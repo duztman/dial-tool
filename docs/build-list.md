@@ -1,7 +1,7 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **done** · **parked**.
-*Last updated 4 Oct 2026.*
+*Last updated 4 Oct 2026 (beta 1.0.1).*
 
 ## Verify on a Mac (beta 1.0)
 
@@ -18,6 +18,7 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 9 | SVG import: a marker and three hands drawn in Illustrator (pointing up, anchor at artboard centre) | verify |
 | 10 | Save / Load / Defaults; last session restored after quitting DrawBot | verify |
 | 11 | Eastern Arabic and Chinese labels render (font fallback) | verify |
+| 23 | beta 1.0.1: Export log shows `all controls connected`; popups open with live items and change the dial; checkboxes, segmented controls, colour wells, text fields respond | verify |
 
 ## Next
 

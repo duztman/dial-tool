@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 1.0.1 · 4 Oct 2026
+
+- **Fixed: dropdowns, checkboxes, segmented controls, colour wells, text fields and the Export/Settings buttons did nothing.** Cause: those controls were only held by the section's `GridView`, which keeps the Cocoa view but not vanilla's Python object; the Python object held the callback, Cocoa doesn't retain targets, so every callback was dropped once the section was built. Popup items showed grey because nothing answered their action. Number controls and the numeral picker worked only because something else happened to hold them. New rule R22.
+- **Self-check at launch:** the Export log says `all controls connected`, or lists any control that lost its callback.
+
 ## beta 1.0 · 4 Oct 2026
 
 First version as a project. Own window replaces DrawBot's `Variable()` panel.

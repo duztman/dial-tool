@@ -1,7 +1,7 @@
 # Dial Tool — rules
 
 Standing rules. Check code against these in reviews; cite them by number.
-*Last updated 4 Oct 2026.*
+*Last updated 4 Oct 2026 (R22 added).*
 
 ## Geometry
 
@@ -31,6 +31,7 @@ Standing rules. Check code against these in reviews; cite them by number.
 - **R15 · A number control is label · slider · typed field · stepper**, kept in sync. Typing past the slider's range extends it.
 - **R16 · Rows that don't apply are hidden**, not disabled.
 - **R17 · No dead ends.** Every risky call has a fallback or reports to the Export log — never fails silently.
+- **R22 · Keep every control's Python object alive.** vanilla stores a control's callback on the Python object (`_target`); Cocoa controls don't retain their target; `GridView` keeps only the Cocoa view. A control that exists only inside a grid loses its callback as soon as the building function returns: popup items turn grey, clicks do nothing. Store controls on the tool (`self.keep`, or a named attribute). Found 4 Oct 2026 (beta 1.0.1).
 
 ## Process
 

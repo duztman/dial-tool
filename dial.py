@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────
-#  dial.py — Dial Tool for DrawBot                     beta 1.0
+#  dial.py — Dial Tool for DrawBot                   beta 1.0.1
 #
 #  ⌘R opens the tool window. Running again replaces the window
 #  and keeps your current settings.
@@ -858,10 +858,11 @@ class DialTool:
         self.static, self.static_dirty = None, True
         self.ready, self.timer, self.last_save = False, None, 0
         self.visibility = []                                       # (grid, row, predicate)
+        self.keep = []                                             # R22: every control's Python object
         self.axis_params, self.nudge_params = {}, {}
         self.families = font_families()
 
-        self.w = Window((1240, 820), "Dial Tool · beta 1.0", minSize=(1000, 700), autosaveName="DialToolWindow")
+        self.w = Window((1240, 820), "Dial Tool · beta 1.0.1", minSize=(1000, 700), autosaveName="DialToolWindow")
         titles = [t for t, _ in SECTIONS]
         self.w.sections = SegmentedButton((10, 10, 430, 24), [dict(title=t, width=52) for t in titles],
                                           callback=self._section_cb, sizeStyle="small")
@@ -890,6 +891,7 @@ class DialTool:
         self._refresh_visibility()
         self.w.open()
         self.ready = True
+        self._check_callbacks()
         family = self.S["ty_family"] if self.S["ty_family"] in self.families else (
             "Helvetica Neue" if "Helvetica Neue" in self.families else self.families[0])
         self.family.set(family)
@@ -906,6 +908,7 @@ class DialTool:
                 if item.get("show"):
                     visibility.append((len(rows), item["show"]))
                 rows.append(dict(cells=cells, rowPadding=(top, 0)))
+        self.keep.append(rows)                                     # GridView keeps only the Cocoa views (R22)
         g.grid = GridView("auto", rows, columnDescriptions=GRID_COLUMNS, columnSpacing=6,
                           rowSpacing=6, rowPlacement="center", rowAlignment="none")
         nsgrid = g.grid.getNSGridView()
@@ -1009,6 +1012,21 @@ class DialTool:
                                      lambda s: self._bar("_nudge_reset", s), momentary=True)
         rows.append(([blank(), self.nudge_reset, blank(), blank()], True, 4))
         return rows
+
+    def _check_callbacks(self):
+        """R17 + R22: report controls that would ignore clicks (action set, target gone)."""
+        dead = []
+        def walk(view):
+            for v in view.subviews():
+                if isinstance(v, AppKit.NSControl) and v.action() and v.target() is None:
+                    dead.append(str(v.className()))
+                walk(v)
+        for g in self.groups:
+            walk(g.grid.getNSGridView())
+        if dead:
+            self.log(f"{len(dead)} controls lost their callback: " + ", ".join(sorted(set(dead))))
+        else:
+            self.log("all controls connected")
 
     # ── sections and visibility ──────────────────────────────
 

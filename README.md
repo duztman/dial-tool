@@ -3,7 +3,7 @@
 A parametric watch-dial design tool that runs inside [DrawBot](https://www.drawbot.com) on macOS.
 Built to explore, present and produce dials for a watch Okay will actually build.
 
-**Status: beta 1.0 (4 Oct 2026).** Geometry is tested off-Mac with `tools/test_harness.py`.
+**Status: beta 1.0.1 (4 Oct 2026)** — on `dev`; `main` holds beta 1.0. Geometry is tested off-Mac with `tools/test_harness.py`.
 The interface was checked against the vanilla and DrawBot sources and its foundation verified on
 Okay's Mac with `tools/dial_probe.py`; the full beta window has not run on a Mac yet
 (see `docs/build-list.md`, Verify).
