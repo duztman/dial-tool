@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────
-#  dial.py — Dial Tool for DrawBot                     beta 2.0
+#  dial.py — Dial Tool for DrawBot                     beta 2.1
 #
 #  ⌘R opens the tool window. Running again replaces the window
 #  and keeps your current settings.
@@ -29,7 +29,7 @@ except ImportError:                                   # test harness outside the
     from drawbot_skia.path import BezierPath
     FormattedString = None
 
-VERSION = "beta 2.0"
+VERSION = "beta 2.1"
 MM = 72 / 25.4                                        # 1 mm in points (render time only, R1)
 MM_PER_PT = 25.4 / 72                                 # imported files arrive in points
 
@@ -105,11 +105,11 @@ DEFAULTS = dict(
     t=10 * 3600 + 9 * 60 + 36,
     out_production=False, out_mirror=False, out_dpi=600.0, out_seconds=4.0, out_fps=30.0,
     # interface
-    ui_section=0, ui_ring=0, ui_page=0, ui_hand=0,
+    ui_section=0, ui_ring=0, ui_hand=0,
 )
 
 # settings that change only colour, hands, output or the interface — no need to rebuild the dial
-NOT_GEOMETRY = ("t", "guides", "ui_section", "ui_ring", "ui_page", "ui_hand")
+NOT_GEOMETRY = ("t", "guides", "ui_section", "ui_ring", "ui_hand")
 NOT_GEOMETRY_PREFIX = ("c_", "ha_", "out_")
 WHOLE = ("count", "every", "offset", "num_digits")   # whole numbers
 
@@ -1114,16 +1114,32 @@ def draw_page(D, S, static, t, preview=True, selected=None):
 # ═════════════════════════════════════════════════════════════
 
 try:
-    import AppKit, CoreText, Quartz
+    import objc, AppKit, CoreText, Quartz
     from vanilla import (Window, Group, TextBox, Slider, EditText, Stepper, ComboBox, PopUpButton,
                          CheckBox, ColorWell, SegmentedButton, List, CheckBoxListCell, TextEditor,
-                         Button, GridView)
+                         Button, GridView, ScrollView)
     from vanilla.dialogs import getFile, putFile
     from drawBot.drawBotDrawingTools import DrawBotDrawingTool
     from drawBot.ui.drawView import DrawView
     HAVE_UI = True
 except ImportError:
     HAVE_UI = False
+
+FlippedView = None
+if HAVE_UI:
+    try:
+        FlippedView = objc.lookUpClass("DialToolFlippedView")     # made by an earlier run (⌘R again)
+    except objc.nosuchclass_error:
+        try:
+            class DialToolFlippedView(AppKit.NSView):
+                """y grows downward, so a short list sits at the top of its scroll view."""
+                def isFlipped(self):
+                    return True
+            FlippedView = DialToolFlippedView
+        except Exception as e:
+            note(f"no scrolling for the ring settings ({e})")
+
+SIZE = "regular"                                                   # control size: "regular" or "small"
 
 SUPPORT = os.path.expanduser("~/Library/Application Support/DialTool")
 LAST_SESSION = os.path.join(SUPPORT, "last.json")
@@ -1228,7 +1244,7 @@ def unique_titles(titles):
     return out
 
 def label(text):
-    return TextBox("auto", f"{text}:" if text else "", alignment="right", sizeStyle="small")
+    return TextBox("auto", f"{text}:" if text else "", alignment="right", sizeStyle=SIZE)
 
 def fill_equally(segmented_button):
     try:
@@ -1236,18 +1252,54 @@ def fill_equally(segmented_button):
     except Exception:
         pass                                                       # older macOS: segments keep their own width
 
-def segmented(items, callback, momentary=False, pos="auto"):
-    c = SegmentedButton(pos, [dict(title=t) for t in items], callback=callback, sizeStyle="small",
+def tabs_left(segmented_button):
+    """tab-like switchers: titles aligned left (macOS 10.13+)."""
+    try:
+        ns = segmented_button.getNSSegmentedButton()
+        for i in range(ns.segmentCount()):
+            ns.setAlignment_forSegment_(getattr(AppKit, "NSTextAlignmentLeft", 0), i)
+    except Exception:
+        pass
+
+def segmented(items, callback, momentary=False, pos="auto", tabs=False):
+    c = SegmentedButton(pos, [dict(title=t) for t in items], callback=callback, sizeStyle=SIZE,
                         selectionStyle="momentary" if momentary else "one")
     fill_equally(c)
+    if tabs:
+        tabs_left(c)
     return c
+
+def scroll_document(group):
+    """a flipped view holding a vanilla Group; the group's content decides its height."""
+    doc = FlippedView.alloc().initWithFrame_(((0, 0), (100, 100)))
+    doc.setTranslatesAutoresizingMaskIntoConstraints_(False)
+    view = group.getNSView()
+    view.setTranslatesAutoresizingMaskIntoConstraints_(False)
+    doc.addSubview_(view)
+    AppKit.NSLayoutConstraint.activateConstraints_([
+        view.topAnchor().constraintEqualToAnchor_(doc.topAnchor()),
+        view.bottomAnchor().constraintEqualToAnchor_(doc.bottomAnchor()),
+        view.leadingAnchor().constraintEqualToAnchor_(doc.leadingAnchor()),
+        view.trailingAnchor().constraintEqualToAnchor_(doc.trailingAnchor())])
+    return doc
+
+def pin_document(scroll):
+    """the document starts at the scroll view's top and is as wide as it; only its height scrolls."""
+    sv = scroll.getNSScrollView()
+    sv.setBorderType_(AppKit.NSNoBorder)
+    clip, doc = sv.contentView(), sv.documentView()
+    AppKit.NSLayoutConstraint.activateConstraints_([
+        doc.topAnchor().constraintEqualToAnchor_(clip.topAnchor()),
+        doc.leadingAnchor().constraintEqualToAnchor_(clip.leadingAnchor()),
+        doc.trailingAnchor().constraintEqualToAnchor_(clip.trailingAnchor())])
 
 def blank():
     return TextBox("auto", "")
 
 def bold(text):
-    t = TextBox("auto", text, sizeStyle="small")
-    t.getNSTextField().setFont_(AppKit.NSFont.boldSystemFontOfSize_(AppKit.NSFont.smallSystemFontSize()))
+    t = TextBox("auto", text, sizeStyle=SIZE)
+    size = AppKit.NSFont.systemFontSize() if SIZE == "regular" else AppKit.NSFont.smallSystemFontSize()
+    t.getNSTextField().setFont_(AppKit.NSFont.boldSystemFontOfSize_(size))
     return t
 
 
@@ -1259,11 +1311,11 @@ class Param:
         self.value = value
         self.lo, self.hi = min(lo, value), max(hi, value)
         self.slider = Slider("auto", minValue=self.lo, maxValue=self.hi, value=value,
-                             callback=self._slid, sizeStyle="small")
+                             callback=self._slid, sizeStyle=SIZE)
         self.field = EditText("auto", fmt(value, step), continuous=False,
-                              callback=self._typed, sizeStyle="small")
+                              callback=self._typed, sizeStyle=SIZE)
         self.stepper = Stepper("auto", value=value, minValue=-1e6, maxValue=1e6, increment=step,
-                               callback=self._stepped, sizeStyle="small")
+                               callback=self._stepped, sizeStyle=SIZE)
         self.row = [label(text), self.slider, self.field, self.stepper]
 
     def _slid(self, sender):
@@ -1305,7 +1357,8 @@ class Param:
 def num(key, text, lo, hi, step, show=None, whole=False, scope=None):
     return dict(kind="num", key=key, text=text, lo=lo, hi=hi, step=step, show=show, whole=whole, scope=scope)
 def pop(key, text, items, show=None, scope=None): return dict(kind="pop", key=key, text=text, items=items, show=show, scope=scope)
-def seg(key, text, items, show=None, scope=None): return dict(kind="seg", key=key, text=text, items=items, show=show, scope=scope)
+def seg(key, text, items, show=None, scope=None, tabs=False):
+    return dict(kind="seg", key=key, text=text, items=items, show=show, scope=scope, tabs=tabs)
 def chk(key, text, show=None, scope=None):        return dict(kind="chk", key=key, text=text, show=show, scope=scope)
 def col(key, text, show=None, scope=None):        return dict(kind="col", key=key, text=text, show=show, scope=scope)
 def txt(key, text, show=None, scope=None):        return dict(kind="txt", key=key, text=text, show=show, scope=scope)
@@ -1324,12 +1377,13 @@ hand_is = lambda *shapes: (lambda H: HAND_SHAPES[H["shape"]] in shapes)
 DIAL_ROWS = [
     num("dial_d", "Diameter", 15, 50, 0.1),
     num("margin", "Page margin", 0, 10, 0.5),
-    chk("guides", "Construction guides"),
     hdr("Colour"),
     col("c_plate", "Plate"), col("c_backdrop", "Backdrop"),
 ]
 
-POSITION_ROWS = [                                                  # every kind
+numerals_only = kind_in("numerals")
+
+RING_ROWS = [                                                      # one list; rows that don't apply hide (R16)
     pop("kind", "Kind", KINDS),
     col("c", "Colour"),
     num("r", "Outer radius", 0, 25, 0.05, show=kind_in("ticks", "markers", "band")),
@@ -1345,9 +1399,7 @@ POSITION_ROWS = [                                                  # every kind
     pop("skip", "Skip where", SKIP_FROM),
     pop("knock", "Knock out", KNOCK_FROM),
     num("clear", "Clearance", 0, 2, 0.01, show=lambda R: R["knock"] != 0),
-]
-
-LOOK_ROWS = [                                                      # rows for each kind; the others hide
+    hdr("Look"),
     seg("shape", "Shape", SHAPES, show=kind_in("ticks", "markers")),
     fil("file", "File", show=marks_with("file")),
     num("scale", "Size ×", 0.05, 10, 0.01, show=marks_with("file")),
@@ -1370,13 +1422,15 @@ LOOK_ROWS = [                                                      # rows for ea
     num("size", "Size", 0.3, 8, 0.05, show=kind_in("numerals")),
     num("width", "Band width", 0.02, 25, 0.05, show=kind_in("band")),
     num("fill", "Fill % of step", 1, 100, 1, show=kind_in("band")),
-]
-
-TYPE_ROWS = [
-    custom("family"), custom("style"), custom("instance"),
-    pop("lang", "Language", LANGS),
-    num("tracking", "Tracking", -200, 800, 5),
-    custom("axes_header"),
+    hdr("Nudge one numeral", show=numerals_only),
+    custom("nudge", show=numerals_only),
+    hdr("Type", show=numerals_only),
+    custom("family", show=numerals_only), custom("style", show=numerals_only),
+    custom("instance", show=numerals_only),
+    pop("lang", "Language", LANGS, show=numerals_only),
+    num("tracking", "Tracking", -200, 800, 5, show=numerals_only),
+    custom("features", show=numerals_only),
+    custom("axes_header", show=numerals_only),                     # axis rows are added after this, per font
 ]
 
 HAND_ROWS = [
@@ -1385,7 +1439,7 @@ HAND_ROWS = [
     num("ha_cap", "Cap Ø", 0, 4, 0.05),
     col("c_cap", "Cap colour"),
     hdr("Hand"),
-    seg("ui_hand", "Edit", ["Hour", "Minute", "Seconds"]),
+    seg("ui_hand", "Edit", ["Hour", "Minute", "Seconds"], tabs=True),
     chk("on", "Show this hand", scope="hand"),
     pop("shape", "Shape", HAND_SHAPES, scope="hand"),
     fil("file", "File", show=hand_is("file"), scope="hand"),
@@ -1432,11 +1486,12 @@ EXPORT_ROWS = [
 ]
 
 SECTIONS = ["Dial", "Rings", "Hands", "Date", "Export"]
-PAGES = ["Position", "Look", "Type", "Nudge"]
 RING_TOOLS = ["Duplicate", "Delete", "↑ Up", "↓ Down"]
 
-GRID_COLUMNS = [dict(width=104, columnPlacement="trailing"), dict(width=196, columnPlacement="fill"),
-                dict(width=56, columnPlacement="fill"), dict(width=22, columnPlacement="leading")]
+GRID_COLUMNS = [dict(width=132, columnPlacement="trailing"), dict(width=200, columnPlacement="fill"),
+                dict(width=62, columnPlacement="fill"), dict(width=24, columnPlacement="leading")]
+WIDE = 200 + 6 + 62 + 6 + 24                                       # a view spanning the last three columns
+PANEL = 470                                                        # left panel width
 
 
 def guard(fn):
@@ -1463,33 +1518,34 @@ class DialTool:
         self.axis_params, self.nudge_params = {}, {}
         self.families = font_families()
 
-        self.w = Window((1240, 840), f"Dial Tool · {VERSION}", minSize=(1000, 720), autosaveName="DialToolWindow")
-        self.w.sections = SegmentedButton((10, 10, 430, 24), [dict(title=t) for t in SECTIONS],
-                                          callback=self._section_cb, sizeStyle="small")
-        fill_equally(self.w.sections)
+        self.w = Window((1300, 860), f"Dial Tool · {VERSION}", minSize=(1060, 720), autosaveName="DialToolWindow")
+        self.w.sections = segmented(SECTIONS, self._section_cb, pos=(10, 10, PANEL, 26), tabs=True)
         self.groups = []
         for i, title in enumerate(SECTIONS):
-            g = Group((10, 44, 430, -34))
+            g = Group((10, 46, PANEL, -36))
             setattr(self.w, f"section{i}", g)
             self.groups.append(g)
             getattr(self, "_build_" + title.lower())(g)
 
-        self.w.canvas = DrawView((450, 10, -10, -72))
-        self.w.timeLabel = TextBox((452, -58, 40, 18), "Time", sizeStyle="small")
-        self.w.timeSlider = Slider((492, -60, -312, 22), minValue=0, maxValue=43199, value=self.S["t"],
-                                   callback=self._time_slid, sizeStyle="small")
-        self.w.timeField = EditText((-302, -60, 76, 22), fmt_time(self.S["t"]), continuous=False,
-                                    callback=self._time_typed, sizeStyle="small")
-        self.w.now = Button((-218, -60, 56, 22), "Now", callback=self._now, sizeStyle="small")
-        self.w.play = Button((-156, -60, 66, 22), "Play", callback=self._play, sizeStyle="small")
-        self.w.fit = Button((-84, -60, 74, 22), "Fit", callback=self._fit, sizeStyle="small")
-        self.w.status = TextBox((12, -24, -12, 16), "", sizeStyle="mini")
+        x = PANEL + 20                                             # preview and the bar under it
+        self.w.canvas = DrawView((x, 10, -10, -74))
+        self.w.timeLabel = TextBox((x + 2, -59, 40, 20), "Time", sizeStyle=SIZE)
+        self.w.timeSlider = Slider((x + 44, -62, -410, 24), minValue=0, maxValue=43199, value=self.S["t"],
+                                   callback=self._time_slid, sizeStyle=SIZE)
+        self.w.timeField = EditText((-398, -62, 84, 24), fmt_time(self.S["t"]), continuous=False,
+                                    callback=self._time_typed, sizeStyle=SIZE)
+        self.w.guides = CheckBox((-302, -61, 78, 22), "Guides", value=bool(self.S["guides"]), sizeStyle=SIZE,
+                                 callback=lambda s: self.set_value("global", "guides", bool(s.get())))
+        self._bind("global", "guides", lambda v: self.w.guides.set(bool(v)))
+        self.w.now = Button((-220, -62, 60, 24), "Now", callback=self._now, sizeStyle=SIZE)
+        self.w.play = Button((-154, -62, 66, 24), "Play", callback=self._play, sizeStyle=SIZE)
+        self.w.fit = Button((-82, -62, 72, 24), "Fit", callback=self._fit, sizeStyle=SIZE)
+        self.w.status = TextBox((12, -26, -12, 18), "", sizeStyle="small")
 
         self.w.bind("close", self._closed)
         self.w.sections.set(self.S["ui_section"])
         self._show_section(self.S["ui_section"])
         self._refresh_ring_list()
-        self.ring_group.pages.set(self.S["ui_page"])
         self._refresh_visibility()
         self.w.open()
         self.ready = True
@@ -1549,14 +1605,14 @@ class DialTool:
             return [(p.row, False, 0)]
         if k in ("pop", "seg"):
             if k == "pop":
-                c = PopUpButton("auto", item["items"], sizeStyle="small", callback=lambda s, f=changed: f(s.get()))
+                c = PopUpButton("auto", item["items"], sizeStyle=SIZE, callback=lambda s, f=changed: f(s.get()))
             else:
-                c = segmented(item["items"], lambda s, f=changed: f(s.get()))
+                c = segmented(item["items"], lambda s, f=changed: f(s.get()), tabs=item.get("tabs"))
             c.set(T[key])
             self._bind(scope, key, lambda v, c=c: c.set(v))
             return [([label(item["text"]), c, blank(), blank()], True, 0)]
         if k == "chk":
-            c = CheckBox("auto", item["text"], value=bool(T[key]), sizeStyle="small",
+            c = CheckBox("auto", item["text"], value=bool(T[key]), sizeStyle=SIZE,
                          callback=lambda s, f=changed: f(bool(s.get())))
             self._bind(scope, key, lambda v, c=c: c.set(bool(v)))
             return [([blank(), c, blank(), blank()], True, 0)]
@@ -1566,12 +1622,12 @@ class DialTool:
             return [([label(item["text"]), dict(view=c, width=44, height=20, columnPlacement="leading"),
                       blank(), blank()], False, 0)]
         if k == "txt":
-            c = EditText("auto", str(T[key]), continuous=False, sizeStyle="small",
+            c = EditText("auto", str(T[key]), continuous=False, sizeStyle=SIZE,
                          callback=lambda s, f=changed: f(str(s.get())))
             self._bind(scope, key, lambda v, c=c: c.set(str(v)))
             return [([label(item["text"]), c, blank(), blank()], True, 0)]
         if k == "file":
-            c = PopUpButton("auto", [], sizeStyle="small",
+            c = PopUpButton("auto", [], sizeStyle=SIZE,
                             callback=lambda s, key=key, scope=scope: self._file_cb(s, scope, key))
             self._file_items(c, T[key])
             self._bind(scope, key, lambda v, c=c: self._file_items(c, v))
@@ -1582,7 +1638,7 @@ class DialTool:
         if k == "hdr":
             return [([blank(), bold(item["text"]), blank(), blank()], True, 12)]
         if k == "note":
-            return [([blank(), TextBox("auto", item["text"], sizeStyle="mini"), blank(), blank()], True, 0)]
+            return [([blank(), TextBox("auto", item["text"], sizeStyle="small"), blank(), blank()], True, 0)]
         return getattr(self, "_rows_" + item["name"])()
 
     # ── sections ─────────────────────────────────────────────
@@ -1607,70 +1663,67 @@ class DialTool:
         g.addAutoPosSizeRules(["H:|[grid]", "H:|-4-[log]-4-|", "V:|[grid]-16-[log]|"])
 
     def _build_rings(self, g):
-        """the ring list, its tools, and four pages for the selected ring."""
+        """the ring list, its tools, and one scrolling list of the selected ring's settings."""
         self.ring_group = g
-        g.list = List((0, 0, -0, 126), [],
+        g.list = List((0, 0, -0, 132), [],
             columnDescriptions=[dict(title="", key="on", cell=CheckBoxListCell(), width=22),
                                 dict(title="Ring", key="name"),
-                                dict(title="Kind", key="kind", editable=False, width=72)],
+                                dict(title="Kind", key="kind", editable=False, width=80)],
             selectionCallback=self._ring_selected, editCallback=self._ring_edited,
             allowsMultipleSelection=False, allowsEmptySelection=False, allowsSorting=False,
             drawFocusRing=False)
-        g.add = PopUpButton((0, 134, 120, 20), ["Add ring…"] + [k.capitalize() for k in KINDS],
-                            callback=self._ring_add, sizeStyle="small")
+        g.add = PopUpButton((0, 142, 132, 24), ["Add ring…"] + [k.capitalize() for k in KINDS],
+                            callback=self._ring_add, sizeStyle=SIZE)
         g.tools = segmented(RING_TOOLS, lambda s: self._bar("ring_tool", s), momentary=True,
-                            pos=(128, 133, -0, 22))
-        g.pages = segmented(PAGES, self._page_cb, pos=(0, 166, -0, 22))
-        self.pages = []
-        for i, (spec, has_note) in enumerate(((POSITION_ROWS, False), (LOOK_ROWS, False),
-                                              (TYPE_ROWS, True), ([custom("nudge")], True))):
-            pg = Group((0, 200, -0, -0))
-            setattr(g, f"page{i}", pg)
-            self.pages.append(pg)
-            if has_note:                                           # Type and Nudge: numerals only
-                pg.note = TextBox((4, 6, -4, 34), "Type and nudges belong to numerals rings. "
-                                  "Change this ring's kind on the Position page.", sizeStyle="small")
-                pg.content = Group((0, 0, -0, -0))
-                host = pg.content
-            else:
-                host = pg
-            host.grid, count = self._grid(spec, "ring")
-            if i == 2:
-                self.type_grid, self.type_base_rows = host.grid, count
-                host.featuresLabel = bold("OpenType features")
-                host.features = List("auto", [],
-                    columnDescriptions=[dict(title="", key="on", cell=CheckBoxListCell(), width=22),
-                                        dict(title="Tag", key="tag", editable=False, width=46),
-                                        dict(title="Feature", key="name", editable=False)],
-                    editCallback=self._features_edited, allowsSorting=False, drawFocusRing=False)
-                self.features_list = host.features
-                host.addAutoPosSizeRules(["H:|[grid]", "H:|-4-[featuresLabel]-4-|", "H:|-4-[features]-4-|",
-                                          "V:|[grid]-16-[featuresLabel]-6-[features]|"])
-            else:
-                host.addAutoPosSizeRules(["H:|[grid]", "V:|[grid]"])
+                            pos=(140, 141, -0, 26))
+        details = Group("auto")
+        details.grid, self.type_base_rows = self._grid(RING_ROWS, "ring")
+        details.addAutoPosSizeRules(["H:|[grid]", "V:|-4-[grid]-16-|"])
+        self.ring_grid = self.type_grid = details.grid
+        self.details = details                                     # R22: its Python object stays here
+        top = 178
+        if FlippedView is not None:
+            try:
+                g.details = ScrollView((0, top, -0, -0), scroll_document(details), hasHorizontalScroller=False,
+                                       hasVerticalScroller=True, autohidesScrollers=True, drawsBackground=False)
+                pin_document(g.details)
+                return
+            except Exception:
+                note("no scrolling for the ring settings\n" + traceback.format_exc())
+        g.detailsPlain = details                                   # fallback: no scrolling (R17)
+        g.addAutoPosSizeRules(["H:|[detailsPlain]|", f"V:|-{top}-[detailsPlain]"])
 
     # custom rows
 
     def _rows_family(self):
-        self.family = ComboBox("auto", self.families, completes=True, sizeStyle="small",
+        self.family = ComboBox("auto", self.families, completes=True, sizeStyle=SIZE,
                                callback=self._family_cb)
         self.family.getNSComboBox().setNumberOfVisibleItems_(24)
         return [([label("Family"), self.family, blank(), blank()], True, 0)]
 
     def _rows_style(self):
-        self.style = PopUpButton("auto", [], sizeStyle="small", callback=self._style_cb)
+        self.style = PopUpButton("auto", [], sizeStyle=SIZE, callback=self._style_cb)
         return [([label("Style"), self.style, blank(), blank()], True, 0)]
 
     def _rows_instance(self):
-        self.instance = PopUpButton("auto", ["—"], sizeStyle="small", callback=self._instance_cb)
+        self.instance = PopUpButton("auto", ["—"], sizeStyle=SIZE, callback=self._instance_cb)
         return [([label("Instance"), self.instance, blank(), blank()], True, 0)]
+
+    def _rows_features(self):
+        self.features_list = List("auto", [],
+            columnDescriptions=[dict(title="", key="on", cell=CheckBoxListCell(), width=22),
+                                dict(title="Tag", key="tag", editable=False, width=46),
+                                dict(title="OpenType feature", key="name", editable=False)],
+            editCallback=self._features_edited, allowsSorting=False, drawFocusRing=False)
+        return [([label("Features"), dict(view=self.features_list, width=WIDE, height=150), blank(), blank()],
+                 True, 0)]
 
     def _rows_axes_header(self):
         self.axes_header = bold("Variable axes")
         return [([blank(), self.axes_header, blank(), blank()], True, 12)]
 
     def _rows_nudge(self):
-        self.nudge_pick = PopUpButton("auto", ["12"], sizeStyle="small", callback=lambda s: self._load_nudge())
+        self.nudge_pick = PopUpButton("auto", ["12"], sizeStyle=SIZE, callback=lambda s: self._load_nudge())
         rows = [([label("Numeral"), self.nudge_pick, blank(), blank()], True, 0)]
         for key, text, lo, hi, step, rest in (("dr", "Radius ±", -5, 5, 0.05, 0), ("da", "Angle ±°", -15, 15, 0.1, 0),
                                               ("rot", "Rotate °", -180, 180, 1, 0), ("s", "Size ×", 0.3, 3, 0.05, 1)):
@@ -1698,7 +1751,7 @@ class DialTool:
         else:
             self.log("all controls connected")
 
-    # ── sections, pages, visibility ──────────────────────────
+    # ── sections and visibility ──────────────────────────────
 
     def _section_cb(self, sender):
         i = sender.get()
@@ -1710,23 +1763,12 @@ class DialTool:
         for i, g in enumerate(self.groups):
             g.show(i == index)
 
-    def _page_cb(self, sender):
-        i = sender.get()
-        if i is not None:
-            self.S["ui_page"] = i
-            self._refresh_pages()
-
-    def _refresh_pages(self):
-        numerals = kind_of(self.ring()) == "numerals"
-        for i, pg in enumerate(self.pages):
-            pg.show(i == self.S["ui_page"])
-            if hasattr(pg, "content"):
-                pg.content.show(numerals)
-                pg.note.show(not numerals)
-
     def _refresh_visibility(self):
         for grid, row, pred, scope in self.visibility:
             grid.showRow(row, bool(pred(self.target(scope))))
+        numerals = kind_of(self.ring()) == "numerals"              # axis rows, added per font, at the end
+        for row in range(self.type_base_rows, self.ring_grid.getRowCount()):
+            self.ring_grid.showRow(row, numerals)
 
     def _load_scope(self, scope):
         """put the selected ring's or hand's values into the controls."""
@@ -1769,7 +1811,7 @@ class DialTool:
 
     @guard
     def _load_ring(self):
-        """the selected ring → every control on its four pages."""
+        """the selected ring → every control in its list."""
         ring = self.ring()
         self.quiet = True
         try:
@@ -1782,7 +1824,7 @@ class DialTool:
                 self._load_nudge_picker()
         finally:
             self.quiet = False
-        self._refresh_pages()
+        self._refresh_visibility()
         self.static_dirty = True
         self.render()
 

@@ -83,6 +83,11 @@ class NS:
         return iter([])
 
 class NSView(NS):
+    @classmethod
+    def alloc(cls):
+        return cls()
+    def initWithFrame_(self, frame):
+        return self
     def __init__(self, wrapper=None):
         self._wrapper = weakref.ref(wrapper) if wrapper is not None else (lambda: None)
         self._subviews, self._target, self._action, self._clicked = [], (lambda: None), None, -1
@@ -266,6 +271,7 @@ class SegmentedButton(V):
     def setup(self):
         object.__setattr__(self, "_count", len(self._kw["segmentDescriptions"]))
         object.__setattr__(self, "_index", -1)
+        self._nsObject.segmentCount = lambda: self._count
     def get(self):
         return self._index if self._index >= 0 else None
     def set(self, i):
@@ -320,6 +326,17 @@ class List(V):
 
 class Group(V):
     ns_class = NSView
+    def getNSView(self):
+        return self._nsObject
+
+class ScrollView(V):
+    ns_class = NSView
+    def setup(self):
+        doc = self._kw["nsView"]
+        self._nsObject._subviews.append(doc)
+        object.__setattr__(self, "_doc", doc)
+    def getNSScrollView(self):
+        return NS(contentView=lambda: NS(), documentView=lambda: self._doc, setBorderType_=lambda b: None)
 
 class Window(Group):
     def setup(self):
@@ -393,7 +410,7 @@ class DrawView:                                                      # drawBot.u
         return NS(autoScales=lambda: True)
 
 for _cls in (TextBox, EditText, TextEditor, Slider, Stepper, CheckBox, ColorWell, Button, ComboBox,
-             PopUpButton, SegmentedButton, List, Group, Window, GridView):  # stand-ins may only add real methods
+             PopUpButton, SegmentedButton, List, Group, ScrollView, Window, GridView):  # stand-ins may only add real methods
     for _m in vars(_cls):
         if not _m.startswith(("_", "sim_")) and _m not in ("setup", "key", "ns_class") \
                 and _m not in methods_of(_cls.__name__):
@@ -440,20 +457,27 @@ class FakeDrawingTool:                                               # DrawBotDr
 
 
 def install_fakes():
-    fake_module("AppKit", NSControl=NSControl, NSSegmentDistributionFillEqually=1,
+    class nosuchclass_error(Exception):
+        pass
+    def lookUpClass(name):
+        raise nosuchclass_error(name)
+    fake_module("objc", lookUpClass=lookUpClass, nosuchclass_error=nosuchclass_error)
+    fake_module("AppKit", NSControl=NSControl, NSView=NSView, NSSegmentDistributionFillEqually=1,
+                NSTextAlignmentLeft=0, NSNoBorder=0,
                 NSColor=NS(colorWithSRGBRed_green_blue_alpha_=lambda *c: Color(*c)),
                 NSColorSpace=NS(sRGBColorSpace=lambda: NS()),
                 NSFontManager=NS(sharedFontManager=lambda: NS(
                     availableFontFamilies=lambda: list(FONTS),
                     availableMembersOfFontFamily_=lambda f: FONTS.get(f, []))),
                 NSFont=NS(boldSystemFontOfSize_=lambda s: NS(), smallSystemFontSize=lambda: 11,
+                          systemFontSize=lambda: 13,
                           fontWithName_size_=lambda n, s: None),
                 NSTimer=NS(scheduledTimerWithTimeInterval_repeats_block_=lambda i, r, b: Timer(b)))
     fake_module("CoreText")
     fake_module("Quartz")
     vanilla = fake_module("vanilla", **{c.__name__: c for c in (
         Window, Group, TextBox, Slider, EditText, Stepper, ComboBox, PopUpButton, CheckBox, ColorWell,
-        SegmentedButton, List, TextEditor, Button, GridView)}, CheckBoxListCell=CheckBoxListCell)
+        SegmentedButton, List, TextEditor, Button, GridView, ScrollView)}, CheckBoxListCell=CheckBoxListCell)
     vanilla.__path__ = []
     fake_module("vanilla.dialogs", getFile=dialog("getFile"), putFile=dialog("putFile"))
     for name in ("drawBot", "drawBot.ui", "drawBot.context"):
@@ -494,11 +518,7 @@ def controls_of(grid):
 
 
 def ring_controls(tool):
-    out = []
-    for pg in tool.pages:
-        host = pg.content if hasattr(pg, "content") else pg
-        out += controls_of(host.grid)
-    return out
+    return controls_of(tool.ring_grid)
 
 
 def controls_in(tool):
@@ -588,7 +608,12 @@ def main():
     def sections():
         for i in range(len(ns["SECTIONS"])):
             T().w.sections.sim_click(i)
-    step("section switcher", sections)
+            for _ in range(2):                                      # guides: in reach from every section
+                T().w.guides.set(not T().w.guides.get())
+                T().w.guides.sim_fire()
+        if T().S["guides"] is not True:
+            problem("the Guides checkbox didn't toggle the guides setting")
+    step("section switcher; guides from every section", sections)
 
     def add_rings():
         g = T().ring_group
@@ -601,13 +626,13 @@ def main():
 
     def every_ring_every_page():
         g = T().ring_group
+        if not hasattr(g, "details") or not isinstance(g.details, ScrollView):
+            problem("the ring settings aren't in a scroll view")
         for r in range(len(T().S["rings"])):
             g.list.sim_select(r)
-            for page in range(len(ns["PAGES"])):
-                g.pages.sim_click(page)
             exercise(T(), ring_controls(T()))
             g.list.sim_select(r)
-    step("every control on every ring (all kinds, all pages)", every_ring_every_page)
+    step("every control on every ring (all kinds)", every_ring_every_page)
 
     def change_kinds():
         g = T().ring_group

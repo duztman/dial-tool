@@ -1,7 +1,7 @@
 # Dial Tool — rules
 
 Standing rules. Check code against these in reviews; cite them by number.
-*Last updated 4 Oct 2026 (beta 2.0: R4, R7, R8, R9, R19 updated; R23 added).*
+*Last updated 4 Oct 2026 (beta 2.1: R14 updated, R24 added).*
 
 ## Geometry
 
@@ -28,11 +28,12 @@ Standing rules. Check code against these in reviews; cite them by number.
 ## Interface
 
 - **R13 · Only APIs in vanilla 0.5.0 and DrawBot 3.132** (what the DrawBot app bundles). Read the source before using a call; `tools/vanilla-0.5.0-api.json` lists every class signature and method.
-- **R14 · No vanilla `Tabs` around auto-layout content** — it collapses. Use segmented switchers (sections, ring pages, hands).
+- **R14 · No vanilla `Tabs` around auto-layout content** — it collapses. Use segmented switchers (sections, hands) or one scrolling list (R24).
 - **R15 · A number control is label · slider · typed field · stepper**, kept in sync. Typing past the slider's range extends it.
 - **R16 · Rows that don't apply are hidden**, not disabled.
 - **R17 · No dead ends.** Every risky call has a fallback or reports to the Export log — never fails silently.
 - **R22 · Keep every control's Python object alive.** vanilla stores a control's callback on the Python object (`_target`); Cocoa controls don't retain their target; `GridView` keeps only the Cocoa view. A control that exists only inside a grid loses its callback as soon as the building function returns: popup items turn grey, clicks do nothing. Store controls on the tool (`self.keep`, a binding, or a named attribute). Found 4 Oct 2026 (beta 1.0.1).
+- **R24 · A scrolling form** is a vanilla `Group` laid out with auto layout, inside a flipped document view (`DialToolFlippedView`, looked up before it is defined so ⌘R again works), pinned to the scroll view's clip view at top, leading and trailing — never bottom, so the content decides the height. A view with no size of its own inside a `GridView` cell (a `List`) needs an explicit width and height.
 
 ## Process
 

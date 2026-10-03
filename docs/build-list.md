@@ -1,7 +1,7 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **done** · **parked**.
-*Last updated 4 Oct 2026 (beta 2.0).*
+*Last updated 4 Oct 2026 (beta 2.1).*
 
 ## Verify on a Mac
 
@@ -20,13 +20,14 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 11 | Eastern Arabic and Chinese labels render (font fallback) | verify |
 | 23 | beta 1.0.1+: Export log shows `all controls connected`; popups open with live items and change the dial; checkboxes, segmented controls, colour wells, text fields respond | verify |
 | 24 | Ring list: add each kind, select, rename, hide (checkbox), duplicate, delete, ↑ ↓; changing a ring's kind keeps its settings | verify |
-| 25 | Ring pages: Position · Look · Type · Nudge show the right rows per kind; Type and Nudge show a note for non-numerals rings | verify |
+| 25 | Ring settings list: right rows per kind; Nudge and Type only for numerals; axis rows follow the font | verify |
 | 26 | Two numerals rings with different fonts; the Type page follows the selected ring; the date uses the top numerals ring's type | verify |
 | 27 | Skip where / knock out behave as named; clearance; the date window clears every ring | verify |
 | 28 | Bands: full ring, sectors (count, every, fill %), pie (band width ≥ radius), partial span | verify |
 | 29 | Hands: Hour · Minute · Seconds picker; every shape; tip, head/ring/disc, hollow wall, counterweight, colours | verify |
 | 30 | PDF and AI import (AI saved PDF-compatible) for a marker and three hands; fit to length, size ×, width ×; white shapes cut; the log notes skipped text or images | verify |
 | 31 | A beta 1.0 last session or preset opens as rings and looks the same | verify |
+| 36 | beta 2.1: the ring settings list starts at the top, scrolls, and shrinks when rows hide; regular-size controls and labels fit; tab titles left; Guides checkbox works from every section | verify |
 
 ## Next
 
@@ -36,7 +37,7 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 13 | Numeral vertical alignment option: glyph bounds (now) vs cap height / baseline | open |
 | 14 | Heavy modes (knockout + 300 ticks ≈ 140–170 ms off-Mac): redraw on mouse-up if dragging feels slow | open |
 | 15 | Fallback-font control for scripts the main font lacks (depends on #11) | open |
-| 16 | Live-text export option alongside outlines (brief §5.2) | open |
+| 16 | Live-text export option alongside outlines — possible, with limits (brief §5.2); Okay asked 4 Oct, not yet commissioned | open |
 | 32 | Scale the whole dial (rings, hands, date) when the diameter changes, or a "scale everything" action (brief §5.7) | open |
 
 ## Later

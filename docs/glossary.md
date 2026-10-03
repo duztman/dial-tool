@@ -2,7 +2,7 @@
 
 What each word means **in this project**. Turkish where it's the common trade word.
 If a term is used differently in conversation, ask, then update this file.
-*Last updated 4 Oct 2026 (beta 2.0: rings).*
+*Last updated 4 Oct 2026 (beta 2.1).*
 
 ## Watch terms
 
@@ -44,7 +44,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Hollow wall** | Turns a mark or a hand into an outline of that thickness (a dot becomes a ring; a hand gets a lume opening). |
 | **Placement** | How numerals sit: **upright** (always level) · **radial** (turn with the circle) · **radial, auto-flip** (never upside down) · **on path** (letters follow the circle, kerning kept). |
 | **Nudge** | A per-numeral correction: radius ±, angle ±, rotate, size ×. Stored per position. |
-| **Page** | One view of the selected ring: **Position** · **Look** · **Type** · **Nudge** (Type and Nudge for numerals rings only). |
+| **Ring settings** | The scrolling list under the ring list: Kind · Colour · Radius · Positions · Give way · Look · Nudge · Type. Nudge and Type show for numerals rings only. (beta 2.0 split it into four pages.) |
 
 ## Hands
 
@@ -62,7 +62,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Section** | One page of the left panel: Dial · Rings · Hands · Date · Export. |
 | **Production mask** | Export mode: every ring in solid black, no plate, no hands, aperture as an outline. |
 | **Mirror** | Flips the output for toner transfer. |
-| **Guides** | Thin blue construction circles in the preview — the dial edge and each ring's edges; the selected ring's in orange. Never exported. |
+| **Guides** | Thin blue construction circles in the preview — the dial edge and each ring's edges; the selected ring's in orange. Switched with the **Guides** checkbox under the preview. Never exported. |
 | **Backdrop** | The preview's background colour; never exported. |
 | **Number control** | Label · slider · typed field · stepper, all showing one value. Typed shorthand: `1.2` set, `+0.5` add, `x0.5` multiply, `/2` divide. |
 | **Settings** (`S`) | One dictionary holding every value; saved as JSON (presets, last session). Rings are a list inside it (`S["rings"]`, top first). |

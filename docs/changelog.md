@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 2.1 · 4 Oct 2026
+
+Interface, after Okay's first look at beta 2.0.
+
+- **Ring settings are one scrolling list** instead of four pages: Kind, Colour, Radius · Positions · Give way · Look · Nudge · Type (with OpenType features and variable axes). Rows that don't apply to the ring's kind hide (R16).
+- **Guides checkbox under the preview**, next to Now · Play · Fit, so it's in reach from every section.
+- **Larger controls:** every control uses the regular macOS size (was small); the left panel is wider (470 px) to fit the labels.
+- **Tab titles aligned left** on the section switcher and the hand picker.
+
 ## beta 2.0 · 4 Oct 2026
 
 The dial becomes a list of rings.
