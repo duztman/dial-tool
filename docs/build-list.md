@@ -21,7 +21,7 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 23 | beta 1.0.1+: Export log shows `all controls connected`; popups open with live items and change the dial; checkboxes, segmented controls, colour wells, text fields respond | verify |
 | 24 | Ring list: add each kind, select, rename, hide (checkbox), duplicate, delete, ↑ ↓; changing a ring's kind keeps its settings | verify |
 | 25 | Ring settings list: right rows per kind; Nudge and Type only for numerals; axis rows follow the font | verify |
-| 26 | Two numerals rings with different fonts; the Type page follows the selected ring; the date uses the top numerals ring's type | verify |
+| 26 | Two numerals rings with different fonts; the Type rows follow the selected ring; the date uses the top numerals ring's type | verify |
 | 27 | Skip where / knock out behave as named; clearance; the date window clears every ring | verify |
 | 28 | Bands: full ring, sectors (count, every, fill %), pie (band width ≥ radius), partial span | verify |
 | 29 | Hands: Hour · Minute · Seconds picker; every shape; tip, head/ring/disc, hollow wall, counterweight, colours | verify |
