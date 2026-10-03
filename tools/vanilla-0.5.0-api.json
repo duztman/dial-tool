@@ -1,0 +1,2411 @@
+{
+"classes": {
+"ActionButton": {
+"bases": [
+"PopUpButton"
+],
+"init": {
+"args": [
+"posSize",
+"items",
+"sizeStyle",
+"bordered"
+],
+"defaults": 2,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"_breakCycles",
+"getFirstItem",
+"setItems"
+],
+"module": "vanillaPopUpButton"
+},
+"BaseMessageDialog": {
+"bases": [
+"BasePanel"
+],
+"init": null,
+"methods": [
+"initWithWindow_resultCallback_",
+"initWithMessageText_informativeText_alertStyle_buttonTitlesValues_window_resultCallback_",
+"run",
+"completionHandler_",
+"_translateValue",
+"alertShowHelp_"
+],
+"module": "dialogs"
+},
+"BasePanel": {
+"bases": [
+"NSObject"
+],
+"init": null,
+"methods": [
+"initWithWindow_resultCallback_cancelCallback_",
+"initWithWindow_resultCallback_",
+"windowWillClose_"
+],
+"module": "dialogs"
+},
+"BasePutGetPanel": {
+"bases": [
+"BasePanel"
+],
+"init": null,
+"methods": [
+"completionHandler_"
+],
+"module": "dialogs"
+},
+"Box": {
+"bases": [
+"VanillaBaseObject"
+],
+"init": {
+"args": [
+"posSize",
+"title",
+"fillColor",
+"borderColor",
+"borderWidth",
+"cornerRadius",
+"margins"
+],
+"defaults": 6,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"getNSBox",
+"_adjustPosSize",
+"_getContentView",
+"_breakCycles",
+"setTitle",
+"getTitle",
+"setFillColor",
+"setBorderColor",
+"setBorderWidth",
+"setCornerRadius",
+"setMargins"
+],
+"module": "vanillaBox"
+},
+"Button": {
+"bases": [
+"VanillaBaseControl"
+],
+"init": {
+"args": [
+"posSize",
+"title",
+"callback",
+"sizeStyle"
+],
+"defaults": 2,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"_testForDeprecatedAttributes",
+"getNSButton",
+"bind"
+],
+"module": "vanillaButton"
+},
+"CheckBox": {
+"bases": [
+"_CheckBoxStandardBuild"
+],
+"init": null,
+"methods": [],
+"module": "vanillaCheckBox"
+},
+"CheckBoxList2Cell": {
+"bases": [
+"CheckBox"
+],
+"init": {
+"args": [
+"title",
+"editable",
+"callback"
+],
+"defaults": 3,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__"
+],
+"module": "vanillaList2"
+},
+"ColorWell": {
+"bases": [
+"VanillaBaseObject"
+],
+"init": {
+"args": [
+"posSize",
+"callback",
+"color",
+"colorWellStyle"
+],
+"defaults": 3,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"getNSColorWell",
+"get",
+"set"
+],
+"module": "vanillaColorWell"
+},
+"ColorWellList2Cell": {
+"bases": [
+"ColorWell"
+],
+"init": {
+"args": [
+"editable",
+"callback",
+"colorWellStyle"
+],
+"defaults": 3,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__"
+],
+"module": "vanillaList2"
+},
+"ComboBox": {
+"bases": [
+"VanillaBaseControl"
+],
+"init": {
+"args": [
+"posSize",
+"items",
+"completes",
+"continuous",
+"callback",
+"formatter",
+"sizeStyle"
+],
+"defaults": 5,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"_breakCycles",
+"_setCallback",
+"getNSComboBox",
+"get",
+"set",
+"setItems",
+"getItems"
+],
+"module": "vanillaComboBox"
+},
+"DatePicker": {
+"bases": [
+"VanillaBaseControl"
+],
+"init": {
+"args": [
+"posSize",
+"date",
+"minDate",
+"maxDate",
+"showStepper",
+"mode",
+"timeDisplay",
+"dateDisplay",
+"callback",
+"sizeStyle"
+],
+"defaults": 9,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"getNSDatePicker",
+"get",
+"set"
+],
+"module": "vanillaDatePicker"
+},
+"Drawer": {
+"bases": [
+"VanillaBaseObject"
+],
+"init": {
+"args": [
+"size",
+"parentWindow",
+"minSize",
+"maxSize",
+"preferredEdge",
+"forceEdge",
+"leadingOffset",
+"trailingOffset"
+],
+"defaults": 6,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"getNSDrawer",
+"_getContentView",
+"_breakCycles",
+"open",
+"close",
+"toggle",
+"isOpen"
+],
+"module": "vanillaDrawer"
+},
+"DropTargetProtocolMixIn": {
+"bases": [],
+"init": null,
+"methods": [
+"_getDropView",
+"setDropSettings",
+"_registerDropTypes",
+"getDropItemValues",
+"_dropCandidateCallbackCaller",
+"_unpackDropCandidateInfo",
+"_dropCandidateEntered",
+"_dropCandidateUpdated",
+"_dropCandidateEnded",
+"_dropCandidateExited",
+"_updateDropCandidateImages",
+"_dropOperationCallbackCaller",
+"_prepareForDrop",
+"_performDrop",
+"_finishDrop"
+],
+"module": "dragAndDrop"
+},
+"EditText": {
+"bases": [
+"VanillaBaseControl"
+],
+"init": {
+"args": [
+"posSize",
+"text",
+"callback",
+"continuous",
+"readOnly",
+"formatter",
+"placeholder",
+"sizeStyle"
+],
+"defaults": 7,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"_testForDeprecatedAttributes",
+"getNSTextField",
+"_setCallback",
+"get",
+"set",
+"getPlaceholder",
+"setPlaceholder",
+"selectAll"
+],
+"module": "vanillaEditText"
+},
+"EditTextList2Cell": {
+"bases": [
+"Group"
+],
+"init": {
+"args": [
+"verticalAlignment",
+"editable",
+"truncationMode",
+"callback"
+],
+"defaults": 4,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"getNSTextField",
+"_internalCallback",
+"set",
+"get"
+],
+"module": "vanillaList2"
+},
+"FloatingWindow": {
+"bases": [
+"Window"
+],
+"init": {
+"args": [
+"posSize",
+"title",
+"minSize",
+"maxSize",
+"textured",
+"autosaveName",
+"closable",
+"initiallyVisible",
+"screen"
+],
+"defaults": 8,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"show"
+],
+"module": "vanillaWindows"
+},
+"GetFileOrFolderPanel": {
+"bases": [
+"BasePutGetPanel"
+],
+"init": null,
+"methods": [
+"initWithWindow_resultCallback_cancelCallback_",
+"run"
+],
+"module": "dialogs"
+},
+"GradientButton": {
+"bases": [
+"ImageButton"
+],
+"init": null,
+"methods": [],
+"module": "vanillaGradientButton"
+},
+"GridView": {
+"bases": [
+"VanillaBaseObject"
+],
+"init": {
+"args": [
+"posSize",
+"contents",
+"columnWidth",
+"columnSpacing",
+"columnPadding",
+"columnPlacement",
+"rowHeight",
+"rowSpacing",
+"rowPadding",
+"rowPlacement",
+"rowAlignment",
+"columnDescriptions"
+],
+"defaults": 10,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"getNSGridView",
+"_normalizeRows",
+"_normalizeRow",
+"_normalizeCells",
+"_normalizeCell",
+"_buildColumns",
+"_setColumnAttributes",
+"_populateColumns",
+"_populateColumn",
+"_buildRows",
+"_setRowAttributes",
+"_populateRow",
+"_populateCell",
+"getColumnCount",
+"columnIsVisible",
+"showColumn",
+"appendColumn",
+"insertColumn",
+"removeColumn",
+"moveColumn",
+"getRowCount",
+"showRow",
+"rowIsVisible",
+"appendRow",
+"insertRow",
+"removeRow",
+"moveRow"
+],
+"module": "vanillaGridView"
+},
+"Group": {
+"bases": [
+"VanillaBaseObject",
+"DropTargetProtocolMixIn"
+],
+"init": {
+"args": [
+"posSize",
+"blendingMode",
+"dropSettings"
+],
+"defaults": 2,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"__setattr__",
+"__delattr__",
+"getNSView",
+"getNSVisualEffectView"
+],
+"module": "vanillaGroup"
+},
+"GroupTitleList2Cell": {
+"bases": [
+"EditTextList2Cell"
+],
+"init": {
+"args": [
+"font",
+"textColor",
+"backgroundColor",
+"verticalAlignment",
+"editable",
+"callback"
+],
+"defaults": 6,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__"
+],
+"module": "vanillaList2"
+},
+"HUDFloatingWindow": {
+"bases": [
+"FloatingWindow"
+],
+"init": null,
+"methods": [],
+"module": "vanillaWindows"
+},
+"HelpButton": {
+"bases": [
+"Button"
+],
+"init": {
+"args": [
+"posSize",
+"callback",
+"page",
+"anchor"
+],
+"defaults": 3,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"_helpBookCallback"
+],
+"module": "vanillaButton"
+},
+"HorizontalLine": {
+"bases": [
+"_Line"
+],
+"init": {
+"args": [
+"posSize"
+],
+"defaults": 0,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__"
+],
+"module": "vanillaBox"
+},
+"HorizontalRadioGroup": {
+"bases": [
+"HorizontalStackGroup",
+"_RadioGroupMixin"
+],
+"init": {
+"args": [
+"posSize",
+"titles",
+"callback",
+"sizeStyle"
+],
+"defaults": 2,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__"
+],
+"module": "vanillaRadioGroup"
+},
+"HorizontalStackGroup": {
+"bases": [
+"HorizontalStackView"
+],
+"init": {
+"args": [
+"posSize"
+],
+"defaults": 0,
+"kwargs": true,
+"kwonly": [],
+"varargs": true
+},
+"methods": [
+"__init__",
+"addView"
+],
+"module": "vanillaStackGroup"
+},
+"HorizontalStackView": {
+"bases": [
+"_StackView"
+],
+"init": null,
+"methods": [],
+"module": "vanillaStackView"
+},
+"ImageButton": {
+"bases": [
+"SquareButton"
+],
+"init": {
+"args": [
+"posSize",
+"imagePath",
+"imageNamed",
+"imageObject",
+"title",
+"bordered",
+"imagePosition",
+"callback",
+"sizeStyle"
+],
+"defaults": 8,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"setImage"
+],
+"module": "vanillaButton"
+},
+"ImageList2Cell": {
+"bases": [
+"ImageView"
+],
+"init": {
+"args": [
+"horizontalAlignment",
+"verticalAlignment",
+"scale",
+"editable",
+"callback"
+],
+"defaults": 5,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"set",
+"get"
+],
+"module": "vanillaList2"
+},
+"ImageView": {
+"bases": [
+"VanillaBaseObject"
+],
+"init": {
+"args": [
+"posSize",
+"horizontalAlignment",
+"verticalAlignment",
+"scale"
+],
+"defaults": 3,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"getNSImageView",
+"setImage"
+],
+"module": "vanillaImageView"
+},
+"LevelIndicator": {
+"bases": [
+"VanillaBaseControl"
+],
+"init": {
+"args": [
+"posSize",
+"style",
+"value",
+"minValue",
+"maxValue",
+"warningValue",
+"criticalValue",
+"tickMarkPosition",
+"minorTickMarkCount",
+"majorTickMarkCount",
+"callback"
+],
+"defaults": 10,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"getNSLevelIndicator",
+"set",
+"get",
+"setMinValue",
+"getMinValue",
+"setMaxValue",
+"getMaxValue",
+"setWarningValue",
+"getWarningValue",
+"setCriticalValue",
+"getCriticalValue"
+],
+"module": "vanillaLevelIndicator"
+},
+"LevelIndicatorList2Cell": {
+"bases": [
+"LevelIndicator"
+],
+"init": {
+"args": [
+"style",
+"value",
+"minValue",
+"maxValue",
+"warningValue",
+"criticalValue",
+"tickMarkPosition",
+"minorTickMarkCount",
+"majorTickMarkCount",
+"imagePath",
+"imageNamed",
+"imageObject",
+"editable",
+"callback"
+],
+"defaults": 14,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__"
+],
+"module": "vanillaList2"
+},
+"List": {
+"bases": [
+"VanillaBaseObject"
+],
+"init": {
+"args": [
+"posSize",
+"items",
+"dataSource",
+"columnDescriptions",
+"showColumnTitles",
+"selectionCallback",
+"doubleClickCallback",
+"editCallback",
+"menuCallback",
+"enableDelete",
+"enableTypingSensitivity",
+"allowsMultipleSelection",
+"allowsEmptySelection",
+"allowsSorting",
+"drawVerticalLines",
+"drawHorizontalLines",
+"autohidesScrollers",
+"drawFocusRing",
+"rowHeight",
+"selfDropSettings",
+"selfWindowDropSettings",
+"selfDocumentDropSettings",
+"selfApplicationDropSettings",
+"otherApplicationDropSettings",
+"dragSettings"
+],
+"defaults": 23,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"_testForDeprecatedAttributes",
+"getNSScrollView",
+"getNSTableView",
+"_breakCycles",
+"_handleColumnWidths",
+"_setColumnAutoresizing",
+"_makeColumnWithoutColumnDescriptions",
+"_makeColumnsWithColumnDescriptions",
+"_wrapItem",
+"_edit",
+"_selection",
+"_keyDown",
+"_menuForEvent",
+"__len__",
+"__getitem__",
+"__setitem__",
+"__delitem__",
+"__contains__",
+"append",
+"remove",
+"index",
+"insert",
+"extend",
+"enable",
+"set",
+"get",
+"_iterIndexSet",
+"getEditedColumnAndRow",
+"getSelection",
+"setSelection",
+"_removeSelection",
+"scrollToSelection",
+"setMenu",
+"_getUnsortedIndexesFromSortedIndexes",
+"_getSortedIndexesFromUnsortedIndexes"
+],
+"module": "vanillaList"
+},
+"List2": {
+"bases": [
+"ScrollView",
+"DropTargetProtocolMixIn"
+],
+"init": {
+"args": [
+"posSize",
+"items",
+"columnDescriptions",
+"allowsSelection",
+"allowsMultipleSelection",
+"allowsEmptySelection",
+"allowsSorting",
+"allowColumnReordering",
+"enableDelete",
+"enableTypingSensitivity",
+"showColumnTitles",
+"drawFocusRing",
+"drawVerticalLines",
+"drawHorizontalLines",
+"alternatingRowColors",
+"autohidesScrollers",
+"selectionCallback",
+"doubleClickCallback",
+"editCallback",
+"menuCallback",
+"allowsGroupRows",
+"floatsGroupRows",
+"groupRowCellClass",
+"groupRowCellClassArguments",
+"autosaveName",
+"dragSettings",
+"dropSettings"
+],
+"defaults": 26,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"_breakCycles",
+"_getDropView",
+"_buildColumns",
+"_wrapItem",
+"getNSTableView",
+"getNSScrollView",
+"enable",
+"set",
+"get",
+"getArrangedIndexes",
+"getArrangedItems",
+"reloadData",
+"getSelectedItems",
+"setSelectedItems",
+"getSelectedIndexes",
+"setSelectedIndexes",
+"scrollToSelection",
+"scrollToIndex",
+"removeSelection",
+"_validateRowsForDrag",
+"_getPasteboardDataForIndex",
+"_keyDown",
+"_menuForEvent",
+"setMenu",
+"setDropSettings",
+"_dropCandidateUpdated",
+"_performDrop"
+],
+"module": "vanillaList2"
+},
+"List2GroupRow": {
+"bases": [],
+"init": {
+"args": [
+"value"
+],
+"defaults": 1,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__"
+],
+"module": "vanillaList2"
+},
+"ObjectBrowser": {
+"bases": [
+"VanillaBaseObject"
+],
+"init": {
+"args": [
+"posSize",
+"obj"
+],
+"defaults": 0,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"getNSScrollView",
+"getNSOutlineView"
+],
+"module": "vanillaBrowser"
+},
+"PathControl": {
+"bases": [
+"VanillaBaseControl"
+],
+"init": {
+"args": [
+"posSize",
+"url",
+"callback",
+"pathStyle",
+"sizeStyle"
+],
+"defaults": 3,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"set",
+"get",
+"getSelected"
+],
+"module": "vanillaPathControl"
+},
+"PopUpButton": {
+"bases": [
+"VanillaBaseControl"
+],
+"init": {
+"args": [
+"posSize",
+"items",
+"callback",
+"sizeStyle"
+],
+"defaults": 2,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"getNSPopUpButton",
+"get",
+"set",
+"getItem",
+"setItem",
+"setItems",
+"getItems"
+],
+"module": "vanillaPopUpButton"
+},
+"PopUpButtonList2Cell": {
+"bases": [
+"PopUpButton"
+],
+"init": {
+"args": [
+"items",
+"editable",
+"callback"
+],
+"defaults": 3,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__"
+],
+"module": "vanillaList2"
+},
+"Popover": {
+"bases": [
+"VanillaBaseObject"
+],
+"init": {
+"args": [
+"size",
+"parentView",
+"preferredEdge",
+"behavior"
+],
+"defaults": 3,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"__del__",
+"_breakCycles",
+"getNSPopover",
+"open",
+"close",
+"resize",
+"bind",
+"unbind",
+"_alertBindings",
+"addAutoPosSizeRules"
+],
+"module": "vanillaPopover"
+},
+"ProgressBar": {
+"bases": [
+"VanillaBaseObject"
+],
+"init": {
+"args": [
+"posSize",
+"minValue",
+"maxValue",
+"isIndeterminate",
+"sizeStyle",
+"progressStyle"
+],
+"defaults": 5,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"getNSProgressIndicator",
+"set",
+"get",
+"increment",
+"start",
+"stop"
+],
+"module": "vanillaProgressBar"
+},
+"ProgressSpinner": {
+"bases": [
+"VanillaBaseObject"
+],
+"init": {
+"args": [
+"posSize",
+"displayWhenStopped",
+"sizeStyle"
+],
+"defaults": 2,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"getNSProgressIndicator",
+"start",
+"stop"
+],
+"module": "vanillaProgressSpinner"
+},
+"PutFilePanel": {
+"bases": [
+"BasePutGetPanel"
+],
+"init": null,
+"methods": [
+"initWithWindow_resultCallback_cancelCallback_",
+"run",
+"completionHandler_"
+],
+"module": "dialogs"
+},
+"PythonBrowserModel": {
+"bases": [
+"NSObject"
+],
+"init": null,
+"methods": [
+"initWithObject_",
+"setObject_",
+"outlineView_numberOfChildrenOfItem_",
+"outlineView_child_ofItem_",
+"outlineView_isItemExpandable_",
+"outlineView_objectValueForTableColumn_byItem_",
+"outlineView_shouldEditTableColumn_item_",
+"outlineView_toolTipForCell_rect_tableColumn_item_mouseLocation_"
+],
+"module": "vanillaBrowser"
+},
+"PythonItem": {
+"bases": [
+"NSObject"
+],
+"init": {
+"args": [
+"name",
+"obj",
+"parent",
+"setvalue",
+"ignoreAppKit"
+],
+"defaults": 1,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__new__",
+"__init__",
+"_setSetters",
+"_setGetters",
+"isExpandable",
+"getChild",
+"getDoc",
+"__len__"
+],
+"module": "vanillaBrowser"
+},
+"RadioButton": {
+"bases": [
+"Button"
+],
+"init": {
+"args": [
+"posSize",
+"title",
+"value",
+"callback",
+"sizeStyle"
+],
+"defaults": 3,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"set",
+"get"
+],
+"module": "vanillaRadioGroup"
+},
+"RadioGroup": {
+"bases": [
+"VanillaBaseControl"
+],
+"init": {
+"args": [
+"posSize",
+"titles",
+"isVertical",
+"callback",
+"sizeStyle"
+],
+"defaults": 3,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"_testForDeprecatedAttributes",
+"getNSMatrix",
+"get",
+"set",
+"enableRadioButton"
+],
+"module": "vanillaRadioGroup"
+},
+"ScrollView": {
+"bases": [
+"VanillaBaseObject"
+],
+"init": {
+"args": [
+"posSize",
+"nsView",
+"hasHorizontalScroller",
+"hasVerticalScroller",
+"autohidesScrollers",
+"backgroundColor",
+"clipView",
+"drawsBackground"
+],
+"defaults": 6,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"_testForDeprecatedAttributes",
+"getNSScrollView",
+"setBackgroundColor"
+],
+"module": "vanillaScrollView"
+},
+"SearchBox": {
+"bases": [
+"VanillaBaseControl"
+],
+"init": {
+"args": [
+"posSize",
+"text",
+"callback",
+"formatter",
+"placeholder",
+"sizeStyle"
+],
+"defaults": 5,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"getNSSearchField",
+"get",
+"set"
+],
+"module": "vanillaSearchBox"
+},
+"SecureEditText": {
+"bases": [
+"EditText"
+],
+"init": null,
+"methods": [
+"getNSSecureTextField"
+],
+"module": "vanillaEditText"
+},
+"SegmentedButton": {
+"bases": [
+"VanillaBaseControl"
+],
+"init": {
+"args": [
+"posSize",
+"segmentDescriptions",
+"callback",
+"selectionStyle",
+"sizeStyle"
+],
+"defaults": 3,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"getNSSegmentedButton",
+"enable",
+"set",
+"get"
+],
+"module": "vanillaSegmentedButton"
+},
+"SegmentedButtonList2Cell": {
+"bases": [
+"SegmentedButton"
+],
+"init": {
+"args": [
+"segmentDescriptions",
+"selectionStyle",
+"editable",
+"callback"
+],
+"defaults": 4,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__"
+],
+"module": "vanillaList2"
+},
+"Sheet": {
+"bases": [
+"Window"
+],
+"init": {
+"args": [
+"posSize",
+"parentWindow",
+"minSize",
+"maxSize",
+"autosaveName"
+],
+"defaults": 3,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"open"
+],
+"module": "vanillaWindows"
+},
+"Slider": {
+"bases": [
+"VanillaBaseControl"
+],
+"init": {
+"args": [
+"posSize",
+"minValue",
+"maxValue",
+"value",
+"tickMarkCount",
+"stopOnTickMarks",
+"continuous",
+"callback",
+"sizeStyle"
+],
+"defaults": 8,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"getNSSlider",
+"_isVerticalFromFrame",
+"_adjustPosSize",
+"get",
+"set",
+"setMinValue",
+"setMaxValue",
+"setTickMarkCount",
+"setTickMarkPosition"
+],
+"module": "vanillaSlider"
+},
+"SliderList2Cell": {
+"bases": [
+"Slider"
+],
+"init": {
+"args": [
+"minValue",
+"maxValue",
+"value",
+"tickMarkCount",
+"stopOnTickMarks",
+"editable",
+"callback"
+],
+"defaults": 7,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__"
+],
+"module": "vanillaList2"
+},
+"SplitView": {
+"bases": [
+"VanillaBaseObject"
+],
+"init": {
+"args": [
+"posSize",
+"paneDescriptions",
+"isVertical",
+"dividerStyle",
+"dividerThickness",
+"dividerColor",
+"autosaveName",
+"dividerImage"
+],
+"defaults": 6,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"_breakCycles",
+"_setupPanes",
+"getRBSplitView",
+"getNSSplitView",
+"setDividerDrawingFunction",
+"isPaneVisible",
+"showPane",
+"togglePane"
+],
+"module": "vanillaSplitView"
+},
+"SplitView2": {
+"bases": [
+"SplitView"
+],
+"init": {
+"args": [],
+"defaults": 0,
+"kwargs": true,
+"kwonly": [],
+"varargs": true
+},
+"methods": [
+"__init__"
+],
+"module": "vanillaSplitView"
+},
+"SquareButton": {
+"bases": [
+"Button"
+],
+"init": {
+"args": [
+"posSize",
+"title",
+"callback",
+"sizeStyle"
+],
+"defaults": 2,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__"
+],
+"module": "vanillaButton"
+},
+"Stepper": {
+"bases": [
+"VanillaBaseControl"
+],
+"init": {
+"args": [
+"posSize",
+"value",
+"minValue",
+"maxValue",
+"increment",
+"autoRepeat",
+"callback",
+"sizeStyle"
+],
+"defaults": 7,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"get",
+"set"
+],
+"module": "vanillaStepper"
+},
+"Tabs": {
+"bases": [
+"VanillaBaseObject"
+],
+"init": {
+"args": [
+"posSize",
+"titles",
+"callback",
+"sizeStyle",
+"showTabs",
+"transitionStyle"
+],
+"defaults": 5,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"getNSTabView",
+"_positionViews",
+"_adjustPosSize",
+"_setCallback",
+"_setSizeStyle",
+"__getitem__",
+"_breakCycles",
+"get",
+"set"
+],
+"module": "vanillaTabs"
+},
+"TestWindow": {
+"bases": [],
+"init": {
+"args": [],
+"defaults": 0,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__"
+],
+"module": "vanillaBrowser"
+},
+"TextBox": {
+"bases": [
+"VanillaBaseControl"
+],
+"init": {
+"args": [
+"posSize",
+"text",
+"alignment",
+"selectable",
+"sizeStyle"
+],
+"defaults": 4,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"getNSTextField",
+"get",
+"set"
+],
+"module": "vanillaTextBox"
+},
+"TextEditor": {
+"bases": [
+"VanillaBaseObject"
+],
+"init": {
+"args": [
+"posSize",
+"text",
+"callback",
+"readOnly",
+"checksSpelling"
+],
+"defaults": 4,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"_testForDeprecatedAttributes",
+"getNSScrollView",
+"getNSTextView",
+"_setCallback",
+"get",
+"set",
+"selectAll"
+],
+"module": "vanillaTextEditor"
+},
+"VanillaArrayController": {
+"bases": [
+"NSArrayController"
+],
+"init": null,
+"methods": [
+"tableView_writeRowsWithIndexes_toPasteboard_",
+"_handleDrop",
+"_handleDropBasedOnSettings",
+"_validateDropPosition",
+"_unpackPboard",
+"tableView_validateDrop_proposedRow_proposedDropOperation_",
+"tableView_acceptDrop_row_dropOperation_",
+"tableView_objectValueForTableColumn_row_",
+"numberOfRowsInTableView_"
+],
+"module": "vanillaList"
+},
+"VanillaArrayControllerObserver": {
+"bases": [
+"NSObject"
+],
+"init": null,
+"methods": [
+"observeValueForKeyPath_ofObject_change_context_"
+],
+"module": "vanillaList"
+},
+"VanillaBaseControl": {
+"bases": [
+"VanillaBaseObject"
+],
+"init": null,
+"methods": [
+"_setSizeStyle",
+"setTitle",
+"getTitle",
+"isEnabled",
+"set",
+"get",
+"bind"
+],
+"module": "vanillaBase"
+},
+"VanillaBaseObject": {
+"bases": [
+"object"
+],
+"init": null,
+"methods": [
+"__setattr__",
+"__delattr__",
+"_setupView",
+"_setupInstantiatedView",
+"_breakCycles",
+"_testForDeprecatedAttributes",
+"_setCallback",
+"_setAutosizingFromPosSize",
+"_setFrame",
+"_adjustPosSize",
+"_getContentView",
+"enable",
+"isVisible",
+"show",
+"getPosSize",
+"setPosSize",
+"addAutoPosSizeRules",
+"move",
+"resize"
+],
+"module": "vanillaBase"
+},
+"VanillaCallbackWrapper": {
+"bases": [
+"NSObject"
+],
+"init": null,
+"methods": [
+"__new__",
+"initWithCallback_",
+"action_"
+],
+"module": "vanillaBase"
+},
+"VanillaComboBoxDelegate": {
+"bases": [
+"NSObject"
+],
+"init": null,
+"methods": [
+"_callVanillaCallback",
+"controlTextDidChange_",
+"controlTextDidEndEditing_",
+"comboBoxSelectionDidChange_"
+],
+"module": "vanillaComboBox"
+},
+"VanillaEditTextDelegate": {
+"bases": [
+"VanillaCallbackWrapper"
+],
+"init": null,
+"methods": [
+"controlTextDidChange_",
+"controlTextDidEndEditing_"
+],
+"module": "vanillaEditText"
+},
+"VanillaError": {
+"bases": [
+"Exception"
+],
+"init": null,
+"methods": [],
+"module": "vanillaBase"
+},
+"VanillaGroupViewSubclass": {
+"bases": [
+"NSView"
+],
+"init": null,
+"methods": [
+"draggingEntered_",
+"draggingUpdated_",
+"draggingEnded_",
+"draggingExited_",
+"updateDraggingItemsForDrag_",
+"prepareForDragOperation_",
+"performDragOperation_",
+"concludeDragOperation_"
+],
+"module": "vanillaGroup"
+},
+"VanillaList2DataSourceAndDelegate": {
+"bases": [
+"NSObject"
+],
+"init": null,
+"methods": [
+"initWithTableView_",
+"setCellClassWithKwargsForColumn",
+"setGroupCellClassWithKwargs",
+"setGetters",
+"setSetters",
+"setValueToCellConverters",
+"setCellToValueConverters",
+"vanillaWrapper",
+"items",
+"setItems",
+"arrangedIndexes",
+"arrangedItems",
+"_updateArrangedIndexes",
+"_getItemForRow",
+"getGroupValueForRow",
+"getItemValueForColumnAndRow",
+"setItemValueForColumnAndRow",
+"numberOfRowsInTableView_",
+"tableView_objectValueForTableColumn_row_",
+"tableView_sortDescriptorsDidChange_",
+"tableView_viewForTableColumn_row_",
+"tableViewSelectionDidChange_",
+"tableView_isGroupRow_",
+"tableView_shouldSelectRow_",
+"cellEditCallback",
+"tableView_pasteboardWriterForRow_",
+"tableView_validateDrop_proposedRow_proposedDropOperation_",
+"tableView_acceptDrop_row_dropOperation_"
+],
+"module": "vanillaList2"
+},
+"VanillaList2TableViewSubclass": {
+"bases": [
+"NSTableView"
+],
+"init": null,
+"methods": [
+"keyDown_",
+"draggingEntered_",
+"draggingEnded_",
+"draggingExited_",
+"canDragRowsWithIndexes_atPoint_",
+"menuForEvent_"
+],
+"module": "vanillaList2"
+},
+"VanillaPopoverContentView": {
+"bases": [
+"NSView"
+],
+"init": null,
+"methods": [
+"_getContentView"
+],
+"module": "vanillaPopover"
+},
+"VanillaPopoverDelegate": {
+"bases": [
+"NSObject"
+],
+"init": null,
+"methods": [
+"popoverWillShow_",
+"popoverDidShow_",
+"popoverWillClose_",
+"popoverDidClose_"
+],
+"module": "vanillaPopover"
+},
+"VanillaSplitViewDelegate": {
+"bases": [
+"NSObject"
+],
+"init": null,
+"methods": [
+"splitViewInitialSizing_",
+"_recursivelyResizeSubviews",
+"splitView_shouldCollapseSubview_forDoubleClickOnDividerAtIndex_",
+"splitView_canCollapseSubview_",
+"splitView_constrainMinCoordinate_ofSubviewAt_",
+"splitView_constrainMaxCoordinate_ofSubviewAt_",
+"splitView_resizeSubviewsWithOldSize_",
+"splitView_applyPaneSizeChange_withFrameSize_ignoreView_",
+"splitView_shouldAdjustSizeOfSubview_",
+"splitView_shouldHideDividerAtIndex_",
+"_splitViewCoordinateIndex_"
+],
+"module": "vanillaSplitView"
+},
+"VanillaSplitViewSubclass": {
+"bases": [
+"NSSplitView"
+],
+"init": null,
+"methods": [
+"viewDidMoveToWindow",
+"dividerColor",
+"setDividerColor_",
+"dividerThickness",
+"setDividerThickness_",
+"setDividerDrawingFunction_",
+"drawDividerInRect_",
+"getStateForPane_",
+"setState_forPane_"
+],
+"module": "vanillaSplitView"
+},
+"VanillaTabItem": {
+"bases": [
+"VanillaBaseObject"
+],
+"init": {
+"args": [
+"title"
+],
+"defaults": 0,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"getNSTabViewItem",
+"_getContentView",
+"_breakCycles"
+],
+"module": "vanillaTabs"
+},
+"VanillaTabView": {
+"bases": [
+"NSTabView"
+],
+"init": null,
+"methods": [
+"viewDidMoveToWindow"
+],
+"module": "vanillaTabs"
+},
+"VanillaTabViewController": {
+"bases": [
+"NSTabViewController"
+],
+"init": null,
+"methods": [
+"tabView_didSelectTabViewItem_"
+],
+"module": "vanillaTabs"
+},
+"VanillaTableViewSubclass": {
+"bases": [
+"NSTableView"
+],
+"init": null,
+"methods": [
+"keyDown_",
+"textDidEndEditing_",
+"menuForEvent_"
+],
+"module": "vanillaList"
+},
+"VanillaTextEditorDelegate": {
+"bases": [
+"NSObject"
+],
+"init": null,
+"methods": [
+"textDidChange_"
+],
+"module": "vanillaTextEditor"
+},
+"VanillaWarning": {
+"bases": [
+"Warning"
+],
+"init": null,
+"methods": [],
+"module": "vanillaBase"
+},
+"VerticalLine": {
+"bases": [
+"_Line"
+],
+"init": {
+"args": [
+"posSize"
+],
+"defaults": 0,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__"
+],
+"module": "vanillaBox"
+},
+"VerticalRadioGroup": {
+"bases": [
+"VerticalStackGroup",
+"_RadioGroupMixin"
+],
+"init": {
+"args": [
+"posSize",
+"titles",
+"callback",
+"sizeStyle"
+],
+"defaults": 2,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__"
+],
+"module": "vanillaRadioGroup"
+},
+"VerticalStackGroup": {
+"bases": [
+"VerticalStackView"
+],
+"init": {
+"args": [
+"posSize"
+],
+"defaults": 0,
+"kwargs": true,
+"kwonly": [],
+"varargs": true
+},
+"methods": [
+"__init__",
+"addView"
+],
+"module": "vanillaStackGroup"
+},
+"VerticalStackView": {
+"bases": [
+"_StackView"
+],
+"init": null,
+"methods": [],
+"module": "vanillaStackView"
+},
+"Window": {
+"bases": [
+"NSObject"
+],
+"init": {
+"args": [
+"posSize",
+"title",
+"minSize",
+"maxSize",
+"textured",
+"autosaveName",
+"closable",
+"miniaturizable",
+"initiallyVisible",
+"fullScreenMode",
+"titleVisible",
+"fullSizeContentView",
+"screen"
+],
+"defaults": 12,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__new__",
+"__init__",
+"_testForDeprecatedAttributes",
+"_cascade",
+"_breakCycles",
+"_getContentView",
+"__setattr__",
+"__delattr__",
+"assignToDocument",
+"getNSWindow",
+"getNSWindowController",
+"open",
+"_validateMinMaxSize",
+"close",
+"hide",
+"show",
+"makeKey",
+"makeMain",
+"setTitle",
+"getTitle",
+"select",
+"isVisible",
+"_calculateTitlebarHeight",
+"getPosSize",
+"setPosSize",
+"addAutoPosSizeRules",
+"center",
+"move",
+"resize",
+"setDefaultButton",
+"bind",
+"unbind",
+"_alertBindings",
+"windowWillClose_",
+"windowDidBecomeKey_",
+"windowDidResignKey_",
+"windowDidBecomeMain_",
+"windowDidResignMain_",
+"windowDidMove_",
+"windowDidResize_",
+"windowDidEnterFullScreen_",
+"windowWillEnterFullScreen_",
+"windowDidExitFullScreen_",
+"windowWillExitFullScreen_",
+"windowShouldClose_",
+"setToolbarStyle",
+"addToolbar",
+"getToolbarItems",
+"addToolbarItem",
+"removeToolbarItem",
+"_createToolbarItem",
+"toolbarDefaultItemIdentifiers_",
+"toolbarAllowedItemIdentifiers_",
+"toolbar_itemForItemIdentifier_willBeInsertedIntoToolbar_",
+"toolbarSelectableItemIdentifiers_"
+],
+"module": "vanillaWindows"
+},
+"_CheckBoxManualBuild": {
+"bases": [
+"VanillaBaseObject"
+],
+"init": {
+"args": [
+"posSize",
+"title",
+"callback",
+"value",
+"sizeStyle"
+],
+"defaults": 3,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"getNSButton",
+"_buttonHit",
+"_breakCycles",
+"enable",
+"setTitle",
+"getTitle",
+"get",
+"set",
+"toggle"
+],
+"module": "vanillaCheckBox"
+},
+"_CheckBoxManualBuildButton": {
+"bases": [
+"Button"
+],
+"init": null,
+"methods": [
+"set",
+"get",
+"toggle"
+],
+"module": "vanillaCheckBox"
+},
+"_CheckBoxManualBuildTextButton": {
+"bases": [
+"Button"
+],
+"init": {
+"args": [
+"posSize",
+"title",
+"callback",
+"sizeStyle"
+],
+"defaults": 0,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__"
+],
+"module": "vanillaCheckBox"
+},
+"_CheckBoxStandardBuild": {
+"bases": [
+"Button"
+],
+"init": {
+"args": [
+"posSize",
+"title",
+"callback",
+"value",
+"sizeStyle"
+],
+"defaults": 3,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"set",
+"get",
+"toggle"
+],
+"module": "vanillaCheckBox"
+},
+"_Line": {
+"bases": [
+"Box"
+],
+"init": {
+"args": [
+"posSize"
+],
+"defaults": 0,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"_getContentView"
+],
+"module": "vanillaBox"
+},
+"_RadioGroupMixin": {
+"bases": [
+"object"
+],
+"init": null,
+"methods": [
+"_init",
+"_buildButtons",
+"_buttonCallback",
+"getFittingHeight",
+"get",
+"set"
+],
+"module": "vanillaRadioGroup"
+},
+"_StackView": {
+"bases": [
+"VanillaBaseObject"
+],
+"init": {
+"args": [
+"posSize",
+"views",
+"spacing",
+"alignment",
+"distribution",
+"edgeInsets"
+],
+"defaults": 4,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"getNSStackView",
+"setEdgeInsets",
+"appendView",
+"insertView",
+"removeView"
+],
+"module": "vanillaStackView"
+},
+"_VanillaArrayController": {
+"bases": [
+"VanillaArrayController"
+],
+"init": null,
+"methods": [
+"init"
+],
+"module": "vanillaList"
+},
+"_VanillaArrayControllerObserver": {
+"bases": [
+"VanillaArrayControllerObserver"
+],
+"init": null,
+"methods": [
+"init"
+],
+"module": "vanillaList"
+},
+"_VanillaMethods": {
+"bases": [],
+"init": null,
+"methods": [
+"__new__",
+"setVanillaWrapper_",
+"vanillaWrapper"
+],
+"module": "nsSubclasses"
+},
+"_VanillaTableViewSubclass": {
+"bases": [
+"VanillaTableViewSubclass"
+],
+"init": null,
+"methods": [
+"init"
+],
+"module": "vanillaList"
+},
+"_VisualEffectGroup": {
+"bases": [
+"VanillaBaseObject"
+],
+"init": {
+"args": [
+"cls"
+],
+"defaults": 0,
+"kwargs": false,
+"kwonly": [],
+"varargs": false
+},
+"methods": [
+"__init__",
+"getNSVisualEffectView"
+],
+"module": "vanillaGroup"
+}
+},
+"dialogs": {
+"_mapButtonTitles": {
+"args": [
+"titles"
+],
+"defaults": 0
+},
+"_unwrapView": {
+"args": [
+"view"
+],
+"defaults": 0
+},
+"_unwrapWindow": {
+"args": [
+"window"
+],
+"defaults": 0
+},
+"ask": {
+"args": [
+"messageText",
+"informativeText",
+"alertStyle",
+"buttonTitles",
+"parentWindow",
+"resultCallback",
+"icon",
+"accessoryView",
+"showsHelpCallback"
+],
+"defaults": 9
+},
+"askYesNo": {
+"args": [
+"messageText",
+"informativeText",
+"alertStyle",
+"parentWindow",
+"resultCallback",
+"icon",
+"accessoryView",
+"showsHelpCallback"
+],
+"defaults": 8
+},
+"askYesNoCancel": {
+"args": [
+"messageText",
+"informativeText",
+"alertStyle",
+"parentWindow",
+"resultCallback",
+"icon",
+"accessoryView",
+"showsHelpCallback"
+],
+"defaults": 8
+},
+"getFile": {
+"args": [
+"messageText",
+"title",
+"directory",
+"fileName",
+"allowsMultipleSelection",
+"fileTypes",
+"parentWindow",
+"resultCallback",
+"cancelCallback",
+"accessoryView"
+],
+"defaults": 10
+},
+"getFileOrFolder": {
+"args": [
+"messageText",
+"title",
+"directory",
+"fileName",
+"allowsMultipleSelection",
+"fileTypes",
+"parentWindow",
+"resultCallback",
+"cancelCallback",
+"accessoryView"
+],
+"defaults": 10
+},
+"getFolder": {
+"args": [
+"messageText",
+"title",
+"directory",
+"allowsMultipleSelection",
+"parentWindow",
+"resultCallback",
+"cancelCallback",
+"accessoryView"
+],
+"defaults": 8
+},
+"message": {
+"args": [
+"messageText",
+"informativeText",
+"alertStyle",
+"parentWindow",
+"resultCallback",
+"icon",
+"accessoryView",
+"showsHelpCallback"
+],
+"defaults": 8
+},
+"putFile": {
+"args": [
+"messageText",
+"title",
+"directory",
+"fileName",
+"canCreateDirectories",
+"fileTypes",
+"parentWindow",
+"resultCallback",
+"cancelCallback",
+"accessoryView"
+],
+"defaults": 10
+}
+},
+"source": "cocoa-vanilla 0.5.0 (pinned by DrawBot 3.132 requirements.txt); class signatures and method names extracted from its source with ast; for a class defined per macOS version, the modern branch"
+}

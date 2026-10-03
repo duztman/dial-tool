@@ -1,6 +1,6 @@
 # Dial Tool — brief
 
-*Started 3 Oct 2026. Last updated 4 Oct 2026 (beta 1.0).*
+*Started 3 Oct 2026. Last updated 4 Oct 2026 (beta 2.0: rings).*
 
 ## 1 · Goal
 
@@ -20,6 +20,7 @@ Not photorealistic. Real proportions and perfect vector rendering are.
 - Existing practice: prototyping dials by acid-etching brass blanks with toner transfer (PnP Blue film). Pad printing is the industry pipeline.
 - Ordering from abroad is not possible (except books): materials and parts are sourced in Istanbul.
 - The movement is not chosen yet — design first, then pick a movement that fits.
+- **Production doesn't limit design** (Okay, 4 Oct). The production outputs stay and grow, but what the tool can draw is not narrowed to what a method can print; production-specific checks and outputs are optional layers on top.
 
 ## 3 · Outputs
 
@@ -29,14 +30,16 @@ Not photorealistic. Real proportions and perfect vector rendering are.
 | Motion | MP4, GIF | Hands from the set time, sweep / quartz / 6 or 8 beats per second |
 | Production mask | PDF, SVG, PNG (dpi set) | Mono, optional mirror for toner transfer, aperture outline |
 
+Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules R23).
+
 ## 4 · Decisions
 
 | Date | Decision | Why |
 |---|---|---|
 | 3 Oct | Build in **DrawBot** (Python, macOS) | Best-in-class type: CoreText, OpenType features, variable fonts, outlines; PDF/SVG/MP4/GIF export in one place. Browser tool and Illustrator script were the alternatives. |
 | 3 Oct | v1 does **geometry and division** first | Okay's pick; everything else hangs off it. |
-| 3 Oct | Scope v1: a **regular watch + date window**; subdials, apertures, sectors later | Keep the first version pure. |
-| 3 Oct | All **collision rules** stay available: one ring, skip, knockout, stack | Different dials need different rules. |
+| 3 Oct | Scope v1: a **regular watch + date window**; subdials, apertures, sectors later | Keep the first version pure. *Sectors arrived 4 Oct as band rings.* |
+| 3 Oct | All **collision rules** stay available: one ring, skip, knockout, stack | Different dials need different rules. *Superseded 4 Oct by skip where / knock out per ring; every old rule still reachable.* |
 | 3 Oct | Numeral placement: upright, radial, radial auto-flip, on path; any label set; each numeral movable | "The whole shebang" — words, Chinese, Eastern Arabic, custom. |
 | 3 Oct | Everything is a **filled shape**, no strokes | Exact widths in Illustrator; clean masks for etching and print. |
 | 4 Oct | Own **vanilla window** instead of DrawBot's `Variable()` panel | `Variable()` is a fixed 250 px column, one control per row — no slider + number field, no sections, no conditional rows (read in DrawBot's source). DrawBot's own window is vanilla + `DrawView`; the DrawBot devs point users there. |
@@ -47,6 +50,15 @@ Not photorealistic. Real proportions and perfect vector rendering are.
 | 4 Oct | Typed numbers accept `1.2`, `+0.5`, `x0.5`, `/2` | Matches how Okay describes changes. |
 | 4 Oct | Settings are one dictionary, saved as JSON; last session restored on launch | Presets for free; re-running keeps work. |
 | 4 Oct | Project set up: GitHub `duztman/dial-tool`, Claude Project "Dial Tool"; Mac folder later | Okay. |
+| 4 Oct | **The dial is a list of rings.** Everything in the list is a *ring* (Okay: "rings instead of layers, all round"). Kinds: ticks, markers, numerals, band. Unlimited; select to edit; add, duplicate, delete, move up/down, hide, rename. | Fixed sections allowed one track, one marker set, one numeral set. Rings let any number of each be stacked (minute numerals, scales, rails, zones). |
+| 4 Oct | A ring's **kind** can change later; every ring carries every setting, so nothing is lost. Word: *kind*, not *type* (type = typography). | Okay. |
+| 4 Oct | **Type belongs to each numerals ring.** A new numerals ring copies the top one; the date window uses the top numerals ring's type. | Okay: "type specific to that ring". Date has no font of its own yet (build list #34). |
+| 4 Oct | **List order = stacking order.** Each ring chooses how it gives way to the rings above: *skip where* (markers / markers & numerals / all marks above) and *knock out* (same choices, or everything above) with a clearance. Replaces beta 1.0's four collision rules. | One mechanism for every pair of rings. beta 1.0 dials convert exactly: 11 test dials, zero area difference. |
+| 4 Oct | **Positions:** count, start, span, every, offset, skip those instead. Partial spans mark both ends. | Replaces fixed divisions and "show at" lists; gives scales and arcs for free. |
+| 4 Oct | **Surfaces: flat colour for now** — band rings make full rings, sectors (count · every · fill %) and pies. Finishes (sunray, grain…) later. | Okay: "flat, for now; designs later". |
+| 4 Oct | **Hands:** each hand has its own shape and settings, in mm (R1): baton, pencil, sword, dauphine, leaf, arrow, syringe, Breguet, lollipop, or a file (SVG/PDF/AI) with fit to length, size ×, width ×. Hollow wall and counterweight on any hand. | Okay: "more sensible options, able to import (pdf), size, change shape". Lengths in mm match how movements specify hands. |
+| 4 Oct | **PDF/AI import** reads the page's drawing operators with macOS's own PDF scanner (CoreGraphics `CGPDFScanner`, via pyobjc). | No PDF library ships with DrawBot; pyobjc supports the scanner callbacks (checked in pyobjc's tests). The drawing logic is Mac-free and tested in the harness. |
+| 4 Oct | Interface checked off-Mac with **`tools/ui_smoke.py`**: stand-ins that accept only vanilla 0.5.0's real signatures and methods. | The full window can't run off-Mac; this catches wrong calls and lost callbacks (it reproduces the beta 1.0 dropdown bug when R22 is removed). |
 
 ## 5 · Open questions
 
@@ -55,21 +67,25 @@ Not photorealistic. Real proportions and perfect vector rendering are.
 3. **Minimum line width and clearance** per production method (toner-transfer etching, pad print, laser). Should become rules the tool can warn about.
 4. **Eastern Arabic and Chinese labels** — which fonts; is CoreText's automatic fallback good enough, or do we need a fallback-font control?
 5. Does DrawBot's SVG import into Illustrator at **exact size**, and with usable groups?
-6. When `dial.py` grows, split it into modules or keep one file?
+6. When `dial.py` grows, split it into modules or keep one file? (beta 2.0: 2,212 lines, still one file.)
+7. **Should rings and hands scale with the diameter?** Radii and lengths are absolute mm (R1), so changing the diameter leaves them in place — right for a fixed movement, awkward while exploring. (Build list #32.)
+8. **PDF import with real Illustrator files** — forms, compound paths, white made in spot or CMYK colours. Tested only with hand-written operators so far. (Build list #30.)
 
 ## 6 · Avenues (ideas, not commitments)
 
-- Subdials (small seconds, chronograph registers), day/date apertures, sectors and zones.
+- Subdials (small seconds, chronograph registers), day/date apertures — perhaps as further ring kinds.
+- Surface finishes on bands: sunray, grain, guilloché (Okay: later).
+- Per-ink separations: one production mask per ring colour (pad printing etches one plate per colour).
 - Variation grid: one rule set, many dials on one sheet.
 - Spec sheet export: dial with dimension callouts for suppliers.
-- More hand styles: cathedral, syringe, Breguet, pencil; lume plots.
+- More hand styles: cathedral (file import covers it now); lume plots.
 - Plotter output via LightBurn for the pen plotter (AxiDraw clone).
 - Production warnings: flag lines thinner than the method allows.
 
 ## 7 · Workflow
 
 1. Okay runs `dial.py` on a Mac and reports back with screenshots and the Export log.
-2. Claude changes code, tests geometry with `tools/test_harness.py`, checks UI calls against vanilla/DrawBot source.
+2. Claude changes code, tests geometry with `tools/test_harness.py` and the interface with `tools/ui_smoke.py`, checks UI calls against vanilla/DrawBot source.
 3. Work happens on `dev`; a tested version is merged to `main` with a changelog entry.
 4. When the interface misbehaves at its foundation, run `tools/dial_probe.py` and paste its report.
 
