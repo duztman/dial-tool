@@ -868,7 +868,7 @@ def attrs(text):
     return dict(re.findall(r'([\w-]+)="([^"]*)"', text))
 
 def foot(title):
-    return f'<div class="foot"><span>Dial Tool {{{{version}}}} · {title}</span><span>{{{{pg}}}}</span></div>'
+    return ""                                                # no footer (Okay, 4 Oct 2026); pages are found by tab, contents and links
 
 def tab(no):
     n = int(str(no).split(".")[0])
@@ -942,10 +942,11 @@ def fill_in(ns, version, date):
         ident, toc = re.search(r'id="([\w-]+)"', opening), re.search(r'data-toc="([^"]+)"', opening)
         numbers[ident.group(1)] = n
         if toc:
-            contents.append(f'<tr{" class=sub" if "data-sub" in opening else ""}><td>{toc.group(1)}</td><td>{n:02d}</td></tr>')
+            link = f'<a href="#{ident.group(1)}">'
+            contents.append(f'<tr{" class=sub" if "data-sub" in opening else ""}><td>{link}{toc.group(1)}</a></td><td>{link}{n:02d}</a></td></tr>')
         out.append((ident.group(1), section.replace("{{pg}}", str(n))))
     table = f'<table class="contents">{"".join(contents)}</table>'
-    out = [(i, re.sub(r"\{\{page:([\w-]+)\}\}", lambda m: str(numbers[m.group(1)]), s).replace("{{contents}}", table)) for i, s in out]
+    out = [(i, re.sub(r"\{\{page:([\w-]+)\}\}", lambda m: f'<a href="#{m.group(1)}">{numbers[m.group(1)]}</a>', s).replace("{{contents}}", table)) for i, s in out]
     left = re.findall(r"\{\{.+?\}\}", "".join(s for _, s in out))
     if left:
         raise SystemExit(f"pages: unknown marks {left}")

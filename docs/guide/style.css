@@ -30,8 +30,7 @@ i { font-style: normal; }
 .head { grid-column: 1 / -1; grid-row: 1 / span 2; display: grid; grid-template-columns: subgrid; border-top: .3mm solid var(--ink);
         padding-top: calc(var(--b) * 1.5); }
 .head .title { grid-column-end: span 4; } .head .lead { grid-column-end: span 6; padding-top: calc(var(--b) * 3); }
-.foot { position: absolute; left: 12mm; right: 12mm; bottom: 4mm; display: flex; justify-content: space-between;
-        font-size: 8pt; line-height: 3mm; color: var(--grey); font-feature-settings: "tnum"; }
+a { color: inherit; text-decoration: none; }                  /* links inside the PDF: they work, they don't show */
 /* the thumb index: section n sits on row n, at the page's edge */
 .tab { position: absolute; right: 0; width: 7mm; height: calc(var(--b) * 6); top: calc(11.5mm + (var(--n) - 1) * var(--b) * 10);
        background: var(--sig); color: var(--ink); font-size: 8pt; font-weight: 600; line-height: calc(var(--b) * 6);
