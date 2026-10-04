@@ -52,8 +52,9 @@ DIALS = {}
 
 # ── field watch ──────────────────────────────────────────────
 DIALS["field"] = dict(
+    note='The 24-hour ring is a second numerals ring with a Custom list. The minute ticks <b>skip where</b> the hour marks sit, so the two never overprint.',
     title="Field watch",
-    after="after the A-11 and its descendants: 12 and 24 hours, a plain minute track, nothing else",
+    after="After the A-11 of the 1940s and its descendants: 12 and 24 hours, a plain minute track, nothing else.",
     settings=dict(
         dial_d=30.0, c_plate=BLACK,
         rings=[
@@ -71,8 +72,9 @@ DIALS["field"] = dict(
 
 # ── pilot, type B ────────────────────────────────────────────
 DIALS["pilot"] = dict(
+    note='The minutes are <b>Numbers</b>: first 5, step 5, two digits, over a 300° span that leaves 12 free for the triangle. The two dots are a ticks ring with Count 2 on a 22° span.',
     title="Pilot, type B",
-    after="after the 1940s observer's watch: minutes outside, hours on an inner ring, a triangle and two dots at 12",
+    after="After the 1940s observer's watch: minutes outside, hours on an inner ring, a triangle and two dots at 12.",
     settings=dict(
         dial_d=34.0, c_plate=BLACK,
         rings=[
@@ -93,8 +95,9 @@ DIALS["pilot"] = dict(
 
 # ── diver ────────────────────────────────────────────────────
 DIALS["diver"] = dict(
+    note='Three markers rings share the hours: dots on <b>Every 3, skip those instead</b>; bars on Count 4 with the first position set to none; one triangle. The date takes 3 by itself.',
     title="Diver",
-    after="after the 1950s dive watch: fat dots, bars at 6 and 9, a triangle at 12, the date at 3",
+    after="After the 1950s dive watch: fat dots, bars at 6 and 9, a triangle at 12, the date at 3.",
     settings=dict(
         dial_d=29.0, c_plate=BLACK,
         rings=[
@@ -117,8 +120,9 @@ DIALS["diver"] = dict(
 
 # ── dress, after Seiko ───────────────────────────────────────
 DIALS["dress"] = dict(
+    note="The double bar is the markers ring's <b>12 o'clock</b> style. Both lines of text are numerals rings with Count 1, set <b>on path</b> at 180°.",
     title="Dress watch",
-    after="after the Japanese dress watches of the 1960s: plain bars, a double bar at 12, dauphine hands, a framed date",
+    after="After the Japanese dress watches of the 1960s: plain bars, a double bar at 12, dauphine hands, a framed date.",
     settings=dict(
         dial_d=30.4, c_plate=SILVER,
         rings=[
@@ -139,8 +143,9 @@ DIALS["dress"] = dict(
 
 # ── railway ──────────────────────────────────────────────────
 DIALS["railway"] = dict(
+    note='Two rings. Everything is in the proportions: bars 3.7 × 1.3, ticks 1.3 × 0.45, and a lollipop with its disc at 100 % of the length.',
     title="Station clock",
-    after="after the Swiss railway clock of 1944: heavy bars, and a red seconds hand like a dispatcher's baton",
+    after="After the Swiss railway clock of 1944: heavy bars, and a red seconds hand like a dispatcher's baton.",
     settings=dict(
         dial_d=30.0, c_plate=WHITE,
         rings=[
@@ -155,8 +160,9 @@ DIALS["railway"] = dict(
 
 # ── bauhaus ──────────────────────────────────────────────────
 DIALS["bauhaus"] = dict(
+    note='Line weights carry it: 0.14 for the hours, 0.09 for the minutes, hands under half a millimetre.',
     title="Bauhaus",
-    after="after the German wall-clock school of the 1950s–60s: hairline marks, small numerals, thin hands",
+    after="After the German wall-clock school of the 1950s–60s: hairline marks, small numerals, thin hands.",
     settings=dict(
         dial_d=31.0, c_plate=WHITE,
         rings=[
@@ -172,8 +178,9 @@ DIALS["bauhaus"] = dict(
 
 # ── california ───────────────────────────────────────────────
 DIALS["california"] = dict(
+    note="Two numerals rings on one radius, each with a <b>Custom</b> list that leaves the other's positions empty — so Roman and Arabic can use different fonts and placements.",
     title="California",
-    after="after the 1930s–40s dial: Roman on top, Arabic below, bars at 3 · 6 · 9, a triangle at 12, a railroad track",
+    after="After the 1930s–40s dial: Roman on top, Arabic below, bars at 3 · 6 · 9, a triangle at 12, a railroad track.",
     settings=dict(
         dial_d=30.0, c_plate=BLACK,
         rings=[
@@ -195,8 +202,9 @@ DIALS["california"] = dict(
 
 # ── sector ───────────────────────────────────────────────────
 DIALS["sector"] = dict(
+    note='Bands do the colour: a chapter ring 2.6 wide, and pies made by Band width = Radius with Every 2. The crosshair is a ticks ring, Count 4, Length 12.',
     title="Sector dial",
-    after="after the 1930s scientific dials: a chapter ring, a crosshair, zones of colour",
+    after="After the 1930s scientific dials: a chapter ring, a crosshair, zones of colour.",
     settings=dict(
         dial_d=30.0, c_plate=[0.94, 0.92, 0.87, 1],
         rings=[
@@ -217,8 +225,9 @@ DIALS["sector"] = dict(
 
 # ── gauge ────────────────────────────────────────────────────
 DIALS["gauge"] = dict(
+    note='Start −135°, Span 270°. A partial span marks both ends, so Count 10 gives 0 to 90. The red zone <b>knocks out</b> everything above it with a 0.12 clearance.',
     title="Gauge",
-    after="a 270° scale with a red zone: positions over a partial span mark both ends",
+    after="A 270° scale with a red zone: positions over a partial span mark both ends.",
     settings=dict(
         dial_d=30.0, c_plate=[0.95, 0.94, 0.90, 1],
         rings=[

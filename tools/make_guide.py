@@ -16,7 +16,9 @@ make_guide.py — build the Dial Tool guidebook (docs/Dial-Tool-guide.pdf).
                Chromium prints the result to PDF. A page whose content
                overflows is reported: shorten the text.
 
-Marks in guide.html: {{version}} {{date}} {{strip:NAME}} {{classic:NAME}} {{dial:NAME}}
+Marks in guide.html: {{version}} {{date}} {{contents}} {{classics}} {{page:ID}} {{dial:NAME}}
+                     {{strip:NAME}} {{strip:NAME:FROM-TO}} {{rings:NAME}}
+                     {{ui:strip:NAME-INDEX:RING:keys}} {{ui:dial:NAME:RING|hour|minute|second|date|dial:keys}}
 
 Setup (once): pip install drawbot-skia skia-pathops pillow fonttools playwright
               (+ a Chromium: `playwright install chromium`, or set CHROME=/path/to/chrome)
@@ -143,16 +145,13 @@ FIGURES = {
         fig("bar", "Length 3.4 · Width 1.2", [dict(MARKS, len=3.4, w=1.2)], crop="top"),
         fig("wedge", "Inner width × 0.35", [dict(MARKS, shape="wedge", len=3.4, w=1.6, taper=0.35)], crop="top"),
         fig("wedge", "Inner width × 0", [dict(MARKS, shape="wedge", len=3.4, w=1.8, taper=0.0)], crop="top"),
-        fig("rounded", "Round outer 0.6 · inner 0.2", [dict(MARKS, len=3.4, w=1.2, round_out=0.6, round_in=0.2)], crop="top"),
         fig("dot", "Ø 2.0", [dict(MARKS, shape="dot", w=2.0)], crop="top"),
+        fig("file", "your own SVG · PDF · AI", [dict(MARKS, shape="file", file="@marker.svg", scale=1.0)], crop="top"),
+        fig("rounded", "Round outer 0.6 · Round inner 0.2", [dict(MARKS, len=3.4, w=1.2, round_out=0.6, round_in=0.2)], crop="top"),
         fig("hollow", "Hollow wall 0.22", [dict(MARKS, len=3.4, w=1.4, wall=0.22, round_out=0.3, round_in=0.3)], crop="top"),
-        fig("file", "your SVG · PDF · AI", [dict(MARKS, shape="file", file="@marker.svg", scale=1.0)], crop="top"),
-    ],
-    "twelve": [
-        fig("same", "", [dict(MARKS, w=1.0, twelve="same")], crop="top"),
-        fig("double", "Gap 0.4", [dict(MARKS, w=1.0, twelve="double", twelve_gap=0.4)], crop="top"),
-        fig("triangle", "Scale × 1.2", [dict(MARKS, w=1.0, twelve="triangle", twelve_scale=1.2)], crop="top"),
-        fig("none", "", [dict(MARKS, w=1.0, twelve="none")], crop="top"),
+        fig("12: double", "Gap 0.4", [dict(MARKS, w=1.0, twelve="double", twelve_gap=0.4)], crop="top"),
+        fig("12: triangle", "Scale × 1.2", [dict(MARKS, w=1.0, twelve="triangle", twelve_scale=1.2)], crop="top"),
+        fig("12: none", "", [dict(MARKS, w=1.0, twelve="none")], crop="top"),
     ],
     "giveway": [
         fig("stack", "Skip where: nothing · Knock out: nothing",
@@ -176,6 +175,7 @@ FIGURES = {
     "labels": [
         fig("Arabic", "", [dict(NUMS, r=12.0)], crop="top"),
         fig("Roman · IIII", "", [dict(NUMS, r=12.0, labels="Roman · IIII", **G.BODONI)], crop="top"),
+        fig("Roman · IV", "", [dict(NUMS, r=12.0, labels="Roman · IV", **G.BODONI)], crop="top"),
         fig("Eastern Arabic", "", [dict(NUMS, r=12.0, labels="Eastern Arabic")], crop="top"),
         fig("Chinese", "", [dict(NUMS, r=12.0, labels="Chinese", size=2.2)], crop="top"),
         fig("Words", "on path", [dict(NUMS, labels="Words", mode="on path", size=1.5, r=12.4)], crop="top"),
@@ -226,9 +226,8 @@ HANDS = [
     ("arrow", dict(w=0.45, tail=1.6, tip=2.0, feature=1.7)),
     ("syringe", dict(w=0.3, tail=1.6, tip=2.2, feature=0.9, feature_at=40)),
     ("breguet", dict(w=0.22, tail=1.6, tip=1.2, feature=1.6, feature_at=72)),
-    ("lollipop", dict(w=0.16, tail=2.6, feature=1.0, feature_at=80)),
+    ("lollipop", dict(w=0.16, tail=3.0, feature=1.0, feature_at=80, counter=1.1)),
     ("hollow wall", dict(shape="dauphine", w=1.7, tail=1.4, feature_at=22, wall=0.2)),
-    ("counterweight", dict(shape="baton", w=0.16, tail=3.2, counter=1.1)),
 ]
 
 
@@ -328,7 +327,7 @@ STYLES = {"DINAlternate-Bold": "Bold", "Futura-Medium": "Medium", "HelveticaNeue
 def esc(text):
     return html.escape(str(text))
 
-def number(v):
+def number_text(v):
     if isinstance(v, bool):
         return "on" if v else "off"
     if isinstance(v, float):
@@ -357,22 +356,69 @@ def values(d, keys, ns=None):
         if key in ("skip", "knock") and isinstance(v, int):
             v = ns[{"skip": "SKIP_FROM", "knock": "KNOCK_FROM"}[key]][v]
         if label.endswith(("°", "%")):                           # Start ° 30 → Start 30°
-            out.append(f"{esc(label[:-1].strip())} <b>{esc(number(v))}{' ' * (label[-1] == '%')}{label[-1]}</b>")
+            out.append(f"{esc(label[:-1].strip())} <b>{esc(number_text(v))}{' ' * (label[-1] == '%')}{label[-1]}</b>")
         elif key == "custom":
             out.append(f"{esc(label)} <code>{esc(v)}</code>")
         else:
-            out.append(f"{esc(label)} <b>{esc(number(v))}</b>")
+            out.append(f"{esc(label)} <b>{esc(number_text(v))}</b>")
     return " · ".join(out)
 
-def classic(name, ns):
-    """a panel: the dial, what it is drawn after, and the settings that make it."""
+# The tool's controls, redrawn flat. Values, ranges and labels come from dial.py's own row
+# descriptions (RING_ROWS, HAND_ROWS, DATE_ROWS, DIAL_ROWS), so a redrawn slider sits where the real one would.
+
+def ui_row(row, T, ns):
+    kind, key, label = row["kind"], row.get("key"), esc(row.get("text", ""))
+    v = T[key]
+    if kind == "num":
+        lo, hi = min(row["lo"], v), max(row["hi"], v)
+        at = 100 * (v - lo) / (hi - lo) if hi > lo else 0
+        return (f'<div class="row"><label>{label}</label><i class="slider" style="--at:{at:.1f}%"></i>'
+                f'<i class="field">{esc(ns["fmt"](v, row["step"]).replace("-", "−"))}</i><i class="step"></i></div>')
+    if kind == "pop":
+        return f'<div class="row"><label>{label}</label><i class="pop wide">{esc(row["items"][v])}</i></div>'
+    if kind == "seg":
+        cells = "".join(f'<b class="{"on" if i == v else ""}">{esc(t)}</b>' for i, t in enumerate(row["items"]))
+        return f'<div class="row"><label>{label}</label><i class="seg wide">{cells}</i></div>'
+    if kind == "chk":
+        return f'<div class="row"><label></label><i class="chk wide {"on" if v else ""}">{label}</i></div>'
+    if kind == "col":
+        r, g, b = (round(x * 255) for x in v[:3])
+        return f'<div class="row"><label>{label}</label><i class="well" style="background:rgb({r},{g},{b})"></i></div>'
+    return f'<div class="row"><label>{label}</label><i class="field wide">{esc(v)}</i></div>'
+
+def ui(source, which, keys, ns):
+    """rows of redrawn controls. source: a figure "strip:index" or a classic "dial:name";
+    which: a ring's index, hour · minute · second, date or dial; keys: the settings to show."""
+    kind, name = source.split(":")
+    S = figure_settings(ns, FIGURES[name.rsplit("-", 1)[0]][int(name.rsplit("-", 1)[1])]) if kind == "strip" \
+        else ns["fresh_settings"](G.resolved(G.DIALS[name]["settings"], ns))
+    if which in ("hour", "minute", "second"):
+        T, rows = S["ha_" + which], [r for r in ns["HAND_ROWS"] if r.get("scope") == "hand"]
+    elif which in ("date", "dial"):
+        T, rows = S, ns["DATE_ROWS"] + ns["DIAL_ROWS"] + ns["EXPORT_ROWS"] + [r for r in ns["HAND_ROWS"] if not r.get("scope")]
+    else:
+        T, rows = S["rings"][int(which)], ns["RING_ROWS"]
+    out = []
+    for key in keys.split(","):
+        row = next((r for r in rows if r.get("key") == key and (r.get("show") is None or r["show"](T))), None)
+        if row is None:
+            raise SystemExit(f"guide.html: {{{{ui:{source}:{which}}}}} has no row for {key!r}")
+        out.append(ui_row(row, T, ns))
+    return f'<div class="ui">{"".join(out)}</div>'
+
+def ring_list(s, selected=0):
+    rows = "".join(f'<div class="{"sel" if i == selected else ""}"><i class="chk on"></i><span>{esc(r["name"])}</span>'
+                   f'<em>{esc(r["kind"])}</em></div>' for i, r in enumerate(s["rings"]))
+    return f'<div class="ui list">{rows}</div>'
+
+def classic(name, ns, number):
+    """one page: the dial, what it is drawn after, its ring list and the settings that make it."""
     d = G.DIALS[name]
     s = d["settings"]
-    rows = [f'<tr><th>Dial</th><td>Diameter <b>{number(s["dial_d"])}</b> · Plate {swatch(s["c_plate"])}</td></tr>']
+    rows = []
     for ring in s["rings"]:
-        colour = swatch(ring["c"]) if "c" in ring else ""
         rows.append(f'<tr><th>{esc(ring["name"])}<span>{esc(ring["kind"])}</span></th>'
-                    f'<td>{values(ring, RING_KEYS, ns)} {colour}</td></tr>')
+                    f'<td>{values(ring, RING_KEYS, ns)} {swatch(ring["c"])}</td></tr>')
     if s.get("da_on"):
         at = ns["DATE_AT"][s.get("da_at", 0)][0]
         rows.append(f'<tr><th>Date<span>window</span></th><td>Position <b>{at}</b> · {values(s, DATE_KEYS)}</td></tr>')
@@ -380,32 +426,56 @@ def classic(name, ns):
         hand = s.get(key, {})
         if hand.get("on", True):
             rows.append(f'<tr><th>{label}<span>hand</span></th><td>{values(hand, HAND_KEYS)} {swatch(hand["c"])}</td></tr>')
-    rows.append(f'<tr><th>Cap</th><td>Ø <b>{number(s["ha_cap"])}</b> {swatch(s["c_cap"])}</td></tr>')
-    dark = "dark" if sum(s["c_plate"][:3]) < 1.0 else ""
-    return (f'<section class="classic"><div class="plate {dark}"><img src="img/dial-{name}.svg"></div>'
-            f'<div class="recipe"><h3>{esc(d["title"])}</h3><p class="after">{esc(d["after"])}. '
-            f'<code>presets/{name}.json</code></p><table>{"".join(rows)}</table></div></section>')
+    rows.append(f'<tr><th>Cap</th><td>Ø <b>{number_text(s["ha_cap"])}</b> {swatch(s["c_cap"])}</td></tr>')
+    return f"""<section class="page" id="{name}" data-toc="{esc(d['title'])}" data-sub="1"><div class="grid">
+  <div class="side"><span class="no">11.{number}</span><h1>{esc(d['title'])}</h1>
+    <p>{esc(d['after'])}</p>
+    <div class="block"><span class="k">Look for</span><p>{d['note']}</p></div>
+    <p class="file">presets/{name}.json<br>Dial {number_text(s['dial_d'])} mm {swatch(s['c_plate'])}</p></div>
+  <figure class="hero"><div class="whole"><img src="img/dial-{name}.svg"></div></figure>
+  <div class="spec"><span class="k">Rings, top first</span>{ring_list(s)}
+    <span class="k" style="margin-top:4mm">Settings that differ from a new ring</span>
+    <table class="recipe">{"".join(rows)}</table></div>
+</div><div class="foot"><span>Dial Tool · Guidebook · {{{{version}}}}</span><span class="pg"></span></div></section>
+"""
 
-def strip(name):
-    """a row of small captioned figures."""
+def figure(name, i):
     if name == "hands":
-        cells = [f'<figure><div class="hand"><img src="img/hand-{label.replace(" ", "-")}.svg"></div>'
-                 f'<figcaption><b>{esc(label)}</b></figcaption></figure>' for label, _ in HANDS]
-        return f'<div class="strip hands">{"".join(cells)}</div>'
-    cells = []
-    for i, f in enumerate(FIGURES[name]):
-        crop = f' class="crop {f["crop"]}"' if f["crop"] else ' class="whole"'
-        note = f'<br>{esc(f["values"])}' if f["values"] else ""
-        cells.append(f'<figure><div{crop}><img src="img/{name}-{i}.svg"></div>'
-                     f'<figcaption><b>{esc(f["title"])}</b>{note}</figcaption></figure>')
-    return f'<div class="strip n{len(cells)} {name}">{"".join(cells)}</div>'
+        label = HANDS[i][0]
+        return (f'<figure class="s1"><div class="hand"><img src="img/hand-{label.replace(" ", "-")}.svg"></div>'
+                f'<figcaption><b>{esc(label)}</b></figcaption></figure>')
+    f = FIGURES[name][i]
+    crop = f'crop {f["crop"]}' if f["crop"] else "whole"
+    note = f'<br>{esc(f["values"])}' if f["values"] else ""
+    return (f'<figure class="s2 {name}"><div class="{crop}"><img src="img/{name}-{i}.svg"></div>'
+            f'<figcaption><b>{esc(f["title"])}</b>{note}</figcaption></figure>')
+
+def strip(name, first=None, last=None):
+    """figures as grid cells; {{strip:name}} or {{strip:name:from-to}}."""
+    n = len(HANDS) if name == "hands" else len(FIGURES[name])
+    return "".join(figure(name, i) for i in range(n)[int(first or 0):int(last) if last else n])
 
 def fill_in(page, ns, version, date):
+    page = page.replace("{{classics}}", "".join(classic(n, ns, i + 1) for i, n in enumerate(G.ORDER)))
     page = page.replace("{{version}}", esc(version)).replace("{{date}}", esc(date))
     page = page.replace("{{fonts}}", "cache")
-    page = re.sub(r"\{\{strip:([\w-]+)\}\}", lambda m: strip(m.group(1)), page)
-    page = re.sub(r"\{\{classic:([\w-]+)\}\}", lambda m: classic(m.group(1), ns), page)
+    page = re.sub(r"\{\{strip:([\w]+)(?::(\d+)-(\d+))?\}\}", lambda m: strip(*m.groups()), page)
     page = re.sub(r"\{\{dial:([\w-]+)\}\}", lambda m: f'<img src="img/dial-{m.group(1)}.svg">', page)
+    page = re.sub(r"\{\{ui:(\w+:[\w-]+):(\w+):([\w,]+)\}\}", lambda m: ui(m.group(1), m.group(2), m.group(3), ns), page)
+    page = re.sub(r"\{\{rings:(\w+)(?::(\d+))?\}\}",
+                  lambda m: ring_list(G.DIALS[m.group(1)]["settings"], int(m.group(2) or 0)), page)
+    # page numbers: every <section class="page" id=…> can be referred to as {{page:id}}; data-toc makes a contents line
+    sections = re.findall(r'<section class="page[^"]*"([^>]*)>', page)
+    numbers, contents = {}, []
+    for n, attrs in enumerate(sections, 1):
+        ident, toc = re.search(r'id="([\w-]+)"', attrs), re.search(r'data-toc="([^"]+)"', attrs)
+        if ident:
+            numbers[ident.group(1)] = n
+        if toc:
+            sub = ' class="sub"' if "data-sub" in attrs else ""
+            contents.append(f"<tr{sub}><td>{toc.group(1)}</td><td>{n:02d}</td></tr>")
+    page = re.sub(r"\{\{page:([\w-]+)\}\}", lambda m: str(numbers[m.group(1)]), page)
+    page = page.replace("{{contents}}", f'<table class="contents">{"".join(contents)}</table>')
     left = re.findall(r"\{\{.+?\}\}", page)
     if left:
         raise SystemExit(f"guide.html: unknown marks {left}")
@@ -432,9 +502,9 @@ def build(ns):
         tab.evaluate("document.fonts.ready")
         tab.wait_for_load_state("networkidle")
         report = tab.evaluate("""() => [...document.querySelectorAll('.page')].map((p, i) => {
-            const inner = p.querySelector('.inner');
+            const inner = p.querySelector('.grid');
             return [i + 1, Math.round(inner.scrollHeight - inner.clientHeight)]; })""")
-        tab.pdf(path=OUT, width="210mm", height="297mm", print_background=True,
+        tab.pdf(path=OUT, width="297mm", height="210mm", print_background=True,
                 margin=dict(top="0", right="0", bottom="0", left="0"))
         browser.close()
     os.remove(built)
