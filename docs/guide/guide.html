@@ -1,8 +1,10 @@
 <!doctype html>
 <!-- The Dial Tool guidebook. Edit the text here; tools/make_guide.py fills in the marks in double
      braces, draws the figures and prints docs/Dial-Tool-guide.pdf. The design rules are in docs/design.md.
-     Each section of class "page" is one A4 landscape page on a 12-column grid: text blocks take 3 or 4
-     columns (s3, s4), figures 1, 2 or 3; "nl" starts a new row. -->
+     Each section of class "page" is one A4 landscape page on a 12-column grid. A page is a head, then
+     two columns of class "col": one holds the large example (its panel takes the height that is left),
+     the other the small ones, hung from the top, with text standing on the bottom. Text blocks take 3 or 4
+     columns (s3, s4). Annotations on large examples are in overlay() in tools/make_guide.py. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -12,8 +14,9 @@
 @font-face { font-family: "Inter"; src: url("{{fonts}}/Inter-Italic.ttf"); font-weight: 100 900; font-style: italic; }
 @page { size: 297mm 210mm; margin: 0; }
 :root {
-  --paper: #FCFCFA; --ground: #ECECE8; --ink: #111111; --grey: #5C5C58; --line: #B9B9B4; --accent: #E8500F;
-  --b: 1.5mm;                                 /* baseline unit: body sits on 3, captions on 2.5, leads on 4 */
+  --paper: #FCFCFA; --ground: #ECECE8; --ink: #111111; --grey: #5C5C58; --line: #B9B9B4;
+  --b: 1.375mm;                               /* the unit of every vertical measure: text sits on 3, captions on 2.5 */
+  --gap: calc(var(--b) * 4);                  /* between clusters */
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -21,39 +24,39 @@ body { counter-reset: pg; font-family: "Inter", sans-serif; font-optical-sizing:
        line-height: calc(var(--b) * 3); color: var(--ink); background: var(--paper); font-feature-settings: "kern", "calt", "ss03"; }
 i { font-style: normal; }
 
-/* ── page, grid, hang line ── */
+/* ── page and grid ── */
 .page { width: 297mm; height: 210mm; padding: 12mm; position: relative; break-after: page; background: var(--paper);
         overflow: hidden; contain: layout paint; counter-increment: pg; }
-.grid { height: 100%; display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 4mm; row-gap: calc(var(--b) * 4);
-        align-content: start; overflow: hidden; }
+.grid { height: 100%; display: grid; grid-template-columns: repeat(12, 1fr); grid-template-rows: auto 1fr; column-gap: 4mm;
+        row-gap: var(--gap); overflow: hidden; }
+.grid.flow { grid-template-rows: auto; align-content: space-between; }      /* pages of text only: rows share the white evenly */
 .s1 { grid-column-end: span 1; } .s2 { grid-column-end: span 2; } .s3 { grid-column-end: span 3; } .s4 { grid-column-end: span 4; }
-.s5 { grid-column-end: span 5; } .s6 { grid-column-end: span 6; } .s8 { grid-column-end: span 8; } .s9 { grid-column-end: span 9; }
+.s5 { grid-column-end: span 5; } .s6 { grid-column-end: span 6; } .s7 { grid-column-end: span 7; } .s8 { grid-column-end: span 8; }
 .s12 { grid-column-end: span 12; }
 .nl { grid-column-start: 1; }
-/* text that explains the figures stands on the bottom margin: figures hang from the top line, text sits on the bottom one */
-.low { position: absolute; left: 12mm; right: 12mm; bottom: 15mm; display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 4mm;
-       row-gap: calc(var(--b) * 4); align-items: start; }
-/* every section page starts with a head of fixed height, so all content hangs from one line */
-.head { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; height: calc(var(--b) * 20); border-top: .3mm solid var(--ink);
-        padding-top: calc(var(--b) * 2); }
-.head .title { grid-column-end: span 4; } .head .lead { grid-column-end: span 6; }
+.col { display: grid; grid-template-columns: subgrid; row-gap: var(--gap); align-content: space-between; align-items: start; overflow: hidden; }
+.col:has(> .hero) { grid-template-rows: minmax(0, 1fr); grid-auto-rows: auto; align-content: stretch; }   /* the large example takes the height that is left */
+.head { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; height: calc(var(--b) * 16); border-top: .3mm solid var(--ink);
+        padding-top: calc(var(--b) * 1.5); }
+.head .title { grid-column-end: span 4; } .head .lead { grid-column-end: span 6; padding-top: calc(var(--b) * 3); }
 .foot { position: absolute; left: 12mm; right: 12mm; bottom: 4.5mm; display: flex; justify-content: space-between;
         font-size: 7.5pt; line-height: 3mm; color: var(--grey); }
 .pg::after { content: counter(pg); font-feature-settings: "tnum"; }
 
-/* ── type: four sizes, two weights ── */
-.no { display: block; font-weight: 600; font-size: 7.5pt; line-height: calc(var(--b) * 3); color: var(--accent); font-feature-settings: "tnum"; }
-h1 { font-weight: 300; font-size: 30pt; line-height: calc(var(--b) * 8); letter-spacing: -.022em; }
-.lead { font-size: 12pt; line-height: calc(var(--b) * 4); letter-spacing: -.006em; padding-top: calc(var(--b) * 3); }
-.k { display: block; font-weight: 600; font-size: 7.5pt; line-height: calc(var(--b) * 3); color: var(--grey); }
+/* ── type: four sizes ── */
+.no { display: block; font-weight: 600; font-size: 7.5pt; line-height: calc(var(--b) * 3); font-feature-settings: "tnum"; }
+h1 { font-weight: 300; font-size: 31pt; line-height: calc(var(--b) * 8); letter-spacing: -.022em; }
+.lead { font-size: 12.4pt; line-height: calc(var(--b) * 4); letter-spacing: -.006em; }
+.k { display: block; font-weight: 600; font-size: 7.5pt; line-height: calc(var(--b) * 2.5); color: var(--grey); }
 .block { border-top: .2mm solid var(--ink); padding-top: var(--b); }
-.block h3 { font-weight: 600; font-size: 12pt; line-height: calc(var(--b) * 4); letter-spacing: -.008em; margin-bottom: calc(var(--b) * 1); }
-.block p + p, .block .ui + p, .block table + p { margin-top: calc(var(--b) * 1.5); }
+.block h3 { font-weight: 600; font-size: 12.4pt; line-height: calc(var(--b) * 4); letter-spacing: -.008em; margin-bottom: var(--b); }
+.block p + p { margin-top: var(--b); }
 .block .ui, .block table.plain { margin-top: var(--b); }
+.block .ui + p, .block table + p { margin-top: calc(var(--b) * 2); }
 b { font-weight: 600; }
 code { font-family: inherit; font-style: italic; }
 kbd { font-family: inherit; font-weight: 600; }
-.big { font-weight: 300; font-size: 30pt; line-height: calc(var(--b) * 8); letter-spacing: -.02em; margin-bottom: var(--b); font-feature-settings: "tnum", "case"; }
+.big { font-weight: 300; font-size: 31pt; line-height: calc(var(--b) * 8); letter-spacing: -.02em; margin-bottom: var(--b); font-feature-settings: "tnum", "case"; }
 table.plain { border-collapse: collapse; width: 100%; font-feature-settings: "tnum"; }
 table.plain td { padding: calc(var(--b) * .5) 0; border-bottom: .2mm solid var(--line); vertical-align: top; }
 table.plain td:first-child { font-weight: 600; width: 36%; padding-right: 2mm; }
@@ -62,15 +65,36 @@ ol.steps li { counter-increment: st; padding-left: 6mm; position: relative; }
 ol.steps li + li { margin-top: var(--b); }
 ol.steps li::before { content: counter(st); position: absolute; left: 0; font-weight: 600; }
 
+/* line drawings: icons on a 24-unit square, one stroke weight */
+.ic { display: block; width: calc(var(--b) * 6); height: calc(var(--b) * 6); margin-bottom: calc(var(--b) * 1.5); fill: none; stroke: var(--ink);
+      stroke-width: 1; stroke-linecap: square; stroke-linejoin: miter; overflow: visible; }
+.ic.xl { width: calc(var(--b) * 12); height: calc(var(--b) * 12); stroke-width: .7; margin-bottom: calc(var(--b) * 2); }
+/* a warning: what a careful reader would otherwise find out the hard way */
+.watch { border-top: .2mm solid var(--ink); padding: var(--b) 0 0 calc(var(--b) * 8); position: relative; min-height: calc(var(--b) * 8); }
+.watch .ic { position: absolute; left: 0; top: calc(var(--b) * 1.5); margin: 0; }
+
 /* ── figures ── */
 figure > div { background: var(--ground); overflow: hidden; position: relative; }
-.whole img { display: block; width: 100%; }
-.crop { aspect-ratio: 1 / .62; }
-.crop img { position: absolute; width: 210%; left: -55%; top: -19%; }
-.giveway .crop img { width: 260%; left: -80%; top: -27%; }
+.art { position: relative; } .art img { display: block; width: 100%; }
+.crop { aspect-ratio: 1 / .57; } .labels .crop { aspect-ratio: 1 / .46; }
+.crop .art { position: absolute; width: 210%; left: -55%; top: -19%; }
+.giveway .crop .art { width: 260%; left: -80%; top: -27%; }
+/* the large example: its panel fills the column; a whole dial sits in the largest square that fits (cq = the panel's size) */
+.hero { display: grid; grid-template-rows: minmax(0, 1fr); align-self: stretch; min-height: 0; }
+.hero > div { container-type: size; }
+.hero > .whole { display: grid; place-items: center; }
+.sq { width: min(100cqw, 100cqh); aspect-ratio: 1; position: relative; }
+.sq .art { width: 88%; margin: 6%; } .pad .sq .art { width: 62%; margin: 19%; }
+.hero > .crop { aspect-ratio: auto; }
 figcaption { font-size: 7.5pt; line-height: calc(var(--b) * 2.5); margin-top: var(--b); color: var(--grey); font-feature-settings: "tnum"; }
 figcaption b { color: var(--ink); }
-.hand { padding: 2mm 0 1mm; } .hand img { display: block; width: 100%; height: 44mm; }
+.hand { padding: 2mm 0 1mm; } .hand img { display: block; width: 100%; height: 40mm; }
+/* annotations drawn over a large example, in the dial's own millimetres */
+.over { position: absolute; left: 0; top: 0; width: 100%; height: 100%; fill: none; stroke: var(--ink); stroke-width: var(--sw); overflow: visible; }
+.over text { fill: var(--ink); stroke: none; font-size: var(--fs); font-feature-settings: "tnum"; }
+.over .bold { font-weight: 600; } .over .g { fill: var(--grey); font-weight: 400; } .over .wt, .over .wt .g { fill: #fff; }
+.over .w { stroke: #fff; } .over .dash { stroke-dasharray: calc(var(--sw) * 6) calc(var(--sw) * 5); }
+.over circle { fill: var(--paper); } .over circle.w { fill: none; }
 
 /* ── the tool's controls, redrawn in grey. Sizes in em: 1em = one control label (13 px in the real window) ── */
 .ui { font-size: 6.9pt; line-height: 1.25em; color: #262626; font-feature-settings: "tnum"; background: #ECECEC; padding: .9em 1em .5em;
@@ -96,7 +120,7 @@ figcaption b { color: var(--ink); }
 .seg b { flex: 1; text-align: center; font-weight: 450; line-height: 1.65em; border-radius: .36em; white-space: nowrap; padding: 0 .3em; }
 .seg b.on { background: #fff; box-shadow: 0 .05em .14em rgba(0,0,0,.3); }
 .seg.tabs b { text-align: left; padding-left: .7em; }
-.chk { display: block; padding-left: 1.55em; position: relative; white-space: nowrap; }
+.chk { display: block; padding-left: 1.55em; position: relative; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .chk::before { content: ""; position: absolute; left: 0; top: .08em; width: 1.05em; height: 1.05em; border-radius: .26em; background: #fff; border: .07em solid #ADADAD; }
 .chk.on::before { background: #6E6E6E; border-color: #6E6E6E; }
 .chk.on::after { content: "✓"; position: absolute; left: .19em; top: .02em; color: #fff; font-size: .82em; font-weight: 700; }
@@ -108,8 +132,10 @@ figcaption b { color: var(--ink); }
 .ui.list .head { background: #F2F2F2; color: #5A5A5A; border-bottom: .07em solid #D0D0D0; font-size: .92em; }
 .ui.list .chk { height: 1.2em; padding: 0; } .ui.list em { font-style: normal; color: #6A6A6A; }
 .ui.list .sel { background: #D9D9D9; }
-.tag { display: inline-block; width: 1.7em; height: 1.7em; border-radius: 50%; background: var(--accent); color: #fff; text-align: center;
-       font-weight: 700; font-size: 7pt; line-height: 1.7em; font-feature-settings: "tnum"; }
+/* callout numbers: a figure in a line circle */
+.tag { display: inline-block; width: 1.9em; height: 1.9em; border-radius: 50%; border: .12em solid var(--ink); background: var(--paper); color: var(--ink);
+       text-align: center; font-weight: 600; font-size: 7.5pt; line-height: 1.66em; font-feature-settings: "tnum"; }
+.k .tag { margin-bottom: var(--b); }
 
 /* the whole window: drawn in the tool's own units (points on screen), then scaled to the page width */
 .window { width: 273mm; height: 186.6mm; position: relative; overflow: hidden; }
@@ -129,35 +155,78 @@ figcaption b { color: var(--ink); }
 .px .view { display: flex; align-items: center; justify-content: center; }
 .px .view img { height: 100%; }
 .px .status { font-size: 11px; color: #555; white-space: pre; }
-.px .tag { position: absolute; font-size: 12px; width: 22px; height: 22px; line-height: 22px; }
+.px .tag { position: absolute; font-size: 12px; width: 23px; height: 23px; line-height: 20px; border-width: 1.5px; background: #fff; }
 
 /* ── cover ── */
 .cover { background: rgb(15, 15, 18); color: #F1F0EA; }
 .cover .hero { position: absolute; width: 268mm; right: -76mm; top: -29mm; }
 .cover .left { position: absolute; left: 12mm; top: 12mm; bottom: 12mm; width: 88mm; display: flex; flex-direction: column; }
 .cover h1 { font-size: 64pt; line-height: 21mm; letter-spacing: -.04em; font-weight: 250; margin-left: -1mm; }
-.cover .subtitle { font-size: 12pt; line-height: 6mm; margin-top: 6mm; color: #B9B8B2; }
+.cover .subtitle { font-size: 12.4pt; line-height: calc(var(--b) * 4); margin-top: 6mm; color: #B9B8B2; }
 .cover .subtitle b { color: #F1F0EA; }
-.contents { border-collapse: collapse; width: 100%; font-size: 9pt; line-height: 4.5mm; margin-top: auto; font-feature-settings: "tnum"; }
+.contents { border-collapse: collapse; width: 100%; font-size: 9pt; line-height: calc(var(--b) * 3.2); margin-top: auto; font-feature-settings: "tnum"; }
 .contents td { border-top: .2mm solid #3A3A3C; padding: 0; }
 .contents td:last-child { text-align: right; color: #B9B8B2; }
 .contents tr.sub td:first-child { padding-left: 7.4mm; color: #B9B8B2; }
 
 /* ── classics ── */
-.classic .grid { row-gap: 0; border-top: .3mm solid var(--ink); padding-top: calc(var(--b) * 2); }
-.about h1 { margin-bottom: calc(var(--b) * 2); }
-.about .lead { padding-top: 0; margin-bottom: calc(var(--b) * 4); }
-.about .block { margin-bottom: calc(var(--b) * 3); }
-.classic figure > div { padding: 5mm; }
+.classic .grid { grid-template-rows: 1fr; border-top: .3mm solid var(--ink); padding-top: calc(var(--b) * 1.5); }
+.classic h1 { margin-bottom: calc(var(--b) * 2); }
+.classic .sq .art { width: 94%; margin: 3%; }
+.classic .look { margin-top: var(--gap); }
 .recipe { border-collapse: collapse; width: 100%; font-size: 7.5pt; line-height: calc(var(--b) * 2.5); font-feature-settings: "tnum"; margin-top: var(--b); }
-.recipe th, .recipe td { text-align: left; vertical-align: top; padding: calc(var(--b) * .6) 0; border-top: .2mm solid var(--line); font-weight: 400; }
-.recipe th { font-weight: 600; width: 23mm; padding-right: 2mm; }
+.recipe th, .recipe td { text-align: left; vertical-align: top; padding: calc(var(--b) * .55) 0; border-top: .2mm solid var(--line); font-weight: 400; }
+.recipe th { font-weight: 600; width: 21mm; padding-right: 2mm; }
 .recipe th span { display: block; font-weight: 400; color: var(--grey); }
 .recipe td { color: #2E2E2C; } .recipe td b { color: var(--ink); }
 .swatch { display: inline-block; width: 2.6mm; height: 2.6mm; border-radius: 50%; border: .2mm solid rgba(0,0,0,.45); vertical-align: -.45mm; margin-left: .6mm; }
 </style>
 </head>
 <body>
+
+<!-- line drawings, on a 24-unit square -->
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i-install" viewBox="0 0 24 24"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4 17v4h16v-4"/></symbol>
+  <symbol id="i-speed" viewBox="0 0 24 24"><path d="M4 17a8 8 0 0 1 16 0M2.5 17h19M12 17l4.6-6.6"/></symbol>
+  <symbol id="i-memory" viewBox="0 0 24 24"><path d="M5.2 13.5A7 7 0 1 0 7 7.1M4 4v4h4M12 8.5V12l2.6 1.8"/></symbol>
+  <symbol id="i-unit" viewBox="0 0 24 24"><path d="M2 8.5h20v7H2zM5 8.5v2.5M8 8.5v4M11 8.5v2.5M14 8.5v4M17 8.5v2.5M20 8.5v4"/></symbol>
+  <symbol id="i-angle" viewBox="0 0 24 24"><path d="M12 21V3M12 21 20.5 6.3M12 9a12 12 0 0 1 6 1.6"/><circle cx="12" cy="21" r=".9"/></symbol>
+  <symbol id="i-fill" viewBox="0 0 24 24"><path d="M5 4h14v16H5zM5 11l7-7M5 18 19 4M9 20 19 10M15 20l4-4"/></symbol>
+  <symbol id="i-order" viewBox="0 0 24 24"><path d="M12 3l9 4.5-9 4.5-9-4.5zM3 12l9 4.5 9-4.5M3 16.5 12 21l9-4.5"/></symbol>
+  <symbol id="i-slider" viewBox="0 0 24 24"><path d="M2 8h5M11 8h11M2 16h11M17 16h5"/><circle cx="9" cy="8" r="2"/><circle cx="15" cy="16" r="2"/></symbol>
+  <symbol id="i-type" viewBox="0 0 24 24"><path d="M2 6h20v12H2zM6.5 9.5v5M5 9.5h3M5 14.5h3M11 14.5h7"/></symbol>
+  <symbol id="i-choice" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 12.5l3 3 5.5-7"/></symbol>
+  <symbol id="i-pinch" viewBox="0 0 24 24"><path d="M9.5 14.5 4 20M4 15.5V20h4.5M14.5 9.5 20 4M15.5 4H20v4.5"/></symbol>
+  <symbol id="i-ring" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r=".8"/></symbol>
+  <symbol id="i-kind" viewBox="0 0 24 24"><path d="M4 3h3v7H4zM14 3h5l-1.5 7h-2zM17 21v-7l-2 1.6"/><circle cx="5.5" cy="17.5" r="2.5"/></symbol>
+  <symbol id="i-radius" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 12h9"/><circle cx="12" cy="12" r=".9"/></symbol>
+  <symbol id="i-arc" viewBox="0 0 24 24"><path d="M4.2 18a9 9 0 1 1 15.6 0M3 20.2l2.4-4M21 20.2l-2.4-4"/></symbol>
+  <symbol id="i-every" viewBox="0 0 24 24"><path d="M3 6v7M12 6v7M21 6v7"/><path stroke-dasharray="1 2" d="M6 6v7M9 6v7M15 6v7M18 6v7"/><path d="M3 18h18"/></symbol>
+  <symbol id="i-skip" viewBox="0 0 24 24"><path d="M3 7v7M6.5 7v7M17.5 7v7M21 7v7M10 4h4v13h-4z"/></symbol>
+  <symbol id="i-knock" viewBox="0 0 24 24"><path d="M2 9h6.5M2 14h6.5M15.5 9H22M15.5 14H22M10.5 4h3v15h-3z"/></symbol>
+  <symbol id="i-band" viewBox="0 0 24 24"><path d="M3 19a9 9 0 0 1 18 0M7.5 19a4.5 4.5 0 0 1 9 0M3 19h4.5M16.5 19H21"/></symbol>
+  <symbol id="i-sector" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 12V3M12 12l7.8 4.5M12 12l-7.8 4.5"/></symbol>
+  <symbol id="i-nudge" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M9.5 5.5 12 3l2.5 2.5M9.5 18.5 12 21l2.5-2.5M5.5 9.5 3 12l2.5 2.5M18.5 9.5 21 12l-2.5 2.5"/></symbol>
+  <symbol id="i-font" viewBox="0 0 24 24"><path d="M4 20 12 3l8 17M7.3 13h9.4"/></symbol>
+  <symbol id="i-count" viewBox="0 0 24 24"><path d="M5 20V5L2.5 7M10 8a3 3 0 1 1 5.2 2L10 20h6M19 5h3M19 12h3M19 19h3"/></symbol>
+  <symbol id="i-path" viewBox="0 0 24 24"><path d="M3 19a9 9 0 0 1 18 0"/><path d="M5.5 10.5 8 12.6M11 5v3.3M18.5 10.5 16 12.6"/></symbol>
+  <symbol id="i-beat" viewBox="0 0 24 24"><path d="M2 19h4v-4h4v-4h4V7h4V3h4"/></symbol>
+  <symbol id="i-hand" viewBox="0 0 24 24"><path d="M12 22V8M9.6 8 12 2l2.4 6z"/><circle cx="12" cy="17" r="2"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v4h4M9 13h6M9 17h6"/></symbol>
+  <symbol id="i-in" viewBox="0 0 24 24"><path d="M9 3h10v18H9M3 12h10M9.5 8.5 13 12l-3.5 3.5"/></symbol>
+  <symbol id="i-export" viewBox="0 0 24 24"><path d="M12 15V3M7.5 7.5 12 3l4.5 4.5M4 17v4h16v-4"/></symbol>
+  <symbol id="i-mirror" viewBox="0 0 24 24"><path stroke-dasharray="1.5 2" d="M12 2v20"/><path d="M9 6 3 18h6zM15 6l6 12h-6z"/></symbol>
+  <symbol id="i-live" viewBox="0 0 24 24"><path d="M3 5h18v14H3zM7 15l2.5-6 2.5 6M7.8 13h3.4M15 9v6M14 9h2M14 15h2"/></symbol>
+  <symbol id="i-date" viewBox="0 0 24 24"><path d="M3 6h18v12H3zM9 15V9L7.5 10.2M12.5 9h4l-3 6"/></symbol>
+  <symbol id="i-gap" viewBox="0 0 24 24"><path d="M2 5h20M2 19h20M8 9h8v6H8zM12 5v4M12 15v4"/></symbol>
+  <symbol id="i-cut" viewBox="0 0 24 24"><path stroke-dasharray="2 2" d="M5 7h14v10H5z"/><path d="M2 12h3M19 12h3"/></symbol>
+  <symbol id="i-log" viewBox="0 0 24 24"><path d="M3 4h18v12H10l-5 4.5V16H3zM7 8.5h10M7 12h6"/></symbol>
+  <symbol id="i-repo" viewBox="0 0 24 24"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="8" r="2"/><path d="M6 7v10M18 10c0 5-12 2-12 7"/></symbol>
+  <symbol id="i-rail" viewBox="0 0 24 24"><path d="M2 6h20M2 14h20M5 6v8M9 6v8M13 6v8M17 6v8M21 6v8"/></symbol>
+  <symbol id="i-reset" viewBox="0 0 24 24"><path d="M5.2 13.5A7 7 0 1 0 7 7.1M4 4v4h4"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12c3-4.7 6.3-7 10-7s7 2.3 10 7c-3 4.7-6.3 7-10 7s-7-2.3-10-7z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-watch" viewBox="0 0 24 24"><path d="M12 3 22.5 21h-21zM12 9.5v6M12 17.6v.8"/></symbol>
+</svg>
 
 <!-- ═════════ cover and contents ═════════ -->
 <section class="page cover">
@@ -170,35 +239,36 @@ figcaption b { color: var(--ink); }
 </section>
 
 <!-- ═════════ start ═════════ -->
-<section class="page" id="start" data-toc="01  Start"><div class="grid">
+<section class="page" id="start" data-toc="01  Start"><div class="grid flow">
   <div class="head"><div class="title"><span class="no">01</span><h1>Start</h1></div>
     <p class="lead">Dial Tool is one Python file that runs inside DrawBot, a free drawing app for macOS. It draws a dial as a list of rings, three hands and a date window, in millimetres.</p></div>
-  <div class="block s4"><span class="k">Install</span><h3>Three steps, one file.</h3>
+  <div class="block s4"><svg class="ic"><use href="#i-install"/></svg><span class="k">Install</span><h3>Three steps, one file.</h3>
     <ol class="steps">
       <li><b>DrawBot 3.132</b> or newer, from drawbot.com.</li>
       <li><b>dial.py</b> from github.com/duztman/dial-tool. Branch <i>main</i> is the released version; <i>dev</i> is the newest work.</li>
       <li>Open dial.py in DrawBot and press <kbd>⌘R</kbd>. The window opens.</li>
     </ol></div>
-  <div class="block s4"><span class="k">Speed</span><h3>One optional package.</h3>
+  <div class="block s4"><svg class="ic"><use href="#i-speed"/></svg><span class="k">Speed</span><h3>One optional package.</h3>
     <p>Knockouts and hollow shapes are cut by combining outlines. DrawBot’s own routine is slow; skia-pathops is 2 to 14 times faster.</p>
     <p>In DrawBot: Python → Install Python Packages → <b>skia-pathops</b> → Go. The Export log then starts with “shape combining: skia-pathops”.</p></div>
-  <div class="block s4"><span class="k">Memory</span><h3>Nothing to save.</h3>
+  <div class="block s4"><svg class="ic"><use href="#i-memory"/></svg><span class="k">Memory</span><h3>Nothing to save.</h3>
     <p>Settings are stored as you work. Pressing <kbd>⌘R</kbd> again, or quitting DrawBot, keeps them: the last session reopens.</p>
     <p>Export → Save… writes a named copy; Load… opens one. The nine dials in this guide come as such files.</p></div>
-  <div class="low">
-  <div class="block s3"><span class="k">Unit</span><p class="big">mm</p>
+  <div class="block s3"><svg class="ic xl"><use href="#i-unit"/></svg><span class="k">Unit</span><p class="big">mm</p>
     <p>Every length is in millimetres, drawn at true size. Radii are measured from the dial’s centre.</p></div>
-  <div class="block s3"><span class="k">Angle</span><p class="big">0° = 12</p>
+  <div class="block s3"><svg class="ic xl"><use href="#i-angle"/></svg><span class="k">Angle</span><p class="big">0° = 12</p>
     <p>Clock angles, growing clockwise. 90° is 3 o’clock, 180° is 6, −90° is 9.</p></div>
-  <div class="block s3"><span class="k">Shape</span><p class="big">Fills</p>
+  <div class="block s3"><svg class="ic xl"><use href="#i-fill"/></svg><span class="k">Shape</span><p class="big">Fills</p>
     <p>Everything exported is a filled outline, never a stroke. A 0.12 mm tick is exactly 0.12 mm in Illustrator.</p></div>
-  <div class="block s3"><span class="k">Order</span><p class="big">Top first</p>
+  <div class="block s3"><svg class="ic xl"><use href="#i-order"/></svg><span class="k">Order</span><p class="big">Top first</p>
     <p>The ring list is the stacking order. The top ring is drawn last, in front of the others.</p></div>
-  </div>
+  <div class="watch s4"><svg class="ic"><use href="#i-watch"/></svg><span class="k">Watch</span><p>It runs only inside DrawBot: the window, the fonts and the export all come from DrawBot’s own Python.</p></div>
+  <div class="watch s4"><svg class="ic"><use href="#i-watch"/></svg><span class="k">Watch</span><p>The canvas preview needs macOS 14 or newer. On an older system the PDF preview takes over, and the log says why.</p></div>
+  <div class="watch s4"><svg class="ic"><use href="#i-watch"/></svg><span class="k">Watch</span><p>A dial names its fonts as macOS does. On a Mac without the font, that ring falls back to Helvetica Neue.</p></div>
 </div><div class="foot"><span>Dial Tool {{version}}</span><span class="pg"></span></div></section>
 
 <!-- ═════════ the window: legend, then the drawing ═════════ -->
-<section class="page" id="window" data-toc="02  The window"><div class="grid">
+<section class="page" id="window" data-toc="02  The window"><div class="grid flow">
   <div class="head"><div class="title"><span class="no">02</span><h1>The window</h1></div>
     <p class="lead">Settings on the left, the dial on the right, time underneath. The next page shows it whole, redrawn in grey from the tool’s own measurements, with the field watch loaded.</p></div>
   <div class="block s3"><span class="k"><i class="tag">1</i></span><h3>Sections</h3><p>Dial, Rings, Hands, Date, Export. One is shown at a time.</p></div>
@@ -209,17 +279,17 @@ figcaption b { color: var(--ink); }
   <div class="block s3"><span class="k"><i class="tag">6</i></span><h3>Time</h3><p>Drag, or type 10:09:36. Now sets the clock’s time; Play runs the hands.</p></div>
   <div class="block s3"><span class="k"><i class="tag">7</i></span><h3>Guides, Canvas · PDF, Fit</h3><p>Guides are never exported. Canvas is the fast preview; PDF is DrawBot’s own viewer, the reference. Fit shows the whole page.</p></div>
   <div class="block s3"><span class="k"><i class="tag">8</i></span><h3>Status</h3><p>Ring, font, diameter; then how long the geometry (build) and the drawing (frame) took.</p></div>
-  <div class="block s4 nl"><span class="k">Number</span><h3>Slider, field and stepper show one value.</h3>
+  <div class="block s4"><svg class="ic"><use href="#i-slider"/></svg><span class="k">Number</span><h3>Slider, field and stepper show one value.</h3>
     {{ui:dial:field:3:len,w}}
     <p>Drag for a rough value, type for an exact one, step for the last hundredth. Typing past a slider’s end extends the slider.</p></div>
-  <div class="block s4"><span class="k">Typing</span><h3>Fields do arithmetic.</h3>
+  <div class="block s4"><svg class="ic"><use href="#i-type"/></svg><span class="k">Typing</span><h3>Fields do arithmetic.</h3>
     <table class="plain">
       <tr><td>1.2</td><td>sets 1.2</td></tr>
       <tr><td>+0.5</td><td>adds 0.5</td></tr>
       <tr><td>x0.5</td><td>halves</td></tr>
       <tr><td>/3</td><td>a third</td></tr>
     </table></div>
-  <div class="block s4"><span class="k">Choice</span><h3>Popups, switches, checkboxes.</h3>
+  <div class="block s4"><svg class="ic"><use href="#i-choice"/></svg><span class="k">Choice</span><h3>Popups, switches, checkboxes.</h3>
     {{ui:dial:dress:0:kind,shape,twelve,invert}}
     <p>A choice can change which rows are shown: pick dot and Length disappears.</p></div>
 </div><div class="foot"><span>Dial Tool {{version}}</span><span class="pg"></span></div></section>
@@ -230,13 +300,16 @@ figcaption b { color: var(--ink); }
 <section class="page" id="rings" data-toc="03  Rings"><div class="grid">
   <div class="head"><div class="title"><span class="no">03</span><h1>Rings</h1></div>
     <p class="lead">A ring repeats one thing round the centre, at its positions. A dial is a short list of rings, stacked.</p></div>
-  {{strip:exploded}}
-  <div class="low">
-  <div class="block s4"><span class="k">The idea</span><h3>One dial, five rings.</h3>
-    <p>The diver on page {{page:diver}}, taken apart. Each ring does one job and the list stacks them. Nothing is special-cased: the triangle is a markers ring with a count of one, the depth rating a numerals ring with one label.</p></div>
-  <div class="block s4"><span class="k">The list</span>{{rings:diver}}</div>
-  <div class="block s4"><span class="k">Kind</span><h3>Four kinds, changeable at any time.</h3>
-    <p><b>Ticks</b> and <b>markers</b> repeat a shape. <b>Numerals</b> repeat a label. A <b>band</b> is colour between two radii. Every ring carries every setting, so changing a ring’s kind loses nothing.</p></div>
+  <div class="col s6">
+    {{hero:rings:6}}
+    <div class="watch s6"><svg class="ic"><use href="#i-watch"/></svg><span class="k">Watch</span><p>Order works twice. It is the stacking order, and a ring only gives way to rings <b>above</b> it: to make ticks stop for markers, the markers go higher in the list.</p></div>
+  </div>
+  <div class="col s6">
+    {{strip:exploded}}
+    <div class="block s3"><svg class="ic"><use href="#i-ring"/></svg><span class="k">The idea</span><h3>One dial, five rings.</h3>
+      <p>The diver of page {{page:diver}}, taken apart. Nothing is special-cased: the triangle is a markers ring with a count of one, the depth rating a numerals ring with one label.</p></div>
+    <div class="block s3"><svg class="ic"><use href="#i-kind"/></svg><span class="k">Kind</span><h3>Four kinds.</h3>
+      <p>Ticks and markers repeat a shape, numerals a label; a band is colour between two radii. A ring’s kind can change at any time: it carries every setting.</p></div>
   </div>
 </div><div class="foot"><span>Dial Tool {{version}}</span><span class="pg"></span></div></section>
 
@@ -244,16 +317,20 @@ figcaption b { color: var(--ink); }
 <section class="page" id="positions" data-toc="04  Positions"><div class="grid">
   <div class="head"><div class="title"><span class="no">04</span><h1>Positions</h1></div>
     <p class="lead">Where a ring puts things. Six numbers describe almost any track, scale or set of hours.</p></div>
-  {{strip:positions}}
-  <div class="low">
-  <div class="block s4"><span class="k">Count · Start · Span</span><h3>A full turn spaces evenly. An arc marks both ends.</h3>
-    {{ui:strip:positions-5:0:count,start,span}}
-    <p>With Span 360° twelve positions sit 30° apart. With less, the first and last sit on the ends of the arc: Count 10 over 270° is a scale from 0 to 9.</p></div>
-  <div class="block s4"><span class="k">Every · Offset · Skip those instead</span><h3>Use some of the positions.</h3>
-    {{ui:strip:positions-2:0:every,offset,invert}}
-    <p>Every 3 keeps the cardinals. Tick Skip those instead and the same setting keeps the other eight. Offset moves the starting point.</p></div>
-  <div class="block s4"><span class="k">Radius</span><h3>Measured to the outer edge.</h3>
-    <p>For ticks, markers and bands, Radius is the outer end; Length or Band width runs inward from it. For numerals, Radius is the centre of the text.</p></div>
+  <div class="col s6">
+    {{hero:positions:6}}
+    <div class="block s3"><span class="k">The arc, sixth picture</span>
+      {{ui:strip:positions-5:0:count,start,span}}</div>
+    <div class="block s3"><span class="k">The cardinals, second picture</span>
+      {{ui:strip:positions-1:0:every,offset,invert}}</div>
+    <div class="watch s6"><svg class="ic"><use href="#i-watch"/></svg><span class="k">Watch</span><p>Radii are absolute. Changing the dial’s Diameter moves no ring and no hand: set the diameter first, then each Radius, as you would for a real movement.</p></div>
+  </div>
+  <div class="col s6">
+    {{strip:positions}}
+    <div class="block s3"><svg class="ic"><use href="#i-arc"/></svg><span class="k">Count · Start · Span</span><h3>An arc marks both ends.</h3>
+      <p>Span 360° spaces evenly. Less puts the first and last on the ends: Count 10 over 270° runs 0 to 9.</p></div>
+    <div class="block s3"><svg class="ic"><use href="#i-every"/></svg><span class="k">Every · Offset</span><h3>Use some of them.</h3>
+      <p>Every 3 keeps the cardinals; Skip those instead keeps the other eight.</p></div>
   </div>
 </div><div class="foot"><span>Dial Tool {{version}}</span><span class="pg"></span></div></section>
 
@@ -261,15 +338,18 @@ figcaption b { color: var(--ink); }
 <section class="page" id="marks" data-toc="05  Marks"><div class="grid">
   <div class="head"><div class="title"><span class="no">05</span><h1>Marks</h1></div>
     <p class="lead">Ticks and markers share one set of shapes. A markers ring adds a first position that can differ from the rest.</p></div>
-  {{strip:shapes}}
-  <div class="low">
-  <div class="block s4"><span class="k">Shape</span><h3>Bar, wedge, dot, or your own file.</h3>
-    {{ui:strip:shapes-7:0:shape,len,w,round_out,round_in,wall}}</div>
-  <div class="block s4"><span class="k">Wedge and corners</span><h3>One number tapers; two round.</h3>
-    <p>Inner width × sets the inner end as a share of the outer: 0 is a triangle, 1 a bar, more than 1 widens inward.</p>
-    <p>Round outer and Round inner are true fillets, in mm. Hollow wall leaves an outline of that thickness.</p></div>
-  <div class="block s4"><span class="k">12 o’clock</span><h3>The first position can differ.</h3>
-    <p>A markers ring draws its first position the same, double (with a Gap), as a triangle, or not at all. Scale × sizes it.</p></div>
+  <div class="col s4">
+    {{hero:marks:4}}
+    <div class="block s4"><span class="k">The mark above</span>
+      {{ui:strip:shapes-0:0:shape,r,len,w}}</div>
+    <div class="watch s4"><svg class="ic"><use href="#i-watch"/></svg><span class="k">Watch</span><p>A fillet can’t exceed half the side it rounds, and a Hollow wall of half the width or more leaves the mark solid. Neither warns: the shape just stops changing.</p></div>
+  </div>
+  <div class="col s8">
+    {{strip:shapes}}
+    <div class="block s4"><svg class="ic"><use href="#i-fill"/></svg><span class="k">Wedge and corners</span><h3>One number tapers; two round.</h3>
+      <p>Inner width × sets the inner end as a share of the outer: 0 is a triangle, 1 a bar, more than 1 widens inward. Round outer and Round inner are true fillets, in mm.</p></div>
+    <div class="block s4"><svg class="ic"><use href="#i-count"/></svg><span class="k">12 o’clock</span><h3>The first position can differ.</h3>
+      <p>A markers ring draws its first position the same, double (with a Gap), as a triangle, or not at all. Scale × sizes it. Ticks have no such position.</p></div>
   </div>
 </div><div class="foot"><span>Dial Tool {{version}}</span><span class="pg"></span></div></section>
 
@@ -277,14 +357,18 @@ figcaption b { color: var(--ink); }
 <section class="page" id="giveway" data-toc="06  Give way"><div class="grid">
   <div class="head"><div class="title"><span class="no">06</span><h1>Give way</h1></div>
     <p class="lead">How a ring reacts to the rings above it. One mechanism covers every pair of rings.</p></div>
-  {{strip:giveway}}
-  <div class="low">
-  <div class="block s4"><span class="k">Skip where</span><h3>Leave out positions that are taken.</h3>
-    <p>The ring drops its own positions wherever the chosen rings above already have a mark: minute ticks that stop for the hour markers, fine ticks that stop for the minute ticks.</p></div>
-  <div class="block s4"><span class="k">Knock out</span><h3>Cut a gap round what is above.</h3>
-    <p>The ring is cut back by Clearance mm round the shapes above it: markers, markers and numerals, or everything. The date window always clears every ring, by its own Print clearance.</p></div>
-  <div class="block s4"><span class="k">The ticks in the third picture</span>
-    {{ui:strip:giveway-2:1:skip,knock,clear}}</div>
+  <div class="col s6">
+    {{hero:giveway:6}}
+    <div class="block s3"><span class="k">The ticks above</span>
+      {{ui:strip:giveway-2:1:skip,knock,clear}}</div>
+    <div class="watch s3"><svg class="ic"><use href="#i-watch"/></svg><span class="k">Watch</span><p>Skip compares angles to a hundredth of a degree. Two rings skip each other only where their positions truly coincide: same Start, counts that divide.</p></div>
+  </div>
+  <div class="col s6">
+    {{strip:giveway}}
+    <div class="block s3"><svg class="ic"><use href="#i-skip"/></svg><span class="k">Skip where</span><h3>Leave out what is taken.</h3>
+      <p>The ring drops its own positions wherever the chosen rings above already have a mark: minute ticks that stop for the hour markers.</p></div>
+    <div class="block s3"><svg class="ic"><use href="#i-knock"/></svg><span class="k">Knock out</span><h3>Cut a gap round it.</h3>
+      <p>The ring is cut back by Clearance mm round the shapes above: markers, markers and numerals, or everything.</p></div>
   </div>
 </div><div class="foot"><span>Dial Tool {{version}}</span><span class="pg"></span></div></section>
 
@@ -292,14 +376,16 @@ figcaption b { color: var(--ink); }
 <section class="page" id="bands" data-toc="07  Bands"><div class="grid">
   <div class="head"><div class="title"><span class="no">07</span><h1>Bands</h1></div>
     <p class="lead">Flat colour between Radius and Radius − Band width: rings, rails, zones and sectors.</p></div>
-  {{strip:bands}}
-  <div class="low">
-  <div class="block s4"><span class="k">Segments</span><h3>Positions cut a band into pieces.</h3>
-    <p>Count 1 is a full ring. More positions cut it into segments that tile the span; Fill % is how much of its step each segment covers.</p></div>
-  <div class="block s4"><span class="k">Uses</span><h3>Rails, zones, sectors.</h3>
-    <p>Railroad rails are two bands 0.12 wide. A band as wide as its radius reaches the centre: with Every 2 that is a sector dial. A short span is a red zone.</p></div>
-  <div class="block s4"><span class="k">The sectors in the second picture</span>
-    {{ui:strip:bands-1:0:r,width,count,every,fill}}</div>
+  <div class="col s6">
+    {{hero:bands:6}}
+    <div class="watch s6"><svg class="ic"><use href="#i-watch"/></svg><span class="k">Watch</span><p>Colour is flat, one per ring. A chapter ring with white print is three rings: the band, and white ticks and numerals above it — as in this sector dial, page {{page:sector}}.</p></div>
+  </div>
+  <div class="col s6">
+    {{strip:bands}}
+    <div class="block s3"><svg class="ic"><use href="#i-band"/></svg><span class="k">Segments</span><h3>Positions cut a band.</h3>
+      <p>Count 1 is a full ring. More positions cut it into segments that tile the span; Fill % is how much of its step each one covers.</p></div>
+    <div class="block s3"><svg class="ic"><use href="#i-sector"/></svg><span class="k">The sectors, second picture</span>
+      {{ui:strip:bands-1:0:r,width,count,every}}</div>
   </div>
 </div><div class="foot"><span>Dial Tool {{version}}</span><span class="pg"></span></div></section>
 
@@ -307,16 +393,19 @@ figcaption b { color: var(--ink); }
 <section class="page" id="numerals" data-toc="08  Numerals"><div class="grid">
   <div class="head"><div class="title"><span class="no">08</span><h1>Numerals</h1></div>
     <p class="lead">One label per position: from a built-in set, a count, or a list of your own.</p></div>
-  {{strip:labels:0-6}}
-  {{strip:labels:6-8}}
-  <div class="block s4"><span class="k">Numbers</span><h3>Labels that count.</h3>
-    {{ui:strip:labels-6:0:labels,num_from,num_step,num_digits}}</div>
-  <div class="block s4"><span class="k">Custom</span><h3>Your own list, comma-separated.</h3>
-    <p>One entry per position. An empty entry leaves that position empty, which is how two rings can share one circle of hours.</p></div>
-  <div class="low">
-  {{strip:placement}}
-  <div class="block s4"><span class="k">Placement</span><h3>Four ways to sit.</h3>
-    <p>Upright, radial, radial with auto-flip, or on path. On path sets each letter on the circle with the font’s own spacing; below 3 and 9 o’clock it flips to read left to right.</p></div>
+  <div class="col s4">
+    {{hero:numerals:4}}
+    <div class="block s4"><svg class="ic"><use href="#i-count"/></svg><span class="k">Numbers</span><h3>Labels that count.</h3>
+      {{ui:strip:labels-6:0:labels,num_from,num_step,num_digits}}</div>
+    <div class="watch s4"><svg class="ic"><use href="#i-watch"/></svg><span class="k">Watch</span><p>A Custom list follows positions, not hours. With Start 30° its first entry sits at 1 o’clock.</p></div>
+  </div>
+  <div class="col s8">
+    {{strip:labels}}
+    {{strip:placement}}
+    <div class="block s4"><svg class="ic"><use href="#i-path"/></svg><span class="k">Placement</span><h3>Four ways to sit.</h3>
+      <p>On path sets each letter on the circle with the font’s own spacing; below 3 and 9 o’clock it flips to read left to right.</p></div>
+    <div class="block s4"><svg class="ic"><use href="#i-type"/></svg><span class="k">Custom</span><h3>A list, comma by comma.</h3>
+      <p>Entries go to the positions in order. An empty entry leaves its position empty: the California dial, page {{page:california}}, is two such lists.</p></div>
   </div>
 </div><div class="foot"><span>Dial Tool {{version}}</span><span class="pg"></span></div></section>
 
@@ -324,27 +413,26 @@ figcaption b { color: var(--ink); }
 <section class="page" id="type" data-toc="09  Type and nudge"><div class="grid">
   <div class="head"><div class="title"><span class="no">09</span><h1>Type and nudge</h1></div>
     <p class="lead">Each numerals ring has its own type, from any font installed on the Mac. Each numeral can then be corrected by eye.</p></div>
-  {{strip:type}}
-  <div class="low">
-  <div class="block s4"><span class="k">Type</span><h3>What reaches the outlines.</h3>
-    <table class="plain">
-      <tr><td>Family · Style</td><td>read from macOS; no fonts folder</td></tr>
-      <tr><td>Instance · Axes</td><td>a variable font’s named instances, and a slider per axis</td></tr>
-      <tr><td>Features</td><td>OpenType features under the designer’s own names</td></tr>
-      <tr><td>Language</td><td>local forms, such as Turkish İ ı</td></tr>
-      <tr><td>Tracking</td><td>in 1/1000 em, as in Illustrator</td></tr>
-    </table></div>
-  <div class="block s4"><span class="k">Nudge</span><h3>Correct one numeral at a time.</h3>
-    <table class="plain">
-      <tr><td>Radius ±</td><td>in or out, mm</td></tr>
-      <tr><td>Angle ±°</td><td>round the dial</td></tr>
-      <tr><td>Rotate °</td><td>about its own centre</td></tr>
-      <tr><td>Size ×</td><td>larger or smaller</td></tr>
-    </table>
-    <p>Stored per position. Reset this, or Reset all.</p></div>
-  <div class="block s4"><span class="k">Typical</span><h3>Even the weight.</h3>
-    <p>Two-digit numerals look heavier than single ones. Size × 0.92 on 10, 11 and 12 evens them; Radius −0.2 pulls a wide 12 inward.</p>
-    <p>The date window uses the type of the top numerals ring.</p></div>
+  <div class="col s6">
+    {{hero:type:6}}
+    <div class="block s3"><svg class="ic"><use href="#i-nudge"/></svg><span class="k">Nudge</span><h3>One numeral at a time.</h3>
+      <table class="plain">
+        <tr><td>Radius ±</td><td>in or out, mm</td></tr>
+        <tr><td>Angle ±°</td><td>round the dial</td></tr>
+        <tr><td>Rotate °</td><td>about its centre</td></tr>
+        <tr><td>Size ×</td><td>larger, smaller</td></tr>
+      </table></div>
+    <div class="watch s3"><svg class="ic"><use href="#i-watch"/></svg><span class="k">Watch</span><p>Two-digit numerals look heavier than single ones. Size × 0.92 on 10, 11 and 12 evens them; Radius −0.2 pulls a wide 12 inward. Nudges are stored per position: change Count and they stay with the position, not the label.</p></div>
+  </div>
+  <div class="col s6">
+    {{strip:type}}
+    <div class="block s6"><svg class="ic"><use href="#i-font"/></svg><span class="k">Type</span><h3>What reaches the outlines.</h3>
+      <table class="plain">
+        <tr><td>Family · Style</td><td>read from macOS; there is no fonts folder</td></tr>
+        <tr><td>Instance · Axes</td><td>a variable font’s named instances, and a slider per axis</td></tr>
+        <tr><td>Features</td><td>OpenType features under the designer’s own names</td></tr>
+        <tr><td>Language · Tracking</td><td>local forms, such as Turkish İ ı · 1/1000 em, as in Illustrator</td></tr>
+      </table></div>
   </div>
 </div><div class="foot"><span>Dial Tool {{version}}</span><span class="pg"></span></div></section>
 
@@ -352,20 +440,21 @@ figcaption b { color: var(--ink); }
 <section class="page" id="hands" data-toc="10  Hands"><div class="grid">
   <div class="head"><div class="title"><span class="no">10</span><h1>Hands</h1></div>
     <p class="lead">Hour, minute and seconds each have their own shape, size and colour. Lengths are millimetres from the pivot, as movements specify them.</p></div>
-  {{strip:hands}}
-  <div class="low">
-  <div class="block s4"><span class="k">The diver’s minute hand</span>
-    {{ui:dial:diver:minute:shape,len,w,tail,tip,counter,wall}}</div>
-  <div class="block s4"><span class="k">Feature and file</span><h3>Head, ring, disc — or your own drawing.</h3>
-    <p>Arrow and syringe have a head or barrel width; Breguet and lollipop a ring or disc Ø, placed at a % of the length.</p>
-    <p>A file is drawn pointing up, pivot at the artboard’s centre. Fit file to length scales it to the hand’s Length; Width × stretches it.</p></div>
-  <div class="block s4"><span class="k">Motion</span><h3>Four beats for the seconds hand.</h3>
-    <table class="plain">
-      <tr><td>sweep</td><td>smooth</td></tr>
-      <tr><td>quartz</td><td>1 step per second</td></tr>
-      <tr><td>6 beats/s</td><td>21,600 vph</td></tr>
-      <tr><td>8 beats/s</td><td>28,800 vph</td></tr>
-    </table></div>
+  <div class="col s6">
+    {{hero:hands:6}}
+    <div class="watch s6"><svg class="ic"><use href="#i-watch"/></svg><span class="k">Watch</span><p>Lengths don’t follow the dial. A 13 mm minute hand on a 24 mm dial overhangs it by a millimetre; nothing stops you.</p></div>
+  </div>
+  <div class="col s6">
+    {{strip:hands:0-6}}
+    {{strip:hands:6-12}}
+    <div class="block s3"><svg class="ic"><use href="#i-hand"/></svg><span class="k">The diver’s minute hand</span>
+      {{ui:dial:diver:minute:shape,len,w,tail,tip}}</div>
+    <div class="block s3"><svg class="ic"><use href="#i-beat"/></svg><span class="k">Motion</span><h3>Four beats.</h3>
+      <table class="plain">
+        <tr><td>sweep</td><td>smooth</td></tr>
+        <tr><td>quartz</td><td>1 step a second</td></tr>
+        <tr><td>6 · 8 beats/s</td><td>21,600 · 28,800 vph</td></tr>
+      </table></div>
   </div>
 </div><div class="foot"><span>Dial Tool {{version}}</span><span class="pg"></span></div></section>
 
@@ -373,38 +462,44 @@ figcaption b { color: var(--ink); }
 <section class="page" id="date" data-toc="11  Date window"><div class="grid">
   <div class="head"><div class="title"><span class="no">11</span><h1>Date window</h1></div>
     <p class="lead">A hole in the plate that shows the date disc, with an optional printed frame. Print keeps its distance from it.</p></div>
-  {{strip:date}}
-  <div class="block s3"><span class="k">The window at 3</span>
-    {{ui:strip:date-0:date:da_at,da_r,da_w,da_h,da_round,da_frame,da_clear}}</div>
-  <div class="low">
-  <div class="block s4"><span class="k">Clearance</span><h3>Print keeps away from the hole.</h3>
-    <p>Every ring is cut back by the frame plus Print clearance. Markers and numerals leave the date’s position empty altogether, as on a real dial.</p></div>
-  <div class="block s4"><span class="k">Type</span><h3>The day uses the top numerals ring’s font.</h3>
-    <p>Shows is the day drawn on the disc; Text % of height sizes it. The frame and the day share the Print colour.</p></div>
-  <div class="block s4"><span class="k">Production</span><h3>The aperture becomes a cut line.</h3>
-    <p>In a production mask the hole is drawn as an outline to cut or drill to.</p></div>
+  <div class="col s6">
+    {{hero:date:6}}
+    <div class="block s3"><svg class="ic"><use href="#i-date"/></svg><span class="k">The window above</span>
+      {{ui:strip:date-0:date:da_at,da_r,da_w,da_h,da_round,da_frame,da_clear}}</div>
+    <div class="watch s3"><svg class="ic"><use href="#i-watch"/></svg><span class="k">Watch</span><p>The frame and the day share one Print colour, and the disc is always white. On a dark plate a light frame would mean a light day on white: set Frame to 0 there, as the diver does.</p></div>
+  </div>
+  <div class="col s6">
+    {{strip:date}}
+    <div class="block s3"><svg class="ic"><use href="#i-gap"/></svg><span class="k">Clearance</span><h3>Print keeps away.</h3>
+      <p>Every ring is cut back by the frame plus Print clearance. Markers and numerals leave the date’s position empty altogether.</p></div>
+    <div class="block s3"><svg class="ic"><use href="#i-font"/></svg><span class="k">Type</span><h3>The top numerals ring’s font.</h3>
+      <p>Shows is the day drawn on the disc; Text % of height sizes it.</p></div>
+    <div class="block s3"><svg class="ic"><use href="#i-cut"/></svg><span class="k">Production</span><h3>A cut line.</h3>
+      <p>In a production mask the aperture is an outline to cut or drill to.</p></div>
+    <div class="block s3"><svg class="ic"><use href="#i-angle"/></svg><span class="k">Position</span><h3>Five places.</h3>
+      <p>3, 4:30, 6, 9 or 12; Radius sets how far out.</p></div>
   </div>
 </div><div class="foot"><span>Dial Tool {{version}}</span><span class="pg"></span></div></section>
 
 <!-- ═════════ classics ═════════ -->
-<section class="page" id="classics" data-toc="12  Classics"><div class="grid">
+<section class="page" id="classics" data-toc="12  Classics"><div class="grid flow">
   <div class="head"><div class="title"><span class="no">12</span><h1>Classics</h1></div>
     <p class="lead">Nine dials drawn after well-known types, by eye: approximations, not measured copies. Each page prints the settings that drew the picture.</p></div>
-  <figure class="s2"><div class="whole">{{dial:field}}</div><figcaption><b>Field watch</b><br>page {{page:field}}</figcaption></figure>
-  <figure class="s2"><div class="whole">{{dial:diver}}</div><figcaption><b>Diver</b><br>page {{page:diver}}</figcaption></figure>
-  <figure class="s2"><div class="whole">{{dial:dress}}</div><figcaption><b>Dress watch</b><br>page {{page:dress}}</figcaption></figure>
-  <figure class="s2"><div class="whole">{{dial:pilot}}</div><figcaption><b>Pilot, type B</b><br>page {{page:pilot}}</figcaption></figure>
-  <figure class="s2"><div class="whole">{{dial:california}}</div><figcaption><b>California</b><br>page {{page:california}}</figcaption></figure>
-  <figure class="s2"><div class="whole">{{dial:railway}}</div><figcaption><b>Station clock</b><br>page {{page:railway}}</figcaption></figure>
-  <figure class="s2"><div class="whole">{{dial:bauhaus}}</div><figcaption><b>Bauhaus</b><br>page {{page:bauhaus}}</figcaption></figure>
-  <figure class="s2"><div class="whole">{{dial:sector}}</div><figcaption><b>Sector dial</b><br>page {{page:sector}}</figcaption></figure>
-  <figure class="s2"><div class="whole">{{dial:gauge}}</div><figcaption><b>Gauge</b><br>page {{page:gauge}}</figcaption></figure>
-  <div class="block s3"><span class="k">Presets</span><h3>Load them.</h3>
+  <figure class="s2"><div class="whole"><div class="art">{{dial:field}}</div></div><figcaption><b>Field watch</b><br>page {{page:field}}</figcaption></figure>
+  <figure class="s2"><div class="whole"><div class="art">{{dial:diver}}</div></div><figcaption><b>Diver</b><br>page {{page:diver}}</figcaption></figure>
+  <figure class="s2"><div class="whole"><div class="art">{{dial:dress}}</div></div><figcaption><b>Dress watch</b><br>page {{page:dress}}</figcaption></figure>
+  <figure class="s2"><div class="whole"><div class="art">{{dial:pilot}}</div></div><figcaption><b>Pilot, type B</b><br>page {{page:pilot}}</figcaption></figure>
+  <figure class="s2"><div class="whole"><div class="art">{{dial:california}}</div></div><figcaption><b>California</b><br>page {{page:california}}</figcaption></figure>
+  <figure class="s2"><div class="whole"><div class="art">{{dial:railway}}</div></div><figcaption><b>Station clock</b><br>page {{page:railway}}</figcaption></figure>
+  <figure class="s2"><div class="whole"><div class="art">{{dial:bauhaus}}</div></div><figcaption><b>Bauhaus</b><br>page {{page:bauhaus}}</figcaption></figure>
+  <figure class="s2"><div class="whole"><div class="art">{{dial:sector}}</div></div><figcaption><b>Sector dial</b><br>page {{page:sector}}</figcaption></figure>
+  <figure class="s2"><div class="whole"><div class="art">{{dial:gauge}}</div></div><figcaption><b>Gauge</b><br>page {{page:gauge}}</figcaption></figure>
+  <div class="block s3"><svg class="ic"><use href="#i-file"/></svg><span class="k">Presets</span><h3>Load them.</h3>
     <p>Each dial is a settings file in <code>docs/guide/presets</code>. Export → Settings → Load… opens it, ready to change.</p></div>
-  <div class="block s3 nl"><span class="k">Reading a page</span><h3>Rings top first.</h3>
+  <div class="block s3"><svg class="ic"><use href="#i-order"/></svg><span class="k">Reading a page</span><h3>Rings top first.</h3>
     <p>Only what differs from a newly added ring is printed; everything else is at its starting value.</p></div>
-  <div class="block s3"><span class="k">Fonts</span><h3>Named as on macOS.</h3>
-    <p>DIN Alternate, Futura, Helvetica Neue, Bodoni 72. These pages were rendered off-Mac with similar open fonts, so numerals differ slightly.</p></div>
+  <div class="watch s6 nl"><svg class="ic"><use href="#i-watch"/></svg><span class="k">Watch</span><p>Fonts are named as on macOS: DIN Alternate, Futura, Helvetica Neue, Bodoni 72. These pages were rendered off-Mac with similar open fonts, so numerals differ slightly from what the presets draw on a Mac.</p></div>
+  <div class="watch s6"><svg class="ic"><use href="#i-watch"/></svg><span class="k">Watch</span><p>The presets have not been opened in the tool on a Mac yet. If one looks different from its page, the page is the intention.</p></div>
 </div><div class="foot"><span>Dial Tool {{version}}</span><span class="pg"></span></div></section>
 
 {{classics}}
@@ -413,40 +508,46 @@ figcaption b { color: var(--ink); }
 <section class="page" id="files" data-toc="13  Files in and out"><div class="grid">
   <div class="head"><div class="title"><span class="no">13</span><h1>Files in and out</h1></div>
     <p class="lead">Vectors at true size, a one-colour mask for production, and your own shapes coming in.</p></div>
-  {{strip:output}}
-  <div class="block s3"><span class="k">Export</span>
-    {{ui:strip:output-2:dial:out_production,out_mirror,out_live_text,out_dpi,out_seconds,out_fps}}</div>
-  <div class="low">
-  <div class="block s3"><span class="k">PDF · SVG · PNG</span><h3>True size.</h3><p>Vectors for Illustrator, print, the press, laser: a 30 mm dial opens 30 mm wide. PNG at your dpi, for film: 30 mm at 600 dpi is 709 pixels.</p></div>
-  <div class="block s3"><span class="k">MP4 · GIF</span><h3>The hands moving.</h3><p>From the set time, for Clip seconds at Frames per s, in the chosen beat.</p></div>
-  <div class="block s3"><span class="k">Live text</span><h3>Off by default.</h3><p>Keeps numerals editable in PDF and SVG. The fonts are then needed, and on-path text becomes one object per letter.</p></div>
-  <div class="block s3"><span class="k">In: SVG · PDF · AI</span><h3>Your own markers and hands.</h3><p>Draw pointing up; the artboard’s centre is the anchor. Black is ink, white cuts holes, strokes become outlines. Outline text first; images and gradients are skipped.</p></div>
+  <div class="col s6">
+    {{hero:files:6}}
+    <div class="watch s6"><svg class="ic"><use href="#i-watch"/></svg><span class="k">Watch</span><p>This is the production mask, mirrored: what goes on the film for toner transfer. Check its thinnest line at 100 % before you etch: a 0.09 mm tick is two pixels at 600 dpi.</p></div>
+  </div>
+  <div class="col s6">
+    {{strip:output}}
+    <div class="block s3"><svg class="ic"><use href="#i-export"/></svg><span class="k">Export</span>
+      {{ui:strip:output-2:dial:out_production,out_mirror,out_live_text,out_dpi}}</div>
+    <div class="block s3"><svg class="ic"><use href="#i-unit"/></svg><span class="k">PDF · SVG · PNG</span><h3>True size.</h3>
+      <p>A 30 mm dial opens 30 mm wide. PNG at your dpi: 30 mm at 600 dpi is 709 pixels.</p></div>
+    <div class="block s3"><svg class="ic"><use href="#i-live"/></svg><span class="k">Live text</span><h3>Off by default.</h3>
+      <p>Keeps numerals editable. The fonts are then needed where the file is opened, and on-path text becomes one object per letter.</p></div>
+    <div class="block s3"><svg class="ic"><use href="#i-in"/></svg><span class="k">In: SVG · PDF · AI</span><h3>Your own shapes.</h3>
+      <p>Draw pointing up; the artboard’s centre is the anchor. Black is ink, white cuts holes. Outline text first.</p></div>
   </div>
 </div><div class="foot"><span>Dial Tool {{version}}</span><span class="pg"></span></div></section>
 
 <!-- ═════════ recipes and help ═════════ -->
-<section class="page" id="recipes" data-toc="14  Recipes and help"><div class="grid">
+<section class="page" id="recipes" data-toc="14  Recipes and help"><div class="grid flow">
   <div class="head"><div class="title"><span class="no">14</span><h1>Recipes and help</h1></div>
     <p class="lead">Short constructions to build on, each with a dial that uses it. Then what to check when something looks wrong.</p></div>
-  <div class="block s3"><span class="k">Track</span><h3>Railroad</h3><p>Ticks, Count 60. Two bands 0.12 wide: one at the ticks’ Radius, one at Radius − tick Length + 0.12. Page {{page:california}}.</p></div>
-  <div class="block s3"><span class="k">Track</span><h3>Fifths of a second</h3><p>Ticks Count 60 above ticks Count 300. The 300 Skip where: all marks above.</p></div>
-  <div class="block s3"><span class="k">Hours</span><h3>24-hour ring</h3><p>Numerals, Labels Custom: 24, 13, 14 … 23, at a smaller Radius and Size. Page {{page:field}}.</p></div>
-  <div class="block s3"><span class="k">Hours</span><h3>Two fonts, one circle</h3><p>Two numerals rings on one Radius; each Custom list leaves the other’s positions empty. Page {{page:california}}.</p></div>
-  <div class="block s3"><span class="k">Minutes</span><h3>05 to 60</h3><p>Numerals, Labels Numbers, First number 5, Step 5, Digits 2, Start 30°. Page {{page:sector}}.</p></div>
-  <div class="block s3"><span class="k">Text</span><h3>A wordmark</h3><p>Numerals, Count 1, Start 0° or 180°, Labels Custom, Placement on path. Page {{page:dress}}.</p></div>
-  <div class="block s3"><span class="k">Colour</span><h3>A gap round numerals</h3><p>A band below the numerals; Knock out: markers &amp; numerals above; Clearance 0.3.</p></div>
-  <div class="block s3"><span class="k">Colour</span><h3>Sector dial</h3><p>A band, Count 12, Every 2, Band width equal to Radius. Page {{page:sector}}.</p></div>
-  <div class="block s3"><span class="k">A ring is gone</span><h3>Three places to look</h3><p>Its checkbox in the list; its Every and Offset; and whether it skips positions that a ring above takes.</p></div>
-  <div class="block s3"><span class="k">Diameter</span><h3>Nothing else moves</h3><p>Radii and hand lengths are millimetres from the centre, as on a real movement. Change them ring by ring.</p></div>
-  <div class="block s3"><span class="k">Slow</span><h3>Check the log</h3><p>It should say “shape combining: skia-pathops”. If not, install it: page {{page:start}}.</p></div>
-  <div class="block s3"><span class="k">Start over</span><h3>Defaults</h3><p>Export → Settings → Defaults. The last session is in <code>~/Library/Application Support/DialTool</code>.</p></div>
-  <div class="block s6"><span class="k">When something is wrong</span><h3>Read the log, compare the previews, send both.</h3>
+  <div class="block s3"><svg class="ic"><use href="#i-rail"/></svg><span class="k">Track</span><h3>Railroad</h3><p>Ticks, Count 60. Two bands 0.12 wide: one at the ticks’ Radius, one at Radius − tick Length + 0.12. Page {{page:california}}.</p></div>
+  <div class="block s3"><svg class="ic"><use href="#i-every"/></svg><span class="k">Track</span><h3>Fifths of a second</h3><p>Ticks Count 60 above ticks Count 300. The 300 Skip where: all marks above.</p></div>
+  <div class="block s3"><svg class="ic"><use href="#i-ring"/></svg><span class="k">Hours</span><h3>24-hour ring</h3><p>Numerals, Labels Custom: 24, 13, 14 … 23, at a smaller Radius and Size. Page {{page:field}}.</p></div>
+  <div class="block s3"><svg class="ic"><use href="#i-font"/></svg><span class="k">Hours</span><h3>Two fonts, one circle</h3><p>Two numerals rings on one Radius; each Custom list leaves the other’s positions empty. Page {{page:california}}.</p></div>
+  <div class="block s3"><svg class="ic"><use href="#i-count"/></svg><span class="k">Minutes</span><h3>05 to 60</h3><p>Numerals, Labels Numbers, First number 5, Step 5, Digits 2, Start 30°. Page {{page:sector}}.</p></div>
+  <div class="block s3"><svg class="ic"><use href="#i-path"/></svg><span class="k">Text</span><h3>A wordmark</h3><p>Numerals, Count 1, Start 0° or 180°, Labels Custom, Placement on path. Page {{page:dress}}.</p></div>
+  <div class="block s3"><svg class="ic"><use href="#i-knock"/></svg><span class="k">Colour</span><h3>A gap round numerals</h3><p>A band below the numerals; Knock out: markers &amp; numerals above; Clearance 0.3.</p></div>
+  <div class="block s3"><svg class="ic"><use href="#i-sector"/></svg><span class="k">Colour</span><h3>Sector dial</h3><p>A band, Count 12, Every 2, Band width equal to Radius. Page {{page:sector}}.</p></div>
+  <div class="watch s3"><svg class="ic"><use href="#i-watch"/></svg><span class="k">A ring is gone</span><p>Look at its checkbox in the list, its Every and Offset, and whether it skips positions a ring above takes.</p></div>
+  <div class="watch s3"><svg class="ic"><use href="#i-watch"/></svg><span class="k">No numeral at 3</span><p>The date window took it: markers and numerals leave its position empty.</p></div>
+  <div class="watch s3"><svg class="ic"><use href="#i-watch"/></svg><span class="k">Slow</span><p>The log should say “shape combining: skia-pathops”. If not, install it: page {{page:start}}.</p></div>
+  <div class="watch s3"><svg class="ic"><use href="#i-reset"/></svg><span class="k">Start over</span><p>Export → Settings → Defaults. The last session is in <code>~/Library/Application Support/DialTool</code>.</p></div>
+  <div class="block s6"><svg class="ic"><use href="#i-log"/></svg><span class="k">When something is wrong</span><h3>Read the log, compare the previews, send both.</h3>
     <ol class="steps">
       <li>Open Export and read the log. At launch it says “preview: canvas” and “all controls connected”.</li>
       <li>If the preview looks wrong, switch Canvas to PDF and compare.</li>
       <li>Send a screenshot and the log. If the window doesn’t build at all, run <code>tools/dial_probe.py</code> in DrawBot and send its report.</li>
     </ol></div>
-  <div class="block s6"><span class="k">Where things live</span><h3>One repository.</h3>
+  <div class="block s6"><svg class="ic"><use href="#i-repo"/></svg><span class="k">Where things live</span><h3>One repository.</h3>
     <table class="plain">
       <tr><td>Code and docs</td><td>github.com/duztman/dial-tool</td></tr>
       <tr><td>Words</td><td><code>docs/glossary.md</code></td></tr>
@@ -455,5 +556,13 @@ figcaption b { color: var(--ink); }
     </table></div>
 </div><div class="foot"><span>Dial Tool {{version}}</span><span class="pg"></span></div></section>
 
+<!-- annotation text and lines keep their size on paper (7.5 pt, 0.2 mm) whatever the picture's scale -->
+<script>
+document.fonts.ready.then(() => { for (const s of document.querySelectorAll("svg.over")) {
+  const unit = s.getBoundingClientRect().width / s.viewBox.baseVal.width;      // px on paper per mm of dial
+  s.style.setProperty("--fs", 10 / unit + "px");
+  s.style.setProperty("--sw", .76 / unit + "px");
+} });
+</script>
 </body>
 </html>

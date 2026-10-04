@@ -1,6 +1,6 @@
 # Dial Tool — design canon
 
-*Written 4 Oct 2026 with the guidebook's third edition (beta 2.3). Okay: "this design research might influence
+*Written 4 Oct 2026 with the guidebook's third edition (beta 2.3); revised the same day with the fourth. Okay: "this design research might influence
 the whole build, take notes… let's make it canon."*
 
 This file is the rule for everything Dial Tool shows on paper or screen that isn't a dial: the guidebook
@@ -36,10 +36,12 @@ check §2–§6 against it.
   No monospace anywhere: file names are italic, things you type or click are semibold.
 - **Two weights and one light.** 400 text, 600 emphasis and headlines, 300 for the big titles only
   ("big, light type with small, dark type").
-- **Four sizes.** 7.5 pt captions and labels · 9 pt text · 12 pt leads and headlines · 30 pt titles
-  (the cover alone goes to 64 pt). Nothing smaller than 7.5 pt.
-- **Leading on a 1.5 mm unit.** Captions 3.75 mm, text 4.5 mm, leads 6 mm, titles 12 mm. Spaces between things
-  are multiples of the unit.
+- **Four sizes.** 7.5 pt captions and labels · 9 pt text · 12.4 pt leads and headlines · 31 pt titles
+  (the cover alone goes to 64 pt). Nothing smaller than 7.5 pt. (4 Oct 2026, fourth edition: leads and titles
+  up about 3 % from 12 and 30 pt.)
+- **Leading on a 1.375 mm unit.** Captions 2.5 units (3.44 mm), text 3 (4.125 mm), leads 4 (5.5 mm), titles 8
+  (11 mm). Every space between things is a multiple of the unit: 1 inside a cluster, 4 between clusters.
+  (Fourth edition: the unit came down from 1.5 mm, about 8 %, to set text tighter.)
 - **Line length 40–75 characters.** *(recalled)* So text blocks are 3 or 4 columns wide (65 or 88 mm at 9 pt),
   never 2. Leads run 6 columns at 12 pt.
 - **Flush left, ragged right.** *(recalled)* No justification, no centring, no hyphenation.
@@ -56,8 +58,17 @@ check §2–§6 against it.
 - **Two lines hold every page.** A top line: the rule, the section number, title and lead, in a head of fixed
   height — so figures on every page **hang from the same line**. A bottom line: the text that explains the
   figures **stands on the bottom margin**. The white between them varies and is left white.
-- **Units.** Figures take 1, 2 or 3 columns (12, 6 or 4 to a row); text blocks 3 or 4.
-- **The classic pages** split 3 · 5 · 4: text, the dial, its settings.
+- **Two columns under the head.** One holds the **large example**, the other the small ones. The large
+  example's grey panel takes whatever height its column has left, so no page ends in unexplained white; its
+  controls and a Watch note stand under it. In the other column thumbnails hang from the top line and the
+  text blocks stand on the bottom margin.
+- **Large first, then small.** Each topic opens with one example big enough to carry dimension lines and
+  labels (4 or 6 columns), then goes to 2- or 3-column thumbnails with two-line captions.
+- **Units.** Thumbnails take 1, 2 or 3 columns; text blocks 3 or 4; the large example 4 or 6.
+- **Pages of text only** (Start, The window, Classics, Recipes) have no large example: their rows share the
+  white evenly.
+- **The classic pages** split 8 · 4: the dial in a square panel the full height of the page, then title,
+  what it is drawn after, what to look for, and the settings table standing on the bottom margin.
 - **The cover** is the one page off the grid: a dark field the colour of the dial's own plate, the dial far
   larger than the page.
 
@@ -65,7 +76,8 @@ check §2–§6 against it.
 
 - Paper `#FCFCFA`, ink `#111111`, grey text `#5C5C58` (never lighter: it must stay readable at 7.5 pt),
   rules `#B9B9B4`, figure ground `#ECECE8`.
-- **One accent**, Braun orange `#E8500F`, for two things only: section numbers and the numbered callouts.
+- **No accent colour** (fourth edition; the orange numbers and dots are gone). Section numbers are ink;
+  callout numbers are a figure in a line circle.
 - Dials keep their own colours. Everything around them is neutral.
 - No tinted panels, rounded cards, shadows or decorative rules. A hairline above a block is the only frame.
 
@@ -75,6 +87,15 @@ check §2–§6 against it.
   picture are the ones that drew it (R25).
 - A figure sits on a flat grey square, with a two-line caption: what it is (semibold), then its values (grey).
 - Close-ups show the top of a dial, always cropped the same way, so figures in a row compare.
+- **Annotations are drawn in the dial's own millimetres** (`overlay()` in `tools/make_guide.py`): dimension
+  lines with end ticks, leaders ending in a small ring, dashed construction lines. Text on them is 7.5 pt and
+  lines 0.2 mm on paper at any enlargement — the page measures each picture and sets them.
+- **Line icons.** One set, drawn on a 24-unit square with a single stroke, square ends, no fill
+  (`<symbol>`s at the top of `guide.html`). One per text block, above its label; a few per page, never as
+  decoration without a block. Four are drawn large on the Start page.
+- **Watch notes.** A triangle icon and a short paragraph: what a careful reader would otherwise find out the
+  hard way (order works twice, radii are absolute, fillets stop silently …). One or two per page, under the
+  large example. They state the tool's behaviour, not advice.
 
 ## 6 · The tool's controls, redrawn
 

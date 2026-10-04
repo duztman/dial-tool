@@ -17,7 +17,7 @@ make_guide.py — build the Dial Tool guidebook (docs/Dial-Tool-guide.pdf).
                overflows is reported: shorten the text.
 
 Marks in guide.html: {{version}} {{date}} {{contents}} {{classics}} {{window}} {{page:ID}} {{dial:NAME}}
-                     {{strip:NAME}} {{strip:NAME:FROM-TO}} {{rings:NAME}}
+                     {{strip:NAME}} {{strip:NAME:FROM-TO}} {{hero:NAME:COLUMNS}} {{rings:NAME}}
                      {{ui:strip:NAME-INDEX:RING:keys}} {{ui:dial:NAME:RING|hour|minute|second|date|dial:keys}}
 
 Setup (once): pip install drawbot-skia skia-pathops pillow fonttools playwright
@@ -223,6 +223,143 @@ FIGURES = {
     ],
 }
 
+# one large example per page. crop: None = the whole dial with room for labels round it,
+# "top" / "east" = a close-up of 12 or 3 o'clock.
+HEROES = {
+    "rings":     fig("", "", None, base="diver"),
+    "positions": fig("", "", [MARKS]),
+    "marks":     fig("", "", [dict(MARKS, len=3.4, w=1.2, count=3, start=-30, span=60)], crop="top"),
+    "giveway":   fig("", "", [dict(MARKS, r=14.4, len=3.2, w=1.5, wall=0.25),
+                              dict(TICKS, count=120, len=1.6, w=0.16, knock=1, clear=0.25),
+                              dict(kind="band", r=13.2, width=0.9, c=G.NAVY, knock=1, clear=0.25)], crop="top"),
+    "bands":     fig("", "", None, base="sector", ha_on=False),
+    "numerals":  fig("", "", None, base="california", ha_on=False),
+    "type":      fig("", "", None, base="field", ha_on=False, crop="top"),
+    "hands":     fig("", "", None, base="dress"),
+    "date":      fig("", "", [dict(MARKS, r=13.4), dict(kind="band", r=12.2, width=3.4, c=G.NAVY)], crop="east",
+                     da_on=True, da_at=0, da_r=10.5, da_w=2.6, da_h=2.0, da_frame=0.15, da_clear=0.25, da_day="17"),
+    "files":     fig("", "", None, base="california", out_production=True, out_mirror=True),
+}
+PAD = 0.62                                                   # a whole hero's share of its tile
+# close-ups: enlargement, and the point of the dial (mm from its centre) that sits at the panel's top middle
+# ("top") or in its middle ("east")
+CLOSE = dict(marks=(2.1, 15.5), giveway=(4.0, 16.4), type=(2.1, 14.9), date=(2.6, 9.63))
+
+def cp(r, a):
+    """clock angle → x, y on the page (y grows downward)."""
+    import math
+    return (r * math.sin(math.radians(a)), -r * math.cos(math.radians(a)))
+
+def label(x, y, text, anchor="start", sub=None, white=False):
+    out = f'<text{' class="wt"' if white else ""} x="{x:.2f}" y="{y:.2f}" text-anchor="{anchor}"><tspan class="bold">{esc(text)}</tspan>'
+    if sub:
+        out += f'<tspan class="g" x="{x:.2f}" dy="1.25em">{esc(sub)}</tspan>'
+    return out + "</text>"
+
+def leader(r, a, edge, text, sub=None, out=17.6, dark=True):
+    """from a point on the dial straight out to a label beside it; white while it crosses a dark plate."""
+    (x0, y0), (x1, y1), (x2, y2) = cp(r, a), cp(max(edge, r), a), cp(out, a)
+    side = "start" if x2 >= -0.01 else "end"
+    lx = x2 + (0.7 if side == "start" else -0.7)
+    inner = f'<line class="{"w" if dark else ""}" x1="{x0:.2f}" y1="{y0:.2f}" x2="{x1:.2f}" y2="{y1:.2f}"/>' if edge > r else ""
+    return (f'<circle class="{"w" if dark else ""}" cx="{x0:.2f}" cy="{y0:.2f}" r="0.34"/>{inner}'
+            f'<line x1="{x1:.2f}" y1="{y1:.2f}" x2="{x2:.2f}" y2="{y2:.2f}"/>' + label(lx, y2 + 0.1, text, side, sub))
+
+def dim(x0, y0, x1, y1, text, tx, ty, anchor="start", sub=None, tick=0.35):
+    """a dimension line with end ticks, and its label."""
+    import math
+    dx, dy = x1 - x0, y1 - y0
+    n = math.hypot(dx, dy) or 1
+    px, py = -dy / n * tick, dx / n * tick
+    ends = "".join(f'<line x1="{x - px:.2f}" y1="{y - py:.2f}" x2="{x + px:.2f}" y2="{y + py:.2f}"/>' for x, y in ((x0, y0), (x1, y1)))
+    return f'<line x1="{x0:.2f}" y1="{y0:.2f}" x2="{x1:.2f}" y2="{y1:.2f}"/>{ends}' + label(tx, ty, text, anchor, sub)
+
+def arc_path(r, a0, a1):
+    (x0, y0), (x1, y1) = cp(r, a0), cp(r, a1)
+    return f'<path d="M{x0:.2f} {y0:.2f} A{r} {r} 0 {int(abs(a1 - a0) > 180)} 1 {x1:.2f} {y1:.2f}"/>'
+
+def overlay(name, S):
+    """the annotations drawn over a hero, in the dial's own millimetres."""
+    if name == "rings":
+        R = S["dial_d"] / 2
+        return "".join([
+            leader(11.4, 0, R, "Triangle", "markers · Count 1", out=19.6),
+            leader(11.85, 30, R, "Dots", "markers · every 3, skipped"),
+            leader(13.85, 66, R, "Minutes", "ticks · Count 60"),
+            leader(12.05, 90, R, "Date", "window at 3"),
+            leader(6.0, 166, R, "Depth", "numerals · on path"),
+            leader(11.55, 270, R, "Bars 6 · 9", "markers · Count 4"),
+            leader(6.3, 304.8, R, "Hands", "hour · minute · seconds")])
+    if name == "positions":
+        out = ['<line class="dash" x1="0" y1="0" x2="0" y2="-19.4"/>', label(0, -20.3, "0° = 12 o’clock", "middle"),
+               arc_path(8.0, 0, 30), label(*cp(9.6, 15), "30°", "middle"),
+               dim(0, 0, 13.4, 0, "Radius 13.4", 6.7, -0.75, "middle"),
+               arc_path(19.0, 96, 128), '<path d="M%.2f %.2f l1.1 -.2 M%.2f %.2f l.35 -1.05"/>' % (*cp(19.0, 128), *cp(19.0, 128)),
+               label(*cp(20.4, 112), "clockwise", "start")]
+        for i in range(12):
+            x, y = cp(16.7, i * 30)
+            if i:
+                out.append(f'<text class="g" x="{x:.2f}" y="{y + 0.4:.2f}" text-anchor="middle">{i}</text>')
+        out.append(label(0, 20.6, "Positions 0 – 11", "middle", "Every and Offset count these"))
+        return "".join(out)
+    if name == "marks":
+        return "".join([
+            dim(-0.6, -14.2, 0.6, -14.2, "Width 1.2", 1.0, -14.07, tick=0.22),
+            dim(1.6, -13.4, 1.6, -10.0, "Length 3.4", 2.0, -11.55, tick=0.22),
+            '<line class="dash" x1="-2.6" y1="-13.4" x2="-0.6" y2="-13.4"/><line class="dash" x1="-2.6" y1="0" x2="-0.5" y2="0"/>',
+            '<path d="M-.5 0h1M0 -.5v1"/>', label(0.9, 0.13, "the dial’s centre", "start"),
+            dim(-2.2, 0, -2.2, -13.4, "Radius 13.4", -2.6, -6.1, "end", "centre to the outer end", tick=0.22)])
+    if name == "giveway":
+        return "".join([
+            dim(0.75, -12.75, 1.0, -12.75, "", 0, 0, tick=0.12),
+            '<line x1="0.875" y1="-12.6" x2="1.5" y2="-11.0"/>',
+            label(1.65, -10.75, "Clearance 0.25", "start", "the gap, in mm"),
+            '<line x1="-0.95" y1="-13.9" x2="-1.5" y2="-11.0"/>',
+            label(-1.65, -10.75, "Knock out · markers above", "end", "ticks and band stop short of it")])
+    if name == "hands":
+        R = S["dial_d"] / 2
+        return "".join([
+            leader(13.0, 57.6, R, "Minute", "dauphine · Length 13", dark=False),
+            leader(8.4, 304.8, R, "Hour", "dauphine · Length 8.4", dark=False),
+            leader(13.9, 216, R, "Seconds", "baton · Length 13.9", dark=False),
+            leader(3.6, 36, R, "Tail 3.6", "behind the pivot", dark=False),
+            leader(0.55, 135, R, "Cap Ø 1.1", "over the pivot", dark=False)])
+    if name == "date":
+        return "".join([
+            dim(9.2, -1.75, 11.8, -1.75, "Width 2.6", 10.5, -2.05, "middle", tick=0.14),
+            dim(12.45, -1.0, 12.45, 1.0, "Height 2.0", 12.75, 0.08, tick=0.14),
+            '<line class="dash w" x1="4.2" y1="0" x2="9.05" y2="0"/>', label(4.2, 0.62, "Radius 10.5", "start", "from the dial’s centre"),
+            '<line class="w" x1="10.5" y1="1.45" x2="10.5" y2="2.5"/>',
+            '<line class="w" x1="10.5" y1="2.5" x2="8.55" y2="2.5"/>',
+            label(8.2, 2.6, "Frame 0.15 + Print clearance 0.25", "end", "print keeps this far from the hole")])
+    return ""
+
+def hero(name, span, ns):
+    """{{hero:NAME:COLUMNS}} — the large example, with its annotations."""
+    f = HEROES[name]
+    S = figure_settings(ns, f)
+    page = S["dial_d"] + 2 * S["margin"]
+    tile = span * 19.083 + (span - 1) * 4                    # mm on paper
+    if f["crop"]:
+        z, focus = CLOSE[name]
+        unit = tile * z / page                               # mm on paper per mm of dial
+        box = f"{-page / 2:.3f} {-page / 2:.3f} {page:.3f} {page:.3f}"
+    else:
+        unit = tile * PAD / page
+        box = f"{-page / 2 / PAD:.3f} {-page / 2 / PAD:.3f} {page / PAD:.3f} {page / PAD:.3f}"
+    svg = (f'<svg class="over" viewBox="{box}" style="--fs:{2.65 / unit:.3f}px; --sw:{0.2 / unit:.4f}px">'
+           f'{overlay(name, S)}</svg>') if overlay(name, S) else ""
+    art = f'<div class="art"><img src="img/hero-{name}.svg">{svg if f["crop"] else ""}</div>'
+    if f["crop"]:
+        if f["crop"] == "top":
+            place = f"width:{z * 100:g}cqw; left:{(1 - z) * 50:g}cqw; top:{-(page / 2 - focus) / page * z * 100:.1f}cqw"
+        else:
+            place = f"width:{z * 100:g}cqw; left:{50 - (page / 2 + focus) / page * z * 100:.1f}cqw; top:calc(50cqh - {z * 50:g}cqw)"
+        art = art.replace('class="art"', f'class="art" style="{place}"', 1)
+        return f'<figure class="s{span} hero"><div class="crop {f["crop"]}">{art}</div></figure>'
+    pad = " pad" if svg else ""
+    return f'<figure class="s{span} hero"><div class="whole{pad}"><div class="sq">{art}{svg}</div></div></figure>'
+
 HANDS = [
     ("baton", dict(w=0.9, tail=1.6)),
     ("pencil", dict(w=0.9, tail=1.6, tip=1.6)),
@@ -302,6 +439,8 @@ def figures():
         with open(os.path.join(PRESETS, name + ".json"), "w", encoding="utf-8") as f:
             json.dump(settings, f, indent=1, ensure_ascii=False)
         draw_dial(ns, ns["fresh_settings"](settings), os.path.join(IMG, f"dial-{name}.svg"))
+    for name, f in HEROES.items():
+        draw_dial(ns, figure_settings(ns, f), os.path.join(IMG, f"hero-{name}.svg"))
     for strip, figs in FIGURES.items():
         for i, f in enumerate(figs):
             draw_dial(ns, figure_settings(ns, f), os.path.join(IMG, f"{strip}-{i}.svg"))
@@ -477,18 +616,22 @@ def classic(name, ns, number):
         if hand.get("on", True):
             rows.append(f'<tr><th>{label}<span>hand</span></th><td>{values(hand, HAND_KEYS)} {swatch(hand["c"])}</td></tr>')
     rows.append(f'<tr><th>Cap</th><td>Ø <b>{number_text(s["ha_cap"])}</b> {swatch(s["c_cap"])}</td></tr>')
+    rows.append(f'<tr><th>Preset</th><td><code>presets/{name}.json</code> · Dial <b>{number_text(s["dial_d"])}</b> mm {swatch(s["c_plate"])}</td></tr>')
     return f"""<section class="page classic" id="{name}" data-toc="{esc(d['title'])}" data-sub="1"><div class="grid">
-  <div class="s3 about"><span class="no">{{{{classics-number}}}}.{number}</span><h1>{esc(d['title'])}</h1>
-    <p class="lead">{esc(d['after'])}</p>
-    <div class="block"><span class="k">Look for</span><p>{d['note']}</p></div>
-    <div class="block"><span class="k">Preset</span><p>presets/{name}.json<br>Dial {number_text(s['dial_d'])} mm {swatch(s['c_plate'])}</p></div></div>
-  <figure class="s5"><div class="whole">{{{{dial:{name}}}}}</div></figure>
-  <div class="s4"><span class="k">Rings top first, then hands. Only what differs from a new ring.</span>
-    <table class="recipe">{"".join(rows)}</table></div>
+  <div class="col s8">
+    <figure class="s8 hero"><div class="whole"><div class="sq"><div class="art">{{{{dial:{name}}}}}</div></div></div></figure>
+  </div>
+  <div class="col s4">
+    <div class="s4"><span class="no">{{{{classics-number}}}}.{number}</span><h1>{esc(d['title'])}</h1>
+      <p class="lead">{esc(d['after'])}</p>
+      <div class="block look"><svg class="ic"><use href="#i-eye"/></svg><span class="k">Look for</span><p>{d['note']}</p></div></div>
+    <div class="s4"><span class="k">Rings top first, then hands. Only what differs from a new ring.</span>
+      <table class="recipe">{"".join(rows)}</table></div>
+  </div>
 </div><div class="foot"><span>Dial Tool {{{{version}}}}</span><span class="pg"></span></div></section>
 """
 
-SPANS = dict(giveway=3, type=3, date=3, output=3)             # columns a figure takes; 2 unless named here
+SPANS = dict(giveway=3, type=3)        # figures wider than two columns
 
 def figure(name, i):
     if name == "hands":
@@ -498,7 +641,7 @@ def figure(name, i):
     f = FIGURES[name][i]
     crop = f'crop {f["crop"]}' if f["crop"] else "whole"
     note = f'<br>{esc(f["values"])}' if f["values"] else ""
-    return (f'<figure class="s{SPANS.get(name, 2)} {name}"><div class="{crop}"><img src="img/{name}-{i}.svg"></div>'
+    return (f'<figure class="s{SPANS.get(name, 2)} {name}"><div class="{crop}"><div class="art"><img src="img/{name}-{i}.svg"></div></div>'
             f'<figcaption><b>{esc(f["title"])}</b>{note}</figcaption></figure>')
 
 def strip(name, first=None, last=None):
@@ -512,6 +655,7 @@ def fill_in(page, ns, version, date):
     page = page.replace("{{version}}", esc(version)).replace("{{date}}", esc(date))
     page = page.replace("{{fonts}}", "cache")
     page = re.sub(r"\{\{strip:([\w]+)(?::(\d+)-(\d+))?\}\}", lambda m: strip(*m.groups()), page)
+    page = re.sub(r"\{\{hero:(\w+):(\d+)\}\}", lambda m: hero(m.group(1), int(m.group(2)), ns), page)
     page = re.sub(r"\{\{dial:([\w-]+)\}\}", lambda m: f'<img src="img/dial-{m.group(1)}.svg">', page)
     page = re.sub(r"\{\{ui:(\w+:[\w-]+):(\w+):([\w,]+)\}\}", lambda m: ui(m.group(1), m.group(2), m.group(3), ns), page)
     page = re.sub(r"\{\{rings:(\w+)(?::(\d+))?\}\}",
@@ -556,14 +700,10 @@ def build(ns):
         tab.evaluate("document.fonts.ready")
         tab.wait_for_load_state("networkidle")
         report = tab.evaluate("""() => [...document.querySelectorAll('.page')].map((p, i) => {
-            const inner = p.querySelector('.grid'), low = p.querySelector('.low');
+            const inner = p.querySelector('.grid');
             if (!inner) return [i + 1, 0];
             let over = inner.scrollHeight - inner.clientHeight;
-            if (low) {                                       // text on the bottom line must not reach up into the figures
-                const top = low.getBoundingClientRect().top;
-                for (const e of inner.children)
-                    if (e !== low) over = Math.max(over, e.getBoundingClientRect().bottom + 12 - top);
-            }
+            for (const c of inner.querySelectorAll('.col')) over = Math.max(over, c.scrollHeight - c.clientHeight);
             return [i + 1, Math.round(over)]; })""")
         tab.pdf(path=OUT, width="297mm", height="210mm", print_background=True,
                 margin=dict(top="0", right="0", bottom="0", left="0"))
