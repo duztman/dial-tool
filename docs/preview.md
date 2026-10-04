@@ -1,6 +1,7 @@
 # Dial Tool — the preview: findings and the plan
 
 *Written 4 Oct 2026, after beta 2.2. Research only so far: nothing in `dial.py` has changed yet.*
+*Okay's answers, 4 Oct 03:30: **skia-pathops yes**, **Canvas first**. §4 step 6 is part of the run.*
 
 **How to use this file.** §2 is what we found, with evidence. §3 is the design. §4–§6 are the
 build steps, the off-Mac tests and the Mac check. **§7 is the run**: when Okay says
@@ -34,8 +35,8 @@ The fix keeps DrawBot and adds nothing that has to be installed:
    once per frame. Dragging stays responsive, and Play keeps running while a slider is held.
 4. **The PDF preview stays** as a switch (Canvas · PDF): a fallback if the canvas fails, and the
    reference to compare against. That switch *is* the Mac probe — no separate probe script.
-5. *(Optional, Okay decides)* **skia-pathops** for shape combining, installed once through
-   DrawBot's own package menu.
+5. **skia-pathops** for shape combining (Okay: yes, 4 Oct), installed once per Mac through
+   DrawBot's own package menu. Without it, the tool still works — just slower.
 
 ---
 
@@ -373,7 +374,7 @@ link.addToRunLoop_forMode_(AppKit.NSRunLoop.mainRunLoop(), AppKit.NSRunLoopCommo
 ### 3.5 Canvas · PDF switch
 
 - New setting `ui_preview` (R7: `ui_` prefix; R9: index) in `DEFAULTS`: `0` = Canvas, `1` = PDF.
-  Default per §10 question 2 (default Canvas).
+  Default **0 = Canvas** (Okay, 4 Oct).
 - A segmented control `Canvas | PDF` in the bar under the preview, next to Guides
   (shrink the time slider by ~120 points). Switching shows one view, hides the other, sets `pending`.
 - Both views exist from the start (`DrawView` and `Canvas` at the same position).
@@ -381,9 +382,9 @@ link.addToRunLoop_forMode_(AppKit.NSRunLoop.mainRunLoop(), AppKit.NSRunLoopCommo
   for this session, disable the Canvas segment (R17).
 - `Fit` works on whichever is showing (PDF: `setAutoScales_(True)` as now).
 
-### 3.6 Optional: faster shape combining (skia-pathops) — only if Okay says yes (§10 Q1)
+### 3.6 Faster shape combining (skia-pathops) — Okay: yes (4 Oct)
 
-- Okay installs it once: DrawBot → menu **Python → Install Python Packages** → *Install / Upgrade*,
+- Okay installs it once **on each Mac**: DrawBot → menu **Python → Install Python Packages** → *Install / Upgrade*,
   type `skia-pathops`, **Go!**. Check in a DrawBot script: `import pathops; print(pathops.__version__)` → `0.9.2` or newer.
 - In `dial.py` part 1, where `BezierPath` is imported, and **only in the DrawBot branch** (the
   harness already runs on pathops):
@@ -431,7 +432,7 @@ Each step ends with its test and a commit to `dev`. Stop rule: R20.
 | 3 | `DialToolCanvasView1` + `Canvas` + layer tree + `show()` (§3.2) | part 4 | smoke: canvas slots follow the scene (§5.2) |
 | 4 | Zoom/pan + Fit + resize (§3.2) | part 4 | smoke: `zoom_about` keeps the point under the cursor; fit math |
 | 5 | `ui_preview` switch + fallback (§3.5) | parts 1, 4 | smoke: switch both ways; forced fallback path logs and still renders |
-| 6 | *(if Okay said yes)* skia-pathops subclass (§3.6) | part 1 | harness unchanged (it doesn't use this branch); smoke passes |
+| 6 | skia-pathops subclass (§3.6) — Okay said yes | part 1 | harness unchanged (it doesn't use this branch); smoke passes |
 | 7 | Launch log lines (§6 step 1) | part 4 | smoke shows them in the log |
 | 8 | Docs + guide (§7 step 6) | docs | R25: `make_guide.py` reports 5 pages |
 
@@ -515,7 +516,7 @@ Okay runs the new version and sends **screenshots + the Export log + the status 
 - All good → merge to `main` (with Okay's word), build list items → done.
 - Step 5 shows the canvas drawing worse than the PDF → contingency (§8 risk 1).
 - Canvas broken on a Mac → `ui_preview` default becomes PDF (one line); report; R20.
-- Step 3 still slow on heavy rings and skia-pathops wasn't installed → offer §3.6 again.
+- Step 3 still slow on heavy rings → check the launch log says `shape combining: skia-pathops`; if it says booleanOperations, the install didn't reach that Mac.
 
 ---
 
@@ -581,8 +582,8 @@ Okay runs the new version and sends **screenshots + the Export log + the status 
 
 ## 10 · Questions for Okay (defaults in brackets)
 
-1. **skia-pathops**: install it through DrawBot's package menu and use it? [no — step 6 skipped]
-2. **Which preview at first launch**: Canvas or PDF? [Canvas]
+1. ~~**skia-pathops**~~ — **yes** (Okay, 4 Oct 03:30). Step 6 runs; Okay installs it on each Mac.
+2. ~~**Which preview at first launch**~~ — **Canvas** (Okay, 4 Oct 03:30).
 3. **Display**: Retina or not? Changes how fine lines look in any preview, not the plan. [not needed to run]
 4. **Worst lag**: which slider? Helps judge step 3 of §6. [not needed to run]
 

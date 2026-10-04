@@ -42,7 +42,7 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 38 | **Preview: frame clock.** Controls request a frame; a display-synced clock draws at most once per frame; Play runs on it, also while a slider is held (§3.3) | open — ready to run |
 | 39 | **Preview: Canvas · PDF switch** (`ui_preview`), PDF as fallback and reference (§3.5) | open — ready to run |
 | 40 | **Preview: Mac check** — `docs/preview.md` §6, steps 1–10 | open — after #37–#39 |
-| 41 | **skia-pathops** for shape combining, installed through DrawBot's package menu (§3.6) | open — waiting for Okay |
+| 41 | **skia-pathops** for shape combining, installed through DrawBot's package menu on each Mac (§3.6) — Okay: yes, 4 Oct | open — ready to run |
 | 42 | Smoke test: stand-ins for Quartz / Core Animation, a driven frame clock, canvas and zoom checks (§5.2) | open — with #37 |
 | 32 | Scale the whole dial (rings, hands, date) when the diameter changes, or a "scale everything" action (brief §5.7) | open |
 
