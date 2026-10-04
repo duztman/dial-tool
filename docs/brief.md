@@ -15,10 +15,10 @@ Not photorealistic. Real proportions and perfect vector rendering are.
 
 ## 2 · Context and constraints
 
-- Okay: graphic designer in Istanbul; uses Illustrator daily, also InDesign, After Effects, LightBurn. Comfortable with code; wants to understand what it does.
-- Machines: two Macs (Apple Silicon M4 and a recent Intel), not always the latest macOS; iPhone and iPad as viewers.
+- Okay: graphic designer; uses Illustrator daily, also InDesign, After Effects, LightBurn. Comfortable with code; wants to understand what it does.
+- Machines: Macs, both Apple Silicon and Intel, not always the latest macOS; iPhone and iPad as viewers.
 - Existing practice: prototyping dials by acid-etching brass blanks with toner transfer (PnP Blue film). Pad printing is the industry pipeline.
-- Ordering from abroad is not possible (except books): materials and parts are sourced in Istanbul.
+- Materials and parts are sourced locally: don't plan around ordering from abroad (books excepted).
 - The movement is not chosen yet — design first, then pick a movement that fits.
 - **Production doesn't limit design** (Okay, 4 Oct). The production outputs stay and grow, but what the tool can draw is not narrowed to what a method can print; production-specific checks and outputs are optional layers on top.
 
@@ -62,6 +62,7 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 4 Oct | **Live text** is an export option; **outlines stay the default**. | Okay. Outlines need no fonts and print as seen; live text keeps numerals editable, with Illustrator's limits (§5.2). |
 | 4 Oct | **Guidebook**: a 5-page PDF in IBM Plex Mono — what it does, install, files in and out, FAQ — built from `docs/guide/guide.md` by `tools/make_guide.py`, updated with each release (R25). | Okay: "a guidebook that gets updated, part of the project". Source and script in the repo so any agent can rebuild it; figures come from dial.py itself. |
 | 4 Oct | **beta 2.2 released to `main`.** | Okay: "we have beta v2 here" — beta 2.1 ran on his Mac. |
+| 4 Oct | **Repository public, MIT licence** (fonts stay SIL OFL). City and machine details trimmed from the docs first. | Okay. |
 | 4 Oct | Interface checked off-Mac with **`tools/ui_smoke.py`**: stand-ins that accept only vanilla 0.5.0's real signatures and methods. | The full window can't run off-Mac; this catches wrong calls and lost callbacks (it reproduces the beta 1.0 dropdown bug when R22 is removed). |
 
 ## 5 · Open questions

@@ -4,7 +4,7 @@
 
 ---
 
-> **Dial Tool** is a watch-dial design tool I'm building with you in DrawBot (Python, macOS). I'm Okay, a graphic designer in Istanbul; I'll use it to explore, present and produce dials for a watch I'll actually build — etched brass (toner transfer), pad/screen printing, laser.
+> **Dial Tool** is a watch-dial design tool I'm building with you in DrawBot (Python, macOS). I'm Okay, a graphic designer; I'll use it to explore, present and produce dials for a watch I'll actually build — etched brass (toner transfer), pad/screen printing, laser.
 >
 > **Source of truth:** the GitHub repo `duztman/dial-tool` (`main` = released, `dev` = work in progress). Read `README.md`, then `docs/rules.md`, `docs/brief.md`, `docs/glossary.md`, `docs/build-list.md` before working.
 >

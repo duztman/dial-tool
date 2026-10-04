@@ -1,6 +1,6 @@
 # Instructions for Claude
 
-Project: **Dial Tool** — a DrawBot (macOS) tool for designing watch dials. Owner: Okay (graphic designer, Istanbul).
+Project: **Dial Tool** — a DrawBot (macOS) tool for designing watch dials. Owner: Okay (graphic designer).
 
 Before working, read `README.md`, then `docs/rules.md`, `docs/brief.md`, `docs/glossary.md`, `docs/build-list.md`.
 

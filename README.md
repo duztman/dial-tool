@@ -42,7 +42,12 @@ Off-Mac checks (Python 3, `pip install drawbot-skia skia-pathops pillow`):
 Read in this order: `README.md` → `docs/rules.md` → `docs/brief.md` → `docs/glossary.md` → `docs/build-list.md`.
 Keep the docs up to date after every decision and flag inconsistencies between them.
 
+## Licence
+
+MIT — see [`LICENSE`](LICENSE). The IBM Plex Mono fonts in `docs/guide/fonts/` are under the SIL Open Font
+License ([`OFL.txt`](docs/guide/fonts/OFL.txt)).
+
 ## Where it lives
 
-GitHub `duztman/dial-tool` (branches `main` = released beta, `dev` = work in progress) ·
+GitHub [`duztman/dial-tool`](https://github.com/duztman/dial-tool), public (branches `main` = released beta, `dev` = work in progress) ·
 Claude Project "Dial Tool" · a Mac folder (later).
