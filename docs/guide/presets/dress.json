@@ -1,0 +1,140 @@
+{
+ "dial_d": 30.4,
+ "c_plate": [
+  0.93,
+  0.93,
+  0.91,
+  1
+ ],
+ "rings": [
+  {
+   "kind": "markers",
+   "name": "Hours",
+   "r": 13.9,
+   "len": 2.9,
+   "w": 0.8,
+   "twelve": 1,
+   "twelve_gap": 0.3,
+   "c": [
+    0.2,
+    0.21,
+    0.23,
+    1
+   ]
+  },
+  {
+   "kind": "ticks",
+   "name": "Minutes",
+   "r": 14.7,
+   "count": 60,
+   "len": 0.8,
+   "w": 0.09,
+   "c": [
+    0.2,
+    0.21,
+    0.23,
+    1
+   ],
+   "skip": 1
+  },
+  {
+   "kind": "numerals",
+   "name": "Line 1",
+   "r": 5.6,
+   "count": 1,
+   "start": 180,
+   "size": 0.95,
+   "mode": 3,
+   "labels": 6,
+   "custom": "AUTOMATIC",
+   "c": [
+    0.2,
+    0.21,
+    0.23,
+    1
+   ],
+   "family": "Helvetica Neue",
+   "ps": "HelveticaNeue-Medium"
+  },
+  {
+   "kind": "numerals",
+   "name": "Line 2",
+   "r": 7.0,
+   "count": 1,
+   "start": 180,
+   "size": 0.7,
+   "mode": 3,
+   "labels": 6,
+   "custom": "HI-BEAT  36000",
+   "c": [
+    0.2,
+    0.21,
+    0.23,
+    1
+   ],
+   "family": "Helvetica Neue",
+   "ps": "HelveticaNeue-Medium"
+  }
+ ],
+ "da_on": true,
+ "da_at": 0,
+ "da_r": 10.9,
+ "da_w": 2.7,
+ "da_h": 2.0,
+ "da_round": 0.1,
+ "da_frame": 0.22,
+ "da_clear": 0.25,
+ "da_day": "8",
+ "da_size": 70,
+ "da_ink": [
+  0.2,
+  0.21,
+  0.23,
+  1
+ ],
+ "ha_hour": {
+  "shape": "dauphine",
+  "len": 8.4,
+  "w": 1.6,
+  "c": [
+   0.2,
+   0.21,
+   0.23,
+   1
+  ],
+  "tail": 1.4,
+  "feature_at": 20
+ },
+ "ha_minute": {
+  "shape": "dauphine",
+  "len": 13.0,
+  "w": 1.25,
+  "c": [
+   0.2,
+   0.21,
+   0.23,
+   1
+  ],
+  "tail": 1.6,
+  "feature_at": 15
+ },
+ "ha_second": {
+  "shape": "baton",
+  "len": 13.9,
+  "w": 0.12,
+  "c": [
+   0.1,
+   0.22,
+   0.5,
+   1
+  ],
+  "tail": 3.6
+ },
+ "ha_cap": 1.1,
+ "c_cap": [
+  0.2,
+  0.21,
+  0.23,
+  1
+ ]
+}

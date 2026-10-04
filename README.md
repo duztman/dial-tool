@@ -3,7 +3,7 @@
 A parametric watch-dial design tool that runs inside [DrawBot](https://www.drawbot.com) on macOS.
 Built to explore, present and produce dials for a watch Okay will actually build.
 
-**Status: beta 2.2 (4 Oct 2026)** on `main` — rings. **beta 2.3** on `dev` — new preview (canvas, frame clock, Canvas · PDF switch), waiting for the Mac check in `docs/preview.md` §6. **Start here: [`docs/Dial-Tool-guide.pdf`](docs/Dial-Tool-guide.pdf)** — the 5-page guidebook.
+**Status: beta 2.2 (4 Oct 2026)** on `main` — rings. **beta 2.3** on `dev` — new preview (canvas, frame clock, Canvas · PDF switch), waiting for the Mac check in `docs/preview.md` §6. **Start here: [`docs/Dial-Tool-guide.pdf`](docs/Dial-Tool-guide.pdf)** — the guidebook, with nine classic dials and their settings.
 Geometry is tested off-Mac with `tools/test_harness.py`; the interface runs off-Mac in
 `tools/ui_smoke.py` against vanilla 0.5.0's real signatures. Its foundation was verified on Okay's Mac
 with `tools/dial_probe.py`; beta 2.1's window ran on Okay's Mac (4 Oct); what's still to check there is in `docs/build-list.md`, Verify.
@@ -28,8 +28,9 @@ Off-Mac checks (Python 3, `pip install drawbot-skia skia-pathops pillow`):
 | `tools/bool_bench.py` | Times shape combining: DrawBot's `booleanOperations` vs the harness's `skia-pathops`, on every harness dial (off-Mac). |
 | `tools/vanilla-0.5.0-api.json` | vanilla 0.5.0's class signatures and method names, extracted from its source (used by the smoke test and for R13). |
 | `docs/Dial-Tool-guide.pdf` | The guidebook: what it does, install, files in and out, FAQ. |
-| `docs/guide/` | Its source: `guide.md`, figures (`img/`), IBM Plex Mono (`fonts/`, SIL OFL). |
-| `tools/make_guide.py` | Rebuilds the guidebook (figures rendered by dial.py itself). |
+| `docs/guide/` | Its source: `guide.html` (text and layout), figures (`img/`, generated), `presets/` (the classic dials as loadable settings). |
+| `tools/guide_dials.py` | The classic dials shown in the guide, as Dial Tool settings. |
+| `tools/make_guide.py` | Rebuilds the guidebook: figures drawn by dial.py itself, recipes printed from the same settings, PDF through Chromium. Fetches open fonts (Recursive and stand-ins) into `docs/guide/cache`. |
 | `docs/brief.md` | Goals, decisions, open questions, parked ideas. |
 | `docs/rules.md` | Standing rules — check code against these in reviews. |
 | `docs/glossary.md` | Watch terms and tool terms, and which word means what here. |
@@ -47,8 +48,7 @@ Keep the docs up to date after every decision and flag inconsistencies between t
 
 ## Licence
 
-MIT — see [`LICENSE`](LICENSE). The IBM Plex Mono fonts in `docs/guide/fonts/` are under the SIL Open Font
-License ([`OFL.txt`](docs/guide/fonts/OFL.txt)).
+MIT — see [`LICENSE`](LICENSE). No fonts are kept in the repository; the guide's build fetches open-licence fonts.
 
 ## Where it lives
 

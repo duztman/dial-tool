@@ -1,0 +1,145 @@
+{
+ "dial_d": 30.0,
+ "c_plate": [
+  0.06,
+  0.06,
+  0.07,
+  1
+ ],
+ "rings": [
+  {
+   "kind": "numerals",
+   "name": "Roman",
+   "r": 9.6,
+   "size": 3.3,
+   "mode": 1,
+   "c": [
+    0.93,
+    0.89,
+    0.78,
+    1
+   ],
+   "labels": 6,
+   "custom": ", I, II, , , , , , , , X, XI",
+   "family": "Bodoni 72",
+   "ps": "BodoniSvtyTwoITCTT-Book"
+  },
+  {
+   "kind": "numerals",
+   "name": "Arabic",
+   "r": 9.6,
+   "size": 3.2,
+   "mode": 0,
+   "c": [
+    0.93,
+    0.89,
+    0.78,
+    1
+   ],
+   "labels": 6,
+   "custom": ", , , , 4, 5, , 7, 8, , ,",
+   "family": "DIN Alternate",
+   "ps": "DINAlternate-Bold"
+  },
+  {
+   "kind": "markers",
+   "name": "Bars + triangle",
+   "r": 11.4,
+   "count": 4,
+   "len": 3.4,
+   "w": 1.0,
+   "twelve": 2,
+   "twelve_scale": 1.25,
+   "c": [
+    0.93,
+    0.89,
+    0.78,
+    1
+   ]
+  },
+  {
+   "kind": "ticks",
+   "name": "Minutes",
+   "r": 14.2,
+   "count": 60,
+   "len": 1.0,
+   "w": 0.14,
+   "c": [
+    0.93,
+    0.89,
+    0.78,
+    1
+   ]
+  },
+  {
+   "kind": "band",
+   "name": "Outer rail",
+   "r": 14.2,
+   "width": 0.12,
+   "c": [
+    0.93,
+    0.89,
+    0.78,
+    1
+   ]
+  },
+  {
+   "kind": "band",
+   "name": "Inner rail",
+   "r": 13.32,
+   "width": 0.12,
+   "c": [
+    0.93,
+    0.89,
+    0.78,
+    1
+   ]
+  }
+ ],
+ "ha_hour": {
+  "shape": "pencil",
+  "len": 7.2,
+  "w": 1.5,
+  "c": [
+   0.93,
+   0.89,
+   0.78,
+   1
+  ],
+  "tail": 1.4,
+  "tip": 1.6
+ },
+ "ha_minute": {
+  "shape": "pencil",
+  "len": 11.8,
+  "w": 1.2,
+  "c": [
+   0.93,
+   0.89,
+   0.78,
+   1
+  ],
+  "tail": 1.6,
+  "tip": 1.8
+ },
+ "ha_second": {
+  "shape": "baton",
+  "len": 12.6,
+  "w": 0.13,
+  "c": [
+   0.93,
+   0.89,
+   0.78,
+   1
+  ],
+  "tail": 3.2,
+  "counter": 0.9
+ },
+ "ha_cap": 1.4,
+ "c_cap": [
+  0.93,
+  0.89,
+  0.78,
+  1
+ ]
+}

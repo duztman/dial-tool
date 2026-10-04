@@ -1,0 +1,474 @@
+<!doctype html>
+<!-- The Dial Tool guidebook. Edit the text here; tools/make_guide.py fills in the marks in double braces,
+     draws the figures and prints docs/Dial-Tool-guide.pdf. One <section class="page"> = one A4 page. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dial Tool — guidebook</title>
+<style>
+@font-face { font-family: "Recursive"; src: url("{{fonts}}/Recursive.ttf"); font-weight: 300 1000; }
+@page { size: 210mm 297mm; margin: 0; }
+:root {
+  --paper: #F5F2EB; --panel: #EAE6DC; --tile: #DDD8CC; --ink: #171717; --grey: #7B7870;
+  --line: #CFC9BC; --accent: #C8371B; --dark: #19191A;
+  --sans: "MONO" 0, "CASL" 0, "CRSV" 0; --mono: "MONO" 1, "CASL" 0, "CRSV" 0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { counter-reset: pg; font-family: "Recursive", sans-serif; font-variation-settings: var(--sans); font-weight: 380;
+       font-size: 8.3pt; line-height: 1.45; color: var(--ink); background: var(--paper); }
+
+/* ── page ── */
+.page { width: 210mm; height: 297mm; padding: 12mm 13mm 14mm; position: relative; break-after: page;
+        background: var(--paper); overflow: hidden; }
+.inner { height: 100%; display: flex; flex-direction: column; gap: 3.6mm; overflow: hidden; }
+.page { counter-increment: pg; }
+.pg::after { content: counter(pg, decimal-leading-zero); }
+.foot { position: absolute; left: 13mm; right: 13mm; bottom: 6.5mm; display: flex; justify-content: space-between;
+        font-variation-settings: var(--mono); font-size: 6pt; letter-spacing: .08em; color: var(--grey);
+        text-transform: uppercase; }
+.head { display: flex; align-items: baseline; gap: 4mm; border-bottom: .35mm solid var(--ink); padding-bottom: 2.2mm; }
+.head .no { font-variation-settings: var(--mono); font-weight: 500; font-size: 8pt; color: var(--accent); letter-spacing: .06em; }
+h1 { font-variation-settings: var(--mono); font-weight: 700; font-size: 19pt; line-height: 1; letter-spacing: -.01em;
+     text-transform: uppercase; }
+.head p { margin-left: auto; max-width: 96mm; color: var(--grey); font-size: 7.8pt; line-height: 1.35; text-align: right; }
+
+/* ── panels ── */
+.panel { background: var(--panel); border-radius: 2.2mm; padding: 3.6mm 4.2mm 3.8mm; }
+.panel.dark { background: var(--dark); color: #EDEAE2; }
+.panel.line { background: none; border: .25mm solid var(--line); }
+h2 { font-variation-settings: var(--mono); font-weight: 650; font-size: 7.2pt; letter-spacing: .11em;
+     text-transform: uppercase; color: var(--accent); margin-bottom: 2mm; }
+h2 span { color: var(--grey); font-weight: 450; letter-spacing: .04em; text-transform: none; margin-left: 2mm; }
+.dark h2 span { color: #A9A59B; }
+h3 { font-variation-settings: var(--mono); font-weight: 700; font-size: 11pt; line-height: 1.1; text-transform: uppercase; }
+p + p { margin-top: 1.4mm; }
+b { font-weight: 640; }
+code, kbd { font-family: inherit; font-variation-settings: var(--mono); font-size: .95em; color: var(--accent); }
+.cols { display: grid; gap: 3.6mm; }
+.c2 { grid-template-columns: 1fr 1fr; } .c3 { grid-template-columns: 1fr 1fr 1fr; }
+.c12 { grid-template-columns: 1fr 2fr; } .c21 { grid-template-columns: 2fr 1fr; } .c32 { grid-template-columns: 3fr 2fr; }
+.grow { flex: 1; }
+ol, ul { padding-left: 4.2mm; } li { margin-bottom: .9mm; } li::marker { color: var(--accent); font-variation-settings: var(--mono); }
+ul { list-style: "– "; }
+dl { display: grid; grid-template-columns: auto 1fr; gap: .9mm 3mm; }
+dt { font-variation-settings: var(--mono); font-weight: 600; white-space: nowrap; }
+dl.num dt { color: var(--accent); }
+.note { border-left: .7mm solid var(--accent); padding-left: 3mm; color: var(--ink); }
+.small { font-size: 7.4pt; color: var(--grey); }
+
+/* ── figure strips ── */
+.strip { display: grid; gap: 2.6mm; }
+.n3 { grid-template-columns: repeat(3, 1fr); } .n4 { grid-template-columns: repeat(4, 1fr); }
+.n5 { grid-template-columns: repeat(5, 1fr); } .n7 { grid-template-columns: repeat(7, 1fr); }
+figure > div { background: var(--tile); border-radius: 1.6mm; overflow: hidden; position: relative; }
+.dark figure > div { background: #2A2A2B; }
+.whole img { display: block; width: 100%; }
+.crop { aspect-ratio: 1 / .62; }
+.crop img { position: absolute; width: 210%; left: -55%; top: -19%; }
+.giveway .crop img { width: 260%; left: -80%; top: -27%; }
+figcaption { font-size: 6.9pt; line-height: 1.3; margin-top: 1.3mm; color: var(--grey); }
+figcaption b { font-variation-settings: var(--mono); font-weight: 620; color: var(--ink); }
+.dark figcaption { color: #A9A59B; } .dark figcaption b { color: #EDEAE2; }
+.placement { grid-template-columns: repeat(4, 34mm); }
+.date { grid-template-columns: repeat(3, 46mm); }
+.hands { grid-template-columns: repeat(11, 1fr); gap: 1.6mm; }
+.hands .hand { background: var(--tile); padding: 1.5mm 0 .5mm; }
+.hands img { display: block; height: 30mm; margin: 0 auto; }
+.hands figcaption { text-align: center; font-size: 6.2pt; }
+
+/* ── cover ── */
+.cover .inner { gap: 5mm; }
+.cover h1 { font-size: 46pt; letter-spacing: -.035em; line-height: .88; }
+.cover .top { display: flex; align-items: flex-end; justify-content: space-between; border-bottom: .35mm solid var(--ink); padding-bottom: 4mm; }
+.cover .top p { font-variation-settings: var(--mono); font-size: 7.4pt; text-align: right; line-height: 1.5; color: var(--grey); }
+.cover .top p b { color: var(--ink); }
+.wall { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm; }
+.wall figure > div { padding: 2mm 4.5mm; background: var(--panel); }
+.wall img { display: block; width: 100%; }
+.wall figcaption { display: flex; justify-content: space-between; font-variation-settings: var(--mono); font-size: 6.4pt;
+                   letter-spacing: .08em; text-transform: uppercase; }
+.lede { font-size: 12.5pt; line-height: 1.32; font-weight: 420; max-width: 150mm; }
+.lede b { color: var(--accent); font-weight: 600; }
+
+/* ── window ── */
+.window img { display: block; width: 100%; border-radius: 1.2mm; border: .2mm solid var(--line); }
+dl.legend dt { background: var(--accent); color: #fff; width: 4.2mm; height: 4.2mm; border-radius: 50%; text-align: center;
+               font-size: 6.6pt; line-height: 4.2mm; }
+
+/* ── classics ── */
+.classic { display: grid; grid-template-columns: 78mm 1fr; gap: 5mm; background: var(--panel); border-radius: 2.2mm;
+           padding: 3.6mm; align-items: start; flex: 1; }
+.plate { background: var(--tile); border-radius: 1.6mm; padding: 1mm; }
+.plate img { display: block; width: 100%; }
+.recipe .after { color: var(--grey); font-size: 7.6pt; line-height: 1.35; margin: 1mm 0 2.2mm; }
+.recipe table { border-collapse: collapse; width: 100%; font-size: 7.5pt; line-height: 1.34; }
+.recipe th, .recipe td { text-align: left; vertical-align: top; padding: 1.25mm 0; border-top: .2mm solid var(--line); }
+.recipe th { font-variation-settings: var(--mono); font-weight: 640; width: 25mm; padding-right: 2mm; }
+.recipe th span { display: block; font-weight: 400; color: var(--grey); font-size: 6.3pt; }
+.recipe td b { font-variation-settings: var(--mono); font-weight: 560; }
+.swatch { display: inline-block; width: 2.5mm; height: 2.5mm; border-radius: 50%; border: .2mm solid rgba(0,0,0,.35);
+          vertical-align: -.35mm; margin-left: .6mm; }
+
+table.plain { border-collapse: collapse; width: 100%; }
+table.plain td { padding: 1mm 0; border-top: .2mm solid var(--line); vertical-align: top; }
+table.plain tr:first-child td { border-top: 0; }
+table.plain td:first-child { font-variation-settings: var(--mono); font-weight: 620; width: 27mm; padding-right: 2mm; }
+.dark table.plain td { border-color: #3A3A3B; }
+</style>
+</head>
+<body>
+
+<!-- ═════════ cover ═════════ -->
+<section class="page cover"><div class="inner">
+  <div class="top">
+    <h1>Dial<br>Tool</h1>
+    <p><b>Guidebook</b><br>{{version}} · {{date}}<br>DrawBot · macOS<br>github.com/duztman/dial-tool</p>
+  </div>
+  <p class="lede">A watch dial is a few things repeated round a centre. Dial Tool draws it that way: a list of <b>rings</b> — ticks, markers, numerals, bands — plus hands and a date window, in millimetres, as clean vectors for print, etching and laser.</p>
+  <div class="wall grow">
+    <figure><div>{{dial:field}}</div><figcaption><b>Field watch</b><span>p. 7</span></figcaption></figure>
+    <figure><div>{{dial:diver}}</div><figcaption><b>Diver</b><span>p. 7</span></figcaption></figure>
+    <figure><div>{{dial:dress}}</div><figcaption><b>Dress watch</b><span>p. 8</span></figcaption></figure>
+    <figure><div>{{dial:pilot}}</div><figcaption><b>Pilot, type B</b><span>p. 9</span></figcaption></figure>
+    <figure><div>{{dial:california}}</div><figcaption><b>California</b><span>p. 10</span></figcaption></figure>
+    <figure><div>{{dial:railway}}</div><figcaption><b>Station clock</b><span>p. 8</span></figcaption></figure>
+    <figure><div>{{dial:bauhaus}}</div><figcaption><b>Bauhaus</b><span>p. 9</span></figcaption></figure>
+    <figure><div>{{dial:sector}}</div><figcaption><b>Sector dial</b><span>p. 11</span></figcaption></figure>
+    <figure><div>{{dial:gauge}}</div><figcaption><b>Gauge</b><span>p. 10</span></figcaption></figure>
+  </div>
+  <p class="small">Every dial in this guide was drawn by the tool from the settings printed beside it. They are drawn by eye after well-known dial types — approximations, not measured copies. Rendered off-Mac with open fonts standing in for the macOS fonts named.</p>
+</div><div class="foot"><span>Dial Tool · Guidebook</span><span class="pg">{{version}} · </span></div></section>
+
+<!-- ═════════ start ═════════ -->
+<section class="page"><div class="inner">
+  <div class="head"><span class="no">01</span><h1>Start</h1><p>Install, run, and find your way round the window.</p></div>
+  <div class="cols c2">
+    <div class="panel"><h2>Install</h2>
+      <ol>
+        <li><b>DrawBot 3.132</b> or newer — free, macOS. <code>drawbot.com</code> → Download.</li>
+        <li><b>dial.py</b> — <code>github.com/duztman/dial-tool</code> → <code>dial.py</code> → download the raw file. Branch <code>main</code> is released; <code>dev</code> is the newest work.</li>
+        <li>Open <code>dial.py</code> in DrawBot and press <kbd>⌘R</kbd>. The window opens.</li>
+        <li>For speed (optional): in DrawBot, Python → Install Python Packages → <code>skia-pathops</code> → Go.</li>
+      </ol>
+    </div>
+    <div class="panel"><h2>Good to know</h2>
+      <ul>
+        <li><kbd>⌘R</kbd> again replaces the window and keeps your settings. Quitting DrawBot keeps them too.</li>
+        <li>Everything is in <b>millimetres</b>, at true size.</li>
+        <li>Angles are <b>clock angles</b>: 0° is 12 o'clock, growing clockwise. 90° is 3 o'clock.</li>
+        <li>Everything is a <b>filled shape</b> — no strokes — so widths are exact in Illustrator.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel window"><h2>The window <span>screenshot: beta 2.1 — the Canvas · PDF switch now sits beside Guides</span></h2>
+    <div class="cols c21">
+      <img src="img/fig-window.png">
+      <dl class="legend">
+        <dt>1</dt><dd><b>Sections</b> — Dial · Rings · Hands · Date · Export.</dd>
+        <dt>2</dt><dd><b>Ring list</b> — the top ring is drawn in front. Tick to show; double-click to rename.</dd>
+        <dt>3</dt><dd><b>Add ring…</b> · Duplicate · Delete · Up · Down.</dd>
+        <dt>4</dt><dd><b>The selected ring's settings</b> — one scrolling list. Rows that don't apply hide.</dd>
+        <dt>5</dt><dd><b>Preview</b> — live. The selected ring's guides are orange.</dd>
+        <dt>6</dt><dd><b>Time</b> — drag, or type <code>10:09:36</code>. Now. Play.</dd>
+        <dt>7</dt><dd><b>Guides</b> — construction circles, never exported.</dd>
+        <dt>8</dt><dd><b>Status</b> — ring · font · diameter · build and frame time.</dd>
+      </dl>
+    </div>
+  </div>
+  <div class="cols c3 grow">
+    <div class="panel dark"><h2>Preview</h2>
+      <table class="plain">
+        <tr><td>Pinch</td><td>zoom about the cursor</td></tr>
+        <tr><td>⌘ + scroll</td><td>zoom about the cursor</td></tr>
+        <tr><td>Two fingers</td><td>pan</td></tr>
+        <tr><td>Fit</td><td>the whole page again</td></tr>
+        <tr><td>Canvas · PDF</td><td>Canvas is fast and sharp. PDF is DrawBot's own viewer: the reference. They should match.</td></tr>
+      </table>
+    </div>
+    <div class="panel"><h2>Typing numbers</h2>
+      <p>Every number has a slider, a field and a stepper. In the field:</p>
+      <dl class="num" style="margin-top:1.6mm">
+        <dt>1.2</dt><dd>sets 1.2</dd>
+        <dt>+0.5</dt><dd>adds 0.5</dd>
+        <dt>x0.5</dt><dd>halves</dd>
+        <dt>/2</dt><dd>halves, too</dd>
+      </dl>
+      <p style="margin-top:1.6mm">Typing past a slider's end extends the slider.</p>
+    </div>
+    <div class="panel"><h2>Sections</h2>
+      <table class="plain">
+        <tr><td>Dial</td><td>diameter, page margin, plate and backdrop colour</td></tr>
+        <tr><td>Rings</td><td>the list, and the selected ring — p. 3–5</td></tr>
+        <tr><td>Hands</td><td>hour, minute, seconds, cap — p. 6</td></tr>
+        <tr><td>Date</td><td>the window — p. 6</td></tr>
+        <tr><td>Export</td><td>files, settings, the log — p. 12</td></tr>
+      </table>
+    </div>
+  </div>
+</div><div class="foot"><span>Dial Tool · Guidebook</span><span class="pg">{{version}} · </span></div></section>
+
+<!-- ═════════ rings ═════════ -->
+<section class="page"><div class="inner">
+  <div class="head"><span class="no">02</span><h1>Rings</h1><p>A ring repeats one thing round the centre, at its positions. The list order is the stacking order.</p></div>
+  <div class="panel"><h2>One dial, taken apart <span>the diver from p. 7 — five rings, top first</span></h2>
+    {{strip:exploded}}
+  </div>
+  <div class="panel"><h2>Four kinds</h2>
+    {{strip:kinds}}
+    <p style="margin-top:2.4mm">Change a ring's <b>kind</b> at any time: every ring carries every setting, so nothing is lost. <b>Radius</b> is the outer edge of ticks, markers and bands; for numerals it is the centre of the text.</p>
+  </div>
+  <div class="panel grow"><h2>Positions <span>where a ring puts things</span></h2>
+    {{strip:positions}}
+    <div class="cols c2" style="margin-top:2.6mm">
+      <table class="plain">
+        <tr><td>Count</td><td>how many positions</td></tr>
+        <tr><td>Start °</td><td>where the first one sits (0 = 12 o'clock)</td></tr>
+        <tr><td>Span °</td><td>360 = all round, evenly. Less = an arc with both ends marked</td></tr>
+      </table>
+      <table class="plain">
+        <tr><td>Every</td><td>use every n-th position…</td></tr>
+        <tr><td>Offset</td><td>…counting from this one</td></tr>
+        <tr><td>Skip those instead</td><td>turn the choice round</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="cols c2">
+    <div class="panel line"><h2>In the list</h2>
+      <p><b>Add ring…</b> puts a new ring above the selected one. <b>Duplicate</b>, <b>Delete</b>, <b>↑ Up</b>, <b>↓ Down</b>. The checkbox hides a ring without losing it. A new numerals ring copies the type of the one above.</p>
+    </div>
+    <div class="panel line"><h2>Colour</h2>
+      <p>Each ring has one flat colour. The plate and the backdrop are in the Dial section; hands, cap and date print have their own. The backdrop is for the preview only.</p>
+    </div>
+  </div>
+</div><div class="foot"><span>Dial Tool · Guidebook</span><span class="pg">{{version}} · </span></div></section>
+
+<!-- ═════════ marks ═════════ -->
+<section class="page"><div class="inner">
+  <div class="head"><span class="no">03</span><h1>Marks &amp; bands</h1><p>Ticks and markers share one set of shapes. Bands are colour. Rings give way to the rings above them.</p></div>
+  <div class="panel"><h2>Shapes <span>ticks and markers · values in mm</span></h2>
+    {{strip:shapes}}
+  </div>
+  <div class="cols c32">
+    <div class="panel"><h2>12 o'clock <span>a markers ring's first position</span></h2>
+      {{strip:twelve}}
+    </div>
+    <div class="panel line"><h2>Reading the settings</h2>
+      <table class="plain">
+        <tr><td>Length · Width</td><td>along the radius · across it</td></tr>
+        <tr><td>Inner width ×</td><td>0 triangle · 1 bar · &gt; 1 wider inside</td></tr>
+        <tr><td>Round</td><td>true fillets, at either end</td></tr>
+        <tr><td>Hollow wall</td><td>an outline of that thickness</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="panel dark"><h2>Give way to rings above <span>one mechanism for every pair of rings</span></h2>
+    {{strip:giveway}}
+    <div class="cols c2" style="margin-top:2.6mm">
+      <p><b>Skip where</b> drops this ring's positions where the chosen rings above already have a mark: minute ticks that stop for the hour markers.</p>
+      <p><b>Knock out</b> cuts a gap of <b>Clearance</b> mm round the shapes above — markers, markers &amp; numerals, or everything. The date window always clears every ring.</p>
+    </div>
+  </div>
+  <div class="panel grow"><h2>Bands <span>flat colour between Radius and Radius − Band width</span></h2>
+    {{strip:bands}}
+    <p style="margin-top:2.4mm">For bands, each position starts a segment and the segments tile the span. <b>Fill %</b> is how much of its step a segment covers. Railroad rails are two thin bands; a sector dial is pies.</p>
+  </div>
+</div><div class="foot"><span>Dial Tool · Guidebook</span><span class="pg">{{version}} · </span></div></section>
+
+<!-- ═════════ numerals ═════════ -->
+<section class="page"><div class="inner">
+  <div class="head"><span class="no">04</span><h1>Numerals &amp; type</h1><p>One label per position. Each numerals ring has its own type.</p></div>
+  <div class="panel"><h2>Labels</h2>
+    {{strip:labels}}
+    <p style="margin-top:2.4mm">Also <b>Roman · IV</b>. <b>Numbers</b> count from <b>First number</b> by <b>Step</b>, padded to <b>Digits</b>. <b>Custom</b> is your own list, comma-separated; an empty entry leaves that position empty.</p>
+  </div>
+  <div class="panel"><h2>Placement</h2>
+    {{strip:placement}}
+    <p style="margin-top:2.4mm"><b>On path</b> sets each letter on the circle with the font's real spacing and one baseline; below 3 and 9 o'clock it flips to read left to right.</p>
+  </div>
+  <div class="panel"><h2>Type <span>each numerals ring has its own — fonts as named on macOS</span></h2>
+    {{strip:type}}
+  </div>
+  <div class="cols c2 grow">
+    <div class="panel"><h2>Type settings <span>the date uses the top numerals ring's</span></h2>
+      <table class="plain">
+        <tr><td>Family · Style</td><td>any font installed on the Mac. No fonts folder.</td></tr>
+        <tr><td>Instance</td><td>a variable font's named instances</td></tr>
+        <tr><td>Variable axes</td><td>one slider per axis the font has</td></tr>
+        <tr><td>Features</td><td>OpenType features, with the designer's own names: tabular or oldstyle figures, stylistic sets, slashed zero…</td></tr>
+        <tr><td>Language</td><td>local forms, e.g. Turkish İ ı</td></tr>
+        <tr><td>Size · Tracking</td><td>mm · 1/1000 em, like Illustrator</td></tr>
+      </table>
+    </div>
+    <div class="panel"><h2>Nudge <span>one numeral at a time</span></h2>
+      <p>Pick a numeral, then correct it by eye. Stored per position; Reset this, Reset all.</p>
+      <table class="plain" style="margin-top:1.6mm">
+        <tr><td>Radius ±</td><td>in or out, mm</td></tr>
+        <tr><td>Angle ±°</td><td>round the dial</td></tr>
+        <tr><td>Rotate °</td><td>about its own centre</td></tr>
+        <tr><td>Size ×</td><td>larger or smaller</td></tr>
+      </table>
+      <p style="margin-top:2mm" class="note">Typical: pull a wide <b>12</b> in by <code>−0.2</code>, or shrink <b>10 · 11 · 12</b> with Size × <code>0.92</code> so two-digit numerals weigh the same as the others.</p>
+    </div>
+  </div>
+</div><div class="foot"><span>Dial Tool · Guidebook</span><span class="pg">{{version}} · </span></div></section>
+
+<!-- ═════════ hands ═════════ -->
+<section class="page"><div class="inner">
+  <div class="head"><span class="no">05</span><h1>Hands &amp; date</h1><p>Three hands, each with its own shape and settings. Lengths are millimetres from the pivot.</p></div>
+  <div class="panel"><h2>Shapes <span>drawn here at Length 12</span></h2>
+    {{strip:hands}}
+  </div>
+  <div class="cols c2">
+    <div class="panel"><h2>A hand's settings</h2>
+      <table class="plain">
+        <tr><td>Length · Width</td><td>from the pivot to the tip · at its widest</td></tr>
+        <tr><td>Tail</td><td>behind the pivot</td></tr>
+        <tr><td>Tip length</td><td>pencil, sword, arrow, syringe, Breguet</td></tr>
+        <tr><td>Head · ring · disc</td><td>arrow head or syringe barrel width; Breguet ring or lollipop disc Ø — and where it sits, in % of the length</td></tr>
+        <tr><td>Hollow wall</td><td>a lume opening</td></tr>
+        <tr><td>Counterweight Ø</td><td>a disc on the tail</td></tr>
+        <tr><td>File</td><td>your own drawing: Fit file to length, or Size ×; Width × stretches</td></tr>
+      </table>
+    </div>
+    <div class="panel"><h2>Motion <span>the seconds hand</span></h2>
+      <table class="plain">
+        <tr><td>sweep</td><td>smooth</td></tr>
+        <tr><td>quartz · 1/s</td><td>one step a second</td></tr>
+        <tr><td>6 beats/s</td><td>21,600 vph</td></tr>
+        <tr><td>8 beats/s</td><td>28,800 vph</td></tr>
+      </table>
+      <p style="margin-top:2mm"><b>Play</b> runs the hands from the set time; MP4 and GIF export record them. The <b>cap</b> over the pivot has its own diameter and colour.</p>
+    </div>
+  </div>
+  <div class="panel grow"><h2>Date window</h2>
+    {{strip:date}}
+    <div class="cols c2" style="margin-top:2.6mm">
+      <table class="plain">
+        <tr><td>Position</td><td>3 · 4:30 · 6 · 9 · 12</td></tr>
+        <tr><td>Radius</td><td>the window's centre</td></tr>
+        <tr><td>Width · Height · Corner</td><td>the aperture</td></tr>
+      </table>
+      <table class="plain">
+        <tr><td>Frame</td><td>a printed border; 0 for none</td></tr>
+        <tr><td>Print clearance</td><td>every ring keeps this far from the hole</td></tr>
+        <tr><td>Shows · Text %</td><td>the day on the disc, and its size</td></tr>
+      </table>
+    </div>
+    <p style="margin-top:2mm" class="small">Markers and numerals leave the date's position empty. In a production mask the aperture is a cut line. The frame and the day share the Print colour.</p>
+  </div>
+</div><div class="foot"><span>Dial Tool · Guidebook</span><span class="pg">{{version}} · </span></div></section>
+
+<!-- ═════════ classics ═════════ -->
+<section class="page"><div class="inner">
+  <div class="head"><span class="no">06</span><h1>Classics</h1><p>Rings top first. Only what differs from a new ring is listed. The presets are in <code>docs/guide/presets</code>: Export → Load…</p></div>
+  {{classic:field}}
+  {{classic:diver}}
+</div><div class="foot"><span>Dial Tool · Guidebook</span><span class="pg">{{version}} · </span></div></section>
+
+<section class="page"><div class="inner">
+  <div class="head"><span class="no">06</span><h1>Classics</h1><p>A double bar at 12, a framed date, a wordmark on a path; and almost nothing at all.</p></div>
+  {{classic:dress}}
+  {{classic:railway}}
+</div><div class="foot"><span>Dial Tool · Guidebook</span><span class="pg">{{version}} · </span></div></section>
+
+<section class="page"><div class="inner">
+  <div class="head"><span class="no">06</span><h1>Classics</h1><p>Numbers that count round an arc; hairlines and small numerals.</p></div>
+  {{classic:pilot}}
+  {{classic:bauhaus}}
+</div><div class="foot"><span>Dial Tool · Guidebook</span><span class="pg">{{version}} · </span></div></section>
+
+<section class="page"><div class="inner">
+  <div class="head"><span class="no">06</span><h1>Classics</h1><p>Two fonts in one circle of hours; a scale that isn't a clock.</p></div>
+  {{classic:california}}
+  {{classic:gauge}}
+</div><div class="foot"><span>Dial Tool · Guidebook</span><span class="pg">{{version}} · </span></div></section>
+
+<section class="page"><div class="inner">
+  <div class="head"><span class="no">06</span><h1>Classics</h1><p>Zones of colour — and short recipes to build on.</p></div>
+  {{classic:sector}}
+  <div class="panel"><h2>Recipes</h2>
+    <table class="plain">
+      <tr><td>Railroad track</td><td>Ticks, Count 60. Two thin bands: one at the ticks' Radius, one at Radius − tick Length + Band width. (California, p. 10: 14.2 and 13.32.)</td></tr>
+      <tr><td>Fifths of a second</td><td>Ticks Count 60 above ticks Count 300; the 300 Skip where: all marks above.</td></tr>
+      <tr><td>Cardinals only</td><td>Every 3. The other eight hours: Every 3 + Skip those instead.</td></tr>
+      <tr><td>Minute numerals 05–60</td><td>Numerals, Labels Numbers, First number 5, Step 5, Digits 2, Start 30°.</td></tr>
+      <tr><td>24-hour ring</td><td>Numerals, Labels Custom: <code>24, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23</code>. (Field watch, p. 7.)</td></tr>
+      <tr><td>Wordmark</td><td>Numerals, Count 1, Start 180° (or 0°), Labels Custom, Placement on path. (Dress watch, p. 8.)</td></tr>
+      <tr><td>Two fonts, one ring of hours</td><td>Two numerals rings at the same Radius, each with a Custom list that leaves the other's positions empty. (California, p. 10.)</td></tr>
+      <tr><td>A gap round numerals</td><td>A band below the numerals; Knock out: markers &amp; numerals above; Clearance 0.3.</td></tr>
+      <tr><td>Sector dial</td><td>A band, Count 12, Every 2, Band width = Radius: alternate pies.</td></tr>
+      <tr><td>Lume opening</td><td>Hollow wall on a marker or a hand: 0.15–0.25.</td></tr>
+    </table>
+  </div>
+</div><div class="foot"><span>Dial Tool · Guidebook</span><span class="pg">{{version}} · </span></div></section>
+
+<!-- ═════════ files ═════════ -->
+<section class="page"><div class="inner">
+  <div class="head"><span class="no">07</span><h1>Files &amp; help</h1><p>What goes in, what comes out, and what to do when something looks wrong.</p></div>
+  <div class="panel"><h2>Out <span>the Export section</span></h2>
+    <div class="cols c32">
+      {{strip:output}}
+      <table class="plain">
+        <tr><td>PDF</td><td>vector, true size — Illustrator, print, the press</td></tr>
+        <tr><td>SVG</td><td>vector, true size — Illustrator, laser, the web</td></tr>
+        <tr><td>PNG</td><td>at the dpi you set — film for toner transfer</td></tr>
+        <tr><td>MP4 · GIF</td><td>the hands moving — Clip seconds, Frames per s</td></tr>
+        <tr><td>Live text</td><td>numerals stay text in PDF and SVG. Off by default: outlines need no fonts and print as seen</td></tr>
+        <tr><td>Settings</td><td>Save… and Load… a <code>.json</code> of everything; Defaults starts over</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="cols c2">
+    <div class="panel"><h2>In <span>SVG · PDF · AI, for markers and hands</span></h2>
+      <ul>
+        <li>Draw pointing up, at 12 o'clock. The artboard's centre is the anchor: a hand's pivot, a marker's centre.</li>
+        <li>Black is ink. White shapes cut holes. Strokes become outlines.</li>
+        <li>Outline text first. Images and gradients are skipped, and the log says so.</li>
+        <li>Save AI files with “Create PDF Compatible File”.</li>
+      </ul>
+    </div>
+    <div class="panel"><h2>Before you etch or print</h2>
+      <ul>
+        <li>Draw at true size. A 30 mm dial at 600 dpi is 709 pixels across.</li>
+        <li>Check the thinnest line at 100 %: a 0.09 mm tick is two pixels at 600 dpi.</li>
+        <li><b>Production</b> gives one colour: no plate, no hands, the date aperture as a cut line.</li>
+        <li><b>Mirror</b> flips it for toner transfer.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel grow"><h2>Questions</h2>
+    <div class="cols c2">
+      <table class="plain">
+        <tr><td>Settings?</td><td>Saved as you work, in <code>~/Library/Application Support/DialTool/last.json</code>.</td></tr>
+        <tr><td>Diameter?</td><td>Changing it moves nothing else: radii and lengths are mm from the centre.</td></tr>
+        <tr><td>A ring is gone?</td><td>Check its checkbox, Every and Offset, and what it skips.</td></tr>
+      </table>
+      <table class="plain">
+        <tr><td>Fonts?</td><td>Any font installed on the Mac.</td></tr>
+        <tr><td>Slow?</td><td>Install skia-pathops (p. 2). The log then says <code>shape combining: skia-pathops</code>.</td></tr>
+        <tr><td>Start over?</td><td>Export → Settings → Defaults.</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="cols c2">
+    <div class="panel line"><h2>When something goes wrong</h2>
+      <ol>
+        <li>Open Export and read the log. At launch it says <code>preview: canvas</code> and <code>all controls connected</code>.</li>
+        <li>If the preview looks wrong, switch Canvas → PDF and compare.</li>
+        <li>Send a screenshot and the log. If the window doesn't build at all, run <code>tools/dial_probe.py</code> and send its report.</li>
+      </ol>
+    </div>
+    <div class="panel line"><h2>Where things live</h2>
+      <table class="plain">
+        <tr><td>Code · docs</td><td><code>github.com/duztman/dial-tool</code></td></tr>
+        <tr><td>Words</td><td><code>docs/glossary.md</code></td></tr>
+        <tr><td>Presets</td><td><code>docs/guide/presets/*.json</code></td></tr>
+        <tr><td>This guide</td><td><code>docs/guide/guide.html</code> → <code>tools/make_guide.py</code></td></tr>
+      </table>
+    </div>
+  </div>
+</div><div class="foot"><span>Dial Tool · Guidebook</span><span class="pg">{{version}} · </span></div></section>
+
+</body>
+</html>

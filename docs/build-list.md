@@ -45,6 +45,8 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 41 | **skia-pathops** for shape combining, installed through DrawBot's package menu on each Mac (§3.6) — Okay: yes, 4 Oct. Log must say `shape combining: skia-pathops …` on each Mac | verify (beta 2.3) |
 | 42 | Smoke test: stand-ins for Quartz / Core Animation, a driven frame clock, canvas and zoom checks (§5.2) | done (4 Oct) |
 | 43 | Guidebook window screenshot: retake on the Mac with beta 2.3 (shows the Canvas · PDF switch); update `CALLOUTS` | open |
+| 45 | Classic dial presets (`docs/guide/presets/`): load each on the Mac — fonts DIN Alternate, Futura, Helvetica Neue, Bodoni 72 resolve; compare with the guide's pictures | verify |
+| 46 | Date window on a dark plate: frame and day share one Print colour, so a light frame means a light day on the white disc. Separate colours? (found drawing the diver) | open |
 | 44 | Canvas: show the page edge (dial + margin)? The canvas fills the whole preview with the backdrop; the PDF preview shows the page. Ask Okay after the Mac check | open |
 | 32 | Scale the whole dial (rings, hands, date) when the diameter changes, or a "scale everything" action (brief §5.7) | open |
 

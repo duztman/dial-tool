@@ -15,6 +15,7 @@ The preview plan (`docs/preview.md`), run in full. On `dev`; **not yet seen on a
 - **Window:** minimum width 1180 (was 1060), to keep the time slider's length with the new switch in the bar.
 - **Tests:** `ui_smoke.py` has stand-ins for Core Animation and drives the clock: after every click it compares the canvas's layers with the scene; it checks zoom maths, gestures, the switch, every fallback and a second run of the script. Seven deliberate breakages of the canvas and clock were each caught.
 - **Rules:** R26 (one scene), R27 (our own Cocoa classes), R28 (nothing renders inside a callback).
+- **Guidebook redesigned** (12 pages): panels, Recursive Sans and Mono, a figure for every feature, and nine classic dials (field, diver, dress, pilot type B, California, station clock, Bauhaus, sector, gauge) each printed with the settings that draw it. The classics are also presets: `docs/guide/presets/*.json`. Source is now `docs/guide/guide.html` + `tools/guide_dials.py` (was `guide.md`); R25 updated.
 
 ## beta 2.2 · 4 Oct 2026
 

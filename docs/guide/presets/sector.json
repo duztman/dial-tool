@@ -1,0 +1,162 @@
+{
+ "dial_d": 30.0,
+ "c_plate": [
+  0.94,
+  0.92,
+  0.87,
+  1
+ ],
+ "rings": [
+  {
+   "kind": "numerals",
+   "name": "Hours",
+   "r": 8.6,
+   "every": 3,
+   "size": 2.0,
+   "c": [
+    0.08,
+    0.08,
+    0.08,
+    1
+   ],
+   "family": "Futura",
+   "ps": "Futura-Medium"
+  },
+  {
+   "kind": "markers",
+   "name": "Hour bars",
+   "r": 11.9,
+   "len": 1.4,
+   "w": 0.45,
+   "every": 3,
+   "invert": true,
+   "c": [
+    0.08,
+    0.08,
+    0.08,
+    1
+   ]
+  },
+  {
+   "kind": "ticks",
+   "name": "Minutes",
+   "r": 14.4,
+   "count": 60,
+   "len": 0.7,
+   "w": 0.1,
+   "c": [
+    1,
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "kind": "numerals",
+   "name": "Minute numerals",
+   "r": 12.9,
+   "start": 30,
+   "labels": 7,
+   "num_from": 5,
+   "num_step": 5,
+   "num_digits": 2,
+   "size": 0.9,
+   "mode": 2,
+   "c": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "family": "Futura",
+   "ps": "Futura-Medium"
+  },
+  {
+   "kind": "band",
+   "name": "Chapter",
+   "r": 14.7,
+   "width": 2.6,
+   "c": [
+    0.13,
+    0.22,
+    0.36,
+    1
+   ]
+  },
+  {
+   "kind": "ticks",
+   "name": "Crosshair",
+   "r": 12.0,
+   "count": 4,
+   "len": 12.0,
+   "w": 0.1,
+   "c": [
+    0.08,
+    0.08,
+    0.08,
+    1
+   ]
+  },
+  {
+   "kind": "band",
+   "name": "Sectors",
+   "r": 6.0,
+   "width": 6.0,
+   "count": 12,
+   "every": 2,
+   "c": [
+    0.86,
+    0.82,
+    0.72,
+    1
+   ]
+  }
+ ],
+ "ha_hour": {
+  "shape": "dauphine",
+  "len": 7.5,
+  "w": 1.3,
+  "c": [
+   0.13,
+   0.22,
+   0.36,
+   1
+  ],
+  "tail": 1.0,
+  "feature_at": 22
+ },
+ "ha_minute": {
+  "shape": "dauphine",
+  "len": 12.6,
+  "w": 1.1,
+  "c": [
+   0.13,
+   0.22,
+   0.36,
+   1
+  ],
+  "tail": 1.4,
+  "feature_at": 18
+ },
+ "ha_second": {
+  "shape": "lollipop",
+  "len": 13.4,
+  "w": 0.12,
+  "c": [
+   0.82,
+   0.12,
+   0.1,
+   1
+  ],
+  "tail": 3.0,
+  "feature": 0.9,
+  "feature_at": 80
+ },
+ "ha_cap": 1.6,
+ "c_cap": [
+  0.13,
+  0.22,
+  0.36,
+  1
+ ]
+}

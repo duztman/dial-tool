@@ -1,0 +1,114 @@
+{
+ "dial_d": 30.0,
+ "c_plate": [
+  0.06,
+  0.06,
+  0.07,
+  1
+ ],
+ "rings": [
+  {
+   "kind": "numerals",
+   "name": "Hours",
+   "r": 10.5,
+   "size": 3.0,
+   "c": [
+    0.93,
+    0.89,
+    0.78,
+    1
+   ],
+   "family": "DIN Alternate",
+   "ps": "DINAlternate-Bold"
+  },
+  {
+   "kind": "numerals",
+   "name": "24 hours",
+   "r": 7.3,
+   "size": 1.35,
+   "c": [
+    0.93,
+    0.89,
+    0.78,
+    1
+   ],
+   "labels": 6,
+   "custom": "24, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23",
+   "family": "DIN Alternate",
+   "ps": "DINAlternate-Bold"
+  },
+  {
+   "kind": "markers",
+   "name": "Hour marks",
+   "r": 14.4,
+   "len": 1.7,
+   "w": 0.42,
+   "c": [
+    0.93,
+    0.89,
+    0.78,
+    1
+   ]
+  },
+  {
+   "kind": "ticks",
+   "name": "Minutes",
+   "r": 14.4,
+   "count": 60,
+   "len": 1.0,
+   "w": 0.16,
+   "c": [
+    0.93,
+    0.89,
+    0.78,
+    1
+   ],
+   "skip": 1
+  }
+ ],
+ "ha_hour": {
+  "shape": "sword",
+  "len": 7.6,
+  "w": 1.5,
+  "c": [
+   0.93,
+   0.89,
+   0.78,
+   1
+  ],
+  "tail": 1.6,
+  "tip": 2.4
+ },
+ "ha_minute": {
+  "shape": "sword",
+  "len": 12.6,
+  "w": 1.2,
+  "c": [
+   0.93,
+   0.89,
+   0.78,
+   1
+  ],
+  "tail": 1.8,
+  "tip": 3.0
+ },
+ "ha_second": {
+  "shape": "baton",
+  "len": 13.2,
+  "w": 0.14,
+  "c": [
+   0.93,
+   0.89,
+   0.78,
+   1
+  ],
+  "tail": 3.4
+ },
+ "ha_cap": 1.5,
+ "c_cap": [
+  0.93,
+  0.89,
+  0.78,
+  1
+ ]
+}

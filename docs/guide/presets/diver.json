@@ -1,0 +1,156 @@
+{
+ "dial_d": 29.0,
+ "c_plate": [
+  0.06,
+  0.06,
+  0.07,
+  1
+ ],
+ "rings": [
+  {
+   "kind": "markers",
+   "name": "Triangle",
+   "r": 13.2,
+   "count": 1,
+   "shape": "wedge",
+   "taper": 0.0,
+   "len": 3.3,
+   "w": 3.5,
+   "round_out": 0.25,
+   "c": [
+    0.88,
+    0.92,
+    0.84,
+    1
+   ]
+  },
+  {
+   "kind": "markers",
+   "name": "Bars 6 · 9",
+   "r": 13.2,
+   "count": 4,
+   "len": 3.3,
+   "w": 1.5,
+   "round_out": 0.2,
+   "round_in": 0.2,
+   "twelve": 3,
+   "c": [
+    0.88,
+    0.92,
+    0.84,
+    1
+   ]
+  },
+  {
+   "kind": "markers",
+   "name": "Dots",
+   "r": 13.0,
+   "shape": "dot",
+   "w": 2.3,
+   "every": 3,
+   "invert": true,
+   "c": [
+    0.88,
+    0.92,
+    0.84,
+    1
+   ]
+  },
+  {
+   "kind": "numerals",
+   "name": "Depth",
+   "r": 5.2,
+   "count": 1,
+   "start": 180,
+   "size": 0.95,
+   "mode": 3,
+   "labels": 6,
+   "custom": "200 m  ·  660 ft",
+   "c": [
+    0.97,
+    0.97,
+    0.95,
+    1
+   ],
+   "family": "Helvetica Neue",
+   "ps": "HelveticaNeue-Medium"
+  },
+  {
+   "kind": "ticks",
+   "name": "Minutes",
+   "r": 14.3,
+   "count": 60,
+   "len": 0.9,
+   "w": 0.16,
+   "c": [
+    0.97,
+    0.97,
+    0.95,
+    1
+   ]
+  }
+ ],
+ "da_on": true,
+ "da_at": 0,
+ "da_r": 10.7,
+ "da_w": 2.7,
+ "da_h": 2.0,
+ "da_round": 0.15,
+ "da_frame": 0.0,
+ "da_clear": 0.3,
+ "da_day": "24",
+ "da_size": 68,
+ "da_ink": [
+  0.08,
+  0.08,
+  0.08,
+  1
+ ],
+ "ha_hour": {
+  "shape": "pencil",
+  "len": 7.4,
+  "w": 2.0,
+  "c": [
+   0.78,
+   0.79,
+   0.8,
+   1
+  ],
+  "tail": 1.6,
+  "tip": 1.8
+ },
+ "ha_minute": {
+  "shape": "pencil",
+  "len": 12.4,
+  "w": 1.5,
+  "c": [
+   0.78,
+   0.79,
+   0.8,
+   1
+  ],
+  "tail": 1.8,
+  "tip": 2.0
+ },
+ "ha_second": {
+  "shape": "lollipop",
+  "len": 13.0,
+  "w": 0.18,
+  "c": [
+   0.78,
+   0.79,
+   0.8,
+   1
+  ],
+  "tail": 3.4,
+  "feature": 1.25,
+  "feature_at": 70
+ },
+ "ha_cap": 1.6,
+ "c_cap": [
+  0.78,
+  0.79,
+  0.8,
+  1
+ ]
+}

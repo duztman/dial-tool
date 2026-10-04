@@ -44,4 +44,4 @@ Standing rules. Check code against these in reviews; cite them by number.
 - **R19 · Test before handing over.** Geometry: `tools/test_harness.py`, and look at the contact sheet. Interface: `tools/ui_smoke.py` must pass.
 - **R20 · Third attempt at the same fix → stop and ask.** The first assumption was probably wrong.
 - **R21 · Measure, don't estimate** — sizes and timings come from real renders.
-- **R25 · The guidebook follows each release.** Edit `docs/guide/guide.md`; run `tools/make_guide.py`; it must report as many pages as `#` sections (5). Screenshots come from Okay's Mac (`docs/guide/img/window.png`); callout positions are in `CALLOUTS`.
+- **R25 · The guidebook follows each release.** Edit `docs/guide/guide.html` (text, layout) and `tools/guide_dials.py` (the classic dials); run `tools/make_guide.py`; it must report no overflowing page. Figures and the printed values come from the same settings, drawn by `dial.py` — never type a value into the guide that a figure doesn't use. The window screenshot comes from Okay's Mac (`docs/guide/img/window.png`); callout positions are in `CALLOUTS`. Fonts are fetched into `docs/guide/cache` (not in the repo).
