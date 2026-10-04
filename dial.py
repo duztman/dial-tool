@@ -1234,6 +1234,7 @@ try:
                          CheckBox, ColorWell, SegmentedButton, List, CheckBoxListCell, TextEditor,
                          Button, GridView, ScrollView)
     from vanilla.dialogs import getFile, putFile
+    from vanilla.vanillaBase import VanillaCallbackWrapper
     from drawBot.drawBotDrawingTools import DrawBotDrawingTool
     from drawBot.ui.drawView import DrawView
     HAVE_UI = True
@@ -1270,6 +1271,40 @@ FEATURE_NAMES = dict(
     cpsp="capital spacing", hist="historical forms", ornm="ornaments", dnom="denominators",
     numr="numerators", afrc="alternative fractions", rvrn="variation alternates")
 DEFAULT_ON = {"kern", "liga", "calt", "ccmp", "locl", "mark", "mkmk", "rlig", "rclt", "curs", "clig"}
+
+
+# ── frame clock: nothing draws inside a control's callback (R28) ──
+#   Controls change settings and ask for a frame; the clock calls the tool's
+#   frame at most once per display refresh, also while a slider is held.
+
+class Clock:
+    def __init__(self, window, frame):
+        self.target = VanillaCallbackWrapper(frame)                # kept here (R22)
+        self.link = self.timer = None
+        try:                                                       # macOS 14+: in step with the display
+            self.link = window.displayLinkWithTarget_selector_(self.target, "action:")
+            self.link.addToRunLoop_forMode_(AppKit.NSRunLoop.mainRunLoop(), AppKit.NSRunLoopCommonModes)
+            self.kind = "display link"
+        except Exception:                                          # older macOS: a 60-per-second timer (R17)
+            self.link = None
+            self.timer = AppKit.NSTimer.timerWithTimeInterval_repeats_block_(1 / 60, True, frame)
+            AppKit.NSRunLoop.mainRunLoop().addTimer_forMode_(self.timer, AppKit.NSRunLoopCommonModes)
+            self.kind = "timer"
+
+    def wake(self):
+        if self.link is not None:
+            self.link.setPaused_(False)
+
+    def sleep(self):
+        """nothing to draw: stop being called until someone asks again (the timer just idles)."""
+        if self.link is not None:
+            self.link.setPaused_(True)
+
+    def stop(self):
+        for ticking in (self.link, self.timer):
+            if ticking is not None:
+                ticking.invalidate()
+        self.link = self.timer = self.target = None
 
 
 # ── small helpers ────────────────────────────────────────────
@@ -1628,7 +1663,9 @@ class DialTool:
         self.S = fresh_settings(S)
         self.D = DrawBotDrawingTool()                              # private engine: main canvas untouched
         self.static, self.static_dirty = None, True
-        self.ready, self.timer, self.last_save, self.quiet = False, None, 0, False
+        self.ready, self.last_save, self.quiet = False, 0, False
+        self.clock, self.pending, self.playing = None, False, False   # the frame clock (R28)
+        self.build_ms = self.status_at = 0
         self.bindings = []                                         # (scope, key, refresh control from value)
         self.visibility = []                                       # (grid, row, predicate, scope)
         self.grids, self.keep = [], []                             # R22: every control's Python object
@@ -1666,6 +1703,7 @@ class DialTool:
         self._refresh_visibility()
         self.w.open()
         self.ready = True
+        self._start_clock()
         self._check_callbacks()
         self._load_ring()                                          # type, nudge, then renders
 
@@ -2009,21 +2047,61 @@ class DialTool:
         self._refresh_visibility()
         self.render()
 
-    @guard
     def render(self):
+        """ask for a redraw. Nothing is drawn here: the frame clock does it (R28)."""
         if not self.ready:
             return
+        self.pending = True
+        if self.clock is None:
+            self._frame()                                          # no clock: draw right away (R17)
+        else:
+            self.clock.wake()
+
+    def _start_clock(self):
+        try:
+            self.clock = Clock(self.w.getNSWindow(), self._frame)
+            self.log(f"clock: {self.clock.kind}")
+        except Exception as e:
+            self.clock = None
+            self.log(f"clock: none ({e}) — redraws happen inside the controls; Play is off")
+
+    def _frame(self, sender=None):
+        """one display frame: draw if something asked for it; while playing, move the time first."""
+        try:
+            if not self.ready:
+                return
+            if self.playing:
+                wall, t = self.play_from
+                self.S["t"] = (t + time.time() - wall) % 43200
+                self._sync_time()
+                self.pending = True
+            if not self.pending:
+                if self.clock is not None:
+                    self.clock.sleep()
+                return
+            self.pending = False
+            self._draw()
+        except Exception:                                          # report, and never stop the clock (R17)
+            self._stop_playing()
+            self.log("error while drawing a frame\n" + traceback.format_exc())
+
+    def _draw(self):
         t0 = time.perf_counter()
         if self.static is None or self.static_dirty:
             self.static = build_static(self.S)
             self.static_dirty = False
+            self.build_ms = (time.perf_counter() - t0) * 1000
+        t1 = time.perf_counter()
         self.D.newDrawing()
         draw_page(self.D, self.S, self.static, self.S["t"], preview=True, selected=self.S["ui_ring"])
         self._show_pdf(self.D.pdfImage())
-        ms = (time.perf_counter() - t0) * 1000
-        ring = self.ring()
-        font = f"   ·   {ring['ps']}" if kind_of(ring) == "numerals" else ""
-        self.w.status.set(f"{ring['name']}{font}   ·   Ø {self.S['dial_d']:.1f} mm   ·   redraw {ms:.0f} ms")
+        frame_ms = (time.perf_counter() - t1) * 1000
+        if not self.playing or time.time() - self.status_at > 0.25:   # readable while playing
+            ring = self.ring()
+            font = f"   ·   {ring['ps']}" if kind_of(ring) == "numerals" else ""
+            self.w.status.set(f"{ring['name']}{font}   ·   Ø {self.S['dial_d']:.1f} mm   ·   pdf"
+                              f"   ·   build {self.build_ms:.0f} ms   ·   frame {frame_ms:.0f} ms")
+            self.status_at = time.time()
         while NOTES:
             self.log(NOTES.pop(0))
         self._autosave()
@@ -2232,46 +2310,47 @@ class DialTool:
         self.w.timeSlider.set(self.S["t"] % 43200)
         self.w.timeField.set(fmt_time(self.S["t"]))
 
+    def _set_time(self, t):
+        self.S["t"] = t
+        self.play_from = (time.time(), t)                          # while playing: carry on from here
+        self.render()
+
     @guard
     def _time_slid(self, sender):
-        self.S["t"] = sender.get()
-        self.w.timeField.set(fmt_time(self.S["t"]))
-        self.render()
+        self.w.timeField.set(fmt_time(sender.get()))
+        self._set_time(sender.get())
 
     @guard
     def _time_typed(self, sender):
         t = parse_time(sender.get())
-        if t is not None:
-            self.S["t"] = t
+        self._set_time(self.S["t"] if t is None else t)
         self._sync_time()
-        self.render()
 
     @guard
     def _now(self, sender):
         lt = time.localtime()
-        self.S["t"] = lt.tm_hour % 12 * 3600 + lt.tm_min * 60 + lt.tm_sec
+        self._set_time(lt.tm_hour % 12 * 3600 + lt.tm_min * 60 + lt.tm_sec)
         self._sync_time()
-        self.render()
 
     @guard
     def _play(self, sender):
-        if self.timer is not None:
-            self.timer.invalidate()
-            self.timer = None
-            sender.setTitle("Play")
+        """Play and Stop only set a flag; the frame clock moves the hands (R28)."""
+        if self.playing or self.clock is None:
+            self._stop_playing()
+            if self.clock is None:
+                self.log("Play needs the frame clock, which didn't start (see the log's first lines)")
             return
+        self.playing = True
         self.play_from = (time.time(), self.S["t"])
-        self.timer = AppKit.NSTimer.scheduledTimerWithTimeInterval_repeats_block_(1 / 30, True, self._tick)
-        sender.setTitle("Stop")
+        self.w.play.setTitle("Stop")
+        self.render()
 
-    def _tick(self, timer):
+    def _stop_playing(self):
+        self.playing = False
         try:
-            wall, t = self.play_from
-            self.S["t"] = (t + time.time() - wall) % 43200
-            self._sync_time()
-            self.render()
+            self.w.play.setTitle("Play")
         except Exception:
-            timer.invalidate()
+            pass
 
     # ── export and settings ──────────────────────────────────
 
@@ -2330,9 +2409,10 @@ class DialTool:
                 pass
 
     def _closed(self, sender):
-        if self.timer is not None:
-            self.timer.invalidate()
-            self.timer = None
+        self.playing = False
+        if self.clock is not None:
+            self.clock.stop()
+            self.clock = None
         self._autosave(force=True)
         self.ready = False
 

@@ -18,7 +18,7 @@ Setup: the harness's packages (pip install drawbot-skia skia-pathops pillow)
 Use:   python tools/ui_smoke.py
 """
 
-import builtins, gc, json, os, re, sys, tempfile, traceback, types, weakref
+import builtins, gc, json, os, re, sys, tempfile, time, traceback, types, weakref
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -121,11 +121,51 @@ class Color:
     def blueComponent(self): return self.c[2]
     def alphaComponent(self): return self.c[3]
 
-class Timer:
+COMMON_MODES = "kCFRunLoopCommonModes"                              # also runs while a control is held
+DISPLAY_LINK = [True]                                               # False: pretend macOS 13 (no display links)
+
+class Timer:                                                        # NSTimer made with timerWith…: not scheduled yet
     def __init__(self, block):
-        self.block, self.valid = block, True
+        self.block, self.valid, self.modes = block, True, []
     def invalidate(self):
         self.valid = False
+
+class Link:                                                         # CADisplayLink
+    def __init__(self, target):
+        self.target, self.paused, self.valid, self.modes = target, False, True, []
+    def addToRunLoop_forMode_(self, loop, mode):
+        self.modes.append(mode)
+    def setPaused_(self, paused):
+        self.paused = bool(paused)
+    def invalidate(self):
+        self.valid = False
+
+class RunLoop:
+    def addTimer_forMode_(self, timer, mode):
+        timer.modes.append(mode)
+
+class NSWindow(NS):
+    def displayLinkWithTarget_selector_(self, target, selector):
+        if not DISPLAY_LINK[0]:
+            raise AttributeError("displayLinkWithTarget_selector_")
+        if selector != "action:" or not isinstance(target, Target):
+            problem(f"display link: target {target!r} / selector {selector!r} can't be called")
+        return Link(target)
+
+def drive(frames=1):
+    """let the frame clock tick, as the display would. A sleeping or unscheduled clock doesn't tick."""
+    tool = getattr(builtins, "_dial_tool", None)
+    clock = getattr(tool, "clock", None)
+    if clock is None:
+        return
+    for _ in range(frames):
+        link, timer = clock.link, clock.timer
+        if link is not None and link.valid and not link.paused and COMMON_MODES in link.modes:
+            link.target.callback(link)
+        elif timer is not None and timer.valid and COMMON_MODES in timer.modes:
+            timer.block(timer)
+    if tool.ready and tool.pending:
+        problem("a redraw was asked for, but the next frame didn't draw it (clock asleep or not scheduled?)")
 
 FONTS = {"Helvetica Neue": [["HelveticaNeue", "Regular"], ["HelveticaNeue-Bold", "Bold"]],
          "Skia": [["Skia-Regular", "Regular"], ["Skia-Regular_Bold", "Bold"]],
@@ -187,6 +227,7 @@ class V:
                     "ignores clicks: its callback is gone (R22)")
             return
         target.callback(self if sender is None else sender)
+        drive()                                                     # the next display frame
 
 class Value(V):
     key = "value"
@@ -320,9 +361,11 @@ class List(V):
             self._changed_selection()
     def sim_select(self, i):
         self.setSelection([i])
+        drive()
     def sim_edit(self, i, key, value):
         self._items[i][key] = value
         self._edited()
+        drive()
 
 class Group(V):
     ns_class = NSView
@@ -341,6 +384,7 @@ class ScrollView(V):
 class Window(Group):
     def setup(self):
         object.__setattr__(self, "_events", {})
+        object.__setattr__(self, "_nsWindow", NSWindow())
     def open(self):
         pass
     def bind(self, event, callback):
@@ -349,7 +393,7 @@ class Window(Group):
         for cb in self._events.get("close", []):
             cb(self)
     def getNSWindow(self):
-        return NS()
+        return self._nsWindow
 
 class GridRow(NS):
     def __init__(self, cells):
@@ -403,9 +447,10 @@ def CheckBoxListCell(title=None):
 class DrawView:                                                      # drawBot.ui.drawView.DrawView
     def __init__(self, posSize):
         self._nsObject = NSView(self)
-        self.pdf = None
+        self.pdf, self.count = None, 0
     def setPDFDocument(self, pdf):
         self.pdf = pdf
+        self.count += 1
     def getNSView(self):
         return NS(autoScales=lambda: True)
 
@@ -472,7 +517,8 @@ def install_fakes():
                 NSFont=NS(boldSystemFontOfSize_=lambda s: NS(), smallSystemFontSize=lambda: 11,
                           systemFontSize=lambda: 13,
                           fontWithName_size_=lambda n, s: None),
-                NSTimer=NS(scheduledTimerWithTimeInterval_repeats_block_=lambda i, r, b: Timer(b)))
+                NSTimer=NS(timerWithTimeInterval_repeats_block_=lambda i, r, b: Timer(b)),
+                NSRunLoop=NS(mainRunLoop=lambda: RunLoop()), NSRunLoopCommonModes=COMMON_MODES)
     fake_module("CoreText")
     fake_module("Quartz")
     vanilla = fake_module("vanilla", **{c.__name__: c for c in (
@@ -480,6 +526,7 @@ def install_fakes():
         SegmentedButton, List, TextEditor, Button, GridView, ScrollView)}, CheckBoxListCell=CheckBoxListCell)
     vanilla.__path__ = []
     fake_module("vanilla.dialogs", getFile=dialog("getFile"), putFile=dialog("putFile"))
+    fake_module("vanilla.vanillaBase", VanillaCallbackWrapper=Target)
     for name in ("drawBot", "drawBot.ui", "drawBot.context"):
         fake_module(name).__path__ = []
     fake_module("drawBot.drawBotDrawingTools", DrawBotDrawingTool=FakeDrawingTool)
@@ -601,7 +648,7 @@ def main():
     ns = load_dial(home)
     T = lambda: builtins._dial_tool
 
-    step("open the window", lambda: ns["start"]())
+    step("open the window", lambda: (ns["start"](), drive()))
     gc.collect()                                                    # strict: anything only cycles hold is gone
     step("all controls connected (R22)", lambda: None if "all controls connected" in T().logbox.get()
          else problem("the launch self-check didn't report 'all controls connected'"))
@@ -714,21 +761,60 @@ def main():
         tool.S["da_on"] = True
         tool.static_dirty = True
         tool.render()
+        drive()
         exercise(tool, controls_in(tool), popups_max=6)
     step("everything once more with the date window on", date_and_dial)
+
+    def frame_clock():
+        tool = T()
+        link, view = tool.clock.link, tool.w.canvas
+        if "clock: display link" not in tool.logbox.get():
+            problem("the launch log doesn't say 'clock: display link'")
+        n = view.count
+        tool.set_value("global", "guides", not tool.S["guides"])    # what a control's callback does
+        if view.count != n or not tool.pending or link.paused:
+            problem("a control's callback must only ask for a frame, with the clock awake (R28)")
+        tool.set_value("global", "guides", not tool.S["guides"])    # twice in one frame…
+        drive()
+        if view.count != n + 1:
+            problem(f"…should draw once; drew {view.count - n} times")
+        drive()
+        if view.count != n + 1 or not link.paused:
+            problem("with nothing to draw, the clock should go to sleep and draw nothing")
+        if "build" not in tool.w.status.get() or "frame" not in tool.w.status.get():
+            problem(f"status line has no build / frame times: {tool.w.status.get()!r}")
+    step("frame clock: callbacks ask, one frame draws, idle sleeps (R28)", frame_clock)
 
     def time_controls():
         tool = T()
         tool.w.timeField.set("3:15:20")
         tool.w.timeField.sim_fire()
+        if tool.S["t"] != 3 * 3600 + 15 * 60 + 20:
+            problem("typed time didn't reach the setting")
         tool.w.timeSlider.set(20000)
         tool.w.timeSlider.sim_fire()
         tool.w.now.sim_fire()
         tool.w.play.sim_fire()
-        tool.timer.block(tool.timer)
+        if not tool.playing or tool.w.play._kw["title"] != "Stop":
+            problem("Play didn't start")
+        seen = [tool.S["t"]]
+        for _ in range(2):
+            time.sleep(0.02)
+            tool.w.guides.set(not tool.w.guides.get())
+            tool.w.guides.sim_fire()                                # using a control while playing
+            seen.append(tool.S["t"])
+        if not seen[0] < seen[1] < seen[2]:
+            problem(f"Play should keep the hands moving while controls are used: {seen}")
+        tool.w.timeSlider.set(100)
+        tool.w.timeSlider.sim_fire()                                # the time slider while playing
+        if not 100 <= tool.S["t"] < 101:
+            problem(f"dragging the time while playing should carry on from there, got {tool.S['t']}")
         tool.w.play.sim_fire()
+        drive(2)
+        if tool.playing or tool.w.play._kw["title"] != "Play" or not tool.clock.link.paused:
+            problem("Stop should stop the hands and let the clock sleep")
         tool.w.fit.sim_fire()
-    step("time: typed, slider, now, play, fit", time_controls)
+    step("time: typed, slider, now, play (also while a control is used), fit", time_controls)
 
     def export():
         tool = T()
@@ -802,6 +888,33 @@ def main():
         if S["ui_section"] != 2 or S["rings"][0]["nudge"] != {"0": {"dr": 0.4}}:
             problem("beta 1.0 section or nudge didn't convert")
     step("run again; open a beta 1.0 last session", rerun_and_migrate)
+
+    def clock_fallback_and_close():
+        tool = T()
+        link = tool.clock.link
+        tool.w.close()
+        if link.valid or tool.clock is not None:
+            problem("closing the window should stop the clock")
+        builtins._dial_tool = None
+        DISPLAY_LINK[0] = False                                     # as on macOS 13
+        try:
+            ns["start"]()
+            drive()
+            tool = T()
+            timer = tool.clock.timer
+            if "clock: timer" not in tool.logbox.get() or timer is None or COMMON_MODES not in timer.modes:
+                problem("without display links the clock should fall back to a timer in the common modes (R17)")
+            n = tool.w.canvas.count
+            tool.w.guides.set(not tool.w.guides.get())
+            tool.w.guides.sim_fire()
+            if tool.w.canvas.count != n + 1:
+                problem("the timer clock didn't draw the frame")
+            tool.w.close()
+            if timer.valid:
+                problem("closing the window should stop the timer")
+        finally:
+            DISPLAY_LINK[0] = True
+    step("clock: timer fallback; closing stops it", clock_fallback_and_close)
 
     print()
     if PROBLEMS:
