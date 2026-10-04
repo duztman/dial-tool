@@ -1,6 +1,6 @@
 # Dial Tool — design canon
 
-*Written 4 Oct 2026 with the guidebook's third edition (beta 2.3); revised the same day with the fourth and fifth. Okay: "this design research might influence
+*Written 4 Oct 2026 with the guidebook's third edition (beta 2.3); revised the same day with the fourth, fifth and sixth. Okay: "this design research might influence
 the whole build, take notes… let's make it canon."*
 
 This file is the rule for everything Dial Tool shows on paper or screen that isn't a dial: the guidebook
@@ -44,14 +44,14 @@ check §2–§6 against it.
 - **One family, sans.** Inter (open licence; fetched at build time). Okay asked for "a sans like Univers";
   Univers itself can't be redistributed. Changing the family is one `@font-face` line in `docs/guide/style.css`.
   No monospace anywhere: file names are italic, things you type or click are semibold.
-- **Two weights and one light.** 400 text, 600 emphasis and headlines, 300 for the big titles only
+- **Two weights and one light.** 400 text, 600 emphasis, headlines and leads, 300 for the big titles only
   ("big, light type with small, dark type").
-- **Four sizes.** 7.5 pt captions and labels · 9 pt text · 12.4 pt leads and headlines · 31 pt titles
-  (the cover alone goes to 64 pt). Nothing smaller than 7.5 pt. (4 Oct 2026, fourth edition: leads and titles
-  up about 3 % from 12 and 30 pt.)
-- **Leading on a 1.375 mm unit.** Captions 2.5 units (3.44 mm), text 3 (4.125 mm), leads 4 (5.5 mm), titles 8
-  (11 mm). Every space between things is a multiple of the unit: 1 inside a cluster, 4 between clusters.
-  (Fourth edition: the unit came down from 1.5 mm, about 8 %, to set text tighter.)
+- **Three sizes** (sixth edition, 4 Oct 2026; Okay: "overall larger type, fewer type sizes"). 8 pt small:
+  labels, captions, tables, annotations. 10 pt text — and its semibold is every headline and the lead.
+  32 pt light: titles and the four big words on Start (the cover alone doubles it, 64 pt). Before: 7.5 · 9 ·
+  12.4 · 31.
+- **Leading on a 1.375 mm unit.** Small 2.5 units (3.44 mm), text 3 (4.125 mm), titles 8 (11 mm). Every space
+  between things is a multiple of the unit: 1 inside a cluster, 4 between clusters.
 - **Line length 40–75 characters.** *(recalled)* So text blocks are 3 or 4 columns wide (65 or 88 mm at 9 pt),
   never 2. Leads run 6 columns at 12 pt.
 - **Flush left, ragged right.** *(recalled)* No justification, no centring, no hyphenation.
@@ -93,9 +93,13 @@ alignment to these rules as well."*
 
 ## 4 · Colour
 
-- Paper `#FCFCFA`, ink `#111111`, grey text `#5C5C58` (never lighter: it must stay readable at 7.5 pt),
+- Paper `#FCFCFA`, ink `#111111`, grey text `#5C5C58` (never lighter: it must stay readable at 8 pt),
   rules `#B9B9B4`, ground `#ECECE8`.
-- **No accent colour.** Section numbers are ink; callout numbers are a figure in a line circle.
+- **One colour: signal yellow `#F5C518`** (sixth edition; Okay: "select a characteristic color like teenage
+  eng."). It is the plate of every plain figure — so a figure reads as "a dial", black ink on yellow — and
+  the thumb index, and the line that cuts the cover. Nothing else. Chosen over orange because it carries
+  black marks and navy bands at full contrast and is the yellow of a Braun seconds hand. One constant each:
+  `PAPER` in `tools/make_guide.py`, `--sig` in `style.css`.
 - Dials keep their own colours. Everything around them is neutral.
 - No tinted panels, rounded cards, shadows or decorative rules. A hairline above a block is the only frame.
 
@@ -103,18 +107,15 @@ alignment to these rules as well."*
 
 - **Every dial is drawn by `dial.py`** from settings kept in the repo, and the values printed beside a
   picture are the ones that drew it (R25).
-- **Pictures stand on the paper. A ground is allowed only where the picture needs an edge** (fifth edition;
-  Okay: "some illustrations are allowed backgrounds. Where it's needed? Reason."). Three reasons, no others:
-  1. *a close-up* — an enlarged dial has to be cut somewhere, and the ground is the window it is seen through;
-  2. *a set that mixes light and dark plates* and must read as one set — the nine classics, small and large;
-  3. *the tool's controls* — they are grey in the tool.
-  Whole dials, hands, diagrams and icons have no ground.
-- **A plain plate is a hairline circle** with a small cross at its centre: figures that explain a setting are
-  drawn as ink on the page's own white, like a technical drawing. Classic dials keep their plates.
+- **Every picture has a ground** (sixth edition; Okay: "bring back the backgrounds. Blocks seem better
+  aligned that way"). The ground is the grid box made visible: whole dials, close-ups, hands and large
+  examples all sit on `#ECECE8`. The fifth edition's rule — ground only where a picture needs an edge — was
+  tried and withdrawn. Icons and the cover have no ground.
+- **A plain plate is yellow** (§4), in whole figures and in close-ups. Classic dials keep their plates.
 - **Side by side, one thing changes.** Figures in a row share view, scale and crop; only the setting in the
   caption differs. A caption is two lines: what it is (semibold), then its values (grey).
 - **Annotations are drawn in the dial's own millimetres** (`overlay()` in `tools/make_guide.py`): dimension
-  lines with end ticks, leaders ending in a small ring, dashed construction lines. Text on them is 7.5 pt and
+  lines with end ticks, leaders ending in a small ring, dashed construction lines. Text on them is 8 pt and
   lines 0.2 mm on paper at any enlargement — the page measures each picture and sets them. The build reports
   a label that leaves its picture or overlaps another.
 - **Line icons.** One set, drawn on a 24-unit square with a single stroke, square ends, no fill

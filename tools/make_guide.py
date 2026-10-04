@@ -116,7 +116,7 @@ def advance(txt, t, size):
 
 # ── figures ──────────────────────────────────────────────────
 
-PAPER  = [0.988, 0.988, 0.980, 1]                           # the page's own white: a plain plate is a hairline circle
+PAPER  = [0.961, 0.773, 0.094, 1]                           # the book's one colour, signal yellow #F5C518: every plain plate (--sig in style.css)
 INK    = G.INK
 MARKS  = dict(kind="markers", name="Markers", r=13.4, len=2.8, w=0.7)
 TICKS  = dict(kind="ticks", name="Ticks", r=14.4, count=60, len=1.0, w=0.12)
@@ -134,7 +134,7 @@ FIGURES = {
     "first": [
         fig("1 · ticks", "Add ring… → ticks · Count 60", [TICKS]),
         fig("2 · markers", "added above the ticks", [MARKS, TICKS]),
-        fig("3 · give way", "ticks: Skip where markers above", [MARKS, dict(TICKS, skip=1)]),
+        fig("3 · give way", "ticks skip where markers sit", [MARKS, dict(TICKS, skip=1)]),
         fig("4 · numerals, hands", "Every 3 · Radius 8 · Size 2.4", [dict(NUMS, every=3, r=8.0, size=2.4), MARKS, dict(TICKS, skip=1)],
             ha_on=True, c_cap=INK, ha_second=dict(c=INK)),
     ],
@@ -160,7 +160,7 @@ FIGURES = {
         fig("wedge", "Inner width × 1.8", [dict(MARKS, shape="wedge", len=3.4, w=0.9, taper=1.8)], crop="top"),
         fig("dot", "Ø 2.0", [dict(MARKS, shape="dot", w=2.0)], crop="top"),
         fig("file", "your own SVG · PDF · AI", [dict(MARKS, shape="file", file="@marker.svg", scale=1.0)], crop="top"),
-        fig("rounded", "Round outer 0.6 · Round inner 0.2", [dict(MARKS, len=3.4, w=1.2, round_out=0.6, round_in=0.2)], crop="top"),
+        fig("rounded", "Round outer 0.6 · inner 0.2", [dict(MARKS, len=3.4, w=1.2, round_out=0.6, round_in=0.2)], crop="top"),
         fig("hollow", "Hollow wall 0.22", [dict(MARKS, len=3.4, w=1.4, wall=0.22, round_out=0.3, round_in=0.3)], crop="top"),
         fig("12: double", "Gap 0.4", [dict(MARKS, w=1.0, twelve="double", twelve_gap=0.4)], crop="top"),
         fig("12: triangle", "Scale × 1.2", [dict(MARKS, w=1.0, twelve="triangle", twelve_scale=1.2)], crop="top"),
@@ -215,7 +215,7 @@ FIGURES = {
             da_on=True, da_at=0, da_day="17"),
         fig("at 4:30", "Corner 0.6 · Frame 0", [MARKS, dict(TICKS, skip=1)],
             da_on=True, da_at=1, da_round=0.6, da_frame=0.0, da_day="28"),
-        fig("at 6", "Print clearance 0.4 cuts the band", [dict(MARKS, r=13.0), dict(kind="band", r=11.6, width=2.2, c=G.NAVY)],
+        fig("at 6", "Clearance 0.4 cuts the band", [dict(MARKS, r=13.0), dict(kind="band", r=11.6, width=2.2, c=G.NAVY)],
             da_on=True, da_at=2, da_r=10.5, da_clear=0.4, da_day="3"),
     ],
     "output": [
@@ -312,7 +312,7 @@ def overlay(name, S):
             leader(12.05, 90, R, "Date", "window at 3"),
             leader(6.0, 166, R, "Depth", "numerals · on path"),
             leader(11.55, 270, R, "Bars 6 · 9", "markers · Count 4"),
-            leader(6.3, 304.8, R, "Hands", "hour · minute · seconds")])
+            leader(6.3, 304.8, R, "Hands", "three, each its own")])
     if name == "positions":
         out = ['<line class="dash" x1="0" y1="0" x2="0" y2="-19.4"/>', label(0, -20.3, "0° = 12 o’clock", "middle"),
                arc_path(8.0, 0, 30), label(*cp(9.6, 15), "30°", "middle"),
@@ -351,7 +351,7 @@ def overlay(name, S):
         return "".join([
             dim(9.2, -1.75, 11.8, -1.75, "Width 2.6", 10.5, -2.05, "middle", tick=0.14),
             dim(12.45, -1.0, 12.45, 1.0, "Height 2.0", 12.75, 0.08, tick=0.14),
-            '<line class="dash w" x1="4.2" y1="0" x2="9.05" y2="0"/>', label(4.2, 0.62, "Radius 10.5", "start", "from the dial’s centre"),
+            '<line class="dash" x1="4.2" y1="0" x2="9.05" y2="0"/>', label(4.2, 0.62, "Radius 10.5", "start", "from the dial’s centre"),
             '<line class="w" x1="10.5" y1="1.45" x2="10.5" y2="2.5"/>',
             '<line class="w" x1="10.5" y1="2.5" x2="8.55" y2="2.5"/>',
             label(8.2, 2.6, "Frame 0.15 + Print clearance 0.25", "end", "print keeps this far from the hole")])
@@ -373,9 +373,9 @@ def hero(name, c, r, ns):
     W, Hh = width(c), height(r)
     share = 0.8 if notes else 0.94                           # the dial's page, as a share of the panel's height
     unit = Hh * share / page                                 # mm on paper per mm of dial
-    edge = f'<circle class="plate" r="{S["dial_d"] / 2:g}"/>' if light(S) else ""
+    edge = ""
     box = f"{-W / 2 / unit:.3f} {-Hh / 2 / unit:.3f} {W / unit:.3f} {Hh / unit:.3f}"
-    return (f'<figure class="c{c} r{r} hero"><div class="whole" style="--k:{share}"><div class="art">{img}</div>'
+    return (f'<figure class="c{c} r{r} hero"><div class="whole ground" style="--k:{share}"><div class="art">{img}</div>'
             f'<svg class="over" viewBox="{box}">{edge}{notes}</svg></div></figure>')
 
 HANDS = [
@@ -389,7 +389,7 @@ HANDS = [
     ("breguet", dict(w=0.22, tail=1.6, tip=1.2, feature=1.6, feature_at=72)),
     ("lollipop", dict(w=0.16, tail=3.0, feature=1.0, feature_at=80)),
     ("hollow wall", dict(shape="dauphine", w=1.7, tail=1.4, feature_at=22, wall=0.2)),
-    ("counterweight", dict(shape="baton", w=0.16, tail=3.2, counter=1.1)),
+    ("counter", dict(shape="baton", w=0.16, tail=3.2, counter=1.1)),
     ("file", dict(shape="file", file="@hand.svg", fit=True)),
 ]
 
@@ -677,7 +677,7 @@ def classic(name, ns, number):
 def figure(name, i):
     if name == "hands":
         label = HANDS[i][0]
-        return (f'<figure class="c1 r4 hands"><div class="hand"><img src="img/hand-{label.replace(" ", "-")}.svg"></div>'
+        return (f'<figure class="c1 r4 hands"><div class="hand ground"><img src="img/hand-{label.replace(" ", "-")}.svg"></div>'
                 f'<figcaption><b>{esc(label)}</b></figcaption></figure>')
     f, m = FIGURES[name][i], META[f"{name}-{i}"]
     img = f'<img src="img/{name}-{i}.svg">'
@@ -687,8 +687,7 @@ def figure(name, i):
         c, r, z, focus = CROPS[name]
         place = place_top(z, focus, 36.0)
         return f'<figure class="c{c} r{r} {name}"><div class="crop"><div class="art" style="{place}">{img}</div></div>{caption}</figure>'
-    edge = '<i class="edge"></i>' if m["light"] else ""
-    return (f'<figure class="c2 r4 {name}"><div class="whole" style="--k:{m["k"]:.3f}"><div class="art">{img}</div>{edge}</div>'
+    return (f'<figure class="c2 r4 {name}"><div class="whole ground" style="--k:{0.9 * m["k"]:.3f}"><div class="art">{img}</div></div>'
             f'{caption}</figure>')
 
 def strip(name, first=None, last=None):
@@ -921,10 +920,10 @@ SHELL = """<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Dia
 %s
 %s
 <script>
-// annotation text and lines keep their size on paper (7.5 pt, 0.2 mm) whatever the picture's scale
+// annotation text and lines keep their size on paper (8 pt, 0.2 mm) whatever the picture's scale
 document.fonts.ready.then(() => { for (const s of document.querySelectorAll("svg.over")) {
   const unit = s.getBoundingClientRect().width / s.viewBox.baseVal.width;      // px on paper per mm of dial
-  s.style.setProperty("--fs", 10 / unit + "px"); s.style.setProperty("--sw", .76 / unit + "px"); } });
+  s.style.setProperty("--fs", 10.67 / unit + "px"); s.style.setProperty("--sw", .76 / unit + "px"); } });
 </script></body></html>"""
 
 # what the build measures on every page, so problems are found by number, not by eye

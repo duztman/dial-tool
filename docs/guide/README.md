@@ -30,7 +30,7 @@ columns (`c`) and rows (`r`) it takes, and they fill a `<col>` left to right, to
 The usual page: pictures in the top 8 rows, words and controls in the bottom 4, so one line runs across
 the page under the pictures.
 
-What fits: a block with an icon above holds 7 lines of text in 4 rows and 3 in 3 rows; with `side="1"`
+What fits: a block with an icon above holds about 7 lines of text in 4 rows and 4 in 3 rows; with `side="1"`
 (icon beside) 2 rows hold 2 lines. A caption holds 2 lines. If it doesn't fit, shorten the text.
 
 ## Tags
@@ -72,5 +72,5 @@ a large example · `{{rings:NAME:SELECTED}}` a dial's ring list, redrawn ·
   `base`). `crop="top"` makes it a close-up of 12 o’clock.
 - A large example is one line in `HEROES` and, if it is annotated, a branch in `overlay()`. Annotations are
   written in the dial’s own millimetres from its centre (y grows downward): `leader()`, `dim()`, `label()`.
-  Their text is always 7.5 pt and their lines 0.2 mm on paper: the page measures each picture and sets them.
+  Their text is always 8 pt and their lines 0.2 mm on paper: the page measures each picture and sets them.
 - Close-ups are placed by `CLOSE` / `CROPS`: an enlargement and the radius that sits at the panel’s top.

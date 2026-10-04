@@ -7,11 +7,11 @@
 @page { size: 297mm 210mm; margin: 0; }
 :root {
   --paper: #FCFCFA; --ground: #ECECE8; --ink: #111111; --grey: #5C5C58; --line: #B9B9B4;
-  --b: 1.375mm;
+  --b: 1.375mm; --sig: #F5C518;                 /* the one colour: plain plates (PAPER in make_guide.py) and the thumb index */
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-body { font-family: "Inter", sans-serif; font-optical-sizing: auto; font-weight: 400; font-size: 9pt;
+body { font-family: "Inter", sans-serif; font-optical-sizing: auto; font-weight: 400; font-size: 10pt;
        line-height: calc(var(--b) * 3); color: var(--ink); background: var(--paper); font-feature-settings: "kern", "calt", "ss03"; }
 i { font-style: normal; }
 
@@ -31,19 +31,19 @@ i { font-style: normal; }
         padding-top: calc(var(--b) * 1.5); }
 .head .title { grid-column-end: span 4; } .head .lead { grid-column-end: span 6; padding-top: calc(var(--b) * 3); }
 .foot { position: absolute; left: 12mm; right: 12mm; bottom: 4mm; display: flex; justify-content: space-between;
-        font-size: 7.5pt; line-height: 3mm; color: var(--grey); font-feature-settings: "tnum"; }
+        font-size: 8pt; line-height: 3mm; color: var(--grey); font-feature-settings: "tnum"; }
 /* the thumb index: section n sits on row n, at the page's edge */
 .tab { position: absolute; right: 0; width: 7mm; height: calc(var(--b) * 6); top: calc(11.5mm + (var(--n) - 1) * var(--b) * 10);
-       background: var(--ink); color: var(--paper); font-size: 7.5pt; font-weight: 600; line-height: calc(var(--b) * 6);
+       background: var(--sig); color: var(--ink); font-size: 8pt; font-weight: 600; line-height: calc(var(--b) * 6);
        padding-left: 1.6mm; font-feature-settings: "tnum"; }
 
-/* ── type: four sizes ── */
-.no { display: block; font-weight: 600; font-size: 7.5pt; line-height: calc(var(--b) * 3); font-feature-settings: "tnum"; }
-h1 { font-weight: 300; font-size: 31pt; line-height: calc(var(--b) * 8); letter-spacing: -.022em; white-space: nowrap; }
-.lead { font-size: 12.4pt; line-height: calc(var(--b) * 4); letter-spacing: -.006em; }
-.k { display: block; font-weight: 600; font-size: 7.5pt; line-height: calc(var(--b) * 2.5); color: var(--grey); }
+/* ── type: three sizes — 8 pt small, 10 pt text (headlines are its semibold), 32 pt titles ── */
+.no { display: block; font-weight: 600; font-size: 8pt; line-height: calc(var(--b) * 3); font-feature-settings: "tnum"; }
+h1 { font-weight: 300; font-size: 32pt; line-height: calc(var(--b) * 8); letter-spacing: -.022em; white-space: nowrap; }
+.lead { font-weight: 600; line-height: calc(var(--b) * 3); }
+.k { display: block; font-weight: 600; font-size: 8pt; line-height: calc(var(--b) * 2.5); color: var(--grey); }
 .block, .watch { border-top: .2mm solid var(--ink); padding-top: var(--b); overflow: hidden; }
-.block h3 { font-weight: 600; font-size: 12.4pt; line-height: calc(var(--b) * 4); letter-spacing: -.008em; margin-bottom: var(--b); }
+.block h3 { font-weight: 600; font-size: 10pt; line-height: calc(var(--b) * 3); margin-bottom: calc(var(--b) * .5); }
 .block p + p { margin-top: var(--b); }
 .block .ui, .block table.plain { margin-top: var(--b); }
 .block .ui + .k { margin-top: calc(var(--b) * 1.5); }
@@ -51,7 +51,7 @@ h1 { font-weight: 300; font-size: 31pt; line-height: calc(var(--b) * 8); letter-
 b { font-weight: 600; }
 code { font-family: inherit; font-style: italic; }
 kbd { font-family: inherit; font-weight: 600; }
-.big { font-weight: 300; font-size: 31pt; line-height: calc(var(--b) * 8); letter-spacing: -.02em; margin-bottom: var(--b); font-feature-settings: "tnum", "case"; }
+.big { font-weight: 300; font-size: 32pt; line-height: calc(var(--b) * 8); letter-spacing: -.02em; margin-bottom: var(--b); font-feature-settings: "tnum", "case"; }
 table.plain { border-collapse: collapse; width: 100%; font-feature-settings: "tnum"; }
 table.plain td { padding: calc(var(--b) * .5) 0; border-bottom: .2mm solid var(--line); vertical-align: top; }
 table.plain td:first-child { font-weight: 600; width: 36%; padding-right: 2mm; }
@@ -74,20 +74,15 @@ ol.steps li::before { content: counter(st); position: absolute; left: 0; font-we
 figure { display: grid; grid-template-rows: minmax(0, 1fr) calc(var(--b) * 6); min-height: 0; }
 figure.hero { grid-template-rows: minmax(0, 1fr); }
 figure > div { position: relative; overflow: hidden; container-type: size; }
-figcaption { font-size: 7.5pt; line-height: calc(var(--b) * 2.5); padding-top: var(--b); color: var(--grey); font-feature-settings: "tnum"; overflow: hidden; }
+figcaption { font-size: 8pt; line-height: calc(var(--b) * 2.5); padding-top: var(--b); color: var(--grey); font-feature-settings: "tnum"; overflow: hidden; }
 figcaption b { color: var(--ink); }
 .art { position: relative; } .art img { display: block; width: 100%; }
-/* a whole dial stands on the paper, as tall as its box; a light plate gets a hairline edge */
-.whole .art, .edge { position: absolute; left: 50%; top: 50%; translate: -50% -50%; aspect-ratio: 1; }
-.whole .art { height: calc(100cqh * var(--k, 1)); }
-.edge { height: 100cqh; border-radius: 50%; border: .2mm solid var(--ink);          /* the plate's edge, and its centre */
-        background: linear-gradient(var(--ink), var(--ink)) center / .2mm 2mm no-repeat, linear-gradient(var(--ink), var(--ink)) center / 2mm .2mm no-repeat; }
-/* grounds: only where a picture needs an edge — a close-up (it has to be cut somewhere), a set of
-   dials that mixes light and dark plates, the tool's controls */
+/* a whole dial stands in the middle of its ground */
+.whole .art { position: absolute; left: 50%; top: 50%; translate: -50% -50%; aspect-ratio: 1; height: calc(100cqh * var(--k, 1)); }
+/* every picture has a ground: it is the box the grid aligns, made visible */
 .ground, .crop { background: var(--ground); }
 .crop .art { position: absolute; }
 .hand img { display: block; width: 100%; height: 100%; }
-figure.hands > div { border-bottom: .2mm solid var(--ink); }
 /* annotations drawn over a large example, in the dial's own millimetres */
 .over { position: absolute; left: 0; top: 0; width: 100%; height: 100%; fill: none; stroke: var(--ink); stroke-width: var(--sw); overflow: visible; }
 .over text { fill: var(--ink); stroke: none; font-size: var(--fs); font-feature-settings: "tnum"; }
@@ -133,7 +128,7 @@ figure.hands > div { border-bottom: .2mm solid var(--ink); }
 .ui.list .sel { background: #D9D9D9; }
 /* callout numbers: a figure in a line circle */
 .tag { display: inline-block; width: 1.9em; height: 1.9em; border-radius: 50%; border: .12em solid var(--ink); background: var(--paper); color: var(--ink);
-       text-align: center; font-weight: 600; font-size: 7.5pt; line-height: 1.66em; font-feature-settings: "tnum"; }
+       text-align: center; font-weight: 600; font-size: 8pt; line-height: 1.66em; font-feature-settings: "tnum"; }
 .k .tag { margin-bottom: var(--b); }
 
 /* the whole window: drawn in the tool's own units (points on screen), then scaled to the page width */
@@ -164,13 +159,13 @@ figure.hands > div { border-bottom: .2mm solid var(--ink); }
 .cover .dial .done { clip-path: inset(0 0 0 50%); }
 .cover .over { stroke: #8F8E89; }
 .cover .over text, .cover .over .g { fill: #A3A29C; } .cover .over .bold { fill: #F1F0EA; }
-.cover .over .split { stroke: #F1F0EA; } .cover .over circle { fill: none; }
+.cover .over .split { stroke: var(--sig); } .cover .over circle { fill: none; }
 .cover .left { position: absolute; left: 12mm; top: 11.5mm; bottom: 11.5mm; width: 65.25mm; display: flex; flex-direction: column; }
 .cover h1 { font-size: 64pt; line-height: 21mm; letter-spacing: -.04em; font-weight: 250; margin-left: -1mm; }
-.cover .subtitle { font-size: 12.4pt; line-height: calc(var(--b) * 4); margin-top: calc(var(--b) * 4); color: #B9B8B2; }
+.cover .subtitle { font-size: 10pt; line-height: calc(var(--b) * 3); margin-top: calc(var(--b) * 4); color: #B9B8B2; }
 .cover .subtitle b { color: #F1F0EA; }
-.cover .said { font-size: 9pt; line-height: calc(var(--b) * 3); margin-top: calc(var(--b) * 4); color: #B9B8B2; }
-.contents { border-collapse: collapse; width: 100%; font-size: 9pt; line-height: calc(var(--b) * 3.2); margin-top: auto; font-feature-settings: "tnum"; }
+.cover .said { font-size: 10pt; line-height: calc(var(--b) * 3); margin-top: calc(var(--b) * 4); color: #B9B8B2; }
+.contents { border-collapse: collapse; width: 100%; font-size: 10pt; line-height: calc(var(--b) * 3.2); margin-top: auto; font-feature-settings: "tnum"; }
 .contents td { border-top: .2mm solid #3A3A3C; padding: 0; }
 .contents td:last-child { text-align: right; color: #B9B8B2; }
 .contents tr.sub td:first-child { padding-left: 7.4mm; color: #B9B8B2; }
@@ -179,7 +174,7 @@ figure.hands > div { border-bottom: .2mm solid var(--ink); }
 .classic .col { grid-row: 1 / span 14; }
 .classic .top { border-top: .3mm solid var(--ink); padding-top: calc(var(--b) * 1.5); overflow: hidden; }
 .classic h1 { margin-bottom: calc(var(--b) * 1.5); }
-.recipe { border-collapse: collapse; width: 100%; font-size: 7.5pt; line-height: calc(var(--b) * 2.5); font-feature-settings: "tnum"; margin-top: var(--b); }
+.recipe { border-collapse: collapse; width: 100%; font-size: 8pt; line-height: calc(var(--b) * 2.5); font-feature-settings: "tnum"; margin-top: var(--b); }
 .recipe th, .recipe td { text-align: left; vertical-align: top; padding: calc(var(--b) * .45) 0; border-top: .2mm solid var(--line); font-weight: 400; }
 .recipe th { font-weight: 600; width: 21mm; padding-right: 2mm; }
 .recipe th span { display: block; font-weight: 400; color: var(--grey); }
@@ -187,11 +182,11 @@ figure.hands > div { border-bottom: .2mm solid var(--ink); }
 .swatch { display: inline-block; width: 2.6mm; height: 2.6mm; border-radius: 50%; border: .2mm solid rgba(0,0,0,.45); vertical-align: -.45mm; margin-left: .6mm; }
 
 /* ── reference: every setting, printed from the tool's own row descriptions. Five rows are two grid rows. ── */
-.ref { border-collapse: collapse; width: 100%; font-size: 7.5pt; line-height: calc(var(--b) * 2.5); font-feature-settings: "tnum"; table-layout: fixed; }
-.ref th, .ref td { text-align: left; vertical-align: top; padding: calc(var(--b) * .75) 2mm calc(var(--b) * .75) 0; height: calc(var(--b) * 4);
+.ref { border-collapse: collapse; width: 100%; font-size: 8pt; line-height: calc(var(--b) * 2.5); font-feature-settings: "tnum"; table-layout: fixed; }
+.ref th, .ref td { text-align: left; vertical-align: top; padding: calc(var(--b) * .7) 2mm calc(var(--b) * .7) 0; height: calc(var(--b) * 4);
                    border-top: .2mm solid var(--line); font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ref td[colspan] { white-space: normal; }
 .ref th { font-weight: 600; } .ref td { color: #2E2E2C; } .ref td.g { color: var(--grey); }
 .ref tr.h th { color: var(--grey); font-weight: 600; border-top: .2mm solid var(--ink); }
-.ref tr.t th { color: var(--grey); border-top: .2mm solid var(--ink); } .ref tr.t th:first-child { color: var(--ink); font-size: 9pt; }
+.ref tr.t th { color: var(--grey); border-top: .2mm solid var(--ink); } .ref tr.t th:first-child { color: var(--ink); }
 .ref col.a { width: 21%; } .ref col.b { width: 17%; } .ref col.c { width: 8%; } .ref col.d { width: 12%; }
