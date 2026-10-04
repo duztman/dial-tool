@@ -129,12 +129,12 @@ def oklch(L, C, h):
 # from yellow. It is the plate of the section's plain figures and its tab on the page edge.
 # Yellow carries the most colour; the further a hue is from it, the less it gets, because a green
 # or blue of the same strength looks far louder on the grey ground.
-SECTIONS_N, TINT = 14, dict(L=0.90, strong=0.095, weak=0.022, first_hue=95)
+SECTIONS_N, TINT = 14, dict(L=0.90, strong=0.095, weak=0.042, first_hue=95)
 
 def tint(n):
     import math
-    turn = n * 360 / SECTIONS_N
-    near = ((1 + math.cos(math.radians(turn))) / 2) ** 4      # 1 at yellow, 0 opposite it
+    turn = (n * 5 % SECTIONS_N) * 360 / SECTIONS_N            # five fourteenths a step: neighbours are far apart in hue
+    near = ((1 + math.cos(math.radians(turn))) / 2) ** 2      # 1 at yellow, 0 opposite it
     return oklch(TINT["L"], TINT["weak"] + (TINT["strong"] - TINT["weak"]) * near, TINT["first_hue"] + turn)
 
 COLOURS = {n + 1: tint(n) for n in range(SECTIONS_N)}

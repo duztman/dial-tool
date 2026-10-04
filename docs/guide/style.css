@@ -6,7 +6,7 @@
 @font-face { font-family: "Inter"; src: url("cache/Inter-Italic.ttf"); font-weight: 100 900; font-style: italic; }
 @page { size: 297mm 210mm; margin: 0; }
 :root {
-  --paper: #FCFCFA; --ground: #ECECE8; --ink: #111111; --grey: #5C5C58; --line: #B9B9B4;
+  --paper: #FCFCFA; --ground: #E3E3DE; --ink: #111111; --grey: #5C5C58; --line: #B9B9B4;
   --b: 1.375mm; --sig: #ECECE8;                 /* a section's own colour, set on each page by make_guide.py (COLOURS) */
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -151,17 +151,18 @@ figcaption b { color: var(--ink); }
 .px .status { font-size: 11px; color: #555; white-space: pre; }
 .px .tag { position: absolute; font-size: 12px; width: 23px; height: 23px; line-height: 20px; border-width: 1.5px; background: #fff; }
 
-/* ── cover: three equal fields, dark · lighter · lightest. Title and contents on the first; one whole
+/* ── cover: three equal fields, each a step lighter, ending near 50 % value. Title and contents on the first; one whole
    dial (174 mm across) centred on the line between the other two — construction left, finished right. ── */
 .cover { background: rgb(15, 15, 18); color: #F1F0EA; }
 .cover .mid, .cover .light { position: absolute; top: 0; bottom: 0; width: 99mm; }
-.cover .mid { left: 99mm; background: var(--sig); }
-.cover .light { left: 198mm; background: color-mix(in oklab, var(--sig) 38%, var(--paper)); }
+.cover .mid { left: 99mm; background: #46463F; }                 /* about 28 % value */
+.cover .light { left: 198mm; background: #827F74; }               /* about 50 % value */
 .cover .dial { position: absolute; width: 207.7mm; height: 207.7mm; left: 94.15mm; top: 1.15mm; }
 .cover .dial img { position: absolute; left: 0; top: 0; width: 100%; }
-.cover .dial .ghost { opacity: .3; clip-path: inset(0 50% 0 0); }
+.cover .dial .ghost { opacity: .14; clip-path: inset(0 50% 0 0); }
 .cover .dial .done { clip-path: inset(0 0 0 50%); }
-.cover .over { stroke: var(--ink); clip-path: inset(0 50% 0 0); }
+.cover .over { stroke: #D9D7CC; clip-path: inset(0 50% 0 0); }
+.cover .over text, .cover .over .g { fill: #C9C7BC; } .cover .over .bold { fill: #F1F0EA; }
 .cover .over circle { fill: none; }
 .cover .left { position: absolute; left: 12mm; top: 11.5mm; bottom: 11.5mm; width: 75mm; display: flex; flex-direction: column; }
 .cover h1 { font-size: 64pt; line-height: calc(var(--b) * 16); letter-spacing: -.04em; font-weight: 250; margin-left: -1mm; }
