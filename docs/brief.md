@@ -1,6 +1,6 @@
 # Dial Tool — brief
 
-*Started 3 Oct 2026. Last updated 4 Oct 2026 (beta 2.2).*
+*Started 3 Oct 2026. Last updated 4 Oct 2026 (beta 2.2; preview plan written — `docs/preview.md`).*
 
 ## 1 · Goal
 
@@ -16,7 +16,7 @@ Not photorealistic. Real proportions and perfect vector rendering are.
 ## 2 · Context and constraints
 
 - Okay: graphic designer; uses Illustrator daily, also InDesign, After Effects, LightBurn. Comfortable with code; wants to understand what it does.
-- Machines: Macs, both Apple Silicon and Intel, not always the latest macOS; iPhone and iPad as viewers.
+- Machines: Macs, both Apple Silicon and Intel, not always the latest macOS; iPhone and iPad as viewers. As of 4 Oct 2026 both Macs run macOS 15; the Intel one has integrated graphics — the slowest machine to test speed on.
 - Existing practice: prototyping dials by acid-etching brass blanks with toner transfer (PnP Blue film). Pad printing is the industry pipeline.
 - Materials and parts are sourced locally: don't plan around ordering from abroad (books excepted).
 - The movement is not chosen yet — design first, then pick a movement that fits.
@@ -63,6 +63,7 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 4 Oct | **Guidebook**: a 5-page PDF in IBM Plex Mono — what it does, install, files in and out, FAQ — built from `docs/guide/guide.md` by `tools/make_guide.py`, updated with each release (R25). | Okay: "a guidebook that gets updated, part of the project". Source and script in the repo so any agent can rebuild it; figures come from dial.py itself. |
 | 4 Oct | **beta 2.2 released to `main`.** | Okay: "we have beta v2 here" — beta 2.1 ran on his Mac. |
 | 4 Oct | **Repository public, MIT licence** (fonts stay SIL OFL). City and machine details trimmed from the docs first. | Okay. |
+| 4 Oct | **Preview plan** (`docs/preview.md`): draw the preview with Core Animation from one scene shared with export; a display-synced frame clock; the PDF preview kept as a switch and fallback; skia-pathops optional. Runs when Okay says *"run the preview plan"*. | Okay's complaints after beta 2.1: flashing, lag while dragging, blur while zooming. Causes found in DrawBot's source and Apple's docs (PDF document swap; scroll-view magnification; `booleanOperations` 2–14× slower than skia-pathops, measured with `tools/bool_bench.py`). |
 | 4 Oct | Interface checked off-Mac with **`tools/ui_smoke.py`**: stand-ins that accept only vanilla 0.5.0's real signatures and methods. | The full window can't run off-Mac; this catches wrong calls and lost callbacks (it reproduces the beta 1.0 dropdown bug when R22 is removed). |
 
 ## 5 · Open questions
@@ -75,6 +76,8 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 6. When `dial.py` grows, split it into modules or keep one file? (beta 2.2: 2,339 lines, still one file.)
 7. **Should rings and hands scale with the diameter?** Radii and lengths are absolute mm (R1), so changing the diameter leaves them in place — right for a fixed movement, awkward while exploring. (Build list #32.)
 8. **PDF import with real Illustrator files** — forms, compound paths, white made in spot or CMYK colours. Tested only with hand-written operators so far. (Build list #30.)
+9. **Preview drawing** — do Core Animation shape layers draw fine lines (0.12 mm ticks) as the PDF does? Apple says shape rasterization "may favor speed over accuracy". Settled by the Mac check in `docs/preview.md` §6 step 5; contingency in §8.
+10. **skia-pathops** for shape combining — install through DrawBot's package menu? (`docs/preview.md` §3.6, §10.)
 
 ## 6 · Avenues (ideas, not commitments)
 

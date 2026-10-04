@@ -1,7 +1,7 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **done** · **parked**.
-*Last updated 4 Oct 2026 (beta 2.2). Seen working on Okay's Mac 4 Oct (beta 2.1 screenshot): window, sections, ring list, ring settings list, regular-size controls, live popups, type per numerals ring with feature names.*
+*Last updated 4 Oct 2026 (beta 2.2; preview plan #37–#42 added, see `docs/preview.md`). Seen working on Okay's Mac 4 Oct (beta 2.1 screenshot): window, sections, ring list, ring settings list, regular-size controls, live popups, type per numerals ring with feature names.*
 
 ## Verify on a Mac
 
@@ -11,8 +11,8 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 2 | Number controls: slider, typed field (incl. `+`, `x`, `/`), stepper stay in sync | verify |
 | 3 | Type (per numerals ring): family box, style, named instance (try Skia), axis sliders appear/disappear per font | verify |
 | 4 | OpenType feature list toggles change the numerals; designer names show where the font has them | verify |
-| 5 | Zoom and scroll position survive redraws; Fit resets | verify |
-| 6 | Play (macOS timer) runs; Stop stops; closing the window stops it | verify |
+| 5 | Zoom and scroll position survive redraws; Fit resets — *the canvas (#37) keeps zoom in Python, so this holds by design; check it there* | verify |
+| 6 | Play runs; Stop stops; closing the window stops it — *known bug: Play pauses while a slider is held (timer in the default run-loop mode); fixed by the frame clock (#38)* | verify |
 | 7 | Button bars register which button was clicked (Export, Settings, ring tools, Reset nudge) | verify |
 | 8 | Export PDF / SVG / PNG / MP4 / GIF; check SVG and PDF open at true size in Illustrator | verify |
 | 9 | SVG import: a marker and three hands drawn in Illustrator (pointing up, anchor at artboard centre) | verify |
@@ -35,9 +35,15 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 |---|---|---|
 | 12 | Production limits per method: minimum line width and clearance; warn in the preview | open |
 | 13 | Numeral vertical alignment option: glyph bounds (now) vs cap height / baseline | open |
-| 14 | Heavy modes (knockout + 300 ticks ≈ 140–170 ms off-Mac): redraw on mouse-up if dragging feels slow | open |
+| 14 | Heavy modes (knockout + 300 ticks ≈ 140–170 ms off-Mac): redraw on mouse-up if dragging feels slow. *4 Oct: DrawBot's shape combining is 2–14× slower than the harness's (`tools/bool_bench.py`, `docs/preview.md` §2.4) — see #38 and #41 first* | open |
 | 15 | Fallback-font control for scripts the main font lacks (depends on #11) | open |
 | 16 | Live-text export option alongside outlines (beta 2.2) — verify: export PDF and SVG with it on, open in Illustrator with the font installed | verify |
+| 37 | **Preview: canvas.** Core Animation layers drawn from one scene shared with export; pinch / two-finger pan / ⌘-scroll zoom, Fit; sharp during zoom; no flash (`docs/preview.md` §3.1–3.2) | open — ready to run |
+| 38 | **Preview: frame clock.** Controls request a frame; a display-synced clock draws at most once per frame; Play runs on it, also while a slider is held (§3.3) | open — ready to run |
+| 39 | **Preview: Canvas · PDF switch** (`ui_preview`), PDF as fallback and reference (§3.5) | open — ready to run |
+| 40 | **Preview: Mac check** — `docs/preview.md` §6, steps 1–10 | open — after #37–#39 |
+| 41 | **skia-pathops** for shape combining, installed through DrawBot's package menu (§3.6) | open — waiting for Okay |
+| 42 | Smoke test: stand-ins for Quartz / Core Animation, a driven frame clock, canvas and zoom checks (§5.2) | open — with #37 |
 | 32 | Scale the whole dial (rings, hands, date) when the diameter changes, or a "scale everything" action (brief §5.7) | open |
 
 ## Later

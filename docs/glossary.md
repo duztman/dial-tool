@@ -102,7 +102,11 @@ Kept so older notes still read.
 |---|---|
 | **DrawBot** | The macOS app (Python) the tool runs in. Version 3.132. |
 | **vanilla** | The macOS interface library DrawBot itself is built with. Version 0.5.0 inside DrawBot. |
-| **DrawView** | DrawBot's PDF canvas, reused as the tool's preview. |
+| **DrawView** | DrawBot's PDF viewer (Apple's `PDFView`), reused as the tool's preview — the **PDF preview**. |
+| **Canvas** | *(planned, `docs/preview.md`)* The preview drawn by macOS's Core Animation: one layer per plate, ring, date part and hand. Not to be confused with DrawBot's own drawing area. |
+| **Scene** | *(planned)* The list `scene()` returns: everything to draw, bottom to top, with colours. Export and both previews read it (R26). |
+| **Frame clock** | *(planned)* A timer tied to the display's refresh. Controls only request a frame; the clock draws at most once per frame. |
+| **Shape combining** | Union, difference, xor and overlap removal of paths (knockouts, cuts, hollow shapes). DrawBot uses `booleanOperations`; the harness uses `skia-pathops`. |
 | **Private engine** | A separate `DrawBotDrawingTool` so the tool never disturbs DrawBot's own canvas. |
 | **GridView** | Apple's form grid, used for every form (label · control · field · stepper columns). |
 | **Binding** | The link from a control to a setting key in a scope — global, the selected ring, or the selected hand — so selecting another ring refills the controls. |

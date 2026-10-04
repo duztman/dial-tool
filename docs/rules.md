@@ -1,7 +1,7 @@
 # Dial Tool — rules
 
 Standing rules. Check code against these in reviews; cite them by number.
-*Last updated 4 Oct 2026 (beta 2.2: R10 updated, R25 added).*
+*Last updated 4 Oct 2026 (beta 2.2: R10 updated, R25 added; R13 reworded to match the code — see `docs/preview.md` §9 for R26–R28, added when the preview plan runs).*
 
 ## Geometry
 
@@ -27,7 +27,7 @@ Standing rules. Check code against these in reviews; cite them by number.
 
 ## Interface
 
-- **R13 · Only APIs in vanilla 0.5.0 and DrawBot 3.132** (what the DrawBot app bundles). Read the source before using a call; `tools/vanilla-0.5.0-api.json` lists every class signature and method.
+- **R13 · Only what ships with DrawBot 3.132:** vanilla 0.5.0, DrawBot itself, and Apple's frameworks through DrawBot's PyObjC (AppKit, Quartz, CoreText, Core Animation — `dial.py` already uses the first three directly). Read the source before using a call; `tools/vanilla-0.5.0-api.json` lists every vanilla class signature and method. APIs from macOS 14 are allowed with a fallback (R17): both of Okay's Macs run macOS 15 (4 Oct 2026). *Reworded 4 Oct: it said "only vanilla and DrawBot", which the code had already outgrown.*
 - **R14 · No vanilla `Tabs` around auto-layout content** — it collapses. Use segmented switchers (sections, hands) or one scrolling list (R24).
 - **R15 · A number control is label · slider · typed field · stepper**, kept in sync. Typing past the slider's range extends it.
 - **R16 · Rows that don't apply are hidden**, not disabled.

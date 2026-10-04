@@ -24,6 +24,7 @@ Off-Mac checks (Python 3, `pip install drawbot-skia skia-pathops pillow`):
 | `tools/dial_probe.py` | Foundation test for the interface. Run it in DrawBot when something breaks; its Report tab says which part failed. |
 | `tools/test_harness.py` | Renders the geometry without a Mac (drawbot-skia) into a contact sheet; checks the PDF importer's drawing logic. |
 | `tools/ui_smoke.py` | Runs the whole interface without a Mac on stand-ins that accept only what vanilla 0.5.0 accepts. |
+| `tools/bool_bench.py` | Times shape combining: DrawBot's `booleanOperations` vs the harness's `skia-pathops`, on every harness dial (off-Mac). |
 | `tools/vanilla-0.5.0-api.json` | vanilla 0.5.0's class signatures and method names, extracted from its source (used by the smoke test and for R13). |
 | `docs/Dial-Tool-guide.pdf` | The guidebook: what it does, install, files in and out, FAQ. |
 | `docs/guide/` | Its source: `guide.md`, figures (`img/`), IBM Plex Mono (`fonts/`, SIL OFL). |
@@ -32,6 +33,7 @@ Off-Mac checks (Python 3, `pip install drawbot-skia skia-pathops pillow`):
 | `docs/rules.md` | Standing rules — check code against these in reviews. |
 | `docs/glossary.md` | Watch terms and tool terms, and which word means what here. |
 | `docs/build-list.md` | Numbered open items, things to verify, ideas. |
+| `docs/preview.md` | The preview: findings (flash, lag, blur), design, build steps, tests, Mac check, and the run order for "run the preview plan". |
 | `docs/changelog.md` | Versions. |
 | `docs/project-prompt.md` | Start-off prompt for the Claude Project. |
 | `docs/beta-1.0-geometry.png` | Reference renders of beta 1.0. |

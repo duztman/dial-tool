@@ -17,3 +17,4 @@
 > - I test on my Mac and send screenshots plus the Export section's log. If the foundation breaks, I run `tools/dial_probe.py` and paste its report.
 > - Simplest approach that works. Nothing unprompted. Third attempt at the same fix → stop and ask.
 > - "**Future map**" = assemble from the build list and brief §5–§8, ordered Now → Next → Later → Parked.
+> - "**Run the preview plan**" = follow `docs/preview.md` §7 start to finish and hand over a new version.
