@@ -1092,16 +1092,21 @@ def hand_shape(h):
         return p
     return memo(("hand", key_of(h)), build)
 
+def hand_items(S, t):
+    """the hands that are on, bottom first: (name, colour, upright shape, clock angle)."""
+    angles = hand_angles(t, BEATS[S["ha_beat"]][1])
+    return [(name, S["ha_" + name]["c"], hand_shape(S["ha_" + name]), a)
+            for name, a in zip(HANDS, angles) if S["ha_" + name]["on"]]
+
+def turned(path, angle):
+    """a copy of an upright shape, turned to a clock angle (R2)."""
+    p = path.copy()
+    p.rotate(-angle)
+    return p
+
 def build_hands(S, t):
     """[(colour, shape)] for hour, minute, seconds, then the cap."""
-    angles = hand_angles(t, BEATS[S["ha_beat"]][1])
-    out = []
-    for name, a in zip(HANDS, angles):
-        h = S["ha_" + name]
-        if h["on"]:
-            p = hand_shape(h).copy()
-            p.rotate(-a)
-            out.append((h["c"], p))
+    out = [(colour, turned(path, a)) for _, colour, path, a in hand_items(S, t)]
     if S["ha_cap"] > 0:
         out.append((S["c_cap"], circle(S["ha_cap"])))
     return out
@@ -1111,8 +1116,76 @@ def build_hands(S, t):
 #  3 · DRAWING  — D is a DrawBot drawing engine
 # ═════════════════════════════════════════════════════════════
 
+GUIDE          = [0.0, 0.55, 0.9, 0.5]                # dial edge, date radius, axes
+GUIDE_RING     = [0.0, 0.55, 0.9, 0.35]               # a ring's edges
+GUIDE_SELECTED = [1.0, 0.45, 0.0, 0.95]               # the ring being edited
+
+def scene(S, static, t, preview=True, selected=None):
+    """what to draw, bottom to top. Export and both previews read this list (R26).
+
+    Each item: role · path (mm; a hand's is upright, see angle) · fill (RGBA, None for guides)
+    · angle (clock angle for hands, else 0). Rings add ring (their entry in static["rings"]),
+    hands add name, guides add stroke and width (mm). An item with a key is "the same shape"
+    while its key is equal; without one, while its path is the same object.
+    selected = index of the ring being edited; its guides are drawn stronger.
+    """
+    items = []
+    def add(role, path, fill, **more):
+        if path is not None:
+            items.append(dict(role=role, path=path, fill=fill, angle=0, **more))
+    date = static["date"]
+    rings = static["rings"][::-1]                                  # bottom ring first, top ring last
+
+    if S["out_production"]:                                        # mono mask, no plate, no hands
+        black = [0, 0, 0, 1]
+        for d in rings:
+            add("ring", d["path"], black, ring=d)
+        if date:
+            add("date frame", date["frame"], black)
+            add("cutline", date["cutline"], black)
+    else:
+        if date:                                                   # date disc, seen through the hole
+            add("date disc", date["window"], [1, 1, 1, 1])
+            add("date number", date["number"], S["da_ink"])
+        add("plate", static["plate"], S["c_plate"])
+        for d in rings:
+            add("ring", d["path"], d["ring"]["c"], ring=d)
+        if date:
+            add("date frame", date["frame"], S["da_ink"])
+        if S["ha_on"]:
+            for name, colour, path, a in hand_items(S, t):
+                add("hand", path, colour, name=name)
+                items[-1]["angle"] = a
+            if S["ha_cap"] > 0:
+                add("cap", circle(S["ha_cap"]), S["c_cap"], key=("cap", S["ha_cap"]))
+
+    if preview and S["guides"]:                                    # never exported (R5)
+        R = S["dial_d"] / 2
+        def ring_guide(r, colour, width):
+            add("guide", circle(2 * r), None, stroke=colour, width=width, key=("circle", r))
+        def line_guide(p0, p1):
+            p = BezierPath()
+            p.line(p0, p1)
+            add("guide", p, None, stroke=GUIDE, width=0.03, key=("line", p0, p1))
+        for r in (R,) + ((S["da_r"],) if date else ()):
+            ring_guide(r, GUIDE, 0.03)
+        line_guide((-R, 0), (R, 0))
+        line_guide((0, -R), (0, R))
+        for i, ring in enumerate(S["rings"]):
+            if not ring["on"]:
+                continue
+            inner = {"ticks": ring["len"], "markers": ring["len"], "band": ring["width"]}.get(kind_of(ring), 0)
+            for r in sorted({ring["r"], ring["r"] - inner}, reverse=True):
+                if r > 0:
+                    if i == selected:
+                        ring_guide(r, GUIDE_SELECTED, 0.05)
+                    else:
+                        ring_guide(r, GUIDE_RING, 0.03)
+    return items
+
+
 def draw_page(D, S, static, t, preview=True, selected=None):
-    """selected = index of the ring being edited; its guides are drawn stronger."""
+    """one page through DrawBot: every export, and the PDF preview. Draws the scene (R26)."""
     size = (S["dial_d"] + 2 * S["margin"]) * MM
     D.newPage(size, size)
     production = S["out_production"]
@@ -1124,72 +1197,31 @@ def draw_page(D, S, static, t, preview=True, selected=None):
     if S["out_mirror"]:
         D.scale(-1, 1)                                             # for toner transfer
     D.stroke(None)
-    date = static["date"]
-    rings = static["rings"][::-1]                                  # bottom ring first, top ring last
+    live = S["out_live_text"] and not preview and not production   # export option: numerals as text
 
-    if production:                                                 # mono mask, no plate, no hands
-        D.fill(0, 0, 0, 1)
-        for d in rings:
-            D.drawPath(d["path"])
-        if date:
-            if date["frame"]:
-                D.drawPath(date["frame"])
-            D.drawPath(date["cutline"])
-    else:
-        live = S["out_live_text"] and not preview                  # export option: numerals as text
-        if date:                                                   # date disc, seen through the hole
-            D.fill(1, 1, 1, 1)
-            D.drawPath(date["window"])
-            D.fill(*S["da_ink"])
-            if live:
-                typ, size = date_type(S), S["da_h"] * S["da_size"] / 100
-                c = text_centre(S["da_day"], typ, size)
-                if c is not None:
-                    with D.savedState():
-                        D.translate(*clock_point(S["da_r"], date_angle(S)))
-                        live_text(D, S["da_day"], typ, size, S["da_ink"], (-c[0], -c[1]))
-            else:
-                D.drawPath(date["number"])
-        D.fill(*S["c_plate"])
-        D.drawPath(static["plate"])
-        for d in rings:
-            D.fill(*d["ring"]["c"])
-            if live and d["kind"] == "numerals":
-                numerals_live(D, d)
-            else:
-                D.drawPath(d["path"])
-        if date and date["frame"]:
-            D.fill(*S["da_ink"])
-            D.drawPath(date["frame"])
-        if S["ha_on"]:
-            for colour, p in build_hands(S, t):
-                D.fill(*colour)
-                D.drawPath(p)
-
-    if preview and S["guides"]:                                    # never exported (R5)
-        R = S["dial_d"] / 2
-        D.fill(None)
-        D.strokeWidth(0.03)
-        D.stroke(0.0, 0.55, 0.9, 0.5)
-        for r in (R,) + ((S["da_r"],) if date else ()):
-            D.oval(-r, -r, 2 * r, 2 * r)
-        D.line((-R, 0), (R, 0))
-        D.line((0, -R), (0, R))
-        for i, ring in enumerate(S["rings"]):
-            if not ring["on"]:
-                continue
-            kind = kind_of(ring)
-            inner = {"ticks": ring["len"], "markers": ring["len"], "band": ring["width"]}.get(kind, 0)
-            if i == selected:
-                D.stroke(1.0, 0.45, 0.0, 0.95)
-                D.strokeWidth(0.05)
-            else:
-                D.stroke(0.0, 0.55, 0.9, 0.35)
-                D.strokeWidth(0.03)
-            for r in {ring["r"], ring["r"] - inner}:
-                if r > 0:
-                    D.oval(-r, -r, 2 * r, 2 * r)
-        D.stroke(None)
+    for item in scene(S, static, t, preview, selected):
+        role = item["role"]
+        if role == "guide":
+            D.fill(None)
+            D.stroke(*item["stroke"])
+            D.strokeWidth(item["width"])
+            D.drawPath(item["path"])
+            D.stroke(None)
+            continue
+        D.fill(*item["fill"])
+        if live and role == "date number":
+            typ, height = date_type(S), S["da_h"] * S["da_size"] / 100
+            c = text_centre(S["da_day"], typ, height)
+            if c is not None:
+                with D.savedState():
+                    D.translate(*clock_point(S["da_r"], date_angle(S)))
+                    live_text(D, S["da_day"], typ, height, S["da_ink"], (-c[0], -c[1]))
+        elif live and role == "ring" and item["ring"]["kind"] == "numerals":
+            numerals_live(D, item["ring"])
+        elif role == "hand":
+            D.drawPath(turned(item["path"], item["angle"]))
+        else:
+            D.drawPath(item["path"])
 
 
 # ═════════════════════════════════════════════════════════════
