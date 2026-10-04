@@ -30,9 +30,10 @@ Off-Mac checks (Python 3, `pip install drawbot-skia skia-pathops pillow`):
 | `docs/Dial-Tool-guide.pdf` | The guidebook: what it does, install, files in and out, FAQ. |
 | `docs/guide/` | Its source: `guide.html` (text and layout), figures (`img/`, generated), `presets/` (the classic dials as loadable settings). |
 | `tools/guide_dials.py` | The classic dials shown in the guide, as Dial Tool settings. |
-| `tools/make_guide.py` | Rebuilds the guidebook: figures drawn by dial.py itself, recipes printed from the same settings, PDF through Chromium. Fetches open fonts (Recursive and stand-ins) into `docs/guide/cache`. |
+| `tools/make_guide.py` | Rebuilds the guidebook: figures drawn by dial.py itself, recipes printed from the same settings, PDF through Chromium. Fetches open fonts (Inter and stand-ins) into `docs/guide/cache`. |
 | `docs/brief.md` | Goals, decisions, open questions, parked ideas. |
 | `docs/rules.md` | Standing rules — check code against these in reviews. |
+| `docs/design.md` | The design canon: type, grid, colour, pictures, redrawn controls — for the guide and anything else shown. |
 | `docs/glossary.md` | Watch terms and tool terms, and which word means what here. |
 | `docs/build-list.md` | Numbered open items, things to verify, ideas. |
 | `docs/preview.md` | The preview: findings (flash, lag, blur), design, build steps, tests, the **Mac check (§6)**, and what the run changed (§12). |

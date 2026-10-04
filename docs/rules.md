@@ -1,7 +1,7 @@
 # Dial Tool — rules
 
 Standing rules. Check code against these in reviews; cite them by number.
-*Last updated 4 Oct 2026 (beta 2.3: R26–R28 added with the preview plan; beta 2.2: R10 updated, R25 added, R13 reworded).*
+*Last updated 4 Oct 2026 (beta 2.3: R26–R28 added with the preview plan, R29 with the design canon; beta 2.2: R10 updated, R25 added, R13 reworded).*
 
 ## Geometry
 
@@ -44,4 +44,5 @@ Standing rules. Check code against these in reviews; cite them by number.
 - **R19 · Test before handing over.** Geometry: `tools/test_harness.py`, and look at the contact sheet. Interface: `tools/ui_smoke.py` must pass.
 - **R20 · Third attempt at the same fix → stop and ask.** The first assumption was probably wrong.
 - **R21 · Measure, don't estimate** — sizes and timings come from real renders.
-- **R25 · The guidebook follows each release.** Edit `docs/guide/guide.html` (text, layout) and `tools/guide_dials.py` (the classic dials); run `tools/make_guide.py`; it must report no overflowing page. Layout: every block sits on the 12-column grid (classes `s2`, `s4`… in `guide.html`); redrawn controls come from `{{ui:…}}` marks, which read `dial.py`'s row descriptions. Figures and the printed values come from the same settings, drawn by `dial.py` — never type a value into the guide that a figure doesn't use. The window screenshot comes from Okay's Mac (`docs/guide/img/window.png`); callout positions are in `CALLOUTS`. Fonts are fetched into `docs/guide/cache` (not in the repo).
+- **R25 · The guidebook follows each release.** Edit `docs/guide/guide.html` (text, layout) and `tools/guide_dials.py` (the classic dials); run `tools/make_guide.py`; it must report no overflowing page. Figures, the redrawn window and the printed values all come from `dial.py` and the same settings — never type a value into the guide that a figure doesn't use. Fonts are fetched into `docs/guide/cache` (not in the repo).
+- **R29 · `docs/design.md` is the design canon** for anything shown that isn't a dial: type, grid, colour, pictures, redrawn controls, writing. Follow it; when a new need doesn't fit, change the canon first, then the page.
