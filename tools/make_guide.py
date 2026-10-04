@@ -506,6 +506,7 @@ def figures():
         with open(os.path.join(PRESETS, name + ".json"), "w", encoding="utf-8") as f:
             json.dump(settings, f, indent=1, ensure_ascii=False)
         draw(ns, f"dial-{name}", ns["fresh_settings"](settings))
+    draw(ns, "cover", cover_settings(ns))
     for name, f in HEROES.items():
         draw(ns, f"hero-{name}", figure_settings(ns, f))
     for strip, figs in FIGURES.items():
@@ -736,10 +737,14 @@ def thumb(name):
 
 COVER = "bauhaus"                                            # the dial on the cover
 
+def cover_settings(ns):
+    """the cover's dial: a classic, with its plate in the first section's yellow."""
+    return ns["fresh_settings"](G.resolved(dict(G.DIALS[COVER]["settings"], c_plate=COLOURS[1]), ns))
+
 def cover(ns):
     """one classic dial, whole: its left half as construction (every radius and angle the settings
     name), its right half as those settings print it."""
-    S = ns["fresh_settings"](G.resolved(G.DIALS[COVER]["settings"], ns))
+    S = cover_settings(ns)
     page, R = S["dial_d"] + 2 * S["margin"], S["dial_d"] / 2
     half = lambda r, dash="": f'<path class="{dash}" d="M0 {r:.2f} A{r:.2f} {r:.2f} 0 0 1 0 {-r:.2f}"/>'
     out = [half(R), '<path d="M-.6 0h.6M0 -.6v1.2"/>']
@@ -760,7 +765,7 @@ def cover(ns):
         out.append(f'<line class="dash" x1="{x0:.2f}" y1="{y0:.2f}" x2="{x1:.2f}" y2="{y1:.2f}"/>')
         out.append(f'<text x="{x2:.2f}" y="{y2 + 0.15:.2f}" text-anchor="middle">−{360 - a}°</text>')
     out.append(label(*cp(R + 0.35, 224), f"Diameter {S['dial_d']:g}", "end"))
-    return (f'<div class="dial"><img class="ghost" src="img/dial-{COVER}.svg"><img class="done" src="img/dial-{COVER}.svg">'
+    return (f'<div class="dial"><img class="ghost" src="img/cover.svg"><img class="done" src="img/cover.svg">'
             f'<svg class="over" viewBox="{-page / 2:g} {-page / 2:g} {page:g} {page:g}">{"".join(out)}</svg></div>')
 
 
