@@ -1,7 +1,7 @@
 # Dial Tool — rules
 
 Standing rules. Check code against these in reviews; cite them by number.
-*Last updated 4 Oct 2026 (beta 2.1: R14 updated, R24 added).*
+*Last updated 4 Oct 2026 (beta 2.2: R10 updated, R25 added).*
 
 ## Geometry
 
@@ -21,7 +21,7 @@ Standing rules. Check code against these in reviews; cite them by number.
 
 ## Type
 
-- **R10 · Text always goes through DrawBot's `FormattedString`** and becomes outlines (`BezierPath.text`), so font, tracking, features, axes and language all reach the vectors.
+- **R10 · Text always goes through DrawBot's `FormattedString`** and becomes outlines (`BezierPath.text`), so font, tracking, features, axes and language all reach the vectors. The export option *live text* draws the same `FormattedString` as text instead, placed from the outlines' bounds (`numeral_setup`, `path_letters`, `text_centre` are shared) so both land in the same place; cuts become clipping masks. Preview and production masks are always outlines.
 - **R11 · Tracking is in 1/1000 em** (Illustrator's unit), converted to absolute only at drawing time.
 - **R12 · OpenType features store only what differs from the font's default** (kern, liga, calt… are on by default).
 
@@ -41,3 +41,4 @@ Standing rules. Check code against these in reviews; cite them by number.
 - **R19 · Test before handing over.** Geometry: `tools/test_harness.py`, and look at the contact sheet. Interface: `tools/ui_smoke.py` must pass.
 - **R20 · Third attempt at the same fix → stop and ask.** The first assumption was probably wrong.
 - **R21 · Measure, don't estimate** — sizes and timings come from real renders.
+- **R25 · The guidebook follows each release.** Edit `docs/guide/guide.md`; run `tools/make_guide.py`; it must report as many pages as `#` sections (5). Screenshots come from Okay's Mac (`docs/guide/img/window.png`); callout positions are in `CALLOUTS`.

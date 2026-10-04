@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────
-#  dial.py — Dial Tool for DrawBot                     beta 2.1
+#  dial.py — Dial Tool for DrawBot                     beta 2.2
 #
 #  ⌘R opens the tool window. Running again replaces the window
 #  and keeps your current settings.
@@ -29,7 +29,7 @@ except ImportError:                                   # test harness outside the
     from drawbot_skia.path import BezierPath
     FormattedString = None
 
-VERSION = "beta 2.1"
+VERSION = "beta 2.2"
 MM = 72 / 25.4                                        # 1 mm in points (render time only, R1)
 MM_PER_PT = 25.4 / 72                                 # imported files arrive in points
 
@@ -103,7 +103,8 @@ DEFAULTS = dict(
     da_clear=0.25, da_day="17", da_size=62.0, da_ink=INK,
     # time and output
     t=10 * 3600 + 9 * 60 + 36,
-    out_production=False, out_mirror=False, out_dpi=600.0, out_seconds=4.0, out_fps=30.0,
+    out_production=False, out_mirror=False, out_live_text=False,
+    out_dpi=600.0, out_seconds=4.0, out_fps=30.0,
     # interface
     ui_section=0, ui_ring=0, ui_hand=0,
 )
@@ -244,7 +245,7 @@ def fresh_settings(over=None):
     """DEFAULTS + saved or partial settings. beta 1.0 settings are converted first (R8)."""
     over = dict(over or {})
     if "rings" not in over and OLD_ONLY & set(over):
-        over = from_beta1(over)
+        over = dict({k: v for k, v in over.items() if k in DEFAULTS}, **from_beta1(over))
     S = json.loads(json.dumps(DEFAULTS))
     for k, v in over.items():
         if k in S:
@@ -779,34 +780,42 @@ def ring_labels(ring):
     parts = txt.split()
     return [parts[i % len(parts)] for i in range(n)]
 
-def on_path(txt, r, a, t, size):
-    """letters walk along the circle with real kerning; the bottom half flips to read left → right."""
+def path_letters(txt, r, a, t, size):
+    """a word on the circle, letter by letter: (letter, clock angle, flipped?, offset).
+    Real kerning and tracking; one baseline for all letters; the bottom half flips to read left → right."""
     flip = 90 < a % 360 < 270
     tr = t["tracking"] / 1000 * size
     adv = [advance(txt[:i], t, size) for i in range(len(txt) + 1)]   # where each letter starts
     total = adv[-1] - tr
     whole = text_path(txt, t, size).bounds()
-    yc = (whole[1] + whole[3]) / 2 if whole else 0                   # one baseline for all letters
+    yc = (whole[1] + whole[3]) / 2 if whole else 0
     out = []
     for i, ch in enumerate(txt):
         if not ch.strip():
             continue
-        g = text_path(ch, t, size)
         own = advance(ch, t, size) - tr
         c = adv[i] + own / 2 - total / 2                              # letter centre along the word
-        g.translate(-own / 2, -yc)
+        out.append((ch, a - degrees(c / r) if flip else a + degrees(c / r), flip, (-own / 2, -yc)))
+    return out
+
+def on_path(txt, r, a, t, size):
+    out = []
+    for ch, angle, flip, (dx, dy) in path_letters(txt, r, a, t, size):
+        g = text_path(ch, t, size)
+        g.translate(dx, dy)
         if flip:
             g.rotate(180)
-            out.append(place(g, r, a - degrees(c / r)))
-        else:
-            out.append(place(g, r, a + degrees(c / r)))
+        out.append(place(g, r, angle))
     return merge(out)
 
-def numeral_at(ring, i, a, label):
-    mode = MODES[ring["mode"]]
+def numeral_setup(ring, i, a):
+    """placement, radius, angle, size and rotation of the numeral at position i, nudge included."""
     n = ring["nudge"].get(str(i), {})
-    r, a = ring["r"] + n.get("dr", 0), a + n.get("da", 0)
-    size, rot = ring["size"] * n.get("s", 1), n.get("rot", 0)
+    return (MODES[ring["mode"]], ring["r"] + n.get("dr", 0), a + n.get("da", 0),
+            ring["size"] * n.get("s", 1), n.get("rot", 0))
+
+def numeral_at(ring, i, a, label):
+    mode, r, a, size, rot = numeral_setup(ring, i, a)
     if mode == "on path":
         p = on_path(label, r, a, ring, size)
         if rot:
@@ -821,6 +830,68 @@ def numeral_at(ring, i, a, label):
         p.rotate(-(flip + rot))
         place(p, r, a)
     return p
+
+
+# ── live text: the export option ─────────────────────────────
+#   The same placements as the outlines above, drawn as text the PDF/SVG
+#   keeps (the fonts are needed to open it). Positions come from the
+#   outlines' bounds, so live and outlined numerals sit in the same place.
+
+def live_text(D, txt, t, size, colour, pos):
+    if FormattedString is not None and TEST_FONT is None:
+        D.text(FormattedString(txt, fill=tuple(colour), **type_kwargs(t, size)), pos)
+    else:                                                          # test harness: a plain font
+        D.fill(*colour)
+        D.font(TEST_FONT)
+        D.fontSize(size)
+        D.text(txt, pos)
+
+def text_centre(txt, t, size):
+    b = text_path(txt, t, size).bounds()
+    return ((b[0] + b[2]) / 2, (b[1] + b[3]) / 2) if b else None
+
+def numeral_live(D, ring, i, a, label, colour):
+    mode, r, a, size, rot = numeral_setup(ring, i, a)
+    if mode == "on path":
+        for ch, angle, flip, pos in path_letters(label, r, a, ring, size):
+            with D.savedState():
+                if rot:
+                    D.rotate(-rot, center=clock_point(r, a))
+                D.rotate(-angle)
+                D.translate(0, r)
+                if flip:
+                    D.rotate(180)
+                live_text(D, ch, ring, size, colour, pos)
+        return
+    c = text_centre(label, ring, size)
+    if c is None:
+        return
+    with D.savedState():
+        if mode == "upright":
+            D.translate(*clock_point(r, a))
+            D.rotate(-rot)
+        else:
+            flip = 180 if (mode == "radial, auto-flip" and 90 < a % 360 < 270) else 0
+            D.rotate(-a)
+            D.translate(0, r)
+            D.rotate(-(flip + rot))
+        live_text(D, label, ring, size, colour, (-c[0], -c[1]))
+
+def numerals_live(D, d):
+    """a numerals ring as live text. What knockouts or the date's clear zone cut away
+    becomes a clipping mask, since live text can't be cut."""
+    ring = d["ring"]
+    angles, labels = ring_angles(ring), ring_labels(ring)
+    with D.savedState():
+        if d["path"] is not d["shape"]:
+            removed = d["shape"].difference(d["path"])
+            if not empty(removed):
+                area = BezierPath()
+                area.rect(-500, -500, 1000, 1000)                  # mm: far larger than any dial
+                D.clipPath(area.difference(removed))
+        for i in d["keep"]:
+            if labels[i]:
+                numeral_live(D, ring, i, angles[i], labels[i], ring["c"])
 
 
 # ── one ring ─────────────────────────────────────────────────
@@ -893,7 +964,7 @@ def build_rings(S, cut=None):
 
         key = ("final", key_of(ring), tuple(keep),
                tuple((key_of(d["ring"]), tuple(d["keep"])) for d in sources), date_key(S) if cut else None)
-        done.append(dict(ring=ring, kind=kind, keep=keep, taken=taken, path=memo(key, final)))
+        done.append(dict(ring=ring, kind=kind, keep=keep, taken=taken, shape=shape, path=memo(key, final)))
     return done
 
 
@@ -1065,16 +1136,28 @@ def draw_page(D, S, static, t, preview=True, selected=None):
                 D.drawPath(date["frame"])
             D.drawPath(date["cutline"])
     else:
+        live = S["out_live_text"] and not preview                  # export option: numerals as text
         if date:                                                   # date disc, seen through the hole
             D.fill(1, 1, 1, 1)
             D.drawPath(date["window"])
             D.fill(*S["da_ink"])
-            D.drawPath(date["number"])
+            if live:
+                typ, size = date_type(S), S["da_h"] * S["da_size"] / 100
+                c = text_centre(S["da_day"], typ, size)
+                if c is not None:
+                    with D.savedState():
+                        D.translate(*clock_point(S["da_r"], date_angle(S)))
+                        live_text(D, S["da_day"], typ, size, S["da_ink"], (-c[0], -c[1]))
+            else:
+                D.drawPath(date["number"])
         D.fill(*S["c_plate"])
         D.drawPath(static["plate"])
         for d in rings:
             D.fill(*d["ring"]["c"])
-            D.drawPath(d["path"])
+            if live and d["kind"] == "numerals":
+                numerals_live(D, d)
+            else:
+                D.drawPath(d["path"])
         if date and date["frame"]:
             D.fill(*S["da_ink"])
             D.drawPath(date["frame"])
@@ -1152,7 +1235,8 @@ FEATURE_NAMES = dict(
     c2sc="caps to small caps", case="case-sensitive forms", salt="stylistic alternates",
     swsh="swash", titl="titling", ccmp="glyph composition", locl="localized forms",
     mark="mark positioning", mkmk="mark to mark", aalt="access all alternates",
-    cpsp="capital spacing", hist="historical forms", ornm="ornaments")
+    cpsp="capital spacing", hist="historical forms", ornm="ornaments", dnom="denominators",
+    numr="numerators", afrc="alternative fractions", rvrn="variation alternates")
 DEFAULT_ON = {"kern", "liga", "calt", "ccmp", "locl", "mark", "mkmk", "rlig", "rclt", "curs", "clig"}
 
 
@@ -1478,6 +1562,7 @@ DATE_ROWS = [
 EXPORT_ROWS = [
     chk("out_production", "Production: mono print mask"),
     chk("out_mirror", "Mirror: toner transfer"),
+    chk("out_live_text", "Live text in PDF · SVG (fonts needed)"),
     num("out_dpi", "PNG dpi", 72, 2400, 1),
     num("out_seconds", "Clip seconds", 1, 60, 1),
     num("out_fps", "Frames per s", 6, 60, 1),

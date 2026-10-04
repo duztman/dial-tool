@@ -200,6 +200,47 @@ def check_pdf_painter(ns):
     return all(checks.values())
 
 
+def check_live_text(ns):
+    """export option "live text": numerals drawn as text must land where the outlines do."""
+    cases = {
+        "upright": {},
+        "radial auto-flip": VARIANTS["rounded-wedge"],
+        "on path, nudged, date": VARIANTS["words-on-path"],
+        "knocked out (clip)": {"rings": [
+            {"kind": "markers", "r": 13.6, "len": 3.0, "w": 1.0},
+            {"kind": "numerals", "r": 12.0, "size": 2.6, "mode": 1, "knock": 1, "clear": 0.3}]},
+    }
+    ok = True
+    real, calls = ns["live_text"], []
+    def counted(*args):
+        calls.append(args[1])
+        return real(*args)
+    ns["live_text"] = counted
+    for name, over in cases.items():
+        paths = []
+        calls.clear()
+        for live in (False, True):
+            S = ns["fresh_settings"](dict(over, out_live_text=live, ha_on=False, guides=False))
+            static = ns["build_static"](S)
+            D.newDrawing()
+            mm = ns["MM"]
+            ns["MM"] = mm * ZOOM
+            ns["draw_page"](D, S, static, S["t"], preview=False)
+            ns["MM"] = mm
+            path = os.path.join(OUT, f"_live_{int(live)}.png")
+            D.saveImage(path)
+            D.endDrawing()
+            paths.append(path)
+        a, b = (Image.open(p).convert("L") for p in paths)
+        diff = sum(1 for x, y in zip(a.getdata(), b.getdata()) if abs(x - y) > 96) / (a.size[0] * a.size[1])
+        good = diff < 0.002 and len(calls) > 0
+        ok &= good
+        print(("PASS  " if good else "FAIL  ") + f"live text matches outlines: {name} "
+              f"({len(calls)} texts drawn, {diff * 100:.3f}% pixels differ)")
+    ns["live_text"] = real
+    return ok
+
+
 def sheet(paths, cols=3):
     ims = [Image.open(p).convert("RGBA") for p in paths]
     w, h = ims[0].size
@@ -223,5 +264,6 @@ if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     ns = load_dial(font or find_font())
     ok = check_pdf_painter(ns)
+    ok &= check_live_text(ns)
     sheet([render(ns, n, v) for n, v in variants.items()])
     sys.exit(0 if ok else 1)

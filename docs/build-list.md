@@ -1,13 +1,13 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **done** · **parked**.
-*Last updated 4 Oct 2026 (beta 2.1).*
+*Last updated 4 Oct 2026 (beta 2.2). Seen working on Okay's Mac 4 Oct (beta 2.1 screenshot): window, sections, ring list, ring settings list, regular-size controls, live popups, type per numerals ring with feature names.*
 
 ## Verify on a Mac
 
 | # | Item | Status |
 |---|---|---|
-| 1 | Window opens; section switcher (Dial · Rings · Hands · Date · Export) shows each section; rows hide/show as settings change | verify |
+| 1 | Window opens; section switcher (Dial · Rings · Hands · Date · Export) shows each section; rows hide/show as settings change | done (4 Oct) |
 | 2 | Number controls: slider, typed field (incl. `+`, `x`, `/`), stepper stay in sync | verify |
 | 3 | Type (per numerals ring): family box, style, named instance (try Skia), axis sliders appear/disappear per font | verify |
 | 4 | OpenType feature list toggles change the numerals; designer names show where the font has them | verify |
@@ -18,7 +18,7 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 9 | SVG import: a marker and three hands drawn in Illustrator (pointing up, anchor at artboard centre) | verify |
 | 10 | Save / Load / Defaults; last session restored after quitting DrawBot | verify |
 | 11 | Eastern Arabic and Chinese labels render (font fallback) | verify |
-| 23 | beta 1.0.1+: Export log shows `all controls connected`; popups open with live items and change the dial; checkboxes, segmented controls, colour wells, text fields respond | verify |
+| 23 | beta 1.0.1+: Export log shows `all controls connected`; popups open with live items and change the dial; checkboxes, segmented controls, colour wells, text fields respond | done (4 Oct) |
 | 24 | Ring list: add each kind, select, rename, hide (checkbox), duplicate, delete, ↑ ↓; changing a ring's kind keeps its settings | verify |
 | 25 | Ring settings list: right rows per kind; Nudge and Type only for numerals; axis rows follow the font | verify |
 | 26 | Two numerals rings with different fonts; the Type rows follow the selected ring; the date uses the top numerals ring's type | verify |
@@ -37,7 +37,7 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 13 | Numeral vertical alignment option: glyph bounds (now) vs cap height / baseline | open |
 | 14 | Heavy modes (knockout + 300 ticks ≈ 140–170 ms off-Mac): redraw on mouse-up if dragging feels slow | open |
 | 15 | Fallback-font control for scripts the main font lacks (depends on #11) | open |
-| 16 | Live-text export option alongside outlines — possible, with limits (brief §5.2); Okay asked 4 Oct, not yet commissioned | open |
+| 16 | Live-text export option alongside outlines (beta 2.2) — verify: export PDF and SVG with it on, open in Illustrator with the font installed | verify |
 | 32 | Scale the whole dial (rings, hands, date) when the diameter changes, or a "scale everything" action (brief §5.7) | open |
 
 ## Later

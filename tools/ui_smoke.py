@@ -504,6 +504,7 @@ def load_dial(home):
         b = text_path(txt, t, size).bounds() if txt else None
         return b[2] if b else 0.0
     ns["text_path"], ns["advance"] = text_path, advance
+    ns["TEST_FONT"] = font                                          # live text uses the plain test font
     return ns
 
 
@@ -740,6 +741,27 @@ def main():
             if not os.path.exists(path):
                 problem(f"export {kind} wrote nothing")
     step("export PDF, SVG, PNG, MP4, GIF", export)
+
+    def export_live_text():
+        tool = T()
+        live = next(c for c in controls_in(tool) if isinstance(c, CheckBox) and "Live text" in c._kw["title"])
+        live.set(True)
+        live.sim_fire()
+        if tool.S["out_live_text"] is not True:
+            problem("the live text checkbox didn't reach the setting")
+        tool.S["da_on"] = True
+        tool.static_dirty = True
+        bar = next(c for c in controls_in(tool) if isinstance(c, SegmentedButton) and c._count == 5
+                   and c._kw.get("selectionStyle") == "momentary")
+        for i, kind in enumerate(["pdf", "svg"]):
+            path = os.path.join(home, f"live.{kind}")
+            ANSWERS["putFile"].append(path)
+            bar.sim_click(i)
+            if not os.path.exists(path):
+                problem(f"live-text export {kind} wrote nothing")
+        live.set(False)
+        live.sim_fire()
+    step("export with live text", export_live_text)
 
     def presets():
         tool = T()

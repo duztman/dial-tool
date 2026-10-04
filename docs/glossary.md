@@ -2,7 +2,7 @@
 
 What each word means **in this project**. Turkish where it's the common trade word.
 If a term is used differently in conversation, ask, then update this file.
-*Last updated 4 Oct 2026 (beta 2.1).*
+*Last updated 4 Oct 2026 (beta 2.2).*
 
 ## Watch terms
 
@@ -61,6 +61,8 @@ If a term is used differently in conversation, ask, then update this file.
 |---|---|
 | **Section** | One page of the left panel: Dial · Rings · Hands · Date · Export. |
 | **Production mask** | Export mode: every ring in solid black, no plate, no hands, aperture as an outline. |
+| **Live text** | Export option: numerals and the date stay text in PDF/SVG (the fonts are needed to open them). Off by default — then text is **outlines**. |
+| **Guidebook** | `docs/Dial-Tool-guide.pdf`, the 5-page user guide, built from `docs/guide/guide.md`. |
 | **Mirror** | Flips the output for toner transfer. |
 | **Guides** | Thin blue construction circles in the preview — the dial edge and each ring's edges; the selected ring's in orange. Switched with the **Guides** checkbox under the preview. Never exported. |
 | **Backdrop** | The preview's background colour; never exported. |

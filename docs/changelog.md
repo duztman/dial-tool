@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## beta 2.2 · 4 Oct 2026
+
+Released to `main`: beta 2 runs on Okay's Mac (beta 2.1 screenshot, 4 Oct).
+
+- **Live text export option** (Export → "Live text in PDF · SVG"): numerals and the date stay text the fonts can edit. Off by default — outlines need no fonts and print exactly as seen. Placed from the same outlines' bounds, so live and outlined numerals land in the same place (checked: under 0.05 % of pixels differ, upright, radial, on path, knocked out). What knockouts or the date's clearance cut away becomes a clipping mask.
+- **Feature names** for dnom, numr, afrc, rvrn.
+- **Guidebook:** `docs/Dial-Tool-guide.pdf`, 5 pages, IBM Plex Mono, from `docs/guide/guide.md` via `tools/make_guide.py` (figures rendered with dial.py itself).
+- **Tests:** the harness checks live-text placement; the smoke test exports with live text (it caught a name clash in the date's live text before release).
+- **Fixed:** a beta 1.0-style settings file now keeps any beta 2 keys it also contains.
+
 ## beta 2.1 · 4 Oct 2026
 
 Interface, after Okay's first look at beta 2.0.

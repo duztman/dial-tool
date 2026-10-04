@@ -1,6 +1,6 @@
 # Dial Tool — brief
 
-*Started 3 Oct 2026. Last updated 4 Oct 2026 (beta 2.1).*
+*Started 3 Oct 2026. Last updated 4 Oct 2026 (beta 2.2).*
 
 ## 1 · Goal
 
@@ -59,16 +59,19 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 4 Oct | **Hands:** each hand has its own shape and settings, in mm (R1): baton, pencil, sword, dauphine, leaf, arrow, syringe, Breguet, lollipop, or a file (SVG/PDF/AI) with fit to length, size ×, width ×. Hollow wall and counterweight on any hand. | Okay: "more sensible options, able to import (pdf), size, change shape". Lengths in mm match how movements specify hands. |
 | 4 Oct | **PDF/AI import** reads the page's drawing operators with macOS's own PDF scanner (CoreGraphics `CGPDFScanner`, via pyobjc). | No PDF library ships with DrawBot; pyobjc supports the scanner callbacks (checked in pyobjc's tests). The drawing logic is Mac-free and tested in the harness. |
 | 4 Oct | **Ring settings: one scrolling list**, not pages. **Guides** checkbox under the preview. **Regular-size controls**; panel 470 px. **Tab titles left-aligned.** | Okay, after beta 2.0: pages felt fragmented; guides needed from every section; type too small. |
+| 4 Oct | **Live text** is an export option; **outlines stay the default**. | Okay. Outlines need no fonts and print as seen; live text keeps numerals editable, with Illustrator's limits (§5.2). |
+| 4 Oct | **Guidebook**: a 5-page PDF in IBM Plex Mono — what it does, install, files in and out, FAQ — built from `docs/guide/guide.md` by `tools/make_guide.py`, updated with each release (R25). | Okay: "a guidebook that gets updated, part of the project". Source and script in the repo so any agent can rebuild it; figures come from dial.py itself. |
+| 4 Oct | **beta 2.2 released to `main`.** | Okay: "we have beta v2 here" — beta 2.1 ran on his Mac. |
 | 4 Oct | Interface checked off-Mac with **`tools/ui_smoke.py`**: stand-ins that accept only vanilla 0.5.0's real signatures and methods. | The full window can't run off-Mac; this catches wrong calls and lost callbacks (it reproduces the beta 1.0 dropdown bug when R22 is removed). |
 
 ## 5 · Open questions
 
 1. **Movement** — which one? It fixes the real dial diameter, hand lengths, the date window's position and size (date wheel), and the feet positions.
-2. **Live text vs outlines** in SVG/PDF export. Now always outlines (the font is not needed in Illustrator, but text is not editable). Live text is possible as an option (build list #16): DrawBot writes real text to PDF when drawing a `FormattedString`. Limits found 4 Oct: Illustrator outlines or rebuilds text with ligatures/alternate glyphs when it opens a PDF; the font must be installed where it's opened; on-path numerals become one text object per letter; knockouts and the date clearance would have to become clipping masks; production masks stay outlines.
+2. ~~**Live text vs outlines**~~ — settled 4 Oct: outlines by default, live text as an option (beta 2.2). Background: DrawBot writes real text to PDF when drawing a `FormattedString`. Limits found 4 Oct: Illustrator outlines or rebuilds text with ligatures/alternate glyphs when it opens a PDF; the font must be installed where it's opened; on-path numerals become one text object per letter; knockouts and the date clearance would have to become clipping masks; production masks stay outlines.
 3. **Minimum line width and clearance** per production method (toner-transfer etching, pad print, laser). Should become rules the tool can warn about.
 4. **Eastern Arabic and Chinese labels** — which fonts; is CoreText's automatic fallback good enough, or do we need a fallback-font control?
 5. Does DrawBot's SVG import into Illustrator at **exact size**, and with usable groups?
-6. When `dial.py` grows, split it into modules or keep one file? (beta 2.1: 2,254 lines, still one file.)
+6. When `dial.py` grows, split it into modules or keep one file? (beta 2.2: 2,339 lines, still one file.)
 7. **Should rings and hands scale with the diameter?** Radii and lengths are absolute mm (R1), so changing the diameter leaves them in place — right for a fixed movement, awkward while exploring. (Build list #32.)
 8. **PDF import with real Illustrator files** — forms, compound paths, white made in spot or CMYK colours. Tested only with hand-written operators so far. (Build list #30.)
 
