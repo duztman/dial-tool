@@ -34,6 +34,7 @@ Every number has a slider, a field and a stepper. In the field: `1.2` sets · `+
 1. **DrawBot 3.132 or newer** — free, macOS only. `drawbot.com` → Download.
 2. **dial.py** — `github.com/duztman/dial-tool` → `dial.py` → download the raw file. Branch `main` is released; `dev` is the newest work.
 3. Open `dial.py` in DrawBot and press **⌘R**. The Dial Tool window opens.
+4. Optional, for speed: DrawBot → Python → Install Python Packages → `skia-pathops` → Go.
 
 Pressing ⌘R again replaces the window and keeps your settings. Quitting DrawBot keeps them too: the last session reopens next time.
 
@@ -41,10 +42,10 @@ Pressing ⌘R again replaces the window and keeps your settings. Quitting DrawBo
 
 ![](fig-window.png){w=170}
 
-| 1 | **Sections** — Dial · Rings · Hands · Date · Export | 5 | **Preview** — Fit resets the zoom |
+| 1 | **Sections** — Dial · Rings · Hands · Date · Export | 5 | **Preview** — pinch or ⌘-scroll zooms, two fingers pan, Fit resets |
 | 2 | **Ring list** — show · name (double-click to rename) · kind | 6 | **Time** — drag, or type `10:09:36`; Now; Play |
 | 3 | **Add ring…** · Duplicate · Delete · Up · Down | 7 | **Guides** — construction circles, never exported |
-| 4 | **The selected ring's settings** — one scrolling list | 8 | **Status** — ring · font · diameter · redraw time |
+| 4 | **The selected ring's settings** — one scrolling list | 8 | **Status** — ring · font · diameter · build and frame time |
 
 # RINGS
 
@@ -124,11 +125,12 @@ Each numerals ring has its own type: family → style → named instance; variab
 - **A ring disappeared.** Check its show checkbox, its Every and Offset, and whether it skips positions a ring above takes.
 - **A numeral is missing at the date.** Markers and numerals leave the date's position empty, and all print keeps the Print clearance from the hole.
 - **How do I start over?** Export → Settings → Defaults.
+- **Canvas or PDF?** The switch under the preview. Canvas is fast and sharp; PDF is DrawBot's own viewer, the reference. They should look the same.
 - **Do my beta 1.0 files still open?** Yes — they open as rings, unchanged.
 
 ## When something goes wrong
 
-1. Open the Export section and read the log. At launch it says `all controls connected`.
+1. Open the Export section and read the log. At launch it says `preview: canvas` and `all controls connected`.
 2. Send a screenshot and the log.
 3. If the window doesn't build at all, run `tools/dial_probe.py` in DrawBot and send its report.
 

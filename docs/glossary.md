@@ -2,7 +2,7 @@
 
 What each word means **in this project**. Turkish where it's the common trade word.
 If a term is used differently in conversation, ask, then update this file.
-*Last updated 4 Oct 2026 (beta 2.2).*
+*Last updated 4 Oct 2026 (beta 2.3).*
 
 ## Watch terms
 
@@ -103,10 +103,12 @@ Kept so older notes still read.
 | **DrawBot** | The macOS app (Python) the tool runs in. Version 3.132. |
 | **vanilla** | The macOS interface library DrawBot itself is built with. Version 0.5.0 inside DrawBot. |
 | **DrawView** | DrawBot's PDF viewer (Apple's `PDFView`), reused as the tool's preview — the **PDF preview**. |
-| **Canvas** | *(planned, `docs/preview.md`)* The preview drawn by macOS's Core Animation: one layer per plate, ring, date part and hand. Not to be confused with DrawBot's own drawing area. |
-| **Scene** | *(planned)* The list `scene()` returns: everything to draw, bottom to top, with colours. Export and both previews read it (R26). |
-| **Frame clock** | *(planned)* A timer tied to the display's refresh. Controls only request a frame; the clock draws at most once per frame. |
-| **Shape combining** | Union, difference, xor and overlap removal of paths (knockouts, cuts, hollow shapes). DrawBot uses `booleanOperations`; the harness uses `skia-pathops`. |
+| **Canvas** | The preview drawn by macOS's Core Animation (class `Canvas`, beta 2.3): one layer per scene item. Zoom and pan live in it. Not to be confused with DrawBot's own drawing area. |
+| **Slot** | One shape layer of the canvas plus what it shows now (class `Slot`); slot *i* shows scene item *i*. Only changes are sent to macOS. |
+| **Preview switch** | `Canvas · PDF` under the preview; setting `ui_preview` (0 canvas, 1 PDF). |
+| **Scene** | The list `scene()` returns: everything to draw, bottom to top, with colours; each entry is an **item** with a **role** (plate, ring, hand, guide…). Export and both previews read it (R26). |
+| **Frame clock** | A clock in step with the display's refresh (class `Clock`: a display link, or a timer on older macOS). Controls only ask for a frame; the clock draws at most once per frame (R28). **Build** = rebuilding geometry; **frame** = drawing it — both shown in the status line. |
+| **Shape combining** | Union, difference, xor and overlap removal of paths (knockouts, cuts, hollow shapes). DrawBot's own is `booleanOperations`; the harness uses `skia-pathops`, and so does the tool on a Mac where it's installed (beta 2.3). The launch log says which. |
 | **Private engine** | A separate `DrawBotDrawingTool` so the tool never disturbs DrawBot's own canvas. |
 | **GridView** | Apple's form grid, used for every form (label · control · field · stepper columns). |
 | **Binding** | The link from a control to a setting key in a scope — global, the selected ring, or the selected hand — so selecting another ring refills the controls. |

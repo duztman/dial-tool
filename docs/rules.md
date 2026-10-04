@@ -1,7 +1,7 @@
 # Dial Tool — rules
 
 Standing rules. Check code against these in reviews; cite them by number.
-*Last updated 4 Oct 2026 (beta 2.2: R10 updated, R25 added; R13 reworded to match the code — see `docs/preview.md` §9 for R26–R28, added when the preview plan runs).*
+*Last updated 4 Oct 2026 (beta 2.3: R26–R28 added with the preview plan; beta 2.2: R10 updated, R25 added, R13 reworded).*
 
 ## Geometry
 
@@ -11,6 +11,7 @@ Standing rules. Check code against these in reviews; cite them by number.
 - **R4 · Filled shapes only.** Everything that can be exported is a filled path — no strokes. Bands are sectors (two arcs and two lines) or two circles subtracted; hollow shapes are an outline minus an inset; imported strokes are outlined.
 - **R5 · Guides and backdrop are preview-only.** Never exported.
 - **R6 · Geometry is a function of settings.** Parts 1–3 of `dial.py` (settings, geometry, drawing) never touch the interface; they take the settings dictionary `S` and return shapes. That is what makes them testable off-Mac.
+- **R26 · One scene.** Export and every preview draw from `scene()` (part 3). The only differences allowed are preview-only: guides, backdrop, and the canvas drawing guides in screen points. None of them reaches an export (R5).
 - **R23 · Imported files (SVG, PDF, AI).** Drawn pointing up (12 o'clock); the artboard's centre is the anchor — a hand's pivot, a marker's centre. Only the first page counts. Fills are ink; plain white fills (gray 1, RGB 1 1 1, CMYK 0 0 0 0) cut; strokes become outlines (R4); clipping is ignored; text, images and gradients are skipped and reported in the Export log. Colours set through spot/indexed spaces (`scn`) count as ink. AI files must be saved with "Create PDF Compatible File".
 
 ## Settings
@@ -34,6 +35,8 @@ Standing rules. Check code against these in reviews; cite them by number.
 - **R17 · No dead ends.** Every risky call has a fallback or reports to the Export log — never fails silently.
 - **R22 · Keep every control's Python object alive.** vanilla stores a control's callback on the Python object (`_target`); Cocoa controls don't retain their target; `GridView` keeps only the Cocoa view. A control that exists only inside a grid loses its callback as soon as the building function returns: popup items turn grey, clicks do nothing. Store controls on the tool (`self.keep`, a binding, or a named attribute). Found 4 Oct 2026 (beta 1.0.1).
 - **R24 · A scrolling form** is a vanilla `Group` laid out with auto layout, inside a flipped document view (`DialToolFlippedView`, looked up before it is defined so ⌘R again works), pinned to the scroll view's clip view at top, leading and trailing — never bottom, so the content decides the height. A view with no size of its own inside a `GridView` cell (a `List`) needs an explicit width and height.
+- **R27 · Our own Cocoa classes** have one name per contract, ending in a number (`DialToolCanvasView1`), are looked up with `objc.lookUpClass` before being defined (a process can't define a class twice; ⌘R runs the script again), and only pass events on to Python. Change what a class must do → a new number. (`DialToolFlippedView` predates the numbering; R24.)
+- **R28 · Nothing renders inside a control's callback.** Callbacks change settings and call `render()`, which only asks for a frame; the frame clock (`Clock`, `_frame`) draws, at most once per display frame.
 
 ## Process
 

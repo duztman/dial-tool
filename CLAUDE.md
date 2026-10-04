@@ -10,5 +10,5 @@ Before working, read `README.md`, then `docs/rules.md`, `docs/brief.md`, `docs/g
 - Docs are written for other agents as readers: plain, specific, dated.
 - Okay learns concepts, not syntax: explain *what* and *why*, keep code readable for a designer.
 - The interface can't run off-Mac. Check vanilla/DrawBot calls against their source (vanilla 0.5.0, DrawBot 3.132; signatures in `tools/vanilla-0.5.0-api.json`) before using them. Run `tools/test_harness.py` for geometry and `tools/ui_smoke.py` for the interface (R19).
-- When Okay says **"run the preview plan"**, follow `docs/preview.md` §7 from start to finish.
+- The preview plan (`docs/preview.md`) ran on 4 Oct 2026 → beta 2.3 on `dev`. Next is Okay's Mac check (§6); act on its results as §6 "Decisions from the check" says. Don't run the plan again.
 - Commit to `dev`; `main` only for a released version. On each release, update the guidebook (`docs/guide/guide.md` → `tools/make_guide.py`, R25).

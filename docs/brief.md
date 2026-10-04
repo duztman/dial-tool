@@ -1,6 +1,6 @@
 # Dial Tool — brief
 
-*Started 3 Oct 2026. Last updated 4 Oct 2026 (beta 2.2; preview plan written — `docs/preview.md`).*
+*Started 3 Oct 2026. Last updated 4 Oct 2026 (beta 2.3 on `dev`: preview plan built, Mac check pending — `docs/preview.md` §6).*
 
 ## 1 · Goal
 
@@ -65,6 +65,7 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 4 Oct | **Repository public, MIT licence** (fonts stay SIL OFL). City and machine details trimmed from the docs first. | Okay. |
 | 4 Oct | **Preview plan** (`docs/preview.md`): draw the preview with Core Animation from one scene shared with export; a display-synced frame clock; the PDF preview kept as a switch and fallback; skia-pathops optional. Runs when Okay says *"run the preview plan"*. | Okay's complaints after beta 2.1: flashing, lag while dragging, blur while zooming. Causes found in DrawBot's source and Apple's docs (PDF document swap; scroll-view magnification; `booleanOperations` 2–14× slower than skia-pathops, measured with `tools/bool_bench.py`). |
 | 4 Oct | **skia-pathops** for shape combining, installed per Mac through DrawBot's package menu; the tool falls back to DrawBot's own if it's missing. **Canvas** is the preview at first launch; PDF stays a switch. | Okay. Shape combining is 2–14× faster and matches the harness; reversible by uninstalling. Canvas fixes flash, lag and blur; PDF remains the reference. |
+| 4 Oct | **beta 2.3 (on `dev`): the preview is drawn by Core Animation from one scene** shared with export (R26); a frame clock draws (R28); the PDF preview stays as a switch and automatic fallback; skia-pathops is used when installed. `main` stays at beta 2.2 until Okay's Mac check. | Okay: "run the preview plan". Built as planned; differences from the plan are listed in `docs/preview.md` §12. |
 | 4 Oct | Interface checked off-Mac with **`tools/ui_smoke.py`**: stand-ins that accept only vanilla 0.5.0's real signatures and methods. | The full window can't run off-Mac; this catches wrong calls and lost callbacks (it reproduces the beta 1.0 dropdown bug when R22 is removed). |
 
 ## 5 · Open questions
@@ -74,10 +75,10 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 3. **Minimum line width and clearance** per production method (toner-transfer etching, pad print, laser). Should become rules the tool can warn about.
 4. **Eastern Arabic and Chinese labels** — which fonts; is CoreText's automatic fallback good enough, or do we need a fallback-font control?
 5. Does DrawBot's SVG import into Illustrator at **exact size**, and with usable groups?
-6. When `dial.py` grows, split it into modules or keep one file? (beta 2.2: 2,339 lines, still one file.)
+6. When `dial.py` grows, split it into modules or keep one file? (beta 2.3: about 2,700 lines, still one file.)
 7. **Should rings and hands scale with the diameter?** Radii and lengths are absolute mm (R1), so changing the diameter leaves them in place — right for a fixed movement, awkward while exploring. (Build list #32.)
 8. **PDF import with real Illustrator files** — forms, compound paths, white made in spot or CMYK colours. Tested only with hand-written operators so far. (Build list #30.)
-9. **Preview drawing** — do Core Animation shape layers draw fine lines (0.12 mm ticks) as the PDF does? Apple says shape rasterization "may favor speed over accuracy". Settled by the Mac check in `docs/preview.md` §6 step 5; contingency in §8.
+9. **Preview drawing** — do Core Animation shape layers draw fine lines (0.12 mm ticks) as the PDF does? Apple says shape rasterization "may favor speed over accuracy". Built in beta 2.3; **still open until the Mac check** (`docs/preview.md` §6 step 5: also look at whether curves stay smooth when zoomed); contingency in §8.
 10. ~~**skia-pathops**~~ — settled 4 Oct: yes (§4).
 
 ## 6 · Avenues (ideas, not commitments)

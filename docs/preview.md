@@ -1,11 +1,12 @@
 # Dial Tool — the preview: findings and the plan
 
-*Written 4 Oct 2026, after beta 2.2. Research only so far: nothing in `dial.py` has changed yet.*
-*Okay's answers, 4 Oct 03:30: **skia-pathops yes**, **Canvas first**. §4 step 6 is part of the run.*
+*Written 4 Oct 2026, after beta 2.2. Okay's answers, 4 Oct 03:30: **skia-pathops yes**, **Canvas first**.*
+***The plan ran on 4 Oct 2026 → beta 2.3 on `dev`.** §4 steps 0–8 are done. What differs from §3 is listed
+in **§12** — where §3 and §12 disagree, §12 and the code are right. **Next: Okay's Mac check, §6.** Nothing here
+has been seen on a Mac yet.*
 
 **How to use this file.** §2 is what we found, with evidence. §3 is the design. §4–§6 are the
-build steps, the off-Mac tests and the Mac check. **§7 is the run**: when Okay says
-*"run the preview plan"*, an agent follows §7 from top to bottom and hands over a new version.
+build steps, the off-Mac tests and the Mac check. §7 was the run order (done; don't run it again).
 §8 lists risks with their fallbacks, §9 the rule changes, §10 the questions still open (each has
 a default, so the run never stalls on them).
 
@@ -423,6 +424,8 @@ except ImportError:
 ## 4 · Build steps
 
 Each step ends with its test and a commit to `dev`. Stop rule: R20.
+**All done 4 Oct 2026** — commits `e9cccb6` (1), `91b4908` (2), `5b11c61` (3–5, one commit: they share the
+`Canvas` class), `e2e5605` (6–7), then the docs commit (8).
 
 | # | Step | Touches | Done when |
 |---|---|---|---|
@@ -495,15 +498,18 @@ New checks:
 
 Okay runs the new version and sends **screenshots + the Export log + the status line numbers**.
 
-1. **Launch.** The Export log should list: `preview: canvas` (or the reason it fell back),
-   `clock: display link` (or `timer`), `paths: CGPath (macOS 14+)` (or `DrawBot`),
-   `shape combining: …`, and `all controls connected`.
+0. **Start on the Intel Mac.** Get `dial.py` from the `dev` branch. Window title: `Dial Tool · beta 2.3`.
+1. **Launch.** The Export log should list (newest on top): `all controls connected`,
+   `clock: display link` (or `timer`), `shape combining: skia-pathops 0.9.2` (or `booleanOperations …` if the
+   package isn't on that Mac), `paths: CGPath (macOS 14+)` (or `DrawBot`), `preview: canvas` (or
+   `preview: PDF only — …` with the reason). Is the dial upright, centred, and does it fill the preview?
 2. **Flashing.** Drag a ring's radius slider. Canvas: no flash. Switch to PDF and repeat to compare.
 3. **Lag.** Drag the dial diameter, then a knockout ring's clearance. Note the status line's
    *build* and *frame* ms in both modes.
 4. **Blur.** Pinch-zoom to ~10× on the track. Canvas: sharp during the pinch. PDF: blurry until release.
 5. **Truth.** At Fit and at ~8×, switch Canvas ↔ PDF on the finest ticks (0.12 mm) and the numerals.
-   They should look the same. Screenshot both if they don't.
+   They should look the same. Screenshot both if they don't. Look at round shapes (dots, numerals) at ~8×
+   on the canvas: curves must be smooth, not made of straight pieces (unverified off-Mac, §12).
 6. **Play.** Press Play, then drag any slider: the hands keep moving. Try sweep, 6 and 8 beats/s.
 7. **Gestures.** Two-finger pan moves the dial *with* the fingers; ⌘-scroll zooms about the
    cursor; Fit recentres; resizing the window keeps the dial in place.
@@ -513,7 +519,8 @@ Okay runs the new version and sends **screenshots + the Export log + the status 
     (export didn't change).
 
 **Decisions from the check:**
-- All good → merge to `main` (with Okay's word), build list items → done.
+- All good → merge to `main` (with Okay's word), build list #37–#41 → done, retake the guide's screenshot (#43).
+- If anything is wrong, the PDF switch keeps the tool usable meanwhile.
 - Step 5 shows the canvas drawing worse than the PDF → contingency (§8 risk 1).
 - Canvas broken on a Mac → `ui_preview` default becomes PDF (one line); report; R20.
 - Step 3 still slow on heavy rings → check the launch log says `shape combining: skia-pathops`; if it says booleanOperations, the install didn't reach that Mac.
@@ -607,3 +614,42 @@ Okay runs the new version and sends **screenshots + the Export log + the status 
 - vanilla 0.5.0 source (PyPI `cocoa-vanilla` 0.5.0): `vanillaBase.py` (`VanillaCallbackWrapper`, `_setupView`), `nsSubclasses.py` (`getNSSubclass`), `vanillaGroup.py`, `vanillaScrollView.py`
 - skia-pathops on PyPI (0.9.2, universal2 abi3 wheel): https://pypi.org/project/skia-pathops/
 - Measurements: `tools/bool_bench.py` (this repo), 4 Oct 2026
+
+---
+
+## 12 · What the run changed (4 Oct 2026, beta 2.3)
+
+Built as §3 describes, except:
+
+| # | Plan (§3) | Built | Why |
+|---|---|---|---|
+| 1 | Display link from the canvas's view | From the **window** (`Clock`) | The clock also drives the PDF preview, when the canvas view is hidden; a hidden view's link may stop. |
+| 2 | `Canvas.show(items, S, playing)` | `Canvas.draw(items, S)` | vanilla's `show()` shows/hides a view; the tool needs it for the switch. |
+| 3 | Colours with `CGColorCreateSRGB` | `NSColor … .CGColor()` (`cg_colour`) | One colour route (`to_ns`), available on every macOS DrawBot runs on. |
+| 4 | — | `host.setMasksToBounds_(True)` | A zoomed dial would otherwise draw over the left panel. |
+| 5 | "Same shape" = same path object | Same object, **or** equal `key` for items that are rebuilt every frame (guides, cap) | Their paths are new objects each frame; without keys Play would re-send them 60 times a second. |
+| 6 | Canvas failure: force `ui_preview = 1` | `mode()` returns PDF while the canvas is missing; the setting is left alone. A canvas error *while drawing* also switches to PDF, in the same frame, and logs it | The forced value would be saved and stick to PDF on the next launch. |
+| 7 | `CGPath` check by trying it | Tried once at start, and its bounding box checked (`paths:` in the log) | A call that returns something unusable should fall back too. |
+| 8 | Minimum window width unchanged | 1060 → **1180** | The switch takes 126 points from the time slider; at 1060 the slider would vanish. |
+| 9 | skia-pathops methods `self._ops()`, `other._ops()` | A function `_to_pathops(path)`; **same options as the harness** (`removeOverlap`: `keep_starting_points=False`); `PathOpsError` → DrawBot's own method | `other` may be a plain DrawBot path; the harness renders are then the reference; no dead end (R17). |
+| 10 | — | Time slider / field / Now while playing: Play carries on from the new time | With the clock running during a drag, Play would otherwise fight the slider every frame. |
+| 11 | — | No clock at all (display link *and* timer fail): redraw inside the control, Play off, logged | R17. |
+| 12 | Cap "if `ha_cap > 0`" | Cap only when hands are shown, as beta 2.2 drew it | Pixel-identical first. |
+| 13 | One commit per step | Steps 3–5 in one commit | They are one class. |
+
+**Known difference between the two previews** (allowed by R26): the canvas fills the whole preview with the
+backdrop; the PDF preview shows the page (dial + margin) on grey. Build list #44.
+
+**Checked off-Mac:** 45 harness renders pixel-identical to beta 2.2; the pathops route renders equal the
+harness's; `ui_smoke.py` passes with the canvas compared against the scene after every click; six deliberate
+breakages caught (clock never woken, guide width not updated on zoom, path re-sent every frame, pan sign,
+hand direction, missing fill reset, missing position).
+
+**Not checked — only the Mac can** (§6): every Cocoa call in `Canvas`, `Slot`, `Clock` and
+`DialToolCanvasView1` (read against PyObjC conventions and DrawBot / vanilla source, never run); layer
+orientation; sharpness and curve smoothness under zoom; speed and memory at high zoom on Intel graphics
+(`ZOOM_MAX` = 400 points per mm); the scroll direction; `NSBezierPath.CGPath` through DrawBot's PyObjC;
+real timings; skia-pathops inside DrawBot's `BezierPath` subclass (run here on the stand-in path only).
+Source recalled, not re-read on 4 Oct: Nick Lockwood, *iOS Core Animation: Advanced Techniques*, ch. 6 —
+shape layers don't pixelate when scaled and keep no bitmap of their own.
+
