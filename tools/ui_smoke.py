@@ -226,7 +226,8 @@ def cg_bounding_box(cgpath):
     x0, y0, x1, y1 = cgpath.path.bounds()
     return NS(size=NS(width=x1 - x0, height=y1 - y0))
 
-BezierPath.getNSBezierPath = lambda self: NSBezierPath(self)       # DrawBot's BezierPath has these two
+BezierPath.getNSBezierPath = lambda self: NSBezierPath(self)       # DrawBot's BezierPath has these three
+BezierPath.setNSBezierPath = lambda self, ns_path: setattr(self, "path", ns_path.path.path)
 BezierPath._getCGPath = lambda self: CGPath(self, "DrawBot")
 
 class Event:                                                        # NSEvent: a scroll or a pinch at a point
@@ -811,6 +812,7 @@ def step(name, fn):
 
 
 def main():
+    harness = test_harness.load_dial(test_harness.find_font())      # the harness's dial.py, before the stand-ins
     install_fakes()
     home = tempfile.mkdtemp(prefix="dial-smoke-")
     os.makedirs(os.path.join(test_harness.OUT), exist_ok=True)
@@ -821,6 +823,51 @@ def main():
     gc.collect()                                                    # strict: anything only cycles hold is gone
     step("all controls connected (R22)", lambda: None if "all controls connected" in T().logbox.get()
          else problem("the launch self-check didn't report 'all controls connected'"))
+
+    def shape_engine():
+        """on the Mac, dial.py wraps DrawBot's BezierPath to combine shapes with skia-pathops.
+        Here that wrapper runs on the stand-in path; its renders must equal the harness's."""
+        from PIL import Image, ImageChops
+        if "shape combining: skia-pathops" not in T().logbox.get() or ns["BezierPath"] is BezierPath:
+            problem("with pathops installed, the log should say 'shape combining: skia-pathops …'")
+        for name in ("knockout-date", "scale-arc", "file-shapes", "production-mirror"):
+            ns["_memo"].clear()
+            harness["_memo"].clear()
+            a = Image.open(test_harness.render(harness, "_engine-harness", test_harness.VARIANTS[name]))
+            b = Image.open(test_harness.render(ns, "_engine-mac", test_harness.VARIANTS[name]))
+            if ImageChops.difference(a.convert("RGBA"), b.convert("RGBA")).getbbox():
+                problem(f"shape combining: {name} differs between the harness and the Mac route")
+        import pathops
+        real_op, real_simplify, failed = pathops.op, pathops.simplify, []
+        def failing(real):                                          # skia gives up once → DrawBot's own method
+            def fn(*a, **k):                                        # (here "DrawBot's own" is the stand-in's, which
+                if len(failed) % 2 == 0:                            # calls pathops again: that second call works)
+                    failed.append(1)
+                    raise pathops.PathOpsError("simulated")
+                failed.append(0)
+                return real(*a, **k)
+            return fn
+        pathops.op, pathops.simplify = failing(real_op), failing(real_simplify)
+        try:
+            a, b = ns["circle"](10), ns["circle"](6)
+            ring = a.difference(b)
+            both = ns["merge"]([a, b])
+            both.removeOverlap()
+            if sum(failed) != 2 or ring.pointInside((0, 0)) or not ring.pointInside((4, 0)) \
+                    or not both.pointInside((0, 0)):
+                problem("when pathops fails on a shape, DrawBot's own method should combine it (R17)")
+        finally:
+            pathops.op, pathops.simplify = real_op, real_simplify
+        real = sys.modules.pop("pathops")
+        sys.modules["pathops"] = None                               # as if skia-pathops weren't installed
+        try:
+            plain = {"__name__": "dial_smoke_plain"}
+            exec(compile(open(test_harness.DIAL, encoding="utf-8").read(), "dial.py", "exec"), plain)
+            if plain["BezierPath"] is not BezierPath or "booleanOperations" not in plain["SHAPE_ENGINE"]:
+                problem("without pathops, dial.py should use DrawBot's own BezierPath and say so (R17)")
+        finally:
+            sys.modules["pathops"] = real
+    step("shape combining: pathops route equals the harness; falls back without it", shape_engine)
 
     def sections():
         for i in range(len(ns["SECTIONS"])):

@@ -1,13 +1,13 @@
 # ─────────────────────────────────────────────────────────────
-#  dial.py — Dial Tool for DrawBot                     beta 2.2
+#  dial.py — Dial Tool for DrawBot                     beta 2.3
 #
 #  ⌘R opens the tool window. Running again replaces the window
 #  and keeps your current settings.
 #
 #  1 · SETTINGS     every setting and its starting value
 #  2 · GEOMETRY     settings → shapes  (millimetres, clock angles)
-#  3 · DRAWING      shapes → a page    (preview and export)
-#  4 · INTERFACE    the window
+#  3 · DRAWING      shapes → a scene → a page  (export, PDF preview)
+#  4 · INTERFACE    the window, the canvas preview, the frame clock
 #
 #  The dial is a list of RINGS. A ring repeats one thing around
 #  the centre — ticks, markers, numerals or a band of colour — at
@@ -26,12 +26,57 @@ from contextlib import contextmanager
 
 try:
     from drawBot.context.baseContext import BezierPath, FormattedString
+    SHAPE_ENGINE = "booleanOperations (DrawBot's own — install skia-pathops for speed, see the guide)"
 except ImportError:                                   # test harness outside the app
     from drawbot_skia.path import BezierPath
     FormattedString = None
+    SHAPE_ENGINE = "skia-pathops (test harness)"
 
-VERSION = "beta 2.2"
-SHAPE_ENGINE = "booleanOperations (DrawBot)"          # which library combines shapes
+if FormattedString is not None:
+    try:                                              # faster shape combining, if it's installed:
+        import pathops                                # DrawBot ▸ Python ▸ Install Python Packages ▸ skia-pathops
+
+        def _to_pathops(path):
+            p = pathops.Path()
+            path.drawToPen(p.getPen())
+            return p
+
+        class BezierPath(BezierPath):
+            """DrawBot's BezierPath, with union / difference / xor / removeOverlap done by skia-pathops:
+            2–14× faster than DrawBot's own, and the library the test harness uses."""
+
+            def _combined(self, other, name):
+                try:
+                    out = self.__class__()
+                    pathops.op(_to_pathops(self), _to_pathops(other), getattr(pathops.PathOp, name.upper()),
+                               fix_winding=True, keep_starting_points=True).draw(out)
+                    return out
+                except pathops.PathOpsError:              # skia gave up on this shape: DrawBot's own way (R17)
+                    return getattr(super(), name)(other)
+
+            def union(self, other):
+                return self._combined(other, "union")
+
+            def difference(self, other):
+                return self._combined(other, "difference")
+
+            def xor(self, other):
+                return self._combined(other, "xor")
+
+            def removeOverlap(self):
+                try:
+                    out = self.__class__()
+                    pathops.simplify(_to_pathops(self), fix_winding=True, keep_starting_points=False).draw(out)
+                    self.setNSBezierPath(out.getNSBezierPath())
+                except pathops.PathOpsError:
+                    super().removeOverlap()
+                return self
+
+        SHAPE_ENGINE = f"skia-pathops {pathops.__version__}"
+    except ImportError:
+        pass                                          # not installed: DrawBot's own, slower (R17)
+
+VERSION = "beta 2.3"
 MM = 72 / 25.4                                        # 1 mm in points (render time only, R1)
 MM_PER_PT = 25.4 / 72                                 # imported files arrive in points
 
