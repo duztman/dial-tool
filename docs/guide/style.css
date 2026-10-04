@@ -7,7 +7,7 @@
 @page { size: 297mm 210mm; margin: 0; }
 :root {
   --paper: #FCFCFA; --ground: #ECECE8; --ink: #111111; --grey: #5C5C58; --line: #B9B9B4;
-  --b: 1.375mm; --sig: #F5C518;                 /* the one colour: plain plates (PAPER in make_guide.py) and the thumb index */
+  --b: 1.375mm; --sig: #ECECE8;                 /* a section's own colour, set on each page by make_guide.py (COLOURS) */
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -86,8 +86,8 @@ figcaption b { color: var(--ink); }
 /* annotations drawn over a large example, in the dial's own millimetres */
 .over { position: absolute; left: 0; top: 0; width: 100%; height: 100%; fill: none; stroke: var(--ink); stroke-width: var(--sw); overflow: visible; }
 .over text { fill: var(--ink); stroke: none; font-size: var(--fs); font-feature-settings: "tnum"; }
-.over .bold { font-weight: 600; } .over .g { fill: var(--grey); font-weight: 400; } .over .wt, .over .wt .g { fill: #fff; }
-.over .w { stroke: #fff; } .over .dash { stroke-dasharray: calc(var(--sw) * 6) calc(var(--sw) * 5); }
+.over .bold { font-weight: 600; } .over .g { fill: #3A3A38; font-weight: 400; } .over .wt, .over .wt .g { fill: #fff; }
+.over .w, .over .w line { stroke: #fff; } .over .dash { stroke-dasharray: calc(var(--sw) * 6) calc(var(--sw) * 5); }
 .over circle { fill: var(--paper); } .over circle.w, .over circle.plate { fill: none; }
 
 /* ── the tool's controls, redrawn in grey. Sizes in em: 1em = one control label (13 px in the real window) ── */
@@ -151,21 +151,23 @@ figcaption b { color: var(--ink); }
 .px .status { font-size: 11px; color: #555; white-space: pre; }
 .px .tag { position: absolute; font-size: 12px; width: 23px; height: 23px; line-height: 20px; border-width: 1.5px; background: #fff; }
 
-/* ── cover: one dial, half construction, half finished ── */
+/* ── cover: one whole dial on two fields — dark for its construction, the first section's colour for
+   the finished half. The dial is 198 mm across, 6 mm from three edges; the fields meet on its centre line. ── */
 .cover { background: rgb(15, 15, 18); color: #F1F0EA; }
-.cover .dial { position: absolute; width: 260mm; height: 260mm; left: 76mm; top: -25mm; }
+.cover .half { position: absolute; left: 192mm; right: 0; top: 0; bottom: 0; background: var(--sig); }
+.cover .dial { position: absolute; width: 237.6mm; height: 237.6mm; left: 73.2mm; top: -13.8mm; }
 .cover .dial img { position: absolute; left: 0; top: 0; width: 100%; }
 .cover .dial .ghost { opacity: .13; clip-path: inset(0 50% 0 0); }
 .cover .dial .done { clip-path: inset(0 0 0 50%); }
-.cover .over { stroke: #8F8E89; }
+.cover .over { stroke: #8F8E89; clip-path: inset(0 50% 0 -20%); }
 .cover .over text, .cover .over .g { fill: #A3A29C; } .cover .over .bold { fill: #F1F0EA; }
-.cover .over .split { stroke: var(--sig); } .cover .over circle { fill: none; }
+.cover .over circle { fill: none; }
 .cover .left { position: absolute; left: 12mm; top: 11.5mm; bottom: 11.5mm; width: 65.25mm; display: flex; flex-direction: column; }
-.cover h1 { font-size: 64pt; line-height: 21mm; letter-spacing: -.04em; font-weight: 250; margin-left: -1mm; }
-.cover .subtitle { font-size: 10pt; line-height: calc(var(--b) * 3); margin-top: calc(var(--b) * 4); color: #B9B8B2; }
+.cover h1 { font-size: 96pt; line-height: calc(var(--b) * 24); letter-spacing: -.045em; font-weight: 250; margin-left: -1.5mm; }
+.cover .subtitle { font-size: 10pt; line-height: calc(var(--b) * 3); margin-top: calc(var(--b) * 3); color: #B9B8B2; }
 .cover .subtitle b { color: #F1F0EA; }
-.cover .said { font-size: 10pt; line-height: calc(var(--b) * 3); margin-top: calc(var(--b) * 4); color: #B9B8B2; }
-.contents { border-collapse: collapse; width: 100%; font-size: 10pt; line-height: calc(var(--b) * 3.2); margin-top: auto; font-feature-settings: "tnum"; }
+.cover .said { font-size: 10pt; line-height: calc(var(--b) * 3); margin-top: calc(var(--b) * 3); color: #B9B8B2; }
+.contents { border-collapse: collapse; width: 100%; font-size: 10pt; line-height: calc(var(--b) * 3); margin-top: auto; font-feature-settings: "tnum"; }
 .contents td { border-top: .2mm solid #3A3A3C; padding: 0; }
 .contents td:last-child { text-align: right; color: #B9B8B2; }
 .contents tr.sub td:first-child { padding-left: 7.4mm; color: #B9B8B2; }

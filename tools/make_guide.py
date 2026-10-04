@@ -116,7 +116,30 @@ def advance(txt, t, size):
 
 # ── figures ──────────────────────────────────────────────────
 
-PAPER  = [0.961, 0.773, 0.094, 1]                           # the book's one colour, signal yellow #F5C518: every plain plate (--sig in style.css)
+def oklch(L, C, h):
+    """a colour by lightness, strength and hue → red, green, blue (0–1), clipped to what a screen can show."""
+    import math
+    a, b = C * math.cos(math.radians(h)), C * math.sin(math.radians(h))
+    l, m, s = ((L + p * a + q * b) ** 3 for p, q in ((0.3963377774, 0.2158037573), (-0.1055613458, -0.0638541728), (-0.0894841775, -1.2914855480)))
+    rgb = (4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+           -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s)
+    return [round(min(1, max(0, 12.92 * v if v <= 0.0031308 else 1.055 * v ** (1 / 2.4) - 0.055)), 3) for v in rgb] + [1]
+
+# every section has its own colour: the same lightness and strength, the hue stepped round the circle
+# from yellow. It is the plate of the section's plain figures and its tab on the page edge.
+# Yellow carries the most colour; the further a hue is from it, the less it gets, because a green
+# or blue of the same strength looks far louder on the grey ground.
+SECTIONS_N, TINT = 14, dict(L=0.90, strong=0.095, weak=0.045, first_hue=95)
+
+def tint(n):
+    import math
+    turn = n * 360 / SECTIONS_N
+    near = ((1 + math.cos(math.radians(turn))) / 2) ** 2      # 1 at yellow, 0 opposite it
+    return oklch(TINT["L"], TINT["weak"] + (TINT["strong"] - TINT["weak"]) * near, TINT["first_hue"] + turn)
+
+COLOURS = {n + 1: tint(n) for n in range(SECTIONS_N)}
+def hexed(c): return "#%02X%02X%02X" % tuple(round(v * 255) for v in c[:3])
+PAPER  = COLOURS[1]
 INK    = G.INK
 MARKS  = dict(kind="markers", name="Markers", r=13.4, len=2.8, w=0.7)
 TICKS  = dict(kind="ticks", name="Ticks", r=14.4, count=60, len=1.0, w=0.12)
@@ -250,6 +273,15 @@ HEROES = {
                      da_on=True, da_at=0, da_r=10.5, da_w=2.6, da_h=2.0, da_frame=0.15, da_clear=0.25, da_day="17"),
     "files":     fig("", "", None, base="california", out_production=True, out_mirror=True),
 }
+STRIP_SECTION = dict(first=1, kinds=3, exploded=3, positions=4, shapes=5, giveway=6, bands=7, labels=8, placement=8,
+                     type=9, date=11, output=13)
+HERO_SECTION = dict(rings=3, positions=4, marks=5, giveway=6, bands=7, numerals=8, type=9, hands=10, date=11, files=13)
+for _name, _figs in FIGURES.items():
+    for _f in _figs:
+        _f["section"] = STRIP_SECTION[_name]
+for _name, _f in HEROES.items():
+    _f["section"] = HERO_SECTION[_name]
+
 PAD = 0.62                                                   # a whole hero's share of its tile
 # close-ups: enlargement, and the point of the dial (mm from its centre) that sits at the panel's top middle
 # ("top") or in its middle ("east")
@@ -288,14 +320,15 @@ def leader(r, a, edge, text, sub=None, out=17.6, dark=True):
     return (f'<circle class="{"w" if dark else ""}" cx="{x0:.2f}" cy="{y0:.2f}" r="0.34"/>{inner}'
             f'<line x1="{x1:.2f}" y1="{y1:.2f}" x2="{x2:.2f}" y2="{y2:.2f}"/>' + label(lx, y2 + 0.1, text, side, sub))
 
-def dim(x0, y0, x1, y1, text, tx, ty, anchor="start", sub=None, tick=0.35):
+def dim(x0, y0, x1, y1, text, tx, ty, anchor="start", sub=None, tick=0.35, white=False):
     """a dimension line with end ticks, and its label."""
     import math
     dx, dy = x1 - x0, y1 - y0
     n = math.hypot(dx, dy) or 1
     px, py = -dy / n * tick, dx / n * tick
     ends = "".join(f'<line x1="{x - px:.2f}" y1="{y - py:.2f}" x2="{x + px:.2f}" y2="{y + py:.2f}"/>' for x, y in ((x0, y0), (x1, y1)))
-    return f'<line x1="{x0:.2f}" y1="{y0:.2f}" x2="{x1:.2f}" y2="{y1:.2f}"/>{ends}' + label(tx, ty, text, anchor, sub)
+    lines = f'<g{' class="w"' if white else ""}><line x1="{x0:.2f}" y1="{y0:.2f}" x2="{x1:.2f}" y2="{y1:.2f}"/>{ends}</g>'
+    return lines + label(tx, ty, text, anchor, sub, white)
 
 def arc_path(r, a0, a1):
     (x0, y0), (x1, y1) = cp(r, a0), cp(r, a1)
@@ -349,7 +382,7 @@ def overlay(name, S):
             leader(0.55, 135, R, "Cap Ø 1.1", "over the pivot", dark=False)])
     if name == "date":
         return "".join([
-            dim(9.2, -1.75, 11.8, -1.75, "Width 2.6", 10.5, -2.05, "middle", tick=0.14),
+            dim(9.2, -1.75, 11.8, -1.75, "Width 2.6", 10.5, -2.05, "middle", tick=0.14, white=True),
             dim(12.45, -1.0, 12.45, 1.0, "Height 2.0", 12.75, 0.08, tick=0.14),
             '<line class="dash" x1="4.2" y1="0" x2="9.05" y2="0"/>', label(4.2, 0.62, "Radius 10.5", "start", "from the dial’s centre"),
             '<line class="w" x1="10.5" y1="1.45" x2="10.5" y2="2.5"/>',
@@ -400,7 +433,7 @@ def figure_settings(ns, f):
         if f["keep"]:
             s["rings"] = [r for r in s["rings"] if r["name"] in f["keep"]]
     else:
-        s = dict(PLAIN, rings=f["rings"])
+        s = dict(PLAIN, rings=f["rings"], c_plate=COLOURS[f["section"]])
     s.update(f["settings"])
     return ns["fresh_settings"](H.resolve_files(G.resolved(s, ns)))
 
@@ -661,7 +694,7 @@ def classic(name, ns, number):
     rows.append(f'<tr><th>Cap</th><td>Ø <b>{number_text(s["ha_cap"])}</b> {swatch(s["c_cap"])}</td></tr>')
     rows.append(f'<tr><th>Preset</th><td><code>presets/{name}.json</code> · Dial <b>{number_text(s["dial_d"])}</b> mm {swatch(s["c_plate"])}</td></tr>')
     k = 0.9 * META[f"dial-{name}"]["k"]
-    return f"""<section class="page classic" id="{name}" data-toc="{esc(d['title'])}" data-sub="1">{foot(d['title'])}{tab(CLASSICS)}<div class="grid">
+    return f"""<section class="page classic" id="{name}" data-toc="{esc(d['title'])}" data-sub="1" style="--sig:{hexed(COLOURS[int(CLASSICS)])}">{foot(d['title'])}{tab(CLASSICS)}<div class="grid">
   <div class="col c8">
     <figure class="c8 r14 hero"><div class="whole ground" style="--k:{k:.3f}"><div class="art">{{{{dial:{name}}}}}</div></div></figure>
   </div>
@@ -707,7 +740,7 @@ def cover(ns):
     S = ns["fresh_settings"](G.resolved(G.DIALS["field"]["settings"], ns))
     page, R = S["dial_d"] + 2 * S["margin"], S["dial_d"] / 2
     half = lambda r, dash="": f'<path class="{dash}" d="M0 {r:.2f} A{r:.2f} {r:.2f} 0 0 1 0 {-r:.2f}"/>'
-    out = [f'<line class="split" x1="0" y1="{-page / 2}" x2="0" y2="{page / 2}"/>', half(R), '<path d="M-.6 0h.6M0 -.6v1.2"/>']
+    out = [half(R), '<path d="M-.6 0h.6M0 -.6v1.2"/>']
     named = {}
     for ring in S["rings"]:
         kind, r = ns["kind_of"](ring), ring["r"]
@@ -843,7 +876,7 @@ def page_open(m):
     a = attrs(m.group(1))
     no, title = a["no"], a["title"]
     toc = f' data-toc="{title}" data-sub="1"' if "." in no else f' data-toc="{no}  {title}"'
-    return (f'<section class="page" id="{a["id"]}"{toc}>{foot(title)}{tab(no)}<div class="grid">'
+    return (f'<section class="page" id="{a["id"]}"{toc} style="--sig:{hexed(COLOURS[int(no.split(".")[0])])}">{foot(title)}{tab(no)}<div class="grid">'
             f'<div class="head"><div class="title"><span class="no">{no}</span><h1>{title}</h1></div>'
             f'<p class="lead">{a.get("lead", "")}</p></div>')
 
@@ -890,6 +923,7 @@ def fill_in(ns, version, date):
     page = expand(page)
     page = page.replace("{{classics}}", "".join(classic(n, ns, i + 1) for i, n in enumerate(G.ORDER)))
     page = page.replace("{{window}}", window(ns)).replace("{{cover}}", cover(ns))
+    page = re.sub(r"\{\{sig:(\d+)\}\}", lambda m: hexed(COLOURS[int(m.group(1))]), page)
     page = page.replace("{{version}}", esc(version)).replace("{{date}}", esc(date))
     page = re.sub(r"\{\{strip:([\w]+)(?::(\d+)-(\d+))?\}\}", lambda m: strip(*m.groups()), page)
     page = re.sub(r"\{\{thumb:(\w+)\}\}", lambda m: thumb(m.group(1)), page)

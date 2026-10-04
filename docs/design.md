@@ -1,6 +1,6 @@
 # Dial Tool — design canon
 
-*Written 4 Oct 2026 with the guidebook's third edition (beta 2.3); revised the same day with the fourth, fifth and sixth. Okay: "this design research might influence
+*Written 4 Oct 2026 with the guidebook's third edition (beta 2.3); revised the same day with the fourth to seventh. Okay: "this design research might influence
 the whole build, take notes… let's make it canon."*
 
 This file is the rule for everything Dial Tool shows on paper or screen that isn't a dial: the guidebook
@@ -48,7 +48,7 @@ check §2–§6 against it.
   ("big, light type with small, dark type").
 - **Three sizes** (sixth edition, 4 Oct 2026; Okay: "overall larger type, fewer type sizes"). 8 pt small:
   labels, captions, tables, annotations. 10 pt text — and its semibold is every headline and the lead.
-  32 pt light: titles and the four big words on Start (the cover alone doubles it, 64 pt). Before: 7.5 · 9 ·
+  32 pt light: titles and the four big words on Start (the cover alone triples it, 96 pt). Before: 7.5 · 9 ·
   12.4 · 31.
 - **Leading on a 1.375 mm unit.** Small 2.5 units (3.44 mm), text 3 (4.125 mm), titles 8 (11 mm). Every space
   between things is a multiple of the unit: 1 inside a cluster, 4 between clusters.
@@ -95,11 +95,14 @@ alignment to these rules as well."*
 
 - Paper `#FCFCFA`, ink `#111111`, grey text `#5C5C58` (never lighter: it must stay readable at 8 pt),
   rules `#B9B9B4`, ground `#ECECE8`.
-- **One colour: signal yellow `#F5C518`** (sixth edition; Okay: "select a characteristic color like teenage
-  eng."). It is the plate of every plain figure — so a figure reads as "a dial", black ink on yellow — and
-  the thumb index, and the line that cuts the cover. Nothing else. Chosen over orange because it carries
-  black marks and navy bands at full contrast and is the yellow of a Braun seconds hand. One constant each:
-  `PAPER` in `tools/make_guide.py`, `--sig` in `style.css`.
+- **Every section has its own colour** (seventh edition, 4 Oct 2026; Okay: "Yellow is lovely. Start with
+  that but revert to paler, less contrasty to bg color palette. Every section gets own color."). Fourteen
+  pale tints of one lightness (OKLCH L 0.90), the hue stepped round the circle from yellow (95°) in
+  fourteenths. Yellow keeps the most colour (C 0.095); hues far from it get less (down to 0.045), because a
+  green or blue of equal strength looks louder on the grey ground. Section 1 is `#F0DC8E`.
+- A section's colour is used for exactly two things: the **plate of its plain figures** (whole and close-up)
+  and its **tab** on the page edge. The cover's right field is section 1's. Defined once: `TINT` and `tint()`
+  in `tools/make_guide.py`; pages receive it as `--sig`.
 - Dials keep their own colours. Everything around them is neutral.
 - No tinted panels, rounded cards, shadows or decorative rules. A hairline above a block is the only frame.
 
@@ -111,7 +114,7 @@ alignment to these rules as well."*
   aligned that way"). The ground is the grid box made visible: whole dials, close-ups, hands and large
   examples all sit on `#ECECE8`. The fifth edition's rule — ground only where a picture needs an edge — was
   tried and withdrawn. Icons and the cover have no ground.
-- **A plain plate is yellow** (§4), in whole figures and in close-ups. Classic dials keep their plates.
+- **A plain plate takes its section's colour** (§4), in whole figures and in close-ups. Classic dials keep their plates.
 - **Side by side, one thing changes.** Figures in a row share view, scale and crop; only the setting in the
   caption differs. A caption is two lines: what it is (semibold), then its values (grey).
 - **Annotations are drawn in the dial's own millimetres** (`overlay()` in `tools/make_guide.py`): dimension
@@ -126,9 +129,14 @@ alignment to these rules as well."*
   large example. They state the tool's behaviour, not advice.
 - **Steps are pictures in a row**, numbered in their captions: one view, one change per step (Start: a first
   dial in four moves; Give way: stack, skip, knock out).
-- **The cover is the idea in one picture**: a dial cut by a vertical line. Left of it the construction —
-  every radius and angle the settings name, in hairlines over a ghost of the dial — right of it the dial
-  those settings print. Dark field, the dial larger than the page, contents on the left.
+- **The cover is the idea in one picture**: one whole dial, 198 mm across, 6 mm from three edges of the
+  page, on two fields that meet on its centre line. Left, dark: the construction — every radius and angle the
+  settings name, in hairlines over a ghost of the dial — with the title (96 pt) and contents. Right, section
+  1's yellow: the dial those settings print. Nothing is cropped.
+- **The four Start icons share one outline**, the dial's circle, with one idea drawn inside each (a radius
+  with millimetre ticks, an angle from 12, a hatched mark, a stack).
+- **Labels on pictures**: ink, with their second line in dark grey `#3A3A38`; white where they cross a dark
+  band. A label sits wholly on the plate or wholly on the ground, never across the edge.
 
 ## 6 · The tool's controls, redrawn
 
