@@ -641,7 +641,7 @@ Built as §3 describes, except:
 backdrop; the PDF preview shows the page (dial + margin) on grey. Build list #44.
 
 **Checked off-Mac:** 45 harness renders pixel-identical to beta 2.2; the pathops route renders equal the
-harness's; `ui_smoke.py` passes with the canvas compared against the scene after every click; six deliberate
+harness's; `ui_smoke.py` passes with the canvas compared against the scene after every click; seven deliberate
 breakages caught (clock never woken, guide width not updated on zoom, path re-sent every frame, pan sign,
 hand direction, missing fill reset, missing position).
 

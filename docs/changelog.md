@@ -13,7 +13,7 @@ The preview plan (`docs/preview.md`), run in full. On `dev`; **not yet seen on a
 - **skia-pathops** for shape combining when it's installed in DrawBot (Python → Install Python Packages): 2–14× faster than DrawBot's own, and the same library as the harness. Without it, or if it gives up on a shape, DrawBot's own does the work.
 - **Status line:** `canvas` or `pdf` · build ms (geometry) · frame ms (drawing). **Launch log:** preview, path route, shape combining, clock.
 - **Window:** minimum width 1180 (was 1060), to keep the time slider's length with the new switch in the bar.
-- **Tests:** `ui_smoke.py` has stand-ins for Core Animation and drives the clock: after every click it compares the canvas's layers with the scene; it checks zoom maths, gestures, the switch, every fallback and a second run of the script. Six deliberate breakages of the canvas were each caught.
+- **Tests:** `ui_smoke.py` has stand-ins for Core Animation and drives the clock: after every click it compares the canvas's layers with the scene; it checks zoom maths, gestures, the switch, every fallback and a second run of the script. Seven deliberate breakages of the canvas and clock were each caught.
 - **Rules:** R26 (one scene), R27 (our own Cocoa classes), R28 (nothing renders inside a callback).
 
 ## beta 2.2 · 4 Oct 2026
