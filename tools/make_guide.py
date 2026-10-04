@@ -129,12 +129,12 @@ def oklch(L, C, h):
 # from yellow. It is the plate of the section's plain figures and its tab on the page edge.
 # Yellow carries the most colour; the further a hue is from it, the less it gets, because a green
 # or blue of the same strength looks far louder on the grey ground.
-SECTIONS_N, TINT = 14, dict(L=0.90, strong=0.095, weak=0.045, first_hue=95)
+SECTIONS_N, TINT = 14, dict(L=0.90, strong=0.095, weak=0.022, first_hue=95)
 
 def tint(n):
     import math
     turn = n * 360 / SECTIONS_N
-    near = ((1 + math.cos(math.radians(turn))) / 2) ** 2      # 1 at yellow, 0 opposite it
+    near = ((1 + math.cos(math.radians(turn))) / 2) ** 4      # 1 at yellow, 0 opposite it
     return oklch(TINT["L"], TINT["weak"] + (TINT["strong"] - TINT["weak"]) * near, TINT["first_hue"] + turn)
 
 COLOURS = {n + 1: tint(n) for n in range(SECTIONS_N)}
@@ -701,7 +701,7 @@ def classic(name, ns, number):
   <div class="col c4">
     <div class="top c4 r3"><span class="no">{CLASSICS}.{number}</span><h1>{esc(d['title'])}</h1><p class="lead">{esc(d['after'])}</p></div>
     <div class="block c4 r3"><svg class="ic"><use href="#i-eye"/></svg><span class="k">Look for</span><p>{d['note']}</p></div>
-    <div class="block c4 r8"><span class="k">Rings top first, then hands. Only what differs from a new ring.</span>
+    <div class="block c4 r8"><span class="k">Settings that differ from a new ring</span>
       <table class="recipe">{"".join(rows)}</table></div>
   </div>
 </div></section>
@@ -734,10 +734,12 @@ def thumb(name):
     return (f'<figure class="c2 r4"><div class="whole ground" style="--k:{k:.3f}"><div class="art"><img src="img/dial-{name}.svg"></div></div>'
             f'<figcaption><b>{esc(G.DIALS[name]["title"])}</b><br>page {{{{page:{name}}}}}</figcaption></figure>')
 
+COVER = "bauhaus"                                            # the dial on the cover
+
 def cover(ns):
-    """the field watch, twice: left of the line its construction (every radius and angle the settings
-    name), right of it the dial those settings draw."""
-    S = ns["fresh_settings"](G.resolved(G.DIALS["field"]["settings"], ns))
+    """one classic dial, whole: its left half as construction (every radius and angle the settings
+    name), its right half as those settings print it."""
+    S = ns["fresh_settings"](G.resolved(G.DIALS[COVER]["settings"], ns))
     page, R = S["dial_d"] + 2 * S["margin"], S["dial_d"] / 2
     half = lambda r, dash="": f'<path class="{dash}" d="M0 {r:.2f} A{r:.2f} {r:.2f} 0 0 1 0 {-r:.2f}"/>'
     out = [half(R), '<path d="M-.6 0h.6M0 -.6v1.2"/>']
@@ -758,7 +760,7 @@ def cover(ns):
         out.append(f'<line class="dash" x1="{x0:.2f}" y1="{y0:.2f}" x2="{x1:.2f}" y2="{y1:.2f}"/>')
         out.append(f'<text x="{x2:.2f}" y="{y2 + 0.15:.2f}" text-anchor="middle">−{360 - a}°</text>')
     out.append(label(*cp(R + 0.35, 224), f"Diameter {S['dial_d']:g}", "end"))
-    return (f'<div class="dial"><img class="ghost" src="img/dial-field.svg"><img class="done" src="img/dial-field.svg">'
+    return (f'<div class="dial"><img class="ghost" src="img/dial-{COVER}.svg"><img class="done" src="img/dial-{COVER}.svg">'
             f'<svg class="over" viewBox="{-page / 2:g} {-page / 2:g} {page:g} {page:g}">{"".join(out)}</svg></div>')
 
 

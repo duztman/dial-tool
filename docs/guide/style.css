@@ -151,19 +151,20 @@ figcaption b { color: var(--ink); }
 .px .status { font-size: 11px; color: #555; white-space: pre; }
 .px .tag { position: absolute; font-size: 12px; width: 23px; height: 23px; line-height: 20px; border-width: 1.5px; background: #fff; }
 
-/* ── cover: one whole dial on two fields — dark for its construction, the first section's colour for
-   the finished half. The dial is 198 mm across, 6 mm from three edges; the fields meet on its centre line. ── */
+/* ── cover: three equal fields, dark · lighter · lightest. Title and contents on the first; one whole
+   dial (174 mm across) centred on the line between the other two — construction left, finished right. ── */
 .cover { background: rgb(15, 15, 18); color: #F1F0EA; }
-.cover .half { position: absolute; left: 192mm; right: 0; top: 0; bottom: 0; background: var(--sig); }
-.cover .dial { position: absolute; width: 237.6mm; height: 237.6mm; left: 73.2mm; top: -13.8mm; }
+.cover .mid, .cover .light { position: absolute; top: 0; bottom: 0; width: 99mm; }
+.cover .mid { left: 99mm; background: var(--sig); }
+.cover .light { left: 198mm; background: color-mix(in oklab, var(--sig) 38%, var(--paper)); }
+.cover .dial { position: absolute; width: 207.7mm; height: 207.7mm; left: 94.15mm; top: 1.15mm; }
 .cover .dial img { position: absolute; left: 0; top: 0; width: 100%; }
-.cover .dial .ghost { opacity: .13; clip-path: inset(0 50% 0 0); }
+.cover .dial .ghost { opacity: .3; clip-path: inset(0 50% 0 0); }
 .cover .dial .done { clip-path: inset(0 0 0 50%); }
-.cover .over { stroke: #8F8E89; clip-path: inset(0 50% 0 -20%); }
-.cover .over text, .cover .over .g { fill: #A3A29C; } .cover .over .bold { fill: #F1F0EA; }
+.cover .over { stroke: var(--ink); clip-path: inset(0 50% 0 0); }
 .cover .over circle { fill: none; }
-.cover .left { position: absolute; left: 12mm; top: 11.5mm; bottom: 11.5mm; width: 65.25mm; display: flex; flex-direction: column; }
-.cover h1 { font-size: 96pt; line-height: calc(var(--b) * 24); letter-spacing: -.045em; font-weight: 250; margin-left: -1.5mm; }
+.cover .left { position: absolute; left: 12mm; top: 11.5mm; bottom: 11.5mm; width: 75mm; display: flex; flex-direction: column; }
+.cover h1 { font-size: 64pt; line-height: calc(var(--b) * 16); letter-spacing: -.04em; font-weight: 250; margin-left: -1mm; }
 .cover .subtitle { font-size: 10pt; line-height: calc(var(--b) * 3); margin-top: calc(var(--b) * 3); color: #B9B8B2; }
 .cover .subtitle b { color: #F1F0EA; }
 .cover .said { font-size: 10pt; line-height: calc(var(--b) * 3); margin-top: calc(var(--b) * 3); color: #B9B8B2; }
