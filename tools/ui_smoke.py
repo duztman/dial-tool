@@ -1,8 +1,11 @@
 """
 ui_smoke.py — run dial.py's whole interface without a Mac.
 
-Stand-ins replace vanilla, AppKit, Quartz and DrawBot's window parts, then
-the script clicks through every section, ring kind, page, hand and button.
+Stand-ins replace vanilla, AppKit, Quartz (Core Animation layers included)
+and DrawBot's window parts, then the script clicks through every section,
+ring kind, page, hand and button. The frame clock is driven by hand: after
+every click one display frame runs, and the canvas's layers are compared
+with the scene they should show.
 
 The vanilla stand-ins accept exactly what vanilla 0.5.0 accepts: class
 signatures and method names come from tools/vanilla-0.5.0-api.json, which
@@ -18,7 +21,7 @@ Setup: the harness's packages (pip install drawbot-skia skia-pathops pillow)
 Use:   python tools/ui_smoke.py
 """
 
-import builtins, gc, json, os, re, sys, tempfile, time, traceback, types, weakref
+import builtins, gc, json, math, os, random, re, sys, tempfile, time, traceback, types, weakref
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -82,7 +85,15 @@ class NS:
     def __iter__(self):
         return iter([])
 
+OBJC_CLASSES = {}                                                   # one process: classes outlive a ⌘R
+
 class NSView(NS):
+    def __init_subclass__(cls, **kw):
+        super().__init_subclass__(**kw)
+        if cls.__name__.startswith("DialTool"):                     # dial.py's own Cocoa classes (R27)
+            if cls.__name__ in OBJC_CLASSES:
+                raise RuntimeError(f"{cls.__name__} is overriding existing Objective-C class")
+            OBJC_CLASSES[cls.__name__] = cls
     @classmethod
     def alloc(cls):
         return cls()
@@ -91,6 +102,20 @@ class NSView(NS):
     def __init__(self, wrapper=None):
         self._wrapper = weakref.ref(wrapper) if wrapper is not None else (lambda: None)
         self._subviews, self._target, self._action, self._clicked = [], (lambda: None), None, -1
+        self._size, self._layer, self._hidden = (900.0, 700.0), None, False
+    def bounds(self):
+        return NS(size=NS(width=self._size[0], height=self._size[1]))
+    def setLayer_(self, layer):
+        self._layer = layer
+    def setHidden_(self, hidden):
+        self._hidden = bool(hidden)
+    def convertPoint_fromView_(self, point, view):
+        return point
+    def window(self):
+        return NS(backingScaleFactor=lambda: 2.0)
+    def sim_resize(self, w, h):
+        self._size = (float(w), float(h))
+        self.setFrameSize_(NS(width=w, height=h))
     def subviews(self):
         return list(self._subviews)
     def vanillaWrapper(self):
@@ -114,6 +139,8 @@ class Target:                                                       # vanilla's 
 class Color:
     def __init__(self, *c):
         self.c = list(c)
+    def CGColor(self):
+        return tuple(self.c)
     def colorUsingColorSpace_(self, space):
         return self
     def redComponent(self): return self.c[0]
@@ -139,6 +166,81 @@ class Link:                                                         # CADisplayL
         self.paused = bool(paused)
     def invalidate(self):
         self.valid = False
+
+class Layer:
+    """CALayer / CAShapeLayer: remembers what was set, counts the sets, and insists that
+    every change happens inside a transaction with animations off."""
+    log = []                                                        # (layer, property) for every set
+    def __init__(self):
+        self.sublayers, self.parent = [], None
+        self.props = {"FillColor": (0, 0, 0, 1)}                    # a new CAShapeLayer fills black
+    @classmethod
+    def layer(cls):
+        return cls()
+    def addSublayer_(self, layer):
+        self.sublayers.append(layer)
+        layer.parent = self
+    def removeFromSuperlayer(self):
+        self.parent.sublayers.remove(self)
+        self.parent = None
+    def __getattr__(self, name):
+        if name.startswith("set") and name.endswith("_"):
+            def setter(value, prop=name[3:-1]):
+                if self.parent is not None and not Transaction.quiet():
+                    problem(f"layer {prop} changed outside a no-animation transaction: it would fade in")
+                self.props[prop] = value
+                Layer.log.append((self, prop))
+            return setter
+        raise AttributeError(name)
+
+class Transaction:                                                  # CATransaction
+    stack = []
+    @classmethod
+    def begin(cls):
+        cls.stack.append(False)
+    @classmethod
+    def setDisableActions_(cls, on):
+        cls.stack[-1] = bool(on)
+    @classmethod
+    def commit(cls):
+        cls.stack.pop()
+    @classmethod
+    def quiet(cls):
+        return bool(cls.stack) and cls.stack[-1]
+
+CG_PATH = [True]                                                    # False: pretend macOS 13 (no NSBezierPath.CGPath)
+
+class CGPath:
+    def __init__(self, path, route):
+        self.path, self.route = path, route
+
+class NSBezierPath:
+    def __init__(self, path):
+        self.path = path
+    def CGPath(self):
+        if not CG_PATH[0]:
+            raise AttributeError("CGPath")
+        return CGPath(self.path, "CGPath")
+
+def cg_bounding_box(cgpath):
+    x0, y0, x1, y1 = cgpath.path.bounds()
+    return NS(size=NS(width=x1 - x0, height=y1 - y0))
+
+BezierPath.getNSBezierPath = lambda self: NSBezierPath(self)       # DrawBot's BezierPath has these two
+BezierPath._getCGPath = lambda self: CGPath(self, "DrawBot")
+
+class Event:                                                        # NSEvent: a scroll or a pinch at a point
+    def __init__(self, at=(0, 0), dx=0, dy=0, precise=True, command=False, magnification=0):
+        self.at, self.dx, self.dy, self.precise = at, dx, dy, precise
+        self.command, self.mag = command, magnification
+    def locationInWindow(self): return NS(x=self.at[0], y=self.at[1])
+    def scrollingDeltaX(self): return self.dx
+    def scrollingDeltaY(self): return self.dy
+    def hasPreciseScrollingDeltas(self): return self.precise
+    def modifierFlags(self): return COMMAND if self.command else 0
+    def magnification(self): return self.mag
+
+COMMAND = 1 << 20
 
 class RunLoop:
     def addTimer_forMode_(self, timer, mode):
@@ -166,6 +268,55 @@ def drive(frames=1):
             timer.block(timer)
     if tool.ready and tool.pending:
         problem("a redraw was asked for, but the next frame didn't draw it (clock asleep or not scheduled?)")
+    if tool.ready and tool.mode() == 0:
+        for message in check_canvas(tool):
+            problem(message)
+
+DIAL = {}                                                           # dial.py's namespace, once loaded
+
+def check_canvas(tool):
+    """the canvas's layers must show exactly the scene (R26): same order, shapes, colours, angles.
+    → the differences found."""
+    found = []
+    problem = found.append
+    S, canvas = tool.S, tool.canvas
+    items = DIAL["scene"](S, tool.static, S["t"], True, S["ui_ring"])
+    layers = canvas.dial.sublayers
+    if not (len(items) == len(canvas.slots) == len(layers)) or any(s.layer is not l for s, l in zip(canvas.slots, layers)):
+        return [f"canvas: {len(items)} scene items, {len(canvas.slots)} slots, {len(layers)} layers"]
+    if [s.role for s in canvas.slots] != [i["role"] for i in items]:
+        problem("canvas: slot roles differ from the scene's")
+    for n, (item, slot) in enumerate(zip(items, canvas.slots)):
+        got, what = slot.layer.props, f"canvas slot {n} ({item['role']})"
+        shown = got.get("Path")
+        if "key" in item:
+            a, b = shown.path.bounds(), item["path"].bounds()
+            if slot.key != item["key"] or a is None or max(abs(x - y) for x, y in zip(a, b)) > 1e-6:
+                problem(f"{what}: shows another shape than the scene's")
+        elif shown is None or shown.path is not slot.source:
+            problem(f"{what}: its layer doesn't show the slot's path")
+        elif slot.source is not item["path"] and slot.source.bounds() != item["path"].bounds():
+            problem(f"{what}: its layer doesn't show the scene's path")   # (an equal shape rebuilt after the
+                                                                          # shape memory emptied is fine)
+        if got.get("FillColor") != (tuple(item["fill"]) if item["fill"] else None):
+            problem(f"{what}: fill {got.get('FillColor')} isn't {item['fill']}")
+        stroke = item.get("stroke")
+        if got.get("StrokeColor") != (tuple(stroke) if stroke else None):
+            problem(f"{what}: stroke {got.get('StrokeColor')} isn't {stroke}")
+        if stroke and abs(got.get("LineWidth", 0) * canvas.z - item["px"]) > 1e-9:
+            problem(f"{what}: guide isn't {item['px']} screen point(s) wide")
+        want = ("rotate", -math.radians(item["angle"])) if item["angle"] else None
+        turn = got.get("AffineTransform")
+        if (turn if turn != ("rotate", -0.0) and turn != ("rotate", 0.0) else None) != want:
+            problem(f"{what}: turned {turn}, should be {want}")
+    mirror = -1 if S["out_mirror"] else 1
+    if canvas.dial.props.get("AffineTransform") != ("scale", mirror * canvas.z, canvas.z) \
+            or canvas.dial.props.get("Position") != canvas.c:
+        problem("canvas: the dial layer isn't at the canvas's zoom, centre and mirror")
+    backdrop = (1, 1, 1, 1) if S["out_production"] else tuple(S["c_backdrop"])
+    if canvas.host.props.get("BackgroundColor") != backdrop:
+        problem("canvas: backdrop colour not shown")
+    return found
 
 FONTS = {"Helvetica Neue": [["HelveticaNeue", "Regular"], ["HelveticaNeue-Bold", "Bold"]],
          "Skia": [["Skia-Regular", "Regular"], ["Skia-Regular_Bold", "Bold"]],
@@ -185,8 +336,9 @@ class V:
     """base for vanilla stand-ins; checks every call against vanilla 0.5.0."""
     ns_class = NSControl
     def __init__(self, *args, **kwargs):
-        object.__setattr__(self, "_kw", check_call(type(self).__name__, args, kwargs))
-        object.__setattr__(self, "_nsObject", self.ns_class(self))
+        object.__setattr__(self, "_kw", check_call(self._vanilla_name(), args, kwargs))
+        view_class = getattr(type(self), "nsViewClass", None) or self.ns_class   # as vanilla's Group does
+        object.__setattr__(self, "_nsObject", view_class(self))
         callback = self._kw.get("callback")
         if callback is not None:
             object.__setattr__(self, "_target", Target(callback))   # held by the Python object only
@@ -198,10 +350,15 @@ class V:
     def setup(self):
         pass
 
+    @classmethod
+    def _vanilla_name(cls):
+        """the vanilla class this is, or is built on (dial.py's Canvas is a Group)."""
+        return next(c.__name__ for c in cls.__mro__ if c.__name__ in CLASSES)
+
     def __getattr__(self, name):
         if name.startswith("_"):
             raise AttributeError(name)
-        cls = type(self).__name__
+        cls = self._vanilla_name()
         if name in methods_of(cls):
             return lambda *a, **k: NS()
         raise AttributeError(f"vanilla 0.5.0 {cls} has no {name!r}")
@@ -213,6 +370,7 @@ class V:
 
     def show(self, on):
         object.__setattr__(self, "_shown", bool(on))
+        self._nsObject._hidden = not on
 
     def addAutoPosSizeRules(self, rules, metrics=None):
         for rule in rules:
@@ -451,6 +609,8 @@ class DrawView:                                                      # drawBot.u
     def setPDFDocument(self, pdf):
         self.pdf = pdf
         self.count += 1
+    def show(self, on):
+        self._nsObject._hidden = not on
     def getNSView(self):
         return NS(autoScales=lambda: True)
 
@@ -505,9 +665,13 @@ def install_fakes():
     class nosuchclass_error(Exception):
         pass
     def lookUpClass(name):
-        raise nosuchclass_error(name)
-    fake_module("objc", lookUpClass=lookUpClass, nosuchclass_error=nosuchclass_error)
+        if name not in OBJC_CLASSES:
+            raise nosuchclass_error(name)
+        return OBJC_CLASSES[name]
+    fake_module("objc", lookUpClass=lookUpClass, nosuchclass_error=nosuchclass_error,
+                super=lambda cls, obj: NS(), python_method=lambda fn: fn)
     fake_module("AppKit", NSControl=NSControl, NSView=NSView, NSSegmentDistributionFillEqually=1,
+                NSEventModifierFlagCommand=COMMAND, NSScreen=NS(mainScreen=lambda: NS(backingScaleFactor=lambda: 2.0)),
                 NSTextAlignmentLeft=0, NSNoBorder=0,
                 NSColor=NS(colorWithSRGBRed_green_blue_alpha_=lambda *c: Color(*c)),
                 NSColorSpace=NS(sRGBColorSpace=lambda: NS()),
@@ -520,7 +684,10 @@ def install_fakes():
                 NSTimer=NS(timerWithTimeInterval_repeats_block_=lambda i, r, b: Timer(b)),
                 NSRunLoop=NS(mainRunLoop=lambda: RunLoop()), NSRunLoopCommonModes=COMMON_MODES)
     fake_module("CoreText")
-    fake_module("Quartz")
+    fake_module("Quartz", CALayer=Layer, CAShapeLayer=Layer, CATransaction=Transaction,
+                CGAffineTransformMakeScale=lambda x, y: ("scale", x, y),
+                CGAffineTransformMakeRotation=lambda a: ("rotate", a),
+                CGPathGetBoundingBox=cg_bounding_box)
     vanilla = fake_module("vanilla", **{c.__name__: c for c in (
         Window, Group, TextBox, Slider, EditText, Stepper, ComboBox, PopUpButton, CheckBox, ColorWell,
         SegmentedButton, List, TextEditor, Button, GridView, ScrollView)}, CheckBoxListCell=CheckBoxListCell)
@@ -552,6 +719,8 @@ def load_dial(home):
         return b[2] if b else 0.0
     ns["text_path"], ns["advance"] = text_path, advance
     ns["TEST_FONT"] = font                                          # live text uses the plain test font
+    DIAL.clear()
+    DIAL.update(ns)
     return ns
 
 
@@ -767,7 +936,8 @@ def main():
 
     def frame_clock():
         tool = T()
-        link, view = tool.clock.link, tool.w.canvas
+        link, view = tool.clock.link, tool.w.pdf
+        tool.w.preview.sim_click(1)                                 # the PDF preview: every draw is a new document
         if "clock: display link" not in tool.logbox.get():
             problem("the launch log doesn't say 'clock: display link'")
         n = view.count
@@ -783,7 +953,145 @@ def main():
             problem("with nothing to draw, the clock should go to sleep and draw nothing")
         if "build" not in tool.w.status.get() or "frame" not in tool.w.status.get():
             problem(f"status line has no build / frame times: {tool.w.status.get()!r}")
+        tool.w.preview.sim_click(0)
     step("frame clock: callbacks ask, one frame draws, idle sleeps (R28)", frame_clock)
+
+    def canvas_only_what_changed():
+        tool = T()
+        if tool.mode() != 0 or "preview: canvas" not in tool.logbox.get() or "paths: CGPath" not in tool.logbox.get():
+            problem("the canvas should be the preview at launch, and the log should say so")
+        tool.S["ha_on"] = True
+        for h in ns["HANDS"]:
+            tool.S["ha_" + h]["on"] = True
+        tool.render()
+        drive()
+        hands = [s for s in tool.canvas.slots if s.role == "hand"]
+        before = [s.layer.props.get("AffineTransform") for s in hands]
+        Layer.log.clear()
+        tool.w.timeSlider.set((tool.S["t"] + 4000) % 43200)
+        tool.w.timeSlider.sim_fire()                                # time only…
+        props = {prop for _, prop in Layer.log}
+        if props != {"AffineTransform"} or len(Layer.log) != 3:
+            problem(f"a time change should only turn the three hands, it set {sorted(props)} × {len(Layer.log)}")
+        if any(a == b for a, b in zip(before, [s.layer.props.get("AffineTransform") for s in hands])):
+            problem("a time change didn't turn every hand")
+        Layer.log.clear()
+        well = next(c for c in controls_of(tool.groups[0].grid) if isinstance(c, ColorWell))
+        well.set(Color(0.3, 0.5, 0.7, 1))
+        well.sim_fire()                                             # …a colour only
+        if {prop for _, prop in Layer.log} != {"FillColor"} or len(Layer.log) != 1:
+            problem(f"a plate colour change should set one fill, it set {[p for _, p in Layer.log]}")
+        Layer.log.clear()
+        drive()
+        if Layer.log:
+            problem("an idle frame changed layers")
+    step("canvas: a time or colour change touches only that", canvas_only_what_changed)
+
+    def canvas_zoom_pan():
+        tool = T()
+        canvas, view, S = tool.canvas, tool.canvas.getNSView(), tool.S
+        fit, zoom_about = ns["fit_zoom"], ns["zoom_about"]
+        if abs(fit(600, 600, dict(dial_d=30.0, margin=3.0)) - 600 / 36) > 1e-12:
+            problem("fit_zoom: 30 mm + 3 mm margins in 600 × 600 should be 600 / 36 points per mm")
+        rnd = random.Random(7)
+        for _ in range(500):
+            z, k = rnd.uniform(1, 300), rnd.uniform(0.2, 5)
+            c, p = (rnd.uniform(0, 900), rnd.uniform(0, 700)), (rnd.uniform(0, 900), rnd.uniform(0, 700))
+            z2, c2 = zoom_about(z, c, p, k, 2.0, 400.0)
+            under = lambda z, c: ((p[0] - c[0]) / z, (p[1] - c[1]) / z)     # the mm point under the cursor
+            if not 2.0 - 1e-9 <= z2 <= 400.0 + 1e-9 or max(abs(a - b) for a, b in zip(under(z, c), under(z2, c2))) > 1e-9:
+                problem("zoom_about: the point under the cursor moved, or the limits were passed")
+                break
+        view.sim_resize(900, 700)
+        tool.w.fit.sim_fire()
+        page = S["dial_d"] + 2 * S["margin"]
+        if not canvas.fitted or abs(canvas.z - 700 / page) > 1e-9 or canvas.c != (450, 350):
+            problem(f"Fit: zoom {canvas.z}, centre {canvas.c} in a 900 × 700 view")
+        view.sim_resize(1000, 800)
+        if abs(canvas.z - 800 / page) > 1e-9 or canvas.c != (500, 400):
+            problem("a fitted dial should refit when the view is resized")
+        at = (120.0, 630.0)
+        spot = ((at[0] - canvas.c[0]) / canvas.z, (at[1] - canvas.c[1]) / canvas.z)
+        view.magnifyWithEvent_(Event(at=at, magnification=0.5))     # pinch
+        view.scrollWheel_(Event(at=at, dy=30, command=True))        # ⌘-scroll
+        now = ((at[0] - canvas.c[0]) / canvas.z, (at[1] - canvas.c[1]) / canvas.z)
+        if canvas.fitted or canvas.z <= 800 / page * 1.5 or max(abs(a - b) for a, b in zip(spot, now)) > 1e-9:
+            problem("pinch and ⌘-scroll should zoom in about the cursor")
+        c = canvas.c
+        view.scrollWheel_(Event(dx=12, dy=-7))                      # two fingers: right and up
+        if canvas.c != (c[0] + 12, c[1] + 7):
+            problem("two-finger scroll should move the dial with the fingers")
+        view.scrollWheel_(Event(dx=1, dy=0, precise=False))         # a mouse wheel notch
+        if canvas.c != (c[0] + 22, c[1] + 7):
+            problem("a mouse wheel should pan in bigger steps")
+        z, c = canvas.z, canvas.c
+        view.sim_resize(1100, 900)
+        if canvas.z != z or canvas.c != (c[0] + 50, c[1] + 50):
+            problem("a zoomed dial should keep its zoom and place when the view is resized")
+        for _ in range(40):
+            view.magnifyWithEvent_(Event(at=at, magnification=1.0))
+        if canvas.z != ns["ZOOM_MAX"]:
+            problem("zooming in should stop at ZOOM_MAX")
+        for _ in range(40):
+            view.magnifyWithEvent_(Event(at=at, magnification=-0.5))
+        if abs(canvas.z - 900 / page / 4) > 1e-9:
+            problem("zooming out should stop at a quarter of Fit")
+        tool.w.guides.set(True)
+        tool.w.guides.sim_fire()                                    # guides: still 1 point wide at this zoom (drive checks)
+        tool.w.guides.sim_fire()
+        z = canvas.z
+        tool.set_value("global", "dial_d", S["dial_d"] + 1)         # redraws must not reset the zoom (build list #5)
+        drive()
+        if canvas.z != z:
+            problem("a redraw reset the zoom")
+        tool.set_value("global", "dial_d", S["dial_d"] - 1)
+        tool.w.fit.sim_fire()
+        tool.set_value("global", "margin", S["margin"] + 2)         # fitted: a bigger page refits
+        drive()
+        if abs(canvas.z - 900 / (S["dial_d"] + 2 * S["margin"])) > 1e-9:
+            problem("a fitted dial should refit when the page size changes")
+        tool.set_value("global", "margin", S["margin"] - 2)
+        for key in ("out_mirror", "out_production"):                # drive checks mirror and backdrop
+            tool.set_value("global", key, True)
+            drive()
+            tool.set_value("global", key, False)
+            drive()
+    step("canvas: fit, pinch, ⌘-scroll, pan, resize, limits, mirror, production", canvas_zoom_pan)
+
+    def preview_switch():
+        tool = T()
+        pdf, canvas = tool.w.pdf, tool.w.canvas
+        n = pdf.count
+        tool.w.preview.sim_click(1)
+        if tool.S["ui_preview"] != 1 or pdf.count != n + 1 or pdf._nsObject._hidden or not canvas._nsObject._hidden:
+            problem("switching to PDF should show and draw the PDF preview and hide the canvas")
+        tool.w.fit.sim_fire()
+        exercise(tool, controls_of(tool.groups[0].grid))            # the Dial section, drawn as PDF
+        tool.w.preview.sim_click(0)
+        if tool.S["ui_preview"] != 0 or tool.mode() != 0 or canvas._nsObject._hidden or not pdf._nsObject._hidden:
+            problem("switching back should show the canvas and hide the PDF preview")
+    step("preview switch: Canvas → PDF → Canvas", preview_switch)
+
+    def canvas_fails():
+        tool = T()
+        real = tool.canvas.draw
+        def broken(items, S):
+            raise RuntimeError("simulated Core Animation failure")
+        object.__setattr__(tool.canvas, "draw", broken)
+        n = tool.w.pdf.count
+        tool.w.guides.sim_fire()
+        log = tool.logbox.get()
+        if "the canvas failed" not in log or tool.mode() != 1 or tool.w.pdf.count != n + 1 \
+                or tool.w.pdf._nsObject._hidden or tool.w.preview.get() != 1:
+            problem("a canvas error should be logged and the PDF preview should take over in the same frame (R17)")
+        tool.logbox.set("")                                         # that error was the test's own
+        tool.w.guides.sim_fire()
+        tool.w.fit.sim_fire()
+        ns["start"]()                                               # ⌘R: a fresh window gets the canvas back
+        drive()
+        if T().mode() != 0:
+            problem("after running again the canvas should be back")
+    step("canvas failure falls back to PDF, logged", canvas_fails)
 
     def time_controls():
         tool = T()
@@ -904,10 +1212,10 @@ def main():
             timer = tool.clock.timer
             if "clock: timer" not in tool.logbox.get() or timer is None or COMMON_MODES not in timer.modes:
                 problem("without display links the clock should fall back to a timer in the common modes (R17)")
-            n = tool.w.canvas.count
+            n = len(tool.canvas.slots)
             tool.w.guides.set(not tool.w.guides.get())
             tool.w.guides.sim_fire()
-            if tool.w.canvas.count != n + 1:
+            if len(tool.canvas.slots) == n:
                 problem("the timer clock didn't draw the frame")
             tool.w.close()
             if timer.valid:
@@ -915,6 +1223,50 @@ def main():
         finally:
             DISPLAY_LINK[0] = True
     step("clock: timer fallback; closing stops it", clock_fallback_and_close)
+
+    def no_canvas_class_and_old_macos():
+        T().w.close()
+        builtins._dial_tool = None
+        CG_PATH[0] = False                                          # macOS 13: no NSBezierPath.CGPath
+        try:
+            ns["start"]()
+            drive()
+            tool = T()
+            if "paths: DrawBot" not in tool.logbox.get() or tool.mode() != 0:
+                problem("without NSBezierPath.CGPath the canvas should use DrawBot's converter and say so")
+            if any(s.layer.props["Path"].route != "DrawBot" for s in tool.canvas.slots):
+                problem("…and every path should come through it")
+            tool.w.close()
+        finally:
+            CG_PATH[0] = True
+        builtins._dial_tool = None
+        real, ns["CanvasView"] = ns["CanvasView"], None             # the view class couldn't be made
+        try:
+            ns["start"]()
+            drive()
+            tool = T()
+            if "preview: PDF only" not in tool.logbox.get() or tool.mode() != 1 or tool.w.pdf.count < 1:
+                problem("without the canvas view class the tool should open with the PDF preview and say so (R17)")
+            exercise(tool, controls_of(tool.groups[0].grid))
+            tool.w.fit.sim_fire()
+            tool.w.play.sim_fire()
+            tool.w.play.sim_fire()
+            tool.w.close()
+        finally:
+            ns["CanvasView"] = real
+        builtins._dial_tool = None
+    step("fallbacks: DrawBot's path converter; no canvas class → PDF only", no_canvas_class_and_old_macos)
+
+    def second_run_of_the_script():
+        ns2 = load_dial(home)                                       # ⌘R runs dial.py again in the same process
+        if ns2["CanvasView"] is not ns["CanvasView"] or ns2["FlippedView"] is not ns["FlippedView"]:
+            problem("a second run must look its Cocoa classes up, not define them again (R27)")
+        ns2["start"]()
+        drive()
+        if T().mode() != 0 or ns2["NOTES"]:
+            problem(f"second run: canvas not showing, or notes: {ns2['NOTES']}")
+        T().w.close()
+    step("the script runs a second time in the same process (⌘R)", second_run_of_the_script)
 
     print()
     if PROBLEMS:

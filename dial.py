@@ -21,7 +21,8 @@
 # ─────────────────────────────────────────────────────────────
 
 import os, json, copy, time, traceback, builtins
-from math import sin, cos, tan, acos, sqrt, ceil, radians, degrees, hypot, pi
+from math import sin, cos, tan, acos, sqrt, ceil, radians, degrees, hypot, pi, exp
+from contextlib import contextmanager
 
 try:
     from drawBot.context.baseContext import BezierPath, FormattedString
@@ -30,6 +31,7 @@ except ImportError:                                   # test harness outside the
     FormattedString = None
 
 VERSION = "beta 2.2"
+SHAPE_ENGINE = "booleanOperations (DrawBot)"          # which library combines shapes
 MM = 72 / 25.4                                        # 1 mm in points (render time only, R1)
 MM_PER_PT = 25.4 / 72                                 # imported files arrive in points
 
@@ -106,11 +108,11 @@ DEFAULTS = dict(
     out_production=False, out_mirror=False, out_live_text=False,
     out_dpi=600.0, out_seconds=4.0, out_fps=30.0,
     # interface
-    ui_section=0, ui_ring=0, ui_hand=0,
+    ui_section=0, ui_ring=0, ui_hand=0, ui_preview=0,              # ui_preview: 0 canvas · 1 PDF
 )
 
 # settings that change only colour, hands, output or the interface — no need to rebuild the dial
-NOT_GEOMETRY = ("t", "guides", "ui_section", "ui_ring", "ui_hand")
+NOT_GEOMETRY = ("t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_preview")
 NOT_GEOMETRY_PREFIX = ("c_", "ha_", "out_")
 WHOLE = ("count", "every", "offset", "num_digits")   # whole numbers
 
@@ -254,6 +256,7 @@ def fresh_settings(over=None):
     for h in HANDS:
         S["ha_" + h] = complete(HAND_BASE, S["ha_" + h])
     S["ui_ring"] = min(max(int(S["ui_ring"]), 0), len(S["rings"]) - 1)
+    S["ui_preview"] = 1 if S["ui_preview"] == 1 else 0
     return S
 
 
@@ -1125,8 +1128,9 @@ def scene(S, static, t, preview=True, selected=None):
 
     Each item: role · path (mm; a hand's is upright, see angle) · fill (RGBA, None for guides)
     · angle (clock angle for hands, else 0). Rings add ring (their entry in static["rings"]),
-    hands add name, guides add stroke and width (mm). An item with a key is "the same shape"
-    while its key is equal; without one, while its path is the same object.
+    hands add name, guides add stroke, width (mm, for the PDF) and px (screen points, for the
+    canvas). An item with a key is "the same shape" while its key is equal; without one, while
+    its path is the same object.
     selected = index of the ring being edited; its guides are drawn stronger.
     """
     items = []
@@ -1161,14 +1165,14 @@ def scene(S, static, t, preview=True, selected=None):
 
     if preview and S["guides"]:                                    # never exported (R5)
         R = S["dial_d"] / 2
-        def ring_guide(r, colour, width):
-            add("guide", circle(2 * r), None, stroke=colour, width=width, key=("circle", r))
+        def ring_guide(r, colour, width=0.03, px=1):
+            add("guide", circle(2 * r), None, stroke=colour, width=width, px=px, key=("circle", r))
         def line_guide(p0, p1):
             p = BezierPath()
             p.line(p0, p1)
-            add("guide", p, None, stroke=GUIDE, width=0.03, key=("line", p0, p1))
+            add("guide", p, None, stroke=GUIDE, width=0.03, px=1, key=("line", p0, p1))
         for r in (R,) + ((S["da_r"],) if date else ()):
-            ring_guide(r, GUIDE, 0.03)
+            ring_guide(r, GUIDE)
         line_guide((-R, 0), (R, 0))
         line_guide((0, -R), (0, R))
         for i, ring in enumerate(S["rings"]):
@@ -1178,9 +1182,9 @@ def scene(S, static, t, preview=True, selected=None):
             for r in sorted({ring["r"], ring["r"] - inner}, reverse=True):
                 if r > 0:
                     if i == selected:
-                        ring_guide(r, GUIDE_SELECTED, 0.05)
+                        ring_guide(r, GUIDE_SELECTED, width=0.05, px=1.5)
                     else:
-                        ring_guide(r, GUIDE_RING, 0.03)
+                        ring_guide(r, GUIDE_RING)
     return items
 
 
@@ -1240,6 +1244,7 @@ try:
     HAVE_UI = True
 except ImportError:
     HAVE_UI = False
+    Group = object                                                 # lets the Canvas class below be read off-Mac
 
 FlippedView = None
 if HAVE_UI:
@@ -1271,6 +1276,242 @@ FEATURE_NAMES = dict(
     cpsp="capital spacing", hist="historical forms", ornm="ornaments", dnom="denominators",
     numr="numerators", afrc="alternative fractions", rvrn="variation alternates")
 DEFAULT_ON = {"kern", "liga", "calt", "ccmp", "locl", "mark", "mkmk", "rlig", "rclt", "curs", "clig"}
+
+
+# ── canvas: the preview, drawn by Core Animation ─────────────
+#   One shape layer ("slot") per scene item, in the scene's order (R26). The
+#   layers live in millimetres inside one "dial" layer; zooming and panning
+#   only change that layer's scale and position, so macOS redraws every
+#   shape sharp at each step. A frame touches only what changed: a moving
+#   hand is one rotation, a new colour one property.
+
+ZOOM_MAX = 400                                                     # screen points per mm
+
+def fit_zoom(view_w, view_h, S):
+    """screen points per mm at which the whole page (dial + margins) fits the view."""
+    return min(view_w, view_h) / (S["dial_d"] + 2 * S["margin"])
+
+def zoom_about(z, c, p, k, lo, hi):
+    """zoom by k, kept within lo…hi, so that the spot under view point p stays there.
+    z = points per mm, c = where the dial's centre sits in the view. → (z, c)"""
+    k = min(max(z * k, lo), hi) / z
+    return z * k, (p[0] + (c[0] - p[0]) * k, p[1] + (c[1] - p[1]) * k)
+
+@contextmanager
+def no_animation():
+    """change layers together and at once (Core Animation would fade each change over 0.25 s)."""
+    Quartz.CATransaction.begin()
+    Quartz.CATransaction.setDisableActions_(True)
+    try:
+        yield
+    finally:
+        Quartz.CATransaction.commit()
+
+def cg_colour(c):
+    return to_ns(c).CGColor()
+
+CanvasView = None
+if HAVE_UI:
+    try:
+        CanvasView = objc.lookUpClass("DialToolCanvasView1")      # made by an earlier run (⌘R again, R27)
+    except objc.nosuchclass_error:
+        try:
+            class DialToolCanvasView1(AppKit.NSView):
+                """the canvas's view. It only passes gestures and size changes on to its Canvas,
+                so this class never has to change (a class can't be redefined, R27)."""
+                def acceptsFirstResponder(self):
+                    return True
+                def scrollWheel_(self, event):
+                    self._pass("scrolled", event)
+                def magnifyWithEvent_(self, event):
+                    self._pass("magnified", event)
+                def setFrameSize_(self, size):
+                    objc.super(DialToolCanvasView1, self).setFrameSize_(size)
+                    self._pass("resized", None)
+                def viewDidChangeBackingProperties(self):
+                    objc.super(DialToolCanvasView1, self).viewDidChangeBackingProperties()
+                    self._pass("rescaled", None)
+                @objc.python_method
+                def _pass(self, name, event):
+                    try:
+                        owner = self.vanillaWrapper()              # vanilla's link back to the Canvas
+                        if owner is not None:
+                            getattr(owner, name)(event)
+                    except Exception:
+                        print(traceback.format_exc())
+            CanvasView = DialToolCanvasView1
+        except Exception as e:
+            note(f"no canvas view class ({e})")
+
+
+class Slot:
+    """one shape layer, and what it shows now — so only changes are sent to Core Animation."""
+
+    def __init__(self, parent, scale):
+        self.layer = Quartz.CAShapeLayer.layer()
+        self.layer.setContentsScale_(scale)
+        self.layer.setFillColor_(None)                             # a new shape layer fills black
+        parent.addSublayer_(self.layer)
+        self.role = self.key = self.source = self.fill = self.stroke = None
+        self.angle = self.px = 0
+
+    def update(self, item, canvas):
+        self.role = item["role"]
+        same = item["key"] == self.key if "key" in item else item["path"] is self.source
+        if not same:
+            self.layer.setPath_(canvas.cg_path(item["path"]))
+        self.key, self.source = item.get("key"), item["path"]
+        if item["fill"] != self.fill:
+            self.fill = list(item["fill"]) if item["fill"] else None
+            self.layer.setFillColor_(cg_colour(self.fill) if self.fill else None)
+        stroke = item.get("stroke")
+        if stroke != self.stroke:
+            self.stroke = list(stroke) if stroke else None
+            self.layer.setStrokeColor_(cg_colour(self.stroke) if self.stroke else None)
+        if item.get("px", 0) != self.px:
+            self.px = item.get("px", 0)
+            self.layer.setLineWidth_(self.px / canvas.z)           # guides: a constant width on screen
+        if item["angle"] != self.angle:                            # hands turn about the pivot (R2: clockwise)
+            self.angle = item["angle"]
+            self.layer.setAffineTransform_(Quartz.CGAffineTransformMakeRotation(-radians(self.angle)))
+
+
+class Canvas(Group):
+    """the preview. A vanilla Group whose view hosts our layers:
+
+        view ─ host (backdrop colour, clips) ─ dial (centre, zoom, mirror) ─ one slot per scene item
+    """
+    nsViewClass = CanvasView
+    built = False
+
+    def __init__(self, posSize, S):
+        super().__init__(posSize)
+        self.S = S
+        view = self.getNSView()
+        self.host = Quartz.CALayer.layer()
+        self.host.setMasksToBounds_(True)                          # a zoomed dial stays inside the preview
+        view.setLayer_(self.host)                                  # our layer first, then "wants layer":
+        view.setWantsLayer_(True)                                  # that order makes the layers ours
+        self.dial = Quartz.CALayer.layer()                         # its (0, 0) is the dial's centre, in mm
+        self.host.addSublayer_(self.dial)
+        self.slots = []
+        self.z, self.c, self.fitted = 1.0, (0.0, 0.0), True        # points per mm · centre in the view
+        self.view_size, self.shown = (0.0, 0.0), None
+        self.paths = "CGPath (macOS 14+)"
+        try:                                                       # is macOS's own path conversion there?
+            box = Quartz.CGPathGetBoundingBox(circle(1).getNSBezierPath().CGPath())
+            if abs(box.size.width - 1) > 0.01:
+                raise ValueError
+        except Exception:
+            self.paths = "DrawBot"                                 # older macOS: DrawBot's converter (R17)
+        self.built = True
+        self.resized()
+
+    # the view's geometry
+
+    def size(self):
+        s = self.getNSView().bounds().size
+        return s.width, s.height
+
+    def cg_path(self, p):
+        return p.getNSBezierPath().CGPath() if self.paths != "DrawBot" else p._getCGPath()
+
+    def _screen_scale(self):
+        window = self.getNSView().window()
+        screen = window if window is not None else AppKit.NSScreen.mainScreen()
+        return screen.backingScaleFactor() if screen is not None else 2.0
+
+    def _place(self):
+        """put the dial layer at c, scaled to z; guides keep their width on screen."""
+        mirror = -1 if self.S["out_mirror"] else 1                 # toner transfer: flipped left–right
+        with no_animation():
+            self.dial.setPosition_(self.c)
+            self.dial.setAffineTransform_(Quartz.CGAffineTransformMakeScale(mirror * self.z, self.z))
+            for slot in self.slots:
+                if slot.px:
+                    slot.layer.setLineWidth_(slot.px / self.z)
+
+    def fit(self):
+        w, h = self.size()
+        if w < 1 or h < 1:
+            return
+        self.fitted = True
+        self.z, self.c = fit_zoom(w, h, self.S), (w / 2, h / 2)
+        self._place()
+
+    def zoom(self, k, p):
+        w, h = self.size()
+        if w < 1 or h < 1:
+            return
+        self.z, self.c = zoom_about(self.z, self.c, p, k, fit_zoom(w, h, self.S) / 4, ZOOM_MAX)
+        self.fitted = False
+        self._place()
+
+    # what the view passes on (R27)
+
+    def _point(self, event):
+        p = self.getNSView().convertPoint_fromView_(event.locationInWindow(), None)
+        return (p.x, p.y)
+
+    def scrolled(self, event):
+        """two fingers: pan. With ⌘ (or a mouse wheel with ⌘): zoom about the cursor."""
+        dx, dy = event.scrollingDeltaX(), event.scrollingDeltaY()
+        if event.modifierFlags() & AppKit.NSEventModifierFlagCommand:
+            self.zoom(exp(dy * 0.01), self._point(event))
+            return
+        if not event.hasPreciseScrollingDeltas():                  # a mouse wheel reports coarse steps
+            dx, dy = dx * 10, dy * 10
+        self.fitted = False
+        self.c = (self.c[0] + dx, self.c[1] - dy)                  # the dial moves with the fingers
+        self._place()
+
+    def magnified(self, event):
+        """pinch: zoom about the cursor."""
+        self.zoom(1 + event.magnification(), self._point(event))
+
+    def resized(self, event=None):
+        if not self.built:
+            return
+        w, h = self.size()
+        if w < 1 or h < 1:
+            return
+        if self.fitted:
+            self.fit()
+        else:                                                      # the dial stays where it is in the view
+            self.c = (self.c[0] + (w - self.view_size[0]) / 2, self.c[1] + (h - self.view_size[1]) / 2)
+            self._place()
+        self.view_size = (w, h)
+
+    def rescaled(self, event=None):
+        """moved to a display with another pixel density."""
+        if not self.built:
+            return
+        scale = self._screen_scale()
+        with no_animation():
+            for layer in [self.host, self.dial] + [slot.layer for slot in self.slots]:
+                layer.setContentsScale_(scale)
+
+    # drawing
+
+    def draw(self, items, S):
+        """show a scene: slot i shows item i."""
+        self.S = S
+        backdrop = [1, 1, 1, 1] if S["out_production"] else list(S["c_backdrop"])
+        shown = (backdrop, S["dial_d"] + 2 * S["margin"], bool(S["out_mirror"]))
+        with no_animation():
+            if shown != self.shown:                                # backdrop, page size or mirror changed
+                self.host.setBackgroundColor_(cg_colour(backdrop))
+                self.shown = shown
+                if self.fitted:
+                    self.fit()
+                else:
+                    self._place()
+            while len(self.slots) < len(items):
+                self.slots.append(Slot(self.dial, self._screen_scale()))
+            while len(self.slots) > len(items):
+                self.slots.pop().layer.removeFromSuperlayer()
+            for slot, item in zip(self.slots, items):
+                slot.update(item, self)
 
 
 # ── frame clock: nothing draws inside a control's callback (R28) ──
@@ -1672,7 +1913,7 @@ class DialTool:
         self.axis_params, self.nudge_params = {}, {}
         self.families = font_families()
 
-        self.w = Window((1300, 860), f"Dial Tool · {VERSION}", minSize=(1060, 720), autosaveName="DialToolWindow")
+        self.w = Window((1300, 860), f"Dial Tool · {VERSION}", minSize=(1180, 720), autosaveName="DialToolWindow")
         self.w.sections = segmented(SECTIONS, self._section_cb, pos=(10, 10, PANEL, 26), tabs=True)
         self.groups = []
         for i, title in enumerate(SECTIONS):
@@ -1681,16 +1922,26 @@ class DialTool:
             self.groups.append(g)
             getattr(self, "_build_" + title.lower())(g)
 
-        x = PANEL + 20                                             # preview and the bar under it
-        self.w.canvas = DrawView((x, 10, -10, -74))
+        x = PANEL + 20                                             # two previews in one place, and the bar under them
+        self.w.pdf = DrawView((x, 10, -10, -74))                   # DrawBot's PDF view: the reference and the fallback
+        self.canvas, launch = None, []
+        try:
+            if CanvasView is None:
+                raise RuntimeError("its view class is missing")
+            self.w.canvas = Canvas((x, 10, -10, -74), self.S)
+            self.canvas = self.w.canvas
+            launch += ["preview: canvas", f"paths: {self.canvas.paths}"]
+        except Exception as e:                                     # PDF preview only (R17)
+            launch += [f"preview: PDF only — the canvas didn't start ({e})"]
         self.w.timeLabel = TextBox((x + 2, -59, 40, 20), "Time", sizeStyle=SIZE)
-        self.w.timeSlider = Slider((x + 44, -62, -410, 24), minValue=0, maxValue=43199, value=self.S["t"],
+        self.w.timeSlider = Slider((x + 44, -62, -536, 24), minValue=0, maxValue=43199, value=self.S["t"],
                                    callback=self._time_slid, sizeStyle=SIZE)
-        self.w.timeField = EditText((-398, -62, 84, 24), fmt_time(self.S["t"]), continuous=False,
+        self.w.timeField = EditText((-524, -62, 84, 24), fmt_time(self.S["t"]), continuous=False,
                                     callback=self._time_typed, sizeStyle=SIZE)
-        self.w.guides = CheckBox((-302, -61, 78, 22), "Guides", value=bool(self.S["guides"]), sizeStyle=SIZE,
+        self.w.guides = CheckBox((-428, -61, 78, 22), "Guides", value=bool(self.S["guides"]), sizeStyle=SIZE,
                                  callback=lambda s: self.set_value("global", "guides", bool(s.get())))
         self._bind("global", "guides", lambda v: self.w.guides.set(bool(v)))
+        self.w.preview = segmented(["Canvas", "PDF"], self._preview_cb, pos=(-346, -63, 120, 26))
         self.w.now = Button((-220, -62, 60, 24), "Now", callback=self._now, sizeStyle=SIZE)
         self.w.play = Button((-154, -62, 66, 24), "Play", callback=self._play, sizeStyle=SIZE)
         self.w.fit = Button((-82, -62, 72, 24), "Fit", callback=self._fit, sizeStyle=SIZE)
@@ -1701,8 +1952,11 @@ class DialTool:
         self._show_section(self.S["ui_section"])
         self._refresh_ring_list()
         self._refresh_visibility()
+        self._show_preview()
         self.w.open()
         self.ready = True
+        for line in launch + [f"shape combining: {SHAPE_ENGINE}"]:
+            self.log(line)
         self._start_clock()
         self._check_callbacks()
         self._load_ring()                                          # type, nudge, then renders
@@ -2092,30 +2346,61 @@ class DialTool:
             self.static_dirty = False
             self.build_ms = (time.perf_counter() - t0) * 1000
         t1 = time.perf_counter()
-        self.D.newDrawing()
-        draw_page(self.D, self.S, self.static, self.S["t"], preview=True, selected=self.S["ui_ring"])
-        self._show_pdf(self.D.pdfImage())
+        if self.mode() == 0:
+            try:
+                self.canvas.draw(scene(self.S, self.static, self.S["t"], True, self.S["ui_ring"]), self.S)
+            except Exception:                                      # the canvas broke: PDF from here on (R17)
+                self.canvas = None
+                self._show_preview()
+                self.log("the canvas failed; showing the PDF preview instead\n" + traceback.format_exc())
+        if self.mode() == 1:
+            self.D.newDrawing()
+            draw_page(self.D, self.S, self.static, self.S["t"], preview=True, selected=self.S["ui_ring"])
+            self._show_pdf(self.D.pdfImage())
         frame_ms = (time.perf_counter() - t1) * 1000
         if not self.playing or time.time() - self.status_at > 0.25:   # readable while playing
             ring = self.ring()
             font = f"   ·   {ring['ps']}" if kind_of(ring) == "numerals" else ""
-            self.w.status.set(f"{ring['name']}{font}   ·   Ø {self.S['dial_d']:.1f} mm   ·   pdf"
+            self.w.status.set(f"{ring['name']}{font}   ·   Ø {self.S['dial_d']:.1f} mm   ·   {['canvas', 'pdf'][self.mode()]}"
                               f"   ·   build {self.build_ms:.0f} ms   ·   frame {frame_ms:.0f} ms")
             self.status_at = time.time()
         while NOTES:
             self.log(NOTES.pop(0))
         self._autosave()
 
+    # ── the two previews ─────────────────────────────────────
+
+    def mode(self):
+        """which preview is showing: 0 canvas · 1 PDF (always PDF when the canvas isn't available)."""
+        return 0 if self.canvas is not None and self.S["ui_preview"] == 0 else 1
+
+    def _show_preview(self):
+        mode = self.mode()
+        self.w.pdf.show(mode == 1)
+        try:
+            self.w.canvas.show(mode == 0)
+        except AttributeError:
+            pass                                                   # the canvas was never built
+        self.w.preview.set(mode)
+        if self.canvas is None:                                    # nothing to switch to
+            self.w.preview.getNSSegmentedButton().setEnabled_forSegment_(False, 0)
+
+    @guard
+    def _preview_cb(self, sender):
+        self.S["ui_preview"] = sender.get() or 0
+        self._show_preview()
+        self.render()
+
     def _show_pdf(self, pdf):
         """swap the drawing but keep your zoom and scroll position."""
-        view = self.w.canvas.getNSView()
+        view = self.w.pdf.getNSView()
         keep = not view.autoScales()
         point = None
         if keep:
             scale = view.scaleFactor()
             dest = view.currentDestination()
             point = dest.point() if dest is not None else None
-        self.w.canvas.setPDFDocument(pdf)
+        self.w.pdf.setPDFDocument(pdf)
         if keep:
             try:
                 view.setAutoScales_(False)
@@ -2126,8 +2411,12 @@ class DialTool:
             except Exception:
                 pass
 
+    @guard
     def _fit(self, sender):
-        self.w.canvas.getNSView().setAutoScales_(True)
+        if self.mode() == 0:
+            self.canvas.fit()
+        else:
+            self.w.pdf.getNSView().setAutoScales_(True)
 
     # ── type (the selected numerals ring's) ──────────────────
 
