@@ -1,7 +1,7 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **done** · **parked**.
-*Last updated 4 Oct 2026 (beta 2.3: preview plan built, #37–#41 wait for the Mac check, `docs/preview.md` §6). Seen working on Okay's Mac 4 Oct (beta 2.1 screenshot): window, sections, ring list, ring settings list, regular-size controls, live popups, type per numerals ring with feature names.*
+*Last updated 4 Oct 2026 (beta 2.3: preview plan built, #37–#41 were waiting for the Mac check, `docs/preview.md` §6 — set aside by Okay the same day, see #40). Seen working on Okay's Mac 4 Oct (beta 2.1 screenshot): window, sections, ring list, ring settings list, regular-size controls, live popups, type per numerals ring with feature names.*
 
 ## Verify on a Mac
 
@@ -41,7 +41,7 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 37 | **Preview: canvas.** Core Animation layers drawn from one scene shared with export; pinch / two-finger pan / ⌘-scroll zoom, Fit; sharp during zoom; no flash (`docs/preview.md` §3.1–3.2) | verify (beta 2.3) |
 | 38 | **Preview: frame clock.** Controls request a frame; a display-synced clock draws at most once per frame; Play runs on it, also while a slider is held (§3.3) | verify (beta 2.3) |
 | 39 | **Preview: Canvas · PDF switch** (`ui_preview`), PDF as fallback and reference (§3.5) | verify (beta 2.3) |
-| 40 | **Preview: Mac check** — `docs/preview.md` §6, steps 1–10 | **open — Okay, on the Intel Mac first** |
+| 40 | **Preview: Mac check** — `docs/preview.md` §6, steps 1–10 | **set aside** — Okay, 4 Oct: "No mac check. Trust as if." beta 2.3 is treated as working; reopen on the first screenshot or log that says otherwise |
 | 41 | **skia-pathops** for shape combining, installed through DrawBot's package menu on each Mac (§3.6) — Okay: yes, 4 Oct. Log must say `shape combining: skia-pathops …` on each Mac | verify (beta 2.3) |
 | 42 | Smoke test: stand-ins for Quartz / Core Animation, a driven frame clock, canvas and zoom checks (§5.2) | done (4 Oct) |
 | 43 | Guidebook window: the screenshot is gone; the window is redrawn from `dial.py` (design canon §6). Compare the drawing with the real window on the Mac once: proportions, row order, control looks | verify |

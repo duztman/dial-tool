@@ -1,0 +1,16 @@
+<page id="numerals" no="08" title="Numerals" lead="One label per position: from a built-in set, a count, or a list of your own.">
+<col c="4">
+  {{hero:numerals:4:6}}
+  <block c="4" r="4" ic="count" k="Numbers" h="Labels that count.">
+    {{ui:strip:labels-6:0:labels,num_from,num_step,num_digits}}</block>
+  <watch c="4" r="2">A Custom list follows positions, not hours. With Start 30° its first entry sits at 1 o’clock.</watch>
+</col>
+<col c="8">
+  {{strip:labels}}
+  {{strip:placement}}
+  <block c="4" r="2" ic="path" side="1" k="Placement" h="Four ways to sit.">
+    <p>On path sets each letter on the circle; below 3 and 9 it flips to read left to right.</p></block>
+  <block c="4" r="2" ic="type" side="1" k="Custom" h="A list, comma by comma.">
+    <p>An empty entry leaves its position empty: California, page {{page:california}}, is two such lists.</p></block>
+</col>
+</page>

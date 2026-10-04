@@ -63,7 +63,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Production mask** | Export mode: every ring in solid black, no plate, no hands, aperture as an outline. |
 | **Live text** | Export option: numerals and the date stay text in PDF/SVG (the fonts are needed to open them). Off by default — then text is **outlines**. |
 | **Design canon** | `docs/design.md`: the rules for type, grid, colour, pictures and redrawn controls (R29). |
-| **Guidebook** | `docs/Dial-Tool-guide.pdf`, the user guide (A4 landscape, 25 pages, set by the design canon), built from `docs/guide/guide.html` by `tools/make_guide.py`. |
+| **Guidebook** | `docs/Dial-Tool-guide.pdf`, the user guide (A4 landscape, 28 pages, set by the design canon), built from `docs/guide/pages/` and `style.css` by `tools/make_guide.py`. |
 | **Classics** | The guide's nine example dials (field, diver, dress, pilot, California, station clock, Bauhaus, sector, gauge): settings in `tools/guide_dials.py`, also saved as presets in `docs/guide/presets/`. Drawn by eye after dial types, not measured. |
 | **Mirror** | Flips the output for toner transfer. |
 | **Guides** | Thin blue construction circles in the preview — the dial edge and each ring's edges; the selected ring's in orange. Switched with the **Guides** checkbox under the preview. Never exported. |

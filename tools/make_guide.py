@@ -1,31 +1,34 @@
 """
 make_guide.py — build the Dial Tool guidebook (docs/Dial-Tool-guide.pdf).
 
-  docs/guide/guide.html   the pages: text, layout and styles. Edit it there.
-  tools/guide_dials.py    the classic dials, as real Dial Tool settings.
-  this file               the small feature figures (FIGURES), and the build:
+  docs/guide/pages/*.html   the pages, one file each: text, and which pictures go where.
+  docs/guide/style.css      how everything looks (rules: docs/design.md).
+  docs/guide/icons.svg      the line icons.
+  docs/guide/README.md      how to write a page: the tags, the marks, the grid.
+  tools/guide_dials.py      the classic dials, as real Dial Tool settings.
+  this file                 the small figures (FIGURES), the large examples and their
+                            annotations (HEROES, overlay), and the build:
 
   1. fonts     downloaded once from github.com/google/fonts into docs/guide/cache
                (not in the repo): Inter for the pages, and open stand-ins for
                the macOS fonts the dials name (guide_dials.FONT_STAND_INS);
-  2. figures   every dial and feature figure is drawn by dial.py itself, through
-               the test harness (drawbot-skia), as SVG into docs/guide/img;
+  2. figures   every dial and figure is drawn by dial.py itself, through the test
+               harness (drawbot-skia), as SVG into docs/guide/img — only those whose
+               settings changed since the last build;
   3. presets   each classic dial → docs/guide/presets/<name>.json (Load… reads them);
-  4. pages     {{…}} marks in guide.html are filled in (figure strips, recipes
-               printed from the same settings that drew the pictures), and
-               Chromium prints the result to PDF. A page whose content
-               overflows is reported: shorten the text.
-
-Marks in guide.html: {{version}} {{date}} {{contents}} {{classics}} {{window}} {{page:ID}} {{dial:NAME}}
-                     {{strip:NAME}} {{strip:NAME:FROM-TO}} {{hero:NAME:COLUMNS}} {{rings:NAME}}
-                     {{ui:strip:NAME-INDEX:RING:keys}} {{ui:dial:NAME:RING|hour|minute|second|date|dial:keys}}
+  4. pages     tags and {{…}} marks are filled in, Chromium lays the pages out, and
+               the build measures them: a box too small for its text, a box off the
+               grid, a label that leaves its picture or sits on another. Each is
+               printed as a CHECK line. Fix them all; the PDF is still written.
 
 Setup (once): pip install drawbot-skia skia-pathops pillow fonttools playwright
               (+ a Chromium: `playwright install chromium`, or set CHROME=/path/to/chrome)
-Use:          python tools/make_guide.py
+Use:          python tools/make_guide.py              all pages → the PDF
+              python tools/make_guide.py marks date   only these pages → pictures in
+                                                      docs/guide/cache/preview, to look at
 """
 
-import os, re, sys, json, glob, html, datetime, urllib.request
+import os, re, sys, json, glob, html, hashlib, datetime, urllib.request
 from fontTools.ttLib import TTFont
 from fontTools.varLib import instancer
 from fontTools import subset
@@ -113,7 +116,7 @@ def advance(txt, t, size):
 
 # ── figures ──────────────────────────────────────────────────
 
-PAPER  = [0.955, 0.945, 0.915, 1]
+PAPER  = [0.988, 0.988, 0.980, 1]                           # the page's own white: a plain plate is a hairline circle
 INK    = G.INK
 MARKS  = dict(kind="markers", name="Markers", r=13.4, len=2.8, w=0.7)
 TICKS  = dict(kind="ticks", name="Ticks", r=14.4, count=60, len=1.0, w=0.12)
@@ -128,6 +131,13 @@ def fig(title, values, rings=None, crop=None, base=None, keep=None, **settings):
 
 # strips of small figures: name → [figures]. The values text is what you'd set in the tool.
 FIGURES = {
+    "first": [
+        fig("1 · ticks", "Add ring… → ticks · Count 60", [TICKS]),
+        fig("2 · markers", "added above the ticks", [MARKS, TICKS]),
+        fig("3 · give way", "ticks: Skip where markers above", [MARKS, dict(TICKS, skip=1)]),
+        fig("4 · numerals, hands", "Every 3 · Radius 8 · Size 2.4", [dict(NUMS, every=3, r=8.0, size=2.4), MARKS, dict(TICKS, skip=1)],
+            ha_on=True, c_cap=INK, ha_second=dict(c=INK)),
+    ],
     "kinds": [
         fig("ticks", "Count 60 · Length 1.0 · Width 0.12", [TICKS]),
         fig("markers", "Count 12 · Length 2.8 · Width 0.7", [MARKS]),
@@ -140,11 +150,11 @@ FIGURES = {
         fig("Every 3 · skip those instead", "the other eight", [dict(MARKS, every=3, invert=True)]),
         fig("Every 2 · Offset 1", "the odd hours", [dict(MARKS, every=2, offset=1)]),
         fig("Count 4 · Start 45°", "a quarter turn off", [dict(MARKS, count=4, start=45)]),
-        fig("Count 10 · Start −135° · Span 270°", "an arc: both ends marked", [dict(MARKS, count=10, start=-135, span=270)]),
+        fig("Count 10 · Span 270°", "Start −135° · both ends marked", [dict(MARKS, count=10, start=-135, span=270)]),
     ],
     "shapes": [
         fig("bar", "Length 3.4 · Width 1.2", [dict(MARKS, len=3.4, w=1.2)], crop="top"),
-        fig("bar, fine", "Count 60 · Length 1.6 · Width 0.12", [dict(TICKS, r=13.4, len=1.6)], crop="top"),
+        fig("bar, fine", "Count 60 · 1.6 × 0.12", [dict(TICKS, r=13.4, len=1.6)], crop="top"),
         fig("wedge", "Inner width × 0.35", [dict(MARKS, shape="wedge", len=3.4, w=1.6, taper=0.35)], crop="top"),
         fig("wedge", "Inner width × 0", [dict(MARKS, shape="wedge", len=3.4, w=1.8, taper=0.0)], crop="top"),
         fig("wedge", "Inner width × 1.8", [dict(MARKS, shape="wedge", len=3.4, w=0.9, taper=1.8)], crop="top"),
@@ -184,7 +194,7 @@ FIGURES = {
         fig("Eastern Arabic", "", [dict(NUMS, r=12.0, labels="Eastern Arabic")], crop="top"),
         fig("Chinese", "", [dict(NUMS, r=12.0, labels="Chinese", size=2.2)], crop="top"),
         fig("Words", "on path", [dict(NUMS, labels="Words", mode="on path", size=1.5, r=12.4)], crop="top"),
-        fig("Numbers", "First 5 · Step 5 · Digits 2 · Start 30°",
+        fig("Numbers", "First 5 · Step 5 · Digits 2",
             [dict(NUMS, r=12.0, labels="Numbers", num_from=5, num_step=5, num_digits=2, start=30)], crop="top"),
         fig("Custom", "N, NNE, , , E, …", [dict(NUMS, r=12.0, labels="Custom", custom="N, NNE, , E, , , S, , , W, , NNW", size=2.2)], crop="top"),
     ],
@@ -201,7 +211,7 @@ FIGURES = {
         fig("on path", "letters follow the circle", [dict(NUMS, labels="Words", mode="on path", size=1.15, r=11.6)]),
     ],
     "date": [
-        fig("at 3", "Radius 10.5 · 2.6 × 2.0 · Frame 0.15", [MARKS, dict(TICKS, skip=1)],
+        fig("at 3", "2.6 × 2.0 · Frame 0.15", [MARKS, dict(TICKS, skip=1)],
             da_on=True, da_at=0, da_day="17"),
         fig("at 4:30", "Corner 0.6 · Frame 0", [MARKS, dict(TICKS, skip=1)],
             da_on=True, da_at=1, da_round=0.6, da_frame=0.0, da_day="28"),
@@ -215,8 +225,8 @@ FIGURES = {
     ],
     "exploded": [
         fig("Minutes", "ticks · Count 60", None, base="diver", keep=["Minutes"], ha_on=False, da_on=False),
-        fig("Dots", "markers · Every 3, skip those instead", None, base="diver", keep=["Dots"], ha_on=False, da_on=False),
-        fig("Bars 6 · 9", "markers · Count 4 · 12 o’clock: none", None, base="diver", keep=["Bars 6 · 9"], ha_on=False, da_on=False),
+        fig("Dots", "markers · Every 3, skipped", None, base="diver", keep=["Dots"], ha_on=False, da_on=False),
+        fig("Bars 6 · 9", "markers · Count 4 · 12: none", None, base="diver", keep=["Bars 6 · 9"], ha_on=False, da_on=False),
         fig("Triangle", "markers · Count 1 · wedge", None, base="diver", keep=["Triangle"], ha_on=False, da_on=False),
         fig("Depth", "numerals · Custom · on path", None, base="diver", keep=["Depth"], ha_on=False, da_on=False),
         fig("The dial", "with hands and the date", None, base="diver"),
@@ -236,14 +246,25 @@ HEROES = {
     "numerals":  fig("", "", None, base="california", ha_on=False),
     "type":      fig("", "", None, base="field", ha_on=False, crop="top"),
     "hands":     fig("", "", None, base="dress"),
-    "date":      fig("", "", [dict(MARKS, r=13.4), dict(kind="band", r=12.2, width=3.4, c=G.NAVY)], crop="east",
+    "date":      fig("", "", [dict(kind="band", r=12.2, width=3.4, c=G.NAVY)], crop="east",
                      da_on=True, da_at=0, da_r=10.5, da_w=2.6, da_h=2.0, da_frame=0.15, da_clear=0.25, da_day="17"),
     "files":     fig("", "", None, base="california", out_production=True, out_mirror=True),
 }
 PAD = 0.62                                                   # a whole hero's share of its tile
 # close-ups: enlargement, and the point of the dial (mm from its centre) that sits at the panel's top middle
 # ("top") or in its middle ("east")
-CLOSE = dict(marks=(2.1, 15.5), giveway=(4.0, 16.4), type=(2.1, 14.9), date=(2.6, 9.63))
+CLOSE = dict(marks=(1.9, 15.3), giveway=(4.0, 15.7), type=(2.1, 14.9), date=(2.6, 9.63))
+# strips of close-ups: columns, rows, enlargement, the radius at the panel's top
+CROPS = dict(shapes=(2, 3, 2.3, 16.1), labels=(2, 3, 2.1, 16.1), giveway=(3, 4, 2.6, 15.9), type=(3, 4, 2.1, 16.1))
+B, COLUMN, GUTTER = 1.375, 19.083, 4.0                       # the grid, in mm (docs/guide/style.css)
+
+def width(c):  return c * COLUMN + (c - 1) * GUTTER         # c columns
+def height(r): return (r * 6 + (r - 1) * 4) * B             # r rows
+def light(S):  return sum(S["c_plate"][:3]) > 2.55 and not S["out_production"]
+
+def place_top(z, focus, page):
+    """where an enlarged dial sits in its panel (cqw = a hundredth of the panel's width)."""
+    return f"width:{z * 100:g}cqw; left:{(1 - z) * 50:g}cqw; top:{-(page / 2 - focus) / page * z * 100:.1f}cqw"
 
 def cp(r, a):
     """clock angle → x, y on the page (y grows downward)."""
@@ -251,6 +272,8 @@ def cp(r, a):
     return (r * math.sin(math.radians(a)), -r * math.cos(math.radians(a)))
 
 def label(x, y, text, anchor="start", sub=None, white=False):
+    if not text:
+        return ""
     out = f'<text{' class="wt"' if white else ""} x="{x:.2f}" y="{y:.2f}" text-anchor="{anchor}"><tspan class="bold">{esc(text)}</tspan>'
     if sub:
         out += f'<tspan class="g" x="{x:.2f}" dy="1.25em">{esc(sub)}</tspan>'
@@ -334,31 +357,26 @@ def overlay(name, S):
             label(8.2, 2.6, "Frame 0.15 + Print clearance 0.25", "end", "print keeps this far from the hole")])
     return ""
 
-def hero(name, span, ns):
-    """{{hero:NAME:COLUMNS}} — the large example, with its annotations."""
+def hero(name, c, r, ns):
+    """{{hero:NAME:COLUMNS:ROWS}} — the large example, with its annotations."""
     f = HEROES[name]
     S = figure_settings(ns, f)
     page = S["dial_d"] + 2 * S["margin"]
-    tile = span * 19.083 + (span - 1) * 4                    # mm on paper
+    notes = overlay(name, S)
+    img = f'<img src="img/hero-{name}.svg">'
     if f["crop"]:
         z, focus = CLOSE[name]
-        unit = tile * z / page                               # mm on paper per mm of dial
-        box = f"{-page / 2:.3f} {-page / 2:.3f} {page:.3f} {page:.3f}"
-    else:
-        unit = tile * PAD / page
-        box = f"{-page / 2 / PAD:.3f} {-page / 2 / PAD:.3f} {page / PAD:.3f} {page / PAD:.3f}"
-    svg = (f'<svg class="over" viewBox="{box}" style="--fs:{2.65 / unit:.3f}px; --sw:{0.2 / unit:.4f}px">'
-           f'{overlay(name, S)}</svg>') if overlay(name, S) else ""
-    art = f'<div class="art"><img src="img/hero-{name}.svg">{svg if f["crop"] else ""}</div>'
-    if f["crop"]:
-        if f["crop"] == "top":
-            place = f"width:{z * 100:g}cqw; left:{(1 - z) * 50:g}cqw; top:{-(page / 2 - focus) / page * z * 100:.1f}cqw"
-        else:
-            place = f"width:{z * 100:g}cqw; left:{50 - (page / 2 + focus) / page * z * 100:.1f}cqw; top:calc(50cqh - {z * 50:g}cqw)"
-        art = art.replace('class="art"', f'class="art" style="{place}"', 1)
-        return f'<figure class="s{span} hero"><div class="crop {f["crop"]}">{art}</div></figure>'
-    pad = " pad" if svg else ""
-    return f'<figure class="s{span} hero"><div class="whole{pad}"><div class="sq">{art}{svg}</div></div></figure>'
+        place = place_top(z, focus, page) if f["crop"] == "top" else \
+            f"width:{z * 100:g}cqw; left:{50 - (page / 2 + focus) / page * z * 100:.1f}cqw; top:calc(50cqh - {z * 50:g}cqw)"
+        svg = f'<svg class="over" viewBox="{-page / 2:g} {-page / 2:g} {page:g} {page:g}">{notes}</svg>' if notes else ""
+        return f'<figure class="c{c} r{r} hero"><div class="crop"><div class="art" style="{place}">{img}{svg}</div></div></figure>'
+    W, Hh = width(c), height(r)
+    share = 0.8 if notes else 0.94                           # the dial's page, as a share of the panel's height
+    unit = Hh * share / page                                 # mm on paper per mm of dial
+    edge = f'<circle class="plate" r="{S["dial_d"] / 2:g}"/>' if light(S) else ""
+    box = f"{-W / 2 / unit:.3f} {-Hh / 2 / unit:.3f} {W / unit:.3f} {Hh / unit:.3f}"
+    return (f'<figure class="c{c} r{r} hero"><div class="whole" style="--k:{share}"><div class="art">{img}</div>'
+            f'<svg class="over" viewBox="{box}">{edge}{notes}</svg></div></figure>')
 
 HANDS = [
     ("baton", dict(w=0.9, tail=1.6)),
@@ -427,25 +445,48 @@ def draw_preview(ns, name, selected):
 
 WINDOW = ("field", 3)                                       # the dial and the selected ring in the window drawing
 
+META = {}                                                    # image name → what the page needs to know to place it
+_drawn = {}
+
+def draw(ns, name, S):
+    """draw img/NAME.svg — unless these settings already drew it (cache/figures.json remembers)."""
+    page = S["dial_d"] + 2 * S["margin"]
+    META[name] = dict(k=page / S["dial_d"], light=light(S))
+    key = hashlib.sha1((json.dumps(S, sort_keys=True, default=str) + STAMP).encode()).hexdigest()
+    path = os.path.join(IMG, name + ".svg")
+    if _drawn.get(name) != key or not os.path.exists(path):
+        draw_dial(ns, S, path)
+        _drawn[name] = key
+
 def figures():
+    global STAMP
     ns = H.load_dial(H.find_font())
     ns["text_path"], ns["advance"] = text_path, advance
     os.makedirs(H.OUT, exist_ok=True)
-    for old in glob.glob(os.path.join(IMG, "*.svg")) + glob.glob(os.path.join(IMG, "*.png")):
-        os.remove(old)
     os.makedirs(PRESETS, exist_ok=True)
+    STAMP = "".join(str(os.path.getmtime(os.path.join(d, f))) for d, f in ((ROOT, "dial.py"), (HERE, "guide_dials.py")))
+    memory = os.path.join(CACHE, "figures.json")
+    if os.path.exists(memory):
+        _drawn.update(json.load(open(memory)))
     for name in G.ORDER:
         settings = G.resolved(G.DIALS[name]["settings"], ns)
         with open(os.path.join(PRESETS, name + ".json"), "w", encoding="utf-8") as f:
             json.dump(settings, f, indent=1, ensure_ascii=False)
-        draw_dial(ns, ns["fresh_settings"](settings), os.path.join(IMG, f"dial-{name}.svg"))
+        draw(ns, f"dial-{name}", ns["fresh_settings"](settings))
     for name, f in HEROES.items():
-        draw_dial(ns, figure_settings(ns, f), os.path.join(IMG, f"hero-{name}.svg"))
+        draw(ns, f"hero-{name}", figure_settings(ns, f))
     for strip, figs in FIGURES.items():
         for i, f in enumerate(figs):
-            draw_dial(ns, figure_settings(ns, f), os.path.join(IMG, f"{strip}-{i}.svg"))
-    draw_hands(ns)
-    draw_preview(ns, *WINDOW)
+            draw(ns, f"{strip}-{i}", figure_settings(ns, f))
+    if _drawn.get("hands") != STAMP:
+        draw_hands(ns)
+        draw_preview(ns, *WINDOW)
+        _drawn["hands"] = STAMP
+    for old in glob.glob(os.path.join(IMG, "*.svg")):        # pictures nothing draws any more
+        stem = os.path.basename(old)[:-4]
+        if stem not in META and not stem.startswith(("hand-", "preview-")):
+            os.remove(old)
+    json.dump(_drawn, open(memory, "w"))
     return ns
 
 
@@ -552,7 +593,7 @@ def ui(source, which, keys, ns):
     for key in keys.split(","):
         row = next((r for r in rows if r.get("key") == key and (r.get("show") is None or r["show"](T))), None)
         if row is None:
-            raise SystemExit(f"guide.html: {{{{ui:{source}:{which}}}}} has no row for {key!r}")
+            raise SystemExit(f"pages: {{{{ui:{source}:{which}}}}} has no row for {key!r}")
         out.append(ui_row(row, T, ns))
     return f'<div class="ui">{"".join(out)}</div>'
 
@@ -600,8 +641,10 @@ def window(ns):
   <i class="tag" style="left:1048px; top:802px">7</i><i class="tag" style="left:452px; top:860px">8</i>
 </div></div>"""
 
+
 def classic(name, ns, number):
-    """one page: the dial large, what it is drawn after, and the settings that make it."""
+    """one page: the dial the full height of the page; beside it what it is drawn after, what to look
+    for, and the settings that make it."""
     d = G.DIALS[name]
     s = d["settings"]
     rows = []
@@ -617,67 +660,290 @@ def classic(name, ns, number):
             rows.append(f'<tr><th>{label}<span>hand</span></th><td>{values(hand, HAND_KEYS)} {swatch(hand["c"])}</td></tr>')
     rows.append(f'<tr><th>Cap</th><td>Ø <b>{number_text(s["ha_cap"])}</b> {swatch(s["c_cap"])}</td></tr>')
     rows.append(f'<tr><th>Preset</th><td><code>presets/{name}.json</code> · Dial <b>{number_text(s["dial_d"])}</b> mm {swatch(s["c_plate"])}</td></tr>')
-    return f"""<section class="page classic" id="{name}" data-toc="{esc(d['title'])}" data-sub="1"><div class="grid">
-  <div class="col s8">
-    <figure class="s8 hero"><div class="whole"><div class="sq"><div class="art">{{{{dial:{name}}}}}</div></div></div></figure>
+    k = 0.9 * META[f"dial-{name}"]["k"]
+    return f"""<section class="page classic" id="{name}" data-toc="{esc(d['title'])}" data-sub="1">{foot(d['title'])}{tab(CLASSICS)}<div class="grid">
+  <div class="col c8">
+    <figure class="c8 r14 hero"><div class="whole ground" style="--k:{k:.3f}"><div class="art">{{{{dial:{name}}}}}</div></div></figure>
   </div>
-  <div class="col s4">
-    <div class="s4"><span class="no">{{{{classics-number}}}}.{number}</span><h1>{esc(d['title'])}</h1>
-      <p class="lead">{esc(d['after'])}</p>
-      <div class="block look"><svg class="ic"><use href="#i-eye"/></svg><span class="k">Look for</span><p>{d['note']}</p></div></div>
-    <div class="s4"><span class="k">Rings top first, then hands. Only what differs from a new ring.</span>
+  <div class="col c4">
+    <div class="top c4 r3"><span class="no">{CLASSICS}.{number}</span><h1>{esc(d['title'])}</h1><p class="lead">{esc(d['after'])}</p></div>
+    <div class="block c4 r3"><svg class="ic"><use href="#i-eye"/></svg><span class="k">Look for</span><p>{d['note']}</p></div>
+    <div class="block c4 r8"><span class="k">Rings top first, then hands. Only what differs from a new ring.</span>
       <table class="recipe">{"".join(rows)}</table></div>
   </div>
-</div><div class="foot"><span>Dial Tool {{{{version}}}}</span><span class="pg"></span></div></section>
+</div></section>
 """
-
-SPANS = dict(giveway=3, type=3)        # figures wider than two columns
 
 def figure(name, i):
     if name == "hands":
         label = HANDS[i][0]
-        return (f'<figure class="s1"><div class="hand"><img src="img/hand-{label.replace(" ", "-")}.svg"></div>'
+        return (f'<figure class="c1 r4 hands"><div class="hand"><img src="img/hand-{label.replace(" ", "-")}.svg"></div>'
                 f'<figcaption><b>{esc(label)}</b></figcaption></figure>')
-    f = FIGURES[name][i]
-    crop = f'crop {f["crop"]}' if f["crop"] else "whole"
+    f, m = FIGURES[name][i], META[f"{name}-{i}"]
+    img = f'<img src="img/{name}-{i}.svg">'
     note = f'<br>{esc(f["values"])}' if f["values"] else ""
-    return (f'<figure class="s{SPANS.get(name, 2)} {name}"><div class="{crop}"><div class="art"><img src="img/{name}-{i}.svg"></div></div>'
-            f'<figcaption><b>{esc(f["title"])}</b>{note}</figcaption></figure>')
+    caption = f'<figcaption><b>{esc(f["title"])}</b>{note}</figcaption>'
+    if f["crop"]:
+        c, r, z, focus = CROPS[name]
+        place = place_top(z, focus, 36.0)
+        return f'<figure class="c{c} r{r} {name}"><div class="crop"><div class="art" style="{place}">{img}</div></div>{caption}</figure>'
+    edge = '<i class="edge"></i>' if m["light"] else ""
+    return (f'<figure class="c2 r4 {name}"><div class="whole" style="--k:{m["k"]:.3f}"><div class="art">{img}</div>{edge}</div>'
+            f'{caption}</figure>')
 
 def strip(name, first=None, last=None):
     """figures as grid cells; {{strip:name}} or {{strip:name:from-to}}."""
     n = len(HANDS) if name == "hands" else len(FIGURES[name])
     return "".join(figure(name, i) for i in range(n)[int(first or 0):int(last) if last else n])
 
-def fill_in(page, ns, version, date):
+def thumb(name):
+    """{{thumb:NAME}} — a classic dial, small, on a ground (the nine mix light and dark plates)."""
+    k = 0.86 * META[f"dial-{name}"]["k"]
+    return (f'<figure class="c2 r4"><div class="whole ground" style="--k:{k:.3f}"><div class="art"><img src="img/dial-{name}.svg"></div></div>'
+            f'<figcaption><b>{esc(G.DIALS[name]["title"])}</b><br>page {{{{page:{name}}}}}</figcaption></figure>')
+
+def cover(ns):
+    """the field watch, twice: left of the line its construction (every radius and angle the settings
+    name), right of it the dial those settings draw."""
+    S = ns["fresh_settings"](G.resolved(G.DIALS["field"]["settings"], ns))
+    page, R = S["dial_d"] + 2 * S["margin"], S["dial_d"] / 2
+    half = lambda r, dash="": f'<path class="{dash}" d="M0 {r:.2f} A{r:.2f} {r:.2f} 0 0 1 0 {-r:.2f}"/>'
+    out = [f'<line class="split" x1="0" y1="{-page / 2}" x2="0" y2="{page / 2}"/>', half(R), '<path d="M-.6 0h.6M0 -.6v1.2"/>']
+    named = {}
+    for ring in S["rings"]:
+        kind, r = ns["kind_of"](ring), ring["r"]
+        named.setdefault(r, []).append(ring["name"])
+        if kind in ("ticks", "markers"):
+            out.append(half(r - ring["len"], "dash"))
+        elif kind == "numerals":
+            out += [half(r - ring["size"] / 2, "dash"), half(r + ring["size"] / 2, "dash")]
+    for i, (r, names) in enumerate(sorted(named.items())):
+        out.append(half(r))
+        x, y = cp(r, 247 - 4 * i)
+        out.append(label(x + 0.35, y, " · ".join(names), "start", f"Radius {r:g}"))
+    for a in range(210, 331, 30):
+        (x0, y0), (x1, y1), (x2, y2) = cp(1.2, a), cp(R + 0.5, a), cp(R + 1.25, a)
+        out.append(f'<line class="dash" x1="{x0:.2f}" y1="{y0:.2f}" x2="{x1:.2f}" y2="{y1:.2f}"/>')
+        out.append(f'<text x="{x2:.2f}" y="{y2 + 0.15:.2f}" text-anchor="middle">−{360 - a}°</text>')
+    out.append(label(*cp(R + 0.35, 224), f"Diameter {S['dial_d']:g}", "end"))
+    return (f'<div class="dial"><img class="ghost" src="img/dial-field.svg"><img class="done" src="img/dial-field.svg">'
+            f'<svg class="over" viewBox="{-page / 2:g} {-page / 2:g} {page:g} {page:g}">{"".join(out)}</svg></div>')
+
+
+# every setting, printed from dial.py's row descriptions
+
+CUSTOM_ROWS = dict(nudge=("Nudge", "per numeral: Radius ± · Angle ±° · Rotate ° · Size ×"), family=("Family", "every font installed on the Mac"),
+                   style=("Style", "the family’s styles"), instance=("Instance", "a variable font’s named instances"),
+                   features=("Features", "the font’s OpenType features"), axes_header=("Axes", "one slider per variable axis"))
+
+def shown_for(row, ns):
+    """which kinds of ring (and shapes of mark) a ring row is shown for — found by trying them all."""
+    if row.get("show") is None:
+        return "all"
+    kinds, shapes = [], set()
+    for k, kind in enumerate(ns["KINDS"]):
+        hit = False
+        for sh in range(4):
+            for tw in range(4):
+                for lab in range(len(ns["LABEL_SETS"])):
+                    if row["show"](dict(ns["RING_BASE"], kind=k, shape=sh, twelve=tw, labels=lab, knock=1)):
+                        hit = True
+                        shapes.add(sh)
+        if hit:
+            kinds.append(kind)
+    if len(kinds) == 4:
+        return "all"
+    text = " · ".join(kinds)
+    if set(kinds) <= {"ticks", "markers"} and len(shapes) < 4:
+        text += " (" + " · ".join(ns["SHAPES"][i] for i in sorted(shapes)) + ")"
+    return text
+
+def hands_for(row, ns):
+    if row.get("show") is None:
+        return "all"
+    names = [n for i, n in enumerate(ns["HAND_SHAPES"])
+             if row["show"](dict(ns["HAND_BASE"], shape=i, fit=True)) or row["show"](dict(ns["HAND_BASE"], shape=i, fit=False))]
+    if len(names) == len(ns["HAND_SHAPES"]):
+        return "all"
+    if len(names) == len(ns["HAND_SHAPES"]) - 1:
+        return "all but " + next(n for n in ns["HAND_SHAPES"] if n not in names)
+    return " · ".join(names)
+
+def ref_rows(rows, base, ns, who=None):
+    out = []
+    for row in rows:
+        kind, key, text = row["kind"], row.get("key"), esc(row.get("text", ""))
+        where = f'<td class="g">{esc(who(row, ns))}</td>' if who else ""
+        span = 5 if who else 4
+        v = base.get(key) if key else None
+        if kind == "hdr":
+            out.append(f'<tr class="h"><th colspan="{span}">{text}</th></tr>')
+        elif kind == "num":
+            lo, hi = (number_text(float(row[k])) for k in ("lo", "hi"))
+            out.append(f'<tr><th>{text}</th><td>{lo} to {hi}</td><td>{row["step"]:g}</td>'
+                       f'<td>{"" if v is None else esc(ns["fmt"](v, row["step"]).replace("-", "−"))}</td>{where}</tr>')
+        elif kind in ("pop", "seg"):
+            items = " · ".join(f"<b>{esc(t)}</b>" if i == v else esc(t) for i, t in enumerate(row["items"]))   # bold: where it starts
+            out.append(f'<tr><th>{text}</th><td colspan="3">{items}</td>{where}</tr>')
+        elif kind == "chk":
+            out.append(f'<tr><th>{text}</th><td colspan="2">on · off</td><td>{"" if v is None else number_text(bool(v))}</td>{where}</tr>')
+        elif kind == "col":
+            out.append(f'<tr><th>{text}</th><td colspan="2">a colour</td><td>{swatch(v) if v else ""}</td>{where}</tr>')
+        elif kind == "txt":
+            out.append(f'<tr><th>{text}</th><td colspan="2">text</td><td>{esc(v or "")}</td>{where}</tr>')
+        elif kind == "file":
+            out.append(f'<tr><th>{text}</th><td colspan="2">SVG · PDF · AI</td><td></td>{where}</tr>')
+        elif kind == "bar":
+            out.append(f'<tr><th>{text}</th><td colspan="{span - 1}">{esc(" · ".join(row["items"]))}</td></tr>')
+        elif kind == "custom":
+            name, what = CUSTOM_ROWS[row["name"]]
+            out.append(f'<tr><th>{name}</th><td colspan="3">{what}</td>{where}</tr>')
+    return out
+
+def ref_table(rows, title, who_title=None):
+    cols = '<colgroup><col class="a"><col class="b"><col class="c"><col class="d">' + ("<col>" if who_title else "") + "</colgroup>"
+    head = (f'<tr class="t"><th>{title}</th><th>From · to</th><th>Step</th><th>Starts at</th>'
+            + (f"<th>{who_title}</th>" if who_title else "") + "</tr>")
+    return f'<table class="ref">{cols}{head}{"".join(rows)}</table>'
+
+def ref(which, ns):
+    """{{ref:ring1}} {{ref:ring2}} {{ref:dial}} {{ref:hands}} {{ref:date}} {{ref:export}}"""
+    S = ns["fresh_settings"]({})
+    if which.startswith("ring"):
+        base = dict(ns["RING_BASE"], kind=1, **ns["KIND_START"]["markers"](15.0))
+        rows = ref_rows(ns["RING_ROWS"], base, ns, shown_for)
+        cut = next(i for i, r in enumerate(rows) if ">12 o&#x27;clock" in r)
+        return ref_table(rows[:cut] if which == "ring1" else rows[cut:], "A ring" if which == "ring1" else "A ring · 2", "Shown for")
+    if which == "dial":
+        return ref_table(ref_rows(ns["DIAL_ROWS"], S, ns), "Dial")
+    if which == "hands":
+        top = [r for r in ns["HAND_ROWS"] if not r.get("scope") and r.get("key") != "ui_hand"]
+        one = [r for r in ns["HAND_ROWS"] if r.get("scope") == "hand"]
+        return ref_table(ref_rows(top, S, ns, lambda r, n: "") + ref_rows(one, ns["HAND_BASE"], ns, hands_for), "Hands", "Shown for")
+    if which == "date":
+        return ref_table(ref_rows(ns["DATE_ROWS"], S, ns), "Date")
+    return ref_table(ref_rows(ns["EXPORT_ROWS"], S, ns), "Export")
+
+
+# the pages: docs/guide/pages/*.html, written with a few short tags (docs/guide/README.md)
+
+PAGES = os.path.join(GUIDE, "pages")
+CLASSICS = "12"
+
+def attrs(text):
+    return dict(re.findall(r'([\w-]+)="([^"]*)"', text))
+
+def foot(title):
+    return f'<div class="foot"><span>Dial Tool {{{{version}}}} · {title}</span><span>{{{{pg}}}}</span></div>'
+
+def tab(no):
+    n = int(str(no).split(".")[0])
+    return f'<i class="tab" style="--n:{n}">{n:02d}</i>'
+
+def page_open(m):
+    a = attrs(m.group(1))
+    no, title = a["no"], a["title"]
+    toc = f' data-toc="{title}" data-sub="1"' if "." in no else f' data-toc="{no}  {title}"'
+    return (f'<section class="page" id="{a["id"]}"{toc}>{foot(title)}{tab(no)}<div class="grid">'
+            f'<div class="head"><div class="title"><span class="no">{no}</span><h1>{title}</h1></div>'
+            f'<p class="lead">{a.get("lead", "")}</p></div>')
+
+def icon(a):
+    return f'<svg class="ic{" xl" if a.get("xl") else ""}"><use href="#i-{a["ic"]}"/></svg>' if a.get("ic") else ""
+
+def block(m):
+    a, body = attrs(m.group(1)), m.group(2).strip()
+    out = f'<div class="block c{a["c"]} r{a["r"]}{" side" if a.get("side") else ""}">{icon(a)}'
+    if a.get("tag"):
+        out += f'<span class="k"><i class="tag">{a["tag"]}</i></span>'
+    if a.get("k"):
+        out += f'<span class="k">{a["k"]}</span>'
+    if a.get("big"):
+        out += f'<p class="big">{a["big"]}</p>'
+    if a.get("h"):
+        out += f'<h3>{a["h"]}</h3>'
+    return out + body + "</div>"
+
+def watch(m):
+    a = dict(ic="watch", k="Watch", **{}) | attrs(m.group(1))
+    return f'<div class="watch c{a["c"]} r{a["r"]}">{icon(a)}<span class="k">{a["k"]}</span><p>{m.group(2).strip()}</p></div>'
+
+def find(m):
+    a, rows = attrs(m.group(1)), []
+    for line in m.group(2).strip().splitlines():
+        want, how, where = (part.strip() for part in line.split("|"))
+        rows.append(f'<tr><td>{want}</td><td>{how}</td><td class="pg">{{{{page:{where}}}}}</td></tr>')
+    return (f'<div class="block c{a["c"]} r{a["r"]}">{icon(a)}<span class="k">{a["k"]}</span>'
+            f'<table class="plain find">{"".join(rows)}</table></div>')
+
+def expand(text):
+    """the short tags → HTML."""
+    text = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+    text = re.sub(r"<page\b([^>]*)>", page_open, text).replace("</page>", "</div></section>")
+    text = re.sub(r'<col c="(\d+)">', r'<div class="col c\1">', text).replace("</col>", "</div>")
+    text = re.sub(r"<block\b([^>]*)>(.*?)</block>", block, text, flags=re.S)
+    text = re.sub(r"<watch\b([^>]*)>(.*?)</watch>", watch, text, flags=re.S)
+    return re.sub(r"<find\b([^>]*)>(.*?)</find>", find, text, flags=re.S)
+
+def fill_in(ns, version, date):
+    """every page, as (id, html)."""
+    page = "".join(open(f, encoding="utf-8").read() for f in sorted(glob.glob(os.path.join(PAGES, "*.html"))))
+    page = expand(page)
     page = page.replace("{{classics}}", "".join(classic(n, ns, i + 1) for i, n in enumerate(G.ORDER)))
-    page = page.replace("{{window}}", window(ns))
+    page = page.replace("{{window}}", window(ns)).replace("{{cover}}", cover(ns))
     page = page.replace("{{version}}", esc(version)).replace("{{date}}", esc(date))
-    page = page.replace("{{fonts}}", "cache")
     page = re.sub(r"\{\{strip:([\w]+)(?::(\d+)-(\d+))?\}\}", lambda m: strip(*m.groups()), page)
-    page = re.sub(r"\{\{hero:(\w+):(\d+)\}\}", lambda m: hero(m.group(1), int(m.group(2)), ns), page)
+    page = re.sub(r"\{\{thumb:(\w+)\}\}", lambda m: thumb(m.group(1)), page)
+    page = re.sub(r"\{\{hero:(\w+):(\d+):(\d+)\}\}", lambda m: hero(m.group(1), int(m.group(2)), int(m.group(3)), ns), page)
     page = re.sub(r"\{\{dial:([\w-]+)\}\}", lambda m: f'<img src="img/dial-{m.group(1)}.svg">', page)
     page = re.sub(r"\{\{ui:(\w+:[\w-]+):(\w+):([\w,]+)\}\}", lambda m: ui(m.group(1), m.group(2), m.group(3), ns), page)
     page = re.sub(r"\{\{rings:(\w+)(?::(\d+))?\}\}",
                   lambda m: ring_list(G.DIALS[m.group(1)]["settings"], int(m.group(2) or 0)), page)
-    # page numbers: every <section class="page" id=…> can be referred to as {{page:id}}; data-toc makes a contents line
-    sections = re.findall(r'<section class="page[^"]*"([^>]*)>', page)
-    numbers, contents = {}, []
-    for n, attrs in enumerate(sections, 1):
-        ident, toc = re.search(r'id="([\w-]+)"', attrs), re.search(r'data-toc="([^"]+)"', attrs)
-        if ident:
-            numbers[ident.group(1)] = n
+    page = re.sub(r"\{\{ref:(\w+)\}\}", lambda m: ref(m.group(1), ns), page)
+    sections = re.findall(r'<section class="page.*?</section>', page, flags=re.S)
+    numbers, contents, out = {}, [], []
+    for n, section in enumerate(sections, 1):
+        opening = section[:section.index(">")]
+        ident, toc = re.search(r'id="([\w-]+)"', opening), re.search(r'data-toc="([^"]+)"', opening)
+        numbers[ident.group(1)] = n
         if toc:
-            sub = ' class="sub"' if "data-sub" in attrs else ""
-            contents.append(f"<tr{sub}><td>{toc.group(1)}</td><td>{n:02d}</td></tr>")
-    page = re.sub(r"\{\{page:([\w-]+)\}\}", lambda m: str(numbers[m.group(1)]), page)
-    number = re.search(r'id="classics" data-toc="(\d\d)', page)
-    page = page.replace("{{classics-number}}", number.group(1) if number else "")
-    page = page.replace("{{contents}}", f'<table class="contents">{"".join(contents)}</table>')
-    left = re.findall(r"\{\{.+?\}\}", page)
+            contents.append(f'<tr{" class=sub" if "data-sub" in opening else ""}><td>{toc.group(1)}</td><td>{n:02d}</td></tr>')
+        out.append((ident.group(1), section.replace("{{pg}}", str(n))))
+    table = f'<table class="contents">{"".join(contents)}</table>'
+    out = [(i, re.sub(r"\{\{page:([\w-]+)\}\}", lambda m: str(numbers[m.group(1)]), s).replace("{{contents}}", table)) for i, s in out]
+    left = re.findall(r"\{\{.+?\}\}", "".join(s for _, s in out))
     if left:
-        raise SystemExit(f"guide.html: unknown marks {left}")
-    return page
+        raise SystemExit(f"pages: unknown marks {left}")
+    return out
+
+SHELL = """<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Dial Tool — guidebook</title>
+<link rel="stylesheet" href="style.css"></head><body>
+%s
+%s
+<script>
+// annotation text and lines keep their size on paper (7.5 pt, 0.2 mm) whatever the picture's scale
+document.fonts.ready.then(() => { for (const s of document.querySelectorAll("svg.over")) {
+  const unit = s.getBoundingClientRect().width / s.viewBox.baseVal.width;      // px on paper per mm of dial
+  s.style.setProperty("--fs", 10 / unit + "px"); s.style.setProperty("--sw", .76 / unit + "px"); } });
+</script></body></html>"""
+
+# what the build measures on every page, so problems are found by number, not by eye
+CHECK = """() => { const mm = 96 / 25.4, out = [], near = v => Math.abs(v - Math.round(v)) < .03;
+  const name = e => String(e.textContent || e.getAttribute("class")).trim().replace(/\\s+/g, ' ').slice(0, 34);
+  for (const p of document.querySelectorAll('.page')) { const P = p.getBoundingClientRect(), id = p.id;
+    for (const e of p.querySelectorAll('.col > div, figcaption, .head'))
+      if (e.scrollHeight > e.clientHeight + 1) out.push(`${id}: “${name(e)}” is ${e.scrollHeight - e.clientHeight} px too tall for its box`);
+    for (const e of p.querySelectorAll('.col > *, .grid > .head')) { const r = e.getBoundingClientRect();
+      const row = (r.top - P.top - 11.5 * mm) / (13.75 * mm), end = (r.bottom - P.top - 11.5 * mm + 5.5 * mm) / (13.75 * mm);
+      const col = (r.left - P.left - 12 * mm) / (23.0833 * mm);
+      if (!near(row) || !near(end) || !near(col)) out.push(`${id}: “${name(e)}” is off the grid (row ${row.toFixed(2)}–${end.toFixed(2)}, column ${col.toFixed(2)})`); }
+    for (const s of p.querySelectorAll('svg.over')) { const box = (s.closest('figure') || p).getBoundingClientRect();
+      const t = [...s.querySelectorAll('text')].map(e => [e, e.getBoundingClientRect()]);
+      t.forEach(([e, r], i) => {
+        if (r.left < box.left - 1 || r.right > box.right + 1 || r.top < box.top - 1 || r.bottom > box.bottom + 1) out.push(`${id}: label “${name(e)}” leaves its picture`);
+        for (const [f, q] of t.slice(i + 1)) if (r.left < q.right - 1 && q.left < r.right - 1 && r.top < q.bottom - 1 && q.top < r.bottom - 1)
+          out.push(`${id}: labels “${name(e)}” and “${name(f)}” overlap`); }); } }
+  return out; }"""
 
 def chromium():
     for path in [os.environ.get("CHROME")] + sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome")) + [
@@ -686,37 +952,43 @@ def chromium():
             return path
     return None                                              # let Playwright find its own
 
-def build(ns):
+def build(ns, only=()):
+    """all pages → the PDF; or only the named pages → pictures in docs/guide/cache/preview, to look at."""
     version, date = ns["VERSION"], datetime.date.today().strftime("%-d %b %Y")
-    page = fill_in(open(os.path.join(GUIDE, "guide.html"), encoding="utf-8").read(), ns, version, date)
+    sections = fill_in(ns, version, date)
+    unknown = [i for i in only if i not in dict(sections)]
+    if unknown:
+        raise SystemExit(f"no page called {unknown}; pages are: {' '.join(i for i, _ in sections)}")
+    chosen = [s for i, s in sections if not only or i in only]
     built = os.path.join(GUIDE, "_built.html")               # next to img/ and cache/, so relative links work
     with open(built, "w", encoding="utf-8") as f:
-        f.write(page)
+        f.write(SHELL % (open(os.path.join(GUIDE, "icons.svg"), encoding="utf-8").read(), "\n".join(chosen)))
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
         browser = pw.chromium.launch(executable_path=chromium())
-        tab = browser.new_page()
-        tab.goto("file://" + os.path.abspath(built))
-        tab.evaluate("document.fonts.ready")
-        tab.wait_for_load_state("networkidle")
-        report = tab.evaluate("""() => [...document.querySelectorAll('.page')].map((p, i) => {
-            const inner = p.querySelector('.grid');
-            if (!inner) return [i + 1, 0];
-            let over = inner.scrollHeight - inner.clientHeight;
-            for (const c of inner.querySelectorAll('.col')) over = Math.max(over, c.scrollHeight - c.clientHeight);
-            return [i + 1, Math.round(over)]; })""")
-        tab.pdf(path=OUT, width="297mm", height="210mm", print_background=True,
-                margin=dict(top="0", right="0", bottom="0", left="0"))
+        tab_ = browser.new_page(viewport=dict(width=1123, height=794), device_scale_factor=1.25)
+        tab_.goto("file://" + os.path.abspath(built))
+        tab_.evaluate("document.fonts.ready")
+        tab_.wait_for_load_state("networkidle")
+        problems = tab_.evaluate(CHECK)
+        if only:
+            preview = os.path.join(CACHE, "preview")
+            os.makedirs(preview, exist_ok=True)
+            for ident in only:
+                tab_.locator(f"#{ident}").screenshot(path=os.path.join(preview, ident + ".png"))
+                print(os.path.join(preview, ident + ".png"))
+        else:
+            tab_.pdf(path=OUT, width="297mm", height="210mm", print_background=True,
+                     margin=dict(top="0", right="0", bottom="0", left="0"))
+            print(f"{OUT}: {len(chosen)} pages")
         browser.close()
     os.remove(built)
-    over = [(n, px) for n, px in report if px > 1]
-    print(f"{OUT}: {len(report)} pages")
-    for n, px in over:
-        print(f"WARNING: page {n} overflows by {px} px — shorten guide.html")
-    return not over
+    for line in problems:
+        print("CHECK", line)
+    return not problems
 
 
 if __name__ == "__main__":
     os.makedirs(IMG, exist_ok=True)
     fetch_fonts()
-    sys.exit(0 if build(figures()) else 1)
+    sys.exit(0 if build(figures(), tuple(sys.argv[1:])) else 1)

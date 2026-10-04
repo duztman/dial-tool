@@ -1,0 +1,197 @@
+/* The guidebook's styles. Rules: docs/design.md. How pages are written: docs/guide/README.md.
+   One unit (--b, 1.375 mm) measures everything vertical. A page is 12 columns × 14 rows:
+   a row is 6 units, the space between rows 4. Every box starts on a column line and a row line. */
+
+@font-face { font-family: "Inter"; src: url("cache/Inter.ttf"); font-weight: 100 900; font-style: normal; }
+@font-face { font-family: "Inter"; src: url("cache/Inter-Italic.ttf"); font-weight: 100 900; font-style: italic; }
+@page { size: 297mm 210mm; margin: 0; }
+:root {
+  --paper: #FCFCFA; --ground: #ECECE8; --ink: #111111; --grey: #5C5C58; --line: #B9B9B4;
+  --b: 1.375mm;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { font-family: "Inter", sans-serif; font-optical-sizing: auto; font-weight: 400; font-size: 9pt;
+       line-height: calc(var(--b) * 3); color: var(--ink); background: var(--paper); font-feature-settings: "kern", "calt", "ss03"; }
+i { font-style: normal; }
+
+/* ── page and grid ── */
+.page { width: 297mm; height: 210mm; padding: 11.5mm 12mm; position: relative; break-after: page; background: var(--paper);
+        overflow: hidden; contain: layout paint; }
+.grid { height: 100%; display: grid; grid-template-columns: repeat(12, 1fr); grid-template-rows: repeat(14, calc(var(--b) * 6));
+        gap: calc(var(--b) * 4) 4mm; }
+.col { grid-row: 3 / span 12; display: grid; grid-template-columns: subgrid; grid-template-rows: subgrid; }
+.c1 { grid-column-end: span 1; } .c2 { grid-column-end: span 2; } .c3 { grid-column-end: span 3; } .c4 { grid-column-end: span 4; }
+.c5 { grid-column-end: span 5; } .c6 { grid-column-end: span 6; } .c7 { grid-column-end: span 7; } .c8 { grid-column-end: span 8; }
+.c9 { grid-column-end: span 9; } .c10 { grid-column-end: span 10; } .c12 { grid-column-end: span 12; }
+.r1 { grid-row-end: span 1; } .r2 { grid-row-end: span 2; } .r3 { grid-row-end: span 3; } .r4 { grid-row-end: span 4; }
+.r5 { grid-row-end: span 5; } .r6 { grid-row-end: span 6; } .r7 { grid-row-end: span 7; } .r8 { grid-row-end: span 8; }
+.r9 { grid-row-end: span 9; } .r10 { grid-row-end: span 10; } .r12 { grid-row-end: span 12; } .r14 { grid-row-end: span 14; }
+.head { grid-column: 1 / -1; grid-row: 1 / span 2; display: grid; grid-template-columns: subgrid; border-top: .3mm solid var(--ink);
+        padding-top: calc(var(--b) * 1.5); }
+.head .title { grid-column-end: span 4; } .head .lead { grid-column-end: span 6; padding-top: calc(var(--b) * 3); }
+.foot { position: absolute; left: 12mm; right: 12mm; bottom: 4mm; display: flex; justify-content: space-between;
+        font-size: 7.5pt; line-height: 3mm; color: var(--grey); font-feature-settings: "tnum"; }
+/* the thumb index: section n sits on row n, at the page's edge */
+.tab { position: absolute; right: 0; width: 7mm; height: calc(var(--b) * 6); top: calc(11.5mm + (var(--n) - 1) * var(--b) * 10);
+       background: var(--ink); color: var(--paper); font-size: 7.5pt; font-weight: 600; line-height: calc(var(--b) * 6);
+       padding-left: 1.6mm; font-feature-settings: "tnum"; }
+
+/* ── type: four sizes ── */
+.no { display: block; font-weight: 600; font-size: 7.5pt; line-height: calc(var(--b) * 3); font-feature-settings: "tnum"; }
+h1 { font-weight: 300; font-size: 31pt; line-height: calc(var(--b) * 8); letter-spacing: -.022em; white-space: nowrap; }
+.lead { font-size: 12.4pt; line-height: calc(var(--b) * 4); letter-spacing: -.006em; }
+.k { display: block; font-weight: 600; font-size: 7.5pt; line-height: calc(var(--b) * 2.5); color: var(--grey); }
+.block, .watch { border-top: .2mm solid var(--ink); padding-top: var(--b); overflow: hidden; }
+.block h3 { font-weight: 600; font-size: 12.4pt; line-height: calc(var(--b) * 4); letter-spacing: -.008em; margin-bottom: var(--b); }
+.block p + p { margin-top: var(--b); }
+.block .ui, .block table.plain { margin-top: var(--b); }
+.block .ui + .k { margin-top: calc(var(--b) * 1.5); }
+.block .ui + p, .block table + p { margin-top: calc(var(--b) * 2); }
+b { font-weight: 600; }
+code { font-family: inherit; font-style: italic; }
+kbd { font-family: inherit; font-weight: 600; }
+.big { font-weight: 300; font-size: 31pt; line-height: calc(var(--b) * 8); letter-spacing: -.02em; margin-bottom: var(--b); font-feature-settings: "tnum", "case"; }
+table.plain { border-collapse: collapse; width: 100%; font-feature-settings: "tnum"; }
+table.plain td { padding: calc(var(--b) * .5) 0; border-bottom: .2mm solid var(--line); vertical-align: top; }
+table.plain td:first-child { font-weight: 600; width: 36%; padding-right: 2mm; }
+table.plain td.pg { width: 8mm; text-align: right; color: var(--grey); }
+table.find td:first-child { width: 44%; }
+ol.steps { list-style: none; counter-reset: st; }
+ol.steps li { counter-increment: st; padding-left: 6mm; position: relative; }
+ol.steps li + li { margin-top: var(--b); }
+ol.steps li::before { content: counter(st); position: absolute; left: 0; font-weight: 600; }
+
+/* line drawings: icons on a 24-unit square, one stroke weight */
+.ic { display: block; width: calc(var(--b) * 6); height: calc(var(--b) * 6); margin-bottom: calc(var(--b) * 1.5); fill: none; stroke: var(--ink);
+      stroke-width: 1; stroke-linecap: square; stroke-linejoin: miter; overflow: visible; }
+.ic.xl { width: calc(var(--b) * 12); height: calc(var(--b) * 12); stroke-width: .7; margin-bottom: calc(var(--b) * 2); }
+/* a warning — and any block whose icon stands beside the text instead of above it */
+.watch, .block.side { padding-left: calc(var(--b) * 8); position: relative; }
+.watch .ic, .block.side .ic { position: absolute; left: 0; top: calc(var(--b) * 1.5); margin: 0; }
+
+/* ── figures: a picture, then a caption exactly one row high ── */
+figure { display: grid; grid-template-rows: minmax(0, 1fr) calc(var(--b) * 6); min-height: 0; }
+figure.hero { grid-template-rows: minmax(0, 1fr); }
+figure > div { position: relative; overflow: hidden; container-type: size; }
+figcaption { font-size: 7.5pt; line-height: calc(var(--b) * 2.5); padding-top: var(--b); color: var(--grey); font-feature-settings: "tnum"; overflow: hidden; }
+figcaption b { color: var(--ink); }
+.art { position: relative; } .art img { display: block; width: 100%; }
+/* a whole dial stands on the paper, as tall as its box; a light plate gets a hairline edge */
+.whole .art, .edge { position: absolute; left: 50%; top: 50%; translate: -50% -50%; aspect-ratio: 1; }
+.whole .art { height: calc(100cqh * var(--k, 1)); }
+.edge { height: 100cqh; border-radius: 50%; border: .2mm solid var(--ink);          /* the plate's edge, and its centre */
+        background: linear-gradient(var(--ink), var(--ink)) center / .2mm 2mm no-repeat, linear-gradient(var(--ink), var(--ink)) center / 2mm .2mm no-repeat; }
+/* grounds: only where a picture needs an edge — a close-up (it has to be cut somewhere), a set of
+   dials that mixes light and dark plates, the tool's controls */
+.ground, .crop { background: var(--ground); }
+.crop .art { position: absolute; }
+.hand img { display: block; width: 100%; height: 100%; }
+figure.hands > div { border-bottom: .2mm solid var(--ink); }
+/* annotations drawn over a large example, in the dial's own millimetres */
+.over { position: absolute; left: 0; top: 0; width: 100%; height: 100%; fill: none; stroke: var(--ink); stroke-width: var(--sw); overflow: visible; }
+.over text { fill: var(--ink); stroke: none; font-size: var(--fs); font-feature-settings: "tnum"; }
+.over .bold { font-weight: 600; } .over .g { fill: var(--grey); font-weight: 400; } .over .wt, .over .wt .g { fill: #fff; }
+.over .w { stroke: #fff; } .over .dash { stroke-dasharray: calc(var(--sw) * 6) calc(var(--sw) * 5); }
+.over circle { fill: var(--paper); } .over circle.w, .over circle.plate { fill: none; }
+
+/* ── the tool's controls, redrawn in grey. Sizes in em: 1em = one control label (13 px in the real window) ── */
+.ui { font-size: 6.9pt; line-height: 1.25em; color: #262626; font-feature-settings: "tnum"; background: #ECECEC; padding: .9em 1em .5em;
+      border: .08em solid #C2C2C2; border-radius: .5em; }
+.ui .row { display: grid; grid-template-columns: 31% 1fr 4.77em 1.2em; column-gap: .46em; align-items: center; min-height: 1.85em; margin-bottom: .46em; }
+.ui .row.hdr { margin-top: .5em; } .ui .row.hdr b { font-weight: 700; }
+.ui label { text-align: right; white-space: nowrap; overflow: hidden; }
+.wide { grid-column: 2 / span 3; }
+.slider { display: block; height: .3em; border-radius: .15em; position: relative;
+          background: linear-gradient(to right, #8A8A8A var(--at), #CFCFCF var(--at)); }
+.slider::after { content: ""; position: absolute; left: calc(var(--at) - .62em); top: -.48em; width: 1.25em; height: 1.25em; border-radius: 50%;
+                 background: #fff; border: .07em solid #A6A6A6; box-shadow: 0 .06em .12em rgba(0,0,0,.22); }
+.field { display: block; background: #fff; border: .07em solid #C2C2C2; border-radius: .22em; height: 1.75em; line-height: 1.6em; padding: 0 .45em;
+         white-space: nowrap; overflow: hidden; }
+.step { display: block; width: 1em; height: 1.75em; border-radius: .5em; background: #fff; border: .07em solid #C2C2C2; position: relative; }
+.step::before, .step::after { content: ""; position: absolute; left: .22em; border: .24em solid transparent; }
+.step::before { top: .08em; border-bottom-color: #555; } .step::after { bottom: .08em; border-top-color: #555; }
+.pop { display: block; background: #fff; border: .07em solid #C2C2C2; border-radius: .42em; height: 1.75em; line-height: 1.6em; padding: 0 1.9em 0 .6em;
+       position: relative; white-space: nowrap; overflow: hidden; }
+.pop::after { content: "↕"; position: absolute; right: .2em; top: .18em; width: 1.25em; height: 1.25em; border-radius: .3em; background: #7C7C7C;
+              color: #fff; font-size: .95em; line-height: 1.2em; text-align: center; }
+.seg { display: flex; background: #DCDCDC; border-radius: .46em; padding: .13em; height: 1.95em; }
+.seg b { flex: 1; text-align: center; font-weight: 450; line-height: 1.65em; border-radius: .36em; white-space: nowrap; padding: 0 .3em; }
+.seg b.on { background: #fff; box-shadow: 0 .05em .14em rgba(0,0,0,.3); }
+.seg.tabs b { text-align: left; padding-left: .7em; }
+.chk { display: block; padding-left: 1.55em; position: relative; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.chk::before { content: ""; position: absolute; left: 0; top: .08em; width: 1.05em; height: 1.05em; border-radius: .26em; background: #fff; border: .07em solid #ADADAD; }
+.chk.on::before { background: #6E6E6E; border-color: #6E6E6E; }
+.chk.on::after { content: "✓"; position: absolute; left: .19em; top: .02em; color: #fff; font-size: .82em; font-weight: 700; }
+.well { display: block; width: 3.4em; height: 1.55em; background-clip: content-box !important; padding: .16em; border: .07em solid #ADADAD; background-color: #fff; }
+.btn { display: block; background: #fff; border: .07em solid #C2C2C2; border-radius: .42em; text-align: center; line-height: 1.7em;
+       box-shadow: 0 .04em .08em rgba(0,0,0,.12); }
+.ui.list { padding: 0; background: #fff; border-radius: 0; }
+.ui.list div { display: grid; grid-template-columns: 1.9em 1fr 6.2em; align-items: center; padding: 0 .5em; height: 1.72em; }
+.ui.list .head { display: grid; border: 0; background: #F2F2F2; color: #5A5A5A; border-bottom: .07em solid #D0D0D0; font-size: .92em; }
+.ui.list .chk { height: 1.2em; padding: 0; } .ui.list em { font-style: normal; color: #6A6A6A; }
+.ui.list .sel { background: #D9D9D9; }
+/* callout numbers: a figure in a line circle */
+.tag { display: inline-block; width: 1.9em; height: 1.9em; border-radius: 50%; border: .12em solid var(--ink); background: var(--paper); color: var(--ink);
+       text-align: center; font-weight: 600; font-size: 7.5pt; line-height: 1.66em; font-feature-settings: "tnum"; }
+.k .tag { margin-bottom: var(--b); }
+
+/* the whole window: drawn in the tool's own units (points on screen), then scaled to the page width */
+.window { width: 273mm; height: 187mm; position: relative; overflow: hidden; }
+.px { position: absolute; left: 0; top: 0; width: 1300px; height: 888px; zoom: .7925; margin: 1px; font-size: 13px; line-height: 16px;
+      background: #ECECEC; border-radius: 11px; box-shadow: 0 0 0 1px #B4B4B4; color: #262626; font-feature-settings: "tnum"; }
+.px .titlebar { height: 28px; background: #E0E0E0; border-bottom: 1px solid #C6C6C6; border-radius: 11px 11px 0 0; position: relative; text-align: center;
+                line-height: 28px; font-weight: 600; color: #3C3C3C; }
+.px .titlebar i { position: absolute; top: 8px; width: 12px; height: 12px; border-radius: 50%; background: #BDBDBD; }
+.px .titlebar i:nth-child(1) { left: 12px; } .px .titlebar i:nth-child(2) { left: 32px; } .px .titlebar i:nth-child(3) { left: 52px; }
+.px .body { position: absolute; left: 0; top: 28px; width: 1300px; height: 860px; }
+.px .body > * { position: absolute; }
+.px .ui { font-size: 13px; background: none; border: 0; padding: 0; border-radius: 0; }
+.px .ui.list { background: #fff; border: 1px solid #C2C2C2; height: 100%; }
+.px .ui .row { grid-template-columns: 132px 200px 62px 24px; column-gap: 6px; min-height: 24px; margin-bottom: 6px; }
+.px .ui .row.hdr { margin-top: 12px; }
+.px .rows { height: 596px; overflow: hidden; }
+.px .view { display: flex; align-items: center; justify-content: center; }
+.px .view img { height: 100%; }
+.px .status { font-size: 11px; color: #555; white-space: pre; }
+.px .tag { position: absolute; font-size: 12px; width: 23px; height: 23px; line-height: 20px; border-width: 1.5px; background: #fff; }
+
+/* ── cover: one dial, half construction, half finished ── */
+.cover { background: rgb(15, 15, 18); color: #F1F0EA; }
+.cover .dial { position: absolute; width: 260mm; height: 260mm; left: 76mm; top: -25mm; }
+.cover .dial img { position: absolute; left: 0; top: 0; width: 100%; }
+.cover .dial .ghost { opacity: .13; clip-path: inset(0 50% 0 0); }
+.cover .dial .done { clip-path: inset(0 0 0 50%); }
+.cover .over { stroke: #8F8E89; }
+.cover .over text, .cover .over .g { fill: #A3A29C; } .cover .over .bold { fill: #F1F0EA; }
+.cover .over .split { stroke: #F1F0EA; } .cover .over circle { fill: none; }
+.cover .left { position: absolute; left: 12mm; top: 11.5mm; bottom: 11.5mm; width: 65.25mm; display: flex; flex-direction: column; }
+.cover h1 { font-size: 64pt; line-height: 21mm; letter-spacing: -.04em; font-weight: 250; margin-left: -1mm; }
+.cover .subtitle { font-size: 12.4pt; line-height: calc(var(--b) * 4); margin-top: calc(var(--b) * 4); color: #B9B8B2; }
+.cover .subtitle b { color: #F1F0EA; }
+.cover .said { font-size: 9pt; line-height: calc(var(--b) * 3); margin-top: calc(var(--b) * 4); color: #B9B8B2; }
+.contents { border-collapse: collapse; width: 100%; font-size: 9pt; line-height: calc(var(--b) * 3.2); margin-top: auto; font-feature-settings: "tnum"; }
+.contents td { border-top: .2mm solid #3A3A3C; padding: 0; }
+.contents td:last-child { text-align: right; color: #B9B8B2; }
+.contents tr.sub td:first-child { padding-left: 7.4mm; color: #B9B8B2; }
+
+/* ── classics: the dial the full height of the page, its settings beside it ── */
+.classic .col { grid-row: 1 / span 14; }
+.classic .top { border-top: .3mm solid var(--ink); padding-top: calc(var(--b) * 1.5); overflow: hidden; }
+.classic h1 { margin-bottom: calc(var(--b) * 1.5); }
+.recipe { border-collapse: collapse; width: 100%; font-size: 7.5pt; line-height: calc(var(--b) * 2.5); font-feature-settings: "tnum"; margin-top: var(--b); }
+.recipe th, .recipe td { text-align: left; vertical-align: top; padding: calc(var(--b) * .45) 0; border-top: .2mm solid var(--line); font-weight: 400; }
+.recipe th { font-weight: 600; width: 21mm; padding-right: 2mm; }
+.recipe th span { display: block; font-weight: 400; color: var(--grey); }
+.recipe td { color: #2E2E2C; } .recipe td b { color: var(--ink); }
+.swatch { display: inline-block; width: 2.6mm; height: 2.6mm; border-radius: 50%; border: .2mm solid rgba(0,0,0,.45); vertical-align: -.45mm; margin-left: .6mm; }
+
+/* ── reference: every setting, printed from the tool's own row descriptions. Five rows are two grid rows. ── */
+.ref { border-collapse: collapse; width: 100%; font-size: 7.5pt; line-height: calc(var(--b) * 2.5); font-feature-settings: "tnum"; table-layout: fixed; }
+.ref th, .ref td { text-align: left; vertical-align: top; padding: calc(var(--b) * .75) 2mm calc(var(--b) * .75) 0; height: calc(var(--b) * 4);
+                   border-top: .2mm solid var(--line); font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ref td[colspan] { white-space: normal; }
+.ref th { font-weight: 600; } .ref td { color: #2E2E2C; } .ref td.g { color: var(--grey); }
+.ref tr.h th { color: var(--grey); font-weight: 600; border-top: .2mm solid var(--ink); }
+.ref tr.t th { color: var(--grey); border-top: .2mm solid var(--ink); } .ref tr.t th:first-child { color: var(--ink); font-size: 9pt; }
+.ref col.a { width: 21%; } .ref col.b { width: 17%; } .ref col.c { width: 8%; } .ref col.d { width: 12%; }

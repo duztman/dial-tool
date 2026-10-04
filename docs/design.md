@@ -1,11 +1,11 @@
 # Dial Tool — design canon
 
-*Written 4 Oct 2026 with the guidebook's third edition (beta 2.3); revised the same day with the fourth. Okay: "this design research might influence
+*Written 4 Oct 2026 with the guidebook's third edition (beta 2.3); revised the same day with the fourth and fifth. Okay: "this design research might influence
 the whole build, take notes… let's make it canon."*
 
 This file is the rule for everything Dial Tool shows on paper or screen that isn't a dial: the guidebook
 first, then presentation sheets, spec sheets and, where it applies, the tool's own window.
-`docs/guide/guide.html` is its reference implementation; if they disagree, fix one of them the same day.
+`docs/guide/` (`style.css`, `pages/`) is its reference implementation; if they disagree, fix one of them the same day.
 
 ## 1 · What it is modelled on
 
@@ -26,13 +26,23 @@ What was read on 4 Oct 2026, and what is only remembered:
 | "Braun's own sparing, hierarchical use of colour"; Akzidenz Grotesk, Helvetica and Univers as "the obvious type choices" for Braun-related work | **Read** (the-brandidentity.com, on Das Programm). |
 | How Braun manuals actually look (lowercase headings, Akzidenz, numbered line drawings, multilingual columns) | **Recalled**, not documented by a page read on this day. Treat as a description of an intention, not a citation. |
 
+**teenage engineering's guides** (added with the fifth edition, at Okay's pointer: "they have loads of data,
+they are top notch") — for how much reference a guide can carry and stay calm: one view of the thing
+repeated with a single part changed, labels outside the drawing on thin leaders, outline drawings with
+almost no fills, decimal section numbers, parameter tables.
+
+| Source | Status |
+|---|---|
+| teenage.engineering/guides/ep-133, /guides/op-1/original, the OP-1 field guide PDF | **Read as text summaries only** (a fetch tool's description of each page). The pages were not seen. Section numbering, tables and lowercase prose are documented by those summaries; the drawing style is the summary's wording, not an observation. |
+| "The best way to use teenage engineering manuals" (observer.bearblog.dev) | **Read.** Its complaint: 100-page PDFs are written to be read through, and people need "quick answers to specific questions". Answered here by the Find it page and the thumb index. |
+
 Not found: a text source describing the layout of Braun instruction leaflets in detail. If one turns up,
 check §2–§6 against it.
 
 ## 2 · Type
 
 - **One family, sans.** Inter (open licence; fetched at build time). Okay asked for "a sans like Univers";
-  Univers itself can't be redistributed. Changing the family is one `@font-face` line in `guide.html`.
+  Univers itself can't be redistributed. Changing the family is one `@font-face` line in `docs/guide/style.css`.
   No monospace anywhere: file names are italic, things you type or click are semibold.
 - **Two weights and one light.** 400 text, 600 emphasis and headlines, 300 for the big titles only
   ("big, light type with small, dark type").
@@ -54,30 +64,38 @@ check §2–§6 against it.
 
 ## 3 · Grid
 
-- **A4 landscape, 12 mm margins, 12 columns** of 19.08 mm with 4 mm gutters.
-- **Two lines hold every page.** A top line: the rule, the section number, title and lead, in a head of fixed
-  height — so figures on every page **hang from the same line**. A bottom line: the text that explains the
-  figures **stands on the bottom margin**. The white between them varies and is left white.
-- **Two columns under the head.** One holds the **large example**, the other the small ones. The large
-  example's grey panel takes whatever height its column has left, so no page ends in unexplained white; its
-  controls and a Watch note stand under it. In the other column thumbnails hang from the top line and the
-  text blocks stand on the bottom margin.
+*Fifth edition, 4 Oct 2026: rows added. Okay: "you are fine at stacking by the rules, let's add horizontal
+alignment to these rules as well."*
+
+- **A4 landscape, 12 columns × 14 rows.** Side margins 12 mm, top and bottom 11.5 mm. A column is 19.08 mm
+  with 4 mm between; a row is 6 units (8.25 mm) with 4 units (5.5 mm) between. 14 × 6 + 13 × 4 = 136 units =
+  187 mm, the page's height inside its margins.
+- **Every box starts and ends on a column line and a row line.** Its size is said in columns and rows
+  (`c`, `r`), never in millimetres. The build measures this and reports any box that is off.
+- **The head is rows 1–2**: the rule, the section number, title, and a lead of one or two lines.
+- **The line under the pictures.** In the 12 rows under the head, pictures take the top 8 and words and
+  controls the bottom 4, so one rule runs across the whole page at row 9 (Marks: row 10, for three rows of
+  shapes; Numerals: row 11). Left of it the large example with its controls and a Watch note; right of it the
+  small figures with the blocks that explain them.
 - **Large first, then small.** Each topic opens with one example big enough to carry dimension lines and
-  labels (4 or 6 columns), then goes to 2- or 3-column thumbnails with two-line captions.
-- **Units.** Thumbnails take 1, 2 or 3 columns; text blocks 3 or 4; the large example 4 or 6.
-- **Pages of text only** (Start, The window, Classics, Recipes) have no large example: their rows share the
-  white evenly.
-- **The classic pages** split 8 · 4: the dial in a square panel the full height of the page, then title,
-  what it is drawn after, what to look for, and the settings table standing on the bottom margin.
-- **The cover** is the one page off the grid: a dark field the colour of the dial's own plate, the dial far
-  larger than the page.
+  labels (4 or 6 columns, 6 or 8 rows), then goes to thumbnails.
+- **Fixed sizes for small things.** A thumbnail of a whole dial is 2 columns × 4 rows: the picture is the top
+  three rows and the spaces between them, the caption exactly the fourth row (two lines). A close-up is
+  2 × 3 or 3 × 4; a hand 1 × 4. A text block is 3 or 4 columns wide and 2, 3 or 4 rows high.
+- **Pages of words** (Start, The window, Classics, Reference) use the same rows: blocks of 3 or 4 rows, in
+  bands across the page.
+- **The classic pages** split 8 · 4 and use all 14 rows: the dial on a ground the full height of the page;
+  beside it the title (rows 1–3), what to look for (4–6), and the settings table hanging from row 7.
+- **Reference tables** keep the rhythm: a table row is 4 units, so five of them are two grid rows.
+- **The thumb index.** Fourteen sections, fourteen rows: section *n* has a black tab at the page's edge on
+  row *n*. Flip the edge to find a section.
+- **The cover** is the one page off the grid.
 
 ## 4 · Colour
 
 - Paper `#FCFCFA`, ink `#111111`, grey text `#5C5C58` (never lighter: it must stay readable at 7.5 pt),
-  rules `#B9B9B4`, figure ground `#ECECE8`.
-- **No accent colour** (fourth edition; the orange numbers and dots are gone). Section numbers are ink;
-  callout numbers are a figure in a line circle.
+  rules `#B9B9B4`, ground `#ECECE8`.
+- **No accent colour.** Section numbers are ink; callout numbers are a figure in a line circle.
 - Dials keep their own colours. Everything around them is neutral.
 - No tinted panels, rounded cards, shadows or decorative rules. A hairline above a block is the only frame.
 
@@ -85,17 +103,31 @@ check §2–§6 against it.
 
 - **Every dial is drawn by `dial.py`** from settings kept in the repo, and the values printed beside a
   picture are the ones that drew it (R25).
-- A figure sits on a flat grey square, with a two-line caption: what it is (semibold), then its values (grey).
-- Close-ups show the top of a dial, always cropped the same way, so figures in a row compare.
+- **Pictures stand on the paper. A ground is allowed only where the picture needs an edge** (fifth edition;
+  Okay: "some illustrations are allowed backgrounds. Where it's needed? Reason."). Three reasons, no others:
+  1. *a close-up* — an enlarged dial has to be cut somewhere, and the ground is the window it is seen through;
+  2. *a set that mixes light and dark plates* and must read as one set — the nine classics, small and large;
+  3. *the tool's controls* — they are grey in the tool.
+  Whole dials, hands, diagrams and icons have no ground.
+- **A plain plate is a hairline circle** with a small cross at its centre: figures that explain a setting are
+  drawn as ink on the page's own white, like a technical drawing. Classic dials keep their plates.
+- **Side by side, one thing changes.** Figures in a row share view, scale and crop; only the setting in the
+  caption differs. A caption is two lines: what it is (semibold), then its values (grey).
 - **Annotations are drawn in the dial's own millimetres** (`overlay()` in `tools/make_guide.py`): dimension
   lines with end ticks, leaders ending in a small ring, dashed construction lines. Text on them is 7.5 pt and
-  lines 0.2 mm on paper at any enlargement — the page measures each picture and sets them.
+  lines 0.2 mm on paper at any enlargement — the page measures each picture and sets them. The build reports
+  a label that leaves its picture or overlaps another.
 - **Line icons.** One set, drawn on a 24-unit square with a single stroke, square ends, no fill
-  (`<symbol>`s at the top of `guide.html`). One per text block, above its label; a few per page, never as
+  (`docs/guide/icons.svg`). One per text block, above its label or beside it; a few per page, never as
   decoration without a block. Four are drawn large on the Start page.
 - **Watch notes.** A triangle icon and a short paragraph: what a careful reader would otherwise find out the
   hard way (order works twice, radii are absolute, fillets stop silently …). One or two per page, under the
   large example. They state the tool's behaviour, not advice.
+- **Steps are pictures in a row**, numbered in their captions: one view, one change per step (Start: a first
+  dial in four moves; Give way: stack, skip, knock out).
+- **The cover is the idea in one picture**: a dial cut by a vertical line. Left of it the construction —
+  every radius and angle the settings name, in hairlines over a ghost of the dial — right of it the dial
+  those settings print. Dark field, the dial larger than the page, contents on the left.
 
 ## 6 · The tool's controls, redrawn
 
@@ -112,6 +144,11 @@ check §2–§6 against it.
 - A block is a label, a one-sentence headline, and two to four lines. If it needs more, it is two blocks.
 - Say what a setting does and give a real value. No adjectives about the tool.
 - Glossary words only (`docs/glossary.md`).
+- **Written for use.** A block says what you would do with the setting, not only what it is. One dry line a
+  page is welcome ("the ranges are habits, not limits"); two is a tone.
+- **Three ways in**: the contents (cover), the thumb index (page edges), and Find it (last page: what you
+  want → what the tool calls it → page). Every setting is also listed once, with its range, step and
+  starting value, in tables printed from `dial.py`'s own rows (R25): they cannot drift.
 
 ## 8 · For the tool itself — ideas, not decisions
 

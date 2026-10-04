@@ -1,0 +1,99 @@
+<page id="recipes" no="14" title="Reference" lead="Constructions to build on, every setting with its range, and a way in when you know what you want but not its name.">
+<col c="12">
+  <block c="3" r="3" ic="rail" side="1" k="Track" h="Railroad"><p>Ticks, Count 60. Two bands 0.12 wide: at the ticks’ Radius, and at Radius − Length + 0.12. Page {{page:california}}.</p></block>
+  <block c="3" r="3" ic="every" side="1" k="Track" h="Fifths of a second"><p>Ticks Count 60 above ticks Count 300. The 300 Skip where: all marks above.</p></block>
+  <block c="3" r="3" ic="ring" side="1" k="Hours" h="24-hour ring"><p>Numerals, Labels Custom: 24, 13, 14 … 23, at a smaller Radius and Size. Page {{page:field}}.</p></block>
+  <block c="3" r="3" ic="font" side="1" k="Hours" h="Two fonts, one circle"><p>Two numerals rings on one Radius; each Custom list leaves the other’s positions empty. Page {{page:california}}.</p></block>
+  <block c="3" r="3" ic="count" side="1" k="Minutes" h="05 to 60"><p>Numerals, Labels Numbers, First number 5, Step 5, Digits 2, Start 30°. Page {{page:sector}}.</p></block>
+  <block c="3" r="3" ic="path" side="1" k="Text" h="A wordmark"><p>Numerals, Count 1, Start 0° or 180°, Labels Custom, Placement on path. Page {{page:dress}}.</p></block>
+  <block c="3" r="3" ic="knock" side="1" k="Colour" h="A gap round numerals"><p>A band below the numerals; Knock out: markers &amp; numerals above; Clearance 0.3.</p></block>
+  <block c="3" r="3" ic="sector" side="1" k="Colour" h="Sector dial"><p>A band, Count 12, Every 2, Band width equal to Radius. Page {{page:sector}}.</p></block>
+  <block c="6" r="3" ic="log" side="1" k="When something is wrong" h="Read the log, compare the previews, send both.">
+    <ol class="steps">
+      <li>Open Export and read the log. At launch it says “preview: canvas” and “all controls connected”.</li>
+      <li>If the preview looks wrong, switch Canvas to PDF and compare.</li>
+      <li>Send a screenshot and the log. If the window doesn’t build, run <code>tools/dial_probe.py</code> and send its report.</li>
+    </ol></block>
+  <watch c="3" r="3" k="A ring is gone">Look at its checkbox in the list, its Every and Offset, and whether it skips positions a ring above takes.</watch>
+  <watch c="3" r="3" k="No numeral at 3">The date window took it: markers and numerals leave its position empty.</watch>
+  <block c="6" r="3" ic="repo" side="1" k="Where things live" h="One repository.">
+    <table class="plain">
+      <tr><td>Code and docs</td><td>github.com/duztman/dial-tool</td></tr>
+      <tr><td>Words · rules</td><td><code>docs/glossary.md</code> · <code>docs/design.md</code></td></tr>
+      <tr><td>Presets</td><td><code>docs/guide/presets</code></td></tr>
+      <tr><td>This book</td><td><code>docs/guide/pages</code>, built by <code>tools/make_guide.py</code></td></tr>
+    </table></block>
+  <watch c="3" r="3" k="Slow">The log should say “shape combining: skia-pathops”. If not, install it: page {{page:start}}.</watch>
+  <watch c="3" r="3" ic="reset" k="Start over">Export → Settings → Defaults. The last session is kept in <code>~/Library/Application Support/DialTool</code>.</watch>
+</col>
+</page>
+
+<page id="ring-settings" no="14.1" title="Every ring setting" lead="Printed from the tool’s own rows, so it cannot drift. Starts at: a markers ring added to a 30 mm dial.">
+<col c="12">
+  <div class="c6 r12">{{ref:ring1}}</div>
+  <div class="c6 r12">{{ref:ring2}}</div>
+</col>
+</page>
+
+<page id="other-settings" no="14.2" title="Every other setting" lead="Dial, hands, date and export. A slider’s range is where it stops, not where the value must: type past it.">
+<col c="12">
+  <div class="c6 r12">{{ref:hands}}</div>
+  <div class="c6 r12">{{ref:dial}}{{ref:date}}{{ref:export}}</div>
+</col>
+</page>
+
+<page id="find" no="14.3" title="Find it" lead="You know what you want on the dial. This says what the tool calls it, and where this book shows it.">
+<col c="12">
+  <find c="4" r="12" ic="every" k="Tracks and marks">
+    a minute track | ticks, Count 60 | positions
+    a railroad track | two hairline bands | recipes
+    fifths of a second | Count 300, skipping | recipes
+    marks only at 3 · 6 · 9 · 12 | Every 3 | positions
+    all but the cardinals | Skip those instead | positions
+    a scale on an arc | Start · Span | gauge
+    a triangle at 12 | 12 o’clock: triangle | marks
+    a double bar at 12 | 12 o’clock: double | marks
+    lume dots | Shape dot | marks
+    outlined markers | Hollow wall | marks
+    rounded bars | Round outer · inner | marks
+    my own marker | Shape file | files
+    ticks that stop at markers | Skip where | giveway
+    a gap round the numerals | Knock out | giveway
+    a crosshair | ticks, Count 4, long | sector
+  </find>
+  <find c="4" r="12" ic="font" k="Numerals and colour">
+    Roman, IIII or IV | Labels | numerals
+    a 24-hour ring | Labels Custom | field
+    05 to 60 | Labels Numbers | pilot
+    compass points, words | Labels Custom | numerals
+    text on a curve | Placement on path | dress
+    two fonts on one circle | two Custom lists | california
+    upright or radial | Placement | numerals
+    one numeral looks heavy | Nudge: Size × | type
+    a variable font’s weight | Axes | type
+    Turkish İ ı | Language | type
+    wider spacing | Tracking | type
+    a chapter ring | band + rings above | bands
+    pie sectors | Band width = Radius | bands
+    a red zone | band, Start · Span | gauge
+    a hairline circle | Band width 0.12 | bands
+  </find>
+  <find c="4" r="12" ic="export" k="Hands, date, files">
+    another hand shape | Shape | hands
+    a lollipop seconds hand | Ring · disc Ø | railway
+    a skeleton hand | Hollow wall | hands
+    my own hand | Shape file | files
+    ticking or sweeping | Motion | hands
+    another time shown | Time field | window
+    the date at 4:30 | Position | date
+    no frame round the date | Frame 0 | date
+    a mask for etching | Production | files
+    flipped for toner transfer | Mirror | files
+    a true-size PDF | Export → PDF | files
+    a 600 dpi PNG | PNG dpi | files
+    a moving clip | MP4 · GIF | files
+    keep or reopen a dial | Save… · Load… | start
+    begin again | Defaults | recipes
+  </find>
+</col>
+</page>

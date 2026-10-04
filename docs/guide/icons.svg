@@ -1,0 +1,46 @@
+<!-- line drawings on a 24-unit square: one stroke, square ends, no fill. Used as <block ic="name"> -->
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i-install" viewBox="0 0 24 24"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4 17v4h16v-4"/></symbol>
+  <symbol id="i-speed" viewBox="0 0 24 24"><path d="M4 17a8 8 0 0 1 16 0M2.5 17h19M12 17l4.6-6.6"/></symbol>
+  <symbol id="i-memory" viewBox="0 0 24 24"><path d="M5.2 13.5A7 7 0 1 0 7 7.1M4 4v4h4M12 8.5V12l2.6 1.8"/></symbol>
+  <symbol id="i-unit" viewBox="0 0 24 24"><path d="M2 8.5h20v7H2zM5 8.5v2.5M8 8.5v4M11 8.5v2.5M14 8.5v4M17 8.5v2.5M20 8.5v4"/></symbol>
+  <symbol id="i-angle" viewBox="0 0 24 24"><path d="M12 21V3M12 21 20.5 6.3M12 9a12 12 0 0 1 6 1.6"/><circle cx="12" cy="21" r=".9"/></symbol>
+  <symbol id="i-fill" viewBox="0 0 24 24"><path d="M5 4h14v16H5zM5 11l7-7M5 18 19 4M9 20 19 10M15 20l4-4"/></symbol>
+  <symbol id="i-order" viewBox="0 0 24 24"><path d="M12 3l9 4.5-9 4.5-9-4.5zM3 12l9 4.5 9-4.5M3 16.5 12 21l9-4.5"/></symbol>
+  <symbol id="i-slider" viewBox="0 0 24 24"><path d="M2 8h5M11 8h11M2 16h11M17 16h5"/><circle cx="9" cy="8" r="2"/><circle cx="15" cy="16" r="2"/></symbol>
+  <symbol id="i-type" viewBox="0 0 24 24"><path d="M2 6h20v12H2zM6.5 9.5v5M5 9.5h3M5 14.5h3M11 14.5h7"/></symbol>
+  <symbol id="i-choice" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 12.5l3 3 5.5-7"/></symbol>
+  <symbol id="i-pinch" viewBox="0 0 24 24"><path d="M9.5 14.5 4 20M4 15.5V20h4.5M14.5 9.5 20 4M15.5 4H20v4.5"/></symbol>
+  <symbol id="i-ring" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r=".8"/></symbol>
+  <symbol id="i-kind" viewBox="0 0 24 24"><path d="M4 3h3v7H4zM14 3h5l-1.5 7h-2zM17 21v-7l-2 1.6"/><circle cx="5.5" cy="17.5" r="2.5"/></symbol>
+  <symbol id="i-radius" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 12h9"/><circle cx="12" cy="12" r=".9"/></symbol>
+  <symbol id="i-arc" viewBox="0 0 24 24"><path d="M4.2 18a9 9 0 1 1 15.6 0M3 20.2l2.4-4M21 20.2l-2.4-4"/></symbol>
+  <symbol id="i-every" viewBox="0 0 24 24"><path d="M3 6v7M12 6v7M21 6v7"/><path stroke-dasharray="1 2" d="M6 6v7M9 6v7M15 6v7M18 6v7"/><path d="M3 18h18"/></symbol>
+  <symbol id="i-skip" viewBox="0 0 24 24"><path d="M3 7v7M6.5 7v7M17.5 7v7M21 7v7M10 4h4v13h-4z"/></symbol>
+  <symbol id="i-knock" viewBox="0 0 24 24"><path d="M2 9h6.5M2 14h6.5M15.5 9H22M15.5 14H22M10.5 4h3v15h-3z"/></symbol>
+  <symbol id="i-band" viewBox="0 0 24 24"><path d="M3 19a9 9 0 0 1 18 0M7.5 19a4.5 4.5 0 0 1 9 0M3 19h4.5M16.5 19H21"/></symbol>
+  <symbol id="i-sector" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 12V3M12 12l7.8 4.5M12 12l-7.8 4.5"/></symbol>
+  <symbol id="i-nudge" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M9.5 5.5 12 3l2.5 2.5M9.5 18.5 12 21l2.5-2.5M5.5 9.5 3 12l2.5 2.5M18.5 9.5 21 12l-2.5 2.5"/></symbol>
+  <symbol id="i-font" viewBox="0 0 24 24"><path d="M4 20 12 3l8 17M7.3 13h9.4"/></symbol>
+  <symbol id="i-count" viewBox="0 0 24 24"><path d="M5 20V5L2.5 7M10 8a3 3 0 1 1 5.2 2L10 20h6M19 5h3M19 12h3M19 19h3"/></symbol>
+  <symbol id="i-path" viewBox="0 0 24 24"><path d="M3 19a9 9 0 0 1 18 0"/><path d="M5.5 10.5 8 12.6M11 5v3.3M18.5 10.5 16 12.6"/></symbol>
+  <symbol id="i-beat" viewBox="0 0 24 24"><path d="M2 19h4v-4h4v-4h4V7h4V3h4"/></symbol>
+  <symbol id="i-hand" viewBox="0 0 24 24"><path d="M12 22V8M9.6 8 12 2l2.4 6z"/><circle cx="12" cy="17" r="2"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v4h4M9 13h6M9 17h6"/></symbol>
+  <symbol id="i-in" viewBox="0 0 24 24"><path d="M9 3h10v18H9M3 12h10M9.5 8.5 13 12l-3.5 3.5"/></symbol>
+  <symbol id="i-export" viewBox="0 0 24 24"><path d="M12 15V3M7.5 7.5 12 3l4.5 4.5M4 17v4h16v-4"/></symbol>
+  <symbol id="i-mirror" viewBox="0 0 24 24"><path stroke-dasharray="1.5 2" d="M12 2v20"/><path d="M9 6 3 18h6zM15 6l6 12h-6z"/></symbol>
+  <symbol id="i-live" viewBox="0 0 24 24"><path d="M3 5h18v14H3zM7 15l2.5-6 2.5 6M7.8 13h3.4M15 9v6M14 9h2M14 15h2"/></symbol>
+  <symbol id="i-date" viewBox="0 0 24 24"><path d="M3 6h18v12H3zM9 15V9L7.5 10.2M12.5 9h4l-3 6"/></symbol>
+  <symbol id="i-gap" viewBox="0 0 24 24"><path d="M2 5h20M2 19h20M8 9h8v6H8zM12 5v4M12 15v4"/></symbol>
+  <symbol id="i-cut" viewBox="0 0 24 24"><path stroke-dasharray="2 2" d="M5 7h14v10H5z"/><path d="M2 12h3M19 12h3"/></symbol>
+  <symbol id="i-log" viewBox="0 0 24 24"><path d="M3 4h18v12H10l-5 4.5V16H3zM7 8.5h10M7 12h6"/></symbol>
+  <symbol id="i-repo" viewBox="0 0 24 24"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="8" r="2"/><path d="M6 7v10M18 10c0 5-12 2-12 7"/></symbol>
+  <symbol id="i-rail" viewBox="0 0 24 24"><path d="M2 6h20M2 14h20M5 6v8M9 6v8M13 6v8M17 6v8M21 6v8"/></symbol>
+  <symbol id="i-reset" viewBox="0 0 24 24"><path d="M5.2 13.5A7 7 0 1 0 7 7.1M4 4v4h4"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12c3-4.7 6.3-7 10-7s7 2.3 10 7c-3 4.7-6.3 7-10 7s-7-2.3-10-7z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-watch" viewBox="0 0 24 24"><path d="M12 3 22.5 21h-21zM12 9.5v6M12 17.6v.8"/></symbol>
+  <symbol id="i-find" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><path d="M15 15l6.5 6.5"/></symbol>
+  <symbol id="i-table" viewBox="0 0 24 24"><path d="M3 4h18v16H3zM3 9h18M3 14.5h18M10 4v16"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M3 4h18v16H3zM10 8.5v7l6-3.5z"/></symbol>
+</svg>

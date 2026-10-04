@@ -1,0 +1,28 @@
+<page id="window" no="02" title="The window" lead="Settings on the left, the dial on the right, time underneath. Overleaf it is redrawn whole, in grey, from the tool’s own measurements.">
+<col c="12">
+  <block c="3" r="4" tag="1" h="Sections"><p>Dial, Rings, Hands, Date, Export. One is shown at a time.</p></block>
+  <block c="3" r="4" tag="2" h="Ring list"><p>Top ring in front. The checkbox hides a ring; double-click a name to change it. The selected ring is the one the settings edit.</p></block>
+  <block c="3" r="4" tag="3" h="Ring tools"><p>Add ring… puts a new ring above the selected one. Duplicate, Delete, move up, move down.</p></block>
+  <block c="3" r="4" tag="4" h="The ring’s settings"><p>One scrolling list. Rows that don’t apply to the ring’s kind are hidden, not greyed out.</p></block>
+  <block c="3" r="4" tag="5" h="Preview"><p>Follows every change. Pinch or ⌘-scroll zooms about the cursor; two fingers pan. With Guides on, the selected ring’s edges are orange.</p></block>
+  <block c="3" r="4" tag="6" h="Time"><p>Drag, or type 10:09:36. Now sets the clock’s time; Play runs the hands.</p></block>
+  <block c="3" r="4" tag="7" h="Guides, Canvas · PDF, Fit"><p>Guides are never exported. Canvas is the fast preview; PDF is DrawBot’s own viewer, the reference. Fit shows the whole page.</p></block>
+  <block c="3" r="4" tag="8" h="Status"><p>Ring, font, diameter; then how long the geometry (build) and the drawing (frame) took.</p></block>
+  <block c="4" r="4" side="1" ic="slider" k="Number" h="Slider, field and stepper show one value.">
+    {{ui:dial:field:3:len,w}}
+    <p>Drag for a rough value, type for an exact one, step for the last hundredth. Typing past a slider’s end extends the slider: the ranges are habits, not limits.</p></block>
+  <block c="4" r="4" side="1" ic="type" k="Typing" h="Fields do arithmetic.">
+    <table class="plain">
+      <tr><td>1.2</td><td>sets 1.2</td></tr>
+      <tr><td>+0.5</td><td>adds 0.5</td></tr>
+      <tr><td>x0.5</td><td>halves</td></tr>
+      <tr><td>/3</td><td>a third</td></tr>
+    </table>
+    <p>Useful when a drawing says “a third of the way in” and the field says 13.4.</p></block>
+  <block c="4" r="4" side="1" ic="choice" k="Choice" h="Popups, switches, checkboxes.">
+    {{ui:dial:dress:0:kind,shape,twelve}}
+    <p>A choice can change which rows are shown: pick dot and Length disappears, because a dot has none.</p></block>
+</col>
+</page>
+
+<section class="page" id="window-drawing">{{window}}<i class="tab" style="--n:2">02</i></section>

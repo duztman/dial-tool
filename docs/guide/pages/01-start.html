@@ -1,0 +1,27 @@
+<page id="start" no="01" title="Start" lead="One Python file that runs inside DrawBot, a free drawing app for macOS. It draws a dial as a list of rings, in millimetres.">
+<col c="12">
+  <block c="4" r="4" ic="install" k="Install" h="Three steps, one file.">
+    <ol class="steps">
+      <li><b>DrawBot 3.132</b> or newer, from drawbot.com.</li>
+      <li><b>dial.py</b> from github.com/duztman/dial-tool. Branch <i>main</i> is the released version; <i>dev</i> is the newest work.</li>
+      <li>Open dial.py in DrawBot and press <kbd>⌘R</kbd>. The window opens.</li>
+    </ol></block>
+  <block c="4" r="4" ic="speed" k="Speed" h="One optional package.">
+    <p>Knockouts and hollow shapes are cut by combining outlines. DrawBot’s own routine is slow; skia-pathops is 2 to 14 times faster.</p>
+    <p>In DrawBot: Python → Install Python Packages → <b>skia-pathops</b> → Go. The Export log then opens with “shape combining: skia-pathops”.</p></block>
+  <block c="4" r="4" ic="memory" k="Memory" h="Nothing to save.">
+    <p>Settings are stored as you work. Press <kbd>⌘R</kbd> again, or quit DrawBot: the last session reopens as you left it.</p>
+    <p>Export → Save… writes a named copy; Load… opens one. The nine dials in this book come as such files.</p></block>
+  <block c="3" r="4" ic="unit" xl="1" k="Unit" big="mm">
+    <p>Every length is a millimetre, drawn at true size. Radii are measured from the dial’s centre.</p></block>
+  <block c="3" r="4" ic="angle" xl="1" k="Angle" big="0° = 12">
+    <p>Clock angles, growing clockwise. 90° is 3 o’clock, 180° is 6, −90° is 9.</p></block>
+  <block c="3" r="4" ic="fill" xl="1" k="Shape" big="Fills">
+    <p>Everything exported is a filled outline, never a stroke. A 0.12 mm tick is 0.12 mm in Illustrator.</p></block>
+  <block c="3" r="4" ic="order" xl="1" k="Order" big="Top first">
+    <p>The ring list is the stacking order. The top ring is drawn last, in front of the others.</p></block>
+  {{strip:first}}
+  <watch c="4" r="2">It runs only inside DrawBot. The window, the fonts and the export all come from DrawBot’s own Python.</watch>
+  <watch c="4" r="2">The canvas preview needs macOS 14 or newer. Older systems get the PDF preview, and the log says why.</watch>
+</col>
+</page>

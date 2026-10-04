@@ -28,7 +28,7 @@ Off-Mac checks (Python 3, `pip install drawbot-skia skia-pathops pillow`):
 | `tools/bool_bench.py` | Times shape combining: DrawBot's `booleanOperations` vs the harness's `skia-pathops`, on every harness dial (off-Mac). |
 | `tools/vanilla-0.5.0-api.json` | vanilla 0.5.0's class signatures and method names, extracted from its source (used by the smoke test and for R13). |
 | `docs/Dial-Tool-guide.pdf` | The guidebook: what it does, install, files in and out, FAQ. |
-| `docs/guide/` | Its source: `guide.html` (text and layout), figures (`img/`, generated), `presets/` (the classic dials as loadable settings). |
+| `docs/guide/` | Its source: `pages/` (one file per page), `style.css`, `icons.svg`, `README.md` (how to write a page), figures (`img/`, generated), `presets/` (the classic dials as loadable settings). |
 | `tools/guide_dials.py` | The classic dials shown in the guide, as Dial Tool settings. |
 | `tools/make_guide.py` | Rebuilds the guidebook: figures drawn by dial.py itself, recipes printed from the same settings, PDF through Chromium. Fetches open fonts (Inter and stand-ins) into `docs/guide/cache`. |
 | `docs/brief.md` | Goals, decisions, open questions, parked ideas. |
