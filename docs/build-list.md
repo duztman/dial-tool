@@ -61,8 +61,8 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 51 | MP4 and GIF export (WebCodecs) | open |
 | 52 | Live text in PDF · SVG; named instances of variable fonts; a fallback font for scripts the main font lacks (Eastern Arabic, Chinese: HarfBuzz has no automatic fallback, CoreText had) | open |
 | 53 | **Better interface overall** — Okay, 11 Oct: "better ui overall, learn and implement. Move delete layers, export better." Research first (how good parametric tools lay out lists, inspectors and export), then propose. Includes: drag to reorder rings, undo, an export panel that shows what will be written. | open (Okay: later) |
-| 54 | **Use it through Claude (MCP)** — Okay, 11 Oct: "can we attach an mcp to that, so someone can use over claude?" `web/src/geometry.js` and `output.js` run in Node without a window (the parity test does it), so a small server could offer: read and change settings, list fonts, return a PNG / SVG / PDF. Decide: local (runs on the user's computer) or hosted. | open (Okay: later) |
-| 55 | Somewhere to open it without the file: GitHub Pages for the repo (Okay switches it on in the repo's settings) | open |
+| 54 | **Use it through Claude (MCP)** — Okay, 11 Oct: "can we attach an mcp to that, so someone can use over claude?" `web/src/geometry.js` and `output.js` run in Node without a window (the parity test does it), so a small server could offer: read and change settings, list fonts, return a PNG / SVG / PDF. Decide: local (runs on the user's computer) or hosted. | **dropped** — Okay, 11 Oct: "No need for mcp since we are on github." |
+| 55 | Online at <https://duztman.github.io/dial-tool/> — Okay, 11 Oct: "can I get it online somewhere? Under GitHub?" The `gh-pages` branch holds `index.html` (a copy of `web/dial-tool.html`); pushing the branch switched GitHub Pages on. Seen live 11 Oct. To update: copy the new build to `index.html` on `gh-pages`, commit, push. | done (11 Oct) |
 | 56 | Remembered fonts: font files added by hand are forgotten when the page closes (installed fonts are found again) | open |
 
 ## Later
