@@ -10,7 +10,7 @@ On `dev` and online. Okay, 11 Oct, after beta 4.0: "Bottom (and top) black bar. 
 - **The bar keeps the panel's columns:** under the panel the square stands in the toggle column and the status runs over the six columns; beside it Play, Now, − +, Fit are one column wide (54), the speeds and the time two (120), 12 apart; the slider takes what is left.
 - **Guides switch:** a rounded box two columns wide (columns 5–6) with a bullseye crossed by lines. On: filled black, "Guides on". Off: dashed grey outline, "Guides off". A press only switches (unchanged).
 - **Phone:** the bar's controls share one row, the slider has the row under it; no zoom buttons (a phone pinches).
-- **Tests:** 115 checks: 60× speed, the zoom buttons, the switch's two looks, and the widths above.
+- **Tests:** 114 checks: 60× speed, the zoom buttons, the switch's two looks, and the widths above.
 - **Not on the columns:** the five tabs share the six columns' width equally, so their centres fall between columns.
 
 ## beta 4.0 (web version) · 11 Oct 2026
