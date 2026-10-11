@@ -84,11 +84,9 @@ h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; margin: 0; }
 .row > button.main:first-child { justify-self: stretch; }        /* a button standing where the label would (PNG) */
 /* a pane: a thick line, its name, its rows. The eye in the toggle column shows whether it is open; the whole
    heading is the button. A folded pane says what it holds, in grey, at the right. */
-.row.hdr { display: block; min-height: 0; margin-top: calc(var(--unit) * 4); border-top: var(--thick) solid var(--ink); padding: 0; }
-.row.hdr.folded { margin-top: 0; }
-.form > .row.hdr:first-child, .form > [hidden]:first-child + .row.hdr, .pinned > .row.hdr:first-child { margin-top: 0; }
-.pinned:not([hidden]) + .form > .row.hdr:first-child, .pinned:not([hidden]) + .form > [hidden]:first-child + .row.hdr { border-top: 0; }      /* the hairline already opens it */
-.row.hdr.folded + .row.hdr, .row.hdr.folded + [hidden] + .row.hdr { margin-top: 0; }
+.row.hdr { display: block; min-height: 0; margin-top: 0; border-top: var(--thick) solid var(--ink); padding: 0; }
+.row.hdr.spaced { margin-top: calc(var(--unit) * 4); }       /* air above a pane only when the pane before it is open (set in sync_rows) */
+.pinned:not([hidden]) + .form > .row.hdr.first { border-top: 0; }      /* the hairline under the pinned rows already opens it */
 .form > .row.hdr.folded:last-child { border-bottom: 1px solid var(--rule); }
 h2 { font-size: 12.5px; font-weight: 600; letter-spacing: 0.01em; margin: 0; white-space: nowrap; }
 button.fold { position: relative; display: flex; align-items: center; gap: var(--gap); width: 100%; height: 40px; padding: 0; border: 0; background: none; text-align: left; }
@@ -6710,6 +6708,14 @@ var DialTool = class _DialTool {
       }
       r.el.hidden = !applies || Boolean(r.group && !r.group.el.hidden && this.is_folded(r.group));
       if (!r.el.hidden) r.refresh(T);
+    }
+    const before = { pinned: null, form: null };
+    for (const r of this.rows) {
+      if (!r.fold || r.el.hidden) continue;
+      const where = r.row.pin ? "pinned" : "form";
+      r.el.classList.toggle("first", before[where] === null);
+      r.el.classList.toggle("spaced", before[where] !== null && !this.is_folded(before[where]));
+      before[where] = r;
     }
   }
   /** what a folded pane holds, in a few words: the values of its first rows. Folding hides controls, not information. */
