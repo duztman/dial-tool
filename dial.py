@@ -151,7 +151,7 @@ DEFAULTS = dict(
     # time and output
     t=10 * 3600 + 9 * 60 + 36,
     out_production=False, out_mirror=False, out_live_text=False,
-    out_dpi=600.0, out_seconds=4.0, out_fps=30.0,
+    out_dpi=600.0, out_seconds=4.0, out_fps=30.0, out_px=1080,
     # interface
     ui_section=0, ui_ring=0, ui_hand=0, ui_preview=0,              # ui_preview: 0 canvas · 1 PDF
 )
@@ -1233,6 +1233,14 @@ def scene(S, static, t, preview=True, selected=None):
     return items
 
 
+def clip_resolution(S):
+    """MP4 · GIF: the resolution (pixels per inch) at which the page comes out out_px pixels wide.
+    DrawBot's default, 72, makes one pixel per point — a 36 mm page is 102 pixels — and its MP4
+    export refuses a frame with an odd pixel count. So: an even count, and the half pixel extra
+    keeps DrawBot's rounding-down (int(points × resolution / 72)) on that count. → (resolution, pixels)"""
+    px = max(2, 2 * round(S["out_px"] / 2))
+    return (px + 0.5) * 72 / ((S["dial_d"] + 2 * S["margin"]) * MM), px
+
 def draw_page(D, S, static, t, preview=True, selected=None):
     """one page through DrawBot: every export, and the PDF preview. Draws the scene (R26)."""
     size = (S["dial_d"] + 2 * S["margin"]) * MM
@@ -1919,6 +1927,7 @@ EXPORT_ROWS = [
     num("out_dpi", "PNG dpi", 72, 2400, 1),
     num("out_seconds", "Clip seconds", 1, 60, 1),
     num("out_fps", "Frames per s", 6, 60, 1),
+    num("out_px", "Clip size px", 100, 2160, 2, whole=True),
     bar("Export", ["PDF", "SVG", "PNG", "MP4", "GIF"], "export"),
     bar("Settings", ["Save…", "Load…", "Defaults"], "presets"),
 ]
@@ -2706,10 +2715,16 @@ class DialTool:
                 D.frameDuration(1 / fps)
         else:
             draw_page(D, self.S, static, self.S["t"], preview=False)
-        options = dict(imageResolution=self.S["out_dpi"]) if kind == "png" else {}
+        options, size = {}, ""
+        if kind == "png":
+            options = dict(imageResolution=self.S["out_dpi"])
+        elif kind in ("mp4", "gif"):                               # an even, chosen pixel size (clip_resolution)
+            resolution, px = clip_resolution(self.S)
+            options = dict(imageResolution=resolution)
+            size = f" · {px} × {px} px"
         D.saveImage(path, **options)
         D.endDrawing()
-        self.log(f"exported {path}")
+        self.log(f"exported {path}{size}")
 
     @guard
     def presets(self, index):

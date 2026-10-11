@@ -15,6 +15,7 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 6 | Play runs; Stop stops; closing the window stops it; Play keeps running while a slider is held (beta 2.3, frame clock) | verify |
 | 7 | Button bars register which button was clicked (Export, Settings, ring tools, Reset nudge) | verify |
 | 8 | Export PDF / SVG / PNG / MP4 / GIF; check SVG and PDF open at true size in Illustrator | verify |
+| 48 | MP4 · GIF at **Clip size px** (`out_px`, beta 2.3, 11 Oct): export an MP4 of a 33.5 mm dial (it failed before: odd pixel count); the log says `… · 1080 × 1080 px`; the file plays. GIF at the same size — is it too heavy? | verify |
 | 9 | SVG import: a marker and three hands drawn in Illustrator (pointing up, anchor at artboard centre) | verify |
 | 10 | Save / Load / Defaults; last session restored after quitting DrawBot | verify |
 | 11 | Eastern Arabic and Chinese labels render (font fallback) | verify |

@@ -648,6 +648,8 @@ class FakeFormattedString:
         return ["kern", "liga", "tnum", "ss01"]
 
 
+CLIP = {"px": None}                                                 # the last movie's frame size, in pixels
+
 class FakeDrawingTool:                                               # DrawBotDrawingTool on drawbot-skia
     def __getattr__(self, name):
         return getattr(SKIA_DB, name)
@@ -656,8 +658,13 @@ class FakeDrawingTool:                                               # DrawBotDr
     def frameDuration(self, seconds):
         pass
     def saveImage(self, path, **options):
-        if path.endswith((".mp4", ".gif")):
-            open(path, "w").close()                                  # drawbot-skia can't write movies
+        if path.endswith((".mp4", ".gif")):                          # drawbot-skia can't write movies
+            # DrawBot 3.132's rule (imageContext.py): pixels = int(points × resolution / 72); MP4 refuses odd
+            px = int(SKIA_DB.width() * max(1.0, options.get("imageResolution", 72.0)) / 72.0)
+            if path.endswith(".mp4") and px % 2:
+                raise Exception("Exporting to mp4 doesn't support odd pixel dimensions for width and height.")
+            CLIP["px"] = px
+            open(path, "w").close()
         else:
             SKIA_DB.saveImage(path)
 
@@ -1181,7 +1188,19 @@ def main():
             bar.sim_click(i)
             if not os.path.exists(path):
                 problem(f"export {kind} wrote nothing")
-    step("export PDF, SVG, PNG, MP4, GIF", export)
+        for d, px in [(30.0, 1080), (33.5, 1080), (36.0, 721), (41.3, 100), (27.77, 2160)]:   # odd page sizes too
+            tool.S["dial_d"], tool.S["out_px"] = d, px
+            tool.static_dirty = True                                 # the diameter is geometry
+            tool.render()
+            path = os.path.join(home, f"clip-{d}-{px}.mp4")
+            ANSWERS["putFile"].append(path)
+            bar.sim_click(3)
+            want = 2 * round(px / 2)
+            if not os.path.exists(path):
+                problem(f"export MP4 failed for a {d} mm dial at {px} px")
+            elif CLIP["px"] != want:
+                problem(f"MP4 for a {d} mm dial: {CLIP["px"]} px, wanted {want}")
+    step("export PDF, SVG, PNG, MP4 (any page size), GIF", export)
 
     def export_live_text():
         tool = T()
