@@ -52,7 +52,7 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 44 | Canvas: show the page edge (dial + margin)? The canvas fills the whole preview with the backdrop; the PDF preview shows the page. Ask Okay after the Mac check | open |
 | 32 | Scale the whole dial (rings, hands, date) when the diameter changes, or a "scale everything" action (brief §5.7) | open |
 
-## Web version (beta 4.1, 11 Oct 2026)
+## Web version (beta 4.2, 11 Oct 2026)
 
 | # | Item | Status |
 |---|---|---|
@@ -70,7 +70,7 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 60 | Add fonts by Google link: try it on the real page (it was tested against local copies of the same paths). A dial opened from a link could fetch a missing Google family by its name by itself — not done: every unknown font would cost three failed requests | verify / open |
 | 62 | OpenType tiles, grouped (web version): features that have a name of their own first; the numbered sets (`ss01`…, stylistic sets) and (`cv01`…, character variants) each in a group below. A note from Okay, 11 Oct 2026, while he marks up screenshots of the whole panel. Done in beta 4.0 | done |
 | 63 | **Live text in the PDF** (web version). The SVG keeps numerals as text since beta 4.0; the PDF is written by hand (`web/src/output.js`), so live text there means building the font into the file. Okay, 11 Oct: "SVG now, PDF later" | open |
-| 64 | **Panel (beta 4.0) and bar, speeds, Guides switch (beta 4.1): look at them on Okay's devices** — columns, eyes, rename box, picture tiles, colour picker, grouped OpenType tiles, Export rows, the panel put away. Only seen in Chromium here. Ask: keep the square in the bar that hides the panel? Are the picture tiles the right pictures? | verify |
+| 64 | **Panel (beta 4.0), bar, speeds, Guides switch (4.1), day steps and margins (4.2): look at them on Okay's devices** — columns, eyes, rename box, picture tiles, colour picker, grouped OpenType tiles, Export rows, the panel put away. Only seen in Chromium here. Ask: keep the square in the bar that hides the panel? Are the picture tiles the right pictures? | verify |
 | 65 | Rings on a low window: the pinned part (list + the ring's first pane) is taller since beta 4.0, leaving less to scroll. If it bothers: pin only the list | open |
 | 66 | Tabs and the columns: five tabs share six columns, so they sit between columns (Okay, 11 Oct: "Columns? They fit 'em"). Ways: tabs one column each with the sixth free, or a sixth sign. Ask Okay | open |
 

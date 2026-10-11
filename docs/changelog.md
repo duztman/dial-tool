@@ -1,5 +1,19 @@
 # Dial Tool — changelog
 
+## beta 4.2 (web version) · 11 Oct 2026
+
+On `dev` and online. Okay, 11 Oct: "That bar color went too light. Darker. Under left column have the controls. Day slider has steps that clicking snaps to. 10:10 is a special one. Nice column fitting controls, low contrast under left column. Leftmost of left column, lines extend on top of eyes. Arrange paddings and fit header nicely. Layers: cursor icon much lighter and thinner strokes." Seen in Chromium here only.
+
+- **Bar: a middle grey** `#A9A9A4` (black `#111111` → `#DADAD5` in 4.1, "too light" → this).
+- **Time controls are under the panel, on its columns:** the panel's square in the toggle column, then Play 1 · speeds 2 · time 2 · Now 1 — exactly the six columns. Low contrast there: no fills, thin darker lines; the chosen speed is a shade darker.
+- **Day slider** under the preview, with **steps**: the twelve hours and **10:10** (a black pill; the pose watches are shown in). A click on a step goes exactly there. A click on the slider itself (not a drag) goes to the nearest step; a drag stays free. The step the time is on shows bold.
+- **View** at the right: − + · Fit. The status line (selected ring · font · Ø · build time) moved here and only shows on windows wider than 1500.
+- **Margins and lines.** The panel has one side margin, 24, left and right. Every line — a pane's thick line, the header's hairline, the tabs' — runs from margin to margin, so it passes over the eyes; the eyes stand 2 right of the margin (Okay, minutes later: "eyes closer to the right 2-3 px"; `--nudge`). Toggle column = an eye (16) + a gap (12). Panel 460 wide: 24 + 16 + 12 + 384 + 24.
+- **Header:** 64 high, title and Guides switch centred on one line, a hairline under it, then the tabs.
+- **Rename box:** grey `#8E8E89` (was black), strokes 0.7 (were 1.2); black when the pointer is on it.
+- **Fixed on the way:** the panel's 1-pixel right border was taking its pixel from the columns; it has its own now.
+- **Tests:** 121 checks.
+
 ## beta 4.1 (web version) · 11 Oct 2026
 
 On `dev` and online. Okay, 11 Oct, after beta 4.0: "Bottom (and top) black bar. Lighter gray, better organization, better usability. Add a fast time option. Make a better guides toggler. Icon bullseye with lines, rounded corners, on/off distinct", then "Columns? They fit 'em". Seen in Chromium here only.

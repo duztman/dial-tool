@@ -93,7 +93,7 @@ const hand_pic = (i) => {
   return `<svg viewBox="-3 -14 6 18.5" width="9" height="28" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;
 };
 const TOOL_ICONS = {
-  rename: `<rect x="1.5" y="1.5" width="13" height="13" rx="3.5" stroke-width="1.2"/><path d="M8 4.4L8 11.6M6.2 4.2L9.8 4.2M6.2 11.8L9.8 11.8" stroke-width="1.2"/>`,
+  rename: `<rect x="1.5" y="1.5" width="13" height="13" rx="3.5" stroke-width="0.7"/><path d="M8 4.4L8 11.6M6.2 4.2L9.8 4.2M6.2 11.8L9.8 11.8" stroke-width="0.7"/>`,      // thin and light (Okay, 11 Oct 2026)
   panel: `<rect x="1.5" y="2.5" width="13" height="11"/><path d="M6 2.5L6 13.5"/>`,
   copy: `<rect x="5.5" y="5.5" width="8" height="8"/><path d="M10.5 5.5L10.5 2.5L2.5 2.5L2.5 10.5L5.5 10.5"/>`,
   up: `<path d="M8 13L8 3M4 7L8 3L12 7"/>`,
@@ -275,6 +275,8 @@ ROWS.Dial.push(                                    // guides: preview only, noth
   num("gd_sel_strength", "…strength %", 5, 100, 1, { show: guides_on }),
   num("gd_sel_w", "…thickness", 0.25, 6, 0.25, { show: guides_on }),
 );
+// the day slider's steps: every hour, and 10:10 — hands spread like a smile, the pose watches are photographed in
+const DAY_STEPS = [...Array.from({ length: 12 }, (_, h) => [h * 3600, String(h || 12), false]), [10 * 3600 + 10 * 60, "10:10", true]].sort((a, b) => a[0] - b[0]);
 const SPEEDS = [[1, "Real time"], [60, "A minute every second"], [720, "An hour every five seconds: twelve hours in a minute"]];
 const SECTIONS = Object.keys(ROWS);                // their numbers are what ui_section stores (R9)
 const TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];      // left to right; Guides is the box at the top right (Okay, 11 Oct 2026)
@@ -462,11 +464,27 @@ class DialTool {
     }
     const view = (id, title, inside, act) => { const b = el("button", { type: "button", className: "icon", id, title, ariaLabel: title, onclick: act }); b.innerHTML = icon(inside); return b; };
     const middle = () => [this.svg.clientWidth / 2, this.svg.clientHeight / 2];
+    // the day: the slider, and under it the steps a click snaps to — the twelve hours and 10:10, the pose watches are shown in
+    const steps = el("div", { className: "steps12" });
+    for (const [t, text, special] of DAY_STEPS) {
+      const b = el("button", { type: "button", className: special ? "special" : "", textContent: text, title: special ? "10:10, the classic pose" : `${text} o’clock`, onclick: () => this.set_time(t) });
+      b.style.setProperty("--at", t / 43200);
+      b.dataset.t = t;
+      steps.append(b);
+    }
+    // a click on the slider (not a drag) goes to the nearest step
+    let pressed = null;
+    this.time_slider.onpointerdown = (e) => { pressed = [e.clientX, e.clientY]; };
+    this.time_slider.onpointerup = (e) => {
+      if (!pressed || Math.hypot(e.clientX - pressed[0], e.clientY - pressed[1]) > 3) return;
+      const t = +this.time_slider.value;
+      this.set_time(DAY_STEPS.map((x) => x[0]).reduce((best, x) => (Math.abs(x - t) < Math.abs(best - t) ? x : best)));
+    };
     const bar = el("footer", { className: "bar" },
-      el("div", { className: "lead" }, side, this.status),
-      el("div", { className: "group timing" }, this.play_button, this.speeds, this.time_field, this.time_slider,
+      el("div", { className: "lead" }, side, this.play_button, this.speeds, this.time_field,
         el("button", { type: "button", id: "now", textContent: "Now", title: "The time it is now", onclick: () => { const d = new Date(); this.set_time(d.getHours() % 12 * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000); } })),
-      el("div", { className: "group viewing" },
+      el("div", { className: "group day" }, this.time_slider, steps),
+      el("div", { className: "group viewing" }, this.status,
         el("span", { className: "zooms" },
           view("zoom-out", "Zoom out", `<path d="M3.5 8L12.5 8"/>`, () => { this.zoom(1 / 1.4, middle()); this.render(); }),
           view("zoom-in", "Zoom in", `<path d="M3.5 8L12.5 8M8 3.5L8 12.5"/>`, () => { this.zoom(1.4, middle()); this.render(); })),
@@ -1637,6 +1655,7 @@ class DialTool {
   sync_time() {
     if (document.activeElement !== this.time_field) this.time_field.value = fmt_time(this.S.t);
     if (document.activeElement !== this.time_slider || this.playing) this.time_slider.value = Math.floor(this.S.t);
+    for (const b of document.querySelectorAll(".steps12 button")) b.classList.toggle("on", Math.abs(+b.dataset.t - this.S.t) < 0.5);
   }
 
   set_time(t) {

@@ -150,7 +150,7 @@ check(await page.$$eval(".ringlist li.on.off .rename", (e) => e.length) === 0, "
 await shot("4a-hidden-ring");
 await page.click(".ringlist li.on button.eye");
 check(await page.$$eval(".ringlist li.on .rename", (e) => e.length) === 1, "shown again: the rename box is back");
-const eyes = await page.$$eval(".ringlist button.eye, .pinned button.fold .eye", (e) => [...new Set(e.map((x) => Math.round(x.getBoundingClientRect().left)))]);
+const eyes = await page.$$eval(".ringlist button.eye svg, .pinned button.fold .eye svg", (e) => [...new Set(e.map((x) => Math.round(x.getBoundingClientRect().left)))]);
 check(eyes.length === 1, `ring eyes and pane eyes stand in one column (left edges: ${eyes.join(", ")})`);
 check(await page.$$eval(".row.pick .pickt svg", (e) => e.length) >= 4, "Kind is a row of picture tiles");
 await page.click("#ring-kind-Kind-0");
@@ -419,9 +419,24 @@ await page.click("#zoom-in");
 check(near(await S("t.z") / z1, 1.4, 0.01), "the + in the bar zooms in by 1.4");
 await page.click("#zoom-out");
 await page.click("#fit");
+// the day slider's steps: a click on a step, or on the slider near one, goes exactly there; 10:10 is one of them
+await page.click('.steps12 button:text-is("3")');
+check(await S("S.t === 3 * 3600") && await page.inputValue("#time") === "3:00:00", "the step 3 under the day slider: three o'clock sharp");
+await page.click(".steps12 button.special");
+check(await S("S.t === 10 * 3600 + 600") && await page.$eval(".steps12 button.special", (e) => e.classList.contains("on")), "the 10:10 step: ten past ten");
+const track = await page.$eval("#time-slider", (e) => { const r = e.getBoundingClientRect(); return [r.left, r.top + r.height / 2, r.width]; });
+await page.mouse.click(track[0] + 8 + (track[2] - 16) * 0.51, track[1]);
+check(await S("S.t === 6 * 3600"), `a click on the slider just past the middle snaps to six o'clock (${await S("S.t")})`);
+const drag_from = track[0] + 8 + (track[2] - 16) * 0.5;
+await page.mouse.move(drag_from, track[1]); await page.mouse.down(); await page.mouse.move(drag_from + 37, track[1], { steps: 4 }); await page.mouse.up();
+check(await S("S.t % 3600 !== 0 && S.t > 6 * 3600"), `a drag does not snap (${await S("S.t")})`);
+const under = await page.evaluate(() => { const l = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left), row = document.querySelector(".form .row.num") || document.querySelector(".row.num"); return { play: l("#play"), col: Math.round(row.getBoundingClientRect().left), now_right: Math.round(document.querySelector("#now").getBoundingClientRect().right), row_right: Math.round(row.getBoundingClientRect().right) }; });
+check(under.play === under.col && under.now_right === under.row_right, `under the panel the time controls start and end with the six columns (${JSON.stringify(under)})`);
+const pane_lines = await page.$$eval(".form .row.hdr", (h) => h.filter((e) => e.offsetParent).map((e) => Math.round(e.getBoundingClientRect().left) + "/" + Math.round(e.querySelector(".eye svg").getBoundingClientRect().left)));
+check(pane_lines.length > 0 && pane_lines.every((x) => x === "24/26"), `a pane's line starts at the margin, over its eye, which stands 2 further in (${pane_lines[0]})`);
 // the bar keeps the columns: widths of one or two columns, and the Guides switch ends on the panel's last column
-const fits = await page.evaluate(() => { const w = (q) => Math.round(document.querySelector(q).getBoundingClientRect().width), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); return { play: w("#play"), speeds: w(".speeds"), time: w("#time"), now: w("#now"), zooms: w(".zooms"), fit: w("#fit"), guides: w("#guides"), guides_right: r("#guides"), row_right: r(".form .row"), side: Math.round(document.querySelector("#panel-toggle").getBoundingClientRect().left + 15) }; });
-check(fits.play === 54 && fits.now === 54 && fits.zooms === 54 && fits.fit === 54 && fits.speeds === 120 && fits.time === 120 && fits.guides === 120 && fits.guides_right === fits.row_right && fits.side === 18, `bar and Guides switch fit the columns (${JSON.stringify(fits)})`);
+const fits = await page.evaluate(() => { const w = (q) => Math.round(document.querySelector(q).getBoundingClientRect().width), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); return { play: w("#play"), speeds: w(".speeds"), time: w("#time"), now: w("#now"), zooms: w(".zooms"), fit: w("#fit"), guides: w("#guides"), guides_right: r("#guides"), row_right: r(".form .row"), side: Math.round(document.querySelector("#panel-toggle").getBoundingClientRect().left + 13) }; });
+check(fits.play === 54 && fits.now === 54 && fits.zooms === 54 && fits.fit === 54 && fits.speeds === 120 && fits.time === 120 && fits.guides === 120 && fits.guides_right === fits.row_right && fits.side === 32, `bar and Guides switch fit the columns (${JSON.stringify(fits)})`);
 await shot("7b-bar");
 await page.fill("#time", "3:20:10");
 await page.press("#time", "Enter");

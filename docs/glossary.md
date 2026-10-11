@@ -62,6 +62,8 @@ If a term is used differently in conversation, ask, then update this file.
 | **Section** | One page of the left panel: Dial · Rings · Hands · Date · Export. |
 | **Pane** | A named part of a section, opened by a thick line (web version, beta 4.0; called a *group* in beta 3.0). Its eye folds it. |
 | **Toggle column** | The narrow column at the far left of the panel (web version). It holds only eyes: a pane's (open or folded) and a ring's (shown or hidden on the dial). |
+| **Margin** | The panel's side space, 24, the same left and right (web version, beta 4.2). Lines start and end on it; so do the eyes. |
+| **Day slider · step** | The bar's slider over twelve hours. Its steps are the twelve hours and 10:10: a click goes exactly to one. |
 | **Eye** | The sign in the toggle column. Open = showing; closed, with lashes = put away. |
 | **Rename box** | A text cursor in a rounded box, after the selected ring's name: the only way to rename a ring (web version). |
 | **Picture tile** | One choice shown as a small drawing with its name under it (ring kind, mark shape, hand shape, what a window shows…). |

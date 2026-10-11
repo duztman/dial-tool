@@ -6,11 +6,15 @@
   color-scheme: light;
   --paper: #FCFCFA; --ink: #111111; --grey: #5C5C58; --rule: #B9B9B4; --ground: #ECECE8;
   --select: #F0DC8E;                               /* the canon's yellow: what is selected */
-  --bar: #DADAD5; --bar-ink: #111111; --bar-rule: #8E8E89; --bar-field: #FCFCFA;      /* the bar under everything: a light grey (was black until beta 4.1) */
+  --bar: #A9A9A4; --bar-ink: #111111; --bar-rule: #6F6F6A; --bar-field: #FCFCFA;      /* the bar: a middle grey (black until beta 4.1, then #DADAD5: too light) */
   /* the panel's columns (beta 4.0): a toggle column at the far left (eyes: a pane's, a ring's), then six
-     equal columns with equal gaps, then the right margin. 36 + (6 × 54 + 5 × 12) + 28 = 448.
+     equal columns with equal gaps, then the right margin. 24 + 16 + 12 + (6 × 54 + 5 × 12) + 24 = 460.
+     Lines (a pane's thick line, the header's, the tabs') run from margin to margin, so they pass over the eyes.
      label 2 · slider 2 · value 1 · stepper 1 · menus and text 4 · swatch 1, its value 2 · a picture tile 1 */
-  --toggle: 36px; --col: 54px; --gap: 12px; --edge: 28px;
+  --margin: 24px;                                  /* the panel's side space, left and right: where every line starts and ends */
+  --nudge: 2px;                                    /* the eyes stand this much right of the margin (Okay, 11 Oct 2026: "closer to the right 2-3 px") */
+  --eye: 16px;                                     /* the toggle column: an eye wide, then a gap */
+  --toggle: calc(var(--margin) + var(--eye) + var(--gap)); --col: 54px; --gap: 12px; --edge: var(--margin);
   --panel: calc(var(--toggle) + 6 * var(--col) + 5 * var(--gap) + var(--edge));
   --gutter: 22px;                                  /* the bar's and the font sheet's side space */
   --unit: 5.5px;                                   /* every space is a multiple of this */
@@ -22,14 +26,15 @@
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
 body { background: var(--paper); color: var(--ink); overflow: hidden; }
-#app { display: grid; grid-template-columns: var(--panel) 1fr; grid-template-rows: 1fr auto; height: 100%; }
+#app { display: grid; grid-template-columns: calc(var(--panel) + 1px) 1fr; grid-template-rows: 1fr auto; height: 100%; }
 .quiet { color: var(--grey); }
 button, select, input { font: inherit; color: inherit; }
 
 /* the panel. Two verticals carry everything: the left edge (headings, labels, lists) and the
    controls' edge, one label column further in. */
 .panel { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--rule); }
-.panel header { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 4) var(--edge) calc(var(--unit) * 3) var(--toggle); }
+.panel header { display: flex; align-items: center; gap: calc(var(--unit) * 2); height: 64px; padding: 0 var(--margin); }
+.panel header .quiet { padding-top: 2px; }
 /* guides: a box at the top right with a tick; the whole box switches them */
 .guidesbox { margin-left: auto; align-self: center; display: flex; align-items: center; justify-content: center; gap: 8px; width: calc(2 * var(--col) + var(--gap)); height: 32px; padding: 0; border: 1.5px solid var(--ink); border-radius: 10px;      /* two columns wide: columns 5 and 6 */
   background: var(--ink); color: var(--paper); font-weight: 600; cursor: pointer; user-select: none; }
@@ -42,7 +47,7 @@ button, select, input { font: inherit; color: inherit; }
 h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; margin: 0; }
 
 /* sections: a sign inside a ring, its name under it */
-.tabs { display: grid; grid-template-columns: repeat(5, 1fr); padding: 0 var(--edge) 0 var(--toggle); }
+.tabs { display: grid; grid-template-columns: repeat(5, 1fr); margin: 0 var(--margin); padding: 12px 0 0; border-top: 1px solid var(--rule); }
 .tabs button { display: grid; justify-items: center; gap: 6px; height: auto; border: 0; background: none; padding: 4px 0 11px; color: var(--grey); cursor: pointer; }
 .tabs button:hover { background: none; color: var(--ink); }
 .tabs button:active { background: none; }
@@ -75,14 +80,14 @@ h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; margin: 0; }
 .row > button.main:first-child { justify-self: stretch; }        /* a button standing where the label would (PNG) */
 /* a pane: a thick line, its name, its rows. The eye in the toggle column shows whether it is open; the whole
    heading is the button. A folded pane says what it holds, in grey, at the right. */
-.row.hdr { display: block; min-height: 0; margin-top: 0; border-top: var(--thick) solid var(--ink); padding: 0; }
+.row.hdr { display: block; min-height: 0; margin-top: 0; margin-left: calc(var(--margin) - var(--toggle)); border-top: var(--thick) solid var(--ink); padding: 0; }
 .row.hdr.spaced { margin-top: calc(var(--unit) * 4); }       /* air above a pane only when the pane before it is open (set in sync_rows) */
 .pinned:not([hidden]) + .form > .row.hdr.first { border-top: 0; }      /* the hairline under the pinned rows already opens it */
 .form > .row.hdr.folded:last-child { border-bottom: 1px solid var(--rule); }
 h2 { font-size: 12.5px; font-weight: 600; letter-spacing: 0.01em; margin: 0; white-space: nowrap; }
-button.fold { position: relative; display: flex; align-items: center; gap: var(--gap); width: 100%; height: 40px; padding: 0; border: 0; background: none; text-align: left; }
+button.fold { position: relative; display: flex; align-items: center; gap: var(--gap); width: 100%; height: 40px; padding: 0 0 0 calc(var(--toggle) - var(--margin)); border: 0; background: none; text-align: left; }
 button.fold:hover, button.fold:active { background: none; color: var(--ink); }
-button.fold .eye { position: absolute; left: calc(-1 * var(--toggle)); top: 0; display: grid; place-items: center; width: var(--toggle); height: 100%; color: var(--ink); }
+button.fold .eye { position: absolute; left: var(--nudge); top: 0; display: grid; place-items: center; width: var(--eye); height: 100%; color: var(--ink); }
 .folded button.fold .eye, .folded button.fold h2 { color: var(--grey); }
 button.fold:hover .eye, button.fold:hover h2 { color: var(--ink); }
 button.fold .summary { margin-left: auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
@@ -171,7 +176,7 @@ button.plain:active, button.sign:active { background: var(--ink); color: var(--p
 .ringlist li + li { box-shadow: inset 0 1px 0 var(--ground); }
 .ringlist li.on { background: var(--select); box-shadow: none; }
 .ringlist li.on + li { box-shadow: none; }
-.ringlist button.eye { display: grid; place-items: center; width: var(--toggle); height: 100%; padding: 0; border: 0; background: none; color: var(--ink); }
+.ringlist button.eye { display: grid; align-items: center; justify-items: start; width: var(--toggle); height: 100%; padding: 0 0 0 calc(var(--margin) + var(--nudge)); border: 0; background: none; color: var(--ink); }
 .ringlist button.eye:hover { background: rgba(0, 0, 0, 0.06); }
 .ringlist li.off { color: var(--rule); }
 .ringlist li.off button.eye, .ringlist li.off .kind { color: var(--rule); }
@@ -184,7 +189,8 @@ button.plain:active, button.sign:active { background: var(--ink); color: var(--p
 .ringlist .dropline { position: absolute; left: 0; right: 0; height: 3px; background: var(--ink); pointer-events: none; }
 .ringlist span.name { padding: 0 8px 0 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ringlist input.name { grid-column: 3 / 5; height: 26px; margin-left: 2px; padding: 0 4px; }
-.ringlist .rename { display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 0; background: none; }
+.ringlist .rename { display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 0; background: none; color: #8E8E89; }
+.ringlist .rename:hover { color: var(--ink); }
 .ringlist .rename:hover { background: rgba(0, 0, 0, 0.1); }
 .ringlist .kind { grid-column: 5; justify-self: end; padding-left: 8px; }
 .listfoot { display: flex; justify-content: space-between; align-items: center; height: var(--line); padding: 0 calc(var(--edge) - 5px) 0 var(--toggle); border-top: 1px solid var(--rule); }
@@ -259,14 +265,14 @@ main { position: relative; overflow: hidden; }
 
 /* the bar: under the panel and the preview. Its first cell is as wide as the panel, so the time
    controls start where the preview starts. */
-/* the bar keeps the panel's columns: under the panel its square stands in the toggle column and the status runs
-   over the six columns; beside it every control is one or two columns wide, 12 apart.
-   play 1 · speeds 2 · time 2 · slider (what is left) · Now 1 │ − + 1 · Fit 1 */
-.bar { grid-column: 1 / -1; display: flex; align-items: center; gap: 0; height: 48px; padding: 0 var(--edge) 0 0; background: var(--bar); color: var(--bar-ink); border-top: 1px solid var(--bar-rule); }
-.bar .lead { flex: none; display: flex; align-items: center; gap: 0; width: var(--panel); min-width: 0; padding: 0 var(--edge) 0 0; }
-.bar .side { flex: none; width: 30px; margin: 0 calc((var(--toggle) - 30px) / 2); }
-.bar .group { display: flex; align-items: center; gap: var(--gap); height: 100%; padding: 0 var(--gap); border-left: 1px solid var(--bar-rule); }
-.bar .timing { flex: 1; min-width: 0; }
+/* the bar keeps the panel's columns. Under the panel: the panel's square in the toggle column, then the time
+   controls on the six columns — play 1 · speeds 2 · time 2 · Now 1 — quiet, so they don't shout under the panel.
+   Under the preview: the day slider with its steps, then the view: − + 1 · Fit 1. */
+.bar { grid-column: 1 / -1; display: flex; align-items: stretch; gap: 0; height: 52px; padding: 0 var(--margin) 0 0; background: var(--bar); color: var(--bar-ink); border-top: 1px solid var(--bar-rule); }
+.bar .lead { flex: none; display: flex; align-items: center; gap: var(--gap); width: var(--panel); min-width: 0; padding: 0 var(--margin) 0 0; }
+.bar .side { flex: none; width: 26px; margin: 0 calc(var(--toggle) - var(--margin) - var(--eye) / 2 - 13px - var(--gap)) 0 calc(var(--margin) + var(--eye) / 2 - 13px); }
+.bar .group { display: flex; align-items: center; gap: var(--gap); padding: 0 var(--gap); border-left: 1px solid var(--bar-rule); }
+.bar .day { flex: 1; min-width: 0; display: grid; grid-template-rows: 22px 18px; align-content: center; gap: 0; padding: 0 20px; }
 .bar .viewing { padding-right: 0; }
 .bar .zooms { display: flex; width: var(--col); }
 .bar .zooms button { flex: 1; min-width: 0; width: auto; }
@@ -275,39 +281,45 @@ main { position: relative; overflow: hidden; }
 /* the panel put away: the dial gets the whole window */
 #app.nopanel { grid-template-columns: 0 1fr; }
 #app.nopanel .panel { display: none; }
-#app.nopanel .bar .lead { width: auto; }
-#app.nopanel .bar .status { display: none; }
-.bar .status { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--grey); }
-.bar .time { flex: none; width: calc(2 * var(--col) + var(--gap)); height: 30px; text-align: center; font-weight: 600; letter-spacing: 0.02em; }
-.bar input[type="text"] { background: var(--bar-field); border-color: var(--bar-rule); color: var(--bar-ink); }
-.bar input[type="range"] { flex: 1; min-width: 60px; accent-color: var(--bar-ink); margin: 0; }
+.bar .status { max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px; opacity: 0.7; }
+@media (max-width: 1500px) { .bar .status { display: none; } }
 .bar button { flex: none; height: 30px; width: var(--col); min-width: 0; padding: 0; background: var(--bar-field); color: var(--bar-ink); border-color: var(--bar-rule); }
 .bar button:hover { background: #fff; border-color: var(--bar-ink); }
-.bar button:active, .bar .segs button.on { background: var(--bar-ink); color: var(--bar-field); border-color: var(--bar-ink); }
+.bar button:active, .bar .viewing .segs button.on { background: var(--bar-ink); color: var(--bar-field); border-color: var(--bar-ink); }
 .bar .icon { display: inline-flex; align-items: center; justify-content: center; }
-.bar #play { background: var(--bar-ink); color: var(--bar-field); border-color: var(--bar-ink); }
-.bar #play:hover { background: #333331; }
+/* low contrast under the panel: no fills, thin lines a shade darker than the bar; what is chosen is a shade darker still */
+.bar .lead button, .bar .lead input[type="text"] { background: none; border-color: rgba(0, 0, 0, 0.28); color: var(--bar-ink); }
+.bar .lead button:hover, .bar .lead input[type="text"]:hover { background: rgba(255, 255, 255, 0.22); border-color: rgba(0, 0, 0, 0.5); }
+.bar .lead button:active { background: rgba(0, 0, 0, 0.3); color: var(--bar-ink); }
+.bar .lead .segs button.on { background: rgba(0, 0, 0, 0.2); color: var(--bar-ink); border-color: rgba(0, 0, 0, 0.28); }
+.bar .lead .side { border-color: transparent; }
+.bar .time { flex: none; width: calc(2 * var(--col) + var(--gap)); height: 30px; text-align: center; font-weight: 600; letter-spacing: 0.02em; }
 .bar .speeds { width: calc(2 * var(--col) + var(--gap)); }
 .bar .speeds button { flex: 1; width: auto; }
+.bar input[type="range"] { width: 100%; margin: 0; accent-color: var(--bar-ink); }
+/* the steps: --at = how far along the day (0 to 1). The 8px keep them on the thumb's path, which stops half a thumb short of each end. */
+.steps12 { position: relative; height: 18px; margin: 0 8px; }
+.steps12 button { position: absolute; left: calc(var(--at) * 100%); top: 0; transform: translateX(-50%); width: auto; min-width: 18px; height: 18px; padding: 0 2px; border: 0; background: none;
+  font-size: 11px; line-height: 18px; color: rgba(0, 0, 0, 0.62); }
+.steps12 button::before { content: ""; position: absolute; left: 50%; top: -3px; width: 1px; height: 4px; background: rgba(0, 0, 0, 0.45); }
+.steps12 button:hover { background: none; color: #000; text-decoration: underline; }
+.steps12 button.on { color: #000; font-weight: 700; }
+.steps12 button.special { transform: translateX(-12%); top: -1px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--bar-ink); color: var(--bar-field); font-weight: 600; font-size: 10.5px; z-index: 1; }
+.steps12 button.special::before { left: 12%; height: 5px; top: -4px; background: var(--bar-ink); }      /* the pill sits to the right of the 10; its tick stays at 10:10 */
+.steps12 button.special:hover { background: #000; text-decoration: none; }
 .bar input:focus, .bar button:focus-visible, .bar input[type="range"]:focus-visible { outline-color: var(--bar-ink); }
 /* a phone, or a narrow window: the bar on top, the preview under it; below them the whole panel scrolls as one */
 @media (max-width: 860px) {
-  :root { --gutter: 16px; --edge: 16px; --toggle: 34px; --col: calc((100vw - var(--toggle) - var(--edge) - 5 * var(--gap)) / 6); }
+  :root { --gutter: 16px; --margin: 16px; --gap: 10px; --col: calc((100vw - var(--toggle) - var(--edge) - 5 * var(--gap)) / 6); }
   #app, #app.nopanel { grid-template-columns: 1fr; grid-template-rows: auto 42% 1fr; }
   #app.nopanel { grid-template-rows: auto 1fr 0; }
-  .bar { grid-row: 1; flex-wrap: wrap; height: auto; padding: 0 var(--edge) 0 0; border-top: 0; border-bottom: 1px solid var(--bar-rule); }
-  .bar .lead, #app.nopanel .bar .lead { width: auto; padding: 0; }
-  .bar .group { height: 46px; padding: 0; gap: var(--gap); border-left: 0; }
-  .bar .timing { display: contents; }               /* its parts join the bar's own row; the slider gets a row to itself */
-  .bar .timing > * { margin-right: var(--gap); }
-  .bar .speeds { width: auto; flex: 3 1 0; font-size: 12px; }
-  .bar .time { width: auto; flex: 2 1 0; }
-  .bar button { width: auto; flex: 1 1 0; }
-  .bar .side { flex: none; width: 30px; }
-  .bar input[type="range"] { order: 9; flex: 0 0 calc(100% - var(--toggle)); margin: 0 0 10px var(--toggle); }
-  .bar .viewing { flex: 1 1 0; height: 46px; }
+  .bar { grid-row: 1; flex-wrap: wrap; height: auto; padding: 0; border-top: 0; border-bottom: 1px solid var(--bar-rule); }
+  .bar .lead { width: 100%; height: 46px; }
+  .bar .group { border-left: 0; }
+  .bar .day { flex: 1 1 0; height: 48px; padding: 0 var(--margin); }
+  .bar .viewing { padding: 0 var(--margin) 0 0; }
   .bar .zooms { display: none; }                    /* a phone pinches */
-  .bar .viewing button { width: 100%; }
+  .steps12 button:nth-child(odd):not(.special) { display: none; }      /* every other hour: 1 3 5 … wait for room */
   main { grid-row: 2; }
   .panel { grid-row: 3; display: block; overflow-y: auto; -webkit-overflow-scrolling: touch; border-right: 0; border-top: 1px solid var(--rule); }
   .form { overflow: visible; }
