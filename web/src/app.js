@@ -8,6 +8,8 @@
 
 import * as G from "./geometry.js";
 import { svg_document, pdf_document } from "./output.js";
+import { FONT_LIST, FONT_SITE } from "./font_list.js";
+import { EXAMPLES } from "./examples.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const el = (tag, props = {}, ...children) => {
@@ -31,6 +33,28 @@ const FEATURE_NAMES = {
 };
 const DEFAULT_ON = new Set(["kern", "liga", "calt", "ccmp", "locl", "mark", "mkmk", "rlig", "rclt", "curs", "clig", "rvrn"]);
 
+// ── icons: drawn here, 1.4-point lines, so they take the colour of their button ──
+
+const icon = (inside, size = 16, box = "0 0 16 16") => `<svg viewBox="${box}" width="${size}" height="${size}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${inside}</svg>`;
+const ticks = (n, r0, r1) => Array.from({ length: n }, (_, i) => { const a = i * 2 * Math.PI / n, x = Math.sin(a), y = -Math.cos(a); return `M${(x * r0).toFixed(2)} ${(y * r0).toFixed(2)}L${(x * r1).toFixed(2)} ${(y * r1).toFixed(2)}`; }).join("");
+// a section's sign: a small picture inside a ring
+const SECTION_ICONS = {
+  Dial: `<circle r="6.5" fill="currentColor" stroke="none"/>`,
+  Rings: `<circle r="8"/><circle r="3.5"/>`,
+  Hands: `<path d="M0 0L0 -8.5M0 0L5.5 3.5"/><circle r="1.3" fill="currentColor" stroke="none"/>`,
+  Date: `<rect x="-6" y="-4.5" width="12" height="9" rx="1.2"/><path d="M-1.6 -1.4L0.4 -2.4L0.4 2.6"/>`,
+  Export: `<path d="M0 -8L0 3M-4 -1L0 3L4 -1M-6.5 7L6.5 7"/>`,
+  Guides: `<circle r="5.5"/><path d="M0 -9.5L0 9.5M-9.5 0L9.5 0"/>`,
+};
+const section_icon = (name) => icon(`<circle class="ring" r="15"/><g class="sign">${SECTION_ICONS[name]}</g>`, 34, "-17 -17 34 34");
+const TOOL_ICONS = {
+  up: `<path d="M8 13L8 3M4 7L8 3L12 7"/>`,
+  down: `<path d="M8 3L8 13M4 9L8 13L12 9"/>`,
+  duplicate: `<rect x="5.5" y="5.5" width="8" height="8"/><path d="M10.5 5.5L10.5 2.5L2.5 2.5L2.5 10.5L5.5 10.5"/>`,
+  delete: `<path d="M3 4.5L13 4.5M6.5 4.5L6.5 2.5L9.5 2.5L9.5 4.5M4.5 4.5L5.2 13.5L10.8 13.5L11.5 4.5"/>`,
+  grip: `<path d="M5.5 4L5.5 4.01M10.5 4L10.5 4.01M5.5 8L5.5 8.01M10.5 8L10.5 8.01M5.5 12L5.5 12.01M10.5 12L10.5 12.01" stroke-width="2"/>`,
+};
+
 // ── rows: what each section shows ────────────────────────────
 
 const num = (key, text, lo, hi, step, o = {}) => ({ kind: "num", key, text, lo, hi, step, ...o });
@@ -48,7 +72,10 @@ const marks_with = (...shapes) => (R) => ["ticks", "markers"].includes(G.kind_of
 const labels_are = (name) => (R) => G.kind_of(R) === "numerals" && G.LABEL_SETS[R.labels][0] === name;
 const hand_is = (...shapes) => (H) => shapes.includes(G.HAND_SHAPES[H.shape]);
 const numerals_only = kind_in("numerals");
-const date_on = (S) => S.da_on;
+const W = { scope: "window" };
+const win_on = (T) => T.on;
+const win_is = (...kinds) => (T) => T.on && kinds.includes(G.WINDOW_KINDS[T.kind]);
+const TAB_NAMES = { Date: "Windows" };            // the section's number and key stay "Date" (R8, R9); its tab says what it now holds
 const H = { scope: "hand" };
 
 const ROWS = {
@@ -60,6 +87,7 @@ const ROWS = {
   ],
   Rings: [                                         // one list; rows that don't apply hide (R16)
     custom("ring_list", { scope: "global", pin: true }),            // pin: stays in view while the rest scrolls
+    custom("ring_title", { pin: true }),
     pop("kind", "Kind", G.KINDS, { pin: true }),
     col("c", "Colour", { pin: true }),
     num("r", "Outer radius", 0, 25, 0.05, { pin: true, show: kind_in("ticks", "markers", "band") }),
@@ -129,21 +157,31 @@ const ROWS = {
     num("wall", "Hollow wall", 0, 1, 0.01, H),
     col("c", "Colour", H),
   ],
-  Date: [
-    chk("da_on", "Date window"),
-    pop("da_at", "Position", G.DATE_AT.map((d) => d[0]), { show: date_on }),
-    num("da_r", "Radius", 2, 18, 0.05, { show: date_on }),
-    num("da_w", "Width", 0.5, 6, 0.05, { show: date_on }),
-    num("da_h", "Height", 0.5, 5, 0.05, { show: date_on }),
-    num("da_round", "Corner", 0, 2, 0.05, { show: date_on }),
-    num("da_frame", "Frame", 0, 0.6, 0.01, { show: date_on }),
-    num("da_clear", "Print clearance", 0, 1, 0.01, { show: date_on }),
-    col("da_ink", "Print colour", { show: date_on }),
-    txt("da_day", "Shows", { show: date_on }),
-    num("da_size", "Text % of height", 20, 100, 1, { show: date_on }),
-    info("Uses the top numerals ring’s type.", { show: date_on }),
+  Date: [                                          // "Windows" on its tab: up to four holes in the plate
+    seg("ui_window", "Window", ["1", "2", "3", "4"]),
+    chk("on", "Show this window", W),
+    pop("kind", "Shows", G.WINDOW_KINDS, { ...W, show: win_on }),
+    txt("text", "Text", { ...W, show: win_is("date", "day") }),
+    num("size", "Text % of height", 20, 100, 1, { ...W, show: win_is("date", "day") }),
+    info("Uses the top numerals ring’s type.", { ...W, show: win_is("date", "day") }),
+    num("hour", "Hour of the day", 0, 24, 0.5, { ...W, show: win_is("am · pm") }),
+    info("0 is midnight: all night. 12 is noon: all day.", { ...W, show: win_is("am · pm") }),
+    num("age", "Moon age, days", 0, 29.5, 0.1, { ...W, show: win_is("moon phase") }),
+    info("0 new moon · 14.8 full · its height follows its width.", { ...W, show: win_is("moon phase") }),
+    hdr("Place and size", { ...W, show: win_on }),
+    pop("at", "Position", G.DATE_AT.map((d) => d[0]), { ...W, show: win_on }),
+    num("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
+    num("w", "Width", 0.5, 8, 0.05, { ...W, show: win_on }),
+    num("h", "Height", 0.5, 5, 0.05, { ...W, show: win_is("date", "day", "am · pm") }),
+    num("round", "Corner", 0, 2, 0.05, { ...W, show: win_is("date", "day") }),
+    hdr("Print", { ...W, show: win_on }),
+    num("frame", "Frame", 0, 0.6, 0.01, { ...W, show: win_on }),
+    num("clear", "Print clearance", 0, 1, 0.01, { ...W, show: win_on }),
+    col("ink", "Print colour", { ...W, show: win_on }),
   ],
   Export: [
+    custom("examples"),
+    hdr("Files"),
     chk("out_production", "Production: mono print mask"),
     chk("out_mirror", "Mirror: toner transfer"),
     num("out_dpi", "PNG dpi", 72, 2400, 1),
@@ -152,7 +190,25 @@ const ROWS = {
     custom("log"),
   ],
 };
-const SECTIONS = Object.keys(ROWS);
+const guides_on = (S) => S.guides;
+ROWS.Guides = [                                    // preview only: nothing here reaches a file (R5)
+  chk("guides", "Show guides"),
+  hdr("Which", { show: guides_on }),
+  chk("gd_edge", "Dial edge and date radius", { show: guides_on }),
+  chk("gd_axes", "Centre lines", { show: guides_on }),
+  chk("gd_rings", "Every ring’s edges", { show: guides_on }),
+  info("The selected ring’s edges always show.", { show: (S) => S.guides && !S.gd_rings }),
+  hdr("Lines", { show: guides_on }),
+  col("gd_c", "Colour", { show: guides_on }),
+  num("gd_strength", "Strength %", 5, 100, 1, { show: guides_on }),
+  num("gd_w", "Thickness", 0.25, 6, 0.25, { show: guides_on }),
+  hdr("Selected ring", { show: guides_on }),
+  col("gd_sel_c", "Colour", { show: guides_on }),
+  num("gd_sel_strength", "Strength %", 5, 100, 1, { show: guides_on }),
+  num("gd_sel_w", "Thickness", 0.25, 6, 0.25, { show: guides_on }),
+];
+const SECTIONS = Object.keys(ROWS);                // their numbers are what ui_section stores (R9): Guides, added last, is 5
+const TAB_ORDER = ["Export", "Dial", "Rings", "Hands", "Date", "Guides"];      // left to right (Okay, 11 Oct 2026)
 for (const name of SECTIONS) for (const row of ROWS[name]) row.scope ??= name === "Rings" ? "ring" : "global";
 
 // ── small helpers ────────────────────────────────────────────
@@ -244,7 +300,8 @@ class DialTool {
 
   ring() { return this.S.rings[this.S.ui_ring]; }
   hand() { return this.S["ha_" + G.HANDS[this.S.ui_hand]]; }
-  target(scope) { return scope === "ring" ? this.ring() : scope === "hand" ? this.hand() : this.S; }
+  window() { return G.windows_of(this.S)[this.S.ui_window]; }
+  target(scope) { return scope === "ring" ? this.ring() : scope === "hand" ? this.hand() : scope === "window" ? this.window() : this.S; }
 
   set_value(scope, key, value) {
     const T = this.target(scope);
@@ -253,6 +310,12 @@ class DialTool {
     if (scope === "ring") {
       if (!["c", "name"].includes(key)) this.static_dirty = true;
       if (key === "kind" || key === "name" || key === "on") this.fill_ring_list();
+    } else if (scope === "window") {
+      if (key !== "ink") this.static_dirty = true;
+      if (key === "kind") {                        // a date shows a number, a day a word: swap the untouched starting text
+        if (G.WINDOW_KINDS[value] === "day" && T.text === "17") T.text = "MON";
+        if (G.WINDOW_KINDS[value] === "date" && T.text === "MON") T.text = "17";
+      }
     } else if (scope === "global") {
       const quiet = G.NOT_GEOMETRY.includes(key) || G.NOT_GEOMETRY_PREFIX.some((p) => key.startsWith(p));
       if (!quiet) this.static_dirty = true;
@@ -268,16 +331,18 @@ class DialTool {
     const root = $("#app");
     root.replaceChildren();
     this.tabs = el("nav", { className: "tabs" });
-    SECTIONS.forEach((name, i) => {
-      this.tabs.append(el("button", { type: "button", textContent: name, onclick: () => { this.S.ui_section = i; this.show_section(); this.render(); } }));
+    TAB_ORDER.forEach((name) => {
+      const i = SECTIONS.indexOf(name);
+      const tab = el("button", { type: "button", onclick: () => { this.S.ui_section = i; this.show_section(); this.render(); } });
+      tab.dataset.tab = name;
+      tab.innerHTML = section_icon(name);
+      tab.append(el("span", { textContent: TAB_NAMES[name] || name }));
+      this.tabs.append(tab);
     });
     this.pinned = el("div", { className: "pinned" });              // rows that stay in view
     this.form = el("div", { className: "form" });                  // rows that scroll
-    this.guides_box = el("input", { id: "guides", type: "checkbox" });
-    this.guides_box.onchange = () => this.set_value("global", "guides", this.guides_box.checked);
     const panel = el("aside", { className: "panel" },
-      el("header", {}, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION }),
-        el("label", { className: "check guides" }, this.guides_box, " Guides")),
+      el("header", {}, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION })),
       this.tabs, this.pinned, this.form);
 
     this.svg = svg_el("svg");
@@ -286,7 +351,12 @@ class DialTool {
     this.backdrop.setAttribute("width", "100%");
     this.backdrop.setAttribute("height", "100%");
     this.dial = svg_el("g");
-    this.svg.append(this.backdrop, this.dial);
+    this.over = svg_el("g");                       // above the dial, same place and zoom: the outline of what the pointer is on
+    this.over.setAttribute("pointer-events", "none");
+    this.glow = ["glow under", "glow"].map((name) => { const line = svg_el("path"); line.setAttribute("class", name); this.over.append(line); return line; });
+    this.svg.append(this.backdrop, this.dial, this.over);
+    this.tip = el("div", { className: "tip", hidden: true }, el("span"));       // the name of what the pointer is on
+    this.tip.insertAdjacentHTML("beforeend", '<svg viewBox="0 0 20 10" width="20" height="10" aria-hidden="true"><path class="a" d="M0 0 L10 10 L20 0"/><path class="b" d="M0 0 L10 10 L20 0"/><path class="c" d="M-1 -3 L21 -3 L21 0 L10 9 L-1 0 Z"/></svg>');
     this.preview_events();
 
     this.time_field = el("input", { id: "time", className: "time", type: "text", title: "Time shown, h:mm:ss" });
@@ -299,7 +369,7 @@ class DialTool {
       this.status, this.time_field, this.time_slider, this.play_button,
       el("button", { type: "button", textContent: "Now", onclick: () => { const d = new Date(); this.set_time(d.getHours() % 12 * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000); } }),
       el("button", { type: "button", textContent: "Fit", onclick: () => { this.fit(); this.render(); } }));
-    root.append(panel, el("main", {}, this.svg), bar);
+    root.append(panel, el("main", {}, this.svg, this.tip), bar);
     this.play_icon();
     new ResizeObserver(() => this.resized()).observe(this.svg);
   }
@@ -307,7 +377,7 @@ class DialTool {
   /** the rows of the section that is showing. */
   show_section() {
     const name = SECTIONS[this.S.ui_section];
-    [...this.tabs.children].forEach((b, i) => b.classList.toggle("on", i === this.S.ui_section));
+    [...this.tabs.children].forEach((b) => b.classList.toggle("on", b.dataset.tab === name));
     this.form.replaceChildren();
     this.pinned.replaceChildren();
     this.rows = ROWS[name].map((row) => this.build_row(row));
@@ -324,7 +394,6 @@ class DialTool {
       r.el.hidden = r.row.show ? !r.row.show(T) : false;
       if (!r.el.hidden) r.refresh(T);
     }
-    this.guides_box.checked = this.S.guides;
   }
 
   /** one row of the form → {row, el, refresh(T)}. */
@@ -374,7 +443,7 @@ class DialTool {
 
     if (row.kind === "seg") {
       const group = el("span", { className: "segs" });
-      row.items.forEach((name, i) => group.append(el("button", { type: "button", textContent: name, onclick: () => { set(i); if (row.key === "ui_hand") this.sync_rows(); } })));
+      row.items.forEach((name, i) => group.append(el("button", { type: "button", textContent: name, onclick: () => { set(i); if (row.key.startsWith("ui_")) this.sync_rows(); } })));
       wrap.append(el("label", { textContent: row.text }), group);
       out.refresh = (T) => [...group.children].forEach((b, i) => b.classList.toggle("on", i === T[row.key]));
     }
@@ -411,16 +480,27 @@ class DialTool {
   row_ring_list(wrap, out) {
     wrap.className = "ringlist";
     this.ring_list = el("ol");
-    const add = el("div", { className: "tools" }, el("span", { className: "quiet", textContent: "Add" }));
+    // under the list, joined to it: what you can add (words) and what you can do to the selected ring (signs)
+    const add = el("span", { className: "adds" }, el("span", { className: "quiet", textContent: "Add" }));
     for (const kind of G.KINDS) {
-      add.append(el("button", { type: "button", textContent: kind[0].toUpperCase() + kind.slice(1), onclick: () => this.ring_tool("add", kind) }));
+      add.append(el("button", { type: "button", className: "plain", id: "add-" + kind, textContent: kind[0].toUpperCase() + kind.slice(1), onclick: () => this.ring_tool("add", kind) }));
     }
-    const tools = el("div", { className: "tools" });
-    for (const [name, action] of [["Duplicate", "duplicate"], ["Delete", "delete"], ["↑ Up", "up"], ["↓ Down", "down"]]) {
-      tools.append(el("button", { type: "button", textContent: name, onclick: () => this.ring_tool(action) }));
+    const tools = el("span", { className: "signs" });
+    for (const [action, title] of [["up", "Move up"], ["down", "Move down"], ["duplicate", "Duplicate"], ["delete", "Delete"]]) {
+      const b = el("button", { type: "button", className: "sign", id: "ring-" + action, title, ariaLabel: title, onclick: () => this.ring_tool(action) });
+      b.innerHTML = icon(TOOL_ICONS[action]);
+      tools.append(b);
     }
-    wrap.append(this.ring_list, tools, add);
+    wrap.append(el("h2", { textContent: "Rings, top first" }), this.ring_list, el("div", { className: "listfoot" }, add, tools));
     this.fill_ring_list();
+  }
+
+  /** the heading over the selected ring's own rows: its name. */
+  row_ring_title(wrap, out) {
+    wrap.className = "row hdr";
+    const title = el("h2");
+    wrap.append(title);
+    out.refresh = (R) => { title.textContent = R.name || G.kind_of(R); };
   }
 
   fill_ring_list() {
@@ -428,17 +508,58 @@ class DialTool {
     const keep = document.activeElement && document.activeElement.dataset.ring;
     this.ring_list.replaceChildren();
     this.S.rings.forEach((ring, i) => {
+      const grip = el("span", { className: "grip", title: "Drag to change the order" });
+      grip.innerHTML = icon(TOOL_ICONS.grip);
+      grip.onpointerdown = (e) => this.drag_ring(e, i);
       const box = el("input", { type: "checkbox", checked: ring.on, title: "Show this ring" });
       box.onchange = () => { this.S.ui_ring = i; this.set_value("ring", "on", box.checked); };
       const name = el("input", { type: "text", value: ring.name, className: "name" });
       name.dataset.ring = i;
       name.onfocus = () => this.select_ring(i, false);
-      name.oninput = () => { ring.name = name.value; this.autosave(); };
-      const item = el("li", { className: i === this.S.ui_ring ? "on" : "" }, box, name, el("span", { className: "quiet", textContent: G.kind_of(ring) }));
+      name.oninput = () => { ring.name = name.value; this.sync_rows(); this.autosave(); };
+      const item = el("li", { className: i === this.S.ui_ring ? "on" : "" }, grip, box, name, el("span", { className: "quiet", textContent: G.kind_of(ring) }));
       item.onclick = (e) => { if (e.target === item || e.target.tagName === "SPAN") this.select_ring(i); };
       this.ring_list.append(item);
     });
     if (keep !== undefined && keep !== null) { const again = this.ring_list.querySelector(`input[data-ring="${keep}"]`); if (again && document.activeElement !== again) again.focus(); }
+  }
+
+  /** drag a ring by its grip to another place in the list. The list's order is the stacking order:
+   *  the top row is drawn last, in front. A line shows where the ring will land. */
+  drag_ring(e, from) {
+    e.preventDefault();
+    const list = this.ring_list, rows = [...list.children], grip = e.currentTarget;
+    const line = el("div", { className: "dropline" });
+    list.append(line);
+    rows[from].classList.add("dragged");
+    grip.setPointerCapture(e.pointerId);
+    let to = from;
+    const move = (ev) => {                         // the gap nearest the pointer: 0 = above the first row
+      const box = list.getBoundingClientRect(), y = ev.clientY - box.top + list.scrollTop;
+      let gap = rows.findIndex((row) => y < row.offsetTop + row.offsetHeight / 2);      // the list is the rows' frame of reference
+      if (gap < 0) gap = rows.length;
+      to = gap > from ? gap - 1 : gap;               // where the ring ends up once it is taken out
+      const at = gap < rows.length ? rows[gap].offsetTop : rows[rows.length - 1].offsetTop + rows[rows.length - 1].offsetHeight;
+      line.style.top = `${Math.max(at - 1, 0)}px`;
+      line.hidden = to === from;
+    };
+    const drop = () => {
+      grip.onpointermove = grip.onpointerup = grip.onpointercancel = null;
+      line.remove();
+      rows[from].classList.remove("dragged");
+      if (to === from) return this.select_ring(from);
+      const rings = this.S.rings, [ring] = rings.splice(from, 1);
+      rings.splice(to, 0, ring);
+      this.S.ui_ring = to;
+      this.static_dirty = true;
+      this.fill_ring_list();
+      this.sync_rows();
+      this.render();
+    };
+    grip.onpointermove = move;
+    grip.onpointerup = drop;
+    grip.onpointercancel = () => { to = from; drop(); };
+    move(e);
   }
 
   select_ring(i, refill = true) {
@@ -527,42 +648,75 @@ class DialTool {
     };
   }
 
-  /** family and style, and where fonts come from: this computer (Chrome, Edge) or a font file. */
+  /** the font picker: a list where every font shows its own numerals. First the tool's own twenty,
+   *  then font files you added, then (Chrome, Edge) the fonts on this computer. */
   row_font(wrap, out) {
     wrap.className = "font";
-    const family = el("select", { id: "font-family" }), style = el("select", { id: "font-style" });
-    const state = el("span", { className: "quiet" });
-    const families = () => {
-      const by = new Map();
-      for (const f of this.catalog.values()) { if (!by.has(f.family)) by.set(f.family, []); by.get(f.family).push(f); }
-      return new Map([...by.entries()].sort((a, b) => a[0].localeCompare(b[0])));
-    };
-    family.onchange = () => {
-      const styles = families().get(family.value) || [];
-      const first = styles.find((f) => /^(regular|roman|book|normal)$/i.test(f.style)) || styles[0];
-      if (first) this.use_font(first);
-    };
-    style.onchange = () => { const f = this.catalog.get(style.value); if (f) this.use_font(f); };
+    const styles = el("div", { className: "segs styles" });
+    const find = el("input", { type: "text", id: "font-find", placeholder: "Find a font", hidden: true });
+    const list = el("div", { className: "fontlist", id: "font-list" });
+    const state = el("div", { className: "quiet note" });
     const file = el("input", { type: "file", accept: ".ttf,.otf,.ttc,.otc", multiple: true, hidden: true, id: "font-file" });
     file.onchange = async () => { await this.add_font_files([...file.files]); file.value = ""; };
     const buttons = el("div", { className: "tools" },
       el("button", { type: "button", id: "local-fonts", textContent: "Installed fonts", hidden: !("queryLocalFonts" in window), onclick: () => this.local_fonts(true) }),
       el("button", { type: "button", textContent: "Add font file…", onclick: () => file.click() }), file);
-    wrap.append(el("div", { className: "row pop" }, el("label", { htmlFor: "font-family", textContent: "Family" }), family),
-      el("div", { className: "row pop" }, el("label", { htmlFor: "font-style", textContent: "Style" }), style),
-      el("div", { className: "row" }, el("span"), buttons), el("div", { className: "row note" }, el("span"), state));
+    wrap.append(styles, find, list, buttons, state);
+    const regular = (fonts) => fonts.find((f) => /^(regular|roman|book|normal)$/i.test(f.style)) || fonts[0];
+    const families = () => {                       // family → its fonts, in the catalogue's order
+      const by = new Map();
+      for (const f of this.catalog.values()) { if (!by.has(f.family)) by.set(f.family, []); by.get(f.family).push(f); }
+      return by;
+    };
+    /** "1234567890" in the font itself: the outline made with the list, or drawn now, or set by the browser. */
+    const sample = (f) => {
+      const box = el("span", { className: "sample" });
+      let s = f.sample;
+      if (!s && G.has_font(f.ps)) {
+        const t = { ...G.RING_BASE, ps: f.ps, axes: {}, features: {} };
+        s = { d: G.text_path("1234567890", t, 1000).svg(0, true), w: Math.round(G.advance("1234567890", t, 1000)) };
+      }
+      if (s) box.innerHTML = `<svg viewBox="0 -800 ${s.w} 1000" height="22" aria-hidden="true"><path d="${s.d}" fill="currentColor"/></svg>`;
+      else { box.textContent = "1234567890"; box.style.fontFamily = `"${f.family}"`; }     // an installed font: the browser can show it
+      return box;
+    };
+    find.oninput = () => { list.dataset.shown = ""; out.refresh(this.ring()); };
+    let was_selected = null;
     out.refresh = (R) => {
-      const by = families();
-      const names = [...by.keys()];
-      if (!by.has(R.family)) names.unshift(R.family);
-      const want = names.join("|");
-      if (family.dataset.items !== want) { family.replaceChildren(...names.map((n) => el("option", { value: n, textContent: n }))); family.dataset.items = want; }
-      family.value = R.family;
-      const styles = by.get(R.family) || [];
-      style.replaceChildren(...styles.map((f) => el("option", { value: f.ps, textContent: f.style || f.ps })));
-      style.value = R.ps;
+      const by = families(), q = find.value.trim().toLowerCase();
+      find.hidden = by.size <= 24;
+      const key = [...by.keys()].join("|") + "/" + q + "/" + G.font_list().length;
+      if (list.dataset.shown !== key) {            // the list itself changes only when fonts arrive or the search does
+        list.dataset.shown = key;
+        list.replaceChildren();
+        let group = null;
+        for (const [family, fonts] of by) {
+          if (q && !family.toLowerCase().includes(q)) continue;
+          const f = regular(fonts);
+          if (f.group !== group) {
+            group = f.group;
+            const title = { added: "Added by you", computer: "On this computer" }[group];
+            if (title) list.append(el("div", { className: "group quiet", textContent: title }));
+          }
+          const row = el("button", { type: "button", className: "fontrow", title: f.what ? `${family} · ${f.what}` : family, onclick: () => { this.font_note = ""; this.use_font(f); } },
+            sample(f), el("span", { className: "name", textContent: family }));
+          row.dataset.family = family;
+          row.dataset.group = f.group;
+          list.append(row);
+        }
+      }
+      let selected = null;
+      for (const row of list.querySelectorAll(".fontrow")) { const on = row.dataset.family === R.family; row.classList.toggle("on", on); if (on) selected = row; }
+      if (selected && was_selected !== R.family + this.S.ui_ring) { was_selected = R.family + this.S.ui_ring; list.scrollTop = Math.max(0, selected.offsetTop - list.offsetTop - 40); }
+      const mine = by.get(R.family) || [];         // the family's styles, as buttons
+      styles.hidden = mine.length < 2;
+      styles.replaceChildren(...mine.map((f) => {
+        const b = el("button", { type: "button", textContent: f.style || f.ps, onclick: () => this.use_font(f) });
+        b.classList.toggle("on", f.ps === R.ps);
+        return b;
+      }));
       const missing = G.has_font(R.ps) ? "" : this.catalog.has(R.ps) ? "Loading… "
-        : `${R.family} isn’t loaded yet, so ${G.font_list()[0].family} stands in. Press Installed fonts (Chrome or Edge) or add its file. `;
+        : `${R.family} isn’t loaded yet, so ${G.font_list()[0].family} stands in. Pick a font from the list, press Installed fonts (Chrome or Edge), or add its file. `;
       state.textContent = missing + (this.font_note || "");
     };
   }
@@ -631,10 +785,23 @@ class DialTool {
     };
   }
 
+  /** five dials to start from: each is a link (R31), so it can also be copied or opened in a new tab. */
+  row_examples(wrap) {
+    wrap.className = "examples";
+    const grid = el("div", { className: "cards" });
+    for (const e of EXAMPLES) {
+      const card = el("a", { href: e.link, title: `Open the ${e.name} dial` });
+      card.innerHTML = e.picture;
+      card.append(el("span", { textContent: e.name }));
+      grid.append(card);
+    }
+    wrap.append(el("h2", { textContent: "Examples" }), grid);
+  }
+
   row_export(wrap) {
     wrap.className = "row bar-row";
     const tools = el("span", { className: "tools" });
-    for (const kind of ["PDF", "SVG", "PNG"]) tools.append(el("button", { type: "button", id: "export-" + kind.toLowerCase(), textContent: kind, onclick: () => this.export(kind.toLowerCase()) }));
+    for (const kind of ["PDF", "SVG", "PNG"]) tools.append(el("button", { type: "button", className: "main", id: "export-" + kind.toLowerCase(), textContent: kind, onclick: () => this.export(kind.toLowerCase()) }));
     wrap.append(el("label", { textContent: "Export" }), tools);
   }
 
@@ -643,7 +810,7 @@ class DialTool {
     const file = el("input", { type: "file", accept: ".json,application/json", hidden: true, id: "load-file" });
     file.onchange = async () => { if (file.files[0]) this.load_text(await file.files[0].text(), file.files[0].name); file.value = ""; };
     wrap.append(el("label", { textContent: "Settings" }), el("span", { className: "tools" },
-      el("button", { type: "button", id: "save", textContent: "Save…", onclick: () => { save_file("dial.json", JSON.stringify(this.S, null, 1), "application/json"); this.log("saved dial.json to your downloads"); } }),
+      el("button", { type: "button", id: "save", textContent: "Save…", onclick: () => { save_file("dial.json", JSON.stringify({ ...this.S, ui_section: Math.min(this.S.ui_section, 4) }, null, 1), "application/json"); this.log("saved dial.json to your downloads"); } }),   // dial.py knows sections 0–4
       el("button", { type: "button", textContent: "Load…", onclick: () => file.click() }),
       el("button", { type: "button", textContent: "Defaults", onclick: () => this.reopen({ ui_section: this.S.ui_section }) }),
       el("button", { type: "button", id: "copy-link", textContent: "Copy link", onclick: () => this.copy_link() }), file));
@@ -660,7 +827,9 @@ class DialTool {
 
   /** fonts are needed before the first numerals are right: load what the settings name, if we may. */
   async fonts_at_start() {
-    for (const f of G.font_list()) this.catalog.set(f.ps, { family: f.family, style: f.style, ps: f.ps });
+    for (const f of G.font_list()) this.catalog.set(f.ps, { family: f.family, style: f.style, ps: f.ps, group: "list" });   // Inter, inside the page
+    for (const f of FONT_LIST) if (!this.catalog.has(f.ps)) this.catalog.set(f.ps, { ...f, group: "list" });               // the tool's own list
+    await this.load_fonts_in_use();
     try {
       const status = await navigator.permissions.query({ name: "local-fonts" });
       if (status.state === "granted") await this.local_fonts(false);
@@ -675,7 +844,7 @@ class DialTool {
     try {
       const list = await window.queryLocalFonts();
       for (const f of list) {
-        if (!this.catalog.has(f.postscriptName)) this.catalog.set(f.postscriptName, { family: f.family, style: f.style, ps: f.postscriptName, data: f });
+        if (!this.catalog.has(f.postscriptName)) this.catalog.set(f.postscriptName, { family: f.family, style: f.style, ps: f.postscriptName, data: f, group: "computer" });
       }
       // a browser that isn't allowed answers with an empty list, not with an error
       if (list.length) say(`${list.length} installed fonts are now listed under Family.`);
@@ -689,8 +858,13 @@ class DialTool {
 
   /** read one catalogued font into the text engine. A collection file holds several: find ours. */
   async load_font(entry) {
-    if (G.has_font(entry.ps) || !entry.data) return G.has_font(entry.ps);
-    const bytes = new Uint8Array(await (await entry.data.blob()).arrayBuffer());
+    if (G.has_font(entry.ps) || !(entry.data || entry.file)) return G.has_font(entry.ps);
+    let bytes;
+    if (entry.file) {                              // one of the tool's own: fetched from the tool's site when first used
+      const answer = await fetch(FONT_SITE + entry.file);
+      if (!answer.ok) throw new Error(`${answer.status} from ${FONT_SITE}${entry.file}`);
+      bytes = new Uint8Array(await answer.arrayBuffer());
+    } else bytes = new Uint8Array(await (await entry.data.blob()).arrayBuffer());
     for (let i = 0; i < 64; i++) {
       const got = G.add_font(bytes, i);
       if (!got) break;
@@ -703,7 +877,12 @@ class DialTool {
     let loaded = false;
     for (const ring of this.S.rings) {
       const entry = this.catalog.get(ring.ps);
-      if (entry && !G.has_font(ring.ps)) loaded = (await this.load_font(entry)) || loaded;
+      try {
+        if (entry && !G.has_font(ring.ps)) loaded = (await this.load_font(entry)) || loaded;
+      } catch (e) {
+        this.font_note = `Couldn’t fetch ${entry.family} (${e.message}). Are you online?`;
+        this.log(this.font_note);
+      }
     }
     if (loaded) { this.static_dirty = true; this.sync_rows(); this.render(); }
   }
@@ -717,8 +896,8 @@ class DialTool {
         for (let i = 0; i < 64; i++) {             // a collection (.ttc) holds several fonts
           const got = G.add_font(bytes, i);
           if (!got) break;
-          this.catalog.set(got.ps, { family: got.family, style: got.style, ps: got.ps });
-          added.push(got);
+          if (!this.catalog.has(got.ps)) this.catalog.set(got.ps, { family: got.family, style: got.style, ps: got.ps, group: "added" });
+          added.push(this.catalog.get(got.ps));
         }
       }
     } catch (e) {
@@ -730,16 +909,22 @@ class DialTool {
     const R = this.ring();
     if (G.kind_of(R) === "numerals" && !added.some((f) => f.ps === R.ps)) {       // not the ring's own font: switch to the new one
       const pick = added.find((f) => /^(regular|roman|book|normal)$/i.test(f.style)) || added[0];
-      await this.use_font(this.catalog.get(pick.ps));
+      await this.use_font(pick);
     }
     G.forget();
     this.static_dirty = true; this.sync_rows(); this.render();
   }
 
   async use_font(entry) {
-    await this.load_font(entry);
+    try {
+      await this.load_font(entry);
+    } catch (e) {
+      this.font_note = `Couldn’t fetch ${entry.family} (${e.message}). Are you online?`;
+      this.log(this.font_note);
+      return this.sync_rows();
+    }
     const R = this.ring();
-    R.family = entry.family; R.ps = entry.ps; R.axes = {}; R.features = {};
+    R.family = entry.family; R.ps = entry.ps; R.axes = { ...(entry.start || {}) }; R.features = {};
     this.static_dirty = true;
     this.sync_rows();
     this.render();
@@ -822,7 +1007,11 @@ class DialTool {
     const ring = this.ring();
     const font = G.kind_of(ring) === "numerals" ? `   ·   ${ring.ps}` : "";
     this.status.textContent = `${ring.name}${font} · Ø ${S.dial_d.toFixed(1)} mm · build ${this.build_ms.toFixed(0)} ms`;
-    while (G.NOTES.length) this.log(G.NOTES.shift());
+    while (G.NOTES.length) {                       // a font that is on its way isn't worth a line: it arrives in a moment
+      const note = G.NOTES.shift(), ps = (/\(([^)]+)\) isn’t loaded|\(([^)]+)\) isn't loaded/.exec(note) || []).slice(1).find(Boolean);
+      const coming = ps && this.catalog.has(ps) && (this.catalog.get(ps).file || this.catalog.get(ps).data);
+      if (!coming) this.log(note);
+    }
     this.autosave();
   }
 
@@ -834,7 +1023,9 @@ class DialTool {
   /** put the dial at c, scaled to z; mirrored for toner transfer. y grows upward inside. */
   place() {
     const flip = this.S.out_mirror ? -1 : 1;
-    this.dial.setAttribute("transform", `translate(${this.c[0]} ${this.c[1]}) scale(${flip * this.z} ${-this.z})`);
+    const where = `translate(${this.c[0]} ${this.c[1]}) scale(${flip * this.z} ${-this.z})`;
+    this.dial.setAttribute("transform", where);
+    this.over.setAttribute("transform", where);
   }
 
   fit() {
@@ -874,66 +1065,96 @@ class DialTool {
     const at = (e) => { const r = this.svg.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
     this.svg.addEventListener("wheel", (e) => {
       e.preventDefault();
+      this.hover(null);
       if (e.ctrlKey || e.metaKey) this.zoom(Math.exp(-e.deltaY * 0.01), at(e));      // pinch, or ⌘ / ctrl + scroll
       else { this.fitted = false; this.c = [this.c[0] - e.deltaX, this.c[1] - e.deltaY]; this.place(); }
     }, { passive: false });
     let down = null;
     this.svg.addEventListener("pointerdown", (e) => { down = { p: at(e), c: this.c.slice(), moved: false }; this.svg.setPointerCapture(e.pointerId); });
     this.svg.addEventListener("pointermove", (e) => {
-      if (!down) return;
+      if (!down) return e.pointerType === "mouse" ? this.hover(at(e), document.elementFromPoint(e.clientX, e.clientY)) : null;
       const p = at(e);
       if (Math.hypot(p[0] - down.p[0], p[1] - down.p[1]) > 4) down.moved = true;
-      if (down.moved) { this.fitted = false; this.c = [down.c[0] + p[0] - down.p[0], down.c[1] + p[1] - down.p[1]]; this.place(); }
+      if (down.moved) { this.hover(null); this.fitted = false; this.c = [down.c[0] + p[0] - down.p[0], down.c[1] + p[1] - down.p[1]]; this.place(); }
     });
     this.svg.addEventListener("pointerup", (e) => {
       if (down && !down.moved) this.clicked(at(e), document.elementFromPoint(e.clientX, e.clientY));
       down = null;
     });
+    this.svg.addEventListener("pointerleave", () => this.hover(null));
     let pinch = 1;                                 // Safari reports a pinch as gesture events
     this.svg.addEventListener("gesturestart", (e) => { e.preventDefault(); pinch = 1; });
     this.svg.addEventListener("gesturechange", (e) => { e.preventDefault(); this.zoom(e.scale / pinch, at(e)); pinch = e.scale; });
   }
 
-  /** a click on the preview opens the settings of what was clicked. */
-  clicked(p, node) {
+  /** what is under a point of the preview: {kind, name, …} or null. kind: ring · hand · cap · date · plate.
+   *  Used by the hover label and by the click, so they always agree. */
+  piece_at(p, node) {
     const S = this.S, mm = this.to_mm(p), r = Math.hypot(mm[0], mm[1]);
     const item = node && node.dataset && node.dataset.i !== undefined ? this.items[+node.dataset.i] : null;
     const role = item ? item.role : null;
-    const go = (section) => { S.ui_section = section; };
-    let ring = null;
-    if (role === "hand") { go(2); S.ui_hand = G.HANDS.indexOf(item.name); }
-    else if (role === "cap") go(2);
-    else if (role && role.startsWith("date") || role === "cutline") go(3);
-    else if (role === "ring") ring = item.index;
-    else {                                         // the plate or the backdrop. Thin ticks are hard to hit, so:
+    if (role === "hand") return { kind: "hand", hand: G.HANDS.indexOf(item.name), name: { hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name], path: item.path, angle: item.angle };
+    if (role === "cap") return { kind: "cap", name: "Cap", path: item.path, angle: 0 };
+    if (role && (role.startsWith("date") || role === "cutline")) {
+      const x = this.statik.windows.find((b) => b.index === item.window), kind = G.WINDOW_KINDS[x.w.kind];
+      return { kind: "date", window: x.index, name: { date: "Date window", day: "Day window", "am · pm": "AM · PM window", "moon phase": "Moon phase window" }[kind], path: x.window, angle: 0 };
+    }
+    let d = role === "ring" ? item.ring : null;
+    if (!d) {                                      // the plate or the backdrop. Thin ticks are hard to hit, so:
       const slack = 4 / this.z;                    // of the rings whose zone (between their radii) is under the
-      const angle = Math.atan2(mm[0], mm[1]) * 180 / Math.PI;      // click, take the one with the nearest mark
+      const angle = Math.atan2(mm[0], mm[1]) * 180 / Math.PI;      // point, take the one with the nearest mark
       let best = Infinity;
-      for (const d of this.statik.rings) {         // top ring first, so the top one wins a tie
-        const R = d.ring;
-        const [lo, hi] = d.kind === "numerals" ? [R.r - R.size / 2, R.r + R.size / 2] : [R.r - (d.kind === "band" ? R.width : R.len), R.r];
+      for (const x of this.statik.rings) {         // top ring first, so the top one wins a tie
+        const R = x.ring;
+        const [lo, hi] = x.kind === "numerals" ? [R.r - R.size / 2, R.r + R.size / 2] : [R.r - (x.kind === "band" ? R.width : R.len), R.r];
         if (r < lo - slack || r > hi + slack) continue;
-        const away = d.kind === "band" ? 1e6 : Math.min(...d.taken.map((a) => Math.abs(((angle - a + 540) % 360) - 180))) * Math.PI / 180 * r;
-        if (away < best) { best = away; ring = S.rings.indexOf(R); }
-      }
-      if (ring === null) go(r <= S.dial_d / 2 ? 0 : S.ui_section);
-    }
-    if (ring !== null) {
-      go(1);
-      S.ui_ring = ring;
-      const d = this.statik.rings.find((x) => x.ring === S.rings[ring]);
-      if (d && d.kind === "numerals") {            // which numeral? the nearest one's centre
-        let best = Infinity;
-        d.parts.forEach((part, k) => {
-          const b = part.bounds();
-          if (!b) return;
-          const dist = Math.hypot((b[0] + b[2]) / 2 - mm[0], (b[1] + b[3]) / 2 - mm[1]);
-          if (dist < best) { best = dist; this.nudge_at = String(d.at[k]); }
-        });
+        const away = x.kind === "band" ? 1e6 : Math.min(...x.taken.map((a) => Math.abs(((angle - a + 540) % 360) - 180))) * Math.PI / 180 * r;
+        if (away < best) { best = away; d = x; }
       }
     }
+    if (!d) return r <= S.dial_d / 2 && !S.out_production ? { kind: "plate", name: "Plate", path: this.statik.plate, angle: 0 } : null;
+    const piece = { kind: "ring", ring: S.rings.indexOf(d.ring), name: d.ring.name || G.kind_of(d.ring), path: d.path, angle: 0 };
+    if (d.kind === "numerals") {                   // which numeral? the nearest one's centre
+      let best = Infinity;
+      d.parts.forEach((part, k) => {
+        const b = part.bounds();
+        if (!b) return;
+        const dist = Math.hypot((b[0] + b[2]) / 2 - mm[0], (b[1] + b[3]) / 2 - mm[1]);
+        if (dist < best) { best = dist; piece.numeral = String(d.at[k]); }
+      });
+    }
+    return piece;
+  }
+
+  /** a click on the preview opens the settings of what was clicked. */
+  clicked(p, node) {
+    const piece = this.piece_at(p, node), S = this.S;
+    if (!piece) return;
+    S.ui_section = { ring: 1, hand: 2, cap: 2, date: 3, plate: 0 }[piece.kind];
+    if (piece.kind === "ring") { S.ui_ring = piece.ring; if (piece.numeral !== undefined) this.nudge_at = piece.numeral; }
+    if (piece.kind === "hand") S.ui_hand = piece.hand;
+    if (piece.kind === "date") S.ui_window = piece.window;
     this.show_section();
     this.render();
+  }
+
+  /** the pointer rests on something that can be edited: outline it, and say its name beside the pointer. */
+  hover(p, node) {
+    const piece = p ? this.piece_at(p, node) : null;
+    this.tip.hidden = !piece;
+    for (const line of this.glow) line.setAttribute("d", piece ? piece.path.svg(4) : "");
+    if (!piece) return;
+    for (const line of this.glow) { if (piece.angle) line.setAttribute("transform", `rotate(${-piece.angle})`); else line.removeAttribute("transform"); }
+    this.tip.firstChild.textContent = piece.name;
+    // the label sits above the pointer, its arrow's tip 10 points from it; under the pointer near the top edge.
+    // Near a side edge the label stops at the edge and the arrow slides along it, so it still points at the pointer.
+    const [w] = this.size(), box = this.tip.getBoundingClientRect(), half = box.width / 2, gap = 10, edge = 6;
+    const below = p[1] - gap - box.height - 8 < edge;
+    const x = clamp(p[0], edge + half, Math.max(edge + half, w - edge - half));
+    this.tip.classList.toggle("below", below);
+    this.tip.style.left = `${x - half}px`;
+    this.tip.style.top = `${below ? p[1] + gap + 8 : p[1] - gap - 8 - box.height}px`;
+    this.tip.style.setProperty("--arrow", `${clamp(p[0] - (x - half), 12, box.width - 12)}px`);
   }
 
   // ── time ─────────────────────────────────────────────────
@@ -1055,7 +1276,7 @@ export async function open_window(pathkit, harfbuzz, font_bytes) {
   if (from_link) tool.log("opened the dial in the address");
   window.addEventListener("hashchange", async () => {              // another dial's link pasted into this tab
     const next = await unpack(location.hash);
-    if (next) { tool.reopen(next); tool.log("opened the dial in the address"); }
+    if (next) { tool.reopen({ ...next, ui_section: tool.S.ui_section }); tool.log("opened the dial in the address"); }
   });
   tool.sync_time();
   window.dial_tool = tool;

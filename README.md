@@ -26,6 +26,7 @@ Off-Mac checks (Python 3, `pip install drawbot-skia skia-pathops pillow`):
 | `dial.py` | The tool. One file, four parts: settings · geometry · drawing (the scene) · interface (window, canvas preview, frame clock). The dial is a list of rings. |
 | `web/dial-tool.html` | **The web version, built**: one file with everything inside. Open it in a browser. |
 | `web/src/` | Its source: `geometry.js` (parts 1–3 of `dial.py`, name for name) · `output.js` (SVG, PDF) · `app.js` (the window) · `style.css` · `main.js`. `web/build.mjs` packs them into the one file. |
+| `web/fonts/` | The twenty open-licence font families the web version offers (SIL OFL; `README.md` and `licences/` inside). `web/fonts.mjs` fetches them and writes `src/font_list.js`; `web/examples.mjs` writes the five example dials (`src/examples.js`); `web/links.mjs` turns settings files into links. |
 | `web/test/` | `parity.py` draws every harness dial with `dial.py` and with the web geometry and compares the pictures; `window.mjs` uses the built page in Chromium (rows, ring list, clicks on the preview, fonts, exports, save and load). |
 | `tools/dial_probe.py` | Foundation test for the interface. Run it in DrawBot when something breaks; its Report tab says which part failed. |
 | `tools/test_harness.py` | Renders the geometry without a Mac (drawbot-skia) into a contact sheet; checks the PDF importer's drawing logic. |

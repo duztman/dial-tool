@@ -34,7 +34,8 @@ const FROM_KINDS = [[], ["markers"], ["markers", "numerals"], ["ticks", "markers
 export const MODES = ["upright", "radial", "radial, auto-flip", "on path"];
 export const HANDS = ["hour", "minute", "second"];
 export const HAND_SHAPES = ["baton", "pencil", "sword", "dauphine", "leaf", "arrow", "syringe", "breguet", "lollipop", "file"];
-export const DATE_AT = [["3", 90], ["4:30", 135], ["6", 180], ["9", 270], ["12", 0]];
+export const DATE_AT = [["3", 90], ["4:30", 135], ["6", 180], ["9", 270], ["12", 0], ["1:30", 45], ["7:30", 225], ["10:30", 315]];
+export const WINDOW_KINDS = ["date", "day", "am · pm", "moon phase"];      // what a window shows (web version)
 export const LANGS = ["default", "tr", "nl", "de", "pl", "ro", "ca", "ar", "fa", "zh-Hans", "ja"];
 export const BEATS = [["sweep", 0], ["quartz · 1/s", 1], ["6 beats/s", 6], ["8 beats/s", 8]];
 export const LABEL_SETS = [                        // popups store the index (R9): only ever append
@@ -71,6 +72,15 @@ export const HAND_BASE = {
   counter: 0.0, wall: 0.0, round: 0.0, c: [0.10, 0.10, 0.12, 1],
 };
 
+// windows 2 to 4 (web version, beta 3.0). Window 1 is the date window both tools know: its keys are da_….
+// text: what a date or day window shows · hour: of the day, for am · pm · age: of the moon, in days.
+export const WINDOW_BASE = {
+  on: false, kind: 0, at: 0, r: 10.5, w: 2.6, h: 2.0, round: 0.2, frame: 0.15, clear: 0.25,
+  text: "17", size: 62.0, ink: INK, hour: 10.0, age: 14.8,
+};
+const FIRST_WINDOW = { on: "da_on", kind: "da_kind", at: "da_at", r: "da_r", w: "da_w", h: "da_h", round: "da_round", frame: "da_frame",
+  clear: "da_clear", text: "da_day", size: "da_size", ink: "da_ink", hour: "da_hour", age: "da_age" };
+
 export const DEFAULTS = {
   version: 2,
   dial_d: 30.0, margin: 3.0, guides: true,
@@ -79,14 +89,20 @@ export const DEFAULTS = {
   ha_on: true, ha_beat: 0, ha_cap: 1.6, c_cap: ACCENT, ha_hour: {}, ha_minute: {}, ha_second: {},
   da_on: false, da_at: 0, da_r: 10.5, da_w: 2.6, da_h: 2.0, da_round: 0.2, da_frame: 0.15,
   da_clear: 0.25, da_day: "17", da_size: 62.0, da_ink: INK,
+  da_kind: 0, da_hour: 10.0, da_age: 14.8, windows: [WINDOW_BASE, WINDOW_BASE, WINDOW_BASE],
   t: 10 * 3600 + 9 * 60 + 36,
   out_production: false, out_mirror: false, out_live_text: false,
   out_dpi: 600.0, out_seconds: 4.0, out_fps: 30.0, out_px: 1080,
-  ui_section: 0, ui_ring: 0, ui_hand: 0, ui_preview: 0,
+  ui_section: 0, ui_ring: 0, ui_hand: 0, ui_preview: 0, ui_window: 0,
+  // guides (web version, beta 3.0): which ones, their colour, strength (%) and thickness (screen points).
+  // The starting values draw what dial.py draws. Preview only, never in a file (R5).
+  gd_edge: true, gd_axes: true, gd_rings: true,
+  gd_c: [0.0, 0.55, 0.9, 1], gd_strength: 50.0, gd_w: 1.0,
+  gd_sel_c: [1.0, 0.45, 0.0, 1], gd_sel_strength: 95.0, gd_sel_w: 1.5,
 };
 
 export const NOT_GEOMETRY = ["t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_preview"];
-export const NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_"];
+export const NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_"];
 
 /** base values + d's values (deep copies), names turned into popup indexes. */
 export function complete(base, d) {
@@ -218,6 +234,8 @@ export function fresh_settings(over = null) {
   S.rings = S.rings.map((r) => complete(RING_BASE, r));
   if (!S.rings.length) S.rings = [complete(RING_BASE, {})];
   for (const h of HANDS) S["ha_" + h] = complete(HAND_BASE, S["ha_" + h]);
+  S.windows = [0, 1, 2].map((i) => ({ ...clone(WINDOW_BASE), ...((Array.isArray(S.windows) && S.windows[i]) || {}) }));
+  S.ui_window = min(max(parseInt(S.ui_window) || 0, 0), 3);
   S.ui_ring = min(max(parseInt(S.ui_ring) || 0, 0), S.rings.length - 1);
   S.ui_preview = 0;
   return S;
@@ -243,6 +261,7 @@ export function lean(S) {
   for (const k in S) {
     if (k.startsWith("ui_") || k === "version" || JSON.stringify(S[k]) === JSON.stringify(DEFAULTS[k])) continue;
     if (k === "rings") out.rings = S.rings.map((r) => differing(r, RING_BASE));
+    else if (k === "windows") out.windows = S.windows.map((w) => differing(w, WINDOW_BASE));
     else if (HANDS.some((h) => k === "ha_" + h)) out[k] = differing(S[k], HAND_BASE);
     else out[k] = S[k];
   }
@@ -440,6 +459,7 @@ export class Path {
     return out;
   }
   union(other) { return this._combined(other, "UNION"); }
+  intersection(other) { return empty(this) || empty(other) ? new Path() : this._combined(other, "INTERSECT"); }
   difference(other) { return this._combined(other, "DIFFERENCE"); }
   removeOverlap() {
     if (empty(this)) return this;
@@ -848,7 +868,19 @@ function ring_shapes(ring, keep, grow = 0, solid = false) {
   });
 }
 
-export const date_angle = (S) => (S.da_on ? DATE_AT[S.da_at][1] : null);
+/** window 1, read through the names windows 2 to 4 use (it is stored as da_…, as dial.py stores it). */
+export function first_window(S) {
+  return new Proxy({}, {
+    get: (_, key) => S[FIRST_WINDOW[key]],
+    set: (_, key, value) => { S[FIRST_WINDOW[key]] = value; return true; },
+    has: (_, key) => key in FIRST_WINDOW,
+    ownKeys: () => Object.keys(FIRST_WINDOW),
+    getOwnPropertyDescriptor: (_, key) => (key in FIRST_WINDOW ? { enumerable: true, configurable: true, value: S[FIRST_WINDOW[key]] } : undefined),
+  });
+}
+/** the four windows, in order; ui_window counts along this list. */
+export const windows_of = (S) => [first_window(S), ...S.windows];
+const window_angle = (w) => DATE_AT[w.at][1];
 
 /** every visible ring, top first: its positions, what it skips, what knocks it out.
  *
@@ -856,12 +888,12 @@ export const date_angle = (S) => (S.da_on ? DATE_AT[S.da_at][1] : null);
  *  knock out — cut gaps (clearance) round the shapes of the chosen rings above.
  *  cut       — the date window's clear zone; markers and numerals also leave its position empty. */
 function build_rings(S, cut = null) {
-  const dA = date_angle(S), done = [];
+  const holes = windows_of(S).filter((w) => w.on).map(window_angle), done = [];
   for (const ring of S.rings) {
     if (!ring.on) continue;
     const kind = kind_of(ring), angles = ring_angles(ring);
     let keep = angles.map((_, i) => i).filter((i) => picked(ring, i));
-    if (dA !== null && (kind === "markers" || kind === "numerals")) keep = keep.filter((i) => !near(angles[i], dA));
+    if (kind === "markers" || kind === "numerals") keep = keep.filter((i) => !holes.some((a) => near(angles[i], a)));
     if (ring.skip) {
       const taken = done.filter((d) => FROM_KINDS[ring.skip].includes(d.kind)).flatMap((d) => d.taken);
       keep = keep.filter((i) => !taken.some((a) => near(angles[i], a, 0.01)));
@@ -883,43 +915,77 @@ function build_rings(S, cut = null) {
   return done;
 }
 
-// ── date window ──────────────────────────────────────────────
+// ── windows: date · day · am–pm · moon phase ─────────────────
+//   A window is a hole in the plate with something showing through from below, drawn on white.
+//   Everything is in the window's own space first (its centre at the origin, upright), then moved
+//   to its position. Filled shapes only (R4).
 
 function date_key(S) {
-  const k = {};
-  for (const a of Object.keys(S).sort()) if (a.startsWith("da_") && a !== "da_ink") k[a] = S[a];
-  return JSON.stringify(k) + JSON.stringify(TYPE_KEYS.map((a) => date_type(S)[a]));
+  const all = windows_of(S).map((w) => { const k = { ...w }; delete k.ink; return k; });
+  return JSON.stringify(all) + JSON.stringify(TYPE_KEYS.map((a) => date_type(S)[a]));
 }
 
-/** the date's text uses the type of the top numerals ring. */
+/** a window's text uses the type of the top numerals ring. */
 function date_type(S) {
   return S.rings.find((ring) => kind_of(ring) === "numerals") || RING_BASE;
 }
 
-function date_window(S, grow = 0) {
-  return rounded_rect(S.da_w + 2 * grow, S.da_h + 2 * grow, S.da_round + grow).translate(...clock_point(S.da_r, date_angle(S)));
+/** the moon window, from its width alone: an arch over two humps. The moon, a disc as big as a hump,
+ *  rises from behind the left hump (new), stands clear in the middle (full) and sets behind the right one.
+ *  → [the opening, the night sky (opening minus moon and stars)] */
+function moon_window(w, age) {
+  const m = w / 4, base = -0.36 * w;               // hump and moon radius · the bottom edge
+  const arch = circle(2 * 0.5336 * w).translate(0, base + 0.1864 * w).intersection(new Path().rect(-w, base, 2 * w, 2 * w));
+  const opening = arch.difference(circle(2 * m).translate(-m, base)).difference(circle(2 * m).translate(m, base));
+  const f = (((age % 29.53) + 29.53) % 29.53) / 29.53;           // 0 new · 0.5 full · 1 new again
+  const moon = circle(2 * m).translate(-m * cos(PI * f), base - 0.3 * m + (Math.sqrt(3) + 0.3) * m * sin(PI * f));
+  const stars = merge([[-0.3, 0.5], [0.33, 0.42], [0.08, 0.63]].map(([x, y]) => circle(0.07 * w).translate(x * w, base + y * w)));
+  return [opening, opening.difference(moon).difference(stars)];
 }
 
-function build_date(S) {
-  if (date_angle(S) === null) return null;
-  const win = date_window(S), f = S.da_frame;
-  const num = centred(text_path(S.da_day, date_type(S), S.da_h * S.da_size / 100)).translate(...clock_point(S.da_r, date_angle(S)));
+/** the am · pm window: a disc turns once a day under it, pivot on the window's bottom edge — half night
+ *  (dark, with a crescent and two stars), half day (a sun). hour 12 = all day, 0 = all night. → what is dark */
+function day_night(w, h, hour) {
+  const opening = new Path().rect(-w / 2, -h / 2, w, h), pivot = [0, -h / 2];
+  const turn = (((hour % 24) + 24) % 24) / 24 * 360, reach = 0.55 * h;       // clock angle of the night half's middle
+  const night = sector(0, 2 * (w + h), -90, 90).rotate(-turn).translate(...pivot).intersection(opening);
+  const at = (a, r) => [pivot[0] + r * sin(radians(a)), pivot[1] + r * cos(radians(a))];
+  const crescent = circle(0.4 * h).difference(circle(0.4 * h).translate(0.13 * h, 0.05 * h)).translate(...at(turn, reach));
+  const stars = merge([[-28, 0.72], [30, 0.8]].map(([da, k]) => circle(0.07 * h).translate(...at(turn + da, k * h))));
+  const sun = circle(0.34 * h).translate(...at(turn + 180, reach)).intersection(opening);
+  return merge([night.difference(crescent).difference(stars), sun]);
+}
+
+/** one window, built: {w (its settings), index, window (the hole), frame, cutline, content, clear (keep-out zone)} */
+function build_window(S, w, index) {
+  const centre = clock_point(w.r, window_angle(w)), kind = WINDOW_KINDS[w.kind];
+  let opening, content, grown;
+  if (kind === "moon phase") {
+    const [hole, sky] = moon_window(w.w, w.age);
+    opening = hole; content = sky;
+    grown = (d) => offset(hole.copy(), d).translate(...centre);
+  } else {
+    opening = rounded_rect(w.w, w.h, w.round);
+    grown = (d) => rounded_rect(w.w + 2 * d, w.h + 2 * d, w.round + d).translate(...centre);
+    content = kind === "am · pm" ? day_night(w.w, w.h, w.hour).intersection(opening) : centred(text_path(w.text, date_type(S), w.h * w.size / 100));
+  }
+  const win = opening.translate(...centre);
   return {
-    window: win,
-    frame: f > 0 ? date_window(S, f).difference(win) : null,
-    cutline: date_window(S, 0.05).difference(win),             // aperture outline for production
-    number: num,
+    w, index, window: win, number: content.translate(...centre),
+    frame: w.frame > 0 ? grown(w.frame).difference(win) : null,
+    cutline: grown(0.05).difference(win),                      // aperture outline for production
+    clear: grown(w.frame + w.clear),                           // keep print clear of the hole
   };
 }
 
 // ── everything that doesn't move ─────────────────────────────
 
 export function build_static(S) {
-  const date = build_date(S);
-  const cut = date ? date_window(S, S.da_frame + S.da_clear) : null;   // keep print clear of the hole
+  const windows = windows_of(S).map((w, i) => (w.on ? build_window(S, w, i) : null)).filter(Boolean);
+  const cut = windows.length === 0 ? null : windows.length === 1 ? windows[0].clear : merge(windows.map((x) => x.clear)).removeOverlap();
   let plate = circle(S.dial_d);
-  if (date) plate = plate.difference(date.window);
-  return { plate, rings: build_rings(S, cut), date };
+  for (const x of windows) plate = plate.difference(x.window);
+  return { plate, rings: build_rings(S, cut), windows, date: windows[0] || null };
 }
 
 // ── hands ────────────────────────────────────────────────────
@@ -1002,25 +1068,25 @@ export function scene(S, statik, t, preview = true, selected = null) {
   const add = (role, path, fill, more = {}) => {
     if (path) items.push({ role, path, fill, angle: 0, ...more });
   };
-  const date = statik.date;
+  const windows = statik.windows;
   const rings = statik.rings.slice().reverse();    // bottom ring first, top ring last
   const index = (d) => S.rings.indexOf(d.ring);
 
   if (S.out_production) {                          // mono mask, no plate, no hands
     const black = [0, 0, 0, 1];
     for (const d of rings) add("ring", d.path, black, { ring: d, index: index(d) });
-    if (date) {
-      add("date frame", date.frame, black);
-      add("cutline", date.cutline, black);
+    for (const x of windows) {
+      add("date frame", x.frame, black, { window: x.index });
+      add("cutline", x.cutline, black, { window: x.index });
     }
   } else {
-    if (date) {                                    // date disc, seen through the hole
-      add("date disc", date.window, [1, 1, 1, 1]);
-      add("date number", date.number, S.da_ink);
+    for (const x of windows) {                     // what shows through each hole, on white
+      add("date disc", x.window, [1, 1, 1, 1], { window: x.index });
+      add("date number", x.number, x.w.ink, { window: x.index });
     }
     add("plate", statik.plate, S.c_plate);
     for (const d of rings) add("ring", d.path, d.ring.c, { ring: d, index: index(d) });
-    if (date) add("date frame", date.frame, S.da_ink);
+    for (const x of windows) add("date frame", x.frame, x.w.ink, { window: x.index });
     if (S.ha_on) {
       for (const [name, colour, path, a] of hand_items(S, t)) add("hand", path, colour, { name, angle: a });
       if (S.ha_cap > 0) add("cap", circle(S.ha_cap), S.c_cap);
@@ -1029,17 +1095,23 @@ export function scene(S, statik, t, preview = true, selected = null) {
 
   if (preview && S.guides) {                       // never exported (R5)
     const R = S.dial_d / 2;
-    const ring_guide = (r, colour, px = 1) => add("guide", circle(2 * r), null, { stroke: colour, px });
-    const line_guide = (p0, p1) => add("guide", new Path().line(p0, p1), null, { stroke: GUIDE, px: 1 });
-    ring_guide(R, GUIDE);
-    if (date) ring_guide(S.da_r, GUIDE);
-    line_guide([-R, 0], [R, 0]);
-    line_guide([0, -R], [0, R]);
+    const tint = (c, strength) => [c[0], c[1], c[2], Math.min(Math.max(strength, 0), 100) / 100];
+    const plain = tint(S.gd_c, S.gd_strength), ring_edge = tint(S.gd_c, S.gd_strength * 0.7), chosen = tint(S.gd_sel_c, S.gd_sel_strength);
+    const ring_guide = (r, colour, px) => add("guide", circle(2 * r), null, { stroke: colour, px });
+    const line_guide = (p0, p1) => add("guide", new Path().line(p0, p1), null, { stroke: plain, px: S.gd_w });
+    if (S.gd_edge) {
+      ring_guide(R, plain, S.gd_w);
+      for (const r of new Set(windows.map((x) => x.w.r))) ring_guide(r, plain, S.gd_w);
+    }
+    if (S.gd_axes) {
+      line_guide([-R, 0], [R, 0]);
+      line_guide([0, -R], [0, R]);
+    }
     S.rings.forEach((ring, i) => {
-      if (!ring.on) return;
+      if (!ring.on || !(S.gd_rings || i === selected)) return;
       const inner = { ticks: ring.len, markers: ring.len, band: ring.width }[kind_of(ring)] || 0;
       for (const r of [...new Set([ring.r, ring.r - inner])].sort((a, b) => b - a)) {
-        if (r > 0) ring_guide(r, i === selected ? GUIDE_SELECTED : GUIDE_RING, i === selected ? 1.5 : 1);
+        if (r > 0) ring_guide(r, i === selected ? chosen : ring_edge, i === selected ? S.gd_sel_w : S.gd_w);
       }
     });
   }
