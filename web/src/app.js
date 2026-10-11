@@ -478,12 +478,18 @@ class DialTool {
     this.time_slider.onpointerup = (e) => {
       if (!pressed || Math.hypot(e.clientX - pressed[0], e.clientY - pressed[1]) > 3) return;
       const t = +this.time_slider.value;
-      this.set_time(DAY_STEPS.map((x) => x[0]).reduce((best, x) => (Math.abs(x - t) < Math.abs(best - t) ? x : best)));
+      this.set_time([...this.day_ticks, 10 * 3600 + 600].reduce((best, x) => (Math.abs(x - t) < Math.abs(best - t) ? x : best)));
     };
+    // the ruler behind the slider: a line with ticks crossing it. The wider the window, the finer it is cut.
+    this.ruler = svg_el("svg");
+    this.ruler.setAttribute("class", "ruler");
+    this.ruler.setAttribute("aria-hidden", "true");
+    this.day_ticks = DAY_STEPS.map((x) => x[0]);
+    new ResizeObserver(() => this.draw_ruler()).observe(this.time_slider);
     const bar = el("footer", { className: "bar" },
       el("div", { className: "lead" }, side, this.play_button, this.speeds, this.time_field,
         el("button", { type: "button", id: "now", textContent: "Now", title: "The time it is now", onclick: () => { const d = new Date(); this.set_time(d.getHours() % 12 * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000); } })),
-      el("div", { className: "group day" }, this.time_slider, steps),
+      el("div", { className: "group day" }, this.ruler, this.time_slider, steps),
       el("div", { className: "group viewing" }, this.status,
         el("span", { className: "zooms" },
           view("zoom-out", "Zoom out", `<path d="M3.5 8L12.5 8"/>`, () => { this.zoom(1 / 1.4, middle()); this.render(); }),
@@ -1662,6 +1668,27 @@ class DialTool {
     if (this.playing) this.play_from = [performance.now(), t];     // Play carries on from the new time
     this.sync_time();
     this.render();
+  }
+
+  /** the day's ruler. An hour gets as many cuts as its width allows: none, halves, quarters, ten or five minutes.
+   *  Hour lines are long, the others shorter; all cross the line. A click on the slider snaps to the nearest cut. */
+  draw_ruler() {
+    const W = this.time_slider.clientWidth, H = 22, THUMB = 3;
+    if (!W) return;
+    const hour = (W - THUMB) / 12;
+    const minutes = [5, 10, 15, 30, 60].find((m) => hour / (60 / m) >= 7) || 60;      // cuts at least 7 apart
+    const x = (t) => (THUMB / 2 + (W - THUMB) * t / 43200).toFixed(2);
+    const lines = { hour: "", half: "", small: "" };
+    this.day_ticks = [];
+    for (let m = 0; m < 720; m += minutes) {
+      const kind = m % 60 === 0 ? "hour" : m % 30 === 0 ? "half" : "small", h = { hour: 16, half: 10, small: 6 }[kind];
+      lines[kind] += `M${x(m * 60)} ${(H - h) / 2}V${(H + h) / 2}`;
+      this.day_ticks.push(m * 60);
+    }
+    this.ruler.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    this.ruler.dataset.minutes = minutes;
+    this.ruler.innerHTML = `<path class="line" d="M0 ${H / 2}H${W}"/>` + Object.entries(lines).map(([kind, d]) => `<path class="${kind}" d="${d}"/>`).join("")
+      + `<path class="pose" d="M${x(36600)} 1V${H - 1}"/>`;
   }
 
   /** how fast time runs while playing: 1 = a real second each second. Part of the window, not of the dial. */

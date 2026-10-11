@@ -9,8 +9,9 @@ On `dev` and online. Okay, 12 Oct, with a marked-up screenshot of the ring list 
 - **Selected is light blue** `#CFE4F5` with a blue frame `#86B4DA` (was the canon's yellow `#F0DC8E`). The same colour marks the chosen font in the font sheet and an example under the pointer: one colour for "selected" everywhere. `docs/design.md` (the guide's canon) still says yellow; it describes the guidebook, not this panel.
 - **Guides switch:** tight at the sides, as wide as its sign and word (about 93; was two columns, 120); it still ends on the right margin. Okay: "tighter guides button from the sides".
 - **Dial tab:** eight pies (were four); chosen, every other pie is filled. Okay: "dial icon double the pies".
-- **The part that scrolls is a touch darker:** `#F5F5F2` under the rows that scroll, against the paper `#FCFCFA` of the header, tabs and pinned rows (about 3 %). Okay: "scrollable area gets a smidge darker bg".
-- **Tests:** 123 checks.
+- **The part that scrolls is darker:** `#E8E8E6` under the rows that scroll, 8 % darker than the paper `#FCFCFA` of the header, tabs and pinned rows. Okay: "scrollable area gets a smidge darker bg" (first 3 %, `#F5F5F2`), then "from 3 % dark to 8".
+- **Day slider is a ruler** (Okay's marked-up screenshot: "no need to fill in the past there, divide the horizontal stretch more. Lines crossing instead of dots. Fill more as screen grows"): a line with cuts crossing it and a white line for a handle; nothing is filled in behind the handle. Each hour is cut as finely as its width allows — halves, quarters, ten or five minutes, cuts at least 7 apart — so a wider window shows more. A click snaps to the nearest cut shown, or to 10:10; a drag stays free. Hour names and the 10:10 pill stay under it.
+- **Tests:** 126 checks.
 
 ## beta 4.2 (web version) · 11 Oct 2026
 
