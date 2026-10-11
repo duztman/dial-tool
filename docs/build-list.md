@@ -87,3 +87,4 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | # | Item | Status |
 |---|---|---|
 | 22 | Mac folder set-up (Okay will ask) | parked |
+| 61 | **Editing on the preview** (web version): handles, movers and shifters drawn on the dial itself, e.g. drag a ring's radius or size, spread the numerals. Models named by Okay: Illustrator's radial Repeat tool and its Gradient tool. The panel keeps the detailed settings; the handles are the quick way. Okay, 11 Oct 2026: "Park now" | parked |

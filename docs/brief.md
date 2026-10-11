@@ -120,6 +120,7 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 ## 8 · Parked
 
 - Mac folder set-up — Okay will ask when it's time.
+- Editing on the preview (web version) — handles, movers, shifters on the dial, after Illustrator's radial Repeat and Gradient tools; detailed settings stay in the panel. Parked by Okay on 11 Oct 2026 (build list #61); the panel's controls come first.
 - ~~Browser version of the tool — DrawBot chosen for type.~~ Built 11 Oct 2026 (`web/`, §4): HarfBuzz gives the browser the type control DrawBot was chosen for.
 - drawbot-skia (cross-platform DrawBot) — test harness only; it lacks much of DrawBot's text engine.
 - ezui (RoboFont) — not available without RoboFont.
