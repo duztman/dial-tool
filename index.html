@@ -46,9 +46,8 @@ button, select, input { font: inherit; color: inherit; }
 .panel header .quiet { padding-top: 2px; }
 /* guides: a box at the top right with a tick; the whole box switches them */
 .guidesbox { margin-left: auto; align-self: center; display: flex; align-items: center; justify-content: center; gap: 8px; width: calc(2 * var(--col) + var(--gap)); height: 32px; padding: 0; border: 1.5px solid var(--ink); border-radius: 10px;      /* two columns wide: columns 5 and 6 */
-  background: var(--ink); color: var(--paper); font-weight: 600; cursor: pointer; user-select: none; }
-.guidesbox small { min-width: 20px; font-size: 11px; font-weight: 400; opacity: 0.75; text-align: left; }
-.guidesbox:hover { background: #333331; }
+  background: none; color: var(--ink); font-weight: 600; cursor: pointer; user-select: none; }      /* on: a solid dark outline, dark sign and word; off: dashed and grey */
+.guidesbox:hover { background: var(--ground); }
 .guidesbox[aria-pressed="false"] { background: none; color: var(--grey); border-color: var(--rule); border-style: dashed; font-weight: 400; }
 .guidesbox[aria-pressed="false"]:hover { background: var(--ground); color: var(--ink); }
 .guidesbox[aria-pressed="false"] svg { opacity: 0.55; }
@@ -313,8 +312,8 @@ main { position: relative; overflow: hidden; }
 .steps12 button::before { content: ""; position: absolute; left: 50%; top: -3px; width: 1px; height: 4px; background: rgba(0, 0, 0, 0.45); }
 .steps12 button:hover { background: none; color: #000; text-decoration: underline; }
 .steps12 button.on { color: #000; font-weight: 700; }
-.steps12 button.special { transform: translateX(-12%); top: -1px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--bar-ink); color: var(--bar-field); font-weight: 600; font-size: 10.5px; z-index: 1; }
-.steps12 button.special::before { left: 12%; height: 5px; top: -4px; background: var(--bar-ink); }      /* the pill sits to the right of the 10; its tick stays at 10:10 */
+.steps12 button.special { transform: translateX(-4%); top: -1px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--bar-ink); color: var(--bar-field); font-weight: 600; font-size: 10.5px; z-index: 1; }
+.steps12 button.special::before { left: 4%; height: 5px; top: -4px; background: var(--bar-ink); }      /* the pill sits to the right of the 10; its tick stays at 10:10 */
 .steps12 button.special:hover { background: #000; text-decoration: none; }
 .bar input:focus, .bar button:focus-visible, .bar input[type="range"]:focus-visible { outline-color: var(--bar-ink); }
 /* a phone, or a narrow window: the bar on top, the preview under it; below them the whole panel scrolls as one */
@@ -6672,12 +6671,12 @@ var DialTool = class _DialTool {
     } catch (e) {
     }
   }
-  /** top right: the guides' switch — a bullseye with lines, in a rounded box. Filled = on, outlined = off.
+  /** top right: the guides' switch — a bullseye with lines, in a rounded box. A solid dark outline = on, a dashed grey one = off; no words (Okay, 11 Oct 2026).
    *  A press only switches them; their settings are in Dial. */
   guides_box() {
     this.guides_tick = el("button", { type: "button", className: "guidesbox", id: "guides", onclick: () => this.set_value("global", "guides", !this.S.guides) });
     this.guides_tick.innerHTML = icon(`<circle r="5.6"/><circle r="2.1"/><path d="M0 -8.6L0 -3.6M0 3.6L0 8.6M-8.6 0L-3.6 0M3.6 0L8.6 0"/>`, 18, "-9 -9 18 18");
-    this.guides_tick.append(el("span", { textContent: "Guides" }), el("small"));
+    this.guides_tick.append(el("span", { textContent: "Guides" }));
     return this.guides_tick;
   }
   /** the rows of the section that is showing. Rows after a heading belong to its group, which can be folded. */
@@ -6722,7 +6721,6 @@ var DialTool = class _DialTool {
   /** every row: hidden if it doesn't apply (R16) or its group is folded; its controls showing the scope's value. */
   sync_rows() {
     this.guides_tick.setAttribute("aria-pressed", String(Boolean(this.S.guides)));
-    this.guides_tick.lastChild.textContent = this.S.guides ? "on" : "off";
     this.guides_tick.title = this.S.guides ? "Guides are on: press to hide them (their settings are in Dial)" : "Guides are off: press to show them";
     for (const r of this.rows) {
       const T = this.target(r.row.scope);
