@@ -14,6 +14,7 @@
 :root {
   color-scheme: light;
   --paper: #FCFCFA; --ink: #111111; --grey: #5C5C58; --rule: #B9B9B4; --ground: #ECECE8;
+  --scroll: #F5F5F2;                               /* the part of the panel that scrolls: a touch darker than the paper (#FCFCFA), about 3 % */
   --select: #CFE4F5; --select-rule: #86B4DA;       /* what is selected: a light blue (the canon's yellow until beta 4.3; Okay, 12 Oct 2026) */
   --bar: #333333; --bar-ink: #F2F2EE; --bar-rule: #5C5C58; --bar-field: #454543;      /* the bar: 80 % black, light on dark (Okay, 12 Oct 2026; before: black, #DADAD5, #A9A9A4) */
   --bar-dim: rgba(255, 255, 255, 0.3); --bar-faint: rgba(255, 255, 255, 0.12);      /* quiet lines and fills on the bar */
@@ -71,7 +72,7 @@ h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; margin: 0; }
 .tabs button:focus-visible { outline-offset: -2px; }
 
 .pinned { padding: 0 var(--edge) calc(var(--unit) * 3) var(--toggle); background: var(--paper); border-bottom: 1px solid var(--rule); }      /* a hairline: what is under it scrolls */
-.form { flex: 1; min-height: 0; overflow-y: auto; padding: 0 var(--edge) calc(var(--unit) * 10) var(--toggle); }
+.form { background: var(--scroll); flex: 1; min-height: 0; overflow-y: auto; padding: 0 var(--edge) calc(var(--unit) * 10) var(--toggle); }
 
 #app [hidden] { display: none; }                 /* rows that don't apply (R16); beats .row's own display */
 

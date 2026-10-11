@@ -9,6 +9,7 @@ On `dev` and online. Okay, 12 Oct, with a marked-up screenshot of the ring list 
 - **Selected is light blue** `#CFE4F5` with a blue frame `#86B4DA` (was the canon's yellow `#F0DC8E`). The same colour marks the chosen font in the font sheet and an example under the pointer: one colour for "selected" everywhere. `docs/design.md` (the guide's canon) still says yellow; it describes the guidebook, not this panel.
 - **Guides switch:** tight at the sides, as wide as its sign and word (about 93; was two columns, 120); it still ends on the right margin. Okay: "tighter guides button from the sides".
 - **Dial tab:** eight pies (were four); chosen, every other pie is filled. Okay: "dial icon double the pies".
+- **The part that scrolls is a touch darker:** `#F5F5F2` under the rows that scroll, against the paper `#FCFCFA` of the header, tabs and pinned rows (about 3 %). Okay: "scrollable area gets a smidge darker bg".
 - **Tests:** 123 checks.
 
 ## beta 4.2 (web version) · 11 Oct 2026
