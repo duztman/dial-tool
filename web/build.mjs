@@ -1,0 +1,71 @@
+// build.mjs — packs the web version into ONE file, web/dial-tool.html.
+//
+// Everything is inside that file: the code (src/), the two engines (PathKit and HarfBuzz,
+// as WebAssembly) and Inter as the stand-in font. So it opens by double-click, needs no
+// server and no internet, and can be put anywhere.
+//
+//   cd web && npm install && node build.mjs [/path/to/stand-in-font.otf]
+
+import esbuild from "esbuild";
+import fs from "fs";
+import path from "path";
+import { createRequire } from "module";
+
+const here = path.dirname(new URL(import.meta.url).pathname);
+const require = createRequire(import.meta.url);
+const FONT = process.argv[2] || "/usr/share/fonts/opentype/inter/Inter-Regular.otf";    // Inter, SIL Open Font Licence
+const b64 = (file) => fs.readFileSync(file).toString("base64");
+
+const patch_engines = {                            // both engines look for their .wasm file next to the page:
+  name: "engines-from-the-page",                   // hand them the bytes packed in the page instead
+  setup(build) {
+    build.onLoad({ filter: /harfbuzzjs[\\/]dist[\\/]index\.mjs$/ }, (args) => {
+      const text = fs.readFileSync(args.path, "utf8");
+      const call = "init(await createHarfBuzz());";
+      if (!text.includes(call)) throw new Error("harfbuzzjs changed how it starts: update build.mjs");
+      return { contents: text.replace(call, `init(await createHarfBuzz({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));`), loader: "js" };
+    });
+  },
+};
+
+const out = await esbuild.build({
+  entryPoints: [path.join(here, "src/main.js")], bundle: true, format: "esm", write: false, minify: false,
+  platform: "browser", target: "es2022", plugins: [patch_engines], external: ["fs", "path", "module", "url", "crypto"],
+  logLevel: "warning",
+});
+const code = out.outputFiles[0].text.replace(/<\/script/g, "<\\/script");
+const css = fs.readFileSync(path.join(here, "src/style.css"), "utf8");
+const version = /VERSION = "([^"]+)"/.exec(fs.readFileSync(path.join(here, "src/geometry.js"), "utf8"))[1];
+
+const html = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dial Tool</title>
+<!-- Dial Tool, web version · ${version} · built ${new Date().toISOString().slice(0, 10)} · source: github.com/duztman/dial-tool, web/src
+     One file: code, shape engine (PathKit), text engine (HarfBuzz) and the stand-in font (Inter, OFL) are all inside. -->
+<style>
+${css}</style>
+</head>
+<body>
+<div id="app"><p style="padding:22px">Starting…</p></div>
+<script>
+globalThis.__DIAL = {
+  packed: {
+    pathkit: "${b64(require.resolve("pathkit-wasm/bin/pathkit.wasm"))}",
+    harfbuzz: "${b64(require.resolve("harfbuzzjs/dist/harfbuzz.wasm"))}",
+    font: "${b64(FONT)}",
+  },
+  bytes(name) { return Uint8Array.from(atob(this.packed[name]), (c) => c.charCodeAt(0)); },
+};
+window.addEventListener("error", (e) => { const a = document.getElementById("app"); if (a && a.textContent.startsWith("Starting")) a.innerHTML = '<p style="padding:22px">Dial Tool couldn’t start: ' + e.message + '</p>'; });
+</script>
+<script type="module">
+${code}
+</script>
+</body>
+</html>
+`;
+fs.writeFileSync(path.join(here, "dial-tool.html"), html);
+console.log(`dial-tool.html · ${version} · ${(html.length / 1e6).toFixed(2)} MB`);

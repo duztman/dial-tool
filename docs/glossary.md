@@ -2,7 +2,7 @@
 
 What each word means **in this project**. Turkish where it's the common trade word.
 If a term is used differently in conversation, ask, then update this file.
-*Last updated 4 Oct 2026 (beta 2.3).*
+*Last updated 11 Oct 2026 (web version, beta 3.0).*
 
 ## Watch terms
 
@@ -114,6 +114,12 @@ Kept so older notes still read.
 | **Private engine** | A separate `DrawBotDrawingTool` so the tool never disturbs DrawBot's own canvas. |
 | **GridView** | Apple's form grid, used for every form (label · control · field · stepper columns). |
 | **Binding** | The link from a control to a setting key in a scope — global, the selected ring, or the selected hand — so selecting another ring refills the controls. |
+| **Web version** | The tool in a browser (`web/`, beta 3.0): `web/dial-tool.html`, one file. Same settings and scene as `dial.py` (R30). |
+| **PathKit** | Skia's shape combining, compiled for the browser; the web version's **shape combining**. The same engine as `skia-pathops`. |
+| **HarfBuzz** | The web version's text engine: turns text + font + features + axes + language into positioned glyph outlines. Does what DrawBot's `FormattedString` (CoreText) does in `dial.py`. |
+| **Stand-in font** | Inter, packed inside the web version's file: draws numerals whose font isn't loaded yet. The log names the font it replaces. |
+| **Installed fonts** | The web version's button that lists the computer's fonts (Chrome, Edge). Other browsers: add font files. |
+| **Round ends** | A hand's setting `round` (web version): the corner radius of its flat ends. Marks get round ends from *Round outer* / *Round inner*. Okay's "round caps". |
 | **Probe** | `tools/dial_probe.py`, a self-reporting test of the interface foundation, run on the Mac. |
 | **Harness** | `tools/test_harness.py`, renders geometry off-Mac (drawbot-skia). |
 | **Smoke test** | `tools/ui_smoke.py`, runs the whole interface off-Mac on **stand-ins** that accept only what vanilla 0.5.0 accepts. |

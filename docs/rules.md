@@ -1,7 +1,7 @@
 # Dial Tool — rules
 
 Standing rules. Check code against these in reviews; cite them by number.
-*Last updated 4 Oct 2026 (beta 2.3: R26–R28 added with the preview plan, R29 with the design canon; beta 2.2: R10 updated, R25 added, R13 reworded).*
+*Last updated 11 Oct 2026 (web version: R30 added, R19 extended). Before: 4 Oct 2026 (beta 2.3: R26–R28 added with the preview plan, R29 with the design canon; beta 2.2: R10 updated, R25 added, R13 reworded).*
 
 ## Geometry
 
@@ -38,10 +38,12 @@ Standing rules. Check code against these in reviews; cite them by number.
 - **R27 · Our own Cocoa classes** have one name per contract, ending in a number (`DialToolCanvasView1`), are looked up with `objc.lookUpClass` before being defined (a process can't define a class twice; ⌘R runs the script again), and only pass events on to Python. Change what a class must do → a new number. (`DialToolFlippedView` predates the numbering; R24.)
 - **R28 · Nothing renders inside a control's callback.** Callbacks change settings and call `render()`, which only asks for a frame; the frame clock (`Clock`, `_frame`) draws, at most once per display frame.
 
+- **R30 · The web version** (`web/`) keeps `dial.py`'s settings keys, defaults and function names in `web/src/geometry.js`, so one settings file opens in both (R8) and the two can be read side by side. A key only one of them knows must be harmless to the other. It builds to **one file** with nothing fetched at run time; its two engines are pinned in `web/package.json` (PathKit — Skia's shape combining; HarfBuzz — text). R1–R6, R9–R12, R15–R17, R26 and R28 apply to it as written; R13, R14, R22, R24 and R27 are about DrawBot's window only. *Added 11 Oct 2026.*
+
 ## Process
 
 - **R18 · Simplest approach that works** (Occam). No new feature without Okay asking.
-- **R19 · Test before handing over.** Geometry: `tools/test_harness.py`, and look at the contact sheet. Interface: `tools/ui_smoke.py` must pass.
+- **R19 · Test before handing over.** Geometry: `tools/test_harness.py`, and look at the contact sheet. Interface: `tools/ui_smoke.py` must pass. Web version: `cd web && npm test` must pass, and look at `web/test/out/sheet.png` and the screenshots.
 - **R20 · Third attempt at the same fix → stop and ask.** The first assumption was probably wrong.
 - **R21 · Measure, don't estimate** — sizes and timings come from real renders.
 - **R25 · The guidebook follows each release.** Edit the pages in `docs/guide/pages/` (how: `docs/guide/README.md`) and `tools/guide_dials.py` (the classic dials); run `tools/make_guide.py`; it must print no `CHECK` line (a box too small for its text, a box off the grid, an annotation out of place). Figures, the redrawn window and the printed values all come from `dial.py` and the same settings — never type a value into the guide that a figure doesn't use. Fonts are fetched into `docs/guide/cache` (not in the repo).

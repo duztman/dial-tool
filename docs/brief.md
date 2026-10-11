@@ -1,6 +1,6 @@
 # Dial Tool — brief
 
-*Started 3 Oct 2026. Last updated 4 Oct 2026 (beta 2.3 on `dev`: preview plan built, Mac check pending — `docs/preview.md` §6).*
+*Started 3 Oct 2026. Last updated 11 Oct 2026 (web version, beta 3.0, on `dev`). Before: 4 Oct 2026 (beta 2.3 on `dev`: preview plan built, Mac check pending — `docs/preview.md` §6).*
 
 ## 1 · Goal
 
@@ -67,6 +67,9 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 4 Oct | **skia-pathops** for shape combining, installed per Mac through DrawBot's package menu; the tool falls back to DrawBot's own if it's missing. **Canvas** is the preview at first launch; PDF stays a switch. | Okay. Shape combining is 2–14× faster and matches the harness; reversible by uninstalling. Canvas fixes flash, lag and blur; PDF remains the reference. |
 | 4 Oct | **beta 2.3 (on `dev`): the preview is drawn by Core Animation from one scene** shared with export (R26); a frame clock draws (R28); the PDF preview stays as a switch and automatic fallback; skia-pathops is used when installed. `main` stays at beta 2.2 until Okay's Mac check. | Okay: "run the preview plan". Built as planned; differences from the plan are listed in `docs/preview.md` §12. |
 | 11 Oct | **MP4 · GIF are rendered at a chosen pixel size** (`out_px`, "Clip size px", 1080), always even. | Okay: "mp4 export does not work". Cause read in DrawBot 3.132's source: clips come out at 72 ppi and MP4 refuses odd pixel counts; his 33.5 mm dial made 111 px frames. Not yet seen on a Mac. |
+| 11 Oct | **A web version** (`web/`, beta 3.0): the same settings, geometry and scene in a browser, built to one HTML file. Not p5.js: the preview is SVG, shapes are combined by PathKit (Skia), text is shaped by HarfBuzz. `dial.py` stays in the repo; whether it is kept up is open (§5.11). | Okay: "can we do this with p5js? on a modern browser? … if answers are yes go." Asked for round ends on everything and a click on the preview that opens the clicked part's settings. Checked first: HarfBuzz in the browser does kerning, OpenType features, variable axes, collections and the designer's feature names (run here on Lora, Inter, Noto CJK); Chrome and Edge can read installed fonts (Local Font Access; not Safari or Firefox). Unlike DrawBot's window, a browser page can be run and looked at before handing over. p5.js draws to a bitmap canvas and has its own, thinner text engine — the wrong tool for true-size vector files and type. |
+| 11 Oct | **Round ends.** Marks: `round_out` / `round_in` at half the width or more already make a round end (in `dial.py` too); the web version adds a "Round both ends" button. Hands: new key `round` in each hand (web version; `dial.py` ignores it). | Okay: "I need round caps on everything. Minute markers, hands." |
+| 11 Oct | **Click the preview → that part's settings** (web version): a ring, a numeral (also picks it for Nudge), a hand, the date window, the plate. A click beside a thin tick takes the ring whose mark is nearest. | Okay. |
 | 4 Oct | **Guidebook redesigned**, then made landscape in a Swiss, catalogue manner (Okay: "think Braun catalogs… grid system… no visual fluff… redrawn UI"): 23 pages, 12-column grid, cover with contents, controls redrawn from `dial.py`'s own row descriptions, one classic per page, more figures, nine classic dials with real values and presets. Type: **Recursive Sans + Mono** (Okay asked for Input; it isn't on Google Fonts and its free licence is for private use only, so Okay chose Recursive). Built from HTML through Chromium. Off-Mac renders use open stand-ins for the macOS fonts the dials name. | Okay: "a better pdf… panels, details, helpful, nicer dials, real-world classics, examples with real values". |
 | 4 Oct | **Design canon** (`docs/design.md`, R29) and the guidebook's third edition built on it: one sans like Univers (Inter, open licence), no mono, dark cover, grey redrawn window at true proportions, better contrast and sizes. The canon also lists ideas for the tool's own window (§8) — not decided. | Okay: "research Braun catalogs and instruction guides… Lupton… a sans like Univers, scrap the mono… better cover, darker… UI: more detail, grayscale, right proportions… let's make it canon". |
 | 4 Oct | **Guidebook, fourth edition; canon revised** (`docs/design.md` §2–§5): unit 1.375 mm (text leading −8 %), leads and titles +3 % (12.4 / 31 pt), no accent colour, one large annotated example per topic then thumbnails, line icons, "Watch" notes, classic pages 8 · 4. | Okay: "line height … down just a little bit, larger text up just a little tiny bit … less white space … a few examples larger, then smaller … line drawing icons, no red dots … what to point out, what to warn about". |
@@ -87,6 +90,8 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 7. **Should rings and hands scale with the diameter?** Radii and lengths are absolute mm (R1), so changing the diameter leaves them in place — right for a fixed movement, awkward while exploring. (Build list #32.)
 8. **PDF import with real Illustrator files** — forms, compound paths, white made in spot or CMYK colours. Tested only with hand-written operators so far. (Build list #30.)
 9. **Preview drawing** — do Core Animation shape layers draw fine lines (0.12 mm ticks) as the PDF does? Apple says shape rasterization "may favor speed over accuracy". Built in beta 2.3; **still open until the Mac check** (`docs/preview.md` §6 step 5: also look at whether curves stay smooth when zoomed); contingency in §8.
+11. **One tool or two?** With the web version (11 Oct), is `dial.py` kept up, or frozen at beta 2.3 as the reference the web version is checked against? Until Okay says: new features go to the web version only; `dial.py` gets fixes.
+12. **Installed fonts in the web version on Okay's Macs** — not yet tried there: does Chrome list Helvetica Neue (a collection file) and do the numerals match `dial.py`'s? (Build list #49.)
 10. ~~**skia-pathops**~~ — settled 4 Oct: yes (§4).
 
 ## 6 · Avenues (ideas, not commitments)
@@ -110,6 +115,6 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 ## 8 · Parked
 
 - Mac folder set-up — Okay will ask when it's time.
-- Browser version of the tool — DrawBot chosen for type.
+- ~~Browser version of the tool — DrawBot chosen for type.~~ Built 11 Oct 2026 (`web/`, §4): HarfBuzz gives the browser the type control DrawBot was chosen for.
 - drawbot-skia (cross-platform DrawBot) — test harness only; it lacks much of DrawBot's text engine.
 - ezui (RoboFont) — not available without RoboFont.

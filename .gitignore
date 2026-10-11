@@ -4,3 +4,5 @@ __pycache__/
 test-renders/
 docs/guide/cache/
 docs/guide/_built.html
+web/node_modules/
+web/test/out/

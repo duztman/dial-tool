@@ -1,7 +1,7 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **done** · **parked**.
-*Last updated 4 Oct 2026 (beta 2.3: preview plan built, #37–#41 were waiting for the Mac check, `docs/preview.md` §6 — set aside by Okay the same day, see #40). Seen working on Okay's Mac 4 Oct (beta 2.1 screenshot): window, sections, ring list, ring settings list, regular-size controls, live popups, type per numerals ring with feature names.*
+*Last updated 11 Oct 2026 (web version: #49–#56; MP4 fix: #48). Before: 4 Oct 2026 (beta 2.3: preview plan built, #37–#41 were waiting for the Mac check, `docs/preview.md` §6 — set aside by Okay the same day, see #40). Seen working on Okay's Mac 4 Oct (beta 2.1 screenshot): window, sections, ring list, ring settings list, regular-size controls, live popups, type per numerals ring with feature names.*
 
 ## Verify on a Mac
 
@@ -51,6 +51,19 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 46 | Date window on a dark plate: frame and day share one Print colour, so a light frame means a light day on the white disc. Separate colours? (found drawing the diver) | open |
 | 44 | Canvas: show the page edge (dial + margin)? The canvas fills the whole preview with the backdrop; the PDF preview shows the page. Ask Okay after the Mac check | open |
 | 32 | Scale the whole dial (rings, hands, date) when the diameter changes, or a "scale everything" action (brief §5.7) | open |
+
+## Web version (beta 3.0, 11 Oct 2026)
+
+| # | Item | Status |
+|---|---|---|
+| 49 | **First run on Okay's Mac**, in Chrome: open `web/dial-tool.html`; load a settings file; Rings → a numerals ring → Type → *Installed fonts* (Chrome asks once) → the numerals turn from Inter to Helvetica Neue. Compare with `dial.py`'s export of the same settings. Export PDF and SVG, open in Illustrator at true size. | verify |
+| 50 | Imported shapes (SVG, PDF, AI) for markers and hands — not in the web version; a "file" shape is drawn as a bar or baton and the log says so. In a browser the file's content has to travel inside the settings (no file paths). | open |
+| 51 | MP4 and GIF export (WebCodecs) | open |
+| 52 | Live text in PDF · SVG; named instances of variable fonts; a fallback font for scripts the main font lacks (Eastern Arabic, Chinese: HarfBuzz has no automatic fallback, CoreText had) | open |
+| 53 | **Better interface overall** — Okay, 11 Oct: "better ui overall, learn and implement. Move delete layers, export better." Research first (how good parametric tools lay out lists, inspectors and export), then propose. Includes: drag to reorder rings, undo, an export panel that shows what will be written. | open (Okay: later) |
+| 54 | **Use it through Claude (MCP)** — Okay, 11 Oct: "can we attach an mcp to that, so someone can use over claude?" `web/src/geometry.js` and `output.js` run in Node without a window (the parity test does it), so a small server could offer: read and change settings, list fonts, return a PNG / SVG / PDF. Decide: local (runs on the user's computer) or hosted. | open (Okay: later) |
+| 55 | Somewhere to open it without the file: GitHub Pages for the repo (Okay switches it on in the repo's settings) | open |
+| 56 | Remembered fonts: font files added by hand are forgotten when the page closes (installed fonts are found again) | open |
 
 ## Later
 

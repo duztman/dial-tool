@@ -3,7 +3,9 @@
 A parametric watch-dial design tool that runs inside [DrawBot](https://www.drawbot.com) on macOS.
 Built to explore, present and produce dials for a watch Okay will actually build.
 
-**Status: beta 2.2 (4 Oct 2026)** on `main` — rings. **beta 2.3** on `dev` — new preview (canvas, frame clock, Canvas · PDF switch), waiting for the Mac check in `docs/preview.md` §6. **Start here: [`docs/Dial-Tool-guide.pdf`](docs/Dial-Tool-guide.pdf)** — the guidebook, with nine classic dials and their settings.
+**Web version: beta 3.0 (11 Oct 2026)** on `dev` — the same tool in a browser: open [`web/dial-tool.html`](web/dial-tool.html) (one file, no install; Chrome or Edge for the fonts installed on the computer). It reads and writes the same settings files as `dial.py`. What it has and lacks: `docs/changelog.md`; what's next: `docs/build-list.md`, Web.
+
+**DrawBot version: beta 2.2 (4 Oct 2026)** on `main` — rings. **beta 2.3** on `dev` — new preview (canvas, frame clock, Canvas · PDF switch), waiting for the Mac check in `docs/preview.md` §6. **Start here: [`docs/Dial-Tool-guide.pdf`](docs/Dial-Tool-guide.pdf)** — the guidebook, with nine classic dials and their settings.
 Geometry is tested off-Mac with `tools/test_harness.py`; the interface runs off-Mac in
 `tools/ui_smoke.py` against vanilla 0.5.0's real signatures. Its foundation was verified on Okay's Mac
 with `tools/dial_probe.py`; beta 2.1's window ran on Okay's Mac (4 Oct); what's still to check there is in `docs/build-list.md`, Verify.
@@ -22,6 +24,9 @@ Off-Mac checks (Python 3, `pip install drawbot-skia skia-pathops pillow`):
 | File | What it is |
 |---|---|
 | `dial.py` | The tool. One file, four parts: settings · geometry · drawing (the scene) · interface (window, canvas preview, frame clock). The dial is a list of rings. |
+| `web/dial-tool.html` | **The web version, built**: one file with everything inside. Open it in a browser. |
+| `web/src/` | Its source: `geometry.js` (parts 1–3 of `dial.py`, name for name) · `output.js` (SVG, PDF) · `app.js` (the window) · `style.css` · `main.js`. `web/build.mjs` packs them into the one file. |
+| `web/test/` | `parity.py` draws every harness dial with `dial.py` and with the web geometry and compares the pictures; `window.mjs` uses the built page in Chromium (rows, ring list, clicks on the preview, fonts, exports, save and load). |
 | `tools/dial_probe.py` | Foundation test for the interface. Run it in DrawBot when something breaks; its Report tab says which part failed. |
 | `tools/test_harness.py` | Renders the geometry without a Mac (drawbot-skia) into a contact sheet; checks the PDF importer's drawing logic. |
 | `tools/ui_smoke.py` | Runs the whole interface without a Mac on stand-ins that accept only what vanilla 0.5.0 accepts; drives the frame clock and compares the canvas's layers with the scene. |
