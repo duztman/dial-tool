@@ -68,6 +68,7 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 59 | Windows: am · pm and moon phase follow settings (hour, moon age), not the time shown; a day window is as wide as its Width, not its word. A window's shape is upright at every position. Ask Okay what he wants here | open |
 | 56 | Remembered fonts: fonts added from a link are remembered (11 Oct); font files added by hand are still forgotten when the page closes | open |
 | 60 | Add fonts by Google link: try it on the real page (it was tested against local copies of the same paths). A dial opened from a link could fetch a missing Google family by its name by itself — not done: every unknown font would cost three failed requests | verify / open |
+| 62 | OpenType tiles, grouped (web version): features that have a name of their own first; the numbered sets (`ss01`…, stylistic sets) and (`cv01`…, character variants) each in a group below. A note from Okay, 11 Oct 2026, while he marks up screenshots of the whole panel; not started | open |
 
 ## Later
 
