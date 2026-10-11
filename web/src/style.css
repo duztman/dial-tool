@@ -6,7 +6,7 @@
   color-scheme: light;
   --paper: #FCFCFA; --ink: #111111; --grey: #5C5C58; --rule: #B9B9B4; --ground: #ECECE8;
   --select: #F0DC8E;                               /* the canon's yellow: what is selected */
-  --bar: #111111; --bar-ink: #FCFCFA; --bar-rule: #5C5C58; --bar-field: #2A2A28;      /* the bar under everything */
+  --bar: #DADAD5; --bar-ink: #111111; --bar-rule: #8E8E89; --bar-field: #FCFCFA;      /* the bar under everything: a light grey (was black until beta 4.1) */
   /* the panel's columns (beta 4.0): a toggle column at the far left (eyes: a pane's, a ring's), then six
      equal columns with equal gaps, then the right margin. 36 + (6 × 54 + 5 × 12) + 28 = 448.
      label 2 · slider 2 · value 1 · stepper 1 · menus and text 4 · swatch 1, its value 2 · a picture tile 1 */
@@ -31,9 +31,14 @@ button, select, input { font: inherit; color: inherit; }
 .panel { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--rule); }
 .panel header { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 4) var(--edge) calc(var(--unit) * 3) var(--toggle); }
 /* guides: a box at the top right with a tick; the whole box switches them */
-.guidesbox { margin-left: auto; align-self: center; display: flex; align-items: center; gap: 12px; height: 30px; padding: 0 10px 0 14px; border: 1px solid var(--ink); cursor: pointer; user-select: none; }
-.guidesbox:hover { background: var(--ground); }
-.guidesbox input { margin: 0; width: 14px; height: 14px; }
+.guidesbox { margin-left: auto; align-self: center; display: flex; align-items: center; justify-content: center; gap: 8px; width: calc(2 * var(--col) + var(--gap)); height: 32px; padding: 0; border: 1.5px solid var(--ink); border-radius: 10px;      /* two columns wide: columns 5 and 6 */
+  background: var(--ink); color: var(--paper); font-weight: 600; cursor: pointer; user-select: none; }
+.guidesbox small { min-width: 20px; font-size: 11px; font-weight: 400; opacity: 0.75; text-align: left; }
+.guidesbox:hover { background: #333331; }
+.guidesbox[aria-pressed="false"] { background: none; color: var(--grey); border-color: var(--rule); border-style: dashed; font-weight: 400; }
+.guidesbox[aria-pressed="false"]:hover { background: var(--ground); color: var(--ink); }
+.guidesbox[aria-pressed="false"] svg { opacity: 0.55; }
+.guidesbox:active { background: var(--ink); color: var(--paper); }
 h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; margin: 0; }
 
 /* sections: a sign inside a ring, its name under it */
@@ -256,32 +261,55 @@ main { position: relative; overflow: hidden; }
 
 /* the bar: under the panel and the preview. Its first cell is as wide as the panel, so the time
    controls start where the preview starts. */
-.bar { grid-column: 1 / -1; display: grid; grid-template-columns: calc(var(--panel) - var(--gutter) * 2) 78px 1fr auto auto auto; align-items: center;
-  gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 2) var(--gutter); background: var(--bar); color: var(--bar-ink); }
-.bar .lead { display: flex; align-items: center; gap: calc(var(--unit) * 2); min-width: 0; margin-left: calc((var(--toggle) - 26px) / 2 - var(--gutter)); }
-.bar .side { flex: none; width: 26px; min-width: 0; padding: 0; border-color: transparent; }
+/* the bar keeps the panel's columns: under the panel its square stands in the toggle column and the status runs
+   over the six columns; beside it every control is one or two columns wide, 12 apart.
+   play 1 · speeds 2 · time 2 · slider (what is left) · Now 1 │ − + 1 · Fit 1 */
+.bar { grid-column: 1 / -1; display: flex; align-items: center; gap: 0; height: 48px; padding: 0 var(--edge) 0 0; background: var(--bar); color: var(--bar-ink); border-top: 1px solid var(--bar-rule); }
+.bar .lead { flex: none; display: flex; align-items: center; gap: 0; width: var(--panel); min-width: 0; padding: 0 var(--edge) 0 0; }
+.bar .side { flex: none; width: 30px; margin: 0 calc((var(--toggle) - 30px) / 2); }
+.bar .group { display: flex; align-items: center; gap: var(--gap); height: 100%; padding: 0 var(--gap); border-left: 1px solid var(--bar-rule); }
+.bar .timing { flex: 1; min-width: 0; }
+.bar .viewing { padding-right: 0; }
+.bar .zooms { display: flex; width: var(--col); }
+.bar .zooms button { flex: 1; min-width: 0; width: auto; }
+.bar .zooms button + button { border-left: 0; }
 .bar .side[aria-pressed="true"] { background: var(--bar-ink); color: var(--bar); }
 /* the panel put away: the dial gets the whole window */
 #app.nopanel { grid-template-columns: 0 1fr; }
 #app.nopanel .panel { display: none; }
-#app.nopanel .bar { grid-template-columns: auto 78px 1fr auto auto auto; }
+#app.nopanel .bar .lead { width: auto; }
 #app.nopanel .bar .status { display: none; }
-.bar .status { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: var(--gutter); opacity: 0.72; }
-.bar .time { margin-left: var(--gutter); width: 78px; text-align: right; }
+.bar .status { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--grey); }
+.bar .time { flex: none; width: calc(2 * var(--col) + var(--gap)); height: 30px; text-align: center; font-weight: 600; letter-spacing: 0.02em; }
 .bar input[type="text"] { background: var(--bar-field); border-color: var(--bar-rule); color: var(--bar-ink); }
-.bar input[type="range"] { accent-color: var(--bar-ink); margin-left: var(--gutter); width: calc(100% - var(--gutter)); }
-.bar button { background: var(--bar); color: var(--bar-ink); border-color: var(--bar-rule); min-width: 44px; }
-.bar button:hover { background: var(--bar-field); }
-.bar button:active { background: var(--bar-ink); color: var(--bar); }
-.bar input:focus, .bar button:focus-visible, .bar input[type="range"]:focus-visible { outline-color: var(--bar-ink); }
+.bar input[type="range"] { flex: 1; min-width: 60px; accent-color: var(--bar-ink); margin: 0; }
+.bar button { flex: none; height: 30px; width: var(--col); min-width: 0; padding: 0; background: var(--bar-field); color: var(--bar-ink); border-color: var(--bar-rule); }
+.bar button:hover { background: #fff; border-color: var(--bar-ink); }
+.bar button:active, .bar .segs button.on { background: var(--bar-ink); color: var(--bar-field); border-color: var(--bar-ink); }
 .bar .icon { display: inline-flex; align-items: center; justify-content: center; }
+.bar #play { background: var(--bar-ink); color: var(--bar-field); border-color: var(--bar-ink); }
+.bar #play:hover { background: #333331; }
+.bar .speeds { width: calc(2 * var(--col) + var(--gap)); }
+.bar .speeds button { flex: 1; width: auto; }
+.bar input:focus, .bar button:focus-visible, .bar input[type="range"]:focus-visible { outline-color: var(--bar-ink); }
 /* a phone, or a narrow window: the bar on top, the preview under it; below them the whole panel scrolls as one */
 @media (max-width: 860px) {
   :root { --gutter: 16px; --edge: 16px; --toggle: 34px; --col: calc((100vw - var(--toggle) - var(--edge) - 5 * var(--gap)) / 6); }
   #app, #app.nopanel { grid-template-columns: 1fr; grid-template-rows: auto 42% 1fr; }
   #app.nopanel { grid-template-rows: auto 1fr 0; }
-  .bar, #app.nopanel .bar { grid-row: 1; grid-template-columns: auto 78px 1fr auto auto auto; padding: calc(var(--unit) * 2) 16px; }
-  .bar .lead { margin-left: 0; }
+  .bar { grid-row: 1; flex-wrap: wrap; height: auto; padding: 0 var(--edge) 0 0; border-top: 0; border-bottom: 1px solid var(--bar-rule); }
+  .bar .lead, #app.nopanel .bar .lead { width: auto; padding: 0; }
+  .bar .group { height: 46px; padding: 0; gap: var(--gap); border-left: 0; }
+  .bar .timing { display: contents; }               /* its parts join the bar's own row; the slider gets a row to itself */
+  .bar .timing > * { margin-right: var(--gap); }
+  .bar .speeds { width: auto; flex: 3 1 0; font-size: 12px; }
+  .bar .time { width: auto; flex: 2 1 0; }
+  .bar button { width: auto; flex: 1 1 0; }
+  .bar .side { flex: none; width: 30px; }
+  .bar input[type="range"] { order: 9; flex: 0 0 calc(100% - var(--toggle)); margin: 0 0 10px var(--toggle); }
+  .bar .viewing { flex: 1 1 0; height: 46px; }
+  .bar .zooms { display: none; }                    /* a phone pinches */
+  .bar .viewing button { width: 100%; }
   main { grid-row: 2; }
   .panel { grid-row: 3; display: block; overflow-y: auto; -webkit-overflow-scrolling: touch; border-right: 0; border-top: 1px solid var(--rule); }
   .form { overflow: visible; }
@@ -292,7 +320,6 @@ main { position: relative; overflow: hidden; }
   .listfoot .signs { margin-left: auto; }
   .pickt { padding-left: 0; padding-right: 0; font-size: 10px; letter-spacing: -0.01em; }
   .bar .status { display: none; }
-  .bar .time, .bar input[type="range"] { margin-left: 0; width: 100%; }
   .picker { inset: auto 0 0 0; width: 100%; height: 58%; border-right: 0; border-top: 1px solid var(--ink); }
   .picker::backdrop { background: none; }
 }

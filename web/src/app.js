@@ -264,7 +264,7 @@ const ROWS = {
 const guides_on = (S) => S.guides;
 ROWS.Dial.push(                                    // guides: preview only, nothing here reaches a file (R5)
   hdr("Guides", { folded: true }),
-  info("Guides are off. Tick the Guides box at the top right to show them.", { show: (S) => !S.guides }),
+  info("Guides are off. Press Guides at the top right to show them.", { show: (S) => !S.guides }),
   chk("gd_edge", "Dial edge and window radii", { show: guides_on }),
   chk("gd_axes", "Centre lines", { show: guides_on }),
   chk("gd_rings", "Every ring’s edges", { show: guides_on }),
@@ -275,6 +275,7 @@ ROWS.Dial.push(                                    // guides: preview only, noth
   num("gd_sel_strength", "…strength %", 5, 100, 1, { show: guides_on }),
   num("gd_sel_w", "…thickness", 0.25, 6, 0.25, { show: guides_on }),
 );
+const SPEEDS = [[1, "Real time"], [60, "A minute every second"], [720, "An hour every five seconds: twelve hours in a minute"]];
 const SECTIONS = Object.keys(ROWS);                // their numbers are what ui_section stores (R9)
 const TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];      // left to right; Guides is the box at the top right (Okay, 11 Oct 2026)
 for (const name of SECTIONS) for (const row of ROWS[name]) row.scope ??= name === "Rings" ? "ring" : "global";
@@ -451,10 +452,26 @@ class DialTool {
     this.status = el("div", { className: "status" });
     const side = el("button", { type: "button", className: "icon side", id: "panel-toggle", title: "Hide or show the settings", ariaLabel: "Hide or show the settings", onclick: () => this.show_panel(root.classList.contains("nopanel")) });
     side.innerHTML = icon(TOOL_ICONS.panel);
+    // the bar, in three parts: what is selected · time (play, how fast, the time, the slider, now) · view (zoom out, in, fit)
+    this.speed = 1;
+    this.speeds = el("span", { className: "segs speeds", role: "radiogroup", ariaLabel: "How fast time runs" });
+    for (const [k, title] of SPEEDS) {
+      const b = el("button", { type: "button", id: "speed-" + k, textContent: k + "×", title, onclick: () => this.set_speed(k) });
+      b.setAttribute("role", "radio");
+      this.speeds.append(b);
+    }
+    const view = (id, title, inside, act) => { const b = el("button", { type: "button", className: "icon", id, title, ariaLabel: title, onclick: act }); b.innerHTML = icon(inside); return b; };
+    const middle = () => [this.svg.clientWidth / 2, this.svg.clientHeight / 2];
     const bar = el("footer", { className: "bar" },
-      el("div", { className: "lead" }, side, this.status), this.time_field, this.time_slider, this.play_button,
-      el("button", { type: "button", textContent: "Now", onclick: () => { const d = new Date(); this.set_time(d.getHours() % 12 * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000); } }),
-      el("button", { type: "button", textContent: "Fit", onclick: () => { this.fit(); this.render(); } }));
+      el("div", { className: "lead" }, side, this.status),
+      el("div", { className: "group timing" }, this.play_button, this.speeds, this.time_field, this.time_slider,
+        el("button", { type: "button", id: "now", textContent: "Now", title: "The time it is now", onclick: () => { const d = new Date(); this.set_time(d.getHours() % 12 * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000); } })),
+      el("div", { className: "group viewing" },
+        el("span", { className: "zooms" },
+          view("zoom-out", "Zoom out", `<path d="M3.5 8L12.5 8"/>`, () => { this.zoom(1 / 1.4, middle()); this.render(); }),
+          view("zoom-in", "Zoom in", `<path d="M3.5 8L12.5 8M8 3.5L8 12.5"/>`, () => { this.zoom(1.4, middle()); this.render(); })),
+        el("button", { type: "button", id: "fit", textContent: "Fit", title: "Show the whole page", onclick: () => { this.fit(); this.render(); } })));
+    this.set_speed(1);
     root.append(panel, el("main", {}, this.svg, this.tip), bar, this.build_picker());
     this.play_icon();
     let shown = true;
@@ -470,11 +487,13 @@ class DialTool {
     try { localStorage.setItem("dial-tool-panel", on ? "on" : "off"); } catch (e) { /* not kept */ }
   }
 
-  /** top right: a box with a tick. Clicking anywhere on it switches the guides; their settings are in Dial. */
+  /** top right: the guides' switch — a bullseye with lines, in a rounded box. Filled = on, outlined = off.
+   *  A press only switches them; their settings are in Dial. */
   guides_box() {
-    this.guides_tick = el("input", { type: "checkbox", id: "guides" });
-    this.guides_tick.onchange = () => this.set_value("global", "guides", this.guides_tick.checked);
-    return el("label", { className: "guidesbox", htmlFor: "guides", title: "Show guides (their settings are in Dial)" }, "Guides", this.guides_tick);
+    this.guides_tick = el("button", { type: "button", className: "guidesbox", id: "guides", onclick: () => this.set_value("global", "guides", !this.S.guides) });
+    this.guides_tick.innerHTML = icon(`<circle r="5.6"/><circle r="2.1"/><path d="M0 -8.6L0 -3.6M0 3.6L0 8.6M-8.6 0L-3.6 0M3.6 0L8.6 0"/>`, 18, "-9 -9 18 18");
+    this.guides_tick.append(el("span", { textContent: "Guides" }), el("small"));
+    return this.guides_tick;
   }
 
   /** the rows of the section that is showing. Rows after a heading belong to its group, which can be folded. */
@@ -510,7 +529,9 @@ class DialTool {
 
   /** every row: hidden if it doesn't apply (R16) or its group is folded; its controls showing the scope's value. */
   sync_rows() {
-    this.guides_tick.checked = this.S.guides;
+    this.guides_tick.setAttribute("aria-pressed", String(Boolean(this.S.guides)));
+    this.guides_tick.lastChild.textContent = this.S.guides ? "on" : "off";
+    this.guides_tick.title = this.S.guides ? "Guides are on: press to hide them (their settings are in Dial)" : "Guides are off: press to show them";
     for (const r of this.rows) {
       const T = this.target(r.row.scope);
       const applies = r.row.show ? Boolean(r.row.show(T)) : true;
@@ -1387,7 +1408,7 @@ class DialTool {
     try {
       if (this.playing) {
         const [wall, t] = this.play_from;
-        this.S.t = (t + (performance.now() - wall) / 1000) % 43200;
+        this.S.t = (t + (performance.now() - wall) / 1000 * this.speed) % 43200;
         this.sync_time();
         this.render();
       }
@@ -1613,6 +1634,13 @@ class DialTool {
     if (this.playing) this.play_from = [performance.now(), t];     // Play carries on from the new time
     this.sync_time();
     this.render();
+  }
+
+  /** how fast time runs while playing: 1 = a real second each second. Part of the window, not of the dial. */
+  set_speed(k) {
+    this.speed = k;
+    if (this.playing) this.play_from = [performance.now(), this.S.t];
+    [...this.speeds.children].forEach((b) => { const on = b.id === "speed-" + k; b.classList.toggle("on", on); b.setAttribute("aria-checked", String(on)); });
   }
 
   play(on) {
