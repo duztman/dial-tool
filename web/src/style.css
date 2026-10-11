@@ -24,12 +24,10 @@ button, select, input { font: inherit; color: inherit; }
    controls' edge, one label column further in. */
 .panel { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--rule); }
 .panel header { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 3) var(--gutter) calc(var(--unit) * 3); }
-/* guides: a box at the top right — the word opens their settings, the tick switches them */
-.guidesbox { margin-left: auto; align-self: center; display: flex; align-items: center; border: 1px solid var(--ink); }
-.guidesbox button { border: 0; height: 24px; padding: 0 8px 0 10px; }
-.guidesbox button.on { background: var(--ink); color: var(--paper); }
-.guidesbox input { margin: 0 8px 0 2px; }
-.guidesbox button.on + input { margin-left: 8px; }
+/* guides: a box at the top right with a tick; the whole box switches them */
+.guidesbox { margin-left: auto; align-self: center; display: flex; align-items: center; gap: 8px; height: 26px; padding: 0 8px 0 10px; border: 1px solid var(--ink); cursor: pointer; user-select: none; }
+.guidesbox:hover { background: var(--ground); }
+.guidesbox input { margin: 0; }
 h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; margin: 0; }
 
 /* sections: a sign inside a ring, its name under it */
@@ -57,16 +55,44 @@ h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; margin: 0; }
 .row.chk > span:first-child:empty, .row.note > span:first-child:empty { display: none; }
 .row.note span:last-child { grid-column: 1 / -1; padding: 2px 0 4px; }
 .row > button { justify-self: start; }
-/* a heading opens a group: space above, a hairline, the name at the left edge; its rows follow closely */
-.row.hdr { display: block; min-height: 0; margin-top: calc(var(--unit) * 4); border-top: 1px solid var(--ink); padding: 7px 0 5px; }
+/* a heading opens a group: space above, a hairline, the name at the left edge; its rows follow closely.
+   The heading is a button: it folds its group away and brings it back. */
+.row.hdr { display: block; min-height: 0; margin-top: calc(var(--unit) * 4); border-top: 1px solid var(--ink); padding: 3px 0 2px; }
+.row.hdr.folded { margin-top: 0; }
+.row.hdr.folded + .row.hdr, .row.hdr.folded + [hidden] + .row.hdr { margin-top: 0; }
 h2 { font-size: 12px; font-weight: 600; letter-spacing: 0.01em; margin: 0; }
+button.fold { display: flex; align-items: center; justify-content: space-between; flex-direction: row-reverse; width: 100%; height: 28px; padding: 0; border: 0; background: none; text-align: left; }
+button.fold:hover, button.fold:active { background: none; color: var(--ink); }
+button.fold svg { color: var(--grey); transition: transform 0.12s; }
+.folded button.fold svg { transform: rotate(-90deg); }
+@media (prefers-reduced-motion: reduce) { button.fold svg { transition: none; } }
 input[type="text"], select { height: 24px; border: 1px solid var(--rule); background: #fff; padding: 0 6px; min-width: 0; width: 100%; border-radius: 0; }
 input[type="text"]:focus, select:focus, button:focus-visible, input[type="range"]:focus-visible { outline: 2px solid var(--ink); outline-offset: 0; }
 .row.num input[type="text"] { text-align: right; }
 input[type="range"] { width: 100%; margin: 0; accent-color: var(--ink); }
 input[type="checkbox"] { accent-color: var(--ink); margin: 0 6px 0 0; }
-input[type="color"] { width: 44px; height: 24px; padding: 0; border: 1px solid var(--rule); background: none; }
-.colour { display: flex; align-items: center; gap: calc(var(--unit) * 2); }
+/* colour: a square swatch that opens a palette, and the value as text */
+.colour { display: flex; align-items: center; gap: calc(var(--unit) * 1.5); }
+.swatch { width: 44px; height: 24px; padding: 0; border: 1px solid var(--rule); box-shadow: inset 0 0 0 2px #fff; }
+.swatch:hover, .swatch:active { box-shadow: inset 0 0 0 1px #fff; }
+input.hex { width: 84px; font-variant-numeric: tabular-nums; }
+.palette { grid-column: 1 / -1; display: grid; grid-template-columns: var(--label) 1fr; gap: 6px calc(var(--unit) * 1.5); align-items: start; margin: 4px 0 8px; padding: 10px; background: var(--ground); }
+.palette .chips { display: grid; grid-template-columns: repeat(auto-fill, 26px); gap: 4px; }
+.palette .chips button { width: 26px; height: 26px; padding: 0; border: 1px solid rgba(0, 0, 0, 0.25); }
+.palette .chips button.on { outline: 2px solid var(--ink); outline-offset: 1px; }
+.palette .other { grid-column: 2; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.palette input[type="color"] { width: 26px; height: 26px; padding: 0; border: 1px solid var(--rule); background: none; -webkit-appearance: none; appearance: none; border-radius: 0; }
+.palette input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+.palette input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 0; }
+
+/* OpenType switches: tiles that fill the width, pressed = on */
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 4px; }
+.tile { display: grid; align-content: space-between; justify-items: start; gap: 4px; height: auto; min-height: 50px; padding: 6px 8px; border-color: var(--rule); background: #fff; text-align: left; line-height: 1.25; }
+.tile small { color: var(--grey); font: 10.5px/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.tile[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.tile[aria-pressed="true"] small { color: #B9B9B4; }
+.tile:hover { background: var(--ground); }
+.tile[aria-pressed="true"]:hover { background: #333331; }
 .check { display: inline-flex; align-items: center; }
 
 /* buttons, four kinds. plain outline: an action · main (filled): writes a file · plain (words only):
@@ -91,7 +117,6 @@ button.plain:active, button.sign:active { background: var(--ink); color: var(--p
 .tools { display: flex; flex-wrap: wrap; gap: var(--unit); align-items: center; }
 
 /* the ring list: top ring first; its foot holds what can be added and what can be done to the selected ring */
-.ringlist h2 { border-top: 1px solid var(--ink); padding: 7px 0 5px; }
 .ringlist ol { position: relative; list-style: none; margin: 0; padding: 0; border: 1px solid var(--rule); border-bottom: 0; max-height: 150px; overflow-y: auto; background: #fff; }
 .ringlist li { display: grid; grid-template-columns: 16px 20px 1fr auto; align-items: center; gap: 4px; height: 29px; padding: 0 8px 0 3px; cursor: pointer; }
 .ringlist .grip { display: grid; place-items: center; height: 100%; color: var(--rule); cursor: grab; touch-action: none; }
@@ -107,7 +132,8 @@ button.plain:active, button.sign:active { background: var(--ink); color: var(--p
 .listfoot .adds, .listfoot .signs { display: flex; align-items: center; gap: 1px; }
 .listfoot .adds > .quiet { margin-right: 2px; }
 .listfoot .adds > .quiet::after { content: " +"; }
-.pinned .row.hdr { margin-top: calc(var(--unit) * 3); }
+.pinned .row.hdr { margin-top: calc(var(--unit) * 2); }
+.pinned > .row.hdr:first-child { margin-top: 0; }
 /* the log and the link: what the tool says, set apart — small, monospaced, grey, on a light ground */
 .log, .link { display: block; width: 100%; margin: 0; padding: 8px 10px; border: 0; background: var(--ground); color: var(--grey);
   font: 11px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -118,7 +144,10 @@ button.plain:active, button.sign:active { background: var(--ink); color: var(--p
 
 /* the font picker: every font shows its own numerals */
 .font { display: grid; gap: var(--unit); margin-top: var(--unit); }
-.font .styles { flex-wrap: wrap; }
+.font .styles { flex-wrap: wrap; gap: 4px; }
+.font .styles button { flex: 0 0 auto; padding: 0 9px; white-space: nowrap; }
+.font .styles button + button { border-left: 1px solid var(--rule); }
+.font .styles button.on + button { border-left-color: var(--rule); }
 .fontlist { border: 1px solid var(--rule); background: #fff; max-height: 318px; overflow-y: auto; }
 .fontrow { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: calc(var(--unit) * 2); width: 100%; height: 35px; padding: 0 8px; border: 0; border-bottom: 1px solid var(--ground); background: none; text-align: left; }
 .fontrow:hover { background: var(--ground); }
@@ -131,7 +160,6 @@ button.plain:active, button.sign:active { background: var(--ink); color: var(--p
 .font .note:empty { display: none; }
 
 /* examples: five dials to start from */
-.examples h2 { border-top: 1px solid var(--ink); padding: 7px 0 5px; }
 .examples .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--unit); }
 .examples a { display: grid; gap: 3px; padding: 6px 4px 4px; background: var(--ground); color: var(--ink); text-decoration: none; text-align: center; }
 .examples a:hover, .examples a:focus-visible { background: var(--select); outline: 0; }

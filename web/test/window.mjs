@@ -180,8 +180,10 @@ await page.mouse.up();
 await frame();
 check(JSON.stringify(await S("S.rings.map((r) => r.name)")) === JSON.stringify(order), "dragged back to the top: the first order again");
 
-// ── guides have their own section ──
-await tab("Guides");
+// ── guides: a box with a tick at the top right; their settings are a group in Dial, folded until asked for ──
+await tab("Dial");
+check(await page.isHidden("#global-gd-w-Thickness"), "the Guides group starts folded");
+await page.click('.fold:has-text("Guides")');
 await page.fill("#global-gd-w-Thickness", "3");
 await page.press("#global-gd-w-Thickness", "Enter");
 await page.uncheck("#global-gd-axes-Centre-lines");
@@ -191,8 +193,23 @@ await shot("4c-guides");
 await page.uncheck("#guides");
 await frame();
 check(await S("!t.items.some((i) => i.role === 'guide')") && await page.isHidden("#global-gd-w-Thickness"), "the tick in the Guides box, off: none drawn, and the settings hide");
-await page.check("#guides");
-check(await page.$$eval(".tabs button", (b) => b.map((x) => x.textContent.trim()).join(" ")) === "Dial Rings Hands Windows Export" && await page.$(".panel header .guidesbox #guides") !== null, "tabs: Export last; Guides is a box with a tick at the top right");
+await page.click(".guidesbox", { position: { x: 12, y: 12 } });
+check(await S("S.guides === true && S.ui_section === 0"), "a click anywhere on the Guides box switches them back on, and opens nothing");
+await page.click('.fold:has-text("Size")');
+check(await page.isHidden("#global-dial-d-Diameter") && await page.isVisible("#global-gd-w-Thickness"), "a heading folds its own group only");
+await page.click('.fold:has-text("Size")');
+
+// ── colour: a swatch opens a palette; the value can be typed ──
+await page.click("#global-c-plate-Plate");
+check(await page.isVisible('.palette [data-colour="#0E2A47"]') && await page.$$eval(".row.col:has(#global-c-plate-Plate) .chips >> nth=0 >> button", (b) => b.length) >= 3, "the plate's swatch opens a palette: this dial's colours and a set of dial colours");
+await page.click('.row.col:has(#global-c-plate-Plate) [data-colour="#0E2A47"]');
+check(JSON.stringify(await S("S.c_plate.map((v) => Math.round(v * 255))")) === "[14,42,71,255]" && await page.inputValue("#global-c-plate-Plate-hex") === "#0E2A47", "picking navy sets the plate, and the value shows as text");
+await page.fill("#global-c-plate-Plate-hex", "ede8db");
+await page.press("#global-c-plate-Plate-hex", "Enter");
+check(JSON.stringify(await S("S.c_plate.map((v) => Math.round(v * 255))")) === "[237,232,219,255]", "a typed value sets it too");
+await page.click("#global-c-plate-Plate");
+await shot("4c2-colour");
+check(await page.$$eval(".tabs button", (b) => b.map((x) => x.textContent.trim()).join(" ")) === "Dial Rings Hands Windows Export" && await page.$(".panel header label.guidesbox #guides") !== null, "tabs: Export last; Guides is a box with a tick at the top right");
 
 // ── windows: up to four, each a date, a day, am · pm or a moon phase ──
 await tab("Date");
@@ -246,11 +263,12 @@ await page.press("#axis-wght", "Enter");
 await frame();
 check(await S("S.rings[S.ui_ring].axes.wght === 700") && (await S("t.statik.rings.find((d) => d.kind === 'numerals').path.svg(3).length")) !== light, "weight 700 changes the numerals' outlines");
 const wide = await S("(() => { const b = t.statik.rings.find((d) => d.kind === 'numerals').parts[0].bounds(); return b[2] - b[0]; })()");
-await page.check("#feature-tnum");
+await page.click("#feature-tnum");
 await frame();
 const tab_w = await S("(() => { const b = t.statik.rings.find((d) => d.kind === 'numerals').parts[0].bounds(); return b[2] - b[0]; })()");
 check(await S("S.rings[S.ui_ring].features.tnum === true") && tab_w !== wide, "the tnum feature (tabular figures) changes the width of “12”");
-await page.uncheck("#feature-tnum");
+check(await page.getAttribute("#feature-tnum", "aria-pressed") === "true", "the feature's tile shows as pressed");
+await page.click("#feature-tnum");
 check(await S("!('tnum' in S.rings[S.ui_ring].features)"), "switching a feature back to the font's default stores nothing (R12)");
 check((await page.textContent(".font .note")).includes("Added Lora") && await page.$('.fontrow[data-family="Lora"] .sample svg') !== null, "the Type rows say what the font action did, and Lora joins the list with its numerals");
 await shot("5-type");

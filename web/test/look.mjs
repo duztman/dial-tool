@@ -9,7 +9,7 @@ await page.route("https://duztman.github.io/dial-tool/fonts/**", (route) => rout
 if (process.argv[2]) await page.addInitScript((s) => localStorage.setItem("dial-tool-last", s), fs.readFileSync(process.argv[2], "utf8"));
 await page.goto("file://" + process.cwd() + "/dial-tool.html");
 await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
-for (const name of ["Dial", "Rings", "Hands", "Date", "Export", "Guides"]) {
+for (const name of ["Dial", "Rings", "Hands", "Date", "Export"]) {
   await page.click(`button[data-tab="${name}"]`);
   await page.waitForTimeout(250);
   await page.screenshot({ path: `test/out/look-${name}.png` });

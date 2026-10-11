@@ -31,6 +31,10 @@ const FEATURE_NAMES = {
   hist: "historical forms", ornm: "ornaments", dnom: "denominators", numr: "numerators",
   afrc: "alternative fractions", rvrn: "variation alternates",
 };
+const PALETTE = [                                  // colours dials are made of: blacks and greys · whites and creams · blues · greens · reds to yellow · brown · lume
+  "#111111", "#1A1A1F", "#3A3A3C", "#6E6E73", "#A7A7AA", "#D6D6D2", "#FFFFFF", "#F5F2EA", "#EDE8DB", "#E4D9BF", "#D8C9A3",
+  "#0E2A47", "#1F4E79", "#5B8DB8", "#12372A", "#2E6B4F", "#7A1F1F", "#CC381A", "#E8742A", "#F5C518", "#5A3A22", "#C8E6A0",
+];
 const DEFAULT_ON = new Set(["kern", "liga", "calt", "ccmp", "locl", "mark", "mkmk", "rlig", "rclt", "curs", "clig", "rvrn"]);
 
 // ── icons: drawn here, 1.4-point lines, so they take the colour of their button ──
@@ -87,7 +91,8 @@ const ROWS = {
     col("c_plate", "Plate"), col("c_backdrop", "Backdrop"),
   ],
   Rings: [                                         // one list; rows that don't apply hide (R16)
-    custom("ring_list", { scope: "global", pin: true }),            // pin: stays in view while the rest scrolls
+    hdr("Rings, top first", { scope: "global", pin: true }),       // pin: stays in view while the rest scrolls
+    custom("ring_list", { scope: "global", pin: true }),
     custom("ring_title", { pin: true }),
     pop("kind", "Kind", G.KINDS, { pin: true }),
     col("c", "Colour", { pin: true }),
@@ -135,7 +140,9 @@ const ROWS = {
     custom("font", { show: numerals_only }),
     pop("lang", "Language", G.LANGS, { show: numerals_only }),
     num("tracking", "Tracking", -200, 800, 5, { show: numerals_only }),
+    hdr("Variable axes", { show: (R) => numerals_only(R) && G.has_font(R.ps) && Object.keys(G.font_axes(G.font_of(R))).length > 0 }),
     custom("axes", { show: numerals_only }),
+    hdr("OpenType features", { show: (R) => numerals_only(R) && G.has_font(R.ps) }),
     custom("features", { show: numerals_only }),
   ],
   Hands: [
@@ -189,6 +196,7 @@ const ROWS = {
     col("ink", "Print colour", { ...W, show: win_on }),
   ],
   Export: [
+    hdr("Examples"),
     custom("examples"),
     hdr("For production"),
     chk("out_production", "Mono print mask"),
@@ -205,23 +213,20 @@ const ROWS = {
   ],
 };
 const guides_on = (S) => S.guides;
-ROWS.Guides = [                                    // preview only: nothing here reaches a file (R5)
-  info("Guides are off. Tick the box at the top right to show them.", { show: (S) => !S.guides }),
-  hdr("Which", { show: guides_on }),
-  chk("gd_edge", "Dial edge and date radius", { show: guides_on }),
+ROWS.Dial.push(                                    // guides: preview only, nothing here reaches a file (R5)
+  hdr("Guides", { folded: true }),
+  info("Guides are off. Tick the Guides box at the top right to show them.", { show: (S) => !S.guides }),
+  chk("gd_edge", "Dial edge and window radii", { show: guides_on }),
   chk("gd_axes", "Centre lines", { show: guides_on }),
   chk("gd_rings", "Every ring’s edges", { show: guides_on }),
-  info("The selected ring’s edges always show.", { show: (S) => S.guides && !S.gd_rings }),
-  hdr("Lines", { show: guides_on }),
   col("gd_c", "Colour", { show: guides_on }),
   num("gd_strength", "Strength %", 5, 100, 1, { show: guides_on }),
   num("gd_w", "Thickness", 0.25, 6, 0.25, { show: guides_on }),
-  hdr("Selected ring", { show: guides_on }),
-  col("gd_sel_c", "Colour", { show: guides_on }),
-  num("gd_sel_strength", "Strength %", 5, 100, 1, { show: guides_on }),
-  num("gd_sel_w", "Thickness", 0.25, 6, 0.25, { show: guides_on }),
-];
-const SECTIONS = Object.keys(ROWS);                // their numbers are what ui_section stores (R9): Guides, added last, is 5
+  col("gd_sel_c", "Selected ring", { show: guides_on }),
+  num("gd_sel_strength", "…strength %", 5, 100, 1, { show: guides_on }),
+  num("gd_sel_w", "…thickness", 0.25, 6, 0.25, { show: guides_on }),
+);
+const SECTIONS = Object.keys(ROWS);                // their numbers are what ui_section stores (R9)
 const TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];      // left to right; Guides is the box at the top right (Okay, 11 Oct 2026)
 for (const name of SECTIONS) for (const row of ROWS[name]) row.scope ??= name === "Rings" ? "ring" : "global";
 
@@ -388,35 +393,52 @@ class DialTool {
     new ResizeObserver(() => this.resized()).observe(this.svg);
   }
 
-  /** top right, in a box: the word opens the guides' settings, the tick switches them on and off. */
+  /** top right: a box with a tick. Clicking anywhere on it switches the guides; their settings are in Dial. */
   guides_box() {
-    this.guides_open = el("button", { type: "button", textContent: "Guides", title: "Guide settings", onclick: () => { this.S.ui_section = SECTIONS.indexOf("Guides"); this.show_section(); this.render(); } });
-    this.guides_open.dataset.tab = "Guides";
-    this.guides_tick = el("input", { type: "checkbox", id: "guides", title: "Show guides", ariaLabel: "Show guides" });
+    this.guides_tick = el("input", { type: "checkbox", id: "guides" });
     this.guides_tick.onchange = () => this.set_value("global", "guides", this.guides_tick.checked);
-    return el("div", { className: "guidesbox" }, this.guides_open, this.guides_tick);
+    return el("label", { className: "guidesbox", htmlFor: "guides", title: "Show guides (their settings are in Dial)" }, "Guides", this.guides_tick);
   }
 
-  /** the rows of the section that is showing. */
+  /** the rows of the section that is showing. Rows after a heading belong to its group, which can be folded. */
   show_section() {
+    if (!(this.S.ui_section in SECTIONS)) this.S.ui_section = 0;
     const name = SECTIONS[this.S.ui_section];
     [...this.tabs.children].forEach((b) => b.classList.toggle("on", b.dataset.tab === name));
-    this.guides_open.classList.toggle("on", name === "Guides");
     this.form.replaceChildren();
     this.pinned.replaceChildren();
     this.rows = ROWS[name].map((row) => this.build_row(row));
-    for (const r of this.rows) (r.row.pin ? this.pinned : this.form).append(r.el);
+    const heading = { pinned: null, form: null };
+    for (const r of this.rows) {
+      const where = r.row.pin ? "pinned" : "form";
+      if (r.fold) heading[where] = r; else r.group = heading[where];
+      this[where].append(r.el);
+    }
     this.pinned.hidden = !this.pinned.children.length;
     this.sync_rows();
     this.form.scrollTop = 0;
   }
 
-  /** every row: hidden if it doesn't apply (R16), its controls showing the scope's value. */
+  /** folded groups are remembered by this browser (a convenience, not part of the dial). */
+  is_folded(r) {
+    if (!this.folds) { try { this.folds = JSON.parse(localStorage.getItem("dial-tool-folds")) || {}; } catch (e) { this.folds = {}; } }
+    return this.folds[r.fold] ?? Boolean(r.row.folded);
+  }
+  fold(r, folded) {
+    this.is_folded(r);
+    this.folds[r.fold] = folded;
+    try { localStorage.setItem("dial-tool-folds", JSON.stringify(this.folds)); } catch (e) { /* not kept */ }
+    this.sync_rows();
+  }
+
+  /** every row: hidden if it doesn't apply (R16) or its group is folded; its controls showing the scope's value. */
   sync_rows() {
     this.guides_tick.checked = this.S.guides;
     for (const r of this.rows) {
       const T = this.target(r.row.scope);
-      r.el.hidden = r.row.show ? !r.row.show(T) : false;
+      const applies = r.row.show ? Boolean(r.row.show(T)) : true;
+      if (r.fold) r.el.classList.toggle("folded", this.is_folded(r));
+      r.el.hidden = !applies || Boolean(r.group && !r.group.el.hidden && this.is_folded(r.group));
       if (!r.el.hidden) r.refresh(T);
     }
   }
@@ -429,7 +451,17 @@ class DialTool {
     const id = `${row.scope}-${row.key}-${row.text || row.name}`.replace(/[^A-Za-z0-9]+/g, "-");
     const active = (e) => document.activeElement === e;
 
-    if (row.kind === "hdr") wrap.append(el("h2", { textContent: row.text }));
+    if (row.kind === "hdr" || row.name === "ring_title") {     // a heading: click it to fold or unfold its group
+      out.fold = `${SECTIONS[this.S.ui_section]}/${row.text || row.name}`;
+      const title = el("h2", { textContent: row.text || "" });
+      const button = el("button", { type: "button", className: "fold", onclick: () => this.fold(out, !this.is_folded(out)) });
+      button.innerHTML = icon(`<path d="M4 6L8 10L12 6"/>`, 14);
+      button.append(title);
+      wrap.className = "row hdr";
+      wrap.append(button);
+      if (row.name === "ring_title") out.refresh = (R) => { title.textContent = R.name || G.kind_of(R); };
+      return out;
+    }
     if (row.kind === "note") wrap.append(el("span"), el("span", { className: "quiet", textContent: row.text }));
 
     if (row.kind === "num") {                      // label · slider · typed field · stepper (R15)
@@ -480,12 +512,31 @@ class DialTool {
       out.refresh = (T) => { box.checked = Boolean(T[row.key]); };
     }
 
-    if (row.kind === "col") {
-      const well = el("input", { type: "color", id });
-      const hex = el("span", { className: "quiet" });
-      well.oninput = () => set(from_hex(well.value, this.target(row.scope)[row.key][3] ?? 1));
-      wrap.append(el("label", { htmlFor: id, textContent: row.text }), el("span", { className: "colour" }, well, hex));
-      out.refresh = (T) => { if (!active(well)) well.value = to_hex(T[row.key]); hex.textContent = to_hex(T[row.key]).toUpperCase(); };
+    if (row.kind === "col") {                      // a swatch (opens the palette) · the value, which can be typed
+      const swatch = el("button", { type: "button", className: "swatch", id, title: "Choose a colour" });
+      const hex = el("input", { type: "text", className: "hex", id: id + "-hex", spellcheck: false, maxLength: 7, ariaLabel: row.text + ", as #RRGGBB" });
+      const palette = el("div", { className: "palette", hidden: true });
+      const pick = (value) => set(from_hex(value, this.target(row.scope)[row.key][3] ?? 1));
+      const other = el("input", { type: "color", id: id + "-other", ariaLabel: "Any colour" });
+      other.oninput = () => pick(other.value);
+      const fill = () => {                         // the colours this dial already uses, then a fixed set that suits dials
+        const S = this.S, used = [S.c_plate, S.c_backdrop, S.c_cap, ...S.rings.map((r) => r.c), ...G.HANDS.map((h) => S["ha_" + h].c), ...G.windows_of(S).map((w) => w.ink)];
+        const chip = (c) => { const b = el("button", { type: "button", title: c, ariaLabel: c, onclick: () => pick(c) }); b.style.background = c; b.dataset.colour = c; return b; };
+        palette.replaceChildren(
+          el("span", { className: "quiet", textContent: "In this dial" }), el("div", { className: "chips" }, ...[...new Set(used.map(to_hex).map((c) => c.toUpperCase()))].map(chip)),
+          el("span", { className: "quiet", textContent: "Dial colours" }), el("div", { className: "chips" }, ...PALETTE.map(chip)),
+          el("label", { className: "other" }, other, " Any colour…"));
+      };
+      swatch.onclick = () => { palette.hidden = !palette.hidden; if (!palette.hidden) fill(); };
+      hex.onchange = () => { const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex.value.trim()); if (m) pick("#" + (m[1].length === 3 ? [...m[1]].map((c) => c + c).join("") : m[1])); hex.value = to_hex(this.target(row.scope)[row.key]).toUpperCase(); };
+      wrap.append(el("label", { htmlFor: id, textContent: row.text }), el("span", { className: "colour" }, swatch, hex), palette);
+      out.refresh = (T) => {
+        const value = to_hex(T[row.key]);
+        swatch.style.background = value;
+        if (!active(hex)) hex.value = value.toUpperCase();
+        if (!active(other)) other.value = value;
+        for (const b of palette.querySelectorAll("button")) b.classList.toggle("on", b.dataset.colour === value.toUpperCase());
+      };
     }
 
     if (row.kind === "txt") {
@@ -516,16 +567,8 @@ class DialTool {
       b.innerHTML = icon(TOOL_ICONS[action]);
       tools.append(b);
     }
-    wrap.append(el("h2", { textContent: "Rings, top first" }), this.ring_list, el("div", { className: "listfoot" }, add, tools));
+    wrap.append(this.ring_list, el("div", { className: "listfoot" }, add, tools));
     this.fill_ring_list();
-  }
-
-  /** the heading over the selected ring's own rows: its name. */
-  row_ring_title(wrap, out) {
-    wrap.className = "row hdr";
-    const title = el("h2");
-    wrap.append(title);
-    out.refresh = (R) => { title.textContent = R.name || G.kind_of(R); };
   }
 
   fill_ring_list() {
@@ -757,7 +800,6 @@ class DialTool {
       if (key !== shown) {
         shown = key;
         wrap.replaceChildren();
-        if (Object.keys(axes).length) wrap.append(el("div", { className: "row hdr" }, el("h2", { textContent: "Variable axes" })));
         for (const tag in axes) {
           const a = axes[tag], id = "axis-" + tag;
           const slider = el("input", { type: "range", min: a.min, max: a.max, step: (a.max - a.min) / 1000, id: id + "-slider" });
@@ -783,30 +825,31 @@ class DialTool {
 
   /** the font's OpenType features. Only what differs from the font's default is stored (R12). */
   row_features(wrap, out) {
-    wrap.className = "features";
+    wrap.className = "tiles";
     let shown = null;
     out.refresh = (R) => {
       const font = G.has_font(R.ps) ? G.font_of(R) : null;
       const key = (font ? font.ps : "") + this.S.ui_ring;
       if (key !== shown) {
         shown = key;
-        wrap.replaceChildren(el("div", { className: "row hdr" }, el("h2", { textContent: "OpenType features" })));
+        wrap.replaceChildren();
         // the switches a designer would use: named by the font, or known by name here, or a stylistic set
         // or character variant. (Fonts also list features their script needs to work at all; those stay on.)
-        const useful = ([tag, designer]) => designer || FEATURE_NAMES[tag] || /^(ss|cv)\d\d$/.test(tag);
+        const plumbing = ["aalt", "ccmp", "locl", "mark", "mkmk", "rvrn"];
+        const useful = ([tag, designer]) => !plumbing.includes(tag) && (designer || FEATURE_NAMES[tag] || /^(ss|cv)\d\d$/.test(tag));
         for (const [tag, designer] of font ? G.font_features(font).filter(useful) : []) {
-          const box = el("input", { type: "checkbox", id: "feature-" + tag });
-          box.dataset.tag = tag;
-          box.onchange = () => {
-            const all = { ...this.ring().features };
-            if (box.checked === DEFAULT_ON.has(tag)) delete all[tag]; else all[tag] = box.checked;
+          const tile = el("button", { type: "button", className: "tile", id: "feature-" + tag }, el("span", { textContent: designer || FEATURE_NAMES[tag] || tag }), el("small", { textContent: tag }));
+          tile.dataset.tag = tag;
+          tile.onclick = () => {                     // press to switch; only what differs from the font's default is stored (R12)
+            const on = tile.getAttribute("aria-pressed") !== "true", all = { ...this.ring().features };
+            if (on === DEFAULT_ON.has(tag)) delete all[tag]; else all[tag] = on;
             this.set_value("ring", "features", all);
           };
-          wrap.append(el("div", { className: "row chk" }, el("span", { className: "quiet tag", textContent: tag }),
-            el("label", { className: "check", htmlFor: "feature-" + tag }, box, " " + (designer || FEATURE_NAMES[tag] || tag))));
+          wrap.append(tile);
         }
+        if (!wrap.children.length && font) wrap.append(el("span", { className: "quiet", textContent: "This font has no switches." }));
       }
-      for (const box of wrap.querySelectorAll("input")) box.checked = R.features[box.dataset.tag] ?? DEFAULT_ON.has(box.dataset.tag);
+      for (const tile of wrap.querySelectorAll(".tile")) tile.setAttribute("aria-pressed", String(R.features[tile.dataset.tag] ?? DEFAULT_ON.has(tile.dataset.tag)));
     };
   }
 
@@ -820,7 +863,7 @@ class DialTool {
       card.append(el("span", { textContent: e.name }));
       grid.append(card);
     }
-    wrap.append(el("h2", { textContent: "Examples" }), grid);
+    wrap.append(grid);
   }
 
   row_export(wrap) {
