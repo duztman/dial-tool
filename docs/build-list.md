@@ -52,7 +52,7 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 44 | Canvas: show the page edge (dial + margin)? The canvas fills the whole preview with the backdrop; the PDF preview shows the page. Ask Okay after the Mac check | open |
 | 32 | Scale the whole dial (rings, hands, date) when the diameter changes, or a "scale everything" action (brief §5.7) | open |
 
-## Web version (beta 4.3, 12 Oct 2026)
+## Web version (beta 4.4, 12 Oct 2026)
 
 | # | Item | Status |
 |---|---|---|
@@ -71,6 +71,9 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 62 | OpenType tiles, grouped (web version): features that have a name of their own first; the numbered sets (`ss01`…, stylistic sets) and (`cv01`…, character variants) each in a group below. A note from Okay, 11 Oct 2026, while he marks up screenshots of the whole panel. Done in beta 4.0 | done |
 | 63 | **Live text in the PDF** (web version). The SVG keeps numerals as text since beta 4.0; the PDF is written by hand (`web/src/output.js`), so live text there means building the font into the file. Okay, 11 Oct: "SVG now, PDF later" | open |
 | 64 | **Panel (beta 4.0), bar, speeds, Guides switch (4.1), day steps and margins (4.2), dark bar and framed rings (4.3): look at them on Okay's devices** — columns, eyes, rename box, picture tiles, colour picker, grouped OpenType tiles, Export rows, the panel put away. Only seen in Chromium here. Ask: keep the square in the bar that hides the panel? Are the picture tiles the right pictures? | verify |
+| 67 | **Beta 4.4 on Okay's devices**: sliders (disc 18, track 4 — say bigger or smaller), square tick boxes, panes sliding, the paper-light cards and log on the grey, pane headings at 13. **Open the PDF in Illustrator: does each part arrive as a named layer?** (Layers are written as PDF "optional content"; read back here with MuPDF and qpdf only.) Place the PNG in InDesign: true size? | verify |
+| 68 | File names: `dial-30mm-2026-10-12.pdf` (diameter and day; a mask says `-mask`, `-mirrored`). Asked Okay, 12 Oct: this, or a name field for the dial? No answer yet | open |
+| 69 | Review, 12 Oct, found and not done: split `web/src/app.js` (one class, 1,800 lines; the colour picker alone is 85 lines inside `build_row`); scrollbars that take room (macOS "Show scroll bars: always") would make the scrolling rows about 15 narrower than the pinned ones — not reproduced here, ask Okay what his Mac is set to; `main` has no `web/` though the tool is online from `gh-pages` | open |
 | 65 | Rings on a low window: the pinned part (list + the ring's first pane) is taller since beta 4.0, leaving less to scroll. If it bothers: pin only the list | open |
 | 66 | Tabs and the columns: five tabs share six columns, so they sit between columns (Okay, 11 Oct: "Columns? They fit 'em"). Ways: tabs one column each with the sixth free, or a sixth sign. Ask Okay | open |
 

@@ -1,5 +1,42 @@
 # Dial Tool — changelog
 
+## beta 4.4 (web version) · 12 Oct 2026
+
+On `dev`. A code review of the web version, asked for by Okay, 12 Oct ("Code review time. All on the table"), then his go for four steps plus two additions: "redesign sliders like this" (a sketch: a thick black disc on the track) and "Bg color created clashes, look around." Seen in Chromium here only. `dial.py` is unchanged.
+
+**Nothing jumps**
+- **A click on the preview keeps the panel.** It used to build every row again, even when its section was already showing: the scroll went back to the top and an open colour picker closed. Now the rows stay and only show the new values.
+- **Each section remembers its scroll**, and pressing the tab that is showing does nothing.
+- **Panes slide** shut and open (140 ms), so what is under them travels instead of jumping; what is under moves by exactly the pane's height. Off when the system asks for less motion.
+- **The Guides switch keeps its width** on and off (it was 89 / 87.9: its word changed weight).
+
+**The stylesheet, rebuilt** (`web/src/style.css`; rule R32)
+- **Seven layers** — tokens · base · controls · panel · preview · bar · narrow. A later layer wins whatever the selectors look like, so no part undoes another. There was no `!important` before and there is none now.
+- **Tokens:** every colour, size and measure has one name. Before: 224 pixel values, 26px written eight times, `#fff` twenty times.
+- **Buttons by kind.** A plain `button` is only its words; a class says what it is (`btn`, `btn main`, `plain`, `sign`, steps, segments, tiles). Before, one look was given to every button and undone in 22 places.
+- **Panes are real elements**, and the toggle column is a real column: a pane's body is a grid of seven tracks (the eye's, then the six). The three places that broke out of the panel's padding with negative margins are gone, and so is the air between panes that was worked out in `sync_rows`.
+- **Type: four sizes** — 11 · 12 · 13 · 15 (were eight: 10 · 10.5 · 11 · 12 · 12.5 · 13 · 15 · 20). Pane headings are 13 semibold (were 12.5).
+
+**Sliders and grounds**
+- **Sliders** after Okay's sketch: a 4-point track, ink up to the handle, and the handle an 18-point black disc with a light centre (26 on a touch screen). The day slider in the bar stays a ruler.
+- **Tick boxes** are square, like every other control (ink when ticked); the browser's own were rounded on iPad.
+- **On the scrolling grey** (`#E8E8E6`) several things had almost its colour (`#ECECE8`) and melted into it: the example cards, the link, the log, the hex line, a tile under the pointer. A part now knows what it stands on: on the grey these are paper-light; on paper they are grey as before. Buttons are white like the fields (were paper), one hover grey everywhere.
+- **Phone:** picture tiles stand under their label on all six columns, so their words fit at the same size as elsewhere.
+
+**Files**
+- **PDF: every part is a layer with its name** — plate, each ring by its name, each hand, each window part — listed top first. PDF 1.5 (was 1.4). *Not yet opened in Illustrator: build list #67.*
+- **A production mask's PDF is in grey ink** (`0 g`), not RGB black, so nothing can turn it into a four-colour black.
+- **PNG: its dpi is written in the file**, so a 600 dpi picture opens at true size in Photoshop or InDesign (was 72). A mask's PNG is black on white (was on nothing). Asking for more pixels than a browser can draw says so instead of saving an empty file.
+- **SVG:** shapes are named after what they are (`plate`, `minute-ticks`, `hour-hand`; were `plate-7`, `Markers-9`), colours are hex, a title says what the file is.
+- **File names say what they are:** `dial-30mm-2026-10-12.pdf`, `dial-30mm-mask-mirrored-2026-10-12.pdf` (were always `dial.pdf`). Okay was asked whether he would rather name dials himself; no answer yet (build list #68).
+
+**Small**
+- Switching between windows 1–4 no longer rebuilds the geometry (`ui_window` was missing from `NOT_GEOMETRY`).
+- Load… and Defaults close the tool they replace (its observers and its pending save), instead of leaving it running.
+- **Tests:** 137 checks (were 126).
+
+**Found, not done** (Okay's go covered steps 1–4): `app.js` is one class of 1,800 lines; a dial with 300 ticks and knock-outs takes about 90 ms a slider step here, more on the Intel Mac (#14); in Rings the pinned part leaves 300 of 900 points to scroll (#65); `main` has no `web/` although the tool is online.
+
 ## beta 4.3 (web version) · 12 Oct 2026
 
 On `dev` and online. Okay, 12 Oct, with a marked-up screenshot of the ring list ("frame layers", "light blue"): "Yet darker bottom bar, 80% black. Invert appropriate". Seen in Chromium here only.

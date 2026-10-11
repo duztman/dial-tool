@@ -4,361 +4,442 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.3 · built 2026-10-11 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.4 · built 2026-10-11 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz) and the stand-in font (Inter, OFL) are all inside. -->
 <style>
-/* Dial Tool, web version. Colours and type follow docs/design.md (the design canon):
-   paper, ink, one grey for quiet text, hairline rules, a ground behind the picture;
-   no cards, shadows or rounded panels. Layout: a fixed panel of rows and the preview, side by side;
-   under both, one dark bar for time and view. */
-:root {
-  color-scheme: light;
-  --paper: #FCFCFA; --ink: #111111; --grey: #5C5C58; --rule: #B9B9B4; --ground: #ECECE8;
-  --scroll: #E8E8E6;                               /* the part of the panel that scrolls: 8 % darker than the paper #FCFCFA (3 % at first; Okay, 12 Oct 2026) */
-  --select: #CFE4F5; --select-rule: #86B4DA;       /* what is selected: a light blue (the canon's yellow until beta 4.3; Okay, 12 Oct 2026) */
-  --bar: #333333; --bar-ink: #F2F2EE; --bar-rule: #5C5C58; --bar-field: #454543;      /* the bar: 80 % black, light on dark (Okay, 12 Oct 2026; before: black, #DADAD5, #A9A9A4) */
-  --bar-dim: rgba(255, 255, 255, 0.3); --bar-faint: rgba(255, 255, 255, 0.12);      /* quiet lines and fills on the bar */
-  /* the panel's columns (beta 4.0): a toggle column at the far left (eyes: a pane's, a ring's), then six
-     equal columns with equal gaps, then the right margin. 24 + 16 + 12 + (6 × 54 + 5 × 12) + 24 = 460.
-     Lines (a pane's thick line, the header's, the tabs') run from margin to margin, so they pass over the eyes.
-     label 2 · slider 2 · value 1 · stepper 1 · menus and text 4 · swatch 1, its value 2 · a picture tile 1 */
-  --margin: 24px;                                  /* the panel's side space, left and right: where every line starts and ends */
-  --nudge: 2px;                                    /* the eyes stand this much right of the margin (Okay, 11 Oct 2026: "closer to the right 2-3 px") */
-  --eye: 16px;                                     /* the toggle column: an eye wide, then a gap */
-  --toggle: calc(var(--margin) + var(--eye) + var(--gap)); --col: 54px; --gap: 12px; --edge: var(--margin);
-  --panel: calc(var(--toggle) + 6 * var(--col) + 5 * var(--gap) + var(--edge));
-  --gutter: 22px;                                  /* the bar's and the font sheet's side space */
-  --unit: 5.5px;                                   /* every space is a multiple of this */
-  --line: 34px;                                    /* a row's height */
-  --thick: 2px;                                    /* opens a pane; everything inside a pane is a hairline */
-  font: 13px/1.4 system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-variant-numeric: tabular-nums lining-nums;
+/* Dial Tool, web version — the stylesheet.
+
+   How it is organised (beta 4.4, 12 Oct 2026):
+
+   1 · tokens    every colour, size and measure has one name, in :root. Nothing below repeats a value.
+   2 · base      the page, plain elements.
+   3 · controls  buttons (by kind), fields, sliders, ticks, segments, tiles: the same wherever they stand.
+   4 · panel     header, tabs, panes, rows, the ring list, colour picker, fonts, examples, log.
+   5 · preview   the dial's picture, the outline and label under the pointer.
+   6 · bar       time and view, under panel and preview.
+   7 · narrow    a phone or a narrow window.
+
+   These are cascade layers: a later layer wins over an earlier one whatever the selectors look like,
+   so no rule has to be written "stronger" to get its way, and a part never undoes another part.
+   Colours and type follow docs/design.md (the design canon): paper, ink, one grey for quiet text,
+   hairline rules; no cards, shadows or rounded panels. */
+@layer tokens, base, controls, panel, preview, bar, narrow;
+
+[hidden] { display: none; }                        /* outside the layers, so it wins over all of them: rows that don't apply (R16) */
+
+@layer tokens {
+  :root {
+    color-scheme: light;
+    /* colour */
+    --paper: #FCFCFA; --ink: #111111; --grey: #5C5C58; --rule: #B9B9B4; --ground: #ECECE8;
+    --scroll: #E8E8E6;                             /* the part of the panel that scrolls: 8 % darker than the paper (Okay, 12 Oct 2026) */
+    --field: #FFFFFF;                              /* inside a control: fields, tiles, buttons */
+    --hover: #F1F1EE;                              /* a control under the pointer: seen on paper, on the scrolling grey and on a white tile alike */
+    --ink-hover: #333331;                          /* a filled control under the pointer */
+    --faint: #8E8E89;                              /* signs that wait: the rename box */
+    --select: #CFE4F5; --select-rule: #86B4DA;     /* what is selected: a light blue (Okay, 12 Oct 2026) */
+    --glow: #FF7300;                               /* the outline of what the pointer is on, in the preview */
+    --veil: rgba(0, 0, 0, 0.06); --veil-strong: rgba(0, 0, 0, 0.1);      /* a touch of dark on a coloured row */
+    --chip-rule: rgba(0, 0, 0, 0.25);
+    --bar: #333333; --bar-ink: #F2F2EE; --bar-rule: #5C5C58; --bar-field: #454543; --bar-hover: #5A5A57;      /* the bar: 80 % black, light on dark (Okay, 12 Oct 2026) */
+    --bar-dim: rgba(255, 255, 255, 0.3); --bar-faint: rgba(255, 255, 255, 0.12);      /* quiet lines and fills on the bar */
+    --bar-on: rgba(255, 255, 255, 0.24); --bar-edge: rgba(255, 255, 255, 0.6); --bar-quiet: rgba(255, 255, 255, 0.66);
+    /* what a part stands on. A part that scrolls sets these again (see .form): an inset block is darker
+       than paper but lighter than the scrolling grey, so it never melts into its ground. */
+    --surface: var(--paper); --inset: var(--ground); --well: var(--ground);
+
+    /* the panel's columns: a toggle column at the far left (eyes: a pane's, a ring's), then six equal
+       columns with equal gaps, between two margins. 24 + 16 + 12 + (6 × 54 + 5 × 12) + 24 = 460.
+       Lines (a pane's thick line, the header's, the tabs') run from margin to margin, so they pass over the eyes.
+       label 2 · slider 2 · value 1 · stepper 1 · menus and text 4 · swatch 1, its value 2 · a picture tile 1 */
+    --margin: 24px;                                /* the panel's side space, left and right: where every line starts and ends */
+    --eye: 16px;                                   /* the toggle column */
+    --gap: 12px; --col: 54px;
+    --nudge: 2px;                                  /* the eyes stand this much right of the margin (Okay, 11 Oct 2026) */
+    --lead: calc(var(--eye) + var(--gap));         /* the toggle column and the gap after it: where the six columns start */
+    --columns: var(--eye) repeat(6, minmax(0, 1fr));
+    --panel: calc(2 * var(--margin) + var(--lead) + 6 * var(--col) + 5 * var(--gap));
+    --unit: 5.5px;                                 /* every space is a multiple of this */
+    --air: calc(4 * var(--unit));                  /* under an open pane */
+    --hair: 1px; --thick: 2px;                     /* a thick line opens a pane; everything inside a pane is a hairline */
+    --control: 26px;                               /* a control's height: field, button, swatch */
+    --control-large: 32px;                         /* the Guides switch, the hex line */
+    --line: 34px;                                  /* a row's height */
+    --head: 40px;                                  /* a pane's heading */
+    --header: 64px;                                /* the panel's top: title and Guides */
+    --bar-height: 52px; --bar-control: 30px;
+    --icon: 16px;                                  /* a sign's drawing */
+    --tile: 50px;                                  /* a picture tile's least height */
+    --frame-out: 8px;                              /* a framed list row is this much wider than the lines, each side */
+    --ring-gap: 4px;                               /* between framed rows */
+    --thumb: 18px; --track: 4px;                   /* sliders: a black disc on a thin track (Okay's sketch, 12 Oct 2026) */
+    --tick: 16px;                                  /* a tick box */
+
+    /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
+    --t-xs: 11px; --t-s: 12px; --t-m: 13px; --t-l: 15px;
+    --t-sample: 20px;                              /* a font's numerals in the font list, when the browser sets them */
+    --sans: system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;      /* only for what the tool says: the log, a link, a hex value, a feature's tag */
+  }
+  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; } }      /* a finger needs more to hold than a pointer */
 }
-* { box-sizing: border-box; }
-html, body { height: 100%; margin: 0; }
-body { background: var(--paper); color: var(--ink); overflow: hidden; }
-#app { display: grid; grid-template-columns: calc(var(--panel) + 1px) 1fr; grid-template-rows: 1fr auto; height: 100%; }
-.quiet { color: var(--grey); }
-button, select, input { font: inherit; color: inherit; }
 
-/* the panel. Two verticals carry everything: the left edge (headings, labels, lists) and the
-   controls' edge, one label column further in. */
-.panel { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--rule); }
-.panel header { display: flex; align-items: center; gap: calc(var(--unit) * 2); height: 64px; padding: 0 var(--margin); }
-.panel header .quiet { padding-top: 2px; }
-/* guides: a box at the top right with a tick; the whole box switches them */
-.guidesbox { margin-left: auto; align-self: center; display: flex; align-items: center; justify-content: center; gap: 7px; height: 32px; padding: 0 10px 0 8px; border: 1.5px solid var(--ink); border-radius: 10px;      /* as wide as its sign and word, tight at the sides (Okay, 12 Oct 2026); it ends on the right margin */
-  background: none; color: var(--ink); font-weight: 600; cursor: pointer; user-select: none; }      /* on: a solid dark outline, dark sign and word; off: dashed and grey */
-.guidesbox:hover { background: var(--ground); }
-.guidesbox[aria-pressed="false"] { background: none; color: var(--grey); border-color: var(--rule); border-style: dashed; font-weight: 400; }
-.guidesbox[aria-pressed="false"]:hover { background: var(--ground); color: var(--ink); }
-.guidesbox[aria-pressed="false"] svg { opacity: 0.55; }
-.guidesbox:active { background: var(--ink); color: var(--paper); }
-h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; margin: 0; }
+@layer base {
+  :root { font: var(--t-m)/1.4 var(--sans); font-variant-numeric: tabular-nums lining-nums; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--paper); color: var(--ink); overflow: hidden; }
+  #app { display: grid; grid-template-columns: calc(var(--panel) + var(--hair)) 1fr; grid-template-rows: 1fr auto; height: 100%; }
+  .starting { padding: var(--margin); }
+  h1 { font-size: var(--t-l); font-weight: 600; letter-spacing: -0.005em; margin: 0; }
+  h2 { font-size: var(--t-m); font-weight: 600; margin: 0; white-space: nowrap; }
+  h3 { font-size: var(--t-s); font-weight: 400; color: var(--grey); margin: 0; }
+  .quiet { color: var(--grey); }
+}
 
-/* sections: a sign inside a ring, its name under it */
-.tabs { display: grid; grid-template-columns: repeat(5, 1fr); margin: 0 var(--margin); padding: 12px 0 0; border-top: 1px solid var(--rule); }
-.tabs button { display: grid; justify-items: center; gap: 6px; height: auto; border: 0; background: none; padding: 4px 0 11px; color: var(--grey); cursor: pointer; }
-.tabs button:hover { background: none; color: var(--ink); }
-.tabs button:active { background: none; }
-.tabs .ring { stroke-width: 1.2; }
-.tabs button.on { color: var(--ink); font-weight: 600; box-shadow: inset 0 -3px 0 var(--ink); }
-.tabs button.on .ring { fill: var(--ink); stroke: var(--ink); }
-.tabs button.on .sign { color: var(--paper); }
-.tabs .dama { display: none; }
-.tabs button[data-tab="Dial"].on .ring { fill: none; }
-.tabs button[data-tab="Dial"].on .sign { color: var(--ink); }
-.tabs button[data-tab="Dial"].on .dama { display: inline; }
-.tabs button:focus-visible { outline-offset: -2px; }
+@layer controls {
+  /* a button starts as nothing but its words; a class says what kind it is. Four kinds stand in rows:
+     btn (outline): an action · btn main (filled): writes a file · plain (words only): adds something ·
+     sign (a drawing only): acts on the selected thing. Steps, segments and tiles are below. */
+  button { appearance: none; margin: 0; padding: 0; border: 0; border-radius: 0; background: none; font: inherit; color: inherit; cursor: pointer; }
+  select, input { font: inherit; color: inherit; }
+  :is(button, select, input[type="text"], input[type="checkbox"], textarea):focus-visible { outline: 2px solid var(--ink); outline-offset: 0; }
+  input[type="text"]:focus, select:focus { outline: 2px solid var(--ink); outline-offset: 0; }
 
-.pinned { padding: 0 var(--edge) calc(var(--unit) * 3) var(--toggle); background: var(--paper); border-bottom: 1px solid var(--rule); }      /* a hairline: what is under it scrolls */
-.form { background: var(--scroll); flex: 1; min-height: 0; overflow-y: auto; padding: 0 var(--edge) calc(var(--unit) * 10) var(--toggle); }
+  .btn, .step, .segs > button, .plain, .sign { height: var(--control); border: var(--hair) solid var(--ink); background: var(--field); }
+  :is(.btn, .step, .segs > button):hover { background: var(--hover); }
+  :is(.btn, .step, .segs > button, .plain, .sign):active { background: var(--ink); color: var(--paper); }
+  .btn { padding: 0 10px; }
+  .btn.main { min-width: var(--col); background: var(--ink); color: var(--paper); font-weight: 600; }
+  .btn.main:hover { background: var(--ink-hover); }
+  .plain, .sign { flex: none; border-color: transparent; background: none; }
+  .plain { padding: 0 6px; white-space: nowrap; }
+  .sign { display: inline-grid; place-items: center; width: var(--control); }
+  :is(.plain, .sign):hover { background: var(--field); border-color: var(--rule); }
 
-#app [hidden] { display: none; }                 /* rows that don't apply (R16); beats .row's own display */
+  .steps, .segs { display: flex; }
+  .steps { width: 100%; }
+  .step, .segs > button { flex: 1; border-color: var(--rule); }
+  .segs > button { padding: 0 4px; }
+  :is(.step, .segs > button) + button { border-left: 0; }
+  .segs > button.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .tools { display: flex; flex-wrap: wrap; gap: var(--unit); align-items: center; }
 
-/* rows sit on the six columns: label 2 · control 2 · typed field 1 · stepper 1 */
-.row { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0 var(--gap); align-items: center; min-height: var(--line); }
-.row > :first-child { grid-column: span 2; }
-.row.num > input[type="range"] { grid-column: span 2; }
-.row > label:first-child, .row > span.tag { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.row.pop select, .row.txt input, .row .segs, .row .colour, .row .tools, .row .picks, .row > button:not(:first-child) { grid-column: 3 / -1; }
-.row.chk label, .row .wide { grid-column: 1 / -1; }             /* a tick and its words start at the left edge */
-.row.chk > span:first-child:empty, .row.note > span:first-child:empty { display: none; }
-.row.note { min-height: 0; }
-.row.note span:last-child { grid-column: 1 / -1; padding: 0 0 8px; }
-.row > button:not(:first-child) { justify-self: start; }
-.row > button.main:first-child { justify-self: stretch; }        /* a button standing where the label would (PNG) */
-/* a pane: a thick line, its name, its rows. The eye in the toggle column shows whether it is open; the whole
-   heading is the button. A folded pane says what it holds, in grey, at the right. */
-.row.hdr { display: block; min-height: 0; margin-top: 0; margin-left: calc(var(--margin) - var(--toggle)); border-top: var(--thick) solid var(--ink); padding: 0; }
-.row.hdr.spaced { margin-top: calc(var(--unit) * 4); }       /* air above a pane only when the pane before it is open (set in sync_rows) */
-.pinned:not([hidden]) + .form > .row.hdr.first { border-top: 0; }      /* the hairline under the pinned rows already opens it */
-.form > .row.hdr.folded:last-child { border-bottom: 1px solid var(--rule); }
-h2 { font-size: 12.5px; font-weight: 600; letter-spacing: 0.01em; margin: 0; white-space: nowrap; }
-button.fold { position: relative; display: flex; align-items: center; gap: var(--gap); width: 100%; height: 40px; padding: 0 0 0 calc(var(--toggle) - var(--margin)); border: 0; background: none; text-align: left; }
-button.fold:hover, button.fold:active { background: none; color: var(--ink); }
-button.fold .eye { position: absolute; left: var(--nudge); top: 0; display: grid; place-items: center; width: var(--eye); height: 100%; color: var(--ink); }
-.folded button.fold .eye, .folded button.fold h2 { color: var(--grey); }
-button.fold:hover .eye, button.fold:hover h2 { color: var(--ink); }
-button.fold .summary { margin-left: auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
-button.fold:focus-visible { outline-offset: -2px; }
-input[type="text"], select { height: 26px; border: 1px solid var(--rule); background: #fff; padding: 0 6px; min-width: 0; width: 100%; border-radius: 0; }
-input[type="text"]:focus, select:focus, button:focus-visible, input[type="range"]:focus-visible { outline: 2px solid var(--ink); outline-offset: 0; }
-.row.num input[type="text"] { text-align: right; }
-input[type="range"] { width: 100%; margin: 0; accent-color: var(--ink); }
-input[type="checkbox"] { accent-color: var(--ink); margin: 0 6px 0 0; }
-/* colour: a swatch one column wide that opens the picker, and the value as text, two columns */
-.colour { display: grid; grid-template-columns: var(--col) calc(2 * var(--col) + var(--gap)); gap: var(--gap); align-items: center; }
-.swatch { width: 100%; height: 26px; padding: 0; border: 1px solid var(--rule); box-shadow: inset 0 0 0 2px #fff; }
-.swatch:hover, .swatch:active { box-shadow: inset 0 0 0 1px #fff; }
-input.hex { font-variant-numeric: tabular-nums; }
-/* the picker: a field of one hue, the hues, the colour as numbers, the dial's colours, the hex to copy */
-.palette { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px var(--gap); align-items: start; margin: 2px 0 12px; padding: 12px 0 14px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
-.palette > * { grid-column: 1 / -1; }
-.palette > .quiet { grid-column: span 2; line-height: 22px; }
-.palette > .chips { grid-column: 3 / -1; }
-.sv { position: relative; height: 132px; touch-action: none; cursor: crosshair;
-  background: linear-gradient(to top, #000, rgba(0, 0, 0, 0)), linear-gradient(to right, #fff, var(--hue, #f00)); }
-.hue { position: relative; height: 16px; touch-action: none; cursor: ew-resize;
-  background: linear-gradient(to right, #f00, #ff0 16.67%, #0f0 33.33%, #0ff 50%, #00f 66.67%, #f0f 83.33%, #f00); }
-.sv i, .hue i { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; box-shadow: 0 0 0 2px #fff, 0 0 0 3px #111; pointer-events: none; }
-.hue i { top: 50%; width: 6px; height: 20px; margin: -10px 0 0 -3px; border-radius: 0; background: none; }
-.asnumbers { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--gap); align-items: center; }
-.asnumbers .segs { grid-column: span 2; }
-.asnumbers .numbers { grid-column: 3 / -1; display: flex; gap: 6px; }
-.asnumbers .numbers label { flex: 1; display: flex; align-items: center; gap: 4px; color: var(--grey); font-size: 11px; }
-.asnumbers .numbers input { padding: 0 4px; text-align: right; color: var(--ink); font-size: 13px; }
-.palette .chips { display: grid; grid-template-columns: repeat(auto-fill, 22px); gap: 4px; }
-.palette .chips button { width: 22px; height: 22px; padding: 0; border: 1px solid rgba(0, 0, 0, 0.25); }
-.palette .chips button.on { outline: 2px solid var(--ink); outline-offset: 1px; }
-.hexline { display: flex; align-items: center; gap: var(--gap); padding: 0 0 0 10px; height: 32px; background: var(--ground); }
-.hexline code { flex: 1; font: 13px/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace; user-select: all; }
-.hexline .copy { height: 32px; min-width: calc(var(--col) + 12px); }
+  input[type="text"], select { height: var(--control); width: 100%; min-width: 0; padding: 0 6px; border: var(--hair) solid var(--rule); border-radius: 0; background: var(--field); }
 
-/* a choice as pictures: tiles one column wide, the chosen one filled */
-.picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px var(--gap); padding: 4px 0; }
-.pickt { display: grid; justify-items: center; align-content: start; gap: 3px; height: auto; min-height: 50px; padding: 6px 1px 5px; border-color: var(--rule); background: #fff; font-size: 10.5px; line-height: 1.15; }
-.pickt span { overflow-wrap: anywhere; text-align: center; }
-.pickt.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
-.pickt.on:hover { background: #333331; }
-.row.pick { align-items: start; }
-.row.pick > label { line-height: var(--line); }
+  /* a tick box: square like every other control; ink when ticked */
+  input[type="checkbox"] { appearance: none; flex: none; display: inline-grid; place-content: center; width: var(--tick); height: var(--tick); margin: 0 8px 0 0; border: var(--hair) solid var(--ink); border-radius: 0; background: var(--field); cursor: pointer; }
+  input[type="checkbox"]::before { content: ""; width: calc(var(--tick) - 6px); height: calc(var(--tick) - 6px); background: var(--paper); clip-path: polygon(12% 48%, 0 62%, 40% 100%, 100% 20%, 86% 8%, 38% 72%); opacity: 0; }
+  input[type="checkbox"]:checked { background: var(--ink); }
+  input[type="checkbox"]:checked::before { opacity: 1; }
+  .check { display: inline-flex; align-items: center; cursor: pointer; }
 
-/* OpenType switches: tiles that fill the width, pressed = on */
-.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px var(--gap); }      /* a tile is two columns wide */
-.features { padding-top: 4px; }
-.features h3 { margin: 16px 0 8px; padding-top: 8px; border-top: 1px solid var(--rule); font-size: 12px; font-weight: 400; color: var(--grey); }
-.tile { display: grid; align-content: space-between; justify-items: start; gap: 4px; height: auto; min-height: 52px; padding: 7px 8px; border-color: var(--rule); background: #fff; text-align: left; line-height: 1.25; }
-.tile small { color: var(--grey); font: 10.5px/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
-.tile[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
-.tile[aria-pressed="true"] small { color: #B9B9B4; }
-.tile:hover { background: var(--ground); }
-.tile[aria-pressed="true"]:hover { background: #333331; }
-.check { display: inline-flex; align-items: center; }
+  /* a slider: a thin track, ink up to the handle, and the handle a black disc with a light centre.
+     --p (0 to 1, set in app.js: filled) says how far along it is; --fill is that, measured along the track. */
+  input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: var(--control); margin: 0; background: none; cursor: pointer;
+    --fill: calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--p, 0)); }
+  input[type="range"]::-webkit-slider-runnable-track { height: var(--track); border-radius: var(--track); background: linear-gradient(to right, var(--ink) var(--fill), var(--well) var(--fill)); }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: var(--thumb); height: var(--thumb); margin-top: calc((var(--track) - var(--thumb)) / 2); border: 0; border-radius: 50%;
+    background: radial-gradient(circle, var(--field) 0 2px, var(--ink) 2.75px); }
+  input[type="range"]::-moz-range-track { height: var(--track); border-radius: var(--track); background: var(--well); }
+  input[type="range"]::-moz-range-progress { height: var(--track); border-radius: var(--track); background: var(--ink); }
+  input[type="range"]::-moz-range-thumb { width: var(--thumb); height: var(--thumb); border: 0; border-radius: 50%; background: radial-gradient(circle, var(--field) 0 2px, var(--ink) 2.75px); }
+  input[type="range"]:focus-visible { outline: 0; }
+  input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink); }
+  input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink); }
 
-/* buttons, four kinds. plain outline: an action · main (filled): writes a file · plain (words only):
-   adds something · sign (a drawing only): acts on the selected thing */
-button { height: 26px; border: 1px solid var(--ink); background: var(--paper); padding: 0 10px; cursor: pointer; border-radius: 0; }
-button:hover { background: var(--ground); }
-button:active { background: var(--ink); color: var(--paper); }
-button.main { background: var(--ink); color: var(--paper); min-width: 58px; font-weight: 600; }
-button.main:hover { background: #333331; }
-button.plain { border-color: transparent; background: none; padding: 0 6px; white-space: nowrap; flex: none; }
-button.plain:hover { background: var(--paper); border-color: var(--rule); }
-button.sign { display: inline-grid; place-items: center; flex: none; width: 26px; padding: 0; border-color: transparent; background: none; }
-button.sign:hover { background: var(--paper); border-color: var(--rule); }
-button.plain:active, button.sign:active { background: var(--ink); color: var(--paper); }
-.steps { display: flex; }
-.steps { width: 100%; }
-.step { flex: 1; padding: 0; border-color: var(--rule); }
-.step + .step { border-left: 0; }
-.segs { display: flex; }
-.segs button { flex: 1; border-color: var(--rule); padding: 0 4px; }
-.segs button + button { border-left: 0; }
-.segs button.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-.tools { display: flex; flex-wrap: wrap; gap: var(--unit); align-items: center; }
+  /* a choice as pictures (pickt: one column wide) and OpenType switches (tile: two columns wide); the chosen one is filled */
+  .pickt, .tile { display: grid; border: var(--hair) solid var(--rule); background: var(--field); }
+  :is(.pickt, .tile):hover { background: var(--hover); }
+  :is(.pickt.on, .tile[aria-pressed="true"]) { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  :is(.pickt.on, .tile[aria-pressed="true"]):hover { background: var(--ink-hover); }
+  .picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px var(--gap); padding: 4px 0; }
+  .pickt { justify-items: center; align-content: start; gap: 3px; min-height: var(--tile); padding: 6px 1px 5px; font-size: var(--t-xs); line-height: 1.15; }
+  .pickt span { overflow-wrap: anywhere; text-align: center; }
+  .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px var(--gap); }
+  .tile { align-content: space-between; justify-items: start; gap: 4px; min-height: calc(var(--tile) + 2px); padding: 7px 8px; text-align: left; line-height: 1.25; }
+  .tile small { color: var(--grey); font: var(--t-xs)/1 var(--mono); }
+  .tile[aria-pressed="true"] small { color: var(--rule); }
 
-/* the ring list: top ring first. It runs from edge to edge of the panel: the eye (show or hide the ring) is in
-   the toggle column, then grip · name · rename box (selected ring) · kind. Hairlines only; the selected ring is yellow. */
-.ringlist { --out: 8px; margin: 0 calc(-1 * var(--out)) 0 calc(var(--margin) - var(--toggle) - var(--out)); }      /* each ring is a framed row, a little wider than the lines, so the eye has room inside the frame */
-.ringlist ol { position: relative; list-style: none; margin: 0; padding: 2px 0 0; display: grid; gap: 4px; max-height: calc((var(--line) + 4px) * 5 + 4px); overflow-y: auto; }
-.ringlist li { display: grid; grid-template-columns: calc(var(--toggle) - var(--margin) + var(--out) - 1px) 18px minmax(0, auto) auto 1fr; align-items: center; gap: 0; height: var(--line); padding-right: calc(var(--out) - 1px);
-  border: 1px solid var(--rule); border-radius: 5px; background: #fff; cursor: pointer; }
-.ringlist li:hover { border-color: var(--grey); }
-.ringlist li.on { background: var(--select); border-color: var(--select-rule); }
-.ringlist button.eye { display: grid; align-items: center; justify-items: start; width: 100%; height: 100%; padding: 0 0 0 calc(var(--out) + var(--nudge) - 1px); border: 0; border-radius: 4px 0 0 4px; background: none; color: var(--ink); }
-.ringlist button.eye:hover { background: rgba(0, 0, 0, 0.06); }
-.ringlist li.off { color: var(--rule); }
-.ringlist li.off button.eye, .ringlist li.off .kind { color: var(--rule); }
-.ringlist li.off.on { color: var(--grey); }
-.ringlist li.off.on button.eye, .ringlist li.off.on .kind { color: var(--grey); }
-.ringlist .grip { display: grid; place-items: center; height: 100%; margin-left: -4px; color: var(--rule); cursor: grab; touch-action: none; }
-.ringlist li:hover .grip, .ringlist li.on .grip { color: var(--grey); }
-.ringlist li.dragged { opacity: 0.45; }
-.ringlist li.dragged .grip { cursor: grabbing; }
-.ringlist .dropline { position: absolute; left: 0; right: 0; height: 3px; background: var(--ink); pointer-events: none; }
-.ringlist span.name { padding: 0 8px 0 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ringlist input.name { grid-column: 3 / 5; height: 26px; margin-left: 2px; padding: 0 4px; }
-.ringlist .rename { display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 0; background: none; color: #8E8E89; }
-.ringlist .rename:hover { color: var(--ink); }
-.ringlist .rename:hover { background: rgba(0, 0, 0, 0.1); }
-.ringlist .kind { grid-column: 5; justify-self: end; padding-left: 8px; }
-.listfoot { display: flex; justify-content: space-between; align-items: center; height: var(--line); margin-top: 4px; padding: 0 calc(var(--out) - 5px) 0 calc(var(--toggle) - var(--margin) + var(--out)); }
-.listfoot .adds, .listfoot .signs { display: flex; align-items: center; gap: 1px; }
-.listfoot .adds > .quiet { margin-right: 4px; }
-.listfoot .adds > .quiet::after { content: " +"; }
-.listfoot button.plain { padding: 0 5px; }
-/* the log and the link: what the tool says, set apart — small, monospaced, grey, on a light ground */
-.log, .link { display: block; width: 100%; margin: 0; padding: 8px 10px; border: 0; background: var(--ground); color: var(--grey);
-  font: 11px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
-.log { min-height: 96px; max-height: 260px; overflow-y: auto; }
-.link { resize: none; overflow-y: auto; color: var(--ink); }
-.link:focus { outline: 2px solid var(--ink); }
-.linkrow .tools { margin-top: var(--unit); gap: calc(var(--unit) * 2); }
+  /* what the tool says, set apart: small, monospaced, on an inset ground */
+  .log, .link, .hexline { background: var(--inset); }
+  .log, .link { display: block; width: 100%; margin: 0; padding: 8px 10px; border: 0; color: var(--grey); font: var(--t-xs)/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .log { min-height: 96px; max-height: 260px; overflow-y: auto; }
+  .link { resize: none; overflow-y: auto; color: var(--ink); }
+}
 
-/* the font picker: every font shows its own numerals */
-.font { display: grid; gap: var(--unit); margin-top: var(--unit); }
-.font .styles { flex-wrap: wrap; gap: 4px; }
-.font .styles button { flex: 0 0 auto; padding: 0 9px; white-space: nowrap; }
-.font .styles button + button { border-left: 1px solid var(--rule); }
-.font .styles button.on + button { border-left-color: var(--rule); }
-.fontlist { border: 1px solid var(--rule); background: #fff; overflow-y: auto; }
-.fontrow.current { border: 1px solid var(--rule); background: #fff; grid-template-columns: 1fr auto auto; height: 40px; }
-.fontrow.current .name { color: var(--ink); }
-.fontrow.current .change { color: var(--grey); padding-left: 6px; border-left: 1px solid var(--rule); }
+@layer panel {
+  /* the panel: header, tabs, the pinned panes, the panes that scroll. */
+  .panel { display: flex; flex-direction: column; min-height: 0; border-right: var(--hair) solid var(--rule); }
+  #app.nopanel { grid-template-columns: 0 1fr; }   /* the panel put away: the dial gets the whole window */
+  #app.nopanel .panel { display: none; }
+  .panel > header { display: flex; align-items: center; height: var(--header); padding: 0 var(--margin); }
+  .panel .title { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); }
+  /* guides: a box at the top right; the whole box switches them. On: a solid dark outline, dark sign and word.
+     Off: dashed and grey. Its word keeps the width of its bold form, so the box is the same size on and off. */
+  .guidesbox { margin-left: auto; display: flex; align-items: center; justify-content: center; gap: 7px; height: var(--control-large); padding: 0 10px 0 8px; border: 1.5px solid var(--ink); border-radius: 10px; font-weight: 600; user-select: none; }
+  .guidesbox .word::after { content: attr(data-text); display: block; height: 0; overflow: hidden; visibility: hidden; font-weight: 600; }
+  .guidesbox:hover { background: var(--ground); }
+  .guidesbox[aria-pressed="false"] { color: var(--grey); border-color: var(--rule); border-style: dashed; font-weight: 400; }
+  .guidesbox[aria-pressed="false"]:hover { color: var(--ink); }
+  .guidesbox[aria-pressed="false"] svg { opacity: 0.55; }
+  .guidesbox:active { background: var(--ink); color: var(--paper); }
 
-/* the font sheet: over the panel, so the dial stays in view; from the bottom on a phone */
-.picker { position: fixed; inset: 0 auto 0 0; width: var(--panel); max-width: 100vw; height: 100%; max-height: none; margin: 0; padding: 0; border: 0; border-right: 1px solid var(--ink);
-  background: var(--paper); color: var(--ink); }
-.picker[open] { display: grid; grid-template-rows: auto auto 1fr auto; gap: var(--unit); padding: calc(var(--unit) * 4) var(--edge) calc(var(--unit) * 3) var(--toggle); }
-.picker::backdrop { background: none; }                /* the dial keeps its true colours while you choose */
-.picker header { display: flex; align-items: center; justify-content: space-between; }
-.picker header h2 { font-size: 15px; }
-.picker .fontlist { min-height: 0; }
-.picker .adding { display: grid; gap: var(--unit); border-top: 1px solid var(--ink); padding-top: 7px; }
-.picker .pasting { display: grid; grid-template-columns: 1fr auto; gap: var(--unit); }
-.picker .note:empty { display: none; }
-.fontrow { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: calc(var(--unit) * 2); width: 100%; height: 35px; padding: 0 8px; border: 0; border-bottom: 1px solid var(--ground); background: none; text-align: left; }
-.fontrow:hover { background: var(--ground); }
-.fontrow.on, .fontrow.on:hover { background: var(--select); color: var(--ink); }
-.fontrow .sample { display: flex; align-items: center; min-width: 0; overflow: hidden; font-size: 20px; line-height: 1; white-space: nowrap; }
-.fontrow .sample svg { display: block; flex: none; }
-.fontrow .name { color: var(--grey); white-space: nowrap; }
-.fontrow.on .name { color: var(--ink); }
-.fontlist .group { padding: calc(var(--unit) * 2) 8px 2px; border-bottom: 1px solid var(--rule); }
-.font .note:empty { display: none; }
+  /* sections: a sign inside a ring, its name under it */
+  .tabs { display: grid; grid-template-columns: repeat(5, 1fr); margin: 0 var(--margin); padding: 12px 0 0; border-top: var(--hair) solid var(--rule); }
+  .tabs button { display: grid; justify-items: center; gap: 6px; padding: 4px 0 11px; color: var(--grey); }
+  .tabs button:hover { color: var(--ink); }
+  .tabs button:focus-visible { outline-offset: -2px; }
+  .tabs .ring { stroke-width: 1.2; }
+  .tabs .dama { display: none; }
+  .tabs button.on { color: var(--ink); font-weight: 600; box-shadow: inset 0 -3px 0 var(--ink); }
+  .tabs button.on .ring { fill: var(--ink); stroke: var(--ink); }
+  .tabs button.on .sign { color: var(--paper); }
+  .tabs button[data-tab="Dial"].on .ring { fill: none; }      /* Dial's sign is the ring itself, cut in pies: chosen, every other pie is filled */
+  .tabs button[data-tab="Dial"].on .sign { color: var(--ink); }
+  .tabs button[data-tab="Dial"].on .dama { display: inline; }
 
-/* examples: five dials to start from */
-.examples { margin-left: calc(var(--edge) - var(--toggle)); padding: 4px 0; }      /* full width: the same space left and right */
-.examples .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--unit); }
-.examples a { display: grid; gap: 3px; padding: 6px 4px 4px; background: var(--ground); color: var(--ink); text-decoration: none; text-align: center; }
-.examples a:hover, .examples a:focus-visible { background: var(--select); outline: 0; }
-.examples svg { width: 100%; height: auto; display: block; }
+  .pinned, .form { padding: 0 var(--margin); }
+  .pinned { border-bottom: var(--hair) solid var(--rule); }      /* a hairline: what is under it scrolls */
+  .pinned > .pane:last-child { --air: calc(3 * var(--unit)); }
+  .form { --surface: var(--scroll); --inset: var(--paper); --well: var(--field);
+    flex: 1; min-height: 0; overflow-y: auto; padding-bottom: calc(6 * var(--unit)); background: var(--surface); }
 
-/* the preview */
-main { min-width: 0; min-height: 0; background: var(--ground); }
-.preview { width: 100%; height: 100%; display: block; touch-action: none; cursor: default; user-select: none; }
-.preview path { cursor: pointer; }
-main { position: relative; overflow: hidden; }
-/* the outline of what the pointer is on: an orange line on a white one, so it shows on any colour */
-.glow { fill: none; stroke: #FF7300; stroke-width: 1.5px; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
-.glow.under { stroke: #fff; stroke-width: 4px; }
-/* its name: black inside, then a white line, then a black line — readable on any dial. --arrow: where the arrow sits. */
-.tip { position: absolute; z-index: 2; pointer-events: none; padding: 3px 8px; background: #111; color: #fff; white-space: nowrap;
-  box-shadow: 0 0 0 1px #fff, 0 0 0 2px #111; font-weight: 600; }
-.tip svg { position: absolute; left: calc(var(--arrow, 50%) - 10px); top: 100%; overflow: visible; }
-.tip.below svg { top: auto; bottom: 100%; transform: scaleY(-1); }
-.tip svg path { fill: none; }
-.tip svg .a { stroke: #111; stroke-width: 5px; }
-.tip svg .b { stroke: #fff; stroke-width: 2.6px; }
-.tip svg .c { fill: #111; }
+  /* a pane: a thick line, its heading, its rows. The eye in the toggle column shows whether it is open; the whole
+     heading is the button. A folded pane says what it holds, in grey, at the right. Its body is where the columns
+     are: the toggle column, then the six. Rows stand on the six; a few things (ring list, examples) take all seven. */
+  .pane { border-top: var(--thick) solid var(--ink); }
+  .pinned:not([hidden]) + .form > .pane:first-child { border-top: 0; }      /* the hairline under the pinned panes already opens it */
+  .form > .pane.folded:last-child { border-bottom: var(--hair) solid var(--rule); }
+  .fold { display: grid; grid-template-columns: var(--eye) auto minmax(0, 1fr); column-gap: var(--gap); align-items: center; width: 100%; height: var(--head); text-align: left; }
+  .fold .eye { display: grid; place-items: center; position: relative; left: var(--nudge); }
+  .folded > .fold :is(.eye, h2) { color: var(--grey); }
+  .fold:hover :is(.eye, h2) { color: var(--ink); }
+  .fold .summary { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; font-size: var(--t-s); }
+  .fold:focus-visible { outline-offset: -2px; }
+  .body { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); padding-bottom: var(--air); }
+  .body > * { grid-column: 2 / -1; }
+  .body > :is(.ringlist, .examples) { grid-column: 1 / -1; }
+  .body.sliding { overflow-y: clip; }               /* while a pane opens or closes (app.js: slide) */
 
-/* the bar: under the panel and the preview. Its first cell is as wide as the panel, so the time
-   controls start where the preview starts. */
-/* the bar keeps the panel's columns. Under the panel: the panel's square in the toggle column, then the time
-   controls on the six columns — play 1 · speeds 2 · time 2 · Now 1 — quiet, so they don't shout under the panel.
-   Under the preview: the day slider with its steps, then the view: − + 1 · Fit 1. */
-.bar { grid-column: 1 / -1; display: flex; align-items: stretch; gap: 0; height: 52px; padding: 0 var(--margin) 0 0; background: var(--bar); color: var(--bar-ink); border-top: 1px solid var(--bar-rule); }
-.bar .lead { flex: none; display: flex; align-items: center; gap: var(--gap); width: var(--panel); min-width: 0; padding: 0 var(--margin) 0 0; }
-.bar .side { flex: none; width: 26px; margin: 0 calc(var(--toggle) - var(--margin) - var(--eye) / 2 - 13px - var(--gap)) 0 calc(var(--margin) + var(--eye) / 2 - 13px); }
-.bar .group { display: flex; align-items: center; gap: var(--gap); padding: 0 var(--gap); border-left: 1px solid var(--bar-rule); }
-.bar .day { position: relative; flex: 1; min-width: 0; display: grid; grid-template-rows: 22px 18px; align-content: center; gap: 0; padding: 0 20px; }
-/* the day slider is a ruler: a line, cuts crossing it (drawn in draw_ruler, finer on a wider window), and a line for a handle.
-   Nothing is filled in behind the handle: the past is not a quantity. */
-.ruler { grid-area: 1 / 1; width: 100%; height: 22px; display: block; pointer-events: none; fill: none; stroke: var(--bar-ink); stroke-width: 1; shape-rendering: crispEdges; }
-.ruler .line { opacity: 0.4; }
-.ruler .hour { opacity: 0.85; }
-.ruler .half { opacity: 0.6; }
-.ruler .small { opacity: 0.38; }
-.ruler .pose { opacity: 0; }
-.bar .day input[type="range"] { grid-area: 1 / 1; -webkit-appearance: none; appearance: none; height: 22px; background: none; cursor: ew-resize; }
-.bar .day input[type="range"]::-webkit-slider-runnable-track { height: 22px; background: none; }
-.bar .day input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 3px; height: 22px; border: 0; border-radius: 0; background: #fff; box-shadow: 0 0 0 2px var(--bar); }
-.bar .day input[type="range"]::-moz-range-track { height: 22px; background: none; }
-.bar .day input[type="range"]::-moz-range-progress { background: none; }
-.bar .day input[type="range"]::-moz-range-thumb { width: 3px; height: 22px; border: 0; border-radius: 0; background: #fff; box-shadow: 0 0 0 2px var(--bar); }
-.bar .viewing { padding-right: 0; }
-.bar .zooms { display: flex; width: var(--col); }
-.bar .zooms button { flex: 1; min-width: 0; width: auto; }
-.bar .zooms button + button { border-left: 0; }
-.bar .side[aria-pressed="true"] { background: var(--bar-ink); color: var(--bar); }
-/* the panel put away: the dial gets the whole window */
-#app.nopanel { grid-template-columns: 0 1fr; }
-#app.nopanel .panel { display: none; }
-.bar .status { max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px; opacity: 0.7; }
-@media (max-width: 1500px) { .bar .status { display: none; } }
-.bar button { flex: none; height: 30px; width: var(--col); min-width: 0; padding: 0; background: var(--bar-field); color: var(--bar-ink); border-color: var(--bar-rule); }
-.bar button:hover { background: #5A5A57; border-color: var(--bar-ink); }
-.bar button:active, .bar .viewing .segs button.on { background: var(--bar-ink); color: var(--bar); border-color: var(--bar-ink); }
-.bar .icon { display: inline-flex; align-items: center; justify-content: center; }
-/* low contrast under the panel: no fills, thin lines a shade darker than the bar; what is chosen is a shade darker still */
-.bar .lead button, .bar .lead input[type="text"] { background: none; border-color: var(--bar-dim); color: var(--bar-ink); }
-.bar .lead button:hover, .bar .lead input[type="text"]:hover { background: var(--bar-faint); border-color: rgba(255, 255, 255, 0.6); }
-.bar .lead button:active { background: var(--bar-dim); color: var(--bar-ink); }
-.bar .lead .segs button.on { background: rgba(255, 255, 255, 0.24); color: #fff; border-color: var(--bar-dim); }
-.bar .lead .side { border-color: transparent; }
-.bar .time { flex: none; width: calc(2 * var(--col) + var(--gap)); height: 30px; text-align: center; font-weight: 600; letter-spacing: 0.02em; }
-.bar .speeds { width: calc(2 * var(--col) + var(--gap)); }
-.bar .speeds button { flex: 1; width: auto; }
-.bar input[type="range"] { width: 100%; margin: 0; accent-color: var(--bar-ink); color-scheme: dark; }
-/* the steps' names: --at = how far along the day (0 to 1); the 1.5px keep them on the handle's path (it is 3 wide) */
-.steps12 { position: relative; height: 18px; margin: 0 1.5px; }
-.steps12 button { position: absolute; left: calc(var(--at) * 100%); top: 0; transform: translateX(-50%); width: auto; min-width: 18px; height: 18px; padding: 0 2px; border: 0; background: none;
-  font-size: 11px; line-height: 18px; color: rgba(255, 255, 255, 0.66); }
-.steps12 button:hover { background: none; color: #fff; text-decoration: underline; }
-.steps12 button.on { color: #fff; font-weight: 700; }
-.steps12 button.special { transform: translateX(-4%); top: -1px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--bar-ink); color: var(--bar); font-weight: 600; font-size: 10.5px; z-index: 1; }
-.steps12 button.special:hover { background: #fff; color: #000; text-decoration: none; }
-.bar input:focus, .bar button:focus-visible, .bar input[type="range"]:focus-visible { outline-color: var(--bar-ink); }
-/* a phone, or a narrow window: the bar on top, the preview under it; below them the whole panel scrolls as one */
-@media (max-width: 860px) {
-  :root { --gutter: 16px; --margin: 16px; --gap: 10px; --col: calc((100vw - var(--toggle) - var(--edge) - 5 * var(--gap)) / 6); }
-  #app, #app.nopanel { grid-template-columns: 1fr; grid-template-rows: auto 42% 1fr; }
-  #app.nopanel { grid-template-rows: auto 1fr 0; }
-  .bar { grid-row: 1; flex-wrap: wrap; height: auto; padding: 0; border-top: 0; border-bottom: 1px solid var(--bar-rule); }
-  .bar .lead { width: 100%; height: 46px; }
-  .bar .group { border-left: 0; }
-  .bar .day { flex: 1 1 0; height: 48px; padding: 0 var(--margin); }
-  .bar .viewing { padding: 0 var(--margin) 0 0; }
-  .bar .zooms { display: none; }                    /* a phone pinches */
-  .steps12 button:nth-child(odd):not(.special) { display: none; }      /* every other hour: 1 3 5 … wait for room */
-  main { grid-row: 2; }
-  .panel { grid-row: 3; display: block; overflow-y: auto; -webkit-overflow-scrolling: touch; border-right: 0; border-top: 1px solid var(--rule); }
-  .form { overflow: visible; }
-  .tabs { position: sticky; top: 0; z-index: 1; background: var(--paper); }
-  .ringlist ol { max-height: none; }
-  .listfoot { flex-wrap: wrap; height: auto; min-height: var(--line); padding-top: 4px; padding-bottom: 4px; }
-  .listfoot .adds > .quiet { white-space: nowrap; }
-  .listfoot .signs { margin-left: auto; }
-  .pickt { padding-left: 0; padding-right: 0; font-size: 10px; letter-spacing: -0.01em; }
-  .bar .status { display: none; }
-  .picker { inset: auto 0 0 0; width: 100%; height: 58%; border-right: 0; border-top: 1px solid var(--ink); }
-  .picker::backdrop { background: none; }
+  /* rows sit on the six columns: label 2 · control 2 · typed field 1 · stepper 1 */
+  .row { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); column-gap: var(--gap); align-items: center; min-height: var(--line); }
+  .row > :first-child { grid-column: span 2; }
+  .row.num > input[type="range"] { grid-column: span 2; }
+  .row.num input[type="text"] { text-align: right; }
+  .row > label:first-child { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row > :is(select, .segs, .colour, .tools, .picks), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
+  .row > :is(.check, .wide, .palette), .row.note > .quiet { grid-column: 1 / -1; }      /* a tick and its words start at the left edge */
+  .row > span:first-child:empty { display: none; }
+  .row.note { min-height: 0; }
+  .row.note > .quiet { padding-bottom: 8px; }
+  .row > button:not(:first-child) { justify-self: start; }
+  .row > .btn.main:first-child { justify-self: stretch; }      /* a button standing where the label would (PNG) */
+  .row.pick { align-items: start; }
+  .row.pick > label { line-height: var(--line); }
+  .features { padding-top: 4px; }
+  .features h3 { margin: 16px 0 8px; padding-top: 8px; border-top: var(--hair) solid var(--rule); }
+  .linkrow .tools { margin-top: var(--unit); gap: calc(var(--unit) * 2); }
+
+  /* colour: a swatch one column wide that opens the picker, and the value as text, two columns */
+  .colour { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: var(--gap); align-items: center; }
+  .colour .hex { grid-column: span 2; }
+  .swatch { height: var(--control); border: var(--hair) solid var(--rule); box-shadow: inset 0 0 0 2px var(--field); }
+  .swatch:hover, .swatch:active { box-shadow: inset 0 0 0 1px var(--field); }
+  /* the picker: a field of one hue, the hues, the colour as numbers, the dial's colours, the hex to copy */
+  .palette { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px var(--gap); align-items: start; margin: 2px 0 12px; padding: 12px 0 14px; border-top: var(--hair) solid var(--rule); border-bottom: var(--hair) solid var(--rule); }
+  .palette > * { grid-column: 1 / -1; }
+  .palette > .quiet { grid-column: span 2; line-height: 22px; }
+  .palette > .chips { grid-column: 3 / -1; display: grid; grid-template-columns: repeat(auto-fill, 22px); gap: 4px; }
+  .chips button { width: 22px; height: 22px; border: var(--hair) solid var(--chip-rule); }
+  .chips button.on { outline: 2px solid var(--ink); outline-offset: 1px; }
+  .sv, .hue { position: relative; touch-action: none; }
+  .sv { height: 132px; cursor: crosshair; background: linear-gradient(to top, #000, rgba(0, 0, 0, 0)), linear-gradient(to right, #fff, var(--hue, #f00)); }
+  .hue { height: 16px; cursor: ew-resize; background: linear-gradient(to right, #f00, #ff0 16.67%, #0f0 33.33%, #0ff 50%, #00f 66.67%, #f0f 83.33%, #f00); }
+  .sv i, .hue i { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--ink); pointer-events: none; }
+  .hue i { top: 50%; width: 6px; height: 20px; margin: -10px 0 0 -3px; border-radius: 0; }
+  .asnumbers { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--gap); align-items: center; }
+  .asnumbers .segs { grid-column: span 2; }
+  .asnumbers .numbers { grid-column: 3 / -1; display: flex; gap: 6px; }
+  .asnumbers .numbers label { flex: 1; display: flex; align-items: center; gap: 4px; color: var(--grey); font-size: var(--t-xs); }
+  .asnumbers .numbers input { padding: 0 4px; text-align: right; color: var(--ink); font-size: var(--t-m); }
+  .hexline { display: flex; align-items: center; gap: var(--gap); padding-left: 10px; }
+  .hexline code { flex: 1; font: var(--t-m)/1 var(--mono); user-select: all; }
+  .hexline .copy { height: var(--control-large); min-width: calc(var(--col) + var(--gap)); }
+
+  /* the ring list: top ring first. Each ring is a framed row, a little wider than the pane's lines on both sides
+     (--frame-out), so the eye has room inside the frame: eye (show or hide the ring, in the toggle column) · grip ·
+     name · rename box (selected ring) · kind. The selected ring is light blue. */
+  .ringlist { margin: 0 calc(-1 * var(--frame-out)); }
+  .ringlist ol { position: relative; list-style: none; margin: 0; padding: 2px 0 0; display: grid; gap: var(--ring-gap); max-height: calc(5 * (var(--line) + var(--ring-gap)) + 4px); overflow-y: auto; }
+  .ringlist li { display: grid; grid-template-columns: calc(var(--frame-out) - var(--hair) + var(--lead)) 18px minmax(0, auto) auto 1fr; align-items: center; height: var(--line); padding-right: calc(var(--frame-out) - var(--hair));
+    border: var(--hair) solid var(--rule); border-radius: 5px; background: var(--field); cursor: pointer; }
+  .ringlist li:hover { border-color: var(--grey); }
+  .ringlist li.on { background: var(--select); border-color: var(--select-rule); }
+  .ringlist li.off, .ringlist li.off .kind { color: var(--rule); }
+  .ringlist li.off.on, .ringlist li.off.on .kind { color: var(--grey); }
+  .ringlist .eye { display: grid; align-items: center; justify-items: start; width: 100%; height: 100%; padding-left: calc(var(--frame-out) - var(--hair) + var(--nudge)); border-radius: 4px 0 0 4px; }
+  .ringlist .eye:hover { background: var(--veil); }
+  .ringlist .grip { display: grid; place-items: center; height: 100%; margin-left: -4px; color: var(--rule); cursor: grab; touch-action: none; }
+  .ringlist li:hover .grip, .ringlist li.on .grip { color: var(--grey); }
+  .ringlist li.dragged { opacity: 0.45; }
+  .ringlist li.dragged .grip { cursor: grabbing; }
+  .ringlist .dropline { position: absolute; left: 0; right: 0; height: 3px; background: var(--ink); pointer-events: none; }
+  .ringlist span.name { padding: 0 8px 0 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ringlist input.name { grid-column: 3 / 5; margin-left: 2px; padding: 0 4px; }
+  .ringlist .rename { display: grid; place-items: center; width: var(--control); height: var(--control); color: var(--faint); }
+  .ringlist .rename:hover { color: var(--ink); background: var(--veil-strong); }
+  .ringlist .kind { grid-column: 5; justify-self: end; padding-left: 8px; }
+  /* under the list: what you can add (words) and what you can do to the selected ring (signs). The words start
+     on the six columns; the last sign's drawing ends on the right margin. */
+  .listfoot { display: flex; justify-content: space-between; align-items: center; height: var(--line); margin-top: var(--ring-gap);
+    padding: 0 calc(var(--frame-out) - (var(--control) - var(--icon)) / 2) 0 calc(var(--frame-out) + var(--lead)); }
+  .listfoot .adds, .listfoot .signs { display: flex; align-items: center; gap: 1px; }
+  .listfoot .adds > .quiet { margin-right: 4px; }
+  .listfoot .adds > .quiet::after { content: " +"; }
+  .listfoot .plain { padding: 0 5px; }
+
+  /* the font picker: every font shows its own numerals */
+  .font { display: grid; gap: var(--unit); margin-top: var(--unit); }
+  .font .styles { flex-wrap: wrap; gap: 4px; }
+  .font .styles > button { flex: 0 0 auto; padding: 0 9px; white-space: nowrap; border-left: var(--hair) solid var(--rule); }
+  .font .styles > button.on { border-color: var(--ink); }
+  .font .note:empty, .picker .note:empty { display: none; }
+  .fontlist { border: var(--hair) solid var(--rule); background: var(--field); overflow-y: auto; }
+  .fontrow { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: calc(var(--unit) * 2); width: 100%; height: 35px; padding: 0 8px; border-bottom: var(--hair) solid var(--ground); text-align: left; }
+  .fontrow:hover { background: var(--hover); }
+  .fontrow.on, .fontrow.on:hover { background: var(--select); }
+  .fontrow .sample { display: flex; align-items: center; min-width: 0; overflow: hidden; font-size: var(--t-sample); line-height: 1; white-space: nowrap; }
+  .fontrow .sample svg { display: block; flex: none; }
+  .fontrow .name { color: var(--grey); white-space: nowrap; }
+  .fontrow.on .name, .fontrow.current .name { color: var(--ink); }
+  .fontrow.current { grid-template-columns: 1fr auto auto; height: var(--head); border: var(--hair) solid var(--rule); background: var(--field); }
+  .fontrow.current .change { color: var(--grey); padding-left: 6px; border-left: var(--hair) solid var(--rule); }
+  .fontlist .group { padding: calc(var(--unit) * 2) 8px 2px; border-bottom: var(--hair) solid var(--rule); }
+
+  /* the font sheet: over the panel, on its columns, so the dial stays in view; from the bottom on a phone */
+  .picker { position: fixed; inset: 0 auto 0 0; width: var(--panel); max-width: 100vw; height: 100%; max-height: none; margin: 0; padding: 0; border: 0; border-right: var(--hair) solid var(--ink);
+    background: var(--paper); color: var(--ink); }
+  .picker[open] { display: grid; grid-template-rows: auto auto 1fr auto; gap: var(--unit); padding: calc(var(--unit) * 4) var(--margin) calc(var(--unit) * 3) calc(var(--margin) + var(--lead)); }
+  .picker::backdrop { background: none; }          /* the dial keeps its true colours while you choose */
+  .picker header { display: flex; align-items: center; justify-content: space-between; }
+  .picker header h2 { font-size: var(--t-l); }
+  .picker .fontlist { min-height: 0; }
+  .picker .adding { display: grid; gap: var(--unit); border-top: var(--hair) solid var(--ink); padding-top: 7px; }
+  .picker .pasting { display: grid; grid-template-columns: 1fr auto; gap: var(--unit); }
+
+  /* examples: five dials to start from, each on an inset ground, the full width of the pane */
+  .examples { padding: 4px 0; }
+  .examples .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--unit); }
+  .examples a { display: grid; gap: 3px; padding: 6px 4px 4px; background: var(--inset); color: var(--ink); text-decoration: none; text-align: center; }
+  .examples a:hover, .examples a:focus-visible { background: var(--select); outline: 0; }
+  .examples svg { display: block; width: 100%; height: auto; }
+}
+
+@layer preview {
+  main { position: relative; min-width: 0; min-height: 0; overflow: hidden; background: var(--ground); }
+  .preview { display: block; width: 100%; height: 100%; touch-action: none; cursor: default; user-select: none; }
+  .preview path { cursor: pointer; }
+  /* the outline of what the pointer is on: an orange line on a white one, so it shows on any colour */
+  .glow { fill: none; stroke: var(--glow); stroke-width: 1.5px; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+  .glow.under { stroke: #fff; stroke-width: 4px; }
+  /* its name: black inside, then a white line, then a black line — readable on any dial. --arrow: where the arrow sits. */
+  .tip { position: absolute; z-index: 2; pointer-events: none; padding: 3px 8px; background: var(--ink); color: #fff; white-space: nowrap;
+    box-shadow: 0 0 0 1px #fff, 0 0 0 2px var(--ink); font-weight: 600; }
+  .tip svg { position: absolute; left: calc(var(--arrow, 50%) - 10px); top: 100%; overflow: visible; }
+  .tip.below svg { top: auto; bottom: 100%; transform: scaleY(-1); }
+  .tip svg path { fill: none; }
+  .tip svg .a { stroke: var(--ink); stroke-width: 5px; }
+  .tip svg .b { stroke: #fff; stroke-width: 2.6px; }
+  .tip svg .c { fill: var(--ink); }
+}
+
+@layer bar {
+  /* the bar: under the panel and the preview, on the panel's columns. Under the panel (.lead): the panel's
+     square in the toggle column, then play 1 · speeds 2 · time 2 · Now 1 — quiet, so they don't shout under
+     the panel. Under the preview: the day slider with its steps, then the view: − + 1 · Fit 1. */
+  .bar { grid-column: 1 / -1; display: flex; align-items: stretch; height: var(--bar-height); padding-right: var(--margin); background: var(--bar); color: var(--bar-ink); border-top: var(--hair) solid var(--bar-rule); }
+  .bar .lead { flex: none; display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; width: var(--panel); padding: 0 var(--margin); }
+  .bar .group { display: flex; align-items: center; gap: var(--gap); padding: 0 var(--gap); border-left: var(--hair) solid var(--bar-rule); }
+  .bar :is(.lead, .viewing) button, .bar .time { height: var(--bar-control); border: var(--hair) solid var(--bar-rule); background: var(--bar-field); color: var(--bar-ink); }
+  .bar :is(.lead, .viewing) button:hover { background: var(--bar-hover); border-color: var(--bar-ink); }
+  .bar :is(.lead, .viewing) button:active, .bar .viewing .segs > button.on { background: var(--bar-ink); color: var(--bar); border-color: var(--bar-ink); }
+  .bar :is(button, input):focus-visible, .bar input[type="text"]:focus { outline-color: var(--bar-ink); }
+  .bar .icon { display: inline-flex; align-items: center; justify-content: center; }
+  /* low contrast under the panel: no fills, thin light lines; what is chosen is a shade lighter */
+  .bar .lead :is(button, .time) { background: none; border-color: var(--bar-dim); }
+  .bar .lead :is(button, .time):hover { background: var(--bar-faint); border-color: var(--bar-edge); }
+  .bar .lead button:active { background: var(--bar-dim); color: var(--bar-ink); }
+  .bar .lead .segs > button.on { background: var(--bar-on); color: #fff; border-color: var(--bar-dim); }
+  .bar .lead .segs > button + button { border-left: 0; }
+  .bar .lead .side { justify-self: center; width: var(--control); border-color: transparent; }      /* centred on the toggle column, like the eyes above it */
+  .bar .side[aria-pressed="true"] { background: var(--bar-ink); color: var(--bar); }
+  .bar .speeds, .bar .time { grid-column: span 2; }
+  .bar .time { width: 100%; text-align: center; font-weight: 600; letter-spacing: 0.02em; }
+  .bar .viewing { padding-right: 0; }
+  .bar .viewing > button, .bar .zooms { flex: none; width: var(--col); }
+  .bar .zooms { display: flex; }
+  .bar .zooms button { flex: 1; min-width: 0; }
+  .bar .zooms button + button { border-left: 0; }
+  .bar .status { max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: var(--t-s); opacity: 0.7; }
+  @media (max-width: 1500px) { .bar .status { display: none; } }      /* the status line needs a wide window */
+
+  /* the day slider is a ruler: a line, cuts crossing it (drawn in draw_ruler, finer on a wider window), and a line
+     for a handle. Nothing is filled in behind the handle: the past is not a quantity. */
+  .bar .day { --ruler: 22px; --names: 18px; --handle: 3px; position: relative; flex: 1; min-width: 0; display: grid; grid-template-rows: var(--ruler) var(--names); align-content: center; gap: 0; padding: 0 20px; }
+  .ruler { grid-area: 1 / 1; display: block; width: 100%; height: var(--ruler); pointer-events: none; fill: none; stroke: var(--bar-ink); stroke-width: 1; shape-rendering: crispEdges; }
+  .ruler .line { opacity: 0.4; }
+  .ruler .hour { opacity: 0.85; }
+  .ruler .half { opacity: 0.6; }
+  .ruler .small { opacity: 0.38; }
+  .ruler .pose { opacity: 0; }
+  .bar .day input[type="range"] { grid-area: 1 / 1; height: var(--ruler); cursor: ew-resize; }
+  .bar .day input[type="range"]::-webkit-slider-runnable-track { height: var(--ruler); border-radius: 0; background: none; }
+  .bar .day input[type="range"]::-webkit-slider-thumb { width: var(--handle); height: var(--ruler); margin-top: 0; border-radius: 0; background: #fff; box-shadow: 0 0 0 2px var(--bar); }
+  .bar .day input[type="range"]::-moz-range-track { height: var(--ruler); background: none; }
+  .bar .day input[type="range"]::-moz-range-progress { background: none; }
+  .bar .day input[type="range"]::-moz-range-thumb { width: var(--handle); height: var(--ruler); border-radius: 0; background: #fff; box-shadow: 0 0 0 2px var(--bar); }
+  .bar .day input[type="range"]:focus-visible { outline: 2px solid var(--bar-ink); }
+  /* the steps' names: --at = how far along the day (0 to 1); the side margins keep them on the handle's path */
+  .steps12 { position: relative; height: var(--names); margin: 0 calc(var(--handle) / 2); }
+  .steps12 button { position: absolute; left: calc(var(--at) * 100%); top: 0; transform: translateX(-50%); min-width: var(--names); height: var(--names); padding: 0 2px; font-size: var(--t-xs); line-height: var(--names); color: var(--bar-quiet); }
+  .steps12 button:hover { color: #fff; text-decoration: underline; }
+  .steps12 button.on { color: #fff; font-weight: 700; }
+  .steps12 button.special { transform: translateX(-4%); top: -1px; z-index: 1; padding: 0 5px; border-radius: calc(var(--names) / 2); background: var(--bar-ink); color: var(--bar); font-weight: 600; }
+  .steps12 button.special:hover { background: #fff; color: #000; text-decoration: none; }
+}
+
+@layer narrow {
+  /* a phone, or a narrow window: the bar on top, the preview under it; below them the whole panel scrolls as one.
+     The six columns share what the screen gives. */
+  @media (max-width: 860px) {
+    :root { --margin: 16px; --gap: 10px; --col: calc((100vw - 2 * var(--margin) - var(--lead) - 5 * var(--gap)) / 6); }
+    #app, #app.nopanel { grid-template-columns: 1fr; grid-template-rows: auto 42% 1fr; }
+    #app.nopanel { grid-template-rows: auto 1fr 0; }
+    .bar { grid-row: 1; flex-wrap: wrap; height: auto; padding: 0; border-top: 0; border-bottom: var(--hair) solid var(--bar-rule); }
+    .bar .lead { width: 100%; height: 46px; }
+    .bar .group { border-left: 0; }
+    .bar .day { flex: 1 1 0; height: 48px; padding: 0 var(--margin); }
+    .bar .viewing { padding: 0 var(--margin) 0 0; }
+    .bar .zooms { display: none; }                  /* a phone pinches */
+    .steps12 button:nth-child(odd):not(.special) { display: none; }      /* every other hour: 1 3 5 … wait for room */
+    main { grid-row: 2; }
+    .panel { grid-row: 3; display: block; overflow-y: auto; -webkit-overflow-scrolling: touch; border-right: 0; border-top: var(--hair) solid var(--rule); }
+    .form { overflow: visible; }
+    .tabs { position: sticky; top: 0; z-index: 1; background: var(--paper); }
+    .ringlist ol { max-height: none; }
+    .listfoot { flex-wrap: wrap; height: auto; min-height: var(--line); padding-top: 4px; padding-bottom: 4px; }
+    .listfoot .adds > .quiet { white-space: nowrap; }
+    .listfoot .signs { margin-left: auto; }
+    .row.pick > label, .row.pick > .picks { grid-column: 1 / -1; }      /* picture tiles under their label, on all six columns: room for their words */
+    .row.pick > label { line-height: 1.4; padding-top: var(--unit); }
+    .picker { inset: auto 0 0 0; width: 100%; height: 58%; border-right: 0; border-top: var(--hair) solid var(--ink); }
+  }
 }
 </style>
 </head>
 <body>
-<div id="app"><p style="padding:22px">Starting…</p></div>
+<div id="app"><p class="starting">Starting…</p></div>
 <script>
 globalThis.__DIAL = {
   packed: {
@@ -368,7 +449,7 @@ globalThis.__DIAL = {
   },
   bytes(name) { return Uint8Array.from(atob(this.packed[name]), (c) => c.charCodeAt(0)); },
 };
-window.addEventListener("error", (e) => { const a = document.getElementById("app"); if (a && a.textContent.startsWith("Starting")) a.innerHTML = '<p style="padding:22px">Dial Tool couldn’t start: ' + e.message + '</p>'; });
+window.addEventListener("error", (e) => { const a = document.getElementById("app"); if (a && a.textContent.startsWith("Starting")) a.innerHTML = '<p class="starting">Dial Tool couldn’t start: ' + e.message + '</p>'; });
 </script>
 <script type="module">
 var __create = Object.create;
@@ -4707,7 +4788,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.3";
+var VERSION = "beta 4.4";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -4890,7 +4971,7 @@ var DEFAULTS = {
   gd_sel_strength: 95,
   gd_sel_w: 1.5
 };
-var NOT_GEOMETRY = ["t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_preview"];
+var NOT_GEOMETRY = ["t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview"];
 var NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_"];
 function complete(base, d) {
   const out = Object.assign(clone(base), clone(d || {}));
@@ -5984,7 +6065,18 @@ var num = (v, digits = 4) => {
   const s = (v + 0).toFixed(digits).replace(/^-(0(\.0+)?)$/, "$1");
   return s.includes(".") ? s.replace(/\.?0+$/, "") || "0" : s;
 };
-var rgb = (c) => `rgb(${c.slice(0, 3).map((v) => Math.round(v * 255)).join(",")})`;
+var rgb = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Math.max(v, 0), 1) * 255).toString(16).padStart(2, "0")).join("").toUpperCase();
+function item_name(item) {
+  if (item.role === "ring") return item.ring.ring.name || item.ring.kind;
+  if (item.role === "hand") return { hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name] || item.name;
+  if (item.window !== void 0) return `Window ${item.window + 1} ${{ "date disc": "disc", "date number": "content", "date frame": "frame", cutline: "cut line" }[item.role] || item.role}`;
+  return item.role[0].toUpperCase() + item.role.slice(1);
+}
+function file_name(S, ext, now = /* @__PURE__ */ new Date()) {
+  const day = [now.getFullYear(), now.getMonth() + 1, now.getDate()].map((v) => String(v).padStart(2, "0")).join("-");
+  const what = ext === "json" ? "" : (S.out_production ? "-mask" : "") + (S.out_mirror ? "-mirrored" : "");
+  return `dial-${num(S.dial_d, 2)}mm${what}-${day}.${ext}`;
+}
 function drawn(S, statik, t, preview, selected) {
   return scene(S, statik, t, preview, selected).map((item) => item.role === "hand" ? { ...item, path: turned(item.path, item.angle) } : item);
 }
@@ -6021,11 +6113,17 @@ function svg_document(S, statik, t, { preview = false, selected = null, live = f
     `<?xml version="1.0" encoding="UTF-8"?>`,
     `<svg xmlns="http://www.w3.org/2000/svg" width="${num(size)}mm" height="${num(size)}mm" viewBox="0 0 ${num(size)} ${num(size)}">`
   ];
+  if (!preview) out.push(`<title>Dial Tool \xB7 ${num(S.dial_d, 2)} mm dial${S.out_production ? " \xB7 print mask" : ""}${S.out_mirror ? " \xB7 mirrored" : ""}</title>`);
+  const ids = /* @__PURE__ */ new Map();
+  const named = (item) => {
+    const slug = item_name(item).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || item.role.replace(/ /g, "-");
+    ids.set(slug, (ids.get(slug) || 0) + 1);
+    return ` id="${/^[a-z]/.test(slug) ? "" : "ring-"}${slug}${ids.get(slug) > 1 ? "-" + ids.get(slug) : ""}"`;
+  };
   if (preview && !S.out_production) out.push(`<rect width="${num(size)}" height="${num(size)}" fill="${rgb(S.c_backdrop)}"/>`);
-  out.push(`<g transform="translate(${num(size / 2)} ${num(size / 2)}) scale(${flip} 1)">`);
+  out.push(`<g id="dial" transform="translate(${num(size / 2)} ${num(size / 2)})${flip < 0 ? " scale(-1 1)" : ""}">`);
   for (const item of drawn(S, statik, t, preview, selected)) {
-    const name = item.role === "ring" ? item.ring.ring.name : item.role === "hand" ? item.name + " hand" : item.role;
-    const id = ` id="${name.replace(/[^A-Za-z0-9]+/g, "-")}-${out.length}"`;
+    const id = named(item);
     const text = live ? live_texts(S, statik, item) : null;
     if (text && text.texts.length) {
       let clip = "";
@@ -6045,34 +6143,44 @@ function svg_document(S, statik, t, { preview = false, selected = null, live = f
   out.push(`</g>`, `</svg>`);
   return out.join("\n");
 }
+var pdf_text = (text) => "<FEFF" + [...String(text)].flatMap((ch) => {
+  const c = ch.codePointAt(0);
+  return c > 65535 ? [55296 + (c - 65536 >> 10), 56320 + (c - 65536 & 1023)] : [c];
+}).map((u) => u.toString(16).padStart(4, "0").toUpperCase()).join("") + ">";
 function pdf_document(S, statik, t) {
   const size = page_mm(S) * MM, flip = S.out_mirror ? -1 : 1;
   const alphas = [];
+  const layers = [];
   const body = [`q ${num(MM * flip, 6)} 0 0 ${num(MM, 6)} ${num(size / 2)} ${num(size / 2)} cm`];
   for (const item of drawn(S, statik, t, false, null)) {
     const [r, g, b, a] = item.fill;
     if (a < 1 && !alphas.includes(a)) alphas.push(a);
-    body.push(a < 1 ? `q /A${alphas.indexOf(a)} gs` : "q", `${num(r)} ${num(g)} ${num(b)} rg`);
+    layers.push(item_name(item));
+    body.push(`/OC /L${layers.length - 1} BDC`, a < 1 ? `q /A${alphas.indexOf(a)} gs` : "q", S.out_production ? `${num(r)} g` : `${num(r)} ${num(g)} ${num(b)} rg`);
     for (const c of item.path.d) {
       const v = c.slice(1).map((x) => num(x, 5)).join(" ");
       body.push(c[0] === "M" ? `${v} m` : c[0] === "L" ? `${v} l` : c[0] === "C" ? `${v} c` : "h");
     }
-    body.push("f", "Q");
+    body.push("f", "Q", "EMC");
   }
   body.push("Q");
   const stream = body.join("\n");
   const states = alphas.map((a, i) => `/A${i} << /ca ${num(a)} >>`).join(" ");
+  const FIRST = 6;
+  const refs = layers.map((_, i) => `${FIRST + i} 0 R`);
   const objects = [
-    `<< /Type /Catalog /Pages 2 0 R >>`,
+    `<< /Type /Catalog /Pages 2 0 R /OCProperties << /OCGs [${refs.join(" ")}] /D << /Order [${refs.slice().reverse().join(" ")}] /ON [${refs.join(" ")}] >> >> >>`,
+    // listed top first, as the ring list is
     `<< /Type /Pages /Kids [3 0 R] /Count 1 >>`,
-    `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${num(size)} ${num(size)}] /Contents 4 0 R /Resources << /ExtGState << ${states} >> >> >>`,
+    `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${num(size)} ${num(size)}] /Contents 4 0 R /Resources << /ExtGState << ${states} >> /Properties << ${refs.map((r, i) => `/L${i} ${r}`).join(" ")} >> >> >>`,
     `<< /Length ${stream.length} >>
 stream
 ${stream}
 endstream`,
-    `<< /Title (Dial Tool) /Creator (Dial Tool, web version) >>`
+    `<< /Title ${pdf_text(`Dial Tool \xB7 ${num(S.dial_d, 2)} mm dial${S.out_production ? " \xB7 print mask" : ""}`)} /Creator (Dial Tool, web version) >>`,
+    ...layers.map((name) => `<< /Type /OCG /Name ${pdf_text(name)} >>`)
   ];
-  let text = "%PDF-1.4\n";
+  let text = "%PDF-1.5\n";
   const starts = [];
   objects.forEach((o, i) => {
     starts.push(text.length);
@@ -6094,6 +6202,31 @@ ${xref}
 `;
   return new TextEncoder().encode(text);
 }
+var CRC = Array.from({ length: 256 }, (_, n) => {
+  for (let k = 0; k < 8; k++) n = n & 1 ? 3988292384 ^ n >>> 1 : n >>> 1;
+  return n >>> 0;
+});
+var crc32 = (bytes) => {
+  let c = 4294967295;
+  for (const b of bytes) c = CRC[(c ^ b) & 255] ^ c >>> 8;
+  return (c ^ 4294967295) >>> 0;
+};
+function png_with_dpi(bytes, dpi) {
+  const per_metre = Math.round(dpi / 0.0254);
+  const chunk = new Uint8Array(21), view = new DataView(chunk.buffer);
+  view.setUint32(0, 9);
+  chunk.set([112, 72, 89, 115], 4);
+  view.setUint32(8, per_metre);
+  view.setUint32(12, per_metre);
+  chunk[16] = 1;
+  view.setUint32(17, crc32(chunk.subarray(4, 17)));
+  const at = 33;
+  const out = new Uint8Array(bytes.length + chunk.length);
+  out.set(bytes.subarray(0, at));
+  out.set(chunk, at);
+  out.set(bytes.subarray(at), at + chunk.length);
+  return out;
+}
 
 // src/font_list.js
 var FONT_SITE = "https://duztman.github.io/dial-tool/fonts/";
@@ -6111,6 +6244,9 @@ var el = (tag, props = {}, ...children) => {
 };
 var svg_el = (tag) => document.createElementNS("http://www.w3.org/2000/svg", tag);
 var clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
+var filled = (slider) => slider.style.setProperty("--p", clamp((slider.value - slider.min) / (slider.max - slider.min || 1), 0, 1).toFixed(4));
+var PNG_MOST = 16384;
+var PNG_SAFE = 4096 * 4096;
 var LAST = "dial-tool-last";
 var FEATURE_NAMES = {
   kern: "kerning",
@@ -6496,6 +6632,7 @@ var DialTool = class _DialTool {
     this.font_note = "";
     this.build_ms = 0;
     this.rows = [];
+    this.scrolls = {};
     this.log_lines = [];
     this.build_window();
     this.show_section();
@@ -6549,6 +6686,7 @@ var DialTool = class _DialTool {
     TAB_ORDER.forEach((name) => {
       const i = SECTIONS.indexOf(name);
       const tab = el("button", { type: "button", onclick: () => {
+        if (this.S.ui_section === i) return;
         this.S.ui_section = i;
         this.show_section();
         this.render();
@@ -6563,7 +6701,7 @@ var DialTool = class _DialTool {
     const panel = el(
       "aside",
       { className: "panel" },
-      el("header", {}, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: VERSION }), this.guides_box()),
+      el("header", {}, el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: VERSION })), this.guides_box()),
       this.tabs,
       this.pinned,
       this.form
@@ -6631,7 +6769,8 @@ var DialTool = class _DialTool {
     this.ruler.setAttribute("class", "ruler");
     this.ruler.setAttribute("aria-hidden", "true");
     this.day_ticks = DAY_STEPS.map((x) => x[0]);
-    new ResizeObserver(() => this.draw_ruler()).observe(this.time_slider);
+    this.watchers = [new ResizeObserver(() => this.draw_ruler())];
+    this.watchers[0].observe(this.time_slider);
     const bar = el(
       "footer",
       { className: "bar" },
@@ -6679,7 +6818,8 @@ var DialTool = class _DialTool {
     } catch (e) {
     }
     if (!shown) this.show_panel(false);
-    new ResizeObserver(() => this.resized()).observe(this.svg);
+    this.watchers.push(new ResizeObserver(() => this.resized()));
+    this.watchers.at(-1).observe(this.svg);
   }
   /** the whole panel, away or back: the dial gets the window. Remembered by this browser. */
   show_panel(on) {
@@ -6695,27 +6835,36 @@ var DialTool = class _DialTool {
   guides_box() {
     this.guides_tick = el("button", { type: "button", className: "guidesbox", id: "guides", onclick: () => this.set_value("global", "guides", !this.S.guides) });
     this.guides_tick.innerHTML = icon(`<circle r="5.6"/><circle r="2.1"/><path d="M0 -8.6L0 -3.6M0 3.6L0 8.6M-8.6 0L-3.6 0M3.6 0L8.6 0"/>`, 18, "-9 -9 18 18");
-    this.guides_tick.append(el("span", { textContent: "Guides" }));
+    const word = el("span", { className: "word", textContent: "Guides" });
+    word.dataset.text = "Guides";
+    this.guides_tick.append(word);
     return this.guides_tick;
   }
-  /** the rows of the section that is showing. Rows after a heading belong to its group, which can be folded. */
+  /** the rows of the section that is showing. A heading opens a pane; the rows after it go inside the pane,
+   *  which can be folded. Each section remembers how far it was scrolled. */
   show_section() {
     if (!(this.S.ui_section in SECTIONS)) this.S.ui_section = 0;
     const name = SECTIONS[this.S.ui_section];
+    if (this.section_shown) this.scrolls[this.section_shown] = this.form.scrollTop;
     [...this.tabs.children].forEach((b) => b.classList.toggle("on", b.dataset.tab === name));
     this.form.replaceChildren();
     this.pinned.replaceChildren();
+    this.ring_list = null;
     this.rows = ROWS[name].map((row) => this.build_row(row));
-    const heading = { pinned: null, form: null };
+    let pane = null;
     for (const r of this.rows) {
-      const where = r.row.pin ? "pinned" : "form";
-      if (r.fold) heading[where] = r;
-      else r.group = heading[where];
-      this[where].append(r.el);
+      if (r.fold) {
+        pane = r;
+        (r.row.pin ? this.pinned : this.form).append(r.el);
+      } else {
+        r.group = pane;
+        pane.body.append(r.el);
+      }
     }
     this.pinned.hidden = !this.pinned.children.length;
     this.sync_rows();
-    this.form.scrollTop = 0;
+    this.section_shown = name;
+    this.form.scrollTop = this.scrolls[name] || 0;
   }
   /** folded groups are remembered by this browser (a convenience, not part of the dial). */
   is_folded(r) {
@@ -6735,18 +6884,44 @@ var DialTool = class _DialTool {
       localStorage.setItem("dial-tool-folds", JSON.stringify(this.folds));
     } catch (e) {
     }
+    const open = r.body.offsetHeight;
     this.sync_rows();
+    this.slide(r, open, folded);
   }
-  /** every row: hidden if it doesn't apply (R16) or its group is folded; its controls showing the scope's value. */
+  /** a pane closes and opens by sliding, so what is under it travels instead of jumping.
+   *  Not when the system asks for less motion; and never left half-way (R17). */
+  slide(r, from, folded) {
+    const body = r.body;
+    if (r.sliding) {
+      r.sliding.onfinish = r.sliding.oncancel = null;
+      r.sliding.cancel();
+      r.sliding = null;
+    }
+    const done = () => {
+      body.classList.remove("sliding");
+      body.hidden = this.is_folded(r);
+      r.sliding = null;
+    };
+    body.hidden = false;
+    const to = folded ? 0 : body.offsetHeight;
+    if (!body.animate || from === to || matchMedia("(prefers-reduced-motion: reduce)").matches) return done();
+    body.classList.add("sliding");
+    r.sliding = body.animate([{ height: `${from}px` }, { height: `${to}px` }], { duration: 140, easing: "ease-out" });
+    r.sliding.onfinish = r.sliding.oncancel = done;
+  }
+  /** every row: hidden if it doesn't apply (R16); its controls showing the scope's value. A pane hides its rows
+   *  when it is folded, and everything in it when its heading doesn't apply. */
   sync_rows() {
     this.guides_tick.setAttribute("aria-pressed", String(Boolean(this.S.guides)));
     this.guides_tick.title = this.S.guides ? "Guides are on: press to hide them (their settings are in Dial)" : "Guides are off: press to show them";
     for (const r of this.rows) {
       const T = this.target(r.row.scope);
       const applies = r.row.show ? Boolean(r.row.show(T)) : true;
+      r.el.hidden = !applies;
       if (r.fold) {
         const folded = this.is_folded(r);
         r.el.classList.toggle("folded", folded);
+        if (!r.sliding) r.body.hidden = folded;
         if (r.folded_shown !== folded) {
           r.folded_shown = folded;
           r.eye.innerHTML = eye(!folded);
@@ -6754,16 +6929,8 @@ var DialTool = class _DialTool {
         }
         r.summary.textContent = folded ? this.summary(r) : "";
       }
-      r.el.hidden = !applies || Boolean(r.group && !r.group.el.hidden && this.is_folded(r.group));
-      if (!r.el.hidden) r.refresh(T);
-    }
-    const before = { pinned: null, form: null };
-    for (const r of this.rows) {
-      if (!r.fold || r.el.hidden) continue;
-      const where = r.row.pin ? "pinned" : "form";
-      r.el.classList.toggle("first", before[where] === null);
-      r.el.classList.toggle("spaced", before[where] !== null && !this.is_folded(before[where]));
-      before[where] = r;
+      const pane = r.group;
+      if (applies && !(pane && (pane.el.hidden || this.is_folded(pane)))) r.refresh(T);
     }
   }
   /** what a folded pane holds, in a few words: the values of its first rows. Folding hides controls, not information. */
@@ -6796,8 +6963,8 @@ var DialTool = class _DialTool {
       out.eye = el("span", { className: "eye" });
       out.summary = el("span", { className: "summary quiet" });
       out.button = el("button", { type: "button", className: "fold", title: "Show or hide this pane", onclick: () => this.fold(out, !this.is_folded(out)) }, out.eye, title, out.summary);
-      wrap.className = "row hdr";
-      wrap.append(out.button);
+      out.body = el("div", { className: "body" });
+      out.el = el("section", { className: "pane" }, out.button, out.body);
       if (row.name === "ring_title") out.refresh = (R) => {
         title.textContent = R.name || kind_of(R);
       };
@@ -6832,7 +6999,7 @@ var DialTool = class _DialTool {
         }
       };
       const step = (dir) => el("button", { type: "button", className: "step", textContent: dir > 0 ? "+" : "\u2212", tabIndex: -1, onclick: () => commit(this.target(row.scope)[row.key] + dir * row.step) });
-      const lead = row.button ? el("button", { type: "button", className: "main", id: "export-" + row.button, textContent: row.button.toUpperCase(), title: `Export a ${row.button.toUpperCase()} at this dpi`, onclick: () => this.export(row.button) }) : el("label", { htmlFor: id, textContent: row.text });
+      const lead = row.button ? el("button", { type: "button", className: "btn main", id: "export-" + row.button, textContent: row.button.toUpperCase(), title: `Export a ${row.button.toUpperCase()} at this dpi`, onclick: () => this.export(row.button) }) : el("label", { htmlFor: id, textContent: row.text });
       if (row.button) {
         slider.ariaLabel = field.ariaLabel = row.text;
         field.title = row.text + " \xB7 " + field.title;
@@ -6843,6 +7010,7 @@ var DialTool = class _DialTool {
         if (v > +slider.max) slider.max = v;
         if (v < +slider.min) slider.min = v;
         if (+slider.value !== v) slider.value = v;
+        filled(slider);
         if (!typing) field.value = fmt(v, row.step);
       };
     }
@@ -6899,7 +7067,7 @@ var DialTool = class _DialTool {
       const hues = el("div", { className: "hue", title: "Hue" }, el("i"));
       const modes = el("span", { className: "segs" }), numbers = el("span", { className: "numbers" });
       const out_hex = el("code", { className: "hexout" });
-      const copy = el("button", { type: "button", className: "copy", textContent: "Copy", onclick: async () => {
+      const copy = el("button", { type: "button", className: "btn copy", textContent: "Copy", onclick: async () => {
         try {
           await navigator.clipboard.writeText(out_hex.textContent);
           copy.textContent = "Copied";
@@ -7181,8 +7349,8 @@ var DialTool = class _DialTool {
     wrap.append(el("span"), el(
       "span",
       { className: "tools" },
-      el("button", { type: "button", textContent: "Round both ends", onclick: both((R) => Math.max(+(R.w / 2).toFixed(2), 0.01)) }),
-      el("button", { type: "button", textContent: "Square", onclick: both(() => 0) })
+      el("button", { type: "button", className: "btn", textContent: "Round both ends", onclick: both((R) => Math.max(+(R.w / 2).toFixed(2), 0.01)) }),
+      el("button", { type: "button", className: "btn", textContent: "Square", onclick: both(() => 0) })
     ));
   }
   /** a correction for one numeral: radius ±, angle ±, rotate, size ×. Click a numeral in the preview to pick it. */
@@ -7215,7 +7383,7 @@ var DialTool = class _DialTool {
       line("da", "Angle \xB1 \xB0", 0.1, 0),
       line("rot", "Rotate \xB0", 1, 0),
       line("s", "Size \xD7", 0.01, 1),
-      el("div", { className: "row" }, el("span"), el("button", { type: "button", textContent: "Reset this numeral", onclick: () => {
+      el("div", { className: "row" }, el("span"), el("button", { type: "button", className: "btn", textContent: "Reset this numeral", onclick: () => {
         const all = { ...this.ring().nudge };
         delete all[this.nudge_at];
         this.set_value("ring", "nudge", all);
@@ -7318,19 +7486,19 @@ var DialTool = class _DialTool {
     this.picker = el(
       "dialog",
       { className: "picker", id: "font-picker" },
-      el("header", {}, el("h2", { textContent: "Fonts" }), el("button", { type: "button", className: "main", id: "font-done", textContent: "Done", onclick: () => this.picker.close() })),
+      el("header", {}, el("h2", { textContent: "Fonts" }), el("button", { type: "button", className: "btn main", id: "font-done", textContent: "Done", onclick: () => this.picker.close() })),
       find,
       list,
       el(
         "div",
         { className: "adding" },
         el("h2", { textContent: "Add fonts" }),
-        el("div", { className: "pasting" }, paste, el("button", { type: "button", id: "font-add", textContent: "Add", onclick: add })),
+        el("div", { className: "pasting" }, paste, el("button", { type: "button", className: "btn", id: "font-add", textContent: "Add", onclick: add })),
         el(
           "div",
           { className: "tools" },
-          el("button", { type: "button", textContent: "Font file\u2026", onclick: () => file.click() }),
-          el("button", { type: "button", id: "local-fonts", textContent: "Installed fonts", hidden: !("queryLocalFonts" in window), onclick: () => this.local_fonts(true) }),
+          el("button", { type: "button", className: "btn", textContent: "Font file\u2026", onclick: () => file.click() }),
+          el("button", { type: "button", className: "btn", id: "local-fonts", textContent: "Installed fonts", hidden: !("queryLocalFonts" in window), onclick: () => this.local_fonts(true) }),
           file
         ),
         el("div", { className: "quiet note", id: "picker-note" })
@@ -7412,7 +7580,8 @@ var DialTool = class _DialTool {
       }
       for (const input of wrap.querySelectorAll("input")) {
         const a = axes[input.dataset.tag];
-        if (a && document.activeElement !== input) input.value = input.type === "range" ? R.axes[a && input.dataset.tag] ?? a.default : fmt(R.axes[input.dataset.tag] ?? a.default, 0.1);
+        if (a && document.activeElement !== input) input.value = input.type === "range" ? R.axes[input.dataset.tag] ?? a.default : fmt(R.axes[input.dataset.tag] ?? a.default, 0.1);
+        if (input.type === "range") filled(input);
       }
     };
   }
@@ -7467,7 +7636,7 @@ var DialTool = class _DialTool {
   row_export(wrap) {
     wrap.className = "row";
     const tools = el("span", { className: "tools" });
-    for (const kind of ["PDF", "SVG"]) tools.append(el("button", { type: "button", className: "main", id: "export-" + kind.toLowerCase(), textContent: kind, onclick: () => this.export(kind.toLowerCase()) }));
+    for (const kind of ["PDF", "SVG"]) tools.append(el("button", { type: "button", className: "btn main", id: "export-" + kind.toLowerCase(), textContent: kind, onclick: () => this.export(kind.toLowerCase()) }));
     wrap.append(el("label", { textContent: "Vector" }), tools);
   }
   /** under the PNG row: what that dpi comes to. */
@@ -7490,13 +7659,14 @@ var DialTool = class _DialTool {
     wrap.append(el(
       "span",
       { className: "tools wide" },
-      el("button", { type: "button", id: "save", textContent: "Save\u2026", onclick: () => {
-        save_file("dial.json", JSON.stringify({ ...this.S, ui_section: Math.min(this.S.ui_section, 4) }, null, 1), "application/json");
-        this.log("saved dial.json to your downloads");
+      el("button", { type: "button", className: "btn", id: "save", textContent: "Save\u2026", onclick: () => {
+        const name = file_name(this.S, "json");
+        save_file(name, JSON.stringify({ ...this.S, ui_section: Math.min(this.S.ui_section, 4) }, null, 1), "application/json");
+        this.log(`saved ${name} to your downloads`);
       } }),
       // dial.py knows sections 0–4
-      el("button", { type: "button", textContent: "Load\u2026", onclick: () => file.click() }),
-      el("button", { type: "button", textContent: "Defaults", onclick: () => this.reopen({ ui_section: this.S.ui_section }) }),
+      el("button", { type: "button", className: "btn", textContent: "Load\u2026", onclick: () => file.click() }),
+      el("button", { type: "button", className: "btn", textContent: "Defaults", onclick: () => this.reopen({ ui_section: this.S.ui_section }) }),
       file
     ));
   }
@@ -7508,7 +7678,7 @@ var DialTool = class _DialTool {
     wrap.append(this.link_box, el(
       "div",
       { className: "tools" },
-      el("button", { type: "button", id: "copy-link", textContent: "Copy link", onclick: () => this.copy_link() }),
+      el("button", { type: "button", className: "btn", id: "copy-link", textContent: "Copy link", onclick: () => this.copy_link() }),
       el("span", { className: "quiet", id: "link-size" })
     ));
     out.refresh = () => this.show_link();
@@ -7764,6 +7934,7 @@ var DialTool = class _DialTool {
   }
   frame() {
     this.pending = false;
+    if (this.closed) return;
     try {
       if (this.playing) {
         const [wall, t] = this.play_from;
@@ -7981,14 +8152,18 @@ var DialTool = class _DialTool {
   clicked(p, node) {
     const piece = this.piece_at(p, node), S = this.S;
     if (!piece) return;
-    S.ui_section = { ring: 1, hand: 2, cap: 2, date: 3, plate: 0 }[piece.kind];
+    const section = { ring: 1, hand: 2, cap: 2, date: 3, plate: 0 }[piece.kind], same = section === S.ui_section;
+    S.ui_section = section;
     if (piece.kind === "ring") {
       S.ui_ring = piece.ring;
       if (piece.numeral !== void 0) this.nudge_at = piece.numeral;
     }
     if (piece.kind === "hand") S.ui_hand = piece.hand;
     if (piece.kind === "date") S.ui_window = piece.window;
-    this.show_section();
+    if (same) {
+      this.fill_ring_list();
+      this.sync_rows();
+    } else this.show_section();
     this.render();
   }
   /** the pointer rests on something that can be edited: outline it, and say its name beside the pointer. */
@@ -8067,25 +8242,33 @@ var DialTool = class _DialTool {
   async export(kind) {
     try {
       const S = this.S, statik = build_static(S);
+      const name = file_name(S, kind);
       if (kind === "svg") {
         const live = S.out_live_text && !S.out_production;
-        save_file("dial.svg", svg_document(S, statik, S.t, { live }), "image/svg+xml");
-        if (live) return this.log(`exported dial.svg \xB7 ${page_mm(S).toFixed(2)} mm square \xB7 numerals are text: ${[...new Set(S.rings.filter((r) => r.on && kind_of(r) === "numerals").map((r) => r.family))].join(", ") || "no numerals"} must be installed to open it`);
+        save_file(name, svg_document(S, statik, S.t, { live }), "image/svg+xml");
+        if (live) return this.log(`exported ${name} \xB7 ${page_mm(S).toFixed(2)} mm square \xB7 numerals are text: ${[...new Set(S.rings.filter((r) => r.on && kind_of(r) === "numerals").map((r) => r.family))].join(", ") || "no numerals"} must be installed to open it`);
       }
-      if (kind === "pdf") save_file("dial.pdf", pdf_document(S, statik, S.t), "application/pdf");
+      if (kind === "pdf") save_file(name, pdf_document(S, statik, S.t), "application/pdf");
       if (kind === "png") {
         const px = Math.round(page_mm(S) / 25.4 * S.out_dpi);
+        if (px > PNG_MOST) return this.log(`PNG not made: ${px} \xD7 ${px} px is more than a browser can draw (${PNG_MOST} a side). Lower the dpi to ${Math.floor(PNG_MOST / page_mm(S) * 25.4)} or less, or use the PDF.`);
         const image = new Image();
         image.src = URL.createObjectURL(new Blob([svg_document(S, statik, S.t)], { type: "image/svg+xml" }));
         await image.decode();
-        const canvas = el("canvas", { width: px, height: px });
-        canvas.getContext("2d").drawImage(image, 0, 0, px, px);
+        const canvas = el("canvas", { width: px, height: px }), pen = canvas.getContext("2d");
+        if (S.out_production) {
+          pen.fillStyle = "#fff";
+          pen.fillRect(0, 0, px, px);
+        }
+        pen.drawImage(image, 0, 0, px, px);
         URL.revokeObjectURL(image.src);
-        save_file("dial.png", await new Promise((done) => canvas.toBlob(done, "image/png")), "image/png");
-        this.log(`exported dial.png \xB7 ${px} \xD7 ${px} px`);
+        const blob = await new Promise((done) => canvas.toBlob(done, "image/png"));
+        if (!blob) throw new Error(`this browser couldn\u2019t make a picture of ${px} \xD7 ${px} px: lower the dpi`);
+        save_file(name, png_with_dpi(new Uint8Array(await blob.arrayBuffer()), S.out_dpi), "image/png");
+        this.log(`exported ${name} \xB7 ${px} \xD7 ${px} px \xB7 ${Math.round(S.out_dpi)} dpi is written in the file, so it opens at ${page_mm(S).toFixed(2)} mm` + (px * px > PNG_SAFE ? ` \xB7 large: if it is empty in Safari, lower the dpi` : ""));
         return;
       }
-      this.log(`exported dial.${kind} \xB7 ${page_mm(S).toFixed(2)} mm square, to your downloads`);
+      this.log(`exported ${name} \xB7 ${page_mm(S).toFixed(2)} mm square, to your downloads`);
     } catch (e) {
       this.log(`export ${kind} failed: ${e.stack || e}`);
     }
@@ -8100,9 +8283,17 @@ var DialTool = class _DialTool {
       this.log(`couldn\u2019t load ${name}: ${e.message}`);
     }
   }
+  /** this tool is being replaced (reopen): stop everything it still has running, so it can't draw or
+   *  save over the new one. */
+  close() {
+    this.closed = true;
+    this.playing = false;
+    clearTimeout(this.saving);
+    for (const w of this.watchers) w.disconnect();
+  }
   /** start again with new settings (the simplest way to update every control). */
   reopen(settings) {
-    this.playing = false;
+    this.close();
     const fonts2 = this.catalog;
     tool = new _DialTool(settings);
     for (const [ps, f] of fonts2) if (!tool.catalog.has(ps)) tool.catalog.set(ps, f);
@@ -8113,6 +8304,7 @@ var DialTool = class _DialTool {
   autosave() {
     clearTimeout(this.saving);
     this.saving = setTimeout(async () => {
+      if (this.closed) return;
       try {
         localStorage.setItem(LAST, JSON.stringify(this.S));
       } catch (e) {

@@ -49,7 +49,7 @@ const html = `<!doctype html>
 ${css}</style>
 </head>
 <body>
-<div id="app"><p style="padding:22px">Starting…</p></div>
+<div id="app"><p class="starting">Starting…</p></div>
 <script>
 globalThis.__DIAL = {
   packed: {
@@ -59,7 +59,7 @@ globalThis.__DIAL = {
   },
   bytes(name) { return Uint8Array.from(atob(this.packed[name]), (c) => c.charCodeAt(0)); },
 };
-window.addEventListener("error", (e) => { const a = document.getElementById("app"); if (a && a.textContent.startsWith("Starting")) a.innerHTML = '<p style="padding:22px">Dial Tool couldn’t start: ' + e.message + '</p>'; });
+window.addEventListener("error", (e) => { const a = document.getElementById("app"); if (a && a.textContent.startsWith("Starting")) a.innerHTML = '<p class="starting">Dial Tool couldn’t start: ' + e.message + '</p>'; });
 </script>
 <script type="module">
 ${code}

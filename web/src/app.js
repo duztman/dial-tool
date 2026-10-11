@@ -1,13 +1,13 @@
 // Dial Tool, web version — part 4: the window.
 //
-//   left: sections (Dial · Rings · Hands · Date · Export), each a list of rows
+//   left: sections (Dial · Rings · Hands · Windows · Export), each a list of panes; a pane is a heading and its rows
 //   right: the preview (SVG — one element per scene item) and the bar under it
 //
 // Rows are described as data (ROWS), as in dial.py; one function turns a row into
 // controls. Controls change the settings S and ask for a frame; the frame draws (R28).
 
 import * as G from "./geometry.js";
-import { svg_document, pdf_document } from "./output.js";
+import { svg_document, pdf_document, png_with_dpi, file_name } from "./output.js";
 import { FONT_LIST, FONT_SITE } from "./font_list.js";
 import { EXAMPLES } from "./examples.js";
 
@@ -19,7 +19,11 @@ const el = (tag, props = {}, ...children) => {
 };
 const svg_el = (tag) => document.createElementNS("http://www.w3.org/2000/svg", tag);
 const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
+/** a slider tells its stylesheet how far along it is (--p, 0 to 1): the filled part of its track. */
+const filled = (slider) => slider.style.setProperty("--p", clamp((slider.value - slider.min) / ((slider.max - slider.min) || 1), 0, 1).toFixed(4));
 
+const PNG_MOST = 16384;                            // a browser's canvas is at most this many pixels a side
+const PNG_SAFE = 4096 * 4096;                      // Safari on a phone or tablet draws nothing past this many pixels in all
 const LAST = "dial-tool-last";                     // the last session, kept by the browser
 const FEATURE_NAMES = {
   kern: "kerning", liga: "ligatures", calt: "contextual alternates", dlig: "discretionary ligatures",
@@ -373,6 +377,7 @@ class DialTool {
     this.font_note = "";                           // what the last font action did, shown under its buttons
     this.build_ms = 0;
     this.rows = [];
+    this.scrolls = {};                             // how far each section was scrolled (the window's state, not the dial's)
     this.log_lines = [];
     this.build_window();
     this.show_section();
@@ -420,7 +425,7 @@ class DialTool {
     this.tabs = el("nav", { className: "tabs" });
     TAB_ORDER.forEach((name) => {
       const i = SECTIONS.indexOf(name);
-      const tab = el("button", { type: "button", onclick: () => { this.S.ui_section = i; this.show_section(); this.render(); } });
+      const tab = el("button", { type: "button", onclick: () => { if (this.S.ui_section === i) return; this.S.ui_section = i; this.show_section(); this.render(); } });
       tab.dataset.tab = name;
       tab.innerHTML = section_icon(name);
       tab.append(el("span", { textContent: TAB_NAMES[name] || name }));
@@ -429,7 +434,7 @@ class DialTool {
     this.pinned = el("div", { className: "pinned" });              // rows that stay in view
     this.form = el("div", { className: "form" });                  // rows that scroll
     const panel = el("aside", { className: "panel" },
-      el("header", {}, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION }), this.guides_box()),
+      el("header", {}, el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION })), this.guides_box()),
       this.tabs, this.pinned, this.form);
 
     this.svg = svg_el("svg");
@@ -485,7 +490,8 @@ class DialTool {
     this.ruler.setAttribute("class", "ruler");
     this.ruler.setAttribute("aria-hidden", "true");
     this.day_ticks = DAY_STEPS.map((x) => x[0]);
-    new ResizeObserver(() => this.draw_ruler()).observe(this.time_slider);
+    this.watchers = [new ResizeObserver(() => this.draw_ruler())];      // closed with the tool (close)
+    this.watchers[0].observe(this.time_slider);
     const bar = el("footer", { className: "bar" },
       el("div", { className: "lead" }, side, this.play_button, this.speeds, this.time_field,
         el("button", { type: "button", id: "now", textContent: "Now", title: "The time it is now", onclick: () => { const d = new Date(); this.set_time(d.getHours() % 12 * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000); } })),
@@ -501,7 +507,8 @@ class DialTool {
     let shown = true;
     try { shown = localStorage.getItem("dial-tool-panel") !== "off"; } catch (e) { /* not kept */ }
     if (!shown) this.show_panel(false);
-    new ResizeObserver(() => this.resized()).observe(this.svg);
+    this.watchers.push(new ResizeObserver(() => this.resized()));
+    this.watchers.at(-1).observe(this.svg);
   }
 
   /** the whole panel, away or back: the dial gets the window. Remembered by this browser. */
@@ -516,27 +523,32 @@ class DialTool {
   guides_box() {
     this.guides_tick = el("button", { type: "button", className: "guidesbox", id: "guides", onclick: () => this.set_value("global", "guides", !this.S.guides) });
     this.guides_tick.innerHTML = icon(`<circle r="5.6"/><circle r="2.1"/><path d="M0 -8.6L0 -3.6M0 3.6L0 8.6M-8.6 0L-3.6 0M3.6 0L8.6 0"/>`, 18, "-9 -9 18 18");
-    this.guides_tick.append(el("span", { textContent: "Guides" }));
+    const word = el("span", { className: "word", textContent: "Guides" });
+    word.dataset.text = "Guides";
+    this.guides_tick.append(word);
     return this.guides_tick;
   }
 
-  /** the rows of the section that is showing. Rows after a heading belong to its group, which can be folded. */
+  /** the rows of the section that is showing. A heading opens a pane; the rows after it go inside the pane,
+   *  which can be folded. Each section remembers how far it was scrolled. */
   show_section() {
     if (!(this.S.ui_section in SECTIONS)) this.S.ui_section = 0;
     const name = SECTIONS[this.S.ui_section];
+    if (this.section_shown) this.scrolls[this.section_shown] = this.form.scrollTop;
     [...this.tabs.children].forEach((b) => b.classList.toggle("on", b.dataset.tab === name));
     this.form.replaceChildren();
     this.pinned.replaceChildren();
+    this.ring_list = null;                         // the Rings section builds it again
     this.rows = ROWS[name].map((row) => this.build_row(row));
-    const heading = { pinned: null, form: null };
+    let pane = null;
     for (const r of this.rows) {
-      const where = r.row.pin ? "pinned" : "form";
-      if (r.fold) heading[where] = r; else r.group = heading[where];
-      this[where].append(r.el);
+      if (r.fold) { pane = r; (r.row.pin ? this.pinned : this.form).append(r.el); }
+      else { r.group = pane; pane.body.append(r.el); }
     }
     this.pinned.hidden = !this.pinned.children.length;
     this.sync_rows();
-    this.form.scrollTop = 0;
+    this.section_shown = name;
+    this.form.scrollTop = this.scrolls[name] || 0;
   }
 
   /** folded groups are remembered by this browser (a convenience, not part of the dial). */
@@ -548,34 +560,43 @@ class DialTool {
     this.is_folded(r);
     this.folds[r.fold] = folded;
     try { localStorage.setItem("dial-tool-folds", JSON.stringify(this.folds)); } catch (e) { /* not kept */ }
+    const open = r.body.offsetHeight;                // the pane's height before anything changes (0 if it was folded)
     this.sync_rows();
+    this.slide(r, open, folded);
   }
 
-  /** every row: hidden if it doesn't apply (R16) or its group is folded; its controls showing the scope's value. */
+  /** a pane closes and opens by sliding, so what is under it travels instead of jumping.
+   *  Not when the system asks for less motion; and never left half-way (R17). */
+  slide(r, from, folded) {
+    const body = r.body;
+    if (r.sliding) { r.sliding.onfinish = r.sliding.oncancel = null; r.sliding.cancel(); r.sliding = null; }      // turned round half-way
+    const done = () => { body.classList.remove("sliding"); body.hidden = this.is_folded(r); r.sliding = null; };
+    body.hidden = false;                             // in view while it slides
+    const to = folded ? 0 : body.offsetHeight;
+    if (!body.animate || from === to || matchMedia("(prefers-reduced-motion: reduce)").matches) return done();
+    body.classList.add("sliding");
+    r.sliding = body.animate([{ height: `${from}px` }, { height: `${to}px` }], { duration: 140, easing: "ease-out" });
+    r.sliding.onfinish = r.sliding.oncancel = done;
+  }
+
+  /** every row: hidden if it doesn't apply (R16); its controls showing the scope's value. A pane hides its rows
+   *  when it is folded, and everything in it when its heading doesn't apply. */
   sync_rows() {
     this.guides_tick.setAttribute("aria-pressed", String(Boolean(this.S.guides)));
     this.guides_tick.title = this.S.guides ? "Guides are on: press to hide them (their settings are in Dial)" : "Guides are off: press to show them";
     for (const r of this.rows) {
       const T = this.target(r.row.scope);
       const applies = r.row.show ? Boolean(r.row.show(T)) : true;
+      r.el.hidden = !applies;
       if (r.fold) {
         const folded = this.is_folded(r);
         r.el.classList.toggle("folded", folded);
+        if (!r.sliding) r.body.hidden = folded;
         if (r.folded_shown !== folded) { r.folded_shown = folded; r.eye.innerHTML = eye(!folded); r.button.setAttribute("aria-expanded", String(!folded)); }
         r.summary.textContent = folded ? this.summary(r) : "";
       }
-      r.el.hidden = !applies || Boolean(r.group && !r.group.el.hidden && this.is_folded(r.group));
-      if (!r.el.hidden) r.refresh(T);
-    }
-    // air between panes: above a heading only when the pane before it (in the same part of the panel) is open.
-    // Worked out here, not by "the element after" in the stylesheet: a folded pane's rows are still there, hidden.
-    const before = { pinned: null, form: null };
-    for (const r of this.rows) {
-      if (!r.fold || r.el.hidden) continue;
-      const where = r.row.pin ? "pinned" : "form";
-      r.el.classList.toggle("first", before[where] === null);
-      r.el.classList.toggle("spaced", before[where] !== null && !this.is_folded(before[where]));
-      before[where] = r;
+      const pane = r.group;
+      if (applies && !(pane && (pane.el.hidden || this.is_folded(pane)))) r.refresh(T);
     }
   }
 
@@ -611,8 +632,8 @@ class DialTool {
       out.eye = el("span", { className: "eye" });
       out.summary = el("span", { className: "summary quiet" });
       out.button = el("button", { type: "button", className: "fold", title: "Show or hide this pane", onclick: () => this.fold(out, !this.is_folded(out)) }, out.eye, title, out.summary);
-      wrap.className = "row hdr";
-      wrap.append(out.button);
+      out.body = el("div", { className: "body" });
+      out.el = el("section", { className: "pane" }, out.button, out.body);
       if (row.name === "ring_title") out.refresh = (R) => { title.textContent = R.name || G.kind_of(R); };
       return out;
     }
@@ -635,7 +656,7 @@ class DialTool {
       };
       const step = (dir) => el("button", { type: "button", className: "step", textContent: dir > 0 ? "+" : "−", tabIndex: -1, onclick: () => commit(this.target(row.scope)[row.key] + dir * row.step) });
       const lead = row.button
-        ? el("button", { type: "button", className: "main", id: "export-" + row.button, textContent: row.button.toUpperCase(), title: `Export a ${row.button.toUpperCase()} at this dpi`, onclick: () => this.export(row.button) })
+        ? el("button", { type: "button", className: "btn main", id: "export-" + row.button, textContent: row.button.toUpperCase(), title: `Export a ${row.button.toUpperCase()} at this dpi`, onclick: () => this.export(row.button) })
         : el("label", { htmlFor: id, textContent: row.text });
       if (row.button) { slider.ariaLabel = field.ariaLabel = row.text; field.title = row.text + " · " + field.title; }
       wrap.append(lead, slider, field, el("span", { className: "steps" }, step(-1), step(1)));
@@ -644,6 +665,7 @@ class DialTool {
         if (v > +slider.max) slider.max = v;       // the slider grows to hold a typed value
         if (v < +slider.min) slider.min = v;
         if (+slider.value !== v) slider.value = v;
+        filled(slider);
         if (!typing) field.value = fmt(v, row.step);
       };
     }
@@ -697,7 +719,7 @@ class DialTool {
       const hues = el("div", { className: "hue", title: "Hue" }, el("i"));
       const modes = el("span", { className: "segs" }), numbers = el("span", { className: "numbers" });
       const out_hex = el("code", { className: "hexout" });
-      const copy = el("button", { type: "button", className: "copy", textContent: "Copy", onclick: async () => {
+      const copy = el("button", { type: "button", className: "btn copy", textContent: "Copy", onclick: async () => {
         try { await navigator.clipboard.writeText(out_hex.textContent); copy.textContent = "Copied"; } catch (e) { copy.textContent = "Select it"; }
         setTimeout(() => { copy.textContent = "Copy"; }, 1200);
       } });
@@ -926,8 +948,8 @@ class DialTool {
       this.static_dirty = true; this.sync_rows(); this.render();
     };
     wrap.append(el("span"), el("span", { className: "tools" },
-      el("button", { type: "button", textContent: "Round both ends", onclick: both((R) => Math.max(+(R.w / 2).toFixed(2), 0.01)) }),
-      el("button", { type: "button", textContent: "Square", onclick: both(() => 0) })));
+      el("button", { type: "button", className: "btn", textContent: "Round both ends", onclick: both((R) => Math.max(+(R.w / 2).toFixed(2), 0.01)) }),
+      el("button", { type: "button", className: "btn", textContent: "Square", onclick: both(() => 0) })));
   }
 
   /** a correction for one numeral: radius ±, angle ±, rotate, size ×. Click a numeral in the preview to pick it. */
@@ -951,7 +973,7 @@ class DialTool {
     };
     wrap.append(el("div", { className: "row pop" }, el("label", { htmlFor: "nudge-pick", textContent: "Numeral" }), pick),
       line("dr", "Radius ±", 0.05, 0), line("da", "Angle ± °", 0.1, 0), line("rot", "Rotate °", 1, 0), line("s", "Size ×", 0.01, 1),
-      el("div", { className: "row" }, el("span"), el("button", { type: "button", textContent: "Reset this numeral", onclick: () => {
+      el("div", { className: "row" }, el("span"), el("button", { type: "button", className: "btn", textContent: "Reset this numeral", onclick: () => {
         const all = { ...this.ring().nudge };
         delete all[this.nudge_at];
         this.set_value("ring", "nudge", all);
@@ -1033,14 +1055,14 @@ class DialTool {
     const file = el("input", { type: "file", accept: ".ttf,.otf,.ttc,.otc", multiple: true, hidden: true, id: "font-file" });
     file.onchange = async () => { await this.add_font_files([...file.files]); file.value = ""; };
     this.picker = el("dialog", { className: "picker", id: "font-picker" },
-      el("header", {}, el("h2", { textContent: "Fonts" }), el("button", { type: "button", className: "main", id: "font-done", textContent: "Done", onclick: () => this.picker.close() })),
+      el("header", {}, el("h2", { textContent: "Fonts" }), el("button", { type: "button", className: "btn main", id: "font-done", textContent: "Done", onclick: () => this.picker.close() })),
       find, list,
       el("div", { className: "adding" },
         el("h2", { textContent: "Add fonts" }),
-        el("div", { className: "pasting" }, paste, el("button", { type: "button", id: "font-add", textContent: "Add", onclick: add })),
+        el("div", { className: "pasting" }, paste, el("button", { type: "button", className: "btn", id: "font-add", textContent: "Add", onclick: add })),
         el("div", { className: "tools" },
-          el("button", { type: "button", textContent: "Font file…", onclick: () => file.click() }),
-          el("button", { type: "button", id: "local-fonts", textContent: "Installed fonts", hidden: !("queryLocalFonts" in window), onclick: () => this.local_fonts(true) }), file),
+          el("button", { type: "button", className: "btn", textContent: "Font file…", onclick: () => file.click() }),
+          el("button", { type: "button", className: "btn", id: "local-fonts", textContent: "Installed fonts", hidden: !("queryLocalFonts" in window), onclick: () => this.local_fonts(true) }), file),
         el("div", { className: "quiet note", id: "picker-note" })));
     this.picker.addEventListener("click", (e) => { if (e.target === this.picker) this.picker.close(); });      // a click outside closes it
     return this.picker;
@@ -1111,7 +1133,8 @@ class DialTool {
       }
       for (const input of wrap.querySelectorAll("input")) {
         const a = axes[input.dataset.tag];
-        if (a && document.activeElement !== input) input.value = input.type === "range" ? (R.axes[a && input.dataset.tag] ?? a.default) : fmt(R.axes[input.dataset.tag] ?? a.default, 0.1);
+        if (a && document.activeElement !== input) input.value = input.type === "range" ? (R.axes[input.dataset.tag] ?? a.default) : fmt(R.axes[input.dataset.tag] ?? a.default, 0.1);
+        if (input.type === "range") filled(input);
       }
     };
   }
@@ -1172,7 +1195,7 @@ class DialTool {
   row_export(wrap) {
     wrap.className = "row";
     const tools = el("span", { className: "tools" });
-    for (const kind of ["PDF", "SVG"]) tools.append(el("button", { type: "button", className: "main", id: "export-" + kind.toLowerCase(), textContent: kind, onclick: () => this.export(kind.toLowerCase()) }));
+    for (const kind of ["PDF", "SVG"]) tools.append(el("button", { type: "button", className: "btn main", id: "export-" + kind.toLowerCase(), textContent: kind, onclick: () => this.export(kind.toLowerCase()) }));
     wrap.append(el("label", { textContent: "Vector" }), tools);
   }
 
@@ -1189,9 +1212,9 @@ class DialTool {
     const file = el("input", { type: "file", accept: ".json,application/json", hidden: true, id: "load-file" });
     file.onchange = async () => { if (file.files[0]) this.load_text(await file.files[0].text(), file.files[0].name); file.value = ""; };
     wrap.append(el("span", { className: "tools wide" },
-      el("button", { type: "button", id: "save", textContent: "Save…", onclick: () => { save_file("dial.json", JSON.stringify({ ...this.S, ui_section: Math.min(this.S.ui_section, 4) }, null, 1), "application/json"); this.log("saved dial.json to your downloads"); } }),   // dial.py knows sections 0–4
-      el("button", { type: "button", textContent: "Load…", onclick: () => file.click() }),
-      el("button", { type: "button", textContent: "Defaults", onclick: () => this.reopen({ ui_section: this.S.ui_section }) }), file));
+      el("button", { type: "button", className: "btn", id: "save", textContent: "Save…", onclick: () => { const name = file_name(this.S, "json"); save_file(name, JSON.stringify({ ...this.S, ui_section: Math.min(this.S.ui_section, 4) }, null, 1), "application/json"); this.log(`saved ${name} to your downloads`); } }),   // dial.py knows sections 0–4
+      el("button", { type: "button", className: "btn", textContent: "Load…", onclick: () => file.click() }),
+      el("button", { type: "button", className: "btn", textContent: "Defaults", onclick: () => this.reopen({ ui_section: this.S.ui_section }) }), file));
   }
 
   /** the dial's link, spelled out, and a button that copies it. */
@@ -1200,7 +1223,7 @@ class DialTool {
     this.link_box = el("textarea", { id: "link", className: "link", readOnly: true, rows: 3, spellcheck: false, ariaLabel: "Link to this dial" });
     this.link_box.onfocus = () => this.link_box.select();
     wrap.append(this.link_box, el("div", { className: "tools" },
-      el("button", { type: "button", id: "copy-link", textContent: "Copy link", onclick: () => this.copy_link() }),
+      el("button", { type: "button", className: "btn", id: "copy-link", textContent: "Copy link", onclick: () => this.copy_link() }),
       el("span", { className: "quiet", id: "link-size" })));
     out.refresh = () => this.show_link();
   }
@@ -1438,6 +1461,7 @@ class DialTool {
 
   frame() {
     this.pending = false;
+    if (this.closed) return;
     try {
       if (this.playing) {
         const [wall, t] = this.play_from;
@@ -1628,11 +1652,12 @@ class DialTool {
   clicked(p, node) {
     const piece = this.piece_at(p, node), S = this.S;
     if (!piece) return;
-    S.ui_section = { ring: 1, hand: 2, cap: 2, date: 3, plate: 0 }[piece.kind];
+    const section = { ring: 1, hand: 2, cap: 2, date: 3, plate: 0 }[piece.kind], same = section === S.ui_section;
+    S.ui_section = section;
     if (piece.kind === "ring") { S.ui_ring = piece.ring; if (piece.numeral !== undefined) this.nudge_at = piece.numeral; }
     if (piece.kind === "hand") S.ui_hand = piece.hand;
     if (piece.kind === "date") S.ui_window = piece.window;
-    this.show_section();
+    if (same) { this.fill_ring_list(); this.sync_rows(); } else this.show_section();
     this.render();
   }
 
@@ -1717,25 +1742,31 @@ class DialTool {
   async export(kind) {
     try {
       const S = this.S, statik = G.build_static(S);
+      const name = file_name(S, kind);
       if (kind === "svg") {
         const live = S.out_live_text && !S.out_production;
-        save_file("dial.svg", svg_document(S, statik, S.t, { live }), "image/svg+xml");
-        if (live) return this.log(`exported dial.svg · ${G.page_mm(S).toFixed(2)} mm square · numerals are text: ${[...new Set(S.rings.filter((r) => r.on && G.kind_of(r) === "numerals").map((r) => r.family))].join(", ") || "no numerals"} must be installed to open it`);
+        save_file(name, svg_document(S, statik, S.t, { live }), "image/svg+xml");
+        if (live) return this.log(`exported ${name} · ${G.page_mm(S).toFixed(2)} mm square · numerals are text: ${[...new Set(S.rings.filter((r) => r.on && G.kind_of(r) === "numerals").map((r) => r.family))].join(", ") || "no numerals"} must be installed to open it`);
       }
-      if (kind === "pdf") save_file("dial.pdf", pdf_document(S, statik, S.t), "application/pdf");
+      if (kind === "pdf") save_file(name, pdf_document(S, statik, S.t), "application/pdf");
       if (kind === "png") {
         const px = Math.round(G.page_mm(S) / 25.4 * S.out_dpi);
+        if (px > PNG_MOST) return this.log(`PNG not made: ${px} × ${px} px is more than a browser can draw (${PNG_MOST} a side). Lower the dpi to ${Math.floor(PNG_MOST / G.page_mm(S) * 25.4)} or less, or use the PDF.`);
         const image = new Image();
         image.src = URL.createObjectURL(new Blob([svg_document(S, statik, S.t)], { type: "image/svg+xml" }));
         await image.decode();
-        const canvas = el("canvas", { width: px, height: px });
-        canvas.getContext("2d").drawImage(image, 0, 0, px, px);
+        const canvas = el("canvas", { width: px, height: px }), pen = canvas.getContext("2d");
+        if (S.out_production) { pen.fillStyle = "#fff"; pen.fillRect(0, 0, px, px); }      // a mask is black on white, never on nothing
+        pen.drawImage(image, 0, 0, px, px);
         URL.revokeObjectURL(image.src);
-        save_file("dial.png", await new Promise((done) => canvas.toBlob(done, "image/png")), "image/png");
-        this.log(`exported dial.png · ${px} × ${px} px`);
+        const blob = await new Promise((done) => canvas.toBlob(done, "image/png"));
+        if (!blob) throw new Error(`this browser couldn’t make a picture of ${px} × ${px} px: lower the dpi`);
+        save_file(name, png_with_dpi(new Uint8Array(await blob.arrayBuffer()), S.out_dpi), "image/png");
+        this.log(`exported ${name} · ${px} × ${px} px · ${Math.round(S.out_dpi)} dpi is written in the file, so it opens at ${G.page_mm(S).toFixed(2)} mm`
+          + (px * px > PNG_SAFE ? ` · large: if it is empty in Safari, lower the dpi` : ""));
         return;
       }
-      this.log(`exported dial.${kind} · ${G.page_mm(S).toFixed(2)} mm square, to your downloads`);
+      this.log(`exported ${name} · ${G.page_mm(S).toFixed(2)} mm square, to your downloads`);
     } catch (e) {
       this.log(`export ${kind} failed: ${e.stack || e}`);
     }
@@ -1752,9 +1783,18 @@ class DialTool {
     }
   }
 
+  /** this tool is being replaced (reopen): stop everything it still has running, so it can't draw or
+   *  save over the new one. */
+  close() {
+    this.closed = true;
+    this.playing = false;
+    clearTimeout(this.saving);
+    for (const w of this.watchers) w.disconnect();
+  }
+
   /** start again with new settings (the simplest way to update every control). */
   reopen(settings) {
-    this.playing = false;
+    this.close();
     const fonts = this.catalog;
     tool = new DialTool(settings);
     for (const [ps, f] of fonts) if (!tool.catalog.has(ps)) tool.catalog.set(ps, f);
@@ -1766,6 +1806,7 @@ class DialTool {
   autosave() {
     clearTimeout(this.saving);
     this.saving = setTimeout(async () => {
+      if (this.closed) return;
       try { localStorage.setItem(LAST, JSON.stringify(this.S)); } catch (e) { /* private window: nothing kept */ }
       try { history.replaceState(null, "", await this.show_link()); } catch (e) { /* the address stays as it was */ }
     }, 400);

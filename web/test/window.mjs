@@ -15,7 +15,7 @@ const check = (ok, what) => { console.log((ok ? "ok    " : "FAIL  ") + what); if
 const near = (a, b, tol = 0.02) => Math.abs(a - b) <= tol;
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || "/opt/pw-browsers/chromium" });
-const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2, acceptDownloads: true });
+const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2, acceptDownloads: true, reducedMotion: "reduce" });      // panes fold at once here; their slide has a check of its own
 await context.grantPermissions(["local-fonts"]).catch(() => {});
 // the tool's own fonts come from its site; here they are served from web/fonts/, so the test needs no network
 await context.route("https://duztman.github.io/dial-tool/fonts/**", (route) => route.fulfill({ path: "fonts/" + decodeURIComponent(route.request().url().split("/fonts/")[1]), headers: { "access-control-allow-origin": "*" } }));
@@ -229,7 +229,7 @@ await page.click('.fold:has-text("Size") .eye');
 check(await page.isVisible("#global-dial-d-Diameter") && (await page.textContent('.fold:has-text("Size") .summary')) === "", "its eye opens it again, and the summary goes");
 // folding must not leave uneven gaps: folded panes stack line on line, whatever they hold
 await tab("Hands");
-const gaps = async () => page.$$eval(".form .row.hdr", (h) => h.filter((e) => e.offsetParent).map((e, i, all) => (i ? Math.round(e.getBoundingClientRect().top - all[i - 1].getBoundingClientRect().top) : 0)).slice(1));
+const gaps = async () => page.$$eval(".form .pane", (h) => h.filter((e) => e.offsetParent).map((e, i, all) => (i ? Math.round(e.getBoundingClientRect().top - all[i - 1].getBoundingClientRect().top) : 0)).slice(1));
 for (const name of ["Cap", "One hand", "Size"]) await page.click(`.form .fold:has-text("${name}") >> nth=0`);
 const folded_gaps = await gaps();
 check(folded_gaps[1] === 42 && folded_gaps[2] === 42 && folded_gaps[3] === 42, `three folded panes in a row are 42 apart, and so is the open one after them (${folded_gaps.join(", ")})`);
@@ -447,7 +447,7 @@ await page.setViewportSize({ width: 1440, height: 900 });
 await frame();
 const under = await page.evaluate(() => { const l = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left), row = document.querySelector(".form .row.num") || document.querySelector(".row.num"); return { play: l("#play"), col: Math.round(row.getBoundingClientRect().left), now_right: Math.round(document.querySelector("#now").getBoundingClientRect().right), row_right: Math.round(row.getBoundingClientRect().right) }; });
 check(under.play === under.col && under.now_right === under.row_right, `under the panel the time controls start and end with the six columns (${JSON.stringify(under)})`);
-const pane_lines = await page.$$eval(".form .row.hdr", (h) => h.filter((e) => e.offsetParent).map((e) => Math.round(e.getBoundingClientRect().left) + "/" + Math.round(e.querySelector(".eye svg").getBoundingClientRect().left)));
+const pane_lines = await page.$$eval(".form .pane", (h) => h.filter((e) => e.offsetParent).map((e) => Math.round(e.getBoundingClientRect().left) + "/" + Math.round(e.querySelector(".eye svg").getBoundingClientRect().left)));
 check(pane_lines.length > 0 && pane_lines.every((x) => x === "24/26"), `a pane's line starts at the margin, over its eye, which stands 2 further in (${pane_lines[0]})`);
 // the bar keeps the columns: widths of one or two columns, and the Guides switch ends on the panel's last column
 const fits = await page.evaluate(() => { const w = (q) => Math.round(document.querySelector(q).getBoundingClientRect().width), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); return { play: w("#play"), speeds: w(".speeds"), time: w("#time"), now: w("#now"), zooms: w(".zooms"), fit: w("#fit"), guides: w("#guides"), guides_right: r("#guides"), row_right: r(".form .row"), side: Math.round(document.querySelector("#panel-toggle").getBoundingClientRect().left + 13) }; });
@@ -460,13 +460,20 @@ check(await S("S.t === 3 * 3600 + 20 * 60 + 10"), "typed time 3:20:10");
 // ── files: PDF, SVG, PNG, save, load ──
 await tab("Export");
 const size_mm = await S("S.dial_d + 2 * S.margin");
+const await_ring_name = await S("S.rings.find((r) => r.on).name");
 const pdf = await download("#export-pdf");
 const pdf_text = fs.readFileSync(pdf, "latin1");
 const box_pt = /MediaBox \[0 0 ([\d.]+) ([\d.]+)\]/.exec(pdf_text);
-check(pdf_text.startsWith("%PDF-1.4") && box_pt && near(+box_pt[1] / 72 * 25.4, size_mm, 0.001), `PDF: page ${(box_pt[1] / 72 * 25.4).toFixed(2)} mm = dial + margins (${size_mm} mm)`);
+check(pdf_text.startsWith("%PDF-1.5") && box_pt && near(+box_pt[1] / 72 * 25.4, size_mm, 0.001), `PDF: page ${(box_pt[1] / 72 * 25.4).toFixed(2)} mm = dial + margins (${size_mm} mm)`);
 check(!/ S\n| re\n|BT\n/.test(pdf_text) && (pdf_text.match(/\nf\n/g) || []).length >= 8, "PDF: filled paths only, no strokes or text (R4, R5)");
+const layer_names = (pdf_text.match(/\/Type \/OCG \/Name <FEFF([0-9A-F]+)>/g) || []).map((x) => (/<FEFF([0-9A-F]+)>/.exec(x)[1].match(/.{4}/g) || []).map((h) => String.fromCharCode(parseInt(h, 16))).join(""));
+check(layer_names.includes("Plate") && layer_names.includes("Hour hand") && layer_names.some((n) => n === await_ring_name) && (pdf_text.match(/ BDC\n/g) || []).length === layer_names.length,
+  `PDF: every part is a layer with its name (${layer_names.join(" · ")})`);
+check(/^dial-[\d.]+mm-\d{4}-\d\d-\d\d\.pdf$/.test(path.basename(pdf)), `the file says what it is: ${path.basename(pdf)}`);
 const svg = await download("#export-svg");
 const svg_text = fs.readFileSync(svg, "utf8");
+const svg_ids = (svg_text.match(/ id="[^"]+"/g) || []).map((x) => x.slice(5, -1));
+check(svg_ids.includes("plate") && svg_ids.includes("hour-hand") && new Set(svg_ids).size === svg_ids.length && !/scale\(1 1\)/.test(svg_text), `SVG: shapes are named after what they are, each name once (${svg_ids.slice(0, 6).join(", ")} …)`);
 check(svg_text.includes(`width="${size_mm}mm"`) && !svg_text.includes("stroke=") && (svg_text.match(/<path/g) || []).length >= 8, "SVG: true size in mm, no guides");
 // live text: the numerals stay text, each where its outline was
 await page.check("#global-out-live-text-Keep-numerals-as-text-in-the-SVG");
@@ -486,6 +493,17 @@ const png = await download("#export-png");
 const want_px = Math.round(size_mm / 25.4 * await S("S.out_dpi"));
 const png_bytes = fs.readFileSync(png);
 check(png_bytes.readUInt32BE(16) === want_px && png_bytes.readUInt32BE(20) === want_px, `PNG: ${want_px} × ${want_px} px at ${await S("S.out_dpi")} dpi`);
+const phys = png_bytes.indexOf("pHYs");
+check(phys === 37 && near(png_bytes.readUInt32BE(phys + 4) * 0.0254, await S("S.out_dpi"), 0.5) && png_bytes.readUInt32BE(phys - 4) === 9, `PNG: its dpi is written in the file (${(png_bytes.readUInt32BE(phys + 4) * 0.0254).toFixed(1)}), so it opens at true size`);
+// a production mask: grey ink only in the PDF, and black on white (not on nothing) in the PNG
+await page.check("#global-out-production-Mono-print-mask");
+const mask_pdf = await download("#export-pdf");
+const mask_text = fs.readFileSync(mask_pdf, "latin1");
+check(/\n0 g\n/.test(mask_text) && !/ rg\n/.test(mask_text) && path.basename(mask_pdf).includes("-mask-"), `a mask's PDF is in grey ink (0 g), no RGB black: ${path.basename(mask_pdf)}`);
+const mask_png = await download("#export-png");
+const corner = await page.evaluate(async (b64) => { const i = new Image(); i.src = "data:image/png;base64," + b64; await i.decode(); const c = document.createElement("canvas"); c.width = c.height = 4; const x = c.getContext("2d"); x.drawImage(i, 0, 0); return [...x.getImageData(0, 0, 1, 1).data]; }, fs.readFileSync(mask_png).toString("base64"));
+check(corner.join() === "255,255,255,255", "a mask's PNG has a white ground");
+await page.uncheck("#global-out-production-Mono-print-mask");
 const saved = await download("#save");
 const before_save = await S("JSON.stringify(S)");
 check(JSON.stringify(JSON.parse(fs.readFileSync(saved, "utf8"))) === before_save, "Save… writes the settings as they are");
@@ -541,6 +559,37 @@ await page.evaluate((l) => { location.hash = l.split("#")[1]; }, link);
 await page.waitForFunction(() => window.dial_tool.S.ha_hour.round === 2, null, { timeout: 5000 }).catch(() => {});
 check(await S("S.ha_hour.round === 2"), "pasting a link into the open tool switches to that dial");
 
+// ── nothing jumps: a click on the preview keeps the rows; panes slide; the Guides switch keeps its size ──
+await tab("Rings");
+await page.click(".ringlist li >> nth=2");
+await page.$eval(".form", (e) => { e.scrollTop = 180; });
+await page.evaluate(() => { window.__row = document.querySelector(".form .row"); });
+await page.click(".swatch");
+await click_mm(0, 10);                               // a numeral, in the section that is showing
+const kept = await page.evaluate(() => ({ same_rows: window.__row === document.querySelector(".form .row"), scroll: document.querySelector(".form").scrollTop, picker: !document.querySelector(".pinned .palette").hidden, ring: window.dial_tool.ring().name, list: document.querySelector(".ringlist li.on .name").textContent }));
+check(kept.same_rows && kept.scroll === 180 && kept.picker && kept.ring === kept.list, `a click on the preview keeps the rows, their scroll (${kept.scroll}) and an open colour picker, and selects ${kept.ring}`);
+await page.click(".swatch");
+await tab("Hands"); await page.$eval(".form", (e) => { e.scrollTop = 120; }); await tab("Dial"); await tab("Hands");
+check(await page.$eval(".form", (e) => e.scrollTop) === 120, "a section is back where it was scrolled to");
+await page.$eval(".form", (e) => { e.scrollTop = 0; });
+await tab("Dial");
+const guides_w = [];
+for (let i = 0; i < 2; i++) { guides_w.push(await page.$eval("#guides", (e) => e.getBoundingClientRect().width)); await page.click("#guides"); await frame(); }
+check(guides_w[0] === guides_w[1], `the Guides switch is the same width on and off (${guides_w.join(" / ")})`);
+check(await page.$eval("#global-dial-d-Diameter-slider", (e) => { const p = +e.style.getPropertyValue("--p"); return Math.abs(p - (e.value - e.min) / (e.max - e.min)) < 0.001 && getComputedStyle(e).appearance === "none"; }), "a slider knows how far along it is: its track is filled up to the handle");
+await page.emulateMedia({ reducedMotion: "no-preference" });
+const heights = await page.evaluate(async () => {
+  const pane = [...document.querySelectorAll(".form .pane")].find((p) => !p.hidden && !p.classList.contains("folded")), body = pane.querySelector(".body"), next = pane.nextElementSibling;
+  const open = body.offsetHeight, top0 = next.getBoundingClientRect().top, seen = [];
+  pane.querySelector(".fold").click();
+  for (let i = 0; i < 60 && (body.getAnimations().length || !i); i++) { await new Promise((r) => requestAnimationFrame(r)); seen.push(Math.round(body.getBoundingClientRect().height)); }
+  const shut = { hidden: body.hidden, moved: Math.round(top0 - next.getBoundingClientRect().top) };
+  pane.querySelector(".fold").click();
+  await new Promise((r) => setTimeout(r, 400));
+  return { open, between: seen.filter((h) => h > 0 && h < open).length, shut, again: body.offsetHeight };
+});
+check(heights.between >= 2 && heights.shut.hidden && heights.shut.moved === heights.open && heights.again === heights.open, `a pane slides shut and open: ${heights.between} steps on the way, and what is under it moves by exactly its height (${heights.shut.moved} = ${heights.open})`);
+await page.emulateMedia({ reducedMotion: "reduce" });
 check(errors.length === 0, "no errors in the browser's console" + (errors.length ? ": " + errors.slice(0, 3).join(" | ") : ""));
 // ── the panel put away, and a phone ──
 await page.click("#panel-toggle");

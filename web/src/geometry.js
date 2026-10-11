@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.3";
+export const VERSION = "beta 4.4";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -101,7 +101,7 @@ export const DEFAULTS = {
   gd_sel_c: [1.0, 0.45, 0.0, 1], gd_sel_strength: 95.0, gd_sel_w: 1.5,
 };
 
-export const NOT_GEOMETRY = ["t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_preview"];
+export const NOT_GEOMETRY = ["t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview"];
 export const NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_"];
 
 /** base values + d's values (deep copies), names turned into popup indexes. */

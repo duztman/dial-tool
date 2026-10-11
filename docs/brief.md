@@ -1,6 +1,6 @@
 # Dial Tool — brief
 
-*Started 3 Oct 2026. Last updated 11 Oct 2026 (web version, beta 3.0, on `dev`). Before: 4 Oct 2026 (beta 2.3 on `dev`: preview plan built, Mac check pending — `docs/preview.md` §6).*
+*Started 3 Oct 2026. Last updated 12 Oct 2026 (web version, beta 4.4, on `dev`). Before: 11 Oct 2026 (web version, beta 3.0); 4 Oct 2026 (beta 2.3 on `dev`: preview plan built, Mac check pending — `docs/preview.md` §6).*
 
 ## 1 · Goal
 
@@ -89,6 +89,8 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 4 Oct | **Guidebook, seventh edition** (`docs/design.md` §4, §5): a pale colour per section instead of one yellow; cover with the whole dial on two fields and a 96 pt title; Start icons on one outline; picture labels checked against their backgrounds. | Okay: "Yellow is lovely. Start with that but revert to paler, less contrasty to bg color palette. Every section gets own color. Cover: do not crop dial. Minimal padding, fit big and add bg to either half. Larger title. Start section: redraw icons more uniform… Some text got bgs. Check and refine." |
 | 4 Oct | **No Mac check.** beta 2.3 is treated as working; the guide describes it as such (the "not opened on a Mac yet" note is gone). `main` is still beta 2.2: releasing 2.3 is Okay's call. | Okay: "No mac check. Trust as if. This pdf will guide the future." |
 | 4 Oct | Interface checked off-Mac with **`tools/ui_smoke.py`**: stand-ins that accept only vanilla 0.5.0's real signatures and methods. | The full window can't run off-Mac; this catches wrong calls and lost callbacks (it reproduces the beta 1.0 dropdown bug when R22 is removed). |
+| 12 Oct | **Web version, beta 4.4: the review.** Rows stay when the preview is clicked; sections keep their scroll; panes slide. The stylesheet is layers and tokens (rule R32). Sliders are a black disc on a thin track; tick boxes are square; things on the scrolling grey are paper-light. | Okay: "Code review time. All on the table", then "All good 1-4", "redesign sliders like this" (a sketch), "Bg color created clashes, look around." |
+| 12 Oct | **Files (web version):** the PDF has a named layer per part and writes a production mask in grey ink; the PNG carries its dpi and a mask's is on white; SVG shapes are named plainly; file names say size and day (`dial-30mm-2026-10-12.pdf`). | Part of the review Okay approved. The file-name pattern is Claude's proposal, not yet confirmed by Okay (build list #68). |
 
 ## 5 · Open questions
 
