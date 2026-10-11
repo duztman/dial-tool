@@ -544,6 +544,16 @@ class DialTool {
       r.el.hidden = !applies || Boolean(r.group && !r.group.el.hidden && this.is_folded(r.group));
       if (!r.el.hidden) r.refresh(T);
     }
+    // air between panes: above a heading only when the pane before it (in the same part of the panel) is open.
+    // Worked out here, not by "the element after" in the stylesheet: a folded pane's rows are still there, hidden.
+    const before = { pinned: null, form: null };
+    for (const r of this.rows) {
+      if (!r.fold || r.el.hidden) continue;
+      const where = r.row.pin ? "pinned" : "form";
+      r.el.classList.toggle("first", before[where] === null);
+      r.el.classList.toggle("spaced", before[where] !== null && !this.is_folded(before[where]));
+      before[where] = r;
+    }
   }
 
   /** what a folded pane holds, in a few words: the values of its first rows. Folding hides controls, not information. */

@@ -222,6 +222,14 @@ check(await page.isHidden("#global-dial-d-Diameter") && await page.isVisible("#g
 check((await page.textContent('.fold:has-text("Size") .summary')).includes("diameter 30.0"), "a folded pane says what it holds: diameter 30.0 …");
 await page.click('.fold:has-text("Size") .eye');
 check(await page.isVisible("#global-dial-d-Diameter") && (await page.textContent('.fold:has-text("Size") .summary')) === "", "its eye opens it again, and the summary goes");
+// folding must not leave uneven gaps: folded panes stack line on line, whatever they hold
+await tab("Hands");
+const gaps = async () => page.$$eval(".form .row.hdr", (h) => h.filter((e) => e.offsetParent).map((e, i, all) => (i ? Math.round(e.getBoundingClientRect().top - all[i - 1].getBoundingClientRect().top) : 0)).slice(1));
+for (const name of ["Cap", "One hand", "Size"]) await page.click(`.form .fold:has-text("${name}") >> nth=0`);
+const folded_gaps = await gaps();
+check(folded_gaps[1] === 42 && folded_gaps[2] === 42 && folded_gaps[3] === 42, `three folded panes in a row are 42 apart, and so is the open one after them (${folded_gaps.join(", ")})`);
+for (const name of ["Cap", "One hand", "Size"]) await page.click(`.form .fold:has-text("${name}") >> nth=0`);
+await tab("Dial");
 // the columns: every slider, value and stepper starts on the same three lines
 const lines = await page.$$eval(".form .row.num", (rows) => [...new Set(rows.filter((r) => r.offsetParent).map((r) => [...r.children].slice(1).map((c) => Math.round(c.getBoundingClientRect().left)).join("/")))]);
 check(lines.length === 1, `number rows share their columns (${lines.join(" | ")})`);
