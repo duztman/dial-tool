@@ -4828,6 +4828,22 @@ function fresh_settings(over = null) {
   S.ui_preview = 0;
   return S;
 }
+var LINK_SCHEME = 1;
+function differing(d, base) {
+  const out = {};
+  for (const k in d) if (JSON.stringify(d[k]) !== JSON.stringify(base[k])) out[k] = d[k];
+  return out;
+}
+function lean(S) {
+  const out = {};
+  for (const k in S) {
+    if (k.startsWith("ui_") || k === "version" || JSON.stringify(S[k]) === JSON.stringify(DEFAULTS[k])) continue;
+    if (k === "rings") out.rings = S.rings.map((r) => differing(r, RING_BASE));
+    else if (HANDS.some((h) => k === "ha_" + h)) out[k] = differing(S[k], HAND_BASE);
+    else out[k] = S[k];
+  }
+  return out;
+}
 var PK = null;
 var HB = null;
 function start(pathkit2, harfbuzz) {
@@ -5849,6 +5865,28 @@ function save_file(name, data, type) {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 5e3);
 }
+var b64 = (bytes) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+var un_b64 = (text) => Uint8Array.from(atob(text.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
+var through = async (bytes, stream) => new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer());
+async function pack(S) {
+  const bytes = new TextEncoder().encode(JSON.stringify(lean(S)));
+  try {
+    return `${LINK_SCHEME}.` + b64(await through(bytes, new CompressionStream("deflate-raw")));
+  } catch (e) {
+    return "0." + b64(bytes);
+  }
+}
+async function unpack(hash) {
+  const m = /^#?([01])\.([A-Za-z0-9_-]+)$/.exec(hash || "");
+  if (!m) return null;
+  try {
+    const bytes = m[1] === "0" ? un_b64(m[2]) : await through(un_b64(m[2]), new DecompressionStream("deflate-raw"));
+    const settings = JSON.parse(new TextDecoder().decode(bytes));
+    return settings && typeof settings === "object" && !Array.isArray(settings) ? settings : null;
+  } catch (e) {
+    return null;
+  }
+}
 var DialTool = class _DialTool {
   constructor(settings) {
     this.S = fresh_settings(settings);
@@ -6373,6 +6411,7 @@ var DialTool = class _DialTool {
       } }),
       el("button", { type: "button", textContent: "Load\u2026", onclick: () => file.click() }),
       el("button", { type: "button", textContent: "Defaults", onclick: () => this.reopen({ ui_section: this.S.ui_section }) }),
+      el("button", { type: "button", id: "copy-link", textContent: "Copy link", onclick: () => this.copy_link() }),
       file
     ));
   }
@@ -6769,14 +6808,34 @@ var DialTool = class _DialTool {
     tool.load_fonts_in_use();
     window.dial_tool = tool;
   }
+  /** shortly after the last change: keep the session, and make the address bar say this dial. */
   autosave() {
     clearTimeout(this.saving);
-    this.saving = setTimeout(() => {
+    this.saving = setTimeout(async () => {
       try {
         localStorage.setItem(LAST, JSON.stringify(this.S));
       } catch (e) {
       }
+      try {
+        history.replaceState(null, "", "#" + await pack(this.S));
+      } catch (e) {
+      }
     }, 400);
+  }
+  /** the whole dial as one address: open it anywhere and the dial is back. Fonts travel by name only. */
+  async copy_link() {
+    const link = location.href.split("#")[0] + "#" + await pack(this.S);
+    try {
+      await navigator.clipboard.writeText(link);
+      this.log(`link copied \xB7 ${link.length} characters`);
+    } catch (e) {
+      this.log(`couldn\u2019t copy by itself; the link is in the address bar, and here:
+${link}`);
+    }
+    try {
+      history.replaceState(null, "", link);
+    } catch (e) {
+    }
   }
   log(message) {
     const stamp = (/* @__PURE__ */ new Date()).toTimeString().slice(0, 8);
@@ -6788,16 +6847,27 @@ var DialTool = class _DialTool {
   }
 };
 var tool = null;
-function open_window(pathkit2, harfbuzz, font_bytes) {
+async function open_window(pathkit2, harfbuzz, font_bytes) {
   start(pathkit2, harfbuzz);
   add_font(font_bytes, 0, true);
-  let settings = null;
-  try {
-    settings = JSON.parse(localStorage.getItem(LAST));
-  } catch (e) {
-    settings = null;
+  let settings = await unpack(location.hash);
+  const from_link = settings !== null;
+  if (!settings) {
+    try {
+      settings = JSON.parse(localStorage.getItem(LAST));
+    } catch (e) {
+      settings = null;
+    }
   }
   tool = new DialTool(settings);
+  if (from_link) tool.log("opened the dial in the address");
+  window.addEventListener("hashchange", async () => {
+    const next = await unpack(location.hash);
+    if (next) {
+      tool.reopen(next);
+      tool.log("opened the dial in the address");
+    }
+  });
   tool.sync_time();
   window.dial_tool = tool;
   window.addEventListener("pagehide", () => {
@@ -6819,7 +6889,7 @@ function open_window(pathkit2, harfbuzz, font_bytes) {
 
 // src/main.js
 var pathkit = await (0, import_pathkit.default)({ wasmBinary: globalThis.__DIAL.bytes("pathkit") });
-open_window(pathkit, dist_exports, globalThis.__DIAL.bytes("font"));
+await open_window(pathkit, dist_exports, globalThis.__DIAL.bytes("font"));
 
 </script>
 </body>

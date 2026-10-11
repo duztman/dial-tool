@@ -6,4 +6,4 @@ import * as HarfBuzz from "harfbuzzjs";
 import { open_window } from "./app.js";
 
 const pathkit = await PathKitInit({ wasmBinary: globalThis.__DIAL.bytes("pathkit") });
-open_window(pathkit, HarfBuzz, globalThis.__DIAL.bytes("font"));
+await open_window(pathkit, HarfBuzz, globalThis.__DIAL.bytes("font"));

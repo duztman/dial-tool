@@ -235,6 +235,33 @@ await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 check(await S("S.ha_hour.round === 2"), "the last session is back after closing and reopening the page");
 await shot("8-reopened");
 
+// ── a dial as a link ──
+await context.grantPermissions(["local-fonts", "clipboard-read", "clipboard-write"]).catch(() => {});
+await tab("Export");
+await page.click("#copy-link");
+await page.waitForFunction(() => window.dial_tool.log_lines[0].includes("link copied"), null, { timeout: 5000 }).catch(() => {});
+const link = await page.evaluate(() => location.href);
+check(/#1\.[A-Za-z0-9_-]+$/.test(link), `Copy link: the address carries the dial (${link.split("#")[1].length} characters after #)`);
+const wanted = await S("JSON.stringify({ ...S, ui_section: 0, ui_ring: 0, ui_hand: 0 })");
+const other = await context.newPage();                               // someone else's browser: no last session of this dial
+await other.addInitScript(() => localStorage.removeItem("dial-tool-last"));
+await other.goto(link);
+await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
+const got = await other.evaluate(() => JSON.stringify({ ...window.dial_tool.S, ui_section: 0, ui_ring: 0, ui_hand: 0 }));
+check(got === wanted, "opening the link elsewhere gives the same dial, every setting");
+await other.goto(link.split("#")[0] + "#1.not-a-dial");
+await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
+check(await other.evaluate(() => window.dial_tool.S.rings.length > 0), "a broken link opens the tool anyway");
+await other.close();
+await page.click('button:text-is("Defaults")');
+await page.waitForFunction(() => window.dial_tool.statik && window.dial_tool.S.ha_hour.round === 0);
+await page.waitForTimeout(600);
+const short = await page.evaluate(() => location.hash);
+check(short.length < 12, `the starting dial's link is short (${short})`);
+await page.evaluate((l) => { location.hash = l.split("#")[1]; }, link);
+await page.waitForFunction(() => window.dial_tool.S.ha_hour.round === 2, null, { timeout: 5000 }).catch(() => {});
+check(await S("S.ha_hour.round === 2"), "pasting a link into the open tool switches to that dial");
+
 check(errors.length === 0, "no errors in the browser's console" + (errors.length ? ": " + errors.slice(0, 3).join(" | ") : ""));
 await browser.close();
 console.log(problems.length ? `\n${problems.length} problem(s).` : "\nWindow test passed.");

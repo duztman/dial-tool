@@ -187,6 +187,33 @@ function save_file(name, data, type) {
   setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
 
+// ── a dial as a link: the settings, packed into the part of the address after # ──
+//   scheme 1: lean settings (only what differs from the start) → JSON → deflate → base64 for addresses.
+//   scheme 0: the same without deflate, for a browser that can't compress.
+
+const b64 = (bytes) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const un_b64 = (text) => Uint8Array.from(atob(text.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
+const through = async (bytes, stream) => new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer());
+
+async function pack(S) {
+  const bytes = new TextEncoder().encode(JSON.stringify(G.lean(S)));
+  try { return `${G.LINK_SCHEME}.` + b64(await through(bytes, new CompressionStream("deflate-raw"))); }
+  catch (e) { return "0." + b64(bytes); }
+}
+
+/** the part after # → settings, or null if it isn't a dial. */
+async function unpack(hash) {
+  const m = /^#?([01])\.([A-Za-z0-9_-]+)$/.exec(hash || "");
+  if (!m) return null;
+  try {
+    const bytes = m[1] === "0" ? un_b64(m[2]) : await through(un_b64(m[2]), new DecompressionStream("deflate-raw"));
+    const settings = JSON.parse(new TextDecoder().decode(bytes));
+    return settings && typeof settings === "object" && !Array.isArray(settings) ? settings : null;
+  } catch (e) {
+    return null;
+  }
+}
+
 // ── the tool ─────────────────────────────────────────────────
 
 class DialTool {
@@ -618,7 +645,8 @@ class DialTool {
     wrap.append(el("label", { textContent: "Settings" }), el("span", { className: "tools" },
       el("button", { type: "button", id: "save", textContent: "Save…", onclick: () => { save_file("dial.json", JSON.stringify(this.S, null, 1), "application/json"); this.log("saved dial.json to your downloads"); } }),
       el("button", { type: "button", textContent: "Load…", onclick: () => file.click() }),
-      el("button", { type: "button", textContent: "Defaults", onclick: () => this.reopen({ ui_section: this.S.ui_section }) }), file));
+      el("button", { type: "button", textContent: "Defaults", onclick: () => this.reopen({ ui_section: this.S.ui_section }) }),
+      el("button", { type: "button", id: "copy-link", textContent: "Copy link", onclick: () => this.copy_link() }), file));
   }
 
   row_log(wrap, out) {
@@ -982,9 +1010,25 @@ class DialTool {
     window.dial_tool = tool;
   }
 
+  /** shortly after the last change: keep the session, and make the address bar say this dial. */
   autosave() {
     clearTimeout(this.saving);
-    this.saving = setTimeout(() => { try { localStorage.setItem(LAST, JSON.stringify(this.S)); } catch (e) { /* private window: nothing kept */ } }, 400);
+    this.saving = setTimeout(async () => {
+      try { localStorage.setItem(LAST, JSON.stringify(this.S)); } catch (e) { /* private window: nothing kept */ }
+      try { history.replaceState(null, "", "#" + await pack(this.S)); } catch (e) { /* the address stays as it was */ }
+    }, 400);
+  }
+
+  /** the whole dial as one address: open it anywhere and the dial is back. Fonts travel by name only. */
+  async copy_link() {
+    const link = location.href.split("#")[0] + "#" + await pack(this.S);
+    try {
+      await navigator.clipboard.writeText(link);
+      this.log(`link copied · ${link.length} characters`);
+    } catch (e) {
+      this.log(`couldn’t copy by itself; the link is in the address bar, and here:\n${link}`);
+    }
+    try { history.replaceState(null, "", link); } catch (e) { /* fine */ }
   }
 
   log(message) {
@@ -1001,12 +1045,18 @@ class DialTool {
 
 let tool = null;
 
-export function open_window(pathkit, harfbuzz, font_bytes) {
+export async function open_window(pathkit, harfbuzz, font_bytes) {
   G.start(pathkit, harfbuzz);
   G.add_font(font_bytes, 0, true);                 // the page's own font: stands in until yours are loaded
-  let settings = null;
-  try { settings = JSON.parse(localStorage.getItem(LAST)); } catch (e) { settings = null; }
+  let settings = await unpack(location.hash);      // a dial in the address comes first…
+  const from_link = settings !== null;
+  if (!settings) { try { settings = JSON.parse(localStorage.getItem(LAST)); } catch (e) { settings = null; } }   // …then the last session
   tool = new DialTool(settings);
+  if (from_link) tool.log("opened the dial in the address");
+  window.addEventListener("hashchange", async () => {              // another dial's link pasted into this tab
+    const next = await unpack(location.hash);
+    if (next) { tool.reopen(next); tool.log("opened the dial in the address"); }
+  });
   tool.sync_time();
   window.dial_tool = tool;
   window.addEventListener("pagehide", () => { try { localStorage.setItem(LAST, JSON.stringify(tool.S)); } catch (e) { /* nothing kept */ } });

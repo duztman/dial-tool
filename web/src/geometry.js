@@ -223,6 +223,32 @@ export function fresh_settings(over = null) {
   return S;
 }
 
+// ── a dial as a link ─────────────────────────────────────────
+//   A link carries only what differs from the starting values, so it stays short.
+//   That makes the starting values part of every link ever copied: from now on
+//   DEFAULTS, RING_BASE, HAND_BASE and the starting rings and hands must not change (R31).
+//   To change one, add LINK_SCHEME 2 with its own table and keep reading scheme 1 with this one.
+
+export const LINK_SCHEME = 1;
+
+function differing(d, base) {
+  const out = {};
+  for (const k in d) if (JSON.stringify(d[k]) !== JSON.stringify(base[k])) out[k] = d[k];
+  return out;
+}
+
+/** the settings, without everything that still has its starting value and without the window's own state. */
+export function lean(S) {
+  const out = {};
+  for (const k in S) {
+    if (k.startsWith("ui_") || k === "version" || JSON.stringify(S[k]) === JSON.stringify(DEFAULTS[k])) continue;
+    if (k === "rings") out.rings = S.rings.map((r) => differing(r, RING_BASE));
+    else if (HANDS.some((h) => k === "ha_" + h)) out[k] = differing(S[k], HAND_BASE);
+    else out[k] = S[k];
+  }
+  return out;
+}
+
 // ═════════════════════════════════════════════════════════════
 //  2 · GEOMETRY
 // ═════════════════════════════════════════════════════════════

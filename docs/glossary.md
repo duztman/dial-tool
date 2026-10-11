@@ -119,6 +119,7 @@ Kept so older notes still read.
 | **HarfBuzz** | The web version's text engine: turns text + font + features + axes + language into positioned glyph outlines. Does what DrawBot's `FormattedString` (CoreText) does in `dial.py`. |
 | **Stand-in font** | Inter, packed inside the web version's file: draws numerals whose font isn't loaded yet. The log names the font it replaces. |
 | **Installed fonts** | The web version's button that lists the computer's fonts (Chrome, Edge). Other browsers: add font files. |
+| **Link** (a dial's) | The web version's address with the dial after `#`: scheme number, a dot, the packed settings. Carries the dial, not the window's state (section, selected ring) and not font files. R31. |
 | **Round ends** | A hand's setting `round` (web version): the corner radius of its flat ends. Marks get round ends from *Round outer* / *Round inner*. Okay's "round caps". |
 | **Probe** | `tools/dial_probe.py`, a self-reporting test of the interface foundation, run on the Mac. |
 | **Harness** | `tools/test_harness.py`, renders geometry off-Mac (drawbot-skia). |
