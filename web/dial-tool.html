@@ -177,10 +177,15 @@ main { position: relative; overflow: hidden; }
 .bar button:active { background: var(--bar-ink); color: var(--bar); }
 .bar input:focus, .bar button:focus-visible, .bar input[type="range"]:focus-visible { outline-color: var(--bar-ink); }
 .bar .icon { display: inline-flex; align-items: center; justify-content: center; }
+/* a phone, or a narrow window: the bar on top, the preview under it, the panel below */
 @media (max-width: 860px) {
-  #app { grid-template-columns: 1fr; grid-template-rows: 50% 1fr auto; }
-  main { grid-row: 1; } .panel { border-right: 0; border-top: 1px solid var(--rule); }
-  .bar { grid-template-columns: 78px 1fr auto auto auto; } .bar .status { display: none; } .bar .time, .bar input[type="range"] { margin-left: 0; width: 100%; }
+  #app { grid-template-columns: 1fr; grid-template-rows: auto 44% 1fr; }
+  .bar { grid-row: 1; grid-template-columns: 78px 1fr auto auto auto; padding: calc(var(--unit) * 2) 16px; }
+  main { grid-row: 2; }
+  .panel { grid-row: 3; border-right: 0; border-top: 1px solid var(--rule); }
+  .bar .status { display: none; }
+  .bar .time, .bar input[type="range"] { margin-left: 0; width: 100%; }
+  :root { --gutter: 16px; }
 }
 </style>
 </head>
