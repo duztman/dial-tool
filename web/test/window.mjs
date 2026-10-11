@@ -348,6 +348,7 @@ await tab("Export");
 await page.click("#copy-link");
 await page.waitForFunction(() => window.dial_tool.log_lines[0].includes("link copied"), null, { timeout: 5000 }).catch(() => {});
 const link = await page.evaluate(() => location.href);
+check(await page.inputValue("#link") === link && (await page.$eval("#log", (e) => getComputedStyle(e).fontFamily)).toLowerCase().includes("mono"), "the link is spelled out above its Copy button; the log is monospaced");
 check(/#1\.[A-Za-z0-9_-]+$/.test(link), `Copy link: the address carries the dial (${link.split("#")[1].length} characters after #)`);
 const wanted = await S("JSON.stringify({ ...S, ui_section: 0, ui_ring: 0, ui_hand: 0 })");
 const other = await context.newPage();                               // someone else's browser: no last session of this dial

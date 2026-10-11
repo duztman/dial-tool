@@ -80,6 +80,7 @@ const H = { scope: "hand" };
 
 const ROWS = {
   Dial: [
+    hdr("Size"),
     num("dial_d", "Diameter", 15, 50, 0.1),
     num("margin", "Page margin", 0, 10, 0.5),
     hdr("Colour"),
@@ -103,19 +104,21 @@ const ROWS = {
     pop("skip", "Skip where", G.SKIP_FROM),
     pop("knock", "Knock out", G.KNOCK_FROM),
     num("clear", "Clearance", 0, 2, 0.01, { show: (R) => R.knock !== 0 }),
-    hdr("Look"),
+    hdr("Shape", { show: kind_in("ticks", "markers") }),
     seg("shape", "Shape", G.SHAPES.slice(0, 3), { show: kind_in("ticks", "markers") }),
     num("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
     num("w", "Width · Ø", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "dot", "file") }),
     num("taper", "Inner width ×", 0, 2, 0.01, { show: marks_with("wedge") }),
+    num("wall", "Hollow wall", 0, 1.5, 0.01, { show: kind_in("ticks", "markers") }),
+    hdr("Ends", { show: marks_with("bar", "wedge", "file") }),
     num("round_out", "Round outer", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
     num("round_in", "Round inner", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
     custom("round_ends", { show: marks_with("bar", "wedge", "file") }),
-    num("wall", "Hollow wall", 0, 1.5, 0.01, { show: kind_in("ticks", "markers") }),
     hdr("12 o’clock · first position", { show: kind_in("markers") }),
     seg("twelve", "Style", G.TWELVES, { show: kind_in("markers") }),
     num("twelve_scale", "Scale ×", 0.5, 2.5, 0.05, { show: (R) => G.kind_of(R) === "markers" && R.twelve !== 3 }),
     num("twelve_gap", "Gap", 0, 3, 0.05, { show: (R) => G.kind_of(R) === "markers" && R.twelve === 1 }),
+    hdr("Numerals", { show: numerals_only }),
     pop("labels", "Labels", G.LABEL_SETS.map((s) => s[0]), { show: numerals_only }),
     txt("custom", "Custom", { show: labels_are("Custom") }),
     num("num_from", "First number", -1000, 1000, 1, { show: labels_are("Numbers") }),
@@ -123,6 +126,7 @@ const ROWS = {
     num("num_digits", "Digits", 0, 4, 1, { whole: true, show: labels_are("Numbers") }),
     pop("mode", "Placement", G.MODES, { show: numerals_only }),
     num("size", "Size", 0.3, 8, 0.05, { show: numerals_only }),
+    hdr("Band", { show: kind_in("band") }),
     num("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),
     num("fill", "Fill % of step", 1, 100, 1, { show: kind_in("band") }),
     hdr("Nudge one numeral", { show: numerals_only }),
@@ -135,17 +139,22 @@ const ROWS = {
     custom("features", { show: numerals_only }),
   ],
   Hands: [
+    hdr("All hands"),
     chk("ha_on", "Show hands"),
     pop("ha_beat", "Motion", G.BEATS.map((b) => b[0])),
+    hdr("Cap"),
     num("ha_cap", "Cap Ø", 0, 4, 0.05),
-    col("c_cap", "Cap colour"),
-    hdr("Hand"),
+    col("c_cap", "Colour"),
+    hdr("One hand"),
     seg("ui_hand", "Edit", ["Hour", "Minute", "Seconds"]),
     chk("on", "Show this hand", H),
     pop("shape", "Shape", G.HAND_SHAPES.slice(0, 9), H),
+    col("c", "Colour", H),
+    hdr("Size", H),
     num("len", "Length", 0.5, 30, 0.05, H),
     num("w", "Width", 0.02, 4, 0.01, H),
     num("tail", "Tail", 0, 10, 0.05, H),
+    hdr("Details", H),
     num("round", "Round ends", 0, 2, 0.01, { ...H, show: hand_is("baton", "pencil", "sword", "arrow", "syringe", "breguet", "lollipop", "file") }),
     num("tip", "Tip length", 0, 10, 0.05, { ...H, show: hand_is("pencil", "sword", "arrow", "syringe", "breguet") }),
     num("feature", "Head width", 0, 6, 0.05, { ...H, show: hand_is("arrow", "syringe") }),
@@ -155,11 +164,11 @@ const ROWS = {
     num("feature_at", "Ring · disc at %", 0, 100, 1, { ...H, show: hand_is("breguet", "lollipop") }),
     num("counter", "Counterweight Ø", 0, 4, 0.05, H),
     num("wall", "Hollow wall", 0, 1, 0.01, H),
-    col("c", "Colour", H),
   ],
   Date: [                                          // "Windows" on its tab: up to four holes in the plate
     seg("ui_window", "Window", ["1", "2", "3", "4"]),
     chk("on", "Show this window", W),
+    hdr("What it shows", { ...W, show: win_on }),
     pop("kind", "Shows", G.WINDOW_KINDS, { ...W, show: win_on }),
     txt("text", "Text", { ...W, show: win_is("date", "day") }),
     num("size", "Text % of height", 20, 100, 1, { ...W, show: win_is("date", "day") }),
@@ -181,12 +190,17 @@ const ROWS = {
   ],
   Export: [
     custom("examples"),
-    hdr("Files"),
-    chk("out_production", "Production: mono print mask"),
-    chk("out_mirror", "Mirror: toner transfer"),
-    num("out_dpi", "PNG dpi", 72, 2400, 1),
+    hdr("For production"),
+    chk("out_production", "Mono print mask"),
+    chk("out_mirror", "Mirrored, for toner transfer"),
+    hdr("Export a file"),
     custom("export"),
+    num("out_dpi", "PNG dpi", 72, 2400, 1),
+    hdr("Settings file"),
     custom("settings"),
+    hdr("Link to this dial"),
+    custom("link"),
+    hdr("Log"),
     custom("log"),
   ],
 };
@@ -810,27 +824,46 @@ class DialTool {
   }
 
   row_export(wrap) {
-    wrap.className = "row bar-row";
+    wrap.className = "row";
     const tools = el("span", { className: "tools" });
     for (const kind of ["PDF", "SVG", "PNG"]) tools.append(el("button", { type: "button", className: "main", id: "export-" + kind.toLowerCase(), textContent: kind, onclick: () => this.export(kind.toLowerCase()) }));
-    wrap.append(el("label", { textContent: "Export" }), tools);
+    wrap.append(el("label", { textContent: "Format" }), tools);
   }
 
   row_settings(wrap) {
-    wrap.className = "row bar-row";
+    wrap.className = "row";
     const file = el("input", { type: "file", accept: ".json,application/json", hidden: true, id: "load-file" });
     file.onchange = async () => { if (file.files[0]) this.load_text(await file.files[0].text(), file.files[0].name); file.value = ""; };
-    wrap.append(el("label", { textContent: "Settings" }), el("span", { className: "tools" },
+    wrap.append(el("span", { className: "tools wide" },
       el("button", { type: "button", id: "save", textContent: "Save…", onclick: () => { save_file("dial.json", JSON.stringify({ ...this.S, ui_section: Math.min(this.S.ui_section, 4) }, null, 1), "application/json"); this.log("saved dial.json to your downloads"); } }),   // dial.py knows sections 0–4
       el("button", { type: "button", textContent: "Load…", onclick: () => file.click() }),
-      el("button", { type: "button", textContent: "Defaults", onclick: () => this.reopen({ ui_section: this.S.ui_section }) }),
-      el("button", { type: "button", id: "copy-link", textContent: "Copy link", onclick: () => this.copy_link() }), file));
+      el("button", { type: "button", textContent: "Defaults", onclick: () => this.reopen({ ui_section: this.S.ui_section }) }), file));
+  }
+
+  /** the dial's link, spelled out, and a button that copies it. */
+  row_link(wrap, out) {
+    wrap.className = "linkrow";
+    this.link_box = el("textarea", { id: "link", className: "link", readOnly: true, rows: 3, spellcheck: false, ariaLabel: "Link to this dial" });
+    this.link_box.onfocus = () => this.link_box.select();
+    wrap.append(this.link_box, el("div", { className: "tools" },
+      el("button", { type: "button", id: "copy-link", textContent: "Copy link", onclick: () => this.copy_link() }),
+      el("span", { className: "quiet", id: "link-size" })));
+    out.refresh = () => this.show_link();
+  }
+
+  async show_link() {
+    const link = location.href.split("#")[0] + "#" + await pack(this.S);
+    if (this.link_box && this.link_box.isConnected) {
+      this.link_box.value = link;
+      $("#link-size").textContent = `${link.length} characters · fonts travel by name`;
+    }
+    return link;
   }
 
   row_log(wrap, out) {
     wrap.className = "logrow";
     const box = el("pre", { className: "log", id: "log" });
-    wrap.append(el("h2", { textContent: "Log" }), box);
+    wrap.append(box);
     out.refresh = () => { box.textContent = this.log_lines.join("\n"); };
   }
 
@@ -1247,13 +1280,13 @@ class DialTool {
     clearTimeout(this.saving);
     this.saving = setTimeout(async () => {
       try { localStorage.setItem(LAST, JSON.stringify(this.S)); } catch (e) { /* private window: nothing kept */ }
-      try { history.replaceState(null, "", "#" + await pack(this.S)); } catch (e) { /* the address stays as it was */ }
+      try { history.replaceState(null, "", await this.show_link()); } catch (e) { /* the address stays as it was */ }
     }, 400);
   }
 
   /** the whole dial as one address: open it anywhere and the dial is back. Fonts travel by name only. */
   async copy_link() {
-    const link = location.href.split("#")[0] + "#" + await pack(this.S);
+    const link = await this.show_link();
     try {
       await navigator.clipboard.writeText(link);
       this.log(`link copied · ${link.length} characters`);

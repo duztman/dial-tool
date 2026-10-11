@@ -33,7 +33,7 @@ button, select, input { font: inherit; color: inherit; }
 h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; margin: 0; }
 
 /* sections: a sign inside a ring, its name under it */
-.tabs { display: grid; grid-template-columns: repeat(5, 1fr); padding: 0 calc(var(--gutter) - 6px); border-bottom: 1px solid var(--ink); }
+.tabs { display: grid; grid-template-columns: repeat(5, 1fr); padding: 0 calc(var(--gutter) - 6px); border-bottom: 1px solid var(--rule); }
 .tabs button { display: grid; justify-items: center; gap: 5px; height: auto; border: 0; background: none; padding: 4px 0 9px; color: var(--grey); cursor: pointer; }
 .tabs button:hover { background: none; color: var(--ink); }
 .tabs button:active { background: none; }
@@ -45,18 +45,20 @@ h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; margin: 0; }
 
 .pinned { padding: calc(var(--unit) * 3) var(--gutter) calc(var(--unit) * 2); border-bottom: 1px solid var(--rule); background: var(--paper); }
 .form { flex: 1; min-height: 0; overflow-y: auto; padding: calc(var(--unit) * 3) var(--gutter) calc(var(--unit) * 8); }
-.pinned + .form > .row.hdr:first-child, .form > .row.hdr:first-child, .form > .examples:first-child + .row.hdr { margin-top: 0; }
-.form > .row.hdr:first-child, .form > [hidden]:first-child + .row.hdr { margin-top: 0; border-top: 0; padding-top: 0; }
+.form > .row.hdr:first-child, .form > [hidden]:first-child + .row.hdr { margin-top: 0; }
 
 #app [hidden] { display: none; }                 /* rows that don't apply (R16); beats .row's own display */
 
 /* rows: label · control · typed field · stepper */
 .row { display: grid; grid-template-columns: var(--label) 1fr var(--field) 40px; gap: 0 calc(var(--unit) * 1.5); align-items: center; min-height: 29px; }
 .row > label:first-child, .row > span.tag { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.row.pop select, .row.txt input, .row .wide, .row .segs, .row .colour, .row .tools, .row.chk label, .row.note span:last-child, .row > button { grid-column: 2 / -1; }
+.row.pop select, .row.txt input, .row .segs, .row .colour, .row .tools, .row.note span:last-child, .row > button { grid-column: 2 / -1; }
+.row.chk label, .row .wide { grid-column: 1 / -1; }             /* a tick and its words start at the left edge */
+.row.chk > span:first-child:empty, .row.note > span:first-child:empty { display: none; }
+.row.note span:last-child { grid-column: 1 / -1; padding: 2px 0 4px; }
 .row > button { justify-self: start; }
-/* a heading opens a group: a hairline, space above, the name at the left edge */
-.row.hdr { display: block; min-height: 0; margin-top: calc(var(--unit) * 3); border-top: 1px solid var(--rule); padding: calc(var(--unit) * 2) 0 var(--unit); }
+/* a heading opens a group: space above, a hairline, the name at the left edge; its rows follow closely */
+.row.hdr { display: block; min-height: 0; margin-top: calc(var(--unit) * 4); border-top: 1px solid var(--ink); padding: 7px 0 5px; }
 h2 { font-size: 12px; font-weight: 600; letter-spacing: 0.01em; margin: 0; }
 input[type="text"], select { height: 24px; border: 1px solid var(--rule); background: #fff; padding: 0 6px; min-width: 0; width: 100%; border-radius: 0; }
 input[type="text"]:focus, select:focus, button:focus-visible, input[type="range"]:focus-visible { outline: 2px solid var(--ink); outline-offset: 0; }
@@ -89,7 +91,7 @@ button.plain:active, button.sign:active { background: var(--ink); color: var(--p
 .tools { display: flex; flex-wrap: wrap; gap: var(--unit); align-items: center; }
 
 /* the ring list: top ring first; its foot holds what can be added and what can be done to the selected ring */
-.ringlist h2 { margin-bottom: var(--unit); }
+.ringlist h2 { border-top: 1px solid var(--ink); padding: 7px 0 5px; }
 .ringlist ol { position: relative; list-style: none; margin: 0; padding: 0; border: 1px solid var(--rule); border-bottom: 0; max-height: 150px; overflow-y: auto; background: #fff; }
 .ringlist li { display: grid; grid-template-columns: 16px 20px 1fr auto; align-items: center; gap: 4px; height: 29px; padding: 0 8px 0 3px; cursor: pointer; }
 .ringlist .grip { display: grid; place-items: center; height: 100%; color: var(--rule); cursor: grab; touch-action: none; }
@@ -105,10 +107,14 @@ button.plain:active, button.sign:active { background: var(--ink); color: var(--p
 .listfoot .adds, .listfoot .signs { display: flex; align-items: center; gap: 1px; }
 .listfoot .adds > .quiet { margin-right: 2px; }
 .listfoot .adds > .quiet::after { content: " +"; }
-.pinned .row.hdr { margin-top: calc(var(--unit) * 2); border-top: 0; padding-top: 0; }
-.logrow h2 { margin: calc(var(--unit) * 4) 0 var(--unit); border-top: 1px solid var(--rule); padding-top: calc(var(--unit) * 2); }
-.log { margin: 0; white-space: pre-wrap; font: inherit; color: var(--grey); min-height: 120px; }
-.bar-row { margin-top: var(--unit); }
+.pinned .row.hdr { margin-top: calc(var(--unit) * 3); }
+/* the log and the link: what the tool says, set apart — small, monospaced, grey, on a light ground */
+.log, .link { display: block; width: 100%; margin: 0; padding: 8px 10px; border: 0; background: var(--ground); color: var(--grey);
+  font: 11px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+.log { min-height: 96px; max-height: 260px; overflow-y: auto; }
+.link { resize: none; overflow-y: auto; color: var(--ink); }
+.link:focus { outline: 2px solid var(--ink); }
+.linkrow .tools { margin-top: var(--unit); gap: calc(var(--unit) * 2); }
 
 /* the font picker: every font shows its own numerals */
 .font { display: grid; gap: var(--unit); margin-top: var(--unit); }
@@ -125,7 +131,7 @@ button.plain:active, button.sign:active { background: var(--ink); color: var(--p
 .font .note:empty { display: none; }
 
 /* examples: five dials to start from */
-.examples h2 { margin-bottom: var(--unit); }
+.examples h2 { border-top: 1px solid var(--ink); padding: 7px 0 5px; }
 .examples .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--unit); }
 .examples a { display: grid; gap: 3px; padding: 6px 4px 4px; background: var(--ground); color: var(--ink); text-decoration: none; text-align: center; }
 .examples a:hover, .examples a:focus-visible { background: var(--select); outline: 0; }

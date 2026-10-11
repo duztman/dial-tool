@@ -42,7 +42,7 @@ button, select, input { font: inherit; color: inherit; }
 h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; margin: 0; }
 
 /* sections: a sign inside a ring, its name under it */
-.tabs { display: grid; grid-template-columns: repeat(5, 1fr); padding: 0 calc(var(--gutter) - 6px); border-bottom: 1px solid var(--ink); }
+.tabs { display: grid; grid-template-columns: repeat(5, 1fr); padding: 0 calc(var(--gutter) - 6px); border-bottom: 1px solid var(--rule); }
 .tabs button { display: grid; justify-items: center; gap: 5px; height: auto; border: 0; background: none; padding: 4px 0 9px; color: var(--grey); cursor: pointer; }
 .tabs button:hover { background: none; color: var(--ink); }
 .tabs button:active { background: none; }
@@ -54,18 +54,20 @@ h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; margin: 0; }
 
 .pinned { padding: calc(var(--unit) * 3) var(--gutter) calc(var(--unit) * 2); border-bottom: 1px solid var(--rule); background: var(--paper); }
 .form { flex: 1; min-height: 0; overflow-y: auto; padding: calc(var(--unit) * 3) var(--gutter) calc(var(--unit) * 8); }
-.pinned + .form > .row.hdr:first-child, .form > .row.hdr:first-child, .form > .examples:first-child + .row.hdr { margin-top: 0; }
-.form > .row.hdr:first-child, .form > [hidden]:first-child + .row.hdr { margin-top: 0; border-top: 0; padding-top: 0; }
+.form > .row.hdr:first-child, .form > [hidden]:first-child + .row.hdr { margin-top: 0; }
 
 #app [hidden] { display: none; }                 /* rows that don't apply (R16); beats .row's own display */
 
 /* rows: label · control · typed field · stepper */
 .row { display: grid; grid-template-columns: var(--label) 1fr var(--field) 40px; gap: 0 calc(var(--unit) * 1.5); align-items: center; min-height: 29px; }
 .row > label:first-child, .row > span.tag { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.row.pop select, .row.txt input, .row .wide, .row .segs, .row .colour, .row .tools, .row.chk label, .row.note span:last-child, .row > button { grid-column: 2 / -1; }
+.row.pop select, .row.txt input, .row .segs, .row .colour, .row .tools, .row.note span:last-child, .row > button { grid-column: 2 / -1; }
+.row.chk label, .row .wide { grid-column: 1 / -1; }             /* a tick and its words start at the left edge */
+.row.chk > span:first-child:empty, .row.note > span:first-child:empty { display: none; }
+.row.note span:last-child { grid-column: 1 / -1; padding: 2px 0 4px; }
 .row > button { justify-self: start; }
-/* a heading opens a group: a hairline, space above, the name at the left edge */
-.row.hdr { display: block; min-height: 0; margin-top: calc(var(--unit) * 3); border-top: 1px solid var(--rule); padding: calc(var(--unit) * 2) 0 var(--unit); }
+/* a heading opens a group: space above, a hairline, the name at the left edge; its rows follow closely */
+.row.hdr { display: block; min-height: 0; margin-top: calc(var(--unit) * 4); border-top: 1px solid var(--ink); padding: 7px 0 5px; }
 h2 { font-size: 12px; font-weight: 600; letter-spacing: 0.01em; margin: 0; }
 input[type="text"], select { height: 24px; border: 1px solid var(--rule); background: #fff; padding: 0 6px; min-width: 0; width: 100%; border-radius: 0; }
 input[type="text"]:focus, select:focus, button:focus-visible, input[type="range"]:focus-visible { outline: 2px solid var(--ink); outline-offset: 0; }
@@ -98,7 +100,7 @@ button.plain:active, button.sign:active { background: var(--ink); color: var(--p
 .tools { display: flex; flex-wrap: wrap; gap: var(--unit); align-items: center; }
 
 /* the ring list: top ring first; its foot holds what can be added and what can be done to the selected ring */
-.ringlist h2 { margin-bottom: var(--unit); }
+.ringlist h2 { border-top: 1px solid var(--ink); padding: 7px 0 5px; }
 .ringlist ol { position: relative; list-style: none; margin: 0; padding: 0; border: 1px solid var(--rule); border-bottom: 0; max-height: 150px; overflow-y: auto; background: #fff; }
 .ringlist li { display: grid; grid-template-columns: 16px 20px 1fr auto; align-items: center; gap: 4px; height: 29px; padding: 0 8px 0 3px; cursor: pointer; }
 .ringlist .grip { display: grid; place-items: center; height: 100%; color: var(--rule); cursor: grab; touch-action: none; }
@@ -114,10 +116,14 @@ button.plain:active, button.sign:active { background: var(--ink); color: var(--p
 .listfoot .adds, .listfoot .signs { display: flex; align-items: center; gap: 1px; }
 .listfoot .adds > .quiet { margin-right: 2px; }
 .listfoot .adds > .quiet::after { content: " +"; }
-.pinned .row.hdr { margin-top: calc(var(--unit) * 2); border-top: 0; padding-top: 0; }
-.logrow h2 { margin: calc(var(--unit) * 4) 0 var(--unit); border-top: 1px solid var(--rule); padding-top: calc(var(--unit) * 2); }
-.log { margin: 0; white-space: pre-wrap; font: inherit; color: var(--grey); min-height: 120px; }
-.bar-row { margin-top: var(--unit); }
+.pinned .row.hdr { margin-top: calc(var(--unit) * 3); }
+/* the log and the link: what the tool says, set apart — small, monospaced, grey, on a light ground */
+.log, .link { display: block; width: 100%; margin: 0; padding: 8px 10px; border: 0; background: var(--ground); color: var(--grey);
+  font: 11px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+.log { min-height: 96px; max-height: 260px; overflow-y: auto; }
+.link { resize: none; overflow-y: auto; color: var(--ink); }
+.link:focus { outline: 2px solid var(--ink); }
+.linkrow .tools { margin-top: var(--unit); gap: calc(var(--unit) * 2); }
 
 /* the font picker: every font shows its own numerals */
 .font { display: grid; gap: var(--unit); margin-top: var(--unit); }
@@ -134,7 +140,7 @@ button.plain:active, button.sign:active { background: var(--ink); color: var(--p
 .font .note:empty { display: none; }
 
 /* examples: five dials to start from */
-.examples h2 { margin-bottom: var(--unit); }
+.examples h2 { border-top: 1px solid var(--ink); padding: 7px 0 5px; }
 .examples .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--unit); }
 .examples a { display: grid; gap: 3px; padding: 6px 4px 4px; background: var(--ground); color: var(--ink); text-decoration: none; text-align: center; }
 .examples a:hover, .examples a:focus-visible { background: var(--select); outline: 0; }
@@ -5933,6 +5939,7 @@ var TAB_NAMES = { Date: "Windows" };
 var H = { scope: "hand" };
 var ROWS = {
   Dial: [
+    hdr("Size"),
     num2("dial_d", "Diameter", 15, 50, 0.1),
     num2("margin", "Page margin", 0, 10, 0.5),
     hdr("Colour"),
@@ -5959,19 +5966,21 @@ var ROWS = {
     pop("skip", "Skip where", SKIP_FROM),
     pop("knock", "Knock out", KNOCK_FROM),
     num2("clear", "Clearance", 0, 2, 0.01, { show: (R) => R.knock !== 0 }),
-    hdr("Look"),
+    hdr("Shape", { show: kind_in("ticks", "markers") }),
     seg("shape", "Shape", SHAPES.slice(0, 3), { show: kind_in("ticks", "markers") }),
     num2("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
     num2("w", "Width \xB7 \xD8", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "dot", "file") }),
     num2("taper", "Inner width \xD7", 0, 2, 0.01, { show: marks_with("wedge") }),
+    num2("wall", "Hollow wall", 0, 1.5, 0.01, { show: kind_in("ticks", "markers") }),
+    hdr("Ends", { show: marks_with("bar", "wedge", "file") }),
     num2("round_out", "Round outer", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
     num2("round_in", "Round inner", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
     custom("round_ends", { show: marks_with("bar", "wedge", "file") }),
-    num2("wall", "Hollow wall", 0, 1.5, 0.01, { show: kind_in("ticks", "markers") }),
     hdr("12 o\u2019clock \xB7 first position", { show: kind_in("markers") }),
     seg("twelve", "Style", TWELVES, { show: kind_in("markers") }),
     num2("twelve_scale", "Scale \xD7", 0.5, 2.5, 0.05, { show: (R) => kind_of(R) === "markers" && R.twelve !== 3 }),
     num2("twelve_gap", "Gap", 0, 3, 0.05, { show: (R) => kind_of(R) === "markers" && R.twelve === 1 }),
+    hdr("Numerals", { show: numerals_only }),
     pop("labels", "Labels", LABEL_SETS.map((s) => s[0]), { show: numerals_only }),
     txt("custom", "Custom", { show: labels_are("Custom") }),
     num2("num_from", "First number", -1e3, 1e3, 1, { show: labels_are("Numbers") }),
@@ -5979,6 +5988,7 @@ var ROWS = {
     num2("num_digits", "Digits", 0, 4, 1, { whole: true, show: labels_are("Numbers") }),
     pop("mode", "Placement", MODES, { show: numerals_only }),
     num2("size", "Size", 0.3, 8, 0.05, { show: numerals_only }),
+    hdr("Band", { show: kind_in("band") }),
     num2("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),
     num2("fill", "Fill % of step", 1, 100, 1, { show: kind_in("band") }),
     hdr("Nudge one numeral", { show: numerals_only }),
@@ -5991,17 +6001,22 @@ var ROWS = {
     custom("features", { show: numerals_only })
   ],
   Hands: [
+    hdr("All hands"),
     chk("ha_on", "Show hands"),
     pop("ha_beat", "Motion", BEATS.map((b) => b[0])),
+    hdr("Cap"),
     num2("ha_cap", "Cap \xD8", 0, 4, 0.05),
-    col("c_cap", "Cap colour"),
-    hdr("Hand"),
+    col("c_cap", "Colour"),
+    hdr("One hand"),
     seg("ui_hand", "Edit", ["Hour", "Minute", "Seconds"]),
     chk("on", "Show this hand", H),
     pop("shape", "Shape", HAND_SHAPES.slice(0, 9), H),
+    col("c", "Colour", H),
+    hdr("Size", H),
     num2("len", "Length", 0.5, 30, 0.05, H),
     num2("w", "Width", 0.02, 4, 0.01, H),
     num2("tail", "Tail", 0, 10, 0.05, H),
+    hdr("Details", H),
     num2("round", "Round ends", 0, 2, 0.01, { ...H, show: hand_is("baton", "pencil", "sword", "arrow", "syringe", "breguet", "lollipop", "file") }),
     num2("tip", "Tip length", 0, 10, 0.05, { ...H, show: hand_is("pencil", "sword", "arrow", "syringe", "breguet") }),
     num2("feature", "Head width", 0, 6, 0.05, { ...H, show: hand_is("arrow", "syringe") }),
@@ -6010,13 +6025,13 @@ var ROWS = {
     num2("feature_at", "Barrel from %", 0, 100, 1, { ...H, show: hand_is("syringe") }),
     num2("feature_at", "Ring \xB7 disc at %", 0, 100, 1, { ...H, show: hand_is("breguet", "lollipop") }),
     num2("counter", "Counterweight \xD8", 0, 4, 0.05, H),
-    num2("wall", "Hollow wall", 0, 1, 0.01, H),
-    col("c", "Colour", H)
+    num2("wall", "Hollow wall", 0, 1, 0.01, H)
   ],
   Date: [
     // "Windows" on its tab: up to four holes in the plate
     seg("ui_window", "Window", ["1", "2", "3", "4"]),
     chk("on", "Show this window", W),
+    hdr("What it shows", { ...W, show: win_on }),
     pop("kind", "Shows", WINDOW_KINDS, { ...W, show: win_on }),
     txt("text", "Text", { ...W, show: win_is("date", "day") }),
     num2("size", "Text % of height", 20, 100, 1, { ...W, show: win_is("date", "day") }),
@@ -6038,12 +6053,17 @@ var ROWS = {
   ],
   Export: [
     custom("examples"),
-    hdr("Files"),
-    chk("out_production", "Production: mono print mask"),
-    chk("out_mirror", "Mirror: toner transfer"),
-    num2("out_dpi", "PNG dpi", 72, 2400, 1),
+    hdr("For production"),
+    chk("out_production", "Mono print mask"),
+    chk("out_mirror", "Mirrored, for toner transfer"),
+    hdr("Export a file"),
     custom("export"),
+    num2("out_dpi", "PNG dpi", 72, 2400, 1),
+    hdr("Settings file"),
     custom("settings"),
+    hdr("Link to this dial"),
+    custom("link"),
+    hdr("Log"),
     custom("log")
   ]
 };
@@ -6759,21 +6779,21 @@ var DialTool = class _DialTool {
     wrap.append(el("h2", { textContent: "Examples" }), grid);
   }
   row_export(wrap) {
-    wrap.className = "row bar-row";
+    wrap.className = "row";
     const tools = el("span", { className: "tools" });
     for (const kind of ["PDF", "SVG", "PNG"]) tools.append(el("button", { type: "button", className: "main", id: "export-" + kind.toLowerCase(), textContent: kind, onclick: () => this.export(kind.toLowerCase()) }));
-    wrap.append(el("label", { textContent: "Export" }), tools);
+    wrap.append(el("label", { textContent: "Format" }), tools);
   }
   row_settings(wrap) {
-    wrap.className = "row bar-row";
+    wrap.className = "row";
     const file = el("input", { type: "file", accept: ".json,application/json", hidden: true, id: "load-file" });
     file.onchange = async () => {
       if (file.files[0]) this.load_text(await file.files[0].text(), file.files[0].name);
       file.value = "";
     };
-    wrap.append(el("label", { textContent: "Settings" }), el(
+    wrap.append(el(
       "span",
-      { className: "tools" },
+      { className: "tools wide" },
       el("button", { type: "button", id: "save", textContent: "Save\u2026", onclick: () => {
         save_file("dial.json", JSON.stringify({ ...this.S, ui_section: Math.min(this.S.ui_section, 4) }, null, 1), "application/json");
         this.log("saved dial.json to your downloads");
@@ -6781,14 +6801,34 @@ var DialTool = class _DialTool {
       // dial.py knows sections 0–4
       el("button", { type: "button", textContent: "Load\u2026", onclick: () => file.click() }),
       el("button", { type: "button", textContent: "Defaults", onclick: () => this.reopen({ ui_section: this.S.ui_section }) }),
-      el("button", { type: "button", id: "copy-link", textContent: "Copy link", onclick: () => this.copy_link() }),
       file
     ));
+  }
+  /** the dial's link, spelled out, and a button that copies it. */
+  row_link(wrap, out) {
+    wrap.className = "linkrow";
+    this.link_box = el("textarea", { id: "link", className: "link", readOnly: true, rows: 3, spellcheck: false, ariaLabel: "Link to this dial" });
+    this.link_box.onfocus = () => this.link_box.select();
+    wrap.append(this.link_box, el(
+      "div",
+      { className: "tools" },
+      el("button", { type: "button", id: "copy-link", textContent: "Copy link", onclick: () => this.copy_link() }),
+      el("span", { className: "quiet", id: "link-size" })
+    ));
+    out.refresh = () => this.show_link();
+  }
+  async show_link() {
+    const link = location.href.split("#")[0] + "#" + await pack(this.S);
+    if (this.link_box && this.link_box.isConnected) {
+      this.link_box.value = link;
+      $("#link-size").textContent = `${link.length} characters \xB7 fonts travel by name`;
+    }
+    return link;
   }
   row_log(wrap, out) {
     wrap.className = "logrow";
     const box = el("pre", { className: "log", id: "log" });
-    wrap.append(el("h2", { textContent: "Log" }), box);
+    wrap.append(box);
     out.refresh = () => {
       box.textContent = this.log_lines.join("\n");
     };
@@ -7240,14 +7280,14 @@ var DialTool = class _DialTool {
       } catch (e) {
       }
       try {
-        history.replaceState(null, "", "#" + await pack(this.S));
+        history.replaceState(null, "", await this.show_link());
       } catch (e) {
       }
     }, 400);
   }
   /** the whole dial as one address: open it anywhere and the dial is back. Fonts travel by name only. */
   async copy_link() {
-    const link = location.href.split("#")[0] + "#" + await pack(this.S);
+    const link = await this.show_link();
     try {
       await navigator.clipboard.writeText(link);
       this.log(`link copied \xB7 ${link.length} characters`);
