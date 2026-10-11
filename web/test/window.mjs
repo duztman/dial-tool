@@ -30,7 +30,7 @@ await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik, nu
 
 const S = (expr) => page.evaluate(`(() => { const t = window.dial_tool, S = t.S; return ${expr}; })()`);
 const frame = () => page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
-const tab = async (name) => { await page.click(`.tabs button[data-tab="${name}"]`); await frame(); };
+const tab = async (name) => { await page.click(`button[data-tab="${name}"]`); await frame(); };
 const shot = async (name) => { await frame(); await page.screenshot({ path: path.join(OUT, name + ".png") }); };
 /** click the preview at a spot given in dial millimetres (y up). */
 const click_mm = async (x, y) => {
@@ -188,11 +188,11 @@ await page.uncheck("#global-gd-axes-Centre-lines");
 await frame();
 check(await S("t.items.filter((i) => i.role === 'guide' && i.px === 3).length > 0 && !t.items.some((i) => i.role === 'guide' && i.path.d.length === 2)"), "Guides: thickness 3 and no centre lines reach the preview");
 await shot("4c-guides");
-await page.uncheck("#global-guides-Show-guides");
+await page.uncheck("#guides");
 await frame();
-check(await S("!t.items.some((i) => i.role === 'guide')") && await page.isHidden("#global-gd-w-Thickness"), "Show guides off: none drawn, and the other rows hide");
-await page.check("#global-guides-Show-guides");
-check(await page.$$eval(".tabs button", (b) => b.map((x) => x.textContent.trim()).join(" ")) === "Export Dial Rings Hands Windows Guides", "tabs: Export first, Guides last");
+check(await S("!t.items.some((i) => i.role === 'guide')") && await page.isHidden("#global-gd-w-Thickness"), "the tick in the Guides box, off: none drawn, and the settings hide");
+await page.check("#guides");
+check(await page.$$eval(".tabs button", (b) => b.map((x) => x.textContent.trim()).join(" ")) === "Dial Rings Hands Windows Export" && await page.$(".panel header .guidesbox #guides") !== null, "tabs: Export last; Guides is a box with a tick at the top right");
 
 // ── windows: up to four, each a date, a day, am · pm or a moon phase ──
 await tab("Date");

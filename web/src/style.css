@@ -24,10 +24,16 @@ button, select, input { font: inherit; color: inherit; }
    controls' edge, one label column further in. */
 .panel { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--rule); }
 .panel header { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 3) var(--gutter) calc(var(--unit) * 3); }
+/* guides: a box at the top right — the word opens their settings, the tick switches them */
+.guidesbox { margin-left: auto; align-self: center; display: flex; align-items: center; border: 1px solid var(--ink); }
+.guidesbox button { border: 0; height: 24px; padding: 0 8px 0 10px; }
+.guidesbox button.on { background: var(--ink); color: var(--paper); }
+.guidesbox input { margin: 0 8px 0 2px; }
+.guidesbox button.on + input { margin-left: 8px; }
 h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; margin: 0; }
 
 /* sections: a sign inside a ring, its name under it */
-.tabs { display: grid; grid-template-columns: repeat(6, 1fr); padding: 0 calc(var(--gutter) - 6px); border-bottom: 1px solid var(--ink); }
+.tabs { display: grid; grid-template-columns: repeat(5, 1fr); padding: 0 calc(var(--gutter) - 6px); border-bottom: 1px solid var(--ink); }
 .tabs button { display: grid; justify-items: center; gap: 5px; height: auto; border: 0; background: none; padding: 4px 0 9px; color: var(--grey); cursor: pointer; }
 .tabs button:hover { background: none; color: var(--ink); }
 .tabs button:active { background: none; }
@@ -40,7 +46,7 @@ h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; margin: 0; }
 .pinned { padding: calc(var(--unit) * 3) var(--gutter) calc(var(--unit) * 2); border-bottom: 1px solid var(--rule); background: var(--paper); }
 .form { flex: 1; min-height: 0; overflow-y: auto; padding: calc(var(--unit) * 3) var(--gutter) calc(var(--unit) * 8); }
 .pinned + .form > .row.hdr:first-child, .form > .row.hdr:first-child, .form > .examples:first-child + .row.hdr { margin-top: 0; }
-.form > .row.hdr:first-child { border-top: 0; padding-top: 0; }
+.form > .row.hdr:first-child, .form > [hidden]:first-child + .row.hdr { margin-top: 0; border-top: 0; padding-top: 0; }
 
 #app [hidden] { display: none; }                 /* rows that don't apply (R16); beats .row's own display */
 

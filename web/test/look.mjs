@@ -10,11 +10,11 @@ if (process.argv[2]) await page.addInitScript((s) => localStorage.setItem("dial-
 await page.goto("file://" + process.cwd() + "/dial-tool.html");
 await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 for (const name of ["Dial", "Rings", "Hands", "Date", "Export", "Guides"]) {
-  await page.click(`.tabs button[data-tab="${name}"]`);
+  await page.click(`button[data-tab="${name}"]`);
   await page.waitForTimeout(250);
   await page.screenshot({ path: `test/out/look-${name}.png` });
 }
-await page.click('.tabs button[data-tab="Rings"]');
+await page.click('button[data-tab="Rings"]');
 await page.click('.ringlist li:has-text("numerals")');
 await page.$eval(".form", (e) => { e.scrollTop = 560; });
 const box = await page.$eval(".preview", (e) => { const r = e.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; });

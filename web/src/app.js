@@ -192,7 +192,7 @@ const ROWS = {
 };
 const guides_on = (S) => S.guides;
 ROWS.Guides = [                                    // preview only: nothing here reaches a file (R5)
-  chk("guides", "Show guides"),
+  info("Guides are off. Tick the box at the top right to show them.", { show: (S) => !S.guides }),
   hdr("Which", { show: guides_on }),
   chk("gd_edge", "Dial edge and date radius", { show: guides_on }),
   chk("gd_axes", "Centre lines", { show: guides_on }),
@@ -208,7 +208,7 @@ ROWS.Guides = [                                    // preview only: nothing here
   num("gd_sel_w", "Thickness", 0.25, 6, 0.25, { show: guides_on }),
 ];
 const SECTIONS = Object.keys(ROWS);                // their numbers are what ui_section stores (R9): Guides, added last, is 5
-const TAB_ORDER = ["Export", "Dial", "Rings", "Hands", "Date", "Guides"];      // left to right (Okay, 11 Oct 2026)
+const TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];      // left to right; Guides is the box at the top right (Okay, 11 Oct 2026)
 for (const name of SECTIONS) for (const row of ROWS[name]) row.scope ??= name === "Rings" ? "ring" : "global";
 
 // ── small helpers ────────────────────────────────────────────
@@ -342,7 +342,7 @@ class DialTool {
     this.pinned = el("div", { className: "pinned" });              // rows that stay in view
     this.form = el("div", { className: "form" });                  // rows that scroll
     const panel = el("aside", { className: "panel" },
-      el("header", {}, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION })),
+      el("header", {}, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION }), this.guides_box()),
       this.tabs, this.pinned, this.form);
 
     this.svg = svg_el("svg");
@@ -374,10 +374,20 @@ class DialTool {
     new ResizeObserver(() => this.resized()).observe(this.svg);
   }
 
+  /** top right, in a box: the word opens the guides' settings, the tick switches them on and off. */
+  guides_box() {
+    this.guides_open = el("button", { type: "button", textContent: "Guides", title: "Guide settings", onclick: () => { this.S.ui_section = SECTIONS.indexOf("Guides"); this.show_section(); this.render(); } });
+    this.guides_open.dataset.tab = "Guides";
+    this.guides_tick = el("input", { type: "checkbox", id: "guides", title: "Show guides", ariaLabel: "Show guides" });
+    this.guides_tick.onchange = () => this.set_value("global", "guides", this.guides_tick.checked);
+    return el("div", { className: "guidesbox" }, this.guides_open, this.guides_tick);
+  }
+
   /** the rows of the section that is showing. */
   show_section() {
     const name = SECTIONS[this.S.ui_section];
     [...this.tabs.children].forEach((b) => b.classList.toggle("on", b.dataset.tab === name));
+    this.guides_open.classList.toggle("on", name === "Guides");
     this.form.replaceChildren();
     this.pinned.replaceChildren();
     this.rows = ROWS[name].map((row) => this.build_row(row));
@@ -389,6 +399,7 @@ class DialTool {
 
   /** every row: hidden if it doesn't apply (R16), its controls showing the scope's value. */
   sync_rows() {
+    this.guides_tick.checked = this.S.guides;
     for (const r of this.rows) {
       const T = this.target(r.row.scope);
       r.el.hidden = r.row.show ? !r.row.show(T) : false;
