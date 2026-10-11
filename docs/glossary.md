@@ -60,6 +60,12 @@ If a term is used differently in conversation, ask, then update this file.
 | Term | Meaning |
 |---|---|
 | **Section** | One page of the left panel: Dial · Rings · Hands · Date · Export. |
+| **Pane** | A named part of a section, opened by a thick line (web version, beta 4.0; called a *group* in beta 3.0). Its eye folds it. |
+| **Toggle column** | The narrow column at the far left of the panel (web version). It holds only eyes: a pane's (open or folded) and a ring's (shown or hidden on the dial). |
+| **Eye** | The sign in the toggle column. Open = showing; closed, with lashes = put away. |
+| **Rename box** | A text cursor in a rounded box, after the selected ring's name: the only way to rename a ring (web version). |
+| **Picture tile** | One choice shown as a small drawing with its name under it (ring kind, mark shape, hand shape, what a window shows…). |
+| **Colour picker** | What a swatch opens: the colour field, the hues, RGB / CMYK numbers, the dial's colours, the hex to copy. |
 | **Production mask** | Export mode: every ring in solid black, no plate, no hands, aperture as an outline. |
 | **Live text** | Export option: numerals and the date stay text in PDF/SVG (the fonts are needed to open them). Off by default — then text is **outlines**. |
 | **Design canon** | `docs/design.md`: the rules for type, grid, colour, pictures and redrawn controls (R29). |

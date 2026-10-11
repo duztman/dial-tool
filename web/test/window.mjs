@@ -121,8 +121,19 @@ await tab("Rings");
 const before = await S("S.rings.length");
 await page.click("#add-band");
 check(await S(`S.rings.length === ${before + 1} && S.rings[S.ui_ring].kind === 3`), "Add Band → a band ring, selected");
-await page.fill(".ringlist li.on .name", "Edge");
-check(await S("S.rings[S.ui_ring].name === 'Edge'"), "renamed to Edge");
+check(await page.$$eval(".ringlist input", (e) => e.length) === 0 && await page.$$eval(".ringlist .rename", (e) => e.length) === 1, "the ring list has no name fields: one rename box, on the selected ring");
+const mine = await S("S.ui_ring"), other_ring = mine === 0 ? 1 : 0;
+await page.click(`.ringlist li:nth-child(${other_ring + 1}) .name`);
+check(await S(`S.ui_ring === ${other_ring}`) && await page.$$eval(".ringlist input", (e) => e.length) === 0, "a click on another ring's name selects it and renames nothing");
+await page.click(`.ringlist li:nth-child(${mine + 1}) .name`);
+await page.click(".ringlist li.on .rename");
+await page.fill(".ringlist li.on input.name", "Edge");
+await page.press(".ringlist li.on input.name", "Enter");
+check(await S("S.rings[S.ui_ring].name === 'Edge'") && await page.textContent(".ringlist li.on span.name") === "Edge", "the rename box turns the name into a field; Enter keeps it: Edge");
+await page.click(".ringlist li.on .rename");
+await page.fill(".ringlist li.on input.name", "Nope");
+await page.press(".ringlist li.on input.name", "Escape");
+check(await S("S.rings[S.ui_ring].name === 'Edge'"), "Esc puts the old name back");
 const was = await S("S.ui_ring");
 await page.click("#ring-up");
 check(await S(`S.rings[${was - 1}].name === 'Edge' && S.ui_ring === ${was - 1}`), "↑ Up moves it one place up the list");
@@ -132,11 +143,17 @@ await page.click("#ring-duplicate");
 check(await S(`S.rings.length === ${before + 2} && S.rings[S.ui_ring].name === 'Edge copy'`), "Duplicate");
 await page.click("#ring-delete");
 check(await S(`S.rings.length === ${before + 1} && S.rings[S.ui_ring].name === 'Edge'`), "Delete removes the copy");
-await page.uncheck(".ringlist li.on input[type=checkbox]");
+await page.click(".ringlist li.on button.eye");
 await frame();
-check(await S("S.rings[S.ui_ring].on === false && !t.items.some((i) => i.role === 'ring' && i.index === S.ui_ring)"), "unticking hides the ring in the preview");
-await page.check(".ringlist li.on input[type=checkbox]");
-await page.selectOption("#ring-kind-Kind", "0");
+check(await S("S.rings[S.ui_ring].on === false && !t.items.some((i) => i.role === 'ring' && i.index === S.ui_ring)"), "the eye in the left column hides the ring in the preview");
+check(await page.$$eval(".ringlist li.on.off .rename", (e) => e.length) === 0, "a hidden ring greys and loses its rename box");
+await shot("4a-hidden-ring");
+await page.click(".ringlist li.on button.eye");
+check(await page.$$eval(".ringlist li.on .rename", (e) => e.length) === 1, "shown again: the rename box is back");
+const eyes = await page.$$eval(".ringlist button.eye, .pinned button.fold .eye", (e) => [...new Set(e.map((x) => Math.round(x.getBoundingClientRect().left)))]);
+check(eyes.length === 1, `ring eyes and pane eyes stand in one column (left edges: ${eyes.join(", ")})`);
+check(await page.$$eval(".row.pick .pickt svg", (e) => e.length) >= 4, "Kind is a row of picture tiles");
+await page.click("#ring-kind-Kind-0");
 check(await S("S.rings[S.ui_ring].kind === 0 && S.rings[S.ui_ring].width === 1"), "changing a ring's kind keeps its settings");
 await page.click("#ring-delete");
 await shot("4-rings");
@@ -197,11 +214,33 @@ await page.click(".guidesbox", { position: { x: 12, y: 12 } });
 check(await S("S.guides === true && S.ui_section === 0"), "a click anywhere on the Guides box switches them back on, and opens nothing");
 await page.click('.fold:has-text("Size")');
 check(await page.isHidden("#global-dial-d-Diameter") && await page.isVisible("#global-gd-w-Thickness"), "a heading folds its own group only");
-await page.click('.fold:has-text("Size")');
+check((await page.textContent('.fold:has-text("Size") .summary')).includes("diameter 30.0"), "a folded pane says what it holds: diameter 30.0 …");
+await page.click('.fold:has-text("Size") .eye');
+check(await page.isVisible("#global-dial-d-Diameter") && (await page.textContent('.fold:has-text("Size") .summary')) === "", "its eye opens it again, and the summary goes");
+// the columns: every slider, value and stepper starts on the same three lines
+const lines = await page.$$eval(".form .row.num", (rows) => [...new Set(rows.filter((r) => r.offsetParent).map((r) => [...r.children].slice(1).map((c) => Math.round(c.getBoundingClientRect().left)).join("/")))]);
+check(lines.length === 1, `number rows share their columns (${lines.join(" | ")})`);
 
 // ── colour: a swatch opens a palette; the value can be typed ──
 await page.click("#global-c-plate-Plate");
-check(await page.isVisible('.palette [data-colour="#0E2A47"]') && await page.$$eval(".row.col:has(#global-c-plate-Plate) .chips >> nth=0 >> button", (b) => b.length) >= 3, "the plate's swatch opens a palette: this dial's colours and a set of dial colours");
+check(await page.isVisible('.palette [data-colour="#0E2A47"]') && await page.$$eval(".row.col:has(#global-c-plate-Plate) .chips >> nth=0 >> button", (b) => b.length) >= 3, "the plate's swatch opens the picker: this dial's colours and a set of dial colours");
+const plate = '.row.col:has(#global-c-plate-Plate)';
+const sv = await page.$eval(plate + " .sv", (e) => { const r = e.getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; });
+await page.mouse.click(sv[0] + sv[2] * 0.5, sv[1] + sv[3] * 0.25);
+const picked = await S("(() => { const [r, g, b] = S.c_plate, hi = Math.max(r, g, b), lo = Math.min(r, g, b); return [hi, (hi - lo) / hi]; })()");
+check(near(picked[0], 0.75, 0.03) && near(picked[1], 0.5, 0.03), "a click in the colour field: half strength, three quarters bright");
+const hue = await page.$eval(plate + " .hue", (e) => { const r = e.getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; });
+await page.mouse.click(hue[0] + hue[2] * 2 / 3, hue[1] + hue[3] / 2);
+check(await S("S.c_plate[2] > S.c_plate[0] && S.c_plate[2] > S.c_plate[1]"), "a click two thirds along the hues: blue");
+await page.click(plate + ' .segs button:text-is("CMYK")');
+await page.fill("#global-c-plate-Plate-K", "100");
+await page.press("#global-c-plate-Plate-K", "Enter");
+check(JSON.stringify(await S("S.c_plate.slice(0, 3)")) === "[0,0,0]" && await page.textContent(plate + " .hexout") === "#000000", "CMYK: K 100 is black, and the hex to copy says #000000");
+await page.click(plate + ' .segs button:text-is("RGB")');
+await page.fill("#global-c-plate-Plate-R", "255");
+await page.press("#global-c-plate-Plate-R", "Enter");
+check(await page.inputValue("#global-c-plate-Plate-hex") === "#FF0000", "RGB: R 255 → #FF0000");
+await shot("4c1-picker");
 await page.click('.row.col:has(#global-c-plate-Plate) [data-colour="#0E2A47"]');
 check(JSON.stringify(await S("S.c_plate.map((v) => Math.round(v * 255))")) === "[14,42,71,255]" && await page.inputValue("#global-c-plate-Plate-hex") === "#0E2A47", "picking navy sets the plate, and the value shows as text");
 await page.fill("#global-c-plate-Plate-hex", "ede8db");
@@ -217,7 +256,7 @@ const kinds = [["2", "1", "9"], ["3", "2", "6"], ["4", "3", "12"]];          // 
 for (const [n, kind, at] of kinds) {
   await page.click(`.segs button:text-is("${n}")`);
   await page.check("#window-on-Show-this-window");
-  await page.selectOption("#window-kind-Shows", kind);
+  await page.click("#window-kind-Shows-" + kind);
   await page.selectOption("#window-at-Position", { label: at });
 }
 await page.fill("#window-age-Moon-age-days", "6");
@@ -328,7 +367,7 @@ await page.click("#font-done");
 
 // ── the ring's main rows stay in view while the rest scrolls ──
 await page.$eval(".form", (e) => { e.scrollTop = 99999; });
-check(await page.$eval("#ring-kind-Kind", (e) => { const r = e.getBoundingClientRect(), p = document.querySelector(".panel").getBoundingClientRect(); return r.top > p.top && r.bottom < p.bottom && e.closest(".pinned") !== null; }), "Kind, Colour and radius stay in view when the rows are scrolled to the end");
+check(await page.$eval("#ring-kind-Kind-0", (e) => { const r = e.getBoundingClientRect(), p = document.querySelector(".panel").getBoundingClientRect(); return r.top > p.top && r.bottom < p.bottom && e.closest(".pinned") !== null; }), "Kind, Colour and radius stay in view when the rows are scrolled to the end");
 await shot("6b-scrolled");
 
 // ── zoom, pan, fit; play ──
@@ -370,6 +409,20 @@ check(!/ S\n| re\n|BT\n/.test(pdf_text) && (pdf_text.match(/\nf\n/g) || []).leng
 const svg = await download("#export-svg");
 const svg_text = fs.readFileSync(svg, "utf8");
 check(svg_text.includes(`width="${size_mm}mm"`) && !svg_text.includes("stroke=") && (svg_text.match(/<path/g) || []).length >= 8, "SVG: true size in mm, no guides");
+// live text: the numerals stay text, each where its outline was
+await page.check("#global-out-live-text-Keep-numerals-as-text-in-the-SVG");
+const live_text = fs.readFileSync(await download("#export-svg"), "utf8");
+fs.writeFileSync(path.join(OUT, "dial-live.svg"), live_text);
+const numerals = await S("(() => { const d = t.statik.rings.find((d) => d.kind === 'numerals'); if (!d) return null; const b = d.parts[0].bounds(); return { n: d.parts.length, c: [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2], mode: d.ring.mode, family: d.ring.family }; })()");
+if (numerals) {
+  const texts = live_text.match(/<text [^>]*>[^<]*<\/text>/g) || [];
+  const first = /translate\(([-\d.]+) ([-\d.]+)\) rotate/.exec(texts.find((x) => x.includes("rotate(")) || "");
+  check(texts.length >= numerals.n && texts[0].includes(`font-family="${numerals.family}"`), `SVG with live text: ${texts.length} texts in ${numerals.family}`);
+  if (numerals.mode === 0) check(first && near(+first[1], numerals.c[0], 0.01) && near(+first[2], -numerals.c[1], 0.01), "the first numeral's text stands where its outline's centre is");
+}
+check((live_text.match(/<path/g) || []).length >= 6 && !svg_text.includes("<text"), "everything else stays outlines; without the tick there is no text");
+await page.uncheck("#global-out-live-text-Keep-numerals-as-text-in-the-SVG");
+check(await page.$eval(".row:has(#export-png)", (r) => r.querySelector("input[type=range]") !== null) && /dpi = \d+ × \d+ px/.test(await page.textContent("#png-size")), "the PNG button shares a row with its dpi, and says what that comes to");
 const png = await download("#export-png");
 const want_px = Math.round(size_mm / 25.4 * await S("S.out_dpi"));
 const png_bytes = fs.readFileSync(png);
@@ -430,6 +483,24 @@ await page.waitForFunction(() => window.dial_tool.S.ha_hour.round === 2, null, {
 check(await S("S.ha_hour.round === 2"), "pasting a link into the open tool switches to that dial");
 
 check(errors.length === 0, "no errors in the browser's console" + (errors.length ? ": " + errors.slice(0, 3).join(" | ") : ""));
+// ── the panel put away, and a phone ──
+await page.click("#panel-toggle");
+await frame();
+check(await page.isHidden(".panel") && await page.$eval(".preview", (e) => e.getBoundingClientRect().left) < 2, "the square in the bar puts the panel away: the dial has the whole window");
+await shot("10-no-panel");
+await page.click("#panel-toggle");
+check(await page.isVisible(".panel"), "and brings it back");
+await page.setViewportSize({ width: 390, height: 844 });
+await tab("Rings");
+await frame();
+const narrow = await page.evaluate(() => ({ wide: document.documentElement.scrollWidth, eye: document.querySelector(".form button.fold .eye").getBoundingClientRect().left, bar: document.querySelector(".bar").getBoundingClientRect().top }));
+check(narrow.wide <= 390 && narrow.eye >= 0 && narrow.bar === 0, "a phone: nothing wider than the screen, the eyes in view, the bar on top");
+await shot("11-phone");
+await page.click('.form .fold >> nth=0');
+await shot("11b-phone-folded");
+await page.click('.form .fold >> nth=0');
+await page.setViewportSize({ width: 1440, height: 900 });
+
 await browser.close();
 console.log(problems.length ? `\n${problems.length} problem(s).` : "\nWindow test passed.");
 process.exit(problems.length ? 1 : 0);

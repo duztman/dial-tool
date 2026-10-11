@@ -7,9 +7,15 @@
   --paper: #FCFCFA; --ink: #111111; --grey: #5C5C58; --rule: #B9B9B4; --ground: #ECECE8;
   --select: #F0DC8E;                               /* the canon's yellow: what is selected */
   --bar: #111111; --bar-ink: #FCFCFA; --bar-rule: #5C5C58; --bar-field: #2A2A28;      /* the bar under everything */
-  --panel: 430px; --gutter: 22px;
+  /* the panel's columns (beta 4.0): a toggle column at the far left (eyes: a pane's, a ring's), then six
+     equal columns with equal gaps, then the right margin. 36 + (6 × 54 + 5 × 12) + 28 = 448.
+     label 2 · slider 2 · value 1 · stepper 1 · menus and text 4 · swatch 1, its value 2 · a picture tile 1 */
+  --toggle: 36px; --col: 54px; --gap: 12px; --edge: 28px;
+  --panel: calc(var(--toggle) + 6 * var(--col) + 5 * var(--gap) + var(--edge));
+  --gutter: 22px;                                  /* the bar's and the font sheet's side space */
   --unit: 5.5px;                                   /* every space is a multiple of this */
-  --label: 118px; --field: 62px;
+  --line: 34px;                                    /* a row's height */
+  --thick: 2px;                                    /* opens a pane; everything inside a pane is a hairline */
   font: 13px/1.4 system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-variant-numeric: tabular-nums lining-nums;
 }
@@ -23,71 +29,108 @@ button, select, input { font: inherit; color: inherit; }
 /* the panel. Two verticals carry everything: the left edge (headings, labels, lists) and the
    controls' edge, one label column further in. */
 .panel { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--rule); }
-.panel header { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 3) var(--gutter) calc(var(--unit) * 3); }
+.panel header { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 4) var(--edge) calc(var(--unit) * 3) var(--toggle); }
 /* guides: a box at the top right with a tick; the whole box switches them */
-.guidesbox { margin-left: auto; align-self: center; display: flex; align-items: center; gap: 8px; height: 26px; padding: 0 8px 0 10px; border: 1px solid var(--ink); cursor: pointer; user-select: none; }
+.guidesbox { margin-left: auto; align-self: center; display: flex; align-items: center; gap: 12px; height: 30px; padding: 0 10px 0 14px; border: 1px solid var(--ink); cursor: pointer; user-select: none; }
 .guidesbox:hover { background: var(--ground); }
-.guidesbox input { margin: 0; }
+.guidesbox input { margin: 0; width: 14px; height: 14px; }
 h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; margin: 0; }
 
 /* sections: a sign inside a ring, its name under it */
-.tabs { display: grid; grid-template-columns: repeat(5, 1fr); padding: 0 calc(var(--gutter) - 6px); border-bottom: 1px solid var(--rule); }
-.tabs button { display: grid; justify-items: center; gap: 5px; height: auto; border: 0; background: none; padding: 4px 0 9px; color: var(--grey); cursor: pointer; }
+.tabs { display: grid; grid-template-columns: repeat(5, 1fr); padding: 0 var(--edge) 0 var(--toggle); }
+.tabs button { display: grid; justify-items: center; gap: 6px; height: auto; border: 0; background: none; padding: 4px 0 11px; color: var(--grey); cursor: pointer; }
 .tabs button:hover { background: none; color: var(--ink); }
 .tabs button:active { background: none; }
 .tabs .ring { stroke-width: 1.2; }
 .tabs button.on { color: var(--ink); font-weight: 600; box-shadow: inset 0 -3px 0 var(--ink); }
 .tabs button.on .ring { fill: var(--ink); stroke: var(--ink); }
 .tabs button.on .sign { color: var(--paper); }
+.tabs .dama { display: none; }
+.tabs button[data-tab="Dial"].on .ring { fill: none; }
+.tabs button[data-tab="Dial"].on .sign { color: var(--ink); }
+.tabs button[data-tab="Dial"].on .dama { display: inline; }
 .tabs button:focus-visible { outline-offset: -2px; }
 
-.pinned { padding: calc(var(--unit) * 3) var(--gutter) calc(var(--unit) * 2); border-bottom: 1px solid var(--rule); background: var(--paper); }
-.form { flex: 1; min-height: 0; overflow-y: auto; padding: calc(var(--unit) * 3) var(--gutter) calc(var(--unit) * 8); }
-.form > .row.hdr:first-child, .form > [hidden]:first-child + .row.hdr { margin-top: 0; }
+.pinned { padding: 0 var(--edge) calc(var(--unit) * 3) var(--toggle); background: var(--paper); border-bottom: 1px solid var(--rule); }      /* a hairline: what is under it scrolls */
+.form { flex: 1; min-height: 0; overflow-y: auto; padding: 0 var(--edge) calc(var(--unit) * 10) var(--toggle); }
 
 #app [hidden] { display: none; }                 /* rows that don't apply (R16); beats .row's own display */
 
-/* rows: label · control · typed field · stepper */
-.row { display: grid; grid-template-columns: var(--label) 1fr var(--field) 40px; gap: 0 calc(var(--unit) * 1.5); align-items: center; min-height: 29px; }
+/* rows sit on the six columns: label 2 · control 2 · typed field 1 · stepper 1 */
+.row { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0 var(--gap); align-items: center; min-height: var(--line); }
+.row > :first-child { grid-column: span 2; }
+.row.num > input[type="range"] { grid-column: span 2; }
 .row > label:first-child, .row > span.tag { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.row.pop select, .row.txt input, .row .segs, .row .colour, .row .tools, .row.note span:last-child, .row > button { grid-column: 2 / -1; }
+.row.pop select, .row.txt input, .row .segs, .row .colour, .row .tools, .row .picks, .row > button:not(:first-child) { grid-column: 3 / -1; }
 .row.chk label, .row .wide { grid-column: 1 / -1; }             /* a tick and its words start at the left edge */
 .row.chk > span:first-child:empty, .row.note > span:first-child:empty { display: none; }
-.row.note span:last-child { grid-column: 1 / -1; padding: 2px 0 4px; }
-.row > button { justify-self: start; }
-/* a heading opens a group: space above, a hairline, the name at the left edge; its rows follow closely.
-   The heading is a button: it folds its group away and brings it back. */
-.row.hdr { display: block; min-height: 0; margin-top: calc(var(--unit) * 4); border-top: 1px solid var(--ink); padding: 3px 0 2px; }
+.row.note { min-height: 0; }
+.row.note span:last-child { grid-column: 1 / -1; padding: 0 0 8px; }
+.row > button:not(:first-child) { justify-self: start; }
+.row > button.main:first-child { justify-self: stretch; }        /* a button standing where the label would (PNG) */
+/* a pane: a thick line, its name, its rows. The eye in the toggle column shows whether it is open; the whole
+   heading is the button. A folded pane says what it holds, in grey, at the right. */
+.row.hdr { display: block; min-height: 0; margin-top: calc(var(--unit) * 4); border-top: var(--thick) solid var(--ink); padding: 0; }
 .row.hdr.folded { margin-top: 0; }
+.form > .row.hdr:first-child, .form > [hidden]:first-child + .row.hdr, .pinned > .row.hdr:first-child { margin-top: 0; }
+.pinned:not([hidden]) + .form > .row.hdr:first-child, .pinned:not([hidden]) + .form > [hidden]:first-child + .row.hdr { border-top: 0; }      /* the hairline already opens it */
 .row.hdr.folded + .row.hdr, .row.hdr.folded + [hidden] + .row.hdr { margin-top: 0; }
-h2 { font-size: 12px; font-weight: 600; letter-spacing: 0.01em; margin: 0; }
-button.fold { display: flex; align-items: center; justify-content: space-between; flex-direction: row-reverse; width: 100%; height: 28px; padding: 0; border: 0; background: none; text-align: left; }
+.form > .row.hdr.folded:last-child { border-bottom: 1px solid var(--rule); }
+h2 { font-size: 12.5px; font-weight: 600; letter-spacing: 0.01em; margin: 0; white-space: nowrap; }
+button.fold { position: relative; display: flex; align-items: center; gap: var(--gap); width: 100%; height: 40px; padding: 0; border: 0; background: none; text-align: left; }
 button.fold:hover, button.fold:active { background: none; color: var(--ink); }
-button.fold svg { color: var(--grey); transition: transform 0.12s; }
-.folded button.fold svg { transform: rotate(-90deg); }
-@media (prefers-reduced-motion: reduce) { button.fold svg { transition: none; } }
-input[type="text"], select { height: 24px; border: 1px solid var(--rule); background: #fff; padding: 0 6px; min-width: 0; width: 100%; border-radius: 0; }
+button.fold .eye { position: absolute; left: calc(-1 * var(--toggle)); top: 0; display: grid; place-items: center; width: var(--toggle); height: 100%; color: var(--ink); }
+.folded button.fold .eye, .folded button.fold h2 { color: var(--grey); }
+button.fold:hover .eye, button.fold:hover h2 { color: var(--ink); }
+button.fold .summary { margin-left: auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+button.fold:focus-visible { outline-offset: -2px; }
+input[type="text"], select { height: 26px; border: 1px solid var(--rule); background: #fff; padding: 0 6px; min-width: 0; width: 100%; border-radius: 0; }
 input[type="text"]:focus, select:focus, button:focus-visible, input[type="range"]:focus-visible { outline: 2px solid var(--ink); outline-offset: 0; }
 .row.num input[type="text"] { text-align: right; }
 input[type="range"] { width: 100%; margin: 0; accent-color: var(--ink); }
 input[type="checkbox"] { accent-color: var(--ink); margin: 0 6px 0 0; }
-/* colour: a square swatch that opens a palette, and the value as text */
-.colour { display: flex; align-items: center; gap: calc(var(--unit) * 1.5); }
-.swatch { width: 44px; height: 24px; padding: 0; border: 1px solid var(--rule); box-shadow: inset 0 0 0 2px #fff; }
+/* colour: a swatch one column wide that opens the picker, and the value as text, two columns */
+.colour { display: grid; grid-template-columns: var(--col) calc(2 * var(--col) + var(--gap)); gap: var(--gap); align-items: center; }
+.swatch { width: 100%; height: 26px; padding: 0; border: 1px solid var(--rule); box-shadow: inset 0 0 0 2px #fff; }
 .swatch:hover, .swatch:active { box-shadow: inset 0 0 0 1px #fff; }
-input.hex { width: 84px; font-variant-numeric: tabular-nums; }
-.palette { grid-column: 1 / -1; display: grid; grid-template-columns: var(--label) 1fr; gap: 6px calc(var(--unit) * 1.5); align-items: start; margin: 4px 0 8px; padding: 10px; background: var(--ground); }
-.palette .chips { display: grid; grid-template-columns: repeat(auto-fill, 26px); gap: 4px; }
-.palette .chips button { width: 26px; height: 26px; padding: 0; border: 1px solid rgba(0, 0, 0, 0.25); }
+input.hex { font-variant-numeric: tabular-nums; }
+/* the picker: a field of one hue, the hues, the colour as numbers, the dial's colours, the hex to copy */
+.palette { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px var(--gap); align-items: start; margin: 2px 0 12px; padding: 12px 0 14px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.palette > * { grid-column: 1 / -1; }
+.palette > .quiet { grid-column: span 2; line-height: 22px; }
+.palette > .chips { grid-column: 3 / -1; }
+.sv { position: relative; height: 132px; touch-action: none; cursor: crosshair;
+  background: linear-gradient(to top, #000, rgba(0, 0, 0, 0)), linear-gradient(to right, #fff, var(--hue, #f00)); }
+.hue { position: relative; height: 16px; touch-action: none; cursor: ew-resize;
+  background: linear-gradient(to right, #f00, #ff0 16.67%, #0f0 33.33%, #0ff 50%, #00f 66.67%, #f0f 83.33%, #f00); }
+.sv i, .hue i { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; box-shadow: 0 0 0 2px #fff, 0 0 0 3px #111; pointer-events: none; }
+.hue i { top: 50%; width: 6px; height: 20px; margin: -10px 0 0 -3px; border-radius: 0; background: none; }
+.asnumbers { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--gap); align-items: center; }
+.asnumbers .segs { grid-column: span 2; }
+.asnumbers .numbers { grid-column: 3 / -1; display: flex; gap: 6px; }
+.asnumbers .numbers label { flex: 1; display: flex; align-items: center; gap: 4px; color: var(--grey); font-size: 11px; }
+.asnumbers .numbers input { padding: 0 4px; text-align: right; color: var(--ink); font-size: 13px; }
+.palette .chips { display: grid; grid-template-columns: repeat(auto-fill, 22px); gap: 4px; }
+.palette .chips button { width: 22px; height: 22px; padding: 0; border: 1px solid rgba(0, 0, 0, 0.25); }
 .palette .chips button.on { outline: 2px solid var(--ink); outline-offset: 1px; }
-.palette .other { grid-column: 2; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
-.palette input[type="color"] { width: 26px; height: 26px; padding: 0; border: 1px solid var(--rule); background: none; -webkit-appearance: none; appearance: none; border-radius: 0; }
-.palette input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-.palette input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 0; }
+.hexline { display: flex; align-items: center; gap: var(--gap); padding: 0 0 0 10px; height: 32px; background: var(--ground); }
+.hexline code { flex: 1; font: 13px/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace; user-select: all; }
+.hexline .copy { height: 32px; min-width: calc(var(--col) + 12px); }
+
+/* a choice as pictures: tiles one column wide, the chosen one filled */
+.picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px var(--gap); padding: 4px 0; }
+.pickt { display: grid; justify-items: center; align-content: start; gap: 3px; height: auto; min-height: 50px; padding: 6px 1px 5px; border-color: var(--rule); background: #fff; font-size: 10.5px; line-height: 1.15; }
+.pickt span { overflow-wrap: anywhere; text-align: center; }
+.pickt.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.pickt.on:hover { background: #333331; }
+.row.pick { align-items: start; }
+.row.pick > label { line-height: var(--line); }
 
 /* OpenType switches: tiles that fill the width, pressed = on */
-.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 4px; }
-.tile { display: grid; align-content: space-between; justify-items: start; gap: 4px; height: auto; min-height: 50px; padding: 6px 8px; border-color: var(--rule); background: #fff; text-align: left; line-height: 1.25; }
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px var(--gap); }      /* a tile is two columns wide */
+.features { padding-top: 4px; }
+.features h3 { margin: 16px 0 8px; padding-top: 8px; border-top: 1px solid var(--rule); font-size: 12px; font-weight: 400; color: var(--grey); }
+.tile { display: grid; align-content: space-between; justify-items: start; gap: 4px; height: auto; min-height: 52px; padding: 7px 8px; border-color: var(--rule); background: #fff; text-align: left; line-height: 1.25; }
 .tile small { color: var(--grey); font: 10.5px/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
 .tile[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
 .tile[aria-pressed="true"] small { color: #B9B9B4; }
@@ -97,18 +140,19 @@ input.hex { width: 84px; font-variant-numeric: tabular-nums; }
 
 /* buttons, four kinds. plain outline: an action · main (filled): writes a file · plain (words only):
    adds something · sign (a drawing only): acts on the selected thing */
-button { height: 24px; border: 1px solid var(--ink); background: var(--paper); padding: 0 10px; cursor: pointer; border-radius: 0; }
+button { height: 26px; border: 1px solid var(--ink); background: var(--paper); padding: 0 10px; cursor: pointer; border-radius: 0; }
 button:hover { background: var(--ground); }
 button:active { background: var(--ink); color: var(--paper); }
 button.main { background: var(--ink); color: var(--paper); min-width: 58px; font-weight: 600; }
 button.main:hover { background: #333331; }
 button.plain { border-color: transparent; background: none; padding: 0 6px; white-space: nowrap; flex: none; }
 button.plain:hover { background: var(--paper); border-color: var(--rule); }
-button.sign { display: inline-grid; place-items: center; flex: none; width: 24px; padding: 0; border-color: transparent; background: none; }
+button.sign { display: inline-grid; place-items: center; flex: none; width: 26px; padding: 0; border-color: transparent; background: none; }
 button.sign:hover { background: var(--paper); border-color: var(--rule); }
 button.plain:active, button.sign:active { background: var(--ink); color: var(--paper); }
 .steps { display: flex; }
-.step { width: 20px; padding: 0; border-color: var(--rule); }
+.steps { width: 100%; }
+.step { flex: 1; padding: 0; border-color: var(--rule); }
 .step + .step { border-left: 0; }
 .segs { display: flex; }
 .segs button { flex: 1; border-color: var(--rule); padding: 0 4px; }
@@ -116,24 +160,35 @@ button.plain:active, button.sign:active { background: var(--ink); color: var(--p
 .segs button.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .tools { display: flex; flex-wrap: wrap; gap: var(--unit); align-items: center; }
 
-/* the ring list: top ring first; its foot holds what can be added and what can be done to the selected ring */
-.ringlist ol { position: relative; list-style: none; margin: 0; padding: 0; border: 1px solid var(--rule); border-bottom: 0; max-height: 150px; overflow-y: auto; background: #fff; }
-.ringlist li { display: grid; grid-template-columns: 16px 20px 1fr auto; align-items: center; gap: 4px; height: 29px; padding: 0 8px 0 3px; cursor: pointer; }
-.ringlist .grip { display: grid; place-items: center; height: 100%; color: var(--rule); cursor: grab; touch-action: none; }
+/* the ring list: top ring first. It runs from edge to edge of the panel: the eye (show or hide the ring) is in
+   the toggle column, then grip · name · rename box (selected ring) · kind. Hairlines only; the selected ring is yellow. */
+.ringlist { margin: 0 calc(-1 * var(--edge)) 0 calc(-1 * var(--toggle)); }
+.ringlist ol { position: relative; list-style: none; margin: 0; padding: 0; max-height: calc(var(--line) * 5 + 4px); overflow-y: auto; }
+.ringlist li { display: grid; grid-template-columns: var(--toggle) 18px minmax(0, auto) auto 1fr; align-items: center; gap: 0; height: var(--line); padding-right: var(--edge); cursor: pointer; }
+.ringlist li + li { box-shadow: inset 0 1px 0 var(--ground); }
+.ringlist li.on { background: var(--select); box-shadow: none; }
+.ringlist li.on + li { box-shadow: none; }
+.ringlist button.eye { display: grid; place-items: center; width: var(--toggle); height: 100%; padding: 0; border: 0; background: none; color: var(--ink); }
+.ringlist button.eye:hover { background: rgba(0, 0, 0, 0.06); }
+.ringlist li.off { color: var(--rule); }
+.ringlist li.off button.eye, .ringlist li.off .kind { color: var(--rule); }
+.ringlist li.off.on { color: var(--grey); }
+.ringlist li.off.on button.eye, .ringlist li.off.on .kind { color: var(--grey); }
+.ringlist .grip { display: grid; place-items: center; height: 100%; margin-left: -4px; color: var(--rule); cursor: grab; touch-action: none; }
 .ringlist li:hover .grip, .ringlist li.on .grip { color: var(--grey); }
 .ringlist li.dragged { opacity: 0.45; }
 .ringlist li.dragged .grip { cursor: grabbing; }
 .ringlist .dropline { position: absolute; left: 0; right: 0; height: 3px; background: var(--ink); pointer-events: none; }
-.ringlist li + li { border-top: 1px solid var(--ground); }
-.ringlist li.on { background: var(--select); }
-.ringlist .name { border-color: transparent; background: transparent; height: 22px; padding-left: 2px; }
-.ringlist .name:focus { background: #fff; }
-.listfoot { display: flex; justify-content: space-between; align-items: center; height: 31px; padding: 0 3px 0 8px; border: 1px solid var(--rule); background: var(--ground); }
+.ringlist span.name { padding: 0 8px 0 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ringlist input.name { grid-column: 3 / 5; height: 26px; margin-left: 2px; padding: 0 4px; }
+.ringlist .rename { display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 0; background: none; }
+.ringlist .rename:hover { background: rgba(0, 0, 0, 0.1); }
+.ringlist .kind { grid-column: 5; justify-self: end; padding-left: 8px; }
+.listfoot { display: flex; justify-content: space-between; align-items: center; height: var(--line); padding: 0 calc(var(--edge) - 5px) 0 var(--toggle); border-top: 1px solid var(--rule); }
 .listfoot .adds, .listfoot .signs { display: flex; align-items: center; gap: 1px; }
-.listfoot .adds > .quiet { margin-right: 2px; }
+.listfoot .adds > .quiet { margin-right: 4px; }
 .listfoot .adds > .quiet::after { content: " +"; }
-.pinned .row.hdr { margin-top: calc(var(--unit) * 2); }
-.pinned > .row.hdr:first-child { margin-top: 0; }
+.listfoot button.plain { padding: 0 5px; }
 /* the log and the link: what the tool says, set apart — small, monospaced, grey, on a light ground */
 .log, .link { display: block; width: 100%; margin: 0; padding: 8px 10px; border: 0; background: var(--ground); color: var(--grey);
   font: 11px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -156,7 +211,7 @@ button.plain:active, button.sign:active { background: var(--ink); color: var(--p
 /* the font sheet: over the panel, so the dial stays in view; from the bottom on a phone */
 .picker { position: fixed; inset: 0 auto 0 0; width: var(--panel); max-width: 100vw; height: 100%; max-height: none; margin: 0; padding: 0; border: 0; border-right: 1px solid var(--ink);
   background: var(--paper); color: var(--ink); }
-.picker[open] { display: grid; grid-template-rows: auto auto 1fr auto; gap: var(--unit); padding: calc(var(--unit) * 3) var(--gutter); }
+.picker[open] { display: grid; grid-template-rows: auto auto 1fr auto; gap: var(--unit); padding: calc(var(--unit) * 4) var(--edge) calc(var(--unit) * 3) var(--toggle); }
 .picker::backdrop { background: none; }                /* the dial keeps its true colours while you choose */
 .picker header { display: flex; align-items: center; justify-content: space-between; }
 .picker header h2 { font-size: 15px; }
@@ -175,6 +230,7 @@ button.plain:active, button.sign:active { background: var(--ink); color: var(--p
 .font .note:empty { display: none; }
 
 /* examples: five dials to start from */
+.examples { margin-left: calc(var(--edge) - var(--toggle)); padding: 4px 0; }      /* full width: the same space left and right */
 .examples .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--unit); }
 .examples a { display: grid; gap: 3px; padding: 6px 4px 4px; background: var(--ground); color: var(--ink); text-decoration: none; text-align: center; }
 .examples a:hover, .examples a:focus-visible { background: var(--select); outline: 0; }
@@ -202,6 +258,14 @@ main { position: relative; overflow: hidden; }
    controls start where the preview starts. */
 .bar { grid-column: 1 / -1; display: grid; grid-template-columns: calc(var(--panel) - var(--gutter) * 2) 78px 1fr auto auto auto; align-items: center;
   gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 2) var(--gutter); background: var(--bar); color: var(--bar-ink); }
+.bar .lead { display: flex; align-items: center; gap: calc(var(--unit) * 2); min-width: 0; margin-left: calc((var(--toggle) - 26px) / 2 - var(--gutter)); }
+.bar .side { flex: none; width: 26px; min-width: 0; padding: 0; border-color: transparent; }
+.bar .side[aria-pressed="true"] { background: var(--bar-ink); color: var(--bar); }
+/* the panel put away: the dial gets the whole window */
+#app.nopanel { grid-template-columns: 0 1fr; }
+#app.nopanel .panel { display: none; }
+#app.nopanel .bar { grid-template-columns: auto 78px 1fr auto auto auto; }
+#app.nopanel .bar .status { display: none; }
 .bar .status { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: var(--gutter); opacity: 0.72; }
 .bar .time { margin-left: var(--gutter); width: 78px; text-align: right; }
 .bar input[type="text"] { background: var(--bar-field); border-color: var(--bar-rule); color: var(--bar-ink); }
@@ -213,16 +277,22 @@ main { position: relative; overflow: hidden; }
 .bar .icon { display: inline-flex; align-items: center; justify-content: center; }
 /* a phone, or a narrow window: the bar on top, the preview under it; below them the whole panel scrolls as one */
 @media (max-width: 860px) {
-  #app { grid-template-columns: 1fr; grid-template-rows: auto 42% 1fr; }
-  .bar { grid-row: 1; grid-template-columns: 78px 1fr auto auto auto; padding: calc(var(--unit) * 2) 16px; }
+  :root { --gutter: 16px; --edge: 16px; --toggle: 34px; --col: calc((100vw - var(--toggle) - var(--edge) - 5 * var(--gap)) / 6); }
+  #app, #app.nopanel { grid-template-columns: 1fr; grid-template-rows: auto 42% 1fr; }
+  #app.nopanel { grid-template-rows: auto 1fr 0; }
+  .bar, #app.nopanel .bar { grid-row: 1; grid-template-columns: auto 78px 1fr auto auto auto; padding: calc(var(--unit) * 2) 16px; }
+  .bar .lead { margin-left: 0; }
   main { grid-row: 2; }
   .panel { grid-row: 3; display: block; overflow-y: auto; -webkit-overflow-scrolling: touch; border-right: 0; border-top: 1px solid var(--rule); }
   .form { overflow: visible; }
   .tabs { position: sticky; top: 0; z-index: 1; background: var(--paper); }
   .ringlist ol { max-height: none; }
+  .listfoot { flex-wrap: wrap; height: auto; min-height: var(--line); padding-top: 4px; padding-bottom: 4px; }
+  .listfoot .adds > .quiet { white-space: nowrap; }
+  .listfoot .signs { margin-left: auto; }
+  .pickt { padding-left: 0; padding-right: 0; font-size: 10px; letter-spacing: -0.01em; }
   .bar .status { display: none; }
   .bar .time, .bar input[type="range"] { margin-left: 0; width: 100%; }
-  :root { --gutter: 16px; }
   .picker { inset: auto 0 0 0; width: 100%; height: 58%; border-right: 0; border-top: 1px solid var(--ink); }
   .picker::backdrop { background: none; }
 }

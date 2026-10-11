@@ -43,15 +43,59 @@ const icon = (inside, size = 16, box = "0 0 16 16") => `<svg viewBox="${box}" wi
 const ticks = (n, r0, r1) => Array.from({ length: n }, (_, i) => { const a = i * 2 * Math.PI / n, x = Math.sin(a), y = -Math.cos(a); return `M${(x * r0).toFixed(2)} ${(y * r0).toFixed(2)}L${(x * r1).toFixed(2)} ${(y * r1).toFixed(2)}`; }).join("");
 // a section's sign: a small picture inside a ring
 const SECTION_ICONS = {
-  Dial: `<circle r="6.5" fill="currentColor" stroke="none"/>`,
+  // pies: the ring cut in four. Chosen: two opposite pies filled, a checkerboard ("dama"; Okay, 11 Oct 2026)
+  Dial: `<path d="M0 -15L0 15M-15 0L15 0" stroke-width="1.2"/><path class="dama" d="M0 0L0 -15A15 15 0 0 1 15 0ZM0 0L0 15A15 15 0 0 1 -15 0Z" fill="currentColor" stroke="none"/>`,
   Rings: `<circle r="8"/><circle r="3.5"/>`,
   Hands: `<path d="M0 0L0 -8.5M0 0L5.5 3.5"/><circle r="1.3" fill="currentColor" stroke="none"/>`,
-  Date: `<rect x="-6" y="-4.5" width="12" height="9" rx="1.2"/><path d="M-1.6 -1.4L0.4 -2.4L0.4 2.6"/>`,
+  Date: `<rect x="2.2" y="-3.2" width="8" height="6.4" rx="1.4" fill="currentColor" stroke="none"/>`,      // a dial with a window at 3 (Okay's drawing, 11 Oct 2026)
   Export: `<path d="M0 -8L0 3M-4 -1L0 3L4 -1M-6.5 7L6.5 7"/>`,
   Guides: `<circle r="5.5"/><path d="M0 -9.5L0 9.5M-9.5 0L9.5 0"/>`,
 };
 const section_icon = (name) => icon(`<circle class="ring" r="15"/><g class="sign">${SECTION_ICONS[name]}</g>`, 34, "-17 -17 34 34");
+const EYE = {                                      // the left column's sign: open = showing, closed (with lashes) = put away
+  open: `<path d="M1.5 8C3.5 4.6 5.8 3.3 8 3.3S12.5 4.6 14.5 8C12.5 11.4 10.2 12.7 8 12.7S3.5 11.4 1.5 8Z"/><circle cx="8" cy="8" r="2" fill="currentColor" stroke="none"/>`,
+  closed: `<path d="M1.5 6.5C3.5 9.6 5.8 10.8 8 10.8S12.5 9.6 14.5 6.5M8 10.8L8 13.4M4.7 10.1L3.7 12.4M11.3 10.1L12.3 12.4M2.5 8.1L1.1 9.8M13.5 8.1L14.9 9.8"/>`,
+};
+const eye = (open) => icon(EYE[open ? "open" : "closed"]);
+// small pictures for choices that are easier seen than read. 28 × 20, drawn like the other signs.
+const pic = (inside) => icon(inside, 28, "0 0 28 20").replace('width="28" height="28"', 'width="28" height="20"');
+const solid = `fill="currentColor" stroke="none"`;
+const PICS = {
+  kind: [
+    `<path d="M3 16L4.6 11.8M8.6 9.2L9.4 4.8M14 8L14 3.5M19.4 9.2L18.6 4.8M25 16L23.4 11.8" stroke-width="1.2"/>`,
+    `<path d="M3.4 15.5L5.4 10.6M14 8L14 2.8M24.6 15.5L22.6 10.6" stroke-width="3.2" stroke-linecap="butt"/>`,
+    `<path d="M8.5 6L10.5 4.5L10.5 15.5M14.5 7C14.5 3.6 19.5 3.6 19.5 7C19.5 9.6 14.5 12 14.5 15.5L19.8 15.5"/>`,
+    `<path d="M3 16A11 11 0 0 1 25 16" stroke-width="3.6" stroke-linecap="butt"/>`,
+  ],
+  shape: [`<rect x="12" y="3" width="4" height="14" ${solid}/>`, `<path d="M10.5 3L17.5 3L15.2 17L12.8 17Z" ${solid}/>`, `<circle cx="14" cy="10" r="4.5" ${solid}/>`],
+  twelve: [
+    `<rect x="12.2" y="3" width="3.6" height="14" ${solid}/>`,
+    `<rect x="8.6" y="3" width="3.6" height="14" ${solid}/><rect x="15.8" y="3" width="3.6" height="14" ${solid}/>`,
+    `<path d="M8 3L20 3L14 17Z" ${solid}/>`,
+    `<rect x="12.2" y="3" width="3.6" height="14" stroke-width="1" stroke-dasharray="1.6 1.6"/>`,
+  ],
+  mode: [                                          // an A at 3 and at 6 o'clock: how it stands
+    `<path d="M3 17A11 11 0 0 1 25 17" stroke-width="0.8" opacity="0.45"/><path d="M4 12.5L6 7.5L8 12.5M12 9L14 4L16 9M20 12.5L22 7.5L24 12.5"/>`,
+    `<path d="M3 17A11 11 0 0 1 25 17" stroke-width="0.8" opacity="0.45"/><path d="M12 9L14 4L16 9"/><path d="M12 9L14 4L16 9" transform="rotate(-52 14 17)"/><path d="M12 9L14 4L16 9" transform="rotate(52 14 17)"/>`,
+    `<circle cx="14" cy="10" r="8.5" stroke-width="0.8" opacity="0.45"/><path d="M12.4 6.4L14 2.6L15.6 6.4"/><path d="M12.4 17.4L14 13.6L15.6 17.4"/>`,
+    `<path d="M3 17A11 11 0 0 1 25 17" stroke-width="0.8" opacity="0.45"/><path d="M12.6 8.4L14 4.8L15.4 8.4" /><path d="M12.6 8.4L14 4.8L15.4 8.4" transform="rotate(-24 14 17)"/><path d="M12.6 8.4L14 4.8L15.4 8.4" transform="rotate(24 14 17)"/><path d="M12.6 8.4L14 4.8L15.4 8.4" transform="rotate(-48 14 17)"/><path d="M12.6 8.4L14 4.8L15.4 8.4" transform="rotate(48 14 17)"/>`,
+  ],
+  window: [
+    `<rect x="6" y="3.5" width="16" height="13" rx="1.5"/><path d="M10.6 8L12.2 7L12.2 13M15 7L18.4 7L16 13" stroke-width="1.2"/>`,
+    `<rect x="2.5" y="4.5" width="23" height="11" rx="1.5"/><path d="M6 12.5L6 7.5L8 10.5L10 7.5L10 12.5M13 7.5L15.5 7.5L15.5 12.5L13 12.5ZM18.5 12.5L18.5 7.5L22 12.5L22 7.5" stroke-width="1.1"/>`,
+    `<rect x="4" y="4" width="20" height="12" rx="1"/><path d="M4 16L4 4L14 4A12 12 0 0 0 14 16Z" ${solid}/><circle cx="19" cy="10" r="2.2" ${solid}/>`,
+    `<path d="M3 16A11 11 0 0 1 25 16A5.5 5.5 0 0 0 14 16A5.5 5.5 0 0 0 3 16Z"/><circle cx="14" cy="8.6" r="3" ${solid}/>`,
+  ],
+};
+/** a hand's picture is the hand itself, drawn by the geometry with a standard size. */
+const hand_pic = (i) => {
+  const p = G.hand_shape({ ...G.HAND_BASE, shape: i, len: 13, w: 2.2, tail: 3, tip: 4.5, feature: 4.4, feature_at: [0, 0, 0, 30, 0, 0, 45, 62, 62][i] || 0, round: 0, wall: 0, counter: 0 });
+  return `<svg viewBox="-3 -14 6 18.5" width="9" height="28" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;
+};
 const TOOL_ICONS = {
+  rename: `<rect x="1.5" y="1.5" width="13" height="13" rx="3.5" stroke-width="1.2"/><path d="M8 4.4L8 11.6M6.2 4.2L9.8 4.2M6.2 11.8L9.8 11.8" stroke-width="1.2"/>`,
+  panel: `<rect x="1.5" y="2.5" width="13" height="11"/><path d="M6 2.5L6 13.5"/>`,
+  copy: `<rect x="5.5" y="5.5" width="8" height="8"/><path d="M10.5 5.5L10.5 2.5L2.5 2.5L2.5 10.5L5.5 10.5"/>`,
   up: `<path d="M8 13L8 3M4 7L8 3L12 7"/>`,
   down: `<path d="M8 3L8 13M4 9L8 13L12 9"/>`,
   duplicate: `<rect x="5.5" y="5.5" width="8" height="8"/><path d="M10.5 5.5L10.5 2.5L2.5 2.5L2.5 10.5L5.5 10.5"/>`,
@@ -64,6 +108,7 @@ const TOOL_ICONS = {
 const num = (key, text, lo, hi, step, o = {}) => ({ kind: "num", key, text, lo, hi, step, ...o });
 const pop = (key, text, items, o = {}) => ({ kind: "pop", key, text, items, ...o });
 const seg = (key, text, items, o = {}) => ({ kind: "seg", key, text, items, ...o });
+const pick = (key, text, items, pics, o = {}) => ({ kind: "pick", key, text, items, pics, ...o });      // a choice shown as pictures
 const chk = (key, text, o = {}) => ({ kind: "chk", key, text, ...o });
 const col = (key, text, o = {}) => ({ kind: "col", key, text, ...o });
 const txt = (key, text, o = {}) => ({ kind: "txt", key, text, ...o });
@@ -94,7 +139,7 @@ const ROWS = {
     hdr("Rings, top first", { scope: "global", pin: true }),       // pin: stays in view while the rest scrolls
     custom("ring_list", { scope: "global", pin: true }),
     custom("ring_title", { pin: true }),
-    pop("kind", "Kind", G.KINDS, { pin: true }),
+    pick("kind", "Kind", G.KINDS, PICS.kind, { pin: true }),
     col("c", "Colour", { pin: true }),
     num("r", "Outer radius", 0, 25, 0.05, { pin: true, show: kind_in("ticks", "markers", "band") }),
     num("r", "Centre radius", 0, 25, 0.05, { pin: true, show: kind_in("numerals") }),
@@ -110,7 +155,7 @@ const ROWS = {
     pop("knock", "Knock out", G.KNOCK_FROM),
     num("clear", "Clearance", 0, 2, 0.01, { show: (R) => R.knock !== 0 }),
     hdr("Shape", { show: kind_in("ticks", "markers") }),
-    seg("shape", "Shape", G.SHAPES.slice(0, 3), { show: kind_in("ticks", "markers") }),
+    pick("shape", "Shape", G.SHAPES.slice(0, 3), PICS.shape, { show: kind_in("ticks", "markers") }),
     num("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
     num("w", "Width · Ø", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "dot", "file") }),
     num("taper", "Inner width ×", 0, 2, 0.01, { show: marks_with("wedge") }),
@@ -120,7 +165,7 @@ const ROWS = {
     num("round_in", "Round inner", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
     custom("round_ends", { show: marks_with("bar", "wedge", "file") }),
     hdr("12 o’clock · first position", { show: kind_in("markers") }),
-    seg("twelve", "Style", G.TWELVES, { show: kind_in("markers") }),
+    pick("twelve", "Style", G.TWELVES, PICS.twelve, { show: kind_in("markers") }),
     num("twelve_scale", "Scale ×", 0.5, 2.5, 0.05, { show: (R) => G.kind_of(R) === "markers" && R.twelve !== 3 }),
     num("twelve_gap", "Gap", 0, 3, 0.05, { show: (R) => G.kind_of(R) === "markers" && R.twelve === 1 }),
     hdr("Numerals", { show: numerals_only }),
@@ -129,7 +174,7 @@ const ROWS = {
     num("num_from", "First number", -1000, 1000, 1, { show: labels_are("Numbers") }),
     num("num_step", "Step", -100, 100, 1, { show: labels_are("Numbers") }),
     num("num_digits", "Digits", 0, 4, 1, { whole: true, show: labels_are("Numbers") }),
-    pop("mode", "Placement", G.MODES, { show: numerals_only }),
+    pick("mode", "Placement", G.MODES, PICS.mode, { show: numerals_only }),
     num("size", "Size", 0.3, 8, 0.05, { show: numerals_only }),
     hdr("Band", { show: kind_in("band") }),
     num("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),
@@ -155,7 +200,7 @@ const ROWS = {
     hdr("One hand"),
     seg("ui_hand", "Edit", ["Hour", "Minute", "Seconds"]),
     chk("on", "Show this hand", H),
-    pop("shape", "Shape", G.HAND_SHAPES.slice(0, 9), H),
+    pick("shape", "Shape", G.HAND_SHAPES.slice(0, 9), hand_pic, H),
     col("c", "Colour", H),
     hdr("Size", H),
     num("len", "Length", 0.5, 30, 0.05, H),
@@ -173,10 +218,11 @@ const ROWS = {
     num("wall", "Hollow wall", 0, 1, 0.01, H),
   ],
   Date: [                                          // "Windows" on its tab: up to four holes in the plate
-    seg("ui_window", "Window", ["1", "2", "3", "4"]),
+    hdr("Window"),
+    seg("ui_window", "Edit", ["1", "2", "3", "4"]),
     chk("on", "Show this window", W),
     hdr("What it shows", { ...W, show: win_on }),
-    pop("kind", "Shows", G.WINDOW_KINDS, { ...W, show: win_on }),
+    pick("kind", "Shows", G.WINDOW_KINDS, PICS.window, { ...W, show: win_on }),
     txt("text", "Text", { ...W, show: win_is("date", "day") }),
     num("size", "Text % of height", 20, 100, 1, { ...W, show: win_is("date", "day") }),
     info("Uses the top numerals ring’s type.", { ...W, show: win_is("date", "day") }),
@@ -203,7 +249,10 @@ const ROWS = {
     chk("out_mirror", "Mirrored, for toner transfer"),
     hdr("Export a file"),
     custom("export"),
-    num("out_dpi", "PNG dpi", 72, 2400, 1),
+    chk("out_live_text", "Keep numerals as text in the SVG"),
+    info("The font must be installed where the file is opened. PDF and PNG stay outlines.", { show: (S) => S.out_live_text }),
+    num("out_dpi", "PNG dpi", 72, 2400, 1, { button: "png" }),       // the PNG button stands where the label would: the dpi is its setting
+    custom("png_size"),
     hdr("Settings file"),
     custom("settings"),
     hdr("Link to this dial"),
@@ -251,6 +300,22 @@ function parse_time(text) {
   return ((p[0] % 12) * 3600 + (p[1] || 0) * 60 + (p[2] || 0)) % 43200;
 }
 const to_hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(clamp(v, 0, 1) * 255).toString(16).padStart(2, "0")).join("");
+/** colour as hue (0–360), strength and brightness (0–1), and back. */
+function rgb_hsv([r, g, b]) {
+  const hi = Math.max(r, g, b), d = hi - Math.min(r, g, b);
+  const h = d === 0 ? 0 : hi === r ? ((g - b) / d + 6) % 6 : hi === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [h * 60, hi === 0 ? 0 : d / hi, hi];
+}
+function hsv_rgb([h, s, v]) {
+  const f = (n) => { const k = (n + h / 60) % 6; return v - v * s * Math.max(0, Math.min(k, 4 - k, 1)); };
+  return [f(5), f(3), f(1)];
+}
+/** CMYK by plain arithmetic (no printer profile): good for naming a colour, not for proofing one. */
+function rgb_cmyk([r, g, b]) {
+  const k = 1 - Math.max(r, g, b);
+  return k >= 1 ? [0, 0, 0, 1] : [(1 - r - k) / (1 - k), (1 - g - k) / (1 - k), (1 - b - k) / (1 - k), k];
+}
+const cmyk_rgb = ([c, m, y, k]) => [(1 - c) * (1 - k), (1 - m) * (1 - k), (1 - y) * (1 - k)];
 const from_hex = (h, alpha = 1) => [1, 3, 5].map((i) => +(parseInt(h.slice(i, i + 2), 16) / 255).toFixed(4)).concat([alpha]);
 
 function save_file(name, data, type) {
@@ -384,13 +449,25 @@ class DialTool {
     this.time_slider.oninput = () => this.set_time(+this.time_slider.value);
     this.play_button = el("button", { type: "button", className: "icon", id: "play", onclick: () => this.play(!this.playing) });
     this.status = el("div", { className: "status" });
+    const side = el("button", { type: "button", className: "icon side", id: "panel-toggle", title: "Hide or show the settings", ariaLabel: "Hide or show the settings", onclick: () => this.show_panel(root.classList.contains("nopanel")) });
+    side.innerHTML = icon(TOOL_ICONS.panel);
     const bar = el("footer", { className: "bar" },
-      this.status, this.time_field, this.time_slider, this.play_button,
+      el("div", { className: "lead" }, side, this.status), this.time_field, this.time_slider, this.play_button,
       el("button", { type: "button", textContent: "Now", onclick: () => { const d = new Date(); this.set_time(d.getHours() % 12 * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000); } }),
       el("button", { type: "button", textContent: "Fit", onclick: () => { this.fit(); this.render(); } }));
     root.append(panel, el("main", {}, this.svg, this.tip), bar, this.build_picker());
     this.play_icon();
+    let shown = true;
+    try { shown = localStorage.getItem("dial-tool-panel") !== "off"; } catch (e) { /* not kept */ }
+    if (!shown) this.show_panel(false);
     new ResizeObserver(() => this.resized()).observe(this.svg);
+  }
+
+  /** the whole panel, away or back: the dial gets the window. Remembered by this browser. */
+  show_panel(on) {
+    $("#app").classList.toggle("nopanel", !on);
+    $("#panel-toggle").setAttribute("aria-pressed", String(!on));
+    try { localStorage.setItem("dial-tool-panel", on ? "on" : "off"); } catch (e) { /* not kept */ }
   }
 
   /** top right: a box with a tick. Clicking anywhere on it switches the guides; their settings are in Dial. */
@@ -437,10 +514,32 @@ class DialTool {
     for (const r of this.rows) {
       const T = this.target(r.row.scope);
       const applies = r.row.show ? Boolean(r.row.show(T)) : true;
-      if (r.fold) r.el.classList.toggle("folded", this.is_folded(r));
+      if (r.fold) {
+        const folded = this.is_folded(r);
+        r.el.classList.toggle("folded", folded);
+        if (r.folded_shown !== folded) { r.folded_shown = folded; r.eye.innerHTML = eye(!folded); r.button.setAttribute("aria-expanded", String(!folded)); }
+        r.summary.textContent = folded ? this.summary(r) : "";
+      }
       r.el.hidden = !applies || Boolean(r.group && !r.group.el.hidden && this.is_folded(r.group));
       if (!r.el.hidden) r.refresh(T);
     }
+  }
+
+  /** what a folded pane holds, in a few words: the values of its first rows. Folding hides controls, not information. */
+  summary(heading) {
+    const parts = [];
+    for (const r of this.rows) {
+      if (r.group !== heading || !r.row.key || parts.length === 3) continue;
+      const row = r.row, T = this.target(row.scope);
+      if (row.show && !row.show(T)) continue;
+      const v = T[row.key];
+      if (row.kind === "num") parts.push(`${row.text.replace(/^…/, "").toLowerCase()} ${fmt(v, row.step)}`);
+      else if (row.kind === "pop" || row.kind === "pick" || row.kind === "seg") parts.push(String(row.items[v] ?? ""));
+      else if (row.kind === "col") parts.push(to_hex(v).toUpperCase());
+      else if (row.kind === "txt") parts.push(String(v));
+      else if (row.kind === "chk" && v) parts.push(row.text.toLowerCase());
+    }
+    return parts.filter(Boolean).join(" · ");
   }
 
   /** one row of the form → {row, el, refresh(T)}. */
@@ -453,12 +552,13 @@ class DialTool {
 
     if (row.kind === "hdr" || row.name === "ring_title") {     // a heading: click it to fold or unfold its group
       out.fold = `${SECTIONS[this.S.ui_section]}/${row.text || row.name}`;
+      // the eye in the left column says whether the pane is open; the whole heading is its button
       const title = el("h2", { textContent: row.text || "" });
-      const button = el("button", { type: "button", className: "fold", onclick: () => this.fold(out, !this.is_folded(out)) });
-      button.innerHTML = icon(`<path d="M4 6L8 10L12 6"/>`, 14);
-      button.append(title);
+      out.eye = el("span", { className: "eye" });
+      out.summary = el("span", { className: "summary quiet" });
+      out.button = el("button", { type: "button", className: "fold", title: "Show or hide this pane", onclick: () => this.fold(out, !this.is_folded(out)) }, out.eye, title, out.summary);
       wrap.className = "row hdr";
-      wrap.append(button);
+      wrap.append(out.button);
       if (row.name === "ring_title") out.refresh = (R) => { title.textContent = R.name || G.kind_of(R); };
       return out;
     }
@@ -480,7 +580,11 @@ class DialTool {
         if (e.key === "ArrowUp" || e.key === "ArrowDown") { e.preventDefault(); commit(this.target(row.scope)[row.key] + (e.key === "ArrowUp" ? 1 : -1) * row.step * (e.shiftKey ? 10 : 1)); }
       };
       const step = (dir) => el("button", { type: "button", className: "step", textContent: dir > 0 ? "+" : "−", tabIndex: -1, onclick: () => commit(this.target(row.scope)[row.key] + dir * row.step) });
-      wrap.append(el("label", { htmlFor: id, textContent: row.text }), slider, field, el("span", { className: "steps" }, step(-1), step(1)));
+      const lead = row.button
+        ? el("button", { type: "button", className: "main", id: "export-" + row.button, textContent: row.button.toUpperCase(), title: `Export a ${row.button.toUpperCase()} at this dpi`, onclick: () => this.export(row.button) })
+        : el("label", { htmlFor: id, textContent: row.text });
+      if (row.button) { slider.ariaLabel = field.ariaLabel = row.text; field.title = row.text + " · " + field.title; }
+      wrap.append(lead, slider, field, el("span", { className: "steps" }, step(-1), step(1)));
       out.refresh = (T) => {
         const v = T[row.key] ?? 0;
         if (v > +slider.max) slider.max = v;       // the slider grows to hold a typed value
@@ -498,6 +602,19 @@ class DialTool {
       out.refresh = (T) => { select.value = T[row.key]; };
     }
 
+    if (row.kind === "pick") {                     // a choice as pictures: one tile per item, on the columns
+      const group = el("span", { className: "picks", role: "radiogroup", ariaLabel: row.text });
+      row.items.forEach((name, i) => {
+        const tile = el("button", { type: "button", className: "pickt", id: `${id}-${i}`, title: name, onclick: () => set(i) });
+        tile.setAttribute("role", "radio");
+        tile.innerHTML = typeof row.pics === "function" ? row.pics(i) : pic(row.pics[i]);
+        tile.append(el("span", { textContent: name }));
+        group.append(tile);
+      });
+      wrap.append(el("label", { textContent: row.text }), group);
+      out.refresh = (T) => [...group.children].forEach((b, i) => { b.classList.toggle("on", i === T[row.key]); b.setAttribute("aria-checked", String(i === T[row.key])); });
+    }
+
     if (row.kind === "seg") {
       const group = el("span", { className: "segs" });
       row.items.forEach((name, i) => group.append(el("button", { type: "button", textContent: name, onclick: () => { set(i); if (row.key.startsWith("ui_")) this.sync_rows(); } })));
@@ -512,30 +629,89 @@ class DialTool {
       out.refresh = (T) => { box.checked = Boolean(T[row.key]); };
     }
 
-    if (row.kind === "col") {                      // a swatch (opens the palette) · the value, which can be typed
+    if (row.kind === "col") {                      // a swatch (opens the picker) · the value, which can be typed
       const swatch = el("button", { type: "button", className: "swatch", id, title: "Choose a colour" });
       const hex = el("input", { type: "text", className: "hex", id: id + "-hex", spellcheck: false, maxLength: 7, ariaLabel: row.text + ", as #RRGGBB" });
       const palette = el("div", { className: "palette", hidden: true });
-      const pick = (value) => set(from_hex(value, this.target(row.scope)[row.key][3] ?? 1));
-      const other = el("input", { type: "color", id: id + "-other", ariaLabel: "Any colour" });
-      other.oninput = () => pick(other.value);
-      const fill = () => {                         // the colours this dial already uses, then a fixed set that suits dials
-        const S = this.S, used = [S.c_plate, S.c_backdrop, S.c_cap, ...S.rings.map((r) => r.c), ...G.HANDS.map((h) => S["ha_" + h].c), ...G.windows_of(S).map((w) => w.ink)];
-        const chip = (c) => { const b = el("button", { type: "button", title: c, ariaLabel: c, onclick: () => pick(c) }); b.style.background = c; b.dataset.colour = c; return b; };
-        palette.replaceChildren(
-          el("span", { className: "quiet", textContent: "In this dial" }), el("div", { className: "chips" }, ...[...new Set(used.map(to_hex).map((c) => c.toUpperCase()))].map(chip)),
-          el("span", { className: "quiet", textContent: "Dial colours" }), el("div", { className: "chips" }, ...PALETTE.map(chip)),
-          el("label", { className: "other" }, other, " Any colour…"));
+      const now = () => this.target(row.scope)[row.key];
+      const put = (rgb) => set(rgb.map((v) => +clamp(v, 0, 1).toFixed(4)).concat([now()[3] ?? 1]));
+      const pick = (value) => put(from_hex(value).slice(0, 3));
+      // the picker: a field of the hue (across: white → full colour, down: → black), the hues under it,
+      // the same colour as numbers (RGB for screens, CMYK for print talk), this dial's colours, and the hex to copy.
+      let hsv = [0, 0, 0], built = false;
+      const field = el("div", { className: "sv", title: "Across: how strong. Down: how dark." }, el("i"));
+      const hues = el("div", { className: "hue", title: "Hue" }, el("i"));
+      const modes = el("span", { className: "segs" }), numbers = el("span", { className: "numbers" });
+      const out_hex = el("code", { className: "hexout" });
+      const copy = el("button", { type: "button", className: "copy", textContent: "Copy", onclick: async () => {
+        try { await navigator.clipboard.writeText(out_hex.textContent); copy.textContent = "Copied"; } catch (e) { copy.textContent = "Select it"; }
+        setTimeout(() => { copy.textContent = "Copy"; }, 1200);
+      } });
+      const used = el("div", { className: "chips" }), fixed = el("div", { className: "chips" });
+      const chip = (c) => { const b = el("button", { type: "button", title: c, ariaLabel: c, onclick: () => pick(c) }); b.style.background = c; b.dataset.colour = c; return b; };
+      const drag = (box, move) => {
+        box.onpointerdown = (e) => {
+          e.preventDefault();
+          box.setPointerCapture(e.pointerId);
+          const at = (ev) => { const r = box.getBoundingClientRect(); move(clamp((ev.clientX - r.left) / r.width, 0, 1), clamp((ev.clientY - r.top) / r.height, 0, 1)); };
+          box.onpointermove = at;
+          box.onpointerup = box.onpointercancel = () => { box.onpointermove = null; };
+          at(e);
+        };
       };
-      swatch.onclick = () => { palette.hidden = !palette.hidden; if (!palette.hidden) fill(); };
-      hex.onchange = () => { const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex.value.trim()); if (m) pick("#" + (m[1].length === 3 ? [...m[1]].map((c) => c + c).join("") : m[1])); hex.value = to_hex(this.target(row.scope)[row.key]).toUpperCase(); };
+      drag(field, (x, y) => { hsv = [hsv[0], x, 1 - y]; put(hsv_rgb(hsv)); });
+      drag(hues, (x) => { hsv = [x * 360, hsv[1], hsv[2]]; put(hsv_rgb(hsv)); });
+      const show_numbers = () => {
+        const mode = this.colour_mode || "RGB", rgb = now().slice(0, 3);
+        [...modes.children].forEach((b) => b.classList.toggle("on", b.textContent === mode));
+        const values = mode === "RGB" ? rgb.map((v) => Math.round(v * 255)) : rgb_cmyk(rgb).map((v) => Math.round(v * 100));
+        if (numbers.dataset.mode !== mode) {
+          numbers.dataset.mode = mode;
+          numbers.replaceChildren(...[...mode === "RGB" ? "RGB" : "CMYK"].map((letter, i) => {
+            const f = el("input", { type: "text", inputMode: "numeric", ariaLabel: letter, id: `${id}-${letter}` });
+            f.onchange = () => {
+              const all = [...numbers.querySelectorAll("input")].map((x) => parseFloat(x.value) || 0);
+              put(mode === "RGB" ? all.map((v) => v / 255) : cmyk_rgb(all.map((v) => v / 100)));
+            };
+            f.dataset.i = i;
+            return el("label", {}, letter, f);
+          }));
+        }
+        for (const f of numbers.querySelectorAll("input")) if (!active(f)) f.value = values[f.dataset.i];
+      };
+      const build = () => {
+        built = true;
+        for (const mode of ["RGB", "CMYK"]) modes.append(el("button", { type: "button", textContent: mode, onclick: () => { this.colour_mode = mode; show_numbers(); } }));
+        fixed.append(...PALETTE.map(chip));
+        palette.append(field, hues, el("div", { className: "asnumbers" }, modes, numbers),
+          el("span", { className: "quiet", textContent: "In this dial" }), used,
+          el("span", { className: "quiet", textContent: "Dial colours" }), fixed,
+          el("div", { className: "hexline" }, out_hex, copy));
+      };
+      swatch.onclick = () => {
+        palette.hidden = !palette.hidden;
+        if (palette.hidden) return;
+        if (!built) build();
+        const S = this.S, all = [S.c_plate, S.c_backdrop, S.c_cap, ...S.rings.map((r) => r.c), ...G.HANDS.map((h) => S["ha_" + h].c), ...G.windows_of(S).map((w) => w.ink)];
+        used.replaceChildren(...[...new Set(all.map(to_hex).map((c) => c.toUpperCase()))].map(chip));
+        out.refresh(this.target(row.scope));
+      };
+      hex.onchange = () => { const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex.value.trim()); if (m) pick("#" + (m[1].length === 3 ? [...m[1]].map((c) => c + c).join("") : m[1])); hex.value = to_hex(now()).toUpperCase(); };
       wrap.append(el("label", { htmlFor: id, textContent: row.text }), el("span", { className: "colour" }, swatch, hex), palette);
       out.refresh = (T) => {
-        const value = to_hex(T[row.key]);
+        const value = to_hex(T[row.key]).toUpperCase();
         swatch.style.background = value;
-        if (!active(hex)) hex.value = value.toUpperCase();
-        if (!active(other)) other.value = value;
-        for (const b of palette.querySelectorAll("button")) b.classList.toggle("on", b.dataset.colour === value.toUpperCase());
+        if (!active(hex)) hex.value = value;
+        if (palette.hidden || !built) return;
+        const fresh = rgb_hsv(T[row.key]);         // grey has no hue and black no strength: keep the ones last chosen
+        if (to_hex(hsv_rgb(hsv)).toUpperCase() !== value) hsv = [fresh[1] > 0 && fresh[2] > 0 ? fresh[0] : hsv[0], fresh[2] > 0 ? fresh[1] : hsv[1], fresh[2]];
+        field.style.setProperty("--hue", `hsl(${hsv[0]} 100% 50%)`);
+        field.firstChild.style.left = `${hsv[1] * 100}%`; field.firstChild.style.top = `${(1 - hsv[2]) * 100}%`;
+        field.firstChild.style.background = value;
+        hues.firstChild.style.left = `${hsv[0] / 360 * 100}%`;
+        out_hex.textContent = value;
+        show_numbers();
+        for (const b of palette.querySelectorAll(".chips button")) b.classList.toggle("on", b.dataset.colour === value);
       };
     }
 
@@ -571,25 +747,49 @@ class DialTool {
     this.fill_ring_list();
   }
 
+  /** one row per ring: eye (show or hide it on the dial, in the left column) · grip · name · the rename box
+   *  (selected ring only, and not while it is hidden) · its kind. A click anywhere else on a row selects it. */
   fill_ring_list() {
     if (!this.ring_list) return;
-    const keep = document.activeElement && document.activeElement.dataset.ring;
     this.ring_list.replaceChildren();
     this.S.rings.forEach((ring, i) => {
+      const selected = i === this.S.ui_ring;
+      const show = el("button", { type: "button", className: "eye", title: ring.on ? "Hide this ring" : "Show this ring", ariaLabel: `Show ${ring.name}`, onclick: (e) => { e.stopPropagation(); this.S.ui_ring = i; this.set_value("ring", "on", !ring.on); } });
+      show.setAttribute("aria-pressed", String(ring.on));
+      show.innerHTML = eye(ring.on);
       const grip = el("span", { className: "grip", title: "Drag to change the order" });
       grip.innerHTML = icon(TOOL_ICONS.grip);
       grip.onpointerdown = (e) => this.drag_ring(e, i);
-      const box = el("input", { type: "checkbox", checked: ring.on, title: "Show this ring" });
-      box.onchange = () => { this.S.ui_ring = i; this.set_value("ring", "on", box.checked); };
-      const name = el("input", { type: "text", value: ring.name, className: "name" });
-      name.dataset.ring = i;
-      name.onfocus = () => this.select_ring(i, false);
-      name.oninput = () => { ring.name = name.value; this.sync_rows(); this.autosave(); };
-      const item = el("li", { className: i === this.S.ui_ring ? "on" : "" }, grip, box, name, el("span", { className: "quiet", textContent: G.kind_of(ring) }));
-      item.onclick = (e) => { if (e.target === item || e.target.tagName === "SPAN") this.select_ring(i); };
+      const name = el("span", { className: "name", textContent: ring.name || G.kind_of(ring) });
+      const item = el("li", { className: (selected ? "on" : "") + (ring.on ? "" : " off") }, show, grip, name);
+      if (selected && ring.on) {
+        const rename = el("button", { type: "button", className: "rename", title: "Rename this ring", ariaLabel: "Rename this ring", onclick: (e) => { e.stopPropagation(); this.rename_ring(i, item, name); } });
+        rename.innerHTML = icon(TOOL_ICONS.rename, 18);
+        item.append(rename);
+      }
+      item.append(el("span", { className: "quiet kind", textContent: G.kind_of(ring) }));
+      item.onclick = () => { if (!item.querySelector("input")) this.select_ring(i); };
       this.ring_list.append(item);
     });
-    if (keep !== undefined && keep !== null) { const again = this.ring_list.querySelector(`input[data-ring="${keep}"]`); if (again && document.activeElement !== again) again.focus(); }
+  }
+
+  /** the name becomes a field: Enter or a click elsewhere keeps it, Esc puts the old name back. */
+  rename_ring(i, item, name) {
+    const ring = this.S.rings[i], before = ring.name;
+    const field = el("input", { type: "text", value: ring.name, className: "name", ariaLabel: "Ring name" });
+    let done = false;
+    const end = (keep) => {
+      if (done) return;
+      done = true;
+      ring.name = keep ? field.value.trim() || before : before;
+      this.fill_ring_list(); this.sync_rows(); this.autosave();
+    };
+    field.oninput = () => { ring.name = field.value; this.sync_rows(); };
+    field.onblur = () => end(true);
+    field.onkeydown = (e) => { if (e.key === "Enter") end(true); if (e.key === "Escape") end(false); };
+    name.replaceWith(field);
+    item.classList.add("renaming");
+    field.focus(); field.select();
   }
 
   /** drag a ring by its grip to another place in the list. The list's order is the stacking order:
@@ -864,7 +1064,7 @@ class DialTool {
 
   /** the font's OpenType features. Only what differs from the font's default is stored (R12). */
   row_features(wrap, out) {
-    wrap.className = "tiles";
+    wrap.className = "features";
     let shown = null;
     out.refresh = (R) => {
       const font = G.has_font(R.ps) ? G.font_of(R) : null;
@@ -876,6 +1076,9 @@ class DialTool {
         // or character variant. (Fonts also list features their script needs to work at all; those stay on.)
         const plumbing = ["aalt", "ccmp", "locl", "mark", "mkmk", "rvrn"];
         const useful = ([tag, designer]) => !plumbing.includes(tag) && (designer || FEATURE_NAMES[tag] || /^(ss|cv)\d\d$/.test(tag));
+        // three groups: features with a name of their own, then the numbered ones — stylistic sets (ss01…),
+        // character variants (cv01…) — each under its own small heading (Okay, 11 Oct 2026)
+        const groups = [["", []], ["Stylistic sets", []], ["Character variants", []]];
         for (const [tag, designer] of font ? G.font_features(font).filter(useful) : []) {
           const tile = el("button", { type: "button", className: "tile", id: "feature-" + tag }, el("span", { textContent: designer || FEATURE_NAMES[tag] || tag }), el("small", { textContent: tag }));
           tile.dataset.tag = tag;
@@ -884,7 +1087,13 @@ class DialTool {
             if (on === DEFAULT_ON.has(tag)) delete all[tag]; else all[tag] = on;
             this.set_value("ring", "features", all);
           };
-          wrap.append(tile);
+          groups[/^ss\d\d$/.test(tag) ? 1 : /^cv\d\d$/.test(tag) ? 2 : 0][1].push(tile);
+        }
+        groups[0][1].sort((x, y) => x.firstChild.textContent.localeCompare(y.firstChild.textContent));
+        for (const [title, tiles] of groups) {
+          if (!tiles.length) continue;
+          if (title) wrap.append(el("h3", { textContent: title }));
+          wrap.append(el("div", { className: "tiles" }, ...tiles));
         }
         if (!wrap.children.length && font) wrap.append(el("span", { className: "quiet", textContent: "This font has no switches." }));
       }
@@ -905,11 +1114,20 @@ class DialTool {
     wrap.append(grid);
   }
 
+  /** files that stay drawings. The PNG button is on its own row, with its dpi. */
   row_export(wrap) {
     wrap.className = "row";
     const tools = el("span", { className: "tools" });
-    for (const kind of ["PDF", "SVG", "PNG"]) tools.append(el("button", { type: "button", className: "main", id: "export-" + kind.toLowerCase(), textContent: kind, onclick: () => this.export(kind.toLowerCase()) }));
-    wrap.append(el("label", { textContent: "Format" }), tools);
+    for (const kind of ["PDF", "SVG"]) tools.append(el("button", { type: "button", className: "main", id: "export-" + kind.toLowerCase(), textContent: kind, onclick: () => this.export(kind.toLowerCase()) }));
+    wrap.append(el("label", { textContent: "Vector" }), tools);
+  }
+
+  /** under the PNG row: what that dpi comes to. */
+  row_png_size(wrap, out) {
+    wrap.className = "row note";
+    const text = el("span", { className: "quiet", id: "png-size" });
+    wrap.append(el("span"), text);
+    out.refresh = () => { const mm = G.page_mm(this.S), px = Math.round(mm / 25.4 * this.S.out_dpi); text.textContent = `${fmt(mm, 0.1)} mm at ${Math.round(this.S.out_dpi)} dpi = ${px} × ${px} px`; };
   }
 
   row_settings(wrap) {
@@ -1416,7 +1634,11 @@ class DialTool {
   async export(kind) {
     try {
       const S = this.S, statik = G.build_static(S);
-      if (kind === "svg") save_file("dial.svg", svg_document(S, statik, S.t), "image/svg+xml");
+      if (kind === "svg") {
+        const live = S.out_live_text && !S.out_production;
+        save_file("dial.svg", svg_document(S, statik, S.t, { live }), "image/svg+xml");
+        if (live) return this.log(`exported dial.svg · ${G.page_mm(S).toFixed(2)} mm square · numerals are text: ${[...new Set(S.rings.filter((r) => r.on && G.kind_of(r) === "numerals").map((r) => r.family))].join(", ") || "no numerals"} must be installed to open it`);
+      }
       if (kind === "pdf") save_file("dial.pdf", pdf_document(S, statik, S.t), "application/pdf");
       if (kind === "png") {
         const px = Math.round(G.page_mm(S) / 25.4 * S.out_dpi);

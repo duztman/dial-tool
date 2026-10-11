@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 3.0";
+export const VERSION = "beta 4.0";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -836,6 +836,53 @@ function numeral_at(ring, i, a0, label) {
     place(p, r, a);
   }
   return p;
+}
+
+// ── live text: the export option (as in dial.py) ─────────────
+//   The same placements as the outlines above, described so a file can keep them as text.
+//   Positions come from the outlines' bounds, so live and outlined numerals sit in the same place.
+//   A text is {txt, t (its type), size, fill, steps, at}: steps are moves in mm with y up,
+//   ["t", x, y] = move, ["r", degrees anticlockwise, cx, cy] = turn; at = where the baseline starts.
+
+function text_centre(txt, t, size) {
+  const b = text_path(txt, t, size).bounds();
+  return b ? [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2] : null;
+}
+
+function numeral_live(ring, i, a0, label) {
+  const [mode, r, a, size, rot] = numeral_setup(ring, i, a0);
+  const base = { t: ring, size, fill: ring.c };
+  if (mode === "on path") {
+    return path_letters(label, r, a, ring, size).map(([ch, angle, flip, pos]) => ({
+      ...base, txt: ch, at: pos,
+      steps: [...(rot ? [["r", -rot, ...clock_point(r, a)]] : []), ["r", -angle, 0, 0], ["t", 0, r], ...(flip ? [["r", 180, 0, 0]] : [])],
+    }));
+  }
+  const c = text_centre(label, ring, size);
+  if (!c) return [];
+  const turn = ((a % 360) + 360) % 360;
+  const flip = mode === "radial, auto-flip" && turn > 90 && turn < 270 ? 180 : 0;
+  const steps = mode === "upright" ? [["t", ...clock_point(r, a)], ["r", -rot, 0, 0]] : [["r", -a, 0, 0], ["t", 0, r], ["r", -(flip + rot), 0, 0]];
+  return [{ ...base, txt: label, at: [-c[0], -c[1]], steps }];
+}
+
+/** a scene item as live text, or null if it has none: {texts, removed}. removed = what knockouts
+ *  and the windows' clear zones cut away from the outlines; live text can't be cut, so a file
+ *  hides that area with a clipping mask. */
+export function live_texts(S, statik, item) {
+  if (item.role === "ring" && item.ring.kind === "numerals") {
+    const d = item.ring, ring = d.ring, angles = ring_angles(ring), labels = ring_labels(ring);
+    const removed = d.path !== d.shape ? d.shape.difference(d.path) : null;
+    return { texts: d.keep.filter((i) => labels[i]).flatMap((i) => numeral_live(ring, i, angles[i], labels[i])), removed: removed && !empty(removed) ? removed : null };
+  }
+  if (item.role === "date number") {
+    const x = statik.windows.find((w) => w.index === item.window);
+    if (!x || !["date", "day"].includes(WINDOW_KINDS[x.w.kind])) return null;
+    const t = date_type(S), size = x.w.h * x.w.size / 100, c = text_centre(x.w.text, t, size);
+    if (!c) return null;
+    return { texts: [{ txt: x.w.text, t, size, fill: x.w.ink, at: [-c[0], -c[1]], steps: [["t", ...clock_point(x.w.r, window_angle(x.w))]] }], removed: null };
+  }
+  return null;
 }
 
 // ── one ring ─────────────────────────────────────────────────
