@@ -33,12 +33,10 @@ button, select, input { font: inherit; color: inherit; }
    controls' edge, one label column further in. */
 .panel { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--rule); }
 .panel header { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 3) var(--gutter) calc(var(--unit) * 3); }
-/* guides: a box at the top right — the word opens their settings, the tick switches them */
-.guidesbox { margin-left: auto; align-self: center; display: flex; align-items: center; border: 1px solid var(--ink); }
-.guidesbox button { border: 0; height: 24px; padding: 0 8px 0 10px; }
-.guidesbox button.on { background: var(--ink); color: var(--paper); }
-.guidesbox input { margin: 0 8px 0 2px; }
-.guidesbox button.on + input { margin-left: 8px; }
+/* guides: a box at the top right with a tick; the whole box switches them */
+.guidesbox { margin-left: auto; align-self: center; display: flex; align-items: center; gap: 8px; height: 26px; padding: 0 8px 0 10px; border: 1px solid var(--ink); cursor: pointer; user-select: none; }
+.guidesbox:hover { background: var(--ground); }
+.guidesbox input { margin: 0; }
 h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; margin: 0; }
 
 /* sections: a sign inside a ring, its name under it */
@@ -66,16 +64,44 @@ h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; margin: 0; }
 .row.chk > span:first-child:empty, .row.note > span:first-child:empty { display: none; }
 .row.note span:last-child { grid-column: 1 / -1; padding: 2px 0 4px; }
 .row > button { justify-self: start; }
-/* a heading opens a group: space above, a hairline, the name at the left edge; its rows follow closely */
-.row.hdr { display: block; min-height: 0; margin-top: calc(var(--unit) * 4); border-top: 1px solid var(--ink); padding: 7px 0 5px; }
+/* a heading opens a group: space above, a hairline, the name at the left edge; its rows follow closely.
+   The heading is a button: it folds its group away and brings it back. */
+.row.hdr { display: block; min-height: 0; margin-top: calc(var(--unit) * 4); border-top: 1px solid var(--ink); padding: 3px 0 2px; }
+.row.hdr.folded { margin-top: 0; }
+.row.hdr.folded + .row.hdr, .row.hdr.folded + [hidden] + .row.hdr { margin-top: 0; }
 h2 { font-size: 12px; font-weight: 600; letter-spacing: 0.01em; margin: 0; }
+button.fold { display: flex; align-items: center; justify-content: space-between; flex-direction: row-reverse; width: 100%; height: 28px; padding: 0; border: 0; background: none; text-align: left; }
+button.fold:hover, button.fold:active { background: none; color: var(--ink); }
+button.fold svg { color: var(--grey); transition: transform 0.12s; }
+.folded button.fold svg { transform: rotate(-90deg); }
+@media (prefers-reduced-motion: reduce) { button.fold svg { transition: none; } }
 input[type="text"], select { height: 24px; border: 1px solid var(--rule); background: #fff; padding: 0 6px; min-width: 0; width: 100%; border-radius: 0; }
 input[type="text"]:focus, select:focus, button:focus-visible, input[type="range"]:focus-visible { outline: 2px solid var(--ink); outline-offset: 0; }
 .row.num input[type="text"] { text-align: right; }
 input[type="range"] { width: 100%; margin: 0; accent-color: var(--ink); }
 input[type="checkbox"] { accent-color: var(--ink); margin: 0 6px 0 0; }
-input[type="color"] { width: 44px; height: 24px; padding: 0; border: 1px solid var(--rule); background: none; }
-.colour { display: flex; align-items: center; gap: calc(var(--unit) * 2); }
+/* colour: a square swatch that opens a palette, and the value as text */
+.colour { display: flex; align-items: center; gap: calc(var(--unit) * 1.5); }
+.swatch { width: 44px; height: 24px; padding: 0; border: 1px solid var(--rule); box-shadow: inset 0 0 0 2px #fff; }
+.swatch:hover, .swatch:active { box-shadow: inset 0 0 0 1px #fff; }
+input.hex { width: 84px; font-variant-numeric: tabular-nums; }
+.palette { grid-column: 1 / -1; display: grid; grid-template-columns: var(--label) 1fr; gap: 6px calc(var(--unit) * 1.5); align-items: start; margin: 4px 0 8px; padding: 10px; background: var(--ground); }
+.palette .chips { display: grid; grid-template-columns: repeat(auto-fill, 26px); gap: 4px; }
+.palette .chips button { width: 26px; height: 26px; padding: 0; border: 1px solid rgba(0, 0, 0, 0.25); }
+.palette .chips button.on { outline: 2px solid var(--ink); outline-offset: 1px; }
+.palette .other { grid-column: 2; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.palette input[type="color"] { width: 26px; height: 26px; padding: 0; border: 1px solid var(--rule); background: none; -webkit-appearance: none; appearance: none; border-radius: 0; }
+.palette input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+.palette input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 0; }
+
+/* OpenType switches: tiles that fill the width, pressed = on */
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 4px; }
+.tile { display: grid; align-content: space-between; justify-items: start; gap: 4px; height: auto; min-height: 50px; padding: 6px 8px; border-color: var(--rule); background: #fff; text-align: left; line-height: 1.25; }
+.tile small { color: var(--grey); font: 10.5px/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.tile[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.tile[aria-pressed="true"] small { color: #B9B9B4; }
+.tile:hover { background: var(--ground); }
+.tile[aria-pressed="true"]:hover { background: #333331; }
 .check { display: inline-flex; align-items: center; }
 
 /* buttons, four kinds. plain outline: an action · main (filled): writes a file · plain (words only):
@@ -100,7 +126,6 @@ button.plain:active, button.sign:active { background: var(--ink); color: var(--p
 .tools { display: flex; flex-wrap: wrap; gap: var(--unit); align-items: center; }
 
 /* the ring list: top ring first; its foot holds what can be added and what can be done to the selected ring */
-.ringlist h2 { border-top: 1px solid var(--ink); padding: 7px 0 5px; }
 .ringlist ol { position: relative; list-style: none; margin: 0; padding: 0; border: 1px solid var(--rule); border-bottom: 0; max-height: 150px; overflow-y: auto; background: #fff; }
 .ringlist li { display: grid; grid-template-columns: 16px 20px 1fr auto; align-items: center; gap: 4px; height: 29px; padding: 0 8px 0 3px; cursor: pointer; }
 .ringlist .grip { display: grid; place-items: center; height: 100%; color: var(--rule); cursor: grab; touch-action: none; }
@@ -116,7 +141,8 @@ button.plain:active, button.sign:active { background: var(--ink); color: var(--p
 .listfoot .adds, .listfoot .signs { display: flex; align-items: center; gap: 1px; }
 .listfoot .adds > .quiet { margin-right: 2px; }
 .listfoot .adds > .quiet::after { content: " +"; }
-.pinned .row.hdr { margin-top: calc(var(--unit) * 3); }
+.pinned .row.hdr { margin-top: calc(var(--unit) * 2); }
+.pinned > .row.hdr:first-child { margin-top: 0; }
 /* the log and the link: what the tool says, set apart — small, monospaced, grey, on a light ground */
 .log, .link { display: block; width: 100%; margin: 0; padding: 8px 10px; border: 0; background: var(--ground); color: var(--grey);
   font: 11px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -127,7 +153,10 @@ button.plain:active, button.sign:active { background: var(--ink); color: var(--p
 
 /* the font picker: every font shows its own numerals */
 .font { display: grid; gap: var(--unit); margin-top: var(--unit); }
-.font .styles { flex-wrap: wrap; }
+.font .styles { flex-wrap: wrap; gap: 4px; }
+.font .styles button { flex: 0 0 auto; padding: 0 9px; white-space: nowrap; }
+.font .styles button + button { border-left: 1px solid var(--rule); }
+.font .styles button.on + button { border-left-color: var(--rule); }
 .fontlist { border: 1px solid var(--rule); background: #fff; max-height: 318px; overflow-y: auto; }
 .fontrow { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: calc(var(--unit) * 2); width: 100%; height: 35px; padding: 0 8px; border: 0; border-bottom: 1px solid var(--ground); background: none; text-align: left; }
 .fontrow:hover { background: var(--ground); }
@@ -140,7 +169,6 @@ button.plain:active, button.sign:active { background: var(--ink); color: var(--p
 .font .note:empty { display: none; }
 
 /* examples: five dials to start from */
-.examples h2 { border-top: 1px solid var(--ink); padding: 7px 0 5px; }
 .examples .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--unit); }
 .examples a { display: grid; gap: 3px; padding: 6px 4px 4px; background: var(--ground); color: var(--ink); text-decoration: none; text-align: center; }
 .examples a:hover, .examples a:focus-visible { background: var(--select); outline: 0; }
@@ -5905,6 +5933,31 @@ var FEATURE_NAMES = {
   afrc: "alternative fractions",
   rvrn: "variation alternates"
 };
+var PALETTE = [
+  // colours dials are made of: blacks and greys · whites and creams · blues · greens · reds to yellow · brown · lume
+  "#111111",
+  "#1A1A1F",
+  "#3A3A3C",
+  "#6E6E73",
+  "#A7A7AA",
+  "#D6D6D2",
+  "#FFFFFF",
+  "#F5F2EA",
+  "#EDE8DB",
+  "#E4D9BF",
+  "#D8C9A3",
+  "#0E2A47",
+  "#1F4E79",
+  "#5B8DB8",
+  "#12372A",
+  "#2E6B4F",
+  "#7A1F1F",
+  "#CC381A",
+  "#E8742A",
+  "#F5C518",
+  "#5A3A22",
+  "#C8E6A0"
+];
 var DEFAULT_ON = /* @__PURE__ */ new Set(["kern", "liga", "calt", "ccmp", "locl", "mark", "mkmk", "rlig", "rclt", "curs", "clig", "rvrn"]);
 var icon = (inside, size = 16, box = "0 0 16 16") => `<svg viewBox="${box}" width="${size}" height="${size}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${inside}</svg>`;
 var SECTION_ICONS = {
@@ -5953,8 +6006,9 @@ var ROWS = {
   ],
   Rings: [
     // one list; rows that don't apply hide (R16)
-    custom("ring_list", { scope: "global", pin: true }),
+    hdr("Rings, top first", { scope: "global", pin: true }),
     // pin: stays in view while the rest scrolls
+    custom("ring_list", { scope: "global", pin: true }),
     custom("ring_title", { pin: true }),
     pop("kind", "Kind", KINDS, { pin: true }),
     col("c", "Colour", { pin: true }),
@@ -6002,7 +6056,9 @@ var ROWS = {
     custom("font", { show: numerals_only }),
     pop("lang", "Language", LANGS, { show: numerals_only }),
     num2("tracking", "Tracking", -200, 800, 5, { show: numerals_only }),
+    hdr("Variable axes", { show: (R) => numerals_only(R) && has_font(R.ps) && Object.keys(font_axes(font_of(R))).length > 0 }),
     custom("axes", { show: numerals_only }),
+    hdr("OpenType features", { show: (R) => numerals_only(R) && has_font(R.ps) }),
     custom("features", { show: numerals_only })
   ],
   Hands: [
@@ -6057,6 +6113,7 @@ var ROWS = {
     col("ink", "Print colour", { ...W, show: win_on })
   ],
   Export: [
+    hdr("Examples"),
     custom("examples"),
     hdr("For production"),
     chk("out_production", "Mono print mask"),
@@ -6073,23 +6130,20 @@ var ROWS = {
   ]
 };
 var guides_on = (S) => S.guides;
-ROWS.Guides = [
-  // preview only: nothing here reaches a file (R5)
-  info("Guides are off. Tick the box at the top right to show them.", { show: (S) => !S.guides }),
-  hdr("Which", { show: guides_on }),
-  chk("gd_edge", "Dial edge and date radius", { show: guides_on }),
+ROWS.Dial.push(
+  // guides: preview only, nothing here reaches a file (R5)
+  hdr("Guides", { folded: true }),
+  info("Guides are off. Tick the Guides box at the top right to show them.", { show: (S) => !S.guides }),
+  chk("gd_edge", "Dial edge and window radii", { show: guides_on }),
   chk("gd_axes", "Centre lines", { show: guides_on }),
   chk("gd_rings", "Every ring\u2019s edges", { show: guides_on }),
-  info("The selected ring\u2019s edges always show.", { show: (S) => S.guides && !S.gd_rings }),
-  hdr("Lines", { show: guides_on }),
   col("gd_c", "Colour", { show: guides_on }),
   num2("gd_strength", "Strength %", 5, 100, 1, { show: guides_on }),
   num2("gd_w", "Thickness", 0.25, 6, 0.25, { show: guides_on }),
-  hdr("Selected ring", { show: guides_on }),
-  col("gd_sel_c", "Colour", { show: guides_on }),
-  num2("gd_sel_strength", "Strength %", 5, 100, 1, { show: guides_on }),
-  num2("gd_sel_w", "Thickness", 0.25, 6, 0.25, { show: guides_on })
-];
+  col("gd_sel_c", "Selected ring", { show: guides_on }),
+  num2("gd_sel_strength", "\u2026strength %", 5, 100, 1, { show: guides_on }),
+  num2("gd_sel_w", "\u2026thickness", 0.25, 6, 0.25, { show: guides_on })
+);
 var SECTIONS = Object.keys(ROWS);
 var TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];
 for (const name of SECTIONS) for (const row of ROWS[name]) row.scope ??= name === "Rings" ? "ring" : "global";
@@ -6278,37 +6332,59 @@ var DialTool = class _DialTool {
     this.play_icon();
     new ResizeObserver(() => this.resized()).observe(this.svg);
   }
-  /** top right, in a box: the word opens the guides' settings, the tick switches them on and off. */
+  /** top right: a box with a tick. Clicking anywhere on it switches the guides; their settings are in Dial. */
   guides_box() {
-    this.guides_open = el("button", { type: "button", textContent: "Guides", title: "Guide settings", onclick: () => {
-      this.S.ui_section = SECTIONS.indexOf("Guides");
-      this.show_section();
-      this.render();
-    } });
-    this.guides_open.dataset.tab = "Guides";
-    this.guides_tick = el("input", { type: "checkbox", id: "guides", title: "Show guides", ariaLabel: "Show guides" });
+    this.guides_tick = el("input", { type: "checkbox", id: "guides" });
     this.guides_tick.onchange = () => this.set_value("global", "guides", this.guides_tick.checked);
-    return el("div", { className: "guidesbox" }, this.guides_open, this.guides_tick);
+    return el("label", { className: "guidesbox", htmlFor: "guides", title: "Show guides (their settings are in Dial)" }, "Guides", this.guides_tick);
   }
-  /** the rows of the section that is showing. */
+  /** the rows of the section that is showing. Rows after a heading belong to its group, which can be folded. */
   show_section() {
+    if (!(this.S.ui_section in SECTIONS)) this.S.ui_section = 0;
     const name = SECTIONS[this.S.ui_section];
     [...this.tabs.children].forEach((b) => b.classList.toggle("on", b.dataset.tab === name));
-    this.guides_open.classList.toggle("on", name === "Guides");
     this.form.replaceChildren();
     this.pinned.replaceChildren();
     this.rows = ROWS[name].map((row) => this.build_row(row));
-    for (const r of this.rows) (r.row.pin ? this.pinned : this.form).append(r.el);
+    const heading = { pinned: null, form: null };
+    for (const r of this.rows) {
+      const where = r.row.pin ? "pinned" : "form";
+      if (r.fold) heading[where] = r;
+      else r.group = heading[where];
+      this[where].append(r.el);
+    }
     this.pinned.hidden = !this.pinned.children.length;
     this.sync_rows();
     this.form.scrollTop = 0;
   }
-  /** every row: hidden if it doesn't apply (R16), its controls showing the scope's value. */
+  /** folded groups are remembered by this browser (a convenience, not part of the dial). */
+  is_folded(r) {
+    if (!this.folds) {
+      try {
+        this.folds = JSON.parse(localStorage.getItem("dial-tool-folds")) || {};
+      } catch (e) {
+        this.folds = {};
+      }
+    }
+    return this.folds[r.fold] ?? Boolean(r.row.folded);
+  }
+  fold(r, folded) {
+    this.is_folded(r);
+    this.folds[r.fold] = folded;
+    try {
+      localStorage.setItem("dial-tool-folds", JSON.stringify(this.folds));
+    } catch (e) {
+    }
+    this.sync_rows();
+  }
+  /** every row: hidden if it doesn't apply (R16) or its group is folded; its controls showing the scope's value. */
   sync_rows() {
     this.guides_tick.checked = this.S.guides;
     for (const r of this.rows) {
       const T = this.target(r.row.scope);
-      r.el.hidden = r.row.show ? !r.row.show(T) : false;
+      const applies = r.row.show ? Boolean(r.row.show(T)) : true;
+      if (r.fold) r.el.classList.toggle("folded", this.is_folded(r));
+      r.el.hidden = !applies || Boolean(r.group && !r.group.el.hidden && this.is_folded(r.group));
       if (!r.el.hidden) r.refresh(T);
     }
   }
@@ -6320,7 +6396,19 @@ var DialTool = class _DialTool {
     const set = (v) => this.set_value(row.scope, row.key, v);
     const id = `${row.scope}-${row.key}-${row.text || row.name}`.replace(/[^A-Za-z0-9]+/g, "-");
     const active = (e) => document.activeElement === e;
-    if (row.kind === "hdr") wrap.append(el("h2", { textContent: row.text }));
+    if (row.kind === "hdr" || row.name === "ring_title") {
+      out.fold = `${SECTIONS[this.S.ui_section]}/${row.text || row.name}`;
+      const title = el("h2", { textContent: row.text || "" });
+      const button = el("button", { type: "button", className: "fold", onclick: () => this.fold(out, !this.is_folded(out)) });
+      button.innerHTML = icon(`<path d="M4 6L8 10L12 6"/>`, 14);
+      button.append(title);
+      wrap.className = "row hdr";
+      wrap.append(button);
+      if (row.name === "ring_title") out.refresh = (R) => {
+        title.textContent = R.name || kind_of(R);
+      };
+      return out;
+    }
     if (row.kind === "note") wrap.append(el("span"), el("span", { className: "quiet", textContent: row.text }));
     if (row.kind === "num") {
       const slider = el("input", { type: "range", min: row.lo, max: row.hi, step: row.step, id: id + "-slider" });
@@ -6386,13 +6474,44 @@ var DialTool = class _DialTool {
       };
     }
     if (row.kind === "col") {
-      const well = el("input", { type: "color", id });
-      const hex = el("span", { className: "quiet" });
-      well.oninput = () => set(from_hex(well.value, this.target(row.scope)[row.key][3] ?? 1));
-      wrap.append(el("label", { htmlFor: id, textContent: row.text }), el("span", { className: "colour" }, well, hex));
+      const swatch = el("button", { type: "button", className: "swatch", id, title: "Choose a colour" });
+      const hex = el("input", { type: "text", className: "hex", id: id + "-hex", spellcheck: false, maxLength: 7, ariaLabel: row.text + ", as #RRGGBB" });
+      const palette = el("div", { className: "palette", hidden: true });
+      const pick = (value) => set(from_hex(value, this.target(row.scope)[row.key][3] ?? 1));
+      const other = el("input", { type: "color", id: id + "-other", ariaLabel: "Any colour" });
+      other.oninput = () => pick(other.value);
+      const fill = () => {
+        const S = this.S, used = [S.c_plate, S.c_backdrop, S.c_cap, ...S.rings.map((r) => r.c), ...HANDS.map((h) => S["ha_" + h].c), ...windows_of(S).map((w) => w.ink)];
+        const chip = (c) => {
+          const b = el("button", { type: "button", title: c, ariaLabel: c, onclick: () => pick(c) });
+          b.style.background = c;
+          b.dataset.colour = c;
+          return b;
+        };
+        palette.replaceChildren(
+          el("span", { className: "quiet", textContent: "In this dial" }),
+          el("div", { className: "chips" }, ...[...new Set(used.map(to_hex).map((c) => c.toUpperCase()))].map(chip)),
+          el("span", { className: "quiet", textContent: "Dial colours" }),
+          el("div", { className: "chips" }, ...PALETTE.map(chip)),
+          el("label", { className: "other" }, other, " Any colour\u2026")
+        );
+      };
+      swatch.onclick = () => {
+        palette.hidden = !palette.hidden;
+        if (!palette.hidden) fill();
+      };
+      hex.onchange = () => {
+        const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex.value.trim());
+        if (m) pick("#" + (m[1].length === 3 ? [...m[1]].map((c) => c + c).join("") : m[1]));
+        hex.value = to_hex(this.target(row.scope)[row.key]).toUpperCase();
+      };
+      wrap.append(el("label", { htmlFor: id, textContent: row.text }), el("span", { className: "colour" }, swatch, hex), palette);
       out.refresh = (T) => {
-        if (!active(well)) well.value = to_hex(T[row.key]);
-        hex.textContent = to_hex(T[row.key]).toUpperCase();
+        const value = to_hex(T[row.key]);
+        swatch.style.background = value;
+        if (!active(hex)) hex.value = value.toUpperCase();
+        if (!active(other)) other.value = value;
+        for (const b of palette.querySelectorAll("button")) b.classList.toggle("on", b.dataset.colour === value.toUpperCase());
       };
     }
     if (row.kind === "txt") {
@@ -6421,17 +6540,8 @@ var DialTool = class _DialTool {
       b.innerHTML = icon(TOOL_ICONS[action]);
       tools.append(b);
     }
-    wrap.append(el("h2", { textContent: "Rings, top first" }), this.ring_list, el("div", { className: "listfoot" }, add, tools));
+    wrap.append(this.ring_list, el("div", { className: "listfoot" }, add, tools));
     this.fill_ring_list();
-  }
-  /** the heading over the selected ring's own rows: its name. */
-  row_ring_title(wrap, out) {
-    wrap.className = "row hdr";
-    const title = el("h2");
-    wrap.append(title);
-    out.refresh = (R) => {
-      title.textContent = R.name || kind_of(R);
-    };
   }
   fill_ring_list() {
     if (!this.ring_list) return;
@@ -6716,7 +6826,6 @@ var DialTool = class _DialTool {
       if (key !== shown) {
         shown = key;
         wrap.replaceChildren();
-        if (Object.keys(axes).length) wrap.append(el("div", { className: "row hdr" }, el("h2", { textContent: "Variable axes" })));
         for (const tag in axes) {
           const a = axes[tag], id = "axis-" + tag;
           const slider = el("input", { type: "range", min: a.min, max: a.max, step: (a.max - a.min) / 1e3, id: id + "-slider" });
@@ -6742,33 +6851,30 @@ var DialTool = class _DialTool {
   }
   /** the font's OpenType features. Only what differs from the font's default is stored (R12). */
   row_features(wrap, out) {
-    wrap.className = "features";
+    wrap.className = "tiles";
     let shown = null;
     out.refresh = (R) => {
       const font = has_font(R.ps) ? font_of(R) : null;
       const key = (font ? font.ps : "") + this.S.ui_ring;
       if (key !== shown) {
         shown = key;
-        wrap.replaceChildren(el("div", { className: "row hdr" }, el("h2", { textContent: "OpenType features" })));
-        const useful = ([tag, designer]) => designer || FEATURE_NAMES[tag] || /^(ss|cv)\d\d$/.test(tag);
+        wrap.replaceChildren();
+        const plumbing = ["aalt", "ccmp", "locl", "mark", "mkmk", "rvrn"];
+        const useful = ([tag, designer]) => !plumbing.includes(tag) && (designer || FEATURE_NAMES[tag] || /^(ss|cv)\d\d$/.test(tag));
         for (const [tag, designer] of font ? font_features(font).filter(useful) : []) {
-          const box = el("input", { type: "checkbox", id: "feature-" + tag });
-          box.dataset.tag = tag;
-          box.onchange = () => {
-            const all = { ...this.ring().features };
-            if (box.checked === DEFAULT_ON.has(tag)) delete all[tag];
-            else all[tag] = box.checked;
+          const tile = el("button", { type: "button", className: "tile", id: "feature-" + tag }, el("span", { textContent: designer || FEATURE_NAMES[tag] || tag }), el("small", { textContent: tag }));
+          tile.dataset.tag = tag;
+          tile.onclick = () => {
+            const on = tile.getAttribute("aria-pressed") !== "true", all = { ...this.ring().features };
+            if (on === DEFAULT_ON.has(tag)) delete all[tag];
+            else all[tag] = on;
             this.set_value("ring", "features", all);
           };
-          wrap.append(el(
-            "div",
-            { className: "row chk" },
-            el("span", { className: "quiet tag", textContent: tag }),
-            el("label", { className: "check", htmlFor: "feature-" + tag }, box, " " + (designer || FEATURE_NAMES[tag] || tag))
-          ));
+          wrap.append(tile);
         }
+        if (!wrap.children.length && font) wrap.append(el("span", { className: "quiet", textContent: "This font has no switches." }));
       }
-      for (const box of wrap.querySelectorAll("input")) box.checked = R.features[box.dataset.tag] ?? DEFAULT_ON.has(box.dataset.tag);
+      for (const tile of wrap.querySelectorAll(".tile")) tile.setAttribute("aria-pressed", String(R.features[tile.dataset.tag] ?? DEFAULT_ON.has(tile.dataset.tag)));
     };
   }
   /** five dials to start from: each is a link (R31), so it can also be copied or opened in a new tab. */
@@ -6781,7 +6887,7 @@ var DialTool = class _DialTool {
       card.append(el("span", { textContent: e.name }));
       grid.append(card);
     }
-    wrap.append(el("h2", { textContent: "Examples" }), grid);
+    wrap.append(grid);
   }
   row_export(wrap) {
     wrap.className = "row";
