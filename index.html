@@ -33,10 +33,16 @@ button, select, input { font: inherit; color: inherit; }
    controls' edge, one label column further in. */
 .panel { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--rule); }
 .panel header { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 3) var(--gutter) calc(var(--unit) * 3); }
+/* guides: a box at the top right — the word opens their settings, the tick switches them */
+.guidesbox { margin-left: auto; align-self: center; display: flex; align-items: center; border: 1px solid var(--ink); }
+.guidesbox button { border: 0; height: 24px; padding: 0 8px 0 10px; }
+.guidesbox button.on { background: var(--ink); color: var(--paper); }
+.guidesbox input { margin: 0 8px 0 2px; }
+.guidesbox button.on + input { margin-left: 8px; }
 h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; margin: 0; }
 
 /* sections: a sign inside a ring, its name under it */
-.tabs { display: grid; grid-template-columns: repeat(6, 1fr); padding: 0 calc(var(--gutter) - 6px); border-bottom: 1px solid var(--ink); }
+.tabs { display: grid; grid-template-columns: repeat(5, 1fr); padding: 0 calc(var(--gutter) - 6px); border-bottom: 1px solid var(--ink); }
 .tabs button { display: grid; justify-items: center; gap: 5px; height: auto; border: 0; background: none; padding: 4px 0 9px; color: var(--grey); cursor: pointer; }
 .tabs button:hover { background: none; color: var(--ink); }
 .tabs button:active { background: none; }
@@ -49,7 +55,7 @@ h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; margin: 0; }
 .pinned { padding: calc(var(--unit) * 3) var(--gutter) calc(var(--unit) * 2); border-bottom: 1px solid var(--rule); background: var(--paper); }
 .form { flex: 1; min-height: 0; overflow-y: auto; padding: calc(var(--unit) * 3) var(--gutter) calc(var(--unit) * 8); }
 .pinned + .form > .row.hdr:first-child, .form > .row.hdr:first-child, .form > .examples:first-child + .row.hdr { margin-top: 0; }
-.form > .row.hdr:first-child { border-top: 0; padding-top: 0; }
+.form > .row.hdr:first-child, .form > [hidden]:first-child + .row.hdr { margin-top: 0; border-top: 0; padding-top: 0; }
 
 #app [hidden] { display: none; }                 /* rows that don't apply (R16); beats .row's own display */
 
@@ -6044,7 +6050,7 @@ var ROWS = {
 var guides_on = (S) => S.guides;
 ROWS.Guides = [
   // preview only: nothing here reaches a file (R5)
-  chk("guides", "Show guides"),
+  info("Guides are off. Tick the box at the top right to show them.", { show: (S) => !S.guides }),
   hdr("Which", { show: guides_on }),
   chk("gd_edge", "Dial edge and date radius", { show: guides_on }),
   chk("gd_axes", "Centre lines", { show: guides_on }),
@@ -6060,7 +6066,7 @@ ROWS.Guides = [
   num2("gd_sel_w", "Thickness", 0.25, 6, 0.25, { show: guides_on })
 ];
 var SECTIONS = Object.keys(ROWS);
-var TAB_ORDER = ["Export", "Dial", "Rings", "Hands", "Date", "Guides"];
+var TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];
 for (const name of SECTIONS) for (const row of ROWS[name]) row.scope ??= name === "Rings" ? "ring" : "global";
 function parse_number(text, current) {
   const s = String(text).trim().replace(",", ".").replace("\xD7", "x");
@@ -6194,7 +6200,7 @@ var DialTool = class _DialTool {
     const panel = el(
       "aside",
       { className: "panel" },
-      el("header", {}, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: VERSION })),
+      el("header", {}, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: VERSION }), this.guides_box()),
       this.tabs,
       this.pinned,
       this.form
@@ -6247,10 +6253,23 @@ var DialTool = class _DialTool {
     this.play_icon();
     new ResizeObserver(() => this.resized()).observe(this.svg);
   }
+  /** top right, in a box: the word opens the guides' settings, the tick switches them on and off. */
+  guides_box() {
+    this.guides_open = el("button", { type: "button", textContent: "Guides", title: "Guide settings", onclick: () => {
+      this.S.ui_section = SECTIONS.indexOf("Guides");
+      this.show_section();
+      this.render();
+    } });
+    this.guides_open.dataset.tab = "Guides";
+    this.guides_tick = el("input", { type: "checkbox", id: "guides", title: "Show guides", ariaLabel: "Show guides" });
+    this.guides_tick.onchange = () => this.set_value("global", "guides", this.guides_tick.checked);
+    return el("div", { className: "guidesbox" }, this.guides_open, this.guides_tick);
+  }
   /** the rows of the section that is showing. */
   show_section() {
     const name = SECTIONS[this.S.ui_section];
     [...this.tabs.children].forEach((b) => b.classList.toggle("on", b.dataset.tab === name));
+    this.guides_open.classList.toggle("on", name === "Guides");
     this.form.replaceChildren();
     this.pinned.replaceChildren();
     this.rows = ROWS[name].map((row) => this.build_row(row));
@@ -6261,6 +6280,7 @@ var DialTool = class _DialTool {
   }
   /** every row: hidden if it doesn't apply (R16), its controls showing the scope's value. */
   sync_rows() {
+    this.guides_tick.checked = this.S.guides;
     for (const r of this.rows) {
       const T = this.target(r.row.scope);
       r.el.hidden = r.row.show ? !r.row.show(T) : false;
