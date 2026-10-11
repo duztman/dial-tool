@@ -157,6 +157,7 @@ const tab_w = await S("(() => { const b = t.statik.rings.find((d) => d.kind === 
 check(await S("S.rings[S.ui_ring].features.tnum === true") && tab_w !== wide, "the tnum feature (tabular figures) changes the width of “12”");
 await page.uncheck("#feature-tnum");
 check(await S("!('tnum' in S.rings[S.ui_ring].features)"), "switching a feature back to the font's default stores nothing (R12)");
+check((await page.textContent(".font .note")).includes("Added Lora"), "the Type rows say what the font action did");
 await shot("5-type");
 if (await page.evaluate(() => "queryLocalFonts" in window)) {
   await page.click("#local-fonts");
@@ -167,9 +168,14 @@ if (await page.evaluate(() => "queryLocalFonts" in window)) {
   await page.selectOption("#font-family", pick);
   await page.waitForFunction((f) => window.dial_tool.ring().family === f && window.dial_tool.statik, pick);
   await frame();
-    check(await S("S.rings[S.ui_ring].family") === pick && (await page.textContent(".font .note")).trim() === "", `a font installed on this computer (${pick}) draws the numerals`);
+    check(await S("S.rings[S.ui_ring].family") === pick && !(await page.textContent(".font .note")).includes("stands in") && (await page.textContent(".font .note")).includes("installed fonts are now listed"), `a font installed on this computer (${pick}) draws the numerals`);
 } else check(false, "this browser has no queryLocalFonts");
 await shot("6-local-font");
+
+// ── the ring's main rows stay in view while the rest scrolls ──
+await page.$eval(".form", (e) => { e.scrollTop = 99999; });
+check(await page.$eval("#ring-kind-Kind", (e) => { const r = e.getBoundingClientRect(), p = document.querySelector(".panel").getBoundingClientRect(); return r.top > p.top && r.bottom < p.bottom && e.closest(".pinned") !== null; }), "Kind, Colour and radius stay in view when the rows are scrolled to the end");
+await shot("6b-scrolled");
 
 // ── zoom, pan, fit; play ──
 const z0 = await S("t.z");
@@ -189,10 +195,11 @@ check(await S("t.fitted === false"), "two-finger scroll pans");
 await page.click('button:text-is("Fit")');
 check(near(await S("t.z"), z0, 1e-6) && await S("t.fitted"), "Fit puts the whole page back");
 const t0 = await S("S.t");
-await page.click('button:text-is("Play")');
+await page.click("#play");
 await page.waitForTimeout(600);
 const t1 = await S("S.t");
-await page.click('button:text-is("Stop")');
+check(await page.getAttribute("#play", "title") === "Pause", "while playing, the button offers Pause");
+await page.click("#play");
 check(t1 - t0 > 0.4 && t1 - t0 < 1.5, `Play moves the time (${(t1 - t0).toFixed(2)} s in 0.6 s)`);
 await page.fill("#time", "3:20:10");
 await page.press("#time", "Enter");

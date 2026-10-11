@@ -59,11 +59,11 @@ const ROWS = {
     col("c_plate", "Plate"), col("c_backdrop", "Backdrop"),
   ],
   Rings: [                                         // one list; rows that don't apply hide (R16)
-    custom("ring_list", { scope: "global" }),
-    pop("kind", "Kind", G.KINDS),
-    col("c", "Colour"),
-    num("r", "Outer radius", 0, 25, 0.05, { show: kind_in("ticks", "markers", "band") }),
-    num("r", "Centre radius", 0, 25, 0.05, { show: kind_in("numerals") }),
+    custom("ring_list", { scope: "global", pin: true }),            // pin: stays in view while the rest scrolls
+    pop("kind", "Kind", G.KINDS, { pin: true }),
+    col("c", "Colour", { pin: true }),
+    num("r", "Outer radius", 0, 25, 0.05, { pin: true, show: kind_in("ticks", "markers", "band") }),
+    num("r", "Centre radius", 0, 25, 0.05, { pin: true, show: kind_in("numerals") }),
     hdr("Positions"),
     num("count", "Count", 1, 360, 1, { whole: true }),
     num("start", "Start °", -180, 180, 0.5),
@@ -200,6 +200,7 @@ class DialTool {
     this.z = 10; this.c = [0, 0]; this.fitted = true;      // preview: screen points per mm · dial centre in the view
     this.catalog = new Map();                      // fonts that can be loaded: PostScript name → {family, style, ps, load()}
     this.nudge_at = "0";                           // which numeral the nudge rows edit
+    this.font_note = "";                           // what the last font action did, shown under its buttons
     this.build_ms = 0;
     this.rows = [];
     this.log_lines = [];
@@ -243,10 +244,14 @@ class DialTool {
     SECTIONS.forEach((name, i) => {
       this.tabs.append(el("button", { type: "button", textContent: name, onclick: () => { this.S.ui_section = i; this.show_section(); this.render(); } }));
     });
-    this.form = el("div", { className: "form" });
+    this.pinned = el("div", { className: "pinned" });              // rows that stay in view
+    this.form = el("div", { className: "form" });                  // rows that scroll
+    this.guides_box = el("input", { id: "guides", type: "checkbox" });
+    this.guides_box.onchange = () => this.set_value("global", "guides", this.guides_box.checked);
     const panel = el("aside", { className: "panel" },
-      el("header", {}, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION })),
-      this.tabs, this.form);
+      el("header", {}, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION }),
+        el("label", { className: "check guides" }, this.guides_box, " Guides")),
+      this.tabs, this.pinned, this.form);
 
     this.svg = svg_el("svg");
     this.svg.setAttribute("class", "preview");
@@ -261,17 +266,14 @@ class DialTool {
     this.time_field.onchange = () => { const t = parse_time(this.time_field.value); if (t !== null) this.set_time(t); else this.sync_time(); };
     this.time_slider = el("input", { id: "time-slider", type: "range", min: 0, max: 43199, step: 1 });
     this.time_slider.oninput = () => this.set_time(+this.time_slider.value);
-    this.play_button = el("button", { type: "button", textContent: "Play", onclick: () => this.play(!this.playing) });
-    this.guides_box = el("input", { id: "guides", type: "checkbox" });
-    this.guides_box.onchange = () => this.set_value("global", "guides", this.guides_box.checked);
-    this.status = el("div", { className: "status quiet" });
-    const bar = el("div", { className: "bar" },
-      this.time_field, this.time_slider,
+    this.play_button = el("button", { type: "button", className: "icon", id: "play", onclick: () => this.play(!this.playing) });
+    this.status = el("div", { className: "status" });
+    const bar = el("footer", { className: "bar" },
+      this.status, this.time_field, this.time_slider, this.play_button,
       el("button", { type: "button", textContent: "Now", onclick: () => { const d = new Date(); this.set_time(d.getHours() % 12 * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000); } }),
-      this.play_button,
-      el("button", { type: "button", textContent: "Fit", onclick: () => { this.fit(); this.render(); } }),
-      el("label", { className: "check" }, this.guides_box, " Guides"));
-    root.append(panel, el("main", {}, this.svg, bar, this.status));
+      el("button", { type: "button", textContent: "Fit", onclick: () => { this.fit(); this.render(); } }));
+    root.append(panel, el("main", {}, this.svg), bar);
+    this.play_icon();
     new ResizeObserver(() => this.resized()).observe(this.svg);
   }
 
@@ -280,8 +282,10 @@ class DialTool {
     const name = SECTIONS[this.S.ui_section];
     [...this.tabs.children].forEach((b, i) => b.classList.toggle("on", i === this.S.ui_section));
     this.form.replaceChildren();
+    this.pinned.replaceChildren();
     this.rows = ROWS[name].map((row) => this.build_row(row));
-    for (const r of this.rows) this.form.append(r.el);
+    for (const r of this.rows) (r.row.pin ? this.pinned : this.form).append(r.el);
+    this.pinned.hidden = !this.pinned.children.length;
     this.sync_rows();
     this.form.scrollTop = 0;
   }
@@ -530,8 +534,9 @@ class DialTool {
       const styles = by.get(R.family) || [];
       style.replaceChildren(...styles.map((f) => el("option", { value: f.ps, textContent: f.style || f.ps })));
       style.value = R.ps;
-      state.textContent = G.has_font(R.ps) ? "" : this.catalog.has(R.ps) ? "Loading…"
-        : `${R.family} isn’t available here yet, so ${G.font_list()[0].family} stands in. Press “Installed fonts” (Chrome or Edge) or add its file.`;
+      const missing = G.has_font(R.ps) ? "" : this.catalog.has(R.ps) ? "Loading… "
+        : `${R.family} isn’t loaded yet, so ${G.font_list()[0].family} stands in. Press Installed fonts (Chrome or Edge) or add its file. `;
+      state.textContent = missing + (this.font_note || "");
     };
   }
 
@@ -637,15 +642,19 @@ class DialTool {
 
   /** list the fonts installed on this computer (Chrome and Edge ask once), and load the ones in use. */
   async local_fonts(asked) {
+    const say = (text) => { if (asked) { this.font_note = text; this.log(text); this.sync_rows(); } };
+    say("Asking the browser for this computer’s fonts… (it may show a question near the address bar)");
     try {
       const list = await window.queryLocalFonts();
       for (const f of list) {
         if (!this.catalog.has(f.postscriptName)) this.catalog.set(f.postscriptName, { family: f.family, style: f.style, ps: f.postscriptName, data: f });
       }
-      if (asked) this.log(`${list.length} fonts on this computer are listed under Family`);
+      // a browser that isn't allowed answers with an empty list, not with an error
+      if (list.length) say(`${list.length} installed fonts are now listed under Family.`);
+      else say("The browser gave no fonts: it isn’t allowed to for this page. Click the icon at the left of the address bar → Site settings → Fonts → Allow, reload, and press Installed fonts again. Or use Add font file… (Helvetica Neue is /System/Library/Fonts/HelveticaNeue.ttc).");
       await this.load_fonts_in_use();
     } catch (e) {
-      if (asked) this.log(`This browser didn’t list the fonts (${e.message}). Add font files instead.`);
+      say(`The browser refused to list fonts (${e.name}: ${e.message}). Use Add font file… instead.`);
     }
     this.sync_rows();
   }
@@ -672,19 +681,30 @@ class DialTool {
   }
 
   async add_font_files(files) {
-    let last = null;
-    for (const file of files) {
-      const bytes = new Uint8Array(await file.arrayBuffer());
-      for (let i = 0; i < 64; i++) {
-        const got = G.add_font(bytes, i);
-        if (!got) break;
-        this.catalog.set(got.ps, { family: got.family, style: got.style, ps: got.ps });
-        last = got;
+    const added = [];
+    const say = (text) => { this.font_note = text; this.log(text); this.sync_rows(); };
+    try {
+      for (const file of files) {
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        for (let i = 0; i < 64; i++) {             // a collection (.ttc) holds several fonts
+          const got = G.add_font(bytes, i);
+          if (!got) break;
+          this.catalog.set(got.ps, { family: got.family, style: got.style, ps: got.ps });
+          added.push(got);
+        }
       }
+    } catch (e) {
+      return say(`Couldn’t read ${files.map((f) => f.name).join(", ")} (${e.name}: ${e.message}).`);
     }
-    if (!last) return this.log("That file didn’t open as a font (TTF, OTF or TTC).");
-    this.log(`added ${last.family}`);
-    if (G.kind_of(this.ring()) === "numerals") await this.use_font(this.catalog.get(last.ps));
+    if (!added.length) return say(`${files.map((f) => f.name).join(", ")} didn’t open as a font (TTF, OTF, TTC).`);
+    const families = [...new Set(added.map((f) => f.family))];
+    say(`Added ${families.slice(0, 3).join(", ")}${families.length > 3 ? "…" : ""}: ${added.length} style${added.length > 1 ? "s" : ""}.`);
+    const R = this.ring();
+    if (G.kind_of(R) === "numerals" && !added.some((f) => f.ps === R.ps)) {       // not the ring's own font: switch to the new one
+      const pick = added.find((f) => /^(regular|roman|book|normal)$/i.test(f.style)) || added[0];
+      await this.use_font(this.catalog.get(pick.ps));
+    }
+    G.forget();
     this.static_dirty = true; this.sync_rows(); this.render();
   }
 
@@ -773,7 +793,7 @@ class DialTool {
     this.place();
     const ring = this.ring();
     const font = G.kind_of(ring) === "numerals" ? `   ·   ${ring.ps}` : "";
-    this.status.textContent = `${ring.name}${font}   ·   Ø ${S.dial_d.toFixed(1)} mm   ·   build ${this.build_ms.toFixed(0)} ms`;
+    this.status.textContent = `${ring.name}${font} · Ø ${S.dial_d.toFixed(1)} mm · build ${this.build_ms.toFixed(0)} ms`;
     while (G.NOTES.length) this.log(G.NOTES.shift());
     this.autosave();
   }
@@ -905,8 +925,15 @@ class DialTool {
   play(on) {
     this.playing = on;
     this.play_from = [performance.now(), this.S.t];
-    this.play_button.textContent = on ? "Stop" : "Play";
+    this.play_icon();
     this.render();
+  }
+
+  /** the button shows what a press will do: a triangle to play, two bars to pause. */
+  play_icon() {
+    const shape = this.playing ? '<rect x="3" y="2" width="3.5" height="12"/><rect x="9.5" y="2" width="3.5" height="12"/>' : '<path d="M4 2 L14 8 L4 14 Z"/>';
+    this.play_button.innerHTML = `<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" fill="currentColor">${shape}</svg>`;
+    this.play_button.title = this.play_button.ariaLabel = this.playing ? "Pause" : "Play";
   }
 
   // ── files out and in ─────────────────────────────────────

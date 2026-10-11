@@ -1,10 +1,13 @@
 /* Dial Tool, web version. Colours and type follow docs/design.md (the design canon):
    paper, ink, one grey for quiet text, hairline rules, a ground behind the picture;
-   no cards, shadows or rounded panels. Layout: a fixed panel of rows, the preview fills the rest. */
+   no cards, shadows or rounded panels. Layout: a fixed panel of rows and the preview, side by side;
+   under both, one dark bar for time and view. */
 :root {
   color-scheme: light;
   --paper: #FCFCFA; --ink: #111111; --grey: #5C5C58; --rule: #B9B9B4; --ground: #ECECE8;
   --select: #F0DC8E;                               /* the canon's yellow: what is selected */
+  --bar: #111111; --bar-ink: #FCFCFA; --bar-rule: #5C5C58; --bar-field: #2A2A28;      /* the bar under everything */
+  --panel: 430px; --gutter: 22px;
   --unit: 5.5px;                                   /* every space is a multiple of this */
   --label: 132px; --field: 62px;
   font: 13px/1.38 system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -13,18 +16,21 @@
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
 body { background: var(--paper); color: var(--ink); overflow: hidden; }
-#app { display: grid; grid-template-columns: 430px 1fr; height: 100%; }
+#app { display: grid; grid-template-columns: var(--panel) 1fr; grid-template-rows: 1fr auto; height: 100%; }
 .quiet { color: var(--grey); }
 button, select, input { font: inherit; color: inherit; }
 
 /* the panel */
 .panel { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--rule); }
-.panel header { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 3) calc(var(--unit) * 4) calc(var(--unit) * 2); }
+.panel header { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 3) var(--gutter) calc(var(--unit) * 2); }
+.panel header .guides { margin-left: auto; align-self: center; }
 h1 { font-size: 13px; font-weight: 600; margin: 0; }
-.tabs { display: flex; padding: 0 calc(var(--unit) * 4); border-bottom: 1px solid var(--ink); }
+.tabs { display: flex; padding: 0 var(--gutter); border-bottom: 1px solid var(--ink); }
 .tabs button { border: 0; background: none; padding: var(--unit) calc(var(--unit) * 2); margin-right: 2px; cursor: pointer; }
 .tabs button.on { background: var(--ink); color: var(--paper); }
-.form { flex: 1; min-height: 0; overflow-y: auto; padding: calc(var(--unit) * 3) calc(var(--unit) * 4) calc(var(--unit) * 8); }
+.pinned { padding: calc(var(--unit) * 3) var(--gutter) calc(var(--unit) * 2); border-bottom: 1px solid var(--rule); }
+.form { flex: 1; min-height: 0; overflow-y: auto; padding: calc(var(--unit) * 3) var(--gutter) calc(var(--unit) * 8); }
+.pinned + .form > .row.hdr:first-child { margin-top: 0; border-top: 0; padding-top: 0; }
 
 #app [hidden] { display: none; }                 /* rows that don't apply (R16); beats .row's own display */
 
@@ -58,8 +64,8 @@ button:active { background: var(--ink); color: var(--paper); }
 .tools { display: flex; flex-wrap: wrap; gap: var(--unit); align-items: center; }
 
 /* the ring list: top ring first */
-.ringlist { margin-bottom: calc(var(--unit) * 3); }
-.ringlist ol { list-style: none; margin: 0 0 var(--unit); padding: 0; border: 1px solid var(--rule); max-height: 190px; overflow-y: auto; background: #fff; }
+.ringlist { margin-bottom: calc(var(--unit) * 2); }
+.ringlist ol { list-style: none; margin: 0 0 var(--unit); padding: 0; border: 1px solid var(--rule); max-height: 164px; overflow-y: auto; background: #fff; }
 .ringlist li { display: grid; grid-template-columns: 20px 1fr auto; align-items: center; gap: var(--unit); padding: 2px 8px; cursor: pointer; }
 .ringlist li + li { border-top: 1px solid var(--ground); }
 .ringlist li.on { background: var(--select); }
@@ -70,12 +76,26 @@ button:active { background: var(--ink); color: var(--paper); }
 .log { margin: 0; white-space: pre-wrap; font: inherit; color: var(--grey); min-height: 120px; }
 .bar-row { margin-top: calc(var(--unit) * 2); }
 
-/* the preview and the bar under it */
-main { display: grid; grid-template-rows: 1fr auto auto; min-width: 0; min-height: 0; background: var(--ground); }
+/* the preview */
+main { min-width: 0; min-height: 0; background: var(--ground); }
 .preview { width: 100%; height: 100%; display: block; touch-action: none; cursor: default; user-select: none; }
 .preview path { cursor: pointer; }
-.bar { display: flex; align-items: center; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 2) calc(var(--unit) * 3); background: var(--paper); border-top: 1px solid var(--rule); }
-.bar .time { width: 78px; text-align: right; }
-.bar input[type="range"] { flex: 1; }
-.status { padding: 0 calc(var(--unit) * 3) calc(var(--unit) * 2); background: var(--paper); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-@media (max-width: 860px) { #app { grid-template-columns: 1fr; grid-template-rows: 55% 45%; } main { grid-row: 1; } .panel { border-right: 0; border-top: 1px solid var(--rule); } }
+
+/* the bar: under the panel and the preview. Its first cell is as wide as the panel, so the time
+   controls start where the preview starts. */
+.bar { grid-column: 1 / -1; display: grid; grid-template-columns: calc(var(--panel) - var(--gutter) * 2) 78px 1fr auto auto auto; align-items: center;
+  gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 2) var(--gutter); background: var(--bar); color: var(--bar-ink); }
+.bar .status { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: var(--gutter); opacity: 0.72; }
+.bar .time { margin-left: var(--gutter); width: 78px; text-align: right; }
+.bar input[type="text"] { background: var(--bar-field); border-color: var(--bar-rule); color: var(--bar-ink); }
+.bar input[type="range"] { accent-color: var(--bar-ink); margin-left: var(--gutter); width: calc(100% - var(--gutter)); }
+.bar button { background: var(--bar); color: var(--bar-ink); border-color: var(--bar-rule); min-width: 44px; }
+.bar button:hover { background: var(--bar-field); }
+.bar button:active { background: var(--bar-ink); color: var(--bar); }
+.bar input:focus, .bar button:focus-visible, .bar input[type="range"]:focus-visible { outline-color: var(--bar-ink); }
+.bar .icon { display: inline-flex; align-items: center; justify-content: center; }
+@media (max-width: 860px) {
+  #app { grid-template-columns: 1fr; grid-template-rows: 50% 1fr auto; }
+  main { grid-row: 1; } .panel { border-right: 0; border-top: 1px solid var(--rule); }
+  .bar { grid-template-columns: 78px 1fr auto auto auto; } .bar .status { display: none; } .bar .time, .bar input[type="range"] { margin-left: 0; width: 100%; }
+}

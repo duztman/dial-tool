@@ -9,11 +9,14 @@
 <style>
 /* Dial Tool, web version. Colours and type follow docs/design.md (the design canon):
    paper, ink, one grey for quiet text, hairline rules, a ground behind the picture;
-   no cards, shadows or rounded panels. Layout: a fixed panel of rows, the preview fills the rest. */
+   no cards, shadows or rounded panels. Layout: a fixed panel of rows and the preview, side by side;
+   under both, one dark bar for time and view. */
 :root {
   color-scheme: light;
   --paper: #FCFCFA; --ink: #111111; --grey: #5C5C58; --rule: #B9B9B4; --ground: #ECECE8;
   --select: #F0DC8E;                               /* the canon's yellow: what is selected */
+  --bar: #111111; --bar-ink: #FCFCFA; --bar-rule: #5C5C58; --bar-field: #2A2A28;      /* the bar under everything */
+  --panel: 430px; --gutter: 22px;
   --unit: 5.5px;                                   /* every space is a multiple of this */
   --label: 132px; --field: 62px;
   font: 13px/1.38 system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -22,18 +25,21 @@
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
 body { background: var(--paper); color: var(--ink); overflow: hidden; }
-#app { display: grid; grid-template-columns: 430px 1fr; height: 100%; }
+#app { display: grid; grid-template-columns: var(--panel) 1fr; grid-template-rows: 1fr auto; height: 100%; }
 .quiet { color: var(--grey); }
 button, select, input { font: inherit; color: inherit; }
 
 /* the panel */
 .panel { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--rule); }
-.panel header { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 3) calc(var(--unit) * 4) calc(var(--unit) * 2); }
+.panel header { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 3) var(--gutter) calc(var(--unit) * 2); }
+.panel header .guides { margin-left: auto; align-self: center; }
 h1 { font-size: 13px; font-weight: 600; margin: 0; }
-.tabs { display: flex; padding: 0 calc(var(--unit) * 4); border-bottom: 1px solid var(--ink); }
+.tabs { display: flex; padding: 0 var(--gutter); border-bottom: 1px solid var(--ink); }
 .tabs button { border: 0; background: none; padding: var(--unit) calc(var(--unit) * 2); margin-right: 2px; cursor: pointer; }
 .tabs button.on { background: var(--ink); color: var(--paper); }
-.form { flex: 1; min-height: 0; overflow-y: auto; padding: calc(var(--unit) * 3) calc(var(--unit) * 4) calc(var(--unit) * 8); }
+.pinned { padding: calc(var(--unit) * 3) var(--gutter) calc(var(--unit) * 2); border-bottom: 1px solid var(--rule); }
+.form { flex: 1; min-height: 0; overflow-y: auto; padding: calc(var(--unit) * 3) var(--gutter) calc(var(--unit) * 8); }
+.pinned + .form > .row.hdr:first-child { margin-top: 0; border-top: 0; padding-top: 0; }
 
 #app [hidden] { display: none; }                 /* rows that don't apply (R16); beats .row's own display */
 
@@ -67,8 +73,8 @@ button:active { background: var(--ink); color: var(--paper); }
 .tools { display: flex; flex-wrap: wrap; gap: var(--unit); align-items: center; }
 
 /* the ring list: top ring first */
-.ringlist { margin-bottom: calc(var(--unit) * 3); }
-.ringlist ol { list-style: none; margin: 0 0 var(--unit); padding: 0; border: 1px solid var(--rule); max-height: 190px; overflow-y: auto; background: #fff; }
+.ringlist { margin-bottom: calc(var(--unit) * 2); }
+.ringlist ol { list-style: none; margin: 0 0 var(--unit); padding: 0; border: 1px solid var(--rule); max-height: 164px; overflow-y: auto; background: #fff; }
 .ringlist li { display: grid; grid-template-columns: 20px 1fr auto; align-items: center; gap: var(--unit); padding: 2px 8px; cursor: pointer; }
 .ringlist li + li { border-top: 1px solid var(--ground); }
 .ringlist li.on { background: var(--select); }
@@ -79,15 +85,29 @@ button:active { background: var(--ink); color: var(--paper); }
 .log { margin: 0; white-space: pre-wrap; font: inherit; color: var(--grey); min-height: 120px; }
 .bar-row { margin-top: calc(var(--unit) * 2); }
 
-/* the preview and the bar under it */
-main { display: grid; grid-template-rows: 1fr auto auto; min-width: 0; min-height: 0; background: var(--ground); }
+/* the preview */
+main { min-width: 0; min-height: 0; background: var(--ground); }
 .preview { width: 100%; height: 100%; display: block; touch-action: none; cursor: default; user-select: none; }
 .preview path { cursor: pointer; }
-.bar { display: flex; align-items: center; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 2) calc(var(--unit) * 3); background: var(--paper); border-top: 1px solid var(--rule); }
-.bar .time { width: 78px; text-align: right; }
-.bar input[type="range"] { flex: 1; }
-.status { padding: 0 calc(var(--unit) * 3) calc(var(--unit) * 2); background: var(--paper); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-@media (max-width: 860px) { #app { grid-template-columns: 1fr; grid-template-rows: 55% 45%; } main { grid-row: 1; } .panel { border-right: 0; border-top: 1px solid var(--rule); } }
+
+/* the bar: under the panel and the preview. Its first cell is as wide as the panel, so the time
+   controls start where the preview starts. */
+.bar { grid-column: 1 / -1; display: grid; grid-template-columns: calc(var(--panel) - var(--gutter) * 2) 78px 1fr auto auto auto; align-items: center;
+  gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 2) var(--gutter); background: var(--bar); color: var(--bar-ink); }
+.bar .status { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: var(--gutter); opacity: 0.72; }
+.bar .time { margin-left: var(--gutter); width: 78px; text-align: right; }
+.bar input[type="text"] { background: var(--bar-field); border-color: var(--bar-rule); color: var(--bar-ink); }
+.bar input[type="range"] { accent-color: var(--bar-ink); margin-left: var(--gutter); width: calc(100% - var(--gutter)); }
+.bar button { background: var(--bar); color: var(--bar-ink); border-color: var(--bar-rule); min-width: 44px; }
+.bar button:hover { background: var(--bar-field); }
+.bar button:active { background: var(--bar-ink); color: var(--bar); }
+.bar input:focus, .bar button:focus-visible, .bar input[type="range"]:focus-visible { outline-color: var(--bar-ink); }
+.bar .icon { display: inline-flex; align-items: center; justify-content: center; }
+@media (max-width: 860px) {
+  #app { grid-template-columns: 1fr; grid-template-rows: 50% 1fr auto; }
+  main { grid-row: 1; } .panel { border-right: 0; border-top: 1px solid var(--rule); }
+  .bar { grid-template-columns: 78px 1fr auto auto auto; } .bar .status { display: none; } .bar .time, .bar input[type="range"] { margin-left: 0; width: 100%; }
+}
 </style>
 </head>
 <body>
@@ -5165,7 +5185,8 @@ function add_font(bytes, index = 0, fallback = false) {
   try {
     const face = new HB.Face(new HB.Blob(bytes), index);
     if (!face.upem) return null;
-    const name = (id) => face.getName(id, "en") || "";
+    const listed = face.listNames();
+    const name = (id) => face.getName(id, "en") || listed.filter((n) => n.nameId === id).map((n) => face.getName(id, n.language)).find(Boolean) || "";
     const info2 = {
       face,
       font: new HB.Font(face),
@@ -5705,11 +5726,12 @@ var ROWS = {
   ],
   Rings: [
     // one list; rows that don't apply hide (R16)
-    custom("ring_list", { scope: "global" }),
-    pop("kind", "Kind", KINDS),
-    col("c", "Colour"),
-    num2("r", "Outer radius", 0, 25, 0.05, { show: kind_in("ticks", "markers", "band") }),
-    num2("r", "Centre radius", 0, 25, 0.05, { show: kind_in("numerals") }),
+    custom("ring_list", { scope: "global", pin: true }),
+    // pin: stays in view while the rest scrolls
+    pop("kind", "Kind", KINDS, { pin: true }),
+    col("c", "Colour", { pin: true }),
+    num2("r", "Outer radius", 0, 25, 0.05, { pin: true, show: kind_in("ticks", "markers", "band") }),
+    num2("r", "Centre radius", 0, 25, 0.05, { pin: true, show: kind_in("numerals") }),
     hdr("Positions"),
     num2("count", "Count", 1, 360, 1, { whole: true }),
     num2("start", "Start \xB0", -180, 180, 0.5),
@@ -5840,6 +5862,7 @@ var DialTool = class _DialTool {
     this.fitted = true;
     this.catalog = /* @__PURE__ */ new Map();
     this.nudge_at = "0";
+    this.font_note = "";
     this.build_ms = 0;
     this.rows = [];
     this.log_lines = [];
@@ -5890,12 +5913,22 @@ var DialTool = class _DialTool {
         this.render();
       } }));
     });
+    this.pinned = el("div", { className: "pinned" });
     this.form = el("div", { className: "form" });
+    this.guides_box = el("input", { id: "guides", type: "checkbox" });
+    this.guides_box.onchange = () => this.set_value("global", "guides", this.guides_box.checked);
     const panel = el(
       "aside",
       { className: "panel" },
-      el("header", {}, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: VERSION })),
+      el(
+        "header",
+        {},
+        el("h1", { textContent: "Dial Tool" }),
+        el("span", { className: "quiet", textContent: VERSION }),
+        el("label", { className: "check guides" }, this.guides_box, " Guides")
+      ),
       this.tabs,
+      this.pinned,
       this.form
     );
     this.svg = svg_el("svg");
@@ -5914,27 +5947,26 @@ var DialTool = class _DialTool {
     };
     this.time_slider = el("input", { id: "time-slider", type: "range", min: 0, max: 43199, step: 1 });
     this.time_slider.oninput = () => this.set_time(+this.time_slider.value);
-    this.play_button = el("button", { type: "button", textContent: "Play", onclick: () => this.play(!this.playing) });
-    this.guides_box = el("input", { id: "guides", type: "checkbox" });
-    this.guides_box.onchange = () => this.set_value("global", "guides", this.guides_box.checked);
-    this.status = el("div", { className: "status quiet" });
+    this.play_button = el("button", { type: "button", className: "icon", id: "play", onclick: () => this.play(!this.playing) });
+    this.status = el("div", { className: "status" });
     const bar = el(
-      "div",
+      "footer",
       { className: "bar" },
+      this.status,
       this.time_field,
       this.time_slider,
+      this.play_button,
       el("button", { type: "button", textContent: "Now", onclick: () => {
         const d = /* @__PURE__ */ new Date();
         this.set_time(d.getHours() % 12 * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1e3);
       } }),
-      this.play_button,
       el("button", { type: "button", textContent: "Fit", onclick: () => {
         this.fit();
         this.render();
-      } }),
-      el("label", { className: "check" }, this.guides_box, " Guides")
+      } })
     );
-    root.append(panel, el("main", {}, this.svg, bar, this.status));
+    root.append(panel, el("main", {}, this.svg), bar);
+    this.play_icon();
     new ResizeObserver(() => this.resized()).observe(this.svg);
   }
   /** the rows of the section that is showing. */
@@ -5942,8 +5974,10 @@ var DialTool = class _DialTool {
     const name = SECTIONS[this.S.ui_section];
     [...this.tabs.children].forEach((b, i) => b.classList.toggle("on", i === this.S.ui_section));
     this.form.replaceChildren();
+    this.pinned.replaceChildren();
     this.rows = ROWS[name].map((row) => this.build_row(row));
-    for (const r of this.rows) this.form.append(r.el);
+    for (const r of this.rows) (r.row.pin ? this.pinned : this.form).append(r.el);
+    this.pinned.hidden = !this.pinned.children.length;
     this.sync_rows();
     this.form.scrollTop = 0;
   }
@@ -6247,7 +6281,8 @@ var DialTool = class _DialTool {
       const styles = by.get(R.family) || [];
       style.replaceChildren(...styles.map((f) => el("option", { value: f.ps, textContent: f.style || f.ps })));
       style.value = R.ps;
-      state.textContent = has_font(R.ps) ? "" : this.catalog.has(R.ps) ? "Loading\u2026" : `${R.family} isn\u2019t available here yet, so ${font_list()[0].family} stands in. Press \u201CInstalled fonts\u201D (Chrome or Edge) or add its file.`;
+      const missing = has_font(R.ps) ? "" : this.catalog.has(R.ps) ? "Loading\u2026 " : `${R.family} isn\u2019t loaded yet, so ${font_list()[0].family} stands in. Press Installed fonts (Chrome or Edge) or add its file. `;
+      state.textContent = missing + (this.font_note || "");
     };
   }
   /** a variable font's axes, one slider each. */
@@ -6362,15 +6397,24 @@ var DialTool = class _DialTool {
   }
   /** list the fonts installed on this computer (Chrome and Edge ask once), and load the ones in use. */
   async local_fonts(asked) {
+    const say = (text) => {
+      if (asked) {
+        this.font_note = text;
+        this.log(text);
+        this.sync_rows();
+      }
+    };
+    say("Asking the browser for this computer\u2019s fonts\u2026 (it may show a question near the address bar)");
     try {
       const list = await window.queryLocalFonts();
       for (const f of list) {
         if (!this.catalog.has(f.postscriptName)) this.catalog.set(f.postscriptName, { family: f.family, style: f.style, ps: f.postscriptName, data: f });
       }
-      if (asked) this.log(`${list.length} fonts on this computer are listed under Family`);
+      if (list.length) say(`${list.length} installed fonts are now listed under Family.`);
+      else say("The browser gave no fonts: it isn\u2019t allowed to for this page. Click the icon at the left of the address bar \u2192 Site settings \u2192 Fonts \u2192 Allow, reload, and press Installed fonts again. Or use Add font file\u2026 (Helvetica Neue is /System/Library/Fonts/HelveticaNeue.ttc).");
       await this.load_fonts_in_use();
     } catch (e) {
-      if (asked) this.log(`This browser didn\u2019t list the fonts (${e.message}). Add font files instead.`);
+      say(`The browser refused to list fonts (${e.name}: ${e.message}). Use Add font file\u2026 instead.`);
     }
     this.sync_rows();
   }
@@ -6398,19 +6442,34 @@ var DialTool = class _DialTool {
     }
   }
   async add_font_files(files) {
-    let last = null;
-    for (const file of files) {
-      const bytes = new Uint8Array(await file.arrayBuffer());
-      for (let i = 0; i < 64; i++) {
-        const got = add_font(bytes, i);
-        if (!got) break;
-        this.catalog.set(got.ps, { family: got.family, style: got.style, ps: got.ps });
-        last = got;
+    const added = [];
+    const say = (text) => {
+      this.font_note = text;
+      this.log(text);
+      this.sync_rows();
+    };
+    try {
+      for (const file of files) {
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        for (let i = 0; i < 64; i++) {
+          const got = add_font(bytes, i);
+          if (!got) break;
+          this.catalog.set(got.ps, { family: got.family, style: got.style, ps: got.ps });
+          added.push(got);
+        }
       }
+    } catch (e) {
+      return say(`Couldn\u2019t read ${files.map((f) => f.name).join(", ")} (${e.name}: ${e.message}).`);
     }
-    if (!last) return this.log("That file didn\u2019t open as a font (TTF, OTF or TTC).");
-    this.log(`added ${last.family}`);
-    if (kind_of(this.ring()) === "numerals") await this.use_font(this.catalog.get(last.ps));
+    if (!added.length) return say(`${files.map((f) => f.name).join(", ")} didn\u2019t open as a font (TTF, OTF, TTC).`);
+    const families = [...new Set(added.map((f) => f.family))];
+    say(`Added ${families.slice(0, 3).join(", ")}${families.length > 3 ? "\u2026" : ""}: ${added.length} style${added.length > 1 ? "s" : ""}.`);
+    const R = this.ring();
+    if (kind_of(R) === "numerals" && !added.some((f) => f.ps === R.ps)) {
+      const pick = added.find((f) => /^(regular|roman|book|normal)$/i.test(f.style)) || added[0];
+      await this.use_font(this.catalog.get(pick.ps));
+    }
+    forget();
     this.static_dirty = true;
     this.sync_rows();
     this.render();
@@ -6500,7 +6559,7 @@ var DialTool = class _DialTool {
     this.place();
     const ring = this.ring();
     const font = kind_of(ring) === "numerals" ? `   \xB7   ${ring.ps}` : "";
-    this.status.textContent = `${ring.name}${font}   \xB7   \xD8 ${S.dial_d.toFixed(1)} mm   \xB7   build ${this.build_ms.toFixed(0)} ms`;
+    this.status.textContent = `${ring.name}${font} \xB7 \xD8 ${S.dial_d.toFixed(1)} mm \xB7 build ${this.build_ms.toFixed(0)} ms`;
     while (NOTES.length) this.log(NOTES.shift());
     this.autosave();
   }
@@ -6659,8 +6718,14 @@ var DialTool = class _DialTool {
   play(on) {
     this.playing = on;
     this.play_from = [performance.now(), this.S.t];
-    this.play_button.textContent = on ? "Stop" : "Play";
+    this.play_icon();
     this.render();
+  }
+  /** the button shows what a press will do: a triangle to play, two bars to pause. */
+  play_icon() {
+    const shape2 = this.playing ? '<rect x="3" y="2" width="3.5" height="12"/><rect x="9.5" y="2" width="3.5" height="12"/>' : '<path d="M4 2 L14 8 L4 14 Z"/>';
+    this.play_button.innerHTML = `<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" fill="currentColor">${shape2}</svg>`;
+    this.play_button.title = this.play_button.ariaLabel = this.playing ? "Pause" : "Play";
   }
   // ── files out and in ─────────────────────────────────────
   async export(kind) {

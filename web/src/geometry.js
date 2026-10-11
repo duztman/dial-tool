@@ -562,7 +562,8 @@ export function add_font(bytes, index = 0, fallback = false) {
   try {
     const face = new HB.Face(new HB.Blob(bytes), index);
     if (!face.upem) return null;
-    const name = (id) => face.getName(id, "en") || "";
+    const listed = face.listNames();               // some system fonts carry a name in one language only
+    const name = (id) => face.getName(id, "en") || listed.filter((n) => n.nameId === id).map((n) => face.getName(id, n.language)).find(Boolean) || "";
     const info = {
       face, font: new HB.Font(face), upem: face.upem,
       ps: name(6) || name(4), family: name(16) || name(1), style: name(17) || name(2),

@@ -56,7 +56,7 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 
 | # | Item | Status |
 |---|---|---|
-| 49 | **First run on Okay's Mac**, in Chrome: open `web/dial-tool.html`; load a settings file; Rings → a numerals ring → Type → *Installed fonts* (Chrome asks once) → the numerals turn from Inter to Helvetica Neue. Compare with `dial.py`'s export of the same settings. Export PDF and SVG, open in Illustrator at true size. | verify |
+| 49 | **Installed fonts on Okay's Intel Mac** — 11 Oct: Chrome listed nothing (page opened from a file in Downloads; cause unknown: not allowed for file pages, blocked in Chrome's site settings, or an extension). The page now says what happened under the buttons: get that line from Okay. If file pages can't be allowed, serve the tool from a web address (#55). Then the rest of the first run, in Chrome: open `web/dial-tool.html`; load a settings file; Rings → a numerals ring → Type → *Installed fonts* (Chrome asks once) → the numerals turn from Inter to Helvetica Neue. Compare with `dial.py`'s export of the same settings. Export PDF and SVG, open in Illustrator at true size. | verify |
 | 50 | Imported shapes (SVG, PDF, AI) for markers and hands — not in the web version; a "file" shape is drawn as a bar or baton and the log says so. In a browser the file's content has to travel inside the settings (no file paths). | open |
 | 51 | MP4 and GIF export (WebCodecs) | open |
 | 52 | Live text in PDF · SVG; named instances of variable fonts; a fallback font for scripts the main font lacks (Eastern Arabic, Chinese: HarfBuzz has no automatic fallback, CoreText had) | open |
