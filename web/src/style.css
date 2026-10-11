@@ -37,9 +37,8 @@ button, select, input { font: inherit; color: inherit; }
 .panel header .quiet { padding-top: 2px; }
 /* guides: a box at the top right with a tick; the whole box switches them */
 .guidesbox { margin-left: auto; align-self: center; display: flex; align-items: center; justify-content: center; gap: 8px; width: calc(2 * var(--col) + var(--gap)); height: 32px; padding: 0; border: 1.5px solid var(--ink); border-radius: 10px;      /* two columns wide: columns 5 and 6 */
-  background: var(--ink); color: var(--paper); font-weight: 600; cursor: pointer; user-select: none; }
-.guidesbox small { min-width: 20px; font-size: 11px; font-weight: 400; opacity: 0.75; text-align: left; }
-.guidesbox:hover { background: #333331; }
+  background: none; color: var(--ink); font-weight: 600; cursor: pointer; user-select: none; }      /* on: a solid dark outline, dark sign and word; off: dashed and grey */
+.guidesbox:hover { background: var(--ground); }
 .guidesbox[aria-pressed="false"] { background: none; color: var(--grey); border-color: var(--rule); border-style: dashed; font-weight: 400; }
 .guidesbox[aria-pressed="false"]:hover { background: var(--ground); color: var(--ink); }
 .guidesbox[aria-pressed="false"] svg { opacity: 0.55; }
@@ -304,8 +303,8 @@ main { position: relative; overflow: hidden; }
 .steps12 button::before { content: ""; position: absolute; left: 50%; top: -3px; width: 1px; height: 4px; background: rgba(0, 0, 0, 0.45); }
 .steps12 button:hover { background: none; color: #000; text-decoration: underline; }
 .steps12 button.on { color: #000; font-weight: 700; }
-.steps12 button.special { transform: translateX(-12%); top: -1px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--bar-ink); color: var(--bar-field); font-weight: 600; font-size: 10.5px; z-index: 1; }
-.steps12 button.special::before { left: 12%; height: 5px; top: -4px; background: var(--bar-ink); }      /* the pill sits to the right of the 10; its tick stays at 10:10 */
+.steps12 button.special { transform: translateX(-4%); top: -1px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--bar-ink); color: var(--bar-field); font-weight: 600; font-size: 10.5px; z-index: 1; }
+.steps12 button.special::before { left: 4%; height: 5px; top: -4px; background: var(--bar-ink); }      /* the pill sits to the right of the 10; its tick stays at 10:10 */
 .steps12 button.special:hover { background: #000; text-decoration: none; }
 .bar input:focus, .bar button:focus-visible, .bar input[type="range"]:focus-visible { outline-color: var(--bar-ink); }
 /* a phone, or a narrow window: the bar on top, the preview under it; below them the whole panel scrolls as one */

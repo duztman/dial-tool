@@ -505,12 +505,12 @@ class DialTool {
     try { localStorage.setItem("dial-tool-panel", on ? "on" : "off"); } catch (e) { /* not kept */ }
   }
 
-  /** top right: the guides' switch — a bullseye with lines, in a rounded box. Filled = on, outlined = off.
+  /** top right: the guides' switch — a bullseye with lines, in a rounded box. A solid dark outline = on, a dashed grey one = off; no words (Okay, 11 Oct 2026).
    *  A press only switches them; their settings are in Dial. */
   guides_box() {
     this.guides_tick = el("button", { type: "button", className: "guidesbox", id: "guides", onclick: () => this.set_value("global", "guides", !this.S.guides) });
     this.guides_tick.innerHTML = icon(`<circle r="5.6"/><circle r="2.1"/><path d="M0 -8.6L0 -3.6M0 3.6L0 8.6M-8.6 0L-3.6 0M3.6 0L8.6 0"/>`, 18, "-9 -9 18 18");
-    this.guides_tick.append(el("span", { textContent: "Guides" }), el("small"));
+    this.guides_tick.append(el("span", { textContent: "Guides" }));
     return this.guides_tick;
   }
 
@@ -548,7 +548,6 @@ class DialTool {
   /** every row: hidden if it doesn't apply (R16) or its group is folded; its controls showing the scope's value. */
   sync_rows() {
     this.guides_tick.setAttribute("aria-pressed", String(Boolean(this.S.guides)));
-    this.guides_tick.lastChild.textContent = this.S.guides ? "on" : "off";
     this.guides_tick.title = this.S.guides ? "Guides are on: press to hide them (their settings are in Dial)" : "Guides are off: press to show them";
     for (const r of this.rows) {
       const T = this.target(r.row.scope);

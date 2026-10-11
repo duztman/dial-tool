@@ -12,6 +12,7 @@ On `dev` and online. Okay, 11 Oct: "That bar color went too light. Darker. Under
 - **Header:** 64 high, title and Guides switch centred on one line, a hairline under it, then the tabs.
 - **Rename box:** grey `#8E8E89` (was black), strokes 0.7 (were 1.2); black when the pointer is on it.
 - **Fixed on the way:** the panel's 1-pixel right border was taking its pixel from the columns; it has its own now.
+- **Guides switch, again** (Okay: "don't say on or off, active is solid outline dark color, off stays the same"): on is a solid dark outline with a dark sign and word, no fill; off is the dashed grey box as before; the words on / off are gone.
 - **Tests:** 121 checks.
 
 ## beta 4.1 (web version) · 11 Oct 2026
