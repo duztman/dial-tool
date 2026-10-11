@@ -66,7 +66,8 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 57 | **Look at it on Okay's Mac**: everything added on 11 Oct after the first screenshot was only seen in Chromium here — font picker, examples, pointer label, tabs, Guides, dragging rings, four windows. | verify |
 | 58 | Peter Wiegel's fonts (peter-wiegel.de: alte DIN 1451, DIN 1451 Breitschrift 1936, DIN 1451 Form H): read the licence file in each download; if it allows passing on, swap them into the list of 20 | open |
 | 59 | Windows: am · pm and moon phase follow settings (hour, moon age), not the time shown; a day window is as wide as its Width, not its word. A window's shape is upright at every position. Ask Okay what he wants here | open |
-| 56 | Remembered fonts: font files added by hand are forgotten when the page closes (installed fonts are found again) | open |
+| 56 | Remembered fonts: fonts added from a link are remembered (11 Oct); font files added by hand are still forgotten when the page closes | open |
+| 60 | Add fonts by Google link: try it on the real page (it was tested against local copies of the same paths). A dial opened from a link could fetch a missing Google family by its name by itself — not done: every unknown font would cost three failed requests | verify / open |
 
 ## Later
 

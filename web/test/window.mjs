@@ -237,26 +237,56 @@ for (const n of ["2", "3", "4"]) { await page.click(`.segs button:text-is("${n}"
 await page.click('.segs button:text-is("1")');
 check(await S("t.statik.windows.length === 1"), "windows 2 to 4 switched off again");
 
-// ── fonts: the tool's own list, a file with a variable axis, features, the fonts on this computer ──
+// ── fonts: only the ring's font shows in Type; the list is a sheet over the panel ──
 await click_mm(...clock(10, 120));
-check(await page.$$eval('.fontrow[data-group="list"]', (rows) => rows.length) === 20 && await page.$$eval('.fontrow[data-group="list"] .sample svg path', (p) => p.length) === 20, "the font list: twenty families, each showing numerals in its own outlines");
-check(await page.$("#font-family") === null && await page.$$eval(".font select", (e) => e.length) === 0, "no dropdowns in the font rows");
+check(await page.$$eval(".form .fontrow", (rows) => rows.length) === 1 && await page.$$eval(".form select#font-family", (e) => e.length) === 0, "Type shows one font, the selected one, and no dropdowns");
+await page.click("#font-current");
+check(await page.$eval("#font-picker", (d) => d.open) && await page.$eval("#font-picker", (d) => { const r = d.getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); return r.right <= m.left + 1; }), "pressing it opens the font sheet over the panel, beside the dial");
+check(await page.$$eval('#font-picker .fontrow[data-group="list"]', (rows) => rows.length) === 20 && await page.$$eval('#font-picker .fontrow[data-group="list"] .sample svg path', (p) => p.length) === 20, "the sheet lists the tool's twenty families, each showing numerals in its own outlines");
 await page.click('.fontrow[data-family="Jost"]');
 await page.waitForFunction(() => window.dial_tool.ring().ps === "Jost-Regular" && document.querySelector("#axis-wght"), null, { timeout: 8000 }).catch(() => {});
-check(await S("S.rings[S.ui_ring].ps === 'Jost-Regular'") && await page.$("#axis-wght") !== null && !(await page.textContent(".font .note")).includes("stands in"), "click Jost in the list: fetched, drawn, and its weight axis appears");
-await page.click('.fontrow[data-family="Barlow"]');
-await page.waitForFunction(() => window.dial_tool.ring().ps === "Barlow-Regular");
-await page.click('.font .styles button:text-is("Bold")');
-await page.waitForFunction(() => window.dial_tool.ring().ps === "Barlow-Bold", null, { timeout: 8000 }).catch(() => {});
-check(await S("S.rings[S.ui_ring].ps === 'Barlow-Bold'"), "Barlow's styles are buttons: Bold");
+check(await S("S.rings[S.ui_ring].ps === 'Jost-Regular'") && await page.$("#axis-wght") !== null && await page.$eval("#font-picker", (d) => d.open), "click Jost: fetched and drawn, the sheet stays open to compare");
 await page.click('.fontrow[data-family="Josefin Sans"]');
 await page.waitForFunction(() => window.dial_tool.ring().family === "Josefin Sans");
 check(await S("S.rings[S.ui_ring].axes.wght === 400"), "a variable font that rests at Thin starts at regular weight");
-await shot("5a-font-list");
-await page.setInputFiles("#font-file", "/usr/share/fonts/truetype/google-fonts/Lora-Variable.ttf");
+await shot("5a-font-sheet");
+
+// add fonts: a Google Fonts link (served here from this machine: the test needs no network)
+const meta = (name, file, ps) => `name: "${name}"\nlicense: "OFL"\nfonts {\n  name: "${name}"\n  style: "normal"\n  weight: 400\n  filename: "${file}"\n  post_script_name: "${ps}"\n  full_name: "${name} Regular"\n}\nfonts {\n  name: "${name}"\n  style: "italic"\n  weight: 400\n  filename: "Italic.ttf"\n  post_script_name: "${ps}Italic"\n  full_name: "${name} Italic"\n}\n`;
+const asked_for = [];
+await context.route("https://raw.githubusercontent.com/google/fonts/main/**", (route) => {
+  const path_ = decodeURIComponent(route.request().url().split("/main/")[1]);
+  asked_for.push(path_);
+  const cors = { "access-control-allow-origin": "*" };
+  if (path_ === "ofl/lora/METADATA.pb") return route.fulfill({ body: meta("Lora", "Lora[wght].ttf", "Lora-Regular"), headers: cors });
+  if (path_ === "ofl/lora/Lora[wght].ttf") return route.fulfill({ path: "/usr/share/fonts/truetype/google-fonts/Lora-Variable.ttf", headers: cors });
+  return route.fulfill({ status: 404, body: "404: Not Found", headers: cors });
+});
+await page.fill("#font-link", "https://fonts.google.com/specimen/Lora?preview.text=12");
+await page.click("#font-add");
+await page.waitForFunction(() => window.dial_tool.ring().family === "Lora" && window.dial_tool.statik, null, { timeout: 8000 }).catch(() => {});
+check(await S("S.rings[S.ui_ring].ps === 'Lora-Regular'") && asked_for.includes("ofl/lora/Lora[wght].ttf") && !asked_for.includes("ofl/lora/Italic.ttf"), "a Google Fonts page link adds the family's upright fonts and uses it");
+check((await page.textContent("#picker-note")).includes("Added Lora") && await page.$('#font-picker .fontrow[data-family="Lora"][data-group="added"] .sample svg') !== null && await S("JSON.parse(localStorage.getItem('dial-tool-fonts')).some((f) => f.ps === 'Lora-Regular' && f.url.includes('raw.githubusercontent.com'))"), "the sheet says so; Lora is listed under Added by you with its numerals, and this browser remembers where it came from");
+await page.fill("#font-link", "Nonesuch Grotesk");
+await page.press("#font-link", "Enter");
+await page.waitForFunction(() => document.querySelector("#picker-note").textContent.includes("no family"), null, { timeout: 8000 }).catch(() => {});
+check((await page.textContent("#picker-note")).includes("no family spelled"), "a name Google Fonts doesn't have is answered plainly");
+await page.fill("#font-link", "https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap");
+await page.press("#font-link", "Enter");
+await page.waitForFunction(() => document.querySelector("#picker-note").textContent.includes("Added Lora"), null, { timeout: 8000 }).catch(() => {});
+check((await page.textContent("#picker-note")).includes("Added Lora"), "an embed link (fonts.googleapis.com/css2?family=…) works too");
+errors.length = 0;                                   // the three "not found" answers above are the browser's, and expected
+
+// a font file
+await page.setInputFiles("#font-file", "/usr/share/fonts/truetype/google-fonts/Poppins-Light.ttf");
+await page.waitForFunction(() => window.dial_tool.ring().ps === "Poppins-Light", null, { timeout: 8000 }).catch(() => {});
+check(await S("S.rings[S.ui_ring].ps === 'Poppins-Light'") && (await page.textContent("#picker-note")).includes("Added Poppins"), "a font file is added and used");
+await page.click('#font-picker .fontrow[data-family="Lora"]');
 await page.waitForFunction(() => window.dial_tool.ring().family === "Lora");
+await page.click("#font-done");
+check(await page.$eval("#font-picker", (d) => !d.open) && (await page.textContent("#font-current .name")) === "Lora" && await page.$("#font-current .sample svg") !== null, "Done closes the sheet; Type shows Lora with its numerals");
 await frame();
-check(await page.$("#axis-wght") !== null, "Lora added from a file: its weight axis has a slider");
+check(await page.$("#axis-wght") !== null, "Lora's weight axis has a slider");
 const light = await S("t.statik.rings.find((d) => d.kind === 'numerals').path.svg(3).length");
 await page.fill("#axis-wght", "700");
 await page.press("#axis-wght", "Enter");
@@ -270,20 +300,31 @@ check(await S("S.rings[S.ui_ring].features.tnum === true") && tab_w !== wide, "t
 check(await page.getAttribute("#feature-tnum", "aria-pressed") === "true", "the feature's tile shows as pressed");
 await page.click("#feature-tnum");
 check(await S("!('tnum' in S.rings[S.ui_ring].features)"), "switching a feature back to the font's default stores nothing (R12)");
-check((await page.textContent(".font .note")).includes("Added Lora") && await page.$('.fontrow[data-family="Lora"] .sample svg') !== null, "the Type rows say what the font action did, and Lora joins the list with its numerals");
 await shot("5-type");
+
+// styles as buttons; the fonts on this computer
+await page.click("#font-current");
+await page.click('#font-picker .fontrow[data-family="Barlow"]');
+await page.waitForFunction(() => window.dial_tool.ring().ps === "Barlow-Regular");
+await page.click("#font-done");
+await page.click('.font .styles button:text-is("Bold")');
+await page.waitForFunction(() => window.dial_tool.ring().ps === "Barlow-Bold", null, { timeout: 8000 }).catch(() => {});
+check(await S("S.rings[S.ui_ring].ps === 'Barlow-Bold'"), "Barlow's styles are buttons under the font: Bold");
+await page.click("#font-current");
 if (await page.evaluate(() => "queryLocalFonts" in window)) {
   await page.click("#local-fonts");
   await page.waitForFunction(() => [...window.dial_tool.catalog.values()].some((f) => f.data), null, { timeout: 15000 }).catch(() => {});
   const listed = await S("[...t.catalog.values()].filter((f) => f.data).length");
-  check(listed > 5, `Fonts on this computer: ${listed} listed`);
-  const pick = await S("[...t.catalog.values()].find((f) => f.data && /Poppins/.test(f.family) && /^Regular$/.test(f.style))?.family || [...t.catalog.values()].find((f) => f.data).family");
-  await page.click(`.fontrow[data-family="${pick}"]`);
+  check(listed > 5, `Installed fonts: ${listed} listed`);
+  const pick = await S("[...t.catalog.values()].find((f) => f.data && /Liberation Sans$/.test(f.family) && /^Regular$/.test(f.style))?.family || [...t.catalog.values()].find((f) => f.data).family");
+  await page.fill("#font-find", pick.slice(0, 6));
+  await page.click(`#font-picker .fontrow[data-family="${pick}"]`);
   await page.waitForFunction((f) => window.dial_tool.ring().family === f && window.dial_tool.statik, pick);
   await frame();
-    check(await S("S.rings[S.ui_ring].family") === pick && !(await page.textContent(".font .note")).includes("stands in"), `a font installed on this computer (${pick}) draws the numerals`);
+  check(await S("S.rings[S.ui_ring].family") === pick && !(await page.textContent("#font-note")).includes("stands in"), `Find narrows the list; a font installed on this computer (${pick}) draws the numerals`);
 } else check(false, "this browser has no queryLocalFonts");
 await shot("6-local-font");
+await page.click("#font-done");
 
 // ── the ring's main rows stay in view while the rest scrolls ──
 await page.$eval(".form", (e) => { e.scrollTop = 99999; });

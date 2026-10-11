@@ -388,7 +388,7 @@ class DialTool {
       this.status, this.time_field, this.time_slider, this.play_button,
       el("button", { type: "button", textContent: "Now", onclick: () => { const d = new Date(); this.set_time(d.getHours() % 12 * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000); } }),
       el("button", { type: "button", textContent: "Fit", onclick: () => { this.fit(); this.render(); } }));
-    root.append(panel, el("main", {}, this.svg, this.tip), bar);
+    root.append(panel, el("main", {}, this.svg, this.tip), bar, this.build_picker());
     this.play_icon();
     new ResizeObserver(() => this.resized()).observe(this.svg);
   }
@@ -716,77 +716,116 @@ class DialTool {
     };
   }
 
-  /** the font picker: a list where every font shows its own numerals. First the tool's own twenty,
-   *  then font files you added, then (Chrome, Edge) the fonts on this computer. */
+  // ── fonts: the Type group shows the ring's font; the list of all fonts is a sheet of its own ──
+
+  /** family → its fonts, in the catalogue's order. */
+  families() {
+    const by = new Map();
+    for (const f of this.catalog.values()) { if (!by.has(f.family)) by.set(f.family, []); by.get(f.family).push(f); }
+    return by;
+  }
+
+  /** "1234567890" in the font itself: the outline made with the list, or drawn now, or set by the browser. */
+  sample(f) {
+    const box = el("span", { className: "sample" });
+    let s = f.sample;
+    if (!s && G.has_font(f.ps)) {
+      const t = { ...G.RING_BASE, ps: f.ps, axes: f.start || {}, features: {} };
+      s = { d: G.text_path("1234567890", t, 1000).svg(0, true), w: Math.round(G.advance("1234567890", t, 1000)) };
+    }
+    if (s) box.innerHTML = `<svg viewBox="0 -800 ${s.w} 1000" height="22" aria-hidden="true"><path d="${s.d}" fill="currentColor"/></svg>`;
+    else { box.textContent = "1234567890"; box.style.fontFamily = `"${f.family}"`; }       // an installed font: the browser can show it
+    return box;
+  }
+
+  /** in the Type group: the ring's font alone (press it for the list), and its styles as buttons. */
   row_font(wrap, out) {
     wrap.className = "font";
+    const current = el("button", { type: "button", className: "fontrow current", id: "font-current", title: "Choose a font", onclick: () => this.open_picker() });
     const styles = el("div", { className: "segs styles" });
-    const find = el("input", { type: "text", id: "font-find", placeholder: "Find a font", hidden: true });
-    const list = el("div", { className: "fontlist", id: "font-list" });
-    const state = el("div", { className: "quiet note" });
-    const file = el("input", { type: "file", accept: ".ttf,.otf,.ttc,.otc", multiple: true, hidden: true, id: "font-file" });
-    file.onchange = async () => { await this.add_font_files([...file.files]); file.value = ""; };
-    const buttons = el("div", { className: "tools" },
-      el("button", { type: "button", id: "local-fonts", textContent: "Installed fonts", hidden: !("queryLocalFonts" in window), onclick: () => this.local_fonts(true) }),
-      el("button", { type: "button", textContent: "Add font file…", onclick: () => file.click() }), file);
-    wrap.append(styles, find, list, buttons, state);
-    const regular = (fonts) => fonts.find((f) => /^(regular|roman|book|normal)$/i.test(f.style)) || fonts[0];
-    const families = () => {                       // family → its fonts, in the catalogue's order
-      const by = new Map();
-      for (const f of this.catalog.values()) { if (!by.has(f.family)) by.set(f.family, []); by.get(f.family).push(f); }
-      return by;
-    };
-    /** "1234567890" in the font itself: the outline made with the list, or drawn now, or set by the browser. */
-    const sample = (f) => {
-      const box = el("span", { className: "sample" });
-      let s = f.sample;
-      if (!s && G.has_font(f.ps)) {
-        const t = { ...G.RING_BASE, ps: f.ps, axes: {}, features: {} };
-        s = { d: G.text_path("1234567890", t, 1000).svg(0, true), w: Math.round(G.advance("1234567890", t, 1000)) };
-      }
-      if (s) box.innerHTML = `<svg viewBox="0 -800 ${s.w} 1000" height="22" aria-hidden="true"><path d="${s.d}" fill="currentColor"/></svg>`;
-      else { box.textContent = "1234567890"; box.style.fontFamily = `"${f.family}"`; }     // an installed font: the browser can show it
-      return box;
-    };
-    find.oninput = () => { list.dataset.shown = ""; out.refresh(this.ring()); };
-    let was_selected = null;
+    const state = el("div", { className: "quiet note", id: "font-note" });
+    wrap.append(current, styles, state);
+    let shown = null;
     out.refresh = (R) => {
-      const by = families(), q = find.value.trim().toLowerCase();
-      find.hidden = by.size <= 24;
-      const key = [...by.keys()].join("|") + "/" + q + "/" + G.font_list().length;
-      if (list.dataset.shown !== key) {            // the list itself changes only when fonts arrive or the search does
-        list.dataset.shown = key;
-        list.replaceChildren();
-        let group = null;
-        for (const [family, fonts] of by) {
-          if (q && !family.toLowerCase().includes(q)) continue;
-          const f = regular(fonts);
-          if (f.group !== group) {
-            group = f.group;
-            const title = { added: "Added by you", computer: "On this computer" }[group];
-            if (title) list.append(el("div", { className: "group quiet", textContent: title }));
-          }
-          const row = el("button", { type: "button", className: "fontrow", title: f.what ? `${family} · ${f.what}` : family, onclick: () => { this.font_note = ""; this.use_font(f); } },
-            sample(f), el("span", { className: "name", textContent: family }));
-          row.dataset.family = family;
-          row.dataset.group = f.group;
-          list.append(row);
-        }
+      const mine = this.families().get(R.family) || [], f = this.catalog.get(R.ps) || mine[0];
+      const key = R.ps + "/" + G.has_font(R.ps);
+      if (key !== shown) {
+        shown = key;
+        current.replaceChildren(f ? this.sample(f) : el("span", { className: "sample quiet", textContent: "not loaded" }),
+          el("span", { className: "name", textContent: R.family }), el("span", { className: "change", textContent: "Change…" }));
       }
-      let selected = null;
-      for (const row of list.querySelectorAll(".fontrow")) { const on = row.dataset.family === R.family; row.classList.toggle("on", on); if (on) selected = row; }
-      if (selected && was_selected !== R.family + this.S.ui_ring) { was_selected = R.family + this.S.ui_ring; list.scrollTop = Math.max(0, selected.offsetTop - list.offsetTop - 40); }
-      const mine = by.get(R.family) || [];         // the family's styles, as buttons
-      styles.hidden = mine.length < 2;
-      styles.replaceChildren(...mine.map((f) => {
-        const b = el("button", { type: "button", textContent: f.style || f.ps, onclick: () => this.use_font(f) });
-        b.classList.toggle("on", f.ps === R.ps);
+      styles.hidden = mine.length < 2;             // the family's styles, as buttons
+      styles.replaceChildren(...mine.map((x) => {
+        const b = el("button", { type: "button", textContent: x.style || x.ps, onclick: () => this.use_font(x) });
+        b.classList.toggle("on", x.ps === R.ps);
         return b;
       }));
       const missing = G.has_font(R.ps) ? "" : this.catalog.has(R.ps) ? "Loading… "
-        : `${R.family} isn’t loaded yet, so ${G.font_list()[0].family} stands in. Pick a font from the list, press Installed fonts (Chrome or Edge), or add its file. `;
+        : `${R.family} isn’t loaded yet, so ${G.font_list()[0].family} stands in. Press the font above to choose another or to add it. `;
       state.textContent = missing + (this.font_note || "");
+      if (this.picker && this.picker.open) this.fill_picker();
     };
+  }
+
+  /** the font sheet: every font with its numerals — the tool's own twenty, then yours, then (Chrome, Edge)
+   *  this computer's — and the ways to add more. It lies over the panel, so the dial stays in view. */
+  build_picker() {
+    const find = el("input", { type: "text", id: "font-find", placeholder: "Find a font" });
+    find.oninput = () => this.fill_picker(true);
+    const list = el("div", { className: "fontlist", id: "font-list" });
+    const paste = el("input", { type: "text", id: "font-link", placeholder: "Google Fonts link or family name, or a link to a font file" });
+    const add = () => { if (paste.value.trim()) this.add_from_text(paste.value).then((ok) => { if (ok) paste.value = ""; }); };
+    paste.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); add(); } };
+    const file = el("input", { type: "file", accept: ".ttf,.otf,.ttc,.otc", multiple: true, hidden: true, id: "font-file" });
+    file.onchange = async () => { await this.add_font_files([...file.files]); file.value = ""; };
+    this.picker = el("dialog", { className: "picker", id: "font-picker" },
+      el("header", {}, el("h2", { textContent: "Fonts" }), el("button", { type: "button", className: "main", id: "font-done", textContent: "Done", onclick: () => this.picker.close() })),
+      find, list,
+      el("div", { className: "adding" },
+        el("h2", { textContent: "Add fonts" }),
+        el("div", { className: "pasting" }, paste, el("button", { type: "button", id: "font-add", textContent: "Add", onclick: add })),
+        el("div", { className: "tools" },
+          el("button", { type: "button", textContent: "Font file…", onclick: () => file.click() }),
+          el("button", { type: "button", id: "local-fonts", textContent: "Installed fonts", hidden: !("queryLocalFonts" in window), onclick: () => this.local_fonts(true) }), file),
+        el("div", { className: "quiet note", id: "picker-note" })));
+    this.picker.addEventListener("click", (e) => { if (e.target === this.picker) this.picker.close(); });      // a click outside closes it
+    return this.picker;
+  }
+
+  open_picker() {
+    $("#font-find").value = "";
+    this.fill_picker(true);
+    if (!this.picker.open) this.picker.showModal();
+    this.load_remembered();
+  }
+
+  fill_picker(again = false) {
+    const list = $("#font-list"), R = this.ring(), by = this.families(), q = $("#font-find").value.trim().toLowerCase();
+    const regular = (fonts) => fonts.find((f) => /^(regular|roman|book|normal)$/i.test(f.style)) || fonts[0];
+    const key = [...by.keys()].join("|") + "/" + q + "/" + G.font_list().length;
+    if (again || list.dataset.shown !== key) {     // the list itself changes only when fonts arrive or the search does
+      list.dataset.shown = key;
+      list.replaceChildren();
+      let group = null;
+      for (const [family, fonts] of by) {
+        if (q && !family.toLowerCase().includes(q)) continue;
+        const f = regular(fonts);
+        if (f.group !== group) {
+          group = f.group;
+          const title = { added: "Added by you", computer: "On this computer" }[group];
+          if (title) list.append(el("div", { className: "group quiet", textContent: title }));
+        }
+        const row = el("button", { type: "button", className: "fontrow", title: f.what ? `${family} · ${f.what}` : family, onclick: () => { this.font_note = ""; this.use_font(f); } },
+          this.sample(f), el("span", { className: "name", textContent: family }));
+        row.dataset.family = family;
+        row.dataset.group = f.group;
+        list.append(row);
+      }
+      const on = list.querySelector(`.fontrow[data-family="${CSS.escape(R.family)}"]`);
+      if (on && again) list.scrollTop = Math.max(0, on.offsetTop - list.offsetTop - 80);
+    }
+    for (const row of list.querySelectorAll(".fontrow")) row.classList.toggle("on", row.dataset.family === R.family);
+    $("#picker-note").textContent = this.font_note || "";
   }
 
   /** a variable font's axes, one slider each. */
@@ -916,6 +955,7 @@ class DialTool {
   async fonts_at_start() {
     for (const f of G.font_list()) this.catalog.set(f.ps, { family: f.family, style: f.style, ps: f.ps, group: "list" });   // Inter, inside the page
     for (const f of FONT_LIST) if (!this.catalog.has(f.ps)) this.catalog.set(f.ps, { ...f, group: "list" });               // the tool's own list
+    for (const f of this.remembered()) if (!this.catalog.has(f.ps)) this.catalog.set(f.ps, { ...f, group: "added" });      // added from a link, earlier
     await this.load_fonts_in_use();
     try {
       const status = await navigator.permissions.query({ name: "local-fonts" });
@@ -926,7 +966,7 @@ class DialTool {
 
   /** list the fonts installed on this computer (Chrome and Edge ask once), and load the ones in use. */
   async local_fonts(asked) {
-    const say = (text) => { if (asked) { this.font_note = text; this.log(text); this.sync_rows(); } };
+    const say = (text) => { if (asked) this.say_font(text); };
     say("Asking the browser for this computer’s fonts… (it may show a question near the address bar)");
     try {
       const list = await window.queryLocalFonts();
@@ -945,11 +985,12 @@ class DialTool {
 
   /** read one catalogued font into the text engine. A collection file holds several: find ours. */
   async load_font(entry) {
-    if (G.has_font(entry.ps) || !(entry.data || entry.file)) return G.has_font(entry.ps);
+    if (G.has_font(entry.ps) || !(entry.data || entry.file || entry.url)) return G.has_font(entry.ps);
     let bytes;
-    if (entry.file) {                              // one of the tool's own: fetched from the tool's site when first used
-      const answer = await fetch(FONT_SITE + entry.file);
-      if (!answer.ok) throw new Error(`${answer.status} from ${FONT_SITE}${entry.file}`);
+    if (entry.file || entry.url) {                 // one of the tool's own, or one added from a link: fetched when first used
+      const address = entry.url || FONT_SITE + entry.file;
+      const answer = await fetch(address);
+      if (!answer.ok) throw new Error(`${answer.status} from ${address}`);
       bytes = new Uint8Array(await answer.arrayBuffer());
     } else bytes = new Uint8Array(await (await entry.data.blob()).arrayBuffer());
     for (let i = 0; i < 64; i++) {
@@ -974,42 +1015,140 @@ class DialTool {
     if (loaded) { this.static_dirty = true; this.sync_rows(); this.render(); }
   }
 
+  /** font files chosen or dropped. */
   async add_font_files(files) {
-    const added = [];
-    const say = (text) => { this.font_note = text; this.log(text); this.sync_rows(); };
     try {
-      for (const file of files) {
-        const bytes = new Uint8Array(await file.arrayBuffer());
-        for (let i = 0; i < 64; i++) {             // a collection (.ttc) holds several fonts
-          const got = G.add_font(bytes, i);
-          if (!got) break;
-          if (!this.catalog.has(got.ps)) this.catalog.set(got.ps, { family: got.family, style: got.style, ps: got.ps, group: "added" });
-          added.push(this.catalog.get(got.ps));
-        }
-      }
+      const got = [];
+      for (const file of files) got.push({ name: file.name, bytes: new Uint8Array(await file.arrayBuffer()) });
+      await this.take_fonts(got);
     } catch (e) {
-      return say(`Couldn’t read ${files.map((f) => f.name).join(", ")} (${e.name}: ${e.message}).`);
+      this.say_font(`Couldn’t read ${files.map((f) => f.name).join(", ")} (${e.name}: ${e.message}).`);
     }
-    if (!added.length) return say(`${files.map((f) => f.name).join(", ")} didn’t open as a font (TTF, OTF, TTC).`);
-    const families = [...new Set(added.map((f) => f.family))];
-    say(`Added ${families.slice(0, 3).join(", ")}${families.length > 3 ? "…" : ""}: ${added.length} style${added.length > 1 ? "s" : ""}.`);
+  }
+
+  say_font(text) { this.font_note = text; this.log(text); this.sync_rows(); if (this.picker && this.picker.open) this.fill_picker(); }
+
+  /** fonts that arrived as bytes → the text engine and the list. A source with a url is remembered by this
+   *  browser, so the font is there again next time. → how many were added */
+  async take_fonts(sources, family = null) {
+    const added = [];
+    for (const src of sources) {
+      for (let i = 0; i < 64; i++) {               // a collection (.ttc) holds several fonts
+        const got = G.add_font(src.bytes, i);
+        if (!got) break;
+        if (!this.catalog.has(got.ps) || this.catalog.get(got.ps).group !== "list") {       // the tool's own twenty keep their entry
+          this.catalog.set(got.ps, { family: family || got.family, style: src.style || got.style, ps: got.ps, group: "added", url: src.url, start: this.start_of(got.ps) });
+        }
+        added.push(this.catalog.get(got.ps));
+      }
+    }
+    if (!added.length) { this.say_font(`${sources.map((x) => x.name).join(", ")} didn’t open as a font (TTF, OTF, TTC).`); return 0; }
+    this.remember(added);
+    const names = [...new Set(added.map((f) => f.family))];
+    this.say_font(`Added ${names.slice(0, 3).join(", ")}${names.length > 3 ? "…" : ""}: ${added.length} style${added.length > 1 ? "s" : ""}.`);
     const R = this.ring();
     if (G.kind_of(R) === "numerals" && !added.some((f) => f.ps === R.ps)) {       // not the ring's own font: switch to the new one
-      const pick = added.find((f) => /^(regular|roman|book|normal)$/i.test(f.style)) || added[0];
-      await this.use_font(pick);
+      await this.use_font(added.find((f) => /^(regular|roman|book|normal)$/i.test(f.style)) || added[0]);
     }
     G.forget();
     this.static_dirty = true; this.sync_rows(); this.render();
+    if (this.picker && this.picker.open) this.fill_picker(true);
+    return added.length;
+  }
+
+  /** what was typed or pasted into Add fonts → fonts. Understands: a Google Fonts page or embed link, a family's
+   *  name as Google Fonts spells it, and a direct link to a font file. → true if something was added */
+  async add_from_text(text) {
+    text = text.trim();
+    let names = [text], file = null;
+    try {
+      const u = new URL(text);
+      names = [];
+      if (/\.(ttf|otf|ttc|otc)$/i.test(u.pathname)) file = text;
+      else if (u.hostname === "fonts.googleapis.com") names = u.searchParams.getAll("family").map((f) => f.split(":")[0]);
+      else if (u.hostname.endsWith("fonts.google.com")) {
+        const page = /\/specimen\/([^/?]+)/.exec(u.pathname);
+        if (page) names = [decodeURIComponent(page[1]).replace(/\+/g, " ")];
+        else names = u.searchParams.getAll("selection.family").flatMap((v) => v.split("|")).map((f) => f.split(":")[0]);
+      }
+      if (!file && !names.length) { this.say_font("That link isn’t one I can read: use a Google Fonts page (fonts.google.com/specimen/…), its embed link, or a link that ends in .ttf or .otf."); return false; }
+    } catch (e) { /* not a link: a family name */ }
+    try {
+      if (file) {
+        this.say_font(`Fetching ${file}…`);
+        const answer = await fetch(file);
+        if (!answer.ok) throw new Error(`the site answered ${answer.status}`);
+        return (await this.take_fonts([{ name: file.split("/").pop(), bytes: new Uint8Array(await answer.arrayBuffer()), url: file }])) > 0;
+      }
+      let total = 0;
+      for (const name of names) total += await this.add_google(name.trim());
+      return total > 0;
+    } catch (e) {
+      this.say_font(`Couldn’t fetch that (${e.message}). A site has to allow other pages to read its files; if it doesn’t, download the font and use Font file….`);
+      return false;
+    }
+  }
+
+  /** one family from Google Fonts' own repository on GitHub (the font files as their designers delivered them;
+   *  Google's font service itself only hands out a compressed web format this tool's text engine can't read). */
+  async add_google(name) {
+    const folder = name.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (!folder) return 0;
+    this.say_font(`Looking for ${name} in Google Fonts…`);
+    for (const licence of ["ofl", "apache", "ufl"]) {
+      const base = `https://raw.githubusercontent.com/google/fonts/main/${licence}/${folder}/`;
+      const answer = await fetch(base + "METADATA.pb");
+      if (!answer.ok) continue;
+      const about = await answer.text();
+      const family = (/^name: "([^"]+)"/m.exec(about) || [])[1] || name;
+      const fonts = [...about.matchAll(/fonts \{([^}]*)\}/g)].map((m) => Object.fromEntries([...m[1].matchAll(/(\w+): "?([^"\n]*)"?/g)].map((x) => [x[1], x[2]])));
+      const upright = fonts.filter((f) => f.style === "normal").slice(0, 12);     // italics lean: not for a dial
+      const sources = [];
+      for (const f of upright) {
+        const url = base + encodeURIComponent(f.filename);
+        const file = await fetch(url);
+        if (!file.ok) throw new Error(`${f.filename}: ${file.status}`);
+        sources.push({ name: f.filename, bytes: new Uint8Array(await file.arrayBuffer()), url, style: upright.length > 1 ? (f.full_name || "").replace(family, "").trim() || "Regular" : "Regular" });
+      }
+      return this.take_fonts(sources, family);
+    }
+    this.say_font(`Google Fonts has no family spelled “${name}”. Copy the name from its page, or paste the page’s link.`);
+    return 0;
+  }
+
+  /** fonts added from a link are remembered by this browser as their addresses, and fetched again when wanted. */
+  remember(added) {
+    try {
+      const kept = JSON.parse(localStorage.getItem("dial-tool-fonts") || "[]").filter((k) => !added.some((f) => f.ps === k.ps));
+      for (const f of added) if (f.url) kept.push({ family: f.family, style: f.style, ps: f.ps, url: f.url });
+      localStorage.setItem("dial-tool-fonts", JSON.stringify(kept));
+    } catch (e) { /* not kept */ }
+  }
+  remembered() {
+    try { return JSON.parse(localStorage.getItem("dial-tool-fonts") || "[]"); } catch (e) { return []; }
+  }
+  /** when the sheet opens: fetch the remembered fonts that aren't here yet, so each can show its numerals. */
+  async load_remembered() {
+    let any = false;
+    for (const f of this.catalog.values()) {
+      if (f.url && !G.has_font(f.ps)) { try { any = (await this.load_font(f)) || any; } catch (e) { /* offline: it keeps its name */ } }
+    }
+    if (any && this.picker.open) this.fill_picker(true);
+  }
+
+  /** a variable font may rest at its thinnest weight: start it at regular (400) where it has that. */
+  start_of(ps) {
+    const wght = G.font_axes(G.font_of({ ps })).wght;
+    return wght && wght.default !== 400 && wght.min <= 400 && wght.max >= 400 ? { wght: 400 } : {};
   }
 
   async use_font(entry) {
     try {
       await this.load_font(entry);
     } catch (e) {
-      this.font_note = `Couldn’t fetch ${entry.family} (${e.message}). Are you online?`;
-      this.log(this.font_note);
-      return this.sync_rows();
+      return this.say_font(`Couldn’t fetch ${entry.family} (${e.message}). Are you online?`);
     }
+    if (!entry.start && G.has_font(entry.ps)) entry.start = this.start_of(entry.ps);
     const R = this.ring();
     R.family = entry.family; R.ps = entry.ps; R.axes = { ...(entry.start || {}) }; R.features = {};
     this.static_dirty = true;

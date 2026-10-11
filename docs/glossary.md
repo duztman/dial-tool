@@ -121,7 +121,8 @@ Kept so older notes still read.
 | **Installed fonts** | The web version's button that lists the computer's fonts (Chrome, Edge). Other browsers: add font files. |
 | **Link** (a dial's) | The web version's address with the dial after `#`: scheme number, a dot, the packed settings. Carries the dial, not the window's state (section, selected ring) and not font files. R31. |
 | **Window** | A hole in the plate with something showing through (web version: up to four). **Kind**: date · day · am · pm · moon phase. Window 1 is the **date window** of `dial.py`. The section's tab says Windows; its key and number stay Date / 3. |
-| **Font list** | The web version's own twenty open-licence families (`web/fonts/`), shown in the **picker** by their numerals. |
+| **Font list** | The web version's own twenty open-licence families (`web/fonts/`). |
+| **Font sheet** | The sheet that opens from the font in Type: every font by its numerals, a search, and **Add fonts** (Google link or name, link to a font file, font file, installed fonts). |
 | **Pointer label** | The name shown beside the pointer for the piece under it; the piece is outlined. |
 | **Round ends** | A hand's setting `round` (web version): the corner radius of its flat ends. Marks get round ends from *Round outer* / *Round inner*. Okay's "round caps". |
 | **Probe** | `tools/dial_probe.py`, a self-reporting test of the interface foundation, run on the Mac. |

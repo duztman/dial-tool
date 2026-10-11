@@ -148,7 +148,22 @@ button.plain:active, button.sign:active { background: var(--ink); color: var(--p
 .font .styles button { flex: 0 0 auto; padding: 0 9px; white-space: nowrap; }
 .font .styles button + button { border-left: 1px solid var(--rule); }
 .font .styles button.on + button { border-left-color: var(--rule); }
-.fontlist { border: 1px solid var(--rule); background: #fff; max-height: 318px; overflow-y: auto; }
+.fontlist { border: 1px solid var(--rule); background: #fff; overflow-y: auto; }
+.fontrow.current { border: 1px solid var(--rule); background: #fff; grid-template-columns: 1fr auto auto; height: 40px; }
+.fontrow.current .name { color: var(--ink); }
+.fontrow.current .change { color: var(--grey); padding-left: 6px; border-left: 1px solid var(--rule); }
+
+/* the font sheet: over the panel, so the dial stays in view; from the bottom on a phone */
+.picker { position: fixed; inset: 0 auto 0 0; width: var(--panel); max-width: 100vw; height: 100%; max-height: none; margin: 0; padding: 0; border: 0; border-right: 1px solid var(--ink);
+  background: var(--paper); color: var(--ink); }
+.picker[open] { display: grid; grid-template-rows: auto auto 1fr auto; gap: var(--unit); padding: calc(var(--unit) * 3) var(--gutter); }
+.picker::backdrop { background: none; }                /* the dial keeps its true colours while you choose */
+.picker header { display: flex; align-items: center; justify-content: space-between; }
+.picker header h2 { font-size: 15px; }
+.picker .fontlist { min-height: 0; }
+.picker .adding { display: grid; gap: var(--unit); border-top: 1px solid var(--ink); padding-top: 7px; }
+.picker .pasting { display: grid; grid-template-columns: 1fr auto; gap: var(--unit); }
+.picker .note:empty { display: none; }
 .fontrow { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: calc(var(--unit) * 2); width: 100%; height: 35px; padding: 0 8px; border: 0; border-bottom: 1px solid var(--ground); background: none; text-align: left; }
 .fontrow:hover { background: var(--ground); }
 .fontrow.on, .fontrow.on:hover { background: var(--select); color: var(--ink); }
@@ -196,13 +211,18 @@ main { position: relative; overflow: hidden; }
 .bar button:active { background: var(--bar-ink); color: var(--bar); }
 .bar input:focus, .bar button:focus-visible, .bar input[type="range"]:focus-visible { outline-color: var(--bar-ink); }
 .bar .icon { display: inline-flex; align-items: center; justify-content: center; }
-/* a phone, or a narrow window: the bar on top, the preview under it, the panel below */
+/* a phone, or a narrow window: the bar on top, the preview under it; below them the whole panel scrolls as one */
 @media (max-width: 860px) {
-  #app { grid-template-columns: 1fr; grid-template-rows: auto 44% 1fr; }
+  #app { grid-template-columns: 1fr; grid-template-rows: auto 42% 1fr; }
   .bar { grid-row: 1; grid-template-columns: 78px 1fr auto auto auto; padding: calc(var(--unit) * 2) 16px; }
   main { grid-row: 2; }
-  .panel { grid-row: 3; border-right: 0; border-top: 1px solid var(--rule); }
+  .panel { grid-row: 3; display: block; overflow-y: auto; -webkit-overflow-scrolling: touch; border-right: 0; border-top: 1px solid var(--rule); }
+  .form { overflow: visible; }
+  .tabs { position: sticky; top: 0; z-index: 1; background: var(--paper); }
+  .ringlist ol { max-height: none; }
   .bar .status { display: none; }
   .bar .time, .bar input[type="range"] { margin-left: 0; width: 100%; }
   :root { --gutter: 16px; }
+  .picker { inset: auto 0 0 0; width: 100%; height: 58%; border-right: 0; border-top: 1px solid var(--ink); }
+  .picker::backdrop { background: none; }
 }
