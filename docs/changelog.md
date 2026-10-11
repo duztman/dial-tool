@@ -1,5 +1,16 @@
 # Dial Tool — changelog
 
+## beta 4.3 (web version) · 12 Oct 2026
+
+On `dev` and online. Okay, 12 Oct, with a marked-up screenshot of the ring list ("frame layers", "light blue"): "Yet darker bottom bar, 80% black. Invert appropriate". Seen in Chromium here only.
+
+- **Bar: 80 % black** (`#333333`), light on dark: words `#F2F2EE`; under the panel the quiet controls are thin light outlines, the chosen speed a lighter fill; the day slider is light, its steps light grey, the step the time is on white and bold, 10:10 a light pill; − + and Fit are dark-grey buttons with light signs. (The bar so far: black → `#DADAD5` → `#A9A9A4` → this.)
+- **Ring list: every ring is a framed row** — a hairline frame with slightly rounded corners (5), white inside, 4 apart, 8 wider than the pane lines on each side so the eye has room inside the frame.
+- **Selected is light blue** `#CFE4F5` with a blue frame `#86B4DA` (was the canon's yellow `#F0DC8E`). The same colour marks the chosen font in the font sheet and an example under the pointer: one colour for "selected" everywhere. `docs/design.md` (the guide's canon) still says yellow; it describes the guidebook, not this panel.
+- **Guides switch:** tight at the sides, as wide as its sign and word (about 93; was two columns, 120); it still ends on the right margin. Okay: "tighter guides button from the sides".
+- **Dial tab:** eight pies (were four); chosen, every other pie is filled. Okay: "dial icon double the pies".
+- **Tests:** 123 checks.
+
 ## beta 4.2 (web version) · 11 Oct 2026
 
 On `dev` and online. Okay, 11 Oct: "That bar color went too light. Darker. Under left column have the controls. Day slider has steps that clicking snaps to. 10:10 is a special one. Nice column fitting controls, low contrast under left column. Leftmost of left column, lines extend on top of eyes. Arrange paddings and fit header nicely. Layers: cursor icon much lighter and thinner strokes." Seen in Chromium here only.

@@ -5,8 +5,9 @@
 :root {
   color-scheme: light;
   --paper: #FCFCFA; --ink: #111111; --grey: #5C5C58; --rule: #B9B9B4; --ground: #ECECE8;
-  --select: #F0DC8E;                               /* the canon's yellow: what is selected */
-  --bar: #A9A9A4; --bar-ink: #111111; --bar-rule: #6F6F6A; --bar-field: #FCFCFA;      /* the bar: a middle grey (black until beta 4.1, then #DADAD5: too light) */
+  --select: #CFE4F5; --select-rule: #86B4DA;       /* what is selected: a light blue (the canon's yellow until beta 4.3; Okay, 12 Oct 2026) */
+  --bar: #333333; --bar-ink: #F2F2EE; --bar-rule: #5C5C58; --bar-field: #454543;      /* the bar: 80 % black, light on dark (Okay, 12 Oct 2026; before: black, #DADAD5, #A9A9A4) */
+  --bar-dim: rgba(255, 255, 255, 0.3); --bar-faint: rgba(255, 255, 255, 0.12);      /* quiet lines and fills on the bar */
   /* the panel's columns (beta 4.0): a toggle column at the far left (eyes: a pane's, a ring's), then six
      equal columns with equal gaps, then the right margin. 24 + 16 + 12 + (6 × 54 + 5 × 12) + 24 = 460.
      Lines (a pane's thick line, the header's, the tabs') run from margin to margin, so they pass over the eyes.
@@ -36,7 +37,7 @@ button, select, input { font: inherit; color: inherit; }
 .panel header { display: flex; align-items: center; gap: calc(var(--unit) * 2); height: 64px; padding: 0 var(--margin); }
 .panel header .quiet { padding-top: 2px; }
 /* guides: a box at the top right with a tick; the whole box switches them */
-.guidesbox { margin-left: auto; align-self: center; display: flex; align-items: center; justify-content: center; gap: 8px; width: calc(2 * var(--col) + var(--gap)); height: 32px; padding: 0; border: 1.5px solid var(--ink); border-radius: 10px;      /* two columns wide: columns 5 and 6 */
+.guidesbox { margin-left: auto; align-self: center; display: flex; align-items: center; justify-content: center; gap: 7px; height: 32px; padding: 0 10px 0 8px; border: 1.5px solid var(--ink); border-radius: 10px;      /* as wide as its sign and word, tight at the sides (Okay, 12 Oct 2026); it ends on the right margin */
   background: none; color: var(--ink); font-weight: 600; cursor: pointer; user-select: none; }      /* on: a solid dark outline, dark sign and word; off: dashed and grey */
 .guidesbox:hover { background: var(--ground); }
 .guidesbox[aria-pressed="false"] { background: none; color: var(--grey); border-color: var(--rule); border-style: dashed; font-weight: 400; }
@@ -169,13 +170,13 @@ button.plain:active, button.sign:active { background: var(--ink); color: var(--p
 
 /* the ring list: top ring first. It runs from edge to edge of the panel: the eye (show or hide the ring) is in
    the toggle column, then grip · name · rename box (selected ring) · kind. Hairlines only; the selected ring is yellow. */
-.ringlist { margin: 0 calc(-1 * var(--edge)) 0 calc(-1 * var(--toggle)); }
-.ringlist ol { position: relative; list-style: none; margin: 0; padding: 0; max-height: calc(var(--line) * 5 + 4px); overflow-y: auto; }
-.ringlist li { display: grid; grid-template-columns: var(--toggle) 18px minmax(0, auto) auto 1fr; align-items: center; gap: 0; height: var(--line); padding-right: var(--edge); cursor: pointer; }
-.ringlist li + li { box-shadow: inset 0 1px 0 var(--ground); }
-.ringlist li.on { background: var(--select); box-shadow: none; }
-.ringlist li.on + li { box-shadow: none; }
-.ringlist button.eye { display: grid; align-items: center; justify-items: start; width: var(--toggle); height: 100%; padding: 0 0 0 calc(var(--margin) + var(--nudge)); border: 0; background: none; color: var(--ink); }
+.ringlist { --out: 8px; margin: 0 calc(-1 * var(--out)) 0 calc(var(--margin) - var(--toggle) - var(--out)); }      /* each ring is a framed row, a little wider than the lines, so the eye has room inside the frame */
+.ringlist ol { position: relative; list-style: none; margin: 0; padding: 2px 0 0; display: grid; gap: 4px; max-height: calc((var(--line) + 4px) * 5 + 4px); overflow-y: auto; }
+.ringlist li { display: grid; grid-template-columns: calc(var(--toggle) - var(--margin) + var(--out) - 1px) 18px minmax(0, auto) auto 1fr; align-items: center; gap: 0; height: var(--line); padding-right: calc(var(--out) - 1px);
+  border: 1px solid var(--rule); border-radius: 5px; background: #fff; cursor: pointer; }
+.ringlist li:hover { border-color: var(--grey); }
+.ringlist li.on { background: var(--select); border-color: var(--select-rule); }
+.ringlist button.eye { display: grid; align-items: center; justify-items: start; width: 100%; height: 100%; padding: 0 0 0 calc(var(--out) + var(--nudge) - 1px); border: 0; border-radius: 4px 0 0 4px; background: none; color: var(--ink); }
 .ringlist button.eye:hover { background: rgba(0, 0, 0, 0.06); }
 .ringlist li.off { color: var(--rule); }
 .ringlist li.off button.eye, .ringlist li.off .kind { color: var(--rule); }
@@ -192,7 +193,7 @@ button.plain:active, button.sign:active { background: var(--ink); color: var(--p
 .ringlist .rename:hover { color: var(--ink); }
 .ringlist .rename:hover { background: rgba(0, 0, 0, 0.1); }
 .ringlist .kind { grid-column: 5; justify-self: end; padding-left: 8px; }
-.listfoot { display: flex; justify-content: space-between; align-items: center; height: var(--line); padding: 0 calc(var(--edge) - 5px) 0 var(--toggle); border-top: 1px solid var(--rule); }
+.listfoot { display: flex; justify-content: space-between; align-items: center; height: var(--line); margin-top: 4px; padding: 0 calc(var(--out) - 5px) 0 calc(var(--toggle) - var(--margin) + var(--out)); }
 .listfoot .adds, .listfoot .signs { display: flex; align-items: center; gap: 1px; }
 .listfoot .adds > .quiet { margin-right: 4px; }
 .listfoot .adds > .quiet::after { content: " +"; }
@@ -283,29 +284,29 @@ main { position: relative; overflow: hidden; }
 .bar .status { max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px; opacity: 0.7; }
 @media (max-width: 1500px) { .bar .status { display: none; } }
 .bar button { flex: none; height: 30px; width: var(--col); min-width: 0; padding: 0; background: var(--bar-field); color: var(--bar-ink); border-color: var(--bar-rule); }
-.bar button:hover { background: #fff; border-color: var(--bar-ink); }
-.bar button:active, .bar .viewing .segs button.on { background: var(--bar-ink); color: var(--bar-field); border-color: var(--bar-ink); }
+.bar button:hover { background: #5A5A57; border-color: var(--bar-ink); }
+.bar button:active, .bar .viewing .segs button.on { background: var(--bar-ink); color: var(--bar); border-color: var(--bar-ink); }
 .bar .icon { display: inline-flex; align-items: center; justify-content: center; }
 /* low contrast under the panel: no fills, thin lines a shade darker than the bar; what is chosen is a shade darker still */
-.bar .lead button, .bar .lead input[type="text"] { background: none; border-color: rgba(0, 0, 0, 0.28); color: var(--bar-ink); }
-.bar .lead button:hover, .bar .lead input[type="text"]:hover { background: rgba(255, 255, 255, 0.22); border-color: rgba(0, 0, 0, 0.5); }
-.bar .lead button:active { background: rgba(0, 0, 0, 0.3); color: var(--bar-ink); }
-.bar .lead .segs button.on { background: rgba(0, 0, 0, 0.2); color: var(--bar-ink); border-color: rgba(0, 0, 0, 0.28); }
+.bar .lead button, .bar .lead input[type="text"] { background: none; border-color: var(--bar-dim); color: var(--bar-ink); }
+.bar .lead button:hover, .bar .lead input[type="text"]:hover { background: var(--bar-faint); border-color: rgba(255, 255, 255, 0.6); }
+.bar .lead button:active { background: var(--bar-dim); color: var(--bar-ink); }
+.bar .lead .segs button.on { background: rgba(255, 255, 255, 0.24); color: #fff; border-color: var(--bar-dim); }
 .bar .lead .side { border-color: transparent; }
 .bar .time { flex: none; width: calc(2 * var(--col) + var(--gap)); height: 30px; text-align: center; font-weight: 600; letter-spacing: 0.02em; }
 .bar .speeds { width: calc(2 * var(--col) + var(--gap)); }
 .bar .speeds button { flex: 1; width: auto; }
-.bar input[type="range"] { width: 100%; margin: 0; accent-color: var(--bar-ink); }
+.bar input[type="range"] { width: 100%; margin: 0; accent-color: var(--bar-ink); color-scheme: dark; }
 /* the steps: --at = how far along the day (0 to 1). The 8px keep them on the thumb's path, which stops half a thumb short of each end. */
 .steps12 { position: relative; height: 18px; margin: 0 8px; }
 .steps12 button { position: absolute; left: calc(var(--at) * 100%); top: 0; transform: translateX(-50%); width: auto; min-width: 18px; height: 18px; padding: 0 2px; border: 0; background: none;
-  font-size: 11px; line-height: 18px; color: rgba(0, 0, 0, 0.62); }
-.steps12 button::before { content: ""; position: absolute; left: 50%; top: -3px; width: 1px; height: 4px; background: rgba(0, 0, 0, 0.45); }
-.steps12 button:hover { background: none; color: #000; text-decoration: underline; }
-.steps12 button.on { color: #000; font-weight: 700; }
-.steps12 button.special { transform: translateX(-4%); top: -1px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--bar-ink); color: var(--bar-field); font-weight: 600; font-size: 10.5px; z-index: 1; }
+  font-size: 11px; line-height: 18px; color: rgba(255, 255, 255, 0.66); }
+.steps12 button::before { content: ""; position: absolute; left: 50%; top: -3px; width: 1px; height: 4px; background: rgba(255, 255, 255, 0.45); }
+.steps12 button:hover { background: none; color: #fff; text-decoration: underline; }
+.steps12 button.on { color: #fff; font-weight: 700; }
+.steps12 button.special { transform: translateX(-4%); top: -1px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--bar-ink); color: var(--bar); font-weight: 600; font-size: 10.5px; z-index: 1; }
 .steps12 button.special::before { left: 4%; height: 5px; top: -4px; background: var(--bar-ink); }      /* the pill sits to the right of the 10; its tick stays at 10:10 */
-.steps12 button.special:hover { background: #000; text-decoration: none; }
+.steps12 button.special:hover { background: #fff; color: #000; text-decoration: none; }
 .bar input:focus, .bar button:focus-visible, .bar input[type="range"]:focus-visible { outline-color: var(--bar-ink); }
 /* a phone, or a narrow window: the bar on top, the preview under it; below them the whole panel scrolls as one */
 @media (max-width: 860px) {

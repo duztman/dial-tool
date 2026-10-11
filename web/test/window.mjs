@@ -121,6 +121,8 @@ await tab("Rings");
 const before = await S("S.rings.length");
 await page.click("#add-band");
 check(await S(`S.rings.length === ${before + 1} && S.rings[S.ui_ring].kind === 3`), "Add Band → a band ring, selected");
+const row_look = await page.$$eval(".ringlist li", (l) => l.map((e) => { const c = getComputedStyle(e); return (e.classList.contains("on") ? "on " : "") + c.borderTopWidth + " " + c.backgroundColor; }));
+check(row_look.every((x) => x.includes("1px")) && row_look.filter((x) => x === "on 1px rgb(207, 228, 245)").length === 1, "every ring is a framed row; the selected one is light blue");
 check(await page.$$eval(".ringlist input", (e) => e.length) === 0 && await page.$$eval(".ringlist .rename", (e) => e.length) === 1, "the ring list has no name fields: one rename box, on the selected ring");
 const mine = await S("S.ui_ring"), other_ring = mine === 0 ? 1 : 0;
 await page.click(`.ringlist li:nth-child(${other_ring + 1}) .name`);
@@ -182,6 +184,7 @@ await shot("4b-hover-setup");
 await tab("Rings");
 const order = await S("S.rings.map((r) => r.name)");
 const grip = await page.$eval(".ringlist li:nth-child(1) .grip", (e) => { const r = e.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2, r.height]; });
+grip[2] = await page.$$eval(".ringlist li", (l) => l[1].getBoundingClientRect().top - l[0].getBoundingClientRect().top);      // from one row to the next
 await page.mouse.move(grip[0], grip[1]);
 await page.mouse.down();
 await page.mouse.move(grip[0], grip[1] + grip[2] * 1.2, { steps: 4 });
@@ -210,6 +213,8 @@ await shot("4c-guides");
 await page.click("#guides");
 await frame();
 check(await S("!t.items.some((i) => i.role === 'guide')") && await page.isHidden("#global-gd-w-Thickness"), "the Guides switch, off: none drawn, and the settings hide");
+const looks = await page.evaluate(() => { const c = (q, p) => getComputedStyle(document.querySelector(q))[p]; return [c(".bar", "backgroundColor"), c(".bar", "color")]; });
+check(looks[0] === "rgb(51, 51, 51)" && looks[1] === "rgb(242, 242, 238)", "the bar is 80 % black with light words");
 await page.mouse.move(900, 400);
 const off_look = await page.$eval("#guides", (e) => { const c = getComputedStyle(e); return [e.getAttribute("aria-pressed"), c.backgroundColor, e.textContent, parseFloat(c.borderTopLeftRadius)]; });
 check(off_look[0] === "false" && off_look[1] === "rgba(0, 0, 0, 0)" && off_look[2] === "Guides" && off_look[3] >= 8 && await page.$eval("#guides", (e) => getComputedStyle(e).borderTopStyle) === "dashed", "off, it is a dashed grey rounded box, with no word for it");
@@ -436,7 +441,7 @@ const pane_lines = await page.$$eval(".form .row.hdr", (h) => h.filter((e) => e.
 check(pane_lines.length > 0 && pane_lines.every((x) => x === "24/26"), `a pane's line starts at the margin, over its eye, which stands 2 further in (${pane_lines[0]})`);
 // the bar keeps the columns: widths of one or two columns, and the Guides switch ends on the panel's last column
 const fits = await page.evaluate(() => { const w = (q) => Math.round(document.querySelector(q).getBoundingClientRect().width), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); return { play: w("#play"), speeds: w(".speeds"), time: w("#time"), now: w("#now"), zooms: w(".zooms"), fit: w("#fit"), guides: w("#guides"), guides_right: r("#guides"), row_right: r(".form .row"), side: Math.round(document.querySelector("#panel-toggle").getBoundingClientRect().left + 13) }; });
-check(fits.play === 54 && fits.now === 54 && fits.zooms === 54 && fits.fit === 54 && fits.speeds === 120 && fits.time === 120 && fits.guides === 120 && fits.guides_right === fits.row_right && fits.side === 32, `bar and Guides switch fit the columns (${JSON.stringify(fits)})`);
+check(fits.play === 54 && fits.now === 54 && fits.zooms === 54 && fits.fit === 54 && fits.speeds === 120 && fits.time === 120 && fits.guides < 100 && fits.guides_right === fits.row_right && fits.side === 32, `bar and Guides switch fit the columns (${JSON.stringify(fits)})`);
 await shot("7b-bar");
 await page.fill("#time", "3:20:10");
 await page.press("#time", "Enter");

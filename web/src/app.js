@@ -43,8 +43,8 @@ const icon = (inside, size = 16, box = "0 0 16 16") => `<svg viewBox="${box}" wi
 const ticks = (n, r0, r1) => Array.from({ length: n }, (_, i) => { const a = i * 2 * Math.PI / n, x = Math.sin(a), y = -Math.cos(a); return `M${(x * r0).toFixed(2)} ${(y * r0).toFixed(2)}L${(x * r1).toFixed(2)} ${(y * r1).toFixed(2)}`; }).join("");
 // a section's sign: a small picture inside a ring
 const SECTION_ICONS = {
-  // pies: the ring cut in four. Chosen: two opposite pies filled, a checkerboard ("dama"; Okay, 11 Oct 2026)
-  Dial: `<path d="M0 -15L0 15M-15 0L15 0" stroke-width="1.2"/><path class="dama" d="M0 0L0 -15A15 15 0 0 1 15 0ZM0 0L0 15A15 15 0 0 1 -15 0Z" fill="currentColor" stroke="none"/>`,
+  // pies: the ring cut in eight (four until beta 4.3). Chosen: every other pie filled, a checkerboard ("dama"; Okay, 11–12 Oct 2026)
+  Dial: `<path d="M0.0 -15.0L0.0 15.0M10.61 -10.61L-10.61 10.61M15.0 -0.0L-15.0 0.0M10.61 10.61L-10.61 -10.61" stroke-width="1.1"/><path class="dama" d="M0 0L0.0 -15.0A15 15 0 0 1 10.61 -10.61ZM0 0L15.0 -0.0A15 15 0 0 1 10.61 10.61ZM0 0L0.0 15.0A15 15 0 0 1 -10.61 10.61ZM0 0L-15.0 0.0A15 15 0 0 1 -10.61 -10.61Z" fill="currentColor" stroke="none"/>`,
   Rings: `<circle r="8"/><circle r="3.5"/>`,
   Hands: `<path d="M0 0L0 -8.5M0 0L5.5 3.5"/><circle r="1.3" fill="currentColor" stroke="none"/>`,
   Date: `<rect x="2.2" y="-3.2" width="8" height="6.4" rx="1.4" fill="currentColor" stroke="none"/>`,      // a dial with a window at 3 (Okay's drawing, 11 Oct 2026)
