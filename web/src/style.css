@@ -41,7 +41,6 @@
     /* the line before and after every row: white on the scrolling grey, that grey on paper and white (Okay, 12 Oct 2026).
        A part that scrolls sets --row-rule again, like its surface. */
     --line-on-grey: #FFFFFF; --line-on-paper: var(--scroll); --row-rule: var(--line-on-paper);
-    --on-canvas: var(--ink); --on-canvas-quiet: var(--grey); --on-canvas-low: var(--faint); --on-canvas-fill: var(--paper); --canvas-hover: var(--veil-strong);      /* what stands on the preview's backdrop; main.dark sets them again */
 
     /* the panel's columns: a toggle column at the far left (eyes: a pane's, a ring's), then six equal
        columns with equal gaps, between two margins. 24 + 16 + 12 + (6 × 54 + 5 × 12) + 24 = 460.
@@ -424,29 +423,21 @@
   main { position: relative; min-width: 0; min-height: 0; overflow: hidden; background: var(--ground); }
   .preview { display: block; width: 100%; height: 100%; touch-action: none; cursor: default; user-select: none; }
   .preview path { cursor: pointer; }
-  main.dark { --on-canvas: var(--bar-ink); --on-canvas-quiet: var(--bar-quiet); --on-canvas-low: var(--bar-low); --on-canvas-fill: var(--bar); --canvas-hover: var(--bar-faint); }
-
-  /* guides, at the preview's top right: a switch and, joined to it, the arrow that drops their list. Their colour
-     follows the backdrop (--on-canvas). On: a solid outline. Off: dashed and quiet. The word keeps the width of its
-     bold form, so the box is the same size on and off. */
-  .guides { position: absolute; z-index: 3; top: var(--canvas-inset); right: var(--canvas-inset); display: flex; justify-content: flex-end; color: var(--on-canvas); }
-  .guidesbox, .guidesmore { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: var(--hair) solid var(--on-canvas); user-select: none; }
+  /* guides, at the preview's top right: a switch and, joined to it, the arrow that drops their list. It never
+     depends on the backdrop (Okay, 12 Oct 2026: "ensure contrast at all times, simply"): it carries its own ground.
+     On: light, with dark words. Off: near black, with quiet words. A solid hairline round both, of a middle tone
+     that shows on a white backdrop and on a black one. The word keeps the width of its bold form, so the box is
+     the same size on and off. */
+  .guides { position: absolute; z-index: 3; top: var(--canvas-inset); right: var(--canvas-inset); display: flex; justify-content: flex-end; }
+  .guidesbox, .guidesmore { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: var(--hair) solid var(--faint); background: var(--bar-ink); color: var(--night); user-select: none; }
   .guidesbox { gap: 7px; padding: 0 10px 0 8px; border-radius: 10px 0 0 10px; font-weight: 600; }
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 10px 10px 0; }
   .guidesbox .word::after { content: attr(data-text); display: block; height: 0; overflow: hidden; visibility: hidden; font-weight: 600; }
-  :is(.guidesbox, .guidesmore):hover { background: var(--canvas-hover); }
-  /* off: a hairline of two tones, with no gaps (Okay, 12 Oct 2026). Dashes as light as the word; between them a tone
-     nearer the backdrop. The dashes are the border; the other tone is a ground under the border; the inside is
-     filled with the backdrop's own colour (--canvas, set by app.js), so only the line shows it. */
-  .guidesbox[aria-pressed="false"] { color: var(--on-canvas-quiet); font-weight: 400; }
-  .guidesbox[aria-pressed="false"], .guidesbox[aria-pressed="false"] + .guidesmore { border-color: var(--on-canvas-quiet); border-style: dashed;
-    background: linear-gradient(var(--canvas), var(--canvas)) padding-box, linear-gradient(var(--on-canvas-low), var(--on-canvas-low)) border-box; }
-  .guidesbox[aria-pressed="false"]:hover { color: var(--on-canvas); }
-  .guidesmore[aria-expanded="true"] { background: var(--on-canvas); color: var(--on-canvas-fill); }
-  .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }
-  /* off, everything on the switch has one colour, the dashes' light one: sign, word and arrow (Okay, 12 Oct 2026) */
-  .guidesbox[aria-pressed="false"] + .guidesmore { color: var(--on-canvas-quiet); }
-  .guidesbox[aria-pressed="false"] + .guidesmore[aria-expanded="true"] { background: linear-gradient(var(--canvas), var(--canvas)) padding-box, linear-gradient(var(--on-canvas-low), var(--on-canvas-low)) border-box; }      /* open, only its arrow turns */
+  :is(.guidesbox, .guidesmore):hover { background: var(--field); }
+  .guidesbox[aria-pressed="false"], .guidesbox[aria-pressed="false"] + .guidesmore { background: var(--night); color: var(--bar-quiet); }
+  .guidesbox[aria-pressed="false"] { font-weight: 400; }
+  :is(.guidesbox[aria-pressed="false"], .guidesbox[aria-pressed="false"] + .guidesmore):hover { background: var(--night-field); color: var(--bar-ink); }
+  .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }      /* open, only its arrow turns */
   /* the list: near black and round, like the colour pop-out (.night). A kind of guide is one line: its name, then
      round choices with room between them — none, then the eight colours. The chosen one stands in a thick ring of its own colour, a
      little of the ground between them. A hairline under every line. */

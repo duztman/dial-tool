@@ -230,8 +230,8 @@ await page.click("#guides");
 await frame();
 check(await S("!t.items.some((i) => i.role === 'guide')") && await page.isVisible("#guide-list"), "the Guides switch, off: none drawn; the list stays where it is");
 await page.mouse.move(480, 30);
-const one_colour = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c("#guides").color, c("#guides svg").opacity, c("#guides-more").color, c("#guides").borderTopColor]; });
-check(one_colour[0] === one_colour[2] && one_colour[0] === one_colour[3] && one_colour[1] === "1", `off, its sign, word, arrow and dashes are one colour (${one_colour[0]})`);
+const one_colour = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c("#guides").color, c("#guides svg").opacity, c("#guides-more").color, c("#guides").backgroundColor, c("#guides").borderTopStyle]; });
+check(one_colour[0] === one_colour[2] && one_colour[1] === "1" && one_colour[3] === "rgb(20, 20, 19)" && one_colour[4] === "solid", `off, it is near black with a solid line; its sign, word and arrow are one quiet colour (${one_colour[0]})`);
 await page.mouse.click(480, 30);                      // the backdrop, off the dial
 check(await page.isHidden("#guide-list"), "a press outside the list puts it away");
 await page.click("#guides-more");
@@ -239,18 +239,18 @@ const looks = await page.evaluate(() => { const c = (q, p) => getComputedStyle(d
 check(looks[0] === "rgb(51, 51, 51)" && looks[1] === "rgb(242, 242, 238)", "the bar is 80 % black with light words");
 await page.mouse.move(900, 400);
 const off_look = await page.$eval("#guides", (e) => { const c = getComputedStyle(e); return [e.getAttribute("aria-pressed"), c.backgroundColor, e.textContent, c.borderTopStyle]; });
-const off_line = await page.$eval("#guides", (e) => { const c = getComputedStyle(e); return [c.borderTopWidth, c.backgroundImage.split("linear-gradient").length - 1, c.borderTopColor]; });
-check(off_look[0] === "false" && off_look[2] === "Guides" && off_look[3] === "dashed" && off_line[0] === "1px" && off_line[1] === 2 && off_line[2] === "rgb(92, 92, 88)", "off, its line is a hairline of two tones with no gaps: dashes as light as its word, a second tone under them");
+check(off_look[0] === "false" && off_look[2] === "Guides" && off_look[3] === "solid", "off, no dashes");
 await shot("4c3-guides-off");
 await page.click("#guides");
 await page.click("#guides-more");
 await page.mouse.move(900, 400);
-check(await S("S.guides === true && S.ui_section === 0") && await page.isHidden("#guide-list") && await page.$eval("#guides", (e) => { const c = getComputedStyle(e); return c.borderTopStyle + c.borderTopColor; }) === "solidrgb(17, 17, 17)", "pressed again it is on: a solid dark outline on a light backdrop");
+check(await S("S.guides === true && S.ui_section === 0") && await page.isHidden("#guide-list") && await page.$eval("#guides", (e) => { const c = getComputedStyle(e); return c.backgroundColor + c.color; }) === "rgb(242, 242, 238)rgb(20, 20, 19)", "pressed again it is on: light, with dark words");
 // its colour follows the backdrop
 await page.fill("#global-c-backdrop-Backdrop-hex", "#1A1A1F");
 await page.press("#global-c-backdrop-Backdrop-hex", "Enter");
 await frame();
-check(await page.$eval("#guides", (e) => getComputedStyle(e).color) === "rgb(242, 242, 238)", "on a dark backdrop the switch is light");
+check(await page.$eval("#guides", (e) => { const c = getComputedStyle(e); return c.backgroundColor + c.color; }) === "rgb(242, 242, 238)rgb(20, 20, 19)", "on a dark backdrop it looks the same: it carries its own ground");
+for (const grey of ["#808080", "#F2F2EE", "#141413"]) { await page.fill("#global-c-backdrop-Backdrop-hex", grey); await page.press("#global-c-backdrop-Backdrop-hex", "Enter"); await frame(); await page.screenshot({ path: path.join(OUT, `4c5-guides-on-${grey.slice(1)}.png`), clip: { x: 1240, y: 0, width: 200, height: 60 } }); await page.click("#guides"); await page.mouse.move(480, 30); await frame(); await page.screenshot({ path: path.join(OUT, `4c5-guides-off-${grey.slice(1)}.png`), clip: { x: 1240, y: 0, width: 200, height: 60 } }); await page.click("#guides"); await page.mouse.move(480, 30); }
 await shot("4c4-guides-dark");
 await page.fill("#global-c-backdrop-Backdrop-hex", "#CCCCC7");
 await page.press("#global-c-backdrop-Backdrop-hex", "Enter");

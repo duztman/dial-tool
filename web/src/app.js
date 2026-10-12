@@ -1849,9 +1849,6 @@ class DialTool {
     this.items = items;
     const backdrop = S.out_production ? [1, 1, 1, 1] : S.c_backdrop;
     this.backdrop.setAttribute("fill", to_hex(backdrop));
-    this.main.style.setProperty("--canvas", to_hex(backdrop));      // the stylesheet fills the Guides switch with it
-    // what stands on the preview (the Guides switch) is dark on a light backdrop, light on a dark one
-    this.main.classList.toggle("dark", 0.2126 * backdrop[0] + 0.7152 * backdrop[1] + 0.0722 * backdrop[2] < 0.45);
     while (this.slots.length < items.length) {
       const node = svg_el("path");
       this.dial.append(node);
