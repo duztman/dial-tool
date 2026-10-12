@@ -277,6 +277,13 @@
   .body > :is(.ringlist, .examples) { grid-column: 1 / -1; }
   .body.sliding { overflow-y: clip; }               /* while a pane opens or closes (app.js: slide) */
 
+  /* a bar: one line of its own, outside the panes (Hands: All hands · Show hands · Motion). It opens like a pane, with
+     a thick line; on the columns: name 2 · tick 2 · menu 2. */
+  .handsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; min-height: calc(var(--head) + var(--unit)); border-top: var(--thick) solid var(--ink); }
+  .handsbar > h2 { grid-column: 2 / span 2; }
+  .handsbar > .check { grid-column: 4 / span 2; white-space: nowrap; }
+  .handsbar > select { grid-column: 6 / span 2; }
+
   /* rows sit on the six columns: label 2 · control 2 · typed field 1 · stepper 1 */
   .row { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); column-gap: var(--gap); align-items: center; min-height: var(--line); }
   /* a hairline before and after every row. Two shadows, both on the row's own last line and the line above its
@@ -289,6 +296,7 @@
   .row > :is(select, .segs, .colour, .single, .tools, .picks, .swatches), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
   .row > :is(.check, .wide), .row.note > .quiet { grid-column: 1 / -1; }      /* a tick and its words start at the left edge */
   .row > span:first-child:empty { display: none; }
+  .row.nest > .check { grid-column: 3 / -1; }       /* a question about the row above: it starts where the controls start */
   .row.note { min-height: 0; }
   .row.note > .quiet { padding-bottom: 8px; }
   .row > button:not(:first-child) { justify-self: start; }
@@ -6574,7 +6582,8 @@ var ROWS = {
     hdr("Dial"),
     // the plate: how big, what colour, what is on it
     num2("dial_d", "Diameter", 15, 50, 0.1),
-    chk("ui_scale", "Scale everything on the dial with it"),
+    chk("ui_scale", "Scale everything with it", { nest: true }),
+    // nest: a question about the row above starts on the controls' column (Okay, 12 Oct 2026)
     col("c_plate", "Plate"),
     custom("background"),
     hdr("Colours"),
@@ -6603,7 +6612,7 @@ var ROWS = {
     num2("span", "Span \xB0", 1, 360, 1),
     num2("every", "Every", 1, 60, 1, { whole: true }),
     num2("offset", "Offset", 0, 59, 1, { whole: true }),
-    chk("invert", "Skip those instead"),
+    chk("invert", "Skip those instead", { nest: true }),
     hdr("Give way to rings above"),
     pop("skip", "Skip where", SKIP_FROM),
     pop("knock", "Knock out", KNOCK_FROM),
@@ -6645,9 +6654,8 @@ var ROWS = {
     custom("features", { show: numerals_only })
   ],
   Hands: [
-    hdr("All hands"),
-    chk("ha_on", "Show hands"),
-    pop("ha_beat", "Motion", BEATS.map((b) => b[0])),
+    custom("hands_bar", { pin: true, bar: true }),
+    // bar: one line of its own, always in view: All hands · Show hands · Motion
     hdr("Cap"),
     num2("ha_cap", "Cap \xD8", 0, 4, 0.05),
     col("c_cap", "Colour"),
@@ -6704,7 +6712,7 @@ var ROWS = {
     chk("out_mirror", "Mirrored, for toner transfer"),
     hdr("Export a file"),
     custom("export"),
-    chk("out_live_text", "Keep numerals as text in the SVG"),
+    chk("out_live_text", "Keep numerals as text in the SVG", { nest: true }),
     info("The font must be installed where the file is opened. PDF and PNG stay outlines.", { show: (S) => S.out_live_text }),
     num2("out_dpi", "PNG dpi", 72, 2400, 1, { button: "png" }),
     // the PNG button stands where the label would: the dpi is its setting
@@ -7182,7 +7190,8 @@ var DialTool = class _DialTool {
     this.rows = ROWS[name].map((row) => this.build_row(row));
     let pane = null;
     for (const r of this.rows) {
-      if (r.fold) {
+      if (r.row.bar) (r.row.pin ? this.pinned : this.form).append(r.el);
+      else if (r.fold) {
         pane = r;
         (r.row.pin ? this.pinned : this.form).append(r.el);
       } else {
@@ -7285,7 +7294,7 @@ var DialTool = class _DialTool {
   }
   /** one row of the form → {row, el, refresh(T)}. */
   build_row(row) {
-    const wrap = el("div", { className: "row " + row.kind });
+    const wrap = el("div", { className: "row " + row.kind + (row.nest ? " nest" : "") });
     const out = { row, el: wrap, refresh: () => {
     } };
     const set = (v) => this.set_value(row.scope, row.key, v);
@@ -7772,6 +7781,20 @@ var DialTool = class _DialTool {
     const lines = el("div"), same = el("button", { type: "button", className: "btn", id: "sectors-same", textContent: "All as the ring", title: "Every sector in the ring\u2019s colour again", onclick: () => this.set_value("ring", "cs", {}) });
     wrap.append(lines, el("div", { className: "row" }, el("span"), el("span", { className: "tools" }, same)));
     out.refresh = () => this.swatch_lines(lines, () => [{ text: "Sectors", colours: this.sector_colours(this.S.ui_ring) }]);
+  }
+  /** Hands, always in view, one line (Okay, 12 Oct 2026): the name, a tick to show the hands, how they move. */
+  row_hands_bar(wrap, out) {
+    wrap.className = "handsbar";
+    const tick = el("input", { type: "checkbox", id: "global-ha-on-Show-hands" });
+    tick.onchange = () => this.set_value("global", "ha_on", tick.checked);
+    const motion = el("select", { id: "global-ha-beat-Motion", title: "How the seconds hand moves", ariaLabel: "Motion" });
+    BEATS.forEach((b, i) => motion.append(el("option", { value: i, textContent: b[0] })));
+    motion.onchange = () => this.set_value("global", "ha_beat", +motion.value);
+    wrap.append(el("h2", { textContent: "All hands" }), el("label", { className: "check", htmlFor: tick.id }, tick, " Show hands"), motion);
+    out.refresh = (S) => {
+      tick.checked = Boolean(S.ha_on);
+      motion.value = S.ha_beat;
+    };
   }
   /** the plate's background: only the button for now (Okay, 12 Oct 2026: "no background image functionality now. Just the button"). */
   row_background(wrap) {
