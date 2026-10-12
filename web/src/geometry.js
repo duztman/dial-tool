@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.4";
+export const VERSION = "beta 4.5";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -94,13 +94,22 @@ export const DEFAULTS = {
   out_production: false, out_mirror: false, out_live_text: false,
   out_dpi: 600.0, out_seconds: 4.0, out_fps: 30.0, out_px: 1080,
   ui_section: 0, ui_ring: 0, ui_hand: 0, ui_preview: 0, ui_window: 0,
-  // guides (web version, beta 3.0): which ones, their colour, strength (%) and thickness (screen points).
-  // The starting values draw what dial.py draws. Preview only, never in a file (R5).
-  gd_edge: true, gd_axes: true, gd_rings: true,
-  gd_c: [0.0, 0.55, 0.9, 1], gd_strength: 50.0, gd_w: 1.0,
+  // guides: preview only, never in a file (R5). Five kinds, each with an eye (shown or not) and a colour:
+  // a place in GUIDE_COLOURS (R9: a number, never the colour itself). One thickness (screen points) for all;
+  // the selected ring's lines are half as thick again. (beta 4.5, 12 Oct 2026)
+  gd_edge: true, gd_axes: true, gd_win: true, gd_rings: true, gd_sel: true,
+  gd_k_edge: 1, gd_k_axes: 1, gd_k_win: 1, gd_k_rings: 1, gd_k_sel: 4, gd_w: 1.0,
+  // until beta 4.4 guides had two free colours with a strength each. Kept because old links and files carry
+  // them (R8, R31); nothing reads them now.
+  gd_c: [0.0, 0.55, 0.9, 1], gd_strength: 50.0,
   gd_sel_c: [1.0, 0.45, 0.0, 1], gd_sel_strength: 95.0, gd_sel_w: 1.5,
 };
 
+/** the eight colours a guide can have: six neons, a dark and a light (Okay, 12 Oct 2026). The list only grows at its end (R9). */
+export const GUIDE_COLOURS = ["#FF2D95", "#00E5FF", "#39FF14", "#FFE600", "#FF6A00", "#7A5CFF", "#111111", "#FFFFFF"];
+/** the five kinds of guide: [key of its eye, key of its colour, name]. */
+export const GUIDE_KINDS = [["gd_edge", "gd_k_edge", "Dial edge"], ["gd_axes", "gd_k_axes", "Centre lines"], ["gd_win", "gd_k_win", "Window radii"],
+  ["gd_rings", "gd_k_rings", "Ring edges"], ["gd_sel", "gd_k_sel", "Selected ring"]];
 export const NOT_GEOMETRY = ["t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview"];
 export const NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_"];
 
@@ -1142,23 +1151,24 @@ export function scene(S, statik, t, preview = true, selected = null) {
 
   if (preview && S.guides) {                       // never exported (R5)
     const R = S.dial_d / 2;
-    const tint = (c, strength) => [c[0], c[1], c[2], Math.min(Math.max(strength, 0), 100) / 100];
-    const plain = tint(S.gd_c, S.gd_strength), ring_edge = tint(S.gd_c, S.gd_strength * 0.7), chosen = tint(S.gd_sel_c, S.gd_sel_strength);
-    const ring_guide = (r, colour, px) => add("guide", circle(2 * r), null, { stroke: colour, px });
-    const line_guide = (p0, p1) => add("guide", new Path().line(p0, p1), null, { stroke: plain, px: S.gd_w });
-    if (S.gd_edge) {
-      ring_guide(R, plain, S.gd_w);
-      for (const r of new Set(windows.map((x) => x.w.r))) ring_guide(r, plain, S.gd_w);
-    }
+    const colour = (key) => {                      // a place in GUIDE_COLOURS → RGBA
+      const hex = GUIDE_COLOURS[S[key]] || GUIDE_COLOURS[0];
+      return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).concat([1]);
+    };
+    const ring_guide = (r, key, px) => add("guide", circle(2 * r), null, { stroke: colour(key), px });
+    const line_guide = (p0, p1) => add("guide", new Path().line(p0, p1), null, { stroke: colour("gd_k_axes"), px: S.gd_w });
+    if (S.gd_edge) ring_guide(R, "gd_k_edge", S.gd_w);
+    if (S.gd_win) for (const r of new Set(windows.map((x) => x.w.r))) ring_guide(r, "gd_k_win", S.gd_w);
     if (S.gd_axes) {
       line_guide([-R, 0], [R, 0]);
       line_guide([0, -R], [0, R]);
     }
     S.rings.forEach((ring, i) => {
-      if (!ring.on || !(S.gd_rings || i === selected)) return;
+      const chosen = i === selected && S.gd_sel;
+      if (!ring.on || !(S.gd_rings || chosen)) return;
       const inner = { ticks: ring.len, markers: ring.len, band: ring.width }[kind_of(ring)] || 0;
       for (const r of [...new Set([ring.r, ring.r - inner])].sort((a, b) => b - a)) {
-        if (r > 0) ring_guide(r, i === selected ? chosen : ring_edge, i === selected ? S.gd_sel_w : S.gd_w);
+        if (r > 0) ring_guide(r, chosen ? "gd_k_sel" : "gd_k_rings", chosen ? S.gd_w * 1.5 : S.gd_w);
       }
     });
   }

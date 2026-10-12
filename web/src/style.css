@@ -38,6 +38,10 @@
     /* what a part stands on. A part that scrolls sets these again (see .form): an inset block is darker
        than paper but lighter than the scrolling grey, so it never melts into its ground. */
     --surface: var(--paper); --inset: var(--ground); --well: var(--ground);
+    /* the line before and after every row: white on the scrolling grey, that grey on paper and white (Okay, 12 Oct 2026).
+       A part that scrolls sets --row-rule again, like its surface. */
+    --line-on-grey: #FFFFFF; --line-on-paper: var(--scroll); --row-rule: var(--line-on-paper);
+    --on-canvas: var(--ink); --on-canvas-quiet: var(--grey); --on-canvas-fill: var(--paper); --canvas-hover: var(--veil-strong);      /* what stands on the preview's backdrop; main.dark sets them again */
 
     /* the panel's columns: a toggle column at the far left (eyes: a pane's, a ring's), then six equal
        columns with equal gaps, between two margins. 24 + 16 + 12 + (6 × 54 + 5 × 12) + 24 = 460.
@@ -65,6 +69,12 @@
     --ring-gap: 4px;                               /* between framed rows */
     --thumb: 18px; --track: 4px;                   /* sliders: a black disc on a thin track (Okay's sketch, 12 Oct 2026) */
     --tick: 16px;                                  /* a tick box */
+    --chip: 22px; --chip-gap: 4px;                 /* a colour to pick: in the pop-out's two rows, in the guides' list */
+    --pop-pad: 12px; --pop-label: 72px;            /* the colour pop-out: its side space, and the column of its rows' names */
+    --pop-field: 168px; --pop-hue: 24px;           /* its field of one hue, and the strip of hues under it */
+    --knob: 20px;                                  /* the handle on the field and on the strip */
+    --canvas-inset: 12px;                          /* from the preview's edge to what stands on it */
+    --guide-name: 96px;                            /* the names in the guides' list */
 
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
     --t-xs: 11px; --t-s: 12px; --t-m: 13px; --t-l: 15px;
@@ -72,7 +82,7 @@
     --sans: system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
     --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;      /* only for what the tool says: the log, a link, a hex value, a feature's tag */
   }
-  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; } }      /* a finger needs more to hold than a pointer */
+  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --pop-field: 220px; --pop-hue: 36px; --knob: 30px; } }      /* a finger needs more to hold than a pointer */
 }
 
 @layer base {
@@ -153,7 +163,14 @@
   .tile[aria-pressed="true"] small { color: var(--rule); }
 
   /* what the tool says, set apart: small, monospaced, on an inset ground */
-  .log, .link, .hexline { background: var(--inset); }
+  .log, .link { background: var(--inset); }
+
+  /* colours to pick: small squares in a row; the one in use is outlined */
+  .chips { display: grid; grid-template-columns: repeat(auto-fill, var(--chip)); gap: var(--chip-gap); }
+  .chips button { width: var(--chip); height: var(--chip); border: var(--hair) solid var(--chip-rule); }
+  .chips button.on { outline: var(--thick) solid var(--ink); outline-offset: 1px; }
+  .chips button.add { border-color: var(--rule); background: var(--field); color: var(--ink); line-height: 1; }
+  .chips button.add:hover { background: var(--hover); border-color: var(--ink); }
   .log, .link { display: block; width: 100%; margin: 0; padding: 8px 10px; border: 0; color: var(--grey); font: var(--t-xs)/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
   .log { min-height: 96px; max-height: 260px; overflow-y: auto; }
   .link { resize: none; overflow-y: auto; color: var(--ink); }
@@ -166,16 +183,6 @@
   #app.nopanel .panel { display: none; }
   .panel > header { display: flex; align-items: center; height: var(--header); padding: 0 var(--margin); }
   .panel .title { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); }
-  /* guides: a box at the top right; the whole box switches them. On: a solid dark outline, dark sign and word.
-     Off: dashed and grey. Its word keeps the width of its bold form, so the box is the same size on and off. */
-  .guidesbox { margin-left: auto; display: flex; align-items: center; justify-content: center; gap: 7px; height: var(--control-large); padding: 0 10px 0 8px; border: 1.5px solid var(--ink); border-radius: 10px; font-weight: 600; user-select: none; }
-  .guidesbox .word::after { content: attr(data-text); display: block; height: 0; overflow: hidden; visibility: hidden; font-weight: 600; }
-  .guidesbox:hover { background: var(--ground); }
-  .guidesbox[aria-pressed="false"] { color: var(--grey); border-color: var(--rule); border-style: dashed; font-weight: 400; }
-  .guidesbox[aria-pressed="false"]:hover { color: var(--ink); }
-  .guidesbox[aria-pressed="false"] svg { opacity: 0.55; }
-  .guidesbox:active { background: var(--ink); color: var(--paper); }
-
   /* sections: a sign inside a ring, its name under it */
   .tabs { display: grid; grid-template-columns: repeat(5, 1fr); margin: 0 var(--margin); padding: 12px 0 0; border-top: var(--hair) solid var(--rule); }
   .tabs button { display: grid; justify-items: center; gap: 6px; padding: 4px 0 11px; color: var(--grey); }
@@ -193,7 +200,7 @@
   .pinned, .form { padding: 0 var(--margin); }
   .pinned { border-bottom: var(--hair) solid var(--rule); }      /* a hairline: what is under it scrolls */
   .pinned > .pane:last-child { --air: calc(3 * var(--unit)); }
-  .form { --surface: var(--scroll); --inset: var(--paper); --well: var(--field);
+  .form { --surface: var(--scroll); --inset: var(--paper); --well: var(--field); --row-rule: var(--line-on-grey);
     flex: 1; min-height: 0; overflow-y: auto; padding-bottom: calc(6 * var(--unit)); background: var(--surface); }
 
   /* a pane: a thick line, its heading, its rows. The eye in the toggle column shows whether it is open; the whole
@@ -215,12 +222,15 @@
 
   /* rows sit on the six columns: label 2 · control 2 · typed field 1 · stepper 1 */
   .row { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); column-gap: var(--gap); align-items: center; min-height: var(--line); }
+  /* a hairline before and after every row. Two shadows, both on the row's own last line and the line above its
+     first: where rows meet they fall on the same line, so it stays one hairline, whichever rows are hidden. */
+  .row:not(.note) { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule), 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
   .row > :first-child { grid-column: span 2; }
   .row.num > input[type="range"] { grid-column: span 2; }
   .row.num input[type="text"] { text-align: right; }
   .row > label:first-child { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .row > :is(select, .segs, .colour, .tools, .picks), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
-  .row > :is(.check, .wide, .palette), .row.note > .quiet { grid-column: 1 / -1; }      /* a tick and its words start at the left edge */
+  .row > :is(.check, .wide), .row.note > .quiet { grid-column: 1 / -1; }      /* a tick and its words start at the left edge */
   .row > span:first-child:empty { display: none; }
   .row.note { min-height: 0; }
   .row.note > .quiet { padding-bottom: 8px; }
@@ -237,26 +247,33 @@
   .colour .hex { grid-column: span 2; }
   .swatch { height: var(--control); border: var(--hair) solid var(--rule); box-shadow: inset 0 0 0 2px var(--field); }
   .swatch:hover, .swatch:active { box-shadow: inset 0 0 0 1px var(--field); }
-  /* the picker: a field of one hue, the hues, the colour as numbers, the dial's colours, the hex to copy */
-  .palette { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px var(--gap); align-items: start; margin: 2px 0 12px; padding: 12px 0 14px; border-top: var(--hair) solid var(--rule); border-bottom: var(--hair) solid var(--rule); }
-  .palette > * { grid-column: 1 / -1; }
-  .palette > .quiet { grid-column: span 2; line-height: 22px; }
-  .palette > .chips { grid-column: 3 / -1; display: grid; grid-template-columns: repeat(auto-fill, 22px); gap: 4px; }
-  .chips button { width: 22px; height: 22px; border: var(--hair) solid var(--chip-rule); }
-  .chips button.on { outline: 2px solid var(--ink); outline-offset: 1px; }
+
+  /* the colour pop-out: one for the whole tool, at the right of the swatch that opened it. Paper, one ink line round it.
+     Its head drags it. Rows of colours: a name, then the chips. Then the field of one hue and the strip of hues, tall
+     enough for a finger. Last, one line: RGB · CMYK · HEX, the values, COPY — small, boxed, capitals. */
+  .colourpop { position: fixed; z-index: 5; display: grid; gap: var(--unit); width: calc(2 * var(--pop-pad) + 2 * var(--hair) + var(--pop-label) + 11 * var(--chip) + 10 * var(--chip-gap)); max-width: 100vw;      /* eleven chips to a row: the palette's ten and its + */
+    padding: 0 var(--pop-pad) var(--pop-pad); border: var(--hair) solid var(--ink); background: var(--paper); }
+  .colourpop[hidden] { display: none; }
+  .colourpop header { display: flex; align-items: center; height: var(--head); cursor: grab; touch-action: none; user-select: none; border-bottom: var(--hair) solid var(--row-rule); }
+  .colourpop header h2 { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+  .colourpop header .sign[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+  .chiprow { display: grid; grid-template-columns: var(--pop-label) minmax(0, 1fr); align-items: start; }
+  .chiprow > .quiet { line-height: var(--chip); font-size: var(--t-s); }
   .sv, .hue { position: relative; touch-action: none; }
-  .sv { height: 132px; cursor: crosshair; background: linear-gradient(to top, #000, rgba(0, 0, 0, 0)), linear-gradient(to right, #fff, var(--hue, #f00)); }
-  .hue { height: 16px; cursor: ew-resize; background: linear-gradient(to right, #f00, #ff0 16.67%, #0f0 33.33%, #0ff 50%, #00f 66.67%, #f0f 83.33%, #f00); }
-  .sv i, .hue i { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--ink); pointer-events: none; }
-  .hue i { top: 50%; width: 6px; height: 20px; margin: -10px 0 0 -3px; border-radius: 0; }
-  .asnumbers { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--gap); align-items: center; }
-  .asnumbers .segs { grid-column: span 2; }
-  .asnumbers .numbers { grid-column: 3 / -1; display: flex; gap: 6px; }
-  .asnumbers .numbers label { flex: 1; display: flex; align-items: center; gap: 4px; color: var(--grey); font-size: var(--t-xs); }
-  .asnumbers .numbers input { padding: 0 4px; text-align: right; color: var(--ink); font-size: var(--t-m); }
-  .hexline { display: flex; align-items: center; gap: var(--gap); padding-left: 10px; }
-  .hexline code { flex: 1; font: var(--t-m)/1 var(--mono); user-select: all; }
-  .hexline .copy { height: var(--control-large); min-width: calc(var(--col) + var(--gap)); }
+  .sv { height: var(--pop-field); cursor: crosshair; background: linear-gradient(to top, #000, rgba(0, 0, 0, 0)), linear-gradient(to right, #fff, var(--hue, #f00)); }
+  .hue { height: var(--pop-hue); cursor: ew-resize; background: linear-gradient(to right, #f00, #ff0 16.67%, #0f0 33.33%, #0ff 50%, #00f 66.67%, #f0f 83.33%, #f00); }
+  .sv i, .hue i { position: absolute; width: var(--knob); height: var(--knob); translate: -50% -50%; border-radius: 50%; box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--ink); pointer-events: none; }
+  .hue i { top: 50%; width: calc(var(--knob) / 3); height: calc(var(--pop-hue) + 6px); border-radius: 0; }
+  .asnumbers { display: flex; gap: var(--chip-gap); align-items: center; font-size: var(--t-xs); letter-spacing: 0.04em; text-transform: uppercase; }
+  .asnumbers .segs { flex: none; }
+  .asnumbers .segs > button { flex: none; padding: 0 6px; }
+  .asnumbers .numbers { flex: 1; min-width: 0; display: flex; gap: var(--chip-gap); }
+  .asnumbers .numbers input { padding: 0 2px; text-align: center; text-transform: uppercase; }
+  .asnumbers .copy { flex: none; min-width: var(--col); padding: 0 6px; font-weight: 600; }
+  /* wide: over the whole preview (app.js sets where). The field takes the height that is left. */
+  .colourpop.wide { grid-template-rows: auto auto auto 1fr auto auto; width: auto; }
+  .colourpop.wide header { cursor: default; }
+  .colourpop.wide .sv { height: auto; min-height: var(--pop-field); }
 
   /* the ring list: top ring first. Each ring is a framed row, a little wider than the pane's lines on both sides
      (--frame-out), so the eye has room inside the frame: eye (show or hide the ring, in the toggle column) · grip ·
@@ -331,6 +348,32 @@
   main { position: relative; min-width: 0; min-height: 0; overflow: hidden; background: var(--ground); }
   .preview { display: block; width: 100%; height: 100%; touch-action: none; cursor: default; user-select: none; }
   .preview path { cursor: pointer; }
+  main.dark { --on-canvas: var(--bar-ink); --on-canvas-quiet: var(--bar-quiet); --on-canvas-fill: var(--bar); --canvas-hover: var(--bar-faint); }
+
+  /* guides, at the preview's top right: a switch and, joined to it, the arrow that drops their list. Their colour
+     follows the backdrop (--on-canvas). On: a solid outline. Off: dashed and quiet. The word keeps the width of its
+     bold form, so the box is the same size on and off. */
+  .guides { position: absolute; z-index: 3; top: var(--canvas-inset); right: var(--canvas-inset); display: flex; justify-content: flex-end; color: var(--on-canvas); }
+  .guidesbox, .guidesmore { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: 1.5px solid var(--on-canvas); user-select: none; }
+  .guidesbox { gap: 7px; padding: 0 10px 0 8px; border-radius: 10px 0 0 10px; font-weight: 600; }
+  .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 10px 10px 0; }
+  .guidesbox .word::after { content: attr(data-text); display: block; height: 0; overflow: hidden; visibility: hidden; font-weight: 600; }
+  :is(.guidesbox, .guidesmore):hover { background: var(--canvas-hover); }
+  .guidesbox[aria-pressed="false"] { color: var(--on-canvas-quiet); font-weight: 400; }
+  .guidesbox[aria-pressed="false"], .guidesbox[aria-pressed="false"] + .guidesmore { border-color: var(--on-canvas-quiet); border-style: dashed; }
+  .guidesbox[aria-pressed="false"]:hover { color: var(--on-canvas); }
+  .guidesbox[aria-pressed="false"] svg { opacity: 0.55; }
+  .guidesmore[aria-expanded="true"] { background: var(--on-canvas); color: var(--on-canvas-fill); }
+  .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }
+  /* the list: paper, like the colour pop-out. A kind of guide is an eye, its name, eight colours. */
+  .guidelist { position: absolute; top: calc(100% + var(--unit)); right: 0; width: calc(2 * var(--pop-pad) + 2 * var(--hair) + var(--eye) + var(--guide-name) + 2 * var(--gap) + 8 * var(--chip) + 7 * var(--chip-gap)); max-height: calc(100vh - var(--bar-height) - 2 * var(--canvas-inset) - var(--control-large) - var(--unit)); overflow-y: auto;
+    padding: var(--unit) var(--pop-pad) var(--pop-pad); border: var(--hair) solid var(--ink); background: var(--paper); color: var(--ink); }
+  .guidekind { display: grid; grid-template-columns: var(--eye) var(--guide-name) auto; column-gap: var(--gap); align-items: center; min-height: var(--line);
+    box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  .guidekind .eye { display: grid; place-items: center; height: var(--control); }
+  .guidekind.off :is(.eye, .name) { color: var(--grey); }
+  .guidekind .chips { grid-template-columns: repeat(8, var(--chip)); }
+  .guidefoot { display: flex; justify-content: flex-end; padding-top: calc(2 * var(--unit)); }
   /* the outline of what the pointer is on: an orange line on a white one, so it shows on any colour */
   .glow { fill: none; stroke: var(--glow); stroke-width: 1.5px; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
   .glow.under { stroke: #fff; stroke-width: 4px; }
@@ -425,5 +468,10 @@
     .row.pick > label, .row.pick > .picks { grid-column: 1 / -1; }      /* picture tiles under their label, on all six columns: room for their words */
     .row.pick > label { line-height: 1.4; padding-top: var(--unit); }
     .picker { inset: auto 0 0 0; width: 100%; height: 58%; border-right: 0; border-top: var(--hair) solid var(--ink); }
+    /* the colour pop-out is a sheet from the bottom; wide, it is the whole screen */
+    .colourpop { inset: auto 0 0 0; width: auto; border-width: var(--hair) 0 0; }
+    .colourpop.wide { inset: 0; }
+    .colourpop header { cursor: default; }
+    .guidelist { max-width: calc(100vw - 2 * var(--canvas-inset)); }
   }
 }

@@ -2,7 +2,7 @@
 
 What each word means **in this project**. Turkish where it's the common trade word.
 If a term is used differently in conversation, ask, then update this file.
-*Last updated 11 Oct 2026 (web version, beta 3.0).*
+*Last updated 12 Oct 2026 (web version, beta 4.5: guides, colour pop-out, palette).*
 
 ## Watch terms
 
@@ -60,21 +60,24 @@ If a term is used differently in conversation, ask, then update this file.
 | Term | Meaning |
 |---|---|
 | **Section** | One page of the left panel: Dial · Rings · Hands · Date · Export. |
-| **Pane** | A named part of a section, opened by a thick line (web version, beta 4.0; called a *group* in beta 3.0). Its eye folds it. |
+| **Pane** | A named part of a section, opened by a thick line (web version, beta 4.0; called a *group* in beta 3.0). Its eye folds it. The Dial section's panes: **Dial** (diameter, plate, background) and **Page** (margin, backdrop). |
+| **Row line** | The hairline before and after every row: white on the scrolling grey, that grey on paper. |
+| **Logo** | Planned (build list #72): an SVG placed on the dial with the mouse; it is a ring in the ring list. Not the *background* (a picture on the plate, not built). |
 | **Toggle column** | The narrow column at the far left of the panel (web version). It holds only eyes: a pane's (open or folded) and a ring's (shown or hidden on the dial). |
 | **Margin** | The panel's side space, 24, the same left and right (web version, beta 4.2). Lines start and end on it; so do the eyes. |
 | **Day slider · step** | The bar's slider over twelve hours. Its steps are the twelve hours and 10:10: a click goes exactly to one. |
 | **Eye** | The sign in the toggle column. Open = showing; closed, with lashes = put away. |
 | **Rename box** | A text cursor in a rounded box, after the selected ring's name: the only way to rename a ring (web version). |
 | **Picture tile** | One choice shown as a small drawing with its name under it (ring kind, mark shape, hand shape, what a window shows…). |
-| **Colour picker** | What a swatch opens: the colour field, the hues, RGB / CMYK numbers, the dial's colours, the hex to copy. |
+| **Colour pop-out** | What a swatch opens, at its right (web version, beta 4.5; the *colour picker* of 4.0–4.4): one for the whole tool. *On this dial* · *Palette* · the field and the hues · one line of RGB / CMYK / HEX with COPY. Its head drags it; its square widens it over the preview. |
+| **Palette** | The pop-out's second row: ten colours to start, plus the ones added with **+**. Kept by the browser, not by the dial or its link. |
 | **Production mask** | Export mode: every ring in solid black, no plate, no hands, aperture as an outline. |
 | **Live text** | Export option: numerals and the date stay text in PDF/SVG (the fonts are needed to open them). Off by default — then text is **outlines**. |
 | **Design canon** | `docs/design.md`: the rules for type, grid, colour, pictures and redrawn controls (R29). |
 | **Guidebook** | `docs/Dial-Tool-guide.pdf`, the user guide (A4 landscape, 28 pages, set by the design canon), built from `docs/guide/pages/` and `style.css` by `tools/make_guide.py`. |
 | **Classics** | The guide's nine example dials (field, diver, dress, pilot, California, station clock, Bauhaus, sector, gauge): settings in `tools/guide_dials.py`, also saved as presets in `docs/guide/presets/`. Drawn by eye after dial types, not measured. |
 | **Mirror** | Flips the output for toner transfer. |
-| **Guides** | Thin blue construction circles in the preview — the dial edge and each ring's edges; the selected ring's in orange. Switched with the **Guides** checkbox under the preview. Never exported. |
+| **Guides** | Thin construction lines in the preview, never exported. Five **kinds**: dial edge · centre lines · window radii · ring edges · selected ring. Each kind has an eye and one of the eight **guide colours** (six neons, a dark, a light). Switched with the **Guides switch** at the preview's top right; its arrow drops the **guide list**. |
 | **Backdrop** | The preview's background colour; never exported. |
 | **Number control** | Label · slider · typed field · stepper, all showing one value. Typed shorthand: `1.2` set, `+0.5` add, `x0.5` multiply, `/2` divide. |
 | **Settings** (`S`) | One dictionary holding every value; saved as JSON (presets, last session). Rings are a list inside it (`S["rings"]`, top first). |

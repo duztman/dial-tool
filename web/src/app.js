@@ -35,10 +35,9 @@ const FEATURE_NAMES = {
   hist: "historical forms", ornm: "ornaments", dnom: "denominators", numr: "numerators",
   afrc: "alternative fractions", rvrn: "variation alternates",
 };
-const PALETTE = [                                  // colours dials are made of: blacks and greys · whites and creams · blues · greens · reds to yellow · brown · lume
-  "#111111", "#1A1A1F", "#3A3A3C", "#6E6E73", "#A7A7AA", "#D6D6D2", "#FFFFFF", "#F5F2EA", "#EDE8DB", "#E4D9BF", "#D8C9A3",
-  "#0E2A47", "#1F4E79", "#5B8DB8", "#12372A", "#2E6B4F", "#7A1F1F", "#CC381A", "#E8742A", "#F5C518", "#5A3A22", "#C8E6A0",
-];
+const PALETTE = ["#111111", "#FFFFFF", "#EDE8DB", "#A7A7AA", "#3A3A3C", "#0E2A47", "#12372A", "#7A1F1F", "#C8E6A0", "#E8742A"];      // the palette's first ten: black, white, cream, silver, anthracite, navy, green, burgundy, lume, orange
+const POP_GAP = 12;                              // between a swatch and the pop-out it opens, in screen points
+const PALETTE_KEY = "dial-tool-palette";           // the palette as this browser keeps it: the ten, and what was added
 const DEFAULT_ON = new Set(["kern", "liga", "calt", "ccmp", "locl", "mark", "mkmk", "rlig", "rclt", "curs", "clig", "rvrn"]);
 
 // ── icons: drawn here, 1.4-point lines, so they take the colour of their button ──
@@ -133,11 +132,13 @@ const H = { scope: "hand" };
 
 const ROWS = {
   Dial: [
-    hdr("Size"),
+    hdr("Dial"),                                   // the plate: how big, what colour, what is on it
     num("dial_d", "Diameter", 15, 50, 0.1),
+    col("c_plate", "Plate"),
+    custom("background"),
+    hdr("Page"),                                   // around the dial: preview and page only
     num("margin", "Page margin", 0, 10, 0.5),
-    hdr("Colour"),
-    col("c_plate", "Plate"), col("c_backdrop", "Backdrop"),
+    col("c_backdrop", "Backdrop"),
   ],
   Rings: [                                         // one list; rows that don't apply hide (R16)
     hdr("Rings, top first", { scope: "global", pin: true }),       // pin: stays in view while the rest scrolls
@@ -265,25 +266,11 @@ const ROWS = {
     custom("log"),
   ],
 };
-const guides_on = (S) => S.guides;
-ROWS.Dial.push(                                    // guides: preview only, nothing here reaches a file (R5)
-  hdr("Guides", { folded: true }),
-  info("Guides are off. Press Guides at the top right to show them.", { show: (S) => !S.guides }),
-  chk("gd_edge", "Dial edge and window radii", { show: guides_on }),
-  chk("gd_axes", "Centre lines", { show: guides_on }),
-  chk("gd_rings", "Every ring’s edges", { show: guides_on }),
-  col("gd_c", "Colour", { show: guides_on }),
-  num("gd_strength", "Strength %", 5, 100, 1, { show: guides_on }),
-  num("gd_w", "Thickness", 0.25, 6, 0.25, { show: guides_on }),
-  col("gd_sel_c", "Selected ring", { show: guides_on }),
-  num("gd_sel_strength", "…strength %", 5, 100, 1, { show: guides_on }),
-  num("gd_sel_w", "…thickness", 0.25, 6, 0.25, { show: guides_on }),
-);
 // the day slider's steps: every hour, and 10:10 — hands spread like a smile, the pose watches are photographed in
 const DAY_STEPS = [...Array.from({ length: 12 }, (_, h) => [h * 3600, String(h || 12), false]), [10 * 3600 + 10 * 60, "10:10", true]].sort((a, b) => a[0] - b[0]);
 const SPEEDS = [[1, "Real time"], [60, "A minute every second"], [720, "An hour every five seconds: twelve hours in a minute"]];
 const SECTIONS = Object.keys(ROWS);                // their numbers are what ui_section stores (R9)
-const TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];      // left to right; Guides is the box at the top right (Okay, 11 Oct 2026)
+const TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];      // left to right. Guides is a switch on the preview (Okay, 12 Oct 2026)
 for (const name of SECTIONS) for (const row of ROWS[name]) row.scope ??= name === "Rings" ? "ring" : "global";
 
 // ── small helpers ────────────────────────────────────────────
@@ -323,6 +310,23 @@ function rgb_cmyk([r, g, b]) {
   return k >= 1 ? [0, 0, 0, 1] : [(1 - r - k) / (1 - k), (1 - g - k) / (1 - k), (1 - b - k) / (1 - k), k];
 }
 const cmyk_rgb = ([c, m, y, k]) => [(1 - c) * (1 - k), (1 - m) * (1 - k), (1 - y) * (1 - k)];
+/** '#abc', 'ABCDEF', '#a1b2c3' → '#A1B2C3'; anything else → null. */
+function parse_hex(text) {
+  const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(text).trim());
+  return m ? "#" + (m[1].length === 3 ? [...m[1]].map((c) => c + c).join("") : m[1]).toUpperCase() : null;
+}
+const has_focus = (e) => document.activeElement === e;
+/** drag inside a box: move(x, y) gets where the pointer is, 0 to 1 across and down. */
+function drag_in(box, move) {
+  box.onpointerdown = (e) => {
+    e.preventDefault();
+    box.setPointerCapture(e.pointerId);
+    const at = (ev) => { const r = box.getBoundingClientRect(); move(clamp((ev.clientX - r.left) / r.width, 0, 1), clamp((ev.clientY - r.top) / r.height, 0, 1)); };
+    box.onpointermove = at;
+    box.onpointerup = box.onpointercancel = () => { box.onpointermove = null; };
+    at(e);
+  };
+}
 const from_hex = (h, alpha = 1) => [1, 3, 5].map((i) => +(parseInt(h.slice(i, i + 2), 16) / 255).toFixed(4)).concat([alpha]);
 
 function save_file(name, data, type) {
@@ -434,7 +438,7 @@ class DialTool {
     this.pinned = el("div", { className: "pinned" });              // rows that stay in view
     this.form = el("div", { className: "form" });                  // rows that scroll
     const panel = el("aside", { className: "panel" },
-      el("header", {}, el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION })), this.guides_box()),
+      el("header", {}, el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION }))),
       this.tabs, this.pinned, this.form);
 
     this.svg = svg_el("svg");
@@ -502,7 +506,8 @@ class DialTool {
           view("zoom-in", "Zoom in", `<path d="M3.5 8L12.5 8M8 3.5L8 12.5"/>`, () => { this.zoom(1.4, middle()); this.render(); })),
         el("button", { type: "button", id: "fit", textContent: "Fit", title: "Show the whole page", onclick: () => { this.fit(); this.render(); } })));
     this.set_speed(1);
-    root.append(panel, el("main", {}, this.svg, this.tip), bar, this.build_picker());
+    this.main = el("main", {}, this.svg, this.tip, this.guides_box());
+    root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     this.play_icon();
     let shown = true;
     try { shown = localStorage.getItem("dial-tool-panel") !== "off"; } catch (e) { /* not kept */ }
@@ -518,15 +523,58 @@ class DialTool {
     try { localStorage.setItem("dial-tool-panel", on ? "on" : "off"); } catch (e) { /* not kept */ }
   }
 
-  /** top right: the guides' switch — a bullseye with lines, in a rounded box. A solid dark outline = on, a dashed grey one = off; no words (Okay, 11 Oct 2026).
-   *  A press only switches them; their settings are in Dial. */
+  /** guides, at the preview's top right (Okay, 12 Oct 2026): a switch (a bullseye and the word; solid outline = on,
+   *  dashed = off) and, joined to it, an arrow that drops their list: the five kinds of guide, each with an eye and
+   *  one of eight colours; one thickness; Reset. No free colours here. */
   guides_box() {
     this.guides_tick = el("button", { type: "button", className: "guidesbox", id: "guides", onclick: () => this.set_value("global", "guides", !this.S.guides) });
     this.guides_tick.innerHTML = icon(`<circle r="5.6"/><circle r="2.1"/><path d="M0 -8.6L0 -3.6M0 3.6L0 8.6M-8.6 0L-3.6 0M3.6 0L8.6 0"/>`, 18, "-9 -9 18 18");
     const word = el("span", { className: "word", textContent: "Guides" });
     word.dataset.text = "Guides";
     this.guides_tick.append(word);
-    return this.guides_tick;
+    const list = el("div", { className: "guidelist", id: "guide-list", hidden: true });
+    const more = el("button", { type: "button", className: "guidesmore", id: "guides-more", title: "Which guides, and their colours", ariaLabel: "Which guides, and their colours" });
+    more.innerHTML = icon(`<path d="M4 6.5L8 10.5L12 6.5"/>`);
+    more.setAttribute("aria-expanded", "false");
+    const open = (on) => { list.hidden = !on; more.setAttribute("aria-expanded", String(on)); if (on) this.sync_guides(); };
+    more.onclick = () => open(list.hidden);
+    this.guide_kinds = G.GUIDE_KINDS.map(([show, colour, name]) => {
+      const see = el("button", { type: "button", className: "eye", id: "guide-" + show, title: "Show or hide: " + name.toLowerCase(), onclick: () => this.set_value("global", show, !this.S[show]) });
+      const chips = el("span", { className: "chips", role: "radiogroup", ariaLabel: name + ", colour" });
+      G.GUIDE_COLOURS.forEach((hex, i) => {
+        const b = el("button", { type: "button", title: hex, ariaLabel: hex, onclick: () => this.set_value("global", colour, i) });
+        b.setAttribute("role", "radio");
+        b.style.background = hex;
+        chips.append(b);
+      });
+      const line = el("div", { className: "guidekind" }, see, el("span", { className: "name", textContent: name }), chips);
+      list.append(line);
+      return { show, colour, see, chips, line };
+    });
+    this.guide_rows = [this.build_row({ ...num("gd_w", "Thickness", 0.25, 6, 0.25), scope: "global" })];
+    const reset = el("button", { type: "button", className: "btn", id: "guides-reset", textContent: "Reset", title: "The guides as they started", onclick: () => {
+      for (const key of Object.keys(G.DEFAULTS)) if (key.startsWith("gd_")) this.S[key] = structuredClone(G.DEFAULTS[key]);
+      this.sync_rows();
+      this.render();
+    } });
+    list.append(...this.guide_rows.map((r) => r.el), el("div", { className: "guidefoot" }, reset));
+    const box = el("div", { className: "guides" }, this.guides_tick, more, list);
+    box.onkeydown = (e) => { if (e.key === "Escape" && !list.hidden) { open(false); more.focus(); } };
+    return box;
+  }
+
+  /** the guides' switch and list show the settings. */
+  sync_guides() {
+    const S = this.S;
+    this.guides_tick.setAttribute("aria-pressed", String(Boolean(S.guides)));
+    this.guides_tick.title = S.guides ? "Guides are on: press to hide them" : "Guides are off: press to show them";
+    if ($("#guide-list").hidden) return;
+    for (const k of this.guide_kinds) {
+      const on = Boolean(S[k.show]);
+      if (k.shown !== on) { k.shown = on; k.see.innerHTML = eye(on); k.see.setAttribute("aria-pressed", String(on)); k.line.classList.toggle("off", !on); }
+      [...k.chips.children].forEach((b, i) => { b.classList.toggle("on", i === S[k.colour]); b.setAttribute("aria-checked", String(i === S[k.colour])); });
+    }
+    for (const r of this.guide_rows) r.refresh(S);
   }
 
   /** the rows of the section that is showing. A heading opens a pane; the rows after it go inside the pane,
@@ -535,6 +583,7 @@ class DialTool {
     if (!(this.S.ui_section in SECTIONS)) this.S.ui_section = 0;
     const name = SECTIONS[this.S.ui_section];
     if (this.section_shown) this.scrolls[this.section_shown] = this.form.scrollTop;
+    this.pop_close();                              // its swatch goes with the rows
     [...this.tabs.children].forEach((b) => b.classList.toggle("on", b.dataset.tab === name));
     this.form.replaceChildren();
     this.pinned.replaceChildren();
@@ -582,8 +631,7 @@ class DialTool {
   /** every row: hidden if it doesn't apply (R16); its controls showing the scope's value. A pane hides its rows
    *  when it is folded, and everything in it when its heading doesn't apply. */
   sync_rows() {
-    this.guides_tick.setAttribute("aria-pressed", String(Boolean(this.S.guides)));
-    this.guides_tick.title = this.S.guides ? "Guides are on: press to hide them (their settings are in Dial)" : "Guides are off: press to show them";
+    this.sync_guides();
     for (const r of this.rows) {
       const T = this.target(r.row.scope);
       const applies = r.row.show ? Boolean(r.row.show(T)) : true;
@@ -598,6 +646,7 @@ class DialTool {
       const pane = r.group;
       if (applies && !(pane && (pane.el.hidden || this.is_folded(pane)))) r.refresh(T);
     }
+    this.pop_refresh();
   }
 
   /** what a folded pane holds, in a few words: the values of its first rows. Folding hides controls, not information. */
@@ -705,89 +754,17 @@ class DialTool {
       out.refresh = (T) => { box.checked = Boolean(T[row.key]); };
     }
 
-    if (row.kind === "col") {                      // a swatch (opens the picker) · the value, which can be typed
-      const swatch = el("button", { type: "button", className: "swatch", id, title: "Choose a colour" });
+    if (row.kind === "col") {                      // a swatch (opens the colour pop-out beside it) · the value, which can be typed
+      const swatch = el("button", { type: "button", className: "swatch", id, title: "Choose a colour", onclick: () => this.pop_open(row, swatch) });
       const hex = el("input", { type: "text", className: "hex", id: id + "-hex", spellcheck: false, maxLength: 7, ariaLabel: row.text + ", as #RRGGBB" });
-      const palette = el("div", { className: "palette", hidden: true });
       const now = () => this.target(row.scope)[row.key];
-      const put = (rgb) => set(rgb.map((v) => +clamp(v, 0, 1).toFixed(4)).concat([now()[3] ?? 1]));
-      const pick = (value) => put(from_hex(value).slice(0, 3));
-      // the picker: a field of the hue (across: white → full colour, down: → black), the hues under it,
-      // the same colour as numbers (RGB for screens, CMYK for print talk), this dial's colours, and the hex to copy.
-      let hsv = [0, 0, 0], built = false;
-      const field = el("div", { className: "sv", title: "Across: how strong. Down: how dark." }, el("i"));
-      const hues = el("div", { className: "hue", title: "Hue" }, el("i"));
-      const modes = el("span", { className: "segs" }), numbers = el("span", { className: "numbers" });
-      const out_hex = el("code", { className: "hexout" });
-      const copy = el("button", { type: "button", className: "btn copy", textContent: "Copy", onclick: async () => {
-        try { await navigator.clipboard.writeText(out_hex.textContent); copy.textContent = "Copied"; } catch (e) { copy.textContent = "Select it"; }
-        setTimeout(() => { copy.textContent = "Copy"; }, 1200);
-      } });
-      const used = el("div", { className: "chips" }), fixed = el("div", { className: "chips" });
-      const chip = (c) => { const b = el("button", { type: "button", title: c, ariaLabel: c, onclick: () => pick(c) }); b.style.background = c; b.dataset.colour = c; return b; };
-      const drag = (box, move) => {
-        box.onpointerdown = (e) => {
-          e.preventDefault();
-          box.setPointerCapture(e.pointerId);
-          const at = (ev) => { const r = box.getBoundingClientRect(); move(clamp((ev.clientX - r.left) / r.width, 0, 1), clamp((ev.clientY - r.top) / r.height, 0, 1)); };
-          box.onpointermove = at;
-          box.onpointerup = box.onpointercancel = () => { box.onpointermove = null; };
-          at(e);
-        };
-      };
-      drag(field, (x, y) => { hsv = [hsv[0], x, 1 - y]; put(hsv_rgb(hsv)); });
-      drag(hues, (x) => { hsv = [x * 360, hsv[1], hsv[2]]; put(hsv_rgb(hsv)); });
-      const show_numbers = () => {
-        const mode = this.colour_mode || "RGB", rgb = now().slice(0, 3);
-        [...modes.children].forEach((b) => b.classList.toggle("on", b.textContent === mode));
-        const values = mode === "RGB" ? rgb.map((v) => Math.round(v * 255)) : rgb_cmyk(rgb).map((v) => Math.round(v * 100));
-        if (numbers.dataset.mode !== mode) {
-          numbers.dataset.mode = mode;
-          numbers.replaceChildren(...[...mode === "RGB" ? "RGB" : "CMYK"].map((letter, i) => {
-            const f = el("input", { type: "text", inputMode: "numeric", ariaLabel: letter, id: `${id}-${letter}` });
-            f.onchange = () => {
-              const all = [...numbers.querySelectorAll("input")].map((x) => parseFloat(x.value) || 0);
-              put(mode === "RGB" ? all.map((v) => v / 255) : cmyk_rgb(all.map((v) => v / 100)));
-            };
-            f.dataset.i = i;
-            return el("label", {}, letter, f);
-          }));
-        }
-        for (const f of numbers.querySelectorAll("input")) if (!active(f)) f.value = values[f.dataset.i];
-      };
-      const build = () => {
-        built = true;
-        for (const mode of ["RGB", "CMYK"]) modes.append(el("button", { type: "button", textContent: mode, onclick: () => { this.colour_mode = mode; show_numbers(); } }));
-        fixed.append(...PALETTE.map(chip));
-        palette.append(field, hues, el("div", { className: "asnumbers" }, modes, numbers),
-          el("span", { className: "quiet", textContent: "In this dial" }), used,
-          el("span", { className: "quiet", textContent: "Dial colours" }), fixed,
-          el("div", { className: "hexline" }, out_hex, copy));
-      };
-      swatch.onclick = () => {
-        palette.hidden = !palette.hidden;
-        if (palette.hidden) return;
-        if (!built) build();
-        const S = this.S, all = [S.c_plate, S.c_backdrop, S.c_cap, ...S.rings.map((r) => r.c), ...G.HANDS.map((h) => S["ha_" + h].c), ...G.windows_of(S).map((w) => w.ink)];
-        used.replaceChildren(...[...new Set(all.map(to_hex).map((c) => c.toUpperCase()))].map(chip));
-        out.refresh(this.target(row.scope));
-      };
-      hex.onchange = () => { const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex.value.trim()); if (m) pick("#" + (m[1].length === 3 ? [...m[1]].map((c) => c + c).join("") : m[1])); hex.value = to_hex(now()).toUpperCase(); };
-      wrap.append(el("label", { htmlFor: id, textContent: row.text }), el("span", { className: "colour" }, swatch, hex), palette);
+      hex.onchange = () => { const value = parse_hex(hex.value); if (value) set(from_hex(value, now()[3] ?? 1)); hex.value = to_hex(now()).toUpperCase(); };
+      wrap.append(el("label", { htmlFor: id, textContent: row.text }), el("span", { className: "colour" }, swatch, hex));
       out.refresh = (T) => {
         const value = to_hex(T[row.key]).toUpperCase();
         swatch.style.background = value;
+        swatch.setAttribute("aria-expanded", String(this.pop.at !== null && this.pop.at.swatch === swatch));
         if (!active(hex)) hex.value = value;
-        if (palette.hidden || !built) return;
-        const fresh = rgb_hsv(T[row.key]);         // grey has no hue and black no strength: keep the ones last chosen
-        if (to_hex(hsv_rgb(hsv)).toUpperCase() !== value) hsv = [fresh[1] > 0 && fresh[2] > 0 ? fresh[0] : hsv[0], fresh[2] > 0 ? fresh[1] : hsv[1], fresh[2]];
-        field.style.setProperty("--hue", `hsl(${hsv[0]} 100% 50%)`);
-        field.firstChild.style.left = `${hsv[1] * 100}%`; field.firstChild.style.top = `${(1 - hsv[2]) * 100}%`;
-        field.firstChild.style.background = value;
-        hues.firstChild.style.left = `${hsv[0] / 360 * 100}%`;
-        out_hex.textContent = value;
-        show_numbers();
-        for (const b of palette.querySelectorAll(".chips button")) b.classList.toggle("on", b.dataset.colour === value);
       };
     }
 
@@ -802,7 +779,188 @@ class DialTool {
     return out;
   }
 
+  // ── the colour pop-out ───────────────────────────────────
+  //   One for the whole tool (Okay, 12 Oct 2026). A swatch opens it at its right; it edits that swatch's setting:
+  //   a scope and a key, so with a ring's colour open, selecting another ring shows that ring's colour.
+  //   Top to bottom: this dial's colours · the palette (ten to start, + adds the colour in hand, − takes it out;
+  //   kept by this browser, not by the dial) · the field of one hue and the hues, sized for a finger ·
+  //   one line: RGB / CMYK / HEX, the values, COPY. Its head drags it; the square widens it over the preview.
+
+  build_pop() {
+    const P = this.pop = { at: null, hsv: [0, 0, 0], used: "", mode: "", wide: false };
+    try { this.palette = JSON.parse(localStorage.getItem(PALETTE_KEY)); } catch (e) { /* not kept */ }
+    if (!Array.isArray(this.palette)) this.palette = PALETTE.slice();
+    this.colour_mode = "HEX";
+    const now = () => this.target(P.at.scope)[P.at.key];
+    const put = (rgb) => this.set_value(P.at.scope, P.at.key, rgb.map((v) => +clamp(v, 0, 1).toFixed(4)).concat([now()[3] ?? 1]));
+    P.pick = (hex) => put(from_hex(hex).slice(0, 3));
+    P.title = el("h2");
+    const wide = el("button", { type: "button", className: "sign", id: "pop-wide", title: "Over the whole preview, and back", ariaLabel: "Over the whole preview, and back", onclick: () => this.pop_wide(!P.wide) });
+    wide.innerHTML = icon(`<rect x="2.5" y="2.5" width="11" height="11"/><path d="M6 10L10 6M7 6L10 6L10 9"/>`);
+    const shut = el("button", { type: "button", className: "sign", id: "pop-close", title: "Close", ariaLabel: "Close", onclick: () => this.pop_close() });
+    shut.innerHTML = icon(`<path d="M4 4L12 12M12 4L4 12"/>`);
+    const head = el("header", { title: "Drag to move" }, P.title, wide, shut);
+    P.used_chips = el("span", { className: "chips", id: "pop-used" });
+    P.palette_chips = el("span", { className: "chips", id: "pop-palette" });
+    P.field = el("div", { className: "sv", title: "Across: how strong. Down: how dark." }, el("i"));
+    P.hues = el("div", { className: "hue", title: "Hue" }, el("i"));
+    drag_in(P.field, (x, y) => { P.hsv = [P.hsv[0], x, 1 - y]; put(hsv_rgb(P.hsv)); });
+    drag_in(P.hues, (x) => { P.hsv = [x * 360, P.hsv[1], P.hsv[2]]; put(hsv_rgb(P.hsv)); });
+    P.modes = el("span", { className: "segs" });
+    for (const mode of ["RGB", "CMYK", "HEX"]) P.modes.append(el("button", { type: "button", textContent: mode, id: "pop-as-" + mode, onclick: () => { this.colour_mode = mode; this.pop_refresh(); } }));
+    P.numbers = el("span", { className: "numbers" });
+    P.copy = el("button", { type: "button", className: "btn copy", id: "pop-copy", textContent: "COPY", title: "Copy the values shown", onclick: async () => {
+      try { await navigator.clipboard.writeText(this.pop_text()); P.copy.textContent = "COPIED"; } catch (e) { P.copy.textContent = "NO"; }
+      setTimeout(() => { P.copy.textContent = "COPY"; }, 1200);
+    } });
+    P.el = el("div", { className: "colourpop", id: "colour-pop", hidden: true },
+      head,
+      el("div", { className: "chiprow" }, el("span", { className: "quiet", textContent: "On this dial" }), P.used_chips),
+      el("div", { className: "chiprow" }, el("span", { className: "quiet", textContent: "Palette" }), P.palette_chips),
+      P.field, P.hues, el("div", { className: "asnumbers" }, P.modes, P.numbers, P.copy));
+    P.el.setAttribute("role", "dialog");
+    P.el.onkeydown = (e) => { if (e.key === "Escape") { const swatch = P.at && P.at.swatch; this.pop_close(); if (swatch) swatch.focus(); } };
+    // the head drags it (not when it is wide, and not on a phone, where it is a sheet)
+    head.onpointerdown = (e) => {
+      if (e.target.closest("button") || P.wide || this.pop_is_sheet()) return;
+      e.preventDefault();
+      head.setPointerCapture(e.pointerId);
+      const r = P.el.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
+      head.onpointermove = (ev) => this.pop_place(ev.clientX - dx, ev.clientY - dy);
+      head.onpointerup = head.onpointercancel = () => { head.onpointermove = null; };
+    };
+    return P.el;
+  }
+
+  pop_is_sheet() { return matchMedia("(max-width: 860px)").matches; }
+
+  /** put its top left corner there, kept inside the window. */
+  pop_place(x, y) {
+    const P = this.pop, r = P.el.getBoundingClientRect();
+    if (this.pop_is_sheet()) { P.el.style.left = P.el.style.top = ""; return; }      // a sheet stands where the stylesheet puts it
+    P.el.style.left = `${clamp(x, 0, Math.max(0, innerWidth - r.width))}px`;
+    P.el.style.top = `${clamp(y, 0, Math.max(0, innerHeight - r.height))}px`;
+  }
+
+  /** a swatch was pressed: open beside it; pressed again: close. */
+  pop_open(row, swatch) {
+    const P = this.pop;
+    if (P.at && P.at.swatch === swatch) return this.pop_close();
+    P.at = { scope: row.scope, key: row.key, text: row.text, swatch };
+    P.el.hidden = false;
+    this.pop_wide(false);
+    this.sync_rows();
+    const r = swatch.getBoundingClientRect();
+    this.pop_place(r.right + POP_GAP, r.top - POP_GAP);
+  }
+
+  pop_close() {
+    const P = this.pop;
+    if (!P || !P.at) return;
+    const swatch = P.at.swatch;
+    P.at = null;
+    P.el.hidden = true;
+    swatch.setAttribute("aria-expanded", "false");
+  }
+
+  /** over the whole preview (the field and the hues take the room), or back to its own size where it was. */
+  pop_wide(on) {
+    const P = this.pop;
+    if (on === P.wide) return;
+    if (on) P.back = [P.el.style.left, P.el.style.top];
+    P.wide = on;
+    P.el.classList.toggle("wide", on);
+    $("#pop-wide").setAttribute("aria-pressed", String(on));
+    if (on) this.pop_cover(); else { for (const side of ["width", "height"]) P.el.style[side] = ""; [P.el.style.left, P.el.style.top] = P.back; }
+  }
+  pop_cover() {
+    const P = this.pop, r = this.main.getBoundingClientRect();
+    if (this.pop_is_sheet()) { for (const side of ["left", "top", "width", "height"]) P.el.style[side] = ""; return; }      // the window became narrow: a sheet, placed by the stylesheet
+    if (!P.wide) return;
+    Object.assign(P.el.style, { left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px` });
+  }
+
+  /** whose colour it is: "Numerals · Colour", "Hour hand · Colour", "Plate". */
+  pop_name() {
+    const at = this.pop.at, S = this.S;
+    const whose = at.scope === "ring" ? this.ring().name || G.kind_of(this.ring()) : at.scope === "hand" ? ["Hour hand", "Minute hand", "Seconds hand"][S.ui_hand] : at.scope === "window" ? `Window ${S.ui_window + 1}` : "";
+    return whose ? `${whose} · ${at.text}` : at.text;
+  }
+
+  /** the values as the line shows them, to copy: #RRGGBB · 255, 128, 0 · 0, 50, 100, 0 */
+  pop_text() {
+    const rgb = this.target(this.pop.at.scope)[this.pop.at.key].slice(0, 3), mode = this.colour_mode;
+    return mode === "HEX" ? to_hex(rgb).toUpperCase() : (mode === "RGB" ? rgb.map((v) => Math.round(v * 255)) : rgb_cmyk(rgb).map((v) => Math.round(v * 100))).join(", ");
+  }
+
+  /** the pop-out shows the setting it edits. */
+  pop_refresh() {
+    const P = this.pop;
+    if (!P || !P.at) return;
+    const T = this.target(P.at.scope), S = this.S;
+    if (!T || !Array.isArray(T[P.at.key]) || !P.at.swatch.isConnected) return this.pop_close();
+    const rgb = T[P.at.key].slice(0, 3), value = to_hex(rgb).toUpperCase();
+    P.title.textContent = this.pop_name();
+    const put = (c) => P.pick(c);
+    const chip = (c) => { const b = el("button", { type: "button", title: c, ariaLabel: c, onclick: () => put(c) }); b.style.background = c; b.dataset.colour = c; return b; };
+    // this dial's colours: every part that has one, each colour once
+    const all = [S.c_plate, S.c_backdrop, S.c_cap, ...S.rings.map((r) => r.c), ...G.HANDS.map((h) => S["ha_" + h].c), ...G.windows_of(S).filter((w) => w.on).map((w) => w.ink)];
+    const used = [...new Set(all.map((c) => to_hex(c).toUpperCase()))];
+    if (P.used !== used.join()) { P.used = used.join(); P.used_chips.replaceChildren(...used.map(chip)); }
+    // the palette, then its + (or −, when the colour in hand is already in it)
+    const kept = this.palette.includes(value), list = this.palette.join() + kept;
+    if (P.listed !== list) {
+      P.listed = list;
+      const change = el("button", { type: "button", className: "add", id: "pop-add", textContent: kept ? "−" : "+", title: kept ? "Take this colour out of the palette" : "Add this colour to the palette", onclick: () => {
+        const now = to_hex(this.target(P.at.scope)[P.at.key]).toUpperCase();
+        this.palette = this.palette.includes(now) ? this.palette.filter((c) => c !== now) : [...this.palette, now];
+        try { localStorage.setItem(PALETTE_KEY, JSON.stringify(this.palette)); } catch (e) { /* not kept */ }
+        this.pop_refresh();
+      } });
+      P.palette_chips.replaceChildren(...this.palette.map(chip), change);
+    }
+    for (const b of P.el.querySelectorAll(".chips button[data-colour]")) b.classList.toggle("on", b.dataset.colour === value);
+    // the field and the hues. Grey has no hue and black no strength: keep the ones last chosen.
+    const fresh = rgb_hsv(rgb);
+    if (to_hex(hsv_rgb(P.hsv)).toUpperCase() !== value) P.hsv = [fresh[1] > 0 && fresh[2] > 0 ? fresh[0] : P.hsv[0], fresh[2] > 0 ? fresh[1] : P.hsv[1], fresh[2]];
+    const knob = P.field.firstChild;
+    P.field.style.setProperty("--hue", `hsl(${P.hsv[0]} 100% 50%)`);
+    knob.style.left = `${P.hsv[1] * 100}%`; knob.style.top = `${(1 - P.hsv[2]) * 100}%`;
+    knob.style.background = value;
+    P.hues.firstChild.style.left = `${P.hsv[0] / 360 * 100}%`;
+    // the line: the same colour as numbers
+    const mode = this.colour_mode;
+    [...P.modes.children].forEach((b) => b.classList.toggle("on", b.textContent === mode));
+    if (P.mode !== mode) {
+      P.mode = mode;
+      P.numbers.dataset.mode = mode;
+      const commit = () => {
+        const fields = [...P.numbers.querySelectorAll("input")];
+        if (mode === "HEX") { const hex = parse_hex(fields[0].value); if (hex) P.pick(hex); else this.pop_refresh(); return; }
+        const all = fields.map((x) => parseFloat(x.value) || 0);
+        const next = mode === "RGB" ? all.map((v) => v / 255) : cmyk_rgb(all.map((v) => v / 100));
+        this.set_value(P.at.scope, P.at.key, next.map((v) => +clamp(v, 0, 1).toFixed(4)).concat([this.target(P.at.scope)[P.at.key][3] ?? 1]));
+        this.pop_refresh();
+      };
+      P.numbers.replaceChildren(...(mode === "HEX" ? ["hex"] : [...mode]).map((letter, i) => {
+        const f = el("input", { type: "text", inputMode: mode === "HEX" ? "text" : "numeric", ariaLabel: letter, id: "pop-" + letter, spellcheck: false, onchange: commit });
+        f.dataset.i = i;
+        return f;
+      }));
+    }
+    const values = mode === "HEX" ? [value] : mode === "RGB" ? rgb.map((v) => Math.round(v * 255)) : rgb_cmyk(rgb).map((v) => Math.round(v * 100));
+    for (const f of P.numbers.querySelectorAll("input")) if (!has_focus(f)) f.value = values[f.dataset.i];
+  }
+
   // ── rows built by hand ───────────────────────────────────
+
+  /** the plate's background: only the button for now (Okay, 12 Oct 2026: "no background image functionality now. Just the button"). */
+  row_background(wrap) {
+    const note = el("span", { className: "quiet", hidden: true, textContent: "Not built yet." });
+    wrap.append(el("label", { textContent: "Background" }),
+      el("span", { className: "tools" }, el("button", { type: "button", className: "btn", id: "background-add", textContent: "Add image…", onclick: () => { note.hidden = false; } }), note));
+  }
+
 
   /** the ring list: order = stacking order, top ring first. Show, name, and the tools. */
   row_ring_list(wrap, out) {
@@ -1488,6 +1646,8 @@ class DialTool {
     this.items = items;
     const backdrop = S.out_production ? [1, 1, 1, 1] : S.c_backdrop;
     this.backdrop.setAttribute("fill", to_hex(backdrop));
+    // what stands on the preview (the Guides switch) is dark on a light backdrop, light on a dark one
+    this.main.classList.toggle("dark", 0.2126 * backdrop[0] + 0.7152 * backdrop[1] + 0.0722 * backdrop[2] < 0.45);
     while (this.slots.length < items.length) {
       const node = svg_el("path");
       this.dial.append(node);
@@ -1570,6 +1730,7 @@ class DialTool {
   }
 
   resized() {
+    this.pop_cover();
     const [w, h] = this.size();
     if (w < 1 || h < 1) return;
     if (this.fitted) this.fit();

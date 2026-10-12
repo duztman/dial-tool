@@ -1,5 +1,27 @@
 # Dial Tool — changelog
 
+## beta 4.5 (web version) · 12 Oct 2026
+
+On `dev`. Okay's usability review, one tab at a time; this is the Dial tab, step 1 of 3. Seen in Chromium here only. `dial.py` is frozen from now on (Okay: "Do not work on dial.py anymore, we're on github").
+
+**The Dial tab, regrouped**
+- **Two panes: Dial** (Diameter · Plate · Background) **and Page** (Page margin · Backdrop). Before: Size · Colour · Guides.
+- **Background is a button only** ("Add image…"); pressing it says "Not built yet." Okay: "No background image functionality now. Just the button."
+- **A hairline before and after every row**, everywhere: white on the scrolling grey, that grey (`#E8E8E6`) on paper and white. Tokens `--line-on-grey`, `--line-on-paper`, `--row-rule`.
+
+**Guides, on the preview**
+- **The switch stands at the preview's top right**, 12 from its edges, out of the panel's header. Its colour follows the backdrop: dark on light, light on dark (`main.dark`, set when the backdrop's luminance is under 0.45).
+- **An arrow joined to it drops the list**: five kinds — dial edge, centre lines, window radii, ring edges, selected ring — each with an eye and one of **eight colours** (`GUIDE_COLOURS`: six neons, `#111111`, `#FFFFFF`). No free colour. One Thickness; the selected ring's lines are 1.5× it. **Reset** puts the guides back.
+- **Settings**: new keys `gd_win`, `gd_sel` (eyes) and `gd_k_edge`, `gd_k_axes`, `gd_k_win`, `gd_k_rings`, `gd_k_sel` (a place in the eight, R9). Guides are drawn at full strength. `gd_c`, `gd_strength`, `gd_sel_c`, `gd_sel_strength`, `gd_sel_w` stay in `DEFAULTS` (R8, R31) and are read by nothing. Window radii had no eye of their own before (they followed the dial edge's).
+
+**Colour: one pop-out for the whole tool**
+- **A swatch opens it 12 to its right**; it is not built inside each row any more. It edits a scope and a key, so with a ring's colour open, clicking another ring on the preview shows that ring's colour. Changing section closes it. Escape, its ×, or the swatch again close it.
+- **Top to bottom**: *On this dial* · *Palette* (ten to start; **+** adds the colour in hand, and reads **−** to take it out when it is already there; kept by the browser under `dial-tool-palette`, not by the dial or its link) · the field of one hue (168 high; 220 for a finger) and the hue strip (24; 36) with larger handles · one line: `RGB` `CMYK` `HEX`, the values, `COPY`, small boxed capitals. COPY copies what the line shows.
+- **Its head drags it. The square widens it** over the whole preview (the field takes the room) and back to where it was. On a phone it is a sheet from the bottom.
+- The palette's ten: `#111111 #FFFFFF #EDE8DB #A7A7AA #3A3A3C #0E2A47 #12372A #7A1F1F #C8E6A0 #E8742A` — Claude's choice, offered to Okay, not yet confirmed. The 22 "dial colours" of beta 4.4 are gone.
+
+**Not in this step** (build list #70–#72): scale the contents with the diameter; a colour per sector of a band; a logo (an SVG placed with the mouse, kept as a ring).
+
 ## beta 4.4 (web version) · 12 Oct 2026
 
 On `dev`. A code review of the web version, asked for by Okay, 12 Oct ("Code review time. All on the table"), then his go for four steps plus two additions: "redesign sliders like this" (a sketch: a thick black disc on the track) and "Bg color created clashes, look around." Seen in Chromium here only. `dial.py` is unchanged.
