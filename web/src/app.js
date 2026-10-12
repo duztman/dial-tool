@@ -840,6 +840,10 @@ class DialTool {
       const hex = el("input", { type: "text", className: "hex", id: id + "-hex", spellcheck: false, maxLength: 7, ariaLabel: row.text + ", as #RRGGBB" });
       const pill = el("span", { className: "colour" }, swatch, hex);
       swatch.onclick = () => this.pop_open(this.colour_of_row(row), swatch, pill);
+      // the hex opens it too (Okay, 12 Oct 2026). With a mouse it can still be typed in; under a finger it only opens
+      // the pop-out, which has its own HEX field: no keyboard jumps up over the dial.
+      hex.readOnly = matchMedia("(pointer: coarse)").matches;
+      hex.onclick = () => { if (!(this.pop.at && this.pop.at.swatch === swatch)) this.pop_open(this.colour_of_row(row), swatch, pill); };
       const now = () => this.target(row.scope)[row.key];
       hex.onchange = () => { const value = parse_hex(hex.value); if (value) set(from_hex(value, now()[3] ?? 1)); hex.value = to_hex(now()).toUpperCase(); };
       wrap.append(el("label", { htmlFor: id, textContent: row.text }), pill);
@@ -877,7 +881,7 @@ class DialTool {
     P.put = put;
     P.pick = (hex) => put(from_hex(hex).slice(0, 3));
     P.title = el("h2");
-    const wide = el("button", { type: "button", className: "sign", id: "pop-wide", title: "Over the whole preview, and back", ariaLabel: "Over the whole preview, and back", onclick: () => this.pop_wide(!P.wide) });
+    const wide = el("button", { type: "button", className: "sign", id: "pop-wide", title: "Twice the size, and back", ariaLabel: "Twice the size, and back", onclick: () => this.pop_wide(!P.wide) });
     wide.innerHTML = icon(`<rect x="2.5" y="2.5" width="11" height="11"/><path d="M6 10L10 6M7 6L10 6L10 9"/>`);
     const shut = el("button", { type: "button", className: "sign", id: "pop-close", title: "Close", ariaLabel: "Close", onclick: () => this.pop_close() });
     shut.innerHTML = icon(`<path d="M4 4L12 12M12 4L4 12"/>`);
@@ -912,7 +916,7 @@ class DialTool {
     P.el.onkeydown = (e) => { if (e.key === "Escape") { const swatch = P.at && P.at.swatch; this.pop_close(); if (swatch) swatch.focus(); } };
     // the head drags it (not when it is wide, and not on a phone, where it is a sheet)
     head.onpointerdown = (e) => {
-      if (e.target.closest("button") || P.wide || this.pop_is_sheet()) return;
+      if (e.target.closest("button") || this.pop_is_sheet()) return;
       e.preventDefault();
       head.setPointerCapture(e.pointerId);
       const r = P.el.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
@@ -970,21 +974,31 @@ class DialTool {
     swatch.setAttribute("aria-expanded", "false");
   }
 
-  /** over the whole preview (the field and the hues take the room), or back to its own size where it was. */
+  /** twice its size (Okay, 12 Oct 2026: "size of popup grows ×2"), or back. Twice as wide; the field of one hue takes
+   *  the added height, so the whole is twice as high. Never larger than the window. On a phone it is a sheet: wide,
+   *  it is the whole screen, and the stylesheet does it. */
   pop_wide(on) {
     const P = this.pop;
     if (on === P.wide) return;
-    if (on) P.back = [P.el.style.left, P.el.style.top];
+    const r = P.el.getBoundingClientRect(), field = P.field.getBoundingClientRect().height;
     P.wide = on;
     P.el.classList.toggle("wide", on);
     $("#pop-wide").setAttribute("aria-pressed", String(on));
-    if (on) this.pop_cover(); else { for (const side of ["width", "height"]) P.el.style[side] = ""; [P.el.style.left, P.el.style.top] = P.back; }
+    if (on && !this.pop_is_sheet()) {
+      P.el.style.width = `${Math.min(2 * r.width, innerWidth)}px`;
+      P.field.style.height = `${field}px`;
+      const rest = P.el.getBoundingClientRect().height - field;      // everything but the field, at the new width (the chips grew)
+      P.field.style.height = `${Math.max(field, Math.min(2 * r.height, innerHeight) - rest)}px`;
+    } else P.el.style.width = P.field.style.height = "";
+    if (!P.el.hidden) this.pop_place(r.left, r.top);          // where it was, moved only as far as the window asks
   }
+  /** the window changed size: a sheet is placed by the stylesheet; anything else stays inside the window. */
   pop_cover() {
-    const P = this.pop, r = this.main.getBoundingClientRect();
-    if (this.pop_is_sheet()) { for (const side of ["left", "top", "width", "height"]) P.el.style[side] = ""; return; }      // the window became narrow: a sheet, placed by the stylesheet
-    if (!P.wide) return;
-    Object.assign(P.el.style, { left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px` });
+    const P = this.pop;
+    if (!P.at) return;
+    if (this.pop_is_sheet()) { P.el.style.width = P.field.style.height = ""; }
+    const r = P.el.getBoundingClientRect();
+    this.pop_place(r.left, r.top);
   }
 
   /** the values as the line shows them, to copy: #RRGGBB · 255, 128, 0 · 0, 50, 100, 0 */
