@@ -202,10 +202,10 @@ const ROWS = {
     custom("features", { show: numerals_only }),
   ],
   Hands: [
-    custom("hand_tabs", { pin: true, bar: true }),      // on top, always in view: which hand the panes below are about (Okay, 12 Oct 2026: "acts as a tab system for what's below")
     custom("hands_bar", { pin: true, bar: true }),      // bar: one line of its own, always in view: All hands · Show hands · Motion
+    custom("hand_tabs", { pin: true, bar: true }),      // under it, always in view: which hand the panes below are about (Okay, 12 Oct 2026: "acts as a tab system for what's below")
     hdr("One hand", { title: (S) => HAND_NAMES[S.ui_hand] }),      // its heading says which: Hour hand · Minute hand · Seconds hand
-    chk("on", "Show this hand", { ...H, nest: true }),
+    chk("on", "Show this hand", { ...H, head: true }),      // on the heading line, beside the hand's name
     pick("shape", "Shape", G.HAND_SHAPES.slice(0, 9), hand_pic, H),
     col("c", "Colour", H),
     hdr("Size", H),

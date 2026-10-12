@@ -358,8 +358,12 @@ const folded_gaps = await gaps();
 check(folded_gaps[1] === 42 && folded_gaps[2] === 42, `folded panes in a row are 42 apart, and so is the open one after them (${folded_gaps.join(", ")})`);
 for (const i of [0, 1, 2]) await page.click(`.form .pane >> nth=${i} >> .fold h2`);
 // Hands: Hour · Minute · Seconds are tabs on top of the pinned part; the panes below are about the chosen hand
-const hand_tabs = await page.evaluate(() => { const p = document.querySelector(".pinned"), t = p.querySelector(".tabsbar"); return [p.firstElementChild === t, t.nextElementSibling.classList.contains("handsbar"), [...t.querySelectorAll("button")].map((b) => b.textContent).join(" "), [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent).join(" · ")]; });
-check(hand_tabs[0] && hand_tabs[1] && hand_tabs[2] === "Hour Minute Seconds", "the hand tabs are the first pinned line, All hands the second");
+const hand_tabs = await page.evaluate(() => { const p = document.querySelector(".pinned"), t = p.querySelector(".tabsbar"); return [p.firstElementChild.classList.contains("handsbar"), p.firstElementChild.nextElementSibling === t, [...t.querySelectorAll("button")].map((b) => b.textContent).join(" "), [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent).join(" · ")]; });
+check(hand_tabs[0] && hand_tabs[1] && hand_tabs[2] === "Hour Minute Seconds", "All hands is the first pinned line, the hand tabs the second, right above the hand's panes");
+const tick_up = await page.evaluate(() => { const pane = document.querySelector(".form .pane"), t = pane.querySelector(".headcontrol").getBoundingClientRect(), h = pane.querySelector(".fold").getBoundingClientRect(); return [pane.querySelector(".headcontrol input").id, t.top >= h.top && t.bottom <= h.bottom, pane.querySelector(".body .check") === null]; });
+check(tick_up[0] === "hand-on-Show-this-hand" && tick_up[1] && tick_up[2], "Show this hand is on the heading line, beside the hand's name");
+const pill_gaps = await page.$eval(".form .colour", (e) => { const r = e.getBoundingClientRect(), d = e.querySelector(".dot").getBoundingClientRect(), h = e.querySelector(".hex").getBoundingClientRect(); return [d.left - r.left, h.left - d.right, r.right - h.right].map((v) => Math.round(v)); });
+check(pill_gaps.join() === "8,8,8", `a colour pill has one space three times: before the swatch, between swatch and hex, after it (${pill_gaps.join(" · ")})`);
 await page.click("#hand-tab-2");
 check(await S("S.ui_hand === 2") && await page.textContent(".form .pane >> nth=0 >> h2") === "Seconds hand" && await page.$eval("#hand-tab-2", (e) => e.classList.contains("on")), "a tab chooses the hand; the first pane's heading says Seconds hand");
 check((await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))).at(-1) === "Cap", "Cap, which belongs to all three, comes after the hand's own panes");
