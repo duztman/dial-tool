@@ -134,7 +134,7 @@ const ROWS = {
   Dial: [
     hdr("Dial"),                                   // the plate: how big, what colour, what is on it
     num("dial_d", "Diameter", 15, 50, 0.1),
-    chk("ui_scale", "Scale everything on the dial with it"),
+    chk("ui_scale", "Scale everything with it", { nest: true }),      // nest: a question about the row above starts on the controls' column (Okay, 12 Oct 2026)
     col("c_plate", "Plate"),
     custom("background"),
     hdr("Colours"),                                // every coloured part on the plate, in one list; a band's sectors one by one
@@ -159,7 +159,7 @@ const ROWS = {
     num("span", "Span °", 1, 360, 1),
     num("every", "Every", 1, 60, 1, { whole: true }),
     num("offset", "Offset", 0, 59, 1, { whole: true }),
-    chk("invert", "Skip those instead"),
+    chk("invert", "Skip those instead", { nest: true }),
     hdr("Give way to rings above"),
     pop("skip", "Skip where", G.SKIP_FROM),
     pop("knock", "Knock out", G.KNOCK_FROM),
@@ -201,9 +201,7 @@ const ROWS = {
     custom("features", { show: numerals_only }),
   ],
   Hands: [
-    hdr("All hands"),
-    chk("ha_on", "Show hands"),
-    pop("ha_beat", "Motion", G.BEATS.map((b) => b[0])),
+    custom("hands_bar", { pin: true, bar: true }),      // bar: one line of its own, always in view: All hands · Show hands · Motion
     hdr("Cap"),
     num("ha_cap", "Cap Ø", 0, 4, 0.05),
     col("c_cap", "Colour"),
@@ -259,7 +257,7 @@ const ROWS = {
     chk("out_mirror", "Mirrored, for toner transfer"),
     hdr("Export a file"),
     custom("export"),
-    chk("out_live_text", "Keep numerals as text in the SVG"),
+    chk("out_live_text", "Keep numerals as text in the SVG", { nest: true }),
     info("The font must be installed where the file is opened. PDF and PNG stay outlines.", { show: (S) => S.out_live_text }),
     num("out_dpi", "PNG dpi", 72, 2400, 1, { button: "png" }),       // the PNG button stands where the label would: the dpi is its setting
     custom("png_size"),
@@ -666,7 +664,8 @@ class DialTool {
     this.rows = ROWS[name].map((row) => this.build_row(row));
     let pane = null;
     for (const r of this.rows) {
-      if (r.fold) { pane = r; (r.row.pin ? this.pinned : this.form).append(r.el); }
+      if (r.row.bar) (r.row.pin ? this.pinned : this.form).append(r.el);      // a line of its own, outside the panes
+      else if (r.fold) { pane = r; (r.row.pin ? this.pinned : this.form).append(r.el); }
       else { r.group = pane; pane.body.append(r.el); }
     }
     this.pinned.hidden = !this.pinned.children.length;
@@ -745,7 +744,7 @@ class DialTool {
 
   /** one row of the form → {row, el, refresh(T)}. */
   build_row(row) {
-    const wrap = el("div", { className: "row " + row.kind });
+    const wrap = el("div", { className: "row " + row.kind + (row.nest ? " nest" : "") });
     const out = { row, el: wrap, refresh: () => {} };
     const set = (v) => this.set_value(row.scope, row.key, v);
     const id = `${row.scope}-${row.key}-${row.text || row.name}`.replace(/[^A-Za-z0-9]+/g, "-");
@@ -1143,6 +1142,18 @@ class DialTool {
     const lines = el("div"), same = el("button", { type: "button", className: "btn", id: "sectors-same", textContent: "All as the ring", title: "Every sector in the ring’s colour again", onclick: () => this.set_value("ring", "cs", {}) });
     wrap.append(lines, el("div", { className: "row" }, el("span"), el("span", { className: "tools" }, same)));
     out.refresh = () => this.swatch_lines(lines, () => [{ text: "Sectors", colours: this.sector_colours(this.S.ui_ring) }]);
+  }
+
+  /** Hands, always in view, one line (Okay, 12 Oct 2026): the name, a tick to show the hands, how they move. */
+  row_hands_bar(wrap, out) {
+    wrap.className = "handsbar";
+    const tick = el("input", { type: "checkbox", id: "global-ha-on-Show-hands" });
+    tick.onchange = () => this.set_value("global", "ha_on", tick.checked);
+    const motion = el("select", { id: "global-ha-beat-Motion", title: "How the seconds hand moves", ariaLabel: "Motion" });
+    G.BEATS.forEach((b, i) => motion.append(el("option", { value: i, textContent: b[0] })));
+    motion.onchange = () => this.set_value("global", "ha_beat", +motion.value);
+    wrap.append(el("h2", { textContent: "All hands" }), el("label", { className: "check", htmlFor: tick.id }, tick, " Show hands"), motion);
+    out.refresh = (S) => { tick.checked = Boolean(S.ha_on); motion.value = S.ha_beat; };
   }
 
   /** the plate's background: only the button for now (Okay, 12 Oct 2026: "no background image functionality now. Just the button"). */

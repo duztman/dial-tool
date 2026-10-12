@@ -268,6 +268,13 @@
   .body > :is(.ringlist, .examples) { grid-column: 1 / -1; }
   .body.sliding { overflow-y: clip; }               /* while a pane opens or closes (app.js: slide) */
 
+  /* a bar: one line of its own, outside the panes (Hands: All hands · Show hands · Motion). It opens like a pane, with
+     a thick line; on the columns: name 2 · tick 2 · menu 2. */
+  .handsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; min-height: calc(var(--head) + var(--unit)); border-top: var(--thick) solid var(--ink); }
+  .handsbar > h2 { grid-column: 2 / span 2; }
+  .handsbar > .check { grid-column: 4 / span 2; white-space: nowrap; }
+  .handsbar > select { grid-column: 6 / span 2; }
+
   /* rows sit on the six columns: label 2 · control 2 · typed field 1 · stepper 1 */
   .row { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); column-gap: var(--gap); align-items: center; min-height: var(--line); }
   /* a hairline before and after every row. Two shadows, both on the row's own last line and the line above its
@@ -280,6 +287,7 @@
   .row > :is(select, .segs, .colour, .single, .tools, .picks, .swatches), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
   .row > :is(.check, .wide), .row.note > .quiet { grid-column: 1 / -1; }      /* a tick and its words start at the left edge */
   .row > span:first-child:empty { display: none; }
+  .row.nest > .check { grid-column: 3 / -1; }       /* a question about the row above: it starts where the controls start */
   .row.note { min-height: 0; }
   .row.note > .quiet { padding-bottom: 8px; }
   .row > button:not(:first-child) { justify-self: start; }

@@ -281,14 +281,15 @@ const at_30 = await measures();
 await page.fill("#global-dial-d-Diameter", "36"); await page.press("#global-dial-d-Diameter", "Enter");
 check(JSON.stringify(await measures()) === JSON.stringify(at_30), "the diameter alone leaves rings and hands where they are");
 await page.fill("#global-dial-d-Diameter", "30"); await page.press("#global-dial-d-Diameter", "Enter");
-await page.check("#global-ui-scale-Scale-everything-on-the-dial-with-it");
+await page.check("#global-ui-scale-Scale-everything-with-it");
 await page.fill("#global-dial-d-Diameter", "36"); await page.press("#global-dial-d-Diameter", "Enter");
 const at_36 = await measures();
 check(at_36.slice(0, 5).every((v, i) => near(v, at_30[i] * 1.2, 1e-4)) && at_36[5] === at_30[5] && at_36[6] === at_30[6], `with "scale everything" ticked, 30 → 36 makes radii, sizes, lengths and the cap 1.2× (count and margin stay)`);
 await shot("4d-scaled");
 for (const d of ["41.3", "22", "30"]) { await page.fill("#global-dial-d-Diameter", d); await page.press("#global-dial-d-Diameter", "Enter"); }
 check(JSON.stringify(await measures()) === JSON.stringify(at_30), "36 → 41.3 → 22 → 30: everything is back exactly where it was");
-await page.uncheck("#global-ui-scale-Scale-everything-on-the-dial-with-it");
+await page.uncheck("#global-ui-scale-Scale-everything-with-it");
+check(await page.evaluate(() => Math.round(document.querySelector(".row.nest .check").getBoundingClientRect().left) === Math.round(document.querySelector(".form .row.num input[type=range]").getBoundingClientRect().left)), "a nested question starts on the controls' column");
 check(await S("!('ui_scale' in G_lean(S))".replace("G_lean(S)", "JSON.parse(JSON.stringify(S, (k, v) => (k.startsWith('ui_') ? undefined : v)))")), "the tick is the window's state, not the dial's");
 // Colours: every coloured part in one list
 const listed = await page.$$eval(".colourlist .row label", (l) => l.map((x) => x.textContent));
@@ -343,8 +344,17 @@ await tab("Hands");
 const gaps = async () => page.$$eval(".form .pane", (h) => h.filter((e) => e.offsetParent).map((e, i, all) => (i ? Math.round(e.getBoundingClientRect().top - all[i - 1].getBoundingClientRect().top) : 0)).slice(1));
 for (const name of ["Cap", "One hand", "Size"]) await page.click(`.form .fold:has-text("${name}") >> nth=0`);
 const folded_gaps = await gaps();
-check(folded_gaps[1] === 42 && folded_gaps[2] === 42 && folded_gaps[3] === 42, `three folded panes in a row are 42 apart, and so is the open one after them (${folded_gaps.join(", ")})`);
+check(folded_gaps[1] === 42 && folded_gaps[2] === 42, `folded panes in a row are 42 apart, and so is the open one after them (${folded_gaps.join(", ")})`);
 for (const name of ["Cap", "One hand", "Size"]) await page.click(`.form .fold:has-text("${name}") >> nth=0`);
+// All hands: one line, always in view — its name, the tick, the menu, on the columns
+const bar_line = await page.evaluate(() => { const b = document.querySelector(".pinned .handsbar"), tops = [...b.children].map((e) => Math.round(e.getBoundingClientRect().top + e.getBoundingClientRect().height / 2)); const x = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left); return [Math.max(...tops) - Math.min(...tops), x(".handsbar .check") - x(".form .row.num input[type=range]"), b.querySelector("h2").textContent]; });
+check(bar_line[0] <= 1 && bar_line[1] === 0 && bar_line[2] === "All hands", "All hands is one pinned line: name · Show hands · Motion, the tick on the controls' column");
+await page.selectOption("#global-ha-beat-Motion", "1");
+await page.uncheck("#global-ha-on-Show-hands");
+await frame();
+check(await S("S.ha_beat === 1 && S.ha_on === false && !t.items.some((i) => i.role === 'hand')"), "its menu and tick work: quartz, hands hidden");
+await page.check("#global-ha-on-Show-hands"); await page.selectOption("#global-ha-beat-Motion", "0");
+await shot("4f-hands-bar");
 await tab("Dial");
 // the columns: every slider, value and stepper starts on the same three lines
 const lines = await page.$$eval(".form .row.num", (rows) => [...new Set(rows.filter((r) => r.offsetParent).map((r) => [...r.children].slice(1).map((c) => Math.round(c.getBoundingClientRect().left)).join("/")))]);

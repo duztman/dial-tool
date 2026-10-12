@@ -65,6 +65,8 @@ If a term is used differently in conversation, ask, then update this file.
 | **Scale everything** | The tick under Diameter: a change of diameter multiplies every measure on the dial (not the page margin). |
 | **Unit box** | The box at the panel's top right: the unit lengths are shown and typed in (mm, points, inches, lignes). Settings stay in mm. **Ligne**: the watchmakers' unit for movement sizes, 2.2558 mm. |
 | **Reach** | The unseen frame round a small control that also takes a finger's press (web version, touch only). |
+| **Bar** | One line of its own, outside the panes and always in view (Hands: All hands · Show hands · Motion). |
+| **Nested question** | A tick or menu that asks about the row above it; it starts on the controls' column, not at the left. |
 | **Row line** | The hairline before and after every row: white on the scrolling grey, that grey on paper. |
 | **Logo** | Planned (build list #72): an SVG placed on the dial with the mouse; it is a ring in the ring list. Not the *background* (a picture on the plate, not built). |
 | **Toggle column** | The narrow column at the far left of the panel (web version). It holds only eyes: a pane's (open or folded) and a ring's (shown or hidden on the dial). |
