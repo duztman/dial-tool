@@ -127,6 +127,9 @@ const numerals_only = kind_in("numerals");
 const W = { scope: "window" };
 const win_on = (T) => T.on;
 const win_is = (...kinds) => (T) => T.on && kinds.includes(G.WINDOW_KINDS[T.kind]);
+// the Windows cards, left to right: 12 · 3 · 6 · 9. slot = which of the four windows a card is (window 1, the date
+// window of old, starts at 3, so the second card is its); at = that place in G.DATE_AT.
+const WINDOW_CARDS = [{ slot: 1, at: 4 }, { slot: 0, at: 0 }, { slot: 2, at: 2 }, { slot: 3, at: 3 }];
 const HAND_NAMES = ["Hour hand", "Minute hand", "Seconds hand"];
 const TAB_NAMES = { Date: "Windows" };            // the section's number and key stay "Date" (R8, R9); its tab says what it now holds
 const H = { scope: "hand" };
@@ -227,10 +230,9 @@ const ROWS = {
     col("c_cap", "Colour"),
   ],
   Date: [                                          // "Windows" on its tab: up to four holes in the plate
-    hdr("Window"),
-    seg("ui_window", "Edit", ["1", "2", "3", "4"], { head: true }),
-    chk("on", "Show this window", { ...W, nest: true }),
-    hdr("What it shows", { ...W, show: win_on }),
+    custom("window_cards", { bar: true }),         // four cards, 12 · 3 · 6 · 9: where each window is, and tabs for the panes below (Okay, 12 Oct 2026)
+    hdr("Window", { title: (S) => `Window at ${G.DATE_AT[G.windows_of(S)[S.ui_window].at][0]}` }),
+    chk("on", "Show this window", { ...W, head: true }),
     pick("kind", "Shows", G.WINDOW_KINDS, PICS.window, { ...W, show: win_on }),
     txt("text", "Text", { ...W, show: win_is("date", "day") }),
     num("size", "Text % of height", 20, 100, 1, { ...W, show: win_is("date", "day") }),
@@ -1160,6 +1162,44 @@ class DialTool {
     const lines = el("div"), same = el("button", { type: "button", className: "btn", id: "sectors-same", textContent: "All as the ring", title: "Every sector in the ring’s colour again", onclick: () => this.set_value("ring", "cs", {}) });
     wrap.append(lines, el("div", { className: "row" }, el("span"), el("span", { className: "tools" }, same)));
     out.refresh = () => this.swatch_lines(lines, () => [{ text: "Sectors", colours: this.sector_colours(this.S.ui_ring) }]);
+  }
+
+  /** Windows, on top: four cards the size of the example cards, 12 · 3 · 6 · 9. A card is a small dial with its window
+   *  drawn where it is: filled when it is shown, an outline when it isn't. They are tabs: a press chooses the window
+   *  the panes below are about. A window not in use yet goes to its card's place when its card is first pressed. */
+  row_window_cards(wrap, out) {
+    wrap.className = "windowcards";
+    const grid = el("div", { className: "cards", role: "tablist", ariaLabel: "Which window" });
+    const cards = WINDOW_CARDS.map((c) => {
+      const pic = el("span", { className: "pic" }), name = el("span");
+      const b = el("button", { type: "button", id: "window-card-" + c.slot, onclick: () => {
+        const w = G.windows_of(this.S)[c.slot];
+        this.S.ui_window = c.slot;
+        if (!w.on && w.at === G.WINDOW_BASE.at && c.at !== w.at) { w.at = c.at; this.static_dirty = true; }      // never used: it starts at its card's place
+        this.sync_rows();
+        this.render();
+      } }, pic, name);
+      b.setAttribute("role", "tab");
+      grid.append(b);
+      return { ...c, b, pic, name, drawn: "" };
+    });
+    wrap.append(grid);
+    out.refresh = (S) => {
+      for (const c of cards) {
+        const w = G.windows_of(S)[c.slot], at = !w.on && w.at === G.WINDOW_BASE.at ? c.at : w.at;      // never used: shown at its card's place, where it will start
+        const [place, angle] = G.DATE_AT[at], a = angle * Math.PI / 180;
+        const x = 9.3 * Math.sin(a), y = -9.3 * Math.cos(a), state = `${at}/${Boolean(w.on)}`;
+        if (c.drawn !== state) {
+          c.drawn = state;
+          c.pic.innerHTML = icon(`<circle r="15" stroke-width="1.1"/><rect x="${(x - 3.6).toFixed(2)}" y="${(y - 2.8).toFixed(2)}" width="7.2" height="5.6" rx="1.2" stroke-width="1.1"${w.on ? ' fill="currentColor"' : ""}/>`, 34, "-17 -17 34 34");
+          c.name.textContent = place;
+          c.b.title = `The window at ${place}${w.on ? "" : " (not shown)"}`;
+        }
+        c.b.classList.toggle("on", c.slot === S.ui_window);
+        c.b.classList.toggle("off", !w.on);
+        c.b.setAttribute("aria-selected", String(c.slot === S.ui_window));
+      }
+    };
   }
 
   /** Hands, on top and always in view: Hour · Minute · Seconds, as tabs for the panes below. */

@@ -278,6 +278,15 @@
   /* a bar: one line of its own, outside the panes (Hands: All hands · Show hands · Motion). It opens like a pane, with
      a thick line; on the columns: name 2 · tick 2 · menu 2. */
   .handsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; min-height: calc(var(--head) + var(--unit)); border-top: var(--thick) solid var(--ink); }
+  /* Windows: four cards the size of the example cards (five to a row), 12 · 3 · 6 · 9. They are tabs: the chosen one
+     is ink. A window that isn't shown is quiet. The line under the section tabs is theirs. */
+  .windowcards { padding: calc(2 * var(--unit)) 0 calc(3 * var(--unit)); border-top: var(--thick) solid var(--ink); }
+  .windowcards .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--unit); }
+  .windowcards button { display: grid; justify-items: center; gap: 3px; padding: 8px 4px 5px; background: var(--inset); font-weight: 600; }
+  .windowcards button svg { display: block; }
+  .windowcards button.off { color: var(--grey); font-weight: 400; }
+  .windowcards button:hover { background: var(--select); }
+  .windowcards button.on { background: var(--ink); color: var(--paper); }
   .handsbar + .tabsbar { border-top: var(--hair) solid var(--rule); }
   /* tabs inside a section, always in view (Hands: Hour · Minute · Seconds): one line across the six columns */
   .tabsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; min-height: calc(var(--head) + var(--unit)); border-top: var(--thick) solid var(--ink); }

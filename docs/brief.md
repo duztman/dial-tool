@@ -110,6 +110,7 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 12 Oct | **Hands: the hand picker is a line of tabs on top of the pinned part.** | Okay, on the picker: "This one to the top of the persistent area, one line. Acts as a tab system for what's below." Moving Cap to the end and naming the pane after the hand are Claude's, to make "what's below" true. |
 | 12 Oct | **Guides and Backdrop switches: outline only, never filled; quiet.** Colour: black or white by contrast with the backdrop. Guides off = sign struck through, word plain. | Okay: "Background button must be outline all times, never fill. As does the guides section. Make these visible but not the first thing that pops up." Kept from his earlier word: no dashes, contrast at all times. |
 | 12 Oct | **Hands: All hands above the hand tabs; Show this hand on the heading line. Colour pill: equal, larger gaps (8).** | Okay, notes on a screenshot: "swap" (the two pinned lines), "move up" (Show this hand), "same gap, bigger" (in the pill). |
+| 12 Oct | **Windows: four place cards (12 · 3 · 6 · 9) as tabs**, in the example cards' size; the top of the section simplified to them and one pane. | Okay, pointing at the example cards: "Window 1-2-3-4 are place indicators in these example card sizes. 1-2-3-4 are 12-3-6-9. Simplify window top. These also act as tabs, clicking changes selectors below." The date window keeps its start at 3 (R31), so it is the second card — Claude's mapping, said to Okay. |
 
 ## 5 · Open questions
 

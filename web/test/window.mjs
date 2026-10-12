@@ -369,15 +369,23 @@ check(await S("S.ui_hand === 2") && await page.textContent(".form .pane >> nth=0
 check((await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))).at(-1) === "Cap", "Cap, which belongs to all three, comes after the hand's own panes");
 await page.click("#hand-tab-0");
 await shot("4g-hand-tabs");
-// a pane's main selector stands on its heading line (Windows → Window: 1 · 2 · 3 · 4), also when the pane is folded
+// Windows: four cards, 12 · 3 · 6 · 9, are the tabs; Show this window is on the heading line, also when the pane is folded
 await tab("Date");
-const on_head = await page.evaluate(() => { const pane = [...document.querySelectorAll(".form .pane")].find((p) => p.querySelector("h2").textContent === "Window"), c = pane.querySelector(".headcontrol").getBoundingClientRect(), h = pane.querySelector(".fold").getBoundingClientRect(), ref = document.querySelector(".form .row.nest .check").getBoundingClientRect(); return [c.top >= h.top && c.bottom <= h.bottom, Math.round(c.left - ref.left), pane.querySelector(".body .segs") === null]; });
-check(on_head[0] && on_head[1] === 0 && on_head[2], "Window's picker is on its heading line, on the controls' columns, and not a row of its own");
-await page.click('.form .fold:has-text("Window") h2 >> nth=0');
-await page.click('.form .pane >> nth=0 >> .headcontrol button:text-is("3")');
-check(await S("S.ui_window === 2") && await page.isVisible(".form .pane >> nth=0 >> .headcontrol"), "folded, the pane still shows its selector, and it works");
-await page.click('.form .pane >> nth=0 >> .headcontrol button:text-is("1")');
-await page.click('.form .fold:has-text("Window") h2 >> nth=0');
+const cards = await page.$$eval(".windowcards button", (b) => b.map((x) => [x.id, x.textContent, x.classList.contains("on"), Math.round(x.getBoundingClientRect().width)]));
+check(cards.map((c) => c[1]).join(" ") === "12 3 6 9" && cards.map((c) => c[0]).join(" ") === "window-card-1 window-card-0 window-card-2 window-card-3" && cards[1][2], `four cards: 12 · 3 · 6 · 9; the date window of old is the one at 3, and chosen (${cards[0][3]} wide)`);
+await tab("Export");
+const example_w = await page.$eval(".examples a", (e) => Math.round(e.getBoundingClientRect().width));
+await tab("Date");
+check(example_w === cards[0][3], `a window card is as wide as an example card (${example_w})`);
+await page.click("#window-card-2");
+check(await S("S.ui_window === 2 && S.windows[1].at === 2 && S.windows[1].on === false") && await page.textContent(".form .pane >> nth=0 >> h2") === "Window at 6" && await page.$eval("#window-card-2", (e) => e.classList.contains("on") && e.classList.contains("off")), "the card at 6 chooses its window: the pane says Window at 6; not in use yet, it takes the card's place");
+const on_head = await page.evaluate(() => { const pane = document.querySelector(".form .pane"), c = pane.querySelector(".headcontrol").getBoundingClientRect(), h = pane.querySelector(".fold").getBoundingClientRect(); return [c.top >= h.top && c.bottom <= h.bottom, pane.querySelector(".headcontrol input").id]; });
+check(on_head[0] && on_head[1] === "window-on-Show-this-window", "Show this window is on the heading line");
+await page.click(".form .pane >> nth=0 >> .fold h2");
+check(await page.isVisible("#window-on-Show-this-window"), "folded, the pane still shows it");
+await page.click(".form .pane >> nth=0 >> .fold h2");
+await page.click("#window-card-0");
+await shot("4h-window-cards");
 await tab("Hands");
 // All hands: one line, always in view — its name, the tick, the menu, on the columns
 const bar_line = await page.evaluate(() => { const b = document.querySelector(".pinned .handsbar"), tops = [...b.children].map((e) => Math.round(e.getBoundingClientRect().top + e.getBoundingClientRect().height / 2)); const x = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left); return [Math.max(...tops) - Math.min(...tops), x(".handsbar .check") - x(".form .row.num input[type=range]"), b.querySelector("h2").textContent]; });
@@ -462,9 +470,9 @@ check(await page.$$eval(".tabs button", (b) => b.map((x) => x.textContent.trim()
 
 // ── windows: up to four, each a date, a day, am · pm or a moon phase ──
 await tab("Date");
-const kinds = [["2", "1", "9"], ["3", "2", "6"], ["4", "3", "12"]];          // window, kind, position
+const kinds = [["1", "1", "9"], ["2", "2", "6"], ["3", "3", "12"]];          // window (its card's number), kind, position
 for (const [n, kind, at] of kinds) {
-  await page.click(`.segs button:text-is("${n}")`);
+  await page.click("#window-card-" + n);
   await page.check("#window-on-Show-this-window");
   await page.click("#window-kind-Shows-" + kind);
   await page.selectOption("#window-at-Position", { label: at });
@@ -482,8 +490,8 @@ check((await page.textContent(".tip span")) === "Moon phase window", "pointer on
 await click_mm(...moon_at);
 check(await S("S.ui_section === 3 && S.ui_window === 3") && await page.isVisible("#window-age-Moon-age-days") && await page.isHidden("#window-h-Height"), "click it: Windows, window 4, with the moon's rows");
 await shot("4d-windows");
-for (const n of ["2", "3", "4"]) { await page.click(`.segs button:text-is("${n}")`); await page.uncheck("#window-on-Show-this-window"); }
-await page.click('.segs button:text-is("1")');
+for (const n of ["1", "2", "3"]) { await page.click("#window-card-" + n); await page.uncheck("#window-on-Show-this-window"); }
+await page.click("#window-card-0");
 check(await S("t.statik.windows.length === 1"), "windows 2 to 4 switched off again");
 
 // ── fonts: only the ring's font shows in Type; the list is a sheet over the panel ──
