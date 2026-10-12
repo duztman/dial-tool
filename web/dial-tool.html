@@ -271,6 +271,14 @@
   .fold:hover :is(.eye, h2) { color: var(--ink); }
   .fold .summary { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; font-size: var(--t-s); }
   .fold:focus-visible { outline-offset: -2px; }
+  /* a pane's main selector stands on its heading line, on the four control columns, with no name of its own: the
+     heading names it. The pane is laid on the columns so the selector can lie over the heading's right part; the
+     heading stays one button under it. It shows when the pane is folded too, where the summary would be. */
+  .pane.has { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); }
+  .pane.has > * { grid-column: 1 / -1; }
+  .pane.has > .fold { grid-row: 1; }
+  .pane.has > .fold .summary { visibility: hidden; }
+  .pane.has > .headcontrol { grid-row: 1; grid-column: 4 / -1; align-self: center; z-index: 1; }
   .body { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); padding-bottom: var(--air); }
   .body > * { grid-column: 2 / -1; }
   .body > :is(.ringlist, .examples) { grid-column: 1 / -1; }
@@ -447,6 +455,14 @@
   .guidesbox[aria-pressed="false"] { font-weight: 400; }
   :is(.guidesbox[aria-pressed="false"], .guidesbox[aria-pressed="false"] + .guidesmore):hover { background: var(--night-field); color: var(--bar-ink); }
   .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }      /* open, only its arrow turns */
+  /* the backdrop's colour, at the preview's bottom left: built like the Guides switch when it is on, and always so —
+     its own light ground, a solid hairline. It shows the colour as a chip. Black while its pop-out is open. */
+  .backdropbox { position: absolute; z-index: 3; left: var(--canvas-inset); bottom: var(--canvas-inset); display: flex; align-items: center; gap: 7px; height: var(--control-large); padding: 0 10px 0 8px;
+    border: var(--hair) solid var(--faint); border-radius: 10px; background: var(--bar-ink); color: var(--night); font-weight: 600; user-select: none; }
+  .backdropbox:hover { background: var(--field); }
+  .backdropbox[aria-expanded="true"] { background: var(--night); color: var(--bar-ink); }
+  .backdropbox .dot { border-color: var(--faint); }
+
   /* the list: near black and round, like the colour pop-out (.night). A kind of guide is one line: its name, then
      round choices with room between them — none, then the eight colours. The chosen one stands in a thick ring of its own colour, a
      little of the ground between them. A hairline under every line. */
@@ -6623,7 +6639,8 @@ var ROWS = {
     num2("twelve_scale", "Scale \xD7", 0.5, 2.5, 0.05, { show: (R) => kind_of(R) === "markers" && R.twelve !== 3 }),
     num2("twelve_gap", "Gap", 0, 3, 0.05, { show: (R) => kind_of(R) === "markers" && R.twelve === 1 }),
     hdr("Numerals", { show: numerals_only }),
-    pop("labels", "Labels", LABEL_SETS.map((s) => s[0]), { show: numerals_only }),
+    pop("labels", "Labels", LABEL_SETS.map((s) => s[0]), { show: numerals_only, head: true }),
+    // head: a pane's main selector stands on its heading line, without a name of its own (Okay, 12 Oct 2026)
     txt("custom", "Custom", { show: labels_are("Custom") }),
     num2("num_from", "First number", -1e3, 1e3, 1, { show: labels_are("Numbers") }),
     num2("num_step", "Step", -100, 100, 1, { show: labels_are("Numbers") }),
@@ -6651,8 +6668,8 @@ var ROWS = {
     num2("ha_cap", "Cap \xD8", 0, 4, 0.05),
     col("c_cap", "Colour"),
     hdr("One hand"),
-    seg("ui_hand", "Edit", ["Hour", "Minute", "Seconds"]),
-    chk("on", "Show this hand", H),
+    seg("ui_hand", "Edit", ["Hour", "Minute", "Seconds"], { head: true }),
+    chk("on", "Show this hand", { ...H, nest: true }),
     pick("shape", "Shape", HAND_SHAPES.slice(0, 9), hand_pic, H),
     col("c", "Colour", H),
     hdr("Size", H),
@@ -6673,8 +6690,8 @@ var ROWS = {
   Date: [
     // "Windows" on its tab: up to four holes in the plate
     hdr("Window"),
-    seg("ui_window", "Edit", ["1", "2", "3", "4"]),
-    chk("on", "Show this window", W),
+    seg("ui_window", "Edit", ["1", "2", "3", "4"], { head: true }),
+    chk("on", "Show this window", { ...W, nest: true }),
     hdr("What it shows", { ...W, show: win_on }),
     pick("kind", "Shows", WINDOW_KINDS, PICS.window, { ...W, show: win_on }),
     txt("text", "Text", { ...W, show: win_is("date", "day") }),
@@ -6685,7 +6702,7 @@ var ROWS = {
     num2("age", "Moon age, days", 0, 29.5, 0.1, { ...W, show: win_is("moon phase") }),
     info("0 new moon \xB7 14.8 full \xB7 its height follows its width.", { ...W, show: win_is("moon phase") }),
     hdr("Place and size", { ...W, show: win_on }),
-    pop("at", "Position", DATE_AT.map((d) => d[0]), { ...W, show: win_on }),
+    pop("at", "Position", DATE_AT.map((d) => d[0]), { ...W, show: win_on, head: true }),
     num2("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
     num2("w", "Width", 0.5, 8, 0.05, { ...W, show: win_on }),
     num2("h", "Height", 0.5, 5, 0.05, { ...W, show: win_is("date", "day", "am \xB7 pm") }),
@@ -6894,7 +6911,7 @@ var DialTool = class _DialTool {
    *  swatch or a colour pill is left to that swatch: it opens, moves or closes the pop-out itself. */
   pressed(e) {
     const on = (q) => e.target.closest && e.target.closest(q);
-    if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour")) this.pop_close();
+    if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox")) this.pop_close();
     if (this.guides_open && !$("#guide-list").hidden && !on(".guides")) this.guides_open(false);
     if (this.unit_open && !$("#unit-menu").hidden && !on(".unit")) this.unit_open(false);
   }
@@ -7030,7 +7047,7 @@ var DialTool = class _DialTool {
       )
     );
     this.set_speed(1);
-    this.main = el("main", {}, this.svg, this.tip, this.guides_box());
+    this.main = el("main", {}, this.svg, this.tip, this.guides_box(), this.backdrop_box());
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     this.play_icon();
     let shown = true;
@@ -7092,6 +7109,16 @@ var DialTool = class _DialTool {
       }
     };
     open(false);
+    return box;
+  }
+  /** the backdrop's colour, at the preview's bottom left (Okay, 12 Oct 2026): one switch like the Guides one, always
+   *  with a solid line, showing the colour as a chip. A press opens the colour pop-out for the backdrop. */
+  backdrop_box() {
+    const dot = el("i", { className: "dot" });
+    const box = el("button", { type: "button", className: "backdropbox", id: "backdrop", title: "The backdrop\u2019s colour (preview only)" }, dot, el("span", { textContent: "Backdrop" }));
+    box.setAttribute("aria-expanded", "false");
+    box.onclick = () => this.pop_open({ read: () => this.S.c_backdrop, write: (v) => this.set_value("global", "c_backdrop", v), label: () => "Backdrop" }, box);
+    this.backdrop_dot = dot;
     return box;
   }
   /** guides, at the preview's top right (Okay, 12 Oct 2026): a switch (a bullseye and the word; solid outline = on,
@@ -7185,6 +7212,15 @@ var DialTool = class _DialTool {
       else if (r.fold) {
         pane = r;
         (r.row.pin ? this.pinned : this.form).append(r.el);
+      } else if (r.row.head && pane) {
+        const control = r.el.lastElementChild;
+        control.classList.add("headcontrol");
+        control.ariaLabel = r.row.text;
+        r.el = control;
+        r.group = pane;
+        r.in_head = true;
+        pane.button.after(control);
+        pane.el.classList.add("has");
       } else {
         r.group = pane;
         pane.body.append(r.el);
@@ -7242,6 +7278,7 @@ var DialTool = class _DialTool {
    *  when it is folded, and everything in it when its heading doesn't apply. */
   sync_rows() {
     this.sync_guides();
+    paint(this.backdrop_dot, this.S.c_backdrop);
     this.unit_button.textContent = this.unit()[0];
     this.unit_items.forEach((b, i) => {
       b.classList.toggle("on", i === this.S.ui_unit);
@@ -7263,7 +7300,7 @@ var DialTool = class _DialTool {
         r.summary.textContent = folded ? this.summary(r) : "";
       }
       const pane = r.group;
-      if (applies && !(pane && (pane.el.hidden || this.is_folded(pane)))) r.refresh(T);
+      if (applies && (r.in_head || !(pane && (pane.el.hidden || this.is_folded(pane))))) r.refresh(T);
     }
     this.pop_refresh();
   }
@@ -7271,7 +7308,7 @@ var DialTool = class _DialTool {
   summary(heading) {
     const parts = [];
     for (const r of this.rows) {
-      if (r.group !== heading || !r.row.key || parts.length === 3) continue;
+      if (r.group !== heading || !r.row.key || r.in_head || parts.length === 3) continue;
       const row = r.row, T = this.target(row.scope);
       if (row.show && !row.show(T)) continue;
       const v = T[row.key];

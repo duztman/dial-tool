@@ -179,7 +179,7 @@ const ROWS = {
     num("twelve_scale", "Scale ×", 0.5, 2.5, 0.05, { show: (R) => G.kind_of(R) === "markers" && R.twelve !== 3 }),
     num("twelve_gap", "Gap", 0, 3, 0.05, { show: (R) => G.kind_of(R) === "markers" && R.twelve === 1 }),
     hdr("Numerals", { show: numerals_only }),
-    pop("labels", "Labels", G.LABEL_SETS.map((s) => s[0]), { show: numerals_only }),
+    pop("labels", "Labels", G.LABEL_SETS.map((s) => s[0]), { show: numerals_only, head: true }),      // head: a pane's main selector stands on its heading line, without a name of its own (Okay, 12 Oct 2026)
     txt("custom", "Custom", { show: labels_are("Custom") }),
     num("num_from", "First number", -1000, 1000, 1, { show: labels_are("Numbers") }),
     num("num_step", "Step", -100, 100, 1, { show: labels_are("Numbers") }),
@@ -206,8 +206,8 @@ const ROWS = {
     num("ha_cap", "Cap Ø", 0, 4, 0.05),
     col("c_cap", "Colour"),
     hdr("One hand"),
-    seg("ui_hand", "Edit", ["Hour", "Minute", "Seconds"]),
-    chk("on", "Show this hand", H),
+    seg("ui_hand", "Edit", ["Hour", "Minute", "Seconds"], { head: true }),
+    chk("on", "Show this hand", { ...H, nest: true }),
     pick("shape", "Shape", G.HAND_SHAPES.slice(0, 9), hand_pic, H),
     col("c", "Colour", H),
     hdr("Size", H),
@@ -227,8 +227,8 @@ const ROWS = {
   ],
   Date: [                                          // "Windows" on its tab: up to four holes in the plate
     hdr("Window"),
-    seg("ui_window", "Edit", ["1", "2", "3", "4"]),
-    chk("on", "Show this window", W),
+    seg("ui_window", "Edit", ["1", "2", "3", "4"], { head: true }),
+    chk("on", "Show this window", { ...W, nest: true }),
     hdr("What it shows", { ...W, show: win_on }),
     pick("kind", "Shows", G.WINDOW_KINDS, PICS.window, { ...W, show: win_on }),
     txt("text", "Text", { ...W, show: win_is("date", "day") }),
@@ -239,7 +239,7 @@ const ROWS = {
     num("age", "Moon age, days", 0, 29.5, 0.1, { ...W, show: win_is("moon phase") }),
     info("0 new moon · 14.8 full · its height follows its width.", { ...W, show: win_is("moon phase") }),
     hdr("Place and size", { ...W, show: win_on }),
-    pop("at", "Position", G.DATE_AT.map((d) => d[0]), { ...W, show: win_on }),
+    pop("at", "Position", G.DATE_AT.map((d) => d[0]), { ...W, show: win_on, head: true }),
     num("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
     num("w", "Width", 0.5, 8, 0.05, { ...W, show: win_on }),
     num("h", "Height", 0.5, 5, 0.05, { ...W, show: win_is("date", "day", "am · pm") }),
@@ -452,7 +452,7 @@ class DialTool {
    *  swatch or a colour pill is left to that swatch: it opens, moves or closes the pop-out itself. */
   pressed(e) {
     const on = (q) => e.target.closest && e.target.closest(q);
-    if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour")) this.pop_close();
+    if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox")) this.pop_close();
     if (this.guides_open && !$("#guide-list").hidden && !on(".guides")) this.guides_open(false);
     if (this.unit_open && !$("#unit-menu").hidden && !on(".unit")) this.unit_open(false);
   }
@@ -542,7 +542,7 @@ class DialTool {
           view("zoom-in", "Zoom in", `<path d="M3.5 8L12.5 8M8 3.5L8 12.5"/>`, () => { this.zoom(1.4, middle()); this.render(); })),
         el("button", { type: "button", id: "fit", textContent: "Fit", title: "Show the whole page", onclick: () => { this.fit(); this.render(); } })));
     this.set_speed(1);
-    this.main = el("main", {}, this.svg, this.tip, this.guides_box());
+    this.main = el("main", {}, this.svg, this.tip, this.guides_box(), this.backdrop_box());
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     this.play_icon();
     let shown = true;
@@ -584,6 +584,17 @@ class DialTool {
     const box = el("div", { className: "unit" }, this.unit_button, menu);
     box.onkeydown = (e) => { if (e.key === "Escape" && !menu.hidden) { open(false); this.unit_button.focus(); } };
     open(false);
+    return box;
+  }
+
+  /** the backdrop's colour, at the preview's bottom left (Okay, 12 Oct 2026): one switch like the Guides one, always
+   *  with a solid line, showing the colour as a chip. A press opens the colour pop-out for the backdrop. */
+  backdrop_box() {
+    const dot = el("i", { className: "dot" });
+    const box = el("button", { type: "button", className: "backdropbox", id: "backdrop", title: "The backdrop’s colour (preview only)" }, dot, el("span", { textContent: "Backdrop" }));
+    box.setAttribute("aria-expanded", "false");
+    box.onclick = () => this.pop_open({ read: () => this.S.c_backdrop, write: (v) => this.set_value("global", "c_backdrop", v), label: () => "Backdrop" }, box);
+    this.backdrop_dot = dot;
     return box;
   }
 
@@ -666,6 +677,14 @@ class DialTool {
     for (const r of this.rows) {
       if (r.row.bar) (r.row.pin ? this.pinned : this.form).append(r.el);      // a line of its own, outside the panes
       else if (r.fold) { pane = r; (r.row.pin ? this.pinned : this.form).append(r.el); }
+      else if (r.row.head && pane) {               // a pane's main selector: its control alone, on the heading line
+        const control = r.el.lastElementChild;
+        control.classList.add("headcontrol");
+        control.ariaLabel = r.row.text;
+        r.el = control; r.group = pane; r.in_head = true;
+        pane.button.after(control);
+        pane.el.classList.add("has");
+      }
       else { r.group = pane; pane.body.append(r.el); }
     }
     this.pinned.hidden = !this.pinned.children.length;
@@ -706,6 +725,7 @@ class DialTool {
    *  when it is folded, and everything in it when its heading doesn't apply. */
   sync_rows() {
     this.sync_guides();
+    paint(this.backdrop_dot, this.S.c_backdrop);
     this.unit_button.textContent = this.unit()[0];
     this.unit_items.forEach((b, i) => { b.classList.toggle("on", i === this.S.ui_unit); b.setAttribute("aria-checked", String(i === this.S.ui_unit)); });
     for (const r of this.rows) {
@@ -720,7 +740,7 @@ class DialTool {
         r.summary.textContent = folded ? this.summary(r) : "";
       }
       const pane = r.group;
-      if (applies && !(pane && (pane.el.hidden || this.is_folded(pane)))) r.refresh(T);
+      if (applies && (r.in_head || !(pane && (pane.el.hidden || this.is_folded(pane))))) r.refresh(T);      // a heading's selector shows even when its pane is folded
     }
     this.pop_refresh();
   }
@@ -729,7 +749,7 @@ class DialTool {
   summary(heading) {
     const parts = [];
     for (const r of this.rows) {
-      if (r.group !== heading || !r.row.key || parts.length === 3) continue;
+      if (r.group !== heading || !r.row.key || r.in_head || parts.length === 3) continue;
       const row = r.row, T = this.target(row.scope);
       if (row.show && !row.show(T)) continue;
       const v = T[row.key];

@@ -247,6 +247,17 @@ await page.click("#guides");
 await page.click("#guides-more");
 await page.mouse.move(900, 400);
 check(await S("S.guides === true && S.ui_section === 0") && await page.isHidden("#guide-list") && await page.$eval("#guides", (e) => { const c = getComputedStyle(e); return c.backgroundColor + c.color; }) === "rgb(242, 242, 238)rgb(20, 20, 19)", "pressed again it is on: light, with dark words");
+// the backdrop's colour: a switch at the preview's bottom left, showing the colour as a chip
+const bd = await page.evaluate(() => { const b = document.querySelector("#backdrop").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(), c = getComputedStyle(document.querySelector("#backdrop")); return [Math.round(b.left - m.left), Math.round(m.bottom - b.bottom), c.borderTopStyle, getComputedStyle(document.querySelector("#backdrop .dot")).getPropertyValue("--c")]; });
+check(bd[0] === 12 && bd[1] === 12 && bd[2] === "solid" && bd[3].includes("204, 204, 199"), "the Backdrop switch is 12 from the preview's bottom left, solid-lined, its chip the backdrop's colour");
+await page.click("#backdrop");
+check(await page.isVisible("#colour-pop") && await page.textContent("#colour-pop h2") === "Backdrop" && await page.$eval("#colour-pop", (e) => e.getBoundingClientRect().bottom <= innerHeight), "a press opens the colour pop-out for the backdrop, inside the window");
+await page.click("#pop-as-HEX"); await page.fill("#pop-hex", "#808080"); await page.press("#pop-hex", "Enter");
+check(await S("Math.round(S.c_backdrop[0] * 255) === 128") && (await page.$eval("#backdrop .dot", (e) => getComputedStyle(e).getPropertyValue("--c"))).includes("128, 128, 128"), "typing a colour there changes the backdrop and the chip");
+await shot("4c6-backdrop-switch");
+await page.click("#backdrop");
+check(await page.isHidden("#colour-pop"), "pressed again, it closes");
+await type_hex("global-c-backdrop-Backdrop", "#CCCCC7");
 // its colour follows the backdrop
 await type_hex("global-c-backdrop-Backdrop", "#1A1A1F");
 await frame();
@@ -342,10 +353,21 @@ check(await page.isVisible("#global-dial-d-Diameter") && (await page.textContent
 // folding must not leave uneven gaps: folded panes stack line on line, whatever they hold
 await tab("Hands");
 const gaps = async () => page.$$eval(".form .pane", (h) => h.filter((e) => e.offsetParent).map((e, i, all) => (i ? Math.round(e.getBoundingClientRect().top - all[i - 1].getBoundingClientRect().top) : 0)).slice(1));
-for (const name of ["Cap", "One hand", "Size"]) await page.click(`.form .fold:has-text("${name}") >> nth=0`);
+for (const name of ["Cap", "One hand", "Size"]) await page.click(`.form .fold:has-text("${name}") h2 >> nth=0`);
 const folded_gaps = await gaps();
 check(folded_gaps[1] === 42 && folded_gaps[2] === 42, `folded panes in a row are 42 apart, and so is the open one after them (${folded_gaps.join(", ")})`);
-for (const name of ["Cap", "One hand", "Size"]) await page.click(`.form .fold:has-text("${name}") >> nth=0`);
+for (const name of ["Cap", "One hand", "Size"]) await page.click(`.form .fold:has-text("${name}") h2 >> nth=0`);
+// a pane's main selector stands on its heading line: One hand → Hour · Minute · Seconds
+const on_head = await page.evaluate(() => { const pane = [...document.querySelectorAll(".form .pane")].find((p) => p.querySelector("h2").textContent === "One hand"), c = pane.querySelector(".headcontrol").getBoundingClientRect(), h = pane.querySelector(".fold").getBoundingClientRect(), ref = document.querySelector(".form .row.num input[type=range]").getBoundingClientRect(); return [c.top >= h.top && c.bottom <= h.bottom, Math.round(c.left - ref.left), pane.querySelector(".body .segs") === null]; });
+check(on_head[0] && on_head[1] === 0 && on_head[2], "One hand's picker is on its heading line, on the controls' columns, and not a row of its own");
+await page.click('.form .pane:has(h2:text-is("One hand")) .headcontrol button:text-is("Seconds")');
+check(await S("S.ui_hand === 2"), "it works there: Seconds");
+await page.click('.form .fold:has-text("One hand") h2');
+check(await page.isVisible('.form .pane:has(h2:text-is("One hand")) .headcontrol') && await page.isHidden("#hand-on-Show-this-hand"), "folded, the pane still shows its selector");
+await page.click('.form .pane:has(h2:text-is("One hand")) .headcontrol button:text-is("Hour")');
+check(await S("S.ui_hand === 0"), "and it still works");
+await page.click('.form .fold:has-text("One hand") h2');
+await shot("4g-head-selector");
 // All hands: one line, always in view — its name, the tick, the menu, on the columns
 const bar_line = await page.evaluate(() => { const b = document.querySelector(".pinned .handsbar"), tops = [...b.children].map((e) => Math.round(e.getBoundingClientRect().top + e.getBoundingClientRect().height / 2)); const x = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left); return [Math.max(...tops) - Math.min(...tops), x(".handsbar .check") - x(".form .row.num input[type=range]"), b.querySelector("h2").textContent]; });
 check(bar_line[0] <= 1 && bar_line[1] === 0 && bar_line[2] === "All hands", "All hands is one pinned line: name · Show hands · Motion, the tick on the controls' column");

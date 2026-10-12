@@ -262,6 +262,14 @@
   .fold:hover :is(.eye, h2) { color: var(--ink); }
   .fold .summary { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; font-size: var(--t-s); }
   .fold:focus-visible { outline-offset: -2px; }
+  /* a pane's main selector stands on its heading line, on the four control columns, with no name of its own: the
+     heading names it. The pane is laid on the columns so the selector can lie over the heading's right part; the
+     heading stays one button under it. It shows when the pane is folded too, where the summary would be. */
+  .pane.has { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); }
+  .pane.has > * { grid-column: 1 / -1; }
+  .pane.has > .fold { grid-row: 1; }
+  .pane.has > .fold .summary { visibility: hidden; }
+  .pane.has > .headcontrol { grid-row: 1; grid-column: 4 / -1; align-self: center; z-index: 1; }
   .body { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); padding-bottom: var(--air); }
   .body > * { grid-column: 2 / -1; }
   .body > :is(.ringlist, .examples) { grid-column: 1 / -1; }
@@ -438,6 +446,14 @@
   .guidesbox[aria-pressed="false"] { font-weight: 400; }
   :is(.guidesbox[aria-pressed="false"], .guidesbox[aria-pressed="false"] + .guidesmore):hover { background: var(--night-field); color: var(--bar-ink); }
   .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }      /* open, only its arrow turns */
+  /* the backdrop's colour, at the preview's bottom left: built like the Guides switch when it is on, and always so —
+     its own light ground, a solid hairline. It shows the colour as a chip. Black while its pop-out is open. */
+  .backdropbox { position: absolute; z-index: 3; left: var(--canvas-inset); bottom: var(--canvas-inset); display: flex; align-items: center; gap: 7px; height: var(--control-large); padding: 0 10px 0 8px;
+    border: var(--hair) solid var(--faint); border-radius: 10px; background: var(--bar-ink); color: var(--night); font-weight: 600; user-select: none; }
+  .backdropbox:hover { background: var(--field); }
+  .backdropbox[aria-expanded="true"] { background: var(--night); color: var(--bar-ink); }
+  .backdropbox .dot { border-color: var(--faint); }
+
   /* the list: near black and round, like the colour pop-out (.night). A kind of guide is one line: its name, then
      round choices with room between them — none, then the eight colours. The chosen one stands in a thick ring of its own colour, a
      little of the ground between them. A hairline under every line. */
