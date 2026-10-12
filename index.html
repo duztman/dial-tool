@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.4 · built 2026-10-11 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.5 · built 2026-10-12 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz) and the stand-in font (Inter, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet.
@@ -47,6 +47,10 @@
     /* what a part stands on. A part that scrolls sets these again (see .form): an inset block is darker
        than paper but lighter than the scrolling grey, so it never melts into its ground. */
     --surface: var(--paper); --inset: var(--ground); --well: var(--ground);
+    /* the line before and after every row: white on the scrolling grey, that grey on paper and white (Okay, 12 Oct 2026).
+       A part that scrolls sets --row-rule again, like its surface. */
+    --line-on-grey: #FFFFFF; --line-on-paper: var(--scroll); --row-rule: var(--line-on-paper);
+    --on-canvas: var(--ink); --on-canvas-quiet: var(--grey); --on-canvas-fill: var(--paper); --canvas-hover: var(--veil-strong);      /* what stands on the preview's backdrop; main.dark sets them again */
 
     /* the panel's columns: a toggle column at the far left (eyes: a pane's, a ring's), then six equal
        columns with equal gaps, between two margins. 24 + 16 + 12 + (6 × 54 + 5 × 12) + 24 = 460.
@@ -74,6 +78,12 @@
     --ring-gap: 4px;                               /* between framed rows */
     --thumb: 18px; --track: 4px;                   /* sliders: a black disc on a thin track (Okay's sketch, 12 Oct 2026) */
     --tick: 16px;                                  /* a tick box */
+    --chip: 22px; --chip-gap: 4px;                 /* a colour to pick: in the pop-out's two rows, in the guides' list */
+    --pop-pad: 12px; --pop-label: 72px;            /* the colour pop-out: its side space, and the column of its rows' names */
+    --pop-field: 168px; --pop-hue: 24px;           /* its field of one hue, and the strip of hues under it */
+    --knob: 20px;                                  /* the handle on the field and on the strip */
+    --canvas-inset: 12px;                          /* from the preview's edge to what stands on it */
+    --guide-name: 96px;                            /* the names in the guides' list */
 
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
     --t-xs: 11px; --t-s: 12px; --t-m: 13px; --t-l: 15px;
@@ -81,7 +91,7 @@
     --sans: system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
     --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;      /* only for what the tool says: the log, a link, a hex value, a feature's tag */
   }
-  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; } }      /* a finger needs more to hold than a pointer */
+  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --pop-field: 220px; --pop-hue: 36px; --knob: 30px; } }      /* a finger needs more to hold than a pointer */
 }
 
 @layer base {
@@ -162,7 +172,14 @@
   .tile[aria-pressed="true"] small { color: var(--rule); }
 
   /* what the tool says, set apart: small, monospaced, on an inset ground */
-  .log, .link, .hexline { background: var(--inset); }
+  .log, .link { background: var(--inset); }
+
+  /* colours to pick: small squares in a row; the one in use is outlined */
+  .chips { display: grid; grid-template-columns: repeat(auto-fill, var(--chip)); gap: var(--chip-gap); }
+  .chips button { width: var(--chip); height: var(--chip); border: var(--hair) solid var(--chip-rule); }
+  .chips button.on { outline: var(--thick) solid var(--ink); outline-offset: 1px; }
+  .chips button.add { border-color: var(--rule); background: var(--field); color: var(--ink); line-height: 1; }
+  .chips button.add:hover { background: var(--hover); border-color: var(--ink); }
   .log, .link { display: block; width: 100%; margin: 0; padding: 8px 10px; border: 0; color: var(--grey); font: var(--t-xs)/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
   .log { min-height: 96px; max-height: 260px; overflow-y: auto; }
   .link { resize: none; overflow-y: auto; color: var(--ink); }
@@ -175,16 +192,6 @@
   #app.nopanel .panel { display: none; }
   .panel > header { display: flex; align-items: center; height: var(--header); padding: 0 var(--margin); }
   .panel .title { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); }
-  /* guides: a box at the top right; the whole box switches them. On: a solid dark outline, dark sign and word.
-     Off: dashed and grey. Its word keeps the width of its bold form, so the box is the same size on and off. */
-  .guidesbox { margin-left: auto; display: flex; align-items: center; justify-content: center; gap: 7px; height: var(--control-large); padding: 0 10px 0 8px; border: 1.5px solid var(--ink); border-radius: 10px; font-weight: 600; user-select: none; }
-  .guidesbox .word::after { content: attr(data-text); display: block; height: 0; overflow: hidden; visibility: hidden; font-weight: 600; }
-  .guidesbox:hover { background: var(--ground); }
-  .guidesbox[aria-pressed="false"] { color: var(--grey); border-color: var(--rule); border-style: dashed; font-weight: 400; }
-  .guidesbox[aria-pressed="false"]:hover { color: var(--ink); }
-  .guidesbox[aria-pressed="false"] svg { opacity: 0.55; }
-  .guidesbox:active { background: var(--ink); color: var(--paper); }
-
   /* sections: a sign inside a ring, its name under it */
   .tabs { display: grid; grid-template-columns: repeat(5, 1fr); margin: 0 var(--margin); padding: 12px 0 0; border-top: var(--hair) solid var(--rule); }
   .tabs button { display: grid; justify-items: center; gap: 6px; padding: 4px 0 11px; color: var(--grey); }
@@ -202,7 +209,7 @@
   .pinned, .form { padding: 0 var(--margin); }
   .pinned { border-bottom: var(--hair) solid var(--rule); }      /* a hairline: what is under it scrolls */
   .pinned > .pane:last-child { --air: calc(3 * var(--unit)); }
-  .form { --surface: var(--scroll); --inset: var(--paper); --well: var(--field);
+  .form { --surface: var(--scroll); --inset: var(--paper); --well: var(--field); --row-rule: var(--line-on-grey);
     flex: 1; min-height: 0; overflow-y: auto; padding-bottom: calc(6 * var(--unit)); background: var(--surface); }
 
   /* a pane: a thick line, its heading, its rows. The eye in the toggle column shows whether it is open; the whole
@@ -224,12 +231,15 @@
 
   /* rows sit on the six columns: label 2 · control 2 · typed field 1 · stepper 1 */
   .row { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); column-gap: var(--gap); align-items: center; min-height: var(--line); }
+  /* a hairline before and after every row. Two shadows, both on the row's own last line and the line above its
+     first: where rows meet they fall on the same line, so it stays one hairline, whichever rows are hidden. */
+  .row:not(.note) { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule), 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
   .row > :first-child { grid-column: span 2; }
   .row.num > input[type="range"] { grid-column: span 2; }
   .row.num input[type="text"] { text-align: right; }
   .row > label:first-child { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .row > :is(select, .segs, .colour, .tools, .picks), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
-  .row > :is(.check, .wide, .palette), .row.note > .quiet { grid-column: 1 / -1; }      /* a tick and its words start at the left edge */
+  .row > :is(.check, .wide), .row.note > .quiet { grid-column: 1 / -1; }      /* a tick and its words start at the left edge */
   .row > span:first-child:empty { display: none; }
   .row.note { min-height: 0; }
   .row.note > .quiet { padding-bottom: 8px; }
@@ -246,26 +256,33 @@
   .colour .hex { grid-column: span 2; }
   .swatch { height: var(--control); border: var(--hair) solid var(--rule); box-shadow: inset 0 0 0 2px var(--field); }
   .swatch:hover, .swatch:active { box-shadow: inset 0 0 0 1px var(--field); }
-  /* the picker: a field of one hue, the hues, the colour as numbers, the dial's colours, the hex to copy */
-  .palette { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px var(--gap); align-items: start; margin: 2px 0 12px; padding: 12px 0 14px; border-top: var(--hair) solid var(--rule); border-bottom: var(--hair) solid var(--rule); }
-  .palette > * { grid-column: 1 / -1; }
-  .palette > .quiet { grid-column: span 2; line-height: 22px; }
-  .palette > .chips { grid-column: 3 / -1; display: grid; grid-template-columns: repeat(auto-fill, 22px); gap: 4px; }
-  .chips button { width: 22px; height: 22px; border: var(--hair) solid var(--chip-rule); }
-  .chips button.on { outline: 2px solid var(--ink); outline-offset: 1px; }
+
+  /* the colour pop-out: one for the whole tool, at the right of the swatch that opened it. Paper, one ink line round it.
+     Its head drags it. Rows of colours: a name, then the chips. Then the field of one hue and the strip of hues, tall
+     enough for a finger. Last, one line: RGB · CMYK · HEX, the values, COPY — small, boxed, capitals. */
+  .colourpop { position: fixed; z-index: 5; display: grid; gap: var(--unit); width: calc(2 * var(--pop-pad) + 2 * var(--hair) + var(--pop-label) + 11 * var(--chip) + 10 * var(--chip-gap)); max-width: 100vw;      /* eleven chips to a row: the palette's ten and its + */
+    padding: 0 var(--pop-pad) var(--pop-pad); border: var(--hair) solid var(--ink); background: var(--paper); }
+  .colourpop[hidden] { display: none; }
+  .colourpop header { display: flex; align-items: center; height: var(--head); cursor: grab; touch-action: none; user-select: none; border-bottom: var(--hair) solid var(--row-rule); }
+  .colourpop header h2 { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+  .colourpop header .sign[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+  .chiprow { display: grid; grid-template-columns: var(--pop-label) minmax(0, 1fr); align-items: start; }
+  .chiprow > .quiet { line-height: var(--chip); font-size: var(--t-s); }
   .sv, .hue { position: relative; touch-action: none; }
-  .sv { height: 132px; cursor: crosshair; background: linear-gradient(to top, #000, rgba(0, 0, 0, 0)), linear-gradient(to right, #fff, var(--hue, #f00)); }
-  .hue { height: 16px; cursor: ew-resize; background: linear-gradient(to right, #f00, #ff0 16.67%, #0f0 33.33%, #0ff 50%, #00f 66.67%, #f0f 83.33%, #f00); }
-  .sv i, .hue i { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--ink); pointer-events: none; }
-  .hue i { top: 50%; width: 6px; height: 20px; margin: -10px 0 0 -3px; border-radius: 0; }
-  .asnumbers { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--gap); align-items: center; }
-  .asnumbers .segs { grid-column: span 2; }
-  .asnumbers .numbers { grid-column: 3 / -1; display: flex; gap: 6px; }
-  .asnumbers .numbers label { flex: 1; display: flex; align-items: center; gap: 4px; color: var(--grey); font-size: var(--t-xs); }
-  .asnumbers .numbers input { padding: 0 4px; text-align: right; color: var(--ink); font-size: var(--t-m); }
-  .hexline { display: flex; align-items: center; gap: var(--gap); padding-left: 10px; }
-  .hexline code { flex: 1; font: var(--t-m)/1 var(--mono); user-select: all; }
-  .hexline .copy { height: var(--control-large); min-width: calc(var(--col) + var(--gap)); }
+  .sv { height: var(--pop-field); cursor: crosshair; background: linear-gradient(to top, #000, rgba(0, 0, 0, 0)), linear-gradient(to right, #fff, var(--hue, #f00)); }
+  .hue { height: var(--pop-hue); cursor: ew-resize; background: linear-gradient(to right, #f00, #ff0 16.67%, #0f0 33.33%, #0ff 50%, #00f 66.67%, #f0f 83.33%, #f00); }
+  .sv i, .hue i { position: absolute; width: var(--knob); height: var(--knob); translate: -50% -50%; border-radius: 50%; box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--ink); pointer-events: none; }
+  .hue i { top: 50%; width: calc(var(--knob) / 3); height: calc(var(--pop-hue) + 6px); border-radius: 0; }
+  .asnumbers { display: flex; gap: var(--chip-gap); align-items: center; font-size: var(--t-xs); letter-spacing: 0.04em; text-transform: uppercase; }
+  .asnumbers .segs { flex: none; }
+  .asnumbers .segs > button { flex: none; padding: 0 6px; }
+  .asnumbers .numbers { flex: 1; min-width: 0; display: flex; gap: var(--chip-gap); }
+  .asnumbers .numbers input { padding: 0 2px; text-align: center; text-transform: uppercase; }
+  .asnumbers .copy { flex: none; min-width: var(--col); padding: 0 6px; font-weight: 600; }
+  /* wide: over the whole preview (app.js sets where). The field takes the height that is left. */
+  .colourpop.wide { grid-template-rows: auto auto auto 1fr auto auto; width: auto; }
+  .colourpop.wide header { cursor: default; }
+  .colourpop.wide .sv { height: auto; min-height: var(--pop-field); }
 
   /* the ring list: top ring first. Each ring is a framed row, a little wider than the pane's lines on both sides
      (--frame-out), so the eye has room inside the frame: eye (show or hide the ring, in the toggle column) · grip ·
@@ -340,6 +357,32 @@
   main { position: relative; min-width: 0; min-height: 0; overflow: hidden; background: var(--ground); }
   .preview { display: block; width: 100%; height: 100%; touch-action: none; cursor: default; user-select: none; }
   .preview path { cursor: pointer; }
+  main.dark { --on-canvas: var(--bar-ink); --on-canvas-quiet: var(--bar-quiet); --on-canvas-fill: var(--bar); --canvas-hover: var(--bar-faint); }
+
+  /* guides, at the preview's top right: a switch and, joined to it, the arrow that drops their list. Their colour
+     follows the backdrop (--on-canvas). On: a solid outline. Off: dashed and quiet. The word keeps the width of its
+     bold form, so the box is the same size on and off. */
+  .guides { position: absolute; z-index: 3; top: var(--canvas-inset); right: var(--canvas-inset); display: flex; justify-content: flex-end; color: var(--on-canvas); }
+  .guidesbox, .guidesmore { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: 1.5px solid var(--on-canvas); user-select: none; }
+  .guidesbox { gap: 7px; padding: 0 10px 0 8px; border-radius: 10px 0 0 10px; font-weight: 600; }
+  .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 10px 10px 0; }
+  .guidesbox .word::after { content: attr(data-text); display: block; height: 0; overflow: hidden; visibility: hidden; font-weight: 600; }
+  :is(.guidesbox, .guidesmore):hover { background: var(--canvas-hover); }
+  .guidesbox[aria-pressed="false"] { color: var(--on-canvas-quiet); font-weight: 400; }
+  .guidesbox[aria-pressed="false"], .guidesbox[aria-pressed="false"] + .guidesmore { border-color: var(--on-canvas-quiet); border-style: dashed; }
+  .guidesbox[aria-pressed="false"]:hover { color: var(--on-canvas); }
+  .guidesbox[aria-pressed="false"] svg { opacity: 0.55; }
+  .guidesmore[aria-expanded="true"] { background: var(--on-canvas); color: var(--on-canvas-fill); }
+  .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }
+  /* the list: paper, like the colour pop-out. A kind of guide is an eye, its name, eight colours. */
+  .guidelist { position: absolute; top: calc(100% + var(--unit)); right: 0; width: calc(2 * var(--pop-pad) + 2 * var(--hair) + var(--eye) + var(--guide-name) + 2 * var(--gap) + 8 * var(--chip) + 7 * var(--chip-gap)); max-height: calc(100vh - var(--bar-height) - 2 * var(--canvas-inset) - var(--control-large) - var(--unit)); overflow-y: auto;
+    padding: var(--unit) var(--pop-pad) var(--pop-pad); border: var(--hair) solid var(--ink); background: var(--paper); color: var(--ink); }
+  .guidekind { display: grid; grid-template-columns: var(--eye) var(--guide-name) auto; column-gap: var(--gap); align-items: center; min-height: var(--line);
+    box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  .guidekind .eye { display: grid; place-items: center; height: var(--control); }
+  .guidekind.off :is(.eye, .name) { color: var(--grey); }
+  .guidekind .chips { grid-template-columns: repeat(8, var(--chip)); }
+  .guidefoot { display: flex; justify-content: flex-end; padding-top: calc(2 * var(--unit)); }
   /* the outline of what the pointer is on: an orange line on a white one, so it shows on any colour */
   .glow { fill: none; stroke: var(--glow); stroke-width: 1.5px; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
   .glow.under { stroke: #fff; stroke-width: 4px; }
@@ -434,6 +477,11 @@
     .row.pick > label, .row.pick > .picks { grid-column: 1 / -1; }      /* picture tiles under their label, on all six columns: room for their words */
     .row.pick > label { line-height: 1.4; padding-top: var(--unit); }
     .picker { inset: auto 0 0 0; width: 100%; height: 58%; border-right: 0; border-top: var(--hair) solid var(--ink); }
+    /* the colour pop-out is a sheet from the bottom; wide, it is the whole screen */
+    .colourpop { inset: auto 0 0 0; width: auto; border-width: var(--hair) 0 0; }
+    .colourpop.wide { inset: 0; }
+    .colourpop header { cursor: default; }
+    .guidelist { max-width: calc(100vw - 2 * var(--canvas-inset)); }
   }
 }
 </style>
@@ -4788,7 +4836,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.4";
+var VERSION = "beta 4.5";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -4959,18 +5007,36 @@ var DEFAULTS = {
   ui_hand: 0,
   ui_preview: 0,
   ui_window: 0,
-  // guides (web version, beta 3.0): which ones, their colour, strength (%) and thickness (screen points).
-  // The starting values draw what dial.py draws. Preview only, never in a file (R5).
+  // guides: preview only, never in a file (R5). Five kinds, each with an eye (shown or not) and a colour:
+  // a place in GUIDE_COLOURS (R9: a number, never the colour itself). One thickness (screen points) for all;
+  // the selected ring's lines are half as thick again. (beta 4.5, 12 Oct 2026)
   gd_edge: true,
   gd_axes: true,
+  gd_win: true,
   gd_rings: true,
+  gd_sel: true,
+  gd_k_edge: 1,
+  gd_k_axes: 1,
+  gd_k_win: 1,
+  gd_k_rings: 1,
+  gd_k_sel: 4,
+  gd_w: 1,
+  // until beta 4.4 guides had two free colours with a strength each. Kept because old links and files carry
+  // them (R8, R31); nothing reads them now.
   gd_c: [0, 0.55, 0.9, 1],
   gd_strength: 50,
-  gd_w: 1,
   gd_sel_c: [1, 0.45, 0, 1],
   gd_sel_strength: 95,
   gd_sel_w: 1.5
 };
+var GUIDE_COLOURS = ["#FF2D95", "#00E5FF", "#39FF14", "#FFE600", "#FF6A00", "#7A5CFF", "#111111", "#FFFFFF"];
+var GUIDE_KINDS = [
+  ["gd_edge", "gd_k_edge", "Dial edge"],
+  ["gd_axes", "gd_k_axes", "Centre lines"],
+  ["gd_win", "gd_k_win", "Window radii"],
+  ["gd_rings", "gd_k_rings", "Ring edges"],
+  ["gd_sel", "gd_k_sel", "Selected ring"]
+];
 var NOT_GEOMETRY = ["t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview"];
 var NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_"];
 function complete(base, d) {
@@ -6035,23 +6101,24 @@ function scene(S, statik, t, preview = true, selected = null) {
   }
   if (preview && S.guides) {
     const R = S.dial_d / 2;
-    const tint = (c, strength) => [c[0], c[1], c[2], Math.min(Math.max(strength, 0), 100) / 100];
-    const plain = tint(S.gd_c, S.gd_strength), ring_edge = tint(S.gd_c, S.gd_strength * 0.7), chosen = tint(S.gd_sel_c, S.gd_sel_strength);
-    const ring_guide = (r, colour, px) => add("guide", circle(2 * r), null, { stroke: colour, px });
-    const line_guide = (p0, p1) => add("guide", new Path().line(p0, p1), null, { stroke: plain, px: S.gd_w });
-    if (S.gd_edge) {
-      ring_guide(R, plain, S.gd_w);
-      for (const r of new Set(windows.map((x) => x.w.r))) ring_guide(r, plain, S.gd_w);
-    }
+    const colour = (key) => {
+      const hex = GUIDE_COLOURS[S[key]] || GUIDE_COLOURS[0];
+      return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).concat([1]);
+    };
+    const ring_guide = (r, key, px) => add("guide", circle(2 * r), null, { stroke: colour(key), px });
+    const line_guide = (p0, p1) => add("guide", new Path().line(p0, p1), null, { stroke: colour("gd_k_axes"), px: S.gd_w });
+    if (S.gd_edge) ring_guide(R, "gd_k_edge", S.gd_w);
+    if (S.gd_win) for (const r of new Set(windows.map((x) => x.w.r))) ring_guide(r, "gd_k_win", S.gd_w);
     if (S.gd_axes) {
       line_guide([-R, 0], [R, 0]);
       line_guide([0, -R], [0, R]);
     }
     S.rings.forEach((ring, i) => {
-      if (!ring.on || !(S.gd_rings || i === selected)) return;
+      const chosen = i === selected && S.gd_sel;
+      if (!ring.on || !(S.gd_rings || chosen)) return;
       const inner = { ticks: ring.len, markers: ring.len, band: ring.width }[kind_of(ring)] || 0;
       for (const r of [.../* @__PURE__ */ new Set([ring.r, ring.r - inner])].sort((a, b) => b - a)) {
-        if (r > 0) ring_guide(r, i === selected ? chosen : ring_edge, i === selected ? S.gd_sel_w : S.gd_w);
+        if (r > 0) ring_guide(r, chosen ? "gd_k_sel" : "gd_k_rings", chosen ? S.gd_w * 1.5 : S.gd_w);
       }
     });
   }
@@ -6282,31 +6349,9 @@ var FEATURE_NAMES = {
   afrc: "alternative fractions",
   rvrn: "variation alternates"
 };
-var PALETTE = [
-  // colours dials are made of: blacks and greys · whites and creams · blues · greens · reds to yellow · brown · lume
-  "#111111",
-  "#1A1A1F",
-  "#3A3A3C",
-  "#6E6E73",
-  "#A7A7AA",
-  "#D6D6D2",
-  "#FFFFFF",
-  "#F5F2EA",
-  "#EDE8DB",
-  "#E4D9BF",
-  "#D8C9A3",
-  "#0E2A47",
-  "#1F4E79",
-  "#5B8DB8",
-  "#12372A",
-  "#2E6B4F",
-  "#7A1F1F",
-  "#CC381A",
-  "#E8742A",
-  "#F5C518",
-  "#5A3A22",
-  "#C8E6A0"
-];
+var PALETTE = ["#111111", "#FFFFFF", "#EDE8DB", "#A7A7AA", "#3A3A3C", "#0E2A47", "#12372A", "#7A1F1F", "#C8E6A0", "#E8742A"];
+var POP_GAP = 12;
+var PALETTE_KEY = "dial-tool-palette";
 var DEFAULT_ON = /* @__PURE__ */ new Set(["kern", "liga", "calt", "ccmp", "locl", "mark", "mkmk", "rlig", "rclt", "curs", "clig", "rvrn"]);
 var icon = (inside, size = 16, box = "0 0 16 16") => `<svg viewBox="${box}" width="${size}" height="${size}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${inside}</svg>`;
 var SECTION_ICONS = {
@@ -6393,11 +6438,14 @@ var TAB_NAMES = { Date: "Windows" };
 var H = { scope: "hand" };
 var ROWS = {
   Dial: [
-    hdr("Size"),
+    hdr("Dial"),
+    // the plate: how big, what colour, what is on it
     num2("dial_d", "Diameter", 15, 50, 0.1),
-    num2("margin", "Page margin", 0, 10, 0.5),
-    hdr("Colour"),
     col("c_plate", "Plate"),
+    custom("background"),
+    hdr("Page"),
+    // around the dial: preview and page only
+    num2("margin", "Page margin", 0, 10, 0.5),
     col("c_backdrop", "Backdrop")
   ],
   Rings: [
@@ -6530,21 +6578,6 @@ var ROWS = {
     custom("log")
   ]
 };
-var guides_on = (S) => S.guides;
-ROWS.Dial.push(
-  // guides: preview only, nothing here reaches a file (R5)
-  hdr("Guides", { folded: true }),
-  info("Guides are off. Press Guides at the top right to show them.", { show: (S) => !S.guides }),
-  chk("gd_edge", "Dial edge and window radii", { show: guides_on }),
-  chk("gd_axes", "Centre lines", { show: guides_on }),
-  chk("gd_rings", "Every ring\u2019s edges", { show: guides_on }),
-  col("gd_c", "Colour", { show: guides_on }),
-  num2("gd_strength", "Strength %", 5, 100, 1, { show: guides_on }),
-  num2("gd_w", "Thickness", 0.25, 6, 0.25, { show: guides_on }),
-  col("gd_sel_c", "Selected ring", { show: guides_on }),
-  num2("gd_sel_strength", "\u2026strength %", 5, 100, 1, { show: guides_on }),
-  num2("gd_sel_w", "\u2026thickness", 0.25, 6, 0.25, { show: guides_on })
-);
 var DAY_STEPS = [...Array.from({ length: 12 }, (_, h) => [h * 3600, String(h || 12), false]), [10 * 3600 + 10 * 60, "10:10", true]].sort((a, b) => a[0] - b[0]);
 var SPEEDS = [[1, "Real time"], [60, "A minute every second"], [720, "An hour every five seconds: twelve hours in a minute"]];
 var SECTIONS = Object.keys(ROWS);
@@ -6585,6 +6618,26 @@ function rgb_cmyk([r, g, b]) {
   return k >= 1 ? [0, 0, 0, 1] : [(1 - r - k) / (1 - k), (1 - g - k) / (1 - k), (1 - b - k) / (1 - k), k];
 }
 var cmyk_rgb = ([c, m, y, k]) => [(1 - c) * (1 - k), (1 - m) * (1 - k), (1 - y) * (1 - k)];
+function parse_hex(text) {
+  const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(text).trim());
+  return m ? "#" + (m[1].length === 3 ? [...m[1]].map((c) => c + c).join("") : m[1]).toUpperCase() : null;
+}
+var has_focus = (e) => document.activeElement === e;
+function drag_in(box, move) {
+  box.onpointerdown = (e) => {
+    e.preventDefault();
+    box.setPointerCapture(e.pointerId);
+    const at = (ev) => {
+      const r = box.getBoundingClientRect();
+      move(clamp((ev.clientX - r.left) / r.width, 0, 1), clamp((ev.clientY - r.top) / r.height, 0, 1));
+    };
+    box.onpointermove = at;
+    box.onpointerup = box.onpointercancel = () => {
+      box.onpointermove = null;
+    };
+    at(e);
+  };
+}
 var from_hex = (h, alpha = 1) => [1, 3, 5].map((i) => +(parseInt(h.slice(i, i + 2), 16) / 255).toFixed(4)).concat([alpha]);
 function save_file(name, data, type) {
   const url = URL.createObjectURL(new Blob([data], { type }));
@@ -6701,7 +6754,7 @@ var DialTool = class _DialTool {
     const panel = el(
       "aside",
       { className: "panel" },
-      el("header", {}, el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: VERSION })), this.guides_box()),
+      el("header", {}, el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: VERSION }))),
       this.tabs,
       this.pinned,
       this.form
@@ -6810,7 +6863,8 @@ var DialTool = class _DialTool {
       )
     );
     this.set_speed(1);
-    root.append(panel, el("main", {}, this.svg, this.tip), bar, this.build_picker());
+    this.main = el("main", {}, this.svg, this.tip, this.guides_box());
+    root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     this.play_icon();
     let shown = true;
     try {
@@ -6830,15 +6884,74 @@ var DialTool = class _DialTool {
     } catch (e) {
     }
   }
-  /** top right: the guides' switch — a bullseye with lines, in a rounded box. A solid dark outline = on, a dashed grey one = off; no words (Okay, 11 Oct 2026).
-   *  A press only switches them; their settings are in Dial. */
+  /** guides, at the preview's top right (Okay, 12 Oct 2026): a switch (a bullseye and the word; solid outline = on,
+   *  dashed = off) and, joined to it, an arrow that drops their list: the five kinds of guide, each with an eye and
+   *  one of eight colours; one thickness; Reset. No free colours here. */
   guides_box() {
     this.guides_tick = el("button", { type: "button", className: "guidesbox", id: "guides", onclick: () => this.set_value("global", "guides", !this.S.guides) });
     this.guides_tick.innerHTML = icon(`<circle r="5.6"/><circle r="2.1"/><path d="M0 -8.6L0 -3.6M0 3.6L0 8.6M-8.6 0L-3.6 0M3.6 0L8.6 0"/>`, 18, "-9 -9 18 18");
     const word = el("span", { className: "word", textContent: "Guides" });
     word.dataset.text = "Guides";
     this.guides_tick.append(word);
-    return this.guides_tick;
+    const list = el("div", { className: "guidelist", id: "guide-list", hidden: true });
+    const more = el("button", { type: "button", className: "guidesmore", id: "guides-more", title: "Which guides, and their colours", ariaLabel: "Which guides, and their colours" });
+    more.innerHTML = icon(`<path d="M4 6.5L8 10.5L12 6.5"/>`);
+    more.setAttribute("aria-expanded", "false");
+    const open = (on) => {
+      list.hidden = !on;
+      more.setAttribute("aria-expanded", String(on));
+      if (on) this.sync_guides();
+    };
+    more.onclick = () => open(list.hidden);
+    this.guide_kinds = GUIDE_KINDS.map(([show, colour, name]) => {
+      const see = el("button", { type: "button", className: "eye", id: "guide-" + show, title: "Show or hide: " + name.toLowerCase(), onclick: () => this.set_value("global", show, !this.S[show]) });
+      const chips = el("span", { className: "chips", role: "radiogroup", ariaLabel: name + ", colour" });
+      GUIDE_COLOURS.forEach((hex, i) => {
+        const b = el("button", { type: "button", title: hex, ariaLabel: hex, onclick: () => this.set_value("global", colour, i) });
+        b.setAttribute("role", "radio");
+        b.style.background = hex;
+        chips.append(b);
+      });
+      const line = el("div", { className: "guidekind" }, see, el("span", { className: "name", textContent: name }), chips);
+      list.append(line);
+      return { show, colour, see, chips, line };
+    });
+    this.guide_rows = [this.build_row({ ...num2("gd_w", "Thickness", 0.25, 6, 0.25), scope: "global" })];
+    const reset = el("button", { type: "button", className: "btn", id: "guides-reset", textContent: "Reset", title: "The guides as they started", onclick: () => {
+      for (const key of Object.keys(DEFAULTS)) if (key.startsWith("gd_")) this.S[key] = structuredClone(DEFAULTS[key]);
+      this.sync_rows();
+      this.render();
+    } });
+    list.append(...this.guide_rows.map((r) => r.el), el("div", { className: "guidefoot" }, reset));
+    const box = el("div", { className: "guides" }, this.guides_tick, more, list);
+    box.onkeydown = (e) => {
+      if (e.key === "Escape" && !list.hidden) {
+        open(false);
+        more.focus();
+      }
+    };
+    return box;
+  }
+  /** the guides' switch and list show the settings. */
+  sync_guides() {
+    const S = this.S;
+    this.guides_tick.setAttribute("aria-pressed", String(Boolean(S.guides)));
+    this.guides_tick.title = S.guides ? "Guides are on: press to hide them" : "Guides are off: press to show them";
+    if ($("#guide-list").hidden) return;
+    for (const k of this.guide_kinds) {
+      const on = Boolean(S[k.show]);
+      if (k.shown !== on) {
+        k.shown = on;
+        k.see.innerHTML = eye(on);
+        k.see.setAttribute("aria-pressed", String(on));
+        k.line.classList.toggle("off", !on);
+      }
+      [...k.chips.children].forEach((b, i) => {
+        b.classList.toggle("on", i === S[k.colour]);
+        b.setAttribute("aria-checked", String(i === S[k.colour]));
+      });
+    }
+    for (const r of this.guide_rows) r.refresh(S);
   }
   /** the rows of the section that is showing. A heading opens a pane; the rows after it go inside the pane,
    *  which can be folded. Each section remembers how far it was scrolled. */
@@ -6846,6 +6959,7 @@ var DialTool = class _DialTool {
     if (!(this.S.ui_section in SECTIONS)) this.S.ui_section = 0;
     const name = SECTIONS[this.S.ui_section];
     if (this.section_shown) this.scrolls[this.section_shown] = this.form.scrollTop;
+    this.pop_close();
     [...this.tabs.children].forEach((b) => b.classList.toggle("on", b.dataset.tab === name));
     this.form.replaceChildren();
     this.pinned.replaceChildren();
@@ -6912,8 +7026,7 @@ var DialTool = class _DialTool {
   /** every row: hidden if it doesn't apply (R16); its controls showing the scope's value. A pane hides its rows
    *  when it is folded, and everything in it when its heading doesn't apply. */
   sync_rows() {
-    this.guides_tick.setAttribute("aria-pressed", String(Boolean(this.S.guides)));
-    this.guides_tick.title = this.S.guides ? "Guides are on: press to hide them (their settings are in Dial)" : "Guides are off: press to show them";
+    this.sync_guides();
     for (const r of this.rows) {
       const T = this.target(r.row.scope);
       const applies = r.row.show ? Boolean(r.row.show(T)) : true;
@@ -6932,6 +7045,7 @@ var DialTool = class _DialTool {
       const pane = r.group;
       if (applies && !(pane && (pane.el.hidden || this.is_folded(pane)))) r.refresh(T);
     }
+    this.pop_refresh();
   }
   /** what a folded pane holds, in a few words: the values of its first rows. Folding hides controls, not information. */
   summary(heading) {
@@ -7056,123 +7170,20 @@ var DialTool = class _DialTool {
       };
     }
     if (row.kind === "col") {
-      const swatch = el("button", { type: "button", className: "swatch", id, title: "Choose a colour" });
+      const swatch = el("button", { type: "button", className: "swatch", id, title: "Choose a colour", onclick: () => this.pop_open(row, swatch) });
       const hex = el("input", { type: "text", className: "hex", id: id + "-hex", spellcheck: false, maxLength: 7, ariaLabel: row.text + ", as #RRGGBB" });
-      const palette = el("div", { className: "palette", hidden: true });
       const now = () => this.target(row.scope)[row.key];
-      const put = (rgb2) => set(rgb2.map((v) => +clamp(v, 0, 1).toFixed(4)).concat([now()[3] ?? 1]));
-      const pick2 = (value) => put(from_hex(value).slice(0, 3));
-      let hsv = [0, 0, 0], built = false;
-      const field = el("div", { className: "sv", title: "Across: how strong. Down: how dark." }, el("i"));
-      const hues = el("div", { className: "hue", title: "Hue" }, el("i"));
-      const modes = el("span", { className: "segs" }), numbers = el("span", { className: "numbers" });
-      const out_hex = el("code", { className: "hexout" });
-      const copy = el("button", { type: "button", className: "btn copy", textContent: "Copy", onclick: async () => {
-        try {
-          await navigator.clipboard.writeText(out_hex.textContent);
-          copy.textContent = "Copied";
-        } catch (e) {
-          copy.textContent = "Select it";
-        }
-        setTimeout(() => {
-          copy.textContent = "Copy";
-        }, 1200);
-      } });
-      const used = el("div", { className: "chips" }), fixed = el("div", { className: "chips" });
-      const chip = (c) => {
-        const b = el("button", { type: "button", title: c, ariaLabel: c, onclick: () => pick2(c) });
-        b.style.background = c;
-        b.dataset.colour = c;
-        return b;
-      };
-      const drag = (box, move) => {
-        box.onpointerdown = (e) => {
-          e.preventDefault();
-          box.setPointerCapture(e.pointerId);
-          const at = (ev) => {
-            const r = box.getBoundingClientRect();
-            move(clamp((ev.clientX - r.left) / r.width, 0, 1), clamp((ev.clientY - r.top) / r.height, 0, 1));
-          };
-          box.onpointermove = at;
-          box.onpointerup = box.onpointercancel = () => {
-            box.onpointermove = null;
-          };
-          at(e);
-        };
-      };
-      drag(field, (x, y) => {
-        hsv = [hsv[0], x, 1 - y];
-        put(hsv_rgb(hsv));
-      });
-      drag(hues, (x) => {
-        hsv = [x * 360, hsv[1], hsv[2]];
-        put(hsv_rgb(hsv));
-      });
-      const show_numbers = () => {
-        const mode = this.colour_mode || "RGB", rgb2 = now().slice(0, 3);
-        [...modes.children].forEach((b) => b.classList.toggle("on", b.textContent === mode));
-        const values = mode === "RGB" ? rgb2.map((v) => Math.round(v * 255)) : rgb_cmyk(rgb2).map((v) => Math.round(v * 100));
-        if (numbers.dataset.mode !== mode) {
-          numbers.dataset.mode = mode;
-          numbers.replaceChildren(...[...mode === "RGB" ? "RGB" : "CMYK"].map((letter, i) => {
-            const f = el("input", { type: "text", inputMode: "numeric", ariaLabel: letter, id: `${id}-${letter}` });
-            f.onchange = () => {
-              const all = [...numbers.querySelectorAll("input")].map((x) => parseFloat(x.value) || 0);
-              put(mode === "RGB" ? all.map((v) => v / 255) : cmyk_rgb(all.map((v) => v / 100)));
-            };
-            f.dataset.i = i;
-            return el("label", {}, letter, f);
-          }));
-        }
-        for (const f of numbers.querySelectorAll("input")) if (!active(f)) f.value = values[f.dataset.i];
-      };
-      const build = () => {
-        built = true;
-        for (const mode of ["RGB", "CMYK"]) modes.append(el("button", { type: "button", textContent: mode, onclick: () => {
-          this.colour_mode = mode;
-          show_numbers();
-        } }));
-        fixed.append(...PALETTE.map(chip));
-        palette.append(
-          field,
-          hues,
-          el("div", { className: "asnumbers" }, modes, numbers),
-          el("span", { className: "quiet", textContent: "In this dial" }),
-          used,
-          el("span", { className: "quiet", textContent: "Dial colours" }),
-          fixed,
-          el("div", { className: "hexline" }, out_hex, copy)
-        );
-      };
-      swatch.onclick = () => {
-        palette.hidden = !palette.hidden;
-        if (palette.hidden) return;
-        if (!built) build();
-        const S = this.S, all = [S.c_plate, S.c_backdrop, S.c_cap, ...S.rings.map((r) => r.c), ...HANDS.map((h) => S["ha_" + h].c), ...windows_of(S).map((w) => w.ink)];
-        used.replaceChildren(...[...new Set(all.map(to_hex).map((c) => c.toUpperCase()))].map(chip));
-        out.refresh(this.target(row.scope));
-      };
       hex.onchange = () => {
-        const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex.value.trim());
-        if (m) pick2("#" + (m[1].length === 3 ? [...m[1]].map((c) => c + c).join("") : m[1]));
+        const value = parse_hex(hex.value);
+        if (value) set(from_hex(value, now()[3] ?? 1));
         hex.value = to_hex(now()).toUpperCase();
       };
-      wrap.append(el("label", { htmlFor: id, textContent: row.text }), el("span", { className: "colour" }, swatch, hex), palette);
+      wrap.append(el("label", { htmlFor: id, textContent: row.text }), el("span", { className: "colour" }, swatch, hex));
       out.refresh = (T) => {
         const value = to_hex(T[row.key]).toUpperCase();
         swatch.style.background = value;
+        swatch.setAttribute("aria-expanded", String(this.pop.at !== null && this.pop.at.swatch === swatch));
         if (!active(hex)) hex.value = value;
-        if (palette.hidden || !built) return;
-        const fresh = rgb_hsv(T[row.key]);
-        if (to_hex(hsv_rgb(hsv)).toUpperCase() !== value) hsv = [fresh[1] > 0 && fresh[2] > 0 ? fresh[0] : hsv[0], fresh[2] > 0 ? fresh[1] : hsv[1], fresh[2]];
-        field.style.setProperty("--hue", `hsl(${hsv[0]} 100% 50%)`);
-        field.firstChild.style.left = `${hsv[1] * 100}%`;
-        field.firstChild.style.top = `${(1 - hsv[2]) * 100}%`;
-        field.firstChild.style.background = value;
-        hues.firstChild.style.left = `${hsv[0] / 360 * 100}%`;
-        out_hex.textContent = value;
-        show_numbers();
-        for (const b of palette.querySelectorAll(".chips button")) b.classList.toggle("on", b.dataset.colour === value);
       };
     }
     if (row.kind === "txt") {
@@ -7186,7 +7197,236 @@ var DialTool = class _DialTool {
     if (row.kind === "custom") this["row_" + row.name](wrap, out);
     return out;
   }
+  // ── the colour pop-out ───────────────────────────────────
+  //   One for the whole tool (Okay, 12 Oct 2026). A swatch opens it at its right; it edits that swatch's setting:
+  //   a scope and a key, so with a ring's colour open, selecting another ring shows that ring's colour.
+  //   Top to bottom: this dial's colours · the palette (ten to start, + adds the colour in hand, − takes it out;
+  //   kept by this browser, not by the dial) · the field of one hue and the hues, sized for a finger ·
+  //   one line: RGB / CMYK / HEX, the values, COPY. Its head drags it; the square widens it over the preview.
+  build_pop() {
+    const P = this.pop = { at: null, hsv: [0, 0, 0], used: "", mode: "", wide: false };
+    try {
+      this.palette = JSON.parse(localStorage.getItem(PALETTE_KEY));
+    } catch (e) {
+    }
+    if (!Array.isArray(this.palette)) this.palette = PALETTE.slice();
+    this.colour_mode = "HEX";
+    const now = () => this.target(P.at.scope)[P.at.key];
+    const put = (rgb2) => this.set_value(P.at.scope, P.at.key, rgb2.map((v) => +clamp(v, 0, 1).toFixed(4)).concat([now()[3] ?? 1]));
+    P.pick = (hex) => put(from_hex(hex).slice(0, 3));
+    P.title = el("h2");
+    const wide = el("button", { type: "button", className: "sign", id: "pop-wide", title: "Over the whole preview, and back", ariaLabel: "Over the whole preview, and back", onclick: () => this.pop_wide(!P.wide) });
+    wide.innerHTML = icon(`<rect x="2.5" y="2.5" width="11" height="11"/><path d="M6 10L10 6M7 6L10 6L10 9"/>`);
+    const shut = el("button", { type: "button", className: "sign", id: "pop-close", title: "Close", ariaLabel: "Close", onclick: () => this.pop_close() });
+    shut.innerHTML = icon(`<path d="M4 4L12 12M12 4L4 12"/>`);
+    const head = el("header", { title: "Drag to move" }, P.title, wide, shut);
+    P.used_chips = el("span", { className: "chips", id: "pop-used" });
+    P.palette_chips = el("span", { className: "chips", id: "pop-palette" });
+    P.field = el("div", { className: "sv", title: "Across: how strong. Down: how dark." }, el("i"));
+    P.hues = el("div", { className: "hue", title: "Hue" }, el("i"));
+    drag_in(P.field, (x, y) => {
+      P.hsv = [P.hsv[0], x, 1 - y];
+      put(hsv_rgb(P.hsv));
+    });
+    drag_in(P.hues, (x) => {
+      P.hsv = [x * 360, P.hsv[1], P.hsv[2]];
+      put(hsv_rgb(P.hsv));
+    });
+    P.modes = el("span", { className: "segs" });
+    for (const mode of ["RGB", "CMYK", "HEX"]) P.modes.append(el("button", { type: "button", textContent: mode, id: "pop-as-" + mode, onclick: () => {
+      this.colour_mode = mode;
+      this.pop_refresh();
+    } }));
+    P.numbers = el("span", { className: "numbers" });
+    P.copy = el("button", { type: "button", className: "btn copy", id: "pop-copy", textContent: "COPY", title: "Copy the values shown", onclick: async () => {
+      try {
+        await navigator.clipboard.writeText(this.pop_text());
+        P.copy.textContent = "COPIED";
+      } catch (e) {
+        P.copy.textContent = "NO";
+      }
+      setTimeout(() => {
+        P.copy.textContent = "COPY";
+      }, 1200);
+    } });
+    P.el = el(
+      "div",
+      { className: "colourpop", id: "colour-pop", hidden: true },
+      head,
+      el("div", { className: "chiprow" }, el("span", { className: "quiet", textContent: "On this dial" }), P.used_chips),
+      el("div", { className: "chiprow" }, el("span", { className: "quiet", textContent: "Palette" }), P.palette_chips),
+      P.field,
+      P.hues,
+      el("div", { className: "asnumbers" }, P.modes, P.numbers, P.copy)
+    );
+    P.el.setAttribute("role", "dialog");
+    P.el.onkeydown = (e) => {
+      if (e.key === "Escape") {
+        const swatch = P.at && P.at.swatch;
+        this.pop_close();
+        if (swatch) swatch.focus();
+      }
+    };
+    head.onpointerdown = (e) => {
+      if (e.target.closest("button") || P.wide || this.pop_is_sheet()) return;
+      e.preventDefault();
+      head.setPointerCapture(e.pointerId);
+      const r = P.el.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
+      head.onpointermove = (ev) => this.pop_place(ev.clientX - dx, ev.clientY - dy);
+      head.onpointerup = head.onpointercancel = () => {
+        head.onpointermove = null;
+      };
+    };
+    return P.el;
+  }
+  pop_is_sheet() {
+    return matchMedia("(max-width: 860px)").matches;
+  }
+  /** put its top left corner there, kept inside the window. */
+  pop_place(x, y) {
+    const P = this.pop, r = P.el.getBoundingClientRect();
+    if (this.pop_is_sheet()) {
+      P.el.style.left = P.el.style.top = "";
+      return;
+    }
+    P.el.style.left = `${clamp(x, 0, Math.max(0, innerWidth - r.width))}px`;
+    P.el.style.top = `${clamp(y, 0, Math.max(0, innerHeight - r.height))}px`;
+  }
+  /** a swatch was pressed: open beside it; pressed again: close. */
+  pop_open(row, swatch) {
+    const P = this.pop;
+    if (P.at && P.at.swatch === swatch) return this.pop_close();
+    P.at = { scope: row.scope, key: row.key, text: row.text, swatch };
+    P.el.hidden = false;
+    this.pop_wide(false);
+    this.sync_rows();
+    const r = swatch.getBoundingClientRect();
+    this.pop_place(r.right + POP_GAP, r.top - POP_GAP);
+  }
+  pop_close() {
+    const P = this.pop;
+    if (!P || !P.at) return;
+    const swatch = P.at.swatch;
+    P.at = null;
+    P.el.hidden = true;
+    swatch.setAttribute("aria-expanded", "false");
+  }
+  /** over the whole preview (the field and the hues take the room), or back to its own size where it was. */
+  pop_wide(on) {
+    const P = this.pop;
+    if (on === P.wide) return;
+    if (on) P.back = [P.el.style.left, P.el.style.top];
+    P.wide = on;
+    P.el.classList.toggle("wide", on);
+    $("#pop-wide").setAttribute("aria-pressed", String(on));
+    if (on) this.pop_cover();
+    else {
+      for (const side of ["width", "height"]) P.el.style[side] = "";
+      [P.el.style.left, P.el.style.top] = P.back;
+    }
+  }
+  pop_cover() {
+    const P = this.pop, r = this.main.getBoundingClientRect();
+    if (this.pop_is_sheet()) {
+      for (const side of ["left", "top", "width", "height"]) P.el.style[side] = "";
+      return;
+    }
+    if (!P.wide) return;
+    Object.assign(P.el.style, { left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px` });
+  }
+  /** whose colour it is: "Numerals · Colour", "Hour hand · Colour", "Plate". */
+  pop_name() {
+    const at = this.pop.at, S = this.S;
+    const whose = at.scope === "ring" ? this.ring().name || kind_of(this.ring()) : at.scope === "hand" ? ["Hour hand", "Minute hand", "Seconds hand"][S.ui_hand] : at.scope === "window" ? `Window ${S.ui_window + 1}` : "";
+    return whose ? `${whose} \xB7 ${at.text}` : at.text;
+  }
+  /** the values as the line shows them, to copy: #RRGGBB · 255, 128, 0 · 0, 50, 100, 0 */
+  pop_text() {
+    const rgb2 = this.target(this.pop.at.scope)[this.pop.at.key].slice(0, 3), mode = this.colour_mode;
+    return mode === "HEX" ? to_hex(rgb2).toUpperCase() : (mode === "RGB" ? rgb2.map((v) => Math.round(v * 255)) : rgb_cmyk(rgb2).map((v) => Math.round(v * 100))).join(", ");
+  }
+  /** the pop-out shows the setting it edits. */
+  pop_refresh() {
+    const P = this.pop;
+    if (!P || !P.at) return;
+    const T = this.target(P.at.scope), S = this.S;
+    if (!T || !Array.isArray(T[P.at.key]) || !P.at.swatch.isConnected) return this.pop_close();
+    const rgb2 = T[P.at.key].slice(0, 3), value = to_hex(rgb2).toUpperCase();
+    P.title.textContent = this.pop_name();
+    const put = (c) => P.pick(c);
+    const chip = (c) => {
+      const b = el("button", { type: "button", title: c, ariaLabel: c, onclick: () => put(c) });
+      b.style.background = c;
+      b.dataset.colour = c;
+      return b;
+    };
+    const all = [S.c_plate, S.c_backdrop, S.c_cap, ...S.rings.map((r) => r.c), ...HANDS.map((h) => S["ha_" + h].c), ...windows_of(S).filter((w) => w.on).map((w) => w.ink)];
+    const used = [...new Set(all.map((c) => to_hex(c).toUpperCase()))];
+    if (P.used !== used.join()) {
+      P.used = used.join();
+      P.used_chips.replaceChildren(...used.map(chip));
+    }
+    const kept = this.palette.includes(value), list = this.palette.join() + kept;
+    if (P.listed !== list) {
+      P.listed = list;
+      const change = el("button", { type: "button", className: "add", id: "pop-add", textContent: kept ? "\u2212" : "+", title: kept ? "Take this colour out of the palette" : "Add this colour to the palette", onclick: () => {
+        const now = to_hex(this.target(P.at.scope)[P.at.key]).toUpperCase();
+        this.palette = this.palette.includes(now) ? this.palette.filter((c) => c !== now) : [...this.palette, now];
+        try {
+          localStorage.setItem(PALETTE_KEY, JSON.stringify(this.palette));
+        } catch (e) {
+        }
+        this.pop_refresh();
+      } });
+      P.palette_chips.replaceChildren(...this.palette.map(chip), change);
+    }
+    for (const b of P.el.querySelectorAll(".chips button[data-colour]")) b.classList.toggle("on", b.dataset.colour === value);
+    const fresh = rgb_hsv(rgb2);
+    if (to_hex(hsv_rgb(P.hsv)).toUpperCase() !== value) P.hsv = [fresh[1] > 0 && fresh[2] > 0 ? fresh[0] : P.hsv[0], fresh[2] > 0 ? fresh[1] : P.hsv[1], fresh[2]];
+    const knob = P.field.firstChild;
+    P.field.style.setProperty("--hue", `hsl(${P.hsv[0]} 100% 50%)`);
+    knob.style.left = `${P.hsv[1] * 100}%`;
+    knob.style.top = `${(1 - P.hsv[2]) * 100}%`;
+    knob.style.background = value;
+    P.hues.firstChild.style.left = `${P.hsv[0] / 360 * 100}%`;
+    const mode = this.colour_mode;
+    [...P.modes.children].forEach((b) => b.classList.toggle("on", b.textContent === mode));
+    if (P.mode !== mode) {
+      P.mode = mode;
+      P.numbers.dataset.mode = mode;
+      const commit = () => {
+        const fields = [...P.numbers.querySelectorAll("input")];
+        if (mode === "HEX") {
+          const hex = parse_hex(fields[0].value);
+          if (hex) P.pick(hex);
+          else this.pop_refresh();
+          return;
+        }
+        const all2 = fields.map((x) => parseFloat(x.value) || 0);
+        const next = mode === "RGB" ? all2.map((v) => v / 255) : cmyk_rgb(all2.map((v) => v / 100));
+        this.set_value(P.at.scope, P.at.key, next.map((v) => +clamp(v, 0, 1).toFixed(4)).concat([this.target(P.at.scope)[P.at.key][3] ?? 1]));
+        this.pop_refresh();
+      };
+      P.numbers.replaceChildren(...(mode === "HEX" ? ["hex"] : [...mode]).map((letter, i) => {
+        const f = el("input", { type: "text", inputMode: mode === "HEX" ? "text" : "numeric", ariaLabel: letter, id: "pop-" + letter, spellcheck: false, onchange: commit });
+        f.dataset.i = i;
+        return f;
+      }));
+    }
+    const values = mode === "HEX" ? [value] : mode === "RGB" ? rgb2.map((v) => Math.round(v * 255)) : rgb_cmyk(rgb2).map((v) => Math.round(v * 100));
+    for (const f of P.numbers.querySelectorAll("input")) if (!has_focus(f)) f.value = values[f.dataset.i];
+  }
   // ── rows built by hand ───────────────────────────────────
+  /** the plate's background: only the button for now (Okay, 12 Oct 2026: "no background image functionality now. Just the button"). */
+  row_background(wrap) {
+    const note2 = el("span", { className: "quiet", hidden: true, textContent: "Not built yet." });
+    wrap.append(
+      el("label", { textContent: "Background" }),
+      el("span", { className: "tools" }, el("button", { type: "button", className: "btn", id: "background-add", textContent: "Add image\u2026", onclick: () => {
+        note2.hidden = false;
+      } }), note2)
+    );
+  }
   /** the ring list: order = stacking order, top ring first. Show, name, and the tools. */
   row_ring_list(wrap, out) {
     wrap.className = "ringlist";
@@ -7960,6 +8200,7 @@ var DialTool = class _DialTool {
     this.items = items;
     const backdrop = S.out_production ? [1, 1, 1, 1] : S.c_backdrop;
     this.backdrop.setAttribute("fill", to_hex(backdrop));
+    this.main.classList.toggle("dark", 0.2126 * backdrop[0] + 0.7152 * backdrop[1] + 0.0722 * backdrop[2] < 0.45);
     while (this.slots.length < items.length) {
       const node = svg_el("path");
       this.dial.append(node);
@@ -8043,6 +8284,7 @@ var DialTool = class _DialTool {
     this.place();
   }
   resized() {
+    this.pop_cover();
     const [w, h] = this.size();
     if (w < 1 || h < 1) return;
     if (this.fitted) this.fit();
