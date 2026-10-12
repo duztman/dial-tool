@@ -95,6 +95,7 @@ export const DEFAULTS = {
   out_production: false, out_mirror: false, out_live_text: false,
   out_dpi: 600.0, out_seconds: 4.0, out_fps: 30.0, out_px: 1080,
   ui_section: 0, ui_ring: 0, ui_hand: 0, ui_preview: 0, ui_window: 0,
+  ui_unit: 0,                                      // the unit lengths are shown and typed in: a place in UNITS. Settings stay in mm (R1)
   ui_scale: false,                                 // changing the diameter scales everything on the dial with it (the window's state: not in a link)
   // guides: preview only, never in a file (R5). Five kinds, each with an eye (shown or not) and a colour:
   // a place in GUIDE_COLOURS (R9: a number, never the colour itself). One thickness (screen points) for all;
@@ -107,12 +108,17 @@ export const DEFAULTS = {
   gd_sel_c: [1.0, 0.45, 0.0, 1], gd_sel_strength: 95.0, gd_sel_w: 1.5,
 };
 
+/** units a length can be shown and typed in: [short name, name, how many make a millimetre, extra decimals].
+ *  Only for the window: every setting, link and file stays in mm (R1). The list only grows at its end (R9).
+ *  A ligne is the watchmakers' unit for movement sizes: 2.2558 mm. */
+export const UNITS = [["mm", "Millimetres", 1, 0], ["pt", "Points", 72 / 25.4, 0], ["in", "Inches", 1 / 25.4, 2], ["lig", "Lignes", 1 / 2.2558, 1]];
+
 /** the eight colours a guide can have: six neons, a dark and a light (Okay, 12 Oct 2026). The list only grows at its end (R9). */
 export const GUIDE_COLOURS = ["#FF2D95", "#00E5FF", "#39FF14", "#FFE600", "#FF6A00", "#7A5CFF", "#111111", "#FFFFFF"];
 /** the five kinds of guide: [key of its eye, key of its colour, name]. */
 export const GUIDE_KINDS = [["gd_edge", "gd_k_edge", "Dial edge"], ["gd_axes", "gd_k_axes", "Centre lines"], ["gd_win", "gd_k_win", "Window radii"],
   ["gd_rings", "gd_k_rings", "Ring edges"], ["gd_sel", "gd_k_sel", "Selected ring"]];
-export const NOT_GEOMETRY = ["t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale"];
+export const NOT_GEOMETRY = ["t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
 export const NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_"];
 
 /** base values + d's values (deep copies), names turned into popup indexes. */
@@ -1203,9 +1209,9 @@ export const turned = (path, angle) => path.copy().rotate(-angle);
 /** everything on the dial that is measured in mm — what "scale everything with the diameter" changes. Not angles,
  *  counts, percentages or the page margin; and not the diameter itself, which the caller sets.
  *  measures(S) → the values, in a fixed order; set_measures(S, values) puts a list of the same length back. */
-const RING_MM = ["r", "len", "w", "width", "clear", "round_out", "round_in", "wall", "size", "twelve_gap"];
-const HAND_MM = ["len", "w", "tail", "tip", "feature", "counter", "wall", "round"];
-const WINDOW_MM = ["r", "w", "h", "round", "frame", "clear"];
+export const RING_MM = ["r", "len", "w", "width", "clear", "round_out", "round_in", "wall", "size", "twelve_gap"];
+export const HAND_MM = ["len", "w", "tail", "tip", "feature", "counter", "wall", "round"];
+export const WINDOW_MM = ["r", "w", "h", "round", "frame", "clear"];
 function each_measure(S, visit) {
   for (const ring of S.rings) {
     for (const key of RING_MM) visit(ring, key);

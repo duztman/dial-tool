@@ -256,6 +256,25 @@ await page.fill("#global-c-backdrop-Backdrop-hex", "#CCCCC7");
 await page.press("#global-c-backdrop-Backdrop-hex", "Enter");
 // the Dial section: two panes, Dial (diameter, plate, background) and Page (margin, backdrop); no Guides pane
 check(JSON.stringify(await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))) === '["Dial","Colours","Page"]' && await page.isVisible("#background-add"), "Dial has three panes: Dial, Colours and Page; Background is a button");
+// units: a box at the panel's top right; lengths are shown and typed in the unit, kept in mm
+const unit_box = async () => page.$eval("#unit", (e) => { const r = e.getBoundingClientRect(), row = document.querySelector(".form .row").getBoundingClientRect(); return [e.textContent, Math.round(r.width), Math.round(r.height), Math.round(row.right - r.right)]; });
+const as_mm = await unit_box();
+check(as_mm[0] === "mm" && as_mm[3] === 0 && await page.isHidden("#unit-menu"), "the unit box says mm and ends on the panel's last column");
+await page.click("#unit");
+check(JSON.stringify(await page.$$eval("#unit-menu button span:first-child", (b) => b.map((x) => x.textContent))) === '["Millimetres","Points","Inches","Lignes"]', "its menu: millimetres, points, inches, lignes");
+await page.click("#unit-in");
+const as_in = await unit_box();
+check(as_in[0] === "in" && as_in[1] === as_mm[1] && as_in[2] === as_mm[2] && await page.isHidden("#unit-menu"), `Inches: the box says in and keeps its size (${as_in[1]} × ${as_in[2]})`);
+check(await page.inputValue("#global-dial-d-Diameter") === "1.181" && await S("S.dial_d") === 30, "a 30 mm diameter shows as 1.181; the setting is still 30");
+await page.fill("#global-dial-d-Diameter", "1.5"); await page.press("#global-dial-d-Diameter", "Enter");
+check(near(await S("S.dial_d"), 38.1, 1e-6), "1.5 typed in inches is 38.1 mm");
+await page.click("#unit"); await page.click("#unit-pt");
+check(await page.inputValue("#global-dial-d-Diameter") === "108.0", "in points it reads 108.0");
+await shot("4b-units");
+await page.click("#unit"); await page.mouse.click(480, 30);
+check(await page.isHidden("#unit-menu"), "a press outside the menu puts it away");
+await page.click("#unit"); await page.click("#unit-mm");
+await page.fill("#global-dial-d-Diameter", "30"); await page.press("#global-dial-d-Diameter", "Enter");
 // scale everything with the diameter: off, the rings stay; on, every measure follows, and comes back
 const measures = () => S("[S.rings[0].r, S.rings[0].size, S.rings[1].len, S.ha_hour.len, S.ha_cap, S.rings[0].count, S.margin]");
 const at_30 = await measures();

@@ -213,6 +213,19 @@
   #app.nopanel .panel { display: none; }
   .panel > header { display: flex; align-items: center; height: var(--header); padding: 0 var(--margin); }
   .panel .title { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); }
+  /* units: a box at the panel's top right saying the unit lengths are shown in, by its short name; one column wide
+     whatever it says. Its menu hangs under it, the units by their full names, a hairline between them. */
+  .unit { position: relative; margin-left: auto; }
+  .unitbox { width: var(--col); height: var(--control-large); border: var(--thick) solid var(--ink); font-weight: 600; text-align: center; }
+  .unitbox:hover { background: var(--hover); }
+  .unitbox[aria-expanded="true"] { background: var(--ink); color: var(--paper); }
+  .unitmenu { position: absolute; z-index: 4; top: calc(100% + var(--unit)); right: 0; min-width: calc(2 * var(--col) + var(--gap)); border: var(--thick) solid var(--ink); background: var(--field); }
+  .unitmenu button { display: flex; justify-content: space-between; gap: var(--gap); width: 100%; height: var(--line); padding: 0 10px; align-items: center; white-space: nowrap; }
+  .unitmenu button + button { border-top: var(--hair) solid var(--rule); }
+  .unitmenu button:hover { background: var(--hover); }
+  .unitmenu button.on { font-weight: 600; }
+  .unitmenu button.on .quiet { color: var(--ink); }
+
   /* sections: a sign inside a ring, its name under it */
   .tabs { display: grid; grid-template-columns: repeat(5, 1fr); margin: 0 var(--margin); padding: 12px 0 0; border-top: var(--hair) solid var(--rule); }
   .tabs button { display: grid; justify-items: center; gap: 6px; padding: 4px 0 11px; color: var(--grey); }
@@ -5067,6 +5080,8 @@ var DEFAULTS = {
   ui_hand: 0,
   ui_preview: 0,
   ui_window: 0,
+  ui_unit: 0,
+  // the unit lengths are shown and typed in: a place in UNITS. Settings stay in mm (R1)
   ui_scale: false,
   // changing the diameter scales everything on the dial with it (the window's state: not in a link)
   // guides: preview only, never in a file (R5). Five kinds, each with an eye (shown or not) and a colour:
@@ -5091,6 +5106,7 @@ var DEFAULTS = {
   gd_sel_strength: 95,
   gd_sel_w: 1.5
 };
+var UNITS = [["mm", "Millimetres", 1, 0], ["pt", "Points", 72 / 25.4, 0], ["in", "Inches", 1 / 25.4, 2], ["lig", "Lignes", 1 / 2.2558, 1]];
 var GUIDE_COLOURS = ["#FF2D95", "#00E5FF", "#39FF14", "#FFE600", "#FF6A00", "#7A5CFF", "#111111", "#FFFFFF"];
 var GUIDE_KINDS = [
   ["gd_edge", "gd_k_edge", "Dial edge"],
@@ -5099,7 +5115,7 @@ var GUIDE_KINDS = [
   ["gd_rings", "gd_k_rings", "Ring edges"],
   ["gd_sel", "gd_k_sel", "Selected ring"]
 ];
-var NOT_GEOMETRY = ["t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale"];
+var NOT_GEOMETRY = ["t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
 var NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_"];
 function complete(base, d) {
   const out = Object.assign(clone(base), clone(d || {}));
@@ -6698,6 +6714,8 @@ function parse_number(text, current) {
   let out = s[0] === "+" ? current + v : s[0] === "x" || s[0] === "*" ? current * v : s[0] === "/" ? current / v : parseFloat(s);
   return Number.isFinite(out) ? out : current;
 }
+var LENGTH_KEYS = { ring: RING_MM, hand: HAND_MM, window: WINDOW_MM, global: ["dial_d", "margin", "ha_cap"] };
+var is_length = (row) => row.kind === "num" && (LENGTH_KEYS[row.scope] || []).includes(row.key);
 var decimals = (step) => (String(step).split(".")[1] || "").length;
 var fmt = (v, step) => (+v).toFixed(Math.max(decimals(step), 0));
 var fmt_time = (t) => {
@@ -6865,6 +6883,7 @@ var DialTool = class _DialTool {
     const on = (q) => e.target.closest && e.target.closest(q);
     if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour")) this.pop_close();
     if (this.guides_open && !$("#guide-list").hidden && !on(".guides")) this.guides_open(false);
+    if (this.unit_open && !$("#unit-menu").hidden && !on(".unit")) this.unit_open(false);
   }
   // ── building the window ──────────────────────────────────
   build_window() {
@@ -6889,7 +6908,7 @@ var DialTool = class _DialTool {
     const panel = el(
       "aside",
       { className: "panel" },
-      el("header", {}, el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: VERSION }))),
+      el("header", {}, el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: VERSION })), this.unit_box()),
       this.tabs,
       this.pinned,
       this.form
@@ -7018,6 +7037,49 @@ var DialTool = class _DialTool {
       localStorage.setItem("dial-tool-panel", on ? "on" : "off");
     } catch (e) {
     }
+  }
+  // ── units ────────────────────────────────────────────────
+  //   Lengths are kept in mm (R1). The box at the panel's top right chooses the unit they are shown and typed in;
+  //   it says the unit's short name and keeps its size. Its menu: the units by their full names.
+  unit() {
+    return UNITS[this.S.ui_unit] || UNITS[0];
+  }
+  /** a length in mm → the text of it in the chosen unit. */
+  in_unit(mm, places) {
+    const u = this.unit();
+    return (mm * u[2]).toFixed(places + u[3]);
+  }
+  unit_box() {
+    const menu = el("div", { className: "unitmenu", id: "unit-menu", hidden: true });
+    menu.setAttribute("role", "menu");
+    this.unit_button = el("button", { type: "button", className: "unitbox", id: "unit", title: "The unit lengths are shown in" });
+    this.unit_button.setAttribute("aria-haspopup", "menu");
+    const open = (on) => {
+      menu.hidden = !on;
+      this.unit_button.setAttribute("aria-expanded", String(on));
+    };
+    this.unit_open = open;
+    this.unit_button.onclick = () => open(menu.hidden);
+    this.unit_items = UNITS.map(([short, name], i) => {
+      const b = el("button", { type: "button", id: "unit-" + short, onclick: () => {
+        this.S.ui_unit = i;
+        open(false);
+        this.sync_rows();
+        this.render();
+      } }, el("span", { textContent: name }), el("span", { className: "quiet", textContent: short }));
+      b.setAttribute("role", "menuitemradio");
+      menu.append(b);
+      return b;
+    });
+    const box = el("div", { className: "unit" }, this.unit_button, menu);
+    box.onkeydown = (e) => {
+      if (e.key === "Escape" && !menu.hidden) {
+        open(false);
+        this.unit_button.focus();
+      }
+    };
+    open(false);
+    return box;
   }
   /** guides, at the preview's top right (Okay, 12 Oct 2026): a switch (a bullseye and the word; solid outline = on,
    *  dashed = off) and, joined to it, an arrow that drops their list: the five kinds of guide, each with an eye and
@@ -7166,6 +7228,11 @@ var DialTool = class _DialTool {
    *  when it is folded, and everything in it when its heading doesn't apply. */
   sync_rows() {
     this.sync_guides();
+    this.unit_button.textContent = this.unit()[0];
+    this.unit_items.forEach((b, i) => {
+      b.classList.toggle("on", i === this.S.ui_unit);
+      b.setAttribute("aria-checked", String(i === this.S.ui_unit));
+    });
     for (const r of this.rows) {
       const T = this.target(r.row.scope);
       const applies = r.row.show ? Boolean(r.row.show(T)) : true;
@@ -7194,7 +7261,7 @@ var DialTool = class _DialTool {
       const row = r.row, T = this.target(row.scope);
       if (row.show && !row.show(T)) continue;
       const v = T[row.key];
-      if (row.kind === "num") parts.push(`${row.text.replace(/^…/, "").toLowerCase()} ${fmt(v, row.step)}`);
+      if (row.kind === "num") parts.push(`${row.text.replace(/^…/, "").toLowerCase()} ${is_length(row) ? this.in_unit(v, decimals(row.step)) : fmt(v, row.step)}`);
       else if (row.kind === "pop" || row.kind === "pick" || row.kind === "seg") parts.push(String(row.items[v] ?? ""));
       else if (row.kind === "col") parts.push(to_hex(v).toUpperCase());
       else if (row.kind === "txt") parts.push(String(v));
@@ -7231,6 +7298,9 @@ var DialTool = class _DialTool {
         v = row.whole ? Math.round(v) : +(+v).toFixed(6);
         set(row.whole ? clamp(v, row.lo, row.hi) : v);
       };
+      const length = is_length(row);
+      const per = () => length ? this.unit()[2] : 1, places = () => decimals(row.step) + (length ? this.unit()[3] : 0);
+      const shown = (v) => (v * per()).toFixed(places());
       let typing = false;
       slider.oninput = () => commit(+slider.value);
       field.oninput = () => {
@@ -7242,7 +7312,7 @@ var DialTool = class _DialTool {
       };
       field.onchange = () => {
         typing = false;
-        commit(parse_number(field.value, this.target(row.scope)[row.key]));
+        commit(parse_number(field.value, this.target(row.scope)[row.key] * per()) / per());
         out.refresh(this.target(row.scope));
       };
       field.onkeydown = (e) => {
@@ -7264,7 +7334,7 @@ var DialTool = class _DialTool {
         if (v < +slider.min) slider.min = v;
         if (+slider.value !== v) slider.value = v;
         filled(slider);
-        if (!typing) field.value = fmt(v, row.step);
+        if (!typing) field.value = shown(v);
       };
     }
     if (row.kind === "pop") {
@@ -7869,7 +7939,8 @@ var DialTool = class _DialTool {
       const f = el("input", { type: "text", id: "nudge-" + key, inputMode: "decimal" });
       f.onchange = () => {
         const R = this.ring(), n = { ...R.nudge[this.nudge_at] || {} };
-        const v = parse_number(f.value, n[key] ?? neutral);
+        const per = key === "dr" ? this.unit()[2] : 1;
+        const v = parse_number(f.value, (n[key] ?? neutral) * per) / per;
         if (Math.abs(v - neutral) < 1e-9) delete n[key];
         else n[key] = +v.toFixed(4);
         const all = { ...R.nudge };
@@ -7904,7 +7975,7 @@ var DialTool = class _DialTool {
       const n = R.nudge[this.nudge_at] || {};
       for (const key in fields) {
         const [f, step, neutral] = fields[key];
-        if (document.activeElement !== f) f.value = fmt(n[key] ?? neutral, step / 10);
+        if (document.activeElement !== f) f.value = key === "dr" ? this.in_unit(n[key] ?? neutral, decimals(step / 10)) : fmt(n[key] ?? neutral, step / 10);
       }
     };
   }
@@ -8149,7 +8220,7 @@ var DialTool = class _DialTool {
     wrap.append(el("span"), text);
     out.refresh = () => {
       const mm = page_mm(this.S), px = Math.round(mm / 25.4 * this.S.out_dpi);
-      text.textContent = `${fmt(mm, 0.1)} mm at ${Math.round(this.S.out_dpi)} dpi = ${px} \xD7 ${px} px`;
+      text.textContent = `${this.in_unit(mm, 1)} ${this.unit()[0]} at ${Math.round(this.S.out_dpi)} dpi = ${px} \xD7 ${px} px`;
     };
   }
   row_settings(wrap) {
@@ -8506,7 +8577,7 @@ var DialTool = class _DialTool {
     this.place();
     const ring = this.ring();
     const font = kind_of(ring) === "numerals" ? `   \xB7   ${ring.ps}` : "";
-    this.status.textContent = `${ring.name}${font} \xB7 \xD8 ${S.dial_d.toFixed(1)} mm \xB7 build ${this.build_ms.toFixed(0)} ms`;
+    this.status.textContent = `${ring.name}${font} \xB7 \xD8 ${this.in_unit(S.dial_d, 1)} ${this.unit()[0]} \xB7 build ${this.build_ms.toFixed(0)} ms`;
     while (NOTES.length) {
       const note2 = NOTES.shift(), ps = (/\(([^)]+)\) isn’t loaded|\(([^)]+)\) isn't loaded/.exec(note2) || []).slice(1).find(Boolean);
       const coming = ps && this.catalog.has(ps) && (this.catalog.get(ps).file || this.catalog.get(ps).data);

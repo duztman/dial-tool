@@ -5,7 +5,7 @@ Standing rules. Check code against these in reviews; cite them by number.
 
 ## Geometry
 
-- **R1 · Millimetres.** All geometry is in mm — ring radii, hand lengths, everything. Points appear only at render time (`MM = 72 / 25.4`) and when reading imported files (`MM_PER_PT`).
+- **R1 · Millimetres.** All geometry is in mm — ring radii, hand lengths, everything. Points appear only at render time (`MM = 72 / 25.4`) and when reading imported files (`MM_PER_PT`). The web version's unit box changes what the window shows and takes, never what is stored.
 - **R2 · Clock angles.** 0° = 12 o'clock, growing clockwise. DrawBot turns counter-clockwise, so rotations are negated in one place: `place()`.
 - **R3 · Draw upright, then place.** A shape is drawn at the origin pointing outward (+y), then moved to its radius and turned to its angle.
 - **R4 · Filled shapes only.** Everything that can be exported is a filled path — no strokes. Bands are sectors (two arcs and two lines) or two circles subtracted; hollow shapes are an outline minus an inset; imported strokes are outlined.
