@@ -86,7 +86,7 @@
     --night: #141413; --night-field: #262624; --night-hover: #34342F; --night-rule: #4A4A46; --night-chip-rule: rgba(255, 255, 255, 0.28);
     /* round corners belong to colour things only: the pop-out, its field, a colour pill, a swatch */
     --round-large: 14px; --round: 8px; --round-small: 5px;
-    --pill: 22px; --dot: 14px;                     /* a colour pill's height, and the small swatch inside it */
+    --pill: 22px; --pill-gap: 8px; --dot: 14px;                     /* a colour pill's height, and the small swatch inside it */
     --pop-width: 388px; --pop-chips: 11; --pop-chip-gap: 12px;      /* the colour pop-out: its width; colours to a row (the palette's ten and its +), which share the row's width; the room between two */
     --checker: repeating-conic-gradient(#BDBDB9 0 25%, #FFFFFF 0 50%) 0 0 / 8px 8px;      /* what shows through a see-through colour */
     --canvas-inset: 12px;                          /* from the preview's edge to what stands on it */
@@ -287,7 +287,7 @@
   /* a bar: one line of its own, outside the panes (Hands: All hands · Show hands · Motion). It opens like a pane, with
      a thick line; on the columns: name 2 · tick 2 · menu 2. */
   .handsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; min-height: calc(var(--head) + var(--unit)); border-top: var(--thick) solid var(--ink); }
-  .tabsbar + .handsbar { border-top: var(--hair) solid var(--rule); }
+  .handsbar + .tabsbar { border-top: var(--hair) solid var(--rule); }
   /* tabs inside a section, always in view (Hands: Hour · Minute · Seconds): one line across the six columns */
   .tabsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; min-height: calc(var(--head) + var(--unit)); border-top: var(--thick) solid var(--ink); }
   .tabsbar > .segs { grid-column: 2 / -1; }
@@ -322,7 +322,7 @@
   /* colour: a pill — one small button holding a swatch and the hex in monospace; it opens the pop-out. Quiet at
      rest, a middle grey under the pointer, black while its pop-out is open (no outlines). A swatch shows its colour
      (--c) over a checkerboard, so a see-through colour looks see-through. */
-  .colour { display: inline-flex; align-items: center; gap: 6px; justify-self: start; height: var(--pill); padding: 0 8px 0 4px; border-radius: var(--round-small); background: var(--well); font: var(--t-s)/1 var(--mono); }
+  .colour { display: inline-flex; align-items: center; gap: var(--pill-gap); justify-self: start; height: var(--pill); padding: 0 var(--pill-gap);      border-radius: var(--round-small); background: var(--well); font: var(--t-s)/1 var(--mono); }
   .colour:hover { background: var(--rule); }
   .colour[aria-expanded="true"] { background: var(--ink); color: var(--paper); }
   .swatch, .dot { flex: none; width: var(--dot); height: var(--dot); border: var(--hair) solid var(--chip-rule); border-radius: var(--round-small); background: linear-gradient(var(--c, transparent), var(--c, transparent)), var(--checker); }
@@ -6666,13 +6666,14 @@ var ROWS = {
     custom("features", { show: numerals_only })
   ],
   Hands: [
-    custom("hand_tabs", { pin: true, bar: true }),
-    // on top, always in view: which hand the panes below are about (Okay, 12 Oct 2026: "acts as a tab system for what's below")
     custom("hands_bar", { pin: true, bar: true }),
     // bar: one line of its own, always in view: All hands · Show hands · Motion
+    custom("hand_tabs", { pin: true, bar: true }),
+    // under it, always in view: which hand the panes below are about (Okay, 12 Oct 2026: "acts as a tab system for what's below")
     hdr("One hand", { title: (S) => HAND_NAMES[S.ui_hand] }),
     // its heading says which: Hour hand · Minute hand · Seconds hand
-    chk("on", "Show this hand", { ...H, nest: true }),
+    chk("on", "Show this hand", { ...H, head: true }),
+    // on the heading line, beside the hand's name
     pick("shape", "Shape", HAND_SHAPES.slice(0, 9), hand_pic, H),
     col("c", "Colour", H),
     hdr("Size", H),
