@@ -87,11 +87,11 @@
     /* round corners belong to colour things only: the pop-out, its field, a colour pill, a swatch */
     --round-large: 14px; --round: 8px; --round-small: 5px;
     --dot: 18px;                                   /* the small swatch inside a colour pill */
-    --chip-large: 22px;                            /* a colour to pick, in the pop-out */
+    --pop-width: 388px; --pop-chips: 11; --pop-chip-gap: 12px;      /* the colour pop-out: its width; colours to a row (the palette's ten and its +), which share the row's width; the room between two */
     --checker: repeating-conic-gradient(#BDBDB9 0 25%, #FFFFFF 0 50%) 0 0 / 8px 8px;      /* what shows through a see-through colour */
     --canvas-inset: 12px;                          /* from the preview's edge to what stands on it */
     --guide-name: 92px; --guide-row: 42px;         /* a line of the guides' list is this high */                           /* the names in the guides' list */
-    --guide-dot: 13px; --guide-gap: 9px;           /* a round colour in the guides' list, and the room between two: the chosen one's ring needs it */
+    --guide-dot: 10px; --guide-gap: 10px;           /* a round colour in the guides' list, and the room between two: the chosen one's ring needs it */
     --ring-gap-in: 2px; --ring-thick: 3px;         /* the chosen one: a ring of the ground this wide, then a ring of its own colour this thick */
 
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
@@ -100,7 +100,7 @@
     --sans: system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
     --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;      /* only for what the tool says: the log, a link, a hex value, a feature's tag */
   }
-  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --chip-large: 28px; --dot: 22px; --guide-dot: 18px; --guide-gap: 11px; --pop-field: 180px; --pop-hue: 32px; --knob: 28px; } }      /* a finger needs more to hold than a pointer */
+  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --pop-width: 454px; --dot: 22px; --guide-dot: 14px; --guide-gap: 13px; --pop-field: 180px; --pop-hue: 32px; --knob: 28px; } }      /* a finger needs more to hold than a pointer */
 }
 
 @layer base {
@@ -289,7 +289,7 @@
      checkerboard, so a see-through colour looks see-through. */
   .colour { display: inline-flex; align-items: center; gap: 7px; justify-self: start; height: var(--control); padding: 0 9px 0 4px; border-radius: var(--round); background: var(--well); }
   .colour:focus-within { outline: var(--thick) solid var(--ink); }
-  .colour .hex { width: 8ch; padding: 0; border: 0; background: none; text-align: left; line-height: var(--control); }
+  .colour .hex { width: 8ch; padding: 0; border: 0; background: none; text-align: left; line-height: var(--control); cursor: pointer; }
   .colour input.hex { height: 100%; }
   .colour input.hex:focus { outline: 0; }
   button.colour:hover { background: var(--hover); }
@@ -305,16 +305,18 @@
      buttons and fields look as they do elsewhere, light on dark. Its head drags it. Rows of colours: a name, then the
      chips. Then the field of one hue, the strip of hues and (rings only) the strip of how see-through, tall enough
      for a finger. Last, one line: RGB · CMYK · HEX, the colour, the values, COPY — small, boxed, capitals. */
-  .colourpop { --chip: var(--chip-large);
-    position: fixed; z-index: 5; display: grid; gap: var(--pop-gap); width: calc(2 * var(--pop-pad) + 2 * var(--hair) + var(--pop-label) + 11 * var(--chip) + 10 * var(--chip-gap)); max-width: 100vw;      /* eleven chips to a row: the palette's ten and its + */
-    padding: 0 var(--pop-pad) var(--pop-pad); }
+  .colourpop { position: fixed; z-index: 5; display: grid; gap: var(--pop-gap); width: var(--pop-width); max-width: 100vw; max-height: 100vh; padding: 0 var(--pop-pad) var(--pop-pad); }
   .colourpop[hidden] { display: none; }
   .colourpop header { display: flex; align-items: center; height: var(--head); cursor: grab; touch-action: none; user-select: none; border-bottom: var(--hair) solid var(--row-rule); }
   .colourpop header h2 { flex: 1; overflow: hidden; text-overflow: ellipsis; }
   .colourpop header .sign { border-radius: var(--round-small); }
   .colourpop header .sign[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
-  .chiprow { display: grid; grid-template-columns: var(--pop-label) minmax(0, 1fr); align-items: start; }
-  .chiprow > .quiet { line-height: var(--chip); font-size: var(--t-s); }
+  /* a row of colours: its name, then the chips. A row holds --pop-chips of them with wide gaps; they share the width,
+     so they shrink to fit (Okay, 12 Oct 2026: "×3 gaps, shrink to fit") and grow when the pop-out does. */
+  .chiprow { display: grid; grid-template-columns: var(--pop-label) minmax(0, 1fr); align-items: center; }
+  .chiprow > .quiet { font-size: var(--t-s); }
+  .chiprow .chips { grid-template-columns: repeat(var(--pop-chips), minmax(0, 1fr)); gap: var(--pop-chip-gap); }
+  .chiprow .chips button { width: auto; height: auto; aspect-ratio: 1; }
   .sv, .hue, .alpha { position: relative; touch-action: none; }
   .sv { height: var(--pop-field); border-radius: var(--round); cursor: crosshair; background: linear-gradient(to top, #000, rgba(0, 0, 0, 0)), linear-gradient(to right, #fff, var(--hue, #f00)); }
   .hue, .alpha { height: var(--pop-hue); border-radius: calc(var(--pop-hue) / 2); cursor: ew-resize; }
@@ -334,10 +336,7 @@
   .asnumbers .numbers { flex: 1; min-width: 0; display: flex; gap: var(--chip-gap); }
   .asnumbers .numbers input { padding: 0 2px; text-align: center; text-transform: uppercase; }
   .asnumbers .copy { flex: none; min-width: var(--col); padding: 0 6px; font-weight: 600; }
-  /* wide: over the whole preview (app.js sets where). The field takes the height that is left. */
-  .colourpop.wide { grid-template-rows: auto auto auto 1fr; width: auto; border-radius: 0; }
-  .colourpop.wide header { cursor: default; }
-  .colourpop.wide .sv { height: auto; min-height: var(--pop-field); }
+  /* wide: twice the size (app.js sets the width and the field's height). */
 
   /* the ring list: top ring first. Each ring is a framed row, a little wider than the pane's lines on both sides
      (--frame-out), so the eye has room inside the frame: eye (show or hide the ring, in the toggle column) · grip ·
@@ -550,7 +549,8 @@
     .picker { inset: auto 0 0 0; width: 100%; height: 58%; border-right: 0; border-top: var(--hair) solid var(--ink); }
     /* the colour pop-out is a sheet from the bottom; wide, it is the whole screen */
     .colourpop { inset: auto 0 0 0; width: auto; border-width: var(--hair) 0 0; border-radius: var(--round-large) var(--round-large) 0 0; }
-    .colourpop.wide { inset: 0; }
+    .colourpop.wide { inset: 0; grid-template-rows: auto auto auto 1fr; border-radius: 0; }      /* wide, a sheet is the whole screen; the field takes the height that is left */
+    .colourpop.wide .sv { height: auto; min-height: var(--pop-field); }
     .colourpop header { cursor: default; }
     .guidelist { max-width: calc(100vw - 2 * var(--canvas-inset)); }
   }
@@ -7383,6 +7383,10 @@ var DialTool = class _DialTool {
       const hex = el("input", { type: "text", className: "hex", id: id + "-hex", spellcheck: false, maxLength: 7, ariaLabel: row.text + ", as #RRGGBB" });
       const pill = el("span", { className: "colour" }, swatch, hex);
       swatch.onclick = () => this.pop_open(this.colour_of_row(row), swatch, pill);
+      hex.readOnly = matchMedia("(pointer: coarse)").matches;
+      hex.onclick = () => {
+        if (!(this.pop.at && this.pop.at.swatch === swatch)) this.pop_open(this.colour_of_row(row), swatch, pill);
+      };
       const now = () => this.target(row.scope)[row.key];
       hex.onchange = () => {
         const value = parse_hex(hex.value);
@@ -7425,7 +7429,7 @@ var DialTool = class _DialTool {
     P.put = put;
     P.pick = (hex) => put(from_hex(hex).slice(0, 3));
     P.title = el("h2");
-    const wide = el("button", { type: "button", className: "sign", id: "pop-wide", title: "Over the whole preview, and back", ariaLabel: "Over the whole preview, and back", onclick: () => this.pop_wide(!P.wide) });
+    const wide = el("button", { type: "button", className: "sign", id: "pop-wide", title: "Twice the size, and back", ariaLabel: "Twice the size, and back", onclick: () => this.pop_wide(!P.wide) });
     wide.innerHTML = icon(`<rect x="2.5" y="2.5" width="11" height="11"/><path d="M6 10L10 6M7 6L10 6L10 9"/>`);
     const shut = el("button", { type: "button", className: "sign", id: "pop-close", title: "Close", ariaLabel: "Close", onclick: () => this.pop_close() });
     shut.innerHTML = icon(`<path d="M4 4L12 12M12 4L4 12"/>`);
@@ -7490,7 +7494,7 @@ var DialTool = class _DialTool {
       }
     };
     head.onpointerdown = (e) => {
-      if (e.target.closest("button") || P.wide || this.pop_is_sheet()) return;
+      if (e.target.closest("button") || this.pop_is_sheet()) return;
       e.preventDefault();
       head.setPointerCapture(e.pointerId);
       const r = P.el.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
@@ -7553,28 +7557,33 @@ var DialTool = class _DialTool {
     P.el.hidden = true;
     swatch.setAttribute("aria-expanded", "false");
   }
-  /** over the whole preview (the field and the hues take the room), or back to its own size where it was. */
+  /** twice its size (Okay, 12 Oct 2026: "size of popup grows ×2"), or back. Twice as wide; the field of one hue takes
+   *  the added height, so the whole is twice as high. Never larger than the window. On a phone it is a sheet: wide,
+   *  it is the whole screen, and the stylesheet does it. */
   pop_wide(on) {
     const P = this.pop;
     if (on === P.wide) return;
-    if (on) P.back = [P.el.style.left, P.el.style.top];
+    const r = P.el.getBoundingClientRect(), field = P.field.getBoundingClientRect().height;
     P.wide = on;
     P.el.classList.toggle("wide", on);
     $("#pop-wide").setAttribute("aria-pressed", String(on));
-    if (on) this.pop_cover();
-    else {
-      for (const side of ["width", "height"]) P.el.style[side] = "";
-      [P.el.style.left, P.el.style.top] = P.back;
-    }
+    if (on && !this.pop_is_sheet()) {
+      P.el.style.width = `${Math.min(2 * r.width, innerWidth)}px`;
+      P.field.style.height = `${field}px`;
+      const rest = P.el.getBoundingClientRect().height - field;
+      P.field.style.height = `${Math.max(field, Math.min(2 * r.height, innerHeight) - rest)}px`;
+    } else P.el.style.width = P.field.style.height = "";
+    if (!P.el.hidden) this.pop_place(r.left, r.top);
   }
+  /** the window changed size: a sheet is placed by the stylesheet; anything else stays inside the window. */
   pop_cover() {
-    const P = this.pop, r = this.main.getBoundingClientRect();
+    const P = this.pop;
+    if (!P.at) return;
     if (this.pop_is_sheet()) {
-      for (const side of ["left", "top", "width", "height"]) P.el.style[side] = "";
-      return;
+      P.el.style.width = P.field.style.height = "";
     }
-    if (!P.wide) return;
-    Object.assign(P.el.style, { left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px` });
+    const r = P.el.getBoundingClientRect();
+    this.pop_place(r.left, r.top);
   }
   /** the values as the line shows them, to copy: #RRGGBB · 255, 128, 0 · 0, 50, 100, 0 */
   pop_text() {
