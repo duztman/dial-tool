@@ -76,7 +76,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Rename box** | A text cursor in a rounded box, after the selected ring's name: the only way to rename a ring (web version). |
 | **Picture tile** | One choice shown as a small drawing with its name under it (ring kind, mark shape, hand shape, what a window shows…). |
 | **Colour pop-out** | What a swatch opens, at its right (web version, beta 4.5; the *colour picker* of 4.0–4.4): one for the whole tool. *On this dial* · *Palette* · the field and the hues · one line of RGB / CMYK / HEX with COPY. Its head drags it; its square makes it twice the size. |
-| **Colour pill** | How a colour shows in the panel: a small swatch and its hex in one rounded box. The swatch opens the pop-out; in a colour row the hex can be typed. |
+| **Colour pill** | How a colour shows in the panel: one small button holding a swatch and the hex in monospace. It opens the pop-out; nothing is typed in it. |
 | **Opacity** | How see-through a ring's colour is (the colour's fourth number). Rings and band sectors only. |
 | **Palette** | The pop-out's second row: ten colours to start, plus the ones added with **+**. Kept by the browser, not by the dial or its link. |
 | **Production mask** | Export mode: every ring in solid black, no plate, no hands, aperture as an outline. |

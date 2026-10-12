@@ -29,6 +29,8 @@ await page.goto("file://" + process.cwd() + "/dial-tool.html");
 await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
 
 const S = (expr) => page.evaluate(`(() => { const t = window.dial_tool, S = t.S; return ${expr}; })()`);
+/** set a colour the way a person does: open its pill's pop-out, type the hex there, close it. */
+const type_hex = async (id, hex) => { await page.click("#" + id); await page.click("#pop-as-HEX"); await page.fill("#pop-hex", hex); await page.press("#pop-hex", "Enter"); await page.click("#pop-close"); };
 const frame = () => page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
 const tab = async (name) => { await page.click(`button[data-tab="${name}"]`); await frame(); };
 const shot = async (name) => { await frame(); await page.screenshot({ path: path.join(OUT, name + ".png") }); };
@@ -246,14 +248,12 @@ await page.click("#guides-more");
 await page.mouse.move(900, 400);
 check(await S("S.guides === true && S.ui_section === 0") && await page.isHidden("#guide-list") && await page.$eval("#guides", (e) => { const c = getComputedStyle(e); return c.backgroundColor + c.color; }) === "rgb(242, 242, 238)rgb(20, 20, 19)", "pressed again it is on: light, with dark words");
 // its colour follows the backdrop
-await page.fill("#global-c-backdrop-Backdrop-hex", "#1A1A1F");
-await page.press("#global-c-backdrop-Backdrop-hex", "Enter");
+await type_hex("global-c-backdrop-Backdrop", "#1A1A1F");
 await frame();
 check(await page.$eval("#guides", (e) => { const c = getComputedStyle(e); return c.backgroundColor + c.color; }) === "rgb(242, 242, 238)rgb(20, 20, 19)", "on a dark backdrop it looks the same: it carries its own ground");
-for (const grey of ["#808080", "#F2F2EE", "#141413"]) { await page.fill("#global-c-backdrop-Backdrop-hex", grey); await page.press("#global-c-backdrop-Backdrop-hex", "Enter"); await frame(); await page.screenshot({ path: path.join(OUT, `4c5-guides-on-${grey.slice(1)}.png`), clip: { x: 1240, y: 0, width: 200, height: 60 } }); await page.click("#guides"); await page.mouse.move(480, 30); await frame(); await page.screenshot({ path: path.join(OUT, `4c5-guides-off-${grey.slice(1)}.png`), clip: { x: 1240, y: 0, width: 200, height: 60 } }); await page.click("#guides"); await page.mouse.move(480, 30); }
+for (const grey of ["#808080", "#F2F2EE", "#141413"]) { await type_hex("global-c-backdrop-Backdrop", grey); await frame(); await page.screenshot({ path: path.join(OUT, `4c5-guides-on-${grey.slice(1)}.png`), clip: { x: 1240, y: 0, width: 200, height: 60 } }); await page.click("#guides"); await page.mouse.move(480, 30); await frame(); await page.screenshot({ path: path.join(OUT, `4c5-guides-off-${grey.slice(1)}.png`), clip: { x: 1240, y: 0, width: 200, height: 60 } }); await page.click("#guides"); await page.mouse.move(480, 30); }
 await shot("4c4-guides-dark");
-await page.fill("#global-c-backdrop-Backdrop-hex", "#CCCCC7");
-await page.press("#global-c-backdrop-Backdrop-hex", "Enter");
+await type_hex("global-c-backdrop-Backdrop", "#CCCCC7");
 // the Dial section: two panes, Dial (diameter, plate, background) and Page (margin, backdrop); no Guides pane
 check(JSON.stringify(await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))) === '["Dial","Colours","Page"]' && await page.isVisible("#background-add"), "Dial has three panes: Dial, Colours and Page; Background is a button");
 // units: a box at the panel's top right; lengths are shown and typed in the unit, kept in mm
@@ -364,8 +364,8 @@ check(lines.length === 1, `number rows share their columns (${lines.join(" | ")}
 await page.click("#global-c-plate-Plate");
 const pop_at = await page.evaluate(() => { const p = document.querySelector("#colour-pop").getBoundingClientRect(), s = document.querySelector("#global-c-plate-Plate").closest(".colour").getBoundingClientRect(); return [Math.round(p.left - s.right), p.top < s.bottom && p.bottom > s.top]; });
 check(await page.isVisible("#colour-pop") && pop_at[0] === 12 && pop_at[1], "the plate's swatch opens the colour pop-out, 12 to the right of its pill");
-const pop_look = await page.evaluate(() => { const c = getComputedStyle(document.querySelector("#colour-pop")), pill = getComputedStyle(document.querySelector("#global-c-plate-Plate").closest(".colour")); return [c.backgroundColor, parseFloat(c.borderTopLeftRadius), parseFloat(pill.borderTopLeftRadius), document.querySelector("#global-c-plate-Plate-hex").closest(".colour") !== null]; });
-check(pop_look[0] === "rgb(20, 20, 19)" && pop_look[1] >= 12 && pop_look[2] >= 6 && pop_look[3], "the pop-out is near black with round corners; a colour in the panel is a pill: a small swatch and its hex");
+const pop_look = await page.evaluate(() => { const c = getComputedStyle(document.querySelector("#colour-pop")), pill = getComputedStyle(document.querySelector("#global-c-plate-Plate").closest(".colour")); return [c.backgroundColor, parseFloat(c.borderTopLeftRadius), parseFloat(pill.borderTopLeftRadius), getComputedStyle(document.querySelector("#global-c-plate-Plate-hex")).fontFamily.includes("mono") && document.querySelector("#global-c-plate-Plate").tagName === "BUTTON" && getComputedStyle(document.querySelector("#global-c-plate-Plate")).backgroundColor === "rgb(17, 17, 17)"]; });
+check(pop_look[0] === "rgb(20, 20, 19)" && pop_look[1] >= 12 && pop_look[2] >= 4 && pop_look[3], "the pop-out is near black with round corners; a colour in the panel is a pill, one button: a small swatch and its hex in monospace; black while its pop-out is open");
 check(await page.isHidden(".alpharow"), "the plate has no opacity strip");
 await page.mouse.click(200, 800);
 check(await page.isHidden("#colour-pop"), "a press outside the pop-out puts it away");
@@ -384,7 +384,7 @@ const hue = await page.$eval("#colour-pop .hue", (e) => { const r = e.getBoundin
 await page.mouse.click(hue[0] + hue[2] * 2 / 3, hue[1] + hue[3] / 2);
 check(await S("S.c_plate[2] > S.c_plate[0] && S.c_plate[2] > S.c_plate[1]") && hue[3] >= 20, "a click two thirds along the hues: blue (the strip is 20 high or more)");
 // add the colour in hand to the palette; it is kept by the browser; − takes it out
-const in_hand = await S("document.querySelector('#global-c-plate-Plate-hex').value");
+const in_hand = await S("document.querySelector('#global-c-plate-Plate-hex').textContent");
 await page.click("#pop-add");
 check(await page.$$eval("#pop-palette button[data-colour]", (b) => b.length) === 11 && await S(`JSON.parse(localStorage.getItem('dial-tool-palette')).includes('${in_hand}')`) && await page.textContent("#pop-add") === "−", "+ adds the colour in hand to the palette, kept by the browser; the + becomes −");
 await page.click("#pop-add");
@@ -397,7 +397,7 @@ check(JSON.stringify(await S("S.c_plate.slice(0, 3)")) === "[0,0,0]" && await pa
 await page.click("#pop-as-RGB");
 await page.fill("#pop-R", "255");
 await page.press("#pop-R", "Enter");
-check(await page.inputValue("#global-c-plate-Plate-hex") === "#FF0000", "RGB: R 255 → #FF0000");
+check(await page.textContent("#global-c-plate-Plate-hex") === "#FF0000", "RGB: R 255 → #FF0000");
 const one_line = await page.evaluate(() => { const tops = [...document.querySelectorAll("#colour-pop .asnumbers button, #colour-pop .asnumbers input")].map((e) => Math.round(e.getBoundingClientRect().top)); const c = getComputedStyle(document.querySelector("#pop-copy")); return [new Set(tops).size, c.textTransform, document.querySelector("#pop-copy").textContent]; });
 check(one_line[0] === 1 && one_line[2] === "COPY", "RGB · CMYK · HEX, the values and COPY stand on one line, in capitals");
 const pop_size = await page.$eval("#colour-pop", (e) => { const r = e.getBoundingClientRect(); return [r.width, r.height]; });
@@ -420,9 +420,8 @@ const pop_back = await page.$eval("#colour-pop", (e) => { const r = e.getBoundin
 check(pop_back[0] === pop_before[2] && near(pop_back[1], pop_size[1], 1), "and back to its own size");
 await shot("4c1-picker");
 await page.click('#colour-pop [data-colour="#0E2A47"]');
-check(JSON.stringify(await S("S.c_plate.map((v) => Math.round(v * 255))")) === "[14,42,71,255]" && await page.inputValue("#global-c-plate-Plate-hex") === "#0E2A47", "picking navy sets the plate, and the value shows as text");
-await page.fill("#global-c-plate-Plate-hex", "ede8db");
-await page.press("#global-c-plate-Plate-hex", "Enter");
+check(JSON.stringify(await S("S.c_plate.map((v) => Math.round(v * 255))")) === "[14,42,71,255]" && await page.textContent("#global-c-plate-Plate-hex") === "#0E2A47", "picking navy sets the plate, and the value shows as text");
+await page.click("#pop-as-HEX"); await page.fill("#pop-hex", "ede8db"); await page.press("#pop-hex", "Enter");
 check(JSON.stringify(await S("S.c_plate.map((v) => Math.round(v * 255))")) === "[237,232,219,255]", "a typed value sets it too");
 await page.click("#global-c-plate-Plate");
 await shot("4c2-colour");
@@ -724,11 +723,11 @@ await tab("Rings");
 await page.click(".ringlist li >> nth=2");
 await page.$eval(".form", (e) => { e.scrollTop = 180; });
 await page.evaluate(() => { window.__row = document.querySelector(".form .row"); });
-await page.click(".swatch");
+await page.click(".pinned .colour");
 await click_mm(0, 10);                               // a numeral, in the section that is showing
 const kept = await page.evaluate(() => ({ same_rows: window.__row === document.querySelector(".form .row"), scroll: document.querySelector(".form").scrollTop, picker: document.querySelector("#colour-pop").hidden, ring: window.dial_tool.ring().name, list: document.querySelector(".ringlist li.on .name").textContent }));
 check(kept.same_rows && kept.scroll === 180 && kept.picker && kept.ring === kept.list, `a click on the preview keeps the rows, their scroll (${kept.scroll}) and selects ${kept.ring}; the colour pop-out, pressed outside of, is put away`);
-await page.click(".swatch");
+await page.click(".pinned .colour");
 await tab("Hands"); await page.$eval(".form", (e) => { e.scrollTop = 120; }); await tab("Dial"); await tab("Hands");
 check(await page.$eval(".form", (e) => e.scrollTop) === 120, "a section is back where it was scrolled to");
 await page.$eval(".form", (e) => { e.scrollTop = 0; });
@@ -784,7 +783,7 @@ check(reach.coarse && reach.left && reach.above && reach.nearer_next, `under a f
 await pad.touchscreen.tap(...await pad.$eval('#guide-list .guidekind:nth-child(2) .tone:nth-child(5)', (e) => { const r = e.getBoundingClientRect(); return [r.left - 4, r.top - 8]; }));
 check(await pad.evaluate(() => window.dial_tool.S.gd_k_axes === 3), "a tap just outside a dot chooses it");
 await pad.tap("#global-c-plate-Plate-hex");
-const chip_reach = await pad.evaluate(() => { const c = [...document.querySelectorAll("#pop-palette button")], r = c[4].getBoundingClientRect(); return [document.elementFromPoint(r.left - 4, r.top + 4) === c[4], document.querySelector("#global-c-plate-Plate-hex").readOnly, !document.querySelector("#colour-pop").hidden]; });
+const chip_reach = await pad.evaluate(() => { const c = [...document.querySelectorAll("#pop-palette button")], r = c[4].getBoundingClientRect(); return [document.elementFromPoint(r.left - 4, r.top + 4) === c[4], document.querySelector("#global-c-plate-Plate-hex").tagName === "SPAN", !document.querySelector("#colour-pop").hidden]; });
 check(chip_reach.every(Boolean), "the hex in a pill opens the pop-out and isn't typed in; a chip is pressed from 4 beside it");
 await pad.screenshot({ path: path.join(OUT, "12-touch.png") });
 await touch.close();

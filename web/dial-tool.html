@@ -86,7 +86,7 @@
     --night: #141413; --night-field: #262624; --night-hover: #34342F; --night-rule: #4A4A46; --night-chip-rule: rgba(255, 255, 255, 0.28);
     /* round corners belong to colour things only: the pop-out, its field, a colour pill, a swatch */
     --round-large: 14px; --round: 8px; --round-small: 5px;
-    --dot: 18px;                                   /* the small swatch inside a colour pill */
+    --pill: 22px; --dot: 14px;                     /* a colour pill's height, and the small swatch inside it */
     --pop-width: 388px; --pop-chips: 11; --pop-chip-gap: 12px;      /* the colour pop-out: its width; colours to a row (the palette's ten and its +), which share the row's width; the room between two */
     --checker: repeating-conic-gradient(#BDBDB9 0 25%, #FFFFFF 0 50%) 0 0 / 8px 8px;      /* what shows through a see-through colour */
     --canvas-inset: 12px;                          /* from the preview's edge to what stands on it */
@@ -100,7 +100,7 @@
     --sans: system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
     --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;      /* only for what the tool says: the log, a link, a hex value, a feature's tag */
   }
-  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --pop-width: 454px; --dot: 22px; --guide-dot: 14px; --guide-gap: 13px; --pop-field: 180px; --pop-hue: 32px; --knob: 28px; } }      /* a finger needs more to hold than a pointer */
+  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --pop-width: 454px; --pill: 28px; --dot: 18px; --guide-dot: 14px; --guide-gap: 13px; --pop-field: 180px; --pop-hue: 32px; --knob: 28px; } }      /* a finger needs more to hold than a pointer */
 }
 
 @layer base {
@@ -306,15 +306,15 @@
   .features h3 { margin: 16px 0 8px; padding-top: 8px; border-top: var(--hair) solid var(--rule); }
   .linkrow .tools { margin-top: var(--unit); gap: calc(var(--unit) * 2); }
 
-  /* colour: a pill holding a small swatch (it opens the pop-out) and the hex. A swatch shows its colour (--c) over a
-     checkerboard, so a see-through colour looks see-through. */
-  .colour { display: inline-flex; align-items: center; gap: 7px; justify-self: start; height: var(--control); padding: 0 9px 0 4px; border-radius: var(--round); background: var(--well); }
-  .colour:focus-within { outline: var(--thick) solid var(--ink); }
-  .colour .hex { width: 8ch; padding: 0; border: 0; background: none; text-align: left; line-height: var(--control); cursor: pointer; }
-  .colour input.hex { height: 100%; }
-  .colour input.hex:focus { outline: 0; }
-  button.colour:hover { background: var(--hover); }
+  /* colour: a pill — one small button holding a swatch and the hex in monospace; it opens the pop-out. Quiet at
+     rest, a middle grey under the pointer, black while its pop-out is open (no outlines). A swatch shows its colour
+     (--c) over a checkerboard, so a see-through colour looks see-through. */
+  .colour { display: inline-flex; align-items: center; gap: 6px; justify-self: start; height: var(--pill); padding: 0 8px 0 4px; border-radius: var(--round-small); background: var(--well); font: var(--t-s)/1 var(--mono); }
+  .colour:hover { background: var(--rule); }
+  .colour[aria-expanded="true"] { background: var(--ink); color: var(--paper); }
   .swatch, .dot { flex: none; width: var(--dot); height: var(--dot); border: var(--hair) solid var(--chip-rule); border-radius: var(--round-small); background: linear-gradient(var(--c, transparent), var(--c, transparent)), var(--checker); }
+  .colour .dot { border-radius: 3px; }
+  .colour[aria-expanded="true"] .dot { border-color: var(--night-chip-rule); }
   .swatch:hover { border-color: var(--ink); }
   /* colours in a list (Dial → Colours, a band's sectors): square swatches in a row that wraps */
   .swatches { display: flex; flex-wrap: wrap; gap: var(--chip-gap); padding: var(--chip-gap) 0; }
@@ -7393,26 +7393,10 @@ var DialTool = class _DialTool {
       };
     }
     if (row.kind === "col") {
-      const swatch = el("button", { type: "button", className: "swatch", id, title: "Choose a colour" });
-      const hex = el("input", { type: "text", className: "hex", id: id + "-hex", spellcheck: false, maxLength: 7, ariaLabel: row.text + ", as #RRGGBB" });
-      const pill = el("span", { className: "colour" }, swatch, hex);
-      swatch.onclick = () => this.pop_open(this.colour_of_row(row), swatch, pill);
-      hex.readOnly = matchMedia("(pointer: coarse)").matches;
-      hex.onclick = () => {
-        if (!(this.pop.at && this.pop.at.swatch === swatch)) this.pop_open(this.colour_of_row(row), swatch, pill);
-      };
-      const now = () => this.target(row.scope)[row.key];
-      hex.onchange = () => {
-        const value = parse_hex(hex.value);
-        if (value) set(from_hex(value, now()[3] ?? 1));
-        hex.value = to_hex(now()).toUpperCase();
-      };
+      const pill = this.colour_pill(id, "Choose a colour");
+      pill.onclick = () => this.pop_open(this.colour_of_row(row), pill);
       wrap.append(el("label", { htmlFor: id, textContent: row.text }), pill);
-      out.refresh = (T) => {
-        paint(swatch, T[row.key]);
-        swatch.setAttribute("aria-expanded", String(this.pop.at !== null && this.pop.at.swatch === swatch));
-        if (!active(hex)) hex.value = to_hex(T[row.key]).toUpperCase();
-      };
+      out.refresh = (T) => pill.show(T[row.key]);
     }
     if (row.kind === "txt") {
       const field = el("input", { type: "text", id, className: "wide" });
@@ -7531,6 +7515,18 @@ var DialTool = class _DialTool {
     }
     P.el.style.left = `${clamp(x, 0, Math.max(0, innerWidth - r.width))}px`;
     P.el.style.top = `${clamp(y, 0, Math.max(0, innerHeight - r.height))}px`;
+  }
+  /** a colour pill: one small button — a swatch and the hex in monospace (Okay, 12 Oct 2026: "all sleek"). It only
+   *  opens the pop-out, on every device. While the pop-out is open for it, it is black. show(rgba) fills it. */
+  colour_pill(id, title) {
+    const dot = el("i", { className: "dot" }), hex = el("span", { className: "hex", id: id + "-hex" });
+    const pill = el("button", { type: "button", className: "colour", id, title }, dot, hex);
+    pill.setAttribute("aria-expanded", "false");
+    pill.show = (c) => {
+      paint(dot, c);
+      hex.textContent = to_hex(c).toUpperCase();
+    };
+    return pill;
   }
   /** a row's colour, as the pop-out wants it: read it, write it, say whose it is ("Numerals · Colour", "Plate").
    *  It follows the scope, so with a ring's colour open, selecting another ring shows that ring's. */
@@ -7717,7 +7713,7 @@ var DialTool = class _DialTool {
       holder.replaceChildren(...list.map((line) => {
         const group = el("span", { className: line.colours.length === 1 ? "single" : "swatches" });
         for (const c of line.colours) {
-          const swatch = line.colours.length === 1 ? el("button", { type: "button", className: "colour", id: "colour-" + c.id, title: c.title }, el("i", { className: "dot" }), el("span", { className: "hex" })) : el("button", { type: "button", className: "swatch", id: "colour-" + c.id, title: c.title });
+          const swatch = line.colours.length === 1 ? this.colour_pill("colour-" + c.id, c.title) : el("button", { type: "button", className: "swatch", id: "colour-" + c.id, title: c.title });
           swatch.onclick = () => this.pop_open({ read: c.read, write: c.write, label: () => c.title, alpha: Boolean(c.alpha) }, swatch, group);
           group.append(swatch);
         }
@@ -7727,10 +7723,8 @@ var DialTool = class _DialTool {
     const all = list.flatMap((l) => l.colours);
     [...holder.querySelectorAll("button.colour, button.swatch")].forEach((swatch, k) => {
       const c = all[k].read();
-      if (swatch.classList.contains("colour")) {
-        paint(swatch.firstChild, c);
-        swatch.lastChild.textContent = to_hex(c).toUpperCase();
-      } else paint(swatch, c);
+      if (swatch.show) swatch.show(c);
+      else paint(swatch, c);
     });
   }
   /** Dial → Colours: every coloured part on the plate. Rings top first, a band's sectors one by one; hands, cap, windows. */

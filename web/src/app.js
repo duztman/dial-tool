@@ -834,23 +834,11 @@ class DialTool {
       out.refresh = (T) => { box.checked = Boolean(T[row.key]); };
     }
 
-    if (row.kind === "col") {                      // a pill: a small swatch (opens the colour pop-out) and the hex, which can be typed
-      const swatch = el("button", { type: "button", className: "swatch", id, title: "Choose a colour" });
-      const hex = el("input", { type: "text", className: "hex", id: id + "-hex", spellcheck: false, maxLength: 7, ariaLabel: row.text + ", as #RRGGBB" });
-      const pill = el("span", { className: "colour" }, swatch, hex);
-      swatch.onclick = () => this.pop_open(this.colour_of_row(row), swatch, pill);
-      // the hex opens it too (Okay, 12 Oct 2026). With a mouse it can still be typed in; under a finger it only opens
-      // the pop-out, which has its own HEX field: no keyboard jumps up over the dial.
-      hex.readOnly = matchMedia("(pointer: coarse)").matches;
-      hex.onclick = () => { if (!(this.pop.at && this.pop.at.swatch === swatch)) this.pop_open(this.colour_of_row(row), swatch, pill); };
-      const now = () => this.target(row.scope)[row.key];
-      hex.onchange = () => { const value = parse_hex(hex.value); if (value) set(from_hex(value, now()[3] ?? 1)); hex.value = to_hex(now()).toUpperCase(); };
+    if (row.kind === "col") {                      // a colour pill: a button that opens the colour pop-out. Nothing is typed in it; the pop-out has the HEX field.
+      const pill = this.colour_pill(id, "Choose a colour");
+      pill.onclick = () => this.pop_open(this.colour_of_row(row), pill);
       wrap.append(el("label", { htmlFor: id, textContent: row.text }), pill);
-      out.refresh = (T) => {
-        paint(swatch, T[row.key]);
-        swatch.setAttribute("aria-expanded", String(this.pop.at !== null && this.pop.at.swatch === swatch));
-        if (!active(hex)) hex.value = to_hex(T[row.key]).toUpperCase();
-      };
+      out.refresh = (T) => pill.show(T[row.key]);
     }
 
     if (row.kind === "txt") {
@@ -933,6 +921,16 @@ class DialTool {
     if (this.pop_is_sheet()) { P.el.style.left = P.el.style.top = ""; return; }      // a sheet stands where the stylesheet puts it
     P.el.style.left = `${clamp(x, 0, Math.max(0, innerWidth - r.width))}px`;
     P.el.style.top = `${clamp(y, 0, Math.max(0, innerHeight - r.height))}px`;
+  }
+
+  /** a colour pill: one small button — a swatch and the hex in monospace (Okay, 12 Oct 2026: "all sleek"). It only
+   *  opens the pop-out, on every device. While the pop-out is open for it, it is black. show(rgba) fills it. */
+  colour_pill(id, title) {
+    const dot = el("i", { className: "dot" }), hex = el("span", { className: "hex", id: id + "-hex" });
+    const pill = el("button", { type: "button", className: "colour", id, title }, dot, hex);
+    pill.setAttribute("aria-expanded", "false");
+    pill.show = (c) => { paint(dot, c); hex.textContent = to_hex(c).toUpperCase(); };
+    return pill;
   }
 
   /** a row's colour, as the pop-out wants it: read it, write it, say whose it is ("Numerals · Colour", "Plate").
@@ -1103,9 +1101,7 @@ class DialTool {
         const group = el("span", { className: line.colours.length === 1 ? "single" : "swatches" });
         for (const c of line.colours) {
           // one colour: a pill with its hex, like a colour row. Many (a band's sectors): squares.
-          const swatch = line.colours.length === 1
-            ? el("button", { type: "button", className: "colour", id: "colour-" + c.id, title: c.title }, el("i", { className: "dot" }), el("span", { className: "hex" }))
-            : el("button", { type: "button", className: "swatch", id: "colour-" + c.id, title: c.title });
+          const swatch = line.colours.length === 1 ? this.colour_pill("colour-" + c.id, c.title) : el("button", { type: "button", className: "swatch", id: "colour-" + c.id, title: c.title });
           swatch.onclick = () => this.pop_open({ read: c.read, write: c.write, label: () => c.title, alpha: Boolean(c.alpha) }, swatch, group);
           group.append(swatch);
         }
@@ -1115,7 +1111,7 @@ class DialTool {
     const all = list.flatMap((l) => l.colours);
     [...holder.querySelectorAll("button.colour, button.swatch")].forEach((swatch, k) => {
       const c = all[k].read();
-      if (swatch.classList.contains("colour")) { paint(swatch.firstChild, c); swatch.lastChild.textContent = to_hex(c).toUpperCase(); } else paint(swatch, c);
+      if (swatch.show) swatch.show(c); else paint(swatch, c);
     });
   }
 
