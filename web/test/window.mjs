@@ -229,6 +229,12 @@ check(await S("S.gd_k_edge === 1 && S.gd_axes === true && S.gd_w === 1"), "Reset
 await page.click("#guides");
 await frame();
 check(await S("!t.items.some((i) => i.role === 'guide')") && await page.isVisible("#guide-list"), "the Guides switch, off: none drawn; the list stays where it is");
+await page.mouse.move(480, 30);
+const one_colour = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c("#guides").color, c("#guides svg").opacity, c("#guides-more").color, c("#guides").borderTopColor]; });
+check(one_colour[0] === one_colour[2] && one_colour[0] === one_colour[3] && one_colour[1] === "1", `off, its sign, word, arrow and dashes are one colour (${one_colour[0]})`);
+await page.mouse.click(480, 30);                      // the backdrop, off the dial
+check(await page.isHidden("#guide-list"), "a press outside the list puts it away");
+await page.click("#guides-more");
 const looks = await page.evaluate(() => { const c = (q, p) => getComputedStyle(document.querySelector(q))[p]; return [c(".bar", "backgroundColor"), c(".bar", "color")]; });
 check(looks[0] === "rgb(51, 51, 51)" && looks[1] === "rgb(242, 242, 238)", "the bar is 80 % black with light words");
 await page.mouse.move(900, 400);
@@ -332,6 +338,9 @@ check(await page.isVisible("#colour-pop") && pop_at[0] === 12 && pop_at[1], "the
 const pop_look = await page.evaluate(() => { const c = getComputedStyle(document.querySelector("#colour-pop")), pill = getComputedStyle(document.querySelector("#global-c-plate-Plate").closest(".colour")); return [c.backgroundColor, parseFloat(c.borderTopLeftRadius), parseFloat(pill.borderTopLeftRadius), document.querySelector("#global-c-plate-Plate-hex").closest(".colour") !== null]; });
 check(pop_look[0] === "rgb(20, 20, 19)" && pop_look[1] >= 12 && pop_look[2] >= 6 && pop_look[3], "the pop-out is near black with round corners; a colour in the panel is a pill: a small swatch and its hex");
 check(await page.isHidden(".alpharow"), "the plate has no opacity strip");
+await page.mouse.click(200, 800);
+check(await page.isHidden("#colour-pop"), "a press outside the pop-out puts it away");
+await page.click("#global-c-plate-Plate");
 check(await page.$$eval("#pop-used button", (b) => b.length) >= 3 && await page.$$eval("#pop-palette button[data-colour]", (b) => b.length) === 10 && await page.isVisible('#pop-palette [data-colour="#0E2A47"]'), "first row: this dial's colours; second row: a palette of ten");
 const one_row = await page.$$eval("#pop-palette button", (b) => new Set(b.map((x) => Math.round(x.getBoundingClientRect().top))).size);
 check(one_row === 1, "the ten and their + stand in one row");
@@ -341,7 +350,7 @@ const picked = await S("(() => { const [r, g, b] = S.c_plate, hi = Math.max(r, g
 check(near(picked[0], 0.75, 0.03) && near(picked[1], 0.5, 0.03), "a click in the colour field: half strength, three quarters bright");
 const hue = await page.$eval("#colour-pop .hue", (e) => { const r = e.getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; });
 await page.mouse.click(hue[0] + hue[2] * 2 / 3, hue[1] + hue[3] / 2);
-check(await S("S.c_plate[2] > S.c_plate[0] && S.c_plate[2] > S.c_plate[1]") && hue[3] >= 24, "a click two thirds along the hues: blue (the strip is 24 high or more)");
+check(await S("S.c_plate[2] > S.c_plate[0] && S.c_plate[2] > S.c_plate[1]") && hue[3] >= 20, "a click two thirds along the hues: blue (the strip is 20 high or more)");
 // add the colour in hand to the palette; it is kept by the browser; − takes it out
 const in_hand = await S("document.querySelector('#global-c-plate-Plate-hex').value");
 await page.click("#pop-add");
@@ -682,8 +691,8 @@ await page.$eval(".form", (e) => { e.scrollTop = 180; });
 await page.evaluate(() => { window.__row = document.querySelector(".form .row"); });
 await page.click(".swatch");
 await click_mm(0, 10);                               // a numeral, in the section that is showing
-const kept = await page.evaluate(() => ({ same_rows: window.__row === document.querySelector(".form .row"), scroll: document.querySelector(".form").scrollTop, picker: !document.querySelector("#colour-pop").hidden && document.querySelector("#colour-pop h2").textContent.startsWith(window.dial_tool.ring().name), ring: window.dial_tool.ring().name, list: document.querySelector(".ringlist li.on .name").textContent }));
-check(kept.same_rows && kept.scroll === 180 && kept.picker && kept.ring === kept.list, `a click on the preview keeps the rows, their scroll (${kept.scroll}) and the open colour pop-out, which now shows ${kept.ring}'s colour`);
+const kept = await page.evaluate(() => ({ same_rows: window.__row === document.querySelector(".form .row"), scroll: document.querySelector(".form").scrollTop, picker: document.querySelector("#colour-pop").hidden, ring: window.dial_tool.ring().name, list: document.querySelector(".ringlist li.on .name").textContent }));
+check(kept.same_rows && kept.scroll === 180 && kept.picker && kept.ring === kept.list, `a click on the preview keeps the rows, their scroll (${kept.scroll}) and selects ${kept.ring}; the colour pop-out, pressed outside of, is put away`);
 await page.click(".swatch");
 await tab("Hands"); await page.$eval(".form", (e) => { e.scrollTop = 120; }); await tab("Dial"); await tab("Hands");
 check(await page.$eval(".form", (e) => e.scrollTop) === 120, "a section is back where it was scrolled to");

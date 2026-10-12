@@ -393,6 +393,10 @@ class DialTool {
     this.scrolls = {};                             // how far each section was scrolled (the window's state, not the dial's)
     this.log_lines = [];
     this.build_window();
+    if (!DialTool.listening) {                     // once for the page: the tool that is open now gets the press
+      DialTool.listening = true;
+      document.addEventListener("pointerdown", (e) => { if (window.dial_tool) window.dial_tool.pressed(e); }, true);
+    }
     this.show_section();
     this.fit();
     this.sync_time();
@@ -441,6 +445,14 @@ class DialTool {
     const run = this.scale_from;
     G.set_measures(S, run.base.map((v) => +(v * to / run.d).toFixed(6)));
     run.now = JSON.stringify(G.measures(S));
+  }
+
+  /** a press anywhere outside the colour pop-out or the guides' list puts it away (Okay, 12 Oct 2026). A press on a
+   *  swatch or a colour pill is left to that swatch: it opens, moves or closes the pop-out itself. */
+  pressed(e) {
+    const on = (q) => e.target.closest && e.target.closest(q);
+    if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour")) this.pop_close();
+    if (this.guides_open && !$("#guide-list").hidden && !on(".guides")) this.guides_open(false);
   }
 
   // ── building the window ──────────────────────────────────
@@ -560,6 +572,7 @@ class DialTool {
     more.setAttribute("aria-expanded", "false");
     const open = (on) => { list.hidden = !on; more.setAttribute("aria-expanded", String(on)); if (on) this.sync_guides(); };
     more.onclick = () => open(list.hidden);
+    this.guides_open = open;
     // a kind of guide is one line: its name, then nine round choices — none (a struck circle), then the eight colours.
     // The chosen one wears a thick ring (after a list Okay drew on, 12 Oct 2026). None = this kind is not shown.
     this.guide_kinds = G.GUIDE_KINDS.map(([show, colour, name]) => {

@@ -15,6 +15,9 @@ On `dev`. Step 2 of the Dial tab (Okay: "Go on with 2"). Seen in Chromium here o
 - **A colour in the panel is a pill**: a small swatch (it opens the pop-out) and the hex, which can be typed. In Dial → Colours a part with one colour is a pill too; a band's sectors stay squares. A swatch shows a see-through colour over a checkerboard.
 - **The Guides switch's line** is a hairline (1, was 1.5). Off, it has no gaps: dashes as light as its word over a second, quieter tone; the inside is filled with the backdrop's colour (`--canvas`).
 - **The guides' list is near black and round** too (stylesheet class `.night`, shared with the pop-out), after a list Okay drew on: a line per kind — its name, then round choices with room between them: **None** (a struck circle) and the eight colours. The chosen one stands in a thick ring of its own colour. None replaces the eye; pressing a colour shows that kind again. A hairline under every line.
+- **Smaller, with more room inside** (Okay, on the live page): the guides' dots are 13 with 9 between (18 / 11 for a finger; were 16 / 13 and 22 / 15), its lines 42 high, its edge space 16; Thickness sits on the list's own columns. The colour pop-out's chips are 22 (28 for a finger; were 26 / 34), its field 140 high (180), its edge space 16 and 12 between its blocks: 388 wide (was 422).
+- **A press outside** the colour pop-out or the guides' list **puts it away** (`pressed`). So a click on the preview no longer keeps the pop-out open and retargets it; a press on another swatch still moves it there.
+- **Guides switch, off**: sign, word, arrow and dashes are one colour (the sign was dimmer, the arrow filled when open).
 - Round corners are for colour things only (stylesheet tokens `--round-large`, `--round`, `--round-small`).
 
 ## beta 4.5 (web version) · 12 Oct 2026
