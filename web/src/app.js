@@ -604,7 +604,7 @@ class DialTool {
    *  one of eight colours; one thickness; Reset. No free colours here. */
   guides_box() {
     this.guides_tick = el("button", { type: "button", className: "guidesbox", id: "guides", onclick: () => this.set_value("global", "guides", !this.S.guides) });
-    this.guides_tick.innerHTML = icon(`<circle r="5.6"/><circle r="2.1"/><path d="M0 -8.6L0 -3.6M0 3.6L0 8.6M-8.6 0L-3.6 0M3.6 0L8.6 0"/>`, 18, "-9 -9 18 18");
+    this.guides_tick.innerHTML = icon(`<circle r="5.6"/><circle r="2.1"/><path d="M0 -8.6L0 -3.6M0 3.6L0 8.6M-8.6 0L-3.6 0M3.6 0L8.6 0"/><path class="slash" d="M-7.4 7.4L7.4 -7.4"/>`, 18, "-9 -9 18 18");
     const word = el("span", { className: "word", textContent: "Guides" });
     word.dataset.text = "Guides";
     this.guides_tick.append(word);
@@ -1880,6 +1880,10 @@ class DialTool {
     this.items = items;
     const backdrop = S.out_production ? [1, 1, 1, 1] : S.c_backdrop;
     this.backdrop.setAttribute("fill", to_hex(backdrop));
+    // what stands on the preview (Guides, Backdrop) is outline only, in black or white: whichever stands out more from
+    // the backdrop. One of the two always has a contrast of 4.5 or more, so they can't be lost on any colour.
+    const lin = (v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4), L = 0.2126 * lin(backdrop[0]) + 0.7152 * lin(backdrop[1]) + 0.0722 * lin(backdrop[2]);
+    this.main.classList.toggle("dark", 1.05 / (L + 0.05) > (L + 0.05) / 0.05);
     while (this.slots.length < items.length) {
       const node = svg_el("path");
       this.dial.append(node);

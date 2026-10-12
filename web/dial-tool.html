@@ -445,28 +445,26 @@
   main { position: relative; min-width: 0; min-height: 0; overflow: hidden; background: var(--ground); }
   .preview { display: block; width: 100%; height: 100%; touch-action: none; cursor: default; user-select: none; }
   .preview path { cursor: pointer; }
-  /* guides, at the preview's top right: a switch and, joined to it, the arrow that drops their list. It never
-     depends on the backdrop (Okay, 12 Oct 2026: "ensure contrast at all times, simply"): it carries its own ground.
-     On: light, with dark words. Off: near black, with quiet words. A solid hairline round both, of a middle tone
-     that shows on a white backdrop and on a black one. The word keeps the width of its bold form, so the box is
-     the same size on and off. */
+  /* what stands on the preview: the Guides switch (top right, with the arrow that drops its list) and the Backdrop
+     switch (bottom left). Outline only, never filled (Okay, 12 Oct 2026); there to be found, not to be the first
+     thing seen: a hairline and plain words. Their one colour is black or white, whichever stands out more from the
+     backdrop (main.dark, set by app.js) — one of the two always does, on any colour. No dashes, no greys.
+     Guides on: its word is bold. Off: plain, and its sign is struck through. The word keeps the width of its bold
+     form, so the box is the same size on and off. */
+  main { --on-canvas: var(--ink); }
+  main.dark { --on-canvas: #FFFFFF; }
   .guides { position: absolute; z-index: 3; top: var(--canvas-inset); right: var(--canvas-inset); display: flex; justify-content: flex-end; }
-  .guidesbox, .guidesmore { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: var(--hair) solid var(--faint); background: var(--bar-ink); color: var(--night); user-select: none; }
+  .guidesbox, .guidesmore, .backdropbox { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: var(--hair) solid var(--on-canvas); color: var(--on-canvas); user-select: none; }
+  :is(.guidesbox, .guidesmore, .backdropbox):hover { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); }      /* under the pointer its line is twice as thick: still no fill */
   .guidesbox { gap: 7px; padding: 0 10px 0 8px; border-radius: 10px 0 0 10px; font-weight: 600; }
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 10px 10px 0; }
   .guidesbox .word::after { content: attr(data-text); display: block; height: 0; overflow: hidden; visibility: hidden; font-weight: 600; }
-  :is(.guidesbox, .guidesmore):hover { background: var(--field); }
-  .guidesbox[aria-pressed="false"], .guidesbox[aria-pressed="false"] + .guidesmore { background: var(--night); color: var(--bar-quiet); }
   .guidesbox[aria-pressed="false"] { font-weight: 400; }
-  :is(.guidesbox[aria-pressed="false"], .guidesbox[aria-pressed="false"] + .guidesmore):hover { background: var(--night-field); color: var(--bar-ink); }
+  .guidesbox[aria-pressed="true"] .slash { display: none; }
   .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }      /* open, only its arrow turns */
-  /* the backdrop's colour, at the preview's bottom left: built like the Guides switch when it is on, and always so —
-     its own light ground, a solid hairline. It shows the colour as a chip. Black while its pop-out is open. */
-  .backdropbox { position: absolute; z-index: 3; left: var(--canvas-inset); bottom: var(--canvas-inset); display: flex; align-items: center; gap: 7px; height: var(--control-large); padding: 0 10px 0 8px;
-    border: var(--hair) solid var(--faint); border-radius: 10px; background: var(--bar-ink); color: var(--night); font-weight: 600; user-select: none; }
-  .backdropbox:hover { background: var(--field); }
-  .backdropbox[aria-expanded="true"] { background: var(--night); color: var(--bar-ink); }
-  .backdropbox .dot { border-color: var(--faint); }
+  .backdropbox { position: absolute; z-index: 3; left: var(--canvas-inset); bottom: var(--canvas-inset); gap: 7px; padding: 0 10px 0 8px; border-radius: 10px; }
+  .backdropbox[aria-expanded="true"] { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); }
+  .backdropbox .dot { border-color: var(--on-canvas); }
 
   /* the list: near black and round, like the colour pop-out (.night). A kind of guide is one line: its name, then
      round choices with room between them — none, then the eight colours. The chosen one stands in a thick ring of its own colour, a
@@ -7135,7 +7133,7 @@ var DialTool = class _DialTool {
    *  one of eight colours; one thickness; Reset. No free colours here. */
   guides_box() {
     this.guides_tick = el("button", { type: "button", className: "guidesbox", id: "guides", onclick: () => this.set_value("global", "guides", !this.S.guides) });
-    this.guides_tick.innerHTML = icon(`<circle r="5.6"/><circle r="2.1"/><path d="M0 -8.6L0 -3.6M0 3.6L0 8.6M-8.6 0L-3.6 0M3.6 0L8.6 0"/>`, 18, "-9 -9 18 18");
+    this.guides_tick.innerHTML = icon(`<circle r="5.6"/><circle r="2.1"/><path d="M0 -8.6L0 -3.6M0 3.6L0 8.6M-8.6 0L-3.6 0M3.6 0L8.6 0"/><path class="slash" d="M-7.4 7.4L7.4 -7.4"/>`, 18, "-9 -9 18 18");
     const word = el("span", { className: "word", textContent: "Guides" });
     word.dataset.text = "Guides";
     this.guides_tick.append(word);
@@ -8629,6 +8627,8 @@ var DialTool = class _DialTool {
     this.items = items;
     const backdrop = S.out_production ? [1, 1, 1, 1] : S.c_backdrop;
     this.backdrop.setAttribute("fill", to_hex(backdrop));
+    const lin = (v) => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4, L = 0.2126 * lin(backdrop[0]) + 0.7152 * lin(backdrop[1]) + 0.0722 * lin(backdrop[2]);
+    this.main.classList.toggle("dark", 1.05 / (L + 0.05) > (L + 0.05) / 0.05);
     while (this.slots.length < items.length) {
       const node = svg_el("path");
       this.dial.append(node);
