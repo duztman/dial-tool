@@ -9,6 +9,13 @@ On `dev`. Step 2 of the Dial tab (Okay: "Go on with 2"). Seen in Chromium here o
 - **Dial → Colours**: every coloured part in one list — rings top first (a band's sectors one by one), hour · minute · seconds hand, cap, the windows that are on. Each swatch opens the colour pop-out. Plate and backdrop keep their own rows.
 - **The pop-out's binding** is now read · write · label, not scope and key, so list swatches can use it. Opened from a list it stands at the right of the whole row of swatches, so the neighbours stay in reach. *On this dial* includes sector colours.
 
+**Later the same day** (Okay, on the live page: "Guides borders need work… I love this color selector…"; asked which selector, he chose "the example's look, our parts")
+- **The colour pop-out is near black** (`#141413`) **with round corners**, after a selector Okay showed: a rounded field, pill handles on the strips, larger rounded chips (26; 34 for a finger), a small swatch before the values. Its parts are unchanged (two rows of colours, RGB · CMYK · HEX, COPY, widen, drag); changes still apply at once, there is no Cancel / Apply.
+- **Opacity, rings only**: a third strip and a % field, shown for a ring's colour and a band's sector colours. It is the colour's fourth number, which preview, SVG and PDF already drew.
+- **A colour in the panel is a pill**: a small swatch (it opens the pop-out) and the hex, which can be typed. In Dial → Colours a part with one colour is a pill too; a band's sectors stay squares. A swatch shows a see-through colour over a checkerboard.
+- **The Guides switch's line** is a hairline (1, was 1.5). Off, it has no gaps: dashes as light as its word over a second, quieter tone; the inside is filled with the backdrop's colour (`--canvas`).
+- Round corners are for colour things only (stylesheet tokens `--round-large`, `--round`, `--round-small`).
+
 ## beta 4.5 (web version) · 12 Oct 2026
 
 On `dev`. Okay's usability review, one tab at a time; this is the Dial tab, step 1 of 3. Seen in Chromium here only. `dial.py` is frozen from now on (Okay: "Do not work on dial.py anymore, we're on github").

@@ -105,6 +105,7 @@ alignment to these rules as well."*
   in `tools/make_guide.py`; pages receive it as `--sig`.
 - Dials keep their own colours. Everything around them is neutral.
 - No tinted panels, rounded cards, shadows or decorative rules. A hairline above a block is the only frame.
+  *Exception, the tool's window only (Okay, 12 Oct 2026): colour things are round and the colour pop-out is near black — the pop-out, a colour pill, a swatch.*
 
 ## 5 · Pictures
 

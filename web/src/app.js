@@ -321,6 +321,10 @@ function parse_hex(text) {
   return m ? "#" + (m[1].length === 3 ? [...m[1]].map((c) => c + c).join("") : m[1]).toUpperCase() : null;
 }
 const has_focus = (e) => document.activeElement === e;
+/** a colour as a stylesheet reads it, see-through part included. */
+const css_colour = (c) => `rgba(${c.slice(0, 3).map((v) => Math.round(clamp(v, 0, 1) * 255)).join(", ")}, ${c[3] ?? 1})`;
+/** a swatch shows a colour: over a checkerboard, so a see-through one looks it (--c, read by the stylesheet). */
+const paint = (swatch, c) => swatch.style.setProperty("--c", css_colour(c));
 /** drag inside a box: move(x, y) gets where the pointer is, 0 to 1 across and down. */
 function drag_in(box, move) {
   box.onpointerdown = (e) => {
@@ -772,17 +776,18 @@ class DialTool {
       out.refresh = (T) => { box.checked = Boolean(T[row.key]); };
     }
 
-    if (row.kind === "col") {                      // a swatch (opens the colour pop-out beside it) · the value, which can be typed
-      const swatch = el("button", { type: "button", className: "swatch", id, title: "Choose a colour", onclick: () => this.pop_open(this.colour_of_row(row), swatch) });
+    if (row.kind === "col") {                      // a pill: a small swatch (opens the colour pop-out) and the hex, which can be typed
+      const swatch = el("button", { type: "button", className: "swatch", id, title: "Choose a colour" });
       const hex = el("input", { type: "text", className: "hex", id: id + "-hex", spellcheck: false, maxLength: 7, ariaLabel: row.text + ", as #RRGGBB" });
+      const pill = el("span", { className: "colour" }, swatch, hex);
+      swatch.onclick = () => this.pop_open(this.colour_of_row(row), swatch, pill);
       const now = () => this.target(row.scope)[row.key];
       hex.onchange = () => { const value = parse_hex(hex.value); if (value) set(from_hex(value, now()[3] ?? 1)); hex.value = to_hex(now()).toUpperCase(); };
-      wrap.append(el("label", { htmlFor: id, textContent: row.text }), el("span", { className: "colour" }, swatch, hex));
+      wrap.append(el("label", { htmlFor: id, textContent: row.text }), pill);
       out.refresh = (T) => {
-        const value = to_hex(T[row.key]).toUpperCase();
-        swatch.style.background = value;
+        paint(swatch, T[row.key]);
         swatch.setAttribute("aria-expanded", String(this.pop.at !== null && this.pop.at.swatch === swatch));
-        if (!active(hex)) hex.value = value;
+        if (!active(hex)) hex.value = to_hex(T[row.key]).toUpperCase();
       };
     }
 
@@ -824,6 +829,14 @@ class DialTool {
     P.hues = el("div", { className: "hue", title: "Hue" }, el("i"));
     drag_in(P.field, (x, y) => { P.hsv = [P.hsv[0], x, 1 - y]; put(hsv_rgb(P.hsv)); });
     drag_in(P.hues, (x) => { P.hsv = [x * 360, P.hsv[1], P.hsv[2]]; put(hsv_rgb(P.hsv)); });
+    // how see-through: a strip from nothing to the full colour, and the same as a percentage. Rings only.
+    const see_through = (a) => P.at.write(P.at.read().slice(0, 3).concat([+clamp(a, 0, 1).toFixed(2)]));
+    P.alpha = el("div", { className: "alpha", title: "Opacity" }, el("i"));
+    drag_in(P.alpha, (x) => see_through(x));
+    P.alpha_field = el("input", { type: "text", inputMode: "numeric", id: "pop-alpha", ariaLabel: "Opacity, %", title: "Opacity, %" });
+    P.alpha_field.onchange = () => { const v = parseFloat(P.alpha_field.value); if (Number.isFinite(v)) see_through(v / 100); P.alpha_field.value = `${Math.round((P.at.read()[3] ?? 1) * 100)}%`; };
+    P.alpha_row = el("div", { className: "alpharow" }, P.alpha, P.alpha_field);
+    P.dot = el("i", { className: "dot" });
     P.modes = el("span", { className: "segs" });
     for (const mode of ["RGB", "CMYK", "HEX"]) P.modes.append(el("button", { type: "button", textContent: mode, id: "pop-as-" + mode, onclick: () => { this.colour_mode = mode; this.pop_refresh(); } }));
     P.numbers = el("span", { className: "numbers" });
@@ -835,7 +848,7 @@ class DialTool {
       head,
       el("div", { className: "chiprow" }, el("span", { className: "quiet", textContent: "On this dial" }), P.used_chips),
       el("div", { className: "chiprow" }, el("span", { className: "quiet", textContent: "Palette" }), P.palette_chips),
-      P.field, P.hues, el("div", { className: "asnumbers" }, P.modes, P.numbers, P.copy));
+      P.field, P.hues, P.alpha_row, el("div", { className: "asnumbers" }, P.modes, P.dot, P.numbers, P.copy));
     P.el.setAttribute("role", "dialog");
     P.el.onkeydown = (e) => { if (e.key === "Escape") { const swatch = P.at && P.at.swatch; this.pop_close(); if (swatch) swatch.focus(); } };
     // the head drags it (not when it is wide, and not on a phone, where it is a sheet)
@@ -864,6 +877,7 @@ class DialTool {
    *  It follows the scope, so with a ring's colour open, selecting another ring shows that ring's. */
   colour_of_row(row) {
     return {
+      alpha: row.scope === "ring",                 // only a ring can be see-through (Okay, 12 Oct 2026)
       read: () => { const T = this.target(row.scope); return T ? T[row.key] : null; },
       write: (value) => this.set_value(row.scope, row.key, value),
       label: () => {
@@ -955,6 +969,13 @@ class DialTool {
     knob.style.left = `${P.hsv[1] * 100}%`; knob.style.top = `${(1 - P.hsv[2]) * 100}%`;
     knob.style.background = value;
     P.hues.firstChild.style.left = `${P.hsv[0] / 360 * 100}%`;
+    P.hues.firstChild.style.background = `hsl(${P.hsv[0]} 100% 50%)`;
+    const a = colour[3] ?? 1;
+    P.alpha_row.hidden = !P.at.alpha;
+    P.alpha.style.setProperty("--solid", value);
+    P.alpha.firstChild.style.left = `${a * 100}%`;
+    if (!has_focus(P.alpha_field)) P.alpha_field.value = `${Math.round(a * 100)}%`;
+    paint(P.dot, P.at.alpha ? colour : rgb);
     // the line: the same colour as numbers
     const mode = this.colour_mode;
     [...P.modes.children].forEach((b) => b.classList.toggle("on", b.textContent === mode));
@@ -994,7 +1015,7 @@ class DialTool {
   sector_colours(i) {
     const ring = this.S.rings[i], name = ring.name || G.kind_of(ring);
     return G.positions_of(ring).map((at, n) => ({
-      id: `ring-${i}-sector-${at}`, title: `${name} · sector ${n + 1}`,
+      id: `ring-${i}-sector-${at}`, title: `${name} · sector ${n + 1}`, alpha: true,
       read: () => { const R = this.S.rings[i]; return R ? G.sector_colour(R, at) : null; },
       write: (value) => { const R = this.S.rings[i]; R.cs = { ...R.cs, [at]: value }; this.changed(true); },
     }));
@@ -1007,28 +1028,34 @@ class DialTool {
     if (holder.dataset.list !== signature) {
       holder.dataset.list = signature;
       holder.replaceChildren(...list.map((line) => {
-        const group = el("span", { className: "swatches" });
+        const group = el("span", { className: line.colours.length === 1 ? "single" : "swatches" });
         for (const c of line.colours) {
-          const swatch = el("button", { type: "button", className: "swatch", id: "colour-" + c.id, title: c.title });
-          swatch.onclick = () => this.pop_open({ read: c.read, write: c.write, label: () => c.title }, swatch, group);
+          // one colour: a pill with its hex, like a colour row. Many (a band's sectors): squares.
+          const swatch = line.colours.length === 1
+            ? el("button", { type: "button", className: "colour", id: "colour-" + c.id, title: c.title }, el("i", { className: "dot" }), el("span", { className: "hex" }))
+            : el("button", { type: "button", className: "swatch", id: "colour-" + c.id, title: c.title });
+          swatch.onclick = () => this.pop_open({ read: c.read, write: c.write, label: () => c.title, alpha: Boolean(c.alpha) }, swatch, group);
           group.append(swatch);
         }
         return el("div", { className: "row" }, el("label", { textContent: line.text }), group);
       }));
     }
     const all = list.flatMap((l) => l.colours);
-    [...holder.querySelectorAll(".swatch")].forEach((swatch, k) => { swatch.style.background = to_hex(all[k].read()).toUpperCase(); });
+    [...holder.querySelectorAll("button.colour, button.swatch")].forEach((swatch, k) => {
+      const c = all[k].read();
+      if (swatch.classList.contains("colour")) { paint(swatch.firstChild, c); swatch.lastChild.textContent = to_hex(c).toUpperCase(); } else paint(swatch, c);
+    });
   }
 
   /** Dial → Colours: every coloured part on the plate. Rings top first, a band's sectors one by one; hands, cap, windows. */
   row_colours(wrap, out) {
     wrap.className = "colourlist";
-    const one = (id, title, read, write) => [{ id, title, read, write }];
+    const one = (id, title, read, write, alpha = false) => [{ id, title, read, write, alpha }];
     out.refresh = () => this.swatch_lines(wrap, () => {
       const S = this.S, lines = [];
       S.rings.forEach((ring, i) => {
         const text = ring.name || G.kind_of(ring), sectors = G.kind_of(ring) === "band" && G.positions_of(ring).length > 1;
-        lines.push({ text, colours: sectors ? this.sector_colours(i) : one(`ring-${i}`, text, () => (this.S.rings[i] || {}).c, (v) => { this.S.rings[i].c = v; this.changed(); }) });
+        lines.push({ text, colours: sectors ? this.sector_colours(i) : one(`ring-${i}`, text, () => (this.S.rings[i] || {}).c, (v) => { this.S.rings[i].c = v; this.changed(); }, true) });
       });
       G.HANDS.forEach((h, k) => { const text = ["Hour hand", "Minute hand", "Seconds hand"][k]; lines.push({ text, colours: one("hand-" + h, text, () => this.S["ha_" + h].c, (v) => { this.S["ha_" + h].c = v; this.changed(); }) }); });
       lines.push({ text: "Cap", colours: one("cap", "Cap", () => this.S.c_cap, (v) => { this.S.c_cap = v; this.changed(); }) });
@@ -1737,6 +1764,7 @@ class DialTool {
     this.items = items;
     const backdrop = S.out_production ? [1, 1, 1, 1] : S.c_backdrop;
     this.backdrop.setAttribute("fill", to_hex(backdrop));
+    this.main.style.setProperty("--canvas", to_hex(backdrop));      // the stylesheet fills the Guides switch with it
     // what stands on the preview (the Guides switch) is dark on a light backdrop, light on a dark one
     this.main.classList.toggle("dark", 0.2126 * backdrop[0] + 0.7152 * backdrop[1] + 0.0722 * backdrop[2] < 0.45);
     while (this.slots.length < items.length) {

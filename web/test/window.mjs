@@ -226,7 +226,8 @@ const looks = await page.evaluate(() => { const c = (q, p) => getComputedStyle(d
 check(looks[0] === "rgb(51, 51, 51)" && looks[1] === "rgb(242, 242, 238)", "the bar is 80 % black with light words");
 await page.mouse.move(900, 400);
 const off_look = await page.$eval("#guides", (e) => { const c = getComputedStyle(e); return [e.getAttribute("aria-pressed"), c.backgroundColor, e.textContent, c.borderTopStyle]; });
-check(off_look[0] === "false" && off_look[1] === "rgba(0, 0, 0, 0)" && off_look[2] === "Guides" && off_look[3] === "dashed", "off, it is a dashed box with no fill");
+const off_line = await page.$eval("#guides", (e) => { const c = getComputedStyle(e); return [c.borderTopWidth, c.backgroundImage.split("linear-gradient").length - 1, c.borderTopColor]; });
+check(off_look[0] === "false" && off_look[2] === "Guides" && off_look[3] === "dashed" && off_line[0] === "1px" && off_line[1] === 2 && off_line[2] === "rgb(92, 92, 88)", "off, its line is a hairline of two tones with no gaps: dashes as light as its word, a second tone under them");
 await shot("4c3-guides-off");
 await page.click("#guides");
 await page.click("#guides-more");
@@ -277,6 +278,11 @@ const band = await S("S.ui_ring");
 check(await page.$$eval(".form .colourlist .swatch", (b) => b.length) === 6, "six sectors: Sector colours shows six swatches");
 await page.click(`#colour-ring-${band}-sector-1`);
 check((await page.textContent("#colour-pop h2")).endsWith("sector 2"), "the second one opens the pop-out as “… · sector 2”");
+check(await page.isVisible(".alpharow"), "a ring's colour has an opacity strip");
+await page.fill("#pop-alpha", "50"); await page.press("#pop-alpha", "Enter");
+await frame();
+check(await S(`S.rings[${band}].cs["1"][3] === 0.5`) && await page.$eval(".preview path[fill-opacity='0.5']", (e) => e !== null) && await page.inputValue("#pop-alpha") === "50%", "opacity 50: the sector is half see-through in the preview");
+await page.fill("#pop-alpha", "100"); await page.press("#pop-alpha", "Enter");
 await page.fill("#pop-hex", "#0E2A47"); await page.press("#pop-hex", "Enter");
 await page.click(`#colour-ring-${band}-sector-3`);
 await page.fill("#pop-hex", "#0E2A47"); await page.press("#pop-hex", "Enter");
@@ -314,8 +320,11 @@ check(lines.length === 1, `number rows share their columns (${lines.join(" | ")}
 
 // ── colour: a swatch opens the pop-out at its right; the value can be typed ──
 await page.click("#global-c-plate-Plate");
-const pop_at = await page.evaluate(() => { const p = document.querySelector("#colour-pop").getBoundingClientRect(), s = document.querySelector("#global-c-plate-Plate").getBoundingClientRect(); return [Math.round(p.left - s.right), p.top < s.bottom && p.bottom > s.top]; });
-check(await page.isVisible("#colour-pop") && pop_at[0] === 12 && pop_at[1], "the plate's swatch opens the colour pop-out, 12 to its right");
+const pop_at = await page.evaluate(() => { const p = document.querySelector("#colour-pop").getBoundingClientRect(), s = document.querySelector("#global-c-plate-Plate").closest(".colour").getBoundingClientRect(); return [Math.round(p.left - s.right), p.top < s.bottom && p.bottom > s.top]; });
+check(await page.isVisible("#colour-pop") && pop_at[0] === 12 && pop_at[1], "the plate's swatch opens the colour pop-out, 12 to the right of its pill");
+const pop_look = await page.evaluate(() => { const c = getComputedStyle(document.querySelector("#colour-pop")), pill = getComputedStyle(document.querySelector("#global-c-plate-Plate").closest(".colour")); return [c.backgroundColor, parseFloat(c.borderTopLeftRadius), parseFloat(pill.borderTopLeftRadius), document.querySelector("#global-c-plate-Plate-hex").closest(".colour") !== null]; });
+check(pop_look[0] === "rgb(20, 20, 19)" && pop_look[1] >= 12 && pop_look[2] >= 6 && pop_look[3], "the pop-out is near black with round corners; a colour in the panel is a pill: a small swatch and its hex");
+check(await page.isHidden(".alpharow"), "the plate has no opacity strip");
 check(await page.$$eval("#pop-used button", (b) => b.length) >= 3 && await page.$$eval("#pop-palette button[data-colour]", (b) => b.length) === 10 && await page.isVisible('#pop-palette [data-colour="#0E2A47"]'), "first row: this dial's colours; second row: a palette of ten");
 const one_row = await page.$$eval("#pop-palette button", (b) => new Set(b.map((x) => Math.round(x.getBoundingClientRect().top))).size);
 check(one_row === 1, "the ten and their + stand in one row");

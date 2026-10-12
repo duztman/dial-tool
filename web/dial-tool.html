@@ -22,7 +22,7 @@
    These are cascade layers: a later layer wins over an earlier one whatever the selectors look like,
    so no rule has to be written "stronger" to get its way, and a part never undoes another part.
    Colours and type follow docs/design.md (the design canon): paper, ink, one grey for quiet text,
-   hairline rules; no cards, shadows or rounded panels. */
+   hairline rules; no cards, shadows or rounded panels — except colour things (the pop-out, a colour pill, a swatch), which are round. */
 @layer tokens, base, controls, panel, preview, bar, narrow;
 
 [hidden] { display: none; }                        /* outside the layers, so it wins over all of them: rows that don't apply (R16) */
@@ -43,14 +43,14 @@
     --chip-rule: rgba(0, 0, 0, 0.25);
     --bar: #333333; --bar-ink: #F2F2EE; --bar-rule: #5C5C58; --bar-field: #454543; --bar-hover: #5A5A57;      /* the bar: 80 % black, light on dark (Okay, 12 Oct 2026) */
     --bar-dim: rgba(255, 255, 255, 0.3); --bar-faint: rgba(255, 255, 255, 0.12);      /* quiet lines and fills on the bar */
-    --bar-on: rgba(255, 255, 255, 0.24); --bar-edge: rgba(255, 255, 255, 0.6); --bar-quiet: rgba(255, 255, 255, 0.66);
+    --bar-low: rgba(255, 255, 255, 0.4); --bar-on: rgba(255, 255, 255, 0.24); --bar-edge: rgba(255, 255, 255, 0.6); --bar-quiet: rgba(255, 255, 255, 0.66);
     /* what a part stands on. A part that scrolls sets these again (see .form): an inset block is darker
        than paper but lighter than the scrolling grey, so it never melts into its ground. */
     --surface: var(--paper); --inset: var(--ground); --well: var(--ground);
     /* the line before and after every row: white on the scrolling grey, that grey on paper and white (Okay, 12 Oct 2026).
        A part that scrolls sets --row-rule again, like its surface. */
     --line-on-grey: #FFFFFF; --line-on-paper: var(--scroll); --row-rule: var(--line-on-paper);
-    --on-canvas: var(--ink); --on-canvas-quiet: var(--grey); --on-canvas-fill: var(--paper); --canvas-hover: var(--veil-strong);      /* what stands on the preview's backdrop; main.dark sets them again */
+    --on-canvas: var(--ink); --on-canvas-quiet: var(--grey); --on-canvas-low: var(--faint); --on-canvas-fill: var(--paper); --canvas-hover: var(--veil-strong);      /* what stands on the preview's backdrop; main.dark sets them again */
 
     /* the panel's columns: a toggle column at the far left (eyes: a pane's, a ring's), then six equal
        columns with equal gaps, between two margins. 24 + 16 + 12 + (6 × 54 + 5 × 12) + 24 = 460.
@@ -82,6 +82,13 @@
     --pop-pad: 12px; --pop-label: 72px;            /* the colour pop-out: its side space, and the column of its rows' names */
     --pop-field: 168px; --pop-hue: 24px;           /* its field of one hue, and the strip of hues under it */
     --knob: 20px;                                  /* the handle on the field and on the strip */
+    /* the colour pop-out is near black (Okay, 12 Oct 2026); inside it the usual names (--ink, --paper, --field…) are set to these */
+    --night: #141413; --night-field: #262624; --night-hover: #34342F; --night-rule: #4A4A46; --night-chip-rule: rgba(255, 255, 255, 0.28);
+    /* round corners belong to colour things only: the pop-out, its field, a colour pill, a swatch */
+    --round-large: 14px; --round: 8px; --round-small: 5px;
+    --dot: 18px;                                   /* the small swatch inside a colour pill */
+    --chip-large: 26px;                            /* a colour to pick, in the pop-out */
+    --checker: repeating-conic-gradient(#BDBDB9 0 25%, #FFFFFF 0 50%) 0 0 / 8px 8px;      /* what shows through a see-through colour */
     --canvas-inset: 12px;                          /* from the preview's edge to what stands on it */
     --guide-name: 96px;                            /* the names in the guides' list */
 
@@ -91,7 +98,7 @@
     --sans: system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
     --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;      /* only for what the tool says: the log, a link, a hex value, a feature's tag */
   }
-  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --pop-field: 220px; --pop-hue: 36px; --knob: 30px; } }      /* a finger needs more to hold than a pointer */
+  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --chip-large: 34px; --dot: 22px; --pop-field: 220px; --pop-hue: 36px; --knob: 30px; } }      /* a finger needs more to hold than a pointer */
 }
 
 @layer base {
@@ -176,8 +183,8 @@
 
   /* colours to pick: small squares in a row; the one in use is outlined */
   .chips { display: grid; grid-template-columns: repeat(auto-fill, var(--chip)); gap: var(--chip-gap); }
-  .chips button { width: var(--chip); height: var(--chip); border: var(--hair) solid var(--chip-rule); }
-  .chips button.on { outline: var(--thick) solid var(--ink); outline-offset: 1px; }
+  .chips button { width: var(--chip); height: var(--chip); border: var(--hair) solid var(--chip-rule); border-radius: var(--round-small); }
+  .chips button.on { outline: var(--thick) solid var(--ink); outline-offset: 2px; }
   .chips button.add { border-color: var(--rule); background: var(--field); color: var(--ink); line-height: 1; }
   .chips button.add:hover { background: var(--hover); border-color: var(--ink); }
   .log, .link { display: block; width: 100%; margin: 0; padding: 8px 10px; border: 0; color: var(--grey); font: var(--t-xs)/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -238,7 +245,7 @@
   .row.num > input[type="range"] { grid-column: span 2; }
   .row.num input[type="text"] { text-align: right; }
   .row > label:first-child { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .row > :is(select, .segs, .colour, .tools, .picks, .swatches), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
+  .row > :is(select, .segs, .colour, .single, .tools, .picks, .swatches), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
   .row > :is(.check, .wide), .row.note > .quiet { grid-column: 1 / -1; }      /* a tick and its words start at the left edge */
   .row > span:first-child:empty { display: none; }
   .row.note { min-height: 0; }
@@ -251,40 +258,61 @@
   .features h3 { margin: 16px 0 8px; padding-top: 8px; border-top: var(--hair) solid var(--rule); }
   .linkrow .tools { margin-top: var(--unit); gap: calc(var(--unit) * 2); }
 
-  /* colour: a swatch one column wide that opens the picker, and the value as text, two columns */
-  .colour { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: var(--gap); align-items: center; }
-  .colour .hex { grid-column: span 2; }
-  .swatch { height: var(--control); border: var(--hair) solid var(--rule); box-shadow: inset 0 0 0 2px var(--field); }
-  .swatch:hover, .swatch:active { box-shadow: inset 0 0 0 1px var(--field); }
+  /* colour: a pill holding a small swatch (it opens the pop-out) and the hex. A swatch shows its colour (--c) over a
+     checkerboard, so a see-through colour looks see-through. */
+  .colour { display: inline-flex; align-items: center; gap: 7px; justify-self: start; height: var(--control); padding: 0 9px 0 4px; border-radius: var(--round); background: var(--well); }
+  .colour:focus-within { outline: var(--thick) solid var(--ink); }
+  .colour .hex { width: 8ch; padding: 0; border: 0; background: none; text-align: left; line-height: var(--control); }
+  .colour input.hex { height: 100%; }
+  .colour input.hex:focus { outline: 0; }
+  button.colour:hover { background: var(--hover); }
+  .swatch, .dot { flex: none; width: var(--dot); height: var(--dot); border: var(--hair) solid var(--chip-rule); border-radius: var(--round-small); background: linear-gradient(var(--c, transparent), var(--c, transparent)), var(--checker); }
+  .swatch:hover { border-color: var(--ink); }
   /* colours in a list (Dial → Colours, a band's sectors): square swatches in a row that wraps */
   .swatches { display: flex; flex-wrap: wrap; gap: var(--chip-gap); padding: var(--chip-gap) 0; }
-  .swatches .swatch { flex: none; width: var(--control); }
+  .swatches .swatch { width: var(--control); height: var(--control); border-radius: var(--round-small); }
   .swatch[aria-expanded="true"] { outline: var(--thick) solid var(--ink); outline-offset: 1px; }
 
-  /* the colour pop-out: one for the whole tool, at the right of the swatch that opened it. Paper, one ink line round it.
-     Its head drags it. Rows of colours: a name, then the chips. Then the field of one hue and the strip of hues, tall
-     enough for a finger. Last, one line: RGB · CMYK · HEX, the values, COPY — small, boxed, capitals. */
-  .colourpop { position: fixed; z-index: 5; display: grid; gap: var(--unit); width: calc(2 * var(--pop-pad) + 2 * var(--hair) + var(--pop-label) + 11 * var(--chip) + 10 * var(--chip-gap)); max-width: 100vw;      /* eleven chips to a row: the palette's ten and its + */
-    padding: 0 var(--pop-pad) var(--pop-pad); border: var(--hair) solid var(--ink); background: var(--paper); }
+  /* the colour pop-out: one for the whole tool, at the right of the swatch that opened it. Near black, round corners
+     (after a selector Okay showed, 12 Oct 2026). Inside it the usual colour names are set to their night values, so
+     buttons and fields look as they do elsewhere, light on dark. Its head drags it. Rows of colours: a name, then the
+     chips. Then the field of one hue, the strip of hues and (rings only) the strip of how see-through, tall enough
+     for a finger. Last, one line: RGB · CMYK · HEX, the colour, the values, COPY — small, boxed, capitals. */
+  .colourpop { --paper: var(--night); --surface: var(--night); --ink: var(--bar-ink); --grey: var(--bar-quiet); --field: var(--night-field); --hover: var(--night-hover); --ink-hover: #FFFFFF;
+    --rule: var(--night-rule); --row-rule: var(--night-rule); --chip-rule: var(--night-chip-rule); --chip: var(--chip-large);
+    position: fixed; z-index: 5; display: grid; gap: calc(1.5 * var(--unit)); width: calc(2 * var(--pop-pad) + 2 * var(--hair) + var(--pop-label) + 11 * var(--chip) + 10 * var(--chip-gap)); max-width: 100vw;      /* eleven chips to a row: the palette's ten and its + */
+    padding: 0 var(--pop-pad) var(--pop-pad); border: var(--hair) solid var(--rule); border-radius: var(--round-large); background: var(--paper); color: var(--ink); }
   .colourpop[hidden] { display: none; }
   .colourpop header { display: flex; align-items: center; height: var(--head); cursor: grab; touch-action: none; user-select: none; border-bottom: var(--hair) solid var(--row-rule); }
   .colourpop header h2 { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+  .colourpop header .sign { border-radius: var(--round-small); }
   .colourpop header .sign[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+  .colourpop :is(input[type="text"], .btn) { border-radius: var(--round-small); }
+  .colourpop .segs > button:first-child { border-radius: var(--round-small) 0 0 var(--round-small); }
+  .colourpop .segs > button:last-child { border-radius: 0 var(--round-small) var(--round-small) 0; }
   .chiprow { display: grid; grid-template-columns: var(--pop-label) minmax(0, 1fr); align-items: start; }
   .chiprow > .quiet { line-height: var(--chip); font-size: var(--t-s); }
-  .sv, .hue { position: relative; touch-action: none; }
-  .sv { height: var(--pop-field); cursor: crosshair; background: linear-gradient(to top, #000, rgba(0, 0, 0, 0)), linear-gradient(to right, #fff, var(--hue, #f00)); }
-  .hue { height: var(--pop-hue); cursor: ew-resize; background: linear-gradient(to right, #f00, #ff0 16.67%, #0f0 33.33%, #0ff 50%, #00f 66.67%, #f0f 83.33%, #f00); }
-  .sv i, .hue i { position: absolute; width: var(--knob); height: var(--knob); translate: -50% -50%; border-radius: 50%; box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--ink); pointer-events: none; }
-  .hue i { top: 50%; width: calc(var(--knob) / 3); height: calc(var(--pop-hue) + 6px); border-radius: 0; }
+  .sv, .hue, .alpha { position: relative; touch-action: none; }
+  .sv { height: var(--pop-field); border-radius: var(--round); cursor: crosshair; background: linear-gradient(to top, #000, rgba(0, 0, 0, 0)), linear-gradient(to right, #fff, var(--hue, #f00)); }
+  .hue, .alpha { height: var(--pop-hue); border-radius: calc(var(--pop-hue) / 2); cursor: ew-resize; }
+  .hue { background: linear-gradient(to right, #f00, #ff0 16.67%, #0f0 33.33%, #0ff 50%, #00f 66.67%, #f0f 83.33%, #f00); }
+  .alpha { flex: 1; background: linear-gradient(to right, transparent, var(--solid, #000)), var(--checker); }
+  /* handles: a white ring with a dark one round it, so they show on any colour. On the field a disc; on a strip a pill. */
+  .sv i, .hue i, .alpha i { position: absolute; width: var(--knob); height: var(--knob); translate: -50% -50%; border-radius: 50%; box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px var(--night); pointer-events: none; }
+  :is(.hue, .alpha) i { top: 50%; width: calc(var(--knob) * 0.5); height: calc(var(--pop-hue) + 2px); border-radius: var(--knob); }
+  .alpha i { background: var(--solid, #000); }
+  .alpharow { display: flex; align-items: center; gap: var(--gap); }
+  .alpharow[hidden] { display: none; }
+  .alpharow input { flex: none; width: var(--col); text-align: center; }
   .asnumbers { display: flex; gap: var(--chip-gap); align-items: center; font-size: var(--t-xs); letter-spacing: 0.04em; text-transform: uppercase; }
   .asnumbers .segs { flex: none; }
   .asnumbers .segs > button { flex: none; padding: 0 6px; }
+  .asnumbers .dot { margin: 0 2px 0 6px; }
   .asnumbers .numbers { flex: 1; min-width: 0; display: flex; gap: var(--chip-gap); }
   .asnumbers .numbers input { padding: 0 2px; text-align: center; text-transform: uppercase; }
   .asnumbers .copy { flex: none; min-width: var(--col); padding: 0 6px; font-weight: 600; }
   /* wide: over the whole preview (app.js sets where). The field takes the height that is left. */
-  .colourpop.wide { grid-template-rows: auto auto auto 1fr auto auto; width: auto; }
+  .colourpop.wide { grid-template-rows: auto auto auto 1fr; width: auto; border-radius: 0; }
   .colourpop.wide header { cursor: default; }
   .colourpop.wide .sv { height: auto; min-height: var(--pop-field); }
 
@@ -361,19 +389,23 @@
   main { position: relative; min-width: 0; min-height: 0; overflow: hidden; background: var(--ground); }
   .preview { display: block; width: 100%; height: 100%; touch-action: none; cursor: default; user-select: none; }
   .preview path { cursor: pointer; }
-  main.dark { --on-canvas: var(--bar-ink); --on-canvas-quiet: var(--bar-quiet); --on-canvas-fill: var(--bar); --canvas-hover: var(--bar-faint); }
+  main.dark { --on-canvas: var(--bar-ink); --on-canvas-quiet: var(--bar-quiet); --on-canvas-low: var(--bar-low); --on-canvas-fill: var(--bar); --canvas-hover: var(--bar-faint); }
 
   /* guides, at the preview's top right: a switch and, joined to it, the arrow that drops their list. Their colour
      follows the backdrop (--on-canvas). On: a solid outline. Off: dashed and quiet. The word keeps the width of its
      bold form, so the box is the same size on and off. */
   .guides { position: absolute; z-index: 3; top: var(--canvas-inset); right: var(--canvas-inset); display: flex; justify-content: flex-end; color: var(--on-canvas); }
-  .guidesbox, .guidesmore { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: 1.5px solid var(--on-canvas); user-select: none; }
+  .guidesbox, .guidesmore { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: var(--hair) solid var(--on-canvas); user-select: none; }
   .guidesbox { gap: 7px; padding: 0 10px 0 8px; border-radius: 10px 0 0 10px; font-weight: 600; }
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 10px 10px 0; }
   .guidesbox .word::after { content: attr(data-text); display: block; height: 0; overflow: hidden; visibility: hidden; font-weight: 600; }
   :is(.guidesbox, .guidesmore):hover { background: var(--canvas-hover); }
+  /* off: a hairline of two tones, with no gaps (Okay, 12 Oct 2026). Dashes as light as the word; between them a tone
+     nearer the backdrop. The dashes are the border; the other tone is a ground under the border; the inside is
+     filled with the backdrop's own colour (--canvas, set by app.js), so only the line shows it. */
   .guidesbox[aria-pressed="false"] { color: var(--on-canvas-quiet); font-weight: 400; }
-  .guidesbox[aria-pressed="false"], .guidesbox[aria-pressed="false"] + .guidesmore { border-color: var(--on-canvas-quiet); border-style: dashed; }
+  .guidesbox[aria-pressed="false"], .guidesbox[aria-pressed="false"] + .guidesmore { border-color: var(--on-canvas-quiet); border-style: dashed;
+    background: linear-gradient(var(--canvas), var(--canvas)) padding-box, linear-gradient(var(--on-canvas-low), var(--on-canvas-low)) border-box; }
   .guidesbox[aria-pressed="false"]:hover { color: var(--on-canvas); }
   .guidesbox[aria-pressed="false"] svg { opacity: 0.55; }
   .guidesmore[aria-expanded="true"] { background: var(--on-canvas); color: var(--on-canvas-fill); }
@@ -482,7 +514,7 @@
     .row.pick > label { line-height: 1.4; padding-top: var(--unit); }
     .picker { inset: auto 0 0 0; width: 100%; height: 58%; border-right: 0; border-top: var(--hair) solid var(--ink); }
     /* the colour pop-out is a sheet from the bottom; wide, it is the whole screen */
-    .colourpop { inset: auto 0 0 0; width: auto; border-width: var(--hair) 0 0; }
+    .colourpop { inset: auto 0 0 0; width: auto; border-width: var(--hair) 0 0; border-radius: var(--round-large) var(--round-large) 0 0; }
     .colourpop.wide { inset: 0; }
     .colourpop header { cursor: default; }
     .guidelist { max-width: calc(100vw - 2 * var(--canvas-inset)); }
@@ -6678,6 +6710,8 @@ function parse_hex(text) {
   return m ? "#" + (m[1].length === 3 ? [...m[1]].map((c) => c + c).join("") : m[1]).toUpperCase() : null;
 }
 var has_focus = (e) => document.activeElement === e;
+var css_colour = (c) => `rgba(${c.slice(0, 3).map((v) => Math.round(clamp(v, 0, 1) * 255)).join(", ")}, ${c[3] ?? 1})`;
+var paint = (swatch, c) => swatch.style.setProperty("--c", css_colour(c));
 function drag_in(box, move) {
   box.onpointerdown = (e) => {
     e.preventDefault();
@@ -7236,20 +7270,21 @@ var DialTool = class _DialTool {
       };
     }
     if (row.kind === "col") {
-      const swatch = el("button", { type: "button", className: "swatch", id, title: "Choose a colour", onclick: () => this.pop_open(this.colour_of_row(row), swatch) });
+      const swatch = el("button", { type: "button", className: "swatch", id, title: "Choose a colour" });
       const hex = el("input", { type: "text", className: "hex", id: id + "-hex", spellcheck: false, maxLength: 7, ariaLabel: row.text + ", as #RRGGBB" });
+      const pill = el("span", { className: "colour" }, swatch, hex);
+      swatch.onclick = () => this.pop_open(this.colour_of_row(row), swatch, pill);
       const now = () => this.target(row.scope)[row.key];
       hex.onchange = () => {
         const value = parse_hex(hex.value);
         if (value) set(from_hex(value, now()[3] ?? 1));
         hex.value = to_hex(now()).toUpperCase();
       };
-      wrap.append(el("label", { htmlFor: id, textContent: row.text }), el("span", { className: "colour" }, swatch, hex));
+      wrap.append(el("label", { htmlFor: id, textContent: row.text }), pill);
       out.refresh = (T) => {
-        const value = to_hex(T[row.key]).toUpperCase();
-        swatch.style.background = value;
+        paint(swatch, T[row.key]);
         swatch.setAttribute("aria-expanded", String(this.pop.at !== null && this.pop.at.swatch === swatch));
-        if (!active(hex)) hex.value = value;
+        if (!active(hex)) hex.value = to_hex(T[row.key]).toUpperCase();
       };
     }
     if (row.kind === "txt") {
@@ -7298,6 +7333,17 @@ var DialTool = class _DialTool {
       P.hsv = [x * 360, P.hsv[1], P.hsv[2]];
       put(hsv_rgb(P.hsv));
     });
+    const see_through = (a) => P.at.write(P.at.read().slice(0, 3).concat([+clamp(a, 0, 1).toFixed(2)]));
+    P.alpha = el("div", { className: "alpha", title: "Opacity" }, el("i"));
+    drag_in(P.alpha, (x) => see_through(x));
+    P.alpha_field = el("input", { type: "text", inputMode: "numeric", id: "pop-alpha", ariaLabel: "Opacity, %", title: "Opacity, %" });
+    P.alpha_field.onchange = () => {
+      const v = parseFloat(P.alpha_field.value);
+      if (Number.isFinite(v)) see_through(v / 100);
+      P.alpha_field.value = `${Math.round((P.at.read()[3] ?? 1) * 100)}%`;
+    };
+    P.alpha_row = el("div", { className: "alpharow" }, P.alpha, P.alpha_field);
+    P.dot = el("i", { className: "dot" });
     P.modes = el("span", { className: "segs" });
     for (const mode of ["RGB", "CMYK", "HEX"]) P.modes.append(el("button", { type: "button", textContent: mode, id: "pop-as-" + mode, onclick: () => {
       this.colour_mode = mode;
@@ -7323,7 +7369,8 @@ var DialTool = class _DialTool {
       el("div", { className: "chiprow" }, el("span", { className: "quiet", textContent: "Palette" }), P.palette_chips),
       P.field,
       P.hues,
-      el("div", { className: "asnumbers" }, P.modes, P.numbers, P.copy)
+      P.alpha_row,
+      el("div", { className: "asnumbers" }, P.modes, P.dot, P.numbers, P.copy)
     );
     P.el.setAttribute("role", "dialog");
     P.el.onkeydown = (e) => {
@@ -7362,6 +7409,8 @@ var DialTool = class _DialTool {
    *  It follows the scope, so with a ring's colour open, selecting another ring shows that ring's. */
   colour_of_row(row) {
     return {
+      alpha: row.scope === "ring",
+      // only a ring can be see-through (Okay, 12 Oct 2026)
       read: () => {
         const T = this.target(row.scope);
         return T ? T[row.key] : null;
@@ -7467,6 +7516,13 @@ var DialTool = class _DialTool {
     knob.style.top = `${(1 - P.hsv[2]) * 100}%`;
     knob.style.background = value;
     P.hues.firstChild.style.left = `${P.hsv[0] / 360 * 100}%`;
+    P.hues.firstChild.style.background = `hsl(${P.hsv[0]} 100% 50%)`;
+    const a = colour[3] ?? 1;
+    P.alpha_row.hidden = !P.at.alpha;
+    P.alpha.style.setProperty("--solid", value);
+    P.alpha.firstChild.style.left = `${a * 100}%`;
+    if (!has_focus(P.alpha_field)) P.alpha_field.value = `${Math.round(a * 100)}%`;
+    paint(P.dot, P.at.alpha ? colour : rgb2);
     const mode = this.colour_mode;
     [...P.modes.children].forEach((b) => b.classList.toggle("on", b.textContent === mode));
     if (P.mode !== mode) {
@@ -7508,6 +7564,7 @@ var DialTool = class _DialTool {
     return positions_of(ring).map((at, n) => ({
       id: `ring-${i}-sector-${at}`,
       title: `${name} \xB7 sector ${n + 1}`,
+      alpha: true,
       read: () => {
         const R = this.S.rings[i];
         return R ? sector_colour(R, at) : null;
@@ -7526,24 +7583,28 @@ var DialTool = class _DialTool {
     if (holder.dataset.list !== signature) {
       holder.dataset.list = signature;
       holder.replaceChildren(...list.map((line) => {
-        const group = el("span", { className: "swatches" });
+        const group = el("span", { className: line.colours.length === 1 ? "single" : "swatches" });
         for (const c of line.colours) {
-          const swatch = el("button", { type: "button", className: "swatch", id: "colour-" + c.id, title: c.title });
-          swatch.onclick = () => this.pop_open({ read: c.read, write: c.write, label: () => c.title }, swatch, group);
+          const swatch = line.colours.length === 1 ? el("button", { type: "button", className: "colour", id: "colour-" + c.id, title: c.title }, el("i", { className: "dot" }), el("span", { className: "hex" })) : el("button", { type: "button", className: "swatch", id: "colour-" + c.id, title: c.title });
+          swatch.onclick = () => this.pop_open({ read: c.read, write: c.write, label: () => c.title, alpha: Boolean(c.alpha) }, swatch, group);
           group.append(swatch);
         }
         return el("div", { className: "row" }, el("label", { textContent: line.text }), group);
       }));
     }
     const all = list.flatMap((l) => l.colours);
-    [...holder.querySelectorAll(".swatch")].forEach((swatch, k) => {
-      swatch.style.background = to_hex(all[k].read()).toUpperCase();
+    [...holder.querySelectorAll("button.colour, button.swatch")].forEach((swatch, k) => {
+      const c = all[k].read();
+      if (swatch.classList.contains("colour")) {
+        paint(swatch.firstChild, c);
+        swatch.lastChild.textContent = to_hex(c).toUpperCase();
+      } else paint(swatch, c);
     });
   }
   /** Dial → Colours: every coloured part on the plate. Rings top first, a band's sectors one by one; hands, cap, windows. */
   row_colours(wrap, out) {
     wrap.className = "colourlist";
-    const one = (id, title, read, write) => [{ id, title, read, write }];
+    const one = (id, title, read, write, alpha = false) => [{ id, title, read, write, alpha }];
     out.refresh = () => this.swatch_lines(wrap, () => {
       const S = this.S, lines = [];
       S.rings.forEach((ring, i) => {
@@ -7551,7 +7612,7 @@ var DialTool = class _DialTool {
         lines.push({ text, colours: sectors ? this.sector_colours(i) : one(`ring-${i}`, text, () => (this.S.rings[i] || {}).c, (v) => {
           this.S.rings[i].c = v;
           this.changed();
-        }) });
+        }, true) });
       });
       HANDS.forEach((h, k) => {
         const text = ["Hour hand", "Minute hand", "Seconds hand"][k];
@@ -8363,6 +8424,7 @@ var DialTool = class _DialTool {
     this.items = items;
     const backdrop = S.out_production ? [1, 1, 1, 1] : S.c_backdrop;
     this.backdrop.setAttribute("fill", to_hex(backdrop));
+    this.main.style.setProperty("--canvas", to_hex(backdrop));
     this.main.classList.toggle("dark", 0.2126 * backdrop[0] + 0.7152 * backdrop[1] + 0.0722 * backdrop[2] < 0.45);
     while (this.slots.length < items.length) {
       const node = svg_el("path");
