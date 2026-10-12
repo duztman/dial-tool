@@ -79,20 +79,20 @@
     --thumb: 18px; --track: 4px;                   /* sliders: a black disc on a thin track (Okay's sketch, 12 Oct 2026) */
     --tick: 16px;                                  /* a tick box */
     --chip: 22px; --chip-gap: 4px;                 /* a colour to pick: in the pop-out's two rows, in the guides' list */
-    --pop-pad: 12px; --pop-label: 72px;            /* the colour pop-out: its side space, and the column of its rows' names */
-    --pop-field: 168px; --pop-hue: 24px;           /* its field of one hue, and the strip of hues under it */
+    --pop-pad: 16px; --pop-gap: 12px; --pop-label: 72px;      /* a night part (colour pop-out, guides' list): the space inside its edge, the space between its blocks; the column of the pop-out's row names */
+    --pop-field: 140px; --pop-hue: 22px;           /* its field of one hue, and the strip of hues under it */
     --knob: 20px;                                  /* the handle on the field and on the strip */
     /* the colour pop-out is near black (Okay, 12 Oct 2026); inside it the usual names (--ink, --paper, --field…) are set to these */
     --night: #141413; --night-field: #262624; --night-hover: #34342F; --night-rule: #4A4A46; --night-chip-rule: rgba(255, 255, 255, 0.28);
     /* round corners belong to colour things only: the pop-out, its field, a colour pill, a swatch */
     --round-large: 14px; --round: 8px; --round-small: 5px;
     --dot: 18px;                                   /* the small swatch inside a colour pill */
-    --chip-large: 26px;                            /* a colour to pick, in the pop-out */
+    --chip-large: 22px;                            /* a colour to pick, in the pop-out */
     --checker: repeating-conic-gradient(#BDBDB9 0 25%, #FFFFFF 0 50%) 0 0 / 8px 8px;      /* what shows through a see-through colour */
     --canvas-inset: 12px;                          /* from the preview's edge to what stands on it */
-    --guide-name: 104px;                           /* the names in the guides' list */
-    --guide-dot: 16px; --guide-gap: 13px;          /* a round colour in the guides' list, and the room between two: the chosen one's ring needs it */
-    --ring-gap-in: 2px; --ring-thick: 4px;         /* the chosen one: a ring of the ground this wide, then a ring of its own colour this thick */
+    --guide-name: 92px; --guide-row: 42px;         /* a line of the guides' list is this high */                           /* the names in the guides' list */
+    --guide-dot: 13px; --guide-gap: 9px;           /* a round colour in the guides' list, and the room between two: the chosen one's ring needs it */
+    --ring-gap-in: 2px; --ring-thick: 3px;         /* the chosen one: a ring of the ground this wide, then a ring of its own colour this thick */
 
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
     --t-xs: 11px; --t-s: 12px; --t-m: 13px; --t-l: 15px;
@@ -100,7 +100,7 @@
     --sans: system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
     --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;      /* only for what the tool says: the log, a link, a hex value, a feature's tag */
   }
-  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --chip-large: 34px; --dot: 22px; --guide-dot: 22px; --guide-gap: 15px; --pop-field: 220px; --pop-hue: 36px; --knob: 30px; } }      /* a finger needs more to hold than a pointer */
+  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --chip-large: 28px; --dot: 22px; --guide-dot: 18px; --guide-gap: 11px; --pop-field: 180px; --pop-hue: 32px; --knob: 28px; } }      /* a finger needs more to hold than a pointer */
 }
 
 @layer base {
@@ -293,7 +293,7 @@
      chips. Then the field of one hue, the strip of hues and (rings only) the strip of how see-through, tall enough
      for a finger. Last, one line: RGB · CMYK · HEX, the colour, the values, COPY — small, boxed, capitals. */
   .colourpop { --chip: var(--chip-large);
-    position: fixed; z-index: 5; display: grid; gap: calc(1.5 * var(--unit)); width: calc(2 * var(--pop-pad) + 2 * var(--hair) + var(--pop-label) + 11 * var(--chip) + 10 * var(--chip-gap)); max-width: 100vw;      /* eleven chips to a row: the palette's ten and its + */
+    position: fixed; z-index: 5; display: grid; gap: var(--pop-gap); width: calc(2 * var(--pop-pad) + 2 * var(--hair) + var(--pop-label) + 11 * var(--chip) + 10 * var(--chip-gap)); max-width: 100vw;      /* eleven chips to a row: the palette's ten and its + */
     padding: 0 var(--pop-pad) var(--pop-pad); }
   .colourpop[hidden] { display: none; }
   .colourpop header { display: flex; align-items: center; height: var(--head); cursor: grab; touch-action: none; user-select: none; border-bottom: var(--hair) solid var(--row-rule); }
@@ -417,15 +417,17 @@
   .guidesbox[aria-pressed="false"], .guidesbox[aria-pressed="false"] + .guidesmore { border-color: var(--on-canvas-quiet); border-style: dashed;
     background: linear-gradient(var(--canvas), var(--canvas)) padding-box, linear-gradient(var(--on-canvas-low), var(--on-canvas-low)) border-box; }
   .guidesbox[aria-pressed="false"]:hover { color: var(--on-canvas); }
-  .guidesbox[aria-pressed="false"] svg { opacity: 0.55; }
   .guidesmore[aria-expanded="true"] { background: var(--on-canvas); color: var(--on-canvas-fill); }
   .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }
+  /* off, everything on the switch has one colour, the dashes' light one: sign, word and arrow (Okay, 12 Oct 2026) */
+  .guidesbox[aria-pressed="false"] + .guidesmore { color: var(--on-canvas-quiet); }
+  .guidesbox[aria-pressed="false"] + .guidesmore[aria-expanded="true"] { background: linear-gradient(var(--canvas), var(--canvas)) padding-box, linear-gradient(var(--on-canvas-low), var(--on-canvas-low)) border-box; }      /* open, only its arrow turns */
   /* the list: near black and round, like the colour pop-out (.night). A kind of guide is one line: its name, then
      round choices with room between them — none, then the eight colours. The chosen one stands in a thick ring of its own colour, a
      little of the ground between them. A hairline under every line. */
   .guidelist { position: absolute; top: calc(100% + var(--unit)); right: 0; width: calc(2 * var(--pop-pad) + 2 * var(--hair) + var(--guide-name) + 9 * var(--guide-dot) + 9 * var(--guide-gap)); max-width: calc(100vw - 2 * var(--canvas-inset));
-    max-height: calc(100vh - var(--bar-height) - 2 * var(--canvas-inset) - var(--control-large) - var(--unit)); overflow-y: auto; padding: var(--unit) var(--pop-pad) var(--pop-pad); }
-  .guidekind { display: grid; grid-template-columns: var(--guide-name) 1fr; align-items: center; min-height: var(--line); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+    max-height: calc(100vh - var(--bar-height) - 2 * var(--canvas-inset) - var(--control-large) - var(--unit)); overflow-y: auto; padding: var(--unit) var(--pop-pad) var(--pop-pad); }      /* less on top: a line's own height already stands its dots off the edge */
+  .guidekind { display: grid; grid-template-columns: var(--guide-name) 1fr; align-items: center; min-height: var(--guide-row); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
   .guidekind.off .name { color: var(--grey); }
   .dots { display: flex; justify-content: space-between; align-items: center; padding: 0 calc(var(--ring-gap-in) + var(--ring-thick)) 0 var(--guide-gap); }
   .dots button { flex: none; display: grid; place-items: center; width: var(--guide-dot); height: var(--guide-dot); border-radius: 50%; }
@@ -435,8 +437,10 @@
   .dots .none svg { width: var(--guide-dot); height: var(--guide-dot); }
   .dots .none:hover { color: var(--ink); }
   .dots .none.on { background: var(--ink); color: var(--paper); box-shadow: 0 0 0 var(--ring-thick) var(--ink); }
-  .guidelist .row { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
-  .guidefoot { display: flex; justify-content: flex-end; padding-top: calc(2 * var(--unit)); }
+  /* Thickness, on the list's own columns: name · slider · value · stepper */
+  .guidelist .row { grid-template-columns: var(--guide-name) minmax(0, 1fr) var(--col) var(--col); min-height: var(--guide-row); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  .guidelist .row > :is(label, input[type="range"]) { grid-column: auto; }
+  .guidefoot { display: flex; justify-content: flex-end; padding-top: var(--pop-pad); }
   /* the outline of what the pointer is on: an orange line on a white one, so it shows on any colour */
   .glow { fill: none; stroke: var(--glow); stroke-width: 1.5px; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
   .glow.under { stroke: #fff; stroke-width: 4px; }
@@ -6795,6 +6799,12 @@ var DialTool = class _DialTool {
     this.scrolls = {};
     this.log_lines = [];
     this.build_window();
+    if (!_DialTool.listening) {
+      _DialTool.listening = true;
+      document.addEventListener("pointerdown", (e) => {
+        if (window.dial_tool) window.dial_tool.pressed(e);
+      }, true);
+    }
     this.show_section();
     this.fit();
     this.sync_time();
@@ -6848,6 +6858,13 @@ var DialTool = class _DialTool {
     const run = this.scale_from;
     set_measures(S, run.base.map((v) => +(v * to / run.d).toFixed(6)));
     run.now = JSON.stringify(measures(S));
+  }
+  /** a press anywhere outside the colour pop-out or the guides' list puts it away (Okay, 12 Oct 2026). A press on a
+   *  swatch or a colour pill is left to that swatch: it opens, moves or closes the pop-out itself. */
+  pressed(e) {
+    const on = (q) => e.target.closest && e.target.closest(q);
+    if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour")) this.pop_close();
+    if (this.guides_open && !$("#guide-list").hidden && !on(".guides")) this.guides_open(false);
   }
   // ── building the window ──────────────────────────────────
   build_window() {
@@ -7021,6 +7038,7 @@ var DialTool = class _DialTool {
       if (on) this.sync_guides();
     };
     more.onclick = () => open(list.hidden);
+    this.guides_open = open;
     this.guide_kinds = GUIDE_KINDS.map(([show, colour, name]) => {
       const dots = el("span", { className: "dots", role: "radiogroup", ariaLabel: name });
       const none = el("button", { type: "button", className: "none", id: "guide-" + show, title: "None: hide " + name.toLowerCase(), ariaLabel: "None", onclick: () => this.set_value("global", show, false) });
