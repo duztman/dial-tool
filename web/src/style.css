@@ -278,6 +278,11 @@
   /* a bar: one line of its own, outside the panes (Hands: All hands · Show hands · Motion). It opens like a pane, with
      a thick line; on the columns: name 2 · tick 2 · menu 2. */
   .handsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; min-height: calc(var(--head) + var(--unit)); border-top: var(--thick) solid var(--ink); }
+  .tabsbar + .handsbar { border-top: var(--hair) solid var(--rule); }
+  /* tabs inside a section, always in view (Hands: Hour · Minute · Seconds): one line across the six columns */
+  .tabsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; min-height: calc(var(--head) + var(--unit)); border-top: var(--thick) solid var(--ink); }
+  .tabsbar > .segs { grid-column: 2 / -1; }
+  .tabsbar .segs > button { height: var(--control-large); font-weight: 600; }
   .handsbar > h2 { grid-column: 2 / span 2; }
   .handsbar > .check { grid-column: 4 / span 2; white-space: nowrap; }
   .handsbar > select { grid-column: 6 / span 2; }

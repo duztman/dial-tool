@@ -65,8 +65,9 @@ If a term is used differently in conversation, ask, then update this file.
 | **Scale everything** | The tick under Diameter: a change of diameter multiplies every measure on the dial (not the page margin). |
 | **Unit box** | The box at the panel's top right: the unit lengths are shown and typed in (mm, points, inches, lignes). Settings stay in mm. **Ligne**: the watchmakers' unit for movement sizes, 2.2558 mm. |
 | **Reach** | The unseen frame round a small control that also takes a finger's press (web version, touch only). |
-| **Heading selector** | A pane's main selector, standing on its heading line with no name of its own (Labels, the hand picker, the window picker, Position). |
+| **Heading selector** | A pane's main selector, standing on its heading line with no name of its own (Labels, the window picker, Position). |
 | **Backdrop switch** | The button at the preview's bottom left: the backdrop's colour as a chip; it opens the colour pop-out. |
+| **Hand tabs** | Hour · Minute · Seconds, the first pinned line of Hands: they choose the hand the panes below are about. |
 | **Bar** | One line of its own, outside the panes and always in view (Hands: All hands · Show hands · Motion). |
 | **Nested question** | A tick or menu that asks about the row above it; it starts on the controls' column, not at the left. |
 | **Row line** | The hairline before and after every row: white on the scrolling grey, that grey on paper. |

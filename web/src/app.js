@@ -127,6 +127,7 @@ const numerals_only = kind_in("numerals");
 const W = { scope: "window" };
 const win_on = (T) => T.on;
 const win_is = (...kinds) => (T) => T.on && kinds.includes(G.WINDOW_KINDS[T.kind]);
+const HAND_NAMES = ["Hour hand", "Minute hand", "Seconds hand"];
 const TAB_NAMES = { Date: "Windows" };            // the section's number and key stay "Date" (R8, R9); its tab says what it now holds
 const H = { scope: "hand" };
 
@@ -201,12 +202,9 @@ const ROWS = {
     custom("features", { show: numerals_only }),
   ],
   Hands: [
+    custom("hand_tabs", { pin: true, bar: true }),      // on top, always in view: which hand the panes below are about (Okay, 12 Oct 2026: "acts as a tab system for what's below")
     custom("hands_bar", { pin: true, bar: true }),      // bar: one line of its own, always in view: All hands · Show hands · Motion
-    hdr("Cap"),
-    num("ha_cap", "Cap Ø", 0, 4, 0.05),
-    col("c_cap", "Colour"),
-    hdr("One hand"),
-    seg("ui_hand", "Edit", ["Hour", "Minute", "Seconds"], { head: true }),
+    hdr("One hand", { title: (S) => HAND_NAMES[S.ui_hand] }),      // its heading says which: Hour hand · Minute hand · Seconds hand
     chk("on", "Show this hand", { ...H, nest: true }),
     pick("shape", "Shape", G.HAND_SHAPES.slice(0, 9), hand_pic, H),
     col("c", "Colour", H),
@@ -224,6 +222,9 @@ const ROWS = {
     num("feature_at", "Ring · disc at %", 0, 100, 1, { ...H, show: hand_is("breguet", "lollipop") }),
     num("counter", "Counterweight Ø", 0, 4, 0.05, H),
     num("wall", "Hollow wall", 0, 1, 0.01, H),
+    hdr("Cap"),                                    // after the hand's own panes: it belongs to all three
+    num("ha_cap", "Cap Ø", 0, 4, 0.05),
+    col("c_cap", "Colour"),
   ],
   Date: [                                          // "Windows" on its tab: up to four holes in the plate
     hdr("Window"),
@@ -780,6 +781,7 @@ class DialTool {
       out.body = el("div", { className: "body" });
       out.el = el("section", { className: "pane" }, out.button, out.body);
       if (row.name === "ring_title") out.refresh = (R) => { title.textContent = R.name || G.kind_of(R); };
+      if (row.title) out.refresh = (T) => { title.textContent = row.title(T); };
       return out;
     }
     if (row.kind === "note") wrap.append(el("span"), el("span", { className: "quiet", textContent: row.text }));
@@ -1158,6 +1160,19 @@ class DialTool {
     const lines = el("div"), same = el("button", { type: "button", className: "btn", id: "sectors-same", textContent: "All as the ring", title: "Every sector in the ring’s colour again", onclick: () => this.set_value("ring", "cs", {}) });
     wrap.append(lines, el("div", { className: "row" }, el("span"), el("span", { className: "tools" }, same)));
     out.refresh = () => this.swatch_lines(lines, () => [{ text: "Sectors", colours: this.sector_colours(this.S.ui_ring) }]);
+  }
+
+  /** Hands, on top and always in view: Hour · Minute · Seconds, as tabs for the panes below. */
+  row_hand_tabs(wrap, out) {
+    wrap.className = "tabsbar";
+    const tabs = el("span", { className: "segs", role: "tablist", ariaLabel: "Which hand" });
+    ["Hour", "Minute", "Seconds"].forEach((name, i) => {
+      const b = el("button", { type: "button", id: "hand-tab-" + i, textContent: name, onclick: () => this.set_value("global", "ui_hand", i) });
+      b.setAttribute("role", "tab");
+      tabs.append(b);
+    });
+    wrap.append(tabs);
+    out.refresh = (S) => [...tabs.children].forEach((b, i) => { b.classList.toggle("on", i === S.ui_hand); b.setAttribute("aria-selected", String(i === S.ui_hand)); });
   }
 
   /** Hands, always in view, one line (Okay, 12 Oct 2026): the name, a tick to show the hands, how they move. */

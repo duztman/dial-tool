@@ -353,21 +353,28 @@ check(await page.isVisible("#global-dial-d-Diameter") && (await page.textContent
 // folding must not leave uneven gaps: folded panes stack line on line, whatever they hold
 await tab("Hands");
 const gaps = async () => page.$$eval(".form .pane", (h) => h.filter((e) => e.offsetParent).map((e, i, all) => (i ? Math.round(e.getBoundingClientRect().top - all[i - 1].getBoundingClientRect().top) : 0)).slice(1));
-for (const name of ["Cap", "One hand", "Size"]) await page.click(`.form .fold:has-text("${name}") h2 >> nth=0`);
+for (const i of [0, 1, 2]) await page.click(`.form .pane >> nth=${i} >> .fold h2`);
 const folded_gaps = await gaps();
 check(folded_gaps[1] === 42 && folded_gaps[2] === 42, `folded panes in a row are 42 apart, and so is the open one after them (${folded_gaps.join(", ")})`);
-for (const name of ["Cap", "One hand", "Size"]) await page.click(`.form .fold:has-text("${name}") h2 >> nth=0`);
-// a pane's main selector stands on its heading line: One hand → Hour · Minute · Seconds
-const on_head = await page.evaluate(() => { const pane = [...document.querySelectorAll(".form .pane")].find((p) => p.querySelector("h2").textContent === "One hand"), c = pane.querySelector(".headcontrol").getBoundingClientRect(), h = pane.querySelector(".fold").getBoundingClientRect(), ref = document.querySelector(".form .row.num input[type=range]").getBoundingClientRect(); return [c.top >= h.top && c.bottom <= h.bottom, Math.round(c.left - ref.left), pane.querySelector(".body .segs") === null]; });
-check(on_head[0] && on_head[1] === 0 && on_head[2], "One hand's picker is on its heading line, on the controls' columns, and not a row of its own");
-await page.click('.form .pane:has(h2:text-is("One hand")) .headcontrol button:text-is("Seconds")');
-check(await S("S.ui_hand === 2"), "it works there: Seconds");
-await page.click('.form .fold:has-text("One hand") h2');
-check(await page.isVisible('.form .pane:has(h2:text-is("One hand")) .headcontrol') && await page.isHidden("#hand-on-Show-this-hand"), "folded, the pane still shows its selector");
-await page.click('.form .pane:has(h2:text-is("One hand")) .headcontrol button:text-is("Hour")');
-check(await S("S.ui_hand === 0"), "and it still works");
-await page.click('.form .fold:has-text("One hand") h2');
-await shot("4g-head-selector");
+for (const i of [0, 1, 2]) await page.click(`.form .pane >> nth=${i} >> .fold h2`);
+// Hands: Hour · Minute · Seconds are tabs on top of the pinned part; the panes below are about the chosen hand
+const hand_tabs = await page.evaluate(() => { const p = document.querySelector(".pinned"), t = p.querySelector(".tabsbar"); return [p.firstElementChild === t, t.nextElementSibling.classList.contains("handsbar"), [...t.querySelectorAll("button")].map((b) => b.textContent).join(" "), [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent).join(" · ")]; });
+check(hand_tabs[0] && hand_tabs[1] && hand_tabs[2] === "Hour Minute Seconds", "the hand tabs are the first pinned line, All hands the second");
+await page.click("#hand-tab-2");
+check(await S("S.ui_hand === 2") && await page.textContent(".form .pane >> nth=0 >> h2") === "Seconds hand" && await page.$eval("#hand-tab-2", (e) => e.classList.contains("on")), "a tab chooses the hand; the first pane's heading says Seconds hand");
+check((await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))).at(-1) === "Cap", "Cap, which belongs to all three, comes after the hand's own panes");
+await page.click("#hand-tab-0");
+await shot("4g-hand-tabs");
+// a pane's main selector stands on its heading line (Windows → Window: 1 · 2 · 3 · 4), also when the pane is folded
+await tab("Date");
+const on_head = await page.evaluate(() => { const pane = [...document.querySelectorAll(".form .pane")].find((p) => p.querySelector("h2").textContent === "Window"), c = pane.querySelector(".headcontrol").getBoundingClientRect(), h = pane.querySelector(".fold").getBoundingClientRect(), ref = document.querySelector(".form .row.nest .check").getBoundingClientRect(); return [c.top >= h.top && c.bottom <= h.bottom, Math.round(c.left - ref.left), pane.querySelector(".body .segs") === null]; });
+check(on_head[0] && on_head[1] === 0 && on_head[2], "Window's picker is on its heading line, on the controls' columns, and not a row of its own");
+await page.click('.form .fold:has-text("Window") h2 >> nth=0');
+await page.click('.form .pane >> nth=0 >> .headcontrol button:text-is("3")');
+check(await S("S.ui_window === 2") && await page.isVisible(".form .pane >> nth=0 >> .headcontrol"), "folded, the pane still shows its selector, and it works");
+await page.click('.form .pane >> nth=0 >> .headcontrol button:text-is("1")');
+await page.click('.form .fold:has-text("Window") h2 >> nth=0');
+await tab("Hands");
 // All hands: one line, always in view — its name, the tick, the menu, on the columns
 const bar_line = await page.evaluate(() => { const b = document.querySelector(".pinned .handsbar"), tops = [...b.children].map((e) => Math.round(e.getBoundingClientRect().top + e.getBoundingClientRect().height / 2)); const x = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left); return [Math.max(...tops) - Math.min(...tops), x(".handsbar .check") - x(".form .row.num input[type=range]"), b.querySelector("h2").textContent]; });
 check(bar_line[0] <= 1 && bar_line[1] === 0 && bar_line[2] === "All hands", "All hands is one pinned line: name · Show hands · Motion, the tick on the controls' column");
