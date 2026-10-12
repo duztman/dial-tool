@@ -287,6 +287,15 @@
   /* a bar: one line of its own, outside the panes (Hands: All hands · Show hands · Motion). It opens like a pane, with
      a thick line; on the columns: name 2 · tick 2 · menu 2. */
   .handsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; min-height: calc(var(--head) + var(--unit)); border-top: var(--thick) solid var(--ink); }
+  /* Windows: four cards the size of the example cards (five to a row), 12 · 3 · 6 · 9. They are tabs: the chosen one
+     is ink. A window that isn't shown is quiet. The line under the section tabs is theirs. */
+  .windowcards { padding: calc(2 * var(--unit)) 0 calc(3 * var(--unit)); border-top: var(--thick) solid var(--ink); }
+  .windowcards .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--unit); }
+  .windowcards button { display: grid; justify-items: center; gap: 3px; padding: 8px 4px 5px; background: var(--inset); font-weight: 600; }
+  .windowcards button svg { display: block; }
+  .windowcards button.off { color: var(--grey); font-weight: 400; }
+  .windowcards button:hover { background: var(--select); }
+  .windowcards button.on { background: var(--ink); color: var(--paper); }
   .handsbar + .tabsbar { border-top: var(--hair) solid var(--rule); }
   /* tabs inside a section, always in view (Hands: Hour · Minute · Seconds): one line across the six columns */
   .tabsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; min-height: calc(var(--head) + var(--unit)); border-top: var(--thick) solid var(--ink); }
@@ -6569,7 +6578,6 @@ var TOOL_ICONS = {
 };
 var num2 = (key, text, lo, hi, step, o = {}) => ({ kind: "num", key, text, lo, hi, step, ...o });
 var pop = (key, text, items, o = {}) => ({ kind: "pop", key, text, items, ...o });
-var seg = (key, text, items, o = {}) => ({ kind: "seg", key, text, items, ...o });
 var pick = (key, text, items, pics, o = {}) => ({ kind: "pick", key, text, items, pics, ...o });
 var chk = (key, text, o = {}) => ({ kind: "chk", key, text, ...o });
 var col = (key, text, o = {}) => ({ kind: "col", key, text, ...o });
@@ -6585,6 +6593,7 @@ var numerals_only = kind_in("numerals");
 var W = { scope: "window" };
 var win_on = (T) => T.on;
 var win_is = (...kinds) => (T) => T.on && kinds.includes(WINDOW_KINDS[T.kind]);
+var WINDOW_CARDS = [{ slot: 1, at: 4 }, { slot: 0, at: 0 }, { slot: 2, at: 2 }, { slot: 3, at: 3 }];
 var HAND_NAMES = ["Hour hand", "Minute hand", "Seconds hand"];
 var TAB_NAMES = { Date: "Windows" };
 var H = { scope: "hand" };
@@ -6697,10 +6706,10 @@ var ROWS = {
   ],
   Date: [
     // "Windows" on its tab: up to four holes in the plate
-    hdr("Window"),
-    seg("ui_window", "Edit", ["1", "2", "3", "4"], { head: true }),
-    chk("on", "Show this window", { ...W, nest: true }),
-    hdr("What it shows", { ...W, show: win_on }),
+    custom("window_cards", { bar: true }),
+    // four cards, 12 · 3 · 6 · 9: where each window is, and tabs for the panes below (Okay, 12 Oct 2026)
+    hdr("Window", { title: (S) => `Window at ${DATE_AT[windows_of(S)[S.ui_window].at][0]}` }),
+    chk("on", "Show this window", { ...W, head: true }),
     pick("kind", "Shows", WINDOW_KINDS, PICS.window, { ...W, show: win_on }),
     txt("text", "Text", { ...W, show: win_is("date", "day") }),
     num2("size", "Text % of height", 20, 100, 1, { ...W, show: win_is("date", "day") }),
@@ -7814,6 +7823,46 @@ var DialTool = class _DialTool {
     const lines = el("div"), same = el("button", { type: "button", className: "btn", id: "sectors-same", textContent: "All as the ring", title: "Every sector in the ring\u2019s colour again", onclick: () => this.set_value("ring", "cs", {}) });
     wrap.append(lines, el("div", { className: "row" }, el("span"), el("span", { className: "tools" }, same)));
     out.refresh = () => this.swatch_lines(lines, () => [{ text: "Sectors", colours: this.sector_colours(this.S.ui_ring) }]);
+  }
+  /** Windows, on top: four cards the size of the example cards, 12 · 3 · 6 · 9. A card is a small dial with its window
+   *  drawn where it is: filled when it is shown, an outline when it isn't. They are tabs: a press chooses the window
+   *  the panes below are about. A window not in use yet goes to its card's place when its card is first pressed. */
+  row_window_cards(wrap, out) {
+    wrap.className = "windowcards";
+    const grid = el("div", { className: "cards", role: "tablist", ariaLabel: "Which window" });
+    const cards = WINDOW_CARDS.map((c) => {
+      const pic2 = el("span", { className: "pic" }), name = el("span");
+      const b = el("button", { type: "button", id: "window-card-" + c.slot, onclick: () => {
+        const w = windows_of(this.S)[c.slot];
+        this.S.ui_window = c.slot;
+        if (!w.on && w.at === WINDOW_BASE.at && c.at !== w.at) {
+          w.at = c.at;
+          this.static_dirty = true;
+        }
+        this.sync_rows();
+        this.render();
+      } }, pic2, name);
+      b.setAttribute("role", "tab");
+      grid.append(b);
+      return { ...c, b, pic: pic2, name, drawn: "" };
+    });
+    wrap.append(grid);
+    out.refresh = (S) => {
+      for (const c of cards) {
+        const w = windows_of(S)[c.slot], at = !w.on && w.at === WINDOW_BASE.at ? c.at : w.at;
+        const [place2, angle] = DATE_AT[at], a = angle * Math.PI / 180;
+        const x = 9.3 * Math.sin(a), y = -9.3 * Math.cos(a), state = `${at}/${Boolean(w.on)}`;
+        if (c.drawn !== state) {
+          c.drawn = state;
+          c.pic.innerHTML = icon(`<circle r="15" stroke-width="1.1"/><rect x="${(x - 3.6).toFixed(2)}" y="${(y - 2.8).toFixed(2)}" width="7.2" height="5.6" rx="1.2" stroke-width="1.1"${w.on ? ' fill="currentColor"' : ""}/>`, 34, "-17 -17 34 34");
+          c.name.textContent = place2;
+          c.b.title = `The window at ${place2}${w.on ? "" : " (not shown)"}`;
+        }
+        c.b.classList.toggle("on", c.slot === S.ui_window);
+        c.b.classList.toggle("off", !w.on);
+        c.b.setAttribute("aria-selected", String(c.slot === S.ui_window));
+      }
+    };
   }
   /** Hands, on top and always in view: Hour · Minute · Seconds, as tabs for the panes below. */
   row_hand_tabs(wrap, out) {
