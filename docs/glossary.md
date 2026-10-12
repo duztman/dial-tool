@@ -81,7 +81,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Guidebook** | `docs/Dial-Tool-guide.pdf`, the user guide (A4 landscape, 28 pages, set by the design canon), built from `docs/guide/pages/` and `style.css` by `tools/make_guide.py`. |
 | **Classics** | The guide's nine example dials (field, diver, dress, pilot, California, station clock, Bauhaus, sector, gauge): settings in `tools/guide_dials.py`, also saved as presets in `docs/guide/presets/`. Drawn by eye after dial types, not measured. |
 | **Mirror** | Flips the output for toner transfer. |
-| **Guides** | Thin construction lines in the preview, never exported. Five **kinds**: dial edge · centre lines · window radii · ring edges · selected ring. Each kind has an eye and one of the eight **guide colours** (six neons, a dark, a light). Switched with the **Guides switch** at the preview's top right; its arrow drops the **guide list**. |
+| **Guides** | Thin construction lines in the preview, never exported. Five **kinds**: dial edge · centre lines · window radii · ring edges · selected ring. Each kind has one of the eight **guide colours** (six neons, a dark, a light) or **None** (not shown). Switched with the **Guides switch** at the preview's top right; its arrow drops the **guide list**. |
 | **Backdrop** | The preview's background colour; never exported. |
 | **Number control** | Label · slider · typed field · stepper, all showing one value. Typed shorthand: `1.2` set, `+0.5` add, `x0.5` multiply, `/2` divide. |
 | **Settings** (`S`) | One dictionary holding every value; saved as JSON (presets, last session). Rings are a list inside it (`S["rings"]`, top first). |

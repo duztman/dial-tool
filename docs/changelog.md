@@ -14,6 +14,7 @@ On `dev`. Step 2 of the Dial tab (Okay: "Go on with 2"). Seen in Chromium here o
 - **Opacity, rings only**: a third strip and a % field, shown for a ring's colour and a band's sector colours. It is the colour's fourth number, which preview, SVG and PDF already drew.
 - **A colour in the panel is a pill**: a small swatch (it opens the pop-out) and the hex, which can be typed. In Dial → Colours a part with one colour is a pill too; a band's sectors stay squares. A swatch shows a see-through colour over a checkerboard.
 - **The Guides switch's line** is a hairline (1, was 1.5). Off, it has no gaps: dashes as light as its word over a second, quieter tone; the inside is filled with the backdrop's colour (`--canvas`).
+- **The guides' list is near black and round** too (stylesheet class `.night`, shared with the pop-out), after a list Okay drew on: a line per kind — its name, then round choices with room between them: **None** (a struck circle) and the eight colours. The chosen one stands in a thick ring of its own colour. None replaces the eye; pressing a colour shows that kind again. A hairline under every line.
 - Round corners are for colour things only (stylesheet tokens `--round-large`, `--round`, `--round-small`).
 
 ## beta 4.5 (web version) · 12 Oct 2026

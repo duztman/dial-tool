@@ -81,7 +81,9 @@
     --chip-large: 26px;                            /* a colour to pick, in the pop-out */
     --checker: repeating-conic-gradient(#BDBDB9 0 25%, #FFFFFF 0 50%) 0 0 / 8px 8px;      /* what shows through a see-through colour */
     --canvas-inset: 12px;                          /* from the preview's edge to what stands on it */
-    --guide-name: 96px;                            /* the names in the guides' list */
+    --guide-name: 104px;                           /* the names in the guides' list */
+    --guide-dot: 16px; --guide-gap: 13px;          /* a round colour in the guides' list, and the room between two: the chosen one's ring needs it */
+    --ring-gap-in: 2px; --ring-thick: 4px;         /* the chosen one: a ring of the ground this wide, then a ring of its own colour this thick */
 
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
     --t-xs: 11px; --t-s: 12px; --t-m: 13px; --t-l: 15px;
@@ -89,7 +91,7 @@
     --sans: system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
     --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;      /* only for what the tool says: the log, a link, a hex value, a feature's tag */
   }
-  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --chip-large: 34px; --dot: 22px; --pop-field: 220px; --pop-hue: 36px; --knob: 30px; } }      /* a finger needs more to hold than a pointer */
+  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --chip-large: 34px; --dot: 22px; --guide-dot: 22px; --guide-gap: 15px; --pop-field: 220px; --pop-hue: 36px; --knob: 30px; } }      /* a finger needs more to hold than a pointer */
 }
 
 @layer base {
@@ -171,6 +173,18 @@
 
   /* what the tool says, set apart: small, monospaced, on an inset ground */
   .log, .link { background: var(--inset); }
+
+  /* night: a part that is near black with light words (the colour pop-out, the guides' list). Inside it the usual
+     colour names are set to their night values, so every control looks as it does elsewhere, light on dark. */
+  .night { --paper: var(--night); --surface: var(--night); --ink: var(--bar-ink); --grey: var(--bar-quiet); --field: var(--night-field); --well: var(--night-rule); --inset: var(--night-field);
+    --hover: var(--night-hover); --ink-hover: #FFFFFF; --rule: var(--night-rule); --row-rule: var(--night-rule); --chip-rule: var(--night-chip-rule);
+    border: var(--hair) solid var(--rule); border-radius: var(--round-large); background: var(--paper); color: var(--ink); }
+  .night :is(input[type="text"], .btn) { border-radius: var(--round-small); }
+  .night .segs > button:first-child { border-radius: var(--round-small) 0 0 var(--round-small); }
+  .night .segs > button:last-child { border-radius: 0 var(--round-small) var(--round-small) 0; }
+  .night .steps > .step:first-child { border-radius: var(--round-small) 0 0 var(--round-small); }
+  .night .steps > .step:last-child { border-radius: 0 var(--round-small) var(--round-small) 0; }
+  .night .row > label:first-child { color: var(--grey); }
 
   /* colours to pick: small squares in a row; the one in use is outlined */
   .chips { display: grid; grid-template-columns: repeat(auto-fill, var(--chip)); gap: var(--chip-gap); }
@@ -269,18 +283,14 @@
      buttons and fields look as they do elsewhere, light on dark. Its head drags it. Rows of colours: a name, then the
      chips. Then the field of one hue, the strip of hues and (rings only) the strip of how see-through, tall enough
      for a finger. Last, one line: RGB · CMYK · HEX, the colour, the values, COPY — small, boxed, capitals. */
-  .colourpop { --paper: var(--night); --surface: var(--night); --ink: var(--bar-ink); --grey: var(--bar-quiet); --field: var(--night-field); --hover: var(--night-hover); --ink-hover: #FFFFFF;
-    --rule: var(--night-rule); --row-rule: var(--night-rule); --chip-rule: var(--night-chip-rule); --chip: var(--chip-large);
+  .colourpop { --chip: var(--chip-large);
     position: fixed; z-index: 5; display: grid; gap: calc(1.5 * var(--unit)); width: calc(2 * var(--pop-pad) + 2 * var(--hair) + var(--pop-label) + 11 * var(--chip) + 10 * var(--chip-gap)); max-width: 100vw;      /* eleven chips to a row: the palette's ten and its + */
-    padding: 0 var(--pop-pad) var(--pop-pad); border: var(--hair) solid var(--rule); border-radius: var(--round-large); background: var(--paper); color: var(--ink); }
+    padding: 0 var(--pop-pad) var(--pop-pad); }
   .colourpop[hidden] { display: none; }
   .colourpop header { display: flex; align-items: center; height: var(--head); cursor: grab; touch-action: none; user-select: none; border-bottom: var(--hair) solid var(--row-rule); }
   .colourpop header h2 { flex: 1; overflow: hidden; text-overflow: ellipsis; }
   .colourpop header .sign { border-radius: var(--round-small); }
   .colourpop header .sign[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
-  .colourpop :is(input[type="text"], .btn) { border-radius: var(--round-small); }
-  .colourpop .segs > button:first-child { border-radius: var(--round-small) 0 0 var(--round-small); }
-  .colourpop .segs > button:last-child { border-radius: 0 var(--round-small) var(--round-small) 0; }
   .chiprow { display: grid; grid-template-columns: var(--pop-label) minmax(0, 1fr); align-items: start; }
   .chiprow > .quiet { line-height: var(--chip); font-size: var(--t-s); }
   .sv, .hue, .alpha { position: relative; touch-action: none; }
@@ -401,14 +411,22 @@
   .guidesbox[aria-pressed="false"] svg { opacity: 0.55; }
   .guidesmore[aria-expanded="true"] { background: var(--on-canvas); color: var(--on-canvas-fill); }
   .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }
-  /* the list: paper, like the colour pop-out. A kind of guide is an eye, its name, eight colours. */
-  .guidelist { position: absolute; top: calc(100% + var(--unit)); right: 0; width: calc(2 * var(--pop-pad) + 2 * var(--hair) + var(--eye) + var(--guide-name) + 2 * var(--gap) + 8 * var(--chip) + 7 * var(--chip-gap)); max-height: calc(100vh - var(--bar-height) - 2 * var(--canvas-inset) - var(--control-large) - var(--unit)); overflow-y: auto;
-    padding: var(--unit) var(--pop-pad) var(--pop-pad); border: var(--hair) solid var(--ink); background: var(--paper); color: var(--ink); }
-  .guidekind { display: grid; grid-template-columns: var(--eye) var(--guide-name) auto; column-gap: var(--gap); align-items: center; min-height: var(--line);
-    box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
-  .guidekind .eye { display: grid; place-items: center; height: var(--control); }
-  .guidekind.off :is(.eye, .name) { color: var(--grey); }
-  .guidekind .chips { grid-template-columns: repeat(8, var(--chip)); }
+  /* the list: near black and round, like the colour pop-out (.night). A kind of guide is one line: its name, then
+     round choices with room between them — none, then the eight colours. The chosen one stands in a thick ring of its own colour, a
+     little of the ground between them. A hairline under every line. */
+  .guidelist { position: absolute; top: calc(100% + var(--unit)); right: 0; width: calc(2 * var(--pop-pad) + 2 * var(--hair) + var(--guide-name) + 9 * var(--guide-dot) + 9 * var(--guide-gap)); max-width: calc(100vw - 2 * var(--canvas-inset));
+    max-height: calc(100vh - var(--bar-height) - 2 * var(--canvas-inset) - var(--control-large) - var(--unit)); overflow-y: auto; padding: var(--unit) var(--pop-pad) var(--pop-pad); }
+  .guidekind { display: grid; grid-template-columns: var(--guide-name) 1fr; align-items: center; min-height: var(--line); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  .guidekind.off .name { color: var(--grey); }
+  .dots { display: flex; justify-content: space-between; align-items: center; padding: 0 calc(var(--ring-gap-in) + var(--ring-thick)) 0 var(--guide-gap); }
+  .dots button { flex: none; display: grid; place-items: center; width: var(--guide-dot); height: var(--guide-dot); border-radius: 50%; }
+  .dots .tone { background: var(--c); box-shadow: 0 0 0 var(--hair) var(--chip-rule); }
+  .dots .tone.on { box-shadow: 0 0 0 var(--ring-gap-in) var(--paper), 0 0 0 calc(var(--ring-gap-in) + var(--ring-thick)) var(--c), 0 0 0 calc(var(--ring-gap-in) + var(--ring-thick) + var(--hair)) var(--chip-rule); }
+  .dots .none { color: var(--grey); }
+  .dots .none svg { width: var(--guide-dot); height: var(--guide-dot); }
+  .dots .none:hover { color: var(--ink); }
+  .dots .none.on { background: var(--ink); color: var(--paper); box-shadow: 0 0 0 var(--ring-thick) var(--ink); }
+  .guidelist .row { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
   .guidefoot { display: flex; justify-content: flex-end; padding-top: calc(2 * var(--unit)); }
   /* the outline of what the pointer is on: an orange line on a white one, so it shows on any colour */
   .glow { fill: none; stroke: var(--glow); stroke-width: 1.5px; vector-effect: non-scaling-stroke; stroke-linejoin: round; }

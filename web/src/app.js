@@ -554,24 +554,28 @@ class DialTool {
     const word = el("span", { className: "word", textContent: "Guides" });
     word.dataset.text = "Guides";
     this.guides_tick.append(word);
-    const list = el("div", { className: "guidelist", id: "guide-list", hidden: true });
+    const list = el("div", { className: "guidelist night", id: "guide-list", hidden: true });
     const more = el("button", { type: "button", className: "guidesmore", id: "guides-more", title: "Which guides, and their colours", ariaLabel: "Which guides, and their colours" });
     more.innerHTML = icon(`<path d="M4 6.5L8 10.5L12 6.5"/>`);
     more.setAttribute("aria-expanded", "false");
     const open = (on) => { list.hidden = !on; more.setAttribute("aria-expanded", String(on)); if (on) this.sync_guides(); };
     more.onclick = () => open(list.hidden);
+    // a kind of guide is one line: its name, then nine round choices — none (a struck circle), then the eight colours.
+    // The chosen one wears a thick ring (after a list Okay drew on, 12 Oct 2026). None = this kind is not shown.
     this.guide_kinds = G.GUIDE_KINDS.map(([show, colour, name]) => {
-      const see = el("button", { type: "button", className: "eye", id: "guide-" + show, title: "Show or hide: " + name.toLowerCase(), onclick: () => this.set_value("global", show, !this.S[show]) });
-      const chips = el("span", { className: "chips", role: "radiogroup", ariaLabel: name + ", colour" });
+      const dots = el("span", { className: "dots", role: "radiogroup", ariaLabel: name });
+      const none = el("button", { type: "button", className: "none", id: "guide-" + show, title: "None: hide " + name.toLowerCase(), ariaLabel: "None", onclick: () => this.set_value("global", show, false) });
+      none.innerHTML = icon(`<circle cx="8" cy="8" r="6.3"/><path d="M3.6 3.6L12.4 12.4"/>`);
+      dots.append(none);
       G.GUIDE_COLOURS.forEach((hex, i) => {
-        const b = el("button", { type: "button", title: hex, ariaLabel: hex, onclick: () => this.set_value("global", colour, i) });
-        b.setAttribute("role", "radio");
-        b.style.background = hex;
-        chips.append(b);
+        const b = el("button", { type: "button", className: "tone", title: hex, ariaLabel: hex, onclick: () => { this.S[show] = true; this.S[colour] = i; this.sync_rows(); this.render(); } });
+        b.style.setProperty("--c", hex);
+        dots.append(b);
       });
-      const line = el("div", { className: "guidekind" }, see, el("span", { className: "name", textContent: name }), chips);
+      for (const b of dots.children) b.setAttribute("role", "radio");
+      const line = el("div", { className: "guidekind" }, el("span", { className: "name", textContent: name }), dots);
       list.append(line);
-      return { show, colour, see, chips, line };
+      return { show, colour, dots, line };
     });
     this.guide_rows = [this.build_row({ ...num("gd_w", "Thickness", 0.25, 6, 0.25), scope: "global" })];
     const reset = el("button", { type: "button", className: "btn", id: "guides-reset", textContent: "Reset", title: "The guides as they started", onclick: () => {
@@ -592,9 +596,13 @@ class DialTool {
     this.guides_tick.title = S.guides ? "Guides are on: press to hide them" : "Guides are off: press to show them";
     if ($("#guide-list").hidden) return;
     for (const k of this.guide_kinds) {
-      const on = Boolean(S[k.show]);
-      if (k.shown !== on) { k.shown = on; k.see.innerHTML = eye(on); k.see.setAttribute("aria-pressed", String(on)); k.line.classList.toggle("off", !on); }
-      [...k.chips.children].forEach((b, i) => { b.classList.toggle("on", i === S[k.colour]); b.setAttribute("aria-checked", String(i === S[k.colour])); });
+      const shown = Boolean(S[k.show]);
+      k.line.classList.toggle("off", !shown);
+      [...k.dots.children].forEach((b, n) => {       // the first is None; then the eight colours
+        const on = n === 0 ? !shown : shown && n - 1 === S[k.colour];
+        b.classList.toggle("on", on);
+        b.setAttribute("aria-checked", String(on));
+      });
     }
     for (const r of this.guide_rows) r.refresh(S);
   }
@@ -844,7 +852,7 @@ class DialTool {
       try { await navigator.clipboard.writeText(this.pop_text()); P.copy.textContent = "COPIED"; } catch (e) { P.copy.textContent = "NO"; }
       setTimeout(() => { P.copy.textContent = "COPY"; }, 1200);
     } });
-    P.el = el("div", { className: "colourpop", id: "colour-pop", hidden: true },
+    P.el = el("div", { className: "colourpop night", id: "colour-pop", hidden: true },
       head,
       el("div", { className: "chiprow" }, el("span", { className: "quiet", textContent: "On this dial" }), P.used_chips),
       el("div", { className: "chiprow" }, el("span", { className: "quiet", textContent: "Palette" }), P.palette_chips),
