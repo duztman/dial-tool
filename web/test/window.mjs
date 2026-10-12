@@ -759,6 +759,26 @@ await shot("11b-phone-folded");
 await page.click('.form .fold:visible >> nth=0');
 await page.setViewportSize({ width: 1440, height: 900 });
 
+// ── under a finger: small controls are pressed from a little outside their edge too ──
+const touch = await browser.newContext({ viewport: { width: 1180, height: 820 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true });
+const pad = await touch.newPage();
+await pad.goto("file://" + process.cwd() + "/dial-tool.html");
+await pad.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
+await pad.tap("#guides-more");
+const reach = await pad.evaluate(() => {
+  const dots = [...document.querySelectorAll("#guide-list .guidekind:nth-child(2) .tone")], a = dots[2].getBoundingClientRect(), b = dots[3].getBoundingClientRect();
+  const at = (x, y) => document.elementFromPoint(x, y);
+  return { coarse: matchMedia("(pointer: coarse)").matches, size: a.width, left: at(a.left - 5, a.top + a.height / 2) === dots[2], above: at(a.left + a.width / 2, a.top - 10) === dots[2], nearer_next: at(b.left - 5, b.top + b.height / 2) === dots[3] };
+});
+check(reach.coarse && reach.left && reach.above && reach.nearer_next, `under a finger a ${reach.size} dot is pressed from 5 beside it and 10 above it; nearer the next dot, the next one is`);
+await pad.touchscreen.tap(...await pad.$eval('#guide-list .guidekind:nth-child(2) .tone:nth-child(5)', (e) => { const r = e.getBoundingClientRect(); return [r.left - 4, r.top - 8]; }));
+check(await pad.evaluate(() => window.dial_tool.S.gd_k_axes === 3), "a tap just outside a dot chooses it");
+await pad.tap("#global-c-plate-Plate-hex");
+const chip_reach = await pad.evaluate(() => { const c = [...document.querySelectorAll("#pop-palette button")], r = c[4].getBoundingClientRect(); return [document.elementFromPoint(r.left - 4, r.top + 4) === c[4], document.querySelector("#global-c-plate-Plate-hex").readOnly, !document.querySelector("#colour-pop").hidden]; });
+check(chip_reach.every(Boolean), "the hex in a pill opens the pop-out and isn't typed in; a chip is pressed from 4 beside it");
+await pad.screenshot({ path: path.join(OUT, "12-touch.png") });
+await touch.close();
+
 await browser.close();
 console.log(problems.length ? `\n${problems.length} problem(s).` : "\nWindow test passed.");
 process.exit(problems.length ? 1 : 0);
