@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.6 (web version) · 12 Oct 2026
+
+On `dev`. Step 2 of the Dial tab (Okay: "Go on with 2"). Seen in Chromium here only.
+
+- **Scale everything on the dial with it**: a tick under Diameter, off to start (`ui_scale`, the window's state: not in a link). On, a change of diameter multiplies every measure in mm — rings (radius, length, width, band width, clearance, round ends, wall, numeral size, 12 o'clock gap, a numeral's radius nudge), hands (length, width, tail, tip, head, counterweight, wall, round), windows (radius, width, height, round, frame, clearance), cap. Not angles, counts, percentages, the page margin. The measures are worked out from where a run of diameter changes began (`scale_with`, `G.measures`), so 30 → 36 → 22 → 30 lands exactly on the first values; editing anything else starts a new run.
+- **A colour per sector of a band**: new ring key `cs` (position → RGBA; empty = all in the ring's colour, so earlier links draw as before, R31). A band with sector colours is drawn, and exported, as one shape per colour ("Band colour 1", "Band colour 2"); the print mask stays one shape. Rings → **Sector colours** (a band with more than one sector): a swatch per sector, and **All as the ring**.
+- **Dial → Colours**: every coloured part in one list — rings top first (a band's sectors one by one), hour · minute · seconds hand, cap, the windows that are on. Each swatch opens the colour pop-out. Plate and backdrop keep their own rows.
+- **The pop-out's binding** is now read · write · label, not scope and key, so list swatches can use it. Opened from a list it stands at the right of the whole row of swatches, so the neighbours stay in reach. *On this dial* includes sector colours.
+
 ## beta 4.5 (web version) · 12 Oct 2026
 
 On `dev`. Okay's usability review, one tab at a time; this is the Dial tab, step 1 of 3. Seen in Chromium here only. `dial.py` is frozen from now on (Okay: "Do not work on dial.py anymore, we're on github").

@@ -241,7 +241,57 @@ await shot("4c4-guides-dark");
 await page.fill("#global-c-backdrop-Backdrop-hex", "#CCCCC7");
 await page.press("#global-c-backdrop-Backdrop-hex", "Enter");
 // the Dial section: two panes, Dial (diameter, plate, background) and Page (margin, backdrop); no Guides pane
-check(JSON.stringify(await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))) === '["Dial","Page"]' && await page.isVisible("#background-add"), "Dial has two panes, Dial and Page; Background is a button");
+check(JSON.stringify(await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))) === '["Dial","Colours","Page"]' && await page.isVisible("#background-add"), "Dial has three panes: Dial, Colours and Page; Background is a button");
+// scale everything with the diameter: off, the rings stay; on, every measure follows, and comes back
+const measures = () => S("[S.rings[0].r, S.rings[0].size, S.rings[1].len, S.ha_hour.len, S.ha_cap, S.rings[0].count, S.margin]");
+const at_30 = await measures();
+await page.fill("#global-dial-d-Diameter", "36"); await page.press("#global-dial-d-Diameter", "Enter");
+check(JSON.stringify(await measures()) === JSON.stringify(at_30), "the diameter alone leaves rings and hands where they are");
+await page.fill("#global-dial-d-Diameter", "30"); await page.press("#global-dial-d-Diameter", "Enter");
+await page.check("#global-ui-scale-Scale-everything-on-the-dial-with-it");
+await page.fill("#global-dial-d-Diameter", "36"); await page.press("#global-dial-d-Diameter", "Enter");
+const at_36 = await measures();
+check(at_36.slice(0, 5).every((v, i) => near(v, at_30[i] * 1.2, 1e-4)) && at_36[5] === at_30[5] && at_36[6] === at_30[6], `with "scale everything" ticked, 30 → 36 makes radii, sizes, lengths and the cap 1.2× (count and margin stay)`);
+await shot("4d-scaled");
+for (const d of ["41.3", "22", "30"]) { await page.fill("#global-dial-d-Diameter", d); await page.press("#global-dial-d-Diameter", "Enter"); }
+check(JSON.stringify(await measures()) === JSON.stringify(at_30), "36 → 41.3 → 22 → 30: everything is back exactly where it was");
+await page.uncheck("#global-ui-scale-Scale-everything-on-the-dial-with-it");
+check(await S("!('ui_scale' in G_lean(S))".replace("G_lean(S)", "JSON.parse(JSON.stringify(S, (k, v) => (k.startsWith('ui_') ? undefined : v)))")), "the tick is the window's state, not the dial's");
+// Colours: every coloured part in one list
+const listed = await page.$$eval(".colourlist .row label", (l) => l.map((x) => x.textContent));
+check(listed.length === await S("S.rings.length + 4 + [S.da_on, ...S.windows.map((w) => w.on)].filter(Boolean).length") && listed.join().includes("Hour hand,Minute hand,Seconds hand,Cap"), `Colours lists every ring, the hands, the cap and the windows that are on (${listed.join(" · ")})`);
+await page.click("#colour-hand-second");
+check(await page.textContent("#colour-pop h2") === "Seconds hand", "a swatch in the list opens the pop-out for that part");
+await page.click("#pop-as-HEX"); await page.fill("#pop-hex", "#39FF14"); await page.press("#pop-hex", "Enter");
+check(JSON.stringify(await S("S.ha_second.c.slice(0, 3).map((v) => Math.round(v * 255))")) === "[57,255,20]", "and sets its colour");
+await page.fill("#pop-hex", "#CC381A"); await page.press("#pop-hex", "Enter");
+await page.click("#pop-close");
+// a band's sectors, one colour each
+await tab("Rings");
+await page.click("#add-band");
+check(await page.isHidden("#sectors-same"), "a band of one piece has no sector colours");
+await page.fill("#ring-count-Count", "6"); await page.press("#ring-count-Count", "Enter");
+await page.fill("#ring-width-Band-width", "4"); await page.press("#ring-width-Band-width", "Enter").catch(() => {});
+await frame();
+const band = await S("S.ui_ring");
+check(await page.$$eval(".form .colourlist .swatch", (b) => b.length) === 6, "six sectors: Sector colours shows six swatches");
+await page.click(`#colour-ring-${band}-sector-1`);
+check((await page.textContent("#colour-pop h2")).endsWith("sector 2"), "the second one opens the pop-out as “… · sector 2”");
+await page.fill("#pop-hex", "#0E2A47"); await page.press("#pop-hex", "Enter");
+await page.click(`#colour-ring-${band}-sector-3`);
+await page.fill("#pop-hex", "#0E2A47"); await page.press("#pop-hex", "Enter");
+await frame();
+const parts = await S(`t.items.filter((i) => i.role === 'ring' && i.index === ${band}).map((i) => [i.part, Math.round(i.fill[2] * 255)])`);
+check(JSON.stringify(await S(`Object.keys(S.rings[${band}].cs)`)) === '["1","3"]' && parts.length === 2 && parts.some((p) => p[1] === 71), `two sectors navy: the band is drawn as two shapes, one per colour (${JSON.stringify(parts)})`);
+await shot("4e-sectors");
+await tab("Dial");
+check(await page.$$eval(`.colourlist .swatch[id^="colour-ring-${band}-sector"]`, (b) => b.length) === 6, "Dial → Colours shows the band's six sectors too");
+await tab("Rings");
+await page.click("#sectors-same");
+await frame();
+check(await S(`Object.keys(S.rings[${band}].cs).length === 0 && t.items.filter((i) => i.role === 'ring' && i.index === ${band}).length === 1`), "All as the ring: one colour, one shape again");
+await page.click("#ring-delete");
+await tab("Dial");
 // a line before and after every row: white on the scrolling grey, that grey on paper
 const row_line = await page.$eval(".form .row.num", (e) => getComputedStyle(e).boxShadow);
 check(row_line.split("rgb(255, 255, 255)").length === 3, "every row has a white hairline before and after it, on the grey");
@@ -654,9 +704,9 @@ await frame();
 const narrow = await page.evaluate(() => ({ wide: document.documentElement.scrollWidth, eye: document.querySelector(".form button.fold .eye").getBoundingClientRect().left, bar: document.querySelector(".bar").getBoundingClientRect().top }));
 check(narrow.wide <= 390 && narrow.eye >= 0 && narrow.bar === 0, "a phone: nothing wider than the screen, the eyes in view, the bar on top");
 await shot("11-phone");
-await page.click('.form .fold >> nth=0');
+await page.click('.form .fold:visible >> nth=0');
 await shot("11b-phone-folded");
-await page.click('.form .fold >> nth=0');
+await page.click('.form .fold:visible >> nth=0');
 await page.setViewportSize({ width: 1440, height: 900 });
 
 await browser.close();

@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.5";
+export const VERSION = "beta 4.6";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -62,6 +62,7 @@ export const RING_BASE = {
   labels: 0, custom: "", num_from: 0.0, num_step: 5.0, num_digits: 0, mode: 0, size: 2.4, nudge: {},
   family: "Helvetica Neue", ps: "HelveticaNeue", tracking: 0.0, lang: 0, axes: {}, features: {},
   width: 1.0, fill: 100.0,
+  cs: {},                                          // a band's sectors with a colour of their own: position → RGBA. Empty = all in the ring's colour (beta 4.6)
 };
 export const TYPE_KEYS = ["family", "ps", "size", "tracking", "lang", "axes", "features"];
 
@@ -94,6 +95,7 @@ export const DEFAULTS = {
   out_production: false, out_mirror: false, out_live_text: false,
   out_dpi: 600.0, out_seconds: 4.0, out_fps: 30.0, out_px: 1080,
   ui_section: 0, ui_ring: 0, ui_hand: 0, ui_preview: 0, ui_window: 0,
+  ui_scale: false,                                 // changing the diameter scales everything on the dial with it (the window's state: not in a link)
   // guides: preview only, never in a file (R5). Five kinds, each with an eye (shown or not) and a colour:
   // a place in GUIDE_COLOURS (R9: a number, never the colour itself). One thickness (screen points) for all;
   // the selected ring's lines are half as thick again. (beta 4.5, 12 Oct 2026)
@@ -110,7 +112,7 @@ export const GUIDE_COLOURS = ["#FF2D95", "#00E5FF", "#39FF14", "#FFE600", "#FF6A
 /** the five kinds of guide: [key of its eye, key of its colour, name]. */
 export const GUIDE_KINDS = [["gd_edge", "gd_k_edge", "Dial edge"], ["gd_axes", "gd_k_axes", "Centre lines"], ["gd_win", "gd_k_win", "Window radii"],
   ["gd_rings", "gd_k_rings", "Ring edges"], ["gd_sel", "gd_k_sel", "Selected ring"]];
-export const NOT_GEOMETRY = ["t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview"];
+export const NOT_GEOMETRY = ["t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale"];
 export const NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_"];
 
 /** base values + d's values (deep copies), names turned into popup indexes. */
@@ -593,7 +595,7 @@ function memo(key, build) {
 export const forget = () => _memo.clear();
 
 /** a settings object as text, without colour and name. */
-function key_of(d, skip = ["c", "name"]) {
+function key_of(d, skip = ["c", "cs", "name"]) {
   const k = {};
   for (const a of Object.keys(d).sort()) if (!skip.includes(a)) k[a] = d[a];
   return JSON.stringify(k);
@@ -718,6 +720,12 @@ export function ring_angles(ring) {
   const step = kind_of(ring) === "band" || span >= 360 ? span / n : (n > 1 ? span / (n - 1) : 0);
   return Array.from({ length: n }, (_, i) => ring.start + i * step);
 }
+
+/** the positions a ring uses, by number: for a band, its sectors. */
+export const positions_of = (ring) => ring_angles(ring).map((_, i) => i).filter((i) => picked(ring, i));
+
+/** the colour of a band's sector at position i: its own, or the ring's. */
+export const sector_colour = (ring, i) => (ring.cs && ring.cs[String(i)]) || ring.c;
 
 /** the every / offset / skip-those-instead pattern. */
 function picked(ring, i) {
@@ -966,7 +974,18 @@ function build_rings(S, cut = null) {
       return out;
     };
     const key = "final" + key_of(ring) + JSON.stringify([keep, sources.map((d) => [key_of(d.ring), d.keep]), cut ? date_key(S) : null]);
-    done.push({ ring, kind, keep, taken, shape, at, parts, path: memo(key, final) });
+    const d = { ring, kind, keep, taken, shape, at, parts, path: memo(key, final) };
+    // a band whose sectors have colours of their own is drawn as one shape per colour: the sectors of that
+    // colour, cut like the whole ring. Which sectors go together is remembered, not which colour they have.
+    if (kind === "band" && at.some((i) => ring.cs && ring.cs[String(i)])) {
+      const groups = new Map();
+      at.forEach((i, j) => { const c = JSON.stringify(sector_colour(ring, i)); groups.set(c, [...(groups.get(c) || []), j]); });
+      d.tints = [...groups.values()].map((js) => ({
+        at: at[js[0]],                             // one of its sectors: where its colour is read
+        path: memo("tint" + key + JSON.stringify(js), () => merge(js.map((j) => parts[j])).intersection(d.path)),
+      }));
+    }
+    done.push(d);
   }
   return done;
 }
@@ -1141,7 +1160,10 @@ export function scene(S, statik, t, preview = true, selected = null) {
       add("date number", x.number, x.w.ink, { window: x.index });
     }
     add("plate", statik.plate, S.c_plate);
-    for (const d of rings) add("ring", d.path, d.ring.c, { ring: d, index: index(d) });
+    for (const d of rings) {
+      if (d.tints) d.tints.forEach((tint, n) => add("ring", tint.path, sector_colour(d.ring, tint.at), { ring: d, index: index(d), part: n + 1 }));
+      else add("ring", d.path, d.ring.c, { ring: d, index: index(d) });
+    }
     for (const x of windows) add("date frame", x.frame, x.w.ink, { window: x.index });
     if (S.ha_on) {
       for (const [name, colour, path, a] of hand_items(S, t)) add("hand", path, colour, { name, angle: a });
@@ -1177,6 +1199,31 @@ export function scene(S, statik, t, preview = true, selected = null) {
 
 /** a copy of an upright shape, turned to a clock angle (R2). */
 export const turned = (path, angle) => path.copy().rotate(-angle);
+
+/** everything on the dial that is measured in mm — what "scale everything with the diameter" changes. Not angles,
+ *  counts, percentages or the page margin; and not the diameter itself, which the caller sets.
+ *  measures(S) → the values, in a fixed order; set_measures(S, values) puts a list of the same length back. */
+const RING_MM = ["r", "len", "w", "width", "clear", "round_out", "round_in", "wall", "size", "twelve_gap"];
+const HAND_MM = ["len", "w", "tail", "tip", "feature", "counter", "wall", "round"];
+const WINDOW_MM = ["r", "w", "h", "round", "frame", "clear"];
+function each_measure(S, visit) {
+  for (const ring of S.rings) {
+    for (const key of RING_MM) visit(ring, key);
+    for (const at of Object.keys(ring.nudge).sort()) if (ring.nudge[at].dr) visit(ring.nudge[at], "dr");      // a numeral's own radius ±
+  }
+  for (const h of HANDS) for (const key of HAND_MM) visit(S["ha_" + h], key);
+  for (const w of windows_of(S)) for (const key of WINDOW_MM) visit(w, key);
+  visit(S, "ha_cap");
+}
+export function measures(S) {
+  const out = [];
+  each_measure(S, (d, key) => out.push(d[key]));
+  return out;
+}
+export function set_measures(S, values) {
+  let i = 0;
+  each_measure(S, (d, key) => { d[key] = values[i++]; });
+}
 
 /** the page's side in mm: the dial and its margins. */
 export const page_mm = (S) => S.dial_d + 2 * S.margin;

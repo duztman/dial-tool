@@ -134,8 +134,11 @@ const ROWS = {
   Dial: [
     hdr("Dial"),                                   // the plate: how big, what colour, what is on it
     num("dial_d", "Diameter", 15, 50, 0.1),
+    chk("ui_scale", "Scale everything on the dial with it"),
     col("c_plate", "Plate"),
     custom("background"),
+    hdr("Colours"),                                // every coloured part on the plate, in one list; a band's sectors one by one
+    custom("colours"),
     hdr("Page"),                                   // around the dial: preview and page only
     num("margin", "Page margin", 0, 10, 0.5),
     col("c_backdrop", "Backdrop"),
@@ -148,6 +151,8 @@ const ROWS = {
     col("c", "Colour", { pin: true }),
     num("r", "Outer radius", 0, 25, 0.05, { pin: true, show: kind_in("ticks", "markers", "band") }),
     num("r", "Centre radius", 0, 25, 0.05, { pin: true, show: kind_in("numerals") }),
+    hdr("Sector colours", { show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
+    custom("sectors", { show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
     hdr("Positions"),
     num("count", "Count", 1, 360, 1, { whole: true }),
     num("start", "Start °", -180, 180, 0.5),
@@ -402,9 +407,11 @@ class DialTool {
   set_value(scope, key, value) {
     const T = this.target(scope);
     if (JSON.stringify(T[key]) === JSON.stringify(value)) return;
+    // the diameter, with "scale everything" ticked: every measure on the dial grows or shrinks by the same factor
+    if (scope === "global" && key === "dial_d" && this.S.ui_scale && T.dial_d > 0 && value > 0) this.scale_with(T.dial_d, value);
     T[key] = value;
     if (scope === "ring") {
-      if (!["c", "name"].includes(key)) this.static_dirty = true;
+      if (!["c", "name"].includes(key)) this.static_dirty = true;      // (cs too: which sectors share a colour decides the shapes)
       if (key === "kind" || key === "name" || key === "on") this.fill_ring_list();
     } else if (scope === "window") {
       if (key !== "ink") this.static_dirty = true;
@@ -419,6 +426,17 @@ class DialTool {
     }
     this.sync_rows();
     this.render();
+  }
+
+  /** the diameter goes from one value to another and everything on the dial goes with it. The measures are always
+   *  worked out from where a run of changes began (this.scale_from), not from the last step, so dragging the slider
+   *  up and back lands exactly on the first values. Anything else edited in between starts a new run. */
+  scale_with(from, to) {
+    const S = this.S, now = JSON.stringify(G.measures(S));
+    if (!this.scale_from || this.scale_from.now !== now) this.scale_from = { d: from, base: G.measures(S) };
+    const run = this.scale_from;
+    G.set_measures(S, run.base.map((v) => +(v * to / run.d).toFixed(6)));
+    run.now = JSON.stringify(G.measures(S));
   }
 
   // ── building the window ──────────────────────────────────
@@ -755,7 +773,7 @@ class DialTool {
     }
 
     if (row.kind === "col") {                      // a swatch (opens the colour pop-out beside it) · the value, which can be typed
-      const swatch = el("button", { type: "button", className: "swatch", id, title: "Choose a colour", onclick: () => this.pop_open(row, swatch) });
+      const swatch = el("button", { type: "button", className: "swatch", id, title: "Choose a colour", onclick: () => this.pop_open(this.colour_of_row(row), swatch) });
       const hex = el("input", { type: "text", className: "hex", id: id + "-hex", spellcheck: false, maxLength: 7, ariaLabel: row.text + ", as #RRGGBB" });
       const now = () => this.target(row.scope)[row.key];
       hex.onchange = () => { const value = parse_hex(hex.value); if (value) set(from_hex(value, now()[3] ?? 1)); hex.value = to_hex(now()).toUpperCase(); };
@@ -791,8 +809,8 @@ class DialTool {
     try { this.palette = JSON.parse(localStorage.getItem(PALETTE_KEY)); } catch (e) { /* not kept */ }
     if (!Array.isArray(this.palette)) this.palette = PALETTE.slice();
     this.colour_mode = "HEX";
-    const now = () => this.target(P.at.scope)[P.at.key];
-    const put = (rgb) => this.set_value(P.at.scope, P.at.key, rgb.map((v) => +clamp(v, 0, 1).toFixed(4)).concat([now()[3] ?? 1]));
+    const put = (rgb) => P.at.write(rgb.map((v) => +clamp(v, 0, 1).toFixed(4)).concat([P.at.read()[3] ?? 1]));
+    P.put = put;
     P.pick = (hex) => put(from_hex(hex).slice(0, 3));
     P.title = el("h2");
     const wide = el("button", { type: "button", className: "sign", id: "pop-wide", title: "Over the whole preview, and back", ariaLabel: "Over the whole preview, and back", onclick: () => this.pop_wide(!P.wide) });
@@ -842,16 +860,32 @@ class DialTool {
     P.el.style.top = `${clamp(y, 0, Math.max(0, innerHeight - r.height))}px`;
   }
 
-  /** a swatch was pressed: open beside it; pressed again: close. */
-  pop_open(row, swatch) {
+  /** a row's colour, as the pop-out wants it: read it, write it, say whose it is ("Numerals · Colour", "Plate").
+   *  It follows the scope, so with a ring's colour open, selecting another ring shows that ring's. */
+  colour_of_row(row) {
+    return {
+      read: () => { const T = this.target(row.scope); return T ? T[row.key] : null; },
+      write: (value) => this.set_value(row.scope, row.key, value),
+      label: () => {
+        const S = this.S, scope = row.scope;
+        const whose = scope === "ring" ? this.ring().name || G.kind_of(this.ring()) : scope === "hand" ? ["Hour hand", "Minute hand", "Seconds hand"][S.ui_hand] : scope === "window" ? `Window ${S.ui_window + 1}` : "";
+        return whose ? `${whose} · ${row.text}` : row.text;
+      },
+    };
+  }
+
+  /** a swatch was pressed: open beside it; pressed again: close. colour = {read(), write(rgba), label()}.
+   *  beside = what it opens at the right of: the swatch, or the row of swatches it is in, so its neighbours stay in reach. */
+  pop_open(colour, swatch, beside = swatch) {
     const P = this.pop;
     if (P.at && P.at.swatch === swatch) return this.pop_close();
-    P.at = { scope: row.scope, key: row.key, text: row.text, swatch };
+    if (P.at) P.at.swatch.setAttribute("aria-expanded", "false");
+    P.at = { ...colour, swatch };
+    swatch.setAttribute("aria-expanded", "true");
     P.el.hidden = false;
     this.pop_wide(false);
     this.sync_rows();
-    const r = swatch.getBoundingClientRect();
-    this.pop_place(r.right + POP_GAP, r.top - POP_GAP);
+    this.pop_place(beside.getBoundingClientRect().right + POP_GAP, swatch.getBoundingClientRect().top - POP_GAP);
   }
 
   pop_close() {
@@ -880,16 +914,9 @@ class DialTool {
     Object.assign(P.el.style, { left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px` });
   }
 
-  /** whose colour it is: "Numerals · Colour", "Hour hand · Colour", "Plate". */
-  pop_name() {
-    const at = this.pop.at, S = this.S;
-    const whose = at.scope === "ring" ? this.ring().name || G.kind_of(this.ring()) : at.scope === "hand" ? ["Hour hand", "Minute hand", "Seconds hand"][S.ui_hand] : at.scope === "window" ? `Window ${S.ui_window + 1}` : "";
-    return whose ? `${whose} · ${at.text}` : at.text;
-  }
-
   /** the values as the line shows them, to copy: #RRGGBB · 255, 128, 0 · 0, 50, 100, 0 */
   pop_text() {
-    const rgb = this.target(this.pop.at.scope)[this.pop.at.key].slice(0, 3), mode = this.colour_mode;
+    const rgb = this.pop.at.read().slice(0, 3), mode = this.colour_mode;
     return mode === "HEX" ? to_hex(rgb).toUpperCase() : (mode === "RGB" ? rgb.map((v) => Math.round(v * 255)) : rgb_cmyk(rgb).map((v) => Math.round(v * 100))).join(", ");
   }
 
@@ -897,14 +924,14 @@ class DialTool {
   pop_refresh() {
     const P = this.pop;
     if (!P || !P.at) return;
-    const T = this.target(P.at.scope), S = this.S;
-    if (!T || !Array.isArray(T[P.at.key]) || !P.at.swatch.isConnected) return this.pop_close();
-    const rgb = T[P.at.key].slice(0, 3), value = to_hex(rgb).toUpperCase();
-    P.title.textContent = this.pop_name();
+    const S = this.S, colour = P.at.swatch.isConnected ? P.at.read() : null;
+    if (!Array.isArray(colour)) return this.pop_close();      // its swatch is gone (another section, a ring deleted)
+    const rgb = colour.slice(0, 3), value = to_hex(rgb).toUpperCase();
+    P.title.textContent = P.at.label();
     const put = (c) => P.pick(c);
     const chip = (c) => { const b = el("button", { type: "button", title: c, ariaLabel: c, onclick: () => put(c) }); b.style.background = c; b.dataset.colour = c; return b; };
     // this dial's colours: every part that has one, each colour once
-    const all = [S.c_plate, S.c_backdrop, S.c_cap, ...S.rings.map((r) => r.c), ...G.HANDS.map((h) => S["ha_" + h].c), ...G.windows_of(S).filter((w) => w.on).map((w) => w.ink)];
+    const all = [S.c_plate, S.c_backdrop, S.c_cap, ...S.rings.flatMap((r) => [r.c, ...Object.values(r.cs || {})]), ...G.HANDS.map((h) => S["ha_" + h].c), ...G.windows_of(S).filter((w) => w.on).map((w) => w.ink)];
     const used = [...new Set(all.map((c) => to_hex(c).toUpperCase()))];
     if (P.used !== used.join()) { P.used = used.join(); P.used_chips.replaceChildren(...used.map(chip)); }
     // the palette, then its + (or −, when the colour in hand is already in it)
@@ -912,7 +939,7 @@ class DialTool {
     if (P.listed !== list) {
       P.listed = list;
       const change = el("button", { type: "button", className: "add", id: "pop-add", textContent: kept ? "−" : "+", title: kept ? "Take this colour out of the palette" : "Add this colour to the palette", onclick: () => {
-        const now = to_hex(this.target(P.at.scope)[P.at.key]).toUpperCase();
+        const now = to_hex(P.at.read()).toUpperCase();
         this.palette = this.palette.includes(now) ? this.palette.filter((c) => c !== now) : [...this.palette, now];
         try { localStorage.setItem(PALETTE_KEY, JSON.stringify(this.palette)); } catch (e) { /* not kept */ }
         this.pop_refresh();
@@ -939,7 +966,7 @@ class DialTool {
         if (mode === "HEX") { const hex = parse_hex(fields[0].value); if (hex) P.pick(hex); else this.pop_refresh(); return; }
         const all = fields.map((x) => parseFloat(x.value) || 0);
         const next = mode === "RGB" ? all.map((v) => v / 255) : cmyk_rgb(all.map((v) => v / 100));
-        this.set_value(P.at.scope, P.at.key, next.map((v) => +clamp(v, 0, 1).toFixed(4)).concat([this.target(P.at.scope)[P.at.key][3] ?? 1]));
+        P.put(next);
         this.pop_refresh();
       };
       P.numbers.replaceChildren(...(mode === "HEX" ? ["hex"] : [...mode]).map((letter, i) => {
@@ -953,6 +980,70 @@ class DialTool {
   }
 
   // ── rows built by hand ───────────────────────────────────
+
+  // ── colours in lists: small swatches, each opening the pop-out ──
+
+  /** a setting changed outside set_value (a colour in a list): show it. shapes = the dial's shapes changed too. */
+  changed(shapes = false) {
+    if (shapes) this.static_dirty = true;
+    this.sync_rows();
+    this.render();
+  }
+
+  /** a band's sectors as colours: [{id, title, read, write}], one per position it uses. */
+  sector_colours(i) {
+    const ring = this.S.rings[i], name = ring.name || G.kind_of(ring);
+    return G.positions_of(ring).map((at, n) => ({
+      id: `ring-${i}-sector-${at}`, title: `${name} · sector ${n + 1}`,
+      read: () => { const R = this.S.rings[i]; return R ? G.sector_colour(R, at) : null; },
+      write: (value) => { const R = this.S.rings[i]; R.cs = { ...R.cs, [at]: value }; this.changed(true); },
+    }));
+  }
+
+  /** lines of swatches inside a holder: lines() → [{text, colours: [{id, title, read, write}]}]. Built again only
+   *  when the list itself changes (a ring added, renamed, a sector more), so an open pop-out keeps its swatch. */
+  swatch_lines(holder, lines) {
+    const list = lines(), signature = JSON.stringify(list.map((l) => [l.text, l.colours.map((c) => c.id)]));
+    if (holder.dataset.list !== signature) {
+      holder.dataset.list = signature;
+      holder.replaceChildren(...list.map((line) => {
+        const group = el("span", { className: "swatches" });
+        for (const c of line.colours) {
+          const swatch = el("button", { type: "button", className: "swatch", id: "colour-" + c.id, title: c.title });
+          swatch.onclick = () => this.pop_open({ read: c.read, write: c.write, label: () => c.title }, swatch, group);
+          group.append(swatch);
+        }
+        return el("div", { className: "row" }, el("label", { textContent: line.text }), group);
+      }));
+    }
+    const all = list.flatMap((l) => l.colours);
+    [...holder.querySelectorAll(".swatch")].forEach((swatch, k) => { swatch.style.background = to_hex(all[k].read()).toUpperCase(); });
+  }
+
+  /** Dial → Colours: every coloured part on the plate. Rings top first, a band's sectors one by one; hands, cap, windows. */
+  row_colours(wrap, out) {
+    wrap.className = "colourlist";
+    const one = (id, title, read, write) => [{ id, title, read, write }];
+    out.refresh = () => this.swatch_lines(wrap, () => {
+      const S = this.S, lines = [];
+      S.rings.forEach((ring, i) => {
+        const text = ring.name || G.kind_of(ring), sectors = G.kind_of(ring) === "band" && G.positions_of(ring).length > 1;
+        lines.push({ text, colours: sectors ? this.sector_colours(i) : one(`ring-${i}`, text, () => (this.S.rings[i] || {}).c, (v) => { this.S.rings[i].c = v; this.changed(); }) });
+      });
+      G.HANDS.forEach((h, k) => { const text = ["Hour hand", "Minute hand", "Seconds hand"][k]; lines.push({ text, colours: one("hand-" + h, text, () => this.S["ha_" + h].c, (v) => { this.S["ha_" + h].c = v; this.changed(); }) }); });
+      lines.push({ text: "Cap", colours: one("cap", "Cap", () => this.S.c_cap, (v) => { this.S.c_cap = v; this.changed(); }) });
+      G.windows_of(S).forEach((w, k) => { if (w.on) lines.push({ text: `Window ${k + 1}`, colours: one("window-" + k, `Window ${k + 1}`, () => G.windows_of(this.S)[k].ink, (v) => { G.windows_of(this.S)[k].ink = v; this.changed(); }) }); });
+      return lines;
+    });
+  }
+
+  /** Rings → Sector colours (a band with more than one sector): a swatch per sector, and all back to the ring's colour. */
+  row_sectors(wrap, out) {
+    wrap.className = "colourlist";
+    const lines = el("div"), same = el("button", { type: "button", className: "btn", id: "sectors-same", textContent: "All as the ring", title: "Every sector in the ring’s colour again", onclick: () => this.set_value("ring", "cs", {}) });
+    wrap.append(lines, el("div", { className: "row" }, el("span"), el("span", { className: "tools" }, same)));
+    out.refresh = () => this.swatch_lines(lines, () => [{ text: "Sectors", colours: this.sector_colours(this.S.ui_ring) }]);
+  }
 
   /** the plate's background: only the button for now (Okay, 12 Oct 2026: "no background image functionality now. Just the button"). */
   row_background(wrap) {

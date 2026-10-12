@@ -1,7 +1,7 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **done** · **parked**.
-*Last updated 12 Oct 2026 (beta 4.5: #70–#75; #32 moved to the web version). Before: 11 Oct 2026 (web version: #49–#56; MP4 fix: #48). Before: 4 Oct 2026 (beta 2.3: preview plan built, #37–#41 were waiting for the Mac check, `docs/preview.md` §6 — set aside by Okay the same day, see #40). Seen working on Okay's Mac 4 Oct (beta 2.1 screenshot): window, sections, ring list, ring settings list, regular-size controls, live popups, type per numerals ring with feature names.*
+*Last updated 12 Oct 2026 (beta 4.6: #70, #71 built; beta 4.5: #70–#75; #32 moved to the web version). Before: 11 Oct 2026 (web version: #49–#56; MP4 fix: #48). Before: 4 Oct 2026 (beta 2.3: preview plan built, #37–#41 were waiting for the Mac check, `docs/preview.md` §6 — set aside by Okay the same day, see #40). Seen working on Okay's Mac 4 Oct (beta 2.1 screenshot): window, sections, ring list, ring settings list, regular-size controls, live popups, type per numerals ring with feature names.*
 
 ## Verify on a Mac
 
@@ -52,7 +52,7 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 44 | Canvas: show the page edge (dial + margin)? The canvas fills the whole preview with the backdrop; the PDF preview shows the page. Ask Okay after the Mac check | open |
 | 32 | Scale the whole dial (rings, hands, date) when the diameter changes, or a "scale everything" action (brief §5.7) | → web version, #70 |
 
-## Web version (beta 4.5, 12 Oct 2026)
+## Web version (beta 4.6, 12 Oct 2026)
 
 | # | Item | Status |
 |---|---|---|
@@ -74,8 +74,8 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 67 | **Beta 4.4 on Okay's devices**: sliders (disc 18, track 4 — say bigger or smaller), square tick boxes, panes sliding, the paper-light cards and log on the grey, pane headings at 13. **Open the PDF in Illustrator: does each part arrive as a named layer?** (Layers are written as PDF "optional content"; read back here with MuPDF and qpdf only.) Place the PNG in InDesign: true size? | verify |
 | 68 | File names: `dial-30mm-2026-10-12.pdf` (diameter and day; a mask says `-mask`, `-mirrored`). Asked Okay, 12 Oct: this, or a name field for the dial? No answer yet | open |
 | 69 | Review, 12 Oct, found and not done: split `web/src/app.js` (one class, 1,800 lines; the colour picker alone is 85 lines inside `build_row`); scrollbars that take room (macOS "Show scroll bars: always") would make the scrolling rows about 15 narrower than the pinned ones — not reproduced here, ask Okay what his Mac is set to; `main` has no `web/` though the tool is online from `gh-pages` | open |
-| 70 | **Scale the contents with the diameter** (step 2): a toggle under Diameter, off by default. On: every mm value follows (radii, widths, lengths, type size, windows, clearances); angles and counts don't. Scale from the values at the start of the drag, so repeated dragging doesn't drift. Okay, 12 Oct: "Size change needs (scale innards as well) toggle" | open — next |
-| 71 | **A colour per sector** of a band ring (step 2), and a **Colours pane** on Dial listing every coloured part. A new ring key; empty = the ring's colour, so old links draw as before (R31). Okay, 12 Oct: "pies, rings. All get individual color controls" → "Each sector its own" | open — next |
+| 70 | **Scale the contents with the diameter** (step 2): a toggle under Diameter, off by default. On: every mm value follows (radii, widths, lengths, type size, windows, clearances); angles and counts don't. Scale from the values at the start of the drag, so repeated dragging doesn't drift. Okay, 12 Oct: "Size change needs (scale innards as well) toggle". Built in beta 4.6: look at it on Okay's devices; is the list of what scales right (the page margin doesn't)? | verify |
+| 71 | **A colour per sector** of a band ring (step 2), and a **Colours pane** on Dial listing every coloured part. A new ring key; empty = the ring's colour, so old links draw as before (R31). Okay, 12 Oct: "pies, rings. All get individual color controls" → "Each sector its own". Built in beta 4.6 (`cs`, Sector colours in Rings, Colours in Dial): look at it; open the PDF and SVG of a two-colour band in Illustrator | verify |
 | 72 | **Logo** (step 3): an SVG placed on the dial with the mouse; it is also a ring, edited in Rings "differently"; a link from the Dial pane goes to it. Its file's content travels in the settings (see #50). Ask Okay before building: its colours (he first wanted an SVG's colours adjustable), scale and rotation, whether a link can carry it | open |
 | 73 | **Background image** on the plate: only the button exists (Dial pane, says "Not built yet"). When built: PNG, scale · rotate · move · opacity, *Include in export*; not in a link; R4 needs an exception. Okay, 12 Oct: "No background image functionality now. Just the button" | parked by Okay |
 | 74 | **Beta 4.5 on Okay's Mac and iPad**: row lines (white on grey — enough contrast?); the Guides switch on the preview and its list; the eight guide colours at full strength on his dials; the colour pop-out: where it opens, dragging, widening, the field and strip under a finger, the one line of values. Ask: are the palette's ten his ten? Should the palette's − be there? | verify |

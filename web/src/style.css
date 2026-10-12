@@ -229,7 +229,7 @@
   .row.num > input[type="range"] { grid-column: span 2; }
   .row.num input[type="text"] { text-align: right; }
   .row > label:first-child { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .row > :is(select, .segs, .colour, .tools, .picks), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
+  .row > :is(select, .segs, .colour, .tools, .picks, .swatches), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
   .row > :is(.check, .wide), .row.note > .quiet { grid-column: 1 / -1; }      /* a tick and its words start at the left edge */
   .row > span:first-child:empty { display: none; }
   .row.note { min-height: 0; }
@@ -247,6 +247,10 @@
   .colour .hex { grid-column: span 2; }
   .swatch { height: var(--control); border: var(--hair) solid var(--rule); box-shadow: inset 0 0 0 2px var(--field); }
   .swatch:hover, .swatch:active { box-shadow: inset 0 0 0 1px var(--field); }
+  /* colours in a list (Dial → Colours, a band's sectors): square swatches in a row that wraps */
+  .swatches { display: flex; flex-wrap: wrap; gap: var(--chip-gap); padding: var(--chip-gap) 0; }
+  .swatches .swatch { flex: none; width: var(--control); }
+  .swatch[aria-expanded="true"] { outline: var(--thick) solid var(--ink); outline-offset: 1px; }
 
   /* the colour pop-out: one for the whole tool, at the right of the swatch that opened it. Paper, one ink line round it.
      Its head drags it. Rows of colours: a name, then the chips. Then the field of one hue and the strip of hues, tall

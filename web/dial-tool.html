@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.5 · built 2026-10-12 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.6 · built 2026-10-12 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz) and the stand-in font (Inter, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet.
@@ -238,7 +238,7 @@
   .row.num > input[type="range"] { grid-column: span 2; }
   .row.num input[type="text"] { text-align: right; }
   .row > label:first-child { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .row > :is(select, .segs, .colour, .tools, .picks), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
+  .row > :is(select, .segs, .colour, .tools, .picks, .swatches), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
   .row > :is(.check, .wide), .row.note > .quiet { grid-column: 1 / -1; }      /* a tick and its words start at the left edge */
   .row > span:first-child:empty { display: none; }
   .row.note { min-height: 0; }
@@ -256,6 +256,10 @@
   .colour .hex { grid-column: span 2; }
   .swatch { height: var(--control); border: var(--hair) solid var(--rule); box-shadow: inset 0 0 0 2px var(--field); }
   .swatch:hover, .swatch:active { box-shadow: inset 0 0 0 1px var(--field); }
+  /* colours in a list (Dial → Colours, a band's sectors): square swatches in a row that wraps */
+  .swatches { display: flex; flex-wrap: wrap; gap: var(--chip-gap); padding: var(--chip-gap) 0; }
+  .swatches .swatch { flex: none; width: var(--control); }
+  .swatch[aria-expanded="true"] { outline: var(--thick) solid var(--ink); outline-offset: 1px; }
 
   /* the colour pop-out: one for the whole tool, at the right of the swatch that opened it. Paper, one ink line round it.
      Its head drags it. Rows of colours: a name, then the chips. Then the field of one hue and the strip of hues, tall
@@ -4836,7 +4840,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.5";
+var VERSION = "beta 4.6";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -4911,7 +4915,9 @@ var RING_BASE = {
   axes: {},
   features: {},
   width: 1,
-  fill: 100
+  fill: 100,
+  cs: {}
+  // a band's sectors with a colour of their own: position → RGBA. Empty = all in the ring's colour (beta 4.6)
 };
 var TYPE_KEYS = ["family", "ps", "size", "tracking", "lang", "axes", "features"];
 var HAND_BASE = {
@@ -5007,6 +5013,8 @@ var DEFAULTS = {
   ui_hand: 0,
   ui_preview: 0,
   ui_window: 0,
+  ui_scale: false,
+  // changing the diameter scales everything on the dial with it (the window's state: not in a link)
   // guides: preview only, never in a file (R5). Five kinds, each with an eye (shown or not) and a colour:
   // a place in GUIDE_COLOURS (R9: a number, never the colour itself). One thickness (screen points) for all;
   // the selected ring's lines are half as thick again. (beta 4.5, 12 Oct 2026)
@@ -5037,7 +5045,7 @@ var GUIDE_KINDS = [
   ["gd_rings", "gd_k_rings", "Ring edges"],
   ["gd_sel", "gd_k_sel", "Selected ring"]
 ];
-var NOT_GEOMETRY = ["t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview"];
+var NOT_GEOMETRY = ["t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale"];
 var NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_"];
 function complete(base, d) {
   const out = Object.assign(clone(base), clone(d || {}));
@@ -5635,7 +5643,7 @@ function memo(key, build) {
   return _memo.get(key);
 }
 var forget = () => _memo.clear();
-function key_of(d, skip = ["c", "name"]) {
+function key_of(d, skip = ["c", "cs", "name"]) {
   const k = {};
   for (const a of Object.keys(d).sort()) if (!skip.includes(a)) k[a] = d[a];
   return JSON.stringify(k);
@@ -5736,6 +5744,8 @@ function ring_angles(ring) {
   const step = kind_of(ring) === "band" || span >= 360 ? span / n : n > 1 ? span / (n - 1) : 0;
   return Array.from({ length: n }, (_, i) => ring.start + i * step);
 }
+var positions_of = (ring) => ring_angles(ring).map((_, i) => i).filter((i) => picked(ring, i));
+var sector_colour = (ring, i) => ring.cs && ring.cs[String(i)] || ring.c;
 function picked(ring, i) {
   const every = max(parseInt(ring.every) || 1, 1);
   const hit = ((i - (parseInt(ring.offset) || 0)) % every + every) % every === 0;
@@ -5939,22 +5949,35 @@ function build_rings(S, cut = null) {
     let keep = angles.map((_, i) => i).filter((i) => picked(ring, i));
     if (kind === "markers" || kind === "numerals") keep = keep.filter((i) => !holes.some((a) => near(angles[i], a)));
     if (ring.skip) {
-      const taken2 = done.filter((d) => FROM_KINDS[ring.skip].includes(d.kind)).flatMap((d) => d.taken);
+      const taken2 = done.filter((d2) => FROM_KINDS[ring.skip].includes(d2.kind)).flatMap((d2) => d2.taken);
       keep = keep.filter((i) => !taken2.some((a) => near(angles[i], a, 0.01)));
     }
     const [shape2, taken, at, parts] = ring_shapes(ring, keep);
-    const sources = done.filter((d) => FROM_KINDS[ring.knock].includes(d.kind));
+    const sources = done.filter((d2) => FROM_KINDS[ring.knock].includes(d2.kind));
     const final = () => {
       let out = shape2;
       if (sources.length && !empty(out)) {
-        const cutter = merge(sources.map((d) => ring_shapes(d.ring, d.keep, ring.clear, true)[0]));
+        const cutter = merge(sources.map((d2) => ring_shapes(d2.ring, d2.keep, ring.clear, true)[0]));
         if (!empty(cutter)) out = out.difference(cutter.removeOverlap());
       }
       if (cut && !empty(out)) out = out.difference(cut);
       return out;
     };
-    const key = "final" + key_of(ring) + JSON.stringify([keep, sources.map((d) => [key_of(d.ring), d.keep]), cut ? date_key(S) : null]);
-    done.push({ ring, kind, keep, taken, shape: shape2, at, parts, path: memo(key, final) });
+    const key = "final" + key_of(ring) + JSON.stringify([keep, sources.map((d2) => [key_of(d2.ring), d2.keep]), cut ? date_key(S) : null]);
+    const d = { ring, kind, keep, taken, shape: shape2, at, parts, path: memo(key, final) };
+    if (kind === "band" && at.some((i) => ring.cs && ring.cs[String(i)])) {
+      const groups = /* @__PURE__ */ new Map();
+      at.forEach((i, j) => {
+        const c = JSON.stringify(sector_colour(ring, i));
+        groups.set(c, [...groups.get(c) || [], j]);
+      });
+      d.tints = [...groups.values()].map((js) => ({
+        at: at[js[0]],
+        // one of its sectors: where its colour is read
+        path: memo("tint" + key + JSON.stringify(js), () => merge(js.map((j) => parts[j])).intersection(d.path))
+      }));
+    }
+    done.push(d);
   }
   return done;
 }
@@ -6092,7 +6115,10 @@ function scene(S, statik, t, preview = true, selected = null) {
       add("date number", x.number, x.w.ink, { window: x.index });
     }
     add("plate", statik.plate, S.c_plate);
-    for (const d of rings) add("ring", d.path, d.ring.c, { ring: d, index: index(d) });
+    for (const d of rings) {
+      if (d.tints) d.tints.forEach((tint, n) => add("ring", tint.path, sector_colour(d.ring, tint.at), { ring: d, index: index(d), part: n + 1 }));
+      else add("ring", d.path, d.ring.c, { ring: d, index: index(d) });
+    }
     for (const x of windows) add("date frame", x.frame, x.w.ink, { window: x.index });
     if (S.ha_on) {
       for (const [name, colour, path, a] of hand_items(S, t)) add("hand", path, colour, { name, angle: a });
@@ -6125,6 +6151,29 @@ function scene(S, statik, t, preview = true, selected = null) {
   return items;
 }
 var turned = (path, angle) => path.copy().rotate(-angle);
+var RING_MM = ["r", "len", "w", "width", "clear", "round_out", "round_in", "wall", "size", "twelve_gap"];
+var HAND_MM = ["len", "w", "tail", "tip", "feature", "counter", "wall", "round"];
+var WINDOW_MM = ["r", "w", "h", "round", "frame", "clear"];
+function each_measure(S, visit) {
+  for (const ring of S.rings) {
+    for (const key of RING_MM) visit(ring, key);
+    for (const at of Object.keys(ring.nudge).sort()) if (ring.nudge[at].dr) visit(ring.nudge[at], "dr");
+  }
+  for (const h of HANDS) for (const key of HAND_MM) visit(S["ha_" + h], key);
+  for (const w of windows_of(S)) for (const key of WINDOW_MM) visit(w, key);
+  visit(S, "ha_cap");
+}
+function measures(S) {
+  const out = [];
+  each_measure(S, (d, key) => out.push(d[key]));
+  return out;
+}
+function set_measures(S, values) {
+  let i = 0;
+  each_measure(S, (d, key) => {
+    d[key] = values[i++];
+  });
+}
 var page_mm = (S) => S.dial_d + 2 * S.margin;
 
 // src/output.js
@@ -6134,7 +6183,7 @@ var num = (v, digits = 4) => {
 };
 var rgb = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Math.max(v, 0), 1) * 255).toString(16).padStart(2, "0")).join("").toUpperCase();
 function item_name(item) {
-  if (item.role === "ring") return item.ring.ring.name || item.ring.kind;
+  if (item.role === "ring") return (item.ring.ring.name || item.ring.kind) + (item.part ? ` colour ${item.part}` : "");
   if (item.role === "hand") return { hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name] || item.name;
   if (item.window !== void 0) return `Window ${item.window + 1} ${{ "date disc": "disc", "date number": "content", "date frame": "frame", cutline: "cut line" }[item.role] || item.role}`;
   return item.role[0].toUpperCase() + item.role.slice(1);
@@ -6441,8 +6490,12 @@ var ROWS = {
     hdr("Dial"),
     // the plate: how big, what colour, what is on it
     num2("dial_d", "Diameter", 15, 50, 0.1),
+    chk("ui_scale", "Scale everything on the dial with it"),
     col("c_plate", "Plate"),
     custom("background"),
+    hdr("Colours"),
+    // every coloured part on the plate, in one list; a band's sectors one by one
+    custom("colours"),
     hdr("Page"),
     // around the dial: preview and page only
     num2("margin", "Page margin", 0, 10, 0.5),
@@ -6458,6 +6511,8 @@ var ROWS = {
     col("c", "Colour", { pin: true }),
     num2("r", "Outer radius", 0, 25, 0.05, { pin: true, show: kind_in("ticks", "markers", "band") }),
     num2("r", "Centre radius", 0, 25, 0.05, { pin: true, show: kind_in("numerals") }),
+    hdr("Sector colours", { show: (R) => kind_of(R) === "band" && positions_of(R).length > 1 }),
+    custom("sectors", { show: (R) => kind_of(R) === "band" && positions_of(R).length > 1 }),
     hdr("Positions"),
     num2("count", "Count", 1, 360, 1, { whole: true }),
     num2("start", "Start \xB0", -180, 180, 0.5),
@@ -6711,6 +6766,7 @@ var DialTool = class _DialTool {
   set_value(scope, key, value) {
     const T = this.target(scope);
     if (JSON.stringify(T[key]) === JSON.stringify(value)) return;
+    if (scope === "global" && key === "dial_d" && this.S.ui_scale && T.dial_d > 0 && value > 0) this.scale_with(T.dial_d, value);
     T[key] = value;
     if (scope === "ring") {
       if (!["c", "name"].includes(key)) this.static_dirty = true;
@@ -6730,6 +6786,16 @@ var DialTool = class _DialTool {
     }
     this.sync_rows();
     this.render();
+  }
+  /** the diameter goes from one value to another and everything on the dial goes with it. The measures are always
+   *  worked out from where a run of changes began (this.scale_from), not from the last step, so dragging the slider
+   *  up and back lands exactly on the first values. Anything else edited in between starts a new run. */
+  scale_with(from, to) {
+    const S = this.S, now = JSON.stringify(measures(S));
+    if (!this.scale_from || this.scale_from.now !== now) this.scale_from = { d: from, base: measures(S) };
+    const run = this.scale_from;
+    set_measures(S, run.base.map((v) => +(v * to / run.d).toFixed(6)));
+    run.now = JSON.stringify(measures(S));
   }
   // ── building the window ──────────────────────────────────
   build_window() {
@@ -7170,7 +7236,7 @@ var DialTool = class _DialTool {
       };
     }
     if (row.kind === "col") {
-      const swatch = el("button", { type: "button", className: "swatch", id, title: "Choose a colour", onclick: () => this.pop_open(row, swatch) });
+      const swatch = el("button", { type: "button", className: "swatch", id, title: "Choose a colour", onclick: () => this.pop_open(this.colour_of_row(row), swatch) });
       const hex = el("input", { type: "text", className: "hex", id: id + "-hex", spellcheck: false, maxLength: 7, ariaLabel: row.text + ", as #RRGGBB" });
       const now = () => this.target(row.scope)[row.key];
       hex.onchange = () => {
@@ -7211,8 +7277,8 @@ var DialTool = class _DialTool {
     }
     if (!Array.isArray(this.palette)) this.palette = PALETTE.slice();
     this.colour_mode = "HEX";
-    const now = () => this.target(P.at.scope)[P.at.key];
-    const put = (rgb2) => this.set_value(P.at.scope, P.at.key, rgb2.map((v) => +clamp(v, 0, 1).toFixed(4)).concat([now()[3] ?? 1]));
+    const put = (rgb2) => P.at.write(rgb2.map((v) => +clamp(v, 0, 1).toFixed(4)).concat([P.at.read()[3] ?? 1]));
+    P.put = put;
     P.pick = (hex) => put(from_hex(hex).slice(0, 3));
     P.title = el("h2");
     const wide = el("button", { type: "button", className: "sign", id: "pop-wide", title: "Over the whole preview, and back", ariaLabel: "Over the whole preview, and back", onclick: () => this.pop_wide(!P.wide) });
@@ -7292,16 +7358,34 @@ var DialTool = class _DialTool {
     P.el.style.left = `${clamp(x, 0, Math.max(0, innerWidth - r.width))}px`;
     P.el.style.top = `${clamp(y, 0, Math.max(0, innerHeight - r.height))}px`;
   }
-  /** a swatch was pressed: open beside it; pressed again: close. */
-  pop_open(row, swatch) {
+  /** a row's colour, as the pop-out wants it: read it, write it, say whose it is ("Numerals · Colour", "Plate").
+   *  It follows the scope, so with a ring's colour open, selecting another ring shows that ring's. */
+  colour_of_row(row) {
+    return {
+      read: () => {
+        const T = this.target(row.scope);
+        return T ? T[row.key] : null;
+      },
+      write: (value) => this.set_value(row.scope, row.key, value),
+      label: () => {
+        const S = this.S, scope = row.scope;
+        const whose = scope === "ring" ? this.ring().name || kind_of(this.ring()) : scope === "hand" ? ["Hour hand", "Minute hand", "Seconds hand"][S.ui_hand] : scope === "window" ? `Window ${S.ui_window + 1}` : "";
+        return whose ? `${whose} \xB7 ${row.text}` : row.text;
+      }
+    };
+  }
+  /** a swatch was pressed: open beside it; pressed again: close. colour = {read(), write(rgba), label()}.
+   *  beside = what it opens at the right of: the swatch, or the row of swatches it is in, so its neighbours stay in reach. */
+  pop_open(colour, swatch, beside = swatch) {
     const P = this.pop;
     if (P.at && P.at.swatch === swatch) return this.pop_close();
-    P.at = { scope: row.scope, key: row.key, text: row.text, swatch };
+    if (P.at) P.at.swatch.setAttribute("aria-expanded", "false");
+    P.at = { ...colour, swatch };
+    swatch.setAttribute("aria-expanded", "true");
     P.el.hidden = false;
     this.pop_wide(false);
     this.sync_rows();
-    const r = swatch.getBoundingClientRect();
-    this.pop_place(r.right + POP_GAP, r.top - POP_GAP);
+    this.pop_place(beside.getBoundingClientRect().right + POP_GAP, swatch.getBoundingClientRect().top - POP_GAP);
   }
   pop_close() {
     const P = this.pop;
@@ -7334,25 +7418,19 @@ var DialTool = class _DialTool {
     if (!P.wide) return;
     Object.assign(P.el.style, { left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px` });
   }
-  /** whose colour it is: "Numerals · Colour", "Hour hand · Colour", "Plate". */
-  pop_name() {
-    const at = this.pop.at, S = this.S;
-    const whose = at.scope === "ring" ? this.ring().name || kind_of(this.ring()) : at.scope === "hand" ? ["Hour hand", "Minute hand", "Seconds hand"][S.ui_hand] : at.scope === "window" ? `Window ${S.ui_window + 1}` : "";
-    return whose ? `${whose} \xB7 ${at.text}` : at.text;
-  }
   /** the values as the line shows them, to copy: #RRGGBB · 255, 128, 0 · 0, 50, 100, 0 */
   pop_text() {
-    const rgb2 = this.target(this.pop.at.scope)[this.pop.at.key].slice(0, 3), mode = this.colour_mode;
+    const rgb2 = this.pop.at.read().slice(0, 3), mode = this.colour_mode;
     return mode === "HEX" ? to_hex(rgb2).toUpperCase() : (mode === "RGB" ? rgb2.map((v) => Math.round(v * 255)) : rgb_cmyk(rgb2).map((v) => Math.round(v * 100))).join(", ");
   }
   /** the pop-out shows the setting it edits. */
   pop_refresh() {
     const P = this.pop;
     if (!P || !P.at) return;
-    const T = this.target(P.at.scope), S = this.S;
-    if (!T || !Array.isArray(T[P.at.key]) || !P.at.swatch.isConnected) return this.pop_close();
-    const rgb2 = T[P.at.key].slice(0, 3), value = to_hex(rgb2).toUpperCase();
-    P.title.textContent = this.pop_name();
+    const S = this.S, colour = P.at.swatch.isConnected ? P.at.read() : null;
+    if (!Array.isArray(colour)) return this.pop_close();
+    const rgb2 = colour.slice(0, 3), value = to_hex(rgb2).toUpperCase();
+    P.title.textContent = P.at.label();
     const put = (c) => P.pick(c);
     const chip = (c) => {
       const b = el("button", { type: "button", title: c, ariaLabel: c, onclick: () => put(c) });
@@ -7360,7 +7438,7 @@ var DialTool = class _DialTool {
       b.dataset.colour = c;
       return b;
     };
-    const all = [S.c_plate, S.c_backdrop, S.c_cap, ...S.rings.map((r) => r.c), ...HANDS.map((h) => S["ha_" + h].c), ...windows_of(S).filter((w) => w.on).map((w) => w.ink)];
+    const all = [S.c_plate, S.c_backdrop, S.c_cap, ...S.rings.flatMap((r) => [r.c, ...Object.values(r.cs || {})]), ...HANDS.map((h) => S["ha_" + h].c), ...windows_of(S).filter((w) => w.on).map((w) => w.ink)];
     const used = [...new Set(all.map((c) => to_hex(c).toUpperCase()))];
     if (P.used !== used.join()) {
       P.used = used.join();
@@ -7370,7 +7448,7 @@ var DialTool = class _DialTool {
     if (P.listed !== list) {
       P.listed = list;
       const change = el("button", { type: "button", className: "add", id: "pop-add", textContent: kept ? "\u2212" : "+", title: kept ? "Take this colour out of the palette" : "Add this colour to the palette", onclick: () => {
-        const now = to_hex(this.target(P.at.scope)[P.at.key]).toUpperCase();
+        const now = to_hex(P.at.read()).toUpperCase();
         this.palette = this.palette.includes(now) ? this.palette.filter((c) => c !== now) : [...this.palette, now];
         try {
           localStorage.setItem(PALETTE_KEY, JSON.stringify(this.palette));
@@ -7404,7 +7482,7 @@ var DialTool = class _DialTool {
         }
         const all2 = fields.map((x) => parseFloat(x.value) || 0);
         const next = mode === "RGB" ? all2.map((v) => v / 255) : cmyk_rgb(all2.map((v) => v / 100));
-        this.set_value(P.at.scope, P.at.key, next.map((v) => +clamp(v, 0, 1).toFixed(4)).concat([this.target(P.at.scope)[P.at.key][3] ?? 1]));
+        P.put(next);
         this.pop_refresh();
       };
       P.numbers.replaceChildren(...(mode === "HEX" ? ["hex"] : [...mode]).map((letter, i) => {
@@ -7417,6 +7495,91 @@ var DialTool = class _DialTool {
     for (const f of P.numbers.querySelectorAll("input")) if (!has_focus(f)) f.value = values[f.dataset.i];
   }
   // ── rows built by hand ───────────────────────────────────
+  // ── colours in lists: small swatches, each opening the pop-out ──
+  /** a setting changed outside set_value (a colour in a list): show it. shapes = the dial's shapes changed too. */
+  changed(shapes = false) {
+    if (shapes) this.static_dirty = true;
+    this.sync_rows();
+    this.render();
+  }
+  /** a band's sectors as colours: [{id, title, read, write}], one per position it uses. */
+  sector_colours(i) {
+    const ring = this.S.rings[i], name = ring.name || kind_of(ring);
+    return positions_of(ring).map((at, n) => ({
+      id: `ring-${i}-sector-${at}`,
+      title: `${name} \xB7 sector ${n + 1}`,
+      read: () => {
+        const R = this.S.rings[i];
+        return R ? sector_colour(R, at) : null;
+      },
+      write: (value) => {
+        const R = this.S.rings[i];
+        R.cs = { ...R.cs, [at]: value };
+        this.changed(true);
+      }
+    }));
+  }
+  /** lines of swatches inside a holder: lines() → [{text, colours: [{id, title, read, write}]}]. Built again only
+   *  when the list itself changes (a ring added, renamed, a sector more), so an open pop-out keeps its swatch. */
+  swatch_lines(holder, lines) {
+    const list = lines(), signature = JSON.stringify(list.map((l) => [l.text, l.colours.map((c) => c.id)]));
+    if (holder.dataset.list !== signature) {
+      holder.dataset.list = signature;
+      holder.replaceChildren(...list.map((line) => {
+        const group = el("span", { className: "swatches" });
+        for (const c of line.colours) {
+          const swatch = el("button", { type: "button", className: "swatch", id: "colour-" + c.id, title: c.title });
+          swatch.onclick = () => this.pop_open({ read: c.read, write: c.write, label: () => c.title }, swatch, group);
+          group.append(swatch);
+        }
+        return el("div", { className: "row" }, el("label", { textContent: line.text }), group);
+      }));
+    }
+    const all = list.flatMap((l) => l.colours);
+    [...holder.querySelectorAll(".swatch")].forEach((swatch, k) => {
+      swatch.style.background = to_hex(all[k].read()).toUpperCase();
+    });
+  }
+  /** Dial → Colours: every coloured part on the plate. Rings top first, a band's sectors one by one; hands, cap, windows. */
+  row_colours(wrap, out) {
+    wrap.className = "colourlist";
+    const one = (id, title, read, write) => [{ id, title, read, write }];
+    out.refresh = () => this.swatch_lines(wrap, () => {
+      const S = this.S, lines = [];
+      S.rings.forEach((ring, i) => {
+        const text = ring.name || kind_of(ring), sectors = kind_of(ring) === "band" && positions_of(ring).length > 1;
+        lines.push({ text, colours: sectors ? this.sector_colours(i) : one(`ring-${i}`, text, () => (this.S.rings[i] || {}).c, (v) => {
+          this.S.rings[i].c = v;
+          this.changed();
+        }) });
+      });
+      HANDS.forEach((h, k) => {
+        const text = ["Hour hand", "Minute hand", "Seconds hand"][k];
+        lines.push({ text, colours: one("hand-" + h, text, () => this.S["ha_" + h].c, (v) => {
+          this.S["ha_" + h].c = v;
+          this.changed();
+        }) });
+      });
+      lines.push({ text: "Cap", colours: one("cap", "Cap", () => this.S.c_cap, (v) => {
+        this.S.c_cap = v;
+        this.changed();
+      }) });
+      windows_of(S).forEach((w, k) => {
+        if (w.on) lines.push({ text: `Window ${k + 1}`, colours: one("window-" + k, `Window ${k + 1}`, () => windows_of(this.S)[k].ink, (v) => {
+          windows_of(this.S)[k].ink = v;
+          this.changed();
+        }) });
+      });
+      return lines;
+    });
+  }
+  /** Rings → Sector colours (a band with more than one sector): a swatch per sector, and all back to the ring's colour. */
+  row_sectors(wrap, out) {
+    wrap.className = "colourlist";
+    const lines = el("div"), same = el("button", { type: "button", className: "btn", id: "sectors-same", textContent: "All as the ring", title: "Every sector in the ring\u2019s colour again", onclick: () => this.set_value("ring", "cs", {}) });
+    wrap.append(lines, el("div", { className: "row" }, el("span"), el("span", { className: "tools" }, same)));
+    out.refresh = () => this.swatch_lines(lines, () => [{ text: "Sectors", colours: this.sector_colours(this.S.ui_ring) }]);
+  }
   /** the plate's background: only the button for now (Okay, 12 Oct 2026: "no background image functionality now. Just the button"). */
   row_background(wrap) {
     const note2 = el("span", { className: "quiet", hidden: true, textContent: "Not built yet." });
