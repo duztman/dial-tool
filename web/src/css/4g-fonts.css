@@ -1,7 +1,7 @@
 /* fonts: the font box, the font sheet, stickers and their legend */
 @layer panel {
-  .features { padding-top: 4px; }
-  .features h3 { margin: 16px 0 8px; padding-top: 8px; border-top: var(--hair) solid var(--rule); }
+  .features { padding-top: var(--unit); }
+  .features h3 { margin: var(--u6) 0 var(--u3); padding-top: var(--u3); border-top: var(--hair) solid var(--rule); }
   /* the font picker: every font shows its own numerals */
   /* a box inside the panel (the font box) has a ring row's frame: it starts where the labels start and ends
      --frame-out past the lines, so what is in it stands on the pane's own columns — sliders, fields and steppers
@@ -39,7 +39,12 @@
   .langs { position: relative; }
   .langbox { min-width: var(--control); }
   .fontname .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
-  .fontlist { border: var(--hair) solid var(--rule); background: var(--field); overflow-y: auto; }
+  /* the list scrolls, and says so: a slim scrollbar of two pills, a light one the whole height, a darker one for how much is under (Okay, 13 Oct 2026) */
+  .fontlist { border: var(--hair) solid var(--rule); background: var(--field); overflow-y: auto; }      /* ::-webkit-scrollbar only: Chrome ignores it once scrollbar-width or scrollbar-color is set */
+  .fontlist::-webkit-scrollbar { width: var(--scrollbar); }
+  .fontlist::-webkit-scrollbar-track { margin: var(--unit) 0; border-radius: var(--round-pill); background: var(--ground); }
+  .fontlist::-webkit-scrollbar-thumb { border-radius: var(--round-pill); background: var(--rule); }
+  .fontlist::-webkit-scrollbar-thumb:hover { background: var(--grey); }
   /* a line of the font sheet, on three columns: the family's name in its own face · its numerals, all starting on one
      line · what the family has (styles, bold, italic, axes), small. A full hairline between two lines. */
   .fontrow { display: grid; grid-template-columns: var(--font-name) minmax(0, 1fr) var(--font-has); align-items: center; gap: var(--gap); width: 100%; min-height: var(--head); padding: 0 var(--btn-pad); border-bottom: var(--hair) solid var(--rule); text-align: left; }
@@ -53,7 +58,8 @@
   .fontrow .has { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: calc(var(--unit) / 2); padding: var(--unit) 0; }      /* on one line as long as the column lets them */
   /* a sticker: one thing a family has, in the pixel font at its own size (R32), on a colour of its kind, round
      corners. */
-  .sticker { padding: var(--hair) calc(var(--unit) / 2); border-radius: var(--round-tiny); background: var(--st-styles); color: var(--st-ink); font: 400 var(--t-pixel)/1.25 var(--pixel); text-transform: uppercase; white-space: nowrap; }
+  .sticker { opacity: var(--pixel-ink);      /* the pixel font a little under full strength, on pale and on black alike (Okay, 13 Oct 2026: "Silkscreen too dark on full black, 70%") */
+    padding: var(--hair) calc(var(--unit) / 2); border-radius: var(--round-tiny); background: var(--st-styles); color: var(--st-ink); font: 400 var(--t-pixel)/1.25 var(--pixel); text-transform: uppercase; white-space: nowrap; }
   .sticker.weight { background: var(--st-weight); }
   .sticker.italic { background: var(--st-italic); }
   .sticker.width { background: var(--st-width); }
@@ -94,5 +100,7 @@
   .picker .fontlist { min-height: 0; }
   .picker .adding { display: grid; gap: calc(var(--unit) * 2); border-top: var(--thick) solid var(--ink); padding-top: calc(var(--unit) * 2); }
   .picker .squares { display: flex; align-items: flex-end; gap: var(--unit); }
+  .picker .squares > .pickt span { white-space: normal; }      /* the squares say what they take: two lines */
+  #window-font-back { opacity: var(--pixel-ink); }      /* As the numerals: quiet, like a sign (Okay, 13 Oct 2026: 70 %) */
   .picker .squares > .pickt { width: calc(var(--col) + var(--gap) + var(--unit)); aspect-ratio: 1; align-content: center; }      /* square buttons */
 }

@@ -4,8 +4,8 @@
      sign (a drawing only): acts on the selected thing. Steps, segments and tiles are below. */
   button { appearance: none; margin: 0; padding: 0; border: 0; border-radius: 0; background: none; font: inherit; color: inherit; cursor: pointer; }
   select, input { font: inherit; color: inherit; }
-  :is(button, select, input[type="text"], input[type="checkbox"], textarea):focus-visible { outline: 2px solid var(--ink); outline-offset: 0; }
-  input[type="text"]:focus, select:focus { outline: 2px solid var(--ink); outline-offset: 0; }
+  :is(button, select, input[type="text"], input[type="checkbox"], textarea):focus-visible { outline: var(--thick) solid var(--ink); outline-offset: 0; }
+  input[type="text"]:focus, select:focus { outline: var(--thick) solid var(--ink); outline-offset: 0; }
 
   .btn, .step, .segs > button, .plain, .sign { height: var(--control); border: var(--hair) solid var(--ink); background: var(--field); }
   :is(.btn, .step, .segs > button):hover { background: var(--hover); }
@@ -14,20 +14,21 @@
   .btn.main { min-width: var(--col); background: var(--ink); color: var(--paper); font-weight: 600; }
   .btn.main:hover { background: var(--ink-hover); }
   .plain, .sign { flex: none; border-color: transparent; background: none; }
-  .plain { padding: 0 6px; white-space: nowrap; }
+  .plain { padding: 0 var(--unit); white-space: nowrap; }
   .sign { display: inline-grid; place-items: center; width: var(--control); }
   :is(.plain, .sign):hover { background: var(--field); border-color: var(--rule); }
 
   .steps, .segs { display: flex; }
   .steps { width: 100%; }
   .step, .segs > button { flex: 1; border-color: var(--rule); }
-  .segs > button { padding: 0 4px; }
+  .segs > button { padding: 0 var(--unit); }
   /* a window's places: a square of the four quarters · a white bar · the places between and a box of three dots
      for any time. Each a box of its own, one unit apart. */
   .atgrid { grid-column: 3 / -1; display: grid; grid-template-columns: 2fr auto 3fr; gap: var(--unit); align-items: stretch; padding: var(--unit) 0; }
   .atgrid > .segs { display: grid; gap: var(--unit); }
   .atgrid > .quarters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .atgrid > .between { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .atgrid > .segs > button { padding: 0; }      /* "10:30" needs the whole box */
   .atgrid > .segs > button + button { border-left: var(--hair) solid var(--rule); }
   .atgrid > .segs > button.on { border-color: var(--ink); }
   .atgrid > .divide { width: var(--thick); background: var(--row-rule); }
@@ -35,11 +36,11 @@
   :is(.step, .segs > button) + button { border-left: 0; }
   .tools { display: flex; flex-wrap: wrap; gap: var(--unit); align-items: center; }
 
-  input[type="text"], select { height: var(--control); width: 100%; min-width: 0; padding: 0 6px; border: var(--hair) solid var(--rule); border-radius: 0; background: var(--field); }
+  input[type="text"], select { height: var(--control); width: 100%; min-width: 0; padding: 0 var(--unit); border: var(--hair) solid var(--rule); border-radius: 0; background: var(--field); }
 
   /* a tick box: square like every other control; ink when ticked */
-  input[type="checkbox"] { appearance: none; flex: none; display: inline-grid; place-content: center; width: var(--tick); height: var(--tick); margin: 0 8px 0 0; border: var(--hair) solid var(--ink); border-radius: 0; background: var(--field); cursor: pointer; }
-  input[type="checkbox"]::before { content: ""; width: calc(var(--tick) - 6px); height: calc(var(--tick) - 6px); background: var(--paper); clip-path: polygon(12% 48%, 0 62%, 40% 100%, 100% 20%, 86% 8%, 38% 72%); opacity: 0; }
+  input[type="checkbox"] { appearance: none; flex: none; display: inline-grid; place-content: center; width: var(--tick); height: var(--tick); margin: 0 var(--u3) 0 0; border: var(--hair) solid var(--ink); border-radius: 0; background: var(--field); cursor: pointer; }
+  input[type="checkbox"]::before { content: ""; width: calc(var(--tick) - var(--unit)); height: calc(var(--tick) - var(--unit)); background: var(--paper); clip-path: polygon(12% 48%, 0 62%, 40% 100%, 100% 20%, 86% 8%, 38% 72%); opacity: 0; }
   input[type="checkbox"]:checked { background: var(--ink); }
   input[type="checkbox"]:checked::before { opacity: 1; }
   .check { display: inline-flex; align-items: center; cursor: pointer; }
@@ -50,13 +51,13 @@
     --fill: calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--p, 0)); }
   input[type="range"]::-webkit-slider-runnable-track { height: var(--track); border-radius: var(--track); background: linear-gradient(to right, var(--ink) var(--fill), var(--well) var(--fill)); }
   input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: var(--thumb); height: var(--thumb); margin-top: calc((var(--track) - var(--thumb)) / 2); border: 0; border-radius: 50%;
-    background: radial-gradient(circle, var(--field) 0 2px, var(--ink) 2.75px); }
+    background: radial-gradient(circle, var(--field) 0 var(--thumb-eye), var(--ink) var(--thumb-eye-edge)); }
   input[type="range"]::-moz-range-track { height: var(--track); border-radius: var(--track); background: var(--well); }
   input[type="range"]::-moz-range-progress { height: var(--track); border-radius: var(--track); background: var(--ink); }
-  input[type="range"]::-moz-range-thumb { width: var(--thumb); height: var(--thumb); border: 0; border-radius: 50%; background: radial-gradient(circle, var(--field) 0 2px, var(--ink) 2.75px); }
+  input[type="range"]::-moz-range-thumb { width: var(--thumb); height: var(--thumb); border: 0; border-radius: 50%; background: radial-gradient(circle, var(--field) 0 var(--thumb-eye), var(--ink) var(--thumb-eye-edge)); }
   input[type="range"]:focus-visible { outline: 0; }
-  input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink); }
-  input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink); }
+  input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 var(--thick) var(--surface), 0 0 0 calc(2 * var(--thick)) var(--ink); }
+  input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 var(--thick) var(--surface), 0 0 0 calc(2 * var(--thick)) var(--ink); }
 
   /* a choice as pictures (pickt: one column wide) and OpenType switches (tile: two columns wide); the chosen one is filled */
   .pickt, .tile { display: grid; border: var(--hair) solid var(--rule); background: var(--field); }
@@ -65,8 +66,8 @@
   .picks.five { grid-template-columns: repeat(5, minmax(0, 1fr)); }      /* five choices (a window's shape) */
   .pickt { justify-items: center; align-content: start; gap: calc(var(--unit) / 2); min-height: var(--tile); padding: var(--unit) var(--hair); font-size: var(--t-xs); line-height: 1.15; }
   .pickt span { white-space: nowrap; text-align: center; }      /* a tile's word is one line; a name too long for it has a short one in TILE_WORDS */
-  .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px var(--gap); }
-  .tile { align-content: space-between; justify-items: start; gap: 4px; min-height: calc(var(--tile) + 2px); padding: 7px 8px; text-align: left; line-height: 1.25; }
+  .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--unit) var(--gap); }
+  .tile { align-content: space-between; justify-items: start; gap: var(--unit); min-height: calc(var(--tile) + var(--u1)); padding: var(--unit) var(--u3); text-align: left; line-height: 1.25; }
   .tile small { color: var(--grey); font: var(--t-xs)/1 var(--mono); }
   .tile[aria-pressed="true"] small { color: var(--rule); }
 
@@ -89,7 +90,7 @@
   /* night: a part that is near black with light words (the colour pop-out, the guides' list). Inside it the usual
      colour names are set to their night values, so every control looks as it does elsewhere, light on dark. */
   .night { --paper: var(--night); --surface: var(--night); --ink: var(--bar-ink); --grey: var(--bar-quiet); --field: var(--night-field); --well: var(--night-rule); --inset: var(--night-field);
-    --hover: var(--night-hover); --ink-hover: #FFFFFF; --rule: var(--night-rule); --row-rule: var(--night-rule); --chip-rule: var(--night-chip-rule);
+    --hover: var(--night-hover); --ink-hover: var(--white); --rule: var(--night-rule); --row-rule: var(--night-rule); --chip-rule: var(--night-chip-rule);
     border: var(--hair) solid var(--rule); border-radius: var(--round-large); background: var(--paper); color: var(--ink); }
   .night :is(input[type="text"], .btn) { border-radius: var(--round-small); }
   .night .segs > button:first-child { border-radius: var(--round-small) 0 0 var(--round-small); }
@@ -101,10 +102,10 @@
   /* colours to pick: small squares in a row; the one in use is outlined */
   .chips { display: grid; grid-template-columns: repeat(auto-fill, var(--chip)); gap: var(--chip-gap); }
   .chips button { width: var(--chip); height: var(--chip); border: var(--hair) solid var(--chip-rule); border-radius: var(--round-small); }
-  .chips button.on { outline: var(--thick) solid var(--ink); outline-offset: 2px; }
+  .chips button.on { outline: var(--thick) solid var(--ink); outline-offset: var(--u1); }
   .chips button.add { border-color: var(--rule); background: var(--field); color: var(--ink); line-height: 1; }
   .chips button.add:hover { background: var(--hover); border-color: var(--ink); }
-  .log, .link { display: block; width: 100%; margin: 0; padding: 8px 10px; border: 0; color: var(--grey); font: var(--t-xs)/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
-  .log { min-height: 96px; max-height: 260px; overflow-y: auto; }
+  .log, .link { display: block; width: 100%; margin: 0; padding: var(--u3) var(--u4); border: 0; color: var(--grey); font: var(--t-xs)/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .log { min-height: var(--log-least); max-height: var(--log-most); overflow-y: auto; }
   .link { resize: none; overflow-y: auto; color: var(--ink); }
 }

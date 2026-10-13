@@ -29,7 +29,7 @@
   .row > label:first-child { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .row > label.strong:first-child { color: var(--ink); font-weight: 600; }      /* a name where a label would stand: the selected ring's, before its kinds */
   /* a label with a small menu beside it: the words, then a boxed arrow with the browser's own menu lying over it */
-  .menulabel { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .menulabel { display: flex; align-items: center; gap: var(--unit); min-width: 0; }
   .menulabel > label { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .labelmenu { position: relative; flex: none; display: grid; place-items: center; width: var(--menu-box); height: var(--menu-box); border: var(--hair) solid var(--grey); background: var(--field); color: var(--ink); }
   .labelmenu:hover { border-color: var(--ink); }

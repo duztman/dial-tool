@@ -7,14 +7,14 @@
   .colour:hover { background: var(--rule); }
   .colour[aria-expanded="true"] { background: var(--ink); color: var(--paper); }
   .swatch, .dot { flex: none; width: var(--dot); height: var(--dot); border: var(--hair) solid var(--chip-rule); border-radius: var(--round-small); background: linear-gradient(var(--c, transparent), var(--c, transparent)), var(--checker); }
-  .colour .dot { width: 1em; height: 1em; border-radius: 3px; }      /* as large as its hex */
-  .dot.tiny { display: inline-block; width: var(--dot-tiny); height: var(--dot-tiny); border-radius: 2px; vertical-align: -1px; }
+  .colour .dot { width: 1em; height: 1em; border-radius: var(--round-tiny); }      /* as large as its hex */
+  .dot.tiny { display: inline-block; width: var(--dot-tiny); height: var(--dot-tiny); border-radius: var(--round-tiny); vertical-align: calc(-1 * var(--hair)); }
   .colour[aria-expanded="true"] .dot { border-color: var(--night-chip-rule); }
   .swatch:hover { border-color: var(--ink); }
   /* colours in a list (Dial → Colours, a band's sectors): square swatches in a row that wraps */
   .swatches { display: flex; flex-wrap: wrap; gap: var(--chip-gap); padding: var(--chip-gap) 0; }
   .swatches .swatch { width: var(--control); height: var(--control); border-radius: var(--round-small); }
-  .swatch[aria-expanded="true"] { outline: var(--thick) solid var(--ink); outline-offset: 1px; }
+  .swatch[aria-expanded="true"] { outline: var(--thick) solid var(--ink); outline-offset: var(--hair); }
 
   /* the colour pop-out: one for the whole tool, at the right of the swatch that opened it. Near black, round corners. Inside it the usual colour names are set to their night values, so
      buttons and fields look as they do elsewhere, light on dark. Its head drags it. Rows of colours: a name, then the
@@ -33,23 +33,23 @@
   .chiprow .chips { grid-template-columns: repeat(var(--pop-chips), minmax(0, 1fr)); gap: var(--pop-chip-gap); }
   .chiprow .chips button { width: auto; height: auto; aspect-ratio: 1; }
   .sv, .hue, .alpha { position: relative; touch-action: none; }
-  .sv { height: var(--pop-field); border-radius: var(--round); cursor: crosshair; background: linear-gradient(to top, #000, rgba(0, 0, 0, 0)), linear-gradient(to right, #fff, var(--hue, #f00)); }
+  .sv { height: var(--pop-field); border-radius: var(--round); cursor: crosshair; background: linear-gradient(to top, var(--black), transparent), linear-gradient(to right, var(--white), var(--hue, #f00)); }
   .hue, .alpha { height: var(--pop-hue); border-radius: calc(var(--pop-hue) / 2); cursor: ew-resize; }
   .hue { background: linear-gradient(to right, #f00, #ff0 16.67%, #0f0 33.33%, #0ff 50%, #00f 66.67%, #f0f 83.33%, #f00); }
-  .alpha { flex: 1; background: linear-gradient(to right, transparent, var(--solid, #000)), var(--checker); }
+  .alpha { flex: 1; background: linear-gradient(to right, transparent, var(--solid, var(--black))), var(--checker); }
   /* handles: a white ring with a dark one round it, so they show on any colour. On the field a disc; on a strip a pill. */
-  .sv i, .hue i, .alpha i { position: absolute; width: var(--knob); height: var(--knob); translate: -50% -50%; border-radius: 50%; box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px var(--night); pointer-events: none; }
-  :is(.hue, .alpha) i { top: 50%; width: calc(var(--knob) * 0.5); height: calc(var(--pop-hue) + 2px); border-radius: var(--knob); }
-  .alpha i { background: var(--solid, #000); }
+  .sv i, .hue i, .alpha i { position: absolute; width: var(--knob); height: var(--knob); translate: -50% -50%; border-radius: 50%; box-shadow: 0 0 0 var(--thick) var(--white), 0 0 0 calc(var(--thick) + var(--thumb-eye-edge) / 2) var(--night); pointer-events: none; }
+  :is(.hue, .alpha) i { top: 50%; width: calc(var(--knob) * 0.5); height: calc(var(--pop-hue) + var(--u1)); border-radius: var(--knob); }
+  .alpha i { background: var(--solid, var(--black)); }
   .alpharow { display: flex; align-items: center; gap: var(--gap); }
   .alpharow[hidden] { display: none; }
   .alpharow input { flex: none; width: var(--col); text-align: center; }
   .asnumbers { display: flex; gap: var(--chip-gap); align-items: center; font-size: var(--t-xs); letter-spacing: 0.04em; text-transform: uppercase; }
   .asnumbers .segs { flex: none; }
-  .asnumbers .segs > button { flex: none; padding: 0 6px; }
-  .asnumbers .dot { margin: 0 2px 0 6px; }
+  .asnumbers .segs > button { flex: none; padding: 0 var(--unit); }
+  .asnumbers .dot { margin: 0 var(--u1) 0 var(--unit); }
   .asnumbers .numbers { flex: 1; min-width: 0; display: flex; gap: var(--chip-gap); }
-  .asnumbers .numbers input { padding: 0 2px; text-align: center; text-transform: uppercase; }
-  .asnumbers .copy { flex: none; min-width: var(--col); padding: 0 6px; font-weight: 600; }
+  .asnumbers .numbers input { padding: 0 var(--u1); text-align: center; text-transform: uppercase; }
+  .asnumbers .copy { flex: none; min-width: var(--col); padding: 0 var(--unit); font-weight: 600; }
   /* wide: twice the size (app.js sets the width and the field's height). */
 }

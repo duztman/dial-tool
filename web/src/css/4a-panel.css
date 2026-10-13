@@ -13,7 +13,7 @@
   .unitbox:hover { background: var(--hover); color: var(--ink); border-color: var(--ink); }
   /* a small menu hanging under its button (the units; the kinds of ring to add): lines a row high, a hairline between them */
   :is(.unitmenu, .addmenu) { position: absolute; z-index: 4; top: calc(100% + var(--unit)); right: 0; min-width: calc(2 * var(--col) + var(--gap)); border: var(--hair) solid var(--ink); background: var(--field); }
-  :is(.unitmenu, .addmenu) button { display: flex; align-items: center; gap: var(--gap); width: 100%; height: var(--line); padding: 0 10px; white-space: nowrap; }
+  :is(.unitmenu, .addmenu) button { display: flex; align-items: center; gap: var(--gap); width: 100%; height: var(--line); padding: 0 var(--u4); white-space: nowrap; }
   :is(.unitmenu, .addmenu) button + button { border-top: var(--hair) solid var(--rule); }
   :is(.unitmenu, .addmenu) button:hover { background: var(--hover); }
   .unitmenu button { justify-content: space-between; }
@@ -21,8 +21,8 @@
   .unitmenu button.on .quiet { color: var(--ink); }
 
   /* sections: a sign inside a ring, its name under it */
-  .tabs { display: grid; grid-template-columns: repeat(5, 1fr); margin: 0 var(--margin); padding: 12px 0 0; border-top: var(--hair) solid var(--rule); }
-  .tabs button { display: grid; justify-items: center; gap: 6px; padding: 4px 0 11px; color: var(--grey); }
+  .tabs { display: grid; grid-template-columns: repeat(5, 1fr); margin: 0 var(--margin); padding: var(--u4) 0 0; border-top: var(--hair) solid var(--rule); }
+  .tabs button { display: grid; justify-items: center; gap: var(--unit); padding: var(--unit) 0 var(--u4); color: var(--grey); }
   .tabs button:hover { color: var(--ink); }
   .tabs button:focus-visible { outline-offset: -2px; }
   .tabs .ring { stroke-width: 1.2; }

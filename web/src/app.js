@@ -102,7 +102,7 @@ const PICS = {
     `<rect x="5" y="2.5" width="18" height="15" rx="1.5"/><path d="M12.4 7.6L14.6 6L14.6 14" stroke-width="1.6"/>`,
     `<rect x="2" y="4" width="24" height="12" rx="1.5"/><path d="M10 13.5L10 6.5L14 11.5L18 6.5L18 13.5" stroke-width="1.6"/>`,
     `<rect x="3" y="3.5" width="22" height="13" rx="1.5"/><path d="M3.5 16L3.5 4L14 4L14 16Z" ${solid}/>`,
-    `<path d="M17.5 2.8A7.4 7.4 0 1 0 17.5 17.2A9 9 0 0 1 17.5 2.8Z" ${solid}/>`,
+    `<circle cx="14" cy="10" r="8.5"/><path d="M16.2 4.2A6.1 6.1 0 1 0 16.2 15.8A7.4 7.4 0 0 1 16.2 4.2Z" ${solid}/>`,      // the crescent inside a circle, framed like its brothers (Okay, 13 Oct 2026)
   ],
 };
 /** a hand's picture is the hand itself, drawn by the geometry with a standard size. */
@@ -166,7 +166,8 @@ const VALUE_PICS = {                               // a value button's drawing, 
   // scale: a small circle growing into the large one, joined by their two tangents. Okay's drawing (Asset_1.svg, 13 Oct
   // 2026: circles at 8.48 20.93 r 8.11 and 24.29 14.71 r 14.33), whole inside the button's own square (Okay, 13 Oct:
   // "shrink scale icon for better h-spacing"): the drawing's middle (19.5 14.71) is the button's.
-  size: `<circle cx="4.79" r="14.33"/><circle class="small" cx="-11.02" cy="6.22" r="8.11"/><path d="M-16.55 0.3L-4.99 -10.48M-10.77 14.33L4.79 14.33"/>`,
+  // (Okay, 13 Oct 2026: "connect two centers with dark like its sister, move right 1px"): the centres joined by a dark line, as the radius' button has, and the whole a point to the right
+  size: `<g transform="translate(1 0)"><circle cx="4.79" r="14.33"/><circle class="small" cx="-11.02" cy="6.22" r="8.11"/><path class="tangent" d="M-16.55 0.3L-4.99 -10.48M-10.77 14.33L4.79 14.33"/><path class="dark" d="M-11.02 6.22L4.79 0"/><circle class="pivot" cx="4.79" r="2"/></g>`,
 };
 
 // a language in the list, by its name; on its button, by two letters ("zh-Hans" → ZH; the font's own choice → "Lang.")
@@ -2052,7 +2053,7 @@ class DialTool {
     const at = (name) => G.DATE_AT.findIndex((d) => d[0] === name);
     const press = (i) => { const w = this.window(); w.at = i; w.at_deg = null; this.changed(true); };
     const button = (name) => el("button", { type: "button", id: "window-at-Position-" + at(name), textContent: name, onclick: () => press(at(name)) });
-    const quarters = ["3", "6", "9", "12"].map(button), between = G.DATE_AT.map((d) => d[0]).filter((n) => !["3", "6", "9", "12"].includes(n)).sort((a, b) => G.DATE_AT[at(a)][1] - G.DATE_AT[at(b)][1]).map(button);
+    const quarters = ["3", "6", "9", "12"].map(button), between = ["1:30", "4:30", "7:30", "10:30", "4"].map(button);      // the half-hours together, then the rest (Okay, 13 Oct 2026: ":30s together")
     const more = el("button", { type: "button", className: "atmore", id: "window-at-more", textContent: "···", title: "Any time: 2:15, 7:40…" });
     more.setAttribute("aria-expanded", "false");
     more.onclick = () => this.value_pop_open(more, { kind: "custom", name: "at_time", scope: "window", key: "at_deg", text: "Time" });
@@ -2132,11 +2133,10 @@ class DialTool {
       el("header", {}, el("h2", { textContent: "Fonts" }), find),      // the search stands at the sheet's top right
       list,
       el("div", { className: "adding" },
-        el("h2", { textContent: "Add fonts" }),
         paste,
         el("div", { className: "squares" },
-          square("font-add", "Add link", "A font by its Google Fonts link or name, or by a link to a font file", `<path d="M8 3.5L8 12.5M3.5 8L12.5 8"/>`, () => { if (paste.hidden) { paste.hidden = false; paste.focus(); } else if (paste.value.trim()) add(); else paste.focus(); }),      // the field for the link is out of sight until this is pressed (Okay, 13 Oct 2026)
-          square("font-file-open", "Font file", "A font file from this computer: .ttf · .otf", `<path d="M4 2.5L9.5 2.5L12 5L12 13.5L4 13.5ZM9.5 2.5L9.5 5L12 5"/>`, () => file.click()),
+          square("font-add", "Add font link (gfonts, url)", "A font by its Google Fonts link or name, or by a link to a font file", `<path d="M8 3.5L8 12.5M3.5 8L12.5 8"/>`, () => { if (paste.hidden) { paste.hidden = false; paste.focus(); } else if (paste.value.trim()) add(); else paste.focus(); }),      // the field for the link is out of sight until this is pressed (Okay, 13 Oct 2026)
+          square("font-file-open", "Add font file (woff, ttf, otf)", "A font file from this computer: .ttf · .otf · .woff", `<path d="M4 2.5L9.5 2.5L12 5L12 13.5L4 13.5ZM9.5 2.5L9.5 5L12 5"/>`, () => file.click()),
           square("local-fonts", "Installed", "The fonts installed on this computer", `<rect x="2.5" y="3.5" width="11" height="7.5"/><path d="M6 13.5L10 13.5M8 11L8 13.5"/>`, () => this.local_fonts(true), { hidden: !("queryLocalFonts" in window) }), file),
         el("div", { className: "quiet note", id: "picker-note" }),
         // at the sheet's bottom, to the right: what the stickers say, on two columns (Okay, 13 Oct 2026)

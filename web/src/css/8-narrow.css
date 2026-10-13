@@ -2,13 +2,13 @@
   /* a phone, or a narrow window: the bar on top, the preview under it; below them the whole panel scrolls as one.
      The six columns share what the screen gives. */
   @media (max-width: 860px) {
-    :root { --canvas-top: var(--canvas-inset); --margin: 16px; --gap: 10px; --col: calc((100vw - 2 * var(--margin) - var(--lead) - 5 * var(--gap)) / 6); }
+    :root { --canvas-top: var(--canvas-inset); --margin: var(--u6); --gap: var(--u4); --col: calc((100vw - 2 * var(--margin) - var(--lead) - 5 * var(--gap)) / 6); }
     #app, #app.nopanel { grid-template-columns: 1fr; grid-template-rows: auto 42% 1fr; }
     #app.nopanel { grid-template-rows: auto 1fr 0; }
     .bar { grid-row: 1; flex-wrap: wrap; height: auto; padding: 0; border-top: 0; border-bottom: var(--hair) solid var(--bar-rule); }
-    .bar .lead { width: 100%; height: 46px; }
+    .bar .lead { width: 100%; height: var(--bar-lead-narrow); }
     .bar .group { border-left: 0; }
-    .bar .day { flex: 1 1 0; height: 48px; padding: 0 var(--margin); }
+    .bar .day { flex: 1 1 0; height: var(--bar-day-narrow); padding: 0 var(--margin); }
     .bar .viewing { padding: 0 var(--margin) 0 0; }
     .bar .zooms { display: none; }                  /* a phone pinches */
     .steps12 button:nth-child(odd):not(.special) { display: none; }      /* every other hour: 1 3 5 … wait for room */

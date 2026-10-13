@@ -9,15 +9,15 @@
      Guides on: its word is bold. Off: plain, and its sign is struck through. The word keeps the width of its bold
      form, so the box is the same size on and off. */
   main { --on-canvas: var(--ink); }
-  main.dark { --on-canvas: #FFFFFF; }
+  main.dark { --on-canvas: var(--white); }
   .guides { position: absolute; z-index: 3; top: var(--canvas-top); right: var(--canvas-inset); display: flex; justify-content: flex-end; }
   .onview { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: var(--hair) solid var(--line-faint); color: var(--on-canvas); user-select: none; }
   @media (hover: hover) { .onview:hover { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); } }      /* under the pointer its line is twice as thick: still no fill */
   /* undo · redo, before the Guides switch: two joined outlined buttons; pale when there is no step that way */
   .undos { position: absolute; z-index: 3; top: var(--canvas-top); left: var(--canvas-inset); display: flex; }      /* top left of the preview, beside the panel */
   .undobox { width: var(--control-large); }
-  .undobox:first-child { border-radius: 10px 0 0 10px; }
-  .undobox:last-child { border-left: 0; border-radius: 0 10px 10px 0; }
+  .undobox:first-child { border-radius: var(--round-switch) 0 0 var(--round-switch); }
+  .undobox:last-child { border-left: 0; border-radius: 0 var(--round-switch) var(--round-switch) 0; }
   /* what stands on the preview is faint, so the dial is what one sees. Three states, all by how
      much shows (opacity; the line by the same share of its colour), so they hold on any backdrop:
        can be pressed    line and what is in it at --faint; whole under a pointer, with the keyboard on it, or open
@@ -35,13 +35,13 @@
   .guidesbox[aria-pressed="true"] > .word { opacity: 1; }
   .undobox.none, .undobox.none:hover { border-color: var(--line-fainter); box-shadow: none; }
   :is(.undobox.none, .undobox.none:hover) > * { opacity: calc(var(--faint) / 2); }
-  .guidesbox { gap: 7px; padding: 0 10px 0 8px; border-radius: 10px 0 0 10px; font-weight: 600; }
-  .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 10px 10px 0; }
+  .guidesbox { gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch) 0 0 var(--round-switch); font-weight: 600; }
+  .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 var(--round-switch) var(--round-switch) 0; }
   .guidesbox .word::after { content: attr(data-text); display: block; height: 0; overflow: hidden; visibility: hidden; font-weight: 600; }
   .guidesbox[aria-pressed="false"] { font-weight: 400; }
   .guidesbox[aria-pressed="true"] .slash { display: none; }
   .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }      /* open, only its arrow turns */
-  .backdropbox { position: absolute; z-index: 3; left: var(--canvas-inset); bottom: var(--canvas-inset); gap: 7px; padding: 0 10px 0 8px; border-radius: 10px; }
+  .backdropbox { position: absolute; z-index: 3; left: var(--canvas-inset); bottom: var(--canvas-inset); gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch); }
   .backdropbox[aria-expanded="true"] { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); }
   .backdropbox .dot { border-color: var(--on-canvas); }
 
@@ -57,14 +57,14 @@
   .guidehead { display: grid; grid-template-columns: var(--guide-name) 1fr; align-items: center; min-height: var(--guide-row); margin-top: var(--unit); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
   .guidehead .name { font-weight: 600; }
   .guidehead .segs { justify-self: end; margin-right: calc(var(--ring-gap-in) + var(--ring-thick)); }
-  .guidehead .segs > button { padding: 0 9px; }
+  .guidehead .segs > button { padding: 0 var(--u3); }
   .guidekind.ring.selected .name { font-weight: 600; }
   /* a guide you added takes two lines: its name, its measures and a cross to remove it; under them its colours */
-  .guidekind.added { position: relative; grid-template-columns: 1fr; row-gap: 2px; padding: 4px 0; }
-  .guidekind.added .name { display: flex; align-items: center; gap: 6px; overflow: visible; }
+  .guidekind.added { position: relative; grid-template-columns: 1fr; row-gap: var(--u1); padding: var(--unit) 0; }
+  .guidekind.added .name { display: flex; align-items: center; gap: var(--unit); overflow: visible; }
   .guidekind.added .dots { padding-left: var(--guide-name); }
-  .guidekind.added > .sign { position: absolute; top: 4px; right: 0; }
-  .guidefield { display: inline-flex; align-items: center; gap: 4px; color: var(--grey); }
+  .guidekind.added > .sign { position: absolute; top: var(--unit); right: 0; }
+  .guidefield { display: inline-flex; align-items: center; gap: var(--unit); color: var(--grey); }
   .guidefield input { width: var(--col); height: var(--control); text-align: center; }
   .dots { display: flex; justify-content: space-between; align-items: center; padding: 0 calc(var(--ring-gap-in) + var(--ring-thick)) 0 var(--guide-gap); }
   .dots button { flex: none; display: grid; place-items: center; width: var(--guide-dot); height: var(--guide-dot); border-radius: 50%; }
@@ -79,15 +79,15 @@
   .guidelist .row > :is(label, input[type="range"]) { grid-column: auto; }
   .guidefoot { display: flex; justify-content: flex-end; padding-top: var(--pop-pad); }
   /* the outline of what the pointer is on: an orange line on a white one, so it shows on any colour */
-  .glow { fill: none; stroke: var(--glow); stroke-width: 1.5px; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
-  .glow.under { stroke: #fff; stroke-width: 4px; }
+  .glow { fill: none; stroke: var(--glow); stroke-width: var(--glow-line); vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+  .glow.under { stroke: var(--white); stroke-width: var(--glow-under); }
   /* its name: black inside, then a white line, then a black line — readable on any dial. --arrow: where the arrow sits. */
-  .tip { position: absolute; z-index: 2; pointer-events: none; padding: 3px 8px; background: var(--ink); color: #fff; white-space: nowrap;
-    box-shadow: 0 0 0 1px #fff, 0 0 0 2px var(--ink); font-weight: 600; }
+  .tip { position: absolute; z-index: 2; pointer-events: none; padding: var(--u1) var(--u3); background: var(--ink); color: var(--white); white-space: nowrap;
+    box-shadow: 0 0 0 var(--hair) var(--white), 0 0 0 var(--thick) var(--ink); font-weight: 600; }
   .tip svg { position: absolute; left: calc(var(--arrow, 50%) - 10px); top: 100%; overflow: visible; }
   .tip.below svg { top: auto; bottom: 100%; transform: scaleY(-1); }
   .tip svg path { fill: none; }
-  .tip svg .a { stroke: var(--ink); stroke-width: 5px; }
-  .tip svg .b { stroke: #fff; stroke-width: 2.6px; }
+  .tip svg .a { stroke: var(--ink); stroke-width: var(--tip-arrow); }
+  .tip svg .b { stroke: var(--white); stroke-width: var(--tip-arrow-in); }
   .tip svg .c { fill: var(--ink); }
 }

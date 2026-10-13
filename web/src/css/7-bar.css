@@ -14,7 +14,7 @@
   .bar .lead :is(button, .time) { background: none; border-color: var(--bar-dim); }
   .bar .lead :is(button, .time):hover { background: var(--bar-faint); border-color: var(--bar-edge); }
   .bar .lead button:active { background: var(--bar-dim); color: var(--bar-ink); }
-  .bar .lead .segs > button.on { background: var(--bar-on); color: #fff; border-color: var(--bar-dim); }
+  .bar .lead .segs > button.on { background: var(--bar-on); color: var(--white); border-color: var(--bar-dim); }
   .bar .lead .segs > button + button { border-left: 0; }
   .bar .lead .side { justify-self: center; width: var(--control); border-color: transparent; }      /* centred on the toggle column, like the eyes above it */
   .bar .side[aria-pressed="true"] { background: var(--bar-ink); color: var(--bar); }
@@ -23,19 +23,19 @@
   .bar .timebox { position: relative; display: grid; }
   .bar .lead .timebox .half { position: absolute; right: 0; top: 0; width: var(--half); border-color: transparent; font-size: var(--t-xs); letter-spacing: 0.04em; color: var(--bar-quiet); }
   .bar .lead .timebox .half:hover { color: var(--bar-ink); }
-  .bar .timebox .time { padding-right: calc(var(--half) - 6px); }
+  .bar .timebox .time { padding-right: calc(var(--half) - var(--unit)); }
   .bar .time { width: 100%; text-align: center; font-weight: 600; letter-spacing: 0.02em; }
   .bar .viewing { padding-right: 0; }
   .bar .viewing > button, .bar .zooms { flex: none; width: var(--col); }
   .bar .zooms { display: flex; }
   .bar .zooms button { flex: 1; min-width: 0; }
   .bar .zooms button + button { border-left: 0; }
-  .bar .status { max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: var(--t-s); opacity: 0.7; }
+  .bar .status { max-width: var(--status-width); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: var(--t-s); opacity: 0.7; }
   @media (max-width: 1500px) { .bar .status { display: none; } }      /* the status line needs a wide window */
 
   /* the day slider is a ruler: a line, cuts crossing it (drawn in draw_ruler, finer on a wider window), and a line
      for a handle. Nothing is filled in behind the handle: the past is not a quantity. */
-  .bar .day { --ruler: 22px; --names: 18px; --handle: 3px; position: relative; flex: 1; min-width: 0; display: grid; grid-template-rows: var(--ruler) var(--names); align-content: center; gap: 0; padding: 0 20px; }
+  .bar .day { position: relative; flex: 1; min-width: 0; display: grid; grid-template-rows: var(--ruler) var(--names); align-content: center; gap: 0; padding: 0 var(--u8); }
   .ruler { grid-area: 1 / 1; display: block; width: 100%; height: var(--ruler); pointer-events: none; fill: none; stroke: var(--bar-ink); stroke-width: 1; shape-rendering: crispEdges; }
   .ruler .line { opacity: 0.4; }
   .ruler .hour { opacity: 0.85; }
@@ -44,18 +44,18 @@
   .ruler .pose { opacity: 0; }
   .bar .day input[type="range"] { grid-area: 1 / 1; height: var(--ruler); cursor: ew-resize; }
   .bar .day input[type="range"]::-webkit-slider-runnable-track { height: var(--ruler); border-radius: 0; background: none; }
-  .bar .day input[type="range"]::-webkit-slider-thumb { width: var(--handle); height: var(--ruler); margin-top: 0; border-radius: 0; background: #fff; box-shadow: 0 0 0 2px var(--bar); }
+  .bar .day input[type="range"]::-webkit-slider-thumb { width: var(--handle); height: var(--ruler); margin-top: 0; border-radius: 0; background: var(--white); box-shadow: 0 0 0 var(--thick) var(--bar); }
   .bar .day input[type="range"]::-moz-range-track { height: var(--ruler); background: none; }
   .bar .day input[type="range"]::-moz-range-progress { background: none; }
-  .bar .day input[type="range"]::-moz-range-thumb { width: var(--handle); height: var(--ruler); border-radius: 0; background: #fff; box-shadow: 0 0 0 2px var(--bar); }
-  .bar .day input[type="range"]:focus-visible { outline: 2px solid var(--bar-ink); }
+  .bar .day input[type="range"]::-moz-range-thumb { width: var(--handle); height: var(--ruler); border-radius: 0; background: var(--white); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  .bar .day input[type="range"]:focus-visible { outline: var(--thick) solid var(--bar-ink); }
   /* the steps' names: --at = how far along the day (0 to 1); the side margins keep them on the handle's path */
   .steps12 { position: relative; height: var(--names); margin: 0 calc(var(--handle) / 2); }
-  .steps12 button { position: absolute; left: calc(var(--at) * 100%); top: 0; transform: translateX(-50%); min-width: var(--names); height: var(--names); padding: 0 2px; font-size: var(--t-xs); line-height: var(--names); color: var(--bar-quiet); }
-  .steps12 button:hover { color: #fff; text-decoration: underline; }
-  .steps12 button.on { color: #fff; font-weight: 700; }
+  .steps12 button { position: absolute; left: calc(var(--at) * 100%); top: 0; transform: translateX(-50%); min-width: var(--names); height: var(--names); padding: 0 var(--u1); font-size: var(--t-xs); line-height: var(--names); color: var(--bar-quiet); }
+  .steps12 button:hover { color: var(--white); text-decoration: underline; }
+  .steps12 button.on { color: var(--white); font-weight: 700; }
   /* 10:10 stands on the preview, over the bar and clear of the ruler, above its place in the day */
   .steps12 button.special { top: auto; bottom: calc((var(--bar-height) + var(--hair) + var(--ruler) + var(--names)) / 2 + var(--unit));      /* from the hours' foot up to the bar's top line (ruler and hours stand in the bar's middle), and one unit more */
     z-index: 1; padding: 0 var(--unit); border-radius: calc(var(--names) / 2); background: var(--bar-ink); color: var(--bar); font-weight: 600; }
-  .steps12 button.special:hover { background: #fff; color: #000; text-decoration: none; }
+  .steps12 button.special:hover { background: var(--white); color: var(--black); text-decoration: none; }
 }

@@ -8,7 +8,7 @@
   .windowcards { padding: calc(2 * var(--unit)) 0 0; border-top: var(--thick) solid var(--ink); }      /* no room under the cards: they are tabs, standing on the line of the pane they choose */
   .windowcards .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }      /* the four tabs span the panel from margin to margin, the eyes' column too */
   .windowcards .card { position: relative; display: grid; }
-  .windowcards .card > button:first-child { display: grid; justify-items: center; gap: 3px; padding: var(--tab-pad) 4px; font-weight: 600; }
+  .windowcards .card > button:first-child { display: grid; justify-items: center; gap: var(--u1); padding: var(--tab-pad) var(--unit); font-weight: 600; }
   .windowcards .card > button:first-child svg { display: block; }
   .windowcards .card > button:first-child.off:not(.on) { color: var(--grey); font-weight: 400; }
   .handsbar + .tabsbar { border-top: var(--hair) solid var(--rule); }
