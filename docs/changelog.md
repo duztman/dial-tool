@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.35.6 (web version) · 14 Oct 2026
+
+- **The legend's window** is two of the sheet's columns wide (from over *Add font file* to the right edge), its items one under the other with a hairline between; each meaning shortened to one line, so an item is two lines at most (meaning · OpenType name), and the window fits without scrolling.
+- **Shadows**: the sheet's a little less blurred (6, was 7); the legend's lighter and closer (`--shadow-light`).
+- **The font sheet** ends one row height above the bar (its top stays).
+
 ## beta 4.35.5 (web version) · 14 Oct 2026
 
 - **The legend is a window**: open, it floats over the foot of the font list (the list keeps its height), with a light frame and the sheet's shadow; its items two to a row, a hairline between them; the stickers keep their size, the words are small (11) on as many lines as they need, set closer (1.2).

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.35.5 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.35.6 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -141,7 +141,8 @@
     --st-other: color-mix(in srgb, #7A5CFF var(--st-tint), var(--field)); --st-figure: color-mix(in srgb, #FF6A00 var(--st-tint), var(--field));
     --st-sets: color-mix(in srgb, #2D7BFF var(--st-tint), var(--field)); --st-styles: var(--ground);
     --st-tint: var(--guide-tint);
-    --shadow: calc(-2 * var(--unit)) 0 7px rgba(0, 0, 0, 0.28);      /* what floats over the window throws its shadow to the left, a little soft */
+    --shadow: calc(-2 * var(--unit)) 0 6px rgba(0, 0, 0, 0.28);
+    --shadow-light: calc(-1 * var(--unit)) 0 5px rgba(0, 0, 0, 0.14);      /* a window over a window (the font sheet's legend): lighter, half as far (Okay, 14 Oct 2026: "second shadow lighter, both less blur") */      /* what floats over the window throws its shadow to the left, a little soft */
     --swatch-col: calc(2 * (var(--line-button) + var(--ringline-gap)) + var(--ringline-inner) - var(--hair));      /* from a pane's right edge to the right edge of the ring list's colour column: a colour swatch further down stands in that column too */
     --t-sample: 20px;                              /* a font's numerals in the font list, when the browser sets them */
     --t-pixel: 8px;                                /* the pixel font's own size: its dots fall on the screen's (R32) */
@@ -740,16 +741,16 @@
   .stickerlabel { display: flex; min-width: 0; }
   .axisname { display: flex; align-items: center; gap: var(--unit); min-width: 0; color: var(--grey); white-space: nowrap; }      /* an axis's name, as a label, and its code as a sticker; a press sets the axis back */
   .axisname:hover { color: var(--ink); }
-  /* the legend: folded to a button beside the squares; open, a window of its own over the foot of the list, its items
-     two to a row with a hairline between them, small words on as many lines as they need (Okay, 14 Oct 2026: "this
-     opening thing is a window") */
+  /* the legend: folded to a button beside the squares; open, a window of its own over the foot of the list, two of the
+     sheet's columns wide (from over the second button to the right edge), its items one under the other with a hairline
+     between them, small words on three lines at most (Okay, 14 Oct 2026) */
   .picker .adding { position: relative; }
-  .legend { position: absolute; z-index: 2; left: 0; right: 0; bottom: calc(100% + var(--unit)); display: grid; grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr); column-gap: var(--unit);
-    max-height: 60vh; overflow-y: auto; margin: 0; padding: var(--unit) var(--u3); border: var(--hair) solid var(--rule); background: var(--paper); box-shadow: var(--shadow);
+  .legend { position: absolute; z-index: 2; left: calc((100% - 2 * var(--unit)) / 3 + var(--unit)); right: 0; bottom: calc(100% + var(--unit)); display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: var(--u3);
+    max-height: calc(100vh - var(--header) - var(--bar-height) - 2 * var(--line)); overflow-y: auto; margin: 0; padding: var(--unit) var(--u3); border: var(--hair) solid var(--rule); background: var(--paper); box-shadow: var(--shadow-light);
     color: var(--ink); font-size: var(--t-xs); line-height: 1.2; }
   .legend[hidden] { display: none; }
-  .legend :is(dt, dd) { padding: var(--unit) 0; border-top: var(--hair) solid var(--rule); }
-  .legend :is(dt, dd):nth-child(-n + 4) { border-top: 0; }      /* the first row has no line over it */
+  .legend :is(dt, dd) { padding: var(--u1) 0; border-top: var(--hair) solid var(--rule); }
+  .legend :is(dt, dd):nth-child(-n + 2) { border-top: 0; }      /* the first item has no line over it */
   .legend dt { display: flex; justify-content: flex-end; align-items: flex-start; }
   .legend dt .sticker { padding: calc(0.375 * var(--unit)) calc(0.75 * var(--unit)); font-size: calc(1.5 * var(--t-pixel)); }      /* three quarters of its double (R32's one exception) */
   .legend dd { margin: 0; }
@@ -761,7 +762,7 @@
   /* it floats over the panel: as wide and as high as the panel (from the window's top to the bar, never over the
      bar), its left edge on the panel's third column, where the controls start, so its right part lies over the
      preview; a shadow to its left */
-  .picker { position: fixed; inset: var(--header) auto var(--bar-height) calc(var(--margin) + var(--lead) + 2 * (var(--col) + var(--gap))); width: var(--panel); max-width: calc(100vw - 2 * var(--margin)); height: auto; max-height: none; margin: 0; padding: 0; border: var(--hair) solid var(--rule); box-shadow: var(--shadow);      /* a light edge (Okay, 13 Oct 2026: "lighter borders") */
+  .picker { position: fixed; inset: var(--header) auto calc(var(--bar-height) + var(--line)) calc(var(--margin) + var(--lead) + 2 * (var(--col) + var(--gap))); width: var(--panel); max-width: calc(100vw - 2 * var(--margin)); height: auto; max-height: none; margin: 0; padding: 0; border: var(--hair) solid var(--rule); box-shadow: var(--shadow);      /* a light edge (Okay, 13 Oct 2026: "lighter borders") */
     background: var(--paper); color: var(--ink); }
   .picker[open] { display: grid; grid-template-rows: auto 1fr auto; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 3) var(--margin) var(--margin); }
   .picker:focus { outline: none; }
@@ -5354,7 +5355,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.35.5";
+var VERSION = "beta 4.35.6";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -7190,18 +7191,18 @@ var LANG_NAMES = { default: "As the font sets it", tr: "Turkish", nl: "Dutch", d
 var lang_short = (code) => code === "default" ? "Lang." : code.slice(0, 2).toUpperCase();
 var TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip" };
 var STICKER_LEGEND = [
-  ["w. 100\u2013900", "weight", "Any weight between the two numbers, here 100 to 900.", "wght axis"],
+  ["w. 100\u2013900", "weight", "Any weight in the range.", "wght axis"],
   ["bold", "weight", "Has a bold.", ""],
-  ["italic", "italic", "Has an italic.", "ital or slnt axis, or an italic style"],
-  ["wd", "width", "Any width, from narrow to wide.", "wdth axis"],
-  ["opt", "optical", "Drawn for small sizes and for large ones.", "opsz axis"],
-  ["tab", "figure", "Tabular figures: every figure one width.", "tnum"],
-  ["old", "figure", "Oldstyle figures, with ascenders and descenders.", "onum"],
-  ["zero", "figure", "A zero with a slash through it.", "zero"],
-  ["frac", "figure", "Fractions: \xBD made from 1/2.", "frac"],
-  ["2 ss", "sets", "Stylistic sets: other shapes to switch on.", "ss01 to ss20"],
-  ["5 cv", "sets", "Character variants: one character drawn another way.", "cv01 to cv99"],
-  ["3 st", "styles", "Separate styles: Regular, Bold and so on.", ""]
+  ["italic", "italic", "Has an italic.", "ital, slnt or a style"],
+  ["wd", "width", "Any width, narrow to wide.", "wdth axis"],
+  ["opt", "optical", "Drawn for small and large.", "opsz axis"],
+  ["tab", "figure", "Tabular: figures one width.", "tnum"],
+  ["old", "figure", "Oldstyle figures.", "onum"],
+  ["zero", "figure", "A zero with a slash.", "zero"],
+  ["frac", "figure", "Fractions: \xBD from 1/2.", "frac"],
+  ["2 ss", "sets", "Sets of other shapes.", "ss01 to ss20"],
+  ["5 cv", "sets", "Variants of one character.", "cv01 to cv99"],
+  ["3 st", "styles", "Separate styles.", ""]
 ];
 var FIGURE_WORDS = [["tnum", "tab"], ["onum", "old"], ["zero", "zero"], ["frac", "frac"]];
 var NAME_LEAST = 0.7;

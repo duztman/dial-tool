@@ -86,16 +86,16 @@
   .stickerlabel { display: flex; min-width: 0; }
   .axisname { display: flex; align-items: center; gap: var(--unit); min-width: 0; color: var(--grey); white-space: nowrap; }      /* an axis's name, as a label, and its code as a sticker; a press sets the axis back */
   .axisname:hover { color: var(--ink); }
-  /* the legend: folded to a button beside the squares; open, a window of its own over the foot of the list, its items
-     two to a row with a hairline between them, small words on as many lines as they need (Okay, 14 Oct 2026: "this
-     opening thing is a window") */
+  /* the legend: folded to a button beside the squares; open, a window of its own over the foot of the list, two of the
+     sheet's columns wide (from over the second button to the right edge), its items one under the other with a hairline
+     between them, small words on three lines at most (Okay, 14 Oct 2026) */
   .picker .adding { position: relative; }
-  .legend { position: absolute; z-index: 2; left: 0; right: 0; bottom: calc(100% + var(--unit)); display: grid; grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr); column-gap: var(--unit);
-    max-height: 60vh; overflow-y: auto; margin: 0; padding: var(--unit) var(--u3); border: var(--hair) solid var(--rule); background: var(--paper); box-shadow: var(--shadow);
+  .legend { position: absolute; z-index: 2; left: calc((100% - 2 * var(--unit)) / 3 + var(--unit)); right: 0; bottom: calc(100% + var(--unit)); display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: var(--u3);
+    max-height: calc(100vh - var(--header) - var(--bar-height) - 2 * var(--line)); overflow-y: auto; margin: 0; padding: var(--unit) var(--u3); border: var(--hair) solid var(--rule); background: var(--paper); box-shadow: var(--shadow-light);
     color: var(--ink); font-size: var(--t-xs); line-height: 1.2; }
   .legend[hidden] { display: none; }
-  .legend :is(dt, dd) { padding: var(--unit) 0; border-top: var(--hair) solid var(--rule); }
-  .legend :is(dt, dd):nth-child(-n + 4) { border-top: 0; }      /* the first row has no line over it */
+  .legend :is(dt, dd) { padding: var(--u1) 0; border-top: var(--hair) solid var(--rule); }
+  .legend :is(dt, dd):nth-child(-n + 2) { border-top: 0; }      /* the first item has no line over it */
   .legend dt { display: flex; justify-content: flex-end; align-items: flex-start; }
   .legend dt .sticker { padding: calc(0.375 * var(--unit)) calc(0.75 * var(--unit)); font-size: calc(1.5 * var(--t-pixel)); }      /* three quarters of its double (R32's one exception) */
   .legend dd { margin: 0; }
@@ -107,7 +107,7 @@
   /* it floats over the panel: as wide and as high as the panel (from the window's top to the bar, never over the
      bar), its left edge on the panel's third column, where the controls start, so its right part lies over the
      preview; a shadow to its left */
-  .picker { position: fixed; inset: var(--header) auto var(--bar-height) calc(var(--margin) + var(--lead) + 2 * (var(--col) + var(--gap))); width: var(--panel); max-width: calc(100vw - 2 * var(--margin)); height: auto; max-height: none; margin: 0; padding: 0; border: var(--hair) solid var(--rule); box-shadow: var(--shadow);      /* a light edge (Okay, 13 Oct 2026: "lighter borders") */
+  .picker { position: fixed; inset: var(--header) auto calc(var(--bar-height) + var(--line)) calc(var(--margin) + var(--lead) + 2 * (var(--col) + var(--gap))); width: var(--panel); max-width: calc(100vw - 2 * var(--margin)); height: auto; max-height: none; margin: 0; padding: 0; border: var(--hair) solid var(--rule); box-shadow: var(--shadow);      /* a light edge (Okay, 13 Oct 2026: "lighter borders") */
     background: var(--paper); color: var(--ink); }
   .picker[open] { display: grid; grid-template-rows: auto 1fr auto; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 3) var(--margin) var(--margin); }
   .picker:focus { outline: none; }

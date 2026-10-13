@@ -182,13 +182,13 @@ const TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip" };
 // the font sheet's legend: a sticker of each kind, and what it says about a family. The stickers' words are short, so a
 // family's stickers stand on one line; bold and italic keep their words (Okay, 13 Oct 2026: "condense all sticker text but
 // bold and italic. weight gets w. and range"). The legend spells each one out.
-// Each meaning is a sentence; under it, light, the OpenType name of what the sticker reads (Okay, 14 Oct 2026).
-const STICKER_LEGEND = [["w. 100–900", "weight", "Any weight between the two numbers, here 100 to 900.", "wght axis"], ["bold", "weight", "Has a bold.", ""],
-  ["italic", "italic", "Has an italic.", "ital or slnt axis, or an italic style"], ["wd", "width", "Any width, from narrow to wide.", "wdth axis"],
-  ["opt", "optical", "Drawn for small sizes and for large ones.", "opsz axis"], ["tab", "figure", "Tabular figures: every figure one width.", "tnum"],
-  ["old", "figure", "Oldstyle figures, with ascenders and descenders.", "onum"], ["zero", "figure", "A zero with a slash through it.", "zero"],
-  ["frac", "figure", "Fractions: ½ made from 1/2.", "frac"], ["2 ss", "sets", "Stylistic sets: other shapes to switch on.", "ss01 to ss20"],
-  ["5 cv", "sets", "Character variants: one character drawn another way.", "cv01 to cv99"], ["3 st", "styles", "Separate styles: Regular, Bold and so on.", ""]];
+// Each meaning is a short sentence, one line in the legend's window; under it, light, the OpenType name of what the sticker reads (Okay, 14 Oct 2026).
+const STICKER_LEGEND = [["w. 100–900", "weight", "Any weight in the range.", "wght axis"], ["bold", "weight", "Has a bold.", ""],
+  ["italic", "italic", "Has an italic.", "ital, slnt or a style"], ["wd", "width", "Any width, narrow to wide.", "wdth axis"],
+  ["opt", "optical", "Drawn for small and large.", "opsz axis"], ["tab", "figure", "Tabular: figures one width.", "tnum"],
+  ["old", "figure", "Oldstyle figures.", "onum"], ["zero", "figure", "A zero with a slash.", "zero"],
+  ["frac", "figure", "Fractions: ½ from 1/2.", "frac"], ["2 ss", "sets", "Sets of other shapes.", "ss01 to ss20"],
+  ["5 cv", "sets", "Variants of one character.", "cv01 to cv99"], ["3 st", "styles", "Separate styles.", ""]];
 // the OpenType switches that change numerals, in a short word each, for the stickers
 const FIGURE_WORDS = [["tnum", "tab"], ["onum", "old"], ["zero", "zero"], ["frac", "frac"]];
 // a variable font's axes, in words, for the font sheet's stickers
