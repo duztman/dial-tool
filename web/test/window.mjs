@@ -840,14 +840,18 @@ await click_mm(...clock(10, 120));
 check(await page.$$eval(".form .fontrow", (rows) => rows.length) === 1 && await page.$$eval(".form select#font-family", (e) => e.length) === 0, "Type shows one font, the selected one, and no dropdowns");
 await page.click("#font-current");
 const sheet_at = await page.$eval("#font-picker", (d) => { const r = d.getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); const c = getComputedStyle(d), p = document.querySelector(".panel").getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top), Math.round(r.width - p.width), Math.round(r.right - m.left), c.boxShadow !== "none", !document.querySelector("#font-done")].join(" "); });
-check(await page.$eval("#font-picker", (d) => d.open) && sheet_at === "24 24 -1 23 true true", `pressing it opens the font sheet: floating over the panel, a margin down and a margin to the right, as wide as the panel less its edge line, its right part over the preview, with a shadow; no Done button (${sheet_at})`);
+check(await page.$eval("#font-picker", (d) => d.open) && sheet_at === "24 0 -1 23 true true" && await page.$eval("#font-picker", (d) => Math.round(document.querySelector(".bar").getBoundingClientRect().top - d.getBoundingClientRect().bottom) === 0 && document.activeElement !== document.querySelector("#font-find") && document.querySelector("#font-find").closest("header") !== null), `pressing it opens the font sheet: floating over the panel, from the window's top down to the bar, a margin to the right, as wide as the panel less its edge line, with a shadow; no Done button; Find a font is on its top line and waits for a press (${sheet_at})`);
 {
   const row = await page.evaluate(() => { const rows = [...document.querySelectorAll("#font-picker .fontrow")], x = (e) => Math.round(e.getBoundingClientRect().left), by = (f) => rows.find((r) => r.dataset.family === f);
-    return { names: new Set(rows.map((r) => x(r.querySelector(".name")))).size, numerals: new Set(rows.map((r) => x(r.querySelector(".sample")))).size, order: rows.every((r) => x(r.querySelector(".name")) < x(r.querySelector(".sample")) && x(r.querySelector(".sample")) < x(r.querySelector(".has"))), drawn: by("Jost").querySelector(".name svg path") !== null, barlow: by("Barlow").querySelector(".has").textContent, archivo: by("Archivo").querySelector(".has").textContent, line: getComputedStyle(rows[0]).borderBottomColor === getComputedStyle(document.querySelector(".fontlist")).borderTopColor,
+    return { names: new Set(rows.map((r) => x(r.querySelector(".name")))).size, numerals: new Set(rows.map((r) => x(r.querySelector(".sample")))).size, order: rows.every((r) => x(r.querySelector(".name")) < x(r.querySelector(".sample")) && x(r.querySelector(".sample")) < x(r.querySelector(".has"))), drawn: by("Jost").querySelector(".name svg path") !== null, barlow: [...by("Barlow").querySelectorAll(".sticker")].map((e) => e.textContent + (e.classList.contains("strong") ? "!" : "")).join(" "), archivo: [...by("Archivo").querySelectorAll(".sticker")].map((e) => e.textContent + (e.classList.contains("strong") ? "!" : "")).join(" "), sticker: (() => { const c = getComputedStyle(by("Archivo").querySelector(".sticker.strong")), d = getComputedStyle(by("Archivo").querySelector(".sticker:not(.strong)")); return [c.fontFamily.includes("Silkscreen"), c.fontSize, c.fontWeight, d.fontWeight, document.fonts.check('700 8px "Silkscreen"')].join(" "); })(), fits: rows.every((r) => { const n = r.querySelector(".name"), g = n.querySelector("svg"); return !g || g.getBoundingClientRect().right <= n.getBoundingClientRect().right + 0.5; }), has: new Set(rows.map((r) => Math.round(r.querySelector(".has").getBoundingClientRect().width))).size, line: getComputedStyle(rows[0]).borderBottomColor === getComputedStyle(document.querySelector(".fontlist")).borderTopColor,
       squares: [...document.querySelectorAll("#font-picker .squares > .pickt")].filter((b) => b.offsetParent).map((b) => { const r = b.getBoundingClientRect(); return b.textContent + " " + (Math.round(r.width) === Math.round(r.height)); }).join(" · ") }; });
   check(row.names === 1 && row.numerals === 1 && row.order && row.drawn && row.line, "a line of the sheet: the family's name drawn in its own face at the left · its numerals, all starting on one line · what it has; a full line between two");
-  check(row.barlow === "4 styles\nbold" && row.archivo === "wght · wdth", `what a family has: Barlow ${row.barlow}; Archivo ${row.archivo}`);
+  check(row.barlow === "bold! 4 styles" && row.archivo === "weight! width" && row.sticker === "true 8px 700 400 true" && row.has === 1, `what a family has, as stickers in the pixel font, in words: Barlow ${row.barlow}; Archivo ${row.archivo} (! = bold); their column is one width (${row.sticker})`);
+  check(row.fits, "every family's name fits its column: the long ones are drawn smaller");
   check(row.squares.startsWith("Add link true · Font file true"), `Add fonts has square buttons (${row.squares})`);
+  const shut = await page.isHidden("#font-link");
+  await page.click("#font-add");
+  check(shut && await page.isVisible("#font-link") && await page.evaluate(() => document.activeElement.id === "font-link"), "the field for a link is out of sight until Add link is pressed; then it is there, with the keyboard in it");
 }
 check(await page.$$eval('#font-picker .fontrow[data-group="list"]', (rows) => rows.length) === 20 && await page.$$eval('#font-picker .fontrow[data-group="list"] .sample svg path', (p) => p.length) === 20, "the sheet lists the tool's twenty families, each showing numerals in its own outlines");
 await page.click('.fontrow[data-family="Jost"]');
@@ -869,15 +873,18 @@ await context.route("https://raw.githubusercontent.com/google/fonts/main/**", (r
   if (path_ === "ofl/lora/Lora[wght].ttf") return route.fulfill({ path: "/usr/share/fonts/truetype/google-fonts/Lora-Variable.ttf", headers: cors });
   return route.fulfill({ status: 404, body: "404: Not Found", headers: cors });
 });
+if (await page.isHidden("#font-link")) await page.click("#font-add");
 await page.fill("#font-link", "https://fonts.google.com/specimen/Lora?preview.text=12");
 await page.click("#font-add");
 await page.waitForFunction(() => window.dial_tool.ring().family === "Lora" && window.dial_tool.statik, null, { timeout: 8000 }).catch(() => {});
 check(await S("S.rings[S.ui_ring].ps === 'Lora-Regular'") && asked_for.includes("ofl/lora/Lora[wght].ttf") && !asked_for.includes("ofl/lora/Italic.ttf"), "a Google Fonts page link adds the family's upright fonts and uses it");
 check((await page.textContent("#picker-note")).includes("Added Lora") && await page.$('#font-picker .fontrow[data-family="Lora"][data-group="added"] .sample svg') !== null && await S("JSON.parse(localStorage.getItem('dial-tool-fonts')).some((f) => f.ps === 'Lora-Regular' && f.url.includes('raw.githubusercontent.com'))"), "the sheet says so; Lora is listed under Added by you with its numerals, and this browser remembers where it came from");
+if (await page.isHidden("#font-link")) await page.click("#font-add");
 await page.fill("#font-link", "Nonesuch Grotesk");
 await page.press("#font-link", "Enter");
 await page.waitForFunction(() => document.querySelector("#picker-note").textContent.includes("no family"), null, { timeout: 8000 }).catch(() => {});
 check((await page.textContent("#picker-note")).includes("no family spelled"), "a name Google Fonts doesn't have is answered plainly");
+if (await page.isHidden("#font-link")) await page.click("#font-add");
 await page.fill("#font-link", "https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap");
 await page.press("#font-link", "Enter");
 await page.waitForFunction(() => document.querySelector("#picker-note").textContent.includes("Added Lora"), null, { timeout: 8000 }).catch(() => {});

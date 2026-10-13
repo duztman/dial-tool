@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.27 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **Font sheet**: as high as the panel, down to the bar; hard shadow; Find a font at the top right, not active until pressed; stickers in Silkscreen (bold for bold · weight · italic) in words; long names and wide numerals are drawn smaller to fit; the link field shows when *Add link* is pressed.
+
 ## beta 4.26 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.

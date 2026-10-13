@@ -110,7 +110,7 @@
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
     --t-xs: 11px; --t-s: 12px; --t-m: 13px; --t-l: 15px;
     --font-name: 104px; --font-has: 92px;          /* the font sheet's columns: a family's name · what it has (its numerals take the rest) */
-    --shadow: calc(-2 * var(--unit)) 0 calc(5 * var(--unit)) rgba(0, 0, 0, 0.28);      /* what floats over the window throws its shadow to the left */
+    --shadow: calc(-2 * var(--unit)) 0 0 rgba(0, 0, 0, 0.28);      /* what floats over the window throws its shadow to the left: a hard edge, no blur (Okay, 13 Oct 2026: "much sharper") */
     --t-sample: 20px;                              /* a font's numerals in the font list, when the browser sets them */
     --t-pixel: 8px;                                /* the pixel font's own size: its dots fall on the screen's (R32) */
     --sans: system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -625,19 +625,26 @@
   .fontrow :is(.sample, .face) { display: flex; align-items: center; min-width: 0; overflow: hidden; line-height: 1; white-space: nowrap; }
   .fontrow .sample { font-size: var(--t-sample); }
   .fontrow .face { font-size: var(--t-l); }
-  .fontrow :is(.sample, .face) svg { display: block; flex: none; }
-  .fontrow .has { color: var(--grey); font: var(--t-xs)/1.25 var(--mono); text-align: right; white-space: pre; }
+  .fontrow .sample svg { display: block; flex: none; }
+  .fontrow .face svg, .fontlist .sample svg { display: block; flex: 0 1 auto; height: auto; max-width: 100%; }      /* in the sheet: what is too wide for its column is drawn smaller */
+  .fontrow .has { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: calc(var(--unit) / 2); }
+  /* a sticker: one thing a family has, in the pixel font at its own size (R32). Strong: bold, ink. Else: regular, grey. */
+  .sticker { padding: var(--hair) calc(var(--unit) / 2); border: var(--hair) solid var(--rule); color: var(--grey); font: 400 var(--t-pixel)/1.25 var(--pixel); text-transform: uppercase; white-space: nowrap; }
+  .sticker.strong { border-color: var(--ink); color: var(--ink); font-weight: 700; }
+
   .fontrow.current { grid-template-columns: minmax(0, 1fr); height: var(--head); border: 0; }      /* the chosen font's numerals, alone on their line */
   .fontlist .group { padding: calc(var(--unit) * 2) var(--btn-pad) calc(var(--unit) / 2); border-bottom: var(--hair) solid var(--rule); }
 
   /* the font sheet: over the panel, on its columns, so the dial stays in view; from the bottom on a phone */
-  /* it floats over the panel, as wide as the panel, a margin down and the same margin to the right, so its right
-     part lies over the preview; a shadow to its left (Okay, 13 Oct 2026) */
-  .picker { position: fixed; inset: var(--margin) auto var(--margin) var(--margin); width: var(--panel); max-width: calc(100vw - 2 * var(--margin)); height: auto; max-height: none; margin: 0; padding: 0; border: var(--hair) solid var(--ink); box-shadow: var(--shadow);
+  /* it floats over the panel: as wide and as high as the panel (from the window's top to the bar, never over the
+     bar), a margin to the right, so its right part lies over the preview; a hard shadow to its left (Okay, 13 Oct 2026) */
+  .picker { position: fixed; inset: 0 auto var(--bar-height) var(--margin); width: var(--panel); max-width: calc(100vw - 2 * var(--margin)); height: auto; max-height: none; margin: 0; padding: 0; border: var(--hair) solid var(--ink); box-shadow: var(--shadow);
     background: var(--paper); color: var(--ink); }
-  .picker[open] { display: grid; grid-template-rows: auto auto 1fr auto; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 3) var(--margin) var(--margin); }
+  .picker[open] { display: grid; grid-template-rows: auto 1fr auto; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 3) var(--margin) var(--margin); }
+  .picker:focus { outline: none; }
   .picker::backdrop { background: none; }          /* the dial keeps its true colours while you choose */
-  .picker header { display: flex; align-items: center; justify-content: space-between; }
+  .picker header { display: flex; align-items: center; justify-content: space-between; gap: var(--gap); }
+  .picker header > input { width: calc(3 * var(--col) + 2 * var(--gap)); }      /* Find a font: at the sheet's top right, half its width */
   .picker header h2 { font-size: var(--t-l); }
   .picker .fontlist { min-height: 0; }
   .picker .adding { display: grid; gap: calc(var(--unit) * 2); border-top: var(--thick) solid var(--ink); padding-top: calc(var(--unit) * 2); }

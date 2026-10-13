@@ -35,7 +35,7 @@ const out = await esbuild.build({
 });
 const code = out.outputFiles[0].text.replace(/<\/script/g, "<\\/script");
 // Silkscreen (SIL OFL, fonts/ui/): the pixel font for the tiny numbers inside small drawings. Packed into the stylesheet.
-const pixel = `@font-face { font-family: "Silkscreen"; src: url(data:font/ttf;base64,${b64(path.join(here, "fonts/ui/Silkscreen-Regular.ttf"))}) format("truetype"); font-display: block; }\n`;
+const pixel = [["Regular", 400], ["Bold", 700]].map(([style, weight]) => `@font-face { font-family: "Silkscreen"; font-weight: ${weight}; src: url(data:font/ttf;base64,${b64(path.join(here, `fonts/ui/Silkscreen-${style}.ttf`))}) format("truetype"); font-display: block; }\n`).join("");      // bold: the stickers that matter most in the font sheet
 const css = fs.readFileSync(path.join(here, "src/style.css"), "utf8") + pixel;
 const version = /VERSION = "([^"]+)"/.exec(fs.readFileSync(path.join(here, "src/geometry.js"), "utf8"))[1];
 
