@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.19 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **Windows**: the *Print* pane is gone; *Frame* and *Clearance* are in *Shape*.
+- **Export**: *For production* is named *Print*.
+- Half line also when a hidden row lies between a row and its nested row.
+
 ## beta 4.18 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.

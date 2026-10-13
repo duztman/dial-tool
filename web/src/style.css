@@ -338,9 +338,9 @@
   /* a nested row belongs to the row above it (.nest: a question about it · .tied: its settings · .under: a note
      about it). Between the two stands a half line: a hairline from the controls' column to the right edge, in
      the place of the whole one (Okay, 13 Oct 2026). The row above draws it, on its own last line, where every
-     line of a row falls; the nested row draws no line over itself. */
+     line of a row falls; the nested row draws no line over itself. One hidden row may lie between the two (a note that doesn't apply now). */
   .row:is(.nest, .tied, .under), .row.note { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
-  .row:has(+ .row:is(.nest, .tied, .under):not([hidden])) { box-shadow: 0 calc(-1 * var(--hair)) 0 var(--row-rule); background: linear-gradient(var(--row-rule) 0 0) right bottom / calc(100% - var(--nest-from)) var(--hair) no-repeat; }
+  .row:has(+ .row:is(.nest, .tied, .under):not([hidden])), .row:has(+ .row[hidden] + .row:is(.nest, .tied, .under):not([hidden])) { box-shadow: 0 calc(-1 * var(--hair)) 0 var(--row-rule); background: linear-gradient(var(--row-rule) 0 0) right bottom / calc(100% - var(--nest-from)) var(--hair) no-repeat; }
   .row:is(.nest, .tied, .under):has(+ .row:is(.nest, .tied, .under):not([hidden])) { box-shadow: none; }
   .row > .blank:first-child { display: block; }
   .row.note.under > .quiet { grid-column: 3 / -1; }      /* a note about the controls above it starts on their column */      /* an empty place where a label would stand: what follows keeps its column */

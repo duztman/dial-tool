@@ -294,6 +294,10 @@ const ROWS = {
     chk("turn", "Turn it with its radius", { ...W, show: (T) => T.on && G.window_shape(T) !== "arc" }),
     info("Only off the quarters: at 4 it turns 30°, at half past four 45°.", { ...W, show: (T) => T.on && T.turn && G.window_turn(T) === 0 && G.window_shape(T) !== "arc" }),
     chk("text_turn", "Turn the text with it", { ...W, nest: true, show: (T) => T.on && T.turn && G.window_shape(T) !== "arc" && ["date", "day"].includes(G.WINDOW_KINDS[T.kind]) }),
+    // the frame round the hole and the room kept clear round it are drawn on the dial: they are design, so they
+    // stand here, not under a pane called Print (Okay, 13 Oct 2026: print things under Print, design among design)
+    num("frame", "Frame", 0, 0.6, 0.01, { ...W, show: win_on }),
+    num("clear", "Clearance", 0, 1, 0.01, { ...W, show: win_on }),
     hdr("Place and size", { ...W, show: win_on }),
     pop("at", "Position", G.DATE_AT.map((d) => d[0]), { ...W, show: win_on, head: true }),
     num("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
@@ -304,9 +308,6 @@ const ROWS = {
     col("text_c", "Text · picture", { ...W, show: win_on, or: (T) => T.ink }),       // or: what an unset colour is
     col("disc_c", "Disc under it", { ...W, show: win_on, or: () => [1, 1, 1, 1] }),
     col("ink", "Frame", { ...W, show: win_on }),
-    hdr("Print", { ...W, show: win_on }),
-    num("frame", "Frame", 0, 0.6, 0.01, { ...W, show: win_on }),
-    num("clear", "Print clearance", 0, 1, 0.01, { ...W, show: win_on }),
   ],
   Export: [
     // Okay's order, 13 Oct 2026. Export a file stays in view (pinned): Vector · PDF | SVG, with its tick right
@@ -319,7 +320,7 @@ const ROWS = {
     custom("export_png"),
     num("out_dpi", "dpi", 72, 2400, 1, { tie: true, bare: true }),      // bare: no word before it (the line under it says "at 600 dpi"); the slider stands under the buttons
     custom("png_size"),
-    hdr("For production"),
+    hdr("Print"),                                  // what only the printed or etched dial needs (was "For production" until beta 4.19)
     chk("out_production", "Mono print mask"),
     chk("out_mirror", "Mirrored, for toner transfer"),
     hdr("Link to this dial"),
