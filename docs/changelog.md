@@ -1,5 +1,16 @@
 # Dial Tool — changelog
 
+## beta 4.35 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only; the look-check (`web/test/same.mjs`) proves the first step against 4.34.
+
+- **Stylesheet ordered, the look kept** (`web/src/css/`, one file per layer and part; R32 rewritten): a *chosen* layer (what is on, picked or open is ink with paper words, one rule), the repeats merged (pane headings, small menus, the preview's switches, rules said twice), two unused tokens gone, dated citations out of the comments. Proof: `node test/same.mjs` — the computed style of every element in 447 states, three screens, the pointer on each kind of control — found one difference against 4.34, a fix (the open language button under the pointer was ink on ink).
+- **Fixes**: tabs cut their own top corners (`.tab`), so the V over a joint is a clean V and the chosen tab's line wins at its edges (no paper chip on the black tab, no grey sliver); `--faint` was two tokens, the rename box is grey again (`--wait`); a slider's track shows in the white font box (build list #128: it was white on white); a row's field for words is one height with the other fields.
+- **The font box stands on the pane's columns** (build list #125): a ring row's frame (from the labels' start to 8 past the lines); Lang. and the sliders on the controls' column, fields and steppers on the third and fourth tile, Change… ending on the line; labels take what is left. The numerals and letters in a thick light frame one unit inside the box (Okay's sketch). A number's row everywhere lays its tracks out in full (`--num-columns`) — no negative margins for the field and stepper any more (`--tile-wider` is gone).
+- **Values on the scale**: every space is a step of the unit (`--u1` … `--u8`), every measure has a name, lines are `--hair` · `--thick` · `--triple`, pure white and black are `--white` · `--black`; hex is short where it is the same colour. Things moved by a pixel or two.
+- **Okay's notes of the evening**, the small ones built: the language button says *Lang.* (TR, DE… when chosen); the :30s stand together in a window's Position (1:30 4:30 / 7:30 10:30, then 4); the moon tile's crescent in a circle like its brothers; the scale button's centres joined by a dark line like the radius', a point to the right, the whole drawing lit when pressed; the squares for adding a font say what they take (*Add font link (gfonts, url)* · *Add font file (woff, ttf, otf)*), no heading over them; the font sheet's list has a slim two-pill scrollbar (webkit only; unseen here, Playwright hides scrollbars); the pixel font and *As the numerals* at 70 %. The larger ones are build list #134–#151.
+- **Tests**: `web/test/same.mjs` (the look-check; `save` keeps the look in `web/test/same.json`, not in the repo). The window test reads the new tab shape and the new words.
+
 ## beta 4.34 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.
