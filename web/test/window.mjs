@@ -717,6 +717,7 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
   }
   await page.click("#window-font-back");
   check(await S("S.da_tracking === null && S.da_lang === null && S.da_features === null && Object.keys(S.da_axes).length === 0"), "As the numerals takes the window's tracking, language, axes and features back too");
+  check(await page.$eval("#window-font-back", (b) => b.hidden || (b.textContent === "Copy style of Numerals" && b.querySelector("i").textContent === "Numerals" && getComputedStyle(b).backgroundColor === "rgba(0, 0, 0, 0)" && b.querySelector("svg") !== null)), "its button says Copy style of Numerals — the ring's name as written, in italic — beside a copy sign, a box with no fill");
   check(own[0] === "Oswald" && own[1] === ring_font && own[2] && await S("S.da_ps === ''") && !(await page.textContent("#window-font-name")).includes("as the numerals"), "a window can have a font of its own (Oswald) without touching the numerals' font; As the numerals takes it back");
   // three colours
   const fills = async () => { await frame(); return page.evaluate(() => { const t = window.dial_tool, items = [...document.querySelectorAll("main svg [fill]")]; const S = t.S; return [S.da_text_c, S.da_disc_c, S.da_ink]; }); };

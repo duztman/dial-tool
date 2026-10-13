@@ -120,7 +120,7 @@
   .picker .squares > .pickt small { color: var(--grey); font-size: inherit; }
   .picker .squares > .legendbutton { grid-column: 3; grid-row: 1; }      /* always the third; Installed (Chrome only) goes under the first */
   .picker .squares > .legendbutton[aria-expanded="true"] svg { rotate: 180deg; }
-  #window-font-back { justify-self: start; display: inline-flex; align-items: center; gap: var(--unit); border-color: var(--rule); color: var(--grey); opacity: var(--pixel-ink); }      /* As the numerals: a box with a copy sign, quiet (Okay, 13 Oct 2026) */
+  #window-font-back { justify-self: start; display: inline-flex; align-items: center; gap: var(--unit); border-color: var(--rule); background: none; color: var(--grey); opacity: var(--pixel-ink); }      /* Copy style of <the numerals ring>: a box with a copy sign and no fill, quiet; the ring's name in italic (Okay, 13–14 Oct 2026) */
   #window-font-back:hover { opacity: 1; border-color: var(--ink); color: var(--ink); }
   .partfold .many { color: var(--grey); font-weight: 400; }      /* how many switches */
 }

@@ -2004,7 +2004,7 @@ class DialTool {
     const named = el("div", { className: "fontname", onclick: (e) => { if (!e.target.closest(".colour, .langs, button")) open(); } }, name, ...(lang ? [lang.el] : []), swatch, el("button", { type: "button", className: "btn", id: pre + "font-change", textContent: "Change…", onclick: open }));
     const styles = el("div", { className: "segs styles" });
     const state = el("div", { className: "quiet note", id: pre + "font-note" });
-    const back = el("button", { type: "button", className: "btn", id: "window-font-back", innerHTML: icon(`<rect x="5.5" y="5.5" width="8" height="8"/><path d="M3.5 10.5L2.5 10.5L2.5 2.5L10.5 2.5L10.5 3.5"/>`) + "<span>As the numerals</span>", title: "Use the top numerals ring’s font again", hidden: true,
+    const back = el("button", { type: "button", className: "btn", id: "window-font-back", innerHTML: icon(`<rect x="5.5" y="5.5" width="8" height="8"/><path d="M3.5 10.5L2.5 10.5L2.5 2.5L10.5 2.5L10.5 3.5"/>`) + "<span>Copy style of <i>Numerals</i></span>", title: "Use the top numerals ring’s font again", hidden: true,
       onclick: () => { const w = this.window(); w.family = ""; w.ps = ""; w.axes = {}; w.features = null; w.tracking = null; w.lang = null; this.changed(true); } });
     // every font box has all of it (Okay, 13 Oct 2026): numerals and letters · name, colour · styles, language · size ·
     // tracking · the variable axes · the OpenType features. The last can be put away.
@@ -2017,6 +2017,7 @@ class DialTool {
     out.refresh = (T) => {
       const R = own ? G.window_type(this.S, T) : T;
       back.hidden = !(own && (T.ps || T.tracking != null || T.lang != null || T.features != null || Object.keys(T.axes || {}).length));
+      if (own) back.querySelector("i").textContent = numerals().name || "Numerals";      // the top numerals ring, by its name as it is written (Okay, 14 Oct 2026: "Copy style of Numerals")
       if (lang) lang.refresh(T);
       size.refresh(T);
       tracking.refresh(T);

@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.35.2 (web version) · 14 Oct 2026
+
+- **Font box of a window**: *As the numerals* is now **Copy style of *Numerals*** — the top numerals ring's name as it is written, in italic — beside a copy sign; a box with no fill (Okay: "Copy style of Numerals (case sensitive)… Box has no bg fill").
+
 ## beta 4.35.1 (web version) · 14 Oct 2026
 
 On `dev` and on the live page. A small push: the second number after the point counts small pushes from now on (Okay, 14 Oct 2026), so the iPad shows which one it has.
