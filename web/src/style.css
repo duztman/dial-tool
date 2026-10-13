@@ -184,10 +184,10 @@
   :is(.pickt, .tile):hover { background: var(--hover); }
   :is(.pickt.on, .tile[aria-pressed="true"]) { background: var(--ink); border-color: var(--ink); color: var(--paper); }
   :is(.pickt.on, .tile[aria-pressed="true"]):hover { background: var(--ink-hover); }
-  .picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gap); padding: var(--gap) 0; }      /* one space: between the tiles, both ways, and from them to the row's lines (Okay, 13 Oct 2026) */
+  .picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--unit); padding: var(--unit) 0; }      /* one small space, the unit: between the tiles, both ways, and from them to the row's lines (Okay, 13 Oct 2026: "look how close the lines are to the boxes. We need that here"). The tiles are wider than a column for it */
   .picks.five { grid-template-columns: repeat(5, minmax(0, 1fr)); }      /* five choices (a window's shape) */
   .pickt { justify-items: center; align-content: start; gap: calc(var(--unit) / 2); min-height: var(--tile); padding: var(--unit) var(--hair); font-size: var(--t-xs); line-height: 1.15; }
-  .pickt span { overflow-wrap: anywhere; text-align: center; }
+  .pickt span { white-space: nowrap; text-align: center; }      /* a tile's word is one line (Okay, 13 Oct 2026); a name too long for it has a short one in TILE_WORDS */
   .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px var(--gap); }
   .tile { align-content: space-between; justify-items: start; gap: 4px; min-height: calc(var(--tile) + 2px); padding: 7px 8px; text-align: left; line-height: 1.25; }
   .tile small { color: var(--grey); font: var(--t-xs)/1 var(--mono); }
@@ -615,7 +615,9 @@
   /* what stands on the preview is faint until the pointer is on it or it is open, so the dial is what one sees (Okay,
      13 Oct 2026: "as faint as this unclickable one. Achieve this via opacity"). What can't be pressed now is fainter still. */
   .guidesbox, .guidesmore, .backdropbox, .undobox { opacity: var(--faint); }
-  :is(.guidesbox, .guidesmore, .backdropbox, .undobox):is(:hover, :focus-visible, [aria-expanded="true"]) { opacity: 1; }
+  :is(.guidesbox, .guidesmore, .backdropbox, .undobox):is(:focus-visible, [aria-expanded="true"]) { opacity: 1; }
+  /* only where a pointer can hover: under a finger "hover" stays on after a tap, and the switch just pressed would stay whole */
+  @media (hover: hover) { :is(.guidesbox, .guidesmore, .backdropbox, .undobox):hover { opacity: 1; } }
   .undobox.none, .undobox.none:hover { opacity: calc(var(--faint) / 2); box-shadow: none; }
   .guidesbox { gap: 7px; padding: 0 10px 0 8px; border-radius: 10px 0 0 10px; font-weight: 600; }
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 10px 10px 0; }

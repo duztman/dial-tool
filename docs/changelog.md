@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.21 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **Picture tiles** stand one unit (5.5) apart and from the row's lines; a tile's word is one line (*moon*, *auto-flip*).
+- **Switches on the preview** stay faint after a tap on a touch screen.
+
 ## beta 4.20 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.

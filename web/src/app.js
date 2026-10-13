@@ -160,6 +160,9 @@ const VALUE_PICS = {                               // a value button's drawing, 
 const LANG_NAMES = { default: "As the font sets it", tr: "Turkish", nl: "Dutch", de: "German", pl: "Polish", ro: "Romanian", ca: "Catalan", ar: "Arabic", fa: "Persian", "zh-Hans": "Chinese, simplified", ja: "Japanese" };
 const lang_short = (code) => (code === "default" ? "–" : code.slice(0, 2).toUpperCase());
 
+// a tile's word is one line: a name too long for a tile is said shorter there (its tag still says it whole)
+const TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip" };
+
 const kind_in = (...names) => (R) => names.includes(G.kind_of(R));
 const marks_with = (...shapes) => (R) => ["ticks", "markers"].includes(G.kind_of(R)) && shapes.includes(G.SHAPES[R.shape]);
 const labels_are = (name) => (R) => G.kind_of(R) === "numerals" && G.LABEL_SETS[R.labels][0] === name;
@@ -1034,7 +1037,7 @@ class DialTool {
         const tile = el("button", { type: "button", className: "pickt", id: `${id}-${i}`, title: name, onclick: () => set(i) });
         tile.setAttribute("role", "radio");
         tile.innerHTML = typeof row.pics === "function" ? row.pics(i) : pic(row.pics[i]);
-        tile.append(el("span", { textContent: name }));
+        tile.append(el("span", { textContent: TILE_WORDS[name] || name }));
         group.append(tile);
       });
       const label = el("label", { textContent: row.text, className: row.label ? "strong" : "" });
