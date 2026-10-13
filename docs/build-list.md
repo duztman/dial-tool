@@ -1,7 +1,7 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **done** · **parked**.
-*Last updated 13 Oct 2026, night (beta 4.35: #125 and #128 done, #134–#151 from Okay's evening review on the iPad, six of them built; #98 corrected). Before, 13 Oct 2026 (beta 4.8 built: #82, #99; noted #100; beta 4.7 built: #78–#81, #92, #94, #95, #97, #98; atlas review: #78–#91 added, #59 settled, #53 corrected). Before: 12 Oct 2026 (beta 4.6: #70, #71 built; beta 4.5: #70–#75; #32 moved to the web version). Before: 11 Oct 2026 (web version: #49–#56; MP4 fix: #48). Before: 4 Oct 2026 (beta 2.3: preview plan built, #37–#41 were waiting for the Mac check, `docs/preview.md` §6 — set aside by Okay the same day, see #40). Seen working on Okay's Mac 4 Oct (beta 2.1 screenshot): window, sections, ring list, ring settings list, regular-size controls, live popups, type per numerals ring with feature names.*
+*Last updated 13 Oct 2026, night (beta 4.35: #125 and #128 done, #134–#153 from Okay's evening review on the iPad, six of them built; #98 corrected). Before, 13 Oct 2026 (beta 4.8 built: #82, #99; noted #100; beta 4.7 built: #78–#81, #92, #94, #95, #97, #98; atlas review: #78–#91 added, #59 settled, #53 corrected). Before: 12 Oct 2026 (beta 4.6: #70, #71 built; beta 4.5: #70–#75; #32 moved to the web version). Before: 11 Oct 2026 (web version: #49–#56; MP4 fix: #48). Before: 4 Oct 2026 (beta 2.3: preview plan built, #37–#41 were waiting for the Mac check, `docs/preview.md` §6 — set aside by Okay the same day, see #40). Seen working on Okay's Mac 4 Oct (beta 2.1 screenshot): window, sections, ring list, ring settings list, regular-size controls, live popups, type per numerals ring with feature names.*
 
 ## Verify on a Mac
 
@@ -150,7 +150,7 @@ Atlas: https://claude.ai/artifact/QdvVC37Y6csV7FcUjJHqAH. Numbers in brackets ar
 
 ## Okay's evening review on the iPad (13 Oct 2026, 21:02–22:15, while beta 4.35 was being built)
 
-Eighteen notes with pictures, in the order they came. Built the same night where small; the rest wait for his word. Pictures: the session's zip of 13 Oct, `images-okay/`.
+Twenty notes (eighteen with pictures, two at 22:39 after the hand-over), in the order they came. Built the same night where small; the rest wait for his word. Pictures: the session's zip of 13 Oct, `images-okay/`.
 
 | # | Item | Status |
 |---|---|---|
@@ -172,6 +172,8 @@ Eighteen notes with pictures, in the order they came. Built the same night where
 | 149 | **The window cards' pictures: the window's offset from the ring as in the section tab's icon; "lock the ring on preview"** (22:07, picture of the Windows tab icon over the four cards): the top icon's window-to-edge spacing is better; use it in the cards. "Lock the ring on preview" — unclear: the ring fixed and only the window moving in the cards' pictures? Ask. | noted — ask |
 | 150 | ***As the numerals* at 70 %, "same style as the ×"; later a drop-down** (22:10, picture of the button): now: 70 % opacity (built in 4.35 as `--pixel-ink`), the style of the × sign — which ×? the guides list's remove cross is a bare sign; read as "quiet like a sign", the outline kept: ask. Later: a drop-down at the end of the font box listing the rings — as ring X; ring X's colour; ring X's font but not its colour; and so on. | opacity done (4.35) · rest noted |
 | 151 | **The number box, open** (22:15, picture of an open number box beside a hand's detail box): both − and + at the right; capture the first tap, then enlarge; the open box bigger, square buttons, the value centred and larger, and the box may overlap the rows above and below while open; a thicker border when active. | noted — for later (Okay) |
+| 152 | **Pinch zoom is jumpy** (22:39, iPad): "it goes haywire with two inputs but when it locks in it zooms nicely" — the first moments of a two-finger gesture jump (two pointer events before the pinch is recognised?), then it is smooth. Look at `app.js`'s pointer handling on the preview: ignore the first move after the second finger lands, or start the pinch from the pair's first distance. | noted — bug |
+| 153 | **A tapped control keeps its highlight while the panel changes** (22:39, iPad and touch): the tapped item gets a highlight outline; while the menu/panel re-lays itself after the tap the outline stays, then it goes back to normal. Hide the highlight while the change is happening (the browser's tap highlight, `-webkit-tap-highlight-color`, and `:focus` on touch: a touch tap should not leave a focus ring; `:focus-visible` already limits it on Chrome, Safari differs). | noted — bug |
 
 ## Later
 
