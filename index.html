@@ -132,7 +132,8 @@
 
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
     --t-xs: 11px; --t-s: 12px; --t-m: 13px; --t-l: 15px;
-    --font-name: 104px; --font-has: 92px; --font-has-most: 120px;     /* the font sheet's columns: a family's name · what it has (its numerals take the rest) · the most the stickers' column may take from the numerals */
+    --font-name: 104px;                            /* the font sheet's columns: a family's name · its numerals (the rest) · what it has (--font-has, set by the sheet: as wide as the Find field) */
+    --find: calc(3 * var(--col) + 2 * var(--gap)); /* the font sheet's Find field: three columns, the sheet's right half */
     /* stickers: one colour for a kind of thing a font family has. Pale: a guide's colour, as much of it as in the
        selected ring's row */
     --st-ink: #141413;
@@ -418,7 +419,7 @@
   .row.num input[type="text"] { text-align: right; }
   /* the font sheet's two fields (Find a font, a link) are larger than a row's, with a darker line. A row's field for
      words (a window's text, custom labels) is a field like any other (Okay, 13 Oct 2026: "remove input height") */
-  .picker header > input, .picker .adding > input { height: var(--control-large); border-color: var(--grey); }
+  .picker header .find > input, .picker .adding > input { height: var(--control-large); border-color: var(--grey); }
   .row > label:first-child { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .row > label.strong:first-child { color: var(--ink); font-weight: 600; }      /* a name where a label would stand: the selected ring's, before its kinds */
   /* a label with a small menu beside it: the words, then a boxed arrow with the browser's own menu lying over it */
@@ -693,13 +694,18 @@
   .langbox { min-width: var(--control); }
   .fontname .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
   /* the list scrolls, and says so: a slim scrollbar of two pills, a light one the whole height, a darker one for how much is under (Okay, 13 Oct 2026) */
-  .fontlist { border: var(--hair) solid var(--rule); background: var(--field); overflow-y: auto; }      /* ::-webkit-scrollbar only: Chrome ignores it once scrollbar-width or scrollbar-color is set */
-  .fontlist::-webkit-scrollbar { width: var(--scrollbar); }
-  .fontlist::-webkit-scrollbar-track { margin: var(--unit) 0; border-radius: var(--round-pill); background: var(--ground); }
-  .fontlist::-webkit-scrollbar-thumb { border-radius: var(--round-pill); background: var(--rule); }
-  .fontlist::-webkit-scrollbar-thumb:hover { background: var(--grey); }
+  /* the list scrolls, and says so with a scrollbar the tool draws (an iPad shows its own only while it moves): two slim
+     pills in the rows' right margin, a light one the whole height, a darker one for the share in view (Okay, 13 Oct 2026) */
+  .listwrap { position: relative; display: grid; min-height: 0; }
+  .fontlist { height: 100%; border: var(--hair) solid var(--rule); background: var(--field); overflow-y: auto; scrollbar-width: none; }
+  .fontlist::-webkit-scrollbar { display: none; }
+  .rail { position: absolute; top: var(--unit); bottom: var(--unit); right: calc((var(--btn-pad) - var(--scrollbar)) / 2 + var(--hair)); width: var(--scrollbar); border-radius: var(--round-pill); background: var(--ground); cursor: pointer; touch-action: none; }
+  .rail i { position: absolute; top: 0; left: 0; right: 0; border-radius: var(--round-pill); background: var(--rule); }
+  .rail:hover i, .rail.held i { background: var(--grey); }
+  .rail::after { content: ""; position: absolute; inset: 0 calc(-1 * var(--unit)); }      /* reach: a finger finds it from beside it too */
   /* a line of the font sheet, on three columns: the family's name in its own face · its numerals, all starting on one
      line · what the family has (styles, bold, italic, axes), small. A full hairline between two lines. */
+  .fontlist { --font-has: calc(var(--find) - var(--btn-pad) - var(--hair)); }      /* the stickers start under the Find field's left edge */
   .fontrow { display: grid; grid-template-columns: var(--font-name) minmax(0, 1fr) var(--font-has); align-items: center; gap: var(--gap); width: 100%; min-height: var(--head); padding: 0 var(--btn-pad); border-bottom: var(--hair) solid var(--rule); text-align: left; }
   .fontrow:hover { background: var(--hover); }
   .fontrow.on, .fontrow.on:hover { background: var(--select); }
@@ -708,7 +714,7 @@
   .fontrow .face { font-size: var(--t-l); }
   .fontrow .sample svg { display: block; flex: none; }
   .fontrow .face svg { display: block; flex: 0 1 auto; height: auto; max-width: 100%; }      /* a name too wide for its column is drawn smaller; numerals are cut at their column's edge */
-  .fontrow .has { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: calc(var(--unit) / 2); padding: var(--unit) 0; }      /* on one line as long as the column lets them */
+  .fontrow .has { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: calc(var(--unit) / 2); padding: var(--unit) 0; }      /* from the column's left edge, on one line as long as it lets them */
   /* a sticker: one thing a family has, in the pixel font at its own size (R32), on a colour of its kind, round
      corners. */
   .sticker { opacity: var(--pixel-ink);      /* the pixel font a little under full strength, on pale and on black alike (Okay, 13 Oct 2026: "Silkscreen too dark on full black, 70%") */
@@ -731,9 +737,11 @@
   .stickerlabel { display: flex; min-width: 0; }
   .axisname { display: flex; align-items: center; gap: var(--unit); min-width: 0; color: var(--grey); white-space: nowrap; }      /* an axis's name, as a label, and its code as a sticker; a press sets the axis back */
   .axisname:hover { color: var(--ink); }
-  /* the legend, at the sheet's bottom right: each kind of sticker and what it says */
-  .legend { display: grid; grid-template-columns: repeat(2, auto auto); gap: calc(var(--unit) / 2) var(--unit); align-items: center; justify-content: end; margin: 0; color: var(--grey); font-size: var(--t-xs); white-space: nowrap; }
+  /* the legend: folded to a button beside the squares; open, one large column over them, so it pushes the list up */
+  .legend { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--unit) var(--u4); align-items: center; margin: 0; padding: var(--u3) 0; border-top: var(--hair) solid var(--rule); color: var(--ink); font-size: var(--t-m); }
+  .legend[hidden] { display: none; }
   .legend dt { justify-self: end; display: flex; }
+  .legend dt .sticker { padding: calc(var(--unit) / 2) var(--unit); font-size: calc(2 * var(--t-pixel)); }      /* the pixel font at its double (R32) */
   .legend dd { margin: 0; }
   .fontrow.current { grid-template-columns: minmax(0, 1fr); height: var(--head); border: 0; }      /* the chosen font's numerals and letters, alone on their line */
   .fontlist .group { padding: calc(var(--unit) * 2) var(--btn-pad) calc(var(--unit) / 2); border-bottom: var(--hair) solid var(--rule); }
@@ -742,20 +750,29 @@
   /* it floats over the panel: as wide and as high as the panel (from the window's top to the bar, never over the
      bar), its left edge on the panel's third column, where the controls start, so its right part lies over the
      preview; a shadow to its left */
-  .picker { position: fixed; inset: 0 auto var(--bar-height) calc(var(--margin) + var(--lead) + 2 * (var(--col) + var(--gap))); width: var(--panel); max-width: calc(100vw - 2 * var(--margin)); height: auto; max-height: none; margin: 0; padding: 0; border: var(--hair) solid var(--ink); box-shadow: var(--shadow);
+  .picker { position: fixed; inset: var(--header) auto var(--bar-height) calc(var(--margin) + var(--lead) + 2 * (var(--col) + var(--gap))); width: var(--panel); max-width: calc(100vw - 2 * var(--margin)); height: auto; max-height: none; margin: 0; padding: 0; border: var(--hair) solid var(--ink); box-shadow: var(--shadow);
     background: var(--paper); color: var(--ink); }
   .picker[open] { display: grid; grid-template-rows: auto 1fr auto; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 3) var(--margin) var(--margin); }
   .picker:focus { outline: none; }
   .picker::backdrop { background: none; }          /* the dial keeps its true colours while you choose */
   .picker header { display: flex; align-items: center; justify-content: space-between; gap: var(--gap); }
-  .picker header > input { width: calc(3 * var(--col) + 2 * var(--gap)); }      /* Find a font: at the sheet's top right, half its width */
+  /* Find: at the sheet's top right, as wide as the stickers' column under it; a magnifier in it, no words */
+  .picker header > .find { position: relative; width: var(--find); }
+  .picker header > .find > input { width: 100%; padding-right: var(--control-large); }
+  .picker header > .find > input::-webkit-search-cancel-button { -webkit-appearance: none; }
+  .picker header > .find > svg { position: absolute; right: var(--u3); top: 50%; translate: 0 -50%; color: var(--grey); pointer-events: none; }
   .picker header h2 { font-size: var(--t-l); }
   .picker .fontlist { min-height: 0; }
-  .picker .adding { display: grid; gap: calc(var(--unit) * 2); border-top: var(--thick) solid var(--ink); padding-top: calc(var(--unit) * 2); }
-  .picker .squares { display: flex; align-items: flex-end; gap: var(--unit); }
-  .picker .squares > .pickt span { white-space: normal; }      /* the squares say what they take: two lines */
-  #window-font-back { opacity: var(--pixel-ink); }      /* As the numerals: quiet, like a sign (Okay, 13 Oct 2026: 70 %) */
-  .picker .squares > .pickt { width: calc(var(--col) + var(--gap) + var(--unit)); aspect-ratio: 1; align-content: center; }      /* square buttons */
+  .picker .adding { display: grid; gap: var(--u4); }      /* straight under the list: its edge is the line between them */
+  .picker .squares { display: flex; align-items: stretch; gap: var(--unit); }
+  /* the squares: shorter, a sign beside two lines of words (Okay, 13 Oct 2026: "shorter"); they set the height of the
+     sheet's foot. The legend's button is the last of them, at the right. */
+  .picker .squares > .pickt { flex: 0 1 auto; grid-template-columns: auto auto; justify-items: start; align-items: center; align-content: center; column-gap: var(--unit); min-height: var(--u8); padding: var(--unit) var(--u3); text-align: left; }
+  .picker .squares > .pickt span { white-space: normal; text-align: left; }
+  .picker .squares > .legendbutton { margin-left: auto; }
+  .picker .squares > .legendbutton[aria-expanded="true"] svg { rotate: 180deg; }
+  #window-font-back { justify-self: start; opacity: var(--pixel-ink); }      /* As the numerals: words only, a frame under the pointer, like the signs; 70 % (Okay, 13 Oct 2026: "same style as the ×") */
+  #window-font-back:hover { opacity: 1; }
 }
 
 /* the Gallery's cards */
@@ -6253,6 +6270,13 @@ function font_features(info2) {
   }
   return [...seen.entries()].sort((a, b) => a[0].localeCompare(b[0]));
 }
+function has_chars(txt2, t) {
+  const info2 = font_of(t), buffer = new HB.Buffer();
+  buffer.addText(txt2);
+  buffer.guessSegmentProperties();
+  HB.shape(info2.font, buffer, []);
+  return buffer.getGlyphInfosAndPositions().every((g) => g.codepoint !== 0);
+}
 function shaped(txt2, t, size) {
   return memo("text" + JSON.stringify([txt2, t.ps, size, t.tracking, t.lang, t.axes, t.features]), () => {
     const info2 = font_of(t), k = size / info2.upem, tr = t.tracking / 1e3 * size;
@@ -7153,21 +7177,22 @@ var LANG_NAMES = { default: "As the font sets it", tr: "Turkish", nl: "Dutch", d
 var lang_short = (code) => code === "default" ? "Lang." : code.slice(0, 2).toUpperCase();
 var TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip" };
 var STICKER_LEGEND = [
-  ["weight 100\u2013900", "weight", "any weight between"],
+  ["w. 100\u2013900", "weight", "any weight between the two, here 100 to 900"],
   ["bold", "weight", "has a bold"],
   ["italic", "italic", "has an italic"],
-  ["width", "width", "any width"],
-  ["optical", "optical", "drawn for small and large"],
-  ["tabular", "figure", "figures of one width"],
-  ["oldstyle", "figure", "figures with tails"],
+  ["wd", "width", "any width, narrow to wide"],
+  ["opt", "optical", "drawn for small sizes and for large"],
+  ["tab", "figure", "tabular: figures all one width"],
+  ["old", "figure", "oldstyle: figures with tails"],
   ["zero", "figure", "a slashed zero"],
-  ["fractions", "figure", "\xBD made from 1/2"],
-  ["2 sets", "sets", "other shapes to switch on"],
-  ["3 styles", "styles", "separate styles"]
+  ["frac", "figure", "fractions: \xBD made from 1/2"],
+  ["2 ss", "sets", "stylistic sets: other shapes to switch on"],
+  ["5 cv", "sets", "character variants: a single character drawn another way"],
+  ["3 st", "styles", "separate styles"]
 ];
-var FIGURE_WORDS = [["tnum", "tabular"], ["onum", "oldstyle"], ["zero", "zero"], ["frac", "fractions"]];
+var FIGURE_WORDS = [["tnum", "tab"], ["onum", "old"], ["zero", "zero"], ["frac", "frac"]];
 var NAME_LEAST = 0.7;
-var AXIS_WORDS = { wdth: "width", opsz: "optical", GRAD: "grade", XHGT: "x-height", SOFT: "softness", MONO: "mono", CASL: "casual" };
+var AXIS_WORDS = { wdth: "wd", opsz: "opt", GRAD: "grad", XHGT: "xh", SOFT: "soft", MONO: "mono", CASL: "cas" };
 var kind_in = (...names) => (R) => names.includes(kind_of(R));
 var marks_with = (...shapes) => (R) => ["ticks", "markers"].includes(kind_of(R)) && shapes.includes(SHAPES[R.shape]);
 var labels_are = (name) => (R) => kind_of(R) === "numerals" && LABEL_SETS[R.labels][0] === name;
@@ -9250,10 +9275,10 @@ var DialTool = class _DialTool {
    *  what = "name": the family's name in its own face instead, likewise. */
   sample(f, what = "sample", fits = what === "name") {
     const box = el("span", { className: what === "name" ? "face" : "sample" });
-    const text = what === "name" ? f.family : what === "preview" ? "1234567890 Abcdefg" : "1234567890", high = what === "name" ? 16 : 20;
-    let s = what === "preview" ? has_font(f.ps) ? null : f.sample : f[what];
-    if (!s && has_font(f.ps)) {
-      const t = { ...RING_BASE, ps: f.ps, axes: f.start || {}, features: {}, tracking: 0, lang: 0 };
+    const t = has_font(f.ps) ? { ...RING_BASE, ps: f.ps, axes: f.start || {}, features: {}, tracking: 0, lang: 0 } : null;
+    const text = what === "name" ? f.family : what === "preview" ? "1234567890 Abcdefg" + (t && has_chars("\u2026", t) ? "\u2026" : "...") : "1234567890", high = what === "name" ? 16 : 20;
+    let s = what === "preview" ? t ? null : f.sample : f[what];
+    if (!s && t) {
       s = { d: text_path(text, t, 1e3).svg(0, true), w: Math.round(advance(text, t, 1e3)) };
     }
     const wide = s ? Math.ceil(s.w / 1e3 * high) : 0, tall = Math.round(high * 1.25);
@@ -9266,22 +9291,22 @@ var DialTool = class _DialTool {
   }
   /** what a family has, for the font sheet's last column, as small stickers in the pixel font (Okay, 13 Oct 2026):
    *  → [[word, kind]…]. The kind gives the sticker its colour (the legend under the list says which is which).
-   *  Plain words, not tags: "weight", not "wght". */
+   *  Short words, spelled out in the legend: "w. 100–900", "tab", "2 ss". */
   family_says(fonts2) {
     const styles = fonts2.map((f) => f.style || ""), first = fonts2[0];
     const ranges = first.axes || (has_font(first.ps) ? Object.fromEntries(Object.entries(font_axes(font_of({ ps: first.ps, axes: {} }))).map(([tag, x]) => [tag, [x.min, x.max]])) : {});
     const axes = Object.keys(ranges);
     const said = [];
-    if (axes.includes("wght")) said.push([`weight ${Math.round(ranges.wght[0])}\u2013${Math.round(ranges.wght[1])}`, "weight"]);
+    if (axes.includes("wght")) said.push([`w. ${Math.round(ranges.wght[0])}\u2013${Math.round(ranges.wght[1])}`, "weight"]);
     else if (styles.some((x) => /bold|black|heavy/i.test(x))) said.push(["bold", "weight"]);
     if (axes.includes("ital") || axes.includes("slnt") || styles.some((x) => /italic|oblique/i.test(x))) said.push(["italic", "italic"]);
     for (const tag of axes) if (!["wght", "ital", "slnt"].includes(tag)) said.push([AXIS_WORDS[tag] || tag, { wdth: "width", opsz: "optical" }[tag] || "other"]);
     const tags = first.features || (has_font(first.ps) ? font_features(font_of({ ps: first.ps, axes: {} })).map(([tag]) => tag) : []);
     for (const [tag, word] of FIGURE_WORDS) if (tags.includes(tag)) said.push([word, "figure"]);
     const sets = tags.filter((tag) => /^ss\d\d$/.test(tag)).length, variants = tags.filter((tag) => /^cv\d\d$/.test(tag)).length;
-    if (sets) said.push([sets === 1 ? "1 set" : `${sets} sets`, "sets"]);
-    if (variants) said.push([variants === 1 ? "1 variant" : `${variants} variants`, "sets"]);
-    if (fonts2.length > 1) said.push([`${fonts2.length} styles`, "styles"]);
+    if (sets) said.push([`${sets} ss`, "sets"]);
+    if (variants) said.push([`${variants} cv`, "sets"]);
+    if (fonts2.length > 1) said.push([`${fonts2.length} st`, "styles"]);
     return said;
   }
   /** whose font the font sheet and the style buttons set: the selected ring's, or the selected window's. */
@@ -9322,7 +9347,7 @@ var DialTool = class _DialTool {
     const state = el("div", { className: "quiet note", id: pre + "font-note" });
     const back = el("button", {
       type: "button",
-      className: "btn",
+      className: "plain",
       id: "window-font-back",
       textContent: "As the numerals",
       title: "Use the top numerals ring\u2019s font again",
@@ -9486,9 +9511,40 @@ var DialTool = class _DialTool {
   /** the font sheet: every font with its numerals — the tool's own twenty, then yours, then (Chrome, Edge)
    *  this computer's — and the ways to add more. It lies over the panel, so the dial stays in view. */
   build_picker() {
-    const find = el("input", { type: "text", id: "font-find", placeholder: "Find a font" });
+    const find = el("input", { type: "search", id: "font-find", ariaLabel: "Find a font", title: "Find a font" });
     find.oninput = () => this.fill_picker(true);
+    const finder = el("span", { className: "find" }, find);
+    finder.insertAdjacentHTML("beforeend", icon(`<circle cx="6.8" cy="6.8" r="4.3"/><path d="M10 10L13.5 13.5"/>`));
     const list = el("div", { className: "fontlist", id: "font-list" });
+    const rail = el("span", { className: "rail", ariaHidden: "true" }, el("i"));
+    this.rail = rail;
+    list.addEventListener("scroll", () => this.rail_place(), { passive: true });
+    rail.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const thumb = rail.firstChild, r = rail.getBoundingClientRect(), t = thumb.getBoundingClientRect();
+      const span = list.scrollHeight - list.clientHeight, room = r.height - t.height;
+      const grab = e.target === thumb ? e.clientY - t.top : t.height / 2;
+      const go = (y) => {
+        list.scrollTop = room > 0 ? Math.min(1, Math.max(0, (y - r.top - grab) / room)) * span : 0;
+      };
+      if (e.target !== thumb) go(e.clientY);
+      rail.setPointerCapture(e.pointerId);
+      rail.classList.add("held");
+      rail.onpointermove = (m) => go(m.clientY);
+      rail.onpointerup = rail.onpointercancel = () => {
+        rail.onpointermove = rail.onpointerup = rail.onpointercancel = null;
+        rail.classList.remove("held");
+      };
+    });
+    const legend = el("dl", { className: "legend", id: "font-legend", hidden: true }, ...STICKER_LEGEND.flatMap(([word, kind, says]) => [el("dt", {}, el("span", { className: "sticker " + kind, textContent: word })), el("dd", { textContent: says })]));
+    const legend_button = el("button", { type: "button", className: "pickt legendbutton", id: "font-legend-open", title: "What the stickers mean" });
+    legend_button.innerHTML = icon(`<path d="M4 10L8 6L12 10"/>`) + "<span>Legend</span>";
+    legend_button.setAttribute("aria-expanded", "false");
+    legend_button.onclick = () => {
+      legend.hidden = !legend.hidden;
+      legend_button.setAttribute("aria-expanded", String(!legend.hidden));
+      requestAnimationFrame(() => this.rail_place());
+    };
     const paste = el("input", { type: "text", id: "font-link", placeholder: "Google Fonts link or family name, or a link to a font file" });
     const add = () => {
       if (paste.value.trim()) this.add_from_text(paste.value).then((ok) => {
@@ -9509,19 +9565,21 @@ var DialTool = class _DialTool {
     };
     const square = (id, word, title, d, act, o = {}) => {
       const b = el("button", { type: "button", className: "pickt", id, title, onclick: act, ...o });
-      b.innerHTML = icon(d, Math.round(20 * PIC_SCALE)) + `<span>${word}</span>`;
+      b.innerHTML = icon(d) + `<span>${word}</span>`;
       return b;
     };
     this.picker = el(
       "dialog",
       { className: "picker", id: "font-picker" },
-      el("header", {}, el("h2", { textContent: "Fonts" }), find),
+      el("header", {}, el("h2", { textContent: "Fonts" }), finder),
       // the search stands at the sheet's top right
-      list,
+      el("div", { className: "listwrap" }, list, rail),
       el(
         "div",
         { className: "adding" },
         paste,
+        el("div", { className: "quiet note", id: "picker-note" }),
+        legend,
         el(
           "div",
           { className: "squares" },
@@ -9535,14 +9593,15 @@ var DialTool = class _DialTool {
           // the field for the link is out of sight until this is pressed (Okay, 13 Oct 2026)
           square("font-file-open", "Add font file (woff, ttf, otf)", "A font file from this computer: .ttf \xB7 .otf \xB7 .woff", `<path d="M4 2.5L9.5 2.5L12 5L12 13.5L4 13.5ZM9.5 2.5L9.5 5L12 5"/>`, () => file.click()),
           square("local-fonts", "Installed", "The fonts installed on this computer", `<rect x="2.5" y="3.5" width="11" height="7.5"/><path d="M6 13.5L10 13.5M8 11L8 13.5"/>`, () => this.local_fonts(true), { hidden: !("queryLocalFonts" in window) }),
-          file
-        ),
-        el("div", { className: "quiet note", id: "picker-note" }),
-        // at the sheet's bottom, to the right: what the stickers say, on two columns (Okay, 13 Oct 2026)
-        el("dl", { className: "legend", id: "font-legend" }, ...STICKER_LEGEND.flatMap(([word, kind, says]) => [el("dt", {}, el("span", { className: "sticker " + kind, textContent: word })), el("dd", { textContent: says })]))
+          file,
+          legend_button
+        )
       )
     );
     this.picker.tabIndex = -1;
+    window.addEventListener("resize", () => {
+      if (this.picker.open) this.rail_place();
+    });
     this.picker.addEventListener("click", (e) => {
       if (e.target === this.picker) this.picker.close();
     });
@@ -9590,19 +9649,24 @@ var DialTool = class _DialTool {
         row.dataset.group = f.group;
         list.append(row);
       }
-      list.style.removeProperty("--font-has");
-      let widest = 0;
-      for (const has of list.querySelectorAll(".has")) {
-        const gap = parseFloat(getComputedStyle(has).columnGap) || 0;
-        widest = Math.max(widest, [...has.children].reduce((sum, c) => sum + c.getBoundingClientRect().width, 0) + gap * Math.max(0, has.children.length - 1) + 1);
-      }
-      const most = parseFloat(getComputedStyle(list).getPropertyValue("--font-has-most")) || widest;
-      if (widest) list.style.setProperty("--font-has", Math.ceil(Math.min(widest, most)) + "px");
       const on = list.querySelector(`.fontrow[data-family="${CSS.escape(R.family)}"]`);
       if (on && again) list.scrollTop = Math.max(0, on.offsetTop - list.offsetTop - 80);
     }
     for (const row of list.querySelectorAll(".fontrow")) row.classList.toggle("on", row.dataset.family === R.family);
     $("#picker-note").textContent = this.font_note || "";
+    requestAnimationFrame(() => this.rail_place());
+  }
+  /** the font list's scrollbar: the dark pill's length is the share of the list in view, its place where that share is;
+   *  no scrollbar when everything is in view. */
+  rail_place() {
+    const list = $("#font-list"), rail = this.rail;
+    if (!list || !rail) return;
+    const span = list.scrollHeight - list.clientHeight;
+    rail.hidden = span <= 1;
+    if (rail.hidden) return;
+    const h = rail.clientHeight, thumb = Math.max(h * list.clientHeight / list.scrollHeight, 3 * parseFloat(getComputedStyle(rail).width));
+    rail.firstChild.style.height = thumb + "px";
+    rail.firstChild.style.translate = `0 ${(h - thumb) * list.scrollTop / span}px`;
   }
   /** whose type a font box sets, and what an unset part of it is: a ring's own · a window's, which follows the top
    *  numerals ring wherever it has nothing of its own. → {scope, base_axis(T, tag, a), base_feature(T, tag)} */
