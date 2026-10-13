@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.35.15 (web version) · 14 Oct 2026
+
+- **The hand's preview box stays still** while the hand's shapes and rows scroll beside it, until the end of the hand's pane (the Cap pane) pushes it up (wide layout; `position: sticky` in `4d-hands.css`).
+
 ## beta 4.35.14 (web version) · 14 Oct 2026
 
 - **Lang. and Change…** in the font box at three quarters, box and words (20 high, 10 type), in lighter grey with a lighter line; under a finger the whole height of the font name's line presses them.
