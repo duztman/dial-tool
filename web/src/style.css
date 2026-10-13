@@ -168,10 +168,16 @@
   .steps { width: 100%; }
   .step, .segs > button { flex: 1; border-color: var(--rule); }
   .segs > button { padding: 0 4px; }
-  /* many choices: on two lines, five to a line, each its own box (a window's nine places) */
-  .segs.many { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--unit); padding: var(--unit) 0; }
-  .segs.many > button + button { border-left: var(--hair) solid var(--rule); }
-  .segs.many > button.on { border-color: var(--ink); }
+  /* a window's places: a square of the four quarters · a white bar · the places between and a box of three dots
+     for any time. Each a box of its own, one unit apart. */
+  .atgrid { grid-column: 3 / -1; display: grid; grid-template-columns: 2fr auto 3fr; gap: var(--unit); align-items: stretch; padding: var(--unit) 0; }
+  .atgrid > .segs { display: grid; gap: var(--unit); }
+  .atgrid > .quarters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .atgrid > .between { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .atgrid > .segs > button + button { border-left: var(--hair) solid var(--rule); }
+  .atgrid > .segs > button.on { border-color: var(--ink); }
+  .atgrid > .divide { width: var(--thick); background: var(--row-rule); }
+  .atmore:not(.on) { letter-spacing: 0.1em; }      /* the three dots, a little apart */
   :is(.step, .segs > button) + button { border-left: 0; }
   .segs > button.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
   .tools { display: flex; flex-wrap: wrap; gap: var(--unit); align-items: center; }
@@ -605,7 +611,7 @@
   .tag.valuepop { --row-rule: transparent; display: block; padding: 2px 8px 8px; pointer-events: auto; font-weight: 400; }
   .tag.valuepop.growing { overflow: hidden; }
   .valuepop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 6px; min-height: 0; }
-  .valuepop .row > * { grid-column: 1; }
+  .valuepop .row > *, .valuepop .row.txt > input { grid-column: 1; }
   .valuepop .row input[type="range"] { display: none; }
   .valuepop .row input[type="text"] { width: 100%; text-align: center; }
   .valuepop .row .steps { display: grid; grid-template-columns: 1fr 1fr; }

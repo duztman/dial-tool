@@ -301,11 +301,10 @@ const ROWS = {
     custom("window_cards", { pin: true, bar: true }),      // pin: always in view, like the hand tabs (Okay, 13 Oct 2026) ·         // four cards, 12 · 3 · 6 · 9: where each window is, and tabs for the panes below (Okay, 12 Oct 2026)
     // the cards are tabs only; a window is shown by the tick on its heading line (Okay, 13 Oct 2026, after trying a
     // small switch on each card: "unnecessarily complex… enable window tickmark is the way to go. leave them as tabs")
-    hdr("Window", { title: (S) => `Window at ${G.DATE_AT[G.windows_of(S)[S.ui_window].at][0]}` }),
+    hdr("Window", { title: (S) => `Window at ${G.window_place(G.windows_of(S)[S.ui_window])}` }),
     chk("on", "Show this window", { ...W, head: true }),
     // where it is and how big come first, right under the tick (Okay, 13 Oct 2026); a pane of their own, Place and size, until beta 4.22
-    // every place is a button, in the clock's order, so the others are seen and pressed (Okay, 13 Oct 2026: "list other options to encourage clicking"; a menu before)
-    seg("at", "Position", G.DATE_AT.map((d) => d[0]), { ...W, show: win_on, many: true, order: G.DATE_AT.map((d, i) => i).sort((a, b) => G.DATE_AT[a][1] - G.DATE_AT[b][1]) }),
+    custom("window_at", { ...W, show: win_on, text: "Position" }),
     num("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
     num("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("rectangle", "arch", "arc") }),
     num("w", "Ø", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
@@ -570,7 +569,7 @@ class DialTool {
     if (this.unit_open && !$("#unit-menu").hidden && !on(".unit")) this.unit_open(false);
     if (this.lang_opens && !on(".langs")) for (const shut of this.lang_opens) shut(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
-    if (this.value_pop && !on("#value-pop") && !on(".valueb")) this.value_pop_close();
+    if (this.value_pop && !on("#value-pop") && !on(".valueb, .atmore")) this.value_pop_close();
     this.tag_hide();
   }
 
@@ -1463,8 +1462,9 @@ class DialTool {
     out.refresh = (S) => {
       for (const c of cards) {
         const w = G.windows_of(S)[c.slot], at = !w.on && w.at === G.WINDOW_BASE.at ? c.at : w.at;      // never used: shown at its card's place, where it will start
-        const [place, angle] = G.DATE_AT[at], a = angle * Math.PI / 180;
-        const x = 9.3 * Math.sin(a), y = -9.3 * Math.cos(a), state = `${at}/${Boolean(w.on)}`;
+        const used = w.on || w.at !== G.WINDOW_BASE.at || w.at_deg != null;
+        const place = used ? G.window_place(w) : G.DATE_AT[at][0], angle = used ? G.window_angle(w) : G.DATE_AT[at][1], a = angle * Math.PI / 180;
+        const x = 9.3 * Math.sin(a), y = -9.3 * Math.cos(a), state = `${angle}/${Boolean(w.on)}`;
         if (c.drawn !== state) {
           c.drawn = state;
           c.pic.innerHTML = icon(`<circle r="15" stroke-width="1.1"/><rect x="${(x - 3.6).toFixed(2)}" y="${(y - 2.8).toFixed(2)}" width="7.2" height="5.6" rx="1.2" stroke-width="1.1"${w.on ? ' fill="currentColor"' : ""}/>`, 34, "-17 -17 34 34");
@@ -1926,8 +1926,8 @@ class DialTool {
    *  what = "name": the family's name in its own face instead, likewise. */
   sample(f, what = "sample", fits = what === "name") {
     const box = el("span", { className: what === "name" ? "face" : "sample" });
-    // preview: in a font box the numerals are followed by the alphabet, as far as the box goes (Okay's drawing, 13 Oct 2026)
-    const text = what === "name" ? f.family : what === "preview" ? "1234567890 Abcdefghijklmnopqrstuvwxyz" : "1234567890", high = what === "name" ? 16 : 20;
+    // preview: in a font box the numerals are followed by letters, A to g (Okay, 13 Oct 2026)
+    const text = what === "name" ? f.family : what === "preview" ? "1234567890 Abcdefg" : "1234567890", high = what === "name" ? 16 : 20;
     let s = what === "preview" ? (G.has_font(f.ps) ? null : f.sample) : f[what];
     if (!s && G.has_font(f.ps)) {
       const t = { ...G.RING_BASE, ps: f.ps, axes: f.start || {}, features: {}, tracking: 0, lang: 0 };
@@ -2041,6 +2041,46 @@ class DialTool {
     wrap.id = "hand-detail";
     let drawn = "";
     out.refresh = (T) => { const now = hand_detail(T); if (now !== drawn) { drawn = now; wrap.innerHTML = now; } };
+  }
+
+  /** a window's place (Okay, 13 Oct 2026): every named place is a button, so the others are seen and pressed — first
+   *  the four quarters, a square of 3 · 6 · 9 · 12; a white bar; then the places between; and a last box, three dots,
+   *  that opens the tag with a field for any time ("2:15"). The window keeps the place in the list (at, R9), or the
+   *  time's angle (at_deg) when it has one of its own. */
+  row_window_at(wrap, out) {
+    wrap.className = "row windowat";
+    const at = (name) => G.DATE_AT.findIndex((d) => d[0] === name);
+    const press = (i) => { const w = this.window(); w.at = i; w.at_deg = null; this.changed(true); };
+    const button = (name) => el("button", { type: "button", id: "window-at-Position-" + at(name), textContent: name, onclick: () => press(at(name)) });
+    const quarters = ["3", "6", "9", "12"].map(button), between = G.DATE_AT.map((d) => d[0]).filter((n) => !["3", "6", "9", "12"].includes(n)).sort((a, b) => G.DATE_AT[at(a)][1] - G.DATE_AT[at(b)][1]).map(button);
+    const more = el("button", { type: "button", className: "atmore", id: "window-at-more", textContent: "···", title: "Any time: 2:15, 7:40…" });
+    more.setAttribute("aria-expanded", "false");
+    more.onclick = () => this.value_pop_open(more, { kind: "custom", name: "at_time", scope: "window", key: "at_deg", text: "Time" });
+    wrap.append(el("label", { textContent: "Position" }),
+      el("span", { className: "atgrid" }, el("span", { className: "segs quarters" }, ...quarters), el("i", { className: "divide" }), el("span", { className: "segs between" }, ...between, more)));
+    out.refresh = (T) => {
+      for (const b of [...quarters, ...between]) b.classList.toggle("on", T.at_deg == null && b.id === "window-at-Position-" + T.at);
+      more.classList.toggle("on", T.at_deg != null);
+      more.textContent = T.at_deg != null ? G.window_place(T) : "···";
+    };
+  }
+
+  /** inside the tag that the three dots open: the window's place as a time, typed. "2:15", "2.25" and "14:15" all
+   *  say a quarter past two; a named place typed here ("4:30") is that place. */
+  row_at_time(wrap, out) {
+    wrap.className = "row txt";
+    const field = el("input", { type: "text", id: "window-at-time", inputMode: "numeric", placeholder: "2:15" });
+    const take = () => {
+      const m = field.value.trim().match(/^(\d{1,2})(?:[:.,h ](\d{1,2}))?$/), w = this.window();
+      if (!m || +m[1] > 24 || +(m[2] || 0) > 59) { field.value = G.window_place(w); return; }
+      const dot = /[.,]/.test(field.value) && m[2] !== undefined;      // 2.25: a quarter of an hour, not 25 minutes
+      const deg = ((+m[1] % 12) + (dot ? +("0." + m[2]) : +(m[2] || 0) / 60)) * 30, named = G.DATE_AT.findIndex((d) => Math.abs(d[1] - deg) < 0.01);
+      if (named >= 0) { w.at = named; w.at_deg = null; } else w.at_deg = deg;
+      this.changed(true);
+    };
+    field.onchange = take;
+    wrap.append(el("label", { htmlFor: "window-at-time", textContent: "Time" }), field);
+    out.refresh = (T) => { if (document.activeElement !== field) field.value = G.window_place(T); };
   }
 
   /** the language the numerals are set in (a font may draw a figure differently for one): a small button saying its

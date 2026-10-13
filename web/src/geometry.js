@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.33";
+export const VERSION = "beta 4.34";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -94,10 +94,11 @@ export const WINDOW_BASE = {
   shape: 0, sides: 6, turn: false, text_turn: true, family: "", ps: "", axes: {}, text_c: null, disc_c: null,
   tracking: null, lang: null,                      // its own tracking and language (beta 4.26); null = the top numerals ring's, as before
   features: null,                                  // its own OpenType features (beta 4.30); null = none of its own. axes: {} likewise
+  at_deg: null,                                    // a place of its own, in clock degrees (beta 4.34); null = the named place, at
 };
 const FIRST_WINDOW = { on: "da_on", kind: "da_kind", at: "da_at", r: "da_r", w: "da_w", h: "da_h", round: "da_round", frame: "da_frame",
   clear: "da_clear", text: "da_day", size: "da_size", ink: "da_ink", hour: "da_hour", age: "da_age",
-  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c", tracking: "da_tracking", lang: "da_lang", features: "da_features" };
+  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c", tracking: "da_tracking", lang: "da_lang", features: "da_features", at_deg: "da_at_deg" };
 
 export const DEFAULTS = {
   version: 2,
@@ -108,7 +109,7 @@ export const DEFAULTS = {
   da_on: false, da_at: 0, da_r: 10.5, da_w: 2.6, da_h: 2.0, da_round: 0.2, da_frame: 0.15,
   da_clear: 0.25, da_day: "17", da_size: 62.0, da_ink: INK,
   da_kind: 0, da_hour: 10.0, da_age: 14.8, windows: [WINDOW_BASE, WINDOW_BASE, WINDOW_BASE],
-  da_shape: 0, da_sides: 6, da_turn: false, da_text_turn: true, da_family: "", da_ps: "", da_axes: {}, da_text_c: null, da_disc_c: null, da_tracking: null, da_lang: null, da_features: null,      // window 1's share of WINDOW_BASE's keys of 13 Oct 2026
+  da_shape: 0, da_sides: 6, da_turn: false, da_text_turn: true, da_family: "", da_ps: "", da_axes: {}, da_text_c: null, da_disc_c: null, da_tracking: null, da_lang: null, da_features: null, da_at_deg: null,      // window 1's share of WINDOW_BASE's keys of 13 Oct 2026
   t: 10 * 3600 + 9 * 60 + 36,
   out_production: false, out_mirror: false, out_live_text: false,
   out_dpi: 600.0, out_seconds: 4.0, out_fps: 30.0, out_px: 1080,
@@ -1004,7 +1005,14 @@ export function first_window(S) {
 }
 /** the four windows, in order; ui_window counts along this list. */
 export const windows_of = (S) => [first_window(S), ...S.windows];
-const window_angle = (w) => DATE_AT[w.at][1];
+/** where a window stands, in clock degrees: one of the named places (at), or a time of its own (at_deg; beta 4.34). */
+export const window_angle = (w) => w.at_deg ?? DATE_AT[w.at][1];
+/** …and how that place is said: "3", "4:30", "2:15". */
+export const window_place = (w) => {
+  if (w.at_deg == null) return DATE_AT[w.at][0];
+  const minutes = Math.round((((w.at_deg % 360) + 360) % 360) * 2) % 720, h = Math.floor(minutes / 60) || 12, m = minutes % 60;      // half a degree is a minute
+  return m ? `${h}:${String(m).padStart(2, "0")}` : String(h);
+};
 
 /** every visible ring, top first: its positions, what it skips, what knocks it out.
  *

@@ -3,7 +3,7 @@
 A parametric watch-dial design tool that runs in the browser (`web/`). The [DrawBot](https://www.drawbot.com) version, `dial.py`, is frozen since 12 Oct 2026 and kept for reference (R30).
 Built to explore, present and produce dials for a watch Okay will actually build.
 
-**Web version: beta 4.33 (13 Oct 2026)** on `dev` — the same tool in a browser. **Online: <https://duztman.github.io/dial-tool/>** (the `gh-pages` branch: `index.html` is a copy of `web/dial-tool.html`). Or open [`web/dial-tool.html`](web/dial-tool.html) from disk (one file, no install; Chrome or Edge for the fonts installed on the computer). It reads and writes the same settings files as `dial.py`. What it has and lacks: `docs/changelog.md`; what's next: `docs/build-list.md`, Web.
+**Web version: beta 4.34 (13 Oct 2026)** on `dev` — the same tool in a browser. **Online: <https://duztman.github.io/dial-tool/>** (the `gh-pages` branch: `index.html` is a copy of `web/dial-tool.html`). Or open [`web/dial-tool.html`](web/dial-tool.html) from disk (one file, no install; Chrome or Edge for the fonts installed on the computer). It reads and writes the same settings files as `dial.py`. What it has and lacks: `docs/changelog.md`; what's next: `docs/build-list.md`, Web.
 
 **DrawBot version (frozen 12 Oct 2026, not edited): beta 2.2 (4 Oct 2026)** on `main` — rings. **beta 2.3** on `dev` — new preview (canvas, frame clock, Canvas · PDF switch), waiting for the Mac check in `docs/preview.md` §6. **Start here: [`docs/Dial-Tool-guide.pdf`](docs/Dial-Tool-guide.pdf)** — the guidebook, with nine classic dials and their settings.
 Geometry is tested off-Mac with `tools/test_harness.py`; the interface runs off-Mac in

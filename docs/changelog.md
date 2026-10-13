@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.34 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **Windows, position**: a square of the quarters · a white bar · the places between · three dots that open a field for any time (new key `at_deg`).
+- **Font box**: the preview reads 1234567890 Abcdefg.
+
 ## beta 4.33 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.
