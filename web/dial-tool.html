@@ -77,9 +77,13 @@
     --ring-gap: 4px;                               /* between framed rows */
     --sum-gap: 12px;                               /* in a ring's row: between its summary and its kind */
     --guide-tint: 22%; --guide-edge: 65%;          /* the selected ring's row: this much of its guide's colour in its ground, and in its frame */
-    --round-pill: 999px;                           /* ends fully round: the Add group and the signs under the ring list */
+    --round-pill: 999px;                           /* fully round: the signs on the Rings heading line, a value button */
     --menu-box: 18px;                              /* the boxed arrow beside a label that opens a small menu */
-    --foot-gap: 4px; --foot-pad: 4px;              /* under the ring list: between the round signs · beside each word of the Add group */
+    --foot-gap: 4px;                               /* between the round signs on the Rings heading line */
+    --ringline: 52px; --ringline-gap: 8px;         /* the selected ring's line: its height · between its parts */
+    --kind-button: 34px;                           /* in that line: a kind's button, and the colour's */
+    --value-button: 40px;                          /* a value as a round button: room for five figures over its radius */
+    --dot-tiny: 10px;                              /* a colour inside a line of words: a folded pane's summary */
     --thumb: 18px; --track: 4px;                   /* sliders: a black disc on a thin track (Okay's sketch, 12 Oct 2026) */
     --tick: 16px;                                  /* a tick box */
     --reach: calc((var(--line) - var(--control)) / 2);      /* what a row leaves above and under a control: under a finger, a press there counts too */
@@ -348,6 +352,7 @@
   .colour[aria-expanded="true"] { background: var(--ink); color: var(--paper); }
   .swatch, .dot { flex: none; width: var(--dot); height: var(--dot); border: var(--hair) solid var(--chip-rule); border-radius: var(--round-small); background: linear-gradient(var(--c, transparent), var(--c, transparent)), var(--checker); }
   .colour .dot { border-radius: 3px; }
+  .dot.tiny { display: inline-block; width: var(--dot-tiny); height: var(--dot-tiny); border-radius: 2px; vertical-align: -1px; }
   .colour[aria-expanded="true"] .dot { border-color: var(--night-chip-rule); }
   .swatch:hover { border-color: var(--ink); }
   /* colours in a list (Dial → Colours, a band's sectors): square swatches in a row that wraps */
@@ -420,21 +425,50 @@
   .ringlist .rename:hover { color: var(--ink); background: var(--veil-strong); }
   .ringlist .sum { grid-column: 5; justify-self: end; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--t-s); }
   .ringlist .kind { grid-column: 6; justify-self: start; padding-left: var(--sum-gap); }
-  /* under the list: what you can add (words) and what you can do to the selected ring (signs). The words start
-     on the six columns; the last sign's drawing ends on the right margin. */
-  .listfoot { display: flex; justify-content: space-between; align-items: center; height: var(--line); margin-top: var(--ring-gap);
-    padding-right: var(--frame-out); }
-  /* Add + and the four kinds are one outlined group with round ends, a hairline between its parts; the four signs
-     are outlined circles (Okay's drawing, 13 Oct 2026). */
-  .listfoot .adds, .listfoot .signs { display: flex; align-items: center; }
-  .listfoot .adds { flex: none; height: var(--control); border: var(--hair) solid var(--grey); border-radius: var(--round-pill); overflow: hidden; }
-  .listfoot .adds > * { display: grid; align-items: center; height: 100%; padding: 0 var(--foot-pad); border: 0; }
-  .listfoot .adds > * + * { border-left: var(--hair) solid var(--grey); }
-  .listfoot .adds > .quiet::after { content: " +"; white-space: pre; }
-  .listfoot .adds > .quiet { display: block; line-height: calc(var(--control) - 2 * var(--hair)); white-space: nowrap; }
-  .listfoot .adds > .plain:hover { background: var(--field); }
-  .listfoot .signs { gap: var(--foot-gap); }
-  .listfoot .signs .sign { border-color: var(--grey); border-radius: var(--round-pill); }
+  /* the list's tools stand on the pane's heading line, at its right: a plus that opens the four kinds, then move up ·
+     move down · duplicate · delete, all five the same outlined circle (Okay, 13 Oct 2026). The pane is laid on the
+     columns so they can lie over the heading's right part; folded, the summary stands there instead. */
+  .pane.tooled { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); }
+  .pane.tooled > * { grid-column: 1 / -1; }
+  .pane.tooled > .fold { grid-row: 1; }
+  .pane.tooled:not(.folded) > .fold .summary { visibility: hidden; }
+  .pane.tooled > .headtools { grid-row: 1; grid-column: 4 / -1; justify-self: end; align-self: center; z-index: 1; }
+  .pane.tooled.folded > .headtools { display: none; }
+  .headtools { display: flex; align-items: center; gap: var(--foot-gap); }
+  .headtools .sign { border-color: var(--grey); border-radius: var(--round-pill); }
+  .headtools .sign[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .adder { position: relative; display: grid; }
+  .addmenu { position: absolute; z-index: 4; top: calc(100% + var(--unit)); right: 0; min-width: calc(2 * var(--col) + var(--gap)); border: var(--hair) solid var(--ink); background: var(--field); }
+  .addmenu button { display: flex; align-items: center; gap: var(--gap); width: 100%; height: var(--line); padding: 0 10px; white-space: nowrap; }
+  .addmenu button + button { border-top: var(--hair) solid var(--rule); }
+  .addmenu button:hover { background: var(--hover); }
+
+  /* the selected ring in one line: its name · its kind (four buttons, pictures only) · its colour (a swatch) · its
+     radius (a value button). The radius' pop-up hangs under the line, as wide as the line. */
+  .ringline { position: relative; display: flex; align-items: center; gap: var(--ringline-gap); min-height: var(--ringline); }
+  .ringline .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+  .kinds { display: flex; flex: none; }
+  .kinds button { display: grid; place-items: center; width: var(--kind-button); height: var(--kind-button); border: var(--hair) solid var(--rule); background: var(--field); }
+  .kinds button + button { margin-left: calc(-1 * var(--hair)); }
+  .kinds button:hover { background: var(--hover); }
+  .kinds button.on { position: relative; background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .colour.bare { flex: none; justify-content: center; width: var(--kind-button); height: var(--kind-button); padding: 0; border: var(--hair) solid var(--rule); border-radius: 0; background: var(--field); }
+  .colour.bare .hex { display: none; }
+  .colour.bare[aria-expanded="true"] { border-color: var(--ink); }
+
+  /* a value as a button: a circle with a radius drawn in it and the value written on the line. A click pops up the
+     number's row under it; pressing and moving changes the value. */
+  .valueb { position: relative; flex: none; width: var(--value-button); height: var(--value-button); border-radius: var(--round-pill); cursor: ew-resize; touch-action: none; }
+  .valueb svg { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.1; }
+  .valueb svg circle:first-child { fill: var(--field); stroke: var(--grey); }
+  .valueb svg .pivot { fill: currentColor; stroke: none; }
+  .valueb:hover svg circle:first-child { fill: var(--hover); stroke: var(--ink); }
+  .valueb:is([aria-expanded="true"], .dragging) { color: var(--paper); }
+  .valueb:is([aria-expanded="true"], .dragging) svg circle:first-child { fill: var(--ink); stroke: var(--ink); }
+  .valueb .figure { position: absolute; left: 0; right: 0; bottom: calc(50% + 2px); text-align: center; font-size: var(--t-xs); font-weight: 600; line-height: 1; }
+  .valueb .figure.long { letter-spacing: -0.06em; }
+  .valuepop { --row-rule: transparent; position: absolute; z-index: 4; top: calc(100% + var(--unit)); left: 0; right: 0; padding: 0 10px; border: var(--hair) solid var(--ink); background: var(--field); }
+  .valuepop .row input[type="range"] { visibility: hidden; }      /* the button is dragged instead: the pop-up is for typing */
 
   /* the font picker: every font shows its own numerals */
   .font { display: grid; gap: var(--unit); margin-top: var(--unit); }
@@ -605,9 +639,6 @@
     .form { overflow: visible; }
     .tabs { position: sticky; top: 0; z-index: 1; background: var(--paper); }
     .ringlist ol { max-height: none; }
-    .listfoot { flex-wrap: wrap; height: auto; min-height: var(--line); padding-top: 4px; padding-bottom: 4px; }
-    .listfoot .adds > .quiet { white-space: nowrap; }
-    .listfoot .signs { margin-left: auto; }
     .row.pick > label, .row.pick > .picks { grid-column: 1 / -1; }      /* picture tiles under their label, on all six columns: room for their words */
     .row.pick > label { line-height: 1.4; padding-top: var(--unit); }
     .picker { inset: auto 0 0 0; width: 100%; height: 58%; border-right: 0; border-top: var(--hair) solid var(--ink); }
@@ -6579,12 +6610,12 @@ var solid = `fill="currentColor" stroke="none"`;
 var KIND_PIC = 30;
 var PICS = {
   // a ring's kind: the whole circle, as on a dial (Okay's drawing, 13 Oct 2026). Square, a little larger than the others.
-  kind: (i) => icon([
+  kind: (i, size = KIND_PIC) => icon([
     `<path d="${ticks(18, 8.5, 13.5)}" stroke-width="1.3" stroke-linecap="butt"/>`,
     `<path d="${ticks(8, 8.5, 13.5)}" stroke-width="3" stroke-linecap="butt"/>`,
     [["12", 0, -9.4], ["3", 10, 0], ["6", 0, 9.4], ["9", -10, 0]].map(([t, x, y]) => `<text x="${x}" y="${y}" font-size="8" font-weight="600" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">${t}</text>`).join(""),
     `<circle r="10.5" stroke-width="5.4"/>`
-  ][i], KIND_PIC, "-15 -15 30 30"),
+  ][i], size, "-15 -15 30 30"),
   shape: [`<rect x="12" y="3" width="4" height="14" ${solid}/>`, `<path d="M10.5 3L17.5 3L15.2 17L12.8 17Z" ${solid}/>`, `<circle cx="14" cy="10" r="4.5" ${solid}/>`],
   twelve: [
     `<rect x="12.2" y="3" width="3.6" height="14" ${solid}/>`,
@@ -6630,6 +6661,11 @@ var txt = (key, text, o = {}) => ({ kind: "txt", key, text, ...o });
 var hdr = (text, o = {}) => ({ kind: "hdr", text, ...o });
 var info = (text, o = {}) => ({ kind: "note", text, ...o });
 var custom = (name, o = {}) => ({ kind: "custom", name, ...o });
+var RADIUS_ROWS = {
+  outer: num2("r", "Outer radius", 0, 25, 0.05, { scope: "ring" }),
+  numerals: num2("r", "Centre radius", 0, 25, 0.05, { scope: "ring", menu: { key: "anchor", title: "What the radius measures to", items: [[1, "Baseline"], [2, "Ascender"], [0, "Centre"]] } })
+};
+var radius_row = (R) => RADIUS_ROWS[kind_of(R) === "numerals" ? "numerals" : "outer"];
 var kind_in = (...names) => (R) => names.includes(kind_of(R));
 var marks_with = (...shapes) => (R) => ["ticks", "markers"].includes(kind_of(R)) && shapes.includes(SHAPES[R.shape]);
 var labels_are = (name) => (R) => kind_of(R) === "numerals" && LABEL_SETS[R.labels][0] === name;
@@ -6661,18 +6697,22 @@ var ROWS = {
   ],
   Rings: [
     // one list; rows that don't apply hide (R16)
-    // one pinned pane (Okay's drawing, 13 Oct 2026): the list, then the selected ring by its name: kind, colour, radius.
-    // Folded it is one line, "Rings: Hours   numerals · #141414 · …": the list's height given back to the panes below.
-    hdr("Rings, top first", { scope: "global", pin: true, title: (S, folded) => folded && S.rings[S.ui_ring] ? `Rings: ${S.rings[S.ui_ring].name || kind_of(S.rings[S.ui_ring])}` : "Rings, top first" }),
-    // pin: stays in view while the rest scrolls
+    // one pinned pane (Okay's drawings, 13 Oct 2026). Its heading line carries the list's tools: a plus that opens
+    // the four kinds, and move up · move down · duplicate · delete. Then the list. Then the selected ring in one
+    // line: its name · its kind · its colour · its radius. Folded, the pane is one line: "Rings: Hours   numerals · ■ · …".
+    hdr("Rings, top first", {
+      scope: "global",
+      pin: true,
+      tools: "ring_tools",
+      // pin: stays in view while the rest scrolls
+      title: (S, folded) => folded && S.rings[S.ui_ring] ? `Rings: ${S.rings[S.ui_ring].name || kind_of(S.rings[S.ui_ring])}` : "Rings, top first",
+      summary: (S, tool2) => {
+        const R = S.rings[S.ui_ring];
+        return R ? [kind_of(R), { c: R.c }, `${label_of(radius_row(R), R).toLowerCase()} ${tool2.in_unit(R.r, 2)}`] : [];
+      }
+    }),
     custom("ring_list", { scope: "global", pin: true }),
-    pick("kind", "Kind", KINDS, PICS.kind, { pin: true, label: (R) => R.name || kind_of(R) }),
-    // label: the ring's name stands where "Kind" would
-    col("c", "Colour", { pin: true }),
-    num2("r", "Outer radius", 0, 25, 0.05, { pin: true, show: kind_in("ticks", "markers", "band") }),
-    // menu: a small menu beside the label. A numeral's radius can measure to its centre, its baseline or its top;
-    // the label says which. Shown in the order Okay wrote them; what is stored is the place in G.ANCHORS (R9).
-    num2("r", "Centre radius", 0, 25, 0.05, { pin: true, show: kind_in("numerals"), menu: { key: "anchor", title: "What the radius measures to", items: [[1, "Baseline"], [2, "Ascender"], [0, "Centre"]] } }),
+    custom("ring_line", { pin: true }),
     hdr("Sector colours", { show: (R) => kind_of(R) === "band" && positions_of(R).length > 1 }),
     custom("sectors", { show: (R) => kind_of(R) === "band" && positions_of(R).length > 1 }),
     hdr("Positions"),
@@ -6981,6 +7021,8 @@ var DialTool = class _DialTool {
     if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox")) this.pop_close();
     if (this.guides_open && !$("#guide-list").hidden && !on(".guides")) this.guides_open(false);
     if (this.unit_open && !$("#unit-menu").hidden && !on(".unit")) this.unit_open(false);
+    if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
+    if (this.value_pop && !on("#value-pop") && !on(".valueb")) this.value_pop_close();
   }
   // ── building the window ──────────────────────────────────
   build_window() {
@@ -7365,15 +7407,24 @@ var DialTool = class _DialTool {
           r.eye.innerHTML = eye(!folded);
           r.button.setAttribute("aria-expanded", String(!folded));
         }
-        r.summary.textContent = folded ? this.summary(r) : "";
+        const parts = folded ? this.summary(r) : [], said = JSON.stringify(parts);
+        if (r.summary_shown !== said) {
+          r.summary_shown = said;
+          this.show_summary(r.summary, parts);
+        }
       }
       const pane = r.group;
       if (applies && (r.in_head || !(pane && (pane.el.hidden || this.is_folded(pane))))) r.refresh(T);
+    }
+    if (this.value_pop) {
+      if (!this.value_pop.box.isConnected) this.value_pop = null;
+      else this.value_pop.r.refresh(this.target(this.value_pop.r.row.scope));
     }
     this.pop_refresh();
   }
   /** what a folded pane holds, in a few words: the values of its first rows. Folding hides controls, not information. */
   summary(heading) {
+    if (heading.row.summary) return heading.row.summary(this.S, this);
     const parts = [];
     for (const r of this.rows) {
       if (r.group !== heading || !r.row.key || r.in_head || parts.length === 3) continue;
@@ -7382,11 +7433,22 @@ var DialTool = class _DialTool {
       const v = T[row.key];
       if (row.kind === "num") parts.push(`${label_of(row, T).replace(/^…/, "").toLowerCase()} ${is_length(row) ? this.in_unit(v, decimals(row.step)) : fmt(v, row.step)}`);
       else if (row.kind === "pop" || row.kind === "pick" || row.kind === "seg") parts.push(String(row.items[v] ?? ""));
-      else if (row.kind === "col") parts.push(to_hex(v).toUpperCase());
+      else if (row.kind === "col") parts.push({ c: v });
       else if (row.kind === "txt") parts.push(String(v));
       else if (row.kind === "chk" && v) parts.push(row.text.toLowerCase());
     }
-    return parts.filter(Boolean).join(" \xB7 ");
+    return parts.filter(Boolean);
+  }
+  /** a summary's parts in a line, a dot between them: words as words, a colour as a tiny swatch. */
+  show_summary(box, parts) {
+    box.replaceChildren();
+    parts.forEach((part, i) => {
+      if (i) box.append(" \xB7 ");
+      if (typeof part === "string") return box.append(part);
+      const dot = el("i", { className: "dot tiny", title: to_hex(part.c).toUpperCase() });
+      paint(dot, part.c);
+      box.append(dot);
+    });
   }
   /** one row of the form → {row, el, refresh(T)}. */
   build_row(row) {
@@ -7404,6 +7466,10 @@ var DialTool = class _DialTool {
       out.button = el("button", { type: "button", className: "fold", title: "Show or hide this pane", onclick: () => this.fold(out, !this.is_folded(out)) }, out.eye, title, out.summary);
       out.body = el("div", { className: "body" });
       out.el = el("section", { className: "pane" }, out.button, out.body);
+      if (row.tools) {
+        out.el.classList.add("tooled");
+        out.button.after(this["head_" + row.tools]());
+      }
       if (row.title) out.refresh = (T) => {
         title.textContent = row.title(T, this.is_folded(out));
       };
@@ -7969,22 +8035,153 @@ var DialTool = class _DialTool {
       } }), note2)
     );
   }
-  /** the ring list: order = stacking order, top ring first. Show, name, and the tools. */
+  /** the ring list: order = stacking order, top ring first. Its tools are on the pane's heading line (head_ring_tools). */
   row_ring_list(wrap, out) {
     wrap.className = "ringlist";
     this.ring_list = el("ol");
-    const add = el("span", { className: "adds" }, el("span", { className: "quiet", textContent: "Add" }));
-    for (const kind of KINDS) {
-      add.append(el("button", { type: "button", className: "plain", id: "add-" + kind, textContent: kind[0].toUpperCase() + kind.slice(1), onclick: () => this.ring_tool("add", kind) }));
-    }
-    const tools = el("span", { className: "signs" });
+    wrap.append(this.ring_list);
+    this.fill_ring_list();
+  }
+  /** the list's tools, on the heading line: a plus that opens the four kinds (add one above the selected ring),
+   *  then what you can do to the selected ring. All five are the same outlined circle (Okay, 13 Oct 2026). */
+  head_ring_tools() {
+    const menu = el("div", { className: "addmenu", id: "add-menu", hidden: true });
+    menu.setAttribute("role", "menu");
+    const plus = el("button", { type: "button", className: "sign", id: "ring-add", title: "Add a ring", ariaLabel: "Add a ring" });
+    plus.innerHTML = icon(`<path d="M8 3L8 13M3 8L13 8"/>`);
+    plus.setAttribute("aria-haspopup", "menu");
+    const open = (on) => {
+      menu.hidden = !on;
+      plus.setAttribute("aria-expanded", String(on));
+    };
+    this.add_open = open;
+    plus.onclick = () => open(menu.hidden);
+    KINDS.forEach((kind, i) => {
+      const b = el("button", { type: "button", id: "add-" + kind, onclick: () => {
+        open(false);
+        this.ring_tool("add", kind);
+      } });
+      b.innerHTML = PICS.kind(i, 20);
+      b.append(el("span", { textContent: kind[0].toUpperCase() + kind.slice(1) }));
+      b.setAttribute("role", "menuitem");
+      menu.append(b);
+    });
+    const tools = el("span", { className: "headtools signs" }, el("span", { className: "adder" }, plus, menu));
+    tools.onkeydown = (e) => {
+      if (e.key === "Escape" && !menu.hidden) {
+        open(false);
+        plus.focus();
+      }
+    };
     for (const [action, title] of [["up", "Move up"], ["down", "Move down"], ["duplicate", "Duplicate"], ["delete", "Delete"]]) {
       const b = el("button", { type: "button", className: "sign", id: "ring-" + action, title, ariaLabel: title, onclick: () => this.ring_tool(action) });
       b.innerHTML = icon(TOOL_ICONS[action]);
       tools.append(b);
     }
-    wrap.append(this.ring_list, el("div", { className: "listfoot" }, add, tools));
-    this.fill_ring_list();
+    open(false);
+    return tools;
+  }
+  /** the selected ring in one line (Okay, 13 Oct 2026): its name · its kind, four buttons with pictures only ·
+   *  its colour, a swatch · its radius, a round button with the radius drawn in it and the value on the line. */
+  row_ring_line(wrap, out) {
+    wrap.className = "ringline";
+    const name = el("b", { className: "name" });
+    const kinds = el("span", { className: "kinds", role: "radiogroup", ariaLabel: "Kind" });
+    KINDS.forEach((kind, i) => {
+      const b = el("button", { type: "button", id: `ring-kind-Kind-${i}`, title: kind, ariaLabel: kind, onclick: () => this.set_value("ring", "kind", i) });
+      b.setAttribute("role", "radio");
+      b.innerHTML = PICS.kind(i, 24);
+      kinds.append(b);
+    });
+    const colour = this.colour_pill("ring-c-Colour", "Colour");
+    colour.classList.add("bare");
+    colour.onclick = () => this.pop_open(this.colour_of_row({ scope: "ring", key: "c", text: "Colour" }), colour);
+    const radius = this.value_button("ring-r", () => radius_row(this.ring()));
+    wrap.append(name, kinds, colour, radius.el);
+    out.refresh = (R) => {
+      name.textContent = name.title = R.name || kind_of(R);
+      [...kinds.children].forEach((b, i) => {
+        b.classList.toggle("on", i === R.kind);
+        b.setAttribute("aria-checked", String(i === R.kind));
+      });
+      colour.show(R.c);
+      radius.refresh();
+    };
+  }
+  // ── a value as a button ──────────────────────────────────
+  //   A number shown as a small round drawing with its value written in it (Okay, 13 Oct 2026; first use: a ring's
+  //   radius). A click pops up the number's ordinary row under the button, the field ready to type in; pressing
+  //   and moving the pointer changes the value without opening anything (right or up: more; Shift: ten times
+  //   finer); a press outside puts the pop-up away. row() says which number row it stands for right now.
+  value_button(id, row) {
+    const b = el("button", { type: "button", className: "valueb", id });
+    const figure = el("span", { className: "figure" });
+    b.innerHTML = `<svg viewBox="-20 -20 40 40" aria-hidden="true"><circle r="19.4"/><path d="M0 0L19.4 0"/><circle class="pivot" r="1.6"/></svg>`;
+    b.append(figure);
+    const T = () => this.target(row().scope);
+    const refresh = () => {
+      const r = row(), v = T()[r.key] ?? 0, text = String(parseFloat(this.in_unit(v, decimals(r.step))));
+      figure.textContent = text;
+      figure.classList.toggle("long", text.length > 5);
+      b.title = `${label_of(r, T())} ${text} ${this.unit()[0]} \xB7 click to type, or press and drag`;
+      b.ariaLabel = `${label_of(r, T())} ${text}`;
+    };
+    let press = null;
+    b.onpointerdown = (e) => {
+      press = { x: e.clientX, y: e.clientY, v: T()[row().key], moved: false };
+      b.setPointerCapture(e.pointerId);
+    };
+    b.onpointermove = (e) => {
+      if (!press) return;
+      const d = e.clientX - press.x - (e.clientY - press.y);
+      if (!press.moved && Math.abs(d) < 4) return;
+      if (!press.moved) {
+        press.moved = true;
+        this.value_pop_close();
+        b.classList.add("dragging");
+      }
+      const r = row(), step = r.step * (e.shiftKey ? 0.1 : 1);
+      this.set_value(r.scope, r.key, +Math.max(press.v + Math.round(d / 2) * step, r.lo).toFixed(6));
+    };
+    b.onpointerup = b.onpointercancel = () => {
+      const was = press;
+      press = null;
+      b.classList.remove("dragging");
+      if (was && !was.moved) this.value_pop_open(b, row());
+    };
+    b.onclick = (e) => {
+      if (!e.detail && !this.value_pop) this.value_pop_open(b, row());
+    };
+    return { el: b, refresh };
+  }
+  /** the pop-up under a value button: the number's own row (label · field · − +; for a numeral's radius the menu
+   *  beside the label too). Enter, Escape or a press outside closes it. */
+  value_pop_open(button, row) {
+    if (this.value_pop && this.value_pop.button === button) return this.value_pop_close();
+    this.value_pop_close();
+    const r = this.build_row(row), box = el("div", { className: "valuepop", id: "value-pop" }, r.el);
+    button.parentElement.append(box);
+    button.setAttribute("aria-expanded", "true");
+    this.value_pop = { button, box, r };
+    r.refresh(this.target(row.scope));
+    const field = box.querySelector('input[type="text"]');
+    box.onkeydown = (e) => {
+      if (!(e.key === "Escape" || e.key === "Enter" && e.target === field)) return;
+      e.preventDefault();
+      this.value_pop_close();
+      button.focus();
+    };
+    field.focus();
+    field.select();
+  }
+  value_pop_close() {
+    if (!this.value_pop) return;
+    const { button, box } = this.value_pop;
+    this.value_pop = null;
+    const field = box.querySelector('input[type="text"]');
+    if (document.activeElement === field) field.blur();
+    box.remove();
+    button.setAttribute("aria-expanded", "false");
   }
   /** a ring in a few numbers, for its row in the list: how many it draws × how big one is · r its radius.
    *  "How big" is what you would name first for its kind: a tick's or marker's length (a dot's Ø), a numeral's
@@ -8113,6 +8310,7 @@ var DialTool = class _DialTool {
   }
   select_ring(i, refill = true) {
     if (i === this.S.ui_ring && !refill) return;
+    this.value_pop_close();
     this.S.ui_ring = clamp(i, 0, this.S.rings.length - 1);
     if (refill) this.fill_ring_list();
     else [...this.ring_list.children].forEach((li, k) => li.classList.toggle("on", k === this.S.ui_ring));

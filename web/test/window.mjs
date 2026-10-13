@@ -121,6 +121,7 @@ await shot("3-round-ends");
 // ── the ring list: add, rename, hide, duplicate, move, delete ──
 await tab("Rings");
 const before = await S("S.rings.length");
+await page.click("#ring-add");
 await page.click("#add-band");
 check(await S(`S.rings.length === ${before + 1} && S.rings[S.ui_ring].kind === 3`), "Add Band → a band ring, selected");
 const row_look = await page.$$eval(".ringlist li", (l) => l.map((e) => { const c = getComputedStyle(e); return (e.classList.contains("on") ? "on " : "") + c.borderTopWidth + " " + c.backgroundColor; }));
@@ -167,30 +168,57 @@ await shot("4a-hidden-ring");
 await page.click(".ringlist li.on button.eye");
 check(await page.$$eval(".ringlist li.on .rename", (e) => e.length) === 1, "shown again: the rename box is back");
 const eyes = await page.$$eval(".ringlist button.eye svg, .pinned button.fold .eye svg", (e) => [...new Set(e.map((x) => Math.round(x.getBoundingClientRect().left)))]);
-const starts = await page.evaluate(() => { const l = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); return { row: l(".ringlist li"), label: l(".pinned .row > label"), adds: l(".listfoot .adds"), add_word: l(".listfoot .adds > .quiet"), signs: r(".listfoot .signs"), line: r(".pinned .pane"), gap: l(".listfoot .signs") - r(".listfoot .adds") }; });
-check(eyes.length === 2 && starts.row === starts.label && starts.adds === starts.label && starts.add_word >= starts.adds && starts.signs === starts.line && starts.gap >= 4,
-  `ring rows and the Add group start where the labels start; a ring's eye is inside its row; the signs end on the pane's line (${JSON.stringify(starts)})`);
-const foot = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c(".listfoot .adds").borderTopWidth, parseFloat(c(".listfoot .adds").borderTopLeftRadius) >= 13, c(".listfoot .signs .sign").borderTopWidth, parseFloat(c(".listfoot .signs .sign").borderTopLeftRadius) >= 13, document.querySelector(".listfoot .adds").scrollWidth <= document.querySelector(".listfoot .adds").clientWidth + 2]; });
-check(foot[0] === "1px" && foot[1] && foot[2] === "1px" && foot[3] && foot[4], "Add + and the kinds are one outlined group with round ends, nothing cut off; the four signs are outlined circles");
-// one pinned pane: the list, then the ring by its name before the kind tiles; folded it is one line, "Rings: <name>"
-const one = await page.evaluate(() => { const p = document.querySelector(".pinned"); return [p.querySelectorAll(".pane").length, p.querySelector(".row.pick > label").textContent, p.querySelector("h2").textContent]; });
-check(one[0] === 1 && one[1] === await S("S.rings[S.ui_ring].name") && one[2] === "Rings, top first", `Rings has one pinned pane; the selected ring's name stands before its kinds: ${one[1]}`);
+const starts = await page.evaluate(() => { const l = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); return { row: l(".ringlist li"), name: l(".ringline .name"), heading: l(".pinned h2"), tools: r(".headtools"), radius: r(".ringline .valueb"), line: r(".pinned .pane") }; });
+check(eyes.length === 2 && starts.row === starts.name && starts.row === starts.heading && starts.tools === starts.line && starts.radius === starts.line,
+  `ring rows and the ring's line start where the heading starts; a ring's eye is inside its row; the tools and the radius button end on the pane's line (${JSON.stringify(starts)})`);
+// the heading line carries the tools: a plus and four signs, all the same outlined circle; the plus opens the four kinds
+const tools = await page.evaluate(() => { const signs = [...document.querySelectorAll(".headtools .sign")], h = document.querySelector(".pinned .fold").getBoundingClientRect(); return { ids: signs.map((b) => b.id).join(" "), look: [...new Set(signs.map((b) => { const c = getComputedStyle(b), r = b.getBoundingClientRect(); return [c.borderTopWidth, parseFloat(c.borderTopLeftRadius) >= 13, r.width, r.height].join("/"); }))], on_line: signs.every((b) => { const r = b.getBoundingClientRect(); return r.top >= h.top && r.bottom <= h.bottom; }), foot: document.querySelectorAll(".listfoot").length }; });
+check(tools.ids === "ring-add ring-up ring-down ring-duplicate ring-delete" && tools.look.length === 1 && tools.look[0] === "1px/true/26/26" && tools.on_line && tools.foot === 0, `plus · up · down · duplicate · delete stand on the heading line, five outlined circles of one size (${tools.look.join(" ")}); no line under the list`);
+await page.click("#ring-add");
+check(await page.isVisible("#add-menu") && (await page.$$eval("#add-menu button > span", (b) => b.map((x) => x.textContent).join(" "))) === "Ticks Markers Numerals Band", "the plus opens a menu of the four kinds");
+await shot("4c9-add-menu");
+await page.mouse.click(60, 44);      // on the tool's name: nothing to press there
+check(await page.isHidden("#add-menu"), "a press outside puts the menu away");
+// one pinned pane: the list, then the selected ring in one line: name · kinds · colour · radius. Folded: one line, "Rings: <name>"
+const one = await page.evaluate(() => { const p = document.querySelector(".pinned"), line = p.querySelector(".ringline"), top = (e) => Math.round(e.getBoundingClientRect().top + e.getBoundingClientRect().height / 2); return { panes: p.querySelectorAll(".pane").length, name: line.querySelector(".name").textContent, kinds: line.querySelectorAll(".kinds button svg").length, words: line.querySelectorAll(".kinds span").length, hex: getComputedStyle(line.querySelector(".colour .hex")).display, mids: [...new Set([...line.children].filter((e) => !e.classList.contains("valuepop")).map(top))].length, height: Math.round(line.getBoundingClientRect().height), title: p.querySelector("h2").textContent, figure: line.querySelector(".valueb .figure").textContent }; });
+check(one.panes === 1 && one.name === await S("S.rings[S.ui_ring].name") && one.kinds === 4 && one.words === 0 && one.hex === "none" && one.mids === 1 && one.title === "Rings, top first" && one.figure === String(await S("S.rings[S.ui_ring].r")),
+  `the selected ring is one line (${one.height} high): its name, four kind buttons with pictures only, a swatch without hex, and a round button that says its radius: ${one.name} · ${one.figure}`);
 const pinned_open = await page.$eval(".pinned", (e) => e.getBoundingClientRect().height);
 await page.click(".pinned .fold h2");
-const shut = await page.evaluate(() => { const p = document.querySelector(".pinned"); return [p.querySelector("h2").textContent, p.querySelector(".summary").textContent, p.getBoundingClientRect().height]; });
-check(shut[0] === "Rings: " + one[1] && shut[1].startsWith(await S("['ticks','markers','numerals','band'][S.rings[S.ui_ring].kind]") + " · #") && shut[2] < 60, `folded, it is one line: "${shut[0]}   ${shut[1]}" (${Math.round(pinned_open)} → ${Math.round(shut[2])} high)`);
+const shut = await page.evaluate(() => { const p = document.querySelector(".pinned"), s = p.querySelector(".summary"); return [p.querySelector("h2").textContent, s.textContent, p.getBoundingClientRect().height, s.querySelectorAll(".dot.tiny").length, getComputedStyle(p.querySelector(".headtools")).display]; });
+check(shut[0] === "Rings: " + one.name && shut[1].startsWith(await S("['ticks','markers','numerals','band'][S.rings[S.ui_ring].kind]") + " ·  · ") && !shut[1].includes("#") && shut[3] === 1 && shut[2] < 60 && shut[4] === "none", `folded, it is one line: "${shut[0]}   ${shut[1].replace(" ·  · ", " · ■ · ")}", the colour a tiny swatch without hex (${Math.round(pinned_open)} → ${Math.round(shut[2])} high)`);
 await shot("4c8-rings-folded");
 await page.click(".pinned .fold h2");
-// a numeral's radius measures to its centre, its baseline or its top: the menu beside the label (13 Oct 2026)
+// the radius button: a click pops up the number's row, the field ready; typing sets; a press outside puts it away
+const r_before = await S("S.rings[S.ui_ring].r");
+await page.click("#ring-r");
+check(await page.isVisible("#value-pop") && await page.evaluate(() => document.activeElement && document.activeElement.closest("#value-pop") !== null && document.activeElement.type === "text"), "a click on the radius button pops up a number field, ready to type in");
+await page.keyboard.type("+0.5");
+await page.keyboard.press("Enter");
+check(await page.$("#value-pop") === null && Math.abs(await S("S.rings[S.ui_ring].r") - (r_before + 0.5)) < 1e-9 && await page.textContent("#ring-r .figure") === String(r_before + 0.5), `typing +0.5 and Enter adds it and closes the pop-up: ${r_before} → ${await S("S.rings[S.ui_ring].r")}`);
+await page.click("#ring-r");
+await page.mouse.click(60, 44);      // on the tool's name: nothing to press there
+check(await page.$("#value-pop") === null, "a press outside puts the pop-up away");
+// …and pressing and moving changes the value without opening anything: two screen points a step, right or up is more
+const rb = await page.$eval("#ring-r", (e) => { const r = e.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; });
+await page.mouse.move(rb[0], rb[1]); await page.mouse.down(); await page.mouse.move(rb[0] + 10, rb[1], { steps: 4 }); await page.mouse.move(rb[0] + 20, rb[1], { steps: 4 });
+const mid_drag = await S("S.rings[S.ui_ring].r");
+await page.mouse.move(rb[0] - 20, rb[1], { steps: 6 }); await page.mouse.up();
+check(Math.abs(mid_drag - (r_before + 0.5 + 0.5)) < 1e-9 && Math.abs(await S("S.rings[S.ui_ring].r") - (r_before + 0.5 - 0.5)) < 1e-9 && await page.$("#value-pop") === null, `dragged 20 to the right the radius is 0.5 more (${mid_drag}), 20 to the left 0.5 less; no pop-up opens`);
+await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before);
+// a numeral's radius measures to its centre, its baseline or its top: the menu beside the label, in the pop-up (13 Oct 2026)
+const numerals_at = await S("S.rings.findIndex((r) => r.kind === 2)"), ring_before = await S("S.ui_ring");
+await page.click(`.ringlist li:nth-child(${numerals_at + 1}) .name`);
+await page.click("#ring-r");
 const anchors = await page.evaluate(() => {
-  const t = window.dial_tool, i0 = t.S.ui_ring, i = t.S.rings.findIndex((r) => r.kind === 2);
-  t.select_ring(i);
-  const ring = t.S.rings[i], menu = document.querySelector(".menulabel select"), label = () => document.querySelector(".menulabel label").textContent;
-  const out = { options: [...menu.options].map((o) => o.textContent).join(" "), labels: [label()] , r: ring.r };
+  const t = window.dial_tool, ring = t.ring(), menu = document.querySelector("#value-pop .menulabel select"), label = () => document.querySelector("#value-pop .menulabel label").textContent;
+  const out = { options: [...menu.options].map((o) => o.textContent).join(" "), labels: [label()], r: ring.r };
   for (const v of ["1", "2", "0"]) { menu.value = v; menu.dispatchEvent(new Event("change")); out.labels.push(label()); out["a" + v] = ring.anchor; }
-  t.select_ring(i0);
   return out;
 });
+await shot("4c10-radius-pop");
+await page.keyboard.press("Escape");
+await page.click(`.ringlist li:nth-child(${ring_before + 1}) .name`);
 check(anchors.options === "Baseline Ascender Centre" && anchors.labels.join(" | ") === "Centre radius | Baseline radius | Ascender radius | Centre radius" && anchors.a1 === 1 && anchors.a2 === 2 && anchors.a0 === 0,
   `the radius of numerals has a menu beside its label: ${anchors.options}; the label follows: ${anchors.labels.join(" → ")}`);
 // …and the drawing follows: the numeral at 12 stands on the radius (baseline), hangs from it (ascender), or is centred on it
@@ -359,6 +387,7 @@ await page.fill("#pop-hex", "#CC381A"); await page.press("#pop-hex", "Enter");
 await page.click("#pop-close");
 // a band's sectors, one colour each
 await tab("Rings");
+await page.click("#ring-add");
 await page.click("#add-band");
 check(await page.isHidden("#sectors-same"), "a band of one piece has no sector colours");
 await page.fill("#ring-count-Count", "6"); await page.press("#ring-count-Count", "Enter");

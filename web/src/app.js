@@ -63,15 +63,15 @@ const eye = (open) => icon(EYE[open ? "open" : "closed"]);
 // small pictures for choices that are easier seen than read. 28 × 20, drawn like the other signs.
 const pic = (inside) => icon(inside, 28, "0 0 28 20").replace('width="28" height="28"', 'width="28" height="20"');
 const solid = `fill="currentColor" stroke="none"`;
-const KIND_PIC = 30;                               // a kind's picture, a square this wide: 28 × 20 for the others
+const KIND_PIC = 30;                               // a kind's picture on a tile, a square this wide (28 × 20 for the others); 24 in the ring line, 20 in the Add menu
 const PICS = {
   // a ring's kind: the whole circle, as on a dial (Okay's drawing, 13 Oct 2026). Square, a little larger than the others.
-  kind: (i) => icon([
+  kind: (i, size = KIND_PIC) => icon([
     `<path d="${ticks(18, 8.5, 13.5)}" stroke-width="1.3" stroke-linecap="butt"/>`,
     `<path d="${ticks(8, 8.5, 13.5)}" stroke-width="3" stroke-linecap="butt"/>`,
     [["12", 0, -9.4], ["3", 10, 0], ["6", 0, 9.4], ["9", -10, 0]].map(([t, x, y]) => `<text x="${x}" y="${y}" font-size="8" font-weight="600" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">${t}</text>`).join(""),
     `<circle r="10.5" stroke-width="5.4"/>`,
-  ][i], KIND_PIC, "-15 -15 30 30"),
+  ][i], size, "-15 -15 30 30"),
   shape: [`<rect x="12" y="3" width="4" height="14" ${solid}/>`, `<path d="M10.5 3L17.5 3L15.2 17L12.8 17Z" ${solid}/>`, `<circle cx="14" cy="10" r="4.5" ${solid}/>`],
   twelve: [
     `<rect x="12.2" y="3" width="3.6" height="14" ${solid}/>`,
@@ -121,6 +121,15 @@ const hdr = (text, o = {}) => ({ kind: "hdr", text, ...o });
 const info = (text, o = {}) => ({ kind: "note", text, ...o });
 const custom = (name, o = {}) => ({ kind: "custom", name, ...o });
 
+// a ring's radius as a number row: what the radius button's pop-up shows. A numeral's radius can measure to its
+// centre, its baseline or its top: the small menu beside the label, in the order Okay wrote them; what is stored is
+// the place in G.ANCHORS (R9).
+const RADIUS_ROWS = {
+  outer: num("r", "Outer radius", 0, 25, 0.05, { scope: "ring" }),
+  numerals: num("r", "Centre radius", 0, 25, 0.05, { scope: "ring", menu: { key: "anchor", title: "What the radius measures to", items: [[1, "Baseline"], [2, "Ascender"], [0, "Centre"]] } }),
+};
+const radius_row = (R) => RADIUS_ROWS[G.kind_of(R) === "numerals" ? "numerals" : "outer"];
+
 const kind_in = (...names) => (R) => names.includes(G.kind_of(R));
 const marks_with = (...shapes) => (R) => ["ticks", "markers"].includes(G.kind_of(R)) && shapes.includes(G.SHAPES[R.shape]);
 const labels_are = (name) => (R) => G.kind_of(R) === "numerals" && G.LABEL_SETS[R.labels][0] === name;
@@ -150,16 +159,14 @@ const ROWS = {
     col("c_backdrop", "Backdrop"),
   ],
   Rings: [                                         // one list; rows that don't apply hide (R16)
-    // one pinned pane (Okay's drawing, 13 Oct 2026): the list, then the selected ring by its name: kind, colour, radius.
-    // Folded it is one line, "Rings: Hours   numerals · #141414 · …": the list's height given back to the panes below.
-    hdr("Rings, top first", { scope: "global", pin: true, title: (S, folded) => (folded && S.rings[S.ui_ring] ? `Rings: ${S.rings[S.ui_ring].name || G.kind_of(S.rings[S.ui_ring])}` : "Rings, top first") }),       // pin: stays in view while the rest scrolls
+    // one pinned pane (Okay's drawings, 13 Oct 2026). Its heading line carries the list's tools: a plus that opens
+    // the four kinds, and move up · move down · duplicate · delete. Then the list. Then the selected ring in one
+    // line: its name · its kind · its colour · its radius. Folded, the pane is one line: "Rings: Hours   numerals · ■ · …".
+    hdr("Rings, top first", { scope: "global", pin: true, tools: "ring_tools",       // pin: stays in view while the rest scrolls
+      title: (S, folded) => (folded && S.rings[S.ui_ring] ? `Rings: ${S.rings[S.ui_ring].name || G.kind_of(S.rings[S.ui_ring])}` : "Rings, top first"),
+      summary: (S, tool) => { const R = S.rings[S.ui_ring]; return R ? [G.kind_of(R), { c: R.c }, `${label_of(radius_row(R), R).toLowerCase()} ${tool.in_unit(R.r, 2)}`] : []; } }),
     custom("ring_list", { scope: "global", pin: true }),
-    pick("kind", "Kind", G.KINDS, PICS.kind, { pin: true, label: (R) => R.name || G.kind_of(R) }),      // label: the ring's name stands where "Kind" would
-    col("c", "Colour", { pin: true }),
-    num("r", "Outer radius", 0, 25, 0.05, { pin: true, show: kind_in("ticks", "markers", "band") }),
-    // menu: a small menu beside the label. A numeral's radius can measure to its centre, its baseline or its top;
-    // the label says which. Shown in the order Okay wrote them; what is stored is the place in G.ANCHORS (R9).
-    num("r", "Centre radius", 0, 25, 0.05, { pin: true, show: kind_in("numerals"), menu: { key: "anchor", title: "What the radius measures to", items: [[1, "Baseline"], [2, "Ascender"], [0, "Centre"]] } }),
+    custom("ring_line", { pin: true }),
     hdr("Sector colours", { show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
     custom("sectors", { show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
     hdr("Positions"),
@@ -466,6 +473,8 @@ class DialTool {
     if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox")) this.pop_close();
     if (this.guides_open && !$("#guide-list").hidden && !on(".guides")) this.guides_open(false);
     if (this.unit_open && !$("#unit-menu").hidden && !on(".unit")) this.unit_open(false);
+    if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
+    if (this.value_pop && !on("#value-pop") && !on(".valueb")) this.value_pop_close();
   }
 
   // ── building the window ──────────────────────────────────
@@ -749,16 +758,22 @@ class DialTool {
         r.el.classList.toggle("folded", folded);
         if (!r.sliding) r.body.hidden = folded;
         if (r.folded_shown !== folded) { r.folded_shown = folded; r.eye.innerHTML = eye(!folded); r.button.setAttribute("aria-expanded", String(!folded)); }
-        r.summary.textContent = folded ? this.summary(r) : "";
+        const parts = folded ? this.summary(r) : [], said = JSON.stringify(parts);
+        if (r.summary_shown !== said) { r.summary_shown = said; this.show_summary(r.summary, parts); }
       }
       const pane = r.group;
       if (applies && (r.in_head || !(pane && (pane.el.hidden || this.is_folded(pane))))) r.refresh(T);      // a heading's selector shows even when its pane is folded
+    }
+    if (this.value_pop) {
+      if (!this.value_pop.box.isConnected) this.value_pop = null;      // its line went with the section
+      else this.value_pop.r.refresh(this.target(this.value_pop.r.row.scope));
     }
     this.pop_refresh();
   }
 
   /** what a folded pane holds, in a few words: the values of its first rows. Folding hides controls, not information. */
   summary(heading) {
+    if (heading.row.summary) return heading.row.summary(this.S, this);
     const parts = [];
     for (const r of this.rows) {
       if (r.group !== heading || !r.row.key || r.in_head || parts.length === 3) continue;
@@ -767,11 +782,23 @@ class DialTool {
       const v = T[row.key];
       if (row.kind === "num") parts.push(`${label_of(row, T).replace(/^…/, "").toLowerCase()} ${is_length(row) ? this.in_unit(v, decimals(row.step)) : fmt(v, row.step)}`);
       else if (row.kind === "pop" || row.kind === "pick" || row.kind === "seg") parts.push(String(row.items[v] ?? ""));
-      else if (row.kind === "col") parts.push(to_hex(v).toUpperCase());
+      else if (row.kind === "col") parts.push({ c: v });       // a colour is shown, not spelled: a tiny swatch (Okay, 13 Oct 2026)
       else if (row.kind === "txt") parts.push(String(v));
       else if (row.kind === "chk" && v) parts.push(row.text.toLowerCase());
     }
-    return parts.filter(Boolean).join(" · ");
+    return parts.filter(Boolean);
+  }
+
+  /** a summary's parts in a line, a dot between them: words as words, a colour as a tiny swatch. */
+  show_summary(box, parts) {
+    box.replaceChildren();
+    parts.forEach((part, i) => {
+      if (i) box.append(" · ");
+      if (typeof part === "string") return box.append(part);
+      const dot = el("i", { className: "dot tiny", title: to_hex(part.c).toUpperCase() });
+      paint(dot, part.c);
+      box.append(dot);
+    });
   }
 
   /** one row of the form → {row, el, refresh(T)}. */
@@ -791,6 +818,10 @@ class DialTool {
       out.button = el("button", { type: "button", className: "fold", title: "Show or hide this pane", onclick: () => this.fold(out, !this.is_folded(out)) }, out.eye, title, out.summary);
       out.body = el("div", { className: "body" });
       out.el = el("section", { className: "pane" }, out.button, out.body);
+      if (row.tools) {                             // tools on the heading line, at its right; folded, the summary stands there instead
+        out.el.classList.add("tooled");
+        out.button.after(this["head_" + row.tools]());
+      }
       if (row.title) out.refresh = (T) => { title.textContent = row.title(T, this.is_folded(out)); };
       return out;
     }
@@ -1256,23 +1287,129 @@ class DialTool {
   }
 
 
-  /** the ring list: order = stacking order, top ring first. Show, name, and the tools. */
+  /** the ring list: order = stacking order, top ring first. Its tools are on the pane's heading line (head_ring_tools). */
   row_ring_list(wrap, out) {
     wrap.className = "ringlist";
     this.ring_list = el("ol");
-    // under the list, joined to it: what you can add (words) and what you can do to the selected ring (signs)
-    const add = el("span", { className: "adds" }, el("span", { className: "quiet", textContent: "Add" }));
-    for (const kind of G.KINDS) {
-      add.append(el("button", { type: "button", className: "plain", id: "add-" + kind, textContent: kind[0].toUpperCase() + kind.slice(1), onclick: () => this.ring_tool("add", kind) }));
-    }
-    const tools = el("span", { className: "signs" });
+    wrap.append(this.ring_list);
+    this.fill_ring_list();
+  }
+
+  /** the list's tools, on the heading line: a plus that opens the four kinds (add one above the selected ring),
+   *  then what you can do to the selected ring. All five are the same outlined circle (Okay, 13 Oct 2026). */
+  head_ring_tools() {
+    const menu = el("div", { className: "addmenu", id: "add-menu", hidden: true });
+    menu.setAttribute("role", "menu");
+    const plus = el("button", { type: "button", className: "sign", id: "ring-add", title: "Add a ring", ariaLabel: "Add a ring" });
+    plus.innerHTML = icon(`<path d="M8 3L8 13M3 8L13 8"/>`);
+    plus.setAttribute("aria-haspopup", "menu");
+    const open = (on) => { menu.hidden = !on; plus.setAttribute("aria-expanded", String(on)); };
+    this.add_open = open;
+    plus.onclick = () => open(menu.hidden);
+    G.KINDS.forEach((kind, i) => {
+      const b = el("button", { type: "button", id: "add-" + kind, onclick: () => { open(false); this.ring_tool("add", kind); } });
+      b.innerHTML = PICS.kind(i, 20);
+      b.append(el("span", { textContent: kind[0].toUpperCase() + kind.slice(1) }));
+      b.setAttribute("role", "menuitem");
+      menu.append(b);
+    });
+    const tools = el("span", { className: "headtools signs" }, el("span", { className: "adder" }, plus, menu));
+    tools.onkeydown = (e) => { if (e.key === "Escape" && !menu.hidden) { open(false); plus.focus(); } };
     for (const [action, title] of [["up", "Move up"], ["down", "Move down"], ["duplicate", "Duplicate"], ["delete", "Delete"]]) {
       const b = el("button", { type: "button", className: "sign", id: "ring-" + action, title, ariaLabel: title, onclick: () => this.ring_tool(action) });
       b.innerHTML = icon(TOOL_ICONS[action]);
       tools.append(b);
     }
-    wrap.append(this.ring_list, el("div", { className: "listfoot" }, add, tools));
-    this.fill_ring_list();
+    open(false);
+    return tools;
+  }
+
+  /** the selected ring in one line (Okay, 13 Oct 2026): its name · its kind, four buttons with pictures only ·
+   *  its colour, a swatch · its radius, a round button with the radius drawn in it and the value on the line. */
+  row_ring_line(wrap, out) {
+    wrap.className = "ringline";
+    const name = el("b", { className: "name" });
+    const kinds = el("span", { className: "kinds", role: "radiogroup", ariaLabel: "Kind" });
+    G.KINDS.forEach((kind, i) => {
+      const b = el("button", { type: "button", id: `ring-kind-Kind-${i}`, title: kind, ariaLabel: kind, onclick: () => this.set_value("ring", "kind", i) });
+      b.setAttribute("role", "radio");
+      b.innerHTML = PICS.kind(i, 24);
+      kinds.append(b);
+    });
+    const colour = this.colour_pill("ring-c-Colour", "Colour");
+    colour.classList.add("bare");                  // the swatch alone: no hex
+    colour.onclick = () => this.pop_open(this.colour_of_row({ scope: "ring", key: "c", text: "Colour" }), colour);
+    const radius = this.value_button("ring-r", () => radius_row(this.ring()));
+    wrap.append(name, kinds, colour, radius.el);
+    out.refresh = (R) => {
+      name.textContent = name.title = R.name || G.kind_of(R);
+      [...kinds.children].forEach((b, i) => { b.classList.toggle("on", i === R.kind); b.setAttribute("aria-checked", String(i === R.kind)); });
+      colour.show(R.c);
+      radius.refresh();
+    };
+  }
+
+  // ── a value as a button ──────────────────────────────────
+  //   A number shown as a small round drawing with its value written in it (Okay, 13 Oct 2026; first use: a ring's
+  //   radius). A click pops up the number's ordinary row under the button, the field ready to type in; pressing
+  //   and moving the pointer changes the value without opening anything (right or up: more; Shift: ten times
+  //   finer); a press outside puts the pop-up away. row() says which number row it stands for right now.
+
+  value_button(id, row) {
+    const b = el("button", { type: "button", className: "valueb", id });
+    const figure = el("span", { className: "figure" });
+    b.innerHTML = `<svg viewBox="-20 -20 40 40" aria-hidden="true"><circle r="19.4"/><path d="M0 0L19.4 0"/><circle class="pivot" r="1.6"/></svg>`;
+    b.append(figure);
+    const T = () => this.target(row().scope);
+    const refresh = () => {
+      const r = row(), v = T()[r.key] ?? 0, text = String(parseFloat(this.in_unit(v, decimals(r.step))));
+      figure.textContent = text;
+      figure.classList.toggle("long", text.length > 5);
+      b.title = `${label_of(r, T())} ${text} ${this.unit()[0]} · click to type, or press and drag`;
+      b.ariaLabel = `${label_of(r, T())} ${text}`;
+    };
+    let press = null;
+    b.onpointerdown = (e) => { press = { x: e.clientX, y: e.clientY, v: T()[row().key], moved: false }; b.setPointerCapture(e.pointerId); };
+    b.onpointermove = (e) => {
+      if (!press) return;
+      const d = (e.clientX - press.x) - (e.clientY - press.y);      // right or up: more
+      if (!press.moved && Math.abs(d) < 4) return;
+      if (!press.moved) { press.moved = true; this.value_pop_close(); b.classList.add("dragging"); }
+      const r = row(), step = r.step * (e.shiftKey ? 0.1 : 1);
+      this.set_value(r.scope, r.key, +Math.max(press.v + Math.round(d / 2) * step, r.lo).toFixed(6));       // two screen points a step
+    };
+    b.onpointerup = b.onpointercancel = () => { const was = press; press = null; b.classList.remove("dragging"); if (was && !was.moved) this.value_pop_open(b, row()); };
+    b.onclick = (e) => { if (!e.detail && !this.value_pop) this.value_pop_open(b, row()); };      // the keyboard (Enter, Space) opens it too
+    return { el: b, refresh };
+  }
+
+  /** the pop-up under a value button: the number's own row (label · field · − +; for a numeral's radius the menu
+   *  beside the label too). Enter, Escape or a press outside closes it. */
+  value_pop_open(button, row) {
+    if (this.value_pop && this.value_pop.button === button) return this.value_pop_close();
+    this.value_pop_close();
+    const r = this.build_row(row), box = el("div", { className: "valuepop", id: "value-pop" }, r.el);
+    button.parentElement.append(box);
+    button.setAttribute("aria-expanded", "true");
+    this.value_pop = { button, box, r };
+    r.refresh(this.target(row.scope));
+    const field = box.querySelector('input[type="text"]');
+    box.onkeydown = (e) => {
+      if (!(e.key === "Escape" || (e.key === "Enter" && e.target === field))) return;
+      e.preventDefault();                          // or the same key press would go on to the button and open it again
+      this.value_pop_close();                      // (what was typed is taken as the field goes)
+      button.focus();
+    };
+    field.focus(); field.select();
+  }
+  value_pop_close() {
+    if (!this.value_pop) return;
+    const { button, box } = this.value_pop;
+    this.value_pop = null;
+    const field = box.querySelector('input[type="text"]');
+    if (document.activeElement === field) field.blur();      // what was typed is taken before the field goes
+    box.remove();
+    button.setAttribute("aria-expanded", "false");
   }
 
   /** a ring in a few numbers, for its row in the list: how many it draws × how big one is · r its radius.
@@ -1384,6 +1521,7 @@ class DialTool {
 
   select_ring(i, refill = true) {
     if (i === this.S.ui_ring && !refill) return;
+    this.value_pop_close();                        // it was about the ring that was selected
     this.S.ui_ring = clamp(i, 0, this.S.rings.length - 1);
     if (refill) this.fill_ring_list();
     else [...this.ring_list.children].forEach((li, k) => li.classList.toggle("on", k === this.S.ui_ring));

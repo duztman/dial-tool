@@ -68,9 +68,13 @@
     --ring-gap: 4px;                               /* between framed rows */
     --sum-gap: 12px;                               /* in a ring's row: between its summary and its kind */
     --guide-tint: 22%; --guide-edge: 65%;          /* the selected ring's row: this much of its guide's colour in its ground, and in its frame */
-    --round-pill: 999px;                           /* ends fully round: the Add group and the signs under the ring list */
+    --round-pill: 999px;                           /* fully round: the signs on the Rings heading line, a value button */
     --menu-box: 18px;                              /* the boxed arrow beside a label that opens a small menu */
-    --foot-gap: 4px; --foot-pad: 4px;              /* under the ring list: between the round signs · beside each word of the Add group */
+    --foot-gap: 4px;                               /* between the round signs on the Rings heading line */
+    --ringline: 52px; --ringline-gap: 8px;         /* the selected ring's line: its height · between its parts */
+    --kind-button: 34px;                           /* in that line: a kind's button, and the colour's */
+    --value-button: 40px;                          /* a value as a round button: room for five figures over its radius */
+    --dot-tiny: 10px;                              /* a colour inside a line of words: a folded pane's summary */
     --thumb: 18px; --track: 4px;                   /* sliders: a black disc on a thin track (Okay's sketch, 12 Oct 2026) */
     --tick: 16px;                                  /* a tick box */
     --reach: calc((var(--line) - var(--control)) / 2);      /* what a row leaves above and under a control: under a finger, a press there counts too */
@@ -339,6 +343,7 @@
   .colour[aria-expanded="true"] { background: var(--ink); color: var(--paper); }
   .swatch, .dot { flex: none; width: var(--dot); height: var(--dot); border: var(--hair) solid var(--chip-rule); border-radius: var(--round-small); background: linear-gradient(var(--c, transparent), var(--c, transparent)), var(--checker); }
   .colour .dot { border-radius: 3px; }
+  .dot.tiny { display: inline-block; width: var(--dot-tiny); height: var(--dot-tiny); border-radius: 2px; vertical-align: -1px; }
   .colour[aria-expanded="true"] .dot { border-color: var(--night-chip-rule); }
   .swatch:hover { border-color: var(--ink); }
   /* colours in a list (Dial → Colours, a band's sectors): square swatches in a row that wraps */
@@ -411,21 +416,50 @@
   .ringlist .rename:hover { color: var(--ink); background: var(--veil-strong); }
   .ringlist .sum { grid-column: 5; justify-self: end; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--t-s); }
   .ringlist .kind { grid-column: 6; justify-self: start; padding-left: var(--sum-gap); }
-  /* under the list: what you can add (words) and what you can do to the selected ring (signs). The words start
-     on the six columns; the last sign's drawing ends on the right margin. */
-  .listfoot { display: flex; justify-content: space-between; align-items: center; height: var(--line); margin-top: var(--ring-gap);
-    padding-right: var(--frame-out); }
-  /* Add + and the four kinds are one outlined group with round ends, a hairline between its parts; the four signs
-     are outlined circles (Okay's drawing, 13 Oct 2026). */
-  .listfoot .adds, .listfoot .signs { display: flex; align-items: center; }
-  .listfoot .adds { flex: none; height: var(--control); border: var(--hair) solid var(--grey); border-radius: var(--round-pill); overflow: hidden; }
-  .listfoot .adds > * { display: grid; align-items: center; height: 100%; padding: 0 var(--foot-pad); border: 0; }
-  .listfoot .adds > * + * { border-left: var(--hair) solid var(--grey); }
-  .listfoot .adds > .quiet::after { content: " +"; white-space: pre; }
-  .listfoot .adds > .quiet { display: block; line-height: calc(var(--control) - 2 * var(--hair)); white-space: nowrap; }
-  .listfoot .adds > .plain:hover { background: var(--field); }
-  .listfoot .signs { gap: var(--foot-gap); }
-  .listfoot .signs .sign { border-color: var(--grey); border-radius: var(--round-pill); }
+  /* the list's tools stand on the pane's heading line, at its right: a plus that opens the four kinds, then move up ·
+     move down · duplicate · delete, all five the same outlined circle (Okay, 13 Oct 2026). The pane is laid on the
+     columns so they can lie over the heading's right part; folded, the summary stands there instead. */
+  .pane.tooled { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); }
+  .pane.tooled > * { grid-column: 1 / -1; }
+  .pane.tooled > .fold { grid-row: 1; }
+  .pane.tooled:not(.folded) > .fold .summary { visibility: hidden; }
+  .pane.tooled > .headtools { grid-row: 1; grid-column: 4 / -1; justify-self: end; align-self: center; z-index: 1; }
+  .pane.tooled.folded > .headtools { display: none; }
+  .headtools { display: flex; align-items: center; gap: var(--foot-gap); }
+  .headtools .sign { border-color: var(--grey); border-radius: var(--round-pill); }
+  .headtools .sign[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .adder { position: relative; display: grid; }
+  .addmenu { position: absolute; z-index: 4; top: calc(100% + var(--unit)); right: 0; min-width: calc(2 * var(--col) + var(--gap)); border: var(--hair) solid var(--ink); background: var(--field); }
+  .addmenu button { display: flex; align-items: center; gap: var(--gap); width: 100%; height: var(--line); padding: 0 10px; white-space: nowrap; }
+  .addmenu button + button { border-top: var(--hair) solid var(--rule); }
+  .addmenu button:hover { background: var(--hover); }
+
+  /* the selected ring in one line: its name · its kind (four buttons, pictures only) · its colour (a swatch) · its
+     radius (a value button). The radius' pop-up hangs under the line, as wide as the line. */
+  .ringline { position: relative; display: flex; align-items: center; gap: var(--ringline-gap); min-height: var(--ringline); }
+  .ringline .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+  .kinds { display: flex; flex: none; }
+  .kinds button { display: grid; place-items: center; width: var(--kind-button); height: var(--kind-button); border: var(--hair) solid var(--rule); background: var(--field); }
+  .kinds button + button { margin-left: calc(-1 * var(--hair)); }
+  .kinds button:hover { background: var(--hover); }
+  .kinds button.on { position: relative; background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .colour.bare { flex: none; justify-content: center; width: var(--kind-button); height: var(--kind-button); padding: 0; border: var(--hair) solid var(--rule); border-radius: 0; background: var(--field); }
+  .colour.bare .hex { display: none; }
+  .colour.bare[aria-expanded="true"] { border-color: var(--ink); }
+
+  /* a value as a button: a circle with a radius drawn in it and the value written on the line. A click pops up the
+     number's row under it; pressing and moving changes the value. */
+  .valueb { position: relative; flex: none; width: var(--value-button); height: var(--value-button); border-radius: var(--round-pill); cursor: ew-resize; touch-action: none; }
+  .valueb svg { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.1; }
+  .valueb svg circle:first-child { fill: var(--field); stroke: var(--grey); }
+  .valueb svg .pivot { fill: currentColor; stroke: none; }
+  .valueb:hover svg circle:first-child { fill: var(--hover); stroke: var(--ink); }
+  .valueb:is([aria-expanded="true"], .dragging) { color: var(--paper); }
+  .valueb:is([aria-expanded="true"], .dragging) svg circle:first-child { fill: var(--ink); stroke: var(--ink); }
+  .valueb .figure { position: absolute; left: 0; right: 0; bottom: calc(50% + 2px); text-align: center; font-size: var(--t-xs); font-weight: 600; line-height: 1; }
+  .valueb .figure.long { letter-spacing: -0.06em; }
+  .valuepop { --row-rule: transparent; position: absolute; z-index: 4; top: calc(100% + var(--unit)); left: 0; right: 0; padding: 0 10px; border: var(--hair) solid var(--ink); background: var(--field); }
+  .valuepop .row input[type="range"] { visibility: hidden; }      /* the button is dragged instead: the pop-up is for typing */
 
   /* the font picker: every font shows its own numerals */
   .font { display: grid; gap: var(--unit); margin-top: var(--unit); }
@@ -596,9 +630,6 @@
     .form { overflow: visible; }
     .tabs { position: sticky; top: 0; z-index: 1; background: var(--paper); }
     .ringlist ol { max-height: none; }
-    .listfoot { flex-wrap: wrap; height: auto; min-height: var(--line); padding-top: 4px; padding-bottom: 4px; }
-    .listfoot .adds > .quiet { white-space: nowrap; }
-    .listfoot .signs { margin-left: auto; }
     .row.pick > label, .row.pick > .picks { grid-column: 1 / -1; }      /* picture tiles under their label, on all six columns: room for their words */
     .row.pick > label { line-height: 1.4; padding-top: var(--unit); }
     .picker { inset: auto 0 0 0; width: 100%; height: 58%; border-right: 0; border-top: var(--hair) solid var(--ink); }
