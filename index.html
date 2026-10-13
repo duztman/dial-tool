@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.18 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.19 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet.
@@ -347,9 +347,9 @@
   /* a nested row belongs to the row above it (.nest: a question about it · .tied: its settings · .under: a note
      about it). Between the two stands a half line: a hairline from the controls' column to the right edge, in
      the place of the whole one (Okay, 13 Oct 2026). The row above draws it, on its own last line, where every
-     line of a row falls; the nested row draws no line over itself. */
+     line of a row falls; the nested row draws no line over itself. One hidden row may lie between the two (a note that doesn't apply now). */
   .row:is(.nest, .tied, .under), .row.note { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
-  .row:has(+ .row:is(.nest, .tied, .under):not([hidden])) { box-shadow: 0 calc(-1 * var(--hair)) 0 var(--row-rule); background: linear-gradient(var(--row-rule) 0 0) right bottom / calc(100% - var(--nest-from)) var(--hair) no-repeat; }
+  .row:has(+ .row:is(.nest, .tied, .under):not([hidden])), .row:has(+ .row[hidden] + .row:is(.nest, .tied, .under):not([hidden])) { box-shadow: 0 calc(-1 * var(--hair)) 0 var(--row-rule); background: linear-gradient(var(--row-rule) 0 0) right bottom / calc(100% - var(--nest-from)) var(--hair) no-repeat; }
   .row:is(.nest, .tied, .under):has(+ .row:is(.nest, .tied, .under):not([hidden])) { box-shadow: none; }
   .row > .blank:first-child { display: block; }
   .row.note.under > .quiet { grid-column: 3 / -1; }      /* a note about the controls above it starts on their column */      /* an empty place where a label would stand: what follows keeps its column */
@@ -5120,7 +5120,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.18";
+var VERSION = "beta 4.19";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -7064,6 +7064,10 @@ var ROWS = {
     chk("turn", "Turn it with its radius", { ...W, show: (T) => T.on && window_shape(T) !== "arc" }),
     info("Only off the quarters: at 4 it turns 30\xB0, at half past four 45\xB0.", { ...W, show: (T) => T.on && T.turn && window_turn(T) === 0 && window_shape(T) !== "arc" }),
     chk("text_turn", "Turn the text with it", { ...W, nest: true, show: (T) => T.on && T.turn && window_shape(T) !== "arc" && ["date", "day"].includes(WINDOW_KINDS[T.kind]) }),
+    // the frame round the hole and the room kept clear round it are drawn on the dial: they are design, so they
+    // stand here, not under a pane called Print (Okay, 13 Oct 2026: print things under Print, design among design)
+    num2("frame", "Frame", 0, 0.6, 0.01, { ...W, show: win_on }),
+    num2("clear", "Clearance", 0, 1, 0.01, { ...W, show: win_on }),
     hdr("Place and size", { ...W, show: win_on }),
     pop("at", "Position", DATE_AT.map((d) => d[0]), { ...W, show: win_on, head: true }),
     num2("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
@@ -7074,10 +7078,7 @@ var ROWS = {
     col("text_c", "Text \xB7 picture", { ...W, show: win_on, or: (T) => T.ink }),
     // or: what an unset colour is
     col("disc_c", "Disc under it", { ...W, show: win_on, or: () => [1, 1, 1, 1] }),
-    col("ink", "Frame", { ...W, show: win_on }),
-    hdr("Print", { ...W, show: win_on }),
-    num2("frame", "Frame", 0, 0.6, 0.01, { ...W, show: win_on }),
-    num2("clear", "Print clearance", 0, 1, 0.01, { ...W, show: win_on })
+    col("ink", "Frame", { ...W, show: win_on })
   ],
   Export: [
     // Okay's order, 13 Oct 2026. Export a file stays in view (pinned): Vector · PDF | SVG, with its tick right
@@ -7092,7 +7093,8 @@ var ROWS = {
     num2("out_dpi", "dpi", 72, 2400, 1, { tie: true, bare: true }),
     // bare: no word before it (the line under it says "at 600 dpi"); the slider stands under the buttons
     custom("png_size"),
-    hdr("For production"),
+    hdr("Print"),
+    // what only the printed or etched dial needs (was "For production" until beta 4.19)
     chk("out_production", "Mono print mask"),
     chk("out_mirror", "Mirrored, for toner transfer"),
     hdr("Link to this dial"),
