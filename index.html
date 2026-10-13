@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.11 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.12 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet.
@@ -82,9 +82,9 @@
     --ringline-pad: 8px; --ringline-gap: 8px; --ringline-join: 2px;      /* the selected ring's line: inside its frame · between its parts · between it and its ring's row */
     --ringline-inner: calc(3 * var(--hair));       /* its second, inner line: three times the outer */
     --row-end: calc(var(--frame-out) - var(--hair) + var(--ringline-inner));      /* the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons */
-    --line-button: 36px; --kind-wide: 46px; --bare-dot: 16px;      /* in that line every control is this high (a value button this wide too) · a kind's button is this wide · the colour's swatch */
+    --line-button: 36px; --bare-dot: 16px;      /* in the ring drawer every control is this high (a value button this wide too) · the colour's swatch */
+    --size-lead: 16px;                             /* before the size button: room for its drawing's small circle, which stands out to the left */
     --name-in: 6px;                                /* a ring's name starts this far into its column; the ring line's buttons too */
-    --card-switch: 22px;                           /* the clock-like switch on a window card */
     --half: 30px;                                  /* AM · PM inside the time's box */
     --value-pop: 132px;                            /* a value button's pop-up: about as wide as it is high */
     --dot-tiny: 10px;                              /* a colour inside a line of words: a folded pane's summary */
@@ -306,26 +306,13 @@
   /* Windows: four cards the size of the example cards (five to a row), 12 · 3 · 6 · 9. They are tabs: the chosen one
      is ink. A window that isn't shown is quiet. The line under the section tabs is theirs. */
   .windowcards { padding: calc(2 * var(--unit)) 0 calc(3 * var(--unit)); border-top: var(--thick) solid var(--ink); }
-  .windowcards .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--unit); }
+  .windowcards .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--unit); margin-left: var(--lead); }      /* the tabs start on the second column, where the labels start (Okay, 13 Oct 2026) */
   .windowcards .card { position: relative; display: grid; }
   .windowcards .card > button:first-child { display: grid; justify-items: center; gap: 3px; padding: 8px 4px 5px; background: var(--inset); font-weight: 600; }
   .windowcards .card > button:first-child svg { display: block; }
   .windowcards .card > button:first-child.off { color: var(--grey); font-weight: 400; }
   .windowcards .card > button:first-child:hover { background: var(--select); }
   .windowcards .card > button:first-child.on { background: var(--ink); color: var(--paper); }
-  /* the switch in a card's top right corner: a small clock. Its hand stands up and the face is filled when the window
-     is shown; it lies to the left on an empty face when it isn't. It takes the card's colour, light on the chosen card. */
-  .cardswitch { position: absolute; top: 3px; right: 3px; display: grid; place-items: center; width: var(--card-switch); height: var(--card-switch); border-radius: var(--round-pill); color: var(--grey); }
-  .cardswitch .hand { transform-origin: 8px 8px; transform: rotate(-90deg); transition: transform 120ms ease-out; }
-  .cardswitch .pivot { fill: currentColor; stroke: none; }
-  .cardswitch.on { color: var(--ink); }
-  .cardswitch.on .hand { transform: none; }
-  .cardswitch.on circle:first-child { fill: var(--select-rule); }
-  .cardswitch:hover { background: var(--veil-strong); }
-  .card > button:first-child.on + .cardswitch { color: var(--paper); }
-  .card > button:first-child.on + .cardswitch.on circle:first-child { fill: var(--select-rule); stroke: var(--paper); }
-  .card > button:first-child.on + .cardswitch.on .hand, .card > button:first-child.on + .cardswitch.on .pivot { color: var(--ink); stroke: var(--ink); }
-  @media (prefers-reduced-motion: reduce) { .cardswitch .hand { transition: none; } }
   .handsbar + .tabsbar { border-top: var(--hair) solid var(--rule); }
   /* tabs inside a section, always in view (Hands: Hour · Minute · Seconds): one line across the six columns */
   .tabsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; min-height: calc(var(--head) + var(--unit)); border-top: var(--thick) solid var(--ink); }
@@ -425,7 +412,7 @@
      and every row borrows them (subgrid), so summaries and kinds stand under each other whatever the words' widths. */
   .ringlist { margin: 0 calc(-1 * var(--frame-out)) 0 var(--lead); }      /* rows start where the labels start (Okay's drawing, 13 Oct 2026): the toggle column is the panes' alone */
   .ringlist ol { position: relative; list-style: none; margin: 0; padding: 2px 0 0; display: grid; row-gap: var(--ring-gap);
-    grid-template-columns: calc(var(--frame-out) + var(--lead)) 18px minmax(0, 1fr) auto repeat(3, calc(var(--line-button) + var(--ringline-gap))) var(--row-end);      /* eye · grip · name · kind · colour · size · radius · the room at the end: rows and the ring drawer share them */ max-height: calc(5 * (var(--line) + var(--ring-gap)) + var(--line-button) + 2 * var(--ringline-pad) + 2 * var(--ringline-inner) + 2 * var(--hair) + var(--ringline-join) + 4px); overflow-y: auto; }      /* five rings and the ring line, then it scrolls */
+    grid-template-columns: calc(var(--frame-out) + var(--lead)) 18px minmax(0, 1fr) auto calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--size-lead)) calc(var(--line-button) + var(--ringline-gap)) var(--row-end);      /* eye · grip · name · kind · colour · size · radius · the room at the end: rows and the ring drawer share them */ max-height: calc(5 * (var(--line) + var(--ring-gap)) + var(--line-button) + 2 * var(--ringline-pad) + 2 * var(--ringline-inner) + 2 * var(--hair) + var(--ringline-join) + 4px); overflow-y: auto; }      /* five rings and the ring line, then it scrolls */
   .ringlist li.ring { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; height: var(--line);
     border: var(--hair) solid var(--rule); border-radius: 5px; background: var(--field); cursor: pointer; }
   .ringlist li.ring:hover { border-color: var(--grey); }
@@ -475,21 +462,20 @@
      narrow gap. It borrows the list's columns (subgrid), so its buttons start where the names start: four kinds
      (pictures only) · its colour (a swatch) · its size and its radius (two value buttons), all one height. The
      frame has the colour of the selected ring's guide, as the row above has, on white. */
-  .ringlist { position: relative; }
   .ringlist li.lineholder { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; margin-top: calc(var(--ringline-join) - var(--ring-gap));
     padding: calc(var(--ringline-pad) + var(--ringline-inner)) 0;
     border: var(--hair) solid var(--select-rule); border-radius: var(--round-small); background: var(--field); box-shadow: inset 0 0 0 var(--ringline-inner) var(--select); }
   /* inside its outer line a second one, three times as thick, in the selected row's ground: the box reads as that row's (Okay, 13 Oct 2026) */
   .guided .ringlist li.lineholder { border-color: color-mix(in srgb, var(--guide) var(--guide-edge), var(--grey)); box-shadow: inset 0 0 0 var(--ringline-inner) color-mix(in srgb, var(--guide) var(--guide-tint), var(--field)); }
   .ringline { display: contents; }                 /* its buttons stand on the list's columns: the kinds from the name's column on, then colour · size · radius each under its place in the row */
-  .ringline > .kinds { grid-column: 3 / 5; justify-self: start; margin-left: var(--name-in); }
+  .ringline > .kinds { grid-column: 3 / 5; justify-self: stretch; margin-left: var(--name-in); }      /* the four fill the name's and the kind's columns, ending where the kinds' words end (Okay, 13 Oct 2026) */
   .ringline > :is(.colour, .valueb) { justify-self: end; }
   .ringline > .colour { grid-column: 5; }
   .ringline > #ring-size { grid-column: 6; }
   .ringline > #ring-r { grid-column: 7; }
   .nothing { display: none; }
-  .kinds { display: flex; flex: none; }
-  .kinds button { display: grid; place-items: center; width: var(--kind-wide); height: var(--line-button); border: var(--hair) solid var(--rule); background: var(--field); }
+  .kinds { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .kinds button { display: grid; place-items: center; height: var(--line-button); border: var(--hair) solid var(--rule); background: var(--field); }
   .kinds button + button { margin-left: calc(-1 * var(--hair)); }
   .kinds button:hover { background: var(--hover); }
   .kinds button.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
@@ -506,7 +492,8 @@
      number's row under it; pressing and moving changes the value. */
   .valueb { position: relative; flex: none; width: var(--line-button); height: var(--line-button); border-radius: var(--round-pill); cursor: ew-resize; touch-action: none; }
   .valueb svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; stroke: var(--grey); stroke-width: 1.1; }
-  .valueb svg .small { fill: var(--field); stroke: var(--rule); }
+  .valueb svg .small { fill: none; stroke: var(--rule); }
+  .valueb#ring-size svg path { stroke: var(--rule); }      /* the scale drawing is all outline */
   .valueb svg circle:first-child { fill: var(--field); stroke: var(--rule); }      /* the same line as the square buttons beside it */
   .valueb svg .pivot { fill: var(--grey); stroke: none; }
   .valueb:hover svg circle:first-child { fill: var(--hover); stroke: var(--ink); }
@@ -515,14 +502,20 @@
   .valueb:is([aria-expanded="true"], .dragging) svg { stroke: var(--paper); }
   .valueb:is([aria-expanded="true"], .dragging) svg .pivot { fill: var(--paper); }
   svg text.pixel { font-family: var(--pixel); }
-  .valuepop { --row-rule: transparent; position: absolute; z-index: 4; width: var(--value-pop); padding: 10px 10px 12px; border: var(--hair) solid var(--ink); background: var(--field); }
-  /* a small square: the number's name (and its menu) · the field · − +, one under the other. No slider: the button is dragged instead. */
+  /* a value button's tag is as wide as the pop-up it grows into: its name at the left, its value at the right, quiet,
+     in the mono face. The pop-up is the same box, higher: the number's name (and its menu) · the field · − +, one
+     under the other. No slider: the button is dragged instead. */
+  .tag.value { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; width: var(--value-pop); }
+  .tag.value .figure { color: var(--grey); font: 400 var(--t-xs)/1 var(--mono); }
+  .tag.valuepop { --row-rule: transparent; display: block; padding: 2px 8px 8px; pointer-events: auto; font-weight: 400; }
+  .tag.valuepop.growing { overflow: hidden; }
   .valuepop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 6px; min-height: 0; }
   .valuepop .row > * { grid-column: 1; }
   .valuepop .row input[type="range"] { display: none; }
   .valuepop .row input[type="text"] { width: 100%; text-align: center; }
   .valuepop .row .steps { display: grid; grid-template-columns: 1fr 1fr; }
-  .valuepop .row :is(label, .menulabel) { min-height: var(--control); align-items: center; display: flex; justify-content: space-between; }
+  .valuepop .row :is(label, .menulabel) { display: flex; justify-content: space-between; align-items: center; color: var(--ink); font: 600 var(--t-s)/1.3 var(--sans); }
+  .valuepop .row .menulabel > label { color: var(--ink); font: inherit; }
 
   /* the font picker: every font shows its own numerals */
   .font { display: grid; gap: var(--unit); margin-top: var(--unit); }
@@ -602,6 +595,20 @@
     max-height: calc(100vh - var(--bar-height) - 2 * var(--canvas-inset) - var(--control-large) - var(--unit)); overflow-y: auto; padding: var(--unit) var(--pop-pad) var(--pop-pad); }      /* less on top: a line's own height already stands its dots off the edge */
   .guidekind { display: grid; grid-template-columns: var(--guide-name) 1fr; align-items: center; min-height: var(--guide-row); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
   .guidekind.off .name { color: var(--grey); }
+  .guidekind .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* the rings' guides and the guides you add: a small heading line with a choice at its right, then a line each */
+  .guidehead { display: grid; grid-template-columns: var(--guide-name) 1fr; align-items: center; min-height: var(--guide-row); margin-top: var(--unit); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  .guidehead .name { font-weight: 600; }
+  .guidehead .segs { justify-self: end; margin-right: calc(var(--ring-gap-in) + var(--ring-thick)); }
+  .guidehead .segs > button { padding: 0 9px; }
+  .guidekind.ring.selected .name { font-weight: 600; }
+  /* a guide you added takes two lines: its name, its measures and a cross to remove it; under them its colours */
+  .guidekind.added { position: relative; grid-template-columns: 1fr; row-gap: 2px; padding: 4px 0; }
+  .guidekind.added .name { display: flex; align-items: center; gap: 6px; overflow: visible; }
+  .guidekind.added .dots { padding-left: var(--guide-name); }
+  .guidekind.added > .sign { position: absolute; top: 4px; right: 0; }
+  .guidefield { display: inline-flex; align-items: center; gap: 4px; color: var(--grey); }
+  .guidefield input { width: var(--col); height: var(--control); text-align: center; }
   .dots { display: flex; justify-content: space-between; align-items: center; padding: 0 calc(var(--ring-gap-in) + var(--ring-thick)) 0 var(--guide-gap); }
   .dots button { flex: none; display: grid; place-items: center; width: var(--guide-dot); height: var(--guide-dot); border-radius: 50%; }
   .dots .tone { background: var(--c); box-shadow: 0 0 0 var(--hair) var(--chip-rule); }
@@ -5071,7 +5078,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.11";
+var VERSION = "beta 4.12";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -5152,6 +5159,8 @@ var RING_BASE = {
   fill: 100,
   num_again: 0,
   // Numbers: the count starts again after this many positions (0 = never), as on Ferguson's dial or a two-hour track (13 Oct 2026)
+  guide: -1,
+  // its guide's colour (preview only, R5): a place in GUIDE_COLOURS · -1 = one by its place in the list (ring_guide) · -2 = none (13 Oct 2026)
   anchor: 0,
   // numerals: what the radius measures to, a place in ANCHORS. 0 = the text's centre, as before (R31)
   cs: {}
@@ -5300,6 +5309,8 @@ var DEFAULTS = {
   gd_k_rings: 1,
   gd_k_sel: 4,
   gd_w: 1,
+  gd_more: [],
+  // guides added by hand: lines, crosshairs, circles (GUIDE_MORE). gd_k_rings and gd_k_sel: unread since 13 Oct 2026, a ring's guide has the ring's own colour
   // until beta 4.4 guides had two free colours with a strength each. Kept because old links and files carry
   // them (R8, R31); nothing reads them now.
   gd_c: [0, 0.55, 0.9, 1],
@@ -5317,6 +5328,12 @@ var GUIDE_KINDS = [
   ["gd_rings", "gd_k_rings", "Ring edges"],
   ["gd_sel", "gd_k_sel", "Selected ring"]
 ];
+var RING_GUIDE_ORDER = [4, 0, 2, 5, 3, 1];
+var ring_guide = (S, i) => {
+  const g = S.rings[i] ? S.rings[i].guide : -2;
+  return g === -2 ? null : g >= 0 && g < GUIDE_COLOURS.length ? g : RING_GUIDE_ORDER[i % RING_GUIDE_ORDER.length];
+};
+var GUIDE_MORE = ["line", "crosshair", "circle"];
 var NOT_GEOMETRY = ["t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
 var NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_"];
 function complete(base, d) {
@@ -5342,6 +5359,8 @@ function new_ring(kind, S, like = null) {
   let n = 2;
   ring.name = base;
   while (names.has(ring.name)) ring.name = `${base} ${n++}`;
+  const taken = new Set(S.rings.map((r, i) => ring_guide(S, i)));
+  ring.guide = RING_GUIDE_ORDER.find((k) => !taken.has(k)) ?? RING_GUIDE_ORDER[S.rings.length % RING_GUIDE_ORDER.length];
   return ring;
 }
 var BETA1_DEFAULTS = {
@@ -5915,7 +5934,7 @@ function memo(key, build) {
   return _memo.get(key);
 }
 var forget = () => _memo.clear();
-function key_of(d, skip = ["c", "cs", "name"]) {
+function key_of(d, skip = ["c", "cs", "name", "guide"]) {
   const k = {};
   for (const a of Object.keys(d).sort()) if (!skip.includes(a)) k[a] = d[a];
   return JSON.stringify(k);
@@ -6448,22 +6467,36 @@ function scene(S, statik, t, preview = true, selected = null) {
       const hex = GUIDE_COLOURS[S[key]] || GUIDE_COLOURS[0];
       return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).concat([1]);
     };
-    const ring_guide = (r, key, px) => add("guide", circle(2 * r), null, { stroke: colour(key), px });
+    const round_guide = (r, key, px) => add("guide", circle(2 * r), null, { stroke: colour(key), px });
     const line_guide = (p0, p1) => add("guide", new Path().line(p0, p1), null, { stroke: colour("gd_k_axes"), px: S.gd_w });
-    if (S.gd_edge) ring_guide(R, "gd_k_edge", S.gd_w);
-    if (S.gd_win) for (const r of new Set(windows.map((x) => x.w.r))) ring_guide(r, "gd_k_win", S.gd_w);
+    if (S.gd_edge) round_guide(R, "gd_k_edge", S.gd_w);
+    if (S.gd_win) for (const r of new Set(windows.map((x) => x.w.r))) round_guide(r, "gd_k_win", S.gd_w);
     if (S.gd_axes) {
       line_guide([-R, 0], [R, 0]);
       line_guide([0, -R], [0, R]);
     }
+    const tone = (k) => {
+      const hex = GUIDE_COLOURS[k] || GUIDE_COLOURS[0];
+      return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).concat([1]);
+    };
+    const stroke_guide = (path, k, px = S.gd_w) => add("guide", path, null, { stroke: tone(k), px });
     S.rings.forEach((ring, i) => {
-      const chosen = i === selected && S.gd_sel;
-      if (!ring.on || !(S.gd_rings || chosen)) return;
+      const chosen = i === selected && S.gd_sel, k = ring_guide(S, i);
+      if (!ring.on || k === null || !(S.gd_rings || chosen)) return;
       const inner = { ticks: ring.len, markers: ring.len, band: ring.width }[kind_of(ring)] || 0;
       for (const r of [.../* @__PURE__ */ new Set([ring.r, ring.r - inner])].sort((a, b) => b - a)) {
-        if (r > 0) ring_guide(r, chosen ? "gd_k_sel" : "gd_k_rings", chosen ? S.gd_w * 1.5 : S.gd_w);
+        if (r > 0) stroke_guide(circle(2 * r), k, chosen ? S.gd_w * 1.5 : S.gd_w);
       }
     });
+    for (const g of S.gd_more || []) {
+      if (!(g.k >= 0)) continue;
+      const kind = GUIDE_MORE[g.kind], at = clock_point(g.r || 0, g.a || 0), arm = 1.2;
+      if (kind === "line") stroke_guide(new Path().line(clock_point(R, g.a || 0), clock_point(R, (g.a || 0) + 180)), g.k);
+      else if (kind === "crosshair") {
+        stroke_guide(new Path().line([at[0] - arm, at[1]], [at[0] + arm, at[1]]), g.k);
+        stroke_guide(new Path().line([at[0], at[1] - arm], [at[0], at[1] + arm]), g.k);
+      } else if (kind === "circle" && g.r > 0) stroke_guide(circle(2 * g.r), g.k);
+    }
   }
   return items;
 }
@@ -6826,8 +6859,9 @@ var VALUE_PICS = {
   // inside a value button, on a 40 × 40 field with the centre at 0 0, under the figure
   radius: `<path d="M0 0L19.4 0"/><circle class="pivot" r="2"/>`,
   // a radius, from the centre to the edge
-  size: `<circle class="small" cx="-13.7" cy="13.7" r="6.5"/>`
-  // scale: a small circle against the large one (Okay's sketch, 13 Oct 2026)
+  // scale: a small circle growing into the large one, joined by their two tangents. Okay's drawing (Asset_1.svg, 13 Oct
+  // 2026: circles at 8.48 20.93 r 8.11 and 24.29 14.71 r 14.33), moved and sized so its large circle is the button's own.
+  size: `<circle class="small" cx="-21.4" cy="8.42" r="10.98"/><path d="M-28.89 0.41L-13.24 -14.19M-21.06 19.4L0 19.4"/>`
 };
 var kind_in = (...names) => (R) => names.includes(kind_of(R));
 var marks_with = (...shapes) => (R) => ["ticks", "markers"].includes(kind_of(R)) && shapes.includes(SHAPES[R.shape]);
@@ -6965,9 +6999,10 @@ var ROWS = {
     // "Windows" on its tab: up to four holes in the plate
     custom("window_cards", { bar: true }),
     // four cards, 12 · 3 · 6 · 9: where each window is, and tabs for the panes below (Okay, 12 Oct 2026)
-    // a window is shown or hidden by the switch on its card (Okay, 13 Oct 2026: "Show this w. Goes away."). Hidden, only its heading shows.
+    // the cards are tabs only; a window is shown by the tick on its heading line (Okay, 13 Oct 2026, after trying a
+    // small switch on each card: "unnecessarily complex… enable window tickmark is the way to go. leave them as tabs")
     hdr("Window", { title: (S) => `Window at ${DATE_AT[windows_of(S)[S.ui_window].at][0]}` }),
-    info("Not shown. The small clock on its card shows it.", { ...W, show: (T) => !T.on }),
+    chk("on", "Show this window", { ...W, head: true }),
     pick("kind", "Shows", WINDOW_KINDS, PICS.window, { ...W, show: win_on }),
     txt("text", "Text", { ...W, show: win_is("date", "day") }),
     num2("size", "Text % of height", 20, 100, 1, { ...W, show: win_is("date", "day") }),
@@ -7196,7 +7231,7 @@ var DialTool = class _DialTool {
     if (scope === "global" && key === "dial_d" && this.S.ui_scale && T.dial_d > 0 && value > 0) this.scale_with(T.dial_d, value);
     T[key] = value;
     if (scope === "ring") {
-      if (!["c", "name"].includes(key)) this.static_dirty = true;
+      if (!["c", "name", "guide"].includes(key)) this.static_dirty = true;
       if (key === "kind" || key === "name" || key === "on") this.fill_ring_list();
     } else if (scope === "window") {
       if (!["ink", "text_c", "disc_c"].includes(key)) this.static_dirty = true;
@@ -7466,15 +7501,18 @@ var DialTool = class _DialTool {
     };
     more.onclick = () => open(list.hidden);
     this.guides_open = open;
-    this.guide_kinds = GUIDE_KINDS.map(([show, colour, name]) => {
+    const dots_line = (name, get, set, none_id = "") => {
       const dots = el("span", { className: "dots", role: "radiogroup", ariaLabel: name });
-      const none = el("button", { type: "button", className: "none", id: "guide-" + show, title: "None: hide " + name.toLowerCase(), ariaLabel: "None", onclick: () => this.set_value("global", show, false) });
+      const none = el("button", { type: "button", className: "none", id: none_id, title: "None: hide " + name.toLowerCase(), ariaLabel: "None", onclick: () => {
+        set(null);
+        this.sync_rows();
+        this.render();
+      } });
       none.innerHTML = icon(`<circle cx="8" cy="8" r="6.3"/><path d="M3.6 3.6L12.4 12.4"/>`);
       dots.append(none);
       GUIDE_COLOURS.forEach((hex, i) => {
         const b = el("button", { type: "button", className: "tone", title: hex, ariaLabel: hex, onclick: () => {
-          this.S[show] = true;
-          this.S[colour] = i;
+          set(i);
           this.sync_rows();
           this.render();
         } });
@@ -7482,13 +7520,62 @@ var DialTool = class _DialTool {
         dots.append(b);
       });
       for (const b of dots.children) b.setAttribute("role", "radio");
-      const line = el("div", { className: "guidekind" }, el("span", { className: "name", textContent: name }), dots);
-      list.append(line);
-      return { show, colour, dots, line };
+      const label = el("span", { className: "name", textContent: name, title: name });
+      const line = el("div", { className: "guidekind" }, label, dots);
+      const refresh = () => {
+        const k = get();
+        line.classList.toggle("off", k === null);
+        [...dots.children].forEach((b, n) => {
+          const on = n === 0 ? k === null : n - 1 === k;
+          b.classList.toggle("on", on);
+          b.setAttribute("aria-checked", String(on));
+        });
+      };
+      return { line, label, refresh };
+    };
+    this.guide_dots = dots_line;
+    this.guide_kinds = GUIDE_KINDS.slice(0, 3).map(([show, colour, name]) => {
+      const d = dots_line(name, () => this.S[show] ? this.S[colour] : null, (k) => {
+        if (k === null) this.S[show] = false;
+        else {
+          this.S[show] = true;
+          this.S[colour] = k;
+        }
+      }, "guide-" + show);
+      list.append(d.line);
+      return d;
     });
+    const which = el("span", { className: "segs", role: "radiogroup", ariaLabel: "Which rings show their guides" });
+    [["All", true, true], ["Selected", false, true], ["None", false, false]].forEach(([word2, rings, sel]) => {
+      const b = el("button", { type: "button", id: "guide-rings-" + word2.toLowerCase(), textContent: word2, onclick: () => {
+        this.S.gd_rings = rings;
+        this.S.gd_sel = sel;
+        this.sync_rows();
+        this.render();
+      } });
+      b.setAttribute("role", "radio");
+      which.append(b);
+    });
+    this.guide_which = which;
+    this.guide_rings = el("div", { className: "guiderings" });
+    this.guide_more = el("div", { className: "guidemore" });
+    const adds = el("span", { className: "segs" });
+    GUIDE_MORE.forEach((kind, i) => adds.append(el("button", { type: "button", id: "guide-add-" + kind, textContent: kind[0].toUpperCase() + kind.slice(1), onclick: () => {
+      const used = new Set((this.S.gd_more || []).map((g) => g.k));
+      this.S.gd_more = [...this.S.gd_more || [], { kind: i, a: 0, r: +(this.S.dial_d / 4).toFixed(2), k: [3, 0, 2, 5, 4, 1].find((k) => !used.has(k)) ?? 3 }];
+      this.sync_rows();
+      this.render();
+    } })));
+    list.append(
+      el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Rings" }), which),
+      this.guide_rings,
+      el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Add" }), adds),
+      this.guide_more
+    );
     this.guide_rows = [this.build_row({ ...num2("gd_w", "Thickness", 0.25, 6, 0.25), scope: "global" })];
     const reset = el("button", { type: "button", className: "btn", id: "guides-reset", textContent: "Reset", title: "The guides as they started", onclick: () => {
       for (const key of Object.keys(DEFAULTS)) if (key.startsWith("gd_")) this.S[key] = structuredClone(DEFAULTS[key]);
+      for (const ring of this.S.rings) ring.guide = RING_BASE.guide;
       this.sync_rows();
       this.render();
     } });
@@ -7508,15 +7595,63 @@ var DialTool = class _DialTool {
     this.guides_tick.setAttribute("aria-pressed", String(Boolean(S.guides)));
     this.guides_tick.title = S.guides ? "Guides are on: press to hide them" : "Guides are off: press to show them";
     if ($("#guide-list").hidden) return;
-    for (const k of this.guide_kinds) {
-      const shown = Boolean(S[k.show]);
-      k.line.classList.toggle("off", !shown);
-      [...k.dots.children].forEach((b, n) => {
-        const on = n === 0 ? !shown : shown && n - 1 === S[k.colour];
-        b.classList.toggle("on", on);
-        b.setAttribute("aria-checked", String(on));
+    for (const k of this.guide_kinds) k.refresh();
+    const which = S.gd_rings ? 0 : S.gd_sel ? 1 : 2;
+    [...this.guide_which.children].forEach((b, n) => {
+      b.classList.toggle("on", n === which);
+      b.setAttribute("aria-checked", String(n === which));
+    });
+    const rings = JSON.stringify(S.rings.map((r) => r.name));
+    if (this.guide_rings.dataset.rings !== rings) {
+      this.guide_rings.dataset.rings = rings;
+      this.guide_ring_lines = S.rings.map((ring, i) => {
+        const d = this.guide_dots(ring.name || kind_of(ring), () => ring_guide(this.S, i), (k) => {
+          this.S.rings[i].guide = k === null ? -2 : k;
+        });
+        d.line.classList.add("ring");
+        return d;
       });
+      this.guide_rings.replaceChildren(...this.guide_ring_lines.map((d) => d.line));
     }
+    this.guide_ring_lines.forEach((d, i) => {
+      d.refresh();
+      d.line.classList.toggle("selected", i === S.ui_ring);
+    });
+    const more = JSON.stringify((S.gd_more || []).map((g) => g.kind));
+    if (this.guide_more.dataset.more !== more) {
+      this.guide_more.dataset.more = more;
+      this.guide_more_lines = (S.gd_more || []).map((g, i) => {
+        const kind = GUIDE_MORE[g.kind], d = this.guide_dots(kind[0].toUpperCase() + kind.slice(1), () => this.S.gd_more[i].k >= 0 ? this.S.gd_more[i].k : null, (k) => {
+          this.S.gd_more[i].k = k === null ? -2 : k;
+        });
+        const field = (key, word, length) => {
+          const input = el("input", { type: "text", inputMode: "decimal", id: `guide-more-${i}-${key}`, title: word, ariaLabel: word });
+          input.onchange = () => {
+            const now = this.S.gd_more[i][key] * (length ? this.unit()[2] : 1);
+            this.S.gd_more[i][key] = +(parse_number(input.value, now) / (length ? this.unit()[2] : 1)).toFixed(4);
+            this.sync_rows();
+            this.render();
+          };
+          return { key, length, input, el: el("label", { className: "guidefield" }, el("span", { textContent: word }), input) };
+        };
+        const fields = [...kind !== "circle" ? [field("a", "\xB0", false)] : [], ...kind !== "line" ? [field("r", "r", true)] : []];
+        const gone = el("button", { type: "button", className: "sign", id: `guide-more-${i}-remove`, title: "Remove this guide", ariaLabel: "Remove this guide", onclick: () => {
+          this.S.gd_more = this.S.gd_more.filter((_, n) => n !== i);
+          this.sync_rows();
+          this.render();
+        } });
+        gone.innerHTML = icon(`<path d="M4 4L12 12M12 4L4 12"/>`);
+        d.label.replaceChildren(d.label.textContent, ...fields.map((f) => f.el));
+        d.line.classList.add("added");
+        d.line.append(gone);
+        return { ...d, fields };
+      });
+      this.guide_more.replaceChildren(...this.guide_more_lines.map((d) => d.line));
+    }
+    this.guide_more_lines.forEach((d, i) => {
+      d.refresh();
+      for (const f of d.fields) if (document.activeElement !== f.input) f.input.value = f.length ? String(parseFloat(this.in_unit(S.gd_more[i][f.key], 2))) : String(+(+S.gd_more[i][f.key]).toFixed(1));
+    });
     for (const r of this.guide_rows) r.refresh(S);
   }
   /** the rows of the section that is showing. A heading opens a pane; the rows after it go inside the pane,
@@ -8174,14 +8309,14 @@ var DialTool = class _DialTool {
     wrap.append(lines, el("div", { className: "row" }, el("span"), el("span", { className: "tools" }, same)));
     out.refresh = () => this.swatch_lines(lines, () => [{ text: "Sectors", colours: this.sector_colours(this.S.ui_ring) }]);
   }
-  /** Windows, on top: four cards the size of the example cards, 12 · 3 · 6 · 9. A card is a small dial with its window
+  /** Windows, on top: four cards, 12 · 3 · 6 · 9, starting on the second column. A card is a small dial with its window
    *  drawn where it is: filled when it is shown, an outline when it isn't. They are tabs: a press chooses the window
    *  the panes below are about. A window not in use yet goes to its card's place when its card is first pressed. */
   row_window_cards(wrap, out) {
     wrap.className = "windowcards";
     const grid = el("div", { className: "cards", role: "tablist", ariaLabel: "Which window" });
     const cards = WINDOW_CARDS.map((c) => {
-      const pic2 = el("span", { className: "pic" }), name = el("span");
+      const pic2 = el("span", { className: "pic" });
       const b = el("button", { type: "button", id: "window-card-" + c.slot, onclick: () => {
         const w = windows_of(this.S)[c.slot];
         this.S.ui_window = c.slot;
@@ -8191,18 +8326,10 @@ var DialTool = class _DialTool {
         }
         this.sync_rows();
         this.render();
-      } }, pic2, name);
+      } }, pic2);
       b.setAttribute("role", "tab");
-      const turn = el("button", { type: "button", className: "cardswitch", id: "window-switch-" + c.slot, onclick: () => {
-        const w = windows_of(this.S)[c.slot];
-        this.S.ui_window = c.slot;
-        if (!w.on && w.at === WINDOW_BASE.at && c.at !== w.at) w.at = c.at;
-        this.set_value("window", "on", !w.on);
-      } });
-      turn.setAttribute("role", "switch");
-      turn.innerHTML = icon(`<circle cx="8" cy="8" r="6.5"/><path class="hand" d="M8 8L8 3.6"/><circle class="pivot" cx="8" cy="8" r="1.1"/>`);
-      grid.append(el("div", { className: "card" }, b, turn));
-      return { ...c, b, turn, pic: pic2, name, drawn: "" };
+      grid.append(el("div", { className: "card" }, b));
+      return { ...c, b, pic: pic2, drawn: "" };
     });
     wrap.append(grid);
     out.refresh = (S) => {
@@ -8213,14 +8340,10 @@ var DialTool = class _DialTool {
         if (c.drawn !== state) {
           c.drawn = state;
           c.pic.innerHTML = icon(`<circle r="15" stroke-width="1.1"/><rect x="${(x - 3.6).toFixed(2)}" y="${(y - 2.8).toFixed(2)}" width="7.2" height="5.6" rx="1.2" stroke-width="1.1"${w.on ? ' fill="currentColor"' : ""}/>`, 34, "-17 -17 34 34");
-          c.name.textContent = place2;
           c.b.title = `The window at ${place2}${w.on ? "" : " (not shown)"}`;
         }
         c.b.classList.toggle("on", c.slot === S.ui_window);
         c.b.classList.toggle("off", !w.on);
-        c.turn.classList.toggle("on", Boolean(w.on));
-        c.turn.setAttribute("aria-checked", String(Boolean(w.on)));
-        c.turn.title = c.turn.ariaLabel = w.on ? `Hide the window at ${place2}` : `Show the window at ${place2}`;
         c.b.setAttribute("aria-selected", String(c.slot === S.ui_window));
       }
     };
@@ -8377,7 +8500,8 @@ var DialTool = class _DialTool {
     const T = () => this.target(row().scope);
     const refresh = () => {
       const r = row(), v = T()[r.key] ?? 0, text = String(parseFloat(this.in_unit(v, decimals(r.step))));
-      b.dataset.tip = `${label_of(r, T())} ${text}`;
+      b.dataset.tip = label_of(r, T());
+      b.dataset.value = text;
       b.ariaLabel = `${label_of(r, T())} ${text} ${this.unit()[0]}`;
     };
     let press = null;
@@ -8410,38 +8534,51 @@ var DialTool = class _DialTool {
     return { el: b, refresh };
   }
   /** the tag: what a wordless button is, said under it while the pointer or the keyboard is on it. One for the whole
-   *  tool, laid over everything, so a list that scrolls can't cut it off. */
+   *  tool, laid over everything, so a list that scrolls can't cut it off. A value button's tag is as wide as the
+   *  pop-up it grows into on a click (value_pop_open): its name at the left, its value at the right. */
   tag_show(target) {
     if (!this.tag) {
       this.tag = el("div", { className: "tag", id: "tag", hidden: true });
       document.body.append(this.tag);
     }
     if (target.getAttribute("aria-expanded") === "true") return this.tag_hide();
-    const box = target.getBoundingClientRect();
-    this.tag.textContent = target.dataset.tip;
+    const value = target.classList.contains("valueb");
+    this.tag.classList.toggle("value", value);
+    if (value) this.tag.replaceChildren(el("span", { textContent: target.dataset.tip }), el("span", { className: "figure", textContent: target.dataset.value }));
+    else this.tag.textContent = target.dataset.tip;
     this.tag.hidden = false;
-    const half = this.tag.offsetWidth / 2, x = clamp(box.left + box.width / 2, half + 4, innerWidth - half - 4);
-    this.tag.style.left = `${x}px`;
-    this.tag.style.top = `${box.bottom + 7}px`;
-    this.tag.style.setProperty("--point", `${box.left + box.width / 2 - x}px`);
+    this.tag_place(this.tag, target);
   }
   tag_hide() {
     if (this.tag) this.tag.hidden = true;
   }
-  /** the pop-up under a value button: the number's own row (label · field · − +; for a numeral's radius the menu
-   *  beside the label too). Enter, Escape or a press outside closes it. */
+  /** under a button, centred on it (kept inside the window), its point on the button's middle. */
+  tag_place(box, target) {
+    const at = target.getBoundingClientRect(), half = box.offsetWidth / 2, x = clamp(at.left + at.width / 2, half + 4, innerWidth - half - 4);
+    box.style.left = `${x}px`;
+    box.style.top = `${at.bottom + 7}px`;
+    box.style.setProperty("--point", `${at.left + at.width / 2 - x}px`);
+  }
+  /** a value button's pop-up is its tag, grown (Okay, 13 Oct 2026: "do it out of our tooltip. consistent width,
+   *  closed/open, height grows on click"): the same box under the button, the same width, now holding the number's
+   *  row — its name (for a numeral's radius with the menu beside it), the field ready to type in, − +. Enter,
+   *  Escape or a press outside closes it. */
   value_pop_open(button, row) {
     if (this.value_pop && this.value_pop.button === button) return this.value_pop_close();
     this.value_pop_close();
-    const r = this.build_row(row), box = el("div", { className: "valuepop", id: "value-pop" }, r.el);
-    const frame = button.closest(".ringlist") || button.parentElement, at = button.getBoundingClientRect(), within = frame.getBoundingClientRect();
-    frame.append(box);
-    box.style.top = `${Math.round(at.bottom - within.top)}px`;
-    box.style.right = `${Math.round(within.right - at.right)}px`;
-    button.setAttribute("aria-expanded", "true");
+    const closed = this.tag && !this.tag.hidden ? this.tag.offsetHeight : 0;
     this.tag_hide();
+    const r = this.build_row(row), box = el("div", { className: "tag value valuepop", id: "value-pop" }, r.el);
+    document.body.append(box);
+    button.setAttribute("aria-expanded", "true");
     this.value_pop = { button, box, r };
     r.refresh(this.target(row.scope));
+    this.tag_place(box, button);
+    if (box.animate && closed && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      box.classList.add("growing");
+      const grow = box.animate([{ height: `${closed}px` }, { height: `${box.offsetHeight}px` }], { duration: 120, easing: "ease-out" });
+      grow.onfinish = grow.oncancel = () => box.classList.remove("growing");
+    }
     const field = box.querySelector('input[type="text"]');
     box.onkeydown = (e) => {
       if (!(e.key === "Escape" || e.key === "Enter" && e.target === field)) return;
@@ -8474,7 +8611,8 @@ var DialTool = class _DialTool {
   /** the summaries follow every change without the list being built again (a name may be being typed in it). */
   sync_ring_summaries() {
     if (!this.ring_list) return;
-    const wrap = this.ring_list.closest(".pane"), guide = this.S.gd_sel ? GUIDE_COLOURS[this.S.gd_k_sel] : null;
+    const k = ring_guide(this.S, this.S.ui_ring);
+    const wrap = this.ring_list.closest(".pane"), guide = k !== null && (this.S.gd_rings || this.S.gd_sel) ? GUIDE_COLOURS[k] : null;
     wrap.classList.toggle("guided", Boolean(guide));
     if (guide) wrap.style.setProperty("--guide", guide);
     else wrap.style.removeProperty("--guide");
@@ -8529,7 +8667,8 @@ var DialTool = class _DialTool {
       paint(chip, ring.c);
       item.append(
         el("span", { className: "quiet kind says-kind", textContent: says.kind, title: "How many, and of what kind" }),
-        el("span", { className: "says chipcell" }, chip),
+        el("span", { className: "says chipcell" }, ...selected ? [] : [chip]),
+        // the selected ring's colour is the drawer's button, right under
         el("span", { className: "quiet says says-size", textContent: says.size, title: "How big one is" }),
         el("span", { className: "quiet says says-r", textContent: says.r, title: "Radius" })
       );
