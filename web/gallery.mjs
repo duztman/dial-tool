@@ -1,0 +1,114 @@
+// gallery.mjs — the Gallery under Export: writes src/gallery.js.
+//
+// Dials drawn after documents in the research atlas (13 Oct 2026); the number in brackets is the atlas entry.
+// Each is plain settings, written here by hand: rings top first, as in the ring list. Fonts are from the web
+// version's own list, so a link looks the same for everybody. Okay, 13 Oct 2026: "have a follow up section under
+// all in export for the gallery, we can add 10-15 there." To add one: add an entry to DIALS, then
+//
+//   cd web && node gallery.mjs && node build.mjs
+
+import fs from "fs";
+import path from "path";
+import { engines } from "./test/engines.mjs";
+import { link } from "./links.mjs";
+import { FONT_LIST } from "./src/font_list.js";
+
+const here = path.dirname(new URL(import.meta.url).pathname);
+const BLACK = [0.07, 0.07, 0.08, 1], WHITE = [0.95, 0.95, 0.92, 1], LUME = [0.80, 0.90, 0.66, 1], RED = [0.78, 0.16, 0.12, 1], PAPER = [0.97, 0.96, 0.93, 1], INK = [0.08, 0.08, 0.08, 1];
+const NUMBERS = 7, CUSTOM = 6, RADIAL = 1, FLIP = 2, ON_PATH = 3;      // places in LABEL_SETS and MODES
+const type = (family, ps, axes = {}) => ({ family, ps, axes });
+const hands = (c, hour, minute, second, cap = 1.4, cap_c = c) => ({ ha_hour: { c, ...hour }, ha_minute: { c, ...minute }, ha_second: { c, ...second }, ha_cap: cap, c_cap: cap_c });
+
+const DIALS = [
+  { name: "B-Uhr, type B", note: "Navigator's watch, 1941: minutes outside and large, hours inside and small [1.9]", settings: {
+    dial_d: 34, c_plate: BLACK,
+    ...hands(WHITE, { shape: "sword", len: 8.2, w: 2.0, tail: 1.6, tip: 2.6 }, { shape: "sword", len: 14.6, w: 1.5, tail: 1.8, tip: 3.2 }, { shape: "baton", len: 15.4, w: 0.2, tail: 4, counter: 1.1 }),
+    rings: [
+      { kind: "markers", name: "Triangle at 12", r: 16.4, count: 1, shape: "wedge", taper: 0, len: 2.6, w: 2.6, c: WHITE },
+      { kind: "markers", name: "Two dots", r: 16.2, count: 2, start: -8, span: 16, shape: "dot", w: 0.75, c: WHITE },
+      { kind: "numerals", name: "Minutes 5–55", r: 13.3, count: 11, start: 30, span: 300, labels: NUMBERS, num_from: 5, num_step: 5, size: 2.5, c: WHITE, ...type("Routed Gothic", "RoutedGothic") },
+      { kind: "ticks", name: "Five minutes", r: 16.4, count: 12, len: 2.0, w: 0.5, twelve: 3, every: 1, offset: 0, c: WHITE, skip: 1 },
+      { kind: "ticks", name: "Minutes", r: 16.4, count: 60, len: 1.2, w: 0.2, c: WHITE, skip: 3 },
+      { kind: "band", name: "Hour circle", r: 9.1, width: 0.16, c: WHITE },
+      { kind: "numerals", name: "Hours", r: 7.4, count: 12, size: 1.55, c: WHITE, ...type("Routed Gothic", "RoutedGothic") },
+    ] } },
+  { name: "12 + 24 hours", note: "US general-purpose watch, MIL-PRF-46374: 13–24 inside 1–12, smaller [1.10]", settings: {
+    dial_d: 30, c_plate: BLACK,
+    ...hands(WHITE, { shape: "pencil", len: 7.2, w: 1.5, tail: 1.4, tip: 1.6 }, { shape: "pencil", len: 12.2, w: 1.1, tail: 1.6, tip: 1.8 }, { shape: "baton", len: 13.2, w: 0.2, tail: 3.4 }, 1.3),
+    rings: [
+      { kind: "markers", name: "Triangle at 12", r: 14.6, count: 1, shape: "wedge", taper: 0, len: 1.9, w: 1.9, c: LUME },
+      { kind: "numerals", name: "Hours 1–12", r: 10.6, count: 12, size: 2.5, c: WHITE, ...type("B612", "B612-Bold") },
+      { kind: "numerals", name: "Hours 13–24", r: 7.5, count: 12, start: 30, labels: NUMBERS, num_from: 13, num_step: 1, size: 1.25, c: WHITE, ...type("B612", "B612-Regular") },
+      { kind: "ticks", name: "Hour marks", r: 14.6, count: 12, len: 1.7, w: 0.55, c: WHITE, skip: 1 },
+      { kind: "ticks", name: "Minutes", r: 14.6, count: 60, len: 0.9, w: 0.18, c: WHITE, skip: 3 },
+    ] } },
+  { name: "Elapsed time", note: "MIL-PRF-46374, Type III: twelve hour marks, a dot for 12, minute marks only from 12 to 4 [3.4]", settings: {
+    dial_d: 30, c_plate: BLACK,
+    ...hands(WHITE, { shape: "baton", len: 7.4, w: 1.3, tail: 1.4, round: 0.65 }, { shape: "baton", len: 12.4, w: 1.0, tail: 1.6, round: 0.5 }, { shape: "lollipop", len: 13.2, w: 0.18, tail: 3.2, feature: 1.1, feature_at: 72 }, 1.3),
+    rings: [
+      { kind: "markers", name: "Dot at 12", r: 11.6, count: 1, shape: "dot", w: 1.5, c: LUME },
+      { kind: "markers", name: "Hour marks", r: 14.5, count: 12, len: 2.2, w: 0.75, c: WHITE },
+      { kind: "ticks", name: "Minutes, 12 to 4", r: 14.5, count: 21, start: 0, span: 120, len: 1.1, w: 0.2, c: WHITE, skip: 1 },
+    ] } },
+  { name: "Montgomery", note: "Railroad safety dial, 1920: every minute numbered, every fifth larger and red [1.7]", settings: {
+    dial_d: 38, c_plate: PAPER,
+    ...hands(INK, { shape: "breguet", len: 9.6, w: 0.55, tail: 1.6, tip: 2.2, feature: 2.4, feature_at: 72 }, { shape: "breguet", len: 14.2, w: 0.45, tail: 1.8, tip: 2.6, feature: 2.2, feature_at: 76 }, { shape: "baton", len: 15, w: 0.14, tail: 3.6 }, 1.2),
+    rings: [
+      { kind: "numerals", name: "Every fifth minute", r: 17.5, count: 12, start: 30, labels: NUMBERS, num_from: 5, num_step: 5, size: 1.5, c: RED, ...type("Barlow", "Barlow-Bold") },
+      { kind: "numerals", name: "Every minute", r: 17.5, count: 60, start: 6, labels: NUMBERS, num_from: 1, num_step: 1, size: 0.82, c: INK, skip: 2, ...type("Barlow", "Barlow-Medium") },
+      { kind: "band", name: "Outer rail", r: 16.5, width: 0.1, c: INK },
+      { kind: "ticks", name: "Five minutes", r: 16.5, count: 12, len: 1.1, w: 0.42, c: INK },
+      { kind: "ticks", name: "Minutes", r: 16.5, count: 60, len: 1.1, w: 0.14, c: INK, skip: 3 },
+      { kind: "band", name: "Inner rail", r: 15.5, width: 0.1, c: INK },
+      { kind: "numerals", name: "Hours", r: 11.8, count: 12, size: 4.4, c: INK, ...type("Playfair Display", "PlayfairDisplay-Regular", { wght: 700 }) },
+    ] } },
+  { name: "World time", note: "After Cottier, 1948: an hour dial, a 24-hour ring split day and night, a ring of cities typed by hand [1.15]", settings: {
+    dial_d: 38, c_plate: [0.93, 0.92, 0.88, 1],
+    ...hands(INK, { shape: "leaf", len: 5.6, w: 1.5, tail: 0.8 }, { shape: "leaf", len: 8.6, w: 1.3, tail: 1.0 }, { shape: "baton", len: 9, w: 0.12, tail: 2, on: false }, 1.0),
+    rings: [
+      { kind: "numerals", name: "Cities", r: 16.9, count: 24, labels: CUSTOM, mode: ON_PATH, size: 0.9, tracking: 50, c: INK, ...type("Barlow Condensed", "BarlowCondensed-Medium"),
+        custom: "LONDON, PARIS, CAIRO, ISTANBUL, DUBAI, KARACHI, DHAKA, BANGKOK, HONG KONG, TOKYO, SYDNEY, NOUMEA, AUCKLAND, MIDWAY, HONOLULU, ALASKA, L. ANGELES, DENVER, CHICAGO, NEW YORK, CARACAS, RIO, S. GEORGIA, AZORES" },
+      { kind: "ticks", name: "City marks", r: 18.6, count: 24, len: 0.7, w: 0.12, start: 7.5, c: INK },
+      { kind: "band", name: "Cities, inner line", r: 15.2, width: 0.1, c: INK },
+      // hour h stands at h × 15°, 24 on top. Day is 6 to 17 (the lower half), night 18 to 5: three numerals rings, as the two halves differ in colour
+      { kind: "numerals", name: "Night hours 18–24", r: 13.55, count: 7, start: 270, span: 90, labels: NUMBERS, num_from: 18, num_step: 1, size: 1.2, c: WHITE, mode: FLIP, ...type("Barlow", "Barlow-SemiBold") },
+      { kind: "numerals", name: "Night hours 1–5", r: 13.55, count: 5, start: 15, span: 60, labels: NUMBERS, num_from: 1, num_step: 1, size: 1.2, c: WHITE, mode: FLIP, ...type("Barlow", "Barlow-SemiBold") },
+      { kind: "numerals", name: "Day hours 6–17", r: 13.55, count: 12, start: 90, span: 165, labels: NUMBERS, num_from: 6, num_step: 1, size: 1.2, c: INK, mode: FLIP, ...type("Barlow", "Barlow-SemiBold") },
+      { kind: "band", name: "Day and night", r: 14.7, width: 2.3, count: 2, start: 82.5, c: [0.83, 0.80, 0.70, 1], cs: { 1: [0.12, 0.15, 0.24, 1] } },
+      { kind: "markers", name: "Hours", r: 11.6, count: 12, len: 1.5, w: 0.45, c: INK, twelve: 1, twelve_gap: 0.35 },
+      { kind: "ticks", name: "Minutes", r: 11.6, count: 60, len: 0.5, w: 0.1, c: INK, skip: 1 },
+    ] } },
+  { name: "Diver, bezel as rings", note: "A bezel drawn with rings on a larger plate, after ISO 6425: a scale to 60, minutes in the first 15 [1.13]", settings: {
+    dial_d: 40, c_plate: [0.05, 0.10, 0.17, 1],
+    ...hands(WHITE, { shape: "arrow", len: 7.6, w: 1.4, tail: 1.5, tip: 3.2, feature: 3.4 }, { shape: "sword", len: 12.6, w: 1.6, tail: 1.8, tip: 2.6 }, { shape: "lollipop", len: 13.4, w: 0.18, tail: 3.4, feature: 1.3, feature_at: 68 }, 1.5),
+    rings: [
+      { kind: "markers", name: "Bezel: triangle", r: 19.6, count: 1, shape: "wedge", taper: 0, len: 2.6, w: 3.0, c: LUME },
+      { kind: "numerals", name: "Bezel: 10–50", r: 18.25, count: 5, start: 60, span: 240, labels: NUMBERS, num_from: 10, num_step: 10, size: 1.9, mode: RADIAL, c: WHITE, ...type("Barlow", "Barlow-SemiBold") },
+      { kind: "ticks", name: "Bezel: five minutes", r: 19.5, count: 12, len: 2.4, w: 0.6, c: WHITE, skip: 2 },
+      { kind: "ticks", name: "Bezel: first 15", r: 19.5, count: 16, start: 0, span: 90, len: 1.3, w: 0.22, c: WHITE, skip: 3 },
+      { kind: "band", name: "Bezel", r: 20, width: 3.6, c: BLACK },
+      { kind: "band", name: "Bezel edge", r: 16.4, width: 0.25, c: [0.62, 0.64, 0.66, 1] },
+      { kind: "markers", name: "Triangle at 12", r: 15.4, count: 1, shape: "wedge", taper: 0, len: 2.8, w: 2.8, c: LUME },
+      { kind: "markers", name: "Bars 3 · 6 · 9", r: 15.4, count: 4, len: 2.8, w: 1.3, twelve: 3, c: LUME },
+      { kind: "markers", name: "Dots", r: 15.2, count: 12, shape: "dot", w: 1.9, every: 3, invert: true, c: LUME },
+      { kind: "ticks", name: "Minutes", r: 15.9, count: 60, len: 0.8, w: 0.16, c: WHITE, skip: 1 },
+    ] } },
+];
+
+const G = await engines();
+for (const f of FONT_LIST) G.add_font(fs.readFileSync(path.join(here, "fonts", f.file)));
+const hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(v * 255).toString(16).padStart(2, "0")).join("");
+const out = [];
+for (const { name, note, settings } of DIALS) {
+  for (const ring of settings.rings) if (ring.ps && !G.has_font(ring.ps)) throw new Error(`${name}: no font ${ring.ps}`);
+  const S = G.fresh_settings({ ...settings, guides: true });
+  const statik = G.build_static(S), R = S.dial_d / 2 + 0.6;
+  const shapes = G.scene(S, statik, S.t, false).map((i) => `<path d="${(i.role === "hand" ? G.turned(i.path, i.angle) : i.path).svg(2, true)}" fill="${hex(i.fill)}"${i.fill[3] < 1 ? ` fill-opacity="${i.fill[3]}"` : ""}/>`).join("");
+  out.push({ name, note, link: link(S), picture: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-R} ${-R} ${2 * R} ${2 * R}">${shapes}</svg>` });
+  while (G.NOTES.length) console.log("note:", G.NOTES.shift());
+}
+fs.writeFileSync(path.join(here, "src/gallery.js"), `// Written by web/gallery.mjs — do not edit. The Gallery's dials, as links, each with a small picture.
+export const GALLERY = ${JSON.stringify(out)};
+`);
+if (process.argv[2]) for (const e of out) fs.writeFileSync(path.join(process.argv[2], e.name.replace(/[^A-Za-z0-9]+/g, "-") + ".svg"), e.picture);      // node gallery.mjs <folder>: the pictures as files, to look at
+console.log(out.map((e) => `${e.name}: link ${e.link.length} · picture ${(e.picture.length / 1e3).toFixed(0)} kB`).join("\n"));

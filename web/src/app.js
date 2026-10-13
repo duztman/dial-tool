@@ -10,6 +10,7 @@ import * as G from "./geometry.js";
 import { svg_document, pdf_document, png_with_dpi, file_name } from "./output.js";
 import { FONT_LIST, FONT_SITE } from "./font_list.js";
 import { EXAMPLES } from "./examples.js";
+import { GALLERY } from "./gallery.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const el = (tag, props = {}, ...children) => {
@@ -200,6 +201,8 @@ const ROWS = {
     num("num_from", "First number", -1000, 1000, 1, { show: labels_are("Numbers") }),
     num("num_step", "Step", -100, 100, 1, { show: labels_are("Numbers") }),
     num("num_digits", "Digits", 0, 4, 1, { whole: true, show: labels_are("Numbers") }),
+    num("num_again", "Start again after", 0, 60, 1, { whole: true, show: labels_are("Numbers") }),      // positions; 0 = never
+    info("0 counts on. 12 with first 5, step 5: 5 to 60, then 5 again.", { show: labels_are("Numbers") }),
     pick("mode", "Placement", G.MODES, PICS.mode, { show: numerals_only }),
     num("size", "Size", 0.3, 8, 0.05, { show: numerals_only }),
     hdr("Band", { show: kind_in("band") }),
@@ -281,6 +284,8 @@ const ROWS = {
     custom("link"),
     hdr("Log"),
     custom("log"),
+    hdr("Gallery"),                                // under everything else: more dials to open and take apart (Okay, 13 Oct 2026)
+    custom("gallery"),
   ],
 };
 // the day slider's steps: every hour, and 10:10 — hands spread like a smile, the pose watches are photographed in
@@ -1832,6 +1837,19 @@ class DialTool {
     const grid = el("div", { className: "cards" });
     for (const e of EXAMPLES) {
       const card = el("a", { href: e.link, title: `Open the ${e.name} dial` });
+      card.innerHTML = e.picture;
+      card.append(el("span", { textContent: e.name }));
+      grid.append(card);
+    }
+    wrap.append(grid);
+  }
+
+  /** the gallery: dials drawn after documents (web/gallery.mjs), three to a line, each with a line saying what it is. */
+  row_gallery(wrap) {
+    wrap.className = "examples gallery";
+    const grid = el("div", { className: "cards" });
+    for (const e of GALLERY) {
+      const card = el("a", { href: e.link, title: e.note });
       card.innerHTML = e.picture;
       card.append(el("span", { textContent: e.name }));
       grid.append(card);

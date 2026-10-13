@@ -5,7 +5,7 @@
   "description": "Dial Tool, web version: source in src/, one-file build in dial-tool.html",
   "scripts": {
     "build": "node build.mjs",
-    "test": "python3 test/parity.py && node build.mjs && node test/window.mjs"
+    "test": "python3 test/parity.py && node test/labels.mjs && node build.mjs && node test/window.mjs"
   },
   "dependencies": {
     "harfbuzzjs": "1.6.3",

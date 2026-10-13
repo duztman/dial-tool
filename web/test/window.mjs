@@ -855,9 +855,9 @@ await shot("8-reopened");
 
 // ── examples: five dials under Export, each a link ──
 await tab("Export");
-check(await page.$$eval(".examples a svg", (e) => e.length) === 5, "Export shows five example dials with pictures");
+check(await page.$$eval(".examples:not(.gallery) a svg", (e) => e.length) === 5, "Export shows five example dials with pictures");
 const example = await page.getAttribute(".examples a >> nth=1", "href");
-await page.click(".examples a >> nth=1");
+await page.click(".examples:not(.gallery) a >> nth=1");
 await page.waitForFunction((h) => location.hash === h && window.dial_tool.statik && window.dial_tool.S.ui_section === 4, example, { timeout: 8000 }).catch(() => {});
 await page.waitForTimeout(700);
 check(await page.evaluate((h) => location.hash === h, example) && await S("t.log_lines.slice(0, 3).every((l) => !l.includes('stands in'))"), "clicking Diver opens it: the address is its link and its fonts are drawn");
@@ -925,6 +925,23 @@ const heights = await page.evaluate(async () => {
 check(heights.between >= 2 && heights.shut.hidden && heights.shut.moved === heights.open && heights.again === heights.open, `a pane slides shut and open: ${heights.between} steps on the way, and what is under it moves by exactly its height (${heights.shut.moved} = ${heights.open})`);
 await page.emulateMedia({ reducedMotion: "reduce" });
 check(errors.length === 0, "no errors in the browser's console" + (errors.length ? ": " + errors.slice(0, 3).join(" | ") : ""));
+// ── the gallery: under everything else in Export; a card opens its dial ──
+await tab("Export");
+{
+  const g = await page.evaluate(() => { const panes = [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent), cards = [...document.querySelectorAll(".gallery a")]; return { last: panes.at(-1), n: cards.length, names: cards.map((c) => c.textContent).join(" · "), pictures: cards.every((c) => c.querySelector("svg path")), across: new Set(cards.slice(0, 3).map((c) => Math.round(c.getBoundingClientRect().top))).size }; });
+  check(g.last === "Gallery" && g.n >= 6 && g.pictures && g.across === 1, `the Gallery is the last pane of Export: ${g.n} dials, three to a line (${g.names})`);
+  await page.$eval(".gallery", (e) => e.scrollIntoView());
+  await shot("4c13-gallery");
+  const before = await S("JSON.stringify(S.rings.map((r) => r.name))");
+  await page.click(".gallery a >> nth=3");
+  await page.waitForFunction((b) => JSON.stringify(window.dial_tool.S.rings.map((r) => r.name)) !== b, before);
+  check(await S("S.rings[0].name === 'Every fifth minute' && S.dial_d === 38"), "a card opens its dial: Montgomery, 38 mm, every fifth minute on top");
+  await frame(); await shot("4c14-gallery-montgomery");
+  await page.waitForTimeout(550);
+  await page.keyboard.press("Control+z");
+  check(await S("JSON.stringify(S.rings.map((r) => r.name))") === before, "and ⌘Z brings the dial that was there back");
+}
+
 // ── the panel put away, and a phone ──
 await page.click("#panel-toggle");
 await frame();

@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.6";
+export const VERSION = "beta 4.7";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -63,6 +63,7 @@ export const RING_BASE = {
   labels: 0, custom: "", num_from: 0.0, num_step: 5.0, num_digits: 0, mode: 0, size: 2.4, nudge: {},
   family: "Helvetica Neue", ps: "HelveticaNeue", tracking: 0.0, lang: 0, axes: {}, features: {},
   width: 1.0, fill: 100.0,
+  num_again: 0,                                    // Numbers: the count starts again after this many positions (0 = never), as on Ferguson's dial or a two-hour track (13 Oct 2026)
   anchor: 0,                                       // numerals: what the radius measures to, a place in ANCHORS. 0 = the text's centre, as before (R31)
   cs: {},                                          // a band's sectors with a colour of their own: position → RGBA. Empty = all in the ring's colour (beta 4.6)
 };
@@ -803,7 +804,10 @@ export function ring_labels(ring) {
     const parts = ring.custom.split(",").map((s) => s.trim());
     return Array.from({ length: n }, (_, i) => parts[i] || "");
   }
-  if (name === "Numbers") return Array.from({ length: n }, (_, i) => number_label(ring.num_from + i * ring.num_step, ring.num_digits));
+  if (name === "Numbers") {
+    const again = max(parseInt(ring.num_again) || 0, 0);       // 0: count on for ever
+    return Array.from({ length: n }, (_, i) => number_label(ring.num_from + (again ? i % again : i) * ring.num_step, ring.num_digits));
+  }
   const parts = txt.split(" ");
   return Array.from({ length: n }, (_, i) => parts[i % parts.length]);
 }

@@ -1,7 +1,7 @@
 # Dial Tool — rules
 
 Standing rules. Check code against these in reviews; cite them by number.
-*Last updated 12 Oct 2026 (beta 4.5: `dial.py` frozen, R30 and R31 reworded; R32 added with beta 4.4). Before: 11 Oct 2026 (web version: R30 and R31 added, R19 extended); 4 Oct 2026 (beta 2.3: R26–R28 added with the preview plan, R29 with the design canon; beta 2.2: R10 updated, R25 added, R13 reworded).*
+*Last updated 13 Oct 2026 (beta 4.7: R15's exception, the value button). Before: 12 Oct 2026 (beta 4.5: `dial.py` frozen, R30 and R31 reworded; R32 added with beta 4.4). Before: 11 Oct 2026 (web version: R30 and R31 added, R19 extended); 4 Oct 2026 (beta 2.3: R26–R28 added with the preview plan, R29 with the design canon; beta 2.2: R10 updated, R25 added, R13 reworded).*
 
 ## Geometry
 
@@ -30,7 +30,7 @@ Standing rules. Check code against these in reviews; cite them by number.
 
 - **R13 · Only what ships with DrawBot 3.132:** vanilla 0.5.0, DrawBot itself, and Apple's frameworks through DrawBot's PyObjC (AppKit, Quartz, CoreText, Core Animation — `dial.py` already uses the first three directly). Read the source before using a call; `tools/vanilla-0.5.0-api.json` lists every vanilla class signature and method. APIs from macOS 14 are allowed with a fallback (R17): both of Okay's Macs run macOS 15 (4 Oct 2026). *Reworded 4 Oct: it said "only vanilla and DrawBot", which the code had already outgrown.*
 - **R14 · No vanilla `Tabs` around auto-layout content** — it collapses. Use segmented switchers (sections, hands) or one scrolling list (R24).
-- **R15 · A number control is label · slider · typed field · stepper**, kept in sync. Typing past the slider's range extends it.
+- **R15 · A number control is label · slider · typed field · stepper**, kept in sync. Typing past the slider's range extends it. *Exception (Okay, 13 Oct 2026, web version):* in a line that sums a thing up (the selected ring's line) a number may be a **value button** — a small drawing with the value in it; a click pops up the number's ordinary row (without its slider), pressing and moving changes the value. More numbers may get one later ("this clicking and dragging functionality is coming up").
 - **R16 · Rows that don't apply are hidden**, not disabled.
 - **R17 · No dead ends.** Every risky call has a fallback or reports to the Export log — never fails silently.
 - **R22 · Keep every control's Python object alive.** vanilla stores a control's callback on the Python object (`_target`); Cocoa controls don't retain their target; `GridView` keeps only the Cocoa view. A control that exists only inside a grid loses its callback as soon as the building function returns: popup items turn grey, clicks do nothing. Store controls on the tool (`self.keep`, a binding, or a named attribute). Found 4 Oct 2026 (beta 1.0.1).

@@ -1,8 +1,21 @@
 # Dial Tool — changelog
 
-## After beta 4.6 (web version) · 13 Oct 2026
+## beta 4.7 (web version) · 13 Oct 2026
 
-On `dev`, not yet on the live page; the version still says beta 4.6. After Okay's review of the research atlas.
+On `dev`. After Okay's review of the research atlas and two drawings of the Rings panel. Seen in Chromium here only.
+
+- **Rings pane, heading line**: the list's tools stand on it — a plus in an outlined circle opens Ticks · Markers · Numerals · Band as a small menu; move up · move down · duplicate · delete beside it, the same circle. The line under the list is gone.
+- **Ring line**: the selected ring in one line — its name · four kind buttons with pictures only (34, pictures 24) · its colour as a swatch · its radius as a **value button**.
+- **Value button** (R15's exception): a circle with a radius drawn in it and the value on the line. A click pops up the number's row under it, ready to type in (for numerals with the Baseline · Ascender · Centre menu); pressing and moving changes the value; a press outside, Enter or Escape closes the pop-up.
+- **A colour in a line of words is a tiny swatch without hex** (a folded pane's summary).
+- **Undo**: ⌘Z back, ⇧⌘Z or ⌘Y forward (Ctrl on Windows); one drag is one step; loading a file, Defaults or a Gallery dial is a step; 200 steps.
+- **am · pm follows the time shown.** The time runs over 24 hours; **AM · PM** is a small word in the time's box; "15:20" and "3:20 pm" can be typed; Now takes the real hour. The window's *Hour of the day* row is gone (its key stays, unread). An am · pm window is drawn again every six minutes of the time shown.
+- **Card switch**: a small clock on each window card shows or hides that window.
+- **Numbers that start again**: *Start again after* (ring key `num_again`, 0 = never; R31).
+- **Gallery**: the last pane of Export, six dials, three to a line (`web/gallery.mjs` → `src/gallery.js`): B-Uhr type B · 12 + 24 hours · Elapsed time · Montgomery · World time · Diver with its bezel as rings.
+- Tests: `test/labels.mjs` (new, in `npm test`); the window test covers all of the above.
+
+Earlier the same day, replaced by the above where they differ (the Add group under the list, the kind tiles and radius row):
 
 - **Rings: one pinned pane** (Okay's drawing, build list #94). The list, then the selected ring by its name where "Kind" stood, before the kind tiles; colour; radius. The second heading is gone. Folded, the pane is one line: "Rings: Numerals   numerals · #141414 · centre radius 10.00" (382 → 43 high in the test window).
 - **Ring rows start where the labels start**; a ring's eye is inside its row. **Add + · Ticks · Markers · Numerals · Band** is one outlined group with round ends; **↑ ↓ duplicate delete** are outlined circles. **Kind pictures** show the whole circle (30 square; the other pictures stay 28 × 20).
