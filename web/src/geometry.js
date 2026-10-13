@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.11";
+export const VERSION = "beta 4.12";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -68,6 +68,7 @@ export const RING_BASE = {
   family: "Helvetica Neue", ps: "HelveticaNeue", tracking: 0.0, lang: 0, axes: {}, features: {},
   width: 1.0, fill: 100.0,
   num_again: 0,                                    // Numbers: the count starts again after this many positions (0 = never), as on Ferguson's dial or a two-hour track (13 Oct 2026)
+  guide: -1,                                       // its guide's colour (preview only, R5): a place in GUIDE_COLOURS · -1 = one by its place in the list (ring_guide) · -2 = none (13 Oct 2026)
   anchor: 0,                                       // numerals: what the radius measures to, a place in ANCHORS. 0 = the text's centre, as before (R31)
   cs: {},                                          // a band's sectors with a colour of their own: position → RGBA. Empty = all in the ring's colour (beta 4.6)
 };
@@ -117,6 +118,7 @@ export const DEFAULTS = {
   // the selected ring's lines are half as thick again. (beta 4.5, 12 Oct 2026)
   gd_edge: true, gd_axes: true, gd_win: true, gd_rings: true, gd_sel: true,
   gd_k_edge: 1, gd_k_axes: 1, gd_k_win: 1, gd_k_rings: 1, gd_k_sel: 4, gd_w: 1.0,
+  gd_more: [],                                     // guides added by hand: lines, crosshairs, circles (GUIDE_MORE). gd_k_rings and gd_k_sel: unread since 13 Oct 2026, a ring's guide has the ring's own colour
   // until beta 4.4 guides had two free colours with a strength each. Kept because old links and files carry
   // them (R8, R31); nothing reads them now.
   gd_c: [0.0, 0.55, 0.9, 1], gd_strength: 50.0,
@@ -133,6 +135,15 @@ export const GUIDE_COLOURS = ["#FF2D95", "#00E5FF", "#39FF14", "#FFE600", "#FF6A
 /** the five kinds of guide: [key of its eye, key of its colour, name]. */
 export const GUIDE_KINDS = [["gd_edge", "gd_k_edge", "Dial edge"], ["gd_axes", "gd_k_axes", "Centre lines"], ["gd_win", "gd_k_win", "Window radii"],
   ["gd_rings", "gd_k_rings", "Ring edges"], ["gd_sel", "gd_k_sel", "Selected ring"]];
+/** a ring's guide has the ring's own colour (Okay, 13 Oct 2026: "connect guides to layers"). Rings that have none
+ *  of their own yet take one by their place in the list, in this order — neighbours never alike ("default guide colors
+ *  come scrambled"). → a place in GUIDE_COLOURS, or null for none */
+export const RING_GUIDE_ORDER = [4, 0, 2, 5, 3, 1];
+export const ring_guide = (S, i) => { const g = S.rings[i] ? S.rings[i].guide : -2; return g === -2 ? null : g >= 0 && g < GUIDE_COLOURS.length ? g : RING_GUIDE_ORDER[i % RING_GUIDE_ORDER.length]; };
+/** guides you add yourself (S.gd_more): [{kind, a, r, k}] — kind: a place in this list · a: clock angle · r: radius in mm
+ *  · k: a place in GUIDE_COLOURS, -2 = none. line: a diameter at angle a · crosshair: a small cross at angle a and
+ *  radius r, to mark a point · circle: radius r. The list only grows at its end (R9). */
+export const GUIDE_MORE = ["line", "crosshair", "circle"];
 export const NOT_GEOMETRY = ["t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
 export const NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_"];
 
@@ -163,6 +174,9 @@ export function new_ring(kind, S, like = null) {
   let n = 2;
   ring.name = base;
   while (names.has(ring.name)) ring.name = `${base} ${n++}`;
+  // a new ring keeps a guide colour of its own from the start: the first in the order that no ring shows yet
+  const taken = new Set(S.rings.map((r, i) => ring_guide(S, i)));
+  ring.guide = RING_GUIDE_ORDER.find((k) => !taken.has(k)) ?? RING_GUIDE_ORDER[S.rings.length % RING_GUIDE_ORDER.length];
   return ring;
 }
 
@@ -616,7 +630,7 @@ function memo(key, build) {
 export const forget = () => _memo.clear();
 
 /** a settings object as text, without colour and name. */
-function key_of(d, skip = ["c", "cs", "name"]) {
+function key_of(d, skip = ["c", "cs", "name", "guide"]) {
   const k = {};
   for (const a of Object.keys(d).sort()) if (!skip.includes(a)) k[a] = d[a];
   return JSON.stringify(k);
@@ -1256,22 +1270,33 @@ export function scene(S, statik, t, preview = true, selected = null) {
       const hex = GUIDE_COLOURS[S[key]] || GUIDE_COLOURS[0];
       return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).concat([1]);
     };
-    const ring_guide = (r, key, px) => add("guide", circle(2 * r), null, { stroke: colour(key), px });
+    const round_guide = (r, key, px) => add("guide", circle(2 * r), null, { stroke: colour(key), px });
     const line_guide = (p0, p1) => add("guide", new Path().line(p0, p1), null, { stroke: colour("gd_k_axes"), px: S.gd_w });
-    if (S.gd_edge) ring_guide(R, "gd_k_edge", S.gd_w);
-    if (S.gd_win) for (const r of new Set(windows.map((x) => x.w.r))) ring_guide(r, "gd_k_win", S.gd_w);
+    if (S.gd_edge) round_guide(R, "gd_k_edge", S.gd_w);
+    if (S.gd_win) for (const r of new Set(windows.map((x) => x.w.r))) round_guide(r, "gd_k_win", S.gd_w);
     if (S.gd_axes) {
       line_guide([-R, 0], [R, 0]);
       line_guide([0, -R], [0, R]);
     }
+    const tone = (k) => { const hex = GUIDE_COLOURS[k] || GUIDE_COLOURS[0]; return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).concat([1]); };
+    const stroke_guide = (path, k, px = S.gd_w) => add("guide", path, null, { stroke: tone(k), px });
+    // a ring's edges, in the ring's own guide colour; the selected ring's half as thick again. Which rings: all
+    // (gd_rings), only the selected one (gd_sel alone), or none.
     S.rings.forEach((ring, i) => {
-      const chosen = i === selected && S.gd_sel;
-      if (!ring.on || !(S.gd_rings || chosen)) return;
+      const chosen = i === selected && S.gd_sel, k = ring_guide(S, i);
+      if (!ring.on || k === null || !(S.gd_rings || chosen)) return;
       const inner = { ticks: ring.len, markers: ring.len, band: ring.width }[kind_of(ring)] || 0;
       for (const r of [...new Set([ring.r, ring.r - inner])].sort((a, b) => b - a)) {
-        if (r > 0) ring_guide(r, chosen ? "gd_k_sel" : "gd_k_rings", chosen ? S.gd_w * 1.5 : S.gd_w);
+        if (r > 0) stroke_guide(circle(2 * r), k, chosen ? S.gd_w * 1.5 : S.gd_w);
       }
     });
+    for (const g of S.gd_more || []) {              // the guides added by hand
+      if (!(g.k >= 0)) continue;
+      const kind = GUIDE_MORE[g.kind], at = clock_point(g.r || 0, g.a || 0), arm = 1.2;      // a crosshair's arms, in mm
+      if (kind === "line") stroke_guide(new Path().line(clock_point(R, g.a || 0), clock_point(R, (g.a || 0) + 180)), g.k);
+      else if (kind === "crosshair") { stroke_guide(new Path().line([at[0] - arm, at[1]], [at[0] + arm, at[1]]), g.k); stroke_guide(new Path().line([at[0], at[1] - arm], [at[0], at[1] + arm]), g.k); }
+      else if (kind === "circle" && g.r > 0) stroke_guide(circle(2 * g.r), g.k);
+    }
   }
   return items;
 }

@@ -148,7 +148,9 @@ const SIZE_ROWS = {
 const size_row = (R) => SIZE_ROWS[G.kind_of(R) === "numerals" ? "numerals" : G.kind_of(R) === "band" ? "band" : G.SHAPES[R.shape] === "dot" ? "dot" : "len"];
 const VALUE_PICS = {                               // inside a value button, on a 40 × 40 field with the centre at 0 0, under the figure
   radius: `<path d="M0 0L19.4 0"/><circle class="pivot" r="2"/>`,                       // a radius, from the centre to the edge
-  size: `<circle class="small" cx="-13.7" cy="13.7" r="6.5"/>`,                         // scale: a small circle against the large one (Okay's sketch, 13 Oct 2026)
+  // scale: a small circle growing into the large one, joined by their two tangents. Okay's drawing (Asset_1.svg, 13 Oct
+  // 2026: circles at 8.48 20.93 r 8.11 and 24.29 14.71 r 14.33), moved and sized so its large circle is the button's own.
+  size: `<circle class="small" cx="-21.4" cy="8.42" r="10.98"/><path d="M-28.89 0.41L-13.24 -14.19M-21.06 19.4L0 19.4"/>`,
 };
 
 const kind_in = (...names) => (R) => names.includes(G.kind_of(R));
@@ -268,9 +270,10 @@ const ROWS = {
   ],
   Date: [                                          // "Windows" on its tab: up to four holes in the plate
     custom("window_cards", { bar: true }),         // four cards, 12 · 3 · 6 · 9: where each window is, and tabs for the panes below (Okay, 12 Oct 2026)
-    // a window is shown or hidden by the switch on its card (Okay, 13 Oct 2026: "Show this w. Goes away."). Hidden, only its heading shows.
+    // the cards are tabs only; a window is shown by the tick on its heading line (Okay, 13 Oct 2026, after trying a
+    // small switch on each card: "unnecessarily complex… enable window tickmark is the way to go. leave them as tabs")
     hdr("Window", { title: (S) => `Window at ${G.DATE_AT[G.windows_of(S)[S.ui_window].at][0]}` }),
-    info("Not shown. The small clock on its card shows it.", { ...W, show: (T) => !T.on }),
+    chk("on", "Show this window", { ...W, head: true }),
     pick("kind", "Shows", G.WINDOW_KINDS, PICS.window, { ...W, show: win_on }),
     txt("text", "Text", { ...W, show: win_is("date", "day") }),
     num("size", "Text % of height", 20, 100, 1, { ...W, show: win_is("date", "day") }),
@@ -498,7 +501,7 @@ class DialTool {
     if (scope === "global" && key === "dial_d" && this.S.ui_scale && T.dial_d > 0 && value > 0) this.scale_with(T.dial_d, value);
     T[key] = value;
     if (scope === "ring") {
-      if (!["c", "name"].includes(key)) this.static_dirty = true;      // (cs too: which sectors share a colour decides the shapes)
+      if (!["c", "name", "guide"].includes(key)) this.static_dirty = true;      // (cs too: which sectors share a colour decides the shapes)
       if (key === "kind" || key === "name" || key === "on") this.fill_ring_list();
     } else if (scope === "window") {
       if (!["ink", "text_c", "disc_c"].includes(key)) this.static_dirty = true;
@@ -700,26 +703,60 @@ class DialTool {
     const open = (on) => { list.hidden = !on; more.setAttribute("aria-expanded", String(on)); if (on) this.sync_guides(); };
     more.onclick = () => open(list.hidden);
     this.guides_open = open;
-    // a kind of guide is one line: its name, then nine round choices — none (a struck circle), then the eight colours.
-    // The chosen one wears a thick ring (after a list Okay drew on, 12 Oct 2026). None = this kind is not shown.
-    this.guide_kinds = G.GUIDE_KINDS.map(([show, colour, name]) => {
+    // a guide is one line: its name, then nine round choices — none (a struck circle), then the eight colours. The
+    // chosen one wears a thick ring (after a list Okay drew on, 12 Oct 2026). get() → a place in the colours or
+    // null for none; set(that) changes it.
+    const dots_line = (name, get, set, none_id = "") => {
       const dots = el("span", { className: "dots", role: "radiogroup", ariaLabel: name });
-      const none = el("button", { type: "button", className: "none", id: "guide-" + show, title: "None: hide " + name.toLowerCase(), ariaLabel: "None", onclick: () => this.set_value("global", show, false) });
+      const none = el("button", { type: "button", className: "none", id: none_id, title: "None: hide " + name.toLowerCase(), ariaLabel: "None", onclick: () => { set(null); this.sync_rows(); this.render(); } });
       none.innerHTML = icon(`<circle cx="8" cy="8" r="6.3"/><path d="M3.6 3.6L12.4 12.4"/>`);
       dots.append(none);
       G.GUIDE_COLOURS.forEach((hex, i) => {
-        const b = el("button", { type: "button", className: "tone", title: hex, ariaLabel: hex, onclick: () => { this.S[show] = true; this.S[colour] = i; this.sync_rows(); this.render(); } });
+        const b = el("button", { type: "button", className: "tone", title: hex, ariaLabel: hex, onclick: () => { set(i); this.sync_rows(); this.render(); } });
         b.style.setProperty("--c", hex);
         dots.append(b);
       });
       for (const b of dots.children) b.setAttribute("role", "radio");
-      const line = el("div", { className: "guidekind" }, el("span", { className: "name", textContent: name }), dots);
-      list.append(line);
-      return { show, colour, dots, line };
+      const label = el("span", { className: "name", textContent: name, title: name });
+      const line = el("div", { className: "guidekind" }, label, dots);
+      const refresh = () => {
+        const k = get();
+        line.classList.toggle("off", k === null);
+        [...dots.children].forEach((b, n) => { const on = n === 0 ? k === null : n - 1 === k; b.classList.toggle("on", on); b.setAttribute("aria-checked", String(on)); });
+      };
+      return { line, label, refresh };
+    };
+    this.guide_dots = dots_line;
+    // the dial's own three: its edge, its centre lines, the windows' radii
+    this.guide_kinds = G.GUIDE_KINDS.slice(0, 3).map(([show, colour, name]) => {
+      const d = dots_line(name, () => (this.S[show] ? this.S[colour] : null), (k) => { if (k === null) this.S[show] = false; else { this.S[show] = true; this.S[colour] = k; } }, "guide-" + show);
+      list.append(d.line);
+      return d;
     });
+    // the rings' guides: each ring's edges in that ring's own colour (Okay, 13 Oct 2026: "connect guides to layers").
+    // One switch for which rings show theirs, then a line per ring; built again when the ring list changes (sync_guides).
+    const which = el("span", { className: "segs", role: "radiogroup", ariaLabel: "Which rings show their guides" });
+    [["All", true, true], ["Selected", false, true], ["None", false, false]].forEach(([word, rings, sel]) => {
+      const b = el("button", { type: "button", id: "guide-rings-" + word.toLowerCase(), textContent: word, onclick: () => { this.S.gd_rings = rings; this.S.gd_sel = sel; this.sync_rows(); this.render(); } });
+      b.setAttribute("role", "radio");
+      which.append(b);
+    });
+    this.guide_which = which;
+    this.guide_rings = el("div", { className: "guiderings" });
+    // guides you add: a line, a crosshair, a circle (Okay: "add an option to add others, crosshair, straight line etc.")
+    this.guide_more = el("div", { className: "guidemore" });
+    const adds = el("span", { className: "segs" });
+    G.GUIDE_MORE.forEach((kind, i) => adds.append(el("button", { type: "button", id: "guide-add-" + kind, textContent: kind[0].toUpperCase() + kind.slice(1), onclick: () => {
+      const used = new Set((this.S.gd_more || []).map((g) => g.k));
+      this.S.gd_more = [...(this.S.gd_more || []), { kind: i, a: 0, r: +(this.S.dial_d / 4).toFixed(2), k: [3, 0, 2, 5, 4, 1].find((k) => !used.has(k)) ?? 3 }];
+      this.sync_rows(); this.render();
+    } })));
+    list.append(el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Rings" }), which), this.guide_rings,
+      el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Add" }), adds), this.guide_more);
     this.guide_rows = [this.build_row({ ...num("gd_w", "Thickness", 0.25, 6, 0.25), scope: "global" })];
     const reset = el("button", { type: "button", className: "btn", id: "guides-reset", textContent: "Reset", title: "The guides as they started", onclick: () => {
       for (const key of Object.keys(G.DEFAULTS)) if (key.startsWith("gd_")) this.S[key] = structuredClone(G.DEFAULTS[key]);
+      for (const ring of this.S.rings) ring.guide = G.RING_BASE.guide;       // the rings' own colours too: by their place again
       this.sync_rows();
       this.render();
     } });
@@ -735,15 +772,47 @@ class DialTool {
     this.guides_tick.setAttribute("aria-pressed", String(Boolean(S.guides)));
     this.guides_tick.title = S.guides ? "Guides are on: press to hide them" : "Guides are off: press to show them";
     if ($("#guide-list").hidden) return;
-    for (const k of this.guide_kinds) {
-      const shown = Boolean(S[k.show]);
-      k.line.classList.toggle("off", !shown);
-      [...k.dots.children].forEach((b, n) => {       // the first is None; then the eight colours
-        const on = n === 0 ? !shown : shown && n - 1 === S[k.colour];
-        b.classList.toggle("on", on);
-        b.setAttribute("aria-checked", String(on));
+    for (const k of this.guide_kinds) k.refresh();
+    // which rings show their guides
+    const which = S.gd_rings ? 0 : S.gd_sel ? 1 : 2;
+    [...this.guide_which.children].forEach((b, n) => { b.classList.toggle("on", n === which); b.setAttribute("aria-checked", String(n === which)); });
+    // a line per ring, top first, built again when the list of rings changes
+    const rings = JSON.stringify(S.rings.map((r) => r.name));
+    if (this.guide_rings.dataset.rings !== rings) {
+      this.guide_rings.dataset.rings = rings;
+      this.guide_ring_lines = S.rings.map((ring, i) => {
+        const d = this.guide_dots(ring.name || G.kind_of(ring), () => G.ring_guide(this.S, i), (k) => { this.S.rings[i].guide = k === null ? -2 : k; });
+        d.line.classList.add("ring");
+        return d;
       });
+      this.guide_rings.replaceChildren(...this.guide_ring_lines.map((d) => d.line));
     }
+    this.guide_ring_lines.forEach((d, i) => { d.refresh(); d.line.classList.toggle("selected", i === S.ui_ring); });
+    // the guides added by hand: name · its measures · remove, then its colours
+    const more = JSON.stringify((S.gd_more || []).map((g) => g.kind));
+    if (this.guide_more.dataset.more !== more) {
+      this.guide_more.dataset.more = more;
+      this.guide_more_lines = (S.gd_more || []).map((g, i) => {
+        const kind = G.GUIDE_MORE[g.kind], d = this.guide_dots(kind[0].toUpperCase() + kind.slice(1), () => (this.S.gd_more[i].k >= 0 ? this.S.gd_more[i].k : null), (k) => { this.S.gd_more[i].k = k === null ? -2 : k; });
+        const field = (key, word, length) => {
+          const input = el("input", { type: "text", inputMode: "decimal", id: `guide-more-${i}-${key}`, title: word, ariaLabel: word });
+          input.onchange = () => { const now = this.S.gd_more[i][key] * (length ? this.unit()[2] : 1); this.S.gd_more[i][key] = +(parse_number(input.value, now) / (length ? this.unit()[2] : 1)).toFixed(4); this.sync_rows(); this.render(); };
+          return { key, length, input, el: el("label", { className: "guidefield" }, el("span", { textContent: word }), input) };
+        };
+        const fields = [...(kind !== "circle" ? [field("a", "°", false)] : []), ...(kind !== "line" ? [field("r", "r", true)] : [])];
+        const gone = el("button", { type: "button", className: "sign", id: `guide-more-${i}-remove`, title: "Remove this guide", ariaLabel: "Remove this guide", onclick: () => { this.S.gd_more = this.S.gd_more.filter((_, n) => n !== i); this.sync_rows(); this.render(); } });
+        gone.innerHTML = icon(`<path d="M4 4L12 12M12 4L4 12"/>`);
+        d.label.replaceChildren(d.label.textContent, ...fields.map((f) => f.el));
+        d.line.classList.add("added");
+        d.line.append(gone);
+        return { ...d, fields };
+      });
+      this.guide_more.replaceChildren(...this.guide_more_lines.map((d) => d.line));
+    }
+    this.guide_more_lines.forEach((d, i) => {
+      d.refresh();
+      for (const f of d.fields) if (document.activeElement !== f.input) f.input.value = f.length ? String(parseFloat(this.in_unit(S.gd_more[i][f.key], 2))) : String(+(+S.gd_more[i][f.key]).toFixed(1));
+    });
     for (const r of this.guide_rows) r.refresh(S);
   }
 
@@ -1284,34 +1353,24 @@ class DialTool {
     out.refresh = () => this.swatch_lines(lines, () => [{ text: "Sectors", colours: this.sector_colours(this.S.ui_ring) }]);
   }
 
-  /** Windows, on top: four cards the size of the example cards, 12 · 3 · 6 · 9. A card is a small dial with its window
+  /** Windows, on top: four cards, 12 · 3 · 6 · 9, starting on the second column. A card is a small dial with its window
    *  drawn where it is: filled when it is shown, an outline when it isn't. They are tabs: a press chooses the window
    *  the panes below are about. A window not in use yet goes to its card's place when its card is first pressed. */
   row_window_cards(wrap, out) {
     wrap.className = "windowcards";
     const grid = el("div", { className: "cards", role: "tablist", ariaLabel: "Which window" });
     const cards = WINDOW_CARDS.map((c) => {
-      const pic = el("span", { className: "pic" }), name = el("span");
+      const pic = el("span", { className: "pic" });       // the card is its picture alone: a small dial with the window in its place, filled when the window is shown (Okay, 13 Oct 2026: no number under it)
       const b = el("button", { type: "button", id: "window-card-" + c.slot, onclick: () => {
         const w = G.windows_of(this.S)[c.slot];
         this.S.ui_window = c.slot;
         if (!w.on && w.at === G.WINDOW_BASE.at && c.at !== w.at) { w.at = c.at; this.static_dirty = true; }      // never used: it starts at its card's place
         this.sync_rows();
         this.render();
-      } }, pic, name);
+      } }, pic);
       b.setAttribute("role", "tab");
-      // the switch on the card (Okay, 13 Oct 2026): a small clock-like sign, its hand up when the window is shown,
-      // lying when it isn't. It shows or hides that window, and chooses it.
-      const turn = el("button", { type: "button", className: "cardswitch", id: "window-switch-" + c.slot, onclick: () => {
-        const w = G.windows_of(this.S)[c.slot];
-        this.S.ui_window = c.slot;
-        if (!w.on && w.at === G.WINDOW_BASE.at && c.at !== w.at) w.at = c.at;
-        this.set_value("window", "on", !w.on);
-      } });
-      turn.setAttribute("role", "switch");
-      turn.innerHTML = icon(`<circle cx="8" cy="8" r="6.5"/><path class="hand" d="M8 8L8 3.6"/><circle class="pivot" cx="8" cy="8" r="1.1"/>`);
-      grid.append(el("div", { className: "card" }, b, turn));
-      return { ...c, b, turn, pic, name, drawn: "" };
+      grid.append(el("div", { className: "card" }, b));
+      return { ...c, b, pic, drawn: "" };
     });
     wrap.append(grid);
     out.refresh = (S) => {
@@ -1322,14 +1381,10 @@ class DialTool {
         if (c.drawn !== state) {
           c.drawn = state;
           c.pic.innerHTML = icon(`<circle r="15" stroke-width="1.1"/><rect x="${(x - 3.6).toFixed(2)}" y="${(y - 2.8).toFixed(2)}" width="7.2" height="5.6" rx="1.2" stroke-width="1.1"${w.on ? ' fill="currentColor"' : ""}/>`, 34, "-17 -17 34 34");
-          c.name.textContent = place;
           c.b.title = `The window at ${place}${w.on ? "" : " (not shown)"}`;
         }
         c.b.classList.toggle("on", c.slot === S.ui_window);
         c.b.classList.toggle("off", !w.on);
-        c.turn.classList.toggle("on", Boolean(w.on));
-        c.turn.setAttribute("aria-checked", String(Boolean(w.on)));
-        c.turn.title = c.turn.ariaLabel = w.on ? `Hide the window at ${place}` : `Show the window at ${place}`;
         c.b.setAttribute("aria-selected", String(c.slot === S.ui_window));
       }
     };
@@ -1468,7 +1523,8 @@ class DialTool {
     const T = () => this.target(row().scope);
     const refresh = () => {                        // no number in it (Okay, 13 Oct 2026): the ring's row, right above, says it; so does the tag
       const r = row(), v = T()[r.key] ?? 0, text = String(parseFloat(this.in_unit(v, decimals(r.step))));
-      b.dataset.tip = `${label_of(r, T())} ${text}`;
+      b.dataset.tip = label_of(r, T());
+      b.dataset.value = text;
       b.ariaLabel = `${label_of(r, T())} ${text} ${this.unit()[0]}`;
     };
     let press = null;
@@ -1487,36 +1543,47 @@ class DialTool {
   }
 
   /** the tag: what a wordless button is, said under it while the pointer or the keyboard is on it. One for the whole
-   *  tool, laid over everything, so a list that scrolls can't cut it off. */
+   *  tool, laid over everything, so a list that scrolls can't cut it off. A value button's tag is as wide as the
+   *  pop-up it grows into on a click (value_pop_open): its name at the left, its value at the right. */
   tag_show(target) {
     if (!this.tag) { this.tag = el("div", { className: "tag", id: "tag", hidden: true }); document.body.append(this.tag); }
     if (target.getAttribute("aria-expanded") === "true") return this.tag_hide();       // its pop-up is open under it: the tag would lie on it
-    const box = target.getBoundingClientRect();
-    this.tag.textContent = target.dataset.tip;
+    const value = target.classList.contains("valueb");
+    this.tag.classList.toggle("value", value);
+    if (value) this.tag.replaceChildren(el("span", { textContent: target.dataset.tip }), el("span", { className: "figure", textContent: target.dataset.value }));
+    else this.tag.textContent = target.dataset.tip;
     this.tag.hidden = false;
-    const half = this.tag.offsetWidth / 2, x = clamp(box.left + box.width / 2, half + 4, innerWidth - half - 4);
-    this.tag.style.left = `${x}px`;
-    this.tag.style.top = `${box.bottom + 7}px`;
-    this.tag.style.setProperty("--point", `${box.left + box.width / 2 - x}px`);
+    this.tag_place(this.tag, target);
   }
   tag_hide() { if (this.tag) this.tag.hidden = true; }
+  /** under a button, centred on it (kept inside the window), its point on the button's middle. */
+  tag_place(box, target) {
+    const at = target.getBoundingClientRect(), half = box.offsetWidth / 2, x = clamp(at.left + at.width / 2, half + 4, innerWidth - half - 4);
+    box.style.left = `${x}px`;
+    box.style.top = `${at.bottom + 7}px`;
+    box.style.setProperty("--point", `${at.left + at.width / 2 - x}px`);
+  }
 
-  /** the pop-up under a value button: the number's own row (label · field · − +; for a numeral's radius the menu
-   *  beside the label too). Enter, Escape or a press outside closes it. */
+  /** a value button's pop-up is its tag, grown (Okay, 13 Oct 2026: "do it out of our tooltip. consistent width,
+   *  closed/open, height grows on click"): the same box under the button, the same width, now holding the number's
+   *  row — its name (for a numeral's radius with the menu beside it), the field ready to type in, − +. Enter,
+   *  Escape or a press outside closes it. */
   value_pop_open(button, row) {
     if (this.value_pop && this.value_pop.button === button) return this.value_pop_close();
     this.value_pop_close();
-    const r = this.build_row(row), box = el("div", { className: "valuepop", id: "value-pop" }, r.el);
-    // a small square whose top right corner meets the button's bottom right (Okay, 13 Oct 2026). It hangs on the
-    // list's frame, not inside the list: the list scrolls and would cut it off.
-    const frame = button.closest(".ringlist") || button.parentElement, at = button.getBoundingClientRect(), within = frame.getBoundingClientRect();
-    frame.append(box);
-    box.style.top = `${Math.round(at.bottom - within.top)}px`;
-    box.style.right = `${Math.round(within.right - at.right)}px`;
-    button.setAttribute("aria-expanded", "true");
+    const closed = this.tag && !this.tag.hidden ? this.tag.offsetHeight : 0;      // as high as the tag it grows from
     this.tag_hide();
+    const r = this.build_row(row), box = el("div", { className: "tag value valuepop", id: "value-pop" }, r.el);
+    document.body.append(box);
+    button.setAttribute("aria-expanded", "true");
     this.value_pop = { button, box, r };
     r.refresh(this.target(row.scope));
+    this.tag_place(box, button);
+    if (box.animate && closed && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      box.classList.add("growing");
+      const grow = box.animate([{ height: `${closed}px` }, { height: `${box.offsetHeight}px` }], { duration: 120, easing: "ease-out" });
+      grow.onfinish = grow.oncancel = () => box.classList.remove("growing");
+    }
     const field = box.querySelector('input[type="text"]');
     box.onkeydown = (e) => {
       if (!(e.key === "Escape" || (e.key === "Enter" && e.target === field))) return;
@@ -1552,7 +1619,8 @@ class DialTool {
     if (!this.ring_list) return;
     // the selected row has the colour of the selected ring's guide on the dial (Okay, 13 Oct 2026): the same thing,
     // marked the same way in both places. No such guide (None): the light blue of before.
-    const wrap = this.ring_list.closest(".pane"), guide = this.S.gd_sel ? G.GUIDE_COLOURS[this.S.gd_k_sel] : null;      // on the pane: the ring's row and the ring line both take it
+    const k = G.ring_guide(this.S, this.S.ui_ring);     // the selected ring's own guide colour (none, or guides for rings off: the light blue)
+    const wrap = this.ring_list.closest(".pane"), guide = k !== null && (this.S.gd_rings || this.S.gd_sel) ? G.GUIDE_COLOURS[k] : null;      // on the pane: the ring's row and the ring drawer both take it
     wrap.classList.toggle("guided", Boolean(guide));
     if (guide) wrap.style.setProperty("--guide", guide); else wrap.style.removeProperty("--guide");
     this.place_ring_line();
@@ -1595,7 +1663,7 @@ class DialTool {
       }
       const says = this.ring_summary(ring), chip = el("i", { className: "dot tiny", title: "Its colour" });
       paint(chip, ring.c);
-      item.append(el("span", { className: "quiet kind says-kind", textContent: says.kind, title: "How many, and of what kind" }), el("span", { className: "says chipcell" }, chip),
+      item.append(el("span", { className: "quiet kind says-kind", textContent: says.kind, title: "How many, and of what kind" }), el("span", { className: "says chipcell" }, ...(selected ? [] : [chip])),      // the selected ring's colour is the drawer's button, right under
         el("span", { className: "quiet says says-size", textContent: says.size, title: "How big one is" }), el("span", { className: "quiet says says-r", textContent: says.r, title: "Radius" }));
       item.onclick = () => { if (!item.querySelector("input")) this.select_ring(i); };
       this.ring_list.append(item);

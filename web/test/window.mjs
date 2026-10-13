@@ -93,7 +93,7 @@ check(await S("S.ui_section === 2 && S.ui_hand === 1"), "click the minute hand �
 await click_mm(0.5, 3);
 check(await S("S.ui_section === 0"), "click the bare plate → Dial");
 await tab("Date");
-await page.evaluate(() => { const t = window.dial_tool; if (!t.window().on) document.querySelector("#window-switch-" + t.S.ui_window).click(); });      // its card's switch shows it
+await page.check("#window-on-Show-this-window");
 await frame();
 await click_mm(...clock(await S("S.da_r"), 90));
 check(await S("S.ui_section === 3"), "click the date window → Date");
@@ -126,13 +126,13 @@ await page.click("#add-band");
 check(await S(`S.rings.length === ${before + 1} && S.rings[S.ui_ring].kind === 3`), "Add Band → a band ring, selected");
 const row_look = await page.$$eval(".ringlist li.ring", (l) => l.map((e) => { const c = getComputedStyle(e); return (e.classList.contains("on") ? "on " : "") + c.borderTopWidth + " " + c.backgroundColor; }));
 // the selected row has the colour of the selected ring's guide (13 Oct 2026); with that guide set to None, the light blue of before
-const guide_row = await page.evaluate(() => { const t = window.dial_tool, bg = () => getComputedStyle(document.querySelector(".ringlist li.ring.on")).backgroundColor; const a = bg(); t.set_value("global", "gd_sel", false); const b = bg(); t.set_value("global", "gd_sel", true); return [a, b, bg(), t.S.gd_k_sel]; });
+const guide_row = await page.evaluate(() => { const t = window.dial_tool, bg = () => getComputedStyle(document.querySelector(".ringlist li.ring.on")).backgroundColor; const was = t.ring().guide, a = bg(); t.set_value("ring", "guide", -2); const b = bg(); t.set_value("ring", "guide", was); return [a, b, bg(), t.S.gd_k_sel]; });
 check(row_look.every((x) => x.includes("1px")) && row_look.filter((x) => x.startsWith("on ")).length === 1 && guide_row[1] === "rgb(207, 228, 245)" && guide_row[0] !== guide_row[1] && guide_row[0] === guide_row[2] && !/255, 255, 255/.test(guide_row[0]),
-  `every ring is a framed row; the selected one is tinted with its guide's colour (${guide_row[0]}), light blue when that guide is None`);
+  `every ring is a framed row; the selected one is tinted with its own guide's colour (${guide_row[0]}), light blue when it has none`);
 // a ring's row says what the ring is, in the drawer's order (13 Oct 2026): name · how many of what kind · its colour · its size · its radius
-const sums = await page.$$eval(".ringlist li.ring", (l) => l.map((e) => { const t = (q) => e.querySelector(q).textContent, x = (q) => Math.round(e.querySelector(q).getBoundingClientRect().left); return [t(".says-kind"), t(".says-size"), t(".says-r"), [x(".name") < x(".says-kind"), x(".says-kind") < x(".dot.tiny"), x(".dot.tiny") < x(".says-size"), x(".says-size") < x(".says-r")].every(Boolean), x(".says-size") + "/" + x(".says-r") + "/" + x(".dot.tiny"), e.getBoundingClientRect().height, getComputedStyle(e.querySelector(".dot.tiny")).getPropertyValue("--c") !== ""]; }));
+const sums = await page.$$eval(".ringlist li.ring", (l) => l.map((e) => { const t = (q) => e.querySelector(q).textContent, x = (q) => Math.round(e.querySelector(q).getBoundingClientRect().left); return [t(".says-kind"), t(".says-size"), t(".says-r"), [x(".name") < x(".says-kind"), x(".says-kind") < x(".chipcell"), x(".chipcell") < x(".says-size"), x(".says-size") < x(".says-r")].every(Boolean), x(".says-size") + "/" + x(".says-r") + "/" + x(".chipcell"), e.getBoundingClientRect().height, e.querySelectorAll(".dot.tiny").length === (e.classList.contains("on") ? 0 : 1)]; }));
 check(sums.every((x) => /^\d+ (ticks|markers|numerals|band)$/.test(x[0]) && /^[\d.]+$/.test(x[1]) && /^[\d.]+$/.test(x[2]) && x[3] && x[6]) && new Set(sums.map((x) => x[4])).size === 1 && new Set(sums.map((x) => x[5])).size === 1,
-  `every ring's row reads kind · colour · size · radius after its name, each in one column down the list, every row with its colour: ${sums.map((x) => x.slice(0, 3).join(" · ")).join(" | ")}`);
+  `every ring's row reads kind · colour · size · radius after its name, each in one column down the list; every row but the selected one has its colour (the drawer's button is right under): ${sums.map((x) => x.slice(0, 3).join(" · ")).join(" | ")}`);
 const sum_before = await page.textContent(".ringlist li.ring.on .says-r");
 await page.evaluate(() => { const t = window.dial_tool; t.set_value("ring", "r", t.ring().r - 1); });
 check(await page.textContent(".ringlist li.ring.on .says-r") !== sum_before && await page.$$eval(".ringlist li.ring.on", (e) => e.length) === 1, `the row follows the ring: radius ${sum_before} → ${await page.textContent(".ringlist li.ring.on .says-r")}`);
@@ -187,12 +187,12 @@ const one = await page.evaluate(() => {
     kinds: line.querySelectorAll(".kinds button svg").length, words: line.querySelectorAll(".kinds span, .name").length, hex: getComputedStyle(line.querySelector(".colour .hex")).display,
     heights: [...new Set([...line.querySelectorAll(".kinds button, .colour, .valueb")].map(h))], round: [...line.querySelectorAll(".valueb")].every((e) => Math.round(e.getBoundingClientRect().width) === h(e)),
     title: p.querySelector("h2").textContent, radius: on.querySelector(".says-r").textContent, size: on.querySelector(".says-size").textContent, figures: line.querySelectorAll(".figure").length,
-    over: [[".dot.tiny", ".colour"], [".says-size", "#ring-size"], [".says-r", "#ring-r"]].map(([a, b]) => { const m = (e) => { const r = e.getBoundingClientRect(); return (r.left + r.right) / 2; }; return Math.abs(m(on.querySelector(a)) - m(line.querySelector(b))); }), small: line.querySelectorAll("#ring-size svg .small").length,
-    ground: c.backgroundColor, frame: c.borderTopColor, row_frame: row.borderTopColor, tip: line.querySelector(".kinds button").dataset.tip, rows: p.querySelectorAll(".ringlist li.ring").length, all: p.querySelectorAll(".ringlist li").length };
+    over: [[".chipcell", ".colour"], [".says-size", "#ring-size"], [".says-r", "#ring-r"]].map(([a, b]) => { const m = (e) => { const r = e.getBoundingClientRect(); return (r.left + r.right) / 2; }; return Math.abs(m(on.querySelector(a)) - m(line.querySelector(b))); }), small: line.querySelectorAll("#ring-size svg .small").length,
+    ground: c.backgroundColor, frame: c.borderTopColor, row_frame: row.borderTopColor, tip: line.querySelector(".kinds button").dataset.tip, kinds_end: Math.abs(line.querySelector(".kinds").getBoundingClientRect().right - on.querySelector(".says-kind").getBoundingClientRect().right), rows: p.querySelectorAll(".ringlist li.ring").length, all: p.querySelectorAll(".ringlist li").length };
 });
 check(one.panes === 1 && one.under && one.gap === 2 && one.order === "kinds ring-c-Colour ring-size ring-r" && one.kinds === 4 && one.words === 0 && one.hex === "none" && one.heights.length === 1 && one.round && one.title === "Rings, top first" && one.all === one.rows + 1
-  && one.radius === String(await S("S.rings[S.ui_ring].r")) && one.size === String(await S("S.rings[S.ui_ring].width")) && one.small === 1 && one.figures === 0 && one.over.every((d) => d <= 1) && one.ground === "rgb(255, 255, 255)" && one.frame === one.row_frame && one.tip === "Ticks",
-  `the ring drawer stands in the list, ${one.gap} under the selected ring's row: four kinds · colour · size · radius, all ${one.heights[0]} high, no numbers in them; the row's colour, size ${one.size} and radius ${one.radius} stand right over their buttons; white, its frame the guide's colour like its row's (${one.frame})`);
+  && one.radius === String(await S("S.rings[S.ui_ring].r")) && one.size === String(await S("S.rings[S.ui_ring].width")) && one.small === 1 && one.figures === 0 && one.kinds_end <= 1 && one.over.every((d) => d <= 1) && one.ground === "rgb(255, 255, 255)" && one.frame === one.row_frame && one.tip === "Ticks",
+  `the ring drawer stands in the list, ${one.gap} under the selected ring's row: four kinds (ending where the kinds' words end) · colour · size (Okay's scale drawing) · radius, all ${one.heights[0]} high, no numbers in them; the row's colour, size ${one.size} and radius ${one.radius} stand right over their buttons; white, its frame the guide's colour like its row's (${one.frame})`);
 // its frame: an outer line in the guide's colour and, inside it, a line three times as thick in the selected row's ground; the tiny numbers are in Silkscreen
 {
   const look = await page.evaluate(async () => {
@@ -223,7 +223,8 @@ await page.hover("#ring-kind-Kind-0");
 const tag = await page.evaluate(() => { const t = document.querySelector("#tag"), b = document.querySelector("#ring-kind-Kind-0").getBoundingClientRect(), r = t.getBoundingClientRect(); return [t.hidden, t.textContent, r.top > b.bottom, Math.abs((r.left + r.right) / 2 - (b.left + b.right) / 2) < 2]; });
 check(!tag[0] && tag[1] === "Ticks" && tag[2] && tag[3], "a kind button says what it is in a tag under it while the pointer is on it: Ticks");
 await page.hover("#ring-r");
-check((await page.textContent("#tag")) === "Outer radius " + await S("S.rings[S.ui_ring].r"), `a round button's tag says its name and its value: ${await page.textContent("#tag")}`);
+const vtag = await page.evaluate(() => { const t = document.querySelector("#tag"); return [[...t.children].map((c) => c.textContent).join(" | "), Math.round(t.getBoundingClientRect().width), Math.round(t.getBoundingClientRect().height)]; });
+check(vtag[0] === "Outer radius | " + await S("S.rings[S.ui_ring].r"), `a round button's tag says its name and its value: ${vtag[0]} (${vtag[1]} wide)`);
 await page.hover("#ring-kind-Kind-0");
 await shot("4c15-ring-line");
 await page.mouse.move(60, 44);
@@ -266,13 +267,14 @@ await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before)
   const dragged = await S("S.rings[S.ui_ring].width");
   await page.evaluate((w) => window.dial_tool.set_value("ring", "width", w), w_before);
   await page.click("#ring-size");
-  const pop = await page.evaluate(() => { const p = document.querySelector("#value-pop").getBoundingClientRect(), b = document.querySelector("#ring-size").getBoundingClientRect(); return [document.querySelector("#value-pop label").textContent, Math.round(p.top - b.bottom), document.querySelector("#value-pop").parentElement.className, Math.round(p.right - b.right), Math.round(p.width), Math.round(p.height), getComputedStyle(document.querySelector("#value-pop input[type=range]")).display]; });
+  await page.waitForTimeout(200);
+  const pop = await page.evaluate(() => { const e = document.querySelector("#value-pop"), p = e.getBoundingClientRect(), b = document.querySelector("#ring-size").getBoundingClientRect(); return [e.querySelector("label").textContent, Math.round(p.top - b.bottom), e.parentElement === document.body && e.classList.contains("tag"), Math.round((p.left + p.right) / 2 - (b.left + b.right) / 2), Math.round(p.width), Math.round(p.height), getComputedStyle(e.querySelector("input[type=range]")).display]; });
   await shot("4c19-size-pop");
   await page.keyboard.type("x2"); await page.keyboard.press("Enter");
   const w_after = await S("S.rings[S.ui_ring].width");
   await page.evaluate((w) => window.dial_tool.set_value("ring", "width", w), w_before);
-  check(Math.abs(dragged - (w_before + 0.4)) < 1e-9 && pop[0] === "Band width" && pop[1] === 0 && pop[3] === 0 && pop[2] === "ringlist" && Math.abs(pop[4] - pop[5]) <= 24 && pop[6] === "none" && Math.abs(w_after - 2 * w_before) < 1e-9 && await page.$("#value-pop") === null,
-    `the size button, before the radius: dragged 16 to the right a band is 0.4 wider; a click pops up a small square (${pop[4]} × ${pop[5]}: ${pop[0]}, the field, − +) whose top right corner is the button's bottom right; it takes x2`);
+  check(Math.abs(dragged - (w_before + 0.4)) < 1e-9 && pop[0] === "Band width" && pop[1] === 7 && pop[2] && Math.abs(pop[3]) <= 1 && pop[4] === vtag[1] && pop[5] > vtag[2] + 40 && pop[6] === "none" && Math.abs(w_after - 2 * w_before) < 1e-9 && await page.$("#value-pop") === null,
+    `the size button, before the radius: dragged 16 to the right a band is 0.4 wider; a click grows its tag into the pop-up — the same box under the button, as wide as the tag (${pop[4]}), now ${pop[5]} high: ${pop[0]}, the field, − +; it takes x2`);
 }
 // undo: ⌘Z takes one step back, ⇧⌘Z forward again; a drag is one step; the window's state stays (13 Oct 2026)
 {
@@ -384,7 +386,33 @@ check(await page.$("main .guides #guides") !== null && await page.$(".panel #gui
 const guides_at = await page.evaluate(() => { const g = document.querySelector(".guides").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); return [Math.round(m.right - g.right), Math.round(g.top - m.top)]; });
 check(guides_at[0] === 12 && guides_at[1] === 12, `it is 12 from the preview's top and right (${guides_at.join(" / ")})`);
 await page.click("#guides-more");
-check(await page.isVisible("#guide-list") && await page.$$eval("#guide-list .guidekind", (r) => r.length) === 5 && await page.$$eval("#guide-list .guidekind >> nth=0 >> .dots .tone", (b) => b.length) === 8 && await page.$$eval("#guide-list .dots .none", (b) => b.length) === 5 && await page.$("#guide-list .swatch") === null, "the arrow drops the list: five kinds of guide, each with None and eight round colours, no free colour");
+check(await page.isVisible("#guide-list") && await page.$$eval("#guide-list > .guidekind", (r) => r.length) === 3 && await page.$$eval("#guide-list .guidekind >> nth=0 >> .dots .tone", (b) => b.length) === 8 && await page.$$eval("#guide-list .guiderings .guidekind.ring", (r) => r.length) === await S("S.rings.length") && await page.$("#guide-list .swatch") === null, "the arrow drops the list: the dial's three kinds of guide, then a line for every ring, each with None and eight round colours, no free colour");
+// guides are connected to the rings (13 Oct 2026): each ring's edges in its own colour, different ones to start with; the row in the ring list is tinted with it
+{
+  const start = await page.evaluate(() => { const t = window.dial_tool, G = t.S.rings.map((r, i) => [r.guide, [...document.querySelectorAll("#guide-list .guidekind.ring")][i].querySelector(".tone.on").title]); return G; });
+  const strokes = await page.evaluate(() => { const t = window.dial_tool; return [...new Set(t.items.filter((i) => i.role === "guide").map((i) => i.stroke.map((v) => Math.round(v * 255)).join(",")))].length; });
+  await page.click("#guide-list .guidekind.ring >> nth=0 >> .tone >> nth=5");
+  const set = await S("S.rings[0].guide");
+  await page.click("#guide-list .guidekind.ring >> nth=0 >> .none");
+  const none = await S("S.rings[0].guide");
+  await page.click("#guide-rings-selected");
+  const only = await page.evaluate(() => { const t = window.dial_tool; t.draw(); return [t.S.gd_rings, t.S.gd_sel]; });
+  await page.click("#guide-rings-all");
+  await page.evaluate(() => { window.dial_tool.set_value("ring", "guide", -1); const t = window.dial_tool; t.S.rings[0].guide = -1; t.sync_rows(); t.render(); });
+  check(new Set(start.map((x) => x[1])).size === Math.min(start.length, 6) && strokes >= 3 && set === 5 && none === -2 && only[0] === false && only[1] === true,
+    `every ring has a guide colour of its own to start with (${start.map((x) => x[1]).join(" ")}); a ring's line in the list changes it or hides it; Rings: All · Selected · None says which rings show theirs`);
+  // guides you add: a line, a crosshair, a circle
+  await page.click("#guide-add-line"); await page.click("#guide-add-crosshair"); await page.click("#guide-add-circle");
+  await page.fill("#guide-more-0-a", "45"); await page.press("#guide-more-0-a", "Enter");
+  await page.fill("#guide-more-1-r", "8"); await page.press("#guide-more-1-r", "Enter");
+  await frame();
+  const added = await page.evaluate(() => { const t = window.dial_tool; return [t.S.gd_more.map((g) => g.kind).join(""), t.S.gd_more[0].a, t.S.gd_more[1].r, t.items.filter((i) => i.role === "guide").length, document.querySelectorAll("#guide-list .guidekind.added").length]; });
+  await shot("4c20-guides");
+  await page.click("#guide-more-1-remove");
+  const left = await S("S.gd_more.map((g) => g.kind).join('')");
+  await page.evaluate(() => { const t = window.dial_tool; t.S.gd_more = []; t.sync_rows(); t.render(); });
+  check(added[0] === "012" && added[1] === 45 && added[2] === 8 && added[4] === 3 && left === "02", `Add: Line · Crosshair · Circle put a guide of that kind in the list, with its angle or radius, its colours and a way to remove it (${added[3]} guides drawn)`);
+}
 const list_look = await page.evaluate(() => { const c = getComputedStyle(document.querySelector("#guide-list")), on = getComputedStyle(document.querySelector("#guide-list .tone.on")); return [c.backgroundColor, parseFloat(c.borderTopLeftRadius), on.borderTopLeftRadius, on.boxShadow.split("rgb").length - 1]; });
 check(list_look[0] === "rgb(20, 20, 19)" && list_look[1] >= 12 && list_look[2] === "50%" && list_look[3] === 3, "the list is near black and round; the chosen colour is a disc in a thick ring of its own colour");
 await page.fill("#global-gd-w-Thickness", "3");
@@ -549,21 +577,7 @@ await shot("4g-hand-tabs");
 // Windows: four cards, 12 · 3 · 6 · 9, are the tabs; Show this window is on the heading line, also when the pane is folded
 await tab("Date");
 const cards = await page.$$eval(".windowcards .card > button:first-child", (b) => b.map((x) => [x.id, x.textContent, x.classList.contains("on"), Math.round(x.getBoundingClientRect().width)]));
-check(cards.map((c) => c[1]).join(" ") === "12 3 6 9" && cards.map((c) => c[0]).join(" ") === "window-card-1 window-card-0 window-card-2 window-card-3" && cards[1][2], `four cards: 12 · 3 · 6 · 9; the date window of old is the one at 3, and chosen (${cards[0][3]} wide)`);
-// each card has a small clock-like switch: it shows or hides that window (13 Oct 2026)
-{
-  const before = await S("[S.ui_window, S.windows[2].on]");
-  const look = async () => page.$eval("#window-switch-3", (e) => [e.getAttribute("aria-checked"), getComputedStyle(e.querySelector(".hand")).transform !== "none", Math.round(e.getBoundingClientRect().width)]);
-  const off = await look();
-  await page.click("#window-switch-3");
-  const on = await look(), chosen = await S("[S.ui_window, S.windows[2].on, S.windows[2].at]");
-  await shot("4c11-window-switch");
-  await page.click("#window-switch-3");
-  const again = await S("S.windows[2].on");
-  check(before[1] === false && off[0] === "false" && off[1] && on[0] === "true" && !on[1] && chosen[0] === 3 && chosen[1] === true && chosen[2] === 3 && again === false && await page.$$eval(".cardswitch", (e) => e.length) === 4,
-    `a card's switch shows its window (hand up) and hides it again (hand lying); it chooses the card too (${off[2]} wide)`);
-  await page.click(`#window-card-${before[0]}`);
-}
+check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ") === "window-card-1 window-card-0 window-card-2 window-card-3" && cards[1][2] && await page.$$eval(".cardswitch", (e) => e.length) === 0 && await page.evaluate(() => Math.round(document.querySelector(".windowcards .card").getBoundingClientRect().left) === Math.round(document.querySelector(".form .pane h2").getBoundingClientRect().left)), `four cards, pictures only, starting on the second column: 12 · 3 · 6 · 9; the date window of old is the one at 3, and chosen (${cards[0][3]} wide)`);
 // a window's shape is its own: rectangle · circle · polygon · arch · arc; it can turn with its radius; its own font; three colours
 {
   const was = await S("JSON.stringify([S.ui_window, S.da_on, S.da_at, S.da_shape, S.da_turn, S.da_ps, S.da_family, S.da_text_c, S.da_disc_c, S.da_w])");
@@ -631,10 +645,14 @@ check(cards.map((c) => c[1]).join(" ") === "12 3 6 9" && cards.map((c) => c[0]).
 await tab("Export");
 const example_w = await page.$eval(".examples a", (e) => Math.round(e.getBoundingClientRect().width));
 await tab("Date");
-check(example_w === cards[0][3], `a window card is as wide as an example card (${example_w})`);
+check(Math.abs(example_w - cards[0][3]) <= 8, `a window card is about as wide as an example card (${cards[0][3]}, ${example_w})`);
 await page.click("#window-card-2");
 check(await S("S.ui_window === 2 && S.windows[1].at === 2 && S.windows[1].on === false") && await page.textContent(".form .pane >> nth=0 >> h2") === "Window at 6" && await page.$eval("#window-card-2", (e) => e.classList.contains("on") && e.classList.contains("off")), "the card at 6 chooses its window: the pane says Window at 6; not in use yet, it takes the card's place");
-check(await page.$("#window-on-Show-this-window") === null && (await page.textContent(".form .pane >> nth=0 >> .body")).includes("The small clock on its card shows it") && await page.isHidden("#window-kind-Shows-0"), "no Show this window tick: a hidden window's pane says its card's clock shows it, and nothing else");
+const on_head = await page.evaluate(() => { const pane = document.querySelector(".form .pane"), c = pane.querySelector(".headcontrol").getBoundingClientRect(), h = pane.querySelector(".fold").getBoundingClientRect(); return [c.top >= h.top && c.bottom <= h.bottom, pane.querySelector(".headcontrol input").id]; });
+check(on_head[0] && on_head[1] === "window-on-Show-this-window", "Show this window is on the heading line: the cards are tabs only");
+await page.click(".form .pane >> nth=0 >> .fold h2");
+check(await page.isVisible("#window-on-Show-this-window"), "folded, the pane still shows it");
+await page.click(".form .pane >> nth=0 >> .fold h2");
 await page.click("#window-card-0");
 await shot("4h-window-cards");
 await tab("Hands");
@@ -724,7 +742,7 @@ await tab("Date");
 const kinds = [["1", "1", "9"], ["2", "2", "6"], ["3", "3", "12"]];          // window (its card's number), kind, position
 for (const [n, kind, at] of kinds) {
   await page.click("#window-card-" + n);
-  await page.evaluate(() => { const t = window.dial_tool; if (!t.window().on) document.querySelector("#window-switch-" + t.S.ui_window).click(); });      // its card's switch shows it
+  await page.check("#window-on-Show-this-window");
   await page.click("#window-kind-Shows-" + kind);
   await page.selectOption("#window-at-Position", { label: at });
 }
@@ -741,7 +759,7 @@ check((await page.textContent(".tip span")) === "Moon phase window", "pointer on
 await click_mm(...moon_at);
 check(await S("S.ui_section === 3 && S.ui_window === 3") && await page.isVisible("#window-age-Moon-age-days") && await page.isHidden("#window-h-Height"), "click it: Windows, window 4, with the moon's rows");
 await shot("4d-windows");
-for (const n of ["1", "2", "3"]) await page.click("#window-switch-" + n);      // hidden again
+for (const n of ["1", "2", "3"]) { await page.click("#window-card-" + n); await page.uncheck("#window-on-Show-this-window"); }
 await page.click("#window-card-0");
 check(await S("t.statik.windows.length === 1"), "windows 2 to 4 switched off again");
 

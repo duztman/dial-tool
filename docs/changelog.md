@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## beta 4.12 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **Guides per ring**: a ring's edges in the ring's own guide colour (new ring key `guide`); a mixed order of colours to start with; the selected ring's row and drawer tinted with it. Guides list: the dial's three kinds · *Rings: All · Selected · None* and a line per ring · *Add: Line · Crosshair · Circle* (new key `gd_more`), each added guide with its angle or radius, colours and a cross.
+- **Value pop-up = the tag, grown**: same box, same width (132), the height grows on a click. The tag of a round button says name and value.
+- **Scale drawing** from Okay's `Asset_1.svg`; the column before the size button is 8 wider for its small circle.
+- **Kind buttons** fill the name's and kind's columns. **No colour square on the selected row.**
+- **Window cards**: pictures only, from the second column; the switches are gone; *Show this window* is back on the heading line.
+
 ## beta 4.11 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.

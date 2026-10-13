@@ -2,7 +2,7 @@
 
 What each word means **in this project**. Turkish where it's the common trade word.
 If a term is used differently in conversation, ask, then update this file.
-*Last updated 13 Oct 2026 (beta 4.11: ring drawer, a row's order; beta 4.8: window shape, turn, size button; beta 4.7: ring line, value button, gallery, card switch; Section, Ring list and Bar brought up to the web version). Before: 12 Oct 2026 (web version, beta 4.6: sector colours, scale everything).*
+*Last updated 13 Oct 2026 (beta 4.12: guides per ring, added guides, window cards as tabs; beta 4.11: ring drawer, a row's order; beta 4.8: window shape, turn, size button; beta 4.7: ring line, value button, gallery, card switch; Section, Ring list and Bar brought up to the web version). Before: 12 Oct 2026 (web version, beta 4.6: sector colours, scale everything).*
 
 ## Watch terms
 
@@ -47,9 +47,9 @@ If a term is used differently in conversation, ask, then update this file.
 | **Nudge** | A per-numeral correction: radius ±, angle ±, rotate, size ×. Stored per position. |
 | **Rings pane** | The pinned pane on top of Rings (web version, 13 Oct 2026): its heading line with the list's tools (a plus that opens the four kinds; move up · move down · duplicate · delete), the ring list, the **ring line**. Folded it is one line: *Rings: <name>* and a summary. |
 | **Ring drawer** | The framed box inside the ring list, right under the selected ring's row, holding that ring's main controls as buttons without words: four kinds · its colour · its **size** (how big one of its things is: a mark's length, a dot's Ø, a numeral's size, a band's width; Okay's "scale") · its radius. Each of the last three stands under its value in the row above. Its outer line has the selected ring's guide colour, its inner line the row's ground. Named 13 Oct 2026; "ring line" before, and `ringline` / `lineholder` in the code. |
-| **Tag** | The small label under a wordless button while the pointer is on it ("Ticks"); one for the whole tool, laid over everything. |
+| **Tag** | The small label under a wordless button while the pointer is on it ("Ticks"); one for the whole tool, laid over everything. A value button's tag says name and value and is as wide as the pop-up it grows into. |
 | **Pixel font** | Silkscreen (SIL OFL), packed into the page: the tool's own tiny numbers inside small drawings, always at 8 (now only 12 · 3 · 6 · 9 in the numerals picture; kept for later). Not one of the dial's fonts. |
-| **Value button** | A number as a small round drawing, without the number (a ring's radius: a circle with its radius drawn; its size: a small circle against the large one); the value is read in the ring's row above it and in its tag. Click: a small square pops up at its bottom right corner (the number's name, field, − +), ready to type in. Press and move: the value changes. R15's exception. |
+| **Value button** | A number as a small round drawing, without the number (a ring's radius: a circle with its radius drawn; its size: a small circle against the large one); the value is read in the ring's row above it and in its tag. Click: its tag grows downwards into the pop-up (the number's name, field, − +), ready to type in. Press and move: the value changes. R15's exception. |
 | **Ring settings** | The scrolling list under the ring list: Kind · Colour · Radius · Positions · Give way · Look · Nudge · Type. Nudge and Type show for numerals rings only. (beta 2.0 split it into four pages.) |
 
 ## Hands
@@ -74,7 +74,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Heading selector** | A pane's main selector, standing on its heading line with no name of its own (Labels, Position). |
 | **Backdrop switch** | The button at the preview's bottom left: the backdrop's colour as a chip; it opens the colour pop-out. |
 | **Hand tabs** | Hour · Minute · Seconds, the second pinned line of Hands, under All hands: they choose the hand the panes below are about. |
-| **Window cards** | The four cards on top of Windows, 12 · 3 · 6 · 9: where each window is, and the tabs that choose the window the panes below are about. Each has a **card switch** in its top right corner: a small clock, hand up = the window is shown. |
+| **Window cards** | The four cards on top of Windows, at 12 · 3 · 6 · 9, starting on the second column: each a small dial with the window in its place, filled when that window is shown. They are tabs: they choose the window the panes below are about. A window is shown by *Show this window* on its heading line. |
 | **Gallery** | The last pane of Export: dials to open and take apart, drawn after documents in the research atlas. Their settings are written in `web/gallery.mjs`. Not the five **examples** on top of Export (five of the guide's classics). |
 | **Undo step** | The dial as it was before a change; taken when the dial has stood still for a moment. ⌘Z goes back one, ⇧⌘Z forward. |
 | **Bottom bar** | The dark strip along the bottom of the window, in three parts: selected · time (play, speeds, the time, the day slider, Now) · view (zoom, Fit). Called "the bar" in notes before 13 Oct 2026. |
@@ -99,7 +99,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Guidebook** | `docs/Dial-Tool-guide.pdf`, the user guide (A4 landscape, 28 pages, set by the design canon), built from `docs/guide/pages/` and `style.css` by `tools/make_guide.py`. |
 | **Classics** | The guide's nine example dials (field, diver, dress, pilot, California, station clock, Bauhaus, sector, gauge): settings in `tools/guide_dials.py`, also saved as presets in `docs/guide/presets/`. Drawn by eye after dial types, not measured. |
 | **Mirror** | Flips the output for toner transfer. |
-| **Guides** | Thin construction lines in the preview, never exported. Five **kinds**: dial edge · centre lines · window radii · ring edges · selected ring. Each kind has one of the eight **guide colours** (six neons, a dark, a light) or **None** (not shown). Switched with the **Guides switch** at the preview's top right; its arrow drops the **guide list**. |
+| **Guides** | Thin construction lines in the preview, never exported. The dial's three **kinds** — dial edge · centre lines · window radii — each have one of the eight **guide colours** (six neons, a dark, a light) or **None**. **A ring's guide** (its edges) has that ring's own colour: one by its place in the list to start with, so neighbours differ; *Rings: All · Selected · None* says which rings show theirs. **Added guides**: a line (a diameter at an angle), a crosshair (a point at an angle and a radius), a circle (a radius). Switched with the **Guides switch** at the preview's top right; its arrow drops the **guide list**. (Until beta 4.12: five kinds, with *Ring edges* and *Selected ring* as kinds of one colour each.) |
 | **Backdrop** | The preview's background colour; never exported. |
 | **Number control** | Label · slider · typed field · stepper, all showing one value. Typed shorthand: `1.2` set, `+0.5` add, `x0.5` multiply, `/2` divide. |
 | **Settings** (`S`) | One dictionary holding every value; saved as JSON (presets, last session). Rings are a list inside it (`S["rings"]`, top first). |

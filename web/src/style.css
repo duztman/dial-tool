@@ -73,9 +73,9 @@
     --ringline-pad: 8px; --ringline-gap: 8px; --ringline-join: 2px;      /* the selected ring's line: inside its frame · between its parts · between it and its ring's row */
     --ringline-inner: calc(3 * var(--hair));       /* its second, inner line: three times the outer */
     --row-end: calc(var(--frame-out) - var(--hair) + var(--ringline-inner));      /* the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons */
-    --line-button: 36px; --kind-wide: 46px; --bare-dot: 16px;      /* in that line every control is this high (a value button this wide too) · a kind's button is this wide · the colour's swatch */
+    --line-button: 36px; --bare-dot: 16px;      /* in the ring drawer every control is this high (a value button this wide too) · the colour's swatch */
+    --size-lead: 16px;                             /* before the size button: room for its drawing's small circle, which stands out to the left */
     --name-in: 6px;                                /* a ring's name starts this far into its column; the ring line's buttons too */
-    --card-switch: 22px;                           /* the clock-like switch on a window card */
     --half: 30px;                                  /* AM · PM inside the time's box */
     --value-pop: 132px;                            /* a value button's pop-up: about as wide as it is high */
     --dot-tiny: 10px;                              /* a colour inside a line of words: a folded pane's summary */
@@ -297,26 +297,13 @@
   /* Windows: four cards the size of the example cards (five to a row), 12 · 3 · 6 · 9. They are tabs: the chosen one
      is ink. A window that isn't shown is quiet. The line under the section tabs is theirs. */
   .windowcards { padding: calc(2 * var(--unit)) 0 calc(3 * var(--unit)); border-top: var(--thick) solid var(--ink); }
-  .windowcards .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--unit); }
+  .windowcards .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--unit); margin-left: var(--lead); }      /* the tabs start on the second column, where the labels start (Okay, 13 Oct 2026) */
   .windowcards .card { position: relative; display: grid; }
   .windowcards .card > button:first-child { display: grid; justify-items: center; gap: 3px; padding: 8px 4px 5px; background: var(--inset); font-weight: 600; }
   .windowcards .card > button:first-child svg { display: block; }
   .windowcards .card > button:first-child.off { color: var(--grey); font-weight: 400; }
   .windowcards .card > button:first-child:hover { background: var(--select); }
   .windowcards .card > button:first-child.on { background: var(--ink); color: var(--paper); }
-  /* the switch in a card's top right corner: a small clock. Its hand stands up and the face is filled when the window
-     is shown; it lies to the left on an empty face when it isn't. It takes the card's colour, light on the chosen card. */
-  .cardswitch { position: absolute; top: 3px; right: 3px; display: grid; place-items: center; width: var(--card-switch); height: var(--card-switch); border-radius: var(--round-pill); color: var(--grey); }
-  .cardswitch .hand { transform-origin: 8px 8px; transform: rotate(-90deg); transition: transform 120ms ease-out; }
-  .cardswitch .pivot { fill: currentColor; stroke: none; }
-  .cardswitch.on { color: var(--ink); }
-  .cardswitch.on .hand { transform: none; }
-  .cardswitch.on circle:first-child { fill: var(--select-rule); }
-  .cardswitch:hover { background: var(--veil-strong); }
-  .card > button:first-child.on + .cardswitch { color: var(--paper); }
-  .card > button:first-child.on + .cardswitch.on circle:first-child { fill: var(--select-rule); stroke: var(--paper); }
-  .card > button:first-child.on + .cardswitch.on .hand, .card > button:first-child.on + .cardswitch.on .pivot { color: var(--ink); stroke: var(--ink); }
-  @media (prefers-reduced-motion: reduce) { .cardswitch .hand { transition: none; } }
   .handsbar + .tabsbar { border-top: var(--hair) solid var(--rule); }
   /* tabs inside a section, always in view (Hands: Hour · Minute · Seconds): one line across the six columns */
   .tabsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; min-height: calc(var(--head) + var(--unit)); border-top: var(--thick) solid var(--ink); }
@@ -416,7 +403,7 @@
      and every row borrows them (subgrid), so summaries and kinds stand under each other whatever the words' widths. */
   .ringlist { margin: 0 calc(-1 * var(--frame-out)) 0 var(--lead); }      /* rows start where the labels start (Okay's drawing, 13 Oct 2026): the toggle column is the panes' alone */
   .ringlist ol { position: relative; list-style: none; margin: 0; padding: 2px 0 0; display: grid; row-gap: var(--ring-gap);
-    grid-template-columns: calc(var(--frame-out) + var(--lead)) 18px minmax(0, 1fr) auto repeat(3, calc(var(--line-button) + var(--ringline-gap))) var(--row-end);      /* eye · grip · name · kind · colour · size · radius · the room at the end: rows and the ring drawer share them */ max-height: calc(5 * (var(--line) + var(--ring-gap)) + var(--line-button) + 2 * var(--ringline-pad) + 2 * var(--ringline-inner) + 2 * var(--hair) + var(--ringline-join) + 4px); overflow-y: auto; }      /* five rings and the ring line, then it scrolls */
+    grid-template-columns: calc(var(--frame-out) + var(--lead)) 18px minmax(0, 1fr) auto calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--size-lead)) calc(var(--line-button) + var(--ringline-gap)) var(--row-end);      /* eye · grip · name · kind · colour · size · radius · the room at the end: rows and the ring drawer share them */ max-height: calc(5 * (var(--line) + var(--ring-gap)) + var(--line-button) + 2 * var(--ringline-pad) + 2 * var(--ringline-inner) + 2 * var(--hair) + var(--ringline-join) + 4px); overflow-y: auto; }      /* five rings and the ring line, then it scrolls */
   .ringlist li.ring { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; height: var(--line);
     border: var(--hair) solid var(--rule); border-radius: 5px; background: var(--field); cursor: pointer; }
   .ringlist li.ring:hover { border-color: var(--grey); }
@@ -466,21 +453,20 @@
      narrow gap. It borrows the list's columns (subgrid), so its buttons start where the names start: four kinds
      (pictures only) · its colour (a swatch) · its size and its radius (two value buttons), all one height. The
      frame has the colour of the selected ring's guide, as the row above has, on white. */
-  .ringlist { position: relative; }
   .ringlist li.lineholder { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; margin-top: calc(var(--ringline-join) - var(--ring-gap));
     padding: calc(var(--ringline-pad) + var(--ringline-inner)) 0;
     border: var(--hair) solid var(--select-rule); border-radius: var(--round-small); background: var(--field); box-shadow: inset 0 0 0 var(--ringline-inner) var(--select); }
   /* inside its outer line a second one, three times as thick, in the selected row's ground: the box reads as that row's (Okay, 13 Oct 2026) */
   .guided .ringlist li.lineholder { border-color: color-mix(in srgb, var(--guide) var(--guide-edge), var(--grey)); box-shadow: inset 0 0 0 var(--ringline-inner) color-mix(in srgb, var(--guide) var(--guide-tint), var(--field)); }
   .ringline { display: contents; }                 /* its buttons stand on the list's columns: the kinds from the name's column on, then colour · size · radius each under its place in the row */
-  .ringline > .kinds { grid-column: 3 / 5; justify-self: start; margin-left: var(--name-in); }
+  .ringline > .kinds { grid-column: 3 / 5; justify-self: stretch; margin-left: var(--name-in); }      /* the four fill the name's and the kind's columns, ending where the kinds' words end (Okay, 13 Oct 2026) */
   .ringline > :is(.colour, .valueb) { justify-self: end; }
   .ringline > .colour { grid-column: 5; }
   .ringline > #ring-size { grid-column: 6; }
   .ringline > #ring-r { grid-column: 7; }
   .nothing { display: none; }
-  .kinds { display: flex; flex: none; }
-  .kinds button { display: grid; place-items: center; width: var(--kind-wide); height: var(--line-button); border: var(--hair) solid var(--rule); background: var(--field); }
+  .kinds { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .kinds button { display: grid; place-items: center; height: var(--line-button); border: var(--hair) solid var(--rule); background: var(--field); }
   .kinds button + button { margin-left: calc(-1 * var(--hair)); }
   .kinds button:hover { background: var(--hover); }
   .kinds button.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
@@ -497,7 +483,8 @@
      number's row under it; pressing and moving changes the value. */
   .valueb { position: relative; flex: none; width: var(--line-button); height: var(--line-button); border-radius: var(--round-pill); cursor: ew-resize; touch-action: none; }
   .valueb svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; stroke: var(--grey); stroke-width: 1.1; }
-  .valueb svg .small { fill: var(--field); stroke: var(--rule); }
+  .valueb svg .small { fill: none; stroke: var(--rule); }
+  .valueb#ring-size svg path { stroke: var(--rule); }      /* the scale drawing is all outline */
   .valueb svg circle:first-child { fill: var(--field); stroke: var(--rule); }      /* the same line as the square buttons beside it */
   .valueb svg .pivot { fill: var(--grey); stroke: none; }
   .valueb:hover svg circle:first-child { fill: var(--hover); stroke: var(--ink); }
@@ -506,14 +493,20 @@
   .valueb:is([aria-expanded="true"], .dragging) svg { stroke: var(--paper); }
   .valueb:is([aria-expanded="true"], .dragging) svg .pivot { fill: var(--paper); }
   svg text.pixel { font-family: var(--pixel); }
-  .valuepop { --row-rule: transparent; position: absolute; z-index: 4; width: var(--value-pop); padding: 10px 10px 12px; border: var(--hair) solid var(--ink); background: var(--field); }
-  /* a small square: the number's name (and its menu) · the field · − +, one under the other. No slider: the button is dragged instead. */
+  /* a value button's tag is as wide as the pop-up it grows into: its name at the left, its value at the right, quiet,
+     in the mono face. The pop-up is the same box, higher: the number's name (and its menu) · the field · − +, one
+     under the other. No slider: the button is dragged instead. */
+  .tag.value { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; width: var(--value-pop); }
+  .tag.value .figure { color: var(--grey); font: 400 var(--t-xs)/1 var(--mono); }
+  .tag.valuepop { --row-rule: transparent; display: block; padding: 2px 8px 8px; pointer-events: auto; font-weight: 400; }
+  .tag.valuepop.growing { overflow: hidden; }
   .valuepop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 6px; min-height: 0; }
   .valuepop .row > * { grid-column: 1; }
   .valuepop .row input[type="range"] { display: none; }
   .valuepop .row input[type="text"] { width: 100%; text-align: center; }
   .valuepop .row .steps { display: grid; grid-template-columns: 1fr 1fr; }
-  .valuepop .row :is(label, .menulabel) { min-height: var(--control); align-items: center; display: flex; justify-content: space-between; }
+  .valuepop .row :is(label, .menulabel) { display: flex; justify-content: space-between; align-items: center; color: var(--ink); font: 600 var(--t-s)/1.3 var(--sans); }
+  .valuepop .row .menulabel > label { color: var(--ink); font: inherit; }
 
   /* the font picker: every font shows its own numerals */
   .font { display: grid; gap: var(--unit); margin-top: var(--unit); }
@@ -593,6 +586,20 @@
     max-height: calc(100vh - var(--bar-height) - 2 * var(--canvas-inset) - var(--control-large) - var(--unit)); overflow-y: auto; padding: var(--unit) var(--pop-pad) var(--pop-pad); }      /* less on top: a line's own height already stands its dots off the edge */
   .guidekind { display: grid; grid-template-columns: var(--guide-name) 1fr; align-items: center; min-height: var(--guide-row); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
   .guidekind.off .name { color: var(--grey); }
+  .guidekind .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* the rings' guides and the guides you add: a small heading line with a choice at its right, then a line each */
+  .guidehead { display: grid; grid-template-columns: var(--guide-name) 1fr; align-items: center; min-height: var(--guide-row); margin-top: var(--unit); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  .guidehead .name { font-weight: 600; }
+  .guidehead .segs { justify-self: end; margin-right: calc(var(--ring-gap-in) + var(--ring-thick)); }
+  .guidehead .segs > button { padding: 0 9px; }
+  .guidekind.ring.selected .name { font-weight: 600; }
+  /* a guide you added takes two lines: its name, its measures and a cross to remove it; under them its colours */
+  .guidekind.added { position: relative; grid-template-columns: 1fr; row-gap: 2px; padding: 4px 0; }
+  .guidekind.added .name { display: flex; align-items: center; gap: 6px; overflow: visible; }
+  .guidekind.added .dots { padding-left: var(--guide-name); }
+  .guidekind.added > .sign { position: absolute; top: 4px; right: 0; }
+  .guidefield { display: inline-flex; align-items: center; gap: 4px; color: var(--grey); }
+  .guidefield input { width: var(--col); height: var(--control); text-align: center; }
   .dots { display: flex; justify-content: space-between; align-items: center; padding: 0 calc(var(--ring-gap-in) + var(--ring-thick)) 0 var(--guide-gap); }
   .dots button { flex: none; display: grid; place-items: center; width: var(--guide-dot); height: var(--guide-dot); border-radius: 50%; }
   .dots .tone { background: var(--c); box-shadow: 0 0 0 var(--hair) var(--chip-rule); }
