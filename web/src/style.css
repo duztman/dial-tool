@@ -109,7 +109,10 @@
 
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
     --t-xs: 11px; --t-s: 12px; --t-m: 13px; --t-l: 15px;
-    --font-name: 104px; --font-has: 92px;          /* the font sheet's columns: a family's name · what it has (its numerals take the rest) */
+    --font-name: 104px; --font-has: 92px; --font-has-most: 120px;     /* …and the most the stickers' column may take from the numerals */
+    --round-tiny: 3px;                             /* a sticker's corners, a small swatch's */
+    --st-ink: #141413; --st-weight: #FFD84D; --st-italic: #FF9EC7; --st-width: #8FE3F5; --st-optical: #B9F2A1; --st-other: #D2C8FF; --st-styles: #E4E4E0;      /* stickers: one colour for a kind of thing a font family has */
+         /* the font sheet's columns: a family's name · what it has (its numerals take the rest) */
     --shadow: calc(-2 * var(--unit)) 0 7px rgba(0, 0, 0, 0.28);      /* what floats over the window throws its shadow to the left, a little soft (Okay, 13 Oct 2026: "much sharper", then "blur 7") */
     --swatch-col: calc(2 * (var(--line-button) + var(--ringline-gap)) + var(--ringline-inner) - var(--hair));      /* from a pane's right edge to the right edge of the ring list's colour column: a colour swatch further down stands in that column too */
     --t-sample: 20px;                              /* a font's numerals in the font list, when the browser sets them */
@@ -631,12 +634,24 @@
   .fontrow .sample { font-size: var(--t-sample); }
   .fontrow .face { font-size: var(--t-l); }
   .fontrow .sample svg { display: block; flex: none; }
-  .fontrow .face svg, .fontlist .sample svg { display: block; flex: 0 1 auto; height: auto; max-width: 100%; }      /* in the sheet: what is too wide for its column is drawn smaller */
-  .fontrow .has { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: calc(var(--unit) / 2); }
-  /* a sticker: one thing a family has, in the pixel font at its own size (R32). Strong: bold, ink. Else: regular, grey. */
-  .sticker { padding: var(--hair) calc(var(--unit) / 2); border: var(--hair) solid var(--rule); color: var(--grey); font: 400 var(--t-pixel)/1.25 var(--pixel); text-transform: uppercase; white-space: nowrap; }
-  .sticker.strong { border-color: var(--ink); color: var(--ink); font-weight: 700; }
-
+  .fontrow .face svg { display: block; flex: 0 1 auto; height: auto; max-width: 100%; }      /* a name too wide for its column is drawn smaller; numerals are cut at their column's edge */
+  .fontrow .has { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: calc(var(--unit) / 2); }      /* on one line as long as the column lets them */
+  /* a sticker: one thing a family has, in the pixel font at its own size (R32), on a colour of its kind, round
+     corners (Okay, 13 Oct 2026: "stickers get colors instead of bold reg… corners rounded"). */
+  .sticker { padding: var(--hair) calc(var(--unit) / 2); border-radius: var(--round-tiny); background: var(--st-styles); color: var(--st-ink); font: 400 var(--t-pixel)/1.25 var(--pixel); text-transform: uppercase; white-space: nowrap; }
+  .sticker.weight { background: var(--st-weight); }
+  .sticker.italic { background: var(--st-italic); }
+  .sticker.width { background: var(--st-width); }
+  .sticker.optical { background: var(--st-optical); }
+  .sticker.other { background: var(--st-other); }
+  /* a sticker as a button, in the tool's own colours: a variable axis's name in its pane */
+  .sticker.ui { height: auto; border: var(--hair) solid var(--grey); background: var(--field); color: var(--ink); cursor: pointer; }
+  .sticker.ui:hover { border-color: var(--ink); background: var(--hover); }
+  .stickerlabel { display: flex; }
+  /* the legend, at the sheet's bottom right: each kind of sticker and what it says */
+  .legend { display: grid; grid-template-columns: auto auto; gap: calc(var(--unit) / 2) var(--unit); align-items: center; align-self: end; margin: 0 0 0 auto; color: var(--grey); font-size: var(--t-xs); }
+  .legend dt { justify-self: end; display: flex; }
+  .legend dd { margin: 0; }
   .fontrow.current { grid-template-columns: minmax(0, 1fr); height: var(--head); border: 0; }      /* the chosen font's numerals, alone on their line */
   .fontlist .group { padding: calc(var(--unit) * 2) var(--btn-pad) calc(var(--unit) / 2); border-bottom: var(--hair) solid var(--rule); }
 
@@ -655,7 +670,7 @@
   .picker .fontlist { min-height: 0; }
   .picker .adding { display: grid; gap: calc(var(--unit) * 2); border-top: var(--thick) solid var(--ink); padding-top: calc(var(--unit) * 2); }
   .picker .adding > input { height: var(--head); }
-  .picker .squares { display: flex; gap: var(--unit); }
+  .picker .squares { display: flex; align-items: flex-end; gap: var(--unit); }
   .picker .squares > .pickt { width: calc(var(--col) + var(--gap) + var(--unit)); aspect-ratio: 1; align-content: center; }      /* square buttons (Okay, 13 Oct 2026) */
 
   /* examples: five dials to start from, each on an inset ground, the full width of the pane */

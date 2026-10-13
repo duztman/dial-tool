@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.29 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **Stickers**: a colour for each kind, round corners, the weight's range on it, one line where the column lets them; a legend at the sheet's bottom right.
+- **Numerals in the sheet**: cut at their column's edge, never above.
+- **Variable axes**: an axis is named by its sticker, a button that sets it back.
+
 ## beta 4.28 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.

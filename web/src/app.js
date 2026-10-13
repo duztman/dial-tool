@@ -175,9 +175,11 @@ const lang_short = (code) => (code === "default" ? "lan" : code.slice(0, 2).toUp
 // a tile's word is one line: a name too long for a tile is said shorter there (its tag still says it whole)
 const TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip" };
 
+// the font sheet's legend: a sticker of each kind, and what it says about a family
+const STICKER_LEGEND = [["weight 100–900", "weight", "any weight between"], ["bold", "weight", "has a bold"], ["italic", "italic", "has an italic"], ["width", "width", "any width"], ["optical", "optical", "drawn for small and large"], ["3 styles", "styles", "separate styles"]];
 // a variable font's axes, in words, for the font sheet's stickers
-const NAME_LEAST = 0.7, SAMPLE_LEAST = 0.6;        // in the font sheet a family's name, and its numerals, may shrink to this share of their size to fit their column
-const AXIS_WORDS = { wdth: "width", opsz: "optical size", GRAD: "grade", XHGT: "x-height", SOFT: "softness", MONO: "mono", CASL: "casual" };
+const NAME_LEAST = 0.7;                            // in the font sheet a family's name may shrink to this share of its size to fit its column
+const AXIS_WORDS = { wdth: "width", opsz: "optical", GRAD: "grade", XHGT: "x-height", SOFT: "softness", MONO: "mono", CASL: "casual" };
 
 const kind_in = (...names) => (R) => names.includes(G.kind_of(R));
 const marks_with = (...shapes) => (R) => ["ticks", "markers"].includes(G.kind_of(R)) && shapes.includes(G.SHAPES[R.shape]);
@@ -1929,26 +1931,29 @@ class DialTool {
       const t = { ...G.RING_BASE, ps: f.ps, axes: f.start || {}, features: {}, tracking: 0, lang: 0 };
       s = { d: G.text_path(text, t, 1000).svg(0, true), w: Math.round(G.advance(text, t, 1000)) };
     }
-    // the law of the font sheet's columns: what is wider than its column shrinks to fit — a name down to NAME_LEAST of
-    // its size, numerals down to SAMPLE_LEAST; past that it is cut
-    const wide = s ? Math.ceil(s.w / 1000 * high) : 0, fit = fits ? ` width="${wide}" style="min-width:${Math.ceil(wide * (what === "name" ? NAME_LEAST : SAMPLE_LEAST))}px"` : "";
-    if (s && s.d) box.innerHTML = `<svg viewBox="0 -800 ${s.w} 1000"${fit || ` height="${high}"`} aria-hidden="true"><path d="${s.d}" fill="currentColor"/></svg>`;
+    // the law of the name column: a name wider than its column is drawn smaller to fit, down to NAME_LEAST of its size,
+    // then cut. Numerals keep their size: what doesn't fit is cut at their column's right edge (Okay, 13 Oct 2026).
+    // The picture is taller than the em (from 1000 over the baseline to 250 under it), so tall figures are never cut above.
+    const wide = s ? Math.ceil(s.w / 1000 * high) : 0, tall = Math.round(high * 1.25);
+    if (s && s.d) box.innerHTML = `<svg viewBox="0 -1000 ${s.w} 1250" width="${wide}" height="${tall}"${fits ? ` style="min-width:${Math.ceil(wide * NAME_LEAST)}px"` : ""} aria-hidden="true"><path d="${s.d}" fill="currentColor"/></svg>`;
     else { box.textContent = text; box.style.fontFamily = `"${f.family}"`; }       // an installed font: the browser can show it
     return box;
   }
 
   /** what a family has, for the font sheet's last column, as small stickers in the pixel font (Okay, 13 Oct 2026):
-   *  → [[word, strong]…]. Strong (bold) for what matters most when choosing numerals: bold · weight · italic.
+   *  → [[word, kind]…]. The kind gives the sticker its colour (the legend under the list says which is which).
    *  Plain words, not tags: "weight", not "wght". */
   family_says(fonts) {
     const styles = fonts.map((f) => f.style || ""), first = fonts[0];
-    const axes = first.axes || (G.has_font(first.ps) ? Object.keys(G.font_axes(G.font_of({ ps: first.ps, axes: {} }))) : []);
+    // a font of the tool's own list says its axes there, [least, most] each; a loaded one is asked
+    const ranges = first.axes || (G.has_font(first.ps) ? Object.fromEntries(Object.entries(G.font_axes(G.font_of({ ps: first.ps, axes: {} }))).map(([tag, x]) => [tag, [x.min, x.max]])) : {});
+    const axes = Object.keys(ranges);
     const said = [];
-    if (axes.includes("wght")) said.push(["weight", true]);
-    else if (styles.some((x) => /bold|black|heavy/i.test(x))) said.push(["bold", true]);
-    if (axes.includes("ital") || axes.includes("slnt") || styles.some((x) => /italic|oblique/i.test(x))) said.push(["italic", true]);
-    for (const tag of axes) if (!["wght", "ital", "slnt"].includes(tag)) said.push([AXIS_WORDS[tag] || tag, false]);
-    if (fonts.length > 1) said.push([`${fonts.length} styles`, false]);
+    if (axes.includes("wght")) said.push([`weight ${Math.round(ranges.wght[0])}–${Math.round(ranges.wght[1])}`, "weight"]);      // the range it can take (Okay, 13 Oct 2026)
+    else if (styles.some((x) => /bold|black|heavy/i.test(x))) said.push(["bold", "weight"]);
+    if (axes.includes("ital") || axes.includes("slnt") || styles.some((x) => /italic|oblique/i.test(x))) said.push(["italic", "italic"]);
+    for (const tag of axes) if (!["wght", "ital", "slnt"].includes(tag)) said.push([AXIS_WORDS[tag] || tag, { wdth: "width", opsz: "optical" }[tag] || "other"]);
+    if (fonts.length > 1) said.push([`${fonts.length} styles`, "styles"]);
     return said;
   }
 
@@ -2074,7 +2079,9 @@ class DialTool {
         el("div", { className: "squares" },
           square("font-add", "Add link", "A font by its Google Fonts link or name, or by a link to a font file", `<path d="M8 3.5L8 12.5M3.5 8L12.5 8"/>`, () => { if (paste.hidden) { paste.hidden = false; paste.focus(); } else if (paste.value.trim()) add(); else paste.focus(); }),      // the field for the link is out of sight until this is pressed (Okay, 13 Oct 2026)
           square("font-file-open", "Font file", "A font file from this computer: .ttf · .otf", `<path d="M4 2.5L9.5 2.5L12 5L12 13.5L4 13.5ZM9.5 2.5L9.5 5L12 5"/>`, () => file.click()),
-          square("local-fonts", "Installed", "The fonts installed on this computer", `<rect x="2.5" y="3.5" width="11" height="7.5"/><path d="M6 13.5L10 13.5M8 11L8 13.5"/>`, () => this.local_fonts(true), { hidden: !("queryLocalFonts" in window) }), file),
+          square("local-fonts", "Installed", "The fonts installed on this computer", `<rect x="2.5" y="3.5" width="11" height="7.5"/><path d="M6 13.5L10 13.5M8 11L8 13.5"/>`, () => this.local_fonts(true), { hidden: !("queryLocalFonts" in window) }), file,
+          // at the sheet's bottom right: what the stickers say (Okay, 13 Oct 2026)
+          el("dl", { className: "legend", id: "font-legend" }, ...STICKER_LEGEND.flatMap(([word, kind, says]) => [el("dt", {}, el("span", { className: "sticker " + kind, textContent: word })), el("dd", { textContent: says })]))),
         el("div", { className: "quiet note", id: "picker-note" })));
     this.picker.tabIndex = -1;
     this.picker.addEventListener("click", (e) => { if (e.target === this.picker) this.picker.close(); });      // a click outside closes it
@@ -2083,11 +2090,11 @@ class DialTool {
 
   open_picker() {
     $("#font-find").value = "";
-    this.fill_picker(true);
     if (!this.picker.open) {
       this.picker.showModal();
       this.picker.focus();                         // not the search field: it waits for a press (on an iPad the keyboard would come up at once; Okay, 13 Oct 2026)
     }
+    this.fill_picker(true);                        // after it is open: the stickers' column is measured on the page
     this.load_remembered();
   }
 
@@ -2112,21 +2119,21 @@ class DialTool {
         named.classList.add("name");
         named.setAttribute("aria-label", family);
         const row = el("button", { type: "button", className: "fontrow", title: f.what ? `${family} · ${f.what}` : family, onclick: () => { this.font_note = ""; this.use_font(f); } },
-          named, this.sample(f, "sample", true), el("span", { className: "has" }, ...this.family_says(fonts).map(([word, strong]) => el("span", { className: strong ? "sticker strong" : "sticker", textContent: word }))));
+          named, this.sample(f), el("span", { className: "has" }, ...this.family_says(fonts).map(([word, kind]) => el("span", { className: "sticker " + kind, textContent: word }))));
         row.dataset.family = family;
         row.dataset.group = f.group;
         list.append(row);
       }
-      // the stickers' column is as wide as the longest line of them: a row's stickers stand on one line, or on two when
-      // that halves the column (more than two stickers)
+      // the stickers' column is as wide as the longest row of stickers on one line, but no wider than the stylesheet
+      // allows (--font-has-most): only a row longer than that takes a second line
       list.style.removeProperty("--font-has");
       let widest = 0;
       for (const has of list.querySelectorAll(".has")) {
-        const w = [...has.children].map((c) => c.offsetWidth), gap = parseFloat(getComputedStyle(has).columnGap) || 0;
-        const line = (from, to) => w.slice(from, to).reduce((a, b) => a + b, 0) + gap * Math.max(0, to - from - 1), half = Math.ceil(w.length / 2);
-        widest = Math.max(widest, w.length > 2 ? Math.max(line(0, half), line(half, w.length)) : line(0, w.length));
+        const gap = parseFloat(getComputedStyle(has).columnGap) || 0;
+        widest = Math.max(widest, [...has.children].reduce((sum, c) => sum + c.getBoundingClientRect().width, 0) + gap * Math.max(0, has.children.length - 1) + 1);      // + 1: parts of a pixel add up
       }
-      if (widest) list.style.setProperty("--font-has", Math.ceil(widest) + "px");
+      const most = parseFloat(getComputedStyle(list).getPropertyValue("--font-has-most")) || widest;
+      if (widest) list.style.setProperty("--font-has", Math.ceil(Math.min(widest, most)) + "px");
       const on = list.querySelector(`.fontrow[data-family="${CSS.escape(R.family)}"]`);
       if (on && again) list.scrollTop = Math.max(0, on.offsetTop - list.offsetTop - 80);
     }
@@ -2158,7 +2165,12 @@ class DialTool {
           slider.oninput = () => commit(slider.value);
           field.onchange = () => commit(parse_number(field.value, this.ring().axes[tag] ?? a.default));
           slider.dataset.tag = field.dataset.tag = tag;
-          wrap.append(el("div", { className: "row num" }, el("label", { htmlFor: id, textContent: `${a.name} · ${tag}` }), slider, field, el("span")));
+          // the axis is named by its sticker, as in the font sheet, here in the tool's own colours and as a button: a
+          // press sets the axis back to where the font rests (Okay, 13 Oct 2026). Axes are not OpenType features: those have their own pane.
+          const word = AXIS_WORDS[tag] || { wght: "weight", ital: "italic", slnt: "slant" }[tag] || a.name || tag;
+          const back = el("button", { type: "button", className: "sticker ui", id: id + "-back", textContent: word, title: `${a.name} (${tag}), ${a.min}–${a.max}: press to set it back to ${a.default}`, onclick: () => commit(a.default) });
+          slider.ariaLabel = field.ariaLabel = a.name;
+          wrap.append(el("div", { className: "row num" }, el("span", { className: "stickerlabel" }, back), slider, field, el("span")));
         }
       }
       for (const input of wrap.querySelectorAll("input")) {

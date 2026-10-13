@@ -83,9 +83,9 @@ for (const [family, what, source, dir, ...files] of FAMILIES) {
       }
       return { d, w: Math.round(x) };
     };
-    // name: the family's name in its own face, for the font sheet (the family's first file only) · axes: what a variable font can vary
+    // name: the family's name in its own face, for the font sheet (the family's first file only) · axes: what a variable font can vary, each with its least and most
     const first = !list.some((f) => f.family === family);
-    list.push({ family, style, ps: face.getName(6, "en"), file: local(file), what, start, axes: Object.keys(all), sample: outline("1234567890"), ...(first ? { name: outline(family) } : {}) });
+    list.push({ family, style, ps: face.getName(6, "en"), file: local(file), what, start, axes: Object.fromEntries(Object.entries(all).map(([tag, x]) => [tag, [x.min, x.max]])), sample: outline("1234567890"), ...(first ? { name: outline(family) } : {}) });
   }
 }
 const text = `// Written by web/fonts.mjs — do not edit. The web version's own fonts: ${FAMILIES.length} families, ${list.length} files,
