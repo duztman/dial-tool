@@ -304,24 +304,26 @@ const ROWS = {
     num("clear", "Print clearance", 0, 1, 0.01, { ...W, show: win_on }),
   ],
   Export: [
-    hdr("Examples"),
-    custom("examples"),
+    // Okay's order, 13 Oct 2026. Export a file stays in view (pinned): Vector · PDF | SVG, with its tick right
+    // under it | Image · PNG on the same column, with its settings under it. Then the rest scrolls; the examples are part of the Gallery.
+    hdr("Export a file", { scope: "global", pin: true }),
+    custom("export_pdf"),
+    custom("export_svg"),
+    chk("out_live_text", "Keep numerals as text in the SVG", { nest: true, tie: true }),      // tie: no line between it and the row above: they are one thing
+    info("The font must be installed where the file is opened. PDF and PNG stay outlines.", { show: (S) => S.out_live_text }),
+    custom("export_png"),
+    num("out_dpi", "dpi", 72, 2400, 1, { tie: true }),
+    custom("png_size"),
     hdr("For production"),
     chk("out_production", "Mono print mask"),
     chk("out_mirror", "Mirrored, for toner transfer"),
-    hdr("Export a file"),
-    custom("export"),
-    chk("out_live_text", "Keep numerals as text in the SVG", { nest: true }),
-    info("The font must be installed where the file is opened. PDF and PNG stay outlines.", { show: (S) => S.out_live_text }),
-    num("out_dpi", "PNG dpi", 72, 2400, 1, { button: "png" }),       // the PNG button stands where the label would: the dpi is its setting
-    custom("png_size"),
-    hdr("Settings file"),
-    custom("settings"),
     hdr("Link to this dial"),
     custom("link"),
+    hdr("Settings file"),
+    custom("settings"),
     hdr("Log"),
     custom("log"),
-    hdr("Gallery"),                                // under everything else: more dials to open and take apart (Okay, 13 Oct 2026)
+    hdr("Gallery"),                                // under everything else: dials to open and take apart (Okay, 13 Oct 2026), the five first examples among them
     custom("gallery"),
   ],
 };
@@ -941,6 +943,7 @@ class DialTool {
   /** one row of the form → {row, el, refresh(T)}. */
   build_row(row) {
     const wrap = el("div", { className: "row " + row.kind + (row.nest ? " nest" : "") });
+    const tied = () => { if (row.tie) out.el.classList.add("tied"); };      // tie: this row belongs to the one above it, no line between them
     const out = { row, el: wrap, refresh: () => {} };
     const set = (v) => this.set_value(row.scope, row.key, v);
     const id = `${row.scope}-${row.key}-${row.text || row.name}`.replace(/[^A-Za-z0-9]+/g, "-");
@@ -1062,6 +1065,7 @@ class DialTool {
     }
 
     if (row.kind === "custom") this["row_" + row.name](wrap, out);
+    tied();
     return out;
   }
 
@@ -2025,23 +2029,12 @@ class DialTool {
   }
 
   /** five dials to start from: each is a link (R31), so it can also be copied or opened in a new tab. */
-  row_examples(wrap) {
-    wrap.className = "examples";
-    const grid = el("div", { className: "cards" });
-    for (const e of EXAMPLES) {
-      const card = el("a", { href: e.link, title: `Open the ${e.name} dial` });
-      card.innerHTML = e.picture;
-      card.append(el("span", { textContent: e.name }));
-      grid.append(card);
-    }
-    wrap.append(grid);
-  }
-
-  /** the gallery: dials drawn after documents (web/gallery.mjs), three to a line, each with a line saying what it is. */
+  /** the gallery: dials drawn after documents (web/gallery.mjs), then the five first examples (web/examples.mjs), three to
+   *  a line, each with a line saying what it is. */
   row_gallery(wrap) {
     wrap.className = "examples gallery";
     const grid = el("div", { className: "cards" });
-    for (const e of GALLERY) {
+    for (const e of [...GALLERY, ...EXAMPLES.map((x) => ({ ...x, note: `${x.name}: one of the guidebook's classic dials` }))]) {
       const card = el("a", { href: e.link, title: e.note });
       card.innerHTML = e.picture;
       card.append(el("span", { textContent: e.name }));
@@ -2051,11 +2044,20 @@ class DialTool {
   }
 
   /** files that stay drawings. The PNG button is on its own row, with its dpi. */
-  row_export(wrap) {
+  row_export_pdf(wrap) {
     wrap.className = "row";
-    const tools = el("span", { className: "tools" });
-    for (const kind of ["PDF", "SVG"]) tools.append(el("button", { type: "button", className: "btn main", id: "export-" + kind.toLowerCase(), textContent: kind, onclick: () => this.export(kind.toLowerCase()) }));
-    wrap.append(el("label", { textContent: "Vector" }), tools);
+    wrap.append(el("label", { textContent: "Vector" }), this.export_button("PDF"));
+  }
+  row_export_svg(wrap) {                             // under PDF, on the same column
+    wrap.className = "row";
+    wrap.append(el("span", { className: "blank" }), this.export_button("SVG"));
+  }
+  row_export_png(wrap) {                             // on the same column as PDF and SVG (Okay, 13 Oct 2026); its settings are the rows under it
+    wrap.className = "row";
+    wrap.append(el("label", { textContent: "Image" }), this.export_button("PNG"));
+  }
+  export_button(kind) {
+    return el("button", { type: "button", className: "btn main", id: "export-" + kind.toLowerCase(), textContent: kind, title: `Export a ${kind}`, onclick: () => this.export(kind.toLowerCase()) });
   }
 
   /** under the PNG row: what that dpi comes to. */

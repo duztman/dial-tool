@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.13 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **Export**: *Export a file* is pinned: Vector · PDF | SVG and its tick (no line between them) | Image · PNG and its dpi. Below: For production · Link to this dial · Settings file · Log · Gallery. A row can be *tied* to the one above (no line between).
+- **Gallery** holds the five examples too (eleven dials); the Examples pane is gone.
+- **Tabs**: hand tabs and window cards touch, stand on the pane's thick line, round top corners; window cards fill the columns; taller.
+
 ## beta 4.12 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.

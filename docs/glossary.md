@@ -2,7 +2,7 @@
 
 What each word means **in this project**. Turkish where it's the common trade word.
 If a term is used differently in conversation, ask, then update this file.
-*Last updated 13 Oct 2026 (beta 4.12: guides per ring, added guides, window cards as tabs; beta 4.11: ring drawer, a row's order; beta 4.8: window shape, turn, size button; beta 4.7: ring line, value button, gallery, card switch; Section, Ring list and Bar brought up to the web version). Before: 12 Oct 2026 (web version, beta 4.6: sector colours, scale everything).*
+*Last updated 13 Oct 2026 (beta 4.13: tabs, Export's order; beta 4.12: guides per ring, added guides, window cards as tabs; beta 4.11: ring drawer, a row's order; beta 4.8: window shape, turn, size button; beta 4.7: ring line, value button, gallery, card switch; Section, Ring list and Bar brought up to the web version). Before: 12 Oct 2026 (web version, beta 4.6: sector colours, scale everything).*
 
 ## Watch terms
 
@@ -75,7 +75,8 @@ If a term is used differently in conversation, ask, then update this file.
 | **Backdrop switch** | The button at the preview's bottom left: the backdrop's colour as a chip; it opens the colour pop-out. |
 | **Hand tabs** | Hour · Minute · Seconds, the second pinned line of Hands, under All hands: they choose the hand the panes below are about. |
 | **Window cards** | The four cards on top of Windows, at 12 · 3 · 6 · 9, starting on the second column: each a small dial with the window in its place, filled when that window is shown. They are tabs: they choose the window the panes below are about. A window is shown by *Show this window* on its heading line. |
-| **Gallery** | The last pane of Export: dials to open and take apart, drawn after documents in the research atlas. Their settings are written in `web/gallery.mjs`. Not the five **examples** on top of Export (five of the guide's classics). |
+| **Gallery** | The last pane of Export: dials to open and take apart — six drawn after documents in the research atlas (`web/gallery.mjs`), then the five first **examples** (five of the guide's classics, `web/examples.mjs`; a pane of their own on top of Export until beta 4.13). |
+| **Tab** | A choice of what the panes below are about, drawn as a tab: touching its neighbours, standing on the thick line under it, top corners round (a notch between two), the chosen one black. The hand tabs and the window cards. Not the five section **tabs** on top of the panel, which keep their own look. |
 | **Undo step** | The dial as it was before a change; taken when the dial has stood still for a moment. ⌘Z goes back one, ⇧⌘Z forward. |
 | **Bottom bar** | The dark strip along the bottom of the window, in three parts: selected · time (play, speeds, the time, the day slider, Now) · view (zoom, Fit). Called "the bar" in notes before 13 Oct 2026. |
 | **Pinned line** | One line of its own, outside the panes and always in view (Hands: All hands · Show hands · Motion; the hand tabs). Called "bar" from 12 Oct until Okay named the two on 13 Oct 2026; the row option in `app.js` is still `bar`. |

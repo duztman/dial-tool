@@ -67,6 +67,8 @@
     --frame-out: 8px;                              /* a framed list row is this much wider than the lines, each side */
     --ring-gap: 4px;                               /* between framed rows */
     --guide-tint: 22%; --guide-edge: 65%;          /* the selected ring's row: this much of its guide's colour in its ground, and in its frame */
+    --tab-round: 8px;                              /* a tab's top corners: the notch between two tabs */
+    --tab-high: 40px; --tab-pad: 11px;             /* a word tab's height (Hour · Minute · Seconds) · above and under a picture tab's picture (the window cards): room to breathe */
     --round-pill: 999px;                           /* fully round: the signs on the Rings heading line, a value button */
     --menu-box: 18px;                              /* the boxed arrow beside a label that opens a small menu */
     --foot-gap: 4px;                               /* between the round signs on the Rings heading line */
@@ -296,19 +298,26 @@
   .handsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; min-height: calc(var(--head) + var(--unit)); border-top: var(--thick) solid var(--ink); }
   /* Windows: four cards the size of the example cards (five to a row), 12 · 3 · 6 · 9. They are tabs: the chosen one
      is ink. A window that isn't shown is quiet. The line under the section tabs is theirs. */
-  .windowcards { padding: calc(2 * var(--unit)) 0 calc(3 * var(--unit)); border-top: var(--thick) solid var(--ink); }
-  .windowcards .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--unit); margin-left: var(--lead); }      /* the tabs start on the second column, where the labels start (Okay, 13 Oct 2026) */
+  .windowcards { padding: calc(2 * var(--unit)) 0 0; border-top: var(--thick) solid var(--ink); }      /* no room under the cards: they are tabs, standing on the line of the pane they choose */
+  .windowcards .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-left: var(--lead); }      /* the four tabs start on the second column, where the labels start, and fill the six columns (Okay, 13 Oct 2026) */
   .windowcards .card { position: relative; display: grid; }
-  .windowcards .card > button:first-child { display: grid; justify-items: center; gap: 3px; padding: 8px 4px 5px; background: var(--inset); font-weight: 600; }
+  .windowcards .card > button:first-child { display: grid; justify-items: center; gap: 3px; padding: var(--tab-pad) 4px; font-weight: 600; }
   .windowcards .card > button:first-child svg { display: block; }
-  .windowcards .card > button:first-child.off { color: var(--grey); font-weight: 400; }
-  .windowcards .card > button:first-child:hover { background: var(--select); }
-  .windowcards .card > button:first-child.on { background: var(--ink); color: var(--paper); }
+  .windowcards .card > button:first-child.off:not(.on) { color: var(--grey); font-weight: 400; }
   .handsbar + .tabsbar { border-top: var(--hair) solid var(--rule); }
   /* tabs inside a section, always in view (Hands: Hour · Minute · Seconds): one line across the six columns */
   .tabsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; min-height: calc(var(--head) + var(--unit)); border-top: var(--thick) solid var(--ink); }
   .tabsbar > .segs { grid-column: 2 / -1; }
-  .tabsbar .segs > button { height: var(--control-large); font-weight: 600; }
+  .tabsbar .segs > button { height: var(--tab-high); font-weight: 600; }
+  .tabsbar { align-items: end; padding-top: calc(1.5 * var(--unit)); }
+  .pinned:has(> .tabsbar:last-child) { border-bottom: var(--thick) solid var(--ink); }      /* the hand tabs stand on a pane's thick line: the pane under them is the one they choose */
+  /* tabs (Okay, 13 Oct 2026: "both look bad as buttons. attach to the bottom, give top inbetweens a notch"): the hand
+     tabs and the window cards. They touch each other and stand on the line under them with no foot of their own;
+     their top corners are round, so between two tabs the top has a notch. The chosen one is black. */
+  :is(.tabsbar .segs, .windowcards .card) > button { border: var(--hair) solid var(--rule); border-bottom: 0; border-radius: var(--tab-round) var(--tab-round) 0 0; background: var(--field); }
+  :is(.tabsbar .segs > button, .windowcards .card) + :is(button, .card) { margin-left: calc(-1 * var(--hair)); }
+  :is(.tabsbar .segs, .windowcards .card) > button:hover { background: var(--hover); }
+  :is(.tabsbar .segs, .windowcards .card) > button.on { position: relative; background: var(--ink); border-color: var(--ink); color: var(--paper); }
   .handsbar > h2 { grid-column: 2 / span 2; }
   .handsbar > .check { grid-column: 4 / span 2; white-space: nowrap; }
   .handsbar > select { grid-column: 6 / span 2; }
@@ -318,6 +327,10 @@
   /* a hairline before and after every row. Two shadows, both on the row's own last line and the line above its
      first: where rows meet they fall on the same line, so it stays one hairline, whichever rows are hidden. */
   .row:not(.note) { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule), 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  /* a tied row belongs to the row above it: no line between the two (SVG and its tick; PNG and its dpi) */
+  .row.tied:not(.note) { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  .row:not(.note):has(+ .row.tied) { box-shadow: 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  .row > .blank:first-child { display: block; }      /* an empty place where a label would stand: what follows keeps its column */
   .row > :first-child { grid-column: span 2; }
   .row.num > input[type="range"] { grid-column: span 2; }
   .row.num input[type="text"] { text-align: right; }

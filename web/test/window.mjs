@@ -573,6 +573,11 @@ await page.click("#hand-tab-2");
 check(await S("S.ui_hand === 2") && await page.textContent(".form .pane >> nth=0 >> h2") === "Seconds hand" && await page.$eval("#hand-tab-2", (e) => e.classList.contains("on")), "a tab chooses the hand; the first pane's heading says Seconds hand");
 check((await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))).at(-1) === "Cap", "Cap, which belongs to all three, comes after the hand's own panes");
 await page.click("#hand-tab-0");
+{
+  const strip = await page.evaluate(() => { const tabs = [...document.querySelectorAll(".tabsbar .segs > button")], r = (e) => e.getBoundingClientRect(), p = r(document.querySelector(".pinned")), c = getComputedStyle(tabs[0]);
+    return { touch: tabs.every((b, i) => !i || Math.abs(r(b).left - r(tabs[i - 1]).right) <= 1), on_line: Math.round(p.bottom - r(tabs[0]).bottom), line: getComputedStyle(document.querySelector(".pinned")).borderBottomWidth, round: [c.borderTopLeftRadius, c.borderBottomLeftRadius].join(" "), high: Math.round(r(tabs[0]).height) }; });
+  check(strip.touch && strip.on_line === 2 && strip.line === "2px" && strip.round === "8px 0px" && strip.high === 40, `the hand tabs are tabs: touching, on a thick line, top corners round, ${strip.high} high`);
+}
 await shot("4g-hand-tabs");
 // Windows: four cards, 12 · 3 · 6 · 9, are the tabs; Show this window is on the heading line, also when the pane is folded
 await tab("Date");
@@ -643,9 +648,13 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
   await page.evaluate((was) => { const t = window.dial_tool; t.set_value("window", "kind", was[2]); t.set_value("window", "on", was[1]); t.S.ui_window = was[0]; t.set_time(was[3]); t.sync_rows(); }, was);
 }
 await tab("Export");
-const example_w = await page.$eval(".examples a", (e) => Math.round(e.getBoundingClientRect().width));
+const example_w = 78;      // what an example card measured while there were five in a row (until beta 4.13): a window card keeps that size
 await tab("Date");
-check(Math.abs(example_w - cards[0][3]) <= 8, `a window card is about as wide as an example card (${cards[0][3]}, ${example_w})`);
+{ // tabs (13 Oct 2026): the window cards and the hand tabs touch each other, stand on the line under them, have round top corners (the notch between two) and fill the six columns
+  const strip = await page.evaluate(() => { const cards = [...document.querySelectorAll(".windowcards .card > button")], r = (e) => e.getBoundingClientRect(), pane = document.querySelector(".windowcards + .pane"), c = getComputedStyle(cards[0]), row = document.querySelector(".form .row");
+    return { touch: cards.every((b, i) => !i || Math.abs(r(b).left - r(cards[i - 1]).right) <= 1), on_line: Math.round(r(pane).top - r(cards[0]).bottom), round: [c.borderTopLeftRadius, c.borderBottomLeftRadius].join(" "), left: Math.round(r(cards[0]).left - r(document.querySelector(".form .pane h2")).left), right: Math.round(r(cards.at(-1)).right - r(pane).right), high: Math.round(r(cards[0]).height) }; });
+  check(strip.touch && strip.on_line === 0 && strip.round === "8px 0px" && strip.left === 0 && strip.right === 0 && strip.high >= 54, `the window cards are tabs: touching, on the pane's line, top corners round, from the second column to the last (${strip.high} high)`);
+}
 await page.click("#window-card-2");
 check(await S("S.ui_window === 2 && S.windows[1].at === 2 && S.windows[1].on === false") && await page.textContent(".form .pane >> nth=0 >> h2") === "Window at 6" && await page.$eval("#window-card-2", (e) => e.classList.contains("on") && e.classList.contains("off")), "the card at 6 chooses its window: the pane says Window at 6; not in use yet, it takes the card's place");
 const on_head = await page.evaluate(() => { const pane = document.querySelector(".form .pane"), c = pane.querySelector(".headcontrol").getBoundingClientRect(), h = pane.querySelector(".fold").getBoundingClientRect(); return [c.top >= h.top && c.bottom <= h.bottom, pane.querySelector(".headcontrol input").id]; });
@@ -957,7 +966,18 @@ if (numerals) {
 }
 check((live_text.match(/<path/g) || []).length >= 6 && !svg_text.includes("<text"), "everything else stays outlines; without the tick there is no text");
 await page.uncheck("#global-out-live-text-Keep-numerals-as-text-in-the-SVG");
-check(await page.$eval(".row:has(#export-png)", (r) => r.querySelector("input[type=range]") !== null) && /dpi = \d+ × \d+ px/.test(await page.textContent("#png-size")), "the PNG button shares a row with its dpi, and says what that comes to");
+// Export a file stays in view; its order: Vector · PDF | SVG and its tick | PNG and its settings (Okay, 13 Oct 2026)
+{
+  const e = await page.evaluate(() => {
+    const p = document.querySelector(".pinned"), rows = [...p.querySelectorAll(".body > .row")].filter((r) => r.offsetParent), left = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left), shadow = (r) => getComputedStyle(r).boxShadow.split("rgb").length - 1;
+    return { pinned: [...p.querySelectorAll("h2")].map((h) => h.textContent).join(), order: rows.map((r) => (r.querySelector("button.main") || {}).id || (r.querySelector("input") || {}).id || r.className).join(" | "),
+      pdf: left("#export-pdf"), svg: left("#export-svg"), png: left("#export-png"), label: left(".pinned .row > label"), tick: left(".pinned .check"), lines: rows.map(shadow).join(""), below: [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent).join(" · ") };
+  });
+  check(e.pinned === "Export a file" && e.order === "export-pdf | export-svg | global-out-live-text-Keep-numerals-as-text-in-the-SVG | export-png | global-out-dpi-dpi-slider | row note" && e.pdf === e.svg && e.png === e.pdf && e.pdf > e.label && e.tick === e.svg && e.lines === "211110" && e.below === "For production · Link to this dial · Settings file · Log · Gallery",
+    `Export a file is pinned: Vector · PDF, SVG under it with its tick tied to it, then PNG on the same column with its dpi under it; below scroll ${e.below}`);
+  await shot("4c21-export");
+}
+check(/dpi = \d+ × \d+ px/.test(await page.textContent("#png-size")), "under PNG and its dpi: what that comes to");
 const png = await download("#export-png");
 const want_px = Math.round(size_mm / 25.4 * await S("S.out_dpi"));
 const png_bytes = fs.readFileSync(png);
@@ -988,11 +1008,11 @@ await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 check(await S("S.ha_hour.round === 2"), "the last session is back after closing and reopening the page");
 await shot("8-reopened");
 
-// ── examples: five dials under Export, each a link ──
+// ── examples: the five first dials, now in the Gallery, each a link ──
 await tab("Export");
-check(await page.$$eval(".examples:not(.gallery) a svg", (e) => e.length) === 5, "Export shows five example dials with pictures");
-const example = await page.getAttribute(".examples a >> nth=1", "href");
-await page.click(".examples:not(.gallery) a >> nth=1");
+check(await page.$$eval(".examples a svg", (e) => e.length) === await page.$$eval(".gallery a svg", (e) => e.length) && (await page.$$eval(".gallery a", (a) => a.map((x) => x.textContent))).slice(-5).join(" ") === "Field Diver Bauhaus Sector Gauge", "the five first examples are part of the Gallery now, after its own dials");
+const example = await page.getAttribute('.gallery a:has-text("Diver") >> nth=-1', "href");
+await page.click('.gallery a:has-text("Diver") >> nth=-1');
 await page.waitForFunction((h) => location.hash === h && window.dial_tool.statik && window.dial_tool.S.ui_section === 4, example, { timeout: 8000 }).catch(() => {});
 await page.waitForTimeout(700);
 check(await page.evaluate((h) => location.hash === h, example) && await S("t.log_lines.slice(0, 3).every((l) => !l.includes('stands in'))"), "clicking Diver opens it: the address is its link and its fonts are drawn");
