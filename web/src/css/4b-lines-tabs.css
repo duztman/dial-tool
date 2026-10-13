@@ -6,7 +6,7 @@
   /* Windows: four cards the size of the example cards (five to a row), 12 · 3 · 6 · 9. They are tabs: the chosen one
      is ink. A window that isn't shown is quiet. The line under the section tabs is theirs. */
   .windowcards { padding: calc(2 * var(--unit)) 0 0; border-top: var(--thick) solid var(--ink); }      /* no room under the cards: they are tabs, standing on the line of the pane they choose */
-  .windowcards .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }      /* the four tabs span the panel from margin to margin, the eyes' column too */
+  .windowcards .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-left: var(--lead); }      /* the four tabs start where the labels start (the eyes' column is left free) and end on the pane's line (Okay, 14 Oct 2026: "squeeze the paddings to fit tabs") */
   .windowcards .card { position: relative; display: grid; }
   .windowcards .card > button:first-child { display: grid; justify-items: center; gap: var(--u1); padding: var(--tab-pad) var(--unit); font-weight: 600; }
   .windowcards .card > button:first-child svg { display: block; }

@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.35.13 (web version) · 14 Oct 2026
+
+- **The window tabs** start where the labels start (the eyes' column is left free) and end on the pane's line; each is narrower.
+- **The font box** stands between the pane's lines, as the rows above it do, instead of 8 px past the right one; its sliders are 8 px shorter, so its fields, steppers and Change… end 8 px inside the box. The text colour's swatch stays in the ring list's colour column.
+
 ## beta 4.35.12 (web version) · 14 Oct 2026
 
 - **The legend's meanings, shorter**, so the window no longer scrolls on an iPad in landscape (1180 × 820 and larger; at 1024 × 768 about two lines still scroll): *Any weight in the range · Has an italic, axis or style · Any width, narrow to wide · Shapes made for small and large sizes · Tabular figures, all one width · Oldstyle figures, which rise and fall · A slashed zero · Stylistic sets: other shapes · Single letters redrawn · Separate styles: Regular, Bold…* Every meaning is one or two lines.

@@ -3,11 +3,12 @@
   .features { padding-top: var(--unit); }
   .features h3 { margin: var(--u6) 0 var(--u3); padding-top: var(--u3); border-top: var(--hair) solid var(--rule); }
   /* the font picker: every font shows its own numerals */
-  /* a box inside the panel (the font box) has a ring row's frame: it starts where the labels start and ends
-     --frame-out past the lines, so what is in it stands on the pane's own columns — sliders, fields and steppers
-     under the rows outside, the language button on the controls' column — and the labels take what is left,
+  /* a box inside the panel (the font box) stands between the pane's lines: it starts where the labels start and
+     ends on the pane's right line, as the rows above it do (Okay, 14 Oct 2026: "squeeze the slider to fit fonts
+     block"). Inside, the language button and the sliders start on the controls' column; the sliders give up
+     --frame-out, so the fields and steppers end that much inside the box's edge. The labels take what is left,
      one --btn-pad in from the edge. The frame is an outline drawn inside the box's edge, so it takes no room. */
-  .font { display: grid; gap: var(--unit); margin: var(--unit) calc(-1 * var(--frame-out)) var(--unit) 0; }
+  .font { display: grid; gap: var(--unit); margin: var(--unit) 0; }
   .font .styles { flex-wrap: wrap; gap: var(--unit); }
   .font .styles > button { flex: 0 0 auto; padding: 0 var(--btn-pad); white-space: nowrap; border-left: var(--hair) solid var(--rule); }
   .font .styles > button.on { border-color: var(--ink); }
@@ -17,7 +18,7 @@
   .fontbox { --well: var(--ground); display: grid; outline: var(--hair) solid var(--rule); outline-offset: calc(-1 * var(--hair)); background: var(--field); }      /* a slider's track must show on the white: the ground's grey (build list #128: it was white on white) */
   .fontbox > * + * { border-top: var(--hair) solid var(--rule); }
   .fontbox > .styles { padding: var(--btn-pad) var(--frame-out) var(--btn-pad) var(--btn-pad); }      /* as much room under the style buttons as before them (Okay, 14 Oct 2026: X and X) */
-  .fontbox .row { padding-right: var(--frame-out); box-shadow: none; }      /* size, tracking, an axis: rows like any other, between the box's own lines, their tracks ending on the pane's line */
+  .fontbox .row { padding-right: var(--frame-out); box-shadow: none; }      /* size, tracking, an axis: rows like any other, between the box's own lines, their steppers ending --frame-out inside the box */
   .fontbox .row > :first-child { padding-left: var(--btn-pad); }
   /* the chosen font's numerals and letters, the box's first line: in a thick light frame one unit inside the box (Okay's sketch, 13 Oct 2026: "thick border, no bg") */
   .fontbox > .fontrow.current { width: auto; margin: var(--unit); border: var(--ringline-inner) solid var(--ground); background: var(--ground); }      /* the whole cell in the ground's grey (Okay, 13 Oct 2026) */
@@ -36,7 +37,7 @@
   .fontname .name { grid-column: 1 / 4; padding-left: var(--btn-pad); }      /* the font's name is the box's heading */
   .fontname .langs { grid-column: 5; justify-self: start; }      /* the language: on the controls' column, a button like Change… */
   .fontname > .btn { grid-column: 7 / 10; justify-self: end; }      /* Change…, ending where the rows' steppers end */
-  .fontname .colour.mini { position: absolute; top: 50%; translate: 0 -50%; right: calc(var(--frame-out) + var(--swatch-col) + (var(--line-button) - var(--t-m) - 2 * var(--hair)) / 2); }      /* the colour stands in the ring list's colour column; Change… leaves it room */
+  .fontname .colour.mini { position: absolute; top: 50%; translate: 0 -50%; right: calc(var(--swatch-col) + (var(--line-button) - var(--t-m) - 2 * var(--hair)) / 2); }      /* the colour stands in the ring list's colour column (the ring rows stand --frame-out past the line, the box does not); Change… leaves it room */
   .langs { position: relative; }
   .langbox { min-width: var(--control); }
   .fontname .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
