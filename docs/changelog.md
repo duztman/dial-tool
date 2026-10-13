@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.17 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **Half lines**: before a nested row (a question about the row above, its tied settings, a note under it) the hairline starts at the controls' column. Token `--nest-from`.
+- **Dial section**: Dial and Page are pinned, in that order; Colours scrolls under them.
+
 ## beta 4.16 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.

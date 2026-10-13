@@ -171,16 +171,17 @@ const H = { scope: "hand" };
 
 const ROWS = {
   Dial: [
-    hdr("Dial"),                                   // the plate: how big, what colour, what is on it
+    // Okay, 13 Oct 2026: Dial and Page stay in view (pinned); the list of colours scrolls under them.
+    hdr("Dial", { pin: true }),                    // the plate: how big, what colour, what is on it
     num("dial_d", "Diameter", 15, 50, 0.1),
     chk("ui_scale", "Scale everything with it", { nest: true }),      // nest: a question about the row above starts on the controls' column (Okay, 12 Oct 2026)
     col("c_plate", "Plate"),
     custom("background"),
-    hdr("Colours"),                                // every coloured part on the plate, in one list; a band's sectors one by one
-    custom("colours"),
-    hdr("Page"),                                   // around the dial: preview and page only
+    hdr("Page", { pin: true }),                    // around the dial: preview and page only
     num("margin", "Page margin", 0, 10, 0.5),
     col("c_backdrop", "Backdrop"),
+    hdr("Colours"),                                // every coloured part on the plate, in one list; a band's sectors one by one
+    custom("colours"),
   ],
   Rings: [                                         // one list; rows that don't apply hide (R16)
     // one pinned pane (Okay's drawings, 13 Oct 2026). Its heading line carries the list's tools: a plus that opens

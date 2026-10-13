@@ -470,7 +470,7 @@ for (const grey of ["#808080", "#F2F2EE", "#141413", "#4B317F", "#C8E6A0", "#CC3
 await shot("4c4-guides-dark");
 await type_hex("global-c-backdrop-Backdrop", "#CCCCC7");
 // the Dial section: two panes, Dial (diameter, plate, background) and Page (margin, backdrop); no Guides pane
-check(JSON.stringify(await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))) === '["Dial","Colours","Page"]' && await page.isVisible("#background-add"), "Dial has three panes: Dial, Colours and Page; Background is a button");
+check(JSON.stringify(await page.$$eval(".pinned .pane h2", (h) => h.map((x) => x.textContent))) === '["Dial","Page"]' && JSON.stringify(await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))) === '["Colours"]' && await page.isVisible("#background-add"), "Dial has three panes: Dial and Page stay in view, Colours scrolls under them; Background is a button");
 // units: a box at the panel's top right; lengths are shown and typed in the unit, kept in mm
 const unit_box = async () => page.$eval("#unit", (e) => { const r = e.getBoundingClientRect(), row = document.querySelector(".form .row").getBoundingClientRect(); return [e.textContent, Math.round(r.width), Math.round(r.height), Math.round(row.right - r.right)]; });
 const as_mm = await unit_box();
@@ -504,7 +504,7 @@ await shot("4d-scaled");
 for (const d of ["41.3", "22", "30"]) { await page.fill("#global-dial-d-Diameter", d); await page.press("#global-dial-d-Diameter", "Enter"); }
 check(JSON.stringify(await measures()) === JSON.stringify(at_30), "36 → 41.3 → 22 → 30: everything is back exactly where it was");
 await page.uncheck("#global-ui-scale-Scale-everything-with-it");
-check(await page.evaluate(() => Math.round(document.querySelector(".row.nest .check").getBoundingClientRect().left) === Math.round(document.querySelector(".form .row.num input[type=range]").getBoundingClientRect().left)), "a nested question starts on the controls' column");
+check(await page.evaluate(() => Math.round(document.querySelector(".row.nest .check").getBoundingClientRect().left) === Math.round(document.querySelector(".row.num input[type=range]").getBoundingClientRect().left)), "a nested question starts on the controls' column");
 check(await S("!('ui_scale' in G_lean(S))".replace("G_lean(S)", "JSON.parse(JSON.stringify(S, (k, v) => (k.startsWith('ui_') ? undefined : v)))")), "the tick is the window's state, not the dial's");
 // Colours: every coloured part in one list
 const listed = await page.$$eval(".colourlist .row label", (l) => l.map((x) => x.textContent));
@@ -548,13 +548,15 @@ check(await S(`Object.keys(S.rings[${band}].cs).length === 0 && t.items.filter((
 await page.click("#ring-delete");
 await tab("Dial");
 // a line before and after every row: white on the scrolling grey, that grey on paper
-const row_line = await page.$eval(".form .row.num", (e) => getComputedStyle(e).boxShadow);
+const row_line = await page.$eval(".form .colourlist .row", (e) => getComputedStyle(e).boxShadow);
 check(row_line.split("rgb(255, 255, 255)").length === 3, "every row has a white hairline before and after it, on the grey");
-await page.click('.form .fold:has-text("Dial")');
+const half_line = await page.$eval(".row:has(+ .row.nest)", (e) => { const c = getComputedStyle(e); return [c.boxShadow.split("rgb").length - 1, c.backgroundSize, c.backgroundPosition, e.querySelector("label").textContent]; });
+check(half_line[0] === 1 && half_line[1].startsWith("calc(66.6667% - 4px)") && half_line[2] === "100% 100%" && half_line[3] === "Diameter", "before a nested row stands a half line, from the controls' column to the right edge: Diameter draws it, over Scale everything with it");
+await page.click('.pinned .fold:has-text("Dial")');
 check(await page.isHidden("#global-dial-d-Diameter") && await page.isVisible("#global-margin-Page-margin"), "a heading folds its own group only");
-check((await page.textContent('.form .fold:has-text("Dial") .summary')).includes("diameter 30.0"), "a folded pane says what it holds: diameter 30.0 …");
-await page.click('.form .fold:has-text("Dial") .eye');
-check(await page.isVisible("#global-dial-d-Diameter") && (await page.textContent('.form .fold:has-text("Dial") .summary')) === "", "its eye opens it again, and the summary goes");
+check((await page.textContent('.pinned .fold:has-text("Dial") .summary')).includes("diameter 30.0"), "a folded pane says what it holds: diameter 30.0 …");
+await page.click('.pinned .fold:has-text("Dial") .eye');
+check(await page.isVisible("#global-dial-d-Diameter") && (await page.textContent('.pinned .fold:has-text("Dial") .summary')) === "", "its eye opens it again, and the summary goes");
 // folding must not leave uneven gaps: folded panes stack line on line, whatever they hold
 await tab("Hands");
 const gaps = async () => page.$$eval(".form .pane", (h) => h.filter((e) => e.offsetParent).map((e, i, all) => (i ? Math.round(e.getBoundingClientRect().top - all[i - 1].getBoundingClientRect().top) : 0)).slice(1));
@@ -677,7 +679,7 @@ await page.check("#global-ha-on-Show-hands"); await page.selectOption("#global-h
 await shot("4f-hands-bar");
 await tab("Dial");
 // the columns: every slider, value and stepper starts on the same three lines
-const lines = await page.$$eval(".form .row.num", (rows) => [...new Set(rows.filter((r) => r.offsetParent).map((r) => [...r.children].slice(1).map((c) => Math.round(c.getBoundingClientRect().left)).join("/")))]);
+const lines = await page.$$eval(".pinned .row.num", (rows) => [...new Set(rows.filter((r) => r.offsetParent).map((r) => [...r.children].slice(1).map((c) => Math.round(c.getBoundingClientRect().left)).join("/")))]);
 check(lines.length === 1, `number rows share their columns (${lines.join(" | ")})`);
 
 // ── colour: a swatch opens the pop-out at its right; the value can be typed ──
@@ -980,12 +982,12 @@ await page.uncheck("#global-out-live-text-Keep-numerals-as-text-in-the-SVG");
 // Export a file stays in view; its order: Vector · PDF | SVG and its tick | PNG and its settings (Okay, 13 Oct 2026)
 {
   const e = await page.evaluate(() => {
-    const p = document.querySelector(".pinned"), rows = [...p.querySelectorAll(".body > .row")].filter((r) => r.offsetParent), left = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left), shadow = (r) => getComputedStyle(r).boxShadow.split("rgb").length - 1;
+    const p = document.querySelector(".pinned"), rows = [...p.querySelectorAll(".body > .row")].filter((r) => r.offsetParent), left = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left), shadow = (r) => getComputedStyle(r).boxShadow.split("rgb").length - 1, half = (r) => { const c = getComputedStyle(r); return c.backgroundImage === "none" ? 0 : c.backgroundSize.startsWith("calc(66.6667% - 4px)") && c.backgroundPosition === "100% 100%" ? 1 : 9; };      // two thirds of the row less a third of a gap: from the third column on
     return { pinned: [...p.querySelectorAll("h2")].map((h) => h.textContent).join(), order: rows.map((r) => (r.querySelector("button.main") || {}).id || (r.querySelector("input") || {}).id || r.className).join(" | "),
-      pdf: left("#export-pdf"), svg: left("#export-svg"), png: left("#export-png"), label: left(".pinned .row > label"), tick: left(".pinned .check"), lines: rows.map(shadow).join(""), below: [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent).join(" · ") };
+      pdf: left("#export-pdf"), svg: left("#export-svg"), png: left("#export-png"), label: left(".pinned .row > label"), tick: left(".pinned .check"), lines: rows.map(shadow).join(""), halves: rows.map(half).join(""), below: [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent).join(" · ") };
   });
-  check(e.pinned === "Export a file" && e.order === "export-pdf | export-svg | global-out-live-text-Keep-numerals-as-text-in-the-SVG | export-png | global-out-dpi-dpi-slider | row note under" && e.pdf === e.svg && e.png === e.pdf && e.pdf > e.label && e.tick === e.svg && e.lines === "211111" && e.below === "For production · Link to this dial · Settings file · Log · Gallery",
-    `Export a file is pinned: Vector · PDF, SVG under it with its tick tied to it, then PNG on the same column with its dpi under it; below scroll ${e.below}`);
+  check(e.pinned === "Export a file" && e.order === "export-pdf | export-svg | global-out-live-text-Keep-numerals-as-text-in-the-SVG | export-png | global-out-dpi-dpi-slider | row note under" && e.pdf === e.svg && e.png === e.pdf && e.pdf > e.label && e.tick === e.svg && e.lines === "211101" && e.halves === "010110" && e.below === "For production · Link to this dial · Settings file · Log · Gallery",
+    `Export a file is pinned: Vector · PDF, SVG under it with its tick tied to it, then PNG on the same column with its dpi under it; a half line, from the buttons' column, before each nested row (the tick, the dpi, its note: ${e.lines} ${e.halves}); below scroll ${e.below}`);
   await shot("4c21-export");
 }
 {
@@ -1085,7 +1087,7 @@ check(guides_w[0] === guides_w[1], `the Guides switch is the same width on and o
 check(await page.$eval("#global-dial-d-Diameter-slider", (e) => { const p = +e.style.getPropertyValue("--p"); return Math.abs(p - (e.value - e.min) / (e.max - e.min)) < 0.001 && getComputedStyle(e).appearance === "none"; }), "a slider knows how far along it is: its track is filled up to the handle");
 await page.emulateMedia({ reducedMotion: "no-preference" });
 const heights = await page.evaluate(async () => {
-  const pane = [...document.querySelectorAll(".form .pane")].find((p) => !p.hidden && !p.classList.contains("folded")), body = pane.querySelector(".body"), next = pane.nextElementSibling;
+  const pane = [...document.querySelectorAll(".pinned .pane")].find((p) => !p.hidden && !p.classList.contains("folded")), body = pane.querySelector(".body"), next = pane.nextElementSibling;
   const open = body.offsetHeight, top0 = next.getBoundingClientRect().top, seen = [];
   pane.querySelector(".fold").click();
   for (let i = 0; i < 60 && (body.getAnimations().length || !i); i++) { await new Promise((r) => requestAnimationFrame(r)); seen.push(Math.round(body.getBoundingClientRect().height)); }

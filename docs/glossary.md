@@ -80,6 +80,8 @@ If a term is used differently in conversation, ask, then update this file.
 | **Undo step** | The dial as it was before a change; taken when the dial has stood still for a moment. ⌘Z goes back one, ⇧⌘Z forward. |
 | **Bottom bar** | The dark strip along the bottom of the window, in three parts: selected · time (play, speeds, the time, the day slider, Now) · view (zoom, Fit). Called "the bar" in notes before 13 Oct 2026. |
 | **Pinned line** | One line of its own, outside the panes and always in view (Hands: All hands · Show hands · Motion; the hand tabs). Called "bar" from 12 Oct until Okay named the two on 13 Oct 2026; the row option in `app.js` is still `bar`. |
+| **Half line** | The hairline between a row and a **nested row**: it starts at the controls' column (the third of six) and ends at the right edge. Okay, 13 Oct 2026 (beta 4.17). |
+| **Nested row** | A row that belongs to the row above it: a question about it (`nest`), its settings (`tie`), or a note about it (`under`). It starts on the controls' column and has a **half line** over it. |
 | **Ring summary** | What a ring's row says after its name, in the drawer's order: how many and of what kind (`60 ticks`) · a small square of its colour · its size · its radius — the last two as bare numbers in the mono face, in the unit box's unit. |
 | **Nested question** | A tick or menu that asks about the row above it; it starts on the controls' column, not at the left. |
 | **Row line** | The hairline before and after every row: white on the scrolling grey, that grey on paper. |
