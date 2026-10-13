@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.35.17 (web version) · 14 Oct 2026
+
+- **The hand's preview box** stops one unit under the line, the same gap as between the shape tiles.
+
 ## beta 4.35.16 (web version) · 14 Oct 2026
 
 - **The hand's preview box** scrolls up with its pane until its top meets the line under the hand tabs, and stays there (4.35.15 held it where it started, under the pane's heading).
