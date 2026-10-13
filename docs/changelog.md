@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.9 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Okay's designed picture of the ring line. Seen in Chromium here only.
+
+- **The ring line stands in the list**, right under the selected ring's row (2 apart) and moves with the selection; framed in the guide's colour on white. Its buttons start where the names start. **One height for every control** (36): kinds 46 wide · colour · size · radius.
+- **Size button's drawing**: a small circle against the large one, the value in the middle. The drag arrow is gone; both round buttons are still dragged themselves.
+- **The tag** is one floating label for the whole tool (a scrolling list can't cut it off); it hides while a pop-up is open. The value pop-up hangs under the ring line on the list's frame.
+- The list shows five rings and the ring line before it scrolls.
+
 ## beta 4.8 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Okay's third drawing of the ring line, and the Windows section. Seen in Chromium here only.

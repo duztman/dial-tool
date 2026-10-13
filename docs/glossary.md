@@ -46,9 +46,9 @@ If a term is used differently in conversation, ask, then update this file.
 | **Placement** | How numerals sit: **upright** (always level) · **radial** (turn with the circle) · **radial, auto-flip** (never upside down) · **on path** (letters follow the circle, kerning kept). |
 | **Nudge** | A per-numeral correction: radius ±, angle ±, rotate, size ×. Stored per position. |
 | **Rings pane** | The pinned pane on top of Rings (web version, 13 Oct 2026): its heading line with the list's tools (a plus that opens the four kinds; move up · move down · duplicate · delete), the ring list, the **ring line**. Folded it is one line: *Rings: <name>* and a summary. |
-| **Ring line** | The selected ring in one framed line under the list, as wide as the rows, all buttons and no words: four kinds · its colour · its **size** (how big one of its things is: a mark's length, a dot's Ø, a numeral's size, a band's width) · its radius · a double arrow to drag the radius by. Its frame has the selected ring's guide colour. |
-| **Tag** | The small label under a wordless button while the pointer is on it ("Ticks"). |
-| **Value button** | A number as a small round drawing with its value written in it (a ring's radius: a circle with its radius drawn; its size: a measure between two stops). Click: the number's row pops up under it, ready to type in. Press and move: the value changes. R15's exception. |
+| **Ring line** | The selected ring's controls in one framed line inside the ring list, right under that ring's row; its buttons start where the names start, all one height, no words: four kinds · its colour · its **size** (how big one of its things is: a mark's length, a dot's Ø, a numeral's size, a band's width; Okay's "scale") · its radius. Its frame has the selected ring's guide colour, on white. |
+| **Tag** | The small label under a wordless button while the pointer is on it ("Ticks"); one for the whole tool, laid over everything. |
+| **Value button** | A number as a small round drawing with its value written in it (a ring's radius: a circle with its radius drawn; its size: a small circle against the large one). Click: the number's row pops up under it, ready to type in. Press and move: the value changes. R15's exception. |
 | **Ring settings** | The scrolling list under the ring list: Kind · Colour · Radius · Positions · Give way · Look · Nudge · Type. Nudge and Type show for numerals rings only. (beta 2.0 split it into four pages.) |
 
 ## Hands

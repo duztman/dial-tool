@@ -146,7 +146,7 @@ const SIZE_ROWS = {
 const size_row = (R) => SIZE_ROWS[G.kind_of(R) === "numerals" ? "numerals" : G.kind_of(R) === "band" ? "band" : G.SHAPES[R.shape] === "dot" ? "dot" : "len"];
 const VALUE_PICS = {                               // inside a value button, on a 40 × 40 field with the centre at 0 0, under the figure
   radius: `<path d="M0 0L19.4 0"/><circle class="pivot" r="1.6"/>`,                     // a radius, from the centre to the edge
-  size: `<path d="M-9 5L9 5M-9 2L-9 8M9 2L9 8"/>`,                                     // a measure between two stops
+  size: `<circle class="small" cx="-13.7" cy="13.7" r="6"/>`,                           // scale: a small circle against the large one (Okay's sketch, 13 Oct 2026)
 };
 
 const kind_in = (...names) => (R) => names.includes(G.kind_of(R));
@@ -462,6 +462,10 @@ class DialTool {
     if (!DialTool.listening) {                     // once for the page: the tool that is open now gets the press
       DialTool.listening = true;
       document.addEventListener("pointerdown", (e) => { if (window.dial_tool) window.dial_tool.pressed(e); }, true);
+      const tipped = (e) => (e.target.closest ? e.target.closest("[data-tip]") : null);      // tags: under the pointer, or where the keyboard is
+      document.addEventListener("pointerover", (e) => { const t = tipped(e); if (window.dial_tool) { if (t && e.pointerType !== "touch") window.dial_tool.tag_show(t); else window.dial_tool.tag_hide(); } });
+      document.addEventListener("focusin", (e) => { const t = tipped(e); if (t && window.dial_tool && t.matches(":focus-visible")) window.dial_tool.tag_show(t); });
+      document.addEventListener("focusout", () => { if (window.dial_tool) window.dial_tool.tag_hide(); });
       document.addEventListener("keydown", (e) => {   // ⌘Z undo · ⇧⌘Z or ⌘Y redo (Ctrl on Windows) — Okay, 13 Oct 2026
         const z = (e.metaKey || e.ctrlKey) && !e.altKey && e.key.toLowerCase() === "z", y = (e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "y";
         if (!(z || y) || !window.dial_tool || document.querySelector("dialog[open]")) return;
@@ -528,6 +532,7 @@ class DialTool {
     if (this.unit_open && !$("#unit-menu").hidden && !on(".unit")) this.unit_open(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
     if (this.value_pop && !on("#value-pop") && !on(".valueb")) this.value_pop_close();
+    this.tag_hide();
   }
 
   // ── building the window ──────────────────────────────────
@@ -750,6 +755,7 @@ class DialTool {
     this.form.replaceChildren();
     this.pinned.replaceChildren();
     this.ring_list = null;                         // the Rings section builds it again
+    this.ring_line_holder = null;
     this.font_scope = SECTIONS[this.S.ui_section] === "Date" ? "window" : "ring";      // whose font the font row here is about
     this.rows = ROWS[name].map((row) => this.build_row(row));
     let pane = null;
@@ -1380,6 +1386,7 @@ class DialTool {
   row_ring_list(wrap, out) {
     wrap.className = "ringlist";
     this.ring_list = el("ol");
+    this.ring_list.onscroll = () => this.value_pop_close();      // the pop-up hangs where the ring line was
     wrap.append(this.ring_list);
     this.fill_ring_list();
   }
@@ -1413,11 +1420,11 @@ class DialTool {
     return tools;
   }
 
-  /** the selected ring in one framed line that fills the pane's width (Okay's drawing, 13 Oct 2026): four kind
-   *  buttons, pictures only · its colour · how big one of its things is and its radius, two round value buttons
-   *  · a handle to drag the radius by.
-   *  No words: what a button is shows under it while the pointer is on it (data-tip). The frame has the colour of
-   *  the selected ring's guide, like the ring's row above it, on white. */
+  /** the selected ring's line (Okay's design, 13 Oct 2026): a framed line in the list, right under the selected
+   *  ring's row, its buttons starting where the names start — four kinds, pictures only · its colour · how big one
+   *  of its things is and its radius, two round value buttons. All one height. No words: a tag says what a button
+   *  is while the pointer is on it (data-tip). The frame has the colour of the selected ring's guide, like the row
+   *  above it, on white. */
   row_ring_line(wrap, out) {
     wrap.className = "ringline";
     const kinds = el("span", { className: "kinds", role: "radiogroup", ariaLabel: "Kind" });
@@ -1432,9 +1439,11 @@ class DialTool {
     colour.classList.add("bare");                  // the swatch alone: no hex
     colour.dataset.tip = colour.ariaLabel = "Colour";
     colour.onclick = () => this.pop_open(this.colour_of_row({ scope: "ring", key: "c", text: "Colour" }), colour);
-    const size = this.value_button("ring-size", () => size_row(this.ring()), VALUE_PICS.size);       // before the radius (Okay, 13 Oct 2026)
+    const size = this.value_button("ring-size", () => size_row(this.ring()), VALUE_PICS.size, "mid");
     const radius = this.value_button("ring-r", () => radius_row(this.ring()), VALUE_PICS.radius);
-    wrap.append(kinds, colour, size.el, radius.el, radius.handle);
+    wrap.append(kinds, colour, size.el, radius.el);
+    this.ring_line_holder = el("li", { className: "lineholder" }, wrap);      // it lives in the list (place_ring_line), not among the pane's rows
+    out.el = el("span", { className: "nothing" });
     out.refresh = (R) => {
       [...kinds.children].forEach((b, i) => { b.classList.toggle("on", i === R.kind); b.setAttribute("aria-checked", String(i === R.kind)); });
       colour.show(R.c);
@@ -1450,41 +1459,48 @@ class DialTool {
   //   opening anything (right or up: more; Shift: ten times finer); a press outside puts the pop-up away.
   //   row() says which number row it stands for right now.
 
-  value_button(id, row, drawing) {
+  value_button(id, row, drawing, figure_at = "") {
     const b = el("button", { type: "button", className: "valueb", id });
-    const figure = el("span", { className: "figure" });
+    const figure = el("span", { className: "figure " + figure_at });
     b.innerHTML = `<svg viewBox="-20 -20 40 40" aria-hidden="true"><circle r="19.4"/>${drawing}</svg>`;
     b.append(figure);
-    const handle = el("button", { type: "button", className: "valueh", id: id + "-drag", tabIndex: -1 });
-    handle.innerHTML = icon(`<path d="M2 8L22 8M6 4L2 8L6 12M18 4L22 8L18 12"/>`, 24, "0 0 24 16").replace('height="24"', 'height="16"');
     const T = () => this.target(row().scope);
     const refresh = () => {
       const r = row(), v = T()[r.key] ?? 0, text = String(parseFloat(this.in_unit(v, decimals(r.step))));
       figure.textContent = text;
-      figure.classList.toggle("long", text.length > 5);
+      figure.classList.toggle("long", text.length > 4);
       b.dataset.tip = label_of(r, T());
       b.ariaLabel = `${label_of(r, T())} ${text} ${this.unit()[0]}`;
-      handle.dataset.tip = "Drag";
-      handle.ariaLabel = `Drag to change the ${label_of(r, T()).toLowerCase()}`;
     };
-    const drags = (part, click) => {
-      let press = null;
-      part.onpointerdown = (e) => { press = { x: e.clientX, y: e.clientY, v: T()[row().key], moved: false }; part.setPointerCapture(e.pointerId); };
-      part.onpointermove = (e) => {
-        if (!press) return;
-        const d = (e.clientX - press.x) - (e.clientY - press.y);      // right or up: more
-        if (!press.moved && Math.abs(d) < 4) return;
-        if (!press.moved) { press.moved = true; this.value_pop_close(); b.classList.add("dragging"); handle.classList.add("dragging"); }
-        const r = row(), step = r.step * (e.shiftKey ? 0.1 : 1);
-        this.set_value(r.scope, r.key, +Math.max(press.v + Math.round(d / 2) * step, r.lo).toFixed(6));       // two screen points a step
-      };
-      part.onpointerup = part.onpointercancel = () => { const was = press; press = null; b.classList.remove("dragging"); handle.classList.remove("dragging"); if (was && !was.moved && click) this.value_pop_open(b, row()); };
+    let press = null;
+    b.onpointerdown = (e) => { press = { x: e.clientX, y: e.clientY, v: T()[row().key], moved: false }; b.setPointerCapture(e.pointerId); };
+    b.onpointermove = (e) => {
+      if (!press) return;
+      const d = (e.clientX - press.x) - (e.clientY - press.y);      // right or up: more
+      if (!press.moved && Math.abs(d) < 4) return;
+      if (!press.moved) { press.moved = true; this.value_pop_close(); this.tag_hide(); b.classList.add("dragging"); }
+      const r = row(), step = r.step * (e.shiftKey ? 0.1 : 1);
+      this.set_value(r.scope, r.key, +Math.max(press.v + Math.round(d / 2) * step, r.lo).toFixed(6));       // two screen points a step
     };
-    drags(b, true);
-    drags(handle, false);
+    b.onpointerup = b.onpointercancel = () => { const was = press; press = null; b.classList.remove("dragging"); if (was && !was.moved) this.value_pop_open(b, row()); };
     b.onclick = (e) => { if (!e.detail && !this.value_pop) this.value_pop_open(b, row()); };      // the keyboard (Enter, Space) opens it too
-    return { el: b, handle, refresh };
+    return { el: b, refresh };
   }
+
+  /** the tag: what a wordless button is, said under it while the pointer or the keyboard is on it. One for the whole
+   *  tool, laid over everything, so a list that scrolls can't cut it off. */
+  tag_show(target) {
+    if (!this.tag) { this.tag = el("div", { className: "tag", id: "tag", hidden: true }); document.body.append(this.tag); }
+    if (target.getAttribute("aria-expanded") === "true") return this.tag_hide();       // its pop-up is open under it: the tag would lie on it
+    const box = target.getBoundingClientRect();
+    this.tag.textContent = target.dataset.tip;
+    this.tag.hidden = false;
+    const half = this.tag.offsetWidth / 2, x = clamp(box.left + box.width / 2, half + 4, innerWidth - half - 4);
+    this.tag.style.left = `${x}px`;
+    this.tag.style.top = `${box.bottom + 7}px`;
+    this.tag.style.setProperty("--point", `${box.left + box.width / 2 - x}px`);
+  }
+  tag_hide() { if (this.tag) this.tag.hidden = true; }
 
   /** the pop-up under a value button: the number's own row (label · field · − +; for a numeral's radius the menu
    *  beside the label too). Enter, Escape or a press outside closes it. */
@@ -1492,8 +1508,12 @@ class DialTool {
     if (this.value_pop && this.value_pop.button === button) return this.value_pop_close();
     this.value_pop_close();
     const r = this.build_row(row), box = el("div", { className: "valuepop", id: "value-pop" }, r.el);
-    button.parentElement.append(box);
+    // under the ring line, but hung on the list's frame, not inside the list: the list scrolls and would cut it off
+    const frame = button.closest(".ringlist") || button.parentElement, line = (button.closest(".lineholder") || button).getBoundingClientRect();
+    frame.append(box);
+    box.style.top = `${Math.round(line.bottom - frame.getBoundingClientRect().top + 5)}px`;
     button.setAttribute("aria-expanded", "true");
+    this.tag_hide();
     this.value_pop = { button, box, r };
     r.refresh(this.target(row.scope));
     const field = box.querySelector('input[type="text"]');
@@ -1532,7 +1552,8 @@ class DialTool {
     const wrap = this.ring_list.closest(".pane"), guide = this.S.gd_sel ? G.GUIDE_COLOURS[this.S.gd_k_sel] : null;      // on the pane: the ring's row and the ring line both take it
     wrap.classList.toggle("guided", Boolean(guide));
     if (guide) wrap.style.setProperty("--guide", guide); else wrap.style.removeProperty("--guide");
-    [...this.ring_list.children].forEach((li, i) => {
+    this.place_ring_line();
+    this.ring_rows().forEach((li, i) => {
       const sum = li.querySelector(".sum"), ring = this.S.rings[i];
       if (sum && ring) { const text = this.ring_summary(ring); if (sum.textContent !== text) sum.textContent = text; }
     });
@@ -1552,7 +1573,7 @@ class DialTool {
       grip.innerHTML = icon(TOOL_ICONS.grip);
       grip.onpointerdown = (e) => this.drag_ring(e, i);
       const name = el("span", { className: "name", textContent: ring.name || G.kind_of(ring) });
-      const item = el("li", { className: (selected ? "on" : "") + (ring.on ? "" : " off") }, show, grip, name);
+      const item = el("li", { className: "ring" + (selected ? " on" : "") + (ring.on ? "" : " off") }, show, grip, name);
       if (selected && ring.on) {
         const rename = el("button", { type: "button", className: "rename", title: "Rename this ring", ariaLabel: "Rename this ring", onclick: (e) => { e.stopPropagation(); this.rename_ring(i, item, name); } });
         rename.innerHTML = icon(TOOL_ICONS.rename, 18);
@@ -1563,6 +1584,16 @@ class DialTool {
       item.onclick = () => { if (!item.querySelector("input")) this.select_ring(i); };
       this.ring_list.append(item);
     });
+    this.place_ring_line();
+  }
+
+  /** the rings' rows in the list, top first (the list also holds the ring line, which is not one of them). */
+  ring_rows() { return this.ring_list ? [...this.ring_list.children].filter((li) => li.classList.contains("ring")) : []; }
+
+  /** the ring line stands in the list, right under the selected ring's row (Okay's design, 13 Oct 2026). */
+  place_ring_line() {
+    const row = this.ring_rows()[this.S.ui_ring], holder = this.ring_line_holder;
+    if (row && holder && (holder.previousElementSibling !== row || !holder.isConnected)) row.after(holder);
   }
 
   /** the name becomes a field: Enter or a click elsewhere keeps it, Esc puts the old name back. */
@@ -1588,7 +1619,7 @@ class DialTool {
    *  the top row is drawn last, in front. A line shows where the ring will land. */
   drag_ring(e, from) {
     e.preventDefault();
-    const list = this.ring_list, rows = [...list.children], grip = e.currentTarget;
+    const list = this.ring_list, rows = this.ring_rows(), grip = e.currentTarget;
     const line = el("div", { className: "dropline" });
     list.append(line);
     rows[from].classList.add("dragged");
@@ -1627,7 +1658,7 @@ class DialTool {
     this.value_pop_close();                        // it was about the ring that was selected
     this.S.ui_ring = clamp(i, 0, this.S.rings.length - 1);
     if (refill) this.fill_ring_list();
-    else [...this.ring_list.children].forEach((li, k) => li.classList.toggle("on", k === this.S.ui_ring));
+    else { this.ring_rows().forEach((li, k) => li.classList.toggle("on", k === this.S.ui_ring)); this.place_ring_line(); }
     this.sync_rows();
     this.render();
   }

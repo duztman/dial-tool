@@ -124,32 +124,32 @@ const before = await S("S.rings.length");
 await page.click("#ring-add");
 await page.click("#add-band");
 check(await S(`S.rings.length === ${before + 1} && S.rings[S.ui_ring].kind === 3`), "Add Band → a band ring, selected");
-const row_look = await page.$$eval(".ringlist li", (l) => l.map((e) => { const c = getComputedStyle(e); return (e.classList.contains("on") ? "on " : "") + c.borderTopWidth + " " + c.backgroundColor; }));
+const row_look = await page.$$eval(".ringlist li.ring", (l) => l.map((e) => { const c = getComputedStyle(e); return (e.classList.contains("on") ? "on " : "") + c.borderTopWidth + " " + c.backgroundColor; }));
 // the selected row has the colour of the selected ring's guide (13 Oct 2026); with that guide set to None, the light blue of before
-const guide_row = await page.evaluate(() => { const t = window.dial_tool, bg = () => getComputedStyle(document.querySelector(".ringlist li.on")).backgroundColor; const a = bg(); t.set_value("global", "gd_sel", false); const b = bg(); t.set_value("global", "gd_sel", true); return [a, b, bg(), t.S.gd_k_sel]; });
+const guide_row = await page.evaluate(() => { const t = window.dial_tool, bg = () => getComputedStyle(document.querySelector(".ringlist li.ring.on")).backgroundColor; const a = bg(); t.set_value("global", "gd_sel", false); const b = bg(); t.set_value("global", "gd_sel", true); return [a, b, bg(), t.S.gd_k_sel]; });
 check(row_look.every((x) => x.includes("1px")) && row_look.filter((x) => x.startsWith("on ")).length === 1 && guide_row[1] === "rgb(207, 228, 245)" && guide_row[0] !== guide_row[1] && guide_row[0] === guide_row[2] && !/255, 255, 255/.test(guide_row[0]),
   `every ring is a framed row; the selected one is tinted with its guide's colour (${guide_row[0]}), light blue when that guide is None`);
 // a ring's row says what the ring is, in numbers (13 Oct 2026, build list #78): how many × how big · r radius
-const sums = await page.$$eval(".ringlist li", (l) => l.map((e) => [e.querySelector(".sum").textContent, e.querySelector(".kind").textContent, Math.round(e.querySelector(".kind").getBoundingClientRect().left), e.getBoundingClientRect().height]));
+const sums = await page.$$eval(".ringlist li.ring", (l) => l.map((e) => [e.querySelector(".sum").textContent, e.querySelector(".kind").textContent, Math.round(e.querySelector(".kind").getBoundingClientRect().left), e.getBoundingClientRect().height]));
 check(sums.every(([t]) => /^\d+ × [\d.]+ · r [\d.]+$/.test(t)) && new Set(sums.map((x) => x[2])).size === 1 && new Set(sums.map((x) => x[3])).size === 1,
   `every ring's row has a summary; the kinds start on one line; the rows are one height: ${sums.map((x) => x[0] + " " + x[1]).join(" | ")}`);
-const sum_before = await page.textContent(".ringlist li.on .sum");
+const sum_before = await page.textContent(".ringlist li.ring.on .sum");
 await page.evaluate(() => { const t = window.dial_tool; t.set_value("ring", "r", t.ring().r - 1); });
-check(await page.textContent(".ringlist li.on .sum") !== sum_before && await page.$$eval(".ringlist li.on", (e) => e.length) === 1, `the summary follows the ring: ${sum_before} → ${await page.textContent(".ringlist li.on .sum")}`);
+check(await page.textContent(".ringlist li.ring.on .sum") !== sum_before && await page.$$eval(".ringlist li.ring.on", (e) => e.length) === 1, `the summary follows the ring: ${sum_before} → ${await page.textContent(".ringlist li.ring.on .sum")}`);
 await page.evaluate(() => { const t = window.dial_tool; t.set_value("ring", "r", t.ring().r + 1); });
 await shot("4c7-ring-summary");
 check(await page.$$eval(".ringlist input", (e) => e.length) === 0 && await page.$$eval(".ringlist .rename", (e) => e.length) === 1, "the ring list has no name fields: one rename box, on the selected ring");
 const mine = await S("S.ui_ring"), other_ring = mine === 0 ? 1 : 0;
-await page.click(`.ringlist li:nth-child(${other_ring + 1}) .name`);
+await page.click(`.ringlist li:nth-child(${other_ring + 1} of .ring) .name`);
 check(await S(`S.ui_ring === ${other_ring}`) && await page.$$eval(".ringlist input", (e) => e.length) === 0, "a click on another ring's name selects it and renames nothing");
-await page.click(`.ringlist li:nth-child(${mine + 1}) .name`);
-await page.click(".ringlist li.on .rename");
-await page.fill(".ringlist li.on input.name", "Edge");
-await page.press(".ringlist li.on input.name", "Enter");
-check(await S("S.rings[S.ui_ring].name === 'Edge'") && await page.textContent(".ringlist li.on span.name") === "Edge", "the rename box turns the name into a field; Enter keeps it: Edge");
-await page.click(".ringlist li.on .rename");
-await page.fill(".ringlist li.on input.name", "Nope");
-await page.press(".ringlist li.on input.name", "Escape");
+await page.click(`.ringlist li:nth-child(${mine + 1} of .ring) .name`);
+await page.click(".ringlist li.ring.on .rename");
+await page.fill(".ringlist li.ring.on input.name", "Edge");
+await page.press(".ringlist li.ring.on input.name", "Enter");
+check(await S("S.rings[S.ui_ring].name === 'Edge'") && await page.textContent(".ringlist li.ring.on span.name") === "Edge", "the rename box turns the name into a field; Enter keeps it: Edge");
+await page.click(".ringlist li.ring.on .rename");
+await page.fill(".ringlist li.ring.on input.name", "Nope");
+await page.press(".ringlist li.ring.on input.name", "Escape");
 check(await S("S.rings[S.ui_ring].name === 'Edge'"), "Esc puts the old name back");
 const was = await S("S.ui_ring");
 await page.click("#ring-up");
@@ -160,17 +160,17 @@ await page.click("#ring-duplicate");
 check(await S(`S.rings.length === ${before + 2} && S.rings[S.ui_ring].name === 'Edge copy'`), "Duplicate");
 await page.click("#ring-delete");
 check(await S(`S.rings.length === ${before + 1} && S.rings[S.ui_ring].name === 'Edge'`), "Delete removes the copy");
-await page.click(".ringlist li.on button.eye");
+await page.click(".ringlist li.ring.on button.eye");
 await frame();
 check(await S("S.rings[S.ui_ring].on === false && !t.items.some((i) => i.role === 'ring' && i.index === S.ui_ring)"), "the eye in the left column hides the ring in the preview");
-check(await page.$$eval(".ringlist li.on.off .rename", (e) => e.length) === 0, "a hidden ring greys and loses its rename box");
+check(await page.$$eval(".ringlist li.ring.on.off .rename", (e) => e.length) === 0, "a hidden ring greys and loses its rename box");
 await shot("4a-hidden-ring");
-await page.click(".ringlist li.on button.eye");
-check(await page.$$eval(".ringlist li.on .rename", (e) => e.length) === 1, "shown again: the rename box is back");
+await page.click(".ringlist li.ring.on button.eye");
+check(await page.$$eval(".ringlist li.ring.on .rename", (e) => e.length) === 1, "shown again: the rename box is back");
 const eyes = await page.$$eval(".ringlist button.eye svg, .pinned button.fold .eye svg", (e) => [...new Set(e.map((x) => Math.round(x.getBoundingClientRect().left)))]);
-const starts = await page.evaluate(() => { const l = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); return { row: l(".ringlist li"), row_end: r(".ringlist li"), line: l(".ringline"), line_end: r(".ringline"), heading: l(".pinned h2"), tools: r(".headtools"), pane: r(".pinned .pane") }; });
-check(eyes.length === 2 && starts.row === starts.heading && starts.line === starts.row && starts.line_end === starts.row_end && starts.tools === starts.pane,
-  `ring rows start where the heading starts, a ring's eye inside its row; the ring line is as wide as the rows; the tools end on the pane's line (${JSON.stringify(starts)})`);
+const starts = await page.evaluate(() => { const l = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); return { row: l(".ringlist li.ring"), row_end: r(".ringlist li.ring"), line: l(".lineholder"), line_end: r(".lineholder"), heading: l(".pinned h2"), tools: r(".headtools"), pane: r(".pinned .pane"), name: l(".ringlist li.ring.on .name") + 6, kinds: l(".ringline .kinds") }; });
+check(eyes.length === 2 && starts.row === starts.heading && starts.line === starts.row && starts.line_end === starts.row_end && starts.tools === starts.pane && starts.kinds === starts.name,
+  `ring rows start where the heading starts, a ring's eye inside its row; the ring line is as wide as the rows and its buttons start where the names start; the tools end on the pane's line (${JSON.stringify(starts)})`);
 // the heading line carries the tools: a plus and four signs, all the same outlined circle; the plus opens the four kinds
 const tools = await page.evaluate(() => { const signs = [...document.querySelectorAll(".headtools .sign")], h = document.querySelector(".pinned .fold").getBoundingClientRect(); return { ids: signs.map((b) => b.id).join(" "), look: [...new Set(signs.map((b) => { const c = getComputedStyle(b), r = b.getBoundingClientRect(); return [c.borderTopWidth, parseFloat(c.borderTopLeftRadius) >= 13, r.width, r.height].join("/"); }))], on_line: signs.every((b) => { const r = b.getBoundingClientRect(); return r.top >= h.top && r.bottom <= h.bottom; }), foot: document.querySelectorAll(".listfoot").length }; });
 check(tools.ids === "ring-add ring-up ring-down ring-duplicate ring-delete" && tools.look.length === 1 && tools.look[0] === "1px/true/26/26" && tools.on_line && tools.foot === 0, `plus · up · down · duplicate · delete stand on the heading line, five outlined circles of one size (${tools.look.join(" ")}); no line under the list`);
@@ -179,22 +179,33 @@ check(await page.isVisible("#add-menu") && (await page.$$eval("#add-menu button 
 await shot("4c9-add-menu");
 await page.mouse.click(60, 44);      // on the tool's name: nothing to press there
 check(await page.isHidden("#add-menu"), "a press outside puts the menu away");
-// one pinned pane: the list, then the selected ring in one framed line of buttons that fills the width (Okay's drawing, 13 Oct 2026)
+// the ring line (Okay's design, 13 Oct 2026): in the list, right under the selected ring's row; kinds · colour · size · radius, all one height
 const one = await page.evaluate(() => {
-  const p = document.querySelector(".pinned"), line = p.querySelector(".ringline"), box = line.getBoundingClientRect(), parts = [...line.children].filter((e) => !e.classList.contains("valuepop"));
-  const mid = (e) => Math.round(e.getBoundingClientRect().top + e.getBoundingClientRect().height / 2), c = getComputedStyle(line), row = getComputedStyle(p.querySelector(".ringlist li.on"));
-  return { panes: p.querySelectorAll(".pane").length, order: parts.map((e) => e.id || e.className).join(" "), kinds: line.querySelectorAll(".kinds button svg").length, words: line.querySelectorAll(".kinds span, .name").length,
-    hex: getComputedStyle(line.querySelector(".colour .hex")).display, mids: new Set(parts.map(mid)).size, height: Math.round(box.height), title: p.querySelector("h2").textContent,
-    radius: line.querySelector("#ring-r .figure").textContent, size: line.querySelector("#ring-size .figure").textContent, ground: c.backgroundColor, frame: c.borderTopColor, row_frame: row.borderTopColor,
-    fills: Math.round(parts[0].getBoundingClientRect().left - box.left) <= 7 && Math.round(box.right - parts.at(-1).getBoundingClientRect().right) <= 7, tip: line.querySelector(".kinds button").dataset.tip };
+  const p = document.querySelector(".pinned"), holder = p.querySelector(".lineholder"), line = holder.querySelector(".ringline"), parts = [...line.children], on = p.querySelector(".ringlist li.ring.on");
+  const c = getComputedStyle(holder), row = getComputedStyle(on), h = (e) => Math.round(e.getBoundingClientRect().height);
+  return { panes: p.querySelectorAll(".pane").length, under: holder.previousElementSibling === on, gap: Math.round(holder.getBoundingClientRect().top - on.getBoundingClientRect().bottom), order: parts.map((e) => e.id || e.className).join(" "),
+    kinds: line.querySelectorAll(".kinds button svg").length, words: line.querySelectorAll(".kinds span, .name").length, hex: getComputedStyle(line.querySelector(".colour .hex")).display,
+    heights: [...new Set([...line.querySelectorAll(".kinds button, .colour, .valueb")].map(h))], round: [...line.querySelectorAll(".valueb")].every((e) => Math.round(e.getBoundingClientRect().width) === h(e)),
+    title: p.querySelector("h2").textContent, radius: line.querySelector("#ring-r .figure").textContent, size: line.querySelector("#ring-size .figure").textContent, small: line.querySelectorAll("#ring-size svg .small").length,
+    ground: c.backgroundColor, frame: c.borderTopColor, row_frame: row.borderTopColor, tip: line.querySelector(".kinds button").dataset.tip, rows: p.querySelectorAll(".ringlist li.ring").length, all: p.querySelectorAll(".ringlist li").length };
 });
-check(one.panes === 1 && one.order === "kinds ring-c-Colour ring-size ring-r ring-r-drag" && one.kinds === 4 && one.words === 0 && one.hex === "none" && one.mids === 1 && one.fills && one.title === "Rings, top first"
-  && one.radius === String(await S("S.rings[S.ui_ring].r")) && one.size === String(await S("S.rings[S.ui_ring].width")) && one.ground === "rgb(255, 255, 255)" && one.frame === one.row_frame && one.tip === "Ticks",
-  `the selected ring is one framed line of buttons (${one.height} high) filling the width: four kinds · colour · size ${one.size} · radius ${one.radius} · a drag handle; white, its frame the guide's colour like its row's (${one.frame})`);
+check(one.panes === 1 && one.under && one.gap === 2 && one.order === "kinds ring-c-Colour ring-size ring-r" && one.kinds === 4 && one.words === 0 && one.hex === "none" && one.heights.length === 1 && one.round && one.title === "Rings, top first" && one.all === one.rows + 1
+  && one.radius === String(await S("S.rings[S.ui_ring].r")) && one.size === String(await S("S.rings[S.ui_ring].width")) && one.small === 1 && one.ground === "rgb(255, 255, 255)" && one.frame === one.row_frame && one.tip === "Ticks",
+  `the ring line stands in the list, ${one.gap} under the selected ring's row: four kinds · colour · size ${one.size} (a small circle against the large one) · radius ${one.radius}, all ${one.heights[0]} high; white, its frame the guide's colour like its row's (${one.frame})`);
 await page.hover("#ring-kind-Kind-0");
-check(await page.$eval("#ring-kind-Kind-0", (e) => getComputedStyle(e, "::after").content) === '"Ticks"', "a kind button says what it is under it while the pointer is on it: Ticks");
+const tag = await page.evaluate(() => { const t = document.querySelector("#tag"), b = document.querySelector("#ring-kind-Kind-0").getBoundingClientRect(), r = t.getBoundingClientRect(); return [t.hidden, t.textContent, r.top > b.bottom, Math.abs((r.left + r.right) / 2 - (b.left + b.right) / 2) < 2]; });
+check(!tag[0] && tag[1] === "Ticks" && tag[2] && tag[3], "a kind button says what it is in a tag under it while the pointer is on it: Ticks");
 await shot("4c15-ring-line");
 await page.mouse.move(60, 44);
+check(await page.$eval("#tag", (t) => t.hidden), "the tag goes when the pointer leaves");
+// selecting another ring moves the line under that ring's row
+{
+  const before = await S("S.ui_ring"), other = before === 0 ? 1 : 0;
+  await page.click(`.ringlist li:nth-child(${other + 1} of .ring) .name`);
+  const moved = await page.evaluate(() => { const h = document.querySelector(".lineholder"); return h.previousElementSibling === document.querySelector(".ringlist li.ring.on") && document.querySelectorAll(".lineholder").length === 1; });
+  await page.click(`.ringlist li:nth-child(${before + 1} of .ring) .name`);
+  check(moved, "select another ring and the line moves under its row");
+}
 const pinned_open = await page.$eval(".pinned", (e) => e.getBoundingClientRect().height);
 await page.click(".pinned .fold h2");
 const shut = await page.evaluate(() => { const p = document.querySelector(".pinned"), s = p.querySelector(".summary"); return [p.querySelector("h2").textContent, s.textContent, p.getBoundingClientRect().height, s.querySelectorAll(".dot.tiny").length, getComputedStyle(p.querySelector(".headtools")).display]; });
@@ -219,18 +230,18 @@ await page.mouse.move(rb[0] - 20, rb[1], { steps: 6 }); await page.mouse.up();
 check(Math.abs(mid_drag - (r_before + 0.5 + 0.5)) < 1e-9 && Math.abs(await S("S.rings[S.ui_ring].r") - (r_before + 0.5 - 0.5)) < 1e-9 && await page.$("#value-pop") === null, `dragged 20 to the right the radius is 0.5 more (${mid_drag}), 20 to the left 0.5 less; no pop-up opens`);
 await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before);
 {
-  const hb = await page.$eval("#ring-r-drag", (e) => { const r = e.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; });
-  await page.mouse.move(hb[0], hb[1]); await page.mouse.down(); await page.mouse.move(hb[0] + 8, hb[1], { steps: 4 }); await page.mouse.move(hb[0] + 16, hb[1], { steps: 4 }); await page.mouse.up();
-  const by_handle = await S("S.rings[S.ui_ring].r");
-  await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before);
   const w_before = await S("S.rings[S.ui_ring].width");
+  const sb = await page.$eval("#ring-size", (e) => { const r = e.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; });
+  await page.mouse.move(sb[0], sb[1]); await page.mouse.down(); await page.mouse.move(sb[0] + 8, sb[1], { steps: 4 }); await page.mouse.move(sb[0] + 16, sb[1], { steps: 4 }); await page.mouse.up();
+  const dragged = await S("S.rings[S.ui_ring].width");
+  await page.evaluate((w) => window.dial_tool.set_value("ring", "width", w), w_before);
   await page.click("#ring-size");
-  const size_label = await page.textContent("#value-pop label");
+  const pop = await page.evaluate(() => { const p = document.querySelector("#value-pop").getBoundingClientRect(), h = document.querySelector(".lineholder").getBoundingClientRect(), l = document.querySelector(".ringlist ol").getBoundingClientRect(); return [document.querySelector("#value-pop label").textContent, Math.round(p.top - h.bottom), document.querySelector("#value-pop").parentElement.className, p.bottom > 0]; });
   await page.keyboard.type("x2"); await page.keyboard.press("Enter");
   const w_after = await S("S.rings[S.ui_ring].width");
   await page.evaluate((w) => window.dial_tool.set_value("ring", "width", w), w_before);
-  check(Math.abs(by_handle - (r_before + 0.4)) < 1e-9 && size_label === "Band width" && Math.abs(w_after - 2 * w_before) < 1e-9 && await page.$("#value-pop") === null,
-    `the handle drags the radius (16 to the right: +0.4); the size button, before it, pops up the ring's own size (a band: ${size_label}) and takes x2`);
+  check(Math.abs(dragged - (w_before + 0.4)) < 1e-9 && pop[0] === "Band width" && pop[1] >= 3 && pop[1] <= 7 && pop[2] === "ringlist" && Math.abs(w_after - 2 * w_before) < 1e-9 && await page.$("#value-pop") === null,
+    `the size button, before the radius: dragged 16 to the right a band is 0.4 wider; a click pops up its row (${pop[0]}) ${pop[1]} under the ring line, outside the scrolling list; it takes x2`);
 }
 // undo: ⌘Z takes one step back, ⇧⌘Z forward again; a drag is one step; the window's state stays (13 Oct 2026)
 {
@@ -253,7 +264,7 @@ await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before)
   await page.keyboard.press("Control+z");
   const back = await state();
   check(s1[1] > s0[1] && s2[0] === s0[0] + 1 && JSON.stringify(u1) === JSON.stringify(s1) && JSON.stringify(u2) === JSON.stringify(s0) && JSON.stringify(r1) === JSON.stringify(s1) && JSON.stringify(back) === JSON.stringify(s0)
-    && await page.textContent("#ring-r .figure") === String(s0[1]) && await page.$$eval(".ringlist li", (l) => l.length) === s0[0],
+    && await page.textContent("#ring-r .figure") === String(s0[1]) && await page.$$eval(".ringlist li.ring", (l) => l.length) === s0[0],
     `undo: a duplicate, then a whole drag of the radius (${s1[1]} → ${s0[1]}), each one step back; redo brings the drag back; the panel follows`);
   await page.evaluate(() => window.dial_tool.set_value("global", "dial_d", 31));
   await settle();
@@ -268,7 +279,7 @@ await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before)
 }
 // a numeral's radius measures to its centre, its baseline or its top: the menu beside the label, in the pop-up (13 Oct 2026)
 const numerals_at = await S("S.rings.findIndex((r) => r.kind === 2)"), ring_before = await S("S.ui_ring");
-await page.click(`.ringlist li:nth-child(${numerals_at + 1}) .name`);
+await page.click(`.ringlist li:nth-child(${numerals_at + 1} of .ring) .name`);
 await page.click("#ring-r");
 const anchors = await page.evaluate(() => {
   const t = window.dial_tool, ring = t.ring(), menu = document.querySelector("#value-pop .menulabel select"), label = () => document.querySelector("#value-pop .menulabel label").textContent;
@@ -278,7 +289,7 @@ const anchors = await page.evaluate(() => {
 });
 await shot("4c10-radius-pop");
 await page.keyboard.press("Escape");
-await page.click(`.ringlist li:nth-child(${ring_before + 1}) .name`);
+await page.click(`.ringlist li:nth-child(${ring_before + 1} of .ring) .name`);
 check(anchors.options === "Baseline Ascender Centre" && anchors.labels.join(" | ") === "Centre radius | Baseline radius | Ascender radius | Centre radius" && anchors.a1 === 1 && anchors.a2 === 2 && anchors.a0 === 0,
   `the radius of numerals has a menu beside its label: ${anchors.options}; the label follows: ${anchors.labels.join(" → ")}`);
 // …and the drawing follows: the numeral at 12 stands on the radius (baseline), hangs from it (ascender), or is centred on it
@@ -319,8 +330,8 @@ await shot("4b-hover-setup");
 // ── drag a ring to another place in the list ──
 await tab("Rings");
 const order = await S("S.rings.map((r) => r.name)");
-const grip = await page.$eval(".ringlist li:nth-child(1) .grip", (e) => { const r = e.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2, r.height]; });
-grip[2] = await page.$$eval(".ringlist li", (l) => l[1].getBoundingClientRect().top - l[0].getBoundingClientRect().top);      // from one row to the next
+const grip = await page.$eval(".ringlist li:nth-child(1 of .ring) .grip", (e) => { const r = e.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2, r.height]; });
+grip[2] = await page.$$eval(".ringlist li.ring", (l) => l[1].getBoundingClientRect().top - l[0].getBoundingClientRect().top);      // from one row to the next
 await page.mouse.move(grip[0], grip[1]);
 await page.mouse.down();
 await page.mouse.move(grip[0], grip[1] + grip[2] * 1.2, { steps: 4 });
@@ -970,12 +981,12 @@ check(await S("S.ha_hour.round === 2"), "pasting a link into the open tool switc
 
 // ── nothing jumps: a click on the preview keeps the rows; panes slide; the Guides switch keeps its size ──
 await tab("Rings");
-await page.click(".ringlist li >> nth=2");
+await page.click(".ringlist li.ring >> nth=2");
 await page.$eval(".form", (e) => { e.scrollTop = 180; });
 await page.evaluate(() => { window.__row = document.querySelector(".form .row"); });
 await page.click(".pinned .colour");
 await click_mm(0, 10);                               // a numeral, in the section that is showing
-const kept = await page.evaluate(() => ({ same_rows: window.__row === document.querySelector(".form .row"), scroll: document.querySelector(".form").scrollTop, picker: document.querySelector("#colour-pop").hidden, ring: window.dial_tool.ring().name, list: document.querySelector(".ringlist li.on .name").textContent }));
+const kept = await page.evaluate(() => ({ same_rows: window.__row === document.querySelector(".form .row"), scroll: document.querySelector(".form").scrollTop, picker: document.querySelector("#colour-pop").hidden, ring: window.dial_tool.ring().name, list: document.querySelector(".ringlist li.ring.on .name").textContent }));
 check(kept.same_rows && kept.scroll === 180 && kept.picker && kept.ring === kept.list, `a click on the preview keeps the rows, their scroll (${kept.scroll}) and selects ${kept.ring}; the colour pop-out, pressed outside of, is put away`);
 await page.click(".pinned .colour");
 await tab("Hands"); await page.$eval(".form", (e) => { e.scrollTop = 120; }); await tab("Dial"); await tab("Hands");

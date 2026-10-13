@@ -1,6 +1,6 @@
 # Dial Tool — brief
 
-*Started 3 Oct 2026. Last updated 13 Oct 2026 (review of the research atlas: decisions in §4, parked ideas in §8; web version beta 4.8). Before: 12 Oct 2026 (web version, beta 4.4 to 4.6, on `dev`). Before: 11 Oct 2026 (web version, beta 3.0); 4 Oct 2026 (beta 2.3 on `dev`: preview plan built, Mac check pending — `docs/preview.md` §6).*
+*Started 3 Oct 2026. Last updated 13 Oct 2026 (review of the research atlas: decisions in §4, parked ideas in §8; web version beta 4.9). Before: 12 Oct 2026 (web version, beta 4.4 to 4.6, on `dev`). Before: 11 Oct 2026 (web version, beta 3.0); 4 Oct 2026 (beta 2.3 on `dev`: preview plan built, Mac check pending — `docs/preview.md` §6).*
 
 ## 1 · Goal
 
@@ -139,6 +139,7 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 13 Oct | ***Show this window* is gone**: a window is shown or hidden by its card's switch only. | Okay: "Show this w. Goes away." |
 | 13 Oct | **Windows: a Shape pane** — rectangle · circle · polygon (sides) · arch · arc, one Corner value; the hole can turn with its radius (4 o'clock added: 30°; half past: 45°) and its text with it or not. **A window can have its own font** (else the top numerals ring's, as before). **Three colours**: text or picture · the disc under the hole · the frame. Old windows draw as before (R31). Settles build list #34 and #46. | Okay: "Window shape pane: Font selectable, colors selectable. Go"; the shapes are from his note on atlas 2.5 and his Yes on 2.1, 2.3, 2.8. Which three colours is Claude's reading. |
 | 13 Oct | **Later: the whole interface smaller on an iPad**, about 80 % (build list #100). | Okay: "Can you scale the ui down, altogether, like %80 on ipad, note for later". |
+| 13 Oct | **beta 4.9. Ring line, Okay's design:** it stands in the list, right under the selected ring's row (2 apart), framed like it on white; its buttons start where the ring names start; every control is one height (36): four kinds (46 wide) · colour · size · radius. The drag arrow is gone (the two round buttons are dragged themselves). The size button's drawing is a small circle against the large one ("scale"). The tag is one floating label for the whole tool. | Okay, with a designed picture: "new design dropped. icons consistent sized, new sketches for scale icons, tidy up and implement". His picture writes the size as "9,25x"; the tool shows the plain value — Claude's choice, to ask. |
 
 ## 5 · Open questions
 
