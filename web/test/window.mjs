@@ -888,7 +888,7 @@ check(await page.$eval("#font-picker", (d) => d.open) && sheet_at === "184 64 -1
   check(row.legend === "w. 100–900 bold italic wd opt tab old zero frac 2 ss 5 cv 3 st" && row.legend_at, `a legend says what each sticker means: folded to a button beside the squares, it opens upwards over them (${row.legend})`);
   check(row.cut, "numerals keep their size in every row: the wide ones are cut at their column's edge, none above");
   check(row.fits, "every family's name fits its column: the long ones are drawn smaller");
-  check(row.squares.startsWith("Add font link(gfonts, url) true · Add font file(woff, ttf, otf) true") && row.squares.endsWith("Legend true"), `the buttons for adding a font say what they are, and under it, light, what they take; short (no higher than 46), on the list's three columns, the legend's button last (${row.squares})`);
+  check(row.squares.startsWith("Add font link(gfonts, url) true · Add font file(woff, ttf, otf) true") && row.squares.endsWith("Legend(OpenType abbr.) true"), `the buttons for adding a font say what they are, and under it, light, what they take; short (no higher than 46), on the list's three columns, the legend's button last (${row.squares})`);
   await page.keyboard.press("Escape");
   { // the text's colour stands in the ring list's colour column; the name's whole line opens the sheet
     const col = await page.evaluate(() => { const mid = (e) => { const r = e.getBoundingClientRect(); return r.left + r.width / 2; }; return [mid(document.querySelector(".ringlist li.ring:not(.on) .chipcell")), mid(document.querySelector("#font-c")), document.querySelector("#font-c").getBoundingClientRect().right <= document.querySelector("#font-change").getBoundingClientRect().left, true]; });

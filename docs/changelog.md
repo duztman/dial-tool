@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.35.5 (web version) · 14 Oct 2026
+
+- **The legend is a window**: open, it floats over the foot of the font list (the list keeps its height), with a light frame and the sheet's shadow; its items two to a row, a hairline between them; the stickers keep their size, the words are small (11) on as many lines as they need, set closer (1.2).
+- **The Legend button** has a second line like its brothers: *(OpenType abbr.)*.
+
 ## beta 4.35.4 (web version) · 14 Oct 2026
 
 - **The font sheet's legend**: on the sheet's three columns — each sticker ends on the first column's line, its meaning starts on the second (where the second button starts); the stickers at three quarters of their former size (12, R32's one exception); every meaning a sentence with a capital and a full stop, and under it, light, the OpenType name of what it reads (*wght axis*, *tnum*, *ss01 to ss20*…).
