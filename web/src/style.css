@@ -71,11 +71,13 @@
     --round-pill: 999px;                           /* fully round: the signs on the Rings heading line, a value button */
     --menu-box: 18px;                              /* the boxed arrow beside a label that opens a small menu */
     --foot-gap: 4px;                               /* between the round signs on the Rings heading line */
-    --ringline-pad: 5px; --ringline-gap: 8px; --ringline-join: 2px;      /* the selected ring's line: inside its frame · between its parts · between it and its ring's row */
+    --ringline-pad: 8px; --ringline-gap: 8px; --ringline-join: 2px;      /* the selected ring's line: inside its frame · between its parts · between it and its ring's row */
+    --ringline-inner: calc(3 * var(--hair));       /* its second, inner line: three times the outer */
     --line-button: 36px; --kind-wide: 46px; --bare-dot: 16px;      /* in that line every control is this high (a value button this wide too) · a kind's button is this wide · the colour's swatch */
     --name-in: 6px;                                /* a ring's name starts this far into its column; the ring line's buttons too */
     --card-switch: 22px;                           /* the clock-like switch on a window card */
     --half: 30px;                                  /* AM · PM inside the time's box */
+    --value-pop: 132px;                            /* a value button's pop-up: about as wide as it is high */
     --dot-tiny: 10px;                              /* a colour inside a line of words: a folded pane's summary */
     --thumb: 18px; --track: 4px;                   /* sliders: a black disc on a thin track (Okay's sketch, 12 Oct 2026) */
     --tick: 16px;                                  /* a tick box */
@@ -99,7 +101,9 @@
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
     --t-xs: 11px; --t-s: 12px; --t-m: 13px; --t-l: 15px;
     --t-sample: 20px;                              /* a font's numerals in the font list, when the browser sets them */
+    --t-pixel: 8px;                                /* the pixel font's own size: its dots fall on the screen's (R32) */
     --sans: system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --pixel: "Silkscreen", ui-monospace, Menlo, monospace;      /* tiny numbers inside small drawings (a value button, the numerals picture): Silkscreen, packed into the page by build.mjs (SIL OFL) */
     --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;      /* only for what the tool says: the log, a link, a hex value, a feature's tag */
   }
   @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --pop-width: 454px; --pill: 28px; --dot: 18px; --guide-dot: 14px; --guide-gap: 13px; --pop-field: 180px; --pop-hue: 32px; --knob: 28px; } }      /* a finger needs more to hold than a pointer */
@@ -412,7 +416,7 @@
      and every row borrows them (subgrid), so summaries and kinds stand under each other whatever the words' widths. */
   .ringlist { margin: 0 calc(-1 * var(--frame-out)) 0 var(--lead); }      /* rows start where the labels start (Okay's drawing, 13 Oct 2026): the toggle column is the panes' alone */
   .ringlist ol { position: relative; list-style: none; margin: 0; padding: 2px 0 0; display: grid; row-gap: var(--ring-gap);
-    grid-template-columns: calc(var(--frame-out) + var(--lead)) 18px minmax(0, auto) auto minmax(0, 1fr) auto; max-height: calc(5 * (var(--line) + var(--ring-gap)) + var(--line-button) + 2 * var(--ringline-pad) + 2 * var(--hair) + var(--ringline-join) + 4px); overflow-y: auto; }      /* five rings and the ring line, then it scrolls */
+    grid-template-columns: calc(var(--frame-out) + var(--lead)) 18px minmax(0, auto) auto minmax(0, 1fr) auto; max-height: calc(5 * (var(--line) + var(--ring-gap)) + var(--line-button) + 2 * var(--ringline-pad) + 2 * var(--ringline-inner) + 2 * var(--hair) + var(--ringline-join) + 4px); overflow-y: auto; }      /* five rings and the ring line, then it scrolls */
   .ringlist li.ring { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; height: var(--line); padding-right: calc(var(--frame-out) - var(--hair));
     border: var(--hair) solid var(--rule); border-radius: 5px; background: var(--field); cursor: pointer; }
   .ringlist li.ring:hover { border-color: var(--grey); }
@@ -427,9 +431,11 @@
   .ringlist li.ring.dragged { opacity: 0.45; }
   .ringlist li.ring.dragged .grip { cursor: grabbing; }
   .ringlist .dropline { position: absolute; left: 0; right: 0; height: 3px; background: var(--ink); pointer-events: none; }
-  .ringlist span.name { padding: 0 8px 0 var(--name-in); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ringlist .namecell { display: flex; align-items: center; min-width: 0; padding-right: 8px; }
+  .ringlist span.name { min-width: 0; padding: 0 4px 0 var(--name-in); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ringlist span.name.renames { cursor: text; }
   .ringlist input.name { grid-column: 3 / 5; margin-left: 2px; padding: 0 4px; }
-  .ringlist .rename { display: grid; place-items: center; width: var(--control); height: var(--control); color: var(--faint); }
+  .ringlist .rename { flex: none; display: grid; place-items: center; width: var(--control); height: var(--control); color: var(--faint); }
   .ringlist .rename:hover { color: var(--ink); background: var(--veil-strong); }
   .ringlist .sum { grid-column: 5; justify-self: end; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--t-s); }
   .ringlist .kind { grid-column: 6; justify-self: start; padding-left: var(--sum-gap); }
@@ -457,8 +463,10 @@
      frame has the colour of the selected ring's guide, as the row above has, on white. */
   .ringlist { position: relative; }
   .ringlist li.lineholder { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; margin-top: calc(var(--ringline-join) - var(--ring-gap));
-    padding: var(--ringline-pad) calc(var(--frame-out) - var(--hair)) var(--ringline-pad) 0; border: var(--hair) solid var(--select-rule); border-radius: var(--round-small); background: var(--field); }
-  .guided .ringlist li.lineholder { border-color: color-mix(in srgb, var(--guide) var(--guide-edge), var(--grey)); }
+    padding: calc(var(--ringline-pad) + var(--ringline-inner)) calc(var(--frame-out) - var(--hair) + var(--ringline-inner)) calc(var(--ringline-pad) + var(--ringline-inner)) 0;
+    border: var(--hair) solid var(--select-rule); border-radius: var(--round-small); background: var(--field); box-shadow: inset 0 0 0 var(--ringline-inner) var(--select); }
+  /* inside its outer line a second one, three times as thick, in the selected row's ground: the box reads as that row's (Okay, 13 Oct 2026) */
+  .guided .ringlist li.lineholder { border-color: color-mix(in srgb, var(--guide) var(--guide-edge), var(--grey)); box-shadow: inset 0 0 0 var(--ringline-inner) color-mix(in srgb, var(--guide) var(--guide-tint), var(--field)); }
   .ringline { grid-column: 3 / -1; display: flex; align-items: center; gap: var(--ringline-gap); padding-left: var(--name-in); }
   .nothing { display: none; }
   .kinds { display: flex; flex: none; }
@@ -468,7 +476,7 @@
   .kinds button.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
   .colour.bare { flex: none; justify-content: center; width: var(--line-button); height: var(--line-button); padding: 0; border: var(--hair) solid var(--rule); border-radius: 0; background: var(--field); }
   .colour.bare .hex { display: none; }
-  .colour.bare .dot { width: var(--bare-dot); height: var(--bare-dot); }
+  .colour.bare .dot { width: var(--bare-dot); height: var(--bare-dot); border-color: var(--rule); }
   .colour.bare[aria-expanded="true"] { border-color: var(--ink); }
   /* the tag: what a wordless button is, under it while the pointer is on it. One for the whole tool, over everything. */
   .tag { position: fixed; z-index: 30; translate: -50% 0; padding: 2px 8px 3px; border: var(--thick) solid var(--ink); border-radius: var(--round-small); background: var(--field); color: var(--ink);
@@ -478,18 +486,27 @@
   /* a value as a button: a circle with a radius drawn in it and the value written on the line. A click pops up the
      number's row under it; pressing and moving changes the value. */
   .valueb { position: relative; flex: none; width: var(--line-button); height: var(--line-button); border-radius: var(--round-pill); cursor: ew-resize; touch-action: none; }
-  .valueb svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.1; }
-  .valueb svg .small { fill: var(--field); stroke: var(--grey); }
-  .valueb svg circle:first-child { fill: var(--field); stroke: var(--grey); }
-  .valueb svg .pivot { fill: currentColor; stroke: none; }
+  .valueb svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; stroke: var(--grey); stroke-width: 1.1; }
+  .valueb svg .small { fill: var(--field); stroke: var(--rule); }
+  .valueb svg circle:first-child { fill: var(--field); stroke: var(--rule); }      /* the same line as the square buttons beside it */
+  .valueb svg .pivot { fill: var(--grey); stroke: none; }
   .valueb:hover svg circle:first-child { fill: var(--hover); stroke: var(--ink); }
   .valueb:is([aria-expanded="true"], .dragging) { color: var(--paper); }
   .valueb:is([aria-expanded="true"], .dragging) svg circle:first-child { fill: var(--ink); stroke: var(--ink); }
-  .valueb .figure { position: absolute; left: 0; right: 0; bottom: calc(50% + 2px); text-align: center; font-size: var(--t-xs); font-weight: 600; line-height: 1; }
+  .valueb:is([aria-expanded="true"], .dragging) svg { stroke: var(--paper); }
+  .valueb:is([aria-expanded="true"], .dragging) svg .pivot { fill: var(--paper); }
+  .valueb .figure { position: absolute; left: 0; right: 0; bottom: calc(50% + 2px); text-align: center; font: var(--t-pixel)/1 var(--pixel); }      /* tiny numbers: the pixel font at its own size */
   .valueb .figure.mid { bottom: auto; top: 50%; translate: 0 -50%; }      /* no line to stand on: in the middle */
-  .valueb .figure.long { letter-spacing: -0.07em; }
-  .valuepop { --row-rule: transparent; position: absolute; z-index: 4; top: 100%; left: 0; right: 0; padding: 0 10px; border: var(--hair) solid var(--ink); background: var(--field); }
-  .valuepop .row input[type="range"] { visibility: hidden; }      /* the button is dragged instead: the pop-up is for typing */
+  .valueb .figure.long { letter-spacing: -1px; }
+  svg text.pixel { font-family: var(--pixel); }
+  .valuepop { --row-rule: transparent; position: absolute; z-index: 4; width: var(--value-pop); padding: 10px 10px 12px; border: var(--hair) solid var(--ink); background: var(--field); }
+  /* a small square: the number's name (and its menu) · the field · − +, one under the other. No slider: the button is dragged instead. */
+  .valuepop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 6px; min-height: 0; }
+  .valuepop .row > * { grid-column: 1; }
+  .valuepop .row input[type="range"] { display: none; }
+  .valuepop .row input[type="text"] { width: 100%; text-align: center; }
+  .valuepop .row .steps { display: grid; grid-template-columns: 1fr 1fr; }
+  .valuepop .row :is(label, .menulabel) { min-height: var(--control); align-items: center; display: flex; justify-content: space-between; }
 
   /* the font picker: every font shows its own numerals */
   .font { display: grid; gap: var(--unit); margin-top: var(--unit); }

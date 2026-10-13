@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## beta 4.10 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Okay's marked-up picture of the Rings pane. Seen in Chromium here only.
+
+- **Rename**: the box stands right beside the name; it goes when the row is too full; a click on the selected ring's name renames it.
+- **Ring line's frame**: inside the outer line a second one, 3 thick, in the selected row's ground; 8 of room inside (was 5).
+- **Value pop-up**: a small square (132 wide) hung on the button's bottom right corner: name (and the anchor menu) · field · − +.
+- **Pictures**: round buttons have the square buttons' outline; ticks, markers, numerals and band pictures weigh about the same.
+- **Silkscreen** (SIL OFL, `web/fonts/ui/`) is packed into the page for the tool's tiny numbers, at 8: the values in the round buttons and 12 · 3 · 6 · 9 in the numerals picture. R32 amended.
+
 ## beta 4.9 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Okay's designed picture of the ring line. Seen in Chromium here only.

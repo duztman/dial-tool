@@ -68,10 +68,12 @@ const KIND_PIC = 30;                               // a kind's picture on a tile
 const PICS = {
   // a ring's kind: the whole circle, as on a dial (Okay's drawing, 13 Oct 2026). Square, a little larger than the others.
   kind: (i, size = KIND_PIC) => icon([
-    `<path d="${ticks(18, 8.5, 13.5)}" stroke-width="1.3" stroke-linecap="butt"/>`,
-    `<path d="${ticks(8, 8.5, 13.5)}" stroke-width="3" stroke-linecap="butt"/>`,
-    [["12", 0, -9.4], ["3", 10, 0], ["6", 0, 9.4], ["9", -10, 0]].map(([t, x, y]) => `<text x="${x}" y="${y}" font-size="8" font-weight="600" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">${t}</text>`).join(""),
-    `<circle r="10.5" stroke-width="5.4"/>`,
+    // the four weigh about the same (Okay, 13 Oct 2026: "equalize contrast"): many thin ticks, eight thicker marks,
+    // four numbers set in the pixel font at its own size (10 here is 8 on the screen at 24), a ring of middle weight
+    `<path d="${ticks(24, 8.5, 13.5)}" stroke-width="1.25" stroke-linecap="butt"/>`,
+    `<path d="${ticks(8, 8.5, 13.5)}" stroke-width="2.6" stroke-linecap="butt"/>`,
+    [["12", 0, -8.75], ["3", 10, 0], ["6", 0, 8.75], ["9", -10, 0]].map(([t, x, y]) => `<text class="pixel" x="${x}" y="${y}" font-size="10" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">${t}</text>`).join(""),
+    `<circle r="10.6" stroke-width="3.6"/>`,
   ][i], size, "-15 -15 30 30"),
   shape: [`<rect x="12" y="3" width="4" height="14" ${solid}/>`, `<path d="M10.5 3L17.5 3L15.2 17L12.8 17Z" ${solid}/>`, `<circle cx="14" cy="10" r="4.5" ${solid}/>`],
   twelve: [
@@ -1404,7 +1406,7 @@ class DialTool {
     plus.onclick = () => open(menu.hidden);
     G.KINDS.forEach((kind, i) => {
       const b = el("button", { type: "button", id: "add-" + kind, onclick: () => { open(false); this.ring_tool("add", kind); } });
-      b.innerHTML = PICS.kind(i, 20);
+      b.innerHTML = PICS.kind(i, 24);
       b.append(el("span", { textContent: kind[0].toUpperCase() + kind.slice(1) }));
       b.setAttribute("role", "menuitem");
       menu.append(b);
@@ -1508,10 +1510,12 @@ class DialTool {
     if (this.value_pop && this.value_pop.button === button) return this.value_pop_close();
     this.value_pop_close();
     const r = this.build_row(row), box = el("div", { className: "valuepop", id: "value-pop" }, r.el);
-    // under the ring line, but hung on the list's frame, not inside the list: the list scrolls and would cut it off
-    const frame = button.closest(".ringlist") || button.parentElement, line = (button.closest(".lineholder") || button).getBoundingClientRect();
+    // a small square whose top right corner meets the button's bottom right (Okay, 13 Oct 2026). It hangs on the
+    // list's frame, not inside the list: the list scrolls and would cut it off.
+    const frame = button.closest(".ringlist") || button.parentElement, at = button.getBoundingClientRect(), within = frame.getBoundingClientRect();
     frame.append(box);
-    box.style.top = `${Math.round(line.bottom - frame.getBoundingClientRect().top + 5)}px`;
+    box.style.top = `${Math.round(at.bottom - within.top)}px`;
+    box.style.right = `${Math.round(within.right - at.right)}px`;
     button.setAttribute("aria-expanded", "true");
     this.tag_hide();
     this.value_pop = { button, box, r };
@@ -1559,8 +1563,9 @@ class DialTool {
     });
   }
 
-  /** one row per ring: eye (show or hide it on the dial, in the left column) · grip · name · the rename box
-   *  (selected ring only, and not while it is hidden) · its summary · its kind. A click anywhere else on a row selects it. */
+  /** one row per ring: eye (show or hide it on the dial) · grip · name, with the rename box right beside it (selected
+   *  ring only, not while it is hidden, and not when the line is too full) · its summary · its kind. A click on the
+   *  selected ring's name renames it; a click anywhere else on a row selects it. */
   fill_ring_list() {
     if (!this.ring_list) return;
     this.ring_list.replaceChildren();
@@ -1573,16 +1578,23 @@ class DialTool {
       grip.innerHTML = icon(TOOL_ICONS.grip);
       grip.onpointerdown = (e) => this.drag_ring(e, i);
       const name = el("span", { className: "name", textContent: ring.name || G.kind_of(ring) });
-      const item = el("li", { className: "ring" + (selected ? " on" : "") + (ring.on ? "" : " off") }, show, grip, name);
-      if (selected && ring.on) {
-        const rename = el("button", { type: "button", className: "rename", title: "Rename this ring", ariaLabel: "Rename this ring", onclick: (e) => { e.stopPropagation(); this.rename_ring(i, item, name); } });
+      const cell = el("span", { className: "namecell" }, name);       // the name and, right beside it, the rename box
+      const item = el("li", { className: "ring" + (selected ? " on" : "") + (ring.on ? "" : " off") }, show, grip, cell);
+      let rename = null;
+      if (selected && ring.on) {                   // the selected ring is renamed by a click on its name, or on the box beside it (Okay, 13 Oct 2026)
+        const start = (e) => { e.stopPropagation(); this.rename_ring(i, item, cell); };
+        rename = el("button", { type: "button", className: "rename", title: "Rename this ring", ariaLabel: "Rename this ring", onclick: start });
         rename.innerHTML = icon(TOOL_ICONS.rename, 18);
-        item.append(rename);
+        cell.append(rename);
+        name.classList.add("renames");
+        name.title = "Rename this ring";
+        name.onclick = start;
       }
       item.append(el("span", { className: "quiet sum", textContent: this.ring_summary(ring), title: "How many × how big · radius" }));
       item.append(el("span", { className: "quiet kind", textContent: G.kind_of(ring) }));
       item.onclick = () => { if (!item.querySelector("input")) this.select_ring(i); };
       this.ring_list.append(item);
+      if (rename && name.scrollWidth > name.clientWidth) rename.hidden = true;       // no room: the box goes, the name keeps its letters (and still renames)
     });
     this.place_ring_line();
   }
@@ -1597,7 +1609,7 @@ class DialTool {
   }
 
   /** the name becomes a field: Enter or a click elsewhere keeps it, Esc puts the old name back. */
-  rename_ring(i, item, name) {
+  rename_ring(i, item, name) {                     // name: what the field stands in for (the name's cell)
     const ring = this.S.rings[i], before = ring.name;
     const field = el("input", { type: "text", value: ring.name, className: "name", ariaLabel: "Ring name" });
     let done = false;

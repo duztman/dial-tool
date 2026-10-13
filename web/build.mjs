@@ -34,7 +34,9 @@ const out = await esbuild.build({
   logLevel: "warning",
 });
 const code = out.outputFiles[0].text.replace(/<\/script/g, "<\\/script");
-const css = fs.readFileSync(path.join(here, "src/style.css"), "utf8");
+// Silkscreen (SIL OFL, fonts/ui/): the pixel font for the tiny numbers inside small drawings. Packed into the stylesheet.
+const pixel = `@font-face { font-family: "Silkscreen"; src: url(data:font/ttf;base64,${b64(path.join(here, "fonts/ui/Silkscreen-Regular.ttf"))}) format("truetype"); font-display: block; }\n`;
+const css = fs.readFileSync(path.join(here, "src/style.css"), "utf8") + pixel;
 const version = /VERSION = "([^"]+)"/.exec(fs.readFileSync(path.join(here, "src/geometry.js"), "utf8"))[1];
 
 const html = `<!doctype html>
@@ -44,7 +46,7 @@ const html = `<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
 <!-- Dial Tool, web version · ${version} · built ${new Date().toISOString().slice(0, 10)} · source: github.com/duztman/dial-tool, web/src
-     One file: code, shape engine (PathKit), text engine (HarfBuzz) and the stand-in font (Inter, OFL) are all inside. -->
+     One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 ${css}</style>
 </head>

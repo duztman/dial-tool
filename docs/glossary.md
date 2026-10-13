@@ -48,7 +48,8 @@ If a term is used differently in conversation, ask, then update this file.
 | **Rings pane** | The pinned pane on top of Rings (web version, 13 Oct 2026): its heading line with the list's tools (a plus that opens the four kinds; move up · move down · duplicate · delete), the ring list, the **ring line**. Folded it is one line: *Rings: <name>* and a summary. |
 | **Ring line** | The selected ring's controls in one framed line inside the ring list, right under that ring's row; its buttons start where the names start, all one height, no words: four kinds · its colour · its **size** (how big one of its things is: a mark's length, a dot's Ø, a numeral's size, a band's width; Okay's "scale") · its radius. Its frame has the selected ring's guide colour, on white. |
 | **Tag** | The small label under a wordless button while the pointer is on it ("Ticks"); one for the whole tool, laid over everything. |
-| **Value button** | A number as a small round drawing with its value written in it (a ring's radius: a circle with its radius drawn; its size: a small circle against the large one). Click: the number's row pops up under it, ready to type in. Press and move: the value changes. R15's exception. |
+| **Pixel font** | Silkscreen (SIL OFL), packed into the page: the tool's own tiny numbers inside small drawings, always at 8. Not one of the dial's fonts. |
+| **Value button** | A number as a small round drawing with its value written in it (a ring's radius: a circle with its radius drawn; its size: a small circle against the large one). Click: a small square pops up at its bottom right corner (the number's name, field, − +), ready to type in. Press and move: the value changes. R15's exception. |
 | **Ring settings** | The scrolling list under the ring list: Kind · Colour · Radius · Positions · Give way · Look · Nudge · Type. Nudge and Type show for numerals rings only. (beta 2.0 split it into four pages.) |
 
 ## Hands
@@ -86,7 +87,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Margin** | The panel's side space, 24, the same left and right (web version, beta 4.2). Lines start and end on it; so do the eyes. |
 | **Day slider · step** | The bottom bar's slider over twelve hours. Its steps are the twelve hours and 10:10: a click goes exactly to one. It stays in the half of the day that is showing; **AM · PM**, the small word in the time's box, turns the half over. |
 | **Eye** | The sign in the toggle column. Open = showing; closed, with lashes = put away. |
-| **Rename box** | A text cursor in a rounded box, after the selected ring's name: the only way to rename a ring (web version). |
+| **Rename box** | A text cursor in a rounded box, right beside the selected ring's name; left out when the row is too full. A click on it, or on the selected ring's name, renames the ring (beta 4.10; until then the box was the only way). |
 | **Picture tile** | One choice shown as a small drawing with its name under it (ring kind, mark shape, hand shape, what a window shows…). |
 | **Colour pop-out** | What a swatch opens, at its right (web version, beta 4.5; the *colour picker* of 4.0–4.4): one for the whole tool. *On this dial* · *Palette* · the field and the hues · one line of RGB / CMYK / HEX with COPY. Its head drags it; its square makes it twice the size. |
 | **Colour pill** | How a colour shows in the panel: one small button holding a swatch and the hex in monospace. It opens the pop-out; nothing is typed in it. |

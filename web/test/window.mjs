@@ -192,6 +192,32 @@ const one = await page.evaluate(() => {
 check(one.panes === 1 && one.under && one.gap === 2 && one.order === "kinds ring-c-Colour ring-size ring-r" && one.kinds === 4 && one.words === 0 && one.hex === "none" && one.heights.length === 1 && one.round && one.title === "Rings, top first" && one.all === one.rows + 1
   && one.radius === String(await S("S.rings[S.ui_ring].r")) && one.size === String(await S("S.rings[S.ui_ring].width")) && one.small === 1 && one.ground === "rgb(255, 255, 255)" && one.frame === one.row_frame && one.tip === "Ticks",
   `the ring line stands in the list, ${one.gap} under the selected ring's row: four kinds · colour · size ${one.size} (a small circle against the large one) · radius ${one.radius}, all ${one.heights[0]} high; white, its frame the guide's colour like its row's (${one.frame})`);
+// its frame: an outer line in the guide's colour and, inside it, a line three times as thick in the selected row's ground; the tiny numbers are in Silkscreen
+{
+  const look = await page.evaluate(async () => {
+    await document.fonts.load('8px "Silkscreen"');
+    const h = document.querySelector(".lineholder"), c = getComputedStyle(h), on = getComputedStyle(document.querySelector(".ringlist li.ring.on")), f = getComputedStyle(document.querySelector("#ring-r .figure"));
+    const strokes = [...new Set([...document.querySelectorAll(".valueb svg circle:first-child, .valueb svg .small")].map((e) => getComputedStyle(e).stroke))], kind = getComputedStyle(document.querySelector(".kinds button:not(.on)")).borderTopColor;
+    return { inner: c.boxShadow, ground: on.backgroundColor, pad: parseFloat(c.paddingTop), font: f.fontFamily, size: f.fontSize, loaded: document.fonts.check('8px "Silkscreen"'), strokes, kind, text: getComputedStyle(document.querySelector(".kinds svg text")).fontFamily };
+  });
+  check(look.inner.includes("3px") && look.inner.includes("inset") && look.inner.startsWith(look.ground) && look.pad === 11 && look.font.includes("Silkscreen") && look.size === "8px" && look.loaded && look.text.includes("Silkscreen") && look.strokes.length === 1 && look.strokes[0] === look.kind,
+    `the ring line's frame has an inner line 3 thick in its row's ground (${look.ground}) and ${look.pad} of room; its tiny numbers are in Silkscreen at 8; round and square buttons have one outline (${look.kind})`);
+}
+// the selected ring is renamed by a click on its name; the rename box stands right beside the name
+{
+  const gap = await page.evaluate(() => { const n = document.querySelector(".ringlist li.ring.on .name").getBoundingClientRect(), r = document.querySelector(".ringlist li.ring.on .rename").getBoundingClientRect(); return Math.round(r.left - n.right); });
+  const was = await S("S.rings[S.ui_ring].name");
+  await page.click(".ringlist li.ring.on .name");
+  const field = await page.$$eval(".ringlist li.ring.on input.name", (e) => e.length);
+  await page.keyboard.press("Escape");
+  await page.evaluate(() => { const t = window.dial_tool; t.ring().name = "A very long name for a ring that can not fit in its row"; t.fill_ring_list(); t.sync_rows(); });
+  const long = await page.evaluate(() => { const r = document.querySelector(".ringlist li.ring.on .rename"), n = document.querySelector(".ringlist li.ring.on .name"); return [r.hidden, n.scrollWidth > n.clientWidth]; });
+  await page.click(".ringlist li.ring.on .name");
+  const still = await page.$$eval(".ringlist li.ring.on input.name", (e) => e.length);
+  await page.keyboard.press("Escape");
+  await page.evaluate((was) => { const t = window.dial_tool; t.ring().name = was; t.fill_ring_list(); t.sync_rows(); }, was);
+  check(gap === 0 && field === 1 && long[0] && long[1] && still === 1 && await S("S.rings[S.ui_ring].name") === was, "the rename box stands right beside the name; a click on the selected ring's name renames it; a name too long for the row loses the box and still renames");
+}
 await page.hover("#ring-kind-Kind-0");
 const tag = await page.evaluate(() => { const t = document.querySelector("#tag"), b = document.querySelector("#ring-kind-Kind-0").getBoundingClientRect(), r = t.getBoundingClientRect(); return [t.hidden, t.textContent, r.top > b.bottom, Math.abs((r.left + r.right) / 2 - (b.left + b.right) / 2) < 2]; });
 check(!tag[0] && tag[1] === "Ticks" && tag[2] && tag[3], "a kind button says what it is in a tag under it while the pointer is on it: Ticks");
@@ -236,12 +262,13 @@ await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before)
   const dragged = await S("S.rings[S.ui_ring].width");
   await page.evaluate((w) => window.dial_tool.set_value("ring", "width", w), w_before);
   await page.click("#ring-size");
-  const pop = await page.evaluate(() => { const p = document.querySelector("#value-pop").getBoundingClientRect(), h = document.querySelector(".lineholder").getBoundingClientRect(), l = document.querySelector(".ringlist ol").getBoundingClientRect(); return [document.querySelector("#value-pop label").textContent, Math.round(p.top - h.bottom), document.querySelector("#value-pop").parentElement.className, p.bottom > 0]; });
+  const pop = await page.evaluate(() => { const p = document.querySelector("#value-pop").getBoundingClientRect(), b = document.querySelector("#ring-size").getBoundingClientRect(); return [document.querySelector("#value-pop label").textContent, Math.round(p.top - b.bottom), document.querySelector("#value-pop").parentElement.className, Math.round(p.right - b.right), Math.round(p.width), Math.round(p.height), getComputedStyle(document.querySelector("#value-pop input[type=range]")).display]; });
+  await shot("4c19-size-pop");
   await page.keyboard.type("x2"); await page.keyboard.press("Enter");
   const w_after = await S("S.rings[S.ui_ring].width");
   await page.evaluate((w) => window.dial_tool.set_value("ring", "width", w), w_before);
-  check(Math.abs(dragged - (w_before + 0.4)) < 1e-9 && pop[0] === "Band width" && pop[1] >= 3 && pop[1] <= 7 && pop[2] === "ringlist" && Math.abs(w_after - 2 * w_before) < 1e-9 && await page.$("#value-pop") === null,
-    `the size button, before the radius: dragged 16 to the right a band is 0.4 wider; a click pops up its row (${pop[0]}) ${pop[1]} under the ring line, outside the scrolling list; it takes x2`);
+  check(Math.abs(dragged - (w_before + 0.4)) < 1e-9 && pop[0] === "Band width" && pop[1] === 0 && pop[3] === 0 && pop[2] === "ringlist" && Math.abs(pop[4] - pop[5]) <= 24 && pop[6] === "none" && Math.abs(w_after - 2 * w_before) < 1e-9 && await page.$("#value-pop") === null,
+    `the size button, before the radius: dragged 16 to the right a band is 0.4 wider; a click pops up a small square (${pop[4]} × ${pop[5]}: ${pop[0]}, the field, − +) whose top right corner is the button's bottom right; it takes x2`);
 }
 // undo: ⌘Z takes one step back, ⇧⌘Z forward again; a drag is one step; the window's state stays (13 Oct 2026)
 {
