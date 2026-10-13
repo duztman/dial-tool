@@ -146,12 +146,17 @@ const SIZE_ROWS = {
   numerals: num("size", "Size", 0.3, 8, 0.05, { scope: "ring" }), band: num("width", "Band width", 0.02, 25, 0.05, { scope: "ring" }),
 };
 const size_row = (R) => SIZE_ROWS[G.kind_of(R) === "numerals" ? "numerals" : G.kind_of(R) === "band" ? "band" : G.SHAPES[R.shape] === "dot" ? "dot" : "len"];
-const VALUE_PICS = {                               // inside a value button, on a 40 × 40 field with the centre at 0 0, under the figure
-  radius: `<path d="M0 0L19.4 0"/><circle class="pivot" r="2"/>`,                       // a radius, from the centre to the edge
+const VALUE_PICS = {                               // a value button's drawing, on a 40 × 40 field with the centre at 0 0. Its first circle is the button's own disc
+  radius: `<circle r="19.4"/><path d="M0 0L19.4 0"/><circle class="pivot" r="2"/>`,     // a radius, from the centre to the edge
   // scale: a small circle growing into the large one, joined by their two tangents. Okay's drawing (Asset_1.svg, 13 Oct
-  // 2026: circles at 8.48 20.93 r 8.11 and 24.29 14.71 r 14.33), moved and sized so its large circle is the button's own.
-  size: `<circle class="small" cx="-21.4" cy="8.42" r="10.98"/><path d="M-28.89 0.41L-13.24 -14.19M-21.06 19.4L0 19.4"/>`,
+  // 2026: circles at 8.48 20.93 r 8.11 and 24.29 14.71 r 14.33), whole inside the button's own square (Okay, 13 Oct:
+  // "shrink scale icon for better h-spacing"): the drawing's middle (19.5 14.71) is the button's.
+  size: `<circle cx="4.79" r="14.33"/><circle class="small" cx="-11.02" cy="6.22" r="8.11"/><path d="M-16.55 0.3L-4.99 -10.48M-10.77 14.33L4.79 14.33"/>`,
 };
+
+// a language in the list, by its name; on its button, by two letters ("zh-Hans" → ZH; the font's own choice → a dash)
+const LANG_NAMES = { default: "As the font sets it", tr: "Turkish", nl: "Dutch", de: "German", pl: "Polish", ro: "Romanian", ca: "Catalan", ar: "Arabic", fa: "Persian", "zh-Hans": "Chinese, simplified", ja: "Japanese" };
+const lang_short = (code) => (code === "default" ? "–" : code.slice(0, 2).toUpperCase());
 
 const kind_in = (...names) => (R) => names.includes(G.kind_of(R));
 const marks_with = (...shapes) => (R) => ["ticks", "markers"].includes(G.kind_of(R)) && shapes.includes(G.SHAPES[R.shape]);
@@ -237,7 +242,6 @@ const ROWS = {
     custom("nudge", { show: numerals_only }),
     hdr("Type", { show: numerals_only }),
     custom("font", { show: numerals_only }),
-    pop("lang", "Language", G.LANGS, { show: numerals_only }),
     num("tracking", "Tracking", -200, 800, 5, { show: numerals_only }),
     hdr("Variable axes", { show: (R) => numerals_only(R) && G.has_font(R.ps) && Object.keys(G.font_axes(G.font_of(R))).length > 0 }),
     custom("axes", { show: numerals_only }),
@@ -539,6 +543,7 @@ class DialTool {
     if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox")) this.pop_close();
     if (this.guides_open && !$("#guide-list").hidden && !on(".guides")) this.guides_open(false);
     if (this.unit_open && !$("#unit-menu").hidden && !on(".unit")) this.unit_open(false);
+    if (this.lang_open && $("#lang-menu") && !$("#lang-menu").hidden && !on(".langs")) this.lang_open(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
     if (this.value_pop && !on("#value-pop") && !on(".valueb")) this.value_pop_close();
     this.tag_hide();
@@ -633,8 +638,8 @@ class DialTool {
         el("button", { type: "button", id: "fit", textContent: "Fit", title: "Show the whole page", onclick: () => { this.fit(); this.render(); } })));
     this.set_speed(1);
     const guides = this.guides_box();
-    guides.prepend(this.undo_box());               // top right: undo · redo, then the Guides switch
-    this.main = el("main", {}, this.svg, this.tip, guides, this.backdrop_box());
+    // on the preview: undo · redo top left, beside the panel (Okay, 13 Oct 2026) · the Guides switch top right · Backdrop bottom left
+    this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.backdrop_box());
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     this.play_icon();
     let shown = true;
@@ -1525,7 +1530,7 @@ class DialTool {
 
   value_button(id, row, drawing) {
     const b = el("button", { type: "button", className: "valueb", id });
-    b.innerHTML = `<svg viewBox="-20 -20 40 40" aria-hidden="true"><circle r="19.4"/>${drawing}</svg>`;
+    b.innerHTML = `<svg viewBox="-20 -20 40 40" aria-hidden="true">${drawing}</svg>`;
     const T = () => this.target(row().scope);
     const refresh = () => {                        // no number in it (Okay, 13 Oct 2026): the ring's row, right above, says it; so does the tag
       const r = row(), v = T()[r.key] ?? 0, text = String(parseFloat(this.in_unit(v, decimals(r.step))));
@@ -1859,8 +1864,9 @@ class DialTool {
   /** …and the type that holder draws with: a window without a font of its own draws with the top numerals ring's. */
   font_shown() { const T = this.font_holder(); return this.font_scope === "window" ? G.window_type(this.S, T) : T; }
 
-  /** a font, in three lines (Okay, 13 Oct 2026): its numerals · its name, with Change… at the right · its styles
-   *  as buttons. The numerals and Change… both open the font sheet. */
+  /** a font, in a white box of three lines with hairlines between (Okay, 13 Oct 2026): its numerals · its name, with
+   *  the language (a ring's only: two letters, a list under them) and Change… at the right · its styles as buttons.
+   *  The numerals and Change… both open the font sheet. */
   row_font(wrap, out) {
     wrap.className = "font";
     const scope = out.row.scope, own = scope === "window";       // a window's font row: the same, with a way back to the numerals' font
@@ -1869,16 +1875,18 @@ class DialTool {
     const open = () => choose(() => this.open_picker());
     const current = el("button", { type: "button", className: "fontrow current", id: pre + "font-current", title: "Choose a font", onclick: open });
     const name = el("span", { className: "name", id: pre + "font-name" });
-    const named = el("div", { className: "fontname" }, name, el("button", { type: "button", className: "btn", id: pre + "font-change", textContent: "Change…", onclick: open }));
+    const lang = own ? null : this.lang_box();
+    const named = el("div", { className: "fontname" }, name, ...(lang ? [lang.el] : []), el("button", { type: "button", className: "btn", id: pre + "font-change", textContent: "Change…", onclick: open }));
     const styles = el("div", { className: "segs styles" });
     const state = el("div", { className: "quiet note", id: pre + "font-note" });
     const back = el("button", { type: "button", className: "btn", id: "window-font-back", textContent: "As the numerals", title: "Use the top numerals ring’s font again", hidden: true,
       onclick: () => { const w = this.window(); w.family = ""; w.ps = ""; w.axes = {}; this.changed(true); } });
-    wrap.append(current, named, styles, ...(own ? [back] : []), state);
+    wrap.append(el("div", { className: "fontbox" }, current, named, styles), ...(own ? [back] : []), state);
     let shown = null;
     out.refresh = (T) => {
       const R = own ? G.window_type(this.S, T) : T;
       back.hidden = !(own && T.ps);
+      if (lang) lang.refresh(T);
       const mine = this.families().get(R.family) || [], f = this.catalog.get(R.ps) || mine[0];
       const key = R.ps + "/" + G.has_font(R.ps) + "/" + Boolean(T.ps);
       if (key !== shown) {
@@ -1897,6 +1905,35 @@ class DialTool {
       state.textContent = missing + (this.font_note || "");
       if (this.picker && this.picker.open) this.fill_picker();
     };
+  }
+
+  /** the language the numerals are set in (a font may draw a figure differently for one): a small button saying its
+   *  two letters; a press opens the list (Okay, 13 Oct 2026). The ring keeps the place in G.LANGS (R9). */
+  lang_box() {
+    const menu = el("div", { className: "unitmenu", id: "lang-menu", hidden: true });
+    menu.setAttribute("role", "menu");
+    const button = el("button", { type: "button", className: "btn langbox", id: "lang" });
+    button.setAttribute("aria-haspopup", "menu");
+    const open = (on) => { menu.hidden = !on; button.setAttribute("aria-expanded", String(on)); };
+    this.lang_open = open;
+    button.onclick = () => open(menu.hidden);
+    const items = G.LANGS.map((code, i) => {
+      const b = el("button", { type: "button", id: "lang-" + code, onclick: () => { open(false); this.set_value("ring", "lang", i); } },
+        el("span", { textContent: LANG_NAMES[code] || code }), el("span", { className: "quiet", textContent: lang_short(code) }));
+      b.setAttribute("role", "menuitemradio");
+      menu.append(b);
+      return b;
+    });
+    const box = el("div", { className: "langs" }, button, menu);
+    box.onkeydown = (e) => { if (e.key === "Escape" && !menu.hidden) { open(false); button.focus(); } };
+    open(false);
+    const refresh = (R) => {
+      const code = G.LANGS[R.lang] || G.LANGS[0];
+      button.textContent = lang_short(code);
+      button.title = "Language: " + (LANG_NAMES[code] || code);
+      items.forEach((b, i) => { b.classList.toggle("on", i === (R.lang || 0)); b.setAttribute("aria-checked", String(i === (R.lang || 0))); });
+    };
+    return { el: box, refresh };
   }
 
   /** the font sheet: every font with its numerals — the tool's own twenty, then yours, then (Chrome, Edge)

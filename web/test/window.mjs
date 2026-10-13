@@ -226,6 +226,11 @@ await page.hover("#ring-r");
 const vtag = await page.evaluate(() => { const t = document.querySelector("#tag"); return [[...t.children].map((c) => c.textContent).join(" | "), Math.round(t.getBoundingClientRect().width), Math.round(t.getBoundingClientRect().height)]; });
 check(vtag[0] === "Outer radius | " + await S("S.rings[S.ui_ring].r"), `a round button's tag says its name and its value: ${vtag[0]} (${vtag[1]} wide)`);
 await page.hover("#ring-kind-Kind-0");
+{
+  const d = await page.evaluate(() => { const b = document.querySelector("#ring-size"), r = b.getBoundingClientRect(), parts = [...b.querySelectorAll("svg > *")].map((e) => e.getBoundingClientRect()), c = document.querySelector(".ringline .colour").getBoundingClientRect(), rad = document.querySelector("#ring-r").getBoundingClientRect();
+    return [parts.every((x) => x.left >= r.left - 0.6 && x.right <= r.right + 0.6 && x.top >= r.top - 0.6 && x.bottom <= r.bottom + 0.6), Math.round(r.left - c.right), Math.round(rad.left - r.right)]; });
+  check(d[0] && d[1] === d[2], `the scale drawing is whole inside its button; colour · size · radius stand the same space apart (${d[1]} · ${d[2]})`);
+}
 await shot("4c15-ring-line");
 await page.mouse.move(60, 44);
 check(await page.$eval("#tag", (t) => t.hidden), "the tag goes when the pointer leaves");
@@ -303,11 +308,11 @@ await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before)
   await settle();
   await page.keyboard.press("Meta+z");
   check((await state())[3] === s0[3], "⌘Z does the same");
-  const place = await page.evaluate(() => { const u = document.querySelector(".undos").getBoundingClientRect(), g = document.querySelector("#guides").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); return [u.right <= g.left, Math.round(u.top - m.top) === Math.round(g.top - m.top), u.left > m.left + m.width / 2, document.querySelector("#redo").classList.contains("none")]; });
+  const place = await page.evaluate(() => { const u = document.querySelector(".undos").getBoundingClientRect(), g = document.querySelector("#guides").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); return [u.right <= g.left, Math.round(u.top - m.top) === Math.round(g.top - m.top), Math.round(u.left - m.left) === Math.round(u.top - m.top), document.querySelector("#redo").classList.contains("none")]; });
   await page.click("#redo");
   const fwd = (await state())[3];
   await page.click("#undo");
-  check(place[0] && place[1] && place[2] && !place[3] && fwd === 31 && (await state())[3] === s0[3], "Undo and Redo stand on the preview's top right, before the Guides switch, and do the same");
+  check(place[0] && place[1] && place[2] && !place[3] && fwd === 31 && (await state())[3] === s0[3], "Undo and Redo stand on the preview's top left, as far from its left edge as from its top, level with the Guides switch, and do the same");
   await shot("4c16-undo");
 }
 // a numeral's radius measures to its centre, its baseline or its top: the menu beside the label, in the pop-up (13 Oct 2026)
@@ -435,10 +440,10 @@ check(await S("S.gd_k_edge === 1 && S.gd_axes === true && S.gd_w === 1"), "Reset
 await page.click("#guides");
 await frame();
 check(await S("!t.items.some((i) => i.role === 'guide')") && await page.isVisible("#guide-list"), "the Guides switch, off: none drawn; the list stays where it is");
-await page.mouse.move(480, 30);
+await page.mouse.move(640, 30);
 const one_colour = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c("#guides").color, c("#guides-more").color, c("#guides").borderTopColor, c("#guides").backgroundColor, c("#guides").borderTopStyle, c("#guides .slash").display, c("#guides").fontWeight]; });
 check(one_colour[0] === one_colour[1] && one_colour[0] === one_colour[2] && one_colour[3] === "rgba(0, 0, 0, 0)" && one_colour[4] === "solid" && one_colour[5] !== "none" && one_colour[6] === "400", `off, it is an outline with no fill; sign, word, arrow and line are one colour (${one_colour[0]}); the sign is struck through`);
-await page.mouse.click(480, 30);                      // the backdrop, off the dial
+await page.mouse.click(640, 30);                      // the backdrop, off the dial
 check(await page.isHidden("#guide-list"), "a press outside the list puts it away");
 await page.click("#guides-more");
 const looks = await page.evaluate(() => { const c = (q, p) => getComputedStyle(document.querySelector(q))[p]; return [c(".bar", "backgroundColor"), c(".bar", "color")]; });
@@ -466,7 +471,7 @@ await type_hex("global-c-backdrop-Backdrop", "#CCCCC7");
 await type_hex("global-c-backdrop-Backdrop", "#1A1A1F");
 await frame();
 check(await page.$eval("#guides", (e) => { const c = getComputedStyle(e); return c.backgroundColor + c.color; }) === "rgba(0, 0, 0, 0)rgb(255, 255, 255)" && await page.$eval("#backdrop", (e) => { const c = getComputedStyle(e); return c.backgroundColor + c.color; }) === "rgba(0, 0, 0, 0)rgb(255, 255, 255)", "on a dark backdrop both switches are white outlines");
-for (const grey of ["#808080", "#F2F2EE", "#141413", "#4B317F", "#C8E6A0", "#CC381A"]) { await type_hex("global-c-backdrop-Backdrop", grey); await frame(); await page.screenshot({ path: path.join(OUT, `4c5-guides-on-${grey.slice(1)}.png`), clip: { x: 1240, y: 0, width: 200, height: 60 } }); await page.click("#guides"); await page.mouse.move(480, 30); await frame(); await page.screenshot({ path: path.join(OUT, `4c5-guides-off-${grey.slice(1)}.png`), clip: { x: 1240, y: 0, width: 200, height: 60 } }); await page.screenshot({ path: path.join(OUT, `4c5-backdrop-${grey.slice(1)}.png`), clip: { x: 460, y: 790, width: 200, height: 60 } }); await page.click("#guides"); await page.mouse.move(480, 30); }
+for (const grey of ["#808080", "#F2F2EE", "#141413", "#4B317F", "#C8E6A0", "#CC381A"]) { await type_hex("global-c-backdrop-Backdrop", grey); await frame(); await page.screenshot({ path: path.join(OUT, `4c5-guides-on-${grey.slice(1)}.png`), clip: { x: 1240, y: 0, width: 200, height: 60 } }); await page.click("#guides"); await page.mouse.move(640, 30); await frame(); await page.screenshot({ path: path.join(OUT, `4c5-guides-off-${grey.slice(1)}.png`), clip: { x: 1240, y: 0, width: 200, height: 60 } }); await page.screenshot({ path: path.join(OUT, `4c5-backdrop-${grey.slice(1)}.png`), clip: { x: 460, y: 790, width: 200, height: 60 } }); await page.click("#guides"); await page.mouse.move(640, 30); }
 await shot("4c4-guides-dark");
 await type_hex("global-c-backdrop-Backdrop", "#CCCCC7");
 // the Dial section: two panes, Dial (diameter, plate, background) and Page (margin, backdrop); no Guides pane
@@ -486,7 +491,7 @@ check(near(await S("S.dial_d"), 38.1, 1e-6), "1.5 typed in inches is 38.1 mm");
 await page.click("#unit"); await page.click("#unit-pt");
 check(await page.inputValue("#global-dial-d-Diameter") === "108.0", "in points it reads 108.0");
 await shot("4b-units");
-await page.click("#unit"); await page.mouse.click(480, 30);
+await page.click("#unit"); await page.mouse.click(640, 30);
 check(await page.isHidden("#unit-menu"), "a press outside the menu puts it away");
 await page.click("#unit"); await page.click("#unit-mm");
 await page.fill("#global-dial-d-Diameter", "30"); await page.press("#global-dial-d-Diameter", "Enter");
@@ -577,11 +582,15 @@ check(await S("S.ui_hand === 2") && await page.textContent(".form .pane >> nth=0
 check((await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))).at(-1) === "Cap", "Cap, which belongs to all three, comes after the hand's own panes");
 await page.click("#hand-tab-0");
 {
-  const strip = await page.evaluate(() => { const tabs = [...document.querySelectorAll(".tabsbar .segs > button")], r = (e) => e.getBoundingClientRect(), p = r(document.querySelector(".pinned")), c = getComputedStyle(tabs[0]);
-    return { touch: tabs.every((b, i) => !i || Math.abs(r(b).left - r(tabs[i - 1]).right) <= 1), on_line: Math.round(p.bottom - r(tabs[0]).bottom), line: getComputedStyle(document.querySelector(".pinned")).borderBottomWidth, round: [c.borderTopLeftRadius, c.borderBottomLeftRadius].join(" "), high: Math.round(r(tabs[0]).height) }; });
-  check(strip.touch && strip.on_line === 2 && strip.line === "2px" && strip.round === "8px 0px" && strip.high === 40, `the hand tabs are tabs: touching, on a thick line, top corners round, ${strip.high} high`);
+  const strip = await page.evaluate(() => { const tabs = [...document.querySelectorAll(".tabsbar .segs > button")], r = (e) => e.getBoundingClientRect(), p = r(document.querySelector(".pinned")), c = getComputedStyle(tabs[0]), v = (b) => getComputedStyle(b, "::before");
+    return { touch: tabs.every((b, i) => !i || Math.abs(r(b).left - r(tabs[i - 1]).right) <= 1), on_line: Math.round(p.bottom - r(tabs[0]).bottom), line: getComputedStyle(document.querySelector(".pinned")).borderBottomWidth, round: [c.borderTopLeftRadius, getComputedStyle(tabs.at(-1)).borderTopRightRadius].join(" "), notch: [v(tabs[0]).content === "none", parseFloat(v(tabs[1]).width).toFixed(1), v(tabs[1]).transform.startsWith("matrix(0.707"), v(tabs[2]).content !== "none"].join(" "), high: Math.round(r(tabs[0]).height) }; });
+  check(strip.touch && strip.on_line === 2 && strip.line === "2px" && strip.round === "0px 0px" && strip.notch === "true 11.3 true true" && strip.high === 40, `the hand tabs are tabs: touching, on a thick line, the first and last corner square, a sharp notch 8 deep over each joint (${strip.notch}), ${strip.high} high`);
 }
 await shot("4g-hand-tabs");
+{ // 10:10 stands on the preview, over the bar, clear of the ruler (Okay, 13 Oct 2026); the scale drawing stays inside its button
+  const p = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), pill = r(".steps12 .special"), bar = r(".bar"); return [Math.round((bar.top - pill.bottom) * 10) / 10, document.elementFromPoint(pill.left + pill.width / 2, pill.top + pill.height / 2).textContent]; });
+  check(p[0] === 5.5 && p[1] === "10:10", `10:10 stands on the preview, one unit over the bar (${p[0]}), and can be pressed there`);
+}
 // Windows: four cards, 12 · 3 · 6 · 9, are the tabs; Show this window is on the heading line, also when the pane is folded
 await tab("Date");
 const cards = await page.$$eval(".windowcards .card > button:first-child", (b) => b.map((x) => [x.id, x.textContent, x.classList.contains("on"), Math.round(x.getBoundingClientRect().width)]));
@@ -655,8 +664,8 @@ const example_w = 78;      // what an example card measured while there were fiv
 await tab("Date");
 { // tabs (13 Oct 2026): the window cards and the hand tabs touch each other, stand on the line under them, have round top corners (the notch between two) and fill the six columns
   const strip = await page.evaluate(() => { const cards = [...document.querySelectorAll(".windowcards .card > button")], r = (e) => e.getBoundingClientRect(), pane = document.querySelector(".windowcards + .pane"), c = getComputedStyle(cards[0]), row = document.querySelector(".form .row");
-    return { touch: cards.every((b, i) => !i || Math.abs(r(b).left - r(cards[i - 1]).right) <= 1), on_line: Math.round(r(pane).top - r(cards[0]).bottom), round: [c.borderTopLeftRadius, c.borderBottomLeftRadius].join(" "), left: Math.round(r(cards[0]).left - r(document.querySelector(".form .pane h2")).left), right: Math.round(r(cards.at(-1)).right - r(pane).right), high: Math.round(r(cards[0]).height) }; });
-  check(strip.touch && strip.on_line === 0 && strip.round === "8px 0px" && strip.left === 0 && strip.right === 0 && strip.high >= 54, `the window cards are tabs: touching, on the pane's line, top corners round, from the second column to the last (${strip.high} high)`);
+    return { touch: cards.every((b, i) => !i || Math.abs(r(b).left - r(cards[i - 1]).right) <= 1), on_line: Math.round(r(pane).top - r(cards[0]).bottom), round: [c.borderTopLeftRadius, getComputedStyle(cards.at(-1)).borderTopRightRadius].join(" "), notch: cards.map((b) => getComputedStyle(b, "::before").content !== "none").join(" "), left: Math.round(r(cards[0]).left - r(document.querySelector(".form .pane h2")).left), right: Math.round(r(cards.at(-1)).right - r(pane).right), high: Math.round(r(cards[0]).height) }; });
+  check(strip.touch && strip.on_line === 0 && strip.round === "0px 0px" && strip.notch === "false true true true" && strip.left === 0 && strip.right === 0 && strip.high >= 54, `the window cards are tabs: touching, on the pane's line, square at both ends with a sharp notch over each joint, from the second column to the last (${strip.high} high)`);
 }
 await page.click("#window-card-2");
 check(await S("S.ui_window === 2 && S.windows[1].at === 2 && S.windows[1].on === false") && await page.textContent(".form .pane >> nth=0 >> h2") === "Window at 6" && await page.$eval("#window-card-2", (e) => e.classList.contains("on") && e.classList.contains("off")), "the card at 6 chooses its window: the pane says Window at 6; not in use yet, it takes the card's place");
@@ -826,9 +835,17 @@ check(await page.$eval("#font-picker", (d) => !d.open) && (await page.textConten
 await frame();
 check(await page.$("#axis-wght") !== null, "Lora's weight axis has a slider");
 {
-  const f = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), box = r(".font"), top = r("#font-current"), name = r("#font-name"), change = r("#font-change"), styles = r(".font .styles"), numerals = r("#font-current svg");
-    return { order: top.bottom <= name.top && name.bottom <= styles.top, right: Math.round(box.right - change.right), left: Math.round(name.left - box.left), whole: numerals.right <= top.right, gaps: [change.top - top.bottom, styles.top - change.bottom] }; });
-  check(f.order && f.right === 0 && f.left === 0 && f.whole && f.gaps.every((v) => Math.abs(v - 5.5) < 0.3), `a font stands in three lines: its numerals, whole · its name with Change… at the right end · its styles; one unit between the lines (${f.gaps.map((v) => +v.toFixed(2)).join(" · ")})`);
+  const f = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), box = r(".fontbox"), top = r("#font-current"), name = r("#font-name"), change = r("#font-change"), lang = r("#lang"), styles = r(".font .styles"), numerals = r("#font-current svg"), c = (q) => getComputedStyle(document.querySelector(q));
+    return { order: top.bottom <= name.top && name.bottom <= styles.top, right: Math.round(box.right - change.right), left: Math.round(name.left - box.left), whole: numerals.right <= top.right, lang: lang.right <= change.left && lang.left >= name.right,
+      white: c(".fontbox").backgroundColor, lines: [c(".fontname").borderTopWidth, c(".font .styles").borderTopWidth].join(" "), quiet: c("#font-change").borderTopColor === c(".fontbox").borderTopColor }; });
+  check(f.order && f.right === 11 && f.left === 11 && f.whole && f.lang && f.white === "rgb(255, 255, 255)" && f.lines === "1px 1px" && f.quiet, `a font stands in a white box of three lines with a hairline between them: its numerals, whole · its name, then the language and Change… at the right · its styles; the buttons' lines are as faint as the box's (${JSON.stringify(f)})`);
+  check(await page.textContent("#lang") === "–" && await page.isHidden("#lang-menu") && await page.$("select[id*=lang]") === null, "the language is a small button (a dash: as the font sets it), not a row with a menu");
+  await page.click("#lang");
+  const langs = await page.$$eval("#lang-menu button", (b) => b.map((x) => x.textContent).join(" | "));
+  await page.click("#lang-tr");
+  check(langs.startsWith("As the font sets it– | TurkishTR | DutchNL") && await page.textContent("#lang") === "TR" && await page.isHidden("#lang-menu") && await S("S.rings[S.ui_ring].lang === 1"), "a press opens the list of languages by name; choosing Turkish sets the ring's language and the button says TR");
+  await page.click("#lang"); await page.click("#lang-default");
+  check(await S("S.rings[S.ui_ring].lang === 0"), "and back to the font's own");
   await page.$eval(".font", (e) => e.scrollIntoView({ block: "center" }));
   await shot("4c22-font");
   await page.click("#font-change");

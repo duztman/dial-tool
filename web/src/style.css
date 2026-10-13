@@ -69,7 +69,7 @@
     --frame-out: 8px;                              /* a framed list row is this much wider than the lines, each side */
     --ring-gap: 4px;                               /* between framed rows */
     --guide-tint: 22%; --guide-edge: 65%;          /* the selected ring's row: this much of its guide's colour in its ground, and in its frame */
-    --tab-round: 8px;                              /* a tab's top corners: the notch between two tabs */
+    --tab-notch: 8px;                              /* how deep the notch between two tabs is cut (a V, twice as wide) */
     --tab-high: 40px; --tab-pad: 11px;             /* a word tab's height (Hour · Minute · Seconds) · above and under a picture tab's picture (the window cards): room to breathe */
     --round-pill: 999px;                           /* fully round: the signs on the Rings heading line, a value button */
     --menu-box: 18px;                              /* the boxed arrow beside a label that opens a small menu */
@@ -78,7 +78,6 @@
     --ringline-inner: calc(3 * var(--hair));       /* its second, inner line: three times the outer */
     --row-end: calc(var(--frame-out) - var(--hair) + var(--ringline-inner));      /* the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons */
     --line-button: 36px; --bare-dot: 16px;      /* in the ring drawer every control is this high (a value button this wide too) · the colour's swatch */
-    --size-lead: 16px;                             /* before the size button: room for its drawing's small circle, which stands out to the left */
     --name-in: 6px;                                /* a ring's name starts this far into its column; the ring line's buttons too */
     --half: 30px;                                  /* AM · PM inside the time's box */
     --value-pop: 132px;                            /* a value button's pop-up: about as wide as it is high */
@@ -317,8 +316,13 @@
   .pinned:has(> .tabsbar:last-child) { border-bottom: var(--thick) solid var(--ink); }      /* the hand tabs stand on a pane's thick line: the pane under them is the one they choose */
   /* tabs (Okay, 13 Oct 2026: "both look bad as buttons. attach to the bottom, give top inbetweens a notch"): the hand
      tabs and the window cards. They touch each other and stand on the line under them with no foot of their own;
-     their top corners are round, so between two tabs the top has a notch. The chosen one is black. */
-  :is(.tabsbar .segs, .windowcards .card) > button { border: var(--hair) solid var(--rule); border-bottom: 0; border-radius: var(--tab-round) var(--tab-round) 0 0; background: var(--field); }
+     between two tabs the top has a sharp notch, a V; the first and the last corner are square (Okay, 13 Oct 2026:
+     "make notches sharp. beginning and ends square"). The chosen one is black. The V is a square stood on its
+     corner over the joint, in the surface's colour, with the tabs' line on its two lower sides. */
+  :is(.tabsbar .segs, .windowcards .card) > button { border: var(--hair) solid var(--rule); border-bottom: 0; background: var(--field); }
+  :is(.tabsbar .segs > button + button, .windowcards .card + .card > button) { position: relative; }
+  :is(.tabsbar .segs > button + button, .windowcards .card + .card > button)::before { content: ""; position: absolute; z-index: 1; left: calc(-1 * var(--hair) / 2); top: calc(-1 * var(--hair)); width: calc(var(--tab-notch) * 1.4142); height: calc(var(--tab-notch) * 1.4142);
+    transform: translate(-50%, -50%) rotate(45deg); background: var(--surface); border: solid var(--rule); border-width: 0 var(--hair) var(--hair) 0; pointer-events: none; }
   :is(.tabsbar .segs > button, .windowcards .card) + :is(button, .card) { margin-left: calc(-1 * var(--hair)); }
   :is(.tabsbar .segs, .windowcards .card) > button:hover { background: var(--hover); }
   :is(.tabsbar .segs, .windowcards .card) > button.on { position: relative; background: var(--ink); border-color: var(--ink); color: var(--paper); }
@@ -427,7 +431,7 @@
      and every row borrows them (subgrid), so summaries and kinds stand under each other whatever the words' widths. */
   .ringlist { margin: 0 calc(-1 * var(--frame-out)) 0 var(--lead); }      /* rows start where the labels start (Okay's drawing, 13 Oct 2026): the toggle column is the panes' alone */
   .ringlist ol { position: relative; list-style: none; margin: 0; padding: 2px 0 0; display: grid; row-gap: var(--ring-gap);
-    grid-template-columns: calc(var(--frame-out) + var(--lead)) 18px minmax(0, 1fr) auto calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--size-lead)) calc(var(--line-button) + var(--ringline-gap)) var(--row-end);      /* eye · grip · name · kind · colour · size · radius · the room at the end: rows and the ring drawer share them */ max-height: calc(5 * (var(--line) + var(--ring-gap)) + var(--line-button) + 2 * var(--ringline-pad) + 2 * var(--ringline-inner) + 2 * var(--hair) + var(--ringline-join) + 4px); overflow-y: auto; }      /* five rings and the ring line, then it scrolls */
+    grid-template-columns: calc(var(--frame-out) + var(--lead)) 18px minmax(0, 1fr) auto calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--ringline-gap)) var(--row-end);      /* eye · grip · name · kind · colour · size · radius · the room at the end: rows and the ring drawer share them */ max-height: calc(5 * (var(--line) + var(--ring-gap)) + var(--line-button) + 2 * var(--ringline-pad) + 2 * var(--ringline-inner) + 2 * var(--hair) + var(--ringline-join) + 4px); overflow-y: auto; }      /* five rings and the ring line, then it scrolls */
   .ringlist li.ring { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; height: var(--line);
     border: var(--hair) solid var(--rule); border-radius: 5px; background: var(--field); cursor: pointer; }
   .ringlist li.ring:hover { border-color: var(--grey); }
@@ -533,13 +537,23 @@
   .valuepop .row .menulabel > label { color: var(--ink); font: inherit; }
 
   /* the font picker: every font shows its own numerals */
-  .font { display: grid; gap: var(--unit); margin-top: var(--unit); }
+  .font { display: grid; gap: var(--unit); margin: var(--unit) 0; }
   .font .styles { flex-wrap: wrap; gap: var(--unit); }
   .font .styles > button { flex: 0 0 auto; padding: 0 var(--btn-pad); white-space: nowrap; border-left: var(--hair) solid var(--rule); }
   .font .styles > button.on { border-color: var(--ink); }
   .font .note:empty, .picker .note:empty { display: none; }
   .font > .btn { justify-self: start; }
-  .fontname { display: flex; align-items: center; justify-content: space-between; gap: var(--gap); }      /* the font's name, Change… at the right */
+  /* a font's three lines stand in one white box, a hairline between them; what is in it is quiet: grey lines, grey words */
+  .fontbox { display: grid; border: var(--hair) solid var(--rule); background: var(--field); }
+  .fontbox > * + * { border-top: var(--hair) solid var(--rule); }
+  .fontbox > :is(.fontname, .styles) { padding: var(--unit) var(--btn-pad); }
+  .fontbox .btn, .fontbox .styles > button { border-color: var(--rule); color: var(--grey); }
+  .fontbox :is(.btn, .styles > button):hover { border-color: var(--ink); color: var(--ink); }
+  .fontbox .styles > button.on, .fontbox .btn[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .fontname { display: flex; align-items: center; gap: var(--unit); }      /* the font's name; the language and Change… at the right */
+  .fontname .name { flex: 1; }
+  .langs { position: relative; }
+  .langbox { min-width: var(--control); padding: 0 var(--unit); font: var(--t-xs)/1 var(--mono); }
   .fontname .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .fontlist { border: var(--hair) solid var(--rule); background: var(--field); overflow-y: auto; }
   .fontrow { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: calc(var(--unit) * 2); width: 100%; height: var(--line); padding: 0 var(--btn-pad); border-bottom: var(--hair) solid var(--ground); text-align: left; }
@@ -549,7 +563,7 @@
   .fontrow .sample svg { display: block; flex: none; }
   .fontrow .name { color: var(--grey); white-space: nowrap; }
   .fontrow.on .name, .fontrow.current .name { color: var(--ink); }
-  .fontrow.current { grid-template-columns: minmax(0, 1fr); height: var(--head); border: var(--hair) solid var(--rule); background: var(--field); }      /* the chosen font's numerals, alone on their line */
+  .fontrow.current { grid-template-columns: minmax(0, 1fr); height: var(--head); border: 0; }      /* the chosen font's numerals, alone on their line */
   .fontlist .group { padding: calc(var(--unit) * 2) var(--btn-pad) calc(var(--unit) / 2); border-bottom: var(--hair) solid var(--rule); }
 
   /* the font sheet: over the panel, on its columns, so the dial stays in view; from the bottom on a phone */
@@ -589,7 +603,7 @@
   .guidesbox, .guidesmore, .backdropbox, .undobox { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: var(--hair) solid var(--on-canvas); color: var(--on-canvas); user-select: none; }
   :is(.guidesbox, .guidesmore, .backdropbox, .undobox):hover { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); }      /* under the pointer its line is twice as thick: still no fill */
   /* undo · redo, before the Guides switch: two joined outlined buttons; pale when there is no step that way */
-  .undos { display: flex; margin-right: var(--canvas-inset); }
+  .undos { position: absolute; z-index: 3; top: var(--canvas-inset); left: var(--canvas-inset); display: flex; }      /* top left of the preview, beside the panel (Okay, 13 Oct 2026) */
   .undobox { width: var(--control-large); }
   .undobox:first-child { border-radius: 10px 0 0 10px; }
   .undobox:last-child { border-left: 0; border-radius: 0 10px 10px 0; }
@@ -707,7 +721,9 @@
   .steps12 button { position: absolute; left: calc(var(--at) * 100%); top: 0; transform: translateX(-50%); min-width: var(--names); height: var(--names); padding: 0 2px; font-size: var(--t-xs); line-height: var(--names); color: var(--bar-quiet); }
   .steps12 button:hover { color: #fff; text-decoration: underline; }
   .steps12 button.on { color: #fff; font-weight: 700; }
-  .steps12 button.special { transform: translateX(-4%); top: -1px; z-index: 1; padding: 0 5px; border-radius: calc(var(--names) / 2); background: var(--bar-ink); color: var(--bar); font-weight: 600; }
+  /* 10:10 stands on the preview, over the bar and clear of the ruler (Okay, 13 Oct 2026), above its place in the day */
+  .steps12 button.special { top: auto; bottom: calc((var(--bar-height) + var(--hair) + var(--ruler) + var(--names)) / 2 + var(--unit));      /* from the hours' foot up to the bar's top line (ruler and hours stand in the bar's middle), and one unit more */
+    z-index: 1; padding: 0 var(--unit); border-radius: calc(var(--names) / 2); background: var(--bar-ink); color: var(--bar); font-weight: 600; }
   .steps12 button.special:hover { background: #fff; color: #000; text-decoration: none; }
 }
 
@@ -725,6 +741,7 @@
     .bar .viewing { padding: 0 var(--margin) 0 0; }
     .bar .zooms { display: none; }                  /* a phone pinches */
     .steps12 button:nth-child(odd):not(.special) { display: none; }      /* every other hour: 1 3 5 … wait for room */
+    .steps12 button.special { bottom: auto; top: calc(-1 * var(--hair)); }      /* the bar is on top here and the preview's top corners are taken (undo, Guides): 10:10 stays among the hours */
     main { grid-row: 2; }
     .panel { grid-row: 3; display: block; overflow-y: auto; -webkit-overflow-scrolling: touch; border-right: 0; border-top: var(--hair) solid var(--rule); }
     .form { overflow: visible; }

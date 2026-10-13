@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## beta 4.18 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **10:10** stands on the preview, over the bar (not on a phone).
+- **Scale drawing** inside its button; colour · size · radius evenly spaced, in the drawer and the list.
+- **Tabs**: sharp V notches, square ends.
+- **Undo · redo** on the preview's top left.
+- **Font box**: white, hairlines between its three lines, quiet buttons. **Language**: a two-letter button in it that opens a list; the Language row is gone.
+
 ## beta 4.17 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.
