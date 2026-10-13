@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.21 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.22 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet.
@@ -5131,7 +5131,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.21";
+var VERSION = "beta 4.22";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -7061,6 +7061,12 @@ var ROWS = {
     // small switch on each card: "unnecessarily complex… enable window tickmark is the way to go. leave them as tabs")
     hdr("Window", { title: (S) => `Window at ${DATE_AT[windows_of(S)[S.ui_window].at][0]}` }),
     chk("on", "Show this window", { ...W, head: true }),
+    // where it is and how big come first, right under the tick (Okay, 13 Oct 2026); a pane of their own, Place and size, until beta 4.22
+    pop("at", "Position", DATE_AT.map((d) => d[0]), { ...W, show: win_on }),
+    num2("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
+    num2("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("rectangle", "arch", "arc") }),
+    num2("w", "\xD8", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
+    num2("h", "Height", 0.5, 5, 0.05, { ...W, show: shape_is("rectangle", "arc") }),
     pick("kind", "Shows", WINDOW_KINDS, PICS.window, { ...W, show: win_on }),
     txt("text", "Text", { ...W, show: win_is("date", "day") }),
     num2("size", "Text % of height", 20, 100, 1, { ...W, show: win_is("date", "day") }),
@@ -7081,12 +7087,6 @@ var ROWS = {
     // stand here, not under a pane called Print (Okay, 13 Oct 2026: print things under Print, design among design)
     num2("frame", "Frame", 0, 0.6, 0.01, { ...W, show: win_on }),
     num2("clear", "Clearance", 0, 1, 0.01, { ...W, show: win_on }),
-    hdr("Place and size", { ...W, show: win_on }),
-    pop("at", "Position", DATE_AT.map((d) => d[0]), { ...W, show: win_on, head: true }),
-    num2("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
-    num2("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("rectangle", "arch", "arc") }),
-    num2("w", "\xD8", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
-    num2("h", "Height", 0.5, 5, 0.05, { ...W, show: shape_is("rectangle", "arc") }),
     hdr("Colours", { ...W, show: win_on }),
     col("text_c", "Text \xB7 picture", { ...W, show: win_on, or: (T) => T.ink }),
     // or: what an unset colour is
