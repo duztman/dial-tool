@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.31 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.32 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet.
@@ -642,6 +642,8 @@
   .fontname { position: relative; display: flex; align-items: center; gap: var(--ringline-gap); cursor: pointer; }
   .fontname .name { flex: 1; font-weight: 600; }
   .fontname .langs { margin-right: var(--line-button); }
+  .styles > .langs { margin-left: auto; }      /* the language, at the right end of the styles' line */
+  .fontname:not(:has(.langs)) > .colour.mini + .btn { margin-left: calc(var(--line-button) + var(--ringline-gap)); }      /* the room the colour stands in, when no language keeps it */
   .fontname .colour.mini { position: absolute; top: 50%; translate: 0 -50%; right: calc(var(--swatch-col) - var(--hair) + (var(--line-button) - var(--t-m) - 2 * var(--hair)) / 2); }      /* the font's name is the box's heading (Okay, 13 Oct 2026) */
   .langs { position: relative; }
   .langbox { min-width: var(--control); padding: 0 var(--unit); font: var(--t-xs)/1 var(--mono); }
@@ -5258,7 +5260,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.31";
+var VERSION = "beta 4.32";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -7070,7 +7072,7 @@ var VALUE_PICS = {
   size: `<circle cx="4.79" r="14.33"/><circle class="small" cx="-11.02" cy="6.22" r="8.11"/><path d="M-16.55 0.3L-4.99 -10.48M-10.77 14.33L4.79 14.33"/>`
 };
 var LANG_NAMES = { default: "As the font sets it", tr: "Turkish", nl: "Dutch", de: "German", pl: "Polish", ro: "Romanian", ca: "Catalan", ar: "Arabic", fa: "Persian", "zh-Hans": "Chinese, simplified", ja: "Japanese" };
-var lang_short = (code) => code === "default" ? "lan" : code.slice(0, 2).toUpperCase();
+var lang_short = (code) => code === "default" ? "LAN" : code.slice(0, 2).toUpperCase();
 var TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip" };
 var STICKER_LEGEND = [
   ["weight 100\u2013900", "weight", "any weight between"],
@@ -9259,7 +9261,7 @@ var DialTool = class _DialTool {
       }
     });
     const axes = this.box_part("font/axes", "Variable axes", this.axes_part(pre, own));
-    const features = this.box_part("font/features", "OpenType features", this.features_part(pre, own));
+    const features = this.box_part("font/features", "OpenType features", this.features_part(pre, own), true);
     wrap.append(el("div", { className: "fontbox" }, current, named, styles, tracking.el, axes.el, features.el), ...own ? [back] : [], state);
     let shown = null;
     out.refresh = (T) => {
@@ -9275,7 +9277,7 @@ var DialTool = class _DialTool {
       if (key !== shown) {
         shown = key;
         current.replaceChildren(f ? this.sample(f) : el("span", { className: "sample quiet", textContent: "not loaded" }));
-        name.textContent = own && !T.ps ? `${R.family} \xB7 as the numerals` : R.family;
+        name.textContent = R.family;
       }
       styles.hidden = mine.length < 2;
       styles.replaceChildren(...mine.map((x) => {
@@ -9283,6 +9285,8 @@ var DialTool = class _DialTool {
         b.classList.toggle("on", x.ps === R.ps);
         return b;
       }));
+      if (styles.hidden) named.insertBefore(lang.el, swatch);
+      else styles.append(lang.el);
       const missing = has_font(R.ps) ? "" : this.catalog.has(R.ps) ? "Loading\u2026 " : `${R.family} isn\u2019t loaded yet, so ${font_list()[0].family} stands in. Press Change\u2026 to choose another or to add it. `;
       state.textContent = missing + (this.font_note || "");
       if (this.picker && this.picker.open) this.fill_picker();
@@ -9560,12 +9564,12 @@ var DialTool = class _DialTool {
   }
   /** a part of a font box that can be put away (Okay, 13 Oct 2026: "show hide within block possible"): a line with its
    *  name, a press folds what is under it. Kept with the panes' folds, one for all font boxes. */
-  box_part(name, title, part) {
+  box_part(name, title, part, shut = false) {
     const head = el("button", { type: "button", className: "partfold", title: "Show or hide this part" });
     let none = false;
     const set = () => {
       this.is_folded({ fold: name, row: {} });
-      const folded = Boolean(this.folds[name]);
+      const folded = this.folds[name] ?? shut;
       part.el.hidden = folded || none;
       head.classList.toggle("none", none);
       head.title = none ? `This font has no ${title}` : "Show or hide this part";
@@ -9575,7 +9579,7 @@ var DialTool = class _DialTool {
     head.onclick = () => {
       if (none) return;
       this.is_folded({ fold: name, row: {} });
-      this.folds[name] = !this.folds[name];
+      this.folds[name] = !(this.folds[name] ?? shut);
       try {
         localStorage.setItem("dial-tool-folds", JSON.stringify(this.folds));
       } catch (e) {
