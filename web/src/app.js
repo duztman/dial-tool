@@ -2194,6 +2194,8 @@ class DialTool {
     this.picker.tabIndex = -1;
     window.addEventListener("resize", () => { if (this.picker.open) { this.rail_place(); this.legend_fit(); } });
     this.picker.addEventListener("click", (e) => { if (e.target === this.picker) this.picker.close(); });      // a click outside closes it
+    // the legend's window closes at a press anywhere outside it (but its own button, which toggles it) (Okay, 14 Oct 2026)
+    this.picker.addEventListener("pointerdown", (e) => { if (!legend.hidden && !e.target.closest("#font-legend, #font-legend-open")) legend_button.click(); });
     return this.picker;
   }
 

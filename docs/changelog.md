@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.35.10 (web version) · 14 Oct 2026
+
+- **The legend's window**: its title on one line, across both columns from the top left; the pixel font (title and stickers) at 12, half a size more than in the list; the meanings smaller, at 10, a size under the buttons' words (a new token, `--t-xxs`); a press anywhere outside it closes it (the sheet stays open; its own button still opens and closes it). The last item is still below the fold.
+
 ## beta 4.35.9 (web version) · 14 Oct 2026
 
 - **The legend's window**: its meanings at the size of the buttons' words under it (11); a title over them in the pixel font, *OpenType abbreviations*; a bracket never breaks across two lines. The last two items are still below the fold.

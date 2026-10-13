@@ -100,6 +100,7 @@
 
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
     --t-xs: 11px; --t-s: 12px; --t-m: 13px; --t-l: 15px;
+    --t-xxs: 10px;                                 /* one size more, the smallest: the words in the font sheet's legend (Okay, 14 Oct 2026: "smaller text") */
     --find: calc(3 * var(--col) + 2 * var(--gap)); /* the font sheet's Find field: three columns, the sheet's right half */
     /* stickers: one colour for a kind of thing a font family has. Pale: a guide's colour, as much of it as in the
        selected ring's row */
