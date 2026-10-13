@@ -92,7 +92,9 @@
     --night: #141413; --night-field: #262624; --night-hover: #34342F; --night-rule: #4A4A46; --night-chip-rule: rgba(255, 255, 255, 0.28);
     /* round corners belong to colour things only: the pop-out, its field, a colour pill, a swatch */
     --round-large: 14px; --round: 8px; --round-small: 5px;
-    --pill: 22px; --pill-gap: 8px; --dot: 14px;                     /* a colour pill's height, and the small swatch inside it */
+    --dot: 14px;                                   /* a swatch to pick from (a band's sectors) */
+    --pill-gap: var(--unit);                       /* a colour pill: this one space everywhere. Around its swatch, between swatch and hex, and from the pill to its row's lines: a row is the swatch and four of these (Okay, 13 Oct 2026) */
+    --pill: calc(1em + 2 * var(--pill-gap));       /* its height. The swatch is as high as the hex is set (1em) */
     --pop-width: 388px; --pop-chips: 11; --pop-chip-gap: 12px;      /* the colour pop-out: its width; colours to a row (the palette's ten and its +), which share the row's width; the room between two */
     --checker: repeating-conic-gradient(#BDBDB9 0 25%, #FFFFFF 0 50%) 0 0 / 8px 8px;      /* what shows through a see-through colour */
     --canvas-inset: 12px;                          /* from the preview's edge to what stands on it */
@@ -108,7 +110,7 @@
     --pixel: "Silkscreen", ui-monospace, Menlo, monospace;      /* tiny numbers inside small drawings (a value button, the numerals picture): Silkscreen, packed into the page by build.mjs (SIL OFL) */
     --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;      /* only for what the tool says: the log, a link, a hex value, a feature's tag */
   }
-  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --pop-width: 454px; --pill: 28px; --dot: 18px; --guide-dot: 14px; --guide-gap: 13px; --pop-field: 180px; --pop-hue: 32px; --knob: 28px; } }      /* a finger needs more to hold than a pointer */
+  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --pop-width: 454px; --dot: 18px; --guide-dot: 14px; --guide-gap: 13px; --pop-field: 180px; --pop-hue: 32px; --knob: 28px; } }      /* a finger needs more to hold than a pointer */
 }
 
 @layer base {
@@ -347,8 +349,10 @@
   .row > :is(.check, .wide, .picks.five), .row.note > .quiet { grid-column: 1 / -1; }      /* a tick and its words start at the left edge */
   .row > span:first-child:empty { display: none; }
   .row.nest > .check { grid-column: 3 / -1; }       /* a question about the row above: it starts where the controls start */
-  .row.note { min-height: 0; }
-  .row.note > .quiet { padding-bottom: 8px; }
+  /* a note is a row of words: as much room over them as under, and a hairline closes it like any row (the row
+     above draws the one over it) */
+  .row.note { min-height: 0; box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  .row.note > .quiet { padding: var(--unit) 0; }
   .row > button:not(:first-child) { justify-self: start; }
   .row > .btn.main:first-child { justify-self: stretch; }      /* a button standing where the label would (PNG) */
   .row.pick { align-items: start; }
@@ -364,7 +368,7 @@
   .colour:hover { background: var(--rule); }
   .colour[aria-expanded="true"] { background: var(--ink); color: var(--paper); }
   .swatch, .dot { flex: none; width: var(--dot); height: var(--dot); border: var(--hair) solid var(--chip-rule); border-radius: var(--round-small); background: linear-gradient(var(--c, transparent), var(--c, transparent)), var(--checker); }
-  .colour .dot { border-radius: 3px; }
+  .colour .dot { width: 1em; height: 1em; border-radius: 3px; }      /* as large as its hex */
   .dot.tiny { display: inline-block; width: var(--dot-tiny); height: var(--dot-tiny); border-radius: 2px; vertical-align: -1px; }
   .colour[aria-expanded="true"] .dot { border-color: var(--night-chip-rule); }
   .swatch:hover { border-color: var(--ink); }

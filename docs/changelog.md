@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.15 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **Colour pill**: swatch as high as the hex (12); one unit (5.5) everywhere in and around it, up to the row's lines; 23 high, also under a finger (was 28 there).
+- **Notes** (the grey lines of words under a row): one unit over and under the words, a hairline under the note.
+
 ## beta 4.14 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.

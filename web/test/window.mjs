@@ -567,8 +567,9 @@ const hand_tabs = await page.evaluate(() => { const p = document.querySelector("
 check(hand_tabs[0] && hand_tabs[1] && hand_tabs[2] === "Hour Minute Seconds", "All hands is the first pinned line, the hand tabs the second, right above the hand's panes");
 const tick_up = await page.evaluate(() => { const pane = document.querySelector(".form .pane"), t = pane.querySelector(".headcontrol").getBoundingClientRect(), h = pane.querySelector(".fold").getBoundingClientRect(); return [pane.querySelector(".headcontrol input").id, t.top >= h.top && t.bottom <= h.bottom, pane.querySelector(".body .check") === null]; });
 check(tick_up[0] === "hand-on-Show-this-hand" && tick_up[1] && tick_up[2], "Show this hand is on the heading line, beside the hand's name");
-const pill_gaps = await page.$eval(".form .colour", (e) => { const r = e.getBoundingClientRect(), d = e.querySelector(".dot").getBoundingClientRect(), h = e.querySelector(".hex").getBoundingClientRect(); return [d.left - r.left, h.left - d.right, r.right - h.right].map((v) => Math.round(v)); });
-check(pill_gaps.join() === "8,8,8", `a colour pill has one space three times: before the swatch, between swatch and hex, after it (${pill_gaps.join(" · ")})`);
+const pill_gaps = await page.$eval(".form .colour", (e) => { const r = e.getBoundingClientRect(), d = e.querySelector(".dot").getBoundingClientRect(), h = e.querySelector(".hex").getBoundingClientRect(), row = e.closest(".row").getBoundingClientRect();
+  return { gaps: [d.left - r.left, h.left - d.right, r.right - h.right, d.top - r.top, r.bottom - d.bottom, r.top - row.top, row.bottom - r.bottom], dot: d.height, type: parseFloat(getComputedStyle(e).fontSize) }; });
+check(pill_gaps.gaps.every((v) => Math.abs(v - 5.5) < 0.3) && pill_gaps.dot === pill_gaps.type, `a colour pill has one space seven times: beside, over and under its swatch, between swatch and hex, after the hex, from the pill to its row's two lines; the swatch is as high as the hex is set (${pill_gaps.gaps.map((v) => +v.toFixed(2)).join(" · ")}; ${pill_gaps.dot} = ${pill_gaps.type})`);
 await page.click("#hand-tab-2");
 check(await S("S.ui_hand === 2") && await page.textContent(".form .pane >> nth=0 >> h2") === "Seconds hand" && await page.$eval("#hand-tab-2", (e) => e.classList.contains("on")), "a tab chooses the hand; the first pane's heading says Seconds hand");
 check((await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))).at(-1) === "Cap", "Cap, which belongs to all three, comes after the hand's own panes");
@@ -973,13 +974,15 @@ await page.uncheck("#global-out-live-text-Keep-numerals-as-text-in-the-SVG");
     return { pinned: [...p.querySelectorAll("h2")].map((h) => h.textContent).join(), order: rows.map((r) => (r.querySelector("button.main") || {}).id || (r.querySelector("input") || {}).id || r.className).join(" | "),
       pdf: left("#export-pdf"), svg: left("#export-svg"), png: left("#export-png"), label: left(".pinned .row > label"), tick: left(".pinned .check"), lines: rows.map(shadow).join(""), below: [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent).join(" · ") };
   });
-  check(e.pinned === "Export a file" && e.order === "export-pdf | export-svg | global-out-live-text-Keep-numerals-as-text-in-the-SVG | export-png | global-out-dpi-dpi-slider | row note under" && e.pdf === e.svg && e.png === e.pdf && e.pdf > e.label && e.tick === e.svg && e.lines === "211110" && e.below === "For production · Link to this dial · Settings file · Log · Gallery",
+  check(e.pinned === "Export a file" && e.order === "export-pdf | export-svg | global-out-live-text-Keep-numerals-as-text-in-the-SVG | export-png | global-out-dpi-dpi-slider | row note under" && e.pdf === e.svg && e.png === e.pdf && e.pdf > e.label && e.tick === e.svg && e.lines === "211111" && e.below === "For production · Link to this dial · Settings file · Log · Gallery",
     `Export a file is pinned: Vector · PDF, SVG under it with its tick tied to it, then PNG on the same column with its dpi under it; below scroll ${e.below}`);
   await shot("4c21-export");
 }
 {
   const at = await page.evaluate(() => { const l = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left); return [l("#png-size"), l("#export-png"), l("#global-out-dpi-dpi-slider"), document.querySelector(".row:has(#global-out-dpi-dpi) > :first-child").textContent]; });
   check(/dpi = \d+ × \d+ px/.test(await page.textContent("#png-size")) && at[0] === at[1] && at[2] === at[1] && at[3] === "", "the dpi's slider has no word before it; it and the line saying what that comes to start on the buttons' column");
+  const note = await page.evaluate(() => { const q = document.querySelector("#png-size"), row = q.closest(".row").getBoundingClientRect(), range = document.createRange(); range.selectNodeContents(q); const words = range.getBoundingClientRect(); return [words.top - row.top, row.bottom - words.bottom, parseFloat(getComputedStyle(q).paddingTop), parseFloat(getComputedStyle(q).paddingBottom)]; });
+  check(Math.abs(note[0] - note[1]) < 0.3 && note[2] === 5.5 && note[3] === 5.5, `a note has as much room over its words as under them, one unit of padding each way (${note.map((v) => +v.toFixed(2)).join(" · ")})`);
   await shot("4c21-export");
 }
 const png = await download("#export-png");
