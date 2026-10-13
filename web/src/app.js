@@ -167,7 +167,9 @@ const VALUE_PICS = {                               // a value button's drawing, 
   // 2026: circles at 8.48 20.93 r 8.11 and 24.29 14.71 r 14.33), whole inside the button's own square (Okay, 13 Oct:
   // "shrink scale icon for better h-spacing"): the drawing's middle (19.5 14.71) is the button's.
   // (Okay, 13 Oct 2026: "connect two centers with dark like its sister, move right 1px"): the centres joined by a dark line, as the radius' button has, and the whole a point to the right
-  size: `<g transform="translate(1 0)"><circle cx="4.79" r="14.33"/><circle class="small" cx="-11.02" cy="6.22" r="8.11"/><path class="tangent" d="M-16.55 0.3L-4.99 -10.48M-10.77 14.33L4.79 14.33"/><path class="dark" d="M-11.02 6.22L4.79 0"/><circle class="pivot" cx="4.79" r="2"/></g>`,
+  // Turned 25° counter-clockwise (Okay, 13 Oct 2026, 22:52: "rotate this icon to fit height, less wide, keeping proportions"):
+  // 34 wide and 35 high instead of 38 by 29; the turned drawing's middle put back on the button's, then the point right.
+  size: `<g transform="translate(-0.5 -1) rotate(-25)"><circle cx="4.79" r="14.33"/><circle class="small" cx="-11.02" cy="6.22" r="8.11"/><path class="tangent" d="M-16.55 0.3L-4.99 -10.48M-10.77 14.33L4.79 14.33"/><path class="dark" d="M-11.02 6.22L4.79 0"/><circle class="pivot" cx="4.79" r="2"/></g>`,
 };
 
 // a language in the list, by its name; on its button, by two letters ("zh-Hans" → ZH; the font's own choice → "Lang.")

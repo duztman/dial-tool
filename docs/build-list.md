@@ -1,7 +1,7 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **done** · **parked**.
-*Last updated 13 Oct 2026, night (beta 4.35: #125 and #128 done, #134–#154 from Okay's evening review on the iPad, six of them built; #98 corrected). Before, 13 Oct 2026 (beta 4.8 built: #82, #99; noted #100; beta 4.7 built: #78–#81, #92, #94, #95, #97, #98; atlas review: #78–#91 added, #59 settled, #53 corrected). Before: 12 Oct 2026 (beta 4.6: #70, #71 built; beta 4.5: #70–#75; #32 moved to the web version). Before: 11 Oct 2026 (web version: #49–#56; MP4 fix: #48). Before: 4 Oct 2026 (beta 2.3: preview plan built, #37–#41 were waiting for the Mac check, `docs/preview.md` §6 — set aside by Okay the same day, see #40). Seen working on Okay's Mac 4 Oct (beta 2.1 screenshot): window, sections, ring list, ring settings list, regular-size controls, live popups, type per numerals ring with feature names.*
+*Last updated 13 Oct 2026, night (beta 4.35: #125 and #128 done, #134–#155 from Okay's evening review on the iPad, six of them built; #98 corrected). Before, 13 Oct 2026 (beta 4.8 built: #82, #99; noted #100; beta 4.7 built: #78–#81, #92, #94, #95, #97, #98; atlas review: #78–#91 added, #59 settled, #53 corrected). Before: 12 Oct 2026 (beta 4.6: #70, #71 built; beta 4.5: #70–#75; #32 moved to the web version). Before: 11 Oct 2026 (web version: #49–#56; MP4 fix: #48). Before: 4 Oct 2026 (beta 2.3: preview plan built, #37–#41 were waiting for the Mac check, `docs/preview.md` §6 — set aside by Okay the same day, see #40). Seen working on Okay's Mac 4 Oct (beta 2.1 screenshot): window, sections, ring list, ring settings list, regular-size controls, live popups, type per numerals ring with feature names.*
 
 ## Verify on a Mac
 
@@ -150,7 +150,7 @@ Atlas: https://claude.ai/artifact/QdvVC37Y6csV7FcUjJHqAH. Numbers in brackets ar
 
 ## Okay's evening review on the iPad (13 Oct 2026, 21:02–22:15, while beta 4.35 was being built)
 
-Twenty-one notes (eighteen with pictures, three after the hand-over), in the order they came. Built the same night where small; the rest wait for his word. Pictures: the session's zip of 13 Oct, `images-okay/`.
+Twenty-two notes (eighteen with pictures, four after the hand-over), in the order they came. Built the same night where small; the rest wait for his word. Pictures: the session's zip of 13 Oct, `images-okay/`.
 
 | # | Item | Status |
 |---|---|---|
@@ -175,6 +175,7 @@ Twenty-one notes (eighteen with pictures, three after the hand-over), in the ord
 | 152 | **Pinch zoom is jumpy** (22:39, iPad): "it goes haywire with two inputs but when it locks in it zooms nicely" — the first moments of a two-finger gesture jump (two pointer events before the pinch is recognised?), then it is smooth. Look at `app.js`'s pointer handling on the preview: ignore the first move after the second finger lands, or start the pinch from the pair's first distance. | noted — bug |
 | 153 | **A tapped control keeps its highlight while the panel changes** (22:39, iPad and touch): the tapped item gets a highlight outline; while the menu/panel re-lays itself after the tap the outline stays, then it goes back to normal. Hide the highlight while the change is happening (the browser's tap highlight, `-webkit-tap-highlight-color`, and `:focus` on touch: a touch tap should not leave a focus ring; `:focus-visible` already limits it on Chrome, Safari differs). | noted — bug |
 | 154 | **Stickers condensed; the legend large, below, opening upwards** (22:43): every sticker's words shortened except *bold* and *italic*; *weight* becomes *w.* with its range (*w. 100–900*); no font row takes three lines of stickers; the legend becomes large, under the list, and opens upwards as a single column (folded by default — with #137). Belongs with #137, #144, #146: one redraw of the font sheet's lower half. | noted |
+| 155 | **The scale drawing turned to fit the height** (22:52, a sketch over the two round buttons): "rotate this icon to fit height, less wide while keeping proportions". **Built in 4.35** (same night): the drawing turned 25° counter-clockwise, 34 wide and 35 high instead of 38 × 29, recentred, still a point to the right. | done · look at it |
 
 ## Later
 
