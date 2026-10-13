@@ -169,7 +169,7 @@ const VALUE_PICS = {                               // a value button's drawing, 
   // (Okay, 13 Oct 2026: "connect two centers with dark like its sister, move right 1px"): the centres joined by a dark line, as the radius' button has, and the whole a point to the right
   // Turned 25° counter-clockwise (Okay, 13 Oct 2026, 22:52: "rotate this icon to fit height, less wide, keeping proportions"):
   // 34 wide and 35 high instead of 38 by 29; the turned drawing's middle put back on the button's, then the point right.
-  size: `<g transform="translate(-0.5 -1) rotate(-25)"><circle cx="4.79" r="14.33"/><circle class="small" cx="-11.02" cy="6.22" r="8.11"/><path class="tangent" d="M-16.55 0.3L-4.99 -10.48M-10.77 14.33L4.79 14.33"/><path class="dark" d="M-11.02 6.22L4.79 0"/><circle class="pivot" cx="4.79" r="2"/></g>`,
+  size: `<circle cx="3.84" cy="-3.02" r="14.33"/><circle class="small" cx="-7.86" cy="9.29" r="8.11"/><path class="tangent" d="M-15.37 6.27L-9.45 -8.39M-4.2 16.54L9.9 9.96"/><path class="dark" d="M-7.86 9.29L3.84 -3.02"/><circle class="pivot" cx="3.84" cy="-3.02" r="2"/>`,      // the points turned, not a transform: a turned group's box would be measured larger than the drawing
 };
 
 // a language in the list, by its name; on its button, by two letters ("zh-Hans" → ZH; the font's own choice → "Lang.")
