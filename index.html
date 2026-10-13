@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.35.6 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.35.7 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -779,10 +779,14 @@
   .picker .squares { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--unit); }      /* on the list's three columns */
   /* the squares: shorter, a sign beside two lines of words (Okay, 13 Oct 2026: "shorter"); they set the height of the
      sheet's foot. The legend's button is the last of them, at the right. */
-  .picker .squares > .pickt { grid-template-columns: auto minmax(0, 1fr); justify-items: start; align-items: center; align-content: center; column-gap: var(--unit); min-height: var(--u8); padding: var(--unit) var(--u3); text-align: left; }
-  .picker .squares > .pickt span { white-space: nowrap; text-align: left; }
-  .picker .squares > .pickt small { color: var(--wait); font-size: inherit; }      /* lighter (Okay, 14 Oct 2026) */
-  .picker .squares > .legendbutton { grid-column: 3; grid-row: 1; }      /* always the third; Installed (Chrome only) goes under the first */
+  /* the ways to add a font share the first two columns equally (two: each a column; three: each a third of the two) */
+  .picker .squares > .adds { grid-column: 1 / 3; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--unit); }
+  .picker .squares .adds.three > .pickt small, .picker .squares .adds.three > .pickt br { display: none; }      /* three in the room of two: no second lines */
+  .picker .squares .adds.three > .pickt span { white-space: normal; }
+  .picker .squares .pickt { grid-template-columns: auto minmax(0, 1fr); justify-items: start; align-items: center; align-content: center; column-gap: var(--unit); min-height: var(--u8); padding: var(--unit) var(--u3); text-align: left; }
+  .picker .squares .pickt span { white-space: nowrap; text-align: left; }
+  .picker .squares .pickt small { color: var(--wait); font-size: inherit; }      /* lighter (Okay, 14 Oct 2026) */
+  .picker .squares > .legendbutton { grid-column: 3; grid-row: 1; }      /* always the third */
   .picker .squares > .legendbutton[aria-expanded="true"] svg { rotate: 180deg; }
   #window-font-back { justify-self: start; display: inline-flex; align-items: center; gap: var(--unit); border-color: var(--rule); background: none; color: var(--grey); opacity: var(--pixel-ink); }      /* Copy style of <the numerals ring>: a box with a copy sign and no fill, quiet; the ring's name in italic (Okay, 13–14 Oct 2026) */
   #window-font-back:hover { opacity: 1; border-color: var(--ink); color: var(--ink); }
@@ -5355,7 +5359,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.35.6";
+var VERSION = "beta 4.35.7";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -9599,16 +9603,22 @@ var DialTool = class _DialTool {
         el(
           "div",
           { className: "squares" },
-          square("font-add", "Add font link (gfonts, url)", "A font by its Google Fonts link or name, or by a link to a font file", `<path d="M8 3.5L8 12.5M3.5 8L12.5 8"/>`, () => {
-            if (paste.hidden) {
-              paste.hidden = false;
-              paste.focus();
-            } else if (paste.value.trim()) add();
-            else paste.focus();
-          }),
-          // the field for the link is out of sight until this is pressed (Okay, 13 Oct 2026)
-          square("font-file-open", "Add font file (woff, ttf, otf)", "A font file from this computer: .ttf \xB7 .otf \xB7 .woff", `<path d="M4 2.5L9.5 2.5L12 5L12 13.5L4 13.5ZM9.5 2.5L9.5 5L12 5"/>`, () => file.click()),
-          square("local-fonts", "Installed", "The fonts installed on this computer", `<rect x="2.5" y="3.5" width="11" height="7.5"/><path d="M6 13.5L10 13.5M8 11L8 13.5"/>`, () => this.local_fonts(true), { hidden: !("queryLocalFonts" in window) }),
+          // the ways to add a font, in the first two of the sheet's three columns, sharing them equally: Installed first when
+          // the browser can read this computer's fonts (Chrome, Edge), then a link, then a file (Okay, 14 Oct 2026)
+          el(
+            "div",
+            { className: "adds" + ("queryLocalFonts" in window ? " three" : "") },
+            square("local-fonts", "Installed", "The fonts installed on this computer", `<rect x="2.5" y="3.5" width="11" height="7.5"/><path d="M6 13.5L10 13.5M8 11L8 13.5"/>`, () => this.local_fonts(true), { hidden: !("queryLocalFonts" in window) }),
+            square("font-add", "Add font link (gfonts, url)", "A font by its Google Fonts link or name, or by a link to a font file", `<path d="M8 3.5L8 12.5M3.5 8L12.5 8"/>`, () => {
+              if (paste.hidden) {
+                paste.hidden = false;
+                paste.focus();
+              } else if (paste.value.trim()) add();
+              else paste.focus();
+            }),
+            // the field for the link is out of sight until this is pressed (Okay, 13 Oct 2026)
+            square("font-file-open", "Add font file (woff, ttf, otf)", "A font file from this computer: .ttf \xB7 .otf \xB7 .woff", `<path d="M4 2.5L9.5 2.5L12 5L12 13.5L4 13.5ZM9.5 2.5L9.5 5L12 5"/>`, () => file.click())
+          ),
           file,
           legend_button
         )
