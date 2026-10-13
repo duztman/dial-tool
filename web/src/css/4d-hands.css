@@ -9,6 +9,7 @@
   .detail .pivot { fill: var(--surface); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
   /* a line of tiles that opens: closed, the first few and the chosen one; then "more" and a dashed plus for one's own */
   .picks.line:not(.open) > [role="radio"]:not(.in4) { display: none; }
+  .picks.line:not(.open) > .own { display: none; }      /* closed: the shapes and "more"; the SVG tile stands at the end of the opened list (Okay, 13 Oct 2026) */
   .picks.line { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .row > .picks.line { grid-column: 1 / -1; }
   .pickt.own { border-style: dashed; color: var(--grey); cursor: default; }
@@ -31,7 +32,7 @@
   @media (min-width: 861px) {
     /* wide: the box in the first two columns, as high as the rows beside it; the rows in the other four, each one
        line: label · slider · the number box */
-    .body > .detail { grid-column: 2 / span 2; grid-row: 1 / span 40; }      /* 40: more rows than a hand has; the rows it doesn't use are nothing high */
+    .body > .detail { grid-column: 2 / span 2; grid-row: 1 / span 40; align-self: start; height: calc(7 * var(--line)); }      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
     .body > .row.side { grid-column: 4 / -1; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--side-num); }
     .row.side { --num-open: calc((100% + var(--side-num)) / 2); }      /* the row less its label and one gap: slider and number together */
     .row.side > :first-child, .row.side > input[type="range"] { grid-column: auto; }
@@ -40,6 +41,6 @@
     .row.side > label > .short { display: inline; }
     .row.side > .colour { grid-column: 2 / -1; }
     .row.side > .picks.line { grid-column: 1 / -1; grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .picks.line:not(.open) > [role="radio"]:not(.in2) { display: none; }
+    .picks.line:not(.open) > [role="radio"]:not(.in3) { display: none; }      /* three shapes and "more" */
   }
 }

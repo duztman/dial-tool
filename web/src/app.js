@@ -102,7 +102,7 @@ const PICS = {
     `<rect x="5" y="2.5" width="18" height="15" rx="1.5"/><path d="M12.4 7.6L14.6 6L14.6 14" stroke-width="1.6"/>`,
     `<rect x="2" y="4" width="24" height="12" rx="1.5"/><path d="M10 13.5L10 6.5L14 11.5L18 6.5L18 13.5" stroke-width="1.6"/>`,
     `<rect x="3" y="3.5" width="22" height="13" rx="1.5"/><path d="M3.5 16L3.5 4L14 4L14 16Z" ${solid}/>`,
-    `<circle cx="14" cy="10" r="8.5"/><path d="M16.2 4.2A6.1 6.1 0 1 0 16.2 15.8A7.4 7.4 0 0 1 16.2 4.2Z" ${solid}/>`,      // the crescent inside a circle, framed like its brothers (Okay, 13 Oct 2026)
+    `<path d="M14 1.5A8.5 8.5 0 0 0 14 18.5A11 11 0 0 1 14 1.5Z" ${solid}/><circle cx="14" cy="10" r="8.5"/>`,      // a circle, its dark side the crescent reaching the frame, as am · pm's dark half reaches its frame (Okay, 13 Oct 2026)
   ],
 };
 /** a hand's picture is the hand itself, drawn by the geometry with a standard size. */
@@ -1116,7 +1116,7 @@ class DialTool {
         if (row.label) label.textContent = row.label(T);
         const tiles = [...group.querySelectorAll('[role="radio"]')];
         tiles.forEach((b, i) => { b.classList.toggle("on", i === T[row.key]); b.setAttribute("aria-checked", String(i === T[row.key])); });
-        if (row.line) for (const [name, n] of [["in2", 2], ["in4", 4]]) {      // which tiles the closed line shows: the first n, the last of them giving its place to the chosen one
+        if (row.line) for (const [name, n] of [["in3", 3], ["in4", 4]]) {      // which tiles the closed line shows: the first n, the last of them giving its place to the chosen one
           const chosen = T[row.key] || 0, shown = chosen < n ? tiles.slice(0, n) : [...tiles.slice(0, n - 1), tiles[chosen]];
           tiles.forEach((b) => b.classList.toggle(name, shown.includes(b)));
         }

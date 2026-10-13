@@ -600,16 +600,17 @@ await page.click("#hand-tab-0");
 }
 { // a hand's pane (13 Oct 2026): a box with the hand itself at the left, its rows beside it: a line of tiles that opens, numbers, colour
   const look = () => page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), box = r("#hand-detail"), rows = [...document.querySelectorAll(".form .pane .body")][0].querySelectorAll(".row.side:not([hidden])"), first = rows[0].getBoundingClientRect(), last = rows[rows.length - 1].getBoundingClientRect(), tiles = [...document.querySelectorAll(".picks.line > *")].filter((e) => e.offsetParent).map((e) => e.textContent);
-    return { beside: Math.round(first.left - box.right), top: Math.round(box.top - first.top), bottom: Math.round(last.bottom - box.bottom), tiles: tiles.join(" "), panes: [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent).join(" · "), d: document.querySelector("#hand-detail .upright path").getAttribute("d"), centre: document.querySelectorAll("#hand-detail .upright .axis, #hand-detail .upright .pivot").length, one_line: [...rows].every((e) => e.getBoundingClientRect().height < 90) }; });
+    return { beside: Math.round(first.left - box.right), top: Math.round(box.top - first.top), bottom: Math.round(last.bottom - box.bottom), high: Math.round(box.height), tiles: tiles.join(" "), panes: [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent).join(" · "), d: document.querySelector("#hand-detail .upright path").getAttribute("d"), centre: document.querySelectorAll("#hand-detail .upright .axis, #hand-detail .upright .pivot").length, one_line: [...rows].every((e) => e.getBoundingClientRect().height < 90) }; });
   const a = await look();
-  check(a.beside === 12 && a.top === 6 && a.bottom === 6 && a.panes === "Hour hand · Cap" && a.centre === 2, `a hand has one pane: at the left a box with the hand itself, its centre marked, as high as the rows beside it (${JSON.stringify({ ...a, d: 0 })})`);
-  check(a.tiles === "baton pencil more SVG", `its shapes are one line: ${a.tiles}`);
+  check(a.beside === 12 && a.top === 6 && a.high === 238 && a.panes === "Hour hand · Cap" && a.centre === 2, `a hand has one pane: at the left a box with the hand itself, its centre marked, seven rows high (${JSON.stringify({ ...a, d: 0 })})`);
+  check(a.tiles === "baton pencil sword more", `its shapes are one line, three and more; the SVG tile waits in the opened list: ${a.tiles}`);
   await page.click("#hand-shape-Shape-more");
   const open = (await look()).tiles;
   await page.click("#hand-shape-Shape-7");
   await page.click("#hand-shape-Shape-more");
   const b = await look();
-  check(open.split(" ").length === 11 && open.endsWith("less SVG") && b.tiles === "baton breguet more SVG" && b.d !== a.d, `more opens all nine (${open}); closed again, the chosen one has a place on the line (${b.tiles}), and the box shows it`);
+  const box_high = await page.$eval("#hand-detail", (e) => Math.round(e.getBoundingClientRect().height));
+  check(open.split(" ").length === 11 && open.endsWith("less SVG") && b.tiles === "baton pencil breguet more" && b.d !== a.d && box_high === a.high, `more opens all nine (${open}); closed again, the chosen one has a place on the line (${b.tiles}), and the box shows it; the box keeps its height (${box_high})`);
   await page.click("#hand-shape-Shape-0");
   // the number box: the number with a tiny plus over a tiny minus; a press on the number and it grows over the slider
   const nb = () => page.evaluate(() => { const box = document.querySelector(".row.side .numbox"), r = box.getBoundingClientRect(), s = box.closest(".row").querySelector("input[type=range]").getBoundingClientRect(), [minus, plus] = [...box.querySelectorAll(".step")].map((e) => e.getBoundingClientRect()); return { w: Math.round(r.width), h: Math.round(r.height), over: r.left <= s.left + 1, stacked: plus.bottom <= minus.top + 1 && Math.round(plus.left) === Math.round(minus.left), step: Math.round(plus.width) + "x" + Math.round(plus.height) }; });
