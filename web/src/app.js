@@ -182,13 +182,13 @@ const TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip" };
 // the font sheet's legend: a sticker of each kind, and what it says about a family. The stickers' words are short, so a
 // family's stickers stand on one line; bold and italic keep their words (Okay, 13 Oct 2026: "condense all sticker text but
 // bold and italic. weight gets w. and range"). The legend spells each one out.
-// Each meaning is a short sentence, one line in the legend's window; under it, light, the OpenType name of what the sticker reads (Okay, 14 Oct 2026).
-const STICKER_LEGEND = [["w. 100–900", "weight", "Any weight in the range.", "wght axis"], ["bold", "weight", "Has a bold.", ""],
-  ["italic", "italic", "Has an italic.", "ital, slnt or a style"], ["wd", "width", "Any width, narrow to wide.", "wdth axis"],
-  ["opt", "optical", "Drawn for small and large.", "opsz axis"], ["tab", "figure", "Tabular: figures one width.", "tnum"],
-  ["old", "figure", "Oldstyle figures.", "onum"], ["zero", "figure", "A zero with a slash.", "zero"],
-  ["frac", "figure", "Fractions: ½ from 1/2.", "frac"], ["2 ss", "sets", "Sets of other shapes.", "ss01 to ss20"],
-  ["5 cv", "sets", "Variants of one character.", "cv01 to cv99"], ["3 st", "styles", "Separate styles.", ""]];
+// Each meaning is a sentence; at its end, light, in square brackets, the OpenType abbreviation of what the sticker reads (Okay, 14 Oct 2026).
+const STICKER_LEGEND = [["w. 100–900", "weight", "Any weight between the two numbers, here 100 to 900.", "wght"], ["bold", "weight", "Has a bold.", ""],
+  ["italic", "italic", "Has an italic, as an axis or as a style.", "ital, slnt"], ["wd", "width", "Any width, from narrow to wide.", "wdth"],
+  ["opt", "optical", "Drawn for small sizes and for large ones.", "opsz"], ["tab", "figure", "Tabular figures: every figure one width.", "tnum"],
+  ["old", "figure", "Oldstyle figures, with ascenders and descenders.", "onum"], ["zero", "figure", "A zero with a slash through it.", "zero"],
+  ["frac", "figure", "Fractions: ½ made from 1/2.", "frac"], ["2 ss", "sets", "Stylistic sets: other shapes to switch on.", "ss01–ss20"],
+  ["5 cv", "sets", "Character variants: one character drawn another way.", "cv01–cv99"], ["3 st", "styles", "Separate styles: Regular, Bold and so on.", ""]];
 // the OpenType switches that change numerals, in a short word each, for the stickers
 const FIGURE_WORDS = [["tnum", "tab"], ["onum", "old"], ["zero", "zero"], ["frac", "frac"]];
 // a variable font's axes, in words, for the font sheet's stickers
@@ -2152,12 +2152,18 @@ class DialTool {
       rail.onpointerup = rail.onpointercancel = () => { rail.onpointermove = rail.onpointerup = rail.onpointercancel = null; rail.classList.remove("held"); };
     });
     // the legend: folded to one button beside the squares; open, it stands over them and pushes the list up
-    const legend = el("dl", { className: "legend", id: "font-legend", hidden: true }, ...STICKER_LEGEND.flatMap(([word, kind, says, code]) => [el("dt", {}, el("span", { className: "sticker " + kind, textContent: word })), el("dd", {}, says, ...(code ? [el("br"), el("small", { textContent: code })] : []))]));
+    const legend = el("dl", { className: "legend", id: "font-legend", hidden: true }, ...STICKER_LEGEND.flatMap(([word, kind, says, code]) => [el("dt", {}, el("span", { className: "sticker " + kind, textContent: word })), el("dd", {}, says, ...(code ? [" ", el("small", { textContent: `[${code}]` })] : []))]));
     const legend_button = el("button", { type: "button", className: "pickt legendbutton", id: "font-legend-open", title: "What the stickers mean" });
     legend_button.innerHTML = icon(`<path d="M4 10L8 6L12 10"/>`) + "<span>Legend<br><small>(OpenType abbr.)</small></span>";      // a second line like its brothers (Okay, 14 Oct 2026)
     legend_button.setAttribute("aria-expanded", "false");
+    this.legend_fit = () => {      // the window grows upwards as far as the font list's top, then scrolls (Okay, 14 Oct 2026)
+      if (legend.hidden) return;
+      const room = legend.parentElement.getBoundingClientRect().top - list.getBoundingClientRect().top - parseFloat(getComputedStyle(legend).marginBottom || 0);
+      legend.style.maxHeight = Math.max(0, Math.floor(room - parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit")))) + "px";
+    };
     legend_button.onclick = () => {
       legend.hidden = !legend.hidden;
+      this.legend_fit();
       legend_button.setAttribute("aria-expanded", String(!legend.hidden));
       requestAnimationFrame(() => this.rail_place());
     };
@@ -2186,7 +2192,7 @@ class DialTool {
             square("font-file-open", "Add font file (woff, ttf, otf)", "A font file from this computer: .ttf · .otf · .woff", `<path d="M4 2.5L9.5 2.5L12 5L12 13.5L4 13.5ZM9.5 2.5L9.5 5L12 5"/>`, () => file.click())),
           file, legend_button)));
     this.picker.tabIndex = -1;
-    window.addEventListener("resize", () => { if (this.picker.open) this.rail_place(); });
+    window.addEventListener("resize", () => { if (this.picker.open) { this.rail_place(); this.legend_fit(); } });
     this.picker.addEventListener("click", (e) => { if (e.target === this.picker) this.picker.close(); });      // a click outside closes it
     return this.picker;
   }
