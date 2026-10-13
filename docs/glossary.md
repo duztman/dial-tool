@@ -2,7 +2,7 @@
 
 What each word means **in this project**. Turkish where it's the common trade word.
 If a term is used differently in conversation, ask, then update this file.
-*Last updated 12 Oct 2026 (web version, beta 4.6: sector colours, scale everything).*
+*Last updated 13 Oct 2026 (Section, Ring list and Bar brought up to the web version). Before: 12 Oct 2026 (web version, beta 4.6: sector colours, scale everything).*
 
 ## Watch terms
 
@@ -31,7 +31,7 @@ If a term is used differently in conversation, ask, then update this file.
 |---|---|
 | **Ring** | One entry in the ring list. A ring repeats one thing around the centre at its **positions**. Okay's word for every dial element in the list ("rings, not layers, all round"). Unlimited. |
 | **Kind** | What a ring repeats: **ticks**, **markers**, **numerals** or **band**. Changeable at any time; the ring keeps all its settings. ("Type" is kept for typography.) |
-| **Ring list** | The list in the Rings section. Its order is the **stacking order**: the top ring is drawn last (in front). Each row has a show checkbox and an editable name. |
+| **Ring list** | The list in the Rings section. Its order is the **stacking order**: the top ring is drawn last (in front). Each row (web version): an **eye** (show or hide the ring), a grip to drag it, its name, the **rename box** on the selected ring, its kind. (`dial.py`: a show checkbox and an editable name.) |
 | **Radius** | Ticks, markers, bands: the **outer** radius. Numerals: the radius of the text's **centre**. |
 | **Positions** | Where a ring puts things: **count**, **start °** (where the first one sits), **span °**. A full turn spaces them evenly; a partial span marks both ends (scales). For bands, positions start segments that tile the span. |
 | **Every · Offset · Skip those instead** | Which positions are used: every n-th, starting at the offset; "skip those instead" inverts it. Cardinals = every 3; non-cardinals = every 3, inverted. |
@@ -59,7 +59,7 @@ If a term is used differently in conversation, ask, then update this file.
 
 | Term | Meaning |
 |---|---|
-| **Section** | One page of the left panel: Dial · Rings · Hands · Date · Export. |
+| **Section** | One page of the left panel, chosen by its tab: Dial · Rings · Hands · Windows · Export. The fourth was *Date* until 11 Oct 2026; its key and number are still Date / 3 (R8, R9). |
 | **Pane** | A named part of a section, opened by a thick line (web version, beta 4.0; called a *group* in beta 3.0). Its eye folds it. The Dial section's panes: **Dial** (diameter, plate, background) and **Page** (margin, backdrop). |
 | **Sector colour** | A band's sector with a colour of its own (ring key `cs`). Without one, a sector has the ring's colour. |
 | **Scale everything** | The tick under Diameter: a change of diameter multiplies every measure on the dial (not the page margin). |
@@ -69,7 +69,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Backdrop switch** | The button at the preview's bottom left: the backdrop's colour as a chip; it opens the colour pop-out. |
 | **Hand tabs** | Hour · Minute · Seconds, the second pinned line of Hands, under All hands: they choose the hand the panes below are about. |
 | **Window cards** | The four cards on top of Windows, 12 · 3 · 6 · 9: where each window is, and the tabs that choose the window the panes below are about. |
-| **Bar** | One line of its own, outside the panes and always in view (Hands: All hands · Show hands · Motion). |
+| **Bar** | **Used for two things — to be settled with Okay (found 13 Oct 2026).** (1) The dark strip along the bottom of the window: selected · time · view (brief §4, beta 4.1 to 4.3; the *Day slider* entry below means this one). (2) In the code and since 12 Oct: one line of its own, outside the panes and always in view (Hands: All hands · Show hands · Motion). Until settled, write *bottom bar* for (1) and *pinned line* for (2). |
 | **Nested question** | A tick or menu that asks about the row above it; it starts on the controls' column, not at the left. |
 | **Row line** | The hairline before and after every row: white on the scrolling grey, that grey on paper. |
 | **Logo** | Planned (build list #72): an SVG placed on the dial with the mouse; it is a ring in the ring list. Not the *background* (a picture on the plate, not built). |

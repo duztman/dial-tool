@@ -1,7 +1,7 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **done** · **parked**.
-*Last updated 12 Oct 2026 (beta 4.6: #70, #71 built; beta 4.5: #70–#75; #32 moved to the web version). Before: 11 Oct 2026 (web version: #49–#56; MP4 fix: #48). Before: 4 Oct 2026 (beta 2.3: preview plan built, #37–#41 were waiting for the Mac check, `docs/preview.md` §6 — set aside by Okay the same day, see #40). Seen working on Okay's Mac 4 Oct (beta 2.1 screenshot): window, sections, ring list, ring settings list, regular-size controls, live popups, type per numerals ring with feature names.*
+*Last updated 13 Oct 2026 (atlas review: #78–#91 added, #59 settled, #53 corrected). Before: 12 Oct 2026 (beta 4.6: #70, #71 built; beta 4.5: #70–#75; #32 moved to the web version). Before: 11 Oct 2026 (web version: #49–#56; MP4 fix: #48). Before: 4 Oct 2026 (beta 2.3: preview plan built, #37–#41 were waiting for the Mac check, `docs/preview.md` §6 — set aside by Okay the same day, see #40). Seen working on Okay's Mac 4 Oct (beta 2.1 screenshot): window, sections, ring list, ring settings list, regular-size controls, live popups, type per numerals ring with feature names.*
 
 ## Verify on a Mac
 
@@ -60,12 +60,12 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 50 | Imported shapes (SVG, PDF, AI) for markers and hands — not in the web version; a "file" shape is drawn as a bar or baton and the log says so. In a browser the file's content has to travel inside the settings (no file paths). | open |
 | 51 | MP4 and GIF export (WebCodecs) | open |
 | 52 | Live text in PDF · SVG; named instances of variable fonts; a fallback font for scripts the main font lacks (Eastern Arabic, Chinese: HarfBuzz has no automatic fallback, CoreText had) | open |
-| 53 | **Better interface overall** — Okay, 11 Oct: "better ui overall, learn and implement. Move delete layers, export better." Research first (how good parametric tools lay out lists, inspectors and export), then propose. Includes: drag to reorder rings, undo, an export panel that shows what will be written. | open (Okay: later) |
+| 53 | **Better interface overall** — Okay, 11 Oct: "better ui overall, learn and implement. Move delete layers, export better." Research first (how good parametric tools lay out lists, inspectors and export), then propose. Includes: undo, an export panel that shows what will be written. (Drag to reorder rings: done 11 Oct.) 13 Oct: the ring list's rows are #78; the atlas's other interface patterns (section 4 and 6) are not picked. | open (Okay: later) |
 | 54 | **Use it through Claude (MCP)** — Okay, 11 Oct: "can we attach an mcp to that, so someone can use over claude?" `web/src/geometry.js` and `output.js` run in Node without a window (the parity test does it), so a small server could offer: read and change settings, list fonts, return a PNG / SVG / PDF. Decide: local (runs on the user's computer) or hosted. | **dropped** — Okay, 11 Oct: "No need for mcp since we are on github." |
 | 55 | Online at <https://duztman.github.io/dial-tool/> — Okay, 11 Oct: "can I get it online somewhere? Under GitHub?" The `gh-pages` branch holds `index.html` (a copy of `web/dial-tool.html`); pushing the branch switched GitHub Pages on. Seen live 11 Oct. To update: copy the new build to `index.html` on `gh-pages`, commit, push. | done (11 Oct) |
 | 57 | **Look at it on Okay's Mac**: everything added on 11 Oct after the first screenshot was only seen in Chromium here — font picker, examples, pointer label, tabs, Guides, dragging rings, four windows. | verify |
 | 58 | Peter Wiegel's fonts (peter-wiegel.de: alte DIN 1451, DIN 1451 Breitschrift 1936, DIN 1451 Form H): read the licence file in each download; if it allows passing on, swap them into the list of 20 | open |
-| 59 | Windows: am · pm and moon phase follow settings (hour, moon age), not the time shown; a day window is as wide as its Width, not its word. A window's shape is upright at every position. Ask Okay what he wants here | open |
+| 59 | Windows: am · pm and moon phase follow settings (hour, moon age), not the time shown; a day window is as wide as its Width, not its word. A window's shape is upright at every position. Ask Okay what he wants here. **Settled 13 Oct** (brief §4): am · pm follows the time shown → #79; moon age stays a setting; a day window stays as wide as its Width; turning a window with its radius → #82 | settled → #79, #82 |
 | 56 | Remembered fonts: fonts added from a link are remembered (11 Oct); font files added by hand are still forgotten when the page closes | open |
 | 60 | Add fonts by Google link: try it on the real page (it was tested against local copies of the same paths). A dial opened from a link could fetch a missing Google family by its name by itself — not done: every unknown font would cost three failed requests | verify / open |
 | 62 | OpenType tiles, grouped (web version): features that have a name of their own first; the numbered sets (`ss01`…, stylistic sets) and (`cv01`…, character variants) each in a group below. A note from Okay, 11 Oct 2026, while he marks up screenshots of the whole panel. Done in beta 4.0 | done |
@@ -84,6 +84,29 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 75 | Usability review, the other tabs: Rings · Hands · Windows · Export, one at a time (Okay, 12 Oct) | open |
 | 65 | Rings on a low window: the pinned part (list + the ring's first pane) is taller since beta 4.0, leaving less to scroll. If it bothers: pin only the list | open |
 | 66 | Tabs and the columns: five tabs share six columns, so they sit between columns (Okay, 11 Oct: "Columns? They fit 'em"). Ways: tabs one column each with the sixth free, or a sixth sign. Ask Okay | open |
+
+## From the atlas review (13 Oct 2026)
+
+Atlas: https://claude.ai/artifact/QdvVC37Y6csV7FcUjJHqAH. Numbers in brackets are the atlas's entries. Order: brief §4, 13 Oct — Okay has confirmed the first phase (docs) only; the rest is Claude's proposal until he says go, phase by phase.
+
+| # | Item | Status |
+|---|---|---|
+| 78 | **Ring list rows with a summary** [4.1]: after a ring's kind, two or three of its values (count, radius, size…), the row still one line high; long names are cut. Stylesheet: R32 | open — Now 2 |
+| 79 | **am · pm follows the time shown** [2.6]. The window reads the time, not its *Hour of the day* setting (key `hour` stays, R8). Time is twelve hours today (`t` is taken mod 43200): the bottom bar needs an AM · PM switch and *Now* must keep the real hour. **Ask before building:** an am · pm window in an old link would draw from the time instead of its `hour` (R31) — always follow, or a tick that is off to start? Okay's answer of 13 Oct, "switch on windows on via a small analog on the menu", is not understood yet: ask what it means | open — Now 3, ask first |
+| 80 | **Labels that start again** [1.8 Ferguson, 1.11 two-hour track]: Numerals → Numbers gets *Start again after n positions*, 0 = off (a new ring key; off draws as before, R31). Ferguson: from 0, step 1, again after 10. Two-hour track: count 24, from 5, step 5, again after 12 | open — Now 4 |
+| 81 | **Gallery**: a section of its own under everything else in Export, 10–15 example dials (Okay, 13 Oct). First ones, all drawable today: B-Uhr Baumuster B [1.9], 12 + 24 hours [1.10], MIL-PRF-46374 Type III [3.4], Montgomery as two numerals rings [1.7]; then world time [1.15] and a diver's bezel drawn as outer rings on a larger plate [1.13] ("the user might hack things for creativity and this is one"). The four ways a window meets the rings [2.9] need nothing built | open — Now 5 |
+| 82 | **Window shape**: one Shape pane for every window, apart from what it shows: rectangle · circle · polygon (sides) · arch (the moon's) · arc (a day window at 12 [2.8]), one Corner value; a moon phase window may be a plain rectangle or circle [2.5, Okay's note]. With it: a 4 o'clock position (appended, R9), *Turn the window with its radius* [2.1] and *Turn the digits with it* [2.3]. Old windows draw as before (R31) | open — Next |
+| 83 | **Positions law** [1.1]: a selector on the Positions heading line: even · reciprocal · logarithmic · table · squeeze toward an angle [7.15]. Only `ring_angles()` changes. Tachymeter [1.2] = reciprocal with base, from, to, step; one ticks ring per stretch of steps. Depth cartouches [1.14] = table, typed as angle and label pairs. To decide when it is built: Count hides where the law sets it (R16); what "a partial span marks both ends" means per law; a table brings its own labels | open — Next |
+| 84 | **Jog** [7.19]: step the time by a minute from the bottom bar. The shuttle half exists (1× · 60× · 720×) | open — Next |
+| 85 | **Hand tip to a ring's edge** [7.13, Max Bill]: a button in Hands → Size that sets Length once. A lasting link would need rings to have identities; they are a list that is reordered | open — Next |
+| 86 | **Big date** [2.7]: a fifth window kind (appended, R9): two cells; bar, frame or none | open — Later |
+| 87 | **Registration marks** [3.7]: the same two marks in the page margin of every production file. With per-ink masks (#35); needs a line in R5 / R26 | open — Later, with #35 |
+| 88 | **Weight** [6.19]: one value in Dial that multiplies every width on the dial, applied like Scale everything (#70) so the panel's numbers stay true | open — Later |
+| 89 | **Movement numbers**: a *Size from movement* menu for windows [2.2] and the dial feet as a sixth kind of guide [3.8]. Blocked: only Sellita's two window sizes were read from a source (SW200-1 2.00 × 2.70 mm, SW400-1 2.40 × 3.24 mm); Ronda's are inferred, NH35 and Miyota drawings were unreadable; feet positions depend on the movement (brief §5.1). Okay opens the drawings on a Mac first | open — Later, blocked |
+| 90 | **A ring edited flat** [7.16, Fischinger]: cut at 12, edited as a strip, rolled back. A second way to show the preview; close to #61 | parked (Claude's proposal) |
+| 91 | **A sliding strip for Count** [7.5, Citroën GS]: a new kind of number control; R15 would need an exception, and Count has a typed field and a stepper | parked (Claude's proposal) |
+
+Not checked, 13 Oct: R25 says the guidebook follows each release and is drawn by `dial.py`, which is frozen (R30) — does the guide cover the web betas (3.0 to 4.6), and what should R25 say now? Ask Okay.
 
 ## Later
 

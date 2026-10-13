@@ -1,6 +1,6 @@
 # Dial Tool — brief
 
-*Started 3 Oct 2026. Last updated 12 Oct 2026 (web version, beta 4.4, on `dev`). Before: 11 Oct 2026 (web version, beta 3.0); 4 Oct 2026 (beta 2.3 on `dev`: preview plan built, Mac check pending — `docs/preview.md` §6).*
+*Started 3 Oct 2026. Last updated 13 Oct 2026 (review of the research atlas: decisions in §4, parked ideas in §8; web version still beta 4.6). Before: 12 Oct 2026 (web version, beta 4.4 to 4.6, on `dev`). Before: 11 Oct 2026 (web version, beta 3.0); 4 Oct 2026 (beta 2.3 on `dev`: preview plan built, Mac check pending — `docs/preview.md` §6).*
 
 ## 1 · Goal
 
@@ -111,6 +111,12 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 12 Oct | **Guides and Backdrop switches: outline only, never filled; quiet.** Colour: black or white by contrast with the backdrop. Guides off = sign struck through, word plain. | Okay: "Background button must be outline all times, never fill. As does the guides section. Make these visible but not the first thing that pops up." Kept from his earlier word: no dashes, contrast at all times. |
 | 12 Oct | **Hands: All hands above the hand tabs; Show this hand on the heading line. Colour pill: equal, larger gaps (8).** | Okay, notes on a screenshot: "swap" (the two pinned lines), "move up" (Show this hand), "same gap, bigger" (in the pill). |
 | 12 Oct | **Windows: four place cards (12 · 3 · 6 · 9) as tabs**, in the example cards' size; the top of the section simplified to them and one pane. | Okay, pointing at the example cards: "Window 1-2-3-4 are place indicators in these example card sizes. 1-2-3-4 are 12-3-6-9. Simplify window top. These also act as tabs, clicking changes selectors below." The date window keeps its start at 3 (R31), so it is the second card — Claude's mapping, said to Okay. |
+| 13 Oct | **The research atlas is research, not a to-do list.** Atlas: "Dial Tool Atlas", 13 Oct 2026 (https://claude.ai/artifact/QdvVC37Y6csV7FcUjJHqAH). Okay marked 27 entries yes, 10 no, 1 with a note. Only what is in `build-list.md` is planned: #78–#91. | Okay: "The atlas is research, not a to-do list… The list is not final, this much I believe is a good start for today. Prioritize interface fixes first, do the bare minimum easy ones, and 'found while reading repo' fixes. Phase the work, give me phases and let me decide." |
+| 13 Oct | **Order** (Claude's proposal; Okay has confirmed the first phase only, "Start with phase one"): Now 1 docs · Now 2 ring list rows with a summary (#78) · Now 3 am · pm follows the time (#79) · Now 4 labels that start again (#80) · Now 5 examples (#81). Next: window shape (#82), positions law (#83), jog (#84), hand tip to a ring's edge (#85). Later: #86–#89. Parked: #90, #91. | Interface first, then the smallest changes; the positions law is the one large change to the geometry and stays out of the first day. |
+| 13 Oct | **Scale everything keeps moving windows.** The atlas (2.10) proposed that a window's radius is a movement constant and stays put when the diameter changes; Okay said no. #70 stays as built. | Okay's No on atlas 2.10. The movement is not chosen (§5.1), and Scale everything is off unless ticked. |
+| 13 Oct | **Windows: am · pm will follow the time shown** (atlas 2.6, build list #79). **Moon age stays a setting** (the date is a typed text with no month, so nothing to follow). **A day window's width stays its Width** (a real one is as wide as the movement's disc, not the word). **Shape:** once a window is on, its shape can be edited, for every kind; a moon phase window may also be a plain rectangle or circle (#82). This settles build list #59. | Okay's Yes on atlas 2.6 and 2.8, and his note on 2.5: "we also need a simple rectangular or round window for this. And all windows can be shaped… Round corners, multigon, etc within one pane." — "editable once turned on". |
+| 13 Oct | **No bezel in the tool.** A diver's bezel (atlas 1.13) is drawn as outer rings on a larger plate, as an example. | Claude: a bezel is not the dial that gets etched (R18). Okay: "you are correct but the user might hack things for creativity and this is one." |
+| 13 Oct | **A gallery in Export**, a section of its own under everything else, for 10–15 example dials (#81). The five examples of 11 Oct stay where they are. | Okay: "have a follow up section under all in export for the gallery, we can add 10-15 there." |
 
 ## 5 · Open questions
 
@@ -120,10 +126,10 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 4. **Eastern Arabic and Chinese labels** — which fonts; is CoreText's automatic fallback good enough, or do we need a fallback-font control?
 5. Does DrawBot's SVG import into Illustrator at **exact size**, and with usable groups?
 6. When `dial.py` grows, split it into modules or keep one file? (beta 2.3: about 2,700 lines, still one file.)
-7. **Should rings and hands scale with the diameter?** Radii and lengths are absolute mm (R1), so changing the diameter leaves them in place — right for a fixed movement, awkward while exploring. (Build list #32.)
+7. ~~**Should rings and hands scale with the diameter?**~~ — settled 12 Oct: a tick, *Scale everything with it*, off to start (beta 4.6, build list #70). 13 Oct: windows scale too (§4).
 8. **PDF import with real Illustrator files** — forms, compound paths, white made in spot or CMYK colours. Tested only with hand-written operators so far. (Build list #30.)
 9. **Preview drawing** — do Core Animation shape layers draw fine lines (0.12 mm ticks) as the PDF does? Apple says shape rasterization "may favor speed over accuracy". Built in beta 2.3; **still open until the Mac check** (`docs/preview.md` §6 step 5: also look at whether curves stay smooth when zoomed); contingency in §8.
-11. **One tool or two?** With the web version (11 Oct), is `dial.py` kept up, or frozen at beta 2.3 as the reference the web version is checked against? Until Okay says: new features go to the web version only; `dial.py` gets fixes.
+11. ~~**One tool or two?**~~ — settled 12 Oct: `dial.py` is frozen; the web version is the tool (§4, R30).
 12. **Installed fonts in the web version on Okay's Macs** — not yet tried there: does Chrome list Helvetica Neue (a collection file) and do the numerals match `dial.py`'s? (Build list #49.)
 10. ~~**skia-pathops**~~ — settled 4 Oct: yes (§4).
 
@@ -140,10 +146,12 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 
 ## 7 · Workflow
 
-1. Okay runs `dial.py` on a Mac and reports back with screenshots and the Export log.
-2. Claude changes code, tests geometry with `tools/test_harness.py` and the interface with `tools/ui_smoke.py`, checks UI calls against vanilla/DrawBot source.
-3. Work happens on `dev`; a tested version is merged to `main` with a changelog entry.
-4. When the interface misbehaves at its foundation, run `tools/dial_probe.py` and paste its report.
+*Rewritten 13 Oct 2026 for the web version; until 12 Oct this described `dial.py` on a Mac (run it, send screenshots, `tools/dial_probe.py` when the foundation breaks).*
+
+1. Claude changes the web version (`web/src/`), runs `cd web && npm test` and looks at the pictures in `web/test/out/` (R19), builds `web/dial-tool.html`.
+2. Work happens on `dev`. For Okay to see a change, the build is copied to `index.html` on `gh-pages` (https://duztman.github.io/dial-tool/).
+3. Okay opens it in Chrome on a Mac or iPad and reports back with screenshots and the Export section's log.
+4. A tested version is merged to `main` with a changelog entry.
 
 ## 8 · Parked
 
@@ -152,3 +160,8 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 - ~~Browser version of the tool — DrawBot chosen for type.~~ Built 11 Oct 2026 (`web/`, §4): HarfBuzz gives the browser the type control DrawBot was chosen for.
 - drawbot-skia (cross-platform DrawBot) — test harness only; it lacks much of DrawBot's text engine.
 - ezui (RoboFont) — not available without RoboFont.
+- From the research atlas (13 Oct 2026, https://claude.ai/artifact/QdvVC37Y6csV7FcUjJHqAH), Okay's No's worth keeping (kept on Claude's proposal; Okay has not confirmed this list):
+  - **Snail tachymeter** (atlas 1.6): a reciprocal scale wound into a spiral — a fifth positions law where the radius falls with the angle. Comes back only after the positions law (#83).
+  - **Disorder with a seed** (atlas 7.14, Vera Molnár): a disorder % per ring with a typed seed, so a link redraws the same dial.
+  - The other No's stay in the atlas only: 6.21 the ring as a sentence · 7.6 Citroën CX satellites · 7.7 Apian's volvelles · 7.11 Mengenlehreuhr · 7.12 case outline (TWELVE, ROKU) · 7.18 Powers of Ten · 7.20 Kenya Hara's emptiness. 2.10 is a decision, not a parked idea (§4).
+- From the same review, Okay's Yes's that Claude proposes to park (build list #90, #91): the ring edited flat (atlas 7.16) and the sliding strip for Count (atlas 7.5).
