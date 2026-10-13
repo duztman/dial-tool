@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.33 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.34 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet.
@@ -177,10 +177,16 @@
   .steps { width: 100%; }
   .step, .segs > button { flex: 1; border-color: var(--rule); }
   .segs > button { padding: 0 4px; }
-  /* many choices: on two lines, five to a line, each its own box (a window's nine places) */
-  .segs.many { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--unit); padding: var(--unit) 0; }
-  .segs.many > button + button { border-left: var(--hair) solid var(--rule); }
-  .segs.many > button.on { border-color: var(--ink); }
+  /* a window's places: a square of the four quarters · a white bar · the places between and a box of three dots
+     for any time. Each a box of its own, one unit apart. */
+  .atgrid { grid-column: 3 / -1; display: grid; grid-template-columns: 2fr auto 3fr; gap: var(--unit); align-items: stretch; padding: var(--unit) 0; }
+  .atgrid > .segs { display: grid; gap: var(--unit); }
+  .atgrid > .quarters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .atgrid > .between { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .atgrid > .segs > button + button { border-left: var(--hair) solid var(--rule); }
+  .atgrid > .segs > button.on { border-color: var(--ink); }
+  .atgrid > .divide { width: var(--thick); background: var(--row-rule); }
+  .atmore:not(.on) { letter-spacing: 0.1em; }      /* the three dots, a little apart */
   :is(.step, .segs > button) + button { border-left: 0; }
   .segs > button.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
   .tools { display: flex; flex-wrap: wrap; gap: var(--unit); align-items: center; }
@@ -614,7 +620,7 @@
   .tag.valuepop { --row-rule: transparent; display: block; padding: 2px 8px 8px; pointer-events: auto; font-weight: 400; }
   .tag.valuepop.growing { overflow: hidden; }
   .valuepop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 6px; min-height: 0; }
-  .valuepop .row > * { grid-column: 1; }
+  .valuepop .row > *, .valuepop .row.txt > input { grid-column: 1; }
   .valuepop .row input[type="range"] { display: none; }
   .valuepop .row input[type="text"] { width: 100%; text-align: center; }
   .valuepop .row .steps { display: grid; grid-template-columns: 1fr 1fr; }
@@ -5268,7 +5274,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.33";
+var VERSION = "beta 4.34";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -5405,8 +5411,10 @@ var WINDOW_BASE = {
   tracking: null,
   lang: null,
   // its own tracking and language (beta 4.26); null = the top numerals ring's, as before
-  features: null
+  features: null,
   // its own OpenType features (beta 4.30); null = none of its own. axes: {} likewise
+  at_deg: null
+  // a place of its own, in clock degrees (beta 4.34); null = the named place, at
 };
 var FIRST_WINDOW = {
   on: "da_on",
@@ -5434,7 +5442,8 @@ var FIRST_WINDOW = {
   disc_c: "da_disc_c",
   tracking: "da_tracking",
   lang: "da_lang",
-  features: "da_features"
+  features: "da_features",
+  at_deg: "da_at_deg"
 };
 var DEFAULTS = {
   version: 2,
@@ -5478,6 +5487,7 @@ var DEFAULTS = {
   da_tracking: null,
   da_lang: null,
   da_features: null,
+  da_at_deg: null,
   // window 1's share of WINDOW_BASE's keys of 13 Oct 2026
   t: 10 * 3600 + 9 * 60 + 36,
   out_production: false,
@@ -6450,7 +6460,12 @@ function first_window(S) {
   });
 }
 var windows_of = (S) => [first_window(S), ...S.windows];
-var window_angle = (w) => DATE_AT[w.at][1];
+var window_angle = (w) => w.at_deg ?? DATE_AT[w.at][1];
+var window_place = (w) => {
+  if (w.at_deg == null) return DATE_AT[w.at][0];
+  const minutes = Math.round((w.at_deg % 360 + 360) % 360 * 2) % 720, h = Math.floor(minutes / 60) || 12, m = minutes % 60;
+  return m ? `${h}:${String(m).padStart(2, "0")}` : String(h);
+};
 function build_rings(S, cut = null) {
   const holes = windows_of(S).filter((w) => w.on).map(window_angle), done = [];
   for (const ring of S.rings) {
@@ -7051,7 +7066,6 @@ var TOOL_ICONS = {
 };
 var num2 = (key, text, lo, hi, step, o = {}) => ({ kind: "num", key, text, lo, hi, step, ...o });
 var pop = (key, text, items, o = {}) => ({ kind: "pop", key, text, items, ...o });
-var seg = (key, text, items, o = {}) => ({ kind: "seg", key, text, items, ...o });
 var pick = (key, text, items, pics, o = {}) => ({ kind: "pick", key, text, items, pics, ...o });
 var chk = (key, text, o = {}) => ({ kind: "chk", key, text, ...o });
 var col = (key, text, o = {}) => ({ kind: "col", key, text, ...o });
@@ -7234,11 +7248,10 @@ var ROWS = {
     // pin: always in view, like the hand tabs (Okay, 13 Oct 2026) ·         // four cards, 12 · 3 · 6 · 9: where each window is, and tabs for the panes below (Okay, 12 Oct 2026)
     // the cards are tabs only; a window is shown by the tick on its heading line (Okay, 13 Oct 2026, after trying a
     // small switch on each card: "unnecessarily complex… enable window tickmark is the way to go. leave them as tabs")
-    hdr("Window", { title: (S) => `Window at ${DATE_AT[windows_of(S)[S.ui_window].at][0]}` }),
+    hdr("Window", { title: (S) => `Window at ${window_place(windows_of(S)[S.ui_window])}` }),
     chk("on", "Show this window", { ...W, head: true }),
     // where it is and how big come first, right under the tick (Okay, 13 Oct 2026); a pane of their own, Place and size, until beta 4.22
-    // every place is a button, in the clock's order, so the others are seen and pressed (Okay, 13 Oct 2026: "list other options to encourage clicking"; a menu before)
-    seg("at", "Position", DATE_AT.map((d) => d[0]), { ...W, show: win_on, many: true, order: DATE_AT.map((d, i) => i).sort((a, b) => DATE_AT[a][1] - DATE_AT[b][1]) }),
+    custom("window_at", { ...W, show: win_on, text: "Position" }),
     num2("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
     num2("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("rectangle", "arch", "arc") }),
     num2("w", "\xD8", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
@@ -7506,7 +7519,7 @@ var DialTool = class _DialTool {
     if (this.unit_open && !$("#unit-menu").hidden && !on(".unit")) this.unit_open(false);
     if (this.lang_opens && !on(".langs")) for (const shut of this.lang_opens) shut(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
-    if (this.value_pop && !on("#value-pop") && !on(".valueb")) this.value_pop_close();
+    if (this.value_pop && !on("#value-pop") && !on(".valueb, .atmore")) this.value_pop_close();
     this.tag_hide();
   }
   // ── building the window ──────────────────────────────────
@@ -8641,8 +8654,9 @@ var DialTool = class _DialTool {
     out.refresh = (S) => {
       for (const c of cards) {
         const w = windows_of(S)[c.slot], at = !w.on && w.at === WINDOW_BASE.at ? c.at : w.at;
-        const [place2, angle] = DATE_AT[at], a = angle * Math.PI / 180;
-        const x = 9.3 * Math.sin(a), y = -9.3 * Math.cos(a), state = `${at}/${Boolean(w.on)}`;
+        const used = w.on || w.at !== WINDOW_BASE.at || w.at_deg != null;
+        const place2 = used ? window_place(w) : DATE_AT[at][0], angle = used ? window_angle(w) : DATE_AT[at][1], a = angle * Math.PI / 180;
+        const x = 9.3 * Math.sin(a), y = -9.3 * Math.cos(a), state = `${angle}/${Boolean(w.on)}`;
         if (c.drawn !== state) {
           c.drawn = state;
           c.pic.innerHTML = icon(`<circle r="15" stroke-width="1.1"/><rect x="${(x - 3.6).toFixed(2)}" y="${(y - 2.8).toFixed(2)}" width="7.2" height="5.6" rx="1.2" stroke-width="1.1"${w.on ? ' fill="currentColor"' : ""}/>`, 34, "-17 -17 34 34");
@@ -9181,7 +9195,7 @@ var DialTool = class _DialTool {
    *  what = "name": the family's name in its own face instead, likewise. */
   sample(f, what = "sample", fits = what === "name") {
     const box = el("span", { className: what === "name" ? "face" : "sample" });
-    const text = what === "name" ? f.family : what === "preview" ? "1234567890 Abcdefghijklmnopqrstuvwxyz" : "1234567890", high = what === "name" ? 16 : 20;
+    const text = what === "name" ? f.family : what === "preview" ? "1234567890 Abcdefg" : "1234567890", high = what === "name" ? 16 : 20;
     let s = what === "preview" ? has_font(f.ps) ? null : f.sample : f[what];
     if (!s && has_font(f.ps)) {
       const t = { ...RING_BASE, ps: f.ps, axes: f.start || {}, features: {}, tracking: 0, lang: 0 };
@@ -9312,6 +9326,59 @@ var DialTool = class _DialTool {
         drawn2 = now;
         wrap.innerHTML = now;
       }
+    };
+  }
+  /** a window's place (Okay, 13 Oct 2026): every named place is a button, so the others are seen and pressed — first
+   *  the four quarters, a square of 3 · 6 · 9 · 12; a white bar; then the places between; and a last box, three dots,
+   *  that opens the tag with a field for any time ("2:15"). The window keeps the place in the list (at, R9), or the
+   *  time's angle (at_deg) when it has one of its own. */
+  row_window_at(wrap, out) {
+    wrap.className = "row windowat";
+    const at = (name) => DATE_AT.findIndex((d) => d[0] === name);
+    const press = (i) => {
+      const w = this.window();
+      w.at = i;
+      w.at_deg = null;
+      this.changed(true);
+    };
+    const button = (name) => el("button", { type: "button", id: "window-at-Position-" + at(name), textContent: name, onclick: () => press(at(name)) });
+    const quarters = ["3", "6", "9", "12"].map(button), between = DATE_AT.map((d) => d[0]).filter((n) => !["3", "6", "9", "12"].includes(n)).sort((a, b) => DATE_AT[at(a)][1] - DATE_AT[at(b)][1]).map(button);
+    const more = el("button", { type: "button", className: "atmore", id: "window-at-more", textContent: "\xB7\xB7\xB7", title: "Any time: 2:15, 7:40\u2026" });
+    more.setAttribute("aria-expanded", "false");
+    more.onclick = () => this.value_pop_open(more, { kind: "custom", name: "at_time", scope: "window", key: "at_deg", text: "Time" });
+    wrap.append(
+      el("label", { textContent: "Position" }),
+      el("span", { className: "atgrid" }, el("span", { className: "segs quarters" }, ...quarters), el("i", { className: "divide" }), el("span", { className: "segs between" }, ...between, more))
+    );
+    out.refresh = (T) => {
+      for (const b of [...quarters, ...between]) b.classList.toggle("on", T.at_deg == null && b.id === "window-at-Position-" + T.at);
+      more.classList.toggle("on", T.at_deg != null);
+      more.textContent = T.at_deg != null ? window_place(T) : "\xB7\xB7\xB7";
+    };
+  }
+  /** inside the tag that the three dots open: the window's place as a time, typed. "2:15", "2.25" and "14:15" all
+   *  say a quarter past two; a named place typed here ("4:30") is that place. */
+  row_at_time(wrap, out) {
+    wrap.className = "row txt";
+    const field = el("input", { type: "text", id: "window-at-time", inputMode: "numeric", placeholder: "2:15" });
+    const take = () => {
+      const m = field.value.trim().match(/^(\d{1,2})(?:[:.,h ](\d{1,2}))?$/), w = this.window();
+      if (!m || +m[1] > 24 || +(m[2] || 0) > 59) {
+        field.value = window_place(w);
+        return;
+      }
+      const dot = /[.,]/.test(field.value) && m[2] !== void 0;
+      const deg = (+m[1] % 12 + (dot ? +("0." + m[2]) : +(m[2] || 0) / 60)) * 30, named = DATE_AT.findIndex((d) => Math.abs(d[1] - deg) < 0.01);
+      if (named >= 0) {
+        w.at = named;
+        w.at_deg = null;
+      } else w.at_deg = deg;
+      this.changed(true);
+    };
+    field.onchange = take;
+    wrap.append(el("label", { htmlFor: "window-at-time", textContent: "Time" }), field);
+    out.refresh = (T) => {
+      if (document.activeElement !== field) field.value = window_place(T);
     };
   }
   /** the language the numerals are set in (a font may draw a figure differently for one): a small button saying its
