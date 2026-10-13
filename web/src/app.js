@@ -261,7 +261,6 @@ const ROWS = {
     num("num_again", "Start again after", 0, 60, 1, { whole: true, show: labels_are("Numbers") }),      // positions; 0 = never
     info("0 counts on. 12 with first 5, step 5: 5 to 60, then 5 again.", { show: labels_are("Numbers") }),
     pick("mode", "Placement", G.MODES, PICS.mode, { show: numerals_only }),
-    num("size", "Size", 0.3, 8, 0.05, { show: numerals_only }),
     hdr("Band", { show: kind_in("band") }),
     num("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),
     num("fill", "Fill % of step", 1, 100, 1, { show: kind_in("band") }),
@@ -305,14 +304,14 @@ const ROWS = {
     hdr("Window", { title: (S) => `Window at ${G.DATE_AT[G.windows_of(S)[S.ui_window].at][0]}` }),
     chk("on", "Show this window", { ...W, head: true }),
     // where it is and how big come first, right under the tick (Okay, 13 Oct 2026); a pane of their own, Place and size, until beta 4.22
-    pop("at", "Position", G.DATE_AT.map((d) => d[0]), { ...W, show: win_on }),
+    // every place is a button, in the clock's order, so the others are seen and pressed (Okay, 13 Oct 2026: "list other options to encourage clicking"; a menu before)
+    seg("at", "Position", G.DATE_AT.map((d) => d[0]), { ...W, show: win_on, many: true, order: G.DATE_AT.map((d, i) => i).sort((a, b) => G.DATE_AT[a][1] - G.DATE_AT[b][1]) }),
     num("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
     num("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("rectangle", "arch", "arc") }),
     num("w", "Ø", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
     num("h", "Height", 0.5, 5, 0.05, { ...W, show: shape_is("rectangle", "arc") }),
     pick("kind", "Shows", G.WINDOW_KINDS, PICS.window, { ...W, show: win_on }),
     txt("text", "Text", { ...W, show: win_is("date", "day") }),
-    num("size", "Text % of height", 20, 100, 1, { ...W, show: win_is("date", "day") }),
     custom("font", { ...W, show: win_is("date", "day") }),      // its own font, or the top numerals ring's (the start)
     info("Follows the time shown: AM · PM beside the time, under the panel.", { ...W, show: win_is("am · pm") }),
     num("age", "Moon age, days", 0, 29.5, 0.1, { ...W, show: win_is("moon phase") }),
@@ -1119,10 +1118,12 @@ class DialTool {
     }
 
     if (row.kind === "seg") {
-      const group = el("span", { className: "segs" });
-      row.items.forEach((name, i) => group.append(el("button", { type: "button", textContent: name, onclick: () => { set(i); if (row.key.startsWith("ui_")) this.sync_rows(); } })));
+      // order: the buttons' order when it isn't the list's (the list only grows at its end, R9) · many: on two lines
+      const group = el("span", { className: row.many ? "segs many" : "segs" });
+      const buttons = row.items.map((name, i) => el("button", { type: "button", id: `${id}-${i}`, textContent: name, onclick: () => { set(i); if (row.key.startsWith("ui_")) this.sync_rows(); } }));
+      group.append(...(row.order || buttons.map((b, i) => i)).map((i) => buttons[i]));
       wrap.append(el("label", { textContent: row.text }), group);
-      out.refresh = (T) => [...group.children].forEach((b, i) => b.classList.toggle("on", i === T[row.key]));
+      out.refresh = (T) => buttons.forEach((b, i) => b.classList.toggle("on", i === T[row.key]));
     }
 
     if (row.kind === "chk") {
@@ -1140,7 +1141,7 @@ class DialTool {
     }
 
     if (row.kind === "txt") {
-      const field = el("input", { type: "text", id, className: "wide" });
+      const field = el("input", { type: "text", id });      // on the label's line, from the controls' column on (Okay, 13 Oct 2026; under the label, full width, before)
       field.oninput = () => set(field.value);
       wrap.append(el("label", { htmlFor: id, textContent: row.text }), field);
       out.refresh = (T) => { if (!active(field)) field.value = T[row.key]; };
@@ -1925,8 +1926,9 @@ class DialTool {
    *  what = "name": the family's name in its own face instead, likewise. */
   sample(f, what = "sample", fits = what === "name") {
     const box = el("span", { className: what === "name" ? "face" : "sample" });
-    const text = what === "name" ? f.family : "1234567890", high = what === "name" ? 16 : 20;
-    let s = f[what];
+    // preview: in a font box the numerals are followed by the alphabet, as far as the box goes (Okay's drawing, 13 Oct 2026)
+    const text = what === "name" ? f.family : what === "preview" ? "1234567890 Abcdefghijklmnopqrstuvwxyz" : "1234567890", high = what === "name" ? 16 : 20;
+    let s = what === "preview" ? (G.has_font(f.ps) ? null : f.sample) : f[what];
     if (!s && G.has_font(f.ps)) {
       const t = { ...G.RING_BASE, ps: f.ps, axes: f.start || {}, features: {}, tracking: 0, lang: 0 };
       s = { d: G.text_path(text, t, 1000).svg(0, true), w: Math.round(G.advance(text, t, 1000)) };
@@ -1996,25 +1998,28 @@ class DialTool {
     const state = el("div", { className: "quiet note", id: pre + "font-note" });
     const back = el("button", { type: "button", className: "btn", id: "window-font-back", textContent: "As the numerals", title: "Use the top numerals ring’s font again", hidden: true,
       onclick: () => { const w = this.window(); w.family = ""; w.ps = ""; w.axes = {}; w.features = null; w.tracking = null; w.lang = null; this.changed(true); } });
-    // every font box has all of it (Okay, 13 Oct 2026): numerals · name, language, colour · styles · tracking · the
-    // variable axes · the OpenType features. The last two can be put away.
-    const axes = this.box_part("font/axes", "Variable axes", this.axes_part(pre, own));
+    // every font box has all of it (Okay, 13 Oct 2026): numerals and letters · name, colour · styles, language · size ·
+    // tracking · the variable axes · the OpenType features. The last can be put away.
+    // size · tracking · the variable axes, one under the other without a heading (Okay's drawing, 13 Oct 2026)
+    const size = this.build_row(own ? { ...num("size", "Size %", 20, 100, 1), scope: "window" } : { ...num("size", "Size", 0.3, 8, 0.05), scope: "ring" });      // a window's text is sized in % of its height
+    const axes = this.axes_part(pre, own);
     const features = this.box_part("font/features", "OpenType features", this.features_part(pre, own), true);
-    wrap.append(el("div", { className: "fontbox" }, current, named, styles, tracking.el, axes.el, features.el), ...(own ? [back] : []), state);
+    wrap.append(el("div", { className: "fontbox" }, current, named, styles, size.el, tracking.el, axes.el, features.el), ...(own ? [back] : []), state);
     let shown = null;
     out.refresh = (T) => {
       const R = own ? G.window_type(this.S, T) : T;
       back.hidden = !(own && (T.ps || T.tracking != null || T.lang != null || T.features != null || Object.keys(T.axes || {}).length));
       if (lang) lang.refresh(T);
+      size.refresh(T);
       tracking.refresh(T);
-      axes.refresh(R, T);
+      axes.el.hidden = !axes.refresh(R, T);
       features.refresh(R, T);
       swatch.show(T[crow.key] || (crow.or ? crow.or(T) : [0, 0, 0, 1]));
       const mine = this.families().get(R.family) || [], f = this.catalog.get(R.ps) || mine[0];
       const key = R.ps + "/" + G.has_font(R.ps) + "/" + Boolean(T.ps);
       if (key !== shown) {
         shown = key;
-        current.replaceChildren(f ? this.sample(f) : el("span", { className: "sample quiet", textContent: "not loaded" }));
+        current.replaceChildren(f ? this.sample(f, "preview") : el("span", { className: "sample quiet", textContent: "not loaded" }));
         name.textContent = R.family;                // a window without a font of its own shows the numerals' font, plainly (Okay, 13 Oct 2026: no "· as the numerals" after it)
       }
       styles.hidden = mine.length < 2;             // the family's styles, as buttons
@@ -2023,9 +2028,6 @@ class DialTool {
         b.classList.toggle("on", x.ps === R.ps);
         return b;
       }));
-      // the language button stands at the right end of the styles' line; a family of one style has no such line,
-      // then it stands on the name's line (Okay, 13 Oct 2026)
-      if (styles.hidden) named.insertBefore(lang.el, swatch); else styles.append(lang.el);
       const missing = G.has_font(R.ps) ? "" : this.catalog.has(R.ps) ? "Loading… "
         : `${R.family} isn’t loaded yet, so ${G.font_list()[0].family} stands in. Press Change… to choose another or to add it. `;
       state.textContent = missing + (this.font_note || "");
@@ -2193,10 +2195,13 @@ class DialTool {
           slider.oninput = () => commit(slider.value);
           field.onchange = () => commit(parse_number(field.value, now()));
           slider.dataset.tag = field.dataset.tag = tag;
-          // the axis is named by its sticker, as in the font sheet, here in the tool's own colours and as a button: a
-          // press sets the axis back to where the font rests (Okay, 13 Oct 2026). Axes are not OpenType features.
-          const word = AXIS_WORDS[tag] || { wght: "weight", ital: "italic", slnt: "slant" }[tag] || a.name || tag;
-          const back = el("button", { type: "button", className: "sticker ui big", id: id + "-back", textContent: word, title: `${a.name} (${tag}), ${a.min}–${a.max}: press to set it back to ${a.default}`, onclick: () => commit(a.default) });
+          // the axis is named in the tool's own type, with its code as a sticker of the size and colours the font sheet's
+          // have (Okay, 13 Oct 2026: "axes nested here also get ui type"). The name is a button: a press sets the axis
+          // back to where the font rests. Axes are not OpenType features.
+          const word = { wght: "Weight", wdth: "Width", opsz: "Optical size", ital: "Italic", slnt: "Slant" }[tag] || a.name || tag;
+          const kind = { wght: "weight", wdth: "width", opsz: "optical", ital: "italic", slnt: "italic" }[tag] || "other";
+          const back = el("button", { type: "button", className: "axisname", id: id + "-back", title: `${a.name} (${tag}), ${a.min}–${a.max}: press to set it back to ${a.default}`, onclick: () => commit(a.default) },
+            el("span", { textContent: word }), el("span", { className: "sticker " + kind, textContent: tag }));
           slider.ariaLabel = field.ariaLabel = a.name;
           wrap.append(el("div", { className: "row num" }, el("span", { className: "stickerlabel" }, back), slider, field, el("span")));
         }
@@ -2229,8 +2234,10 @@ class DialTool {
         // character variants (cv01…) — each under its own small heading (Okay, 11 Oct 2026)
         const groups = [["", []], ["Stylistic sets", []], ["Character variants", []]];
         for (const [tag, designer] of font ? G.font_features(font).filter(useful) : []) {
-          // a switch is a sticker, twice the size, as a button (Okay, 13 Oct 2026): its name; the tag is in its tip
-          const tile = el("button", { type: "button", className: "sticker ui big", id: pre + "feature-" + tag, textContent: designer || FEATURE_NAMES[tag] || tag, title: `${designer || FEATURE_NAMES[tag] || tag} (${tag})` });
+          // a switch is a tile: its name in the tool's type, and its code as a sticker, of the size and the colours
+          // the font sheet's stickers have (Okay, 13 Oct 2026: "back to rectangular grid with ui type… add codes in actual sticker size/form")
+          const kind = /^(tnum|pnum|lnum|onum|zero|frac|numr|dnom|afrc|sups|subs|sinf|ordn)$/.test(tag) ? "figure" : /^(ss|cv)\d\d$/.test(tag) ? "sets" : "styles";
+          const tile = el("button", { type: "button", className: "tile", id: pre + "feature-" + tag }, el("span", { textContent: designer || FEATURE_NAMES[tag] || tag }), el("span", { className: "sticker " + kind, textContent: tag }));
           tile.dataset.tag = tag;
           tile.onclick = () => {                     // press to switch; only what differs from what it would be anyway is stored (R12)
             const H = this.target(side.scope), on = tile.getAttribute("aria-pressed") !== "true", all = { ...(H.features || {}) };
@@ -2239,14 +2246,16 @@ class DialTool {
           };
           groups[/^ss\d\d$/.test(tag) ? 1 : /^cv\d\d$/.test(tag) ? 2 : 0][1].push(tile);
         }
-        groups[0][1].sort((x, y) => x.textContent.localeCompare(y.textContent));
+        // what changes numerals comes first (Okay, 13 Oct 2026), then the rest; each by name
+        const figures = (tile) => (tile.querySelector(".sticker.figure") ? 0 : 1);
+        groups[0][1].sort((x, y) => figures(x) - figures(y) || x.firstChild.textContent.localeCompare(y.firstChild.textContent));
         for (const [title, tiles] of groups) {
           if (!tiles.length) continue;
           if (title) wrap.append(el("h3", { textContent: title }));
           wrap.append(el("div", { className: "tiles" }, ...tiles));
         }
       }
-      for (const tile of wrap.querySelectorAll(".sticker")) tile.setAttribute("aria-pressed", String((R.features || {})[tile.dataset.tag] ?? DEFAULT_ON.has(tile.dataset.tag)));
+      for (const tile of wrap.querySelectorAll(".tile")) tile.setAttribute("aria-pressed", String((R.features || {})[tile.dataset.tag] ?? DEFAULT_ON.has(tile.dataset.tag)));
       return font ? (wrap.children.length ? true : "none") : false;      // none: a font without switches — its line says so, no line more
     };
     return { el: wrap, refresh };

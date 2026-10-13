@@ -168,6 +168,10 @@
   .steps { width: 100%; }
   .step, .segs > button { flex: 1; border-color: var(--rule); }
   .segs > button { padding: 0 4px; }
+  /* many choices: on two lines, five to a line, each its own box (a window's nine places) */
+  .segs.many { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--unit); padding: var(--unit) 0; }
+  .segs.many > button + button { border-left: var(--hair) solid var(--rule); }
+  .segs.many > button.on { border-color: var(--ink); }
   :is(.step, .segs > button) + button { border-left: 0; }
   .segs > button.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
   .tools { display: flex; flex-wrap: wrap; gap: var(--unit); align-items: center; }
@@ -367,6 +371,8 @@
   .row > :first-child { grid-column: span 2; }
   .row.num > input[type="range"] { grid-column: span 2; }
   .row.num input[type="text"] { text-align: right; }
+  /* a field for words (a window's text, custom labels; the font sheet's two): larger than a number's, with a darker line (Okay, 13 Oct 2026) */
+  .row.txt > input, .picker header > input, .picker .adding > input { height: var(--control-large); border-color: var(--grey); }
   .row > label:first-child { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .row > label.strong:first-child { color: var(--ink); font-weight: 600; }      /* a name where a label would stand: the selected ring's, before its kinds */
   /* a label with a small menu beside it: the words, then a boxed arrow with the browser's own menu lying over it */
@@ -621,8 +627,10 @@
   /* a part of the box that can be put away: the variable axes, the OpenType features. A line with an eye and its name. */
   .partfold { display: flex; align-items: center; gap: var(--unit); width: 100%; height: var(--line); padding: 0 var(--btn-pad); font-weight: 600; text-align: left; }
   .partfold:hover { background: var(--hover); }
-  .boxpart > :is(.axes, .features) { padding: 0 var(--btn-pad) var(--unit); }
-  .boxpart .row { box-shadow: none; }
+  .boxpart > .features { padding: 0 var(--btn-pad) var(--btn-pad); }
+  .fontbox > .axes { padding: 0 var(--btn-pad); }
+  .fontbox .axes .row { box-shadow: none; }
+  .fontbox .tile > .sticker { justify-self: start; }
   .boxpart .features { padding-top: 0; }
   .fontbox .btn, .fontbox .styles > button { border-color: var(--rule); color: var(--grey); }
   .fontbox :is(.btn, .styles > button):hover { border-color: var(--ink); color: var(--ink); }
@@ -631,13 +639,12 @@
      language and the colour. The colour stands in the ring list's colour column, wherever the line is (Okay, 13 Oct
      2026: "the swatch alignment started with rings, now continues"); the place kept for it is that column's width. */
   .fontname { position: relative; display: flex; align-items: center; gap: var(--ringline-gap); cursor: pointer; }
-  .fontname .name { flex: 1; font-weight: 600; }
-  .fontname .langs { margin-right: var(--line-button); }
-  .styles > .langs { margin-left: auto; }      /* the language, at the right end of the styles' line */
-  .fontname:not(:has(.langs)) > .colour.mini + .btn { margin-left: calc(var(--line-button) + var(--ringline-gap)); }      /* the room the colour stands in, when no language keeps it */
+  .fontname .name { flex: 0 1 auto; font-weight: 600; }
+  .fontname .langs { margin-right: auto; }      /* the language: right after the name, a button like Change… (Okay, 13 Oct 2026: "attaches to font name… consistent size") */
+  .fontname > .colour.mini + .btn { margin-left: var(--line-button); }      /* the room the colour stands in */
   .fontname .colour.mini { position: absolute; top: 50%; translate: 0 -50%; right: calc(var(--swatch-col) - var(--hair) + (var(--line-button) - var(--t-m) - 2 * var(--hair)) / 2); }      /* the font's name is the box's heading (Okay, 13 Oct 2026) */
   .langs { position: relative; }
-  .langbox { min-width: var(--control); padding: 0 var(--unit); font: var(--t-xs)/1 var(--mono); }
+  .langbox { min-width: var(--control); }
   .fontname .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .fontlist { border: var(--hair) solid var(--rule); background: var(--field); overflow-y: auto; }
   /* a line of the font sheet, on three columns: the family's name in its own face · its numerals, all starting on one
@@ -670,7 +677,9 @@
   .features .tiles:has(> .sticker) { display: flex; flex-wrap: wrap; gap: var(--unit); }
   .partfold.none { color: var(--grey); font-weight: 400; cursor: default; }
   .partfold.none:hover { background: none; }
-  .stickerlabel { display: flex; }
+  .stickerlabel { display: flex; min-width: 0; }
+  .axisname { display: flex; align-items: center; gap: var(--unit); min-width: 0; color: var(--grey); white-space: nowrap; }      /* an axis's name, as a label, and its code as a sticker; a press sets the axis back */
+  .axisname:hover { color: var(--ink); }
   /* the legend, at the sheet's bottom right: each kind of sticker and what it says */
   .legend { display: grid; grid-template-columns: repeat(2, auto auto); gap: calc(var(--unit) / 2) var(--unit); align-items: center; justify-content: end; margin: 0; color: var(--grey); font-size: var(--t-xs); white-space: nowrap; }
   .legend dt { justify-self: end; display: flex; }
@@ -692,7 +701,6 @@
   .picker header h2 { font-size: var(--t-l); }
   .picker .fontlist { min-height: 0; }
   .picker .adding { display: grid; gap: calc(var(--unit) * 2); border-top: var(--thick) solid var(--ink); padding-top: calc(var(--unit) * 2); }
-  .picker .adding > input { height: var(--head); }
   .picker .squares { display: flex; align-items: flex-end; gap: var(--unit); }
   .picker .squares > .pickt { width: calc(var(--col) + var(--gap) + var(--unit)); aspect-ratio: 1; align-content: center; }      /* square buttons (Okay, 13 Oct 2026) */
 

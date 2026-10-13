@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.32 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.33 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet.
@@ -177,6 +177,10 @@
   .steps { width: 100%; }
   .step, .segs > button { flex: 1; border-color: var(--rule); }
   .segs > button { padding: 0 4px; }
+  /* many choices: on two lines, five to a line, each its own box (a window's nine places) */
+  .segs.many { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--unit); padding: var(--unit) 0; }
+  .segs.many > button + button { border-left: var(--hair) solid var(--rule); }
+  .segs.many > button.on { border-color: var(--ink); }
   :is(.step, .segs > button) + button { border-left: 0; }
   .segs > button.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
   .tools { display: flex; flex-wrap: wrap; gap: var(--unit); align-items: center; }
@@ -376,6 +380,8 @@
   .row > :first-child { grid-column: span 2; }
   .row.num > input[type="range"] { grid-column: span 2; }
   .row.num input[type="text"] { text-align: right; }
+  /* a field for words (a window's text, custom labels; the font sheet's two): larger than a number's, with a darker line (Okay, 13 Oct 2026) */
+  .row.txt > input, .picker header > input, .picker .adding > input { height: var(--control-large); border-color: var(--grey); }
   .row > label:first-child { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .row > label.strong:first-child { color: var(--ink); font-weight: 600; }      /* a name where a label would stand: the selected ring's, before its kinds */
   /* a label with a small menu beside it: the words, then a boxed arrow with the browser's own menu lying over it */
@@ -630,8 +636,10 @@
   /* a part of the box that can be put away: the variable axes, the OpenType features. A line with an eye and its name. */
   .partfold { display: flex; align-items: center; gap: var(--unit); width: 100%; height: var(--line); padding: 0 var(--btn-pad); font-weight: 600; text-align: left; }
   .partfold:hover { background: var(--hover); }
-  .boxpart > :is(.axes, .features) { padding: 0 var(--btn-pad) var(--unit); }
-  .boxpart .row { box-shadow: none; }
+  .boxpart > .features { padding: 0 var(--btn-pad) var(--btn-pad); }
+  .fontbox > .axes { padding: 0 var(--btn-pad); }
+  .fontbox .axes .row { box-shadow: none; }
+  .fontbox .tile > .sticker { justify-self: start; }
   .boxpart .features { padding-top: 0; }
   .fontbox .btn, .fontbox .styles > button { border-color: var(--rule); color: var(--grey); }
   .fontbox :is(.btn, .styles > button):hover { border-color: var(--ink); color: var(--ink); }
@@ -640,13 +648,12 @@
      language and the colour. The colour stands in the ring list's colour column, wherever the line is (Okay, 13 Oct
      2026: "the swatch alignment started with rings, now continues"); the place kept for it is that column's width. */
   .fontname { position: relative; display: flex; align-items: center; gap: var(--ringline-gap); cursor: pointer; }
-  .fontname .name { flex: 1; font-weight: 600; }
-  .fontname .langs { margin-right: var(--line-button); }
-  .styles > .langs { margin-left: auto; }      /* the language, at the right end of the styles' line */
-  .fontname:not(:has(.langs)) > .colour.mini + .btn { margin-left: calc(var(--line-button) + var(--ringline-gap)); }      /* the room the colour stands in, when no language keeps it */
+  .fontname .name { flex: 0 1 auto; font-weight: 600; }
+  .fontname .langs { margin-right: auto; }      /* the language: right after the name, a button like Change… (Okay, 13 Oct 2026: "attaches to font name… consistent size") */
+  .fontname > .colour.mini + .btn { margin-left: var(--line-button); }      /* the room the colour stands in */
   .fontname .colour.mini { position: absolute; top: 50%; translate: 0 -50%; right: calc(var(--swatch-col) - var(--hair) + (var(--line-button) - var(--t-m) - 2 * var(--hair)) / 2); }      /* the font's name is the box's heading (Okay, 13 Oct 2026) */
   .langs { position: relative; }
-  .langbox { min-width: var(--control); padding: 0 var(--unit); font: var(--t-xs)/1 var(--mono); }
+  .langbox { min-width: var(--control); }
   .fontname .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .fontlist { border: var(--hair) solid var(--rule); background: var(--field); overflow-y: auto; }
   /* a line of the font sheet, on three columns: the family's name in its own face · its numerals, all starting on one
@@ -679,7 +686,9 @@
   .features .tiles:has(> .sticker) { display: flex; flex-wrap: wrap; gap: var(--unit); }
   .partfold.none { color: var(--grey); font-weight: 400; cursor: default; }
   .partfold.none:hover { background: none; }
-  .stickerlabel { display: flex; }
+  .stickerlabel { display: flex; min-width: 0; }
+  .axisname { display: flex; align-items: center; gap: var(--unit); min-width: 0; color: var(--grey); white-space: nowrap; }      /* an axis's name, as a label, and its code as a sticker; a press sets the axis back */
+  .axisname:hover { color: var(--ink); }
   /* the legend, at the sheet's bottom right: each kind of sticker and what it says */
   .legend { display: grid; grid-template-columns: repeat(2, auto auto); gap: calc(var(--unit) / 2) var(--unit); align-items: center; justify-content: end; margin: 0; color: var(--grey); font-size: var(--t-xs); white-space: nowrap; }
   .legend dt { justify-self: end; display: flex; }
@@ -701,7 +710,6 @@
   .picker header h2 { font-size: var(--t-l); }
   .picker .fontlist { min-height: 0; }
   .picker .adding { display: grid; gap: calc(var(--unit) * 2); border-top: var(--thick) solid var(--ink); padding-top: calc(var(--unit) * 2); }
-  .picker .adding > input { height: var(--head); }
   .picker .squares { display: flex; align-items: flex-end; gap: var(--unit); }
   .picker .squares > .pickt { width: calc(var(--col) + var(--gap) + var(--unit)); aspect-ratio: 1; align-content: center; }      /* square buttons (Okay, 13 Oct 2026) */
 
@@ -5260,7 +5268,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.32";
+var VERSION = "beta 4.33";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -7043,6 +7051,7 @@ var TOOL_ICONS = {
 };
 var num2 = (key, text, lo, hi, step, o = {}) => ({ kind: "num", key, text, lo, hi, step, ...o });
 var pop = (key, text, items, o = {}) => ({ kind: "pop", key, text, items, ...o });
+var seg = (key, text, items, o = {}) => ({ kind: "seg", key, text, items, ...o });
 var pick = (key, text, items, pics, o = {}) => ({ kind: "pick", key, text, items, pics, ...o });
 var chk = (key, text, o = {}) => ({ kind: "chk", key, text, ...o });
 var col = (key, text, o = {}) => ({ kind: "col", key, text, ...o });
@@ -7178,7 +7187,6 @@ var ROWS = {
     // positions; 0 = never
     info("0 counts on. 12 with first 5, step 5: 5 to 60, then 5 again.", { show: labels_are("Numbers") }),
     pick("mode", "Placement", MODES, PICS.mode, { show: numerals_only }),
-    num2("size", "Size", 0.3, 8, 0.05, { show: numerals_only }),
     hdr("Band", { show: kind_in("band") }),
     num2("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),
     num2("fill", "Fill % of step", 1, 100, 1, { show: kind_in("band") }),
@@ -7229,14 +7237,14 @@ var ROWS = {
     hdr("Window", { title: (S) => `Window at ${DATE_AT[windows_of(S)[S.ui_window].at][0]}` }),
     chk("on", "Show this window", { ...W, head: true }),
     // where it is and how big come first, right under the tick (Okay, 13 Oct 2026); a pane of their own, Place and size, until beta 4.22
-    pop("at", "Position", DATE_AT.map((d) => d[0]), { ...W, show: win_on }),
+    // every place is a button, in the clock's order, so the others are seen and pressed (Okay, 13 Oct 2026: "list other options to encourage clicking"; a menu before)
+    seg("at", "Position", DATE_AT.map((d) => d[0]), { ...W, show: win_on, many: true, order: DATE_AT.map((d, i) => i).sort((a, b) => DATE_AT[a][1] - DATE_AT[b][1]) }),
     num2("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
     num2("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("rectangle", "arch", "arc") }),
     num2("w", "\xD8", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
     num2("h", "Height", 0.5, 5, 0.05, { ...W, show: shape_is("rectangle", "arc") }),
     pick("kind", "Shows", WINDOW_KINDS, PICS.window, { ...W, show: win_on }),
     txt("text", "Text", { ...W, show: win_is("date", "day") }),
-    num2("size", "Text % of height", 20, 100, 1, { ...W, show: win_is("date", "day") }),
     custom("font", { ...W, show: win_is("date", "day") }),
     // its own font, or the top numerals ring's (the start)
     info("Follows the time shown: AM \xB7 PM beside the time, under the panel.", { ...W, show: win_is("am \xB7 pm") }),
@@ -8214,13 +8222,14 @@ var DialTool = class _DialTool {
       };
     }
     if (row.kind === "seg") {
-      const group = el("span", { className: "segs" });
-      row.items.forEach((name, i) => group.append(el("button", { type: "button", textContent: name, onclick: () => {
+      const group = el("span", { className: row.many ? "segs many" : "segs" });
+      const buttons = row.items.map((name, i) => el("button", { type: "button", id: `${id}-${i}`, textContent: name, onclick: () => {
         set(i);
         if (row.key.startsWith("ui_")) this.sync_rows();
-      } })));
+      } }));
+      group.append(...(row.order || buttons.map((b, i) => i)).map((i) => buttons[i]));
       wrap.append(el("label", { textContent: row.text }), group);
-      out.refresh = (T) => [...group.children].forEach((b, i) => b.classList.toggle("on", i === T[row.key]));
+      out.refresh = (T) => buttons.forEach((b, i) => b.classList.toggle("on", i === T[row.key]));
     }
     if (row.kind === "chk") {
       const box = el("input", { type: "checkbox", id });
@@ -8237,7 +8246,7 @@ var DialTool = class _DialTool {
       out.refresh = (T) => pill.show(T[row.key] || (row.or ? row.or(T) : [0, 0, 0, 1]));
     }
     if (row.kind === "txt") {
-      const field = el("input", { type: "text", id, className: "wide" });
+      const field = el("input", { type: "text", id });
       field.oninput = () => set(field.value);
       wrap.append(el("label", { htmlFor: id, textContent: row.text }), field);
       out.refresh = (T) => {
@@ -9172,8 +9181,8 @@ var DialTool = class _DialTool {
    *  what = "name": the family's name in its own face instead, likewise. */
   sample(f, what = "sample", fits = what === "name") {
     const box = el("span", { className: what === "name" ? "face" : "sample" });
-    const text = what === "name" ? f.family : "1234567890", high = what === "name" ? 16 : 20;
-    let s = f[what];
+    const text = what === "name" ? f.family : what === "preview" ? "1234567890 Abcdefghijklmnopqrstuvwxyz" : "1234567890", high = what === "name" ? 16 : 20;
+    let s = what === "preview" ? has_font(f.ps) ? null : f.sample : f[what];
     if (!s && has_font(f.ps)) {
       const t = { ...RING_BASE, ps: f.ps, axes: f.start || {}, features: {}, tracking: 0, lang: 0 };
       s = { d: text_path(text, t, 1e3).svg(0, true), w: Math.round(advance(text, t, 1e3)) };
@@ -9260,23 +9269,25 @@ var DialTool = class _DialTool {
         this.changed(true);
       }
     });
-    const axes = this.box_part("font/axes", "Variable axes", this.axes_part(pre, own));
+    const size = this.build_row(own ? { ...num2("size", "Size %", 20, 100, 1), scope: "window" } : { ...num2("size", "Size", 0.3, 8, 0.05), scope: "ring" });
+    const axes = this.axes_part(pre, own);
     const features = this.box_part("font/features", "OpenType features", this.features_part(pre, own), true);
-    wrap.append(el("div", { className: "fontbox" }, current, named, styles, tracking.el, axes.el, features.el), ...own ? [back] : [], state);
+    wrap.append(el("div", { className: "fontbox" }, current, named, styles, size.el, tracking.el, axes.el, features.el), ...own ? [back] : [], state);
     let shown = null;
     out.refresh = (T) => {
       const R = own ? window_type(this.S, T) : T;
       back.hidden = !(own && (T.ps || T.tracking != null || T.lang != null || T.features != null || Object.keys(T.axes || {}).length));
       if (lang) lang.refresh(T);
+      size.refresh(T);
       tracking.refresh(T);
-      axes.refresh(R, T);
+      axes.el.hidden = !axes.refresh(R, T);
       features.refresh(R, T);
       swatch.show(T[crow.key] || (crow.or ? crow.or(T) : [0, 0, 0, 1]));
       const mine = this.families().get(R.family) || [], f = this.catalog.get(R.ps) || mine[0];
       const key = R.ps + "/" + has_font(R.ps) + "/" + Boolean(T.ps);
       if (key !== shown) {
         shown = key;
-        current.replaceChildren(f ? this.sample(f) : el("span", { className: "sample quiet", textContent: "not loaded" }));
+        current.replaceChildren(f ? this.sample(f, "preview") : el("span", { className: "sample quiet", textContent: "not loaded" }));
         name.textContent = R.family;
       }
       styles.hidden = mine.length < 2;
@@ -9285,8 +9296,6 @@ var DialTool = class _DialTool {
         b.classList.toggle("on", x.ps === R.ps);
         return b;
       }));
-      if (styles.hidden) named.insertBefore(lang.el, swatch);
-      else styles.append(lang.el);
       const missing = has_font(R.ps) ? "" : this.catalog.has(R.ps) ? "Loading\u2026 " : `${R.family} isn\u2019t loaded yet, so ${font_list()[0].family} stands in. Press Change\u2026 to choose another or to add it. `;
       state.textContent = missing + (this.font_note || "");
       if (this.picker && this.picker.open) this.fill_picker();
@@ -9511,8 +9520,14 @@ var DialTool = class _DialTool {
           slider.oninput = () => commit(slider.value);
           field.onchange = () => commit(parse_number(field.value, now()));
           slider.dataset.tag = field.dataset.tag = tag;
-          const word = AXIS_WORDS[tag] || { wght: "weight", ital: "italic", slnt: "slant" }[tag] || a.name || tag;
-          const back = el("button", { type: "button", className: "sticker ui big", id: id + "-back", textContent: word, title: `${a.name} (${tag}), ${a.min}\u2013${a.max}: press to set it back to ${a.default}`, onclick: () => commit(a.default) });
+          const word = { wght: "Weight", wdth: "Width", opsz: "Optical size", ital: "Italic", slnt: "Slant" }[tag] || a.name || tag;
+          const kind = { wght: "weight", wdth: "width", opsz: "optical", ital: "italic", slnt: "italic" }[tag] || "other";
+          const back = el(
+            "button",
+            { type: "button", className: "axisname", id: id + "-back", title: `${a.name} (${tag}), ${a.min}\u2013${a.max}: press to set it back to ${a.default}`, onclick: () => commit(a.default) },
+            el("span", { textContent: word }),
+            el("span", { className: "sticker " + kind, textContent: tag })
+          );
           slider.ariaLabel = field.ariaLabel = a.name;
           wrap.append(el("div", { className: "row num" }, el("span", { className: "stickerlabel" }, back), slider, field, el("span")));
         }
@@ -9540,7 +9555,8 @@ var DialTool = class _DialTool {
         const useful = ([tag, designer]) => !plumbing.includes(tag) && (designer || FEATURE_NAMES[tag] || /^(ss|cv)\d\d$/.test(tag));
         const groups = [["", []], ["Stylistic sets", []], ["Character variants", []]];
         for (const [tag, designer] of font ? font_features(font).filter(useful) : []) {
-          const tile = el("button", { type: "button", className: "sticker ui big", id: pre + "feature-" + tag, textContent: designer || FEATURE_NAMES[tag] || tag, title: `${designer || FEATURE_NAMES[tag] || tag} (${tag})` });
+          const kind = /^(tnum|pnum|lnum|onum|zero|frac|numr|dnom|afrc|sups|subs|sinf|ordn)$/.test(tag) ? "figure" : /^(ss|cv)\d\d$/.test(tag) ? "sets" : "styles";
+          const tile = el("button", { type: "button", className: "tile", id: pre + "feature-" + tag }, el("span", { textContent: designer || FEATURE_NAMES[tag] || tag }), el("span", { className: "sticker " + kind, textContent: tag }));
           tile.dataset.tag = tag;
           tile.onclick = () => {
             const H2 = this.target(side.scope), on = tile.getAttribute("aria-pressed") !== "true", all = { ...H2.features || {} };
@@ -9550,14 +9566,15 @@ var DialTool = class _DialTool {
           };
           groups[/^ss\d\d$/.test(tag) ? 1 : /^cv\d\d$/.test(tag) ? 2 : 0][1].push(tile);
         }
-        groups[0][1].sort((x, y) => x.textContent.localeCompare(y.textContent));
+        const figures = (tile) => tile.querySelector(".sticker.figure") ? 0 : 1;
+        groups[0][1].sort((x, y) => figures(x) - figures(y) || x.firstChild.textContent.localeCompare(y.firstChild.textContent));
         for (const [title, tiles] of groups) {
           if (!tiles.length) continue;
           if (title) wrap.append(el("h3", { textContent: title }));
           wrap.append(el("div", { className: "tiles" }, ...tiles));
         }
       }
-      for (const tile of wrap.querySelectorAll(".sticker")) tile.setAttribute("aria-pressed", String((R.features || {})[tile.dataset.tag] ?? DEFAULT_ON.has(tile.dataset.tag)));
+      for (const tile of wrap.querySelectorAll(".tile")) tile.setAttribute("aria-pressed", String((R.features || {})[tile.dataset.tag] ?? DEFAULT_ON.has(tile.dataset.tag)));
       return font ? wrap.children.length ? true : "none" : false;
     };
     return { el: wrap, refresh };

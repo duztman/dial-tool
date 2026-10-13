@@ -658,7 +658,7 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
   check(tiles.map((t) => t[0]).join(" ") === "rectangle circle polygon arch arc" && tiles[0][1] && Math.abs(circle[0][0] - circle[0][1]) < 0.01 && circle[1] && circle[2] && polygon[1] && polygon[2] && arc[1] && arc[0][0] !== rect[0] && arch[1] < arch[0] && await S("S.da_shape") === 1,
     `Shape: five tiles, a date window starts as a rectangle (${rect.join(" × ")}); circle ${circle[0].join(" × ")}, polygon with Sides and Corner, arc ${arc[0].join(" × ")} (no turning), arch ${arch.join(" × ")}`);
   // turned with its radius at 4: 30°; the text with it or level
-  await page.selectOption("#window-at-Position", { label: "4" });
+  await page.click("#window-at-Position-8");      // 4 o'clock: the ninth in the list (R9), a button now
   const level = await box();
   await page.check("#window-turn-Turn-it-with-its-radius");
   const turned = await box(), text_turned = await page.evaluate(() => { const b = window.dial_tool.statik.windows[0].number.bounds(); return b[3] - b[1]; });
@@ -686,14 +686,17 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
     await page.fill("#window-axis-wght", "600"); await page.press("#window-axis-wght", "Enter");
     check(await page.isHidden(".fontbox .features"), "the OpenType features are put away until asked for");
     await page.click('.fontbox .partfold:has-text("OpenType")');
-    const tile = await page.$("#window-feature-tnum") ? "tnum" : await page.$eval(".boxpart .features .sticker", (e) => e.dataset.tag);
+    const tile = await page.$("#window-feature-tnum") ? "tnum" : await page.$eval(".boxpart .features .tile", (e) => e.dataset.tag);
     await page.click("#window-feature-" + tile);
     check(await S("S.da_axes.wght === 600") && await S(`S.da_features && Object.keys(S.da_features)[0] === '${tile}'`) && await S("JSON.stringify(S.rings.find((r) => r.kind === 2).axes)") === ring_before, `a window's font box has its own variable axes and OpenType features (weight 600, ${tile}); the numerals keep theirs`);
     const heads = await page.$$eval(".fontbox .partfold", (b) => b.filter((e) => e.offsetParent).map((e) => e.textContent).join(" · "));
     await page.click(".fontbox .partfold >> nth=0");
-    const shut = await page.isHidden("#window-axis-wght");
+    const shut = await page.isHidden(".fontbox .features");
     await page.click(".fontbox .partfold >> nth=0");
-    check(heads === "Variable axes · OpenType features" && shut && await page.isVisible("#window-axis-wght"), `two parts of the box can be put away and brought back: ${heads}`);
+    const tag = await page.$eval(".fontbox .features .tile", (e) => { const s = e.querySelector(".sticker"), c = getComputedStyle(s); return [s.textContent === e.dataset.tag, c.fontSize, c.fontFamily.includes("Silkscreen")].join(" "); });
+    const lines = await page.$$eval(".fontbox > *", (e) => e.filter((x) => x.offsetParent).map((x) => (x.querySelector("label, .partfold span, .stickerlabel") || {}).textContent || x.className.split(" ")[0]).join(" · "));
+    check(heads === "OpenType features" && shut && await page.isVisible(".fontbox .features") && tag === "true 8px true", `the OpenType features can be put away and brought back; a feature is a tile with its code as a sticker (${tag})`);
+    check(lines.includes("Size % · Tracking · Weightwght · OpenType features"), `the box's lines, top to bottom: ${lines}`);
   }
   await page.click("#window-font-back");
   check(await S("S.da_tracking === null && S.da_lang === null && S.da_features === null && Object.keys(S.da_axes).length === 0"), "As the numerals takes the window's tracking, language, axes and features back too");
@@ -704,7 +707,7 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
   await frame();
   const scene = await page.evaluate(() => { const t = window.dial_tool; return t.slots ? [...document.querySelectorAll("main svg path")].map((p) => p.getAttribute("fill")).filter(Boolean) : []; });
   await shot("4c18-window-colours");
-  check((await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))).join(" · ").endsWith("Colours · Shape") && await page.evaluate(() => { const rows = [...document.querySelectorAll(".form .pane .body")][0].children, ids = [...rows].filter((r) => r.offsetParent).map((r) => (r.querySelector("select, input, button") || {}).id); return ids[0] === "window-at-Position" && ids[1].startsWith("window-r-Radius"); }) && await page.$eval("#window-clear-Clearance", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape" && await page.$eval("#window-frame-Frame", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape" && await page.isVisible("#window-font-c") && await page.isHidden("#window-text-c-Picture") && await page.isVisible("#window-disc-c-Disc-under-it") && await page.isVisible("#window-ink-Frame"),
+  check((await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))).join(" · ").endsWith("Colours · Shape") && await page.evaluate(() => { const rows = [...document.querySelectorAll(".form .pane .body")][0].children, ids = [...rows].filter((r) => r.offsetParent).map((r) => (r.querySelector("select, input, button") || {}).id); return ids[0] === "window-at-Position-4" && ids[1].startsWith("window-r-Radius") && [...document.querySelectorAll(".segs.many > button")].map((b) => b.textContent).join(" ") === "12 1:30 3 4 4:30 6 7:30 9 10:30"; }) && await page.$eval("#window-clear-Clearance", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape" && await page.$eval("#window-frame-Frame", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape" && await page.isVisible("#window-font-c") && await page.isHidden("#window-text-c-Picture") && await page.isVisible("#window-disc-c-Disc-under-it") && await page.isVisible("#window-ink-Frame"),
     "Windows has the panes Colours · Shape, and no Print pane: position, radius and size come first in the window's own pane, right under Show this window; Frame and Clearance are in Shape; the text's colour is a small swatch beside its font's name; Colours: the disc under it, the frame (and the picture's, for a window that shows one)");
   await page.evaluate((was) => { const t = window.dial_tool, [ui, on, at, shape, turn, ps, family, text_c, disc_c, w] = JSON.parse(was); Object.assign(t.S, { da_at: at, da_shape: shape, da_turn: turn, da_ps: ps, da_family: family, da_text_c: text_c, da_disc_c: disc_c, da_w: w, da_text_turn: true, da_on: on, ui_window: ui }); t.static_dirty = true; t.sync_rows(); t.render(); }, was);
 }
@@ -831,7 +834,7 @@ for (const [n, kind, at] of kinds) {
   await page.click("#window-card-" + n);
   await page.check("#window-on-Show-this-window");
   await page.click("#window-kind-Shows-" + kind);
-  await page.selectOption("#window-at-Position", { label: at });
+  await page.click("#window-at-Position-" + ["3", "4:30", "6", "9", "12", "1:30", "7:30", "10:30", "4"].indexOf(at));
 }
 await page.fill("#window-age-Moon-age-days", "6");
 await page.press("#window-age-Moon-age-days", "Enter");
@@ -937,16 +940,16 @@ check(await page.$("#axis-wght") !== null, "Lora's weight axis has a slider");
 { // a variable axis is named by a sticker, in the tool's colours, that is a button: it sets the axis back
   await page.fill("#axis-wght", "650"); await page.press("#axis-wght", "Enter");
   const moved = await S("S.rings[S.ui_ring].axes.wght");
-  const look = await page.$eval("#axis-wght-back", (e) => { const c = getComputedStyle(e); return [e.textContent, c.fontFamily.includes("Silkscreen"), c.backgroundColor, c.fontSize + " " + (c.color === getComputedStyle(document.querySelector(".fontbox .row > label")).color)]; });
+  const look = await page.$eval("#axis-wght-back", (e) => { const c = getComputedStyle(e); const st = getComputedStyle(e.querySelector(".sticker")); return [e.firstChild.textContent, st.fontFamily.includes("Silkscreen"), e.querySelector(".sticker").textContent, st.fontSize + " " + (c.color === getComputedStyle(document.querySelector(".fontbox .row > label")).color) + " " + (getComputedStyle(e).fontFamily === getComputedStyle(document.querySelector(".fontbox .row > label")).fontFamily)]; });
   await page.click("#axis-wght-back");
-  check(moved === 650 && look[0] === "weight" && look[1] && look[2] === "rgb(255, 255, 255)" && look[3] === "16px true" && await S("S.rings[S.ui_ring].axes.wght === undefined"), "in Variable axes an axis is named by its sticker, twice the size, grey like the labels, as a button: a press sets the axis back to where the font rests");
+  check(moved === 650 && look[0] === "Weight" && look[1] && look[2] === "wght" && look[3] === "8px true true" && await S("S.rings[S.ui_ring].axes.wght === undefined"), "an axis is named in the tool's own type, grey like the labels, with its code as a small sticker; the name is a button: a press sets the axis back to where the font rests");
 }
 {
   const f = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), box = r(".fontbox"), top = r("#font-current"), name = r("#font-name"), change = r("#font-change"), lang = r("#lang"), styles = r(".font .styles"), numerals = r("#font-current svg"), c = (q) => getComputedStyle(document.querySelector(q));
-    return { order: top.bottom <= name.top && name.bottom <= styles.top, right: Math.round(box.right - change.right), left: Math.round(name.left - box.left), whole: numerals.right <= top.right, lang: lang.top >= name.bottom,
+    return { order: top.bottom <= name.top && name.bottom <= styles.top, right: Math.round(box.right - change.right), left: Math.round(name.left - box.left), whole: numerals.right <= top.right, lang: lang.left >= name.right && lang.right <= change.left,
       white: c(".fontbox").backgroundColor, lines: [c(".fontname").borderTopWidth, c(".font .styles").borderTopWidth].join(" "), quiet: c("#font-change").borderTopColor === c(".fontbox").borderTopColor }; });
-  check(f.order && f.right === 11 && f.left === 11 && f.whole && f.lang && f.white === "rgb(255, 255, 255)" && f.lines === "1px 1px" && f.quiet, `a font stands in a white box of three lines with a hairline between them: its numerals, whole · its name, then the language and Change… at the right · its styles; the buttons' lines are as faint as the box's (${JSON.stringify(f)})`);
-  check(await page.textContent("#lang") === "LAN" && await page.$eval("#lang", (e) => e.closest(".styles") !== null && Math.round(e.getBoundingClientRect().right) === Math.round(document.querySelector("#font-change").getBoundingClientRect().right)) && await page.isHidden("#lang-menu") && await page.$("select[id*=lang]") === null, "the language is a small button (it says LAN while the font sets it) at the right end of the styles' line, not a row with a menu");
+  check(f.order && f.right === 11 && f.left === 11 && f.lang && f.white === "rgb(255, 255, 255)" && f.lines === "1px 1px" && f.quiet, `a font stands in a white box of lines with a hairline between them: its numerals and letters, as far as the box goes · its name, then the language and Change… at the right · its styles; the buttons' lines are as faint as the box's (${JSON.stringify(f)})`);
+  check(await page.textContent("#lang") === "LAN" && await page.$eval("#lang", (e) => { const r = e.getBoundingClientRect(), n = document.querySelector("#font-name").getBoundingClientRect(), c = document.querySelector("#font-change"), k = c.getBoundingClientRect(); return Math.round(r.left - n.right) === 8 && r.height === k.height && getComputedStyle(e).font === getComputedStyle(c).font && getComputedStyle(e).paddingLeft === getComputedStyle(c).paddingLeft; }) && await page.isHidden("#lang-menu") && await page.$("select[id*=lang]") === null, "the language is a small button (it says LAN while the font sets it) right after the font's name, as high and set like Change…, not a row with a menu");
   await page.click("#lang");
   const langs = await page.$$eval("#lang-menu button", (b) => b.map((x) => x.textContent).join(" | "));
   await page.click("#lang-tr");
@@ -966,6 +969,10 @@ await frame();
 check(await S("S.rings[S.ui_ring].axes.wght === 700") && (await S("t.statik.rings.find((d) => d.kind === 'numerals').path.svg(3).length")) !== light, "weight 700 changes the numerals' outlines");
 const wide = await S("(() => { const b = t.statik.rings.find((d) => d.kind === 'numerals').parts[0].bounds(); return b[2] - b[0]; })()");
 if (await page.isHidden("#feature-tnum")) await page.click('.fontbox .partfold:has-text("OpenType")');
+{
+  const order = await page.$$eval(".fontbox .features .tiles >> nth=0 >> .tile", (t) => t.map((e) => (e.querySelector(".sticker.figure") ? "F" : "o")).join(""));
+  check(/^F+o*$/.test(order), `the features that change numerals come first in the list (${order})`);
+}
 await page.click("#feature-tnum");
 await frame();
 const tab_w = await S("(() => { const b = t.statik.rings.find((d) => d.kind === 'numerals').parts[0].bounds(); return b[2] - b[0]; })()");

@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.33 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **Font box**: letters after the numerals; LAN right after the name; Size above Tracking; axes without a heading; axes and features in the tool's type with their codes as small stickers; features as tiles again, the ones for numerals first.
+- **Fields for words** on their label's line, larger, darker. **A window's position**: nine buttons in the clock's order.
+
 ## beta 4.32 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.
