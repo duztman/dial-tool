@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.32 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **Font box**: no "· as the numerals" after the name; **LAN** at the right end of the styles' line (on the name's line when a family has one style); OpenType features folded to begin with.
+
 ## beta 4.31 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.

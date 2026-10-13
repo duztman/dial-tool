@@ -633,6 +633,8 @@
   .fontname { position: relative; display: flex; align-items: center; gap: var(--ringline-gap); cursor: pointer; }
   .fontname .name { flex: 1; font-weight: 600; }
   .fontname .langs { margin-right: var(--line-button); }
+  .styles > .langs { margin-left: auto; }      /* the language, at the right end of the styles' line */
+  .fontname:not(:has(.langs)) > .colour.mini + .btn { margin-left: calc(var(--line-button) + var(--ringline-gap)); }      /* the room the colour stands in, when no language keeps it */
   .fontname .colour.mini { position: absolute; top: 50%; translate: 0 -50%; right: calc(var(--swatch-col) - var(--hair) + (var(--line-button) - var(--t-m) - 2 * var(--hair)) / 2); }      /* the font's name is the box's heading (Okay, 13 Oct 2026) */
   .langs { position: relative; }
   .langbox { min-width: var(--control); padding: 0 var(--unit); font: var(--t-xs)/1 var(--mono); }

@@ -169,9 +169,9 @@ const VALUE_PICS = {                               // a value button's drawing, 
   size: `<circle cx="4.79" r="14.33"/><circle class="small" cx="-11.02" cy="6.22" r="8.11"/><path d="M-16.55 0.3L-4.99 -10.48M-10.77 14.33L4.79 14.33"/>`,
 };
 
-// a language in the list, by its name; on its button, by two letters ("zh-Hans" → ZH; the font's own choice → "lan")
+// a language in the list, by its name; on its button, by two letters ("zh-Hans" → ZH; the font's own choice → "LAN")
 const LANG_NAMES = { default: "As the font sets it", tr: "Turkish", nl: "Dutch", de: "German", pl: "Polish", ro: "Romanian", ca: "Catalan", ar: "Arabic", fa: "Persian", "zh-Hans": "Chinese, simplified", ja: "Japanese" };
-const lang_short = (code) => (code === "default" ? "lan" : code.slice(0, 2).toUpperCase());      // none chosen: the button says what it is for (Okay, 13 Oct 2026; a dash before)
+const lang_short = (code) => (code === "default" ? "LAN" : code.slice(0, 2).toUpperCase());      // none chosen: the button says what it is for (Okay, 13 Oct 2026; a dash before)
 
 // a tile's word is one line: a name too long for a tile is said shorter there (its tag still says it whole)
 const TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip" };
@@ -1999,7 +1999,7 @@ class DialTool {
     // every font box has all of it (Okay, 13 Oct 2026): numerals · name, language, colour · styles · tracking · the
     // variable axes · the OpenType features. The last two can be put away.
     const axes = this.box_part("font/axes", "Variable axes", this.axes_part(pre, own));
-    const features = this.box_part("font/features", "OpenType features", this.features_part(pre, own));
+    const features = this.box_part("font/features", "OpenType features", this.features_part(pre, own), true);
     wrap.append(el("div", { className: "fontbox" }, current, named, styles, tracking.el, axes.el, features.el), ...(own ? [back] : []), state);
     let shown = null;
     out.refresh = (T) => {
@@ -2015,7 +2015,7 @@ class DialTool {
       if (key !== shown) {
         shown = key;
         current.replaceChildren(f ? this.sample(f) : el("span", { className: "sample quiet", textContent: "not loaded" }));
-        name.textContent = own && !T.ps ? `${R.family} · as the numerals` : R.family;
+        name.textContent = R.family;                // a window without a font of its own shows the numerals' font, plainly (Okay, 13 Oct 2026: no "· as the numerals" after it)
       }
       styles.hidden = mine.length < 2;             // the family's styles, as buttons
       styles.replaceChildren(...mine.map((x) => {
@@ -2023,6 +2023,9 @@ class DialTool {
         b.classList.toggle("on", x.ps === R.ps);
         return b;
       }));
+      // the language button stands at the right end of the styles' line; a family of one style has no such line,
+      // then it stands on the name's line (Okay, 13 Oct 2026)
+      if (styles.hidden) named.insertBefore(lang.el, swatch); else styles.append(lang.el);
       const missing = G.has_font(R.ps) ? "" : this.catalog.has(R.ps) ? "Loading… "
         : `${R.family} isn’t loaded yet, so ${G.font_list()[0].family} stands in. Press Change… to choose another or to add it. `;
       state.textContent = missing + (this.font_note || "");
@@ -2251,19 +2254,19 @@ class DialTool {
 
   /** a part of a font box that can be put away (Okay, 13 Oct 2026: "show hide within block possible"): a line with its
    *  name, a press folds what is under it. Kept with the panes' folds, one for all font boxes. */
-  box_part(name, title, part) {
+  box_part(name, title, part, shut = false) {
     const head = el("button", { type: "button", className: "partfold", title: "Show or hide this part" });
     let none = false;                              // nothing to show (a font without switches): the line is grey, its sign a sheet with a cross, and it folds nothing
     const set = () => {
       this.is_folded({ fold: name, row: {} });
-      const folded = Boolean(this.folds[name]);
+      const folded = this.folds[name] ?? shut;     // shut: put away until asked for (the OpenType features)
       part.el.hidden = folded || none;
       head.classList.toggle("none", none);
       head.title = none ? `This font has no ${title}` : "Show or hide this part";
       head.setAttribute("aria-expanded", String(!folded && !none));
       head.innerHTML = (none ? icon(NONE_SIGN) : eye(!folded)) + `<span>${title}</span>`;
     };
-    head.onclick = () => { if (none) return; this.is_folded({ fold: name, row: {} }); this.folds[name] = !this.folds[name]; try { localStorage.setItem("dial-tool-folds", JSON.stringify(this.folds)); } catch (e) { /* not kept */ } set(); };
+    head.onclick = () => { if (none) return; this.is_folded({ fold: name, row: {} }); this.folds[name] = !(this.folds[name] ?? shut); try { localStorage.setItem("dial-tool-folds", JSON.stringify(this.folds)); } catch (e) { /* not kept */ } set(); };
     const wrap = el("div", { className: "boxpart" }, head, part.el);
     return { el: wrap, refresh: (R, T) => { const has = part.refresh(R, T); wrap.hidden = !has; none = has === "none"; set(); } };
   }
