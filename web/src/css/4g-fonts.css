@@ -3,35 +3,42 @@
   .features { padding-top: 4px; }
   .features h3 { margin: 16px 0 8px; padding-top: 8px; border-top: var(--hair) solid var(--rule); }
   /* the font picker: every font shows its own numerals */
-  .font { display: grid; gap: var(--unit); margin: var(--unit) 0; }
+  /* a box inside the panel (the font box) has a ring row's frame: it starts where the labels start and ends
+     --frame-out past the lines, so what is in it stands on the pane's own columns — sliders, fields and steppers
+     under the rows outside, the language button on the controls' column — and the labels take what is left,
+     one --btn-pad in from the edge. The frame is an outline drawn inside the box's edge, so it takes no room. */
+  .font { display: grid; gap: var(--unit); margin: var(--unit) calc(-1 * var(--frame-out)) var(--unit) 0; }
   .font .styles { flex-wrap: wrap; gap: var(--unit); }
   .font .styles > button { flex: 0 0 auto; padding: 0 var(--btn-pad); white-space: nowrap; border-left: var(--hair) solid var(--rule); }
   .font .styles > button.on { border-color: var(--ink); }
   .font .note:empty, .picker .note:empty { display: none; }
   .font > .btn { justify-self: start; }
   /* a font's three lines stand in one white box, a hairline between them; what is in it is quiet: grey lines, grey words */
-  .fontbox { display: grid; border: var(--hair) solid var(--rule); background: var(--field); }
+  .fontbox { --well: var(--ground); display: grid; outline: var(--hair) solid var(--rule); outline-offset: calc(-1 * var(--hair)); background: var(--field); }      /* a slider's track must show on the white: the ground's grey (build list #128: it was white on white) */
   .fontbox > * + * { border-top: var(--hair) solid var(--rule); }
-  .fontbox > :is(.fontname, .styles) { padding: var(--unit) var(--btn-pad); }
-  .fontbox > .row { padding: 0 var(--btn-pad); box-shadow: none; }      /* tracking: a row like any other, between the box's own lines */
+  .fontbox > .styles { padding: var(--unit) var(--frame-out) var(--unit) var(--btn-pad); }
+  .fontbox .row { padding-right: var(--frame-out); box-shadow: none; }      /* size, tracking, an axis: rows like any other, between the box's own lines, their tracks ending on the pane's line */
+  .fontbox .row > :first-child { padding-left: var(--btn-pad); }
+  /* the chosen font's numerals and letters, the box's first line: in a thick light frame one unit inside the box (Okay's sketch, 13 Oct 2026: "thick border, no bg") */
+  .fontbox > .fontrow.current { width: auto; margin: var(--unit); border: var(--ringline-inner) solid var(--ground); }
+  .fontbox > .fontrow.current + * { border-top: var(--hair) solid var(--rule); }
   /* a part of the box that can be put away: the variable axes, the OpenType features. A line with an eye and its name. */
   .partfold { display: flex; align-items: center; gap: var(--unit); width: 100%; height: var(--line); padding: 0 var(--btn-pad); font-weight: 600; text-align: left; }
   .partfold:hover { background: var(--hover); }
-  .fontbox > .axes { padding: 0 var(--btn-pad); }
-  .fontbox .axes .row { box-shadow: none; }
   .fontbox .tile > .sticker { justify-self: start; }
   .boxpart > .features { padding: 0 var(--btn-pad) var(--btn-pad); }
   .fontbox .btn, .fontbox .styles > button { border-color: var(--rule); color: var(--grey); }
   .fontbox :is(.btn, .styles > button):hover { border-color: var(--ink); color: var(--ink); }
   /* the font's name · the language · the text's colour · Change…. The whole line opens the font sheet, but for the
      language and the colour. The colour stands in the ring list's colour column, wherever the line is; the place kept for it is that column's width. */
-  .fontname { position: relative; display: flex; align-items: center; gap: var(--ringline-gap); cursor: pointer; }
-  .fontname .langs { margin-right: auto; }      /* the language: right after the name, a button like Change… */
-  .fontname > .colour.mini + .btn { margin-left: var(--line-button); }      /* the room the colour stands in */
-  .fontname .colour.mini { position: absolute; top: 50%; translate: 0 -50%; right: calc(var(--swatch-col) - var(--hair) + (var(--line-button) - var(--t-m) - 2 * var(--hair)) / 2); }      /* the font's name is the box's heading */
+  .fontname { position: relative; display: grid; grid-template-columns: var(--num-columns); align-items: center; padding: var(--unit) var(--frame-out) var(--unit) 0; cursor: pointer; }
+  .fontname .name { grid-column: 1 / 4; padding-left: var(--btn-pad); }      /* the font's name is the box's heading */
+  .fontname .langs { grid-column: 5; justify-self: start; }      /* the language: on the controls' column, a button like Change… */
+  .fontname > .btn { grid-column: 7 / 10; justify-self: end; }      /* Change…, ending where the rows' steppers end */
+  .fontname .colour.mini { position: absolute; top: 50%; translate: 0 -50%; right: calc(var(--frame-out) + var(--swatch-col) + (var(--line-button) - var(--t-m) - 2 * var(--hair)) / 2); }      /* the colour stands in the ring list's colour column; Change… leaves it room */
   .langs { position: relative; }
   .langbox { min-width: var(--control); }
-  .fontname .name { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+  .fontname .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
   .fontlist { border: var(--hair) solid var(--rule); background: var(--field); overflow-y: auto; }
   /* a line of the font sheet, on three columns: the family's name in its own face · its numerals, all starting on one
      line · what the family has (styles, bold, italic, axes), small. A full hairline between two lines. */
@@ -69,7 +76,7 @@
   .legend { display: grid; grid-template-columns: repeat(2, auto auto); gap: calc(var(--unit) / 2) var(--unit); align-items: center; justify-content: end; margin: 0; color: var(--grey); font-size: var(--t-xs); white-space: nowrap; }
   .legend dt { justify-self: end; display: flex; }
   .legend dd { margin: 0; }
-  .fontrow.current { grid-template-columns: minmax(0, 1fr); height: var(--head); border: 0; }      /* the chosen font's numerals, alone on their line */
+  .fontrow.current { grid-template-columns: minmax(0, 1fr); height: var(--head); border: 0; }      /* the chosen font's numerals and letters, alone on their line */
   .fontlist .group { padding: calc(var(--unit) * 2) var(--btn-pad) calc(var(--unit) / 2); border-bottom: var(--hair) solid var(--rule); }
 
   /* the font sheet: over the panel, on its columns, so the dial stays in view; from the bottom on a phone */

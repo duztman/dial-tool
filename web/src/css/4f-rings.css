@@ -25,7 +25,7 @@
   .ringlist span.name { min-width: 0; padding: 0 4px 0 var(--name-in); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ringlist span.name.renames { cursor: text; }
   .ringlist input.name { grid-column: 3; margin-left: 2px; padding: 0 4px; }
-  .ringlist .rename { flex: none; display: grid; place-items: center; width: var(--control); height: var(--control); color: var(--faint); }
+  .ringlist .rename { flex: none; display: grid; place-items: center; width: var(--control); height: var(--control); color: var(--wait); }
   .ringlist .rename:hover { color: var(--ink); background: var(--veil-strong); }
   /* after the name, in the ring drawer's order: kind (with how many) · colour · size · radius. The last three each
      stand in a column as wide as the drawer's button under it, centred on it; the numbers quiet, in the mono face. */

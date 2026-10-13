@@ -17,20 +17,24 @@
   .tabsbar > .segs { grid-column: 2 / -1; }
   .tabsbar .segs > button { height: var(--tab-high); font-weight: 600; }
   .pinned:has(> :is(.tabsbar, .windowcards):last-child) { border-bottom: var(--thick) solid var(--ink); }      /* the hand tabs stand on a pane's thick line: the pane under them is the one they choose */
-  /* tabs: the hand
-     tabs and the window cards. They touch each other and stand on the line under them with no foot of their own;
-     between two tabs the top has a sharp notch, a V; the first and the last corner are square. The chosen one is black. The V is a square stood on its
-     corner over the joint. */
-  :is(.tabsbar .segs, .windowcards .card) > button { border: var(--hair) solid var(--rule); border-bottom: 0; background: var(--field); }
-  :is(.tabsbar .segs > button + button, .windowcards .card + .card > button) { position: relative; }
-  /* two triangles hanging from the tabs' top line, their point down, over the joint: one in the line's colour, and
-     on it one in the surface's colour, smaller by the line. What shows of the first is the V's line. */
-  :is(.tabsbar .segs > button + button, .windowcards .card + .card > button)::before, :is(.tabsbar .segs > button + button, .windowcards .card + .card > button)::after { content: ""; position: absolute; z-index: 1; left: calc(-1 * var(--hair) / 2); top: calc(-1 * var(--hair)); transform: translateX(-50%); clip-path: polygon(0 0, 100% 0, 50% 100%); pointer-events: none; }
-  :is(.tabsbar .segs > button + button, .windowcards .card + .card > button)::before { width: calc(2 * (var(--tab-notch) + 1.4142 * var(--hair))); height: calc(var(--tab-notch) + 1.4142 * var(--hair)); background: var(--rule); }
-  :is(.tabsbar .segs > button + button, .windowcards .card + .card > button)::after { width: calc(2 * var(--tab-notch)); height: var(--tab-notch); background: var(--surface); }
-  :is(.tabsbar .segs > button, .windowcards .card) + :is(button, .card) { margin-left: calc(-1 * var(--hair)); }
-  :is(.tabsbar .segs, .windowcards .card) > button:hover { background: var(--hover); }
-  :is(.tabsbar .segs, .windowcards .card) > button.on { position: relative; }
+  /* tabs: the hand tabs and the window cards. They touch each other and stand on the line under them with no foot
+     of their own; between two tabs the top has a sharp notch, a V. Each tab cuts its own two top corners (a
+     chamfer as deep as the notch, --tab-notch), so two neighbours make the V between them; the first tab's left
+     corner and the last tab's right corner stay square. A tab is drawn in two layers under its words: its line
+     (::before, clipped to the cut shape) and, a hairline inside it, its fill (::after); the chosen tab is ink in
+     both and lies over its neighbours, so its line wins where they meet. */
+  .tab { --cut-l: var(--tab-notch); --cut-r: var(--tab-notch); --tab-line: var(--rule); --tab-fill: var(--field);
+    position: relative; isolation: isolate; border: 0; background: none; }
+  .tab::before, .tab::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+  .tab::before { background: var(--tab-line); clip-path: polygon(var(--cut-l) 0, calc(100% - var(--cut-r)) 0, 100% var(--cut-r), 100% 100%, 0 100%, 0 var(--cut-l)); }
+  /* the fill: the same shape, one hairline inside the line; along the cut, a hairline measured straight across is 0.414 wider */
+  .tab::after { --in-l: max(calc(var(--cut-l) + 0.414 * var(--hair)), var(--hair)); --in-r: max(calc(var(--cut-r) + 0.414 * var(--hair)), var(--hair));
+    background: var(--tab-fill); clip-path: polygon(var(--in-l) var(--hair), calc(100% - var(--in-r)) var(--hair), calc(100% - var(--hair)) var(--in-r), calc(100% - var(--hair)) 100%, var(--hair) 100%, var(--hair) var(--in-l)); }
+  :is(.tabsbar .segs > .tab:first-child, .windowcards .card:first-child > .tab) { --cut-l: 0px; }
+  :is(.tabsbar .segs > .tab:last-child, .windowcards .card:last-child > .tab) { --cut-r: 0px; }
+  :is(.tabsbar .segs > .tab, .windowcards .card) + :is(.tab, .card) { margin-left: calc(-1 * var(--hair)); }      /* one line between two tabs, not two */
+  .tab:hover { --tab-fill: var(--hover); }
+  .tab.on { --tab-line: var(--ink); --tab-fill: var(--ink); z-index: 1; color: var(--paper); }
   .handsbar > h2 { grid-column: 2 / span 2; }
   .handsbar > .check { grid-column: 4 / span 2; white-space: nowrap; }
   .handsbar > select { grid-column: 6 / span 2; }

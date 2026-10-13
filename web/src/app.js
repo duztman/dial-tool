@@ -169,9 +169,9 @@ const VALUE_PICS = {                               // a value button's drawing, 
   size: `<circle cx="4.79" r="14.33"/><circle class="small" cx="-11.02" cy="6.22" r="8.11"/><path d="M-16.55 0.3L-4.99 -10.48M-10.77 14.33L4.79 14.33"/>`,
 };
 
-// a language in the list, by its name; on its button, by two letters ("zh-Hans" → ZH; the font's own choice → "LAN")
+// a language in the list, by its name; on its button, by two letters ("zh-Hans" → ZH; the font's own choice → "Lang.")
 const LANG_NAMES = { default: "As the font sets it", tr: "Turkish", nl: "Dutch", de: "German", pl: "Polish", ro: "Romanian", ca: "Catalan", ar: "Arabic", fa: "Persian", "zh-Hans": "Chinese, simplified", ja: "Japanese" };
-const lang_short = (code) => (code === "default" ? "LAN" : code.slice(0, 2).toUpperCase());      // none chosen: the button says what it is for (Okay, 13 Oct 2026; a dash before)
+const lang_short = (code) => (code === "default" ? "Lang." : code.slice(0, 2).toUpperCase());      // none chosen: the button says what it is for (Okay, 13 Oct 2026: "Lang.", case and point as written; "LAN" before, a dash before that)
 
 // a tile's word is one line: a name too long for a tile is said shorter there (its tag still says it whole)
 const TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip" };
@@ -1447,7 +1447,7 @@ class DialTool {
     const grid = el("div", { className: "cards", role: "tablist", ariaLabel: "Which window" });
     const cards = WINDOW_CARDS.map((c) => {
       const pic = el("span", { className: "pic" });       // the card is its picture alone: a small dial with the window in its place, filled when the window is shown (Okay, 13 Oct 2026: no number under it)
-      const b = el("button", { type: "button", id: "window-card-" + c.slot, onclick: () => {
+      const b = el("button", { type: "button", className: "tab", id: "window-card-" + c.slot, onclick: () => {
         const w = G.windows_of(this.S)[c.slot];
         this.S.ui_window = c.slot;
         if (!w.on && w.at === G.WINDOW_BASE.at && c.at !== w.at) { w.at = c.at; this.static_dirty = true; }      // never used: it starts at its card's place
@@ -1499,7 +1499,7 @@ class DialTool {
     wrap.className = "tabsbar";
     const tabs = el("span", { className: "segs", role: "tablist", ariaLabel: "Which hand" });
     ["Hour", "Minute", "Seconds"].forEach((name, i) => {
-      const b = el("button", { type: "button", id: "hand-tab-" + i, textContent: name, onclick: () => this.set_value("global", "ui_hand", i) });
+      const b = el("button", { type: "button", className: "tab", id: "hand-tab-" + i, textContent: name, onclick: () => this.set_value("global", "ui_hand", i) });
       b.setAttribute("role", "tab");
       tabs.append(b);
     });

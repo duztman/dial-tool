@@ -7,7 +7,7 @@
     --field: #FFFFFF;                              /* inside a control: fields, tiles, buttons */
     --hover: #F1F1EE;                              /* a control under the pointer: seen on paper, on the scrolling grey and on a white tile alike */
     --ink-hover: #333331;                          /* a filled control under the pointer */
-    --faint: #8E8E89;                              /* signs that wait: the rename box */
+    --wait: #8E8E89;                               /* a sign that waits to be used: the rename box (was --faint, which the opacity below then took: the box stood in ink since beta 4.20) */
     --select: #CFE4F5; --select-rule: #86B4DA;     /* what is selected: a light blue */
     --glow: #FF7300;                               /* the outline of what the pointer is on, in the preview */
     --veil: rgba(0, 0, 0, 0.06); --veil-strong: rgba(0, 0, 0, 0.1);      /* a touch of dark on a coloured row */
@@ -38,7 +38,9 @@
     --hair: 1px; --thick: 2px;                     /* a thick line opens a pane; everything inside a pane is a hairline */
     --nest-from: calc((100% + var(--gap)) / 3);     /* where a row's controls start, from its left edge: two of its six columns and their gaps. A half line starts here */
     --side-num: 60px; --side-tiny: 16px;           /* beside a hand's box: a number with its tiny plus and minus (the whole · the two alone) */
-    --tile-wider: calc((var(--gap) - var(--unit)) / 4);      /* four tiles stand closer than four columns: each is this much wider than a column */
+    --tile-w: calc((4 * var(--col) + 3 * var(--gap) - 3 * var(--unit)) / 4);      /* a tile: four stand on the four control columns one unit apart, so each is a little wider than a column. A number's field and its stepper are the third and the fourth tile */
+    /* a number's row, as tracks with the gaps written in (no gap of its own): label 2 columns · slider · field · stepper, the last three on the tiles' edges */
+    --num-columns: var(--col) var(--gap) var(--col) var(--gap) minmax(0, 1fr) var(--gap) var(--tile-w) var(--unit) var(--tile-w);
     --btn-pad: 10px;                               /* from a button's or a box's edge to its words */
     --control: 26px;                               /* a control's height: field, button, swatch */
     --control-large: 32px;                         /* the Guides switch, the hex line */

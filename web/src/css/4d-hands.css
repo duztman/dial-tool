@@ -34,11 +34,7 @@
     .body > .detail { grid-column: 2 / span 2; grid-row: 1 / span 40; }      /* 40: more rows than a hand has; the rows it doesn't use are nothing high */
     .body > .row.side { grid-column: 4 / -1; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--side-num); }
     .row.side { --num-open: calc((100% + var(--side-num)) / 2); }      /* the row less its label and one gap: slider and number together */
-    /* elsewhere a number's field and its stepper are boxes like the tiles: they stand where the third and the fourth
-       tile of a row of four stand, so box edges line up down the pane */
-    .body > .row.num:not(.side) > input[type="text"] { margin-left: calc(-2 * var(--tile-wider)); margin-right: calc(-1 * var(--tile-wider)); width: auto; }
-    .body > .row.num:not(.side) > .steps { margin-left: calc(-3 * var(--tile-wider)); width: calc(100% + 3 * var(--tile-wider)); }
-    .row.side > :first-child, .row.side.num > input[type="range"] { grid-column: auto; }
+    .row.side > :first-child, .row.side > input[type="range"] { grid-column: auto; }
     .row.side > label { font-size: var(--t-s); }
     .row.side > label > .whole { display: none; }
     .row.side > label > .short { display: inline; }

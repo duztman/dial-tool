@@ -6,3 +6,4 @@ docs/guide/cache/
 docs/guide/_built.html
 web/node_modules/
 web/test/out/
+web/test/same.json

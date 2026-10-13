@@ -1,9 +1,9 @@
 /* chosen: what is switched on, picked, or open is ink with paper words, whatever kind of control it is.
    A layer of its own after the controls and the panel, so no control has to say it again and nothing there
-   (a hover, a quiet colour) can undo it. The bar and the night parts have their own colours for it. */
+   (a hover, a quiet colour) can undo it. The bar and the night parts have their own colours for it; a tab (.tab) draws its own. */
 @layer chosen {
   .segs > button.on, .pickt.on, .tile[aria-pressed="true"], .kinds button.on, .sticker.ui[aria-pressed="true"],
-  .unitbox[aria-expanded="true"], .headtools .sign[aria-expanded="true"], .tabsbar .segs > button.on,
-  .windowcards .card > button.on, .fontbox .btn[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .unitbox[aria-expanded="true"], .headtools .sign[aria-expanded="true"],
+  .fontbox .btn[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
   :is(.pickt.on, .tile[aria-pressed="true"]):hover { background: var(--ink-hover); }      /* a chosen tile under the pointer: a shade lighter */
 }

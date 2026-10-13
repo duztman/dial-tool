@@ -1,6 +1,6 @@
 // same.mjs — does the window look the same as it did? A check for changes to the stylesheet that must not change the look.
 //
-//   node test/same.mjs save     the look of the built page now, kept in test/out/same.json
+//   node test/same.mjs save     the look of the built page now, kept in test/same.json
 //   node test/same.mjs          the look now against the kept one: every difference is printed
 //
 // "The look" is what the browser works out for every element of the window (its computed style: sizes, places,
@@ -13,7 +13,7 @@ import { chromium } from "playwright";
 import fs from "fs";
 import crypto from "crypto";
 
-const FILE = "test/out/same.json";
+const FILE = process.env.SAME || "test/same.json";      // not in the repo (about 20 MB); SAME=… keeps it elsewhere
 const saving = process.argv[2] === "save";
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || "/opt/pw-browsers/chromium" });
 const dict = new Map();                            // a style's text → its number (most elements share theirs)

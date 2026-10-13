@@ -39,7 +39,7 @@
     --field: #FFFFFF;                              /* inside a control: fields, tiles, buttons */
     --hover: #F1F1EE;                              /* a control under the pointer: seen on paper, on the scrolling grey and on a white tile alike */
     --ink-hover: #333331;                          /* a filled control under the pointer */
-    --faint: #8E8E89;                              /* signs that wait: the rename box */
+    --wait: #8E8E89;                               /* a sign that waits to be used: the rename box (was --faint, which the opacity below then took: the box stood in ink since beta 4.20) */
     --select: #CFE4F5; --select-rule: #86B4DA;     /* what is selected: a light blue */
     --glow: #FF7300;                               /* the outline of what the pointer is on, in the preview */
     --veil: rgba(0, 0, 0, 0.06); --veil-strong: rgba(0, 0, 0, 0.1);      /* a touch of dark on a coloured row */
@@ -70,7 +70,9 @@
     --hair: 1px; --thick: 2px;                     /* a thick line opens a pane; everything inside a pane is a hairline */
     --nest-from: calc((100% + var(--gap)) / 3);     /* where a row's controls start, from its left edge: two of its six columns and their gaps. A half line starts here */
     --side-num: 60px; --side-tiny: 16px;           /* beside a hand's box: a number with its tiny plus and minus (the whole · the two alone) */
-    --tile-wider: calc((var(--gap) - var(--unit)) / 4);      /* four tiles stand closer than four columns: each is this much wider than a column */
+    --tile-w: calc((4 * var(--col) + 3 * var(--gap) - 3 * var(--unit)) / 4);      /* a tile: four stand on the four control columns one unit apart, so each is a little wider than a column. A number's field and its stepper are the third and the fourth tile */
+    /* a number's row, as tracks with the gaps written in (no gap of its own): label 2 columns · slider · field · stepper, the last three on the tiles' edges */
+    --num-columns: var(--col) var(--gap) var(--col) var(--gap) minmax(0, 1fr) var(--gap) var(--tile-w) var(--unit) var(--tile-w);
     --btn-pad: 10px;                               /* from a button's or a box's edge to its words */
     --control: 26px;                               /* a control's height: field, button, swatch */
     --control-large: 32px;                         /* the Guides switch, the hex line */
@@ -354,20 +356,24 @@
   .tabsbar > .segs { grid-column: 2 / -1; }
   .tabsbar .segs > button { height: var(--tab-high); font-weight: 600; }
   .pinned:has(> :is(.tabsbar, .windowcards):last-child) { border-bottom: var(--thick) solid var(--ink); }      /* the hand tabs stand on a pane's thick line: the pane under them is the one they choose */
-  /* tabs: the hand
-     tabs and the window cards. They touch each other and stand on the line under them with no foot of their own;
-     between two tabs the top has a sharp notch, a V; the first and the last corner are square. The chosen one is black. The V is a square stood on its
-     corner over the joint. */
-  :is(.tabsbar .segs, .windowcards .card) > button { border: var(--hair) solid var(--rule); border-bottom: 0; background: var(--field); }
-  :is(.tabsbar .segs > button + button, .windowcards .card + .card > button) { position: relative; }
-  /* two triangles hanging from the tabs' top line, their point down, over the joint: one in the line's colour, and
-     on it one in the surface's colour, smaller by the line. What shows of the first is the V's line. */
-  :is(.tabsbar .segs > button + button, .windowcards .card + .card > button)::before, :is(.tabsbar .segs > button + button, .windowcards .card + .card > button)::after { content: ""; position: absolute; z-index: 1; left: calc(-1 * var(--hair) / 2); top: calc(-1 * var(--hair)); transform: translateX(-50%); clip-path: polygon(0 0, 100% 0, 50% 100%); pointer-events: none; }
-  :is(.tabsbar .segs > button + button, .windowcards .card + .card > button)::before { width: calc(2 * (var(--tab-notch) + 1.4142 * var(--hair))); height: calc(var(--tab-notch) + 1.4142 * var(--hair)); background: var(--rule); }
-  :is(.tabsbar .segs > button + button, .windowcards .card + .card > button)::after { width: calc(2 * var(--tab-notch)); height: var(--tab-notch); background: var(--surface); }
-  :is(.tabsbar .segs > button, .windowcards .card) + :is(button, .card) { margin-left: calc(-1 * var(--hair)); }
-  :is(.tabsbar .segs, .windowcards .card) > button:hover { background: var(--hover); }
-  :is(.tabsbar .segs, .windowcards .card) > button.on { position: relative; }
+  /* tabs: the hand tabs and the window cards. They touch each other and stand on the line under them with no foot
+     of their own; between two tabs the top has a sharp notch, a V. Each tab cuts its own two top corners (a
+     chamfer as deep as the notch, --tab-notch), so two neighbours make the V between them; the first tab's left
+     corner and the last tab's right corner stay square. A tab is drawn in two layers under its words: its line
+     (::before, clipped to the cut shape) and, a hairline inside it, its fill (::after); the chosen tab is ink in
+     both and lies over its neighbours, so its line wins where they meet. */
+  .tab { --cut-l: var(--tab-notch); --cut-r: var(--tab-notch); --tab-line: var(--rule); --tab-fill: var(--field);
+    position: relative; isolation: isolate; border: 0; background: none; }
+  .tab::before, .tab::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+  .tab::before { background: var(--tab-line); clip-path: polygon(var(--cut-l) 0, calc(100% - var(--cut-r)) 0, 100% var(--cut-r), 100% 100%, 0 100%, 0 var(--cut-l)); }
+  /* the fill: the same shape, one hairline inside the line; along the cut, a hairline measured straight across is 0.414 wider */
+  .tab::after { --in-l: max(calc(var(--cut-l) + 0.414 * var(--hair)), var(--hair)); --in-r: max(calc(var(--cut-r) + 0.414 * var(--hair)), var(--hair));
+    background: var(--tab-fill); clip-path: polygon(var(--in-l) var(--hair), calc(100% - var(--in-r)) var(--hair), calc(100% - var(--hair)) var(--in-r), calc(100% - var(--hair)) 100%, var(--hair) 100%, var(--hair) var(--in-l)); }
+  :is(.tabsbar .segs > .tab:first-child, .windowcards .card:first-child > .tab) { --cut-l: 0px; }
+  :is(.tabsbar .segs > .tab:last-child, .windowcards .card:last-child > .tab) { --cut-r: 0px; }
+  :is(.tabsbar .segs > .tab, .windowcards .card) + :is(.tab, .card) { margin-left: calc(-1 * var(--hair)); }      /* one line between two tabs, not two */
+  .tab:hover { --tab-fill: var(--hover); }
+  .tab.on { --tab-line: var(--ink); --tab-fill: var(--ink); z-index: 1; color: var(--paper); }
   .handsbar > h2 { grid-column: 2 / span 2; }
   .handsbar > .check { grid-column: 4 / span 2; white-space: nowrap; }
   .handsbar > select { grid-column: 6 / span 2; }
@@ -390,10 +396,17 @@
   .row > .blank:first-child { display: block; }
   .row.note.under > .quiet { grid-column: 3 / -1; }      /* a note about the controls above it starts on their column */      /* an empty place where a label would stand: what follows keeps its column */
   .row > :first-child { grid-column: span 2; }
-  .row.num > input[type="range"] { grid-column: span 2; }
+  /* a number's row: its field and stepper are boxes like the tiles, standing where the third and the fourth tile of
+     a row of four stand, so box edges line up down the pane. Its tracks are written out (--num-columns), gaps and all. */
+  .body .row.num:not(.side) { grid-template-columns: var(--num-columns); column-gap: 0; }      /* in the panel; the guides' list and a value pop-up lay their rows their own way */
+  .body .row.num:not(.side) > :first-child { grid-column: 1 / 4; }
+  .body .row.num:not(.side) > input[type="range"] { grid-column: 5; }
+  .body .row.num:not(.side) > input[type="text"] { grid-column: 7; }
+  .body .row.num:not(.side) > .steps { grid-column: 9; }
   .row.num input[type="text"] { text-align: right; }
-  /* a field for words (a window's text, custom labels; the font sheet's two): larger than a number's, with a darker line */
-  .row.txt > input, .picker header > input, .picker .adding > input { height: var(--control-large); border-color: var(--grey); }
+  /* the font sheet's two fields (Find a font, a link) are larger than a row's, with a darker line. A row's field for
+     words (a window's text, custom labels) is a field like any other (Okay, 13 Oct 2026: "remove input height") */
+  .picker header > input, .picker .adding > input { height: var(--control-large); border-color: var(--grey); }
   .row > label:first-child { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .row > label.strong:first-child { color: var(--ink); font-weight: 600; }      /* a name where a label would stand: the selected ring's, before its kinds */
   /* a label with a small menu beside it: the words, then a boxed arrow with the browser's own menu lying over it */
@@ -454,11 +467,7 @@
     .body > .detail { grid-column: 2 / span 2; grid-row: 1 / span 40; }      /* 40: more rows than a hand has; the rows it doesn't use are nothing high */
     .body > .row.side { grid-column: 4 / -1; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--side-num); }
     .row.side { --num-open: calc((100% + var(--side-num)) / 2); }      /* the row less its label and one gap: slider and number together */
-    /* elsewhere a number's field and its stepper are boxes like the tiles: they stand where the third and the fourth
-       tile of a row of four stand, so box edges line up down the pane */
-    .body > .row.num:not(.side) > input[type="text"] { margin-left: calc(-2 * var(--tile-wider)); margin-right: calc(-1 * var(--tile-wider)); width: auto; }
-    .body > .row.num:not(.side) > .steps { margin-left: calc(-3 * var(--tile-wider)); width: calc(100% + 3 * var(--tile-wider)); }
-    .row.side > :first-child, .row.side.num > input[type="range"] { grid-column: auto; }
+    .row.side > :first-child, .row.side > input[type="range"] { grid-column: auto; }
     .row.side > label { font-size: var(--t-s); }
     .row.side > label > .whole { display: none; }
     .row.side > label > .short { display: inline; }
@@ -551,7 +560,7 @@
   .ringlist span.name { min-width: 0; padding: 0 4px 0 var(--name-in); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ringlist span.name.renames { cursor: text; }
   .ringlist input.name { grid-column: 3; margin-left: 2px; padding: 0 4px; }
-  .ringlist .rename { flex: none; display: grid; place-items: center; width: var(--control); height: var(--control); color: var(--faint); }
+  .ringlist .rename { flex: none; display: grid; place-items: center; width: var(--control); height: var(--control); color: var(--wait); }
   .ringlist .rename:hover { color: var(--ink); background: var(--veil-strong); }
   /* after the name, in the ring drawer's order: kind (with how many) · colour · size · radius. The last three each
      stand in a column as wide as the drawer's button under it, centred on it; the numbers quiet, in the mono face. */
@@ -633,35 +642,42 @@
   .features { padding-top: 4px; }
   .features h3 { margin: 16px 0 8px; padding-top: 8px; border-top: var(--hair) solid var(--rule); }
   /* the font picker: every font shows its own numerals */
-  .font { display: grid; gap: var(--unit); margin: var(--unit) 0; }
+  /* a box inside the panel (the font box) has a ring row's frame: it starts where the labels start and ends
+     --frame-out past the lines, so what is in it stands on the pane's own columns — sliders, fields and steppers
+     under the rows outside, the language button on the controls' column — and the labels take what is left,
+     one --btn-pad in from the edge. The frame is an outline drawn inside the box's edge, so it takes no room. */
+  .font { display: grid; gap: var(--unit); margin: var(--unit) calc(-1 * var(--frame-out)) var(--unit) 0; }
   .font .styles { flex-wrap: wrap; gap: var(--unit); }
   .font .styles > button { flex: 0 0 auto; padding: 0 var(--btn-pad); white-space: nowrap; border-left: var(--hair) solid var(--rule); }
   .font .styles > button.on { border-color: var(--ink); }
   .font .note:empty, .picker .note:empty { display: none; }
   .font > .btn { justify-self: start; }
   /* a font's three lines stand in one white box, a hairline between them; what is in it is quiet: grey lines, grey words */
-  .fontbox { display: grid; border: var(--hair) solid var(--rule); background: var(--field); }
+  .fontbox { --well: var(--ground); display: grid; outline: var(--hair) solid var(--rule); outline-offset: calc(-1 * var(--hair)); background: var(--field); }      /* a slider's track must show on the white: the ground's grey (build list #128: it was white on white) */
   .fontbox > * + * { border-top: var(--hair) solid var(--rule); }
-  .fontbox > :is(.fontname, .styles) { padding: var(--unit) var(--btn-pad); }
-  .fontbox > .row { padding: 0 var(--btn-pad); box-shadow: none; }      /* tracking: a row like any other, between the box's own lines */
+  .fontbox > .styles { padding: var(--unit) var(--frame-out) var(--unit) var(--btn-pad); }
+  .fontbox .row { padding-right: var(--frame-out); box-shadow: none; }      /* size, tracking, an axis: rows like any other, between the box's own lines, their tracks ending on the pane's line */
+  .fontbox .row > :first-child { padding-left: var(--btn-pad); }
+  /* the chosen font's numerals and letters, the box's first line: in a thick light frame one unit inside the box (Okay's sketch, 13 Oct 2026: "thick border, no bg") */
+  .fontbox > .fontrow.current { width: auto; margin: var(--unit); border: var(--ringline-inner) solid var(--ground); }
+  .fontbox > .fontrow.current + * { border-top: var(--hair) solid var(--rule); }
   /* a part of the box that can be put away: the variable axes, the OpenType features. A line with an eye and its name. */
   .partfold { display: flex; align-items: center; gap: var(--unit); width: 100%; height: var(--line); padding: 0 var(--btn-pad); font-weight: 600; text-align: left; }
   .partfold:hover { background: var(--hover); }
-  .fontbox > .axes { padding: 0 var(--btn-pad); }
-  .fontbox .axes .row { box-shadow: none; }
   .fontbox .tile > .sticker { justify-self: start; }
   .boxpart > .features { padding: 0 var(--btn-pad) var(--btn-pad); }
   .fontbox .btn, .fontbox .styles > button { border-color: var(--rule); color: var(--grey); }
   .fontbox :is(.btn, .styles > button):hover { border-color: var(--ink); color: var(--ink); }
   /* the font's name · the language · the text's colour · Change…. The whole line opens the font sheet, but for the
      language and the colour. The colour stands in the ring list's colour column, wherever the line is; the place kept for it is that column's width. */
-  .fontname { position: relative; display: flex; align-items: center; gap: var(--ringline-gap); cursor: pointer; }
-  .fontname .langs { margin-right: auto; }      /* the language: right after the name, a button like Change… */
-  .fontname > .colour.mini + .btn { margin-left: var(--line-button); }      /* the room the colour stands in */
-  .fontname .colour.mini { position: absolute; top: 50%; translate: 0 -50%; right: calc(var(--swatch-col) - var(--hair) + (var(--line-button) - var(--t-m) - 2 * var(--hair)) / 2); }      /* the font's name is the box's heading */
+  .fontname { position: relative; display: grid; grid-template-columns: var(--num-columns); align-items: center; padding: var(--unit) var(--frame-out) var(--unit) 0; cursor: pointer; }
+  .fontname .name { grid-column: 1 / 4; padding-left: var(--btn-pad); }      /* the font's name is the box's heading */
+  .fontname .langs { grid-column: 5; justify-self: start; }      /* the language: on the controls' column, a button like Change… */
+  .fontname > .btn { grid-column: 7 / 10; justify-self: end; }      /* Change…, ending where the rows' steppers end */
+  .fontname .colour.mini { position: absolute; top: 50%; translate: 0 -50%; right: calc(var(--frame-out) + var(--swatch-col) + (var(--line-button) - var(--t-m) - 2 * var(--hair)) / 2); }      /* the colour stands in the ring list's colour column; Change… leaves it room */
   .langs { position: relative; }
   .langbox { min-width: var(--control); }
-  .fontname .name { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+  .fontname .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
   .fontlist { border: var(--hair) solid var(--rule); background: var(--field); overflow-y: auto; }
   /* a line of the font sheet, on three columns: the family's name in its own face · its numerals, all starting on one
      line · what the family has (styles, bold, italic, axes), small. A full hairline between two lines. */
@@ -699,7 +715,7 @@
   .legend { display: grid; grid-template-columns: repeat(2, auto auto); gap: calc(var(--unit) / 2) var(--unit); align-items: center; justify-content: end; margin: 0; color: var(--grey); font-size: var(--t-xs); white-space: nowrap; }
   .legend dt { justify-self: end; display: flex; }
   .legend dd { margin: 0; }
-  .fontrow.current { grid-template-columns: minmax(0, 1fr); height: var(--head); border: 0; }      /* the chosen font's numerals, alone on their line */
+  .fontrow.current { grid-template-columns: minmax(0, 1fr); height: var(--head); border: 0; }      /* the chosen font's numerals and letters, alone on their line */
   .fontlist .group { padding: calc(var(--unit) * 2) var(--btn-pad) calc(var(--unit) / 2); border-bottom: var(--hair) solid var(--rule); }
 
   /* the font sheet: over the panel, on its columns, so the dial stays in view; from the bottom on a phone */
@@ -734,11 +750,11 @@
 
 /* chosen: what is switched on, picked, or open is ink with paper words, whatever kind of control it is.
    A layer of its own after the controls and the panel, so no control has to say it again and nothing there
-   (a hover, a quiet colour) can undo it. The bar and the night parts have their own colours for it. */
+   (a hover, a quiet colour) can undo it. The bar and the night parts have their own colours for it; a tab (.tab) draws its own. */
 @layer chosen {
   .segs > button.on, .pickt.on, .tile[aria-pressed="true"], .kinds button.on, .sticker.ui[aria-pressed="true"],
-  .unitbox[aria-expanded="true"], .headtools .sign[aria-expanded="true"], .tabsbar .segs > button.on,
-  .windowcards .card > button.on, .fontbox .btn[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .unitbox[aria-expanded="true"], .headtools .sign[aria-expanded="true"],
+  .fontbox .btn[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
   :is(.pickt.on, .tile[aria-pressed="true"]):hover { background: var(--ink-hover); }      /* a chosen tile under the pointer: a shade lighter */
 }
 
@@ -7107,7 +7123,7 @@ var VALUE_PICS = {
   size: `<circle cx="4.79" r="14.33"/><circle class="small" cx="-11.02" cy="6.22" r="8.11"/><path d="M-16.55 0.3L-4.99 -10.48M-10.77 14.33L4.79 14.33"/>`
 };
 var LANG_NAMES = { default: "As the font sets it", tr: "Turkish", nl: "Dutch", de: "German", pl: "Polish", ro: "Romanian", ca: "Catalan", ar: "Arabic", fa: "Persian", "zh-Hans": "Chinese, simplified", ja: "Japanese" };
-var lang_short = (code) => code === "default" ? "LAN" : code.slice(0, 2).toUpperCase();
+var lang_short = (code) => code === "default" ? "Lang." : code.slice(0, 2).toUpperCase();
 var TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip" };
 var STICKER_LEGEND = [
   ["weight 100\u2013900", "weight", "any weight between"],
@@ -8648,7 +8664,7 @@ var DialTool = class _DialTool {
     const grid = el("div", { className: "cards", role: "tablist", ariaLabel: "Which window" });
     const cards = WINDOW_CARDS.map((c) => {
       const pic2 = el("span", { className: "pic" });
-      const b = el("button", { type: "button", id: "window-card-" + c.slot, onclick: () => {
+      const b = el("button", { type: "button", className: "tab", id: "window-card-" + c.slot, onclick: () => {
         const w = windows_of(this.S)[c.slot];
         this.S.ui_window = c.slot;
         if (!w.on && w.at === WINDOW_BASE.at && c.at !== w.at) {
@@ -8705,7 +8721,7 @@ var DialTool = class _DialTool {
     wrap.className = "tabsbar";
     const tabs = el("span", { className: "segs", role: "tablist", ariaLabel: "Which hand" });
     ["Hour", "Minute", "Seconds"].forEach((name, i) => {
-      const b = el("button", { type: "button", id: "hand-tab-" + i, textContent: name, onclick: () => this.set_value("global", "ui_hand", i) });
+      const b = el("button", { type: "button", className: "tab", id: "hand-tab-" + i, textContent: name, onclick: () => this.set_value("global", "ui_hand", i) });
       b.setAttribute("role", "tab");
       tabs.append(b);
     });
