@@ -2004,7 +2004,7 @@ class DialTool {
     const named = el("div", { className: "fontname", onclick: (e) => { if (!e.target.closest(".colour, .langs, button")) open(); } }, name, ...(lang ? [lang.el] : []), swatch, el("button", { type: "button", className: "btn", id: pre + "font-change", textContent: "Change…", onclick: open }));
     const styles = el("div", { className: "segs styles" });
     const state = el("div", { className: "quiet note", id: pre + "font-note" });
-    const back = el("button", { type: "button", className: "plain", id: "window-font-back", textContent: "As the numerals", title: "Use the top numerals ring’s font again", hidden: true,
+    const back = el("button", { type: "button", className: "btn", id: "window-font-back", innerHTML: icon(`<rect x="5.5" y="5.5" width="8" height="8"/><path d="M3.5 10.5L2.5 10.5L2.5 2.5L10.5 2.5L10.5 3.5"/>`) + "<span>As the numerals</span>", title: "Use the top numerals ring’s font again", hidden: true,
       onclick: () => { const w = this.window(); w.family = ""; w.ps = ""; w.axes = {}; w.features = null; w.tracking = null; w.lang = null; this.changed(true); } });
     // every font box has all of it (Okay, 13 Oct 2026): numerals and letters · name, colour · styles, language · size ·
     // tracking · the variable axes · the OpenType features. The last can be put away.
@@ -2165,7 +2165,7 @@ class DialTool {
     file.onchange = async () => { await this.add_font_files([...file.files]); file.value = ""; };
     // no Done button (Okay, 13 Oct 2026): a press beside the sheet, or Escape, puts it away. Adding fonts: a field
     // for a link or a name, and three square buttons.
-    const square = (id, word, title, d, act, o = {}) => { const b = el("button", { type: "button", className: "pickt", id, title, onclick: act, ...o }); b.innerHTML = icon(d) + `<span>${word}</span>`; return b; };
+    const square = (id, word, title, d, act, o = {}) => { const b = el("button", { type: "button", className: "pickt", id, title, onclick: act, ...o }); const [what, takes] = word.split(" ("); b.innerHTML = icon(d) + `<span>${what}${takes ? `<br><small>(${takes}</small>` : ""}</span>`; return b; };      // the second line, light: what it takes (Okay, 13 Oct 2026)
     this.picker = el("dialog", { className: "picker", id: "font-picker" },
       el("header", {}, el("h2", { textContent: "Fonts" }), finder),      // the search stands at the sheet's top right
       el("div", { className: "listwrap" }, list, rail),
@@ -2357,7 +2357,8 @@ class DialTool {
       head.classList.toggle("none", none);
       head.title = none ? `This font has no ${title}` : "Show or hide this part";
       head.setAttribute("aria-expanded", String(!folded && !none));
-      head.innerHTML = (none ? icon(NONE_SIGN) : eye(!folded)) + `<span>${title}</span>`;
+      const many = part.el.querySelectorAll(".tile").length;      // how many switches the font has, beside the name (Okay, 13 Oct 2026: "How many?")
+      head.innerHTML = (none ? icon(NONE_SIGN) : eye(!folded)) + `<span>${title}</span>` + (many ? `<span class="many">${many}</span>` : "");
     };
     head.onclick = () => { if (none) return; this.is_folded({ fold: name, row: {} }); this.folds[name] = !(this.folds[name] ?? shut); try { localStorage.setItem("dial-tool-folds", JSON.stringify(this.folds)); } catch (e) { /* not kept */ } set(); };
     const wrap = el("div", { className: "boxpart" }, head, part.el);

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.35 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.35.1 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -132,7 +132,6 @@
 
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
     --t-xs: 11px; --t-s: 12px; --t-m: 13px; --t-l: 15px;
-    --font-name: 104px;                            /* the font sheet's columns: a family's name · its numerals (the rest) · what it has (--font-has, set by the sheet: as wide as the Find field) */
     --find: calc(3 * var(--col) + 2 * var(--gap)); /* the font sheet's Find field: three columns, the sheet's right half */
     /* stickers: one colour for a kind of thing a font family has. Pale: a guide's colour, as much of it as in the
        selected ring's row */
@@ -707,8 +706,8 @@
   .rail::after { content: ""; position: absolute; inset: 0 calc(-1 * var(--unit)); }      /* reach: a finger finds it from beside it too */
   /* a line of the font sheet, on three columns: the family's name in its own face · its numerals, all starting on one
      line · what the family has (styles, bold, italic, axes), small. A full hairline between two lines. */
-  .fontlist { --font-has: calc(var(--find) - var(--btn-pad) - var(--hair)); }      /* the stickers start under the Find field's left edge */
-  .fontrow { display: grid; grid-template-columns: var(--font-name) minmax(0, 1fr) var(--font-has); align-items: center; gap: var(--gap); width: 100%; min-height: var(--head); padding: 0 var(--btn-pad); border-bottom: var(--hair) solid var(--rule); text-align: left; }
+  /* a line: three columns of one width — the name · the numerals · the stickers (Okay, 13 Oct 2026: "X as in X = 10") */
+  .fontrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: center; gap: var(--unit); width: 100%; min-height: var(--head); padding: 0 var(--btn-pad); border-bottom: var(--hair) solid var(--rule); text-align: left; }
   .fontrow:hover { background: var(--hover); }
   .fontrow.on, .fontrow.on:hover { background: var(--select); }
   .fontrow :is(.sample, .face) { display: flex; align-items: center; min-width: 0; overflow: hidden; line-height: 1; white-space: nowrap; }
@@ -716,6 +715,7 @@
   .fontrow .face { font-size: var(--t-l); }
   .fontrow .sample svg { display: block; flex: none; }
   .fontrow .face svg { display: block; flex: 0 1 auto; height: auto; max-width: 100%; }      /* a name too wide for its column is drawn smaller; numerals are cut at their column's edge */
+  .fontrow .has .sticker { padding-inline: calc(var(--unit) / 3); }      /* a little tighter in the sheet, so even eight stickers take two lines */
   .fontrow .has { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: calc(var(--unit) / 2); padding: var(--unit) 0; }      /* from the column's left edge, on one line as long as it lets them */
   /* a sticker: one thing a family has, in the pixel font at its own size (R32), on a colour of its kind, round
      corners. */
@@ -752,7 +752,7 @@
   /* it floats over the panel: as wide and as high as the panel (from the window's top to the bar, never over the
      bar), its left edge on the panel's third column, where the controls start, so its right part lies over the
      preview; a shadow to its left */
-  .picker { position: fixed; inset: var(--header) auto var(--bar-height) calc(var(--margin) + var(--lead) + 2 * (var(--col) + var(--gap))); width: var(--panel); max-width: calc(100vw - 2 * var(--margin)); height: auto; max-height: none; margin: 0; padding: 0; border: var(--hair) solid var(--ink); box-shadow: var(--shadow);
+  .picker { position: fixed; inset: var(--header) auto var(--bar-height) calc(var(--margin) + var(--lead) + 2 * (var(--col) + var(--gap))); width: var(--panel); max-width: calc(100vw - 2 * var(--margin)); height: auto; max-height: none; margin: 0; padding: 0; border: var(--hair) solid var(--rule); box-shadow: var(--shadow);      /* a light edge (Okay, 13 Oct 2026: "lighter borders") */
     background: var(--paper); color: var(--ink); }
   .picker[open] { display: grid; grid-template-rows: auto 1fr auto; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 3) var(--margin) var(--margin); }
   .picker:focus { outline: none; }
@@ -766,15 +766,17 @@
   .picker header h2 { font-size: var(--t-l); }
   .picker .fontlist { min-height: 0; }
   .picker .adding { display: grid; gap: var(--u4); }      /* straight under the list: its edge is the line between them */
-  .picker .squares { display: flex; align-items: stretch; gap: var(--unit); }
+  .picker .squares { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--unit); }      /* on the list's three columns */
   /* the squares: shorter, a sign beside two lines of words (Okay, 13 Oct 2026: "shorter"); they set the height of the
      sheet's foot. The legend's button is the last of them, at the right. */
-  .picker .squares > .pickt { flex: 0 1 auto; grid-template-columns: auto auto; justify-items: start; align-items: center; align-content: center; column-gap: var(--unit); min-height: var(--u8); padding: var(--unit) var(--u3); text-align: left; }
-  .picker .squares > .pickt span { white-space: normal; text-align: left; }
-  .picker .squares > .legendbutton { margin-left: auto; }
+  .picker .squares > .pickt { grid-template-columns: auto minmax(0, 1fr); justify-items: start; align-items: center; align-content: center; column-gap: var(--unit); min-height: var(--u8); padding: var(--unit) var(--u3); text-align: left; }
+  .picker .squares > .pickt span { white-space: nowrap; text-align: left; }
+  .picker .squares > .pickt small { color: var(--grey); font-size: inherit; }
+  .picker .squares > .legendbutton { grid-column: 3; grid-row: 1; }      /* always the third; Installed (Chrome only) goes under the first */
   .picker .squares > .legendbutton[aria-expanded="true"] svg { rotate: 180deg; }
-  #window-font-back { justify-self: start; opacity: var(--pixel-ink); }      /* As the numerals: words only, a frame under the pointer, like the signs; 70 % (Okay, 13 Oct 2026: "same style as the ×") */
-  #window-font-back:hover { opacity: 1; }
+  #window-font-back { justify-self: start; display: inline-flex; align-items: center; gap: var(--unit); border-color: var(--rule); color: var(--grey); opacity: var(--pixel-ink); }      /* As the numerals: a box with a copy sign, quiet (Okay, 13 Oct 2026) */
+  #window-font-back:hover { opacity: 1; border-color: var(--ink); color: var(--ink); }
+  .partfold .many { color: var(--grey); font-weight: 400; }      /* how many switches */
 }
 
 /* the Gallery's cards */
@@ -5343,7 +5345,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.35";
+var VERSION = "beta 4.35.1";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -9349,9 +9351,9 @@ var DialTool = class _DialTool {
     const state = el("div", { className: "quiet note", id: pre + "font-note" });
     const back = el("button", {
       type: "button",
-      className: "plain",
+      className: "btn",
       id: "window-font-back",
-      textContent: "As the numerals",
+      innerHTML: icon(`<rect x="5.5" y="5.5" width="8" height="8"/><path d="M3.5 10.5L2.5 10.5L2.5 2.5L10.5 2.5L10.5 3.5"/>`) + "<span>As the numerals</span>",
       title: "Use the top numerals ring\u2019s font again",
       hidden: true,
       onclick: () => {
@@ -9567,7 +9569,8 @@ var DialTool = class _DialTool {
     };
     const square = (id, word, title, d, act, o = {}) => {
       const b = el("button", { type: "button", className: "pickt", id, title, onclick: act, ...o });
-      b.innerHTML = icon(d) + `<span>${word}</span>`;
+      const [what, takes] = word.split(" (");
+      b.innerHTML = icon(d) + `<span>${what}${takes ? `<br><small>(${takes}</small>` : ""}</span>`;
       return b;
     };
     this.picker = el(
@@ -9778,7 +9781,8 @@ var DialTool = class _DialTool {
       head.classList.toggle("none", none);
       head.title = none ? `This font has no ${title}` : "Show or hide this part";
       head.setAttribute("aria-expanded", String(!folded && !none));
-      head.innerHTML = (none ? icon(NONE_SIGN) : eye(!folded)) + `<span>${title}</span>`;
+      const many = part.el.querySelectorAll(".tile").length;
+      head.innerHTML = (none ? icon(NONE_SIGN) : eye(!folded)) + `<span>${title}</span>` + (many ? `<span class="many">${many}</span>` : "");
     };
     head.onclick = () => {
       if (none) return;

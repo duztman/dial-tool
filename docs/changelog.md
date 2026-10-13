@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.35.1 (web version) · 14 Oct 2026
+
+On `dev` and on the live page. A small push: the second number after the point counts small pushes from now on (Okay, 14 Oct 2026), so the iPad shows which one it has.
+
+- **Font sheet**: a line is three columns of one width — name · numerals · stickers (Okay's "X as in X = 10"); the stickers a little tighter, so every row of the tool's own list takes two lines at most; the frame's line light grey; the buttons stand on the same three columns, their words on two lines, the second light (*Add font link* / *(gfonts, url)*).
+- **Font box**: *OpenType features* says how many there are; *As the numerals* is a box with a copy sign, quiet until the pointer is on it.
+- Also since 4.35's first push, the same night: the font sheet redrawn (short stickers, Find with a magnifier, a drawn scrollbar, the legend opening upwards), the preview's ellipsis, the moon tile, the grey preview cell, the hand box seven rows high.
+
 ## beta 4.35 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only; the look-check (`web/test/same.mjs`) proves the first step against 4.34.
