@@ -61,6 +61,7 @@ const EYE = {                                      // the left column's sign: op
   closed: `<path d="M1.5 6.5C3.5 9.6 5.8 10.8 8 10.8S12.5 9.6 14.5 6.5M8 10.8L8 13.4M4.7 10.1L3.7 12.4M11.3 10.1L12.3 12.4M2.5 8.1L1.1 9.8M13.5 8.1L14.9 9.8"/>`,
 };
 const eye = (open) => icon(EYE[open ? "open" : "closed"]);
+const NONE_SIGN = `<path d="M3.5 1.5L9.5 1.5L12.5 4.5L12.5 14.5L3.5 14.5ZM9.5 1.5L9.5 4.5L12.5 4.5"/><path d="M6 7.5L10 11.5M10 7.5L6 11.5"/>`;      // a sheet with a cross: this font has none of it
 // small pictures for choices that are easier seen than read: drawn on 28 × 20 like the other signs, shown larger
 // (Okay, 13 Oct 2026: "bigger, better (less detail) icons… this goes for all"). Their lines stay as thick as a sign's.
 const PIC_SCALE = 1.35;
@@ -176,7 +177,10 @@ const lang_short = (code) => (code === "default" ? "lan" : code.slice(0, 2).toUp
 const TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip" };
 
 // the font sheet's legend: a sticker of each kind, and what it says about a family
-const STICKER_LEGEND = [["weight 100–900", "weight", "any weight between"], ["bold", "weight", "has a bold"], ["italic", "italic", "has an italic"], ["width", "width", "any width"], ["optical", "optical", "drawn for small and large"], ["3 styles", "styles", "separate styles"]];
+const STICKER_LEGEND = [["weight 100–900", "weight", "any weight between"], ["bold", "weight", "has a bold"], ["italic", "italic", "has an italic"], ["width", "width", "any width"], ["optical", "optical", "drawn for small and large"],
+  ["tabular", "figure", "figures of one width"], ["oldstyle", "figure", "figures with tails"], ["zero", "figure", "a slashed zero"], ["fractions", "figure", "½ made from 1/2"], ["2 sets", "sets", "other shapes to switch on"], ["3 styles", "styles", "separate styles"]];
+// the OpenType switches that change numerals, in a word each, for the stickers
+const FIGURE_WORDS = [["tnum", "tabular"], ["onum", "oldstyle"], ["zero", "zero"], ["frac", "fractions"]];
 // a variable font's axes, in words, for the font sheet's stickers
 const NAME_LEAST = 0.7;                            // in the font sheet a family's name may shrink to this share of its size to fit its column
 const AXIS_WORDS = { wdth: "width", opsz: "optical", GRAD: "grade", XHGT: "x-height", SOFT: "softness", MONO: "mono", CASL: "casual" };
@@ -1949,6 +1953,13 @@ class DialTool {
     else if (styles.some((x) => /bold|black|heavy/i.test(x))) said.push(["bold", "weight"]);
     if (axes.includes("ital") || axes.includes("slnt") || styles.some((x) => /italic|oblique/i.test(x))) said.push(["italic", "italic"]);
     for (const tag of axes) if (!["wght", "ital", "slnt"].includes(tag)) said.push([AXIS_WORDS[tag] || tag, { wdth: "width", opsz: "optical" }[tag] || "other"]);
+    // what it can do to numerals (Okay, 13 Oct 2026: "open type features related to numbers as stickers. Not just axes"),
+    // then its numbered sets and variants: one colour, two stickers at most
+    const tags = first.features || (G.has_font(first.ps) ? G.font_features(G.font_of({ ps: first.ps, axes: {} })).map(([tag]) => tag) : []);
+    for (const [tag, word] of FIGURE_WORDS) if (tags.includes(tag)) said.push([word, "figure"]);
+    const sets = tags.filter((tag) => /^ss\d\d$/.test(tag)).length, variants = tags.filter((tag) => /^cv\d\d$/.test(tag)).length;
+    if (sets) said.push([sets === 1 ? "1 set" : `${sets} sets`, "sets"]);
+    if (variants) said.push([variants === 1 ? "1 variant" : `${variants} variants`, "sets"]);
     if (fonts.length > 1) said.push([`${fonts.length} styles`, "styles"]);
     return said;
   }
@@ -2081,10 +2092,10 @@ class DialTool {
         el("div", { className: "squares" },
           square("font-add", "Add link", "A font by its Google Fonts link or name, or by a link to a font file", `<path d="M8 3.5L8 12.5M3.5 8L12.5 8"/>`, () => { if (paste.hidden) { paste.hidden = false; paste.focus(); } else if (paste.value.trim()) add(); else paste.focus(); }),      // the field for the link is out of sight until this is pressed (Okay, 13 Oct 2026)
           square("font-file-open", "Font file", "A font file from this computer: .ttf · .otf", `<path d="M4 2.5L9.5 2.5L12 5L12 13.5L4 13.5ZM9.5 2.5L9.5 5L12 5"/>`, () => file.click()),
-          square("local-fonts", "Installed", "The fonts installed on this computer", `<rect x="2.5" y="3.5" width="11" height="7.5"/><path d="M6 13.5L10 13.5M8 11L8 13.5"/>`, () => this.local_fonts(true), { hidden: !("queryLocalFonts" in window) }), file,
-          // at the sheet's bottom right: what the stickers say (Okay, 13 Oct 2026)
-          el("dl", { className: "legend", id: "font-legend" }, ...STICKER_LEGEND.flatMap(([word, kind, says]) => [el("dt", {}, el("span", { className: "sticker " + kind, textContent: word })), el("dd", { textContent: says })]))),
-        el("div", { className: "quiet note", id: "picker-note" })));
+          square("local-fonts", "Installed", "The fonts installed on this computer", `<rect x="2.5" y="3.5" width="11" height="7.5"/><path d="M6 13.5L10 13.5M8 11L8 13.5"/>`, () => this.local_fonts(true), { hidden: !("queryLocalFonts" in window) }), file),
+        el("div", { className: "quiet note", id: "picker-note" }),
+        // at the sheet's bottom, to the right: what the stickers say, on two columns (Okay, 13 Oct 2026)
+        el("dl", { className: "legend", id: "font-legend" }, ...STICKER_LEGEND.flatMap(([word, kind, says]) => [el("dt", {}, el("span", { className: "sticker " + kind, textContent: word })), el("dd", { textContent: says })]))));
     this.picker.tabIndex = -1;
     this.picker.addEventListener("click", (e) => { if (e.target === this.picker) this.picker.close(); });      // a click outside closes it
     return this.picker;
@@ -2182,7 +2193,7 @@ class DialTool {
           // the axis is named by its sticker, as in the font sheet, here in the tool's own colours and as a button: a
           // press sets the axis back to where the font rests (Okay, 13 Oct 2026). Axes are not OpenType features.
           const word = AXIS_WORDS[tag] || { wght: "weight", ital: "italic", slnt: "slant" }[tag] || a.name || tag;
-          const back = el("button", { type: "button", className: "sticker ui", id: id + "-back", textContent: word, title: `${a.name} (${tag}), ${a.min}–${a.max}: press to set it back to ${a.default}`, onclick: () => commit(a.default) });
+          const back = el("button", { type: "button", className: "sticker ui big", id: id + "-back", textContent: word, title: `${a.name} (${tag}), ${a.min}–${a.max}: press to set it back to ${a.default}`, onclick: () => commit(a.default) });
           slider.ariaLabel = field.ariaLabel = a.name;
           wrap.append(el("div", { className: "row num" }, el("span", { className: "stickerlabel" }, back), slider, field, el("span")));
         }
@@ -2215,7 +2226,8 @@ class DialTool {
         // character variants (cv01…) — each under its own small heading (Okay, 11 Oct 2026)
         const groups = [["", []], ["Stylistic sets", []], ["Character variants", []]];
         for (const [tag, designer] of font ? G.font_features(font).filter(useful) : []) {
-          const tile = el("button", { type: "button", className: "tile", id: pre + "feature-" + tag }, el("span", { textContent: designer || FEATURE_NAMES[tag] || tag }), el("small", { textContent: tag }));
+          // a switch is a sticker, twice the size, as a button (Okay, 13 Oct 2026): its name; the tag is in its tip
+          const tile = el("button", { type: "button", className: "sticker ui big", id: pre + "feature-" + tag, textContent: designer || FEATURE_NAMES[tag] || tag, title: `${designer || FEATURE_NAMES[tag] || tag} (${tag})` });
           tile.dataset.tag = tag;
           tile.onclick = () => {                     // press to switch; only what differs from what it would be anyway is stored (R12)
             const H = this.target(side.scope), on = tile.getAttribute("aria-pressed") !== "true", all = { ...(H.features || {}) };
@@ -2224,16 +2236,15 @@ class DialTool {
           };
           groups[/^ss\d\d$/.test(tag) ? 1 : /^cv\d\d$/.test(tag) ? 2 : 0][1].push(tile);
         }
-        groups[0][1].sort((x, y) => x.firstChild.textContent.localeCompare(y.firstChild.textContent));
+        groups[0][1].sort((x, y) => x.textContent.localeCompare(y.textContent));
         for (const [title, tiles] of groups) {
           if (!tiles.length) continue;
           if (title) wrap.append(el("h3", { textContent: title }));
           wrap.append(el("div", { className: "tiles" }, ...tiles));
         }
-        if (!wrap.children.length && font) wrap.append(el("span", { className: "quiet", textContent: "This font has no switches." }));
       }
-      for (const tile of wrap.querySelectorAll(".tile")) tile.setAttribute("aria-pressed", String((R.features || {})[tile.dataset.tag] ?? DEFAULT_ON.has(tile.dataset.tag)));
-      return Boolean(font);
+      for (const tile of wrap.querySelectorAll(".sticker")) tile.setAttribute("aria-pressed", String((R.features || {})[tile.dataset.tag] ?? DEFAULT_ON.has(tile.dataset.tag)));
+      return font ? (wrap.children.length ? true : "none") : false;      // none: a font without switches — its line says so, no line more
     };
     return { el: wrap, refresh };
   }
@@ -2242,10 +2253,19 @@ class DialTool {
    *  name, a press folds what is under it. Kept with the panes' folds, one for all font boxes. */
   box_part(name, title, part) {
     const head = el("button", { type: "button", className: "partfold", title: "Show or hide this part" });
-    const set = () => { this.is_folded({ fold: name, row: {} }); const folded = Boolean(this.folds[name]); part.el.hidden = folded; head.setAttribute("aria-expanded", String(!folded)); head.innerHTML = eye(!folded) + `<span>${title}</span>`; };
-    head.onclick = () => { this.is_folded({ fold: name, row: {} }); this.folds[name] = !this.folds[name]; try { localStorage.setItem("dial-tool-folds", JSON.stringify(this.folds)); } catch (e) { /* not kept */ } set(); };
+    let none = false;                              // nothing to show (a font without switches): the line is grey, its sign a sheet with a cross, and it folds nothing
+    const set = () => {
+      this.is_folded({ fold: name, row: {} });
+      const folded = Boolean(this.folds[name]);
+      part.el.hidden = folded || none;
+      head.classList.toggle("none", none);
+      head.title = none ? `This font has no ${title}` : "Show or hide this part";
+      head.setAttribute("aria-expanded", String(!folded && !none));
+      head.innerHTML = (none ? icon(NONE_SIGN) : eye(!folded)) + `<span>${title}</span>`;
+    };
+    head.onclick = () => { if (none) return; this.is_folded({ fold: name, row: {} }); this.folds[name] = !this.folds[name]; try { localStorage.setItem("dial-tool-folds", JSON.stringify(this.folds)); } catch (e) { /* not kept */ } set(); };
     const wrap = el("div", { className: "boxpart" }, head, part.el);
-    return { el: wrap, refresh: (R, T) => { wrap.hidden = !part.refresh(R, T); set(); } };
+    return { el: wrap, refresh: (R, T) => { const has = part.refresh(R, T); wrap.hidden = !has; none = has === "none"; set(); } };
   }
 
   /** five dials to start from: each is a link (R31), so it can also be copied or opened in a new tab. */

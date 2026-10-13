@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.31 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **Stickers**: also for what a font does to numerals (tabular · oldstyle · zero · fractions) and its counted sets and variants; paler colours, from the guides'.
+- **Font box**: axes and features as stickers twice the size, grey; a font without switches says so on one grey line.
+
 ## beta 4.30 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.

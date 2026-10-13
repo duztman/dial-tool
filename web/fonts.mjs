@@ -85,7 +85,9 @@ for (const [family, what, source, dir, ...files] of FAMILIES) {
     };
     // name: the family's name in its own face, for the font sheet (the family's first file only) · axes: what a variable font can vary, each with its least and most
     const first = !list.some((f) => f.family === family);
-    list.push({ family, style, ps: face.getName(6, "en"), file: local(file), what, start, axes: Object.fromEntries(Object.entries(all).map(([tag, x]) => [tag, [x.min, x.max]])), sample: outline("1234567890"), ...(first ? { name: outline(family) } : {}) });
+    // features: the OpenType switches that matter for numerals, and the numbered sets and variants (for the font sheet's stickers)
+    const features = [...new Set(face.getTableFeatureTags("GSUB"))].filter((tag) => /^(tnum|pnum|lnum|onum|zero|frac|ss\d\d|cv\d\d)$/.test(tag)).sort();
+    list.push({ family, style, ps: face.getName(6, "en"), file: local(file), what, start, axes: Object.fromEntries(Object.entries(all).map(([tag, x]) => [tag, [x.min, x.max]])), features, sample: outline("1234567890"), ...(first ? { name: outline(family) } : {}) });
   }
 }
 const text = `// Written by web/fonts.mjs — do not edit. The web version's own fonts: ${FAMILIES.length} families, ${list.length} files,

@@ -111,7 +111,14 @@
     --t-xs: 11px; --t-s: 12px; --t-m: 13px; --t-l: 15px;
     --font-name: 104px; --font-has: 92px; --font-has-most: 120px;     /* …and the most the stickers' column may take from the numerals */
     --round-tiny: 3px;                             /* a sticker's corners, a small swatch's */
-    --st-ink: #141413; --st-weight: #FFD84D; --st-italic: #FF9EC7; --st-width: #8FE3F5; --st-optical: #B9F2A1; --st-other: #D2C8FF; --st-styles: #E4E4E0;      /* stickers: one colour for a kind of thing a font family has */
+    /* stickers: one colour for a kind of thing a font family has. Pale: a guide's colour, as much of it as in the
+       selected ring's row (Okay, 13 Oct 2026: "paler, use bg color of selected rings, add new colors closer") */
+    --st-ink: #141413;
+    --st-weight: color-mix(in srgb, #FFE600 var(--st-tint), var(--field)); --st-italic: color-mix(in srgb, #FF2D95 var(--st-tint), var(--field));
+    --st-width: color-mix(in srgb, #00E5FF var(--st-tint), var(--field)); --st-optical: color-mix(in srgb, #39FF14 var(--st-tint), var(--field));
+    --st-other: color-mix(in srgb, #7A5CFF var(--st-tint), var(--field)); --st-figure: color-mix(in srgb, #FF6A00 var(--st-tint), var(--field));
+    --st-sets: color-mix(in srgb, #2D7BFF var(--st-tint), var(--field)); --st-styles: var(--ground);
+    --st-tint: var(--guide-tint);
          /* the font sheet's columns: a family's name · what it has (its numerals take the rest) */
     --shadow: calc(-2 * var(--unit)) 0 7px rgba(0, 0, 0, 0.28);      /* what floats over the window throws its shadow to the left, a little soft (Okay, 13 Oct 2026: "much sharper", then "blur 7") */
     --swatch-col: calc(2 * (var(--line-button) + var(--ringline-gap)) + var(--ringline-inner) - var(--hair));      /* from a pane's right edge to the right edge of the ring list's colour column: a colour swatch further down stands in that column too */
@@ -633,7 +640,7 @@
   .fontlist { border: var(--hair) solid var(--rule); background: var(--field); overflow-y: auto; }
   /* a line of the font sheet, on three columns: the family's name in its own face · its numerals, all starting on one
      line · what the family has (styles, bold, italic, axes), small. A full hairline between two lines. */
-  .fontrow { display: grid; grid-template-columns: var(--font-name) minmax(0, 1fr) var(--font-has); align-items: center; gap: var(--gap); width: 100%; height: var(--head); padding: 0 var(--btn-pad); border-bottom: var(--hair) solid var(--rule); text-align: left; }
+  .fontrow { display: grid; grid-template-columns: var(--font-name) minmax(0, 1fr) var(--font-has); align-items: center; gap: var(--gap); width: 100%; min-height: var(--head); padding: 0 var(--btn-pad); border-bottom: var(--hair) solid var(--rule); text-align: left; }
   .fontrow:hover { background: var(--hover); }
   .fontrow.on, .fontrow.on:hover { background: var(--select); }
   .fontrow :is(.sample, .face) { display: flex; align-items: center; min-width: 0; overflow: hidden; line-height: 1; white-space: nowrap; }
@@ -641,7 +648,7 @@
   .fontrow .face { font-size: var(--t-l); }
   .fontrow .sample svg { display: block; flex: none; }
   .fontrow .face svg { display: block; flex: 0 1 auto; height: auto; max-width: 100%; }      /* a name too wide for its column is drawn smaller; numerals are cut at their column's edge */
-  .fontrow .has { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: calc(var(--unit) / 2); }      /* on one line as long as the column lets them */
+  .fontrow .has { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: calc(var(--unit) / 2); padding: var(--unit) 0; }      /* on one line as long as the column lets them */
   /* a sticker: one thing a family has, in the pixel font at its own size (R32), on a colour of its kind, round
      corners (Okay, 13 Oct 2026: "stickers get colors instead of bold reg… corners rounded"). */
   .sticker { padding: var(--hair) calc(var(--unit) / 2); border-radius: var(--round-tiny); background: var(--st-styles); color: var(--st-ink); font: 400 var(--t-pixel)/1.25 var(--pixel); text-transform: uppercase; white-space: nowrap; }
@@ -650,12 +657,20 @@
   .sticker.width { background: var(--st-width); }
   .sticker.optical { background: var(--st-optical); }
   .sticker.other { background: var(--st-other); }
-  /* a sticker as a button, in the tool's own colours: a variable axis's name in its pane */
-  .sticker.ui { height: auto; border: var(--hair) solid var(--grey); background: var(--field); color: var(--ink); cursor: pointer; }
-  .sticker.ui:hover { border-color: var(--ink); background: var(--hover); }
+  .sticker.figure { background: var(--st-figure); }
+  .sticker.sets { background: var(--st-sets); }
+  /* a sticker as a button, in the tool's own colours: a variable axis's name, an OpenType switch. Twice the size
+     (the pixel font at twice its own, R32), grey like the labels beside it; switched on, it is black. */
+  .sticker.ui { height: auto; border: var(--hair) solid var(--rule); background: var(--field); color: var(--grey); cursor: pointer; }
+  .sticker.ui.big { padding: calc(var(--unit) / 2) var(--unit); font-size: calc(2 * var(--t-pixel)); }
+  .sticker.ui:hover { border-color: var(--ink); color: var(--ink); }
+  .sticker.ui[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+  .features .tiles:has(> .sticker) { display: flex; flex-wrap: wrap; gap: var(--unit); }
+  .partfold.none { color: var(--grey); font-weight: 400; cursor: default; }
+  .partfold.none:hover { background: none; }
   .stickerlabel { display: flex; }
   /* the legend, at the sheet's bottom right: each kind of sticker and what it says */
-  .legend { display: grid; grid-template-columns: auto auto; gap: calc(var(--unit) / 2) var(--unit); align-items: center; align-self: end; margin: 0 0 0 auto; color: var(--grey); font-size: var(--t-xs); }
+  .legend { display: grid; grid-template-columns: repeat(2, auto auto); gap: calc(var(--unit) / 2) var(--unit); align-items: center; justify-content: end; margin: 0; color: var(--grey); font-size: var(--t-xs); white-space: nowrap; }
   .legend dt { justify-self: end; display: flex; }
   .legend dd { margin: 0; }
   .fontrow.current { grid-template-columns: minmax(0, 1fr); height: var(--head); border: 0; }      /* the chosen font's numerals, alone on their line */
