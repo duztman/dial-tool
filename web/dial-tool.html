@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.35.3 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.35.4 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -670,7 +670,7 @@
   /* a font's three lines stand in one white box, a hairline between them; what is in it is quiet: grey lines, grey words */
   .fontbox { --well: var(--ground); display: grid; outline: var(--hair) solid var(--rule); outline-offset: calc(-1 * var(--hair)); background: var(--field); }      /* a slider's track must show on the white: the ground's grey (build list #128: it was white on white) */
   .fontbox > * + * { border-top: var(--hair) solid var(--rule); }
-  .fontbox > .styles { padding: var(--unit) var(--frame-out) var(--unit) var(--btn-pad); }
+  .fontbox > .styles { padding: var(--btn-pad) var(--frame-out) var(--btn-pad) var(--btn-pad); }      /* as much room under the style buttons as before them (Okay, 14 Oct 2026: X and X) */
   .fontbox .row { padding-right: var(--frame-out); box-shadow: none; }      /* size, tracking, an axis: rows like any other, between the box's own lines, their tracks ending on the pane's line */
   .fontbox .row > :first-child { padding-left: var(--btn-pad); }
   /* the chosen font's numerals and letters, the box's first line: in a thick light frame one unit inside the box (Okay's sketch, 13 Oct 2026: "thick border, no bg") */
@@ -741,11 +741,14 @@
   .axisname { display: flex; align-items: center; gap: var(--unit); min-width: 0; color: var(--grey); white-space: nowrap; }      /* an axis's name, as a label, and its code as a sticker; a press sets the axis back */
   .axisname:hover { color: var(--ink); }
   /* the legend: folded to a button beside the squares; open, one large column over them, so it pushes the list up */
-  .legend { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--unit) var(--u4); align-items: center; margin: 0; padding: var(--u3) 0; border-top: var(--hair) solid var(--rule); color: var(--ink); font-size: var(--t-m); }
+  .legend { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--unit); align-items: center; margin: 0; padding: var(--u3) 0; border-top: var(--hair) solid var(--rule); color: var(--ink); font-size: var(--t-m); }
   .legend[hidden] { display: none; }
-  .legend dt { justify-self: end; display: flex; }
-  .legend dt .sticker { padding: calc(var(--unit) / 2) var(--unit); font-size: calc(2 * var(--t-pixel)); }      /* the pixel font at its double (R32) */
-  .legend dd { margin: 0; }
+  /* on the sheet's three columns: the sticker ends on the first column's line, its meaning starts on the second (where the
+     second button starts) and takes the rest, a light second line under it with the OpenType name */
+  .legend dt { grid-column: 1; justify-self: end; display: flex; }
+  .legend dt .sticker { padding: calc(0.375 * var(--unit)) calc(0.75 * var(--unit)); font-size: calc(1.5 * var(--t-pixel)); }      /* three quarters of its double (Okay, 14 Oct 2026; R32) */
+  .legend dd { grid-column: 2 / -1; margin: 0; line-height: 1.3; }
+  .legend dd small { color: var(--wait); font-size: var(--t-s); }
   .fontrow.current { grid-template-columns: minmax(0, 1fr); height: var(--head); border: 0; }      /* the chosen font's numerals and letters, alone on their line */
   .fontlist .group { padding: calc(var(--unit) * 2) var(--btn-pad) calc(var(--unit) / 2); border-bottom: var(--hair) solid var(--rule); }
 
@@ -772,7 +775,7 @@
      sheet's foot. The legend's button is the last of them, at the right. */
   .picker .squares > .pickt { grid-template-columns: auto minmax(0, 1fr); justify-items: start; align-items: center; align-content: center; column-gap: var(--unit); min-height: var(--u8); padding: var(--unit) var(--u3); text-align: left; }
   .picker .squares > .pickt span { white-space: nowrap; text-align: left; }
-  .picker .squares > .pickt small { color: var(--grey); font-size: inherit; }
+  .picker .squares > .pickt small { color: var(--wait); font-size: inherit; }      /* lighter (Okay, 14 Oct 2026) */
   .picker .squares > .legendbutton { grid-column: 3; grid-row: 1; }      /* always the third; Installed (Chrome only) goes under the first */
   .picker .squares > .legendbutton[aria-expanded="true"] svg { rotate: 180deg; }
   #window-font-back { justify-self: start; display: inline-flex; align-items: center; gap: var(--unit); border-color: var(--rule); background: none; color: var(--grey); opacity: var(--pixel-ink); }      /* Copy style of <the numerals ring>: a box with a copy sign and no fill, quiet; the ring's name in italic (Okay, 13–14 Oct 2026) */
@@ -5346,7 +5349,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.35.3";
+var VERSION = "beta 4.35.4";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -7182,18 +7185,18 @@ var LANG_NAMES = { default: "As the font sets it", tr: "Turkish", nl: "Dutch", d
 var lang_short = (code) => code === "default" ? "Lang." : code.slice(0, 2).toUpperCase();
 var TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip" };
 var STICKER_LEGEND = [
-  ["w. 100\u2013900", "weight", "any weight between the two, here 100 to 900"],
-  ["bold", "weight", "has a bold"],
-  ["italic", "italic", "has an italic"],
-  ["wd", "width", "any width, narrow to wide"],
-  ["opt", "optical", "drawn for small sizes and for large"],
-  ["tab", "figure", "tabular: figures all one width"],
-  ["old", "figure", "oldstyle: figures with tails"],
-  ["zero", "figure", "a slashed zero"],
-  ["frac", "figure", "fractions: \xBD made from 1/2"],
-  ["2 ss", "sets", "stylistic sets: other shapes to switch on"],
-  ["5 cv", "sets", "character variants: a single character drawn another way"],
-  ["3 st", "styles", "separate styles"]
+  ["w. 100\u2013900", "weight", "Any weight between the two numbers, here 100 to 900.", "wght axis"],
+  ["bold", "weight", "Has a bold.", ""],
+  ["italic", "italic", "Has an italic.", "ital or slnt axis, or an italic style"],
+  ["wd", "width", "Any width, from narrow to wide.", "wdth axis"],
+  ["opt", "optical", "Drawn for small sizes and for large ones.", "opsz axis"],
+  ["tab", "figure", "Tabular figures: every figure one width.", "tnum"],
+  ["old", "figure", "Oldstyle figures, with ascenders and descenders.", "onum"],
+  ["zero", "figure", "A zero with a slash through it.", "zero"],
+  ["frac", "figure", "Fractions: \xBD made from 1/2.", "frac"],
+  ["2 ss", "sets", "Stylistic sets: other shapes to switch on.", "ss01 to ss20"],
+  ["5 cv", "sets", "Character variants: one character drawn another way.", "cv01 to cv99"],
+  ["3 st", "styles", "Separate styles: Regular, Bold and so on.", ""]
 ];
 var FIGURE_WORDS = [["tnum", "tab"], ["onum", "old"], ["zero", "zero"], ["frac", "frac"]];
 var NAME_LEAST = 0.7;
@@ -9542,7 +9545,7 @@ var DialTool = class _DialTool {
         rail.classList.remove("held");
       };
     });
-    const legend = el("dl", { className: "legend", id: "font-legend", hidden: true }, ...STICKER_LEGEND.flatMap(([word, kind, says]) => [el("dt", {}, el("span", { className: "sticker " + kind, textContent: word })), el("dd", { textContent: says })]));
+    const legend = el("dl", { className: "legend", id: "font-legend", hidden: true }, ...STICKER_LEGEND.flatMap(([word, kind, says, code]) => [el("dt", {}, el("span", { className: "sticker " + kind, textContent: word })), el("dd", {}, says, ...code ? [el("br"), el("small", { textContent: code })] : [])]));
     const legend_button = el("button", { type: "button", className: "pickt legendbutton", id: "font-legend-open", title: "What the stickers mean" });
     legend_button.innerHTML = icon(`<path d="M4 10L8 6L12 10"/>`) + "<span>Legend</span>";
     legend_button.setAttribute("aria-expanded", "false");

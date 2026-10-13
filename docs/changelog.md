@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.35.4 (web version) · 14 Oct 2026
+
+- **The font sheet's legend**: on the sheet's three columns — each sticker ends on the first column's line, its meaning starts on the second (where the second button starts); the stickers at three quarters of their former size (12, R32's one exception); every meaning a sentence with a capital and a full stop, and under it, light, the OpenType name of what it reads (*wght axis*, *tnum*, *ss01 to ss20*…).
+- **Buttons' second lines** a step lighter (`--wait`).
+- **Font box**: as much room under the style buttons as before them.
+
 ## beta 4.35.3 (web version) · 14 Oct 2026
 
 - **Font sheet**: the numerals are drawn 6.5 px (a unit and a hairline) to the left, every row alike, so they don't look inset: most fonts' first numeral now touches the name column's edge (within half a pixel; Michroma's 1 starts 2.6 further in, Routed Gothic's 1.5). Okay: "artificially push them left a bit, all at the same time, make many touch the red line."

@@ -182,10 +182,13 @@ const TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip" };
 // the font sheet's legend: a sticker of each kind, and what it says about a family. The stickers' words are short, so a
 // family's stickers stand on one line; bold and italic keep their words (Okay, 13 Oct 2026: "condense all sticker text but
 // bold and italic. weight gets w. and range"). The legend spells each one out.
-const STICKER_LEGEND = [["w. 100–900", "weight", "any weight between the two, here 100 to 900"], ["bold", "weight", "has a bold"], ["italic", "italic", "has an italic"],
-  ["wd", "width", "any width, narrow to wide"], ["opt", "optical", "drawn for small sizes and for large"], ["tab", "figure", "tabular: figures all one width"],
-  ["old", "figure", "oldstyle: figures with tails"], ["zero", "figure", "a slashed zero"], ["frac", "figure", "fractions: ½ made from 1/2"],
-  ["2 ss", "sets", "stylistic sets: other shapes to switch on"], ["5 cv", "sets", "character variants: a single character drawn another way"], ["3 st", "styles", "separate styles"]];
+// Each meaning is a sentence; under it, light, the OpenType name of what the sticker reads (Okay, 14 Oct 2026).
+const STICKER_LEGEND = [["w. 100–900", "weight", "Any weight between the two numbers, here 100 to 900.", "wght axis"], ["bold", "weight", "Has a bold.", ""],
+  ["italic", "italic", "Has an italic.", "ital or slnt axis, or an italic style"], ["wd", "width", "Any width, from narrow to wide.", "wdth axis"],
+  ["opt", "optical", "Drawn for small sizes and for large ones.", "opsz axis"], ["tab", "figure", "Tabular figures: every figure one width.", "tnum"],
+  ["old", "figure", "Oldstyle figures, with ascenders and descenders.", "onum"], ["zero", "figure", "A zero with a slash through it.", "zero"],
+  ["frac", "figure", "Fractions: ½ made from 1/2.", "frac"], ["2 ss", "sets", "Stylistic sets: other shapes to switch on.", "ss01 to ss20"],
+  ["5 cv", "sets", "Character variants: one character drawn another way.", "cv01 to cv99"], ["3 st", "styles", "Separate styles: Regular, Bold and so on.", ""]];
 // the OpenType switches that change numerals, in a short word each, for the stickers
 const FIGURE_WORDS = [["tnum", "tab"], ["onum", "old"], ["zero", "zero"], ["frac", "frac"]];
 // a variable font's axes, in words, for the font sheet's stickers
@@ -2149,7 +2152,7 @@ class DialTool {
       rail.onpointerup = rail.onpointercancel = () => { rail.onpointermove = rail.onpointerup = rail.onpointercancel = null; rail.classList.remove("held"); };
     });
     // the legend: folded to one button beside the squares; open, it stands over them and pushes the list up
-    const legend = el("dl", { className: "legend", id: "font-legend", hidden: true }, ...STICKER_LEGEND.flatMap(([word, kind, says]) => [el("dt", {}, el("span", { className: "sticker " + kind, textContent: word })), el("dd", { textContent: says })]));
+    const legend = el("dl", { className: "legend", id: "font-legend", hidden: true }, ...STICKER_LEGEND.flatMap(([word, kind, says, code]) => [el("dt", {}, el("span", { className: "sticker " + kind, textContent: word })), el("dd", {}, says, ...(code ? [el("br"), el("small", { textContent: code })] : []))]));
     const legend_button = el("button", { type: "button", className: "pickt legendbutton", id: "font-legend-open", title: "What the stickers mean" });
     legend_button.innerHTML = icon(`<path d="M4 10L8 6L12 10"/>`) + "<span>Legend</span>";
     legend_button.setAttribute("aria-expanded", "false");

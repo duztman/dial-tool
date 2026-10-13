@@ -16,7 +16,7 @@
   /* a font's three lines stand in one white box, a hairline between them; what is in it is quiet: grey lines, grey words */
   .fontbox { --well: var(--ground); display: grid; outline: var(--hair) solid var(--rule); outline-offset: calc(-1 * var(--hair)); background: var(--field); }      /* a slider's track must show on the white: the ground's grey (build list #128: it was white on white) */
   .fontbox > * + * { border-top: var(--hair) solid var(--rule); }
-  .fontbox > .styles { padding: var(--unit) var(--frame-out) var(--unit) var(--btn-pad); }
+  .fontbox > .styles { padding: var(--btn-pad) var(--frame-out) var(--btn-pad) var(--btn-pad); }      /* as much room under the style buttons as before them (Okay, 14 Oct 2026: X and X) */
   .fontbox .row { padding-right: var(--frame-out); box-shadow: none; }      /* size, tracking, an axis: rows like any other, between the box's own lines, their tracks ending on the pane's line */
   .fontbox .row > :first-child { padding-left: var(--btn-pad); }
   /* the chosen font's numerals and letters, the box's first line: in a thick light frame one unit inside the box (Okay's sketch, 13 Oct 2026: "thick border, no bg") */
@@ -87,11 +87,14 @@
   .axisname { display: flex; align-items: center; gap: var(--unit); min-width: 0; color: var(--grey); white-space: nowrap; }      /* an axis's name, as a label, and its code as a sticker; a press sets the axis back */
   .axisname:hover { color: var(--ink); }
   /* the legend: folded to a button beside the squares; open, one large column over them, so it pushes the list up */
-  .legend { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--unit) var(--u4); align-items: center; margin: 0; padding: var(--u3) 0; border-top: var(--hair) solid var(--rule); color: var(--ink); font-size: var(--t-m); }
+  .legend { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--unit); align-items: center; margin: 0; padding: var(--u3) 0; border-top: var(--hair) solid var(--rule); color: var(--ink); font-size: var(--t-m); }
   .legend[hidden] { display: none; }
-  .legend dt { justify-self: end; display: flex; }
-  .legend dt .sticker { padding: calc(var(--unit) / 2) var(--unit); font-size: calc(2 * var(--t-pixel)); }      /* the pixel font at its double (R32) */
-  .legend dd { margin: 0; }
+  /* on the sheet's three columns: the sticker ends on the first column's line, its meaning starts on the second (where the
+     second button starts) and takes the rest, a light second line under it with the OpenType name */
+  .legend dt { grid-column: 1; justify-self: end; display: flex; }
+  .legend dt .sticker { padding: calc(0.375 * var(--unit)) calc(0.75 * var(--unit)); font-size: calc(1.5 * var(--t-pixel)); }      /* three quarters of its double (Okay, 14 Oct 2026; R32) */
+  .legend dd { grid-column: 2 / -1; margin: 0; line-height: 1.3; }
+  .legend dd small { color: var(--wait); font-size: var(--t-s); }
   .fontrow.current { grid-template-columns: minmax(0, 1fr); height: var(--head); border: 0; }      /* the chosen font's numerals and letters, alone on their line */
   .fontlist .group { padding: calc(var(--unit) * 2) var(--btn-pad) calc(var(--unit) / 2); border-bottom: var(--hair) solid var(--rule); }
 
@@ -118,7 +121,7 @@
      sheet's foot. The legend's button is the last of them, at the right. */
   .picker .squares > .pickt { grid-template-columns: auto minmax(0, 1fr); justify-items: start; align-items: center; align-content: center; column-gap: var(--unit); min-height: var(--u8); padding: var(--unit) var(--u3); text-align: left; }
   .picker .squares > .pickt span { white-space: nowrap; text-align: left; }
-  .picker .squares > .pickt small { color: var(--grey); font-size: inherit; }
+  .picker .squares > .pickt small { color: var(--wait); font-size: inherit; }      /* lighter (Okay, 14 Oct 2026) */
   .picker .squares > .legendbutton { grid-column: 3; grid-row: 1; }      /* always the third; Installed (Chrome only) goes under the first */
   .picker .squares > .legendbutton[aria-expanded="true"] svg { rotate: 180deg; }
   #window-font-back { justify-self: start; display: inline-flex; align-items: center; gap: var(--unit); border-color: var(--rule); background: none; color: var(--grey); opacity: var(--pixel-ink); }      /* Copy style of <the numerals ring>: a box with a copy sign and no fill, quiet; the ring's name in italic (Okay, 13–14 Oct 2026) */
