@@ -611,6 +611,12 @@
   .fontbox > * + * { border-top: var(--hair) solid var(--rule); }
   .fontbox > :is(.fontname, .styles) { padding: var(--unit) var(--btn-pad); }
   .fontbox > .row { padding: 0 var(--btn-pad); box-shadow: none; }      /* tracking: a row like any other, between the box's own lines */
+  /* a part of the box that can be put away: the variable axes, the OpenType features. A line with an eye and its name. */
+  .partfold { display: flex; align-items: center; gap: var(--unit); width: 100%; height: var(--line); padding: 0 var(--btn-pad); font-weight: 600; text-align: left; }
+  .partfold:hover { background: var(--hover); }
+  .boxpart > :is(.axes, .features) { padding: 0 var(--btn-pad) var(--unit); }
+  .boxpart .row { box-shadow: none; }
+  .boxpart .features { padding-top: 0; }
   .fontbox .btn, .fontbox .styles > button { border-color: var(--rule); color: var(--grey); }
   .fontbox :is(.btn, .styles > button):hover { border-color: var(--ink); color: var(--ink); }
   .fontbox .styles > button.on, .fontbox .btn[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }

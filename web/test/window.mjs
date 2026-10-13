@@ -680,8 +680,21 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
     await page.click("#window-lang"); await page.click("#window-lang-tr");
     check(before && await S("S.da_tracking === 40 && S.da_lang === 1 && S.rings.find((r) => r.kind === 2).tracking === 0") && await page.textContent("#window-lang") === "TR", "a window has tracking and a language of its own, in its font box; the numerals keep theirs");
   }
+  { // every font box has all of it (beta 4.30): a window's box has the variable axes and the OpenType features too, and both can be put away
+    await page.waitForFunction(() => document.querySelector("#window-axis-wght"), null, { timeout: 8000 }).catch(() => {});
+    const ring_before = await S("JSON.stringify(S.rings.find((r) => r.kind === 2).axes)");
+    await page.fill("#window-axis-wght", "600"); await page.press("#window-axis-wght", "Enter");
+    const tile = await page.$("#window-feature-tnum") ? "tnum" : await page.$eval(".boxpart .features .tile", (e) => e.dataset.tag);
+    await page.click("#window-feature-" + tile);
+    check(await S("S.da_axes.wght === 600") && await S(`S.da_features && Object.keys(S.da_features)[0] === '${tile}'`) && await S("JSON.stringify(S.rings.find((r) => r.kind === 2).axes)") === ring_before, `a window's font box has its own variable axes and OpenType features (weight 600, ${tile}); the numerals keep theirs`);
+    const heads = await page.$$eval(".fontbox .partfold", (b) => b.filter((e) => e.offsetParent).map((e) => e.textContent).join(" · "));
+    await page.click(".fontbox .partfold >> nth=0");
+    const shut = await page.isHidden("#window-axis-wght");
+    await page.click(".fontbox .partfold >> nth=0");
+    check(heads === "Variable axes · OpenType features" && shut && await page.isVisible("#window-axis-wght"), `two parts of the box can be put away and brought back: ${heads}`);
+  }
   await page.click("#window-font-back");
-  check(await S("S.da_tracking === null && S.da_lang === null"), "As the numerals takes the window's tracking and language back too");
+  check(await S("S.da_tracking === null && S.da_lang === null && S.da_features === null && Object.keys(S.da_axes).length === 0"), "As the numerals takes the window's tracking, language, axes and features back too");
   check(own[0] === "Oswald" && own[1] === ring_font && own[2] && await S("S.da_ps === ''") && (await page.textContent("#window-font-name")).includes("as the numerals"), "a window can have a font of its own (Oswald) without touching the numerals' font; As the numerals takes it back");
   // three colours
   const fills = async () => { await frame(); return page.evaluate(() => { const t = window.dial_tool, items = [...document.querySelectorAll("main svg [fill]")]; const S = t.S; return [S.da_text_c, S.da_disc_c, S.da_ink]; }); };

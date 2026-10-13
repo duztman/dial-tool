@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.29";
+export const VERSION = "beta 4.30";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -93,10 +93,11 @@ export const WINDOW_BASE = {
   // text_c, disc_c: the colour of what shows and of the disc under the hole (null = the print colour, and white)
   shape: 0, sides: 6, turn: false, text_turn: true, family: "", ps: "", axes: {}, text_c: null, disc_c: null,
   tracking: null, lang: null,                      // its own tracking and language (beta 4.26); null = the top numerals ring's, as before
+  features: null,                                  // its own OpenType features (beta 4.30); null = none of its own. axes: {} likewise
 };
 const FIRST_WINDOW = { on: "da_on", kind: "da_kind", at: "da_at", r: "da_r", w: "da_w", h: "da_h", round: "da_round", frame: "da_frame",
   clear: "da_clear", text: "da_day", size: "da_size", ink: "da_ink", hour: "da_hour", age: "da_age",
-  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c", tracking: "da_tracking", lang: "da_lang" };
+  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c", tracking: "da_tracking", lang: "da_lang", features: "da_features" };
 
 export const DEFAULTS = {
   version: 2,
@@ -107,7 +108,7 @@ export const DEFAULTS = {
   da_on: false, da_at: 0, da_r: 10.5, da_w: 2.6, da_h: 2.0, da_round: 0.2, da_frame: 0.15,
   da_clear: 0.25, da_day: "17", da_size: 62.0, da_ink: INK,
   da_kind: 0, da_hour: 10.0, da_age: 14.8, windows: [WINDOW_BASE, WINDOW_BASE, WINDOW_BASE],
-  da_shape: 0, da_sides: 6, da_turn: false, da_text_turn: true, da_family: "", da_ps: "", da_axes: {}, da_text_c: null, da_disc_c: null, da_tracking: null, da_lang: null,      // window 1's share of WINDOW_BASE's keys of 13 Oct 2026
+  da_shape: 0, da_sides: 6, da_turn: false, da_text_turn: true, da_family: "", da_ps: "", da_axes: {}, da_text_c: null, da_disc_c: null, da_tracking: null, da_lang: null, da_features: null,      // window 1's share of WINDOW_BASE's keys of 13 Oct 2026
   t: 10 * 3600 + 9 * 60 + 36,
   out_production: false, out_mirror: false, out_live_text: false,
   out_dpi: 600.0, out_seconds: 4.0, out_fps: 30.0, out_px: 1080,
@@ -1068,7 +1069,11 @@ function date_type(S) {
 export function window_type(S, w) {
   const t = date_type(S);
   if (!w) return t;
-  const own = w.ps ? { ...t, family: w.family, ps: w.ps, axes: w.axes || {}, features: {} } : t;
+  // with a font of its own: that font, its own axes and features. Without: the numerals' type, and over it whatever
+  // the window has of its own (an axis, a feature) — nothing, on every dial made before beta 4.30
+  const more = Object.keys(w.axes || {}).length > 0 || w.features != null;
+  const own = w.ps ? { ...t, family: w.family, ps: w.ps, axes: w.axes || {}, features: w.features || {} }
+    : more ? { ...t, axes: { ...t.axes, ...(w.axes || {}) }, features: { ...t.features, ...(w.features || {}) } } : t;
   return w.tracking == null && w.lang == null ? own : { ...own, tracking: w.tracking ?? t.tracking, lang: w.lang ?? t.lang };
 }
 /** how far a window is turned, in clock degrees, when it turns with its radius: from the quarter before it

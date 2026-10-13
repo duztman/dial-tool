@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.30 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **Font box**: Variable axes and OpenType features are parts of it, each can be put away; the two Rings panes are gone.
+- **Windows**: the font box has them too (new key `features`; `axes` now has sliders).
+
 ## beta 4.29 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.

@@ -265,10 +265,6 @@ const ROWS = {
     custom("nudge", { show: numerals_only }),
     hdr("Type", { show: numerals_only }),
     custom("font", { show: numerals_only }),
-    hdr("Variable axes", { show: (R) => numerals_only(R) && G.has_font(R.ps) && Object.keys(G.font_axes(G.font_of(R))).length > 0 }),
-    custom("axes", { show: numerals_only }),
-    hdr("OpenType features", { show: (R) => numerals_only(R) && G.has_font(R.ps) }),
-    custom("features", { show: numerals_only }),
   ],
   Hands: [
     custom("hands_bar", { pin: true, bar: true }),      // bar: one line of its own, always in view: All hands · Show hands · Motion
@@ -1988,14 +1984,20 @@ class DialTool {
     const styles = el("div", { className: "segs styles" });
     const state = el("div", { className: "quiet note", id: pre + "font-note" });
     const back = el("button", { type: "button", className: "btn", id: "window-font-back", textContent: "As the numerals", title: "Use the top numerals ring’s font again", hidden: true,
-      onclick: () => { const w = this.window(); w.family = ""; w.ps = ""; w.axes = {}; w.tracking = null; w.lang = null; this.changed(true); } });
-    wrap.append(el("div", { className: "fontbox" }, current, named, styles, ...(tracking ? [tracking.el] : [])), ...(own ? [back] : []), state);
+      onclick: () => { const w = this.window(); w.family = ""; w.ps = ""; w.axes = {}; w.features = null; w.tracking = null; w.lang = null; this.changed(true); } });
+    // every font box has all of it (Okay, 13 Oct 2026): numerals · name, language, colour · styles · tracking · the
+    // variable axes · the OpenType features. The last two can be put away.
+    const axes = this.box_part("font/axes", "Variable axes", this.axes_part(pre, own));
+    const features = this.box_part("font/features", "OpenType features", this.features_part(pre, own));
+    wrap.append(el("div", { className: "fontbox" }, current, named, styles, tracking.el, axes.el, features.el), ...(own ? [back] : []), state);
     let shown = null;
     out.refresh = (T) => {
       const R = own ? G.window_type(this.S, T) : T;
-      back.hidden = !(own && (T.ps || T.tracking != null || T.lang != null));
+      back.hidden = !(own && (T.ps || T.tracking != null || T.lang != null || T.features != null || Object.keys(T.axes || {}).length));
       if (lang) lang.refresh(T);
-      if (tracking) tracking.refresh(T);
+      tracking.refresh(T);
+      axes.refresh(R, T);
+      features.refresh(R, T);
       swatch.show(T[crow.key] || (crow.or ? crow.or(T) : [0, 0, 0, 1]));
       const mine = this.families().get(R.family) || [], f = this.catalog.get(R.ps) || mine[0];
       const key = R.ps + "/" + G.has_font(R.ps) + "/" + Boolean(T.ps);
@@ -2141,32 +2143,44 @@ class DialTool {
     $("#picker-note").textContent = this.font_note || "";
   }
 
-  /** a variable font's axes, one slider each. */
-  row_axes(wrap, out) {
-    wrap.className = "axes";
-    let shown = null;
-    out.refresh = (R) => {
+  /** whose type a font box sets, and what an unset part of it is: a ring's own · a window's, which follows the top
+   *  numerals ring wherever it has nothing of its own. → {scope, base_axis(T, tag, a), base_feature(T, tag)} */
+  font_side(own) {
+    const numerals = () => G.window_type(this.S, {});
+    return own
+      ? { scope: "window", base_axis: (T, tag, a) => (T.ps ? a.default : numerals().axes[tag] ?? a.default), base_feature: (T, tag) => (T.ps ? DEFAULT_ON.has(tag) : numerals().features[tag] ?? DEFAULT_ON.has(tag)) }
+      : { scope: "ring", base_axis: (T, tag, a) => a.default, base_feature: (T, tag) => DEFAULT_ON.has(tag) };
+  }
+
+  /** a variable font's axes, one slider each: a part of every font box (Okay, 13 Oct 2026: "all font boxes get all
+   *  font functionality"). Only what differs from where the axis rests is stored. → {el, refresh(R, T)}: R the type
+   *  that is drawn, T whose it is. */
+  axes_part(pre, own) {
+    const wrap = el("div", { className: "axes" }), side = this.font_side(own);
+    let shown = null, axes = {};
+    const refresh = (R, T) => {
       const font = G.has_font(R.ps) ? G.font_of(R) : null;
-      const axes = font ? G.font_axes(font) : {};
-      const key = R.ps + JSON.stringify(Object.keys(axes)) + this.S.ui_ring;
+      axes = font ? G.font_axes(font) : {};
+      const key = R.ps + JSON.stringify(Object.keys(axes));
       if (key !== shown) {
         shown = key;
         wrap.replaceChildren();
         for (const tag in axes) {
-          const a = axes[tag], id = "axis-" + tag;
+          const a = axes[tag], id = pre + "axis-" + tag;
           const slider = el("input", { type: "range", min: a.min, max: a.max, step: (a.max - a.min) / 1000, id: id + "-slider" });
           const field = el("input", { type: "text", id, inputMode: "decimal" });
+          const now = () => { const H = this.target(side.scope); return (H.axes || {})[tag] ?? side.base_axis(H, tag, a); };
           const commit = (v) => {
-            const all = { ...this.ring().axes };
+            const H = this.target(side.scope), all = { ...(H.axes || {}) };
             v = clamp(+(+v).toFixed(2), a.min, a.max);
-            if (Math.abs(v - a.default) < 1e-6) delete all[tag]; else all[tag] = v;
-            this.set_value("ring", "axes", all);
+            if (Math.abs(v - side.base_axis(H, tag, a)) < 1e-6) delete all[tag]; else all[tag] = v;
+            this.set_value(side.scope, "axes", all);
           };
           slider.oninput = () => commit(slider.value);
-          field.onchange = () => commit(parse_number(field.value, this.ring().axes[tag] ?? a.default));
+          field.onchange = () => commit(parse_number(field.value, now()));
           slider.dataset.tag = field.dataset.tag = tag;
           // the axis is named by its sticker, as in the font sheet, here in the tool's own colours and as a button: a
-          // press sets the axis back to where the font rests (Okay, 13 Oct 2026). Axes are not OpenType features: those have their own pane.
+          // press sets the axis back to where the font rests (Okay, 13 Oct 2026). Axes are not OpenType features.
           const word = AXIS_WORDS[tag] || { wght: "weight", ital: "italic", slnt: "slant" }[tag] || a.name || tag;
           const back = el("button", { type: "button", className: "sticker ui", id: id + "-back", textContent: word, title: `${a.name} (${tag}), ${a.min}–${a.max}: press to set it back to ${a.default}`, onclick: () => commit(a.default) });
           slider.ariaLabel = field.ariaLabel = a.name;
@@ -2178,16 +2192,18 @@ class DialTool {
         if (a && document.activeElement !== input) input.value = input.type === "range" ? (R.axes[input.dataset.tag] ?? a.default) : fmt(R.axes[input.dataset.tag] ?? a.default, 0.1);
         if (input.type === "range") filled(input);
       }
+      return Object.keys(axes).length > 0;
     };
+    return { el: wrap, refresh };
   }
 
-  /** the font's OpenType features. Only what differs from the font's default is stored (R12). */
-  row_features(wrap, out) {
-    wrap.className = "features";
+  /** the font's OpenType features, likewise a part of every font box. Only what differs from the font's default is stored (R12). */
+  features_part(pre, own) {
+    const wrap = el("div", { className: "features" }), side = this.font_side(own);
     let shown = null;
-    out.refresh = (R) => {
+    const refresh = (R, T) => {
       const font = G.has_font(R.ps) ? G.font_of(R) : null;
-      const key = (font ? font.ps : "") + this.S.ui_ring;
+      const key = font ? font.ps : "";
       if (key !== shown) {
         shown = key;
         wrap.replaceChildren();
@@ -2199,12 +2215,12 @@ class DialTool {
         // character variants (cv01…) — each under its own small heading (Okay, 11 Oct 2026)
         const groups = [["", []], ["Stylistic sets", []], ["Character variants", []]];
         for (const [tag, designer] of font ? G.font_features(font).filter(useful) : []) {
-          const tile = el("button", { type: "button", className: "tile", id: "feature-" + tag }, el("span", { textContent: designer || FEATURE_NAMES[tag] || tag }), el("small", { textContent: tag }));
+          const tile = el("button", { type: "button", className: "tile", id: pre + "feature-" + tag }, el("span", { textContent: designer || FEATURE_NAMES[tag] || tag }), el("small", { textContent: tag }));
           tile.dataset.tag = tag;
-          tile.onclick = () => {                     // press to switch; only what differs from the font's default is stored (R12)
-            const on = tile.getAttribute("aria-pressed") !== "true", all = { ...this.ring().features };
-            if (on === DEFAULT_ON.has(tag)) delete all[tag]; else all[tag] = on;
-            this.set_value("ring", "features", all);
+          tile.onclick = () => {                     // press to switch; only what differs from what it would be anyway is stored (R12)
+            const H = this.target(side.scope), on = tile.getAttribute("aria-pressed") !== "true", all = { ...(H.features || {}) };
+            if (on === side.base_feature(H, tag)) delete all[tag]; else all[tag] = on;
+            this.set_value(side.scope, "features", own && !Object.keys(all).length ? null : all);
           };
           groups[/^ss\d\d$/.test(tag) ? 1 : /^cv\d\d$/.test(tag) ? 2 : 0][1].push(tile);
         }
@@ -2216,8 +2232,20 @@ class DialTool {
         }
         if (!wrap.children.length && font) wrap.append(el("span", { className: "quiet", textContent: "This font has no switches." }));
       }
-      for (const tile of wrap.querySelectorAll(".tile")) tile.setAttribute("aria-pressed", String(R.features[tile.dataset.tag] ?? DEFAULT_ON.has(tile.dataset.tag)));
+      for (const tile of wrap.querySelectorAll(".tile")) tile.setAttribute("aria-pressed", String((R.features || {})[tile.dataset.tag] ?? DEFAULT_ON.has(tile.dataset.tag)));
+      return Boolean(font);
     };
+    return { el: wrap, refresh };
+  }
+
+  /** a part of a font box that can be put away (Okay, 13 Oct 2026: "show hide within block possible"): a line with its
+   *  name, a press folds what is under it. Kept with the panes' folds, one for all font boxes. */
+  box_part(name, title, part) {
+    const head = el("button", { type: "button", className: "partfold", title: "Show or hide this part" });
+    const set = () => { this.is_folded({ fold: name, row: {} }); const folded = Boolean(this.folds[name]); part.el.hidden = folded; head.setAttribute("aria-expanded", String(!folded)); head.innerHTML = eye(!folded) + `<span>${title}</span>`; };
+    head.onclick = () => { this.is_folded({ fold: name, row: {} }); this.folds[name] = !this.folds[name]; try { localStorage.setItem("dial-tool-folds", JSON.stringify(this.folds)); } catch (e) { /* not kept */ } set(); };
+    const wrap = el("div", { className: "boxpart" }, head, part.el);
+    return { el: wrap, refresh: (R, T) => { wrap.hidden = !part.refresh(R, T); set(); } };
   }
 
   /** five dials to start from: each is a link (R31), so it can also be copied or opened in a new tab. */
