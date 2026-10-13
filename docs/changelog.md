@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.35.3 (web version) · 14 Oct 2026
+
+- **Font sheet**: the numerals are drawn 6.5 px (a unit and a hairline) to the left, every row alike, so they don't look inset: most fonts' first numeral now touches the name column's edge (within half a pixel; Michroma's 1 starts 2.6 further in, Routed Gothic's 1.5). Okay: "artificially push them left a bit, all at the same time, make many touch the red line."
+
 ## beta 4.35.2 (web version) · 14 Oct 2026
 
 - **Font box of a window**: *As the numerals* is now **Copy style of *Numerals*** — the top numerals ring's name as it is written, in italic — beside a copy sign; a box with no fill (Okay: "Copy style of Numerals (case sensitive)… Box has no bg fill").
