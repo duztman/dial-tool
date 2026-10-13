@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.35.12 (web version) · 14 Oct 2026
+
+- **The legend's meanings, shorter**, so the window no longer scrolls on an iPad in landscape (1180 × 820 and larger; at 1024 × 768 about two lines still scroll): *Any weight in the range · Has an italic, axis or style · Any width, narrow to wide · Shapes made for small and large sizes · Tabular figures, all one width · Oldstyle figures, which rise and fall · A slashed zero · Stylistic sets: other shapes · Single letters redrawn · Separate styles: Regular, Bold…* Every meaning is one or two lines.
+- **No orphans**: a meaning's last word never stands alone on a line — it stays with its bracket, or, without one, with the word before it (`no_orphan()` in `app.js`, `.together` in the stylesheet).
+
 ## beta 4.35.11 (web version) · 14 Oct 2026
 
 - **The legend's title**, in two lines: *Variable font axes and / OpenType abbreviations* (uppercase, as all the pixel font).

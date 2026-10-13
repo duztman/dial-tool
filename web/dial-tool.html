@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.35.11 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.35.12 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -757,7 +757,8 @@
   .legend dt { display: flex; justify-content: flex-end; align-items: flex-start; padding-right: var(--u3); }
   .legend dt .sticker { padding: calc(0.375 * var(--unit)) calc(0.75 * var(--unit)); font-size: calc(1.5 * var(--t-pixel)); }      /* half a size more than in the list (R32's one exception; Okay, 14 Oct 2026, 01:14: ".5 more size on all silkscreen") */
   .legend dd { margin: 0; }
-  .legend dd small { color: var(--wait); font-size: inherit; white-space: nowrap; }      /* a bracket stays on one line */
+  .legend dd small { color: var(--wait); font-size: inherit; }
+  .legend .together { white-space: nowrap; }      /* the last word and its bracket: never an orphan */
   .fontrow.current { grid-template-columns: minmax(0, 1fr); height: var(--head); border: 0; }      /* the chosen font's numerals and letters, alone on their line */
   .fontlist .group { padding: calc(var(--unit) * 2) var(--btn-pad) calc(var(--unit) / 2); border-bottom: var(--hair) solid var(--rule); }
 
@@ -5363,7 +5364,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.35.11";
+var VERSION = "beta 4.35.12";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -7198,19 +7199,24 @@ var VALUE_PICS = {
 var LANG_NAMES = { default: "As the font sets it", tr: "Turkish", nl: "Dutch", de: "German", pl: "Polish", ro: "Romanian", ca: "Catalan", ar: "Arabic", fa: "Persian", "zh-Hans": "Chinese, simplified", ja: "Japanese" };
 var lang_short = (code) => code === "default" ? "Lang." : code.slice(0, 2).toUpperCase();
 var TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip" };
+function no_orphan(says, code) {
+  const words = says.split(" "), keep = code ? 1 : 2, tail = words.splice(-keep);
+  const end = el("span", { className: "together" }, tail.join(" "), ...code ? [" ", el("small", { textContent: `[${code}]` })] : []);
+  return [words.length ? words.join(" ") + " " : "", end];
+}
 var STICKER_LEGEND = [
-  ["w. 100\u2013900", "weight", "Any weight between the two numbers, here 100 to 900.", "wght"],
+  ["w. 100\u2013900", "weight", "Any weight in the range.", "wght"],
   ["bold", "weight", "Has a bold.", ""],
-  ["italic", "italic", "Has an italic, as an axis or as a style.", "ital, slnt"],
-  ["wd", "width", "Any width, from narrow to wide.", "wdth"],
-  ["opt", "optical", "Drawn for small sizes and for large ones.", "opsz"],
-  ["tab", "figure", "Tabular figures: every figure one width.", "tnum"],
-  ["old", "figure", "Oldstyle figures, with ascenders and descenders.", "onum"],
-  ["zero", "figure", "A zero with a slash through it.", "zero"],
+  ["italic", "italic", "Has an italic, axis or style.", "ital, slnt"],
+  ["wd", "width", "Any width, narrow to wide.", "wdth"],
+  ["opt", "optical", "Shapes made for small and large sizes.", "opsz"],
+  ["tab", "figure", "Tabular figures, all one width.", "tnum"],
+  ["old", "figure", "Oldstyle figures, which rise and fall.", "onum"],
+  ["zero", "figure", "A slashed zero.", "zero"],
   ["frac", "figure", "Fractions: \xBD made from 1/2.", "frac"],
-  ["2 ss", "sets", "Stylistic sets: other shapes to switch on.", "ss01\u2013ss20"],
-  ["5 cv", "sets", "Character variants: one character drawn another way.", "cv01\u2013cv99"],
-  ["3 st", "styles", "Separate styles: Regular, Bold and so on.", ""]
+  ["2 ss", "sets", "Stylistic sets: other shapes.", "ss01\u2013ss20"],
+  ["5 cv", "sets", "Single letters redrawn.", "cv01\u2013cv99"],
+  ["3 st", "styles", "Separate styles: Regular, Bold\u2026", ""]
 ];
 var FIGURE_WORDS = [["tnum", "tab"], ["onum", "old"], ["zero", "zero"], ["frac", "frac"]];
 var NAME_LEAST = 0.7;
@@ -9559,7 +9565,7 @@ var DialTool = class _DialTool {
         rail.classList.remove("held");
       };
     });
-    const legend = el("dl", { className: "legend", id: "font-legend", hidden: true }, el("div", { className: "legendhead" }, "Variable font axes and", el("br"), "OpenType abbreviations"), ...STICKER_LEGEND.flatMap(([word, kind, says, code]) => [el("dt", {}, el("span", { className: "sticker " + kind, textContent: word })), el("dd", {}, says, ...code ? [" ", el("small", { textContent: `[${code}]` })] : [])]));
+    const legend = el("dl", { className: "legend", id: "font-legend", hidden: true }, el("div", { className: "legendhead" }, "Variable font axes and", el("br"), "OpenType abbreviations"), ...STICKER_LEGEND.flatMap(([word, kind, says, code]) => [el("dt", {}, el("span", { className: "sticker " + kind, textContent: word })), el("dd", {}, ...no_orphan(says, code))]));
     const legend_button = el("button", { type: "button", className: "pickt legendbutton", id: "font-legend-open", title: "What the stickers mean" });
     legend_button.innerHTML = icon(`<path d="M4 10L8 6L12 10"/>`) + "<span>Legend<br><small>(OpenType abbr.)</small></span>";
     legend_button.setAttribute("aria-expanded", "false");

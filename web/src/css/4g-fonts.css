@@ -101,7 +101,8 @@
   .legend dt { display: flex; justify-content: flex-end; align-items: flex-start; padding-right: var(--u3); }
   .legend dt .sticker { padding: calc(0.375 * var(--unit)) calc(0.75 * var(--unit)); font-size: calc(1.5 * var(--t-pixel)); }      /* half a size more than in the list (R32's one exception; Okay, 14 Oct 2026, 01:14: ".5 more size on all silkscreen") */
   .legend dd { margin: 0; }
-  .legend dd small { color: var(--wait); font-size: inherit; white-space: nowrap; }      /* a bracket stays on one line */
+  .legend dd small { color: var(--wait); font-size: inherit; }
+  .legend .together { white-space: nowrap; }      /* the last word and its bracket: never an orphan */
   .fontrow.current { grid-template-columns: minmax(0, 1fr); height: var(--head); border: 0; }      /* the chosen font's numerals and letters, alone on their line */
   .fontlist .group { padding: calc(var(--unit) * 2) var(--btn-pad) calc(var(--unit) / 2); border-bottom: var(--hair) solid var(--rule); }
 

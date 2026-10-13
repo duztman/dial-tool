@@ -183,12 +183,18 @@ const TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip" };
 // family's stickers stand on one line; bold and italic keep their words (Okay, 13 Oct 2026: "condense all sticker text but
 // bold and italic. weight gets w. and range"). The legend spells each one out.
 // Each meaning is a sentence; at its end, light, in square brackets, the OpenType abbreviation of what the sticker reads (Okay, 14 Oct 2026).
-const STICKER_LEGEND = [["w. 100–900", "weight", "Any weight between the two numbers, here 100 to 900.", "wght"], ["bold", "weight", "Has a bold.", ""],
-  ["italic", "italic", "Has an italic, as an axis or as a style.", "ital, slnt"], ["wd", "width", "Any width, from narrow to wide.", "wdth"],
-  ["opt", "optical", "Drawn for small sizes and for large ones.", "opsz"], ["tab", "figure", "Tabular figures: every figure one width.", "tnum"],
-  ["old", "figure", "Oldstyle figures, with ascenders and descenders.", "onum"], ["zero", "figure", "A zero with a slash through it.", "zero"],
-  ["frac", "figure", "Fractions: ½ made from 1/2.", "frac"], ["2 ss", "sets", "Stylistic sets: other shapes to switch on.", "ss01–ss20"],
-  ["5 cv", "sets", "Character variants: one character drawn another way.", "cv01–cv99"], ["3 st", "styles", "Separate styles: Regular, Bold and so on.", ""]];
+// a meaning's last line is never one word alone: its last word stays with the bracket after it, or with the word before it (Okay, 14 Oct 2026: "no orphans")
+function no_orphan(says, code) {
+  const words = says.split(" "), keep = code ? 1 : 2, tail = words.splice(-keep);
+  const end = el("span", { className: "together" }, tail.join(" "), ...(code ? [" ", el("small", { textContent: `[${code}]` })] : []));
+  return [words.length ? words.join(" ") + " " : "", end];
+}
+const STICKER_LEGEND = [["w. 100–900", "weight", "Any weight in the range.", "wght"], ["bold", "weight", "Has a bold.", ""],
+  ["italic", "italic", "Has an italic, axis or style.", "ital, slnt"], ["wd", "width", "Any width, narrow to wide.", "wdth"],
+  ["opt", "optical", "Shapes made for small and large sizes.", "opsz"], ["tab", "figure", "Tabular figures, all one width.", "tnum"],
+  ["old", "figure", "Oldstyle figures, which rise and fall.", "onum"], ["zero", "figure", "A slashed zero.", "zero"],
+  ["frac", "figure", "Fractions: ½ made from 1/2.", "frac"], ["2 ss", "sets", "Stylistic sets: other shapes.", "ss01–ss20"],
+  ["5 cv", "sets", "Single letters redrawn.", "cv01–cv99"], ["3 st", "styles", "Separate styles: Regular, Bold…", ""]];      // short, so the window rarely scrolls (Okay, 14 Oct 2026)
 // the OpenType switches that change numerals, in a short word each, for the stickers
 const FIGURE_WORDS = [["tnum", "tab"], ["onum", "old"], ["zero", "zero"], ["frac", "frac"]];
 // a variable font's axes, in words, for the font sheet's stickers
@@ -2152,7 +2158,7 @@ class DialTool {
       rail.onpointerup = rail.onpointercancel = () => { rail.onpointermove = rail.onpointerup = rail.onpointercancel = null; rail.classList.remove("held"); };
     });
     // the legend: folded to one button beside the squares; open, it stands over them and pushes the list up
-    const legend = el("dl", { className: "legend", id: "font-legend", hidden: true }, el("div", { className: "legendhead" }, "Variable font axes and", el("br"), "OpenType abbreviations"), ...STICKER_LEGEND.flatMap(([word, kind, says, code]) => [el("dt", {}, el("span", { className: "sticker " + kind, textContent: word })), el("dd", {}, says, ...(code ? [" ", el("small", { textContent: `[${code}]` })] : []))]));
+    const legend = el("dl", { className: "legend", id: "font-legend", hidden: true }, el("div", { className: "legendhead" }, "Variable font axes and", el("br"), "OpenType abbreviations"), ...STICKER_LEGEND.flatMap(([word, kind, says, code]) => [el("dt", {}, el("span", { className: "sticker " + kind, textContent: word })), el("dd", {}, ...no_orphan(says, code))]));
     const legend_button = el("button", { type: "button", className: "pickt legendbutton", id: "font-legend-open", title: "What the stickers mean" });
     legend_button.innerHTML = icon(`<path d="M4 10L8 6L12 10"/>`) + "<span>Legend<br><small>(OpenType abbr.)</small></span>";      // a second line like its brothers (Okay, 14 Oct 2026)
     legend_button.setAttribute("aria-expanded", "false");
