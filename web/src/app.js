@@ -109,6 +109,14 @@ const hand_pic = (i) => {
   const p = G.hand_shape({ ...G.HAND_BASE, shape: i, len: 13, w: 2.2, tail: 3, tip: 4.5, feature: 4.4, feature_at: [0, 0, 0, 30, 0, 0, 45, 62, 62][i] || 0, round: 0, wall: 0, counter: 0 });
   return `<svg viewBox="-3 -14 6 18.5" width="${Math.round(9 * PIC_SCALE)}" height="${Math.round(28 * PIC_SCALE)}" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;
 };
+/** the chosen hand as it is now, with all its settings (length, width, tail, round ends, hollow wall, counterweight):
+ *  upright, as large as its box allows. A small ring marks the centre it turns on. */
+const hand_detail = (h) => {
+  const p = G.hand_shape(h), b = p.bounds();
+  if (!b) return "";
+  const w = b[2] - b[0], high = b[3] - b[1], m = high * 0.03;      // a little room round it
+  return `<svg viewBox="${(b[0] - m).toFixed(3)} ${(-b[3] - m).toFixed(3)} ${(w + 2 * m).toFixed(3)} ${(high + 2 * m).toFixed(3)}" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor" fill-rule="evenodd"/><circle r="${(high * 0.012).toFixed(3)}" class="pivot"/></svg>`;
+};
 const TOOL_ICONS = {
   rename: `<rect x="1.5" y="1.5" width="13" height="13" rx="3.5" stroke-width="0.7"/><path d="M8 4.4L8 11.6M6.2 4.2L9.8 4.2M6.2 11.8L9.8 11.8" stroke-width="0.7"/>`,      // thin and light (Okay, 11 Oct 2026)
   panel: `<rect x="1.5" y="2.5" width="13" height="11"/><path d="M6 2.5L6 13.5"/>`,
@@ -257,7 +265,7 @@ const ROWS = {
     custom("hand_tabs", { pin: true, bar: true }),      // under it, always in view: which hand the panes below are about (Okay, 12 Oct 2026: "acts as a tab system for what's below")
     hdr("One hand", { title: (S) => HAND_NAMES[S.ui_hand] }),      // its heading says which: Hour hand · Minute hand · Seconds hand
     chk("on", "Show this hand", { ...H, head: true }),      // on the heading line, beside the hand's name
-    pick("shape", "Shape", G.HAND_SHAPES.slice(0, 9), hand_pic, H),
+    pick("shape", "Shape", G.HAND_SHAPES.slice(0, 9), hand_pic, { ...H, detail: hand_detail }),      // detail: under the label, the chosen hand itself, large (Okay's drawing, 13 Oct 2026: "reproduce selected hand in detail")
     col("c", "Colour", H),
     hdr("Size", H),
     num("len", "Length", 0.5, 30, 0.05, H),
@@ -1041,8 +1049,11 @@ class DialTool {
         group.append(tile);
       });
       const label = el("label", { textContent: row.text, className: row.label ? "strong" : "" });
-      wrap.append(label, group);
+      const detail = row.detail ? el("span", { className: "detail", id: id + "-detail" }) : null;      // a box under the label, as high as the tiles: what is chosen, as it is now
+      wrap.append(detail ? el("span", { className: "pickside" }, label, detail) : label, group);
+      let drawn = "";
       out.refresh = (T) => {
+        if (detail) { const now = row.detail(T); if (now !== drawn) { drawn = now; detail.innerHTML = now; } }
         if (row.label) label.textContent = row.label(T);
         [...group.children].forEach((b, i) => { b.classList.toggle("on", i === T[row.key]); b.setAttribute("aria-checked", String(i === T[row.key])); });
       };

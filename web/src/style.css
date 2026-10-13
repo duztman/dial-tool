@@ -370,7 +370,13 @@
   .row > button:not(:first-child) { justify-self: start; }
   .row > .btn.main:first-child { justify-self: stretch; }      /* a button standing where the label would (PNG) */
   .row.pick { align-items: start; }
-  .row.pick > label { line-height: var(--line); }
+  .row.pick > label, .pickside > label { line-height: var(--line); }
+  /* a label with a box under it that shows what is chosen, large (a hand): the box is as high as the tiles beside it */
+  .pickside { align-self: stretch; display: grid; grid-template-rows: auto minmax(0, 1fr); padding-bottom: var(--unit); }
+  .pickside > label { color: var(--grey); }
+  .detail { position: relative; border: var(--hair) solid var(--rule); background: var(--field); }
+  .detail svg { position: absolute; inset: var(--unit); width: calc(100% - 2 * var(--unit)); height: calc(100% - 2 * var(--unit)); }
+  .detail .pivot { fill: var(--field); stroke: none; }
   .features { padding-top: 4px; }
   .features h3 { margin: 16px 0 8px; padding-top: 8px; border-top: var(--hair) solid var(--rule); }
   .linkrow .tools { margin-top: var(--unit); gap: calc(var(--unit) * 2); }
@@ -758,7 +764,8 @@
     .form { overflow: visible; }
     .tabs { position: sticky; top: 0; z-index: 1; background: var(--paper); }
     .ringlist ol { max-height: none; }
-    .row.pick > label, .row.pick > .picks { grid-column: 1 / -1; }      /* picture tiles under their label, on all six columns: room for their words */
+    .row.pick > :is(label, .pickside), .row.pick > .picks { grid-column: 1 / -1; }
+    .detail { height: calc(3 * var(--tile)); }      /* on its own line here: three tiles high */      /* picture tiles under their label, on all six columns: room for their words */
     .row.pick > label { line-height: 1.4; padding-top: var(--unit); }
     .picker { inset: auto 0 0 0; width: 100%; height: 58%; border-right: 0; border-top: var(--hair) solid var(--ink); }
     /* the colour pop-out is a sheet from the bottom; wide, it is the whole screen */

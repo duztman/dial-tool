@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.23 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **Hands**: under the *Shape* label a box shows the chosen hand in detail, as it is now.
+
 ## beta 4.22 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.

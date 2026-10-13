@@ -586,6 +586,14 @@ await page.click("#hand-tab-0");
     return { touch: tabs.every((b, i) => !i || Math.abs(r(b).left - r(tabs[i - 1]).right) <= 1), on_line: Math.round(p.bottom - r(tabs[0]).bottom), line: getComputedStyle(document.querySelector(".pinned")).borderBottomWidth, round: [c.borderTopLeftRadius, getComputedStyle(tabs.at(-1)).borderTopRightRadius].join(" "), notch: [v(tabs[0]).content === "none", parseFloat(getComputedStyle(tabs[1], "::after").width) + "x" + parseFloat(getComputedStyle(tabs[1], "::after").height), v(tabs[1]).clipPath.startsWith("polygon"), v(tabs[2]).content !== "none"].join(" "), high: Math.round(r(tabs[0]).height) }; });
   check(strip.touch && strip.on_line === 2 && strip.line === "2px" && strip.round === "0px 0px" && strip.notch === "true 11x5.5 true true" && strip.high === 40, `the hand tabs are tabs: touching, on a thick line, the first and last corner square, a sharp notch one unit deep and twice as wide over each joint (${strip.notch}), ${strip.high} high`);
 }
+{ // under Shape's label: the chosen hand itself, large, as high as the tiles; it follows the hand's settings
+  const d = async () => page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), box = r(".detail"), tiles = r(".row.pick .picks"), label = r(".pickside label"), svg = r(".detail svg path"); return [Math.round(tiles.bottom - 5.5 - box.bottom), box.top >= label.bottom - 1, Math.round(box.left - label.left), svg.height > 100 && svg.left >= box.left && svg.right <= box.right, document.querySelector(".detail path").getAttribute("d")]; });
+  const before = await d();
+  await page.click("#hand-shape-Shape-7");
+  const after = await d();
+  await page.click("#hand-shape-Shape-0");
+  check(before[0] === 0 && before[1] && before[2] === 0 && before[3] && after[4] !== before[4] && (await d())[4] === before[4], "under the Shape label stands the chosen hand in detail, in a box as high as the tiles; another shape, another drawing");
+}
 await shot("4g-hand-tabs");
 { // 10:10 stands on the preview, over the bar, clear of the ruler (Okay, 13 Oct 2026); the scale drawing stays inside its button
   const p = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), pill = r(".steps12 .special"), bar = r(".bar"); return [Math.round((bar.top - pill.bottom) * 10) / 10, document.elementFromPoint(pill.left + pill.width / 2, pill.top + pill.height / 2).textContent]; });

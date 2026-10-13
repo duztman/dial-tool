@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.22 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.23 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet.
@@ -379,7 +379,13 @@
   .row > button:not(:first-child) { justify-self: start; }
   .row > .btn.main:first-child { justify-self: stretch; }      /* a button standing where the label would (PNG) */
   .row.pick { align-items: start; }
-  .row.pick > label { line-height: var(--line); }
+  .row.pick > label, .pickside > label { line-height: var(--line); }
+  /* a label with a box under it that shows what is chosen, large (a hand): the box is as high as the tiles beside it */
+  .pickside { align-self: stretch; display: grid; grid-template-rows: auto minmax(0, 1fr); padding-bottom: var(--unit); }
+  .pickside > label { color: var(--grey); }
+  .detail { position: relative; border: var(--hair) solid var(--rule); background: var(--field); }
+  .detail svg { position: absolute; inset: var(--unit); width: calc(100% - 2 * var(--unit)); height: calc(100% - 2 * var(--unit)); }
+  .detail .pivot { fill: var(--field); stroke: none; }
   .features { padding-top: 4px; }
   .features h3 { margin: 16px 0 8px; padding-top: 8px; border-top: var(--hair) solid var(--rule); }
   .linkrow .tools { margin-top: var(--unit); gap: calc(var(--unit) * 2); }
@@ -767,7 +773,8 @@
     .form { overflow: visible; }
     .tabs { position: sticky; top: 0; z-index: 1; background: var(--paper); }
     .ringlist ol { max-height: none; }
-    .row.pick > label, .row.pick > .picks { grid-column: 1 / -1; }      /* picture tiles under their label, on all six columns: room for their words */
+    .row.pick > :is(label, .pickside), .row.pick > .picks { grid-column: 1 / -1; }
+    .detail { height: calc(3 * var(--tile)); }      /* on its own line here: three tiles high */      /* picture tiles under their label, on all six columns: room for their words */
     .row.pick > label { line-height: 1.4; padding-top: var(--unit); }
     .picker { inset: auto 0 0 0; width: 100%; height: 58%; border-right: 0; border-top: var(--hair) solid var(--ink); }
     /* the colour pop-out is a sheet from the bottom; wide, it is the whole screen */
@@ -5131,7 +5138,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.22";
+var VERSION = "beta 4.23";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -6878,6 +6885,12 @@ var hand_pic = (i) => {
   const p = hand_shape({ ...HAND_BASE, shape: i, len: 13, w: 2.2, tail: 3, tip: 4.5, feature: 4.4, feature_at: [0, 0, 0, 30, 0, 0, 45, 62, 62][i] || 0, round: 0, wall: 0, counter: 0 });
   return `<svg viewBox="-3 -14 6 18.5" width="${Math.round(9 * PIC_SCALE)}" height="${Math.round(28 * PIC_SCALE)}" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;
 };
+var hand_detail = (h) => {
+  const p = hand_shape(h), b = p.bounds();
+  if (!b) return "";
+  const w = b[2] - b[0], high = b[3] - b[1], m = high * 0.03;
+  return `<svg viewBox="${(b[0] - m).toFixed(3)} ${(-b[3] - m).toFixed(3)} ${(w + 2 * m).toFixed(3)} ${(high + 2 * m).toFixed(3)}" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor" fill-rule="evenodd"/><circle r="${(high * 0.012).toFixed(3)}" class="pivot"/></svg>`;
+};
 var TOOL_ICONS = {
   rename: `<rect x="1.5" y="1.5" width="13" height="13" rx="3.5" stroke-width="0.7"/><path d="M8 4.4L8 11.6M6.2 4.2L9.8 4.2M6.2 11.8L9.8 11.8" stroke-width="0.7"/>`,
   // thin and light (Okay, 11 Oct 2026)
@@ -7032,7 +7045,8 @@ var ROWS = {
     // its heading says which: Hour hand · Minute hand · Seconds hand
     chk("on", "Show this hand", { ...H, head: true }),
     // on the heading line, beside the hand's name
-    pick("shape", "Shape", HAND_SHAPES.slice(0, 9), hand_pic, H),
+    pick("shape", "Shape", HAND_SHAPES.slice(0, 9), hand_pic, { ...H, detail: hand_detail }),
+    // detail: under the label, the chosen hand itself, large (Okay's drawing, 13 Oct 2026: "reproduce selected hand in detail")
     col("c", "Colour", H),
     hdr("Size", H),
     num2("len", "Length", 0.5, 30, 0.05, H),
@@ -7980,8 +7994,17 @@ var DialTool = class _DialTool {
         group.append(tile);
       });
       const label = el("label", { textContent: row.text, className: row.label ? "strong" : "" });
-      wrap.append(label, group);
+      const detail = row.detail ? el("span", { className: "detail", id: id + "-detail" }) : null;
+      wrap.append(detail ? el("span", { className: "pickside" }, label, detail) : label, group);
+      let drawn2 = "";
       out.refresh = (T) => {
+        if (detail) {
+          const now = row.detail(T);
+          if (now !== drawn2) {
+            drawn2 = now;
+            detail.innerHTML = now;
+          }
+        }
         if (row.label) label.textContent = row.label(T);
         [...group.children].forEach((b, i) => {
           b.classList.toggle("on", i === T[row.key]);
