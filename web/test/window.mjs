@@ -206,6 +206,34 @@ const mid_drag = await S("S.rings[S.ui_ring].r");
 await page.mouse.move(rb[0] - 20, rb[1], { steps: 6 }); await page.mouse.up();
 check(Math.abs(mid_drag - (r_before + 0.5 + 0.5)) < 1e-9 && Math.abs(await S("S.rings[S.ui_ring].r") - (r_before + 0.5 - 0.5)) < 1e-9 && await page.$("#value-pop") === null, `dragged 20 to the right the radius is 0.5 more (${mid_drag}), 20 to the left 0.5 less; no pop-up opens`);
 await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before);
+// undo: ⌘Z takes one step back, ⇧⌘Z forward again; a drag is one step; the window's state stays (13 Oct 2026)
+{
+  const settle = () => page.waitForTimeout(550);
+  await settle();
+  const state = () => S("[S.rings.length, S.rings[S.ui_ring].r, S.ui_section, S.dial_d]");
+  const s0 = await state();
+  await page.mouse.move(rb[0], rb[1]); await page.mouse.down(); await page.mouse.move(rb[0] + 12, rb[1], { steps: 5 }); await page.mouse.move(rb[0] + 24, rb[1], { steps: 5 }); await page.mouse.up();
+  await settle();
+  const s1 = await state();
+  await page.click("#ring-duplicate");
+  await settle();
+  const s2 = await state();
+  await page.keyboard.press("Control+z");
+  const u1 = await state();
+  await page.keyboard.press("Control+z");
+  const u2 = await state();
+  await page.keyboard.press("Control+Shift+z");
+  const r1 = await state();
+  await page.keyboard.press("Control+z");
+  const back = await state();
+  check(s1[1] > s0[1] && s2[0] === s0[0] + 1 && JSON.stringify(u1) === JSON.stringify(s1) && JSON.stringify(u2) === JSON.stringify(s0) && JSON.stringify(r1) === JSON.stringify(s1) && JSON.stringify(back) === JSON.stringify(s0)
+    && await page.textContent("#ring-r .figure") === String(s0[1]) && await page.$$eval(".ringlist li", (l) => l.length) === s0[0],
+    `undo: a duplicate, then a whole drag of the radius (${s1[1]} → ${s0[1]}), each one step back; redo brings the drag back; the panel follows`);
+  await page.evaluate(() => window.dial_tool.set_value("global", "dial_d", 31));
+  await settle();
+  await page.keyboard.press("Meta+z");
+  check((await state())[3] === s0[3], "⌘Z does the same");
+}
 // a numeral's radius measures to its centre, its baseline or its top: the menu beside the label, in the pop-up (13 Oct 2026)
 const numerals_at = await S("S.rings.findIndex((r) => r.kind === 2)"), ring_before = await S("S.ui_ring");
 await page.click(`.ringlist li:nth-child(${numerals_at + 1}) .name`);

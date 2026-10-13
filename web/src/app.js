@@ -393,6 +393,14 @@ async function unpack(hash) {
   }
 }
 
+// ── undo ─────────────────────────────────────────────────────
+//   The dial as it was after each change, as text: PAST (oldest first) · NOW · FUTURE (what was undone, until the
+//   next change). It belongs to the page, not to one DialTool, so loading a file or Defaults is one step back too.
+//   A step is taken when the dial has been still for a moment (with the autosave), so one drag of a slider is one
+//   step. Not part of a dial: the time shown and the window's own state (section, selected ring, unit…).
+const HISTORY = { past: [], now: null, future: [], most: 200 };
+const dial_text = (S) => JSON.stringify(S, (key, value) => (key === "t" || key.startsWith("ui_") ? undefined : value));
+
 // ── the tool ─────────────────────────────────────────────────
 
 class DialTool {
@@ -415,6 +423,12 @@ class DialTool {
     if (!DialTool.listening) {                     // once for the page: the tool that is open now gets the press
       DialTool.listening = true;
       document.addEventListener("pointerdown", (e) => { if (window.dial_tool) window.dial_tool.pressed(e); }, true);
+      document.addEventListener("keydown", (e) => {   // ⌘Z undo · ⇧⌘Z or ⌘Y redo (Ctrl on Windows) — Okay, 13 Oct 2026
+        const z = (e.metaKey || e.ctrlKey) && !e.altKey && e.key.toLowerCase() === "z", y = (e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "y";
+        if (!(z || y) || !window.dial_tool || document.querySelector("dialog[open]")) return;
+        e.preventDefault();
+        window.dial_tool.undo(y || e.shiftKey ? 1 : -1);
+      });
     }
     this.show_section();
     this.fit();
@@ -2422,11 +2436,44 @@ class DialTool {
     window.dial_tool = tool;
   }
 
-  /** shortly after the last change: keep the session, and make the address bar say this dial. */
+  /** the dial has changed and stood still: that is one step to undo. */
+  take_step() {
+    const now = dial_text(this.S);
+    if (HISTORY.now === null) HISTORY.now = now;
+    if (now === HISTORY.now) return;
+    HISTORY.past.push(HISTORY.now);
+    if (HISTORY.past.length > HISTORY.most) HISTORY.past.shift();
+    HISTORY.now = now;
+    HISTORY.future = [];
+  }
+
+  /** one step back (-1) or forward again (1). The time shown and the window's state stay as they are. */
+  undo(way) {
+    const field = document.activeElement;
+    if (field && field.matches && field.matches("input, textarea, select")) field.blur();      // what is being typed counts as a change first
+    this.take_step();
+    const [from, to] = way < 0 ? [HISTORY.past, HISTORY.future] : [HISTORY.future, HISTORY.past];
+    if (!from.length) return this.log(way < 0 ? "nothing to undo" : "nothing to redo");
+    to.push(HISTORY.now);
+    HISTORY.now = from.pop();
+    const keep = Object.fromEntries(Object.entries(this.S).filter(([key]) => key === "t" || key.startsWith("ui_")));
+    this.S = G.fresh_settings({ ...JSON.parse(HISTORY.now), ...keep });
+    this.S.ui_ring = clamp(this.S.ui_ring, 0, this.S.rings.length - 1);
+    this.static_dirty = true;
+    this.scale_from = null;
+    this.value_pop = null;
+    this.show_section();                           // every control from the settings again
+    this.load_fonts_in_use();
+    this.render();
+    this.log(way < 0 ? `undone · ${HISTORY.past.length} more` : `redone · ${HISTORY.future.length} more`);
+  }
+
+  /** shortly after the last change: keep the session, take a step for undo, and make the address bar say this dial. */
   autosave() {
     clearTimeout(this.saving);
     this.saving = setTimeout(async () => {
       if (this.closed) return;
+      this.take_step();
       try { localStorage.setItem(LAST, JSON.stringify(this.S)); } catch (e) { /* private window: nothing kept */ }
       try { history.replaceState(null, "", await this.show_link()); } catch (e) { /* the address stays as it was */ }
     }, 400);
