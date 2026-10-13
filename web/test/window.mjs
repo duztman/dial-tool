@@ -442,7 +442,17 @@ await frame();
 check(await S("!t.items.some((i) => i.role === 'guide')") && await page.isVisible("#guide-list"), "the Guides switch, off: none drawn; the list stays where it is");
 await page.mouse.move(640, 30);
 const one_colour = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c("#guides").color, c("#guides-more").color, c("#guides").borderTopColor, c("#guides").backgroundColor, c("#guides").borderTopStyle, c("#guides .slash").display, c("#guides").fontWeight]; });
-check(one_colour[0] === one_colour[1] && one_colour[0] === one_colour[2] && one_colour[3] === "rgba(0, 0, 0, 0)" && one_colour[4] === "solid" && one_colour[5] !== "none" && one_colour[6] === "400", `off, it is an outline with no fill; sign, word, arrow and line are one colour (${one_colour[0]}); the sign is struck through`);
+check(one_colour[0] === one_colour[1] && /0\.35\)$/.test(one_colour[2]) && one_colour[3] === "rgba(0, 0, 0, 0)" && one_colour[4] === "solid" && one_colour[5] !== "none" && one_colour[6] === "400", `off, it is an outline with no fill; sign, word, arrow and line are one colour (${one_colour[0]}), the line at 0.35 of it (${one_colour[2]}); the sign is struck through`);
+{ // three states on the preview: can be pressed (faint) · can't (fainter) · on (Guides: its word alone whole)
+  const o = (q) => page.$eval(q, (e) => getComputedStyle(e).opacity);
+  const off = [await o("#guides .word"), await o("#guides svg"), await o("#backdrop span"), await o("#undo svg")];
+  await page.click("#guides"); await page.mouse.move(640, 30);
+  const on = [await o("#guides .word"), await o("#guides svg"), await page.$eval("#guides", (e) => getComputedStyle(e).borderTopColor)];
+  await page.hover("#guides");
+  const over = await page.$eval("#guides", (e) => getComputedStyle(e).borderTopColor);
+  await page.click("#guides"); await page.mouse.move(640, 30);
+  check(off.join() === "0.35,0.35,0.35,0.35" && on[0] === "1" && on[1] === "0.35" && /0\.35\)$/.test(on[2]) && over === one_colour[0], `on the preview a switch is faint (${off[0]}); Guides on: its word alone is whole, its line still faint; under the pointer the line is whole`);
+}
 await page.mouse.click(640, 30);                      // the backdrop, off the dial
 check(await page.isHidden("#guide-list"), "a press outside the list puts it away");
 await page.click("#guides-more");
@@ -646,8 +656,8 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
   await frame();
   const scene = await page.evaluate(() => { const t = window.dial_tool; return t.slots ? [...document.querySelectorAll("main svg path")].map((p) => p.getAttribute("fill")).filter(Boolean) : []; });
   await shot("4c18-window-colours");
-  check((await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))).join(" · ").endsWith("Shape · Colours") && await page.evaluate(() => { const rows = [...document.querySelectorAll(".form .pane .body")][0].children, ids = [...rows].filter((r) => r.offsetParent).map((r) => (r.querySelector("select, input, button") || {}).id); return ids[0] === "window-at-Position" && ids[1].startsWith("window-r-Radius"); }) && await page.$eval("#window-clear-Clearance", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape" && await page.$eval("#window-frame-Frame", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape" && await page.isVisible("#window-text-c-Text-picture") && await page.isVisible("#window-disc-c-Disc-under-it") && await page.isVisible("#window-ink-Frame"),
-    "Windows has the panes Shape · Colours, and no Print pane: position, radius and size come first in the window's own pane, right under Show this window; Frame and Clearance are in Shape; Colours: text or picture, the disc under it, the frame");
+  check((await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))).join(" · ").endsWith("Colours · Shape") && await page.evaluate(() => { const rows = [...document.querySelectorAll(".form .pane .body")][0].children, ids = [...rows].filter((r) => r.offsetParent).map((r) => (r.querySelector("select, input, button") || {}).id); return ids[0] === "window-at-Position" && ids[1].startsWith("window-r-Radius"); }) && await page.$eval("#window-clear-Clearance", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape" && await page.$eval("#window-frame-Frame", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape" && await page.isVisible("#window-text-c-Text-picture") && await page.isVisible("#window-disc-c-Disc-under-it") && await page.isVisible("#window-ink-Frame"),
+    "Windows has the panes Colours · Shape, and no Print pane: position, radius and size come first in the window's own pane, right under Show this window; Frame and Clearance are in Shape; Colours: text or picture, the disc under it, the frame");
   await page.evaluate((was) => { const t = window.dial_tool, [ui, on, at, shape, turn, ps, family, text_c, disc_c, w] = JSON.parse(was); Object.assign(t.S, { da_at: at, da_shape: shape, da_turn: turn, da_ps: ps, da_family: family, da_text_c: text_c, da_disc_c: disc_c, da_w: w, da_text_turn: true, da_on: on, ui_window: ui }); t.static_dirty = true; t.sync_rows(); t.render(); }, was);
 }
 // an am · pm window follows the time shown: light at 10 in the morning, dark at 10 at night; AM · PM stands in the time's box

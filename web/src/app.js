@@ -304,6 +304,10 @@ const ROWS = {
     info("Follows the time shown: AM · PM beside the time, under the panel.", { ...W, show: win_is("am · pm") }),
     num("age", "Moon age, days", 0, 29.5, 0.1, { ...W, show: win_is("moon phase") }),
     info("0 new moon · 14.8 full.", { ...W, show: win_is("moon phase") }),
+    hdr("Colours", { ...W, show: win_on }),
+    col("text_c", "Text · picture", { ...W, show: win_on, or: (T) => T.ink }),       // or: what an unset colour is
+    col("disc_c", "Disc under it", { ...W, show: win_on, or: () => [1, 1, 1, 1] }),
+    col("ink", "Frame", { ...W, show: win_on }),
     // the hole's shape, apart from what shows through it (Okay, 13 Oct 2026): one pane for every window
     hdr("Shape", { ...W, show: win_on }),
     custom("window_shape", { ...W, show: win_on }),
@@ -316,10 +320,6 @@ const ROWS = {
     // stand here, not under a pane called Print (Okay, 13 Oct 2026: print things under Print, design among design)
     num("frame", "Frame", 0, 0.6, 0.01, { ...W, show: win_on }),
     num("clear", "Clearance", 0, 1, 0.01, { ...W, show: win_on }),
-    hdr("Colours", { ...W, show: win_on }),
-    col("text_c", "Text · picture", { ...W, show: win_on, or: (T) => T.ink }),       // or: what an unset colour is
-    col("disc_c", "Disc under it", { ...W, show: win_on, or: () => [1, 1, 1, 1] }),
-    col("ink", "Frame", { ...W, show: win_on }),
   ],
   Export: [
     // Okay's order, 13 Oct 2026. Export a file stays in view (pinned): Vector · PDF | SVG, with its tick right

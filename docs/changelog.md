@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.24 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **On the preview**: three states — faint (can be pressed), fainter (can't), and on (Guides: its word whole, its line faint).
+- **Windows**: Colours before Shape.
+
 ## beta 4.23 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.

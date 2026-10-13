@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.23 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.24 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet.
@@ -621,19 +621,30 @@
   main.dark { --on-canvas: #FFFFFF; }
   .guides { position: absolute; z-index: 3; top: var(--canvas-inset); right: var(--canvas-inset); display: flex; justify-content: flex-end; }
   .guidesbox, .guidesmore, .backdropbox, .undobox { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: var(--hair) solid var(--on-canvas); color: var(--on-canvas); user-select: none; }
-  :is(.guidesbox, .guidesmore, .backdropbox, .undobox):hover { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); }      /* under the pointer its line is twice as thick: still no fill */
+  @media (hover: hover) { :is(.guidesbox, .guidesmore, .backdropbox, .undobox):hover { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); } }      /* under the pointer its line is twice as thick: still no fill */
   /* undo · redo, before the Guides switch: two joined outlined buttons; pale when there is no step that way */
   .undos { position: absolute; z-index: 3; top: var(--canvas-inset); left: var(--canvas-inset); display: flex; }      /* top left of the preview, beside the panel (Okay, 13 Oct 2026) */
   .undobox { width: var(--control-large); }
   .undobox:first-child { border-radius: 10px 0 0 10px; }
   .undobox:last-child { border-left: 0; border-radius: 0 10px 10px 0; }
-  /* what stands on the preview is faint until the pointer is on it or it is open, so the dial is what one sees (Okay,
-     13 Oct 2026: "as faint as this unclickable one. Achieve this via opacity"). What can't be pressed now is fainter still. */
-  .guidesbox, .guidesmore, .backdropbox, .undobox { opacity: var(--faint); }
-  :is(.guidesbox, .guidesmore, .backdropbox, .undobox):is(:focus-visible, [aria-expanded="true"]) { opacity: 1; }
+  /* what stands on the preview is faint, so the dial is what one sees (Okay, 13 Oct 2026). Three states, all by how
+     much shows (opacity; the line by the same share of its colour), so they hold on any backdrop:
+       can be pressed    line and what is in it at --faint; whole under a pointer, with the keyboard on it, or open
+       can't be pressed  (no step to undo) half of --faint, and nothing under the pointer
+       on                (Guides) its word alone is whole; its line stays faint until the pointer is on it */
+  main { --line-faint: color-mix(in srgb, var(--on-canvas) calc(var(--faint) * 100%), transparent); --line-fainter: color-mix(in srgb, var(--on-canvas) calc(var(--faint) * 50%), transparent); }
+  .guidesbox, .guidesmore, .backdropbox, .undobox { border-color: var(--line-faint); }
+  :is(.guidesbox, .guidesmore, .backdropbox, .undobox) > * { opacity: var(--faint); }
+  :is(.guidesbox, .guidesmore, .backdropbox, .undobox):is(:focus-visible, [aria-expanded="true"]) { border-color: var(--on-canvas); }
+  :is(.guidesbox, .guidesmore, .backdropbox, .undobox):is(:focus-visible, [aria-expanded="true"]) > * { opacity: 1; }
   /* only where a pointer can hover: under a finger "hover" stays on after a tap, and the switch just pressed would stay whole */
-  @media (hover: hover) { :is(.guidesbox, .guidesmore, .backdropbox, .undobox):hover { opacity: 1; } }
-  .undobox.none, .undobox.none:hover { opacity: calc(var(--faint) / 2); box-shadow: none; }
+  @media (hover: hover) {
+    :is(.guidesbox, .guidesmore, .backdropbox, .undobox):hover { border-color: var(--on-canvas); }
+    :is(.guidesbox, .guidesmore, .backdropbox, .undobox):hover > * { opacity: 1; }
+  }
+  .guidesbox[aria-pressed="true"] > .word { opacity: 1; }
+  .undobox.none, .undobox.none:hover { border-color: var(--line-fainter); box-shadow: none; }
+  :is(.undobox.none, .undobox.none:hover) > * { opacity: calc(var(--faint) / 2); }
   .guidesbox { gap: 7px; padding: 0 10px 0 8px; border-radius: 10px 0 0 10px; font-weight: 600; }
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 10px 10px 0; }
   .guidesbox .word::after { content: attr(data-text); display: block; height: 0; overflow: hidden; visibility: hidden; font-weight: 600; }
@@ -5138,7 +5149,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.23";
+var VERSION = "beta 4.24";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -7089,6 +7100,11 @@ var ROWS = {
     info("Follows the time shown: AM \xB7 PM beside the time, under the panel.", { ...W, show: win_is("am \xB7 pm") }),
     num2("age", "Moon age, days", 0, 29.5, 0.1, { ...W, show: win_is("moon phase") }),
     info("0 new moon \xB7 14.8 full.", { ...W, show: win_is("moon phase") }),
+    hdr("Colours", { ...W, show: win_on }),
+    col("text_c", "Text \xB7 picture", { ...W, show: win_on, or: (T) => T.ink }),
+    // or: what an unset colour is
+    col("disc_c", "Disc under it", { ...W, show: win_on, or: () => [1, 1, 1, 1] }),
+    col("ink", "Frame", { ...W, show: win_on }),
     // the hole's shape, apart from what shows through it (Okay, 13 Oct 2026): one pane for every window
     hdr("Shape", { ...W, show: win_on }),
     custom("window_shape", { ...W, show: win_on }),
@@ -7100,12 +7116,7 @@ var ROWS = {
     // the frame round the hole and the room kept clear round it are drawn on the dial: they are design, so they
     // stand here, not under a pane called Print (Okay, 13 Oct 2026: print things under Print, design among design)
     num2("frame", "Frame", 0, 0.6, 0.01, { ...W, show: win_on }),
-    num2("clear", "Clearance", 0, 1, 0.01, { ...W, show: win_on }),
-    hdr("Colours", { ...W, show: win_on }),
-    col("text_c", "Text \xB7 picture", { ...W, show: win_on, or: (T) => T.ink }),
-    // or: what an unset colour is
-    col("disc_c", "Disc under it", { ...W, show: win_on, or: () => [1, 1, 1, 1] }),
-    col("ink", "Frame", { ...W, show: win_on })
+    num2("clear", "Clearance", 0, 1, 0.01, { ...W, show: win_on })
   ],
   Export: [
     // Okay's order, 13 Oct 2026. Export a file stays in view (pinned): Vector · PDF | SVG, with its tick right
