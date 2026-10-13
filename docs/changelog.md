@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.35.7 (web version) · 14 Oct 2026
+
+- **The font sheet's add buttons**: where the browser can read this computer's fonts (Chrome, Edge on a Mac), *Installed* comes first and the three ways to add a font share the first two columns equally, on one line, without their light second lines; the legend's button keeps the third column. Elsewhere (Safari, the iPad) there are two, each a column, as before.
+
 ## beta 4.35.6 (web version) · 14 Oct 2026
 
 - **The legend's window** is two of the sheet's columns wide (from over *Add font file* to the right edge), its items one under the other with a hairline between; each meaning shortened to one line, so an item is two lines at most (meaning · OpenType name), and the window fits without scrolling.

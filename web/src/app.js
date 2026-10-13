@@ -2178,10 +2178,13 @@ class DialTool {
         el("div", { className: "quiet note", id: "picker-note" }),
         legend,
         el("div", { className: "squares" },
-          square("font-add", "Add font link (gfonts, url)", "A font by its Google Fonts link or name, or by a link to a font file", `<path d="M8 3.5L8 12.5M3.5 8L12.5 8"/>`, () => { if (paste.hidden) { paste.hidden = false; paste.focus(); } else if (paste.value.trim()) add(); else paste.focus(); }),      // the field for the link is out of sight until this is pressed (Okay, 13 Oct 2026)
-          square("font-file-open", "Add font file (woff, ttf, otf)", "A font file from this computer: .ttf · .otf · .woff", `<path d="M4 2.5L9.5 2.5L12 5L12 13.5L4 13.5ZM9.5 2.5L9.5 5L12 5"/>`, () => file.click()),
-          square("local-fonts", "Installed", "The fonts installed on this computer", `<rect x="2.5" y="3.5" width="11" height="7.5"/><path d="M6 13.5L10 13.5M8 11L8 13.5"/>`, () => this.local_fonts(true), { hidden: !("queryLocalFonts" in window) }), file,
-          legend_button)));
+          // the ways to add a font, in the first two of the sheet's three columns, sharing them equally: Installed first when
+          // the browser can read this computer's fonts (Chrome, Edge), then a link, then a file (Okay, 14 Oct 2026)
+          el("div", { className: "adds" + ("queryLocalFonts" in window ? " three" : "") },
+            square("local-fonts", "Installed", "The fonts installed on this computer", `<rect x="2.5" y="3.5" width="11" height="7.5"/><path d="M6 13.5L10 13.5M8 11L8 13.5"/>`, () => this.local_fonts(true), { hidden: !("queryLocalFonts" in window) }),
+            square("font-add", "Add font link (gfonts, url)", "A font by its Google Fonts link or name, or by a link to a font file", `<path d="M8 3.5L8 12.5M3.5 8L12.5 8"/>`, () => { if (paste.hidden) { paste.hidden = false; paste.focus(); } else if (paste.value.trim()) add(); else paste.focus(); }),      // the field for the link is out of sight until this is pressed (Okay, 13 Oct 2026)
+            square("font-file-open", "Add font file (woff, ttf, otf)", "A font file from this computer: .ttf · .otf · .woff", `<path d="M4 2.5L9.5 2.5L12 5L12 13.5L4 13.5ZM9.5 2.5L9.5 5L12 5"/>`, () => file.click())),
+          file, legend_button)));
     this.picker.tabIndex = -1;
     window.addEventListener("resize", () => { if (this.picker.open) this.rail_place(); });
     this.picker.addEventListener("click", (e) => { if (e.target === this.picker) this.picker.close(); });      // a click outside closes it
