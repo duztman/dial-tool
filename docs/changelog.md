@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.22 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **Windows**: Position · Radius · Width · Height stand right under *Show this window*; the *Place and size* pane is gone.
+
 ## beta 4.21 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.

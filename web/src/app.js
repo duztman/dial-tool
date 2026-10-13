@@ -283,6 +283,12 @@ const ROWS = {
     // small switch on each card: "unnecessarily complex… enable window tickmark is the way to go. leave them as tabs")
     hdr("Window", { title: (S) => `Window at ${G.DATE_AT[G.windows_of(S)[S.ui_window].at][0]}` }),
     chk("on", "Show this window", { ...W, head: true }),
+    // where it is and how big come first, right under the tick (Okay, 13 Oct 2026); a pane of their own, Place and size, until beta 4.22
+    pop("at", "Position", G.DATE_AT.map((d) => d[0]), { ...W, show: win_on }),
+    num("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
+    num("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("rectangle", "arch", "arc") }),
+    num("w", "Ø", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
+    num("h", "Height", 0.5, 5, 0.05, { ...W, show: shape_is("rectangle", "arc") }),
     pick("kind", "Shows", G.WINDOW_KINDS, PICS.window, { ...W, show: win_on }),
     txt("text", "Text", { ...W, show: win_is("date", "day") }),
     num("size", "Text % of height", 20, 100, 1, { ...W, show: win_is("date", "day") }),
@@ -302,12 +308,6 @@ const ROWS = {
     // stand here, not under a pane called Print (Okay, 13 Oct 2026: print things under Print, design among design)
     num("frame", "Frame", 0, 0.6, 0.01, { ...W, show: win_on }),
     num("clear", "Clearance", 0, 1, 0.01, { ...W, show: win_on }),
-    hdr("Place and size", { ...W, show: win_on }),
-    pop("at", "Position", G.DATE_AT.map((d) => d[0]), { ...W, show: win_on, head: true }),
-    num("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
-    num("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("rectangle", "arch", "arc") }),
-    num("w", "Ø", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
-    num("h", "Height", 0.5, 5, 0.05, { ...W, show: shape_is("rectangle", "arc") }),
     hdr("Colours", { ...W, show: win_on }),
     col("text_c", "Text · picture", { ...W, show: win_on, or: (T) => T.ink }),       // or: what an unset colour is
     col("disc_c", "Disc under it", { ...W, show: win_on, or: () => [1, 1, 1, 1] }),
