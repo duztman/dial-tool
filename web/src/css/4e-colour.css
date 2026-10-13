@@ -1,0 +1,55 @@
+/* colour: the pill, swatches, the pop-out */
+@layer panel {
+  /* colour: a pill — one small button holding a swatch and the hex in monospace; it opens the pop-out. Quiet at
+     rest, a middle grey under the pointer, black while its pop-out is open (no outlines). A swatch shows its colour
+     (--c) over a checkerboard, so a see-through colour looks see-through. */
+  .colour { display: inline-flex; align-items: center; gap: var(--pill-gap); justify-self: start; height: var(--pill); padding: 0 var(--pill-gap);      border-radius: var(--round-small); background: var(--well); font: var(--t-s)/1 var(--mono); }
+  .colour:hover { background: var(--rule); }
+  .colour[aria-expanded="true"] { background: var(--ink); color: var(--paper); }
+  .swatch, .dot { flex: none; width: var(--dot); height: var(--dot); border: var(--hair) solid var(--chip-rule); border-radius: var(--round-small); background: linear-gradient(var(--c, transparent), var(--c, transparent)), var(--checker); }
+  .colour .dot { width: 1em; height: 1em; border-radius: 3px; }      /* as large as its hex */
+  .dot.tiny { display: inline-block; width: var(--dot-tiny); height: var(--dot-tiny); border-radius: 2px; vertical-align: -1px; }
+  .colour[aria-expanded="true"] .dot { border-color: var(--night-chip-rule); }
+  .swatch:hover { border-color: var(--ink); }
+  /* colours in a list (Dial → Colours, a band's sectors): square swatches in a row that wraps */
+  .swatches { display: flex; flex-wrap: wrap; gap: var(--chip-gap); padding: var(--chip-gap) 0; }
+  .swatches .swatch { width: var(--control); height: var(--control); border-radius: var(--round-small); }
+  .swatch[aria-expanded="true"] { outline: var(--thick) solid var(--ink); outline-offset: 1px; }
+
+  /* the colour pop-out: one for the whole tool, at the right of the swatch that opened it. Near black, round corners. Inside it the usual colour names are set to their night values, so
+     buttons and fields look as they do elsewhere, light on dark. Its head drags it. Rows of colours: a name, then the
+     chips. Then the field of one hue, the strip of hues and (rings only) the strip of how see-through, tall enough
+     for a finger. Last, one line: RGB · CMYK · HEX, the colour, the values, COPY — small, boxed, capitals. */
+  .colourpop { position: fixed; z-index: 5; display: grid; gap: var(--pop-gap); width: var(--pop-width); max-width: 100vw; max-height: 100vh; padding: 0 var(--pop-pad) var(--pop-pad); }
+  .colourpop[hidden] { display: none; }
+  .colourpop header { display: flex; align-items: center; height: var(--head); cursor: grab; touch-action: none; user-select: none; border-bottom: var(--hair) solid var(--row-rule); }
+  .colourpop header h2 { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+  .colourpop header .sign { border-radius: var(--round-small); }
+  .colourpop header .sign[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+  /* a row of colours: its name, then the chips. A row holds --pop-chips of them with wide gaps; they share the width,
+     so they shrink to fit and grow when the pop-out does. */
+  .chiprow { display: grid; grid-template-columns: var(--pop-label) minmax(0, 1fr); align-items: center; }
+  .chiprow > .quiet { font-size: var(--t-s); }
+  .chiprow .chips { grid-template-columns: repeat(var(--pop-chips), minmax(0, 1fr)); gap: var(--pop-chip-gap); }
+  .chiprow .chips button { width: auto; height: auto; aspect-ratio: 1; }
+  .sv, .hue, .alpha { position: relative; touch-action: none; }
+  .sv { height: var(--pop-field); border-radius: var(--round); cursor: crosshair; background: linear-gradient(to top, #000, rgba(0, 0, 0, 0)), linear-gradient(to right, #fff, var(--hue, #f00)); }
+  .hue, .alpha { height: var(--pop-hue); border-radius: calc(var(--pop-hue) / 2); cursor: ew-resize; }
+  .hue { background: linear-gradient(to right, #f00, #ff0 16.67%, #0f0 33.33%, #0ff 50%, #00f 66.67%, #f0f 83.33%, #f00); }
+  .alpha { flex: 1; background: linear-gradient(to right, transparent, var(--solid, #000)), var(--checker); }
+  /* handles: a white ring with a dark one round it, so they show on any colour. On the field a disc; on a strip a pill. */
+  .sv i, .hue i, .alpha i { position: absolute; width: var(--knob); height: var(--knob); translate: -50% -50%; border-radius: 50%; box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px var(--night); pointer-events: none; }
+  :is(.hue, .alpha) i { top: 50%; width: calc(var(--knob) * 0.5); height: calc(var(--pop-hue) + 2px); border-radius: var(--knob); }
+  .alpha i { background: var(--solid, #000); }
+  .alpharow { display: flex; align-items: center; gap: var(--gap); }
+  .alpharow[hidden] { display: none; }
+  .alpharow input { flex: none; width: var(--col); text-align: center; }
+  .asnumbers { display: flex; gap: var(--chip-gap); align-items: center; font-size: var(--t-xs); letter-spacing: 0.04em; text-transform: uppercase; }
+  .asnumbers .segs { flex: none; }
+  .asnumbers .segs > button { flex: none; padding: 0 6px; }
+  .asnumbers .dot { margin: 0 2px 0 6px; }
+  .asnumbers .numbers { flex: 1; min-width: 0; display: flex; gap: var(--chip-gap); }
+  .asnumbers .numbers input { padding: 0 2px; text-align: center; text-transform: uppercase; }
+  .asnumbers .copy { flex: none; min-width: var(--col); padding: 0 6px; font-weight: 600; }
+  /* wide: twice the size (app.js sets the width and the field's height). */
+}

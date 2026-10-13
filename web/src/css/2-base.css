@@ -1,0 +1,12 @@
+@layer base {
+  :root { font: var(--t-m)/1.4 var(--sans); font-variant-numeric: tabular-nums lining-nums; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--paper); color: var(--ink); overflow: hidden; }
+  #app { display: grid; grid-template-columns: calc(var(--panel) + var(--hair)) 1fr; grid-template-rows: 1fr auto; height: 100%; }
+  .starting { padding: var(--margin); }
+  h1 { font-size: var(--t-l); font-weight: 600; letter-spacing: -0.005em; margin: 0; }
+  h2 { font-size: var(--t-m); font-weight: 600; margin: 0; white-space: nowrap; }
+  h3 { font-size: var(--t-s); font-weight: 400; color: var(--grey); margin: 0; }
+  .quiet { color: var(--grey); }
+}

@@ -1,0 +1,110 @@
+@layer tokens {
+  :root {
+    color-scheme: light;
+    /* colour */
+    --paper: #FCFCFA; --ink: #111111; --grey: #5C5C58; --rule: #B9B9B4; --ground: #ECECE8;
+    --scroll: #E8E8E6;                             /* the part of the panel that scrolls: 8 % darker than the paper */
+    --field: #FFFFFF;                              /* inside a control: fields, tiles, buttons */
+    --hover: #F1F1EE;                              /* a control under the pointer: seen on paper, on the scrolling grey and on a white tile alike */
+    --ink-hover: #333331;                          /* a filled control under the pointer */
+    --faint: #8E8E89;                              /* signs that wait: the rename box */
+    --select: #CFE4F5; --select-rule: #86B4DA;     /* what is selected: a light blue */
+    --glow: #FF7300;                               /* the outline of what the pointer is on, in the preview */
+    --veil: rgba(0, 0, 0, 0.06); --veil-strong: rgba(0, 0, 0, 0.1);      /* a touch of dark on a coloured row */
+    --chip-rule: rgba(0, 0, 0, 0.25);
+    --bar: #333333; --bar-ink: #F2F2EE; --bar-rule: #5C5C58; --bar-field: #454543; --bar-hover: #5A5A57;      /* the bar: 80 % black, light on dark */
+    --bar-dim: rgba(255, 255, 255, 0.3); --bar-faint: rgba(255, 255, 255, 0.12);      /* quiet lines and fills on the bar */
+    --bar-on: rgba(255, 255, 255, 0.24); --bar-edge: rgba(255, 255, 255, 0.6); --bar-quiet: rgba(255, 255, 255, 0.66);
+    /* what a part stands on. A part that scrolls sets these again (see .form): an inset block is darker
+       than paper but lighter than the scrolling grey, so it never melts into its ground. */
+    --surface: var(--paper); --inset: var(--ground); --well: var(--ground);
+    /* the line before and after every row: white on the scrolling grey, that grey on paper and white.
+       A part that scrolls sets --row-rule again, like its surface. */
+    --line-on-grey: #FFFFFF; --line-on-paper: var(--scroll); --row-rule: var(--line-on-paper);
+
+    /* the panel's columns: a toggle column at the far left (eyes: a pane's, a ring's), then six equal
+       columns with equal gaps, between two margins. 24 + 16 + 12 + (6 × 54 + 5 × 12) + 24 = 460.
+       Lines (a pane's thick line, the header's, the tabs') run from margin to margin, so they pass over the eyes.
+       label 2 · slider 2 · value 1 · stepper 1 · menus and text 4 · swatch 1, its value 2 · a picture tile 1 */
+    --margin: 24px;                                /* the panel's side space, left and right: where every line starts and ends */
+    --eye: 16px;                                   /* the toggle column */
+    --gap: 12px; --col: 54px;
+    --nudge: 2px;                                  /* the eyes stand this much right of the margin */
+    --lead: calc(var(--eye) + var(--gap));         /* the toggle column and the gap after it: where the six columns start */
+    --columns: var(--eye) repeat(6, minmax(0, 1fr));
+    --panel: calc(2 * var(--margin) + var(--lead) + 6 * var(--col) + 5 * var(--gap));
+    --unit: 5.5px;                                 /* every space is a multiple of this */
+    --air: calc(4 * var(--unit));                  /* under an open pane */
+    --hair: 1px; --thick: 2px;                     /* a thick line opens a pane; everything inside a pane is a hairline */
+    --nest-from: calc((100% + var(--gap)) / 3);     /* where a row's controls start, from its left edge: two of its six columns and their gaps. A half line starts here */
+    --side-num: 60px; --side-tiny: 16px;           /* beside a hand's box: a number with its tiny plus and minus (the whole · the two alone) */
+    --tile-wider: calc((var(--gap) - var(--unit)) / 4);      /* four tiles stand closer than four columns: each is this much wider than a column */
+    --btn-pad: 10px;                               /* from a button's or a box's edge to its words */
+    --control: 26px;                               /* a control's height: field, button, swatch */
+    --control-large: 32px;                         /* the Guides switch, the hex line */
+    --line: 34px;                                  /* a row's height */
+    --head: 40px;                                  /* a pane's heading */
+    --header: 64px;                                /* the panel's top: title and Guides */
+    --bar-height: 52px; --bar-control: 30px;
+    --tile: 50px;                                  /* a picture tile's least height */
+    --frame-out: 8px;                              /* a framed list row is this much wider than the lines, each side */
+    --ring-gap: 4px;                               /* between framed rows */
+    --guide-tint: 22%; --guide-edge: 65%;          /* the selected ring's row: this much of its guide's colour in its ground, and in its frame */
+    --tab-notch: var(--unit);                      /* how deep the notch between two tabs is cut (a V, twice as wide): one unit */
+    --tab-high: 40px; --tab-pad: 11px;             /* a word tab's height (Hour · Minute · Seconds) · above and under a picture tab's picture (the window cards): room to breathe */
+    --round-pill: 999px;                           /* fully round: the signs on the Rings heading line, a value button */
+    --menu-box: 18px;                              /* the boxed arrow beside a label that opens a small menu */
+    --foot-gap: 4px;                               /* between the round signs on the Rings heading line */
+    --ringline-pad: 8px; --ringline-gap: 8px; --ringline-join: 2px;      /* the selected ring's line: inside its frame · between its parts · between it and its ring's row */
+    --ringline-inner: calc(3 * var(--hair));       /* its second, inner line: three times the outer */
+    --row-end: calc(var(--frame-out) - var(--hair) + var(--ringline-inner));      /* the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons */
+    --line-button: 36px; --bare-dot: 16px;      /* in the ring drawer every control is this high (a value button this wide too) · the colour's swatch */
+    --name-in: 6px;                                /* a ring's name starts this far into its column; the ring line's buttons too */
+    --half: 30px;                                  /* AM · PM inside the time's box */
+    --value-pop: 132px;                            /* a value button's pop-up: about as wide as it is high */
+    --dot-tiny: 10px;                              /* a colour inside a line of words: a folded pane's summary */
+    --thumb: 18px; --track: 4px;                   /* sliders: a black disc on a thin track */
+    --tick: 16px;                                  /* a tick box */
+    --reach: calc((var(--line) - var(--control)) / 2);      /* what a row leaves above and under a control: under a finger, a press there counts too */
+    --chip: 22px; --chip-gap: 4px;                 /* a colour to pick: in the pop-out's two rows, in the guides' list */
+    --pop-pad: 16px; --pop-gap: 12px; --pop-label: 72px;      /* a night part (colour pop-out, guides' list): the space inside its edge, the space between its blocks; the column of the pop-out's row names */
+    --pop-field: 140px; --pop-hue: 22px;           /* its field of one hue, and the strip of hues under it */
+    --knob: 20px;                                  /* the handle on the field and on the strip */
+    /* the colour pop-out is near black; inside it the usual names (--ink, --paper, --field…) are set to these */
+    --night: #141413; --night-field: #262624; --night-hover: #34342F; --night-rule: #4A4A46; --night-chip-rule: rgba(255, 255, 255, 0.28);
+    /* round corners belong to colour things only: the pop-out, its field, a colour pill, a swatch */
+    --round-large: 14px; --round: 8px; --round-small: 5px;
+    --dot: 14px;                                   /* a swatch to pick from (a band's sectors) */
+    --pill-gap: var(--unit);                       /* a colour pill: this one space everywhere. Around its swatch, between swatch and hex, and from the pill to its row's lines: a row is the swatch and four of these */
+    --pill: calc(1em + 2 * var(--pill-gap));       /* its height. The swatch is as high as the hex is set (1em) */
+    --pop-width: 388px; --pop-chips: 11; --pop-chip-gap: 12px;      /* the colour pop-out: its width; colours to a row (the palette's ten and its +), which share the row's width; the room between two */
+    --checker: repeating-conic-gradient(#BDBDB9 0 25%, #FFFFFF 0 50%) 0 0 / 8px 8px;      /* what shows through a see-through colour */
+    --faint: 0.35;                                 /* how much of a switch on the preview shows at rest */
+    --canvas-inset: 12px;                          /* from the preview's edge to what stands on it */
+    --canvas-top: calc((var(--header) - var(--control-large)) / 2);      /* undo and Guides stand on the header's middle line, with the title and the unit box */
+    --guide-name: 92px; --guide-row: 42px;         /* the guides' list: the column of names · a line's height */
+    --guide-dot: 10px; --guide-gap: 10px;           /* a round colour in the guides' list, and the room between two: the chosen one's ring needs it */
+    --ring-gap-in: 2px; --ring-thick: 3px;         /* the chosen one: a ring of the ground this wide, then a ring of its own colour this thick */
+
+    /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
+    --t-xs: 11px; --t-s: 12px; --t-m: 13px; --t-l: 15px;
+    --font-name: 104px; --font-has: 92px; --font-has-most: 120px;     /* the font sheet's columns: a family's name · what it has (its numerals take the rest) · the most the stickers' column may take from the numerals */
+    --round-tiny: 3px;                             /* a sticker's corners, a small swatch's */
+    /* stickers: one colour for a kind of thing a font family has. Pale: a guide's colour, as much of it as in the
+       selected ring's row */
+    --st-ink: #141413;
+    --st-weight: color-mix(in srgb, #FFE600 var(--st-tint), var(--field)); --st-italic: color-mix(in srgb, #FF2D95 var(--st-tint), var(--field));
+    --st-width: color-mix(in srgb, #00E5FF var(--st-tint), var(--field)); --st-optical: color-mix(in srgb, #39FF14 var(--st-tint), var(--field));
+    --st-other: color-mix(in srgb, #7A5CFF var(--st-tint), var(--field)); --st-figure: color-mix(in srgb, #FF6A00 var(--st-tint), var(--field));
+    --st-sets: color-mix(in srgb, #2D7BFF var(--st-tint), var(--field)); --st-styles: var(--ground);
+    --st-tint: var(--guide-tint);
+    --shadow: calc(-2 * var(--unit)) 0 7px rgba(0, 0, 0, 0.28);      /* what floats over the window throws its shadow to the left, a little soft */
+    --swatch-col: calc(2 * (var(--line-button) + var(--ringline-gap)) + var(--ringline-inner) - var(--hair));      /* from a pane's right edge to the right edge of the ring list's colour column: a colour swatch further down stands in that column too */
+    --t-sample: 20px;                              /* a font's numerals in the font list, when the browser sets them */
+    --t-pixel: 8px;                                /* the pixel font's own size: its dots fall on the screen's (R32) */
+    --sans: system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --pixel: "Silkscreen", ui-monospace, Menlo, monospace;      /* tiny numbers inside small drawings (a value button, the numerals picture): Silkscreen, packed into the page by build.mjs (SIL OFL) */
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;      /* only for what the tool says: the log, a link, a hex value, a feature's tag */
+  }
+  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --pop-width: 454px; --dot: 18px; --guide-dot: 14px; --guide-gap: 13px; --pop-field: 180px; --pop-hue: 32px; --knob: 28px; } }      /* a finger needs more to hold than a pointer */
+}

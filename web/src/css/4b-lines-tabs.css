@@ -1,0 +1,37 @@
+/* pinned lines and tabs inside a section: All hands, the hand tabs, the window cards */
+@layer panel {
+  /* a bar: one line of its own, outside the panes (Hands: All hands · Show hands · Motion). It opens like a pane, with
+     a thick line; on the columns: name 2 · tick 2 · menu 2. */
+  .handsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; min-height: calc(var(--head) + var(--unit)); border-top: var(--thick) solid var(--ink); }
+  /* Windows: four cards the size of the example cards (five to a row), 12 · 3 · 6 · 9. They are tabs: the chosen one
+     is ink. A window that isn't shown is quiet. The line under the section tabs is theirs. */
+  .windowcards { padding: calc(2 * var(--unit)) 0 0; border-top: var(--thick) solid var(--ink); }      /* no room under the cards: they are tabs, standing on the line of the pane they choose */
+  .windowcards .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }      /* the four tabs span the panel from margin to margin, the eyes' column too */
+  .windowcards .card { position: relative; display: grid; }
+  .windowcards .card > button:first-child { display: grid; justify-items: center; gap: 3px; padding: var(--tab-pad) 4px; font-weight: 600; }
+  .windowcards .card > button:first-child svg { display: block; }
+  .windowcards .card > button:first-child.off:not(.on) { color: var(--grey); font-weight: 400; }
+  .handsbar + .tabsbar { border-top: var(--hair) solid var(--rule); }
+  /* tabs inside a section, always in view (Hands: Hour · Minute · Seconds): one line across the six columns */
+  .tabsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: end; min-height: calc(var(--head) + var(--unit)); padding-top: calc(1.5 * var(--unit)); border-top: var(--thick) solid var(--ink); }
+  .tabsbar > .segs { grid-column: 2 / -1; }
+  .tabsbar .segs > button { height: var(--tab-high); font-weight: 600; }
+  .pinned:has(> :is(.tabsbar, .windowcards):last-child) { border-bottom: var(--thick) solid var(--ink); }      /* the hand tabs stand on a pane's thick line: the pane under them is the one they choose */
+  /* tabs: the hand
+     tabs and the window cards. They touch each other and stand on the line under them with no foot of their own;
+     between two tabs the top has a sharp notch, a V; the first and the last corner are square. The chosen one is black. The V is a square stood on its
+     corner over the joint. */
+  :is(.tabsbar .segs, .windowcards .card) > button { border: var(--hair) solid var(--rule); border-bottom: 0; background: var(--field); }
+  :is(.tabsbar .segs > button + button, .windowcards .card + .card > button) { position: relative; }
+  /* two triangles hanging from the tabs' top line, their point down, over the joint: one in the line's colour, and
+     on it one in the surface's colour, smaller by the line. What shows of the first is the V's line. */
+  :is(.tabsbar .segs > button + button, .windowcards .card + .card > button)::before, :is(.tabsbar .segs > button + button, .windowcards .card + .card > button)::after { content: ""; position: absolute; z-index: 1; left: calc(-1 * var(--hair) / 2); top: calc(-1 * var(--hair)); transform: translateX(-50%); clip-path: polygon(0 0, 100% 0, 50% 100%); pointer-events: none; }
+  :is(.tabsbar .segs > button + button, .windowcards .card + .card > button)::before { width: calc(2 * (var(--tab-notch) + 1.4142 * var(--hair))); height: calc(var(--tab-notch) + 1.4142 * var(--hair)); background: var(--rule); }
+  :is(.tabsbar .segs > button + button, .windowcards .card + .card > button)::after { width: calc(2 * var(--tab-notch)); height: var(--tab-notch); background: var(--surface); }
+  :is(.tabsbar .segs > button, .windowcards .card) + :is(button, .card) { margin-left: calc(-1 * var(--hair)); }
+  :is(.tabsbar .segs, .windowcards .card) > button:hover { background: var(--hover); }
+  :is(.tabsbar .segs, .windowcards .card) > button.on { position: relative; }
+  .handsbar > h2 { grid-column: 2 / span 2; }
+  .handsbar > .check { grid-column: 4 / span 2; white-space: nowrap; }
+  .handsbar > select { grid-column: 6 / span 2; }
+}

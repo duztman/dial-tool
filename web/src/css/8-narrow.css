@@ -1,0 +1,34 @@
+@layer narrow {
+  /* a phone, or a narrow window: the bar on top, the preview under it; below them the whole panel scrolls as one.
+     The six columns share what the screen gives. */
+  @media (max-width: 860px) {
+    :root { --canvas-top: var(--canvas-inset); --margin: 16px; --gap: 10px; --col: calc((100vw - 2 * var(--margin) - var(--lead) - 5 * var(--gap)) / 6); }
+    #app, #app.nopanel { grid-template-columns: 1fr; grid-template-rows: auto 42% 1fr; }
+    #app.nopanel { grid-template-rows: auto 1fr 0; }
+    .bar { grid-row: 1; flex-wrap: wrap; height: auto; padding: 0; border-top: 0; border-bottom: var(--hair) solid var(--bar-rule); }
+    .bar .lead { width: 100%; height: 46px; }
+    .bar .group { border-left: 0; }
+    .bar .day { flex: 1 1 0; height: 48px; padding: 0 var(--margin); }
+    .bar .viewing { padding: 0 var(--margin) 0 0; }
+    .bar .zooms { display: none; }                  /* a phone pinches */
+    .steps12 button:nth-child(odd):not(.special) { display: none; }      /* every other hour: 1 3 5 … wait for room */
+    .steps12 button.special { bottom: auto; top: calc(-1 * var(--hair)); }      /* the bar is on top here and the preview's top corners are taken (undo, Guides): 10:10 stays among the hours */
+    main { grid-row: 2; }
+    .panel { grid-row: 3; display: block; overflow-y: auto; -webkit-overflow-scrolling: touch; border-right: 0; border-top: var(--hair) solid var(--rule); }
+    .form { overflow: visible; }
+    .tabs { position: sticky; top: 0; z-index: 3; background: var(--paper); }      /* over what scrolls under it: the tabs' notches, an open number box */
+    .ringlist ol { max-height: none; }
+    .row.pick > label, .row.pick > .picks { grid-column: 1 / -1; }
+    .detail { min-height: 0; height: calc(1.5 * var(--tile)); }      /* over its rows here: a wide box, the hand lying in it, its tip to the right */
+    .detail .upright { display: none; }
+    .detail .lying { display: block; }      /* picture tiles under their label, on all six columns: room for their words */
+    .row.pick > label { line-height: 1.4; padding-top: var(--unit); }
+    .picker { inset: auto 0 0 0; width: 100%; max-width: 100vw; height: 58%; border-width: var(--hair) 0 0; box-shadow: none; }
+    /* the colour pop-out is a sheet from the bottom; wide, it is the whole screen */
+    .colourpop { inset: auto 0 0 0; width: auto; border-width: var(--hair) 0 0; border-radius: var(--round-large) var(--round-large) 0 0; }
+    .colourpop.wide { inset: 0; grid-template-rows: auto auto auto 1fr; border-radius: 0; }      /* wide, a sheet is the whole screen; the field takes the height that is left */
+    .colourpop.wide .sv { height: auto; min-height: var(--pop-field); }
+    .colourpop header { cursor: default; }
+    .guidelist { max-width: calc(100vw - 2 * var(--canvas-inset)); }
+  }
+}

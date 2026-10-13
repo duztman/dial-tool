@@ -1,0 +1,22 @@
+/* Dial Tool, web version — the stylesheet (R32).
+
+   One file per part, in this folder; build.mjs joins them in the order of their names. Each file is one
+   cascade layer (the panel's layer is several files, a to h):
+
+   1 · tokens    every colour, size and measure has one name, in :root. Nothing below repeats a value.
+   2 · base      the page, plain elements.
+   3 · controls  buttons (by kind), fields, sliders, ticks, segments, tiles: the same wherever they stand.
+   4 · panel     a frame · b pinned lines and tabs · c rows · d hands · e colour · f rings · g fonts · h gallery.
+   5 · chosen    what is switched on, picked or open is ink with paper words: one rule for every control.
+   6 · preview   the dial's picture, the switches on it, the guides' list, the outline and label under the pointer.
+   7 · bar       time and view, under panel and preview.
+   8 · narrow    a phone or a narrow window.
+
+   A later layer wins over an earlier one whatever the selectors look like, so no rule has to be written
+   "stronger" to get its way, and a part never undoes another part.
+   Colours and type follow docs/design.md (the design canon): paper, ink, one grey for quiet text, hairline
+   rules; no cards, shadows or rounded panels — except colour things (the pop-out, a colour pill, a swatch),
+   which are round. */
+@layer tokens, base, controls, panel, chosen, preview, bar, narrow;
+
+[hidden] { display: none; }                        /* outside the layers, so it wins over all of them: rows that don't apply (R16) */

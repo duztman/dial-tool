@@ -732,7 +732,7 @@ class DialTool {
    *  with a solid line, showing the colour as a chip. A press opens the colour pop-out for the backdrop. */
   backdrop_box() {
     const dot = el("i", { className: "dot" });
-    const box = el("button", { type: "button", className: "backdropbox", id: "backdrop", title: "The backdrop’s colour (preview only)" }, dot, el("span", { textContent: "Backdrop" }));
+    const box = el("button", { type: "button", className: "onview backdropbox", id: "backdrop", title: "The backdrop’s colour (preview only)" }, dot, el("span", { textContent: "Backdrop" }));
     box.setAttribute("aria-expanded", "false");
     box.onclick = () => this.pop_open({ read: () => this.S.c_backdrop, write: (v) => this.set_value("global", "c_backdrop", v), label: () => "Backdrop" }, box);
     this.backdrop_dot = dot;
@@ -743,13 +743,13 @@ class DialTool {
    *  dashed = off) and, joined to it, an arrow that drops their list: the five kinds of guide, each with an eye and
    *  one of eight colours; one thickness; Reset. No free colours here. */
   guides_box() {
-    this.guides_tick = el("button", { type: "button", className: "guidesbox", id: "guides", onclick: () => this.set_value("global", "guides", !this.S.guides) });
+    this.guides_tick = el("button", { type: "button", className: "onview guidesbox", id: "guides", onclick: () => this.set_value("global", "guides", !this.S.guides) });
     this.guides_tick.innerHTML = icon(`<circle r="5.6"/><circle r="2.1"/><path d="M0 -8.6L0 -3.6M0 3.6L0 8.6M-8.6 0L-3.6 0M3.6 0L8.6 0"/><path class="slash" d="M-7.4 7.4L7.4 -7.4"/>`, 18, "-9 -9 18 18");
     const word = el("span", { className: "word", textContent: "Guides" });
     word.dataset.text = "Guides";
     this.guides_tick.append(word);
     const list = el("div", { className: "guidelist night", id: "guide-list", hidden: true });
-    const more = el("button", { type: "button", className: "guidesmore", id: "guides-more", title: "Which guides, and their colours", ariaLabel: "Which guides, and their colours" });
+    const more = el("button", { type: "button", className: "onview guidesmore", id: "guides-more", title: "Which guides, and their colours", ariaLabel: "Which guides, and their colours" });
     more.innerHTML = icon(`<path d="M4 6.5L8 10.5L12 6.5"/>`);
     more.setAttribute("aria-expanded", "false");
     const open = (on) => { list.hidden = !on; more.setAttribute("aria-expanded", String(on)); if (on) this.sync_guides(); };
@@ -2973,7 +2973,7 @@ class DialTool {
   /** undo and redo on the preview, top right, before the Guides switch (Okay, 13 Oct 2026): two outlined buttons,
    *  like the switches there; pale when there is nothing to go back or forward to. */
   undo_box() {
-    const make = (id, title, way, d) => { const b = el("button", { type: "button", className: "undobox", id, title, ariaLabel: title, onclick: () => this.undo(way) }); b.innerHTML = icon(d); return b; };
+    const make = (id, title, way, d) => { const b = el("button", { type: "button", className: "onview undobox", id, title, ariaLabel: title, onclick: () => this.undo(way) }); b.innerHTML = icon(d); return b; };
     this.undo_buttons = [make("undo", "Undo (⌘Z)", -1, `<path d="M3 6.5H10A3.5 3.5 0 0 1 10 13.5H6M6 3.5L3 6.5L6 9.5"/>`), make("redo", "Redo (⇧⌘Z)", 1, `<path d="M13 6.5H6A3.5 3.5 0 0 0 6 13.5H10M10 3.5L13 6.5L10 9.5"/>`)];
     this.sync_undo();
     return el("span", { className: "undos" }, ...this.undo_buttons);

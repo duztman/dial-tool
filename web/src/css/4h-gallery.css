@@ -1,0 +1,11 @@
+/* the Gallery's cards */
+@layer panel {
+  /* examples: five dials to start from, each on an inset ground, the full width of the pane */
+  .examples { padding: 4px 0; }
+  .examples .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--unit); }
+  .examples a { display: grid; gap: 3px; padding: 6px 4px 4px; background: var(--inset); color: var(--ink); text-decoration: none; text-align: center; }
+  .examples a:hover, .examples a:focus-visible { background: var(--select); outline: 0; }
+  .examples svg { display: block; width: 100%; height: auto; }
+  .gallery .cards { grid-template-columns: repeat(3, 1fr); }      /* the gallery: three to a line, so a dial can be read */
+  .gallery a { padding: 8px 8px 6px; gap: 5px; }
+}

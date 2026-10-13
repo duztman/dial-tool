@@ -1,0 +1,110 @@
+@layer controls {
+  /* a button starts as nothing but its words; a class says what kind it is. Four kinds stand in rows:
+     btn (outline): an action · btn main (filled): writes a file · plain (words only): adds something ·
+     sign (a drawing only): acts on the selected thing. Steps, segments and tiles are below. */
+  button { appearance: none; margin: 0; padding: 0; border: 0; border-radius: 0; background: none; font: inherit; color: inherit; cursor: pointer; }
+  select, input { font: inherit; color: inherit; }
+  :is(button, select, input[type="text"], input[type="checkbox"], textarea):focus-visible { outline: 2px solid var(--ink); outline-offset: 0; }
+  input[type="text"]:focus, select:focus { outline: 2px solid var(--ink); outline-offset: 0; }
+
+  .btn, .step, .segs > button, .plain, .sign { height: var(--control); border: var(--hair) solid var(--ink); background: var(--field); }
+  :is(.btn, .step, .segs > button):hover { background: var(--hover); }
+  :is(.btn, .step, .segs > button, .plain, .sign):active { background: var(--ink); color: var(--paper); }
+  .btn { padding: 0 var(--btn-pad); }
+  .btn.main { min-width: var(--col); background: var(--ink); color: var(--paper); font-weight: 600; }
+  .btn.main:hover { background: var(--ink-hover); }
+  .plain, .sign { flex: none; border-color: transparent; background: none; }
+  .plain { padding: 0 6px; white-space: nowrap; }
+  .sign { display: inline-grid; place-items: center; width: var(--control); }
+  :is(.plain, .sign):hover { background: var(--field); border-color: var(--rule); }
+
+  .steps, .segs { display: flex; }
+  .steps { width: 100%; }
+  .step, .segs > button { flex: 1; border-color: var(--rule); }
+  .segs > button { padding: 0 4px; }
+  /* a window's places: a square of the four quarters · a white bar · the places between and a box of three dots
+     for any time. Each a box of its own, one unit apart. */
+  .atgrid { grid-column: 3 / -1; display: grid; grid-template-columns: 2fr auto 3fr; gap: var(--unit); align-items: stretch; padding: var(--unit) 0; }
+  .atgrid > .segs { display: grid; gap: var(--unit); }
+  .atgrid > .quarters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .atgrid > .between { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .atgrid > .segs > button + button { border-left: var(--hair) solid var(--rule); }
+  .atgrid > .segs > button.on { border-color: var(--ink); }
+  .atgrid > .divide { width: var(--thick); background: var(--row-rule); }
+  .atmore:not(.on) { letter-spacing: 0.1em; }      /* the three dots, a little apart */
+  :is(.step, .segs > button) + button { border-left: 0; }
+  .tools { display: flex; flex-wrap: wrap; gap: var(--unit); align-items: center; }
+
+  input[type="text"], select { height: var(--control); width: 100%; min-width: 0; padding: 0 6px; border: var(--hair) solid var(--rule); border-radius: 0; background: var(--field); }
+
+  /* a tick box: square like every other control; ink when ticked */
+  input[type="checkbox"] { appearance: none; flex: none; display: inline-grid; place-content: center; width: var(--tick); height: var(--tick); margin: 0 8px 0 0; border: var(--hair) solid var(--ink); border-radius: 0; background: var(--field); cursor: pointer; }
+  input[type="checkbox"]::before { content: ""; width: calc(var(--tick) - 6px); height: calc(var(--tick) - 6px); background: var(--paper); clip-path: polygon(12% 48%, 0 62%, 40% 100%, 100% 20%, 86% 8%, 38% 72%); opacity: 0; }
+  input[type="checkbox"]:checked { background: var(--ink); }
+  input[type="checkbox"]:checked::before { opacity: 1; }
+  .check { display: inline-flex; align-items: center; cursor: pointer; }
+
+  /* a slider: a thin track, ink up to the handle, and the handle a black disc with a light centre.
+     --p (0 to 1, set in app.js: filled) says how far along it is; --fill is that, measured along the track. */
+  input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: var(--control); margin: 0; background: none; cursor: pointer;
+    --fill: calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--p, 0)); }
+  input[type="range"]::-webkit-slider-runnable-track { height: var(--track); border-radius: var(--track); background: linear-gradient(to right, var(--ink) var(--fill), var(--well) var(--fill)); }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: var(--thumb); height: var(--thumb); margin-top: calc((var(--track) - var(--thumb)) / 2); border: 0; border-radius: 50%;
+    background: radial-gradient(circle, var(--field) 0 2px, var(--ink) 2.75px); }
+  input[type="range"]::-moz-range-track { height: var(--track); border-radius: var(--track); background: var(--well); }
+  input[type="range"]::-moz-range-progress { height: var(--track); border-radius: var(--track); background: var(--ink); }
+  input[type="range"]::-moz-range-thumb { width: var(--thumb); height: var(--thumb); border: 0; border-radius: 50%; background: radial-gradient(circle, var(--field) 0 2px, var(--ink) 2.75px); }
+  input[type="range"]:focus-visible { outline: 0; }
+  input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink); }
+  input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink); }
+
+  /* a choice as pictures (pickt: one column wide) and OpenType switches (tile: two columns wide); the chosen one is filled */
+  .pickt, .tile { display: grid; border: var(--hair) solid var(--rule); background: var(--field); }
+  :is(.pickt, .tile):hover { background: var(--hover); }
+  .picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--unit); padding: var(--unit) 0; }      /* one small space, the unit: between the tiles, both ways, and from them to the row's lines. The tiles are wider than a column for it */
+  .picks.five { grid-template-columns: repeat(5, minmax(0, 1fr)); }      /* five choices (a window's shape) */
+  .pickt { justify-items: center; align-content: start; gap: calc(var(--unit) / 2); min-height: var(--tile); padding: var(--unit) var(--hair); font-size: var(--t-xs); line-height: 1.15; }
+  .pickt span { white-space: nowrap; text-align: center; }      /* a tile's word is one line; a name too long for it has a short one in TILE_WORDS */
+  .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px var(--gap); }
+  .tile { align-content: space-between; justify-items: start; gap: 4px; min-height: calc(var(--tile) + 2px); padding: 7px 8px; text-align: left; line-height: 1.25; }
+  .tile small { color: var(--grey); font: var(--t-xs)/1 var(--mono); }
+  .tile[aria-pressed="true"] small { color: var(--rule); }
+
+  /* what the tool says, set apart: small, monospaced, on an inset ground */
+  .log, .link { background: var(--inset); }
+
+  /* reach: under a finger, a small control is pressed from a little outside its edge too — up to half-way to its
+     neighbour, so two never overlap. What you see doesn't change: the reach is an unseen frame round the control
+     (--reach-x to the sides, --reach-y above and under; nothing for a mouse). Every small control is listed here. */
+  :is(.dots button, .chips button, .swatches .swatch, .sign, .step, .rename) { position: relative; }
+  :is(.dots button, .chips button, .swatches .swatch, .sign, .step, .rename)::after { content: ""; position: absolute; inset: calc(-1 * var(--reach-y, 0px)) calc(-1 * var(--reach-x, 0px)); }
+  @media (pointer: coarse) {
+    .dots button { --reach-x: calc(var(--guide-gap) / 2); --reach-y: calc((var(--guide-row) - var(--guide-dot)) / 2); }      /* a guide's colour: the whole height of its line */
+    .chiprow .chips button { --reach-x: calc(var(--pop-chip-gap) / 2); --reach-y: calc(var(--pop-chip-gap) / 2); }      /* a colour in the pop-out */
+    .swatches .swatch { --reach-x: calc(var(--chip-gap) / 2); --reach-y: var(--reach); }      /* a band's sector */
+    .sign, .rename, .step, .labelmenu { --reach-y: var(--reach); }      /* signs under the ring list, the pop-out's square and cross, the rename box, − and + */
+    .colourpop header .sign { --reach-y: calc((var(--head) - var(--control)) / 2); }
+  }
+
+  /* night: a part that is near black with light words (the colour pop-out, the guides' list). Inside it the usual
+     colour names are set to their night values, so every control looks as it does elsewhere, light on dark. */
+  .night { --paper: var(--night); --surface: var(--night); --ink: var(--bar-ink); --grey: var(--bar-quiet); --field: var(--night-field); --well: var(--night-rule); --inset: var(--night-field);
+    --hover: var(--night-hover); --ink-hover: #FFFFFF; --rule: var(--night-rule); --row-rule: var(--night-rule); --chip-rule: var(--night-chip-rule);
+    border: var(--hair) solid var(--rule); border-radius: var(--round-large); background: var(--paper); color: var(--ink); }
+  .night :is(input[type="text"], .btn) { border-radius: var(--round-small); }
+  .night .segs > button:first-child { border-radius: var(--round-small) 0 0 var(--round-small); }
+  .night .segs > button:last-child { border-radius: 0 var(--round-small) var(--round-small) 0; }
+  .night .steps > .step:first-child { border-radius: var(--round-small) 0 0 var(--round-small); }
+  .night .steps > .step:last-child { border-radius: 0 var(--round-small) var(--round-small) 0; }
+  .night .row > label:first-child { color: var(--grey); }
+
+  /* colours to pick: small squares in a row; the one in use is outlined */
+  .chips { display: grid; grid-template-columns: repeat(auto-fill, var(--chip)); gap: var(--chip-gap); }
+  .chips button { width: var(--chip); height: var(--chip); border: var(--hair) solid var(--chip-rule); border-radius: var(--round-small); }
+  .chips button.on { outline: var(--thick) solid var(--ink); outline-offset: 2px; }
+  .chips button.add { border-color: var(--rule); background: var(--field); color: var(--ink); line-height: 1; }
+  .chips button.add:hover { background: var(--hover); border-color: var(--ink); }
+  .log, .link { display: block; width: 100%; margin: 0; padding: 8px 10px; border: 0; color: var(--grey); font: var(--t-xs)/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .log { min-height: 96px; max-height: 260px; overflow-y: auto; }
+  .link { resize: none; overflow-y: auto; color: var(--ink); }
+}

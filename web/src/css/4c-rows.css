@@ -1,0 +1,44 @@
+/* rows: a setting on the six columns, nested rows, notes */
+@layer panel {
+  /* rows sit on the six columns: label 2 · control 2 · typed field 1 · stepper 1 */
+  .row { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); column-gap: var(--gap); align-items: center; min-height: var(--line); }
+  /* a hairline before and after every row. Two shadows, both on the row's own last line and the line above its
+     first: where rows meet they fall on the same line, so it stays one hairline, whichever rows are hidden. */
+  .row:not(.note) { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule), 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  /* a nested row belongs to the row above it (.nest: a question about it · .tied: its settings · .under: a note
+     about it). Between the two stands a half line: a hairline from the controls' column to the right edge, in
+     the place of the whole one. The row above draws it, on its own last line, where every
+     line of a row falls; the nested row draws no line over itself. One hidden row may lie between the two (a note that doesn't apply now). */
+  .row:is(.nest, .tied, .under), .row.note { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  .row:has(+ .row:is(.nest, .tied, .under):not([hidden])), .row:has(+ .row[hidden] + .row:is(.nest, .tied, .under):not([hidden])) { box-shadow: 0 calc(-1 * var(--hair)) 0 var(--row-rule); background: linear-gradient(var(--row-rule) 0 0) right bottom / calc(100% - var(--nest-from)) var(--hair) no-repeat; }
+  .row:is(.nest, .tied, .under):has(+ .row:is(.nest, .tied, .under):not([hidden])) { box-shadow: none; }
+  .row > .blank:first-child { display: block; }
+  .row.note.under > .quiet { grid-column: 3 / -1; }      /* a note about the controls above it starts on their column */      /* an empty place where a label would stand: what follows keeps its column */
+  .row > :first-child { grid-column: span 2; }
+  .row.num > input[type="range"] { grid-column: span 2; }
+  .row.num input[type="text"] { text-align: right; }
+  /* a field for words (a window's text, custom labels; the font sheet's two): larger than a number's, with a darker line */
+  .row.txt > input, .picker header > input, .picker .adding > input { height: var(--control-large); border-color: var(--grey); }
+  .row > label:first-child { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row > label.strong:first-child { color: var(--ink); font-weight: 600; }      /* a name where a label would stand: the selected ring's, before its kinds */
+  /* a label with a small menu beside it: the words, then a boxed arrow with the browser's own menu lying over it */
+  .menulabel { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .menulabel > label { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .labelmenu { position: relative; flex: none; display: grid; place-items: center; width: var(--menu-box); height: var(--menu-box); border: var(--hair) solid var(--grey); background: var(--field); color: var(--ink); }
+  .labelmenu:hover { border-color: var(--ink); }
+  .labelmenu > select { position: absolute; inset: calc(-1 * var(--reach-y, 0px)); width: calc(100% + 2 * var(--reach-y, 0px)); height: calc(100% + 2 * var(--reach-y, 0px)); opacity: 0; cursor: pointer; }      /* under a finger the unseen menu is larger than its box (reach) */
+  .row > :is(select, .segs, .colour, .single, .tools, .picks, .swatches), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
+  .row > :is(.check, .wide, .picks.five), .row.note > .quiet { grid-column: 1 / -1; }      /* a tick and its words start at the left edge */
+  .row > span:first-child:empty { display: none; }
+  .row.nest > .check { grid-column: 3 / -1; }       /* a question about the row above: it starts where the controls start */
+  /* a note is a row of words: as much room over them as under, and a hairline closes it like any row (the row
+     above draws the one over it) */
+  .row.note { min-height: 0; }
+  .row.note > .quiet { padding: var(--unit) 0; }
+  .row > button:not(:first-child) { justify-self: start; }
+  .row > .btn.main:first-child { justify-self: stretch; }      /* a button standing where the label would (PNG) */
+  .row.pick { align-items: start; }
+  .row.pick > label { line-height: var(--line); }
+  .row > label > .short { display: none; }         /* a label's short wording: only where there is little room (a side row) */
+  .linkrow .tools { margin-top: var(--unit); gap: calc(var(--unit) * 2); }
+}

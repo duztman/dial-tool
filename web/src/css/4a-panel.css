@@ -1,0 +1,69 @@
+/* the panel's frame: header, units, section tabs, the pinned part and the part that scrolls, panes */
+@layer panel {
+  /* the panel: header, tabs, the pinned panes, the panes that scroll. */
+  .panel { display: flex; flex-direction: column; min-height: 0; border-right: var(--hair) solid var(--rule); }
+  #app.nopanel { grid-template-columns: 0 1fr; }   /* the panel put away: the dial gets the whole window */
+  #app.nopanel .panel { display: none; }
+  .panel > header { display: flex; align-items: center; height: var(--header); padding: 0 var(--margin); }
+  .panel .title { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); }
+  /* units: a box at the panel's top right saying the unit lengths are shown in, by its short name; one column wide
+     whatever it says. Its menu hangs under it, the units by their full names, a hairline between them. */
+  .unit { position: relative; margin-left: auto; }
+  .unitbox { width: var(--col); height: var(--control-large); border: var(--hair) solid var(--rule); color: var(--grey); text-align: center; }      /* its word like the version beside the title, its line like the header's */
+  .unitbox:hover { background: var(--hover); color: var(--ink); border-color: var(--ink); }
+  /* a small menu hanging under its button (the units; the kinds of ring to add): lines a row high, a hairline between them */
+  :is(.unitmenu, .addmenu) { position: absolute; z-index: 4; top: calc(100% + var(--unit)); right: 0; min-width: calc(2 * var(--col) + var(--gap)); border: var(--hair) solid var(--ink); background: var(--field); }
+  :is(.unitmenu, .addmenu) button { display: flex; align-items: center; gap: var(--gap); width: 100%; height: var(--line); padding: 0 10px; white-space: nowrap; }
+  :is(.unitmenu, .addmenu) button + button { border-top: var(--hair) solid var(--rule); }
+  :is(.unitmenu, .addmenu) button:hover { background: var(--hover); }
+  .unitmenu button { justify-content: space-between; }
+  .unitmenu button.on { font-weight: 600; }
+  .unitmenu button.on .quiet { color: var(--ink); }
+
+  /* sections: a sign inside a ring, its name under it */
+  .tabs { display: grid; grid-template-columns: repeat(5, 1fr); margin: 0 var(--margin); padding: 12px 0 0; border-top: var(--hair) solid var(--rule); }
+  .tabs button { display: grid; justify-items: center; gap: 6px; padding: 4px 0 11px; color: var(--grey); }
+  .tabs button:hover { color: var(--ink); }
+  .tabs button:focus-visible { outline-offset: -2px; }
+  .tabs .ring { stroke-width: 1.2; }
+  .tabs .dama { display: none; }
+  .tabs button.on { color: var(--ink); font-weight: 600; box-shadow: inset 0 -3px 0 var(--ink); }
+  .tabs button.on .ring { fill: var(--ink); stroke: var(--ink); }
+  .tabs button.on .sign { color: var(--paper); }
+  .tabs button[data-tab="Dial"].on .ring { fill: none; }      /* Dial's sign is the ring itself, cut in pies: chosen, every other pie is filled */
+  .tabs button[data-tab="Dial"].on .sign { color: var(--ink); }
+  .tabs button[data-tab="Dial"].on .dama { display: inline; }
+
+  .pinned, .form { padding: 0 var(--margin); }
+  .pinned { border-bottom: var(--hair) solid var(--rule); }      /* a hairline: what is under it scrolls */
+  .pinned > .pane:last-child { --air: calc(3 * var(--unit)); }
+  .form { --surface: var(--scroll); --inset: var(--paper); --well: var(--field); --row-rule: var(--line-on-grey);
+    flex: 1; min-height: 0; overflow-y: auto; padding-bottom: calc(6 * var(--unit)); background: var(--surface); }
+
+  /* a pane: a thick line, its heading, its rows. The eye in the toggle column shows whether it is open; the whole
+     heading is the button. A folded pane says what it holds, in grey, at the right. Its body is where the columns
+     are: the toggle column, then the six. Rows stand on the six; a few things (ring list, examples) take all seven. */
+  .pane { border-top: var(--thick) solid var(--ink); }
+  .pinned:not([hidden]) + .form > .pane:first-child { border-top: 0; }      /* the hairline under the pinned panes already opens it */
+  .form > .pane.folded:last-child { border-bottom: var(--hair) solid var(--rule); }
+  .fold { display: grid; grid-template-columns: var(--eye) auto minmax(0, 1fr); column-gap: var(--gap); align-items: center; width: 100%; height: var(--head); text-align: left; }
+  .fold .eye { display: grid; place-items: center; position: relative; left: var(--nudge); }
+  .folded > .fold :is(.eye, h2) { color: var(--grey); }
+  .fold:hover :is(.eye, h2) { color: var(--ink); }
+  .fold .summary { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; font-size: var(--t-s); }
+  .fold:focus-visible { outline-offset: -2px; }
+  /* a pane's main selector stands on its heading line, on the four control columns, with no name of its own: the
+     heading names it. The pane is laid on the columns so the selector can lie over the heading's right part; the
+     heading stays one button under it. It shows when the pane is folded too, where the summary would be. */
+  .pane:is(.has, .tooled) { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); }
+  .pane:is(.has, .tooled) > * { grid-column: 1 / -1; }
+  .pane:is(.has, .tooled) > .fold { grid-row: 1; }
+  .pane:is(.has, .tooled) > :is(.headcontrol, .headtools) { grid-row: 1; grid-column: 4 / -1; align-self: center; z-index: 1; }
+  .pane.has > .fold .summary, .pane.tooled:not(.folded) > .fold .summary { visibility: hidden; }
+  .pane.tooled > .headtools { justify-self: end; }      /* the ring list's tools: at the right; folded, the summary stands there instead */
+  .pane.tooled.folded > .headtools { display: none; }
+  .body { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); padding-bottom: var(--air); }
+  .body > * { grid-column: 2 / -1; }
+  .body > :is(.ringlist, .examples) { grid-column: 1 / -1; }
+  .body.sliding { overflow-y: clip; }               /* while a pane opens or closes (app.js: slide) */
+}

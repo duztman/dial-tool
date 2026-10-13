@@ -1,0 +1,91 @@
+/* fonts: the font box, the font sheet, stickers and their legend */
+@layer panel {
+  .features { padding-top: 4px; }
+  .features h3 { margin: 16px 0 8px; padding-top: 8px; border-top: var(--hair) solid var(--rule); }
+  /* the font picker: every font shows its own numerals */
+  .font { display: grid; gap: var(--unit); margin: var(--unit) 0; }
+  .font .styles { flex-wrap: wrap; gap: var(--unit); }
+  .font .styles > button { flex: 0 0 auto; padding: 0 var(--btn-pad); white-space: nowrap; border-left: var(--hair) solid var(--rule); }
+  .font .styles > button.on { border-color: var(--ink); }
+  .font .note:empty, .picker .note:empty { display: none; }
+  .font > .btn { justify-self: start; }
+  /* a font's three lines stand in one white box, a hairline between them; what is in it is quiet: grey lines, grey words */
+  .fontbox { display: grid; border: var(--hair) solid var(--rule); background: var(--field); }
+  .fontbox > * + * { border-top: var(--hair) solid var(--rule); }
+  .fontbox > :is(.fontname, .styles) { padding: var(--unit) var(--btn-pad); }
+  .fontbox > .row { padding: 0 var(--btn-pad); box-shadow: none; }      /* tracking: a row like any other, between the box's own lines */
+  /* a part of the box that can be put away: the variable axes, the OpenType features. A line with an eye and its name. */
+  .partfold { display: flex; align-items: center; gap: var(--unit); width: 100%; height: var(--line); padding: 0 var(--btn-pad); font-weight: 600; text-align: left; }
+  .partfold:hover { background: var(--hover); }
+  .fontbox > .axes { padding: 0 var(--btn-pad); }
+  .fontbox .axes .row { box-shadow: none; }
+  .fontbox .tile > .sticker { justify-self: start; }
+  .boxpart > .features { padding: 0 var(--btn-pad) var(--btn-pad); }
+  .fontbox .btn, .fontbox .styles > button { border-color: var(--rule); color: var(--grey); }
+  .fontbox :is(.btn, .styles > button):hover { border-color: var(--ink); color: var(--ink); }
+  /* the font's name · the language · the text's colour · Change…. The whole line opens the font sheet, but for the
+     language and the colour. The colour stands in the ring list's colour column, wherever the line is; the place kept for it is that column's width. */
+  .fontname { position: relative; display: flex; align-items: center; gap: var(--ringline-gap); cursor: pointer; }
+  .fontname .langs { margin-right: auto; }      /* the language: right after the name, a button like Change… */
+  .fontname > .colour.mini + .btn { margin-left: var(--line-button); }      /* the room the colour stands in */
+  .fontname .colour.mini { position: absolute; top: 50%; translate: 0 -50%; right: calc(var(--swatch-col) - var(--hair) + (var(--line-button) - var(--t-m) - 2 * var(--hair)) / 2); }      /* the font's name is the box's heading */
+  .langs { position: relative; }
+  .langbox { min-width: var(--control); }
+  .fontname .name { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+  .fontlist { border: var(--hair) solid var(--rule); background: var(--field); overflow-y: auto; }
+  /* a line of the font sheet, on three columns: the family's name in its own face · its numerals, all starting on one
+     line · what the family has (styles, bold, italic, axes), small. A full hairline between two lines. */
+  .fontrow { display: grid; grid-template-columns: var(--font-name) minmax(0, 1fr) var(--font-has); align-items: center; gap: var(--gap); width: 100%; min-height: var(--head); padding: 0 var(--btn-pad); border-bottom: var(--hair) solid var(--rule); text-align: left; }
+  .fontrow:hover { background: var(--hover); }
+  .fontrow.on, .fontrow.on:hover { background: var(--select); }
+  .fontrow :is(.sample, .face) { display: flex; align-items: center; min-width: 0; overflow: hidden; line-height: 1; white-space: nowrap; }
+  .fontrow .sample { font-size: var(--t-sample); }
+  .fontrow .face { font-size: var(--t-l); }
+  .fontrow .sample svg { display: block; flex: none; }
+  .fontrow .face svg { display: block; flex: 0 1 auto; height: auto; max-width: 100%; }      /* a name too wide for its column is drawn smaller; numerals are cut at their column's edge */
+  .fontrow .has { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: calc(var(--unit) / 2); padding: var(--unit) 0; }      /* on one line as long as the column lets them */
+  /* a sticker: one thing a family has, in the pixel font at its own size (R32), on a colour of its kind, round
+     corners. */
+  .sticker { padding: var(--hair) calc(var(--unit) / 2); border-radius: var(--round-tiny); background: var(--st-styles); color: var(--st-ink); font: 400 var(--t-pixel)/1.25 var(--pixel); text-transform: uppercase; white-space: nowrap; }
+  .sticker.weight { background: var(--st-weight); }
+  .sticker.italic { background: var(--st-italic); }
+  .sticker.width { background: var(--st-width); }
+  .sticker.optical { background: var(--st-optical); }
+  .sticker.other { background: var(--st-other); }
+  .sticker.figure { background: var(--st-figure); }
+  .sticker.sets { background: var(--st-sets); }
+  /* a sticker as a button, in the tool's own colours: a variable axis's name, an OpenType switch. Twice the size
+     (the pixel font at twice its own, R32), grey like the labels beside it; switched on, it is black. */
+  .sticker.ui { height: auto; border: var(--hair) solid var(--rule); background: var(--field); color: var(--grey); cursor: pointer; }
+  .sticker.ui.big { padding: calc(var(--unit) / 2) var(--unit); font-size: calc(2 * var(--t-pixel)); }
+  .sticker.ui:hover { border-color: var(--ink); color: var(--ink); }
+  .features .tiles:has(> .sticker) { display: flex; flex-wrap: wrap; gap: var(--unit); }
+  .partfold.none { color: var(--grey); font-weight: 400; cursor: default; }
+  .partfold.none:hover { background: none; }
+  .stickerlabel { display: flex; min-width: 0; }
+  .axisname { display: flex; align-items: center; gap: var(--unit); min-width: 0; color: var(--grey); white-space: nowrap; }      /* an axis's name, as a label, and its code as a sticker; a press sets the axis back */
+  .axisname:hover { color: var(--ink); }
+  /* the legend, at the sheet's bottom right: each kind of sticker and what it says */
+  .legend { display: grid; grid-template-columns: repeat(2, auto auto); gap: calc(var(--unit) / 2) var(--unit); align-items: center; justify-content: end; margin: 0; color: var(--grey); font-size: var(--t-xs); white-space: nowrap; }
+  .legend dt { justify-self: end; display: flex; }
+  .legend dd { margin: 0; }
+  .fontrow.current { grid-template-columns: minmax(0, 1fr); height: var(--head); border: 0; }      /* the chosen font's numerals, alone on their line */
+  .fontlist .group { padding: calc(var(--unit) * 2) var(--btn-pad) calc(var(--unit) / 2); border-bottom: var(--hair) solid var(--rule); }
+
+  /* the font sheet: over the panel, on its columns, so the dial stays in view; from the bottom on a phone */
+  /* it floats over the panel: as wide and as high as the panel (from the window's top to the bar, never over the
+     bar), its left edge on the panel's third column, where the controls start, so its right part lies over the
+     preview; a shadow to its left */
+  .picker { position: fixed; inset: 0 auto var(--bar-height) calc(var(--margin) + var(--lead) + 2 * (var(--col) + var(--gap))); width: var(--panel); max-width: calc(100vw - 2 * var(--margin)); height: auto; max-height: none; margin: 0; padding: 0; border: var(--hair) solid var(--ink); box-shadow: var(--shadow);
+    background: var(--paper); color: var(--ink); }
+  .picker[open] { display: grid; grid-template-rows: auto 1fr auto; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 3) var(--margin) var(--margin); }
+  .picker:focus { outline: none; }
+  .picker::backdrop { background: none; }          /* the dial keeps its true colours while you choose */
+  .picker header { display: flex; align-items: center; justify-content: space-between; gap: var(--gap); }
+  .picker header > input { width: calc(3 * var(--col) + 2 * var(--gap)); }      /* Find a font: at the sheet's top right, half its width */
+  .picker header h2 { font-size: var(--t-l); }
+  .picker .fontlist { min-height: 0; }
+  .picker .adding { display: grid; gap: calc(var(--unit) * 2); border-top: var(--thick) solid var(--ink); padding-top: calc(var(--unit) * 2); }
+  .picker .squares { display: flex; align-items: flex-end; gap: var(--unit); }
+  .picker .squares > .pickt { width: calc(var(--col) + var(--gap) + var(--unit)); aspect-ratio: 1; align-content: center; }      /* square buttons */
+}
