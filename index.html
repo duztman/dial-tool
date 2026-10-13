@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.24 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.25 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet.
@@ -66,6 +66,8 @@
     --air: calc(4 * var(--unit));                  /* under an open pane */
     --hair: 1px; --thick: 2px;                     /* a thick line opens a pane; everything inside a pane is a hairline */
     --nest-from: calc((100% + var(--gap)) / 3);     /* where a row's controls start, from its left edge: two of its six columns and their gaps. A half line starts here */
+    --side-num: 60px; --side-tiny: 16px;           /* beside a hand's box: a number with its tiny plus and minus (the whole · the two alone) */
+    --tile-wider: calc((var(--gap) - var(--unit)) / 4);      /* four tiles stand closer than four columns: each is this much wider than a column */
     --btn-pad: 10px;                               /* from a button's or a box's edge to its words */
     --control: 26px;                               /* a control's height: field, button, swatch */
     --control-large: 32px;                         /* the Guides switch, the hex line */
@@ -108,7 +110,8 @@
     --pop-width: 388px; --pop-chips: 11; --pop-chip-gap: 12px;      /* the colour pop-out: its width; colours to a row (the palette's ten and its +), which share the row's width; the room between two */
     --checker: repeating-conic-gradient(#BDBDB9 0 25%, #FFFFFF 0 50%) 0 0 / 8px 8px;      /* what shows through a see-through colour */
     --faint: 0.35;                                 /* how much of a switch on the preview shows at rest */
-    --canvas-inset: 12px;                          /* from the preview's edge to what stands on it */
+    --canvas-inset: 12px;
+    --canvas-top: calc((var(--header) - var(--control-large)) / 2);      /* undo and Guides stand on the header's middle line, with the title and the unit box (Okay, 13 Oct 2026) */                          /* from the preview's edge to what stands on it */
     --guide-name: 92px; --guide-row: 42px;         /* a line of the guides' list is this high */                           /* the names in the guides' list */
     --guide-dot: 10px; --guide-gap: 10px;           /* a round colour in the guides' list, and the room between two: the chosen one's ring needs it */
     --ring-gap-in: 2px; --ring-thick: 3px;         /* the chosen one: a ring of the ground this wide, then a ring of its own colour this thick */
@@ -379,13 +382,55 @@
   .row > button:not(:first-child) { justify-self: start; }
   .row > .btn.main:first-child { justify-self: stretch; }      /* a button standing where the label would (PNG) */
   .row.pick { align-items: start; }
-  .row.pick > label, .pickside > label { line-height: var(--line); }
-  /* a label with a box under it that shows what is chosen, large (a hand): the box is as high as the tiles beside it */
-  .pickside { align-self: stretch; display: grid; grid-template-rows: auto minmax(0, 1fr); padding-bottom: var(--unit); }
-  .pickside > label { color: var(--grey); }
-  .detail { position: relative; border: var(--hair) solid var(--rule); background: var(--field); }
-  .detail svg { position: absolute; inset: var(--unit); width: calc(100% - 2 * var(--unit)); height: calc(100% - 2 * var(--unit)); }
-  .detail .pivot { fill: var(--field); stroke: none; }
+  .row.pick > label { line-height: var(--line); }
+  .row > label > .short { display: none; }         /* a label's short wording: only where there is little room (a side row) */
+
+  /* a hand's pane (Okay's drawings, 13 Oct 2026): a box with the hand itself, and beside it the rows that make it.
+     The box: the chosen hand in ink, the centre it turns on marked by a line across the box and a small ring. */
+  .detail { position: relative; overflow: hidden; margin: var(--unit) 0; min-height: calc(4 * var(--line)); border: var(--hair) solid var(--rule); background: var(--field); }
+  .detail svg { position: absolute; inset: var(--unit); width: calc(100% - 2 * var(--unit)); height: calc(100% - 2 * var(--unit)); overflow: visible; }
+  .detail .lying { display: none; }
+  .detail .axis { stroke: var(--rule); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
+  .detail .pivot { fill: var(--field); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
+  /* a line of tiles that opens: closed, the first few and the chosen one; then "more" and a dashed plus for one's own */
+  .picks.line:not(.open) > [role="radio"]:not(.in4) { display: none; }
+  .picks.line { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .row > .picks.line { grid-column: 1 / -1; }
+  .pickt.own { border-style: dashed; color: var(--grey); cursor: default; }
+  .pickt.own:hover { background: var(--field); }
+  .pickt.more[aria-expanded="true"] svg { rotate: 180deg; }
+  /* the number box of a side row: the number, and joined to it a tiny plus over a tiny minus. With the keyboard in
+     the number it grows towards the slider, over it: a large minus · the number · a large plus. It hangs at the
+     row's right end, so growing moves nothing else. */
+  .row.side { position: relative; --num-open: calc((200% - var(--gap)) / 3); }
+  .numbox { position: absolute; right: 0; top: 50%; translate: 0 -50%; display: grid; grid-template: "f p" 1fr "f m" 1fr / minmax(0, 1fr) var(--side-tiny); width: var(--side-num); height: var(--control); background: var(--field); transition: width 0.12s ease-out, height 0.12s ease-out; }
+  .numbox > input { grid-area: f; width: 100%; min-width: 0; height: 100%; }
+  .numbox > .step { min-width: 0; height: auto; padding: 0; border-left: 0; font-size: var(--t-xs); line-height: 1; }
+  .numbox > .step:nth-of-type(1) { grid-area: m; border-top: 0; }
+  .numbox > .step:nth-of-type(2) { grid-area: p; }
+  .numbox:focus-within { z-index: 2; grid-template: "m f p" 1fr / var(--control-large) minmax(0, 1fr) var(--control-large); width: var(--num-open); height: var(--control-large); box-shadow: 0 0 0 var(--unit) var(--surface); }
+  .numbox:focus-within > .step { border: var(--hair) solid var(--ink); font-size: var(--t-l); }
+  .numbox:focus-within > .step:nth-of-type(1) { border-right: 0; }
+  .numbox:focus-within > .step:nth-of-type(2) { border-left: 0; }
+  @media (prefers-reduced-motion: reduce) { .numbox { transition: none; } }
+  @media (min-width: 861px) {
+    /* wide: the box in the first two columns, as high as the rows beside it; the rows in the other four, each one
+       line: label · slider · the number box */
+    .body > .detail { grid-column: 2 / span 2; grid-row: 1 / span 40; }      /* 40: more rows than a hand has; the rows it doesn't use are nothing high */
+    .body > .row.side { grid-column: 4 / -1; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--side-num); }
+    .row.side { --num-open: calc((100% + var(--side-num)) / 2); }      /* the row less its label and one gap: slider and number together */
+    /* elsewhere a number's field and its stepper are boxes like the tiles: they stand where the third and the fourth
+       tile of a row of four stand, so box edges line up down the pane (Okay, 13 Oct 2026) */
+    .body > .row.num:not(.side) > input[type="text"] { margin-left: calc(-2 * var(--tile-wider)); margin-right: calc(-1 * var(--tile-wider)); width: auto; }
+    .body > .row.num:not(.side) > .steps { margin-left: calc(-3 * var(--tile-wider)); width: calc(100% + 3 * var(--tile-wider)); }
+    .row.side > :first-child, .row.side.num > input[type="range"] { grid-column: auto; }
+    .row.side > label { font-size: var(--t-s); }
+    .row.side > label > .whole { display: none; }
+    .row.side > label > .short { display: inline; }
+    .row.side > .colour { grid-column: 2 / -1; }
+    .row.side > .picks.line { grid-column: 1 / -1; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .picks.line:not(.open) > [role="radio"]:not(.in2) { display: none; }
+  }
   .features { padding-top: 4px; }
   .features h3 { margin: 16px 0 8px; padding-top: 8px; border-top: var(--hair) solid var(--rule); }
   .linkrow .tools { margin-top: var(--unit); gap: calc(var(--unit) * 2); }
@@ -518,7 +563,9 @@
   .kinds button:hover { background: var(--hover); }
   .kinds button.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
   .colour.bare { flex: none; justify-content: center; width: var(--line-button); height: var(--line-button); padding: 0; border: var(--hair) solid var(--rule); border-radius: 0; background: var(--field); }
-  .colour.bare .hex { display: none; }
+  .colour.bare .hex, .colour.mini .hex { display: none; }
+  .colour.mini { flex: none; height: auto; padding: var(--hair); background: none; }      /* a colour beside the name of what it colours: the swatch alone, as large as the words (a text's, in its font box) */
+  .colour.mini .dot { width: var(--t-m); height: var(--t-m); }
   .colour.bare .dot { width: var(--bare-dot); height: var(--bare-dot); border-color: var(--rule); }
   .colour.bare[aria-expanded="true"] { border-color: var(--ink); }
   /* the tag: what a wordless button is, under it while the pointer is on it. One for the whole tool, over everything. */
@@ -571,7 +618,8 @@
   .fontbox :is(.btn, .styles > button):hover { border-color: var(--ink); color: var(--ink); }
   .fontbox .styles > button.on, .fontbox .btn[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
   .fontname { display: flex; align-items: center; gap: var(--unit); }      /* the font's name; the language and Change… at the right */
-  .fontname .name { flex: 1; font-weight: 600; }      /* the font's name is the box's heading (Okay, 13 Oct 2026) */
+  .fontname .name { flex: 0 1 auto; font-weight: 600; }
+  .fontname .colour.mini { margin-right: auto; }      /* right after the name; what follows goes to the right end */      /* the font's name is the box's heading (Okay, 13 Oct 2026) */
   .langs { position: relative; }
   .langbox { min-width: var(--control); padding: 0 var(--unit); font: var(--t-xs)/1 var(--mono); }
   .fontname .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -619,11 +667,11 @@
      form, so the box is the same size on and off. */
   main { --on-canvas: var(--ink); }
   main.dark { --on-canvas: #FFFFFF; }
-  .guides { position: absolute; z-index: 3; top: var(--canvas-inset); right: var(--canvas-inset); display: flex; justify-content: flex-end; }
+  .guides { position: absolute; z-index: 3; top: var(--canvas-top); right: var(--canvas-inset); display: flex; justify-content: flex-end; }
   .guidesbox, .guidesmore, .backdropbox, .undobox { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: var(--hair) solid var(--on-canvas); color: var(--on-canvas); user-select: none; }
   @media (hover: hover) { :is(.guidesbox, .guidesmore, .backdropbox, .undobox):hover { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); } }      /* under the pointer its line is twice as thick: still no fill */
   /* undo · redo, before the Guides switch: two joined outlined buttons; pale when there is no step that way */
-  .undos { position: absolute; z-index: 3; top: var(--canvas-inset); left: var(--canvas-inset); display: flex; }      /* top left of the preview, beside the panel (Okay, 13 Oct 2026) */
+  .undos { position: absolute; z-index: 3; top: var(--canvas-top); left: var(--canvas-inset); display: flex; }      /* top left of the preview, beside the panel (Okay, 13 Oct 2026) */
   .undobox { width: var(--control-large); }
   .undobox:first-child { border-radius: 10px 0 0 10px; }
   .undobox:last-child { border-left: 0; border-radius: 0 10px 10px 0; }
@@ -768,7 +816,7 @@
   /* a phone, or a narrow window: the bar on top, the preview under it; below them the whole panel scrolls as one.
      The six columns share what the screen gives. */
   @media (max-width: 860px) {
-    :root { --margin: 16px; --gap: 10px; --col: calc((100vw - 2 * var(--margin) - var(--lead) - 5 * var(--gap)) / 6); }
+    :root { --canvas-top: var(--canvas-inset); --margin: 16px; --gap: 10px; --col: calc((100vw - 2 * var(--margin) - var(--lead) - 5 * var(--gap)) / 6); }
     #app, #app.nopanel { grid-template-columns: 1fr; grid-template-rows: auto 42% 1fr; }
     #app.nopanel { grid-template-rows: auto 1fr 0; }
     .bar { grid-row: 1; flex-wrap: wrap; height: auto; padding: 0; border-top: 0; border-bottom: var(--hair) solid var(--bar-rule); }
@@ -782,10 +830,12 @@
     main { grid-row: 2; }
     .panel { grid-row: 3; display: block; overflow-y: auto; -webkit-overflow-scrolling: touch; border-right: 0; border-top: var(--hair) solid var(--rule); }
     .form { overflow: visible; }
-    .tabs { position: sticky; top: 0; z-index: 1; background: var(--paper); }
+    .tabs { position: sticky; top: 0; z-index: 3; background: var(--paper); }      /* over what scrolls under it: the tabs' notches, an open number box */
     .ringlist ol { max-height: none; }
-    .row.pick > :is(label, .pickside), .row.pick > .picks { grid-column: 1 / -1; }
-    .detail { height: calc(3 * var(--tile)); }      /* on its own line here: three tiles high */      /* picture tiles under their label, on all six columns: room for their words */
+    .row.pick > label, .row.pick > .picks { grid-column: 1 / -1; }
+    .detail { min-height: 0; height: calc(1.5 * var(--tile)); }      /* over its rows here: a wide box, the hand lying in it, its tip to the right (Okay, 13 Oct 2026: "B for mobile") */
+    .detail .upright { display: none; }
+    .detail .lying { display: block; }      /* picture tiles under their label, on all six columns: room for their words */
     .row.pick > label { line-height: 1.4; padding-top: var(--unit); }
     .picker { inset: auto 0 0 0; width: 100%; height: 58%; border-right: 0; border-top: var(--hair) solid var(--ink); }
     /* the colour pop-out is a sheet from the bottom; wide, it is the whole screen */
@@ -5149,7 +5199,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.24";
+var VERSION = "beta 4.25";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -6899,8 +6949,10 @@ var hand_pic = (i) => {
 var hand_detail = (h) => {
   const p = hand_shape(h), b = p.bounds();
   if (!b) return "";
-  const w = b[2] - b[0], high = b[3] - b[1], m = high * 0.03;
-  return `<svg viewBox="${(b[0] - m).toFixed(3)} ${(-b[3] - m).toFixed(3)} ${(w + 2 * m).toFixed(3)} ${(high + 2 * m).toFixed(3)}" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor" fill-rule="evenodd"/><circle r="${(high * 0.012).toFixed(3)}" class="pivot"/></svg>`;
+  const w = b[2] - b[0], high = b[3] - b[1], m = high * 0.03, f = (v) => v.toFixed(3);
+  const d = p.svg(3, true), ring = f(Math.max(high * 0.012, 0.12));
+  const centre = (line) => `<path class="axis" d="${line}"/><circle class="pivot" r="${ring}"/>`;
+  return `<svg class="upright" viewBox="${f(b[0] - m)} ${f(-b[3] - m)} ${f(w + 2 * m)} ${f(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${centre("M-999 0L999 0")}</svg><svg class="lying" viewBox="${f(b[1] - m)} ${f(b[0] - m)} ${f(high + 2 * m)} ${f(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${centre("M0 -999L0 999")}</svg>`;
 };
 var TOOL_ICONS = {
   rename: `<rect x="1.5" y="1.5" width="13" height="13" rx="3.5" stroke-width="0.7"/><path d="M8 4.4L8 11.6M6.2 4.2L9.8 4.2M6.2 11.8L9.8 11.8" stroke-width="0.7"/>`,
@@ -7056,23 +7108,25 @@ var ROWS = {
     // its heading says which: Hour hand · Minute hand · Seconds hand
     chk("on", "Show this hand", { ...H, head: true }),
     // on the heading line, beside the hand's name
-    pick("shape", "Shape", HAND_SHAPES.slice(0, 9), hand_pic, { ...H, detail: hand_detail }),
-    // detail: under the label, the chosen hand itself, large (Okay's drawing, 13 Oct 2026: "reproduce selected hand in detail")
-    col("c", "Colour", H),
-    hdr("Size", H),
-    num2("len", "Length", 0.5, 30, 0.05, H),
-    num2("w", "Width", 0.02, 4, 0.01, H),
-    num2("tail", "Tail", 0, 10, 0.05, H),
-    hdr("Details", H),
-    num2("round", "Round ends", 0, 2, 0.01, { ...H, show: hand_is("baton", "pencil", "sword", "arrow", "syringe", "breguet", "lollipop", "file") }),
-    num2("tip", "Tip length", 0, 10, 0.05, { ...H, show: hand_is("pencil", "sword", "arrow", "syringe", "breguet") }),
-    num2("feature", "Head width", 0, 6, 0.05, { ...H, show: hand_is("arrow", "syringe") }),
-    num2("feature", "Ring \xB7 disc \xD8", 0, 6, 0.05, { ...H, show: hand_is("breguet", "lollipop") }),
-    num2("feature_at", "Widest at %", 0, 100, 1, { ...H, show: hand_is("dauphine") }),
-    num2("feature_at", "Barrel from %", 0, 100, 1, { ...H, show: hand_is("syringe") }),
-    num2("feature_at", "Ring \xB7 disc at %", 0, 100, 1, { ...H, show: hand_is("breguet", "lollipop") }),
-    num2("counter", "Counterweight \xD8", 0, 4, 0.05, H),
-    num2("wall", "Hollow wall", 0, 1, 0.01, H),
+    // one pane for a hand (Okay's drawings, 13 Oct 2026): at the left a box with the hand itself, as it is now; beside
+    // it everything that makes it — its shape (one line of tiles that opens; a plus for a shape of one's own, later),
+    // then its numbers and its colour. So what a number changes is seen right beside it, and on the dial at the right.
+    // side: the row stands beside the box · short: the label when there is little room for it.
+    custom("hand_detail", { ...H }),
+    pick("shape", "Shape", HAND_SHAPES.slice(0, 9), hand_pic, { ...H, side: true, line: true }),
+    num2("len", "Length", 0.5, 30, 0.05, { ...H, side: true }),
+    num2("w", "Width", 0.02, 4, 0.01, { ...H, side: true }),
+    num2("tail", "Tail", 0, 10, 0.05, { ...H, side: true }),
+    num2("round", "Round ends", 0, 2, 0.01, { ...H, side: true, show: hand_is("baton", "pencil", "sword", "arrow", "syringe", "breguet", "lollipop", "file") }),
+    num2("tip", "Tip length", 0, 10, 0.05, { ...H, side: true, show: hand_is("pencil", "sword", "arrow", "syringe", "breguet") }),
+    num2("feature", "Head width", 0, 6, 0.05, { ...H, side: true, show: hand_is("arrow", "syringe") }),
+    num2("feature", "Ring \xB7 disc \xD8", 0, 6, 0.05, { ...H, side: true, short: "Ring \xD8", show: hand_is("breguet", "lollipop") }),
+    num2("feature_at", "Widest at %", 0, 100, 1, { ...H, side: true, show: hand_is("dauphine") }),
+    num2("feature_at", "Barrel from %", 0, 100, 1, { ...H, side: true, short: "Barrel %", show: hand_is("syringe") }),
+    num2("feature_at", "Ring \xB7 disc at %", 0, 100, 1, { ...H, side: true, short: "Ring at %", show: hand_is("breguet", "lollipop") }),
+    num2("counter", "Counterweight \xD8", 0, 4, 0.05, { ...H, side: true, short: "Counter \xD8" }),
+    num2("wall", "Hollow wall", 0, 1, 0.01, { ...H, side: true }),
+    col("c", "Colour", { ...H, side: true }),
     hdr("Cap"),
     // after the hand's own panes: it belongs to all three
     num2("ha_cap", "Cap \xD8", 0, 4, 0.05),
@@ -7101,8 +7155,8 @@ var ROWS = {
     num2("age", "Moon age, days", 0, 29.5, 0.1, { ...W, show: win_is("moon phase") }),
     info("0 new moon \xB7 14.8 full.", { ...W, show: win_is("moon phase") }),
     hdr("Colours", { ...W, show: win_on }),
-    col("text_c", "Text \xB7 picture", { ...W, show: win_on, or: (T) => T.ink }),
-    // or: what an unset colour is
+    col("text_c", "Picture", { ...W, show: win_is("am \xB7 pm", "moon phase"), or: (T) => T.ink }),
+    // or: what an unset colour is. A text's colour stands beside its font's name; this row is for the windows that show a picture       // or: what an unset colour is
     col("disc_c", "Disc under it", { ...W, show: win_on, or: () => [1, 1, 1, 1] }),
     col("ink", "Frame", { ...W, show: win_on }),
     // the hole's shape, apart from what shows through it (Okay, 13 Oct 2026): one pane for every window
@@ -7382,7 +7436,7 @@ var DialTool = class _DialTool {
     const panel = el(
       "aside",
       { className: "panel" },
-      el("header", {}, el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: VERSION })), this.unit_box()),
+      el("header", {}, this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: VERSION })), this.unit_box()),
       this.tabs,
       this.pinned,
       this.form
@@ -7497,6 +7551,7 @@ var DialTool = class _DialTool {
     const guides = this.guides_box();
     this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.backdrop_box());
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
+    requestAnimationFrame(() => this.level_title());
     this.play_icon();
     let shown = true;
     try {
@@ -7519,6 +7574,24 @@ var DialTool = class _DialTool {
   // ── units ────────────────────────────────────────────────
   //   Lengths are kept in mm (R1). The box at the panel's top right chooses the unit they are shown and typed in;
   //   it says the unit's short name and keeps its size. Its menu: the units by their full names.
+  /** one line runs through the top of the window (Okay, 13 Oct 2026): the middle of the title's small letters (its
+   *  x-height), the unit box, and undo · Guides on the preview. The boxes are centred on the header's middle by the
+   *  stylesheet; the title is moved onto it here, because where a font's small letters sit can only be measured. */
+  level_title() {
+    const h = this.title.querySelector("h1"), look = getComputedStyle(h);
+    this.title.style.translate = "";
+    const probe = el("span");
+    probe.style.cssText = "display:inline-block;width:0;height:0";
+    h.append(probe);
+    const baseline = probe.getBoundingClientRect().top;
+    probe.remove();
+    const pen = document.createElement("canvas").getContext("2d");
+    pen.font = `${look.fontWeight} ${look.fontSize} ${look.fontFamily}`;
+    const x_height = pen.measureText("x").actualBoundingBoxAscent;
+    const header = this.title.parentElement.getBoundingClientRect();
+    if (!header.height || !x_height) return;
+    this.title.style.translate = `0 ${(header.top + header.height / 2 - (baseline - x_height / 2)).toFixed(2)}px`;
+  }
   unit() {
     return UNITS[this.S.ui_unit] || UNITS[0];
   }
@@ -7893,7 +7966,7 @@ var DialTool = class _DialTool {
   }
   /** one row of the form → {row, el, refresh(T)}. */
   build_row(row) {
-    const wrap = el("div", { className: "row " + row.kind + (row.nest ? " nest" : "") });
+    const wrap = el("div", { className: "row " + row.kind + (row.nest ? " nest" : "") + (row.side ? " side" : "") });
     const tied = () => {
       if (row.tie) out.el.classList.add("tied");
     };
@@ -7952,6 +8025,11 @@ var DialTool = class _DialTool {
       };
       const step = (dir) => el("button", { type: "button", className: "step", textContent: dir > 0 ? "+" : "\u2212", tabIndex: -1, onclick: () => commit(this.target(row.scope)[row.key] + dir * row.step) });
       const label = el("label", { htmlFor: id, textContent: row.text });
+      if (row.short) {
+        label.textContent = "";
+        label.title = row.text;
+        label.append(el("span", { className: "whole", textContent: row.text }), el("span", { className: "short", textContent: row.short }));
+      }
       let lead = label, menu = null;
       if (row.button) lead = el("button", { type: "button", className: "btn main", id: "export-" + row.button, textContent: row.button.toUpperCase(), title: `Export a ${row.button.toUpperCase()} at this dpi`, onclick: () => this.export(row.button) });
       if (row.menu) {
@@ -7972,7 +8050,14 @@ var DialTool = class _DialTool {
         slider.ariaLabel = field.ariaLabel = row.text;
         field.title = row.text + " \xB7 " + field.title;
       }
-      wrap.append(lead, slider, field, el("span", { className: "steps" }, step(-1), step(1)));
+      if (row.side) {
+        const box = el("span", { className: "numbox" }, field, step(-1), step(1));
+        for (const b of box.querySelectorAll(".step")) b.onmousedown = (e) => e.preventDefault();
+        field.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === "Escape") field.blur();
+        });
+        wrap.append(lead, slider, box);
+      } else wrap.append(lead, slider, field, el("span", { className: "steps" }, step(-1), step(1)));
       out.refresh = (T) => {
         const v = T[row.key] ?? 0;
         if (v > +slider.max) slider.max = v;
@@ -8005,22 +8090,35 @@ var DialTool = class _DialTool {
         group.append(tile);
       });
       const label = el("label", { textContent: row.text, className: row.label ? "strong" : "" });
-      const detail = row.detail ? el("span", { className: "detail", id: id + "-detail" }) : null;
-      wrap.append(detail ? el("span", { className: "pickside" }, label, detail) : label, group);
-      let drawn2 = "";
+      let more = null;
+      if (row.line) {
+        more = el("button", { type: "button", className: "pickt more", id: id + "-more", title: "All the shapes" });
+        more.innerHTML = icon(`<path d="M4.5 6.5L8 10L11.5 6.5"/>`, Math.round(20 * PIC_SCALE)) + "<span>more</span>";
+        more.setAttribute("aria-expanded", "false");
+        more.onclick = () => {
+          const open = !group.classList.contains("open");
+          group.classList.toggle("open", open);
+          more.setAttribute("aria-expanded", String(open));
+          more.lastChild.textContent = open ? "less" : "more";
+        };
+        const own = el("button", { type: "button", className: "pickt own", id: id + "-own", title: "A shape of your own, from an SVG file: not built yet" });
+        own.innerHTML = icon(`<path d="M8 3.5L8 12.5M3.5 8L12.5 8"/>`, Math.round(20 * PIC_SCALE)) + "<span>SVG</span>";
+        own.setAttribute("aria-disabled", "true");
+        group.classList.add("line");
+        group.append(more, own);
+        wrap.append(group);
+      } else wrap.append(label, group);
       out.refresh = (T) => {
-        if (detail) {
-          const now = row.detail(T);
-          if (now !== drawn2) {
-            drawn2 = now;
-            detail.innerHTML = now;
-          }
-        }
         if (row.label) label.textContent = row.label(T);
-        [...group.children].forEach((b, i) => {
+        const tiles = [...group.querySelectorAll('[role="radio"]')];
+        tiles.forEach((b, i) => {
           b.classList.toggle("on", i === T[row.key]);
           b.setAttribute("aria-checked", String(i === T[row.key]));
         });
+        if (row.line) for (const [name, n] of [["in2", 2], ["in4", 4]]) {
+          const chosen = T[row.key] || 0, shown = chosen < n ? tiles.slice(0, n) : [...tiles.slice(0, n - 1), tiles[chosen]];
+          tiles.forEach((b) => b.classList.toggle(name, shown.includes(b)));
+        }
       };
     }
     if (row.kind === "seg") {
@@ -9018,8 +9116,12 @@ var DialTool = class _DialTool {
     const current = el("button", { type: "button", className: "fontrow current", id: pre + "font-current", title: "Choose a font", onclick: open });
     const name = el("span", { className: "name", id: pre + "font-name" });
     const lang = own ? null : this.lang_box();
+    const crow = own ? { key: "text_c", scope: "window", text: "Text", or: (T) => T.ink } : { key: "c", scope: "ring", text: "Colour" };
+    const swatch = this.colour_pill(pre + "font-c", "The text\u2019s colour");
+    swatch.classList.add("mini");
+    swatch.onclick = () => this.pop_open(this.colour_of_row(crow), swatch);
     const tracking = own ? null : this.build_row({ ...num2("tracking", "Tracking", -200, 800, 5), scope: "ring" });
-    const named = el("div", { className: "fontname" }, name, ...lang ? [lang.el] : [], el("button", { type: "button", className: "btn", id: pre + "font-change", textContent: "Change\u2026", onclick: open }));
+    const named = el("div", { className: "fontname" }, name, swatch, ...lang ? [lang.el] : [], el("button", { type: "button", className: "btn", id: pre + "font-change", textContent: "Change\u2026", onclick: open }));
     const styles = el("div", { className: "segs styles" });
     const state = el("div", { className: "quiet note", id: pre + "font-note" });
     const back = el("button", {
@@ -9044,6 +9146,7 @@ var DialTool = class _DialTool {
       back.hidden = !(own && T.ps);
       if (lang) lang.refresh(T);
       if (tracking) tracking.refresh(T);
+      swatch.show(T[crow.key] || (crow.or ? crow.or(T) : [0, 0, 0, 1]));
       const mine = this.families().get(R.family) || [], f = this.catalog.get(R.ps) || mine[0];
       const key = R.ps + "/" + has_font(R.ps) + "/" + Boolean(T.ps);
       if (key !== shown) {
@@ -9060,6 +9163,19 @@ var DialTool = class _DialTool {
       const missing = has_font(R.ps) ? "" : this.catalog.has(R.ps) ? "Loading\u2026 " : `${R.family} isn\u2019t loaded yet, so ${font_list()[0].family} stands in. Press Change\u2026 to choose another or to add it. `;
       state.textContent = missing + (this.font_note || "");
       if (this.picker && this.picker.open) this.fill_picker();
+    };
+  }
+  /** the chosen hand in detail: a box of its own, at the left of the hand's rows (on a phone: over them, the hand lying). */
+  row_hand_detail(wrap, out) {
+    wrap.className = "detail";
+    wrap.id = "hand-detail";
+    let drawn2 = "";
+    out.refresh = (T) => {
+      const now = hand_detail(T);
+      if (now !== drawn2) {
+        drawn2 = now;
+        wrap.innerHTML = now;
+      }
     };
   }
   /** the language the numerals are set in (a font may draw a figure differently for one): a small button saying its
