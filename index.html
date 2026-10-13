@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.13 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.14 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet.
@@ -339,7 +339,8 @@
   /* a tied row belongs to the row above it: no line between the two (SVG and its tick; PNG and its dpi) */
   .row.tied:not(.note) { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
   .row:not(.note):has(+ .row.tied) { box-shadow: 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
-  .row > .blank:first-child { display: block; }      /* an empty place where a label would stand: what follows keeps its column */
+  .row > .blank:first-child { display: block; }
+  .row.note.under > .quiet { grid-column: 3 / -1; }      /* a note about the controls above it starts on their column */      /* an empty place where a label would stand: what follows keeps its column */
   .row > :first-child { grid-column: span 2; }
   .row.num > input[type="range"] { grid-column: span 2; }
   .row.num input[type="text"] { text-align: right; }
@@ -5091,7 +5092,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.13";
+var VERSION = "beta 4.14";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -7057,7 +7058,8 @@ var ROWS = {
     // tie: no line between it and the row above: they are one thing
     info("The font must be installed where the file is opened. PDF and PNG stay outlines.", { show: (S) => S.out_live_text }),
     custom("export_png"),
-    num2("out_dpi", "dpi", 72, 2400, 1, { tie: true }),
+    num2("out_dpi", "dpi", 72, 2400, 1, { tie: true, bare: true }),
+    // bare: no word before it (the line under it says "at 600 dpi"); the slider stands under the buttons
     custom("png_size"),
     hdr("For production"),
     chk("out_production", "Mono print mask"),
@@ -7890,6 +7892,12 @@ var DialTool = class _DialTool {
         lead = el("span", { className: "menulabel" }, label, arrow);
       }
       if (row.button) {
+        slider.ariaLabel = field.ariaLabel = row.text;
+        field.title = row.text + " \xB7 " + field.title;
+      }
+      if (row.bare) {
+        label.textContent = "";
+        label.className = "blank";
         slider.ariaLabel = field.ariaLabel = row.text;
         field.title = row.text + " \xB7 " + field.title;
       }
@@ -9159,7 +9167,7 @@ var DialTool = class _DialTool {
   }
   /** under the PNG row: what that dpi comes to. */
   row_png_size(wrap, out) {
-    wrap.className = "row note";
+    wrap.className = "row note under";
     const text = el("span", { className: "quiet", id: "png-size" });
     wrap.append(el("span"), text);
     out.refresh = () => {
