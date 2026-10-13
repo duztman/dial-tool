@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.35.13 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.35.14 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -34,7 +34,7 @@
   :root {
     color-scheme: light;
     /* colour */
-    --paper: #FCFCFA; --ink: #111; --grey: #5C5C58; --rule: #B9B9B4; --ground: #ECECE8;
+    --paper: #FCFCFA; --ink: #111; --grey: #5C5C58; --rule: #B9B9B4; --rule-light: #D4D4CF; --ground: #ECECE8;
     --white: #fff; --black: #000;                  /* pure, for what must show on any colour: the pointer label, the day's handle, the hues' strip */
     --scroll: #E8E8E6;                             /* the part of the panel that scrolls: 8 % darker than the paper */
     --field: var(--white);                              /* inside a control: fields, tiles, buttons */
@@ -77,13 +77,14 @@
     --num-columns: var(--col) var(--gap) var(--col) var(--gap) minmax(0, 1fr) var(--gap) var(--tile-w) var(--unit) var(--tile-w);
     --btn-pad: 10px;                               /* from a button's or a box's edge to its words */
     --control: 26px;                               /* a control's height: field, button, swatch */
+    --control-s: calc(0.75 * var(--control));      /* a quiet button at three quarters: Lang. and Change… in the font box (Okay, 14 Oct 2026) */
     --control-large: 32px;                         /* the Guides switch, the hex line */
     --line: 34px;                                  /* a row's height */
     --head: 40px;                                  /* a pane's heading */
     --header: 64px;                                /* the panel's top: title and Guides */
     --bar-height: 52px; --bar-control: 30px;
     --tile: 50px;                                  /* a picture tile's least height */
-    --frame-out: 8px;                              /* a framed list row is this much wider than the lines, each side */
+    --frame-pad: 8px;                              /* inside a frame (a ring row, the font box): from its edge to what is in it, where a pane's row would have none */
     --ring-gap: 4px;                               /* between framed rows */
     --guide-tint: 22%; --guide-edge: 65%;          /* the selected ring's row: this much of its guide's colour in its ground, and in its frame */
     --tab-notch: var(--unit);                      /* how deep the notch between two tabs is cut (a V, twice as wide): one unit */
@@ -93,7 +94,7 @@
     --foot-gap: 4px;                               /* between the round signs on the Rings heading line */
     --ringline-pad: 8px; --ringline-gap: 8px; --ringline-join: 2px;      /* the selected ring's line: inside its frame · between its parts · between it and its ring's row */
     --ringline-inner: var(--triple);               /* its second, inner line: three times the outer */
-    --row-end: calc(var(--frame-out) - var(--hair) + var(--ringline-inner));      /* the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons */
+    --row-end: calc(var(--frame-pad) - var(--hair) + var(--ringline-inner));      /* the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons */
     --line-button: 36px; --bare-dot: 16px;      /* in the ring drawer every control is this high (a value button this wide too) · the colour's swatch */
     --name-in: 6px;                                /* a ring's name starts this far into its column; the ring line's buttons too */
     --half: 30px;                                  /* AM · PM inside the time's box */
@@ -132,7 +133,7 @@
 
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
     --t-xs: 11px; --t-s: 12px; --t-m: 13px; --t-l: 15px;
-    --t-xxs: 10px;                                 /* one size more, the smallest: the words in the font sheet's legend (Okay, 14 Oct 2026: "smaller text") */
+    --t-xxs: 10px;                                 /* the smallest: the words in the font sheet's legend, and the font box's quiet buttons (Okay, 14 Oct 2026) */
     --find: calc(3 * var(--col) + 2 * var(--gap)); /* the font sheet's Find field: three columns, the sheet's right half */
     /* stickers: one colour for a kind of thing a font family has. Pale: a guide's colour, as much of it as in the
        selected ring's row */
@@ -144,7 +145,7 @@
     --st-tint: var(--guide-tint);
     --shadow: calc(-2 * var(--unit)) 0 6px rgba(0, 0, 0, 0.28);
     --shadow-light: calc(-1 * var(--unit)) 0 5px rgba(0, 0, 0, 0.14);      /* a window over a window (the font sheet's legend): lighter, half as far (Okay, 14 Oct 2026: "second shadow lighter, both less blur") */      /* what floats over the window throws its shadow to the left, a little soft */
-    --swatch-col: calc(2 * (var(--line-button) + var(--ringline-gap)) + var(--ringline-inner) - var(--hair));      /* from a pane's right edge to the right edge of the ring list's colour column: a colour swatch further down stands in that column too */
+    --swatch-col: calc(2 * (var(--line-button) + var(--ringline-gap)) + var(--row-end));      /* from a pane's right edge to the right edge of the ring list's colour column: a colour swatch further down stands in that column too */
     --t-sample: 20px;                              /* a font's numerals in the font list, when the browser sets them */
     --t-pixel: 8px;                                /* the pixel font's own size: its dots fall on the screen's (R32) */
     --pixel-ink: 0.7;                              /* how much of the pixel font shows: full strength is too dark on black (Okay, 13 Oct 2026) */
@@ -248,13 +249,14 @@
   /* reach: under a finger, a small control is pressed from a little outside its edge too — up to half-way to its
      neighbour, so two never overlap. What you see doesn't change: the reach is an unseen frame round the control
      (--reach-x to the sides, --reach-y above and under; nothing for a mouse). Every small control is listed here. */
-  :is(.dots button, .chips button, .swatches .swatch, .sign, .step, .rename) { position: relative; }
-  :is(.dots button, .chips button, .swatches .swatch, .sign, .step, .rename)::after { content: ""; position: absolute; inset: calc(-1 * var(--reach-y, 0px)) calc(-1 * var(--reach-x, 0px)); }
+  :is(.dots button, .chips button, .swatches .swatch, .sign, .step, .rename, .fontname .btn) { position: relative; }
+  :is(.dots button, .chips button, .swatches .swatch, .sign, .step, .rename, .fontname .btn)::after { content: ""; position: absolute; inset: calc(-1 * var(--reach-y, 0px)) calc(-1 * var(--reach-x, 0px)); }
   @media (pointer: coarse) {
     .dots button { --reach-x: calc(var(--guide-gap) / 2); --reach-y: calc((var(--guide-row) - var(--guide-dot)) / 2); }      /* a guide's colour: the whole height of its line */
     .chiprow .chips button { --reach-x: calc(var(--pop-chip-gap) / 2); --reach-y: calc(var(--pop-chip-gap) / 2); }      /* a colour in the pop-out */
     .swatches .swatch { --reach-x: calc(var(--chip-gap) / 2); --reach-y: var(--reach); }      /* a band's sector */
     .sign, .rename, .step, .labelmenu { --reach-y: var(--reach); }      /* signs under the ring list, the pop-out's square and cross, the rename box, − and + */
+    .fontname .btn { --reach-y: calc((var(--control) - var(--control-s)) / 2 + var(--unit)); }      /* Lang. and Change…: the font name line's whole height */
     .colourpop header .sign { --reach-y: calc((var(--head) - var(--control)) / 2); }
   }
 
@@ -550,13 +552,13 @@
 
 /* rings: the list, the ring drawer, the tag, value buttons */
 @layer panel {
-  /* the ring list: top ring first. Each ring is a framed row, a little wider than the pane's lines on both sides
-     (--frame-out), so the eye has room inside the frame: eye (show or hide the ring, in the toggle column) · grip ·
+  /* the ring list: top ring first. Each ring is a framed row between the pane's lines, from where the labels start
+     to the right line (Okay, 14 Oct 2026: "lock it down"); the eye has room inside the frame (--frame-pad): eye (show or hide the ring, in the toggle column) · grip ·
      name · rename box (selected ring) · summary · kind. The selected ring is light blue. The list owns the columns
      and every row borrows them (subgrid), so summaries and kinds stand under each other whatever the words' widths. */
-  .ringlist { margin: 0 calc(-1 * var(--frame-out)) 0 var(--lead); }      /* rows start where the labels start: the toggle column is the panes' alone */
+  .ringlist { margin: 0 0 0 var(--lead); }      /* rows start where the labels start (the toggle column is the panes' alone) and end on the pane's line */
   .ringlist ol { position: relative; list-style: none; margin: 0; padding: var(--u1) 0 0; display: grid; row-gap: var(--ring-gap);
-    grid-template-columns: calc(var(--frame-out) + var(--lead)) var(--grip) minmax(0, 1fr) auto calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--ringline-gap)) var(--row-end);      /* eye · grip · name · kind · colour · size · radius · the room at the end: rows and the ring drawer share them */ max-height: calc(5 * (var(--line) + var(--ring-gap)) + var(--line-button) + 2 * var(--ringline-pad) + 2 * var(--ringline-inner) + 2 * var(--hair) + var(--ringline-join) + var(--unit)); overflow-y: auto; }      /* five rings and the ring line, then it scrolls */
+    grid-template-columns: calc(var(--frame-pad) + var(--lead)) var(--grip) minmax(0, 1fr) auto calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--ringline-gap)) var(--row-end);      /* eye · grip · name · kind · colour · size · radius · the room at the end: rows and the ring drawer share them */ max-height: calc(5 * (var(--line) + var(--ring-gap)) + var(--line-button) + 2 * var(--ringline-pad) + 2 * var(--ringline-inner) + 2 * var(--hair) + var(--ringline-join) + var(--unit)); overflow-y: auto; }      /* five rings and the ring line, then it scrolls */
   .ringlist li.ring { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; height: var(--line);
     border: var(--hair) solid var(--rule); border-radius: var(--round-small); background: var(--field); cursor: pointer; }
   .ringlist li.ring:hover { border-color: var(--grey); }
@@ -564,7 +566,7 @@
   .guided .ringlist li.ring.on { background: color-mix(in srgb, var(--guide) var(--guide-tint), var(--field)); border-color: color-mix(in srgb, var(--guide) var(--guide-edge), var(--grey)); }
   .ringlist li.ring.off, .ringlist li.ring.off :is(.kind, .says) { color: var(--rule); }
   .ringlist li.ring.off.on, .ringlist li.ring.off.on :is(.kind, .says) { color: var(--grey); }
-  .ringlist .eye { display: grid; align-items: center; justify-items: start; width: 100%; height: 100%; padding-left: calc(var(--frame-out) - var(--hair) + var(--nudge)); border-radius: var(--round-small) 0 0 var(--round-small); }
+  .ringlist .eye { display: grid; align-items: center; justify-items: start; width: 100%; height: 100%; padding-left: calc(var(--frame-pad) - var(--hair) + var(--nudge)); border-radius: var(--round-small) 0 0 var(--round-small); }
   .ringlist .eye:hover { background: var(--veil); }
   .ringlist .grip { display: grid; place-items: center; height: 100%; margin-left: -4px; color: var(--rule); cursor: grab; touch-action: none; }
   .ringlist li.ring:hover .grip, .ringlist li.ring.on .grip { color: var(--grey); }
@@ -662,7 +664,7 @@
   /* a box inside the panel (the font box) stands between the pane's lines: it starts where the labels start and
      ends on the pane's right line, as the rows above it do (Okay, 14 Oct 2026: "squeeze the slider to fit fonts
      block"). Inside, the language button and the sliders start on the controls' column; the sliders give up
-     --frame-out, so the fields and steppers end that much inside the box's edge. The labels take what is left,
+     --frame-pad, so the fields and steppers end that much inside the box's edge. The labels take what is left,
      one --btn-pad in from the edge. The frame is an outline drawn inside the box's edge, so it takes no room. */
   .font { display: grid; gap: var(--unit); margin: var(--unit) 0; }
   .font .styles { flex-wrap: wrap; gap: var(--unit); }
@@ -673,8 +675,8 @@
   /* a font's three lines stand in one white box, a hairline between them; what is in it is quiet: grey lines, grey words */
   .fontbox { --well: var(--ground); display: grid; outline: var(--hair) solid var(--rule); outline-offset: calc(-1 * var(--hair)); background: var(--field); }      /* a slider's track must show on the white: the ground's grey (build list #128: it was white on white) */
   .fontbox > * + * { border-top: var(--hair) solid var(--rule); }
-  .fontbox > .styles { padding: var(--btn-pad) var(--frame-out) var(--btn-pad) var(--btn-pad); }      /* as much room under the style buttons as before them (Okay, 14 Oct 2026: X and X) */
-  .fontbox .row { padding-right: var(--frame-out); box-shadow: none; }      /* size, tracking, an axis: rows like any other, between the box's own lines, their steppers ending --frame-out inside the box */
+  .fontbox > .styles { padding: var(--btn-pad) var(--frame-pad) var(--btn-pad) var(--btn-pad); }      /* as much room under the style buttons as before them (Okay, 14 Oct 2026: X and X) */
+  .fontbox .row { padding-right: var(--frame-pad); box-shadow: none; }      /* size, tracking, an axis: rows like any other, between the box's own lines, their steppers ending --frame-pad inside the box */
   .fontbox .row > :first-child { padding-left: var(--btn-pad); }
   /* the chosen font's numerals and letters, the box's first line: in a thick light frame one unit inside the box (Okay's sketch, 13 Oct 2026: "thick border, no bg") */
   .fontbox > .fontrow.current { width: auto; margin: var(--unit); border: var(--ringline-inner) solid var(--ground); background: var(--ground); }      /* the whole cell in the ground's grey (Okay, 13 Oct 2026) */
@@ -686,14 +688,15 @@
   .fontbox .tile > .sticker { justify-self: start; }
   .boxpart > .features { padding: 0 var(--btn-pad) var(--btn-pad); }
   .fontbox .btn, .fontbox .styles > button { border-color: var(--rule); color: var(--grey); }
+  .fontname .btn { height: var(--control-s); padding: 0 calc(0.75 * var(--btn-pad)); border-color: var(--rule-light); color: var(--wait); font-size: var(--t-xxs); }      /* Lang. and Change…: three quarters of a button, and lighter (Okay, 14 Oct 2026) */
   .fontbox :is(.btn, .styles > button):hover { border-color: var(--ink); color: var(--ink); }
   /* the font's name · the language · the text's colour · Change…. The whole line opens the font sheet, but for the
      language and the colour. The colour stands in the ring list's colour column, wherever the line is; the place kept for it is that column's width. */
-  .fontname { position: relative; display: grid; grid-template-columns: var(--num-columns); align-items: center; padding: var(--unit) var(--frame-out) var(--unit) 0; cursor: pointer; }
+  .fontname { position: relative; display: grid; grid-template-columns: var(--num-columns); align-items: center; padding: var(--unit) var(--frame-pad) var(--unit) 0; cursor: pointer; }
   .fontname .name { grid-column: 1 / 4; padding-left: var(--btn-pad); }      /* the font's name is the box's heading */
   .fontname .langs { grid-column: 5; justify-self: start; }      /* the language: on the controls' column, a button like Change… */
   .fontname > .btn { grid-column: 7 / 10; justify-self: end; }      /* Change…, ending where the rows' steppers end */
-  .fontname .colour.mini { position: absolute; top: 50%; translate: 0 -50%; right: calc(var(--swatch-col) + (var(--line-button) - var(--t-m) - 2 * var(--hair)) / 2); }      /* the colour stands in the ring list's colour column (the ring rows stand --frame-out past the line, the box does not); Change… leaves it room */
+  .fontname .colour.mini { position: absolute; top: 50%; translate: 0 -50%; right: calc(var(--swatch-col) + (var(--line-button) - var(--t-m) - 2 * var(--hair)) / 2); }      /* the colour stands in the ring list's colour column ; Change… leaves it room */
   .langs { position: relative; }
   .langbox { min-width: var(--control); }
   .fontname .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
@@ -5365,7 +5368,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.35.13";
+var VERSION = "beta 4.35.14";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;

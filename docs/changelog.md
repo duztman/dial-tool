@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.35.14 (web version) · 14 Oct 2026
+
+- **Lang. and Change…** in the font box at three quarters, box and words (20 high, 10 type), in lighter grey with a lighter line; under a finger the whole height of the font name's line presses them.
+- **The ring rows** stand between the pane's lines too, like the font box: the name gives up the room. The colour column and the font box's swatch still line up. `--frame-out` is gone; the room inside a frame is `--frame-pad` (R32: no negative margins, no exception).
+
 ## beta 4.35.13 (web version) · 14 Oct 2026
 
 - **The window tabs** start where the labels start (the eyes' column is left free) and end on the pane's line; each is narrower.

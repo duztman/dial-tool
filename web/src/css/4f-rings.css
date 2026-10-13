@@ -1,12 +1,12 @@
 /* rings: the list, the ring drawer, the tag, value buttons */
 @layer panel {
-  /* the ring list: top ring first. Each ring is a framed row, a little wider than the pane's lines on both sides
-     (--frame-out), so the eye has room inside the frame: eye (show or hide the ring, in the toggle column) · grip ·
+  /* the ring list: top ring first. Each ring is a framed row between the pane's lines, from where the labels start
+     to the right line (Okay, 14 Oct 2026: "lock it down"); the eye has room inside the frame (--frame-pad): eye (show or hide the ring, in the toggle column) · grip ·
      name · rename box (selected ring) · summary · kind. The selected ring is light blue. The list owns the columns
      and every row borrows them (subgrid), so summaries and kinds stand under each other whatever the words' widths. */
-  .ringlist { margin: 0 calc(-1 * var(--frame-out)) 0 var(--lead); }      /* rows start where the labels start: the toggle column is the panes' alone */
+  .ringlist { margin: 0 0 0 var(--lead); }      /* rows start where the labels start (the toggle column is the panes' alone) and end on the pane's line */
   .ringlist ol { position: relative; list-style: none; margin: 0; padding: var(--u1) 0 0; display: grid; row-gap: var(--ring-gap);
-    grid-template-columns: calc(var(--frame-out) + var(--lead)) var(--grip) minmax(0, 1fr) auto calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--ringline-gap)) var(--row-end);      /* eye · grip · name · kind · colour · size · radius · the room at the end: rows and the ring drawer share them */ max-height: calc(5 * (var(--line) + var(--ring-gap)) + var(--line-button) + 2 * var(--ringline-pad) + 2 * var(--ringline-inner) + 2 * var(--hair) + var(--ringline-join) + var(--unit)); overflow-y: auto; }      /* five rings and the ring line, then it scrolls */
+    grid-template-columns: calc(var(--frame-pad) + var(--lead)) var(--grip) minmax(0, 1fr) auto calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--ringline-gap)) var(--row-end);      /* eye · grip · name · kind · colour · size · radius · the room at the end: rows and the ring drawer share them */ max-height: calc(5 * (var(--line) + var(--ring-gap)) + var(--line-button) + 2 * var(--ringline-pad) + 2 * var(--ringline-inner) + 2 * var(--hair) + var(--ringline-join) + var(--unit)); overflow-y: auto; }      /* five rings and the ring line, then it scrolls */
   .ringlist li.ring { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; height: var(--line);
     border: var(--hair) solid var(--rule); border-radius: var(--round-small); background: var(--field); cursor: pointer; }
   .ringlist li.ring:hover { border-color: var(--grey); }
@@ -14,7 +14,7 @@
   .guided .ringlist li.ring.on { background: color-mix(in srgb, var(--guide) var(--guide-tint), var(--field)); border-color: color-mix(in srgb, var(--guide) var(--guide-edge), var(--grey)); }
   .ringlist li.ring.off, .ringlist li.ring.off :is(.kind, .says) { color: var(--rule); }
   .ringlist li.ring.off.on, .ringlist li.ring.off.on :is(.kind, .says) { color: var(--grey); }
-  .ringlist .eye { display: grid; align-items: center; justify-items: start; width: 100%; height: 100%; padding-left: calc(var(--frame-out) - var(--hair) + var(--nudge)); border-radius: var(--round-small) 0 0 var(--round-small); }
+  .ringlist .eye { display: grid; align-items: center; justify-items: start; width: 100%; height: 100%; padding-left: calc(var(--frame-pad) - var(--hair) + var(--nudge)); border-radius: var(--round-small) 0 0 var(--round-small); }
   .ringlist .eye:hover { background: var(--veil); }
   .ringlist .grip { display: grid; place-items: center; height: 100%; margin-left: -4px; color: var(--rule); cursor: grab; touch-action: none; }
   .ringlist li.ring:hover .grip, .ringlist li.ring.on .grip { color: var(--grey); }
