@@ -71,7 +71,7 @@
     --round-pill: 999px;                           /* fully round: the signs on the Rings heading line, a value button */
     --menu-box: 18px;                              /* the boxed arrow beside a label that opens a small menu */
     --foot-gap: 4px;                               /* between the round signs on the Rings heading line */
-    --ringline: 52px; --ringline-gap: 8px;         /* the selected ring's line: its height · between its parts */
+    --ringline-pad: 5px; --bare-dot: 18px;         /* the selected ring's line: inside its frame · its colour's swatch */
     --kind-button: 34px;                           /* in that line: a kind's button, and the colour's */
     --value-button: 40px;                          /* a value as a round button: room for five figures over its radius */
     --card-switch: 22px;                           /* the clock-like switch on a window card */
@@ -175,6 +175,7 @@
   :is(.pickt.on, .tile[aria-pressed="true"]) { background: var(--ink); border-color: var(--ink); color: var(--paper); }
   :is(.pickt.on, .tile[aria-pressed="true"]):hover { background: var(--ink-hover); }
   .picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px var(--gap); padding: 4px 0; }
+  .picks.five { grid-template-columns: repeat(5, minmax(0, 1fr)); }      /* five choices (a window's shape) */
   .pickt { justify-items: center; align-content: start; gap: 3px; min-height: var(--tile); padding: 6px 1px 5px; font-size: var(--t-xs); line-height: 1.15; }
   .pickt span { overflow-wrap: anywhere; text-align: center; }
   .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px var(--gap); }
@@ -338,7 +339,7 @@
   .labelmenu:hover { border-color: var(--ink); }
   .labelmenu > select { position: absolute; inset: calc(-1 * var(--reach-y, 0px)); width: calc(100% + 2 * var(--reach-y, 0px)); height: calc(100% + 2 * var(--reach-y, 0px)); opacity: 0; cursor: pointer; }      /* under a finger the unseen menu is larger than its box (reach) */
   .row > :is(select, .segs, .colour, .single, .tools, .picks, .swatches), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
-  .row > :is(.check, .wide), .row.note > .quiet { grid-column: 1 / -1; }      /* a tick and its words start at the left edge */
+  .row > :is(.check, .wide, .picks.five), .row.note > .quiet { grid-column: 1 / -1; }      /* a tick and its words start at the left edge */
   .row > span:first-child:empty { display: none; }
   .row.nest > .check { grid-column: 3 / -1; }       /* a question about the row above: it starts where the controls start */
   .row.note { min-height: 0; }
@@ -416,7 +417,7 @@
     border: var(--hair) solid var(--rule); border-radius: 5px; background: var(--field); cursor: pointer; }
   .ringlist li:hover { border-color: var(--grey); }
   .ringlist li.on { background: var(--select); border-color: var(--select-rule); }
-  .ringlist.guided li.on { background: color-mix(in srgb, var(--guide) var(--guide-tint), var(--field)); border-color: color-mix(in srgb, var(--guide) var(--guide-edge), var(--grey)); }
+  .guided .ringlist li.on { background: color-mix(in srgb, var(--guide) var(--guide-tint), var(--field)); border-color: color-mix(in srgb, var(--guide) var(--guide-edge), var(--grey)); }
   .ringlist li.off, .ringlist li.off :is(.kind, .sum) { color: var(--rule); }
   .ringlist li.off.on, .ringlist li.off.on :is(.kind, .sum) { color: var(--grey); }
   .ringlist .eye { display: grid; align-items: center; justify-items: start; width: 100%; height: 100%; padding-left: calc(var(--frame-out) - var(--hair) + var(--nudge)); border-radius: 4px 0 0 4px; }
@@ -450,22 +451,31 @@
   .addmenu button + button { border-top: var(--hair) solid var(--rule); }
   .addmenu button:hover { background: var(--hover); }
 
-  /* the selected ring in one line: its name · its kind (four buttons, pictures only) · its colour (a swatch) · its
-     radius (a value button). The radius' pop-up hangs under the line, as wide as the line. */
-  .ringline { position: relative; display: flex; align-items: center; gap: var(--ringline-gap); min-height: var(--ringline); }
-  .ringline .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
-  .kinds { display: flex; flex: none; }
-  .kinds button { display: grid; place-items: center; width: var(--kind-button); height: var(--kind-button); border: var(--hair) solid var(--rule); background: var(--field); }
+  /* the selected ring in one framed line, as wide as the ring rows above it: four kind buttons (pictures only) · its
+     colour (a swatch) · its size and its radius (two value buttons) · a handle to drag the radius by. Eight equal parts fill the line. The
+     frame has the colour of the selected ring's guide, as that ring's row has, on white. The radius' pop-up hangs
+     under the line. */
+  .body > .ringline { grid-column: 1 / -1; }
+  .ringline { position: relative; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); align-items: center; justify-items: center; margin: var(--ring-gap) calc(-1 * var(--frame-out)) 0 var(--lead);
+    padding: var(--ringline-pad); border: var(--hair) solid var(--select-rule); border-radius: var(--round-small); background: var(--field); }
+  .guided .ringline { border-color: color-mix(in srgb, var(--guide) var(--guide-edge), var(--grey)); }
+  .kinds { grid-column: span 4; justify-self: stretch; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .kinds button { position: relative; display: grid; place-items: center; height: var(--kind-button); border: var(--hair) solid var(--rule); background: var(--field); }
   .kinds button + button { margin-left: calc(-1 * var(--hair)); }
   .kinds button:hover { background: var(--hover); }
-  .kinds button.on { position: relative; background: var(--ink); border-color: var(--ink); color: var(--paper); }
-  .colour.bare { flex: none; justify-content: center; width: var(--kind-button); height: var(--kind-button); padding: 0; border: var(--hair) solid var(--rule); border-radius: 0; background: var(--field); }
+  .kinds button.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .colour.bare { position: relative; justify-content: center; width: var(--kind-button); height: var(--kind-button); padding: 0; border: var(--hair) solid var(--rule); border-radius: 0; background: var(--field); }
   .colour.bare .hex { display: none; }
+  .colour.bare .dot { width: var(--bare-dot); height: var(--bare-dot); }
   .colour.bare[aria-expanded="true"] { border-color: var(--ink); }
+  /* what a wordless button is, said under it while the pointer is on it (or the keyboard): a small tag with a point */
+  [data-tip]:is(:hover, :focus-visible)::after { content: attr(data-tip); position: absolute; z-index: 6; top: calc(100% + 7px); left: 50%; translate: -50% 0; padding: 2px 8px 3px; border: var(--thick) solid var(--ink); border-radius: var(--round-small);
+    background: var(--field); color: var(--ink); font: 600 var(--t-s)/1.3 var(--sans); white-space: nowrap; pointer-events: none; }
+  [data-tip]:is(:hover, :focus-visible)::before { content: ""; position: absolute; z-index: 7; top: calc(100% + 2px); left: 50%; translate: -50% 0; width: 8px; height: 8px; rotate: 45deg; border: var(--thick) solid var(--ink); border-width: var(--thick) 0 0 var(--thick); background: var(--field); pointer-events: none; }
 
   /* a value as a button: a circle with a radius drawn in it and the value written on the line. A click pops up the
      number's row under it; pressing and moving changes the value. */
-  .valueb { position: relative; flex: none; width: var(--value-button); height: var(--value-button); border-radius: var(--round-pill); cursor: ew-resize; touch-action: none; }
+  .valueb { position: relative; width: var(--value-button); height: var(--value-button); border-radius: var(--round-pill); cursor: ew-resize; touch-action: none; }
   .valueb svg { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.1; }
   .valueb svg circle:first-child { fill: var(--field); stroke: var(--grey); }
   .valueb svg .pivot { fill: currentColor; stroke: none; }
@@ -474,6 +484,8 @@
   .valueb:is([aria-expanded="true"], .dragging) svg circle:first-child { fill: var(--ink); stroke: var(--ink); }
   .valueb .figure { position: absolute; left: 0; right: 0; bottom: calc(50% + 2px); text-align: center; font-size: var(--t-xs); font-weight: 600; line-height: 1; }
   .valueb .figure.long { letter-spacing: -0.06em; }
+  .valueh { position: relative; display: grid; place-items: center; justify-self: stretch; height: var(--kind-button); color: var(--grey); cursor: ew-resize; touch-action: none; }
+  .valueh:is(:hover, .dragging) { color: var(--ink); }
   .valuepop { --row-rule: transparent; position: absolute; z-index: 4; top: calc(100% + var(--unit)); left: 0; right: 0; padding: 0 10px; border: var(--hair) solid var(--ink); background: var(--field); }
   .valuepop .row input[type="range"] { visibility: hidden; }      /* the button is dragged instead: the pop-up is for typing */
 
@@ -483,6 +495,7 @@
   .font .styles > button { flex: 0 0 auto; padding: 0 9px; white-space: nowrap; border-left: var(--hair) solid var(--rule); }
   .font .styles > button.on { border-color: var(--ink); }
   .font .note:empty, .picker .note:empty { display: none; }
+  .font > .btn { justify-self: start; padding: 0 10px; }
   .fontlist { border: var(--hair) solid var(--rule); background: var(--field); overflow-y: auto; }
   .fontrow { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: calc(var(--unit) * 2); width: 100%; height: 35px; padding: 0 8px; border-bottom: var(--hair) solid var(--ground); text-align: left; }
   .fontrow:hover { background: var(--hover); }
@@ -529,8 +542,14 @@
   main { --on-canvas: var(--ink); }
   main.dark { --on-canvas: #FFFFFF; }
   .guides { position: absolute; z-index: 3; top: var(--canvas-inset); right: var(--canvas-inset); display: flex; justify-content: flex-end; }
-  .guidesbox, .guidesmore, .backdropbox { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: var(--hair) solid var(--on-canvas); color: var(--on-canvas); user-select: none; }
-  :is(.guidesbox, .guidesmore, .backdropbox):hover { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); }      /* under the pointer its line is twice as thick: still no fill */
+  .guidesbox, .guidesmore, .backdropbox, .undobox { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: var(--hair) solid var(--on-canvas); color: var(--on-canvas); user-select: none; }
+  :is(.guidesbox, .guidesmore, .backdropbox, .undobox):hover { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); }      /* under the pointer its line is twice as thick: still no fill */
+  /* undo · redo, before the Guides switch: two joined outlined buttons; pale when there is no step that way */
+  .undos { display: flex; margin-right: var(--canvas-inset); }
+  .undobox { width: var(--control-large); }
+  .undobox:first-child { border-radius: 10px 0 0 10px; }
+  .undobox:last-child { border-left: 0; border-radius: 0 10px 10px 0; }
+  .undobox.none { opacity: 0.35; }
   .guidesbox { gap: 7px; padding: 0 10px 0 8px; border-radius: 10px 0 0 10px; font-weight: 600; }
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 10px 10px 0; }
   .guidesbox .word::after { content: attr(data-text); display: block; height: 0; overflow: hidden; visibility: hidden; font-weight: 600; }

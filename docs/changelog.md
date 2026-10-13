@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.8 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Okay's third drawing of the ring line, and the Windows section. Seen in Chromium here only.
+
+- **Ring line**: one framed line as wide as the ring rows, all buttons — four kinds · colour · **size** (new: a mark's length, a dot's Ø, a numeral's size or a band's width, as a value button) · radius · a double arrow that drags the radius. No name in it. Frame in the selected ring's guide colour, on white. A **tag** under a wordless button says what it is while the pointer is on it.
+- **Undo · Redo** as two outlined buttons on the preview's top right, before the Guides switch; pale when there is no step that way.
+- **Windows**: *Show this window* is gone (the card's switch does it). New pane **Shape**: rectangle · circle · polygon (Sides) · arch · arc, Corner, *Turn it with its radius* and *Turn the text with it*; position **4** added. A window's **own font** (font sheet; *As the numerals* takes it back). Pane **Colours**: text or picture · disc under it · frame.
+- New keys, all drawing as before at their start (R31): windows `shape`, `sides`, `turn`, `text_turn`, `family`, `ps`, `axes`, `text_c`, `disc_c` (window 1: `da_…`); list `WINDOW_SHAPES` (R9).
+
 ## beta 4.7 (web version) · 13 Oct 2026
 
 On `dev`. After Okay's review of the research atlas and two drawings of the Rings panel. Seen in Chromium here only.

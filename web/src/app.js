@@ -86,6 +86,13 @@ const PICS = {
     `<circle cx="14" cy="10" r="8.5" stroke-width="0.8" opacity="0.45"/><path d="M12.4 6.4L14 2.6L15.6 6.4"/><path d="M12.4 17.4L14 13.6L15.6 17.4"/>`,
     `<path d="M3 17A11 11 0 0 1 25 17" stroke-width="0.8" opacity="0.45"/><path d="M12.6 8.4L14 4.8L15.4 8.4" /><path d="M12.6 8.4L14 4.8L15.4 8.4" transform="rotate(-24 14 17)"/><path d="M12.6 8.4L14 4.8L15.4 8.4" transform="rotate(24 14 17)"/><path d="M12.6 8.4L14 4.8L15.4 8.4" transform="rotate(-48 14 17)"/><path d="M12.6 8.4L14 4.8L15.4 8.4" transform="rotate(48 14 17)"/>`,
   ],
+  hole: [                                          // a window's shape: rectangle · circle · polygon · arch · arc
+    `<rect x="6" y="4" width="16" height="12" rx="1.5"/>`,
+    `<circle cx="14" cy="10" r="6.5"/>`,
+    `<path d="M14 3.2L19.9 6.6L19.9 13.4L14 16.8L8.1 13.4L8.1 6.6Z"/>`,
+    `<path d="M3 16A11 11 0 0 1 25 16A5.5 5.5 0 0 0 14 16A5.5 5.5 0 0 0 3 16Z"/>`,
+    `<path d="M4.5 12.5A14 14 0 0 1 23.5 12.5L21 16.4A10 10 0 0 0 7 16.4Z"/>`,
+  ],
   window: [
     `<rect x="6" y="3.5" width="16" height="13" rx="1.5"/><path d="M10.6 8L12.2 7L12.2 13M15 7L18.4 7L16 13" stroke-width="1.2"/>`,
     `<rect x="2.5" y="4.5" width="23" height="11" rx="1.5"/><path d="M6 12.5L6 7.5L8 10.5L10 7.5L10 12.5M13 7.5L15.5 7.5L15.5 12.5L13 12.5ZM18.5 12.5L18.5 7.5L22 12.5L22 7.5" stroke-width="1.1"/>`,
@@ -130,6 +137,17 @@ const RADIUS_ROWS = {
   numerals: num("r", "Centre radius", 0, 25, 0.05, { scope: "ring", menu: { key: "anchor", title: "What the radius measures to", items: [[1, "Baseline"], [2, "Ascender"], [0, "Centre"]] } }),
 };
 const radius_row = (R) => RADIUS_ROWS[G.kind_of(R) === "numerals" ? "numerals" : "outer"];
+// how big one thing of a ring is — its "inner" size, the number in the ring summary: a mark's length (a dot's Ø), a
+// numeral's size, a band's width. As a number row: what the size button's pop-up shows (Okay, 13 Oct 2026).
+const SIZE_ROWS = {
+  len: num("len", "Length", 0.05, 10, 0.05, { scope: "ring" }), dot: num("w", "Ø", 0.02, 5, 0.01, { scope: "ring" }),
+  numerals: num("size", "Size", 0.3, 8, 0.05, { scope: "ring" }), band: num("width", "Band width", 0.02, 25, 0.05, { scope: "ring" }),
+};
+const size_row = (R) => SIZE_ROWS[G.kind_of(R) === "numerals" ? "numerals" : G.kind_of(R) === "band" ? "band" : G.SHAPES[R.shape] === "dot" ? "dot" : "len"];
+const VALUE_PICS = {                               // inside a value button, on a 40 × 40 field with the centre at 0 0, under the figure
+  radius: `<path d="M0 0L19.4 0"/><circle class="pivot" r="1.6"/>`,                     // a radius, from the centre to the edge
+  size: `<path d="M-9 5L9 5M-9 2L-9 8M9 2L9 8"/>`,                                     // a measure between two stops
+};
 
 const kind_in = (...names) => (R) => names.includes(G.kind_of(R));
 const marks_with = (...shapes) => (R) => ["ticks", "markers"].includes(G.kind_of(R)) && shapes.includes(G.SHAPES[R.shape]);
@@ -139,6 +157,7 @@ const numerals_only = kind_in("numerals");
 const W = { scope: "window" };
 const win_on = (T) => T.on;
 const win_is = (...kinds) => (T) => T.on && kinds.includes(G.WINDOW_KINDS[T.kind]);
+const shape_is = (...shapes) => (T) => T.on && shapes.includes(G.window_shape(T));
 // the Windows cards, left to right: 12 · 3 · 6 · 9. slot = which of the four windows a card is (window 1, the date
 // window of old, starts at 3, so the second card is its); at = that place in G.DATE_AT.
 const WINDOW_CARDS = [{ slot: 1, at: 4 }, { slot: 0, at: 0 }, { slot: 2, at: 2 }, { slot: 3, at: 3 }];
@@ -246,25 +265,37 @@ const ROWS = {
   ],
   Date: [                                          // "Windows" on its tab: up to four holes in the plate
     custom("window_cards", { bar: true }),         // four cards, 12 · 3 · 6 · 9: where each window is, and tabs for the panes below (Okay, 12 Oct 2026)
+    // a window is shown or hidden by the switch on its card (Okay, 13 Oct 2026: "Show this w. Goes away."). Hidden, only its heading shows.
     hdr("Window", { title: (S) => `Window at ${G.DATE_AT[G.windows_of(S)[S.ui_window].at][0]}` }),
-    chk("on", "Show this window", { ...W, head: true }),
+    info("Not shown. The small clock on its card shows it.", { ...W, show: (T) => !T.on }),
     pick("kind", "Shows", G.WINDOW_KINDS, PICS.window, { ...W, show: win_on }),
     txt("text", "Text", { ...W, show: win_is("date", "day") }),
     num("size", "Text % of height", 20, 100, 1, { ...W, show: win_is("date", "day") }),
-    info("Uses the top numerals ring’s type.", { ...W, show: win_is("date", "day") }),
+    custom("font", { ...W, show: win_is("date", "day") }),      // its own font, or the top numerals ring's (the start)
     info("Follows the time shown: AM · PM beside the time, under the panel.", { ...W, show: win_is("am · pm") }),
     num("age", "Moon age, days", 0, 29.5, 0.1, { ...W, show: win_is("moon phase") }),
-    info("0 new moon · 14.8 full · its height follows its width.", { ...W, show: win_is("moon phase") }),
+    info("0 new moon · 14.8 full.", { ...W, show: win_is("moon phase") }),
+    // the hole's shape, apart from what shows through it (Okay, 13 Oct 2026): one pane for every window
+    hdr("Shape", { ...W, show: win_on }),
+    custom("window_shape", { ...W, show: win_on }),
+    num("sides", "Sides", 3, 12, 1, { ...W, whole: true, show: shape_is("polygon") }),
+    num("round", "Corner", 0, 2, 0.05, { ...W, show: shape_is("rectangle", "polygon") }),
+    chk("turn", "Turn it with its radius", { ...W, show: (T) => T.on && G.window_shape(T) !== "arc" }),
+    info("Only off the quarters: at 4 it turns 30°, at half past four 45°.", { ...W, show: (T) => T.on && T.turn && G.window_turn(T) === 0 && G.window_shape(T) !== "arc" }),
+    chk("text_turn", "Turn the text with it", { ...W, nest: true, show: (T) => T.on && T.turn && G.window_shape(T) !== "arc" && ["date", "day"].includes(G.WINDOW_KINDS[T.kind]) }),
     hdr("Place and size", { ...W, show: win_on }),
     pop("at", "Position", G.DATE_AT.map((d) => d[0]), { ...W, show: win_on, head: true }),
     num("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
-    num("w", "Width", 0.5, 8, 0.05, { ...W, show: win_on }),
-    num("h", "Height", 0.5, 5, 0.05, { ...W, show: win_is("date", "day", "am · pm") }),
-    num("round", "Corner", 0, 2, 0.05, { ...W, show: win_is("date", "day") }),
+    num("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("rectangle", "arch", "arc") }),
+    num("w", "Ø", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
+    num("h", "Height", 0.5, 5, 0.05, { ...W, show: shape_is("rectangle", "arc") }),
+    hdr("Colours", { ...W, show: win_on }),
+    col("text_c", "Text · picture", { ...W, show: win_on, or: (T) => T.ink }),       // or: what an unset colour is
+    col("disc_c", "Disc under it", { ...W, show: win_on, or: () => [1, 1, 1, 1] }),
+    col("ink", "Frame", { ...W, show: win_on }),
     hdr("Print", { ...W, show: win_on }),
     num("frame", "Frame", 0, 0.6, 0.01, { ...W, show: win_on }),
     num("clear", "Print clearance", 0, 1, 0.01, { ...W, show: win_on }),
-    col("ink", "Print colour", { ...W, show: win_on }),
   ],
   Export: [
     hdr("Examples"),
@@ -463,7 +494,7 @@ class DialTool {
       if (!["c", "name"].includes(key)) this.static_dirty = true;      // (cs too: which sectors share a colour decides the shapes)
       if (key === "kind" || key === "name" || key === "on") this.fill_ring_list();
     } else if (scope === "window") {
-      if (key !== "ink") this.static_dirty = true;
+      if (!["ink", "text_c", "disc_c"].includes(key)) this.static_dirty = true;
       if (key === "kind") {                        // a date shows a number, a day a word: swap the untouched starting text
         if (G.WINDOW_KINDS[value] === "day" && T.text === "17") T.text = "MON";
         if (G.WINDOW_KINDS[value] === "date" && T.text === "MON") T.text = "17";
@@ -587,7 +618,9 @@ class DialTool {
           view("zoom-in", "Zoom in", `<path d="M3.5 8L12.5 8M8 3.5L8 12.5"/>`, () => { this.zoom(1.4, middle()); this.render(); })),
         el("button", { type: "button", id: "fit", textContent: "Fit", title: "Show the whole page", onclick: () => { this.fit(); this.render(); } })));
     this.set_speed(1);
-    this.main = el("main", {}, this.svg, this.tip, this.guides_box(), this.backdrop_box());
+    const guides = this.guides_box();
+    guides.prepend(this.undo_box());               // top right: undo · redo, then the Guides switch
+    this.main = el("main", {}, this.svg, this.tip, guides, this.backdrop_box());
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     this.play_icon();
     let shown = true;
@@ -717,6 +750,7 @@ class DialTool {
     this.form.replaceChildren();
     this.pinned.replaceChildren();
     this.ring_list = null;                         // the Rings section builds it again
+    this.font_scope = SECTIONS[this.S.ui_section] === "Date" ? "window" : "ring";      // whose font the font row here is about
     this.rows = ROWS[name].map((row) => this.build_row(row));
     let pane = null;
     for (const r of this.rows) {
@@ -807,7 +841,7 @@ class DialTool {
       const v = T[row.key];
       if (row.kind === "num") parts.push(`${label_of(row, T).replace(/^…/, "").toLowerCase()} ${is_length(row) ? this.in_unit(v, decimals(row.step)) : fmt(v, row.step)}`);
       else if (row.kind === "pop" || row.kind === "pick" || row.kind === "seg") parts.push(String(row.items[v] ?? ""));
-      else if (row.kind === "col") parts.push({ c: v });       // a colour is shown, not spelled: a tiny swatch (Okay, 13 Oct 2026)
+      else if (row.kind === "col") parts.push({ c: v || (row.or ? row.or(T) : [0, 0, 0, 1]) });       // a colour is shown, not spelled: a tiny swatch (Okay, 13 Oct 2026)
       else if (row.kind === "txt") parts.push(String(v));
       else if (row.kind === "chk" && v) parts.push(row.text.toLowerCase());
     }
@@ -939,7 +973,7 @@ class DialTool {
       const pill = this.colour_pill(id, "Choose a colour");
       pill.onclick = () => this.pop_open(this.colour_of_row(row), pill);
       wrap.append(el("label", { htmlFor: id, textContent: row.text }), pill);
-      out.refresh = (T) => pill.show(T[row.key]);
+      out.refresh = (T) => pill.show(T[row.key] || (row.or ? row.or(T) : [0, 0, 0, 1]));
     }
 
     if (row.kind === "txt") {
@@ -1039,7 +1073,7 @@ class DialTool {
   colour_of_row(row) {
     return {
       alpha: row.scope === "ring",                 // only a ring can be see-through (Okay, 12 Oct 2026)
-      read: () => { const T = this.target(row.scope); return T ? T[row.key] : null; },
+      read: () => { const T = this.target(row.scope); return T ? T[row.key] || (row.or ? row.or(T) : null) : null; },
       write: (value) => this.set_value(row.scope, row.key, value),
       label: () => {
         const S = this.S, scope = row.scope;
@@ -1292,6 +1326,23 @@ class DialTool {
     };
   }
 
+  /** a window's shape as picture tiles: rectangle · circle · polygon · arch · arc. What is stored is the place in
+   *  G.WINDOW_SHAPES; 0, "as its kind", shows as the shape that kind has had all along. */
+  row_window_shape(wrap, out) {
+    wrap.className = "row pick";
+    const group = el("span", { className: "picks five", role: "radiogroup", ariaLabel: "Shape" });
+    const names = G.WINDOW_SHAPES.slice(1);
+    names.forEach((name, i) => {
+      const tile = el("button", { type: "button", className: "pickt", id: `window-shape-${name}`, title: name, onclick: () => this.set_value("window", "shape", i + 1) });
+      tile.setAttribute("role", "radio");
+      tile.innerHTML = pic(PICS.hole[i]);
+      tile.append(el("span", { textContent: name }));
+      group.append(tile);
+    });
+    wrap.append(group);                            // no label: the pane's heading says Shape, and five tiles need all six columns for their words
+    out.refresh = (T) => [...group.children].forEach((b, i) => { const on = names[i] === G.window_shape(T); b.classList.toggle("on", on); b.setAttribute("aria-checked", String(on)); });
+  }
+
   /** Hands, on top and always in view: Hour · Minute · Seconds, as tabs for the panes below. */
   row_hand_tabs(wrap, out) {
     wrap.className = "tabsbar";
@@ -1362,63 +1413,77 @@ class DialTool {
     return tools;
   }
 
-  /** the selected ring in one line (Okay, 13 Oct 2026): its name · its kind, four buttons with pictures only ·
-   *  its colour, a swatch · its radius, a round button with the radius drawn in it and the value on the line. */
+  /** the selected ring in one framed line that fills the pane's width (Okay's drawing, 13 Oct 2026): four kind
+   *  buttons, pictures only · its colour · how big one of its things is and its radius, two round value buttons
+   *  · a handle to drag the radius by.
+   *  No words: what a button is shows under it while the pointer is on it (data-tip). The frame has the colour of
+   *  the selected ring's guide, like the ring's row above it, on white. */
   row_ring_line(wrap, out) {
     wrap.className = "ringline";
-    const name = el("b", { className: "name" });
     const kinds = el("span", { className: "kinds", role: "radiogroup", ariaLabel: "Kind" });
     G.KINDS.forEach((kind, i) => {
-      const b = el("button", { type: "button", id: `ring-kind-Kind-${i}`, title: kind, ariaLabel: kind, onclick: () => this.set_value("ring", "kind", i) });
+      const b = el("button", { type: "button", id: `ring-kind-Kind-${i}`, ariaLabel: kind, onclick: () => this.set_value("ring", "kind", i) });
       b.setAttribute("role", "radio");
+      b.dataset.tip = kind[0].toUpperCase() + kind.slice(1);
       b.innerHTML = PICS.kind(i, 24);
       kinds.append(b);
     });
-    const colour = this.colour_pill("ring-c-Colour", "Colour");
+    const colour = this.colour_pill("ring-c-Colour", "");
     colour.classList.add("bare");                  // the swatch alone: no hex
+    colour.dataset.tip = colour.ariaLabel = "Colour";
     colour.onclick = () => this.pop_open(this.colour_of_row({ scope: "ring", key: "c", text: "Colour" }), colour);
-    const radius = this.value_button("ring-r", () => radius_row(this.ring()));
-    wrap.append(name, kinds, colour, radius.el);
+    const size = this.value_button("ring-size", () => size_row(this.ring()), VALUE_PICS.size);       // before the radius (Okay, 13 Oct 2026)
+    const radius = this.value_button("ring-r", () => radius_row(this.ring()), VALUE_PICS.radius);
+    wrap.append(kinds, colour, size.el, radius.el, radius.handle);
     out.refresh = (R) => {
-      name.textContent = name.title = R.name || G.kind_of(R);
       [...kinds.children].forEach((b, i) => { b.classList.toggle("on", i === R.kind); b.setAttribute("aria-checked", String(i === R.kind)); });
       colour.show(R.c);
+      size.refresh();
       radius.refresh();
     };
   }
 
   // ── a value as a button ──────────────────────────────────
   //   A number shown as a small round drawing with its value written in it (Okay, 13 Oct 2026; first use: a ring's
-  //   radius). A click pops up the number's ordinary row under the button, the field ready to type in; pressing
-  //   and moving the pointer changes the value without opening anything (right or up: more; Shift: ten times
-  //   finer); a press outside puts the pop-up away. row() says which number row it stands for right now.
+  //   radius), and beside it a handle, a double arrow. A click on the drawing pops up the number's ordinary row
+  //   under it, the field ready to type in; pressing and moving the pointer on either changes the value without
+  //   opening anything (right or up: more; Shift: ten times finer); a press outside puts the pop-up away.
+  //   row() says which number row it stands for right now.
 
-  value_button(id, row) {
+  value_button(id, row, drawing) {
     const b = el("button", { type: "button", className: "valueb", id });
     const figure = el("span", { className: "figure" });
-    b.innerHTML = `<svg viewBox="-20 -20 40 40" aria-hidden="true"><circle r="19.4"/><path d="M0 0L19.4 0"/><circle class="pivot" r="1.6"/></svg>`;
+    b.innerHTML = `<svg viewBox="-20 -20 40 40" aria-hidden="true"><circle r="19.4"/>${drawing}</svg>`;
     b.append(figure);
+    const handle = el("button", { type: "button", className: "valueh", id: id + "-drag", tabIndex: -1 });
+    handle.innerHTML = icon(`<path d="M2 8L22 8M6 4L2 8L6 12M18 4L22 8L18 12"/>`, 24, "0 0 24 16").replace('height="24"', 'height="16"');
     const T = () => this.target(row().scope);
     const refresh = () => {
       const r = row(), v = T()[r.key] ?? 0, text = String(parseFloat(this.in_unit(v, decimals(r.step))));
       figure.textContent = text;
       figure.classList.toggle("long", text.length > 5);
-      b.title = `${label_of(r, T())} ${text} ${this.unit()[0]} · click to type, or press and drag`;
-      b.ariaLabel = `${label_of(r, T())} ${text}`;
+      b.dataset.tip = label_of(r, T());
+      b.ariaLabel = `${label_of(r, T())} ${text} ${this.unit()[0]}`;
+      handle.dataset.tip = "Drag";
+      handle.ariaLabel = `Drag to change the ${label_of(r, T()).toLowerCase()}`;
     };
-    let press = null;
-    b.onpointerdown = (e) => { press = { x: e.clientX, y: e.clientY, v: T()[row().key], moved: false }; b.setPointerCapture(e.pointerId); };
-    b.onpointermove = (e) => {
-      if (!press) return;
-      const d = (e.clientX - press.x) - (e.clientY - press.y);      // right or up: more
-      if (!press.moved && Math.abs(d) < 4) return;
-      if (!press.moved) { press.moved = true; this.value_pop_close(); b.classList.add("dragging"); }
-      const r = row(), step = r.step * (e.shiftKey ? 0.1 : 1);
-      this.set_value(r.scope, r.key, +Math.max(press.v + Math.round(d / 2) * step, r.lo).toFixed(6));       // two screen points a step
+    const drags = (part, click) => {
+      let press = null;
+      part.onpointerdown = (e) => { press = { x: e.clientX, y: e.clientY, v: T()[row().key], moved: false }; part.setPointerCapture(e.pointerId); };
+      part.onpointermove = (e) => {
+        if (!press) return;
+        const d = (e.clientX - press.x) - (e.clientY - press.y);      // right or up: more
+        if (!press.moved && Math.abs(d) < 4) return;
+        if (!press.moved) { press.moved = true; this.value_pop_close(); b.classList.add("dragging"); handle.classList.add("dragging"); }
+        const r = row(), step = r.step * (e.shiftKey ? 0.1 : 1);
+        this.set_value(r.scope, r.key, +Math.max(press.v + Math.round(d / 2) * step, r.lo).toFixed(6));       // two screen points a step
+      };
+      part.onpointerup = part.onpointercancel = () => { const was = press; press = null; b.classList.remove("dragging"); handle.classList.remove("dragging"); if (was && !was.moved && click) this.value_pop_open(b, row()); };
     };
-    b.onpointerup = b.onpointercancel = () => { const was = press; press = null; b.classList.remove("dragging"); if (was && !was.moved) this.value_pop_open(b, row()); };
+    drags(b, true);
+    drags(handle, false);
     b.onclick = (e) => { if (!e.detail && !this.value_pop) this.value_pop_open(b, row()); };      // the keyboard (Enter, Space) opens it too
-    return { el: b, refresh };
+    return { el: b, handle, refresh };
   }
 
   /** the pop-up under a value button: the number's own row (label · field · − +; for a numeral's radius the menu
@@ -1464,7 +1529,7 @@ class DialTool {
     if (!this.ring_list) return;
     // the selected row has the colour of the selected ring's guide on the dial (Okay, 13 Oct 2026): the same thing,
     // marked the same way in both places. No such guide (None): the light blue of before.
-    const wrap = this.ring_list.parentElement, guide = this.S.gd_sel ? G.GUIDE_COLOURS[this.S.gd_k_sel] : null;
+    const wrap = this.ring_list.closest(".pane"), guide = this.S.gd_sel ? G.GUIDE_COLOURS[this.S.gd_k_sel] : null;      // on the pane: the ring's row and the ring line both take it
     wrap.classList.toggle("guided", Boolean(guide));
     if (guide) wrap.style.setProperty("--guide", guide); else wrap.style.removeProperty("--guide");
     [...this.ring_list.children].forEach((li, i) => {
@@ -1668,24 +1733,36 @@ class DialTool {
   }
 
   /** in the Type group: the ring's font alone (press it for the list), and its styles as buttons. */
+  /** whose font the font sheet and the style buttons set: the selected ring's, or the selected window's. */
+  font_holder() { return this.font_scope === "window" ? this.window() : this.ring(); }
+  /** …and the type that holder draws with: a window without a font of its own draws with the top numerals ring's. */
+  font_shown() { const T = this.font_holder(); return this.font_scope === "window" ? G.window_type(this.S, T) : T; }
+
   row_font(wrap, out) {
     wrap.className = "font";
-    const current = el("button", { type: "button", className: "fontrow current", id: "font-current", title: "Choose a font", onclick: () => this.open_picker() });
+    const scope = out.row.scope, own = scope === "window";       // a window's font row: the same, with a way back to the numerals' font
+    const pre = own ? "window-" : "";
+    const choose = (act) => { this.font_scope = scope; return act(); };
+    const current = el("button", { type: "button", className: "fontrow current", id: pre + "font-current", title: "Choose a font", onclick: () => choose(() => this.open_picker()) });
     const styles = el("div", { className: "segs styles" });
-    const state = el("div", { className: "quiet note", id: "font-note" });
-    wrap.append(current, styles, state);
+    const state = el("div", { className: "quiet note", id: pre + "font-note" });
+    const back = el("button", { type: "button", className: "btn", id: "window-font-back", textContent: "As the numerals", title: "Use the top numerals ring’s font again", hidden: true,
+      onclick: () => { const w = this.window(); w.family = ""; w.ps = ""; w.axes = {}; this.changed(true); } });
+    wrap.append(current, styles, ...(own ? [back] : []), state);
     let shown = null;
-    out.refresh = (R) => {
+    out.refresh = (T) => {
+      const R = own ? G.window_type(this.S, T) : T;
+      back.hidden = !(own && T.ps);
       const mine = this.families().get(R.family) || [], f = this.catalog.get(R.ps) || mine[0];
-      const key = R.ps + "/" + G.has_font(R.ps);
+      const key = R.ps + "/" + G.has_font(R.ps) + "/" + Boolean(T.ps);
       if (key !== shown) {
         shown = key;
         current.replaceChildren(f ? this.sample(f) : el("span", { className: "sample quiet", textContent: "not loaded" }),
-          el("span", { className: "name", textContent: R.family }), el("span", { className: "change", textContent: "Change…" }));
+          el("span", { className: "name", textContent: own && !T.ps ? `${R.family} · as the numerals` : R.family }), el("span", { className: "change", textContent: "Change…" }));
       }
       styles.hidden = mine.length < 2;             // the family's styles, as buttons
       styles.replaceChildren(...mine.map((x) => {
-        const b = el("button", { type: "button", textContent: x.style || x.ps, onclick: () => this.use_font(x) });
+        const b = el("button", { type: "button", textContent: x.style || x.ps, onclick: () => choose(() => this.use_font(x)) });
         b.classList.toggle("on", x.ps === R.ps);
         return b;
       }));
@@ -1729,7 +1806,7 @@ class DialTool {
   }
 
   fill_picker(again = false) {
-    const list = $("#font-list"), R = this.ring(), by = this.families(), q = $("#font-find").value.trim().toLowerCase();
+    const list = $("#font-list"), R = this.font_shown(), by = this.families(), q = $("#font-find").value.trim().toLowerCase();
     const regular = (fonts) => fonts.find((f) => /^(regular|roman|book|normal)$/i.test(f.style)) || fonts[0];
     const key = [...by.keys()].join("|") + "/" + q + "/" + G.font_list().length;
     if (again || list.dataset.shown !== key) {     // the list itself changes only when fonts arrive or the search does
@@ -1964,7 +2041,7 @@ class DialTool {
 
   async load_fonts_in_use() {
     let loaded = false;
-    for (const ring of this.S.rings) {
+    for (const ring of [...this.S.rings, ...G.windows_of(this.S).filter((w) => w.ps)]) {      // rings, and windows with a font of their own
       const entry = this.catalog.get(ring.ps);
       try {
         if (entry && !G.has_font(ring.ps)) loaded = (await this.load_font(entry)) || loaded;
@@ -2110,8 +2187,9 @@ class DialTool {
       return this.say_font(`Couldn’t fetch ${entry.family} (${e.message}). Are you online?`);
     }
     if (!entry.start && G.has_font(entry.ps)) entry.start = this.start_of(entry.ps);
-    const R = this.ring();
-    R.family = entry.family; R.ps = entry.ps; R.axes = { ...(entry.start || {}) }; R.features = {};
+    const R = this.font_holder();
+    R.family = entry.family; R.ps = entry.ps; R.axes = { ...(entry.start || {}) };
+    if (this.font_scope !== "window") R.features = {};       // a window's font is plain: no features of its own
     this.static_dirty = true;
     this.sync_rows();
     this.render();
@@ -2482,15 +2560,30 @@ class DialTool {
     window.dial_tool = tool;
   }
 
+  /** undo and redo on the preview, top right, before the Guides switch (Okay, 13 Oct 2026): two outlined buttons,
+   *  like the switches there; pale when there is nothing to go back or forward to. */
+  undo_box() {
+    const make = (id, title, way, d) => { const b = el("button", { type: "button", className: "undobox", id, title, ariaLabel: title, onclick: () => this.undo(way) }); b.innerHTML = icon(d); return b; };
+    this.undo_buttons = [make("undo", "Undo (⌘Z)", -1, `<path d="M3 6.5H10A3.5 3.5 0 0 1 10 13.5H6M6 3.5L3 6.5L6 9.5"/>`), make("redo", "Redo (⇧⌘Z)", 1, `<path d="M13 6.5H6A3.5 3.5 0 0 0 6 13.5H10M10 3.5L13 6.5L10 9.5"/>`)];
+    this.sync_undo();
+    return el("span", { className: "undos" }, ...this.undo_buttons);
+  }
+  sync_undo() {
+    if (!this.undo_buttons) return;
+    [HISTORY.past, HISTORY.future].forEach((steps, i) => { this.undo_buttons[i].classList.toggle("none", !steps.length); this.undo_buttons[i].setAttribute("aria-disabled", String(!steps.length)); });
+  }
+
   /** the dial has changed and stood still: that is one step to undo. */
   take_step() {
     const now = dial_text(this.S);
     if (HISTORY.now === null) HISTORY.now = now;
+    this.sync_undo();
     if (now === HISTORY.now) return;
     HISTORY.past.push(HISTORY.now);
     if (HISTORY.past.length > HISTORY.most) HISTORY.past.shift();
     HISTORY.now = now;
     HISTORY.future = [];
+    this.sync_undo();
   }
 
   /** one step back (-1) or forward again (1). The time shown and the window's state stay as they are. */
@@ -2511,6 +2604,7 @@ class DialTool {
     this.show_section();                           // every control from the settings again
     this.load_fonts_in_use();
     this.render();
+    this.sync_undo();
     this.log(way < 0 ? `undone · ${HISTORY.past.length} more` : `redone · ${HISTORY.future.length} more`);
   }
 

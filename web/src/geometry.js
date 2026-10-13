@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.7";
+export const VERSION = "beta 4.8";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -35,8 +35,12 @@ export const MODES = ["upright", "radial", "radial, auto-flip", "on path"];
 export const ANCHORS = ["centre", "baseline", "ascender"];      // the point of a numeral that sits on its ring's radius (web version, 13 Oct 2026). Only grows at its end (R9)
 export const HANDS = ["hour", "minute", "second"];
 export const HAND_SHAPES = ["baton", "pencil", "sword", "dauphine", "leaf", "arrow", "syringe", "breguet", "lollipop", "file"];
-export const DATE_AT = [["3", 90], ["4:30", 135], ["6", 180], ["9", 270], ["12", 0], ["1:30", 45], ["7:30", 225], ["10:30", 315]];
+export const DATE_AT = [["3", 90], ["4:30", 135], ["6", 180], ["9", 270], ["12", 0], ["1:30", 45], ["7:30", 225], ["10:30", 315], ["4", 120]];      // only grows at its end (R9); 4 added 13 Oct 2026 (Ronda's 4H dial drawing)
 export const WINDOW_KINDS = ["date", "day", "am · pm", "moon phase"];      // what a window shows (web version)
+// the hole's shape, apart from what shows through it (Okay, 13 Oct 2026). 0, the start, is "as its kind": an arch for a
+// moon phase, a rectangle for the others — what was drawn before there was a choice (R31). Only grows at its end (R9).
+export const WINDOW_SHAPES = ["as its kind", "rectangle", "circle", "polygon", "arch", "arc"];
+export const window_shape = (w) => WINDOW_SHAPES[w.shape] && w.shape ? WINDOW_SHAPES[w.shape] : (WINDOW_KINDS[w.kind] === "moon phase" ? "arch" : "rectangle");
 export const LANGS = ["default", "tr", "nl", "de", "pl", "ro", "ca", "ar", "fa", "zh-Hans", "ja"];
 export const BEATS = [["sweep", 0], ["quartz · 1/s", 1], ["6 beats/s", 6], ["8 beats/s", 8]];
 export const LABEL_SETS = [                        // popups store the index (R9): only ever append
@@ -83,9 +87,14 @@ export const HAND_BASE = {
 export const WINDOW_BASE = {
   on: false, kind: 0, at: 0, r: 10.5, w: 2.6, h: 2.0, round: 0.2, frame: 0.15, clear: 0.25,
   text: "17", size: 62.0, ink: INK, hour: 10.0, age: 14.8,
+  // 13 Oct 2026 — shape: a place in WINDOW_SHAPES · sides: of a polygon · turn: the hole turns with its radius (off the
+  // quarters) · text_turn: what shows turns with it · ps, family, axes: its own font ("" = the top numerals ring's type) ·
+  // text_c, disc_c: the colour of what shows and of the disc under the hole (null = the print colour, and white)
+  shape: 0, sides: 6, turn: false, text_turn: true, family: "", ps: "", axes: {}, text_c: null, disc_c: null,
 };
 const FIRST_WINDOW = { on: "da_on", kind: "da_kind", at: "da_at", r: "da_r", w: "da_w", h: "da_h", round: "da_round", frame: "da_frame",
-  clear: "da_clear", text: "da_day", size: "da_size", ink: "da_ink", hour: "da_hour", age: "da_age" };
+  clear: "da_clear", text: "da_day", size: "da_size", ink: "da_ink", hour: "da_hour", age: "da_age",
+  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c" };
 
 export const DEFAULTS = {
   version: 2,
@@ -96,6 +105,7 @@ export const DEFAULTS = {
   da_on: false, da_at: 0, da_r: 10.5, da_w: 2.6, da_h: 2.0, da_round: 0.2, da_frame: 0.15,
   da_clear: 0.25, da_day: "17", da_size: 62.0, da_ink: INK,
   da_kind: 0, da_hour: 10.0, da_age: 14.8, windows: [WINDOW_BASE, WINDOW_BASE, WINDOW_BASE],
+  da_shape: 0, da_sides: 6, da_turn: false, da_text_turn: true, da_family: "", da_ps: "", da_axes: {}, da_text_c: null, da_disc_c: null,      // window 1's share of WINDOW_BASE's keys of 13 Oct 2026
   t: 10 * 3600 + 9 * 60 + 36,
   out_production: false, out_mirror: false, out_live_text: false,
   out_dpi: 600.0, out_seconds: 4.0, out_fps: 30.0, out_px: 1080,
@@ -927,9 +937,11 @@ export function live_texts(S, statik, item) {
   if (item.role === "date number") {
     const x = statik.windows.find((w) => w.index === item.window);
     if (!x || !["date", "day"].includes(WINDOW_KINDS[x.w.kind])) return null;
-    const t = date_type(S), size = x.w.h * x.w.size / 100, c = text_centre(x.w.text, t, size);
+    const shape = window_shape(x.w), high = shape === "rectangle" || shape === "arc" ? x.w.h : shape === "arch" ? x.w.w / 2 : x.w.w;
+    const t = window_type(S, x.w), size = high * x.w.size / 100, c = text_centre(x.w.text, t, size);
     if (!c) return null;
-    return { texts: [{ txt: x.w.text, t, size, fill: x.w.ink, at: [-c[0], -c[1]], steps: [["t", ...clock_point(x.w.r, window_angle(x.w))]] }], removed: null };
+    const turn = x.w.text_turn ? window_turn(x.w) : 0;
+    return { texts: [{ txt: x.w.text, t, size, fill: x.w.text_c || x.w.ink, at: [-c[0], -c[1]], steps: [["t", ...clock_point(x.w.r, window_angle(x.w))], ...(turn ? [["r", -turn, 0, 0]] : [])] }], removed: null };
   }
   return null;
 }
@@ -1028,26 +1040,54 @@ function build_rings(S, cut = null) {
 //   to its position. Filled shapes only (R4).
 
 function date_key(S) {
-  const all = windows_of(S).map((w) => { const k = { ...w }; delete k.ink; return k; });
-  return JSON.stringify(all) + JSON.stringify(TYPE_KEYS.map((a) => date_type(S)[a]));
+  const all = windows_of(S).map((w) => { const k = { ...w }; delete k.ink; delete k.text_c; delete k.disc_c; return k; });
+  return JSON.stringify(all) + JSON.stringify(TYPE_KEYS.map((a) => date_type(S)[a]));      // (a window's own font is among its keys)
 }
 
-/** a window's text uses the type of the top numerals ring. */
+/** a window's text uses the type of the top numerals ring… */
 function date_type(S) {
   return S.rings.find((ring) => kind_of(ring) === "numerals") || RING_BASE;
 }
+/** …unless the window has a font of its own (13 Oct 2026): then that font, plain, with the ring's tracking and language. */
+export function window_type(S, w) {
+  const t = date_type(S);
+  return w && w.ps ? { ...t, family: w.family, ps: w.ps, axes: w.axes || {}, features: {} } : t;
+}
+/** how far a window is turned, in clock degrees, when it turns with its radius: from the quarter before it
+ *  (4 o'clock: 30°, half past four: 45°, as on movement makers' dial drawings). On a quarter: 0. */
+export const window_turn = (w) => (w.turn && window_shape(w) !== "arc" ? ((window_angle(w) % 90) + 90) % 90 : 0);
 
 /** the moon window, from its width alone: an arch over two humps. The moon, a disc as big as a hump,
  *  rises from behind the left hump (new), stands clear in the middle (full) and sets behind the right one.
- *  → [the opening, the night sky (opening minus moon and stars)] */
-function moon_window(w, age) {
+ *  → {opening (the arch), moon, stars}: the night sky is a hole minus moon and stars. */
+function moon_parts(w, age) {
   const m = w / 4, base = -0.36 * w;               // hump and moon radius · the bottom edge
   const arch = circle(2 * 0.5336 * w).translate(0, base + 0.1864 * w).intersection(new Path().rect(-w, base, 2 * w, 2 * w));
   const opening = arch.difference(circle(2 * m).translate(-m, base)).difference(circle(2 * m).translate(m, base));
   const f = (((age % 29.53) + 29.53) % 29.53) / 29.53;           // 0 new · 0.5 full · 1 new again
   const moon = circle(2 * m).translate(-m * cos(PI * f), base - 0.3 * m + (Math.sqrt(3) + 0.3) * m * sin(PI * f));
   const stars = merge([[-0.3, 0.5], [0.33, 0.42], [0.08, 0.63]].map(([x, y]) => circle(0.07 * w).translate(x * w, base + y * w)));
-  return [opening, opening.difference(moon).difference(stars)];
+  return { opening, moon, stars };
+}
+
+/** a window's hole, in its own space (centre at the origin, upright), and the same hole grown by d all round.
+ *  rectangle: width × height, corners rounded · circle: Ø = width · polygon: sides, inscribed in Ø = width, a flat
+ *  side down, corners rounded · arch: the moon's, from its width · arc: a piece of a ring through the window's
+ *  centre, as long as its width along the circle and as thick as its height (a day window at 12). */
+function window_hole(w) {
+  const shape = window_shape(w);
+  if (shape === "rectangle") return [rounded_rect(w.w, w.h, w.round), (d) => rounded_rect(w.w + 2 * d, w.h + 2 * d, w.round + d)];
+  let hole;
+  if (shape === "circle") hole = circle(w.w);
+  else if (shape === "polygon") {
+    const n = min(max(parseInt(w.sides) || 6, 3), 24), R = w.w / 2;
+    const points = Array.from({ length: n }, (_, i) => { const a = radians(180 / n + i * 360 / n); return [R * sin(a), -R * cos(a)]; });
+    hole = poly(points, points.map(() => min(w.round, R * 0.9)));
+  } else if (shape === "arc") {
+    const a = window_angle(w), half = degrees(w.w / 2 / max(w.r, 0.1)), c = clock_point(w.r, a);
+    hole = sector(max(w.r - w.h / 2, 0), w.r + w.h / 2, a - half, a + half).translate(-c[0], -c[1]);
+  } else hole = moon_parts(w.w, 0).opening;
+  return [hole, (d) => offset(hole.copy(), d)];
 }
 
 /** the am · pm window: a disc turns once a day under it, pivot on the window's bottom edge — half night
@@ -1068,25 +1108,27 @@ function day_night(w, h, hour) {
 export const day_hour = (S) => Math.floor((((S.t % 86400) + 86400) % 86400) / 360) / 10;
 export const shows_day = (S) => windows_of(S).some((w) => w.on && WINDOW_KINDS[w.kind] === "am · pm");
 
-/** one window, built: {w (its settings), index, window (the hole), frame, cutline, content, clear (keep-out zone)} */
+/** one window, built: {w (its settings), index, window (the hole), frame, cutline, number (what shows through it),
+ *  clear (keep-out zone)}. Everything is made upright in the window's own space, then turned (if it turns with its
+ *  radius) and moved to its place. */
 function build_window(S, w, index) {
-  const centre = clock_point(w.r, window_angle(w)), kind = WINDOW_KINDS[w.kind];
-  let opening, content, grown;
+  const centre = clock_point(w.r, window_angle(w)), kind = WINDOW_KINDS[w.kind], shape = window_shape(w), turn = window_turn(w);
+  const [opening, grown] = window_hole(w);
+  const high = shape === "rectangle" || shape === "arc" ? w.h : shape === "arch" ? w.w / 2 : w.w;       // the room for what shows, top to bottom
+  let content;
   if (kind === "moon phase") {
-    const [hole, sky] = moon_window(w.w, w.age);
-    opening = hole; content = sky;
-    grown = (d) => offset(hole.copy(), d).translate(...centre);
-  } else {
-    opening = rounded_rect(w.w, w.h, w.round);
-    grown = (d) => rounded_rect(w.w + 2 * d, w.h + 2 * d, w.round + d).translate(...centre);
-    content = kind === "am · pm" ? day_night(w.w, w.h, day_hour(S)).intersection(opening) : centred(text_path(w.text, date_type(S), w.h * w.size / 100));
-  }
-  const win = opening.translate(...centre);
+    const { moon, stars } = moon_parts(w.w, w.age);
+    content = opening.copy().difference(moon).difference(stars);
+  } else if (kind === "am · pm") content = day_night(w.w, high, day_hour(S)).intersection(opening);
+  else content = centred(text_path(w.text, window_type(S, w), high * w.size / 100));
+  const put = (p, turned = true) => (turn && turned ? p.rotate(-turn) : p).translate(...centre);
+  const shows_text = kind === "date" || kind === "day";
+  const win = put(opening.copy());
   return {
-    w, index, window: win, number: content.translate(...centre),
-    frame: w.frame > 0 ? grown(w.frame).difference(win) : null,
-    cutline: grown(0.05).difference(win),                      // aperture outline for production
-    clear: grown(w.frame + w.clear),                           // keep print clear of the hole
+    w, index, window: win, number: put(content, !shows_text || w.text_turn),      // a hole's picture turns with it; its text only if asked
+    frame: w.frame > 0 ? put(grown(w.frame)).difference(win) : null,
+    cutline: put(grown(0.05)).difference(win),                 // aperture outline for production
+    clear: put(grown(w.frame + w.clear)),                      // keep print clear of the hole
   };
 }
 
@@ -1193,8 +1235,8 @@ export function scene(S, statik, t, preview = true, selected = null) {
     }
   } else {
     for (const x of windows) {                     // what shows through each hole, on white
-      add("date disc", x.window, [1, 1, 1, 1], { window: x.index });
-      add("date number", x.number, x.w.ink, { window: x.index });
+      add("date disc", x.window, x.w.disc_c || [1, 1, 1, 1], { window: x.index });
+      add("date number", x.number, x.w.text_c || x.w.ink, { window: x.index });
     }
     add("plate", statik.plate, S.c_plate);
     for (const d of rings) {

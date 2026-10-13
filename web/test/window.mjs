@@ -93,7 +93,7 @@ check(await S("S.ui_section === 2 && S.ui_hand === 1"), "click the minute hand �
 await click_mm(0.5, 3);
 check(await S("S.ui_section === 0"), "click the bare plate → Dial");
 await tab("Date");
-await page.check("#window-on-Show-this-window");
+await page.evaluate(() => { const t = window.dial_tool; if (!t.window().on) document.querySelector("#window-switch-" + t.S.ui_window).click(); });      // its card's switch shows it
 await frame();
 await click_mm(...clock(await S("S.da_r"), 90));
 check(await S("S.ui_section === 3"), "click the date window → Date");
@@ -168,9 +168,9 @@ await shot("4a-hidden-ring");
 await page.click(".ringlist li.on button.eye");
 check(await page.$$eval(".ringlist li.on .rename", (e) => e.length) === 1, "shown again: the rename box is back");
 const eyes = await page.$$eval(".ringlist button.eye svg, .pinned button.fold .eye svg", (e) => [...new Set(e.map((x) => Math.round(x.getBoundingClientRect().left)))]);
-const starts = await page.evaluate(() => { const l = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); return { row: l(".ringlist li"), name: l(".ringline .name"), heading: l(".pinned h2"), tools: r(".headtools"), radius: r(".ringline .valueb"), line: r(".pinned .pane") }; });
-check(eyes.length === 2 && starts.row === starts.name && starts.row === starts.heading && starts.tools === starts.line && starts.radius === starts.line,
-  `ring rows and the ring's line start where the heading starts; a ring's eye is inside its row; the tools and the radius button end on the pane's line (${JSON.stringify(starts)})`);
+const starts = await page.evaluate(() => { const l = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); return { row: l(".ringlist li"), row_end: r(".ringlist li"), line: l(".ringline"), line_end: r(".ringline"), heading: l(".pinned h2"), tools: r(".headtools"), pane: r(".pinned .pane") }; });
+check(eyes.length === 2 && starts.row === starts.heading && starts.line === starts.row && starts.line_end === starts.row_end && starts.tools === starts.pane,
+  `ring rows start where the heading starts, a ring's eye inside its row; the ring line is as wide as the rows; the tools end on the pane's line (${JSON.stringify(starts)})`);
 // the heading line carries the tools: a plus and four signs, all the same outlined circle; the plus opens the four kinds
 const tools = await page.evaluate(() => { const signs = [...document.querySelectorAll(".headtools .sign")], h = document.querySelector(".pinned .fold").getBoundingClientRect(); return { ids: signs.map((b) => b.id).join(" "), look: [...new Set(signs.map((b) => { const c = getComputedStyle(b), r = b.getBoundingClientRect(); return [c.borderTopWidth, parseFloat(c.borderTopLeftRadius) >= 13, r.width, r.height].join("/"); }))], on_line: signs.every((b) => { const r = b.getBoundingClientRect(); return r.top >= h.top && r.bottom <= h.bottom; }), foot: document.querySelectorAll(".listfoot").length }; });
 check(tools.ids === "ring-add ring-up ring-down ring-duplicate ring-delete" && tools.look.length === 1 && tools.look[0] === "1px/true/26/26" && tools.on_line && tools.foot === 0, `plus · up · down · duplicate · delete stand on the heading line, five outlined circles of one size (${tools.look.join(" ")}); no line under the list`);
@@ -179,14 +179,26 @@ check(await page.isVisible("#add-menu") && (await page.$$eval("#add-menu button 
 await shot("4c9-add-menu");
 await page.mouse.click(60, 44);      // on the tool's name: nothing to press there
 check(await page.isHidden("#add-menu"), "a press outside puts the menu away");
-// one pinned pane: the list, then the selected ring in one line: name · kinds · colour · radius. Folded: one line, "Rings: <name>"
-const one = await page.evaluate(() => { const p = document.querySelector(".pinned"), line = p.querySelector(".ringline"), top = (e) => Math.round(e.getBoundingClientRect().top + e.getBoundingClientRect().height / 2); return { panes: p.querySelectorAll(".pane").length, name: line.querySelector(".name").textContent, kinds: line.querySelectorAll(".kinds button svg").length, words: line.querySelectorAll(".kinds span").length, hex: getComputedStyle(line.querySelector(".colour .hex")).display, mids: [...new Set([...line.children].filter((e) => !e.classList.contains("valuepop")).map(top))].length, height: Math.round(line.getBoundingClientRect().height), title: p.querySelector("h2").textContent, figure: line.querySelector(".valueb .figure").textContent }; });
-check(one.panes === 1 && one.name === await S("S.rings[S.ui_ring].name") && one.kinds === 4 && one.words === 0 && one.hex === "none" && one.mids === 1 && one.title === "Rings, top first" && one.figure === String(await S("S.rings[S.ui_ring].r")),
-  `the selected ring is one line (${one.height} high): its name, four kind buttons with pictures only, a swatch without hex, and a round button that says its radius: ${one.name} · ${one.figure}`);
+// one pinned pane: the list, then the selected ring in one framed line of buttons that fills the width (Okay's drawing, 13 Oct 2026)
+const one = await page.evaluate(() => {
+  const p = document.querySelector(".pinned"), line = p.querySelector(".ringline"), box = line.getBoundingClientRect(), parts = [...line.children].filter((e) => !e.classList.contains("valuepop"));
+  const mid = (e) => Math.round(e.getBoundingClientRect().top + e.getBoundingClientRect().height / 2), c = getComputedStyle(line), row = getComputedStyle(p.querySelector(".ringlist li.on"));
+  return { panes: p.querySelectorAll(".pane").length, order: parts.map((e) => e.id || e.className).join(" "), kinds: line.querySelectorAll(".kinds button svg").length, words: line.querySelectorAll(".kinds span, .name").length,
+    hex: getComputedStyle(line.querySelector(".colour .hex")).display, mids: new Set(parts.map(mid)).size, height: Math.round(box.height), title: p.querySelector("h2").textContent,
+    radius: line.querySelector("#ring-r .figure").textContent, size: line.querySelector("#ring-size .figure").textContent, ground: c.backgroundColor, frame: c.borderTopColor, row_frame: row.borderTopColor,
+    fills: Math.round(parts[0].getBoundingClientRect().left - box.left) <= 7 && Math.round(box.right - parts.at(-1).getBoundingClientRect().right) <= 7, tip: line.querySelector(".kinds button").dataset.tip };
+});
+check(one.panes === 1 && one.order === "kinds ring-c-Colour ring-size ring-r ring-r-drag" && one.kinds === 4 && one.words === 0 && one.hex === "none" && one.mids === 1 && one.fills && one.title === "Rings, top first"
+  && one.radius === String(await S("S.rings[S.ui_ring].r")) && one.size === String(await S("S.rings[S.ui_ring].width")) && one.ground === "rgb(255, 255, 255)" && one.frame === one.row_frame && one.tip === "Ticks",
+  `the selected ring is one framed line of buttons (${one.height} high) filling the width: four kinds · colour · size ${one.size} · radius ${one.radius} · a drag handle; white, its frame the guide's colour like its row's (${one.frame})`);
+await page.hover("#ring-kind-Kind-0");
+check(await page.$eval("#ring-kind-Kind-0", (e) => getComputedStyle(e, "::after").content) === '"Ticks"', "a kind button says what it is under it while the pointer is on it: Ticks");
+await shot("4c15-ring-line");
+await page.mouse.move(60, 44);
 const pinned_open = await page.$eval(".pinned", (e) => e.getBoundingClientRect().height);
 await page.click(".pinned .fold h2");
 const shut = await page.evaluate(() => { const p = document.querySelector(".pinned"), s = p.querySelector(".summary"); return [p.querySelector("h2").textContent, s.textContent, p.getBoundingClientRect().height, s.querySelectorAll(".dot.tiny").length, getComputedStyle(p.querySelector(".headtools")).display]; });
-check(shut[0] === "Rings: " + one.name && shut[1].startsWith(await S("['ticks','markers','numerals','band'][S.rings[S.ui_ring].kind]") + " ·  · ") && !shut[1].includes("#") && shut[3] === 1 && shut[2] < 60 && shut[4] === "none", `folded, it is one line: "${shut[0]}   ${shut[1].replace(" ·  · ", " · ■ · ")}", the colour a tiny swatch without hex (${Math.round(pinned_open)} → ${Math.round(shut[2])} high)`);
+check(shut[0] === "Rings: " + await S("S.rings[S.ui_ring].name") && shut[1].startsWith(await S("['ticks','markers','numerals','band'][S.rings[S.ui_ring].kind]") + " ·  · ") && !shut[1].includes("#") && shut[3] === 1 && shut[2] < 60 && shut[4] === "none", `folded, it is one line: "${shut[0]}   ${shut[1].replace(" ·  · ", " · ■ · ")}", the colour a tiny swatch without hex (${Math.round(pinned_open)} → ${Math.round(shut[2])} high)`);
 await shot("4c8-rings-folded");
 await page.click(".pinned .fold h2");
 // the radius button: a click pops up the number's row, the field ready; typing sets; a press outside puts it away
@@ -206,6 +218,20 @@ const mid_drag = await S("S.rings[S.ui_ring].r");
 await page.mouse.move(rb[0] - 20, rb[1], { steps: 6 }); await page.mouse.up();
 check(Math.abs(mid_drag - (r_before + 0.5 + 0.5)) < 1e-9 && Math.abs(await S("S.rings[S.ui_ring].r") - (r_before + 0.5 - 0.5)) < 1e-9 && await page.$("#value-pop") === null, `dragged 20 to the right the radius is 0.5 more (${mid_drag}), 20 to the left 0.5 less; no pop-up opens`);
 await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before);
+{
+  const hb = await page.$eval("#ring-r-drag", (e) => { const r = e.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; });
+  await page.mouse.move(hb[0], hb[1]); await page.mouse.down(); await page.mouse.move(hb[0] + 8, hb[1], { steps: 4 }); await page.mouse.move(hb[0] + 16, hb[1], { steps: 4 }); await page.mouse.up();
+  const by_handle = await S("S.rings[S.ui_ring].r");
+  await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before);
+  const w_before = await S("S.rings[S.ui_ring].width");
+  await page.click("#ring-size");
+  const size_label = await page.textContent("#value-pop label");
+  await page.keyboard.type("x2"); await page.keyboard.press("Enter");
+  const w_after = await S("S.rings[S.ui_ring].width");
+  await page.evaluate((w) => window.dial_tool.set_value("ring", "width", w), w_before);
+  check(Math.abs(by_handle - (r_before + 0.4)) < 1e-9 && size_label === "Band width" && Math.abs(w_after - 2 * w_before) < 1e-9 && await page.$("#value-pop") === null,
+    `the handle drags the radius (16 to the right: +0.4); the size button, before it, pops up the ring's own size (a band: ${size_label}) and takes x2`);
+}
 // undo: ⌘Z takes one step back, ⇧⌘Z forward again; a drag is one step; the window's state stays (13 Oct 2026)
 {
   const settle = () => page.waitForTimeout(550);
@@ -233,6 +259,12 @@ await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before)
   await settle();
   await page.keyboard.press("Meta+z");
   check((await state())[3] === s0[3], "⌘Z does the same");
+  const place = await page.evaluate(() => { const u = document.querySelector(".undos").getBoundingClientRect(), g = document.querySelector("#guides").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); return [u.right <= g.left, Math.round(u.top - m.top) === Math.round(g.top - m.top), u.left > m.left + m.width / 2, document.querySelector("#redo").classList.contains("none")]; });
+  await page.click("#redo");
+  const fwd = (await state())[3];
+  await page.click("#undo");
+  check(place[0] && place[1] && place[2] && !place[3] && fwd === 31 && (await state())[3] === s0[3], "Undo and Redo stand on the preview's top right, before the Guides switch, and do the same");
+  await shot("4c16-undo");
 }
 // a numeral's radius measures to its centre, its baseline or its top: the menu beside the label, in the pop-up (13 Oct 2026)
 const numerals_at = await S("S.rings.findIndex((r) => r.kind === 2)"), ring_before = await S("S.ui_ring");
@@ -490,6 +522,53 @@ check(cards.map((c) => c[1]).join(" ") === "12 3 6 9" && cards.map((c) => c[0]).
     `a card's switch shows its window (hand up) and hides it again (hand lying); it chooses the card too (${off[2]} wide)`);
   await page.click(`#window-card-${before[0]}`);
 }
+// a window's shape is its own: rectangle · circle · polygon · arch · arc; it can turn with its radius; its own font; three colours
+{
+  const was = await S("JSON.stringify([S.ui_window, S.da_on, S.da_at, S.da_shape, S.da_turn, S.da_ps, S.da_family, S.da_text_c, S.da_disc_c, S.da_w])");
+  await page.evaluate(() => { const t = window.dial_tool; t.S.ui_window = 0; t.set_value("window", "on", true); t.sync_rows(); });
+  const tiles = await page.$$eval('[id^="window-shape-"]', (b) => b.map((x) => [x.textContent, x.classList.contains("on")]));
+  const box = async () => { await frame(); return page.evaluate(() => { const b = window.dial_tool.statik.windows[0].window.bounds(); return [+(b[2] - b[0]).toFixed(3), +(b[3] - b[1]).toFixed(3)]; }); };
+  const rect = await box();
+  await page.click("#window-shape-circle");
+  const circle = [await box(), await page.isHidden("#window-h-Height"), await page.isVisible('[id="window-w-"]')];
+  await page.click("#window-shape-polygon");
+  const polygon = [await box(), await page.isVisible("#window-sides-Sides"), await page.isVisible("#window-round-Corner")];
+  await page.click("#window-shape-arc");
+  const arc = [await box(), await page.isHidden("#window-turn-Turn-it-with-its-radius")];
+  await page.click("#window-shape-arch");
+  const arch = await box();
+  await page.click("#window-shape-rectangle");
+  check(tiles.map((t) => t[0]).join(" ") === "rectangle circle polygon arch arc" && tiles[0][1] && Math.abs(circle[0][0] - circle[0][1]) < 0.01 && circle[1] && circle[2] && polygon[1] && polygon[2] && arc[1] && arc[0][0] !== rect[0] && arch[1] < arch[0] && await S("S.da_shape") === 1,
+    `Shape: five tiles, a date window starts as a rectangle (${rect.join(" × ")}); circle ${circle[0].join(" × ")}, polygon with Sides and Corner, arc ${arc[0].join(" × ")} (no turning), arch ${arch.join(" × ")}`);
+  // turned with its radius at 4: 30°; the text with it or level
+  await page.selectOption("#window-at-Position", { label: "4" });
+  const level = await box();
+  await page.check("#window-turn-Turn-it-with-its-radius");
+  const turned = await box(), text_turned = await page.evaluate(() => { const b = window.dial_tool.statik.windows[0].number.bounds(); return b[3] - b[1]; });
+  await page.uncheck("#window-text-turn-Turn-the-text-with-it");
+  await frame();
+  const text_level = await page.evaluate(() => { const b = window.dial_tool.statik.windows[0].number.bounds(); return b[3] - b[1]; });
+  await shot("4c17-window-turned");
+  check(turned[1] > level[1] + 0.3 && text_turned > text_level + 0.1 && await S("S.da_at === 8"), `at 4 a window turned with its radius stands 30° askew (its box ${level.join(" × ")} → ${turned.join(" × ")}); its text turns with it, or stays level`);
+  // its own font, and back
+  const ring_font = await S("S.rings.find((r) => r.kind === 2).ps");
+  await page.click("#window-font-current");
+  await page.click('#font-picker .fontrow[data-family="Oswald"]');
+  await page.waitForFunction(() => window.dial_tool.S.da_ps === "Oswald-Regular" && window.dial_tool.statik);
+  const own = [await S("S.da_family"), await S("S.rings.find((r) => r.kind === 2).ps"), await page.isVisible("#window-font-back")];
+  if (await page.$eval("#font-picker", (d) => d.open)) await page.keyboard.press("Escape");
+  await page.click("#window-font-back");
+  check(own[0] === "Oswald" && own[1] === ring_font && own[2] && await S("S.da_ps === ''") && (await page.textContent("#window-font-current .name")).includes("as the numerals"), "a window can have a font of its own (Oswald) without touching the numerals' font; As the numerals takes it back");
+  // three colours
+  const fills = async () => { await frame(); return page.evaluate(() => { const t = window.dial_tool, items = [...document.querySelectorAll("main svg [fill]")]; const S = t.S; return [S.da_text_c, S.da_disc_c, S.da_ink]; }); };
+  await page.evaluate(() => { const t = window.dial_tool; t.set_value("window", "disc_c", [0.1, 0.1, 0.1, 1]); t.set_value("window", "text_c", [1, 0.9, 0.2, 1]); });
+  await frame();
+  const scene = await page.evaluate(() => { const t = window.dial_tool; return t.slots ? [...document.querySelectorAll("main svg path")].map((p) => p.getAttribute("fill")).filter(Boolean) : []; });
+  await shot("4c18-window-colours");
+  check((await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))).join(" · ").includes("Shape · Place and size · Colours · Print") && await page.isVisible("#window-text-c-Text-picture") && await page.isVisible("#window-disc-c-Disc-under-it") && await page.isVisible("#window-ink-Frame"),
+    "Windows has the panes Shape · Place and size · Colours · Print; Colours: text or picture, the disc under it, the frame");
+  await page.evaluate((was) => { const t = window.dial_tool, [ui, on, at, shape, turn, ps, family, text_c, disc_c, w] = JSON.parse(was); Object.assign(t.S, { da_at: at, da_shape: shape, da_turn: turn, da_ps: ps, da_family: family, da_text_c: text_c, da_disc_c: disc_c, da_w: w, da_text_turn: true, da_on: on, ui_window: ui }); t.static_dirty = true; t.sync_rows(); t.render(); }, was);
+}
 // an am · pm window follows the time shown: light at 10 in the morning, dark at 10 at night; AM · PM stands in the time's box
 {
   const was = await page.evaluate(() => { const t = window.dial_tool, was = [t.S.ui_window, t.S.da_on, t.S.da_kind, t.S.t]; t.S.ui_window = 0; t.set_value("window", "on", true); t.set_value("window", "kind", 2); return was; });
@@ -513,11 +592,7 @@ await tab("Date");
 check(example_w === cards[0][3], `a window card is as wide as an example card (${example_w})`);
 await page.click("#window-card-2");
 check(await S("S.ui_window === 2 && S.windows[1].at === 2 && S.windows[1].on === false") && await page.textContent(".form .pane >> nth=0 >> h2") === "Window at 6" && await page.$eval("#window-card-2", (e) => e.classList.contains("on") && e.classList.contains("off")), "the card at 6 chooses its window: the pane says Window at 6; not in use yet, it takes the card's place");
-const on_head = await page.evaluate(() => { const pane = document.querySelector(".form .pane"), c = pane.querySelector(".headcontrol").getBoundingClientRect(), h = pane.querySelector(".fold").getBoundingClientRect(); return [c.top >= h.top && c.bottom <= h.bottom, pane.querySelector(".headcontrol input").id]; });
-check(on_head[0] && on_head[1] === "window-on-Show-this-window", "Show this window is on the heading line");
-await page.click(".form .pane >> nth=0 >> .fold h2");
-check(await page.isVisible("#window-on-Show-this-window"), "folded, the pane still shows it");
-await page.click(".form .pane >> nth=0 >> .fold h2");
+check(await page.$("#window-on-Show-this-window") === null && (await page.textContent(".form .pane >> nth=0 >> .body")).includes("The small clock on its card shows it") && await page.isHidden("#window-kind-Shows-0"), "no Show this window tick: a hidden window's pane says its card's clock shows it, and nothing else");
 await page.click("#window-card-0");
 await shot("4h-window-cards");
 await tab("Hands");
@@ -607,7 +682,7 @@ await tab("Date");
 const kinds = [["1", "1", "9"], ["2", "2", "6"], ["3", "3", "12"]];          // window (its card's number), kind, position
 for (const [n, kind, at] of kinds) {
   await page.click("#window-card-" + n);
-  await page.check("#window-on-Show-this-window");
+  await page.evaluate(() => { const t = window.dial_tool; if (!t.window().on) document.querySelector("#window-switch-" + t.S.ui_window).click(); });      // its card's switch shows it
   await page.click("#window-kind-Shows-" + kind);
   await page.selectOption("#window-at-Position", { label: at });
 }
@@ -624,7 +699,7 @@ check((await page.textContent(".tip span")) === "Moon phase window", "pointer on
 await click_mm(...moon_at);
 check(await S("S.ui_section === 3 && S.ui_window === 3") && await page.isVisible("#window-age-Moon-age-days") && await page.isHidden("#window-h-Height"), "click it: Windows, window 4, with the moon's rows");
 await shot("4d-windows");
-for (const n of ["1", "2", "3"]) { await page.click("#window-card-" + n); await page.uncheck("#window-on-Show-this-window"); }
+for (const n of ["1", "2", "3"]) await page.click("#window-switch-" + n);      // hidden again
 await page.click("#window-card-0");
 check(await S("t.statik.windows.length === 1"), "windows 2 to 4 switched off again");
 

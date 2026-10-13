@@ -2,7 +2,7 @@
 
 What each word means **in this project**. Turkish where it's the common trade word.
 If a term is used differently in conversation, ask, then update this file.
-*Last updated 13 Oct 2026 (beta 4.7: ring line, value button, gallery, card switch; Section, Ring list and Bar brought up to the web version). Before: 12 Oct 2026 (web version, beta 4.6: sector colours, scale everything).*
+*Last updated 13 Oct 2026 (beta 4.8: window shape, turn, size button; beta 4.7: ring line, value button, gallery, card switch; Section, Ring list and Bar brought up to the web version). Before: 12 Oct 2026 (web version, beta 4.6: sector colours, scale everything).*
 
 ## Watch terms
 
@@ -46,8 +46,9 @@ If a term is used differently in conversation, ask, then update this file.
 | **Placement** | How numerals sit: **upright** (always level) · **radial** (turn with the circle) · **radial, auto-flip** (never upside down) · **on path** (letters follow the circle, kerning kept). |
 | **Nudge** | A per-numeral correction: radius ±, angle ±, rotate, size ×. Stored per position. |
 | **Rings pane** | The pinned pane on top of Rings (web version, 13 Oct 2026): its heading line with the list's tools (a plus that opens the four kinds; move up · move down · duplicate · delete), the ring list, the **ring line**. Folded it is one line: *Rings: <name>* and a summary. |
-| **Ring line** | The selected ring in one line, under the list: its name · four kind buttons (pictures only) · its colour (a swatch) · its radius (a value button). |
-| **Value button** | A number as a small round drawing with its value written in it (first: a ring's radius, a circle with its radius drawn). Click: the number's row pops up under it, ready to type in. Press and move: the value changes. R15's exception. |
+| **Ring line** | The selected ring in one framed line under the list, as wide as the rows, all buttons and no words: four kinds · its colour · its **size** (how big one of its things is: a mark's length, a dot's Ø, a numeral's size, a band's width) · its radius · a double arrow to drag the radius by. Its frame has the selected ring's guide colour. |
+| **Tag** | The small label under a wordless button while the pointer is on it ("Ticks"). |
+| **Value button** | A number as a small round drawing with its value written in it (a ring's radius: a circle with its radius drawn; its size: a measure between two stops). Click: the number's row pops up under it, ready to type in. Press and move: the value changes. R15's exception. |
 | **Ring settings** | The scrolling list under the ring list: Kind · Colour · Radius · Positions · Give way · Look · Nudge · Type. Nudge and Type show for numerals rings only. (beta 2.0 split it into four pages.) |
 
 ## Hands
@@ -119,7 +120,7 @@ Kept so older notes still read.
 
 | Term | Meaning |
 |---|---|
-| **Type** | Typography. Belongs to each numerals ring (family, style, instance, language, size, tracking, axes, features). A new numerals ring copies the top one; the date window uses the top numerals ring's type. |
+| **Type** | Typography. Belongs to each numerals ring (family, style, instance, language, size, tracking, axes, features). A new numerals ring copies the top one; the date window uses the top numerals ring's type, unless it has a font of its own (beta 4.8). |
 | **Family / style** | From macOS's font manager: a family (Helvetica Neue) and its styles (Bold, Light…). |
 | **PostScript name** | The exact name of one style (`HelveticaNeue-Bold`); stored in the ring's `ps`. |
 | **Variable axis** | A continuous design dimension inside a variable font (weight `wght`, width `wdth`…). Each becomes a slider. |
@@ -151,6 +152,7 @@ Kept so older notes still read.
 | **Stand-in font** | Inter, packed inside the web version's file: draws numerals whose font isn't loaded yet. The log names the font it replaces. |
 | **Installed fonts** | The web version's button that lists the computer's fonts (Chrome, Edge). Other browsers: add font files. |
 | **Link** (a dial's) | The web version's address with the dial after `#`: scheme number, a dot, the packed settings. Carries the dial, not the window's state (section, selected ring) and not font files. R31. |
+| **Window shape** | The hole's outline, apart from what the window shows (beta 4.8): rectangle · circle · polygon · arch (the moon's) · arc (a piece of a ring, for a day window at 12). **Turned**: the hole stands along its radius instead of level (only off the quarters). |
 | **Window** | A hole in the plate with something showing through (web version: up to four). **Kind**: date · day · am · pm (follows the time shown since beta 4.7) · moon phase. Window 1 is the **date window** of `dial.py`. The section's tab says Windows; its key and number stay Date / 3. |
 | **Font list** | The web version's own twenty open-licence families (`web/fonts/`). |
 | **Font sheet** | The sheet that opens from the font in Type: every font by its numerals, a search, and **Add fonts** (Google link or name, link to a font file, font file, installed fonts). |
