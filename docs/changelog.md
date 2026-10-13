@@ -4,6 +4,10 @@
 
 On `dev`, not yet on the live page; the version still says beta 4.6. After Okay's review of the research atlas.
 
+- **Rings: one pinned pane** (Okay's drawing, build list #94). The list, then the selected ring by its name where "Kind" stood, before the kind tiles; colour; radius. The second heading is gone. Folded, the pane is one line: "Rings: Numerals   numerals · #141414 · centre radius 10.00" (382 → 43 high in the test window).
+- **Ring rows start where the labels start**; a ring's eye is inside its row. **Add + · Ticks · Markers · Numerals · Band** is one outlined group with round ends; **↑ ↓ duplicate delete** are outlined circles. **Kind pictures** show the whole circle (30 square; the other pictures stay 28 × 20).
+- **The selected ring's row is tinted with the selected ring's guide colour** (22 % of it in the ground, 65 % in the frame); light blue as before when that guide is None. Claude's reading of "GUIDE COLOR" on the drawing; not confirmed.
+- **Radius anchor for numerals** (build list #95): new ring key `anchor` (0 centre, as before · 1 baseline · 2 ascender; R31, R9). A small boxed arrow beside the label opens Baseline · Ascender · Centre; the label reads Baseline radius, and so on. Outlines, on-path letters and live text all use it. Parity with `dial.py` unchanged at centre.
 - **Ring list rows carry a summary** (build list #78, atlas 4.1): before a ring's kind, `how many × how big · r radius` — the positions it draws, one mark's length (a dot's Ø, a numeral's size, a band's width), its radius, in the unit box's unit. The summary follows every change without the list being rebuilt. The list owns the columns and each row borrows them (CSS subgrid), so summaries end and kinds start on one line. Rows stay one line high.
 
 ## beta 4.6 (web version) · 12 Oct 2026

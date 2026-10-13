@@ -67,6 +67,10 @@
     --frame-out: 8px;                              /* a framed list row is this much wider than the lines, each side */
     --ring-gap: 4px;                               /* between framed rows */
     --sum-gap: 12px;                               /* in a ring's row: between its summary and its kind */
+    --guide-tint: 22%; --guide-edge: 65%;          /* the selected ring's row: this much of its guide's colour in its ground, and in its frame */
+    --round-pill: 999px;                           /* ends fully round: the Add group and the signs under the ring list */
+    --menu-box: 18px;                              /* the boxed arrow beside a label that opens a small menu */
+    --foot-gap: 4px; --foot-pad: 4px;              /* under the ring list: between the round signs · beside each word of the Add group */
     --thumb: 18px; --track: 4px;                   /* sliders: a black disc on a thin track (Okay's sketch, 12 Oct 2026) */
     --tick: 16px;                                  /* a tick box */
     --reach: calc((var(--line) - var(--control)) / 2);      /* what a row leaves above and under a control: under a finger, a press there counts too */
@@ -184,7 +188,7 @@
     .dots button { --reach-x: calc(var(--guide-gap) / 2); --reach-y: calc((var(--guide-row) - var(--guide-dot)) / 2); }      /* a guide's colour: the whole height of its line */
     .chiprow .chips button { --reach-x: calc(var(--pop-chip-gap) / 2); --reach-y: calc(var(--pop-chip-gap) / 2); }      /* a colour in the pop-out */
     .swatches .swatch { --reach-x: calc(var(--chip-gap) / 2); --reach-y: var(--reach); }      /* a band's sector */
-    .sign, .rename, .step { --reach-y: var(--reach); }      /* signs under the ring list, the pop-out's square and cross, the rename box, − and + */
+    .sign, .rename, .step, .labelmenu { --reach-y: var(--reach); }      /* signs under the ring list, the pop-out's square and cross, the rename box, − and + */
     .colourpop header .sign { --reach-y: calc((var(--head) - var(--control)) / 2); }
   }
 
@@ -306,6 +310,13 @@
   .row.num > input[type="range"] { grid-column: span 2; }
   .row.num input[type="text"] { text-align: right; }
   .row > label:first-child { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row > label.strong:first-child { color: var(--ink); font-weight: 600; }      /* a name where a label would stand: the selected ring's, before its kinds */
+  /* a label with a small menu beside it: the words, then a boxed arrow with the browser's own menu lying over it */
+  .menulabel { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .menulabel > label { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .labelmenu { position: relative; flex: none; display: grid; place-items: center; width: var(--menu-box); height: var(--menu-box); border: var(--hair) solid var(--grey); background: var(--field); color: var(--ink); }
+  .labelmenu:hover { border-color: var(--ink); }
+  .labelmenu > select { position: absolute; inset: calc(-1 * var(--reach-y, 0px)); width: calc(100% + 2 * var(--reach-y, 0px)); height: calc(100% + 2 * var(--reach-y, 0px)); opacity: 0; cursor: pointer; }      /* under a finger the unseen menu is larger than its box (reach) */
   .row > :is(select, .segs, .colour, .single, .tools, .picks, .swatches), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
   .row > :is(.check, .wide), .row.note > .quiet { grid-column: 1 / -1; }      /* a tick and its words start at the left edge */
   .row > span:first-child:empty { display: none; }
@@ -377,13 +388,14 @@
      (--frame-out), so the eye has room inside the frame: eye (show or hide the ring, in the toggle column) · grip ·
      name · rename box (selected ring) · summary · kind. The selected ring is light blue. The list owns the columns
      and every row borrows them (subgrid), so summaries and kinds stand under each other whatever the words' widths. */
-  .ringlist { margin: 0 calc(-1 * var(--frame-out)); }
+  .ringlist { margin: 0 calc(-1 * var(--frame-out)) 0 var(--lead); }      /* rows start where the labels start (Okay's drawing, 13 Oct 2026): the toggle column is the panes' alone */
   .ringlist ol { position: relative; list-style: none; margin: 0; padding: 2px 0 0; display: grid; row-gap: var(--ring-gap);
     grid-template-columns: calc(var(--frame-out) + var(--lead)) 18px minmax(0, auto) auto minmax(0, 1fr) auto; max-height: calc(5 * (var(--line) + var(--ring-gap)) + 4px); overflow-y: auto; }
   .ringlist li { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; height: var(--line); padding-right: calc(var(--frame-out) - var(--hair));
     border: var(--hair) solid var(--rule); border-radius: 5px; background: var(--field); cursor: pointer; }
   .ringlist li:hover { border-color: var(--grey); }
   .ringlist li.on { background: var(--select); border-color: var(--select-rule); }
+  .ringlist.guided li.on { background: color-mix(in srgb, var(--guide) var(--guide-tint), var(--field)); border-color: color-mix(in srgb, var(--guide) var(--guide-edge), var(--grey)); }
   .ringlist li.off, .ringlist li.off :is(.kind, .sum) { color: var(--rule); }
   .ringlist li.off.on, .ringlist li.off.on :is(.kind, .sum) { color: var(--grey); }
   .ringlist .eye { display: grid; align-items: center; justify-items: start; width: 100%; height: 100%; padding-left: calc(var(--frame-out) - var(--hair) + var(--nudge)); border-radius: 4px 0 0 4px; }
@@ -402,11 +414,18 @@
   /* under the list: what you can add (words) and what you can do to the selected ring (signs). The words start
      on the six columns; the last sign's drawing ends on the right margin. */
   .listfoot { display: flex; justify-content: space-between; align-items: center; height: var(--line); margin-top: var(--ring-gap);
-    padding: 0 calc(var(--frame-out) - (var(--control) - var(--icon)) / 2) 0 calc(var(--frame-out) + var(--lead)); }
-  .listfoot .adds, .listfoot .signs { display: flex; align-items: center; gap: 1px; }
-  .listfoot .adds > .quiet { margin-right: 4px; }
-  .listfoot .adds > .quiet::after { content: " +"; }
-  .listfoot .plain { padding: 0 5px; }
+    padding-right: var(--frame-out); }
+  /* Add + and the four kinds are one outlined group with round ends, a hairline between its parts; the four signs
+     are outlined circles (Okay's drawing, 13 Oct 2026). */
+  .listfoot .adds, .listfoot .signs { display: flex; align-items: center; }
+  .listfoot .adds { flex: none; height: var(--control); border: var(--hair) solid var(--grey); border-radius: var(--round-pill); overflow: hidden; }
+  .listfoot .adds > * { display: grid; align-items: center; height: 100%; padding: 0 var(--foot-pad); border: 0; }
+  .listfoot .adds > * + * { border-left: var(--hair) solid var(--grey); }
+  .listfoot .adds > .quiet::after { content: " +"; white-space: pre; }
+  .listfoot .adds > .quiet { display: block; line-height: calc(var(--control) - 2 * var(--hair)); white-space: nowrap; }
+  .listfoot .adds > .plain:hover { background: var(--field); }
+  .listfoot .signs { gap: var(--foot-gap); }
+  .listfoot .signs .sign { border-color: var(--grey); border-radius: var(--round-pill); }
 
   /* the font picker: every font shows its own numerals */
   .font { display: grid; gap: var(--unit); margin-top: var(--unit); }

@@ -35,7 +35,7 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | # | Item | Status |
 |---|---|---|
 | 12 | Production limits per method: minimum line width and clearance; warn in the preview | open |
-| 13 | Numeral vertical alignment option: glyph bounds (now) vs cap height / baseline | open |
+| 13 | Numeral vertical alignment option: glyph bounds (now) vs cap height / baseline. **13 Oct, web version:** the radius' anchor — centre · baseline · ascender (ring key `anchor`, #95). Still open: centring on the cap height instead of each numeral's own outlines | partly done (#95) |
 | 14 | Heavy modes (knockout + 300 ticks ≈ 140–170 ms off-Mac): redraw on mouse-up if dragging feels slow. *4 Oct: DrawBot's shape combining is 2–14× slower than the harness's (`tools/bool_bench.py`, `docs/preview.md` §2.4) — beta 2.3 has the frame clock and skia-pathops: decide after the Mac check (#40) whether this is still needed* | open |
 | 15 | Fallback-font control for scripts the main font lacks (depends on #11) | open |
 | 16 | Live-text export option alongside outlines (beta 2.2) — verify: export PDF and SVG with it on, open in Illustrator with the font installed | verify |
@@ -82,7 +82,7 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 | 76 | Units box (mm · pt · in · lig): ask Okay — keep lignes as the fourth unit? Should sliders and steppers step in the shown unit (they step in mm)? | verify |
 | 77 | **Persistent groupings for every section** — proposed 12 Oct; Okay: "Persistent lines are scary for me too. Sucks to have no left view height, especially on rings on iPad… Park for now." Only All hands is pinned. Built instead: main selectors on heading lines. Open: a way to give Rings its height back on an iPad (see #65) | parked by Okay |
 | 75 | Usability review, the other tabs: Rings · Hands · Windows · Export, one at a time (Okay, 12 Oct) | open |
-| 65 | Rings on a low window: the pinned part (list + the ring's first pane) is taller since beta 4.0, leaving less to scroll. If it bothers: pin only the list | open |
+| 65 | Rings on a low window: the pinned part (list + the ring's first pane) is taller since beta 4.0, leaving less to scroll. If it bothers: pin only the list. **13 Oct:** the pinned part is one pane that folds to one line (#94) — look at it on the iPad | verify (#94) |
 | 66 | Tabs and the columns: five tabs share six columns, so they sit between columns (Okay, 11 Oct: "Columns? They fit 'em"). Ways: tabs one column each with the sixth free, or a sixth sign. Ask Okay | open |
 
 ## From the atlas review (13 Oct 2026)
@@ -106,6 +106,9 @@ Atlas: https://claude.ai/artifact/QdvVC37Y6csV7FcUjJHqAH. Numbers in brackets ar
 | 90 | **A ring edited flat** [7.16, Fischinger]: cut at 12, edited as a strip, rolled back. A second way to show the preview; close to #61 | parked (Claude's proposal) |
 | 91 | **A sliding strip for Count** [7.5, Citroën GS]: a new kind of number control; R15 would need an exception, and Count has a typed field and a stepper | parked (Claude's proposal) |
 | 92 | **A switch on each window card**: small and clock-like, it turns that window on or off (Okay, 13 Oct). Today the card only chooses the window; *Show this window* is a tick on the pane's heading line. Show Okay what the switch looks like before building; decide whether the tick stays | open — with Now 3 |
+| 94 | **Rings panel, Okay's drawing of 13 Oct** — built, on `dev`: one pinned pane (list, then the ring by its name before the kind tiles; folded = one line "Rings: <name>" and a summary); ring rows start where the labels start, eye inside the row; Add + and the kinds as one outlined group with round ends, the four signs as outlined circles; kind pictures show the whole circle; the selected row tinted with the selected ring's guide colour. **Ask Okay:** is the tint what "GUIDE COLOR" meant (or: choose the guide's colour from the row)? Is the right edge of the rows right (it still stands 8 outside the pane's line, the left edge no longer does)? Does the folded line answer #65 and #77 on the iPad? | verify |
+| 95 | **Radius anchor for numerals** — built, on `dev`: centre · baseline · ascender, a small menu beside the radius' label (glossary: anchor). **Ask Okay:** is "the point that sits on the radius, as the numeral stands" right in every placement? Upright numerals with Baseline all stand on the circle, so the ring of numerals moves up as a whole; radial ones turn their feet to the centre | verify |
+| 96 | **Preview mode** (Okay, 13 Oct: "This comes later, note it"): a switch on the preview's top left opens a 1/1 representation of the dial — also fullscreen, with a background colour to choose. To settle when it is built: 1/1 = true size on the screen (needs the screen's real pixels per mm, which a browser doesn't know: a calibration step) or the dial alone without guides and panel | noted — later |
 | 93 | **Guidebook for the web version** (R25 stands). The guide describes the DrawBot version only: none of `docs/guide/pages/` mentions the web version, and its figures are drawn by the frozen `dial.py`. Okay, 13 Oct: "Rule r25 is right, but! just record, do not build until said so." | recorded — not until Okay says |
 
 ## Later

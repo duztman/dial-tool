@@ -32,6 +32,7 @@ export const SKIP_FROM = ["nothing", "markers above", "markers & numerals above"
 export const KNOCK_FROM = ["nothing", "markers above", "markers & numerals above", "everything above"];
 const FROM_KINDS = [[], ["markers"], ["markers", "numerals"], ["ticks", "markers", "numerals", "band"]];
 export const MODES = ["upright", "radial", "radial, auto-flip", "on path"];
+export const ANCHORS = ["centre", "baseline", "ascender"];      // the point of a numeral that sits on its ring's radius (web version, 13 Oct 2026). Only grows at its end (R9)
 export const HANDS = ["hour", "minute", "second"];
 export const HAND_SHAPES = ["baton", "pencil", "sword", "dauphine", "leaf", "arrow", "syringe", "breguet", "lollipop", "file"];
 export const DATE_AT = [["3", 90], ["4:30", 135], ["6", 180], ["9", 270], ["12", 0], ["1:30", 45], ["7:30", 225], ["10:30", 315]];
@@ -62,6 +63,7 @@ export const RING_BASE = {
   labels: 0, custom: "", num_from: 0.0, num_step: 5.0, num_digits: 0, mode: 0, size: 2.4, nudge: {},
   family: "Helvetica Neue", ps: "HelveticaNeue", tracking: 0.0, lang: 0, axes: {}, features: {},
   width: 1.0, fill: 100.0,
+  anchor: 0,                                       // numerals: what the radius measures to, a place in ANCHORS. 0 = the text's centre, as before (R31)
   cs: {},                                          // a band's sectors with a colour of their own: position → RGBA. Empty = all in the ring's colour (beta 4.6)
 };
 export const TYPE_KEYS = ["family", "ps", "size", "tracking", "lang", "axes", "features"];
@@ -813,14 +815,13 @@ function path_letters(txt, r, a, t, size) {
   const adv = letters.map((_, i) => advance(letters.slice(0, i).join(""), t, size));   // where each letter starts
   adv.push(advance(txt, t, size));
   const total = adv[adv.length - 1] - tr;
-  const whole = text_path(txt, t, size).bounds();
-  const yc = whole ? (whole[1] + whole[3]) / 2 : 0;
+  const dy = numeral_dy(t, txt, size);
   const out = [];
   letters.forEach((ch, i) => {
     if (!ch.trim()) return;
     const own = advance(ch, t, size) - tr;
     const c = adv[i] + own / 2 - total / 2;        // letter centre along the word
-    out.push([ch, flip ? a - degrees(c / r) : a + degrees(c / r), flip, [-own / 2, -yc]]);
+    out.push([ch, flip ? a - degrees(c / r) : a + degrees(c / r), flip, [-own / 2, dy]]);
   });
   return out;
 }
@@ -833,6 +834,24 @@ function on_path(txt, r, a, t, size) {
     out.push(place(g, r, angle));
   }
   return merge(out);
+}
+
+/** the top of a numerals ring's labels above their baseline, at the ring's size: the tallest label decides, so
+ *  every numeral of the ring hangs from one line (figures: their height; words: their ascenders). */
+function ring_top(ring) {
+  return memo("top" + JSON.stringify([ring_labels(ring), TYPE_KEYS.map((k) => ring[k])]), () =>
+    max(0, ...ring_labels(ring).filter(Boolean).map((txt) => { const b = text_path(txt, ring, ring.size).bounds(); return b ? b[3] : 0; })));
+}
+
+/** how far a numeral's outlines move up or down in their own space (baseline at 0, y up) so that the ring's
+ *  anchor lands on the origin, which is then put on the radius: its centre (as always until now), its baseline,
+ *  or its top. Sideways a numeral is always centred. */
+function numeral_dy(ring, txt, size) {
+  const anchor = ANCHORS[ring.anchor] || "centre";
+  if (anchor === "baseline") return 0;
+  if (anchor === "ascender") return -ring_top(ring) * size / (ring.size || 1);
+  const b = text_path(txt, ring, size).bounds();
+  return b ? -(b[1] + b[3]) / 2 : 0;
 }
 
 /** placement, radius, angle, size and rotation of the numeral at position i, nudge included. */
@@ -848,7 +867,8 @@ function numeral_at(ring, i, a0, label) {
     if (rot) p.rotate(-rot, clock_point(r, a));
     return p;
   }
-  const p = centred(text_path(label, ring, size));
+  const p = text_path(label, ring, size), b = p.bounds();
+  if (b) p.translate(-(b[0] + b[2]) / 2, numeral_dy(ring, label, size));
   if (mode === "upright") {
     p.rotate(-rot);
     p.translate(...clock_point(r, a));
@@ -886,7 +906,7 @@ function numeral_live(ring, i, a0, label) {
   const turn = ((a % 360) + 360) % 360;
   const flip = mode === "radial, auto-flip" && turn > 90 && turn < 270 ? 180 : 0;
   const steps = mode === "upright" ? [["t", ...clock_point(r, a)], ["r", -rot, 0, 0]] : [["r", -a, 0, 0], ["t", 0, r], ["r", -(flip + rot), 0, 0]];
-  return [{ ...base, txt: label, at: [-c[0], -c[1]], steps }];
+  return [{ ...base, txt: label, at: [-c[0], numeral_dy(ring, label, size)], steps }];
 }
 
 /** a scene item as live text, or null if it has none: {texts, removed}. removed = what knockouts

@@ -124,7 +124,10 @@ const before = await S("S.rings.length");
 await page.click("#add-band");
 check(await S(`S.rings.length === ${before + 1} && S.rings[S.ui_ring].kind === 3`), "Add Band → a band ring, selected");
 const row_look = await page.$$eval(".ringlist li", (l) => l.map((e) => { const c = getComputedStyle(e); return (e.classList.contains("on") ? "on " : "") + c.borderTopWidth + " " + c.backgroundColor; }));
-check(row_look.every((x) => x.includes("1px")) && row_look.filter((x) => x === "on 1px rgb(207, 228, 245)").length === 1, "every ring is a framed row; the selected one is light blue");
+// the selected row has the colour of the selected ring's guide (13 Oct 2026); with that guide set to None, the light blue of before
+const guide_row = await page.evaluate(() => { const t = window.dial_tool, bg = () => getComputedStyle(document.querySelector(".ringlist li.on")).backgroundColor; const a = bg(); t.set_value("global", "gd_sel", false); const b = bg(); t.set_value("global", "gd_sel", true); return [a, b, bg(), t.S.gd_k_sel]; });
+check(row_look.every((x) => x.includes("1px")) && row_look.filter((x) => x.startsWith("on ")).length === 1 && guide_row[1] === "rgb(207, 228, 245)" && guide_row[0] !== guide_row[1] && guide_row[0] === guide_row[2] && !/255, 255, 255/.test(guide_row[0]),
+  `every ring is a framed row; the selected one is tinted with its guide's colour (${guide_row[0]}), light blue when that guide is None`);
 // a ring's row says what the ring is, in numbers (13 Oct 2026, build list #78): how many × how big · r radius
 const sums = await page.$$eval(".ringlist li", (l) => l.map((e) => [e.querySelector(".sum").textContent, e.querySelector(".kind").textContent, Math.round(e.querySelector(".kind").getBoundingClientRect().left), e.getBoundingClientRect().height]));
 check(sums.every(([t]) => /^\d+ × [\d.]+ · r [\d.]+$/.test(t)) && new Set(sums.map((x) => x[2])).size === 1 && new Set(sums.map((x) => x[3])).size === 1,
@@ -164,7 +167,41 @@ await shot("4a-hidden-ring");
 await page.click(".ringlist li.on button.eye");
 check(await page.$$eval(".ringlist li.on .rename", (e) => e.length) === 1, "shown again: the rename box is back");
 const eyes = await page.$$eval(".ringlist button.eye svg, .pinned button.fold .eye svg", (e) => [...new Set(e.map((x) => Math.round(x.getBoundingClientRect().left)))]);
-check(eyes.length === 1, `ring eyes and pane eyes stand in one column (left edges: ${eyes.join(", ")})`);
+const starts = await page.evaluate(() => { const l = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); return { row: l(".ringlist li"), label: l(".pinned .row > label"), adds: l(".listfoot .adds"), add_word: l(".listfoot .adds > .quiet"), signs: r(".listfoot .signs"), line: r(".pinned .pane"), gap: l(".listfoot .signs") - r(".listfoot .adds") }; });
+check(eyes.length === 2 && starts.row === starts.label && starts.adds === starts.label && starts.add_word >= starts.adds && starts.signs === starts.line && starts.gap >= 4,
+  `ring rows and the Add group start where the labels start; a ring's eye is inside its row; the signs end on the pane's line (${JSON.stringify(starts)})`);
+const foot = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c(".listfoot .adds").borderTopWidth, parseFloat(c(".listfoot .adds").borderTopLeftRadius) >= 13, c(".listfoot .signs .sign").borderTopWidth, parseFloat(c(".listfoot .signs .sign").borderTopLeftRadius) >= 13, document.querySelector(".listfoot .adds").scrollWidth <= document.querySelector(".listfoot .adds").clientWidth + 2]; });
+check(foot[0] === "1px" && foot[1] && foot[2] === "1px" && foot[3] && foot[4], "Add + and the kinds are one outlined group with round ends, nothing cut off; the four signs are outlined circles");
+// one pinned pane: the list, then the ring by its name before the kind tiles; folded it is one line, "Rings: <name>"
+const one = await page.evaluate(() => { const p = document.querySelector(".pinned"); return [p.querySelectorAll(".pane").length, p.querySelector(".row.pick > label").textContent, p.querySelector("h2").textContent]; });
+check(one[0] === 1 && one[1] === await S("S.rings[S.ui_ring].name") && one[2] === "Rings, top first", `Rings has one pinned pane; the selected ring's name stands before its kinds: ${one[1]}`);
+const pinned_open = await page.$eval(".pinned", (e) => e.getBoundingClientRect().height);
+await page.click(".pinned .fold h2");
+const shut = await page.evaluate(() => { const p = document.querySelector(".pinned"); return [p.querySelector("h2").textContent, p.querySelector(".summary").textContent, p.getBoundingClientRect().height]; });
+check(shut[0] === "Rings: " + one[1] && shut[1].startsWith(await S("['ticks','markers','numerals','band'][S.rings[S.ui_ring].kind]") + " · #") && shut[2] < 60, `folded, it is one line: "${shut[0]}   ${shut[1]}" (${Math.round(pinned_open)} → ${Math.round(shut[2])} high)`);
+await shot("4c8-rings-folded");
+await page.click(".pinned .fold h2");
+// a numeral's radius measures to its centre, its baseline or its top: the menu beside the label (13 Oct 2026)
+const anchors = await page.evaluate(() => {
+  const t = window.dial_tool, i0 = t.S.ui_ring, i = t.S.rings.findIndex((r) => r.kind === 2);
+  t.select_ring(i);
+  const ring = t.S.rings[i], menu = document.querySelector(".menulabel select"), label = () => document.querySelector(".menulabel label").textContent;
+  const out = { options: [...menu.options].map((o) => o.textContent).join(" "), labels: [label()] , r: ring.r };
+  for (const v of ["1", "2", "0"]) { menu.value = v; menu.dispatchEvent(new Event("change")); out.labels.push(label()); out["a" + v] = ring.anchor; }
+  t.select_ring(i0);
+  return out;
+});
+check(anchors.options === "Baseline Ascender Centre" && anchors.labels.join(" | ") === "Centre radius | Baseline radius | Ascender radius | Centre radius" && anchors.a1 === 1 && anchors.a2 === 2 && anchors.a0 === 0,
+  `the radius of numerals has a menu beside its label: ${anchors.options}; the label follows: ${anchors.labels.join(" → ")}`);
+// …and the drawing follows: the numeral at 12 stands on the radius (baseline), hangs from it (ascender), or is centred on it
+const at12 = [];
+for (const v of [1, 2, 0]) {
+  await page.evaluate((v) => { const t = window.dial_tool; t.S.rings.find((r) => r.kind === 2).anchor = v; t.static_dirty = true; t.render(); }, v);
+  await frame();
+  at12.push(await page.evaluate(() => { const t = window.dial_tool, d = t.statik.rings.find((x) => x.ring.kind === 2), b = d.parts[0].bounds(); return [b[1] - d.ring.r, b[3] - d.ring.r, (b[1] + b[3]) / 2 - d.ring.r]; }));
+}
+check(Math.abs(at12[0][0]) < 0.06 && at12[0][1] > 1 && Math.abs(at12[1][1]) < 0.01 && at12[1][0] < -1 && Math.abs(at12[2][2]) < 0.001,
+  `at 12 the numeral's foot is on the radius with Baseline (${at12[0][0].toFixed(3)}), its top with Ascender (${at12[1][1].toFixed(3)}), its middle with Centre (${at12[2][2].toFixed(4)})`);
 check(await page.$$eval(".row.pick .pickt svg", (e) => e.length) >= 4, "Kind is a row of picture tiles");
 await page.click("#ring-kind-Kind-0");
 check(await S("S.rings[S.ui_ring].kind === 0 && S.rings[S.ui_ring].width === 1"), "changing a ring's kind keeps its settings");

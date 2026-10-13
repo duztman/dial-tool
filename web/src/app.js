@@ -63,13 +63,15 @@ const eye = (open) => icon(EYE[open ? "open" : "closed"]);
 // small pictures for choices that are easier seen than read. 28 × 20, drawn like the other signs.
 const pic = (inside) => icon(inside, 28, "0 0 28 20").replace('width="28" height="28"', 'width="28" height="20"');
 const solid = `fill="currentColor" stroke="none"`;
+const KIND_PIC = 30;                               // a kind's picture, a square this wide: 28 × 20 for the others
 const PICS = {
-  kind: [
-    `<path d="M3 16L4.6 11.8M8.6 9.2L9.4 4.8M14 8L14 3.5M19.4 9.2L18.6 4.8M25 16L23.4 11.8" stroke-width="1.2"/>`,
-    `<path d="M3.4 15.5L5.4 10.6M14 8L14 2.8M24.6 15.5L22.6 10.6" stroke-width="3.2" stroke-linecap="butt"/>`,
-    `<path d="M8.5 6L10.5 4.5L10.5 15.5M14.5 7C14.5 3.6 19.5 3.6 19.5 7C19.5 9.6 14.5 12 14.5 15.5L19.8 15.5"/>`,
-    `<path d="M3 16A11 11 0 0 1 25 16" stroke-width="3.6" stroke-linecap="butt"/>`,
-  ],
+  // a ring's kind: the whole circle, as on a dial (Okay's drawing, 13 Oct 2026). Square, a little larger than the others.
+  kind: (i) => icon([
+    `<path d="${ticks(18, 8.5, 13.5)}" stroke-width="1.3" stroke-linecap="butt"/>`,
+    `<path d="${ticks(8, 8.5, 13.5)}" stroke-width="3" stroke-linecap="butt"/>`,
+    [["12", 0, -9.4], ["3", 10, 0], ["6", 0, 9.4], ["9", -10, 0]].map(([t, x, y]) => `<text x="${x}" y="${y}" font-size="8" font-weight="600" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">${t}</text>`).join(""),
+    `<circle r="10.5" stroke-width="5.4"/>`,
+  ][i], KIND_PIC, "-15 -15 30 30"),
   shape: [`<rect x="12" y="3" width="4" height="14" ${solid}/>`, `<path d="M10.5 3L17.5 3L15.2 17L12.8 17Z" ${solid}/>`, `<circle cx="14" cy="10" r="4.5" ${solid}/>`],
   twelve: [
     `<rect x="12.2" y="3" width="3.6" height="14" ${solid}/>`,
@@ -148,13 +150,16 @@ const ROWS = {
     col("c_backdrop", "Backdrop"),
   ],
   Rings: [                                         // one list; rows that don't apply hide (R16)
-    hdr("Rings, top first", { scope: "global", pin: true }),       // pin: stays in view while the rest scrolls
+    // one pinned pane (Okay's drawing, 13 Oct 2026): the list, then the selected ring by its name: kind, colour, radius.
+    // Folded it is one line, "Rings: Hours   numerals · #141414 · …": the list's height given back to the panes below.
+    hdr("Rings, top first", { scope: "global", pin: true, title: (S, folded) => (folded && S.rings[S.ui_ring] ? `Rings: ${S.rings[S.ui_ring].name || G.kind_of(S.rings[S.ui_ring])}` : "Rings, top first") }),       // pin: stays in view while the rest scrolls
     custom("ring_list", { scope: "global", pin: true }),
-    custom("ring_title", { pin: true }),
-    pick("kind", "Kind", G.KINDS, PICS.kind, { pin: true }),
+    pick("kind", "Kind", G.KINDS, PICS.kind, { pin: true, label: (R) => R.name || G.kind_of(R) }),      // label: the ring's name stands where "Kind" would
     col("c", "Colour", { pin: true }),
     num("r", "Outer radius", 0, 25, 0.05, { pin: true, show: kind_in("ticks", "markers", "band") }),
-    num("r", "Centre radius", 0, 25, 0.05, { pin: true, show: kind_in("numerals") }),
+    // menu: a small menu beside the label. A numeral's radius can measure to its centre, its baseline or its top;
+    // the label says which. Shown in the order Okay wrote them; what is stored is the place in G.ANCHORS (R9).
+    num("r", "Centre radius", 0, 25, 0.05, { pin: true, show: kind_in("numerals"), menu: { key: "anchor", title: "What the radius measures to", items: [[1, "Baseline"], [2, "Ascender"], [0, "Centre"]] } }),
     hdr("Sector colours", { show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
     custom("sectors", { show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
     hdr("Positions"),
@@ -290,6 +295,9 @@ function parse_number(text, current) {
 }
 /** is this row a length (kept in mm, shown in the chosen unit)? Decided by its key, where the scale tick decides it too. */
 const LENGTH_KEYS = { ring: G.RING_MM, hand: G.HAND_MM, window: G.WINDOW_MM, global: ["dial_d", "margin", "ha_cap"] };
+/** a row's label: its own words, or, with a menu beside it, the chosen item's word before the last of its own
+ *  ("Centre radius" → "Baseline radius"). */
+const label_of = (row, T) => (row.menu ? `${(row.menu.items.find(([v]) => v === (T[row.menu.key] ?? 0)) || row.menu.items[0])[1]} ${row.text.split(" ").pop()}` : row.text);
 const is_length = (row) => row.kind === "num" && (LENGTH_KEYS[row.scope] || []).includes(row.key);
 const decimals = (step) => (String(step).split(".")[1] || "").length;
 const fmt = (v, step) => (+v).toFixed(Math.max(decimals(step), 0));
@@ -757,7 +765,7 @@ class DialTool {
       const row = r.row, T = this.target(row.scope);
       if (row.show && !row.show(T)) continue;
       const v = T[row.key];
-      if (row.kind === "num") parts.push(`${row.text.replace(/^…/, "").toLowerCase()} ${is_length(row) ? this.in_unit(v, decimals(row.step)) : fmt(v, row.step)}`);
+      if (row.kind === "num") parts.push(`${label_of(row, T).replace(/^…/, "").toLowerCase()} ${is_length(row) ? this.in_unit(v, decimals(row.step)) : fmt(v, row.step)}`);
       else if (row.kind === "pop" || row.kind === "pick" || row.kind === "seg") parts.push(String(row.items[v] ?? ""));
       else if (row.kind === "col") parts.push(to_hex(v).toUpperCase());
       else if (row.kind === "txt") parts.push(String(v));
@@ -774,7 +782,7 @@ class DialTool {
     const id = `${row.scope}-${row.key}-${row.text || row.name}`.replace(/[^A-Za-z0-9]+/g, "-");
     const active = (e) => document.activeElement === e;
 
-    if (row.kind === "hdr" || row.name === "ring_title") {     // a heading: click it to fold or unfold its group
+    if (row.kind === "hdr") {                      // a heading: click it to fold or unfold its group
       out.fold = `${SECTIONS[this.S.ui_section]}/${row.text || row.name}`;
       // the eye in the left column says whether the pane is open; the whole heading is its button
       const title = el("h2", { textContent: row.text || "" });
@@ -783,8 +791,7 @@ class DialTool {
       out.button = el("button", { type: "button", className: "fold", title: "Show or hide this pane", onclick: () => this.fold(out, !this.is_folded(out)) }, out.eye, title, out.summary);
       out.body = el("div", { className: "body" });
       out.el = el("section", { className: "pane" }, out.button, out.body);
-      if (row.name === "ring_title") out.refresh = (R) => { title.textContent = R.name || G.kind_of(R); };
-      if (row.title) out.refresh = (T) => { title.textContent = row.title(T); };
+      if (row.title) out.refresh = (T) => { title.textContent = row.title(T, this.is_folded(out)); };
       return out;
     }
     if (row.kind === "note") wrap.append(el("span"), el("span", { className: "quiet", textContent: row.text }));
@@ -809,9 +816,17 @@ class DialTool {
         if (e.key === "ArrowUp" || e.key === "ArrowDown") { e.preventDefault(); commit(this.target(row.scope)[row.key] + (e.key === "ArrowUp" ? 1 : -1) * row.step * (e.shiftKey ? 10 : 1)); }
       };
       const step = (dir) => el("button", { type: "button", className: "step", textContent: dir > 0 ? "+" : "−", tabIndex: -1, onclick: () => commit(this.target(row.scope)[row.key] + dir * row.step) });
-      const lead = row.button
-        ? el("button", { type: "button", className: "btn main", id: "export-" + row.button, textContent: row.button.toUpperCase(), title: `Export a ${row.button.toUpperCase()} at this dpi`, onclick: () => this.export(row.button) })
-        : el("label", { htmlFor: id, textContent: row.text });
+      const label = el("label", { htmlFor: id, textContent: row.text });
+      let lead = label, menu = null;
+      if (row.button) lead = el("button", { type: "button", className: "btn main", id: "export-" + row.button, textContent: row.button.toUpperCase(), title: `Export a ${row.button.toUpperCase()} at this dpi`, onclick: () => this.export(row.button) });
+      if (row.menu) {                              // label · a small boxed arrow: the browser's own menu lies over the arrow, unseen
+        menu = el("select", { id: id + "-" + row.menu.key, title: row.menu.title, ariaLabel: row.menu.title });
+        for (const [v, name] of row.menu.items) menu.append(el("option", { value: v, textContent: name }));
+        menu.onchange = () => this.set_value(row.scope, row.menu.key, +menu.value);
+        const arrow = el("span", { className: "labelmenu" }, menu);
+        arrow.insertAdjacentHTML("afterbegin", icon(`<path d="M4.5 6.5L8 10L11.5 6.5"/>`, 12));
+        lead = el("span", { className: "menulabel" }, label, arrow);
+      }
       if (row.button) { slider.ariaLabel = field.ariaLabel = row.text; field.title = row.text + " · " + field.title; }
       wrap.append(lead, slider, field, el("span", { className: "steps" }, step(-1), step(1)));
       out.refresh = (T) => {
@@ -821,6 +836,7 @@ class DialTool {
         if (+slider.value !== v) slider.value = v;
         filled(slider);
         if (!typing) field.value = shown(v);
+        if (menu) { menu.value = T[row.menu.key] ?? 0; label.textContent = label_of(row, T); }
       };
     }
 
@@ -841,8 +857,12 @@ class DialTool {
         tile.append(el("span", { textContent: name }));
         group.append(tile);
       });
-      wrap.append(el("label", { textContent: row.text }), group);
-      out.refresh = (T) => [...group.children].forEach((b, i) => { b.classList.toggle("on", i === T[row.key]); b.setAttribute("aria-checked", String(i === T[row.key])); });
+      const label = el("label", { textContent: row.text, className: row.label ? "strong" : "" });
+      wrap.append(label, group);
+      out.refresh = (T) => {
+        if (row.label) label.textContent = row.label(T);
+        [...group.children].forEach((b, i) => { b.classList.toggle("on", i === T[row.key]); b.setAttribute("aria-checked", String(i === T[row.key])); });
+      };
     }
 
     if (row.kind === "seg") {
@@ -1267,6 +1287,11 @@ class DialTool {
   /** the summaries follow every change without the list being built again (a name may be being typed in it). */
   sync_ring_summaries() {
     if (!this.ring_list) return;
+    // the selected row has the colour of the selected ring's guide on the dial (Okay, 13 Oct 2026): the same thing,
+    // marked the same way in both places. No such guide (None): the light blue of before.
+    const wrap = this.ring_list.parentElement, guide = this.S.gd_sel ? G.GUIDE_COLOURS[this.S.gd_k_sel] : null;
+    wrap.classList.toggle("guided", Boolean(guide));
+    if (guide) wrap.style.setProperty("--guide", guide); else wrap.style.removeProperty("--guide");
     [...this.ring_list.children].forEach((li, i) => {
       const sum = li.querySelector(".sum"), ring = this.S.rings[i];
       if (sum && ring) { const text = this.ring_summary(ring); if (sum.textContent !== text) sum.textContent = text; }

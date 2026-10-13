@@ -32,7 +32,8 @@ If a term is used differently in conversation, ask, then update this file.
 | **Ring** | One entry in the ring list. A ring repeats one thing around the centre at its **positions**. Okay's word for every dial element in the list ("rings, not layers, all round"). Unlimited. |
 | **Kind** | What a ring repeats: **ticks**, **markers**, **numerals** or **band**. Changeable at any time; the ring keeps all its settings. ("Type" is kept for typography.) |
 | **Ring list** | The list in the Rings section. Its order is the **stacking order**: the top ring is drawn last (in front). Each row (web version): an **eye** (show or hide the ring), a grip to drag it, its name, the **rename box** on the selected ring, its **ring summary**, its kind. (`dial.py`: a show checkbox and an editable name.) |
-| **Radius** | Ticks, markers, bands: the **outer** radius. Numerals: the radius of the text's **centre**. |
+| **Radius** | Ticks, markers, bands: the **outer** radius. Numerals: the radius of the numeral's **anchor** — its centre (the start), its baseline or its top. |
+| **Anchor** | The point of a numeral that sits on its ring's radius (ring key `anchor`, web version, 13 Oct 2026): **centre** (the middle of its outlines) · **baseline** (the middle of the line it stands on) · **ascender** (the middle of its top; the top of the ring's tallest label, so all hang from one line). Chosen in the small menu beside the radius' label, which then reads Centre / Baseline / Ascender radius. |
 | **Positions** | Where a ring puts things: **count**, **start °** (where the first one sits), **span °**. A full turn spaces them evenly; a partial span marks both ends (scales). For bands, positions start segments that tile the span. |
 | **Every · Offset · Skip those instead** | Which positions are used: every n-th, starting at the offset; "skip those instead" inverts it. Cardinals = every 3; non-cardinals = every 3, inverted. |
 | **12 o'clock · first position** | A markers ring's first position can have its own style: same, double (gap), triangle, none; and scale. |
@@ -44,6 +45,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Hollow wall** | Turns a mark or a hand into an outline of that thickness (a dot becomes a ring; a hand gets a lume opening). |
 | **Placement** | How numerals sit: **upright** (always level) · **radial** (turn with the circle) · **radial, auto-flip** (never upside down) · **on path** (letters follow the circle, kerning kept). |
 | **Nudge** | A per-numeral correction: radius ±, angle ±, rotate, size ×. Stored per position. |
+| **Rings pane** | The pinned pane on top of Rings (web version, 13 Oct 2026): the ring list, then the selected ring by its name: kind, colour, radius. Folded it is one line: *Rings: <name>* and a summary. |
 | **Ring settings** | The scrolling list under the ring list: Kind · Colour · Radius · Positions · Give way · Look · Nudge · Type. Nudge and Type show for numerals rings only. (beta 2.0 split it into four pages.) |
 
 ## Hands
@@ -75,7 +77,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Nested question** | A tick or menu that asks about the row above it; it starts on the controls' column, not at the left. |
 | **Row line** | The hairline before and after every row: white on the scrolling grey, that grey on paper. |
 | **Logo** | Planned (build list #72): an SVG placed on the dial with the mouse; it is a ring in the ring list. Not the *background* (a picture on the plate, not built). |
-| **Toggle column** | The narrow column at the far left of the panel (web version). It holds only eyes: a pane's (open or folded) and a ring's (shown or hidden on the dial). |
+| **Toggle column** | The narrow column at the far left of the panel (web version). It holds only the panes' eyes (open or folded). A ring's eye (shown or hidden on the dial) is inside its row since 13 Oct 2026. |
 | **Margin** | The panel's side space, 24, the same left and right (web version, beta 4.2). Lines start and end on it; so do the eyes. |
 | **Day slider · step** | The bottom bar's slider over twelve hours. Its steps are the twelve hours and 10:10: a click goes exactly to one. |
 | **Eye** | The sign in the toggle column. Open = showing; closed, with lashes = put away. |

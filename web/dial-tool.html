@@ -76,6 +76,10 @@
     --frame-out: 8px;                              /* a framed list row is this much wider than the lines, each side */
     --ring-gap: 4px;                               /* between framed rows */
     --sum-gap: 12px;                               /* in a ring's row: between its summary and its kind */
+    --guide-tint: 22%; --guide-edge: 65%;          /* the selected ring's row: this much of its guide's colour in its ground, and in its frame */
+    --round-pill: 999px;                           /* ends fully round: the Add group and the signs under the ring list */
+    --menu-box: 18px;                              /* the boxed arrow beside a label that opens a small menu */
+    --foot-gap: 4px; --foot-pad: 4px;              /* under the ring list: between the round signs · beside each word of the Add group */
     --thumb: 18px; --track: 4px;                   /* sliders: a black disc on a thin track (Okay's sketch, 12 Oct 2026) */
     --tick: 16px;                                  /* a tick box */
     --reach: calc((var(--line) - var(--control)) / 2);      /* what a row leaves above and under a control: under a finger, a press there counts too */
@@ -193,7 +197,7 @@
     .dots button { --reach-x: calc(var(--guide-gap) / 2); --reach-y: calc((var(--guide-row) - var(--guide-dot)) / 2); }      /* a guide's colour: the whole height of its line */
     .chiprow .chips button { --reach-x: calc(var(--pop-chip-gap) / 2); --reach-y: calc(var(--pop-chip-gap) / 2); }      /* a colour in the pop-out */
     .swatches .swatch { --reach-x: calc(var(--chip-gap) / 2); --reach-y: var(--reach); }      /* a band's sector */
-    .sign, .rename, .step { --reach-y: var(--reach); }      /* signs under the ring list, the pop-out's square and cross, the rename box, − and + */
+    .sign, .rename, .step, .labelmenu { --reach-y: var(--reach); }      /* signs under the ring list, the pop-out's square and cross, the rename box, − and + */
     .colourpop header .sign { --reach-y: calc((var(--head) - var(--control)) / 2); }
   }
 
@@ -315,6 +319,13 @@
   .row.num > input[type="range"] { grid-column: span 2; }
   .row.num input[type="text"] { text-align: right; }
   .row > label:first-child { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row > label.strong:first-child { color: var(--ink); font-weight: 600; }      /* a name where a label would stand: the selected ring's, before its kinds */
+  /* a label with a small menu beside it: the words, then a boxed arrow with the browser's own menu lying over it */
+  .menulabel { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .menulabel > label { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .labelmenu { position: relative; flex: none; display: grid; place-items: center; width: var(--menu-box); height: var(--menu-box); border: var(--hair) solid var(--grey); background: var(--field); color: var(--ink); }
+  .labelmenu:hover { border-color: var(--ink); }
+  .labelmenu > select { position: absolute; inset: calc(-1 * var(--reach-y, 0px)); width: calc(100% + 2 * var(--reach-y, 0px)); height: calc(100% + 2 * var(--reach-y, 0px)); opacity: 0; cursor: pointer; }      /* under a finger the unseen menu is larger than its box (reach) */
   .row > :is(select, .segs, .colour, .single, .tools, .picks, .swatches), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
   .row > :is(.check, .wide), .row.note > .quiet { grid-column: 1 / -1; }      /* a tick and its words start at the left edge */
   .row > span:first-child:empty { display: none; }
@@ -386,13 +397,14 @@
      (--frame-out), so the eye has room inside the frame: eye (show or hide the ring, in the toggle column) · grip ·
      name · rename box (selected ring) · summary · kind. The selected ring is light blue. The list owns the columns
      and every row borrows them (subgrid), so summaries and kinds stand under each other whatever the words' widths. */
-  .ringlist { margin: 0 calc(-1 * var(--frame-out)); }
+  .ringlist { margin: 0 calc(-1 * var(--frame-out)) 0 var(--lead); }      /* rows start where the labels start (Okay's drawing, 13 Oct 2026): the toggle column is the panes' alone */
   .ringlist ol { position: relative; list-style: none; margin: 0; padding: 2px 0 0; display: grid; row-gap: var(--ring-gap);
     grid-template-columns: calc(var(--frame-out) + var(--lead)) 18px minmax(0, auto) auto minmax(0, 1fr) auto; max-height: calc(5 * (var(--line) + var(--ring-gap)) + 4px); overflow-y: auto; }
   .ringlist li { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; height: var(--line); padding-right: calc(var(--frame-out) - var(--hair));
     border: var(--hair) solid var(--rule); border-radius: 5px; background: var(--field); cursor: pointer; }
   .ringlist li:hover { border-color: var(--grey); }
   .ringlist li.on { background: var(--select); border-color: var(--select-rule); }
+  .ringlist.guided li.on { background: color-mix(in srgb, var(--guide) var(--guide-tint), var(--field)); border-color: color-mix(in srgb, var(--guide) var(--guide-edge), var(--grey)); }
   .ringlist li.off, .ringlist li.off :is(.kind, .sum) { color: var(--rule); }
   .ringlist li.off.on, .ringlist li.off.on :is(.kind, .sum) { color: var(--grey); }
   .ringlist .eye { display: grid; align-items: center; justify-items: start; width: 100%; height: 100%; padding-left: calc(var(--frame-out) - var(--hair) + var(--nudge)); border-radius: 4px 0 0 4px; }
@@ -411,11 +423,18 @@
   /* under the list: what you can add (words) and what you can do to the selected ring (signs). The words start
      on the six columns; the last sign's drawing ends on the right margin. */
   .listfoot { display: flex; justify-content: space-between; align-items: center; height: var(--line); margin-top: var(--ring-gap);
-    padding: 0 calc(var(--frame-out) - (var(--control) - var(--icon)) / 2) 0 calc(var(--frame-out) + var(--lead)); }
-  .listfoot .adds, .listfoot .signs { display: flex; align-items: center; gap: 1px; }
-  .listfoot .adds > .quiet { margin-right: 4px; }
-  .listfoot .adds > .quiet::after { content: " +"; }
-  .listfoot .plain { padding: 0 5px; }
+    padding-right: var(--frame-out); }
+  /* Add + and the four kinds are one outlined group with round ends, a hairline between its parts; the four signs
+     are outlined circles (Okay's drawing, 13 Oct 2026). */
+  .listfoot .adds, .listfoot .signs { display: flex; align-items: center; }
+  .listfoot .adds { flex: none; height: var(--control); border: var(--hair) solid var(--grey); border-radius: var(--round-pill); overflow: hidden; }
+  .listfoot .adds > * { display: grid; align-items: center; height: 100%; padding: 0 var(--foot-pad); border: 0; }
+  .listfoot .adds > * + * { border-left: var(--hair) solid var(--grey); }
+  .listfoot .adds > .quiet::after { content: " +"; white-space: pre; }
+  .listfoot .adds > .quiet { display: block; line-height: calc(var(--control) - 2 * var(--hair)); white-space: nowrap; }
+  .listfoot .adds > .plain:hover { background: var(--field); }
+  .listfoot .signs { gap: var(--foot-gap); }
+  .listfoot .signs .sign { border-color: var(--grey); border-radius: var(--round-pill); }
 
   /* the font picker: every font shows its own numerals */
   .font { display: grid; gap: var(--unit); margin-top: var(--unit); }
@@ -4966,6 +4985,7 @@ var SKIP_FROM = ["nothing", "markers above", "markers & numerals above", "all ma
 var KNOCK_FROM = ["nothing", "markers above", "markers & numerals above", "everything above"];
 var FROM_KINDS = [[], ["markers"], ["markers", "numerals"], ["ticks", "markers", "numerals", "band"]];
 var MODES = ["upright", "radial", "radial, auto-flip", "on path"];
+var ANCHORS = ["centre", "baseline", "ascender"];
 var HANDS = ["hour", "minute", "second"];
 var HAND_SHAPES = ["baton", "pencil", "sword", "dauphine", "leaf", "arrow", "syringe", "breguet", "lollipop", "file"];
 var DATE_AT = [["3", 90], ["4:30", 135], ["6", 180], ["9", 270], ["12", 0], ["1:30", 45], ["7:30", 225], ["10:30", 315]];
@@ -5028,6 +5048,8 @@ var RING_BASE = {
   features: {},
   width: 1,
   fill: 100,
+  anchor: 0,
+  // numerals: what the radius measures to, a place in ANCHORS. 0 = the text's centre, as before (R31)
   cs: {}
   // a band's sectors with a colour of their own: position → RGBA. Empty = all in the ring's colour (beta 4.6)
 };
@@ -5926,14 +5948,13 @@ function path_letters(txt2, r, a, t, size) {
   const adv = letters.map((_, i) => advance(letters.slice(0, i).join(""), t, size));
   adv.push(advance(txt2, t, size));
   const total = adv[adv.length - 1] - tr;
-  const whole = text_path(txt2, t, size).bounds();
-  const yc = whole ? (whole[1] + whole[3]) / 2 : 0;
+  const dy = numeral_dy(t, txt2, size);
   const out = [];
   letters.forEach((ch, i) => {
     if (!ch.trim()) return;
     const own = advance(ch, t, size) - tr;
     const c = adv[i] + own / 2 - total / 2;
-    out.push([ch, flip ? a - degrees(c / r) : a + degrees(c / r), flip, [-own / 2, -yc]]);
+    out.push([ch, flip ? a - degrees(c / r) : a + degrees(c / r), flip, [-own / 2, dy]]);
   });
   return out;
 }
@@ -5946,6 +5967,19 @@ function on_path(txt2, r, a, t, size) {
   }
   return merge(out);
 }
+function ring_top(ring) {
+  return memo("top" + JSON.stringify([ring_labels(ring), TYPE_KEYS.map((k) => ring[k])]), () => max(0, ...ring_labels(ring).filter(Boolean).map((txt2) => {
+    const b = text_path(txt2, ring, ring.size).bounds();
+    return b ? b[3] : 0;
+  })));
+}
+function numeral_dy(ring, txt2, size) {
+  const anchor = ANCHORS[ring.anchor] || "centre";
+  if (anchor === "baseline") return 0;
+  if (anchor === "ascender") return -ring_top(ring) * size / (ring.size || 1);
+  const b = text_path(txt2, ring, size).bounds();
+  return b ? -(b[1] + b[3]) / 2 : 0;
+}
 function numeral_setup(ring, i, a) {
   const n = ring.nudge[String(i)] || {};
   return [MODES[ring.mode], ring.r + (n.dr || 0), a + (n.da || 0), ring.size * (n.s ?? 1), n.rot || 0];
@@ -5957,7 +5991,8 @@ function numeral_at(ring, i, a0, label) {
     if (rot) p2.rotate(-rot, clock_point(r, a));
     return p2;
   }
-  const p = centred(text_path(label, ring, size));
+  const p = text_path(label, ring, size), b = p.bounds();
+  if (b) p.translate(-(b[0] + b[2]) / 2, numeral_dy(ring, label, size));
   if (mode === "upright") {
     p.rotate(-rot);
     p.translate(...clock_point(r, a));
@@ -5989,7 +6024,7 @@ function numeral_live(ring, i, a0, label) {
   const turn = (a % 360 + 360) % 360;
   const flip = mode === "radial, auto-flip" && turn > 90 && turn < 270 ? 180 : 0;
   const steps = mode === "upright" ? [["t", ...clock_point(r, a)], ["r", -rot, 0, 0]] : [["r", -a, 0, 0], ["t", 0, r], ["r", -(flip + rot), 0, 0]];
-  return [{ ...base, txt: label, at: [-c[0], -c[1]], steps }];
+  return [{ ...base, txt: label, at: [-c[0], numeral_dy(ring, label, size)], steps }];
 }
 function live_texts(S, statik, item) {
   if (item.role === "ring" && item.ring.kind === "numerals") {
@@ -6518,6 +6553,10 @@ var POP_GAP = 12;
 var PALETTE_KEY = "dial-tool-palette";
 var DEFAULT_ON = /* @__PURE__ */ new Set(["kern", "liga", "calt", "ccmp", "locl", "mark", "mkmk", "rlig", "rclt", "curs", "clig", "rvrn"]);
 var icon = (inside, size = 16, box = "0 0 16 16") => `<svg viewBox="${box}" width="${size}" height="${size}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${inside}</svg>`;
+var ticks = (n, r0, r1) => Array.from({ length: n }, (_, i) => {
+  const a = i * 2 * Math.PI / n, x = Math.sin(a), y = -Math.cos(a);
+  return `M${(x * r0).toFixed(2)} ${(y * r0).toFixed(2)}L${(x * r1).toFixed(2)} ${(y * r1).toFixed(2)}`;
+}).join("");
 var SECTION_ICONS = {
   // pies: the ring cut in eight (four until beta 4.3). Chosen: every other pie filled, a checkerboard ("dama"; Okay, 11–12 Oct 2026)
   Dial: `<path d="M0.0 -15.0L0.0 15.0M10.61 -10.61L-10.61 10.61M15.0 -0.0L-15.0 0.0M10.61 10.61L-10.61 -10.61" stroke-width="1.1"/><path class="dama" d="M0 0L0.0 -15.0A15 15 0 0 1 10.61 -10.61ZM0 0L15.0 -0.0A15 15 0 0 1 10.61 10.61ZM0 0L0.0 15.0A15 15 0 0 1 -10.61 10.61ZM0 0L-15.0 0.0A15 15 0 0 1 -10.61 -10.61Z" fill="currentColor" stroke="none"/>`,
@@ -6537,13 +6576,15 @@ var EYE = {
 var eye = (open) => icon(EYE[open ? "open" : "closed"]);
 var pic = (inside) => icon(inside, 28, "0 0 28 20").replace('width="28" height="28"', 'width="28" height="20"');
 var solid = `fill="currentColor" stroke="none"`;
+var KIND_PIC = 30;
 var PICS = {
-  kind: [
-    `<path d="M3 16L4.6 11.8M8.6 9.2L9.4 4.8M14 8L14 3.5M19.4 9.2L18.6 4.8M25 16L23.4 11.8" stroke-width="1.2"/>`,
-    `<path d="M3.4 15.5L5.4 10.6M14 8L14 2.8M24.6 15.5L22.6 10.6" stroke-width="3.2" stroke-linecap="butt"/>`,
-    `<path d="M8.5 6L10.5 4.5L10.5 15.5M14.5 7C14.5 3.6 19.5 3.6 19.5 7C19.5 9.6 14.5 12 14.5 15.5L19.8 15.5"/>`,
-    `<path d="M3 16A11 11 0 0 1 25 16" stroke-width="3.6" stroke-linecap="butt"/>`
-  ],
+  // a ring's kind: the whole circle, as on a dial (Okay's drawing, 13 Oct 2026). Square, a little larger than the others.
+  kind: (i) => icon([
+    `<path d="${ticks(18, 8.5, 13.5)}" stroke-width="1.3" stroke-linecap="butt"/>`,
+    `<path d="${ticks(8, 8.5, 13.5)}" stroke-width="3" stroke-linecap="butt"/>`,
+    [["12", 0, -9.4], ["3", 10, 0], ["6", 0, 9.4], ["9", -10, 0]].map(([t, x, y]) => `<text x="${x}" y="${y}" font-size="8" font-weight="600" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">${t}</text>`).join(""),
+    `<circle r="10.5" stroke-width="5.4"/>`
+  ][i], KIND_PIC, "-15 -15 30 30"),
   shape: [`<rect x="12" y="3" width="4" height="14" ${solid}/>`, `<path d="M10.5 3L17.5 3L15.2 17L12.8 17Z" ${solid}/>`, `<circle cx="14" cy="10" r="4.5" ${solid}/>`],
   twelve: [
     `<rect x="12.2" y="3" width="3.6" height="14" ${solid}/>`,
@@ -6620,14 +6661,18 @@ var ROWS = {
   ],
   Rings: [
     // one list; rows that don't apply hide (R16)
-    hdr("Rings, top first", { scope: "global", pin: true }),
+    // one pinned pane (Okay's drawing, 13 Oct 2026): the list, then the selected ring by its name: kind, colour, radius.
+    // Folded it is one line, "Rings: Hours   numerals · #141414 · …": the list's height given back to the panes below.
+    hdr("Rings, top first", { scope: "global", pin: true, title: (S, folded) => folded && S.rings[S.ui_ring] ? `Rings: ${S.rings[S.ui_ring].name || kind_of(S.rings[S.ui_ring])}` : "Rings, top first" }),
     // pin: stays in view while the rest scrolls
     custom("ring_list", { scope: "global", pin: true }),
-    custom("ring_title", { pin: true }),
-    pick("kind", "Kind", KINDS, PICS.kind, { pin: true }),
+    pick("kind", "Kind", KINDS, PICS.kind, { pin: true, label: (R) => R.name || kind_of(R) }),
+    // label: the ring's name stands where "Kind" would
     col("c", "Colour", { pin: true }),
     num2("r", "Outer radius", 0, 25, 0.05, { pin: true, show: kind_in("ticks", "markers", "band") }),
-    num2("r", "Centre radius", 0, 25, 0.05, { pin: true, show: kind_in("numerals") }),
+    // menu: a small menu beside the label. A numeral's radius can measure to its centre, its baseline or its top;
+    // the label says which. Shown in the order Okay wrote them; what is stored is the place in G.ANCHORS (R9).
+    num2("r", "Centre radius", 0, 25, 0.05, { pin: true, show: kind_in("numerals"), menu: { key: "anchor", title: "What the radius measures to", items: [[1, "Baseline"], [2, "Ascender"], [0, "Centre"]] } }),
     hdr("Sector colours", { show: (R) => kind_of(R) === "band" && positions_of(R).length > 1 }),
     custom("sectors", { show: (R) => kind_of(R) === "band" && positions_of(R).length > 1 }),
     hdr("Positions"),
@@ -6766,6 +6811,7 @@ function parse_number(text, current) {
   return Number.isFinite(out) ? out : current;
 }
 var LENGTH_KEYS = { ring: RING_MM, hand: HAND_MM, window: WINDOW_MM, global: ["dial_d", "margin", "ha_cap"] };
+var label_of = (row, T) => row.menu ? `${(row.menu.items.find(([v]) => v === (T[row.menu.key] ?? 0)) || row.menu.items[0])[1]} ${row.text.split(" ").pop()}` : row.text;
 var is_length = (row) => row.kind === "num" && (LENGTH_KEYS[row.scope] || []).includes(row.key);
 var decimals = (step) => (String(step).split(".")[1] || "").length;
 var fmt = (v, step) => (+v).toFixed(Math.max(decimals(step), 0));
@@ -7334,7 +7380,7 @@ var DialTool = class _DialTool {
       const row = r.row, T = this.target(row.scope);
       if (row.show && !row.show(T)) continue;
       const v = T[row.key];
-      if (row.kind === "num") parts.push(`${row.text.replace(/^…/, "").toLowerCase()} ${is_length(row) ? this.in_unit(v, decimals(row.step)) : fmt(v, row.step)}`);
+      if (row.kind === "num") parts.push(`${label_of(row, T).replace(/^…/, "").toLowerCase()} ${is_length(row) ? this.in_unit(v, decimals(row.step)) : fmt(v, row.step)}`);
       else if (row.kind === "pop" || row.kind === "pick" || row.kind === "seg") parts.push(String(row.items[v] ?? ""));
       else if (row.kind === "col") parts.push(to_hex(v).toUpperCase());
       else if (row.kind === "txt") parts.push(String(v));
@@ -7350,7 +7396,7 @@ var DialTool = class _DialTool {
     const set = (v) => this.set_value(row.scope, row.key, v);
     const id = `${row.scope}-${row.key}-${row.text || row.name}`.replace(/[^A-Za-z0-9]+/g, "-");
     const active = (e) => document.activeElement === e;
-    if (row.kind === "hdr" || row.name === "ring_title") {
+    if (row.kind === "hdr") {
       out.fold = `${SECTIONS[this.S.ui_section]}/${row.text || row.name}`;
       const title = el("h2", { textContent: row.text || "" });
       out.eye = el("span", { className: "eye" });
@@ -7358,11 +7404,8 @@ var DialTool = class _DialTool {
       out.button = el("button", { type: "button", className: "fold", title: "Show or hide this pane", onclick: () => this.fold(out, !this.is_folded(out)) }, out.eye, title, out.summary);
       out.body = el("div", { className: "body" });
       out.el = el("section", { className: "pane" }, out.button, out.body);
-      if (row.name === "ring_title") out.refresh = (R) => {
-        title.textContent = R.name || kind_of(R);
-      };
       if (row.title) out.refresh = (T) => {
-        title.textContent = row.title(T);
+        title.textContent = row.title(T, this.is_folded(out));
       };
       return out;
     }
@@ -7398,7 +7441,17 @@ var DialTool = class _DialTool {
         }
       };
       const step = (dir) => el("button", { type: "button", className: "step", textContent: dir > 0 ? "+" : "\u2212", tabIndex: -1, onclick: () => commit(this.target(row.scope)[row.key] + dir * row.step) });
-      const lead = row.button ? el("button", { type: "button", className: "btn main", id: "export-" + row.button, textContent: row.button.toUpperCase(), title: `Export a ${row.button.toUpperCase()} at this dpi`, onclick: () => this.export(row.button) }) : el("label", { htmlFor: id, textContent: row.text });
+      const label = el("label", { htmlFor: id, textContent: row.text });
+      let lead = label, menu = null;
+      if (row.button) lead = el("button", { type: "button", className: "btn main", id: "export-" + row.button, textContent: row.button.toUpperCase(), title: `Export a ${row.button.toUpperCase()} at this dpi`, onclick: () => this.export(row.button) });
+      if (row.menu) {
+        menu = el("select", { id: id + "-" + row.menu.key, title: row.menu.title, ariaLabel: row.menu.title });
+        for (const [v, name] of row.menu.items) menu.append(el("option", { value: v, textContent: name }));
+        menu.onchange = () => this.set_value(row.scope, row.menu.key, +menu.value);
+        const arrow = el("span", { className: "labelmenu" }, menu);
+        arrow.insertAdjacentHTML("afterbegin", icon(`<path d="M4.5 6.5L8 10L11.5 6.5"/>`, 12));
+        lead = el("span", { className: "menulabel" }, label, arrow);
+      }
       if (row.button) {
         slider.ariaLabel = field.ariaLabel = row.text;
         field.title = row.text + " \xB7 " + field.title;
@@ -7411,6 +7464,10 @@ var DialTool = class _DialTool {
         if (+slider.value !== v) slider.value = v;
         filled(slider);
         if (!typing) field.value = shown(v);
+        if (menu) {
+          menu.value = T[row.menu.key] ?? 0;
+          label.textContent = label_of(row, T);
+        }
       };
     }
     if (row.kind === "pop") {
@@ -7431,11 +7488,15 @@ var DialTool = class _DialTool {
         tile.append(el("span", { textContent: name }));
         group.append(tile);
       });
-      wrap.append(el("label", { textContent: row.text }), group);
-      out.refresh = (T) => [...group.children].forEach((b, i) => {
-        b.classList.toggle("on", i === T[row.key]);
-        b.setAttribute("aria-checked", String(i === T[row.key]));
-      });
+      const label = el("label", { textContent: row.text, className: row.label ? "strong" : "" });
+      wrap.append(label, group);
+      out.refresh = (T) => {
+        if (row.label) label.textContent = row.label(T);
+        [...group.children].forEach((b, i) => {
+          b.classList.toggle("on", i === T[row.key]);
+          b.setAttribute("aria-checked", String(i === T[row.key]));
+        });
+      };
     }
     if (row.kind === "seg") {
       const group = el("span", { className: "segs" });
@@ -7936,6 +7997,10 @@ var DialTool = class _DialTool {
   /** the summaries follow every change without the list being built again (a name may be being typed in it). */
   sync_ring_summaries() {
     if (!this.ring_list) return;
+    const wrap = this.ring_list.parentElement, guide = this.S.gd_sel ? GUIDE_COLOURS[this.S.gd_k_sel] : null;
+    wrap.classList.toggle("guided", Boolean(guide));
+    if (guide) wrap.style.setProperty("--guide", guide);
+    else wrap.style.removeProperty("--guide");
     [...this.ring_list.children].forEach((li, i) => {
       const sum = li.querySelector(".sum"), ring = this.S.rings[i];
       if (sum && ring) {
