@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## beta 4.25 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **Hands**: one pane per hand — the hand itself in a box at the left (its centre marked), its shapes, numbers and colour beside it; shapes on one line that opens; a dashed *SVG* tile for later. On a phone the box lies over the rows.
+- **Number box** in those rows: tiny plus over minus; a press on the number grows it over the slider with a large minus and plus.
+- **Fields and steppers** elsewhere line up with the tiles' edges.
+- **Text colour**: a small swatch beside the font's name (windows, numerals).
+- **Top line**: title, unit box, undo and Guides centred on one line.
+
 ## beta 4.24 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.

@@ -109,13 +109,17 @@ const hand_pic = (i) => {
   const p = G.hand_shape({ ...G.HAND_BASE, shape: i, len: 13, w: 2.2, tail: 3, tip: 4.5, feature: 4.4, feature_at: [0, 0, 0, 30, 0, 0, 45, 62, 62][i] || 0, round: 0, wall: 0, counter: 0 });
   return `<svg viewBox="-3 -14 6 18.5" width="${Math.round(9 * PIC_SCALE)}" height="${Math.round(28 * PIC_SCALE)}" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;
 };
-/** the chosen hand as it is now, with all its settings (length, width, tail, round ends, hollow wall, counterweight):
- *  upright, as large as its box allows. A small ring marks the centre it turns on. */
+/** the chosen hand as it is now, with all its settings (length, width, tail, round ends, hollow wall, counterweight),
+ *  as large as its box allows: upright for a tall box, lying (tip to the right) for a wide one — both are drawn, the
+ *  stylesheet shows one. The centre it turns on is marked: a line across the box and a small ring (Okay, 13 Oct 2026). */
 const hand_detail = (h) => {
   const p = G.hand_shape(h), b = p.bounds();
   if (!b) return "";
-  const w = b[2] - b[0], high = b[3] - b[1], m = high * 0.03;      // a little room round it
-  return `<svg viewBox="${(b[0] - m).toFixed(3)} ${(-b[3] - m).toFixed(3)} ${(w + 2 * m).toFixed(3)} ${(high + 2 * m).toFixed(3)}" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor" fill-rule="evenodd"/><circle r="${(high * 0.012).toFixed(3)}" class="pivot"/></svg>`;
+  const w = b[2] - b[0], high = b[3] - b[1], m = high * 0.03, f = (v) => v.toFixed(3);      // m: a little room round it
+  const d = p.svg(3, true), ring = f(Math.max(high * 0.012, 0.12));
+  const centre = (line) => `<path class="axis" d="${line}"/><circle class="pivot" r="${ring}"/>`;
+  return `<svg class="upright" viewBox="${f(b[0] - m)} ${f(-b[3] - m)} ${f(w + 2 * m)} ${f(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${centre("M-999 0L999 0")}</svg>`
+    + `<svg class="lying" viewBox="${f(b[1] - m)} ${f(b[0] - m)} ${f(high + 2 * m)} ${f(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${centre("M0 -999L0 999")}</svg>`;
 };
 const TOOL_ICONS = {
   rename: `<rect x="1.5" y="1.5" width="13" height="13" rx="3.5" stroke-width="0.7"/><path d="M8 4.4L8 11.6M6.2 4.2L9.8 4.2M6.2 11.8L9.8 11.8" stroke-width="0.7"/>`,      // thin and light (Okay, 11 Oct 2026)
@@ -265,22 +269,25 @@ const ROWS = {
     custom("hand_tabs", { pin: true, bar: true }),      // under it, always in view: which hand the panes below are about (Okay, 12 Oct 2026: "acts as a tab system for what's below")
     hdr("One hand", { title: (S) => HAND_NAMES[S.ui_hand] }),      // its heading says which: Hour hand · Minute hand · Seconds hand
     chk("on", "Show this hand", { ...H, head: true }),      // on the heading line, beside the hand's name
-    pick("shape", "Shape", G.HAND_SHAPES.slice(0, 9), hand_pic, { ...H, detail: hand_detail }),      // detail: under the label, the chosen hand itself, large (Okay's drawing, 13 Oct 2026: "reproduce selected hand in detail")
-    col("c", "Colour", H),
-    hdr("Size", H),
-    num("len", "Length", 0.5, 30, 0.05, H),
-    num("w", "Width", 0.02, 4, 0.01, H),
-    num("tail", "Tail", 0, 10, 0.05, H),
-    hdr("Details", H),
-    num("round", "Round ends", 0, 2, 0.01, { ...H, show: hand_is("baton", "pencil", "sword", "arrow", "syringe", "breguet", "lollipop", "file") }),
-    num("tip", "Tip length", 0, 10, 0.05, { ...H, show: hand_is("pencil", "sword", "arrow", "syringe", "breguet") }),
-    num("feature", "Head width", 0, 6, 0.05, { ...H, show: hand_is("arrow", "syringe") }),
-    num("feature", "Ring · disc Ø", 0, 6, 0.05, { ...H, show: hand_is("breguet", "lollipop") }),
-    num("feature_at", "Widest at %", 0, 100, 1, { ...H, show: hand_is("dauphine") }),
-    num("feature_at", "Barrel from %", 0, 100, 1, { ...H, show: hand_is("syringe") }),
-    num("feature_at", "Ring · disc at %", 0, 100, 1, { ...H, show: hand_is("breguet", "lollipop") }),
-    num("counter", "Counterweight Ø", 0, 4, 0.05, H),
-    num("wall", "Hollow wall", 0, 1, 0.01, H),
+    // one pane for a hand (Okay's drawings, 13 Oct 2026): at the left a box with the hand itself, as it is now; beside
+    // it everything that makes it — its shape (one line of tiles that opens; a plus for a shape of one's own, later),
+    // then its numbers and its colour. So what a number changes is seen right beside it, and on the dial at the right.
+    // side: the row stands beside the box · short: the label when there is little room for it.
+    custom("hand_detail", { ...H }),
+    pick("shape", "Shape", G.HAND_SHAPES.slice(0, 9), hand_pic, { ...H, side: true, line: true }),
+    num("len", "Length", 0.5, 30, 0.05, { ...H, side: true }),
+    num("w", "Width", 0.02, 4, 0.01, { ...H, side: true }),
+    num("tail", "Tail", 0, 10, 0.05, { ...H, side: true }),
+    num("round", "Round ends", 0, 2, 0.01, { ...H, side: true, show: hand_is("baton", "pencil", "sword", "arrow", "syringe", "breguet", "lollipop", "file") }),
+    num("tip", "Tip length", 0, 10, 0.05, { ...H, side: true, show: hand_is("pencil", "sword", "arrow", "syringe", "breguet") }),
+    num("feature", "Head width", 0, 6, 0.05, { ...H, side: true, show: hand_is("arrow", "syringe") }),
+    num("feature", "Ring · disc Ø", 0, 6, 0.05, { ...H, side: true, short: "Ring Ø", show: hand_is("breguet", "lollipop") }),
+    num("feature_at", "Widest at %", 0, 100, 1, { ...H, side: true, show: hand_is("dauphine") }),
+    num("feature_at", "Barrel from %", 0, 100, 1, { ...H, side: true, short: "Barrel %", show: hand_is("syringe") }),
+    num("feature_at", "Ring · disc at %", 0, 100, 1, { ...H, side: true, short: "Ring at %", show: hand_is("breguet", "lollipop") }),
+    num("counter", "Counterweight Ø", 0, 4, 0.05, { ...H, side: true, short: "Counter Ø" }),
+    num("wall", "Hollow wall", 0, 1, 0.01, { ...H, side: true }),
+    col("c", "Colour", { ...H, side: true }),
     hdr("Cap"),                                    // after the hand's own panes: it belongs to all three
     num("ha_cap", "Cap Ø", 0, 4, 0.05),
     col("c_cap", "Colour"),
@@ -305,7 +312,7 @@ const ROWS = {
     num("age", "Moon age, days", 0, 29.5, 0.1, { ...W, show: win_is("moon phase") }),
     info("0 new moon · 14.8 full.", { ...W, show: win_is("moon phase") }),
     hdr("Colours", { ...W, show: win_on }),
-    col("text_c", "Text · picture", { ...W, show: win_on, or: (T) => T.ink }),       // or: what an unset colour is
+    col("text_c", "Picture", { ...W, show: win_is("am · pm", "moon phase"), or: (T) => T.ink }),       // or: what an unset colour is. A text's colour stands beside its font's name; this row is for the windows that show a picture       // or: what an unset colour is
     col("disc_c", "Disc under it", { ...W, show: win_on, or: () => [1, 1, 1, 1] }),
     col("ink", "Frame", { ...W, show: win_on }),
     // the hole's shape, apart from what shows through it (Okay, 13 Oct 2026): one pane for every window
@@ -579,7 +586,7 @@ class DialTool {
     this.pinned = el("div", { className: "pinned" });              // rows that stay in view
     this.form = el("div", { className: "form" });                  // rows that scroll
     const panel = el("aside", { className: "panel" },
-      el("header", {}, el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION })), this.unit_box()),
+      el("header", {}, this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION })), this.unit_box()),
       this.tabs, this.pinned, this.form);
 
     this.svg = svg_el("svg");
@@ -654,6 +661,7 @@ class DialTool {
     // on the preview: undo · redo top left, beside the panel (Okay, 13 Oct 2026) · the Guides switch top right · Backdrop bottom left
     this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.backdrop_box());
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
+    requestAnimationFrame(() => this.level_title());
     this.play_icon();
     let shown = true;
     try { shown = localStorage.getItem("dial-tool-panel") !== "off"; } catch (e) { /* not kept */ }
@@ -672,6 +680,25 @@ class DialTool {
   // ── units ────────────────────────────────────────────────
   //   Lengths are kept in mm (R1). The box at the panel's top right chooses the unit they are shown and typed in;
   //   it says the unit's short name and keeps its size. Its menu: the units by their full names.
+
+  /** one line runs through the top of the window (Okay, 13 Oct 2026): the middle of the title's small letters (its
+   *  x-height), the unit box, and undo · Guides on the preview. The boxes are centred on the header's middle by the
+   *  stylesheet; the title is moved onto it here, because where a font's small letters sit can only be measured. */
+  level_title() {
+    const h = this.title.querySelector("h1"), look = getComputedStyle(h);
+    this.title.style.translate = "";
+    const probe = el("span");                      // an empty box in the line stands on the baseline
+    probe.style.cssText = "display:inline-block;width:0;height:0";
+    h.append(probe);
+    const baseline = probe.getBoundingClientRect().top;
+    probe.remove();
+    const pen = document.createElement("canvas").getContext("2d");
+    pen.font = `${look.fontWeight} ${look.fontSize} ${look.fontFamily}`;
+    const x_height = pen.measureText("x").actualBoundingBoxAscent;
+    const header = this.title.parentElement.getBoundingClientRect();
+    if (!header.height || !x_height) return;
+    this.title.style.translate = `0 ${(header.top + header.height / 2 - (baseline - x_height / 2)).toFixed(2)}px`;
+  }
 
   unit() { return G.UNITS[this.S.ui_unit] || G.UNITS[0]; }
   /** a length in mm → the text of it in the chosen unit. */
@@ -961,7 +988,7 @@ class DialTool {
 
   /** one row of the form → {row, el, refresh(T)}. */
   build_row(row) {
-    const wrap = el("div", { className: "row " + row.kind + (row.nest ? " nest" : "") });
+    const wrap = el("div", { className: "row " + row.kind + (row.nest ? " nest" : "") + (row.side ? " side" : "") });
     const tied = () => { if (row.tie) out.el.classList.add("tied"); };      // tie: this row belongs to the one above it, no line between them
     const out = { row, el: wrap, refresh: () => {} };
     const set = (v) => this.set_value(row.scope, row.key, v);
@@ -1007,6 +1034,7 @@ class DialTool {
       };
       const step = (dir) => el("button", { type: "button", className: "step", textContent: dir > 0 ? "+" : "−", tabIndex: -1, onclick: () => commit(this.target(row.scope)[row.key] + dir * row.step) });
       const label = el("label", { htmlFor: id, textContent: row.text });
+      if (row.short) { label.textContent = ""; label.title = row.text; label.append(el("span", { className: "whole", textContent: row.text }), el("span", { className: "short", textContent: row.short })); }      // two wordings; the stylesheet shows the one there is room for
       let lead = label, menu = null;
       if (row.button) lead = el("button", { type: "button", className: "btn main", id: "export-" + row.button, textContent: row.button.toUpperCase(), title: `Export a ${row.button.toUpperCase()} at this dpi`, onclick: () => this.export(row.button) });
       if (row.menu) {                              // label · a small boxed arrow: the browser's own menu lies over the arrow, unseen
@@ -1019,7 +1047,15 @@ class DialTool {
       }
       if (row.button) { slider.ariaLabel = field.ariaLabel = row.text; field.title = row.text + " · " + field.title; }
       if (row.bare) { label.textContent = ""; label.className = "blank"; slider.ariaLabel = field.ariaLabel = row.text; field.title = row.text + " · " + field.title; }
-      wrap.append(lead, slider, field, el("span", { className: "steps" }, step(-1), step(1)));
+      if (row.side) {
+        // beside a hand's box there is little room (Okay, 13 Oct 2026): the number with a tiny plus over a tiny minus
+        // joined to it. A press on the number and the box grows towards the slider, over it, into a large field
+        // between a large minus and plus; it goes back when one presses elsewhere, or Enter or Escape.
+        const box = el("span", { className: "numbox" }, field, step(-1), step(1));
+        for (const b of box.querySelectorAll(".step")) b.onmousedown = (e) => e.preventDefault();      // a press on minus or plus leaves the field as it is: closed stays closed, open stays open
+        field.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === "Escape") field.blur(); });
+        wrap.append(lead, slider, box);
+      } else wrap.append(lead, slider, field, el("span", { className: "steps" }, step(-1), step(1)));
       out.refresh = (T) => {
         const v = T[row.key] ?? 0;
         if (v > +slider.max) slider.max = v;       // the slider grows to hold a typed value
@@ -1049,13 +1085,29 @@ class DialTool {
         group.append(tile);
       });
       const label = el("label", { textContent: row.text, className: row.label ? "strong" : "" });
-      const detail = row.detail ? el("span", { className: "detail", id: id + "-detail" }) : null;      // a box under the label, as high as the tiles: what is chosen, as it is now
-      wrap.append(detail ? el("span", { className: "pickside" }, label, detail) : label, group);
-      let drawn = "";
+      // line: the tiles alone on one line, without their label; the line shows the chosen one and the first few others,
+      // a "more" tile opens all of them, and a dashed plus stands for a shape of one's own (an SVG file: not built yet)
+      let more = null;
+      if (row.line) {
+        more = el("button", { type: "button", className: "pickt more", id: id + "-more", title: "All the shapes" });
+        more.innerHTML = icon(`<path d="M4.5 6.5L8 10L11.5 6.5"/>`, Math.round(20 * PIC_SCALE)) + "<span>more</span>";
+        more.setAttribute("aria-expanded", "false");
+        more.onclick = () => { const open = !group.classList.contains("open"); group.classList.toggle("open", open); more.setAttribute("aria-expanded", String(open)); more.lastChild.textContent = open ? "less" : "more"; };
+        const own = el("button", { type: "button", className: "pickt own", id: id + "-own", title: "A shape of your own, from an SVG file: not built yet" });
+        own.innerHTML = icon(`<path d="M8 3.5L8 12.5M3.5 8L12.5 8"/>`, Math.round(20 * PIC_SCALE)) + "<span>SVG</span>";
+        own.setAttribute("aria-disabled", "true");
+        group.classList.add("line");
+        group.append(more, own);
+        wrap.append(group);
+      } else wrap.append(label, group);
       out.refresh = (T) => {
-        if (detail) { const now = row.detail(T); if (now !== drawn) { drawn = now; detail.innerHTML = now; } }
         if (row.label) label.textContent = row.label(T);
-        [...group.children].forEach((b, i) => { b.classList.toggle("on", i === T[row.key]); b.setAttribute("aria-checked", String(i === T[row.key])); });
+        const tiles = [...group.querySelectorAll('[role="radio"]')];
+        tiles.forEach((b, i) => { b.classList.toggle("on", i === T[row.key]); b.setAttribute("aria-checked", String(i === T[row.key])); });
+        if (row.line) for (const [name, n] of [["in2", 2], ["in4", 4]]) {      // which tiles the closed line shows: the first n, the last of them giving its place to the chosen one
+          const chosen = T[row.key] || 0, shown = chosen < n ? tiles.slice(0, n) : [...tiles.slice(0, n - 1), tiles[chosen]];
+          tiles.forEach((b) => b.classList.toggle(name, shown.includes(b)));
+        }
       };
     }
 
@@ -1893,8 +1945,14 @@ class DialTool {
     const current = el("button", { type: "button", className: "fontrow current", id: pre + "font-current", title: "Choose a font", onclick: open });
     const name = el("span", { className: "name", id: pre + "font-name" });
     const lang = own ? null : this.lang_box();
+    // the text's colour, small, beside the font's name (Okay, 13 Oct 2026: "text get their color swatch, small. Next to name"):
+    // a window's text colour (unset: its frame's) · a numerals ring's colour
+    const crow = own ? { key: "text_c", scope: "window", text: "Text", or: (T) => T.ink } : { key: "c", scope: "ring", text: "Colour" };
+    const swatch = this.colour_pill(pre + "font-c", "The text’s colour");
+    swatch.classList.add("mini");
+    swatch.onclick = () => this.pop_open(this.colour_of_row(crow), swatch);
     const tracking = own ? null : this.build_row({ ...num("tracking", "Tracking", -200, 800, 5), scope: "ring" });      // the box's last line (Okay, 13 Oct 2026); a window has no tracking of its own
-    const named = el("div", { className: "fontname" }, name, ...(lang ? [lang.el] : []), el("button", { type: "button", className: "btn", id: pre + "font-change", textContent: "Change…", onclick: open }));
+    const named = el("div", { className: "fontname" }, name, swatch, ...(lang ? [lang.el] : []), el("button", { type: "button", className: "btn", id: pre + "font-change", textContent: "Change…", onclick: open }));
     const styles = el("div", { className: "segs styles" });
     const state = el("div", { className: "quiet note", id: pre + "font-note" });
     const back = el("button", { type: "button", className: "btn", id: "window-font-back", textContent: "As the numerals", title: "Use the top numerals ring’s font again", hidden: true,
@@ -1906,6 +1964,7 @@ class DialTool {
       back.hidden = !(own && T.ps);
       if (lang) lang.refresh(T);
       if (tracking) tracking.refresh(T);
+      swatch.show(T[crow.key] || (crow.or ? crow.or(T) : [0, 0, 0, 1]));
       const mine = this.families().get(R.family) || [], f = this.catalog.get(R.ps) || mine[0];
       const key = R.ps + "/" + G.has_font(R.ps) + "/" + Boolean(T.ps);
       if (key !== shown) {
@@ -1924,6 +1983,14 @@ class DialTool {
       state.textContent = missing + (this.font_note || "");
       if (this.picker && this.picker.open) this.fill_picker();
     };
+  }
+
+  /** the chosen hand in detail: a box of its own, at the left of the hand's rows (on a phone: over them, the hand lying). */
+  row_hand_detail(wrap, out) {
+    wrap.className = "detail";
+    wrap.id = "hand-detail";
+    let drawn = "";
+    out.refresh = (T) => { const now = hand_detail(T); if (now !== drawn) { drawn = now; wrap.innerHTML = now; } };
   }
 
   /** the language the numerals are set in (a font may draw a figure differently for one): a small button saying its

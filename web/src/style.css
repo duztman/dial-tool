@@ -57,6 +57,8 @@
     --air: calc(4 * var(--unit));                  /* under an open pane */
     --hair: 1px; --thick: 2px;                     /* a thick line opens a pane; everything inside a pane is a hairline */
     --nest-from: calc((100% + var(--gap)) / 3);     /* where a row's controls start, from its left edge: two of its six columns and their gaps. A half line starts here */
+    --side-num: 60px; --side-tiny: 16px;           /* beside a hand's box: a number with its tiny plus and minus (the whole · the two alone) */
+    --tile-wider: calc((var(--gap) - var(--unit)) / 4);      /* four tiles stand closer than four columns: each is this much wider than a column */
     --btn-pad: 10px;                               /* from a button's or a box's edge to its words */
     --control: 26px;                               /* a control's height: field, button, swatch */
     --control-large: 32px;                         /* the Guides switch, the hex line */
@@ -99,7 +101,8 @@
     --pop-width: 388px; --pop-chips: 11; --pop-chip-gap: 12px;      /* the colour pop-out: its width; colours to a row (the palette's ten and its +), which share the row's width; the room between two */
     --checker: repeating-conic-gradient(#BDBDB9 0 25%, #FFFFFF 0 50%) 0 0 / 8px 8px;      /* what shows through a see-through colour */
     --faint: 0.35;                                 /* how much of a switch on the preview shows at rest */
-    --canvas-inset: 12px;                          /* from the preview's edge to what stands on it */
+    --canvas-inset: 12px;
+    --canvas-top: calc((var(--header) - var(--control-large)) / 2);      /* undo and Guides stand on the header's middle line, with the title and the unit box (Okay, 13 Oct 2026) */                          /* from the preview's edge to what stands on it */
     --guide-name: 92px; --guide-row: 42px;         /* a line of the guides' list is this high */                           /* the names in the guides' list */
     --guide-dot: 10px; --guide-gap: 10px;           /* a round colour in the guides' list, and the room between two: the chosen one's ring needs it */
     --ring-gap-in: 2px; --ring-thick: 3px;         /* the chosen one: a ring of the ground this wide, then a ring of its own colour this thick */
@@ -370,13 +373,55 @@
   .row > button:not(:first-child) { justify-self: start; }
   .row > .btn.main:first-child { justify-self: stretch; }      /* a button standing where the label would (PNG) */
   .row.pick { align-items: start; }
-  .row.pick > label, .pickside > label { line-height: var(--line); }
-  /* a label with a box under it that shows what is chosen, large (a hand): the box is as high as the tiles beside it */
-  .pickside { align-self: stretch; display: grid; grid-template-rows: auto minmax(0, 1fr); padding-bottom: var(--unit); }
-  .pickside > label { color: var(--grey); }
-  .detail { position: relative; border: var(--hair) solid var(--rule); background: var(--field); }
-  .detail svg { position: absolute; inset: var(--unit); width: calc(100% - 2 * var(--unit)); height: calc(100% - 2 * var(--unit)); }
-  .detail .pivot { fill: var(--field); stroke: none; }
+  .row.pick > label { line-height: var(--line); }
+  .row > label > .short { display: none; }         /* a label's short wording: only where there is little room (a side row) */
+
+  /* a hand's pane (Okay's drawings, 13 Oct 2026): a box with the hand itself, and beside it the rows that make it.
+     The box: the chosen hand in ink, the centre it turns on marked by a line across the box and a small ring. */
+  .detail { position: relative; overflow: hidden; margin: var(--unit) 0; min-height: calc(4 * var(--line)); border: var(--hair) solid var(--rule); background: var(--field); }
+  .detail svg { position: absolute; inset: var(--unit); width: calc(100% - 2 * var(--unit)); height: calc(100% - 2 * var(--unit)); overflow: visible; }
+  .detail .lying { display: none; }
+  .detail .axis { stroke: var(--rule); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
+  .detail .pivot { fill: var(--field); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
+  /* a line of tiles that opens: closed, the first few and the chosen one; then "more" and a dashed plus for one's own */
+  .picks.line:not(.open) > [role="radio"]:not(.in4) { display: none; }
+  .picks.line { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .row > .picks.line { grid-column: 1 / -1; }
+  .pickt.own { border-style: dashed; color: var(--grey); cursor: default; }
+  .pickt.own:hover { background: var(--field); }
+  .pickt.more[aria-expanded="true"] svg { rotate: 180deg; }
+  /* the number box of a side row: the number, and joined to it a tiny plus over a tiny minus. With the keyboard in
+     the number it grows towards the slider, over it: a large minus · the number · a large plus. It hangs at the
+     row's right end, so growing moves nothing else. */
+  .row.side { position: relative; --num-open: calc((200% - var(--gap)) / 3); }
+  .numbox { position: absolute; right: 0; top: 50%; translate: 0 -50%; display: grid; grid-template: "f p" 1fr "f m" 1fr / minmax(0, 1fr) var(--side-tiny); width: var(--side-num); height: var(--control); background: var(--field); transition: width 0.12s ease-out, height 0.12s ease-out; }
+  .numbox > input { grid-area: f; width: 100%; min-width: 0; height: 100%; }
+  .numbox > .step { min-width: 0; height: auto; padding: 0; border-left: 0; font-size: var(--t-xs); line-height: 1; }
+  .numbox > .step:nth-of-type(1) { grid-area: m; border-top: 0; }
+  .numbox > .step:nth-of-type(2) { grid-area: p; }
+  .numbox:focus-within { z-index: 2; grid-template: "m f p" 1fr / var(--control-large) minmax(0, 1fr) var(--control-large); width: var(--num-open); height: var(--control-large); box-shadow: 0 0 0 var(--unit) var(--surface); }
+  .numbox:focus-within > .step { border: var(--hair) solid var(--ink); font-size: var(--t-l); }
+  .numbox:focus-within > .step:nth-of-type(1) { border-right: 0; }
+  .numbox:focus-within > .step:nth-of-type(2) { border-left: 0; }
+  @media (prefers-reduced-motion: reduce) { .numbox { transition: none; } }
+  @media (min-width: 861px) {
+    /* wide: the box in the first two columns, as high as the rows beside it; the rows in the other four, each one
+       line: label · slider · the number box */
+    .body > .detail { grid-column: 2 / span 2; grid-row: 1 / span 40; }      /* 40: more rows than a hand has; the rows it doesn't use are nothing high */
+    .body > .row.side { grid-column: 4 / -1; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--side-num); }
+    .row.side { --num-open: calc((100% + var(--side-num)) / 2); }      /* the row less its label and one gap: slider and number together */
+    /* elsewhere a number's field and its stepper are boxes like the tiles: they stand where the third and the fourth
+       tile of a row of four stand, so box edges line up down the pane (Okay, 13 Oct 2026) */
+    .body > .row.num:not(.side) > input[type="text"] { margin-left: calc(-2 * var(--tile-wider)); margin-right: calc(-1 * var(--tile-wider)); width: auto; }
+    .body > .row.num:not(.side) > .steps { margin-left: calc(-3 * var(--tile-wider)); width: calc(100% + 3 * var(--tile-wider)); }
+    .row.side > :first-child, .row.side.num > input[type="range"] { grid-column: auto; }
+    .row.side > label { font-size: var(--t-s); }
+    .row.side > label > .whole { display: none; }
+    .row.side > label > .short { display: inline; }
+    .row.side > .colour { grid-column: 2 / -1; }
+    .row.side > .picks.line { grid-column: 1 / -1; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .picks.line:not(.open) > [role="radio"]:not(.in2) { display: none; }
+  }
   .features { padding-top: 4px; }
   .features h3 { margin: 16px 0 8px; padding-top: 8px; border-top: var(--hair) solid var(--rule); }
   .linkrow .tools { margin-top: var(--unit); gap: calc(var(--unit) * 2); }
@@ -509,7 +554,9 @@
   .kinds button:hover { background: var(--hover); }
   .kinds button.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
   .colour.bare { flex: none; justify-content: center; width: var(--line-button); height: var(--line-button); padding: 0; border: var(--hair) solid var(--rule); border-radius: 0; background: var(--field); }
-  .colour.bare .hex { display: none; }
+  .colour.bare .hex, .colour.mini .hex { display: none; }
+  .colour.mini { flex: none; height: auto; padding: var(--hair); background: none; }      /* a colour beside the name of what it colours: the swatch alone, as large as the words (a text's, in its font box) */
+  .colour.mini .dot { width: var(--t-m); height: var(--t-m); }
   .colour.bare .dot { width: var(--bare-dot); height: var(--bare-dot); border-color: var(--rule); }
   .colour.bare[aria-expanded="true"] { border-color: var(--ink); }
   /* the tag: what a wordless button is, under it while the pointer is on it. One for the whole tool, over everything. */
@@ -562,7 +609,8 @@
   .fontbox :is(.btn, .styles > button):hover { border-color: var(--ink); color: var(--ink); }
   .fontbox .styles > button.on, .fontbox .btn[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
   .fontname { display: flex; align-items: center; gap: var(--unit); }      /* the font's name; the language and Change… at the right */
-  .fontname .name { flex: 1; font-weight: 600; }      /* the font's name is the box's heading (Okay, 13 Oct 2026) */
+  .fontname .name { flex: 0 1 auto; font-weight: 600; }
+  .fontname .colour.mini { margin-right: auto; }      /* right after the name; what follows goes to the right end */      /* the font's name is the box's heading (Okay, 13 Oct 2026) */
   .langs { position: relative; }
   .langbox { min-width: var(--control); padding: 0 var(--unit); font: var(--t-xs)/1 var(--mono); }
   .fontname .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -610,11 +658,11 @@
      form, so the box is the same size on and off. */
   main { --on-canvas: var(--ink); }
   main.dark { --on-canvas: #FFFFFF; }
-  .guides { position: absolute; z-index: 3; top: var(--canvas-inset); right: var(--canvas-inset); display: flex; justify-content: flex-end; }
+  .guides { position: absolute; z-index: 3; top: var(--canvas-top); right: var(--canvas-inset); display: flex; justify-content: flex-end; }
   .guidesbox, .guidesmore, .backdropbox, .undobox { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: var(--hair) solid var(--on-canvas); color: var(--on-canvas); user-select: none; }
   @media (hover: hover) { :is(.guidesbox, .guidesmore, .backdropbox, .undobox):hover { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); } }      /* under the pointer its line is twice as thick: still no fill */
   /* undo · redo, before the Guides switch: two joined outlined buttons; pale when there is no step that way */
-  .undos { position: absolute; z-index: 3; top: var(--canvas-inset); left: var(--canvas-inset); display: flex; }      /* top left of the preview, beside the panel (Okay, 13 Oct 2026) */
+  .undos { position: absolute; z-index: 3; top: var(--canvas-top); left: var(--canvas-inset); display: flex; }      /* top left of the preview, beside the panel (Okay, 13 Oct 2026) */
   .undobox { width: var(--control-large); }
   .undobox:first-child { border-radius: 10px 0 0 10px; }
   .undobox:last-child { border-left: 0; border-radius: 0 10px 10px 0; }
@@ -759,7 +807,7 @@
   /* a phone, or a narrow window: the bar on top, the preview under it; below them the whole panel scrolls as one.
      The six columns share what the screen gives. */
   @media (max-width: 860px) {
-    :root { --margin: 16px; --gap: 10px; --col: calc((100vw - 2 * var(--margin) - var(--lead) - 5 * var(--gap)) / 6); }
+    :root { --canvas-top: var(--canvas-inset); --margin: 16px; --gap: 10px; --col: calc((100vw - 2 * var(--margin) - var(--lead) - 5 * var(--gap)) / 6); }
     #app, #app.nopanel { grid-template-columns: 1fr; grid-template-rows: auto 42% 1fr; }
     #app.nopanel { grid-template-rows: auto 1fr 0; }
     .bar { grid-row: 1; flex-wrap: wrap; height: auto; padding: 0; border-top: 0; border-bottom: var(--hair) solid var(--bar-rule); }
@@ -773,10 +821,12 @@
     main { grid-row: 2; }
     .panel { grid-row: 3; display: block; overflow-y: auto; -webkit-overflow-scrolling: touch; border-right: 0; border-top: var(--hair) solid var(--rule); }
     .form { overflow: visible; }
-    .tabs { position: sticky; top: 0; z-index: 1; background: var(--paper); }
+    .tabs { position: sticky; top: 0; z-index: 3; background: var(--paper); }      /* over what scrolls under it: the tabs' notches, an open number box */
     .ringlist ol { max-height: none; }
-    .row.pick > :is(label, .pickside), .row.pick > .picks { grid-column: 1 / -1; }
-    .detail { height: calc(3 * var(--tile)); }      /* on its own line here: three tiles high */      /* picture tiles under their label, on all six columns: room for their words */
+    .row.pick > label, .row.pick > .picks { grid-column: 1 / -1; }
+    .detail { min-height: 0; height: calc(1.5 * var(--tile)); }      /* over its rows here: a wide box, the hand lying in it, its tip to the right (Okay, 13 Oct 2026: "B for mobile") */
+    .detail .upright { display: none; }
+    .detail .lying { display: block; }      /* picture tiles under their label, on all six columns: room for their words */
     .row.pick > label { line-height: 1.4; padding-top: var(--unit); }
     .picker { inset: auto 0 0 0; width: 100%; height: 58%; border-right: 0; border-top: var(--hair) solid var(--ink); }
     /* the colour pop-out is a sheet from the bottom; wide, it is the whole screen */

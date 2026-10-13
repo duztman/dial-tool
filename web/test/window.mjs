@@ -308,11 +308,11 @@ await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before)
   await settle();
   await page.keyboard.press("Meta+z");
   check((await state())[3] === s0[3], "⌘Z does the same");
-  const place = await page.evaluate(() => { const u = document.querySelector(".undos").getBoundingClientRect(), g = document.querySelector("#guides").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); return [u.right <= g.left, Math.round(u.top - m.top) === Math.round(g.top - m.top), Math.round(u.left - m.left) === Math.round(u.top - m.top), document.querySelector("#redo").classList.contains("none")]; });
+  const place = await page.evaluate(() => { const u = document.querySelector(".undos").getBoundingClientRect(), g = document.querySelector("#guides").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); return [u.right <= g.left, Math.round(u.top - m.top) === Math.round(g.top - m.top), Math.round(u.left - m.left) === 12, document.querySelector("#redo").classList.contains("none")]; });
   await page.click("#redo");
   const fwd = (await state())[3];
   await page.click("#undo");
-  check(place[0] && place[1] && place[2] && !place[3] && fwd === 31 && (await state())[3] === s0[3], "Undo and Redo stand on the preview's top left, as far from its left edge as from its top, level with the Guides switch, and do the same");
+  check(place[0] && place[1] && place[2] && !place[3] && fwd === 31 && (await state())[3] === s0[3], "Undo and Redo stand on the preview's top left, 12 from its left edge, level with the Guides switch, and do the same");
   await shot("4c16-undo");
 }
 // a numeral's radius measures to its centre, its baseline or its top: the menu beside the label, in the pop-up (13 Oct 2026)
@@ -389,7 +389,7 @@ check(JSON.stringify(await S("S.rings.map((r) => r.name)")) === JSON.stringify(o
 await tab("Dial");
 check(await page.$("main .guides #guides") !== null && await page.$(".panel #guides") === null && await page.isHidden("#guide-list"), "the Guides switch stands on the preview, not in the panel; its list is shut");
 const guides_at = await page.evaluate(() => { const g = document.querySelector(".guides").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); return [Math.round(m.right - g.right), Math.round(g.top - m.top)]; });
-check(guides_at[0] === 12 && guides_at[1] === 12, `it is 12 from the preview's top and right (${guides_at.join(" / ")})`);
+check(guides_at[0] === 12 && guides_at[1] === 16, `it is 12 from the preview's right, and 16 from its top: on the header's middle line (${guides_at.join(" / ")})`);
 await page.click("#guides-more");
 check(await page.isVisible("#guide-list") && await page.$$eval("#guide-list > .guidekind", (r) => r.length) === 3 && await page.$$eval("#guide-list .guidekind >> nth=0 >> .dots .tone", (b) => b.length) === 8 && await page.$$eval("#guide-list .guiderings .guidekind.ring", (r) => r.length) === await S("S.rings.length") && await page.$("#guide-list .swatch") === null, "the arrow drops the list: the dial's three kinds of guide, then a line for every ring, each with None and eight round colours, no free colour");
 // guides are connected to the rings (13 Oct 2026): each ring's edges in its own colour, different ones to start with; the row in the ring list is tinted with it
@@ -573,12 +573,13 @@ check((await page.textContent('.pinned .fold:has-text("Dial") .summary')).includ
 await page.click('.pinned .fold:has-text("Dial") .eye');
 check(await page.isVisible("#global-dial-d-Diameter") && (await page.textContent('.pinned .fold:has-text("Dial") .summary')) === "", "its eye opens it again, and the summary goes");
 // folding must not leave uneven gaps: folded panes stack line on line, whatever they hold
-await tab("Hands");
+await tab("Rings");
 const gaps = async () => page.$$eval(".form .pane", (h) => h.filter((e) => e.offsetParent).map((e, i, all) => (i ? Math.round(e.getBoundingClientRect().top - all[i - 1].getBoundingClientRect().top) : 0)).slice(1));
-for (const i of [0, 1, 2]) await page.click(`.form .pane >> nth=${i} >> .fold h2`);
+for (const i of [0, 1, 2]) await page.click(`.form .pane:visible >> nth=${i} >> .fold h2`);
 const folded_gaps = await gaps();
 check(folded_gaps[1] === 42 && folded_gaps[2] === 42, `folded panes in a row are 42 apart, and so is the open one after them (${folded_gaps.join(", ")})`);
-for (const i of [0, 1, 2]) await page.click(`.form .pane >> nth=${i} >> .fold h2`);
+for (const i of [0, 1, 2]) await page.click(`.form .pane:visible >> nth=${i} >> .fold h2`);
+await tab("Hands");
 // Hands: Hour · Minute · Seconds are tabs on top of the pinned part; the panes below are about the chosen hand
 const hand_tabs = await page.evaluate(() => { const p = document.querySelector(".pinned"), t = p.querySelector(".tabsbar"); return [p.firstElementChild.classList.contains("handsbar"), p.firstElementChild.nextElementSibling === t, [...t.querySelectorAll("button")].map((b) => b.textContent).join(" "), [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent).join(" · ")]; });
 check(hand_tabs[0] && hand_tabs[1] && hand_tabs[2] === "Hour Minute Seconds", "All hands is the first pinned line, the hand tabs the second, right above the hand's panes");
@@ -596,13 +597,38 @@ await page.click("#hand-tab-0");
     return { touch: tabs.every((b, i) => !i || Math.abs(r(b).left - r(tabs[i - 1]).right) <= 1), on_line: Math.round(p.bottom - r(tabs[0]).bottom), line: getComputedStyle(document.querySelector(".pinned")).borderBottomWidth, round: [c.borderTopLeftRadius, getComputedStyle(tabs.at(-1)).borderTopRightRadius].join(" "), notch: [v(tabs[0]).content === "none", parseFloat(getComputedStyle(tabs[1], "::after").width) + "x" + parseFloat(getComputedStyle(tabs[1], "::after").height), v(tabs[1]).clipPath.startsWith("polygon"), v(tabs[2]).content !== "none"].join(" "), high: Math.round(r(tabs[0]).height) }; });
   check(strip.touch && strip.on_line === 2 && strip.line === "2px" && strip.round === "0px 0px" && strip.notch === "true 11x5.5 true true" && strip.high === 40, `the hand tabs are tabs: touching, on a thick line, the first and last corner square, a sharp notch one unit deep and twice as wide over each joint (${strip.notch}), ${strip.high} high`);
 }
-{ // under Shape's label: the chosen hand itself, large, as high as the tiles; it follows the hand's settings
-  const d = async () => page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), box = r(".detail"), tiles = r(".row.pick .picks"), label = r(".pickside label"), svg = r(".detail svg path"); return [Math.round(tiles.bottom - 5.5 - box.bottom), box.top >= label.bottom - 1, Math.round(box.left - label.left), svg.height > 100 && svg.left >= box.left && svg.right <= box.right, document.querySelector(".detail path").getAttribute("d")]; });
-  const before = await d();
+{ // a hand's pane (13 Oct 2026): a box with the hand itself at the left, its rows beside it: a line of tiles that opens, numbers, colour
+  const look = () => page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), box = r("#hand-detail"), rows = [...document.querySelectorAll(".form .pane .body")][0].querySelectorAll(".row.side:not([hidden])"), first = rows[0].getBoundingClientRect(), last = rows[rows.length - 1].getBoundingClientRect(), tiles = [...document.querySelectorAll(".picks.line > *")].filter((e) => e.offsetParent).map((e) => e.textContent);
+    return { beside: Math.round(first.left - box.right), top: Math.round(box.top - first.top), bottom: Math.round(last.bottom - box.bottom), tiles: tiles.join(" "), panes: [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent).join(" · "), d: document.querySelector("#hand-detail .upright path").getAttribute("d"), centre: document.querySelectorAll("#hand-detail .upright .axis, #hand-detail .upright .pivot").length, one_line: [...rows].every((e) => e.getBoundingClientRect().height < 90) }; });
+  const a = await look();
+  check(a.beside === 12 && a.top === 6 && a.bottom === 6 && a.panes === "Hour hand · Cap" && a.centre === 2, `a hand has one pane: at the left a box with the hand itself, its centre marked, as high as the rows beside it (${JSON.stringify({ ...a, d: 0 })})`);
+  check(a.tiles === "baton pencil more SVG", `its shapes are one line: ${a.tiles}`);
+  await page.click("#hand-shape-Shape-more");
+  const open = (await look()).tiles;
   await page.click("#hand-shape-Shape-7");
-  const after = await d();
+  await page.click("#hand-shape-Shape-more");
+  const b = await look();
+  check(open.split(" ").length === 11 && open.endsWith("less SVG") && b.tiles === "baton breguet more SVG" && b.d !== a.d, `more opens all nine (${open}); closed again, the chosen one has a place on the line (${b.tiles}), and the box shows it`);
   await page.click("#hand-shape-Shape-0");
-  check(before[0] === 0 && before[1] && before[2] === 0 && before[3] && after[4] !== before[4] && (await d())[4] === before[4], "under the Shape label stands the chosen hand in detail, in a box as high as the tiles; another shape, another drawing");
+  // the number box: the number with a tiny plus over a tiny minus; a press on the number and it grows over the slider
+  const nb = () => page.evaluate(() => { const box = document.querySelector(".row.side .numbox"), r = box.getBoundingClientRect(), s = box.closest(".row").querySelector("input[type=range]").getBoundingClientRect(), [minus, plus] = [...box.querySelectorAll(".step")].map((e) => e.getBoundingClientRect()); return { w: Math.round(r.width), h: Math.round(r.height), over: r.left <= s.left + 1, stacked: plus.bottom <= minus.top + 1 && Math.round(plus.left) === Math.round(minus.left), step: Math.round(plus.width) + "x" + Math.round(plus.height) }; });
+  const shut = await nb(), len = await S("S.ha_hour.len");
+  await page.click(".row.side .numbox .step >> nth=1");
+  const stepped = await S("S.ha_hour.len"), still = await nb();
+  await page.click("#hand-len-Length");
+  const wide = await nb();
+  await page.click(".row.side .numbox .step >> nth=0");
+  const back = await S("S.ha_hour.len"), held = await nb();
+  await page.keyboard.press("Escape");
+  const closed = await nb();
+  check(shut.w === 60 && shut.h === 26 && shut.stacked && shut.step === "16x13" && near(stepped - len, 0.05, 1e-6) && still.w === 60, `beside the box a number has a tiny plus over a tiny minus (${shut.step}); they step it and the box stays small`);
+  check(wide.over && wide.h === 32 && wide.step === "32x32" && !wide.stacked && near(back, len, 1e-6) && held.w === wide.w && closed.w === 60, `a press on the number and its box grows over the slider (${wide.w} wide): a large minus and plus beside the number; it stays open while they are pressed, Escape closes it`);
+}
+{ // one line through the top: the middle of the title's small letters, the unit box, undo and Guides
+  const line = await page.evaluate(() => { const mid = (q) => { const r = document.querySelector(q).getBoundingClientRect(); return r.top + r.height / 2; }, h = document.querySelector("h1"), probe = document.createElement("span"); probe.style.cssText = "display:inline-block;width:0;height:0"; h.append(probe);
+    const base = probe.getBoundingClientRect().top; probe.remove(); const c = getComputedStyle(h), pen = document.createElement("canvas").getContext("2d"); pen.font = `${c.fontWeight} ${c.fontSize} ${c.fontFamily}`;
+    return [base - pen.measureText("x").actualBoundingBoxAscent / 2, mid("#unit"), mid("#undo"), mid("#guides")]; });
+  check(line.every((y) => Math.abs(y - line[1]) < 0.6), `the title's small letters, the unit box, undo and Guides are centred on one line (${line.map((y) => +y.toFixed(1)).join(" · ")})`);
 }
 await shot("4g-hand-tabs");
 { // 10:10 stands on the preview, over the bar, clear of the ruler (Okay, 13 Oct 2026); the scale drawing stays inside its button
@@ -656,8 +682,8 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
   await frame();
   const scene = await page.evaluate(() => { const t = window.dial_tool; return t.slots ? [...document.querySelectorAll("main svg path")].map((p) => p.getAttribute("fill")).filter(Boolean) : []; });
   await shot("4c18-window-colours");
-  check((await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))).join(" · ").endsWith("Colours · Shape") && await page.evaluate(() => { const rows = [...document.querySelectorAll(".form .pane .body")][0].children, ids = [...rows].filter((r) => r.offsetParent).map((r) => (r.querySelector("select, input, button") || {}).id); return ids[0] === "window-at-Position" && ids[1].startsWith("window-r-Radius"); }) && await page.$eval("#window-clear-Clearance", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape" && await page.$eval("#window-frame-Frame", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape" && await page.isVisible("#window-text-c-Text-picture") && await page.isVisible("#window-disc-c-Disc-under-it") && await page.isVisible("#window-ink-Frame"),
-    "Windows has the panes Colours · Shape, and no Print pane: position, radius and size come first in the window's own pane, right under Show this window; Frame and Clearance are in Shape; Colours: text or picture, the disc under it, the frame");
+  check((await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))).join(" · ").endsWith("Colours · Shape") && await page.evaluate(() => { const rows = [...document.querySelectorAll(".form .pane .body")][0].children, ids = [...rows].filter((r) => r.offsetParent).map((r) => (r.querySelector("select, input, button") || {}).id); return ids[0] === "window-at-Position" && ids[1].startsWith("window-r-Radius"); }) && await page.$eval("#window-clear-Clearance", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape" && await page.$eval("#window-frame-Frame", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape" && await page.isVisible("#window-font-c") && await page.isHidden("#window-text-c-Picture") && await page.isVisible("#window-disc-c-Disc-under-it") && await page.isVisible("#window-ink-Frame"),
+    "Windows has the panes Colours · Shape, and no Print pane: position, radius and size come first in the window's own pane, right under Show this window; Frame and Clearance are in Shape; the text's colour is a small swatch beside its font's name; Colours: the disc under it, the frame (and the picture's, for a window that shows one)");
   await page.evaluate((was) => { const t = window.dial_tool, [ui, on, at, shape, turn, ps, family, text_c, disc_c, w] = JSON.parse(was); Object.assign(t.S, { da_at: at, da_shape: shape, da_turn: turn, da_ps: ps, da_family: family, da_text_c: text_c, da_disc_c: disc_c, da_w: w, da_text_turn: true, da_on: on, ui_window: ui }); t.static_dirty = true; t.sync_rows(); t.render(); }, was);
 }
 // an am · pm window follows the time shown: light at 10 in the morning, dark at 10 at night; AM · PM stands in the time's box
@@ -696,7 +722,7 @@ await page.click("#window-card-0");
 await shot("4h-window-cards");
 await tab("Hands");
 // All hands: one line, always in view — its name, the tick, the menu, on the columns
-const bar_line = await page.evaluate(() => { const b = document.querySelector(".pinned .handsbar"), tops = [...b.children].map((e) => Math.round(e.getBoundingClientRect().top + e.getBoundingClientRect().height / 2)); const x = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left); return [Math.max(...tops) - Math.min(...tops), x(".handsbar .check") - x(".form .row.num input[type=range]"), b.querySelector("h2").textContent]; });
+const bar_line = await page.evaluate(() => { const b = document.querySelector(".pinned .handsbar"), tops = [...b.children].map((e) => Math.round(e.getBoundingClientRect().top + e.getBoundingClientRect().height / 2)); const x = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left); return [Math.max(...tops) - Math.min(...tops), x(".handsbar .check") - x(".form .pane:last-child .row.num input[type=range]"), b.querySelector("h2").textContent]; });
 check(bar_line[0] <= 1 && bar_line[1] === 0 && bar_line[2] === "All hands", "All hands is one pinned line: name · Show hands · Motion, the tick on the controls' column");
 await page.selectOption("#global-ha-beat-Motion", "1");
 await page.uncheck("#global-ha-on-Show-hands");
@@ -1112,7 +1138,7 @@ await click_mm(...clock(13, 150));                     // the marker at 5: a rin
 const kept = await page.evaluate(() => ({ same_rows: window.__row === document.querySelector(".form .row"), scroll: document.querySelector(".form").scrollTop, picker: document.querySelector("#colour-pop").hidden, ring: window.dial_tool.ring().name, list: document.querySelector(".ringlist li.ring.on .name").textContent }));
 check(kept.same_rows && kept.scroll === 180 && kept.picker && kept.ring === kept.list, `a click on the preview keeps the rows, their scroll (${kept.scroll}) and selects ${kept.ring}; the colour pop-out, pressed outside of, is put away`);
 await page.click(".pinned .colour");
-await tab("Hands"); await page.$eval(".form", (e) => { e.scrollTop = 120; }); await tab("Dial"); await tab("Hands");
+await tab("Rings"); await page.$eval(".form", (e) => { e.scrollTop = 120; }); await tab("Dial"); await tab("Rings");
 check(await page.$eval(".form", (e) => e.scrollTop) === 120, "a section is back where it was scrolled to");
 await page.$eval(".form", (e) => { e.scrollTop = 0; });
 await tab("Dial");
