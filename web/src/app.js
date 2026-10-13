@@ -563,7 +563,7 @@ class DialTool {
     if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox")) this.pop_close();
     if (this.guides_open && !$("#guide-list").hidden && !on(".guides")) this.guides_open(false);
     if (this.unit_open && !$("#unit-menu").hidden && !on(".unit")) this.unit_open(false);
-    if (this.lang_open && $("#lang-menu") && !$("#lang-menu").hidden && !on(".langs")) this.lang_open(false);
+    if (this.lang_opens && !on(".langs")) for (const shut of this.lang_opens) shut(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
     if (this.value_pop && !on("#value-pop") && !on(".valueb")) this.value_pop_close();
     this.tag_hide();
@@ -1024,15 +1024,16 @@ class DialTool {
       const length = is_length(row);
       const per = () => (length ? this.unit()[2] : 1), places = () => decimals(row.step) + (length ? this.unit()[3] : 0);
       const shown = (v) => (v * per()).toFixed(places());
+      const now = () => { const T = this.target(row.scope); return T[row.key] ?? (row.or ? row.or(T) : 0); };      // or: what an unset number is (a window's tracking: the numerals')
       let typing = false;                          // the field follows every change, except while you type in it
       slider.oninput = () => commit(+slider.value);
       field.oninput = () => { typing = true; };
       field.onblur = () => { typing = false; out.refresh(this.target(row.scope)); };
-      field.onchange = () => { typing = false; commit(parse_number(field.value, this.target(row.scope)[row.key] * per()) / per()); out.refresh(this.target(row.scope)); };
+      field.onchange = () => { typing = false; commit(parse_number(field.value, now() * per()) / per()); out.refresh(this.target(row.scope)); };
       field.onkeydown = (e) => {
-        if (e.key === "ArrowUp" || e.key === "ArrowDown") { e.preventDefault(); commit(this.target(row.scope)[row.key] + (e.key === "ArrowUp" ? 1 : -1) * row.step * (e.shiftKey ? 10 : 1)); }
+        if (e.key === "ArrowUp" || e.key === "ArrowDown") { e.preventDefault(); commit(now() + (e.key === "ArrowUp" ? 1 : -1) * row.step * (e.shiftKey ? 10 : 1)); }
       };
-      const step = (dir) => el("button", { type: "button", className: "step", textContent: dir > 0 ? "+" : "−", tabIndex: -1, onclick: () => commit(this.target(row.scope)[row.key] + dir * row.step) });
+      const step = (dir) => el("button", { type: "button", className: "step", textContent: dir > 0 ? "+" : "−", tabIndex: -1, onclick: () => commit(now() + dir * row.step) });
       const label = el("label", { htmlFor: id, textContent: row.text });
       if (row.short) { label.textContent = ""; label.title = row.text; label.append(el("span", { className: "whole", textContent: row.text }), el("span", { className: "short", textContent: row.short })); }      // two wordings; the stylesheet shows the one there is room for
       let lead = label, menu = null;
@@ -1057,7 +1058,7 @@ class DialTool {
         wrap.append(lead, slider, box);
       } else wrap.append(lead, slider, field, el("span", { className: "steps" }, step(-1), step(1)));
       out.refresh = (T) => {
-        const v = T[row.key] ?? 0;
+        const v = T[row.key] ?? (row.or ? row.or(T) : 0);
         if (v > +slider.max) slider.max = v;       // the slider grows to hold a typed value
         if (v < +slider.min) slider.min = v;
         if (+slider.value !== v) slider.value = v;
@@ -1914,17 +1915,27 @@ class DialTool {
     return by;
   }
 
-  /** "1234567890" in the font itself: the outline made with the list, or drawn now, or set by the browser. */
-  sample(f) {
-    const box = el("span", { className: "sample" });
-    let s = f.sample;
+  /** "1234567890" in the font itself: the outline made with the list, or drawn now, or set by the browser.
+   *  what = "name": the family's name in its own face instead, likewise. */
+  sample(f, what = "sample") {
+    const box = el("span", { className: what === "name" ? "face" : "sample" });
+    const text = what === "name" ? f.family : "1234567890", high = what === "name" ? 16 : 20;
+    let s = f[what];
     if (!s && G.has_font(f.ps)) {
-      const t = { ...G.RING_BASE, ps: f.ps, axes: f.start || {}, features: {} };
-      s = { d: G.text_path("1234567890", t, 1000).svg(0, true), w: Math.round(G.advance("1234567890", t, 1000)) };
+      const t = { ...G.RING_BASE, ps: f.ps, axes: f.start || {}, features: {}, tracking: 0, lang: 0 };
+      s = { d: G.text_path(text, t, 1000).svg(0, true), w: Math.round(G.advance(text, t, 1000)) };
     }
-    if (s) box.innerHTML = `<svg viewBox="0 -800 ${s.w} 1000" height="22" aria-hidden="true"><path d="${s.d}" fill="currentColor"/></svg>`;
-    else { box.textContent = "1234567890"; box.style.fontFamily = `"${f.family}"`; }       // an installed font: the browser can show it
+    if (s && s.d) box.innerHTML = `<svg viewBox="0 -800 ${s.w} 1000" height="${high}" aria-hidden="true"><path d="${s.d}" fill="currentColor"/></svg>`;
+    else { box.textContent = text; box.style.fontFamily = `"${f.family}"`; }       // an installed font: the browser can show it
     return box;
+  }
+
+  /** what a family has, in a few words, for the font sheet's last column: how many styles, bold, italic, its axes. */
+  family_says(fonts) {
+    const styles = fonts.map((f) => f.style || ""), first = fonts[0];
+    const axes = first.axes || (G.has_font(first.ps) ? Object.keys(G.font_axes(G.font_of({ ps: first.ps, axes: {} }))) : []);
+    const more = [styles.some((x) => /bold|black|heavy/i.test(x)) ? "bold" : "", styles.some((x) => /italic|oblique/i.test(x)) ? "italic" : "", ...axes].filter(Boolean).join(" · ");
+    return [fonts.length > 1 ? `${fonts.length} styles` : "", more].filter(Boolean);      // two short lines at most
   }
 
   /** whose font the font sheet and the style buttons set: the selected ring's, or the selected window's. */
@@ -1944,24 +1955,26 @@ class DialTool {
     const open = () => choose(() => this.open_picker());
     const current = el("button", { type: "button", className: "fontrow current", id: pre + "font-current", title: "Choose a font", onclick: open });
     const name = el("span", { className: "name", id: pre + "font-name" });
-    const lang = own ? null : this.lang_box();
+    // a window has tracking and a language of its own too (Okay, 13 Oct 2026); unset, they are the numerals'
+    const numerals = () => G.window_type(this.S, {});
+    const lang = own ? this.lang_box("window", "window-", () => numerals().lang) : this.lang_box();
     // the text's colour, small, beside the font's name (Okay, 13 Oct 2026: "text get their color swatch, small. Next to name"):
     // a window's text colour (unset: its frame's) · a numerals ring's colour
     const crow = own ? { key: "text_c", scope: "window", text: "Text", or: (T) => T.ink } : { key: "c", scope: "ring", text: "Colour" };
     const swatch = this.colour_pill(pre + "font-c", "The text’s colour");
     swatch.classList.add("mini");
     swatch.onclick = () => this.pop_open(this.colour_of_row(crow), swatch);
-    const tracking = own ? null : this.build_row({ ...num("tracking", "Tracking", -200, 800, 5), scope: "ring" });      // the box's last line (Okay, 13 Oct 2026); a window has no tracking of its own
+    const tracking = this.build_row(own ? { ...num("tracking", "Tracking", -200, 800, 5), scope: "window", or: () => numerals().tracking } : { ...num("tracking", "Tracking", -200, 800, 5), scope: "ring" });      // the box's last line
     const named = el("div", { className: "fontname" }, name, swatch, ...(lang ? [lang.el] : []), el("button", { type: "button", className: "btn", id: pre + "font-change", textContent: "Change…", onclick: open }));
     const styles = el("div", { className: "segs styles" });
     const state = el("div", { className: "quiet note", id: pre + "font-note" });
     const back = el("button", { type: "button", className: "btn", id: "window-font-back", textContent: "As the numerals", title: "Use the top numerals ring’s font again", hidden: true,
-      onclick: () => { const w = this.window(); w.family = ""; w.ps = ""; w.axes = {}; this.changed(true); } });
+      onclick: () => { const w = this.window(); w.family = ""; w.ps = ""; w.axes = {}; w.tracking = null; w.lang = null; this.changed(true); } });
     wrap.append(el("div", { className: "fontbox" }, current, named, styles, ...(tracking ? [tracking.el] : [])), ...(own ? [back] : []), state);
     let shown = null;
     out.refresh = (T) => {
       const R = own ? G.window_type(this.S, T) : T;
-      back.hidden = !(own && T.ps);
+      back.hidden = !(own && (T.ps || T.tracking != null || T.lang != null));
       if (lang) lang.refresh(T);
       if (tracking) tracking.refresh(T);
       swatch.show(T[crow.key] || (crow.or ? crow.or(T) : [0, 0, 0, 1]));
@@ -1995,16 +2008,16 @@ class DialTool {
 
   /** the language the numerals are set in (a font may draw a figure differently for one): a small button saying its
    *  two letters; a press opens the list (Okay, 13 Oct 2026). The ring keeps the place in G.LANGS (R9). */
-  lang_box() {
-    const menu = el("div", { className: "unitmenu", id: "lang-menu", hidden: true });
+  lang_box(scope = "ring", pre = "", or = null) {
+    const menu = el("div", { className: "unitmenu langmenu", id: pre + "lang-menu", hidden: true });
     menu.setAttribute("role", "menu");
-    const button = el("button", { type: "button", className: "btn langbox", id: "lang" });
+    const button = el("button", { type: "button", className: "btn langbox", id: pre + "lang" });
     button.setAttribute("aria-haspopup", "menu");
     const open = (on) => { menu.hidden = !on; button.setAttribute("aria-expanded", String(on)); };
-    this.lang_open = open;
+    (this.lang_opens = this.lang_opens || []).push(open);
     button.onclick = () => open(menu.hidden);
     const items = G.LANGS.map((code, i) => {
-      const b = el("button", { type: "button", id: "lang-" + code, onclick: () => { open(false); this.set_value("ring", "lang", i); } },
+      const b = el("button", { type: "button", id: pre + "lang-" + code, onclick: () => { open(false); this.set_value(scope, "lang", i); } },
         el("span", { textContent: LANG_NAMES[code] || code }), el("span", { className: "quiet", textContent: lang_short(code) }));
       b.setAttribute("role", "menuitemradio");
       menu.append(b);
@@ -2013,7 +2026,8 @@ class DialTool {
     const box = el("div", { className: "langs" }, button, menu);
     box.onkeydown = (e) => { if (e.key === "Escape" && !menu.hidden) { open(false); button.focus(); } };
     open(false);
-    const refresh = (R) => {
+    const refresh = (T) => {
+      const R = { lang: T.lang ?? (or ? or(T) : 0) };
       const code = G.LANGS[R.lang] || G.LANGS[0];
       button.textContent = lang_short(code);
       button.title = "Language: " + (LANG_NAMES[code] || code);
@@ -2033,15 +2047,19 @@ class DialTool {
     paste.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); add(); } };
     const file = el("input", { type: "file", accept: ".ttf,.otf,.ttc,.otc", multiple: true, hidden: true, id: "font-file" });
     file.onchange = async () => { await this.add_font_files([...file.files]); file.value = ""; };
+    // no Done button (Okay, 13 Oct 2026): a press beside the sheet, or Escape, puts it away. Adding fonts: a field
+    // for a link or a name, and three square buttons.
+    const square = (id, word, title, d, act, o = {}) => { const b = el("button", { type: "button", className: "pickt", id, title, onclick: act, ...o }); b.innerHTML = icon(d, Math.round(20 * PIC_SCALE)) + `<span>${word}</span>`; return b; };
     this.picker = el("dialog", { className: "picker", id: "font-picker" },
-      el("header", {}, el("h2", { textContent: "Fonts" }), el("button", { type: "button", className: "btn main", id: "font-done", textContent: "Done", onclick: () => this.picker.close() })),
+      el("header", {}, el("h2", { textContent: "Fonts" })),
       find, list,
       el("div", { className: "adding" },
         el("h2", { textContent: "Add fonts" }),
-        el("div", { className: "pasting" }, paste, el("button", { type: "button", className: "btn", id: "font-add", textContent: "Add", onclick: add })),
-        el("div", { className: "tools" },
-          el("button", { type: "button", className: "btn", textContent: "Font file…", onclick: () => file.click() }),
-          el("button", { type: "button", className: "btn", id: "local-fonts", textContent: "Installed fonts", hidden: !("queryLocalFonts" in window), onclick: () => this.local_fonts(true) }), file),
+        paste,
+        el("div", { className: "squares" },
+          square("font-add", "Add link", "Add the font the line above names", `<path d="M8 3.5L8 12.5M3.5 8L12.5 8"/>`, add),
+          square("font-file-open", "Font file", "A font file from this computer: .ttf · .otf", `<path d="M4 2.5L9.5 2.5L12 5L12 13.5L4 13.5ZM9.5 2.5L9.5 5L12 5"/>`, () => file.click()),
+          square("local-fonts", "Installed", "The fonts installed on this computer", `<rect x="2.5" y="3.5" width="11" height="7.5"/><path d="M6 13.5L10 13.5M8 11L8 13.5"/>`, () => this.local_fonts(true), { hidden: !("queryLocalFonts" in window) }), file),
         el("div", { className: "quiet note", id: "picker-note" })));
     this.picker.addEventListener("click", (e) => { if (e.target === this.picker) this.picker.close(); });      // a click outside closes it
     return this.picker;
@@ -2070,8 +2088,12 @@ class DialTool {
           const title = { added: "Added by you", computer: "On this computer" }[group];
           if (title) list.append(el("div", { className: "group quiet", textContent: title }));
         }
+        // a line of the sheet (Okay, 13 Oct 2026): the family's name in its own face · its numerals · what it has
+        const named = this.sample(fonts.find((x) => x.name) || f, "name");
+        named.classList.add("name");
+        named.setAttribute("aria-label", family);
         const row = el("button", { type: "button", className: "fontrow", title: f.what ? `${family} · ${f.what}` : family, onclick: () => { this.font_note = ""; this.use_font(f); } },
-          this.sample(f), el("span", { className: "name", textContent: family }));
+          named, this.sample(f), el("span", { className: "has", textContent: this.family_says(fonts).join("\n") }));
         row.dataset.family = family;
         row.dataset.group = f.group;
         list.append(row);

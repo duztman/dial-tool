@@ -109,6 +109,8 @@
 
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
     --t-xs: 11px; --t-s: 12px; --t-m: 13px; --t-l: 15px;
+    --font-name: 104px; --font-has: 92px;          /* the font sheet's columns: a family's name · what it has (its numerals take the rest) */
+    --shadow: calc(-2 * var(--unit)) 0 calc(5 * var(--unit)) rgba(0, 0, 0, 0.28);      /* what floats over the window throws its shadow to the left */
     --t-sample: 20px;                              /* a font's numerals in the font list, when the browser sets them */
     --t-pixel: 8px;                                /* the pixel font's own size: its dots fall on the screen's (R32) */
     --sans: system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -615,26 +617,33 @@
   .langbox { min-width: var(--control); padding: 0 var(--unit); font: var(--t-xs)/1 var(--mono); }
   .fontname .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .fontlist { border: var(--hair) solid var(--rule); background: var(--field); overflow-y: auto; }
-  .fontrow { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: calc(var(--unit) * 2); width: 100%; height: var(--line); padding: 0 var(--btn-pad); border-bottom: var(--hair) solid var(--ground); text-align: left; }
+  /* a line of the font sheet, on three columns: the family's name in its own face · its numerals, all starting on one
+     line · what the family has (styles, bold, italic, axes), small. A full hairline between two lines. */
+  .fontrow { display: grid; grid-template-columns: var(--font-name) minmax(0, 1fr) var(--font-has); align-items: center; gap: var(--gap); width: 100%; height: var(--head); padding: 0 var(--btn-pad); border-bottom: var(--hair) solid var(--rule); text-align: left; }
   .fontrow:hover { background: var(--hover); }
   .fontrow.on, .fontrow.on:hover { background: var(--select); }
-  .fontrow .sample { display: flex; align-items: center; min-width: 0; overflow: hidden; font-size: var(--t-sample); line-height: 1; white-space: nowrap; }
-  .fontrow .sample svg { display: block; flex: none; }
-  .fontrow .name { color: var(--grey); white-space: nowrap; }
-  .fontrow.on .name, .fontrow.current .name { color: var(--ink); }
+  .fontrow :is(.sample, .face) { display: flex; align-items: center; min-width: 0; overflow: hidden; line-height: 1; white-space: nowrap; }
+  .fontrow .sample { font-size: var(--t-sample); }
+  .fontrow .face { font-size: var(--t-l); }
+  .fontrow :is(.sample, .face) svg { display: block; flex: none; }
+  .fontrow .has { color: var(--grey); font: var(--t-xs)/1.25 var(--mono); text-align: right; white-space: pre; }
   .fontrow.current { grid-template-columns: minmax(0, 1fr); height: var(--head); border: 0; }      /* the chosen font's numerals, alone on their line */
   .fontlist .group { padding: calc(var(--unit) * 2) var(--btn-pad) calc(var(--unit) / 2); border-bottom: var(--hair) solid var(--rule); }
 
   /* the font sheet: over the panel, on its columns, so the dial stays in view; from the bottom on a phone */
-  .picker { position: fixed; inset: 0 auto 0 0; width: var(--panel); max-width: 100vw; height: 100%; max-height: none; margin: 0; padding: 0; border: 0; border-right: var(--hair) solid var(--ink);
+  /* it floats over the panel, as wide as the panel, a margin down and the same margin to the right, so its right
+     part lies over the preview; a shadow to its left (Okay, 13 Oct 2026) */
+  .picker { position: fixed; inset: var(--margin) auto var(--margin) var(--margin); width: var(--panel); max-width: calc(100vw - 2 * var(--margin)); height: auto; max-height: none; margin: 0; padding: 0; border: var(--hair) solid var(--ink); box-shadow: var(--shadow);
     background: var(--paper); color: var(--ink); }
-  .picker[open] { display: grid; grid-template-rows: auto auto 1fr auto; gap: var(--unit); padding: calc(var(--unit) * 4) var(--margin) calc(var(--unit) * 3) calc(var(--margin) + var(--lead)); }
+  .picker[open] { display: grid; grid-template-rows: auto auto 1fr auto; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 3) var(--margin) var(--margin); }
   .picker::backdrop { background: none; }          /* the dial keeps its true colours while you choose */
   .picker header { display: flex; align-items: center; justify-content: space-between; }
   .picker header h2 { font-size: var(--t-l); }
   .picker .fontlist { min-height: 0; }
-  .picker .adding { display: grid; gap: var(--unit); border-top: var(--hair) solid var(--ink); padding-top: 7px; }
-  .picker .pasting { display: grid; grid-template-columns: 1fr auto; gap: var(--unit); }
+  .picker .adding { display: grid; gap: calc(var(--unit) * 2); border-top: var(--thick) solid var(--ink); padding-top: calc(var(--unit) * 2); }
+  .picker .adding > input { height: var(--head); }
+  .picker .squares { display: flex; gap: var(--unit); }
+  .picker .squares > .pickt { width: calc(var(--col) + var(--gap) + var(--unit)); aspect-ratio: 1; align-content: center; }      /* square buttons (Okay, 13 Oct 2026) */
 
   /* examples: five dials to start from, each on an inset ground, the full width of the pane */
   .examples { padding: 4px 0; }
@@ -828,7 +837,7 @@
     .detail .upright { display: none; }
     .detail .lying { display: block; }      /* picture tiles under their label, on all six columns: room for their words */
     .row.pick > label { line-height: 1.4; padding-top: var(--unit); }
-    .picker { inset: auto 0 0 0; width: 100%; height: 58%; border-right: 0; border-top: var(--hair) solid var(--ink); }
+    .picker { inset: auto 0 0 0; width: 100%; max-width: 100vw; height: 58%; border-width: var(--hair) 0 0; box-shadow: none; }
     /* the colour pop-out is a sheet from the bottom; wide, it is the whole screen */
     .colourpop { inset: auto 0 0 0; width: auto; border-width: var(--hair) 0 0; border-radius: var(--round-large) var(--round-large) 0 0; }
     .colourpop.wide { inset: 0; grid-template-rows: auto auto auto 1fr; border-radius: 0; }      /* wide, a sheet is the whole screen; the field takes the height that is left */

@@ -68,23 +68,28 @@ for (const [family, what, source, dir, ...files] of FAMILIES) {
     const all = face.getAxisInfos(), start = {};
     if (all.wght && all.wght.default !== 400 && all.wght.min <= 400 && all.wght.max >= 400) start.wght = 400;
     font.setVariations(Object.entries(start).map(([tag, v]) => new HB.Variation(tag, v)));
-    const buffer = new HB.Buffer();
-    buffer.addText("1234567890");
-    buffer.guessSegmentProperties();
-    HB.shape(font, buffer);
     const k = 1000 / face.upem;
-    let x = 0, d = "";
-    for (const g of buffer.getGlyphInfosAndPositions()) {         // the sample, 1000 units to the em, y down
-      for (const c of font.glyphToJson(g.codepoint)) {
-        d += c.type + c.values.map((v, i) => Math.round(i % 2 ? -v * k : (v + x / k * 1) * k)).join(" ");
+    const outline = (text) => {                                     // a word as an outline, 1000 units to the em, y down
+      const buffer = new HB.Buffer();
+      buffer.addText(text);
+      buffer.guessSegmentProperties();
+      HB.shape(font, buffer);
+      let x = 0, d = "";
+      for (const g of buffer.getGlyphInfosAndPositions()) {
+        for (const c of font.glyphToJson(g.codepoint)) {
+          d += c.type + c.values.map((v, i) => Math.round(i % 2 ? -v * k : (v + x / k * 1) * k)).join(" ");
+        }
+        x += g.xAdvance * k;
       }
-      x += g.xAdvance * k;
-    }
-    list.push({ family, style, ps: face.getName(6, "en"), file: local(file), what, start, sample: { d, w: Math.round(x) } });
+      return { d, w: Math.round(x) };
+    };
+    // name: the family's name in its own face, for the font sheet (the family's first file only) · axes: what a variable font can vary
+    const first = !list.some((f) => f.family === family);
+    list.push({ family, style, ps: face.getName(6, "en"), file: local(file), what, start, axes: Object.keys(all), sample: outline("1234567890"), ...(first ? { name: outline(family) } : {}) });
   }
 }
 const text = `// Written by web/fonts.mjs — do not edit. The web version's own fonts: ${FAMILIES.length} families, ${list.length} files,
-// all under the SIL Open Font Licence (web/fonts/README.md). sample: "1234567890" as an outline, 1000 units to the em.
+// all under the SIL Open Font Licence (web/fonts/README.md). sample: "1234567890" as an outline, 1000 units to the em; name: the family's name likewise.
 export const FONT_SITE = "https://duztman.github.io/dial-tool/fonts/";
 export const FONT_LIST = ${JSON.stringify(list)};
 `;

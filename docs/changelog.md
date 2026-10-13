@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.26 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **Font sheet**: name in its own face · numerals · what the family has; full lines between; floats over the panel with a shadow; no Done button; larger Add fonts with square buttons.
+- **Windows**: Tracking and a language in the font box (new keys `tracking`, `lang`; unset = the numerals').
+
 ## beta 4.25 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.

@@ -674,7 +674,14 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
   await page.waitForFunction(() => window.dial_tool.S.da_ps === "Oswald-Regular" && window.dial_tool.statik);
   const own = [await S("S.da_family"), await S("S.rings.find((r) => r.kind === 2).ps"), await page.isVisible("#window-font-back")];
   if (await page.$eval("#font-picker", (d) => d.open)) await page.keyboard.press("Escape");
+  { // a window's own tracking and language (beta 4.26): unset they are the numerals'; As the numerals takes them back
+    const before = await S("S.da_tracking === null && S.da_lang === null");
+    await page.fill("#window-tracking-Tracking", "40"); await page.press("#window-tracking-Tracking", "Enter");
+    await page.click("#window-lang"); await page.click("#window-lang-tr");
+    check(before && await S("S.da_tracking === 40 && S.da_lang === 1 && S.rings.find((r) => r.kind === 2).tracking === 0") && await page.textContent("#window-lang") === "TR", "a window has tracking and a language of its own, in its font box; the numerals keep theirs");
+  }
   await page.click("#window-font-back");
+  check(await S("S.da_tracking === null && S.da_lang === null"), "As the numerals takes the window's tracking and language back too");
   check(own[0] === "Oswald" && own[1] === ring_font && own[2] && await S("S.da_ps === ''") && (await page.textContent("#window-font-name")).includes("as the numerals"), "a window can have a font of its own (Oswald) without touching the numerals' font; As the numerals takes it back");
   // three colours
   const fills = async () => { await frame(); return page.evaluate(() => { const t = window.dial_tool, items = [...document.querySelectorAll("main svg [fill]")]; const S = t.S; return [S.da_text_c, S.da_disc_c, S.da_ink]; }); };
@@ -832,7 +839,16 @@ check(await S("t.statik.windows.length === 1"), "windows 2 to 4 switched off aga
 await click_mm(...clock(10, 120));
 check(await page.$$eval(".form .fontrow", (rows) => rows.length) === 1 && await page.$$eval(".form select#font-family", (e) => e.length) === 0, "Type shows one font, the selected one, and no dropdowns");
 await page.click("#font-current");
-check(await page.$eval("#font-picker", (d) => d.open) && await page.$eval("#font-picker", (d) => { const r = d.getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); return r.right <= m.left + 1; }), "pressing it opens the font sheet over the panel, beside the dial");
+const sheet_at = await page.$eval("#font-picker", (d) => { const r = d.getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); const c = getComputedStyle(d), p = document.querySelector(".panel").getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top), Math.round(r.width - p.width), Math.round(r.right - m.left), c.boxShadow !== "none", !document.querySelector("#font-done")].join(" "); });
+check(await page.$eval("#font-picker", (d) => d.open) && sheet_at === "24 24 -1 23 true true", `pressing it opens the font sheet: floating over the panel, a margin down and a margin to the right, as wide as the panel less its edge line, its right part over the preview, with a shadow; no Done button (${sheet_at})`);
+{
+  const row = await page.evaluate(() => { const rows = [...document.querySelectorAll("#font-picker .fontrow")], x = (e) => Math.round(e.getBoundingClientRect().left), by = (f) => rows.find((r) => r.dataset.family === f);
+    return { names: new Set(rows.map((r) => x(r.querySelector(".name")))).size, numerals: new Set(rows.map((r) => x(r.querySelector(".sample")))).size, order: rows.every((r) => x(r.querySelector(".name")) < x(r.querySelector(".sample")) && x(r.querySelector(".sample")) < x(r.querySelector(".has"))), drawn: by("Jost").querySelector(".name svg path") !== null, barlow: by("Barlow").querySelector(".has").textContent, archivo: by("Archivo").querySelector(".has").textContent, line: getComputedStyle(rows[0]).borderBottomColor === getComputedStyle(document.querySelector(".fontlist")).borderTopColor,
+      squares: [...document.querySelectorAll("#font-picker .squares > .pickt")].filter((b) => b.offsetParent).map((b) => { const r = b.getBoundingClientRect(); return b.textContent + " " + (Math.round(r.width) === Math.round(r.height)); }).join(" · ") }; });
+  check(row.names === 1 && row.numerals === 1 && row.order && row.drawn && row.line, "a line of the sheet: the family's name drawn in its own face at the left · its numerals, all starting on one line · what it has; a full line between two");
+  check(row.barlow === "4 styles\nbold" && row.archivo === "wght · wdth", `what a family has: Barlow ${row.barlow}; Archivo ${row.archivo}`);
+  check(row.squares.startsWith("Add link true · Font file true"), `Add fonts has square buttons (${row.squares})`);
+}
 check(await page.$$eval('#font-picker .fontrow[data-group="list"]', (rows) => rows.length) === 20 && await page.$$eval('#font-picker .fontrow[data-group="list"] .sample svg path', (p) => p.length) === 20, "the sheet lists the tool's twenty families, each showing numerals in its own outlines");
 await page.click('.fontrow[data-family="Jost"]');
 await page.waitForFunction(() => window.dial_tool.ring().ps === "Jost-Regular" && document.querySelector("#axis-wght"), null, { timeout: 8000 }).catch(() => {});
@@ -874,7 +890,7 @@ await page.waitForFunction(() => window.dial_tool.ring().ps === "Poppins-Light",
 check(await S("S.rings[S.ui_ring].ps === 'Poppins-Light'") && (await page.textContent("#picker-note")).includes("Added Poppins"), "a font file is added and used");
 await page.click('#font-picker .fontrow[data-family="Lora"]');
 await page.waitForFunction(() => window.dial_tool.ring().family === "Lora");
-await page.click("#font-done");
+await page.keyboard.press("Escape");
 check(await page.$eval("#font-picker", (d) => !d.open) && (await page.textContent("#font-name")) === "Lora" && await page.$("#font-current .sample svg") !== null, "Done closes the sheet; Type shows Lora with its numerals");
 await frame();
 check(await page.$("#axis-wght") !== null, "Lora's weight axis has a slider");
@@ -894,7 +910,7 @@ check(await page.$("#axis-wght") !== null, "Lora's weight axis has a slider");
   await shot("4c22-font");
   await page.click("#font-change");
   check(await page.$eval("#font-picker", (d) => d.open), "Change… opens the font sheet");
-  await page.click("#font-done");
+  await page.keyboard.press("Escape");
 }
 const light = await S("t.statik.rings.find((d) => d.kind === 'numerals').path.svg(3).length");
 await page.fill("#axis-wght", "700");
@@ -915,7 +931,7 @@ await shot("5-type");
 await page.click("#font-current");
 await page.click('#font-picker .fontrow[data-family="Barlow"]');
 await page.waitForFunction(() => window.dial_tool.ring().ps === "Barlow-Regular");
-await page.click("#font-done");
+await page.keyboard.press("Escape");
 await page.click('.font .styles button:text-is("Bold")');
 await page.waitForFunction(() => window.dial_tool.ring().ps === "Barlow-Bold", null, { timeout: 8000 }).catch(() => {});
 check(await S("S.rings[S.ui_ring].ps === 'Barlow-Bold'"), "Barlow's styles are buttons under the font: Bold");
@@ -933,7 +949,7 @@ if (await page.evaluate(() => "queryLocalFonts" in window)) {
   check(await S("S.rings[S.ui_ring].family") === pick && !(await page.textContent("#font-note")).includes("stands in"), `Find narrows the list; a font installed on this computer (${pick}) draws the numerals`);
 } else check(false, "this browser has no queryLocalFonts");
 await shot("6-local-font");
-await page.click("#font-done");
+await page.keyboard.press("Escape");
 
 // ── the ring's main rows stay in view while the rest scrolls ──
 await page.$eval(".form", (e) => { e.scrollTop = 99999; });
