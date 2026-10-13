@@ -312,7 +312,7 @@ const ROWS = {
     chk("out_live_text", "Keep numerals as text in the SVG", { nest: true, tie: true }),      // tie: no line between it and the row above: they are one thing
     info("The font must be installed where the file is opened. PDF and PNG stay outlines.", { show: (S) => S.out_live_text }),
     custom("export_png"),
-    num("out_dpi", "dpi", 72, 2400, 1, { tie: true }),
+    num("out_dpi", "dpi", 72, 2400, 1, { tie: true, bare: true }),      // bare: no word before it (the line under it says "at 600 dpi"); the slider stands under the buttons
     custom("png_size"),
     hdr("For production"),
     chk("out_production", "Mono print mask"),
@@ -999,6 +999,7 @@ class DialTool {
         lead = el("span", { className: "menulabel" }, label, arrow);
       }
       if (row.button) { slider.ariaLabel = field.ariaLabel = row.text; field.title = row.text + " · " + field.title; }
+      if (row.bare) { label.textContent = ""; label.className = "blank"; slider.ariaLabel = field.ariaLabel = row.text; field.title = row.text + " · " + field.title; }
       wrap.append(lead, slider, field, el("span", { className: "steps" }, step(-1), step(1)));
       out.refresh = (T) => {
         const v = T[row.key] ?? 0;
@@ -2062,7 +2063,7 @@ class DialTool {
 
   /** under the PNG row: what that dpi comes to. */
   row_png_size(wrap, out) {
-    wrap.className = "row note";
+    wrap.className = "row note under";                // under: it starts on the buttons' column, not at the left (Okay, 13 Oct 2026)
     const text = el("span", { className: "quiet", id: "png-size" });
     wrap.append(el("span"), text);
     out.refresh = () => { const mm = G.page_mm(this.S), px = Math.round(mm / 25.4 * this.S.out_dpi); text.textContent = `${this.in_unit(mm, 1)} ${this.unit()[0]} at ${Math.round(this.S.out_dpi)} dpi = ${px} × ${px} px`; };

@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.14 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **Export, PNG**: no *dpi* label on the dpi row; its slider and the size note under it start on the buttons' column (PDF · SVG · PNG).
+
 ## beta 4.13 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.

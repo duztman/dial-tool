@@ -973,11 +973,15 @@ await page.uncheck("#global-out-live-text-Keep-numerals-as-text-in-the-SVG");
     return { pinned: [...p.querySelectorAll("h2")].map((h) => h.textContent).join(), order: rows.map((r) => (r.querySelector("button.main") || {}).id || (r.querySelector("input") || {}).id || r.className).join(" | "),
       pdf: left("#export-pdf"), svg: left("#export-svg"), png: left("#export-png"), label: left(".pinned .row > label"), tick: left(".pinned .check"), lines: rows.map(shadow).join(""), below: [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent).join(" · ") };
   });
-  check(e.pinned === "Export a file" && e.order === "export-pdf | export-svg | global-out-live-text-Keep-numerals-as-text-in-the-SVG | export-png | global-out-dpi-dpi-slider | row note" && e.pdf === e.svg && e.png === e.pdf && e.pdf > e.label && e.tick === e.svg && e.lines === "211110" && e.below === "For production · Link to this dial · Settings file · Log · Gallery",
+  check(e.pinned === "Export a file" && e.order === "export-pdf | export-svg | global-out-live-text-Keep-numerals-as-text-in-the-SVG | export-png | global-out-dpi-dpi-slider | row note under" && e.pdf === e.svg && e.png === e.pdf && e.pdf > e.label && e.tick === e.svg && e.lines === "211110" && e.below === "For production · Link to this dial · Settings file · Log · Gallery",
     `Export a file is pinned: Vector · PDF, SVG under it with its tick tied to it, then PNG on the same column with its dpi under it; below scroll ${e.below}`);
   await shot("4c21-export");
 }
-check(/dpi = \d+ × \d+ px/.test(await page.textContent("#png-size")), "under PNG and its dpi: what that comes to");
+{
+  const at = await page.evaluate(() => { const l = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left); return [l("#png-size"), l("#export-png"), l("#global-out-dpi-dpi-slider"), document.querySelector(".row:has(#global-out-dpi-dpi) > :first-child").textContent]; });
+  check(/dpi = \d+ × \d+ px/.test(await page.textContent("#png-size")) && at[0] === at[1] && at[2] === at[1] && at[3] === "", "the dpi's slider has no word before it; it and the line saying what that comes to start on the buttons' column");
+  await shot("4c21-export");
+}
 const png = await download("#export-png");
 const want_px = Math.round(size_mm / 25.4 * await S("S.out_dpi"));
 const png_bytes = fs.readFileSync(png);

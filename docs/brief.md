@@ -1,6 +1,6 @@
 # Dial Tool — brief
 
-*Started 3 Oct 2026. Last updated 13 Oct 2026 (review of the research atlas: decisions in §4, parked ideas in §8; web version beta 4.13). Before: 12 Oct 2026 (web version, beta 4.4 to 4.6, on `dev`). Before: 11 Oct 2026 (web version, beta 3.0); 4 Oct 2026 (beta 2.3 on `dev`: preview plan built, Mac check pending — `docs/preview.md` §6).*
+*Started 3 Oct 2026. Last updated 13 Oct 2026 (review of the research atlas: decisions in §4, parked ideas in §8; web version beta 4.14). Before: 12 Oct 2026 (web version, beta 4.4 to 4.6, on `dev`). Before: 11 Oct 2026 (web version, beta 3.0); 4 Oct 2026 (beta 2.3 on `dev`: preview plan built, Mac check pending — `docs/preview.md` §6).*
 
 ## 1 · Goal
 
@@ -149,6 +149,7 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 13 Oct | **Window cards are tabs only**: pictures without a number, starting on the second column, the window filled when shown. ***Show this window* is back** on the heading line; the small switch on each card (beta 4.7) is gone. | Okay, after using the switches: "unnecessarily complex to switch through the tiny switches… i think we need enable window tickmark is the way to go. leave them as tabs. don't write the number below, tabs just window places filled window. start tabs from column 2." |
 | 13 Oct | **beta 4.13. Export:** *Export a file* is pinned and reads Vector · PDF | SVG under it, with *Keep numerals as text* tied to it | Image · PNG on the same column, with its dpi and what that comes to under it. Then scroll: For production · Link to this dial · Settings file · Log · Gallery. **The five examples are part of the Gallery** (after its own six); the Examples pane is gone. | Okay, on a marked-up picture: "this tab: move places as shown. export a file persistent. structured as: vector tab PDF hr tab tab svg br keep numerals hr PNG br settings", then "PNG on the same column as pdf and svg please." The label *Image* beside PNG is Claude's (without it PNG would stand under *Vector*). |
 | 13 Oct | **Tabs look like tabs:** the hand tabs (Hour · Minute · Seconds) and the window cards touch each other, stand on the thick line of the pane they choose with nothing under them, and have round top corners, so the top has a notch between two tabs. The window cards fill the six columns from the second column on. More room in them: hand tabs 40 high (were 32), 11 above and under a card's picture (was 8). | Okay: "these are both tab like structures, both look bad as buttons. attach to the bottom, give top inbetweens a notch to denote tabs. center them or extend to fit column. better (more) vertical spacing in buttons." |
+| 13 Oct | **beta 4.14. Export, the PNG's dpi:** the word *dpi* is gone from its row (the slider and field keep the name for screen readers and in the field's tag); the slider and the size note under it ("36.0 mm at 600 dpi = 850 × 850 px", which still says dpi) start on the column of the PDF · SVG · PNG buttons. | Okay, on a picture of beta 4.13: "all good. remove dpi, move this line aligned with the extension buttons above". |
 
 ## 5 · Open questions
 

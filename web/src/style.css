@@ -330,7 +330,8 @@
   /* a tied row belongs to the row above it: no line between the two (SVG and its tick; PNG and its dpi) */
   .row.tied:not(.note) { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
   .row:not(.note):has(+ .row.tied) { box-shadow: 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
-  .row > .blank:first-child { display: block; }      /* an empty place where a label would stand: what follows keeps its column */
+  .row > .blank:first-child { display: block; }
+  .row.note.under > .quiet { grid-column: 3 / -1; }      /* a note about the controls above it starts on their column */      /* an empty place where a label would stand: what follows keeps its column */
   .row > :first-child { grid-column: span 2; }
   .row.num > input[type="range"] { grid-column: span 2; }
   .row.num input[type="text"] { text-align: right; }
