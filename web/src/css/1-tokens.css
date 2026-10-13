@@ -100,7 +100,8 @@
 
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
     --t-xs: 11px; --t-s: 12px; --t-m: 13px; --t-l: 15px;
-    --font-name: 104px; --font-has: 92px; --font-has-most: 120px;     /* the font sheet's columns: a family's name · what it has (its numerals take the rest) · the most the stickers' column may take from the numerals */
+    --font-name: 104px;                            /* the font sheet's columns: a family's name · its numerals (the rest) · what it has (--font-has, set by the sheet: as wide as the Find field) */
+    --find: calc(3 * var(--col) + 2 * var(--gap)); /* the font sheet's Find field: three columns, the sheet's right half */
     /* stickers: one colour for a kind of thing a font family has. Pale: a guide's colour, as much of it as in the
        selected ring's row */
     --st-ink: #141413;

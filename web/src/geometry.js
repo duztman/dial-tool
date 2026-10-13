@@ -704,6 +704,16 @@ export function font_features(info) {
   return [...seen.entries()].sort((a, b) => a[0].localeCompare(b[0]));
 }
 
+/** does the font have a drawing for every character of `txt`? (A missing one comes back from HarfBuzz as glyph 0.)
+ *  Web version only (R30). */
+export function has_chars(txt, t) {
+  const info = font_of(t), buffer = new HB.Buffer();
+  buffer.addText(txt);
+  buffer.guessSegmentProperties();
+  HB.shape(info.font, buffer, []);
+  return buffer.getGlyphInfosAndPositions().every((g) => g.codepoint !== 0);
+}
+
 /** text → glyphs with positions, in mm. Font, tracking, features, axes and language applied. */
 function shaped(txt, t, size) {
   return memo("text" + JSON.stringify([txt, t.ps, size, t.tracking, t.lang, t.axes, t.features]), () => {

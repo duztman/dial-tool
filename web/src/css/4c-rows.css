@@ -25,7 +25,7 @@
   .row.num input[type="text"] { text-align: right; }
   /* the font sheet's two fields (Find a font, a link) are larger than a row's, with a darker line. A row's field for
      words (a window's text, custom labels) is a field like any other (Okay, 13 Oct 2026: "remove input height") */
-  .picker header > input, .picker .adding > input { height: var(--control-large); border-color: var(--grey); }
+  .picker header .find > input, .picker .adding > input { height: var(--control-large); border-color: var(--grey); }
   .row > label:first-child { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .row > label.strong:first-child { color: var(--ink); font-weight: 600; }      /* a name where a label would stand: the selected ring's, before its kinds */
   /* a label with a small menu beside it: the words, then a boxed arrow with the browser's own menu lying over it */

@@ -40,13 +40,18 @@
   .langbox { min-width: var(--control); }
   .fontname .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
   /* the list scrolls, and says so: a slim scrollbar of two pills, a light one the whole height, a darker one for how much is under (Okay, 13 Oct 2026) */
-  .fontlist { border: var(--hair) solid var(--rule); background: var(--field); overflow-y: auto; }      /* ::-webkit-scrollbar only: Chrome ignores it once scrollbar-width or scrollbar-color is set */
-  .fontlist::-webkit-scrollbar { width: var(--scrollbar); }
-  .fontlist::-webkit-scrollbar-track { margin: var(--unit) 0; border-radius: var(--round-pill); background: var(--ground); }
-  .fontlist::-webkit-scrollbar-thumb { border-radius: var(--round-pill); background: var(--rule); }
-  .fontlist::-webkit-scrollbar-thumb:hover { background: var(--grey); }
+  /* the list scrolls, and says so with a scrollbar the tool draws (an iPad shows its own only while it moves): two slim
+     pills in the rows' right margin, a light one the whole height, a darker one for the share in view (Okay, 13 Oct 2026) */
+  .listwrap { position: relative; display: grid; min-height: 0; }
+  .fontlist { height: 100%; border: var(--hair) solid var(--rule); background: var(--field); overflow-y: auto; scrollbar-width: none; }
+  .fontlist::-webkit-scrollbar { display: none; }
+  .rail { position: absolute; top: var(--unit); bottom: var(--unit); right: calc((var(--btn-pad) - var(--scrollbar)) / 2 + var(--hair)); width: var(--scrollbar); border-radius: var(--round-pill); background: var(--ground); cursor: pointer; touch-action: none; }
+  .rail i { position: absolute; top: 0; left: 0; right: 0; border-radius: var(--round-pill); background: var(--rule); }
+  .rail:hover i, .rail.held i { background: var(--grey); }
+  .rail::after { content: ""; position: absolute; inset: 0 calc(-1 * var(--unit)); }      /* reach: a finger finds it from beside it too */
   /* a line of the font sheet, on three columns: the family's name in its own face · its numerals, all starting on one
      line · what the family has (styles, bold, italic, axes), small. A full hairline between two lines. */
+  .fontlist { --font-has: calc(var(--find) - var(--btn-pad) - var(--hair)); }      /* the stickers start under the Find field's left edge */
   .fontrow { display: grid; grid-template-columns: var(--font-name) minmax(0, 1fr) var(--font-has); align-items: center; gap: var(--gap); width: 100%; min-height: var(--head); padding: 0 var(--btn-pad); border-bottom: var(--hair) solid var(--rule); text-align: left; }
   .fontrow:hover { background: var(--hover); }
   .fontrow.on, .fontrow.on:hover { background: var(--select); }
@@ -55,7 +60,7 @@
   .fontrow .face { font-size: var(--t-l); }
   .fontrow .sample svg { display: block; flex: none; }
   .fontrow .face svg { display: block; flex: 0 1 auto; height: auto; max-width: 100%; }      /* a name too wide for its column is drawn smaller; numerals are cut at their column's edge */
-  .fontrow .has { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: calc(var(--unit) / 2); padding: var(--unit) 0; }      /* on one line as long as the column lets them */
+  .fontrow .has { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: calc(var(--unit) / 2); padding: var(--unit) 0; }      /* from the column's left edge, on one line as long as it lets them */
   /* a sticker: one thing a family has, in the pixel font at its own size (R32), on a colour of its kind, round
      corners. */
   .sticker { opacity: var(--pixel-ink);      /* the pixel font a little under full strength, on pale and on black alike (Okay, 13 Oct 2026: "Silkscreen too dark on full black, 70%") */
@@ -78,9 +83,11 @@
   .stickerlabel { display: flex; min-width: 0; }
   .axisname { display: flex; align-items: center; gap: var(--unit); min-width: 0; color: var(--grey); white-space: nowrap; }      /* an axis's name, as a label, and its code as a sticker; a press sets the axis back */
   .axisname:hover { color: var(--ink); }
-  /* the legend, at the sheet's bottom right: each kind of sticker and what it says */
-  .legend { display: grid; grid-template-columns: repeat(2, auto auto); gap: calc(var(--unit) / 2) var(--unit); align-items: center; justify-content: end; margin: 0; color: var(--grey); font-size: var(--t-xs); white-space: nowrap; }
+  /* the legend: folded to a button beside the squares; open, one large column over them, so it pushes the list up */
+  .legend { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--unit) var(--u4); align-items: center; margin: 0; padding: var(--u3) 0; border-top: var(--hair) solid var(--rule); color: var(--ink); font-size: var(--t-m); }
+  .legend[hidden] { display: none; }
   .legend dt { justify-self: end; display: flex; }
+  .legend dt .sticker { padding: calc(var(--unit) / 2) var(--unit); font-size: calc(2 * var(--t-pixel)); }      /* the pixel font at its double (R32) */
   .legend dd { margin: 0; }
   .fontrow.current { grid-template-columns: minmax(0, 1fr); height: var(--head); border: 0; }      /* the chosen font's numerals and letters, alone on their line */
   .fontlist .group { padding: calc(var(--unit) * 2) var(--btn-pad) calc(var(--unit) / 2); border-bottom: var(--hair) solid var(--rule); }
@@ -89,18 +96,27 @@
   /* it floats over the panel: as wide and as high as the panel (from the window's top to the bar, never over the
      bar), its left edge on the panel's third column, where the controls start, so its right part lies over the
      preview; a shadow to its left */
-  .picker { position: fixed; inset: 0 auto var(--bar-height) calc(var(--margin) + var(--lead) + 2 * (var(--col) + var(--gap))); width: var(--panel); max-width: calc(100vw - 2 * var(--margin)); height: auto; max-height: none; margin: 0; padding: 0; border: var(--hair) solid var(--ink); box-shadow: var(--shadow);
+  .picker { position: fixed; inset: var(--header) auto var(--bar-height) calc(var(--margin) + var(--lead) + 2 * (var(--col) + var(--gap))); width: var(--panel); max-width: calc(100vw - 2 * var(--margin)); height: auto; max-height: none; margin: 0; padding: 0; border: var(--hair) solid var(--ink); box-shadow: var(--shadow);
     background: var(--paper); color: var(--ink); }
   .picker[open] { display: grid; grid-template-rows: auto 1fr auto; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 3) var(--margin) var(--margin); }
   .picker:focus { outline: none; }
   .picker::backdrop { background: none; }          /* the dial keeps its true colours while you choose */
   .picker header { display: flex; align-items: center; justify-content: space-between; gap: var(--gap); }
-  .picker header > input { width: calc(3 * var(--col) + 2 * var(--gap)); }      /* Find a font: at the sheet's top right, half its width */
+  /* Find: at the sheet's top right, as wide as the stickers' column under it; a magnifier in it, no words */
+  .picker header > .find { position: relative; width: var(--find); }
+  .picker header > .find > input { width: 100%; padding-right: var(--control-large); }
+  .picker header > .find > input::-webkit-search-cancel-button { -webkit-appearance: none; }
+  .picker header > .find > svg { position: absolute; right: var(--u3); top: 50%; translate: 0 -50%; color: var(--grey); pointer-events: none; }
   .picker header h2 { font-size: var(--t-l); }
   .picker .fontlist { min-height: 0; }
-  .picker .adding { display: grid; gap: calc(var(--unit) * 2); border-top: var(--thick) solid var(--ink); padding-top: calc(var(--unit) * 2); }
-  .picker .squares { display: flex; align-items: flex-end; gap: var(--unit); }
-  .picker .squares > .pickt span { white-space: normal; }      /* the squares say what they take: two lines */
-  #window-font-back { opacity: var(--pixel-ink); }      /* As the numerals: quiet, like a sign (Okay, 13 Oct 2026: 70 %) */
-  .picker .squares > .pickt { width: calc(var(--col) + var(--gap) + var(--unit)); aspect-ratio: 1; align-content: center; }      /* square buttons */
+  .picker .adding { display: grid; gap: var(--u4); }      /* straight under the list: its edge is the line between them */
+  .picker .squares { display: flex; align-items: stretch; gap: var(--unit); }
+  /* the squares: shorter, a sign beside two lines of words (Okay, 13 Oct 2026: "shorter"); they set the height of the
+     sheet's foot. The legend's button is the last of them, at the right. */
+  .picker .squares > .pickt { flex: 0 1 auto; grid-template-columns: auto auto; justify-items: start; align-items: center; align-content: center; column-gap: var(--unit); min-height: var(--u8); padding: var(--unit) var(--u3); text-align: left; }
+  .picker .squares > .pickt span { white-space: normal; text-align: left; }
+  .picker .squares > .legendbutton { margin-left: auto; }
+  .picker .squares > .legendbutton[aria-expanded="true"] svg { rotate: 180deg; }
+  #window-font-back { justify-self: start; opacity: var(--pixel-ink); }      /* As the numerals: words only, a frame under the pointer, like the signs; 70 % (Okay, 13 Oct 2026: "same style as the ×") */
+  #window-font-back:hover { opacity: 1; }
 }
