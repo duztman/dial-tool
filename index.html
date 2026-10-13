@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.35.2 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.35.3 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -712,6 +712,7 @@
   .fontrow.on, .fontrow.on:hover { background: var(--select); }
   .fontrow :is(.sample, .face) { display: flex; align-items: center; min-width: 0; overflow: hidden; line-height: 1; white-space: nowrap; }
   .fontrow .sample { font-size: var(--t-sample); }
+  .fontlist .fontrow .sample { position: relative; left: calc(-1 * (var(--unit) + var(--hair))); }      /* drawn a gap and a hairline to the left, all alike: most numerals' first ink then touches the name column's edge, so they don't look inset (Okay, 14 Oct 2026) */
   .fontrow .face { font-size: var(--t-l); }
   .fontrow .sample svg { display: block; flex: none; }
   .fontrow .face svg { display: block; flex: 0 1 auto; height: auto; max-width: 100%; }      /* a name too wide for its column is drawn smaller; numerals are cut at their column's edge */
@@ -5345,7 +5346,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.35.2";
+var VERSION = "beta 4.35.3";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
