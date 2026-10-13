@@ -125,6 +125,15 @@ await page.click("#add-band");
 check(await S(`S.rings.length === ${before + 1} && S.rings[S.ui_ring].kind === 3`), "Add Band → a band ring, selected");
 const row_look = await page.$$eval(".ringlist li", (l) => l.map((e) => { const c = getComputedStyle(e); return (e.classList.contains("on") ? "on " : "") + c.borderTopWidth + " " + c.backgroundColor; }));
 check(row_look.every((x) => x.includes("1px")) && row_look.filter((x) => x === "on 1px rgb(207, 228, 245)").length === 1, "every ring is a framed row; the selected one is light blue");
+// a ring's row says what the ring is, in numbers (13 Oct 2026, build list #78): how many × how big · r radius
+const sums = await page.$$eval(".ringlist li", (l) => l.map((e) => [e.querySelector(".sum").textContent, e.querySelector(".kind").textContent, Math.round(e.querySelector(".kind").getBoundingClientRect().left), e.getBoundingClientRect().height]));
+check(sums.every(([t]) => /^\d+ × [\d.]+ · r [\d.]+$/.test(t)) && new Set(sums.map((x) => x[2])).size === 1 && new Set(sums.map((x) => x[3])).size === 1,
+  `every ring's row has a summary; the kinds start on one line; the rows are one height: ${sums.map((x) => x[0] + " " + x[1]).join(" | ")}`);
+const sum_before = await page.textContent(".ringlist li.on .sum");
+await page.evaluate(() => { const t = window.dial_tool; t.set_value("ring", "r", t.ring().r - 1); });
+check(await page.textContent(".ringlist li.on .sum") !== sum_before && await page.$$eval(".ringlist li.on", (e) => e.length) === 1, `the summary follows the ring: ${sum_before} → ${await page.textContent(".ringlist li.on .sum")}`);
+await page.evaluate(() => { const t = window.dial_tool; t.set_value("ring", "r", t.ring().r + 1); });
+await shot("4c7-ring-summary");
 check(await page.$$eval(".ringlist input", (e) => e.length) === 0 && await page.$$eval(".ringlist .rename", (e) => e.length) === 1, "the ring list has no name fields: one rename box, on the selected ring");
 const mine = await S("S.ui_ring"), other_ring = mine === 0 ? 1 : 0;
 await page.click(`.ringlist li:nth-child(${other_ring + 1}) .name`);

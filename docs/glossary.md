@@ -31,7 +31,7 @@ If a term is used differently in conversation, ask, then update this file.
 |---|---|
 | **Ring** | One entry in the ring list. A ring repeats one thing around the centre at its **positions**. Okay's word for every dial element in the list ("rings, not layers, all round"). Unlimited. |
 | **Kind** | What a ring repeats: **ticks**, **markers**, **numerals** or **band**. Changeable at any time; the ring keeps all its settings. ("Type" is kept for typography.) |
-| **Ring list** | The list in the Rings section. Its order is the **stacking order**: the top ring is drawn last (in front). Each row (web version): an **eye** (show or hide the ring), a grip to drag it, its name, the **rename box** on the selected ring, its kind. (`dial.py`: a show checkbox and an editable name.) |
+| **Ring list** | The list in the Rings section. Its order is the **stacking order**: the top ring is drawn last (in front). Each row (web version): an **eye** (show or hide the ring), a grip to drag it, its name, the **rename box** on the selected ring, its **ring summary**, its kind. (`dial.py`: a show checkbox and an editable name.) |
 | **Radius** | Ticks, markers, bands: the **outer** radius. Numerals: the radius of the text's **centre**. |
 | **Positions** | Where a ring puts things: **count**, **start °** (where the first one sits), **span °**. A full turn spaces them evenly; a partial span marks both ends (scales). For bands, positions start segments that tile the span. |
 | **Every · Offset · Skip those instead** | Which positions are used: every n-th, starting at the offset; "skip those instead" inverts it. Cardinals = every 3; non-cardinals = every 3, inverted. |
@@ -69,13 +69,15 @@ If a term is used differently in conversation, ask, then update this file.
 | **Backdrop switch** | The button at the preview's bottom left: the backdrop's colour as a chip; it opens the colour pop-out. |
 | **Hand tabs** | Hour · Minute · Seconds, the second pinned line of Hands, under All hands: they choose the hand the panes below are about. |
 | **Window cards** | The four cards on top of Windows, 12 · 3 · 6 · 9: where each window is, and the tabs that choose the window the panes below are about. |
-| **Bar** | **Used for two things — to be settled with Okay (found 13 Oct 2026).** (1) The dark strip along the bottom of the window: selected · time · view (brief §4, beta 4.1 to 4.3; the *Day slider* entry below means this one). (2) In the code and since 12 Oct: one line of its own, outside the panes and always in view (Hands: All hands · Show hands · Motion). Until settled, write *bottom bar* for (1) and *pinned line* for (2). |
+| **Bottom bar** | The dark strip along the bottom of the window, in three parts: selected · time (play, speeds, the time, the day slider, Now) · view (zoom, Fit). Called "the bar" in notes before 13 Oct 2026. |
+| **Pinned line** | One line of its own, outside the panes and always in view (Hands: All hands · Show hands · Motion; the hand tabs). Called "bar" from 12 Oct until Okay named the two on 13 Oct 2026; the row option in `app.js` is still `bar`. |
+| **Ring summary** | In a ring's row of the ring list, before its kind: how many the ring draws × how big one is (a mark's length, a dot's Ø, a numeral's size, a band's width) · r its radius, e.g. `60 × 1 · r 14.4`. In the unit box's unit. |
 | **Nested question** | A tick or menu that asks about the row above it; it starts on the controls' column, not at the left. |
 | **Row line** | The hairline before and after every row: white on the scrolling grey, that grey on paper. |
 | **Logo** | Planned (build list #72): an SVG placed on the dial with the mouse; it is a ring in the ring list. Not the *background* (a picture on the plate, not built). |
 | **Toggle column** | The narrow column at the far left of the panel (web version). It holds only eyes: a pane's (open or folded) and a ring's (shown or hidden on the dial). |
 | **Margin** | The panel's side space, 24, the same left and right (web version, beta 4.2). Lines start and end on it; so do the eyes. |
-| **Day slider · step** | The bar's slider over twelve hours. Its steps are the twelve hours and 10:10: a click goes exactly to one. |
+| **Day slider · step** | The bottom bar's slider over twelve hours. Its steps are the twelve hours and 10:10: a click goes exactly to one. |
 | **Eye** | The sign in the toggle column. Open = showing; closed, with lashes = put away. |
 | **Rename box** | A text cursor in a rounded box, after the selected ring's name: the only way to rename a ring (web version). |
 | **Picture tile** | One choice shown as a small drawing with its name under it (ring kind, mark shape, hand shape, what a window shows…). |

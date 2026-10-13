@@ -728,6 +728,7 @@ class DialTool {
    *  when it is folded, and everything in it when its heading doesn't apply. */
   sync_rows() {
     this.sync_guides();
+    this.sync_ring_summaries();
     paint(this.backdrop_dot, this.S.c_backdrop);
     this.unit_button.textContent = this.unit()[0];
     this.unit_items.forEach((b, i) => { b.classList.toggle("on", i === this.S.ui_unit); b.setAttribute("aria-checked", String(i === this.S.ui_unit)); });
@@ -1254,8 +1255,26 @@ class DialTool {
     this.fill_ring_list();
   }
 
+  /** a ring in a few numbers, for its row in the list: how many it draws × how big one is · r its radius.
+   *  "How big" is what you would name first for its kind: a tick's or marker's length (a dot's Ø), a numeral's
+   *  size, a band's width. Lengths in the unit box's unit, without trailing zeros. (13 Oct 2026, build list #78) */
+  ring_summary(ring) {
+    const kind = G.kind_of(ring), len = (mm) => String(parseFloat(this.in_unit(mm, 2)));
+    const one = kind === "numerals" ? ring.size : kind === "band" ? ring.width : G.SHAPES[ring.shape] === "dot" ? ring.w : ring.len;
+    return `${G.positions_of(ring).length} × ${len(one)} · r ${len(ring.r)}`;
+  }
+
+  /** the summaries follow every change without the list being built again (a name may be being typed in it). */
+  sync_ring_summaries() {
+    if (!this.ring_list) return;
+    [...this.ring_list.children].forEach((li, i) => {
+      const sum = li.querySelector(".sum"), ring = this.S.rings[i];
+      if (sum && ring) { const text = this.ring_summary(ring); if (sum.textContent !== text) sum.textContent = text; }
+    });
+  }
+
   /** one row per ring: eye (show or hide it on the dial, in the left column) · grip · name · the rename box
-   *  (selected ring only, and not while it is hidden) · its kind. A click anywhere else on a row selects it. */
+   *  (selected ring only, and not while it is hidden) · its summary · its kind. A click anywhere else on a row selects it. */
   fill_ring_list() {
     if (!this.ring_list) return;
     this.ring_list.replaceChildren();
@@ -1274,6 +1293,7 @@ class DialTool {
         rename.innerHTML = icon(TOOL_ICONS.rename, 18);
         item.append(rename);
       }
+      item.append(el("span", { className: "quiet sum", textContent: this.ring_summary(ring), title: "How many × how big · radius" }));
       item.append(el("span", { className: "quiet kind", textContent: G.kind_of(ring) }));
       item.onclick = () => { if (!item.querySelector("input")) this.select_ring(i); };
       this.ring_list.append(item);

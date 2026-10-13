@@ -66,6 +66,7 @@
     --tile: 50px;                                  /* a picture tile's least height */
     --frame-out: 8px;                              /* a framed list row is this much wider than the lines, each side */
     --ring-gap: 4px;                               /* between framed rows */
+    --sum-gap: 12px;                               /* in a ring's row: between its summary and its kind */
     --thumb: 18px; --track: 4px;                   /* sliders: a black disc on a thin track (Okay's sketch, 12 Oct 2026) */
     --tick: 16px;                                  /* a tick box */
     --reach: calc((var(--line) - var(--control)) / 2);      /* what a row leaves above and under a control: under a finger, a press there counts too */
@@ -374,15 +375,17 @@
 
   /* the ring list: top ring first. Each ring is a framed row, a little wider than the pane's lines on both sides
      (--frame-out), so the eye has room inside the frame: eye (show or hide the ring, in the toggle column) · grip ·
-     name · rename box (selected ring) · kind. The selected ring is light blue. */
+     name · rename box (selected ring) · summary · kind. The selected ring is light blue. The list owns the columns
+     and every row borrows them (subgrid), so summaries and kinds stand under each other whatever the words' widths. */
   .ringlist { margin: 0 calc(-1 * var(--frame-out)); }
-  .ringlist ol { position: relative; list-style: none; margin: 0; padding: 2px 0 0; display: grid; gap: var(--ring-gap); max-height: calc(5 * (var(--line) + var(--ring-gap)) + 4px); overflow-y: auto; }
-  .ringlist li { display: grid; grid-template-columns: calc(var(--frame-out) - var(--hair) + var(--lead)) 18px minmax(0, auto) auto 1fr; align-items: center; height: var(--line); padding-right: calc(var(--frame-out) - var(--hair));
+  .ringlist ol { position: relative; list-style: none; margin: 0; padding: 2px 0 0; display: grid; row-gap: var(--ring-gap);
+    grid-template-columns: calc(var(--frame-out) + var(--lead)) 18px minmax(0, auto) auto minmax(0, 1fr) auto; max-height: calc(5 * (var(--line) + var(--ring-gap)) + 4px); overflow-y: auto; }
+  .ringlist li { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; height: var(--line); padding-right: calc(var(--frame-out) - var(--hair));
     border: var(--hair) solid var(--rule); border-radius: 5px; background: var(--field); cursor: pointer; }
   .ringlist li:hover { border-color: var(--grey); }
   .ringlist li.on { background: var(--select); border-color: var(--select-rule); }
-  .ringlist li.off, .ringlist li.off .kind { color: var(--rule); }
-  .ringlist li.off.on, .ringlist li.off.on .kind { color: var(--grey); }
+  .ringlist li.off, .ringlist li.off :is(.kind, .sum) { color: var(--rule); }
+  .ringlist li.off.on, .ringlist li.off.on :is(.kind, .sum) { color: var(--grey); }
   .ringlist .eye { display: grid; align-items: center; justify-items: start; width: 100%; height: 100%; padding-left: calc(var(--frame-out) - var(--hair) + var(--nudge)); border-radius: 4px 0 0 4px; }
   .ringlist .eye:hover { background: var(--veil); }
   .ringlist .grip { display: grid; place-items: center; height: 100%; margin-left: -4px; color: var(--rule); cursor: grab; touch-action: none; }
@@ -394,7 +397,8 @@
   .ringlist input.name { grid-column: 3 / 5; margin-left: 2px; padding: 0 4px; }
   .ringlist .rename { display: grid; place-items: center; width: var(--control); height: var(--control); color: var(--faint); }
   .ringlist .rename:hover { color: var(--ink); background: var(--veil-strong); }
-  .ringlist .kind { grid-column: 5; justify-self: end; padding-left: 8px; }
+  .ringlist .sum { grid-column: 5; justify-self: end; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--t-s); }
+  .ringlist .kind { grid-column: 6; justify-self: start; padding-left: var(--sum-gap); }
   /* under the list: what you can add (words) and what you can do to the selected ring (signs). The words start
      on the six columns; the last sign's drawing ends on the right margin. */
   .listfoot { display: flex; justify-content: space-between; align-items: center; height: var(--line); margin-top: var(--ring-gap);
