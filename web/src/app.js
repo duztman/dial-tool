@@ -168,9 +168,9 @@ const VALUE_PICS = {                               // a value button's drawing, 
   size: `<circle cx="4.79" r="14.33"/><circle class="small" cx="-11.02" cy="6.22" r="8.11"/><path d="M-16.55 0.3L-4.99 -10.48M-10.77 14.33L4.79 14.33"/>`,
 };
 
-// a language in the list, by its name; on its button, by two letters ("zh-Hans" → ZH; the font's own choice → a dash)
+// a language in the list, by its name; on its button, by two letters ("zh-Hans" → ZH; the font's own choice → "lan")
 const LANG_NAMES = { default: "As the font sets it", tr: "Turkish", nl: "Dutch", de: "German", pl: "Polish", ro: "Romanian", ca: "Catalan", ar: "Arabic", fa: "Persian", "zh-Hans": "Chinese, simplified", ja: "Japanese" };
-const lang_short = (code) => (code === "default" ? "–" : code.slice(0, 2).toUpperCase());
+const lang_short = (code) => (code === "default" ? "lan" : code.slice(0, 2).toUpperCase());      // none chosen: the button says what it is for (Okay, 13 Oct 2026; a dash before)
 
 // a tile's word is one line: a name too long for a tile is said shorter there (its tag still says it whole)
 const TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip" };
@@ -1979,7 +1979,7 @@ class DialTool {
     swatch.classList.add("mini");
     swatch.onclick = () => this.pop_open(this.colour_of_row(crow), swatch);
     const tracking = this.build_row(own ? { ...num("tracking", "Tracking", -200, 800, 5), scope: "window", or: () => numerals().tracking } : { ...num("tracking", "Tracking", -200, 800, 5), scope: "ring" });      // the box's last line
-    const named = el("div", { className: "fontname" }, name, swatch, ...(lang ? [lang.el] : []), el("button", { type: "button", className: "btn", id: pre + "font-change", textContent: "Change…", onclick: open }));
+    const named = el("div", { className: "fontname", onclick: (e) => { if (!e.target.closest(".colour, .langs, button")) open(); } }, name, ...(lang ? [lang.el] : []), swatch, el("button", { type: "button", className: "btn", id: pre + "font-change", textContent: "Change…", onclick: open }));
     const styles = el("div", { className: "segs styles" });
     const state = el("div", { className: "quiet note", id: pre + "font-note" });
     const back = el("button", { type: "button", className: "btn", id: "window-font-back", textContent: "As the numerals", title: "Use the top numerals ring’s font again", hidden: true,

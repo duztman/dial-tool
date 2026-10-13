@@ -110,7 +110,8 @@
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
     --t-xs: 11px; --t-s: 12px; --t-m: 13px; --t-l: 15px;
     --font-name: 104px; --font-has: 92px;          /* the font sheet's columns: a family's name · what it has (its numerals take the rest) */
-    --shadow: calc(-2 * var(--unit)) 0 0 rgba(0, 0, 0, 0.28);      /* what floats over the window throws its shadow to the left: a hard edge, no blur (Okay, 13 Oct 2026: "much sharper") */
+    --shadow: calc(-2 * var(--unit)) 0 7px rgba(0, 0, 0, 0.28);      /* what floats over the window throws its shadow to the left, a little soft (Okay, 13 Oct 2026: "much sharper", then "blur 7") */
+    --swatch-col: calc(2 * (var(--line-button) + var(--ringline-gap)) + var(--ringline-inner) - var(--hair));      /* from a pane's right edge to the right edge of the ring list's colour column: a colour swatch further down stands in that column too */
     --t-sample: 20px;                              /* a font's numerals in the font list, when the browser sets them */
     --t-pixel: 8px;                                /* the pixel font's own size: its dots fall on the screen's (R32) */
     --sans: system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -380,11 +381,11 @@
 
   /* a hand's pane (Okay's drawings, 13 Oct 2026): a box with the hand itself, and beside it the rows that make it.
      The box: the chosen hand in ink, the centre it turns on marked by a line across the box and a small ring. */
-  .detail { position: relative; overflow: hidden; margin: var(--unit) 0; min-height: calc(4 * var(--line)); border: var(--hair) solid var(--rule); background: var(--field); }
+  .detail { position: relative; overflow: hidden; margin: var(--unit) 0; min-height: calc(4 * var(--line)); border: var(--hair) solid var(--rule); }      /* no ground of its own (Okay, 13 Oct 2026) */
   .detail svg { position: absolute; inset: var(--unit); width: calc(100% - 2 * var(--unit)); height: calc(100% - 2 * var(--unit)); overflow: visible; }
   .detail .lying { display: none; }
   .detail .axis { stroke: var(--rule); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
-  .detail .pivot { fill: var(--field); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
+  .detail .pivot { fill: var(--surface); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
   /* a line of tiles that opens: closed, the first few and the chosen one; then "more" and a dashed plus for one's own */
   .picks.line:not(.open) > [role="radio"]:not(.in4) { display: none; }
   .picks.line { grid-template-columns: repeat(6, minmax(0, 1fr)); }
@@ -610,9 +611,13 @@
   .fontbox .btn, .fontbox .styles > button { border-color: var(--rule); color: var(--grey); }
   .fontbox :is(.btn, .styles > button):hover { border-color: var(--ink); color: var(--ink); }
   .fontbox .styles > button.on, .fontbox .btn[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
-  .fontname { display: flex; align-items: center; gap: var(--unit); }      /* the font's name; the language and Change… at the right */
-  .fontname .name { flex: 0 1 auto; font-weight: 600; }
-  .fontname .colour.mini { margin-right: auto; }      /* right after the name; what follows goes to the right end */      /* the font's name is the box's heading (Okay, 13 Oct 2026) */
+  /* the font's name · the language · the text's colour · Change…. The whole line opens the font sheet, but for the
+     language and the colour. The colour stands in the ring list's colour column, wherever the line is (Okay, 13 Oct
+     2026: "the swatch alignment started with rings, now continues"); the place kept for it is that column's width. */
+  .fontname { position: relative; display: flex; align-items: center; gap: var(--ringline-gap); cursor: pointer; }
+  .fontname .name { flex: 1; font-weight: 600; }
+  .fontname .langs { margin-right: var(--line-button); }
+  .fontname .colour.mini { position: absolute; top: 50%; translate: 0 -50%; right: calc(var(--swatch-col) - var(--hair) + (var(--line-button) - var(--t-m) - 2 * var(--hair)) / 2); }      /* the font's name is the box's heading (Okay, 13 Oct 2026) */
   .langs { position: relative; }
   .langbox { min-width: var(--control); padding: 0 var(--unit); font: var(--t-xs)/1 var(--mono); }
   .fontname .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -637,8 +642,9 @@
 
   /* the font sheet: over the panel, on its columns, so the dial stays in view; from the bottom on a phone */
   /* it floats over the panel: as wide and as high as the panel (from the window's top to the bar, never over the
-     bar), a margin to the right, so its right part lies over the preview; a hard shadow to its left (Okay, 13 Oct 2026) */
-  .picker { position: fixed; inset: 0 auto var(--bar-height) var(--margin); width: var(--panel); max-width: calc(100vw - 2 * var(--margin)); height: auto; max-height: none; margin: 0; padding: 0; border: var(--hair) solid var(--ink); box-shadow: var(--shadow);
+     bar), its left edge on the panel's third column, where the controls start, so its right part lies over the
+     preview; a shadow to its left (Okay, 13 Oct 2026) */
+  .picker { position: fixed; inset: 0 auto var(--bar-height) calc(var(--margin) + var(--lead) + 2 * (var(--col) + var(--gap))); width: var(--panel); max-width: calc(100vw - 2 * var(--margin)); height: auto; max-height: none; margin: 0; padding: 0; border: var(--hair) solid var(--ink); box-shadow: var(--shadow);
     background: var(--paper); color: var(--ink); }
   .picker[open] { display: grid; grid-template-rows: auto 1fr auto; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 3) var(--margin) var(--margin); }
   .picker:focus { outline: none; }

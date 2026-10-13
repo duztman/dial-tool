@@ -840,7 +840,7 @@ await click_mm(...clock(10, 120));
 check(await page.$$eval(".form .fontrow", (rows) => rows.length) === 1 && await page.$$eval(".form select#font-family", (e) => e.length) === 0, "Type shows one font, the selected one, and no dropdowns");
 await page.click("#font-current");
 const sheet_at = await page.$eval("#font-picker", (d) => { const r = d.getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); const c = getComputedStyle(d), p = document.querySelector(".panel").getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top), Math.round(r.width - p.width), Math.round(r.right - m.left), c.boxShadow !== "none", !document.querySelector("#font-done")].join(" "); });
-check(await page.$eval("#font-picker", (d) => d.open) && sheet_at === "24 0 -1 23 true true" && await page.$eval("#font-picker", (d) => Math.round(document.querySelector(".bar").getBoundingClientRect().top - d.getBoundingClientRect().bottom) === 0 && document.activeElement !== document.querySelector("#font-find") && document.querySelector("#font-find").closest("header") !== null), `pressing it opens the font sheet: floating over the panel, from the window's top down to the bar, a margin to the right, as wide as the panel less its edge line, with a shadow; no Done button; Find a font is on its top line and waits for a press (${sheet_at})`);
+check(await page.$eval("#font-picker", (d) => d.open) && sheet_at === "184 0 -1 183 true true" && await page.$eval("#font-picker", (d) => Math.round(document.querySelector(".bar").getBoundingClientRect().top - d.getBoundingClientRect().bottom) === 0 && document.activeElement !== document.querySelector("#font-find") && document.querySelector("#font-find").closest("header") !== null), `pressing it opens the font sheet: floating over the panel, from the window's top down to the bar, its left edge on the panel's third column, as wide as the panel less its edge line, with a shadow; no Done button; Find a font is on its top line and waits for a press (${sheet_at})`);
 {
   const row = await page.evaluate(() => { const rows = [...document.querySelectorAll("#font-picker .fontrow")], x = (e) => Math.round(e.getBoundingClientRect().left), by = (f) => rows.find((r) => r.dataset.family === f);
     return { names: new Set(rows.map((r) => x(r.querySelector(".name")))).size, numerals: new Set(rows.map((r) => x(r.querySelector(".sample")))).size, order: rows.every((r) => x(r.querySelector(".name")) < x(r.querySelector(".sample")) && x(r.querySelector(".sample")) < x(r.querySelector(".has"))), drawn: by("Jost").querySelector(".name svg path") !== null, barlow: [...by("Barlow").querySelectorAll(".sticker")].map((e) => e.textContent + (e.classList.contains("strong") ? "!" : "")).join(" "), archivo: [...by("Archivo").querySelectorAll(".sticker")].map((e) => e.textContent + (e.classList.contains("strong") ? "!" : "")).join(" "), sticker: (() => { const c = getComputedStyle(by("Archivo").querySelector(".sticker.strong")), d = getComputedStyle(by("Archivo").querySelector(".sticker:not(.strong)")); return [c.fontFamily.includes("Silkscreen"), c.fontSize, c.fontWeight, d.fontWeight, document.fonts.check('700 8px "Silkscreen"')].join(" "); })(), fits: rows.every((r) => { const n = r.querySelector(".name"), g = n.querySelector("svg"); return !g || g.getBoundingClientRect().right <= n.getBoundingClientRect().right + 0.5; }), has: new Set(rows.map((r) => Math.round(r.querySelector(".has").getBoundingClientRect().width))).size, line: getComputedStyle(rows[0]).borderBottomColor === getComputedStyle(document.querySelector(".fontlist")).borderTopColor,
@@ -849,6 +849,20 @@ check(await page.$eval("#font-picker", (d) => d.open) && sheet_at === "24 0 -1 2
   check(row.barlow === "bold! 4 styles" && row.archivo === "weight! width" && row.sticker === "true 8px 700 400 true" && row.has === 1, `what a family has, as stickers in the pixel font, in words: Barlow ${row.barlow}; Archivo ${row.archivo} (! = bold); their column is one width (${row.sticker})`);
   check(row.fits, "every family's name fits its column: the long ones are drawn smaller");
   check(row.squares.startsWith("Add link true · Font file true"), `Add fonts has square buttons (${row.squares})`);
+  await page.keyboard.press("Escape");
+  { // the text's colour stands in the ring list's colour column; the name's whole line opens the sheet
+    const col = await page.evaluate(() => { const mid = (e) => { const r = e.getBoundingClientRect(); return r.left + r.width / 2; }; return [mid(document.querySelector(".ringlist li.ring:not(.on) .chipcell")), mid(document.querySelector("#font-c")), document.querySelector("#font-c").getBoundingClientRect().right <= document.querySelector("#font-change").getBoundingClientRect().left, document.querySelector("#lang").getBoundingClientRect().right <= document.querySelector("#font-c").getBoundingClientRect().left]; });
+    const name = await page.$eval("#font-name", (e) => { const r = e.getBoundingClientRect(); return [r.right - 6, r.top + r.height / 2]; });
+    await page.mouse.click(name[0], name[1]);
+    const opened = await page.$eval("#font-picker", (d) => d.open);
+    await page.keyboard.press("Escape");
+    await page.click("#font-c");
+    const colour_only = await page.$eval("#font-picker", (d) => !d.open) && await page.isVisible("#colour-pop");
+    await page.keyboard.press("Escape"); await page.mouse.click(640, 30);
+    check(Math.abs(col[0] - col[1]) < 0.6 && col[2] && col[3], `the text's colour beside the font's name stands in the ring list's colour column (${col[0]} = ${col[1]}), between the language and Change…`);
+    check(opened && colour_only, "a press anywhere on the name's line opens the font sheet; a press on the colour opens the colour instead");
+    await page.click("#font-change");
+  }
   const shut = await page.isHidden("#font-link");
   await page.click("#font-add");
   check(shut && await page.isVisible("#font-link") && await page.evaluate(() => document.activeElement.id === "font-link"), "the field for a link is out of sight until Add link is pressed; then it is there, with the keyboard in it");
@@ -906,11 +920,11 @@ check(await page.$("#axis-wght") !== null, "Lora's weight axis has a slider");
     return { order: top.bottom <= name.top && name.bottom <= styles.top, right: Math.round(box.right - change.right), left: Math.round(name.left - box.left), whole: numerals.right <= top.right, lang: lang.right <= change.left && lang.left >= name.right,
       white: c(".fontbox").backgroundColor, lines: [c(".fontname").borderTopWidth, c(".font .styles").borderTopWidth].join(" "), quiet: c("#font-change").borderTopColor === c(".fontbox").borderTopColor }; });
   check(f.order && f.right === 11 && f.left === 11 && f.whole && f.lang && f.white === "rgb(255, 255, 255)" && f.lines === "1px 1px" && f.quiet, `a font stands in a white box of three lines with a hairline between them: its numerals, whole · its name, then the language and Change… at the right · its styles; the buttons' lines are as faint as the box's (${JSON.stringify(f)})`);
-  check(await page.textContent("#lang") === "–" && await page.isHidden("#lang-menu") && await page.$("select[id*=lang]") === null, "the language is a small button (a dash: as the font sets it), not a row with a menu");
+  check(await page.textContent("#lang") === "lan" && await page.isHidden("#lang-menu") && await page.$("select[id*=lang]") === null, "the language is a small button (it says lan while the font sets it), not a row with a menu");
   await page.click("#lang");
   const langs = await page.$$eval("#lang-menu button", (b) => b.map((x) => x.textContent).join(" | "));
   await page.click("#lang-tr");
-  check(langs.startsWith("As the font sets it– | TurkishTR | DutchNL") && await page.textContent("#lang") === "TR" && await page.isHidden("#lang-menu") && await S("S.rings[S.ui_ring].lang === 1"), "a press opens the list of languages by name; choosing Turkish sets the ring's language and the button says TR");
+  check(langs.startsWith("As the font sets itlan | TurkishTR | DutchNL") && await page.textContent("#lang") === "TR" && await page.isHidden("#lang-menu") && await S("S.rings[S.ui_ring].lang === 1"), "a press opens the list of languages by name; choosing Turkish sets the ring's language and the button says TR");
   await page.click("#lang"); await page.click("#lang-default");
   check(await S("S.rings[S.ui_ring].lang === 0"), "and back to the font's own");
   await page.$eval(".font", (e) => e.scrollIntoView({ block: "center" }));

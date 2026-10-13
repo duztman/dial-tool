@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.28 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **Font sheet**: left edge on the third column; shadow blur 7.
+- **Font box**: the name's whole line opens the sheet; the language button says *lan* when none is chosen; the colour stands in the ring list's colour column.
+- **Hands**: the detail box has no ground.
+
 ## beta 4.27 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.
