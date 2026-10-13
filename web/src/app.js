@@ -61,8 +61,10 @@ const EYE = {                                      // the left column's sign: op
   closed: `<path d="M1.5 6.5C3.5 9.6 5.8 10.8 8 10.8S12.5 9.6 14.5 6.5M8 10.8L8 13.4M4.7 10.1L3.7 12.4M11.3 10.1L12.3 12.4M2.5 8.1L1.1 9.8M13.5 8.1L14.9 9.8"/>`,
 };
 const eye = (open) => icon(EYE[open ? "open" : "closed"]);
-// small pictures for choices that are easier seen than read. 28 × 20, drawn like the other signs.
-const pic = (inside) => icon(inside, 28, "0 0 28 20").replace('width="28" height="28"', 'width="28" height="20"');
+// small pictures for choices that are easier seen than read: drawn on 28 × 20 like the other signs, shown larger
+// (Okay, 13 Oct 2026: "bigger, better (less detail) icons… this goes for all"). Their lines stay as thick as a sign's.
+const PIC_SCALE = 1.35;
+const pic = (inside) => icon(inside, 28, "0 0 28 20").replace('width="28" height="28"', `width="${Math.round(28 * PIC_SCALE)}" height="${Math.round(20 * PIC_SCALE)}"`).replace('stroke-width="1.4"', `stroke-width="${(1.4 / PIC_SCALE).toFixed(2)}"`);
 const solid = `fill="currentColor" stroke="none"`;
 const KIND_PIC = 30;                               // a kind's picture on a tile, a square this wide (28 × 20 for the others); 24 in the ring line, 20 in the Add menu
 const PICS = {
@@ -95,17 +97,17 @@ const PICS = {
     `<path d="M3 16A11 11 0 0 1 25 16A5.5 5.5 0 0 0 14 16A5.5 5.5 0 0 0 3 16Z"/>`,
     `<path d="M4.5 12.5A14 14 0 0 1 23.5 12.5L21 16.4A10 10 0 0 0 7 16.4Z"/>`,
   ],
-  window: [
-    `<rect x="6" y="3.5" width="16" height="13" rx="1.5"/><path d="M10.6 8L12.2 7L12.2 13M15 7L18.4 7L16 13" stroke-width="1.2"/>`,
-    `<rect x="2.5" y="4.5" width="23" height="11" rx="1.5"/><path d="M6 12.5L6 7.5L8 10.5L10 7.5L10 12.5M13 7.5L15.5 7.5L15.5 12.5L13 12.5ZM18.5 12.5L18.5 7.5L22 12.5L22 7.5" stroke-width="1.1"/>`,
-    `<rect x="4" y="4" width="20" height="12" rx="1"/><path d="M4 16L4 4L14 4A12 12 0 0 0 14 16Z" ${solid}/><circle cx="19" cy="10" r="2.2" ${solid}/>`,
-    `<path d="M3 16A11 11 0 0 1 25 16A5.5 5.5 0 0 0 14 16A5.5 5.5 0 0 0 3 16Z"/><circle cx="14" cy="8.6" r="3" ${solid}/>`,
+  window: [                                        // what a window shows, in as few lines as say it: one figure · one letter · a half filled · a crescent
+    `<rect x="5" y="2.5" width="18" height="15" rx="1.5"/><path d="M12.4 7.6L14.6 6L14.6 14" stroke-width="1.6"/>`,
+    `<rect x="2" y="4" width="24" height="12" rx="1.5"/><path d="M10 13.5L10 6.5L14 11.5L18 6.5L18 13.5" stroke-width="1.6"/>`,
+    `<rect x="3" y="3.5" width="22" height="13" rx="1.5"/><path d="M3.5 16L3.5 4L14 4L14 16Z" ${solid}/>`,
+    `<path d="M17.5 2.8A7.4 7.4 0 1 0 17.5 17.2A9 9 0 0 1 17.5 2.8Z" ${solid}/>`,
   ],
 };
 /** a hand's picture is the hand itself, drawn by the geometry with a standard size. */
 const hand_pic = (i) => {
   const p = G.hand_shape({ ...G.HAND_BASE, shape: i, len: 13, w: 2.2, tail: 3, tip: 4.5, feature: 4.4, feature_at: [0, 0, 0, 30, 0, 0, 45, 62, 62][i] || 0, round: 0, wall: 0, counter: 0 });
-  return `<svg viewBox="-3 -14 6 18.5" width="9" height="28" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;
+  return `<svg viewBox="-3 -14 6 18.5" width="${Math.round(9 * PIC_SCALE)}" height="${Math.round(28 * PIC_SCALE)}" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;
 };
 const TOOL_ICONS = {
   rename: `<rect x="1.5" y="1.5" width="13" height="13" rx="3.5" stroke-width="0.7"/><path d="M8 4.4L8 11.6M6.2 4.2L9.8 4.2M6.2 11.8L9.8 11.8" stroke-width="0.7"/>`,      // thin and light (Okay, 11 Oct 2026)
@@ -242,7 +244,6 @@ const ROWS = {
     custom("nudge", { show: numerals_only }),
     hdr("Type", { show: numerals_only }),
     custom("font", { show: numerals_only }),
-    num("tracking", "Tracking", -200, 800, 5, { show: numerals_only }),
     hdr("Variable axes", { show: (R) => numerals_only(R) && G.has_font(R.ps) && Object.keys(G.font_axes(G.font_of(R))).length > 0 }),
     custom("axes", { show: numerals_only }),
     hdr("OpenType features", { show: (R) => numerals_only(R) && G.has_font(R.ps) }),
@@ -274,7 +275,7 @@ const ROWS = {
     col("c_cap", "Colour"),
   ],
   Date: [                                          // "Windows" on its tab: up to four holes in the plate
-    custom("window_cards", { bar: true }),         // four cards, 12 · 3 · 6 · 9: where each window is, and tabs for the panes below (Okay, 12 Oct 2026)
+    custom("window_cards", { pin: true, bar: true }),      // pin: always in view, like the hand tabs (Okay, 13 Oct 2026) ·         // four cards, 12 · 3 · 6 · 9: where each window is, and tabs for the panes below (Okay, 12 Oct 2026)
     // the cards are tabs only; a window is shown by the tick on its heading line (Okay, 13 Oct 2026, after trying a
     // small switch on each card: "unnecessarily complex… enable window tickmark is the way to go. leave them as tabs")
     hdr("Window", { title: (S) => `Window at ${G.DATE_AT[G.windows_of(S)[S.ui_window].at][0]}` }),
@@ -1866,7 +1867,8 @@ class DialTool {
   font_shown() { const T = this.font_holder(); return this.font_scope === "window" ? G.window_type(this.S, T) : T; }
 
   /** a font, in a white box of three lines with hairlines between (Okay, 13 Oct 2026): its numerals · its name, with
-   *  the language (a ring's only: two letters, a list under them) and Change… at the right · its styles as buttons.
+   *  the language (a ring's only: two letters, a list under them) and Change… at the right · its styles as buttons
+   *  · its tracking (a ring's only).
    *  The numerals and Change… both open the font sheet. */
   row_font(wrap, out) {
     wrap.className = "font";
@@ -1877,17 +1879,19 @@ class DialTool {
     const current = el("button", { type: "button", className: "fontrow current", id: pre + "font-current", title: "Choose a font", onclick: open });
     const name = el("span", { className: "name", id: pre + "font-name" });
     const lang = own ? null : this.lang_box();
+    const tracking = own ? null : this.build_row({ ...num("tracking", "Tracking", -200, 800, 5), scope: "ring" });      // the box's last line (Okay, 13 Oct 2026); a window has no tracking of its own
     const named = el("div", { className: "fontname" }, name, ...(lang ? [lang.el] : []), el("button", { type: "button", className: "btn", id: pre + "font-change", textContent: "Change…", onclick: open }));
     const styles = el("div", { className: "segs styles" });
     const state = el("div", { className: "quiet note", id: pre + "font-note" });
     const back = el("button", { type: "button", className: "btn", id: "window-font-back", textContent: "As the numerals", title: "Use the top numerals ring’s font again", hidden: true,
       onclick: () => { const w = this.window(); w.family = ""; w.ps = ""; w.axes = {}; this.changed(true); } });
-    wrap.append(el("div", { className: "fontbox" }, current, named, styles), ...(own ? [back] : []), state);
+    wrap.append(el("div", { className: "fontbox" }, current, named, styles, ...(tracking ? [tracking.el] : [])), ...(own ? [back] : []), state);
     let shown = null;
     out.refresh = (T) => {
       const R = own ? G.window_type(this.S, T) : T;
       back.hidden = !(own && T.ps);
       if (lang) lang.refresh(T);
+      if (tracking) tracking.refresh(T);
       const mine = this.families().get(R.family) || [], f = this.catalog.get(R.ps) || mine[0];
       const key = R.ps + "/" + G.has_font(R.ps) + "/" + Boolean(T.ps);
       if (key !== shown) {

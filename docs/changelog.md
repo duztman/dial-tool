@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.20 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **On the preview**: undo · redo · Guides · Backdrop are faint (opacity 0.35) until pointed at or open.
+- **Font box**: Tracking is its fourth line; the font's name is bold.
+- **Tabs**: smaller notches (5.5 deep), drawn cleanly; the window tabs are pinned, margin to margin.
+- **Picture tiles**: pictures 1.35 × larger, equal space around the tiles; simpler pictures for what a window shows.
+
 ## beta 4.19 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.
