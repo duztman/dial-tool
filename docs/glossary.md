@@ -2,7 +2,7 @@
 
 What each word means **in this project**. Turkish where it's the common trade word.
 If a term is used differently in conversation, ask, then update this file.
-*Last updated 13 Oct 2026 (beta 4.8: window shape, turn, size button; beta 4.7: ring line, value button, gallery, card switch; Section, Ring list and Bar brought up to the web version). Before: 12 Oct 2026 (web version, beta 4.6: sector colours, scale everything).*
+*Last updated 13 Oct 2026 (beta 4.11: ring drawer, a row's order; beta 4.8: window shape, turn, size button; beta 4.7: ring line, value button, gallery, card switch; Section, Ring list and Bar brought up to the web version). Before: 12 Oct 2026 (web version, beta 4.6: sector colours, scale everything).*
 
 ## Watch terms
 
@@ -31,7 +31,7 @@ If a term is used differently in conversation, ask, then update this file.
 |---|---|
 | **Ring** | One entry in the ring list. A ring repeats one thing around the centre at its **positions**. Okay's word for every dial element in the list ("rings, not layers, all round"). Unlimited. |
 | **Kind** | What a ring repeats: **ticks**, **markers**, **numerals** or **band**. Changeable at any time; the ring keeps all its settings. ("Type" is kept for typography.) |
-| **Ring list** | The list in the Rings section. Its order is the **stacking order**: the top ring is drawn last (in front). Each row (web version): an **eye** (show or hide the ring), a grip to drag it, its name, the **rename box** on the selected ring, its **ring summary**, its kind. (`dial.py`: a show checkbox and an editable name.) |
+| **Ring list** | The list in the Rings section. Its order is the **stacking order**: the top ring is drawn last (in front). Each row (web version): an **eye** (show or hide the ring), a grip to drag it, its name, the **rename box** on the selected ring, its **ring summary** (kind · colour · size · radius). (`dial.py`: a show checkbox and an editable name.) |
 | **Radius** | Ticks, markers, bands: the **outer** radius. Numerals: the radius of the numeral's **anchor** — its centre (the start), its baseline or its top. |
 | **Anchor** | The point of a numeral that sits on its ring's radius (ring key `anchor`, web version, 13 Oct 2026): **centre** (the middle of its outlines) · **baseline** (the middle of the line it stands on) · **ascender** (the middle of its top; the top of the ring's tallest label, so all hang from one line). Chosen in the small menu beside the radius' label (in the radius button's pop-up), which then reads Centre / Baseline / Ascender radius. |
 | **Positions** | Where a ring puts things: **count**, **start °** (where the first one sits), **span °**. A full turn spaces them evenly; a partial span marks both ends (scales). For bands, positions start segments that tile the span. |
@@ -46,10 +46,10 @@ If a term is used differently in conversation, ask, then update this file.
 | **Placement** | How numerals sit: **upright** (always level) · **radial** (turn with the circle) · **radial, auto-flip** (never upside down) · **on path** (letters follow the circle, kerning kept). |
 | **Nudge** | A per-numeral correction: radius ±, angle ±, rotate, size ×. Stored per position. |
 | **Rings pane** | The pinned pane on top of Rings (web version, 13 Oct 2026): its heading line with the list's tools (a plus that opens the four kinds; move up · move down · duplicate · delete), the ring list, the **ring line**. Folded it is one line: *Rings: <name>* and a summary. |
-| **Ring line** | The selected ring's controls in one framed line inside the ring list, right under that ring's row; its buttons start where the names start, all one height, no words: four kinds · its colour · its **size** (how big one of its things is: a mark's length, a dot's Ø, a numeral's size, a band's width; Okay's "scale") · its radius. Its frame has the selected ring's guide colour, on white. |
+| **Ring drawer** | The framed box inside the ring list, right under the selected ring's row, holding that ring's main controls as buttons without words: four kinds · its colour · its **size** (how big one of its things is: a mark's length, a dot's Ø, a numeral's size, a band's width; Okay's "scale") · its radius. Each of the last three stands under its value in the row above. Its outer line has the selected ring's guide colour, its inner line the row's ground. Named 13 Oct 2026; "ring line" before, and `ringline` / `lineholder` in the code. |
 | **Tag** | The small label under a wordless button while the pointer is on it ("Ticks"); one for the whole tool, laid over everything. |
-| **Pixel font** | Silkscreen (SIL OFL), packed into the page: the tool's own tiny numbers inside small drawings, always at 8. Not one of the dial's fonts. |
-| **Value button** | A number as a small round drawing with its value written in it (a ring's radius: a circle with its radius drawn; its size: a small circle against the large one). Click: a small square pops up at its bottom right corner (the number's name, field, − +), ready to type in. Press and move: the value changes. R15's exception. |
+| **Pixel font** | Silkscreen (SIL OFL), packed into the page: the tool's own tiny numbers inside small drawings, always at 8 (now only 12 · 3 · 6 · 9 in the numerals picture; kept for later). Not one of the dial's fonts. |
+| **Value button** | A number as a small round drawing, without the number (a ring's radius: a circle with its radius drawn; its size: a small circle against the large one); the value is read in the ring's row above it and in its tag. Click: a small square pops up at its bottom right corner (the number's name, field, − +), ready to type in. Press and move: the value changes. R15's exception. |
 | **Ring settings** | The scrolling list under the ring list: Kind · Colour · Radius · Positions · Give way · Look · Nudge · Type. Nudge and Type show for numerals rings only. (beta 2.0 split it into four pages.) |
 
 ## Hands
@@ -79,7 +79,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Undo step** | The dial as it was before a change; taken when the dial has stood still for a moment. ⌘Z goes back one, ⇧⌘Z forward. |
 | **Bottom bar** | The dark strip along the bottom of the window, in three parts: selected · time (play, speeds, the time, the day slider, Now) · view (zoom, Fit). Called "the bar" in notes before 13 Oct 2026. |
 | **Pinned line** | One line of its own, outside the panes and always in view (Hands: All hands · Show hands · Motion; the hand tabs). Called "bar" from 12 Oct until Okay named the two on 13 Oct 2026; the row option in `app.js` is still `bar`. |
-| **Ring summary** | In a ring's row of the ring list, before its kind: how many the ring draws × how big one is (a mark's length, a dot's Ø, a numeral's size, a band's width) · r its radius, e.g. `60 × 1 · r 14.4`. In the unit box's unit. |
+| **Ring summary** | What a ring's row says after its name, in the drawer's order: how many and of what kind (`60 ticks`) · a small square of its colour · its size · its radius — the last two as bare numbers in the mono face, in the unit box's unit. |
 | **Nested question** | A tick or menu that asks about the row above it; it starts on the controls' column, not at the left. |
 | **Row line** | The hairline before and after every row: white on the scrolling grey, that grey on paper. |
 | **Logo** | Planned (build list #72): an SVG placed on the dial with the mouse; it is a ring in the ring list. Not the *background* (a picture on the plate, not built). |

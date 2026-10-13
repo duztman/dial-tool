@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.11 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **Ring drawer**: the name of the box under the selected ring's row (was "ring line").
+- **A ring's row** reads name · kind with how many (`60 ticks`) · a small square of its colour · size · radius. The list and the drawer share columns, so a row's colour, size and radius stand over the drawer's buttons for them. Numbers: mono face, 11, quiet.
+- **Round buttons carry no number**; their tag says name and value ("Outer radius 15").
+- **Rings panes**: Shape comes first, with the Ends rows inside it; then Positions and Give way.
+
 ## beta 4.10 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Okay's marked-up picture of the Rings pane. Seen in Chromium here only.

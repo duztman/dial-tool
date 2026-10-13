@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.10 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.11 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet.
@@ -75,13 +75,13 @@
     --tile: 50px;                                  /* a picture tile's least height */
     --frame-out: 8px;                              /* a framed list row is this much wider than the lines, each side */
     --ring-gap: 4px;                               /* between framed rows */
-    --sum-gap: 12px;                               /* in a ring's row: between its summary and its kind */
     --guide-tint: 22%; --guide-edge: 65%;          /* the selected ring's row: this much of its guide's colour in its ground, and in its frame */
     --round-pill: 999px;                           /* fully round: the signs on the Rings heading line, a value button */
     --menu-box: 18px;                              /* the boxed arrow beside a label that opens a small menu */
     --foot-gap: 4px;                               /* between the round signs on the Rings heading line */
     --ringline-pad: 8px; --ringline-gap: 8px; --ringline-join: 2px;      /* the selected ring's line: inside its frame · between its parts · between it and its ring's row */
     --ringline-inner: calc(3 * var(--hair));       /* its second, inner line: three times the outer */
+    --row-end: calc(var(--frame-out) - var(--hair) + var(--ringline-inner));      /* the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons */
     --line-button: 36px; --kind-wide: 46px; --bare-dot: 16px;      /* in that line every control is this high (a value button this wide too) · a kind's button is this wide · the colour's swatch */
     --name-in: 6px;                                /* a ring's name starts this far into its column; the ring line's buttons too */
     --card-switch: 22px;                           /* the clock-like switch on a window card */
@@ -425,14 +425,14 @@
      and every row borrows them (subgrid), so summaries and kinds stand under each other whatever the words' widths. */
   .ringlist { margin: 0 calc(-1 * var(--frame-out)) 0 var(--lead); }      /* rows start where the labels start (Okay's drawing, 13 Oct 2026): the toggle column is the panes' alone */
   .ringlist ol { position: relative; list-style: none; margin: 0; padding: 2px 0 0; display: grid; row-gap: var(--ring-gap);
-    grid-template-columns: calc(var(--frame-out) + var(--lead)) 18px minmax(0, auto) auto minmax(0, 1fr) auto; max-height: calc(5 * (var(--line) + var(--ring-gap)) + var(--line-button) + 2 * var(--ringline-pad) + 2 * var(--ringline-inner) + 2 * var(--hair) + var(--ringline-join) + 4px); overflow-y: auto; }      /* five rings and the ring line, then it scrolls */
-  .ringlist li.ring { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; height: var(--line); padding-right: calc(var(--frame-out) - var(--hair));
+    grid-template-columns: calc(var(--frame-out) + var(--lead)) 18px minmax(0, 1fr) auto repeat(3, calc(var(--line-button) + var(--ringline-gap))) var(--row-end);      /* eye · grip · name · kind · colour · size · radius · the room at the end: rows and the ring drawer share them */ max-height: calc(5 * (var(--line) + var(--ring-gap)) + var(--line-button) + 2 * var(--ringline-pad) + 2 * var(--ringline-inner) + 2 * var(--hair) + var(--ringline-join) + 4px); overflow-y: auto; }      /* five rings and the ring line, then it scrolls */
+  .ringlist li.ring { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; height: var(--line);
     border: var(--hair) solid var(--rule); border-radius: 5px; background: var(--field); cursor: pointer; }
   .ringlist li.ring:hover { border-color: var(--grey); }
   .ringlist li.ring.on { background: var(--select); border-color: var(--select-rule); }
   .guided .ringlist li.ring.on { background: color-mix(in srgb, var(--guide) var(--guide-tint), var(--field)); border-color: color-mix(in srgb, var(--guide) var(--guide-edge), var(--grey)); }
-  .ringlist li.ring.off, .ringlist li.ring.off :is(.kind, .sum) { color: var(--rule); }
-  .ringlist li.ring.off.on, .ringlist li.ring.off.on :is(.kind, .sum) { color: var(--grey); }
+  .ringlist li.ring.off, .ringlist li.ring.off :is(.kind, .says) { color: var(--rule); }
+  .ringlist li.ring.off.on, .ringlist li.ring.off.on :is(.kind, .says) { color: var(--grey); }
   .ringlist .eye { display: grid; align-items: center; justify-items: start; width: 100%; height: 100%; padding-left: calc(var(--frame-out) - var(--hair) + var(--nudge)); border-radius: 4px 0 0 4px; }
   .ringlist .eye:hover { background: var(--veil); }
   .ringlist .grip { display: grid; place-items: center; height: 100%; margin-left: -4px; color: var(--rule); cursor: grab; touch-action: none; }
@@ -443,11 +443,16 @@
   .ringlist .namecell { display: flex; align-items: center; min-width: 0; padding-right: 8px; }
   .ringlist span.name { min-width: 0; padding: 0 4px 0 var(--name-in); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ringlist span.name.renames { cursor: text; }
-  .ringlist input.name { grid-column: 3 / 5; margin-left: 2px; padding: 0 4px; }
+  .ringlist input.name { grid-column: 3; margin-left: 2px; padding: 0 4px; }
   .ringlist .rename { flex: none; display: grid; place-items: center; width: var(--control); height: var(--control); color: var(--faint); }
   .ringlist .rename:hover { color: var(--ink); background: var(--veil-strong); }
-  .ringlist .sum { grid-column: 5; justify-self: end; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--t-s); }
-  .ringlist .kind { grid-column: 6; justify-self: start; padding-left: var(--sum-gap); }
+  /* after the name, in the ring drawer's order: kind (with how many) · colour · size · radius. The last three each
+     stand in a column as wide as the drawer's button under it, centred on it; the numbers quiet, in the mono face. */
+  .ringlist .kind { grid-column: 4; justify-self: end; padding-left: 8px; white-space: nowrap; font-size: var(--t-s); }
+  .ringlist .says { justify-self: end; width: var(--line-button); text-align: center; white-space: nowrap; font: var(--t-xs)/1 var(--mono); }
+  .ringlist .chipcell { grid-column: 5; display: grid; place-items: center; }
+  .ringlist .says-size { grid-column: 6; }
+  .ringlist .says-r { grid-column: 7; }
   /* the list's tools stand on the pane's heading line, at its right: a plus that opens the four kinds, then move up ·
      move down · duplicate · delete, all five the same outlined circle (Okay, 13 Oct 2026). The pane is laid on the
      columns so they can lie over the heading's right part; folded, the summary stands there instead. */
@@ -472,11 +477,16 @@
      frame has the colour of the selected ring's guide, as the row above has, on white. */
   .ringlist { position: relative; }
   .ringlist li.lineholder { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; margin-top: calc(var(--ringline-join) - var(--ring-gap));
-    padding: calc(var(--ringline-pad) + var(--ringline-inner)) calc(var(--frame-out) - var(--hair) + var(--ringline-inner)) calc(var(--ringline-pad) + var(--ringline-inner)) 0;
+    padding: calc(var(--ringline-pad) + var(--ringline-inner)) 0;
     border: var(--hair) solid var(--select-rule); border-radius: var(--round-small); background: var(--field); box-shadow: inset 0 0 0 var(--ringline-inner) var(--select); }
   /* inside its outer line a second one, three times as thick, in the selected row's ground: the box reads as that row's (Okay, 13 Oct 2026) */
   .guided .ringlist li.lineholder { border-color: color-mix(in srgb, var(--guide) var(--guide-edge), var(--grey)); box-shadow: inset 0 0 0 var(--ringline-inner) color-mix(in srgb, var(--guide) var(--guide-tint), var(--field)); }
-  .ringline { grid-column: 3 / -1; display: flex; align-items: center; gap: var(--ringline-gap); padding-left: var(--name-in); }
+  .ringline { display: contents; }                 /* its buttons stand on the list's columns: the kinds from the name's column on, then colour · size · radius each under its place in the row */
+  .ringline > .kinds { grid-column: 3 / 5; justify-self: start; margin-left: var(--name-in); }
+  .ringline > :is(.colour, .valueb) { justify-self: end; }
+  .ringline > .colour { grid-column: 5; }
+  .ringline > #ring-size { grid-column: 6; }
+  .ringline > #ring-r { grid-column: 7; }
   .nothing { display: none; }
   .kinds { display: flex; flex: none; }
   .kinds button { display: grid; place-items: center; width: var(--kind-wide); height: var(--line-button); border: var(--hair) solid var(--rule); background: var(--field); }
@@ -504,9 +514,6 @@
   .valueb:is([aria-expanded="true"], .dragging) svg circle:first-child { fill: var(--ink); stroke: var(--ink); }
   .valueb:is([aria-expanded="true"], .dragging) svg { stroke: var(--paper); }
   .valueb:is([aria-expanded="true"], .dragging) svg .pivot { fill: var(--paper); }
-  .valueb .figure { position: absolute; left: 0; right: 0; bottom: calc(50% + 2px); text-align: center; font: var(--t-pixel)/1 var(--pixel); }      /* tiny numbers: the pixel font at its own size */
-  .valueb .figure.mid { bottom: auto; top: 50%; translate: 0 -50%; }      /* no line to stand on: in the middle */
-  .valueb .figure.long { letter-spacing: -1px; }
   svg text.pixel { font-family: var(--pixel); }
   .valuepop { --row-rule: transparent; position: absolute; z-index: 4; width: var(--value-pop); padding: 10px 10px 12px; border: var(--hair) solid var(--ink); background: var(--field); }
   /* a small square: the number's name (and its menu) · the field · − +, one under the other. No slider: the button is dragged instead. */
@@ -5064,7 +5071,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.10";
+var VERSION = "beta 4.11";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -6817,9 +6824,9 @@ var SIZE_ROWS = {
 var size_row = (R) => SIZE_ROWS[kind_of(R) === "numerals" ? "numerals" : kind_of(R) === "band" ? "band" : SHAPES[R.shape] === "dot" ? "dot" : "len"];
 var VALUE_PICS = {
   // inside a value button, on a 40 × 40 field with the centre at 0 0, under the figure
-  radius: `<path d="M0 0L19.4 0"/><circle class="pivot" r="1.6"/>`,
+  radius: `<path d="M0 0L19.4 0"/><circle class="pivot" r="2"/>`,
   // a radius, from the centre to the edge
-  size: `<circle class="small" cx="-13.7" cy="13.7" r="6"/>`
+  size: `<circle class="small" cx="-13.7" cy="13.7" r="6.5"/>`
   // scale: a small circle against the large one (Okay's sketch, 13 Oct 2026)
 };
 var kind_in = (...names) => (R) => names.includes(kind_of(R));
@@ -6872,6 +6879,17 @@ var ROWS = {
     custom("ring_line", { pin: true }),
     hdr("Sector colours", { show: (R) => kind_of(R) === "band" && positions_of(R).length > 1 }),
     custom("sectors", { show: (R) => kind_of(R) === "band" && positions_of(R).length > 1 }),
+    // what one mark is comes first (Okay, 13 Oct 2026: "moves up to the top"), then where the marks are
+    hdr("Shape", { show: kind_in("ticks", "markers") }),
+    pick("shape", "Shape", SHAPES.slice(0, 3), PICS.shape, { show: kind_in("ticks", "markers") }),
+    num2("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
+    num2("w", "Width \xB7 \xD8", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "dot", "file") }),
+    num2("taper", "Inner width \xD7", 0, 2, 0.01, { show: marks_with("wedge") }),
+    num2("wall", "Hollow wall", 0, 1.5, 0.01, { show: kind_in("ticks", "markers") }),
+    // the ends belong to the shape: nested under it, no pane of their own (Okay, 13 Oct 2026)
+    num2("round_out", "Round outer", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
+    num2("round_in", "Round inner", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
+    custom("round_ends", { show: marks_with("bar", "wedge", "file") }),
     hdr("Positions"),
     num2("count", "Count", 1, 360, 1, { whole: true }),
     num2("start", "Start \xB0", -180, 180, 0.5),
@@ -6883,16 +6901,6 @@ var ROWS = {
     pop("skip", "Skip where", SKIP_FROM),
     pop("knock", "Knock out", KNOCK_FROM),
     num2("clear", "Clearance", 0, 2, 0.01, { show: (R) => R.knock !== 0 }),
-    hdr("Shape", { show: kind_in("ticks", "markers") }),
-    pick("shape", "Shape", SHAPES.slice(0, 3), PICS.shape, { show: kind_in("ticks", "markers") }),
-    num2("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
-    num2("w", "Width \xB7 \xD8", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "dot", "file") }),
-    num2("taper", "Inner width \xD7", 0, 2, 0.01, { show: marks_with("wedge") }),
-    num2("wall", "Hollow wall", 0, 1.5, 0.01, { show: kind_in("ticks", "markers") }),
-    hdr("Ends", { show: marks_with("bar", "wedge", "file") }),
-    num2("round_out", "Round outer", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
-    num2("round_in", "Round inner", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
-    custom("round_ends", { show: marks_with("bar", "wedge", "file") }),
     hdr("12 o\u2019clock \xB7 first position", { show: kind_in("markers") }),
     pick("twelve", "Style", TWELVES, PICS.twelve, { show: kind_in("markers") }),
     num2("twelve_scale", "Scale \xD7", 0.5, 2.5, 0.05, { show: (R) => kind_of(R) === "markers" && R.twelve !== 3 }),
@@ -8342,7 +8350,7 @@ var DialTool = class _DialTool {
     colour.classList.add("bare");
     colour.dataset.tip = colour.ariaLabel = "Colour";
     colour.onclick = () => this.pop_open(this.colour_of_row({ scope: "ring", key: "c", text: "Colour" }), colour);
-    const size = this.value_button("ring-size", () => size_row(this.ring()), VALUE_PICS.size, "mid");
+    const size = this.value_button("ring-size", () => size_row(this.ring()), VALUE_PICS.size);
     const radius = this.value_button("ring-r", () => radius_row(this.ring()), VALUE_PICS.radius);
     wrap.append(kinds, colour, size.el, radius.el);
     this.ring_line_holder = el("li", { className: "lineholder" }, wrap);
@@ -8358,22 +8366,18 @@ var DialTool = class _DialTool {
     };
   }
   // ── a value as a button ──────────────────────────────────
-  //   A number shown as a small round drawing with its value written in it (Okay, 13 Oct 2026; first use: a ring's
-  //   radius), and beside it a handle, a double arrow. A click on the drawing pops up the number's ordinary row
-  //   under it, the field ready to type in; pressing and moving the pointer on either changes the value without
-  //   opening anything (right or up: more; Shift: ten times finer); a press outside puts the pop-up away.
+  //   A number as a small round drawing (Okay, 13 Oct 2026; first: a ring's radius and size). A click pops up a
+  //   small square at its corner, the field ready to type in; pressing and moving the pointer changes the value
+  //   without opening anything (right or up: more; Shift: ten times finer); a press outside puts the pop-up away.
+  //   The value itself is read in the ring's row above, and in the tag.
   //   row() says which number row it stands for right now.
-  value_button(id, row, drawing, figure_at = "") {
+  value_button(id, row, drawing) {
     const b = el("button", { type: "button", className: "valueb", id });
-    const figure = el("span", { className: "figure " + figure_at });
     b.innerHTML = `<svg viewBox="-20 -20 40 40" aria-hidden="true"><circle r="19.4"/>${drawing}</svg>`;
-    b.append(figure);
     const T = () => this.target(row().scope);
     const refresh = () => {
       const r = row(), v = T()[r.key] ?? 0, text = String(parseFloat(this.in_unit(v, decimals(r.step))));
-      figure.textContent = text;
-      figure.classList.toggle("long", text.length > 4);
-      b.dataset.tip = label_of(r, T());
+      b.dataset.tip = `${label_of(r, T())} ${text}`;
       b.ariaLabel = `${label_of(r, T())} ${text} ${this.unit()[0]}`;
     };
     let press = null;
@@ -8457,13 +8461,15 @@ var DialTool = class _DialTool {
     box.remove();
     button.setAttribute("aria-expanded", "false");
   }
-  /** a ring in a few numbers, for its row in the list: how many it draws × how big one is · r its radius.
-   *  "How big" is what you would name first for its kind: a tick's or marker's length (a dot's Ø), a numeral's
-   *  size, a band's width. Lengths in the unit box's unit, without trailing zeros. (13 Oct 2026, build list #78) */
+  /** a ring's row says what the ring is, in the ring drawer's own order (Okay, 13 Oct 2026): its kind (with how many
+   *  it draws) · its colour · how big one of its things is · its radius. Each of the last three stands over the
+   *  drawer's button for it, so the row is the read-out and the drawer under it the controls. "How big" is what you
+   *  would name first for its kind: a tick's or marker's length (a dot's Ø), a numeral's size, a band's width.
+   *  Lengths in the unit box's unit, without trailing zeros. → {kind, size, r} as text */
   ring_summary(ring) {
     const kind = kind_of(ring), len = (mm) => String(parseFloat(this.in_unit(mm, 2)));
     const one = kind === "numerals" ? ring.size : kind === "band" ? ring.width : SHAPES[ring.shape] === "dot" ? ring.w : ring.len;
-    return `${positions_of(ring).length} \xD7 ${len(one)} \xB7 r ${len(ring.r)}`;
+    return { kind: `${positions_of(ring).length} ${kind}`, size: len(one), r: len(ring.r) };
   }
   /** the summaries follow every change without the list being built again (a name may be being typed in it). */
   sync_ring_summaries() {
@@ -8474,16 +8480,20 @@ var DialTool = class _DialTool {
     else wrap.style.removeProperty("--guide");
     this.place_ring_line();
     this.ring_rows().forEach((li, i) => {
-      const sum = li.querySelector(".sum"), ring = this.S.rings[i];
-      if (sum && ring) {
-        const text = this.ring_summary(ring);
-        if (sum.textContent !== text) sum.textContent = text;
+      const ring = this.S.rings[i];
+      if (!ring) return;
+      const says = this.ring_summary(ring);
+      for (const part of ["kind", "size", "r"]) {
+        const cell = li.querySelector(".says-" + part);
+        if (cell && cell.textContent !== says[part]) cell.textContent = says[part];
       }
+      const chip = li.querySelector(".dot.tiny");
+      if (chip) paint(chip, ring.c);
     });
   }
   /** one row per ring: eye (show or hide it on the dial) · grip · name, with the rename box right beside it (selected
-   *  ring only, not while it is hidden, and not when the line is too full) · its summary · its kind. A click on the
-   *  selected ring's name renames it; a click anywhere else on a row selects it. */
+   *  ring only, not while it is hidden, and not when the line is too full) · its kind · its colour · its size · its
+   *  radius (ring_summary). A click on the selected ring's name renames it; a click anywhere else on a row selects it. */
   fill_ring_list() {
     if (!this.ring_list) return;
     this.ring_list.replaceChildren();
@@ -8515,8 +8525,14 @@ var DialTool = class _DialTool {
         name.title = "Rename this ring";
         name.onclick = start2;
       }
-      item.append(el("span", { className: "quiet sum", textContent: this.ring_summary(ring), title: "How many \xD7 how big \xB7 radius" }));
-      item.append(el("span", { className: "quiet kind", textContent: kind_of(ring) }));
+      const says = this.ring_summary(ring), chip = el("i", { className: "dot tiny", title: "Its colour" });
+      paint(chip, ring.c);
+      item.append(
+        el("span", { className: "quiet kind says-kind", textContent: says.kind, title: "How many, and of what kind" }),
+        el("span", { className: "says chipcell" }, chip),
+        el("span", { className: "quiet says says-size", textContent: says.size, title: "How big one is" }),
+        el("span", { className: "quiet says says-r", textContent: says.r, title: "Radius" })
+      );
       item.onclick = () => {
         if (!item.querySelector("input")) this.select_ring(i);
       };

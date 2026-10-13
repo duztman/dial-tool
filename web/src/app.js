@@ -147,8 +147,8 @@ const SIZE_ROWS = {
 };
 const size_row = (R) => SIZE_ROWS[G.kind_of(R) === "numerals" ? "numerals" : G.kind_of(R) === "band" ? "band" : G.SHAPES[R.shape] === "dot" ? "dot" : "len"];
 const VALUE_PICS = {                               // inside a value button, on a 40 × 40 field with the centre at 0 0, under the figure
-  radius: `<path d="M0 0L19.4 0"/><circle class="pivot" r="1.6"/>`,                     // a radius, from the centre to the edge
-  size: `<circle class="small" cx="-13.7" cy="13.7" r="6"/>`,                           // scale: a small circle against the large one (Okay's sketch, 13 Oct 2026)
+  radius: `<path d="M0 0L19.4 0"/><circle class="pivot" r="2"/>`,                       // a radius, from the centre to the edge
+  size: `<circle class="small" cx="-13.7" cy="13.7" r="6.5"/>`,                         // scale: a small circle against the large one (Okay's sketch, 13 Oct 2026)
 };
 
 const kind_in = (...names) => (R) => names.includes(G.kind_of(R));
@@ -191,6 +191,17 @@ const ROWS = {
     custom("ring_line", { pin: true }),
     hdr("Sector colours", { show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
     custom("sectors", { show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
+    // what one mark is comes first (Okay, 13 Oct 2026: "moves up to the top"), then where the marks are
+    hdr("Shape", { show: kind_in("ticks", "markers") }),
+    pick("shape", "Shape", G.SHAPES.slice(0, 3), PICS.shape, { show: kind_in("ticks", "markers") }),
+    num("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
+    num("w", "Width · Ø", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "dot", "file") }),
+    num("taper", "Inner width ×", 0, 2, 0.01, { show: marks_with("wedge") }),
+    num("wall", "Hollow wall", 0, 1.5, 0.01, { show: kind_in("ticks", "markers") }),
+    // the ends belong to the shape: nested under it, no pane of their own (Okay, 13 Oct 2026)
+    num("round_out", "Round outer", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
+    num("round_in", "Round inner", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
+    custom("round_ends", { show: marks_with("bar", "wedge", "file") }),
     hdr("Positions"),
     num("count", "Count", 1, 360, 1, { whole: true }),
     num("start", "Start °", -180, 180, 0.5),
@@ -202,16 +213,6 @@ const ROWS = {
     pop("skip", "Skip where", G.SKIP_FROM),
     pop("knock", "Knock out", G.KNOCK_FROM),
     num("clear", "Clearance", 0, 2, 0.01, { show: (R) => R.knock !== 0 }),
-    hdr("Shape", { show: kind_in("ticks", "markers") }),
-    pick("shape", "Shape", G.SHAPES.slice(0, 3), PICS.shape, { show: kind_in("ticks", "markers") }),
-    num("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
-    num("w", "Width · Ø", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "dot", "file") }),
-    num("taper", "Inner width ×", 0, 2, 0.01, { show: marks_with("wedge") }),
-    num("wall", "Hollow wall", 0, 1.5, 0.01, { show: kind_in("ticks", "markers") }),
-    hdr("Ends", { show: marks_with("bar", "wedge", "file") }),
-    num("round_out", "Round outer", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
-    num("round_in", "Round inner", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
-    custom("round_ends", { show: marks_with("bar", "wedge", "file") }),
     hdr("12 o’clock · first position", { show: kind_in("markers") }),
     pick("twelve", "Style", G.TWELVES, PICS.twelve, { show: kind_in("markers") }),
     num("twelve_scale", "Scale ×", 0.5, 2.5, 0.05, { show: (R) => G.kind_of(R) === "markers" && R.twelve !== 3 }),
@@ -1441,7 +1442,7 @@ class DialTool {
     colour.classList.add("bare");                  // the swatch alone: no hex
     colour.dataset.tip = colour.ariaLabel = "Colour";
     colour.onclick = () => this.pop_open(this.colour_of_row({ scope: "ring", key: "c", text: "Colour" }), colour);
-    const size = this.value_button("ring-size", () => size_row(this.ring()), VALUE_PICS.size, "mid");
+    const size = this.value_button("ring-size", () => size_row(this.ring()), VALUE_PICS.size);
     const radius = this.value_button("ring-r", () => radius_row(this.ring()), VALUE_PICS.radius);
     wrap.append(kinds, colour, size.el, radius.el);
     this.ring_line_holder = el("li", { className: "lineholder" }, wrap);      // it lives in the list (place_ring_line), not among the pane's rows
@@ -1455,23 +1456,19 @@ class DialTool {
   }
 
   // ── a value as a button ──────────────────────────────────
-  //   A number shown as a small round drawing with its value written in it (Okay, 13 Oct 2026; first use: a ring's
-  //   radius), and beside it a handle, a double arrow. A click on the drawing pops up the number's ordinary row
-  //   under it, the field ready to type in; pressing and moving the pointer on either changes the value without
-  //   opening anything (right or up: more; Shift: ten times finer); a press outside puts the pop-up away.
+  //   A number as a small round drawing (Okay, 13 Oct 2026; first: a ring's radius and size). A click pops up a
+  //   small square at its corner, the field ready to type in; pressing and moving the pointer changes the value
+  //   without opening anything (right or up: more; Shift: ten times finer); a press outside puts the pop-up away.
+  //   The value itself is read in the ring's row above, and in the tag.
   //   row() says which number row it stands for right now.
 
-  value_button(id, row, drawing, figure_at = "") {
+  value_button(id, row, drawing) {
     const b = el("button", { type: "button", className: "valueb", id });
-    const figure = el("span", { className: "figure " + figure_at });
     b.innerHTML = `<svg viewBox="-20 -20 40 40" aria-hidden="true"><circle r="19.4"/>${drawing}</svg>`;
-    b.append(figure);
     const T = () => this.target(row().scope);
-    const refresh = () => {
+    const refresh = () => {                        // no number in it (Okay, 13 Oct 2026): the ring's row, right above, says it; so does the tag
       const r = row(), v = T()[r.key] ?? 0, text = String(parseFloat(this.in_unit(v, decimals(r.step))));
-      figure.textContent = text;
-      figure.classList.toggle("long", text.length > 4);
-      b.dataset.tip = label_of(r, T());
+      b.dataset.tip = `${label_of(r, T())} ${text}`;
       b.ariaLabel = `${label_of(r, T())} ${text} ${this.unit()[0]}`;
     };
     let press = null;
@@ -1539,13 +1536,15 @@ class DialTool {
     button.setAttribute("aria-expanded", "false");
   }
 
-  /** a ring in a few numbers, for its row in the list: how many it draws × how big one is · r its radius.
-   *  "How big" is what you would name first for its kind: a tick's or marker's length (a dot's Ø), a numeral's
-   *  size, a band's width. Lengths in the unit box's unit, without trailing zeros. (13 Oct 2026, build list #78) */
+  /** a ring's row says what the ring is, in the ring drawer's own order (Okay, 13 Oct 2026): its kind (with how many
+   *  it draws) · its colour · how big one of its things is · its radius. Each of the last three stands over the
+   *  drawer's button for it, so the row is the read-out and the drawer under it the controls. "How big" is what you
+   *  would name first for its kind: a tick's or marker's length (a dot's Ø), a numeral's size, a band's width.
+   *  Lengths in the unit box's unit, without trailing zeros. → {kind, size, r} as text */
   ring_summary(ring) {
     const kind = G.kind_of(ring), len = (mm) => String(parseFloat(this.in_unit(mm, 2)));
     const one = kind === "numerals" ? ring.size : kind === "band" ? ring.width : G.SHAPES[ring.shape] === "dot" ? ring.w : ring.len;
-    return `${G.positions_of(ring).length} × ${len(one)} · r ${len(ring.r)}`;
+    return { kind: `${G.positions_of(ring).length} ${kind}`, size: len(one), r: len(ring.r) };
   }
 
   /** the summaries follow every change without the list being built again (a name may be being typed in it). */
@@ -1558,14 +1557,18 @@ class DialTool {
     if (guide) wrap.style.setProperty("--guide", guide); else wrap.style.removeProperty("--guide");
     this.place_ring_line();
     this.ring_rows().forEach((li, i) => {
-      const sum = li.querySelector(".sum"), ring = this.S.rings[i];
-      if (sum && ring) { const text = this.ring_summary(ring); if (sum.textContent !== text) sum.textContent = text; }
+      const ring = this.S.rings[i];
+      if (!ring) return;
+      const says = this.ring_summary(ring);
+      for (const part of ["kind", "size", "r"]) { const cell = li.querySelector(".says-" + part); if (cell && cell.textContent !== says[part]) cell.textContent = says[part]; }
+      const chip = li.querySelector(".dot.tiny");
+      if (chip) paint(chip, ring.c);
     });
   }
 
   /** one row per ring: eye (show or hide it on the dial) · grip · name, with the rename box right beside it (selected
-   *  ring only, not while it is hidden, and not when the line is too full) · its summary · its kind. A click on the
-   *  selected ring's name renames it; a click anywhere else on a row selects it. */
+   *  ring only, not while it is hidden, and not when the line is too full) · its kind · its colour · its size · its
+   *  radius (ring_summary). A click on the selected ring's name renames it; a click anywhere else on a row selects it. */
   fill_ring_list() {
     if (!this.ring_list) return;
     this.ring_list.replaceChildren();
@@ -1590,8 +1593,10 @@ class DialTool {
         name.title = "Rename this ring";
         name.onclick = start;
       }
-      item.append(el("span", { className: "quiet sum", textContent: this.ring_summary(ring), title: "How many × how big · radius" }));
-      item.append(el("span", { className: "quiet kind", textContent: G.kind_of(ring) }));
+      const says = this.ring_summary(ring), chip = el("i", { className: "dot tiny", title: "Its colour" });
+      paint(chip, ring.c);
+      item.append(el("span", { className: "quiet kind says-kind", textContent: says.kind, title: "How many, and of what kind" }), el("span", { className: "says chipcell" }, chip),
+        el("span", { className: "quiet says says-size", textContent: says.size, title: "How big one is" }), el("span", { className: "quiet says says-r", textContent: says.r, title: "Radius" }));
       item.onclick = () => { if (!item.querySelector("input")) this.select_ring(i); };
       this.ring_list.append(item);
       if (rename && name.scrollWidth > name.clientWidth) rename.hidden = true;       // no room: the box goes, the name keeps its letters (and still renames)
