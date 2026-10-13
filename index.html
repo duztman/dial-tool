@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.19 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.20 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet.
@@ -78,7 +78,7 @@
     --frame-out: 8px;                              /* a framed list row is this much wider than the lines, each side */
     --ring-gap: 4px;                               /* between framed rows */
     --guide-tint: 22%; --guide-edge: 65%;          /* the selected ring's row: this much of its guide's colour in its ground, and in its frame */
-    --tab-notch: 8px;                              /* how deep the notch between two tabs is cut (a V, twice as wide) */
+    --tab-notch: var(--unit);                      /* how deep the notch between two tabs is cut (a V, twice as wide): one unit (8 until beta 4.20; Okay: "smaller") */
     --tab-high: 40px; --tab-pad: 11px;             /* a word tab's height (Hour · Minute · Seconds) · above and under a picture tab's picture (the window cards): room to breathe */
     --round-pill: 999px;                           /* fully round: the signs on the Rings heading line, a value button */
     --menu-box: 18px;                              /* the boxed arrow beside a label that opens a small menu */
@@ -107,6 +107,7 @@
     --pill: calc(1em + 2 * var(--pill-gap));       /* its height. The swatch is as high as the hex is set (1em) */
     --pop-width: 388px; --pop-chips: 11; --pop-chip-gap: 12px;      /* the colour pop-out: its width; colours to a row (the palette's ten and its +), which share the row's width; the room between two */
     --checker: repeating-conic-gradient(#BDBDB9 0 25%, #FFFFFF 0 50%) 0 0 / 8px 8px;      /* what shows through a see-through colour */
+    --faint: 0.35;                                 /* how much of a switch on the preview shows at rest */
     --canvas-inset: 12px;                          /* from the preview's edge to what stands on it */
     --guide-name: 92px; --guide-row: 42px;         /* a line of the guides' list is this high */                           /* the names in the guides' list */
     --guide-dot: 10px; --guide-gap: 10px;           /* a round colour in the guides' list, and the room between two: the chosen one's ring needs it */
@@ -192,9 +193,9 @@
   :is(.pickt, .tile):hover { background: var(--hover); }
   :is(.pickt.on, .tile[aria-pressed="true"]) { background: var(--ink); border-color: var(--ink); color: var(--paper); }
   :is(.pickt.on, .tile[aria-pressed="true"]):hover { background: var(--ink-hover); }
-  .picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px var(--gap); padding: 4px 0; }
+  .picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gap); padding: var(--gap) 0; }      /* one space: between the tiles, both ways, and from them to the row's lines (Okay, 13 Oct 2026) */
   .picks.five { grid-template-columns: repeat(5, minmax(0, 1fr)); }      /* five choices (a window's shape) */
-  .pickt { justify-items: center; align-content: start; gap: 3px; min-height: var(--tile); padding: 6px 1px 5px; font-size: var(--t-xs); line-height: 1.15; }
+  .pickt { justify-items: center; align-content: start; gap: calc(var(--unit) / 2); min-height: var(--tile); padding: var(--unit) var(--hair); font-size: var(--t-xs); line-height: 1.15; }
   .pickt span { overflow-wrap: anywhere; text-align: center; }
   .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px var(--gap); }
   .tile { align-content: space-between; justify-items: start; gap: 4px; min-height: calc(var(--tile) + 2px); padding: 7px 8px; text-align: left; line-height: 1.25; }
@@ -311,7 +312,7 @@
   /* Windows: four cards the size of the example cards (five to a row), 12 · 3 · 6 · 9. They are tabs: the chosen one
      is ink. A window that isn't shown is quiet. The line under the section tabs is theirs. */
   .windowcards { padding: calc(2 * var(--unit)) 0 0; border-top: var(--thick) solid var(--ink); }      /* no room under the cards: they are tabs, standing on the line of the pane they choose */
-  .windowcards .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-left: var(--lead); }      /* the four tabs start on the second column, where the labels start, and fill the six columns (Okay, 13 Oct 2026) */
+  .windowcards .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }      /* the four tabs span the panel from margin to margin, the eyes' column too (Okay, 13 Oct 2026; from the second column until beta 4.20) */
   .windowcards .card { position: relative; display: grid; }
   .windowcards .card > button:first-child { display: grid; justify-items: center; gap: 3px; padding: var(--tab-pad) 4px; font-weight: 600; }
   .windowcards .card > button:first-child svg { display: block; }
@@ -322,16 +323,19 @@
   .tabsbar > .segs { grid-column: 2 / -1; }
   .tabsbar .segs > button { height: var(--tab-high); font-weight: 600; }
   .tabsbar { align-items: end; padding-top: calc(1.5 * var(--unit)); }
-  .pinned:has(> .tabsbar:last-child) { border-bottom: var(--thick) solid var(--ink); }      /* the hand tabs stand on a pane's thick line: the pane under them is the one they choose */
+  .pinned:has(> :is(.tabsbar, .windowcards):last-child) { border-bottom: var(--thick) solid var(--ink); }      /* the hand tabs stand on a pane's thick line: the pane under them is the one they choose */
   /* tabs (Okay, 13 Oct 2026: "both look bad as buttons. attach to the bottom, give top inbetweens a notch"): the hand
      tabs and the window cards. They touch each other and stand on the line under them with no foot of their own;
      between two tabs the top has a sharp notch, a V; the first and the last corner are square (Okay, 13 Oct 2026:
      "make notches sharp. beginning and ends square"). The chosen one is black. The V is a square stood on its
-     corner over the joint, in the surface's colour, with the tabs' line on its two lower sides. */
+     corner over the joint… until beta 4.20: now two triangles, see below. */
   :is(.tabsbar .segs, .windowcards .card) > button { border: var(--hair) solid var(--rule); border-bottom: 0; background: var(--field); }
   :is(.tabsbar .segs > button + button, .windowcards .card + .card > button) { position: relative; }
-  :is(.tabsbar .segs > button + button, .windowcards .card + .card > button)::before { content: ""; position: absolute; z-index: 1; left: calc(-1 * var(--hair) / 2); top: calc(-1 * var(--hair)); width: calc(var(--tab-notch) * 1.4142); height: calc(var(--tab-notch) * 1.4142);
-    transform: translate(-50%, -50%) rotate(45deg); background: var(--surface); border: solid var(--rule); border-width: 0 var(--hair) var(--hair) 0; pointer-events: none; }
+  /* two triangles hanging from the tabs' top line, their point down, over the joint: one in the line's colour, and
+     on it one in the surface's colour, smaller by the line. What shows of the first is the V's line. */
+  :is(.tabsbar .segs > button + button, .windowcards .card + .card > button)::before, :is(.tabsbar .segs > button + button, .windowcards .card + .card > button)::after { content: ""; position: absolute; z-index: 1; left: calc(-1 * var(--hair) / 2); top: calc(-1 * var(--hair)); transform: translateX(-50%); clip-path: polygon(0 0, 100% 0, 50% 100%); pointer-events: none; }
+  :is(.tabsbar .segs > button + button, .windowcards .card + .card > button)::before { width: calc(2 * (var(--tab-notch) + 1.4142 * var(--hair))); height: calc(var(--tab-notch) + 1.4142 * var(--hair)); background: var(--rule); }
+  :is(.tabsbar .segs > button + button, .windowcards .card + .card > button)::after { width: calc(2 * var(--tab-notch)); height: var(--tab-notch); background: var(--surface); }
   :is(.tabsbar .segs > button, .windowcards .card) + :is(button, .card) { margin-left: calc(-1 * var(--hair)); }
   :is(.tabsbar .segs, .windowcards .card) > button:hover { background: var(--hover); }
   :is(.tabsbar .segs, .windowcards .card) > button.on { position: relative; background: var(--ink); border-color: var(--ink); color: var(--paper); }
@@ -556,11 +560,12 @@
   .fontbox { display: grid; border: var(--hair) solid var(--rule); background: var(--field); }
   .fontbox > * + * { border-top: var(--hair) solid var(--rule); }
   .fontbox > :is(.fontname, .styles) { padding: var(--unit) var(--btn-pad); }
+  .fontbox > .row { padding: 0 var(--btn-pad); box-shadow: none; }      /* tracking: a row like any other, between the box's own lines */
   .fontbox .btn, .fontbox .styles > button { border-color: var(--rule); color: var(--grey); }
   .fontbox :is(.btn, .styles > button):hover { border-color: var(--ink); color: var(--ink); }
   .fontbox .styles > button.on, .fontbox .btn[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
   .fontname { display: flex; align-items: center; gap: var(--unit); }      /* the font's name; the language and Change… at the right */
-  .fontname .name { flex: 1; }
+  .fontname .name { flex: 1; font-weight: 600; }      /* the font's name is the box's heading (Okay, 13 Oct 2026) */
   .langs { position: relative; }
   .langbox { min-width: var(--control); padding: 0 var(--unit); font: var(--t-xs)/1 var(--mono); }
   .fontname .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -616,7 +621,11 @@
   .undobox { width: var(--control-large); }
   .undobox:first-child { border-radius: 10px 0 0 10px; }
   .undobox:last-child { border-left: 0; border-radius: 0 10px 10px 0; }
-  .undobox.none { opacity: 0.35; }
+  /* what stands on the preview is faint until the pointer is on it or it is open, so the dial is what one sees (Okay,
+     13 Oct 2026: "as faint as this unclickable one. Achieve this via opacity"). What can't be pressed now is fainter still. */
+  .guidesbox, .guidesmore, .backdropbox, .undobox { opacity: var(--faint); }
+  :is(.guidesbox, .guidesmore, .backdropbox, .undobox):is(:hover, :focus-visible, [aria-expanded="true"]) { opacity: 1; }
+  .undobox.none, .undobox.none:hover { opacity: calc(var(--faint) / 2); box-shadow: none; }
   .guidesbox { gap: 7px; padding: 0 10px 0 8px; border-radius: 10px 0 0 10px; font-weight: 600; }
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 10px 10px 0; }
   .guidesbox .word::after { content: attr(data-text); display: block; height: 0; overflow: hidden; visibility: hidden; font-weight: 600; }
@@ -5120,7 +5129,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.19";
+var VERSION = "beta 4.20";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -6819,7 +6828,8 @@ var EYE = {
   closed: `<path d="M1.5 6.5C3.5 9.6 5.8 10.8 8 10.8S12.5 9.6 14.5 6.5M8 10.8L8 13.4M4.7 10.1L3.7 12.4M11.3 10.1L12.3 12.4M2.5 8.1L1.1 9.8M13.5 8.1L14.9 9.8"/>`
 };
 var eye = (open) => icon(EYE[open ? "open" : "closed"]);
-var pic = (inside) => icon(inside, 28, "0 0 28 20").replace('width="28" height="28"', 'width="28" height="20"');
+var PIC_SCALE = 1.35;
+var pic = (inside) => icon(inside, 28, "0 0 28 20").replace('width="28" height="28"', `width="${Math.round(28 * PIC_SCALE)}" height="${Math.round(20 * PIC_SCALE)}"`).replace('stroke-width="1.4"', `stroke-width="${(1.4 / PIC_SCALE).toFixed(2)}"`);
 var solid = `fill="currentColor" stroke="none"`;
 var KIND_PIC = 30;
 var PICS = {
@@ -6855,15 +6865,16 @@ var PICS = {
     `<path d="M4.5 12.5A14 14 0 0 1 23.5 12.5L21 16.4A10 10 0 0 0 7 16.4Z"/>`
   ],
   window: [
-    `<rect x="6" y="3.5" width="16" height="13" rx="1.5"/><path d="M10.6 8L12.2 7L12.2 13M15 7L18.4 7L16 13" stroke-width="1.2"/>`,
-    `<rect x="2.5" y="4.5" width="23" height="11" rx="1.5"/><path d="M6 12.5L6 7.5L8 10.5L10 7.5L10 12.5M13 7.5L15.5 7.5L15.5 12.5L13 12.5ZM18.5 12.5L18.5 7.5L22 12.5L22 7.5" stroke-width="1.1"/>`,
-    `<rect x="4" y="4" width="20" height="12" rx="1"/><path d="M4 16L4 4L14 4A12 12 0 0 0 14 16Z" ${solid}/><circle cx="19" cy="10" r="2.2" ${solid}/>`,
-    `<path d="M3 16A11 11 0 0 1 25 16A5.5 5.5 0 0 0 14 16A5.5 5.5 0 0 0 3 16Z"/><circle cx="14" cy="8.6" r="3" ${solid}/>`
+    // what a window shows, in as few lines as say it: one figure · one letter · a half filled · a crescent
+    `<rect x="5" y="2.5" width="18" height="15" rx="1.5"/><path d="M12.4 7.6L14.6 6L14.6 14" stroke-width="1.6"/>`,
+    `<rect x="2" y="4" width="24" height="12" rx="1.5"/><path d="M10 13.5L10 6.5L14 11.5L18 6.5L18 13.5" stroke-width="1.6"/>`,
+    `<rect x="3" y="3.5" width="22" height="13" rx="1.5"/><path d="M3.5 16L3.5 4L14 4L14 16Z" ${solid}/>`,
+    `<path d="M17.5 2.8A7.4 7.4 0 1 0 17.5 17.2A9 9 0 0 1 17.5 2.8Z" ${solid}/>`
   ]
 };
 var hand_pic = (i) => {
   const p = hand_shape({ ...HAND_BASE, shape: i, len: 13, w: 2.2, tail: 3, tip: 4.5, feature: 4.4, feature_at: [0, 0, 0, 30, 0, 0, 45, 62, 62][i] || 0, round: 0, wall: 0, counter: 0 });
-  return `<svg viewBox="-3 -14 6 18.5" width="9" height="28" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;
+  return `<svg viewBox="-3 -14 6 18.5" width="${Math.round(9 * PIC_SCALE)}" height="${Math.round(28 * PIC_SCALE)}" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;
 };
 var TOOL_ICONS = {
   rename: `<rect x="1.5" y="1.5" width="13" height="13" rx="3.5" stroke-width="0.7"/><path d="M8 4.4L8 11.6M6.2 4.2L9.8 4.2M6.2 11.8L9.8 11.8" stroke-width="0.7"/>`,
@@ -7004,7 +7015,6 @@ var ROWS = {
     custom("nudge", { show: numerals_only }),
     hdr("Type", { show: numerals_only }),
     custom("font", { show: numerals_only }),
-    num2("tracking", "Tracking", -200, 800, 5, { show: numerals_only }),
     hdr("Variable axes", { show: (R) => numerals_only(R) && has_font(R.ps) && Object.keys(font_axes(font_of(R))).length > 0 }),
     custom("axes", { show: numerals_only }),
     hdr("OpenType features", { show: (R) => numerals_only(R) && has_font(R.ps) }),
@@ -7042,8 +7052,8 @@ var ROWS = {
   ],
   Date: [
     // "Windows" on its tab: up to four holes in the plate
-    custom("window_cards", { bar: true }),
-    // four cards, 12 · 3 · 6 · 9: where each window is, and tabs for the panes below (Okay, 12 Oct 2026)
+    custom("window_cards", { pin: true, bar: true }),
+    // pin: always in view, like the hand tabs (Okay, 13 Oct 2026) ·         // four cards, 12 · 3 · 6 · 9: where each window is, and tabs for the panes below (Okay, 12 Oct 2026)
     // the cards are tabs only; a window is shown by the tick on its heading line (Okay, 13 Oct 2026, after trying a
     // small switch on each card: "unnecessarily complex… enable window tickmark is the way to go. leave them as tabs")
     hdr("Window", { title: (S) => `Window at ${DATE_AT[windows_of(S)[S.ui_window].at][0]}` }),
@@ -8956,7 +8966,8 @@ var DialTool = class _DialTool {
     return this.font_scope === "window" ? window_type(this.S, T) : T;
   }
   /** a font, in a white box of three lines with hairlines between (Okay, 13 Oct 2026): its numerals · its name, with
-   *  the language (a ring's only: two letters, a list under them) and Change… at the right · its styles as buttons.
+   *  the language (a ring's only: two letters, a list under them) and Change… at the right · its styles as buttons
+   *  · its tracking (a ring's only).
    *  The numerals and Change… both open the font sheet. */
   row_font(wrap, out) {
     wrap.className = "font";
@@ -8970,6 +8981,7 @@ var DialTool = class _DialTool {
     const current = el("button", { type: "button", className: "fontrow current", id: pre + "font-current", title: "Choose a font", onclick: open });
     const name = el("span", { className: "name", id: pre + "font-name" });
     const lang = own ? null : this.lang_box();
+    const tracking = own ? null : this.build_row({ ...num2("tracking", "Tracking", -200, 800, 5), scope: "ring" });
     const named = el("div", { className: "fontname" }, name, ...lang ? [lang.el] : [], el("button", { type: "button", className: "btn", id: pre + "font-change", textContent: "Change\u2026", onclick: open }));
     const styles = el("div", { className: "segs styles" });
     const state = el("div", { className: "quiet note", id: pre + "font-note" });
@@ -8988,12 +9000,13 @@ var DialTool = class _DialTool {
         this.changed(true);
       }
     });
-    wrap.append(el("div", { className: "fontbox" }, current, named, styles), ...own ? [back] : [], state);
+    wrap.append(el("div", { className: "fontbox" }, current, named, styles, ...tracking ? [tracking.el] : []), ...own ? [back] : [], state);
     let shown = null;
     out.refresh = (T) => {
       const R = own ? window_type(this.S, T) : T;
       back.hidden = !(own && T.ps);
       if (lang) lang.refresh(T);
+      if (tracking) tracking.refresh(T);
       const mine = this.families().get(R.family) || [], f = this.catalog.get(R.ps) || mine[0];
       const key = R.ps + "/" + has_font(R.ps) + "/" + Boolean(T.ps);
       if (key !== shown) {
