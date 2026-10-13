@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.15 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.16 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet.
@@ -65,6 +65,7 @@
     --unit: 5.5px;                                 /* every space is a multiple of this */
     --air: calc(4 * var(--unit));                  /* under an open pane */
     --hair: 1px; --thick: 2px;                     /* a thick line opens a pane; everything inside a pane is a hairline */
+    --btn-pad: 10px;                               /* from a button's or a box's edge to its words */
     --control: 26px;                               /* a control's height: field, button, swatch */
     --control-large: 32px;                         /* the Guides switch, the hex line */
     --line: 34px;                                  /* a row's height */
@@ -147,7 +148,7 @@
   .btn, .step, .segs > button, .plain, .sign { height: var(--control); border: var(--hair) solid var(--ink); background: var(--field); }
   :is(.btn, .step, .segs > button):hover { background: var(--hover); }
   :is(.btn, .step, .segs > button, .plain, .sign):active { background: var(--ink); color: var(--paper); }
-  .btn { padding: 0 10px; }
+  .btn { padding: 0 var(--btn-pad); }
   .btn.main { min-width: var(--col); background: var(--ink); color: var(--paper); font-weight: 600; }
   .btn.main:hover { background: var(--ink-hover); }
   .plain, .sign { flex: none; border-color: transparent; background: none; }
@@ -537,22 +538,23 @@
 
   /* the font picker: every font shows its own numerals */
   .font { display: grid; gap: var(--unit); margin-top: var(--unit); }
-  .font .styles { flex-wrap: wrap; gap: 4px; }
-  .font .styles > button { flex: 0 0 auto; padding: 0 9px; white-space: nowrap; border-left: var(--hair) solid var(--rule); }
+  .font .styles { flex-wrap: wrap; gap: var(--unit); }
+  .font .styles > button { flex: 0 0 auto; padding: 0 var(--btn-pad); white-space: nowrap; border-left: var(--hair) solid var(--rule); }
   .font .styles > button.on { border-color: var(--ink); }
   .font .note:empty, .picker .note:empty { display: none; }
-  .font > .btn { justify-self: start; padding: 0 10px; }
+  .font > .btn { justify-self: start; }
+  .fontname { display: flex; align-items: center; justify-content: space-between; gap: var(--gap); }      /* the font's name, Change… at the right */
+  .fontname .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .fontlist { border: var(--hair) solid var(--rule); background: var(--field); overflow-y: auto; }
-  .fontrow { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: calc(var(--unit) * 2); width: 100%; height: 35px; padding: 0 8px; border-bottom: var(--hair) solid var(--ground); text-align: left; }
+  .fontrow { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: calc(var(--unit) * 2); width: 100%; height: var(--line); padding: 0 var(--btn-pad); border-bottom: var(--hair) solid var(--ground); text-align: left; }
   .fontrow:hover { background: var(--hover); }
   .fontrow.on, .fontrow.on:hover { background: var(--select); }
   .fontrow .sample { display: flex; align-items: center; min-width: 0; overflow: hidden; font-size: var(--t-sample); line-height: 1; white-space: nowrap; }
   .fontrow .sample svg { display: block; flex: none; }
   .fontrow .name { color: var(--grey); white-space: nowrap; }
   .fontrow.on .name, .fontrow.current .name { color: var(--ink); }
-  .fontrow.current { grid-template-columns: 1fr auto auto; height: var(--head); border: var(--hair) solid var(--rule); background: var(--field); }
-  .fontrow.current .change { color: var(--grey); padding-left: 6px; border-left: var(--hair) solid var(--rule); }
-  .fontlist .group { padding: calc(var(--unit) * 2) 8px 2px; border-bottom: var(--hair) solid var(--rule); }
+  .fontrow.current { grid-template-columns: minmax(0, 1fr); height: var(--head); border: var(--hair) solid var(--rule); background: var(--field); }      /* the chosen font's numerals, alone on their line */
+  .fontlist .group { padding: calc(var(--unit) * 2) var(--btn-pad) calc(var(--unit) / 2); border-bottom: var(--hair) solid var(--rule); }
 
   /* the font sheet: over the panel, on its columns, so the dial stays in view; from the bottom on a phone */
   .picker { position: fixed; inset: 0 auto 0 0; width: var(--panel); max-width: 100vw; height: 100%; max-height: none; margin: 0; padding: 0; border: 0; border-right: var(--hair) solid var(--ink);
@@ -5096,7 +5098,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.15";
+var VERSION = "beta 4.16";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -8917,7 +8919,6 @@ var DialTool = class _DialTool {
     }
     return box;
   }
-  /** in the Type group: the ring's font alone (press it for the list), and its styles as buttons. */
   /** whose font the font sheet and the style buttons set: the selected ring's, or the selected window's. */
   font_holder() {
     return this.font_scope === "window" ? this.window() : this.ring();
@@ -8927,6 +8928,8 @@ var DialTool = class _DialTool {
     const T = this.font_holder();
     return this.font_scope === "window" ? window_type(this.S, T) : T;
   }
+  /** a font, in three lines (Okay, 13 Oct 2026): its numerals · its name, with Change… at the right · its styles
+   *  as buttons. The numerals and Change… both open the font sheet. */
   row_font(wrap, out) {
     wrap.className = "font";
     const scope = out.row.scope, own = scope === "window";
@@ -8935,7 +8938,10 @@ var DialTool = class _DialTool {
       this.font_scope = scope;
       return act();
     };
-    const current = el("button", { type: "button", className: "fontrow current", id: pre + "font-current", title: "Choose a font", onclick: () => choose(() => this.open_picker()) });
+    const open = () => choose(() => this.open_picker());
+    const current = el("button", { type: "button", className: "fontrow current", id: pre + "font-current", title: "Choose a font", onclick: open });
+    const name = el("span", { className: "name", id: pre + "font-name" });
+    const named = el("div", { className: "fontname" }, name, el("button", { type: "button", className: "btn", id: pre + "font-change", textContent: "Change\u2026", onclick: open }));
     const styles = el("div", { className: "segs styles" });
     const state = el("div", { className: "quiet note", id: pre + "font-note" });
     const back = el("button", {
@@ -8953,7 +8959,7 @@ var DialTool = class _DialTool {
         this.changed(true);
       }
     });
-    wrap.append(current, styles, ...own ? [back] : [], state);
+    wrap.append(current, named, styles, ...own ? [back] : [], state);
     let shown = null;
     out.refresh = (T) => {
       const R = own ? window_type(this.S, T) : T;
@@ -8962,11 +8968,8 @@ var DialTool = class _DialTool {
       const key = R.ps + "/" + has_font(R.ps) + "/" + Boolean(T.ps);
       if (key !== shown) {
         shown = key;
-        current.replaceChildren(
-          f ? this.sample(f) : el("span", { className: "sample quiet", textContent: "not loaded" }),
-          el("span", { className: "name", textContent: own && !T.ps ? `${R.family} \xB7 as the numerals` : R.family }),
-          el("span", { className: "change", textContent: "Change\u2026" })
-        );
+        current.replaceChildren(f ? this.sample(f) : el("span", { className: "sample quiet", textContent: "not loaded" }));
+        name.textContent = own && !T.ps ? `${R.family} \xB7 as the numerals` : R.family;
       }
       styles.hidden = mine.length < 2;
       styles.replaceChildren(...mine.map((x) => {
@@ -8974,7 +8977,7 @@ var DialTool = class _DialTool {
         b.classList.toggle("on", x.ps === R.ps);
         return b;
       }));
-      const missing = has_font(R.ps) ? "" : this.catalog.has(R.ps) ? "Loading\u2026 " : `${R.family} isn\u2019t loaded yet, so ${font_list()[0].family} stands in. Press the font above to choose another or to add it. `;
+      const missing = has_font(R.ps) ? "" : this.catalog.has(R.ps) ? "Loading\u2026 " : `${R.family} isn\u2019t loaded yet, so ${font_list()[0].family} stands in. Press Change\u2026 to choose another or to add it. `;
       state.textContent = missing + (this.font_note || "");
       if (this.picker && this.picker.open) this.fill_picker();
     };

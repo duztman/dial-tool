@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.16 (web version) · 13 Oct 2026
+
+On `dev` and on the live page. Seen in Chromium here only.
+
+- **A font in three lines**: numerals (whole, no longer cut by the name) · name with *Change…* at the right · styles. Spaces from tokens (`--unit`, `--line`, new `--btn-pad`).
+
 ## beta 4.15 (web version) · 13 Oct 2026
 
 On `dev` and on the live page. Seen in Chromium here only.

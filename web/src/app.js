@@ -1853,23 +1853,27 @@ class DialTool {
     return box;
   }
 
-  /** in the Type group: the ring's font alone (press it for the list), and its styles as buttons. */
   /** whose font the font sheet and the style buttons set: the selected ring's, or the selected window's. */
   font_holder() { return this.font_scope === "window" ? this.window() : this.ring(); }
   /** …and the type that holder draws with: a window without a font of its own draws with the top numerals ring's. */
   font_shown() { const T = this.font_holder(); return this.font_scope === "window" ? G.window_type(this.S, T) : T; }
 
+  /** a font, in three lines (Okay, 13 Oct 2026): its numerals · its name, with Change… at the right · its styles
+   *  as buttons. The numerals and Change… both open the font sheet. */
   row_font(wrap, out) {
     wrap.className = "font";
     const scope = out.row.scope, own = scope === "window";       // a window's font row: the same, with a way back to the numerals' font
     const pre = own ? "window-" : "";
     const choose = (act) => { this.font_scope = scope; return act(); };
-    const current = el("button", { type: "button", className: "fontrow current", id: pre + "font-current", title: "Choose a font", onclick: () => choose(() => this.open_picker()) });
+    const open = () => choose(() => this.open_picker());
+    const current = el("button", { type: "button", className: "fontrow current", id: pre + "font-current", title: "Choose a font", onclick: open });
+    const name = el("span", { className: "name", id: pre + "font-name" });
+    const named = el("div", { className: "fontname" }, name, el("button", { type: "button", className: "btn", id: pre + "font-change", textContent: "Change…", onclick: open }));
     const styles = el("div", { className: "segs styles" });
     const state = el("div", { className: "quiet note", id: pre + "font-note" });
     const back = el("button", { type: "button", className: "btn", id: "window-font-back", textContent: "As the numerals", title: "Use the top numerals ring’s font again", hidden: true,
       onclick: () => { const w = this.window(); w.family = ""; w.ps = ""; w.axes = {}; this.changed(true); } });
-    wrap.append(current, styles, ...(own ? [back] : []), state);
+    wrap.append(current, named, styles, ...(own ? [back] : []), state);
     let shown = null;
     out.refresh = (T) => {
       const R = own ? G.window_type(this.S, T) : T;
@@ -1878,8 +1882,8 @@ class DialTool {
       const key = R.ps + "/" + G.has_font(R.ps) + "/" + Boolean(T.ps);
       if (key !== shown) {
         shown = key;
-        current.replaceChildren(f ? this.sample(f) : el("span", { className: "sample quiet", textContent: "not loaded" }),
-          el("span", { className: "name", textContent: own && !T.ps ? `${R.family} · as the numerals` : R.family }), el("span", { className: "change", textContent: "Change…" }));
+        current.replaceChildren(f ? this.sample(f) : el("span", { className: "sample quiet", textContent: "not loaded" }));
+        name.textContent = own && !T.ps ? `${R.family} · as the numerals` : R.family;
       }
       styles.hidden = mine.length < 2;             // the family's styles, as buttons
       styles.replaceChildren(...mine.map((x) => {
@@ -1888,7 +1892,7 @@ class DialTool {
         return b;
       }));
       const missing = G.has_font(R.ps) ? "" : this.catalog.has(R.ps) ? "Loading… "
-        : `${R.family} isn’t loaded yet, so ${G.font_list()[0].family} stands in. Press the font above to choose another or to add it. `;
+        : `${R.family} isn’t loaded yet, so ${G.font_list()[0].family} stands in. Press Change… to choose another or to add it. `;
       state.textContent = missing + (this.font_note || "");
       if (this.picker && this.picker.open) this.fill_picker();
     };

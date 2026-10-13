@@ -620,7 +620,7 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
   const own = [await S("S.da_family"), await S("S.rings.find((r) => r.kind === 2).ps"), await page.isVisible("#window-font-back")];
   if (await page.$eval("#font-picker", (d) => d.open)) await page.keyboard.press("Escape");
   await page.click("#window-font-back");
-  check(own[0] === "Oswald" && own[1] === ring_font && own[2] && await S("S.da_ps === ''") && (await page.textContent("#window-font-current .name")).includes("as the numerals"), "a window can have a font of its own (Oswald) without touching the numerals' font; As the numerals takes it back");
+  check(own[0] === "Oswald" && own[1] === ring_font && own[2] && await S("S.da_ps === ''") && (await page.textContent("#window-font-name")).includes("as the numerals"), "a window can have a font of its own (Oswald) without touching the numerals' font; As the numerals takes it back");
   // three colours
   const fills = async () => { await frame(); return page.evaluate(() => { const t = window.dial_tool, items = [...document.querySelectorAll("main svg [fill]")]; const S = t.S; return [S.da_text_c, S.da_disc_c, S.da_ink]; }); };
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("window", "disc_c", [0.1, 0.1, 0.1, 1]); t.set_value("window", "text_c", [1, 0.9, 0.2, 1]); });
@@ -820,9 +820,19 @@ check(await S("S.rings[S.ui_ring].ps === 'Poppins-Light'") && (await page.textCo
 await page.click('#font-picker .fontrow[data-family="Lora"]');
 await page.waitForFunction(() => window.dial_tool.ring().family === "Lora");
 await page.click("#font-done");
-check(await page.$eval("#font-picker", (d) => !d.open) && (await page.textContent("#font-current .name")) === "Lora" && await page.$("#font-current .sample svg") !== null, "Done closes the sheet; Type shows Lora with its numerals");
+check(await page.$eval("#font-picker", (d) => !d.open) && (await page.textContent("#font-name")) === "Lora" && await page.$("#font-current .sample svg") !== null, "Done closes the sheet; Type shows Lora with its numerals");
 await frame();
 check(await page.$("#axis-wght") !== null, "Lora's weight axis has a slider");
+{
+  const f = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), box = r(".font"), top = r("#font-current"), name = r("#font-name"), change = r("#font-change"), styles = r(".font .styles"), numerals = r("#font-current svg");
+    return { order: top.bottom <= name.top && name.bottom <= styles.top, right: Math.round(box.right - change.right), left: Math.round(name.left - box.left), whole: numerals.right <= top.right, gaps: [change.top - top.bottom, styles.top - change.bottom] }; });
+  check(f.order && f.right === 0 && f.left === 0 && f.whole && f.gaps.every((v) => Math.abs(v - 5.5) < 0.3), `a font stands in three lines: its numerals, whole · its name with Change… at the right end · its styles; one unit between the lines (${f.gaps.map((v) => +v.toFixed(2)).join(" · ")})`);
+  await page.$eval(".font", (e) => e.scrollIntoView({ block: "center" }));
+  await shot("4c22-font");
+  await page.click("#font-change");
+  check(await page.$eval("#font-picker", (d) => d.open), "Change… opens the font sheet");
+  await page.click("#font-done");
+}
 const light = await S("t.statik.rings.find((d) => d.kind === 'numerals').path.svg(3).length");
 await page.fill("#axis-wght", "700");
 await page.press("#axis-wght", "Enter");
