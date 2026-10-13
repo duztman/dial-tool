@@ -2152,7 +2152,7 @@ class DialTool {
       rail.onpointerup = rail.onpointercancel = () => { rail.onpointermove = rail.onpointerup = rail.onpointercancel = null; rail.classList.remove("held"); };
     });
     // the legend: folded to one button beside the squares; open, it stands over them and pushes the list up
-    const legend = el("dl", { className: "legend", id: "font-legend", hidden: true }, el("div", { className: "legendhead", textContent: "OpenType abbreviations" }), ...STICKER_LEGEND.flatMap(([word, kind, says, code]) => [el("dt", {}, el("span", { className: "sticker " + kind, textContent: word })), el("dd", {}, says, ...(code ? [" ", el("small", { textContent: `[${code}]` })] : []))]));
+    const legend = el("dl", { className: "legend", id: "font-legend", hidden: true }, el("div", { className: "legendhead" }, "Variable font axes and", el("br"), "OpenType abbreviations"), ...STICKER_LEGEND.flatMap(([word, kind, says, code]) => [el("dt", {}, el("span", { className: "sticker " + kind, textContent: word })), el("dd", {}, says, ...(code ? [" ", el("small", { textContent: `[${code}]` })] : []))]));
     const legend_button = el("button", { type: "button", className: "pickt legendbutton", id: "font-legend-open", title: "What the stickers mean" });
     legend_button.innerHTML = icon(`<path d="M4 10L8 6L12 10"/>`) + "<span>Legend<br><small>(OpenType abbr.)</small></span>";      // a second line like its brothers (Okay, 14 Oct 2026)
     legend_button.setAttribute("aria-expanded", "false");
