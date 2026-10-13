@@ -74,6 +74,8 @@
     --ringline: 52px; --ringline-gap: 8px;         /* the selected ring's line: its height · between its parts */
     --kind-button: 34px;                           /* in that line: a kind's button, and the colour's */
     --value-button: 40px;                          /* a value as a round button: room for five figures over its radius */
+    --card-switch: 22px;                           /* the clock-like switch on a window card */
+    --half: 30px;                                  /* AM · PM inside the time's box */
     --dot-tiny: 10px;                              /* a colour inside a line of words: a folded pane's summary */
     --thumb: 18px; --track: 4px;                   /* sliders: a black disc on a thin track (Okay's sketch, 12 Oct 2026) */
     --tick: 16px;                                  /* a tick box */
@@ -291,11 +293,25 @@
      is ink. A window that isn't shown is quiet. The line under the section tabs is theirs. */
   .windowcards { padding: calc(2 * var(--unit)) 0 calc(3 * var(--unit)); border-top: var(--thick) solid var(--ink); }
   .windowcards .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--unit); }
-  .windowcards button { display: grid; justify-items: center; gap: 3px; padding: 8px 4px 5px; background: var(--inset); font-weight: 600; }
-  .windowcards button svg { display: block; }
-  .windowcards button.off { color: var(--grey); font-weight: 400; }
-  .windowcards button:hover { background: var(--select); }
-  .windowcards button.on { background: var(--ink); color: var(--paper); }
+  .windowcards .card { position: relative; display: grid; }
+  .windowcards .card > button:first-child { display: grid; justify-items: center; gap: 3px; padding: 8px 4px 5px; background: var(--inset); font-weight: 600; }
+  .windowcards .card > button:first-child svg { display: block; }
+  .windowcards .card > button:first-child.off { color: var(--grey); font-weight: 400; }
+  .windowcards .card > button:first-child:hover { background: var(--select); }
+  .windowcards .card > button:first-child.on { background: var(--ink); color: var(--paper); }
+  /* the switch in a card's top right corner: a small clock. Its hand stands up and the face is filled when the window
+     is shown; it lies to the left on an empty face when it isn't. It takes the card's colour, light on the chosen card. */
+  .cardswitch { position: absolute; top: 3px; right: 3px; display: grid; place-items: center; width: var(--card-switch); height: var(--card-switch); border-radius: var(--round-pill); color: var(--grey); }
+  .cardswitch .hand { transform-origin: 8px 8px; transform: rotate(-90deg); transition: transform 120ms ease-out; }
+  .cardswitch .pivot { fill: currentColor; stroke: none; }
+  .cardswitch.on { color: var(--ink); }
+  .cardswitch.on .hand { transform: none; }
+  .cardswitch.on circle:first-child { fill: var(--select-rule); }
+  .cardswitch:hover { background: var(--veil-strong); }
+  .card > button:first-child.on + .cardswitch { color: var(--paper); }
+  .card > button:first-child.on + .cardswitch.on circle:first-child { fill: var(--select-rule); stroke: var(--paper); }
+  .card > button:first-child.on + .cardswitch.on .hand, .card > button:first-child.on + .cardswitch.on .pivot { color: var(--ink); stroke: var(--ink); }
+  @media (prefers-reduced-motion: reduce) { .cardswitch .hand { transition: none; } }
   .handsbar + .tabsbar { border-top: var(--hair) solid var(--rule); }
   /* tabs inside a section, always in view (Hands: Hour · Minute · Seconds): one line across the six columns */
   .tabsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; min-height: calc(var(--head) + var(--unit)); border-top: var(--thick) solid var(--ink); }
@@ -576,7 +592,12 @@
   .bar .lead .segs > button + button { border-left: 0; }
   .bar .lead .side { justify-self: center; width: var(--control); border-color: transparent; }      /* centred on the toggle column, like the eyes above it */
   .bar .side[aria-pressed="true"] { background: var(--bar-ink); color: var(--bar); }
-  .bar .speeds, .bar .time { grid-column: span 2; }
+  .bar .speeds, .bar .timebox { grid-column: span 2; }
+  /* AM · PM stands inside the time's box, at its right end: one small word that a press turns over */
+  .bar .timebox { position: relative; display: grid; }
+  .bar .lead .timebox .half { position: absolute; right: 0; top: 0; width: var(--half); border-color: transparent; font-size: var(--t-xs); letter-spacing: 0.04em; color: var(--bar-quiet); }
+  .bar .lead .timebox .half:hover { color: var(--bar-ink); }
+  .bar .timebox .time { padding-right: calc(var(--half) - 6px); }
   .bar .time { width: 100%; text-align: center; font-weight: 600; letter-spacing: 0.02em; }
   .bar .viewing { padding-right: 0; }
   .bar .viewing > button, .bar .zooms { flex: none; width: var(--col); }

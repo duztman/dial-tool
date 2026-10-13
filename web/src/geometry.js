@@ -76,7 +76,9 @@ export const HAND_BASE = {
 };
 
 // windows 2 to 4 (web version, beta 3.0). Window 1 is the date window both tools know: its keys are da_….
-// text: what a date or day window shows · hour: of the day, for am · pm · age: of the moon, in days.
+// text: what a date or day window shows · age: of the moon, in days · hour: of the day, for am · pm until 13 Oct
+// 2026 — since then an am · pm window follows the time shown (S.t, 0 to 86400: the second half of a day is pm), as
+// its disc is geared to the hour wheel. `hour` stays because old links and files carry it (R8, R31); nothing reads it.
 export const WINDOW_BASE = {
   on: false, kind: 0, at: 0, r: 10.5, w: 2.6, h: 2.0, round: 0.2, frame: 0.15, clear: 0.25,
   text: "17", size: 62.0, ink: INK, hour: 10.0, age: 14.8,
@@ -1057,6 +1059,11 @@ function day_night(w, h, hour) {
   return merge([night.difference(crescent).difference(stars), sun]);
 }
 
+/** the hour of the day the time shown is in, 0 to 24, in steps of six minutes: what an am · pm window shows, and
+ *  when it has to be drawn again (the disc turns 1.5° in six minutes). */
+export const day_hour = (S) => Math.floor((((S.t % 86400) + 86400) % 86400) / 360) / 10;
+export const shows_day = (S) => windows_of(S).some((w) => w.on && WINDOW_KINDS[w.kind] === "am · pm");
+
 /** one window, built: {w (its settings), index, window (the hole), frame, cutline, content, clear (keep-out zone)} */
 function build_window(S, w, index) {
   const centre = clock_point(w.r, window_angle(w)), kind = WINDOW_KINDS[w.kind];
@@ -1068,7 +1075,7 @@ function build_window(S, w, index) {
   } else {
     opening = rounded_rect(w.w, w.h, w.round);
     grown = (d) => rounded_rect(w.w + 2 * d, w.h + 2 * d, w.round + d).translate(...centre);
-    content = kind === "am · pm" ? day_night(w.w, w.h, w.hour).intersection(opening) : centred(text_path(w.text, date_type(S), w.h * w.size / 100));
+    content = kind === "am · pm" ? day_night(w.w, w.h, day_hour(S)).intersection(opening) : centred(text_path(w.text, date_type(S), w.h * w.size / 100));
   }
   const win = opening.translate(...centre);
   return {

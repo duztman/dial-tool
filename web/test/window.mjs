@@ -474,8 +474,39 @@ await page.click("#hand-tab-0");
 await shot("4g-hand-tabs");
 // Windows: four cards, 12 · 3 · 6 · 9, are the tabs; Show this window is on the heading line, also when the pane is folded
 await tab("Date");
-const cards = await page.$$eval(".windowcards button", (b) => b.map((x) => [x.id, x.textContent, x.classList.contains("on"), Math.round(x.getBoundingClientRect().width)]));
+const cards = await page.$$eval(".windowcards .card > button:first-child", (b) => b.map((x) => [x.id, x.textContent, x.classList.contains("on"), Math.round(x.getBoundingClientRect().width)]));
 check(cards.map((c) => c[1]).join(" ") === "12 3 6 9" && cards.map((c) => c[0]).join(" ") === "window-card-1 window-card-0 window-card-2 window-card-3" && cards[1][2], `four cards: 12 · 3 · 6 · 9; the date window of old is the one at 3, and chosen (${cards[0][3]} wide)`);
+// each card has a small clock-like switch: it shows or hides that window (13 Oct 2026)
+{
+  const before = await S("[S.ui_window, S.windows[2].on]");
+  const look = async () => page.$eval("#window-switch-3", (e) => [e.getAttribute("aria-checked"), getComputedStyle(e.querySelector(".hand")).transform !== "none", Math.round(e.getBoundingClientRect().width)]);
+  const off = await look();
+  await page.click("#window-switch-3");
+  const on = await look(), chosen = await S("[S.ui_window, S.windows[2].on, S.windows[2].at]");
+  await shot("4c11-window-switch");
+  await page.click("#window-switch-3");
+  const again = await S("S.windows[2].on");
+  check(before[1] === false && off[0] === "false" && off[1] && on[0] === "true" && !on[1] && chosen[0] === 3 && chosen[1] === true && chosen[2] === 3 && again === false && await page.$$eval(".cardswitch", (e) => e.length) === 4,
+    `a card's switch shows its window (hand up) and hides it again (hand lying); it chooses the card too (${off[2]} wide)`);
+  await page.click(`#window-card-${before[0]}`);
+}
+// an am · pm window follows the time shown: light at 10 in the morning, dark at 10 at night; AM · PM stands in the time's box
+{
+  const was = await page.evaluate(() => { const t = window.dial_tool, was = [t.S.ui_window, t.S.da_on, t.S.da_kind, t.S.t]; t.S.ui_window = 0; t.set_value("window", "on", true); t.set_value("window", "kind", 2); return was; });
+  const dark = async () => { await frame(); return page.evaluate(() => { const t = window.dial_tool, x = t.statik.windows[0], b = x.number.bounds(), w = x.window.bounds(); return b ? (b[2] - b[0]) * (b[3] - b[1]) / ((w[2] - w[0]) * (w[3] - w[1])) : 0; }); };
+  await page.fill("#time", "10:00"); await page.press("#time", "Enter");
+  const am = [await S("S.t"), await page.textContent("#ampm"), await dark()];
+  await page.click("#ampm");
+  const pm = [await S("S.t"), await page.textContent("#ampm"), await dark(), await page.inputValue("#time")];
+  await shot("4c12-ampm");
+  await page.fill("#time", "15:20"); await page.press("#time", "Enter");
+  const typed = [await S("S.t"), await page.inputValue("#time")];
+  await page.fill("#time", "3:20 am"); await page.press("#time", "Enter");
+  const said = await S("S.t");
+  check(am[0] === 36000 && am[1] === "AM" && pm[0] === 79200 && pm[1] === "PM" && pm[3] === "10:00:00" && pm[2] > am[2] + 0.3 && typed[0] === 55200 && typed[1] === "3:20:00" && said === 12000 && await page.$('[id*="Hour-of-the-day"]') === null,
+    `an am · pm window follows the time: at 10 AM ${(am[2] * 100).toFixed(0)} % of it is drawn dark, at 10 PM ${(pm[2] * 100).toFixed(0)} %; "15:20" is 3:20 PM, "3:20 am" the morning; no Hour of the day row`);
+  await page.evaluate((was) => { const t = window.dial_tool; t.set_value("window", "kind", was[2]); t.set_value("window", "on", was[1]); t.S.ui_window = was[0]; t.set_time(was[3]); t.sync_rows(); }, was);
+}
 await tab("Export");
 const example_w = await page.$eval(".examples a", (e) => Math.round(e.getBoundingClientRect().width));
 await tab("Date");

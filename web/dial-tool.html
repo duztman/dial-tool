@@ -83,6 +83,8 @@
     --ringline: 52px; --ringline-gap: 8px;         /* the selected ring's line: its height · between its parts */
     --kind-button: 34px;                           /* in that line: a kind's button, and the colour's */
     --value-button: 40px;                          /* a value as a round button: room for five figures over its radius */
+    --card-switch: 22px;                           /* the clock-like switch on a window card */
+    --half: 30px;                                  /* AM · PM inside the time's box */
     --dot-tiny: 10px;                              /* a colour inside a line of words: a folded pane's summary */
     --thumb: 18px; --track: 4px;                   /* sliders: a black disc on a thin track (Okay's sketch, 12 Oct 2026) */
     --tick: 16px;                                  /* a tick box */
@@ -300,11 +302,25 @@
      is ink. A window that isn't shown is quiet. The line under the section tabs is theirs. */
   .windowcards { padding: calc(2 * var(--unit)) 0 calc(3 * var(--unit)); border-top: var(--thick) solid var(--ink); }
   .windowcards .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--unit); }
-  .windowcards button { display: grid; justify-items: center; gap: 3px; padding: 8px 4px 5px; background: var(--inset); font-weight: 600; }
-  .windowcards button svg { display: block; }
-  .windowcards button.off { color: var(--grey); font-weight: 400; }
-  .windowcards button:hover { background: var(--select); }
-  .windowcards button.on { background: var(--ink); color: var(--paper); }
+  .windowcards .card { position: relative; display: grid; }
+  .windowcards .card > button:first-child { display: grid; justify-items: center; gap: 3px; padding: 8px 4px 5px; background: var(--inset); font-weight: 600; }
+  .windowcards .card > button:first-child svg { display: block; }
+  .windowcards .card > button:first-child.off { color: var(--grey); font-weight: 400; }
+  .windowcards .card > button:first-child:hover { background: var(--select); }
+  .windowcards .card > button:first-child.on { background: var(--ink); color: var(--paper); }
+  /* the switch in a card's top right corner: a small clock. Its hand stands up and the face is filled when the window
+     is shown; it lies to the left on an empty face when it isn't. It takes the card's colour, light on the chosen card. */
+  .cardswitch { position: absolute; top: 3px; right: 3px; display: grid; place-items: center; width: var(--card-switch); height: var(--card-switch); border-radius: var(--round-pill); color: var(--grey); }
+  .cardswitch .hand { transform-origin: 8px 8px; transform: rotate(-90deg); transition: transform 120ms ease-out; }
+  .cardswitch .pivot { fill: currentColor; stroke: none; }
+  .cardswitch.on { color: var(--ink); }
+  .cardswitch.on .hand { transform: none; }
+  .cardswitch.on circle:first-child { fill: var(--select-rule); }
+  .cardswitch:hover { background: var(--veil-strong); }
+  .card > button:first-child.on + .cardswitch { color: var(--paper); }
+  .card > button:first-child.on + .cardswitch.on circle:first-child { fill: var(--select-rule); stroke: var(--paper); }
+  .card > button:first-child.on + .cardswitch.on .hand, .card > button:first-child.on + .cardswitch.on .pivot { color: var(--ink); stroke: var(--ink); }
+  @media (prefers-reduced-motion: reduce) { .cardswitch .hand { transition: none; } }
   .handsbar + .tabsbar { border-top: var(--hair) solid var(--rule); }
   /* tabs inside a section, always in view (Hands: Hour · Minute · Seconds): one line across the six columns */
   .tabsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; min-height: calc(var(--head) + var(--unit)); border-top: var(--thick) solid var(--ink); }
@@ -585,7 +601,12 @@
   .bar .lead .segs > button + button { border-left: 0; }
   .bar .lead .side { justify-self: center; width: var(--control); border-color: transparent; }      /* centred on the toggle column, like the eyes above it */
   .bar .side[aria-pressed="true"] { background: var(--bar-ink); color: var(--bar); }
-  .bar .speeds, .bar .time { grid-column: span 2; }
+  .bar .speeds, .bar .timebox { grid-column: span 2; }
+  /* AM · PM stands inside the time's box, at its right end: one small word that a press turns over */
+  .bar .timebox { position: relative; display: grid; }
+  .bar .lead .timebox .half { position: absolute; right: 0; top: 0; width: var(--half); border-color: transparent; font-size: var(--t-xs); letter-spacing: 0.04em; color: var(--bar-quiet); }
+  .bar .lead .timebox .half:hover { color: var(--bar-ink); }
+  .bar .timebox .time { padding-right: calc(var(--half) - 6px); }
   .bar .time { width: 100%; text-align: center; font-weight: 600; letter-spacing: 0.02em; }
   .bar .viewing { padding-right: 0; }
   .bar .viewing > button, .bar .zooms { flex: none; width: var(--col); }
@@ -6192,6 +6213,8 @@ function day_night(w, h, hour) {
   const sun = circle(0.34 * h).translate(...at(turn + 180, reach)).intersection(opening);
   return merge([night.difference(crescent).difference(stars), sun]);
 }
+var day_hour = (S) => Math.floor((S.t % 86400 + 86400) % 86400 / 360) / 10;
+var shows_day = (S) => windows_of(S).some((w) => w.on && WINDOW_KINDS[w.kind] === "am \xB7 pm");
 function build_window(S, w, index) {
   const centre = clock_point(w.r, window_angle(w)), kind = WINDOW_KINDS[w.kind];
   let opening, content, grown;
@@ -6203,7 +6226,7 @@ function build_window(S, w, index) {
   } else {
     opening = rounded_rect(w.w, w.h, w.round);
     grown = (d) => rounded_rect(w.w + 2 * d, w.h + 2 * d, w.round + d).translate(...centre);
-    content = kind === "am \xB7 pm" ? day_night(w.w, w.h, w.hour).intersection(opening) : centred(text_path(w.text, date_type(S), w.h * w.size / 100));
+    content = kind === "am \xB7 pm" ? day_night(w.w, w.h, day_hour(S)).intersection(opening) : centred(text_path(w.text, date_type(S), w.h * w.size / 100));
   }
   const win = opening.translate(...centre);
   return {
@@ -6803,8 +6826,7 @@ var ROWS = {
     txt("text", "Text", { ...W, show: win_is("date", "day") }),
     num2("size", "Text % of height", 20, 100, 1, { ...W, show: win_is("date", "day") }),
     info("Uses the top numerals ring\u2019s type.", { ...W, show: win_is("date", "day") }),
-    num2("hour", "Hour of the day", 0, 24, 0.5, { ...W, show: win_is("am \xB7 pm") }),
-    info("0 is midnight: all night. 12 is noon: all day.", { ...W, show: win_is("am \xB7 pm") }),
+    info("Follows the time shown: AM \xB7 PM beside the time, under the panel.", { ...W, show: win_is("am \xB7 pm") }),
     num2("age", "Moon age, days", 0, 29.5, 0.1, { ...W, show: win_is("moon phase") }),
     info("0 new moon \xB7 14.8 full \xB7 its height follows its width.", { ...W, show: win_is("moon phase") }),
     hdr("Place and size", { ...W, show: win_on }),
@@ -6859,10 +6881,13 @@ var fmt_time = (t) => {
   t = (Math.floor(t) % 43200 + 43200) % 43200;
   return [Math.floor(t / 3600) || 12, Math.floor(t / 60) % 60, t % 60].map((v, i) => i ? String(v).padStart(2, "0") : v).join(":");
 };
-function parse_time(text) {
+function parse_time(text, pm_now = false) {
+  const said = /([ap])\.?\s*m\.?\s*$/i.exec(String(text));
+  if (said) text = String(text).slice(0, said.index);
   const p = String(text).split(/[:.\s]+/).map(Number);
   if (p.some((v) => !Number.isFinite(v))) return null;
-  return (p[0] % 12 * 3600 + (p[1] || 0) * 60 + (p[2] || 0)) % 43200;
+  const pm = said ? said[1].toLowerCase() === "p" : p[0] >= 12 && p[0] < 24 ? true : p[0] === 24 || p[0] === 0 ? false : pm_now;
+  return (p[0] % 12 * 3600 + (p[1] || 0) * 60 + (p[2] || 0)) % 43200 + (pm ? 43200 : 0);
 }
 var to_hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(clamp(v, 0, 1) * 255).toString(16).padStart(2, "0")).join("");
 function rgb_hsv([r, g, b]) {
@@ -7080,12 +7105,15 @@ var DialTool = class _DialTool {
     this.preview_events();
     this.time_field = el("input", { id: "time", className: "time", type: "text", title: "Time shown, h:mm:ss" });
     this.time_field.onchange = () => {
-      const t = parse_time(this.time_field.value);
+      const t = parse_time(this.time_field.value, this.S.t >= 43200);
       if (t !== null) this.set_time(t);
       else this.sync_time();
+      this.time_field.value = fmt_time(this.S.t);
     };
+    this.half_button = el("button", { type: "button", id: "ampm", className: "half", title: "Morning or afternoon: an am \xB7 pm window follows it", onclick: () => this.set_time((this.S.t + 43200) % 86400) });
+    const time_box = el("span", { className: "timebox" }, this.time_field, this.half_button);
     this.time_slider = el("input", { id: "time-slider", type: "range", min: 0, max: 43199, step: 1 });
-    this.time_slider.oninput = () => this.set_time(+this.time_slider.value);
+    this.time_slider.oninput = () => this.set_time(+this.time_slider.value + this.half());
     this.play_button = el("button", { type: "button", className: "icon", id: "play", onclick: () => this.play(!this.playing) });
     this.status = el("div", { className: "status" });
     const side = el("button", { type: "button", className: "icon side", id: "panel-toggle", title: "Hide or show the settings", ariaLabel: "Hide or show the settings", onclick: () => this.show_panel(root.classList.contains("nopanel")) });
@@ -7105,7 +7133,7 @@ var DialTool = class _DialTool {
     const middle = () => [this.svg.clientWidth / 2, this.svg.clientHeight / 2];
     const steps = el("div", { className: "steps12" });
     for (const [t, text, special] of DAY_STEPS) {
-      const b = el("button", { type: "button", className: special ? "special" : "", textContent: text, title: special ? "10:10, the classic pose" : `${text} o\u2019clock`, onclick: () => this.set_time(t) });
+      const b = el("button", { type: "button", className: special ? "special" : "", textContent: text, title: special ? "10:10, the classic pose" : `${text} o\u2019clock`, onclick: () => this.set_time(t + this.half()) });
       b.style.setProperty("--at", t / 43200);
       b.dataset.t = t;
       steps.append(b);
@@ -7117,7 +7145,7 @@ var DialTool = class _DialTool {
     this.time_slider.onpointerup = (e) => {
       if (!pressed || Math.hypot(e.clientX - pressed[0], e.clientY - pressed[1]) > 3) return;
       const t = +this.time_slider.value;
-      this.set_time([...this.day_ticks, 10 * 3600 + 600].reduce((best, x) => Math.abs(x - t) < Math.abs(best - t) ? x : best));
+      this.set_time([...this.day_ticks, 10 * 3600 + 600].reduce((best, x) => Math.abs(x - t) < Math.abs(best - t) ? x : best) + this.half());
     };
     this.ruler = svg_el("svg");
     this.ruler.setAttribute("class", "ruler");
@@ -7134,10 +7162,10 @@ var DialTool = class _DialTool {
         side,
         this.play_button,
         this.speeds,
-        this.time_field,
+        time_box,
         el("button", { type: "button", id: "now", textContent: "Now", title: "The time it is now", onclick: () => {
           const d = /* @__PURE__ */ new Date();
-          this.set_time(d.getHours() % 12 * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1e3);
+          this.set_time(d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1e3);
         } })
       ),
       el("div", { className: "group day" }, this.ruler, this.time_slider, steps),
@@ -7983,8 +8011,16 @@ var DialTool = class _DialTool {
         this.render();
       } }, pic2, name);
       b.setAttribute("role", "tab");
-      grid.append(b);
-      return { ...c, b, pic: pic2, name, drawn: "" };
+      const turn = el("button", { type: "button", className: "cardswitch", id: "window-switch-" + c.slot, onclick: () => {
+        const w = windows_of(this.S)[c.slot];
+        this.S.ui_window = c.slot;
+        if (!w.on && w.at === WINDOW_BASE.at && c.at !== w.at) w.at = c.at;
+        this.set_value("window", "on", !w.on);
+      } });
+      turn.setAttribute("role", "switch");
+      turn.innerHTML = icon(`<circle cx="8" cy="8" r="6.5"/><path class="hand" d="M8 8L8 3.6"/><circle class="pivot" cx="8" cy="8" r="1.1"/>`);
+      grid.append(el("div", { className: "card" }, b, turn));
+      return { ...c, b, turn, pic: pic2, name, drawn: "" };
     });
     wrap.append(grid);
     out.refresh = (S) => {
@@ -8000,6 +8036,9 @@ var DialTool = class _DialTool {
         }
         c.b.classList.toggle("on", c.slot === S.ui_window);
         c.b.classList.toggle("off", !w.on);
+        c.turn.classList.toggle("on", Boolean(w.on));
+        c.turn.setAttribute("aria-checked", String(Boolean(w.on)));
+        c.turn.title = c.turn.ariaLabel = w.on ? `Hide the window at ${place2}` : `Show the window at ${place2}`;
         c.b.setAttribute("aria-selected", String(c.slot === S.ui_window));
       }
     };
@@ -8951,7 +8990,7 @@ var DialTool = class _DialTool {
     try {
       if (this.playing) {
         const [wall, t] = this.play_from;
-        this.S.t = (t + (performance.now() - wall) / 1e3 * this.speed) % 43200;
+        this.S.t = (t + (performance.now() - wall) / 1e3 * this.speed) % 86400;
         this.sync_time();
         this.render();
       }
@@ -8963,6 +9002,11 @@ var DialTool = class _DialTool {
   }
   draw() {
     const S = this.S;
+    const day = shows_day(S) ? day_hour(S) : null;
+    if (day !== this.day_drawn) {
+      this.day_drawn = day;
+      this.static_dirty = true;
+    }
     if (!this.statik || this.static_dirty) {
       const t0 = performance.now();
       this.statik = build_static(S);
@@ -9202,10 +9246,18 @@ var DialTool = class _DialTool {
     this.tip.style.setProperty("--arrow", `${clamp(p[0] - (x - half), 12, box.width - 12)}px`);
   }
   // ── time ─────────────────────────────────────────────────
+  /** the half of the day that is showing, in seconds: 0 in the morning, 43200 after noon. The slider and its steps
+   *  are twelve hours long and stay in the half they are in. */
+  half() {
+    return this.S.t % 86400 >= 43200 ? 43200 : 0;
+  }
   sync_time() {
+    const t12 = (this.S.t % 43200 + 43200) % 43200;
     if (document.activeElement !== this.time_field) this.time_field.value = fmt_time(this.S.t);
-    if (document.activeElement !== this.time_slider || this.playing) this.time_slider.value = Math.floor(this.S.t);
-    for (const b of document.querySelectorAll(".steps12 button")) b.classList.toggle("on", Math.abs(+b.dataset.t - this.S.t) < 0.5);
+    if (document.activeElement !== this.time_slider || this.playing) this.time_slider.value = Math.floor(t12);
+    for (const b of document.querySelectorAll(".steps12 button")) b.classList.toggle("on", Math.abs(+b.dataset.t - t12) < 0.5);
+    const word = this.half() ? "PM" : "AM";
+    if (this.half_button.textContent !== word) this.half_button.textContent = word;
   }
   set_time(t) {
     this.S.t = t;

@@ -249,8 +249,7 @@ const ROWS = {
     txt("text", "Text", { ...W, show: win_is("date", "day") }),
     num("size", "Text % of height", 20, 100, 1, { ...W, show: win_is("date", "day") }),
     info("Uses the top numerals ring’s type.", { ...W, show: win_is("date", "day") }),
-    num("hour", "Hour of the day", 0, 24, 0.5, { ...W, show: win_is("am · pm") }),
-    info("0 is midnight: all night. 12 is noon: all day.", { ...W, show: win_is("am · pm") }),
+    info("Follows the time shown: AM · PM beside the time, under the panel.", { ...W, show: win_is("am · pm") }),
     num("age", "Moon age, days", 0, 29.5, 0.1, { ...W, show: win_is("moon phase") }),
     info("0 new moon · 14.8 full · its height follows its width.", { ...W, show: win_is("moon phase") }),
     hdr("Place and size", { ...W, show: win_on }),
@@ -312,10 +311,14 @@ const fmt_time = (t) => {
   t = ((Math.floor(t) % 43200) + 43200) % 43200;
   return [Math.floor(t / 3600) || 12, Math.floor(t / 60) % 60, t % 60].map((v, i) => (i ? String(v).padStart(2, "0") : v)).join(":");
 };
-function parse_time(text) {
+/** "3:20", "3:20:10" keep the half of the day that is showing (pm_now); "3:20 pm", "15:20" say which. → 0 to 86400 */
+function parse_time(text, pm_now = false) {
+  const said = /([ap])\.?\s*m\.?\s*$/i.exec(String(text));
+  if (said) text = String(text).slice(0, said.index);
   const p = String(text).split(/[:.\s]+/).map(Number);
   if (p.some((v) => !Number.isFinite(v))) return null;
-  return ((p[0] % 12) * 3600 + (p[1] || 0) * 60 + (p[2] || 0)) % 43200;
+  const pm = said ? said[1].toLowerCase() === "p" : p[0] >= 12 && p[0] < 24 ? true : p[0] === 24 || p[0] === 0 ? false : pm_now;
+  return ((p[0] % 12) * 3600 + (p[1] || 0) * 60 + (p[2] || 0)) % 43200 + (pm ? 43200 : 0);
 }
 const to_hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(clamp(v, 0, 1) * 255).toString(16).padStart(2, "0")).join("");
 /** colour as hue (0–360), strength and brightness (0–1), and back. */
@@ -526,9 +529,12 @@ class DialTool {
     this.preview_events();
 
     this.time_field = el("input", { id: "time", className: "time", type: "text", title: "Time shown, h:mm:ss" });
-    this.time_field.onchange = () => { const t = parse_time(this.time_field.value); if (t !== null) this.set_time(t); else this.sync_time(); };
+    this.time_field.onchange = () => { const t = parse_time(this.time_field.value, this.S.t >= 43200); if (t !== null) this.set_time(t); else this.sync_time(); this.time_field.value = fmt_time(this.S.t); };      // "15:20" reads back as 3:20:00, PM
+    // which half of the day: the hands can't say, an am · pm window can (it follows the time shown). Typing "15:20" or "3:20 pm" sets it too.
+    this.half_button = el("button", { type: "button", id: "ampm", className: "half", title: "Morning or afternoon: an am · pm window follows it", onclick: () => this.set_time((this.S.t + 43200) % 86400) });
+    const time_box = el("span", { className: "timebox" }, this.time_field, this.half_button);
     this.time_slider = el("input", { id: "time-slider", type: "range", min: 0, max: 43199, step: 1 });
-    this.time_slider.oninput = () => this.set_time(+this.time_slider.value);
+    this.time_slider.oninput = () => this.set_time(+this.time_slider.value + this.half());
     this.play_button = el("button", { type: "button", className: "icon", id: "play", onclick: () => this.play(!this.playing) });
     this.status = el("div", { className: "status" });
     const side = el("button", { type: "button", className: "icon side", id: "panel-toggle", title: "Hide or show the settings", ariaLabel: "Hide or show the settings", onclick: () => this.show_panel(root.classList.contains("nopanel")) });
@@ -546,7 +552,7 @@ class DialTool {
     // the day: the slider, and under it the steps a click snaps to — the twelve hours and 10:10, the pose watches are shown in
     const steps = el("div", { className: "steps12" });
     for (const [t, text, special] of DAY_STEPS) {
-      const b = el("button", { type: "button", className: special ? "special" : "", textContent: text, title: special ? "10:10, the classic pose" : `${text} o’clock`, onclick: () => this.set_time(t) });
+      const b = el("button", { type: "button", className: special ? "special" : "", textContent: text, title: special ? "10:10, the classic pose" : `${text} o’clock`, onclick: () => this.set_time(t + this.half()) });
       b.style.setProperty("--at", t / 43200);
       b.dataset.t = t;
       steps.append(b);
@@ -557,7 +563,7 @@ class DialTool {
     this.time_slider.onpointerup = (e) => {
       if (!pressed || Math.hypot(e.clientX - pressed[0], e.clientY - pressed[1]) > 3) return;
       const t = +this.time_slider.value;
-      this.set_time([...this.day_ticks, 10 * 3600 + 600].reduce((best, x) => (Math.abs(x - t) < Math.abs(best - t) ? x : best)));
+      this.set_time([...this.day_ticks, 10 * 3600 + 600].reduce((best, x) => (Math.abs(x - t) < Math.abs(best - t) ? x : best)) + this.half());
     };
     // the ruler behind the slider: a line with ticks crossing it. The wider the window, the finer it is cut.
     this.ruler = svg_el("svg");
@@ -567,8 +573,8 @@ class DialTool {
     this.watchers = [new ResizeObserver(() => this.draw_ruler())];      // closed with the tool (close)
     this.watchers[0].observe(this.time_slider);
     const bar = el("footer", { className: "bar" },
-      el("div", { className: "lead" }, side, this.play_button, this.speeds, this.time_field,
-        el("button", { type: "button", id: "now", textContent: "Now", title: "The time it is now", onclick: () => { const d = new Date(); this.set_time(d.getHours() % 12 * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000); } })),
+      el("div", { className: "lead" }, side, this.play_button, this.speeds, time_box,
+        el("button", { type: "button", id: "now", textContent: "Now", title: "The time it is now", onclick: () => { const d = new Date(); this.set_time(d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000); } })),
       el("div", { className: "group day" }, this.ruler, this.time_slider, steps),
       el("div", { className: "group viewing" }, this.status,
         el("span", { className: "zooms" },
@@ -1246,8 +1252,18 @@ class DialTool {
         this.render();
       } }, pic, name);
       b.setAttribute("role", "tab");
-      grid.append(b);
-      return { ...c, b, pic, name, drawn: "" };
+      // the switch on the card (Okay, 13 Oct 2026): a small clock-like sign, its hand up when the window is shown,
+      // lying when it isn't. It shows or hides that window, and chooses it.
+      const turn = el("button", { type: "button", className: "cardswitch", id: "window-switch-" + c.slot, onclick: () => {
+        const w = G.windows_of(this.S)[c.slot];
+        this.S.ui_window = c.slot;
+        if (!w.on && w.at === G.WINDOW_BASE.at && c.at !== w.at) w.at = c.at;
+        this.set_value("window", "on", !w.on);
+      } });
+      turn.setAttribute("role", "switch");
+      turn.innerHTML = icon(`<circle cx="8" cy="8" r="6.5"/><path class="hand" d="M8 8L8 3.6"/><circle class="pivot" cx="8" cy="8" r="1.1"/>`);
+      grid.append(el("div", { className: "card" }, b, turn));
+      return { ...c, b, turn, pic, name, drawn: "" };
     });
     wrap.append(grid);
     out.refresh = (S) => {
@@ -1263,6 +1279,9 @@ class DialTool {
         }
         c.b.classList.toggle("on", c.slot === S.ui_window);
         c.b.classList.toggle("off", !w.on);
+        c.turn.classList.toggle("on", Boolean(w.on));
+        c.turn.setAttribute("aria-checked", String(Boolean(w.on)));
+        c.turn.title = c.turn.ariaLabel = w.on ? `Hide the window at ${place}` : `Show the window at ${place}`;
         c.b.setAttribute("aria-selected", String(c.slot === S.ui_window));
       }
     };
@@ -2094,7 +2113,7 @@ class DialTool {
     try {
       if (this.playing) {
         const [wall, t] = this.play_from;
-        this.S.t = (t + (performance.now() - wall) / 1000 * this.speed) % 43200;
+        this.S.t = (t + (performance.now() - wall) / 1000 * this.speed) % 86400;
         this.sync_time();
         this.render();
       }
@@ -2107,6 +2126,8 @@ class DialTool {
 
   draw() {
     const S = this.S;
+    const day = G.shows_day(S) ? G.day_hour(S) : null;       // an am · pm window follows the time shown, in steps of six minutes
+    if (day !== this.day_drawn) { this.day_drawn = day; this.static_dirty = true; }
     if (!this.statik || this.static_dirty) {
       const t0 = performance.now();
       this.statik = G.build_static(S);
@@ -2316,10 +2337,17 @@ class DialTool {
 
   // ── time ─────────────────────────────────────────────────
 
+  /** the half of the day that is showing, in seconds: 0 in the morning, 43200 after noon. The slider and its steps
+   *  are twelve hours long and stay in the half they are in. */
+  half() { return this.S.t % 86400 >= 43200 ? 43200 : 0; }
+
   sync_time() {
+    const t12 = ((this.S.t % 43200) + 43200) % 43200;
     if (document.activeElement !== this.time_field) this.time_field.value = fmt_time(this.S.t);
-    if (document.activeElement !== this.time_slider || this.playing) this.time_slider.value = Math.floor(this.S.t);
-    for (const b of document.querySelectorAll(".steps12 button")) b.classList.toggle("on", Math.abs(+b.dataset.t - this.S.t) < 0.5);
+    if (document.activeElement !== this.time_slider || this.playing) this.time_slider.value = Math.floor(t12);
+    for (const b of document.querySelectorAll(".steps12 button")) b.classList.toggle("on", Math.abs(+b.dataset.t - t12) < 0.5);
+    const word = this.half() ? "PM" : "AM";
+    if (this.half_button.textContent !== word) this.half_button.textContent = word;
   }
 
   set_time(t) {
