@@ -94,13 +94,14 @@
   .picker .adding { position: relative; }      /* the legend hangs over it */
   .legend { position: absolute; z-index: 2; left: calc((100% - 2 * var(--unit)) / 3 + var(--unit)); right: 0; bottom: calc(100% + var(--unit)); display: grid;
     grid-template-columns: calc(50% + var(--unit) / 2) minmax(0, 1fr); overflow-y: auto; margin: 0; padding: var(--u6);
-    border: var(--hair) solid var(--rule); background: var(--hover); box-shadow: var(--shadow-light); color: var(--ink); font-size: var(--t-m); line-height: 1.3; }
+    border: var(--hair) solid var(--rule); background: var(--hover); box-shadow: var(--shadow-light); color: var(--ink); font-size: var(--t-xs); line-height: 1.3; }      /* the size of the buttons' words under it */
   .legend[hidden] { display: none; }
+  .legendhead { grid-column: 2; padding-bottom: var(--unit); color: var(--grey); font: 400 calc(1.5 * var(--t-pixel))/1.25 var(--pixel); text-transform: uppercase; opacity: var(--pixel-ink); }      /* its title over the meanings, in the pixel font at the stickers' size (R32's one exception) */
   .legend :is(dt, dd) { padding: var(--unit) 0; border-top: var(--hair) solid var(--rule); }
   .legend dt { display: flex; justify-content: flex-end; align-items: flex-start; padding-right: var(--u3); }
   .legend dt .sticker { padding: calc(0.375 * var(--unit)) calc(0.75 * var(--unit)); font-size: calc(1.5 * var(--t-pixel)); }      /* three quarters of its double (R32's one exception) */
   .legend dd { margin: 0; }
-  .legend dd small { color: var(--wait); font-size: inherit; }
+  .legend dd small { color: var(--wait); font-size: inherit; white-space: nowrap; }      /* a bracket stays on one line */
   .fontrow.current { grid-template-columns: minmax(0, 1fr); height: var(--head); border: 0; }      /* the chosen font's numerals and letters, alone on their line */
   .fontlist .group { padding: calc(var(--unit) * 2) var(--btn-pad) calc(var(--unit) / 2); border-bottom: var(--hair) solid var(--rule); }
 

@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.35.9 (web version) · 14 Oct 2026
+
+- **The legend's window**: its meanings at the size of the buttons' words under it (11); a title over them in the pixel font, *OpenType abbreviations*; a bracket never breaks across two lines. The last two items are still below the fold.
+
 ## beta 4.35.8 (web version) · 14 Oct 2026
 
 - **The legend's window**: twice the padding; in the open Legend button's grey; a hairline over every item, the first too, running unbroken across sticker and meaning; the meanings start on the third column's line (the Legend button's left edge), the stickers end before it; the full sentences back, in the tool's own size (13), the OpenType abbreviation at the end in light square brackets (*… here 100 to 900. [wght]*); the window grows upwards as far as the font list's top and scrolls past that (`legend_fit` in `app.js`). At this size about a third of it is below the fold.
