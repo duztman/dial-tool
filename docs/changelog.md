@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.35.16 (web version) · 14 Oct 2026
+
+- **The hand's preview box** scrolls up with its pane until its top meets the line under the hand tabs, and stays there (4.35.15 held it where it started, under the pane's heading).
+
 ## beta 4.35.15 (web version) · 14 Oct 2026
 
 - **The hand's preview box stays still** while the hand's shapes and rows scroll beside it, until the end of the hand's pane (the Cap pane) pushes it up (wide layout; `position: sticky` in `4d-hands.css`).

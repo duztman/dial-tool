@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.35.15 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.35.16 · built 2026-10-13 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -482,7 +482,7 @@
     /* wide: the box in the first two columns, as high as the rows beside it; the rows in the other four, each one
        line: label · slider · the number box */
     .body > .detail { grid-column: 2 / span 2; grid-row: 1 / span 40; align-self: start; height: calc(7 * var(--line)); }
-    .body > .detail { position: sticky; top: calc(var(--head) + var(--unit)); }      /* it stays still where it starts while the rows beside it scroll, until the pane's end (the Cap pane) pushes it up (Okay, 14 Oct 2026: "the preview hand should stay still… until cap") */      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
+    .body > .detail { position: sticky; top: 0; }      /* it scrolls up with its pane until it meets the line under the hand tabs, stays there while the rows beside it scroll, and the pane's end (the Cap pane) pushes it on (Okay, 14 Oct 2026: "stay still… until cap"; "align here after scroll") */      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
     .body > .row.side { grid-column: 4 / -1; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--side-num); }
     .row.side { --num-open: calc((100% + var(--side-num)) / 2); }      /* the row less its label and one gap: slider and number together */
     .row.side > :first-child, .row.side > input[type="range"] { grid-column: auto; }
@@ -5369,7 +5369,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.35.15";
+var VERSION = "beta 4.35.16";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
