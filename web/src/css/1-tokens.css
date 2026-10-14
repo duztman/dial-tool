@@ -51,9 +51,10 @@
     --head: 40px;                                  /* a pane's heading */
     --header: 64px;                                /* the panel's top: title and Guides */
     --bar-height: 62px; --bar-control: 30px;      /* a fifth higher than it was, 52 (Okay, 14 Oct 2026, 23:19: "1/5 higher"); a phone keeps its own (--bar-lead-narrow) */
-    --bar-light: #A6A6A6;                          /* the one light tone on the bottom bar: 35 % grey (25 % until Okay, 15 Oct 2026, 00:32: "All 35% gray now"); nothing on the bar is white (Okay, 15 Oct 2026, 00:18: "NOTHING ON THIS WHOLE BAR IS WHITE… EQUALIZE LIGHT TONES IN 25% GRAY") */
+    --bar-light: #737373;                          /* the one light tone on the bottom bar: 55 % grey (Okay, 15 Oct 2026, 00:42: "55%gray all"; 35 % at 00:32, 25 % at 00:18); nothing on the bar is white (Okay, 15 Oct 2026, 00:18: "NOTHING ON THIS WHOLE BAR IS WHITE… EQUALIZE LIGHT TONES IN 25% GRAY") */
     --play: #CC381A; --play-dark: #7A1E0C; --play-light: #F28A6C;      /* the play button, an arcade button from above: its cap (the seconds hand's red, geometry.js ACCENT), the shade round it and under it, the light on it (Okay, 14 Oct 2026: "3 colors and a black outline") */
-    --speed-thumb: 14px; --speed-ball: 6px;        /* how fast: its thumb; the ball on its track at 1× and the knobs at its ends */
+    --speed-thumb: 14px; --speed-ball: 9px;        /* how fast: its thumb; the ball at 1× and the knobs at its ends (6 until Okay, 15 Oct 2026, 00:42: "larger dots, all black with an eye hole") */
+    --play-size: 34px;                             /* the play button: a section tab's box (Okay, 00:42) */
     --t-time: 17px;                                /* the time in the bar: larger than --t-l (Okay, 14 Oct 2026, 23:55: "larger digital time"); R32 lists it */
     --time-chars: 8ch;                             /* the time's field: "10:09:36", eight characters of the mono face */
     --day-wide: 518px;                             /* the day slider at its widest: as wide as on an iPad (1180 wide), so a big screen doesn't stretch it (Okay, 23:19) */

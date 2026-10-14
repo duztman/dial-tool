@@ -213,20 +213,23 @@ const TOOL_ICONS = {
     + `<circle class="core-on" cx="9.25" cy="9.25" r="2" stroke-dasharray="1.25 0.844" stroke-linecap="butt" transform="rotate(-107.9 9.25 9.25)"/><path class="slash" d="M1.87 14.87L14.87 1.87M3.63 16.63L16.63 3.63"/></g>`,
 };
 // play and pause, filled, on 12: the triangle a half point right of the middle, so its weight (not its box) is centred
-// play: an arcade button seen from above, on 32 (Okay, 14 Oct 2026, 23:55: "imitate a arcade button, top view, add
+// play: an arcade button seen from above, on 34 (Okay, 14 Oct 2026, 23:55: "imitate a arcade button, top view, add
 // shadows and highlights in basic svg sausage shapes. 3 colors and a black outline"; 15 Oct, 00:18: "fatter halfcircle
-// sausages and a black even outline… the sausage thickness is equal to outer black ring"). A black disc, the red cap
-// inside it leaving an even black ring RING wide; on the cap two curved sausages as thick as that ring, on one circle:
-// light on the upper left, dark red on the lower right. Pressed — time running — they change places: lit from inside.
+// sausages and a black even outline… the sausage thickness is equal to outer black ring"; 00:32: "Shadows grow until
+// they touch the black"; 00:42: "Strokes on button; halved. Button size without the black bar is same size as dial
+// tabs icon; black outline does not count but stays"). The red cap is as wide as a section tab's ring (rim(): 31,
+// to its outer edge); an even black ring RING wide round it makes 34, a tab icon's box. On the cap two curved
+// sausages as thick as the ring, touching it: light on the upper left, dark red on the lower right. Pressed — time
+// running — they change places: lit from inside.
 const ARCADE = (down) => {
-  const RING = 3, R = 16, mid = R - RING - RING / 2;      // the sausages touch the black ring: no red between (Okay, 15 Oct 2026, 00:32)
-  const arc = (from, to) => {      // a sausage along the circle of radius mid, clock-free angles: 0 = right, growing downward
-    const p = (a) => `${(16 + mid * Math.cos(a * Math.PI / 180)).toFixed(3)} ${(16 + mid * Math.sin(a * Math.PI / 180)).toFixed(3)}`;
+  const RING = 0.75 * 2, CAP = RIM + CURVE / 2, R = CAP + RING, C = R, mid = CAP - RING / 2;      // 1.5 · 15.5 · 17 · the sausages' middle circle
+  const arc = (from, to) => {      // a sausage along the circle of radius mid; angles: 0 = right, growing downward
+    const p = (a) => `${(C + mid * Math.cos(a * Math.PI / 180)).toFixed(3)} ${(C + mid * Math.sin(a * Math.PI / 180)).toFixed(3)}`;
     return `M${p(from)}A${mid} ${mid} 0 0 1 ${p(to)}`;
   };
   const [light, dark] = down ? [arc(15, 135), arc(195, 315)] : [arc(195, 315), arc(15, 135)];
-  return `<svg viewBox="0 0 32 32" width="32" height="32" aria-hidden="true">`
-    + `<circle class="arc-out" cx="16" cy="16" r="${R}"/><circle class="arc-cap" cx="16" cy="16" r="${R - RING}"/>`
+  return `<svg viewBox="0 0 ${2 * R} ${2 * R}" width="${2 * R}" height="${2 * R}" aria-hidden="true">`
+    + `<circle class="arc-out" cx="${C}" cy="${C}" r="${R}"/><circle class="arc-cap" cx="${C}" cy="${C}" r="${CAP}"/>`
     + `<path class="arc-hi" d="${light}" stroke-width="${RING}"/><path class="arc-lo" d="${dark}" stroke-width="${RING}"/></svg>`;
 };
 // a window card: a small dial with the window where it is. The window keeps four points from the rim's inner edge at
@@ -3278,7 +3281,7 @@ class DialTool {
     const lines = { hour: "", half: "", small: "" };
     this.day_ticks = [];
     for (let m = 0; m < 720; m += minutes) {
-      const kind = m % 60 === 0 ? "hour" : m % 30 === 0 ? "half" : "small", h = { hour: 16, half: 10, small: 6 }[kind];
+      const kind = m % 60 === 0 ? "hour" : m % 30 === 0 ? "half" : "small", h = { hour: 18, half: 12, small: 7 }[kind];      // all longer (Okay, 15 Oct 2026, 00:42; were 16 · 10 · 6)
       lines[kind] += `M${x(m * 60)} ${(H - h) / 2}V${(H + h) / 2}`;
       this.day_ticks.push(m * 60);
     }

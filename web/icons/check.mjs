@@ -29,7 +29,6 @@ const WIDTHS = [...["LINE", "SLANT", "CURVE", "DENSE"].map((k) => W[k]), W.DENSE
 const PICTURED = [
   { host: /^ring-kind-|^add-/, widths: [1, 2, 3], why: "a ring kind: ticks 1, marks 2, band 3, as on the dial" },
   { host: /^ring-twelve-Style-3$/, widths: [2], why: "a dashed outline: dashes look lighter than a whole line" },
-  { host: /^play$/, widths: [3], why: "the arcade button's two sausages: as thick as its black ring (Okay, 15 Oct 2026: \"the sausage thickness is equal to outer black ring\")" },
 ];
 const near = (a, b) => Math.abs(a - b) < 0.006;
 const onQuarter = (v) => near(((v % 0.5) + 0.5) % 0.5, 0.25);

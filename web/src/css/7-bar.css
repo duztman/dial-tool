@@ -22,7 +22,7 @@
   .bar .lead > * { flex: none; }
   /* play: a round red arcade button seen from above (Okay: "imitate a arcade button, top view… 3 colors and a black
      outline"), drawn in app.js (ARCADE); no sign on it. While time runs it is pressed in. */
-  .bar .lead .play { width: var(--control-large); height: var(--control-large); padding: 0; border: 0; border-radius: 50%; background: none; }
+  .bar .lead .play { width: var(--play-size); height: var(--play-size); padding: 0; border: 0; border-radius: 50%; background: none; }
   .bar .lead .play:is(:hover, :active) { background: none; }
   .bar .lead .play svg { display: block; }
   .bar .lead .play { margin-right: calc(var(--margin) - var(--u2)); }      /* from play to how fast as far as from NOW to the bar's divider: the margin (Okay, 15 Oct 2026, 00:32, his H marks) */
@@ -40,17 +40,19 @@
   .bar .speedtrack { position: relative; flex: 1; min-width: 0; height: 100%; }
   .bar .humps { position: absolute; inset: 0 calc(var(--speed-thumb) / 2); pointer-events: none; }
   .bar .humps::before { content: ""; position: absolute; left: calc(var(--speed-thumb) / -2); right: calc(var(--speed-thumb) / -2); top: calc(50% - var(--triple) / 2); border-top: var(--triple) solid var(--black); }      /* as thick as the play button's black ring (Okay, 15 Oct 2026, 00:32) */
-  .bar .hump { position: absolute; left: calc(var(--at) * 100%); top: 50%; width: var(--speed-ball); height: var(--speed-ball); translate: -50% -50%; border-radius: 50%; background: var(--bar-light); }
+  /* every dot on the speed line — its two ends, the ball at 1×, the thumb — black with an eye, as the panel's sliders
+     (Okay, 15 Oct 2026, 00:42: "larger dots, all black with an eye hole") */
+  .bar .hump { position: absolute; left: calc(var(--at) * 100%); top: 50%; width: var(--speed-ball); height: var(--speed-ball); translate: -50% -50%; border-radius: 50%; background: radial-gradient(circle, var(--bar-light) 0 var(--thumb-eye), var(--black) var(--thumb-eye-edge)); }
   .bar .humpname { position: absolute; left: calc(var(--at) * 100%); bottom: calc(100% + var(--hair)); height: calc((var(--bar-height) - var(--bar-control)) / 2); translate: -50% 0; line-height: calc((var(--bar-height) - var(--bar-control)) / 2); font-family: var(--pixel); font-size: var(--t-pixel); color: var(--bar-light); white-space: nowrap; }      /* "1×" in Silkscreen at 8, the ball's colour (Okay, 15 Oct 2026, 00:18) — not at --pixel-ink: he asked for the ball's colour (R32 notes it) */
-  .bar .knob { position: absolute; top: 50%; width: var(--speed-ball); height: var(--speed-ball); translate: -50% -50%; border-radius: 50%; background: var(--black); }      /* the black line's two ends, a knob each (Okay: "time speed line in black, has a beginning and end knob") */
+  .bar .knob { position: absolute; top: 50%; width: var(--speed-ball); height: var(--speed-ball); translate: -50% -50%; border-radius: 50%; background: radial-gradient(circle, var(--bar-light) 0 var(--thumb-eye), var(--black) var(--thumb-eye-edge)); }      /* the black line's two ends, a knob each (Okay: "time speed line in black, has a beginning and end knob") */
   .bar .knob.first { left: calc(var(--speed-thumb) / -2); }
   .bar .knob.last { left: calc(100% + var(--speed-thumb) / 2); }
   .bar .speedtrack input[type="range"] { position: absolute; inset: 0; height: 100%; }
   .bar .speedtrack input[type="range"]::-webkit-slider-runnable-track { height: 100%; background: none; }
-  .bar .speedtrack input[type="range"]::-webkit-slider-thumb { width: var(--speed-thumb); height: var(--speed-thumb); margin-top: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2); background: var(--bar-light); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  .bar .speedtrack input[type="range"]::-webkit-slider-thumb { width: var(--speed-thumb); height: var(--speed-thumb); margin-top: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2); background: radial-gradient(circle, var(--bar-light) 0 var(--thumb-eye), var(--black) var(--thumb-eye-edge)); box-shadow: 0 0 0 var(--thick) var(--bar); }
   .bar .speedtrack input[type="range"]::-moz-range-track { height: 100%; background: none; }
   .bar .speedtrack input[type="range"]::-moz-range-progress { background: none; }
-  .bar .speedtrack input[type="range"]::-moz-range-thumb { width: var(--speed-thumb); height: var(--speed-thumb); background: var(--bar-light); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  .bar .speedtrack input[type="range"]::-moz-range-thumb { width: var(--speed-thumb); height: var(--speed-thumb); background: radial-gradient(circle, var(--bar-light) 0 var(--thumb-eye), var(--black) var(--thumb-eye-edge)); box-shadow: 0 0 0 var(--thick) var(--bar); }
   /* the time sings: large, regular weight, bright, centred on its ink (app.js measures it with every figure a 0, so
      it stands still), more room left and right than the other boxes. Its AM · PM window touches it, one colour always
      (Okay: "Pm window touches the time"; "Am/pm does not change color"). */
