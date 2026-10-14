@@ -39,7 +39,12 @@
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 var(--round-switch) var(--round-switch) 0; }
   .guidesbox[aria-pressed="true"] :is(.slash, .core-off), .guidesbox:not([aria-pressed="true"]) .core-on { display: none; }      /* on: the centre ring dashed; off: the hollow slash (Okay's drawings, 14 Oct 2026) */
   .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }      /* open, only its arrow turns */
-  .backdropbox { position: absolute; z-index: 3; left: var(--canvas-inset); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch); }
+  /* Backdrop and its little brother, the eye (Okay, 15 Oct 2026, 02:42): a row standing on the Shadows switch */
+  .backdrops { position: absolute; z-index: 3; left: var(--canvas-inset); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: flex; gap: var(--unit); }
+  .eyebox { width: var(--control-large); padding: 0; overflow: hidden; border-radius: var(--round-switch); }      /* its sign fills the inside; the lashes run out and the box cuts them */
+  .eyebox svg { display: block; flex: none; }
+  .eyebox[aria-pressed="true"] > * { opacity: 1; }
+  .backdropbox { gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch); }
   .backdropbox[aria-expanded="true"] { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); }
   .backdropbox .dot { border-color: var(--on-canvas); }
   /* Shadows (a trial, 14 Oct 2026): the Guides switch's make, at the bottom left, the Backdrop switch standing on it a

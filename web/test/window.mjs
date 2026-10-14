@@ -1338,6 +1338,17 @@ const look = await page.evaluate(() => { const q = (s) => document.querySelector
 check(look.square && look.bar === 62 && look.play[0] === look.play[1] && look.play[2] === "50%" && look.mono && look.status === "none" && look.hint.includes("⌘ + scroll") && look.ruler <= 518,
   `the bar: a fifth higher (${look.bar}), no panel square, a round play, the time in monospace, no status line, how to zoom beside the zoom, the day slider no wider than an iPad's (${look.ruler})`);
 await shot("10-bar");
+{ // Okay's mark opens the bio; the eye beside Backdrop turns on and off and does nothing else (15 Oct 2026)
+  const before = await S("JSON.stringify(S, (k, v) => (k.startsWith('ui_') || k === 't' ? undefined : v))");
+  await page.click("#logo");
+  const bio = await page.evaluate(() => { const b = document.querySelector("#bio"), r = b.getBoundingClientRect(), l = document.querySelector("#logo").getBoundingClientRect(), t = document.querySelector(".panel .title").getBoundingClientRect();
+    return { shown: !b.hidden, links: [...b.querySelectorAll("a")].map((a) => a.textContent), logo_left: Math.round(l.left), title_left: Math.round(t.left) }; });
+  await page.mouse.click(1300, 120);
+  const shut = await page.isHidden("#bio");
+  await page.click("#eye-box"); const eye_on = await page.getAttribute("#eye-box", "aria-pressed"); await page.click("#eye-box");
+  check(bio.shown && shut && bio.links.includes("HarfBuzz") && bio.links.includes("github.com/duztman/dial-tool") && bio.logo_left === 24 && bio.title_left === 52 && eye_on === "true" && await page.getAttribute("#eye-box", "aria-pressed") === "false" && await S("JSON.stringify(S, (k, v) => (k.startsWith('ui_') || k === 't' ? undefined : v))") === before,
+    `Okay's mark in the first column (${bio.logo_left}; the title at ${bio.title_left}) opens the bio with its links (${bio.links.length}), a press outside shuts it; the eye beside Backdrop turns on and off, nothing more`);
+}
 { // the window never zooms, only the dial (Okay, 15 Oct 2026, 02:19)
   const still = await page.evaluate(() => { const wheel = new WheelEvent("wheel", { ctrlKey: true, deltaY: -40, bubbles: true, cancelable: true }); document.querySelector(".panel").dispatchEvent(wheel);
     return [document.querySelector('meta[name="viewport"]').content, getComputedStyle(document.documentElement).touchAction, wheel.defaultPrevented]; });

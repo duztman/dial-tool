@@ -5,6 +5,18 @@
   #app.nopanel { grid-template-columns: 0 1fr; }   /* the panel put away: the dial gets the whole window */
   #app.nopanel .panel { display: none; }
   .panel > header { display: flex; align-items: center; height: var(--header); padding: 0 var(--margin); }
+  /* Okay's mark in the first column, the title after it on the six columns (Okay, 15 Oct 2026, 02:42); a press opens the bio
+     under it, a night part as wide as the panel's lines */
+  .about { position: relative; flex: none; width: var(--eye); margin-right: var(--gap); }
+  .logo { display: grid; place-items: center; width: var(--eye); height: var(--eye); padding: 0; color: var(--ink); }
+  .logo svg { overflow: visible; }
+  .bio { position: absolute; z-index: 6; top: calc(100% + var(--unit)); left: 0; width: var(--bio-width); max-width: calc(100vw - 2 * var(--margin)); padding: var(--unit) var(--pop-pad) var(--pop-pad); font-size: var(--t-m); line-height: 1.45; }
+  .bio h2 { margin: var(--unit) 0; font-size: var(--t-l); }
+  .bio h3 { margin: var(--pop-gap) 0 var(--u1); font-size: var(--t-m); }
+  .bio p { margin: 0 0 var(--unit); }
+  .bio ul { margin: 0; padding-left: var(--pop-pad); }
+  .bio li { margin-bottom: var(--u1); }
+  .bio a { color: var(--white); text-decoration: underline; text-underline-offset: 0.15em; }
   .panel .title { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); }
   /* units: a box at the panel's top right saying the unit lengths are shown in, by its short name; one column wide
      whatever it says. Its menu hangs under it, the units by their full names, a hairline between them. */

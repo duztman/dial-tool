@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.38.8 (web version) · 15 Oct 2026
+
+- **Okay's mark** in the panel's first column, left of the title; a press opens a short **bio**: who made the tool, the source and its licence, and the open-source work it stands on — HarfBuzz, Skia's PathKit, Inter, Silkscreen, the twenty OFL dial typefaces, DrawBot, esbuild, Playwright.
+- **An eye beside Backdrop**: a square switch with an open eye whose lashes run out to its edge. A preview of something to come: a press only turns it on and off.
+- **The speed's thumb 160 %** (14 → 22), its eye the same size.
+- **The Shadows sign mirrored** (lit from the upper left, the shadow to the right), its outline as thin as Guides'.
+- **Ink traps in the Guides sign**: a small cut in each inside corner where an arm crosses the ring.
+
 ## beta 4.38.7 (web version) · 15 Oct 2026
 
 - **The window never zooms, only the dial** (#193): a pinch on the panel, the bar or anywhere but the preview does nothing; inside the preview it zooms the dial as before. The page asks iOS not to scale it, fingers may only scroll (`touch-action`), Safari's gesture events and ctrl + wheel are refused outside the preview.

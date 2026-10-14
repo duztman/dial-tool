@@ -185,6 +185,21 @@ const hand_detail = (h) => {
   return `<svg class="upright" viewBox="${f(b[0] - m)} ${f(-b[3] - m)} ${f(w + 2 * m)} ${f(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${centre("M-999 0L999 0")}</svg>`
     + `<svg class="lying" viewBox="${f(b[1] - m)} ${f(b[0] - m)} ${f(high + 2 * m)} ${f(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${centre("M0 -999L0 999")}</svg>`;
 };
+// the Guides sign's ink traps (Okay, 15 Oct 2026, 02:42: "Guides icon needs them, see if you can figure out where"):
+// where each of the four arms crosses the ring the two lines make four inside corners, and at a small size ink (light,
+// here) pools in them and the crossing reads as a blot. A small round cut at each corner — sixteen in all — keeps the
+// crossing open. They are holes in the sign's mask: at each corner, where an arm's edge meets the ring's edge.
+const INK_TRAPS = (() => {
+  const c = 9.25, r = 5.5, half = DENSE / 2, cut = 0.3, out = [];      // cut: 0.3, looked at beside 0.2 and 0.45 at 12× and at size
+  for (const edge of [r + half, r - half]) for (const side of [-half, half]) {
+    const along = Math.sqrt(edge * edge - side * side);      // how far out along the arm the ring's edge is met
+    for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
+      const x = c + dx * along + (dx ? 0 : side), y = c + dy * along + (dy ? 0 : side);
+      out.push(`<circle cx="${x.toFixed(3)}" cy="${y.toFixed(3)}" r="${cut}" fill="black"/>`);
+    }
+  }
+  return out.join("");
+})();
 const TOOL_ICONS = {
   // on 18; a quiet sign, thin and light (Okay, 11 Oct 2026; again 14 Oct, 04:11: "thinner lines"): DENSE, corners
   // a sixteenth heavier as on any box; light by its grey. Outer edge where it was (1 … 17)
@@ -204,13 +219,26 @@ const TOOL_ICONS = {
   // lower left — and its shadow cast to the left on the ground, a flat ellipse it stands on (after a photograph Okay
   // sent, 15 Oct 2026, 02:13: "make it 2d icon like others… fit a square"). The outline goes through fit.mjs's rules
   // (CURVE, centre on a quarter, radius on a half); the shade and the shadow are filled, their ends on half points
-  shadows: `<circle cx="10.75" cy="7.75" r="5.5" ${sw(CURVE)}/><path d="M13.5 12.5A5.5 5.5 0 0 1 6 5A8 8 0 0 0 13.5 12.5Z" fill="currentColor" stroke="none"/>`
-    + `<path d="M1.25 15.5A5.625 1.25 0 0 0 12.5 15.5A5.625 1.25 0 0 0 1.25 15.5Z" fill="currentColor" stroke="none"/>`,
+  // 15 Oct, 02:42: mirrored (lit from the upper left, the shadow cast to the right) and its outline DENSE, as Guides',
+  // the sign beside it on 18 ("ball stroke thickness too much… look at similar size icons, guides and such")
+  shadows: `<circle cx="7.25" cy="7.75" r="5.5" ${sw(DENSE)}/><path d="M4.5 12.5A5.5 5.5 0 0 0 12 5A8 8 0 0 1 4.5 12.5Z" fill="currentColor" stroke="none"/>`
+    + `<path d="M16.75 15.5A5.625 1.25 0 0 1 5.5 15.5A5.625 1.25 0 0 1 16.75 15.5Z" fill="currentColor" stroke="none"/>`,
+  // Okay's own mark, on 16 in the panel's first column (15 Oct 2026, 02:42: "my personal logo. Draw this like an
+  // icon"): a ring; a diagonal up to its upper right; from it a level line to the right and an upright one down; a
+  // square cell between them; a short slant from the cell's corner to the lower right. Through fit.mjs; every line
+  // inside the ring DENSE — five lines in sixteen points crowd; the ring CURVE (look.py: it reads light at DENSE)
+  logo: `<circle cx="8.25" cy="8.25" r="7" ${sw(CURVE)}/><g ${sw(DENSE)}><path d="M1.75 10.25L10.25 1.75M6.25 5.75H14.25M6.25 5.75V14.75M10.25 5.75V9.75H6.25M10.25 9.75L13.25 12"/></g>`,
+  // the eye button, beside Backdrop, on 30 — the whole inside of its 32 box (15 Oct 2026, 02:42: "a square icon that
+  // houses an open eye with both eyelashes that stretch and crop out at the button outline"). An open eye, its iris
+  // filled, three lashes above and three below running past the edge; the box cuts them. Through fit.mjs; the eye's
+  // axis moved to 15.25 so the upright lashes sit on quarter points with the iris on them
+  eyebox: `<path d="M6.25 15C12.25 9.75 18.25 9.75 24.25 15C18.25 20.25 12.25 20.25 6.25 15Z" ${sw(CURVE)}/><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/>`
+    + `<path d="M10.75 12L6.25 -1M19.75 12L24.25 -1M10.75 18L6.25 31M19.75 18L24.25 31" ${sw(SLANT)}/><path d="M15.25 11.25V-1.75M15.25 18.75V31.75"/>`,
   screen: `<rect x="2.75" y="3.25" width="10.5" height="7.5"/><path d="M8.25 10.75V13.25M5.75 13.25H10.75" ${sw(DENSE)}/>`,
   // the Guides switch, on 18: a target and its cross; its lines crowd, so DENSE. Okay's drawings (14 Oct 2026, 04:11):
   // guides on, the centre ring dashed in six, square-ended (a dash pattern is a texture, not line ends) (core-on); guides off, a hollow slash, two lines with the target cut away
   // between them (the slash group, and the mask that cuts). The stylesheet shows one state's parts (6-preview.css).
-  guides: `<mask id="guides-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18"><rect width="18" height="18" fill="white"/><path class="slash" d="M2.75 15.75L15.75 2.75" stroke="black" stroke-width="2.5" stroke-linecap="butt"/></mask>`
+  guides: `<mask id="guides-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18"><rect width="18" height="18" fill="white"/><path class="slash" d="M2.75 15.75L15.75 2.75" stroke="black" stroke-width="2.5" stroke-linecap="butt"/>${INK_TRAPS}</mask>`
     + `<g ${sw(DENSE)}><g mask="url(#guides-cut)"><circle cx="9.25" cy="9.25" r="5.5"/><circle class="core-off" cx="9.25" cy="9.25" r="2"/><path d="M9.25 1.25V5.75M9.25 12.75V17.25M1.25 9.25H5.75M12.75 9.25H17.25"/></g>`
     + `<circle class="core-on" cx="9.25" cy="9.25" r="2" stroke-dasharray="1.25 0.844" stroke-linecap="butt" transform="rotate(-107.9 9.25 9.25)"/><path class="slash" d="M1.87 14.87L14.87 1.87M3.63 16.63L16.63 3.63"/></g>`,
 };
@@ -729,6 +757,7 @@ class DialTool {
     if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox")) this.pop_close();
     if (this.guides_open && !$("#guide-list").hidden && !on(".guides")) this.guides_open(false);
     if (this.shadows_open && !$("#shadow-list").hidden && !on(".shadows")) this.shadows_open(false);
+    if (this.bio_open && !$("#bio").hidden && !on(".about")) this.bio_open(false);
     if (this.unit_open && !$("#unit-menu").hidden && !on(".unit")) this.unit_open(false);
     if (this.lang_opens && !on(".langs")) for (const shut of this.lang_opens) shut(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
@@ -753,7 +782,7 @@ class DialTool {
     this.pinned = el("div", { className: "pinned" });              // rows that stay in view
     this.form = el("div", { className: "form" });                  // rows that scroll
     const panel = el("aside", { className: "panel" },
-      el("header", {}, this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION })), this.unit_box()),
+      el("header", {}, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION })), this.unit_box()),
       this.tabs, this.pinned, this.form);
 
     this.svg = svg_el("svg");
@@ -916,6 +945,40 @@ class DialTool {
     box.setAttribute("aria-expanded", "false");
     box.onclick = () => this.pop_open({ read: () => this.S.c_backdrop, write: (v) => this.set_value("global", "c_backdrop", v), label: () => "Backdrop" }, box);
     this.backdrop_dot = dot;
+    // its little brother (Okay, 15 Oct 2026, 02:42): a square switch with an eye in it. A preview of a switch to come —
+    // it does nothing yet; a press turns it on and off, so its colour changes ("Click changes color"). Not part of a dial
+    const eye = el("button", { type: "button", className: "onview eyebox", id: "eye-box", title: "A view to come — nothing yet", ariaLabel: "A view to come (nothing yet)" });
+    eye.innerHTML = icon(TOOL_ICONS.eyebox, 30);
+    eye.setAttribute("aria-pressed", "false");
+    eye.onclick = () => eye.setAttribute("aria-pressed", String(eye.getAttribute("aria-pressed") !== "true"));
+    return el("div", { className: "backdrops" }, box, eye);
+  }
+
+  /** Okay's mark in the panel's first column, left of the title; a press opens a short bio: who made the tool, where
+   *  its source is, and the open-source work it stands on (Okay, 15 Oct 2026, 02:42: "This triggers bio. Make it short,
+   *  give links. Acknowledge harfbuzz and other opensource providers"). A press elsewhere or Escape closes it. */
+  logo_box() {
+    const button = el("button", { type: "button", className: "logo", id: "logo", title: "About Dial Tool", ariaLabel: "About Dial Tool" });
+    button.innerHTML = icon(TOOL_ICONS.logo);
+    button.setAttribute("aria-expanded", "false");
+    const a = (href, text) => el("a", { href, textContent: text, target: "_blank", rel: "noopener" });
+    const line = (...parts) => el("p", {}, ...parts);
+    const bio = el("div", { className: "bio night", id: "bio", hidden: true },
+      el("h2", { textContent: "Dial Tool" }),
+      line("A tool for designing watch dials, ring by ring, in the browser. Made by Okay, a graphic designer in Istanbul working across contemporary art, architecture and cinema, for a watch he is building."),
+      line("Source, every version and the MIT licence: ", a("https://github.com/duztman/dial-tool", "github.com/duztman/dial-tool"), "."),
+      el("h3", { textContent: "Built on open source" }),
+      el("ul", {},
+        el("li", {}, a("https://harfbuzz.github.io", "HarfBuzz"), " sets the type (harfbuzzjs, MIT)."),
+        el("li", {}, a("https://skia.org", "Skia"), "’s PathKit joins and cuts the shapes (BSD 3-clause)."),
+        el("li", {}, a("https://rsms.me/inter/", "Inter"), " by Rasmus Andersson is the stand-in typeface; ", a("https://fonts.google.com/specimen/Silkscreen", "Silkscreen"), " by Jason Kottke sets the tiny figures (SIL OFL)."),
+        el("li", {}, "The twenty dial typefaces, each under its designers’ SIL Open Font License, most of them from ", a("https://fonts.google.com", "Google Fonts"), "."),
+        el("li", {}, a("https://www.drawbot.com", "DrawBot"), " is where the tool began; ", a("https://esbuild.github.io", "esbuild"), " builds it and ", a("https://playwright.dev", "Playwright"), " tests it.")));
+    const open = (on) => { bio.hidden = !on; button.setAttribute("aria-expanded", String(on)); };
+    this.bio_open = open;
+    button.onclick = () => open(bio.hidden);
+    const box = el("div", { className: "about" }, button, bio);
+    box.onkeydown = (e) => { if (e.key === "Escape" && !bio.hidden) { open(false); button.focus(); } };
     return box;
   }
 
