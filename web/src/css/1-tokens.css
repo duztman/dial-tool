@@ -55,7 +55,7 @@
     --play: #CC381A; --play-dark: #7A1E0C; --play-light: #F28A6C;      /* the play button, an arcade button from above: its cap (the seconds hand's red, geometry.js ACCENT), the shade round it and under it, the light on it (Okay, 14 Oct 2026: "3 colors and a black outline") */
     --speed-thumb: 14px; --speed-ball: 9px;        /* how fast: its thumb; the ball at 1× and the knobs at its ends (6 until Okay, 15 Oct 2026, 00:42: "larger dots, all black with an eye hole") */
     --speed-pad: calc(var(--u3) + 4px - var(--speed-thumb) / 2);      /* the speed box's room inside, left and right, set so that from its wall to an end knob's edge is 4 more than it was (3.75 → 7.75; Okay, 15 Oct 2026, 01:03: "end ball and the wall… what that was before plus four pixels"; 4 alone at 00:51 was a misreading). The knobs now stand where the thumb's middle stops, half a thumb in from the track's ends: hence the half thumb taken off */
-    --play-size: 34px;                             /* the play button: a section tab's box (Okay, 00:42) */
+    --play-size: 34px; --play-pulse: 22%;          /* the play button: a section tab's box (Okay, 00:42); how far its cap goes toward its light colour at a beat (faint: Okay, 01:20) */
     --t-time: 17px;                                /* the time in the bar: larger than --t-l (Okay, 14 Oct 2026, 23:55: "larger digital time"); R32 lists it */
     --time-chars: 8ch;                             /* the time's field: "10:09:36", eight characters of the mono face */
     --day-wide: 518px;                             /* the day slider at its widest: as wide as on an iPad (1180 wide), so a big screen doesn't stretch it (Okay, 23:19) */

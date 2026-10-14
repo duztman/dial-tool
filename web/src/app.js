@@ -2992,6 +2992,7 @@ class DialTool {
         const [wall, t] = this.play_from;
         this.S.t = (t + (performance.now() - wall) / 1000 * this.speed) % 86400;
         this.sync_time();
+        this.pulse(t + (performance.now() - wall) / 1000);
         this.render();
       }
       this.draw();
@@ -3306,8 +3307,24 @@ class DialTool {
     this.speeds.classList.toggle("real", k === 1);
   }
 
+  /** while time runs the play button's cap brightens faintly with each beat of the movement and fades before the next
+   *  (Okay, 15 Oct 2026, 01:20: "Red button faintly pulses with the beat of the movement when pressed"). The beat is the
+   *  movement's own (Hands: 1/s quartz, 6 or 8 a second), counted in real seconds — at 1× it falls with the seconds
+   *  hand's steps; faster speeds don't make it flicker. A sweep has no beat: the cap breathes once every two seconds.
+   *  at = seconds since midnight, as if time ran at 1×. Not where the system asks for less motion. */
+  pulse(at) {
+    let p = 0;
+    if (this.playing && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const beat = G.BEATS[this.S.ha_beat] ? G.BEATS[this.S.ha_beat][1] : 0;
+      if (beat > 0) p = (1 - (((at * beat) % 1) + 1) % 1) ** 3;      // a flash at the beat, gone before the next
+      else p = 0.5 - 0.5 * Math.cos(at * Math.PI);                  // sweep: a slow breath, two seconds long
+    }
+    this.play_button.style.setProperty("--pulse", p.toFixed(3));
+  }
+
   play(on) {
     this.playing = on;
+    if (!on) this.pulse(0);
     this.play_from = [performance.now(), this.S.t];
     this.play_icon();
     this.render();

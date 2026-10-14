@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.38.1 (web version) · 15 Oct 2026
+
+- **The play button pulses with the movement's beat** (#191): while time runs its red cap brightens faintly at each beat and fades before the next — 1 a second for quartz, 6 or 8 for the mechanical beats, counted in real seconds (at 1× in step with the seconds hand; faster speeds don't make it flicker); a sweep breathes once every two seconds. Not where the system asks for less motion.
+
 ## beta 4.38 (web version) · 15 Oct 2026
 
 Shadows and a new bottom bar, built on a trial page (`try/shadows`) from 14 Oct, 22:36 to 15 Oct, 01:08, then made the live page (Okay: "Congratulations this is v4.38"). Released to `main` with 4.37 and 4.37.1.

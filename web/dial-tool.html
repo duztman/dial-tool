@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.38 · built 2026-10-14 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.38.1 · built 2026-10-14 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -87,7 +87,7 @@
     --play: #CC381A; --play-dark: #7A1E0C; --play-light: #F28A6C;      /* the play button, an arcade button from above: its cap (the seconds hand's red, geometry.js ACCENT), the shade round it and under it, the light on it (Okay, 14 Oct 2026: "3 colors and a black outline") */
     --speed-thumb: 14px; --speed-ball: 9px;        /* how fast: its thumb; the ball at 1× and the knobs at its ends (6 until Okay, 15 Oct 2026, 00:42: "larger dots, all black with an eye hole") */
     --speed-pad: calc(var(--u3) + 4px - var(--speed-thumb) / 2);      /* the speed box's room inside, left and right, set so that from its wall to an end knob's edge is 4 more than it was (3.75 → 7.75; Okay, 15 Oct 2026, 01:03: "end ball and the wall… what that was before plus four pixels"; 4 alone at 00:51 was a misreading). The knobs now stand where the thumb's middle stops, half a thumb in from the track's ends: hence the half thumb taken off */
-    --play-size: 34px;                             /* the play button: a section tab's box (Okay, 00:42) */
+    --play-size: 34px; --play-pulse: 22%;          /* the play button: a section tab's box (Okay, 00:42); how far its cap goes toward its light colour at a beat (faint: Okay, 01:20) */
     --t-time: 17px;                                /* the time in the bar: larger than --t-l (Okay, 14 Oct 2026, 23:55: "larger digital time"); R32 lists it */
     --time-chars: 8ch;                             /* the time's field: "10:09:36", eight characters of the mono face */
     --day-wide: 518px;                             /* the day slider at its widest: as wide as on an iPad (1180 wide), so a big screen doesn't stretch it (Okay, 23:19) */
@@ -973,9 +973,9 @@
   .bar .lead .play { margin-right: calc(var(--margin) - var(--u2)); }      /* from play to how fast as far as from NOW to the bar's divider: the margin (Okay, 15 Oct 2026, 00:32, his H marks) */
   .play .arc-out { fill: var(--black); }
   .play .arc-lo { fill: none; stroke: var(--play-dark); stroke-linecap: round; }
-  .play .arc-cap { fill: var(--play); }
+  .play .arc-cap { fill: color-mix(in srgb, var(--play-light) calc(var(--pulse, 0) * var(--play-pulse)), var(--play)); }      /* --pulse: 0 to 1, set by app.js (pulse) with each beat while time runs */
   .play .arc-hi { fill: none; stroke: var(--play-light); stroke-linecap: round; }
-  .bar .lead .play:hover .arc-cap { fill: color-mix(in srgb, var(--play) 88%, var(--play-light)); }
+  .bar .lead .play:hover .arc-cap { fill: color-mix(in srgb, var(--play-light) calc(12% + var(--pulse, 0) * var(--play-pulse)), var(--play)); }
   /* how fast: a box with its track — a black line with a knob at each end and one ball on it, at 1×, and "1×" over
      the ball, outside the box, in the middle of the room between the box and the bar's top, at the hours' size
      (Okay: "Remove the humps but the one at 1x. Hump=ball in the middle of the line. Put 1x above the dot centered
@@ -5439,7 +5439,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.38";
+var VERSION = "beta 4.38.1";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -10649,6 +10649,7 @@ var DialTool = class _DialTool {
         const [wall, t] = this.play_from;
         this.S.t = (t + (performance.now() - wall) / 1e3 * this.speed) % 86400;
         this.sync_time();
+        this.pulse(t + (performance.now() - wall) / 1e3);
         this.render();
       }
       this.draw();
@@ -10989,8 +10990,23 @@ var DialTool = class _DialTool {
     this.speed_slider.title = `How fast time runs: ${speed_word(k)}\xD7 (0.5\xD7 to 720\xD7)`;
     this.speeds.classList.toggle("real", k === 1);
   }
+  /** while time runs the play button's cap brightens faintly with each beat of the movement and fades before the next
+   *  (Okay, 15 Oct 2026, 01:20: "Red button faintly pulses with the beat of the movement when pressed"). The beat is the
+   *  movement's own (Hands: 1/s quartz, 6 or 8 a second), counted in real seconds — at 1× it falls with the seconds
+   *  hand's steps; faster speeds don't make it flicker. A sweep has no beat: the cap breathes once every two seconds.
+   *  at = seconds since midnight, as if time ran at 1×. Not where the system asks for less motion. */
+  pulse(at) {
+    let p = 0;
+    if (this.playing && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const beat = BEATS[this.S.ha_beat] ? BEATS[this.S.ha_beat][1] : 0;
+      if (beat > 0) p = (1 - (at * beat % 1 + 1) % 1) ** 3;
+      else p = 0.5 - 0.5 * Math.cos(at * Math.PI);
+    }
+    this.play_button.style.setProperty("--pulse", p.toFixed(3));
+  }
   play(on) {
     this.playing = on;
+    if (!on) this.pulse(0);
     this.play_from = [performance.now(), this.S.t];
     this.play_icon();
     this.render();
