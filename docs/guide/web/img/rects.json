@@ -1,0 +1,299 @@
+{
+ "viewport": [
+  1440,
+  900
+ ],
+ "scale": 3,
+ "rects": {
+  "dial": {
+   "title": [
+    0,
+    0,
+    460,
+    64
+   ],
+   "unit": [
+    382,
+    16,
+    54,
+    32
+   ],
+   "tabs": [
+    24,
+    64,
+    412,
+    86.2
+   ],
+   "undo": [
+    473,
+    16,
+    64,
+    32
+   ],
+   "guides": [
+    1307.2,
+    16,
+    120.8,
+    32
+   ],
+   "backdrop": [
+    473,
+    804,
+    99.2,
+    32
+   ],
+   "play": [
+    52,
+    859.5,
+    186,
+    30
+   ],
+   "time": [
+    250,
+    859.5,
+    186,
+    30
+   ],
+   "day": [
+    483,
+    854.5,
+    778,
+    22
+   ],
+   "zoom": [
+    1296,
+    859.5,
+    120,
+    30
+   ],
+   "panel_toggle": [
+    19,
+    859.5,
+    26,
+    30
+   ],
+   "bar": [
+    0,
+    848,
+    1440,
+    52
+   ],
+   "panel": [
+    0,
+    0,
+    461,
+    848
+   ],
+   "preview": [
+    461,
+    0,
+    979,
+    848
+   ],
+   "diameter": [
+    184,
+    196.2,
+    187.6,
+    55
+   ],
+   "plate": [
+    184,
+    265.7,
+    79.1,
+    23
+   ],
+   "backdrop_pill": [
+    184,
+    431.7,
+    79.1,
+    23
+   ],
+   "margin": [
+    184,
+    396.2,
+    187.6,
+    26
+   ],
+   "colours": [
+    184,
+    523.2,
+    79.1,
+    227
+   ],
+   "number_row": [
+    184,
+    196.2,
+    252,
+    26
+   ],
+   "pane_dial": [
+    24,
+    150,
+    412,
+    200
+   ],
+   "pane_page": [
+    24,
+    350,
+    412,
+    127
+   ],
+   "pane_colours": [
+    24,
+    478,
+    412,
+    300
+   ]
+  },
+  "pop": {
+   "pop": [
+    292.1,
+    261.2,
+    354,
+    315.1
+   ],
+   "plate": [
+    184,
+    265.7,
+    79.1,
+    23
+   ],
+   "box": [
+    275,
+    254,
+    388,
+    340
+   ]
+  },
+  "rings": {
+   "list": [
+    52,
+    192.2,
+    384,
+    174.8
+   ],
+   "tools": [
+    290,
+    159.2,
+    146,
+    26
+   ],
+   "drawer": [
+    52,
+    230.9,
+    384,
+    60
+   ],
+   "pinned": [
+    0,
+    150.2,
+    460,
+    234.3
+   ],
+   "panel": [
+    0,
+    0,
+    461,
+    848
+   ]
+  },
+  "add": {
+   "menu": [
+    196,
+    190.7,
+    120,
+    138
+   ],
+   "plus": [
+    290,
+    159.2,
+    26,
+    26
+   ],
+   "list": [
+    52,
+    192.2,
+    384,
+    174.8
+   ]
+  },
+  "hover": {
+   "tip": [
+    1181.5,
+    229.2,
+    68.4,
+    23.7
+   ],
+   "glow": [
+    611.3,
+    84.8,
+    678.4,
+    678.4
+   ],
+   "preview": [
+    461,
+    0,
+    979,
+    848
+   ],
+   "pointer": [
+    1211.696223647768,
+    266.8888888888888,
+    8,
+    8
+   ]
+  },
+  "export": {
+   "panel": [
+    0,
+    0,
+    461,
+    848
+   ],
+   "pane_link": [
+    24,
+    539,
+    412,
+    162
+   ],
+   "pane_file": [
+    24,
+    150,
+    412,
+    258
+   ],
+   "pane_print": [
+    24,
+    409,
+    412,
+    130
+   ]
+  },
+  "hands": {
+   "panel": [
+    0,
+    0,
+    461,
+    848
+   ],
+   "tabs": [
+    52,
+    204.9,
+    384,
+    40
+   ]
+  }
+ },
+ "links": {
+  "step-1": "#1.RcxBCoMwEEbhu_zrISS2tXTu0BOISNCpDcSxmAQX4t0Lpbabt_vehiH42A3gU02Y_DIGBVeEsYRBEvjhYxJC372izwJurHGOjlTkWsISdEzgZoP6ScC4By1ZEgiz_hcffLvQkS8Gu6s5E_q5aAbXlhBFwc5UhBVsjav3lvD03e-2vwE",
+  "step-2": "#1.Nc5BCsMgEEbhu_zrQTRtUzp36AlCCKLWCmZSotJFyN0LJdm83Qdvg082Tx586QmzXWMScEeILflQwC-bSyC46ZNtDeBBK2PoTEdmJKxJYgEPG8TOAYxnklZDAcH9xeNGZw4BNnd1JbilSQX3mpCDgI3qCF-wVqbfR8LbToscF_sP",
+  "step-3": "#1.jc9BCoMwEIXhu7z1II62ls4JuukJRCSY1IbGsRhDF-LdCyXuu_l374O3wXoTegupG8JkltErpCKMyVsXIQ8ToiMM_TuY1UHasmCmIxVxR1i8jhHSbnh5tRAmqJkcBLc5LRGE4Te8nulIHkL4UpwIwSmkLirCB8I7bQdw95pW9w8xzElXSFNmjbNWFtzsHeFp-lnzn_0L",
+  "step-4": "#1.jY9BCoMwEEXv8tdDcGxr6Zygm55ARIJJbTCOYpQuxLsXRPfdvN17_L_CBRtrB7kUhN5ObVBITmiX4HyCvG1MntDUY7Szh5SZYaYTOXFFmIK2CVKu6II6CBPU9h6C57BMCYRmFx83OnGIEL6bKyF6hVxMTvhCeKP1DLyCLrP_J9EMi86QIiOkLoz7ij3LRzYzXGwV4WPrQY9j2w8",
+  "step-5": "#1.jdBBCoMwEIXhu7z1IEatpXOCbtoLiEjQ1AZjFGMoVLx7MWi37ebt_o9hFjRamqoBpzmhl1OrLTghtF43yoEf0jhFqKvRyFmBizgSgo5JSJSESdvWgYsFnbZNyK3sFRh336tJGgdCHdrLiY7ZW7BICE6_FTiNspUORXyV6-CnH8Q5yghG2c1ICC-w2KQduGnrZ_UPUQ_ezuA8JrhOj-GKwIqdjSORryXhKavB7u9ZPw",
+  "step-6": "#1.jZA9a8NAEET_y9QboZMdhWzpyk3SuDRGHNJZWXwf4k6HSYz-e5CQ3CbNwBTz3rIPdKJt04F3NcHp2IsHV4Q-S2cS-KptMoS2GaweDfhcFkrRFhWpCyGK7xP4_MBNfLfMvXYGjM_sTNQ2gdAu2_dX2mLdglVFSPJjwLtiT7hqJ_YbjIOONtxBGNKzvZyMk0OwHSbadOqpO4Yc_3C9zQpr_CyrCHewmkkr4EN8Hs1_EG3IfgTXJSHdZFiuWLBqxZaFqqcL4Us3wa9_nH4B",
+  "step-7": "#1.jZDNboMwEITfZc5bC5NCGh9z6qW99BhFyAInWDEGYayoRbx7ZQdQDunPZbXWer7Z2RGVlqaoIDY5oZH9WVuIlHD2ulIO4iSNU4Sy6IwcFMQhYZzTUlLiR0Kv7dlBHEZctK2i3MpGQeDdN6qXxoFQRu0uo6XMWgieEpz-UhAb9kw4yUabTwjsZW_aKwidW19PH6rR-9ZUmGix46vda-v7P7y2wcIoG8xSwhWCB9IMeNPWD-o_iLL1doDIE4K76C5uEbF8xiaM59ORUMuilGHOsnDG2D8i17KoW99DjDfOjuW39YJukNqENif0rQ-hE7bNfthyirAmRllxPFt5fOGld7Tsd5pTZRs-jnC17NRd3Jy9zHnTdAFvgtcQrxKu8Zg7fQM",
+  "step-8": "#1.jZIxb4MwEIX_y5tdhEkhjcdMXdqlYxRZJ-wEK8ZEGJS2KP-9sgMoA2m7nO5k3_funm6AMmSlglgVDDW1R-MgMoZjb5T2EAeyXjOU8myp0xC7NOGcTSFjfM_QGnf0ELsBJ-NUbHdUawi897VuyXowlLF3k7MpjL0QPGPw5ltDrJJnhgPVxn5BYEutbS5gOPu5evrQtdk2VuHKJjk-y702ffuH1jpIWO2CWMZwgeCBNALejOs7_R9E2fSugyhSBn8y5zhFxPIRmya8uO4ZKpIlhfckDzbGfIlckayavoUYbpxNUtzGC30dGRvSgqFt-rB0mqzzB1NeI6yOq8w4ns88PvGyO1r-O83rsgkfB_iKzvpu3SJ5GffNsgm8ClpddCW48YirSDYOomt7HYvxFhTJC8QqJhVEFuxWJI07LTunSHb6s5Pl8nUqksr4Ui5P8QM",
+  "step-9": "#1.jZJPb8IwDMW_yzt7VVPWAjly2mW77IhQZDUBItIUNa3YhvjuU0KLOLA_F8tW7N_zS3KGtuyUhpxVhIa7nfWQBWE3WG0C5JZdMIRaHR33BnKdZ0LQFAoSG0Jn_S5Ars84WK_TuOfGQOJtaEzHLoBQp9llSVMYZyFFQQj2y0DOsmfClhvrPiGx4s61JxCO4VY9vZvGrlqncaFJTtzkXtqh-0NrHiWc8VGsIJwgRSSNgFfrh978B1G3g-8hq5wQDvaYtkhYMWLzTFSXDWHPquZ4npWp2LdDB3m-Ni-z6rpDPOzZuphWhK4dorM8m5c_rHJJsCbte8OJ8sYTE6-4o5W_04Kp29h4Rtjz0dx5qrLFaKooJvAsavXJerR85S4oteSZuFI1q9ZD9t1gUjE-t2Z1gpylZA9ZxBvVrKw_PL52zao3H72qH39AzUrbUKvH3r4B",
+  "step-10": "#1.jZJPb8IwDMW_yzt7VVPWAjly2mW77IhQZDUBItIUNa3YhvjuU0KLOLA_F8tW7N_zS3KGtuyUhpxVhIa7nfWQBWE3WG0C5JZdMIRaHR33BnKdZ0LQFAoSG0Jn_S5Ars84WK_TuOfGQOJtaEzHLoBQp9llSVMYZyFFQQj2y0DOsmfClhvrPiGx4s61JxCO4VY9vZvGrlqncaFJTtzkXtqh-0NrHiWc8VGsIJwgRSSNgFfrh978B1G3g-8hq5wQDvaYtkhYMWLzTFSXDWHPquZ4npWp2LdDB3m-Ni-z6rpDPOzZuphWhK4dorM8m5c_rHJJsCbte8OJ8sYTE6-4o5W_04Kp29h4Rtjz0dx5qrLFaKooJvAsavXJerR85S4oteSZuFI1q9ZD9t1gUjE-t2Z1gpylZA9ZxBvVrKw_PL52zao3H72qH39AzUrbUKvH3r4B"
+ }
+}

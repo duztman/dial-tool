@@ -53,11 +53,11 @@ A tool for drawing watch dials in a web browser. You describe a dial the way a w
 
 **7 · The hands.** Open Hands. Pick a shape for the hour, minute and seconds hand, and make each one long enough to reach its own ring.
 
-**8 · A date.** Open Windows and switch on the window at 3. A small opening appears with today's date in it.
+**8 · A date.** Open Windows and switch on the window at 3. A small opening appears with a date in it; type the one you want it to show.
 
 **9 · Colour.** Give the seconds hand a colour of its own. One accent is usually enough.
 
-**10 · Out.** Open Export and save a PDF. It is the dial at its true size, ready for the next step.
+**10 · Out.** Open Export and save the dial as a PDF or SVG, drawn at its true size, or as a PNG picture. In an SVG the numerals can stay as editable text.
 
 [Each step a small dial, as the window draws it; the change in that step in black, the rest grey. Ends with a link to the finished dial.]
 
@@ -71,23 +71,22 @@ A tool for drawing watch dials in a web browser. You describe a dial the way a w
 
 **The panel.** Settings come in groups, each under a thick line with a name. The eye beside a name folds the group away when you don't need it. Some lines stay pinned at the top while the rest scrolls, so you always know which ring or hand you are working on.
 
-**The dial.** It is drawn live: every change shows at once. Drag to move it, pinch or scroll to zoom, and *Fit* brings it back to the middle.
+**The dial.** It is drawn live: every change shows at once. Drag or scroll to move it; pinch, or hold ⌘ and scroll, to zoom. *Fit* brings the whole page back into view.
 
 **Point and click.** Hover over any part of the dial and its name appears; click it and the panel jumps to its settings. This is often the quickest way to find something.
 
 **The bottom bar.** The hands follow the time. Play them at real speed, sixty times or seven hundred and twenty times faster, or drag along the bar to any hour. A click lands exactly on the hour, or on 10:10, the time watches are photographed at.
 
-**Hiding the panel.** The square at the bottom left puts the panel away, leaving the dial alone on the screen.
 
 ---
 
-## 04 · The window, drawn whole
+## 04 · The whole window
 
-**Lead:** The whole window in grey, with every part numbered.
+**Lead:** The whole window in grey, every part boxed and named.
 
-[A full-page grey-toned screenshot from Chromium, numbered callouts. Each callout one line, as below.]
+[The window, grey-toned, with each part boxed and a thin line to its name. Okay, 13:36: lines and boxes, no numbers.]
 
-1. The tool's name and version. 2. Units. 3. The five tabs. 4. A group, with its eye. 5. A slider, a number field and minus · plus: three ways to set one value. 6. A colour: a click opens the colour box. 7. Undo · redo. 8. Guides: the drawing aids. 9. Backdrop: the colour behind the dial. 10. Play and speed. 11. The time. 12. The day, from 12 to 12. 13. Zoom and Fit.
+The tool's name and version · Units · The five tabs · A group, with its eye · A slider, a number field and minus · plus: three ways to set one value · A colour: a click opens the colour box · Undo · redo · Guides: the drawing aids · Backdrop: the colour behind the dial · Play and speed · The time · The day, from 12 to 12 · Zoom and Fit
 
 **Typing numbers.** A number field also does small sums: type *+0.5* to add, *x2* to double, */3* to take a third. Useful when a drawing says "a third of the radius".
 
@@ -101,7 +100,7 @@ A tool for drawing watch dials in a web browser. You describe a dial the way a w
 
 **Lead:** The plate, the space around it, and every colour on the dial in one list.
 
-**Diameter.** How wide the dial is, edge to edge. Tick *Scale everything with it* and the whole design grows or shrinks with it, rings, numerals and hands together. Leave it off and only the plate changes, which is what you want when you are fitting a design to a case.
+**Diameter.** How wide the dial is, edge to edge. Tick *Scale everything with it* and the whole design grows or shrinks with it, rings, numerals and hands together. Leave it off to resize the plate alone and keep every ring where it is.
 
 **Plate.** The colour of the dial itself.
 
@@ -253,7 +252,7 @@ A tool for drawing watch dials in a web browser. You describe a dial the way a w
 
 **Where.** The four cards at the top stand for windows at 12, 3, 6 and 9. Choose a card, tick *Show this window*, and set its place: one of the hours, the half hours, or any angle, at a distance from the centre.
 
-**What it shows.** The date, the day of the week, AM or PM, or the phase of the moon. The date and day follow the time in the bottom bar; AM · PM changes as the hands pass twelve; the moon shows the age you set.
+**What it shows.** The date, the day of the week, AM or PM, or the phase of the moon. The date and day show what you type in them; AM · PM changes as the hands pass twelve; the moon shows the age you set.
 
 **Shape.** A rectangle, a circle, a polygon of any number of sides, the arch of a moon window, or an arc that follows the curve of the dial. Corners can be rounded. A window off the quarters can turn to face the centre, and its text with it.
 

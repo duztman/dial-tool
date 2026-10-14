@@ -20,7 +20,7 @@
 | **A** | **Start** | |
 | 01 | Start | Open the address; nothing to install; Mac, PC, iPad by finger; millimetres or other units; undo; **a link is the dial** (no save needed). |
 | 02 | A first dial, in ten pictures | From an empty plate to a field watch: diameter → minute track → hour markers → numerals → font → hands → window → export. Each step one picture and one sentence. |
-| 03–04 | The window | The tabs, the panel, the preview and its switches (Guides, Backdrop, Undo), time and day controls. Drawn whole, in grey, at true proportions, with numbered callouts. |
+| 03–04 | The window · The whole window | The tabs, the panel, the preview and its switches (Guides, Backdrop, Undo), time and day controls. Drawn whole, in grey, at true proportions, with numbered callouts. |
 | **B** | **Build** | |
 | 05 | Dial and page | Diameter and *Scale everything with it*; plate, backdrop, page margin; the colour pop-out and palette; transparency. |
 | 06 | Rings | A dial is a list of rings, top first. The four kinds; the list, eye, rename, drag to reorder, the ring line, *Copy style of*. |
