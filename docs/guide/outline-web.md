@@ -2,6 +2,8 @@
 
 *14 Oct 2026. Build list #93. Okay, 10:56: "better content first, then better design"; English only. This is the content plan, for Okay to approve before anything is built. The look stays the canon's (`docs/design.md`): A4 landscape, 12 × 14 grid, one sans.*
 
+**Locked to beta 4.36.1** (Okay, 14 Oct 2026, 13:02: "lock this for this active version, never mind the new updates that might come up in the meantime"). The guide's text, screenshots, figures and settings tables describe beta 4.36.1 — commit `a279c0a`, `docs/versions.md` — and nothing later. Build its pictures from that version (`tools/versions.sh open 4.36.1`), not from `dev`. Later changes to the tool wait for a later edition.
+
 ## What changes from the 4 Oct guide
 
 - **Tasks before settings.** The 4 Oct guide was a manual of the window's rows. This one starts with making a dial, then explains the parts.

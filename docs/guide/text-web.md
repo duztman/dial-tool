@@ -2,6 +2,8 @@
 
 *14 Oct 2026, beta 4.36.1. The words of the new guidebook, page by page, before any picture or layout (build list #93). Plan: `docs/guide/outline-web.md`. Okay, 12:14: "less jargon … explain in layman's terms, leave the jargon for references … short prose … minimal bullet points." Each page has a title, a lead (the line under the title) and its blocks; a block's label is in small capitals in the book. [Square brackets] are notes for whoever builds the page, not text.*
 
+**Locked to beta 4.36.1** (Okay, 14 Oct 2026, 13:02: "lock this for this active version, never mind the new updates that might come up in the meantime"). The guide's text, screenshots, figures and settings tables describe beta 4.36.1 — commit `a279c0a`, `docs/versions.md` — and nothing later. Build its pictures from that version (`tools/versions.sh open 4.36.1`), not from `dev`. Later changes to the tool wait for a later edition.
+
 ---
 
 ## 00 · Cover

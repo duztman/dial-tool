@@ -204,6 +204,7 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 14 Oct | **A clone on Okay's Mac** at `~/Desktop/dial-maker/dial-tool-github-repo/`, refreshed at least every fifth version (4.40, 4.45 …). | Okay, 10:56: "add github-repo at the end … keep it fresh every .5 versions" |
 | 14 Oct | **The new guidebook (build list #93) is a go: content first, then design; English only.** | Okay, 10:56: "better content first, then better design. we've come a long way"; "En only" |
 | 14 Oct | **Guidebook text first: plain words, short prose, few bullets; trade words only in the reference.** Window pictures = Chromium screenshots, grey-toned. No production figures until Okay has tested (production is upcoming). Three classics swapped for Okay's dials (B-Uhr, bezel diver, red minimal). Draft 1 of the text: `docs/guide/text-web.md`. | Okay, 12:14: "first of all a text outline … no visuals … less jargon … layman's terms"; "I did not test brass, production is upcoming"; "swap these three dials" |
+| 14 Oct | **The new guidebook is locked to beta 4.36.1** (commit `a279c0a`): text, screenshots, figures and tables describe that version; later changes wait for a later edition. Okay is reading draft 1. | Okay, 13:02: "lock this for this active version, never mind the new updates that might come up in the meantime. i am reading the notes, i'll come back." |
 
 ## 5 · Open questions
 
