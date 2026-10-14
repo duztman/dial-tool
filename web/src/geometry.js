@@ -1118,16 +1118,27 @@ function moon_parts(w, age) {
 function window_hole(w) {
   const shape = window_shape(w);
   if (shape === "rectangle") return [rounded_rect(w.w, w.h, w.round), (d) => rounded_rect(w.w + 2 * d, w.h + 2 * d, w.round + d)];
-  let hole;
-  if (shape === "circle") hole = circle(w.w);
-  else if (shape === "polygon") {
+  // circles, polygons and arcs grow by their measures, as rectangles do (#168, 14 Oct 2026): growing a curve by
+  // stroking it (offset) bulged a circle up to 6 % at 45° — the "four-petal blob" Okay saw on a stroked frame
+  if (shape === "circle") return [circle(w.w), (d) => circle(w.w + 2 * d)];
+  if (shape === "polygon") {
     const n = min(max(parseInt(w.sides) || 6, 3), 24), R = w.w / 2;
-    const points = Array.from({ length: n }, (_, i) => { const a = radians(180 / n + i * 360 / n); return [R * sin(a), -R * cos(a)]; });
-    hole = poly(points, points.map(() => min(w.round, R * 0.9)));
-  } else if (shape === "arc") {
-    const a = window_angle(w), half = degrees(w.w / 2 / max(w.r, 0.1)), c = clock_point(w.r, a);
-    hole = sector(max(w.r - w.h / 2, 0), w.r + w.h / 2, a - half, a + half).translate(-c[0], -c[1]);
-  } else hole = moon_parts(w.w, 0).opening;
+    const make = (d) => {                          // every side moves out by d: the corners by d / cos(180°/n), their rounding by d
+      const Rd = R + d / cos(PI / n);
+      const points = Array.from({ length: n }, (_, i) => { const a = radians(180 / n + i * 360 / n); return [Rd * sin(a), -Rd * cos(a)]; });
+      return poly(points, points.map(() => min(w.round, R * 0.9) + d));
+    };
+    return [make(0), make];
+  }
+  if (shape === "arc") {
+    const a = window_angle(w), c = clock_point(w.r, a);
+    const make = (d) => {                          // thicker by d each side, longer by d at each end (along its middle circle)
+      const half = degrees((w.w / 2 + d) / max(w.r, 0.1));
+      return sector(max(w.r - w.h / 2 - d, 0), w.r + w.h / 2 + d, a - half, a + half).translate(-c[0], -c[1]);
+    };
+    return [make(0), make];
+  }
+  const hole = moon_parts(w.w, 0).opening;         // the arch: its humps are hollow, so it grows by stroking
   return [hole, (d) => offset(hole.copy(), d)];
 }
 

@@ -6643,19 +6643,28 @@ function moon_parts(w, age) {
 function window_hole(w) {
   const shape2 = window_shape(w);
   if (shape2 === "rectangle") return [rounded_rect(w.w, w.h, w.round), (d) => rounded_rect(w.w + 2 * d, w.h + 2 * d, w.round + d)];
-  let hole;
-  if (shape2 === "circle") hole = circle(w.w);
-  else if (shape2 === "polygon") {
+  if (shape2 === "circle") return [circle(w.w), (d) => circle(w.w + 2 * d)];
+  if (shape2 === "polygon") {
     const n = min(max(parseInt(w.sides) || 6, 3), 24), R = w.w / 2;
-    const points = Array.from({ length: n }, (_, i) => {
-      const a = radians(180 / n + i * 360 / n);
-      return [R * sin(a), -R * cos(a)];
-    });
-    hole = poly(points, points.map(() => min(w.round, R * 0.9)));
-  } else if (shape2 === "arc") {
-    const a = window_angle(w), half = degrees(w.w / 2 / max(w.r, 0.1)), c = clock_point(w.r, a);
-    hole = sector(max(w.r - w.h / 2, 0), w.r + w.h / 2, a - half, a + half).translate(-c[0], -c[1]);
-  } else hole = moon_parts(w.w, 0).opening;
+    const make = (d) => {
+      const Rd = R + d / cos(PI / n);
+      const points = Array.from({ length: n }, (_, i) => {
+        const a = radians(180 / n + i * 360 / n);
+        return [Rd * sin(a), -Rd * cos(a)];
+      });
+      return poly(points, points.map(() => min(w.round, R * 0.9) + d));
+    };
+    return [make(0), make];
+  }
+  if (shape2 === "arc") {
+    const a = window_angle(w), c = clock_point(w.r, a);
+    const make = (d) => {
+      const half = degrees((w.w / 2 + d) / max(w.r, 0.1));
+      return sector(max(w.r - w.h / 2 - d, 0), w.r + w.h / 2 + d, a - half, a + half).translate(-c[0], -c[1]);
+    };
+    return [make(0), make];
+  }
+  const hole = moon_parts(w.w, 0).opening;
   return [hole, (d) => offset(hole.copy(), d)];
 }
 function day_night(w, h, hour) {
