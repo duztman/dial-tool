@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.37.1 · built 2026-10-14 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.38 · built 2026-10-14 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -990,6 +990,8 @@
   .bar .hump { position: absolute; left: calc(var(--at) * 100%); top: 50%; width: var(--speed-ball); height: var(--speed-ball); translate: -50% -50%; border-radius: 50%; background: radial-gradient(circle, var(--bar-light) 0 var(--thumb-eye), var(--black) var(--thumb-eye-edge)); }
   .bar .humpname { position: absolute; left: calc(var(--at) * 100%); bottom: calc(100% + var(--hair)); height: calc((var(--bar-height) - var(--bar-control)) / 2); translate: -50% 0; line-height: calc((var(--bar-height) - var(--bar-control)) / 2); font-family: var(--pixel); font-size: var(--t-pixel); color: var(--bar-light); white-space: nowrap; }      /* "1×" in Silkscreen at 8, the ball's colour (Okay, 15 Oct 2026, 00:18) — not at --pixel-ink: he asked for the ball's colour (R32 notes it) */
   .bar .knob { position: absolute; top: 50%; width: var(--speed-ball); height: var(--speed-ball); translate: -50% -50%; border-radius: 50%; background: radial-gradient(circle, var(--bar-light) 0 var(--thumb-eye), var(--black) var(--thumb-eye-edge)); }      /* the black line's two ends, a knob each (Okay: "time speed line in black, has a beginning and end knob") */
+  .bar .humpname.ghost { color: var(--black); }      /* 1X stays over its ball in black; the rider in grey shows the speed over the thumb and covers the ghost at 1× */
+  .bar .humpname.rider { z-index: 1; }
   .bar .knob.first { left: 0; }      /* where the thumb's middle stops at each end: at the end the thumb sits on its knob (Okay, 15 Oct 2026, 01:03) */
   .bar .knob.last { left: 100%; }
   .bar .speedtrack input[type="range"] { position: absolute; inset: 0; height: 100%; }
@@ -5437,7 +5439,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.37.1";
+var VERSION = "beta 4.38";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -7988,10 +7990,12 @@ var DialTool = class _DialTool {
     };
     const humps = el("span", { className: "humps", ariaHidden: "true" }, el("i", { className: "knob first" }), el("i", { className: "knob last" }));
     for (const h of SPEED_HUMPS) {
-      const ball = el("i", { className: "hump" }), name = el("span", { className: "humpname", textContent: h + "X" });
+      const ball = el("i", { className: "hump" }), name = el("span", { className: "humpname ghost", textContent: h + "X" });
       for (const x of [ball, name]) x.style.setProperty("--at", speed_place(h).toFixed(4));
       humps.append(ball, name);
     }
+    this.speed_name = el("span", { className: "humpname rider", ariaHidden: "true" });
+    humps.append(this.speed_name);
     this.speeds = el("span", { className: "speeds" }, el("span", { className: "speedtrack" }, humps, this.speed_slider));
     const view = (id, title, inside, act) => {
       const b = el("button", { type: "button", className: "icon", id, title, ariaLabel: title, onclick: act });
@@ -10980,6 +10984,8 @@ var DialTool = class _DialTool {
     const p = Math.round(speed_place(k) * 1e3);
     if (document.activeElement !== this.speed_slider || Math.abs(+this.speed_slider.value - p) > 1e3 * SPEED_SNAP) this.speed_slider.value = p;
     this.speed_slider.setAttribute("aria-valuetext", speed_word(k) + "\xD7");
+    this.speed_name.textContent = speed_word(k) + "X";
+    this.speed_name.style.setProperty("--at", (+this.speed_slider.value / 1e3).toFixed(4));
     this.speed_slider.title = `How fast time runs: ${speed_word(k)}\xD7 (0.5\xD7 to 720\xD7)`;
     this.speeds.classList.toggle("real", k === 1);
   }

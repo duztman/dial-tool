@@ -770,7 +770,7 @@ class DialTool {
     // anyway"; build list #190)
     this.speed = 1;
     this.speed_slider = el("input", { id: "speed", type: "range", min: 0, max: 1000, step: 1, ariaLabel: "How fast time runs", title: "How fast time runs: 0.5× to 720×" });
-    this.speed_slider.oninput = () => {
+    this.speed_slider.oninput = () => {      // (set_speed puts the rider over the thumb)
       let p = +this.speed_slider.value / 1000, k = SPEED_LO * (SPEED_HI / SPEED_LO) ** p;
       const near = SPEED_HUMPS.find((h) => Math.abs(speed_place(h) - p) < SPEED_SNAP);
       if (near) k = near;
@@ -780,10 +780,14 @@ class DialTool {
     // tells a screen reader its speed (aria-valuetext); the eye has the ball at 1× and where the thumb stands
     const humps = el("span", { className: "humps", ariaHidden: "true" }, el("i", { className: "knob first" }), el("i", { className: "knob last" }));
     for (const h of SPEED_HUMPS) {
-      const ball = el("i", { className: "hump" }), name = el("span", { className: "humpname", textContent: h + "X" });      // "1X", as Okay wrote it (15 Oct 2026, 00:32)
+      const ball = el("i", { className: "hump" }), name = el("span", { className: "humpname ghost", textContent: h + "X" });      // the ghost: "1X" in black, always over its ball      // "1X", as Okay wrote it (15 Oct 2026, 00:32)
       for (const x of [ball, name]) x.style.setProperty("--at", speed_place(h).toFixed(4));
       humps.append(ball, name);
     }
+    // the speed's name rides over the thumb, in the bar's grey: how many X (Okay, 15 Oct 2026, 01:08: "1X follows the dot.
+    // Indicates how many Xs. Leaves a black ghost of 1x behind at all times")
+    this.speed_name = el("span", { className: "humpname rider", ariaHidden: "true" });
+    humps.append(this.speed_name);
     this.speeds = el("span", { className: "speeds" }, el("span", { className: "speedtrack" }, humps, this.speed_slider));
     const view = (id, title, inside, act) => { const b = el("button", { type: "button", className: "icon", id, title, ariaLabel: title, onclick: act }); b.innerHTML = icon(inside); return b; };
     const middle = () => [this.svg.clientWidth / 2, this.svg.clientHeight / 2];
@@ -3296,6 +3300,8 @@ class DialTool {
     const p = Math.round(speed_place(k) * 1000);
     if (document.activeElement !== this.speed_slider || Math.abs(+this.speed_slider.value - p) > 1000 * SPEED_SNAP) this.speed_slider.value = p;
     this.speed_slider.setAttribute("aria-valuetext", speed_word(k) + "×");
+    this.speed_name.textContent = speed_word(k) + "X";
+    this.speed_name.style.setProperty("--at", (+this.speed_slider.value / 1000).toFixed(4));      // where the thumb stands, not where the snapped speed is
     this.speed_slider.title = `How fast time runs: ${speed_word(k)}× (0.5× to 720×)`;
     this.speeds.classList.toggle("real", k === 1);
   }

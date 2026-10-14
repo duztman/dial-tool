@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.38 (web version) · 15 Oct 2026
+
+Shadows and a new bottom bar, built on a trial page (`try/shadows`) from 14 Oct, 22:36 to 15 Oct, 01:08, then made the live page (Okay: "Congratulations this is v4.38"). Released to `main` with 4.37 and 4.37.1.
+
+- **Shadows on the preview** (#189): one far light; the hands, the cap and the date discs at heights in mm; each surface catches only what falls on it, so a shadow steps where it crosses a hand or a window's edge; nothing outside the dial; preview only (R5, R26). A Shadows switch at the bottom left of the preview with its list (light from · height · darkness · soft edge; each hand's height, the cap's top; the date discs' depth; Reset), Okay's values to start. Switches on the preview no longer go bold when on: their word turns whole.
+- **The bottom bar, redone** (#190): a fifth higher; all monospace; one light tone, 55 % grey, nothing white. Play is a red arcade button seen from above, the size of a section tab, pressed in while time runs. How fast is one slider, 0.5× to 720× on a log scale: a black line with knobs at its ends, a ball at 1× (snaps there), the speed riding over the thumb in Silkscreen with a black 1X left over its ball. The time larger, centred on its ink, its AM · PM window beside it; NOW in capitals. The day slider no wider than on an iPad, 10:10 on its own thick line. "⌘ + scroll to zoom" on a desktop; Fit with a magnifier. The panel's square and the status line are gone.
+
 ## beta 4.37.1 (web version) · 14 Oct 2026, evening
 
 - **Short labels centred on their ink** (#186): the window's places (3 … 10:30, 4, ···), the speeds (1× · 60× · 720×), AM · PM, the bottom bar's hours and 10:10, and the unit box. Each label is measured as it is drawn (`web/src/ink.js`) and moved so the rectangle its ink covers stands on the box's centre; its figures are proportional, so a "1" no longer carries a "0"'s width. Measured on the page at 1440 wide: "10:30" was 0.5 px right and 1.25 px high, now 0 and 0.75; "1×" was 1.25 px high, now 0.25 (test: the window test reads the dots). Fields and the time keep tabular figures.

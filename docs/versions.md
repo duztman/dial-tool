@@ -1,6 +1,6 @@
 # Versions
 
-*14 Oct 2026. Every build, with the commit that holds it. Written for whoever needs an old version — to look at, compare or screenshot.*
+*15 Oct 2026. Every build, with the commit that holds it. Written for whoever needs an old version — to look at, compare or screenshot.*
 
 Every version below is complete in the repo's history: nothing was deleted. On a clone, `tools/versions.sh` turns this table into tags (`v4.30`) and opens any version in its own folder:
 
@@ -13,6 +13,8 @@ Versions 1.x–2.x are the DrawBot tool (`dial.py`, frozen; now in `archive/draw
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.37.1 | 14 Oct 2026 | web | [`eafd7bf`](https://github.com/duztman/dial-tool/tree/eafd7bffdfdb2ee4a2d15c66ce1ef35bef7421b0) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/eafd7bffdfdb2ee4a2d15c66ce1ef35bef7421b0/web/dial-tool.html) | beta 4.37.1: short labels in boxes centred on their ink, proportional figures (#186) |
+| 4.37 | 14 Oct 2026 | web | [`76b06b1`](https://github.com/duztman/dial-tool/tree/76b06b1979ed41c19e902d9fafa57adb9d8a03bf) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/76b06b1979ed41c19e902d9fafa57adb9d8a03bf/web/dial-tool.html) | beta 4.37: the Now list — eye, touch, opacity on hands, keyboard time, even frames, centre hole, arc text, disc hand |
 | 4.36.1 | 14 Oct 2026 | web | [`a279c0a`](https://github.com/duztman/dial-tool/tree/a279c0aa75640e369ac5b60f9a8f2367c14738f0) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/a279c0aa75640e369ac5b60f9a8f2367c14738f0/web/dial-tool.html) | beta 4.36.1: the icon audit's omitted bits — Guides as drawn, rename quiet, rims light g |
 | 4.36 | 14 Oct 2026 | web | [`a2c0bdf`](https://github.com/duztman/dial-tool/tree/a2c0bdf8f2263229b9b181046933c5b4008bae8a) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/a2c0bdf8f2263229b9b181046933c5b4008bae8a/web/dial-tool.html) | beta 4.36: the icon audit — every icon on one 2× grid, equal on the eye; icon canon and |
 | 4.35.17 | 14 Oct 2026 | web | [`ec7334d`](https://github.com/duztman/dial-tool/tree/ec7334d53c19532068a3e6383c67bc99a641a92f) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/ec7334d53c19532068a3e6383c67bc99a641a92f/web/dial-tool.html) | beta 4.35.17: the hand's preview box stops one unit under the line |
