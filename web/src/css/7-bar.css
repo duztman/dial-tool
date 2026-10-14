@@ -36,7 +36,7 @@
      (Okay: "Remove the humps but the one at 1x. Hump=ball in the middle of the line. Put 1x above the dot centered
      in the remaining gap outside the box in ruler number's font size"). --at: how far along the track, 0 to 1; the
      thumb's half-width at each end, so the ball is under the thumb's centre at 1×. */
-  .bar .lead .speeds { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--u2); height: var(--bar-control); padding: 0 var(--u3); border: var(--hair) solid var(--bar-light); }
+  .bar .lead .speeds { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--u2); height: var(--bar-control); padding: 0 var(--speed-pad); border: var(--hair) solid var(--bar-light); }
   .bar .speedtrack { position: relative; flex: 1; min-width: 0; height: 100%; }
   .bar .humps { position: absolute; inset: 0 calc(var(--speed-thumb) / 2); pointer-events: none; }
   .bar .humps::before { content: ""; position: absolute; left: calc(var(--speed-thumb) / -2); right: calc(var(--speed-thumb) / -2); top: calc(50% - var(--triple) / 2); border-top: var(--triple) solid var(--black); }      /* as thick as the play button's black ring (Okay, 15 Oct 2026, 00:32) */
@@ -49,10 +49,10 @@
   .bar .knob.last { left: calc(100% + var(--speed-thumb) / 2); }
   .bar .speedtrack input[type="range"] { position: absolute; inset: 0; height: 100%; }
   .bar .speedtrack input[type="range"]::-webkit-slider-runnable-track { height: 100%; background: none; }
-  .bar .speedtrack input[type="range"]::-webkit-slider-thumb { width: var(--speed-thumb); height: var(--speed-thumb); margin-top: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2); background: radial-gradient(circle, var(--bar-light) 0 var(--thumb-eye), var(--black) var(--thumb-eye-edge)); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  .bar .speedtrack input[type="range"]::-webkit-slider-thumb { width: var(--speed-thumb); height: var(--speed-thumb); margin-top: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2); background: radial-gradient(circle, var(--black) 0 var(--thumb-eye), var(--bar-light) var(--thumb-eye-edge)); box-shadow: 0 0 0 var(--thick) var(--bar); }
   .bar .speedtrack input[type="range"]::-moz-range-track { height: 100%; background: none; }
   .bar .speedtrack input[type="range"]::-moz-range-progress { background: none; }
-  .bar .speedtrack input[type="range"]::-moz-range-thumb { width: var(--speed-thumb); height: var(--speed-thumb); background: radial-gradient(circle, var(--bar-light) 0 var(--thumb-eye), var(--black) var(--thumb-eye-edge)); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  .bar .speedtrack input[type="range"]::-moz-range-thumb { width: var(--speed-thumb); height: var(--speed-thumb); background: radial-gradient(circle, var(--black) 0 var(--thumb-eye), var(--bar-light) var(--thumb-eye-edge)); box-shadow: 0 0 0 var(--thick) var(--bar); }
   /* the time sings: large, regular weight, bright, centred on its ink (app.js measures it with every figure a 0, so
      it stands still), more room left and right than the other boxes. Its AM · PM window touches it, one colour always
      (Okay: "Pm window touches the time"; "Am/pm does not change color"). */
@@ -67,9 +67,9 @@
   .bar .viewing { margin-left: auto; padding-right: 0; }      /* at the right; the room the day slider doesn't take lies before it */
   /* how to zoom: words and a faint magnifier, nothing to press. A pointer zooms with ⌘ + scroll, a finger pinches */
   .bar .zoomhint { display: flex; align-items: center; gap: var(--u2); white-space: nowrap; font-size: var(--t-s); color: var(--bar-light); }
-  .bar .zoomhint svg { opacity: var(--faint); }
   @media (hover: none), (pointer: coarse) { .bar .zoomhint { display: none; } }      /* a desktop's only: no sign or words on an iPad or a phone (Okay, 15 Oct 2026, 00:32) */
   .bar .viewing > button, .bar .zooms { flex: none; width: var(--col); }
+  .bar .fit { display: inline-flex; align-items: center; justify-content: center; gap: var(--u1); }      /* the magnifier, then the word */
   .bar .zooms { display: flex; }
   .bar .zooms button { flex: 1; min-width: 0; }
   .bar .zooms button + button { border-left: 0; }
@@ -83,7 +83,7 @@
   .ruler .hour { opacity: 0.85; }
   .ruler .half { opacity: 0.6; }
   .ruler .small { opacity: 0.38; }
-  .ruler .pose { opacity: 0; }
+  .ruler .pose { stroke-width: var(--triple); }      /* 10:10 has a thick line of its own, the 10:10 step stands on it (Okay, 15 Oct 2026, 00:51); hidden before */
   .bar .day input[type="range"] { grid-area: 1 / 1; height: var(--ruler); cursor: ew-resize; }
   .bar .day input[type="range"]::-webkit-slider-runnable-track { height: var(--ruler); border-radius: 0; background: none; }
   .bar .day input[type="range"]::-webkit-slider-thumb { width: var(--handle); height: var(--ruler); margin-top: 0; border-radius: 0; background: var(--bar-light); box-shadow: 0 0 0 var(--thick) var(--bar); }
@@ -97,7 +97,7 @@
   .steps12 button:hover { text-decoration: underline; }
   .steps12 button.on { font-weight: 700; }
   /* 10:10 stands on the preview, over the bar and clear of the ruler, above its place in the day */
-  .steps12 button.special { top: auto; bottom: calc((var(--bar-height) + var(--hair) + var(--ruler) + var(--names)) / 2 + var(--unit));      /* from the hours' foot up to the bar's top line (ruler and hours stand in the bar's middle), and one unit more */
+  .steps12 button.special { top: auto; bottom: calc(var(--names) + var(--ruler) - var(--hair));      /* its middle bottom on the top of 10:10's thick line (the line starts a hair inside the ruler) — Okay, 15 Oct 2026, 00:51: "1010 gets stuck to its thick line from middle bottom" */
     z-index: 1; padding: 0 var(--unit); border-radius: calc(var(--names) / 2); background: var(--bar-light); color: var(--bar); font-weight: 600; }
   .steps12 button.special:hover { text-decoration: underline; }
 }

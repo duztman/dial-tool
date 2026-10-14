@@ -645,9 +645,10 @@ await page.click("#hand-tab-0");
   check(line.every((y) => Math.abs(y - line[1]) < 0.6), `the title's small letters, the unit box, undo and Guides are centred on one line (${line.map((y) => +y.toFixed(1)).join(" · ")})`);
 }
 await shot("4g-hand-tabs");
-{ // 10:10 stands on the preview, over the bar, clear of the ruler (Okay, 13 Oct 2026); the scale drawing stays inside its button
-  const p = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), pill = r(".steps12 .special"), bar = r(".bar"); return [Math.round((bar.top - pill.bottom) * 10) / 10, document.elementFromPoint(pill.left + pill.width / 2, pill.top + pill.height / 2).textContent]; });
-  check(p[0] === 5.5 && p[1] === "10:10", `10:10 stands on the preview, one unit over the bar (${p[0]}), and can be pressed there`);
+{ // 10:10 stands on its own thick line, its middle bottom on the line's top (Okay, 15 Oct 2026, 00:51; over the bar, clear of the ruler, before)
+  const p = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), pill = r(".steps12 .special"), line = r(".ruler .pose");
+    return [Math.round((line.top - pill.bottom) * 10) / 10, Math.round((pill.left + pill.width / 2 - (line.left + line.width / 2)) * 10) / 10, getComputedStyle(document.querySelector(".ruler .pose")).strokeWidth, document.elementFromPoint(pill.left + pill.width / 2, pill.top + pill.height / 2).textContent]; });
+  check(Math.abs(p[0]) <= 0.5 && Math.abs(p[1]) <= 1 && p[2] === "3px" && p[3] === "10:10", `10:10 sits on its thick line (gap ${p[0]}, off its middle ${p[1]}, line ${p[2]} wide), and can be pressed there`);
 }
 // Windows: four cards, 12 · 3 · 6 · 9, are the tabs; Show this window is on the heading line, also when the pane is folded
 await tab("Date");
@@ -1056,7 +1057,7 @@ await shot("7-zoomed");
 await page.mouse.wheel(40, 30);
 await frame();
 check(await S("t.fitted === false"), "two-finger scroll pans");
-await page.click('button:text-is("Fit")');
+await page.click("#fit");
 check(near(await S("t.z"), z0, 1e-6) && await S("t.fitted"), "Fit puts the whole page back");
 const t0 = await S("S.t");
 await page.click("#play");

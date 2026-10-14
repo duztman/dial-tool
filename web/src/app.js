@@ -200,10 +200,6 @@ const TOOL_ICONS = {
   redo: `<path d="M13.25 6.75H6.75A3.25 3.25 0 0 0 6.75 13.25H10.25M10.25 3.75L13.25 6.75L10.25 9.75" ${sw(SLANT)}/>`,
   wide: `<rect x="2.75" y="2.75" width="10.5" height="10.5"/><path d="M6.25 10.25L10.25 6.25M7.25 6.25H10.25V9.25" ${sw(DENSE)}/>`,
   find: `<circle cx="7" cy="7" r="4.25" ${sw(CURVE)}/><path d="M10.25 10.25L13.25 13.25" ${sw(SLANT)}/>`,
-  // how to zoom (the bar, beside − +): a magnifier with a larger ring and an i in it (Okay, 15 Oct 2026, 00:32: "Magnifier
-  // before the sentence, larger ring and an info i in that"). Through fit.mjs; the i's dot is a round end of its line
-  // (a filled dot snaps to half points, a LINE to quarters: the two would not stand on one axis)
-  zoominfo: `<circle cx="6.75" cy="6.75" r="5.5" ${sw(CURVE)}/><path d="M10.75 10.75L14.25 14.25" ${sw(SLANT)}/><path d="M6.75 6.25V9.75M6.75 4.25V4.25"/>`,
   screen: `<rect x="2.75" y="3.25" width="10.5" height="7.5"/><path d="M8.25 10.75V13.25M5.75 13.25H10.75" ${sw(DENSE)}/>`,
   // the Guides switch, on 18: a target and its cross; its lines crowd, so DENSE. Okay's drawings (14 Oct 2026, 04:11):
   // guides on, the centre ring dashed in six, square-ended (a dash pattern is a texture, not line ends) (core-on); guides off, a hollow slash, two lines with the target cut away
@@ -814,6 +810,10 @@ class DialTool {
     this.day_ticks = DAY_STEPS.map((x) => x[0]);
     this.watchers = [new ResizeObserver(() => this.draw_ruler())];      // closed with the tool (close)
     this.watchers[0].observe(this.time_slider);
+    // Fit: a plain magnifier at the left of its word (Okay, 15 Oct 2026, 00:51: "fit gets a regular magnifier icon on its left")
+    const fit_button = el("button", { type: "button", id: "fit", className: "fit", title: "Show the whole page", onclick: () => { this.fit(); this.render(); } });
+    fit_button.innerHTML = icon(TOOL_ICONS.find);
+    fit_button.append(el("span", { textContent: "Fit" }));
     const bar = el("footer", { className: "bar" },
       el("div", { className: "lead" }, this.play_button, this.speeds, time_box,
         el("button", { type: "button", id: "now", textContent: "Now", title: "The time it is now", onclick: () => { const d = new Date(); this.set_time(d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000); } })),
@@ -822,7 +822,7 @@ class DialTool {
         el("span", { className: "zooms" },
           view("zoom-out", "Zoom out", SIGNS.minus, () => { this.zoom(1 / 1.4, middle()); this.render(); }),
           view("zoom-in", "Zoom in", SIGNS.plus, () => { this.zoom(1.4, middle()); this.render(); })),
-        el("button", { type: "button", id: "fit", textContent: "Fit", title: "Show the whole page", onclick: () => { this.fit(); this.render(); } })));
+        fit_button));
     this.set_speed(1);
     const guides = this.guides_box();
     // on the preview: undo · redo top left, beside the panel (Okay, 13 Oct 2026) · the Guides switch top right · Backdrop bottom left
@@ -839,9 +839,7 @@ class DialTool {
    *  23:19: "say cmd+scroll is zoom in out attached to the zoom area. Put a magnifier icon at the end"; 23:26: "at the
    *  end, not a button, faint"). On a screen without a pointer the words say what a finger does. */
   zoom_hint() {
-    const hint = el("span", { className: "zoomhint" }, el("span", { textContent: "⌘ + scroll to zoom" }));
-    hint.insertAdjacentHTML("afterbegin", icon(TOOL_ICONS.zoominfo));      // the sign before the words (Okay, 15 Oct 2026, 00:32)
-    return hint;
+    return el("span", { className: "zoomhint" }, el("span", { textContent: "⌘ + scroll to zoom" }));      // words only: the magnifier went into Fit (Okay, 15 Oct 2026, 00:51)
   }
 
   /** the whole panel, away or back: the dial gets the window. Remembered by this browser. (Since #190 nothing in
