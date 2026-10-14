@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.36.1 · built 2026-10-14 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.37 · built 2026-10-14 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -487,6 +487,7 @@
     .row.side > label > .whole { display: none; }
     .row.side > label > .short { display: inline; }
     .row.side > .colour { grid-column: 2 / -1; }
+    .row.side > .segs { grid-column: 2 / -1; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }      /* a choice of words beside the box (a disc hand's marker, #164): over the slider and number, its words sharing the width */
     .row.side > .picks.line { grid-column: 1 / -1; grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .picks.line:not(.open) > [role="radio"]:not(.in3) { display: none; }      /* three shapes and "more" */
   }
@@ -5371,7 +5372,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.36.1";
+var VERSION = "beta 4.37";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -5387,7 +5388,7 @@ var FROM_KINDS = [[], ["markers"], ["markers", "numerals"], ["ticks", "markers",
 var MODES = ["upright", "radial", "radial, auto-flip", "on path"];
 var ANCHORS = ["centre", "baseline", "ascender"];
 var HANDS = ["hour", "minute", "second"];
-var HAND_SHAPES = ["baton", "pencil", "sword", "dauphine", "leaf", "arrow", "syringe", "breguet", "lollipop", "file"];
+var HAND_SHAPES = ["baton", "pencil", "sword", "dauphine", "leaf", "arrow", "syringe", "breguet", "lollipop", "file", "disc"];
 var DATE_AT = [["3", 90], ["4:30", 135], ["6", 180], ["9", 270], ["12", 0], ["1:30", 45], ["7:30", 225], ["10:30", 315], ["4", 120]];
 var WINDOW_KINDS = ["date", "day", "am \xB7 pm", "moon phase"];
 var WINDOW_SHAPES = ["as its kind", "rectangle", "circle", "polygon", "arch", "arc"];
@@ -5476,7 +5477,14 @@ var HAND_BASE = {
   counter: 0,
   wall: 0,
   round: 0,
-  c: [0.1, 0.1, 0.12, 1]
+  c: [0.1, 0.1, 0.12, 1],
+  // a disc hand (#164, 14 Oct 2026; Okay: "disk just gets a marker now… one marker as the arrow"): a disc of Ø disc_d
+  // on the pivot, carrying one marker drawn as a markers ring draws its marks — mark: a place in SHAPES (bar · wedge ·
+  // dot), mark_len · mark_w its length and width — with its outer end at the hand's Length. Used only by shape "disc"
+  disc_d: 8,
+  mark: 0,
+  mark_len: 1.6,
+  mark_w: 0.6
 };
 var WINDOW_BASE = {
   on: false,
@@ -6508,7 +6516,7 @@ function live_texts(S, statik, item) {
   }
   if (item.role === "date number") {
     const x = statik.windows.find((w) => w.index === item.window);
-    if (!x || !["date", "day"].includes(WINDOW_KINDS[x.w.kind])) return null;
+    if (!x || !["date", "day"].includes(WINDOW_KINDS[x.w.kind]) || window_shape(x.w) === "arc") return null;
     const shape2 = window_shape(x.w), high = shape2 === "rectangle" || shape2 === "arc" ? x.w.h : shape2 === "arch" ? x.w.w / 2 : x.w.w;
     const t = window_type(S, x.w), size = high * x.w.size / 100, c = text_centre(x.w.text, t, size);
     if (!c) return null;
@@ -6690,7 +6698,10 @@ function build_window(S, w, index) {
     const { moon, stars } = moon_parts(w.w, w.age);
     content = opening.copy().difference(moon).difference(stars);
   } else if (kind === "am \xB7 pm") content = day_night(w.w, high, day_hour(S)).intersection(opening);
-  else content = centred(text_path(w.text, window_type(S, w), high * w.size / 100));
+  else if (shape2 === "arc") {
+    const a = window_angle(w);
+    content = on_path(w.text, w.r, a, window_type(S, w), high * w.size / 100).translate(...centre.map((v) => -v));
+  } else content = centred(text_path(w.text, window_type(S, w), high * w.size / 100));
   const put = (p, turned2 = true) => (turn && turned2 ? p.rotate(-turn) : p).translate(...centre);
   const shows_text = kind === "date" || kind === "day";
   const win = put(opening.copy());
@@ -6764,11 +6775,19 @@ function hand_shape(h) {
       file_shape(h.file);
       shape2 = "baton";
     }
-    let p = hand_outline(shape2, h.len, h.w, h.tail, h.tip, h.feature, h.feature_at / 100 * h.len, h.round || 0);
+    let p = shape2 === "disc" ? disc_hand(h) : hand_outline(shape2, h.len, h.w, h.tail, h.tip, h.feature, h.feature_at / 100 * h.len, h.round || 0);
     if (h.wall > 0) p = p.difference(offset(p, -h.wall));
     if (h.counter > 0) p = p.union(place(circle(h.counter), -h.tail * COUNTER_AT, 0));
     return p;
   });
+}
+function disc_hand(h) {
+  const disc = circle(max(h.disc_d, 0.1));
+  const mark_ring = { ...RING_BASE, shape: h.mark, len: h.mark_len, w: h.mark_w, round_out: h.round || 0, round_in: h.round || 0 };
+  const mark = mark_outline(mark_ring, h.mark_len, h.mark_w), b = mark.bounds();
+  if (!b) return disc;
+  const placed = place(mark, max(h.len - (b[3] - b[1]) / 2, 0.1), 0);
+  return disc.difference(placed).union(placed.difference(circle(max(h.disc_d, 0.1))));
 }
 function hand_items(S, t) {
   const angles = hand_angles(t, BEATS[S.ha_beat][1]);
@@ -6847,7 +6866,7 @@ function scene(S, statik, t, preview = true, selected = null) {
 }
 var turned = (path, angle) => path.copy().rotate(-angle);
 var RING_MM = ["r", "len", "w", "width", "clear", "round_out", "round_in", "wall", "size", "twelve_gap"];
-var HAND_MM = ["len", "w", "tail", "tip", "feature", "counter", "wall", "round"];
+var HAND_MM = ["len", "w", "tail", "tip", "feature", "counter", "wall", "round", "disc_d", "mark_len", "mark_w"];
 var WINDOW_MM = ["r", "w", "h", "round", "frame", "clear"];
 function each_measure(S, visit) {
   for (const ring of S.rings) {
@@ -7198,7 +7217,7 @@ var PICS = {
   ]
 };
 var hand_pic = (i) => {
-  const p = hand_shape({ ...HAND_BASE, shape: i, len: 13, w: 2.2, tail: 3, tip: 4.5, feature: 4.4, feature_at: [0, 0, 0, 30, 0, 0, 45, 62, 62][i] || 0, round: 0, wall: 0, counter: 0 });
+  const p = hand_shape({ ...HAND_BASE, shape: i, len: 13, w: 2.2, tail: 3, tip: 4.5, feature: 4.4, feature_at: [0, 0, 0, 30, 0, 0, 45, 62, 62][i] || 0, round: 0, wall: 0, counter: 0, disc_d: 6, mark_len: 7, mark_w: 2.2 });
   return `<svg viewBox="-3 -14 6 18.5" width="12" height="38" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;
 };
 var hand_detail = (h) => {
@@ -7241,6 +7260,7 @@ var card_pic = (angle, on) => {
 };
 var num2 = (key, text, lo, hi, step, o = {}) => ({ kind: "num", key, text, lo, hi, step, ...o });
 var pop = (key, text, items, o = {}) => ({ kind: "pop", key, text, items, ...o });
+var seg = (key, text, items, o = {}) => ({ kind: "seg", key, text, items, ...o });
 var pick = (key, text, items, pics, o = {}) => ({ kind: "pick", key, text, items, pics, ...o });
 var chk = (key, text, o = {}) => ({ kind: "chk", key, text, ...o });
 var col = (key, text, o = {}) => ({ kind: "col", key, text, ...o });
@@ -7405,11 +7425,19 @@ var ROWS = {
     // then its numbers and its colour. So what a number changes is seen right beside it, and on the dial at the right.
     // side: the row stands beside the box · short: the label when there is little room for it.
     custom("hand_detail", { ...H }),
-    pick("shape", "Shape", HAND_SHAPES.slice(0, 9), hand_pic, { ...H, side: true, line: true }),
+    pick("shape", "Shape", HAND_SHAPES, hand_pic, { ...H, side: true, line: true, skip: [9] }),
+    // every shape but "file" (a shape of one's own: the SVG tile)
     num2("len", "Length", 0.5, 30, 0.05, { ...H, side: true }),
-    num2("w", "Width", 0.02, 4, 0.01, { ...H, side: true }),
-    num2("tail", "Tail", 0, 10, 0.05, { ...H, side: true }),
-    num2("round", "Round ends", 0, 2, 0.01, { ...H, side: true, show: hand_is("baton", "pencil", "sword", "arrow", "syringe", "breguet", "lollipop", "file") }),
+    // a disc's: where its marker's outer end is
+    num2("disc_d", "Disc \xD8", 0.5, 30, 0.05, { ...H, side: true, show: hand_is("disc") }),
+    seg("mark", "Marker", SHAPES.slice(0, 3), { ...H, side: true, show: hand_is("disc") }),
+    // the markers ring's shapes (#164)
+    num2("mark_len", "Marker length", 0.05, 10, 0.05, { ...H, side: true, short: "Marker L", show: hand_is("disc") }),
+    num2("mark_w", "Marker width", 0.02, 5, 0.01, { ...H, side: true, short: "Marker W", show: hand_is("disc") }),
+    num2("w", "Width", 0.02, 4, 0.01, { ...H, side: true, show: (H2) => HAND_SHAPES[H2.shape] !== "disc" }),
+    num2("tail", "Tail", 0, 10, 0.05, { ...H, side: true, show: (H2) => HAND_SHAPES[H2.shape] !== "disc" }),
+    num2("round", "Round ends", 0, 2, 0.01, { ...H, side: true, show: hand_is("baton", "pencil", "sword", "arrow", "syringe", "breguet", "lollipop", "file", "disc") }),
+    // a disc: its marker's ends
     num2("tip", "Tip length", 0, 10, 0.05, { ...H, side: true, show: hand_is("pencil", "sword", "arrow", "syringe", "breguet") }),
     num2("feature", "Head width", 0, 6, 0.05, { ...H, side: true, show: hand_is("arrow", "syringe") }),
     num2("feature", "Ring \xB7 disc \xD8", 0, 6, 0.05, { ...H, side: true, short: "Ring \xD8", show: hand_is("breguet", "lollipop") }),
@@ -8397,6 +8425,7 @@ var DialTool = class _DialTool {
     if (row.kind === "pick") {
       const group = el("span", { className: "picks", role: "radiogroup", ariaLabel: row.text });
       row.items.forEach((name, i) => {
+        if (row.skip && row.skip.includes(i)) return;
         const tile = el("button", { type: "button", className: "pickt", id: `${id}-${i}`, title: name, onclick: () => set(i) });
         tile.setAttribute("role", "radio");
         tile.innerHTML = typeof row.pics === "function" ? row.pics(i) : pic(row.pics[i]);

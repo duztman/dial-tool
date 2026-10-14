@@ -41,6 +41,7 @@
     .row.side > label > .whole { display: none; }
     .row.side > label > .short { display: inline; }
     .row.side > .colour { grid-column: 2 / -1; }
+    .row.side > .segs { grid-column: 2 / -1; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }      /* a choice of words beside the box (a disc hand's marker, #164): over the slider and number, its words sharing the width */
     .row.side > .picks.line { grid-column: 1 / -1; grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .picks.line:not(.open) > [role="radio"]:not(.in3) { display: none; }      /* three shapes and "more" */
   }

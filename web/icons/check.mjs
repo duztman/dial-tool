@@ -74,7 +74,7 @@ const collect = async (state) => {
         b[k].setAttribute("style", ["fill", "stroke", "stroke-width", "opacity", "display"].map((p) => `${p}:${cs.getPropertyValue(p)}`).join(";")); });
       s.setAttribute("data-icon", "i" + i);
       res.push({ key: "i" + i, name, on: !!host.closest(".on, [aria-pressed=true], [aria-expanded=true]"), w: +r.width.toFixed(2), h: +r.height.toFixed(2),
-        vb: vb ? [vb.x, vb.y, vb.width, vb.height] : null, scale: +scale.toFixed(3), parts, inline: c.outerHTML, hand: host.id.startsWith("hand-shape-") && /^hand-shape-Shape-\d$/.test(host.id) });
+        vb: vb ? [vb.x, vb.y, vb.width, vb.height] : null, scale: +scale.toFixed(3), parts, inline: c.outerHTML, hand: host.id.startsWith("hand-shape-") && /^hand-shape-Shape-\d+$/.test(host.id) });
     });
     return res;
   });

@@ -621,7 +621,7 @@ await page.click("#hand-tab-0");
   await page.click("#hand-shape-Shape-more");
   const b = await look();
   const box_high = await page.$eval("#hand-detail", (e) => Math.round(e.getBoundingClientRect().height));
-  check(open.split(" ").length === 11 && open.endsWith("less SVG") && b.tiles === "baton pencil breguet more" && b.d !== a.d && box_high === a.high, `more opens all nine (${open}); closed again, the chosen one has a place on the line (${b.tiles}), and the box shows it; the box keeps its height (${box_high})`);
+  check(open.split(" ").length === 12 && open.endsWith("less SVG") && b.tiles === "baton pencil breguet more" && b.d !== a.d && box_high === a.high, `more opens all ten, the disc too (#164) (${open}); closed again, the chosen one has a place on the line (${b.tiles}), and the box shows it; the box keeps its height (${box_high})`);
   await page.click("#hand-shape-Shape-0");
   // the number box: the number with a tiny plus over a tiny minus; a press on the number and it grows over the slider
   const nb = () => page.evaluate(() => { const box = document.querySelector(".row.side .numbox"), r = box.getBoundingClientRect(), s = box.closest(".row").querySelector("input[type=range]").getBoundingClientRect(), [minus, plus] = [...box.querySelectorAll(".step")].map((e) => e.getBoundingClientRect()); return { w: Math.round(r.width), h: Math.round(r.height), over: r.left <= s.left + 1, stacked: plus.bottom <= minus.top + 1 && Math.round(plus.left) === Math.round(minus.left), step: Math.round(plus.width) + "x" + Math.round(plus.height) }; });
@@ -1279,6 +1279,22 @@ await page.emulateMedia({ reducedMotion: "reduce" });
   await send("pointerup", 11, r[0] - 100, r[1]); await send("pointerup", 12, r[0] + 100, r[1]);
   check(landed.every((v, i) => v === before[i]) && Math.abs(after[0] / before[0] - 2) < 0.01, `a second finger landing moves nothing; spreading them twice as far zooms ×${(after[0] / before[0]).toFixed(2)}`);
   await page.evaluate(() => window.dial_tool.fit && window.dial_tool.fit());
+}
+// #165: the centre hole shows only with the hands hidden; a production mask has its cut line · #164: a disc hand
+{
+  const plate_is = (which) => page.evaluate((w) => { const t = window.dial_tool, p = t.items.find((i) => i.role === "plate"); return p.path === t.statik[w]; }, which);
+  const was_on = await S("S.ha_on");
+  await page.evaluate(() => { window.dial_tool.S.ha_on = true; window.dial_tool.render(); }); await frame();
+  const under = await plate_is("plate") && await S("Boolean(t.statik.hole) && S.dial_hole === 2.7");
+  await page.evaluate(() => { window.dial_tool.S.ha_on = false; window.dial_tool.render(); }); await frame();
+  const shows = await plate_is("plate_holed");
+  await page.evaluate((w) => { window.dial_tool.S.ha_on = w; window.dial_tool.render(); }, was_on); await frame();
+  check(under && shows, "the centre hole (Ø 2.7) is under the hands, and shows when they are hidden");
+  const was_hour = await S("JSON.stringify(S.ha_hour)");
+  await page.evaluate(() => { const t = window.dial_tool; Object.assign(t.S.ha_hour, { on: true, shape: 10, len: 3, disc_d: 8, mark: 0, mark_len: 1.5, mark_w: 0.6 }); t.S.ha_on = true; t.static_dirty = true; t.render(); }); await frame();
+  const disc = await page.evaluate(() => { const b = window.dial_tool.items.find((i) => i.role === "hand" && i.name === "hour").path.bounds(); return [b[2] - b[0], b[3] - b[1]]; });
+  await page.evaluate((h) => { const t = window.dial_tool; t.S.ha_hour = JSON.parse(h); t.static_dirty = true; t.render(); }, was_hour); await frame();
+  check(Math.abs(disc[0] - 8) < 0.01 && Math.abs(disc[1] - 8) < 0.01, `a disc hand is its disc, the marker cut into it (${disc.map((v) => v.toFixed(2)).join(" × ")} mm)`);
 }
 check(errors.length === 0, "no errors in the browser's console" + (errors.length ? ": " + errors.slice(0, 3).join(" | ") : ""));
 // ── the gallery: under everything else in Export; a card opens its dial ──

@@ -169,7 +169,7 @@ const PICS = {
 };
 /** a hand's picture is the hand itself, drawn by the geometry with a standard size (twice its units, so already on whole dots). */
 const hand_pic = (i) => {
-  const p = G.hand_shape({ ...G.HAND_BASE, shape: i, len: 13, w: 2.2, tail: 3, tip: 4.5, feature: 4.4, feature_at: [0, 0, 0, 30, 0, 0, 45, 62, 62][i] || 0, round: 0, wall: 0, counter: 0 });
+  const p = G.hand_shape({ ...G.HAND_BASE, shape: i, len: 13, w: 2.2, tail: 3, tip: 4.5, feature: 4.4, feature_at: [0, 0, 0, 30, 0, 0, 45, 62, 62][i] || 0, round: 0, wall: 0, counter: 0, disc_d: 6, mark_len: 7, mark_w: 2.2 });
   return `<svg viewBox="-3 -14 6 18.5" width="12" height="38" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;
 };
 /** the chosen hand as it is now, with all its settings (length, width, tail, round ends, hollow wall, counterweight),
@@ -380,11 +380,15 @@ const ROWS = {
     // then its numbers and its colour. So what a number changes is seen right beside it, and on the dial at the right.
     // side: the row stands beside the box · short: the label when there is little room for it.
     custom("hand_detail", { ...H }),
-    pick("shape", "Shape", G.HAND_SHAPES.slice(0, 9), hand_pic, { ...H, side: true, line: true }),
-    num("len", "Length", 0.5, 30, 0.05, { ...H, side: true }),
-    num("w", "Width", 0.02, 4, 0.01, { ...H, side: true }),
-    num("tail", "Tail", 0, 10, 0.05, { ...H, side: true }),
-    num("round", "Round ends", 0, 2, 0.01, { ...H, side: true, show: hand_is("baton", "pencil", "sword", "arrow", "syringe", "breguet", "lollipop", "file") }),
+    pick("shape", "Shape", G.HAND_SHAPES, hand_pic, { ...H, side: true, line: true, skip: [9] }),      // every shape but "file" (a shape of one's own: the SVG tile)
+    num("len", "Length", 0.5, 30, 0.05, { ...H, side: true }),      // a disc's: where its marker's outer end is
+    num("disc_d", "Disc Ø", 0.5, 30, 0.05, { ...H, side: true, show: hand_is("disc") }),
+    seg("mark", "Marker", G.SHAPES.slice(0, 3), { ...H, side: true, show: hand_is("disc") }),      // the markers ring's shapes (#164)
+    num("mark_len", "Marker length", 0.05, 10, 0.05, { ...H, side: true, short: "Marker L", show: hand_is("disc") }),
+    num("mark_w", "Marker width", 0.02, 5, 0.01, { ...H, side: true, short: "Marker W", show: hand_is("disc") }),
+    num("w", "Width", 0.02, 4, 0.01, { ...H, side: true, show: (H) => G.HAND_SHAPES[H.shape] !== "disc" }),
+    num("tail", "Tail", 0, 10, 0.05, { ...H, side: true, show: (H) => G.HAND_SHAPES[H.shape] !== "disc" }),
+    num("round", "Round ends", 0, 2, 0.01, { ...H, side: true, show: hand_is("baton", "pencil", "sword", "arrow", "syringe", "breguet", "lollipop", "file", "disc") }),      // a disc: its marker's ends
     num("tip", "Tip length", 0, 10, 0.05, { ...H, side: true, show: hand_is("pencil", "sword", "arrow", "syringe", "breguet") }),
     num("feature", "Head width", 0, 6, 0.05, { ...H, side: true, show: hand_is("arrow", "syringe") }),
     num("feature", "Ring · disc Ø", 0, 6, 0.05, { ...H, side: true, short: "Ring Ø", show: hand_is("breguet", "lollipop") }),
@@ -1202,6 +1206,7 @@ class DialTool {
     if (row.kind === "pick") {                     // a choice as pictures: one tile per item, on the columns
       const group = el("span", { className: "picks", role: "radiogroup", ariaLabel: row.text });
       row.items.forEach((name, i) => {
+        if (row.skip && row.skip.includes(i)) return;      // an item kept in the list for its place (R9) but not offered here
         const tile = el("button", { type: "button", className: "pickt", id: `${id}-${i}`, title: name, onclick: () => set(i) });
         tile.setAttribute("role", "radio");
         tile.innerHTML = typeof row.pics === "function" ? row.pics(i) : pic(row.pics[i]);

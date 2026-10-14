@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.36.1";
+export const VERSION = "beta 4.37";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -34,7 +34,7 @@ const FROM_KINDS = [[], ["markers"], ["markers", "numerals"], ["ticks", "markers
 export const MODES = ["upright", "radial", "radial, auto-flip", "on path"];
 export const ANCHORS = ["centre", "baseline", "ascender"];      // the point of a numeral that sits on its ring's radius (web version, 13 Oct 2026). Only grows at its end (R9)
 export const HANDS = ["hour", "minute", "second"];
-export const HAND_SHAPES = ["baton", "pencil", "sword", "dauphine", "leaf", "arrow", "syringe", "breguet", "lollipop", "file"];
+export const HAND_SHAPES = ["baton", "pencil", "sword", "dauphine", "leaf", "arrow", "syringe", "breguet", "lollipop", "file", "disc"];      // disc: #164, 14 Oct 2026 (appended, R9)
 export const DATE_AT = [["3", 90], ["4:30", 135], ["6", 180], ["9", 270], ["12", 0], ["1:30", 45], ["7:30", 225], ["10:30", 315], ["4", 120]];      // only grows at its end (R9); 4 added 13 Oct 2026 (Ronda's 4H dial drawing)
 export const WINDOW_KINDS = ["date", "day", "am · pm", "moon phase"];      // what a window shows (web version)
 // the hole's shape, apart from what shows through it (Okay, 13 Oct 2026). 0, the start, is "as its kind": an arch for a
@@ -79,6 +79,10 @@ export const HAND_BASE = {
   on: true, shape: 0, file: "", fit: true, scale: 1.0, w_scale: 1.0,
   len: 10.0, w: 1.0, tail: 1.0, tip: 1.0, feature: 1.2, feature_at: 75.0,
   counter: 0.0, wall: 0.0, round: 0.0, c: [0.10, 0.10, 0.12, 1],
+  // a disc hand (#164, 14 Oct 2026; Okay: "disk just gets a marker now… one marker as the arrow"): a disc of Ø disc_d
+  // on the pivot, carrying one marker drawn as a markers ring draws its marks — mark: a place in SHAPES (bar · wedge ·
+  // dot), mark_len · mark_w its length and width — with its outer end at the hand's Length. Used only by shape "disc"
+  disc_d: 8.0, mark: 0, mark_len: 1.6, mark_w: 0.6,
 };
 
 // windows 2 to 4 (web version, beta 3.0). Window 1 is the date window both tools know: its keys are da_….
@@ -1251,11 +1255,22 @@ export function hand_shape(h) {
   return memo("hand" + key_of(h), () => {
     let shape = HAND_SHAPES[h.shape];
     if (shape === "file") { file_shape(h.file); shape = "baton"; }       // no file: a baton (R17)
-    let p = hand_outline(shape, h.len, h.w, h.tail, h.tip, h.feature, h.feature_at / 100 * h.len, h.round || 0);
+    let p = shape === "disc" ? disc_hand(h) : hand_outline(shape, h.len, h.w, h.tail, h.tip, h.feature, h.feature_at / 100 * h.len, h.round || 0);
     if (h.wall > 0) p = p.difference(offset(p, -h.wall));
     if (h.counter > 0) p = p.union(place(circle(h.counter), -h.tail * COUNTER_AT, 0));
     return p;
   });
+}
+
+/** a disc hand, pointing at 12: the disc with its one marker. Disc and marker are one colour, so where the marker lies
+ *  on the disc it is cut out of it (the dial shows through), and where it reaches past the disc it is ink. */
+function disc_hand(h) {
+  const disc = circle(max(h.disc_d, 0.1));
+  const mark_ring = { ...RING_BASE, shape: h.mark, len: h.mark_len, w: h.mark_w, round_out: h.round || 0, round_in: h.round || 0 };
+  const mark = mark_outline(mark_ring, h.mark_len, h.mark_w), b = mark.bounds();
+  if (!b) return disc;
+  const placed = place(mark, max(h.len - (b[3] - b[1]) / 2, 0.1), 0);
+  return disc.difference(placed).union(placed.difference(circle(max(h.disc_d, 0.1))));
 }
 
 /** the hands that are on, bottom first: [name, colour, upright shape, clock angle]. */
@@ -1357,7 +1372,7 @@ export const turned = (path, angle) => path.copy().rotate(-angle);
  *  counts, percentages or the page margin; and not the diameter itself, which the caller sets.
  *  measures(S) → the values, in a fixed order; set_measures(S, values) puts a list of the same length back. */
 export const RING_MM = ["r", "len", "w", "width", "clear", "round_out", "round_in", "wall", "size", "twelve_gap"];
-export const HAND_MM = ["len", "w", "tail", "tip", "feature", "counter", "wall", "round"];
+export const HAND_MM = ["len", "w", "tail", "tip", "feature", "counter", "wall", "round", "disc_d", "mark_len", "mark_w"];
 export const WINDOW_MM = ["r", "w", "h", "round", "frame", "clear"];
 function each_measure(S, visit) {
   for (const ring of S.rings) {
