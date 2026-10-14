@@ -28,6 +28,7 @@ a { color: inherit; text-decoration: underline; text-decoration-thickness: .15mm
 /* blocks: a hairline above, a label in semibold, the words */
 .block { border-top: .2mm solid var(--line); padding-top: calc(var(--b) * 1); overflow: hidden; }
 .block p b { font-weight: 600; }
+.block.bare { border-top: none; padding-top: 0; }
 .block.small { font-size: 7pt; line-height: calc(var(--b) * 2.45); }
 .block.watch { padding-left: 7mm; }
 .block.watch.attached { border-top: none; padding-top: 0; padding-left: 5mm; font-size: 8pt; line-height: calc(var(--b) * 2.7); }   /* a Watch note hung under its block (Okay, 19:18) */

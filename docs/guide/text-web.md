@@ -166,7 +166,7 @@ The colour box is the same wherever a colour is chosen.
 ## 06 · Rings
 
 **Lead:** Every mark, number and track on a dial is a ring.
-A ring repeats one kind of thing round the centre.
+A ring repeats one kind of thing round the centre, at one radius.
 
 **What a ring is.** One row in the list, drawn at one radius. Tracks, hour marks, numbers, bezels and zones of colour are all rings; this diver has eleven.
 
@@ -176,7 +176,7 @@ A ring repeats one kind of thing round the centre.
 
 **The ring drawer.** It opens under the selected ring's row. Click a value button to type a number, or press it and drag: right or up raises the value, and Shift makes each step finer.
 
-**Adding and arranging.** A new ring or a copy goes in above the selected ring and becomes the selected one. A new numerals ring takes its type from the numerals already on the dial. Duplicate is the quick way to a second track: copy one, then change its radius.
+**Adding and arranging.** A new ring or a copy goes in above the selected ring and becomes the selected one. A new numerals ring takes its type from the numerals already on this dial, so they match.
 
 **Watch.** A ring's radius runs from the centre to the outer edge of ticks, markers and bands, and to a numeral's anchor: its middle, its baseline or its top.
 
@@ -199,13 +199,13 @@ A ring repeats one kind of thing round the centre.
 **Note: on Dots.** Every third position skipped, for the bars.
 **Note: on Bars 3 · 6 · 9.** Four markers; the one at 12 is switched off.
 **Note: on Minutes.** Sixty ticks that skip where a marker sits.
-**Note: on Bezel: five minutes.** Twelve ticks that skip where a numeral stands.
-**Note: on Bezel: first 15.** Sixteen ticks over a 90° span: one at each end.
+**Note: on Bezel: five minutes.** Twelve ticks that skip at the numerals.
+**Note: on Bezel: first 15.** Sixteen ticks over 90°: one at each end.
 **Note: on Bezel: 10–50.** Five numerals over 240°: 10 to 50 in tens.
-**Note: on Bezel.** Twelve sectors; each can take its own colour.
+**Note: on Bezel.** Twelve sectors, each in its own colour.
 **Note: on Bezel edge.** A band only 0.25 mm wide reads as a line.
-**Note: on Band.** A band's width grows inwards from its radius.
-**Note: anchor.** Sets a numeral's anchor: centre, baseline or top.
+**Note: on Band.** A band grows inwards from its radius.
+**Note: anchor.** For numerals, sets the point that sits on the radius: centre, baseline or top.
 
 ---
 

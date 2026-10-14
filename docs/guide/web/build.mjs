@@ -86,9 +86,9 @@ let CUR = "";
 const head = (part, no, t, o = {}) => { CUR = no; return `<div class="tabline" style="left:${X(1)}mm;top:${TOP - ROW}mm;width:${W(12)}mm;height:${ROW}mm">
     <div class="ptab" style="width:${W(1)}mm">${part}<span>${no}</span></div><div class="gname">Dial Tool · Guidebook · beta 4.36</div>
     <div class="gurl">duztman.github.io/dial-tool</div></div>
-  <div class="head" style="left:${X(1)}mm;top:${Y(1)}mm;width:${W(12)}mm;height:${H(2)}mm">
-    <h1 style="width:${W(8)}mm">${inline(t.title)}</h1>
-    <p class="lead${o.leadRight ? " right" : ""}" style="${o.leadRight ? `left:${f2(X(7) - X(1))}mm;width:${f2(W(6))}mm` : `width:${W(8)}mm`}">${lead_lines(t.lead)}</p></div>`; };
+  <div class="head" style="left:${f2(X(1) + (o.inset ?? 0))}mm;top:${Y(1)}mm;width:${f2(o.inset ? (o.leadW ?? W(8)) : W(12))}mm;height:${H(2)}mm${o.inset ? ";border-top:none" : ""}">
+    <h1 style="width:${f2(o.inset ? (o.leadW ?? W(8)) : W(8))}mm">${inline(t.title)}</h1>
+    <p class="lead${o.leadRight ? " right" : ""}" style="${o.leadRight ? `left:${f2(X(7) - X(1))}mm;width:${f2(W(6))}mm` : `width:${f2(o.leadW ?? W(8))}mm`}">${lead_lines(t.lead)}</p></div>${o.inset ? `<div style="left:${f2(X(1))}mm;top:${f2(Y(1))}mm;width:${f2(W(12))}mm;border-top:.3mm solid var(--ink)"></div>` : ""}`; };
 const ring_of = (part) => oklch(0.64, 0.13, hue(part));                         // outlines round what matters
 const page = (part, inner) => `<section class="page" data-no="${CUR}" style="--sig:${tint(part)};--sig-ink:${ink_of(part)};--sig-ring:${ring_of(part)}">${inner}</section>`;
 
@@ -359,21 +359,22 @@ const pages = [];
 }
 
 // ════════════════════════ 06 · Rings ════════════════════════
-// Left, large: the diver, eleven rings, each named with its kind; every dot sits on a real mark (found in the
-// tool's own SVG, marks.mjs) and its line leaves the dial without crossing other print. Under it, what a ring is.
-// Right, three pairs, picture beside its words (composition review, r4): the list → Stacking order; the drawer →
-// The drawer; the heading's buttons, closed and open at one size → Adding and arranging.
+// Two fields of the part's colour and one white column (Okay, 20:22 / 20:46: no leftover gaps, balance by eye):
+// left, under the title and lead, the dial: what a ring is, each ring named by how it works; under it the four
+// kinds and the radius pop-up. Right, from the rule to the foot of the page, the window's three pieces stacked in
+// the order you meet them — the list, the drawer, the + — with the words for each beside it in the white column.
 {
   const t = page_text("06"), P = "B";
-  let h = head(P, "06", t, { leadRight: true });
-  // with the lead beside the title, row 2 is free: rows 3–14 are drawn from just under the title to the foot of the
-  // page, each row a little taller (Okay, 20:22: no band of nothing between the head and the pictures)
-  const TOP6 = 31, F6 = (Y(14) + ROW - TOP6) / (Y(14) + ROW - Y(3));
-  const box = (c, r, cs, rs) => ({ x: X(c), y: TOP6 + (Y(r) - Y(3)) * F6, w: W(cs), h: H(rs) * F6 });
+  let h = head(P, "06", t, { leadW: W(6) - 10, inset: 5 });
+  const FOOT = Y(14) + ROW;
+  const L = { x: X(1), y: TOP + 1.5, w: W(6), h: FOOT - TOP - 1.5 }, R = { x: X(7), y: TOP + 1.5, w: W(4), h: FOOT - TOP - 1.5 };
+  h = h.replace('<div class="head"', `<div class="ground flat" style="${css(L)}"></div><div class="ground flat" style="${css(R)}"></div><div class="head"`);   // the title and lead stand on the left field
+  // three equal gaps on the field: lead → dial, dial → strip, strip → foot (Okay, 20:46: balance by eye)
+  const LEADB = Y(1) + 20.5, HD = 2 * 20 * (61 / 40) + 3, HS = 36, GAP = (FOOT - LEADB - HD - HS) / 3;
+  const CY = LEADB + GAP + HD / 2, D0 = CY - 55, DIAL_H = 110, STRIP = HS;              // the dial above, the strip of kinds and radius under it
   const S = JSON.parse(fs.readFileSync(path.join(IMG, "dial-diver.json"), "utf8"));
-  const big = box(1, 3, 6, 6);
-  h += `<div class="ground flat" style="${css(big)}"></div>`;
-  const dd = 62, kd = dd / S.dial_d, pg = (S.dial_d + 2 * S.margin) * kd, cx = big.x + big.w / 2, cy = big.y + big.h / 2;
+  const big = { x: L.x, y: D0, w: L.w, h: DIAL_H };
+  const dd = 61, kd = dd / S.dial_d, pg = (S.dial_d + 2 * S.margin) * kd, cx = big.x + big.w / 2, cy = big.y + big.h / 2;
   h += `<img class="svgdial" src="../img/dial-diver.svg" style="left:${f2(cx - pg / 2)}mm;top:${f2(cy - pg / 2)}mm;width:${f2(pg)}mm">`;
   const KIND = ["ticks", "markers", "numerals", "band"];
   const slug = (n) => n.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -390,7 +391,7 @@ const pages = [];
     MK[k] = MK2[k].map((c) => ({ ...c, cost: c.cross * 50 + (c18.get(key(c)) ?? 40) * 4 + (c25.get(key(c)) ?? 40) + Math.min(6, (c40.get(key(c)) ?? 40) * 0.05) }));
   }
   await b0.close();
-  const top = big.y + 5, bottom = big.y + big.h - 5, PITCH = 10.4;
+  const top = big.y + 5, bottom = big.y + big.h - 5, PITCH = 9.6;
   const cand = S.rings.map((r) => ({ r, kind: r.kind ?? 0, list: (MK[r.name] || []).map((c) => ({ ...c, X: cx + c.x * kd, Y: cy + c.y * kd })).filter((c) => c.Y > top && c.Y < bottom) }));
   for (const c of cand) check(c.list.some((q) => q.cross === 0), `rings dial: no clear way out for "${c.r.name}"`);
   let rng = 7; const rand = () => (rng = (rng * 16807) % 2147483647) / 2147483647;
@@ -400,7 +401,9 @@ const pages = [];
     const used = { L: [], R: [] }, out = []; let ok = true, total = 0;
     for (const c of order) {
       let best = null;
+      const clear = c.list.some((q) => q.cross <= 8);
       for (const q of c.list) {
+        if (clear && q.cross > 8) continue;                  // a ring with a clear way out must use one
         if (used[q.side].some((u) => Math.abs(u - q.Y) < PITCH)) continue;
         // a band is labelled where its line leaves square to it (near 3 or 9), not along its top or bottom edge
         const sc = q.cost + (c.kind === 3 ? Math.abs(q.Y - cy) / (c.r.r * kd) * 6 : 0) + (trial ? rand() * 2 : 0);
@@ -418,7 +421,7 @@ const pages = [];
   let edgeL = cx - 20 * kd - 2.5, edgeR = cx + 20 * kd + 2.5;     // just outside the bezel
   // the group is centred by its ink: the widest label on each side decides how far the dial moves
   // each label: the ring's kind, then in grey what it draws (Okay, 20:22: "Bezel" five times was "informationally dumb")
-  const LW = 34;                                    // a label's measure: two short lines
+  const LW = 31.5;                                    // a label's measure: two short lines
   const inkW = async (p) => (await measure(inline(note(t, "on " + p.r.name)), LW)).W;
   let Lw = 0, Rw = 0; for (const p of placed || []) { const w = (p.W = await inkW(p)); if (p.side === "L") Lw = Math.max(Lw, w); else Rw = Math.max(Rw, w); }
   const shift = ((big.x + big.w - (edgeR + 1.2 + Rw)) - (edgeL - 1.2 - Lw - big.x)) / 2;
@@ -427,78 +430,64 @@ const pages = [];
   const hcx = cx + shift;
   h += pointers({ sides: (placed || []).map((p) => ({ at: [p.X, p.Y], edge: p.side === "L" ? edgeL : edgeR, side: p.side === "L" ? "R" : "L",
     text: note(t, "on " + p.r.name), w: LW })) }, { halo: [hcx, cy, 20 * kd] });
-  h += block(box(1, 9, 3, 3), text(t, "What a ring is"), { flow: "a" }) + block(box(1, 9, 3, 3), text(t, "Watch"), { flow: "a", attach: true });
-  // under them, the radius button's pop-up on a numerals ring: what the Watch note is about
-  const CP = 12;                                    // a card's own margin, in screen points (Okay, 19:52: "a little more padding")
-  { const g = box(1, 12, 3, 3), k = 0.19, rr = [338, 276, 140, 148], lw = 26;
-    const lwInk = (await measure(inline(note(t, "anchor")), lw)).W;      // the group is centred by its ink
-    const cw = (rr[2] + 2 * CP) * k, ch = (rr[3] + 2 * CP) * k, x0 = g.x + (g.w - cw - 4 - lwInk) / 2;
-    // keep the size and radius buttons, the pop-up and the nub joining them; the rows behind, the drawer's edge and
-    // the preview beyond the panel are painted out (Okay, r4: if the background cannot give context, leave it plain)
-    const PP = SHOTS.rects["diver-radius"].pop, keep = [[342, 280, 86, 40], [PP[0], PP[1], PP[2], PP[3]], [396, 314, 24, 12]];
-    const c = card("diver-radius", rr, x0, g.y + (g.h - ch) / 2, k, { pad: CP, bg: "#FFFFFF", keep });
-    h += `<div class="ground flat" style="${css(g)}"></div>` + c.html;
-    const P0 = SHOTS.rects["diver-radius"].pop, menu = c.at([P0[0] + 104, P0[1] + 5, 18, 18]);
-    h += pointers({ sides: [{ at: [menu[0] + menu[2], mid(menu)[1]], edge: c.x + c.w + 2.8, side: "L", text: note(t, "anchor"), w: lw }] }); }
-  // Adding and arranging sits beside its picture (cols 7–12, rows 11–14)
-  h += block(box(4, 9, 3, 3), text(t, "Four kinds"), { flow: "b" }) + block(box(4, 12, 3, 2), text(t, "Adding and arranging"), { flow: "b2", bottom: PAGE[1] - 11 });
 
-  // right: three pictures in cols 7–10, each with its words beside it in cols 11–12
-  const PX0 = X(7), PW = W(4);
-  // Every picture on this side shares its ground out evenly (Okay, 19:52): the same space above the labels,
-  // between the labels and the picture, and under the picture; labels over it stand on one baseline.
-  // 1 · the list: the selected ring and its drawer, two more rows, then the list fades. The eye is named on the
-  // first row under the drawer (a line straight out to the left); the grip and the summary from the selected
-  // row up to one baseline, the rename box above them.
-  { const g = box(7, 3, 4, 5), k = 0.125, lr = [48, 188, 392, 222], wE = 18, wG = 32, wS = 30, wN = 30;
-    const cw = (lr[2] + 2 * CP) * k, ch = (lr[3] + 2 * CP) * k;
-    const H1 = Math.max(await inkH(note(t, "grip"), wG), await inkH(note(t, "summary"), wS)), H2 = await inkH(note(t, "name"), wN);
-    const m = (g.h - H2 - H1 - ch) / 4, z2 = g.y + m, z1 = z2 + H2 + m, cy0 = z1 + H1 + m;
-    const C = card("diver-rings", lr, g.x + (g.w - (wE + 4 + cw)) / 2 + wE + 4, cy0, k, { pad: CP, cls: "cut", fade: 66 });
-    h += `<div class="ground flat" style="${css(g)}"></div>` + C.html;
+  // the strip under the dial, still on the field: the four kinds, and the radius pop-up with what it means
+  const sy = CY + HD / 2 + GAP, CP = 12;
+  h += block({ x: L.x + 5, y: sy - 1.2, w: W(3) - 5, h: STRIP + 4 }, text(t, "Four kinds"), { bare: true });
+  { const k = 0.17, rr = [338, 276, 140, 148], lw = 30, gx = X(4), gw = L.x + L.w - X(4);
+    const cw = (rr[2] + 2 * CP) * k, ch = (rr[3] + 2 * CP) * k;
+    const PP = SHOTS.rects["diver-radius"].pop, keep = [[342, 280, 86, 40], [PP[0], PP[1], PP[2], PP[3]], [396, 314, 24, 12]];
+    const lwInk = (await measure(inline(note(t, "anchor")), lw)).W, x0 = gx + (gw - cw - 4 - lwInk) / 2;
+    const c = card("diver-radius", rr, x0, sy + (STRIP - ch) / 2, k, { pad: CP, bg: "#FFFFFF", keep });
+    h += c.html;
+    const menu = c.at([PP[0] + 104, PP[1] + 5, 18, 18]);
+    h += pointers({ sides: [{ at: [menu[0] + menu[2], mid(menu)[1]], edge: c.x + c.w + 2.8, side: "L", text: note(t, "anchor"), w: lw }] }); }
+
+  // right: three cards stacked in one field, every gap the same; the words for each in the white column
+  const kL = 0.14, lr = [48, 188, 392, 222], kD = 0.19, dr = [100, 236, 330, 50], kA = 0.19, ar = [44, 153, 400, 179];
+  const wE = 18, wG = 32, wS = 30, wN = 30, wK = 64, wV = 48, wM = 34, wA = 34;
+  const chL = (lr[3] + 2 * CP) * kL, chD = (dr[3] + 2 * CP) * kD, chA = (ar[3] + 2 * CP) * kA;
+  const H2 = await inkH(note(t, "name"), wN), H1 = Math.max(await inkH(note(t, "grip"), wG), await inkH(note(t, "summary"), wS));
+  const Ha = await inkH(note(t, "kinds"), wK), Hb = await inkH(note(t, "values"), wV), HM = await inkH(note(t, "move"), wM), HA = await inkH(note(t, "menu"), wA);
+  const m = (R.h - (H2 + H1 + chL + Ha + chD + Hb + HM + HA + chA)) / 10;
+  let y = R.y + m; const at = (dh) => { const v = y; y += dh + m; return v; };
+  const yN = at(H2), yG = at(H1), yL = at(chL), yK = at(Ha), yD = at(chD), yV = at(Hb), yM = at(HM), yP = at(HA), yA = at(chA);
+  const xmin = R.x + 4, xmax = R.x + R.w - 4, TX = { x: X(11), w: W(2) };
+  // 1 · the list
+  { const cw = (lr[2] + 2 * CP) * kL, C = card("diver-rings", lr, R.x + (R.w - (wE + 4 + cw)) / 2 + wE + 4, yL, kL, { pad: CP, cls: "cut", fade: 66 });
+    h += C.html;
     const eye = C.at([62, 305, 18, 14]), grip = C.at([90, 203, 14, 18]), ren = C.at([190, 200, 22, 24]);
-    const sum = outline(C.at([238, 204, 192, 16]), [4 * k, 5 * k, 4 * k, 6 * k]), sx = sum.box[0] + sum.box[2] / 2;
+    const sum = outline(C.at([238, 204, 192, 16]), [4 * kL, 5 * kL, 4 * kL, 6 * kL]), sx = sum.box[0] + sum.box[2] / 2;
     h += pointers({ rings: [sum.svg],
       sides: [{ at: [eye[0], mid(eye)[1]], edge: C.x - 2.8, side: "R", text: note(t, "eye"), w: wE }],
       tiers: [
-        { side: "above", zone: [z1, z1 + H1], xmin: g.x + 4, xmax: g.x + g.w - 4, forbid: [mid(ren)[0]], items: [
-          { at: [mid(grip)[0], grip[1]], text: note(t, "grip"), w: wG },
-          { at: [sx, sum.box[1]], text: note(t, "summary"), w: wS } ] },
-        { side: "above", zone: [z2, z2 + H2], xmin: g.x + 4, xmax: g.x + g.w - 4, items: [
-          { at: [mid(ren)[0], ren[1]], text: note(t, "name"), w: wN } ] } ] });
-    h += block(box(11, 3, 2, 5), text(t, "Stacking order"), { flow: "s1", bottom: Y(7) + ROW }) + block(box(11, 3, 2, 5), text(t, "Watch: order"), { flow: "s1", attach: true, bottom: Y(7) + ROW }); }
-  // 2 · the drawer: the kinds over it; the three value buttons, ringed together, under it
-  { const g = box(7, 8, 4, 3), k = 0.17, dr = [100, 236, 330, 50], wK = 64, wV = 48;
-    const dw = (dr[2] + 2 * CP) * k, dh = (dr[3] + 2 * CP) * k;
-    const Ha = await inkH(note(t, "kinds"), wK), Hb = await inkH(note(t, "values"), wV), m = (g.h - Ha - dh - Hb) / 4;
-    const c = card("diver-rings", dr, g.x + (g.w - dw) / 2, g.y + m + Ha + m, k, { pad: CP });
-    h += `<div class="ground flat" style="${css(g)}"></div>` + c.html;
-    const kinds = c.at([112, 243, 182, 36]), vals = outline(c.at([302, 243, 124, 36]), [7 * k, 4 * k, 7 * k, 4 * k]);   // 4 px is all the drawer leaves at the sides
+        { side: "above", zone: [yG, yG + H1], xmin, xmax, forbid: [mid(ren)[0]], items: [
+          { at: [mid(grip)[0], grip[1]], text: note(t, "grip"), w: wG }, { at: [sx, sum.box[1]], text: note(t, "summary"), w: wS } ] },
+        { side: "above", zone: [yN, yN + H2], xmin, xmax, items: [ { at: [mid(ren)[0], ren[1]], text: note(t, "name"), w: wN } ] } ] });
+    h += block({ x: TX.x, y: yN, w: TX.w, h: 40 }, text(t, "Stacking order"), { flow: "s1", bottom: yD - 2 }) + block({ x: TX.x, y: yN, w: TX.w, h: 40 }, text(t, "Watch: order"), { flow: "s1", attach: true, bottom: yD - 2 }); }
+  // 2 · the drawer
+  { const dw = (dr[2] + 2 * CP) * kD, c = card("diver-rings", dr, R.x + (R.w - dw) / 2, yD, kD, { pad: CP });
+    h += c.html;
+    const kinds = c.at([112, 243, 182, 36]), vals = outline(c.at([302, 243, 124, 36]), [7 * kD, 4 * kD, 7 * kD, 4 * kD]);
     h += pointers({ rings: [vals.svg], tiers: [
-      { side: "above", zone: [g.y + m, g.y + m + Ha], xmin: g.x + 4, xmax: g.x + g.w - 4, items: [
-        { at: [kinds[0] + kinds[2] / 2, kinds[1]], text: note(t, "kinds"), w: wK } ] },
-      { side: "below", zone: [c.y + c.h + m, c.y + c.h + m + Hb], xmin: g.x + 4, xmax: g.x + g.w - 4, items: [
-        { at: [vals.box[0] + vals.box[2] / 2, vals.box[1] + vals.box[3]], text: note(t, "values"), w: wV } ] } ] });
-    h += block(box(11, 8, 2, 3), text(t, "The ring drawer"), { flow: "s2", bottom: Y(10) + ROW }); }
-  // 3 · the heading's buttons, closed then open: the same crop side by side. Closed: the four that act on the
-  // selected ring, ringed together. Open: the + and the kinds it opens, one outline round both.
-  { const g = box(7, 11, 6, 4), k = 0.14, hr = [44, 153, 400, 179], gap = 6, wM = 44, wA = 48;
-    const w = (hr[2] + 2 * CP) * k, hh = (hr[3] + 2 * CP) * k, x0 = g.x + (g.w - 2 * w - gap) / 2;
-    const H = Math.max(await inkH(note(t, "move"), wM), await inkH(note(t, "menu"), wA)), m = (g.h - H - hh) / 3;
-    const a = card("diver-rings", hr, x0, g.y + m + H + m, k, { pad: CP }), o = card("diver-add", hr, x0 + w + gap, g.y + m + H + m, k, { pad: CP });
-    h += `<div class="ground flat" style="${css(g)}"></div>` + a.html + o.html;
-    const tools = outline(a.at([320, 159, 116, 26]), [8 * k, 9 * k, 8 * k, 5 * k]);   // room to breathe; it may brush the +
-    // the + and its menu: a circle and a rounded box, drawn as one outline (each stroke masked inside the other)
-    const pl = o.at([290, 159, 26, 26]), pc = mid(pl), pr = pl[2] / 2 + 9 * k, mn = o.at([196, 191, 120, 138]);   // Okay, 20:46: here the outline may lie over the interface, to breathe
-    const mb = [mn[0] - 10 * k, mn[1] - 4 * k, mn[2] + 20 * k, mn[3] + 14 * k], mr = 2.2;
+      { side: "above", zone: [yK, yK + Ha], xmin, xmax, items: [ { at: [kinds[0] + kinds[2] / 2, kinds[1]], text: note(t, "kinds"), w: wK } ] },
+      { side: "below", zone: [yV, yV + Hb], xmin, xmax, items: [ { at: [vals.box[0] + vals.box[2] / 2, vals.box[1] + vals.box[3]], text: note(t, "values"), w: wV } ] } ] });
+    h += block({ x: TX.x, y: yK, w: TX.w, h: 40 }, text(t, "The ring drawer"), { flow: "s2", bottom: yM - 2 }); }
+  // 3 · the +, open: the four buttons that act on the selected ring, and the + with the kinds it opens
+  { const aw = (ar[2] + 2 * CP) * kA, o = card("diver-add", ar, R.x + (R.w - aw) / 2, yA, kA, { pad: CP });
+    h += o.html;
+    const tools = outline(o.at([320, 159, 116, 26]), [8 * kA, 9 * kA, 8 * kA, 5 * kA]);
+    const pl = o.at([290, 159, 26, 26]), pc = mid(pl), pr = pl[2] / 2 + 9 * kA, mn = o.at([196, 191, 120, 138]);
+    const mb = [mn[0] - 10 * kA, mn[1] - 4 * kA, mn[2] + 20 * kA, mn[3] + 14 * kA], mr = 2.2;
     const union = `<mask id="u06" maskUnits="userSpaceOnUse" x="0" y="0" width="${PAGE[0]}" height="${PAGE[1]}"><rect width="${PAGE[0]}" height="${PAGE[1]}" fill="#fff"/>`
       + `<circle cx="${f2(pc[0])}" cy="${f2(pc[1])}" r="${f2(pr)}" fill="#000"/><rect x="${f2(mb[0])}" y="${f2(mb[1])}" width="${f2(mb[2])}" height="${f2(mb[3])}" rx="${mr}" fill="#000"/></mask>`
       + `<g mask="url(#u06)"><circle class="ring two" cx="${f2(pc[0])}" cy="${f2(pc[1])}" r="${f2(pr)}"/><rect class="ring two" x="${f2(mb[0])}" y="${f2(mb[1])}" width="${f2(mb[2])}" height="${f2(mb[3])}" rx="${mr}"/></g>`;
     h += pointers({ rings: [tools.svg, union], tiers: [
-      { side: "above", zone: [g.y + m, g.y + m + H], xmin: g.x + 4, xmax: g.x + g.w - 4, items: [
-        { at: [tools.box[0] + tools.box[2] / 2, tools.box[1]], text: note(t, "move"), w: wM },
-        { at: [pc[0], pc[1] - pr], text: note(t, "menu"), w: wA } ] } ] });
-  }
+      { side: "above", zone: [yP, yP + HA], xmin, xmax: tools.box[0] + tools.box[2] / 2 - 2.6, items: [
+        { at: [pc[0], pc[1] - pr], text: note(t, "menu"), w: wA, f: 0.75 } ] },
+      { side: "above", zone: [yM, yM + HM], xmin, xmax, items: [
+        { at: [tools.box[0] + tools.box[2] / 2, tools.box[1]], text: note(t, "move"), w: wM, f: 0.6 } ] } ] });
+    h += block({ x: TX.x, y: yM, w: TX.w, h: 40 }, text(t, "Adding and arranging"), { flow: "s3", bottom: FOOT }); }
   pages.push(page(P, h));
 }
 

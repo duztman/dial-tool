@@ -56,6 +56,8 @@
 - Outlines: a lighter, clearer tone of the section colour, not the dark ink (it clashed with the interface's blacks). Where the interface leaves no room (the open + menu), an outline may lie over it so the highlight can breathe, as long as the eye stays on the thing. [r6 06, 20:46]
 - Balance and emptiness are judged by eye for each page; when the lead stands beside the title it fills the right half, its last line on the title's baseline. [r6 06, 20:46]
 
+- Page 06 structure (r7, 20:57): two fields of the part's colour with the same top and bottom edges, and one white column for the words. Left field: title and lead on it, the dial, then a strip (four kinds, the radius pop-up), three equal gaps between them. Right field: the list, the drawer, the + stacked with equal gaps; each text block in the white column level with its picture. Okay: outline bubbles now "much warmer". [r7 06]
+
 ## Cover (later)
 - Big type: tighter tracking/kerning; the title must not overlap the dial. A richer, aesthetic dial; Okay will guide. Etching is not the focus; ring building and design help are. [r1, r4 00]
 
