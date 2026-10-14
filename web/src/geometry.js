@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.38.4";
+export const VERSION = "beta 4.38.5";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -124,8 +124,12 @@ export const DEFAULTS = {
   // guides: preview only, never in a file (R5). Five kinds, each with an eye (shown or not) and a colour:
   // a place in GUIDE_COLOURS (R9: a number, never the colour itself). One thickness (screen points) for all;
   // the selected ring's lines are half as thick again. (beta 4.5, 12 Oct 2026)
-  gd_edge: true, gd_axes: true, gd_win: true, gd_rings: true, gd_sel: true,
-  gd_k_edge: 1, gd_k_axes: 1, gd_k_win: 1, gd_k_rings: 1, gd_k_sel: 4, gd_w: 1.0,
+  // Starting values since beta 4.38.5 (Okay, 15 Oct 2026, 02:06, a picture of the list: "Remove dial edge and set these
+  // defaults, on"): centre lines in the first colour (pink), no window radii, the selected ring's guides only. Old
+  // links that left them at the start see the new ones — preview only (R31 notes it). Dial edge: gone from the list
+  // and never drawn; its keys stay for old links (R8).
+  gd_edge: false, gd_axes: true, gd_win: false, gd_rings: false, gd_sel: true,
+  gd_k_edge: 1, gd_k_axes: 0, gd_k_win: 1, gd_k_rings: 1, gd_k_sel: 4, gd_w: 1.0,
   // shadows: preview only, never in a file (R5). A trial on branch try/shadows (Okay, 14 Oct 2026: "dummy preview
   // only, do not do this on the live page yet"). One light, far away: it comes from a clock angle (sh_from, degrees)
   // at a height over the dial (sh_rise, degrees above the plate's face). Each hand floats at its own height over the
@@ -1347,7 +1351,7 @@ export function scene(S, statik, t, preview = true, selected = null) {
     };
     const round_guide = (r, key, px) => add("guide", circle(2 * r), null, { stroke: colour(key), px });
     const line_guide = (p0, p1) => add("guide", new Path().line(p0, p1), null, { stroke: colour("gd_k_axes"), px: S.gd_w });
-    if (S.gd_edge) round_guide(R, "gd_k_edge", S.gd_w);
+    // the dial edge's guide is gone (Okay, 15 Oct 2026): gd_edge is no longer read
     if (S.gd_win) for (const r of new Set(windows.map((x) => x.w.r))) round_guide(r, "gd_k_win", S.gd_w);
     if (S.gd_axes) {
       line_guide([-R, 0], [R, 0]);

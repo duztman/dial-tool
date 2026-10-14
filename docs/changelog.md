@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.38.5 (web version) · 15 Oct 2026
+
+- **Guides start lighter**: centre lines in pink, no window radii, only the selected ring's edges; the dial edge's guide is gone from the list and the preview. Old links that kept the old starting values see these (preview only; R31 notes it).
+- **A switch that is on shows its sign whole**, not only its word (Guides; Shadows has only its word).
+
 ## beta 4.38.4 (web version) · 15 Oct 2026
 
 - **No slow motion** (#190): the speed runs 1× to 720×. Its two ends are black rings with empty eyes, named 1X and 720X in the bar's grey; the ball at 1× and the snapping are gone. The speed riding over the thumb is white — the one white thing on the bar.

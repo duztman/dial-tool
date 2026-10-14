@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.38.4 · built 2026-10-14 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.38.5 · built 2026-10-14 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -872,7 +872,7 @@
     .onview:hover { border-color: var(--on-canvas); }
     .onview:hover > * { opacity: 1; }
   }
-  .guidesbox[aria-pressed="true"] > .word { opacity: 1; }
+  .guidesbox[aria-pressed="true"] > * { opacity: 1; }      /* on: its sign and its word whole (Okay, 15 Oct 2026, 02:06: "when on the icon is black too. Same goes for shadows") */
   .undobox.none, .undobox.none:hover { border-color: var(--line-fainter); box-shadow: none; }
   :is(.undobox.none, .undobox.none:hover) > * { opacity: calc(var(--faint) / 2); }
   .guidesbox { gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch) 0 0 var(--round-switch); }      /* on, its word is whole (black or white), never bolder (Okay, 14 Oct 2026: "when active label does not get bolder, just gets black") */
@@ -5439,7 +5439,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.38.4";
+var VERSION = "beta 4.38.5";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -5683,13 +5683,17 @@ var DEFAULTS = {
   // guides: preview only, never in a file (R5). Five kinds, each with an eye (shown or not) and a colour:
   // a place in GUIDE_COLOURS (R9: a number, never the colour itself). One thickness (screen points) for all;
   // the selected ring's lines are half as thick again. (beta 4.5, 12 Oct 2026)
-  gd_edge: true,
+  // Starting values since beta 4.38.5 (Okay, 15 Oct 2026, 02:06, a picture of the list: "Remove dial edge and set these
+  // defaults, on"): centre lines in the first colour (pink), no window radii, the selected ring's guides only. Old
+  // links that left them at the start see the new ones — preview only (R31 notes it). Dial edge: gone from the list
+  // and never drawn; its keys stay for old links (R8).
+  gd_edge: false,
   gd_axes: true,
-  gd_win: true,
-  gd_rings: true,
+  gd_win: false,
+  gd_rings: false,
   gd_sel: true,
   gd_k_edge: 1,
-  gd_k_axes: 1,
+  gd_k_axes: 0,
   gd_k_win: 1,
   gd_k_rings: 1,
   gd_k_sel: 4,
@@ -6919,7 +6923,6 @@ function scene(S, statik, t, preview = true, selected = null) {
     };
     const round_guide = (r, key, px) => add("guide", circle(2 * r), null, { stroke: colour(key), px });
     const line_guide = (p0, p1) => add("guide", new Path().line(p0, p1), null, { stroke: colour("gd_k_axes"), px: S.gd_w });
-    if (S.gd_edge) round_guide(R, "gd_k_edge", S.gd_w);
     if (S.gd_win) for (const r of new Set(windows.map((x) => x.w.r))) round_guide(r, "gd_k_win", S.gd_w);
     if (S.gd_axes) {
       line_guide([-R, 0], [R, 0]);
@@ -8213,7 +8216,7 @@ var DialTool = class _DialTool {
       return { line, label, refresh };
     };
     this.guide_dots = dots_line;
-    this.guide_kinds = GUIDE_KINDS.slice(0, 3).map(([show, colour, name]) => {
+    this.guide_kinds = GUIDE_KINDS.slice(1, 3).map(([show, colour, name]) => {
       const d = dots_line(name, () => this.S[show] ? this.S[colour] : null, (k) => {
         if (k === null) this.S[show] = false;
         else {

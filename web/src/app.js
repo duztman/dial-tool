@@ -947,7 +947,7 @@ class DialTool {
     };
     this.guide_dots = dots_line;
     // the dial's own three: its edge, its centre lines, the windows' radii
-    this.guide_kinds = G.GUIDE_KINDS.slice(0, 3).map(([show, colour, name]) => {
+    this.guide_kinds = G.GUIDE_KINDS.slice(1, 3).map(([show, colour, name]) => {      // centre lines and window radii; not the dial edge (gone, 15 Oct 2026)
       const d = dots_line(name, () => (this.S[show] ? this.S[colour] : null), (k) => { if (k === null) this.S[show] = false; else { this.S[show] = true; this.S[colour] = k; } }, "guide-" + show);
       list.append(d.line);
       return d;

@@ -402,11 +402,12 @@ check(await page.$("main .guides #guides") !== null && await page.$(".panel #gui
 const guides_at = await page.evaluate(() => { const g = document.querySelector(".guides").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); return [Math.round(m.right - g.right), Math.round(g.top - m.top)]; });
 check(guides_at[0] === 12 && guides_at[1] === 16, `it is 12 from the preview's right, and 16 from its top: on the header's middle line (${guides_at.join(" / ")})`);
 await page.click("#guides-more");
-check(await page.isVisible("#guide-list") && await page.$$eval("#guide-list > .guidekind", (r) => r.length) === 3 && await page.$$eval("#guide-list .guidekind >> nth=0 >> .dots .tone", (b) => b.length) === 8 && await page.$$eval("#guide-list .guiderings .guidekind.ring", (r) => r.length) === await S("S.rings.length") && await page.$("#guide-list .swatch") === null, "the arrow drops the list: the dial's three kinds of guide, then a line for every ring, each with None and eight round colours, no free colour");
+check(await page.isVisible("#guide-list") && await page.$$eval("#guide-list > .guidekind", (r) => r.length) === 2 && await page.$$eval("#guide-list .guidekind >> nth=0 >> .dots .tone", (b) => b.length) === 8 && await page.$$eval("#guide-list .guiderings .guidekind.ring", (r) => r.length) === await S("S.rings.length") && await page.$("#guide-list .swatch") === null, "the arrow drops the list: the dial's two kinds of guide (no dial edge since 15 Oct 2026), then a line for every ring, each with None and eight round colours, no free colour");
 // guides are connected to the rings (13 Oct 2026): each ring's edges in its own colour, different ones to start with; the row in the ring list is tinted with it
 {
   const start = await page.evaluate(() => { const t = window.dial_tool, G = t.S.rings.map((r, i) => [r.guide, [...document.querySelectorAll("#guide-list .guidekind.ring")][i].querySelector(".tone.on").title]); return G; });
-  const strokes = await page.evaluate(() => { const t = window.dial_tool; return [...new Set(t.items.filter((i) => i.role === "guide").map((i) => i.stroke.map((v) => Math.round(v * 255)).join(",")))].length; });
+  await page.click("#guide-rings-all");      // all rings' guides, to see their colours (only the selected ring's to start since 15 Oct 2026)
+  const strokes = await page.evaluate(() => { const t = window.dial_tool; t.draw(); return [...new Set(t.items.filter((i) => i.role === "guide").map((i) => i.stroke.map((v) => Math.round(v * 255)).join(",")))].length; });
   await page.click("#guide-list .guidekind.ring >> nth=0 >> .tone >> nth=5");
   const set = await S("S.rings[0].guide");
   await page.click("#guide-list .guidekind.ring >> nth=0 >> .none");
@@ -441,13 +442,13 @@ await page.click('#guide-list .guidekind:has-text("Centre lines") .tone >> nth=3
 await frame();
 check(await S("S.gd_axes === true && S.gd_k_axes === 3"), "pressing a colour shows that kind again, in that colour");
 await page.click("#guide-gd_axes");
-await page.click('#guide-list .guidekind:has-text("Dial edge") .tone >> nth=0');
+await page.click('#guide-list .guidekind:has-text("Window radii") .tone >> nth=0');
 await frame();
-check(await S("S.gd_k_edge === 0") && await page.$eval(".preview path[stroke]", (e) => e.getAttribute("stroke")) === "#ff2d95", "a colour pressed is the dial edge's: the first of the eight, at full strength");
+check(await S("S.gd_win === true && S.gd_k_win === 0") && !(await page.$$eval("#guide-list .guidekind .name", (n) => n.map((e) => e.textContent))).includes("Dial edge"), "a colour pressed is the window radii's, the first of the eight; there is no dial edge any more");
 await shot("4c-guides");
 await page.click("#guides-reset");
 await frame();
-check(await S("S.gd_k_edge === 1 && S.gd_axes === true && S.gd_w === 1"), "Reset: the guides as they started");
+check(await S("S.gd_axes === true && S.gd_k_axes === 0 && S.gd_win === false && S.gd_rings === false && S.gd_sel === true && S.gd_w === 1"), "Reset: the guides as they start — centre lines pink, no window radii, the selected ring's (Okay, 15 Oct 2026)");
 await page.click("#guides");
 await frame();
 check(await S("!t.items.some((i) => i.role === 'guide')") && await page.isVisible("#guide-list"), "the Guides switch, off: none drawn; the list stays where it is");
@@ -462,7 +463,7 @@ check(one_colour[0] === one_colour[1] && /0\.35\)$/.test(one_colour[2]) && one_c
   await page.hover("#guides");
   const over = await page.$eval("#guides", (e) => getComputedStyle(e).borderTopColor);
   await page.click("#guides"); await page.mouse.move(640, 30);
-  check(off.join() === "0.35,0.35,0.35,0.35" && on[0] === "1" && on[1] === "0.35" && /0\.35\)$/.test(on[2]) && over === one_colour[0], `on the preview a switch is faint (${off[0]}); Guides on: its word alone is whole, its line still faint; under the pointer the line is whole`);
+  check(off.join() === "0.35,0.35,0.35,0.35" && on[0] === "1" && on[1] === "1" && /0\.35\)$/.test(on[2]) && over === one_colour[0], `on the preview a switch is faint (${off[0]}); Guides on: its sign and word whole (15 Oct 2026), its line still faint; under the pointer the line is whole`);
 }
 await page.mouse.click(640, 30);                      // the backdrop, off the dial
 check(await page.isHidden("#guide-list"), "a press outside the list puts it away");
@@ -1389,7 +1390,7 @@ const reach = await pad.evaluate(() => {
 });
 check(reach.coarse && reach.left && reach.above && reach.nearer_next, `under a finger a ${reach.size} dot is pressed from 5 beside it and 10 above it; nearer the next dot, the next one is`);
 await pad.touchscreen.tap(...await pad.$eval('#guide-list .guidekind:nth-child(2) .tone:nth-child(5)', (e) => { const r = e.getBoundingClientRect(); return [r.left - 4, r.top - 8]; }));
-check(await pad.evaluate(() => window.dial_tool.S.gd_k_axes === 3), "a tap just outside a dot chooses it");
+check(await pad.evaluate(() => window.dial_tool.S.gd_k_win === 3), "a tap just outside a dot chooses it");
 await pad.tap("#global-c-plate-Plate-hex");
 const chip_reach = await pad.evaluate(() => { const c = [...document.querySelectorAll("#pop-palette button")], r = c[4].getBoundingClientRect(); return [document.elementFromPoint(r.left - 4, r.top + 4) === c[4], document.querySelector("#global-c-plate-Plate-hex").tagName === "SPAN", !document.querySelector("#colour-pop").hidden]; });
 check(chip_reach.every(Boolean), "the hex in a pill opens the pop-out and isn't typed in; a chip is pressed from 4 beside it");
