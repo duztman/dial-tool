@@ -1,6 +1,6 @@
 # Dial Tool
 
-A parametric watch-dial design tool that runs on the web. Rings of ticks, markers, numerals and bands; hands; up to four windows; export to PDF, SVG, PNG and MP4.
+A parametric watch-dial design tool that runs on the web. Rings of ticks, markers, numerals and bands; hands; up to four windows; export to PDF, SVG and PNG.
 Built to explore, present and produce watch dials.
 
 **Use it: <https://duztman.github.io/dial-tool/>**, or open [`web/dial-tool.html`](web/dial-tool.html) from disk (one file, no install; Chrome or Edge for the fonts installed on the computer).
