@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.38.7 (web version) · 15 Oct 2026
+
+- **The window never zooms, only the dial** (#193): a pinch on the panel, the bar or anywhere but the preview does nothing; inside the preview it zooms the dial as before. The page asks iOS not to scale it, fingers may only scroll (`touch-action`), Safari's gesture events and ctrl + wheel are refused outside the preview.
+
 ## beta 4.38.6 (web version) · 15 Oct 2026
 
 - **The Shadows switch has a sign** (#192): a sphere lit from the upper right, its shade a crescent on the lower left, its shadow a flat ellipse cast to the left — after a photograph Okay sent. Whole when shadows are on, faint when off.

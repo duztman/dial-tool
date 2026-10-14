@@ -636,6 +636,13 @@ class DialTool {
     if (!DialTool.listening) {                     // once for the page: the tool that is open now gets the press
       DialTool.listening = true;
       document.addEventListener("pointerdown", (e) => { if (window.dial_tool) window.dial_tool.pressed(e); }, true);
+      // the window itself never zooms (Okay, 15 Oct 2026, 02:19: "never let us zoom into the interface. That stays
+      // still, the zoom only applies to the dial on touches"). A pinch anywhere is refused to the browser: Safari's
+      // gesture events (an iPad, a Mac trackpad in Safari) and ctrl + wheel (a trackpad pinch in Chrome). Inside the
+      // preview the dial still zooms: its own listeners act on these before they reach here (preview_events). The
+      // stylesheet does the same for fingers (touch-action on html and body), the page's viewport for iOS.
+      for (const kind of ["gesturestart", "gesturechange", "gestureend"]) document.addEventListener(kind, (e) => e.preventDefault(), { passive: false });
+      document.addEventListener("wheel", (e) => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
       const tipped = (e) => (e.target.closest ? e.target.closest("[data-tip]") : null);      // tags: under the pointer, or where the keyboard is
       // how the last press came: a finger (or pen) or a mouse, and a key — a tap leaves no focus ring (#153)
       document.addEventListener("pointerdown", (e) => { document.documentElement.dataset.press = e.pointerType === "mouse" ? "mouse" : "touch"; }, true);

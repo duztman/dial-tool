@@ -1338,6 +1338,13 @@ const look = await page.evaluate(() => { const q = (s) => document.querySelector
 check(look.square && look.bar === 62 && look.play[0] === look.play[1] && look.play[2] === "50%" && look.mono && look.status === "none" && look.hint.includes("⌘ + scroll") && look.ruler <= 518,
   `the bar: a fifth higher (${look.bar}), no panel square, a round play, the time in monospace, no status line, how to zoom beside the zoom, the day slider no wider than an iPad's (${look.ruler})`);
 await shot("10-bar");
+{ // the window never zooms, only the dial (Okay, 15 Oct 2026, 02:19)
+  const still = await page.evaluate(() => { const wheel = new WheelEvent("wheel", { ctrlKey: true, deltaY: -40, bubbles: true, cancelable: true }); document.querySelector(".panel").dispatchEvent(wheel);
+    return [document.querySelector('meta[name="viewport"]').content, getComputedStyle(document.documentElement).touchAction, wheel.defaultPrevented]; });
+  const z0 = await S("t.z");
+  await page.mouse.move(1000, 400); await page.keyboard.down("Control"); await page.mouse.wheel(0, -100); await page.keyboard.up("Control"); await frame();
+  check(still[0].includes("user-scalable=no") && still[1] === "pan-x pan-y" && still[2] && await S("t.z") > z0, `the window doesn't zoom (a pinch on the panel is refused; ${still[1]}), the dial still does`);
+}
 await page.setViewportSize({ width: 390, height: 844 });
 await tab("Rings");
 await frame();
