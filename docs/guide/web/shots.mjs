@@ -20,7 +20,9 @@ const page = await context.newPage();
 page.on("pageerror", (e) => console.log("page error:", e.message));
 const frame = () => page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
 const ready = () => page.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
-const open = async (hash = "") => { await page.goto("about:blank"); await page.goto(pathToFileURL(path.join(WEB, "dial-tool.html")).href + hash); await ready(); await page.waitForTimeout(400); await frame(); };
+// the page is served at its real address, so its own link shows the address people will see
+await context.route(/^https:\/\/duztman\.github\.io\/dial-tool\/(index\.html)?(#.*)?$/, (r) => r.fulfill({ path: path.join(WEB, "dial-tool.html"), contentType: "text/html" }));
+const open = async (hash = "") => { await page.goto("about:blank"); await page.goto("https://duztman.github.io/dial-tool/" + hash); await ready(); await page.waitForTimeout(400); await frame(); };
 const tab = async (name) => { await page.click(`button[data-tab="${name}"]`); await frame(); await page.waitForTimeout(150); };
 const guides_off = async () => { await page.evaluate(() => { const t = window.dial_tool; t.S.guides = false; t.render(); }); await frame(); };
 const rect = (sel) => page.evaluate((sel) => {
@@ -103,6 +105,59 @@ rects.export.pane_print = await pane("Print");
 await tab("Hands");
 await shot("hands", { panel: "aside", tabs: "[id^=hand-tab-]" });
 
+// ── round 3 (Okay's notes of 14 Oct, 16:56): more states, and the parts inside them ──
+const part_rects = async (name, parts) => { rects[name] = rects[name] || {}; for (const [k, sel] of Object.entries(parts)) { rects[name][k] = await rect(sel); if (!rects[name][k]) console.log(`missing: ${name}.${k}`); } };
+// parts of the starting window
+await tab("Dial");
+await part_rects("dial", { eye: ".pane button.fold .eye, .pane button.fold svg", title_text: "header" });
+// parts of the colour box
+await page.click("#global-c-plate-Plate"); await page.waitForTimeout(200);
+await part_rects("pop", { wide: "#pop-wide", close: "#pop-close", used: "#pop-used", palette: "#pop-palette", add: "#pop-add",
+  field: "#pop-wide ~ * canvas, .pop canvas, [class*=pop] canvas", as: "#pop-as-RGB, #pop-as-CMYK, #pop-as-HEX", hex: "#pop-hex", copy: "#pop-copy" });
+await page.keyboard.press("Escape"); await page.mouse.click(1200, 120); await frame();
+// the units menu's rows
+await page.click("#unit"); await page.waitForTimeout(200);
+await part_rects("unit", { items: "#unit-menu > *" });
+await page.click("#unit"); await page.mouse.click(1200, 120); await frame();
+// a group folded: the Page group's eye pressed
+await page.evaluate(() => { const h = [...document.querySelectorAll(".pane")].find((p) => p.textContent.trim().startsWith("Page")); h.querySelector("button.fold").click(); });
+await page.waitForTimeout(300); await frame();
+await shot("folded", { panel: "aside" });
+rects.folded.pane_page = await pane("Page");
+rects.folded.pane_colours = await pane("Colours");
+await page.evaluate(() => { const h = [...document.querySelectorAll(".pane")].find((p) => p.textContent.trim().startsWith("Page")); h.querySelector("button.fold").click(); });
+await page.waitForTimeout(300);
+// the Windows tab
+await tab("Date");
+await shot("windows", { panel: "aside" });
+// the rings: one row's parts, the drawer's buttons
+await tab("Rings");
+await part_rects("rings", { row: ".ringlist li.ring.on", row_eye: ".ringlist li.ring.on button.eye", row_rename: ".ringlist li.ring.on button.rename",
+  rows: ".ringlist li.ring", kinds: "#ring-kind-Kind-0, #ring-kind-Kind-1, #ring-kind-Kind-2, #ring-kind-Kind-3", colour: "#ring-c-Colour",
+  size: "#ring-size", radius: "#ring-r", add: "#ring-add", up: "#ring-up, #ring-down", dup: "#ring-duplicate", del: "#ring-delete",
+  grip: ".ringlist li.ring.on .grip, .ringlist li.ring.on [class*=grip]" });
+// the pointer on other things, and what a click does
+const at = (R, deg) => page.evaluate(([R, deg]) => { const t = window.dial_tool, r = t.svg.getBoundingClientRect(), a = deg * Math.PI / 180;
+  return [r.left + t.c[0] + R * Math.sin(a) * t.z, r.top + t.c[1] - R * Math.cos(a) * t.z]; }, [R, deg]);
+const hover_at = async (q) => { await page.mouse.move(q[0] + 1, q[1] + 1); await page.mouse.move(q[0], q[1]); await frame(); await page.waitForTimeout(100); };
+const hands_deg = await page.evaluate(() => { const t = window.dial_tool.S.t; return [((t / 3600) % 12) * 30, ((t / 60) % 60) * 6]; });
+let q = await at(5, hands_deg[0]); await hover_at(q);
+await shot("hover-hand", { tip: ".tip" }); rects["hover-hand"].pointer = [q[0] - 4, q[1] - 4, 8, 8];
+q = await at(10, 0); await hover_at(q);
+await shot("hover-numeral", { tip: ".tip" }); rects["hover-numeral"].pointer = [q[0] - 4, q[1] - 4, 8, 8];
+q = await at(13.0, 60); await hover_at(q); await page.mouse.click(q[0], q[1]); await frame(); await page.waitForTimeout(200);
+await page.mouse.move(q[0], q[1] - 1); await frame();
+await shot("clicked", { tip: ".tip", list: ".ringlist", row: ".ringlist li.ring.on", panel: "aside" }); rects.clicked.pointer = [q[0] - 4, q[1] - 4, 8, 8];
+await page.mouse.move(5, 5); await frame();
+// the dial zoomed in, moved
+for (let i = 0; i < 4; i++) await page.click("#zoom-in");
+await frame(); await page.waitForTimeout(200);
+await shot("zoomed", { preview: "main", zoom: "#zoom-out, #zoom-in, #fit" });
+await page.click("#fit"); await frame();
+// Scale everything with it: the starting dial at 30 mm, at 36 without, at 36 with
+const set_d = async (v) => { await page.fill("#global-dial-d-Diameter", v); await page.press("#global-dial-d-Diameter", "Enter"); await page.waitForTimeout(300); };
+await tab("Dial");
+
 // ── the dials of "A first dial", exported by the tool's own SVG button ──
 const W = [0.95, 0.95, 0.92, 1], DARK = [0.11, 0.11, 0.12, 1], ACCENT = [0.80, 0.22, 0.10, 1];
 const minutes = { kind: 0, name: "Minutes", c: W, r: 17.4, count: 60, len: 1.2, w: 0.16 };
@@ -142,6 +197,17 @@ links.diver = diver;
 await open(diver);
 await export_svg("dial-diver");
 fs.writeFileSync(path.join(IMG, "dial-diver.json"), JSON.stringify(await page.evaluate(() => window.dial_tool.S)));
+await tab("Rings");
+await shot("diver-rings", { list: ".ringlist", rows: ".ringlist li.ring", panel: "aside" });
+// Scale everything with it
+await open(); await tab("Export"); await page.click('button:text-is("Defaults")'); await ready(); await frame();
+await export_svg("scale-30");
+await tab("Dial"); await page.fill("#global-dial-d-Diameter", "36"); await page.press("#global-dial-d-Diameter", "Enter"); await page.waitForTimeout(400);
+await export_svg("scale-off");
+await page.fill("#global-dial-d-Diameter", "30"); await page.press("#global-dial-d-Diameter", "Enter"); await page.waitForTimeout(300);
+await page.check("#global-ui-scale-Scale-everything-with-it");
+await page.fill("#global-dial-d-Diameter", "36"); await page.press("#global-dial-d-Diameter", "Enter"); await page.waitForTimeout(400);
+await export_svg("scale-on");
 // the cover: the finished dial, and the same dial as the print mask
 await open(links["step-10"]);
 await page.evaluate(() => { const t = window.dial_tool; t.S.out_production = true; t.render(); });

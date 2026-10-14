@@ -1,3 +1,5 @@
 node_modules/
 out/page-*.png
 out/guide-review.html
+img/made/
+out/jobs.json
