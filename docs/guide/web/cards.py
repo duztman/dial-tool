@@ -47,6 +47,11 @@ def card(job):
     p = round(job.get("pad", 0) * PX)
     made = Image.new("RGB", (w + 2 * p, h + 2 * p), bg)
     made.paste(part, (p, p))
+    from PIL import ImageDraw
+    d = ImageDraw.Draw(made)
+    for bx, by, bw, bh in job.get("blank", []):             # parts of the crop painted out with the background
+        X0 = round((bx - job["rect"][0]) * PX) + p; Y0 = round((by - job["rect"][1]) * PX) + p
+        d.rectangle([X0, Y0, X0 + round(bw * PX), Y0 + round(bh * PX)], fill=bg)
     made.save(os.path.join(OUT, job["out"]))
 
 

@@ -21,26 +21,24 @@ A tool for drawing watch dials in a web browser. You describe a dial the way a w
 
 ## 01 · Start
 
-**Lead:** Open the address and start drawing. Nothing to install, nothing to sign up for.
+**Lead:** Open the address and start drawing.
+Nothing to install, nothing to sign up for.
 
-**Where it lives.** The tool is one web page: duztman.github.io/dial-tool. It runs in any current browser on a Mac or a PC, and on an iPad by finger. Chrome and Edge can also use the fonts installed on your computer.
+**Where it runs.** The tool is one web page, duztman.github.io/dial-tool. It is tested in Chrome on a Mac and on an iPad, where it works by finger. Chrome and Edge can also use your computer's own fonts, once you allow it.
 
-**The link is the dial.** Everything after the # in the address is the dial itself, rewritten with every change you make. Bookmark the address to keep a dial; send it to give someone the same dial. No account, no file.
+**Saving and sharing.** Everything after the # is the dial itself, rewritten with every change. Bookmark the address to keep a dial, or send it to share one; Copy link, in the Export tab, copies it. The browser also keeps your last dial.
 
-**Copy link.** Export › Link to this dial shows the same address, with a button that copies it.
+**Sizes and units.** Every length is the real length on the finished dial. The unit box, top right of the panel, sets the unit you read and type in: millimetres, points, inches, or lignes, the watchmakers' unit for movement sizes.
 
-**Everything is in millimetres.** A dial is drawn at the size it will be on the wrist, often 28 to 40 mm across, and every length you type is a real length. The box at the top right of the panel changes the unit you read and type: millimetres, points, inches or lignes, the watchmaker's unit.
+**Undo and redo.** Undo steps back through your changes and redo steps forward again; a step is taken whenever you pause for a moment. On a PC the keys are Ctrl Z and Ctrl Shift Z, or Ctrl Y.
 
-**Changed your mind?** Undo steps back through your changes, redo steps forward again; on a keyboard, ⌘Z and ⇧⌘Z. A step is taken each time you pause.
+**Watch.** A link carries the dial, not its fonts. A font from your own computer reaches the other person only if they have it too; otherwise they see a stand‑in.
 
-**Watch.** A link carries the dial, not its fonts. A font from your own computer reaches the other person only if they have it too; otherwise they see a stand-in.
-
-**Watch: units.** The unit box changes only what you read. The dial, its link and its files stay in millimetres.
+**Watch: units.** The unit box changes only what you read and type. The dial, its link and its files stay in millimetres.
 
 **Note: undo.** Undo · ⌘Z
 **Note: redo.** Redo · ⇧⌘Z
-**Note: hash.** The dial, packed into the address
-**Note: copy.** Copies the address to your clipboard
+**Note: hash.** Everything after the # is the dial itself.
 
 ---
 
@@ -75,25 +73,25 @@ A tool for drawing watch dials in a web browser. You describe a dial the way a w
 ## 03 · The whole window
 
 **Lead:** Settings on the left, the dial on the right, the time along the bottom.
-Each part below is named for what it does.
+Five tabs choose what the panel edits; the dial redraws as you change it.
 
-**Note: name.** The tool's name and the version you are using.
-**Note: units.** The unit every length is shown and typed in.
-**Note: tabs.** Five tabs switch the panel: the dial, its rings, hands, windows, export.
-**Note: eye.** The eye folds a group of settings to one line, and opens it again.
+**Note: name.** The version you are running; this guide shows 4.36.1.
+**Note: units.** Sets the unit every length is shown and typed in.
+**Note: tabs.** Switches the panel; the dial and the time stay as they are.
+**Note: eye.** Folds a pane to one line that sums up its settings.
 **Note: number.** Drag the slider, type a value, or step it with − and +.
-**Note: colour.** A colour chip opens the colour box beside it.
-**Note: undo.** Undo and redo walk back and forth through your changes.
-**Note: guides.** Shows or hides the construction lines; the arrow chooses which ones.
-**Note: backdrop.** The colour behind the dial on screen; it is never exported.
-**Note: play.** Runs the hands, at real speed, 60 or 720 times faster.
-**Note: time.** The time shown; type one, or press Now for the time it is.
-**Note: day.** Drag across the twelve hours; a click lands on an hour or 10:10.
+**Note: colour.** Each colour row has a pill; click it to open the colour pop-out.
+**Note: undo.** Undo and redo: step back and forth through your changes.
+**Note: guides.** Shows or hides the construction lines; the arrow picks which ones.
+**Note: backdrop.** Sets the colour round the dial in the preview.
+**Note: play.** Runs the hands at real speed, or 60 or 720 times faster.
+**Note: time.** The time on the dial; type one, or press Now for the time it is.
+**Note: day.** The day slider: drag across twelve hours; a click lands on an hour or on 10:10.
 **Note: zoom.** Zoom in and out; Fit shows the whole page again.
 
-**Typing numbers.** A number field also does small sums: +0.5 adds, x2 doubles, /3 takes a third. Useful when a drawing says "a third of the radius".
+**Typing numbers.** A number field also does sums: +0.5 adds, x2 doubles, /3 takes a third. Useful when a drawing says “a third of the radius”.
 
-**On an iPad.** Everything works by finger. Small controls answer to a press a little outside their edge, and a number field grows larger while you touch it.
+**On an iPad.** Everything works by finger. Small controls answer to a press a little outside their edge, and knobs and swatches are drawn larger.
 
 **Watch.** Guides and the backdrop are for the screen only. Nothing you see in them reaches an exported file.
 
@@ -163,34 +161,32 @@ The colour box is the same wherever a colour is chosen.
 
 ## 06 · Rings
 
-**Lead:** Every printed part of a dial is a ring.
+**Lead:** Every mark, number and track on a dial is a ring.
 A ring repeats one kind of thing round the centre.
 
-**What a ring is.** One row in the list: one kind of thing, repeated at a set of positions, at one distance from the centre. Tracks, hour marks, numbers, rails, bezels and zones of colour are all rings. The diver here is eleven of them.
+**What a ring is.** One row in the list, drawn at one radius. Tracks, hour marks, numbers, bezels and zones of colour are all rings; this diver has eleven.
 
-**Four kinds.** Ticks are lines, as on a minute track. Markers are heavier shapes, usually for the hours. Numerals are numbers or words. A band is a ring of flat colour, whole or in pieces. A ring's kind can change at any time; it keeps all its settings.
+**Four kinds.** Ticks are lines, as on a minute track. Markers are heavier shapes, usually for the hours. Numerals are numbers or words. A band is flat colour, whole or in pieces. A ring can change to another kind at any time, and it keeps all of its settings when it does.
 
-**Top first.** The list is the stacking order: the top ring is drawn last, over the others. Drag a row by its grip to move it.
+**Stacking order.** The list is the stacking order: the top ring is drawn last, over the ones below it. Hide a ring to see what it covers.
 
-**A ring's row.** The eye hides a ring without deleting it. After the name come how many and of what kind, its colour, its size and its distance from the centre.
+**The ring drawer.** A selected ring opens its drawer under its row. Click a value button to type a number, or press it and drag right or up for more; hold Shift to go finer.
 
-**The drawer.** The ring you pick opens a drawer under its row: its kind, its colour, its size, its distance from the centre. Click a round button to type a value, or press and drag across it.
+**Adding and arranging.** A new ring or a copy goes in above the selected ring and becomes the selected one. A new numerals ring takes its type from the numerals already on the dial.
 
-**Adding and arranging.** The + on the list's heading adds a ring of any of the four kinds. The arrows move the picked ring up or down, then duplicate and delete. A numerals ring can also copy the type of another, so two rings of numbers match.
+**Watch.** A ring's radius runs from the centre to the outer edge of ticks, markers and bands, and to a numeral's anchor: its middle, its baseline or its top.
 
-**Watch.** A ring's distance is from the centre of the dial, not from its edge. Ticks and markers are measured to their outer end, numerals to their middle.
-
-**Note: eye.** Show or hide
-**Note: grip.** Drag to reorder
-**Note: name.** Its name; click to rename
-**Note: summary.** How many, kind, colour, size, distance
-**Note: kinds.** The four kinds
-**Note: colour.** Colour
-**Note: size.** Size
-**Note: radius.** Distance
-**Note: add.** Add a ring
-**Note: move.** Up · down
-**Note: dup.** Duplicate · delete
+**Note: eye.** Hides the ring without deleting it.
+**Note: grip.** Drag the grip to move the ring in the list.
+**Note: name.** Renames the ring.
+**Note: summary.** The ring at a glance: count and kind, size, radius.
+**Note: kinds.** Picks the ring's kind; its settings stay.
+**Note: colour.** Opens the colour pop-out for this ring.
+**Note: size.** Sets how big each mark is.
+**Note: radius.** Sets the radius, from the centre.
+**Note: add.** Adds a ring above the selected one.
+**Note: move.** Moves the selected ring up or down, duplicates or deletes it.
+**Note: menu.** The four kinds: pick one for the new ring.
 
 ---
 

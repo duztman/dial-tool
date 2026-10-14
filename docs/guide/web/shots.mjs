@@ -196,9 +196,24 @@ const diver = fs.readFileSync(path.join(HERE, "../classics-links.md"), "utf8").m
 links.diver = diver;
 await open(diver);
 await export_svg("dial-diver");
+// Okay's B-Uhr, for the Start page: the window, and the address it lives at
+const buhr = fs.readFileSync(path.join(HERE, "../classics-links.md"), "utf8").match(/B-Uhr.*?(#1\.[A-Za-z0-9_-]+)/)[1];
+await open(buhr); await guides_off(); await page.mouse.move(5, 5); await frame();
+await shot("buhr", { panel: "aside" });
+links.buhr = buhr;
+// the same dial's own link pane, so the address on page 01 and the link card agree
+await tab("Export"); await page.mouse.move(5, 5); await frame();
+await shot("buhr-export", { panel: "aside" });
+rects["buhr-export"].pane_link = await pane("Link to this dial");
+links.buhr_live = await page.evaluate(() => location.hash);          // the address as the tool rewrote it
+await open(diver);
 fs.writeFileSync(path.join(IMG, "dial-diver.json"), JSON.stringify(await page.evaluate(() => window.dial_tool.S)));
 await tab("Rings");
-await shot("diver-rings", { list: ".ringlist", rows: ".ringlist li.ring", panel: "aside" });
+await shot("diver-rings", { list: ".ringlist", rows: ".ringlist li.ring", panel: "aside", add: "#ring-add", up: "#ring-up", down: "#ring-down", dup: "#ring-duplicate", del: "#ring-delete" });
+// the + pressed on the same list: closed and open at the same crop (Okay: two states of one control, same size)
+await page.click("#ring-add"); await page.waitForTimeout(200);
+await shot("diver-add", { menu: "#add-menu", plus: "#ring-add" });
+await page.keyboard.press("Escape"); await frame();
 // Scale everything with it
 await open(); await tab("Export"); await page.click('button:text-is("Defaults")'); await ready(); await frame();
 await export_svg("scale-30");
