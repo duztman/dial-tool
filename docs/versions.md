@@ -13,6 +13,7 @@ Versions 1.x–2.x are the DrawBot tool (`dial.py`, frozen; now in `archive/draw
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.38 | 15 Oct 2026 | web | [`2871fa9`](https://github.com/duztman/dial-tool/tree/2871fa9efddac68833ed4620a75027fee19ada09) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/2871fa9efddac68833ed4620a75027fee19ada09/web/dial-tool.html) | beta 4.38: shadows on the preview (#189) and the new bottom bar (#190) |
 | 4.37.1 | 14 Oct 2026 | web | [`eafd7bf`](https://github.com/duztman/dial-tool/tree/eafd7bffdfdb2ee4a2d15c66ce1ef35bef7421b0) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/eafd7bffdfdb2ee4a2d15c66ce1ef35bef7421b0/web/dial-tool.html) | beta 4.37.1: short labels in boxes centred on their ink, proportional figures (#186) |
 | 4.37 | 14 Oct 2026 | web | [`76b06b1`](https://github.com/duztman/dial-tool/tree/76b06b1979ed41c19e902d9fafa57adb9d8a03bf) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/76b06b1979ed41c19e902d9fafa57adb9d8a03bf/web/dial-tool.html) | beta 4.37: the Now list — eye, touch, opacity on hands, keyboard time, even frames, centre hole, arc text, disc hand |
 | 4.36.1 | 14 Oct 2026 | web | [`a279c0a`](https://github.com/duztman/dial-tool/tree/a279c0aa75640e369ac5b60f9a8f2367c14738f0) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/a279c0aa75640e369ac5b60f9a8f2367c14738f0/web/dial-tool.html) | beta 4.36.1: the icon audit's omitted bits — Guides as drawn, rename quiet, rims light g |
