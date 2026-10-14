@@ -1,5 +1,19 @@
 # Dial Tool — changelog
 
+## beta 4.37 (web version) · 14 Oct 2026, evening
+
+The Now list, built by Claude alone in an hour (Okay, 18:00). On `dev` and the live page; `main` stays at 4.36.1.
+
+- **The eye only shows or hides** (#183): it no longer selects the ring, so the rows below don't jump and the next eye stays under the pointer. A click on the row still selects.
+- **Touch** (#153, #152): no grey tap box and no focus ring after a finger's tap (a key brings the ring back); a pinch follows both fingers from the moment the second lands — zoom by their distance, pan by their midpoint.
+- **Opacity on hands** (#163): the colour pop-out's opacity strip for each hand.
+- **Time from the keyboard** (#84): ← → a minute, ⇧ an hour, space plays or pauses — not while typing, on a slider or in a menu.
+- **Window frames stay even** (#168): circles, polygons and arcs grow by their measures; stroking a circle had bulged it up to 6 % at the diagonals (the "four-petal blob").
+- **Centre hole** (#165): `dial_hole`, Ø 2.7 mm to start, a row under Diameter; seen when the hands are hidden; a cut line on a production mask. Every dial gets it, old links too (Okay waived R31 for it).
+- **Arc text** (#166): a date or day in an arc window bends along the arc and reads left to right at the bottom; it stays outlines with live text on.
+- **Disc hand** (#164): a new hand shape — a disc carrying one marker (bar · wedge · dot), its outer end at the hand's Length, cut out of the disc where it lies on it.
+- Not done: #85 (hand tip to a ring's edge) parked with snapping (#184); #167 (am · pm colours) couldn't be reproduced.
+
 ## beta 4.36.1 (web version) · 14 Oct 2026
 
 - **The Guides switch as Okay drew it:** guides on, the target's centre ring dashed; off, a hollow slash — two lines with the target cut away between them.

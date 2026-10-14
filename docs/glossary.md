@@ -2,7 +2,7 @@
 
 What each word means **in this project**. Turkish where it's the common trade word.
 If a term is used differently in conversation, ask, then update this file.
-*Last updated 14 Oct 2026 (centre hole, disc hand: planned, build list #164, #165). Before, 13 Oct 2026, night (beta 4.35: tab reworded, look-check, the box rule, scale). Before (beta 4.13: tabs, Export's order; beta 4.12: guides per ring, added guides, window cards as tabs; beta 4.11: ring drawer, a row's order; beta 4.8: window shape, turn, size button; beta 4.7: ring line, value button, gallery, card switch; Section, Ring list and Bar brought up to the web version). Before: 12 Oct 2026 (web version, beta 4.6: sector colours, scale everything).*
+*Last updated 14 Oct 2026, evening (beta 4.37: centre hole and disc hand built; the eye). Before, 14 Oct 2026 (centre hole, disc hand: planned, build list #164, #165). Before, 13 Oct 2026, night (beta 4.35: tab reworded, look-check, the box rule, scale). Before (beta 4.13: tabs, Export's order; beta 4.12: guides per ring, added guides, window cards as tabs; beta 4.11: ring drawer, a row's order; beta 4.8: window shape, turn, size button; beta 4.7: ring line, value button, gallery, card switch; Section, Ring list and Bar brought up to the web version). Before: 12 Oct 2026 (web version, beta 4.6: sector colours, scale everything).*
 
 ## Watch terms
 
@@ -15,8 +15,8 @@ If a term is used differently in conversation, ask, then update this file.
 | **Tail** | | The part of a hand behind the pivot, in mm. |
 | **Counterweight** | | A disc on a hand's tail, centred at 73 % of the tail (beta 1.0's proportion). Any hand can have one. |
 | **Cap** | | The disc over the pivot (`ha_cap`, colour `c_cap`). |
-| **Centre hole** | | The hole in the plate the hand pipes pass through. Planned (build list #165): shown when the hands are hidden, under the cap otherwise. Not the holes in the hands themselves. |
-| **Disc hand** | | A hand option (planned, build list #164): a disc (Ø, colour, opacity) carrying one marker, drawn with a markers ring's shapes, as its pointer. No blade. After the mystery dials, where a clear disc carries a dot or an arrow. |
+| **Centre hole** | | The hole in the plate the hand pipes pass through (`dial_hole`, Ø in mm, 2.7 to start; 0 = none; beta 4.37). Shown when the hands are hidden, under the hands otherwise; a production mask always has its cut line. Not the holes in the hands themselves. |
+| **Disc hand** | | A hand shape (`disc`, beta 4.37): a disc on the pivot (`disc_d`) carrying one marker drawn with a markers ring's shapes (`mark`: bar · wedge · dot, `mark_len`, `mark_w`), its outer end at the hand's Length; the marker is cut out of the disc where it lies on it. No blade. After the mystery dials, where a clear disc carries a dot or an arrow. |
 | **Track** · minute track · chapter ring | | The minute marks round the edge. In the tool: a **ticks ring**; railroad rails are thin **band rings**. |
 | **Tick** | | One mark of a ticks ring. A 300-division track is two ticks rings: 60 minute ticks above 300 fine ticks that skip their positions. |
 | **Railroad** | | Two thin rails along a track's edges, ticks between them. In the tool: two thin bands. |
@@ -99,7 +99,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Toggle column** | The narrow column at the far left of the panel (web version). It holds only the panes' eyes (open or folded). A ring's eye (shown or hidden on the dial) is inside its row since 13 Oct 2026. |
 | **Margin** | The panel's side space, 24, the same left and right (web version, beta 4.2). Lines start and end on it; so do the eyes. |
 | **Day slider · step** | The bottom bar's slider over twelve hours. Its steps are the twelve hours and 10:10: a click goes exactly to one. It stays in the half of the day that is showing; **AM · PM**, the small word in the time's box, turns the half over. |
-| **Eye** | The sign in the toggle column. Open = showing; closed, with lashes = put away. |
+| **Eye** | The sign in the toggle column. Open = showing; closed, with lashes = put away. On a ring row it only shows or hides that ring; it doesn't select it (beta 4.37, #183). |
 | **Rename box** | A text cursor in a rounded box, right beside the selected ring's name; left out when the row is too full. A click on it, or on the selected ring's name, renames the ring (beta 4.10; until then the box was the only way). |
 | **Picture tile** | One choice shown as a small drawing with its name under it (ring kind, mark shape, hand shape, what a window shows…). |
 | **Colour pop-out** | What a swatch opens, at its right (web version, beta 4.5; the *colour picker* of 4.0–4.4): one for the whole tool. *On this dial* · *Palette* · the field and the hues · one line of RGB / CMYK / HEX with COPY. Its head drags it; its square makes it twice the size. |
