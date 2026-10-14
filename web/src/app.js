@@ -487,7 +487,7 @@ const DAY_STEPS = [...Array.from({ length: 12 }, (_, h) => [h * 3600, String(h |
 // 6×, 60× and 720× (Okay, 14 Oct 2026, 23:26: "a regular sliding track with humps on it on 1 (larger), 6 then
 // logarithmicly up to 720"; "slightly slower is acceptable": it starts at 0.5×). Near a hump the slider snaps onto
 // it. The speed is written beside the track, not on its thumb, which a finger covers.
-const SPEED_LO = 0.5, SPEED_HI = 720, SPEED_HUMPS = [1], SPEED_SNAP = 0.025;      // one ball now, at 1× (Okay, 14 Oct 2026, 23:55: "remove the humps but the one at 1x"); the slider snaps there only
+const SPEED_LO = 1, SPEED_HI = 720;      // no slow motion: 1× to 720× (Okay, 15 Oct 2026, 01:59: "Remove slow motion from the clock"; 0.5× before). Its two ends are marked 1X and 720X; no ball, no snapping
 const speed_place = (k) => Math.log(k / SPEED_LO) / Math.log(SPEED_HI / SPEED_LO);      // a speed → 0 to 1 along the track
 const speed_word = (k) => (k >= 10 ? String(Math.round(k)) : String(+k.toFixed(1)));      // the figures; the × follows in a span of its own, drawn larger
 const SECTIONS = Object.keys(ROWS);                // their numbers are what ui_section stores (R9)
@@ -770,23 +770,17 @@ class DialTool {
     // (how to zoom, zoom out, in, fit). The panel's square left the bar (Okay, 14 Oct 2026, 23:19: it "doesn't work
     // anyway"; build list #190)
     this.speed = 1;
-    this.speed_slider = el("input", { id: "speed", type: "range", min: 0, max: 1000, step: 1, ariaLabel: "How fast time runs", title: "How fast time runs: 0.5× to 720×" });
+    this.speed_slider = el("input", { id: "speed", type: "range", min: 0, max: 1000, step: 1, ariaLabel: "How fast time runs", title: "How fast time runs: 1× to 720×" });
     this.speed_slider.oninput = () => {      // (set_speed puts the rider over the thumb)
-      let p = +this.speed_slider.value / 1000, k = SPEED_LO * (SPEED_HI / SPEED_LO) ** p;
-      const near = SPEED_HUMPS.find((h) => Math.abs(speed_place(h) - p) < SPEED_SNAP);
-      if (near) k = near;
-      this.set_speed(k);
+      this.set_speed(SPEED_LO * (SPEED_HI / SPEED_LO) ** (+this.speed_slider.value / 1000));
     };
     // no words for the speed in the box any more (Okay, 15 Oct 2026, 00:18: "Remove 1x next to red button"): the slider
     // tells a screen reader its speed (aria-valuetext); the eye has the ball at 1× and where the thumb stands
     const humps = el("span", { className: "humps", ariaHidden: "true" }, el("i", { className: "knob first" }), el("i", { className: "knob last" }));
-    for (const h of SPEED_HUMPS) {
-      const ball = el("i", { className: "hump" }), name = el("span", { className: "humpname ghost", textContent: h + "X" });      // the ghost: "1X" in black, always over its ball      // "1X", as Okay wrote it (15 Oct 2026, 00:32)
-      for (const x of [ball, name]) x.style.setProperty("--at", speed_place(h).toFixed(4));
-      humps.append(ball, name);
-    }
-    // the speed's name rides over the thumb, in the bar's grey: how many X (Okay, 15 Oct 2026, 01:08: "1X follows the dot.
-    // Indicates how many Xs. Leaves a black ghost of 1x behind at all times")
+    // its two ends named in the bar's grey, 1X and 720X (Okay, 15 Oct 2026, 01:59: "denote them 1x and 720x with the bar's gray")
+    for (const [at, word] of [[0, SPEED_LO + "X"], [1, SPEED_HI + "X"]]) { const name = el("span", { className: "humpname end", textContent: word }); name.style.setProperty("--at", at); humps.append(name); }
+    // the speed's name rides over the thumb, the one white thing on the bar: how many X (Okay, 15 Oct 2026, 01:08: "1X
+    // follows the dot. Indicates how many Xs"; 01:59: "It is the only white thing there")
     this.speed_name = el("span", { className: "humpname rider", ariaHidden: "true" });
     humps.append(this.speed_name);
     this.speeds = el("span", { className: "speeds" }, el("span", { className: "speedtrack" }, humps, this.speed_slider));
@@ -3300,10 +3294,10 @@ class DialTool {
     this.speed = k;
     if (this.playing) this.play_from = [performance.now(), this.S.t];
     const p = Math.round(speed_place(k) * 1000);
-    if (document.activeElement !== this.speed_slider || Math.abs(+this.speed_slider.value - p) > 1000 * SPEED_SNAP) this.speed_slider.value = p;
+    if (document.activeElement !== this.speed_slider) this.speed_slider.value = p;
     this.speed_slider.setAttribute("aria-valuetext", speed_word(k) + "×");
     this.speed_name.textContent = speed_word(k) + "X";
-    this.speed_name.style.setProperty("--at", (+this.speed_slider.value / 1000).toFixed(4));      // where the thumb stands, not where the snapped speed is
+    this.speed_name.style.setProperty("--at", (+this.speed_slider.value / 1000).toFixed(4));      // where the thumb stands
     this.speed_slider.title = `How fast time runs: ${speed_word(k)}× (0.5× to 720×)`;
     this.speeds.classList.toggle("real", k === 1);
   }

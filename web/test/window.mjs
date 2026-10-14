@@ -468,8 +468,8 @@ await page.mouse.click(640, 30);                      // the backdrop, off the d
 check(await page.isHidden("#guide-list"), "a press outside the list puts it away");
 await page.click("#guides-more");
 const looks = await page.evaluate(() => { const c = (q, p) => getComputedStyle(document.querySelector(q))[p]; return [c(".bar", "backgroundColor"), c(".bar", "color")]; });
-const whites = await page.evaluate(() => [...document.querySelectorAll(".bar, .bar *")].filter((e) => e.getClientRects().length).flatMap((e) => { const c = getComputedStyle(e); return [c.color, c.backgroundColor, c.borderTopColor].filter((v) => /^rgba?\((2[3-5]\d), (2[3-5]\d), (2[3-5]\d)/.test(v)).map((v) => (e.id || e.className.baseVal || e.className) + " " + v); }));
-check(looks[0] === "rgb(51, 51, 51)" && looks[1] === "rgb(115, 115, 115)" && whites.length === 0, `the bar is 80 % black, its light tone 55 % grey, nothing on it white (Okay, 15 Oct 2026) ${whites.slice(0, 3).join(" · ")}`);
+const whites = await page.evaluate(() => [...document.querySelectorAll(".bar, .bar *:not(.rider)")].filter((e) => e.getClientRects().length).flatMap((e) => { const c = getComputedStyle(e); return [c.color, c.backgroundColor, c.borderTopColor].filter((v) => /^rgba?\((2[3-5]\d), (2[3-5]\d), (2[3-5]\d)/.test(v)).map((v) => (e.id || e.className.baseVal || e.className) + " " + v); }));
+check(looks[0] === "rgb(51, 51, 51)" && looks[1] === "rgb(115, 115, 115)" && whites.length === 0, `the bar is 80 % black, its light tone 55 % grey, nothing on it white but the speed riding over its thumb (Okay, 15 Oct 2026) ${whites.slice(0, 3).join(" · ")}`);
 await page.mouse.move(900, 400);
 const off_look = await page.$eval("#guides", (e) => { const c = getComputedStyle(e); return [e.getAttribute("aria-pressed"), c.backgroundColor, e.textContent, c.borderTopStyle]; });
 check(off_look[0] === "false" && off_look[1] === "rgba(0, 0, 0, 0)" && off_look[2] === "Guides" && off_look[3] === "solid", "off: no fill, no dashes");
@@ -1067,12 +1067,13 @@ check(await page.getAttribute("#play", "title") === "Pause", "while playing, the
 await page.click("#play");
 check(t1 - t0 > 0.4 && t1 - t0 < 1.5, `Play moves the time (${(t1 - t0).toFixed(2)} s in 0.6 s)`);
 // how fast: a slider on a log scale; near a hump (1×, 6×, 60×, 720×) it snaps onto it
-const at_speed = async (k) => page.$eval("#speed", (e, k) => { e.value = Math.round(Math.log(k / 0.5) / Math.log(1440) * 1000) + 8; e.dispatchEvent(new Event("input", { bubbles: true })); }, k);
+const at_speed = async (k) => page.$eval("#speed", (e, k) => { e.value = Math.round(Math.log(k) / Math.log(720) * 1000) + 8; e.dispatchEvent(new Event("input", { bubbles: true })); }, k);
 await at_speed(60);
 const near60 = await S("t.speed");
 check(near60 > 55 && near60 < 70 && near60 !== 60 && /^\d+×$/.test(await page.getAttribute("#speed", "aria-valuetext")), `the speed slider is free between its ends (${near60.toFixed(1)}× near 60), and tells a screen reader (no words in the box since 15 Oct 2026)`);
-await at_speed(1);
-check(await S("t.speed === 1") && await page.getAttribute("#speed", "aria-valuetext") === "1×", "near its one ball, at 1×, it snaps onto it");
+const ends = await page.$$eval(".humpname.end", (n) => n.map((e) => e.textContent + " " + getComputedStyle(e).color).join(" · "));
+check(ends === "1X rgb(115, 115, 115) · 720X rgb(115, 115, 115)" && await page.$eval(".humpname.rider", (e) => e.textContent + " " + getComputedStyle(e).color) === Math.round(near60) + "X rgb(255, 255, 255)",
+  `its ends are named in the bar's grey, the speed rides over the thumb in white (${ends})`);
 await at_speed(60);
 await page.click("#play");
 await page.waitForTimeout(600);
@@ -1080,7 +1081,7 @@ const t2 = await S("S.t");
 await page.click("#play");
 check(t2 - t1 > 20 && t2 - t1 < 90, `about 60×: a minute every second (${(t2 - t1).toFixed(0)} s in 0.6 s)`);
 await page.$eval("#speed", (e) => { e.value = 0; e.dispatchEvent(new Event("input", { bubbles: true })); });
-check(await S("t.speed === 0.5") && await page.getAttribute("#speed", "aria-valuetext") === "0.5×", "at its left end the slider is half speed");
+check(await S("t.speed === 1") && await page.getAttribute("#speed", "aria-valuetext") === "1×", "at its left end the slider is 1×: no slow motion (Okay, 15 Oct 2026)");
 await at_speed(1);
 const z1 = await S("t.z");
 await page.click("#zoom-in");
