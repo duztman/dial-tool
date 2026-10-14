@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.38.6 (web version) · 15 Oct 2026
+
+- **The Shadows switch has a sign** (#192): a sphere lit from the upper right, its shade a crescent on the lower left, its shadow a flat ellipse cast to the left — after a photograph Okay sent. Whole when shadows are on, faint when off.
+
 ## beta 4.38.5 (web version) · 15 Oct 2026
 
 - **Guides start lighter**: centre lines in pink, no window radii, only the selected ring's edges; the dial edge's guide is gone from the list and the preview. Old links that kept the old starting values see these (preview only; R31 notes it).

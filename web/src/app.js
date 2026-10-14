@@ -200,6 +200,12 @@ const TOOL_ICONS = {
   redo: `<path d="M13.25 6.75H6.75A3.25 3.25 0 0 0 6.75 13.25H10.25M10.25 3.75L13.25 6.75L10.25 9.75" ${sw(SLANT)}/>`,
   wide: `<rect x="2.75" y="2.75" width="10.5" height="10.5"/><path d="M6.25 10.25L10.25 6.25M7.25 6.25H10.25V9.25" ${sw(DENSE)}/>`,
   find: `<circle cx="7" cy="7" r="4.25" ${sw(CURVE)}/><path d="M10.25 10.25L13.25 13.25" ${sw(SLANT)}/>`,
+  // the Shadows switch, on 18 like Guides: a sphere lit from the upper right — its outline, its shade a crescent on the
+  // lower left — and its shadow cast to the left on the ground, a flat ellipse it stands on (after a photograph Okay
+  // sent, 15 Oct 2026, 02:13: "make it 2d icon like others… fit a square"). The outline goes through fit.mjs's rules
+  // (CURVE, centre on a quarter, radius on a half); the shade and the shadow are filled, their ends on half points
+  shadows: `<circle cx="10.75" cy="7.75" r="5.5" ${sw(CURVE)}/><path d="M13.5 12.5A5.5 5.5 0 0 1 6 5A8 8 0 0 0 13.5 12.5Z" fill="currentColor" stroke="none"/>`
+    + `<path d="M1.25 15.5A5.625 1.25 0 0 0 12.5 15.5A5.625 1.25 0 0 0 1.25 15.5Z" fill="currentColor" stroke="none"/>`,
   screen: `<rect x="2.75" y="3.25" width="10.5" height="7.5"/><path d="M8.25 10.75V13.25M5.75 13.25H10.75" ${sw(DENSE)}/>`,
   // the Guides switch, on 18: a target and its cross; its lines crowd, so DENSE. Okay's drawings (14 Oct 2026, 04:11):
   // guides on, the centre ring dashed in six, square-ended (a dash pattern is a texture, not line ends) (core-on); guides off, a hollow slash, two lines with the target cut away
@@ -989,6 +995,7 @@ class DialTool {
    *  joined to it, an arrow that opens their settings upward — made like the Guides switch. Preview only (R5). */
   shadows_box() {
     this.shadows_tick = el("button", { type: "button", className: "onview guidesbox shadowsbox", id: "shadows", onclick: () => this.set_value("global", "sh_on", !this.S.sh_on) });
+    this.shadows_tick.innerHTML = icon(TOOL_ICONS.shadows, 18);      // its sign, before its word, as Guides has
     const word = el("span", { className: "word", textContent: "Shadows" });
     word.dataset.text = "Shadows";
     this.shadows_tick.append(word);

@@ -44,10 +44,9 @@
   .backdropbox .dot { border-color: var(--on-canvas); }
   /* Shadows (a trial, 14 Oct 2026): the Guides switch's make, at the bottom left, the Backdrop switch standing on it a
      unit above (Okay, 23:05: "button goes down"); one higher, so its open list lies over Backdrop.
-     No sign yet (a new icon goes through the icon pipeline, R33): the word alone, so its left room is the right's.
+     Its sign is a sphere and its cast shadow (15 Oct 2026), so its room is Guides'.
      Its list opens upward (.shadelist, after the guides' list), so its arrow points up while closed. */
   .shadows { position: absolute; z-index: 4; left: var(--canvas-inset); bottom: var(--canvas-inset); display: flex; }
-  .shadowsbox { padding-left: var(--u4); }
   .shadows .guidesmore svg { rotate: 180deg; }
   .shadows .guidesmore[aria-expanded="true"] svg { rotate: 0deg; }
 
