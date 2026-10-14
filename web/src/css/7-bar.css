@@ -39,14 +39,14 @@
   .bar .lead .speeds { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--u2); height: var(--bar-control); padding: 0 var(--speed-pad); border: var(--hair) solid var(--bar-light); }
   .bar .speedtrack { position: relative; flex: 1; min-width: 0; height: 100%; }
   .bar .humps { position: absolute; inset: 0 calc(var(--speed-thumb) / 2); pointer-events: none; }
-  .bar .humps::before { content: ""; position: absolute; left: calc(var(--speed-thumb) / -2); right: calc(var(--speed-thumb) / -2); top: calc(50% - var(--triple) / 2); border-top: var(--triple) solid var(--black); }      /* as thick as the play button's black ring (Okay, 15 Oct 2026, 00:32) */
+  .bar .humps::before { content: ""; position: absolute; left: 0; right: 0; top: calc(50% - var(--triple) / 2); border-top: var(--triple) solid var(--black); }      /* as thick as the play button's black ring (Okay, 15 Oct 2026, 00:32) */
   /* every dot on the speed line — its two ends, the ball at 1×, the thumb — black with an eye, as the panel's sliders
      (Okay, 15 Oct 2026, 00:42: "larger dots, all black with an eye hole") */
   .bar .hump { position: absolute; left: calc(var(--at) * 100%); top: 50%; width: var(--speed-ball); height: var(--speed-ball); translate: -50% -50%; border-radius: 50%; background: radial-gradient(circle, var(--bar-light) 0 var(--thumb-eye), var(--black) var(--thumb-eye-edge)); }
   .bar .humpname { position: absolute; left: calc(var(--at) * 100%); bottom: calc(100% + var(--hair)); height: calc((var(--bar-height) - var(--bar-control)) / 2); translate: -50% 0; line-height: calc((var(--bar-height) - var(--bar-control)) / 2); font-family: var(--pixel); font-size: var(--t-pixel); color: var(--bar-light); white-space: nowrap; }      /* "1×" in Silkscreen at 8, the ball's colour (Okay, 15 Oct 2026, 00:18) — not at --pixel-ink: he asked for the ball's colour (R32 notes it) */
   .bar .knob { position: absolute; top: 50%; width: var(--speed-ball); height: var(--speed-ball); translate: -50% -50%; border-radius: 50%; background: radial-gradient(circle, var(--bar-light) 0 var(--thumb-eye), var(--black) var(--thumb-eye-edge)); }      /* the black line's two ends, a knob each (Okay: "time speed line in black, has a beginning and end knob") */
-  .bar .knob.first { left: calc(var(--speed-thumb) / -2); }
-  .bar .knob.last { left: calc(100% + var(--speed-thumb) / 2); }
+  .bar .knob.first { left: 0; }      /* where the thumb's middle stops at each end: at the end the thumb sits on its knob (Okay, 15 Oct 2026, 01:03) */
+  .bar .knob.last { left: 100%; }
   .bar .speedtrack input[type="range"] { position: absolute; inset: 0; height: 100%; }
   .bar .speedtrack input[type="range"]::-webkit-slider-runnable-track { height: 100%; background: none; }
   .bar .speedtrack input[type="range"]::-webkit-slider-thumb { width: var(--speed-thumb); height: var(--speed-thumb); margin-top: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2); background: radial-gradient(circle, var(--black) 0 var(--thumb-eye), var(--bar-light) var(--thumb-eye-edge)); box-shadow: 0 0 0 var(--thick) var(--bar); }
@@ -64,7 +64,7 @@
   /* NOW: capitals, at AM · PM's size (Okay: "Now uppercase and in pm's font size which grows 1px") */
   .bar .lead #now { padding: 0 var(--u3); font-size: var(--t-s); text-transform: uppercase; }
   .bar .time { width: 100%; text-align: center; }
-  .bar .viewing { margin-left: auto; padding-right: 0; }      /* at the right; the room the day slider doesn't take lies before it */
+  .bar .viewing { margin-left: auto; padding: 0 0 0 var(--margin); }      /* at the right; the room the day slider doesn't take lies before it. From its divider to what follows as far as from Fit to the window's right edge: the margin (Okay, 15 Oct 2026, 01:03: "equalize those gaps") */
   /* how to zoom: words and a faint magnifier, nothing to press. A pointer zooms with ⌘ + scroll, a finger pinches */
   .bar .zoomhint { display: flex; align-items: center; gap: var(--u2); white-space: nowrap; font-size: var(--t-s); color: var(--bar-light); }
   @media (hover: none), (pointer: coarse) { .bar .zoomhint { display: none; } }      /* a desktop's only: no sign or words on an iPad or a phone (Okay, 15 Oct 2026, 00:32) */
