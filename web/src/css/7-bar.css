@@ -4,20 +4,15 @@
      the panel's square left, #190) — quiet, so they don't shout under the panel, but for the time, which sings.
      Under the preview: the day slider with its steps, no wider than on an iPad, then the view: how to zoom · − + 1 ·
      Fit 1, at the right. (Okay, 14 Oct 2026, 23:19 and 23:26, build list #190) */
-  .bar { grid-column: 1 / -1; display: flex; align-items: stretch; height: var(--bar-height); padding-right: var(--margin); background: var(--bar); color: var(--bar-ink); border-top: var(--hair) solid var(--bar-rule); }
+  .bar { grid-column: 1 / -1; display: flex; align-items: stretch; height: var(--bar-height); padding-right: var(--margin); background: var(--bar); color: var(--bar-light); border-top: var(--hair) solid var(--bar-rule); }
   .bar .lead { flex: none; align-items: center; width: var(--panel); padding: 0 var(--margin); }
   .bar .group { display: flex; align-items: center; gap: var(--gap); padding: 0 var(--gap); border-left: var(--hair) solid var(--bar-rule); }
-  .bar :is(.lead, .viewing) button, .bar .time { height: var(--bar-control); border: var(--hair) solid var(--bar-rule); background: var(--bar-field); color: var(--bar-ink); }
-  .bar :is(.lead, .viewing) button:hover { background: var(--bar-hover); border-color: var(--bar-ink); }
-  .bar :is(.lead, .viewing) button:active, .bar .viewing .segs > button.on { background: var(--bar-ink); color: var(--bar); border-color: var(--bar-ink); }
-  .bar :is(button, input):focus-visible, .bar input[type="text"]:focus { outline-color: var(--bar-ink); }
+  .bar :is(.lead, .viewing) button, .bar .time { height: var(--bar-control); border: var(--hair) solid var(--bar-light); background: none; color: var(--bar-light); }
+  .bar :is(.lead, .viewing) button:hover { background: var(--bar-field); }
+  .bar :is(.lead, .viewing) button:active { background: var(--bar-light); color: var(--bar); }
+  .bar :is(button, input):focus-visible, .bar input[type="text"]:focus { outline-color: var(--bar-light); }
   .bar .icon { display: inline-flex; align-items: center; justify-content: center; }
   /* low contrast under the panel: no fills, thin light lines; what is chosen is a shade lighter */
-  .bar .lead :is(button, .time) { background: none; border-color: var(--bar-dim); }
-  .bar .lead :is(button, .time):hover { background: var(--bar-faint); border-color: var(--bar-edge); }
-  .bar .lead button:active { background: var(--bar-dim); color: var(--bar-ink); }
-  .bar .lead .segs > button.on { background: var(--bar-on); color: var(--white); border-color: var(--bar-dim); }
-  .bar .lead .segs > button + button { border-left: 0; }
   /* the bar's lower line is all monospace (Okay, 14 Oct 2026, 23:55: "All mono on the lower line") */
   .bar { font-family: var(--mono); }
   /* under the panel: play · how fast · the time and its half of the day · NOW, a half-gap between each (Okay: "equalize
@@ -31,46 +26,44 @@
   .bar .lead .play:is(:hover, :active) { background: none; }
   .bar .lead .play svg { display: block; }
   .play .arc-out { fill: var(--black); }
-  .play :is(.arc-base, .arc-lo) { fill: var(--play-dark); }
+  .play .arc-lo { fill: none; stroke: var(--play-dark); stroke-linecap: round; }
   .play .arc-cap { fill: var(--play); }
-  .play .arc-hi { fill: var(--play-light); }
-  .play .arc-hi.down { opacity: 0.6; }
+  .play .arc-hi { fill: none; stroke: var(--play-light); stroke-linecap: round; }
   .bar .lead .play:hover .arc-cap { fill: color-mix(in srgb, var(--play) 88%, var(--play-light)); }
-  /* how fast: a box with the speed in words, then its track — a hairline with one ball on it, at 1×, and "1×" over
+  /* how fast: a box with its track — a black line with a knob at each end and one ball on it, at 1×, and "1×" over
      the ball, outside the box, in the middle of the room between the box and the bar's top, at the hours' size
      (Okay: "Remove the humps but the one at 1x. Hump=ball in the middle of the line. Put 1x above the dot centered
      in the remaining gap outside the box in ruler number's font size"). --at: how far along the track, 0 to 1; the
      thumb's half-width at each end, so the ball is under the thumb's centre at 1×. */
-  .bar .lead .speeds { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--u2); height: var(--bar-control); padding: 0 var(--u3); border: var(--hair) solid var(--bar-dim); }
-  .bar .speedword { flex: none; min-width: var(--speed-word); font-size: var(--t-s); color: var(--bar-quiet); }
-  .bar .speedword .times { font-size: var(--t-times); }      /* the × of the mono face is small beside its figures: drawn larger (Okay: "X might need to grow") */
-  .bar .speeds.real .speedword { color: var(--bar-ink); }
+  .bar .lead .speeds { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--u2); height: var(--bar-control); padding: 0 var(--u3); border: var(--hair) solid var(--bar-light); }
   .bar .speedtrack { position: relative; flex: 1; min-width: 0; height: 100%; }
   .bar .humps { position: absolute; inset: 0 calc(var(--speed-thumb) / 2); pointer-events: none; }
-  .bar .humps::before { content: ""; position: absolute; left: calc(var(--speed-thumb) / -2); right: calc(var(--speed-thumb) / -2); top: 50%; border-top: var(--hair) solid var(--bar-edge); }
-  .bar .hump { position: absolute; left: calc(var(--at) * 100%); top: 50%; width: var(--speed-ball); height: var(--speed-ball); translate: -50% -50%; border-radius: 50%; background: var(--bar-ink); }
-  .bar .humpname { position: absolute; left: calc(var(--at) * 100%); bottom: calc(100% + var(--hair)); height: calc((var(--bar-height) - var(--bar-control)) / 2); translate: -50% 0; line-height: calc((var(--bar-height) - var(--bar-control)) / 2); font-size: var(--t-xs); color: var(--bar-quiet); white-space: nowrap; }
+  .bar .humps::before { content: ""; position: absolute; left: calc(var(--speed-thumb) / -2); right: calc(var(--speed-thumb) / -2); top: 50%; border-top: var(--hair) solid var(--black); }
+  .bar .hump { position: absolute; left: calc(var(--at) * 100%); top: 50%; width: var(--speed-ball); height: var(--speed-ball); translate: -50% -50%; border-radius: 50%; background: var(--bar-light); }
+  .bar .humpname { position: absolute; left: calc(var(--at) * 100%); bottom: calc(100% + var(--hair)); height: calc((var(--bar-height) - var(--bar-control)) / 2); translate: -50% 0; line-height: calc((var(--bar-height) - var(--bar-control)) / 2); font-family: var(--pixel); font-size: var(--t-pixel); color: var(--bar-light); white-space: nowrap; }      /* "1×" in Silkscreen at 8, the ball's colour (Okay, 15 Oct 2026, 00:18) — not at --pixel-ink: he asked for the ball's colour (R32 notes it) */
+  .bar .knob { position: absolute; top: 50%; width: var(--speed-ball); height: var(--speed-ball); translate: -50% -50%; border-radius: 50%; background: var(--black); }      /* the black line's two ends, a knob each (Okay: "time speed line in black, has a beginning and end knob") */
+  .bar .knob.first { left: calc(var(--speed-thumb) / -2); }
+  .bar .knob.last { left: calc(100% + var(--speed-thumb) / 2); }
   .bar .speedtrack input[type="range"] { position: absolute; inset: 0; height: 100%; }
   .bar .speedtrack input[type="range"]::-webkit-slider-runnable-track { height: 100%; background: none; }
-  .bar .speedtrack input[type="range"]::-webkit-slider-thumb { width: var(--speed-thumb); height: var(--speed-thumb); margin-top: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2); background: var(--bar-ink); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  .bar .speedtrack input[type="range"]::-webkit-slider-thumb { width: var(--speed-thumb); height: var(--speed-thumb); margin-top: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2); background: var(--bar-light); box-shadow: 0 0 0 var(--thick) var(--bar); }
   .bar .speedtrack input[type="range"]::-moz-range-track { height: 100%; background: none; }
   .bar .speedtrack input[type="range"]::-moz-range-progress { background: none; }
-  .bar .speedtrack input[type="range"]::-moz-range-thumb { width: var(--speed-thumb); height: var(--speed-thumb); background: var(--bar-ink); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  .bar .speedtrack input[type="range"]::-moz-range-thumb { width: var(--speed-thumb); height: var(--speed-thumb); background: var(--bar-light); box-shadow: 0 0 0 var(--thick) var(--bar); }
   /* the time sings: large, regular weight, bright, centred on its ink (app.js measures it with every figure a 0, so
      it stands still), more room left and right than the other boxes. Its AM · PM window touches it, one colour always
      (Okay: "Pm window touches the time"; "Am/pm does not change color"). */
   .bar .timebox { display: flex; }
-  .bar .timewell { display: grid; height: var(--bar-control); padding: 0 var(--u4); overflow: hidden; border: var(--hair) solid var(--bar-edge); }
-  .bar .timewell:hover { border-color: var(--bar-ink); }
-  .bar .lead .timewell .time { width: var(--time-chars); height: 100%; padding: 0; border: 0; background: none; font-size: var(--t-time); font-weight: 400; letter-spacing: 0; color: var(--white); translate: var(--ink-dx, 0) var(--ink-dy, 0); }
-  .bar .lead .timebox .half { height: var(--bar-control); padding: 0 var(--u3); border-left: 0; font-size: var(--t-s); background: var(--bar-ink); color: var(--bar); border-color: var(--bar-ink); }
-  .bar .lead .timebox .half:hover { background: var(--white); border-color: var(--white); }
+  .bar .timewell { display: grid; height: var(--bar-control); padding: 0 var(--u4); overflow: hidden; border: var(--hair) solid var(--bar-light); }
+  .bar .timewell:hover { background: var(--bar-field); }
+  .bar .lead .timewell .time { width: var(--time-chars); height: 100%; padding: 0; border: 0; background: none; font-size: var(--t-time); font-weight: 400; letter-spacing: 0; color: var(--bar-light); translate: var(--ink-dx, 0) var(--ink-dy, 0); }
+  .bar .lead .timebox .half { height: var(--bar-control); padding: 0 var(--u3); border-left: 0; font-size: var(--t-s); background: none; color: var(--bar-light); border-color: var(--bar-light); }      /* a frame, never filled (Okay, 15 Oct 2026, 00:18) */
   /* NOW: capitals, at AM · PM's size (Okay: "Now uppercase and in pm's font size which grows 1px") */
   .bar .lead #now { padding: 0 var(--u3); font-size: var(--t-s); text-transform: uppercase; }
   .bar .time { width: 100%; text-align: center; }
   .bar .viewing { margin-left: auto; padding-right: 0; }      /* at the right; the room the day slider doesn't take lies before it */
   /* how to zoom: words and a faint magnifier, nothing to press. A pointer zooms with ⌘ + scroll, a finger pinches */
-  .bar .zoomhint { display: flex; align-items: center; gap: var(--u2); white-space: nowrap; font-size: var(--t-s); color: var(--bar-quiet); }
+  .bar .zoomhint { display: flex; align-items: center; gap: var(--u2); white-space: nowrap; font-size: var(--t-s); color: var(--bar-light); }
   .bar .zoomhint svg { opacity: var(--faint); }
   .bar .zoomhint .finger { display: none; }
   @media (hover: none) { .bar .zoomhint .pointer { display: none; } .bar .zoomhint .finger { display: inline; } }
@@ -83,7 +76,7 @@
   /* the day slider is a ruler: a line, cuts crossing it (drawn in draw_ruler, finer on a wider window), and a line
      for a handle. Nothing is filled in behind the handle: the past is not a quantity. */
   .bar .day { position: relative; flex: 1; min-width: 0; max-width: calc(var(--day-wide) + 2 * var(--u8)); display: grid; grid-template-rows: var(--ruler) var(--names); align-content: center; gap: 0; padding: 0 var(--u8); }
-  .ruler { grid-area: 1 / 1; display: block; width: 100%; height: var(--ruler); pointer-events: none; fill: none; stroke: var(--bar-ink); stroke-width: 1; shape-rendering: crispEdges; }
+  .ruler { grid-area: 1 / 1; display: block; width: 100%; height: var(--ruler); pointer-events: none; fill: none; stroke: var(--bar-light); stroke-width: 1; shape-rendering: crispEdges; }
   .ruler .line { opacity: 0.4; }
   .ruler .hour { opacity: 0.85; }
   .ruler .half { opacity: 0.6; }
@@ -91,18 +84,18 @@
   .ruler .pose { opacity: 0; }
   .bar .day input[type="range"] { grid-area: 1 / 1; height: var(--ruler); cursor: ew-resize; }
   .bar .day input[type="range"]::-webkit-slider-runnable-track { height: var(--ruler); border-radius: 0; background: none; }
-  .bar .day input[type="range"]::-webkit-slider-thumb { width: var(--handle); height: var(--ruler); margin-top: 0; border-radius: 0; background: var(--white); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  .bar .day input[type="range"]::-webkit-slider-thumb { width: var(--handle); height: var(--ruler); margin-top: 0; border-radius: 0; background: var(--bar-light); box-shadow: 0 0 0 var(--thick) var(--bar); }
   .bar .day input[type="range"]::-moz-range-track { height: var(--ruler); background: none; }
   .bar .day input[type="range"]::-moz-range-progress { background: none; }
-  .bar .day input[type="range"]::-moz-range-thumb { width: var(--handle); height: var(--ruler); border-radius: 0; background: var(--white); box-shadow: 0 0 0 var(--thick) var(--bar); }
-  .bar .day input[type="range"]:focus-visible { outline: var(--thick) solid var(--bar-ink); }
+  .bar .day input[type="range"]::-moz-range-thumb { width: var(--handle); height: var(--ruler); border-radius: 0; background: var(--bar-light); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  .bar .day input[type="range"]:focus-visible { outline: var(--thick) solid var(--bar-light); }
   /* the steps' names: --at = how far along the day (0 to 1); the side margins keep them on the handle's path */
   .steps12 { position: relative; height: var(--names); margin: 0 calc(var(--handle) / 2); }
-  .steps12 button { position: absolute; left: calc(var(--at) * 100%); top: 0; transform: translateX(-50%); min-width: var(--names); height: var(--names); padding: 0 var(--u1); font-size: var(--t-xs); line-height: var(--names); color: var(--bar-quiet); }
-  .steps12 button:hover { color: var(--white); text-decoration: underline; }
-  .steps12 button.on { color: var(--white); font-weight: 700; }
+  .steps12 button { position: absolute; left: calc(var(--at) * 100%); top: 0; transform: translateX(-50%); min-width: var(--names); height: var(--names); padding: 0 var(--u1); font-size: var(--t-xs); line-height: var(--names); color: var(--bar-light); }
+  .steps12 button:hover { text-decoration: underline; }
+  .steps12 button.on { font-weight: 700; }
   /* 10:10 stands on the preview, over the bar and clear of the ruler, above its place in the day */
   .steps12 button.special { top: auto; bottom: calc((var(--bar-height) + var(--hair) + var(--ruler) + var(--names)) / 2 + var(--unit));      /* from the hours' foot up to the bar's top line (ruler and hours stand in the bar's middle), and one unit more */
-    z-index: 1; padding: 0 var(--unit); border-radius: calc(var(--names) / 2); background: var(--bar-ink); color: var(--bar); font-weight: 600; }
-  .steps12 button.special:hover { background: var(--white); color: var(--black); text-decoration: none; }
+    z-index: 1; padding: 0 var(--unit); border-radius: calc(var(--names) / 2); background: var(--bar-light); color: var(--bar); font-weight: 600; }
+  .steps12 button.special:hover { text-decoration: underline; }
 }

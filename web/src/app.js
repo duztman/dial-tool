@@ -209,17 +209,21 @@ const TOOL_ICONS = {
     + `<circle class="core-on" cx="9.25" cy="9.25" r="2" stroke-dasharray="1.25 0.844" stroke-linecap="butt" transform="rotate(-107.9 9.25 9.25)"/><path class="slash" d="M1.87 14.87L14.87 1.87M3.63 16.63L16.63 3.63"/></g>`,
 };
 // play and pause, filled, on 12: the triangle a half point right of the middle, so its weight (not its box) is centred
-// play: an arcade button seen from above, on 32 (Okay, 14 Oct 2026, 23:55: "Red dot loses play symbol, imitate a
-// arcade button, top view, add shadows and highlights in basic svg sausage shapes. 3 colors and a black outline").
-// A black disc (the outline), the dark ring of the housing, the red cap a point higher than its middle (lit from
-// above), a light sausage on its upper left, a dark one along its lower right. Pressed — time running — the cap sits
-// down in the middle, its light dimmer, its lower shade gone. Filled shapes only: no lines to weigh (R33 is for lines).
-const ARCADE = (down) => `<svg viewBox="0 0 32 32" width="32" height="32" aria-hidden="true">`
-  + `<circle class="arc-out" cx="16" cy="16" r="16"/><circle class="arc-base" cx="16" cy="16" r="15"/>`
-  + `<circle class="arc-cap" cx="16" cy="${down ? 16 : 15}" r="${down ? 11.5 : 12}"/>`
-  + `<rect class="arc-hi${down ? " down" : ""}" x="8.5" y="${down ? 9 : 8}" width="8" height="3" rx="1.5" transform="rotate(-38 12.5 ${down ? 10.5 : 9.5})"/>`
-  + (down ? "" : `<rect class="arc-lo" x="13" y="21.25" width="9" height="2.5" rx="1.25" transform="rotate(-22 17.5 22.5)"/>`)
-  + `</svg>`;
+// play: an arcade button seen from above, on 32 (Okay, 14 Oct 2026, 23:55: "imitate a arcade button, top view, add
+// shadows and highlights in basic svg sausage shapes. 3 colors and a black outline"; 15 Oct, 00:18: "fatter halfcircle
+// sausages and a black even outline… the sausage thickness is equal to outer black ring"). A black disc, the red cap
+// inside it leaving an even black ring RING wide; on the cap two curved sausages as thick as that ring, on one circle:
+// light on the upper left, dark red on the lower right. Pressed — time running — they change places: lit from inside.
+const ARCADE = (down) => {
+  const RING = 3, R = 16, mid = 8.5, arc = (from, to) => {      // a sausage along the circle of radius mid, clock-free angles: 0 = right, growing downward
+    const p = (a) => `${(16 + mid * Math.cos(a * Math.PI / 180)).toFixed(3)} ${(16 + mid * Math.sin(a * Math.PI / 180)).toFixed(3)}`;
+    return `M${p(from)}A${mid} ${mid} 0 0 1 ${p(to)}`;
+  };
+  const [light, dark] = down ? [arc(15, 135), arc(195, 315)] : [arc(195, 315), arc(15, 135)];
+  return `<svg viewBox="0 0 32 32" width="32" height="32" aria-hidden="true">`
+    + `<circle class="arc-out" cx="16" cy="16" r="${R}"/><circle class="arc-cap" cx="16" cy="16" r="${R - RING}"/>`
+    + `<path class="arc-hi" d="${light}" stroke-width="${RING}"/><path class="arc-lo" d="${dark}" stroke-width="${RING}"/></svg>`;
+};
 // a window card: a small dial with the window where it is. The window keeps four points from the rim's inner edge at
 // every angle (as on the Windows tab; Okay, 13 Oct 2026, #149): its distance from the centre is found from its own
 // half-width and half-height in that direction. Its outline is LINE, its corners on quarter points.
@@ -768,14 +772,15 @@ class DialTool {
       if (near) k = near;
       this.set_speed(k);
     };
-    this.speed_word = el("span", { className: "speedword", id: "speed-word" });
-    const humps = el("span", { className: "humps", ariaHidden: "true" });
+    // no words for the speed in the box any more (Okay, 15 Oct 2026, 00:18: "Remove 1x next to red button"): the slider
+    // tells a screen reader its speed (aria-valuetext); the eye has the ball at 1× and where the thumb stands
+    const humps = el("span", { className: "humps", ariaHidden: "true" }, el("i", { className: "knob first" }), el("i", { className: "knob last" }));
     for (const h of SPEED_HUMPS) {
-      const ball = el("i", { className: "hump" }), name = el("span", { className: "humpname" }, String(h), el("span", { className: "times", textContent: "×" }));
+      const ball = el("i", { className: "hump" }), name = el("span", { className: "humpname", textContent: h + "×" });
       for (const x of [ball, name]) x.style.setProperty("--at", speed_place(h).toFixed(4));
       humps.append(ball, name);
     }
-    this.speeds = el("span", { className: "speeds" }, this.speed_word, el("span", { className: "speedtrack" }, humps, this.speed_slider));
+    this.speeds = el("span", { className: "speeds" }, el("span", { className: "speedtrack" }, humps, this.speed_slider));
     const view = (id, title, inside, act) => { const b = el("button", { type: "button", className: "icon", id, title, ariaLabel: title, onclick: act }); b.innerHTML = icon(inside); return b; };
     const middle = () => [this.svg.clientWidth / 2, this.svg.clientHeight / 2];
     // the day: the slider, and under it the steps a click snaps to — the twelve hours and 10:10, the pose watches are shown in
@@ -3284,7 +3289,8 @@ class DialTool {
     if (this.playing) this.play_from = [performance.now(), this.S.t];
     const p = Math.round(speed_place(k) * 1000);
     if (document.activeElement !== this.speed_slider || Math.abs(+this.speed_slider.value - p) > 1000 * SPEED_SNAP) this.speed_slider.value = p;
-    this.speed_word.replaceChildren(speed_word(k), el("span", { className: "times", textContent: "×" }));
+    this.speed_slider.setAttribute("aria-valuetext", speed_word(k) + "×");
+    this.speed_slider.title = `How fast time runs: ${speed_word(k)}× (0.5× to 720×)`;
     this.speeds.classList.toggle("real", k === 1);
   }
 
