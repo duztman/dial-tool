@@ -796,7 +796,7 @@ check(await page.isVisible("#colour-pop") && pop_at[0] === 12 && pop_at[1], "the
 const pop_look = await page.evaluate(() => { const c = getComputedStyle(document.querySelector("#colour-pop")), pill = getComputedStyle(document.querySelector("#global-c-plate-Plate").closest(".colour")); return [c.backgroundColor, parseFloat(c.borderTopLeftRadius), parseFloat(pill.borderTopLeftRadius), getComputedStyle(document.querySelector("#global-c-plate-Plate-hex")).fontFamily.includes("mono") && document.querySelector("#global-c-plate-Plate").tagName === "BUTTON" && getComputedStyle(document.querySelector("#global-c-plate-Plate")).backgroundColor === "rgb(17, 17, 17)"]; });
 check(pop_look[0] === "rgb(20, 20, 19)" && pop_look[1] >= 12 && pop_look[2] >= 4 && pop_look[3], "the pop-out is near black with round corners; a colour in the panel is a pill, one button: a small swatch and its hex in monospace; black while its pop-out is open");
 check(await page.isHidden(".alpharow"), "the plate has no opacity strip");
-await page.mouse.click(200, 800);
+await page.mouse.click(60, 200);      // on the Diameter label: a plain spot outside the pop-out (the colour list moved down with the centre hole row, #165)
 check(await page.isHidden("#colour-pop"), "a press outside the pop-out puts it away");
 await page.click("#global-c-plate-Plate");
 await page.mouse.click(200, 800);

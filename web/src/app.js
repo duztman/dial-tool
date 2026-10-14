@@ -306,7 +306,8 @@ const ROWS = {
     // Okay, 13 Oct 2026: Dial and Page stay in view (pinned); the list of colours scrolls under them.
     hdr("Dial", { pin: true }),                    // the plate: how big, what colour, what is on it
     num("dial_d", "Diameter", 15, 50, 0.1),
-    chk("ui_scale", "Scale everything with it", { nest: true }),      // nest: a question about the row above starts on the controls' column (Okay, 12 Oct 2026)
+    chk("ui_scale", "Scale everything with it", { nest: true }),
+    num("dial_hole", "Centre hole", 0, 6, 0.1),      // Ø; 0 = none. Shows when the hands are hidden (#165)      // nest: a question about the row above starts on the controls' column (Okay, 12 Oct 2026)
     col("c_plate", "Plate"),
     custom("background"),
     hdr("Page", { pin: true }),                    // around the dial: preview and page only
@@ -473,7 +474,7 @@ function parse_number(text, current) {
   return Number.isFinite(out) ? out : current;
 }
 /** is this row a length (kept in mm, shown in the chosen unit)? Decided by its key, where the scale tick decides it too. */
-const LENGTH_KEYS = { ring: G.RING_MM, hand: G.HAND_MM, window: G.WINDOW_MM, global: ["dial_d", "margin", "ha_cap"] };
+const LENGTH_KEYS = { ring: G.RING_MM, hand: G.HAND_MM, window: G.WINDOW_MM, global: ["dial_d", "margin", "ha_cap", "dial_hole"] };
 /** a row's label: its own words, or, with a menu beside it, the chosen item's word before the last of its own
  *  ("Centre radius" → "Baseline radius"). */
 const label_of = (row, T) => (row.menu ? `${(row.menu.items.find(([v]) => v === (T[row.menu.key] ?? 0)) || row.menu.items[0])[1]} ${row.text.split(" ").pop()}` : row.text);

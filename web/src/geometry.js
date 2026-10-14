@@ -103,6 +103,7 @@ const FIRST_WINDOW = { on: "da_on", kind: "da_kind", at: "da_at", r: "da_r", w: 
 export const DEFAULTS = {
   version: 2,
   dial_d: 30.0, margin: 3.0, guides: true,
+  dial_hole: 2.7,                                  // the centre hole's Ø (#165, 14 Oct 2026; web only, R30); 0 = none. Okay waived R31 for it: old links get the hole too
   c_plate: [0.93, 0.91, 0.86, 1], c_backdrop: [0.80, 0.80, 0.78, 1],
   rings: [],
   ha_on: true, ha_beat: 0, ha_cap: 1.6, c_cap: ACCENT, ha_hour: {}, ha_minute: {}, ha_second: {},
@@ -1191,7 +1192,13 @@ export function build_static(S) {
   const cut = windows.length === 0 ? null : windows.length === 1 ? windows[0].clear : merge(windows.map((x) => x.clear)).removeOverlap();
   let plate = circle(S.dial_d);
   for (const x of windows) plate = plate.difference(x.window);
-  return { plate, rings: build_rings(S, cut), windows, date: windows[0] || null };
+  // the centre hole (#165): cut in the plate; the hands' pipes fill it, so it shows only while the hands are hidden
+  // (Okay, 14 Oct 2026: "if we hide hands it will show"). hole: the opening · plate_holed: the plate with it cut ·
+  // hole_line: its outline for a production mask, as a window's cutline
+  const d = S.dial_hole > 0 ? min(S.dial_hole, S.dial_d) : 0;
+  const hole = d > 0 ? circle(d) : null;
+  return { plate, plate_holed: hole ? plate.difference(hole) : plate, hole, hole_line: hole ? circle(d + 0.1).difference(hole) : null,
+    rings: build_rings(S, cut), windows, date: windows[0] || null };
 }
 
 // ── hands ────────────────────────────────────────────────────
@@ -1285,12 +1292,13 @@ export function scene(S, statik, t, preview = true, selected = null) {
       add("date frame", x.frame, black, { window: x.index });
       add("cutline", x.cutline, black, { window: x.index });
     }
+    if (statik.hole_line) add("hole", statik.hole_line, black);
   } else {
     for (const x of windows) {                     // what shows through each hole, on white
       add("date disc", x.window, x.w.disc_c || [1, 1, 1, 1], { window: x.index });
       add("date number", x.number, x.w.text_c || x.w.ink, { window: x.index });
     }
-    add("plate", statik.plate, S.c_plate);
+    add("plate", S.ha_on ? statik.plate : statik.plate_holed, S.c_plate);      // the hole shows when the hands are hidden
     for (const d of rings) {
       if (d.tints) d.tints.forEach((tint, n) => add("ring", tint.path, sector_colour(d.ring, tint.at), { ring: d, index: index(d), part: n + 1 }));
       else add("ring", d.path, d.ring.c, { ring: d, index: index(d) });
