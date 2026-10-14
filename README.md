@@ -1,7 +1,7 @@
 # Dial Tool
 
-A parametric watch-dial design tool that runs inside [DrawBot](https://www.drawbot.com) on macOS.
-Built to explore, present and produce dials for a watch Okay will actually build.
+A parametric watch-dial design tool that runs on the web.
+Built to explore, present and produce watch dials.
 
 **Status: beta 2.2 (4 Oct 2026)** — rings, on `main` and `dev`. **Start here: [`docs/Dial-Tool-guide.pdf`](docs/Dial-Tool-guide.pdf)** — the 5-page guidebook.
 Geometry is tested off-Mac with `tools/test_harness.py`; the interface runs off-Mac in
