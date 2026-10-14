@@ -83,10 +83,10 @@
     --head: 40px;                                  /* a pane's heading */
     --header: 64px;                                /* the panel's top: title and Guides */
     --bar-height: 62px; --bar-control: 30px;      /* a fifth higher than it was, 52 (Okay, 14 Oct 2026, 23:19: "1/5 higher"); a phone keeps its own (--bar-lead-narrow) */
+    --bar-light: #BFBFBF;                          /* the one light tone on the bottom bar: 25 % grey; nothing on the bar is white (Okay, 15 Oct 2026, 00:18: "NOTHING ON THIS WHOLE BAR IS WHITE… EQUALIZE LIGHT TONES IN 25% GRAY") */
     --play: #CC381A; --play-dark: #7A1E0C; --play-light: #F28A6C;      /* the play button, an arcade button from above: its cap (the seconds hand's red, geometry.js ACCENT), the shade round it and under it, the light on it (Okay, 14 Oct 2026: "3 colors and a black outline") */
-    --speed-word: 30px; --speed-thumb: 14px; --speed-ball: 6px;      /* how fast: the room for its words ("720×"), its thumb, the ball on its track at 1× */
+    --speed-thumb: 14px; --speed-ball: 6px;        /* how fast: its thumb; the ball on its track at 1× and the knobs at its ends */
     --t-time: 17px;                                /* the time in the bar: larger than --t-l (Okay, 14 Oct 2026, 23:55: "larger digital time"); R32 lists it */
-    --t-times: 15px;                               /* the × after a speed: the mono face draws it small beside its figures (Okay: "X might need to grow — check"); R32 lists it */
     --time-chars: 8ch;                             /* the time's field: "10:09:36", eight characters of the mono face */
     --day-wide: 518px;                             /* the day slider at its widest: as wide as on an iPad (1180 wide), so a big screen doesn't stretch it (Okay, 23:19) */
     --tile: 50px;                                  /* a picture tile's least height */
@@ -947,20 +947,15 @@
      the panel's square left, #190) — quiet, so they don't shout under the panel, but for the time, which sings.
      Under the preview: the day slider with its steps, no wider than on an iPad, then the view: how to zoom · − + 1 ·
      Fit 1, at the right. (Okay, 14 Oct 2026, 23:19 and 23:26, build list #190) */
-  .bar { grid-column: 1 / -1; display: flex; align-items: stretch; height: var(--bar-height); padding-right: var(--margin); background: var(--bar); color: var(--bar-ink); border-top: var(--hair) solid var(--bar-rule); }
+  .bar { grid-column: 1 / -1; display: flex; align-items: stretch; height: var(--bar-height); padding-right: var(--margin); background: var(--bar); color: var(--bar-light); border-top: var(--hair) solid var(--bar-rule); }
   .bar .lead { flex: none; align-items: center; width: var(--panel); padding: 0 var(--margin); }
   .bar .group { display: flex; align-items: center; gap: var(--gap); padding: 0 var(--gap); border-left: var(--hair) solid var(--bar-rule); }
-  .bar :is(.lead, .viewing) button, .bar .time { height: var(--bar-control); border: var(--hair) solid var(--bar-rule); background: var(--bar-field); color: var(--bar-ink); }
-  .bar :is(.lead, .viewing) button:hover { background: var(--bar-hover); border-color: var(--bar-ink); }
-  .bar :is(.lead, .viewing) button:active, .bar .viewing .segs > button.on { background: var(--bar-ink); color: var(--bar); border-color: var(--bar-ink); }
-  .bar :is(button, input):focus-visible, .bar input[type="text"]:focus { outline-color: var(--bar-ink); }
+  .bar :is(.lead, .viewing) button, .bar .time { height: var(--bar-control); border: var(--hair) solid var(--bar-light); background: none; color: var(--bar-light); }
+  .bar :is(.lead, .viewing) button:hover { background: var(--bar-field); }
+  .bar :is(.lead, .viewing) button:active { background: var(--bar-light); color: var(--bar); }
+  .bar :is(button, input):focus-visible, .bar input[type="text"]:focus { outline-color: var(--bar-light); }
   .bar .icon { display: inline-flex; align-items: center; justify-content: center; }
   /* low contrast under the panel: no fills, thin light lines; what is chosen is a shade lighter */
-  .bar .lead :is(button, .time) { background: none; border-color: var(--bar-dim); }
-  .bar .lead :is(button, .time):hover { background: var(--bar-faint); border-color: var(--bar-edge); }
-  .bar .lead button:active { background: var(--bar-dim); color: var(--bar-ink); }
-  .bar .lead .segs > button.on { background: var(--bar-on); color: var(--white); border-color: var(--bar-dim); }
-  .bar .lead .segs > button + button { border-left: 0; }
   /* the bar's lower line is all monospace (Okay, 14 Oct 2026, 23:55: "All mono on the lower line") */
   .bar { font-family: var(--mono); }
   /* under the panel: play · how fast · the time and its half of the day · NOW, a half-gap between each (Okay: "equalize
@@ -974,46 +969,44 @@
   .bar .lead .play:is(:hover, :active) { background: none; }
   .bar .lead .play svg { display: block; }
   .play .arc-out { fill: var(--black); }
-  .play :is(.arc-base, .arc-lo) { fill: var(--play-dark); }
+  .play .arc-lo { fill: none; stroke: var(--play-dark); stroke-linecap: round; }
   .play .arc-cap { fill: var(--play); }
-  .play .arc-hi { fill: var(--play-light); }
-  .play .arc-hi.down { opacity: 0.6; }
+  .play .arc-hi { fill: none; stroke: var(--play-light); stroke-linecap: round; }
   .bar .lead .play:hover .arc-cap { fill: color-mix(in srgb, var(--play) 88%, var(--play-light)); }
-  /* how fast: a box with the speed in words, then its track — a hairline with one ball on it, at 1×, and "1×" over
+  /* how fast: a box with its track — a black line with a knob at each end and one ball on it, at 1×, and "1×" over
      the ball, outside the box, in the middle of the room between the box and the bar's top, at the hours' size
      (Okay: "Remove the humps but the one at 1x. Hump=ball in the middle of the line. Put 1x above the dot centered
      in the remaining gap outside the box in ruler number's font size"). --at: how far along the track, 0 to 1; the
      thumb's half-width at each end, so the ball is under the thumb's centre at 1×. */
-  .bar .lead .speeds { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--u2); height: var(--bar-control); padding: 0 var(--u3); border: var(--hair) solid var(--bar-dim); }
-  .bar .speedword { flex: none; min-width: var(--speed-word); font-size: var(--t-s); color: var(--bar-quiet); }
-  .bar .speedword .times { font-size: var(--t-times); }      /* the × of the mono face is small beside its figures: drawn larger (Okay: "X might need to grow") */
-  .bar .speeds.real .speedword { color: var(--bar-ink); }
+  .bar .lead .speeds { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--u2); height: var(--bar-control); padding: 0 var(--u3); border: var(--hair) solid var(--bar-light); }
   .bar .speedtrack { position: relative; flex: 1; min-width: 0; height: 100%; }
   .bar .humps { position: absolute; inset: 0 calc(var(--speed-thumb) / 2); pointer-events: none; }
-  .bar .humps::before { content: ""; position: absolute; left: calc(var(--speed-thumb) / -2); right: calc(var(--speed-thumb) / -2); top: 50%; border-top: var(--hair) solid var(--bar-edge); }
-  .bar .hump { position: absolute; left: calc(var(--at) * 100%); top: 50%; width: var(--speed-ball); height: var(--speed-ball); translate: -50% -50%; border-radius: 50%; background: var(--bar-ink); }
-  .bar .humpname { position: absolute; left: calc(var(--at) * 100%); bottom: calc(100% + var(--hair)); height: calc((var(--bar-height) - var(--bar-control)) / 2); translate: -50% 0; line-height: calc((var(--bar-height) - var(--bar-control)) / 2); font-size: var(--t-xs); color: var(--bar-quiet); white-space: nowrap; }
+  .bar .humps::before { content: ""; position: absolute; left: calc(var(--speed-thumb) / -2); right: calc(var(--speed-thumb) / -2); top: 50%; border-top: var(--hair) solid var(--black); }
+  .bar .hump { position: absolute; left: calc(var(--at) * 100%); top: 50%; width: var(--speed-ball); height: var(--speed-ball); translate: -50% -50%; border-radius: 50%; background: var(--bar-light); }
+  .bar .humpname { position: absolute; left: calc(var(--at) * 100%); bottom: calc(100% + var(--hair)); height: calc((var(--bar-height) - var(--bar-control)) / 2); translate: -50% 0; line-height: calc((var(--bar-height) - var(--bar-control)) / 2); font-family: var(--pixel); font-size: var(--t-pixel); color: var(--bar-light); white-space: nowrap; }      /* "1×" in Silkscreen at 8, the ball's colour (Okay, 15 Oct 2026, 00:18) — not at --pixel-ink: he asked for the ball's colour (R32 notes it) */
+  .bar .knob { position: absolute; top: 50%; width: var(--speed-ball); height: var(--speed-ball); translate: -50% -50%; border-radius: 50%; background: var(--black); }      /* the black line's two ends, a knob each (Okay: "time speed line in black, has a beginning and end knob") */
+  .bar .knob.first { left: calc(var(--speed-thumb) / -2); }
+  .bar .knob.last { left: calc(100% + var(--speed-thumb) / 2); }
   .bar .speedtrack input[type="range"] { position: absolute; inset: 0; height: 100%; }
   .bar .speedtrack input[type="range"]::-webkit-slider-runnable-track { height: 100%; background: none; }
-  .bar .speedtrack input[type="range"]::-webkit-slider-thumb { width: var(--speed-thumb); height: var(--speed-thumb); margin-top: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2); background: var(--bar-ink); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  .bar .speedtrack input[type="range"]::-webkit-slider-thumb { width: var(--speed-thumb); height: var(--speed-thumb); margin-top: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2); background: var(--bar-light); box-shadow: 0 0 0 var(--thick) var(--bar); }
   .bar .speedtrack input[type="range"]::-moz-range-track { height: 100%; background: none; }
   .bar .speedtrack input[type="range"]::-moz-range-progress { background: none; }
-  .bar .speedtrack input[type="range"]::-moz-range-thumb { width: var(--speed-thumb); height: var(--speed-thumb); background: var(--bar-ink); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  .bar .speedtrack input[type="range"]::-moz-range-thumb { width: var(--speed-thumb); height: var(--speed-thumb); background: var(--bar-light); box-shadow: 0 0 0 var(--thick) var(--bar); }
   /* the time sings: large, regular weight, bright, centred on its ink (app.js measures it with every figure a 0, so
      it stands still), more room left and right than the other boxes. Its AM · PM window touches it, one colour always
      (Okay: "Pm window touches the time"; "Am/pm does not change color"). */
   .bar .timebox { display: flex; }
-  .bar .timewell { display: grid; height: var(--bar-control); padding: 0 var(--u4); overflow: hidden; border: var(--hair) solid var(--bar-edge); }
-  .bar .timewell:hover { border-color: var(--bar-ink); }
-  .bar .lead .timewell .time { width: var(--time-chars); height: 100%; padding: 0; border: 0; background: none; font-size: var(--t-time); font-weight: 400; letter-spacing: 0; color: var(--white); translate: var(--ink-dx, 0) var(--ink-dy, 0); }
-  .bar .lead .timebox .half { height: var(--bar-control); padding: 0 var(--u3); border-left: 0; font-size: var(--t-s); background: var(--bar-ink); color: var(--bar); border-color: var(--bar-ink); }
-  .bar .lead .timebox .half:hover { background: var(--white); border-color: var(--white); }
+  .bar .timewell { display: grid; height: var(--bar-control); padding: 0 var(--u4); overflow: hidden; border: var(--hair) solid var(--bar-light); }
+  .bar .timewell:hover { background: var(--bar-field); }
+  .bar .lead .timewell .time { width: var(--time-chars); height: 100%; padding: 0; border: 0; background: none; font-size: var(--t-time); font-weight: 400; letter-spacing: 0; color: var(--bar-light); translate: var(--ink-dx, 0) var(--ink-dy, 0); }
+  .bar .lead .timebox .half { height: var(--bar-control); padding: 0 var(--u3); border-left: 0; font-size: var(--t-s); background: none; color: var(--bar-light); border-color: var(--bar-light); }      /* a frame, never filled (Okay, 15 Oct 2026, 00:18) */
   /* NOW: capitals, at AM · PM's size (Okay: "Now uppercase and in pm's font size which grows 1px") */
   .bar .lead #now { padding: 0 var(--u3); font-size: var(--t-s); text-transform: uppercase; }
   .bar .time { width: 100%; text-align: center; }
   .bar .viewing { margin-left: auto; padding-right: 0; }      /* at the right; the room the day slider doesn't take lies before it */
   /* how to zoom: words and a faint magnifier, nothing to press. A pointer zooms with ⌘ + scroll, a finger pinches */
-  .bar .zoomhint { display: flex; align-items: center; gap: var(--u2); white-space: nowrap; font-size: var(--t-s); color: var(--bar-quiet); }
+  .bar .zoomhint { display: flex; align-items: center; gap: var(--u2); white-space: nowrap; font-size: var(--t-s); color: var(--bar-light); }
   .bar .zoomhint svg { opacity: var(--faint); }
   .bar .zoomhint .finger { display: none; }
   @media (hover: none) { .bar .zoomhint .pointer { display: none; } .bar .zoomhint .finger { display: inline; } }
@@ -1026,7 +1019,7 @@
   /* the day slider is a ruler: a line, cuts crossing it (drawn in draw_ruler, finer on a wider window), and a line
      for a handle. Nothing is filled in behind the handle: the past is not a quantity. */
   .bar .day { position: relative; flex: 1; min-width: 0; max-width: calc(var(--day-wide) + 2 * var(--u8)); display: grid; grid-template-rows: var(--ruler) var(--names); align-content: center; gap: 0; padding: 0 var(--u8); }
-  .ruler { grid-area: 1 / 1; display: block; width: 100%; height: var(--ruler); pointer-events: none; fill: none; stroke: var(--bar-ink); stroke-width: 1; shape-rendering: crispEdges; }
+  .ruler { grid-area: 1 / 1; display: block; width: 100%; height: var(--ruler); pointer-events: none; fill: none; stroke: var(--bar-light); stroke-width: 1; shape-rendering: crispEdges; }
   .ruler .line { opacity: 0.4; }
   .ruler .hour { opacity: 0.85; }
   .ruler .half { opacity: 0.6; }
@@ -1034,20 +1027,20 @@
   .ruler .pose { opacity: 0; }
   .bar .day input[type="range"] { grid-area: 1 / 1; height: var(--ruler); cursor: ew-resize; }
   .bar .day input[type="range"]::-webkit-slider-runnable-track { height: var(--ruler); border-radius: 0; background: none; }
-  .bar .day input[type="range"]::-webkit-slider-thumb { width: var(--handle); height: var(--ruler); margin-top: 0; border-radius: 0; background: var(--white); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  .bar .day input[type="range"]::-webkit-slider-thumb { width: var(--handle); height: var(--ruler); margin-top: 0; border-radius: 0; background: var(--bar-light); box-shadow: 0 0 0 var(--thick) var(--bar); }
   .bar .day input[type="range"]::-moz-range-track { height: var(--ruler); background: none; }
   .bar .day input[type="range"]::-moz-range-progress { background: none; }
-  .bar .day input[type="range"]::-moz-range-thumb { width: var(--handle); height: var(--ruler); border-radius: 0; background: var(--white); box-shadow: 0 0 0 var(--thick) var(--bar); }
-  .bar .day input[type="range"]:focus-visible { outline: var(--thick) solid var(--bar-ink); }
+  .bar .day input[type="range"]::-moz-range-thumb { width: var(--handle); height: var(--ruler); border-radius: 0; background: var(--bar-light); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  .bar .day input[type="range"]:focus-visible { outline: var(--thick) solid var(--bar-light); }
   /* the steps' names: --at = how far along the day (0 to 1); the side margins keep them on the handle's path */
   .steps12 { position: relative; height: var(--names); margin: 0 calc(var(--handle) / 2); }
-  .steps12 button { position: absolute; left: calc(var(--at) * 100%); top: 0; transform: translateX(-50%); min-width: var(--names); height: var(--names); padding: 0 var(--u1); font-size: var(--t-xs); line-height: var(--names); color: var(--bar-quiet); }
-  .steps12 button:hover { color: var(--white); text-decoration: underline; }
-  .steps12 button.on { color: var(--white); font-weight: 700; }
+  .steps12 button { position: absolute; left: calc(var(--at) * 100%); top: 0; transform: translateX(-50%); min-width: var(--names); height: var(--names); padding: 0 var(--u1); font-size: var(--t-xs); line-height: var(--names); color: var(--bar-light); }
+  .steps12 button:hover { text-decoration: underline; }
+  .steps12 button.on { font-weight: 700; }
   /* 10:10 stands on the preview, over the bar and clear of the ruler, above its place in the day */
   .steps12 button.special { top: auto; bottom: calc((var(--bar-height) + var(--hair) + var(--ruler) + var(--names)) / 2 + var(--unit));      /* from the hours' foot up to the bar's top line (ruler and hours stand in the bar's middle), and one unit more */
-    z-index: 1; padding: 0 var(--unit); border-radius: calc(var(--names) / 2); background: var(--bar-ink); color: var(--bar); font-weight: 600; }
-  .steps12 button.special:hover { background: var(--white); color: var(--black); text-decoration: none; }
+    z-index: 1; padding: 0 var(--unit); border-radius: calc(var(--names) / 2); background: var(--bar-light); color: var(--bar); font-weight: 600; }
+  .steps12 button.special:hover { text-decoration: underline; }
 }
 
 @layer narrow {
@@ -7405,7 +7398,14 @@ var TOOL_ICONS = {
   // between them (the slash group, and the mask that cuts). The stylesheet shows one state's parts (6-preview.css).
   guides: `<mask id="guides-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18"><rect width="18" height="18" fill="white"/><path class="slash" d="M2.75 15.75L15.75 2.75" stroke="black" stroke-width="2.5" stroke-linecap="butt"/></mask><g ${sw(DENSE)}><g mask="url(#guides-cut)"><circle cx="9.25" cy="9.25" r="5.5"/><circle class="core-off" cx="9.25" cy="9.25" r="2"/><path d="M9.25 1.25V5.75M9.25 12.75V17.25M1.25 9.25H5.75M12.75 9.25H17.25"/></g><circle class="core-on" cx="9.25" cy="9.25" r="2" stroke-dasharray="1.25 0.844" stroke-linecap="butt" transform="rotate(-107.9 9.25 9.25)"/><path class="slash" d="M1.87 14.87L14.87 1.87M3.63 16.63L16.63 3.63"/></g>`
 };
-var ARCADE = (down) => `<svg viewBox="0 0 32 32" width="32" height="32" aria-hidden="true"><circle class="arc-out" cx="16" cy="16" r="16"/><circle class="arc-base" cx="16" cy="16" r="15"/><circle class="arc-cap" cx="16" cy="${down ? 16 : 15}" r="${down ? 11.5 : 12}"/><rect class="arc-hi${down ? " down" : ""}" x="8.5" y="${down ? 9 : 8}" width="8" height="3" rx="1.5" transform="rotate(-38 12.5 ${down ? 10.5 : 9.5})"/>` + (down ? "" : `<rect class="arc-lo" x="13" y="21.25" width="9" height="2.5" rx="1.25" transform="rotate(-22 17.5 22.5)"/>`) + `</svg>`;
+var ARCADE = (down) => {
+  const RING = 3, R = 16, mid = 8.5, arc2 = (from, to) => {
+    const p = (a) => `${(16 + mid * Math.cos(a * Math.PI / 180)).toFixed(3)} ${(16 + mid * Math.sin(a * Math.PI / 180)).toFixed(3)}`;
+    return `M${p(from)}A${mid} ${mid} 0 0 1 ${p(to)}`;
+  };
+  const [light, dark] = down ? [arc2(15, 135), arc2(195, 315)] : [arc2(195, 315), arc2(15, 135)];
+  return `<svg viewBox="0 0 32 32" width="32" height="32" aria-hidden="true"><circle class="arc-out" cx="16" cy="16" r="${R}"/><circle class="arc-cap" cx="16" cy="16" r="${R - RING}"/><path class="arc-hi" d="${light}" stroke-width="${RING}"/><path class="arc-lo" d="${dark}" stroke-width="${RING}"/></svg>`;
+};
 var card_pic = (angle, on) => {
   const a = angle * Math.PI / 180, s = Math.sin(a), c = -Math.cos(a), hw = 4, hh = 3.25;
   const r = RIM_IN - 4 - (hw * Math.abs(s) + hh * Math.abs(c));
@@ -7979,14 +7979,13 @@ var DialTool = class _DialTool {
       if (near2) k = near2;
       this.set_speed(k);
     };
-    this.speed_word = el("span", { className: "speedword", id: "speed-word" });
-    const humps = el("span", { className: "humps", ariaHidden: "true" });
+    const humps = el("span", { className: "humps", ariaHidden: "true" }, el("i", { className: "knob first" }), el("i", { className: "knob last" }));
     for (const h of SPEED_HUMPS) {
-      const ball = el("i", { className: "hump" }), name = el("span", { className: "humpname" }, String(h), el("span", { className: "times", textContent: "\xD7" }));
+      const ball = el("i", { className: "hump" }), name = el("span", { className: "humpname", textContent: h + "\xD7" });
       for (const x of [ball, name]) x.style.setProperty("--at", speed_place(h).toFixed(4));
       humps.append(ball, name);
     }
-    this.speeds = el("span", { className: "speeds" }, this.speed_word, el("span", { className: "speedtrack" }, humps, this.speed_slider));
+    this.speeds = el("span", { className: "speeds" }, el("span", { className: "speedtrack" }, humps, this.speed_slider));
     const view = (id, title, inside, act) => {
       const b = el("button", { type: "button", className: "icon", id, title, ariaLabel: title, onclick: act });
       b.innerHTML = icon(inside);
@@ -10972,7 +10971,8 @@ var DialTool = class _DialTool {
     if (this.playing) this.play_from = [performance.now(), this.S.t];
     const p = Math.round(speed_place(k) * 1e3);
     if (document.activeElement !== this.speed_slider || Math.abs(+this.speed_slider.value - p) > 1e3 * SPEED_SNAP) this.speed_slider.value = p;
-    this.speed_word.replaceChildren(speed_word(k), el("span", { className: "times", textContent: "\xD7" }));
+    this.speed_slider.setAttribute("aria-valuetext", speed_word(k) + "\xD7");
+    this.speed_slider.title = `How fast time runs: ${speed_word(k)}\xD7 (0.5\xD7 to 720\xD7)`;
     this.speeds.classList.toggle("real", k === 1);
   }
   play(on) {
