@@ -21,7 +21,8 @@
 const INKED = [
   ".atgrid button",          // a window's places: 3 · 6 · 9 · 12 · 1:30 … 10:30 · 4 · ···
   ".steps12 button",         // the bottom bar's hours and 10:10
-  "#ampm",                   // AM · PM in the time's box
+  "#ampm",                   // AM · PM, the time's own window
+  "#now",                    // NOW, beside it (Okay, 14 Oct 2026: "make sure the inner type is centered with equal padding within buttons")
   "#unit",                   // mm · pt · in · lig
 ].join(", ");
 

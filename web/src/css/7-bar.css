@@ -5,7 +5,7 @@
      Under the preview: the day slider with its steps, no wider than on an iPad, then the view: how to zoom · − + 1 ·
      Fit 1, at the right. (Okay, 14 Oct 2026, 23:19 and 23:26, build list #190) */
   .bar { grid-column: 1 / -1; display: flex; align-items: stretch; height: var(--bar-height); padding-right: var(--margin); background: var(--bar); color: var(--bar-ink); border-top: var(--hair) solid var(--bar-rule); }
-  .bar .lead { flex: none; display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; width: var(--panel); padding: 0 var(--margin); }
+  .bar .lead { flex: none; align-items: center; width: var(--panel); padding: 0 var(--margin); }
   .bar .group { display: flex; align-items: center; gap: var(--gap); padding: 0 var(--gap); border-left: var(--hair) solid var(--bar-rule); }
   .bar :is(.lead, .viewing) button, .bar .time { height: var(--bar-control); border: var(--hair) solid var(--bar-rule); background: var(--bar-field); color: var(--bar-ink); }
   .bar :is(.lead, .viewing) button:hover { background: var(--bar-hover); border-color: var(--bar-ink); }
@@ -18,38 +18,56 @@
   .bar .lead button:active { background: var(--bar-dim); color: var(--bar-ink); }
   .bar .lead .segs > button.on { background: var(--bar-on); color: var(--white); border-color: var(--bar-dim); }
   .bar .lead .segs > button + button { border-left: 0; }
-  /* play: a round red button that sets time running (Okay: "Play should be a round red button that turns on time") */
-  .bar .lead .play { grid-column: 2; justify-self: start; width: var(--control-large); height: var(--control-large); border: 0; border-radius: 50%; background: var(--play); color: var(--white); }
-  .bar .lead .play:hover { background: var(--play-hover); }
-  .bar .lead .play:active { background: var(--play); color: var(--white); }
-  .bar .speeds, .bar .timebox { grid-column: span 2; }
-  /* how fast: a box with the speed in words, then its track — a hairline with humps at 1× (larger), 6×, 60×, 720×
-     (--at: how far along the track, 0 to 1; the thumb's half-width at each end, so a hump sits under the thumb's
-     centre when the speed is that one). The thumb is a plain light disc: nothing written on it. */
-  .bar .speeds { display: flex; align-items: center; gap: var(--u2); height: var(--bar-control); padding: 0 var(--u2); border: var(--hair) solid var(--bar-dim); }
-  .bar .speedword { flex: none; min-width: var(--speed-word); font-family: var(--mono); font-size: var(--t-s); color: var(--bar-quiet); }
+  /* the bar's lower line is all monospace (Okay, 14 Oct 2026, 23:55: "All mono on the lower line") */
+  .bar { font-family: var(--mono); }
+  /* under the panel: play · how fast · the time and its half of the day · NOW, a half-gap between each (Okay: "equalize
+     all paddings red dot to now, then halve them"), from the first of the six columns to the last. Each box is as wide
+     as its words and the same room on either side of them; how fast takes what is left ("slider can grow"). */
+  .bar .lead { display: flex; gap: var(--u2); padding-left: calc(var(--margin) + var(--lead)); }
+  .bar .lead > * { flex: none; }
+  /* play: a round red arcade button seen from above (Okay: "imitate a arcade button, top view… 3 colors and a black
+     outline"), drawn in app.js (ARCADE); no sign on it. While time runs it is pressed in. */
+  .bar .lead .play { width: var(--control-large); height: var(--control-large); padding: 0; border: 0; border-radius: 50%; background: none; }
+  .bar .lead .play:is(:hover, :active) { background: none; }
+  .bar .lead .play svg { display: block; }
+  .play .arc-out { fill: var(--black); }
+  .play :is(.arc-base, .arc-lo) { fill: var(--play-dark); }
+  .play .arc-cap { fill: var(--play); }
+  .play .arc-hi { fill: var(--play-light); }
+  .play .arc-hi.down { opacity: 0.6; }
+  .bar .lead .play:hover .arc-cap { fill: color-mix(in srgb, var(--play) 88%, var(--play-light)); }
+  /* how fast: a box with the speed in words, then its track — a hairline with one ball on it, at 1×, and "1×" over
+     the ball, outside the box, in the middle of the room between the box and the bar's top, at the hours' size
+     (Okay: "Remove the humps but the one at 1x. Hump=ball in the middle of the line. Put 1x above the dot centered
+     in the remaining gap outside the box in ruler number's font size"). --at: how far along the track, 0 to 1; the
+     thumb's half-width at each end, so the ball is under the thumb's centre at 1×. */
+  .bar .lead .speeds { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--u2); height: var(--bar-control); padding: 0 var(--u3); border: var(--hair) solid var(--bar-dim); }
+  .bar .speedword { flex: none; min-width: var(--speed-word); font-size: var(--t-s); color: var(--bar-quiet); }
+  .bar .speedword .times { font-size: var(--t-times); }      /* the × of the mono face is small beside its figures: drawn larger (Okay: "X might need to grow") */
   .bar .speeds.real .speedword { color: var(--bar-ink); }
   .bar .speedtrack { position: relative; flex: 1; min-width: 0; height: 100%; }
   .bar .humps { position: absolute; inset: 0 calc(var(--speed-thumb) / 2); pointer-events: none; }
   .bar .humps::before { content: ""; position: absolute; left: calc(var(--speed-thumb) / -2); right: calc(var(--speed-thumb) / -2); top: 50%; border-top: var(--hair) solid var(--bar-edge); }
-  .bar .hump { position: absolute; left: calc(var(--at) * 100%); top: 50%; width: var(--hump); height: calc(var(--hump) / 2); translate: -50% -100%; border-radius: var(--hump) var(--hump) 0 0; background: var(--bar-edge); }
-  .bar .hump.big { width: var(--hump-big); height: calc(var(--hump-big) / 2); border-radius: var(--hump-big) var(--hump-big) 0 0; background: var(--bar-ink); }
+  .bar .hump { position: absolute; left: calc(var(--at) * 100%); top: 50%; width: var(--speed-ball); height: var(--speed-ball); translate: -50% -50%; border-radius: 50%; background: var(--bar-ink); }
+  .bar .humpname { position: absolute; left: calc(var(--at) * 100%); bottom: calc(100% + var(--hair)); height: calc((var(--bar-height) - var(--bar-control)) / 2); translate: -50% 0; line-height: calc((var(--bar-height) - var(--bar-control)) / 2); font-size: var(--t-xs); color: var(--bar-quiet); white-space: nowrap; }
   .bar .speedtrack input[type="range"] { position: absolute; inset: 0; height: 100%; }
   .bar .speedtrack input[type="range"]::-webkit-slider-runnable-track { height: 100%; background: none; }
   .bar .speedtrack input[type="range"]::-webkit-slider-thumb { width: var(--speed-thumb); height: var(--speed-thumb); margin-top: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2); background: var(--bar-ink); box-shadow: 0 0 0 var(--thick) var(--bar); }
   .bar .speedtrack input[type="range"]::-moz-range-track { height: 100%; background: none; }
   .bar .speedtrack input[type="range"]::-moz-range-progress { background: none; }
   .bar .speedtrack input[type="range"]::-moz-range-thumb { width: var(--speed-thumb); height: var(--speed-thumb); background: var(--bar-ink); box-shadow: 0 0 0 var(--thick) var(--bar); }
-  /* the time sings: larger, monospace, bright, centred on its ink (app.js measures it, every figure a 0, so it
-     stands still). Beside it its own window for the half of the day: AM light, PM dark; one word, the other gone. */
-  .bar .timebox { display: flex; gap: var(--u1); }
-  .bar .timewell { flex: 1; min-width: 0; display: grid; height: var(--bar-control); overflow: hidden; border: var(--hair) solid var(--bar-edge); }
+  /* the time sings: large, regular weight, bright, centred on its ink (app.js measures it with every figure a 0, so
+     it stands still), more room left and right than the other boxes. Its AM · PM window touches it, one colour always
+     (Okay: "Pm window touches the time"; "Am/pm does not change color"). */
+  .bar .timebox { display: flex; }
+  .bar .timewell { display: grid; height: var(--bar-control); padding: 0 var(--u4); overflow: hidden; border: var(--hair) solid var(--bar-edge); }
   .bar .timewell:hover { border-color: var(--bar-ink); }
-  .bar .lead .timewell .time { height: 100%; padding: 0; border: 0; background: none; font-family: var(--mono); font-size: var(--t-l); font-weight: 600; color: var(--white); translate: var(--ink-dx, 0) var(--ink-dy, 0); }
-  .bar .lead .timebox .half { flex: none; width: var(--half); padding: 0; font-family: var(--mono); font-size: var(--t-xs); background: var(--bar-ink); color: var(--bar); border-color: var(--bar-ink); }
-  .bar .lead .timebox .half.pm { background: var(--black); color: var(--bar-ink); border-color: var(--bar-edge); }
-  .bar .lead .timebox .half:hover { border-color: var(--white); }
-  .bar .time { width: 100%; text-align: center; font-weight: 600; letter-spacing: 0.02em; }
+  .bar .lead .timewell .time { width: var(--time-chars); height: 100%; padding: 0; border: 0; background: none; font-size: var(--t-time); font-weight: 400; letter-spacing: 0; color: var(--white); translate: var(--ink-dx, 0) var(--ink-dy, 0); }
+  .bar .lead .timebox .half { height: var(--bar-control); padding: 0 var(--u3); border-left: 0; font-size: var(--t-s); background: var(--bar-ink); color: var(--bar); border-color: var(--bar-ink); }
+  .bar .lead .timebox .half:hover { background: var(--white); border-color: var(--white); }
+  /* NOW: capitals, at AM · PM's size (Okay: "Now uppercase and in pm's font size which grows 1px") */
+  .bar .lead #now { padding: 0 var(--u3); font-size: var(--t-s); text-transform: uppercase; }
+  .bar .time { width: 100%; text-align: center; }
   .bar .viewing { margin-left: auto; padding-right: 0; }      /* at the right; the room the day slider doesn't take lies before it */
   /* how to zoom: words and a faint magnifier, nothing to press. A pointer zooms with ⌘ + scroll, a finger pinches */
   .bar .zoomhint { display: flex; align-items: center; gap: var(--u2); white-space: nowrap; font-size: var(--t-s); color: var(--bar-quiet); }

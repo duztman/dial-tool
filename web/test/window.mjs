@@ -1067,12 +1067,16 @@ check(t1 - t0 > 0.4 && t1 - t0 < 1.5, `Play moves the time (${(t1 - t0).toFixed(
 // how fast: a slider on a log scale; near a hump (1×, 6×, 60×, 720×) it snaps onto it
 const at_speed = async (k) => page.$eval("#speed", (e, k) => { e.value = Math.round(Math.log(k / 0.5) / Math.log(1440) * 1000) + 8; e.dispatchEvent(new Event("input", { bubbles: true })); }, k);
 await at_speed(60);
-check(await S("t.speed === 60") && await page.textContent("#speed-word") === "60×", "the speed slider snaps onto 60× near its hump, and says so beside the track");
+const near60 = await S("t.speed");
+check(near60 > 55 && near60 < 70 && near60 !== 60 && /^\d+×$/.test(await page.textContent("#speed-word")), `the speed slider is free between its ends (${near60.toFixed(1)}× near 60), and says so beside the track`);
+await at_speed(1);
+check(await S("t.speed === 1") && await page.textContent("#speed-word") === "1×", "near its one ball, at 1×, it snaps onto it");
+await at_speed(60);
 await page.click("#play");
 await page.waitForTimeout(600);
 const t2 = await S("S.t");
 await page.click("#play");
-check(t2 - t1 > 24 && t2 - t1 < 90, `60×: a minute every second (${(t2 - t1).toFixed(0)} s in 0.6 s)`);
+check(t2 - t1 > 20 && t2 - t1 < 90, `about 60×: a minute every second (${(t2 - t1).toFixed(0)} s in 0.6 s)`);
 await page.$eval("#speed", (e) => { e.value = 0; e.dispatchEvent(new Event("input", { bubbles: true })); });
 check(await S("t.speed === 0.5") && await page.textContent("#speed-word") === "0.5×", "at its left end the slider is half speed");
 await at_speed(1);
@@ -1108,8 +1112,11 @@ check(under.play === under.col && under.now_right === under.row_right, `under th
 const pane_lines = await page.$$eval(".form .pane", (h) => h.filter((e) => e.offsetParent).map((e) => Math.round(e.getBoundingClientRect().left) + "/" + Math.round(e.querySelector(".eye svg").getBoundingClientRect().left)));
 check(pane_lines.length > 0 && pane_lines.every((x) => x === "24/26"), `a pane's line starts at the margin, over its eye, which stands 2 further in (${pane_lines[0]})`);
 // the bar keeps the columns: widths of one or two columns, and the Guides switch ends on the panel's last column
-const fits = await page.evaluate(() => { const w = (q) => Math.round(document.querySelector(q).getBoundingClientRect().width), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); return { play: w("#play"), speeds: w(".speeds"), time: w(".timebox"), now: w("#now"), zooms: w(".zooms"), fit: w("#fit") }; });
-check(fits.play === 32 && fits.now === 54 && fits.zooms === 54 && fits.fit === 54 && fits.speeds === 120 && fits.time === 120, `the bar fits the columns: a round play, then two, two and one (${JSON.stringify(fits)})`);
+const fits = await page.evaluate(() => { const w = (q) => Math.round(document.querySelector(q).getBoundingClientRect().width), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); const box = (q) => document.querySelector(q).getBoundingClientRect(), lead = document.querySelector(".bar .lead"), pad = parseFloat(getComputedStyle(lead).paddingRight);
+    const gaps = [["#play", ".speeds"], [".speeds", ".timewell"], ["#ampm", "#now"]].map(([a, b]) => +(box(b).left - box(a).right).toFixed(1));
+    return { play: w("#play"), zooms: w(".zooms"), fit: w("#fit"), gaps, touch: +(box("#ampm").left - box(".timewell").right).toFixed(1), end: Math.round(box(".bar .lead").right - pad - box("#now").right) }; });
+check(fits.play === 32 && fits.zooms === 54 && fits.fit === 54 && fits.gaps.every((g) => g === fits.gaps[0]) && fits.touch === 0 && fits.end === 0,
+  `under the panel: play · how fast · the time touching AM · PM · NOW, one equal gap between them, NOW ending on the panel's last column (${JSON.stringify(fits)})`);
 await shot("7b-bar");
 await page.fill("#time", "3:20:10");
 await page.press("#time", "Enter");

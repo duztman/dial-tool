@@ -209,7 +209,17 @@ const TOOL_ICONS = {
     + `<circle class="core-on" cx="9.25" cy="9.25" r="2" stroke-dasharray="1.25 0.844" stroke-linecap="butt" transform="rotate(-107.9 9.25 9.25)"/><path class="slash" d="M1.87 14.87L14.87 1.87M3.63 16.63L16.63 3.63"/></g>`,
 };
 // play and pause, filled, on 12: the triangle a half point right of the middle, so its weight (not its box) is centred
-const PLAY = { play: `<path d="M3.5 1.25L11 6L3.5 10.75Z"/>`, pause: `<rect x="2.5" y="1.5" width="2.5" height="9"/><rect x="7" y="1.5" width="2.5" height="9"/>` };
+// play: an arcade button seen from above, on 32 (Okay, 14 Oct 2026, 23:55: "Red dot loses play symbol, imitate a
+// arcade button, top view, add shadows and highlights in basic svg sausage shapes. 3 colors and a black outline").
+// A black disc (the outline), the dark ring of the housing, the red cap a point higher than its middle (lit from
+// above), a light sausage on its upper left, a dark one along its lower right. Pressed — time running — the cap sits
+// down in the middle, its light dimmer, its lower shade gone. Filled shapes only: no lines to weigh (R33 is for lines).
+const ARCADE = (down) => `<svg viewBox="0 0 32 32" width="32" height="32" aria-hidden="true">`
+  + `<circle class="arc-out" cx="16" cy="16" r="16"/><circle class="arc-base" cx="16" cy="16" r="15"/>`
+  + `<circle class="arc-cap" cx="16" cy="${down ? 16 : 15}" r="${down ? 11.5 : 12}"/>`
+  + `<rect class="arc-hi${down ? " down" : ""}" x="8.5" y="${down ? 9 : 8}" width="8" height="3" rx="1.5" transform="rotate(-38 12.5 ${down ? 10.5 : 9.5})"/>`
+  + (down ? "" : `<rect class="arc-lo" x="13" y="21.25" width="9" height="2.5" rx="1.25" transform="rotate(-22 17.5 22.5)"/>`)
+  + `</svg>`;
 // a window card: a small dial with the window where it is. The window keeps four points from the rim's inner edge at
 // every angle (as on the Windows tab; Okay, 13 Oct 2026, #149): its distance from the centre is found from its own
 // half-width and half-height in that direction. Its outline is LINE, its corners on quarter points.
@@ -468,9 +478,9 @@ const DAY_STEPS = [...Array.from({ length: 12 }, (_, h) => [h * 3600, String(h |
 // 6×, 60× and 720× (Okay, 14 Oct 2026, 23:26: "a regular sliding track with humps on it on 1 (larger), 6 then
 // logarithmicly up to 720"; "slightly slower is acceptable": it starts at 0.5×). Near a hump the slider snaps onto
 // it. The speed is written beside the track, not on its thumb, which a finger covers.
-const SPEED_LO = 0.5, SPEED_HI = 720, SPEED_HUMPS = [1, 6, 60, 720], SPEED_SNAP = 0.025;
+const SPEED_LO = 0.5, SPEED_HI = 720, SPEED_HUMPS = [1], SPEED_SNAP = 0.025;      // one ball now, at 1× (Okay, 14 Oct 2026, 23:55: "remove the humps but the one at 1x"); the slider snaps there only
 const speed_place = (k) => Math.log(k / SPEED_LO) / Math.log(SPEED_HI / SPEED_LO);      // a speed → 0 to 1 along the track
-const speed_word = (k) => (k >= 10 ? String(Math.round(k)) : String(+k.toFixed(1))) + "×";
+const speed_word = (k) => (k >= 10 ? String(Math.round(k)) : String(+k.toFixed(1)));      // the figures; the × follows in a span of its own, drawn larger
 const SECTIONS = Object.keys(ROWS);                // their numbers are what ui_section stores (R9)
 const TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];      // left to right. Guides is a switch on the preview (Okay, 12 Oct 2026)
 for (const name of SECTIONS) for (const row of ROWS[name]) row.scope ??= name === "Rings" ? "ring" : "global";
@@ -760,7 +770,11 @@ class DialTool {
     };
     this.speed_word = el("span", { className: "speedword", id: "speed-word" });
     const humps = el("span", { className: "humps", ariaHidden: "true" });
-    for (const h of SPEED_HUMPS) { const b = el("i", { className: h === 1 ? "hump big" : "hump" }); b.style.setProperty("--at", speed_place(h).toFixed(4)); humps.append(b); }
+    for (const h of SPEED_HUMPS) {
+      const ball = el("i", { className: "hump" }), name = el("span", { className: "humpname" }, String(h), el("span", { className: "times", textContent: "×" }));
+      for (const x of [ball, name]) x.style.setProperty("--at", speed_place(h).toFixed(4));
+      humps.append(ball, name);
+    }
     this.speeds = el("span", { className: "speeds" }, this.speed_word, el("span", { className: "speedtrack" }, humps, this.speed_slider));
     const view = (id, title, inside, act) => { const b = el("button", { type: "button", className: "icon", id, title, ariaLabel: title, onclick: act }); b.innerHTML = icon(inside); return b; };
     const middle = () => [this.svg.clientWidth / 2, this.svg.clientHeight / 2];
@@ -3234,7 +3248,6 @@ class DialTool {
     for (const b of document.querySelectorAll(".steps12 button")) b.classList.toggle("on", Math.abs(+b.dataset.t - t12) < 0.5);
     const word = this.half() ? "PM" : "AM";
     if (this.half_button.textContent !== word) this.half_button.textContent = word;
-    this.half_button.classList.toggle("pm", word === "PM");      // its window: light in the morning, dark in the afternoon
   }
 
   set_time(t) {
@@ -3271,7 +3284,7 @@ class DialTool {
     if (this.playing) this.play_from = [performance.now(), this.S.t];
     const p = Math.round(speed_place(k) * 1000);
     if (document.activeElement !== this.speed_slider || Math.abs(+this.speed_slider.value - p) > 1000 * SPEED_SNAP) this.speed_slider.value = p;
-    this.speed_word.textContent = speed_word(k);
+    this.speed_word.replaceChildren(speed_word(k), el("span", { className: "times", textContent: "×" }));
     this.speeds.classList.toggle("real", k === 1);
   }
 
@@ -3282,10 +3295,10 @@ class DialTool {
     this.render();
   }
 
-  /** the button shows what a press will do: a triangle to play, two bars to pause. */
+  /** the arcade button shows whether time runs: up, still; pressed in, running (ARCADE). Its name says what a press does. */
   play_icon() {
-    const shape = PLAY[this.playing ? "pause" : "play"];
-    this.play_button.innerHTML = `<svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" fill="currentColor">${shape}</svg>`;
+    this.play_button.innerHTML = ARCADE(this.playing);
+    this.play_button.setAttribute("aria-pressed", String(this.playing));
     this.play_button.title = this.play_button.ariaLabel = this.playing ? "Pause" : "Play";
   }
 

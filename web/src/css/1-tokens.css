@@ -51,9 +51,11 @@
     --head: 40px;                                  /* a pane's heading */
     --header: 64px;                                /* the panel's top: title and Guides */
     --bar-height: 62px; --bar-control: 30px;      /* a fifth higher than it was, 52 (Okay, 14 Oct 2026, 23:19: "1/5 higher"); a phone keeps its own (--bar-lead-narrow) */
-    --play: #CC381A; --play-hover: #E04A2B;        /* the round play button: the seconds hand's red (geometry.js ACCENT), a step lighter under the pointer */
-    --speed-word: 30px; --speed-thumb: 14px;       /* how fast: the room for its words ("720×"), its thumb */
-    --hump: 6px; --hump-big: 10px;                 /* the bumps on the speed's track, and the one at 1× */
+    --play: #CC381A; --play-dark: #7A1E0C; --play-light: #F28A6C;      /* the play button, an arcade button from above: its cap (the seconds hand's red, geometry.js ACCENT), the shade round it and under it, the light on it (Okay, 14 Oct 2026: "3 colors and a black outline") */
+    --speed-word: 30px; --speed-thumb: 14px; --speed-ball: 6px;      /* how fast: the room for its words ("720×"), its thumb, the ball on its track at 1× */
+    --t-time: 17px;                                /* the time in the bar: larger than --t-l (Okay, 14 Oct 2026, 23:55: "larger digital time"); R32 lists it */
+    --t-times: 15px;                               /* the × after a speed: the mono face draws it small beside its figures (Okay: "X might need to grow — check"); R32 lists it */
+    --time-chars: 8ch;                             /* the time's field: "10:09:36", eight characters of the mono face */
     --day-wide: 518px;                             /* the day slider at its widest: as wide as on an iPad (1180 wide), so a big screen doesn't stretch it (Okay, 23:19) */
     --tile: 50px;                                  /* a picture tile's least height */
     --frame-pad: 8px;                              /* inside a frame (a ring row, the font box): from its edge to what is in it, where a pane's row would have none */
@@ -123,7 +125,7 @@
     --scrollbar: var(--unit);                      /* a scrollbar drawn by the tool: slim */
     --sans: system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
     --pixel: "Silkscreen", ui-monospace, Menlo, monospace;      /* tiny numbers inside small drawings (a value button, the numerals picture): Silkscreen, packed into the page by build.mjs (SIL OFL) */
-    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;      /* only for what the tool says: the log, a link, a hex value, a feature's tag */
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;      /* only for what the tool says: the log, a link, a hex value, a feature's tag — and everything on the bottom bar (Okay, 14 Oct 2026, 23:55: "All mono on the lower line") */
   }
   @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --pop-width: 454px; --dot: 18px; --guide-dot: 14px; --guide-gap: 13px; --pop-field: 180px; --pop-hue: 32px; --knob: 28px; } }      /* a finger needs more to hold than a pointer */
 }
