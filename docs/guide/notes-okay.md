@@ -43,6 +43,11 @@
 - Labels next to each other must not read as one sentence: clear separation. [r4 03]
 - Use lines generously to annotate buttons; longer texts and more screenshots are fine, arranged homogeneously. [r3 06]
 
+- Highlights are outline shapes in the section's dark ink, well clear of what they ring (aim ~10 screen px; where the interface is denser, as much as it leaves, never touching a UI line); no grey washes. [r4 06, 19:52]
+- Labels over a picture share one baseline (bottom-aligned, pointing down); labels under it share one cap line (top-aligned, pointing up). The space round a picture is shared out evenly: above the labels = between labels and picture = under the picture. [r4 06, 19:52]
+- A line meets the text, not its bounding box: it ends just under (or over) the line of words it belongs to, somewhere inside the words (a quarter to three quarters along), never at a corner. Side labels: the line meets the first line at its x-height middle. Lines must be long enough to read as lines. [r4 06, 19:52]
+- Screenshot cards: rounded corners, a little more padding. [r4 06, 19:52]
+
 ## Cover (later)
 - Big type: tighter tracking/kerning; the title must not overlap the dial. A richer, aesthetic dial; Okay will guide. Etching is not the focus; ring building and design help are. [r1, r4 00]
 

@@ -58,6 +58,9 @@ a { color: inherit; text-decoration: underline; text-decoration-thickness: .15mm
 .lines circle { fill: var(--sig-ink); }
 .lines polyline.halo { stroke: #FFFFFF; stroke-opacity: .7; stroke-width: .5; }
 .lines circle.halo { fill: #FFFFFF; fill-opacity: .85; }  /* lines over a dark dial (r4 review: invisible on navy) */
+.lines .ring { fill: none; stroke: var(--sig-ink); stroke-width: .3; }
+.lines .ring.two { stroke-width: .6; }   /* masked to its outer half: one outline round two shapes */   /* a highlight: an outline round the group (Okay, 19:52) */
+.plabel { text-wrap: balance; }
 .lines rect.wash { fill: var(--sig-ink); fill-opacity: .16; stroke: none; }
 .lines rect.wash.light { fill: #FFFFFF; fill-opacity: .3; }
 .lines rect.dark { fill: none; stroke: var(--sig); stroke-width: .35; }

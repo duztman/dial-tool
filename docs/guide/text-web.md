@@ -174,24 +174,25 @@ A ring repeats one kind of thing round the centre.
 
 **Stacking order.** The list is the stacking order: the top ring is drawn last, over the ones below it. Hide a ring to see what it covers.
 
-**The ring drawer.** A selected ring opens its drawer under its row. Click a value button to type a number, or press it and drag right or up for more; hold Shift to go finer.
+**The ring drawer.** It opens under the selected ring's row. Click a value button to type a number, or press it and drag: right or up raises the value, and Shift makes each step finer.
 
-**Adding and arranging.** A new ring or a copy goes in above the selected ring and becomes the selected one. A new numerals ring takes its type from the numerals already on the dial.
+**Adding and arranging.** A new ring or a copy goes in above the selected ring and becomes the selected one. A new numerals ring takes its type from the numerals already on the dial. Duplicate is the quick way to a second track: copy one, then change its radius.
 
 **Watch.** A ring's radius runs from the centre to the outer edge of ticks, markers and bands, and to a numeral's anchor: its middle, its baseline or its top.
 
 **Note: eye.** Hides the ring without deleting it.
-**Note: grip.** Drag the grip to move the ring in the list.
+**Note: grip.** Drag the grip to move the ring up or down the list.
 **Note: name.** Renames the ring.
 **Note: summary.** The ring at a glance: count and kind, size, radius.
 **Note: kinds.** Picks the ring's kind; its settings stay.
 **Note: colour.** Opens the colour pop-out for this ring.
-**Note: size.** Sets how big each mark is.
+**Note: size.** Sets how big each mark, numeral or band is.
 **Note: radius.** Sets the radius, from the centre.
 **Note: add.** Adds a ring above the selected one.
 **Note: move.** Moves the selected ring up or down, duplicates or deletes it.
-**Note: menu.** The four kinds: pick one for the new ring.
-**Note: anchor.** Sets the point on a numeral that sits on the radius: centre, baseline or top.
+**Note: menu.** The + opens the four kinds; pick one to add a ring of it.
+**Note: values.** Its colour, size and radius: click one to set it.
+**Note: anchor.** Sets a numeral's anchor: centre, baseline or top.
 
 ---
 

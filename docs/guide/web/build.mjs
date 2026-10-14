@@ -101,7 +101,7 @@ function ground(b, shot, part, cx, cy, k) {
 let card_n = 0;
 function card(shot, rect, x, y, k, o = {}) {
   const pad = o.pad ?? 6, out = `c${++card_n}-${shot}.png`;
-  JOBS.push({ kind: "card", shot, rect, pad, out, bg: o.bg, blank: o.blank });
+  JOBS.push({ kind: "card", shot, rect, pad, out, bg: o.bg, blank: o.blank, keep: o.keep });
   const w = (rect[2] + 2 * pad) * k, h = (rect[3] + 2 * pad) * k;
   if (o.centre) { x -= w / 2; y -= h / 2; }
   const x0 = rect[0] - pad, y0 = rect[1] - pad;
@@ -159,11 +159,81 @@ function leaders(list, o = {}) {
   const clip = o.halo ? `<clipPath id="halo-${CUR}"><circle cx="${f2(o.halo[0])}" cy="${f2(o.halo[1])}" r="${f2(o.halo[2])}"/></clipPath>` : "";
   return `<svg class="lines" viewBox="0 0 ${PAGE[0]} ${PAGE[1]}">${clip}${svg}</svg>${labels}`;
 }
+// ── pointers (Okay, 19:52 — page 06 first) ──
+// A pointer is a dot on the thing (or on the outline round a group of things), a straight line, and a label.
+// · Highlight = an outline drawn round the group, in the section's dark ink, clear of what it rings; no washes.
+// · Labels over a picture stand on one shared baseline (their last lines) and point down; labels under it hang
+//   from one shared cap line and point up. A tier's labels sit with the tallest one's ink centred in the free
+//   space between the ground's edge and the picture, so lines are long enough to read as lines.
+// · A line meets the text, not its box: it ends just under the last line's baseline (or over the first line's
+//   capitals) at a point inside that line's ink, never at a corner — anywhere from a quarter to three quarters
+//   along, wherever the tier balances best.
+// · Side labels (the dial): the line meets the first line at its x-height middle.
+// Positions that depend on how the words break are measured in the browser after the fonts load (layout_pointers).
+const TIERS = {};      // page → [{ side, zone, xmin, xmax, gap, forbid, items: [{ id, x, from }] }]
+let PID = 0;
+/** an outline round a group: a rounded rectangle pad mm clear of r (pads may differ per side: [t, r, b, l]) */
+function outline(r, pad = 1, radius) {
+  const [pt, pr, pb, pl] = Array.isArray(pad) ? pad : [pad, pad, pad, pad];
+  const x = r[0] - pl, y = r[1] - pt, w = r[2] + pl + pr, h = r[3] + pt + pb, rx = radius ?? Math.min(h / 2, w / 2, 2.2);   // one corner for every outline
+  return { svg: `<rect class="ring" x="${f2(x)}" y="${f2(y)}" width="${f2(w)}" height="${f2(h)}" rx="${f2(rx)}"/>`, box: [x, y, w, h] };
+}
+/** tiers: [{ side: "above" | "below", zone: [y0, y1], xmin, xmax, forbid: [x…], items: [{ at: [x, y], text, w, f }] }]
+ *  sides: [{ at: [x, y], edge: x where the line ends, side: "L" (label to the right) | "R", text, sub, w }]
+ *  rings: outline svg strings drawn under the lines. o.halo: [cx, cy, r] a light casing where lines cross a dark dial */
+function pointers({ tiers = [], sides = [], rings = [] }, o = {}) {
+  let svg = rings.join(""), labels = "";
+  const list = (TIERS[CUR] = TIERS[CUR] || []);
+  for (const T of tiers) {
+    const tier = { side: T.side, zone: T.zone, xmin: T.xmin, xmax: T.xmax, gap: T.gap ?? 4, forbid: T.forbid || [], items: [] };
+    for (const it of T.items) {
+      const id = `p${CUR}-${++PID}`;
+      svg += `<circle cx="${f2(it.at[0])}" cy="${f2(it.at[1])}" r=".42"/><polyline data-id="${id}" points="${f2(it.at[0])},${f2(it.at[1])} ${f2(it.at[0])},${f2(it.at[1])}"/>`;
+      labels += `<div class="nlabel plabel" data-id="${id}" style="left:0;top:0;width:${f2(it.w ?? 30)}mm">${inline(it.text)}</div>`;
+      tier.items.push({ id, x: it.at[0], from: it.at[1], f: it.f ?? 0.5 });
+      LEADERS.push({ page: CUR, id, pts: [it.at, it.at], text: it.text, through: false, box: null });
+    }
+    list.push(tier);
+  }
+  for (const it of sides) {
+    const id = `p${CUR}-${++PID}`, right = it.side === "L";
+    if (o.halo) svg += `<g clip-path="url(#halo-${CUR})"><polyline class="halo" points="${f2(it.at[0])},${f2(it.at[1])} ${f2(it.edge)},${f2(it.at[1])}"/><circle class="halo" cx="${f2(it.at[0])}" cy="${f2(it.at[1])}" r=".8"/></g>`;
+    svg += `<circle cx="${f2(it.at[0])}" cy="${f2(it.at[1])}" r=".42"/><polyline data-id="${id}" points="${f2(it.at[0])},${f2(it.at[1])} ${f2(it.edge)},${f2(it.at[1])}"/>`;
+    const w = it.w ?? 30, gap = 1.2;
+    labels += `<div class="nlabel plabel side ${right ? "l" : "r"}${it.sub ? " struct" : ""}" data-id="${id}" data-y="${f2(it.at[1])}" style="left:${f2(right ? it.edge + gap : it.edge - gap - w)}mm;top:0;width:${f2(w)}mm">${inline(it.text)}${it.sub ? `<br><span class="sub">${inline(it.sub)}</span>` : ""}</div>`;
+    LEADERS.push({ page: CUR, id, pts: [it.at, [it.edge, it.at[1]]], text: it.text + (it.sub || ""), through: true, box: null });
+  }
+  const clip = o.halo ? `<clipPath id="halo-${CUR}"><circle cx="${f2(o.halo[0])}" cy="${f2(o.halo[1])}" r="${f2(o.halo[2])}"/></clipPath>` : "";
+  return `<svg class="lines" viewBox="0 0 ${PAGE[0]} ${PAGE[1]}">${clip}${svg}</svg>${labels}`;
+}
 const padbox = (r, p = 1) => [r[0] - p, r[1] - p, r[2] + 2 * p, r[3] + 2 * p];
 const mid = (r) => [r[0] + r[2] / 2, r[1] + r[3] / 2];
 const dial = (b, file, o = {}) => `<div class="pic" style="${css(b)}"><img src="../img/${file}.svg" style="height:${o.fill ?? 92}%"></div>`;
 const caption = (x, y, w, s, al = "l") => `<div class="cap ${al}" style="left:${f2(x)}mm;top:${f2(y)}mm;width:${f2(w)}mm">${inline(s)}</div>`;
 const union = (...rs) => { rs = rs.filter(Boolean); const x = Math.min(...rs.map((r) => r[0])), y = Math.min(...rs.map((r) => r[1])); return [x, y, Math.max(...rs.map((r) => r[0] + r[2])) - x, Math.max(...rs.map((r) => r[1] + r[3])) - y]; };
+
+// ── measuring words before the page is set: how many lines a label takes at a width (Okay, 19:52: the space
+// round a picture is shared out evenly, so the labels' heights must be known when the picture is placed) ──
+const MB = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+const MP = await MB.newPage();
+fs.writeFileSync(path.join(OUT, "measure.html"), `<!doctype html><html><head><style>@font-face{font-family:"Inter";src:url("${pathToFileURL(path.join(HERE, "node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2")).href}") format("woff2");font-weight:100 900;}</style>
+  <link rel="stylesheet" href="../style.css"></head><body><section class="page"><div id="m" class="nlabel plabel" style="left:0;top:0"></div></section></body></html>`);
+await MP.goto(pathToFileURL(path.join(OUT, "measure.html")).href);
+check(await MP.evaluate(() => getComputedStyle(document.getElementById("m")).fontFamily.includes("Inter")), "measuring page: the stylesheet did not load");
+await MP.evaluate(() => document.fonts.ready);
+const LH = 2.7 * B, FS = 8 * 25.4 / 72, CAP = 0.727 * FS;
+/** lines a label takes at w mm, and its ink height (cap top of the first line to the baseline of the last) */
+async function measure(textHtml, w) {
+  const n = await MP.evaluate(([h, w]) => { const el = document.getElementById("m"); el.style.width = w + "mm"; el.innerHTML = h;
+    const tops = new Set(); const wk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    for (let t; (t = wk.nextNode());) for (const m of t.textContent.matchAll(/\S+/g)) { const r = document.createRange(); r.setStart(t, m.index); r.setEnd(t, m.index + m[0].length); const q = r.getClientRects()[0]; if (q) tops.add(Math.round(q.top / 3)); }
+    const rr = [...el.getClientRects()]; let wmax = 0; const wk2 = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), rows = new Map();
+    for (let t; (t = wk2.nextNode());) for (const m of t.textContent.matchAll(/\S+/g)) { const r = document.createRange(); r.setStart(t, m.index); r.setEnd(t, m.index + m[0].length); const q = r.getClientRects()[0]; if (!q) continue; const k = Math.round(q.top / 3), l = rows.get(k) || [1e9, -1e9]; l[0] = Math.min(l[0], q.left); l[1] = Math.max(l[1], q.right); rows.set(k, l); }
+    for (const l of rows.values()) wmax = Math.max(wmax, (l[1] - l[0]) / (96 / 25.4));
+    return [tops.size, wmax]; }, [textHtml, w]);
+  return { n: n[0], H: (n[0] - 1) * LH + CAP, W: n[1] };
+}
+const inkH = async (t, w) => (await measure(inline(t), w)).H;
 
 const pages = [];
 
@@ -304,8 +374,14 @@ const pages = [];
   const b0 = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
   // a 0.25 mm clear lane each side of a line; where a ring has none, a 0.12 mm lane (bars between ticks, the triangle)
   const MK = (await dial_marks(b0, path.join(IMG, "dial-diver.svg"), ids)).out;
+  const MK18 = (await dial_marks(b0, path.join(IMG, "dial-diver.svg"), ids, { lane: 0.18, solid: 8 })).out;
+  const MK35 = (await dial_marks(b0, path.join(IMG, "dial-diver.svg"), ids, { lane: 0.4, solid: 6 })).out;
   const MK2 = (await dial_marks(b0, path.join(IMG, "dial-diver.svg"), ids, { lane: 0.12, solid: 6 })).out;
-  for (const k in MK) if (!MK[k].some((c) => c.cross === 0)) MK[k] = MK2[k];
+  // every way out is scored by its clearance: ink within 0.12 mm of the line costs most, within 0.25 mm least
+  for (const k in MK) {
+    const key = (c) => `${c.mark}${c.side}${c.y.toFixed(2)}`, c18 = new Map(MK18[k].map((c) => [key(c), c.cross])), c25 = new Map(MK[k].map((c) => [key(c), c.cross])), c40 = new Map(MK35[k].map((c) => [key(c), c.cross]));
+    MK[k] = MK2[k].map((c) => ({ ...c, cost: c.cross * 50 + (c18.get(key(c)) ?? 40) * 4 + (c25.get(key(c)) ?? 40) + Math.min(6, (c40.get(key(c)) ?? 40) * 0.05) }));
+  }
   await b0.close();
   const top = big.y + 5, bottom = big.y + big.h - 5, PITCH = 9.6;
   const cand = S.rings.map((r) => ({ r, kind: r.kind ?? 0, list: (MK[r.name] || []).map((c) => ({ ...c, X: cx + c.x * kd, Y: cy + c.y * kd })).filter((c) => c.Y > top && c.Y < bottom) }));
@@ -320,7 +396,7 @@ const pages = [];
       for (const q of c.list) {
         if (used[q.side].some((u) => Math.abs(u - q.Y) < PITCH)) continue;
         // a band is labelled where its line leaves square to it (near 3 or 9), not along its top or bottom edge
-        const sc = q.cross * 50 + (c.kind === 3 ? Math.abs(q.Y - cy) / (c.r.r * kd) * 6 : 0) + (trial ? rand() * 2 : 0);
+        const sc = q.cost + (c.kind === 3 ? Math.abs(q.Y - cy) / (c.r.r * kd) * 6 : 0) + (trial ? rand() * 2 : 0);
         if (!best || sc < best.sc) best = { ...q, sc };
       }
       if (!best) { ok = false; break; }
@@ -332,67 +408,87 @@ const pages = [];
   check(placed, "rings dial: no way to give every ring its own line");
   for (const p of placed || []) check(p.cross <= 8,   // ≤ 8 bitmap pixels: the line grazes a tick's corner, no more
      `rings dial: "${p.r.name}" crosses print on its way out (${p.cross}; clear rows: ${cand.find((c) => c.r === p.r).list.filter((q) => !q.cross).map((q) => q.side + (q.Y - big.y).toFixed(1)).join(" ")})`);
-  const edgeL = cx - 20 * kd - 2.5, edgeR = cx + 20 * kd + 2.5;     // just outside the bezel
-  h += leaders((placed || []).map((p) => ({ from: [p.X, p.Y], through: true,
-    label: { text: `${p.r.name}`, sub: p.r.name.toLowerCase() === KIND[p.kind] ? "" : KIND[p.kind], side: p.side === "L" ? "R" : "L", x: p.side === "L" ? edgeL : edgeR, y: p.Y, w: p.side === "L" ? edgeL - big.x - 4 : big.x + big.w - edgeR - 4 } })), { halo: [cx, cy, 20 * kd] });
+  let edgeL = cx - 20 * kd - 2.5, edgeR = cx + 20 * kd + 2.5;     // just outside the bezel
+  // the group is centred by its ink: the widest label on each side decides how far the dial moves
+  const inkW = async (p, side) => (await measure(inline(p.r.name) + (p.r.name.toLowerCase() === KIND[p.kind] ? "" : `<br><span class="sub">${KIND[p.kind]}</span>`), side === "L" ? edgeL - big.x - 5 : big.x + big.w - edgeR - 5)).W;
+  let Lw = 0, Rw = 0; for (const p of placed || []) { const w = await inkW(p, p.side); if (p.side === "L") Lw = Math.max(Lw, w); else Rw = Math.max(Rw, w); }
+  const shift = ((big.x + big.w - (edgeR + 1.2 + Rw)) - (edgeL - 1.2 - Lw - big.x)) / 2;
+  edgeL += shift; edgeR += shift; for (const p of placed || []) p.X += shift;
+  h = h.replace(`left:${f2(cx - pg / 2)}mm;top:${f2(cy - pg / 2)}mm;width:${f2(pg)}mm">`, `left:${f2(cx + shift - pg / 2)}mm;top:${f2(cy - pg / 2)}mm;width:${f2(pg)}mm">`);
+  const hcx = cx + shift;
+  h += pointers({ sides: (placed || []).map((p) => ({ at: [p.X, p.Y], edge: p.side === "L" ? edgeL : edgeR, side: p.side === "L" ? "R" : "L",
+    text: p.r.name, sub: p.r.name.toLowerCase() === KIND[p.kind] ? "" : KIND[p.kind], w: p.side === "L" ? edgeL - big.x - 5 : big.x + big.w - edgeR - 5 })) }, { halo: [hcx, cy, 20 * kd] });
   h += block(box(1, 9, 3, 3), text(t, "What a ring is"), { flow: "a" }) + block(box(1, 9, 3, 3), text(t, "Watch"), { flow: "a", attach: true });
   // under them, the radius button's pop-up on a numerals ring: what the Watch note is about
-  { const g = box(1, 12, 3, 3), k = 0.2, rr = [338, 276, 140, 150];
-    const cw = (rr[2] + 6) * k, ch = (rr[3] + 6) * k;
-    const c = card("diver-radius", rr, g.x + 4, g.y + (g.h - ch) / 2, k, { pad: 3, cls: "fadeL" });
+  const CP = 12;                                    // a card's own margin, in screen points (Okay, 19:52: "a little more padding")
+  { const g = box(1, 12, 3, 3), k = 0.19, rr = [338, 276, 140, 148], lw = 26;
+    const lwInk = (await measure(inline(note(t, "anchor")), lw)).W;      // the group is centred by its ink
+    const cw = (rr[2] + 2 * CP) * k, ch = (rr[3] + 2 * CP) * k, x0 = g.x + (g.w - cw - 4 - lwInk) / 2;
+    // keep the size and radius buttons, the pop-up and the nub joining them; the rows behind, the drawer's edge and
+    // the preview beyond the panel are painted out (Okay, r4: if the background cannot give context, leave it plain)
+    const PP = SHOTS.rects["diver-radius"].pop, keep = [[342, 280, 86, 40], [PP[0], PP[1], PP[2], PP[3]], [396, 314, 24, 12]];
+    const c = card("diver-radius", rr, x0, g.y + (g.h - ch) / 2, k, { pad: CP, bg: "#FFFFFF", keep });
     h += `<div class="ground flat" style="${css(g)}"></div>` + c.html;
-    const P0 = SHOTS.rects["diver-radius"].pop, menu = c.at([P0[0] + 104, P0[1] + 5, 18, 18]), field = c.at([P0[0] + 8, P0[1] + 42, 116, 26]);
-    const lx = c.x + c.w + 3, lw = g.x + g.w - lx - 3;
-    h += leaders([
-      { box: padbox(menu, 0.5), from: [menu[0] + menu[2] + 0.5, mid(menu)[1]], label: { text: note(t, "anchor"), side: "L", x: lx, y: mid(menu)[1], w: lw } },
-    ]); }
+    const P0 = SHOTS.rects["diver-radius"].pop, menu = c.at([P0[0] + 104, P0[1] + 5, 18, 18]);
+    h += pointers({ sides: [{ at: [menu[0] + menu[2], mid(menu)[1]], edge: c.x + c.w + 2.8, side: "L", text: note(t, "anchor"), w: lw }] }); }
   // Adding and arranging sits beside its picture (cols 7–12, rows 11–14)
   h += block(box(4, 9, 3, 3), text(t, "Four kinds"), { flow: "b" }) + block(box(4, 12, 3, 2), text(t, "Adding and arranging"), { flow: "b" });
 
   // right: three pictures in cols 7–10, each with its words beside it in cols 11–12
   const PX0 = X(7), PW = W(4);
-  // 1 · the list: the selected ring and its drawer, two more rows, then the list fades. Labels on two heights,
-  // so neighbours never read as one line and no line passes a label: eye and rename low, grip and summary high.
-  { const g = box(7, 3, 4, 5), k = 0.135, lr = [44, 188, 400, 222];
-    const cw = (lr[2] + 6) * k, ch = (lr[3] + 6) * k;
-    const C = card("diver-rings", lr, g.x + 24, g.y + g.h - ch - 3, k, { pad: 3, cls: "cut", fade: 66 });
+  // Every picture on this side shares its ground out evenly (Okay, 19:52): the same space above the labels,
+  // between the labels and the picture, and under the picture; labels over it stand on one baseline.
+  // 1 · the list: the selected ring and its drawer, two more rows, then the list fades. The eye is named on the
+  // first row under the drawer (a line straight out to the left); the grip and the summary from the selected
+  // row up to one baseline, the rename box above them.
+  { const g = box(7, 3, 4, 5), k = 0.125, lr = [48, 188, 392, 222], wE = 26, wG = 32, wS = 30, wN = 30;
+    const cw = (lr[2] + 2 * CP) * k, ch = (lr[3] + 2 * CP) * k;
+    const H1 = Math.max(await inkH(note(t, "grip"), wG), await inkH(note(t, "summary"), wS)), H2 = await inkH(note(t, "name"), wN);
+    const m = (g.h - H2 - H1 - ch) / 4, z2 = g.y + m, z1 = z2 + H2 + m, cy0 = z1 + H1 + m;
+    const C = card("diver-rings", lr, g.x + (g.w - (wE + 4 + cw)) / 2 + wE + 4, cy0, k, { pad: CP, cls: "cut", fade: 66 });
     h += `<div class="ground flat" style="${css(g)}"></div>` + C.html;
-    const eye = C.at([62, 199, 18, 26]), grip = C.at([90, 201, 14, 22]), ren = padbox(C.at([190, 200, 22, 24]), 0.5), sum = padbox(C.at([238, 204, 188, 16]), 0.5);
-    const t1 = C.y - 2.4, t2 = t1 - 11.5, sx = sum[0] + sum[2] * 0.92;
-    h += leaders([
-      { from: [mid(eye)[0], eye[1]], label: { text: note(t, "eye"), side: "B", x: mid(eye)[0], y: t1, w: mid(eye)[0] - g.x - 3, align: "r" } },
-      { from: [mid(grip)[0], grip[1]], label: { text: note(t, "grip"), side: "B", x: mid(grip)[0], y: t2, w: 30, align: "r" } },
-      { box: ren, from: [mid(ren)[0], ren[1]], label: { text: note(t, "name"), side: "B", x: mid(ren)[0], y: t1, w: sx - mid(ren)[0] - 3, align: "l" } },
-      { box: sum, from: [sx, sum[1]], label: { text: note(t, "summary"), side: "B", x: sx, y: t2, w: 38, align: "r" } },
-    ]);
+    const eye = C.at([62, 305, 18, 14]), grip = C.at([90, 203, 14, 18]), ren = C.at([190, 200, 22, 24]);
+    const sum = outline(C.at([238, 204, 192, 16]), [4 * k, 5 * k, 4 * k, 6 * k]), sx = sum.box[0] + sum.box[2] / 2;
+    h += pointers({ rings: [sum.svg],
+      sides: [{ at: [eye[0], mid(eye)[1]], edge: C.x - 2.8, side: "R", text: note(t, "eye"), w: wE }],
+      tiers: [
+        { side: "above", zone: [z1, z1 + H1], xmin: g.x + 4, xmax: g.x + g.w - 4, forbid: [mid(ren)[0]], items: [
+          { at: [mid(grip)[0], grip[1]], text: note(t, "grip"), w: wG },
+          { at: [sx, sum.box[1]], text: note(t, "summary"), w: wS } ] },
+        { side: "above", zone: [z2, z2 + H2], xmin: g.x + 4, xmax: g.x + g.w - 4, items: [
+          { at: [mid(ren)[0], ren[1]], text: note(t, "name"), w: wN } ] } ] });
     h += block(box(11, 3, 2, 5), text(t, "Stacking order"), { flow: "s1", bottom: Y(7) + ROW }); }
-  // 2 · the drawer, every button named
-  { const g = box(7, 8, 4, 3), k = 0.19, dr = [100, 236, 330, 50];   // rows 8–10
-    const dw = (dr[2] + 6) * k, dh = (dr[3] + 6) * k;
-    const c = card("diver-rings", dr, g.x + (g.w - dw) / 2, g.y + (g.h - dh) / 2, k, { pad: 3 });
+  // 2 · the drawer: the kinds over it; the three value buttons, ringed together, under it
+  { const g = box(7, 8, 4, 3), k = 0.17, dr = [100, 236, 330, 50], wK = 64, wV = 48;
+    const dw = (dr[2] + 2 * CP) * k, dh = (dr[3] + 2 * CP) * k;
+    const Ha = await inkH(note(t, "kinds"), wK), Hb = await inkH(note(t, "values"), wV), m = (g.h - Ha - dh - Hb) / 4;
+    const c = card("diver-rings", dr, g.x + (g.w - dw) / 2, g.y + m + Ha + m, k, { pad: CP });
     h += `<div class="ground flat" style="${css(g)}"></div>` + c.html;
-    const kinds = c.at([112, 243, 182, 36]), col = c.at([302, 243, 36, 36]), siz = c.at([346, 243, 36, 36]), rad = c.at([390, 243, 36, 36]);
-    const kb = padbox(kinds, 0.45), ya = c.y - 2.8, yb = c.y + c.h + 2.6, kx = mid(kb)[0];
-    // above: the kinds and the radius, both ending at their line; below: the colour and the size
-    h += leaders([
-      { box: kb, from: [kx, kb[1]], label: { text: note(t, "kinds"), side: "B", x: kx, y: ya, w: kx - g.x - 3, align: "r" } },
-      { from: [mid(rad)[0], rad[1]], label: { text: note(t, "radius"), side: "B", x: mid(rad)[0], y: ya, w: mid(rad)[0] - kx - 5, align: "r" } },
-      { from: [mid(col)[0], col[1] + col[3]], label: { text: note(t, "colour"), side: "T", x: mid(col)[0], y: yb, w: 34, align: "r" } },
-      { from: [mid(siz)[0], siz[1] + siz[3]], label: { text: note(t, "size"), side: "T", x: mid(siz)[0], y: yb, w: g.x + g.w - 2 - mid(siz)[0], align: "l" } },
-    ]);
+    const kinds = c.at([112, 243, 182, 36]), vals = outline(c.at([302, 243, 124, 36]), [7 * k, 4 * k, 7 * k, 4 * k]);   // 4 px is all the drawer leaves at the sides
+    h += pointers({ rings: [vals.svg], tiers: [
+      { side: "above", zone: [g.y + m, g.y + m + Ha], xmin: g.x + 4, xmax: g.x + g.w - 4, items: [
+        { at: [kinds[0] + kinds[2] / 2, kinds[1]], text: note(t, "kinds"), w: wK } ] },
+      { side: "below", zone: [c.y + c.h + m, c.y + c.h + m + Hb], xmin: g.x + 4, xmax: g.x + g.w - 4, items: [
+        { at: [vals.box[0] + vals.box[2] / 2, vals.box[1] + vals.box[3]], text: note(t, "values"), w: wV } ] } ] });
     h += block(box(11, 8, 2, 3), text(t, "The ring drawer"), { flow: "s2", bottom: Y(10) + ROW }); }
-  // 3 · the heading's buttons, closed then open: the same crop, the whole width of the list, side by side
-  { const g = box(7, 11, 6, 4), k = 0.14, hr = [44, 153, 400, 179], gap = 6;
-    const w = (hr[2] + 6) * k, hh = (hr[3] + 6) * k, x0 = g.x + (g.w - 2 * w - gap) / 2, y0 = g.y + g.h - hh - 2.5;
-    const a = card("diver-rings", hr, x0, y0, k, { pad: 3 }), o = card("diver-add", hr, x0 + w + gap, y0, k, { pad: 3 });
+  // 3 · the heading's buttons, closed then open: the same crop side by side. Closed: the four that act on the
+  // selected ring, ringed together. Open: the + and the kinds it opens, one outline round both.
+  { const g = box(7, 11, 6, 4), k = 0.14, hr = [44, 153, 400, 179], gap = 6, wM = 44, wA = 48;
+    const w = (hr[2] + 2 * CP) * k, hh = (hr[3] + 2 * CP) * k, x0 = g.x + (g.w - 2 * w - gap) / 2;
+    const H = Math.max(await inkH(note(t, "move"), wM), await inkH(note(t, "menu"), wA)), m = (g.h - H - hh) / 3;
+    const a = card("diver-rings", hr, x0, g.y + m + H + m, k, { pad: CP }), o = card("diver-add", hr, x0 + w + gap, g.y + m + H + m, k, { pad: CP });
     h += `<div class="ground flat" style="${css(g)}"></div>` + a.html + o.html;
-    const plus = a.at([290, 159, 26, 26]), tools = padbox(a.at([322, 159, 114, 26]), 0.4), menu = o.at([196, 191, 120, 138]);
-    const t1 = a.y - 2.4, t2 = t1 - 9.6, mx = menu[0] + menu[2] * 0.3, tx = tools[0] + tools[2] * 0.5;
-    h += leaders([
-      { from: [mid(plus)[0], plus[1]], label: { text: note(t, "add"), side: "B", x: mid(plus)[0], y: t1, w: 40, align: "r" } },
-      { box: tools, from: [tx, tools[1]], label: { text: note(t, "move"), side: "B", x: tx, y: t1, w: mx - tx - 4, align: "l" } },
-      { from: [mx, menu[1]], label: { text: note(t, "menu"), side: "B", x: mx, y: t2, w: g.x + g.w - 2 - mx, align: "l" } },
-    ]);
+    const tools = outline(a.at([320, 159, 116, 26]), [5 * k, 6 * k, 5 * k, 2 * k]);   // the + stands 4 px to the left
+    // the + and its menu: a circle and a rounded box, drawn as one outline (each stroke masked inside the other)
+    const pl = o.at([290, 159, 26, 26]), pc = mid(pl), pr = pl[2] / 2 + 5 * k, mn = o.at([196, 191, 120, 138]);
+    const mb = [mn[0] - 6 * k, mn[1] - 3 * k, mn[2] + 12 * k, mn[3] + 9 * k], mr = 2.2;
+    const union = `<mask id="u06" maskUnits="userSpaceOnUse" x="0" y="0" width="${PAGE[0]}" height="${PAGE[1]}"><rect width="${PAGE[0]}" height="${PAGE[1]}" fill="#fff"/>`
+      + `<circle cx="${f2(pc[0])}" cy="${f2(pc[1])}" r="${f2(pr)}" fill="#000"/><rect x="${f2(mb[0])}" y="${f2(mb[1])}" width="${f2(mb[2])}" height="${f2(mb[3])}" rx="${mr}" fill="#000"/></mask>`
+      + `<g mask="url(#u06)"><circle class="ring two" cx="${f2(pc[0])}" cy="${f2(pc[1])}" r="${f2(pr)}"/><rect class="ring two" x="${f2(mb[0])}" y="${f2(mb[1])}" width="${f2(mb[2])}" height="${f2(mb[3])}" rx="${mr}"/></g>`;
+    h += pointers({ rings: [tools.svg, union], tiers: [
+      { side: "above", zone: [g.y + m, g.y + m + H], xmin: g.x + 4, xmax: g.x + g.w - 4, items: [
+        { at: [tools.box[0] + tools.box[2] / 2, tools.box[1]], text: note(t, "move"), w: wM },
+        { at: [pc[0], pc[1] - pr], text: note(t, "menu"), w: wA } ] } ] });
   }
   pages.push(page(P, h));
 }
@@ -442,6 +538,67 @@ const flowed = await pg.evaluate(([ROW, RGAP]) => {
   return out;
 }, [ROW, RGAP]);
 for (const o of flowed) check(false, `a column of words runs past its end: "${o}…"`);
+// pointers: measure every label's lines, stand each tier on its baseline, slide labels sideways till they balance
+const pointed = await pg.evaluate((TIERS) => {
+  const MM = 96 / 25.4, out = { pts: {}, notes: [] };
+  for (const sec of document.querySelectorAll("section.page")) {
+    const P = sec.getBoundingClientRect(), tiers = TIERS[sec.dataset.no] || [];
+    const lines = (el) => {                       // the label's lines: ink left, right, baseline (mm, page)
+      const fs = parseFloat(getComputedStyle(el).fontSize) / MM, rows = new Map();
+      const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      for (let n; (n = w.nextNode());) for (const m of n.textContent.matchAll(/\S+/g)) {
+        const r = document.createRange(); r.setStart(n, m.index); r.setEnd(n, m.index + m[0].length);
+        const q = r.getClientRects()[0]; if (!q) continue;
+        const k = Math.round(q.top / 3), l = rows.get(k) || { l: 1e9, r: -1e9, b: -1e9 };
+        l.l = Math.min(l.l, (q.left - P.left) / MM); l.r = Math.max(l.r, (q.right - P.left) / MM); l.b = Math.max(l.b, (q.bottom - P.top) / MM);
+        rows.set(k, l);
+      }
+      const ls = [...rows.values()].sort((a, b) => a.b - b.b);
+      for (const l of ls) l.base = l.b - 0.2421875 * fs;          // Inter: descender 0.242 em under the baseline
+      return { ls, fs };
+    };
+    const set = (el, left, top) => { el.style.left = left + "mm"; el.style.top = top + "mm"; };
+    for (const T of tiers) {
+      const els = T.items.map((it) => sec.querySelector(`.plabel[data-id="${it.id}"]`));
+      const m = els.map((el) => { set(el, 0, 0); const { ls, fs } = lines(el), c = T.side === "above" ? ls[ls.length - 1] : ls[0];
+        return { ls, fs, a: c.l, b: c.r, inkL: Math.min(...ls.map((l) => l.l)), inkR: Math.max(...ls.map((l) => l.r)),
+          top: ls[0].base - 0.727 * fs, base: ls[ls.length - 1].base, cap0: ls[0].base - 0.727 * fs }; });
+      // vertical: the tallest label's ink centred in the zone; every label on its baseline (above) or cap line (below)
+      const H = Math.max(...m.map((q) => q.base - q.top)), [z0, z1] = T.zone, inkTop = z0 + (z1 - z0 - H) / 2;
+      const B = inkTop + H, C = inkTop;
+      // horizontal: the line meets the contact line between a quarter and three quarters along it
+      const S = T.items.map((it, i) => {
+        const q = m[i], c = q.b - q.a; let lo = it.x - q.a - 0.75 * c, hi = it.x - q.a - 0.25 * c;
+        lo = Math.max(lo, T.xmin - q.inkL); hi = Math.min(hi, T.xmax - q.inkR);
+        for (const f of T.forbid) { if (f < it.x) lo = Math.max(lo, f + 2.6 - q.inkL); else hi = Math.min(hi, f - 2.6 - q.inkR); }
+        return { i, x: it.x, lo, hi, L: Math.min(hi, Math.max(lo, it.x - q.a - it.f * c)) };
+      }).sort((p, q) => p.x - q.x);
+      for (let pass = 0; pass < 6; pass++) {
+        for (let j = 1; j < S.length; j++) { const p = S[j - 1], q = S[j]; const need = p.L + m[p.i].inkR + T.gap - m[q.i].inkL; if (q.L < need) q.L = Math.min(q.hi, need); }
+        for (let j = S.length - 2; j >= 0; j--) { const p = S[j], q = S[j + 1]; const need = q.L + m[q.i].inkL - T.gap - m[p.i].inkR; if (p.L > need) p.L = Math.max(p.lo, need); }
+      }
+      for (let j = 1; j < S.length; j++) { const p = S[j - 1], q = S[j]; if (p.L + m[p.i].inkR + T.gap - 0.05 > q.L + m[q.i].inkL) out.notes.push(`p${sec.dataset.no} labels crowd: "${els[p.i].textContent.slice(0, 20)}" · "${els[q.i].textContent.slice(0, 20)}"`); }
+      for (const s of S) {
+        if (s.lo > s.hi + 0.01) out.notes.push(`p${sec.dataset.no} label "${els[s.i].textContent.slice(0, 24)}" has no room`);
+        const q = m[s.i], el = els[s.i], it = T.items[s.i];
+        const dy = T.side === "above" ? B - q.base : C - q.cap0;
+        set(el, s.L, dy); el.style.width = (q.inkR + 0.4) + "mm";          // the label's box is its ink, so checks see what the eye sees
+        const yEnd = T.side === "above" ? B + 0.32 * q.fs + 0.7 : C - 0.9;   // under the descenders · over the capitals
+        const pl = sec.querySelector(`polyline[data-id="${it.id}"]`);
+        pl.setAttribute("points", `${it.x.toFixed(2)},${it.from.toFixed(2)} ${it.x.toFixed(2)},${yEnd.toFixed(2)}`);
+        out.pts[it.id] = [[it.x, it.from], [it.x, yEnd]];
+      }
+    }
+    // side labels: the first line's x-height middle on the line
+    for (const el of sec.querySelectorAll(".plabel.side")) {
+      el.style.top = "0mm"; const { ls, fs } = lines(el);
+      el.style.top = (parseFloat(el.dataset.y) - (ls[0].base - 0.2725 * fs)) + "mm";
+    }
+  }
+  return out;
+}, TIERS);
+for (const L of LEADERS) if (L.id && pointed.pts[L.id]) L.pts = pointed.pts[L.id];
+for (const n of pointed.notes) check(false, n);
 await pg.waitForTimeout(600);
 // measure: words that overflow their block
 const over = await pg.evaluate(() => [...document.querySelectorAll(".block")].filter((b) => b.scrollHeight > b.clientHeight + 1).map((b) => b.textContent.trim().slice(0, 40)));
@@ -518,6 +675,6 @@ const frames = await pg.evaluate(() => { const MM = 96 / 25.4; const o = {}; for
   o[sec.dataset.no] = [...sec.querySelectorAll(".shot, .card, .ground, .bar")].map((e) => { const r = e.getBoundingClientRect(); return [(r.left - P.left) / MM, (r.top - P.top) / MM, (r.right - P.left) / MM, (r.bottom - P.top) / MM]; }); } return o; });
 fs.writeFileSync(path.join(OUT, "leaders.json"), JSON.stringify({ leaders: LEADERS.filter((L) => nos.includes(L.page)), frames }));
 const n = nos.length;
-await browser.close();
+await browser.close(); await MB.close();
 console.log(`${n} pages → out/guide-review.pdf · ${problems.length} checks`);
 execFileSync("python3", [path.join(HERE, "check_lines.py")], { stdio: "inherit" });

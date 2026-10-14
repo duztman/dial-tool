@@ -52,6 +52,12 @@ def card(job):
     for bx, by, bw, bh in job.get("blank", []):             # parts of the crop painted out with the background
         X0 = round((bx - job["rect"][0]) * PX) + p; Y0 = round((by - job["rect"][1]) * PX) + p
         d.rectangle([X0, Y0, X0 + round(bw * PX), Y0 + round(bh * PX)], fill=bg)
+    if job.get("keep"):                                      # only these parts stay; the rest becomes the background
+        keep = Image.new("L", made.size, 0); kd = ImageDraw.Draw(keep)
+        for bx, by, bw, bh in job["keep"]:
+            X0 = round((bx - job["rect"][0]) * PX) + p; Y0 = round((by - job["rect"][1]) * PX) + p
+            kd.rectangle([X0, Y0, X0 + round(bw * PX), Y0 + round(bh * PX)], fill=255)
+        made = Image.composite(made, Image.new("RGB", made.size, bg), keep)
     made.save(os.path.join(OUT, job["out"]))
 
 
