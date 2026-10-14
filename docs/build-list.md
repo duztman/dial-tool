@@ -229,6 +229,10 @@ Okay's notes on the first edition (sent 14 Oct, 12:59) and his answers (13:16). 
 | 183 | **The eye selects its ring** (Okay's friend, 14 Oct 17:31): pressing an eye also selected the ring, the ring line moved under it and the rows below dropped, so fast show/hide missed. **Done** (4.37): the eye only shows or hides (`show_ring`). Dragging down the eyes to toggle several: Okay liked it, "not now" | done (4.37) |
 | 184 | **Snapping** (Okay, 18:00, on #85): lengths and radii that snap to rings' edges while dragged. "A bigger question for later" | parked |
 
+| 186 | **Labels centred on their ink** (atlas 2nd ed. 5.11; Okay, 18:39: "FIND THE RECTANGLE within, let's say, 11:30… AND CENTER THAT"; 19:33, after two pictures of the tool's real boxes: "proportional ink box it is. do it."): short labels in boxes of their own get proportional figures and are centred on their ink rectangle, measured in the face actually drawn (`web/src/ink.js`, the selectors in `INKED`). Rules in design canon §2 and R32. **Built in beta 4.37.1.** Look at it on Safari on the Mac: Okay saw "10:30" not tabular there before; the label now sets its own figures | done (4.37.1) · Safari to look |
+| 187 | **Units typed anywhere** (atlas 5.7; Okay, 18:39: "do this"): a field takes `0.5in`, `12pt`, `1lig`, `3mm`, `0.3cm`, `0.5″` and converts to the unit shown; storage stays mm (R1) | open — Now |
+| 188 | **A layout check** (atlas 5.10; Okay, 18:39: "THIS ROCKS. YEZXS PLEAĞSE."): a test that reads the window's boxes and reports what misses the box rule (R32): fields and steppers off their column, spaces off the unit, framed things past the pane's lines. Reports first; fails `npm test` once Okay has sorted real misses from intended ones | open — Now |
+
 ## Later
 
 | # | Item | Status |

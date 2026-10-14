@@ -59,6 +59,15 @@ check §2–§6 against it.
 - **A level of hierarchy gets one or two signals, not more.** *(recalled)* Label: small + grey. Headline:
   size + weight. Emphasis in text: weight only.
 - **Figures are lining and tabular** wherever they line up: tables, captions, recipes, the redrawn controls.
+- **In the tool's window, two kinds of figures** (Okay, 14 Oct 2026): numbers that change in place — fields, the time,
+  counters — are tabular, so they don't jitter; a label that stands still in a box of its own ("10:30", "720×", "AM")
+  is proportional, so a "1" doesn't carry a "0"'s width.
+- **A label in a box is centred on its ink** (Okay, 14 Oct 2026: "FIND THE RECTANGLE… AND CENTER THAT"): the rectangle
+  its ink covers, left to right and top to bottom, stands on the box's centre — not its advance widths, not the font's
+  line box. Overhangs are fine. Measured in the face actually drawn, on that screen, never typed in as a nudge
+  (`web/src/ink.js`). Not the ink's weight: shown and not chosen.
+- **Air before size** *(Claude's, to confirm)*: a label's ink keeps at least a quarter of its font size clear of the
+  box's edge; if it can't, the box grows or the label gets shorter — the type does not shrink.
 - **Real characters.** ’ “ ” · × − ° → ⌘, not their typewriter stand-ins.
 - **No type crimes.** *(recalled)* Nothing stretched, no faux bold or italic, no tight tracking of text.
 

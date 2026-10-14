@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.37.1 (web version) · 14 Oct 2026, evening
+
+- **Short labels centred on their ink** (#186): the window's places (3 … 10:30, 4, ···), the speeds (1× · 60× · 720×), AM · PM, the bottom bar's hours and 10:10, and the unit box. Each label is measured as it is drawn (`web/src/ink.js`) and moved so the rectangle its ink covers stands on the box's centre; its figures are proportional, so a "1" no longer carries a "0"'s width. Measured on the page at 1440 wide: "10:30" was 0.5 px right and 1.25 px high, now 0 and 0.75; "1×" was 1.25 px high, now 0.25 (test: the window test reads the dots). Fields and the time keep tabular figures.
+
 ## beta 4.37 (web version) · 14 Oct 2026, evening
 
 The Now list, built by Claude alone in an hour (Okay, 18:00). On `dev` and the live page; `main` stays at 4.36.1.

@@ -4,6 +4,9 @@
      sign (a drawing only): acts on the selected thing. Steps, segments and tiles are below. */
   button { appearance: none; margin: 0; padding: 0; border: 0; border-radius: 0; background: none; font: inherit; color: inherit; cursor: pointer; }
   select, input { font: inherit; color: inherit; }
+  /* a short label in a box of its own, centred on its ink, with proportional figures (ink.js writes the two
+     offsets; Okay, 14 Oct 2026: "proportional ink box it is"; design canon §2) */
+  .ink { display: inline-block; font-variant-numeric: proportional-nums lining-nums; transform: translate(var(--ink-dx, 0), var(--ink-dy, 0)); }
   :is(button, select, input[type="text"], input[type="checkbox"], textarea):focus-visible { outline: var(--thick) solid var(--ink); outline-offset: 0; }
   [data-press="touch"] :is(button, input[type="checkbox"]):focus-visible { outline: none; }      /* a finger's tap leaves no focus ring; a key brings it back (#153) */
   input[type="text"]:focus, select:focus { outline: var(--thick) solid var(--ink); outline-offset: 0; }

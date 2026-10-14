@@ -11,6 +11,7 @@ import { svg_document, pdf_document, png_with_dpi, file_name } from "./output.js
 import { FONT_LIST, FONT_SITE } from "./font_list.js";
 import { EXAMPLES } from "./examples.js";
 import { GALLERY } from "./gallery.js";
+import { start_ink } from "./ink.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const el = (tag, props = {}, ...children) => {
@@ -3282,6 +3283,7 @@ export async function open_window(pathkit, harfbuzz, font_bytes) {
     if (next) { tool.reopen({ ...next, ui_section: tool.S.ui_section }); tool.log("opened the dial in the address"); }
   });
   tool.sync_time();
+  start_ink();                                     // short labels in boxes, centred on their ink (ink.js)
   window.dial_tool = tool;
   window.addEventListener("pagehide", () => { try { localStorage.setItem(LAST, JSON.stringify(tool.S)); } catch (e) { /* nothing kept */ } });
   window.addEventListener("dragover", (e) => e.preventDefault());

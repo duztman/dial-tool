@@ -1077,7 +1077,7 @@ check(near(await S("t.z") / z1, 1.4, 0.01), "the + in the bar zooms in by 1.4");
 await page.click("#zoom-out");
 await page.click("#fit");
 // the day slider's steps: a click on a step, or on the slider near one, goes exactly there; 10:10 is one of them
-await page.click('.steps12 button:text-is("3")');
+await page.click('.steps12 button:has(.ink:text-is("3"))');
 check(await S("S.t === 3 * 3600") && await page.inputValue("#time") === "3:00:00", "the step 3 under the day slider: three o'clock sharp");
 await page.click(".steps12 button.special");
 check(await S("S.t === 10 * 3600 + 600") && await page.$eval(".steps12 button.special", (e) => e.classList.contains("on")), "the 10:10 step: ten past ten");
@@ -1331,6 +1331,34 @@ await page.click('.form .fold:visible >> nth=0');
 await shot("11b-phone-folded");
 await page.click('.form .fold:visible >> nth=0');
 await page.setViewportSize({ width: 1440, height: 900 });
+
+// ── labels centred on their ink (ink.js, #186): measured from the screen's dots, not from the code's numbers ──
+await S("(t.S.da_on = true, t.S.ui_section = 3, t.show_section(), t.static_dirty = true, t.sync_rows(), t.render(), true)");
+await page.waitForTimeout(300);
+const inked = [];
+for (const sel of ['.atgrid button:has(.ink:text-is("10:30"))', '.atgrid button:has(.ink:text-is("1:30"))', '.atgrid button:has(.ink:text-is("12"))', ".atgrid button.on", "#speed-720", "#speed-1", "#ampm", '.steps12 button:has(.ink:text-is("1"))']) {
+  const box = page.locator(sel).first();
+  const png = (await box.screenshot()).toString("base64");
+  // the ink: dots that differ clearly from the box's own ground (its middle row's first dots inside the border)
+  inked.push([sel, await page.evaluate(async (src) => {
+    const img = new Image(); img.src = "data:image/png;base64," + src; await img.decode();
+    const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
+    const g = c.getContext("2d"); g.drawImage(img, 0, 0); const d = g.getImageData(0, 0, c.width, c.height).data;
+    const at = (x, y) => d.slice((y * c.width + x) * 4, (y * c.width + x) * 4 + 3);
+    const ground = at(Math.round(c.width * 0.08) + 3, Math.round(c.height / 2)), edge = 4;          // inside the border
+    let x0 = 1e9, x1 = -1, y0 = 1e9, y1 = -1;
+    for (let y = edge; y < c.height - edge; y++) for (let x = edge; x < c.width - edge; x++) {
+      const p = at(x, y); if (Math.abs(p[0] - ground[0]) + Math.abs(p[1] - ground[1]) + Math.abs(p[2] - ground[2]) > 150) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+    }
+    return [((x0 + x1 + 1) / 2 - c.width / 2) / 2, ((y0 + y1 + 1) / 2 - c.height / 2) / 2];      // in CSS pixels (2 dots each)
+  }, png)]);
+}
+const off = inked.filter(([, [dx, dy]]) => Math.abs(dx) > 0.75 || Math.abs(dy) > 0.75);
+check(off.length === 0, "short labels in boxes stand on their ink's centre, within ¾ px: " + inked.map(([s, [dx, dy]]) => `${(s.match(/"([^"]+)"/) || [0, s])[1]} ${dx.toFixed(1)},${dy.toFixed(1)}`).join(" · "));
+check(await page.$eval('.atgrid button:has(.ink:text-is("10:30"))', (b) => getComputedStyle(b.firstElementChild).fontVariantNumeric.includes("proportional")).catch(() => false), "their figures are proportional");
+await page.evaluate(() => { const t = window.dial_tool; t.set_time((t.S.t + 43200) % 86400); });
+await page.waitForTimeout(100);
+check(await page.$eval("#ampm", (b) => b.firstElementChild && b.firstElementChild.classList.contains("ink")), "a label whose words change (AM → PM) is measured again");
 
 // ── under a finger: small controls are pressed from a little outside their edge too ──
 const touch = await browser.newContext({ viewport: { width: 1180, height: 820 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true });
