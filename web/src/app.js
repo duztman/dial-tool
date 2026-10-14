@@ -11,7 +11,7 @@ import { svg_document, pdf_document, png_with_dpi, file_name } from "./output.js
 import { FONT_LIST, FONT_SITE } from "./font_list.js";
 import { EXAMPLES } from "./examples.js";
 import { GALLERY } from "./gallery.js";
-import { start_ink } from "./ink.js";
+import { start_ink, offset as ink_offset } from "./ink.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const el = (tag, props = {}, ...children) => {
@@ -464,7 +464,13 @@ const ROWS = {
 };
 // the day slider's steps: every hour, and 10:10 — hands spread like a smile, the pose watches are photographed in
 const DAY_STEPS = [...Array.from({ length: 12 }, (_, h) => [h * 3600, String(h || 12), false]), [10 * 3600 + 10 * 60, "10:10", true]].sort((a, b) => a[0] - b[0]);
-const SPEEDS = [[1, "Real time"], [60, "A minute every second"], [720, "An hour every five seconds: twelve hours in a minute"]];
+// how fast time runs: one slider from half speed to 720×, on a log scale, with humps on its track at 1× (larger),
+// 6×, 60× and 720× (Okay, 14 Oct 2026, 23:26: "a regular sliding track with humps on it on 1 (larger), 6 then
+// logarithmicly up to 720"; "slightly slower is acceptable": it starts at 0.5×). Near a hump the slider snaps onto
+// it. The speed is written beside the track, not on its thumb, which a finger covers.
+const SPEED_LO = 0.5, SPEED_HI = 720, SPEED_HUMPS = [1, 6, 60, 720], SPEED_SNAP = 0.025;
+const speed_place = (k) => Math.log(k / SPEED_LO) / Math.log(SPEED_HI / SPEED_LO);      // a speed → 0 to 1 along the track
+const speed_word = (k) => (k >= 10 ? String(Math.round(k)) : String(+k.toFixed(1))) + "×";
 const SECTIONS = Object.keys(ROWS);                // their numbers are what ui_section stores (R9)
 const TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];      // left to right. Guides is a switch on the preview (Okay, 12 Oct 2026)
 for (const name of SECTIONS) for (const row of ROWS[name]) row.scope ??= name === "Rings" ? "ring" : "global";
@@ -736,21 +742,26 @@ class DialTool {
     this.time_field.onchange = () => { const t = parse_time(this.time_field.value, this.S.t >= 43200); if (t !== null) this.set_time(t); else this.sync_time(); this.time_field.value = fmt_time(this.S.t); };      // "15:20" reads back as 3:20:00, PM
     // which half of the day: the hands can't say, an am · pm window can (it follows the time shown). Typing "15:20" or "3:20 pm" sets it too.
     this.half_button = el("button", { type: "button", id: "ampm", className: "half", title: "Morning or afternoon: an am · pm window follows it", onclick: () => this.set_time((this.S.t + 43200) % 86400) });
-    const time_box = el("span", { className: "timebox" }, this.time_field, this.half_button);
+    const time_box = el("span", { className: "timebox" }, el("span", { className: "timewell" }, this.time_field), this.half_button);
     this.time_slider = el("input", { id: "time-slider", type: "range", min: 0, max: 43199, step: 1 });
     this.time_slider.oninput = () => this.set_time(+this.time_slider.value + this.half());
-    this.play_button = el("button", { type: "button", className: "icon", id: "play", onclick: () => this.play(!this.playing) });
-    this.status = el("div", { className: "status" });
-    const side = el("button", { type: "button", className: "icon side", id: "panel-toggle", title: "Hide or show the settings", ariaLabel: "Hide or show the settings", onclick: () => this.show_panel(root.classList.contains("nopanel")) });
-    side.innerHTML = icon(TOOL_ICONS.panel);
-    // the bar, in three parts: what is selected · time (play, how fast, the time, the slider, now) · view (zoom out, in, fit)
+    this.play_button = el("button", { type: "button", className: "icon play", id: "play", onclick: () => this.play(!this.playing) });
+    this.status = el("div", { className: "status" });      // what is selected, the size, the build time: kept, not shown (Okay, 14 Oct 2026, 23:19: "hide it")
+    // the bar, in two parts: time (play, how fast, the time and its half of the day, now, the day slider) · view
+    // (how to zoom, zoom out, in, fit). The panel's square left the bar (Okay, 14 Oct 2026, 23:19: it "doesn't work
+    // anyway"; build list #190)
     this.speed = 1;
-    this.speeds = el("span", { className: "segs speeds", role: "radiogroup", ariaLabel: "How fast time runs" });
-    for (const [k, title] of SPEEDS) {
-      const b = el("button", { type: "button", id: "speed-" + k, textContent: k + "×", title, onclick: () => this.set_speed(k) });
-      b.setAttribute("role", "radio");
-      this.speeds.append(b);
-    }
+    this.speed_slider = el("input", { id: "speed", type: "range", min: 0, max: 1000, step: 1, ariaLabel: "How fast time runs", title: "How fast time runs: 0.5× to 720×" });
+    this.speed_slider.oninput = () => {
+      let p = +this.speed_slider.value / 1000, k = SPEED_LO * (SPEED_HI / SPEED_LO) ** p;
+      const near = SPEED_HUMPS.find((h) => Math.abs(speed_place(h) - p) < SPEED_SNAP);
+      if (near) k = near;
+      this.set_speed(k);
+    };
+    this.speed_word = el("span", { className: "speedword", id: "speed-word" });
+    const humps = el("span", { className: "humps", ariaHidden: "true" });
+    for (const h of SPEED_HUMPS) { const b = el("i", { className: h === 1 ? "hump big" : "hump" }); b.style.setProperty("--at", speed_place(h).toFixed(4)); humps.append(b); }
+    this.speeds = el("span", { className: "speeds" }, this.speed_word, el("span", { className: "speedtrack" }, humps, this.speed_slider));
     const view = (id, title, inside, act) => { const b = el("button", { type: "button", className: "icon", id, title, ariaLabel: title, onclick: act }); b.innerHTML = icon(inside); return b; };
     const middle = () => [this.svg.clientWidth / 2, this.svg.clientHeight / 2];
     // the day: the slider, and under it the steps a click snaps to — the twelve hours and 10:10, the pose watches are shown in
@@ -777,10 +788,10 @@ class DialTool {
     this.watchers = [new ResizeObserver(() => this.draw_ruler())];      // closed with the tool (close)
     this.watchers[0].observe(this.time_slider);
     const bar = el("footer", { className: "bar" },
-      el("div", { className: "lead" }, side, this.play_button, this.speeds, time_box,
+      el("div", { className: "lead" }, this.play_button, this.speeds, time_box,
         el("button", { type: "button", id: "now", textContent: "Now", title: "The time it is now", onclick: () => { const d = new Date(); this.set_time(d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000); } })),
       el("div", { className: "group day" }, this.ruler, this.time_slider, steps),
-      el("div", { className: "group viewing" }, this.status,
+      el("div", { className: "group viewing" }, this.status, this.zoom_hint(),
         el("span", { className: "zooms" },
           view("zoom-out", "Zoom out", SIGNS.minus, () => { this.zoom(1 / 1.4, middle()); this.render(); }),
           view("zoom-in", "Zoom in", SIGNS.plus, () => { this.zoom(1.4, middle()); this.render(); })),
@@ -792,17 +803,24 @@ class DialTool {
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     requestAnimationFrame(() => this.level_title());
     this.play_icon();
-    let shown = true;
-    try { shown = localStorage.getItem("dial-tool-panel") !== "off"; } catch (e) { /* not kept */ }
-    if (!shown) this.show_panel(false);
+    try { localStorage.removeItem("dial-tool-panel"); } catch (e) { /* not kept */ }      // the panel can't be put away any more: forget that it was
     this.watchers.push(new ResizeObserver(() => this.resized()));
     this.watchers.at(-1).observe(this.svg);
   }
 
-  /** the whole panel, away or back: the dial gets the window. Remembered by this browser. */
+  /** how to zoom, beside the zoom buttons: words, then a faint magnifier, nothing to press (Okay, 14 Oct 2026,
+   *  23:19: "say cmd+scroll is zoom in out attached to the zoom area. Put a magnifier icon at the end"; 23:26: "at the
+   *  end, not a button, faint"). On a screen without a pointer the words say what a finger does. */
+  zoom_hint() {
+    const hint = el("span", { className: "zoomhint" }, el("span", { className: "pointer", textContent: "⌘ + scroll to zoom" }), el("span", { className: "finger", textContent: "Pinch to zoom" }));
+    hint.insertAdjacentHTML("beforeend", icon(TOOL_ICONS.find));
+    return hint;
+  }
+
+  /** the whole panel, away or back: the dial gets the window. Remembered by this browser. (Since #190 nothing in
+   *  the window calls it; kept for the notes.) */
   show_panel(on) {
     $("#app").classList.toggle("nopanel", !on);
-    $("#panel-toggle").setAttribute("aria-pressed", String(!on));
     try { localStorage.setItem("dial-tool-panel", on ? "on" : "off"); } catch (e) { /* not kept */ }
   }
 
@@ -3204,10 +3222,19 @@ class DialTool {
   sync_time() {
     const t12 = ((this.S.t % 43200) + 43200) % 43200;
     if (document.activeElement !== this.time_field) this.time_field.value = fmt_time(this.S.t);
+    // centred on its ink, measured with every figure a 0, so it stands still while its figures change (ink.js)
+    const zeros = this.time_field.value.replace(/[0-9]/g, "0");
+    if (zeros !== this.time_zeros) {
+      this.time_zeros = zeros;
+      const [dx, dy] = ink_offset(zeros, getComputedStyle(this.time_field));
+      this.time_field.style.setProperty("--ink-dx", dx + "px");
+      this.time_field.style.setProperty("--ink-dy", dy + "px");
+    }
     if (document.activeElement !== this.time_slider || this.playing) this.time_slider.value = Math.floor(t12);
     for (const b of document.querySelectorAll(".steps12 button")) b.classList.toggle("on", Math.abs(+b.dataset.t - t12) < 0.5);
     const word = this.half() ? "PM" : "AM";
     if (this.half_button.textContent !== word) this.half_button.textContent = word;
+    this.half_button.classList.toggle("pm", word === "PM");      // its window: light in the morning, dark in the afternoon
   }
 
   set_time(t) {
@@ -3242,7 +3269,10 @@ class DialTool {
   set_speed(k) {
     this.speed = k;
     if (this.playing) this.play_from = [performance.now(), this.S.t];
-    [...this.speeds.children].forEach((b) => { const on = b.id === "speed-" + k; b.classList.toggle("on", on); b.setAttribute("aria-checked", String(on)); });
+    const p = Math.round(speed_place(k) * 1000);
+    if (document.activeElement !== this.speed_slider || Math.abs(+this.speed_slider.value - p) > 1000 * SPEED_SNAP) this.speed_slider.value = p;
+    this.speed_word.textContent = speed_word(k);
+    this.speeds.classList.toggle("real", k === 1);
   }
 
   play(on) {

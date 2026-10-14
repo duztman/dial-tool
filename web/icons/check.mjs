@@ -120,8 +120,7 @@ await visit("Windows", async () => { await tab("Date"); await page.locator("labe
 for (const kind of ["day", "am · pm", "moon"]) await visit("window " + kind, () => page.locator(".form .pickt:visible", { hasText: kind }).first().click());
 await visit("window off", () => page.click("#window-card-2"));
 await visit("Export", () => tab("Export"));
-await visit("panel away", () => page.click("#panel-toggle"));
-await page.click("#panel-toggle");
+// "panel away" is gone: the panel's square left the bar (#190, 14 Oct 2026)
 await browser.close();
 
 // ── the rules ───────────────────────────────────────────────

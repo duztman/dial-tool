@@ -83,7 +83,7 @@ await click_mm(...clock(10, 120));                                  // the numer
 check(await S("S.ui_section === 1 && ['ticks','markers','numerals','band'][S.rings[S.ui_ring].kind] === 'numerals' && t.nudge_at === '4'"), "click the numeral 4 → Rings, the numerals ring, and Nudge is set to that numeral");
 await click_mm(...clock(13, 150));                                  // the marker at 5
 check(await S("['ticks','markers','numerals','band'][S.rings[S.ui_ring].kind] === 'markers'"), "click a marker → the markers ring");
-await click_mm(...clock(13.9, 93));                                 // beside a thin tick (in its zone)
+await click_mm(...clock(13.9, 94));                                 // beside a thin tick (in its zone); 93° until the bar grew (#190): with the preview 10 shorter it fell to the marker at 3
 check(await S("['ticks','markers','numerals','band'][S.rings[S.ui_ring].kind] === 'ticks'"), "click in the ticks' zone → the ticks ring");
 const hands = await S("(() => { const a = [S.t / 43200 * 360, (S.t % 3600) / 3600 * 360]; return a; })()");
 await click_mm(...clock(6, hands[0]));
@@ -1064,13 +1064,18 @@ const t1 = await S("S.t");
 check(await page.getAttribute("#play", "title") === "Pause", "while playing, the button offers Pause");
 await page.click("#play");
 check(t1 - t0 > 0.4 && t1 - t0 < 1.5, `Play moves the time (${(t1 - t0).toFixed(2)} s in 0.6 s)`);
-await page.click("#speed-60");
+// how fast: a slider on a log scale; near a hump (1×, 6×, 60×, 720×) it snaps onto it
+const at_speed = async (k) => page.$eval("#speed", (e, k) => { e.value = Math.round(Math.log(k / 0.5) / Math.log(1440) * 1000) + 8; e.dispatchEvent(new Event("input", { bubbles: true })); }, k);
+await at_speed(60);
+check(await S("t.speed === 60") && await page.textContent("#speed-word") === "60×", "the speed slider snaps onto 60× near its hump, and says so beside the track");
 await page.click("#play");
 await page.waitForTimeout(600);
 const t2 = await S("S.t");
 await page.click("#play");
-check(t2 - t1 > 24 && t2 - t1 < 90 && await page.getAttribute("#speed-60", "aria-checked") === "true", `60×: a minute every second (${(t2 - t1).toFixed(0)} s in 0.6 s)`);
-await page.click("#speed-1");
+check(t2 - t1 > 24 && t2 - t1 < 90, `60×: a minute every second (${(t2 - t1).toFixed(0)} s in 0.6 s)`);
+await page.$eval("#speed", (e) => { e.value = 0; e.dispatchEvent(new Event("input", { bubbles: true })); });
+check(await S("t.speed === 0.5") && await page.textContent("#speed-word") === "0.5×", "at its left end the slider is half speed");
+await at_speed(1);
 const z1 = await S("t.z");
 await page.click("#zoom-in");
 check(near(await S("t.z") / z1, 1.4, 0.01), "the + in the bar zooms in by 1.4");
@@ -1094,7 +1099,8 @@ check(await S(`S.t % ${cut} !== 0 && S.t > 6 * 3600`), `a drag does not snap (${
 await page.setViewportSize({ width: 2200, height: 900 });
 await frame();
 const finer = 60 * +(await page.getAttribute(".ruler", "data-minutes"));
-check(finer < cut, `on a wider window the ruler is cut finer (every ${finer / 60} minutes at 2200 wide)`);
+const wide_ruler = await page.$eval("#time-slider", (e) => Math.round(e.getBoundingClientRect().width));
+check(finer === cut && wide_ruler <= 518, `on a wider window the ruler stays as wide as on an iPad (${wide_ruler}), cut as before (every ${finer / 60} minutes; Okay, 14 Oct 2026: limit it to the iPad's width)`);
 await page.setViewportSize({ width: 1440, height: 900 });
 await frame();
 const under = await page.evaluate(() => { const l = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left), row = [...document.querySelectorAll(".form .row.num")].find((e) => e.offsetParent) || document.querySelector(".row.num"); return { play: l("#play"), col: Math.round(row.getBoundingClientRect().left), now_right: Math.round(document.querySelector("#now").getBoundingClientRect().right), row_right: Math.round(row.getBoundingClientRect().right) }; });
@@ -1102,8 +1108,8 @@ check(under.play === under.col && under.now_right === under.row_right, `under th
 const pane_lines = await page.$$eval(".form .pane", (h) => h.filter((e) => e.offsetParent).map((e) => Math.round(e.getBoundingClientRect().left) + "/" + Math.round(e.querySelector(".eye svg").getBoundingClientRect().left)));
 check(pane_lines.length > 0 && pane_lines.every((x) => x === "24/26"), `a pane's line starts at the margin, over its eye, which stands 2 further in (${pane_lines[0]})`);
 // the bar keeps the columns: widths of one or two columns, and the Guides switch ends on the panel's last column
-const fits = await page.evaluate(() => { const w = (q) => Math.round(document.querySelector(q).getBoundingClientRect().width), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); return { play: w("#play"), speeds: w(".speeds"), time: w("#time"), now: w("#now"), zooms: w(".zooms"), fit: w("#fit"), side: Math.round(document.querySelector("#panel-toggle").getBoundingClientRect().left + 13) }; });
-check(fits.play === 54 && fits.now === 54 && fits.zooms === 54 && fits.fit === 54 && fits.speeds === 120 && fits.time === 120 && fits.side === 32, `the bar fits the columns (${JSON.stringify(fits)})`);
+const fits = await page.evaluate(() => { const w = (q) => Math.round(document.querySelector(q).getBoundingClientRect().width), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); return { play: w("#play"), speeds: w(".speeds"), time: w(".timebox"), now: w("#now"), zooms: w(".zooms"), fit: w("#fit") }; });
+check(fits.play === 32 && fits.now === 54 && fits.zooms === 54 && fits.fit === 54 && fits.speeds === 120 && fits.time === 120, `the bar fits the columns: a round play, then two, two and one (${JSON.stringify(fits)})`);
 await shot("7b-bar");
 await page.fill("#time", "3:20:10");
 await page.press("#time", "Enter");
@@ -1314,13 +1320,13 @@ await tab("Export");
   check(await S("JSON.stringify(S.rings.map((r) => r.name))") === before, "and ⌘Z brings the dial that was there back");
 }
 
-// ── the panel put away, and a phone ──
-await page.click("#panel-toggle");
-await frame();
-check(await page.isHidden(".panel") && await page.$eval(".preview", (e) => e.getBoundingClientRect().left) < 2, "the square in the bar puts the panel away: the dial has the whole window");
-await shot("10-no-panel");
-await page.click("#panel-toggle");
-check(await page.isVisible(".panel"), "and brings it back");
+// ── the bar (Okay, 14 Oct 2026, 23:19, #190), and a phone ──
+const look = await page.evaluate(() => { const q = (s) => document.querySelector(s), r = (s) => q(s).getBoundingClientRect(), c = (s) => getComputedStyle(q(s));
+  return { square: !q("#panel-toggle"), bar: Math.round(r(".bar").height), play: [Math.round(r("#play").width), Math.round(r("#play").height), c("#play").borderRadius], mono: c("#time").fontFamily.includes("monospace"),
+    status: c(".bar .status").display, hint: q(".zoomhint").textContent, ruler: Math.round(r("#time-slider").width) }; });
+check(look.square && look.bar === 62 && look.play[0] === look.play[1] && look.play[2] === "50%" && look.mono && look.status === "none" && look.hint.includes("⌘ + scroll") && look.ruler <= 518,
+  `the bar: a fifth higher (${look.bar}), no panel square, a round play, the time in monospace, no status line, how to zoom beside the zoom, the day slider no wider than an iPad's (${look.ruler})`);
+await shot("10-bar");
 await page.setViewportSize({ width: 390, height: 844 });
 await tab("Rings");
 await frame();
@@ -1336,7 +1342,7 @@ await page.setViewportSize({ width: 1440, height: 900 });
 await S("(t.S.da_on = true, t.S.ui_section = 3, t.show_section(), t.static_dirty = true, t.sync_rows(), t.render(), true)");
 await page.waitForTimeout(300);
 const inked = [];
-for (const sel of ['.atgrid button:has(.ink:text-is("10:30"))', '.atgrid button:has(.ink:text-is("1:30"))', '.atgrid button:has(.ink:text-is("12"))', ".atgrid button.on", "#speed-720", "#speed-1", "#ampm", '.steps12 button:has(.ink:text-is("1"))']) {
+for (const sel of ['.atgrid button:has(.ink:text-is("10:30"))', '.atgrid button:has(.ink:text-is("1:30"))', '.atgrid button:has(.ink:text-is("12"))', ".atgrid button.on", "#ampm", '.steps12 button:has(.ink:text-is("1"))']) {
   const box = page.locator(sel).first();
   const png = (await box.screenshot()).toString("base64");
   // the ink: dots that differ clearly from the box's own ground (its middle row's first dots inside the border)

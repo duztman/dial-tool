@@ -151,7 +151,7 @@ async function walk(page, screen, with_pointer) {
   await attempt("window off", async () => { await page.click("#window-card-2"); await look("Windows, one not shown"); await page.click("#window-card-0"); });
   await tab(page, "Export");
   await look("Export");
-  await attempt("panel away", async () => { await page.click("#panel-toggle"); await snap(page, S("panel put away")); await page.click("#panel-toggle"); });
+  // "panel away": the panel's square left the bar (#190, 14 Oct 2026)
   await attempt("gallery dial", async () => { await page.click('.gallery a:has-text("Diver")'); await page.waitForTimeout(500); await tab(page, "Rings"); await snap(page, S("Diver from the Gallery, Rings")); await tab(page, "Dial"); await snap(page, S("Diver from the Gallery, Dial")); });
 }
 

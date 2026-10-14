@@ -13,12 +13,13 @@
 // design canon §2): a "1" no longer takes the width of a "0".
 //
 // Which labels: the selectors in INKED — boxes whose label stands still. Numbers that change while you drag
-// (fields, the time) keep tabular figures and are left alone. A label whose text changes (AM → PM, ··· → 2:15)
+// (fields) keep tabular figures and are left alone. The time in the bar is the one field centred on its ink
+// (Okay, 14 Oct 2026, 23:19: "we have the new ink weight centerer, apply that"): monospace, and measured as
+// "00:00:00" — every figure a 0 — so it does not shift as its figures change (app.js, sync_time). A label whose text changes (AM → PM, ··· → 2:15)
 // is measured again; so is every label once the fonts have loaded.
 
 const INKED = [
   ".atgrid button",          // a window's places: 3 · 6 · 9 · 12 · 1:30 … 10:30 · 4 · ···
-  ".speeds > button",        // 1× · 60× · 720×
   ".steps12 button",         // the bottom bar's hours and 10:10
   "#ampm",                   // AM · PM in the time's box
   "#unit",                   // mm · pt · in · lig
@@ -29,7 +30,7 @@ const pen = canvas.getContext("2d");
 const known = new Map();       // "font|text" → [dx, dy] in CSS pixels: a label is measured once per face and size
 
 /** how far a label's ink centre is from its box centre: [dx, dy], in CSS pixels, y down. */
-function offset(text, style) {
+export function offset(text, style) {
   const font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
   const key = font + "|" + text;
   if (!known.has(key)) {

@@ -1,7 +1,9 @@
 @layer bar {
-  /* the bar: under the panel and the preview, on the panel's columns. Under the panel (.lead): the panel's
-     square in the toggle column, then play 1 · speeds 2 · time 2 · Now 1 — quiet, so they don't shout under
-     the panel. Under the preview: the day slider with its steps, then the view: − + 1 · Fit 1. */
+  /* the bar: under the panel and the preview, on the panel's columns. Under the panel (.lead), from the first of the
+     six columns: play 1 · how fast 2 · the time and its half of the day 2 · Now 1 (the toggle column stays empty since
+     the panel's square left, #190) — quiet, so they don't shout under the panel, but for the time, which sings.
+     Under the preview: the day slider with its steps, no wider than on an iPad, then the view: how to zoom · − + 1 ·
+     Fit 1, at the right. (Okay, 14 Oct 2026, 23:19 and 23:26, build list #190) */
   .bar { grid-column: 1 / -1; display: flex; align-items: stretch; height: var(--bar-height); padding-right: var(--margin); background: var(--bar); color: var(--bar-ink); border-top: var(--hair) solid var(--bar-rule); }
   .bar .lead { flex: none; display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; width: var(--panel); padding: 0 var(--margin); }
   .bar .group { display: flex; align-items: center; gap: var(--gap); padding: 0 var(--gap); border-left: var(--hair) solid var(--bar-rule); }
@@ -16,26 +18,53 @@
   .bar .lead button:active { background: var(--bar-dim); color: var(--bar-ink); }
   .bar .lead .segs > button.on { background: var(--bar-on); color: var(--white); border-color: var(--bar-dim); }
   .bar .lead .segs > button + button { border-left: 0; }
-  .bar .lead .side { justify-self: center; width: var(--control); border-color: transparent; }      /* centred on the toggle column, like the eyes above it */
-  .bar .side[aria-pressed="true"] { background: var(--bar-ink); color: var(--bar); }
+  /* play: a round red button that sets time running (Okay: "Play should be a round red button that turns on time") */
+  .bar .lead .play { grid-column: 2; justify-self: start; width: var(--control-large); height: var(--control-large); border: 0; border-radius: 50%; background: var(--play); color: var(--white); }
+  .bar .lead .play:hover { background: var(--play-hover); }
+  .bar .lead .play:active { background: var(--play); color: var(--white); }
   .bar .speeds, .bar .timebox { grid-column: span 2; }
-  /* AM · PM stands inside the time's box, at its right end: one small word that a press turns over */
-  .bar .timebox { position: relative; display: grid; }
-  .bar .lead .timebox .half { position: absolute; right: 0; top: 0; width: var(--half); border-color: transparent; font-size: var(--t-xs); letter-spacing: 0.04em; color: var(--bar-quiet); }
-  .bar .lead .timebox .half:hover { color: var(--bar-ink); }
-  .bar .timebox .time { padding-right: calc(var(--half) - var(--unit)); }
+  /* how fast: a box with the speed in words, then its track — a hairline with humps at 1× (larger), 6×, 60×, 720×
+     (--at: how far along the track, 0 to 1; the thumb's half-width at each end, so a hump sits under the thumb's
+     centre when the speed is that one). The thumb is a plain light disc: nothing written on it. */
+  .bar .speeds { display: flex; align-items: center; gap: var(--u2); height: var(--bar-control); padding: 0 var(--u2); border: var(--hair) solid var(--bar-dim); }
+  .bar .speedword { flex: none; min-width: var(--speed-word); font-family: var(--mono); font-size: var(--t-s); color: var(--bar-quiet); }
+  .bar .speeds.real .speedword { color: var(--bar-ink); }
+  .bar .speedtrack { position: relative; flex: 1; min-width: 0; height: 100%; }
+  .bar .humps { position: absolute; inset: 0 calc(var(--speed-thumb) / 2); pointer-events: none; }
+  .bar .humps::before { content: ""; position: absolute; left: calc(var(--speed-thumb) / -2); right: calc(var(--speed-thumb) / -2); top: 50%; border-top: var(--hair) solid var(--bar-edge); }
+  .bar .hump { position: absolute; left: calc(var(--at) * 100%); top: 50%; width: var(--hump); height: calc(var(--hump) / 2); translate: -50% -100%; border-radius: var(--hump) var(--hump) 0 0; background: var(--bar-edge); }
+  .bar .hump.big { width: var(--hump-big); height: calc(var(--hump-big) / 2); border-radius: var(--hump-big) var(--hump-big) 0 0; background: var(--bar-ink); }
+  .bar .speedtrack input[type="range"] { position: absolute; inset: 0; height: 100%; }
+  .bar .speedtrack input[type="range"]::-webkit-slider-runnable-track { height: 100%; background: none; }
+  .bar .speedtrack input[type="range"]::-webkit-slider-thumb { width: var(--speed-thumb); height: var(--speed-thumb); margin-top: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2); background: var(--bar-ink); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  .bar .speedtrack input[type="range"]::-moz-range-track { height: 100%; background: none; }
+  .bar .speedtrack input[type="range"]::-moz-range-progress { background: none; }
+  .bar .speedtrack input[type="range"]::-moz-range-thumb { width: var(--speed-thumb); height: var(--speed-thumb); background: var(--bar-ink); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  /* the time sings: larger, monospace, bright, centred on its ink (app.js measures it, every figure a 0, so it
+     stands still). Beside it its own window for the half of the day: AM light, PM dark; one word, the other gone. */
+  .bar .timebox { display: flex; gap: var(--u1); }
+  .bar .timewell { flex: 1; min-width: 0; display: grid; height: var(--bar-control); overflow: hidden; border: var(--hair) solid var(--bar-edge); }
+  .bar .timewell:hover { border-color: var(--bar-ink); }
+  .bar .lead .timewell .time { height: 100%; padding: 0; border: 0; background: none; font-family: var(--mono); font-size: var(--t-l); font-weight: 600; color: var(--white); translate: var(--ink-dx, 0) var(--ink-dy, 0); }
+  .bar .lead .timebox .half { flex: none; width: var(--half); padding: 0; font-family: var(--mono); font-size: var(--t-xs); background: var(--bar-ink); color: var(--bar); border-color: var(--bar-ink); }
+  .bar .lead .timebox .half.pm { background: var(--black); color: var(--bar-ink); border-color: var(--bar-edge); }
+  .bar .lead .timebox .half:hover { border-color: var(--white); }
   .bar .time { width: 100%; text-align: center; font-weight: 600; letter-spacing: 0.02em; }
-  .bar .viewing { padding-right: 0; }
+  .bar .viewing { margin-left: auto; padding-right: 0; }      /* at the right; the room the day slider doesn't take lies before it */
+  /* how to zoom: words and a faint magnifier, nothing to press. A pointer zooms with ⌘ + scroll, a finger pinches */
+  .bar .zoomhint { display: flex; align-items: center; gap: var(--u2); white-space: nowrap; font-size: var(--t-s); color: var(--bar-quiet); }
+  .bar .zoomhint svg { opacity: var(--faint); }
+  .bar .zoomhint .finger { display: none; }
+  @media (hover: none) { .bar .zoomhint .pointer { display: none; } .bar .zoomhint .finger { display: inline; } }
   .bar .viewing > button, .bar .zooms { flex: none; width: var(--col); }
   .bar .zooms { display: flex; }
   .bar .zooms button { flex: 1; min-width: 0; }
   .bar .zooms button + button { border-left: 0; }
-  .bar .status { max-width: var(--status-width); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: var(--t-s); opacity: 0.7; }
-  @media (max-width: 1500px) { .bar .status { display: none; } }      /* the status line needs a wide window */
+  .bar .status { display: none; }      /* hidden (Okay, 14 Oct 2026, 23:19); app.js still writes it */
 
   /* the day slider is a ruler: a line, cuts crossing it (drawn in draw_ruler, finer on a wider window), and a line
      for a handle. Nothing is filled in behind the handle: the past is not a quantity. */
-  .bar .day { position: relative; flex: 1; min-width: 0; display: grid; grid-template-rows: var(--ruler) var(--names); align-content: center; gap: 0; padding: 0 var(--u8); }
+  .bar .day { position: relative; flex: 1; min-width: 0; max-width: calc(var(--day-wide) + 2 * var(--u8)); display: grid; grid-template-rows: var(--ruler) var(--names); align-content: center; gap: 0; padding: 0 var(--u8); }
   .ruler { grid-area: 1 / 1; display: block; width: 100%; height: var(--ruler); pointer-events: none; fill: none; stroke: var(--bar-ink); stroke-width: 1; shape-rendering: crispEdges; }
   .ruler .line { opacity: 0.4; }
   .ruler .hour { opacity: 0.85; }
