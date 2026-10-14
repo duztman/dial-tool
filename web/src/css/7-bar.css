@@ -28,6 +28,7 @@
   .bar .lead .play { margin-right: calc(var(--margin) - var(--u2)); }      /* from play to how fast as far as from NOW to the bar's divider: the margin (Okay, 15 Oct 2026, 00:32, his H marks) */
   .play .arc-out { fill: var(--black); }
   .play .arc-lo { fill: none; stroke: var(--play-dark); stroke-linecap: round; }
+  .play .arc-dot { fill: var(--play-light); opacity: var(--pulse, 0); }      /* the beat's dot in the middle: there only as the cap pulses, brightest at the beat */
   .play .arc-cap { fill: color-mix(in srgb, var(--play-light) calc(var(--pulse, 0) * var(--play-pulse)), var(--play)); }      /* --pulse: 0 to 1, set by app.js (pulse) with each beat while time runs */
   .play .arc-hi { fill: none; stroke: var(--play-light); stroke-linecap: round; }
   .bar .lead .play:hover .arc-cap { fill: color-mix(in srgb, var(--play-light) calc(12% + var(--pulse, 0) * var(--play-pulse)), var(--play)); }

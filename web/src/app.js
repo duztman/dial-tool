@@ -218,7 +218,7 @@ const TOOL_ICONS = {
 // sausages as thick as the ring, touching it: light on the upper left, dark red on the lower right. Pressed — time
 // running — they change places: lit from inside.
 const ARCADE = (down) => {
-  const RING = 0.75 * 2, CAP = RIM + CURVE / 2, R = CAP + RING, C = R, mid = CAP - RING / 2;      // 1.5 · 15.5 · 17 · the sausages' middle circle
+  const RING = 0.75 * 2, CAP = RIM + CURVE / 2, R = CAP + RING, C = R, mid = CAP - RING / 2, DOT = 2.5;      // DOT: the beat's light in the middle      // 1.5 · 15.5 · 17 · the sausages' middle circle
   const arc = (from, to) => {      // a sausage along the circle of radius mid; angles: 0 = right, growing downward
     const p = (a) => `${(C + mid * Math.cos(a * Math.PI / 180)).toFixed(3)} ${(C + mid * Math.sin(a * Math.PI / 180)).toFixed(3)}`;
     return `M${p(from)}A${mid} ${mid} 0 0 1 ${p(to)}`;
@@ -226,7 +226,8 @@ const ARCADE = (down) => {
   const [light, dark] = down ? [arc(15, 135), arc(195, 315)] : [arc(195, 315), arc(15, 135)];
   return `<svg viewBox="0 0 ${2 * R} ${2 * R}" width="${2 * R}" height="${2 * R}" aria-hidden="true">`
     + `<circle class="arc-out" cx="${C}" cy="${C}" r="${R}"/><circle class="arc-cap" cx="${C}" cy="${C}" r="${CAP}"/>`
-    + `<path class="arc-hi" d="${light}" stroke-width="${RING}"/><path class="arc-lo" d="${dark}" stroke-width="${RING}"/></svg>`;
+    + `<path class="arc-hi" d="${light}" stroke-width="${RING}"/><path class="arc-lo" d="${dark}" stroke-width="${RING}"/>`
+    + `<circle class="arc-dot" cx="${C}" cy="${C}" r="${DOT}"/></svg>`;      // lit by the beat (pulse): Okay, 15 Oct 2026, 01:26: "a centered lighter accent dot on that pulse"
 };
 // a window card: a small dial with the window where it is. The window keeps four points from the rim's inner edge at
 // every angle (as on the Windows tab; Okay, 13 Oct 2026, #149): its distance from the centre is found from its own

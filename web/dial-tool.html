@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.38.1 · built 2026-10-14 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.38.2 · built 2026-10-14 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -973,6 +973,7 @@
   .bar .lead .play { margin-right: calc(var(--margin) - var(--u2)); }      /* from play to how fast as far as from NOW to the bar's divider: the margin (Okay, 15 Oct 2026, 00:32, his H marks) */
   .play .arc-out { fill: var(--black); }
   .play .arc-lo { fill: none; stroke: var(--play-dark); stroke-linecap: round; }
+  .play .arc-dot { fill: var(--play-light); opacity: var(--pulse, 0); }      /* the beat's dot in the middle: there only as the cap pulses, brightest at the beat */
   .play .arc-cap { fill: color-mix(in srgb, var(--play-light) calc(var(--pulse, 0) * var(--play-pulse)), var(--play)); }      /* --pulse: 0 to 1, set by app.js (pulse) with each beat while time runs */
   .play .arc-hi { fill: none; stroke: var(--play-light); stroke-linecap: round; }
   .bar .lead .play:hover .arc-cap { fill: color-mix(in srgb, var(--play-light) calc(12% + var(--pulse, 0) * var(--play-pulse)), var(--play)); }
@@ -5439,7 +5440,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.38.1";
+var VERSION = "beta 4.38.2";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -7407,13 +7408,13 @@ var TOOL_ICONS = {
   guides: `<mask id="guides-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18"><rect width="18" height="18" fill="white"/><path class="slash" d="M2.75 15.75L15.75 2.75" stroke="black" stroke-width="2.5" stroke-linecap="butt"/></mask><g ${sw(DENSE)}><g mask="url(#guides-cut)"><circle cx="9.25" cy="9.25" r="5.5"/><circle class="core-off" cx="9.25" cy="9.25" r="2"/><path d="M9.25 1.25V5.75M9.25 12.75V17.25M1.25 9.25H5.75M12.75 9.25H17.25"/></g><circle class="core-on" cx="9.25" cy="9.25" r="2" stroke-dasharray="1.25 0.844" stroke-linecap="butt" transform="rotate(-107.9 9.25 9.25)"/><path class="slash" d="M1.87 14.87L14.87 1.87M3.63 16.63L16.63 3.63"/></g>`
 };
 var ARCADE = (down) => {
-  const RING = 0.75 * 2, CAP = RIM + CURVE / 2, R = CAP + RING, C2 = R, mid = CAP - RING / 2;
+  const RING = 0.75 * 2, CAP = RIM + CURVE / 2, R = CAP + RING, C2 = R, mid = CAP - RING / 2, DOT = 2.5;
   const arc2 = (from, to) => {
     const p = (a) => `${(C2 + mid * Math.cos(a * Math.PI / 180)).toFixed(3)} ${(C2 + mid * Math.sin(a * Math.PI / 180)).toFixed(3)}`;
     return `M${p(from)}A${mid} ${mid} 0 0 1 ${p(to)}`;
   };
   const [light, dark] = down ? [arc2(15, 135), arc2(195, 315)] : [arc2(195, 315), arc2(15, 135)];
-  return `<svg viewBox="0 0 ${2 * R} ${2 * R}" width="${2 * R}" height="${2 * R}" aria-hidden="true"><circle class="arc-out" cx="${C2}" cy="${C2}" r="${R}"/><circle class="arc-cap" cx="${C2}" cy="${C2}" r="${CAP}"/><path class="arc-hi" d="${light}" stroke-width="${RING}"/><path class="arc-lo" d="${dark}" stroke-width="${RING}"/></svg>`;
+  return `<svg viewBox="0 0 ${2 * R} ${2 * R}" width="${2 * R}" height="${2 * R}" aria-hidden="true"><circle class="arc-out" cx="${C2}" cy="${C2}" r="${R}"/><circle class="arc-cap" cx="${C2}" cy="${C2}" r="${CAP}"/><path class="arc-hi" d="${light}" stroke-width="${RING}"/><path class="arc-lo" d="${dark}" stroke-width="${RING}"/><circle class="arc-dot" cx="${C2}" cy="${C2}" r="${DOT}"/></svg>`;
 };
 var card_pic = (angle, on) => {
   const a = angle * Math.PI / 180, s = Math.sin(a), c = -Math.cos(a), hw = 4, hh = 3.25;
