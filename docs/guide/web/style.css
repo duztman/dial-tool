@@ -1,72 +1,74 @@
 /* The web version's guidebook. Rules: docs/design.md (type §2, grid §3, colour §4, pictures §5).
-   Everything is placed by build.mjs in millimetres on the 12 × 14 grid; this file only says how things look. */
+   Everything is placed by build.mjs in millimetres on the 12 × 14 grid; this file only says how things look.
+   14 Oct 2026, Okay's notes: text a touch smaller with more line height; no one-word lines; frames veiled, rays in the
+   section's colour, the window's frame darker and thicker; the part and page as a tab at the top left. */
 @page { size: 297mm 210mm; margin: 0; }
 :root { --paper: #FCFCFA; --ground: #ECECE8; --ink: #111111; --grey: #5C5C58; --line: #B9B9B4; --b: 1.375mm; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-body { font-family: "Inter", sans-serif; font-weight: 400; font-size: 10pt; line-height: calc(var(--b) * 3); color: var(--ink);
-       background: #888; font-feature-settings: "kern", "calt", "tnum"; }
+body { font-family: "Inter", sans-serif; font-weight: 400; font-size: 9.5pt; line-height: calc(var(--b) * 3.25); color: var(--ink);
+       background: #888; font-feature-settings: "kern", "calt", "tnum"; text-wrap: pretty; }
 em { font-style: normal; font-weight: 600; }
 a { color: inherit; text-decoration: underline; text-decoration-thickness: .15mm; text-underline-offset: .6mm; }
 .page { width: 297mm; height: 210mm; position: relative; overflow: hidden; background: var(--paper); break-after: page; }
 .page > * { position: absolute; }
 
-/* head: rows 1–2 — the rule, the number, the title (32 pt light), the lead (10 pt semibold) */
+/* head: the rule; a tab in the part's colour hanging from it, part and page together; the title; the lead */
 .head { border-top: .3mm solid var(--ink); }
-.head .tno { position: absolute; top: calc(var(--b) * 1.5); font-size: 8pt; font-weight: 600; line-height: calc(var(--b) * 2.5); }
-.head h1 { position: absolute; top: calc(var(--b) * 4); font-size: 32pt; font-weight: 300; line-height: calc(var(--b) * 8); letter-spacing: -.01em; }
-.head .lead { position: absolute; top: calc(var(--b) * 4.6); font-weight: 600; }
+.head .ptab { position: absolute; left: 0; top: 0; height: 5.2mm; padding: 0 2mm; background: var(--sig); font-size: 8pt; font-weight: 600;
+              line-height: 5.2mm; font-feature-settings: "tnum"; }
+.head .ptab span { margin-left: 1.2mm; font-weight: 400; }
+.head h1 { position: absolute; top: calc(var(--b) * 4.4); font-size: 32pt; font-weight: 300; line-height: calc(var(--b) * 8); letter-spacing: -.01em; }
+.head .lead { position: absolute; top: calc(var(--b) * 4.8); font-size: 10pt; font-weight: 600; line-height: calc(var(--b) * 3.4); text-wrap: nowrap; }
 
 /* blocks: a hairline above, a label in semibold, the words */
 .block { border-top: .2mm solid var(--line); padding-top: calc(var(--b) * 1); overflow: hidden; }
 .block p b { font-weight: 600; }
-.block.small { font-size: 8pt; line-height: calc(var(--b) * 2.5); }
-.block.step { border-top: none; padding-top: calc(var(--b) * 1); }
+.block.small { font-size: 7.75pt; line-height: calc(var(--b) * 2.7); }
 .block.watch { padding-left: 7mm; }
 .block .tri { position: absolute; left: 0; top: calc(var(--b) * 1.2); width: 4.6mm; height: 4.6mm; fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; }
 
 /* pictures: every picture sits on the ground (canon §5) */
 .pic { background: var(--ground); display: flex; align-items: center; justify-content: center; }
 .pic img { display: block; }
+.pic .file { width: 80%; aspect-ratio: 1; background: #FFFFFF; outline: .2mm solid var(--line); position: relative; display: flex; align-items: center; justify-content: center; }
+.pic .file img { width: 100%; }
+.pic .file span { position: absolute; bottom: -4.6mm; left: 0; font-size: 7pt; color: var(--grey); white-space: nowrap; }
 
-/* the inset (Okay, 14 Oct 2026): a wider span of the window, grey and faded; the part that matters, larger, framed, in full */
-.inset { background: var(--ground); overflow: hidden; }
-.inset .ctx { position: absolute; left: 0; top: 0; overflow: hidden; }
-.inset .ctx img { position: absolute; filter: grayscale(1); opacity: .32; }
-.inset .lead { position: absolute; left: 0; top: 0; overflow: visible; }
-.inset .lead line { stroke: var(--grey); stroke-width: .15; }
-.inset .lead .from { fill: none; stroke: var(--ink); stroke-width: .25; }
-.inset .zoom { position: absolute; overflow: hidden; outline: .3mm solid var(--ink); background: var(--paper); }
-.inset .zoom img { position: absolute; }
+/* frames (Okay, 14 Oct 2026): the window under, grey, lower in contrast, under a darker veil;
+   over it what matters, in full. Rays and the source box thin, in the section's colour; the window's frame thick, darker. */
+.frame { background: var(--ground); overflow: hidden; }
+.frame img { position: absolute; display: block; }
+.frame .ctx { position: absolute; left: 0; top: 0; overflow: hidden; }
+.frame .ctx img { filter: grayscale(1) contrast(.62) brightness(.9); }
+.frame .veil { position: absolute; inset: 0; background: rgba(40, 40, 36, .22); }
+.frame .rays { position: absolute; left: 0; top: 0; overflow: visible; }
+.frame .rays line, .frame .rays rect { fill: none; stroke: var(--sig); stroke-width: .3; }
+.frame .win, .frame .lift { position: absolute; overflow: hidden; outline: .55mm solid var(--sig-dark); background: var(--paper); }
 
 /* page 04: the window whole, grey, its parts boxed and named */
 .whole { overflow: hidden; outline: .2mm solid var(--line); }
 .whole img { width: 100%; display: block; filter: grayscale(1) contrast(.92); }
 .marks { left: 0; top: 0; width: 297mm; height: 210mm; overflow: visible; }
-.marks rect { fill: none; stroke: var(--ink); stroke-width: .3; }
-.marks polyline { fill: none; stroke: var(--ink); stroke-width: .15; }
-.plabel { font-size: 8pt; line-height: calc(var(--b) * 2.5); }
+.marks rect { fill: none; stroke: var(--sig-dark); stroke-width: .45; }
+.marks polyline { fill: none; stroke: var(--sig-dark); stroke-width: .2; }
+.plabel { font-size: 7.75pt; line-height: calc(var(--b) * 2.7); }
 .plabel.l { text-align: right; }
-
-/* thumb index: a part's tab at the page's edge */
-.thumb { right: 0; width: 6mm; font-size: 8pt; font-weight: 600; text-align: center; padding-top: 1.4mm; }
 
 /* cover */
 .cover { background: #1A1A1A; }
 .cover .field { top: 0; height: 210mm; }
 .cover .field.dark { left: 0; background: #1A1A1A; }
 .cover .half { top: 0; height: 210mm; overflow: hidden; }
-.cover .half img { position: absolute; }
-.cover .mask { filter: invert(1); opacity: .22; }
+.cover .half img, .cover .half svg { position: absolute; left: 0; top: 0; }
+.cover .half img { left: auto; top: auto; }
+.cover .ghost { opacity: .35; filter: grayscale(1); }
 .cover .ctitle { color: #FCFCFA; font-size: 96pt; font-weight: 300; line-height: 30mm; letter-spacing: -.02em; }
 .cover .csub, .cover .cdesc, .cover .ccontents, .cover .cnote { color: #D8D8D2; }
 .cover .csub b { color: #FCFCFA; font-weight: 600; }
-.cover .cdesc { font-size: 10pt; }
-.cover .ccontents { font-size: 8pt; line-height: calc(var(--b) * 2.5); columns: 2; column-gap: 4mm; }
+.cover .cdesc { font-size: 9.5pt; }
+.cover .ccontents { font-size: 7.75pt; line-height: calc(var(--b) * 2.7); columns: 2; column-gap: 4mm; }
 .cover .cpart { break-inside: avoid; margin-bottom: calc(var(--b) * 1.5); }
 .cover .cpart span { display: block; color: #FCFCFA; font-weight: 600; }
 .cover .cpart i { font-style: normal; color: #9A9A94; }
-.cover .cnote { font-size: 8pt; color: #9A9A94; }
-.pic .file { width: 80%; aspect-ratio: 1; background: #FFFFFF; outline: .2mm solid var(--line); position: relative; display: flex; align-items: center; justify-content: center; }
-.pic .file img { width: 100%; }
-.pic .file span { position: absolute; bottom: -4.6mm; left: 0; font-size: 7pt; color: var(--grey); white-space: nowrap; }
+.cover .cnote { font-size: 7pt; line-height: calc(var(--b) * 2.5); color: #9A9A94; }

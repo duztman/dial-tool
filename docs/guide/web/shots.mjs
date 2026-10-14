@@ -75,6 +75,11 @@ const pop_ids = await page.evaluate(() => [...document.querySelectorAll("[id^=po
 console.log("pop ids:", pop_ids);
 await page.keyboard.press("Escape"); await page.mouse.click(1200, 120); await frame();
 
+// the units box, open
+await page.click("#unit"); await page.waitForTimeout(200);
+await shot("unit", { menu: "#unit-menu", unit: "#unit" });
+await page.click("#unit"); await page.mouse.click(1200, 120); await frame();
+
 await tab("Rings");
 await shot("rings", { list: ".ringlist", tools: ".headtools", drawer: ".ringline, .lineholder", pinned: ".pinned", panel: "aside" });
 await page.click("#ring-add"); await page.waitForTimeout(200);
@@ -131,6 +136,12 @@ for (const [i, s] of steps.entries()) {
   await export_svg(`dial-step-${i + 1}`);
   console.log("dial step", i + 1);
 }
+// Okay's bezel diver (docs/guide/classics-links.md): a richer dial, for the cover until Okay picks one
+const diver = fs.readFileSync(path.join(HERE, "../classics-links.md"), "utf8").match(/Diver, bezel.*?(#1\.[A-Za-z0-9_-]+)/)[1];
+links.diver = diver;
+await open(diver);
+await export_svg("dial-diver");
+fs.writeFileSync(path.join(IMG, "dial-diver.json"), JSON.stringify(await page.evaluate(() => window.dial_tool.S)));
 // the cover: the finished dial, and the same dial as the print mask
 await open(links["step-10"]);
 await page.evaluate(() => { const t = window.dial_tool; t.S.out_production = true; t.render(); });
