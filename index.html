@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.38.7 · built 2026-10-14 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.38.8 · built 2026-10-14 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -85,7 +85,8 @@
     --bar-height: 62px; --bar-control: 30px;      /* a fifth higher than it was, 52 (Okay, 14 Oct 2026, 23:19: "1/5 higher"); a phone keeps its own (--bar-lead-narrow) */
     --bar-light: #737373;                          /* the one light tone on the bottom bar: 55 % grey (Okay, 15 Oct 2026, 00:42: "55%gray all"; 35 % at 00:32, 25 % at 00:18); nothing on the bar is white (Okay, 15 Oct 2026, 00:18: "NOTHING ON THIS WHOLE BAR IS WHITE… EQUALIZE LIGHT TONES IN 25% GRAY") */
     --play: #CC381A; --play-dark: #7A1E0C; --play-light: #F28A6C;      /* the play button, an arcade button from above: its cap (the seconds hand's red, geometry.js ACCENT), the shade round it and under it, the light on it (Okay, 14 Oct 2026: "3 colors and a black outline") */
-    --speed-thumb: 14px; --speed-ball: 9px;        /* how fast: its thumb; the ball at 1× and the knobs at its ends (6 until Okay, 15 Oct 2026, 00:42: "larger dots, all black with an eye hole") */
+    --speed-thumb: 22px; --speed-ball: 9px;        /* how fast: its thumb (14 until Okay, 15 Oct 2026, 02:42: "this nubbin should grow 160%, eye stays still"); the knobs at its ends (6 until 00:42) */
+    --bio-width: calc(var(--panel) - 2 * var(--margin));      /* the bio under Okay's mark: as wide as the panel's lines */
     --speed-pad: calc(var(--u3) + 4px - var(--speed-thumb) / 2);      /* the speed box's room inside, left and right, set so that from its wall to an end knob's edge is 4 more than it was (3.75 → 7.75; Okay, 15 Oct 2026, 01:03: "end ball and the wall… what that was before plus four pixels"; 4 alone at 00:51 was a misreading). The knobs now stand where the thumb's middle stops, half a thumb in from the track's ends: hence the half thumb taken off */
     --play-size: 34px; --play-pulse: 22%;          /* the play button: a section tab's box (Okay, 00:42); how far its cap goes toward its light colour at a beat (faint: Okay, 01:20) */
     --t-time: 17px;                                /* the time in the bar: larger than --t-l (Okay, 14 Oct 2026, 23:55: "larger digital time"); R32 lists it */
@@ -301,6 +302,18 @@
   #app.nopanel { grid-template-columns: 0 1fr; }   /* the panel put away: the dial gets the whole window */
   #app.nopanel .panel { display: none; }
   .panel > header { display: flex; align-items: center; height: var(--header); padding: 0 var(--margin); }
+  /* Okay's mark in the first column, the title after it on the six columns (Okay, 15 Oct 2026, 02:42); a press opens the bio
+     under it, a night part as wide as the panel's lines */
+  .about { position: relative; flex: none; width: var(--eye); margin-right: var(--gap); }
+  .logo { display: grid; place-items: center; width: var(--eye); height: var(--eye); padding: 0; color: var(--ink); }
+  .logo svg { overflow: visible; }
+  .bio { position: absolute; z-index: 6; top: calc(100% + var(--unit)); left: 0; width: var(--bio-width); max-width: calc(100vw - 2 * var(--margin)); padding: var(--unit) var(--pop-pad) var(--pop-pad); font-size: var(--t-m); line-height: 1.45; }
+  .bio h2 { margin: var(--unit) 0; font-size: var(--t-l); }
+  .bio h3 { margin: var(--pop-gap) 0 var(--u1); font-size: var(--t-m); }
+  .bio p { margin: 0 0 var(--unit); }
+  .bio ul { margin: 0; padding-left: var(--pop-pad); }
+  .bio li { margin-bottom: var(--u1); }
+  .bio a { color: var(--white); text-decoration: underline; text-underline-offset: 0.15em; }
   .panel .title { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); }
   /* units: a box at the panel's top right saying the unit lengths are shown in, by its short name; one column wide
      whatever it says. Its menu hangs under it, the units by their full names, a hairline between them. */
@@ -879,7 +892,12 @@
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 var(--round-switch) var(--round-switch) 0; }
   .guidesbox[aria-pressed="true"] :is(.slash, .core-off), .guidesbox:not([aria-pressed="true"]) .core-on { display: none; }      /* on: the centre ring dashed; off: the hollow slash (Okay's drawings, 14 Oct 2026) */
   .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }      /* open, only its arrow turns */
-  .backdropbox { position: absolute; z-index: 3; left: var(--canvas-inset); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch); }
+  /* Backdrop and its little brother, the eye (Okay, 15 Oct 2026, 02:42): a row standing on the Shadows switch */
+  .backdrops { position: absolute; z-index: 3; left: var(--canvas-inset); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: flex; gap: var(--unit); }
+  .eyebox { width: var(--control-large); padding: 0; overflow: hidden; border-radius: var(--round-switch); }      /* its sign fills the inside; the lashes run out and the box cuts them */
+  .eyebox svg { display: block; flex: none; }
+  .eyebox[aria-pressed="true"] > * { opacity: 1; }
+  .backdropbox { gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch); }
   .backdropbox[aria-expanded="true"] { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); }
   .backdropbox .dot { border-color: var(--on-canvas); }
   /* Shadows (a trial, 14 Oct 2026): the Guides switch's make, at the bottom left, the Backdrop switch standing on it a
@@ -5438,7 +5456,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.38.7";
+var VERSION = "beta 4.38.8";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -7386,6 +7404,17 @@ var hand_detail = (h) => {
   const centre2 = (line) => `<path class="axis" d="${line}"/><circle class="pivot" r="${ring}"/>`;
   return `<svg class="upright" viewBox="${f(b[0] - m)} ${f(-b[3] - m)} ${f(w + 2 * m)} ${f(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${centre2("M-999 0L999 0")}</svg><svg class="lying" viewBox="${f(b[1] - m)} ${f(b[0] - m)} ${f(high + 2 * m)} ${f(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${centre2("M0 -999L0 999")}</svg>`;
 };
+var INK_TRAPS = (() => {
+  const c = 9.25, r = 5.5, half = DENSE / 2, cut = 0.3, out = [];
+  for (const edge of [r + half, r - half]) for (const side of [-half, half]) {
+    const along = Math.sqrt(edge * edge - side * side);
+    for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
+      const x = c + dx * along + (dx ? 0 : side), y = c + dy * along + (dy ? 0 : side);
+      out.push(`<circle cx="${x.toFixed(3)}" cy="${y.toFixed(3)}" r="${cut}" fill="black"/>`);
+    }
+  }
+  return out.join("");
+})();
 var TOOL_ICONS = {
   // on 18; a quiet sign, thin and light (Okay, 11 Oct 2026; again 14 Oct, 04:11: "thinner lines"): DENSE, corners
   // a sixteenth heavier as on any box; light by its grey. Outer edge where it was (1 … 17)
@@ -7406,12 +7435,24 @@ var TOOL_ICONS = {
   // lower left — and its shadow cast to the left on the ground, a flat ellipse it stands on (after a photograph Okay
   // sent, 15 Oct 2026, 02:13: "make it 2d icon like others… fit a square"). The outline goes through fit.mjs's rules
   // (CURVE, centre on a quarter, radius on a half); the shade and the shadow are filled, their ends on half points
-  shadows: `<circle cx="10.75" cy="7.75" r="5.5" ${sw(CURVE)}/><path d="M13.5 12.5A5.5 5.5 0 0 1 6 5A8 8 0 0 0 13.5 12.5Z" fill="currentColor" stroke="none"/><path d="M1.25 15.5A5.625 1.25 0 0 0 12.5 15.5A5.625 1.25 0 0 0 1.25 15.5Z" fill="currentColor" stroke="none"/>`,
+  // 15 Oct, 02:42: mirrored (lit from the upper left, the shadow cast to the right) and its outline DENSE, as Guides',
+  // the sign beside it on 18 ("ball stroke thickness too much… look at similar size icons, guides and such")
+  shadows: `<circle cx="7.25" cy="7.75" r="5.5" ${sw(DENSE)}/><path d="M4.5 12.5A5.5 5.5 0 0 0 12 5A8 8 0 0 1 4.5 12.5Z" fill="currentColor" stroke="none"/><path d="M16.75 15.5A5.625 1.25 0 0 1 5.5 15.5A5.625 1.25 0 0 1 16.75 15.5Z" fill="currentColor" stroke="none"/>`,
+  // Okay's own mark, on 16 in the panel's first column (15 Oct 2026, 02:42: "my personal logo. Draw this like an
+  // icon"): a ring; a diagonal up to its upper right; from it a level line to the right and an upright one down; a
+  // square cell between them; a short slant from the cell's corner to the lower right. Through fit.mjs; every line
+  // inside the ring DENSE — five lines in sixteen points crowd; the ring CURVE (look.py: it reads light at DENSE)
+  logo: `<circle cx="8.25" cy="8.25" r="7" ${sw(CURVE)}/><g ${sw(DENSE)}><path d="M1.75 10.25L10.25 1.75M6.25 5.75H14.25M6.25 5.75V14.75M10.25 5.75V9.75H6.25M10.25 9.75L13.25 12"/></g>`,
+  // the eye button, beside Backdrop, on 30 — the whole inside of its 32 box (15 Oct 2026, 02:42: "a square icon that
+  // houses an open eye with both eyelashes that stretch and crop out at the button outline"). An open eye, its iris
+  // filled, three lashes above and three below running past the edge; the box cuts them. Through fit.mjs; the eye's
+  // axis moved to 15.25 so the upright lashes sit on quarter points with the iris on them
+  eyebox: `<path d="M6.25 15C12.25 9.75 18.25 9.75 24.25 15C18.25 20.25 12.25 20.25 6.25 15Z" ${sw(CURVE)}/><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/><path d="M10.75 12L6.25 -1M19.75 12L24.25 -1M10.75 18L6.25 31M19.75 18L24.25 31" ${sw(SLANT)}/><path d="M15.25 11.25V-1.75M15.25 18.75V31.75"/>`,
   screen: `<rect x="2.75" y="3.25" width="10.5" height="7.5"/><path d="M8.25 10.75V13.25M5.75 13.25H10.75" ${sw(DENSE)}/>`,
   // the Guides switch, on 18: a target and its cross; its lines crowd, so DENSE. Okay's drawings (14 Oct 2026, 04:11):
   // guides on, the centre ring dashed in six, square-ended (a dash pattern is a texture, not line ends) (core-on); guides off, a hollow slash, two lines with the target cut away
   // between them (the slash group, and the mask that cuts). The stylesheet shows one state's parts (6-preview.css).
-  guides: `<mask id="guides-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18"><rect width="18" height="18" fill="white"/><path class="slash" d="M2.75 15.75L15.75 2.75" stroke="black" stroke-width="2.5" stroke-linecap="butt"/></mask><g ${sw(DENSE)}><g mask="url(#guides-cut)"><circle cx="9.25" cy="9.25" r="5.5"/><circle class="core-off" cx="9.25" cy="9.25" r="2"/><path d="M9.25 1.25V5.75M9.25 12.75V17.25M1.25 9.25H5.75M12.75 9.25H17.25"/></g><circle class="core-on" cx="9.25" cy="9.25" r="2" stroke-dasharray="1.25 0.844" stroke-linecap="butt" transform="rotate(-107.9 9.25 9.25)"/><path class="slash" d="M1.87 14.87L14.87 1.87M3.63 16.63L16.63 3.63"/></g>`
+  guides: `<mask id="guides-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18"><rect width="18" height="18" fill="white"/><path class="slash" d="M2.75 15.75L15.75 2.75" stroke="black" stroke-width="2.5" stroke-linecap="butt"/>${INK_TRAPS}</mask><g ${sw(DENSE)}><g mask="url(#guides-cut)"><circle cx="9.25" cy="9.25" r="5.5"/><circle class="core-off" cx="9.25" cy="9.25" r="2"/><path d="M9.25 1.25V5.75M9.25 12.75V17.25M1.25 9.25H5.75M12.75 9.25H17.25"/></g><circle class="core-on" cx="9.25" cy="9.25" r="2" stroke-dasharray="1.25 0.844" stroke-linecap="butt" transform="rotate(-107.9 9.25 9.25)"/><path class="slash" d="M1.87 14.87L14.87 1.87M3.63 16.63L16.63 3.63"/></g>`
 };
 var ARCADE = (down) => {
   const RING = 0.75 * 2, CAP = RIM + CURVE / 2, R = CAP + RING, C2 = R, mid = CAP - RING / 2, DOT = 7.5;
@@ -7924,6 +7965,7 @@ var DialTool = class _DialTool {
     if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox")) this.pop_close();
     if (this.guides_open && !$("#guide-list").hidden && !on(".guides")) this.guides_open(false);
     if (this.shadows_open && !$("#shadow-list").hidden && !on(".shadows")) this.shadows_open(false);
+    if (this.bio_open && !$("#bio").hidden && !on(".about")) this.bio_open(false);
     if (this.unit_open && !$("#unit-menu").hidden && !on(".unit")) this.unit_open(false);
     if (this.lang_opens && !on(".langs")) for (const shut of this.lang_opens) shut(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
@@ -7953,7 +7995,7 @@ var DialTool = class _DialTool {
     const panel = el(
       "aside",
       { className: "panel" },
-      el("header", {}, this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: VERSION })), this.unit_box()),
+      el("header", {}, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: VERSION })), this.unit_box()),
       this.tabs,
       this.pinned,
       this.form
@@ -8169,6 +8211,51 @@ var DialTool = class _DialTool {
     box2.setAttribute("aria-expanded", "false");
     box2.onclick = () => this.pop_open({ read: () => this.S.c_backdrop, write: (v) => this.set_value("global", "c_backdrop", v), label: () => "Backdrop" }, box2);
     this.backdrop_dot = dot;
+    const eye2 = el("button", { type: "button", className: "onview eyebox", id: "eye-box", title: "A view to come \u2014 nothing yet", ariaLabel: "A view to come (nothing yet)" });
+    eye2.innerHTML = icon(TOOL_ICONS.eyebox, 30);
+    eye2.setAttribute("aria-pressed", "false");
+    eye2.onclick = () => eye2.setAttribute("aria-pressed", String(eye2.getAttribute("aria-pressed") !== "true"));
+    return el("div", { className: "backdrops" }, box2, eye2);
+  }
+  /** Okay's mark in the panel's first column, left of the title; a press opens a short bio: who made the tool, where
+   *  its source is, and the open-source work it stands on (Okay, 15 Oct 2026, 02:42: "This triggers bio. Make it short,
+   *  give links. Acknowledge harfbuzz and other opensource providers"). A press elsewhere or Escape closes it. */
+  logo_box() {
+    const button = el("button", { type: "button", className: "logo", id: "logo", title: "About Dial Tool", ariaLabel: "About Dial Tool" });
+    button.innerHTML = icon(TOOL_ICONS.logo);
+    button.setAttribute("aria-expanded", "false");
+    const a = (href, text) => el("a", { href, textContent: text, target: "_blank", rel: "noopener" });
+    const line = (...parts) => el("p", {}, ...parts);
+    const bio = el(
+      "div",
+      { className: "bio night", id: "bio", hidden: true },
+      el("h2", { textContent: "Dial Tool" }),
+      line("A tool for designing watch dials, ring by ring, in the browser. Made by Okay, a graphic designer in Istanbul working across contemporary art, architecture and cinema, for a watch he is building."),
+      line("Source, every version and the MIT licence: ", a("https://github.com/duztman/dial-tool", "github.com/duztman/dial-tool"), "."),
+      el("h3", { textContent: "Built on open source" }),
+      el(
+        "ul",
+        {},
+        el("li", {}, a("https://harfbuzz.github.io", "HarfBuzz"), " sets the type (harfbuzzjs, MIT)."),
+        el("li", {}, a("https://skia.org", "Skia"), "\u2019s PathKit joins and cuts the shapes (BSD 3-clause)."),
+        el("li", {}, a("https://rsms.me/inter/", "Inter"), " by Rasmus Andersson is the stand-in typeface; ", a("https://fonts.google.com/specimen/Silkscreen", "Silkscreen"), " by Jason Kottke sets the tiny figures (SIL OFL)."),
+        el("li", {}, "The twenty dial typefaces, each under its designers\u2019 SIL Open Font License, most of them from ", a("https://fonts.google.com", "Google Fonts"), "."),
+        el("li", {}, a("https://www.drawbot.com", "DrawBot"), " is where the tool began; ", a("https://esbuild.github.io", "esbuild"), " builds it and ", a("https://playwright.dev", "Playwright"), " tests it.")
+      )
+    );
+    const open = (on) => {
+      bio.hidden = !on;
+      button.setAttribute("aria-expanded", String(on));
+    };
+    this.bio_open = open;
+    button.onclick = () => open(bio.hidden);
+    const box2 = el("div", { className: "about" }, button, bio);
+    box2.onkeydown = (e) => {
+      if (e.key === "Escape" && !bio.hidden) {
+        open(false);
+        button.focus();
+      }
+    };
     return box2;
   }
   /** guides, at the preview's top right (Okay, 12 Oct 2026): a switch (a bullseye and the word; solid outline = on,
