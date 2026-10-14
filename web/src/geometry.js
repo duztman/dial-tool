@@ -964,7 +964,7 @@ export function live_texts(S, statik, item) {
   }
   if (item.role === "date number") {
     const x = statik.windows.find((w) => w.index === item.window);
-    if (!x || !["date", "day"].includes(WINDOW_KINDS[x.w.kind])) return null;
+    if (!x || !["date", "day"].includes(WINDOW_KINDS[x.w.kind]) || window_shape(x.w) === "arc") return null;      // bent text (#166) stays outlines
     const shape = window_shape(x.w), high = shape === "rectangle" || shape === "arc" ? x.w.h : shape === "arch" ? x.w.w / 2 : x.w.w;
     const t = window_type(S, x.w), size = high * x.w.size / 100, c = text_centre(x.w.text, t, size);
     if (!c) return null;
@@ -1173,7 +1173,10 @@ function build_window(S, w, index) {
     const { moon, stars } = moon_parts(w.w, w.age);
     content = opening.copy().difference(moon).difference(stars);
   } else if (kind === "am · pm") content = day_night(w.w, high, day_hour(S)).intersection(opening);
-  else content = centred(text_path(w.text, window_type(S, w), high * w.size / 100));
+  else if (shape === "arc") {                     // an arc window's word bends along its middle circle, as numerals on path do;
+    const a = window_angle(w);                     // read left → right at the bottom too (#166, atlas 2.1, 14 Oct 2026)
+    content = on_path(w.text, w.r, a, window_type(S, w), high * w.size / 100).translate(...centre.map((v) => -v));
+  } else content = centred(text_path(w.text, window_type(S, w), high * w.size / 100));
   const put = (p, turned = true) => (turn && turned ? p.rotate(-turn) : p).translate(...centre);
   const shows_text = kind === "date" || kind === "day";
   const win = put(opening.copy());
