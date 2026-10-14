@@ -38,7 +38,9 @@
      move down · duplicate · delete, all five the same outlined circle. The pane is laid on the
      columns so they can lie over the heading's right part; folded, the summary stands there instead. */
   .headtools { display: flex; align-items: center; gap: var(--foot-gap); }
-  .headtools .sign { border-color: var(--grey); border-radius: var(--round-pill); }
+  .headtools .sign { border: 0; border-radius: var(--round-pill); }      /* no border: the ring is drawn in the sign, as heavy as its lines (round_sign, app.js) */
+  .headtools .sign .rim { stroke: var(--grey); }
+  .headtools .sign:hover .rim { stroke: var(--rule); }
   .adder { position: relative; display: grid; }
 
   /* the selected ring's line: a framed line in the list, right under the selected ring's row and joined to it by a
@@ -75,18 +77,20 @@
   /* a value as a button: a circle with a radius drawn in it and the value written on the line. A click pops up the
      number's row under it; pressing and moving changes the value. */
   .valueb { position: relative; flex: none; width: var(--line-button); height: var(--line-button); border-radius: var(--round-pill); cursor: ew-resize; touch-action: none; }
-  .valueb svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; stroke: var(--grey); stroke-width: 1.1; }
+  .valueb svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; stroke: var(--grey); }      /* line widths are the drawing's own (icon grid, app.js) */
   .valueb svg .small { fill: none; stroke: var(--rule); }
   .valueb#ring-size svg .tangent { stroke: var(--rule); }      /* the scale drawing: outlines, and a dark line between the centres */
   .valueb#ring-size svg .dark { stroke: var(--grey); }
-  .valueb svg circle:first-child { fill: var(--field); stroke: var(--rule); }      /* the same line as the square buttons beside it */
+  .valueb svg .disc { fill: var(--field); stroke: var(--rule); }
+  .valueb svg .hull { fill: none; stroke: none; }
   .valueb svg .pivot { fill: var(--grey); stroke: none; }
-  .valueb:hover svg circle:first-child { fill: var(--hover); stroke: var(--ink); }
+  .valueb:hover svg .disc { fill: var(--hover); stroke: var(--ink); }
   .valueb:is([aria-expanded="true"], .dragging) { color: var(--paper); }
-  .valueb:is([aria-expanded="true"], .dragging) svg circle:first-child { fill: var(--ink); stroke: var(--ink); }
-  .valueb:is([aria-expanded="true"], .dragging) svg { stroke: var(--paper); }
+  /* pressed: the shape fills with ink, its outlines stay grey, the line between the centres and the pivot turn paper (Okay's drawing, 14 Oct 2026) */
+  .valueb:is([aria-expanded="true"], .dragging) svg :is(.disc, .hull, .small) { fill: var(--ink); }
+  .valueb:is([aria-expanded="true"], .dragging) svg :is(.disc, .small, .tangent) { stroke: var(--rule); }
+  .valueb:is([aria-expanded="true"], .dragging) svg path:not(.hull, .tangent), .valueb#ring-size:is([aria-expanded="true"], .dragging) svg .dark { stroke: var(--paper); }
   .valueb:is([aria-expanded="true"], .dragging) svg .pivot { fill: var(--paper); }
-  .valueb:is([aria-expanded="true"], .dragging) svg :is(.small, .tangent, .dark) { stroke: var(--paper); }      /* pressed, the whole drawing lights up, not the big disc alone (Okay, 13 Oct 2026) */
   svg text.pixel { font-family: var(--pixel); opacity: var(--pixel-ink); }
   /* a value button's tag is as wide as the pop-up it grows into: its name at the left, its value at the right, quiet,
      in the mono face. The pop-up is the same box, higher: the number's name (and its menu) · the field · − +, one

@@ -1,6 +1,6 @@
 # Dial Tool — design canon
 
-*Written 4 Oct 2026 with the guidebook's third edition (beta 2.3); revised the same day with the fourth to seventh. Okay: "this design research might influence
+*§9 (the tool's icons) added 14 Oct 2026, beta 4.36. Written 4 Oct 2026 with the guidebook's third edition (beta 2.3); revised the same day with the fourth to seventh. Okay: "this design research might influence
 the whole build, take notes… let's make it canon."*
 
 This file is the rule for everything Dial Tool shows on paper or screen that isn't a dial: the guidebook
@@ -122,7 +122,7 @@ alignment to these rules as well."*
   lines with end ticks, leaders ending in a small ring, dashed construction lines. Text on them is 8 pt and
   lines 0.2 mm on paper at any enlargement — the page measures each picture and sets them. The build reports
   a label that leaves its picture or overlaps another.
-- **Line icons.** One set, drawn on a 24-unit square with a single stroke, square ends, no fill
+- **Line icons** (the guidebook's; the tool's own icons follow §9). One set, drawn on a 24-unit square with a single stroke, square ends, no fill
   (`docs/guide/icons.svg`). One per text block, above its label or beside it; a few per page, never as
   decoration without a block. Four are drawn large on the Start page.
 - **Watch notes.** A triangle icon and a short paragraph: what a careful reader would otherwise find out the
@@ -168,3 +168,62 @@ Noted while drawing the window; none is built. Each needs Okay's word (R18).
 - One accent in the preview too: guides are blue and orange today; the canon would make them grey and orange.
 - The ring settings list could take the guide's order of ideas: Positions · Give way · Look · Type.
 - Presentation sheets (build list #17, #18) should use this grid and type from the start.
+
+## 9 · The tool's icons
+
+*Canon since 14 Oct 2026 (beta 4.36), from the icon audit Okay asked for ("Let this knowledge of good and proper icon
+making be canon. This pipeline for upcoming icons"). Binding through R33. Source: the icon block at the top of
+`web/src/app.js`; checks and tools: `web/icons/` (its `README.md` says how to use them).*
+
+Every screen the tool is used on is 2× (iPad, both Macs): a point is two screen dots, and Chrome puts each icon's
+corner on a dot even when the layout puts it on a fraction (measured, 14 Oct). So what decides sharpness is the grid
+inside the drawing.
+
+- **One unit, one point.** An icon's viewBox is its size on screen. Nothing is drawn at one size and shown at
+  another: scaled drawings land no line on a dot (before the audit, nine families were scaled ×0.63 to ×1.69 and
+  their lines came out 0.79 to 2.36 thick). The hand tiles are the one exception: drawn by the geometry at exactly ×2.
+- **Every line in an icon is a line**: a tab's ring, a window card's dial, a window's frame, the rename box, a round
+  button's ring, a value button's disc. They weigh the same as the sign inside them (Okay, 14 Oct: "Borders, circles
+  outlines. They all count as part of icon"). A ring that holds a sign keeps its outer edge where it was, so nothing
+  grows. The square button boxes around icons are the stylesheet's and are not icons.
+- **Equal on the eye, not in numbers** (Okay: "consistent line thickness is a good goal, but OPTICALLY CONSISTENT
+  needs finesse … perception overrules, sensibly"). A straight line on the grid is three solid dots; a curve or a
+  slant spreads the same ink over more, paler dots and looks lighter; short lines crowded into a small sign look
+  heavier. So one look takes four widths, each a sixteenth of a point from the next:
+
+  | Name | Width | For |
+  |---|---|---|
+  | `LINE` | 1.5 (three dots, about the stem of the panel's type) | straight runs on the grid; arrows (their heads meet the shaft and look heavier there) |
+  | `SLANT` | 1.5625 | slanted lines alone: chevrons, crosses, a polygon, a handle, a letter, undo and redo |
+  | `CURVE` | 1.625 | circles, arcs, waves, the eye, every ring that holds a sign, the round corners of a box |
+  | `DENSE` | 1.25 | short lines crowded inside a small sign: the Guides target, the arrow in a box, a stand |
+
+  The widths were measured, not guessed: each line read in place, the screen blurred as an eye sees it at a desk
+  (sigma 1.5 screen dots), against a lone straight 1.5 line (`web/icons/look.py`). After the audit the median line is
+  1.5 % off that reference and the worst tenth 4 % (before: 9 % and 26 %).
+- **Round corners weigh more.** A box's round corner drawn as thin as its sides looks 3–5 % lighter (measured at
+  r 2 and r 4). A box is drawn with `box()`: sides `LINE` on the grid, corners `CURVE`.
+- **The grid where it helps.** A `LINE`'s level and upright runs sit on quarter points (x.25, x.75): three dots wide,
+  they then cover whole dots. So a 16-point sign is centred on 8.25, half a dot off the middle, which no eye sees. A
+  circle's centre on a quarter and its radius on a half (or the reverse) puts its top, bottom and sides on whole dots.
+  Curves antialias at any width: for them the eye wins over the grid. Fills put their edges on half points.
+- **Pictured widths are not lines.** The ring kinds' ticks (1), marks (2) and band (3) picture the dial's own widths
+  and stay as drawn; so does the dashed none-baton (2: a dashed line looks lighter than a whole one). Fills (pupils,
+  pivots, the window block) are not lines either.
+- **A stylesheet border is not an icon line.** Chrome draws a border in whole points only: asked for 1.5 or 1.62, it
+  draws 1 (measured, 14 Oct). Where a border is part of a sign, the sign draws it (`round_sign()`, the ring list's
+  round tools).
+- **One drawing per idea.** One plus (9 long), one minus, one cross (8), one chevron (8 × 4), one copy sign, one
+  sheet, wherever they appear (`SIGNS` in `app.js`). Open shapes are drawn a little smaller than arrows and boxes
+  beside them, because they look larger. Round caps and joins on every line, as on the dial (Okay, 13 Oct).
+- **Optical, after equal.** The play triangle sits half a point right so its weight is centred, not its box; a window
+  keeps 4 points from its dial's rim at every angle (not one radius); a sign whose lines crowd gets `DENSE`.
+- **Chosen states** fill: a tab's disc fills ink and its sign turns paper; the Dial sign's centre hole becomes a dot
+  of paper; a pressed value button fills its shape with ink, keeps its outlines grey, and turns its inner line and
+  pivot paper (Okay's drawing, 14 Oct).
+
+**For a new icon** (the pipeline, `web/icons/README.md`): draw it at any size in any program → `node icons/fit.mjs
+drawing.svg 16` puts it on the grid, gives each line its width and prints the code to paste → paste it into the icon
+block → `node icons/check.mjs` (also part of `npm test`) checks every icon in the running window against the rules
+above → `python3 icons/look.py` reads how heavy each line looks and names any that is off, and why → look at
+`icons/out/sheet.png`, then on the Mac and the iPad. The numbers propose; the eye decides.

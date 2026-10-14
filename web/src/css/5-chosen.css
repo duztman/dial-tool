@@ -5,5 +5,6 @@
   .segs > button.on, .pickt.on, .tile[aria-pressed="true"], .kinds button.on, .sticker.ui[aria-pressed="true"],
   .unitbox[aria-expanded="true"], .headtools .sign[aria-expanded="true"],
   .fontbox .btn[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .headtools .sign[aria-expanded="true"] .rim { stroke: var(--ink); }
   :is(.pickt.on, .tile[aria-pressed="true"]):hover { background: var(--ink-hover); }      /* a chosen tile under the pointer: a shade lighter */
 }

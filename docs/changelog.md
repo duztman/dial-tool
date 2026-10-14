@@ -1,5 +1,17 @@
 # Dial Tool — changelog
 
+## beta 4.36 (web version) · 14 Oct 2026
+
+The icon audit (Okay, 14 Oct: "Truly awesome work. Apply on live page. Let this knowledge of good and proper icon making be canon.").
+
+- **Every icon on one 2× pixel grid.** Each is drawn at the size it is shown (40 were drawn at one size and scaled to another, ×0.63 to ×1.69); straight lines on quarter points, so they cover whole screen dots.
+- **Every line equally heavy on the eye.** Four widths for one look: `LINE` 1.5 straight, `SLANT` 1.5625 slanted, `CURVE` 1.625 round, `DENSE` 1.25 crowded (were 15 widths, 0.79 to 2.88). Measured: the median line 1.5 % off a straight 1.5 (was 9 %), the worst tenth 4 % (was 26 %).
+- **Rings and frames are lines:** the section tabs' rings, the window cards' dials, the rename box, the value buttons' discs, now as heavy as the signs; outer edges kept. The ring list's round tools draw their ring in the sign (their border could only be 1 point). A box's round corners `CURVE`.
+- **Dial sign:** the plate with its centre hole (was eight pies); chosen, the plate fills and the hole is a dot of paper. **Rings sign:** three equal gaps.
+- **Value buttons pressed:** the shape fills with ink, outlines stay grey, inner line and pivot paper.
+- **One drawing per idea:** one plus (the ring tools' was a point longer), one cross, one chevron, one copy sign (Copy style of… had its own), one sheet. The bin's handle a flat line. Play centred by weight. The 12's dashed none-baton readable. Window cards: window 8 × 6.5 as on the tab, 4 points from the rim at every angle (#149, first half).
+- **The icon pipeline** (`web/icons/`): `fit.mjs`, `check.mjs` (now the last step of `npm test`), `look.py`. Canon: `docs/design.md` §9; rule R33.
+
 ## beta 4.35.17 (web version) · 14 Oct 2026
 
 - **The hand's preview box** stops one unit under the line, the same gap as between the shape tiles.

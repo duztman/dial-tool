@@ -25,14 +25,10 @@
   .tabs button { display: grid; justify-items: center; gap: var(--unit); padding: var(--unit) 0 var(--u4); color: var(--grey); }
   .tabs button:hover { color: var(--ink); }
   .tabs button:focus-visible { outline-offset: -2px; }
-  .tabs .ring { stroke-width: 1.2; }
-  .tabs .dama { display: none; }
   .tabs button.on { color: var(--ink); font-weight: 600; box-shadow: inset 0 -3px 0 var(--ink); }
   .tabs button.on .ring { fill: var(--ink); stroke: var(--ink); }
   .tabs button.on .sign { color: var(--paper); }
-  .tabs button[data-tab="Dial"].on .ring { fill: none; }      /* Dial's sign is the ring itself, cut in pies: chosen, every other pie is filled */
-  .tabs button[data-tab="Dial"].on .sign { color: var(--ink); }
-  .tabs button[data-tab="Dial"].on .dama { display: inline; }
+  .tabs button.on .hub { fill: currentColor; }      /* Dial chosen: its centre hole a dot of paper (Okay's drawing, 14 Oct 2026) */
 
   .pinned, .form { padding: 0 var(--margin); }
   .pinned { border-bottom: var(--hair) solid var(--rule); }      /* a hairline: what is under it scrolls */

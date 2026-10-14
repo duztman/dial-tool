@@ -116,6 +116,13 @@ If a term is used differently in conversation, ask, then update this file.
 | **Settings** (`S`) | One dictionary holding every value; saved as JSON (presets, last session). Rings are a list inside it (`S["rings"]`, top first). |
 | **Static geometry** | Everything that doesn't move (plate, rings, date). Rebuilt when a geometry setting changes; each ring's shapes are remembered by their settings, so editing one ring rebuilds only what depends on it. Hands are turned every frame. |
 | **Imported file** | An SVG, PDF or AI file used as a marker or hand shape (R23). |
+| **Icon** | A small SVG drawing in the window (a section's sign, a tool, a picture tile). Drawn in the icon block at the top of `web/src/app.js`, by R33 and the design canon §9. Not the stylesheet's boxes around them. |
+| **Icon grid** | The rules every icon is drawn by (14 Oct 2026): one unit = one point, four line widths, straight lines on quarter points. |
+| **LINE · SLANT · CURVE · DENSE** | The four icon line widths, one look (design canon §9): straight 1.5 · slanted 1.5625 · round 1.625 · crowded 1.25. |
+| **Quarter point** | A coordinate ending in .25 or .75. A 1.5 line centred there covers three whole screen dots on a 2× screen. |
+| **Pictured width** | A width in an icon that pictures a thing's own width (a ring kind's ticks, marks, band), not a line; kept as drawn. |
+| **Rim** | The ring that holds a sign: a section tab's, a window card's, a round tool's. An icon line like any other. |
+| **Look** (of a line) | How heavy a line appears, read by `web/icons/look.py` against a straight `LINE`. |
 
 ## Retired words (beta 1.0)
 

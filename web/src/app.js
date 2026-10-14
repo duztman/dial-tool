@@ -41,74 +41,136 @@ const POP_GAP = 12;                              // between a swatch and the pop
 const PALETTE_KEY = "dial-tool-palette";           // the palette as this browser keeps it: the ten, and what was added
 const DEFAULT_ON = new Set(["kern", "liga", "calt", "ccmp", "locl", "mark", "mkmk", "rlig", "rclt", "curs", "clig", "rvrn"]);
 
-// ── icons: drawn here, 1.4-point lines, so they take the colour of their button ──
-
-const icon = (inside, size = 16, box = "0 0 16 16") => `<svg viewBox="${box}" width="${size}" height="${size}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${inside}</svg>`;
-const ticks = (n, r0, r1) => Array.from({ length: n }, (_, i) => { const a = i * 2 * Math.PI / n, x = Math.sin(a), y = -Math.cos(a); return `M${(x * r0).toFixed(2)} ${(y * r0).toFixed(2)}L${(x * r1).toFixed(2)} ${(y * r1).toFixed(2)}`; }).join("");
-// a section's sign: a small picture inside a ring
-const SECTION_ICONS = {
-  // pies: the ring cut in eight (four until beta 4.3). Chosen: every other pie filled, a checkerboard ("dama"; Okay, 11–12 Oct 2026)
-  Dial: `<path d="M0.0 -15.0L0.0 15.0M10.61 -10.61L-10.61 10.61M15.0 -0.0L-15.0 0.0M10.61 10.61L-10.61 -10.61" stroke-width="1.1"/><path class="dama" d="M0 0L0.0 -15.0A15 15 0 0 1 10.61 -10.61ZM0 0L15.0 -0.0A15 15 0 0 1 10.61 10.61ZM0 0L0.0 15.0A15 15 0 0 1 -10.61 10.61ZM0 0L-15.0 0.0A15 15 0 0 1 -10.61 -10.61Z" fill="currentColor" stroke="none"/>`,
-  Rings: `<circle r="8"/><circle r="3.5"/>`,
-  Hands: `<path d="M0 0L0 -8.5M0 0L5.5 3.5"/><circle r="1.3" fill="currentColor" stroke="none"/>`,
-  Date: `<rect x="2.2" y="-3.2" width="8" height="6.4" rx="1.4" fill="currentColor" stroke="none"/>`,      // a dial with a window at 3 (Okay's drawing, 11 Oct 2026)
-  Export: `<path d="M0 -8L0 3M-4 -1L0 3L4 -1M-6.5 7L6.5 7"/>`,
-  Guides: `<circle r="5.5"/><path d="M0 -9.5L0 9.5M-9.5 0L9.5 0"/>`,
+// ── icons: drawn here, so they take the colour of their button ──
+//
+// The icon grid (icon audit, 14 Oct 2026). Every screen the tool is used on is 2× (iPad, both Macs): one point is
+// two screen dots, and the browser puts every icon's corner on a dot. So, in every drawing:
+//   · one drawing unit = one point. The viewBox is the icon's size on screen; no icon is scaled up or down.
+//   · every line in every icon looks equally heavy (Okay, 14 Oct 2026: "equalizing line thicknesses over all
+//     icons… perception overrules, sensibly"), rings and frames included. Equal on the eye is not equal in
+//     numbers: a straight line on the grid is three solid dots; a curve or a slant spreads the same ink over
+//     more, paler dots and looks lighter; short lines that crowd a small sign look heavier. So four widths, each a
+//     step of 1/16 from LINE, measured (the audit's weigh.py: the screen blurred as an eye sees it, sigma 1.5 dots,
+//     each line read in place among its neighbours, against a lone straight 1.5 line):
+//       LINE  1.5     straight runs, on the grid; arrows (their heads meet the shaft and look heavier there)
+//       SLANT 1.5625  slanted lines alone: chevrons, crosses, a polygon, a handle, a letter
+//       CURVE 1.625   circles, arcs, waves, an eye, a ring that holds a sign
+//       DENSE 1.25    short lines crowded inside a small sign (the Guides target, the arrow in a box, a stand)
+//     Picture weights that show a thing's own width (a tick, a marker, a band) are not lines and stay as drawn.
+//   · LINE's straight runs are centred on quarter points (x.25, x.75): three dots wide, they cover whole dots.
+//     So a 16-point sign is centred on 8.25, not 8: half a dot off the middle, never seen. Curves antialias
+//     whatever their width; a ring that holds a sign keeps its outer edge where it was (r + width/2 = 15.5).
+//   · round caps and joins, as on the dial (Okay, 13 Oct 2026). Filled shapes have their edges on half points.
+//   · one drawing per idea: one plus, one cross, one chevron, one copy sign, one sheet — wherever they appear.
+const LINE = 1.5, SLANT = LINE + 1 / 16, CURVE = LINE + 2 / 16, DENSE = LINE - 4 / 16;
+const sw = (w) => `stroke-width="${w}"`;
+// a box with round corners: its straight sides LINE, on the grid; its corners CURVE, because a round corner drawn as
+// thin as the sides looks thinner (measured: 3–5 % lighter at r 2 and 4). Two paths, so each gets its own width.
+const box = (x, y, w, h, r) => {
+  const X = x + w, Y = y + h;
+  return `<path d="M${x + r} ${y}H${X - r}M${X} ${y + r}V${Y - r}M${X - r} ${Y}H${x + r}M${x} ${Y - r}V${y + r}"/>`
+    + `<path d="M${X - r} ${y}A${r} ${r} 0 0 1 ${X} ${y + r}M${X} ${Y - r}A${r} ${r} 0 0 1 ${X - r} ${Y}M${x + r} ${Y}A${r} ${r} 0 0 1 ${x} ${Y - r}M${x} ${y + r}A${r} ${r} 0 0 1 ${x + r} ${y}" ${sw(CURVE)}/>`;
 };
-const section_icon = (name) => icon(`<circle class="ring" r="15"/><g class="sign">${SECTION_ICONS[name]}</g>`, 34, "-17 -17 34 34");
+const icon = (inside, size = 16, high = size) => `<svg viewBox="0 0 ${size} ${high}" width="${size}" height="${high}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="round" stroke-linejoin="round">${inside}</svg>`;
+const ticks = (n, r0, r1, c = 0) => Array.from({ length: n }, (_, i) => { const a = i * 2 * Math.PI / n, x = Math.sin(a), y = -Math.cos(a); return `M${(c + x * r0).toFixed(2)} ${(c + y * r0).toFixed(2)}L${(c + x * r1).toFixed(2)} ${(c + y * r1).toFixed(2)}`; }).join("");
+// a wave ring: a circle whose radius swings n times round it, r(θ) = R + a·cos(nθ) — a guilloché line, drawn smooth
+const wave = (cx, cy, R, a, n, steps = 72) => {
+  const P = Array.from({ length: steps }, (_, i) => { const t = (i / steps) * 2 * Math.PI, r = R + a * Math.cos(n * t); return [cx + r * Math.sin(t), cy - r * Math.cos(t)]; });
+  const f = (v) => v.toFixed(2);
+  return `M${f(P[0][0])} ${f(P[0][1])}` + P.map((p1, i) => {     // through every point, a cubic each (Catmull-Rom)
+    const p0 = P[(i - 1 + steps) % steps], p2 = P[(i + 1) % steps], p3 = P[(i + 2) % steps];
+    return `C${f(p1[0] + (p2[0] - p0[0]) / 6)} ${f(p1[1] + (p2[1] - p0[1]) / 6)} ${f(p2[0] - (p3[0] - p1[0]) / 6)} ${f(p2[1] - (p3[1] - p1[1]) / 6)} ${f(p2[0])} ${f(p2[1])}`;
+  }).join("") + "Z";
+};
+// a ring that holds a sign (a tab, a window card): outer edge at 15.5 from the centre, as before; drawn in CURVE
+const RIM = 15.5 - CURVE / 2, RIM_IN = 15.5 - CURVE;      // its radius, and its inner edge
+const rim = (cls = "") => `<circle${cls ? ` class="${cls}"` : ""} cx="17" cy="17" r="${RIM}" ${sw(CURVE)}/>`;
+
+// the shared signs, on 16 points. Their live area is 3.25 … 13.25; a plus is a little shorter (9) and a cross shorter
+// still (8), because open shapes look larger than the arrows and boxes beside them.
+const SIGNS = {
+  plus: `<path d="M8.25 3.75V12.75M3.75 8.25H12.75"/>`,
+  minus: `<path d="M3.75 8.25H12.75"/>`,
+  cross: `<path d="M4.25 4.25L12.25 12.25M12.25 4.25L4.25 12.25" ${sw(SLANT)}/>`,
+  down: `<path d="M4.25 6.25L8.25 10.25L12.25 6.25" ${sw(SLANT)}/>`,         // a chevron; up is the same, turned
+  up: `<path d="M4.25 10.25L8.25 6.25L12.25 10.25" ${sw(SLANT)}/>`,
+  copy: `<rect x="5.75" y="5.75" width="7.5" height="7.5"/><path d="M10.25 5.75V2.75H2.75V10.25H5.75"/>`,
+  sheet: `<path d="M4.25 2.75H9.25L12.25 5.75V13.25H4.25ZM9.25 2.75V5.75H12.25"/>`,
+};
+// a section's sign: a small picture inside a ring. Signs of circles share the ring's centre (17); signs with
+// straight lines sit on the grid (17.25).
+const C = 17.25;
+const SECTION_ICONS = {
+  // a dial: the plate and its centre hole (Okay's drawing, 14 Oct 2026, after the guilloché rings: "Dial → a circle
+  // with a small o"; chosen, the plate filled and the hole a dot of paper: the hub's fill, in the stylesheet)
+  Dial: `<circle class="hub" cx="17" cy="17" r="2" ${sw(CURVE)}/>`,
+  // two rings, the three gaps equal: rim to ring, ring to ring, ring to the middle (Okay, 14 Oct 2026: "equalized")
+  Rings: `<g ${sw(CURVE)}><circle cx="17" cy="17" r="9.5"/><circle cx="17" cy="17" r="4.375"/></g>`,
+  Hands: `<path d="M${C} ${C}V8.75M${C} ${C}L22.75 20.75"/><circle cx="${C}" cy="${C}" r="1.5" fill="currentColor" stroke="none"/>`,
+  Date: `<rect x="19" y="14" width="8" height="6.5" rx="1.5" fill="currentColor" stroke="none"/>`,      // a dial with a window at 3, four points from the rim (Okay's drawing, 11 Oct 2026)
+  Export: `<path d="M${C} 9.25V20.25M13.25 16.25L${C} 20.25L21.25 16.25M10.75 24.25H23.75"/>`,
+};
+// a round sign button (the ring list's tools): its ring is part of the sign, drawn here as heavy as the sign
+// (Okay, 14 Oct 2026: "they all count as part of icon"); the button's own border stays clear. 26 points, the sign's
+// 16 in the middle; the ring's outer edge where the border's was (13 from the centre).
+const round_sign = (inside) => icon(`<circle class="rim" cx="13" cy="13" r="${13 - CURVE / 2}" ${sw(CURVE)}/><g transform="translate(5 5)">${inside}</g>`, 26);
+const section_icon = (name) => icon(`${rim("ring")}<g class="sign">${SECTION_ICONS[name]}</g>`, 34);
 const EYE = {                                      // the left column's sign: open = showing, closed (with lashes) = put away
-  open: `<path d="M1.5 8C3.5 4.6 5.8 3.3 8 3.3S12.5 4.6 14.5 8C12.5 11.4 10.2 12.7 8 12.7S3.5 11.4 1.5 8Z"/><circle cx="8" cy="8" r="2" fill="currentColor" stroke="none"/>`,
-  closed: `<path d="M1.5 6.5C3.5 9.6 5.8 10.8 8 10.8S12.5 9.6 14.5 6.5M8 10.8L8 13.4M4.7 10.1L3.7 12.4M11.3 10.1L12.3 12.4M2.5 8.1L1.1 9.8M13.5 8.1L14.9 9.8"/>`,
+  open: `<path d="M1.75 8.25C3.75 4.85 6.05 3.55 8.25 3.55S12.75 4.85 14.75 8.25C12.75 11.65 10.45 12.95 8.25 12.95S3.75 11.65 1.75 8.25Z" ${sw(CURVE)}/><circle cx="8.25" cy="8.25" r="2.25" fill="currentColor" stroke="none"/>`,
+  closed: `<path d="M1.75 6.75C3.75 9.85 6.05 11.05 8.25 11.05S12.75 9.85 14.75 6.75M8.25 11.05V13.75M4.95 10.35L3.95 12.65M11.55 10.35L12.55 12.65M2.75 8.35L1.35 10.05M13.75 8.35L15.15 10.05" ${sw(CURVE)}/>`,
 };
 const eye = (open) => icon(EYE[open ? "open" : "closed"]);
-const NONE_SIGN = `<path d="M3.5 1.5L9.5 1.5L12.5 4.5L12.5 14.5L3.5 14.5ZM9.5 1.5L9.5 4.5L12.5 4.5"/><path d="M6 7.5L10 11.5M10 7.5L6 11.5"/>`;      // a sheet with a cross: this font has none of it
-// small pictures for choices that are easier seen than read: drawn on 28 × 20 like the other signs, shown larger
-// (Okay, 13 Oct 2026: "bigger, better (less detail) icons… this goes for all"). Their lines stay as thick as a sign's.
-const PIC_SCALE = 1.35;
-const pic = (inside) => icon(inside, 28, "0 0 28 20").replace('width="28" height="28"', `width="${Math.round(28 * PIC_SCALE)}" height="${Math.round(20 * PIC_SCALE)}"`).replace('stroke-width="1.4"', `stroke-width="${(1.4 / PIC_SCALE).toFixed(2)}"`);
+const NONE_SIGN = SIGNS.sheet + `<path d="M6.75 8.25L9.75 11.25M9.75 8.25L6.75 11.25" ${sw(SLANT)}/>`;      // the sheet with a cross: this font has none of it
+// a "none" in a row of colour dots: a slashed circle at the dot's own size (10), its outer edge where it was (4); so small, LINE is enough
+const none_dot = `<svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="round"><circle cx="5" cy="5" r="${4 - LINE / 2}"/><path d="M3.25 3.25L6.75 6.75"/></svg>`;
+// small pictures for choices that are easier seen than read: drawn at the size they are shown, 38 × 27 (they were
+// drawn on 28 × 20 and enlarged 1.35 times; Okay, 13 Oct 2026: "bigger, better (less detail) icons… this goes for all")
+const pic = (inside) => icon(inside, 38, 27);
 const solid = `fill="currentColor" stroke="none"`;
-const KIND_PIC = 30;                               // a kind's picture on a tile, a square this wide (28 × 20 for the others); 24 in the ring line, 20 in the Add menu
+const faint = `${sw(CURVE)} opacity="0.45"`;       // context (the dial's edge behind the A's): as heavy as any line, fainter in colour
+const KIND_PIC = 24;                               // a kind's picture, a square this wide: the ring line and the Add menu
+const A = (x) => `M${x - 2.75} 12.25L${x} 5.5L${x + 2.75} 12.25`;      // an A, as a chevron: how a numeral stands
 const PICS = {
-  // a ring's kind: the whole circle, as on a dial (Okay's drawing, 13 Oct 2026). Square, a little larger than the others.
-  kind: (i, size = KIND_PIC) => icon([
-    // the four weigh about the same (Okay, 13 Oct 2026: "equalize contrast"): many thin ticks, eight thicker marks,
-    // four numbers set in the pixel font at its own size (10 here is 8 on the screen at 24), a ring of middle weight
-    `<path d="${ticks(24, 8.5, 13.5)}" stroke-width="1.25" stroke-linecap="butt"/>`,
-    `<path d="${ticks(8, 8.5, 13.5)}" stroke-width="2.6" stroke-linecap="butt"/>`,
-    [["12", 0, -8.75], ["3", 10, 0], ["6", 0, 8.75], ["9", -10, 0]].map(([t, x, y]) => `<text class="pixel" x="${x}" y="${y}" font-size="10" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">${t}</text>`).join(""),
-    `<circle r="10.6" stroke-width="3.6"/>`,
-  ][i], size, "-15 -15 30 30"),
-  shape: [`<rect x="12" y="3" width="4" height="14" ${solid}/>`, `<path d="M10.5 3L17.5 3L15.2 17L12.8 17Z" ${solid}/>`, `<circle cx="14" cy="10" r="4.5" ${solid}/>`],
-  twelve: [
-    `<rect x="12.2" y="3" width="3.6" height="14" ${solid}/>`,
-    `<rect x="8.6" y="3" width="3.6" height="14" ${solid}/><rect x="15.8" y="3" width="3.6" height="14" ${solid}/>`,
-    `<path d="M8 3L20 3L14 17Z" ${solid}/>`,
-    `<rect x="12.2" y="3" width="3.6" height="14" stroke-width="1" stroke-dasharray="1.6 1.6"/>`,
+  // a ring's kind: the whole circle, as on a dial (Okay's drawing, 13 Oct 2026), centre 12. The four weigh about the
+  // same (Okay, 13 Oct 2026: "equalize contrast"): many thin ticks (1), eight thicker marks (2), four numbers in the
+  // pixel font at its own size (8), a band (3). These are the dial's own widths, pictured, not lines: kept.
+  kind: (i) => icon([
+    `<path d="${ticks(24, 7, 11, 12)}" stroke-width="1" stroke-linecap="butt"/>`,
+    `<path d="${ticks(8, 7, 11, 12)}" stroke-width="2" stroke-linecap="butt"/>`,
+    [["12", 12, 5], ["3", 20, 12], ["6", 12, 19], ["9", 4, 12]].map(([t, x, y]) => `<text class="pixel" x="${x}" y="${y}" font-size="8" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">${t}</text>`).join(""),
+    `<circle cx="12" cy="12" r="8.5" stroke-width="3"/>`,
+  ][i], KIND_PIC),
+  shape: [`<rect x="16.5" y="4" width="5" height="19" ${solid}/>`, `<path d="M14.5 4H23.5L20.5 23H17.5Z" ${solid}/>`, `<circle cx="19" cy="13.5" r="6" ${solid}/>`],
+  twelve: [                                        // the baton is the shape tile's baton: same width (5)
+    `<rect x="16.5" y="4" width="5" height="19" ${solid}/>`,
+    `<rect x="11.5" y="4" width="5" height="19" ${solid}/><rect x="21.5" y="4" width="5" height="19" ${solid}/>`,
+    `<path d="M11 4H27L19 23Z" ${solid}/>`,
+    `<rect x="16.75" y="4.75" width="4.5" height="17.5" stroke-width="2" stroke-dasharray="1.5 2.5"/>`,      // the baton, outlined and dashed (a place left empty): a dashed line looks lighter than a whole one, so 2
   ],
   mode: [                                          // an A at 3 and at 6 o'clock: how it stands
-    `<path d="M3 17A11 11 0 0 1 25 17" stroke-width="0.8" opacity="0.45"/><path d="M4 12.5L6 7.5L8 12.5M12 9L14 4L16 9M20 12.5L22 7.5L24 12.5"/>`,
-    `<path d="M3 17A11 11 0 0 1 25 17" stroke-width="0.8" opacity="0.45"/><path d="M12 9L14 4L16 9"/><path d="M12 9L14 4L16 9" transform="rotate(-52 14 17)"/><path d="M12 9L14 4L16 9" transform="rotate(52 14 17)"/>`,
-    `<circle cx="14" cy="10" r="8.5" stroke-width="0.8" opacity="0.45"/><path d="M12.4 6.4L14 2.6L15.6 6.4"/><path d="M12.4 17.4L14 13.6L15.6 17.4"/>`,
-    `<path d="M3 17A11 11 0 0 1 25 17" stroke-width="0.8" opacity="0.45"/><path d="M12.6 8.4L14 4.8L15.4 8.4" /><path d="M12.6 8.4L14 4.8L15.4 8.4" transform="rotate(-24 14 17)"/><path d="M12.6 8.4L14 4.8L15.4 8.4" transform="rotate(24 14 17)"/><path d="M12.6 8.4L14 4.8L15.4 8.4" transform="rotate(-48 14 17)"/><path d="M12.6 8.4L14 4.8L15.4 8.4" transform="rotate(48 14 17)"/>`,
+    `<path d="M4 23A15 15 0 0 1 34 23" ${faint}/><path d="M5.5 17L8.25 10.25L11 17M16.25 12.25L19 5.5L21.75 12.25M27 17L29.75 10.25L32.5 17"/>`,
+    `<path d="M4 23A15 15 0 0 1 34 23" ${faint}/><path d="${A(19)}"/><path d="${A(19)}" transform="rotate(-52 19 23)"/><path d="${A(19)}" transform="rotate(52 19 23)"/>`,
+    `<circle cx="19" cy="13.5" r="11.5" ${faint}/><path d="M16.75 8.75L19 3.5L21.25 8.75M16.75 23.5L19 18.25L21.25 23.5"/>`,
+    `<path d="M4 23A15 15 0 0 1 34 23" ${faint}/>` + [0, -24, 24, -48, 48].map((t) => `<path d="M17 11.5L19 6.5L21 11.5" transform="rotate(${t} 19 23)"/>`).join(""),
   ],
   hole: [                                          // a window's shape: rectangle · circle · polygon · arch · arc
-    `<rect x="6" y="4" width="16" height="12" rx="1.5"/>`,
-    `<circle cx="14" cy="10" r="6.5"/>`,
-    `<path d="M14 3.2L19.9 6.6L19.9 13.4L14 16.8L8.1 13.4L8.1 6.6Z"/>`,
-    `<path d="M3 16A11 11 0 0 1 25 16A5.5 5.5 0 0 0 14 16A5.5 5.5 0 0 0 3 16Z"/>`,
-    `<path d="M4.5 12.5A14 14 0 0 1 23.5 12.5L21 16.4A10 10 0 0 0 7 16.4Z"/>`,
+    box(8.25, 5.25, 21.5, 16.5, 2),
+    `<circle cx="19" cy="13.5" r="8.75" ${sw(CURVE)}/>`,
+    `<path d="M19 4L27.25 8.75V18.25L19 23L10.75 18.25V8.75Z" ${sw(SLANT)}/>`,
+    `<path d="M4 21.5A15 15 0 0 1 34 21.5A7.5 7.5 0 0 0 19 21.5A7.5 7.5 0 0 0 4 21.5Z" ${sw(CURVE)}/>`,
+    `<path d="M6 17A19 19 0 0 1 32 17L28.5 22.25A13 13 0 0 0 9.5 22.25Z" ${sw(CURVE)}/>`,
   ],
   window: [                                        // what a window shows, in as few lines as say it: one figure · one letter · a half filled · a crescent
-    `<rect x="5" y="2.5" width="18" height="15" rx="1.5"/><path d="M12.4 7.6L14.6 6L14.6 14" stroke-width="1.6"/>`,
-    `<rect x="2" y="4" width="24" height="12" rx="1.5"/><path d="M10 13.5L10 6.5L14 11.5L18 6.5L18 13.5" stroke-width="1.6"/>`,
-    `<rect x="3" y="3.5" width="22" height="13" rx="1.5"/><path d="M3.5 16L3.5 4L14 4L14 16Z" ${solid}/>`,
-    `<path d="M14 1.5A8.5 8.5 0 0 0 14 18.5A11 11 0 0 1 14 1.5Z" ${solid}/><circle cx="14" cy="10" r="8.5"/>`,      // a circle, its dark side the crescent reaching the frame, as am · pm's dark half reaches its frame (Okay, 13 Oct 2026)
+    box(6.75, 3.25, 24.5, 20.5, 2) + `<path d="M16.25 10.5L19.5 8V19" ${sw(CURVE)}/>`,
+    box(2.75, 5.25, 32.5, 16.5, 2) + `<path d="M13.5 18V9L19 15.5L24.5 9V18" ${sw(SLANT)}/>`,
+    box(4.25, 4.75, 29.5, 17.5, 2) + `<path d="M19 4.75H6.25A2 2 0 0 0 4.25 6.75V20.25A2 2 0 0 0 6.25 22.25H19Z" ${solid}/>`,
+    `<path d="M19 1.75A11.75 11.75 0 0 0 19 25.25A15 15 0 0 1 19 1.75Z" ${solid}/><circle cx="19" cy="13.5" r="11.75"/>`,      // the crescent beside it makes the circle look heavier: it stays LINE
   ],
 };
-/** a hand's picture is the hand itself, drawn by the geometry with a standard size. */
+/** a hand's picture is the hand itself, drawn by the geometry with a standard size (twice its units, so already on whole dots). */
 const hand_pic = (i) => {
   const p = G.hand_shape({ ...G.HAND_BASE, shape: i, len: 13, w: 2.2, tail: 3, tip: 4.5, feature: 4.4, feature_at: [0, 0, 0, 30, 0, 0, 45, 62, 62][i] || 0, round: 0, wall: 0, counter: 0 });
-  return `<svg viewBox="-3 -14 6 18.5" width="${Math.round(9 * PIC_SCALE)}" height="${Math.round(28 * PIC_SCALE)}" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;
+  return `<svg viewBox="-3 -14 6 18.5" width="12" height="38" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;
 };
 /** the chosen hand as it is now, with all its settings (length, width, tail, round ends, hollow wall, counterweight),
  *  as large as its box allows: upright for a tall box, lying (tip to the right) for a wide one — both are drawn, the
@@ -123,14 +185,34 @@ const hand_detail = (h) => {
     + `<svg class="lying" viewBox="${f(b[1] - m)} ${f(b[0] - m)} ${f(high + 2 * m)} ${f(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${centre("M0 -999L0 999")}</svg>`;
 };
 const TOOL_ICONS = {
-  rename: `<rect x="1.5" y="1.5" width="13" height="13" rx="3.5" stroke-width="0.7"/><path d="M8 4.4L8 11.6M6.2 4.2L9.8 4.2M6.2 11.8L9.8 11.8" stroke-width="0.7"/>`,      // thin and light (Okay, 11 Oct 2026)
-  panel: `<rect x="1.5" y="2.5" width="13" height="11"/><path d="M6 2.5L6 13.5"/>`,
-  copy: `<rect x="5.5" y="5.5" width="8" height="8"/><path d="M10.5 5.5L10.5 2.5L2.5 2.5L2.5 10.5L5.5 10.5"/>`,
-  up: `<path d="M8 13L8 3M4 7L8 3L12 7"/>`,
-  down: `<path d="M8 3L8 13M4 9L8 13L12 9"/>`,
-  duplicate: `<rect x="5.5" y="5.5" width="8" height="8"/><path d="M10.5 5.5L10.5 2.5L2.5 2.5L2.5 10.5L5.5 10.5"/>`,
-  delete: `<path d="M3 4.5L13 4.5M6.5 4.5L6.5 2.5L9.5 2.5L9.5 4.5M4.5 4.5L5.2 13.5L10.8 13.5L11.5 4.5"/>`,
-  grip: `<path d="M5.5 4L5.5 4.01M10.5 4L10.5 4.01M5.5 8L5.5 8.01M10.5 8L10.5 8.01M5.5 12L5.5 12.01M10.5 12L10.5 12.01" stroke-width="2"/>`,
+  // on 18; light in colour (Okay, 11 Oct 2026: "thin and light"), as heavy as any line since the audit (14 Oct)
+  rename: box(1.75, 1.75, 14.5, 14.5, 4) + `<path d="M9.25 4.75V13.25M7.25 4.75H11.25M7.25 13.25H11.25"/>`,
+  panel: `<rect x="1.75" y="2.75" width="12.5" height="10.5"/><path d="M6.25 2.75V13.25"/>`,
+  copy: SIGNS.copy,
+  up: `<path d="M8.25 13.25V3.25M4.25 7.25L8.25 3.25L12.25 7.25"/>`,
+  down: `<path d="M8.25 3.25V13.25M4.25 9.25L8.25 13.25L12.25 9.25"/>`,
+  duplicate: SIGNS.copy,
+  delete: `<path d="M2.75 4.75H13.75M6.25 2.25H10.25"/><path d="M4.25 4.75L5 13.25H11.5L12.25 4.75"/>`,      // the handle a flat line: a 2-point box at this weight clogs
+  grip: `<g fill="currentColor" stroke="none"><circle cx="5.5" cy="4" r="1"/><circle cx="10.5" cy="4" r="1"/><circle cx="5.5" cy="8" r="1"/><circle cx="10.5" cy="8" r="1"/><circle cx="5.5" cy="12" r="1"/><circle cx="10.5" cy="12" r="1"/></g>`,
+  undo: `<path d="M3.25 6.75H9.75A3.25 3.25 0 0 1 9.75 13.25H6.25M6.25 3.75L3.25 6.75L6.25 9.75" ${sw(SLANT)}/>`,
+  redo: `<path d="M13.25 6.75H6.75A3.25 3.25 0 0 0 6.75 13.25H10.25M10.25 3.75L13.25 6.75L10.25 9.75" ${sw(SLANT)}/>`,
+  wide: `<rect x="2.75" y="2.75" width="10.5" height="10.5"/><path d="M6.25 10.25L10.25 6.25M7.25 6.25H10.25V9.25" ${sw(DENSE)}/>`,
+  find: `<circle cx="7" cy="7" r="4.25" ${sw(CURVE)}/><path d="M10.25 10.25L13.25 13.25" ${sw(SLANT)}/>`,
+  screen: `<rect x="2.75" y="3.25" width="10.5" height="7.5"/><path d="M8.25 10.75V13.25M5.75 13.25H10.75" ${sw(DENSE)}/>`,
+  // the Guides switch, on 18: a target and its cross: its lines crowd, so DENSE; the slash shows when guides are off
+  guides: `<g ${sw(DENSE)}><circle cx="9.25" cy="9.25" r="5.5"/><circle cx="9.25" cy="9.25" r="2"/><path d="M9.25 1.25V5.75M9.25 12.75V17.25M1.25 9.25H5.75M12.75 9.25H17.25"/><path class="slash" d="M2.75 15.75L15.75 2.75"/></g>`,
+};
+// play and pause, filled, on 12: the triangle a half point right of the middle, so its weight (not its box) is centred
+const PLAY = { play: `<path d="M3.5 1.25L11 6L3.5 10.75Z"/>`, pause: `<rect x="2.5" y="1.5" width="2.5" height="9"/><rect x="7" y="1.5" width="2.5" height="9"/>` };
+// a window card: a small dial with the window where it is. The window keeps four points from the rim's inner edge at
+// every angle (as on the Windows tab; Okay, 13 Oct 2026, #149): its distance from the centre is found from its own
+// half-width and half-height in that direction. Its outline is LINE, its corners on quarter points.
+const card_pic = (angle, on) => {
+  const a = angle * Math.PI / 180, s = Math.sin(a), c = -Math.cos(a), hw = 4, hh = 3.25;
+  const r = RIM_IN - 4 - (hw * Math.abs(s) + hh * Math.abs(c));
+  const q = (v) => Math.round((v - 0.25) * 2) / 2 + 0.25;      // the nearest quarter point
+  const x = q(17 + r * s - hw), y = q(17 + r * c - hh);
+  return icon(rim() + (on ? `<rect x="${x}" y="${y}" width="8" height="6.5" rx="1.5" fill="currentColor" stroke="none"/>` : "") + box(x, y, 8, 6.5, 1.5), 34);
 };
 
 // ── rows: what each section shows ────────────────────────────
@@ -161,15 +243,12 @@ const SIZE_ROWS = {
   numerals: num("size", "Size", 0.3, 8, 0.05, { scope: "ring" }), band: num("width", "Band width", 0.02, 25, 0.05, { scope: "ring" }),
 };
 const size_row = (R) => SIZE_ROWS[G.kind_of(R) === "numerals" ? "numerals" : G.kind_of(R) === "band" ? "band" : G.SHAPES[R.shape] === "dot" ? "dot" : "len"];
-const VALUE_PICS = {                               // a value button's drawing, on a 40 × 40 field with the centre at 0 0. Its first circle is the button's own disc
-  radius: `<circle r="19.4"/><path d="M0 0L19.4 0"/><circle class="pivot" r="2"/>`,     // a radius, from the centre to the edge
-  // scale: a small circle growing into the large one, joined by their two tangents. Okay's drawing (Asset_1.svg, 13 Oct
-  // 2026: circles at 8.48 20.93 r 8.11 and 24.29 14.71 r 14.33), whole inside the button's own square (Okay, 13 Oct:
-  // "shrink scale icon for better h-spacing"): the drawing's middle (19.5 14.71) is the button's.
-  // (Okay, 13 Oct 2026: "connect two centers with dark like its sister, move right 1px"): the centres joined by a dark line, as the radius' button has, and the whole a point to the right
-  // Turned 25° counter-clockwise (Okay, 13 Oct 2026, 22:52: "rotate this icon to fit height, less wide, keeping proportions"):
-  // 34 wide and 35 high instead of 38 by 29; the turned drawing's middle put back on the button's, then the point right.
-  size: `<circle cx="3.84" cy="-3.02" r="14.33"/><circle class="small" cx="-7.86" cy="9.29" r="8.11"/><path class="tangent" d="M-15.37 6.27L-9.45 -8.39M-4.2 16.54L9.9 9.96"/><path class="dark" d="M-7.86 9.29L3.84 -3.02"/><circle class="pivot" cx="3.84" cy="-3.02" r="2"/>`,      // the points turned, not a transform: a turned group's box would be measured larger than the drawing
+const VALUE_PICS = {                               // a value button's drawing, at its size (36), centre 18. Its disc is the button's edge and, since the audit's second round, a line as heavy as the others (Okay, 14 Oct 2026: "same thicknesses"); outer edges where they were
+  radius: `<circle class="disc" cx="18" cy="18" r="${18 - CURVE / 2}" ${sw(CURVE)}/><path d="M18 18.25H35.5" ${sw(LINE)}/><circle class="pivot" cx="18" cy="18.25" r="2"/>`,     // a radius, from the centre to the edge
+  // scale: a small circle growing into the large one, joined by their two tangents (Okay's drawing, Asset_1.svg, 13 Oct
+  // 2026, turned 25° to fit the height; 22:52). The hull (both circles and what lies between the tangents) fills when
+  // the button is pressed (Okay's drawing, 14 Oct 2026). Tangents and hull computed from the circles.
+  size: `<path class="hull" d="M14.05 33.01L26.89 26.99A12.6875 12.6875 0 1 0 9.78 10.65L4.36 23.75A7.1875 7.1875 0 0 0 14.05 33.01Z"/><circle class="disc" cx="21.5" cy="15.5" r="12.6875" ${sw(CURVE)}/><circle class="small" cx="11" cy="26.5" r="7.1875" ${sw(CURVE)}/><path class="tangent" d="M4.36 23.75L9.78 10.65M14.05 33.01L26.89 26.99" ${sw(SLANT)}/><path class="dark" d="M11 26.5L21.5 15.5" ${sw(SLANT)}/><circle class="pivot" cx="21.5" cy="15.5" r="2"/>`,
 };
 
 // a language in the list, by its name; on its button, by two letters ("zh-Hans" → ZH; the font's own choice → "Lang.")
@@ -673,8 +752,8 @@ class DialTool {
       el("div", { className: "group day" }, this.ruler, this.time_slider, steps),
       el("div", { className: "group viewing" }, this.status,
         el("span", { className: "zooms" },
-          view("zoom-out", "Zoom out", `<path d="M3.5 8L12.5 8"/>`, () => { this.zoom(1 / 1.4, middle()); this.render(); }),
-          view("zoom-in", "Zoom in", `<path d="M3.5 8L12.5 8M8 3.5L8 12.5"/>`, () => { this.zoom(1.4, middle()); this.render(); })),
+          view("zoom-out", "Zoom out", SIGNS.minus, () => { this.zoom(1 / 1.4, middle()); this.render(); }),
+          view("zoom-in", "Zoom in", SIGNS.plus, () => { this.zoom(1.4, middle()); this.render(); })),
         el("button", { type: "button", id: "fit", textContent: "Fit", title: "Show the whole page", onclick: () => { this.fit(); this.render(); } })));
     this.set_speed(1);
     const guides = this.guides_box();
@@ -760,13 +839,13 @@ class DialTool {
    *  one of eight colours; one thickness; Reset. No free colours here. */
   guides_box() {
     this.guides_tick = el("button", { type: "button", className: "onview guidesbox", id: "guides", onclick: () => this.set_value("global", "guides", !this.S.guides) });
-    this.guides_tick.innerHTML = icon(`<circle r="5.6"/><circle r="2.1"/><path d="M0 -8.6L0 -3.6M0 3.6L0 8.6M-8.6 0L-3.6 0M3.6 0L8.6 0"/><path class="slash" d="M-7.4 7.4L7.4 -7.4"/>`, 18, "-9 -9 18 18");
+    this.guides_tick.innerHTML = icon(TOOL_ICONS.guides, 18);
     const word = el("span", { className: "word", textContent: "Guides" });
     word.dataset.text = "Guides";
     this.guides_tick.append(word);
     const list = el("div", { className: "guidelist night", id: "guide-list", hidden: true });
     const more = el("button", { type: "button", className: "onview guidesmore", id: "guides-more", title: "Which guides, and their colours", ariaLabel: "Which guides, and their colours" });
-    more.innerHTML = icon(`<path d="M4 6.5L8 10.5L12 6.5"/>`);
+    more.innerHTML = icon(SIGNS.down);
     more.setAttribute("aria-expanded", "false");
     const open = (on) => { list.hidden = !on; more.setAttribute("aria-expanded", String(on)); if (on) this.sync_guides(); };
     more.onclick = () => open(list.hidden);
@@ -777,7 +856,7 @@ class DialTool {
     const dots_line = (name, get, set, none_id = "") => {
       const dots = el("span", { className: "dots", role: "radiogroup", ariaLabel: name });
       const none = el("button", { type: "button", className: "none", id: none_id, title: "None: hide " + name.toLowerCase(), ariaLabel: "None", onclick: () => { set(null); this.sync_rows(); this.render(); } });
-      none.innerHTML = icon(`<circle cx="8" cy="8" r="6.3"/><path d="M3.6 3.6L12.4 12.4"/>`);
+      none.innerHTML = none_dot;
       dots.append(none);
       G.GUIDE_COLOURS.forEach((hex, i) => {
         const b = el("button", { type: "button", className: "tone", title: hex, ariaLabel: hex, onclick: () => { set(i); this.sync_rows(); this.render(); } });
@@ -869,7 +948,7 @@ class DialTool {
         };
         const fields = [...(kind !== "circle" ? [field("a", "°", false)] : []), ...(kind !== "line" ? [field("r", "r", true)] : [])];
         const gone = el("button", { type: "button", className: "sign", id: `guide-more-${i}-remove`, title: "Remove this guide", ariaLabel: "Remove this guide", onclick: () => { this.S.gd_more = this.S.gd_more.filter((_, n) => n !== i); this.sync_rows(); this.render(); } });
-        gone.innerHTML = icon(`<path d="M4 4L12 12M12 4L4 12"/>`);
+        gone.innerHTML = icon(SIGNS.cross);
         d.label.replaceChildren(d.label.textContent, ...fields.map((f) => f.el));
         d.line.classList.add("added");
         d.line.append(gone);
@@ -1063,7 +1142,7 @@ class DialTool {
         for (const [v, name] of row.menu.items) menu.append(el("option", { value: v, textContent: name }));
         menu.onchange = () => this.set_value(row.scope, row.menu.key, +menu.value);
         const arrow = el("span", { className: "labelmenu" }, menu);
-        arrow.insertAdjacentHTML("afterbegin", icon(`<path d="M4.5 6.5L8 10L11.5 6.5"/>`, 12));
+        arrow.insertAdjacentHTML("afterbegin", icon(`<path d="M3.25 4.75L6.25 7.75L9.25 4.75" ${sw(SLANT)}/>`, 12));
         lead = el("span", { className: "menulabel" }, label, arrow);
       }
       if (row.button) { slider.ariaLabel = field.ariaLabel = row.text; field.title = row.text + " · " + field.title; }
@@ -1111,11 +1190,11 @@ class DialTool {
       let more = null;
       if (row.line) {
         more = el("button", { type: "button", className: "pickt more", id: id + "-more", title: "All the shapes" });
-        more.innerHTML = icon(`<path d="M4.5 6.5L8 10L11.5 6.5"/>`, Math.round(20 * PIC_SCALE)) + "<span>more</span>";
+        more.innerHTML = icon(`<path d="M7.75 11L13.75 17L19.75 11" ${sw(SLANT)}/>`, 27) + "<span>more</span>";
         more.setAttribute("aria-expanded", "false");
         more.onclick = () => { const open = !group.classList.contains("open"); group.classList.toggle("open", open); more.setAttribute("aria-expanded", String(open)); more.lastChild.textContent = open ? "less" : "more"; };
         const own = el("button", { type: "button", className: "pickt own", id: id + "-own", title: "A shape of your own, from an SVG file: not built yet" });
-        own.innerHTML = icon(`<path d="M8 3.5L8 12.5M3.5 8L12.5 8"/>`, Math.round(20 * PIC_SCALE)) + "<span>SVG</span>";
+        own.innerHTML = icon(`<path d="M13.75 6.25V21.25M6.25 13.75H21.25"/>`, 27) + "<span>SVG</span>";
         own.setAttribute("aria-disabled", "true");
         group.classList.add("line");
         group.append(more, own);
@@ -1184,9 +1263,9 @@ class DialTool {
     P.pick = (hex) => put(from_hex(hex).slice(0, 3));
     P.title = el("h2");
     const wide = el("button", { type: "button", className: "sign", id: "pop-wide", title: "Twice the size, and back", ariaLabel: "Twice the size, and back", onclick: () => this.pop_wide(!P.wide) });
-    wide.innerHTML = icon(`<rect x="2.5" y="2.5" width="11" height="11"/><path d="M6 10L10 6M7 6L10 6L10 9"/>`);
+    wide.innerHTML = icon(TOOL_ICONS.wide);
     const shut = el("button", { type: "button", className: "sign", id: "pop-close", title: "Close", ariaLabel: "Close", onclick: () => this.pop_close() });
-    shut.innerHTML = icon(`<path d="M4 4L12 12M12 4L4 12"/>`);
+    shut.innerHTML = icon(SIGNS.cross);
     const head = el("header", { title: "Drag to move" }, P.title, wide, shut);
     P.used_chips = el("span", { className: "chips", id: "pop-used" });
     P.palette_chips = el("span", { className: "chips", id: "pop-palette" });
@@ -1480,10 +1559,10 @@ class DialTool {
         const w = G.windows_of(S)[c.slot], at = !w.on && w.at === G.WINDOW_BASE.at ? c.at : w.at;      // never used: shown at its card's place, where it will start
         const used = w.on || w.at !== G.WINDOW_BASE.at || w.at_deg != null;
         const place = used ? G.window_place(w) : G.DATE_AT[at][0], angle = used ? G.window_angle(w) : G.DATE_AT[at][1], a = angle * Math.PI / 180;
-        const x = 9.3 * Math.sin(a), y = -9.3 * Math.cos(a), state = `${angle}/${Boolean(w.on)}`;
+        const state = `${angle}/${Boolean(w.on)}`;
         if (c.drawn !== state) {
           c.drawn = state;
-          c.pic.innerHTML = icon(`<circle r="15" stroke-width="1.1"/><rect x="${(x - 3.6).toFixed(2)}" y="${(y - 2.8).toFixed(2)}" width="7.2" height="5.6" rx="1.2" stroke-width="1.1"${w.on ? ' fill="currentColor"' : ""}/>`, 34, "-17 -17 34 34");
+          c.pic.innerHTML = card_pic(angle, w.on);
           c.b.title = `The window at ${place}${w.on ? "" : " (not shown)"}`;
         }
         c.b.classList.toggle("on", c.slot === S.ui_window);
@@ -1558,7 +1637,7 @@ class DialTool {
     const menu = el("div", { className: "addmenu", id: "add-menu", hidden: true });
     menu.setAttribute("role", "menu");
     const plus = el("button", { type: "button", className: "sign", id: "ring-add", title: "Add a ring", ariaLabel: "Add a ring" });
-    plus.innerHTML = icon(`<path d="M8 3L8 13M3 8L13 8"/>`);
+    plus.innerHTML = round_sign(SIGNS.plus);
     plus.setAttribute("aria-haspopup", "menu");
     const open = (on) => { menu.hidden = !on; plus.setAttribute("aria-expanded", String(on)); };
     this.add_open = open;
@@ -1574,7 +1653,7 @@ class DialTool {
     tools.onkeydown = (e) => { if (e.key === "Escape" && !menu.hidden) { open(false); plus.focus(); } };
     for (const [action, title] of [["up", "Move up"], ["down", "Move down"], ["duplicate", "Duplicate"], ["delete", "Delete"]]) {
       const b = el("button", { type: "button", className: "sign", id: "ring-" + action, title, ariaLabel: title, onclick: () => this.ring_tool(action) });
-      b.innerHTML = icon(TOOL_ICONS[action]);
+      b.innerHTML = round_sign(TOOL_ICONS[action]);
       tools.append(b);
     }
     open(false);
@@ -1622,7 +1701,7 @@ class DialTool {
 
   value_button(id, row, drawing) {
     const b = el("button", { type: "button", className: "valueb", id });
-    b.innerHTML = `<svg viewBox="-20 -20 40 40" aria-hidden="true">${drawing}</svg>`;
+    b.innerHTML = `<svg viewBox="0 0 36 36" aria-hidden="true">${drawing}</svg>`;
     const T = () => this.target(row().scope);
     const refresh = () => {                        // no number in it (Okay, 13 Oct 2026): the ring's row, right above, says it; so does the tag
       const r = row(), v = T()[r.key] ?? 0, text = String(parseFloat(this.in_unit(v, decimals(r.step))));
@@ -2013,7 +2092,7 @@ class DialTool {
     const named = el("div", { className: "fontname", onclick: (e) => { if (!e.target.closest(".colour, .langs, button")) open(); } }, name, ...(lang ? [lang.el] : []), swatch, el("button", { type: "button", className: "btn", id: pre + "font-change", textContent: "Change…", onclick: open }));
     const styles = el("div", { className: "segs styles" });
     const state = el("div", { className: "quiet note", id: pre + "font-note" });
-    const back = el("button", { type: "button", className: "btn", id: "window-font-back", innerHTML: icon(`<rect x="5.5" y="5.5" width="8" height="8"/><path d="M3.5 10.5L2.5 10.5L2.5 2.5L10.5 2.5L10.5 3.5"/>`) + "<span>Copy style of <i>Numerals</i></span>", title: "Use the top numerals ring’s font again", hidden: true,
+    const back = el("button", { type: "button", className: "btn", id: "window-font-back", innerHTML: icon(SIGNS.copy) + "<span>Copy style of <i>Numerals</i></span>", title: "Use the top numerals ring’s font again", hidden: true,
       onclick: () => { const w = this.window(); w.family = ""; w.ps = ""; w.axes = {}; w.features = null; w.tracking = null; w.lang = null; this.changed(true); } });
     // every font box has all of it (Okay, 13 Oct 2026): numerals and letters · name, colour · styles, language · size ·
     // tracking · the variable axes · the OpenType features. The last can be put away.
@@ -2138,7 +2217,7 @@ class DialTool {
     const find = el("input", { type: "search", id: "font-find", ariaLabel: "Find a font", title: "Find a font" });
     find.oninput = () => this.fill_picker(true);
     const finder = el("span", { className: "find" }, find);
-    finder.insertAdjacentHTML("beforeend", icon(`<circle cx="6.8" cy="6.8" r="4.3"/><path d="M10 10L13.5 13.5"/>`));
+    finder.insertAdjacentHTML("beforeend", icon(TOOL_ICONS.find));
     const list = el("div", { className: "fontlist", id: "font-list" });
     // the list's own scrollbar, drawn by the tool (an iPad shows its own only while the list moves): a light pill the
     // whole height, a darker one as long as the share of the list in view, where that share is (Okay, 13 Oct 2026)
@@ -2160,7 +2239,7 @@ class DialTool {
     // the legend: folded to one button beside the squares; open, it stands over them and pushes the list up
     const legend = el("dl", { className: "legend", id: "font-legend", hidden: true }, el("div", { className: "legendhead" }, "Variable font axes and", el("br"), "OpenType abbreviations"), ...STICKER_LEGEND.flatMap(([word, kind, says, code]) => [el("dt", {}, el("span", { className: "sticker " + kind, textContent: word })), el("dd", {}, ...no_orphan(says, code))]));
     const legend_button = el("button", { type: "button", className: "pickt legendbutton", id: "font-legend-open", title: "What the stickers mean" });
-    legend_button.innerHTML = icon(`<path d="M4 10L8 6L12 10"/>`) + "<span>Legend<br><small>(OpenType abbr.)</small></span>";      // a second line like its brothers (Okay, 14 Oct 2026)
+    legend_button.innerHTML = icon(SIGNS.up) + "<span>Legend<br><small>(OpenType abbr.)</small></span>";      // a second line like its brothers (Okay, 14 Oct 2026)
     legend_button.setAttribute("aria-expanded", "false");
     this.legend_fit = () => {      // the window grows upwards as far as the font list's top, then scrolls (Okay, 14 Oct 2026)
       if (legend.hidden) return;
@@ -2193,9 +2272,9 @@ class DialTool {
           // the ways to add a font, in the first two of the sheet's three columns, sharing them equally: Installed first when
           // the browser can read this computer's fonts (Chrome, Edge), then a link, then a file (Okay, 14 Oct 2026)
           el("div", { className: "adds" + ("queryLocalFonts" in window ? " three" : "") },
-            square("local-fonts", "Installed", "The fonts installed on this computer", `<rect x="2.5" y="3.5" width="11" height="7.5"/><path d="M6 13.5L10 13.5M8 11L8 13.5"/>`, () => this.local_fonts(true), { hidden: !("queryLocalFonts" in window) }),
-            square("font-add", "Add font link (gfonts, url)", "A font by its Google Fonts link or name, or by a link to a font file", `<path d="M8 3.5L8 12.5M3.5 8L12.5 8"/>`, () => { if (paste.hidden) { paste.hidden = false; paste.focus(); } else if (paste.value.trim()) add(); else paste.focus(); }),      // the field for the link is out of sight until this is pressed (Okay, 13 Oct 2026)
-            square("font-file-open", "Add font file (woff, ttf, otf)", "A font file from this computer: .ttf · .otf · .woff", `<path d="M4 2.5L9.5 2.5L12 5L12 13.5L4 13.5ZM9.5 2.5L9.5 5L12 5"/>`, () => file.click())),
+            square("local-fonts", "Installed", "The fonts installed on this computer", TOOL_ICONS.screen, () => this.local_fonts(true), { hidden: !("queryLocalFonts" in window) }),
+            square("font-add", "Add font link (gfonts, url)", "A font by its Google Fonts link or name, or by a link to a font file", SIGNS.plus, () => { if (paste.hidden) { paste.hidden = false; paste.focus(); } else if (paste.value.trim()) add(); else paste.focus(); }),      // the field for the link is out of sight until this is pressed (Okay, 13 Oct 2026)
+            square("font-file-open", "Add font file (woff, ttf, otf)", "A font file from this computer: .ttf · .otf · .woff", SIGNS.sheet, () => file.click())),
           file, legend_button)));
     this.picker.tabIndex = -1;
     window.addEventListener("resize", () => { if (this.picker.open) { this.rail_place(); this.legend_fit(); } });
@@ -2966,8 +3045,8 @@ class DialTool {
 
   /** the button shows what a press will do: a triangle to play, two bars to pause. */
   play_icon() {
-    const shape = this.playing ? '<rect x="3" y="2" width="3.5" height="12"/><rect x="9.5" y="2" width="3.5" height="12"/>' : '<path d="M4 2 L14 8 L4 14 Z"/>';
-    this.play_button.innerHTML = `<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" fill="currentColor">${shape}</svg>`;
+    const shape = PLAY[this.playing ? "pause" : "play"];
+    this.play_button.innerHTML = `<svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" fill="currentColor">${shape}</svg>`;
     this.play_button.title = this.play_button.ariaLabel = this.playing ? "Pause" : "Play";
   }
 
@@ -3040,7 +3119,7 @@ class DialTool {
    *  like the switches there; pale when there is nothing to go back or forward to. */
   undo_box() {
     const make = (id, title, way, d) => { const b = el("button", { type: "button", className: "onview undobox", id, title, ariaLabel: title, onclick: () => this.undo(way) }); b.innerHTML = icon(d); return b; };
-    this.undo_buttons = [make("undo", "Undo (⌘Z)", -1, `<path d="M3 6.5H10A3.5 3.5 0 0 1 10 13.5H6M6 3.5L3 6.5L6 9.5"/>`), make("redo", "Redo (⇧⌘Z)", 1, `<path d="M13 6.5H6A3.5 3.5 0 0 0 6 13.5H10M10 3.5L13 6.5L10 9.5"/>`)];
+    this.undo_buttons = [make("undo", "Undo (⌘Z)", -1, TOOL_ICONS.undo), make("redo", "Redo (⇧⌘Z)", 1, TOOL_ICONS.redo)];
     this.sync_undo();
     return el("span", { className: "undos" }, ...this.undo_buttons);
   }
