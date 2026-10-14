@@ -37,14 +37,14 @@
 | 20 | Links, files, Gallery | Share a dial as a link; settings files; the Gallery's ready-made rings. |
 | **D** | **Classics** | |
 | 21 | Nine classics, an overview | |
-| 22–30 | One per page | Field, diver, dress, pilot type B, California, station clock, Bauhaus, sector, gauge, drawn with the open fonts. Each page has its link and the settings that differ from a new ring. |
+| 22–30 | One per page | Field, diver (Okay's bezel diver), dress, B-Uhr type B (Okay's), California, station clock, red minimal (Okay's, in Bauhaus's place), sector, gauge, drawn with the open fonts. Each page has its link and the settings that differ from a new ring. |
 | **E** | **Reference** | |
 | 31 | Every setting | Generated from the window's own rows: range, step, starting value. |
 | 32 | Find it + words | "What you want → what the tool calls it → page"; the watch words from `docs/glossary.md` (chapter ring, railroad, sector…). |
 
-## To settle with Okay
+## Settled with Okay (14 Oct 2026, 12:14)
 
-1. The window's drawing: **redrawn in grey** (canon §6, more work, cleaner), or **the real window grey-toned** (always exact, built from a screenshot).
-2. Production pages: what he has learnt from his own brass etching tests, to be written in, and which figures (smallest line, gap) are his measurements and which come from a source.
-3. Should the classics stay these nine, or be swapped for dials from the Gallery?
-4. Length: about 32 pages. Shorter is possible by folding the reference into the pages it belongs to.
+1. The window's pictures are **screenshots from Chromium, grey-toned** (the tests already take them), not redrawn.
+2. **No production figures yet:** Okay hasn't tested brass; production is upcoming. Pages 18–19 explain what the tool gives and what to check, without numbers.
+3. **Three of the classics swapped for Okay's dials:** B-Uhr for pilot type B, his bezel diver for the diver, red minimal (Claude's guess: in Bauhaus's place). His links are in `docs/guide/classics-links.md`.
+4. **About 32 pages.** Text first, page by page, no pictures: `docs/guide/text-web.md`. Plain words on the pages, the trade words in the reference.
