@@ -40,7 +40,8 @@ IMG, CACHE, PRESETS = (os.path.join(GUIDE, d) for d in ("img", "cache", "presets
 OUT = os.path.join(ROOT, "docs", "Dial-Tool-guide.pdf")
 
 sys.path.insert(0, HERE)
-import test_harness as H                                    # loads dial.py on drawbot-skia
+sys.path.insert(0, os.path.join(ROOT, "archive", "drawbot", "tools"))   # test_harness: dial.py, frozen
+import test_harness as H                                   # loads dial.py on drawbot-skia
 import guide_dials as G
 from drawbot_skia.path import BezierPath
 D = H.D

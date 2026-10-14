@@ -109,7 +109,7 @@ alignment to these rules as well."*
 
 ## 5 · Pictures
 
-- **Every dial is drawn by `dial.py`** from settings kept in the repo, and the values printed beside a
+- **Every dial is drawn by `archive/drawbot/dial.py`** from settings kept in the repo, and the values printed beside a
   picture are the ones that drew it (R25).
 - **Every picture has a ground** (sixth edition; Okay: "bring back the backgrounds. Blocks seem better
   aligned that way"). The ground is the grid box made visible: whole dials, close-ups, hands and large
@@ -145,7 +145,7 @@ alignment to these rules as well."*
   Colour wells and the dial are the only colour.
 - **True proportions.** The window is drawn in the tool's own units — 1300 × 860 points, panel 470, the form's
   columns 132 · 200 · 62 · 24 — and scaled as a whole. Rows, labels, slider ranges and values are read from
-  `dial.py`'s row descriptions and a classic dial's settings; the preview is the tool's own, with guides.
+  `archive/drawbot/dial.py`'s row descriptions and a classic dial's settings; the preview is the tool's own, with guides.
 - Small groups of controls beside figures use the same drawing at text size.
 - One thing in the window drawing is invented: the build and frame times in the status line.
 
@@ -158,7 +158,7 @@ alignment to these rules as well."*
   page is welcome ("the ranges are habits, not limits"); two is a tone.
 - **Three ways in**: the contents (cover), the thumb index (page edges), and Find it (last page: what you
   want → what the tool calls it → page). Every setting is also listed once, with its range, step and
-  starting value, in tables printed from `dial.py`'s own rows (R25): they cannot drift.
+  starting value, in tables printed from `archive/drawbot/dial.py`'s own rows (R25): they cannot drift.
 
 ## 8 · For the tool itself — ideas, not decisions
 

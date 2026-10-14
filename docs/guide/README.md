@@ -64,7 +64,7 @@ What fits: a block with an icon above holds about 7 lines of text in 4 rows and 
 with caption · `{{strip:NAME}}` `{{strip:NAME:FROM-TO}}` a row of small figures · `{{hero:NAME:COLUMNS:ROWS}}`
 a large example · `{{rings:NAME:SELECTED}}` a dial's ring list, redrawn ·
 `{{ui:strip:NAME-INDEX:RING:keys}}` `{{ui:dial:NAME:RING|hour|minute|second|date|dial:keys}}` controls, redrawn ·
-`{{ref:ring1|ring2|dial|hands|date|export}}` every setting, from `dial.py`'s row descriptions.
+`{{ref:ring1|ring2|dial|hands|date|export}}` every setting, from `archive/drawbot/dial.py`'s row descriptions.
 
 ## Pictures
 

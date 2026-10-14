@@ -6,6 +6,7 @@
 - **The rename box thinner:** a quiet sign, `DENSE` (corners an eighth heavier, as on any box).
 - **The round tools' rims light grey** (`--rule`, about 28 %, the value discs' colour), at full weight.
 - **The icon check** visits the size button pressed; `<mask>` parts are not read as lines.
+- **The repository is the web tool** (no change to the tool): the DrawBot version — `dial.py`, its tests, its preview plan, reference renders and the 4 Oct guidebook — moved to `archive/drawbot/`, unchanged. Every build since beta 1.0 is listed in `docs/versions.md`; `tools/versions.sh` tags them or opens one beside the clone. README rewritten around the web version.
 
 ## beta 4.36 (web version) · 14 Oct 2026
 

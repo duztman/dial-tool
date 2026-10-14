@@ -14,7 +14,7 @@ Writes web/test/out/sheet.png: dial.py | web | difference, one row per dial.
 import json, os, subprocess, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(HERE, "..", "..", "tools"))
+sys.path.insert(0, os.path.join(HERE, "..", "..", "archive", "drawbot", "tools"))
 import test_harness as H
 import drawbot_skia.drawbot as D
 import pymupdf

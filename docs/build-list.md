@@ -1,7 +1,7 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **done** · **parked**.
-*Last updated 14 Oct 2026 (beta 4.36.1: #159–#161 done, #162 to ask; beta 4.36: #156–#160, the icon audit and pipeline; #149 half built). Before, 13 Oct 2026, night (beta 4.35: #125 and #128 done, #134–#155 from Okay's evening review on the iPad, six of them built; #98 corrected). Before, 13 Oct 2026 (beta 4.8 built: #82, #99; noted #100; beta 4.7 built: #78–#81, #92, #94, #95, #97, #98; atlas review: #78–#91 added, #59 settled, #53 corrected). Before: 12 Oct 2026 (beta 4.6: #70, #71 built; beta 4.5: #70–#75; #32 moved to the web version). Before: 11 Oct 2026 (web version: #49–#56; MP4 fix: #48). Before: 4 Oct 2026 (beta 2.3: preview plan built, #37–#41 were waiting for the Mac check, `docs/preview.md` §6 — set aside by Okay the same day, see #40). Seen working on Okay's Mac 4 Oct (beta 2.1 screenshot): window, sections, ring list, ring settings list, regular-size controls, live popups, type per numerals ring with feature names.*
+*Last updated 14 Oct 2026 (beta 4.36.1: #159–#161 done, #162 to ask; beta 4.36: #156–#160, the icon audit and pipeline; #149 half built). Before, 13 Oct 2026, night (beta 4.35: #125 and #128 done, #134–#155 from Okay's evening review on the iPad, six of them built; #98 corrected). Before, 13 Oct 2026 (beta 4.8 built: #82, #99; noted #100; beta 4.7 built: #78–#81, #92, #94, #95, #97, #98; atlas review: #78–#91 added, #59 settled, #53 corrected). Before: 12 Oct 2026 (beta 4.6: #70, #71 built; beta 4.5: #70–#75; #32 moved to the web version). Before: 11 Oct 2026 (web version: #49–#56; MP4 fix: #48). Before: 4 Oct 2026 (beta 2.3: preview plan built, #37–#41 were waiting for the Mac check, `archive/drawbot/docs/preview.md` §6 — set aside by Okay the same day, see #40). Seen working on Okay's Mac 4 Oct (beta 2.1 screenshot): window, sections, ring list, ring settings list, regular-size controls, live popups, type per numerals ring with feature names.*
 
 ## Verify on a Mac
 
@@ -36,16 +36,16 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 |---|---|---|
 | 12 | Production limits per method: minimum line width and clearance; warn in the preview | open |
 | 13 | Numeral vertical alignment option: glyph bounds (now) vs cap height / baseline. **13 Oct, web version:** the radius' anchor — centre · baseline · ascender (ring key `anchor`, #95). Still open: centring on the cap height instead of each numeral's own outlines | partly done (#95) |
-| 14 | Heavy modes (knockout + 300 ticks ≈ 140–170 ms off-Mac): redraw on mouse-up if dragging feels slow. *4 Oct: DrawBot's shape combining is 2–14× slower than the harness's (`tools/bool_bench.py`, `docs/preview.md` §2.4) — beta 2.3 has the frame clock and skia-pathops: decide after the Mac check (#40) whether this is still needed* | open |
+| 14 | Heavy modes (knockout + 300 ticks ≈ 140–170 ms off-Mac): redraw on mouse-up if dragging feels slow. *4 Oct: DrawBot's shape combining is 2–14× slower than the harness's (`archive/drawbot/tools/bool_bench.py`, `archive/drawbot/docs/preview.md` §2.4) — beta 2.3 has the frame clock and skia-pathops: decide after the Mac check (#40) whether this is still needed* | open |
 | 15 | Fallback-font control for scripts the main font lacks (depends on #11) | open |
 | 16 | Live-text export option alongside outlines (beta 2.2) — verify: export PDF and SVG with it on, open in Illustrator with the font installed | verify |
-| 37 | **Preview: canvas.** Core Animation layers drawn from one scene shared with export; pinch / two-finger pan / ⌘-scroll zoom, Fit; sharp during zoom; no flash (`docs/preview.md` §3.1–3.2) | verify (beta 2.3) |
+| 37 | **Preview: canvas.** Core Animation layers drawn from one scene shared with export; pinch / two-finger pan / ⌘-scroll zoom, Fit; sharp during zoom; no flash (`archive/drawbot/docs/preview.md` §3.1–3.2) | verify (beta 2.3) |
 | 38 | **Preview: frame clock.** Controls request a frame; a display-synced clock draws at most once per frame; Play runs on it, also while a slider is held (§3.3) | verify (beta 2.3) |
 | 39 | **Preview: Canvas · PDF switch** (`ui_preview`), PDF as fallback and reference (§3.5) | verify (beta 2.3) |
-| 40 | **Preview: Mac check** — `docs/preview.md` §6, steps 1–10 | **set aside** — Okay, 4 Oct: "No mac check. Trust as if." beta 2.3 is treated as working; reopen on the first screenshot or log that says otherwise |
+| 40 | **Preview: Mac check** — `archive/drawbot/docs/preview.md` §6, steps 1–10 | **set aside** — Okay, 4 Oct: "No mac check. Trust as if." beta 2.3 is treated as working; reopen on the first screenshot or log that says otherwise |
 | 41 | **skia-pathops** for shape combining, installed through DrawBot's package menu on each Mac (§3.6) — Okay: yes, 4 Oct. Log must say `shape combining: skia-pathops …` on each Mac | verify (beta 2.3) |
 | 42 | Smoke test: stand-ins for Quartz / Core Animation, a driven frame clock, canvas and zoom checks (§5.2) | done (4 Oct) |
-| 43 | Guidebook window: the screenshot is gone; the window is redrawn from `dial.py` (design canon §6). Compare the drawing with the real window on the Mac once: proportions, row order, control looks | verify |
+| 43 | Guidebook window: the screenshot is gone; the window is redrawn from `archive/drawbot/dial.py` (design canon §6). Compare the drawing with the real window on the Mac once: proportions, row order, control looks | verify |
 | 47 | Design canon §8, ideas for the tool's window: tabular figures in number fields; grey + orange guides; presentation sheets on the canon's grid. Ask Okay | open |
 | 45 | Classic dial presets (`docs/guide/presets/`): load each on the Mac — fonts DIN Alternate, Futura, Helvetica Neue, Bodoni 72 resolve; compare with the guide's pictures | verify |
 | 46 | Date window on a dark plate: frame and day share one Print colour, so a light frame means a light day on the white disc. Separate colours? (found drawing the diver) | done in beta 4.8 (web version, #82) |
@@ -56,7 +56,7 @@ Numbered, never renumbered. Status: **open** · **verify** · **done** · **park
 
 | # | Item | Status |
 |---|---|---|
-| 49 | **Installed fonts on Okay's Intel Mac** — 11 Oct: Chrome listed nothing (page opened from a file in Downloads; cause unknown: not allowed for file pages, blocked in Chrome's site settings, or an extension). The page now says what happened under the buttons: get that line from Okay. If file pages can't be allowed, serve the tool from a web address (#55). Then the rest of the first run, in Chrome: open `web/dial-tool.html`; load a settings file; Rings → a numerals ring → Type → *Installed fonts* (Chrome asks once) → the numerals turn from Inter to Helvetica Neue. Compare with `dial.py`'s export of the same settings. Export PDF and SVG, open in Illustrator at true size. | verify |
+| 49 | **Installed fonts on Okay's Intel Mac** — 11 Oct: Chrome listed nothing (page opened from a file in Downloads; cause unknown: not allowed for file pages, blocked in Chrome's site settings, or an extension). The page now says what happened under the buttons: get that line from Okay. If file pages can't be allowed, serve the tool from a web address (#55). Then the rest of the first run, in Chrome: open `web/dial-tool.html`; load a settings file; Rings → a numerals ring → Type → *Installed fonts* (Chrome asks once) → the numerals turn from Inter to Helvetica Neue. Compare with `archive/drawbot/dial.py`'s export of the same settings. Export PDF and SVG, open in Illustrator at true size. | verify |
 | 50 | Imported shapes (SVG, PDF, AI) for markers and hands — not in the web version; a "file" shape is drawn as a bar or baton and the log says so. In a browser the file's content has to travel inside the settings (no file paths). | open |
 | 51 | MP4 and GIF export (WebCodecs) | open |
 | 52 | Live text in PDF · SVG; named instances of variable fonts; a fallback font for scripts the main font lacks (Eastern Arabic, Chinese: HarfBuzz has no automatic fallback, CoreText had) | open |
@@ -146,7 +146,7 @@ Atlas: https://claude.ai/artifact/QdvVC37Y6csV7FcUjJHqAH. Numbers in brackets ar
 | 103 | **beta 4.10** — built: rename box beside the name (and a click on the selected name renames), the ring line's inner line and room, the square value pop-up, even outlines, Silkscreen for tiny numbers. Look at it on Okay's devices: is 8 readable on the iPad? Does a click on the selected name rename too easily? | verify |
 | 101 | **Ring line, Okay's design** — built in beta 4.9: in the list under the selected row, buttons from the name column, all 36 high, new scale drawing, no drag arrow. **Ask Okay:** his picture writes the size as "9,25x" — should the size read as a multiple (×), and with a comma? With six or more rings the list scrolls and the line scrolls with it — fine? | verify · ask |
 | 100 | **The whole interface smaller on an iPad**, about 80 % (Okay, 13 Oct: "note for later"). The sizes are tokens (R32), so one factor on them — or the page's zoom — can do it; the reach rule keeps small controls pressable. Decide: iPad only or a setting | noted — later |
-| 93 | **Guidebook for the web version** (R25 stands). The guide describes the DrawBot version only: none of `docs/guide/pages/` mentions the web version, and its figures are drawn by the frozen `dial.py`. Okay, 13 Oct: "Rule r25 is right, but! just record, do not build until said so." | recorded — not until Okay says |
+| 93 | **Guidebook for the web version** (R25 stands). The guide describes the DrawBot version only: none of `docs/guide/pages/` mentions the web version, and its figures are drawn by the frozen `archive/drawbot/dial.py`. Okay, 13 Oct: "Rule r25 is right, but! just record, do not build until said so." | **go (Okay, 14 Oct): content first, then design; English only.** Outline first, for Okay | now |
 
 ## Okay's evening review on the iPad (13 Oct 2026, 21:02–22:15, while beta 4.35 was being built)
 
@@ -201,5 +201,5 @@ Twenty-two notes (eighteen with pictures, four after the hand-over), in the orde
 
 | # | Item | Status |
 |---|---|---|
-| 22 | Mac folder set-up (Okay will ask) | parked |
+| 22 | Mac folder set-up: a clone at `~/Desktop/dial-maker/dial-tool-github-repo/`, refreshed at least every fifth version (CLAUDE.md) | done (14 Oct) |
 | 61 | **Editing on the preview** (web version): handles, movers and shifters drawn on the dial itself, e.g. drag a ring's radius or size, spread the numerals. Models named by Okay: Illustrator's radial Repeat tool and its Gradient tool. The panel keeps the detailed settings; the handles are the quick way. Okay, 11 Oct 2026: "Park now" | parked |

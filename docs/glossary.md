@@ -31,7 +31,7 @@ If a term is used differently in conversation, ask, then update this file.
 |---|---|
 | **Ring** | One entry in the ring list. A ring repeats one thing around the centre at its **positions**. Okay's word for every dial element in the list ("rings, not layers, all round"). Unlimited. |
 | **Kind** | What a ring repeats: **ticks**, **markers**, **numerals** or **band**. Changeable at any time; the ring keeps all its settings. ("Type" is kept for typography.) |
-| **Ring list** | The list in the Rings section. Its order is the **stacking order**: the top ring is drawn last (in front). Each row (web version): an **eye** (show or hide the ring), a grip to drag it, its name, the **rename box** on the selected ring, its **ring summary** (kind · colour · size · radius). (`dial.py`: a show checkbox and an editable name.) |
+| **Ring list** | The list in the Rings section. Its order is the **stacking order**: the top ring is drawn last (in front). Each row (web version): an **eye** (show or hide the ring), a grip to drag it, its name, the **rename box** on the selected ring, its **ring summary** (kind · colour · size · radius). (`archive/drawbot/dial.py`: a show checkbox and an editable name.) |
 | **Radius** | Ticks, markers, bands: the **outer** radius. Numerals: the radius of the numeral's **anchor** — its centre (the start), its baseline or its top. |
 | **Anchor** | The point of a numeral that sits on its ring's radius (ring key `anchor`, web version, 13 Oct 2026): **centre** (the middle of its outlines) · **baseline** (the middle of the line it stands on) · **ascender** (the middle of its top; the top of the ring's tallest label, so all hang from one line). Chosen in the small menu beside the radius' label (in the radius button's pop-up), which then reads Centre / Baseline / Ascender radius. |
 | **Positions** | Where a ring puts things: **count**, **start °** (where the first one sits), **span °**. A full turn spaces them evenly; a partial span marks both ends (scales). For bands, positions start segments that tile the span. |
@@ -165,18 +165,18 @@ Kept so older notes still read.
 | **Private engine** | A separate `DrawBotDrawingTool` so the tool never disturbs DrawBot's own canvas. |
 | **GridView** | Apple's form grid, used for every form (label · control · field · stepper columns). |
 | **Binding** | The link from a control to a setting key in a scope — global, the selected ring, or the selected hand — so selecting another ring refills the controls. |
-| **Web version** | The tool in a browser (`web/`, beta 3.0): `web/dial-tool.html`, one file. Same settings and scene as `dial.py` (R30). |
+| **Web version** | The tool in a browser (`web/`, beta 3.0): `web/dial-tool.html`, one file. Same settings and scene as `archive/drawbot/dial.py` (R30). |
 | **PathKit** | Skia's shape combining, compiled for the browser; the web version's **shape combining**. The same engine as `skia-pathops`. |
-| **HarfBuzz** | The web version's text engine: turns text + font + features + axes + language into positioned glyph outlines. Does what DrawBot's `FormattedString` (CoreText) does in `dial.py`. |
+| **HarfBuzz** | The web version's text engine: turns text + font + features + axes + language into positioned glyph outlines. Does what DrawBot's `FormattedString` (CoreText) does in `archive/drawbot/dial.py`. |
 | **Stand-in font** | Inter, packed inside the web version's file: draws numerals whose font isn't loaded yet. The log names the font it replaces. |
 | **Installed fonts** | The web version's button that lists the computer's fonts (Chrome, Edge). Other browsers: add font files. |
 | **Link** (a dial's) | The web version's address with the dial after `#`: scheme number, a dot, the packed settings. Carries the dial, not the window's state (section, selected ring) and not font files. R31. |
 | **Window shape** | The hole's outline, apart from what the window shows (beta 4.8): rectangle · circle · polygon · arch (the moon's) · arc (a piece of a ring, for a day window at 12). **Turned**: the hole stands along its radius instead of level (only off the quarters). |
-| **Window** | A hole in the plate with something showing through (web version: up to four). **Kind**: date · day · am · pm (follows the time shown since beta 4.7) · moon phase. Window 1 is the **date window** of `dial.py`. The section's tab says Windows; its key and number stay Date / 3. |
+| **Window** | A hole in the plate with something showing through (web version: up to four). **Kind**: date · day · am · pm (follows the time shown since beta 4.7) · moon phase. Window 1 is the **date window** of `archive/drawbot/dial.py`. The section's tab says Windows; its key and number stay Date / 3. |
 | **Font list** | The web version's own twenty open-licence families (`web/fonts/`). |
 | **Font sheet** | The sheet that opens from the font in Type: every font by its numerals, a search, and **Add fonts** (Google link or name, link to a font file, font file, installed fonts). |
 | **Pointer label** | The name shown beside the pointer for the piece under it; the piece is outlined. |
 | **Round ends** | A hand's setting `round` (web version): the corner radius of its flat ends. Marks get round ends from *Round outer* / *Round inner*. Okay's "round caps". |
-| **Probe** | `tools/dial_probe.py`, a self-reporting test of the interface foundation, run on the Mac. |
-| **Harness** | `tools/test_harness.py`, renders geometry off-Mac (drawbot-skia). |
-| **Smoke test** | `tools/ui_smoke.py`, runs the whole interface off-Mac on **stand-ins** that accept only what vanilla 0.5.0 accepts. |
+| **Probe** | `archive/drawbot/tools/dial_probe.py`, a self-reporting test of the interface foundation, run on the Mac. |
+| **Harness** | `archive/drawbot/tools/test_harness.py`, renders geometry off-Mac (drawbot-skia). |
+| **Smoke test** | `archive/drawbot/tools/ui_smoke.py`, runs the whole interface off-Mac on **stand-ins** that accept only what vanilla 0.5.0 accepts. |
