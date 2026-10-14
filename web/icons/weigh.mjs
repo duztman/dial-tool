@@ -17,14 +17,14 @@ for (const it of items) {
   const els = await p.evaluate((W) => {
     const svg = document.querySelector("#h svg");
     if (!svg.getAttribute("width")) { const vb = svg.viewBox.baseVal; svg.setAttribute("width", vb.width); svg.setAttribute("height", vb.height); }
-    [...svg.querySelectorAll("path,circle,rect,line,polyline,polygon,ellipse")].forEach((e, k) => { if (W && W[k] != null) e.style.strokeWidth = W[k]; });
+    [...svg.querySelectorAll("path,circle,rect,line,polyline,polygon,ellipse")].filter((e) => !e.closest("mask, clipPath, defs")).forEach((e, k) => { if (W && W[k] != null) e.style.strokeWidth = W[k]; });
     // paint everything black, then list the stroked shapes
-    const all = [...svg.querySelectorAll("path,circle,rect,line,polyline,polygon,ellipse")];
+    const all = [...svg.querySelectorAll("path,circle,rect,line,polyline,polygon,ellipse")].filter((e) => !e.closest("mask, clipPath, defs"));
     return all.map((e, k) => { const cs = getComputedStyle(e); return { k, stroked: cs.stroke !== "none" && parseFloat(cs.strokeWidth) > 0 && cs.display !== "none" && cs.opacity !== "0", w: parseFloat(cs.strokeWidth) }; });
   }, it.w || null);
   for (const e of els.filter((e) => e.stroked)) {
     const pts = await p.evaluate(([k, CTX]) => {
-      const svg = document.querySelector("#h svg"), all = [...svg.querySelectorAll("path,circle,rect,line,polyline,polygon,ellipse")];
+      const svg = document.querySelector("#h svg"), all = [...svg.querySelectorAll("path,circle,rect,line,polyline,polygon,ellipse")].filter((e) => !e.closest("mask, clipPath, defs"));
       const ctx = CTX;
       all.forEach((x, i) => { x.style.visibility = ctx || i === k ? "visible" : "hidden"; if (getComputedStyle(x).stroke !== "none") x.style.stroke = "#000"; if (getComputedStyle(x).fill !== "none") x.style.fill = "#000"; x.style.opacity = "1"; if (i === k && !ctx) x.style.fill = "none"; });
       if (!ctx) svg.querySelectorAll("text").forEach((t) => (t.style.visibility = "hidden"));

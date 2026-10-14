@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.36.1 (web version) · 14 Oct 2026
+
+- **The Guides switch as Okay drew it:** guides on, the target's centre ring dashed; off, a hollow slash — two lines with the target cut away between them.
+- **The rename box thinner:** a quiet sign, `DENSE` (corners an eighth heavier, as on any box).
+- **The round tools' rims light grey** (`--rule`, about 28 %, the value discs' colour), at full weight.
+- **The icon check** visits the size button pressed; `<mask>` parts are not read as lines.
+
 ## beta 4.36 (web version) · 14 Oct 2026
 
 The icon audit (Okay, 14 Oct: "Truly awesome work. Apply on live page. Let this knowledge of good and proper icon making be canon.").

@@ -1,6 +1,6 @@
 # Dial Tool — brief
 
-*Started 3 Oct 2026. Last updated 14 Oct 2026 (beta 4.36: the icon audit, canon §9, R33, the icon pipeline). Before, 13 Oct 2026, night (beta 4.35: the stylesheet ordered, the font box on the columns, Okay's evening review; the atlas updated in place). Before, 13 Oct (review of the research atlas: decisions in §4, parked ideas in §8; web version beta 4.34). Before: 12 Oct 2026 (web version, beta 4.4 to 4.6, on `dev`). Before: 11 Oct 2026 (web version, beta 3.0); 4 Oct 2026 (beta 2.3 on `dev`: preview plan built, Mac check pending — `docs/preview.md` §6).*
+*Started 3 Oct 2026. Last updated 14 Oct 2026 (beta 4.36.1: the audit's omitted bits, icons to ask for next time; beta 4.36: the icon audit, canon §9, R33, the icon pipeline). Before, 13 Oct 2026, night (beta 4.35: the stylesheet ordered, the font box on the columns, Okay's evening review; the atlas updated in place). Before, 13 Oct (review of the research atlas: decisions in §4, parked ideas in §8; web version beta 4.34). Before: 12 Oct 2026 (web version, beta 4.4 to 4.6, on `dev`). Before: 11 Oct 2026 (web version, beta 3.0); 4 Oct 2026 (beta 2.3 on `dev`: preview plan built, Mac check pending — `docs/preview.md` §6).*
 
 ## 1 · Goal
 
@@ -197,6 +197,8 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 14 Oct | **The Dial tab's sign is the plate with its centre hole**; chosen, the plate fills and the hole is a dot of paper. Replaces the pies (and the guilloché rings tried in the audit's first round). **The Rings sign's three gaps are equal** (rim to ring, ring to ring, ring to middle). | Okay, 02:13: "rings could be equalized and dial gets a parametric wave of rings (not many) instead of pies"; 03:41, a drawing: the guilloché crossed out, "Dial → a circle with a small o", "Active → filled, a dot". |
 | 14 Oct | **The ring list's round tools draw their ring in the sign** (a stylesheet border can only be whole points: 1.5 is drawn as 1). **A pressed value button** fills its shape with ink, keeps grey outlines, turns its inner line and pivot paper; the radius button follows the size button's drawing. | Okay's drawing, 03:41 (the plus in its circle marked: the circle as thick as the plus; the size button: "same thicknesses", "Active"). |
 | 14 Oct | **Icons have a pipeline** in `web/icons/`: `fit.mjs` puts a new drawing on the grid and prints the code; `check.mjs` checks every icon in the running window (in `npm test`); `look.py` reads how heavy each line looks. | Okay, 03:51: "This pipeline for upcoming icons. Auto generate/fix svgs to come." |
+| 14 Oct | **Icon audit, the omitted bits (beta 4.36.1).** The Guides switch as Okay drew it: on, the centre ring dashed; off, a hollow slash cutting the target. The rename box a quiet sign, thinner (`DENSE`). The round tools' rims light grey (`--rule`, about 28 %) at full weight. The pressed size button in the audit page. The two open questions settled: colours as asked; the radius button pressed like the size button. | Okay, 04:11: "You seem to have omitted these from the third round, also the active size button… Open qs. All good. Just that these smaller circles need to be lighter gray keep the thickness… 30% gray levels." Drawings: "New drawings", "THINNER LINES". |
+| 14 Oct | **A few more icons to redraw** (idea and execution; Okay has them). Not today: ask Okay for them at the start of the next session in the project. | Okay, 04:11: "Few more ugly icons to fix… but this is not for today. Ask for them next time I go into the project." |
 
 ## 5 · Open questions
 
@@ -213,8 +215,6 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 12. **Installed fonts in the web version on Okay's Macs** — not yet tried there: does Chrome list Helvetica Neue (a collection file) and do the numerals match `dial.py`'s? (Build list #49.)
 10. ~~**skia-pathops**~~ — settled 4 Oct: yes (§4).
 
-- **Icon colours** (14 Oct, the audit): the round tools' rings, the value discs and the small circle are grey (the stylesheet's colours), the signs ink. Weights now match; should the colours too? Build list #159.
-- **The radius button pressed** follows the size button's drawing (ink fill, grey outline, paper line and pivot); Okay drew only the size button. Build list #160.
 
 ## 6 · Avenues (ideas, not commitments)
 

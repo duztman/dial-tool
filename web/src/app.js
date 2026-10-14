@@ -66,10 +66,10 @@ const LINE = 1.5, SLANT = LINE + 1 / 16, CURVE = LINE + 2 / 16, DENSE = LINE - 4
 const sw = (w) => `stroke-width="${w}"`;
 // a box with round corners: its straight sides LINE, on the grid; its corners CURVE, because a round corner drawn as
 // thin as the sides looks thinner (measured: 3–5 % lighter at r 2 and 4). Two paths, so each gets its own width.
-const box = (x, y, w, h, r) => {
+const box = (x, y, w, h, r, side = LINE, corner = CURVE) => {      // side, corner: a quiet sign passes its own pair
   const X = x + w, Y = y + h;
-  return `<path d="M${x + r} ${y}H${X - r}M${X} ${y + r}V${Y - r}M${X - r} ${Y}H${x + r}M${x} ${Y - r}V${y + r}"/>`
-    + `<path d="M${X - r} ${y}A${r} ${r} 0 0 1 ${X} ${y + r}M${X} ${Y - r}A${r} ${r} 0 0 1 ${X - r} ${Y}M${x + r} ${Y}A${r} ${r} 0 0 1 ${x} ${Y - r}M${x} ${y + r}A${r} ${r} 0 0 1 ${x + r} ${y}" ${sw(CURVE)}/>`;
+  return `<path d="M${x + r} ${y}H${X - r}M${X} ${y + r}V${Y - r}M${X - r} ${Y}H${x + r}M${x} ${Y - r}V${y + r}"${side === LINE ? "" : ` ${sw(side)}`}/>`
+    + `<path d="M${X - r} ${y}A${r} ${r} 0 0 1 ${X} ${y + r}M${X} ${Y - r}A${r} ${r} 0 0 1 ${X - r} ${Y}M${x + r} ${Y}A${r} ${r} 0 0 1 ${x} ${Y - r}M${x} ${y + r}A${r} ${r} 0 0 1 ${x + r} ${y}" ${sw(corner)}/>`;
 };
 const icon = (inside, size = 16, high = size) => `<svg viewBox="0 0 ${size} ${high}" width="${size}" height="${high}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="round" stroke-linejoin="round">${inside}</svg>`;
 const ticks = (n, r0, r1, c = 0) => Array.from({ length: n }, (_, i) => { const a = i * 2 * Math.PI / n, x = Math.sin(a), y = -Math.cos(a); return `M${(c + x * r0).toFixed(2)} ${(c + y * r0).toFixed(2)}L${(c + x * r1).toFixed(2)} ${(c + y * r1).toFixed(2)}`; }).join("");
@@ -185,8 +185,9 @@ const hand_detail = (h) => {
     + `<svg class="lying" viewBox="${f(b[1] - m)} ${f(b[0] - m)} ${f(high + 2 * m)} ${f(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${centre("M0 -999L0 999")}</svg>`;
 };
 const TOOL_ICONS = {
-  // on 18; light in colour (Okay, 11 Oct 2026: "thin and light"), as heavy as any line since the audit (14 Oct)
-  rename: box(1.75, 1.75, 14.5, 14.5, 4) + `<path d="M9.25 4.75V13.25M7.25 4.75H11.25M7.25 13.25H11.25"/>`,
+  // on 18; a quiet sign, thin and light (Okay, 11 Oct 2026; again 14 Oct, 04:11: "thinner lines"): DENSE, corners
+  // a sixteenth heavier as on any box; light by its grey. Outer edge where it was (1 … 17)
+  rename: box(1.625, 1.625, 14.75, 14.75, 4, DENSE, DENSE + 1 / 8) + `<path d="M9.25 4.75V13.25M7.25 4.75H11.25M7.25 13.25H11.25" ${sw(DENSE)}/>`,
   panel: `<rect x="1.75" y="2.75" width="12.5" height="10.5"/><path d="M6.25 2.75V13.25"/>`,
   copy: SIGNS.copy,
   up: `<path d="M8.25 13.25V3.25M4.25 7.25L8.25 3.25L12.25 7.25"/>`,
@@ -199,8 +200,12 @@ const TOOL_ICONS = {
   wide: `<rect x="2.75" y="2.75" width="10.5" height="10.5"/><path d="M6.25 10.25L10.25 6.25M7.25 6.25H10.25V9.25" ${sw(DENSE)}/>`,
   find: `<circle cx="7" cy="7" r="4.25" ${sw(CURVE)}/><path d="M10.25 10.25L13.25 13.25" ${sw(SLANT)}/>`,
   screen: `<rect x="2.75" y="3.25" width="10.5" height="7.5"/><path d="M8.25 10.75V13.25M5.75 13.25H10.75" ${sw(DENSE)}/>`,
-  // the Guides switch, on 18: a target and its cross: its lines crowd, so DENSE; the slash shows when guides are off
-  guides: `<g ${sw(DENSE)}><circle cx="9.25" cy="9.25" r="5.5"/><circle cx="9.25" cy="9.25" r="2"/><path d="M9.25 1.25V5.75M9.25 12.75V17.25M1.25 9.25H5.75M12.75 9.25H17.25"/><path class="slash" d="M2.75 15.75L15.75 2.75"/></g>`,
+  // the Guides switch, on 18: a target and its cross; its lines crowd, so DENSE. Okay's drawings (14 Oct 2026, 04:11):
+  // guides on, the centre ring dashed in six, square-ended (a dash pattern is a texture, not line ends) (core-on); guides off, a hollow slash, two lines with the target cut away
+  // between them (the slash group, and the mask that cuts). The stylesheet shows one state's parts (6-preview.css).
+  guides: `<mask id="guides-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18"><rect width="18" height="18" fill="white"/><path class="slash" d="M2.75 15.75L15.75 2.75" stroke="black" stroke-width="2.5" stroke-linecap="butt"/></mask>`
+    + `<g ${sw(DENSE)}><g mask="url(#guides-cut)"><circle cx="9.25" cy="9.25" r="5.5"/><circle class="core-off" cx="9.25" cy="9.25" r="2"/><path d="M9.25 1.25V5.75M9.25 12.75V17.25M1.25 9.25H5.75M12.75 9.25H17.25"/></g>`
+    + `<circle class="core-on" cx="9.25" cy="9.25" r="2" stroke-dasharray="1.25 0.844" stroke-linecap="butt" transform="rotate(-107.9 9.25 9.25)"/><path class="slash" d="M1.87 14.87L14.87 1.87M3.63 16.63L16.63 3.63"/></g>`,
 };
 // play and pause, filled, on 12: the triangle a half point right of the middle, so its weight (not its box) is centred
 const PLAY = { play: `<path d="M3.5 1.25L11 6L3.5 10.75Z"/>`, pause: `<rect x="2.5" y="1.5" width="2.5" height="9"/><rect x="7" y="1.5" width="2.5" height="9"/>` };

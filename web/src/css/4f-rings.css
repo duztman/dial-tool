@@ -39,8 +39,8 @@
      columns so they can lie over the heading's right part; folded, the summary stands there instead. */
   .headtools { display: flex; align-items: center; gap: var(--foot-gap); }
   .headtools .sign { border: 0; border-radius: var(--round-pill); }      /* no border: the ring is drawn in the sign, as heavy as its lines (round_sign, app.js) */
-  .headtools .sign .rim { stroke: var(--grey); }
-  .headtools .sign:hover .rim { stroke: var(--rule); }
+  .headtools .sign .rim { stroke: var(--rule); }      /* light grey, as heavy as the sign (Okay, 14 Oct 2026: "lighter gray, keep the thickness… 30 % gray") */
+  .headtools .sign:hover .rim { stroke: var(--grey); }
   .adder { position: relative; display: grid; }
 
   /* the selected ring's line: a framed line in the list, right under the selected ring's row and joined to it by a

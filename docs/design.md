@@ -1,6 +1,6 @@
 # Dial Tool — design canon
 
-*§9 (the tool's icons) added 14 Oct 2026, beta 4.36. Written 4 Oct 2026 with the guidebook's third edition (beta 2.3); revised the same day with the fourth to seventh. Okay: "this design research might influence
+*§9 (the tool's icons) added 14 Oct 2026, beta 4.36; 4.36.1: quiet signs, rim colour, dashed rings, the Guides drawings. Written 4 Oct 2026 with the guidebook's third edition (beta 2.3); revised the same day with the fourth to seventh. Okay: "this design research might influence
 the whole build, take notes… let's make it canon."*
 
 This file is the rule for everything Dial Tool shows on paper or screen that isn't a dial: the guidebook
@@ -216,8 +216,18 @@ inside the drawing.
 - **One drawing per idea.** One plus (9 long), one minus, one cross (8), one chevron (8 × 4), one copy sign, one
   sheet, wherever they appear (`SIGNS` in `app.js`). Open shapes are drawn a little smaller than arrows and boxes
   beside them, because they look larger. Round caps and joins on every line, as on the dial (Okay, 13 Oct).
+- **A quiet sign** may be drawn `DENSE`, with its box's corners an eighth heavier (`box(…, DENSE, DENSE + 1 / 8)`): the
+  rename box (Okay, 11 Oct: "thin and light"; 14 Oct: "thinner lines"). Quiet is a choice per sign, Okay's, not a
+  default.
+- **Colour is not weight.** A ring that frames a tool (the round tools' rims, the value buttons' discs) is light grey,
+  the stylesheet's `--rule` (#B9B9B4, about 28 % grey), at full weight (Okay, 14 Oct: "lighter gray, keep the
+  thickness… 30 % gray").
+- **A dashed ring is a texture**, so its dashes end square (the Guides switch's centre ring when guides are on);
+  every other line ends round.
 - **Optical, after equal.** The play triangle sits half a point right so its weight is centred, not its box; a window
   keeps 4 points from its dial's rim at every angle (not one radius); a sign whose lines crowd gets `DENSE`.
+- **The Guides switch** (Okay's drawings, 14 Oct): on, a target whose centre ring is dashed; off, the target cut by a
+  hollow slash — two lines with the target cut away between them (an SVG mask).
 - **Chosen states** fill: a tab's disc fills ink and its sign turns paper; the Dial sign's centre hole becomes a dot
   of paper; a pressed value button fills its shape with ink, keeps its outlines grey, and turns its inner line and
   pivot paper (Okay's drawing, 14 Oct).

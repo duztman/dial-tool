@@ -2,7 +2,8 @@
 // states, finds every icon (an <svg> in the panel, the bars and the pop-outs: not the preview, the ruler, font samples,
 // hand details or the Gallery), and checks it against the icon grid written in src/app.js (docs/design.md §9):
 //   1. one unit, one point: the viewBox is the icon's size on screen (hand tiles: twice, drawn by the geometry)
-//   2. every stroked line has one of the four widths, LINE · SLANT · CURVE · DENSE, or is a pictured width (PICTURED)
+//   2. every stroked line has one of the four widths, LINE · SLANT · CURVE · DENSE (or DENSE + 1/8: the round corners of
+//      a quiet box, drawn with box(…, DENSE, DENSE + 1 / 8)), or is a pictured width (PICTURED)
 //   3. a LINE's straight runs sit on quarter points (x.25, x.75), so they cover whole screen dots
 //   4. a box with round corners is drawn with box(): its round corners CURVE, its sides LINE
 // Then writes icons/out/: inventory.json (every icon, its size, scale, widths, a self-contained copy), a 2× crop of
@@ -23,7 +24,7 @@ const decl = /const (LINE = [^;]+);/.exec(src);
 if (!decl) { console.log("FAIL  app.js has no `const LINE = …` line: the icon grid is gone"); process.exit(1); }
 const W = {};
 for (const part of decl[1].split(/,\s*(?=[A-Z]+ =)/)) { const [k, v] = part.split("=").map((s) => s.trim()); W[k] = Function(...Object.keys(W), `return ${v}`)(...Object.values(W)); }
-const WIDTHS = ["LINE", "SLANT", "CURVE", "DENSE"].map((k) => W[k]);
+const WIDTHS = [...["LINE", "SLANT", "CURVE", "DENSE"].map((k) => W[k]), W.DENSE + 1 / 8];      // the last: a quiet (DENSE) box's round corners, an eighth heavier, as a LINE box's CURVE corners are
 // pictured widths: drawings of a thing's own width, not lines (design.md §8). By the icon's host and the element's place.
 const PICTURED = [
   { host: /^ring-kind-|^add-/, widths: [1, 2, 3], why: "a ring kind: ticks 1, marks 2, band 3, as on the dial" },
@@ -61,7 +62,7 @@ const collect = async (state) => {
       const host = s.closest("button, a, label, li, summary, .card, h2") || s.parentElement;
       const name = host.id || host.getAttribute("data-tab") || host.title || host.getAttribute("aria-label") || (host.textContent || "").trim().slice(0, 24);
       const root = s.getCTM();
-      const parts = [...s.querySelectorAll("path,circle,rect,line,polyline,polygon,ellipse")].map((e) => {
+      const parts = [...s.querySelectorAll("path,circle,rect,line,polyline,polygon,ellipse")].filter((e) => !e.closest("mask, clipPath, defs")).map((e) => {
         const cs = getComputedStyle(e), m = root.inverse().multiply(e.getCTM());
         return { tag: e.tagName, stroked: cs.stroke !== "none" && cs.display !== "none" && parseFloat(cs.strokeWidth) > 0, w: parseFloat(cs.strokeWidth), d: e.getAttribute("d"),
           rect: e.tagName === "rect" ? ["x", "y", "width", "height", "rx"].map((a) => parseFloat(e.getAttribute(a) || 0)) : null,
@@ -106,6 +107,8 @@ await page.click("#ring-add").catch(() => {});
 await visit("ring hidden", () => page.click(".ringlist li.ring.on button.eye"));
 await page.click(".ringlist li.ring.on button.eye").catch(() => {});
 await visit("value pop-up", () => page.click("#ring-r"));
+await page.keyboard.press("Escape");
+await visit("size pop-up", () => page.click("#ring-size"));
 await page.keyboard.press("Escape");
 await visit("font box", async () => { await page.click('.ringlist li.ring:has-text("numerals")'); await unfold(); await page.evaluate(() => document.querySelectorAll(".fontbox .partfold:not(.none)").forEach((b) => b.click())); });
 await visit("font sheet", async () => { await page.click("#font-change"); await page.waitForTimeout(400); });
