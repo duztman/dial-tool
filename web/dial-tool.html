@@ -839,8 +839,8 @@
      switch (bottom left). Outline only, never filled; there to be found, not to be the first
      thing seen: a hairline and plain words. Their one colour is black or white, whichever stands out more from the
      backdrop (main.dark, set by app.js) — one of the two always does, on any colour. No dashes, no greys.
-     Guides on: its word is bold. Off: plain, and its sign is struck through. The word keeps the width of its bold
-     form, so the box is the same size on and off. */
+     Guides (and Shadows) on: its word is whole, in that colour, never bolder (Okay, 14 Oct 2026, 23:05; bold
+     before). Off: faint, and Guides' sign is struck through. One weight, so the box is the same size on and off. */
   main { --on-canvas: var(--ink); }
   main.dark { --on-canvas: var(--white); }
   .guides { position: absolute; z-index: 3; top: var(--canvas-top); right: var(--canvas-inset); display: flex; justify-content: flex-end; }
@@ -868,19 +868,18 @@
   .guidesbox[aria-pressed="true"] > .word { opacity: 1; }
   .undobox.none, .undobox.none:hover { border-color: var(--line-fainter); box-shadow: none; }
   :is(.undobox.none, .undobox.none:hover) > * { opacity: calc(var(--faint) / 2); }
-  .guidesbox { gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch) 0 0 var(--round-switch); font-weight: 600; }
+  .guidesbox { gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch) 0 0 var(--round-switch); }      /* on, its word is whole (black or white), never bolder (Okay, 14 Oct 2026: "when active label does not get bolder, just gets black") */
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 var(--round-switch) var(--round-switch) 0; }
-  .guidesbox .word::after { content: attr(data-text); display: block; height: 0; overflow: hidden; visibility: hidden; font-weight: 600; }
-  .guidesbox[aria-pressed="false"] { font-weight: 400; }
   .guidesbox[aria-pressed="true"] :is(.slash, .core-off), .guidesbox:not([aria-pressed="true"]) .core-on { display: none; }      /* on: the centre ring dashed; off: the hollow slash (Okay's drawings, 14 Oct 2026) */
   .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }      /* open, only its arrow turns */
-  .backdropbox { position: absolute; z-index: 3; left: var(--canvas-inset); bottom: var(--canvas-inset); gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch); }
+  .backdropbox { position: absolute; z-index: 3; left: var(--canvas-inset); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch); }
   .backdropbox[aria-expanded="true"] { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); }
   .backdropbox .dot { border-color: var(--on-canvas); }
-  /* Shadows (a trial, 14 Oct 2026): the Guides switch's make, standing on the Backdrop switch, a unit between them.
+  /* Shadows (a trial, 14 Oct 2026): the Guides switch's make, at the bottom left, the Backdrop switch standing on it a
+     unit above (Okay, 23:05: "button goes down"); one higher, so its open list lies over Backdrop.
      No sign yet (a new icon goes through the icon pipeline, R33): the word alone, so its left room is the right's.
      Its list opens upward (.shadelist, after the guides' list), so its arrow points up while closed. */
-  .shadows { position: absolute; z-index: 3; left: var(--canvas-inset); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: flex; }
+  .shadows { position: absolute; z-index: 4; left: var(--canvas-inset); bottom: var(--canvas-inset); display: flex; }
   .shadowsbox { padding-left: var(--u4); }
   .shadows .guidesmore svg { rotate: 180deg; }
   .shadows .guidesmore[aria-expanded="true"] svg { rotate: 0deg; }
@@ -921,7 +920,8 @@
   .shadelist .guidehead .name { grid-column: 1 / -1; }      /* its headings are words alone: the whole line, not the names' column */
   /* the Shadows list: the guides' list, opening upward from its switch at the bottom left (after .guidelist, which it overrides) */
   .shadelist { top: auto; right: auto; bottom: calc(100% + var(--unit)); left: 0;
-    max-height: calc(100vh - var(--header) - var(--bar-height) - 2 * var(--canvas-inset) - 2 * var(--control-large) - 2 * var(--unit)); }
+    max-height: calc(100vh - var(--bar-height) - var(--canvas-inset) - var(--canvas-top) - 2 * var(--control-large) - 2 * var(--unit)); }      /* from over its switch up to under undo · redo */
+  .shadelist .row.chk > label.check { grid-column: 1 / -1; }      /* Soft edge and its warning on one line, the whole width */
   /* the outline of what the pointer is on: an orange line on a white one, so it shows on any colour */
   .glow { fill: none; stroke: var(--glow); stroke-width: var(--glow-line); vector-effect: non-scaling-stroke; stroke-linejoin: round; }
   .glow.under { stroke: var(--white); stroke-width: var(--glow-under); }
@@ -1086,9 +1086,9 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 
-// node_modules/pathkit-wasm/bin/pathkit.js
+// ../../duztman/dial-tool/web/node_modules/pathkit-wasm/bin/pathkit.js
 var require_pathkit = __commonJS({
-  "node_modules/pathkit-wasm/bin/pathkit.js"(exports2, module) {
+  "../../duztman/dial-tool/web/node_modules/pathkit-wasm/bin/pathkit.js"(exports2, module) {
     var PathKitInit2 = (() => {
       var _scriptDir = typeof document !== "undefined" && document.currentScript ? document.currentScript.src : void 0;
       if (typeof __filename !== "undefined") _scriptDir = _scriptDir || __filename;
@@ -2570,7 +2570,7 @@ var require_pathkit = __commonJS({
 // src/main.js
 var import_pathkit = __toESM(require_pathkit(), 1);
 
-// node_modules/harfbuzzjs/dist/index.mjs
+// ../../duztman/dial-tool/web/node_modules/harfbuzzjs/dist/index.mjs
 var dist_exports = {};
 __export(dist_exports, {
   AxisFlags: () => AxisFlags,
@@ -2604,7 +2604,7 @@ __export(dist_exports, {
   versionString: () => versionString
 });
 
-// node_modules/harfbuzzjs/dist/harfbuzz.js
+// ../../duztman/dial-tool/web/node_modules/harfbuzzjs/dist/harfbuzz.js
 async function createHarfBuzz(moduleArg = {}) {
   var moduleRtn;
   var Module2 = moduleArg;
@@ -3243,7 +3243,7 @@ async function createHarfBuzz(moduleArg = {}) {
 }
 var harfbuzz_default = createHarfBuzz;
 
-// node_modules/harfbuzzjs/dist/index.mjs
+// ../../duztman/dial-tool/web/node_modules/harfbuzzjs/dist/index.mjs
 var Module;
 var exports;
 var freeFuncPtr;
@@ -5647,18 +5647,19 @@ var DEFAULTS = {
   // plate (mm); the cap's top is the top of the stack; the date discs lie sh_disc mm under the plate's face. A thing
   // of height z casts its shape shifted by z / tan(rise), away from the light, onto everything lower; each surface
   // keeps only the part that falls on it — so a shadow steps where it crosses a hand or a window's edge.
-  // sh_dark: how dark, 0–100 %. sh_blur: a small soft edge (on/off only). Heights are Claude's guesses: the
-  // movement, not chosen yet, fixes them.
+  // sh_dark: how dark, 0–100 %. sh_blur: a small soft edge (on/off only). The starting values are Okay's (14 Oct
+  // 2026, 23:05, a picture of the list: "these in the image are the default values"); the movement, not chosen yet,
+  // will fix the real heights.
   sh_on: true,
-  sh_from: 315,
+  sh_from: 270,
   sh_rise: 35,
   sh_dark: 25,
   sh_blur: false,
-  sh_hour: 0.35,
-  sh_minute: 0.65,
-  sh_second: 0.95,
-  sh_cap: 1.2,
-  sh_disc: 0.5,
+  sh_hour: 0.15,
+  sh_minute: 0.35,
+  sh_second: 0.6,
+  sh_cap: 0.75,
+  sh_disc: 0.15,
   gd_more: [],
   // guides added by hand: lines, crosshairs, circles (GUIDE_MORE). gd_k_rings and gd_k_sel: unread since 13 Oct 2026, a ring's guide has the ring's own colour
   // until beta 4.4 guides had two free colours with a strength each. Kept because old links and files carry
@@ -8218,6 +8219,7 @@ var DialTool = class _DialTool {
     const heights = [row(num2("sh_hour", "Hour hand", 0, 3, 0.05)), row(num2("sh_minute", "Minute hand", 0, 3, 0.05)), row(num2("sh_second", "Seconds hand", 0, 3, 0.05)), row(num2("sh_cap", "Cap\u2019s top", 0, 4, 0.05))];
     const under = [row(num2("sh_disc", "Date discs", 0, 2, 0.05))];
     this.shadow_rows = [...light, ...heights, ...under];
+    light[3].el.querySelector("label.check").append(el("span", { className: "quiet", textContent: "\xA0\xB7 may stutter while time runs" }));
     const reset = el("button", { type: "button", className: "btn", id: "shadows-reset", textContent: "Reset", title: "The shadows as they started", onclick: () => {
       for (const key of Object.keys(DEFAULTS)) if (key.startsWith("sh_") && key !== "sh_on") this.S[key] = structuredClone(DEFAULTS[key]);
       this.sync_rows();
@@ -8281,7 +8283,7 @@ var DialTool = class _DialTool {
       }
     };
     if (!S.sh_on || S.out_production) return finish();
-    set(shade.blur, "stdDeviation", "0.08");
+    set(shade.blur, "stdDeviation", "0.07");
     const a = S.sh_from * Math.PI / 180, per = 1 / Math.tan(clamp(S.sh_rise, 1, 89) * Math.PI / 180);
     const away = (dz) => [-Math.sin(a) * per * dz, -Math.cos(a) * per * dz];
     const f = (v) => v.toFixed(4);

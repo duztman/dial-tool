@@ -132,10 +132,11 @@ export const DEFAULTS = {
   // plate (mm); the cap's top is the top of the stack; the date discs lie sh_disc mm under the plate's face. A thing
   // of height z casts its shape shifted by z / tan(rise), away from the light, onto everything lower; each surface
   // keeps only the part that falls on it — so a shadow steps where it crosses a hand or a window's edge.
-  // sh_dark: how dark, 0–100 %. sh_blur: a small soft edge (on/off only). Heights are Claude's guesses: the
-  // movement, not chosen yet, fixes them.
-  sh_on: true, sh_from: 315, sh_rise: 35, sh_dark: 25, sh_blur: false,
-  sh_hour: 0.35, sh_minute: 0.65, sh_second: 0.95, sh_cap: 1.2, sh_disc: 0.5,
+  // sh_dark: how dark, 0–100 %. sh_blur: a small soft edge (on/off only). The starting values are Okay's (14 Oct
+  // 2026, 23:05, a picture of the list: "these in the image are the default values"); the movement, not chosen yet,
+  // will fix the real heights.
+  sh_on: true, sh_from: 270, sh_rise: 35, sh_dark: 25, sh_blur: false,
+  sh_hour: 0.15, sh_minute: 0.35, sh_second: 0.6, sh_cap: 0.75, sh_disc: 0.15,
   gd_more: [],                                     // guides added by hand: lines, crosshairs, circles (GUIDE_MORE). gd_k_rings and gd_k_sel: unread since 13 Oct 2026, a ring's guide has the ring's own colour
   // until beta 4.4 guides had two free colours with a strength each. Kept because old links and files carry
   // them (R8, R31); nothing reads them now.

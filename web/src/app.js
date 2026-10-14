@@ -964,6 +964,8 @@ class DialTool {
     const heights = [row(num("sh_hour", "Hour hand", 0, 3, 0.05)), row(num("sh_minute", "Minute hand", 0, 3, 0.05)), row(num("sh_second", "Seconds hand", 0, 3, 0.05)), row(num("sh_cap", "Cap’s top", 0, 4, 0.05))];
     const under = [row(num("sh_disc", "Date discs", 0, 2, 0.05))];
     this.shadow_rows = [...light, ...heights, ...under];
+    // the soft edge blurs every shadow again on every frame: a warning beside it (Okay, 23:05: "we don't even need blur but keep it, write a warning beside it")
+    light[3].el.querySelector("label.check").append(el("span", { className: "quiet", textContent: "\u00a0· may stutter while time runs" }));
     const reset = el("button", { type: "button", className: "btn", id: "shadows-reset", textContent: "Reset", title: "The shadows as they started", onclick: () => {
       for (const key of Object.keys(G.DEFAULTS)) if (key.startsWith("sh_") && key !== "sh_on") this.S[key] = structuredClone(G.DEFAULTS[key]);
       this.sync_rows();
@@ -1008,7 +1010,7 @@ class DialTool {
     const finish = () => { for (const [name, n] of shade.parts) if (!used.has(name)) { n.remove(); shade.parts.delete(name); } };
     if (!S.sh_on || S.out_production) return finish();
 
-    set(shade.blur, "stdDeviation", "0.08");      // mm: a small soft edge, the same for every shadow
+    set(shade.blur, "stdDeviation", "0.07");      // mm: a small soft edge, the same for every shadow (0.08 until Okay, 23:05: "sharpen it just a little")
     const a = S.sh_from * Math.PI / 180, per = 1 / Math.tan(clamp(S.sh_rise, 1, 89) * Math.PI / 180);
     const away = (dz) => [-Math.sin(a) * per * dz, -Math.cos(a) * per * dz];      // y grows upward inside the dial (place())
     const f = (v) => v.toFixed(4);
