@@ -187,12 +187,26 @@ A ring repeats one kind of thing round the centre, at one radius.
 **Note: kind Markers.** Heavier shapes, usually for the hours.
 **Note: kind Numerals.** Numbers or words, any font.
 **Note: kind Band.** Flat colour, whole or in pieces.
-**Note: plate.** The plate, under every ring: set in the Dial tab.
+**Note: plate.** The plate, under every ring; its colour is set in the Dial tab.
 **Note: stack.** Each row of the list is one ring. The top row is the top layer, drawn last, over everything below it.
 **Note: pair 1.** Order. The bezel's triangle moved below the bezel: the bezel now covers it.
 **Note: pair 2.** Kind. Dots switched to numerals: same count, same places, now numbers.
 **Note: pair 3.** Give way. Five-minute ticks no longer skip the numerals, so they run under them.
 **Note: pair 4.** Anchor. Centre to top: each numeral moves until its top sits on the radius.
+**What makes a ring.** A kind, a set of positions (how many, where the first sits, how far they spread, which ones are used), a radius, a size and a colour. Every other setting in the Rings tab refines one of these.
+
+**Reading a row.** After the name come how many and of what kind, the colour, the size of one mark and the radius, in the unit you chose. The selected row opens its drawer to change them.
+
+**Drawing order.** The list is drawn from the bottom up, so the top row ends up in front. Drag a row by its grip to move it; hide it with its eye to see what it covers.
+
+**Giving way.** A ring can skip its positions where rings above it have marks, or cut a gap round them. That is how the minute track makes room for the dots, and the bezel's ticks for its numerals.
+
+**Note: together.** The five rings together, as the tool draws them.
+**Note: layer Bezel: 10–50.** Numerals, top of the list: drawn over everything.
+**Note: layer Bezel: five minutes.** Ticks that skip where the numerals above stand.
+**Note: layer Bezel.** A band of twelve sectors, two in green.
+**Note: layer Dots.** Markers at the hours; every third position left out.
+**Note: layer Minutes.** Sixty ticks that skip where the dots above sit.
 **Note: eye.** Hides the ring without deleting it.
 **Note: grip.** Drag the grip to move the ring up or down the list.
 **Note: name.** Renames the ring.

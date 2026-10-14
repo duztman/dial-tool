@@ -57,6 +57,7 @@
 - Balance and emptiness are judged by eye for each page; when the lead stands beside the title it fills the right half, its last line on the title's baseline. [r6 06, 20:46]
 
 - Show how the material works, don't arrange boxes (Okay, 21:18–21:33). Page 06: the list taken apart row by row, each row joined by a straight line to its ring lifted off the dial as a layer (top row = top layer; gaps where a ring gives way); the plate at the bottom. Beside it, cause and effect: one setting changed, the diver exported again by the tool, before → after in loupes. [r9 06]
+- No dark backgrounds, ever. A page covers one concept; what follows (cause and effect of each setting) goes on the next page. Page 06 (r10): white; five rings (one of each kind, two that give way); the assembled dial at left with four working blocks (what makes a ring, reading a row, drawing order, giving way); the list and the dial taken apart at right. [r10 06, 21:47]
 
 ## Cover (later)
 - Big type: tighter tracking/kerning; the title must not overlap the dial. A richer, aesthetic dial; Okay will guide. Etching is not the focus; ring building and design help are. [r1, r4 00]

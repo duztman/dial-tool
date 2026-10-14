@@ -253,6 +253,24 @@ await open(links["step-10"]);
 await page.evaluate(() => { const t = window.dial_tool; t.S.out_production = true; t.render(); });
 await export_svg("dial-mask");
 
+// ── five of the diver's rings, one of each kind and two that give way (page 06: what a ring is) ──
+{
+  const D = JSON.parse(fs.readFileSync(path.join(IMG, "dial-diver.json"), "utf8"));
+  const keep = ["Bezel: 10–50", "Bezel: five minutes", "Bezel", "Dots", "Minutes"];
+  const S5 = { ...D, rings: D.rings.filter((r) => keep.includes(r.name)), ui_ring: 0, ui_section: 1 };
+  await open(link(S5)); await export_svg("dial-five");
+  await guides_off(); await tab("Rings"); await page.mouse.move(5, 5); await frame();
+  rects["five-rows"] = [];
+  const nRows = await page.evaluate(() => document.querySelectorAll(".ringlist li.ring").length);
+  for (let i = 0; i < nRows; i++) {
+    await page.evaluate((i) => document.querySelectorAll(".ringlist li.ring")[i].scrollIntoView({ block: "center" }), i);
+    await frame(); await page.waitForTimeout(80);
+    rects["five-rows"].push(await page.evaluate((i) => { const b = document.querySelectorAll(".ringlist li.ring")[i].getBoundingClientRect(); return [b.left, b.top, b.width, b.height].map((v) => Math.round(v * 10) / 10); }, i));
+    await page.screenshot({ path: path.join(IMG, `five-row-${i}.png`) });
+  }
+  fs.writeFileSync(path.join(IMG, "dial-five.json"), JSON.stringify(S5));
+  links.five = link(S5);
+}
 // ── the diver changed one setting at a time, each exported by the tool (page 06: cause and effect) ──
 {
   const D = JSON.parse(fs.readFileSync(path.join(IMG, "dial-diver.json"), "utf8"));

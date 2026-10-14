@@ -111,8 +111,8 @@ a { color: inherit; text-decoration: underline; text-decoration-thickness: .15mm
 /* page 06: the list and the dial taken apart (Okay, 21:31) */
 .ground.stackbg { background: #27313B; }
 .stack { left: 0; top: 0; width: 297mm; height: 210mm; overflow: visible; }
-.stack .sheet { fill: rgba(13, 26, 43, .32); stroke: rgba(255, 255, 255, .35); stroke-width: .12; }
-.stack .plate { fill: #0D1A2B; stroke: rgba(255, 255, 255, .35); stroke-width: .12; }
+.stack .sheet { fill: #0D1A2B; fill-opacity: .94; stroke: #FFFFFF; stroke-opacity: .3; stroke-width: .1; }
+.stack .plate { fill: #0D1A2B; }
 .card.row { border-radius: .7mm; box-shadow: 0 .2mm .6mm rgba(0, 0, 0, .35); }
 .stacklines line { stroke: rgba(255, 255, 255, .55); stroke-width: .2; }
 .stacklines circle { fill: rgba(255, 255, 255, .8); }
@@ -123,3 +123,6 @@ a { color: inherit; text-decoration: underline; text-decoration-thickness: .15mm
 .lines path.arrow { fill: none; stroke: var(--sig-ink); stroke-width: .3; }
 .pcap { font-size: 8pt; line-height: calc(var(--b) * 2.7); }
 .pcap b { font-weight: 600; }
+.layernote { font-size: 7.5pt; line-height: calc(var(--b) * 2.6); color: var(--grey); }
+.layernote.plate { color: var(--ink); }
+.lines line { stroke: var(--sig-ink); stroke-width: .2; }
