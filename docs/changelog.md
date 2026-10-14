@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.38.3 (web version) · 15 Oct 2026
+
+- **The beat's dot three times as large** (#191): radius 7.5 of the cap's 15.5.
+
 ## beta 4.38.2 (web version) · 15 Oct 2026
 
 - **A light dot in the middle of the play button** (#191): it lights with each beat and fades with the pulse.

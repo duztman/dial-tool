@@ -218,7 +218,7 @@ const TOOL_ICONS = {
 // sausages as thick as the ring, touching it: light on the upper left, dark red on the lower right. Pressed — time
 // running — they change places: lit from inside.
 const ARCADE = (down) => {
-  const RING = 0.75 * 2, CAP = RIM + CURVE / 2, R = CAP + RING, C = R, mid = CAP - RING / 2, DOT = 2.5;      // DOT: the beat's light in the middle      // 1.5 · 15.5 · 17 · the sausages' middle circle
+  const RING = 0.75 * 2, CAP = RIM + CURVE / 2, R = CAP + RING, C = R, mid = CAP - RING / 2, DOT = 7.5;      // DOT: the beat's light in the middle (2.5 until Okay, 15 Oct 2026, 01:29: "enlarge dot 3x")      // 1.5 · 15.5 · 17 · the sausages' middle circle
   const arc = (from, to) => {      // a sausage along the circle of radius mid; angles: 0 = right, growing downward
     const p = (a) => `${(C + mid * Math.cos(a * Math.PI / 180)).toFixed(3)} ${(C + mid * Math.sin(a * Math.PI / 180)).toFixed(3)}`;
     return `M${p(from)}A${mid} ${mid} 0 0 1 ${p(to)}`;
