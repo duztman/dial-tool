@@ -126,6 +126,16 @@ export const DEFAULTS = {
   // the selected ring's lines are half as thick again. (beta 4.5, 12 Oct 2026)
   gd_edge: true, gd_axes: true, gd_win: true, gd_rings: true, gd_sel: true,
   gd_k_edge: 1, gd_k_axes: 1, gd_k_win: 1, gd_k_rings: 1, gd_k_sel: 4, gd_w: 1.0,
+  // shadows: preview only, never in a file (R5). A trial on branch try/shadows (Okay, 14 Oct 2026: "dummy preview
+  // only, do not do this on the live page yet"). One light, far away: it comes from a clock angle (sh_from, degrees)
+  // at a height over the dial (sh_rise, degrees above the plate's face). Each hand floats at its own height over the
+  // plate (mm); the cap's top is the top of the stack; the date discs lie sh_disc mm under the plate's face. A thing
+  // of height z casts its shape shifted by z / tan(rise), away from the light, onto everything lower; each surface
+  // keeps only the part that falls on it — so a shadow steps where it crosses a hand or a window's edge.
+  // sh_dark: how dark, 0–100 %. sh_blur: a small soft edge (on/off only). Heights are Claude's guesses: the
+  // movement, not chosen yet, fixes them.
+  sh_on: true, sh_from: 315, sh_rise: 35, sh_dark: 25, sh_blur: false,
+  sh_hour: 0.35, sh_minute: 0.65, sh_second: 0.95, sh_cap: 1.2, sh_disc: 0.5,
   gd_more: [],                                     // guides added by hand: lines, crosshairs, circles (GUIDE_MORE). gd_k_rings and gd_k_sel: unread since 13 Oct 2026, a ring's guide has the ring's own colour
   // until beta 4.4 guides had two free colours with a strength each. Kept because old links and files carry
   // them (R8, R31); nothing reads them now.
@@ -153,7 +163,7 @@ export const ring_guide = (S, i) => { const g = S.rings[i] ? S.rings[i].guide : 
  *  radius r, to mark a point · circle: radius r. The list only grows at its end (R9). */
 export const GUIDE_MORE = ["line", "crosshair", "circle"];
 export const NOT_GEOMETRY = ["t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
-export const NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_"];
+export const NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_", "sh_"];
 
 /** base values + d's values (deep copies), names turned into popup indexes. */
 export function complete(base, d) {

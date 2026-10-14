@@ -479,7 +479,7 @@ function parse_number(text, current) {
   return Number.isFinite(out) ? out : current;
 }
 /** is this row a length (kept in mm, shown in the chosen unit)? Decided by its key, where the scale tick decides it too. */
-const LENGTH_KEYS = { ring: G.RING_MM, hand: G.HAND_MM, window: G.WINDOW_MM, global: ["dial_d", "margin", "ha_cap", "dial_hole"] };
+const LENGTH_KEYS = { ring: G.RING_MM, hand: G.HAND_MM, window: G.WINDOW_MM, global: ["dial_d", "margin", "ha_cap", "dial_hole", "sh_hour", "sh_minute", "sh_second", "sh_cap", "sh_disc"] };
 /** a row's label: its own words, or, with a menu beside it, the chosen item's word before the last of its own
  *  ("Centre radius" → "Baseline radius"). */
 const label_of = (row, T) => (row.menu ? `${(row.menu.items.find(([v]) => v === (T[row.menu.key] ?? 0)) || row.menu.items[0])[1]} ${row.text.split(" ").pop()}` : row.text);
@@ -690,6 +690,7 @@ class DialTool {
     const on = (q) => e.target.closest && e.target.closest(q);
     if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox")) this.pop_close();
     if (this.guides_open && !$("#guide-list").hidden && !on(".guides")) this.guides_open(false);
+    if (this.shadows_open && !$("#shadow-list").hidden && !on(".shadows")) this.shadows_open(false);
     if (this.unit_open && !$("#unit-menu").hidden && !on(".unit")) this.unit_open(false);
     if (this.lang_opens && !on(".langs")) for (const shut of this.lang_opens) shut(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
@@ -787,7 +788,7 @@ class DialTool {
     this.set_speed(1);
     const guides = this.guides_box();
     // on the preview: undo · redo top left, beside the panel (Okay, 13 Oct 2026) · the Guides switch top right · Backdrop bottom left
-    this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.backdrop_box());
+    this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.shadows_box(), this.backdrop_box());
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     requestAnimationFrame(() => this.level_title());
     this.play_icon();
@@ -942,6 +943,132 @@ class DialTool {
     return box;
   }
 
+  /** shadows, at the preview's bottom left, over the Backdrop switch (a trial; Okay, 14 Oct 2026): a switch and,
+   *  joined to it, an arrow that opens their settings upward — made like the Guides switch. Preview only (R5). */
+  shadows_box() {
+    this.shadows_tick = el("button", { type: "button", className: "onview guidesbox shadowsbox", id: "shadows", onclick: () => this.set_value("global", "sh_on", !this.S.sh_on) });
+    const word = el("span", { className: "word", textContent: "Shadows" });
+    word.dataset.text = "Shadows";
+    this.shadows_tick.append(word);
+    const list = el("div", { className: "guidelist shadelist night", id: "shadow-list", hidden: true });
+    const more = el("button", { type: "button", className: "onview guidesmore", id: "shadows-more", title: "The light, and how high each part stands", ariaLabel: "The light, and how high each part stands" });
+    more.innerHTML = icon(SIGNS.down);
+    more.setAttribute("aria-expanded", "false");
+    const open = (on) => { list.hidden = !on; more.setAttribute("aria-expanded", String(on)); if (on) this.sync_shadows(); };
+    more.onclick = () => open(list.hidden);
+    this.shadows_open = open;
+    const row = (r) => this.build_row({ ...r, scope: "global" });
+    const head = (text) => el("div", { className: "guidehead" }, el("span", { className: "name", textContent: text }));
+    const light = [row(num("sh_from", "From", 0, 359, 1, { whole: true })), row(num("sh_rise", "Height", 5, 85, 1, { whole: true })),
+      row(num("sh_dark", "Darkness", 0, 100, 1, { whole: true })), row(chk("sh_blur", "Soft edge"))];
+    const heights = [row(num("sh_hour", "Hour hand", 0, 3, 0.05)), row(num("sh_minute", "Minute hand", 0, 3, 0.05)), row(num("sh_second", "Seconds hand", 0, 3, 0.05)), row(num("sh_cap", "Cap’s top", 0, 4, 0.05))];
+    const under = [row(num("sh_disc", "Date discs", 0, 2, 0.05))];
+    this.shadow_rows = [...light, ...heights, ...under];
+    const reset = el("button", { type: "button", className: "btn", id: "shadows-reset", textContent: "Reset", title: "The shadows as they started", onclick: () => {
+      for (const key of Object.keys(G.DEFAULTS)) if (key.startsWith("sh_") && key !== "sh_on") this.S[key] = structuredClone(G.DEFAULTS[key]);
+      this.sync_rows();
+      this.render();
+    } });
+    list.append(head("Light · degrees"), ...light.map((r) => r.el), head("Over the plate · mm"), ...heights.map((r) => r.el),
+      head("Under the plate · mm"), ...under.map((r) => r.el), el("div", { className: "guidefoot" }, reset));
+    const box = el("div", { className: "shadows" }, this.shadows_tick, more, list);
+    box.onkeydown = (e) => { if (e.key === "Escape" && !list.hidden) { open(false); more.focus(); } };
+    return box;
+  }
+
+  /** shadows on the preview (a trial, preview only: R5). One light, far away. Each part stands at a height: the date
+   *  discs under the plate, the plate's face at 0, the hands over it, the cap on top. A part at height z casts its own
+   *  outline, shifted by z / tan(the light's height) away from the light, onto every surface lower than it; each
+   *  surface keeps only what falls on itself (a clip by its own outline). So a seconds hand's shadow lies further out
+   *  on the plate than on the minute hand it crosses, and steps at that hand's edge — and at a window's edge.
+   *  The hands and the cap are tied to the centre by their pipes: the pipes' shadow is a band from the centre to the
+   *  cap's shadow, as wide as the cap. Nothing is drawn outside the dial: the plate's own shadow falls only into its
+   *  windows. Each surface's shadows are one group with one opacity, so where two overlap it is not darker. */
+  draw_shadows(items) {
+    const S = this.S;
+    if (!this.shade) {
+      const defs = svg_el("defs"), filter = svg_el("filter"), blur = svg_el("feGaussianBlur");
+      filter.id = "shadow-soft";
+      for (const [k, v] of [["x", "-20%"], ["y", "-20%"], ["width", "140%"], ["height", "140%"]]) filter.setAttribute(k, v);
+      filter.append(blur);
+      defs.append(filter);
+      this.svg.prepend(defs);
+      this.shade = { defs, blur, parts: new Map() };
+    }
+    const shade = this.shade, used = new Set();
+    // a node, made once and kept by its name; parts not used this frame are removed at the end
+    const part = (name, tag, parent) => {
+      let n = shade.parts.get(name);
+      if (!n) { n = svg_el(tag); shade.parts.set(name, n); }
+      if (n.parentNode !== parent) parent.append(n);
+      used.add(name);
+      return n;
+    };
+    const set = (n, k, v) => { if (n.getAttribute(k) !== v) n.setAttribute(k, v); };
+    const finish = () => { for (const [name, n] of shade.parts) if (!used.has(name)) { n.remove(); shade.parts.delete(name); } };
+    if (!S.sh_on || S.out_production) return finish();
+
+    set(shade.blur, "stdDeviation", "0.08");      // mm: a small soft edge, the same for every shadow
+    const a = S.sh_from * Math.PI / 180, per = 1 / Math.tan(clamp(S.sh_rise, 1, 89) * Math.PI / 180);
+    const away = (dz) => [-Math.sin(a) * per * dz, -Math.cos(a) * per * dz];      // y grows upward inside the dial (place())
+    const f = (v) => v.toFixed(4);
+    const height = { hour: S.sh_hour, minute: S.sh_minute, second: S.sh_second };
+    const nodes = items.map((_, i) => this.slots[i].node);
+    const hands = items.map((item, i) => ({ item, i })).filter((x) => x.item.role === "hand").map((x) => ({ ...x, z: height[x.item.name] ?? 0, d: this.slots[x.i].d }));
+    const cap_r = S.ha_on && S.ha_cap > 0 ? S.ha_cap / 2 : 0;
+    const top = Math.max(S.sh_cap, ...hands.map((h) => h.z));
+
+    // one surface: its group goes just before `before` (a node, or null for the end), clipped to its own outline
+    const surface = (name, before, outline, from_z) => {
+      const g = part(name, "g", this.dial), clip = part(name + "/clip", "clipPath", shade.defs);
+      clip.id = "shadow-clip-" + name;
+      outline.forEach(([d, turn], k) => { const p = part(`${name}/clip/${k}`, "path", clip); set(p, "d", d); set(p, "transform", turn ? `rotate(${f(-turn)})` : ""); });
+      set(g, "clip-path", `url(#${clip.id})`);
+      set(g, "opacity", String(clamp(S.sh_dark, 0, 100) / 100));
+      set(g, "fill", "#000");
+      set(g, "pointer-events", "none");
+      if (S.sh_blur) set(g, "filter", "url(#shadow-soft)"); else g.removeAttribute("filter");
+      if (g.nextSibling !== before) this.dial.insertBefore(g, before);
+      // what falls on it: every hand higher than it, then the pipes' band up to the cap's top
+      let k = 0;
+      const cast = (d, turn, dz) => {
+        const p = part(`${name}/cast/${k++}`, "path", g), [x, y] = away(dz);
+        set(p, "d", d);
+        set(p, "transform", `translate(${f(x)} ${f(y)})` + (turn ? ` rotate(${f(-turn)})` : ""));
+      };
+      for (const h of hands) if (h.z > from_z) cast(h.d, h.item.angle, h.z - from_z);
+      if (cap_r && top > from_z) {
+        // the pipes stand from the plate's face (0) to the cap's top: on a surface under the plate their band starts
+        // where the face's height lands, not at the centre
+        const [x0, y0] = away(Math.max(0, -from_z)), [x, y] = away(top - from_z);
+        const len = Math.hypot(x - x0, y - y0) || 1, nx = -(y - y0) / len * cap_r, ny = (x - x0) / len * cap_r;
+        const ring = (cx, cy) => `M${f(cx - cap_r)} ${f(cy)}A${f(cap_r)} ${f(cap_r)} 0 1 0 ${f(cx + cap_r)} ${f(cy)}A${f(cap_r)} ${f(cap_r)} 0 1 0 ${f(cx - cap_r)} ${f(cy)}Z`;
+        for (const d of [ring(x0, y0), ring(x, y), `M${f(x0 + nx)} ${f(y0 + ny)}L${f(x + nx)} ${f(y + ny)}L${f(x - nx)} ${f(y - ny)}L${f(x0 - nx)} ${f(y0 - ny)}Z`]) {
+          const p = part(`${name}/cast/${k++}`, "path", g);
+          set(p, "d", d);
+          set(p, "transform", "");
+        }
+      }
+      return { cast, g };
+    };
+
+    // the date discs, under the plate: they catch the plate's own shadow at the window's edge, and the hands'
+    const plate_at = items.findIndex((x) => x.role === "plate");
+    const discs = items.map((x, i) => ({ x, i })).filter(({ x }) => x.role === "date disc");
+    if (discs.length && plate_at >= 0) {
+      const s = surface("discs", nodes[plate_at], discs.map(({ i }) => [this.slots[i].d, 0]), -S.sh_disc);
+      s.cast(this.slots[plate_at].d, 0, S.sh_disc);
+    }
+    // the plate's face, with everything printed on it: drawn after the last thing before the hands
+    if (plate_at >= 0 && hands.length) {
+      const first = items.findIndex((x) => x.role === "hand" || x.role === "cap" || x.role === "guide");
+      surface("plate", first >= 0 ? nodes[first] : null, [[this.slots[plate_at].d, 0]], 0);
+    }
+    // each hand catches the hands above it
+    for (const h of hands) if (hands.some((o) => o.z > h.z) || (cap_r && top > h.z)) surface("hand-" + h.item.name, nodes[h.i + 1] || null, [[h.d, h.item.angle]], h.z);
+    finish();
+  }
+
   /** the guides' switch and list show the settings. */
   sync_guides() {
     const S = this.S;
@@ -1054,10 +1181,19 @@ class DialTool {
     r.sliding.onfinish = r.sliding.oncancel = done;
   }
 
+  /** the shadows' switch and list show the settings. */
+  sync_shadows() {
+    const on = Boolean(this.S.sh_on);
+    this.shadows_tick.setAttribute("aria-pressed", String(on));
+    this.shadows_tick.title = on ? "Shadows are on: press to hide them" : "Shadows are off: press to show them";
+    if (!$("#shadow-list").hidden) for (const r of this.shadow_rows) r.refresh(this.S);
+  }
+
   /** every row: hidden if it doesn't apply (R16); its controls showing the scope's value. A pane hides its rows
    *  when it is folded, and everything in it when its heading doesn't apply. */
   sync_rows() {
     this.sync_guides();
+    this.sync_shadows();
     this.sync_ring_summaries();
     paint(this.backdrop_dot, this.S.c_backdrop);
     this.unit_button.textContent = this.unit()[0];
@@ -2871,6 +3007,7 @@ class DialTool {
       }
       node.dataset.i = i;
     });
+    this.draw_shadows(items);
     this.place();
     const ring = this.ring();
     const font = G.kind_of(ring) === "numerals" ? `   ·   ${ring.ps}` : "";
