@@ -1,6 +1,6 @@
 @layer base {
   :root { font: var(--t-m)/1.4 var(--sans); font-variant-numeric: tabular-nums lining-nums; }
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }      /* no grey box flashing under a finger (#153) */
   html, body { height: 100%; margin: 0; }
   body { background: var(--paper); color: var(--ink); overflow: hidden; }
   #app { display: grid; grid-template-columns: calc(var(--panel) + var(--hair)) 1fr; grid-template-rows: 1fr auto; height: 100%; }

@@ -5,6 +5,7 @@
   button { appearance: none; margin: 0; padding: 0; border: 0; border-radius: 0; background: none; font: inherit; color: inherit; cursor: pointer; }
   select, input { font: inherit; color: inherit; }
   :is(button, select, input[type="text"], input[type="checkbox"], textarea):focus-visible { outline: var(--thick) solid var(--ink); outline-offset: 0; }
+  [data-press="touch"] :is(button, input[type="checkbox"]):focus-visible { outline: none; }      /* a finger's tap leaves no focus ring; a key brings it back (#153) */
   input[type="text"]:focus, select:focus { outline: var(--thick) solid var(--ink); outline-offset: 0; }
 
   .btn, .step, .segs > button, .plain, .sign { height: var(--control); border: var(--hair) solid var(--ink); background: var(--field); }

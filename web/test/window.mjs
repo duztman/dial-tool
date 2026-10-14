@@ -167,6 +167,16 @@ check(await page.$$eval(".ringlist li.ring.on.off .rename", (e) => e.length) ===
 await shot("4a-hidden-ring");
 await page.click(".ringlist li.ring.on button.eye");
 check(await page.$$eval(".ringlist li.ring.on .rename", (e) => e.length) === 1, "shown again: the rename box is back");
+// #183: an eye on another row shows or hides that ring and leaves the selection (and the ring line) where they are
+{
+  const sel = await S("S.ui_ring"), other = sel === 0 ? 1 : 0;
+  const y0 = await page.$eval(`.ringlist li:nth-child(${other + 1} of .ring) button.eye`, (e) => e.getBoundingClientRect().top);
+  await page.click(`.ringlist li:nth-child(${other + 1} of .ring) button.eye`);
+  const y1 = await page.$eval(`.ringlist li:nth-child(${other + 1} of .ring) button.eye`, (e) => e.getBoundingClientRect().top);
+  check(await S(`S.ui_ring === ${sel} && S.rings[${other}].on === false`) && Math.abs(y1 - y0) < 1, `another row's eye hides its ring without selecting it; the eye stays put (${y0} → ${y1})`);
+  await page.click(`.ringlist li:nth-child(${other + 1} of .ring) button.eye`);
+  check(await S(`S.rings[${other}].on === true && S.ui_ring === ${sel}`), "and shows it again");
+}
 const eyes = await page.$$eval(".ringlist button.eye svg, .pinned button.fold .eye svg", (e) => [...new Set(e.map((x) => Math.round(x.getBoundingClientRect().left)))]);
 const starts = await page.evaluate(() => { const l = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); return { row: l(".ringlist li.ring"), row_end: r(".ringlist li.ring"), line: l(".lineholder"), line_end: r(".lineholder"), heading: l(".pinned h2"), tools: r(".headtools"), pane: r(".pinned .pane"), name: l(".ringlist li.ring.on .name") + 6, kinds: l(".ringline .kinds") }; });
 check(eyes.length === 2 && starts.row === starts.heading && starts.line === starts.row && starts.line_end === starts.row_end && starts.tools === starts.pane && starts.kinds === starts.name,
@@ -1249,6 +1259,27 @@ const heights = await page.evaluate(async () => {
 });
 check(heights.between >= 2 && heights.shut.hidden && heights.shut.moved === heights.open && heights.again === heights.open, `a pane slides shut and open: ${heights.between} steps on the way, and what is under it moves by exactly its height (${heights.shut.moved} = ${heights.open})`);
 await page.emulateMedia({ reducedMotion: "reduce" });
+// #84: the time from the keyboard; #163: a hand's colour has an opacity strip; #152: two fingers pinch without a jump
+{
+  await page.evaluate(() => { document.activeElement && document.activeElement.blur(); window.dial_tool.set_time(36000); });
+  await page.keyboard.press("ArrowRight"); await page.keyboard.press("Shift+ArrowLeft");
+  const t1 = await S("S.t");
+  await page.keyboard.press(" "); const playing = await S("t.playing"); await page.keyboard.press(" ");
+  check(t1 === 36000 + 60 - 3600 && playing && !(await S("t.playing")), `→ a minute, ⇧← an hour back (${t1}), space plays and pauses`);
+  const hand_alpha = await page.evaluate(() => { const t = window.dial_tool; return t.colour_of_row({ scope: "hand", key: "c" }).alpha; });
+  check(hand_alpha === true, "a hand's colour can be see-through: the pop-out shows the opacity strip");
+  const r = await page.evaluate(() => { const b = window.dial_tool.svg.getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; });
+  const before = await S("[t.z, t.c[0], t.c[1]]");
+  const send = (type, id, x, y) => page.evaluate(([type, id, x, y]) => window.dial_tool.svg.dispatchEvent(new PointerEvent(type, { pointerId: id, pointerType: "touch", clientX: x, clientY: y, bubbles: true, isPrimary: id === 11 })), [type, id, x, y]);
+  await page.evaluate(() => { const s = window.dial_tool.svg; s.setPointerCapture = () => {}; });
+  await send("pointerdown", 11, r[0] - 50, r[1]); await send("pointerdown", 12, r[0] + 50, r[1]);
+  const landed = await S("[t.z, t.c[0], t.c[1]]");
+  await send("pointermove", 11, r[0] - 100, r[1]); await send("pointermove", 12, r[0] + 100, r[1]);
+  const after = await S("[t.z, t.c[0], t.c[1]]");
+  await send("pointerup", 11, r[0] - 100, r[1]); await send("pointerup", 12, r[0] + 100, r[1]);
+  check(landed.every((v, i) => v === before[i]) && Math.abs(after[0] / before[0] - 2) < 0.01, `a second finger landing moves nothing; spreading them twice as far zooms ×${(after[0] / before[0]).toFixed(2)}`);
+  await page.evaluate(() => window.dial_tool.fit && window.dial_tool.fit());
+}
 check(errors.length === 0, "no errors in the browser's console" + (errors.length ? ": " + errors.slice(0, 3).join(" | ") : ""));
 // ── the gallery: under everything else in Export; a card opens its dial ──
 await tab("Export");

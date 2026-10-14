@@ -600,9 +600,27 @@ class DialTool {
       DialTool.listening = true;
       document.addEventListener("pointerdown", (e) => { if (window.dial_tool) window.dial_tool.pressed(e); }, true);
       const tipped = (e) => (e.target.closest ? e.target.closest("[data-tip]") : null);      // tags: under the pointer, or where the keyboard is
+      // how the last press came: a finger (or pen) or a mouse, and a key — a tap leaves no focus ring (#153)
+      document.addEventListener("pointerdown", (e) => { document.documentElement.dataset.press = e.pointerType === "mouse" ? "mouse" : "touch"; }, true);
+      document.addEventListener("keydown", () => { document.documentElement.dataset.press = "key"; }, true);
       document.addEventListener("pointerover", (e) => { const t = tipped(e); if (window.dial_tool) { if (t && e.pointerType !== "touch") window.dial_tool.tag_show(t); else window.dial_tool.tag_hide(); } });
-      document.addEventListener("focusin", (e) => { const t = tipped(e); if (t && window.dial_tool && t.matches(":focus-visible")) window.dial_tool.tag_show(t); });
+      document.addEventListener("focusin", (e) => { const t = tipped(e); if (t && window.dial_tool && t.matches(":focus-visible") && document.documentElement.dataset.press !== "touch") window.dial_tool.tag_show(t); });
       document.addEventListener("focusout", () => { if (window.dial_tool) window.dial_tool.tag_hide(); });
+      // the time from the keyboard (#84, atlas 4.3): ← → a minute, with ⇧ an hour; space plays or pauses. Not while
+      // typing, on a slider or a menu (they use these keys), with ⌘/Ctrl/⌥ held, or with a dialog open.
+      document.addEventListener("keydown", (e) => {
+        const tool = window.dial_tool, at = e.target;
+        if (!tool || e.metaKey || e.ctrlKey || e.altKey || document.querySelector("dialog[open]")) return;
+        if (at && at.closest && at.closest("input, textarea, select, [contenteditable='true']")) return;
+        if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+          const step = (e.shiftKey ? 3600 : 60) * (e.key === "ArrowLeft" ? -1 : 1);
+          tool.set_time(((tool.S.t + step) % 86400 + 86400) % 86400);
+          e.preventDefault();
+        } else if (e.key === " " && !e.repeat) {
+          tool.play(!tool.playing);
+          e.preventDefault();
+        }
+      });
       document.addEventListener("keydown", (e) => {   // ⌘Z undo · ⇧⌘Z or ⌘Y redo (Ctrl on Windows) — Okay, 13 Oct 2026
         const z = (e.metaKey || e.ctrlKey) && !e.altKey && e.key.toLowerCase() === "z", y = (e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "y";
         if (!(z || y) || !window.dial_tool || document.querySelector("dialog[open]")) return;
@@ -1336,7 +1354,7 @@ class DialTool {
    *  It follows the scope, so with a ring's colour open, selecting another ring shows that ring's. */
   colour_of_row(row) {
     return {
-      alpha: row.scope === "ring",                 // only a ring can be see-through (Okay, 12 Oct 2026)
+      alpha: row.scope === "ring" || row.scope === "hand",      // rings (Okay, 12 Oct 2026) and hands (#163, 14 Oct 2026) can be see-through
       read: () => { const T = this.target(row.scope); return T ? T[row.key] || (row.or ? row.or(T) : null) : null; },
       write: (value) => this.set_value(row.scope, row.key, value),
       label: () => {
@@ -1829,7 +1847,7 @@ class DialTool {
     this.ring_list.replaceChildren();
     this.S.rings.forEach((ring, i) => {
       const selected = i === this.S.ui_ring;
-      const show = el("button", { type: "button", className: "eye", title: ring.on ? "Hide this ring" : "Show this ring", ariaLabel: `Show ${ring.name}`, onclick: (e) => { e.stopPropagation(); this.S.ui_ring = i; this.set_value("ring", "on", !ring.on); } });
+      const show = el("button", { type: "button", className: "eye", title: ring.on ? "Hide this ring" : "Show this ring", ariaLabel: `Show ${ring.name}`, onclick: (e) => { e.stopPropagation(); this.show_ring(i, !ring.on); } });      // the eye only shows or hides: the selection stays, so the ring line doesn't move and the next eye stays under the pointer (#183)
       show.setAttribute("aria-pressed", String(ring.on));
       show.innerHTML = eye(ring.on);
       const grip = el("span", { className: "grip", title: "Drag to change the order" });
@@ -1861,6 +1879,17 @@ class DialTool {
 
   /** the rings' rows in the list, top first (the list also holds the ring line, which is not one of them). */
   ring_rows() { return this.ring_list ? [...this.ring_list.children].filter((li) => li.classList.contains("ring")) : []; }
+
+  /** show or hide ring i on the dial without selecting it (the eye's job; a click on the row selects). */
+  show_ring(i, on) {
+    const ring = this.S.rings[i];
+    if (!ring || ring.on === on) return;
+    ring.on = on;
+    this.static_dirty = true;
+    this.fill_ring_list();
+    this.sync_rows();
+    this.render();
+  }
 
   /** the ring line stands in the list, right under the selected ring's row (Okay's design, 13 Oct 2026). */
   place_ring_line() {
@@ -2902,22 +2931,51 @@ class DialTool {
       if (e.ctrlKey || e.metaKey) this.zoom(Math.exp(-e.deltaY * 0.01), at(e));      // pinch, or ⌘ / ctrl + scroll
       else { this.fitted = false; this.c = [this.c[0] - e.deltaX, this.c[1] - e.deltaY]; this.place(); }
     }, { passive: false });
-    let down = null;
-    this.svg.addEventListener("pointerdown", (e) => { down = { p: at(e), c: this.c.slice(), moved: false }; this.svg.setPointerCapture(e.pointerId); });
+    // fingers and the mouse, each tracked by its id (#152: one shared `down` let a second finger reset the pan and
+    // both fingers drag it from different places — the jump at the start of a pinch). One pointer pans (or clicks,
+    // if it hasn't moved); two pinch: the zoom follows their distance, the pan their midpoint.
+    const pts = new Map();                         // pointerId → where it is now
+    let down = null;                               // one pointer: {p, c, moved} · two: {d, mid, moved}
+    const pair = () => { const [a, b] = [...pts.values()]; return { d: Math.hypot(b[0] - a[0], b[1] - a[1]) || 1, mid: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2] }; };
+    const restart = () => {                        // a pointer came or went: start again from where they all are now
+      const moved = down ? down.moved : false;
+      if (pts.size === 1) down = { p: [...pts.values()][0], c: this.c.slice(), moved };
+      else if (pts.size >= 2) down = { ...pair(), moved: true };      // a pinch is never a click
+      else down = null;
+    };
+    this.svg.addEventListener("pointerdown", (e) => { pts.set(e.pointerId, at(e)); this.svg.setPointerCapture(e.pointerId); if (pts.size === 1) down = null; restart(); });
     this.svg.addEventListener("pointermove", (e) => {
-      if (!down) return e.pointerType === "mouse" ? this.hover(at(e), document.elementFromPoint(e.clientX, e.clientY)) : null;
+      if (!pts.has(e.pointerId)) return e.pointerType === "mouse" ? this.hover(at(e), document.elementFromPoint(e.clientX, e.clientY)) : null;
+      pts.set(e.pointerId, at(e));
+      if (pts.size >= 2) {
+        const now = pair();
+        this.hover(null);
+        this.c = [this.c[0] + now.mid[0] - down.mid[0], this.c[1] + now.mid[1] - down.mid[1]];      // pan by the midpoint…
+        this.zoom(now.d / down.d, now.mid);                                                        // …zoom by the distance (zoom places)
+        down.d = now.d; down.mid = now.mid;
+        return;
+      }
       const p = at(e);
       if (Math.hypot(p[0] - down.p[0], p[1] - down.p[1]) > 4) down.moved = true;
       if (down.moved) { this.hover(null); this.fitted = false; this.c = [down.c[0] + p[0] - down.p[0], down.c[1] + p[1] - down.p[1]]; this.place(); }
     });
-    this.svg.addEventListener("pointerup", (e) => {
-      if (down && !down.moved) this.clicked(at(e), document.elementFromPoint(e.clientX, e.clientY));
-      down = null;
-    });
+    const up = (e) => {
+      if (!pts.has(e.pointerId)) return;
+      const click = pts.size === 1 && down && !down.moved && e.type === "pointerup";
+      pts.delete(e.pointerId);
+      if (click) this.clicked(at(e), document.elementFromPoint(e.clientX, e.clientY));
+      restart();
+    };
+    this.svg.addEventListener("pointerup", up);
+    this.svg.addEventListener("pointercancel", up);
     this.svg.addEventListener("pointerleave", () => this.hover(null));
     let pinch = 1;                                 // Safari reports a pinch as gesture events
     this.svg.addEventListener("gesturestart", (e) => { e.preventDefault(); pinch = 1; });
-    this.svg.addEventListener("gesturechange", (e) => { e.preventDefault(); this.zoom(e.scale / pinch, at(e)); pinch = e.scale; });
+    this.svg.addEventListener("gesturechange", (e) => {      // a Mac trackpad in Safari; on a touch screen the two pointers above already pinch
+      e.preventDefault();
+      if (pts.size < 2) this.zoom(e.scale / pinch, at(e));
+      pinch = e.scale;
+    });
   }
 
   /** what is under a point of the preview: {kind, name, …} or null. kind: ring · hand · cap · date · plate.
