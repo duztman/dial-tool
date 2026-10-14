@@ -10,6 +10,7 @@
 - No orphans and no "widow-ish" endings: not one word, not two short words, alone on a line. Every paragraph and every label should read as a block, a rectangle. Fix with small text edits. [r2, r4 03]
 - Leads: one sentence per line, written with care. [r2 01]
 - "Watch" notes are valuable (and a pun): add them wherever they genuinely help. [r3 05]
+- A Watch note hangs directly under the block it warns about: smaller (8 pt), indented further, no rule of its own. The pair fills grid boxes as one; a box it runs into counts as full, and the next block starts in the box after. [r4 01, 19:18]
 - English only.
 
 ## Hierarchy and layout
@@ -21,6 +22,7 @@
 - Everything on the 8-unit grid; the part tab sits above the rule, one grid row; beside it the guide's name, the address at the far right. [r2, r3 03]
 - The whole window comes before its parts. [r3 04→03]
 - Proportion, balance, detail: every screenshot, line break and placement intentional. [r3]
+- A homogeneous page beats a hole: no empty grid box at the bottom of a column. If a column runs short, give it another small screenshot and tidbit. [r4 01, 19:18]
 
 ## Screenshots
 - Interface is black and white mostly. Background screenshots go through a gradient map: section colour as white, a slightly darker version as black (low contrast). [r2, r3 05]

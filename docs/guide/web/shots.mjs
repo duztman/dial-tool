@@ -206,6 +206,12 @@ await tab("Export"); await page.mouse.move(5, 5); await frame();
 await shot("buhr-export", { panel: "aside" });
 rects["buhr-export"].pane_link = await pane("Link to this dial");
 links.buhr_live = await page.evaluate(() => location.hash);          // the address as the tool rewrote it
+// the same dial's diameter in millimetres, then in lignes (page 01: the unit box's tidbit)
+await tab("Dial"); await page.mouse.move(5, 5); await frame();
+await shot("buhr-mm", { row: "#global-dial-d-Diameter-slider, #global-dial-d-Diameter, #global-dial-d-Diameter ~ *", label: "label[for=global-dial-d-Diameter], #global-dial-d-Diameter-slider" });
+await page.click("#unit"); await page.waitForTimeout(200);
+await page.click('#unit-menu >> text=Lignes'); await page.waitForTimeout(200); await page.mouse.move(5, 5); await frame();
+await shot("buhr-lig", { row: "#global-dial-d-Diameter-slider, #global-dial-d-Diameter, #global-dial-d-Diameter ~ *", unit: "#unit" });
 await open(diver);
 fs.writeFileSync(path.join(IMG, "dial-diver.json"), JSON.stringify(await page.evaluate(() => window.dial_tool.S)));
 await tab("Rings");
@@ -213,6 +219,12 @@ await shot("diver-rings", { list: ".ringlist", rows: ".ringlist li.ring", panel:
 // the + pressed on the same list: closed and open at the same crop (Okay: two states of one control, same size)
 await page.click("#ring-add"); await page.waitForTimeout(200);
 await shot("diver-add", { menu: "#add-menu", plus: "#ring-add" });
+await page.keyboard.press("Escape"); await frame();
+// the radius button's pop-up on a numerals ring: the number and its anchor menu (page 06: the Watch's picture)
+await page.click('.ringlist li.ring:has-text("Bezel: 10")'); await frame(); await page.waitForTimeout(150);
+await page.mouse.click(page.viewportSize().width - 5, 5); await frame();
+await page.click("#ring-r"); await page.waitForTimeout(300); await frame();
+await shot("diver-radius", { pop: "#value-pop", r: "#ring-r", list: ".ringlist" });
 await page.keyboard.press("Escape"); await frame();
 // Scale everything with it
 await open(); await tab("Export"); await page.click('button:text-is("Defaults")'); await ready(); await frame();

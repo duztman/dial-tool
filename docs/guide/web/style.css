@@ -29,6 +29,8 @@ a { color: inherit; text-decoration: underline; text-decoration-thickness: .15mm
 .block p b { font-weight: 600; }
 .block.small { font-size: 7pt; line-height: calc(var(--b) * 2.45); }
 .block.watch { padding-left: 7mm; }
+.block.watch.attached { border-top: none; padding-top: 0; padding-left: 9mm; font-size: 8pt; line-height: calc(var(--b) * 2.7); }   /* a Watch note hung under its block (Okay, 19:18) */
+.block.attached .tri { left: 4.2mm; top: .35mm; width: 3.4mm; height: 3.4mm; }
 .block .tri { position: absolute; left: 0; top: calc(var(--b) * 1.2); width: 4.6mm; height: 4.6mm; fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; }
 
 /* pictures: every picture sits on the ground (canon §5) */
@@ -49,6 +51,7 @@ a { color: inherit; text-decoration: underline; text-decoration-thickness: .15mm
 .card.flat { border-radius: .6mm; box-shadow: 0 .2mm .7mm rgba(0, 0, 0, .25); }
 .card.cut { -webkit-mask-image: linear-gradient(to bottom, #000 var(--fade, 80%), transparent 100%); mask-image: linear-gradient(to bottom, #000 var(--fade, 80%), transparent 100%); box-shadow: none; }
 .svgdial { display: block; }
+.card.fadeL { mask-image: linear-gradient(to right, transparent 0, #000 22%), linear-gradient(to bottom, #000 78%, transparent 100%); mask-composite: intersect; box-shadow: none; }   /* a crop in the middle of the panel fades where it is cut */
 .lines { left: 0; top: 0; width: 297mm; height: 210mm; overflow: visible; pointer-events: none; }
 .lines polyline { fill: none; stroke: var(--sig-ink); stroke-width: .2; }
 .lines polyline.arrow { stroke-width: .3; marker-end: none; }

@@ -72,7 +72,7 @@ const text = (t, label) => {
 const note = (t, key) => { const v = t.blocks["Note: " + key]; check(v !== undefined, `page "${t.title}": no note "${key}"`); return v || key; };
 
 // ── blocks of words ──
-const block = (b, t, o = {}) => `<div class="block${t.watch ? " watch" : ""}${o.small ? " small" : ""}${o.bare ? " bare" : ""}"${o.flow ? ` data-flow="${o.flow}" data-bottom="${o.bottom ?? Y(14) + ROW}"` : ""} style="${css(b)}">
+const block = (b, t, o = {}) => `<div class="block${t.watch ? " watch" : ""}${o.attach ? " attached" : ""}${o.small ? " small" : ""}${o.bare ? " bare" : ""}"${o.flow ? ` data-flow="${o.flow}" data-bottom="${o.bottom ?? Y(14) + ROW}"` : ""} style="${css(b)}">
   ${t.watch ? `<svg class="tri" viewBox="0 0 24 24"><path d="M12 3 L22 20 L2 20 Z"/><path d="M12 10 V14.5 M12 16.8 V17.6"/></svg>` : ""}
   <p><b>${inline(t.label)}${/[?.!]$/.test(t.label) ? "" : "."}</b> ${inline(t.body)}</p></div>`;
 
@@ -206,39 +206,43 @@ const pages = [];
 
 
 // ════════════════════════ 01 · Start ════════════════════════
-// Left, large: the tool in a browser, its long address cut off by the bar, the dial's part of it marked; under it
-// where it runs and how a dial is kept. Middle: the unit box, closed and open, at one scale. Right: the same dial's
-// link pane; undo and redo. Every picture centred on its own flat ground (Okay, 18:04).
+// Three columns, each picture over its words, rows shared across the page (Okay, 19:18: "homogeneous page is
+// better"; a Watch note hangs under the block it warns about, smaller, and the pair fills grid boxes as one).
+// Left: the tool in a browser, its address cut off by the bar; where it runs; opening a dial.
+// Middle: the unit box closed and open; sizes and units; the same diameter in mm and in lignes.
+// Right: the same dial's link pane; saving and sharing; undo and redo.
 {
   const t = page_text("01"), P = "A";
   let h = head(P, "01", t);
-  const big = box(1, 3, 6, 9);
+  const big = box(1, 3, 6, 8);
   h += `<div class="ground flat" style="${css(big)}"></div>`;
-  const iw = big.w - 12, ih = iw * VH / VW, ix = big.x + 6, barH = 7, lab = 8.5;
+  const barH = 7, lab = 8.5, ih0 = big.h - 9 - barH - 3.5 - lab, iw = Math.min(big.w - 12, ih0 * VW / VH), ih = iw * VH / VW, ix = big.x + (big.w - iw) / 2;
   const iy = big.y + (big.h - ih - barH - 3.5 - lab) / 2 + lab + barH + 3.5;
   const hash = SHOTS.links.buhr_live;
   h += `<div class="bar" style="left:${f2(ix)}mm;top:${f2(iy - barH - 3.5)}mm;width:${f2(iw)}mm"><div class="url"><span class="pre">https://duztman.github.io/dial-tool/</span><span class="hash"><i class="hl">${inline(note(t, "hash"))}</i>${hash}</span></div></div>`;
   h += `<div class="shot framed" style="left:${f2(ix)}mm;top:${f2(iy)}mm;width:${f2(iw)}mm;height:${f2(ih)}mm"><img src="../img/buhr.png"></div>`;
-  h += block(box(1, 12, 3, 3), text(t, "Where it runs"), { flow: "a" }) + block(box(4, 12, 3, 3), text(t, "Saving and sharing"), { flow: "b" });
+  h += block(box(1, 11, 3, 4), text(t, "Where it runs"), { flow: "a" }) + block(box(4, 11, 3, 4), text(t, "Opening a dial"), { flow: "b" });
 
-  // middle — the unit box, closed and open, at one scale, tops aligned
+  // middle — the unit box, closed and open, at one scale, tops aligned; then the same diameter in two units
   const k = 0.19, closed = [309, 8, 132, 46], open = [309, 8, 132, 187];
   h += stage(box(7, 3, 3, 4), [{ shot: "dial", rect: closed, k, bg: "#FFFFFF" }, { shot: "unit", rect: open, k, bg: "#FFFFFF" }], "Top right of the panel: closed, then open", { gap: 5, align: "top" }).html;
-  h += block(box(7, 7, 3, 3), text(t, "Sizes and units"), { flow: "c" }) + block(box(7, 10, 3, 2), text(t, "Watch: units"), { flow: "c" });
+  h += block(box(7, 7, 3, 4), text(t, "Sizes and units"), { flow: "c" }) + block(box(7, 7, 3, 4), text(t, "Watch: units"), { flow: "c", attach: true });
+  const dr = [44, 192, 396, 34];
+  h += stage(box(7, 11, 3, 2), [{ shot: "buhr-mm", rect: dr, k: 0.13, pad: 3 }, { shot: "buhr-lig", rect: dr, k: 0.13, pad: 3 }], "The B-Uhr’s diameter in millimetres, then in lignes", { dir: "col", gap: 1.6 }).html;
+  h += block(box(7, 13, 3, 2), text(t, "Lignes"), { flow: "c2" });
 
-  // right — the same dial's link pane; then undo and redo, each named with its key
+  // right — the same dial's link pane and how a dial is kept; undo and redo, each named with its key
   const PL = SHOTS.rects["buhr-export"].pane_link;
   h += stage(box(10, 3, 3, 4), [{ shot: "buhr-export", rect: [PL[0], PL[1] + 6, PL[2], PL[3] - 12], k: 0.14, pad: 3 }], "The same dial’s link, in the Export tab").html;
-  h += block(box(10, 7, 3, 3), text(t, "Watch"), { flow: "d", bottom: Y(9) + ROW });
-  const s2 = box(10, 10, 3, 2);
-  const su = stage(s2, [{ shot: "dial", rect: [470, 13, 70, 38], k: 0.24, pad: 4 }], "", { dy: -3.4 });
+  h += block(box(10, 7, 3, 4), text(t, "Saving and sharing"), { flow: "d" }) + block(box(10, 7, 3, 4), text(t, "Watch"), { flow: "d", attach: true });
+  const su = stage(box(10, 11, 3, 2), [{ shot: "dial", rect: [470, 13, 70, 38], k: 0.22, pad: 4 }], "", { dy: -3.4 });
   h += su.html;
   const c = su.cards[0], ub = c.at([473, 16, 32, 32]), rb = c.at([505, 16, 32, 32]), ly = c.y + c.h + 3.2;
   h += leaders([
     { from: [mid(ub)[0], ub[1] + ub[3]], label: { text: note(t, "undo"), side: "T", x: mid(ub)[0], y: ly, w: 22, align: "r" } },
     { from: [mid(rb)[0], rb[1] + rb[3]], label: { text: note(t, "redo"), side: "T", x: mid(rb)[0], y: ly, w: 24, align: "l" } },
   ]);
-  h += block(box(10, 12, 3, 3), text(t, "Undo and redo"), { flow: "e" });
+  h += block(box(10, 13, 3, 2), text(t, "Undo and redo"), { flow: "e" });
   pages.push(page(P, h));
 }
 
@@ -331,7 +335,17 @@ const pages = [];
   const edgeL = cx - 20 * kd - 2.5, edgeR = cx + 20 * kd + 2.5;     // just outside the bezel
   h += leaders((placed || []).map((p) => ({ from: [p.X, p.Y], through: true,
     label: { text: `${p.r.name}`, sub: p.r.name.toLowerCase() === KIND[p.kind] ? "" : KIND[p.kind], side: p.side === "L" ? "R" : "L", x: p.side === "L" ? edgeL : edgeR, y: p.Y, w: p.side === "L" ? edgeL - big.x - 4 : big.x + big.w - edgeR - 4 } })), { halo: [cx, cy, 20 * kd] });
-  h += block(box(1, 9, 3, 3), text(t, "What a ring is"), { flow: "a" }) + block(box(1, 12, 3, 2), text(t, "Watch"), { flow: "a" });
+  h += block(box(1, 9, 3, 3), text(t, "What a ring is"), { flow: "a" }) + block(box(1, 9, 3, 3), text(t, "Watch"), { flow: "a", attach: true });
+  // under them, the radius button's pop-up on a numerals ring: what the Watch note is about
+  { const g = box(1, 12, 3, 3), k = 0.2, rr = [338, 276, 140, 150];
+    const cw = (rr[2] + 6) * k, ch = (rr[3] + 6) * k;
+    const c = card("diver-radius", rr, g.x + 4, g.y + (g.h - ch) / 2, k, { pad: 3, cls: "fadeL" });
+    h += `<div class="ground flat" style="${css(g)}"></div>` + c.html;
+    const P0 = SHOTS.rects["diver-radius"].pop, menu = c.at([P0[0] + 104, P0[1] + 5, 18, 18]), field = c.at([P0[0] + 8, P0[1] + 42, 116, 26]);
+    const lx = c.x + c.w + 3, lw = g.x + g.w - lx - 3;
+    h += leaders([
+      { box: padbox(menu, 0.5), from: [menu[0] + menu[2] + 0.5, mid(menu)[1]], label: { text: note(t, "anchor"), side: "L", x: lx, y: mid(menu)[1], w: lw } },
+    ]); }
   // Adding and arranging sits beside its picture (cols 7–12, rows 11–14)
   h += block(box(4, 9, 3, 3), text(t, "Four kinds"), { flow: "b" }) + block(box(4, 12, 3, 2), text(t, "Adding and arranging"), { flow: "b" });
 
@@ -405,15 +419,23 @@ const flowed = await pg.evaluate(([ROW, RGAP]) => {
     const groups = {};
     for (const b of pg.querySelectorAll("[data-flow]")) (groups[b.dataset.flow] = groups[b.dataset.flow] || []).push(b);
     for (const list of Object.values(groups)) {
+      // a block and the Watch notes hung under it (Okay, 19:18) fill grid boxes as one: the pair may run into the
+      // next box, which then counts as full; the next block starts in the box after it
       let y = parseFloat(list[0].style.top);
-      for (const b of list) {
-        b.style.top = y + "mm"; b.style.height = "auto";
-        const hmm = b.getBoundingClientRect().height / MM;
-        const n = Math.max(1, Math.ceil((hmm + RGAP - 0.8) / (ROW + RGAP)));     // the last line's descenders may hang 0.5 mm into the gap
-        const h = n * ROW + (n - 1) * RGAP;
-        b.style.height = h + "mm";
-        if (y + h > parseFloat(b.dataset.bottom) + 0.5) out.push(b.textContent.trim().slice(0, 40));
-        y += h + RGAP;
+      for (let i = 0; i < list.length;) {
+        const g = [list[i]];
+        while (list[i + g.length] && list[i + g.length].classList.contains("attached")) g.push(list[i + g.length]);
+        let yy = y;
+        g.forEach((b, k) => {
+          b.style.top = yy + "mm"; b.style.height = "auto";
+          const hmm = b.getBoundingClientRect().height / MM;
+          if (k < g.length - 1) { b.style.height = hmm + "mm"; yy += hmm + 1.4; return; }
+          const n = Math.max(1, Math.ceil((yy + hmm - y + RGAP - 0.8) / (ROW + RGAP)));
+          if (g.length === 1) b.style.height = (n * ROW + (n - 1) * RGAP) + "mm";
+          if (y + n * ROW + (n - 1) * RGAP > parseFloat(b.dataset.bottom) + 0.5) out.push(b.textContent.trim().slice(0, 40));
+          y += n * (ROW + RGAP);
+        });
+        i += g.length;
       }
     }
   }

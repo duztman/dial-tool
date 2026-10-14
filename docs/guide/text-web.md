@@ -26,11 +26,15 @@ Nothing to install, nothing to sign up for.
 
 **Where it runs.** The tool is one web page, duztman.github.io/dial-tool. It is tested in Chrome on a Mac and on an iPad, where it works by finger. Chrome and Edge can also use your computer's own fonts, once you allow it.
 
-**Saving and sharing.** Everything after the # is the dial itself, rewritten with every change. Bookmark the address to keep a dial, or send it to share one; Copy link, in the Export tab, copies it. The browser also keeps your last dial.
+**Saving and sharing.** Everything after the # is the dial itself, rewritten with every change. Bookmark the address to keep a dial, or send it to share one; Copy link, in the Export tab, copies it for you.
 
 **Sizes and units.** Every length is the real length on the finished dial. The unit box, top right of the panel, sets the unit you read and type in: millimetres, points, inches, or lignes, the watchmakers' unit for movement sizes.
 
-**Undo and redo.** Undo steps back through your changes and redo steps forward again; a step is taken whenever you pause for a moment. On a PC the keys are Ctrl Z and Ctrl Shift Z, or Ctrl Y.
+**Undo and redo.** Each pause after a change is a step you can go back to. On a PC the keys are Ctrl Z and Ctrl Shift Z, or Ctrl Y instead.
+
+**Opening a dial.** A link someone sends you opens their dial, ready to change, and nothing of yours is lost: the bare address, with nothing after it, brings back the last dial you worked on here.
+
+**Lignes.** Movements are sold by width in lignes: one ligne is 2.2558 mm, so an 11½‴ movement is 25.94 mm wide. In lignes, a dial is sized against one.
 
 **Watch.** A link carries the dial, not its fonts. A font from your own computer reaches the other person only if they have it too; otherwise they see a stand‑in.
 
@@ -187,6 +191,7 @@ A ring repeats one kind of thing round the centre.
 **Note: add.** Adds a ring above the selected one.
 **Note: move.** Moves the selected ring up or down, duplicates or deletes it.
 **Note: menu.** The four kinds: pick one for the new ring.
+**Note: anchor.** Sets the point on a numeral that sits on the radius: centre, baseline or top.
 
 ---
 
