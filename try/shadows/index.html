@@ -82,7 +82,11 @@
     --line: 34px;                                  /* a row's height */
     --head: 40px;                                  /* a pane's heading */
     --header: 64px;                                /* the panel's top: title and Guides */
-    --bar-height: 52px; --bar-control: 30px;
+    --bar-height: 62px; --bar-control: 30px;      /* a fifth higher than it was, 52 (Okay, 14 Oct 2026, 23:19: "1/5 higher"); a phone keeps its own (--bar-lead-narrow) */
+    --play: #CC381A; --play-hover: #E04A2B;        /* the round play button: the seconds hand's red (geometry.js ACCENT), a step lighter under the pointer */
+    --speed-word: 30px; --speed-thumb: 14px;       /* how fast: the room for its words ("720×"), its thumb */
+    --hump: 6px; --hump-big: 10px;                 /* the bumps on the speed's track, and the one at 1× */
+    --day-wide: 518px;                             /* the day slider at its widest: as wide as on an iPad (1180 wide), so a big screen doesn't stretch it (Okay, 23:19) */
     --tile: 50px;                                  /* a picture tile's least height */
     --frame-pad: 8px;                              /* inside a frame (a ring row, the font box): from its edge to what is in it, where a pane's row would have none */
     --ring-gap: 4px;                               /* between framed rows */
@@ -97,13 +101,12 @@
     --row-end: calc(var(--frame-pad) - var(--hair) + var(--ringline-inner));      /* the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons */
     --line-button: 36px; --bare-dot: 16px;      /* in the ring drawer every control is this high (a value button this wide too) · the colour's swatch */
     --name-in: 6px;                                /* a ring's name starts this far into its column; the ring line's buttons too */
-    --half: 30px;                                  /* AM · PM inside the time's box */
+    --half: 30px;                                  /* AM · PM: its own window beside the time (Okay, 14 Oct 2026, 23:19) */
     --value-pop: 132px;                            /* a value button's pop-up: about as wide as it is high */
     --dot-tiny: 10px;                              /* a colour inside a line of words: a folded pane's summary */
     --thumb: 18px; --track: 4px; --thumb-eye: 2px; --thumb-eye-edge: 2.75px;      /* sliders: a black disc on a thin track (Okay's sketch); the light centre of the disc, and where its edge softens */
     --grip: 18px;                                  /* the ring list's drag handle column */
     --log-least: 96px; --log-most: 260px;          /* the Export log: at least this high, at most this */
-    --status-width: 240px;                         /* the bar's status line */
     --round-switch: 10px;                          /* the switches on the preview: undo, Guides, Backdrop */
     --glow-line: 1.5px; --glow-under: 4px;         /* the outline of what the pointer is on, and the white line under it */
     --tip-arrow: 5px; --tip-arrow-in: 2.6px;       /* the pointer label's arrow: its dark line and the white line inside it */
@@ -937,9 +940,11 @@
 }
 
 @layer bar {
-  /* the bar: under the panel and the preview, on the panel's columns. Under the panel (.lead): the panel's
-     square in the toggle column, then play 1 · speeds 2 · time 2 · Now 1 — quiet, so they don't shout under
-     the panel. Under the preview: the day slider with its steps, then the view: − + 1 · Fit 1. */
+  /* the bar: under the panel and the preview, on the panel's columns. Under the panel (.lead), from the first of the
+     six columns: play 1 · how fast 2 · the time and its half of the day 2 · Now 1 (the toggle column stays empty since
+     the panel's square left, #190) — quiet, so they don't shout under the panel, but for the time, which sings.
+     Under the preview: the day slider with its steps, no wider than on an iPad, then the view: how to zoom · − + 1 ·
+     Fit 1, at the right. (Okay, 14 Oct 2026, 23:19 and 23:26, build list #190) */
   .bar { grid-column: 1 / -1; display: flex; align-items: stretch; height: var(--bar-height); padding-right: var(--margin); background: var(--bar); color: var(--bar-ink); border-top: var(--hair) solid var(--bar-rule); }
   .bar .lead { flex: none; display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; width: var(--panel); padding: 0 var(--margin); }
   .bar .group { display: flex; align-items: center; gap: var(--gap); padding: 0 var(--gap); border-left: var(--hair) solid var(--bar-rule); }
@@ -954,26 +959,53 @@
   .bar .lead button:active { background: var(--bar-dim); color: var(--bar-ink); }
   .bar .lead .segs > button.on { background: var(--bar-on); color: var(--white); border-color: var(--bar-dim); }
   .bar .lead .segs > button + button { border-left: 0; }
-  .bar .lead .side { justify-self: center; width: var(--control); border-color: transparent; }      /* centred on the toggle column, like the eyes above it */
-  .bar .side[aria-pressed="true"] { background: var(--bar-ink); color: var(--bar); }
+  /* play: a round red button that sets time running (Okay: "Play should be a round red button that turns on time") */
+  .bar .lead .play { grid-column: 2; justify-self: start; width: var(--control-large); height: var(--control-large); border: 0; border-radius: 50%; background: var(--play); color: var(--white); }
+  .bar .lead .play:hover { background: var(--play-hover); }
+  .bar .lead .play:active { background: var(--play); color: var(--white); }
   .bar .speeds, .bar .timebox { grid-column: span 2; }
-  /* AM · PM stands inside the time's box, at its right end: one small word that a press turns over */
-  .bar .timebox { position: relative; display: grid; }
-  .bar .lead .timebox .half { position: absolute; right: 0; top: 0; width: var(--half); border-color: transparent; font-size: var(--t-xs); letter-spacing: 0.04em; color: var(--bar-quiet); }
-  .bar .lead .timebox .half:hover { color: var(--bar-ink); }
-  .bar .timebox .time { padding-right: calc(var(--half) - var(--unit)); }
+  /* how fast: a box with the speed in words, then its track — a hairline with humps at 1× (larger), 6×, 60×, 720×
+     (--at: how far along the track, 0 to 1; the thumb's half-width at each end, so a hump sits under the thumb's
+     centre when the speed is that one). The thumb is a plain light disc: nothing written on it. */
+  .bar .speeds { display: flex; align-items: center; gap: var(--u2); height: var(--bar-control); padding: 0 var(--u2); border: var(--hair) solid var(--bar-dim); }
+  .bar .speedword { flex: none; min-width: var(--speed-word); font-family: var(--mono); font-size: var(--t-s); color: var(--bar-quiet); }
+  .bar .speeds.real .speedword { color: var(--bar-ink); }
+  .bar .speedtrack { position: relative; flex: 1; min-width: 0; height: 100%; }
+  .bar .humps { position: absolute; inset: 0 calc(var(--speed-thumb) / 2); pointer-events: none; }
+  .bar .humps::before { content: ""; position: absolute; left: calc(var(--speed-thumb) / -2); right: calc(var(--speed-thumb) / -2); top: 50%; border-top: var(--hair) solid var(--bar-edge); }
+  .bar .hump { position: absolute; left: calc(var(--at) * 100%); top: 50%; width: var(--hump); height: calc(var(--hump) / 2); translate: -50% -100%; border-radius: var(--hump) var(--hump) 0 0; background: var(--bar-edge); }
+  .bar .hump.big { width: var(--hump-big); height: calc(var(--hump-big) / 2); border-radius: var(--hump-big) var(--hump-big) 0 0; background: var(--bar-ink); }
+  .bar .speedtrack input[type="range"] { position: absolute; inset: 0; height: 100%; }
+  .bar .speedtrack input[type="range"]::-webkit-slider-runnable-track { height: 100%; background: none; }
+  .bar .speedtrack input[type="range"]::-webkit-slider-thumb { width: var(--speed-thumb); height: var(--speed-thumb); margin-top: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2); background: var(--bar-ink); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  .bar .speedtrack input[type="range"]::-moz-range-track { height: 100%; background: none; }
+  .bar .speedtrack input[type="range"]::-moz-range-progress { background: none; }
+  .bar .speedtrack input[type="range"]::-moz-range-thumb { width: var(--speed-thumb); height: var(--speed-thumb); background: var(--bar-ink); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  /* the time sings: larger, monospace, bright, centred on its ink (app.js measures it, every figure a 0, so it
+     stands still). Beside it its own window for the half of the day: AM light, PM dark; one word, the other gone. */
+  .bar .timebox { display: flex; gap: var(--u1); }
+  .bar .timewell { flex: 1; min-width: 0; display: grid; height: var(--bar-control); overflow: hidden; border: var(--hair) solid var(--bar-edge); }
+  .bar .timewell:hover { border-color: var(--bar-ink); }
+  .bar .lead .timewell .time { height: 100%; padding: 0; border: 0; background: none; font-family: var(--mono); font-size: var(--t-l); font-weight: 600; color: var(--white); translate: var(--ink-dx, 0) var(--ink-dy, 0); }
+  .bar .lead .timebox .half { flex: none; width: var(--half); padding: 0; font-family: var(--mono); font-size: var(--t-xs); background: var(--bar-ink); color: var(--bar); border-color: var(--bar-ink); }
+  .bar .lead .timebox .half.pm { background: var(--black); color: var(--bar-ink); border-color: var(--bar-edge); }
+  .bar .lead .timebox .half:hover { border-color: var(--white); }
   .bar .time { width: 100%; text-align: center; font-weight: 600; letter-spacing: 0.02em; }
-  .bar .viewing { padding-right: 0; }
+  .bar .viewing { margin-left: auto; padding-right: 0; }      /* at the right; the room the day slider doesn't take lies before it */
+  /* how to zoom: words and a faint magnifier, nothing to press. A pointer zooms with ⌘ + scroll, a finger pinches */
+  .bar .zoomhint { display: flex; align-items: center; gap: var(--u2); white-space: nowrap; font-size: var(--t-s); color: var(--bar-quiet); }
+  .bar .zoomhint svg { opacity: var(--faint); }
+  .bar .zoomhint .finger { display: none; }
+  @media (hover: none) { .bar .zoomhint .pointer { display: none; } .bar .zoomhint .finger { display: inline; } }
   .bar .viewing > button, .bar .zooms { flex: none; width: var(--col); }
   .bar .zooms { display: flex; }
   .bar .zooms button { flex: 1; min-width: 0; }
   .bar .zooms button + button { border-left: 0; }
-  .bar .status { max-width: var(--status-width); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: var(--t-s); opacity: 0.7; }
-  @media (max-width: 1500px) { .bar .status { display: none; } }      /* the status line needs a wide window */
+  .bar .status { display: none; }      /* hidden (Okay, 14 Oct 2026, 23:19); app.js still writes it */
 
   /* the day slider is a ruler: a line, cuts crossing it (drawn in draw_ruler, finer on a wider window), and a line
      for a handle. Nothing is filled in behind the handle: the past is not a quantity. */
-  .bar .day { position: relative; flex: 1; min-width: 0; display: grid; grid-template-rows: var(--ruler) var(--names); align-content: center; gap: 0; padding: 0 var(--u8); }
+  .bar .day { position: relative; flex: 1; min-width: 0; max-width: calc(var(--day-wide) + 2 * var(--u8)); display: grid; grid-template-rows: var(--ruler) var(--names); align-content: center; gap: 0; padding: 0 var(--u8); }
   .ruler { grid-area: 1 / 1; display: block; width: 100%; height: var(--ruler); pointer-events: none; fill: none; stroke: var(--bar-ink); stroke-width: 1; shape-rendering: crispEdges; }
   .ruler .line { opacity: 0.4; }
   .ruler .hour { opacity: 0.85; }
@@ -1010,6 +1042,7 @@
     .bar .group { border-left: 0; }
     .bar .day { flex: 1 1 0; height: var(--bar-day-narrow); padding: 0 var(--margin); }
     .bar .viewing { padding: 0 var(--margin) 0 0; }
+    .bar .lead .timewell .time { font-size: var(--t-m); }      /* the time's box is narrower here: one size down, so all its figures show */
     .bar .zooms { display: none; }                  /* a phone pinches */
     .steps12 button:nth-child(odd):not(.special) { display: none; }      /* every other hour: 1 3 5 … wait for room */
     .steps12 button.special { bottom: auto; top: calc(-1 * var(--hair)); }      /* the bar is on top here and the preview's top corners are taken (undo, Guides): 10:10 stays among the hours */
@@ -7105,8 +7138,6 @@ var GALLERY = [{ "name": "B-Uhr, type B", "note": "Navigator's watch, 1941: minu
 var INKED = [
   ".atgrid button",
   // a window's places: 3 · 6 · 9 · 12 · 1:30 … 10:30 · 4 · ···
-  ".speeds > button",
-  // 1× · 60× · 720×
   ".steps12 button",
   // the bottom bar's hours and 10:10
   "#ampm",
@@ -7621,7 +7652,12 @@ var ROWS = {
   ]
 };
 var DAY_STEPS = [...Array.from({ length: 12 }, (_, h) => [h * 3600, String(h || 12), false]), [10 * 3600 + 10 * 60, "10:10", true]].sort((a, b) => a[0] - b[0]);
-var SPEEDS = [[1, "Real time"], [60, "A minute every second"], [720, "An hour every five seconds: twelve hours in a minute"]];
+var SPEED_LO = 0.5;
+var SPEED_HI = 720;
+var SPEED_HUMPS = [1, 6, 60, 720];
+var SPEED_SNAP = 0.025;
+var speed_place = (k) => Math.log(k / SPEED_LO) / Math.log(SPEED_HI / SPEED_LO);
+var speed_word = (k) => (k >= 10 ? String(Math.round(k)) : String(+k.toFixed(1))) + "\xD7";
 var SECTIONS = Object.keys(ROWS);
 var TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];
 for (const name of SECTIONS) for (const row of ROWS[name]) row.scope ??= name === "Rings" ? "ring" : "global";
@@ -7907,20 +7943,27 @@ var DialTool = class _DialTool {
       this.time_field.value = fmt_time(this.S.t);
     };
     this.half_button = el("button", { type: "button", id: "ampm", className: "half", title: "Morning or afternoon: an am \xB7 pm window follows it", onclick: () => this.set_time((this.S.t + 43200) % 86400) });
-    const time_box = el("span", { className: "timebox" }, this.time_field, this.half_button);
+    const time_box = el("span", { className: "timebox" }, el("span", { className: "timewell" }, this.time_field), this.half_button);
     this.time_slider = el("input", { id: "time-slider", type: "range", min: 0, max: 43199, step: 1 });
     this.time_slider.oninput = () => this.set_time(+this.time_slider.value + this.half());
-    this.play_button = el("button", { type: "button", className: "icon", id: "play", onclick: () => this.play(!this.playing) });
+    this.play_button = el("button", { type: "button", className: "icon play", id: "play", onclick: () => this.play(!this.playing) });
     this.status = el("div", { className: "status" });
-    const side = el("button", { type: "button", className: "icon side", id: "panel-toggle", title: "Hide or show the settings", ariaLabel: "Hide or show the settings", onclick: () => this.show_panel(root.classList.contains("nopanel")) });
-    side.innerHTML = icon(TOOL_ICONS.panel);
     this.speed = 1;
-    this.speeds = el("span", { className: "segs speeds", role: "radiogroup", ariaLabel: "How fast time runs" });
-    for (const [k, title] of SPEEDS) {
-      const b = el("button", { type: "button", id: "speed-" + k, textContent: k + "\xD7", title, onclick: () => this.set_speed(k) });
-      b.setAttribute("role", "radio");
-      this.speeds.append(b);
+    this.speed_slider = el("input", { id: "speed", type: "range", min: 0, max: 1e3, step: 1, ariaLabel: "How fast time runs", title: "How fast time runs: 0.5\xD7 to 720\xD7" });
+    this.speed_slider.oninput = () => {
+      let p = +this.speed_slider.value / 1e3, k = SPEED_LO * (SPEED_HI / SPEED_LO) ** p;
+      const near2 = SPEED_HUMPS.find((h) => Math.abs(speed_place(h) - p) < SPEED_SNAP);
+      if (near2) k = near2;
+      this.set_speed(k);
+    };
+    this.speed_word = el("span", { className: "speedword", id: "speed-word" });
+    const humps = el("span", { className: "humps", ariaHidden: "true" });
+    for (const h of SPEED_HUMPS) {
+      const b = el("i", { className: h === 1 ? "hump big" : "hump" });
+      b.style.setProperty("--at", speed_place(h).toFixed(4));
+      humps.append(b);
     }
+    this.speeds = el("span", { className: "speeds" }, this.speed_word, el("span", { className: "speedtrack" }, humps, this.speed_slider));
     const view = (id, title, inside, act) => {
       const b = el("button", { type: "button", className: "icon", id, title, ariaLabel: title, onclick: act });
       b.innerHTML = icon(inside);
@@ -7955,7 +7998,6 @@ var DialTool = class _DialTool {
       el(
         "div",
         { className: "lead" },
-        side,
         this.play_button,
         this.speeds,
         time_box,
@@ -7969,6 +8011,7 @@ var DialTool = class _DialTool {
         "div",
         { className: "group viewing" },
         this.status,
+        this.zoom_hint(),
         el(
           "span",
           { className: "zooms" },
@@ -7993,19 +8036,25 @@ var DialTool = class _DialTool {
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     requestAnimationFrame(() => this.level_title());
     this.play_icon();
-    let shown = true;
     try {
-      shown = localStorage.getItem("dial-tool-panel") !== "off";
+      localStorage.removeItem("dial-tool-panel");
     } catch (e) {
     }
-    if (!shown) this.show_panel(false);
     this.watchers.push(new ResizeObserver(() => this.resized()));
     this.watchers.at(-1).observe(this.svg);
   }
-  /** the whole panel, away or back: the dial gets the window. Remembered by this browser. */
+  /** how to zoom, beside the zoom buttons: words, then a faint magnifier, nothing to press (Okay, 14 Oct 2026,
+   *  23:19: "say cmd+scroll is zoom in out attached to the zoom area. Put a magnifier icon at the end"; 23:26: "at the
+   *  end, not a button, faint"). On a screen without a pointer the words say what a finger does. */
+  zoom_hint() {
+    const hint = el("span", { className: "zoomhint" }, el("span", { className: "pointer", textContent: "\u2318 + scroll to zoom" }), el("span", { className: "finger", textContent: "Pinch to zoom" }));
+    hint.insertAdjacentHTML("beforeend", icon(TOOL_ICONS.find));
+    return hint;
+  }
+  /** the whole panel, away or back: the dial gets the window. Remembered by this browser. (Since #190 nothing in
+   *  the window calls it; kept for the notes.) */
   show_panel(on) {
     $("#app").classList.toggle("nopanel", !on);
-    $("#panel-toggle").setAttribute("aria-pressed", String(!on));
     try {
       localStorage.setItem("dial-tool-panel", on ? "on" : "off");
     } catch (e) {
@@ -10857,10 +10906,18 @@ var DialTool = class _DialTool {
   sync_time() {
     const t12 = (this.S.t % 43200 + 43200) % 43200;
     if (document.activeElement !== this.time_field) this.time_field.value = fmt_time(this.S.t);
+    const zeros = this.time_field.value.replace(/[0-9]/g, "0");
+    if (zeros !== this.time_zeros) {
+      this.time_zeros = zeros;
+      const [dx, dy] = offset2(zeros, getComputedStyle(this.time_field));
+      this.time_field.style.setProperty("--ink-dx", dx + "px");
+      this.time_field.style.setProperty("--ink-dy", dy + "px");
+    }
     if (document.activeElement !== this.time_slider || this.playing) this.time_slider.value = Math.floor(t12);
     for (const b of document.querySelectorAll(".steps12 button")) b.classList.toggle("on", Math.abs(+b.dataset.t - t12) < 0.5);
     const word = this.half() ? "PM" : "AM";
     if (this.half_button.textContent !== word) this.half_button.textContent = word;
+    this.half_button.classList.toggle("pm", word === "PM");
   }
   set_time(t) {
     this.S.t = t;
@@ -10891,11 +10948,10 @@ var DialTool = class _DialTool {
   set_speed(k) {
     this.speed = k;
     if (this.playing) this.play_from = [performance.now(), this.S.t];
-    [...this.speeds.children].forEach((b) => {
-      const on = b.id === "speed-" + k;
-      b.classList.toggle("on", on);
-      b.setAttribute("aria-checked", String(on));
-    });
+    const p = Math.round(speed_place(k) * 1e3);
+    if (document.activeElement !== this.speed_slider || Math.abs(+this.speed_slider.value - p) > 1e3 * SPEED_SNAP) this.speed_slider.value = p;
+    this.speed_word.textContent = speed_word(k);
+    this.speeds.classList.toggle("real", k === 1);
   }
   play(on) {
     this.playing = on;
