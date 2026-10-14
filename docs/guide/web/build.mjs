@@ -89,7 +89,8 @@ const head = (part, no, t, o = {}) => { CUR = no; return `<div class="tabline" s
   <div class="head" style="left:${X(1)}mm;top:${Y(1)}mm;width:${W(12)}mm;height:${H(2)}mm">
     <h1 style="width:${W(8)}mm">${inline(t.title)}</h1>
     <p class="lead${o.leadRight ? " right" : ""}" style="${o.leadRight ? `left:${f2(X(7) - X(1))}mm;width:${f2(W(6))}mm` : `width:${W(8)}mm`}">${lead_lines(t.lead)}</p></div>`; };
-const page = (part, inner) => `<section class="page" data-no="${CUR}" style="--sig:${tint(part)};--sig-ink:${ink_of(part)}">${inner}</section>`;
+const ring_of = (part) => oklch(0.64, 0.13, hue(part));                         // outlines round what matters
+const page = (part, inner) => `<section class="page" data-no="${CUR}" style="--sig:${tint(part)};--sig-ink:${ink_of(part)};--sig-ring:${ring_of(part)}">${inner}</section>`;
 
 // ── pictures ──
 const JOBS = [];
@@ -372,7 +373,7 @@ const pages = [];
   const S = JSON.parse(fs.readFileSync(path.join(IMG, "dial-diver.json"), "utf8"));
   const big = box(1, 3, 6, 6);
   h += `<div class="ground flat" style="${css(big)}"></div>`;
-  const dd = 66, kd = dd / S.dial_d, pg = (S.dial_d + 2 * S.margin) * kd, cx = big.x + big.w / 2, cy = big.y + big.h / 2;
+  const dd = 62, kd = dd / S.dial_d, pg = (S.dial_d + 2 * S.margin) * kd, cx = big.x + big.w / 2, cy = big.y + big.h / 2;
   h += `<img class="svgdial" src="../img/dial-diver.svg" style="left:${f2(cx - pg / 2)}mm;top:${f2(cy - pg / 2)}mm;width:${f2(pg)}mm">`;
   const KIND = ["ticks", "markers", "numerals", "band"];
   const slug = (n) => n.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -389,7 +390,7 @@ const pages = [];
     MK[k] = MK2[k].map((c) => ({ ...c, cost: c.cross * 50 + (c18.get(key(c)) ?? 40) * 4 + (c25.get(key(c)) ?? 40) + Math.min(6, (c40.get(key(c)) ?? 40) * 0.05) }));
   }
   await b0.close();
-  const top = big.y + 5, bottom = big.y + big.h - 5, PITCH = 9.6;
+  const top = big.y + 5, bottom = big.y + big.h - 5, PITCH = 10.4;
   const cand = S.rings.map((r) => ({ r, kind: r.kind ?? 0, list: (MK[r.name] || []).map((c) => ({ ...c, X: cx + c.x * kd, Y: cy + c.y * kd })).filter((c) => c.Y > top && c.Y < bottom) }));
   for (const c of cand) check(c.list.some((q) => q.cross === 0), `rings dial: no clear way out for "${c.r.name}"`);
   let rng = 7; const rand = () => (rng = (rng * 16807) % 2147483647) / 2147483647;
@@ -417,14 +418,15 @@ const pages = [];
   let edgeL = cx - 20 * kd - 2.5, edgeR = cx + 20 * kd + 2.5;     // just outside the bezel
   // the group is centred by its ink: the widest label on each side decides how far the dial moves
   // each label: the ring's kind, then in grey what it draws (Okay, 20:22: "Bezel" five times was "informationally dumb")
-  const inkW = async (p, side) => (await measure(KIND[p.kind] + `<br><span class="sub">${inline(note(t, "on " + p.r.name))}</span>`, 80)).W;     // each line whole
-  let Lw = 0, Rw = 0; for (const p of placed || []) { const w = (p.W = await inkW(p, p.side)); if (p.side === "L") Lw = Math.max(Lw, w); else Rw = Math.max(Rw, w); }
+  const LW = 34;                                    // a label's measure: two short lines
+  const inkW = async (p) => (await measure(inline(note(t, "on " + p.r.name)), LW)).W;
+  let Lw = 0, Rw = 0; for (const p of placed || []) { const w = (p.W = await inkW(p)); if (p.side === "L") Lw = Math.max(Lw, w); else Rw = Math.max(Rw, w); }
   const shift = ((big.x + big.w - (edgeR + 1.2 + Rw)) - (edgeL - 1.2 - Lw - big.x)) / 2;
   edgeL += shift; edgeR += shift; for (const p of placed || []) p.X += shift;
   h = h.replace(`left:${f2(cx - pg / 2)}mm;top:${f2(cy - pg / 2)}mm;width:${f2(pg)}mm">`, `left:${f2(cx + shift - pg / 2)}mm;top:${f2(cy - pg / 2)}mm;width:${f2(pg)}mm">`);
   const hcx = cx + shift;
   h += pointers({ sides: (placed || []).map((p) => ({ at: [p.X, p.Y], edge: p.side === "L" ? edgeL : edgeR, side: p.side === "L" ? "R" : "L",
-    text: KIND[p.kind][0].toUpperCase() + KIND[p.kind].slice(1), sub: note(t, "on " + p.r.name), w: p.W + 1 })) }, { halo: [hcx, cy, 20 * kd] });
+    text: note(t, "on " + p.r.name), w: LW })) }, { halo: [hcx, cy, 20 * kd] });
   h += block(box(1, 9, 3, 3), text(t, "What a ring is"), { flow: "a" }) + block(box(1, 9, 3, 3), text(t, "Watch"), { flow: "a", attach: true });
   // under them, the radius button's pop-up on a numerals ring: what the Watch note is about
   const CP = 12;                                    // a card's own margin, in screen points (Okay, 19:52: "a little more padding")
@@ -485,10 +487,10 @@ const pages = [];
     const H = Math.max(await inkH(note(t, "move"), wM), await inkH(note(t, "menu"), wA)), m = (g.h - H - hh) / 3;
     const a = card("diver-rings", hr, x0, g.y + m + H + m, k, { pad: CP }), o = card("diver-add", hr, x0 + w + gap, g.y + m + H + m, k, { pad: CP });
     h += `<div class="ground flat" style="${css(g)}"></div>` + a.html + o.html;
-    const tools = outline(a.at([320, 159, 116, 26]), [5 * k, 6 * k, 5 * k, 2 * k]);   // the + stands 4 px to the left
+    const tools = outline(a.at([320, 159, 116, 26]), [8 * k, 9 * k, 8 * k, 5 * k]);   // room to breathe; it may brush the +
     // the + and its menu: a circle and a rounded box, drawn as one outline (each stroke masked inside the other)
-    const pl = o.at([290, 159, 26, 26]), pc = mid(pl), pr = pl[2] / 2 + 5 * k, mn = o.at([196, 191, 120, 138]);
-    const mb = [mn[0] - 6 * k, mn[1] - 3 * k, mn[2] + 12 * k, mn[3] + 9 * k], mr = 2.2;
+    const pl = o.at([290, 159, 26, 26]), pc = mid(pl), pr = pl[2] / 2 + 9 * k, mn = o.at([196, 191, 120, 138]);   // Okay, 20:46: here the outline may lie over the interface, to breathe
+    const mb = [mn[0] - 10 * k, mn[1] - 4 * k, mn[2] + 20 * k, mn[3] + 14 * k], mr = 2.2;
     const union = `<mask id="u06" maskUnits="userSpaceOnUse" x="0" y="0" width="${PAGE[0]}" height="${PAGE[1]}"><rect width="${PAGE[0]}" height="${PAGE[1]}" fill="#fff"/>`
       + `<circle cx="${f2(pc[0])}" cy="${f2(pc[1])}" r="${f2(pr)}" fill="#000"/><rect x="${f2(mb[0])}" y="${f2(mb[1])}" width="${f2(mb[2])}" height="${f2(mb[3])}" rx="${mr}" fill="#000"/></mask>`
       + `<g mask="url(#u06)"><circle class="ring two" cx="${f2(pc[0])}" cy="${f2(pc[1])}" r="${f2(pr)}"/><rect class="ring two" x="${f2(mb[0])}" y="${f2(mb[1])}" width="${f2(mb[2])}" height="${f2(mb[3])}" rx="${mr}"/></g>`;

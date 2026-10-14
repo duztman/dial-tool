@@ -23,15 +23,15 @@ a { color: inherit; text-decoration: underline; text-decoration-thickness: .15mm
 .head { border-top: .3mm solid var(--ink); }
 .head h1 { position: absolute; top: calc(var(--b) * 1.4); font-size: 32pt; font-weight: 300; line-height: calc(var(--b) * 8); letter-spacing: -.022em; }
 .head .lead { position: absolute; top: calc(var(--b) * 10); font-size: 10pt; font-weight: 600; line-height: calc(var(--b) * 3.4); }
-.head .lead.right { top: calc(var(--b) * 2.3); }
+.head .lead.right { top: 1.33mm; font-size: 14pt; font-weight: 400; line-height: 5.6mm; letter-spacing: -.01em; white-space: nowrap; }   /* beside the title it fills the right half; its last baseline on the title's (Okay, 20:46: balance) */
 
 /* blocks: a hairline above, a label in semibold, the words */
 .block { border-top: .2mm solid var(--line); padding-top: calc(var(--b) * 1); overflow: hidden; }
 .block p b { font-weight: 600; }
 .block.small { font-size: 7pt; line-height: calc(var(--b) * 2.45); }
 .block.watch { padding-left: 7mm; }
-.block.watch.attached { border-top: none; padding-top: 0; padding-left: 9mm; font-size: 8pt; line-height: calc(var(--b) * 2.7); }   /* a Watch note hung under its block (Okay, 19:18) */
-.block.attached .tri { left: 4.2mm; top: .35mm; width: 3.4mm; height: 3.4mm; }
+.block.watch.attached { border-top: none; padding-top: 0; padding-left: 5mm; font-size: 8pt; line-height: calc(var(--b) * 2.7); }   /* a Watch note hung under its block (Okay, 19:18) */
+.block.attached .tri { left: 0; top: .35mm; width: 3.4mm; height: 3.4mm; }   /* no space before the icon (Okay, 20:46: his rule) */
 .block .tri { position: absolute; left: 0; top: calc(var(--b) * 1.2); width: 4.6mm; height: 4.6mm; fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; }
 
 /* pictures: every picture sits on the ground (canon §5) */
@@ -59,8 +59,8 @@ a { color: inherit; text-decoration: underline; text-decoration-thickness: .15mm
 .lines circle { fill: var(--sig-ink); }
 .lines polyline.halo { stroke: #FFFFFF; stroke-opacity: .7; stroke-width: .5; }
 .lines circle.halo { fill: #FFFFFF; fill-opacity: .85; }  /* lines over a dark dial (r4 review: invisible on navy) */
-.lines .ring { fill: none; stroke: var(--sig-ink); stroke-width: .3; }
-.lines .ring.two { stroke-width: .6; }   /* masked to its outer half: one outline round two shapes */   /* a highlight: an outline round the group (Okay, 19:52) */
+.lines .ring { fill: none; stroke: var(--sig-ring); stroke-width: .4; }   /* lighter than the ink: the dark one clashed with the interface's blacks (Okay, 20:46) */
+.lines .ring.two { stroke-width: .8; }   /* masked to its outer half: one outline round two shapes */   /* a highlight: an outline round the group (Okay, 19:52) */
 .plabel { text-wrap: balance; }
 .lines rect.wash { fill: var(--sig-ink); fill-opacity: .16; stroke: none; }
 .lines rect.wash.light { fill: #FFFFFF; fill-opacity: .3; }

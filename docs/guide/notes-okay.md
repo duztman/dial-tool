@@ -51,6 +51,11 @@
 - Communication beats the rules: break one on purpose when it removes unease. A page reads either as a clearly designed white space or as no white space at all; never as leftover gaps. (Page 06: the lead beside the title; rows stretched to fill the page; a narrow label so the picture sits nearer the centre.) [r5 06, 20:22]
 - Labels carry information, not repeated names: on a dial, say each ring's kind and what it draws ("Ticks · every five minutes"), not "Bezel: …" five times. [r5 06, 20:22]
 
+- Labels say what a thing means and how it works, never what it looks like ("Sixty ticks that skip where a marker sits", not "Ticks · the minute track"); don't define one thing over and over. [r6 06, 20:46]
+- Watch notes: no space before the warning icon; the icon itself pushes the text in. (Okay's own rule, not general design knowledge.) [r6 06, 20:46]
+- Outlines: a lighter, clearer tone of the section colour, not the dark ink (it clashed with the interface's blacks). Where the interface leaves no room (the open + menu), an outline may lie over it so the highlight can breathe, as long as the eye stays on the thing. [r6 06, 20:46]
+- Balance and emptiness are judged by eye for each page; when the lead stands beside the title it fills the right half, its last line on the title's baseline. [r6 06, 20:46]
+
 ## Cover (later)
 - Big type: tighter tracking/kerning; the title must not overlap the dial. A richer, aesthetic dial; Okay will guide. Etching is not the focus; ring building and design help are. [r1, r4 00]
 

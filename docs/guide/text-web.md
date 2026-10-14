@@ -194,17 +194,17 @@ A ring repeats one kind of thing round the centre.
 **Note: move.** Moves the selected ring up or down, duplicates or deletes it.
 **Note: menu.** The + opens the four kinds; pick one to add a ring of it.
 **Note: values.** Its colour, size and radius: click one to set it.
-**Note: on Bezel: triangle.** the bezel's triangle
-**Note: on Triangle at 12.** a triangle at 12
-**Note: on Dots.** dots at the hours
-**Note: on Bars 3 · 6 · 9.** bars at 3, 6 and 9
-**Note: on Minutes.** the minute track
-**Note: on Bezel: five minutes.** every five minutes
-**Note: on Bezel: first 15.** the first fifteen
-**Note: on Bezel: 10–50.** 10 to 50
-**Note: on Bezel.** the bezel, two colours
-**Note: on Bezel edge.** its edge, in 12 pieces
-**Note: on Band.** the inner circle
+**Note: on Bezel: triangle.** First in the list, so it is drawn over the bezel.
+**Note: on Triangle at 12.** Count 1: a single marker, at the start.
+**Note: on Dots.** Every third position skipped, for the bars.
+**Note: on Bars 3 · 6 · 9.** Four markers; the one at 12 is switched off.
+**Note: on Minutes.** Sixty ticks that skip where a marker sits.
+**Note: on Bezel: five minutes.** Twelve ticks that skip where a numeral stands.
+**Note: on Bezel: first 15.** Sixteen ticks over a 90° span: one at each end.
+**Note: on Bezel: 10–50.** Five numerals over 240°: 10 to 50 in tens.
+**Note: on Bezel.** Twelve sectors; each can take its own colour.
+**Note: on Bezel edge.** A band only 0.25 mm wide reads as a line.
+**Note: on Band.** A band's width grows inwards from its radius.
 **Note: anchor.** Sets a numeral's anchor: centre, baseline or top.
 
 ---
