@@ -200,6 +200,10 @@ const TOOL_ICONS = {
   redo: `<path d="M13.25 6.75H6.75A3.25 3.25 0 0 0 6.75 13.25H10.25M10.25 3.75L13.25 6.75L10.25 9.75" ${sw(SLANT)}/>`,
   wide: `<rect x="2.75" y="2.75" width="10.5" height="10.5"/><path d="M6.25 10.25L10.25 6.25M7.25 6.25H10.25V9.25" ${sw(DENSE)}/>`,
   find: `<circle cx="7" cy="7" r="4.25" ${sw(CURVE)}/><path d="M10.25 10.25L13.25 13.25" ${sw(SLANT)}/>`,
+  // how to zoom (the bar, beside − +): a magnifier with a larger ring and an i in it (Okay, 15 Oct 2026, 00:32: "Magnifier
+  // before the sentence, larger ring and an info i in that"). Through fit.mjs; the i's dot is a round end of its line
+  // (a filled dot snaps to half points, a LINE to quarters: the two would not stand on one axis)
+  zoominfo: `<circle cx="6.75" cy="6.75" r="5.5" ${sw(CURVE)}/><path d="M10.75 10.75L14.25 14.25" ${sw(SLANT)}/><path d="M6.75 6.25V9.75M6.75 4.25V4.25"/>`,
   screen: `<rect x="2.75" y="3.25" width="10.5" height="7.5"/><path d="M8.25 10.75V13.25M5.75 13.25H10.75" ${sw(DENSE)}/>`,
   // the Guides switch, on 18: a target and its cross; its lines crowd, so DENSE. Okay's drawings (14 Oct 2026, 04:11):
   // guides on, the centre ring dashed in six, square-ended (a dash pattern is a texture, not line ends) (core-on); guides off, a hollow slash, two lines with the target cut away
@@ -215,7 +219,8 @@ const TOOL_ICONS = {
 // inside it leaving an even black ring RING wide; on the cap two curved sausages as thick as that ring, on one circle:
 // light on the upper left, dark red on the lower right. Pressed — time running — they change places: lit from inside.
 const ARCADE = (down) => {
-  const RING = 3, R = 16, mid = 8.5, arc = (from, to) => {      // a sausage along the circle of radius mid, clock-free angles: 0 = right, growing downward
+  const RING = 3, R = 16, mid = R - RING - RING / 2;      // the sausages touch the black ring: no red between (Okay, 15 Oct 2026, 00:32)
+  const arc = (from, to) => {      // a sausage along the circle of radius mid, clock-free angles: 0 = right, growing downward
     const p = (a) => `${(16 + mid * Math.cos(a * Math.PI / 180)).toFixed(3)} ${(16 + mid * Math.sin(a * Math.PI / 180)).toFixed(3)}`;
     return `M${p(from)}A${mid} ${mid} 0 0 1 ${p(to)}`;
   };
@@ -776,7 +781,7 @@ class DialTool {
     // tells a screen reader its speed (aria-valuetext); the eye has the ball at 1× and where the thumb stands
     const humps = el("span", { className: "humps", ariaHidden: "true" }, el("i", { className: "knob first" }), el("i", { className: "knob last" }));
     for (const h of SPEED_HUMPS) {
-      const ball = el("i", { className: "hump" }), name = el("span", { className: "humpname", textContent: h + "×" });
+      const ball = el("i", { className: "hump" }), name = el("span", { className: "humpname", textContent: h + "X" });      // "1X", as Okay wrote it (15 Oct 2026, 00:32)
       for (const x of [ball, name]) x.style.setProperty("--at", speed_place(h).toFixed(4));
       humps.append(ball, name);
     }
@@ -831,8 +836,8 @@ class DialTool {
    *  23:19: "say cmd+scroll is zoom in out attached to the zoom area. Put a magnifier icon at the end"; 23:26: "at the
    *  end, not a button, faint"). On a screen without a pointer the words say what a finger does. */
   zoom_hint() {
-    const hint = el("span", { className: "zoomhint" }, el("span", { className: "pointer", textContent: "⌘ + scroll to zoom" }), el("span", { className: "finger", textContent: "Pinch to zoom" }));
-    hint.insertAdjacentHTML("beforeend", icon(TOOL_ICONS.find));
+    const hint = el("span", { className: "zoomhint" }, el("span", { textContent: "⌘ + scroll to zoom" }));
+    hint.insertAdjacentHTML("afterbegin", icon(TOOL_ICONS.zoominfo));      // the sign before the words (Okay, 15 Oct 2026, 00:32)
     return hint;
   }
 

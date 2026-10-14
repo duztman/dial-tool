@@ -469,7 +469,7 @@ check(await page.isHidden("#guide-list"), "a press outside the list puts it away
 await page.click("#guides-more");
 const looks = await page.evaluate(() => { const c = (q, p) => getComputedStyle(document.querySelector(q))[p]; return [c(".bar", "backgroundColor"), c(".bar", "color")]; });
 const whites = await page.evaluate(() => [...document.querySelectorAll(".bar, .bar *")].filter((e) => e.getClientRects().length).flatMap((e) => { const c = getComputedStyle(e); return [c.color, c.backgroundColor, c.borderTopColor].filter((v) => /^rgba?\((2[3-5]\d), (2[3-5]\d), (2[3-5]\d)/.test(v)).map((v) => (e.id || e.className.baseVal || e.className) + " " + v); }));
-check(looks[0] === "rgb(51, 51, 51)" && looks[1] === "rgb(191, 191, 191)" && whites.length === 0, `the bar is 80 % black, its light tone 25 % grey, nothing on it white (Okay, 15 Oct 2026) ${whites.slice(0, 3).join(" · ")}`);
+check(looks[0] === "rgb(51, 51, 51)" && looks[1] === "rgb(166, 166, 166)" && whites.length === 0, `the bar is 80 % black, its light tone 35 % grey, nothing on it white (Okay, 15 Oct 2026) ${whites.slice(0, 3).join(" · ")}`);
 await page.mouse.move(900, 400);
 const off_look = await page.$eval("#guides", (e) => { const c = getComputedStyle(e); return [e.getAttribute("aria-pressed"), c.backgroundColor, e.textContent, c.borderTopStyle]; });
 check(off_look[0] === "false" && off_look[1] === "rgba(0, 0, 0, 0)" && off_look[2] === "Guides" && off_look[3] === "solid", "off: no fill, no dashes");
@@ -1116,8 +1116,8 @@ check(pane_lines.length > 0 && pane_lines.every((x) => x === "24/26"), `a pane's
 const fits = await page.evaluate(() => { const w = (q) => Math.round(document.querySelector(q).getBoundingClientRect().width), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); const box = (q) => document.querySelector(q).getBoundingClientRect(), lead = document.querySelector(".bar .lead"), pad = parseFloat(getComputedStyle(lead).paddingRight);
     const gaps = [["#play", ".speeds"], [".speeds", ".timewell"], ["#ampm", "#now"]].map(([a, b]) => +(box(b).left - box(a).right).toFixed(1));
     return { play: w("#play"), zooms: w(".zooms"), fit: w("#fit"), gaps, touch: +(box("#ampm").left - box(".timewell").right).toFixed(1), end: Math.round(box(".bar .lead").right - pad - box("#now").right) }; });
-check(fits.play === 32 && fits.zooms === 54 && fits.fit === 54 && fits.gaps.every((g) => g === fits.gaps[0]) && fits.touch === 0 && fits.end === 0,
-  `under the panel: play · how fast · the time touching AM · PM · NOW, one equal gap between them, NOW ending on the panel's last column (${JSON.stringify(fits)})`);
+check(fits.play === 32 && fits.zooms === 54 && fits.fit === 54 && fits.gaps[0] === 24 && fits.gaps[1] === fits.gaps[2] && fits.touch === 0 && fits.end === 0,
+  `under the panel: play, a margin (24), how fast · the time touching AM · PM · NOW one equal gap apart, NOW ending on the panel's last column (${JSON.stringify(fits)})`);
 await shot("7b-bar");
 await page.fill("#time", "3:20:10");
 await page.press("#time", "Enter");
