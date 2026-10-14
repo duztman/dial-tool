@@ -81,12 +81,14 @@ const block = (b, t, o = {}) => `<div class="block${t.watch ? " watch" : ""}${o.
 // "title > two lines > image > explainer text").
 const lead_lines = (s) => s.split(/\n|(?<=[.!?])\s+(?=[A-Z])/).map((l) => inline(l.trim())).join("<br>");
 let CUR = "";
-const head = (part, no, t) => { CUR = no; return `<div class="tabline" style="left:${X(1)}mm;top:${TOP - ROW}mm;width:${W(12)}mm;height:${ROW}mm">
+// o.leadRight: the lead set beside the title, in the right half, its last line on the title's baseline (Okay, 20:22:
+// the empty top right "could have been filled with the two line entrance sentences" — a rule broken on purpose)
+const head = (part, no, t, o = {}) => { CUR = no; return `<div class="tabline" style="left:${X(1)}mm;top:${TOP - ROW}mm;width:${W(12)}mm;height:${ROW}mm">
     <div class="ptab" style="width:${W(1)}mm">${part}<span>${no}</span></div><div class="gname">Dial Tool · Guidebook · beta 4.36</div>
     <div class="gurl">duztman.github.io/dial-tool</div></div>
   <div class="head" style="left:${X(1)}mm;top:${Y(1)}mm;width:${W(12)}mm;height:${H(2)}mm">
     <h1 style="width:${W(8)}mm">${inline(t.title)}</h1>
-    <p class="lead" style="width:${W(8)}mm">${lead_lines(t.lead)}</p></div>`; };
+    <p class="lead${o.leadRight ? " right" : ""}" style="${o.leadRight ? `left:${f2(X(7) - X(1))}mm;width:${f2(W(6))}mm` : `width:${W(8)}mm`}">${lead_lines(t.lead)}</p></div>`; };
 const page = (part, inner) => `<section class="page" data-no="${CUR}" style="--sig:${tint(part)};--sig-ink:${ink_of(part)}">${inner}</section>`;
 
 // ── pictures ──
@@ -362,11 +364,15 @@ const pages = [];
 // The drawer; the heading's buttons, closed and open at one size → Adding and arranging.
 {
   const t = page_text("06"), P = "B";
-  let h = head(P, "06", t);
+  let h = head(P, "06", t, { leadRight: true });
+  // with the lead beside the title, row 2 is free: rows 3–14 are drawn from just under the title to the foot of the
+  // page, each row a little taller (Okay, 20:22: no band of nothing between the head and the pictures)
+  const TOP6 = 31, F6 = (Y(14) + ROW - TOP6) / (Y(14) + ROW - Y(3));
+  const box = (c, r, cs, rs) => ({ x: X(c), y: TOP6 + (Y(r) - Y(3)) * F6, w: W(cs), h: H(rs) * F6 });
   const S = JSON.parse(fs.readFileSync(path.join(IMG, "dial-diver.json"), "utf8"));
   const big = box(1, 3, 6, 6);
   h += `<div class="ground flat" style="${css(big)}"></div>`;
-  const dd = 62, kd = dd / S.dial_d, pg = (S.dial_d + 2 * S.margin) * kd, cx = big.x + big.w / 2, cy = big.y + big.h / 2;
+  const dd = 66, kd = dd / S.dial_d, pg = (S.dial_d + 2 * S.margin) * kd, cx = big.x + big.w / 2, cy = big.y + big.h / 2;
   h += `<img class="svgdial" src="../img/dial-diver.svg" style="left:${f2(cx - pg / 2)}mm;top:${f2(cy - pg / 2)}mm;width:${f2(pg)}mm">`;
   const KIND = ["ticks", "markers", "numerals", "band"];
   const slug = (n) => n.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -410,14 +416,15 @@ const pages = [];
      `rings dial: "${p.r.name}" crosses print on its way out (${p.cross}; clear rows: ${cand.find((c) => c.r === p.r).list.filter((q) => !q.cross).map((q) => q.side + (q.Y - big.y).toFixed(1)).join(" ")})`);
   let edgeL = cx - 20 * kd - 2.5, edgeR = cx + 20 * kd + 2.5;     // just outside the bezel
   // the group is centred by its ink: the widest label on each side decides how far the dial moves
-  const inkW = async (p, side) => (await measure(inline(p.r.name) + (p.r.name.toLowerCase() === KIND[p.kind] ? "" : `<br><span class="sub">${KIND[p.kind]}</span>`), side === "L" ? edgeL - big.x - 5 : big.x + big.w - edgeR - 5)).W;
-  let Lw = 0, Rw = 0; for (const p of placed || []) { const w = await inkW(p, p.side); if (p.side === "L") Lw = Math.max(Lw, w); else Rw = Math.max(Rw, w); }
+  // each label: the ring's kind, then in grey what it draws (Okay, 20:22: "Bezel" five times was "informationally dumb")
+  const inkW = async (p, side) => (await measure(KIND[p.kind] + `<br><span class="sub">${inline(note(t, "on " + p.r.name))}</span>`, 80)).W;     // each line whole
+  let Lw = 0, Rw = 0; for (const p of placed || []) { const w = (p.W = await inkW(p, p.side)); if (p.side === "L") Lw = Math.max(Lw, w); else Rw = Math.max(Rw, w); }
   const shift = ((big.x + big.w - (edgeR + 1.2 + Rw)) - (edgeL - 1.2 - Lw - big.x)) / 2;
   edgeL += shift; edgeR += shift; for (const p of placed || []) p.X += shift;
   h = h.replace(`left:${f2(cx - pg / 2)}mm;top:${f2(cy - pg / 2)}mm;width:${f2(pg)}mm">`, `left:${f2(cx + shift - pg / 2)}mm;top:${f2(cy - pg / 2)}mm;width:${f2(pg)}mm">`);
   const hcx = cx + shift;
   h += pointers({ sides: (placed || []).map((p) => ({ at: [p.X, p.Y], edge: p.side === "L" ? edgeL : edgeR, side: p.side === "L" ? "R" : "L",
-    text: p.r.name, sub: p.r.name.toLowerCase() === KIND[p.kind] ? "" : KIND[p.kind], w: p.side === "L" ? edgeL - big.x - 5 : big.x + big.w - edgeR - 5 })) }, { halo: [hcx, cy, 20 * kd] });
+    text: KIND[p.kind][0].toUpperCase() + KIND[p.kind].slice(1), sub: note(t, "on " + p.r.name), w: p.W + 1 })) }, { halo: [hcx, cy, 20 * kd] });
   h += block(box(1, 9, 3, 3), text(t, "What a ring is"), { flow: "a" }) + block(box(1, 9, 3, 3), text(t, "Watch"), { flow: "a", attach: true });
   // under them, the radius button's pop-up on a numerals ring: what the Watch note is about
   const CP = 12;                                    // a card's own margin, in screen points (Okay, 19:52: "a little more padding")
@@ -432,7 +439,7 @@ const pages = [];
     const P0 = SHOTS.rects["diver-radius"].pop, menu = c.at([P0[0] + 104, P0[1] + 5, 18, 18]);
     h += pointers({ sides: [{ at: [menu[0] + menu[2], mid(menu)[1]], edge: c.x + c.w + 2.8, side: "L", text: note(t, "anchor"), w: lw }] }); }
   // Adding and arranging sits beside its picture (cols 7–12, rows 11–14)
-  h += block(box(4, 9, 3, 3), text(t, "Four kinds"), { flow: "b" }) + block(box(4, 12, 3, 2), text(t, "Adding and arranging"), { flow: "b" });
+  h += block(box(4, 9, 3, 3), text(t, "Four kinds"), { flow: "b" }) + block(box(4, 12, 3, 2), text(t, "Adding and arranging"), { flow: "b2", bottom: PAGE[1] - 11 });
 
   // right: three pictures in cols 7–10, each with its words beside it in cols 11–12
   const PX0 = X(7), PW = W(4);
@@ -441,7 +448,7 @@ const pages = [];
   // 1 · the list: the selected ring and its drawer, two more rows, then the list fades. The eye is named on the
   // first row under the drawer (a line straight out to the left); the grip and the summary from the selected
   // row up to one baseline, the rename box above them.
-  { const g = box(7, 3, 4, 5), k = 0.125, lr = [48, 188, 392, 222], wE = 26, wG = 32, wS = 30, wN = 30;
+  { const g = box(7, 3, 4, 5), k = 0.125, lr = [48, 188, 392, 222], wE = 18, wG = 32, wS = 30, wN = 30;
     const cw = (lr[2] + 2 * CP) * k, ch = (lr[3] + 2 * CP) * k;
     const H1 = Math.max(await inkH(note(t, "grip"), wG), await inkH(note(t, "summary"), wS)), H2 = await inkH(note(t, "name"), wN);
     const m = (g.h - H2 - H1 - ch) / 4, z2 = g.y + m, z1 = z2 + H2 + m, cy0 = z1 + H1 + m;
@@ -457,7 +464,7 @@ const pages = [];
           { at: [sx, sum.box[1]], text: note(t, "summary"), w: wS } ] },
         { side: "above", zone: [z2, z2 + H2], xmin: g.x + 4, xmax: g.x + g.w - 4, items: [
           { at: [mid(ren)[0], ren[1]], text: note(t, "name"), w: wN } ] } ] });
-    h += block(box(11, 3, 2, 5), text(t, "Stacking order"), { flow: "s1", bottom: Y(7) + ROW }); }
+    h += block(box(11, 3, 2, 5), text(t, "Stacking order"), { flow: "s1", bottom: Y(7) + ROW }) + block(box(11, 3, 2, 5), text(t, "Watch: order"), { flow: "s1", attach: true, bottom: Y(7) + ROW }); }
   // 2 · the drawer: the kinds over it; the three value buttons, ringed together, under it
   { const g = box(7, 8, 4, 3), k = 0.17, dr = [100, 236, 330, 50], wK = 64, wV = 48;
     const dw = (dr[2] + 2 * CP) * k, dh = (dr[3] + 2 * CP) * k;
@@ -620,7 +627,7 @@ const ragged = await pg.evaluate(() => {
     const wmax = Math.max(...ls.map((l) => l.r - l.l)), last = ls[ls.length - 1];
     const what = el.textContent.trim().slice(0, 34);
     if ((last.r - last.l) < 0.4 * wmax) out.push(`short last line "${last.words.join(" ")}" in "${what}…"`);
-    ls.forEach((l, i) => { if (l.words.length <= 2 && l.words.join(" ").length < 14) out.push(`line ${i + 1} only "${l.words.join(" ")}" in "${what}…"`); });
+    if (el.getBoundingClientRect().width > 20 * 96 / 25.4) ls.forEach((l, i) => { if (l.words.length <= 2 && l.words.join(" ").length < 14) out.push(`line ${i + 1} only "${l.words.join(" ")}" in "${what}…"`); });
   }
   return out;
 });

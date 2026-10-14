@@ -180,6 +180,8 @@ A ring repeats one kind of thing round the centre.
 
 **Watch.** A ring's radius runs from the centre to the outer edge of ticks, markers and bands, and to a numeral's anchor: its middle, its baseline or its top.
 
+**Watch: order.** A ring gives way only to rings above it, so moving it can bring marks back or take them away. Hidden, a ring is neither drawn nor exported, and no ring gives way to it.
+
 **Note: eye.** Hides the ring without deleting it.
 **Note: grip.** Drag the grip to move the ring up or down the list.
 **Note: name.** Renames the ring.
@@ -192,6 +194,17 @@ A ring repeats one kind of thing round the centre.
 **Note: move.** Moves the selected ring up or down, duplicates or deletes it.
 **Note: menu.** The + opens the four kinds; pick one to add a ring of it.
 **Note: values.** Its colour, size and radius: click one to set it.
+**Note: on Bezel: triangle.** the bezel's triangle
+**Note: on Triangle at 12.** a triangle at 12
+**Note: on Dots.** dots at the hours
+**Note: on Bars 3 · 6 · 9.** bars at 3, 6 and 9
+**Note: on Minutes.** the minute track
+**Note: on Bezel: five minutes.** every five minutes
+**Note: on Bezel: first 15.** the first fifteen
+**Note: on Bezel: 10–50.** 10 to 50
+**Note: on Bezel.** the bezel, two colours
+**Note: on Bezel edge.** its edge, in 12 pieces
+**Note: on Band.** the inner circle
 **Note: anchor.** Sets a numeral's anchor: centre, baseline or top.
 
 ---

@@ -48,6 +48,9 @@
 - A line meets the text, not its bounding box: it ends just under (or over) the line of words it belongs to, somewhere inside the words (a quarter to three quarters along), never at a corner. Side labels: the line meets the first line at its x-height middle. Lines must be long enough to read as lines. [r4 06, 19:52]
 - Screenshot cards: rounded corners, a little more padding. [r4 06, 19:52]
 
+- Communication beats the rules: break one on purpose when it removes unease. A page reads either as a clearly designed white space or as no white space at all; never as leftover gaps. (Page 06: the lead beside the title; rows stretched to fill the page; a narrow label so the picture sits nearer the centre.) [r5 06, 20:22]
+- Labels carry information, not repeated names: on a dial, say each ring's kind and what it draws ("Ticks · every five minutes"), not "Bezel: …" five times. [r5 06, 20:22]
+
 ## Cover (later)
 - Big type: tighter tracking/kerning; the title must not overlap the dial. A richer, aesthetic dial; Okay will guide. Etching is not the focus; ring building and design help are. [r1, r4 00]
 
