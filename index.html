@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.37.1 · built 2026-10-14 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.38 · built 2026-10-14 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -82,7 +82,15 @@
     --line: 34px;                                  /* a row's height */
     --head: 40px;                                  /* a pane's heading */
     --header: 64px;                                /* the panel's top: title and Guides */
-    --bar-height: 52px; --bar-control: 30px;
+    --bar-height: 62px; --bar-control: 30px;      /* a fifth higher than it was, 52 (Okay, 14 Oct 2026, 23:19: "1/5 higher"); a phone keeps its own (--bar-lead-narrow) */
+    --bar-light: #737373;                          /* the one light tone on the bottom bar: 55 % grey (Okay, 15 Oct 2026, 00:42: "55%gray all"; 35 % at 00:32, 25 % at 00:18); nothing on the bar is white (Okay, 15 Oct 2026, 00:18: "NOTHING ON THIS WHOLE BAR IS WHITE… EQUALIZE LIGHT TONES IN 25% GRAY") */
+    --play: #CC381A; --play-dark: #7A1E0C; --play-light: #F28A6C;      /* the play button, an arcade button from above: its cap (the seconds hand's red, geometry.js ACCENT), the shade round it and under it, the light on it (Okay, 14 Oct 2026: "3 colors and a black outline") */
+    --speed-thumb: 14px; --speed-ball: 9px;        /* how fast: its thumb; the ball at 1× and the knobs at its ends (6 until Okay, 15 Oct 2026, 00:42: "larger dots, all black with an eye hole") */
+    --speed-pad: calc(var(--u3) + 4px - var(--speed-thumb) / 2);      /* the speed box's room inside, left and right, set so that from its wall to an end knob's edge is 4 more than it was (3.75 → 7.75; Okay, 15 Oct 2026, 01:03: "end ball and the wall… what that was before plus four pixels"; 4 alone at 00:51 was a misreading). The knobs now stand where the thumb's middle stops, half a thumb in from the track's ends: hence the half thumb taken off */
+    --play-size: 34px;                             /* the play button: a section tab's box (Okay, 00:42) */
+    --t-time: 17px;                                /* the time in the bar: larger than --t-l (Okay, 14 Oct 2026, 23:55: "larger digital time"); R32 lists it */
+    --time-chars: 8ch;                             /* the time's field: "10:09:36", eight characters of the mono face */
+    --day-wide: 518px;                             /* the day slider at its widest: as wide as on an iPad (1180 wide), so a big screen doesn't stretch it (Okay, 23:19) */
     --tile: 50px;                                  /* a picture tile's least height */
     --frame-pad: 8px;                              /* inside a frame (a ring row, the font box): from its edge to what is in it, where a pane's row would have none */
     --ring-gap: 4px;                               /* between framed rows */
@@ -97,13 +105,12 @@
     --row-end: calc(var(--frame-pad) - var(--hair) + var(--ringline-inner));      /* the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons */
     --line-button: 36px; --bare-dot: 16px;      /* in the ring drawer every control is this high (a value button this wide too) · the colour's swatch */
     --name-in: 6px;                                /* a ring's name starts this far into its column; the ring line's buttons too */
-    --half: 30px;                                  /* AM · PM inside the time's box */
+    --half: 30px;                                  /* AM · PM: its own window beside the time (Okay, 14 Oct 2026, 23:19) */
     --value-pop: 132px;                            /* a value button's pop-up: about as wide as it is high */
     --dot-tiny: 10px;                              /* a colour inside a line of words: a folded pane's summary */
     --thumb: 18px; --track: 4px; --thumb-eye: 2px; --thumb-eye-edge: 2.75px;      /* sliders: a black disc on a thin track (Okay's sketch); the light centre of the disc, and where its edge softens */
     --grip: 18px;                                  /* the ring list's drag handle column */
     --log-least: 96px; --log-most: 260px;          /* the Export log: at least this high, at most this */
-    --status-width: 240px;                         /* the bar's status line */
     --round-switch: 10px;                          /* the switches on the preview: undo, Guides, Backdrop */
     --glow-line: 1.5px; --glow-under: 4px;         /* the outline of what the pointer is on, and the white line under it */
     --tip-arrow: 5px; --tip-arrow-in: 2.6px;       /* the pointer label's arrow: its dark line and the white line inside it */
@@ -152,7 +159,7 @@
     --scrollbar: var(--unit);                      /* a scrollbar drawn by the tool: slim */
     --sans: system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
     --pixel: "Silkscreen", ui-monospace, Menlo, monospace;      /* tiny numbers inside small drawings (a value button, the numerals picture): Silkscreen, packed into the page by build.mjs (SIL OFL) */
-    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;      /* only for what the tool says: the log, a link, a hex value, a feature's tag */
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;      /* only for what the tool says: the log, a link, a hex value, a feature's tag — and everything on the bottom bar (Okay, 14 Oct 2026, 23:55: "All mono on the lower line") */
   }
   @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --pop-width: 454px; --dot: 18px; --guide-dot: 14px; --guide-gap: 13px; --pop-field: 180px; --pop-hue: 32px; --knob: 28px; } }      /* a finger needs more to hold than a pointer */
 }
@@ -839,8 +846,8 @@
      switch (bottom left). Outline only, never filled; there to be found, not to be the first
      thing seen: a hairline and plain words. Their one colour is black or white, whichever stands out more from the
      backdrop (main.dark, set by app.js) — one of the two always does, on any colour. No dashes, no greys.
-     Guides on: its word is bold. Off: plain, and its sign is struck through. The word keeps the width of its bold
-     form, so the box is the same size on and off. */
+     Guides (and Shadows) on: its word is whole, in that colour, never bolder (Okay, 14 Oct 2026, 23:05; bold
+     before). Off: faint, and Guides' sign is struck through. One weight, so the box is the same size on and off. */
   main { --on-canvas: var(--ink); }
   main.dark { --on-canvas: var(--white); }
   .guides { position: absolute; z-index: 3; top: var(--canvas-top); right: var(--canvas-inset); display: flex; justify-content: flex-end; }
@@ -868,15 +875,21 @@
   .guidesbox[aria-pressed="true"] > .word { opacity: 1; }
   .undobox.none, .undobox.none:hover { border-color: var(--line-fainter); box-shadow: none; }
   :is(.undobox.none, .undobox.none:hover) > * { opacity: calc(var(--faint) / 2); }
-  .guidesbox { gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch) 0 0 var(--round-switch); font-weight: 600; }
+  .guidesbox { gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch) 0 0 var(--round-switch); }      /* on, its word is whole (black or white), never bolder (Okay, 14 Oct 2026: "when active label does not get bolder, just gets black") */
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 var(--round-switch) var(--round-switch) 0; }
-  .guidesbox .word::after { content: attr(data-text); display: block; height: 0; overflow: hidden; visibility: hidden; font-weight: 600; }
-  .guidesbox[aria-pressed="false"] { font-weight: 400; }
   .guidesbox[aria-pressed="true"] :is(.slash, .core-off), .guidesbox:not([aria-pressed="true"]) .core-on { display: none; }      /* on: the centre ring dashed; off: the hollow slash (Okay's drawings, 14 Oct 2026) */
   .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }      /* open, only its arrow turns */
-  .backdropbox { position: absolute; z-index: 3; left: var(--canvas-inset); bottom: var(--canvas-inset); gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch); }
+  .backdropbox { position: absolute; z-index: 3; left: var(--canvas-inset); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch); }
   .backdropbox[aria-expanded="true"] { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); }
   .backdropbox .dot { border-color: var(--on-canvas); }
+  /* Shadows (a trial, 14 Oct 2026): the Guides switch's make, at the bottom left, the Backdrop switch standing on it a
+     unit above (Okay, 23:05: "button goes down"); one higher, so its open list lies over Backdrop.
+     No sign yet (a new icon goes through the icon pipeline, R33): the word alone, so its left room is the right's.
+     Its list opens upward (.shadelist, after the guides' list), so its arrow points up while closed. */
+  .shadows { position: absolute; z-index: 4; left: var(--canvas-inset); bottom: var(--canvas-inset); display: flex; }
+  .shadowsbox { padding-left: var(--u4); }
+  .shadows .guidesmore svg { rotate: 180deg; }
+  .shadows .guidesmore[aria-expanded="true"] svg { rotate: 0deg; }
 
   /* the list: near black and round, like the colour pop-out (.night). A kind of guide is one line: its name, then
      round choices with room between them — none, then the eight colours. The chosen one stands in a thick ring of its own colour, a
@@ -911,6 +924,11 @@
   .guidelist .row { grid-template-columns: var(--guide-name) minmax(0, 1fr) var(--col) var(--col); min-height: var(--guide-row); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
   .guidelist .row > :is(label, input[type="range"]) { grid-column: auto; }
   .guidefoot { display: flex; justify-content: flex-end; padding-top: var(--pop-pad); }
+  .shadelist .guidehead .name { grid-column: 1 / -1; }      /* its headings are words alone: the whole line, not the names' column */
+  /* the Shadows list: the guides' list, opening upward from its switch at the bottom left (after .guidelist, which it overrides) */
+  .shadelist { top: auto; right: auto; bottom: calc(100% + var(--unit)); left: 0;
+    max-height: calc(100vh - var(--bar-height) - var(--canvas-inset) - var(--canvas-top) - 2 * var(--control-large) - 2 * var(--unit)); }      /* from over its switch up to under undo · redo */
+  .shadelist .row.chk > label.check { grid-column: 1 / -1; }      /* Soft edge and its warning on one line, the whole width */
   /* the outline of what the pointer is on: an orange line on a white one, so it shows on any colour */
   .glow { fill: none; stroke: var(--glow); stroke-width: var(--glow-line); vector-effect: non-scaling-stroke; stroke-linejoin: round; }
   .glow.under { stroke: var(--white); stroke-width: var(--glow-under); }
@@ -926,65 +944,109 @@
 }
 
 @layer bar {
-  /* the bar: under the panel and the preview, on the panel's columns. Under the panel (.lead): the panel's
-     square in the toggle column, then play 1 · speeds 2 · time 2 · Now 1 — quiet, so they don't shout under
-     the panel. Under the preview: the day slider with its steps, then the view: − + 1 · Fit 1. */
-  .bar { grid-column: 1 / -1; display: flex; align-items: stretch; height: var(--bar-height); padding-right: var(--margin); background: var(--bar); color: var(--bar-ink); border-top: var(--hair) solid var(--bar-rule); }
-  .bar .lead { flex: none; display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; width: var(--panel); padding: 0 var(--margin); }
+  /* the bar: under the panel and the preview, on the panel's columns. Under the panel (.lead), from the first of the
+     six columns: play 1 · how fast 2 · the time and its half of the day 2 · Now 1 (the toggle column stays empty since
+     the panel's square left, #190) — quiet, so they don't shout under the panel, but for the time, which sings.
+     Under the preview: the day slider with its steps, no wider than on an iPad, then the view: how to zoom · − + 1 ·
+     Fit 1, at the right. (Okay, 14 Oct 2026, 23:19 and 23:26, build list #190) */
+  .bar { grid-column: 1 / -1; display: flex; align-items: stretch; height: var(--bar-height); padding-right: var(--margin); background: var(--bar); color: var(--bar-light); border-top: var(--hair) solid var(--bar-rule); }
+  .bar .lead { flex: none; align-items: center; width: var(--panel); padding: 0 var(--margin); }
   .bar .group { display: flex; align-items: center; gap: var(--gap); padding: 0 var(--gap); border-left: var(--hair) solid var(--bar-rule); }
-  .bar :is(.lead, .viewing) button, .bar .time { height: var(--bar-control); border: var(--hair) solid var(--bar-rule); background: var(--bar-field); color: var(--bar-ink); }
-  .bar :is(.lead, .viewing) button:hover { background: var(--bar-hover); border-color: var(--bar-ink); }
-  .bar :is(.lead, .viewing) button:active, .bar .viewing .segs > button.on { background: var(--bar-ink); color: var(--bar); border-color: var(--bar-ink); }
-  .bar :is(button, input):focus-visible, .bar input[type="text"]:focus { outline-color: var(--bar-ink); }
+  .bar :is(.lead, .viewing) button, .bar .time { height: var(--bar-control); border: var(--hair) solid var(--bar-light); background: none; color: var(--bar-light); }
+  .bar :is(.lead, .viewing) button:hover { background: var(--bar-field); }
+  .bar :is(.lead, .viewing) button:active { background: var(--bar-light); color: var(--bar); }
+  .bar :is(button, input):focus-visible, .bar input[type="text"]:focus { outline-color: var(--bar-light); }
   .bar .icon { display: inline-flex; align-items: center; justify-content: center; }
   /* low contrast under the panel: no fills, thin light lines; what is chosen is a shade lighter */
-  .bar .lead :is(button, .time) { background: none; border-color: var(--bar-dim); }
-  .bar .lead :is(button, .time):hover { background: var(--bar-faint); border-color: var(--bar-edge); }
-  .bar .lead button:active { background: var(--bar-dim); color: var(--bar-ink); }
-  .bar .lead .segs > button.on { background: var(--bar-on); color: var(--white); border-color: var(--bar-dim); }
-  .bar .lead .segs > button + button { border-left: 0; }
-  .bar .lead .side { justify-self: center; width: var(--control); border-color: transparent; }      /* centred on the toggle column, like the eyes above it */
-  .bar .side[aria-pressed="true"] { background: var(--bar-ink); color: var(--bar); }
-  .bar .speeds, .bar .timebox { grid-column: span 2; }
-  /* AM · PM stands inside the time's box, at its right end: one small word that a press turns over */
-  .bar .timebox { position: relative; display: grid; }
-  .bar .lead .timebox .half { position: absolute; right: 0; top: 0; width: var(--half); border-color: transparent; font-size: var(--t-xs); letter-spacing: 0.04em; color: var(--bar-quiet); }
-  .bar .lead .timebox .half:hover { color: var(--bar-ink); }
-  .bar .timebox .time { padding-right: calc(var(--half) - var(--unit)); }
-  .bar .time { width: 100%; text-align: center; font-weight: 600; letter-spacing: 0.02em; }
-  .bar .viewing { padding-right: 0; }
+  /* the bar's lower line is all monospace (Okay, 14 Oct 2026, 23:55: "All mono on the lower line") */
+  .bar { font-family: var(--mono); }
+  /* under the panel: play · how fast · the time and its half of the day · NOW, a half-gap between each (Okay: "equalize
+     all paddings red dot to now, then halve them"), from the first of the six columns to the last. Each box is as wide
+     as its words and the same room on either side of them; how fast takes what is left ("slider can grow"). */
+  .bar .lead { display: flex; gap: var(--u2); padding-left: calc(var(--margin) + var(--lead)); }
+  .bar .lead > * { flex: none; }
+  /* play: a round red arcade button seen from above (Okay: "imitate a arcade button, top view… 3 colors and a black
+     outline"), drawn in app.js (ARCADE); no sign on it. While time runs it is pressed in. */
+  .bar .lead .play { width: var(--play-size); height: var(--play-size); padding: 0; border: 0; border-radius: 50%; background: none; }
+  .bar .lead .play:is(:hover, :active) { background: none; }
+  .bar .lead .play svg { display: block; }
+  .bar .lead .play { margin-right: calc(var(--margin) - var(--u2)); }      /* from play to how fast as far as from NOW to the bar's divider: the margin (Okay, 15 Oct 2026, 00:32, his H marks) */
+  .play .arc-out { fill: var(--black); }
+  .play .arc-lo { fill: none; stroke: var(--play-dark); stroke-linecap: round; }
+  .play .arc-cap { fill: var(--play); }
+  .play .arc-hi { fill: none; stroke: var(--play-light); stroke-linecap: round; }
+  .bar .lead .play:hover .arc-cap { fill: color-mix(in srgb, var(--play) 88%, var(--play-light)); }
+  /* how fast: a box with its track — a black line with a knob at each end and one ball on it, at 1×, and "1×" over
+     the ball, outside the box, in the middle of the room between the box and the bar's top, at the hours' size
+     (Okay: "Remove the humps but the one at 1x. Hump=ball in the middle of the line. Put 1x above the dot centered
+     in the remaining gap outside the box in ruler number's font size"). --at: how far along the track, 0 to 1; the
+     thumb's half-width at each end, so the ball is under the thumb's centre at 1×. */
+  .bar .lead .speeds { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--u2); height: var(--bar-control); padding: 0 var(--speed-pad); border: var(--hair) solid var(--bar-light); }
+  .bar .speedtrack { position: relative; flex: 1; min-width: 0; height: 100%; }
+  .bar .humps { position: absolute; inset: 0 calc(var(--speed-thumb) / 2); pointer-events: none; }
+  .bar .humps::before { content: ""; position: absolute; left: 0; right: 0; top: calc(50% - var(--triple) / 2); border-top: var(--triple) solid var(--black); }      /* as thick as the play button's black ring (Okay, 15 Oct 2026, 00:32) */
+  /* every dot on the speed line — its two ends, the ball at 1×, the thumb — black with an eye, as the panel's sliders
+     (Okay, 15 Oct 2026, 00:42: "larger dots, all black with an eye hole") */
+  .bar .hump { position: absolute; left: calc(var(--at) * 100%); top: 50%; width: var(--speed-ball); height: var(--speed-ball); translate: -50% -50%; border-radius: 50%; background: radial-gradient(circle, var(--bar-light) 0 var(--thumb-eye), var(--black) var(--thumb-eye-edge)); }
+  .bar .humpname { position: absolute; left: calc(var(--at) * 100%); bottom: calc(100% + var(--hair)); height: calc((var(--bar-height) - var(--bar-control)) / 2); translate: -50% 0; line-height: calc((var(--bar-height) - var(--bar-control)) / 2); font-family: var(--pixel); font-size: var(--t-pixel); color: var(--bar-light); white-space: nowrap; }      /* "1×" in Silkscreen at 8, the ball's colour (Okay, 15 Oct 2026, 00:18) — not at --pixel-ink: he asked for the ball's colour (R32 notes it) */
+  .bar .knob { position: absolute; top: 50%; width: var(--speed-ball); height: var(--speed-ball); translate: -50% -50%; border-radius: 50%; background: radial-gradient(circle, var(--bar-light) 0 var(--thumb-eye), var(--black) var(--thumb-eye-edge)); }      /* the black line's two ends, a knob each (Okay: "time speed line in black, has a beginning and end knob") */
+  .bar .humpname.ghost { color: var(--black); }      /* 1X stays over its ball in black; the rider in grey shows the speed over the thumb and covers the ghost at 1× */
+  .bar .humpname.rider { z-index: 1; }
+  .bar .knob.first { left: 0; }      /* where the thumb's middle stops at each end: at the end the thumb sits on its knob (Okay, 15 Oct 2026, 01:03) */
+  .bar .knob.last { left: 100%; }
+  .bar .speedtrack input[type="range"] { position: absolute; inset: 0; height: 100%; }
+  .bar .speedtrack input[type="range"]::-webkit-slider-runnable-track { height: 100%; background: none; }
+  .bar .speedtrack input[type="range"]::-webkit-slider-thumb { width: var(--speed-thumb); height: var(--speed-thumb); margin-top: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2); background: radial-gradient(circle, var(--black) 0 var(--thumb-eye), var(--bar-light) var(--thumb-eye-edge)); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  .bar .speedtrack input[type="range"]::-moz-range-track { height: 100%; background: none; }
+  .bar .speedtrack input[type="range"]::-moz-range-progress { background: none; }
+  .bar .speedtrack input[type="range"]::-moz-range-thumb { width: var(--speed-thumb); height: var(--speed-thumb); background: radial-gradient(circle, var(--black) 0 var(--thumb-eye), var(--bar-light) var(--thumb-eye-edge)); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  /* the time sings: large, regular weight, bright, centred on its ink (app.js measures it with every figure a 0, so
+     it stands still), more room left and right than the other boxes. Its AM · PM window touches it, one colour always
+     (Okay: "Pm window touches the time"; "Am/pm does not change color"). */
+  .bar .timebox { display: flex; }
+  .bar .timewell { display: grid; height: var(--bar-control); padding: 0 var(--u4); overflow: hidden; border: var(--hair) solid var(--bar-light); }
+  .bar .timewell:hover { background: var(--bar-field); }
+  .bar .lead .timewell .time { width: var(--time-chars); height: 100%; padding: 0; border: 0; background: none; font-size: var(--t-time); font-weight: 400; letter-spacing: 0; color: var(--bar-light); translate: var(--ink-dx, 0) var(--ink-dy, 0); }
+  .bar .lead .timebox .half { height: var(--bar-control); padding: 0 var(--u3); border-left: 0; font-size: var(--t-s); background: none; color: var(--bar-light); border-color: var(--bar-light); }      /* a frame, never filled (Okay, 15 Oct 2026, 00:18) */
+  /* NOW: capitals, at AM · PM's size (Okay: "Now uppercase and in pm's font size which grows 1px") */
+  .bar .lead #now { padding: 0 var(--u3); font-size: var(--t-s); text-transform: uppercase; }
+  .bar .time { width: 100%; text-align: center; }
+  .bar .viewing { margin-left: auto; padding: 0 0 0 var(--margin); }      /* at the right; the room the day slider doesn't take lies before it. From its divider to what follows as far as from Fit to the window's right edge: the margin (Okay, 15 Oct 2026, 01:03: "equalize those gaps") */
+  /* how to zoom: words and a faint magnifier, nothing to press. A pointer zooms with ⌘ + scroll, a finger pinches */
+  .bar .zoomhint { display: flex; align-items: center; gap: var(--u2); white-space: nowrap; font-size: var(--t-s); color: var(--bar-light); }
+  @media (hover: none), (pointer: coarse) { .bar .zoomhint { display: none; } }      /* a desktop's only: no sign or words on an iPad or a phone (Okay, 15 Oct 2026, 00:32) */
   .bar .viewing > button, .bar .zooms { flex: none; width: var(--col); }
+  .bar .fit { display: inline-flex; align-items: center; justify-content: center; gap: var(--u1); }      /* the magnifier, then the word */
   .bar .zooms { display: flex; }
   .bar .zooms button { flex: 1; min-width: 0; }
   .bar .zooms button + button { border-left: 0; }
-  .bar .status { max-width: var(--status-width); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: var(--t-s); opacity: 0.7; }
-  @media (max-width: 1500px) { .bar .status { display: none; } }      /* the status line needs a wide window */
+  .bar .status { display: none; }      /* hidden (Okay, 14 Oct 2026, 23:19); app.js still writes it */
 
   /* the day slider is a ruler: a line, cuts crossing it (drawn in draw_ruler, finer on a wider window), and a line
      for a handle. Nothing is filled in behind the handle: the past is not a quantity. */
-  .bar .day { position: relative; flex: 1; min-width: 0; display: grid; grid-template-rows: var(--ruler) var(--names); align-content: center; gap: 0; padding: 0 var(--u8); }
-  .ruler { grid-area: 1 / 1; display: block; width: 100%; height: var(--ruler); pointer-events: none; fill: none; stroke: var(--bar-ink); stroke-width: 1; shape-rendering: crispEdges; }
+  .bar .day { position: relative; flex: 1; min-width: 0; max-width: calc(var(--day-wide) + 2 * var(--u8)); display: grid; grid-template-rows: var(--ruler) var(--names); align-content: center; gap: 0; padding: 0 var(--u8); }
+  .ruler { grid-area: 1 / 1; display: block; width: 100%; height: var(--ruler); pointer-events: none; fill: none; stroke: var(--bar-light); stroke-width: 1; shape-rendering: crispEdges; }
   .ruler .line { opacity: 0.4; }
   .ruler .hour { opacity: 0.85; }
   .ruler .half { opacity: 0.6; }
   .ruler .small { opacity: 0.38; }
-  .ruler .pose { opacity: 0; }
+  .ruler .pose { stroke-width: var(--triple); }      /* 10:10 has a thick line of its own, the 10:10 step stands on it (Okay, 15 Oct 2026, 00:51); hidden before */
   .bar .day input[type="range"] { grid-area: 1 / 1; height: var(--ruler); cursor: ew-resize; }
   .bar .day input[type="range"]::-webkit-slider-runnable-track { height: var(--ruler); border-radius: 0; background: none; }
-  .bar .day input[type="range"]::-webkit-slider-thumb { width: var(--handle); height: var(--ruler); margin-top: 0; border-radius: 0; background: var(--white); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  .bar .day input[type="range"]::-webkit-slider-thumb { width: var(--handle); height: var(--ruler); margin-top: 0; border-radius: 0; background: var(--bar-light); box-shadow: 0 0 0 var(--thick) var(--bar); }
   .bar .day input[type="range"]::-moz-range-track { height: var(--ruler); background: none; }
   .bar .day input[type="range"]::-moz-range-progress { background: none; }
-  .bar .day input[type="range"]::-moz-range-thumb { width: var(--handle); height: var(--ruler); border-radius: 0; background: var(--white); box-shadow: 0 0 0 var(--thick) var(--bar); }
-  .bar .day input[type="range"]:focus-visible { outline: var(--thick) solid var(--bar-ink); }
+  .bar .day input[type="range"]::-moz-range-thumb { width: var(--handle); height: var(--ruler); border-radius: 0; background: var(--bar-light); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  .bar .day input[type="range"]:focus-visible { outline: var(--thick) solid var(--bar-light); }
   /* the steps' names: --at = how far along the day (0 to 1); the side margins keep them on the handle's path */
   .steps12 { position: relative; height: var(--names); margin: 0 calc(var(--handle) / 2); }
-  .steps12 button { position: absolute; left: calc(var(--at) * 100%); top: 0; transform: translateX(-50%); min-width: var(--names); height: var(--names); padding: 0 var(--u1); font-size: var(--t-xs); line-height: var(--names); color: var(--bar-quiet); }
-  .steps12 button:hover { color: var(--white); text-decoration: underline; }
-  .steps12 button.on { color: var(--white); font-weight: 700; }
+  .steps12 button { position: absolute; left: calc(var(--at) * 100%); top: 0; transform: translateX(-50%); min-width: var(--names); height: var(--names); padding: 0 var(--u1); font-size: var(--t-xs); line-height: var(--names); color: var(--bar-light); }
+  .steps12 button:hover { text-decoration: underline; }
+  .steps12 button.on { font-weight: 700; }
   /* 10:10 stands on the preview, over the bar and clear of the ruler, above its place in the day */
-  .steps12 button.special { top: auto; bottom: calc((var(--bar-height) + var(--hair) + var(--ruler) + var(--names)) / 2 + var(--unit));      /* from the hours' foot up to the bar's top line (ruler and hours stand in the bar's middle), and one unit more */
-    z-index: 1; padding: 0 var(--unit); border-radius: calc(var(--names) / 2); background: var(--bar-ink); color: var(--bar); font-weight: 600; }
-  .steps12 button.special:hover { background: var(--white); color: var(--black); text-decoration: none; }
+  .steps12 button.special { top: auto; bottom: calc(var(--names) + var(--ruler) - var(--hair));      /* its middle bottom on the top of 10:10's thick line (the line starts a hair inside the ruler) — Okay, 15 Oct 2026, 00:51: "1010 gets stuck to its thick line from middle bottom" */
+    z-index: 1; padding: 0 var(--unit); border-radius: calc(var(--names) / 2); background: var(--bar-light); color: var(--bar); font-weight: 600; }
+  .steps12 button.special:hover { text-decoration: underline; }
 }
 
 @layer narrow {
@@ -999,6 +1061,8 @@
     .bar .group { border-left: 0; }
     .bar .day { flex: 1 1 0; height: var(--bar-day-narrow); padding: 0 var(--margin); }
     .bar .viewing { padding: 0 var(--margin) 0 0; }
+    .bar .lead { padding-left: var(--margin); }      /* a phone has no room to keep: the row starts at the margin */
+    .bar .humpname { display: none; }               /* the bar's top line is too close here for "1×" over the ball */
     .bar .zooms { display: none; }                  /* a phone pinches */
     .steps12 button:nth-child(odd):not(.special) { display: none; }      /* every other hour: 1 3 5 … wait for room */
     .steps12 button.special { bottom: auto; top: calc(-1 * var(--hair)); }      /* the bar is on top here and the preview's top corners are taken (undo, Guides): 10:10 stays among the hours */
@@ -1075,9 +1139,9 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 
-// node_modules/pathkit-wasm/bin/pathkit.js
+// ../../duztman/dial-tool/web/node_modules/pathkit-wasm/bin/pathkit.js
 var require_pathkit = __commonJS({
-  "node_modules/pathkit-wasm/bin/pathkit.js"(exports2, module) {
+  "../../duztman/dial-tool/web/node_modules/pathkit-wasm/bin/pathkit.js"(exports2, module) {
     var PathKitInit2 = (() => {
       var _scriptDir = typeof document !== "undefined" && document.currentScript ? document.currentScript.src : void 0;
       if (typeof __filename !== "undefined") _scriptDir = _scriptDir || __filename;
@@ -2559,7 +2623,7 @@ var require_pathkit = __commonJS({
 // src/main.js
 var import_pathkit = __toESM(require_pathkit(), 1);
 
-// node_modules/harfbuzzjs/dist/index.mjs
+// ../../duztman/dial-tool/web/node_modules/harfbuzzjs/dist/index.mjs
 var dist_exports = {};
 __export(dist_exports, {
   AxisFlags: () => AxisFlags,
@@ -2593,7 +2657,7 @@ __export(dist_exports, {
   versionString: () => versionString
 });
 
-// node_modules/harfbuzzjs/dist/harfbuzz.js
+// ../../duztman/dial-tool/web/node_modules/harfbuzzjs/dist/harfbuzz.js
 async function createHarfBuzz(moduleArg = {}) {
   var moduleRtn;
   var Module2 = moduleArg;
@@ -3232,7 +3296,7 @@ async function createHarfBuzz(moduleArg = {}) {
 }
 var harfbuzz_default = createHarfBuzz;
 
-// node_modules/harfbuzzjs/dist/index.mjs
+// ../../duztman/dial-tool/web/node_modules/harfbuzzjs/dist/index.mjs
 var Module;
 var exports;
 var freeFuncPtr;
@@ -5375,7 +5439,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.37.1";
+var VERSION = "beta 4.38";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -5630,6 +5694,25 @@ var DEFAULTS = {
   gd_k_rings: 1,
   gd_k_sel: 4,
   gd_w: 1,
+  // shadows: preview only, never in a file (R5). A trial on branch try/shadows (Okay, 14 Oct 2026: "dummy preview
+  // only, do not do this on the live page yet"). One light, far away: it comes from a clock angle (sh_from, degrees)
+  // at a height over the dial (sh_rise, degrees above the plate's face). Each hand floats at its own height over the
+  // plate (mm); the cap's top is the top of the stack; the date discs lie sh_disc mm under the plate's face. A thing
+  // of height z casts its shape shifted by z / tan(rise), away from the light, onto everything lower; each surface
+  // keeps only the part that falls on it — so a shadow steps where it crosses a hand or a window's edge.
+  // sh_dark: how dark, 0–100 %. sh_blur: a small soft edge (on/off only). The starting values are Okay's (14 Oct
+  // 2026, 23:05, a picture of the list: "these in the image are the default values"); the movement, not chosen yet,
+  // will fix the real heights.
+  sh_on: true,
+  sh_from: 270,
+  sh_rise: 35,
+  sh_dark: 25,
+  sh_blur: false,
+  sh_hour: 0.15,
+  sh_minute: 0.35,
+  sh_second: 0.6,
+  sh_cap: 0.75,
+  sh_disc: 0.15,
   gd_more: [],
   // guides added by hand: lines, crosshairs, circles (GUIDE_MORE). gd_k_rings and gd_k_sel: unread since 13 Oct 2026, a ring's guide has the ring's own colour
   // until beta 4.4 guides had two free colours with a strength each. Kept because old links and files carry
@@ -5656,7 +5739,7 @@ var ring_guide = (S, i) => {
 };
 var GUIDE_MORE = ["line", "crosshair", "circle"];
 var NOT_GEOMETRY = ["t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
-var NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_"];
+var NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_", "sh_"];
 function complete(base, d) {
   const out = Object.assign(clone(base), clone(d || {}));
   for (const [key, names] of [["kind", KINDS], ["shape", "fit" in base ? HAND_SHAPES : SHAPES]]) {
@@ -7075,12 +7158,14 @@ var GALLERY = [{ "name": "B-Uhr, type B", "note": "Navigator's watch, 1941: minu
 var INKED = [
   ".atgrid button",
   // a window's places: 3 · 6 · 9 · 12 · 1:30 … 10:30 · 4 · ···
-  ".speeds > button",
-  // 1× · 60× · 720×
   ".steps12 button",
   // the bottom bar's hours and 10:10
   "#ampm",
-  // AM · PM in the time's box
+  // AM · PM, the time's own window
+  ".fit > span",
+  // Fit, beside its magnifier
+  "#now",
+  // NOW, beside it (Okay, 14 Oct 2026: "make sure the inner type is centered with equal padding within buttons")
   "#unit"
   // mm · pt · in · lig
 ].join(", ");
@@ -7321,7 +7406,15 @@ var TOOL_ICONS = {
   // between them (the slash group, and the mask that cuts). The stylesheet shows one state's parts (6-preview.css).
   guides: `<mask id="guides-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18"><rect width="18" height="18" fill="white"/><path class="slash" d="M2.75 15.75L15.75 2.75" stroke="black" stroke-width="2.5" stroke-linecap="butt"/></mask><g ${sw(DENSE)}><g mask="url(#guides-cut)"><circle cx="9.25" cy="9.25" r="5.5"/><circle class="core-off" cx="9.25" cy="9.25" r="2"/><path d="M9.25 1.25V5.75M9.25 12.75V17.25M1.25 9.25H5.75M12.75 9.25H17.25"/></g><circle class="core-on" cx="9.25" cy="9.25" r="2" stroke-dasharray="1.25 0.844" stroke-linecap="butt" transform="rotate(-107.9 9.25 9.25)"/><path class="slash" d="M1.87 14.87L14.87 1.87M3.63 16.63L16.63 3.63"/></g>`
 };
-var PLAY = { play: `<path d="M3.5 1.25L11 6L3.5 10.75Z"/>`, pause: `<rect x="2.5" y="1.5" width="2.5" height="9"/><rect x="7" y="1.5" width="2.5" height="9"/>` };
+var ARCADE = (down) => {
+  const RING = 0.75 * 2, CAP = RIM + CURVE / 2, R = CAP + RING, C2 = R, mid = CAP - RING / 2;
+  const arc2 = (from, to) => {
+    const p = (a) => `${(C2 + mid * Math.cos(a * Math.PI / 180)).toFixed(3)} ${(C2 + mid * Math.sin(a * Math.PI / 180)).toFixed(3)}`;
+    return `M${p(from)}A${mid} ${mid} 0 0 1 ${p(to)}`;
+  };
+  const [light, dark] = down ? [arc2(15, 135), arc2(195, 315)] : [arc2(195, 315), arc2(15, 135)];
+  return `<svg viewBox="0 0 ${2 * R} ${2 * R}" width="${2 * R}" height="${2 * R}" aria-hidden="true"><circle class="arc-out" cx="${C2}" cy="${C2}" r="${R}"/><circle class="arc-cap" cx="${C2}" cy="${C2}" r="${CAP}"/><path class="arc-hi" d="${light}" stroke-width="${RING}"/><path class="arc-lo" d="${dark}" stroke-width="${RING}"/></svg>`;
+};
 var card_pic = (angle, on) => {
   const a = angle * Math.PI / 180, s = Math.sin(a), c = -Math.cos(a), hw = 4, hh = 3.25;
   const r = RIM_IN - 4 - (hw * Math.abs(s) + hh * Math.abs(c));
@@ -7591,7 +7684,12 @@ var ROWS = {
   ]
 };
 var DAY_STEPS = [...Array.from({ length: 12 }, (_, h) => [h * 3600, String(h || 12), false]), [10 * 3600 + 10 * 60, "10:10", true]].sort((a, b) => a[0] - b[0]);
-var SPEEDS = [[1, "Real time"], [60, "A minute every second"], [720, "An hour every five seconds: twelve hours in a minute"]];
+var SPEED_LO = 0.5;
+var SPEED_HI = 720;
+var SPEED_HUMPS = [1];
+var SPEED_SNAP = 0.025;
+var speed_place = (k) => Math.log(k / SPEED_LO) / Math.log(SPEED_HI / SPEED_LO);
+var speed_word = (k) => k >= 10 ? String(Math.round(k)) : String(+k.toFixed(1));
 var SECTIONS = Object.keys(ROWS);
 var TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];
 for (const name of SECTIONS) for (const row of ROWS[name]) row.scope ??= name === "Rings" ? "ring" : "global";
@@ -7601,7 +7699,7 @@ function parse_number(text, current) {
   let out = s[0] === "+" ? current + v : s[0] === "x" || s[0] === "*" ? current * v : s[0] === "/" ? current / v : parseFloat(s);
   return Number.isFinite(out) ? out : current;
 }
-var LENGTH_KEYS = { ring: RING_MM, hand: HAND_MM, window: WINDOW_MM, global: ["dial_d", "margin", "ha_cap", "dial_hole"] };
+var LENGTH_KEYS = { ring: RING_MM, hand: HAND_MM, window: WINDOW_MM, global: ["dial_d", "margin", "ha_cap", "dial_hole", "sh_hour", "sh_minute", "sh_second", "sh_cap", "sh_disc"] };
 var label_of = (row, T) => row.menu ? `${(row.menu.items.find(([v]) => v === (T[row.menu.key] ?? 0)) || row.menu.items[0])[1]} ${row.text.split(" ").pop()}` : row.text;
 var is_length = (row) => row.kind === "num" && (LENGTH_KEYS[row.scope] || []).includes(row.key);
 var decimals = (step) => (String(step).split(".")[1] || "").length;
@@ -7816,6 +7914,7 @@ var DialTool = class _DialTool {
     const on = (q) => e.target.closest && e.target.closest(q);
     if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox")) this.pop_close();
     if (this.guides_open && !$("#guide-list").hidden && !on(".guides")) this.guides_open(false);
+    if (this.shadows_open && !$("#shadow-list").hidden && !on(".shadows")) this.shadows_open(false);
     if (this.unit_open && !$("#unit-menu").hidden && !on(".unit")) this.unit_open(false);
     if (this.lang_opens && !on(".langs")) for (const shut of this.lang_opens) shut(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
@@ -7876,20 +7975,28 @@ var DialTool = class _DialTool {
       this.time_field.value = fmt_time(this.S.t);
     };
     this.half_button = el("button", { type: "button", id: "ampm", className: "half", title: "Morning or afternoon: an am \xB7 pm window follows it", onclick: () => this.set_time((this.S.t + 43200) % 86400) });
-    const time_box = el("span", { className: "timebox" }, this.time_field, this.half_button);
+    const time_box = el("span", { className: "timebox" }, el("span", { className: "timewell" }, this.time_field), this.half_button);
     this.time_slider = el("input", { id: "time-slider", type: "range", min: 0, max: 43199, step: 1 });
     this.time_slider.oninput = () => this.set_time(+this.time_slider.value + this.half());
-    this.play_button = el("button", { type: "button", className: "icon", id: "play", onclick: () => this.play(!this.playing) });
+    this.play_button = el("button", { type: "button", className: "icon play", id: "play", onclick: () => this.play(!this.playing) });
     this.status = el("div", { className: "status" });
-    const side = el("button", { type: "button", className: "icon side", id: "panel-toggle", title: "Hide or show the settings", ariaLabel: "Hide or show the settings", onclick: () => this.show_panel(root.classList.contains("nopanel")) });
-    side.innerHTML = icon(TOOL_ICONS.panel);
     this.speed = 1;
-    this.speeds = el("span", { className: "segs speeds", role: "radiogroup", ariaLabel: "How fast time runs" });
-    for (const [k, title] of SPEEDS) {
-      const b = el("button", { type: "button", id: "speed-" + k, textContent: k + "\xD7", title, onclick: () => this.set_speed(k) });
-      b.setAttribute("role", "radio");
-      this.speeds.append(b);
+    this.speed_slider = el("input", { id: "speed", type: "range", min: 0, max: 1e3, step: 1, ariaLabel: "How fast time runs", title: "How fast time runs: 0.5\xD7 to 720\xD7" });
+    this.speed_slider.oninput = () => {
+      let p = +this.speed_slider.value / 1e3, k = SPEED_LO * (SPEED_HI / SPEED_LO) ** p;
+      const near2 = SPEED_HUMPS.find((h) => Math.abs(speed_place(h) - p) < SPEED_SNAP);
+      if (near2) k = near2;
+      this.set_speed(k);
+    };
+    const humps = el("span", { className: "humps", ariaHidden: "true" }, el("i", { className: "knob first" }), el("i", { className: "knob last" }));
+    for (const h of SPEED_HUMPS) {
+      const ball = el("i", { className: "hump" }), name = el("span", { className: "humpname ghost", textContent: h + "X" });
+      for (const x of [ball, name]) x.style.setProperty("--at", speed_place(h).toFixed(4));
+      humps.append(ball, name);
     }
+    this.speed_name = el("span", { className: "humpname rider", ariaHidden: "true" });
+    humps.append(this.speed_name);
+    this.speeds = el("span", { className: "speeds" }, el("span", { className: "speedtrack" }, humps, this.speed_slider));
     const view = (id, title, inside, act) => {
       const b = el("button", { type: "button", className: "icon", id, title, ariaLabel: title, onclick: act });
       b.innerHTML = icon(inside);
@@ -7918,13 +8025,18 @@ var DialTool = class _DialTool {
     this.day_ticks = DAY_STEPS.map((x) => x[0]);
     this.watchers = [new ResizeObserver(() => this.draw_ruler())];
     this.watchers[0].observe(this.time_slider);
+    const fit_button = el("button", { type: "button", id: "fit", className: "fit", title: "Show the whole page", onclick: () => {
+      this.fit();
+      this.render();
+    } });
+    fit_button.innerHTML = icon(TOOL_ICONS.find);
+    fit_button.append(el("span", { textContent: "Fit" }));
     const bar = el(
       "footer",
       { className: "bar" },
       el(
         "div",
         { className: "lead" },
-        side,
         this.play_button,
         this.speeds,
         time_box,
@@ -7938,6 +8050,7 @@ var DialTool = class _DialTool {
         "div",
         { className: "group viewing" },
         this.status,
+        this.zoom_hint(),
         el(
           "span",
           { className: "zooms" },
@@ -7950,31 +8063,32 @@ var DialTool = class _DialTool {
             this.render();
           })
         ),
-        el("button", { type: "button", id: "fit", textContent: "Fit", title: "Show the whole page", onclick: () => {
-          this.fit();
-          this.render();
-        } })
+        fit_button
       )
     );
     this.set_speed(1);
     const guides = this.guides_box();
-    this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.backdrop_box());
+    this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.shadows_box(), this.backdrop_box());
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     requestAnimationFrame(() => this.level_title());
     this.play_icon();
-    let shown = true;
     try {
-      shown = localStorage.getItem("dial-tool-panel") !== "off";
+      localStorage.removeItem("dial-tool-panel");
     } catch (e) {
     }
-    if (!shown) this.show_panel(false);
     this.watchers.push(new ResizeObserver(() => this.resized()));
     this.watchers.at(-1).observe(this.svg);
   }
-  /** the whole panel, away or back: the dial gets the window. Remembered by this browser. */
+  /** how to zoom, beside the zoom buttons: words, then a faint magnifier, nothing to press (Okay, 14 Oct 2026,
+   *  23:19: "say cmd+scroll is zoom in out attached to the zoom area. Put a magnifier icon at the end"; 23:26: "at the
+   *  end, not a button, faint"). On a screen without a pointer the words say what a finger does. */
+  zoom_hint() {
+    return el("span", { className: "zoomhint" }, el("span", { textContent: "\u2318 + scroll to zoom" }));
+  }
+  /** the whole panel, away or back: the dial gets the window. Remembered by this browser. (Since #190 nothing in
+   *  the window calls it; kept for the notes.) */
   show_panel(on) {
     $("#app").classList.toggle("nopanel", !on);
-    $("#panel-toggle").setAttribute("aria-pressed", String(!on));
     try {
       localStorage.setItem("dial-tool-panel", on ? "on" : "off");
     } catch (e) {
@@ -8159,6 +8273,155 @@ var DialTool = class _DialTool {
     };
     return box2;
   }
+  /** shadows, at the preview's bottom left, over the Backdrop switch (a trial; Okay, 14 Oct 2026): a switch and,
+   *  joined to it, an arrow that opens their settings upward — made like the Guides switch. Preview only (R5). */
+  shadows_box() {
+    this.shadows_tick = el("button", { type: "button", className: "onview guidesbox shadowsbox", id: "shadows", onclick: () => this.set_value("global", "sh_on", !this.S.sh_on) });
+    const word = el("span", { className: "word", textContent: "Shadows" });
+    word.dataset.text = "Shadows";
+    this.shadows_tick.append(word);
+    const list = el("div", { className: "guidelist shadelist night", id: "shadow-list", hidden: true });
+    const more = el("button", { type: "button", className: "onview guidesmore", id: "shadows-more", title: "The light, and how high each part stands", ariaLabel: "The light, and how high each part stands" });
+    more.innerHTML = icon(SIGNS.down);
+    more.setAttribute("aria-expanded", "false");
+    const open = (on) => {
+      list.hidden = !on;
+      more.setAttribute("aria-expanded", String(on));
+      if (on) this.sync_shadows();
+    };
+    more.onclick = () => open(list.hidden);
+    this.shadows_open = open;
+    const row = (r) => this.build_row({ ...r, scope: "global" });
+    const head = (text) => el("div", { className: "guidehead" }, el("span", { className: "name", textContent: text }));
+    const light = [
+      row(num2("sh_from", "From", 0, 359, 1, { whole: true })),
+      row(num2("sh_rise", "Height", 5, 85, 1, { whole: true })),
+      row(num2("sh_dark", "Darkness", 0, 100, 1, { whole: true })),
+      row(chk("sh_blur", "Soft edge"))
+    ];
+    const heights = [row(num2("sh_hour", "Hour hand", 0, 3, 0.05)), row(num2("sh_minute", "Minute hand", 0, 3, 0.05)), row(num2("sh_second", "Seconds hand", 0, 3, 0.05)), row(num2("sh_cap", "Cap\u2019s top", 0, 4, 0.05))];
+    const under = [row(num2("sh_disc", "Date discs", 0, 2, 0.05))];
+    this.shadow_rows = [...light, ...heights, ...under];
+    light[3].el.querySelector("label.check").append(el("span", { className: "quiet", textContent: "\xA0\xB7 may stutter while time runs" }));
+    const reset = el("button", { type: "button", className: "btn", id: "shadows-reset", textContent: "Reset", title: "The shadows as they started", onclick: () => {
+      for (const key of Object.keys(DEFAULTS)) if (key.startsWith("sh_") && key !== "sh_on") this.S[key] = structuredClone(DEFAULTS[key]);
+      this.sync_rows();
+      this.render();
+    } });
+    list.append(
+      head("Light \xB7 degrees"),
+      ...light.map((r) => r.el),
+      head("Over the plate \xB7 mm"),
+      ...heights.map((r) => r.el),
+      head("Under the plate \xB7 mm"),
+      ...under.map((r) => r.el),
+      el("div", { className: "guidefoot" }, reset)
+    );
+    const box2 = el("div", { className: "shadows" }, this.shadows_tick, more, list);
+    box2.onkeydown = (e) => {
+      if (e.key === "Escape" && !list.hidden) {
+        open(false);
+        more.focus();
+      }
+    };
+    return box2;
+  }
+  /** shadows on the preview (a trial, preview only: R5). One light, far away. Each part stands at a height: the date
+   *  discs under the plate, the plate's face at 0, the hands over it, the cap on top. A part at height z casts its own
+   *  outline, shifted by z / tan(the light's height) away from the light, onto every surface lower than it; each
+   *  surface keeps only what falls on itself (a clip by its own outline). So a seconds hand's shadow lies further out
+   *  on the plate than on the minute hand it crosses, and steps at that hand's edge — and at a window's edge.
+   *  The hands and the cap are tied to the centre by their pipes: the pipes' shadow is a band from the centre to the
+   *  cap's shadow, as wide as the cap. Nothing is drawn outside the dial: the plate's own shadow falls only into its
+   *  windows. Each surface's shadows are one group with one opacity, so where two overlap it is not darker. */
+  draw_shadows(items) {
+    const S = this.S;
+    if (!this.shade) {
+      const defs = svg_el("defs"), filter = svg_el("filter"), blur = svg_el("feGaussianBlur");
+      filter.id = "shadow-soft";
+      for (const [k, v] of [["x", "-20%"], ["y", "-20%"], ["width", "140%"], ["height", "140%"]]) filter.setAttribute(k, v);
+      filter.append(blur);
+      defs.append(filter);
+      this.svg.prepend(defs);
+      this.shade = { defs, blur, parts: /* @__PURE__ */ new Map() };
+    }
+    const shade = this.shade, used = /* @__PURE__ */ new Set();
+    const part = (name, tag, parent) => {
+      let n = shade.parts.get(name);
+      if (!n) {
+        n = svg_el(tag);
+        shade.parts.set(name, n);
+      }
+      if (n.parentNode !== parent) parent.append(n);
+      used.add(name);
+      return n;
+    };
+    const set = (n, k, v) => {
+      if (n.getAttribute(k) !== v) n.setAttribute(k, v);
+    };
+    const finish = () => {
+      for (const [name, n] of shade.parts) if (!used.has(name)) {
+        n.remove();
+        shade.parts.delete(name);
+      }
+    };
+    if (!S.sh_on || S.out_production) return finish();
+    set(shade.blur, "stdDeviation", "0.07");
+    const a = S.sh_from * Math.PI / 180, per = 1 / Math.tan(clamp(S.sh_rise, 1, 89) * Math.PI / 180);
+    const away = (dz) => [-Math.sin(a) * per * dz, -Math.cos(a) * per * dz];
+    const f = (v) => v.toFixed(4);
+    const height = { hour: S.sh_hour, minute: S.sh_minute, second: S.sh_second };
+    const nodes = items.map((_, i) => this.slots[i].node);
+    const hands = items.map((item, i) => ({ item, i })).filter((x) => x.item.role === "hand").map((x) => ({ ...x, z: height[x.item.name] ?? 0, d: this.slots[x.i].d }));
+    const cap_r = S.ha_on && S.ha_cap > 0 ? S.ha_cap / 2 : 0;
+    const top = Math.max(S.sh_cap, ...hands.map((h) => h.z));
+    const surface = (name, before, outline, from_z) => {
+      const g = part(name, "g", this.dial), clip = part(name + "/clip", "clipPath", shade.defs);
+      clip.id = "shadow-clip-" + name;
+      outline.forEach(([d, turn], k2) => {
+        const p = part(`${name}/clip/${k2}`, "path", clip);
+        set(p, "d", d);
+        set(p, "transform", turn ? `rotate(${f(-turn)})` : "");
+      });
+      set(g, "clip-path", `url(#${clip.id})`);
+      set(g, "opacity", String(clamp(S.sh_dark, 0, 100) / 100));
+      set(g, "fill", "#000");
+      set(g, "pointer-events", "none");
+      if (S.sh_blur) set(g, "filter", "url(#shadow-soft)");
+      else g.removeAttribute("filter");
+      if (g.nextSibling !== before) this.dial.insertBefore(g, before);
+      let k = 0;
+      const cast = (d, turn, dz) => {
+        const p = part(`${name}/cast/${k++}`, "path", g), [x, y] = away(dz);
+        set(p, "d", d);
+        set(p, "transform", `translate(${f(x)} ${f(y)})` + (turn ? ` rotate(${f(-turn)})` : ""));
+      };
+      for (const h of hands) if (h.z > from_z) cast(h.d, h.item.angle, h.z - from_z);
+      if (cap_r && top > from_z) {
+        const [x0, y0] = away(Math.max(0, -from_z)), [x, y] = away(top - from_z);
+        const len = Math.hypot(x - x0, y - y0) || 1, nx = -(y - y0) / len * cap_r, ny = (x - x0) / len * cap_r;
+        const ring = (cx, cy) => `M${f(cx - cap_r)} ${f(cy)}A${f(cap_r)} ${f(cap_r)} 0 1 0 ${f(cx + cap_r)} ${f(cy)}A${f(cap_r)} ${f(cap_r)} 0 1 0 ${f(cx - cap_r)} ${f(cy)}Z`;
+        for (const d of [ring(x0, y0), ring(x, y), `M${f(x0 + nx)} ${f(y0 + ny)}L${f(x + nx)} ${f(y + ny)}L${f(x - nx)} ${f(y - ny)}L${f(x0 - nx)} ${f(y0 - ny)}Z`]) {
+          const p = part(`${name}/cast/${k++}`, "path", g);
+          set(p, "d", d);
+          set(p, "transform", "");
+        }
+      }
+      return { cast, g };
+    };
+    const plate_at = items.findIndex((x) => x.role === "plate");
+    const discs = items.map((x, i) => ({ x, i })).filter(({ x }) => x.role === "date disc");
+    if (discs.length && plate_at >= 0) {
+      const s = surface("discs", nodes[plate_at], discs.map(({ i }) => [this.slots[i].d, 0]), -S.sh_disc);
+      s.cast(this.slots[plate_at].d, 0, S.sh_disc);
+    }
+    if (plate_at >= 0 && hands.length) {
+      const first = items.findIndex((x) => x.role === "hand" || x.role === "cap" || x.role === "guide");
+      surface("plate", first >= 0 ? nodes[first] : null, [[this.slots[plate_at].d, 0]], 0);
+    }
+    for (const h of hands) if (hands.some((o) => o.z > h.z) || cap_r && top > h.z) surface("hand-" + h.item.name, nodes[h.i + 1] || null, [[h.d, h.item.angle]], h.z);
+    finish();
+  }
   /** the guides' switch and list show the settings. */
   sync_guides() {
     const S = this.S;
@@ -8306,10 +8569,18 @@ var DialTool = class _DialTool {
     r.sliding = body.animate([{ height: `${from}px` }, { height: `${to}px` }], { duration: 140, easing: "ease-out" });
     r.sliding.onfinish = r.sliding.oncancel = done;
   }
+  /** the shadows' switch and list show the settings. */
+  sync_shadows() {
+    const on = Boolean(this.S.sh_on);
+    this.shadows_tick.setAttribute("aria-pressed", String(on));
+    this.shadows_tick.title = on ? "Shadows are on: press to hide them" : "Shadows are off: press to show them";
+    if (!$("#shadow-list").hidden) for (const r of this.shadow_rows) r.refresh(this.S);
+  }
   /** every row: hidden if it doesn't apply (R16); its controls showing the scope's value. A pane hides its rows
    *  when it is folded, and everything in it when its heading doesn't apply. */
   sync_rows() {
     this.sync_guides();
+    this.sync_shadows();
     this.sync_ring_summaries();
     paint(this.backdrop_dot, this.S.c_backdrop);
     this.unit_button.textContent = this.unit()[0];
@@ -10443,6 +10714,7 @@ var DialTool = class _DialTool {
       }
       node.dataset.i = i;
     });
+    this.draw_shadows(items);
     this.place();
     const ring = this.ring();
     const font = kind_of(ring) === "numerals" ? `   \xB7   ${ring.ps}` : "";
@@ -10668,6 +10940,13 @@ var DialTool = class _DialTool {
   sync_time() {
     const t12 = (this.S.t % 43200 + 43200) % 43200;
     if (document.activeElement !== this.time_field) this.time_field.value = fmt_time(this.S.t);
+    const zeros = this.time_field.value.replace(/[0-9]/g, "0");
+    if (zeros !== this.time_zeros) {
+      this.time_zeros = zeros;
+      const [dx, dy] = offset2(zeros, getComputedStyle(this.time_field));
+      this.time_field.style.setProperty("--ink-dx", dx + "px");
+      this.time_field.style.setProperty("--ink-dy", dy + "px");
+    }
     if (document.activeElement !== this.time_slider || this.playing) this.time_slider.value = Math.floor(t12);
     for (const b of document.querySelectorAll(".steps12 button")) b.classList.toggle("on", Math.abs(+b.dataset.t - t12) < 0.5);
     const word = this.half() ? "PM" : "AM";
@@ -10690,7 +10969,7 @@ var DialTool = class _DialTool {
     const lines = { hour: "", half: "", small: "" };
     this.day_ticks = [];
     for (let m = 0; m < 720; m += minutes) {
-      const kind = m % 60 === 0 ? "hour" : m % 30 === 0 ? "half" : "small", h = { hour: 16, half: 10, small: 6 }[kind];
+      const kind = m % 60 === 0 ? "hour" : m % 30 === 0 ? "half" : "small", h = { hour: 18, half: 12, small: 7 }[kind];
       lines[kind] += `M${x(m * 60)} ${(H2 - h) / 2}V${(H2 + h) / 2}`;
       this.day_ticks.push(m * 60);
     }
@@ -10702,11 +10981,13 @@ var DialTool = class _DialTool {
   set_speed(k) {
     this.speed = k;
     if (this.playing) this.play_from = [performance.now(), this.S.t];
-    [...this.speeds.children].forEach((b) => {
-      const on = b.id === "speed-" + k;
-      b.classList.toggle("on", on);
-      b.setAttribute("aria-checked", String(on));
-    });
+    const p = Math.round(speed_place(k) * 1e3);
+    if (document.activeElement !== this.speed_slider || Math.abs(+this.speed_slider.value - p) > 1e3 * SPEED_SNAP) this.speed_slider.value = p;
+    this.speed_slider.setAttribute("aria-valuetext", speed_word(k) + "\xD7");
+    this.speed_name.textContent = speed_word(k) + "X";
+    this.speed_name.style.setProperty("--at", (+this.speed_slider.value / 1e3).toFixed(4));
+    this.speed_slider.title = `How fast time runs: ${speed_word(k)}\xD7 (0.5\xD7 to 720\xD7)`;
+    this.speeds.classList.toggle("real", k === 1);
   }
   play(on) {
     this.playing = on;
@@ -10714,10 +10995,10 @@ var DialTool = class _DialTool {
     this.play_icon();
     this.render();
   }
-  /** the button shows what a press will do: a triangle to play, two bars to pause. */
+  /** the arcade button shows whether time runs: up, still; pressed in, running (ARCADE). Its name says what a press does. */
   play_icon() {
-    const shape2 = PLAY[this.playing ? "pause" : "play"];
-    this.play_button.innerHTML = `<svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" fill="currentColor">${shape2}</svg>`;
+    this.play_button.innerHTML = ARCADE(this.playing);
+    this.play_button.setAttribute("aria-pressed", String(this.playing));
     this.play_button.title = this.play_button.ariaLabel = this.playing ? "Pause" : "Play";
   }
   // ── files out and in ─────────────────────────────────────
