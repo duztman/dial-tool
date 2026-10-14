@@ -2,7 +2,7 @@
 
 What each word means **in this project**. Turkish where it's the common trade word.
 If a term is used differently in conversation, ask, then update this file.
-*Last updated 13 Oct 2026, night (beta 4.35: tab reworded, look-check, the box rule, scale). Before (beta 4.13: tabs, Export's order; beta 4.12: guides per ring, added guides, window cards as tabs; beta 4.11: ring drawer, a row's order; beta 4.8: window shape, turn, size button; beta 4.7: ring line, value button, gallery, card switch; Section, Ring list and Bar brought up to the web version). Before: 12 Oct 2026 (web version, beta 4.6: sector colours, scale everything).*
+*Last updated 14 Oct 2026 (centre hole, disc hand: planned, build list #164, #165). Before, 13 Oct 2026, night (beta 4.35: tab reworded, look-check, the box rule, scale). Before (beta 4.13: tabs, Export's order; beta 4.12: guides per ring, added guides, window cards as tabs; beta 4.11: ring drawer, a row's order; beta 4.8: window shape, turn, size button; beta 4.7: ring line, value button, gallery, card switch; Section, Ring list and Bar brought up to the web version). Before: 12 Oct 2026 (web version, beta 4.6: sector colours, scale everything).*
 
 ## Watch terms
 
@@ -15,6 +15,8 @@ If a term is used differently in conversation, ask, then update this file.
 | **Tail** | | The part of a hand behind the pivot, in mm. |
 | **Counterweight** | | A disc on a hand's tail, centred at 73 % of the tail (beta 1.0's proportion). Any hand can have one. |
 | **Cap** | | The disc over the pivot (`ha_cap`, colour `c_cap`). |
+| **Centre hole** | | The hole in the plate the hand pipes pass through. Planned (build list #165): shown when the hands are hidden, under the cap otherwise. Not the holes in the hands themselves. |
+| **Disc hand** | | A hand option (planned, build list #164): a disc (Ø, colour, opacity) carrying one marker, drawn with a markers ring's shapes, as its pointer. No blade. After the mystery dials, where a clear disc carries a dot or an arrow. |
 | **Track** · minute track · chapter ring | | The minute marks round the edge. In the tool: a **ticks ring**; railroad rails are thin **band rings**. |
 | **Tick** | | One mark of a ticks ring. A 300-division track is two ticks rings: 60 minute ticks above 300 fine ticks that skip their positions. |
 | **Railroad** | | Two thin rails along a track's edges, ticks between them. In the tool: two thin bands. |
