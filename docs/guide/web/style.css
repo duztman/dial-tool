@@ -107,3 +107,19 @@ a { color: inherit; text-decoration: underline; text-decoration-thickness: .15mm
 .kcell { font-size: 8pt; line-height: calc(var(--b) * 2.7); text-wrap: pretty; }
 .kcell b { font-weight: 600; }
 .card.icon { box-shadow: none; border-radius: .8mm; outline: .2mm solid var(--line); }
+
+/* page 06: the list and the dial taken apart (Okay, 21:31) */
+.ground.stackbg { background: #27313B; }
+.stack { left: 0; top: 0; width: 297mm; height: 210mm; overflow: visible; }
+.stack .sheet { fill: rgba(13, 26, 43, .32); stroke: rgba(255, 255, 255, .35); stroke-width: .12; }
+.stack .plate { fill: #0D1A2B; stroke: rgba(255, 255, 255, .35); stroke-width: .12; }
+.card.row { border-radius: .7mm; box-shadow: 0 .2mm .6mm rgba(0, 0, 0, .35); }
+.stacklines line { stroke: rgba(255, 255, 255, .55); stroke-width: .2; }
+.stacklines circle { fill: rgba(255, 255, 255, .8); }
+.stacknote { font-size: 7.5pt; line-height: calc(var(--b) * 2.6); color: rgba(255, 255, 255, .85); }
+.loupe { border-radius: 50%; overflow: hidden; outline: .35mm solid var(--sig-ring); outline-offset: .6mm; background: #0D1A2B; }
+.loupe svg { width: 100%; height: 100%; display: block; }
+.loupe .guide { fill: none; stroke: #FF2D95; }
+.lines path.arrow { fill: none; stroke: var(--sig-ink); stroke-width: .3; }
+.pcap { font-size: 8pt; line-height: calc(var(--b) * 2.7); }
+.pcap b { font-weight: 600; }

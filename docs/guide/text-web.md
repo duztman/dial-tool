@@ -185,8 +185,14 @@ A ring repeats one kind of thing round the centre, at one radius.
 **Watch: delete.** Delete asks nothing first; undo brings the ring back with its settings.
 **Note: kind Ticks.** Lines, as on a minute track.
 **Note: kind Markers.** Heavier shapes, usually for the hours.
-**Note: kind Numerals.** Numbers or words, in any font.
+**Note: kind Numerals.** Numbers or words, any font.
 **Note: kind Band.** Flat colour, whole or in pieces.
+**Note: plate.** The plate, under every ring: set in the Dial tab.
+**Note: stack.** Each row of the list is one ring. The top row is the top layer, drawn last, over everything below it.
+**Note: pair 1.** Order. The bezel's triangle moved below the bezel: the bezel now covers it.
+**Note: pair 2.** Kind. Dots switched to numerals: same count, same places, now numbers.
+**Note: pair 3.** Give way. Five-minute ticks no longer skip the numerals, so they run under them.
+**Note: pair 4.** Anchor. Centre to top: each numeral moves until its top sits on the radius.
 **Note: eye.** Hides the ring without deleting it.
 **Note: grip.** Drag the grip to move the ring up or down the list.
 **Note: name.** Renames the ring.

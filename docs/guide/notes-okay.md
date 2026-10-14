@@ -56,7 +56,7 @@
 - Outlines: a lighter, clearer tone of the section colour, not the dark ink (it clashed with the interface's blacks). Where the interface leaves no room (the open + menu), an outline may lie over it so the highlight can breathe, as long as the eye stays on the thing. [r6 06, 20:46]
 - Balance and emptiness are judged by eye for each page; when the lead stands beside the title it fills the right half, its last line on the title's baseline. [r6 06, 20:46]
 
-- Page 06 structure (r8, 21:09; r7's single-field version scored 2/100: everything spread thin, pictures small in big grounds): head = title + lead together at left, the four kinds (icon + one line each) at right; two bands across the page sharing edges (rows 3–10, 11–14): picture grounds in cols 1–6 / 7–10, words in white beside them; every text block level with its picture. [r8 06]
+- Show how the material works, don't arrange boxes (Okay, 21:18–21:33). Page 06: the list taken apart row by row, each row joined by a straight line to its ring lifted off the dial as a layer (top row = top layer; gaps where a ring gives way); the plate at the bottom. Beside it, cause and effect: one setting changed, the diver exported again by the tool, before → after in loupes. [r9 06]
 
 ## Cover (later)
 - Big type: tighter tracking/kerning; the title must not overlap the dial. A richer, aesthetic dial; Okay will guide. Etching is not the focus; ring building and design help are. [r1, r4 00]

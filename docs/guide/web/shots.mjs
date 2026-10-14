@@ -216,6 +216,19 @@ await open(diver);
 fs.writeFileSync(path.join(IMG, "dial-diver.json"), JSON.stringify(await page.evaluate(() => window.dial_tool.S)));
 await tab("Rings");
 await shot("diver-rings", { list: ".ringlist", rows: ".ringlist li.ring", panel: "aside", add: "#ring-add", up: "#ring-up", down: "#ring-down", dup: "#ring-duplicate", del: "#ring-delete" });
+// every row on its own (page 06: the list taken apart, row by row, beside the dial taken apart)
+// the list scrolls: each row is brought into view and shot on its own, its place recorded
+rects["diver-rows"] = [];
+{ const nRows = await page.evaluate(() => document.querySelectorAll(".ringlist li.ring").length);
+  for (let i = 0; i < nRows; i++) {
+    const r = await page.evaluate((i) => { const e = document.querySelectorAll(".ringlist li.ring")[i]; e.scrollIntoView({ block: "center" }); const b = e.getBoundingClientRect(); return [b.left, b.top, b.width, b.height].map((v) => Math.round(v * 10) / 10); }, i);
+    await frame(); await page.waitForTimeout(80);
+    const r2 = await page.evaluate((i) => { const b = document.querySelectorAll(".ringlist li.ring")[i].getBoundingClientRect(); return [b.left, b.top, b.width, b.height].map((v) => Math.round(v * 10) / 10); }, i);
+    await page.screenshot({ path: path.join(IMG, `diver-row-${i}.png`) });
+    rects["diver-rows"].push(r2);
+  }
+  await page.evaluate(() => document.querySelector(".ringlist li.ring").scrollIntoView({ block: "center" }));
+}
 // the + pressed on the same list: closed and open at the same crop (Okay: two states of one control, same size)
 await page.click("#ring-add"); await page.waitForTimeout(200);
 await shot("diver-add", { menu: "#add-menu", plus: "#ring-add" });
@@ -240,5 +253,18 @@ await open(links["step-10"]);
 await page.evaluate(() => { const t = window.dial_tool; t.S.out_production = true; t.render(); });
 await export_svg("dial-mask");
 
+// ── the diver changed one setting at a time, each exported by the tool (page 06: cause and effect) ──
+{
+  const D = JSON.parse(fs.readFileSync(path.join(IMG, "dial-diver.json"), "utf8"));
+  const off = (S) => ({ ...S, ha_on: false });                       // hands off: they would hide what changed
+  const by = (S, name) => S.rings.findIndex((r) => r.name === name);
+  const variants = {};
+  variants["var-base"] = off(D);
+  { const S = off(JSON.parse(JSON.stringify(D))); const [tri] = S.rings.splice(by(S, "Bezel: triangle"), 1); S.rings.splice(by(S, "Bezel") + 1, 0, tri); variants["var-order"] = S; }
+  { const S = off(JSON.parse(JSON.stringify(D))); S.rings[by(S, "Dots")].kind = 2; variants["var-kind"] = S; }
+  { const S = off(JSON.parse(JSON.stringify(D))); S.rings[by(S, "Bezel: five minutes")].skip = 0; variants["var-giveway"] = S; }
+  { const S = off(JSON.parse(JSON.stringify(D))); S.rings[by(S, "Bezel: 10–50")].anchor = 2; variants["var-anchor"] = S; }
+  for (const [name, S] of Object.entries(variants)) { await open(link(S)); await export_svg(name); console.log("variant", name); }
+}
 fs.writeFileSync(path.join(IMG, "rects.json"), JSON.stringify({ viewport: [1440, 900], scale: 3, rects, links }, null, 1));
 await browser.close();

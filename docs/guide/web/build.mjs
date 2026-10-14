@@ -359,142 +359,71 @@ const pages = [];
 }
 
 // ════════════════════════ 06 · Rings ════════════════════════
-// Two bands under the head, each one row of pictures with its words (Okay, 20:46–21:09: balance, no leftover
-// space, text beside what it explains). Head: title and lead together at the left; at the right the four kinds,
-// each with its own icon from the tool. Upper band (rows 3–9): the dial, each ring labelled with the setting that
-// makes it | the list and the drawer, words beside each. Lower band (rows 10–14): what one ring is, and the
-// radius pop-up it points to | the + open, with adding and arranging beside it.
+// What a ring is, shown rather than told (Okay, 21:31: "1-2 is on the money … 4 is acceptable").
+// Left: the list taken apart, row by row, and beside each row its ring, lifted off the dial as a layer: the top
+// row is the top layer, drawn last; a ring that gives way carries its gaps in its own layer. Every layer is that
+// ring's own outline from the tool's SVG export (beta 4.36.1); the plate lies at the bottom.
+// Right: cause and effect — one setting changed, the diver exported again by the tool, before and after.
 {
   const t = page_text("06"), P = "B";
-  let h = head(P, "06", t, { leadW: W(6) });
-  const CP = 12;                                    // a card's own margin, in screen points
-  // the four kinds, top right: each kind's icon (from the + menu) over its name and what it is
-  { const KN = ["Ticks", "Markers", "Numerals", "Band"], cw = (W(6) - 3 * GUT) / 4, k = 0.24;
+  let h = head(P, "06", t, { leadW: W(7) });
+  const SVG = fs.readFileSync(path.join(IMG, "dial-diver.svg"), "utf8");
+  const S = JSON.parse(fs.readFileSync(path.join(IMG, "dial-diver.json"), "utf8"));
+  const pathOf = (id) => (SVG.match(new RegExp(`<path id="${id}"[^>]*/>`)) || [""])[0].replace(/ id="[^"]*"/, "");
+  const slug = (n) => n.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const ids = (r) => r.name === "Bezel" ? ["bezel-colour-1", "bezel-colour-2"] : [slug(r.name)];
+  const FOOT = Y(14) + ROW;
+
+  // the four kinds, over the right column: each kind's icon (from the + menu) over its name and what it is
+  { const KN = ["Ticks", "Markers", "Numerals", "Band"], cw = (W(5) - 3 * GUT) / 4, k = 0.22;
     const MN = SHOTS.rects["diver-add"].menu;
     KN.forEach((name, i) => {
-      const x = X(7) + i * (cw + GUT), y = Y(1) + 1.2;
+      const x = X(8) + i * (cw + GUT), y = Y(1) + 1.2;
       const ic = card("diver-add", [MN[0] + 13, MN[1] + 1.5 + i * 34.5, 34, 31.5], x, y, k, { pad: 2, bg: "#FFFFFF", cls: "icon" });
       h += ic.html + `<div class="kcell" style="left:${f2(x)}mm;top:${f2(y + ic.h + 1.6)}mm;width:${f2(cw)}mm"><b>${name}.</b> ${inline(note(t, "kind " + name))}</div>`;
     });
   }
-  const S = JSON.parse(fs.readFileSync(path.join(IMG, "dial-diver.json"), "utf8"));
-  const big = box(1, 3, 6, 8);
-  h += `<div class="ground flat" style="${css(big)}"></div>`;
-  const dd = 61, kd = dd / S.dial_d, pg = (S.dial_d + 2 * S.margin) * kd, cx = big.x + big.w / 2, cy = big.y + big.h / 2;
-  h += `<img class="svgdial" src="../img/dial-diver.svg" style="left:${f2(cx - pg / 2)}mm;top:${f2(cy - pg / 2)}mm;width:${f2(pg)}mm">`;
-  const KIND = ["ticks", "markers", "numerals", "band"];
-  const slug = (n) => n.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  const ids = Object.fromEntries(S.rings.map((r) => [r.name, r.name === "Bezel" ? ["bezel-colour-1", "bezel-colour-2"] : [slug(r.name)]]));
-  const b0 = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
-  // a 0.25 mm clear lane each side of a line; where a ring has none, a 0.12 mm lane (bars between ticks, the triangle)
-  const MK = (await dial_marks(b0, path.join(IMG, "dial-diver.svg"), ids)).out;
-  const MK18 = (await dial_marks(b0, path.join(IMG, "dial-diver.svg"), ids, { lane: 0.18, solid: 8 })).out;
-  const MK35 = (await dial_marks(b0, path.join(IMG, "dial-diver.svg"), ids, { lane: 0.4, solid: 6 })).out;
-  const MK2 = (await dial_marks(b0, path.join(IMG, "dial-diver.svg"), ids, { lane: 0.12, solid: 6 })).out;
-  // every way out is scored by its clearance: ink within 0.12 mm of the line costs most, within 0.25 mm least
-  for (const k in MK) {
-    const key = (c) => `${c.mark}${c.side}${c.y.toFixed(2)}`, c18 = new Map(MK18[k].map((c) => [key(c), c.cross])), c25 = new Map(MK[k].map((c) => [key(c), c.cross])), c40 = new Map(MK35[k].map((c) => [key(c), c.cross]));
-    MK[k] = MK2[k].map((c) => ({ ...c, cost: c.cross * 50 + (c18.get(key(c)) ?? 40) * 4 + (c25.get(key(c)) ?? 40) + Math.min(6, (c40.get(key(c)) ?? 40) * 0.05) }));
-  }
-  await b0.close();
-  const top = big.y + 5, bottom = big.y + big.h - 5, PITCH = 9.6;
-  const cand = S.rings.map((r) => ({ r, kind: r.kind ?? 0, list: (MK[r.name] || []).map((c) => ({ ...c, X: cx + c.x * kd, Y: cy + c.y * kd })).filter((c) => c.Y > top && c.Y < bottom) }));
-  for (const c of cand) check(c.list.some((q) => q.cross === 0), `rings dial: no clear way out for "${c.r.name}"`);
-  let rng = 7; const rand = () => (rng = (rng * 16807) % 2147483647) / 2147483647;
-  let placed = null, bestScore = 1e9;
-  for (let trial = 0; trial < 20000; trial++) {
-    const order = [...cand].sort((a, b) => a.list.filter((q) => !q.cross).length - b.list.filter((q) => !q.cross).length + (trial ? (rand() - 0.5) * (trial % 2 ? 4 : 400) : 0));
-    const used = { L: [], R: [] }, out = []; let ok = true, total = 0;
-    for (const c of order) {
-      let best = null;
-      const clear = c.list.some((q) => q.cross <= 8);
-      for (const q of c.list) {
-        if (clear && q.cross > 8) continue;                  // a ring with a clear way out must use one
-        if (used[q.side].some((u) => Math.abs(u - q.Y) < PITCH)) continue;
-        // a band is labelled where its line leaves square to it (near 3 or 9), not along its top or bottom edge
-        const sc = q.cost + (c.kind === 3 ? Math.abs(q.Y - cy) / (c.r.r * kd) * 6 : 0) + (trial ? rand() * 2 : 0);
-        if (!best || sc < best.sc) best = { ...q, sc };
-      }
-      if (!best) { ok = false; break; }
-      used[best.side].push(best.Y); out.push({ ...c, ...best }); total += best.sc;
-    }
-    total += Math.abs(used.L.length - used.R.length) * 3;
-    if (ok && total < bestScore) { bestScore = total; placed = out; }
-  }
-  check(placed, "rings dial: no way to give every ring its own line");
-  for (const p of placed || []) check(p.cross <= 8,   // ≤ 8 bitmap pixels: the line grazes a tick's corner, no more
-     `rings dial: "${p.r.name}" crosses print on its way out (${p.cross}; clear rows: ${cand.find((c) => c.r === p.r).list.filter((q) => !q.cross).map((q) => q.side + (q.Y - big.y).toFixed(1)).join(" ")})`);
-  let edgeL = cx - 20 * kd - 2.5, edgeR = cx + 20 * kd + 2.5;     // just outside the bezel
-  // the group is centred by its ink: the widest label on each side decides how far the dial moves
-  // each label: the ring's kind, then in grey what it draws (Okay, 20:22: "Bezel" five times was "informationally dumb")
-  const LW = 31.5;                                    // a label's measure: two short lines
-  const inkW = async (p) => (await measure(inline(note(t, "on " + p.r.name)), LW)).W;
-  let Lw = 0, Rw = 0; for (const p of placed || []) { const w = (p.W = await inkW(p)); if (p.side === "L") Lw = Math.max(Lw, w); else Rw = Math.max(Rw, w); }
-  const shift = ((big.x + big.w - (edgeR + 1.2 + Rw)) - (edgeL - 1.2 - Lw - big.x)) / 2;
-  edgeL += shift; edgeR += shift; for (const p of placed || []) p.X += shift;
-  h = h.replace(`left:${f2(cx - pg / 2)}mm;top:${f2(cy - pg / 2)}mm;width:${f2(pg)}mm">`, `left:${f2(cx + shift - pg / 2)}mm;top:${f2(cy - pg / 2)}mm;width:${f2(pg)}mm">`);
-  const hcx = cx + shift;
-  h += pointers({ sides: (placed || []).map((p) => ({ at: [p.X, p.Y], edge: p.side === "L" ? edgeL : edgeR, side: p.side === "L" ? "R" : "L",
-    text: note(t, "on " + p.r.name), w: LW })) }, { halo: [hcx, cy, 20 * kd] });
 
+  // ── left: the list and the dial, taken apart together ──
+  const pan = { x: X(1), y: Y(3), w: W(7), h: FOOT - Y(3) };
+  h += `<div class="ground stackbg" style="${css(pan)}"></div>`;
+  const D = 62, sc = D / S.dial_d, TILT = 0.31, he = D * TILT, n = S.rings.length;
+  const pitch = 11.8, NOTE = 11.1;               // the note over the first row takes NOTE mm                 // eleven rings and the plate: twelve layers
+  const groupH = NOTE + n * pitch + he / 2, cx = pan.x + pan.w - 9 - D / 2, y0 = pan.y + (pan.h - groupH) / 2 + NOTE;   // centred in the panel
+  const each = SHOTS.rects["diver-rows"], kR = 0.17, RP = 3;
+  let layers = "", rows = "", lines = "";
+  const layer = (i, inner) => `<g transform="translate(${f2(cx)} ${f2(y0 + i * pitch)}) scale(${sc} ${f2(sc * TILT)})">`
+    + `<circle r="20" class="sheet"/>${inner}</g>`;
+  // the plate, at the bottom
+  layers += `<g transform="translate(${f2(cx)} ${f2(y0 + n * pitch)}) scale(${sc} ${f2(sc * TILT)})"><circle r="20" class="plate"/></g>`;
+  for (let i = n - 1; i >= 0; i--) layers += layer(i, ids(S.rings[i]).map(pathOf).join(""));
+  S.rings.forEach((r, i) => {
+    const rr = each[i], y = y0 + i * pitch, rh = (rr[3] + 2 * RP) * kR;
+    const c = card(`diver-row-${i}`, rr, pan.x + 7, y - rh / 2, kR, { pad: RP, bg: "#FFFFFF", cls: "row" });
+    rows += c.html;
+    lines += `<line x1="${f2(c.x + c.w + 1.5)}" y1="${f2(y)}" x2="${f2(cx - D / 2 - 1.5)}" y2="${f2(y)}"/><circle cx="${f2(cx - D / 2 - 1.5)}" cy="${f2(y)}" r=".42"/>`;
+  });
+  const yp = y0 + n * pitch;
+  h += `<svg class="stack" viewBox="0 0 ${PAGE[0]} ${PAGE[1]}">${layers}</svg>` + rows
+    + `<svg class="lines stacklines" viewBox="0 0 ${PAGE[0]} ${PAGE[1]}">${lines}<line x1="${f2(pan.x + 7 + 34)}" y1="${f2(yp)}" x2="${f2(cx - D / 2 - 1.5)}" y2="${f2(yp)}"/><circle cx="${f2(cx - D / 2 - 1.5)}" cy="${f2(yp)}" r=".42"/></svg>`
+    + `<div class="stacknote" style="left:${f2(pan.x + 7)}mm;top:${f2(yp - 2.2)}mm;width:33mm">${inline(note(t, "plate"))}</div>`
+    + `<div class="stacknote top" style="left:${f2(pan.x + 7)}mm;bottom:${f2(PAGE[1] - (y0 - 4.6))}mm;width:${f2((384 + 2 * RP) * kR)}mm">${inline(note(t, "stack"))}</div>`;
 
-  // lower left: one ring, one row, and the Watch on radius hung under it; beside them the radius pop-up
-  h += block(box(1, 11, 3, 4), text(t, "One ring, one row"), { flow: "a" }) + block(box(1, 11, 3, 4), text(t, "Watch"), { flow: "a", attach: true });
-  { const g = box(4, 11, 3, 4), k = 0.19, rr = [338, 276, 140, 148], lw = 25;
-    const lwInk = (await measure(inline(note(t, "anchor")), lw)).W;
-    const cw = (rr[2] + 2 * CP) * k, ch = (rr[3] + 2 * CP) * k, x0 = g.x + (g.w - cw - 3 - lwInk) / 2;
-    const PP = SHOTS.rects["diver-radius"].pop, keep = [[342, 280, 86, 40], [PP[0], PP[1], PP[2], PP[3]], [396, 314, 24, 12]];
-    const c = card("diver-radius", rr, x0, g.y + (g.h - ch) / 2, k, { pad: CP, bg: "#FFFFFF", keep });
-    h += `<div class="ground flat" style="${css(g)}"></div>` + c.html;
-    const menu = c.at([PP[0] + 104, PP[1] + 5, 18, 18]);
-    h += pointers({ sides: [{ at: [menu[0] + menu[2], mid(menu)[1]], edge: c.x + c.w + 2.8, side: "L", text: note(t, "anchor"), w: lw }] }); }
-
-  // upper right: the list and the drawer, in two grounds sharing rows 3–9; one margin m for every gap inside them
-  const up = box(7, 3, 4, 8), TX = (y, label, o = {}) => block({ x: X(11), y, w: W(2), h: 30 }, text(t, label), o);
-  const kL = 0.125, lr = [48, 188, 392, 222], kD = 0.17, dr = [100, 236, 330, 50];
-  const wE = 18, wG = 32, wS = 30, wN = 30, wK = 64, wV = 48;
-  const chL = (lr[3] + 2 * CP) * kL, chD = (dr[3] + 2 * CP) * kD;
-  const H2 = await inkH(note(t, "name"), wN), H1 = Math.max(await inkH(note(t, "grip"), wG), await inkH(note(t, "summary"), wS));
-  const Ha = await inkH(note(t, "kinds"), wK), Hb = await inkH(note(t, "values"), wV);
-  const m = (up.h - RGAP - (H2 + H1 + chL + Ha + chD + Hb)) / 8;
-  const gL = { x: up.x, y: up.y, w: up.w, h: H2 + H1 + chL + 4 * m }, gD = { x: up.x, y: gL.y + gL.h + RGAP, w: up.w, h: Ha + chD + Hb + 4 * m };
-  const xmin = up.x + 4, xmax = up.x + up.w - 4;
-  { const z2 = gL.y + m, z1 = z2 + H2 + m, cw = (lr[2] + 2 * CP) * kL;
-    const C = card("diver-rings", lr, gL.x + (gL.w - (wE + 4 + cw)) / 2 + wE + 4, z1 + H1 + m, kL, { pad: CP, cls: "cut", fade: 66 });
-    h += `<div class="ground flat" style="${css(gL)}"></div>` + C.html;
-    const eye = C.at([62, 305, 18, 14]), grip = C.at([90, 203, 14, 18]), ren = C.at([190, 200, 22, 24]);
-    const sum = outline(C.at([238, 204, 192, 16]), [4 * kL, 5 * kL, 4 * kL, 6 * kL]), sx = sum.box[0] + sum.box[2] / 2;
-    h += pointers({ rings: [sum.svg],
-      sides: [{ at: [eye[0], mid(eye)[1]], edge: C.x - 2.8, side: "R", text: note(t, "eye"), w: wE }],
-      tiers: [
-        { side: "above", zone: [z1, z1 + H1], xmin, xmax, forbid: [mid(ren)[0]], items: [
-          { at: [mid(grip)[0], grip[1]], text: note(t, "grip"), w: wG }, { at: [sx, sum.box[1]], text: note(t, "summary"), w: wS } ] },
-        { side: "above", zone: [z2, z2 + H2], xmin, xmax, items: [ { at: [mid(ren)[0], ren[1]], text: note(t, "name"), w: wN } ] } ] });
-    h += TX(gL.y, "Stacking order", { flow: "s1", bottom: gD.y - 2 }) + TX(gL.y, "Watch: order", { flow: "s1", attach: true, bottom: gD.y - 2 }); }
-  { const dw = (dr[2] + 2 * CP) * kD, c = card("diver-rings", dr, gD.x + (gD.w - dw) / 2, gD.y + 2 * m + Ha, kD, { pad: CP });
-    h += `<div class="ground flat" style="${css(gD)}"></div>` + c.html;
-    const kinds = c.at([112, 243, 182, 36]), vals = outline(c.at([302, 243, 124, 36]), [7 * kD, 4 * kD, 7 * kD, 4 * kD]);
-    h += pointers({ rings: [vals.svg], tiers: [
-      { side: "above", zone: [gD.y + m, gD.y + m + Ha], xmin, xmax, items: [ { at: [kinds[0] + kinds[2] / 2, kinds[1]], text: note(t, "kinds"), w: wK } ] },
-      { side: "below", zone: [c.y + c.h + m, c.y + c.h + m + Hb], xmin, xmax, items: [ { at: [vals.box[0] + vals.box[2] / 2, vals.box[1] + vals.box[3]], text: note(t, "values"), w: wV } ] } ] });
-    h += TX(gD.y, "The ring drawer", { flow: "s2", bottom: up.y + up.h }); }
-
-  // lower right: the + open; one label above it (the four buttons), one under it (the menu); words beside it
-  { const g = box(7, 11, 4, 4), k = 0.13, ar = [44, 153, 400, 179], wM = 60, wA = 60;
-    const aw = (ar[2] + 2 * CP) * k, chA = (ar[3] + 2 * CP) * k;
-    const HM = await inkH(note(t, "move"), wM), HA = await inkH(note(t, "menu"), wA), mm = (g.h - HM - chA - HA) / 4;
-    const o = card("diver-add", ar, g.x + (g.w - aw) / 2, g.y + 2 * mm + HM, k, { pad: CP });
-    h += `<div class="ground flat" style="${css(g)}"></div>` + o.html;
-    const tools = outline(o.at([320, 159, 116, 26]), [8 * k, 9 * k, 8 * k, 5 * k]);
-    const pl = o.at([290, 159, 26, 26]), pc = mid(pl), pr = pl[2] / 2 + 9 * k, mn = o.at([196, 191, 120, 138]);
-    const mb = [mn[0] - 10 * k, mn[1] - 4 * k, mn[2] + 20 * k, mn[3] + 14 * k], mr = 2.2;
-    const union = `<mask id="u06" maskUnits="userSpaceOnUse" x="0" y="0" width="${PAGE[0]}" height="${PAGE[1]}"><rect width="${PAGE[0]}" height="${PAGE[1]}" fill="#fff"/>`
-      + `<circle cx="${f2(pc[0])}" cy="${f2(pc[1])}" r="${f2(pr)}" fill="#000"/><rect x="${f2(mb[0])}" y="${f2(mb[1])}" width="${f2(mb[2])}" height="${f2(mb[3])}" rx="${mr}" fill="#000"/></mask>`
-      + `<g mask="url(#u06)"><circle class="ring two" cx="${f2(pc[0])}" cy="${f2(pc[1])}" r="${f2(pr)}"/><rect class="ring two" x="${f2(mb[0])}" y="${f2(mb[1])}" width="${f2(mb[2])}" height="${f2(mb[3])}" rx="${mr}"/></g>`;
-    h += pointers({ rings: [tools.svg, union], tiers: [
-      { side: "above", zone: [g.y + mm, g.y + mm + HM], xmin: g.x + 4, xmax: g.x + g.w - 4, items: [ { at: [tools.box[0] + tools.box[2] / 2, tools.box[1]], text: note(t, "move"), w: wM } ] },
-      { side: "below", zone: [g.y + g.h - mm - HA, g.y + g.h - mm], xmin: g.x + 4, xmax: g.x + g.w - 4, items: [ { at: [mb[0] + mb[2] / 2, mb[1] + mb[3]], text: note(t, "menu"), w: wA } ] } ] });
-    h += TX(g.y, "Adding and arranging", { flow: "s3", bottom: g.y + g.h }) + TX(g.y, "Watch: delete", { flow: "s3", attach: true, bottom: g.y + g.h }); }
+  // ── right: cause and effect, four settings ──
+  const R0 = { x: X(8), y: Y(3), w: W(5), h: FOOT - Y(3) };
+  h += `<div class="ground flat" style="${css(R0)}"></div>`;
+  const PAIRS = [["var-order", 0, -18.4, 2.3, false], ["var-kind", 10.5, -10.5, 1.75, false], ["var-giveway", 15.6, -9.0, 2.6, false], ["var-anchor", 15.6, 9.0, 2.6, true]];
+  const L = 29, gapA = 11, cap = R0.w - 8 - 2 * L - gapA - 6, ph = (R0.h - 8) / 4;
+  const loupe = (file, x, y, rx, ry, Z, guide) => { const Rv = L / 2 / Z;
+    return `<div class="loupe" style="left:${f2(x)}mm;top:${f2(y)}mm;width:${L}mm;height:${L}mm"><svg viewBox="${f2(rx + 23 - Rv)} ${f2(ry + 23 - Rv)} ${f2(2 * Rv)} ${f2(2 * Rv)}"><image href="../img/${file}.svg" width="46" height="46"/>`
+      + (guide ? `<circle cx="23" cy="23" r="18.1" class="guide" style="stroke-width:${f2(0.35 / Z)}"/>` : "") + `</svg></div>`; };
+  PAIRS.forEach(([file, rx, ry, Z, guide], i) => {
+    const y = R0.y + 4 + i * ph + (ph - L) / 2, xa = R0.x + 4, xb = xa + L + gapA;
+    h += loupe("var-base", xa, y, rx, ry, Z, guide) + loupe(file, xb, y, rx, ry, Z, guide);
+    h += `<svg class="lines" viewBox="0 0 ${PAGE[0]} ${PAGE[1]}"><path class="arrow" d="M${f2(xa + L + 2.5)} ${f2(y + L / 2)} H${f2(xb - 2.5)} M${f2(xb - 4.3)} ${f2(y + L / 2 - 1.4)} L${f2(xb - 2.5)} ${f2(y + L / 2)} L${f2(xb - 4.3)} ${f2(y + L / 2 + 1.4)}"/></svg>`;
+    const pc = note(t, "pair " + (i + 1)), cut = pc.indexOf(". ");
+    h += `<div class="pcap" style="left:${f2(xb + L + 6)}mm;top:${f2(y + 1)}mm;width:${f2(cap)}mm"><b>${inline(pc.slice(0, cut + 1))}</b> ${inline(pc.slice(cut + 2))}</div>`;
+  });
   pages.push(page(P, h));
 }
 
