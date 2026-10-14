@@ -103,3 +103,7 @@ a { color: inherit; text-decoration: underline; text-decoration-thickness: .15mm
 .bar .hash::after { content: ""; position: absolute; left: .13mm; bottom: 5.0mm; width: .84mm; height: .84mm; border-radius: 50%; background: var(--sig-ink); }
 .bar .hl { position: absolute; left: .45mm; bottom: 10.6mm; font-style: normal; font-weight: 400; font-size: 8pt; line-height: calc(var(--b) * 2.7); color: var(--ink); white-space: nowrap; }
 .nlabel .sub { color: var(--grey); }
+
+.kcell { font-size: 8pt; line-height: calc(var(--b) * 2.7); text-wrap: pretty; }
+.kcell b { font-weight: 600; }
+.card.icon { box-shadow: none; border-radius: .8mm; outline: .2mm solid var(--line); }

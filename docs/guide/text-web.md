@@ -168,7 +168,7 @@ The colour box is the same wherever a colour is chosen.
 **Lead:** Every mark, number and track on a dial is a ring.
 A ring repeats one kind of thing round the centre, at one radius.
 
-**What a ring is.** One row in the list, drawn at one radius. Tracks, hour marks, numbers, bezels and zones of colour are all rings; this diver has eleven.
+**One ring, one row.** Each ring is one row in the list, drawn at one radius. This diver has eleven, and every label on it names the setting that makes that ring.
 
 **Four kinds.** Ticks are lines, as on a minute track. Markers are heavier shapes, usually for the hours. Numerals are numbers or words. A band is flat colour, whole or in pieces. A ring can change to another kind at any time, and it keeps all of its settings when it does.
 
@@ -176,12 +176,17 @@ A ring repeats one kind of thing round the centre, at one radius.
 
 **The ring drawer.** It opens under the selected ring's row. Click a value button to type a number, or press it and drag: right or up raises the value, and Shift makes each step finer.
 
-**Adding and arranging.** A new ring or a copy goes in above the selected ring and becomes the selected one. A new numerals ring takes its type from the numerals already on this dial, so they match.
+**Adding and arranging.** A new ring or a copy goes in above the selected ring and becomes the selected one. New numerals take the type of those already on the dial.
 
 **Watch.** A ring's radius runs from the centre to the outer edge of ticks, markers and bands, and to a numeral's anchor: its middle, its baseline or its top.
 
-**Watch: order.** A ring gives way only to rings above it, so moving it can bring marks back or take them away. Hidden, a ring is neither drawn nor exported, and no ring gives way to it.
+**Watch: order.** A ring gives way only to rings above it, so moving it up or down the list can add marks or take them away.
 
+**Watch: delete.** Delete asks nothing first; undo brings the ring back with its settings.
+**Note: kind Ticks.** Lines, as on a minute track.
+**Note: kind Markers.** Heavier shapes, usually for the hours.
+**Note: kind Numerals.** Numbers or words, in any font.
+**Note: kind Band.** Flat colour, whole or in pieces.
 **Note: eye.** Hides the ring without deleting it.
 **Note: grip.** Drag the grip to move the ring up or down the list.
 **Note: name.** Renames the ring.
@@ -192,7 +197,7 @@ A ring repeats one kind of thing round the centre, at one radius.
 **Note: radius.** Sets the radius, from the centre.
 **Note: add.** Adds a ring above the selected one.
 **Note: move.** Moves the selected ring up or down, duplicates or deletes it.
-**Note: menu.** The + opens the four kinds; pick one to add a ring of it.
+**Note: menu.** The + opens the four kinds; pick one to add a ring.
 **Note: values.** Its colour, size and radius: click one to set it.
 **Note: on Bezel: triangle.** First in the list, so it is drawn over the bezel.
 **Note: on Triangle at 12.** Count 1: a single marker, at the start.
@@ -205,7 +210,7 @@ A ring repeats one kind of thing round the centre, at one radius.
 **Note: on Bezel.** Twelve sectors, each in its own colour.
 **Note: on Bezel edge.** A band only 0.25 mm wide reads as a line.
 **Note: on Band.** A band grows inwards from its radius.
-**Note: anchor.** For numerals, sets the point that sits on the radius: centre, baseline or top.
+**Note: anchor.** Sets which point of a numeral sits on the radius: centre, baseline or top.
 
 ---
 
