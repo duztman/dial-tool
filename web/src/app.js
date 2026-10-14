@@ -190,12 +190,12 @@ const hand_detail = (h) => {
 // here) pools in them and the crossing reads as a blot. A small round cut at each corner — sixteen in all — keeps the
 // crossing open. They are holes in the sign's mask: at each corner, where an arm's edge meets the ring's edge.
 const INK_TRAPS = (() => {
-  const c = 9.25, r = 5.5, half = DENSE / 2, cut = 0.3, out = [];      // cut: 0.3, looked at beside 0.2 and 0.45 at 12× and at size
+  const c = 9.25, r = 5.5, half = DENSE / 2, cut = 0.45, out = [];      // cut: 0.45, Okay's pick of four (0 · 0.2 · 0.3 · 0.45), 15 Oct 2026, 02:52: "this guides icon is the best"
   for (const edge of [r + half, r - half]) for (const side of [-half, half]) {
     const along = Math.sqrt(edge * edge - side * side);      // how far out along the arm the ring's edge is met
     for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
       const x = c + dx * along + (dx ? 0 : side), y = c + dy * along + (dy ? 0 : side);
-      out.push(`<circle cx="${x.toFixed(3)}" cy="${y.toFixed(3)}" r="${cut}" fill="black"/>`);
+      out.push(`<circle cx="${x.toFixed(3)}" cy="${y.toFixed(3)}" r="${cut}" fill="black" stroke="none"/>`);      // no stroke: a mask's shapes take the sign's own stroke and would cut wider
     }
   }
   return out.join("");
@@ -233,12 +233,15 @@ const TOOL_ICONS = {
   // filled, three lashes above and three below running past the edge; the box cuts them. Through fit.mjs; the eye's
   // axis moved to 15.25 so the upright lashes sit on quarter points with the iris on them
   eyebox: `<path d="M6.25 15C12.25 9.75 18.25 9.75 24.25 15C18.25 20.25 12.25 20.25 6.25 15Z" ${sw(CURVE)}/><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/>`
-    + `<path d="M10.75 12L6.25 -1M19.75 12L24.25 -1M10.75 18L6.25 31M19.75 18L24.25 31" ${sw(SLANT)}/><path d="M15.25 11.25V-1.75M15.25 18.75V31.75"/>`,
+    + `<path d="M10.75 12L6.25 -1M19.75 12L24.25 -1M10.75 18L6.25 31M19.75 18L24.25 31" ${sw(SLANT)}/><path d="M15.25 11V-1.75M15.25 19V31.75"/>`
+    // 02:52: four more lashes from the eye's corners out to the box's corners (Okay's drawing); the upright lashes now
+    // start on the lid's middle line (11 and 19, were 11.25 and 18.75), so their round ends no longer bulge into the eye
+    + `<path d="M7.5 13L-1 2.5M23 13L31.5 2.5M7.5 17L-1 27.5M23 17L31.5 27.5" ${sw(SLANT)}/>`,
   screen: `<rect x="2.75" y="3.25" width="10.5" height="7.5"/><path d="M8.25 10.75V13.25M5.75 13.25H10.75" ${sw(DENSE)}/>`,
   // the Guides switch, on 18: a target and its cross; its lines crowd, so DENSE. Okay's drawings (14 Oct 2026, 04:11):
   // guides on, the centre ring dashed in six, square-ended (a dash pattern is a texture, not line ends) (core-on); guides off, a hollow slash, two lines with the target cut away
   // between them (the slash group, and the mask that cuts). The stylesheet shows one state's parts (6-preview.css).
-  guides: `<mask id="guides-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18"><rect width="18" height="18" fill="white"/><path class="slash" d="M2.75 15.75L15.75 2.75" stroke="black" stroke-width="2.5" stroke-linecap="butt"/>${INK_TRAPS}</mask>`
+  guides: `<mask id="guides-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18"><rect width="18" height="18" fill="white" stroke="none"/><path class="slash" d="M2.75 15.75L15.75 2.75" stroke="black" stroke-width="2.5" stroke-linecap="butt"/>${INK_TRAPS}</mask>`
     + `<g ${sw(DENSE)}><g mask="url(#guides-cut)"><circle cx="9.25" cy="9.25" r="5.5"/><circle class="core-off" cx="9.25" cy="9.25" r="2"/><path d="M9.25 1.25V5.75M9.25 12.75V17.25M1.25 9.25H5.75M12.75 9.25H17.25"/></g>`
     + `<circle class="core-on" cx="9.25" cy="9.25" r="2" stroke-dasharray="1.25 0.844" stroke-linecap="butt" transform="rotate(-107.9 9.25 9.25)"/><path class="slash" d="M1.87 14.87L14.87 1.87M3.63 16.63L16.63 3.63"/></g>`,
 };

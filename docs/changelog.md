@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.38.9 (web version) · 15 Oct 2026
+
+- **The eye switch has eight lashes**: four more from the eye's corners out to the box's corners; the upright lashes no longer bulge into the eye.
+- **The Guides sign's ink traps as Okay picked them** (r 0.45), and their true size: in 4.38.8 the cuts took the sign's stroke and came out wider.
+
 ## beta 4.38.8 (web version) · 15 Oct 2026
 
 - **Okay's mark** in the panel's first column, left of the title; a press opens a short **bio**: who made the tool, the source and its licence, and the open-source work it stands on — HarfBuzz, Skia's PathKit, Inter, Silkscreen, the twenty OFL dial typefaces, DrawBot, esbuild, Playwright.
