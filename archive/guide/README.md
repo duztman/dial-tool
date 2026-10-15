@@ -1,3 +1,13 @@
+# Archived: the old guides (moved here 15 Oct 2026)
+
+*Okay, 15 Oct 2026, 12:50: "Archive them". Frozen; nothing here is built or read by the current guide (`guide/`, by `guide/PLAN.md`).*
+
+- The 4 Oct DrawBot guidebook: `pages/`, `style.css`, `icons.svg`, `img/`, `tools/make_guide.py`, `tools/guide_dials.py` (were in `docs/guide/` and `tools/`). It ran from `archive/drawbot/dial.py`; paths inside these files still say `docs/guide/`.
+- The 4.36.1 web guide, review pages 01, 03, 06 (14 Oct): `web/`, `outline-web.md`, `text-web.md`. Its composer was the starting point of `guide/look/`.
+- Moved elsewhere, still live: Okay's page-design notes → `guide/notes-okay.md` (canon); the classic dials' settings → `web/presets/` (read by `web/examples.mjs`).
+
+---
+
 # Writing the guidebook
 
 *4 Oct 2026. For whoever edits the guide next. The look is decided in `docs/design.md`; this file is the how.*

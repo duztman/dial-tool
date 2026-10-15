@@ -1,5 +1,5 @@
 // links.mjs — settings files → dial links (the same packing as the page's Copy link).
-//   node web/links.mjs docs/guide/presets/field.json [more.json …]
+//   node web/links.mjs web/presets/field.json [more.json …]
 import fs from "fs";
 import zlib from "zlib";
 import { fresh_settings, lean, LINK_SCHEME } from "./src/geometry.js";

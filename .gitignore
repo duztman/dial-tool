@@ -2,8 +2,8 @@ __pycache__/
 *.pyc
 .DS_Store
 test-renders/
-docs/guide/cache/
-docs/guide/_built.html
+archive/guide/cache/
+archive/guide/_built.html
 web/node_modules/
 web/test/out/
 web/test/same.json

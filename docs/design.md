@@ -5,7 +5,7 @@ the whole build, take notes… let's make it canon."*
 
 This file is the rule for everything Dial Tool shows on paper or screen that isn't a dial: the guidebook
 first, then presentation sheets, spec sheets and, where it applies, the tool's own window.
-`docs/guide/` (`style.css`, `pages/`) is its reference implementation; if they disagree, fix one of them the same day.
+`guide/look/` (`style.css`, `build.mjs`) is its reference implementation; if they disagree, fix one of them the same day. (Until 15 Oct 2026 it was `docs/guide/`, now `archive/guide/`; paths below that name `docs/guide/` or `tools/make_guide.py` describe that archived build.)
 
 ## 1 · What it is modelled on
 

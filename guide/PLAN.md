@@ -2,7 +2,7 @@
 
 *Agreed 15 Oct 2026, 09:44 (Okay: "Do it, go ahead … who cares about an old version. Do it for now"). Written 15 Oct 08:50–09:40 from first principles, then reviewed in three rounds by three fresh reviewers who saw only this plan and the live app (beta 4.41.11): a newcomer, an information designer, a maker and skeptic. All three signed off. Replaces the guide locked to beta 4.36.1 (build list #93). Shared copy: https://claude.ai/code/artifact/69a9d228-400c-4bdc-b0ba-2f28ee203636*
 
-**Okay's notes are canon for page design:** `docs/guide/notes-okay.md` (all review rounds, 14 Oct). Where this plan and the notes differ, the notes win — for example screenshots go through the section colour's gradient map onto rounded cards with a soft shadow, and the ring list is shown taken apart row by row, each row joined to its ring lifted off the dial (top row = top layer; drawing order, not press order).
+**Okay's notes are canon for page design:** `guide/notes-okay.md` (all review rounds, 14 Oct). Where this plan and the notes differ, the notes win — for example screenshots go through the section colour's gradient map onto rounded cards with a soft shadow, and the ring list is shown taken apart row by row, each row joined to its ring lifted off the dial (top row = top layer; drawing order, not press order).
 
 App: https://duztman.github.io/dial-tool/
 

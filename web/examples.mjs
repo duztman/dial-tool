@@ -1,6 +1,6 @@
 // examples.mjs — the five example dials under Export: writes src/examples.js.
 //
-// They are five of the guidebook's classics (docs/guide/presets/), with the Mac system fonts
+// They are five of the guidebook's classics (web/presets/), with the Mac system fonts
 // swapped for open ones from the web version's own list (the guide's own stand-ins), so a link
 // to one looks the same for everybody. Each gets a small picture, drawn here once. Where Okay has sent his own version
 // of one (OKAY below), that is used instead of the preset.
@@ -49,7 +49,7 @@ for (const f of FONT_LIST) G.add_font(fs.readFileSync(path.join(here, "fonts", f
 const hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(v * 255).toString(16).padStart(2, "0")).join("");
 const out = [];
 for (const [file, name] of PICK) {
-  const settings = OKAY[file] ? structuredClone(OKAY[file]) : JSON.parse(fs.readFileSync(path.join(here, "../docs/guide/presets", file + ".json"), "utf8"));
+  const settings = OKAY[file] ? structuredClone(OKAY[file]) : JSON.parse(fs.readFileSync(path.join(here, "../web/presets", file + ".json"), "utf8"));
   for (const ring of settings.rings || []) {
     if (!(ring.ps in OPEN)) { if (ring.ps && !G.has_font(ring.ps)) throw new Error(`${file}: no open font for ${ring.ps}`); continue; }
     [ring.family, ring.ps, ring.axes] = OPEN[ring.ps];

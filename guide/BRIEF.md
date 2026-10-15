@@ -17,7 +17,7 @@
 - Phone pictures: 390 × 844 at 3×, only where the phone differs (bar on top, drawer, folded switches, cut names).
 - Print scale: 1 iPad point = 0.2 mm on A4.
 
-**Look.** Okay's notes (`docs/guide/notes-okay.md`) and the design canon (`docs/design.md`); decided on three spreads in step 7, at A4 and at 390 px from one source.
+**Look.** Okay's notes (`guide/notes-okay.md`) and the design canon (`docs/design.md`); decided on three spreads in step 7, at A4 and at 390 px from one source.
 
 **Truth.** Every "do X and Y happens" sentence has a scripted check (behaviours B1–B20 in `inventory/inventory.md` to start). Advice goes on the dated release checklist.
 
