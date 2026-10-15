@@ -1462,6 +1462,14 @@ await tab("Rings");
 await frame();
 const narrow = await page.evaluate(() => ({ wide: document.documentElement.scrollWidth, eye: document.querySelector(".form button.fold .eye").getBoundingClientRect().left, bar: document.querySelector(".bar").getBoundingClientRect().top }));
 check(narrow.wide <= 390 && narrow.eye >= 0 && narrow.bar === 0, "a phone: nothing wider than the screen, the eyes in view, the bar on top");
+{ // a phone's title line (Okay, 15 Oct 2026, 07:59): full at the drawer's top (Gallery pill, unit box); scrolled, squeezed and held on top with the tabs under it; full again back at the top
+  const m = () => page.evaluate(() => { const panel = document.querySelector(".panel"), h = panel.querySelector(":scope > header").getBoundingClientRect(), t = panel.querySelector(".tabs").getBoundingClientRect(), shown = (q) => !!document.querySelector(q).offsetParent;
+    return { sq: panel.classList.contains("squeezed"), high: Math.round(h.height), on_top: Math.round(h.top - panel.getBoundingClientRect().top), tabs_under: Math.round(t.top - h.bottom), pill: shown("#to-gallery"), unit: shown("#unit") }; });
+  const set = (y) => page.evaluate((y) => { document.querySelector(".panel").scrollTop = y; }, y).then(() => page.waitForTimeout(200));
+  await set(0); const a = await m(); await set(400); const b = await m(); await set(0); const c = await m();
+  const ok = [!a.sq && a.pill && a.unit && a.high > b.high, b.sq && !b.pill && !b.unit && b.high === 40 && b.on_top <= 1 && b.tabs_under === 0, JSON.stringify(c) === JSON.stringify(a)];
+  check(ok.every(Boolean), `a phone's title line: full at the top with Gallery and mm (${a.high}), squeezed and held on top once scrolled (${b.high}, the tabs under it), full again back at the top (${ok.join(" ")})`);
+}
 { // a phone's bar row (Okay, 15 Oct 2026, 07:45): the time at the bar's text size, the red dot with as much room left as right
   const b = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(); return { font: getComputedStyle(document.querySelector(".bar .time")).fontSize, half: getComputedStyle(document.querySelector(".bar .timebox .half")).fontSize, left: r(".bar .lead .play").left, right: r(".bar .speeds").left - r(".bar .lead .play").right }; });
   check(b.font === b.half && Math.abs(b.left - b.right) < 0.5 && b.left > 14, `a phone's bar: the time as large as AM (${b.font}), the red dot ${b.left.toFixed(1)} from the edge and ${b.right.toFixed(1)} from how fast`);

@@ -995,11 +995,26 @@ class DialTool {
     };
     // tall enough to hold its top still? measured whenever the drawer or its pinned part changes size
     const panel = $(".panel"), hold = () => {
-      const narrow = matchMedia("(max-width: 860px)").matches, parts = [panel.querySelector(":scope > header"), this.tabs, this.pinned].filter(Boolean);
-      const top = parts.reduce((sum, x) => sum + (x.hidden ? 0 : x.offsetHeight), 0);
+      const narrow = matchMedia("(max-width: 860px)").matches, parts = [this.tabs, this.pinned].filter(Boolean);
+      const top = head_full() + parts.reduce((sum, x) => sum + (x.hidden ? 0 : x.offsetHeight), 0);      // the title line counted at its full height, so squeezing it never tips the drawer into holding
       panel.classList.toggle("held", narrow && panel.clientHeight - top >= SHEET.room);
     };
-    panel.addEventListener("scroll", () => panel.classList.toggle("stuck", panel.scrollTop > panel.querySelector(":scope > header").offsetHeight), { passive: true });      // its tabs held at the top (the title line has gone)
+    // a phone (8-narrow.css): at the drawer's top its title line is full, with the Gallery pill and the unit box; once it
+    // scrolls, the line squeezes (.squeezed) and stays on top, the tabs held under it (.stuck); back at the very top it is
+    // full again (Okay, 15 Oct 2026, 07:59: "this squeezed state is persistent. However, the big size with mm… comes up
+    // when the user loads the page first or scrolls back all the way. Gallery hides together with mm. Only mobile").
+    // Squeezed past 32 px, full again only at 0: the line's own 24 px can't tip it back and forth
+    const head = panel.querySelector(":scope > header"), form = panel.querySelector(".form");
+    let full_h = 0;
+    const head_full = () => (panel.classList.contains("squeezed") && full_h) || (full_h = head.offsetHeight);
+    const squeeze = () => {
+      const held = panel.classList.contains("held"), top = held ? form.scrollTop : panel.scrollTop;
+      if (top > 32) panel.classList.add("squeezed");
+      else if (top < 1) panel.classList.remove("squeezed");
+      panel.classList.toggle("stuck", !held && panel.classList.contains("squeezed"));
+    };
+    panel.addEventListener("scroll", squeeze, { passive: true });
+    form.addEventListener("scroll", squeeze, { passive: true });
     this.watchers.push(new ResizeObserver(hold));
     this.watchers.at(-1).observe(panel);
     this.watchers.at(-1).observe(this.pinned);

@@ -88,13 +88,16 @@
     #app.show :is(.about, .logo) { width: var(--logo-narrow); }
     #app.show .logo { height: var(--logo-narrow); }
     #app.show .logo svg { width: 100%; height: 100%; }
-    /* the drawer's title line, compact (Okay, 15 Oct 2026, 07:02: "a compacted title bar for scrollers' delight. We may
-       lose mm… smaller, actually proportional to eyes okay icon and same text"): a pane heading's height, the mark at
-       the eyes' size, the title at the panes' size; no unit box (lengths stay in mm) */
-    .panel > header { height: var(--head); }
-    .panel .title h1 { font-size: var(--t-m); }
-    .panel .title .quiet { font-size: var(--t-s); }
-    .panel .unit { display: none; }
+    /* the drawer's title line, squeezed once the drawer scrolls (.squeezed, app.js) and staying on top while it does,
+       the tabs held under it (Okay, 15 Oct 2026, 07:02: "a compacted title bar for scrollers' delight. We may lose mm…
+       smaller, actually proportional to eyes okay icon and same text"; 07:59: full on load and back at the very top,
+       "Gallery hides together with mm"): a pane heading's height, the title at the panes' size; no Gallery pill, no unit box */
+    .panel.squeezed > header { height: var(--head); }
+    .panel.squeezed .title h1 { font-size: var(--t-m); }
+    .panel.squeezed .title .quiet { font-size: var(--t-s); }
+    .panel.squeezed :is(.unit, .galleryway) { display: none; }
+    .panel.squeezed:not(.held) > header { position: sticky; top: 0; z-index: 4; background: var(--paper); }
+    .panel.squeezed:not(.held) .tabs { top: var(--head); }
     /* the drawer scrolling as one (not .held): once its top has gone, the tabs stand on paper the drawer's whole width,
        on the thick line that ends what stays put (.stuck, app.js) (07:02: "we still get the scroll past… and no bottom bar") */
     .panel:not(.held) .tabs::before { content: ""; position: absolute; z-index: -1; inset: 0 calc(-1 * var(--margin)); background: var(--paper); }
