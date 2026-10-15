@@ -115,22 +115,44 @@
   .tip svg .a { stroke: var(--ink); stroke-width: var(--tip-arrow); }
   .tip svg .b { stroke: var(--white); stroke-width: var(--tip-arrow-in); }
   .tip svg .c { fill: var(--ink); }
-  /* ── the showcase (the iris switch; Okay, 15 Oct 2026, 04:26) ── over the dial alone: the sky (a gradient, black at
-     the bottom up to the backdrop darkened, set in app.js) fades in; what stands on the preview fades away but the iris
-     switch, at the bottom right, its iris twice as big, and a Now pill at the bottom centre on its line, both faint, in
-     white. A drag on the preview moves the sun */
-  .sky { opacity: var(--show); }
+  /* ── the showcase (the iris switch; Okay, 15 Oct 2026, 04:26, reshaped 04:59 and 05:09) ── What stood on the preview
+     goes at once (fading, it twitched while the sky darkened) and comes back at once; only the dial travels (app.js).
+     The sky (a 45° gradient, set in app.js) and the spotlight fade in; the iris switch is an X at the window's bottom
+     right, Now a pill at the bottom centre on its line, both faint, in white. A drag moves the sun along its day */
+  :is(.sky, .pool) { opacity: 0; transition: opacity var(--show-time) linear; }
+  #app.show :is(.sky, .pool) { opacity: 1; }
   #app.show main { --on-canvas: var(--white); --off-canvas: var(--ink); }
-  :is(.undos, .guides, .backdrops, .shadows) { opacity: calc(1 - var(--show)); }
-  #app.show :is(.undos, .guides, .backdrops, .shadows, #eye-box) { pointer-events: none; }
-  #app.show :is(.preview, .preview path) { cursor: grab; }
-  .eyes { gap: calc(var(--unit) * (1 - var(--show))); }
-  #eye-box { width: calc(var(--control-large) * (1 - var(--show))); opacity: calc(1 - var(--show)); }      /* the eye folds away; the iris takes the corner */
-  #app.show #eye-box { border-width: 0; }
-  .irisbox { width: var(--control-large); padding: 0; overflow: hidden; border-radius: var(--round-switch); }
-  .irisbox svg { display: block; flex: none; }
-  .irisbox circle { scale: calc(1 + var(--show)); transform-origin: 15.25px 15px; }      /* twice the iris in the showcase */
-  .nowpill { position: absolute; z-index: 3; left: 50%; bottom: var(--canvas-inset); translate: -50% 0; height: var(--control-large); padding: 0 var(--u4); border-radius: calc(var(--control-large) / 2);
-    font-family: var(--mono); text-transform: uppercase; opacity: var(--show); visibility: hidden; pointer-events: none; transition: visibility 0s var(--show-time); }
-  #app.show .nowpill { visibility: visible; pointer-events: auto; transition: visibility 0s 0s; }
+  #app.show :is(.undos, .guides, .backdrops, .shadows, .tip) { visibility: hidden; }
+  #app.show :is(#eye-box, .irisgo) { display: none; }
+  #app.show .eyes { position: fixed; }      /* the window's corner, from the first moment: it doesn't ride down with the preview */
+  #app.show :is(.preview, .preview path) { cursor: ew-resize; }      /* the sun goes left and right */
+  /* the iris switch: the iris in a box; pressed, its words slide out to its left (ACTIVATE SHOWCASE), which alone go
+     to the showcase (04:59: "we need affordance"); in the showcase an X, the way out */
+  .irisbox { padding: 0; overflow: hidden; border-radius: var(--round-switch); }
+  .iriskey { display: block; width: calc(var(--control-large) - 2 * var(--hair)); height: 100%; padding: 0; }
+  .iriskey svg { display: block; margin: 0 auto; }
+  .irisbox .x { display: none; }
+  #app.show .irisbox .x { display: inline; }
+  .irisgo { max-width: 0; height: 100%; padding: 0; overflow: hidden; white-space: nowrap; font-family: var(--mono); font-size: var(--t-s); text-transform: uppercase; letter-spacing: var(--track-100);
+    transition: max-width var(--iris-time) var(--view-ease), padding var(--iris-time) var(--view-ease); }
+  .irisgo > .ink { padding-left: var(--track-100); }      /* the tracking after the last letter, given back before the first, so the word stands centred */
+  .irisbox[aria-expanded="true"] .irisgo { max-width: var(--iris-words); padding: 0 var(--u2) 0 var(--u4); }
+  @media (hover: hover) { .irisgo:hover { text-decoration: underline; text-underline-offset: 0.2em; } }
+  /* Now: a pill, tracked 100; pressed, the hands spin to now and it shrinks into a round undo sign (.back), the way back */
+  .nowpill { position: absolute; z-index: 3; left: 50%; bottom: var(--canvas-inset); translate: -50% 0; display: grid; place-items: center; width: var(--now-pill); height: var(--control-large); padding: 0; border-radius: calc(var(--control-large) / 2);
+    font-family: var(--mono); text-transform: uppercase; letter-spacing: var(--track-100); visibility: hidden; transition: width var(--iris-time) var(--view-ease); }
+  .nowpill > * { grid-area: 1 / 1; transition: opacity var(--iris-time) linear; }
+  .nowpill .word > .ink { padding-left: var(--track-100); }
+  .nowpill svg { opacity: 0; }
+  .nowpill.back { width: var(--control-large); }
+  .nowpill.back .word { opacity: 0; }
+  .nowpill.back svg { opacity: var(--faint); }
+  @media (hover: hover) { .nowpill.back:hover svg { opacity: 1; } }
+  #app.show .nowpill { visibility: visible; }
+  /* over Now, once the dial has arrived: a two-headed arrow comes, sways left and right, and goes (04:59) */
+  .sunhint { position: absolute; z-index: 3; left: 50%; bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); translate: -50% 0; color: var(--white); opacity: 0; pointer-events: none; }
+  .sunhint svg { display: block; }
+  .sunhint.go { animation: sway var(--hint-time) ease-in-out; }
+  @keyframes sway { 0% { opacity: 0; transform: translateX(0); } 15% { opacity: var(--faint); } 35% { transform: translateX(calc(-1 * var(--u2))); } 60% { transform: translateX(var(--u2)); } 80% { opacity: var(--faint); transform: translateX(0); } 100% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .sunhint.go { animation: none; } }
 }

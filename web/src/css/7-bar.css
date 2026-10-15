@@ -15,10 +15,10 @@
   /* low contrast under the panel: no fills, thin light lines; what is chosen is a shade lighter */
   /* the bar's lower line is all monospace (Okay, 14 Oct 2026, 23:55: "All mono on the lower line") */
   .bar { font-family: var(--mono); }
-  /* the showcase: the bar bids farewell — its row closes and it sinks with the row's top, out of the window (Okay,
-     15 Oct 2026, 04:26). Not faded: under it is the page's paper, which would show through */
+  /* the showcase: the bar's row closes at once and the bar is out of the window (Okay, 15 Oct 2026, 05:09: only the
+     dial travels); not faded: under it is the page's paper, which would show through */
   .bar { align-self: start; }
-  #app.show .bar { pointer-events: none; }
+  #app.show .bar { visibility: hidden; }      /* the 10:10 tag stands above the bar's top: it would peek in */
   /* under the panel: play · how fast · the time and its half of the day · NOW, a half-gap between each (Okay: "equalize
      all paddings red dot to now, then halve them"), from the first of the six columns to the last. Each box is as wide
      as its words and the same room on either side of them; how fast takes what is left ("slider can grow"). */

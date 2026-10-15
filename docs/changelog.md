@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.38.15 (web version) · 15 Oct 2026
+
+- **The showcase, reshaped.** The iris switch opens to ACTIVATE SHOWCASE first; only those words go in. Going in and out, the panel, the bar and the switches go (and come back) at once and only the dial travels, eased — to 2/3 of the width of a portrait A4 fitted in the window, centred; out, back exactly where it stood.
+- The sky is a 45° gradient, lightest at the top left. A spotlight lies behind the dial and takes its shadow: an oval at sunrise and sunset (faintest, softest), a circle at midday (brightest, almost crisp).
+- The sun crosses a day in ten seconds — rising at the left, at midday from the top (40° high), setting at the right — then rises again. A drag across the window moves it along that day.
+- The iris switch is an X in the showcase (the way out); Now is tracked 100. Pressed, every hand turns twice and lands on now, and Now shrinks into an undo sign; pressed, the hands turn twice back and it grows into Now again. Over Now, a left-right arrow sways once when the dial arrives. The mark and "Dial Tool" are fainter and can't be pressed.
+- The shadows' soft edge is off while anything moves (the dial travelling, the panel sliding, the hands spinning, a drag) and comes back when it stops.
+
 ## beta 4.38.14 (web version) · 15 Oct 2026
 
 - **The showcase**: a new switch left of the eye, the iris alone. Pressed, it shows the dial alone and more: the backdrop darkens to a faint gradient (black at the bottom, the backdrop's colour much darkened at the top), the bar sinks away, and nothing stays but the mark and "Dial Tool" (top left), the iris (bottom right, twice as big) and a Now pill (bottom centre). The clock runs at 1× from where it was, shadows are on with the soft edge, and the sun goes round six times as fast as the minute hand, rising and setting once a round; a press or drag on the preview puts the sun there. Pressed again, back to where you were.

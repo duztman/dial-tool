@@ -1350,26 +1350,36 @@ const look = await page.evaluate(() => { const q = (s) => document.querySelector
 check(look.square && look.bar === 62 && look.play[0] === look.play[1] && look.play[2] === "50%" && look.mono && look.status === "none" && look.hint.includes("⌘ + scroll") && look.ruler <= 518,
   `the bar: a fifth higher (${look.bar}), no panel square, a round play, the time in monospace, no status line, how to zoom beside the zoom, the day slider no wider than an iPad's (${look.ruler})`);
 await shot("10-bar");
-{ // the showcase (Okay, 15 Oct 2026, 04:26): the iris switch, left of the eye — the dial alone and more
-  const q = () => page.evaluate(() => { const t = window.dial_tool, r = (s) => document.querySelector(s).getBoundingClientRect(), o = (s) => +getComputedStyle(document.querySelector(s)).opacity;
-    return { bar: Math.round(r(".bar").top), h: innerHeight, w: innerWidth, playing: t.playing, speed: t.speed, sun: t.show ? [t.show.sun.from, t.show.sun.rise] : null, version: o(".mast .quiet"), guides: o(".guides"), eye: Math.round(r("#eye-box").width),
-      iris: [Math.round(r("#iris-box").right), Math.round(r("#iris-box").bottom), r("#iris-box").top + r("#iris-box").height / 2], pill: [r("#show-now").left + r("#show-now").width / 2, r("#show-now").top + r("#show-now").height / 2, o("#show-now")],
-      sky: o(".sky"), guide_items: t.items.filter((i) => i.role === "guide").length, mast: getComputedStyle(document.querySelector(".panel h1")).color }; });
+{ // the showcase (Okay, 15 Oct 2026, 04:26, reshaped 04:59 and 05:09)
+  const q = () => page.evaluate(() => { const t = window.dial_tool, r = (s) => document.querySelector(s).getBoundingClientRect(), c = (s) => getComputedStyle(document.querySelector(s));
+    return { show: !!t.show, w: innerWidth, h: innerHeight, z: t.z, dial: t.z * t.S.dial_d, c: t.c.slice(), moving: t.moving(), playing: t.playing, speed: t.speed, t: t.S.t, phase: t.show ? t.show.phase : null, from: t.show ? t.sun().from : null,
+      bar: c(".bar").visibility, guides: c(".guides").visibility, open: document.querySelector(".irisbox").getAttribute("aria-expanded"), words: Math.round(r("#iris-go").width),
+      iris: [Math.round(r(".irisbox").right), Math.round(r(".irisbox").bottom), r(".irisbox").top + r(".irisbox").height / 2], x: c(".irisbox .x").display, pill: [r("#show-now").left + r("#show-now").width / 2, r("#show-now").top + r("#show-now").height / 2, Math.round(r("#show-now").width)],
+      mast: [c(".mast").opacity, c(".mast").pointerEvents], sky: c(".sky").opacity, guide_items: t.items.filter((i) => i.role === "guide").length,
+      soft: [...document.querySelectorAll('.preview g[clip-path^="url(#shadow-clip"]')].some((g) => g.getAttribute("filter")), letter: c("#show-now").letterSpacing }; });
   const before = await q();
-  await page.click("#iris-box"); await page.waitForTimeout(1300); await page.mouse.move(5, 300);
+  await page.click("#iris-box"); await page.waitForTimeout(400);
+  const opened = await q();
+  await page.click("#iris-go"); await page.waitForTimeout(150);
+  const going = await q();
+  await page.waitForTimeout(1300); await page.mouse.move(5, 300);
   const on = await q();
-  await page.waitForTimeout(1500);
+  await page.waitForTimeout(1000);
   const later = await q();
-  const mid = await page.evaluate(() => { const t = window.dial_tool, r = t.svg.getBoundingClientRect(); return [r.left + t.c[0], r.top + t.c[1], t.S.dial_d / 2 * t.z]; });
-  await page.mouse.move(mid[0], mid[1] - mid[2] / 2); await page.mouse.down(); await page.mouse.move(mid[0] + mid[2] / 2, mid[1], { steps: 4 });
+  await page.mouse.move(on.w / 4, on.h / 2); await page.mouse.down(); await page.mouse.move(on.w / 4 + 1, on.h / 2);
   const dragged = await q(); await page.mouse.up();
+  await page.click("#show-now"); await page.waitForTimeout(300);
+  const spinning = await q();
+  await page.waitForTimeout(1700);
+  const nowed = await q(), clock = await page.evaluate(() => { const d = new Date(); return d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds(); });
+  await page.click("#show-now"); await page.waitForTimeout(2000);
+  const unnowed = await q();
   await page.click("#iris-box"); await page.waitForTimeout(1300);
   const back = await q();
-  const inset = 12;
-  check(on.bar >= on.h && on.playing && on.speed === 1 && on.version === 0 && on.guides === 0 && on.eye === 0 && on.iris[0] === on.w - inset && on.iris[1] === on.h - inset && Math.abs(on.pill[0] - on.w / 2) < 1 && Math.abs(on.pill[1] - on.iris[2]) < 0.5 && on.pill[2] === 1 && on.sky === 1 && on.guide_items === 0 && /^(rgb\(255, 255, 255\)|color\(srgb 1 1 1\))$/.test(on.mast)
-      && later.sun[0] > on.sun[0] && Math.abs(dragged.sun[0] - 90) < 1 && dragged.sun[1] < 72
-      && back.bar === before.bar && back.playing === before.playing && back.version === 1 && back.guides === 1 && back.eye === 32 && back.sky === 0,
-    `the iris switch: the showcase — the bar gone (${on.bar} ≥ ${on.h}), the clock running at 1×, the version, Guides and the eye away, the iris at the bottom right, Now at the bottom centre on its line, the sky dark, no guides drawn, "Dial Tool" white; the sun goes round (${on.sun[0].toFixed(1)}° → ${later.sun[0].toFixed(1)}°) and a drag puts it where the pointer is (${dragged.sun[0].toFixed(0)}°, ${dragged.sun[1].toFixed(0)}° high); pressed again, all as it was`);
+  const page_px = Math.min(on.w / 210, on.h / 297) * 210 * 2 / 3, inset = 12;
+  const sc = [['!before.show', !before.show], ['opened.open === "true"', opened.open === "true"], ['opened.words > 100', opened.words > 100], ['!opened.show', !opened.show], ['going.show', going.show], ['going.moving', going.moving], ['going.bar === "hidden"', going.bar === "hidden"], ['Math.abs(on.dial - page_px) < 0.5', Math.abs(on.dial - page_px) < 0.5], ['Math.abs(on.c[0] - on.w / 2) < 0.5', Math.abs(on.c[0] - on.w / 2) < 0.5], ['Math.abs(on.c[1] - on.h / 2) < 0.5', Math.abs(on.c[1] - on.h / 2) < 0.5], ['!on.moving', !on.moving], ['on.soft', on.soft], ['on.playing', on.playing], ['on.speed === 1', on.speed === 1], ['on.guides === "hidden"', on.guides === "hidden"], ['on.guide_items === 0', on.guide_items === 0], ['on.iris[0] === on.w - inset', on.iris[0] === on.w - inset], ['on.iris[1] === on.h - inset', on.iris[1] === on.h - inset], ['on.x !== "none"', on.x !== "none"], ['Math.abs(on.pill[0] - on.w / 2) < 1', Math.abs(on.pill[0] - on.w / 2) < 1], ['Math.abs(on.pill[1] - on.iris[2]) < 0.5', Math.abs(on.pill[1] - on.iris[2]) < 0.5], ['on.mast.join() === "0.5,none"', on.mast.join() === "0.5,none"], ['on.sky === "1"', on.sky === "1"], ['on.letter === "1.3px"', on.letter === "1.3px"], ['Math.abs(later.phase - on.phase - 0.1) < 0.03', Math.abs(later.phase - on.phase - 0.1) < 0.03], ['Math.abs(dragged.phase - 0.25) < 0.01', Math.abs(dragged.phase - 0.25) < 0.01], ['Math.abs(dragged.from - 315) < 1', Math.abs(dragged.from - 315) < 1], ['spinning.moving', spinning.moving], ['nowed.pill[2] === 32', nowed.pill[2] === 32], ['Math.abs(nowed.t % 43200 - clock % 43200) < 5', Math.abs(nowed.t % 43200 - clock % 43200) < 5], ['unnowed.pill[2] === 64', unnowed.pill[2] === 64], ['Math.abs(unnowed.t - nowed.t) > 5', Math.abs(unnowed.t - nowed.t) > 5], ['!back.show', !back.show], ['Math.abs(back.z - before.z) < 0.01 && Math.abs(back.c[0] - before.c[0]) < 0.5', Math.abs(back.z - before.z) < 0.01], ['back.bar === "visible"', back.bar === "visible"], ['back.guides === "visible"', back.guides === "visible"], ['back.playing === before.playing', back.playing === before.playing]];
+  check(sc.every((x) => x[1]),
+    sc.filter((x) => !x[1]).map((x) => x[0]).join(' | ') + `the iris switch opens to ACTIVATE SHOWCASE (${opened.words} px), which alone goes in: the bar and switches gone at once, the dial travelling (${going.moving}) to 2/3 of an A4 fitted in the window (${on.dial.toFixed(1)} = ${page_px.toFixed(1)} px), centred, the soft edge back once still; the clock at 1×; the X at the corner, Now (tracked ${on.letter}) on its line; the sun crosses a day in ten seconds (+${(later.phase - on.phase).toFixed(2)} a second) and a drag puts it along it (a quarter across: ${dragged.from.toFixed(0)}°); Now spins the hands to now and shrinks to an undo (${nowed.pill[2]} px), which spins them back; the X goes back to where we were`);
   const mark = await page.evaluate(() => { const h = document.querySelector(".panel .title h1"), look = getComputedStyle(h), probe = document.createElement("span"); probe.style.cssText = "display:inline-block;width:0;height:0"; h.append(probe); const base = probe.getBoundingClientRect().top; probe.remove();
     const pen = document.createElement("canvas").getContext("2d"); pen.font = `${look.fontWeight} ${look.fontSize} ${look.fontFamily}`; const cap = pen.measureText("D").actualBoundingBoxAscent, ring = document.querySelector("#logo circle").getBoundingClientRect();
     return +((ring.top + ring.bottom) / 2 - (base - cap / 2)).toFixed(2); });
