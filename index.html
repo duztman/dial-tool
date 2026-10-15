@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.41.14 · built 2026-10-15 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.41.15 · built 2026-10-15 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -5680,7 +5680,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.41.14";
+var VERSION = "beta 4.41.15";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -11084,6 +11084,8 @@ var DialTool = class _DialTool {
       }
       const pane = this.rows.find((r) => r.fold === "Export/Gallery");
       if (pane && this.is_folded(pane)) this.fold(pane, false);
+      const files = this.rows.find((r) => r.fold === "Export/Export a file");
+      if (files && !this.is_folded(files)) this.fold(files, true);
       const tabs = $(".panel .tabs"), held = getComputedStyle(tabs).position === "sticky";
       const target = $(".gallery").closest(".pane");
       target.style.scrollMarginTop = held ? tabs.offsetHeight + "px" : "";
@@ -11096,7 +11098,10 @@ var DialTool = class _DialTool {
   row_gallery(wrap) {
     wrap.className = "examples gallery";
     const grid = el("div", { className: "cards" });
-    for (const e of [...GALLERY, ...EXAMPLES.map((x) => ({ ...x, note: `${x.name}: one of the guidebook's classic dials` }))]) {
+    const cards = [...GALLERY, ...EXAMPLES.map((x) => ({ ...x, note: `${x.name}: one of the guidebook's classic dials` }))];
+    const bauhaus = cards.findIndex((e) => e.name === "Bauhaus");
+    if (bauhaus > 2) cards.splice(2, 0, ...cards.splice(bauhaus, 1));
+    for (const e of cards) {
       const card = el("a", { href: e.link, title: e.note });
       card.innerHTML = e.picture;
       card.append(el("span", { textContent: e.name }));
