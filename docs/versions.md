@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.41.18 | 15 Oct 2026 | web | [`6b1d798`](https://github.com/duztman/dial-tool/tree/6b1d7987872c5671a3fac23f49c46b80fce03bae) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/6b1d7987872c5671a3fac23f49c46b80fce03bae/web/dial-tool.html) | beta 4.41.18: Montgomery fifth, Okay's 12 + 24, Rubik; a selection keeps the scroll |
 | 4.41.17 | 15 Oct 2026 | web | [`c72a30c`](https://github.com/duztman/dial-tool/tree/c72a30c16b0fe44f0ad23313604c694a50866b2f) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/c72a30c16b0fe44f0ad23313604c694a50866b2f/web/dial-tool.html) | beta 4.41.17: Montgomery after 12 + 24 hours in the Gallery |
 | 4.41.16 | 15 Oct 2026 | web | [`2f19c78`](https://github.com/duztman/dial-tool/tree/2f19c7845fd338214b0c3af3c3a271434703a0a8) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/2f19c7845fd338214b0c3af3c3a271434703a0a8/web/dial-tool.html) | beta 4.41.16: Okay's diver in the Gallery, fourth |
 | 4.41.15 | 15 Oct 2026 | web | [`72b58a8`](https://github.com/duztman/dial-tool/tree/72b58a8e6c894ecd573498ee0ce7d1dea41edcc6) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/72b58a8e6c894ecd573498ee0ce7d1dea41edcc6/web/dial-tool.html) | beta 4.41.15: Bauhaus third in the Gallery; the Gallery pill folds Export a file |
