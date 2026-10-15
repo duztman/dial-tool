@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.41.8 (web version) · 15 Oct 2026
+
+- **The showcase has 10:10 beside Now**: the same whirl, to the classic pose. Whichever is pressed turns into the undo sign; the other stays where it is. The way back is always to the time first shown.
+- **A hands key at the showcase's bottom left**, across from the X: round, the Hands sign inside. Pressed, it hides the hands (filled, the sign dark); the dial's own Show hands is left as it is.
+
 ## beta 4.41.7 (web version) · 15 Oct 2026
 
 - **The showcase's Now, rechoreographed**: the hour hand turns once clockwise, the minute hand once anticlockwise, both landing on the time; the seconds hand makes no turn and goes the short way to its place meanwhile. Slow to start, slow to land. Going back, each big hand turns the other way. (Was: every hand two turns, the same way.)

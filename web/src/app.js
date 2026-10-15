@@ -272,6 +272,9 @@ const TOOL_ICONS = {
   // the showcase switch, left of the eye (Okay, 15 Oct 2026, 04:26: "just the iris inside same box"): the eye's iris
   // alone, where it stands in the eye. In the showcase it is the way out: two of the eye's rays cross on it, an X run
   // out to the box (04:59: "iris becomes an x (2rayiris)"); 1, not the eye's 0.5, so it reads while faint
+  // the showcase's hands key (07:40): the Hands section's sign drawn again for a 38 inside a round key, lines 1 as the
+  // X beside it; the minute hand up, the hour hand at four, the hub a dot
+  hands_key: `<path d="M19 19V8.75M19 19L25.5 23.25" stroke-width="1"/><circle cx="19" cy="19" r="1.75" fill="currentColor" stroke="none"/>`,
   iris: `<circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/><path class="x" d="M-0.75 -1L31.25 31M31.25 -1L-0.75 31" stroke-width="1" stroke-linecap="butt"/>`,
   // the showcase's hint over Now: a line with a head at each end — the sun can be moved left and right (04:59); on 108
   // by 36, three times its first size, white with a glow (05:43: "can't see it… 3x size")
@@ -934,7 +937,7 @@ class DialTool {
     this.set_speed(1);
     const guides = this.guides_box();
     // on the preview: undo · redo top left, beside the panel (Okay, 13 Oct 2026) · the Guides switch top right · Backdrop bottom left
-    this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.sun_hint);
+    this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.ten_pill, this.hands_key, this.sun_hint);
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     root.append(this.sheet());      // a phone's gripper, on the drawer's top line
     requestAnimationFrame(() => this.level_title());
@@ -1038,7 +1041,8 @@ class DialTool {
       if (!was.away) { app.classList.remove("away"); this.eye_button.setAttribute("aria-pressed", "false"); }
       this.set_speed(was.speed);
       if (!was.playing) this.play(false);
-      this.now_pill.classList.remove("back");
+      for (const b of [this.now_pill, this.ten_pill]) { b.classList.remove("back"); b.title = b.ariaLabel = b.dataset.says; }
+      this.hands_key.setAttribute("aria-pressed", "false"); this.hands_key.title = "Hide the hands";
     }
     this.iris_button.setAttribute("aria-pressed", String(on));
     app.style.setProperty("--title-end", this.title.getBoundingClientRect().right.toFixed(1) + "px");
@@ -1120,22 +1124,26 @@ class DialTool {
   /** Now in the showcase: the hands land on the time it is now; the pill shrinks into an undo sign. Pressed then, they
    *  go back to the time they showed (as it has run on since), each the other way, and the sign grows back into Now
    *  (Okay, 04:59; Okay's choice of the way back) */
-  show_now() {
+  //  10:10 does the same, to 10:10 (07:40). The one pressed turns into the undo sign; the other stays as it is. The other
+  //  pressed then takes the hands to its time and the sign moves to it; the way back is still to the time first shown.
+  show_now(kind = "now") {
     const sh = this.show, beat = G.BEATS[this.S.ha_beat][1];
     const from = G.hand_angles(this.S.t, beat);
-    if (!sh.back) {
-      const d = new Date(), now = d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000;
-      sh.back = { t: this.S.t, at: performance.now() };
-      this.set_time(now);
-      sh.spin = { from, way: 1, t0: performance.now() };
-      this.now_pill.classList.add("back");
-    } else {
+    if (sh.back && sh.back.by === kind) {
       this.set_time(sh.back.t + (performance.now() - sh.back.at) / 1000);
       sh.back = null;
       sh.spin = { from, way: -1, t0: performance.now() };
-      this.now_pill.classList.remove("back");
+    } else {
+      const d = new Date(), now = d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000;
+      sh.back = sh.back ? { ...sh.back, by: kind } : { t: this.S.t, at: performance.now(), by: kind };
+      this.set_time(kind === "now" ? now : 10 * 3600 + 600 + this.half());
+      sh.spin = { from, way: 1, t0: performance.now() };
     }
-    this.now_pill.title = this.now_pill.ariaLabel = sh.back ? "Back to the time it showed" : "The time it is now";
+    for (const b of [this.now_pill, this.ten_pill]) {
+      const back = !!sh.back && b.classList.contains(sh.back.by);
+      b.classList.toggle("back", back);
+      b.title = b.ariaLabel = back ? "Back to the time it showed" : b.dataset.says;
+    }
     this.render();
   }
 
@@ -1285,8 +1293,29 @@ class DialTool {
     this.eye_box = el("div", { className: "eyes" }, this.iris_box, eye);
     // the showcase's Now: a pill at the bottom centre, on the iris's line (04:26: "a button appeared bottom center:
     // NOW!"); pressed, the hands spin to now and it shrinks into an undo sign, the way back (show_now)
-    this.now_pill = el("button", { type: "button", className: "onview nowpill", id: "show-now", title: "The time it is now", ariaLabel: "The time it is now", onclick: () => this.show_now() }, el("span", { className: "word", textContent: "Now" }));
-    this.now_pill.insertAdjacentHTML("beforeend", icon(TOOL_ICONS.undo));
+    // Beside it, 10:10, the pose watches are shown in (Okay, 15 Oct 2026, 07:40): the same whirl to 10:10. Whichever was
+    // pressed turns into the undo sign; the other stays as it is (show_now)
+    const pill = (kind, id, word, says) => {
+      const b = el("button", { type: "button", className: "onview nowpill " + kind, id, title: says, ariaLabel: says, onclick: () => this.show_now(kind) }, el("span", { className: "word", textContent: word }));
+      b.insertAdjacentHTML("beforeend", icon(TOOL_ICONS.undo));
+      b.dataset.says = says;
+      return b;
+    };
+    this.now_pill = pill("now", "show-now", "Now", "The time it is now");
+    this.ten_pill = pill("ten", "show-ten", "10:10", "10:10, the classic pose");
+    // the showcase's bottom left corner: the hands shown or hidden, a round key with the Hands sign inside (Okay, 07:40:
+    // "show/hide hands. We have a hands icon, adapt to size. Round with hands inside"). The showcase's alone; the
+    // dial's own Show hands is left as it is
+    this.hands_key = el("button", { type: "button", className: "onview handskey", id: "hands-key", title: "Hide the hands", ariaLabel: "Hands" });
+    this.hands_key.innerHTML = icon(TOOL_ICONS.hands_key, 38);
+    this.hands_key.setAttribute("aria-pressed", "false");
+    this.hands_key.onclick = () => {
+      const hide = !this.show.nohands;
+      this.show.nohands = hide;
+      this.hands_key.setAttribute("aria-pressed", String(hide));
+      this.hands_key.title = hide ? "Show the hands" : "Hide the hands";
+      this.render();
+    };
     // over it, the hint that the sun moves left and right (hint())
     this.sun_hint = el("div", { className: "sunhint", id: "sun-hint" });
     this.sun_hint.innerHTML = icon(TOOL_ICONS.both_ways, 108, 36);
@@ -3434,7 +3463,7 @@ class DialTool {
   }
 
   draw() {
-    const S = this.show ? { ...this.S, guides: false } : this.S;      // the showcase: no guides
+    const S = this.show ? { ...this.S, guides: false, ha_on: this.S.ha_on && !this.show.nohands } : this.S;      // the showcase: no guides; its hands key may hide the hands
     const day = G.shows_day(S) ? G.day_hour(S) : null;       // an am · pm window follows the time shown, in steps of six minutes
     if (day !== this.day_drawn) { this.day_drawn = day; this.static_dirty = true; }
     if (!this.statik || this.static_dirty) {

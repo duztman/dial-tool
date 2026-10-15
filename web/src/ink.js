@@ -24,6 +24,7 @@ const INKED = [
   "#ampm",                   // AM · PM, the time's own window
   ".fit > span",             // Fit, beside its magnifier
   "#show-now > .word",       // the showcase's Now pill (15 Oct 2026)
+  "#show-ten > .word",       // and its 10:10 pill (15 Oct 2026, 07:40)
   ".irisgo",                 // ACTIVATE SHOWCASE, beside the iris
   "#now",                    // NOW, beside it (Okay, 14 Oct 2026: "make sure the inner type is centered with equal padding within buttons")
   "#unit",                   // mm · pt · in · lig

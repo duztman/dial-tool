@@ -159,6 +159,21 @@
   .nowpill.back svg { opacity: var(--faint); }
   @media (hover: hover) { .nowpill.back:hover svg { opacity: 1; } }
   #app.show .nowpill { visibility: visible; }
+  /* Now and 10:10 side by side, the gap between them on the dial's centre line; each is held by its inner edge, so the
+     one that shrinks into the undo sign shrinks toward the middle and the other doesn't move (Okay, 15 Oct 2026, 07:40:
+     "next to now, 10:10. Selected turns undo, other stays still"). 10:10 is two letters (and their tracking) wider */
+  .nowpill.now { translate: calc(-100% - var(--unit) / 2) 0; }
+  .nowpill.ten { translate: calc(var(--unit) / 2) 0; }
+  #app.show .nowpill.ten { width: calc(var(--show-pill) + 2ch + 2 * var(--track-100)); }
+  #app.show .nowpill.ten.back { width: var(--show-key); }
+  /* the hands key: the showcase's bottom left corner, across from the X; round, the Hands sign inside, as faint as the
+     X. Pressed, the hands are hidden and the key is filled, the sign dark on it (07:40) */
+  .handskey { position: fixed; z-index: 3; left: var(--margin); bottom: var(--margin); width: var(--show-key); height: var(--show-key); padding: 0; border-radius: 50%; visibility: hidden; }
+  .handskey svg { display: block; opacity: var(--show-faint); }
+  #app.show .handskey { visibility: visible; }
+  .handskey[aria-pressed="true"] { border-color: transparent; background: color-mix(in srgb, var(--white) calc(var(--show-faint) * 100%), transparent); color: var(--night); }
+  .handskey[aria-pressed="true"] svg { opacity: 1; }
+  @media (hover: hover) { .handskey:hover svg { opacity: 1; } .handskey[aria-pressed="true"]:hover { background: var(--white); } }
   /* over Now, once the dial has arrived: a two-headed arrow, white and glowing, comes, sways left and right, and goes;
      centred between the dial and Now (app.js sets its top) (04:59; 05:43: "can't see it. Make it white and glow and
      fade, 3x size") */

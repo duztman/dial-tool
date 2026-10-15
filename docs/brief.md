@@ -256,6 +256,7 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 15 Oct | **FIT on a phone sized to its contents, equal room either side** (beta 4.41.5). | Okay, 07:21. Claude's reading: "pushing past the empty space" = it grows to the left into the room the day slider leaves; its right edge stays on the margin. |
 | 15 Oct | **Every thick line stands inside the margins**, the pinned part's too (beta 4.41.6); in the margins paper meets the grey with no line. | Okay, 07:29, desktop included. |
 | 15 Oct | **Showcase Now: hour hand one turn clockwise, minute hand one anticlockwise, seconds the short way, all eased in and out** (beta 4.41.7); replaces the double turn of 04:59. Back mirrors it. | Okay, 07:36. |
+| 15 Oct | **Showcase: 10:10 pill beside Now; a round hands key at the bottom left** (beta 4.41.8). The pressed pill turns undo, the other stays; the key hides the hands in the showcase only. | Okay, 07:40. |
 
 ## 5 · Open questions
 
