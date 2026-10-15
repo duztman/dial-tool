@@ -1210,7 +1210,7 @@ await shot("8-reopened");
 
 // ── examples: the five first dials, now in the Gallery, each a link ──
 await tab("Export");
-check(await page.$$eval(".examples a svg", (e) => e.length) === await page.$$eval(".gallery a svg", (e) => e.length) && (await page.$$eval(".gallery a", (a) => a.map((x) => x.textContent))).slice(-5).join(" ") === "Field Diver Bauhaus Sector Gauge", "the five first examples are part of the Gallery now, after its own dials");
+check(await page.$$eval(".examples a svg", (e) => e.length) === await page.$$eval(".gallery a svg", (e) => e.length) && (await page.$$eval(".gallery a", (a) => a.map((x) => x.textContent))).slice(-4).join(" ") === "Field Diver Sector Gauge" && (await page.$$eval(".gallery a", (a) => a[2].textContent)) === "Bauhaus", "the five first examples are part of the Gallery now, after its own dials; Bauhaus third (Okay, 15 Oct 2026, 10:47)");
 const example = await page.getAttribute('.gallery a:has-text("Diver") >> nth=-1', "href");
 await page.click('.gallery a:has-text("Diver") >> nth=-1');
 await page.waitForFunction((h) => location.hash === h && window.dial_tool.statik && window.dial_tool.S.ui_section === 4, example, { timeout: 8000 }).catch(() => {});
@@ -1334,10 +1334,12 @@ await tab("Export");
     const at = await page.evaluate(() => { const g = document.querySelector(".gallery").getBoundingClientRect(), f = document.querySelector(".form").getBoundingClientRect(); return [window.dial_tool.S.ui_section, g.top < f.bottom && g.bottom > f.top]; });
     check(Math.abs(w.mid) < 0.6 && w.high && at[0] === 4 && at[1], `the Gallery pill: centred between the version and the unit box (${w.mid.toFixed(1)}), as high; pressed, Export with the Gallery in view`);
   }
+  check(await page.evaluate(() => JSON.parse(localStorage.getItem("dial-tool-folds") || "{}")["Export/Export a file"] === true) && !(await page.isVisible("#export-pdf")), "the Gallery pill shuts the eye of Export a file, so the Gallery has the room (Okay, 15 Oct 2026, 10:47)");
+  { const f = JSON.parse(await page.evaluate(() => localStorage.getItem("dial-tool-folds") || "{}")); delete f["Export/Export a file"]; await page.evaluate((x) => { localStorage.setItem("dial-tool-folds", x); window.dial_tool.folds = JSON.parse(x); window.dial_tool.show_section(); }, JSON.stringify(f)); }      // open again for the checks after
   await page.$eval(".gallery", (e) => e.scrollIntoView());
   await shot("4c13-gallery");
   const before = await S("JSON.stringify(S.rings.map((r) => r.name))");
-  await page.click(".gallery a >> nth=4");      // after Okay's watch (4.41.9) and three more
+  await page.click(".gallery a >> text=Montgomery");      // by its name: the cards' order changes (Bauhaus third, 4.41.14)
   await page.waitForFunction((b) => JSON.stringify(window.dial_tool.S.rings.map((r) => r.name)) !== b, before);
   check(await S("S.rings[0].name === 'Every fifth minute' && S.dial_d === 38"), "a card opens its dial: Montgomery, 38 mm, every fifth minute on top");
   await frame(); await shot("4c14-gallery-montgomery");

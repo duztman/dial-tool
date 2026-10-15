@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.41.15 (web version) · 15 Oct 2026
+
+- **Bauhaus is the Gallery's third dial**, after Okay's watch and his B-Uhr.
+- **The Gallery pill folds Export a file** (its eye shut), so the Gallery has the room; open it again with its eye.
+
 ## beta 4.41.14 (web version) · 15 Oct 2026
 
 - **Fixed: steppers showed through the open bio.**

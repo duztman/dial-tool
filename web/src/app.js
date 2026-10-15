@@ -3169,6 +3169,8 @@ class DialTool {
       if (this.S.ui_section !== i) { this.S.ui_section = i; this.show_section(); this.render(); }
       const pane = this.rows.find((r) => r.fold === "Export/Gallery");
       if (pane && this.is_folded(pane)) this.fold(pane, false);
+      const files = this.rows.find((r) => r.fold === "Export/Export a file");      // the pinned pane shuts its eye, so the Gallery has the room (Okay, 15 Oct 2026, 10:47: "When gallery clicked, can you shuteye the export persistent?")
+      if (files && !this.is_folded(files)) this.fold(files, true);
       const tabs = $(".panel .tabs"), held = getComputedStyle(tabs).position === "sticky";      // a phone: the tabs stay on top, so the pane stops under them
       const target = $(".gallery").closest(".pane");
       target.style.scrollMarginTop = held ? tabs.offsetHeight + "px" : "";
@@ -3182,7 +3184,10 @@ class DialTool {
   row_gallery(wrap) {
     wrap.className = "examples gallery";
     const grid = el("div", { className: "cards" });
-    for (const e of [...GALLERY, ...EXAMPLES.map((x) => ({ ...x, note: `${x.name}: one of the guidebook's classic dials` }))]) {
+    const cards = [...GALLERY, ...EXAMPLES.map((x) => ({ ...x, note: `${x.name}: one of the guidebook's classic dials` }))];
+    const bauhaus = cards.findIndex((e) => e.name === "Bauhaus");      // third, after Okay's watch and his B-Uhr (Okay, 15 Oct 2026, 10:47: "Bauhaus is a darling. Move it to 3rd on gallery")
+    if (bauhaus > 2) cards.splice(2, 0, ...cards.splice(bauhaus, 1));
+    for (const e of cards) {
       const card = el("a", { href: e.link, title: e.note });
       card.innerHTML = e.picture;
       card.append(el("span", { textContent: e.name }));
