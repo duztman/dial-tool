@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.41.22 (web version) · 15 Oct 2026
+
+- **Gallery:** Sector is Okay's own version (a thin band round the inner pies).
+
 ## beta 4.41.21 (web version) · 15 Oct 2026
 
 - **Dial links have no dashes**: a tilde where a dash was, so a pasted link breaks only at its line's end. Old links still open.

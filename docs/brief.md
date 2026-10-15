@@ -276,6 +276,7 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 15 Oct | **The Gallery's World time is Okay's own** (beta 4.41.20); name and note kept. | Okay, 12:08, his link. |
 | 15 Oct | **Links have no dashes** (beta 4.41.21): "~" stands where "-" stood, so a pasted link breaks only where its line runs out; old links still open. World time before Elapsed time in the Gallery. | Okay, 12:11. |
 | 15 Oct | *Open:* shorter links — scheme 2 with short keys and hex colours (≈ 19 % shorter) or also a deflate dictionary (≈ 25 %, one small library). Build list #246. | Okay, 12:11: "any chance of making this shorter". |
+| 15 Oct | **The Gallery's Sector is Okay's own** (beta 4.41.22); the guide's preset stays as it is. | Okay, 12:47, his link. |
 
 ## 5 · Open questions
 
