@@ -3442,6 +3442,7 @@ class DialTool {
     this.items = items;
     const backdrop = S.out_production ? [1, 1, 1, 1] : S.c_backdrop;
     this.backdrop.setAttribute("fill", to_hex(backdrop));
+    this.main.style.setProperty("--canvas-fill", to_hex(backdrop));      // the backdrop's colour, for a switch whose words show (6-preview.css)
     this.sky_stops[0].setAttribute("stop-color", to_hex(backdrop.map((v, i) => (i < 3 ? v * SKY_TOP : 1))));      // the showcase's sky: the backdrop, much darker, at the top left…
     this.sky_stops[1].setAttribute("stop-color", "#000");                                                          // …to black at the bottom right,
     const [sw_, sh_] = this.size(), reach = ((sw_ + sh_) / 2).toFixed(1);                                         // at 45°: along (1, 1), as far as the far corner

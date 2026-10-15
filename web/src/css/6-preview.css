@@ -167,4 +167,8 @@
   .sunhint.go { animation: sway var(--hint-time) ease-in-out; }
   @keyframes sway { 0% { opacity: 0; transform: translateX(0); } 18% { opacity: 1; } 38% { transform: translateX(calc(-1 * var(--u4))); } 62% { transform: translateX(var(--u4)); } 82% { opacity: 1; transform: translateX(0); } 100% { opacity: 0; } }
   @media (prefers-reduced-motion: reduce) { .sunhint.go { animation: none; } }
+  /* a switch whose words show is filled with the backdrop's colour, so what is under it (the dial) doesn't show through
+     its words (Okay, 15 Oct 2026, 07:07: "these buttons get solid bg color when labels visible"): the iris switch open
+     (ACTIVATE SHOWCASE), the labelled switches — always on a wide screen, on a phone while unfolded (8-narrow.css) */
+  .irisbox[aria-expanded="true"], :is(.guidesbox, .guidesmore, .backdropbox) { background: var(--canvas-fill); }
 }

@@ -70,6 +70,7 @@
     .backdropbox { --sign-w: var(--dot); }
     :is(.guidesbox, .backdropbox) > .word { display: inline-block; max-width: 0; overflow: hidden; white-space: nowrap; transition: max-width var(--iris-time) var(--view-ease), margin var(--iris-time) var(--view-ease); }
     main.words :is(.guidesbox, .backdropbox) { padding-right: var(--u4); }
+    main:not(.words) :is(.guidesbox, .guidesmore, .backdropbox) { background: none; }      /* folded to their signs, the switches are outlines again */
     main.words :is(.guidesbox, .backdropbox) > .word { max-width: var(--word-max); margin-left: var(--unit); }
     /* in the showcase the mark (larger here) and "Dial Tool" stand at the top left: the drawer is gone */
     #app.show :is(.about, .logo) { width: var(--logo-narrow); }
