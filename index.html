@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.41.5 · built 2026-10-15 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.41.6 · built 2026-10-15 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -396,6 +396,10 @@
 
   .pinned, .form { padding: 0 var(--margin); }
   .pinned { border-bottom: var(--thick) solid var(--ink); }      /* what stays put ends on a thick line, on every tab and screen (Okay, 15 Oct 2026, 06:20: "the thick black bars… seems good. Do all adhere?"); a hairline until then on Dial, Rings and Export */
+  /* …inside the margins, like every other thick line (Okay, 15 Oct 2026, 07:29: "lower hr bar should be inset. Hard cut from
+     white to gray on margins. Desktop included"): the border's band stays (nothing under it moves) but is clear, so the
+     panel's paper shows in the margins and meets the grey below with no line; the ink is drawn across the content only */
+  .pinned { border-bottom-color: transparent; background: linear-gradient(var(--ink) 0 0) 50% 100% / calc(100% - 2 * var(--margin)) var(--thick) no-repeat border-box; }
   .pinned > .pane:last-child { --air: calc(3 * var(--unit)); }
   .form { --surface: var(--scroll); --inset: var(--paper); --well: var(--field); --row-rule: var(--line-on-grey);
     flex: 1; min-height: 0; overflow-y: auto; padding-bottom: calc(6 * var(--unit)); background: var(--surface); }
@@ -446,7 +450,6 @@
   .tabsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: end; min-height: calc(var(--head) + var(--unit)); padding-top: calc(1.5 * var(--unit)); border-top: var(--thick) solid var(--ink); }
   .tabsbar > .segs { grid-column: 2 / -1; }
   .tabsbar .segs > button { height: var(--tab-high); font-weight: 600; }
-  .pinned:has(> :is(.tabsbar, .windowcards):last-child) { border-bottom: var(--thick) solid var(--ink); }      /* the hand tabs stand on a pane's thick line: the pane under them is the one they choose */
   /* tabs: the hand tabs and the window cards. They touch each other and stand on the line under them with no foot
      of their own; between two tabs the top has a sharp notch, a V. Each tab cuts its own two top corners (a
      chamfer as deep as the notch, --tab-notch), so two neighbours make the V between them; the first tab's left
@@ -5649,7 +5652,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.41.5";
+var VERSION = "beta 4.41.6";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
