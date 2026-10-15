@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.41.4 · built 2026-10-15 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.41.5 · built 2026-10-15 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -1213,6 +1213,7 @@
     .bar .group { border-left: 0; }
     .bar .day { flex: 1 1 0; height: var(--bar-day-narrow); padding: 0 var(--margin); }
     .bar .viewing { padding: 0 var(--margin) 0 0; }
+    .bar .viewing > .fit { width: auto; padding: 0 var(--u3); }      /* as wide as its sign and word need, with NOW's room either side; the day slider gives way (Okay, 15 Oct 2026, 07:21: "why so squeezed? Allow equal space from its sides") */
     .bar .lead { padding-left: var(--margin); }      /* a phone has no room to keep: the row starts at the margin */
     .bar .humpname { display: none; }               /* the bar's top line is too close here for "1×" over the ball */
     /* here the speed is written in the thumb itself, in the pixel face, black on its grey, in place of its eye (Okay,
@@ -5648,7 +5649,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.41.4";
+var VERSION = "beta 4.41.5";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;

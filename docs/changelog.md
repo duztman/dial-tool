@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.41.5 (web version) · 15 Oct 2026
+
+- **On a phone FIT is as wide as its sign and word need**, with equal room either side (9 px, as NOW has); the day slider gives way.
+
 ## beta 4.41.4 (web version) · 15 Oct 2026
 
 - **The narrow layout's font sheet offers link and file only**: Installed (a desktop Chrome or Edge thing) isn't shown there, and the two keep their second lines.

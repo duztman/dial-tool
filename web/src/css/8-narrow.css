@@ -16,6 +16,7 @@
     .bar .group { border-left: 0; }
     .bar .day { flex: 1 1 0; height: var(--bar-day-narrow); padding: 0 var(--margin); }
     .bar .viewing { padding: 0 var(--margin) 0 0; }
+    .bar .viewing > .fit { width: auto; padding: 0 var(--u3); }      /* as wide as its sign and word need, with NOW's room either side; the day slider gives way (Okay, 15 Oct 2026, 07:21: "why so squeezed? Allow equal space from its sides") */
     .bar .lead { padding-left: var(--margin); }      /* a phone has no room to keep: the row starts at the margin */
     .bar .humpname { display: none; }               /* the bar's top line is too close here for "1×" over the ball */
     /* here the speed is written in the thumb itself, in the pixel face, black on its grey, in place of its eye (Okay,

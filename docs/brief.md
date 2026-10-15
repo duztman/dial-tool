@@ -253,6 +253,7 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 15 Oct | **A switch whose words show is filled with the backdrop's colour** (beta 4.41.2). | Okay, 07:07. Claude's reading: "solid bg color" = the backdrop's own colour (it hides the dial under the words and still looks like an outline on the backdrop); "when labels visible" includes the wide screen's always-labelled Guides, Backdrop and Shadows. |
 | 15 Oct | **The phone's font sheet up to the bar; long words in its buttons cut at their edge** (beta 4.41.3). | Okay, 07:12. Claude's reading: "does fit all the way up the canvas" = it should. |
 | 15 Oct | **Installed is not offered on the narrow layout** (beta 4.41.4). | Okay, 07:14, on Claude's render. A real phone never had it (no `queryLocalFonts`); a narrow desktop window did, three-line buttons with it. |
+| 15 Oct | **FIT on a phone sized to its contents, equal room either side** (beta 4.41.5). | Okay, 07:21. Claude's reading: "pushing past the empty space" = it grows to the left into the room the day slider leaves; its right edge stays on the margin. |
 
 ## 5 · Open questions
 
