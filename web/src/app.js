@@ -794,7 +794,8 @@ class DialTool {
     this.pinned = el("div", { className: "pinned" });              // rows that stay in view
     this.form = el("div", { className: "form" });                  // rows that scroll
     const panel = el("aside", { className: "panel" },
-      el("header", {}, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION })), this.unit_box()),
+      // .mast: the mark, the title and the version — what stays when the panel slides away (dial_alone(), 15 Oct 2026)
+      el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION }))), this.unit_box()),
       this.tabs, this.pinned, this.form);
 
     this.svg = svg_el("svg");
@@ -895,6 +896,25 @@ class DialTool {
     return el("span", { className: "zoomhint" }, el("span", { textContent: "⌘ + scroll to zoom" }));      // words only: the magnifier went into Fit (Okay, 15 Oct 2026, 00:51)
   }
 
+  /** the dial alone, or back (Okay, 15 Oct 2026, 04:02: "it immediately triggers a sliding away action of the left
+   *  white column. Bottom bar stays. Backdrop and shadow stop short. Logo and dial tool and version number is what
+   *  remains on top. In sync with panels sliding away dial is centered, enlarged to fit while enlarging. Use easing").
+   *  The stylesheet does the moving: #app.away turns --away from 0 to 1 (eased), and the panel's column, the panel and
+   *  what stands on the preview follow it. The preview grows with its column; each step of that is a resize, and a
+   *  fitted dial re-fits on every one, so the dial grows and centres in step with the slide. Not part of a dial. */
+  dial_alone(on) {
+    const app = $("#app");
+    this.eye_button.setAttribute("aria-pressed", String(on));
+    if (this.unit_open) this.unit_open(false);
+    app.style.setProperty("--title-end", this.title.getBoundingClientRect().right.toFixed(1) + "px");      // undo · redo stop short of the title
+    app.style.setProperty("--bar-h", $(".bar").offsetHeight + "px");      // a phone: the panel's row is what the bar leaves
+    this.fitted = true;
+    if (this.view_end) app.removeEventListener("transitionend", this.view_end);
+    this.view_end = (e) => { if (e.target === app) { this.fit(); this.render(); } };
+    app.addEventListener("transitionend", this.view_end);
+    app.classList.toggle("away", on);
+  }
+
   /** the whole panel, away or back: the dial gets the window. Remembered by this browser. (Since #190 nothing in
    *  the window calls it; kept for the notes.) */
   show_panel(on) {
@@ -920,7 +940,7 @@ class DialTool {
     const pen = document.createElement("canvas").getContext("2d");
     pen.font = `${look.fontWeight} ${look.fontSize} ${look.fontFamily}`;
     const x_height = pen.measureText("x").actualBoundingBoxAscent;
-    const header = this.title.parentElement.getBoundingClientRect();
+    const header = this.title.closest("header").getBoundingClientRect();
     if (!header.height || !x_height) return;
     this.title.style.translate = `0 ${(header.top + header.height / 2 - (baseline - x_height / 2)).toFixed(2)}px`;
   }
@@ -957,13 +977,13 @@ class DialTool {
     box.setAttribute("aria-expanded", "false");
     box.onclick = () => this.pop_open({ read: () => this.S.c_backdrop, write: (v) => this.set_value("global", "c_backdrop", v), label: () => "Backdrop" }, box);
     this.backdrop_dot = dot;
-    // the eye switch (Okay, 15 Oct 2026, 02:42): a square switch with an eye in it. A preview of a switch to come —
-    // it does nothing yet; a press turns it on and off, so its colour changes ("Click changes color"). Not part of a dial.
-    // Beside Backdrop until 03:41; now on its own at the preview's bottom right, over the zoom (.eyes)
-    const eye = el("button", { type: "button", className: "onview eyebox", id: "eye-box", title: "A view to come — nothing yet", ariaLabel: "A view to come (nothing yet)" });
+    // the eye switch (Okay, 15 Oct 2026, 02:42; at the preview's bottom right since 03:41, .eyes): on, the dial alone —
+    // the panel slides away and the dial grows to fit (dial_alone(), 04:02). Not part of a dial
+    const eye = el("button", { type: "button", className: "onview eyebox", id: "eye-box", title: "The dial alone: the panel slides away", ariaLabel: "The dial alone" });
     eye.innerHTML = icon(TOOL_ICONS.eyebox, 30);
     eye.setAttribute("aria-pressed", "false");
-    eye.onclick = () => eye.setAttribute("aria-pressed", String(eye.getAttribute("aria-pressed") !== "true"));
+    eye.onclick = () => this.dial_alone(eye.getAttribute("aria-pressed") !== "true");
+    this.eye_button = eye;
     this.eye_box = el("div", { className: "eyes" }, eye);
     return el("div", { className: "backdrops" }, box);
   }
@@ -3114,6 +3134,7 @@ class DialTool {
     // the backdrop. One of the two always has a contrast of 4.5 or more, so they can't be lost on any colour.
     const lin = (v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4), L = 0.2126 * lin(backdrop[0]) + 0.7152 * lin(backdrop[1]) + 0.0722 * lin(backdrop[2]);
     this.main.classList.toggle("dark", 1.05 / (L + 0.05) > (L + 0.05) / 0.05);
+    $("#app").classList.toggle("dark", this.main.classList.contains("dark"));      // the mark and title stand on the backdrop when the panel is away
     while (this.slots.length < items.length) {
       const node = svg_el("path");
       this.dial.append(node);

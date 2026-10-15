@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.38.13 (web version) · 15 Oct 2026
+
+- **The eye switch shows the dial alone**: pressed, it fills (a hair inside its line) and the panel slides away to the left, eased; the dial grows and centres in step. The mark, "Dial Tool" and the version stay where they were, turning white on a dark backdrop; Backdrop and Shadows ride left and stop on the mark's line; undo · redo stop after the title; the bottom bar stays. Pressed again, all comes back. On a phone or a portrait iPad the preview grows down over the panel instead.
+- The speed box's growth toward play is now taken from play's margin, not by a negative margin (R32).
+
 ## beta 4.38.12 (web version) · 15 Oct 2026
 
 - **The tool opens with Okay's watch** when there is no dial in the address and no last session (`web/src/opener.js`). "Defaults" still gives the plain starting dial.

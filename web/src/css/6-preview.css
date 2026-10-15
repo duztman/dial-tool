@@ -10,11 +10,13 @@
      before). Off: faint, and Guides' sign is struck through. One weight, so the box is the same size on and off. */
   main { --on-canvas: var(--ink); }
   main.dark { --on-canvas: var(--white); }
+  /* the dial alone: Backdrop and Shadows ride left with the preview's edge and stop short, on the mark's line (the margin) */
+  main { --stop-short: max(var(--canvas-inset), calc(var(--margin) - var(--panel-w) * (1 - var(--away)))); }
   .guides { position: absolute; z-index: 3; top: var(--canvas-top); right: var(--canvas-inset); display: flex; justify-content: flex-end; }
   .onview { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: var(--hair) solid var(--line-faint); color: var(--on-canvas); user-select: none; }
   @media (hover: hover) { .onview:hover { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); } }      /* under the pointer its line is twice as thick: still no fill */
   /* undo · redo, before the Guides switch: two joined outlined buttons; pale when there is no step that way */
-  .undos { position: absolute; z-index: 3; top: var(--canvas-top); left: var(--canvas-inset); display: flex; }      /* top left of the preview, beside the panel */
+  .undos { position: absolute; z-index: 3; top: var(--canvas-top); left: max(var(--canvas-inset), calc(var(--title-end) + var(--gap) - var(--panel-w) * (1 - var(--away)))); display: flex; }      /* top left of the preview, beside the panel; the dial alone, they ride left with the preview's edge and stop short of the title (a gap after it) */
   .undobox { width: var(--control-large); }
   .undobox:first-child { border-radius: var(--round-switch) 0 0 var(--round-switch); }
   .undobox:last-child { border-left: 0; border-radius: 0 var(--round-switch) var(--round-switch) 0; }
@@ -39,12 +41,19 @@
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 var(--round-switch) var(--round-switch) 0; }
   .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }      /* open, only its arrow turns */
   /* Backdrop, standing on the Shadows switch (its row held the eye switch too until 15 Oct 2026, 03:41) */
-  .backdrops { position: absolute; z-index: 3; left: var(--canvas-inset); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: flex; gap: var(--unit); }
+  .backdrops { position: absolute; z-index: 3; left: var(--stop-short); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: flex; gap: var(--unit); }
   /* the eye switch, alone at the preview's bottom right, over the zoom in the bar (Okay, 15 Oct 2026, 03:41) */
   .eyes { position: absolute; z-index: 3; right: var(--canvas-inset); bottom: var(--canvas-inset); display: flex; }
   .eyebox { width: var(--control-large); padding: 0; overflow: hidden; border-radius: var(--round-switch); }      /* its sign fills the inside; the lashes run out and the box cuts them */
   .eyebox svg { display: block; flex: none; }
   .eyebox[aria-pressed="true"] > * { opacity: 1; }
+  /* on: a fill of its colour a hair inside its line, the sign the other colour on it, cut at the fill's edge (Okay,
+     15 Oct 2026, 04:02: "clicking gives a 1px offset black background to it"); white on a dark backdrop, so it shows */
+  .eyebox { position: relative; }
+  .eyebox[aria-pressed="true"]::before { content: ""; position: absolute; inset: var(--hair); border-radius: calc(var(--round-switch) - 2 * var(--hair)); background: var(--on-canvas); }
+  .eyebox[aria-pressed="true"] svg { position: relative; color: var(--off-canvas); clip-path: inset(var(--hair) round calc(var(--round-switch) - 2 * var(--hair))); }
+  main { --off-canvas: var(--white); }
+  main.dark { --off-canvas: var(--ink); }
   .backdropbox { gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch); }
   .backdropbox[aria-expanded="true"] { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); }
   .backdropbox .dot { border-color: var(--on-canvas); }
@@ -52,7 +61,7 @@
      unit above (Okay, 23:05: "button goes down"); one higher, so its open list lies over Backdrop.
      Its sign is a sphere and its cast shadow (15 Oct 2026), so its room is Guides'.
      Its list opens upward (.shadelist, after the guides' list), so its arrow points up while closed. */
-  .shadows { position: absolute; z-index: 4; left: var(--canvas-inset); bottom: var(--canvas-inset); display: flex; }
+  .shadows { position: absolute; z-index: 4; left: var(--stop-short); bottom: var(--canvas-inset); display: flex; }
   .shadows .guidesmore svg { rotate: 180deg; }
   .shadows .guidesmore[aria-expanded="true"] svg { rotate: 0deg; }
 

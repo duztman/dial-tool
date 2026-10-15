@@ -25,7 +25,7 @@
   .bar .lead .play { width: var(--play-size); height: var(--play-size); padding: 0; border: 0; border-radius: 50%; background: none; }
   .bar .lead .play:is(:hover, :active) { background: none; }
   .bar .lead .play svg { display: block; }
-  .bar .lead .play { margin-right: calc(var(--margin) - var(--u2)); }      /* from play to how fast as far as from NOW to the bar's divider: the margin (Okay, 15 Oct 2026, 00:32, his H marks) */
+  .bar .lead .play { margin-right: calc(var(--margin) - var(--u2) - var(--speed-grow)); }      /* from play to how fast as far as from NOW to the bar's divider: the margin (Okay, 15 Oct 2026, 00:32, his H marks), less what the speed box grew toward play (03:18) — taken here, not by a negative margin on the box (R32) */
   .play .arc-out { fill: var(--black); }
   .play .arc-lo { fill: none; stroke: var(--play-dark); stroke-linecap: round; }
   .play .arc-dot { fill: var(--play-light); opacity: var(--pulse, 0); }      /* the beat's dot in the middle: there only as the cap pulses, brightest at the beat */
@@ -37,7 +37,7 @@
      (Okay: "Remove the humps but the one at 1x. Hump=ball in the middle of the line. Put 1x above the dot centered
      in the remaining gap outside the box in ruler number's font size"). --at: how far along the track, 0 to 1; the
      thumb's half-width at each end, so the ball is under the thumb's centre at 1×. */
-  .bar .lead .speeds { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--u2); height: var(--bar-control); padding: 0 var(--speed-pad); margin-left: calc(-1 * var(--speed-grow)); border: var(--hair) solid var(--bar-light); }
+  .bar .lead .speeds { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--u2); height: var(--bar-control); padding: 0 var(--speed-pad); border: var(--hair) solid var(--bar-light); }
   .bar .speedtrack { position: relative; flex: 1; min-width: 0; height: 100%; }
   .bar .humps { position: absolute; inset: 0 calc(var(--speed-thumb) / 2); pointer-events: none; }
   .bar .humps::before { content: ""; position: absolute; left: var(--thumb-eye-edge); right: var(--thumb-eye-edge); top: calc(50% - var(--triple) / 2); border-top: var(--triple) solid var(--black); }      /* as thick as the play button's black ring (Okay, 15 Oct 2026, 00:32) */      /* stopping at the knobs' eyes, so the eyes stay empty */

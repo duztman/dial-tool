@@ -56,6 +56,10 @@
     --speed-thumb: 22px; --speed-ball: 9px;        /* how fast: its thumb (14 until Okay, 15 Oct 2026, 02:42: "this nubbin should grow 160%, eye stays still"); the knobs at its ends (6 until 00:42) */
     --bio-width: calc(var(--panel) - 2 * var(--margin));      /* the bio under Okay's mark: as wide as the panel's lines */
     --logo-disc: 2px;                              /* the bio open: how far the mark's night disc reaches past its 16 box (ring to disc edge ≈ 2.3) */
+    /* the dial alone (the eye switch, Okay, 15 Oct 2026, 04:02): the panel slides away and the dial grows to fit, eased */
+    --panel-w: calc(var(--panel) + var(--hair));   /* the panel's column: its lines and its right hairline */
+    --view-time: 700ms; --view-ease: cubic-bezier(0.65, 0, 0.35, 1);      /* slow out, slow in */
+    --title-end: 0px; --bar-h: 0px;                /* set by dial_alone(): where the title ends (undo · redo stop short of it); the bar's height on a phone */
     --speed-pad: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2);      /* the speed box's room inside, left and right: the thumb at either end stands as far from the wall as from the box's top and bottom (3; Okay, 15 Oct 2026, 03:18: "when the ball is in a terminal, the bounding box clears it as much as it clears from the top… both ends symmetry"). Was u3 + 4 − half a thumb (1.25; 01:03, "before plus four") */
     --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
     --play-size: 34px; --play-pulse: 22%;          /* the play button: a section tab's box (Okay, 00:42); how far its cap goes toward its light colour at a beat (faint: Okay, 01:20) */

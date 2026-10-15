@@ -1360,7 +1360,20 @@ await shot("10-bar");
   await page.mouse.click(1300, 120);
   const shut = await page.isHidden("#bio");
   const eye_at = await page.evaluate(() => { const m = document.querySelector("main").getBoundingClientRect(), e = document.querySelector("#eye-box").getBoundingClientRect(), inset = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--canvas-inset")); return Math.round(m.right - e.right) === inset && Math.round(m.bottom - e.bottom) === inset && document.querySelectorAll("#eye-box mask, #eye-box circle").length === 2; });
-  await page.click("#eye-box"); const eye_on = await page.getAttribute("#eye-box", "aria-pressed"); await page.click("#eye-box");
+  // the dial alone (Okay, 15 Oct 2026, 04:02): the panel slides away, the bar stays, the mast stays, Backdrop and Shadows
+  // stop on the mark's line, undo · redo after the title, the dial fitted in the whole preview; and back
+  const where = () => page.evaluate(() => { const r = (s) => document.querySelector(s).getBoundingClientRect(), t = window.dial_tool;
+    return { panel: Math.round(r(".panel").right), main: Math.round(r("main").left), mast: Math.round(r(".mast").left), title: Math.round(r(".panel .title").right), undo: Math.round(r(".undos").left), back: Math.round(r(".backdrops").left), shadows: Math.round(r(".shadows").left),
+      bar: [Math.round(r(".bar").top), Math.round(r(".bar .lead").width)], fitted: t.fitted, centre: Math.round(t.c[0] - r("main").width / 2), fill: getComputedStyle(document.querySelector("#eye-box"), "::before").backgroundColor, z: t.z }; });
+  const here = await where();
+  await page.click("#eye-box"); const eye_on = await page.getAttribute("#eye-box", "aria-pressed");
+  await page.waitForTimeout(1000);
+  const gone = await where();
+  await page.click("#eye-box"); await page.waitForTimeout(1000);
+  const back = await where();
+  check(gone.panel <= 0 && gone.main === 0 && gone.mast === here.mast && gone.back === 24 && gone.shadows === 24 && gone.undo === gone.title + 12 && gone.bar.join() === here.bar.join() && gone.fitted && gone.centre === 0 && gone.z >= here.z && /^rgb\(17, 17, 17\)/.test(gone.fill)
+      && back.panel === here.panel && back.main === here.main && back.undo === here.undo && back.back === here.back,
+    `the eye switch, on: the dial alone — the panel slid away (${gone.panel}), the mark and title stay (${gone.mast}), Backdrop and Shadows stop on the mark's line (${gone.back}), undo · redo after the title (${gone.undo}), the bar as it was, the dial fitted and centred (×${(gone.z / here.z).toFixed(2)}); the switch filled (${gone.fill}); off, all back`);
   check(bio.shown && shut && bio.links.includes("HarfBuzz") && bio.links.includes("github.com/duztman/dial-tool") && bio.logo_left === 24 && bio.title_left === 52 && bio.text_left === 52 && bio.heads === 0 && bio.contact === "here" && !bio.bare && bio.turned === "rgb(20, 20, 19)" && eye_at && eye_on === "true" && await page.getAttribute("#eye-box", "aria-pressed") === "false" && await S("JSON.stringify(S, (k, v) => (k.startsWith('ui_') || k === 't' ? undefined : v))") === before,
     `Okay's mark in the first column (${bio.logo_left}; the title at ${bio.title_left}) turns over on a night disc (${bio.turned}) and opens the bio, no title of its own, its text on the title's line (${bio.text_left}), with its links (${bio.links.length}), ending "Contact him here" — no address anywhere in the page; a press outside shuts it; the eye switch, alone at the preview's bottom right (${eye_at}), turns on and off, nothing more`);
 }

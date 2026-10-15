@@ -5,6 +5,11 @@
     :root { --canvas-top: var(--canvas-inset); --margin: var(--u6); --gap: var(--u4); --col: calc((100vw - 2 * var(--margin) - var(--lead) - 5 * var(--gap)) / 6); }
     #app, #app.nopanel { grid-template-columns: 1fr; grid-template-rows: auto 42% 1fr; }
     #app.nopanel { grid-template-rows: auto 1fr 0; }
+    /* the dial alone on a phone: the preview's row grows over the panel's (the bar stays on top); nothing slides sideways */
+    #app { grid-template-rows: auto calc(42% + (58% - var(--bar-h)) * var(--away)) minmax(0, 1fr); }
+    .panel, .mast { width: auto; translate: none; }
+    main { --stop-short: var(--canvas-inset); }
+    .undos { left: var(--canvas-inset); }      /* nothing slides sideways, so nothing stops short */
     .bar { grid-row: 1; flex-wrap: wrap; height: auto; padding: 0; border-top: 0; border-bottom: var(--hair) solid var(--bar-rule); }
     .bar .lead { width: 100%; height: var(--bar-lead-narrow); }
     .bar .group { border-left: 0; }
