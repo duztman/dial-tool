@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.41.15 | 15 Oct 2026 | web | [`72b58a8`](https://github.com/duztman/dial-tool/tree/72b58a8e6c894ecd573498ee0ce7d1dea41edcc6) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/72b58a8e6c894ecd573498ee0ce7d1dea41edcc6/web/dial-tool.html) | beta 4.41.15: Bauhaus third in the Gallery; the Gallery pill folds Export a file |
 | 4.41.14 | 15 Oct 2026 | web | [`7fcd95e`](https://github.com/duztman/dial-tool/tree/7fcd95e1c58a21a9f56633b9da602e73b36f633c) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/7fcd95e1c58a21a9f56633b9da602e73b36f633c/web/dial-tool.html) | beta 4.41.14: the open bio over the panel's rows |
 | 4.41.13 | 15 Oct 2026 | web | [`a81dffb`](https://github.com/duztman/dial-tool/tree/a81dffb3af41695cf60b53c4ca0fdefe2e52c128) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/a81dffb3af41695cf60b53c4ca0fdefe2e52c128/web/dial-tool.html) | beta 4.41.13: the size button's drawing level |
 | 4.41.12 | 15 Oct 2026 | web | [`bd39935`](https://github.com/duztman/dial-tool/tree/bd399354d5576bbe2ee53203e214637361e993cf) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/bd399354d5576bbe2ee53203e214637361e993cf/web/dial-tool.html) | beta 4.41.12: the Gallery's second dial is Okay's own B-Uhr |
