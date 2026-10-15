@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.41.21 | 15 Oct 2026 | web | [`07c51c2`](https://github.com/duztman/dial-tool/tree/07c51c2c801c6405b3457ebc82a66cde36d30739) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/07c51c2c801c6405b3457ebc82a66cde36d30739/web/dial-tool.html) | beta 4.41.21: links without dashes; World time before Elapsed |
 | 4.41.20 | 15 Oct 2026 | web | [`2630f6c`](https://github.com/duztman/dial-tool/tree/2630f6c48be89fa79ab3f385e9e5bfedbadedb26) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/2630f6c48be89fa79ab3f385e9e5bfedbadedb26/web/dial-tool.html) | beta 4.41.20: Okay's world time in the Gallery |
 | 4.41.19 | 15 Oct 2026 | web | [`2afba05`](https://github.com/duztman/dial-tool/tree/2afba055429e151582eed77aad10fa2083746d8e) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/2afba055429e151582eed77aad10fa2083746d8e/web/dial-tool.html) | beta 4.41.19: Gallery keeps the place; presses stay under the finger; Alternate; second B-Uhr |
 | 4.41.18 | 15 Oct 2026 | web | [`6b1d798`](https://github.com/duztman/dial-tool/tree/6b1d7987872c5671a3fac23f49c46b80fce03bae) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/6b1d7987872c5671a3fac23f49c46b80fce03bae/web/dial-tool.html) | beta 4.41.18: Montgomery fifth, Okay's 12 + 24, Rubik; a selection keeps the scroll |
