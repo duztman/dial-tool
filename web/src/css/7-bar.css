@@ -14,7 +14,9 @@
   .bar .icon { display: inline-flex; align-items: center; justify-content: center; }
   /* low contrast under the panel: no fills, thin light lines; what is chosen is a shade lighter */
   /* the bar's lower line is all monospace (Okay, 14 Oct 2026, 23:55: "All mono on the lower line") */
-  .bar { font-family: var(--mono); }
+  .bar { font-family: var(--mono); letter-spacing: var(--track-50); }
+  .bar :is(button, input) { letter-spacing: var(--track-50); }      /* the browser gives buttons and fields their own spacing: given the bar's */
+  .bar .humpname { letter-spacing: 0; }      /* the pixel face keeps its own spacing */
   /* the showcase: the bar's row closes at once and the bar is out of the window (Okay, 15 Oct 2026, 05:09: only the
      dial travels); not faded: under it is the page's paper, which would show through */
   .bar { align-self: start; }
@@ -65,7 +67,7 @@
   .bar .timebox { display: flex; }
   .bar .timewell { display: grid; height: var(--bar-control); padding: 0 var(--u4); overflow: hidden; border: var(--hair) solid var(--bar-light); }
   .bar .timewell:hover { background: var(--bar-field); }
-  .bar .lead .timewell .time { width: var(--time-chars); height: 100%; padding: 0; border: 0; background: none; font-size: var(--t-time); font-weight: 400; letter-spacing: 0; color: var(--bar-light); translate: var(--ink-dx, 0) var(--ink-dy, 0); }
+  .bar .lead .timewell .time { width: var(--time-chars); height: 100%; padding: 0; border: 0; background: none; font-size: var(--t-time); font-weight: 400; color: var(--bar-light); translate: var(--ink-dx, 0) var(--ink-dy, 0); }
   .bar .lead .timebox .half { height: var(--bar-control); padding: 0 var(--u3); border-left: 0; font-size: var(--t-s); background: none; color: var(--bar-light); border-color: var(--bar-light); }      /* a frame, never filled (Okay, 15 Oct 2026, 00:18) */
   /* NOW: capitals, at AM · PM's size (Okay: "Now uppercase and in pm's font size which grows 1px") */
   .bar .lead #now { padding: 0 var(--u3); font-size: var(--t-s); text-transform: uppercase; }

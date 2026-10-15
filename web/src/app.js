@@ -975,7 +975,7 @@ class DialTool {
     try { const kept = parseFloat(localStorage.getItem("dial-tool-sheet")); if (kept > 0 && kept < 1) set(kept); } catch (e) { /* not kept */ }
     const limits = () => { const h = app.clientHeight, bar = $(".bar").offsetHeight; return [SHEET.preview / h, (h - bar - SHEET.drawer) / h]; };
     let down = null;
-    grip.onpointerdown = (e) => { grip.setPointerCapture(e.pointerId); down = { y: e.clientY, moved: false }; this.fitted = true; };
+    grip.onpointerdown = (e) => { grip.setPointerCapture(e.pointerId); down = { y: e.clientY, moved: false }; this.fitted = true; app.classList.add("gripping"); };
     grip.onpointermove = (e) => {
       if (!down) return;
       if (Math.abs(e.clientY - down.y) > 4) down.moved = true;
@@ -987,6 +987,7 @@ class DialTool {
       if (!down) return;
       if (!down.moved && e.type === "pointerup") { const [lo, hi] = limits(), now = this.sheet_share ?? SHEET.shares[0]; set(clamp(Math.abs(now - SHEET.shares[0]) < 0.02 ? SHEET.shares[1] : SHEET.shares[0], lo, hi)); }
       down = null;
+      app.classList.remove("gripping");
       try { localStorage.setItem("dial-tool-sheet", String(this.sheet_share)); } catch (er) { /* not kept */ }
     };
     // tall enough to hold its top still? measured whenever the drawer or its pinned part changes size
@@ -1296,7 +1297,7 @@ class DialTool {
     const a = (href, text) => el("a", { href, textContent: text, target: "_blank", rel: "noopener" });
     const line = (...parts) => el("p", {}, ...parts);
     const bio = el("div", { className: "bio night", id: "bio", hidden: true },      // no title of its own: the header's is right above it (Okay, 03:06)
-      line("A tool for designing watch dials, ring by ring, in the browser. Made by Okay, a graphic designer in Istanbul working across contemporary art, architecture and cinema, for a watch he is building."),
+      this.bio_first = line("A tool for designing watch dials, ring by ring, in the browser. Designed and vibe coded by Okay, a graphic designer in Istanbul working across contemporary art, architecture and cinema, for a watch he is building. "),      // 06:51: "designed and vibe coded by okay"; the contact line ends this paragraph
       line("Source, every version and the MIT licence: ", a("https://github.com/duztman/dial-tool", "github.com/duztman/dial-tool"), "."),
       el("h3", { textContent: "Built on open source" }),
       el("ul", {},
@@ -1310,7 +1311,7 @@ class DialTool {
     // so it never stands in the page or the source as an address; put together only when "here" is pressed
     const MAIL = [122, 120, 116, 57, 123, 126, 118, 122, 112, 87, 101, 118, 123, 126, 110, 118, 115, 118, 101, 118, 124, 110, 118, 124, 120];
     const write = el("a", { href: "#contact", textContent: "here", onclick: (e) => { e.preventDefault(); location.href = "mailto:" + String.fromCharCode(...MAIL.map((c) => c ^ 23).reverse()); } });
-    bio.append(el("p", { className: "contact" }, "Contact him ", write, "."));
+    this.bio_first.append("Contact him ", write, ".");
     const open = (on) => { bio.hidden = !on; button.setAttribute("aria-expanded", String(on)); };
     this.bio_open = open;
     button.onclick = () => open(bio.hidden);

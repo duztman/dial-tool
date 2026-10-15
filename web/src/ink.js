@@ -36,7 +36,8 @@ const known = new Map();       // "font|text" → [dx, dy] in CSS pixels: a labe
 /** how far a label's ink centre is from its box centre: [dx, dy], in CSS pixels, y down. */
 export function offset(text, style) {
   const font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
-  const key = font + "|" + text;
+  const track = parseFloat(style.letterSpacing) || 0;      // tracking: the browser adds it after every letter, the last too
+  const key = font + "|" + track + "|" + text;
   if (!known.has(key)) {
     pen.font = font;
     const m = pen.measureText(text);
@@ -47,7 +48,8 @@ export function offset(text, style) {
     const box_y = (m.fontBoundingBoxDescent - m.fontBoundingBoxAscent) / 2;
     const dot = 1 / (window.devicePixelRatio || 1);
     const snap = (v) => Math.round(v / dot) * dot;          // whole screen dots, so the type stays sharp
-    known.set(key, [snap(m.width / 2 - ink_x), snap(box_y - ink_y)]);
+    // with tracking the box is wider by a letter-space after each letter; the ink by one fewer: half a space to the right
+    known.set(key, [snap(m.width / 2 - ink_x + track / 2), snap(box_y - ink_y)]);
   }
   return known.get(key);
 }

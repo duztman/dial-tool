@@ -35,7 +35,7 @@
     --columns: var(--eye) repeat(6, minmax(0, 1fr));
     --panel: calc(2 * var(--margin) + var(--lead) + 6 * var(--col) + 5 * var(--gap));
     --unit: 5.5px;                                 /* every space is a multiple of this: the scale below, in half-units (u1 = half a unit … u8 = four) */
-    --u1: calc(var(--unit) / 2); --u2: var(--unit); --u3: calc(1.5 * var(--unit)); --u4: calc(2 * var(--unit)); --u6: calc(3 * var(--unit)); --u8: calc(4 * var(--unit));
+    --u1: calc(var(--unit) / 2); --u2: var(--unit); --u3: calc(1.5 * var(--unit)); --u4: calc(2 * var(--unit)); --u5: calc(2.5 * var(--unit)); --u6: calc(3 * var(--unit)); --u8: calc(4 * var(--unit));
     --air: calc(4 * var(--unit));                  /* under an open pane */
     --hair: 1px; --thick: 2px; --triple: calc(3 * var(--hair));      /* a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle */
     --nest-from: calc((100% + var(--gap)) / 3);     /* where a row's controls start, from its left edge: two of its six columns and their gaps. A half line starts here */
@@ -65,21 +65,24 @@
     --now-pill: 64px;                              /* the showcase's Now pill */
     /* a phone (Okay, 15 Oct 2026, 06:20–06:24) */
     --preview-share: 42%;                          /* the preview's share of the screen; the drawer under it has the rest, less the bar (its gripper sets it) */
-    --grip-dot: 7px; --grip-hit: 44px;             /* the drawer's gripper: a dot on its top line, and the room a finger gets around it */
+    --grip-w: 26px; --grip-h: 10px; --grip-hit: 44px;      /* the drawer's gripper: a pill on its top line (06:51: "nubbin pill and larger"), and the room a finger gets around it */
+    --grip-groove: 12px;                           /* the one line across it, as a gripper's lines are */
     --sheet-max: 75vh;                             /* a list opened as a sheet from the bottom: at most this tall, then it scrolls */
+    --speed-thumb-narrow: 26px;                    /* a phone's speed thumb, the speed written in it: wide enough for 720X */
     --word-max: 88px;                              /* the most a switch's word unfolds to */
     --logo-narrow: 22px;                           /* Okay's mark, larger on a phone (06:24: "larger okay icon on mobile") */
     --show-key: 40px; --show-pill: 80px;           /* in the showcase the X and Now are a quarter larger (05:43: "now and x can grow too") */
     --show-faint: 0.6;                             /* and less faint than the switches (05:43: "too faint") */
     --hint-time: 2400ms;                           /* the showcase's left-right hint, start to end */
     --mast-show: 0.5;                              /* the mark and "Dial Tool" in the showcase: fainter (Okay, 04:59) */
+    --track-50: 0.05em;                            /* tracking 50: every monospace word of the bottom bar (Okay, 15 Oct 2026, 06:51: "all mono text around here gets +50 tracking") */
     --track-100: 0.1em;                            /* tracking 100 (Okay, 04:59: "now gets 100 tracking") */
     --title-end: 0px; --bar-h: 0px;                /* set by dial_alone(): where the title ends (undo · redo stop short of it); the bar's height on a phone */
     --speed-pad: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2);      /* the speed box's room inside, left and right: the thumb at either end stands as far from the wall as from the box's top and bottom (3; Okay, 15 Oct 2026, 03:18: "when the ball is in a terminal, the bounding box clears it as much as it clears from the top… both ends symmetry"). Was u3 + 4 − half a thumb (1.25; 01:03, "before plus four") */
     --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
     --play-size: 34px; --play-pulse: 22%;          /* the play button: a section tab's box (Okay, 00:42); how far its cap goes toward its light colour at a beat (faint: Okay, 01:20) */
     --t-time: 17px;                                /* the time in the bar: larger than --t-l (Okay, 14 Oct 2026, 23:55: "larger digital time"); R32 lists it */
-    --time-chars: 8ch;                             /* the time's field: "10:09:36", eight characters of the mono face */
+    --time-chars: calc(8ch + 8 * var(--track-50));      /* the time's field: "10:09:36", eight characters of the mono face and their tracking */
     --day-wide: 518px;                             /* the day slider at its widest: as wide as on an iPad (1180 wide), so a big screen doesn't stretch it (Okay, 23:19) */
     --tile: 50px;                                  /* a picture tile's least height */
     --frame-pad: 8px;                              /* inside a frame (a ring row, the font box): from its edge to what is in it, where a pane's row would have none */

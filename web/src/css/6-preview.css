@@ -147,14 +147,12 @@
   #app.show .irisbox .x { display: inline; }
   .irisgo { max-width: 0; height: 100%; padding: 0; overflow: hidden; white-space: nowrap; font-family: var(--mono); font-size: var(--t-s); text-transform: uppercase; letter-spacing: var(--track-100);
     transition: max-width var(--iris-time) var(--view-ease), padding var(--iris-time) var(--view-ease); }
-  .irisgo > .ink { padding-left: var(--track-100); }      /* the tracking after the last letter, given back before the first, so the word stands centred */
   .irisbox[aria-expanded="true"] .irisgo { max-width: var(--iris-words); padding: 0 var(--u2) 0 var(--u4); }
   @media (hover: hover) { .irisgo:hover { text-decoration: underline; text-underline-offset: 0.2em; } }
   /* Now: a pill, tracked 100; pressed, the hands spin to now and it shrinks into a round undo sign (.back), the way back */
   .nowpill { position: absolute; z-index: 3; left: 50%; bottom: var(--canvas-inset); translate: -50% 0; display: grid; place-items: center; width: var(--now-pill); height: var(--control-large); padding: 0; border-radius: calc(var(--control-large) / 2);
     font-family: var(--mono); text-transform: uppercase; letter-spacing: var(--track-100); visibility: hidden; transition: width var(--iris-time) var(--view-ease); }
   .nowpill > * { grid-area: 1 / 1; transition: opacity var(--iris-time) linear; }
-  .nowpill .word > .ink { padding-left: var(--track-100); }
   .nowpill svg { opacity: 0; }
   .nowpill.back { width: var(--control-large); }
   .nowpill.back .word { opacity: 0; }

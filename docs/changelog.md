@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.41 (web version) · 15 Oct 2026 · released
+
+- **A phone's edges meet halfway**: the bar, the switches on the preview and the drawer all stand 2.5 units (13.75) in from both sides (the bar and drawer had 16.5, the switches 12).
+- **The bottom bar's monospace is tracked 50** (time, AM · PM, NOW, FIT, the hours, 10:10); labels stay centred on their ink, tracking counted.
+- **The drawer's gripper is a pill** with one groove across it; held, it is black with a white edge and the whole line goes black.
+- **On a phone the speed is written in its thumb**, in the pixel face, in place of the eye.
+- **The bio**: "Designed and vibe coded by Okay"; the contact line ends the first paragraph.
+
 ## beta 4.40.1 (web version) · 15 Oct 2026
 
 On a phone (and an iPad held upright):
