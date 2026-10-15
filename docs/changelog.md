@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.41.9 (web version) · 15 Oct 2026
+
+- **Okay's watch opens the Gallery**: the dial the tool opens with, first of its cards.
+- **A Gallery pill on the panel's top line**, centred between the version and the unit box, dressed like the unit box: pressed, Export with the Gallery open and in view.
+- **A phone's bar**: the time at the bar's text size (12, as AM); how fast takes the room it gives; the red dot has 16.5 either side (was 14 and 10).
+
 ## beta 4.41.8 (web version) · 15 Oct 2026
 
 - **The showcase has 10:10 beside Now**: the same whirl, to the classic pose. Whichever is pressed turns into the undo sign; the other stays where it is. The way back is always to the time first shown.

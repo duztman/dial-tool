@@ -21,7 +21,7 @@
   .mast .quiet { color: color-mix(in srgb, color-mix(in srgb, var(--mast-ink) 70%, transparent) clamp(0%, (var(--away) - 0.55) * 250%, 100%), var(--grey)); }
   .mast .quiet { opacity: calc(1 - var(--show)); }      /* the showcase keeps the mark and "Dial Tool" only */
   #app.show .mast { opacity: var(--mast-show); pointer-events: none; }      /* the showcase: fainter, and not pressable (Okay, 04:59) */
-  .panel .unit { opacity: calc(1 - 3 * var(--away)); }      /* the unit box goes first, before it slides under the version */
+  .panel :is(.unit, .galleryway) { opacity: calc(1 - 3 * var(--away)); }      /* the unit box and the Gallery pill go first, before they slide under the version */
   /* Okay's mark in the first column, the title after it on the six columns (Okay, 15 Oct 2026, 02:42); a press opens the bio
      under it, a night part as wide as the panel's lines */
   .about { position: relative; flex: none; width: var(--eye); margin-right: var(--gap); }
@@ -44,6 +44,12 @@
   .unit { position: relative; margin-left: auto; }
   .unitbox { width: var(--col); height: var(--control-large); border: var(--hair) solid currentColor; color: color-mix(in srgb, var(--ink) calc(var(--faint) * 50%), transparent); text-align: center; }      /* as light as a switch on the preview that can't be pressed (undo with nothing to undo), its word and its line one colour (Okay, 15 Oct 2026, 03:18); dark under the pointer. Was: its word like the version, its line like the header's */
   .unitbox:hover { background: var(--hover); color: var(--ink); border-color: var(--ink); }
+  /* the way to the Gallery: in the middle of the room between the version and the unit box, a pill dressed as the unit
+     box — its height, its light word and line, dark under the pointer (Okay, 15 Oct 2026, 07:45). The unit box keeps
+     its place at the right (the room's flex takes what's left, so its margin-left: auto has nothing to push) */
+  .galleryway { flex: 1; display: flex; justify-content: center; min-width: 0; }
+  .gallerypill { height: var(--control-large); padding: 0 var(--u4); border: var(--hair) solid currentColor; border-radius: calc(var(--control-large) / 2); color: color-mix(in srgb, var(--ink) calc(var(--faint) * 50%), transparent); white-space: nowrap; }
+  .gallerypill:hover { background: var(--hover); color: var(--ink); border-color: var(--ink); }
   /* a small menu hanging under its button (the units; the kinds of ring to add): lines a row high, a hairline between them */
   :is(.unitmenu, .addmenu) { position: absolute; z-index: 4; top: calc(100% + var(--unit)); right: 0; min-width: calc(2 * var(--col) + var(--gap)); border: var(--hair) solid var(--ink); background: var(--field); }
   :is(.unitmenu, .addmenu) button { display: flex; align-items: center; gap: var(--gap); width: 100%; height: var(--line); padding: 0 var(--u4); white-space: nowrap; }

@@ -12,6 +12,7 @@ import path from "path";
 import { engines } from "./test/engines.mjs";
 import { link } from "./links.mjs";
 import { FONT_LIST } from "./src/font_list.js";
+import { OPENER } from "./src/opener.js";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 const BLACK = [0.07, 0.07, 0.08, 1], WHITE = [0.95, 0.95, 0.92, 1], LUME = [0.80, 0.90, 0.66, 1], RED = [0.78, 0.16, 0.12, 1], PAPER = [0.97, 0.96, 0.93, 1], INK = [0.08, 0.08, 0.08, 1];
@@ -20,6 +21,9 @@ const type = (family, ps, axes = {}) => ({ family, ps, axes });
 const hands = (c, hour, minute, second, cap = 1.4, cap_c = c) => ({ ha_hour: { c, ...hour }, ha_minute: { c, ...minute }, ha_second: { c, ...second }, ha_cap: cap, c_cap: cap_c });
 
 const DIALS = [
+  // the dial the tool opens with, Okay's own watch (Okay, 15 Oct 2026, 07:45: "add this 'default' face to gallery as
+  // well"; 07:48: "the purple you've been working with"): first, its settings as they are in src/opener.js
+  { name: "Okay's watch", note: "The dial Dial Tool opens with: Okay's own watch, purple, a 24-hour ring inside the twelve (15 Oct 2026)", settings: OPENER },
   { name: "B-Uhr, type B", note: "Navigator's watch, 1941: minutes outside and large, hours inside and small [1.9]", settings: {
     dial_d: 34, c_plate: BLACK,
     ...hands(WHITE, { shape: "sword", len: 8.2, w: 2.0, tail: 1.6, tip: 2.6 }, { shape: "sword", len: 14.6, w: 1.5, tail: 1.8, tip: 3.2 }, { shape: "baton", len: 15.4, w: 0.2, tail: 4, counter: 1.1 }),

@@ -830,7 +830,7 @@ class DialTool {
     this.form = el("div", { className: "form" });                  // rows that scroll
     const panel = el("aside", { className: "panel" },
       // .mast: the mark, the title and the version — what stays when the panel slides away (dial_alone(), 15 Oct 2026)
-      el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION }))), this.unit_box()),
+      el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION }))), this.gallery_way(), this.unit_box()),
       this.tabs, this.pinned, this.form);
 
     this.svg = svg_el("svg");
@@ -3141,6 +3141,24 @@ class DialTool {
   }
 
   /** five dials to start from: each is a link (R31), so it can also be copied or opened in a new tab. */
+  /** a way to the Gallery from the panel's top line: a pill dressed as the unit box, centred in the room between the
+   *  version and the unit box (Okay, 15 Oct 2026, 07:45: "a shortcut to the gallery centered between beta blabla and mm.
+   *  A pill of mm complexion"). Pressed: the Export tab, the Gallery pane open and brought into view */
+  gallery_way() {
+    const go = el("button", { type: "button", className: "gallerypill", id: "to-gallery", textContent: "Gallery", title: "Dials to open and take apart" });
+    go.onclick = () => {
+      const i = SECTIONS.indexOf("Export");
+      if (this.S.ui_section !== i) { this.S.ui_section = i; this.show_section(); this.render(); }
+      const pane = this.rows.find((r) => r.fold === "Export/Gallery");
+      if (pane && this.is_folded(pane)) this.fold(pane, false);
+      const tabs = $(".panel .tabs"), held = getComputedStyle(tabs).position === "sticky";      // a phone: the tabs stay on top, so the pane stops under them
+      const target = $(".gallery").closest(".pane");
+      target.style.scrollMarginTop = held ? tabs.offsetHeight + "px" : "";
+      requestAnimationFrame(() => target.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }));
+    };
+    return el("div", { className: "galleryway" }, go);
+  }
+
   /** the gallery: dials drawn after documents (web/gallery.mjs), then the five first examples (web/examples.mjs), three to
    *  a line, each with a line saying what it is. */
   row_gallery(wrap) {

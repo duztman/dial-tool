@@ -1326,10 +1326,18 @@ await tab("Export");
 {
   const g = await page.evaluate(() => { const panes = [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent), cards = [...document.querySelectorAll(".gallery a")]; return { last: panes.at(-1), n: cards.length, names: cards.map((c) => c.textContent).join(" · "), pictures: cards.every((c) => c.querySelector("svg path")), across: new Set(cards.slice(0, 3).map((c) => Math.round(c.getBoundingClientRect().top))).size }; });
   check(g.last === "Gallery" && g.n >= 6 && g.pictures && g.across === 1, `the Gallery is the last pane of Export: ${g.n} dials, three to a line (${g.names})`);
+  check(g.names.startsWith("Okay's watch · "), "the Gallery opens with Okay's watch, the dial the tool opens with (07:45)");
+  { // the way to the Gallery from the panel's top line (07:45): centred between the version and the unit box; pressed, Export with the Gallery in view
+    await tab("Dial");
+    const w = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), v = r(".panel .title .quiet"), u = r("#unit"), p = r("#to-gallery"); return { mid: (p.left + p.right) / 2 - (v.right + u.left) / 2, high: p.height === u.height }; });
+    await page.click("#to-gallery"); await page.waitForTimeout(900);
+    const at = await page.evaluate(() => { const g = document.querySelector(".gallery").getBoundingClientRect(), f = document.querySelector(".form").getBoundingClientRect(); return [window.dial_tool.S.ui_section, g.top < f.bottom && g.bottom > f.top]; });
+    check(Math.abs(w.mid) < 0.6 && w.high && at[0] === 4 && at[1], `the Gallery pill: centred between the version and the unit box (${w.mid.toFixed(1)}), as high; pressed, Export with the Gallery in view`);
+  }
   await page.$eval(".gallery", (e) => e.scrollIntoView());
   await shot("4c13-gallery");
   const before = await S("JSON.stringify(S.rings.map((r) => r.name))");
-  await page.click(".gallery a >> nth=3");
+  await page.click(".gallery a >> nth=4");      // after Okay's watch (4.41.9) and three more
   await page.waitForFunction((b) => JSON.stringify(window.dial_tool.S.rings.map((r) => r.name)) !== b, before);
   check(await S("S.rings[0].name === 'Every fifth minute' && S.dial_d === 38"), "a card opens its dial: Montgomery, 38 mm, every fifth minute on top");
   await frame(); await shot("4c14-gallery-montgomery");
@@ -1454,6 +1462,10 @@ await tab("Rings");
 await frame();
 const narrow = await page.evaluate(() => ({ wide: document.documentElement.scrollWidth, eye: document.querySelector(".form button.fold .eye").getBoundingClientRect().left, bar: document.querySelector(".bar").getBoundingClientRect().top }));
 check(narrow.wide <= 390 && narrow.eye >= 0 && narrow.bar === 0, "a phone: nothing wider than the screen, the eyes in view, the bar on top");
+{ // a phone's bar row (Okay, 15 Oct 2026, 07:45): the time at the bar's text size, the red dot with as much room left as right
+  const b = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(); return { font: getComputedStyle(document.querySelector(".bar .time")).fontSize, half: getComputedStyle(document.querySelector(".bar .timebox .half")).fontSize, left: r(".bar .lead .play").left, right: r(".bar .speeds").left - r(".bar .lead .play").right }; });
+  check(b.font === b.half && Math.abs(b.left - b.right) < 0.5 && b.left > 14, `a phone's bar: the time as large as AM (${b.font}), the red dot ${b.left.toFixed(1)} from the edge and ${b.right.toFixed(1)} from how fast`);
+}
 { // a phone (Okay, 15 Oct 2026, 06:20–06:27): the switches fold to their signs and a tap on the backdrop unfolds them; the
   // drawer has a gripper on its top line — a tap makes it taller, and tall it holds its top still; the lists open as sheets
   const g = () => page.evaluate(() => { const r = (s) => document.querySelector(s).getBoundingClientRect(), panel = document.querySelector(".panel");

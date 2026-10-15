@@ -17,7 +17,11 @@
     .bar .day { flex: 1 1 0; height: var(--bar-day-narrow); padding: 0 var(--margin); }
     .bar .viewing { padding: 0 var(--margin) 0 0; }
     .bar .viewing > .fit { width: auto; padding: 0 var(--u3); }      /* as wide as its sign and word need, with NOW's room either side; the day slider gives way (Okay, 15 Oct 2026, 07:21: "why so squeezed? Allow equal space from its sides") */
-    .bar .lead { padding-left: var(--margin); }      /* a phone has no room to keep: the row starts at the margin */
+    .bar .lead { padding-left: var(--u6); }      /* the red dot with room either side, as much left as right (Okay, 15 Oct 2026, 07:45: "red dot with more space on both sides"); was: the row started at the margin */
+    .bar .lead .play { margin-right: calc(var(--u6) - var(--u2)); }      /* the row's own gap (u2) makes the rest */
+    /* the time at the size of everything else in the bar, AM and FIT (07:45: "smaller, 'same size with all' digi
+       clock"); its field shrinks with it (--time-chars counts its own characters) and how fast takes the room */
+    .bar .lead .timewell .time { font-size: var(--t-s); }
     .bar .humpname { display: none; }               /* the bar's top line is too close here for "1×" over the ball */
     /* here the speed is written in the thumb itself, in the pixel face, black on its grey, in place of its eye (Okay,
        15 Oct 2026, 06:54: "write the speed in silkscreen into this guy instead of the dot") */
