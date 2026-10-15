@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.41.6 · built 2026-10-15 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.41.7 · built 2026-10-15 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -5652,7 +5652,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.41.6";
+var VERSION = "beta 4.41.7";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -8598,9 +8598,9 @@ var DialTool = class _DialTool {
       s.setAttribute("stop-opacity", f(i < 2 ? shade : 0));
     });
   }
-  /** Now in the showcase: every hand turns twice and lands on the time it is now; the pill shrinks into an undo sign.
-   *  Pressed then, the hands turn twice the other way, back to the time they showed (as it has run on since), and the
-   *  sign grows back into Now (Okay, 04:59; Okay's choice of the way back) */
+  /** Now in the showcase: the hands land on the time it is now; the pill shrinks into an undo sign. Pressed then, they
+   *  go back to the time they showed (as it has run on since), each the other way, and the sign grows back into Now
+   *  (Okay, 04:59; Okay's choice of the way back) */
   show_now() {
     const sh = this.show, beat = BEATS[this.S.ha_beat][1];
     const from = hand_angles(this.S.t, beat);
@@ -8619,16 +8619,25 @@ var DialTool = class _DialTool {
     this.now_pill.title = this.now_pill.ariaLabel = sh.back ? "Back to the time it showed" : "The time it is now";
     this.render();
   }
-  /** the hands while they spin: from where they were, two whole turns and the way to where they are now (frame()) */
+  /** the hands while they spin (frame()). The hour hand turns one whole turn clockwise and on to where it lands, the
+   *  minute hand the same anticlockwise (going back, each the other way); the seconds hand makes no turn, it goes the
+   *  short way to its place while the big hands whirl. One easing for all, slow to start and slow to land (Okay, 15 Oct
+   *  2026, 07:36: "big arms move different wises, one clock one anticlock. One turn, ease to stop on position. Seconds?
+   *  Only moves to position slowly as the chaos ensues. Eases both start and end"; was: every hand two turns, one way) */
   spin_hands(items) {
     const sp = this.show && this.show.spin;
     if (!sp) return;
     const p = clamp((performance.now() - sp.t0) / SPIN_MS, 0, 1), e = p < 0.5 ? 4 * p ** 3 : 1 - (-2 * p + 2) ** 3 / 2;
-    const k = { hour: 0, minute: 1, second: 2 };
+    const k = { hour: 0, minute: 1, second: 2 }, way = { hour: sp.way, minute: -sp.way };
     for (const item of items) {
-      if (item.role !== "hand") continue;
-      const a0 = sp.from[k[item.name]], gap = ((item.angle - a0) * sp.way % 360 + 360) % 360;
-      item.angle = p < 1 ? a0 + sp.way * e * (gap + 720) : item.angle;
+      if (item.role !== "hand" || !(item.name in k) || p >= 1) continue;
+      const a0 = sp.from[k[item.name]], d = item.angle - a0;
+      if (item.name === "second") {
+        item.angle = a0 + e * ((d % 360 + 540) % 360 - 180);
+        continue;
+      }
+      const w = way[item.name], gap = (d * w % 360 + 360) % 360;
+      item.angle = a0 + w * e * (gap + 360);
     }
     if (p >= 1) this.show.spin = null;
   }
