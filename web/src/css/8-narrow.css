@@ -6,7 +6,7 @@
     #app, #app.nopanel { grid-template-columns: 1fr; grid-template-rows: auto 42% 1fr; }
     #app.nopanel { grid-template-rows: auto 1fr 0; }
     /* the dial alone on a phone: the preview's row grows over the panel's (the bar stays on top); nothing slides sideways */
-    #app { grid-template-rows: calc(var(--bar-h) * (1 - var(--show))) calc(42% + (58% - var(--bar-h)) * var(--away) + var(--bar-h) * var(--show)) minmax(0, 1fr); }
+    #app { grid-template-rows: calc(var(--bar-h) * (1 - var(--show))) calc(var(--preview-share) + (100% - var(--preview-share) - var(--bar-h)) * var(--away) + var(--bar-h) * var(--show)) minmax(0, 1fr); }
     .bar { translate: 0 calc(-1 * var(--bar-h) * var(--show)); }      /* the showcase: on a phone the bar leaves upward */
     .panel, .mast { width: auto; translate: none; }
     main { --stop-short: var(--canvas-inset); }
@@ -22,7 +22,7 @@
     .steps12 button:nth-child(odd):not(.special) { display: none; }      /* every other hour: 1 3 5 … wait for room */
     .steps12 button.special { bottom: auto; top: calc(-1 * var(--hair)); }      /* the bar is on top here and the preview's top corners are taken (undo, Guides): 10:10 stays among the hours */
     main { grid-row: 2; }
-    .panel { grid-row: 3; display: block; overflow-y: auto; -webkit-overflow-scrolling: touch; border-right: 0; border-top: var(--hair) solid var(--rule); }
+    .panel { grid-row: 3; grid-column: 1; display: block; overflow-y: auto; -webkit-overflow-scrolling: touch; border-right: 0; border-top: var(--hair) solid var(--rule); }
     .form { overflow: visible; }
     .tabs { position: sticky; top: 0; z-index: 3; background: var(--paper); }      /* over what scrolls under it: the tabs' notches, an open number box */
     .ringlist ol { max-height: none; }
@@ -37,6 +37,33 @@
     .colourpop.wide { inset: 0; grid-template-rows: auto auto auto 1fr; border-radius: 0; }      /* wide, a sheet is the whole screen; the field takes the height that is left */
     .colourpop.wide .sv { height: auto; min-height: var(--pop-field); }
     .colourpop header { cursor: default; }
-    .guidelist { max-width: calc(100vw - 2 * var(--canvas-inset)); }
+    /* the Guides and Shadows lists: sheets from the bottom, as the colour pop-out is here — over the drawer, never cut by
+       it, and nothing on the preview showing through (Okay, 15 Oct 2026, 06:27, a picture of the Guides list cut off) */
+    .guidelist { position: fixed; inset: auto 0 0 0; width: auto; max-width: none; max-height: var(--sheet-max); border-width: var(--hair) 0 0; border-radius: var(--round-large) var(--round-large) 0 0; }
+    :is(.guides, .shadows):has(.guidelist:not([hidden])) { z-index: 7; }      /* above the drawer while open */
+    /* Okay, 15 Oct 2026, 06:20–06:24 ── the top: the page's own colour is the bar's, so Safari tints the strip under the
+       phone's status bar to match and the bar no longer starts against white (iOS 26 takes that tint from the body's
+       background; theme-color is no longer read). The drawer keeps its paper. */
+    body { background: var(--bar); }
+    .panel { background: var(--paper); }
+    /* the drawer's gripper: a dot in the middle of its top line, grey as that line; a finger's room around it (app.js: sheet) */
+    .sheetgrip { display: grid; place-items: center; grid-row: 3; grid-column: 1; align-self: start; justify-self: center; z-index: 6; width: var(--grip-hit); height: var(--grip-hit); translate: 0 -50%; touch-action: none; cursor: ns-resize; }
+    .sheetgrip::before { content: ""; width: var(--grip-dot); height: var(--grip-dot); border-radius: 50%; background: var(--rule); }
+    #app.away .sheetgrip { display: none; }
+    /* tall enough, the drawer holds its title, tabs and pinned panes still and only the rest scrolls (.held, app.js) */
+    .panel.held { display: flex; flex-direction: column; overflow: hidden; }
+    .panel.held .form { overflow-y: auto; }
+    /* the switches on the preview show their signs only; a tap on the backdrop unfolds their words (main.words, app.js) */
+    :is(.guidesbox, .backdropbox) { gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); transition: padding var(--iris-time) var(--view-ease); }
+    .guidesbox { --sign-w: 18px; }
+    .backdropbox { --sign-w: var(--dot); }
+    :is(.guidesbox, .backdropbox) > .word { display: inline-block; max-width: 0; overflow: hidden; white-space: nowrap; transition: max-width var(--iris-time) var(--view-ease), margin var(--iris-time) var(--view-ease); }
+    main.words :is(.guidesbox, .backdropbox) { padding-right: var(--u4); }
+    main.words :is(.guidesbox, .backdropbox) > .word { max-width: var(--word-max); margin-left: var(--unit); }
+    /* Okay's mark larger here; in the showcase the mark and "Dial Tool" stand at the top left (the drawer is gone) */
+    .about, .logo { width: var(--logo-narrow); }
+    .logo { height: var(--logo-narrow); }
+    .logo svg { width: 100%; height: 100%; }
+    #app.show .mast { position: fixed; z-index: 6; top: var(--margin); left: var(--margin); }
   }
 }

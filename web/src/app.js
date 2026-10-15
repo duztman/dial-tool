@@ -219,6 +219,12 @@ const SUN = { day: 20, rise: 40, fade: 0.45 };
 const POOL = { size: 1.45, stretch: 1.4, soft: [0.06, 0.8], light: [0.08, 0.42], shade: [0.15, 0.55], lift: 1.5 };
 // the dial's travel into and out of the showcase: the only thing that moves (04:59 and 05:09: "only dial travels with ease")
 const TRAVEL_MS = 900;
+// a phone (Okay, 15 Oct 2026, 06:20): the preview's switches unfold their words this long after a tap on the backdrop
+const WORDS_MS = 3000;
+// a phone's drawer: the preview's share of the screen at the two heights a tap on the gripper jumps between (the
+// drawer about half, then about three quarters); the least the preview and the drawer keep (px); and how much room for
+// scrolling the drawer must have left under its title, tabs and pinned panes before those stay put
+const SHEET = { shares: [0.42, 0.22], preview: 120, drawer: 160, room: 140 };
 const SPIN_MS = 1600;      // Now and back: every hand turns twice and lands (04:59: "hands do a double turn and come to now")
 const TOOL_ICONS = {
   // on 18; a quiet sign, thin and light (Okay, 11 Oct 2026; again 14 Oct, 04:11: "thinner lines"): DENSE, corners
@@ -930,6 +936,7 @@ class DialTool {
     // on the preview: undo · redo top left, beside the panel (Okay, 13 Oct 2026) · the Guides switch top right · Backdrop bottom left
     this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.sun_hint);
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
+    root.append(this.sheet());      // a phone's gripper, on the drawer's top line
     requestAnimationFrame(() => this.level_title());
     this.play_icon();
     try { localStorage.removeItem("dial-tool-panel"); } catch (e) { /* not kept */ }      // the panel can't be put away any more: forget that it was
@@ -945,6 +952,53 @@ class DialTool {
    *  end, not a button, faint"). On a screen without a pointer the words say what a finger does. */
   zoom_hint() {
     return el("span", { className: "zoomhint" }, el("span", { textContent: "⌘ + scroll to zoom" }));      // words only: the magnifier went into Fit (Okay, 15 Oct 2026, 00:51)
+  }
+
+  /** a phone: the switches on the preview show only their signs; a tap on the empty backdrop unfolds their words for
+   *  WORDS_MS, then they fold back (Okay, 15 Oct 2026, 06:20: "hide labels until backdrop tap"; the extended-button
+   *  pattern: a label that folds back to its sign). On a wider screen the words are always there (the stylesheet) */
+  words_unfold() {
+    this.main.classList.add("words");
+    clearTimeout(this.words_timer);
+    this.words_timer = setTimeout(() => this.main.classList.remove("words"), WORDS_MS);
+  }
+
+  /** a phone: the drawer under the preview (the panel) takes as much of the screen as its gripper is dragged to; a tap
+   *  on the gripper jumps between two heights (SHEET). Remembered by this browser. When the drawer is tall enough for
+   *  its title, tabs and pinned panes and some room to scroll (SHEET.room), those stay put and only the rest scrolls,
+   *  as on a wider screen (.held); shorter, the whole drawer scrolls (Okay, 15 Oct 2026, 06:20: "on mobile bottom menu
+   *  should be height adjustable… simple gripper mid top line dot, grey as the line it sits upon") */
+  sheet() {
+    const app = $("#app"), grip = el("div", { className: "sheetgrip", id: "sheet-grip", title: "Drag to make the drawer taller or shorter", ariaLabel: "Drawer height" });
+    grip.setAttribute("role", "separator");
+    const set = (share) => { this.sheet_share = share; app.style.setProperty("--preview-share", (share * 100).toFixed(2) + "%"); };
+    try { const kept = parseFloat(localStorage.getItem("dial-tool-sheet")); if (kept > 0 && kept < 1) set(kept); } catch (e) { /* not kept */ }
+    const limits = () => { const h = app.clientHeight, bar = $(".bar").offsetHeight; return [SHEET.preview / h, (h - bar - SHEET.drawer) / h]; };
+    let down = null;
+    grip.onpointerdown = (e) => { grip.setPointerCapture(e.pointerId); down = { y: e.clientY, moved: false }; this.fitted = true; };
+    grip.onpointermove = (e) => {
+      if (!down) return;
+      if (Math.abs(e.clientY - down.y) > 4) down.moved = true;
+      if (!down.moved) return;
+      const [lo, hi] = limits(), top = app.getBoundingClientRect().top, bar = $(".bar").offsetHeight;
+      set(clamp((e.clientY - top - bar) / app.clientHeight, lo, hi));
+    };
+    grip.onpointerup = grip.onpointercancel = (e) => {
+      if (!down) return;
+      if (!down.moved && e.type === "pointerup") { const [lo, hi] = limits(), now = this.sheet_share ?? SHEET.shares[0]; set(clamp(Math.abs(now - SHEET.shares[0]) < 0.02 ? SHEET.shares[1] : SHEET.shares[0], lo, hi)); }
+      down = null;
+      try { localStorage.setItem("dial-tool-sheet", String(this.sheet_share)); } catch (er) { /* not kept */ }
+    };
+    // tall enough to hold its top still? measured whenever the drawer or its pinned part changes size
+    const panel = $(".panel"), hold = () => {
+      const narrow = matchMedia("(max-width: 860px)").matches, parts = [panel.querySelector(":scope > header"), this.tabs, this.pinned].filter(Boolean);
+      const top = parts.reduce((sum, x) => sum + (x.hidden ? 0 : x.offsetHeight), 0);
+      panel.classList.toggle("held", narrow && panel.clientHeight - top >= SHEET.room);
+    };
+    this.watchers.push(new ResizeObserver(hold));
+    this.watchers.at(-1).observe(panel);
+    this.watchers.at(-1).observe(this.pinned);
+    return grip;
   }
 
   /** the clock to the time it is now (the bar's Now, the showcase's Now pill) */
@@ -1198,7 +1252,7 @@ class DialTool {
    *  with a solid line, showing the colour as a chip. A press opens the colour pop-out for the backdrop. */
   backdrop_box() {
     const dot = el("i", { className: "dot" });
-    const box = el("button", { type: "button", className: "onview backdropbox", id: "backdrop", title: "The backdrop’s colour (preview only)" }, dot, el("span", { textContent: "Backdrop" }));
+    const box = el("button", { type: "button", className: "onview backdropbox", id: "backdrop", title: "The backdrop’s colour (preview only)" }, dot, el("span", { className: "word", textContent: "Backdrop" }));
     box.setAttribute("aria-expanded", "false");
     box.onclick = () => this.pop_open({ read: () => this.S.c_backdrop, write: (v) => this.set_value("global", "c_backdrop", v), label: () => "Backdrop" }, box);
     this.backdrop_dot = dot;
@@ -3598,7 +3652,7 @@ class DialTool {
   /** a click on the preview opens the settings of what was clicked. */
   clicked(p, node) {
     const piece = this.piece_at(p, node), S = this.S;
-    if (!piece) return;
+    if (!piece) return this.words_unfold();
     const section = { ring: 1, hand: 2, cap: 2, date: 3, plate: 0 }[piece.kind], same = section === S.ui_section;
     S.ui_section = section;
     if (piece.kind === "ring") { S.ui_ring = piece.ring; if (piece.numeral !== undefined) this.nudge_at = piece.numeral; }

@@ -8,6 +8,7 @@
   /* the dial alone (Okay, 15 Oct 2026, 04:02): the panel keeps its width and slides left as far as its column closes,
      so it leaves without its lines reflowing; above the preview (z-index) so the mast, which slides back by as much
      and so stays where it was, is over the backdrop once the panel is gone */
+  .sheetgrip { display: none; }      /* a phone's drawer gripper (8-narrow.css); a wider screen has no drawer */
   .panel { position: relative; z-index: 5; width: var(--panel-w); translate: calc(-1 * var(--panel-w) * var(--away)) 0; }
   .mast { display: flex; align-items: center; translate: calc(var(--panel-w) * var(--away)) 0; }
   /* the mast on the backdrop (the dial alone): black or white like the switches, the version a little quieter. Its
@@ -64,7 +65,7 @@
   .tabs button.on .hub { fill: currentColor; }      /* Dial chosen: its centre hole a dot of paper (Okay's drawing, 14 Oct 2026) */
 
   .pinned, .form { padding: 0 var(--margin); }
-  .pinned { border-bottom: var(--hair) solid var(--rule); }      /* a hairline: what is under it scrolls */
+  .pinned { border-bottom: var(--thick) solid var(--ink); }      /* what stays put ends on a thick line, on every tab and screen (Okay, 15 Oct 2026, 06:20: "the thick black bars… seems good. Do all adhere?"); a hairline until then on Dial, Rings and Export */
   .pinned > .pane:last-child { --air: calc(3 * var(--unit)); }
   .form { --surface: var(--scroll); --inset: var(--paper); --well: var(--field); --row-rule: var(--line-on-grey);
     flex: 1; min-height: 0; overflow-y: auto; padding-bottom: calc(6 * var(--unit)); background: var(--surface); }

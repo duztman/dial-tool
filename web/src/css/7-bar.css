@@ -76,6 +76,7 @@
   @media (hover: none), (pointer: coarse) { .bar .zoomhint { display: none; } }      /* a desktop's only: no sign or words on an iPad or a phone (Okay, 15 Oct 2026, 00:32) */
   .bar .viewing > button, .bar .zooms { flex: none; width: var(--col); }
   .bar .fit { display: inline-flex; align-items: center; justify-content: center; gap: var(--u1); }      /* the magnifier, then the word */
+  .bar .fit > span { font-size: var(--t-s); text-transform: uppercase; }      /* FIT, as NOW and AM are set (Okay, 06:21: "is fit alright? It's looking pale": 13 px lower case beside 12 px capitals) */
   .bar .zooms { display: flex; }
   .bar .zooms button { flex: 1; min-width: 0; }
   .bar .zooms button + button { border-left: 0; }

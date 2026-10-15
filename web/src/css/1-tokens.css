@@ -63,6 +63,12 @@
     --iris-time: 250ms;                            /* the iris switch's words sliding out; Now shrinking into its undo sign */
     --iris-words: 160px;                           /* room enough for ACTIVATE SHOWCASE */
     --now-pill: 64px;                              /* the showcase's Now pill */
+    /* a phone (Okay, 15 Oct 2026, 06:20–06:24) */
+    --preview-share: 42%;                          /* the preview's share of the screen; the drawer under it has the rest, less the bar (its gripper sets it) */
+    --grip-dot: 7px; --grip-hit: 44px;             /* the drawer's gripper: a dot on its top line, and the room a finger gets around it */
+    --sheet-max: 75vh;                             /* a list opened as a sheet from the bottom: at most this tall, then it scrolls */
+    --word-max: 88px;                              /* the most a switch's word unfolds to */
+    --logo-narrow: 22px;                           /* Okay's mark, larger on a phone (06:24: "larger okay icon on mobile") */
     --show-key: 40px; --show-pill: 80px;           /* in the showcase the X and Now are a quarter larger (05:43: "now and x can grow too") */
     --show-faint: 0.6;                             /* and less faint than the switches (05:43: "too faint") */
     --hint-time: 2400ms;                           /* the showcase's left-right hint, start to end */

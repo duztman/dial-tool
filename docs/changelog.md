@@ -1,5 +1,18 @@
 # Dial Tool — changelog
 
+## beta 4.40.1 (web version) · 15 Oct 2026
+
+On a phone (and an iPad held upright):
+- **The drawer has a gripper**, a grey dot on its top line: drag it to make the drawer taller or shorter, tap it to jump between about half and three quarters. Tall enough, the drawer holds its title, tabs and pinned panes still and only the rest scrolls.
+- **The switches on the preview show their signs only**; a tap on empty backdrop unfolds their words for three seconds.
+- **The Guides and Shadows lists open as sheets from the bottom**, over the drawer, never cut by it.
+- **The strip under the phone's status bar takes the bar's colour**, so the bar no longer starts against white.
+- **The showcase keeps the mark and "Dial Tool" at the top left**; the mark is larger on a phone.
+
+Everywhere:
+- **What stays put ends on the thick line on every tab** (Dial, Rings and Export had a hairline).
+- **FIT** in capitals at 12, as NOW and AM.
+
 ## beta 4.40 (web version) · 15 Oct 2026 · released
 
 The night's work after 4.38 (4.38.1 to 4.38.11, 4.39, 4.39.1 to 4.39.4), released to `main` as 4.40 (Okay, 05:53: "Release this, it deserves a 4.4" — 4.4 is taken, by 12 Oct's review, so 4.40). Nothing in a dial changed; links and settings files open as before.

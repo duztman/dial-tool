@@ -1420,11 +1420,40 @@ await shot("10-bar");
   await page.mouse.move(1000, 400); await page.keyboard.down("Control"); await page.mouse.wheel(0, -100); await page.keyboard.up("Control"); await frame();
   check(still[0].includes("user-scalable=no") && still[1] === "pan-x pan-y" && still[2] && await S("t.z") > z0, `the window doesn't zoom (a pinch on the panel is refused; ${still[1]}), the dial still does`);
 }
+{ // what stays put ends on the thick line on every tab (Okay, 15 Oct 2026, 06:20)
+  const ends = [];
+  for (const name of ["Dial", "Rings", "Hands", "Date", "Export"]) { await tab(name); ends.push(await page.$eval(".pinned", (e) => getComputedStyle(e).borderBottomWidth + " " + getComputedStyle(e).borderBottomColor)); }
+  check(ends.every((x) => x === "2px rgb(17, 17, 17)"), `every tab's pinned part ends on the thick line (${[...new Set(ends)].join(" · ")}); FIT in capitals at 12 (${await page.$eval("#fit > span", (e) => getComputedStyle(e).textTransform + " " + getComputedStyle(e).fontSize)})`);
+}
 await page.setViewportSize({ width: 390, height: 844 });
 await tab("Rings");
 await frame();
 const narrow = await page.evaluate(() => ({ wide: document.documentElement.scrollWidth, eye: document.querySelector(".form button.fold .eye").getBoundingClientRect().left, bar: document.querySelector(".bar").getBoundingClientRect().top }));
 check(narrow.wide <= 390 && narrow.eye >= 0 && narrow.bar === 0, "a phone: nothing wider than the screen, the eyes in view, the bar on top");
+{ // a phone (Okay, 15 Oct 2026, 06:20–06:27): the switches fold to their signs and a tap on the backdrop unfolds them; the
+  // drawer has a gripper on its top line — a tap makes it taller, and tall it holds its top still; the lists open as sheets
+  const g = () => page.evaluate(() => { const r = (s) => document.querySelector(s).getBoundingClientRect(), panel = document.querySelector(".panel");
+    return { guides: Math.round(r("#guides").width), grip: [Math.round(r("#sheet-grip").left + r("#sheet-grip").width / 2), Math.round(r("#sheet-grip").top + r("#sheet-grip").height / 2), Math.round(r(".panel").top)], dot: getComputedStyle(document.querySelector("#sheet-grip"), "::before").backgroundColor,
+      line: getComputedStyle(panel).borderTopColor, held: panel.classList.contains("held"), panel: Math.round(panel.getBoundingClientRect().height), body: getComputedStyle(document.body).backgroundColor }; });
+  await page.click("#fit");      // the dial was zoomed in above: fitted, the backdrop's corners are free
+  await page.waitForTimeout(3500);      // anything unfolded by the taps before folds back first
+  const folded = await g();
+  const spot = await page.evaluate(() => { const r = document.querySelector("main").getBoundingClientRect(); return [r.left + 40, r.top + 60]; });      // a corner of the backdrop, off the dial
+  await page.mouse.click(spot[0], spot[1]); await page.waitForTimeout(600);
+  const open = await g();
+  await page.waitForTimeout(3300);
+  const shut = await g();
+  await page.mouse.click(folded.grip[0], folded.grip[1]); await page.waitForTimeout(400);
+  const tall = await g();
+  await page.mouse.click(tall.grip[0], tall.grip[1]); await page.waitForTimeout(400);
+  const back = await g();
+  await page.click("#guides-more"); await page.waitForTimeout(200);
+  const sheet = await page.evaluate(() => { const r = document.querySelector("#guide-list").getBoundingClientRect(); return [Math.round(r.left), Math.round(r.right), Math.round(r.bottom), innerWidth, innerHeight]; });
+  await page.click("#guides-more");
+  check(folded.guides === 32 && open.guides > 60 && shut.guides === 32 && folded.dot === folded.line && folded.grip[1] === folded.grip[2] && tall.panel > folded.panel && tall.held && !back.held && back.panel === folded.panel
+      && sheet[0] === 0 && sheet[1] === sheet[3] && sheet[2] === sheet[4] && folded.body === "rgb(51, 51, 51)",
+    `a phone: the switches show their signs (${folded.guides} px) and unfold their words on a tap of the backdrop (${open.guides}), folding back after 3 s; the gripper sits on the drawer's top line in its grey; a tap makes the drawer taller (${folded.panel} → ${tall.panel}) and it holds its top still, another brings it back; Guides opens as a sheet from the bottom; the page's own colour is the bar's`);
+}
 await shot("11-phone");
 await page.click('.form .fold:visible >> nth=0');
 await shot("11b-phone-folded");
