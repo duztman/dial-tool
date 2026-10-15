@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.41.1 (web version) · 15 Oct 2026
+
+On a phone:
+- **The drawer's title line is compact**: a pane heading's height, the mark at the eyes' size, "Dial Tool" at the panes' size; the unit box is gone (lengths in mm).
+- **Scrolling the whole drawer**, the tabs stay on paper across its whole width and on the thick line, as at its top (the panes no longer show past their edges).
+
 ## beta 4.41 (web version) · 15 Oct 2026 · released
 
 - **A phone's edges meet halfway**: the bar, the switches on the preview and the drawer all stand 2.5 units (13.75) in from both sides (the bar and drawer had 16.5, the switches 12).

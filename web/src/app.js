@@ -996,6 +996,7 @@ class DialTool {
       const top = parts.reduce((sum, x) => sum + (x.hidden ? 0 : x.offsetHeight), 0);
       panel.classList.toggle("held", narrow && panel.clientHeight - top >= SHEET.room);
     };
+    panel.addEventListener("scroll", () => panel.classList.toggle("stuck", panel.scrollTop > panel.querySelector(":scope > header").offsetHeight), { passive: true });      // its tabs held at the top (the title line has gone)
     this.watchers.push(new ResizeObserver(hold));
     this.watchers.at(-1).observe(panel);
     this.watchers.at(-1).observe(this.pinned);
