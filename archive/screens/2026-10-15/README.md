@@ -1,8 +1,8 @@
 # Screens of the night of 14–15 October 2026
 
-*Archived 15 Oct 2026, 06:00 (Okay: "We now need the screenshots you grabbed while working (all versions if possible). All I sent, archive them."). From beta 4.37.1 to 4.40.1: the shadows trial, the bottom bar, the mark and bio, the dial alone, the showcase, the phone pass.*
+*Archived 15 Oct 2026, 06:00 (Okay: "We now need the screenshots you grabbed while working (all versions if possible). All I sent, archive them."). From beta 4.37.1 to 4.41: the shadows trial, the bottom bar, the mark and bio, the dial alone, the showcase, the phone pass.*
 
-- `versions/` — one picture per version, 4.38 to 4.40.1 (and `phone-v4.40.1.png`, the same on a phone), each opening Okay's watch from his link at 10:10, at an iPad's landscape size (1180 × 820, 2×). Rendered at archive time from each version's committed `web/dial-tool.html` (versions as renumbered in `docs/versions.md`: 4.38.12 = 4.39 … 4.38.16 = 4.39.4).
+- `versions/` — one picture per version, 4.38 to 4.41 (and `phone-v4.40.1.png`, `phone-v4.41.png`, the same on a phone), each opening Okay's watch from his link at 10:10, at an iPad's landscape size (1180 × 820, 2×). Rendered at archive time from each version's committed `web/dial-tool.html` (versions as renumbered in `docs/versions.md`: 4.38.12 = 4.39 … 4.38.16 = 4.39.4).
 - `claude/` — what Claude shot while working, named `time-version-name`: the version is the build being made then (the next one committed). A shot redone later under the same name kept only its last state; earlier states of those are gone.
 - `okay/` — what Okay sent, named `time-seen-version-id`: the version is the last one committed before he sent it.
 
@@ -34,6 +34,9 @@ Times are Istanbul (UTC+3); "trial-1/2" and "bar-1…7" are the passes on the br
 | 15 Oct 06:20 | `okay/0620-seen-4.40-bacb2316.png` | 4.40 | the phone: the top bar, labels over the dial, the drawer scrolling |
 | 15 Oct 06:24 | `okay/0624-seen-4.40-58dca1c0.png` | 4.40 | the phone in the showcase, no mark or name up top |
 | 15 Oct 06:27 | `okay/0627-seen-4.40-26430112.png` | 4.40 | the phone: the Guides list cut by the drawer |
+| 15 Oct 06:51 | `okay/0651-seen-4.40.1-540bafbd.jpg` | 4.40.1 | the gripper dot on the drawer's line |
+| 15 Oct 06:51 | `okay/0651-seen-4.40.1-e834acd6.png` | 4.40.1 | the phone's edges, a purple line left and a red one right ("meet each other halfway") |
+| 15 Oct 06:54 | `okay/0654-seen-4.40.1-e884363b.jpg` | 4.40.1 | the speed thumb, to carry the speed |
 
 ## Claude's
 
@@ -188,7 +191,6 @@ Times are Istanbul (UTC+3); "trial-1/2" and "bar-1…7" are the passes on the br
 | 15 Oct 06:22 | `claude/0622-4.40.1-mobile-phone-Export-scrolled.png` | 4.40.1 |
 | 15 Oct 06:22 | `claude/0622-4.40.1-mobile-desk-pins.png` | 4.40.1 |
 | 15 Oct 06:22 | `claude/0622-4.40.1-mobile-phone-pins.png` | 4.40.1 |
-| 15 Oct 06:24 | `claude/0624-4.40.1-mobile-bar-before.png` | 4.40.1 |
 | 15 Oct 06:27 | `claude/0627-4.40.1-mobile-p-start.png` | 4.40.1 |
 | 15 Oct 06:27 | `claude/0627-4.40.1-mobile-p-words.png` | 4.40.1 |
 | 15 Oct 06:27 | `claude/0627-4.40.1-mobile-p-tall.png` | 4.40.1 |
@@ -199,3 +201,14 @@ Times are Istanbul (UTC+3); "trial-1/2" and "bar-1…7" are the passes on the br
 | 15 Oct 06:28 | `claude/0628-4.40.1-mobile-p-shadows.png` | 4.40.1 |
 | 15 Oct 06:28 | `claude/0628-4.40.1-mobile-phone-after.png` | 4.40.1 |
 | 15 Oct 06:28 | `claude/0628-4.40.1-mobile-words-zoom.png` | 4.40.1 |
+| 15 Oct 06:53 | `claude/0653-4.41-mobile-bar-before.png` | 4.41 |
+| 15 Oct 06:54 | `claude/0654-4.41-mobile-f-phone.png` | 4.41 |
+| 15 Oct 06:54 | `claude/0654-4.41-mobile-f-grip-held.png` | 4.41 |
+| 15 Oct 06:54 | `claude/0654-4.41-mobile-f-grip.png` | 4.41 |
+| 15 Oct 06:54 | `claude/0654-4.41-mobile-f-bio.png` | 4.41 |
+| 15 Oct 06:54 | `claude/0654-4.41-mobile-f-desk-bar.png` | 4.41 |
+| 15 Oct 06:54 | `claude/0654-4.41-mobile-f-look.png` | 4.41 |
+| 15 Oct 06:56 | `claude/0656-4.41-mobile-thumb-0.png` | 4.41 |
+| 15 Oct 06:56 | `claude/0656-4.41-mobile-thumb-420.png` | 4.41 |
+| 15 Oct 06:56 | `claude/0656-4.41-mobile-thumb-1000.png` | 4.41 |
+| 15 Oct 06:56 | `claude/0656-4.41-mobile-thumbs.png` | 4.41 |
