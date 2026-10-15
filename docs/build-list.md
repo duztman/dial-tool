@@ -285,6 +285,7 @@ App faults the new guide's reviewers and its coverage walk found (`guide/PLAN.md
 | 232 | **Phone: with the drawer dragged up, Undo · Redo overlap the Backdrop switch**. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
 | 233 | **Diameter takes 0 and 1000 when typed** (the slider runs 15–50); no limit, no note. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
 | 234 | **While time plays, changes aren't kept**: the address and the browser's copy update only once time stops (autosave restarts its wait on every frame). A link copied from the address while playing is a step behind; a tab closed while playing keeps the old dial only if the page-hide save runs. Reproduced 15 Oct 2026 (`guide/tests/baseline.md`, stall 14) | open |
+| 235 | **The size button, level** (Okay, 15 Oct 2026, 10:33 and 10:39). Five variants shown beside the radius button (now, level same circles, level touching, level bigger = C, big circle = the radius disc); Okay chose C, the circles "tiny bit far apart", same size. `VALUE_PICS.size`: r 8.5 at 9.25 and r 15 at 20.75, both on y 18.25; distance 11.5 (C 10.875; fit.mjs's grid allows 11 or 11.5, Claude took 11.5); the small circle's edge on the button's, the large one 0.56 past it on the right. Hull and tangents computed from the circles | **built 4.41.13** |
 
 ## Later
 

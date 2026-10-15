@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.41.13 (web version) · 15 Oct 2026
+
+- **The size button's drawing lies level**: the small and large circle side by side on the radius line, larger than before.
+
 ## beta 4.41.12 (web version) · 15 Oct 2026
 
 - **The Gallery's B-Uhr is Okay's own**: green plate, yellow triangle, orange hours, lilac minute numerals; same name.

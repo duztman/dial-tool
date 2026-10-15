@@ -351,9 +351,12 @@ const size_row = (R) => SIZE_ROWS[G.kind_of(R) === "numerals" ? "numerals" : G.k
 const VALUE_PICS = {                               // a value button's drawing, at its size (36), centre 18. Its disc is the button's edge and, since the audit's second round, a line as heavy as the others (Okay, 14 Oct 2026: "same thicknesses"); outer edges where they were
   radius: `<circle class="disc" cx="18" cy="18" r="${18 - CURVE / 2}" ${sw(CURVE)}/><path d="M18 18.25H35.5" ${sw(LINE)}/><circle class="pivot" cx="18" cy="18.25" r="2"/>`,     // a radius, from the centre to the edge
   // scale: a small circle growing into the large one, joined by their two tangents (Okay's drawing, Asset_1.svg, 13 Oct
-  // 2026, turned 25° to fit the height; 22:52). The hull (both circles and what lies between the tangents) fills when
-  // the button is pressed (Okay's drawing, 14 Oct 2026). Tangents and hull computed from the circles.
-  size: `<path class="hull" d="M14.05 33.01L26.89 26.99A12.6875 12.6875 0 1 0 9.78 10.65L4.36 23.75A7.1875 7.1875 0 0 0 14.05 33.01Z"/><circle class="disc" cx="21.5" cy="15.5" r="12.6875" ${sw(CURVE)}/><circle class="small" cx="11" cy="26.5" r="7.1875" ${sw(CURVE)}/><path class="tangent" d="M4.36 23.75L9.78 10.65M14.05 33.01L26.89 26.99" ${sw(SLANT)}/><path class="dark" d="M11 26.5L21.5 15.5" ${sw(SLANT)}/><circle class="pivot" cx="21.5" cy="15.5" r="2"/>`,
+  // 2026). Level since beta 4.41.13: both centres on the radius button's radius line (18.25), small left, large right
+  // (Okay, 15 Oct 2026, 10:39, of the variants: "C, but tiny bit far apart for scale circles. Same size."): r 8.5 and
+  // 15, centres 11.5 apart (C was 10.875; the grid allows 11 or 11.5), placed by fit.mjs; the small one's edge on the
+  // button's, the large one 0.56 past it on the right. The hull (both circles and what lies between the tangents)
+  // fills when the button is pressed (Okay's drawing, 14 Oct 2026). Tangents and hull computed from the circles.
+  size: `<path class="hull" d="M4.45 11.24L12.27 5.88A15 15 0 1 1 12.27 30.62L4.45 25.26A8.5 8.5 0 0 1 4.45 11.24Z"/><circle class="disc" cx="20.75" cy="18.25" r="15" ${sw(CURVE)}/><circle class="small" cx="9.25" cy="18.25" r="8.5" ${sw(CURVE)}/><path class="tangent" d="M4.45 11.24L12.27 5.88M4.45 25.26L12.27 30.62" ${sw(SLANT)}/><path class="dark" d="M9.25 18.25H20.75" ${sw(LINE)}/><circle class="pivot" cx="20.75" cy="18.25" r="2"/>`,
 };
 
 // a language in the list, by its name; on its button, by two letters ("zh-Hans" → ZH; the font's own choice → "Lang.")
