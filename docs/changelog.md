@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.41.19 (web version) · 15 Oct 2026
+
+- **Opening a Gallery dial keeps the panel where it was** (it jumped back to the top).
+- **What you press stays under your finger** while rows above it appear, go or move (the ring line, more/less, folds), as far as the panel can scroll.
+- **A ring's grip is easier to catch** by finger (it reaches into the start of the name).
+- **Alternate**: a band with an even number of sectors can take two colours that alternate.
+- **Gallery:** the B-Uhr is Okay's second version (navy, cyan marks).
+
 ## beta 4.41.18 (web version) · 15 Oct 2026
 
 - **Gallery:** Montgomery fifth; the 12 + 24 is Okay's own, in Rubik.

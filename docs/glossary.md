@@ -69,7 +69,7 @@ If a term is used differently in conversation, ask, then update this file.
 |---|---|
 | **Section** | One page of the left panel, chosen by its tab: Dial · Rings · Hands · Windows · Export. The fourth was *Date* until 11 Oct 2026; its key and number are still Date / 3 (R8, R9). |
 | **Pane** | A named part of a section, opened by a thick line (web version, beta 4.0; called a *group* in beta 3.0). Its eye folds it. The Dial section's panes: **Dial** (diameter, plate, background) and **Page** (margin, backdrop). |
-| **Sector colour** | A band's sector with a colour of its own (ring key `cs`). Without one, a sector has the ring's colour. |
+| **Sector colour** | A band's sector with a colour of its own (ring key `cs`). Without one, a sector has the ring's colour. **Alternate** (beta 4.41.19): with an even number of sectors, two colours round the band, the ring's own on sectors 1, 3, 5… and the other on 2, 4, 6… (stored as sector colours). |
 | **Scale everything** | The tick under Diameter: a change of diameter multiplies every measure on the dial (not the page margin). |
 | **Unit box** | The box at the panel's top right: the unit lengths are shown and typed in (mm, points, inches, lignes). Settings stay in mm. **Ligne**: the watchmakers' unit for movement sizes, 2.2558 mm. |
 | **Reach** | The unseen frame round a small control that also takes a finger's press (web version, touch only). |
