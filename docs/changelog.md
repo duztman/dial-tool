@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.41.11 (web version) · 15 Oct 2026
+
+- **On a phone the mark is larger on the full title line** (22, as in the showcase); squeezed, it is the eyes' size again.
+
 ## beta 4.41.10 (web version) · 15 Oct 2026
 
 - **A phone's title line, full and squeezed**: at the drawer's top it is full — the title at its size, the Gallery pill, mm; once the drawer scrolls it squeezes (no Gallery, no mm) and stays on top with the tabs held under it; back at the very top it is full again.

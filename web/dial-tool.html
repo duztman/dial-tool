@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.41.10 · built 2026-10-15 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.41.11 · built 2026-10-15 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -1306,9 +1306,9 @@
     main:not(.words) :is(.guidesbox, .guidesmore, .backdropbox) { background: none; }      /* folded to their signs, the switches are outlines again */
     main.words :is(.guidesbox, .backdropbox) > .word { max-width: var(--word-max); margin-left: var(--unit); }
     /* in the showcase the mark (larger here) and "Dial Tool" stand at the top left: the drawer is gone */
-    #app.show :is(.about, .logo) { width: var(--logo-narrow); }
-    #app.show .logo { height: var(--logo-narrow); }
-    #app.show .logo svg { width: 100%; height: 100%; }
+    #app.show :is(.about, .logo), .panel:not(.squeezed) :is(.about, .logo) { width: var(--logo-narrow); }
+    #app.show .logo, .panel:not(.squeezed) .logo { height: var(--logo-narrow); }
+    #app.show .logo svg, .panel:not(.squeezed) .logo svg { width: 100%; height: 100%; }      /* …and on the drawer's full title line (Okay, 15 Oct 2026, 08:08: "you forgot the icon resize on the big version"); squeezed, it is the eyes' size again */
     /* the drawer's title line, squeezed once the drawer scrolls (.squeezed, app.js) and staying on top while it does,
        the tabs held under it (Okay, 15 Oct 2026, 07:02: "a compacted title bar for scrollers' delight. We may lose mm…
        smaller, actually proportional to eyes okay icon and same text"; 07:59: full on load and back at the very top,
@@ -5680,7 +5680,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.41.10";
+var VERSION = "beta 4.41.11";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
