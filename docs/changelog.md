@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.41.4 (web version) · 15 Oct 2026
+
+- **The narrow layout's font sheet offers link and file only**: Installed (a desktop Chrome or Edge thing) isn't shown there, and the two keep their second lines.
+
 ## beta 4.41.3 (web version) · 15 Oct 2026
 
 - **On a phone the font sheet reaches up to the bar**, over the whole preview.

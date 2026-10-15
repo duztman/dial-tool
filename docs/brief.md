@@ -252,6 +252,7 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 15 Oct | **Phone: the drawer's title line compact (no unit box, the mark at the eyes' size); scrolling as one, the stuck tabs stand on paper and the thick line** (beta 4.41.1). | Okay, 07:02. Claude's reading: "same text… equalize with others" = "Dial Tool" at the panes' headings' size (13), the version at 12. The hold of 4.40.1 works only on a tall drawer, as built. |
 | 15 Oct | **A switch whose words show is filled with the backdrop's colour** (beta 4.41.2). | Okay, 07:07. Claude's reading: "solid bg color" = the backdrop's own colour (it hides the dial under the words and still looks like an outline on the backdrop); "when labels visible" includes the wide screen's always-labelled Guides, Backdrop and Shadows. |
 | 15 Oct | **The phone's font sheet up to the bar; long words in its buttons cut at their edge** (beta 4.41.3). | Okay, 07:12. Claude's reading: "does fit all the way up the canvas" = it should. |
+| 15 Oct | **Installed is not offered on the narrow layout** (beta 4.41.4). | Okay, 07:14, on Claude's render. A real phone never had it (no `queryLocalFonts`); a narrow desktop window did, three-line buttons with it. |
 
 ## 5 · Open questions
 
