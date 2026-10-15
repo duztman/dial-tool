@@ -1422,6 +1422,12 @@ await shot("10-bar");
   await page.mouse.move(1000, 400); await page.keyboard.down("Control"); await page.mouse.wheel(0, -100); await page.keyboard.up("Control"); await frame();
   check(still[0].includes("user-scalable=no") && still[1] === "pan-x pan-y" && still[2] && await S("t.z") > z0, `the window doesn't zoom (a pinch on the panel is refused; ${still[1]}), the dial still does`);
 }
+{ // the showcase's Now (Okay, 15 Oct 2026, 07:36): the hour hand one turn clockwise, the minute hand one anticlockwise, the seconds the short way; halfway through the spin (eased, so half the way)
+  const half = await page.evaluate(() => { const t = window.dial_tool, kept = t.show, items = ["hour", "minute", "second"].map((name) => ({ role: "hand", name, angle: 100 }));
+    t.show = { spin: { from: [90, 110, 350], way: 1, t0: performance.now() - 800 } }; t.spin_hands(items); t.show = kept; return items.map((i) => i.angle); });
+  const want = [90 + (10 + 360) / 2, 110 - (10 + 360) / 2, 350 + 110 / 2];
+  check(half.every((a, i) => Math.abs(a - want[i]) < 4), `Now in the showcase: hour clockwise, minute anticlockwise, one turn each; seconds the short way (${half.map((a) => a.toFixed(1)).join(" ")} ≈ ${want.join(" ")})`);
+}
 { // what stays put ends on the thick line on every tab (Okay, 15 Oct 2026, 06:20)
   const ends = [];
   for (const name of ["Dial", "Rings", "Hands", "Date", "Export"]) { await tab(name); ends.push(await page.$eval(".pinned", (e) => { const c = getComputedStyle(e); return [c.borderBottomWidth, c.borderBottomColor, c.backgroundImage, c.backgroundSize, c.backgroundOrigin].join(" "); })); }

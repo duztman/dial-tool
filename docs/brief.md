@@ -255,6 +255,7 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 15 Oct | **Installed is not offered on the narrow layout** (beta 4.41.4). | Okay, 07:14, on Claude's render. A real phone never had it (no `queryLocalFonts`); a narrow desktop window did, three-line buttons with it. |
 | 15 Oct | **FIT on a phone sized to its contents, equal room either side** (beta 4.41.5). | Okay, 07:21. Claude's reading: "pushing past the empty space" = it grows to the left into the room the day slider leaves; its right edge stays on the margin. |
 | 15 Oct | **Every thick line stands inside the margins**, the pinned part's too (beta 4.41.6); in the margins paper meets the grey with no line. | Okay, 07:29, desktop included. |
+| 15 Oct | **Showcase Now: hour hand one turn clockwise, minute hand one anticlockwise, seconds the short way, all eased in and out** (beta 4.41.7); replaces the double turn of 04:59. Back mirrors it. | Okay, 07:36. |
 
 ## 5 · Open questions
 

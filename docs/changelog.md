@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.41.7 (web version) · 15 Oct 2026
+
+- **The showcase's Now, rechoreographed**: the hour hand turns once clockwise, the minute hand once anticlockwise, both landing on the time; the seconds hand makes no turn and goes the short way to its place meanwhile. Slow to start, slow to land. Going back, each big hand turns the other way. (Was: every hand two turns, the same way.)
+
 ## beta 4.41.6 (web version) · 15 Oct 2026
 
 - **The thick line under what stays put stops at the margins**, like every other thick line; in the margins the white meets the grey with no line. Desktop and phone.

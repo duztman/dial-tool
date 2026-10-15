@@ -225,7 +225,7 @@ const WORDS_MS = 3000;
 // drawer about half, then about three quarters); the least the preview and the drawer keep (px); and how much room for
 // scrolling the drawer must have left under its title, tabs and pinned panes before those stay put
 const SHEET = { shares: [0.42, 0.22], preview: 120, drawer: 160, room: 140 };
-const SPIN_MS = 1600;      // Now and back: every hand turns twice and lands (04:59: "hands do a double turn and come to now")
+const SPIN_MS = 1600;      // Now and back: the big hands turn once, opposite ways, and land; the seconds hand goes straight there (07:36)
 const TOOL_ICONS = {
   // on 18; a quiet sign, thin and light (Okay, 11 Oct 2026; again 14 Oct, 04:11: "thinner lines"): DENSE, corners
   // a sixteenth heavier as on any box; light by its grey. Outer edge where it was (1 … 17)
@@ -1117,9 +1117,9 @@ class DialTool {
     D.stops.forEach((s, i) => { s.setAttribute("offset", f([0, R / r * (1 - soft * 0.3), 1][i])); s.setAttribute("stop-color", "#000"); s.setAttribute("stop-opacity", f(i < 2 ? shade : 0)); });
   }
 
-  /** Now in the showcase: every hand turns twice and lands on the time it is now; the pill shrinks into an undo sign.
-   *  Pressed then, the hands turn twice the other way, back to the time they showed (as it has run on since), and the
-   *  sign grows back into Now (Okay, 04:59; Okay's choice of the way back) */
+  /** Now in the showcase: the hands land on the time it is now; the pill shrinks into an undo sign. Pressed then, they
+   *  go back to the time they showed (as it has run on since), each the other way, and the sign grows back into Now
+   *  (Okay, 04:59; Okay's choice of the way back) */
   show_now() {
     const sh = this.show, beat = G.BEATS[this.S.ha_beat][1];
     const from = G.hand_angles(this.S.t, beat);
@@ -1139,16 +1139,22 @@ class DialTool {
     this.render();
   }
 
-  /** the hands while they spin: from where they were, two whole turns and the way to where they are now (frame()) */
+  /** the hands while they spin (frame()). The hour hand turns one whole turn clockwise and on to where it lands, the
+   *  minute hand the same anticlockwise (going back, each the other way); the seconds hand makes no turn, it goes the
+   *  short way to its place while the big hands whirl. One easing for all, slow to start and slow to land (Okay, 15 Oct
+   *  2026, 07:36: "big arms move different wises, one clock one anticlock. One turn, ease to stop on position. Seconds?
+   *  Only moves to position slowly as the chaos ensues. Eases both start and end"; was: every hand two turns, one way) */
   spin_hands(items) {
     const sp = this.show && this.show.spin;
     if (!sp) return;
     const p = clamp((performance.now() - sp.t0) / SPIN_MS, 0, 1), e = p < 0.5 ? 4 * p ** 3 : 1 - (-2 * p + 2) ** 3 / 2;
-    const k = { hour: 0, minute: 1, second: 2 };
+    const k = { hour: 0, minute: 1, second: 2 }, way = { hour: sp.way, minute: -sp.way };
     for (const item of items) {
-      if (item.role !== "hand") continue;
-      const a0 = sp.from[k[item.name]], gap = (((item.angle - a0) * sp.way) % 360 + 360) % 360;
-      item.angle = p < 1 ? a0 + sp.way * e * (gap + 720) : item.angle;
+      if (item.role !== "hand" || !(item.name in k) || p >= 1) continue;
+      const a0 = sp.from[k[item.name]], d = item.angle - a0;
+      if (item.name === "second") { item.angle = a0 + e * ((d % 360 + 540) % 360 - 180); continue; }      // the short way, under half a turn
+      const w = way[item.name], gap = ((d * w) % 360 + 360) % 360;      // how far round it is, going its own way
+      item.angle = a0 + w * e * (gap + 360);
     }
     if (p >= 1) this.show.spin = null;
   }
@@ -3438,7 +3444,7 @@ class DialTool {
       this.build_ms = performance.now() - t0;
     }
     const items = G.scene(S, this.statik, S.t, true, S.ui_ring);
-    this.spin_hands(items);      // the showcase's Now: the hands on their double turn
+    this.spin_hands(items);      // the showcase's Now: the big hands whirl opposite ways, the seconds go straight
     this.items = items;
     const backdrop = S.out_production ? [1, 1, 1, 1] : S.c_backdrop;
     this.backdrop.setAttribute("fill", to_hex(backdrop));
