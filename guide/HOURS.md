@@ -7,3 +7,4 @@
 | Plan and its review | 15 Oct, 08:50–09:40 | — | 0.8 | — | before the steps; three blind reviewers, three rounds |
 | 1 Inventory | 15 Oct, 09:45–09:51 | 4 | 0.1 | 0.05 | coverage walk: 153 states, 366 names, 14 s |
 | 2 Brief | 15 Oct, 09:51 | 0.5 | 0.05 | — | waiting for Okay's word |
+| 3 Baseline | 15 Oct, 09:55–10:35 | 1.5 | 0.7 | 0.2 | target + scorer (pipeline); three readers ran in parallel (≈30 min) |

@@ -284,6 +284,7 @@ App faults the new guide's reviewers and its coverage walk found (`guide/PLAN.md
 | 231 | **Word collisions**: Backdrop (a colour and a switch) · Frame (a colour and a width, Windows) · Size, Size %, Size × · Ring Ø and Ring at % on hands · the opener's ring named Band whose kind is numerals. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
 | 232 | **Phone: with the drawer dragged up, Undo · Redo overlap the Backdrop switch**. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
 | 233 | **Diameter takes 0 and 1000 when typed** (the slider runs 15–50); no limit, no note. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 234 | **While time plays, changes aren't kept**: the address and the browser's copy update only once time stops (autosave restarts its wait on every frame). A link copied from the address while playing is a step behind; a tab closed while playing keeps the old dial only if the page-hide save runs. Reproduced 15 Oct 2026 (`guide/tests/baseline.md`, stall 14) | open |
 
 ## Later
 
