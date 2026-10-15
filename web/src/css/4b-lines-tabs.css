@@ -16,7 +16,6 @@
   .tabsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: end; min-height: calc(var(--head) + var(--unit)); padding-top: calc(1.5 * var(--unit)); border-top: var(--thick) solid var(--ink); }
   .tabsbar > .segs { grid-column: 2 / -1; }
   .tabsbar .segs > button { height: var(--tab-high); font-weight: 600; }
-  .pinned:has(> :is(.tabsbar, .windowcards):last-child) { border-bottom: var(--thick) solid var(--ink); }      /* the hand tabs stand on a pane's thick line: the pane under them is the one they choose */
   /* tabs: the hand tabs and the window cards. They touch each other and stand on the line under them with no foot
      of their own; between two tabs the top has a sharp notch, a V. Each tab cuts its own two top corners (a
      chamfer as deep as the notch, --tab-notch), so two neighbours make the V between them; the first tab's left

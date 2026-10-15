@@ -1424,8 +1424,9 @@ await shot("10-bar");
 }
 { // what stays put ends on the thick line on every tab (Okay, 15 Oct 2026, 06:20)
   const ends = [];
-  for (const name of ["Dial", "Rings", "Hands", "Date", "Export"]) { await tab(name); ends.push(await page.$eval(".pinned", (e) => getComputedStyle(e).borderBottomWidth + " " + getComputedStyle(e).borderBottomColor)); }
-  check(ends.every((x) => x === "2px rgb(17, 17, 17)"), `every tab's pinned part ends on the thick line (${[...new Set(ends)].join(" · ")}); FIT in capitals at 12 (${await page.$eval("#fit > span", (e) => getComputedStyle(e).textTransform + " " + getComputedStyle(e).fontSize)})`);
+  for (const name of ["Dial", "Rings", "Hands", "Date", "Export"]) { await tab(name); ends.push(await page.$eval(".pinned", (e) => { const c = getComputedStyle(e); return [c.borderBottomWidth, c.borderBottomColor, c.backgroundImage, c.backgroundSize, c.backgroundOrigin].join(" "); })); }
+  const twice = await page.$eval(".pinned", (e) => 2 * parseFloat(getComputedStyle(e).paddingLeft));
+  check(ends.every((x) => x === `2px rgba(0, 0, 0, 0) linear-gradient(rgb(17, 17, 17) 0px, rgb(17, 17, 17) 0px) calc(100% - ${twice}px) 2px border-box`), `every tab's pinned part ends on the thick line, inside the margins (Okay, 07:29) (${[...new Set(ends)].join(" · ")}); FIT in capitals at 12 (${await page.$eval("#fit > span", (e) => getComputedStyle(e).textTransform + " " + getComputedStyle(e).fontSize)})`);
 }
 await page.setViewportSize({ width: 390, height: 844 });
 await tab("Rings");

@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.41.6 (web version) · 15 Oct 2026
+
+- **The thick line under what stays put stops at the margins**, like every other thick line; in the margins the white meets the grey with no line. Desktop and phone.
+
 ## beta 4.41.5 (web version) · 15 Oct 2026
 
 - **On a phone FIT is as wide as its sign and word need**, with equal room either side (9 px, as NOW has); the day slider gives way.
