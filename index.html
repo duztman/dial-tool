@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.41.7 · built 2026-10-15 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.41.8 · built 2026-10-15 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -1071,6 +1071,21 @@
   .nowpill.back svg { opacity: var(--faint); }
   @media (hover: hover) { .nowpill.back:hover svg { opacity: 1; } }
   #app.show .nowpill { visibility: visible; }
+  /* Now and 10:10 side by side, the gap between them on the dial's centre line; each is held by its inner edge, so the
+     one that shrinks into the undo sign shrinks toward the middle and the other doesn't move (Okay, 15 Oct 2026, 07:40:
+     "next to now, 10:10. Selected turns undo, other stays still"). 10:10 is two letters (and their tracking) wider */
+  .nowpill.now { translate: calc(-100% - var(--unit) / 2) 0; }
+  .nowpill.ten { translate: calc(var(--unit) / 2) 0; }
+  #app.show .nowpill.ten { width: calc(var(--show-pill) + 2ch + 2 * var(--track-100)); }
+  #app.show .nowpill.ten.back { width: var(--show-key); }
+  /* the hands key: the showcase's bottom left corner, across from the X; round, the Hands sign inside, as faint as the
+     X. Pressed, the hands are hidden and the key is filled, the sign dark on it (07:40) */
+  .handskey { position: fixed; z-index: 3; left: var(--margin); bottom: var(--margin); width: var(--show-key); height: var(--show-key); padding: 0; border-radius: 50%; visibility: hidden; }
+  .handskey svg { display: block; opacity: var(--show-faint); }
+  #app.show .handskey { visibility: visible; }
+  .handskey[aria-pressed="true"] { border-color: transparent; background: color-mix(in srgb, var(--white) calc(var(--show-faint) * 100%), transparent); color: var(--night); }
+  .handskey[aria-pressed="true"] svg { opacity: 1; }
+  @media (hover: hover) { .handskey:hover svg { opacity: 1; } .handskey[aria-pressed="true"]:hover { background: var(--white); } }
   /* over Now, once the dial has arrived: a two-headed arrow, white and glowing, comes, sways left and right, and goes;
      centred between the dial and Now (app.js sets its top) (04:59; 05:43: "can't see it. Make it white and glow and
      fade, 3x size") */
@@ -5652,7 +5667,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.41.7";
+var VERSION = "beta 4.41.8";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -7385,6 +7400,8 @@ var INKED = [
   // Fit, beside its magnifier
   "#show-now > .word",
   // the showcase's Now pill (15 Oct 2026)
+  "#show-ten > .word",
+  // and its 10:10 pill (15 Oct 2026, 07:40)
   ".irisgo",
   // ACTIVATE SHOWCASE, beside the iris
   "#now",
@@ -7677,6 +7694,9 @@ var TOOL_ICONS = {
   // the showcase switch, left of the eye (Okay, 15 Oct 2026, 04:26: "just the iris inside same box"): the eye's iris
   // alone, where it stands in the eye. In the showcase it is the way out: two of the eye's rays cross on it, an X run
   // out to the box (04:59: "iris becomes an x (2rayiris)"); 1, not the eye's 0.5, so it reads while faint
+  // the showcase's hands key (07:40): the Hands section's sign drawn again for a 38 inside a round key, lines 1 as the
+  // X beside it; the minute hand up, the hour hand at four, the hub a dot
+  hands_key: `<path d="M19 19V8.75M19 19L25.5 23.25" stroke-width="1"/><circle cx="19" cy="19" r="1.75" fill="currentColor" stroke="none"/>`,
   iris: `<circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/><path class="x" d="M-0.75 -1L31.25 31M31.25 -1L-0.75 31" stroke-width="1" stroke-linecap="butt"/>`,
   // the showcase's hint over Now: a line with a head at each end — the sun can be moved left and right (04:59); on 108
   // by 36, three times its first size, white with a glow (05:43: "can't see it… 3x size")
@@ -8379,7 +8399,7 @@ var DialTool = class _DialTool {
     );
     this.set_speed(1);
     const guides = this.guides_box();
-    this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.sun_hint);
+    this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.ten_pill, this.hands_key, this.sun_hint);
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     root.append(this.sheet());
     requestAnimationFrame(() => this.level_title());
@@ -8515,7 +8535,12 @@ var DialTool = class _DialTool {
       }
       this.set_speed(was.speed);
       if (!was.playing) this.play(false);
-      this.now_pill.classList.remove("back");
+      for (const b of [this.now_pill, this.ten_pill]) {
+        b.classList.remove("back");
+        b.title = b.ariaLabel = b.dataset.says;
+      }
+      this.hands_key.setAttribute("aria-pressed", "false");
+      this.hands_key.title = "Hide the hands";
     }
     this.iris_button.setAttribute("aria-pressed", String(on));
     app.style.setProperty("--title-end", this.title.getBoundingClientRect().right.toFixed(1) + "px");
@@ -8601,22 +8626,26 @@ var DialTool = class _DialTool {
   /** Now in the showcase: the hands land on the time it is now; the pill shrinks into an undo sign. Pressed then, they
    *  go back to the time they showed (as it has run on since), each the other way, and the sign grows back into Now
    *  (Okay, 04:59; Okay's choice of the way back) */
-  show_now() {
+  //  10:10 does the same, to 10:10 (07:40). The one pressed turns into the undo sign; the other stays as it is. The other
+  //  pressed then takes the hands to its time and the sign moves to it; the way back is still to the time first shown.
+  show_now(kind = "now") {
     const sh = this.show, beat = BEATS[this.S.ha_beat][1];
     const from = hand_angles(this.S.t, beat);
-    if (!sh.back) {
-      const d = /* @__PURE__ */ new Date(), now = d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1e3;
-      sh.back = { t: this.S.t, at: performance.now() };
-      this.set_time(now);
-      sh.spin = { from, way: 1, t0: performance.now() };
-      this.now_pill.classList.add("back");
-    } else {
+    if (sh.back && sh.back.by === kind) {
       this.set_time(sh.back.t + (performance.now() - sh.back.at) / 1e3);
       sh.back = null;
       sh.spin = { from, way: -1, t0: performance.now() };
-      this.now_pill.classList.remove("back");
+    } else {
+      const d = /* @__PURE__ */ new Date(), now = d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1e3;
+      sh.back = sh.back ? { ...sh.back, by: kind } : { t: this.S.t, at: performance.now(), by: kind };
+      this.set_time(kind === "now" ? now : 10 * 3600 + 600 + this.half());
+      sh.spin = { from, way: 1, t0: performance.now() };
     }
-    this.now_pill.title = this.now_pill.ariaLabel = sh.back ? "Back to the time it showed" : "The time it is now";
+    for (const b of [this.now_pill, this.ten_pill]) {
+      const back = !!sh.back && b.classList.contains(sh.back.by);
+      b.classList.toggle("back", back);
+      b.title = b.ariaLabel = back ? "Back to the time it showed" : b.dataset.says;
+    }
     this.render();
   }
   /** the hands while they spin (frame()). The hour hand turns one whole turn clockwise and on to where it lands, the
@@ -8788,8 +8817,24 @@ var DialTool = class _DialTool {
     this.iris_button = iris;
     this.iris_open(false);
     this.eye_box = el("div", { className: "eyes" }, this.iris_box, eye2);
-    this.now_pill = el("button", { type: "button", className: "onview nowpill", id: "show-now", title: "The time it is now", ariaLabel: "The time it is now", onclick: () => this.show_now() }, el("span", { className: "word", textContent: "Now" }));
-    this.now_pill.insertAdjacentHTML("beforeend", icon(TOOL_ICONS.undo));
+    const pill = (kind, id, word, says) => {
+      const b = el("button", { type: "button", className: "onview nowpill " + kind, id, title: says, ariaLabel: says, onclick: () => this.show_now(kind) }, el("span", { className: "word", textContent: word }));
+      b.insertAdjacentHTML("beforeend", icon(TOOL_ICONS.undo));
+      b.dataset.says = says;
+      return b;
+    };
+    this.now_pill = pill("now", "show-now", "Now", "The time it is now");
+    this.ten_pill = pill("ten", "show-ten", "10:10", "10:10, the classic pose");
+    this.hands_key = el("button", { type: "button", className: "onview handskey", id: "hands-key", title: "Hide the hands", ariaLabel: "Hands" });
+    this.hands_key.innerHTML = icon(TOOL_ICONS.hands_key, 38);
+    this.hands_key.setAttribute("aria-pressed", "false");
+    this.hands_key.onclick = () => {
+      const hide = !this.show.nohands;
+      this.show.nohands = hide;
+      this.hands_key.setAttribute("aria-pressed", String(hide));
+      this.hands_key.title = hide ? "Show the hands" : "Hide the hands";
+      this.render();
+    };
     this.sun_hint = el("div", { className: "sunhint", id: "sun-hint" });
     this.sun_hint.innerHTML = icon(TOOL_ICONS.both_ways, 108, 36);
     this.sun_hint.onanimationend = () => this.sun_hint.classList.remove("go");
@@ -11353,7 +11398,7 @@ var DialTool = class _DialTool {
     }
   }
   draw() {
-    const S = this.show ? { ...this.S, guides: false } : this.S;
+    const S = this.show ? { ...this.S, guides: false, ha_on: this.S.ha_on && !this.show.nohands } : this.S;
     const day = shows_day(S) ? day_hour(S) : null;
     if (day !== this.day_drawn) {
       this.day_drawn = day;
