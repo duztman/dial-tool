@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.41.23 (web version) · 15 Oct 2026
+
+- **Help**, beside the version in the title line: opens the guide (duztman.github.io/dial-tool/guide/) in a new tab.
+
 ## beta 4.41.22 (web version) · 15 Oct 2026
 
 - **Gallery:** Sector is Okay's own version (a thin band round the inner pies).

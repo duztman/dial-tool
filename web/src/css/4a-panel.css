@@ -39,6 +39,7 @@
   .bio li { margin-bottom: var(--u1); }
   .bio a { color: var(--white); text-decoration: underline; text-underline-offset: 0.15em; }
   .panel .title { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); }
+  .mast .help { text-decoration: underline; text-underline-offset: 0.15em; }      /* Help, beside the version: the version's type, underlined (Okay, 15 Oct 2026, 12:50) */
   /* units: a box at the panel's top right saying the unit lengths are shown in, by its short name; one column wide
      whatever it says. Its menu hangs under it, the units by their full names, a hairline between them. */
   .unit { position: relative; margin-left: auto; }

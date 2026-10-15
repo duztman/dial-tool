@@ -27,6 +27,7 @@ const filled = (slider) => slider.style.setProperty("--p", clamp((slider.value -
 
 const PNG_MOST = 16384;                            // a browser's canvas is at most this many pixels a side
 const PNG_SAFE = 4096 * 4096;                      // Safari on a phone or tablet draws nothing past this many pixels in all
+const GUIDE = "https://duztman.github.io/dial-tool/guide/";      // the guide (#230): "Help" beside the version, in its type, underlined (Okay, 15 Oct 2026, 12:50)
 const LAST = "dial-tool-last";                     // the last session, kept by the browser
 const FEATURE_NAMES = {
   kern: "kerning", liga: "ligatures", calt: "contextual alternates", dlig: "discretionary ligatures",
@@ -836,7 +837,7 @@ class DialTool {
     this.form = el("div", { className: "form" });                  // rows that scroll
     const panel = el("aside", { className: "panel" },
       // .mast: the mark, the title and the version — what stays when the panel slides away (dial_alone(), 15 Oct 2026)
-      el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION }))), this.gallery_way(), this.unit_box()),
+      el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION }), el("a", { className: "quiet help", href: GUIDE, target: "_blank", rel: "noopener", textContent: "Help" }))), this.gallery_way(), this.unit_box()),
       this.tabs, this.pinned, this.form);
     this.finger_anchor(panel);
 

@@ -277,6 +277,7 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 15 Oct | **Links have no dashes** (beta 4.41.21): "~" stands where "-" stood, so a pasted link breaks only where its line runs out; old links still open. World time before Elapsed time in the Gallery. | Okay, 12:11. |
 | 15 Oct | *Open:* shorter links — scheme 2 with short keys and hex colours (≈ 19 % shorter) or also a deflate dictionary (≈ 25 %, one small library). Build list #246. | Okay, 12:11: "any chance of making this shorter". |
 | 15 Oct | **The Gallery's Sector is Okay's own** (beta 4.41.22); the guide's preset stays as it is. | Okay, 12:47, his link. |
+| 15 Oct | **Help in the app** (beta 4.41.23, #230): "Help" beside the version, in the version's type, underlined; it opens the guide, duztman.github.io/dial-tool/guide/, in a new tab. The guide's edition 1 release condition. **Old guides archived** (`archive/guide/`); Okay's notes → `guide/notes-okay.md`, presets → `web/presets/`. | Okay, 12:50: "Help next to beta number same font but underlined"; "Archive them". |
 
 ## 5 · Open questions
 

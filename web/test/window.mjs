@@ -1339,12 +1339,17 @@ await tab("Export");
   const g = await page.evaluate(() => { const panes = [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent), cards = [...document.querySelectorAll(".gallery a")]; return { last: panes.at(-1), n: cards.length, names: cards.map((c) => c.textContent).join(" · "), pictures: cards.every((c) => c.querySelector("svg path")), across: new Set(cards.slice(0, 3).map((c) => Math.round(c.getBoundingClientRect().top))).size }; });
   check(g.last === "Gallery" && g.n >= 6 && g.pictures && g.across === 1, `the Gallery is the last pane of Export: ${g.n} dials, three to a line (${g.names})`);
   check(g.names.startsWith("Okay's watch · "), "the Gallery opens with Okay's watch, the dial the tool opens with (07:45)");
-  { // the way to the Gallery from the panel's top line (07:45): centred between the version and the unit box; pressed, Export with the Gallery in view
+  { // Help (#230; Okay, 15 Oct 2026, 12:50: "next to beta number same font but underlined"): the guide, in a new tab
+    const h = await page.evaluate(() => { const a = [...document.querySelectorAll(".panel .title a")].find((e) => e.textContent === "Help"), v = document.querySelector(".panel .title .quiet"), sa = a && getComputedStyle(a), sv = getComputedStyle(v);
+      return a && { href: a.href, blank: a.target === "_blank", after: v.nextElementSibling === a, same: sa.fontFamily === sv.fontFamily && sa.fontSize === sv.fontSize && sa.color === sv.color, under: sa.textDecorationLine.includes("underline") }; });
+    check(h && h.href === "https://duztman.github.io/dial-tool/guide/" && h.blank && h.after && h.same && h.under, `Help beside the version, in its type and colour, underlined, opens the guide in a new tab (${JSON.stringify(h)})`);
+  }
+  { // the way to the Gallery from the panel's top line (07:45): centred between the title line's end (Help, since 4.41.23) and the unit box; pressed, Export with the Gallery in view
     await tab("Dial");
-    const w = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), v = r(".panel .title .quiet"), u = r("#unit"), p = r("#to-gallery"); return { mid: (p.left + p.right) / 2 - (v.right + u.left) / 2, high: p.height === u.height }; });
+    const w = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), v = r(".panel .title > :last-child"), u = r("#unit"), p = r("#to-gallery"); return { mid: (p.left + p.right) / 2 - (v.right + u.left) / 2, high: p.height === u.height }; });
     await page.click("#to-gallery"); await page.waitForTimeout(900);
     const at = await page.evaluate(() => { const g = document.querySelector(".gallery").getBoundingClientRect(), f = document.querySelector(".form").getBoundingClientRect(); return [window.dial_tool.S.ui_section, g.top < f.bottom && g.bottom > f.top]; });
-    check(Math.abs(w.mid) < 0.6 && w.high && at[0] === 4 && at[1], `the Gallery pill: centred between the version and the unit box (${w.mid.toFixed(1)}), as high; pressed, Export with the Gallery in view`);
+    check(Math.abs(w.mid) < 0.6 && w.high && at[0] === 4 && at[1], `the Gallery pill: centred between Help and the unit box (${w.mid.toFixed(1)}), as high; pressed, Export with the Gallery in view`);
   }
   check(await page.evaluate(() => JSON.parse(localStorage.getItem("dial-tool-folds") || "{}")["Export/Export a file"] === true) && !(await page.isVisible("#export-pdf")), "the Gallery pill shuts the eye of Export a file, so the Gallery has the room (Okay, 15 Oct 2026, 10:47)");
   { const f = JSON.parse(await page.evaluate(() => localStorage.getItem("dial-tool-folds") || "{}")); delete f["Export/Export a file"]; await page.evaluate((x) => { localStorage.setItem("dial-tool-folds", x); window.dial_tool.folds = JSON.parse(x); window.dial_tool.show_section(); }, JSON.stringify(f)); }      // open again for the checks after
