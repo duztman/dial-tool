@@ -8,3 +8,4 @@ web/node_modules/
 web/test/out/
 web/test/same.json
 web/icons/out/
+guide/node_modules

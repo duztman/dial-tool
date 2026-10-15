@@ -262,6 +262,29 @@ Okay's notes on the first edition (sent 14 Oct, 12:59) and his answers (13:16). 
 | 216 | **The larger mark on the phone's full title line** (Okay, 15 Oct 2026, 08:08: "you forgot the icon resize on the big version"): the 06:24 request ("larger okay icon on mobile", `--logo-narrow` 22) had reached only the showcase. Narrow layer: `.panel:not(.squeezed)` takes the same three rules; squeezed, the mark is the eyes' size (07:02) | **built 4.41.11** |
 | 217 | **Okay's B-Uhr as the Gallery's second dial** (Okay, 15 Oct 2026, 09:39, his link: "This is replacing nr 2 on the gallery. No new name"). `gallery.mjs`: the entry "B-Uhr, type B" holds the lean settings of his link (without the time); name and note unchanged. Green plate, yellow triangle and dots, orange hours and seconds hand, lilac minute numerals at r 11.85 with per-numeral nudges, two thin bands at 14.85 and 16.4. Checked: the Gallery card's link decodes to the same dial as his (time and guides aside) | **built 4.41.12** |
 
+## From the guide's inventory (15 Oct 2026)
+
+App faults the new guide's reviewers and its coverage walk found (`guide/PLAN.md` step 1). The guide states the behaviour, dated, until each is fixed.
+
+| # | Item | Status |
+|---|---|---|
+| 218 | **"Add image…" is a dead end**: it says "Not built yet" (R17). Build it (#173) or hide it. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 219 | **No export without the hands and the window content**: a colour export always holds the hands at the time shown and the date (a printer sent it prints hands onto the dial). An Export option to leave them out. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 220 | **Marks lying on a band vanish in the mask** unless the band knocks them out; nothing warns (the Sector dial: its chapter band's ticks and numerals are lost). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 221 | **Knock-out ignores hidden rings**: hiding the rings above a band and exporting gives the band solid, so per-ink films made that way lose their holes. Films come from one full export's PDF layers until this changes. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 222 | **Cut lines in the resist's black**: the window's and the centre hole's 0.05 mm cut lines are drawn in the mask's black (layers "Window 1 cut line", "Hole"); the PNG mask bakes them in. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 223 | **No mask invert** (toner where there are no marks, for sunk marks). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 224 | **No blank outline or registration marks** on the mask; the centre hole's cut line is the only reference. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 225 | **No thinnest-line report**: the Export log could name the thinnest line of a dial; numerals' strokes have no width setting to read it from. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 226 | **Exported files carry no app version** (PDF, SVG, PNG metadata). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 227 | **The file name gives the dial's size; the page is larger** by twice the margin ("dial-30mm" is a 36 mm page). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 228 | **Defaults asks for Helvetica Neue**, which isn't bundled: the Type pane says "not loaded" and Inter stands in. A bundled font in the starting values needs R31's link scheme 2 (or Okay's waiver). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 229 | **No blank start ("New")**: the only reset is Defaults, under Export › Settings file. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 230 | **No way into the guide from the app**: a help link (the guide's release condition, `guide/PLAN.md` §7) and, later, per-pane anchors. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 231 | **Word collisions**: Backdrop (a colour and a switch) · Frame (a colour and a width, Windows) · Size, Size %, Size × · Ring Ø and Ring at % on hands · the opener's ring named Band whose kind is numerals. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 232 | **Phone: with the drawer dragged up, Undo · Redo overlap the Backdrop switch**. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 233 | **Diameter takes 0 and 1000 when typed** (the slider runs 15–50); no limit, no note. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+
 ## Later
 
 | # | Item | Status |
