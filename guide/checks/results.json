@@ -1,0 +1,110 @@
+{
+ "when": "2026-10-15T07:59:22.461Z",
+ "version": "beta 4.41.15",
+ "results": {
+  "B1": {
+   "ok": true,
+   "note": "after reload 25.0, a later visit 25.0"
+  },
+  "B1p": {
+   "ok": true,
+   "note": "while playing another tab saw 19.1; after stopping 25.0"
+  },
+  "B2": {
+   "ok": true,
+   "note": "before: diameter shown 76.5 (another unit); opened: diameter 27.0, unit mm, on the Dial tab: true"
+  },
+  "B3": {
+   "ok": true,
+   "note": "19.1 → Defaults 30.0 → undo 19.1"
+  },
+  "B4": {
+   "ok": true,
+   "note": "\"not loaded\" true, \"Helvetica Neue\" true"
+  },
+  "B5": {
+   "ok": true,
+   "note": "Rings open true; the selected ring's Count reads 60"
+  },
+  "B6": {
+   "ok": true,
+   "note": "identical exports"
+  },
+  "B7": {
+   "ok": true,
+   "note": "ticks with skip where: 48; with nothing: 60"
+  },
+  "B8": {
+   "ok": true,
+   "note": "numerals 12→11 (3 gone: true), markers 12→11, minute ticks 48→49"
+  },
+  "B10": {
+   "ok": true,
+   "note": "page 36 mm, file dial-30mm-2026-10-15.svg"
+  },
+  "B11": {
+   "ok": true,
+   "note": "dial plate minute-ticks markers numerals hour-hand minute-hand seconds-hand cap"
+  },
+  "B12": {
+   "ok": true,
+   "note": "ids: dial minute-ticks markers numerals window-1-frame window-1-cut-line hole · fills: #000000"
+  },
+  "B12b": {
+   "ok": true,
+   "note": "band outlines in the mask: plain 2, knocking out 12"
+  },
+  "B13": {
+   "ok": true,
+   "note": "dial-30mm-mirrored-2026-10-15.svg"
+  },
+  "B14": {
+   "ok": true,
+   "note": "band outlines: rings above shown 12, hidden 2"
+  },
+  "B20": {
+   "ok": true,
+   "note": "panel inside the showcase: false; after pressing the switch again: true"
+  },
+  "B15": {
+   "ok": true,
+   "note": "30.0 → 30.5 → 61.0 → 30.5"
+  },
+  "B18": {
+   "ok": true,
+   "note": "600.0 dpi written"
+  },
+  "B19": {
+   "ok": true,
+   "note": "SVG texts: plain 0, ticked 12; PDF fonts false"
+  },
+  "B21": {
+   "ok": true,
+   "note": "count 4: 12 1 2 3 · every 3: 12 3 6 9 · skip those instead: 1 2 4 5 7 8 10 11"
+  },
+  "B22": {
+   "ok": true,
+   "note": "10:10:00"
+  },
+  "B23": {
+   "ok": true,
+   "note": "19.1 → Field 30.0 → undo 19.1"
+  },
+  "B24": {
+   "ok": true,
+   "note": "after typing 11.5 the button reads \"Centre radius 11.5 mm\""
+  },
+  "B25": {
+   "ok": true,
+   "note": "the preview changed when the mask went on (see B25-mask-on.png)"
+  },
+  "B26": {
+   "ok": true,
+   "note": "dial plate minute-ticks markers numerals"
+  },
+  "B27": {
+   "ok": true,
+   "note": "Plate · Minute ticks · Markers · Numerals · Hour hand · Minute hand · Seconds hand · Cap"
+  }
+ }
+}

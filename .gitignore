@@ -9,3 +9,4 @@ web/test/out/
 web/test/same.json
 web/icons/out/
 guide/node_modules
+guide/checks/out/

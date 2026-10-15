@@ -8,3 +8,4 @@
 | 1 Inventory | 15 Oct, 09:45–09:51 | 4 | 0.1 | 0.05 | coverage walk: 153 states, 366 names, 14 s |
 | 2 Brief | 15 Oct, 09:51 | 0.5 | 0.05 | — | waiting for Okay's word |
 | 3 Baseline | 15 Oct, 09:55–10:35 | 1.5 | 0.7 | 0.2 | target + scorer (pipeline); three readers ran in parallel (≈30 min) |
+| 4 Edition 1 text | 15 Oct, 10:35–11:00 | 3 | 0.6 | 0.4 | 26 checks (`checks/checks.mjs`, 1 m 50 s a run) and the gate (`tools/claims.mjs`); 37 sentences name them. Interrupted 10:47–10:58 for 4.41.15 (not counted) |
