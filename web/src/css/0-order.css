@@ -23,3 +23,5 @@
 /* the dial alone (the eye switch, 15 Oct 2026): how far the panel has gone, 0 (there) to 1 (away). Registered as a
    number so it can be eased; outside the layers, as a declaration of a name, not a rule */
 @property --away { syntax: "<number>"; inherits: true; initial-value: 0; }
+/* the showcase (the iris switch, 15 Oct 2026): 0 (off) to 1 (on), eased like --away */
+@property --show { syntax: "<number>"; inherits: true; initial-value: 0; }

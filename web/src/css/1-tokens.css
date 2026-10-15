@@ -59,6 +59,7 @@
     /* the dial alone (the eye switch, Okay, 15 Oct 2026, 04:02): the panel slides away and the dial grows to fit, eased */
     --panel-w: calc(var(--panel) + var(--hair));   /* the panel's column: its lines and its right hairline */
     --view-time: 700ms; --view-ease: cubic-bezier(0.65, 0, 0.35, 1);      /* slow out, slow in */
+    --show-time: 900ms;                            /* the showcase coming and going: the bar leaving, the sky darkening */
     --title-end: 0px; --bar-h: 0px;                /* set by dial_alone(): where the title ends (undo · redo stop short of it); the bar's height on a phone */
     --speed-pad: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2);      /* the speed box's room inside, left and right: the thumb at either end stands as far from the wall as from the box's top and bottom (3; Okay, 15 Oct 2026, 03:18: "when the ball is in a terminal, the bounding box clears it as much as it clears from the top… both ends symmetry"). Was u3 + 4 − half a thumb (1.25; 01:03, "before plus four") */
     --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */

@@ -15,8 +15,10 @@
      0.95), both ways, so it shows on whichever is under it; a backdrop changed while away turns it at once */
   #app { --mast-ink: var(--ink); }
   #app.dark { --mast-ink: var(--white); }
+  #app.show { --mast-ink: var(--white); }      /* the showcase's sky is dark whatever the backdrop */
   .mast :is(h1, .logo:not([aria-expanded="true"])) { color: color-mix(in srgb, var(--mast-ink) clamp(0%, (var(--away) - 0.55) * 250%, 100%), var(--ink)); }
   .mast .quiet { color: color-mix(in srgb, color-mix(in srgb, var(--mast-ink) 70%, transparent) clamp(0%, (var(--away) - 0.55) * 250%, 100%), var(--grey)); }
+  .mast .quiet { opacity: calc(1 - var(--show)); }      /* the showcase keeps the mark and "Dial Tool" only */
   .panel .unit { opacity: calc(1 - 3 * var(--away)); }      /* the unit box goes first, before it slides under the version */
   /* Okay's mark in the first column, the title after it on the six columns (Okay, 15 Oct 2026, 02:42); a press opens the bio
      under it, a night part as wide as the panel's lines */

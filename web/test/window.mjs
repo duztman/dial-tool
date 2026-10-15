@@ -1350,6 +1350,31 @@ const look = await page.evaluate(() => { const q = (s) => document.querySelector
 check(look.square && look.bar === 62 && look.play[0] === look.play[1] && look.play[2] === "50%" && look.mono && look.status === "none" && look.hint.includes("⌘ + scroll") && look.ruler <= 518,
   `the bar: a fifth higher (${look.bar}), no panel square, a round play, the time in monospace, no status line, how to zoom beside the zoom, the day slider no wider than an iPad's (${look.ruler})`);
 await shot("10-bar");
+{ // the showcase (Okay, 15 Oct 2026, 04:26): the iris switch, left of the eye — the dial alone and more
+  const q = () => page.evaluate(() => { const t = window.dial_tool, r = (s) => document.querySelector(s).getBoundingClientRect(), o = (s) => +getComputedStyle(document.querySelector(s)).opacity;
+    return { bar: Math.round(r(".bar").top), h: innerHeight, w: innerWidth, playing: t.playing, speed: t.speed, sun: t.show ? [t.show.sun.from, t.show.sun.rise] : null, version: o(".mast .quiet"), guides: o(".guides"), eye: Math.round(r("#eye-box").width),
+      iris: [Math.round(r("#iris-box").right), Math.round(r("#iris-box").bottom), r("#iris-box").top + r("#iris-box").height / 2], pill: [r("#show-now").left + r("#show-now").width / 2, r("#show-now").top + r("#show-now").height / 2, o("#show-now")],
+      sky: o(".sky"), guide_items: t.items.filter((i) => i.role === "guide").length, mast: getComputedStyle(document.querySelector(".panel h1")).color }; });
+  const before = await q();
+  await page.click("#iris-box"); await page.waitForTimeout(1300); await page.mouse.move(5, 300);
+  const on = await q();
+  await page.waitForTimeout(1500);
+  const later = await q();
+  const mid = await page.evaluate(() => { const t = window.dial_tool, r = t.svg.getBoundingClientRect(); return [r.left + t.c[0], r.top + t.c[1], t.S.dial_d / 2 * t.z]; });
+  await page.mouse.move(mid[0], mid[1] - mid[2] / 2); await page.mouse.down(); await page.mouse.move(mid[0] + mid[2] / 2, mid[1], { steps: 4 });
+  const dragged = await q(); await page.mouse.up();
+  await page.click("#iris-box"); await page.waitForTimeout(1300);
+  const back = await q();
+  const inset = 12;
+  check(on.bar >= on.h && on.playing && on.speed === 1 && on.version === 0 && on.guides === 0 && on.eye === 0 && on.iris[0] === on.w - inset && on.iris[1] === on.h - inset && Math.abs(on.pill[0] - on.w / 2) < 1 && Math.abs(on.pill[1] - on.iris[2]) < 0.5 && on.pill[2] === 1 && on.sky === 1 && on.guide_items === 0 && /^(rgb\(255, 255, 255\)|color\(srgb 1 1 1\))$/.test(on.mast)
+      && later.sun[0] > on.sun[0] && Math.abs(dragged.sun[0] - 90) < 1 && dragged.sun[1] < 72
+      && back.bar === before.bar && back.playing === before.playing && back.version === 1 && back.guides === 1 && back.eye === 32 && back.sky === 0,
+    `the iris switch: the showcase — the bar gone (${on.bar} ≥ ${on.h}), the clock running at 1×, the version, Guides and the eye away, the iris at the bottom right, Now at the bottom centre on its line, the sky dark, no guides drawn, "Dial Tool" white; the sun goes round (${on.sun[0].toFixed(1)}° → ${later.sun[0].toFixed(1)}°) and a drag puts it where the pointer is (${dragged.sun[0].toFixed(0)}°, ${dragged.sun[1].toFixed(0)}° high); pressed again, all as it was`);
+  const mark = await page.evaluate(() => { const h = document.querySelector(".panel .title h1"), look = getComputedStyle(h), probe = document.createElement("span"); probe.style.cssText = "display:inline-block;width:0;height:0"; h.append(probe); const base = probe.getBoundingClientRect().top; probe.remove();
+    const pen = document.createElement("canvas").getContext("2d"); pen.font = `${look.fontWeight} ${look.fontSize} ${look.fontFamily}`; const cap = pen.measureText("D").actualBoundingBoxAscent, ring = document.querySelector("#logo circle").getBoundingClientRect();
+    return +((ring.top + ring.bottom) / 2 - (base - cap / 2)).toFixed(2); });
+  check(Math.abs(mark) < 0.3, `the mark's ring is centred on the title's capitals (${mark} px off; Okay, 04:26: "align icon better")`);
+}
 { // Okay's mark opens the bio; the eye switch, at the preview's bottom right, turns on and off and does nothing else (15 Oct 2026)
   const before = await S("JSON.stringify(S, (k, v) => (k.startsWith('ui_') || k === 't' ? undefined : v))");
   await page.click("#logo");

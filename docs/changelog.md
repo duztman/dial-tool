@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.38.14 (web version) · 15 Oct 2026
+
+- **The showcase**: a new switch left of the eye, the iris alone. Pressed, it shows the dial alone and more: the backdrop darkens to a faint gradient (black at the bottom, the backdrop's colour much darkened at the top), the bar sinks away, and nothing stays but the mark and "Dial Tool" (top left), the iris (bottom right, twice as big) and a Now pill (bottom centre). The clock runs at 1× from where it was, shadows are on with the soft edge, and the sun goes round six times as fast as the minute hand, rising and setting once a round; a press or drag on the preview puts the sun there. Pressed again, back to where you were.
+- **The mark is aligned to the title's capitals** (it sat a point low).
+
 ## beta 4.38.13 (web version) · 15 Oct 2026
 
 - **The eye switch shows the dial alone**: pressed, it fills (a hair inside its line) and the panel slides away to the left, eased; the dial grows and centres in step. The mark, "Dial Tool" and the version stay where they were, turning white on a dark backdrop; Backdrop and Shadows ride left and stop on the mark's line; undo · redo stop after the title; the bottom bar stays. Pressed again, all comes back. On a phone or a portrait iPad the preview grows down over the panel instead.

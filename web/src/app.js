@@ -201,7 +201,12 @@ const INK_TRAPS = (() => {
   }
   return out.join("");
 })();
-const EYE_RAYS = 24, EYE_RAY = 0.5;      // the eye switch's rays: how many, how thick (Okay, 15 Oct 2026, 03:41)
+const EYE_RAYS = 24, EYE_RAY = 0.5;
+// the showcase's sun (Okay, 15 Oct 2026, 04:26: "sun angle starts moving 6x faster than the time to set and rise"):
+// it goes round six times as fast as the minute hand — once in ten minutes, 0.6° a second — and its height swings
+// once a round, between low (long shadows: it sets) and high (it rises). A press or drag puts it anywhere
+const SKY_TOP = 0.3;      // the showcase's sky at the top: the backdrop's colour at this share of its light ("very darkified but identifiable")
+const SUN = { turn: 6 * 360 / 3600, low: 12, high: 72, mid: 42, swing: 30 };      // the eye switch's rays: how many, how thick (Okay, 15 Oct 2026, 03:41)
 const TOOL_ICONS = {
   // on 18; a quiet sign, thin and light (Okay, 11 Oct 2026; again 14 Oct, 04:11: "thinner lines"): DENSE, corners
   // a sixteenth heavier as on any box; light by its grey. Outer edge where it was (1 … 17)
@@ -245,6 +250,9 @@ const TOOL_ICONS = {
     return `<mask id="eye-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask>`
       + `<path d="${rays}" stroke-width="${EYE_RAY}" stroke-linecap="butt" mask="url(#eye-cut)"/><circle cx="${cx}" cy="${cy}" r="2.75" fill="currentColor" stroke="none"/>`;
   })(),
+  // the showcase switch, left of the eye (Okay, 15 Oct 2026, 04:26: "just the iris inside same box"): the eye's iris
+  // alone, where it stands in the eye; in the showcase it grows to twice its size (the stylesheet)
+  iris: `<circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/>`,
   screen: `<rect x="2.75" y="3.25" width="10.5" height="7.5"/><path d="M8.25 10.75V13.25M5.75 13.25H10.75" ${sw(DENSE)}/>`,
   // the Guides switch, on 18: a target and its cross; its lines crowd, so DENSE. Okay's drawings (14 Oct 2026, 04:11):
   // guides: a target, its centre ring dashed in six, square-ended (a dash pattern is a texture, not line ends), ink
@@ -807,7 +815,16 @@ class DialTool {
     this.over = svg_el("g");                       // above the dial, same place and zoom: the outline of what the pointer is on
     this.over.setAttribute("pointer-events", "none");
     this.glow = ["glow under", "glow"].map((name) => { const line = svg_el("path"); line.setAttribute("class", name); this.over.append(line); return line; });
-    this.svg.append(this.backdrop, this.dial, this.over);
+    // the showcase's sky: over the backdrop, a gradient from black at the bottom up to the backdrop's colour, much
+    // darkened; there always, seen only in the showcase (the stylesheet fades it in). Its colours are set in draw()
+    const sky_defs = svg_el("defs"), sky = svg_el("linearGradient");
+    sky.id = "show-sky";
+    for (const [k, v] of [["x1", "0"], ["y1", "0"], ["x2", "0"], ["y2", "1"]]) sky.setAttribute(k, v);
+    this.sky_stops = [0, 1].map((o) => { const s = svg_el("stop"); s.setAttribute("offset", String(o)); sky.append(s); return s; });
+    sky_defs.append(sky);
+    this.sky = svg_el("rect");
+    for (const [k, v] of [["class", "sky"], ["width", "100%"], ["height", "100%"], ["fill", "url(#show-sky)"], ["pointer-events", "none"]]) this.sky.setAttribute(k, v);
+    this.svg.append(sky_defs, this.backdrop, this.sky, this.dial, this.over);
     this.tip = el("div", { className: "tip", hidden: true }, el("span"));       // the name of what the pointer is on
     this.tip.insertAdjacentHTML("beforeend", '<svg viewBox="0 0 20 10" width="20" height="10" aria-hidden="true"><path class="a" d="M0 0 L10 10 L20 0"/><path class="b" d="M0 0 L10 10 L20 0"/><path class="c" d="M-1 -3 L21 -3 L21 0 L10 9 L-1 0 Z"/></svg>');
     this.preview_events();
@@ -870,7 +887,7 @@ class DialTool {
     fit_button.append(el("span", { textContent: "Fit" }));
     const bar = el("footer", { className: "bar" },
       el("div", { className: "lead" }, this.play_button, this.speeds, time_box,
-        el("button", { type: "button", id: "now", textContent: "Now", title: "The time it is now", onclick: () => { const d = new Date(); this.set_time(d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000); } })),
+        el("button", { type: "button", id: "now", textContent: "Now", title: "The time it is now", onclick: () => this.to_now() })),
       el("div", { className: "group day" }, this.ruler, this.time_slider, steps),
       el("div", { className: "group viewing" }, this.status, this.zoom_hint(),
         el("span", { className: "zooms" },
@@ -880,13 +897,16 @@ class DialTool {
     this.set_speed(1);
     const guides = this.guides_box();
     // on the preview: undo · redo top left, beside the panel (Okay, 13 Oct 2026) · the Guides switch top right · Backdrop bottom left
-    this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box);
+    this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill);
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     requestAnimationFrame(() => this.level_title());
     this.play_icon();
     try { localStorage.removeItem("dial-tool-panel"); } catch (e) { /* not kept */ }      // the panel can't be put away any more: forget that it was
     this.watchers.push(new ResizeObserver(() => this.resized()));
     this.watchers.at(-1).observe(this.svg);
+    // the bar's height, for the rows that make room for it (a phone; the showcase closes its row): kept while it is in place
+    this.watchers.push(new ResizeObserver(() => { if (!this.show && bar.offsetHeight) root.style.setProperty("--bar-h", bar.offsetHeight + "px"); }));
+    this.watchers.at(-1).observe(bar);
   }
 
   /** how to zoom, beside the zoom buttons: words, then a faint magnifier, nothing to press (Okay, 14 Oct 2026,
@@ -894,6 +914,55 @@ class DialTool {
    *  end, not a button, faint"). On a screen without a pointer the words say what a finger does. */
   zoom_hint() {
     return el("span", { className: "zoomhint" }, el("span", { textContent: "⌘ + scroll to zoom" }));      // words only: the magnifier went into Fit (Okay, 15 Oct 2026, 00:51)
+  }
+
+  /** the clock to the time it is now (the bar's Now, the showcase's Now pill) */
+  to_now() { const d = new Date(); this.set_time(d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000); }
+
+  /** the showcase, or back (Okay, 15 Oct 2026, 04:26): "a bigger preview mode… on top of regular preview mode": the
+   *  dial alone (dial_alone), and the backdrop darkens to a faint gradient — black at the bottom up to the backdrop's
+   *  colour, much darkened; the bar leaves; nothing stays but the mark and "Dial Tool" (top left), the iris switch at
+   *  twice its iris (bottom right) and a Now pill (bottom centre, on the iris's line). The clock runs at 1× from where
+   *  it was; shadows are on with the soft edge; the sun goes round on its own (SUN) and a press or drag on the preview
+   *  puts it there. Pressing the iris again goes back to where we were. Nothing of it is stored or part of the dial. */
+  showcase(on) {
+    const app = $("#app");
+    if (on === !!this.show) return;
+    this.hover(null);
+    if (this.pop && this.pop.at) this.pop_close();
+    if (this.bio_open) this.bio_open(false);
+    if (on) {
+      const S = this.S, rise = clamp(S.sh_rise, SUN.low, SUN.high);
+      this.show = { away: app.classList.contains("away"), playing: this.playing, speed: this.speed,
+        sun: { from: S.sh_from, rise, phase: Math.acos(clamp((rise - SUN.mid) / SUN.swing, -1, 1)) * 180 / Math.PI }, at: performance.now() };
+      if (!this.show.away) this.dial_alone(true);
+      app.style.setProperty("--bar-h", $(".bar").offsetHeight + "px");
+      this.fitted = true;
+      app.classList.add("show");
+      this.set_speed(1);
+      if (!this.playing) this.play(true);
+    } else {
+      const was = this.show;
+      this.show = null;
+      app.classList.remove("show");
+      this.fitted = true;
+      if (!was.away) this.dial_alone(false);
+      this.set_speed(was.speed);
+      if (!was.playing) this.play(false);
+    }
+    this.iris_button.setAttribute("aria-pressed", String(on));
+    this.render();
+  }
+
+  /** the showcase's sun, from a point of the preview (a press or a drag, 04:26: "click and drag the sun anywhere"): the
+   *  light comes from that direction, seen from the dial's centre; at the centre it is high, at the dial's edge low */
+  sun_to(p) {
+    const dx = p[0] - this.c[0], dy = p[1] - this.c[1], edge = this.S.dial_d / 2 * this.z;
+    const sun = this.show.sun;
+    sun.from = ((Math.atan2(dx * (this.S.out_mirror ? -1 : 1), -dy) * 180 / Math.PI) + 360) % 360;
+    sun.rise = clamp(SUN.high - (SUN.high - SUN.low) * Math.hypot(dx, dy) / edge, SUN.low, SUN.high);
+    sun.phase = Math.acos(clamp((sun.rise - SUN.mid) / SUN.swing, -1, 1)) * 180 / Math.PI;
+    this.render();
   }
 
   /** the dial alone, or back (Okay, 15 Oct 2026, 04:02: "it immediately triggers a sliding away action of the left
@@ -943,6 +1012,10 @@ class DialTool {
     const header = this.title.closest("header").getBoundingClientRect();
     if (!header.height || !x_height) return;
     this.title.style.translate = `0 ${(header.top + header.height / 2 - (baseline - x_height / 2)).toFixed(2)}px`;
+    // the mark: its ring centred on the middle of the title's capitals, so it reaches as far above them as below the
+    // baseline (Okay, 15 Oct 2026, 04:26: "align icon better"; it was on the header's middle, a point low)
+    const logo = $("#logo"), cap = pen.measureText("D").actualBoundingBoxAscent, moved = header.top + header.height / 2 - (baseline - x_height / 2);
+    if (logo && cap) { logo.style.translate = ""; const r = logo.getBoundingClientRect(); logo.style.translate = `0 ${(baseline + moved - cap / 2 - (r.top + r.height / 2)).toFixed(2)}px`; }
   }
 
   unit() { return G.UNITS[this.S.ui_unit] || G.UNITS[0]; }
@@ -984,7 +1057,14 @@ class DialTool {
     eye.setAttribute("aria-pressed", "false");
     eye.onclick = () => this.dial_alone(eye.getAttribute("aria-pressed") !== "true");
     this.eye_button = eye;
-    this.eye_box = el("div", { className: "eyes" }, eye);
+    const iris = el("button", { type: "button", className: "onview irisbox", id: "iris-box", title: "The dial on show: the clock runs, the sun goes round — drag it anywhere", ariaLabel: "The dial on show" });
+    iris.innerHTML = icon(TOOL_ICONS.iris, 30);
+    iris.setAttribute("aria-pressed", "false");
+    iris.onclick = () => this.showcase(!this.show);
+    this.iris_button = iris;
+    this.eye_box = el("div", { className: "eyes" }, iris, eye);
+    // the showcase's Now: a pill at the bottom centre, on the iris's line (04:26: "a button appeared bottom center: NOW!")
+    this.now_pill = el("button", { type: "button", className: "onview nowpill", id: "show-now", title: "The time it is now", onclick: () => this.to_now() }, el("span", { textContent: "Now" }));
     return el("div", { className: "backdrops" }, box);
   }
 
@@ -1145,7 +1225,7 @@ class DialTool {
    *  cap's shadow, as wide as the cap. Nothing is drawn outside the dial: the plate's own shadow falls only into its
    *  windows. Each surface's shadows are one group with one opacity, so where two overlap it is not darker. */
   draw_shadows(items) {
-    const S = this.S;
+    const S = this.show ? { ...this.S, sh_on: true, sh_blur: true, sh_from: this.show.sun.from, sh_rise: this.show.sun.rise } : this.S;      // the showcase: on, soft, its own sun
     if (!this.shade) {
       const defs = svg_el("defs"), filter = svg_el("filter"), blur = svg_el("feGaussianBlur");
       filter.id = "shadow-soft";
@@ -3107,6 +3187,11 @@ class DialTool {
         this.S.t = (t + (performance.now() - wall) / 1000 * this.speed) % 86400;
         this.sync_time();
         this.pulse(t + (performance.now() - wall) / 1000);
+        if (this.show) {      // the showcase's sun goes round, and rises and sets once a round (SUN)
+          const now = performance.now(), turn = SUN.turn * (now - this.show.at) / 1000, sun = this.show.sun;
+          this.show.at = now;
+          if (!this.show.dragging) { sun.from = (sun.from + turn) % 360; sun.phase = (sun.phase + turn) % 360; sun.rise = SUN.mid + SUN.swing * Math.cos(sun.phase * Math.PI / 180); }
+        }
         this.render();
       }
       this.draw();
@@ -3117,7 +3202,7 @@ class DialTool {
   }
 
   draw() {
-    const S = this.S;
+    const S = this.show ? { ...this.S, guides: false } : this.S;      // the showcase: no guides
     const day = G.shows_day(S) ? G.day_hour(S) : null;       // an am · pm window follows the time shown, in steps of six minutes
     if (day !== this.day_drawn) { this.day_drawn = day; this.static_dirty = true; }
     if (!this.statik || this.static_dirty) {
@@ -3130,6 +3215,8 @@ class DialTool {
     this.items = items;
     const backdrop = S.out_production ? [1, 1, 1, 1] : S.c_backdrop;
     this.backdrop.setAttribute("fill", to_hex(backdrop));
+    this.sky_stops[0].setAttribute("stop-color", to_hex(backdrop.map((v, i) => (i < 3 ? v * SKY_TOP : 1))));      // the showcase's sky: the backdrop, much darker…
+    this.sky_stops[1].setAttribute("stop-color", "#000");                                                          // …to black
     // what stands on the preview (Guides, Backdrop) is outline only, in black or white: whichever stands out more from
     // the backdrop. One of the two always has a contrast of 4.5 or more, so they can't be lost on any colour.
     const lin = (v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4), L = 0.2126 * lin(backdrop[0]) + 0.7152 * lin(backdrop[1]) + 0.0722 * lin(backdrop[2]);
@@ -3252,7 +3339,7 @@ class DialTool {
       else if (pts.size >= 2) down = { ...pair(), moved: true };      // a pinch is never a click
       else down = null;
     };
-    this.svg.addEventListener("pointerdown", (e) => { pts.set(e.pointerId, at(e)); this.svg.setPointerCapture(e.pointerId); if (pts.size === 1) down = null; restart(); });
+    this.svg.addEventListener("pointerdown", (e) => { pts.set(e.pointerId, at(e)); this.svg.setPointerCapture(e.pointerId); if (pts.size === 1) down = null; restart(); if (this.show && pts.size === 1) { this.show.dragging = true; this.sun_to(at(e)); } });
     this.svg.addEventListener("pointermove", (e) => {
       if (!pts.has(e.pointerId)) return e.pointerType === "mouse" ? this.hover(at(e), document.elementFromPoint(e.clientX, e.clientY)) : null;
       pts.set(e.pointerId, at(e));
@@ -3265,12 +3352,14 @@ class DialTool {
         return;
       }
       const p = at(e);
+      if (this.show) { this.sun_to(p); return; }      // the showcase: a drag moves the sun, not the dial
       if (Math.hypot(p[0] - down.p[0], p[1] - down.p[1]) > 4) down.moved = true;
       if (down.moved) { this.hover(null); this.fitted = false; this.c = [down.c[0] + p[0] - down.p[0], down.c[1] + p[1] - down.p[1]]; this.place(); }
     });
     const up = (e) => {
       if (!pts.has(e.pointerId)) return;
-      const click = pts.size === 1 && down && !down.moved && e.type === "pointerup";
+      const click = pts.size === 1 && down && !down.moved && e.type === "pointerup" && !this.show;
+      if (this.show) { this.show.dragging = false; this.show.at = performance.now(); }
       pts.delete(e.pointerId);
       if (click) this.clicked(at(e), document.elementFromPoint(e.clientX, e.clientY));
       restart();
@@ -3341,7 +3430,7 @@ class DialTool {
 
   /** the pointer rests on something that can be edited: outline it, and say its name beside the pointer. */
   hover(p, node) {
-    const piece = p ? this.piece_at(p, node) : null;
+    const piece = p && !this.show ? this.piece_at(p, node) : null;      // the showcase: no outlines, no names
     this.tip.hidden = !piece;
     for (const line of this.glow) line.setAttribute("d", piece ? piece.path.svg(4) : "");
     if (!piece) return;

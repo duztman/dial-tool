@@ -23,6 +23,7 @@ const INKED = [
   ".steps12 button",         // the bottom bar's hours and 10:10
   "#ampm",                   // AM · PM, the time's own window
   ".fit > span",             // Fit, beside its magnifier
+  "#show-now",               // the showcase's Now pill (15 Oct 2026)
   "#now",                    // NOW, beside it (Okay, 14 Oct 2026: "make sure the inner type is centered with equal padding within buttons")
   "#unit",                   // mm · pt · in · lig
 ].join(", ");

@@ -115,4 +115,22 @@
   .tip svg .a { stroke: var(--ink); stroke-width: var(--tip-arrow); }
   .tip svg .b { stroke: var(--white); stroke-width: var(--tip-arrow-in); }
   .tip svg .c { fill: var(--ink); }
+  /* ── the showcase (the iris switch; Okay, 15 Oct 2026, 04:26) ── over the dial alone: the sky (a gradient, black at
+     the bottom up to the backdrop darkened, set in app.js) fades in; what stands on the preview fades away but the iris
+     switch, at the bottom right, its iris twice as big, and a Now pill at the bottom centre on its line, both faint, in
+     white. A drag on the preview moves the sun */
+  .sky { opacity: var(--show); }
+  #app.show main { --on-canvas: var(--white); --off-canvas: var(--ink); }
+  :is(.undos, .guides, .backdrops, .shadows) { opacity: calc(1 - var(--show)); }
+  #app.show :is(.undos, .guides, .backdrops, .shadows, #eye-box) { pointer-events: none; }
+  #app.show :is(.preview, .preview path) { cursor: grab; }
+  .eyes { gap: calc(var(--unit) * (1 - var(--show))); }
+  #eye-box { width: calc(var(--control-large) * (1 - var(--show))); opacity: calc(1 - var(--show)); }      /* the eye folds away; the iris takes the corner */
+  #app.show #eye-box { border-width: 0; }
+  .irisbox { width: var(--control-large); padding: 0; overflow: hidden; border-radius: var(--round-switch); }
+  .irisbox svg { display: block; flex: none; }
+  .irisbox circle { scale: calc(1 + var(--show)); transform-origin: 15.25px 15px; }      /* twice the iris in the showcase */
+  .nowpill { position: absolute; z-index: 3; left: 50%; bottom: var(--canvas-inset); translate: -50% 0; height: var(--control-large); padding: 0 var(--u4); border-radius: calc(var(--control-large) / 2);
+    font-family: var(--mono); text-transform: uppercase; opacity: var(--show); visibility: hidden; pointer-events: none; transition: visibility 0s var(--show-time); }
+  #app.show .nowpill { visibility: visible; pointer-events: auto; transition: visibility 0s 0s; }
 }
