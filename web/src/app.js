@@ -1358,7 +1358,7 @@ class DialTool {
         el("li", {}, a("https://harfbuzz.github.io", "HarfBuzz"), " sets the type (harfbuzzjs, MIT)."),
         el("li", {}, a("https://skia.org", "Skia"), "’s PathKit joins and cuts the shapes (BSD 3-clause)."),
         el("li", {}, a("https://rsms.me/inter/", "Inter"), " by Rasmus Andersson is the stand-in typeface; ", a("https://fonts.google.com/specimen/Silkscreen", "Silkscreen"), " by Jason Kottke sets the tiny figures (SIL OFL)."),
-        el("li", {}, "The twenty dial typefaces, each under its designers’ SIL Open Font License, most of them from ", a("https://fonts.google.com", "Google Fonts"), "."),
+        el("li", {}, "The twenty-one dial typefaces, each under its designers’ SIL Open Font License, most of them from ", a("https://fonts.google.com", "Google Fonts"), "."),
         el("li", {}, a("https://www.drawbot.com", "DrawBot"), " is where the tool began; ", a("https://esbuild.github.io", "esbuild"), " builds it and ", a("https://playwright.dev", "Playwright"), " tests it.")));
     // contact: Okay's address, kept from address-harvesting robots that read pages and repositories (Okay, 03:18:
     // "encrypt it somehow so no one can get it. Reasonably"): stored as its letters' codes, each XOR 23, back to front,
@@ -2545,8 +2545,7 @@ class DialTool {
     if (!ring || ring.on === on) return;
     ring.on = on;
     this.static_dirty = true;
-    this.fill_ring_list();
-    this.sync_rows();
+    this.steady(() => { this.fill_ring_list(); this.sync_rows(); });
     this.render();
   }
 
@@ -2603,8 +2602,7 @@ class DialTool {
       rings.splice(to, 0, ring);
       this.S.ui_ring = to;
       this.static_dirty = true;
-      this.fill_ring_list();
-      this.sync_rows();
+      this.steady(() => { this.fill_ring_list(); this.sync_rows(); });
       this.render();
     };
     grip.onpointermove = move;
@@ -2617,10 +2615,22 @@ class DialTool {
     if (i === this.S.ui_ring && !refill) return;
     this.value_pop_close();                        // it was about the ring that was selected
     this.S.ui_ring = clamp(i, 0, this.S.rings.length - 1);
-    if (refill) this.fill_ring_list();
-    else { this.ring_rows().forEach((li, k) => li.classList.toggle("on", k === this.S.ui_ring)); this.place_ring_line(); }
-    this.sync_rows();
+    this.steady(() => {
+      if (refill) this.fill_ring_list();
+      else { this.ring_rows().forEach((li, k) => li.classList.toggle("on", k === this.S.ui_ring)); this.place_ring_line(); }
+      this.sync_rows();
+    });
     this.render();
+  }
+
+  /** keep the panel's scrolling parts where they stand while the ring list and the rows are rebuilt (Okay, 15 Oct
+   *  2026, 11:13: "Menu jumps up down too much on ipad"). Rebuilding empties the list for a moment, so the form is
+   *  briefly shorter and its scroll is cut back, and Chrome's scroll anchoring moves it again when the rows of
+   *  another kind show: measured, 366 → 32 px on a selection. What is restored is clamped by the browser. */
+  steady(fn) {
+    const parts = [this.form, this.form && this.form.closest(".panel"), this.ring_list].filter(Boolean), at = parts.map((p) => p.scrollTop);
+    fn();
+    parts.forEach((p, k) => { if (p.scrollTop !== at[k]) p.scrollTop = at[k]; });
   }
 
   ring_tool(action, kind) {
@@ -2903,7 +2913,7 @@ class DialTool {
     return { el: box, refresh };
   }
 
-  /** the font sheet: every font with its numerals — the tool's own twenty, then yours, then (Chrome, Edge)
+  /** the font sheet: every font with its numerals — the tool’s own twenty-one, then yours, then (Chrome, Edge)
    *  this computer's — and the ways to add more. It lies over the panel, so the dial stays in view. */
   build_picker() {
     // Find: a field with a magnifier, no words in it (Okay, 13 Oct 2026)
@@ -3348,7 +3358,7 @@ class DialTool {
       for (let i = 0; i < 64; i++) {               // a collection (.ttc) holds several fonts
         const got = G.add_font(src.bytes, i);
         if (!got) break;
-        if (!this.catalog.has(got.ps) || this.catalog.get(got.ps).group !== "list") {       // the tool's own twenty keep their entry
+        if (!this.catalog.has(got.ps) || this.catalog.get(got.ps).group !== "list") {       // the tool’s own twenty-one keep their entry
           this.catalog.set(got.ps, { family: family || got.family, style: src.style || got.style, ps: got.ps, group: "added", url: src.url, start: this.start_of(got.ps) });
         }
         added.push(this.catalog.get(got.ps));

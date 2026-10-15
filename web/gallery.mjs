@@ -68,16 +68,6 @@ const DIALS = [
     "ha_hour": { "shape": 5, "len": 7.6, "w": 1.4, "tail": 1.5, "tip": 3.2, "feature": 3.4, "c": [0.95, 0.95, 0.92, 1] },
     "ha_minute": { "shape": 2, "len": 12.6, "w": 1.6, "tail": 1.8, "tip": 2.6, "c": [0.95, 0.95, 0.92, 1] },
     "ha_second": { "shape": 8, "len": 13.4, "w": 0.18, "tail": 3.4, "feature": 1.3, "feature_at": 68, "c": [0.95, 0.95, 0.92, 1] } } },
-  { name: "12 + 24 hours", note: "US general-purpose watch, MIL-PRF-46374: 13–24 inside 1–12, smaller [1.10]", settings: {
-    dial_d: 30, c_plate: BLACK,
-    ...hands(WHITE, { shape: "pencil", len: 7.2, w: 1.5, tail: 1.4, tip: 1.6 }, { shape: "pencil", len: 12.2, w: 1.1, tail: 1.6, tip: 1.8 }, { shape: "baton", len: 13.2, w: 0.2, tail: 3.4 }, 1.3),
-    rings: [
-      { kind: "markers", name: "Triangle at 12", r: 14.6, count: 1, shape: "wedge", taper: 0, len: 1.9, w: 1.9, c: LUME },
-      { kind: "numerals", name: "Hours 1–12", r: 10.6, count: 12, size: 2.5, c: WHITE, ...type("B612", "B612-Bold") },
-      { kind: "numerals", name: "Hours 13–24", r: 7.5, count: 12, start: 30, labels: NUMBERS, num_from: 13, num_step: 1, size: 1.25, c: WHITE, ...type("B612", "B612-Regular") },
-      { kind: "ticks", name: "Hour marks", r: 14.6, count: 12, len: 1.7, w: 0.55, c: WHITE, skip: 1 },
-      { kind: "ticks", name: "Minutes", r: 14.6, count: 60, len: 0.9, w: 0.18, c: WHITE, skip: 3 },
-    ] } },
   { name: "Montgomery", note: "Railroad safety dial, 1920: every minute numbered, every fifth larger and red [1.7]", settings: {
     dial_d: 38, c_plate: PAPER,
     ...hands(INK, { shape: "breguet", len: 9.6, w: 0.55, tail: 1.6, tip: 2.2, feature: 2.4, feature_at: 72 }, { shape: "breguet", len: 14.2, w: 0.45, tail: 1.8, tip: 2.6, feature: 2.2, feature_at: 76 }, { shape: "baton", len: 15, w: 0.14, tail: 3.6 }, 1.2),
@@ -90,6 +80,22 @@ const DIALS = [
       { kind: "band", name: "Inner rail", r: 15.5, width: 0.1, c: INK },
       { kind: "numerals", name: "Hours", r: 11.8, count: 12, size: 4.4, c: INK, ...type("Playfair Display", "PlayfairDisplay-Regular", { wght: 700 }) },
     ] } },
+  // Okay's own 12 + 24 (15 Oct 2026, 11:29, his link: "This one replaces 12 24 hrs"): a dark grey plate on a green
+  // backdrop, the numerals in Rubik (added to the font list for it), the 24-hour figures tracked and tabular, on the
+  // plate's starting size. Lean settings, as his link carries them.
+  { name: "12 + 24 hours", note: "US general-purpose watch, MIL-PRF-46374: 13–24 inside 1–12, smaller [1.10]", settings: {
+    "guides": false, "gd_axes": false, "c_plate": [0.2308, 0.2308, 0.2498, 1], "c_backdrop": [0.2933, 0.6167, 0.2991, 1],
+    "rings": [
+      { "kind": 1, "name": "Triangle at 12", "c": [0.8, 0.9, 0.66, 1], "r": 14.6, "count": 1, "shape": 1, "len": 1.9, "w": 1.9, "taper": 0 },
+      { "kind": 2, "name": "Hours 1–12", "c": [0.95, 0.95, 0.92, 1], "r": 10.6, "size": 3.1, "family": "Rubik", "ps": "Rubik-Light", "axes": { "wght": 400 } },
+      { "kind": 2, "name": "Hours 13–24", "c": [0.95, 0.95, 0.92, 1], "r": 7.5, "start": 30, "labels": 7, "num_from": 13, "num_step": 1, "size": 1.45, "family": "Rubik", "ps": "Rubik-Light", "tracking": 150, "axes": { "wght": 400 }, "features": { "tnum": true } },
+      { "name": "Hour marks", "c": [0.95, 0.95, 0.92, 1], "r": 14.6, "skip": 1, "len": 1.7, "w": 0.55 },
+      { "name": "Minutes", "c": [0.95, 0.95, 0.92, 1], "r": 14.6, "count": 60, "skip": 3, "len": 0.9, "w": 0.18 },
+    ],
+    "ha_cap": 1.3, "c_cap": [0.95, 0.95, 0.92, 1],
+    "ha_hour": { "shape": 1, "len": 7.2, "w": 1.5, "tail": 1.4, "tip": 1.6, "c": [0.95, 0.95, 0.92, 1] },
+    "ha_minute": { "shape": 1, "len": 12.2, "w": 1.1, "tail": 1.6, "tip": 1.8, "c": [0.95, 0.95, 0.92, 1] },
+    "ha_second": { "len": 13.2, "w": 0.2, "tail": 3.4, "c": [0.95, 0.95, 0.92, 1] } } },
   { name: "Elapsed time", note: "MIL-PRF-46374, Type III: twelve hour marks, a dot for 12, minute marks only from 12 to 4 [3.4]", settings: {
     dial_d: 30, c_plate: BLACK,
     ...hands(WHITE, { shape: "baton", len: 7.4, w: 1.3, tail: 1.4, round: 0.65 }, { shape: "baton", len: 12.4, w: 1.0, tail: 1.6, round: 0.5 }, { shape: "lollipop", len: 13.2, w: 0.18, tail: 3.2, feature: 1.1, feature_at: 72 }, 1.3),

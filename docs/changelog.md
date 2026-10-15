@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.41.18 (web version) · 15 Oct 2026
+
+- **Gallery:** Montgomery fifth; the 12 + 24 is Okay's own, in Rubik.
+- **Rubik** joins the font list (twenty-one).
+- **Selecting, showing or moving a ring keeps the panel where it was scrolled** (it could jump by hundreds of points).
+
 ## beta 4.41.17 (web version) · 15 Oct 2026
 
 - **Montgomery comes right after 12 + 24 hours** in the Gallery.

@@ -270,6 +270,7 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 15 Oct | **Guide step 4, edition 1's text** (`guide/text/edition-1.md`): how the tool thinks (five ideas, not four: true size and keeping split in two), the screen and its phone page, the first dial in ten steps, Find it (eleven questions and the signs without words), the maker page. 37 sentences name 26 behavioural checks (`guide/checks/checks.mjs`), all passing on 4.41.15; `guide/tools/claims.mjs` refuses a sentence whose check fails. | `guide/PLAN.md` step 4. |
 | 15 Oct | **The Gallery's diver is Okay's own, fourth** (beta 4.41.16): his link's settings replace the atlas diver, which goes; the card moves from seventh to fourth (after Bauhaus, third since 4.41.15); name and note kept. | Okay, 11:03: "4th option, replaces og"; 11:05, of three readings: "A". |
 | 15 Oct | **Montgomery right after 12 + 24 hours in the Gallery** (beta 4.41.17), before Elapsed time. | Okay, 11:16: "Montgomery comes after 12 24". |
+| 15 Oct | **Gallery: Montgomery fifth, Okay's own 12 + 24 sixth; Rubik joins the font list (now 21 with Inter); a selection keeps the panel's scroll** (beta 4.41.18). Whites on a diagonal: Bauhaus third, Montgomery fifth. The list was kept at 20 (11 Oct); Okay's ask to add makes it 21. | Okay, 11:29: "Montgomery move one slot before. I want diagonal whites… This one replaces 12 24 hrs. Ad rubik to the roster"; 11:13: "Menu jumps up down too much on ipad". |
 
 ## 5 · Open questions
 

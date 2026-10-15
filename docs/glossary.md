@@ -183,7 +183,7 @@ Kept so older notes still read.
 | **Link** (a dial's) | The web version's address with the dial after `#`: scheme number, a dot, the packed settings. Carries the dial, not the window's state (section, selected ring) and not font files. R31. |
 | **Window shape** | The hole's outline, apart from what the window shows (beta 4.8): rectangle · circle · polygon · arch (the moon's) · arc (a piece of a ring, for a day window at 12). **Turned**: the hole stands along its radius instead of level (only off the quarters). |
 | **Window** | A hole in the plate with something showing through (web version: up to four). **Kind**: date · day · am · pm (follows the time shown since beta 4.7) · moon phase. Window 1 is the **date window** of `archive/drawbot/dial.py`. The section's tab says Windows; its key and number stay Date / 3. |
-| **Font list** | The web version's own twenty open-licence families (`web/fonts/`). |
+| **Font list** | The web version's own twenty-one open-licence families (twenty until Rubik, 15 Oct 2026) (`web/fonts/`). |
 | **Font sheet** | The sheet that opens from the font in Type: every font by its numerals, a search, and **Add fonts** (Google link or name, link to a font file, font file, installed fonts). |
 | **Pointer label** | The name shown beside the pointer for the piece under it; the piece is outlined. |
 | **Round ends** | A hand's setting `round` (web version): the corner radius of its flat ends. Marks get round ends from *Round outer* / *Round inner*. Okay's "round caps". |
