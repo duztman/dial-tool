@@ -224,10 +224,12 @@ const TOOL_ICONS = {
   shadows: `<circle cx="7.25" cy="7.75" r="5.5" ${sw(DENSE)}/><path d="M4.5 12.5A5.5 5.5 0 0 0 12 5A8 8 0 0 1 4.5 12.5Z" fill="currentColor" stroke="none"/>`
     + `<path d="M16.75 15.5A5.625 1.25 0 0 1 5.5 15.5A5.625 1.25 0 0 1 16.75 15.5Z" fill="currentColor" stroke="none"/>`,
   // Okay's own mark, on 16 in the panel's first column (15 Oct 2026, 02:42: "my personal logo. Draw this like an
-  // icon"): a ring; a diagonal up to its upper right; from it a level line to the right and an upright one down; a
-  // square cell between them; a short slant from the cell's corner to the lower right. Through fit.mjs; every line
-  // inside the ring DENSE — five lines in sixteen points crowd; the ring CURVE (look.py: it reads light at DENSE)
-  logo: `<circle cx="8.25" cy="8.25" r="7" ${sw(CURVE)}/><g ${sw(DENSE)}><path d="M1.75 10.25L10.25 1.75M6.25 5.75H14.25M6.25 5.75V14.75M10.25 5.75V9.75H6.25M10.25 9.75L13.25 12"/></g>`,
+  // icon"): a ring; a 45° diagonal from ring to ring; through its crossing with them a level line to the right and an
+  // upright one down; a cell between them (3.5 × 4, as in his drawing); a 45° slant from the cell's corner to the
+  // ring. Every line ends on the ring's middle, where its round cap hides, as in his drawing (03:06: "a bit thinner
+  // and better optimised"): the lines 1 (two dots on a 2× screen), centred on whole and half points, so every straight
+  // edge lands on a whole dot; the ring 1.375 (it was 1.625; a ring reads lighter than a straight line of its width)
+  logo: `<circle cx="8" cy="8" r="7" stroke-width="1.375"/><path d="M1.62 10.88L10.88 1.62M6.5 6H14.71M6.5 6V14.84M10 6V10H6.5M10 10L12.95 12.95" stroke-width="1"/>`,
   // the eye button, beside Backdrop, on 30 — the whole inside of its 32 box (15 Oct 2026, 02:42: "a square icon that
   // houses an open eye with both eyelashes that stretch and crop out at the button outline"). An open eye, its iris
   // filled, three lashes above and three below running past the edge; the box cuts them. Through fit.mjs; the eye's
@@ -966,8 +968,7 @@ class DialTool {
     button.setAttribute("aria-expanded", "false");
     const a = (href, text) => el("a", { href, textContent: text, target: "_blank", rel: "noopener" });
     const line = (...parts) => el("p", {}, ...parts);
-    const bio = el("div", { className: "bio night", id: "bio", hidden: true },
-      el("h2", { textContent: "Dial Tool" }),
+    const bio = el("div", { className: "bio night", id: "bio", hidden: true },      // no title of its own: the header's is right above it (Okay, 03:06)
       line("A tool for designing watch dials, ring by ring, in the browser. Made by Okay, a graphic designer in Istanbul working across contemporary art, architecture and cinema, for a watch he is building."),
       line("Source, every version and the MIT licence: ", a("https://github.com/duztman/dial-tool", "github.com/duztman/dial-tool"), "."),
       el("h3", { textContent: "Built on open source" }),

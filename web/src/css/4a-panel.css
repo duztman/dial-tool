@@ -10,11 +10,15 @@
   .about { position: relative; flex: none; width: var(--eye); margin-right: var(--gap); }
   .logo { display: grid; place-items: center; width: var(--eye); height: var(--eye); padding: 0; color: var(--ink); }
   .logo svg { overflow: visible; }
-  .bio { position: absolute; z-index: 6; top: calc(100% + var(--unit)); left: 0; width: var(--bio-width); max-width: calc(100vw - 2 * var(--margin)); padding: var(--unit) var(--pop-pad) var(--pop-pad); font-size: var(--t-m); line-height: 1.45; }
-  .bio h2 { margin: var(--unit) 0; font-size: var(--t-l); }
+  /* the bio open: the mark turns over, light on a night disc a little wider than its ring (Okay, 15 Oct 2026, 03:06:
+     "clicking inverts and gives it a dark circle behind") */
+  .logo { border-radius: 50%; }
+  .logo[aria-expanded="true"] { color: var(--white); background: var(--night); box-shadow: 0 0 0 var(--logo-disc) var(--night); }
+  /* its text stands on the title’s line, the column after the mark (less its own edge); the list's bullets hang left of it (Okay, 03:06) */
+  .bio { position: absolute; z-index: 6; top: calc(100% + var(--unit)); left: 0; width: var(--bio-width); max-width: calc(100vw - 2 * var(--margin)); padding: var(--pop-pad) var(--pop-pad) calc(var(--pop-pad) - var(--u1)) calc(var(--eye) + var(--gap) - var(--hair)); font-size: var(--t-m); line-height: 1.45; }
   .bio h3 { margin: var(--pop-gap) 0 var(--u1); font-size: var(--t-m); }
   .bio p { margin: 0 0 var(--unit); }
-  .bio ul { margin: 0; padding-left: var(--pop-pad); }
+  .bio ul { margin: 0; padding-left: 0; }
   .bio li { margin-bottom: var(--u1); }
   .bio a { color: var(--white); text-decoration: underline; text-underline-offset: 0.15em; }
   .panel .title { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); }

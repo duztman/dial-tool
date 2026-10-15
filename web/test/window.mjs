@@ -1342,12 +1342,13 @@ await shot("10-bar");
   const before = await S("JSON.stringify(S, (k, v) => (k.startsWith('ui_') || k === 't' ? undefined : v))");
   await page.click("#logo");
   const bio = await page.evaluate(() => { const b = document.querySelector("#bio"), r = b.getBoundingClientRect(), l = document.querySelector("#logo").getBoundingClientRect(), t = document.querySelector(".panel .title").getBoundingClientRect();
-    return { shown: !b.hidden, links: [...b.querySelectorAll("a")].map((a) => a.textContent), logo_left: Math.round(l.left), title_left: Math.round(t.left) }; });
+    return { shown: !b.hidden, links: [...b.querySelectorAll("a")].map((a) => a.textContent), logo_left: Math.round(l.left), title_left: Math.round(t.left),
+      text_left: Math.round(b.querySelector("p").getBoundingClientRect().left), heads: b.querySelectorAll("h2").length, turned: getComputedStyle(document.querySelector("#logo")).backgroundColor }; });
   await page.mouse.click(1300, 120);
   const shut = await page.isHidden("#bio");
   await page.click("#eye-box"); const eye_on = await page.getAttribute("#eye-box", "aria-pressed"); await page.click("#eye-box");
-  check(bio.shown && shut && bio.links.includes("HarfBuzz") && bio.links.includes("github.com/duztman/dial-tool") && bio.logo_left === 24 && bio.title_left === 52 && eye_on === "true" && await page.getAttribute("#eye-box", "aria-pressed") === "false" && await S("JSON.stringify(S, (k, v) => (k.startsWith('ui_') || k === 't' ? undefined : v))") === before,
-    `Okay's mark in the first column (${bio.logo_left}; the title at ${bio.title_left}) opens the bio with its links (${bio.links.length}), a press outside shuts it; the eye beside Backdrop turns on and off, nothing more`);
+  check(bio.shown && shut && bio.links.includes("HarfBuzz") && bio.links.includes("github.com/duztman/dial-tool") && bio.logo_left === 24 && bio.title_left === 52 && bio.text_left === 52 && bio.heads === 0 && bio.turned === "rgb(20, 20, 19)" && eye_on === "true" && await page.getAttribute("#eye-box", "aria-pressed") === "false" && await S("JSON.stringify(S, (k, v) => (k.startsWith('ui_') || k === 't' ? undefined : v))") === before,
+    `Okay's mark in the first column (${bio.logo_left}; the title at ${bio.title_left}) turns over on a night disc (${bio.turned}) and opens the bio, no title of its own, its text on the title's line (${bio.text_left}), with its links (${bio.links.length}); a press outside shuts it; the eye beside Backdrop turns on and off, nothing more`);
 }
 { // the window never zooms, only the dial (Okay, 15 Oct 2026, 02:19)
   const still = await page.evaluate(() => { const wheel = new WheelEvent("wheel", { ctrlKey: true, deltaY: -40, bubbles: true, cancelable: true }); document.querySelector(".panel").dispatchEvent(wheel);

@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.38.10 (web version) · 15 Oct 2026
+
+- **Okay's mark redrawn thinner and on the grid**: lines 1 (were 1.25), the ring 1.375 (was 1.625); every straight edge on a whole dot of a 2× screen; each line ends on the ring, as in his drawing.
+- **The mark turns over while the bio is open**: light on a night disc a little wider than its ring.
+- **The bio has no title of its own**; its text stands on the title's line, the bullets hang left of it.
+
 ## beta 4.38.9 (web version) · 15 Oct 2026
 
 - **The eye switch has eight lashes**: four more from the eye's corners out to the box's corners; the upright lashes no longer bulge into the eye.

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.38.9 · built 2026-10-14 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.38.10 · built 2026-10-15 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -87,6 +87,7 @@
     --play: #CC381A; --play-dark: #7A1E0C; --play-light: #F28A6C;      /* the play button, an arcade button from above: its cap (the seconds hand's red, geometry.js ACCENT), the shade round it and under it, the light on it (Okay, 14 Oct 2026: "3 colors and a black outline") */
     --speed-thumb: 22px; --speed-ball: 9px;        /* how fast: its thumb (14 until Okay, 15 Oct 2026, 02:42: "this nubbin should grow 160%, eye stays still"); the knobs at its ends (6 until 00:42) */
     --bio-width: calc(var(--panel) - 2 * var(--margin));      /* the bio under Okay's mark: as wide as the panel's lines */
+    --logo-disc: 2px;                              /* the bio open: how far the mark's night disc reaches past its 16 box (ring to disc edge ≈ 2.3) */
     --speed-pad: calc(var(--u3) + 4px - var(--speed-thumb) / 2);      /* the speed box's room inside, left and right, set so that from its wall to an end knob's edge is 4 more than it was (3.75 → 7.75; Okay, 15 Oct 2026, 01:03: "end ball and the wall… what that was before plus four pixels"; 4 alone at 00:51 was a misreading). The knobs now stand where the thumb's middle stops, half a thumb in from the track's ends: hence the half thumb taken off */
     --play-size: 34px; --play-pulse: 22%;          /* the play button: a section tab's box (Okay, 00:42); how far its cap goes toward its light colour at a beat (faint: Okay, 01:20) */
     --t-time: 17px;                                /* the time in the bar: larger than --t-l (Okay, 14 Oct 2026, 23:55: "larger digital time"); R32 lists it */
@@ -307,11 +308,15 @@
   .about { position: relative; flex: none; width: var(--eye); margin-right: var(--gap); }
   .logo { display: grid; place-items: center; width: var(--eye); height: var(--eye); padding: 0; color: var(--ink); }
   .logo svg { overflow: visible; }
-  .bio { position: absolute; z-index: 6; top: calc(100% + var(--unit)); left: 0; width: var(--bio-width); max-width: calc(100vw - 2 * var(--margin)); padding: var(--unit) var(--pop-pad) var(--pop-pad); font-size: var(--t-m); line-height: 1.45; }
-  .bio h2 { margin: var(--unit) 0; font-size: var(--t-l); }
+  /* the bio open: the mark turns over, light on a night disc a little wider than its ring (Okay, 15 Oct 2026, 03:06:
+     "clicking inverts and gives it a dark circle behind") */
+  .logo { border-radius: 50%; }
+  .logo[aria-expanded="true"] { color: var(--white); background: var(--night); box-shadow: 0 0 0 var(--logo-disc) var(--night); }
+  /* its text stands on the title’s line, the column after the mark (less its own edge); the list's bullets hang left of it (Okay, 03:06) */
+  .bio { position: absolute; z-index: 6; top: calc(100% + var(--unit)); left: 0; width: var(--bio-width); max-width: calc(100vw - 2 * var(--margin)); padding: var(--pop-pad) var(--pop-pad) calc(var(--pop-pad) - var(--u1)) calc(var(--eye) + var(--gap) - var(--hair)); font-size: var(--t-m); line-height: 1.45; }
   .bio h3 { margin: var(--pop-gap) 0 var(--u1); font-size: var(--t-m); }
   .bio p { margin: 0 0 var(--unit); }
-  .bio ul { margin: 0; padding-left: var(--pop-pad); }
+  .bio ul { margin: 0; padding-left: 0; }
   .bio li { margin-bottom: var(--u1); }
   .bio a { color: var(--white); text-decoration: underline; text-underline-offset: 0.15em; }
   .panel .title { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); }
@@ -5456,7 +5461,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.38.9";
+var VERSION = "beta 4.38.10";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -7439,10 +7444,12 @@ var TOOL_ICONS = {
   // the sign beside it on 18 ("ball stroke thickness too much… look at similar size icons, guides and such")
   shadows: `<circle cx="7.25" cy="7.75" r="5.5" ${sw(DENSE)}/><path d="M4.5 12.5A5.5 5.5 0 0 0 12 5A8 8 0 0 1 4.5 12.5Z" fill="currentColor" stroke="none"/><path d="M16.75 15.5A5.625 1.25 0 0 1 5.5 15.5A5.625 1.25 0 0 1 16.75 15.5Z" fill="currentColor" stroke="none"/>`,
   // Okay's own mark, on 16 in the panel's first column (15 Oct 2026, 02:42: "my personal logo. Draw this like an
-  // icon"): a ring; a diagonal up to its upper right; from it a level line to the right and an upright one down; a
-  // square cell between them; a short slant from the cell's corner to the lower right. Through fit.mjs; every line
-  // inside the ring DENSE — five lines in sixteen points crowd; the ring CURVE (look.py: it reads light at DENSE)
-  logo: `<circle cx="8.25" cy="8.25" r="7" ${sw(CURVE)}/><g ${sw(DENSE)}><path d="M1.75 10.25L10.25 1.75M6.25 5.75H14.25M6.25 5.75V14.75M10.25 5.75V9.75H6.25M10.25 9.75L13.25 12"/></g>`,
+  // icon"): a ring; a 45° diagonal from ring to ring; through its crossing with them a level line to the right and an
+  // upright one down; a cell between them (3.5 × 4, as in his drawing); a 45° slant from the cell's corner to the
+  // ring. Every line ends on the ring's middle, where its round cap hides, as in his drawing (03:06: "a bit thinner
+  // and better optimised"): the lines 1 (two dots on a 2× screen), centred on whole and half points, so every straight
+  // edge lands on a whole dot; the ring 1.375 (it was 1.625; a ring reads lighter than a straight line of its width)
+  logo: `<circle cx="8" cy="8" r="7" stroke-width="1.375"/><path d="M1.62 10.88L10.88 1.62M6.5 6H14.71M6.5 6V14.84M10 6V10H6.5M10 10L12.95 12.95" stroke-width="1"/>`,
   // the eye button, beside Backdrop, on 30 — the whole inside of its 32 box (15 Oct 2026, 02:42: "a square icon that
   // houses an open eye with both eyelashes that stretch and crop out at the button outline"). An open eye, its iris
   // filled, three lashes above and three below running past the edge; the box cuts them. Through fit.mjs; the eye's
@@ -8229,7 +8236,7 @@ var DialTool = class _DialTool {
     const bio = el(
       "div",
       { className: "bio night", id: "bio", hidden: true },
-      el("h2", { textContent: "Dial Tool" }),
+      // no title of its own: the header's is right above it (Okay, 03:06)
       line("A tool for designing watch dials, ring by ring, in the browser. Made by Okay, a graphic designer in Istanbul working across contemporary art, architecture and cinema, for a watch he is building."),
       line("Source, every version and the MIT licence: ", a("https://github.com/duztman/dial-tool", "github.com/duztman/dial-tool"), "."),
       el("h3", { textContent: "Built on open source" }),
