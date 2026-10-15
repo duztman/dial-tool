@@ -1,10 +1,10 @@
 # Screens of the night of 14–15 October 2026
 
-*Archived 15 Oct 2026, 06:00 (Okay: "We now need the screenshots you grabbed while working (all versions if possible). All I sent, archive them."). From beta 4.37.1 to 4.40: the shadows trial, the bottom bar, the mark and bio, the dial alone, the showcase.*
+*Archived 15 Oct 2026, 06:00 (Okay: "We now need the screenshots you grabbed while working (all versions if possible). All I sent, archive them."). From beta 4.37.1 to 4.40.1: the shadows trial, the bottom bar, the mark and bio, the dial alone, the showcase, the phone pass.*
 
-- `versions/` — one picture per version, 4.38 to 4.40, each opening Okay's watch from his link at 10:10, at an iPad's landscape size (1180 × 820, 2×). Rendered at archive time from each version's committed `web/dial-tool.html` (versions as renumbered in `docs/versions.md`: 4.38.12 = 4.39 … 4.38.16 = 4.39.4).
+- `versions/` — one picture per version, 4.38 to 4.40.1 (and `phone-v4.40.1.png`, the same on a phone), each opening Okay's watch from his link at 10:10, at an iPad's landscape size (1180 × 820, 2×). Rendered at archive time from each version's committed `web/dial-tool.html` (versions as renumbered in `docs/versions.md`: 4.38.12 = 4.39 … 4.38.16 = 4.39.4).
 - `claude/` — what Claude shot while working, named `time-version-name`: the version is the build being made then (the next one committed). A shot redone later under the same name kept only its last state; earlier states of those are gone.
-- `okay/` — what Okay sent, named `time-seen-version-id`: the version is the last one committed before he sent it (to the minute: a build sometimes reached the live page a minute before its commit, so a picture may show the next one).
+- `okay/` — what Okay sent, named `time-seen-version-id`: the version is the last one committed before he sent it.
 
 Times are Istanbul (UTC+3); "trial-1/2" and "bar-1…7" are the passes on the branch `try/shadows` before 4.38.
 
@@ -31,6 +31,9 @@ Times are Istanbul (UTC+3); "trial-1/2" and "bar-1…7" are the passes on the br
 | 15 Oct 04:26 | `okay/0426-seen-4.39.1-0a8f6e9c.jpg` | 4.39.1 | the mark in the dial-alone view ("align icon better") |
 | 15 Oct 04:59 | `okay/0459-seen-4.39.2-86cc50a2.png` | 4.39.2 | the iPad in the showcase |
 | 15 Oct 05:43 | `okay/0543-seen-4.39.3-32a42966.jpg` | 4.39.3 | the iris and the eye touching |
+| 15 Oct 06:20 | `okay/0620-seen-4.40-bacb2316.png` | 4.40 | the phone: the top bar, labels over the dial, the drawer scrolling |
+| 15 Oct 06:24 | `okay/0624-seen-4.40-58dca1c0.png` | 4.40 | the phone in the showcase, no mark or name up top |
+| 15 Oct 06:27 | `okay/0627-seen-4.40-26430112.png` | 4.40 | the phone: the Guides list cut by the drawer |
 
 ## Claude's
 
@@ -163,3 +166,36 @@ Times are Istanbul (UTC+3); "trial-1/2" and "bar-1…7" are the passes on the br
 | 15 Oct 05:47 | `claude/0547-4.39.4-view-t-out-450.png` | 4.39.4 |
 | 15 Oct 05:47 | `claude/0547-4.39.4-view-t-out.png` | 4.39.4 |
 | 15 Oct 05:47 | `claude/0547-4.39.4-view-bottom.png` | 4.39.4 |
+| 15 Oct 06:22 | `claude/0622-4.40.1-mobile-desk-Dial.png` | 4.40.1 |
+| 15 Oct 06:22 | `claude/0622-4.40.1-mobile-desk-Rings.png` | 4.40.1 |
+| 15 Oct 06:22 | `claude/0622-4.40.1-mobile-desk-Hands.png` | 4.40.1 |
+| 15 Oct 06:22 | `claude/0622-4.40.1-mobile-desk-Date.png` | 4.40.1 |
+| 15 Oct 06:22 | `claude/0622-4.40.1-mobile-desk-Export.png` | 4.40.1 |
+| 15 Oct 06:22 | `claude/0622-4.40.1-mobile-ipad-Dial.png` | 4.40.1 |
+| 15 Oct 06:22 | `claude/0622-4.40.1-mobile-ipad-Rings.png` | 4.40.1 |
+| 15 Oct 06:22 | `claude/0622-4.40.1-mobile-ipad-Hands.png` | 4.40.1 |
+| 15 Oct 06:22 | `claude/0622-4.40.1-mobile-ipad-Date.png` | 4.40.1 |
+| 15 Oct 06:22 | `claude/0622-4.40.1-mobile-ipad-Export.png` | 4.40.1 |
+| 15 Oct 06:22 | `claude/0622-4.40.1-mobile-phone-Dial.png` | 4.40.1 |
+| 15 Oct 06:22 | `claude/0622-4.40.1-mobile-phone-Dial-scrolled.png` | 4.40.1 |
+| 15 Oct 06:22 | `claude/0622-4.40.1-mobile-phone-Rings.png` | 4.40.1 |
+| 15 Oct 06:22 | `claude/0622-4.40.1-mobile-phone-Rings-scrolled.png` | 4.40.1 |
+| 15 Oct 06:22 | `claude/0622-4.40.1-mobile-phone-Hands.png` | 4.40.1 |
+| 15 Oct 06:22 | `claude/0622-4.40.1-mobile-phone-Hands-scrolled.png` | 4.40.1 |
+| 15 Oct 06:22 | `claude/0622-4.40.1-mobile-phone-Date.png` | 4.40.1 |
+| 15 Oct 06:22 | `claude/0622-4.40.1-mobile-phone-Date-scrolled.png` | 4.40.1 |
+| 15 Oct 06:22 | `claude/0622-4.40.1-mobile-phone-Export.png` | 4.40.1 |
+| 15 Oct 06:22 | `claude/0622-4.40.1-mobile-phone-Export-scrolled.png` | 4.40.1 |
+| 15 Oct 06:22 | `claude/0622-4.40.1-mobile-desk-pins.png` | 4.40.1 |
+| 15 Oct 06:22 | `claude/0622-4.40.1-mobile-phone-pins.png` | 4.40.1 |
+| 15 Oct 06:24 | `claude/0624-4.40.1-mobile-bar-before.png` | 4.40.1 |
+| 15 Oct 06:27 | `claude/0627-4.40.1-mobile-p-start.png` | 4.40.1 |
+| 15 Oct 06:27 | `claude/0627-4.40.1-mobile-p-words.png` | 4.40.1 |
+| 15 Oct 06:27 | `claude/0627-4.40.1-mobile-p-tall.png` | 4.40.1 |
+| 15 Oct 06:27 | `claude/0627-4.40.1-mobile-p-tall-scrolled.png` | 4.40.1 |
+| 15 Oct 06:27 | `claude/0627-4.40.1-mobile-p-dragged.png` | 4.40.1 |
+| 15 Oct 06:27 | `claude/0627-4.40.1-mobile-p-show.png` | 4.40.1 |
+| 15 Oct 06:28 | `claude/0628-4.40.1-mobile-p-guides.png` | 4.40.1 |
+| 15 Oct 06:28 | `claude/0628-4.40.1-mobile-p-shadows.png` | 4.40.1 |
+| 15 Oct 06:28 | `claude/0628-4.40.1-mobile-phone-after.png` | 4.40.1 |
+| 15 Oct 06:28 | `claude/0628-4.40.1-mobile-words-zoom.png` | 4.40.1 |
