@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.41.12 (web version) · 15 Oct 2026
+
+- **The Gallery's B-Uhr is Okay's own**: green plate, yellow triangle, orange hours, lilac minute numerals; same name.
+
 ## beta 4.41.11 (web version) · 15 Oct 2026
 
 - **On a phone the mark is larger on the full title line** (22, as in the showcase); squeezed, it is the eyes' size again.

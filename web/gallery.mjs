@@ -24,18 +24,27 @@ const DIALS = [
   // the dial the tool opens with, Okay's own watch (Okay, 15 Oct 2026, 07:45: "add this 'default' face to gallery as
   // well"; 07:48: "the purple you've been working with"): first, its settings as they are in src/opener.js
   { name: "Okay's watch", note: "The dial Dial Tool opens with: Okay's own watch, purple, a 24-hour ring inside the twelve (15 Oct 2026)", settings: OPENER },
+  // Okay's own B-Uhr (15 Oct 2026, 09:39, his link: "This is replacing nr 2 on the gallery. No new name"): green plate,
+  // yellow triangle and dots, orange hours and seconds hand, lilac minute numerals moved in, two thin bands framing the
+  // numerals. Lean settings, as his link carries them (only what differs from the starting values), without the time.
   { name: "B-Uhr, type B", note: "Navigator's watch, 1941: minutes outside and large, hours inside and small [1.9]", settings: {
-    dial_d: 34, c_plate: BLACK,
-    ...hands(WHITE, { shape: "sword", len: 8.2, w: 2.0, tail: 1.6, tip: 2.6 }, { shape: "sword", len: 14.6, w: 1.5, tail: 1.8, tip: 3.2 }, { shape: "baton", len: 15.4, w: 0.2, tail: 4, counter: 1.1 }),
-    rings: [
-      { kind: "markers", name: "Triangle at 12", r: 16.4, count: 1, shape: "wedge", taper: 0, len: 2.6, w: 2.6, c: WHITE },
-      { kind: "markers", name: "Two dots", r: 16.2, count: 2, start: -8, span: 16, shape: "dot", w: 0.75, c: WHITE },
-      { kind: "numerals", name: "Minutes 5–55", r: 13.3, count: 11, start: 30, span: 300, labels: NUMBERS, num_from: 5, num_step: 5, size: 2.5, c: WHITE, ...type("Routed Gothic", "RoutedGothic") },
-      { kind: "ticks", name: "Five minutes", r: 16.4, count: 12, len: 2.0, w: 0.5, twelve: 3, every: 1, offset: 0, c: WHITE, skip: 1 },
-      { kind: "ticks", name: "Minutes", r: 16.4, count: 60, len: 1.2, w: 0.2, c: WHITE, skip: 3 },
-      { kind: "band", name: "Hour circle", r: 9.1, width: 0.16, c: WHITE },
-      { kind: "numerals", name: "Hours", r: 7.4, count: 12, size: 1.55, c: WHITE, ...type("Routed Gothic", "RoutedGothic") },
-    ] } },
+    "dial_d": 34, "guides": false, "gd_axes": false, "c_plate": [0.0706, 0.2157, 0.1647, 1],
+    "rings": [
+      { "kind": 1, "name": "Triangle at 12", "c": [1, 0.7857, 0, 1], "r": 15.6, "count": 1, "shape": 1, "len": 4.85, "w": 2.16, "taper": 0, "round_out": 0.35, "round_in": 0.24 },
+      { "kind": 1, "name": "Two dots", "c": [1, 0.7843, 0, 1], "r": 16.1, "count": 2, "start": -7, "span": 14, "knock": 3, "shape": 2, "w": 1.01 },
+      { "kind": 3, "name": "Hour circle", "c": [0.95, 0.95, 0.92, 1], "r": 9.1, "width": 0.16 },
+      { "name": "Minutes", "c": [0.95, 0.95, 0.92, 1], "r": 16.4, "count": 60, "skip": 3, "knock": 3, "len": 1.2, "w": 0.2 },
+      { "kind": 2, "name": "Hours", "c": [0.9098, 0.4549, 0.1647, 1], "r": 7.4, "size": 2.15, "family": "Routed Gothic", "ps": "RoutedGothic" },
+      { "kind": 2, "name": "Minutes 5–55", "c": [0.6491, 0.6275, 0.902, 1], "r": 11.85, "count": 11, "start": 30, "span": 300, "labels": 7, "num_from": 5, "size": 3,
+        "nudge": { "1": { "dr": -0.3 }, "3": { "dr": -0.35 }, "7": { "dr": -0.35 }, "8": { "dr": -0.35 }, "9": { "dr": -0.5 } }, "family": "Routed Gothic", "ps": "RoutedGothic" },
+      { "name": "Five minutes", "c": [0.95, 0.95, 0.92, 1], "r": 16.4, "skip": 1, "len": 2.7, "w": 0.35, "twelve": 3 },
+      { "kind": 3, "name": "Band copy", "c": [0.949, 0.949, 0.9216, 1], "r": 14.85, "count": 1, "width": 0.17, "guide": 0 },
+      { "kind": 3, "name": "Band", "c": [0.949, 0.949, 0.9216, 1], "r": 16.4, "count": 1, "width": 0.17, "guide": 0 },
+    ],
+    "ha_beat": 1, "ha_cap": 1.4, "c_cap": [0.9098, 0.4549, 0.1647, 1],
+    "ha_hour": { "shape": 2, "len": 8.2, "w": 2, "tail": 1.6, "tip": 2.6, "c": [0.902, 0.8863, 0.6275, 1] },
+    "ha_minute": { "shape": 2, "len": 14.6, "w": 1.5, "tail": 1.8, "tip": 3.2, "c": [0.902, 0.8866, 0.6275, 1] },
+    "ha_second": { "len": 15.4, "w": 0.2, "tail": 4, "counter": 1.1, "c": [0.9098, 0.4549, 0.1647, 1] } } },
   { name: "12 + 24 hours", note: "US general-purpose watch, MIL-PRF-46374: 13–24 inside 1–12, smaller [1.10]", settings: {
     dial_d: 30, c_plate: BLACK,
     ...hands(WHITE, { shape: "pencil", len: 7.2, w: 1.5, tail: 1.4, tip: 1.6 }, { shape: "pencil", len: 12.2, w: 1.1, tail: 1.6, tip: 1.8 }, { shape: "baton", len: 13.2, w: 0.2, tail: 3.4 }, 1.3),

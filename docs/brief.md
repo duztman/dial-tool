@@ -260,6 +260,7 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 15 Oct | **Okay's watch first in the Gallery; a Gallery pill between the version and the unit box; on a phone the bar's time at 12 and the red dot with equal room** (beta 4.41.9). | Okay, 07:45, 07:48. |
 | 15 Oct | **On a phone the title line is full at the drawer's top and squeezed, held on top, while it scrolls** (beta 4.41.10); the Gallery pill and mm go with the squeeze. | Okay, 07:59. |
 | 15 Oct | **On a phone the mark is 22 on the full title line**, the eyes' size squeezed (beta 4.41.11). | Okay, 08:08. |
+| 15 Oct | **Gallery's second dial is Okay's own B-Uhr** (beta 4.41.12): his link's settings replace the atlas B-Uhr; name and note kept. | Okay, 09:39: "This is replacing nr 2 on the gallery. No new name". |
 
 ## 5 · Open questions
 
