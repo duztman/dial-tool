@@ -135,6 +135,7 @@
   .picker .squares .adds.three > .pickt span { white-space: normal; }
   .picker .squares .pickt { grid-template-columns: auto minmax(0, 1fr); justify-items: start; align-items: center; align-content: center; column-gap: var(--unit); min-height: var(--u8); padding: var(--unit) var(--u3); text-align: left; }
   .picker .squares .pickt span { white-space: nowrap; text-align: left; }
+  .picker .squares .pickt { overflow: hidden; }      /* a word longer than its box is cut at the box's edge (Okay, 15 Oct 2026, 07:12: "cutoff the text and leave it") */
   .picker .squares .pickt small { color: var(--wait); font-size: inherit; }      /* lighter (Okay, 14 Oct 2026) */
   .picker .squares > .legendbutton { grid-column: 3; grid-row: 1; }      /* always the third */
   .picker .squares > .legendbutton[aria-expanded="true"] svg { rotate: 180deg; }

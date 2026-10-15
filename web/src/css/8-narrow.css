@@ -37,7 +37,7 @@
     .detail .upright { display: none; }
     .detail .lying { display: block; }      /* picture tiles under their label, on all six columns: room for their words */
     .row.pick > label { line-height: 1.4; padding-top: var(--unit); }
-    .picker { inset: auto 0 0 0; width: 100%; max-width: 100vw; height: 58%; border-width: var(--hair) 0 0; box-shadow: none; }
+    .picker { inset: var(--bar-h) 0 0 0; width: 100%; max-width: 100vw; height: auto; border-width: var(--hair) 0 0; box-shadow: none; }      /* the font sheet up to the bar: over the whole preview (Okay, 15 Oct 2026, 07:12) */
     /* the colour pop-out is a sheet from the bottom; wide, it is the whole screen */
     .colourpop { inset: auto 0 0 0; width: auto; border-width: var(--hair) 0 0; border-radius: var(--round-large) var(--round-large) 0 0; }
     .colourpop.wide { inset: 0; grid-template-rows: auto auto auto 1fr; border-radius: 0; }      /* wide, a sheet is the whole screen; the field takes the height that is left */

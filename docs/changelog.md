@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.41.3 (web version) · 15 Oct 2026
+
+- **On a phone the font sheet reaches up to the bar**, over the whole preview.
+- **A word longer than its box in the font sheet's buttons is cut at the box's edge** (Legend's "(OpenType abbr.)").
+
 ## beta 4.41.2 (web version) · 15 Oct 2026
 
 - **A switch whose words show is filled with the backdrop's colour**, so the dial under it doesn't show through: the iris switch opened to ACTIVATE SHOWCASE, and Guides, Backdrop and Shadows (always on a wide screen; on a phone while their words are unfolded).
