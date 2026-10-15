@@ -11,6 +11,8 @@ tools/versions.sh open 4.30    # → ../dial-tool-versions/v4.30/, open web/dial
 
 Versions 1.x–2.x are the DrawBot tool (`dial.py`, frozen; now in `archive/drawbot/`). 3.0 onward is the web version (`web/dial-tool.html`). The commit is the last one of that version, with its follow-up fixes.
 
+Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screenshot per version from 4.38 to 4.40 (Okay's watch in each), every screenshot Claude made while working, and every one Okay sent, with an index (`archive/screens/2026-10-15/README.md`).
+
 **Renumbered, 15 Oct 2026** (Okay, 05:58: "cook the books a bit, bump up to 39 just before preview mode, done when finished"): the build just before the eye switch's dial-alone view, 4.38.12, is listed as **4.39**, and the four after it, 4.38.13–4.38.16, as **4.39.1–4.39.4**; 4.40 is the finished night. Only the books changed: those commits are not rewritten, so their pages still print 4.38.x.
 
 | Version | Date | Kind | Commit | Built file | First line of the version |

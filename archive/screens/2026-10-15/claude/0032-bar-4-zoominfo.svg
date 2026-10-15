@@ -1,0 +1,6 @@
+<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="black">
+<circle cx="6.75" cy="6.75" r="5.5"/>
+<path d="M10.75 10.75L14.25 14.25"/>
+<path d="M6.75 6.25V9.75"/>
+<circle cx="6.75" cy="4.25" r="0.75" fill="black" stroke="none"/>
+</svg>
