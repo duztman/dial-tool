@@ -1119,8 +1119,8 @@ check(pane_lines.length > 0 && pane_lines.every((x) => x === "24/26"), `a pane's
 const fits = await page.evaluate(() => { const w = (q) => Math.round(document.querySelector(q).getBoundingClientRect().width), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); const box = (q) => document.querySelector(q).getBoundingClientRect(), lead = document.querySelector(".bar .lead"), pad = parseFloat(getComputedStyle(lead).paddingRight);
     const gaps = [["#play", ".speeds"], [".speeds", ".timewell"], ["#ampm", "#now"]].map(([a, b]) => +(box(b).left - box(a).right).toFixed(1));
     return { play: w("#play"), zooms: w(".zooms"), fit: w("#fit"), gaps, touch: +(box("#ampm").left - box(".timewell").right).toFixed(1), end: Math.round(box(".bar .lead").right - pad - box("#now").right) }; });
-check(fits.play === 34 && fits.zooms === 54 && fits.fit === 54 && fits.gaps[0] === 24 && fits.gaps[1] === fits.gaps[2] && fits.touch === 0 && fits.end === 0,
-  `under the panel: play, a margin (24), how fast · the time touching AM · PM · NOW one equal gap apart, NOW ending on the panel's last column (${JSON.stringify(fits)})`);
+check(fits.play === 34 && fits.zooms === 54 && fits.fit === 54 && fits.gaps[0] === 24 - 3.5 && fits.gaps[1] === fits.gaps[2] && fits.touch === 0 && fits.end === 0,
+  `under the panel: play, a margin less what the speed box grew toward it (24 − 3.5, Okay 15 Oct 03:18), how fast · the time touching AM · PM · NOW one equal gap apart, NOW ending on the panel's last column (${JSON.stringify(fits)})`);
 await shot("7b-bar");
 await page.fill("#time", "3:20:10");
 await page.press("#time", "Enter");
@@ -1332,6 +1332,13 @@ await tab("Export");
 }
 
 // ── the bar (Okay, 14 Oct 2026, 23:19, #190), and a phone ──
+{ // the speed box clears its thumb at either end as much as above and below it; mm as light as a dead switch (Okay, 15 Oct 2026, 03:18)
+  const m = await page.evaluate(() => { const r = (s) => document.querySelector(s).getBoundingClientRect(), box = r(".bar .speeds"), track = r(".bar .speedtrack"), c = getComputedStyle(document.querySelector("#unit"));
+    const thumb = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--speed-thumb"));
+    return { side: [+(track.left - box.left - 1).toFixed(2), +(box.right - 1 - track.right).toFixed(2)], top: (box.height - 2 - thumb) / 2, unit: [c.color, c.borderTopColor] }; });
+  check(m.side[0] === m.top && m.side[1] === m.top && m.unit[0] === m.unit[1],
+    `the speed thumb at an end stands as far from the box's wall (${m.side.join(" · ")}) as from its top (${m.top}); mm's word and line one light colour (${m.unit[0]})`);
+}
 const look = await page.evaluate(() => { const q = (s) => document.querySelector(s), r = (s) => q(s).getBoundingClientRect(), c = (s) => getComputedStyle(q(s));
   return { square: !q("#panel-toggle"), bar: Math.round(r(".bar").height), play: [Math.round(r("#play").width), Math.round(r("#play").height), c("#play").borderRadius], mono: c("#time").fontFamily.includes("monospace"),
     status: c(".bar .status").display, hint: q(".zoomhint").textContent, ruler: Math.round(r("#time-slider").width) }; });
@@ -1343,12 +1350,13 @@ await shot("10-bar");
   await page.click("#logo");
   const bio = await page.evaluate(() => { const b = document.querySelector("#bio"), r = b.getBoundingClientRect(), l = document.querySelector("#logo").getBoundingClientRect(), t = document.querySelector(".panel .title").getBoundingClientRect();
     return { shown: !b.hidden, links: [...b.querySelectorAll("a")].map((a) => a.textContent), logo_left: Math.round(l.left), title_left: Math.round(t.left),
-      text_left: Math.round(b.querySelector("p").getBoundingClientRect().left), heads: b.querySelectorAll("h2").length, turned: getComputedStyle(document.querySelector("#logo")).backgroundColor }; });
+      text_left: Math.round(b.querySelector("p").getBoundingClientRect().left), heads: b.querySelectorAll("h2").length,
+      contact: b.querySelector(".contact a")?.textContent, bare: /[\w.]+@[\w-]+\.\w+/.test(document.documentElement.outerHTML), turned: getComputedStyle(document.querySelector("#logo")).backgroundColor }; });
   await page.mouse.click(1300, 120);
   const shut = await page.isHidden("#bio");
   await page.click("#eye-box"); const eye_on = await page.getAttribute("#eye-box", "aria-pressed"); await page.click("#eye-box");
-  check(bio.shown && shut && bio.links.includes("HarfBuzz") && bio.links.includes("github.com/duztman/dial-tool") && bio.logo_left === 24 && bio.title_left === 52 && bio.text_left === 52 && bio.heads === 0 && bio.turned === "rgb(20, 20, 19)" && eye_on === "true" && await page.getAttribute("#eye-box", "aria-pressed") === "false" && await S("JSON.stringify(S, (k, v) => (k.startsWith('ui_') || k === 't' ? undefined : v))") === before,
-    `Okay's mark in the first column (${bio.logo_left}; the title at ${bio.title_left}) turns over on a night disc (${bio.turned}) and opens the bio, no title of its own, its text on the title's line (${bio.text_left}), with its links (${bio.links.length}); a press outside shuts it; the eye beside Backdrop turns on and off, nothing more`);
+  check(bio.shown && shut && bio.links.includes("HarfBuzz") && bio.links.includes("github.com/duztman/dial-tool") && bio.logo_left === 24 && bio.title_left === 52 && bio.text_left === 52 && bio.heads === 0 && bio.contact === "here" && !bio.bare && bio.turned === "rgb(20, 20, 19)" && eye_on === "true" && await page.getAttribute("#eye-box", "aria-pressed") === "false" && await S("JSON.stringify(S, (k, v) => (k.startsWith('ui_') || k === 't' ? undefined : v))") === before,
+    `Okay's mark in the first column (${bio.logo_left}; the title at ${bio.title_left}) turns over on a night disc (${bio.turned}) and opens the bio, no title of its own, its text on the title's line (${bio.text_left}), with its links (${bio.links.length}), ending "Contact him here" — no address anywhere in the page; a press outside shuts it; the eye beside Backdrop turns on and off, nothing more`);
 }
 { // the window never zooms, only the dial (Okay, 15 Oct 2026, 02:19)
   const still = await page.evaluate(() => { const wheel = new WheelEvent("wheel", { ctrlKey: true, deltaY: -40, bubbles: true, cancelable: true }); document.querySelector(".panel").dispatchEvent(wheel);

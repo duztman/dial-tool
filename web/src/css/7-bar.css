@@ -37,7 +37,7 @@
      (Okay: "Remove the humps but the one at 1x. Hump=ball in the middle of the line. Put 1x above the dot centered
      in the remaining gap outside the box in ruler number's font size"). --at: how far along the track, 0 to 1; the
      thumb's half-width at each end, so the ball is under the thumb's centre at 1×. */
-  .bar .lead .speeds { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--u2); height: var(--bar-control); padding: 0 var(--speed-pad); border: var(--hair) solid var(--bar-light); }
+  .bar .lead .speeds { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--u2); height: var(--bar-control); padding: 0 var(--speed-pad); margin-left: calc(-1 * var(--speed-grow)); border: var(--hair) solid var(--bar-light); }
   .bar .speedtrack { position: relative; flex: 1; min-width: 0; height: 100%; }
   .bar .humps { position: absolute; inset: 0 calc(var(--speed-thumb) / 2); pointer-events: none; }
   .bar .humps::before { content: ""; position: absolute; left: var(--thumb-eye-edge); right: var(--thumb-eye-edge); top: calc(50% - var(--triple) / 2); border-top: var(--triple) solid var(--black); }      /* as thick as the play button's black ring (Okay, 15 Oct 2026, 00:32) */      /* stopping at the knobs' eyes, so the eyes stay empty */

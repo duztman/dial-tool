@@ -20,12 +20,13 @@
   .bio p { margin: 0 0 var(--unit); }
   .bio ul { margin: 0; padding-left: 0; }
   .bio li { margin-bottom: var(--u1); }
+  .bio .contact { margin: var(--pop-gap) 0 var(--u1); }      /* the last line, after the list: how to reach Okay */
   .bio a { color: var(--white); text-decoration: underline; text-underline-offset: 0.15em; }
   .panel .title { display: flex; align-items: baseline; gap: calc(var(--unit) * 2); }
   /* units: a box at the panel's top right saying the unit lengths are shown in, by its short name; one column wide
      whatever it says. Its menu hangs under it, the units by their full names, a hairline between them. */
   .unit { position: relative; margin-left: auto; }
-  .unitbox { width: var(--col); height: var(--control-large); border: var(--hair) solid var(--rule); color: var(--grey); text-align: center; }      /* its word like the version beside the title, its line like the header's */
+  .unitbox { width: var(--col); height: var(--control-large); border: var(--hair) solid currentColor; color: color-mix(in srgb, var(--ink) calc(var(--faint) * 50%), transparent); text-align: center; }      /* as light as a switch on the preview that can't be pressed (undo with nothing to undo), its word and its line one colour (Okay, 15 Oct 2026, 03:18); dark under the pointer. Was: its word like the version, its line like the header's */
   .unitbox:hover { background: var(--hover); color: var(--ink); border-color: var(--ink); }
   /* a small menu hanging under its button (the units; the kinds of ring to add): lines a row high, a hairline between them */
   :is(.unitmenu, .addmenu) { position: absolute; z-index: 4; top: calc(100% + var(--unit)); right: 0; min-width: calc(2 * var(--col) + var(--gap)); border: var(--hair) solid var(--ink); background: var(--field); }

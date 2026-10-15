@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.38.11 (web version) · 15 Oct 2026
+
+- **mm is quiet**: the unit box's word and line one colour, as light as a switch that can't be pressed; dark under the pointer.
+- **The speed box clears its thumb evenly**: at either end the thumb stands as far from the wall as from the top and bottom (3); the box grows toward the play button to make the room, so the track keeps its length.
+- **The bio ends "Contact him here."**: a mail link to Okay whose address is kept scrambled in the page and source and put together only when pressed.
+
 ## beta 4.38.10 (web version) · 15 Oct 2026
 
 - **Okay's mark redrawn thinner and on the grid**: lines 1 (were 1.25), the ring 1.375 (was 1.625); every straight edge on a whole dot of a 2× screen; each line ends on the ring, as in his drawing.

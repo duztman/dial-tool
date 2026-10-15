@@ -978,6 +978,12 @@ class DialTool {
         el("li", {}, a("https://rsms.me/inter/", "Inter"), " by Rasmus Andersson is the stand-in typeface; ", a("https://fonts.google.com/specimen/Silkscreen", "Silkscreen"), " by Jason Kottke sets the tiny figures (SIL OFL)."),
         el("li", {}, "The twenty dial typefaces, each under its designers’ SIL Open Font License, most of them from ", a("https://fonts.google.com", "Google Fonts"), "."),
         el("li", {}, a("https://www.drawbot.com", "DrawBot"), " is where the tool began; ", a("https://esbuild.github.io", "esbuild"), " builds it and ", a("https://playwright.dev", "Playwright"), " tests it.")));
+    // contact: Okay's address, kept from address-harvesting robots that read pages and repositories (Okay, 03:18:
+    // "encrypt it somehow so no one can get it. Reasonably"): stored as its letters' codes, each XOR 23, back to front,
+    // so it never stands in the page or the source as an address; put together only when "here" is pressed
+    const MAIL = [122, 120, 116, 57, 123, 126, 118, 122, 112, 87, 101, 118, 123, 126, 110, 118, 115, 118, 101, 118, 124, 110, 118, 124, 120];
+    const write = el("a", { href: "#contact", textContent: "here", onclick: (e) => { e.preventDefault(); location.href = "mailto:" + String.fromCharCode(...MAIL.map((c) => c ^ 23).reverse()); } });
+    bio.append(el("p", { className: "contact" }, "Contact him ", write, "."));
     const open = (on) => { bio.hidden = !on; button.setAttribute("aria-expanded", String(on)); };
     this.bio_open = open;
     button.onclick = () => open(bio.hidden);
