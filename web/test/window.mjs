@@ -453,8 +453,8 @@ await page.click("#guides");
 await frame();
 check(await S("!t.items.some((i) => i.role === 'guide')") && await page.isVisible("#guide-list"), "the Guides switch, off: none drawn; the list stays where it is");
 await page.mouse.move(640, 30);
-const one_colour = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c("#guides").color, c("#guides-more").color, c("#guides").borderTopColor, c("#guides").backgroundColor, c("#guides").borderTopStyle, c("#guides .slash").display, c("#guides").fontWeight]; });
-check(one_colour[0] === one_colour[1] && /0\.35\)$/.test(one_colour[2]) && one_colour[3] === "rgba(0, 0, 0, 0)" && one_colour[4] === "solid" && one_colour[5] !== "none" && one_colour[6] === "400", `off, it is an outline with no fill; sign, word, arrow and line are one colour (${one_colour[0]}), the line at 0.35 of it (${one_colour[2]}); the sign is struck through`);
+const one_colour = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c("#guides").color, c("#guides-more").color, c("#guides").borderTopColor, c("#guides").backgroundColor, c("#guides").borderTopStyle, document.querySelectorAll("#guides .slash, #guides .core-off").length, c("#guides").fontWeight]; });
+check(one_colour[0] === one_colour[1] && /0\.35\)$/.test(one_colour[2]) && one_colour[3] === "rgba(0, 0, 0, 0)" && one_colour[4] === "solid" && one_colour[5] === 0 && one_colour[6] === "400", `off, it is an outline with no fill; sign, word, arrow and line are one colour (${one_colour[0]}), the line at 0.35 of it (${one_colour[2]}); the sign is the one it has on, only fainter (Okay, 15 Oct 2026, 03:41)`);
 { // three states on the preview: can be pressed (faint) · can't (fainter) · on (Guides: its word alone whole)
   const o = (q) => page.$eval(q, (e) => getComputedStyle(e).opacity);
   const off = [await o("#guides .word"), await o("#guides svg"), await o("#backdrop span"), await o("#undo svg")];
@@ -478,7 +478,7 @@ await shot("4c3-guides-off");
 await page.click("#guides");
 await page.click("#guides-more");
 await page.mouse.move(900, 400);
-check(await S("S.guides === true && S.ui_section === 0") && await page.isHidden("#guide-list") && await page.$eval("#guides", (e) => { const c = getComputedStyle(e); return c.backgroundColor + c.color + c.fontWeight + getComputedStyle(e.querySelector(".word")).opacity + getComputedStyle(e.querySelector(".slash")).display; }) === "rgba(0, 0, 0, 0)rgb(17, 17, 17)4001none", "pressed again it is on: still no fill; the word whole, not bolder (Okay, 14 Oct 2026, 23:05), the sign whole");
+check(await S("S.guides === true && S.ui_section === 0") && await page.isHidden("#guide-list") && await page.$eval("#guides", (e) => { const c = getComputedStyle(e); return c.backgroundColor + c.color + c.fontWeight + getComputedStyle(e.querySelector(".word")).opacity + e.querySelectorAll(".slash").length; }) === "rgba(0, 0, 0, 0)rgb(17, 17, 17)40010", "pressed again it is on: still no fill; the word whole, not bolder (Okay, 14 Oct 2026, 23:05), the sign whole");
 // the backdrop's colour: a switch at the preview's bottom left, showing the colour as a chip
 const bd = await page.evaluate(() => { const b = document.querySelector("#backdrop").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(), c = getComputedStyle(document.querySelector("#backdrop")); const sh = document.querySelector("#shadows").getBoundingClientRect(), unit = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit")); return [Math.round(sh.left - m.left), Math.round(m.bottom - sh.bottom), c.borderTopStyle, getComputedStyle(document.querySelector("#backdrop .dot")).getPropertyValue("--c"), Math.round(b.left - m.left), Math.round(sh.top - b.bottom - unit)]; });
 check(bd[0] === 12 && bd[1] === 12 && bd[4] === 12 && bd[5] === 0 && bd[2] === "solid" && bd[3].includes("204, 204, 199"), "the Shadows switch is 12 from the preview's bottom left, the Backdrop switch a unit over it, solid-lined, its chip the backdrop's colour");
@@ -921,7 +921,8 @@ check(await page.$eval("#font-picker", (d) => d.open) && sheet_at === "184 64 -1
   await page.click("#font-add");
   check(shut && await page.isVisible("#font-link") && await page.evaluate(() => document.activeElement.id === "font-link"), "the field for a link is out of sight until Add link is pressed; then it is there, with the keyboard in it");
 }
-check(await page.$$eval('#font-picker .fontrow[data-group="list"]', (rows) => rows.length) === 20 && await page.$$eval('#font-picker .fontrow[data-group="list"] .sample svg path', (p) => p.length) === 20, "the sheet lists the tool's twenty families, each showing numerals in its own outlines");
+{ const fam = [await page.$$eval('#font-picker .fontrow[data-group="list"]', (rows) => rows.length), await page.$$eval('#font-picker .fontrow[data-group="list"] .sample svg path', (p) => p.length), await page.$$eval('#font-picker .fontrow[data-group="list"]', (rows) => rows.filter((r) => r.querySelectorAll(".sample svg path").length !== 1).map((r) => r.dataset.family + ":" + r.querySelectorAll(".sample svg path").length).join(" "))];
+  check(fam[0] === 20 && fam[1] === 20, `the sheet lists the tool's twenty families, each showing numerals in its own outlines (${fam[0]} · ${fam[1]} ${fam[2]})`); }
 await page.click('.fontrow[data-family="Jost"]');
 await page.waitForFunction(() => window.dial_tool.ring().ps === "Jost-Regular" && document.querySelector("#axis-wght"), null, { timeout: 8000 }).catch(() => {});
 check(await S("S.rings[S.ui_ring].ps === 'Jost-Regular'") && await page.$("#axis-wght") !== null && await page.$eval("#font-picker", (d) => d.open), "click Jost: fetched and drawn, the sheet stays open to compare");
@@ -1235,6 +1236,10 @@ check(got === wanted, "opening the link elsewhere gives the same dial, every set
 await other.goto(link.split("#")[0] + "#1.not-a-dial");
 await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 check(await other.evaluate(() => window.dial_tool.S.rings.length > 0), "a broken link opens the tool anyway");
+await other.goto(link.split("#")[0]);
+await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
+const opener = await other.evaluate(() => [window.dial_tool.S.dial_d, window.dial_tool.S.rings.map((r) => r.name).join(" · ")]);
+check(opener[0] === 19.1 && opener[1].startsWith("Hours · 24 hours"), `no dial in the address and no last session: it opens with Okay's watch (${opener[0]} mm: ${opener[1]})`);
 await other.close();
 await page.click('button:text-is("Defaults")');
 await page.waitForFunction(() => window.dial_tool.statik && window.dial_tool.S.ha_hour.round === 0);
@@ -1345,7 +1350,7 @@ const look = await page.evaluate(() => { const q = (s) => document.querySelector
 check(look.square && look.bar === 62 && look.play[0] === look.play[1] && look.play[2] === "50%" && look.mono && look.status === "none" && look.hint.includes("⌘ + scroll") && look.ruler <= 518,
   `the bar: a fifth higher (${look.bar}), no panel square, a round play, the time in monospace, no status line, how to zoom beside the zoom, the day slider no wider than an iPad's (${look.ruler})`);
 await shot("10-bar");
-{ // Okay's mark opens the bio; the eye beside Backdrop turns on and off and does nothing else (15 Oct 2026)
+{ // Okay's mark opens the bio; the eye switch, at the preview's bottom right, turns on and off and does nothing else (15 Oct 2026)
   const before = await S("JSON.stringify(S, (k, v) => (k.startsWith('ui_') || k === 't' ? undefined : v))");
   await page.click("#logo");
   const bio = await page.evaluate(() => { const b = document.querySelector("#bio"), r = b.getBoundingClientRect(), l = document.querySelector("#logo").getBoundingClientRect(), t = document.querySelector(".panel .title").getBoundingClientRect();
@@ -1354,9 +1359,10 @@ await shot("10-bar");
       contact: b.querySelector(".contact a")?.textContent, bare: /[\w.]+@[\w-]+\.\w+/.test(document.documentElement.outerHTML), turned: getComputedStyle(document.querySelector("#logo")).backgroundColor }; });
   await page.mouse.click(1300, 120);
   const shut = await page.isHidden("#bio");
+  const eye_at = await page.evaluate(() => { const m = document.querySelector("main").getBoundingClientRect(), e = document.querySelector("#eye-box").getBoundingClientRect(), inset = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--canvas-inset")); return Math.round(m.right - e.right) === inset && Math.round(m.bottom - e.bottom) === inset && document.querySelectorAll("#eye-box mask, #eye-box circle").length === 2; });
   await page.click("#eye-box"); const eye_on = await page.getAttribute("#eye-box", "aria-pressed"); await page.click("#eye-box");
-  check(bio.shown && shut && bio.links.includes("HarfBuzz") && bio.links.includes("github.com/duztman/dial-tool") && bio.logo_left === 24 && bio.title_left === 52 && bio.text_left === 52 && bio.heads === 0 && bio.contact === "here" && !bio.bare && bio.turned === "rgb(20, 20, 19)" && eye_on === "true" && await page.getAttribute("#eye-box", "aria-pressed") === "false" && await S("JSON.stringify(S, (k, v) => (k.startsWith('ui_') || k === 't' ? undefined : v))") === before,
-    `Okay's mark in the first column (${bio.logo_left}; the title at ${bio.title_left}) turns over on a night disc (${bio.turned}) and opens the bio, no title of its own, its text on the title's line (${bio.text_left}), with its links (${bio.links.length}), ending "Contact him here" — no address anywhere in the page; a press outside shuts it; the eye beside Backdrop turns on and off, nothing more`);
+  check(bio.shown && shut && bio.links.includes("HarfBuzz") && bio.links.includes("github.com/duztman/dial-tool") && bio.logo_left === 24 && bio.title_left === 52 && bio.text_left === 52 && bio.heads === 0 && bio.contact === "here" && !bio.bare && bio.turned === "rgb(20, 20, 19)" && eye_at && eye_on === "true" && await page.getAttribute("#eye-box", "aria-pressed") === "false" && await S("JSON.stringify(S, (k, v) => (k.startsWith('ui_') || k === 't' ? undefined : v))") === before,
+    `Okay's mark in the first column (${bio.logo_left}; the title at ${bio.title_left}) turns over on a night disc (${bio.turned}) and opens the bio, no title of its own, its text on the title's line (${bio.text_left}), with its links (${bio.links.length}), ending "Contact him here" — no address anywhere in the page; a press outside shuts it; the eye switch, alone at the preview's bottom right (${eye_at}), turns on and off, nothing more`);
 }
 { // the window never zooms, only the dial (Okay, 15 Oct 2026, 02:19)
   const still = await page.evaluate(() => { const wheel = new WheelEvent("wheel", { ctrlKey: true, deltaY: -40, bubbles: true, cancelable: true }); document.querySelector(".panel").dispatchEvent(wheel);
@@ -1407,6 +1413,7 @@ check(await page.$eval("#ampm", (b) => b.firstElementChild && b.firstElementChil
 // ── under a finger: small controls are pressed from a little outside their edge too ──
 const touch = await browser.newContext({ viewport: { width: 1180, height: 820 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true });
 const pad = await touch.newPage();
+await pad.addInitScript(() => { if (!localStorage.getItem("dial-tool-last")) localStorage.setItem("dial-tool-last", "{}"); });      // the plain starting dial, not the opener (Okay's watch, 4.38.12)
 await pad.goto("file://" + process.cwd() + "/dial-tool.html");
 await pad.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
 await pad.tap("#guides-more");

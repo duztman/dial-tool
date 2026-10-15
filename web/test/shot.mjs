@@ -7,6 +7,7 @@ const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, dev
 page.on("console", (m) => { if (m.type() === "error") console.log("console error:", m.text()); });
 page.on("pageerror", (e) => console.log("page error:", e.message));
 if (settings) await page.addInitScript((s) => localStorage.setItem("dial-tool-last", s), fs.readFileSync(settings, "utf8"));
+else await page.addInitScript(() => { if (!localStorage.getItem("dial-tool-last")) localStorage.setItem("dial-tool-last", "{}"); });      // the plain starting dial, not the opener (Okay's watch, 4.38.12)
 await page.goto("file://" + process.cwd() + "/dial-tool.html");
 await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
 await page.waitForTimeout(300);

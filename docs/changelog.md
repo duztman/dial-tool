@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.38.12 (web version) · 15 Oct 2026
+
+- **The tool opens with Okay's watch** when there is no dial in the address and no last session (`web/src/opener.js`). "Defaults" still gives the plain starting dial.
+- **The Guides sign is one drawing**, on and off: off it is only fainter (the slash is gone).
+- **The eye switch moved to the preview's bottom right**, over the zoom, and is redrawn: the iris, 24 thin rays from it cut by the box, and the eye's outline knocked out of the rays; inside the eye only the iris.
+
 ## beta 4.38.11 (web version) · 15 Oct 2026
 
 - **mm is quiet**: the unit box's word and line one colour, as light as a switch that can't be pressed; dark under the pointer.

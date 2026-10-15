@@ -11,6 +11,7 @@ import { svg_document, pdf_document, png_with_dpi, file_name } from "./output.js
 import { FONT_LIST, FONT_SITE } from "./font_list.js";
 import { EXAMPLES } from "./examples.js";
 import { GALLERY } from "./gallery.js";
+import { OPENER } from "./opener.js";
 import { start_ink, offset as ink_offset } from "./ink.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -200,6 +201,7 @@ const INK_TRAPS = (() => {
   }
   return out.join("");
 })();
+const EYE_RAYS = 24, EYE_RAY = 0.5;      // the eye switch's rays: how many, how thick (Okay, 15 Oct 2026, 03:41)
 const TOOL_ICONS = {
   // on 18; a quiet sign, thin and light (Okay, 11 Oct 2026; again 14 Oct, 04:11: "thinner lines"): DENSE, corners
   // a sixteenth heavier as on any box; light by its grey. Outer edge where it was (1 … 17)
@@ -230,22 +232,27 @@ const TOOL_ICONS = {
   // and better optimised"): the lines 1 (two dots on a 2× screen), centred on whole and half points, so every straight
   // edge lands on a whole dot; the ring 1.375 (it was 1.625; a ring reads lighter than a straight line of its width)
   logo: `<circle cx="8" cy="8" r="7" stroke-width="1.375"/><path d="M1.62 10.88L10.88 1.62M6.5 6H14.71M6.5 6V14.84M10 6V10H6.5M10 10L12.95 12.95" stroke-width="1"/>`,
-  // the eye button, beside Backdrop, on 30 — the whole inside of its 32 box (15 Oct 2026, 02:42: "a square icon that
-  // houses an open eye with both eyelashes that stretch and crop out at the button outline"). An open eye, its iris
-  // filled, three lashes above and three below running past the edge; the box cuts them. Through fit.mjs; the eye's
-  // axis moved to 15.25 so the upright lashes sit on quarter points with the iris on them
-  eyebox: `<path d="M6.25 15C12.25 9.75 18.25 9.75 24.25 15C18.25 20.25 12.25 20.25 6.25 15Z" ${sw(CURVE)}/><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/>`
-    + `<path d="M10.75 12L6.25 -1M19.75 12L24.25 -1M10.75 18L6.25 31M19.75 18L24.25 31" ${sw(SLANT)}/><path d="M15.25 11V-1.75M15.25 19V31.75"/>`
-    // 02:52: four more lashes from the eye's corners out to the box's corners (Okay's drawing); the upright lashes now
-    // start on the lid's middle line (11 and 19, were 11.25 and 18.75), so their round ends no longer bulge into the eye
-    + `<path d="M7.5 13L-1 2.5M23 13L31.5 2.5M7.5 17L-1 27.5M23 17L31.5 27.5" ${sw(SLANT)}/>`,
+  // the eye switch, at the preview's bottom right, on 30 — the whole inside of its 32 box (Okay, 15 Oct 2026, 03:41):
+  // the iris and its centre kept (15.25, 15, r 2.75: "the only constant we carry over"); rays from the centre "like an
+  // overexcited asterisk" — the lashes — run past the box, which cuts them; the eye itself is not drawn: its outline
+  // (the 4.38 eye, lids a fifth higher, width kept) at its stroke width (CURVE) is knocked out of the rays, so the eye
+  // is completed by absence; inside it nothing but the iris (03:52: "eye inside white, only iris remains there"). The rays are thin, 0.5, against the icon rules on purpose ("I want to see thin lines").
+  // EYE_RAYS: 24 of the 12 · 16 · 24 · 32 tried (one ray straight up)
+  eyebox: (() => {
+    const cx = 15.25, cy = 15, lift = 5.25 * 1.2, n = EYE_RAYS;
+    const lid = `M6.25 ${cy}C12.25 ${cy - lift} 18.25 ${cy - lift} 24.25 ${cy}C18.25 ${cy + lift} 12.25 ${cy + lift} 6.25 ${cy}Z`;
+    const rays = Array.from({ length: n }, (_, k) => { const a = 2 * Math.PI * k / n; return `M${cx} ${cy}L${(cx + 25 * Math.sin(a)).toFixed(2)} ${(cy - 25 * Math.cos(a)).toFixed(2)}`; }).join("");
+    return `<mask id="eye-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask>`
+      + `<path d="${rays}" stroke-width="${EYE_RAY}" stroke-linecap="butt" mask="url(#eye-cut)"/><circle cx="${cx}" cy="${cy}" r="2.75" fill="currentColor" stroke="none"/>`;
+  })(),
   screen: `<rect x="2.75" y="3.25" width="10.5" height="7.5"/><path d="M8.25 10.75V13.25M5.75 13.25H10.75" ${sw(DENSE)}/>`,
   // the Guides switch, on 18: a target and its cross; its lines crowd, so DENSE. Okay's drawings (14 Oct 2026, 04:11):
-  // guides on, the centre ring dashed in six, square-ended (a dash pattern is a texture, not line ends) (core-on); guides off, a hollow slash, two lines with the target cut away
-  // between them (the slash group, and the mask that cuts). The stylesheet shows one state's parts (6-preview.css).
-  guides: `<mask id="guides-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18"><rect width="18" height="18" fill="white" stroke="none"/><path class="slash" d="M2.75 15.75L15.75 2.75" stroke="black" stroke-width="2.5" stroke-linecap="butt"/>${INK_TRAPS}</mask>`
-    + `<g ${sw(DENSE)}><g mask="url(#guides-cut)"><circle cx="9.25" cy="9.25" r="5.5"/><circle class="core-off" cx="9.25" cy="9.25" r="2"/><path d="M9.25 1.25V5.75M9.25 12.75V17.25M1.25 9.25H5.75M12.75 9.25H17.25"/></g>`
-    + `<circle class="core-on" cx="9.25" cy="9.25" r="2" stroke-dasharray="1.25 0.844" stroke-linecap="butt" transform="rotate(-107.9 9.25 9.25)"/><path class="slash" d="M1.87 14.87L14.87 1.87M3.63 16.63L16.63 3.63"/></g>`,
+  // guides: a target, its centre ring dashed in six, square-ended (a dash pattern is a texture, not line ends), ink
+  // traps where the arms cross the ring. One drawing, on and off: only how much of it shows changes (Okay, 15 Oct
+  // 2026, 03:41: "Guides off: icon should not change"; until 4.38.11 off was a hollow slash and a plain centre ring)
+  guides: `<mask id="guides-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18"><rect width="18" height="18" fill="white" stroke="none"/>${INK_TRAPS}</mask>`
+    + `<g ${sw(DENSE)}><g mask="url(#guides-cut)"><circle cx="9.25" cy="9.25" r="5.5"/><path d="M9.25 1.25V5.75M9.25 12.75V17.25M1.25 9.25H5.75M12.75 9.25H17.25"/></g>`
+    + `<circle cx="9.25" cy="9.25" r="2" stroke-dasharray="1.25 0.844" stroke-linecap="butt" transform="rotate(-107.9 9.25 9.25)"/></g>`,
 };
 // play and pause, filled, on 12: the triangle a half point right of the middle, so its weight (not its box) is centred
 // play: an arcade button seen from above, on 34 (Okay, 14 Oct 2026, 23:55: "imitate a arcade button, top view, add
@@ -872,7 +879,7 @@ class DialTool {
     this.set_speed(1);
     const guides = this.guides_box();
     // on the preview: undo · redo top left, beside the panel (Okay, 13 Oct 2026) · the Guides switch top right · Backdrop bottom left
-    this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.shadows_box(), this.backdrop_box());
+    this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box);
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     requestAnimationFrame(() => this.level_title());
     this.play_icon();
@@ -950,13 +957,15 @@ class DialTool {
     box.setAttribute("aria-expanded", "false");
     box.onclick = () => this.pop_open({ read: () => this.S.c_backdrop, write: (v) => this.set_value("global", "c_backdrop", v), label: () => "Backdrop" }, box);
     this.backdrop_dot = dot;
-    // its little brother (Okay, 15 Oct 2026, 02:42): a square switch with an eye in it. A preview of a switch to come —
-    // it does nothing yet; a press turns it on and off, so its colour changes ("Click changes color"). Not part of a dial
+    // the eye switch (Okay, 15 Oct 2026, 02:42): a square switch with an eye in it. A preview of a switch to come —
+    // it does nothing yet; a press turns it on and off, so its colour changes ("Click changes color"). Not part of a dial.
+    // Beside Backdrop until 03:41; now on its own at the preview's bottom right, over the zoom (.eyes)
     const eye = el("button", { type: "button", className: "onview eyebox", id: "eye-box", title: "A view to come — nothing yet", ariaLabel: "A view to come (nothing yet)" });
     eye.innerHTML = icon(TOOL_ICONS.eyebox, 30);
     eye.setAttribute("aria-pressed", "false");
     eye.onclick = () => eye.setAttribute("aria-pressed", String(eye.getAttribute("aria-pressed") !== "true"));
-    return el("div", { className: "backdrops" }, box, eye);
+    this.eye_box = el("div", { className: "eyes" }, eye);
+    return el("div", { className: "backdrops" }, box);
   }
 
   /** Okay's mark in the panel's first column, left of the title; a press opens a short bio: who made the tool, where
@@ -2854,7 +2863,10 @@ class DialTool {
 
   /** fonts are needed before the first numerals are right: load what the settings name, if we may. */
   async fonts_at_start() {
-    for (const f of G.font_list()) this.catalog.set(f.ps, { family: f.family, style: f.style, ps: f.ps, group: "list" });   // Inter, inside the page
+    // Inter, inside the page, and any font already loaded (a dial opened before this one used it) — a font of the tool's
+    // list keeps the list's family and style: its file may call itself otherwise ("Routed Gothic Wide" is the list's
+    // Routed Gothic, Wide), and the sheet would show it as a family of its own (found 15 Oct 2026, with the opener)
+    for (const f of G.font_list()) { const listed = FONT_LIST.find((x) => x.ps === f.ps); this.catalog.set(f.ps, { family: listed ? listed.family : f.family, style: listed ? listed.style : f.style, ps: f.ps, group: "list" }); }
     for (const f of FONT_LIST) if (!this.catalog.has(f.ps)) this.catalog.set(f.ps, { ...f, group: "list" });               // the tool's own list
     for (const f of this.remembered()) if (!this.catalog.has(f.ps)) this.catalog.set(f.ps, { ...f, group: "added" });      // added from a link, earlier
     await this.load_fonts_in_use();
@@ -3574,7 +3586,8 @@ export async function open_window(pathkit, harfbuzz, font_bytes) {
   G.add_font(font_bytes, 0, true);                 // the page's own font: stands in until yours are loaded
   let settings = await unpack(location.hash);      // a dial in the address comes first…
   const from_link = settings !== null;
-  if (!settings) { try { settings = JSON.parse(localStorage.getItem(LAST)); } catch (e) { settings = null; } }   // …then the last session
+  if (!settings) { try { settings = JSON.parse(localStorage.getItem(LAST)); } catch (e) { settings = null; } }   // …then the last session…
+  if (!settings) settings = structuredClone(OPENER);      // …then Okay's watch (opener.js; 15 Oct 2026)
   tool = new DialTool(settings);
   if (from_link) tool.log("opened the dial in the address");
   window.addEventListener("hashchange", async () => {              // another dial's link pasted into this tab

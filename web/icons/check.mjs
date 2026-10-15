@@ -29,6 +29,7 @@ const WIDTHS = [...["LINE", "SLANT", "CURVE", "DENSE"].map((k) => W[k]), W.DENSE
 const PICTURED = [
   { host: /^ring-kind-|^add-/, widths: [1, 2, 3], why: "a ring kind: ticks 1, marks 2, band 3, as on the dial" },
   { host: /^ring-twelve-Style-3$/, widths: [2], why: "a dashed outline: dashes look lighter than a whole line" },
+  { host: /^eye-box/, widths: [0.5], why: "the eye switch's rays, thin on purpose (Okay, 15 Oct 2026, 03:41: \"I want to see thin lines\")" },
   { host: /^logo$/, widths: [1, 1.375], why: "Okay's own mark, at his weights: lines 1, ring 1.375 (15 Oct 2026, 03:06: \"a bit thinner\")" },
 ];
 const near = (a, b) => Math.abs(a - b) < 0.006;
@@ -39,6 +40,7 @@ const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, dev
 const errors = [];
 page.on("pageerror", (e) => errors.push(e.message));
 await page.addInitScript(() => { Date.now = () => 1791900000000; });
+await page.addInitScript(() => { if (!localStorage.getItem("dial-tool-last")) localStorage.setItem("dial-tool-last", "{}"); });      // the plain starting dial, not the opener (Okay's watch, 4.38.12)
 await page.goto("file://" + process.cwd() + "/dial-tool.html");
 await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
 await page.waitForTimeout(300);
