@@ -78,14 +78,6 @@ const DIALS = [
       { kind: "ticks", name: "Hour marks", r: 14.6, count: 12, len: 1.7, w: 0.55, c: WHITE, skip: 1 },
       { kind: "ticks", name: "Minutes", r: 14.6, count: 60, len: 0.9, w: 0.18, c: WHITE, skip: 3 },
     ] } },
-  { name: "Elapsed time", note: "MIL-PRF-46374, Type III: twelve hour marks, a dot for 12, minute marks only from 12 to 4 [3.4]", settings: {
-    dial_d: 30, c_plate: BLACK,
-    ...hands(WHITE, { shape: "baton", len: 7.4, w: 1.3, tail: 1.4, round: 0.65 }, { shape: "baton", len: 12.4, w: 1.0, tail: 1.6, round: 0.5 }, { shape: "lollipop", len: 13.2, w: 0.18, tail: 3.2, feature: 1.1, feature_at: 72 }, 1.3),
-    rings: [
-      { kind: "markers", name: "Dot at 12", r: 11.6, count: 1, shape: "dot", w: 1.5, c: LUME },
-      { kind: "markers", name: "Hour marks", r: 14.5, count: 12, len: 2.2, w: 0.75, c: WHITE },
-      { kind: "ticks", name: "Minutes, 12 to 4", r: 14.5, count: 21, start: 0, span: 120, len: 1.1, w: 0.2, c: WHITE, skip: 1 },
-    ] } },
   { name: "Montgomery", note: "Railroad safety dial, 1920: every minute numbered, every fifth larger and red [1.7]", settings: {
     dial_d: 38, c_plate: PAPER,
     ...hands(INK, { shape: "breguet", len: 9.6, w: 0.55, tail: 1.6, tip: 2.2, feature: 2.4, feature_at: 72 }, { shape: "breguet", len: 14.2, w: 0.45, tail: 1.8, tip: 2.6, feature: 2.2, feature_at: 76 }, { shape: "baton", len: 15, w: 0.14, tail: 3.6 }, 1.2),
@@ -97,6 +89,14 @@ const DIALS = [
       { kind: "ticks", name: "Minutes", r: 16.5, count: 60, len: 1.1, w: 0.14, c: INK, skip: 3 },
       { kind: "band", name: "Inner rail", r: 15.5, width: 0.1, c: INK },
       { kind: "numerals", name: "Hours", r: 11.8, count: 12, size: 4.4, c: INK, ...type("Playfair Display", "PlayfairDisplay-Regular", { wght: 700 }) },
+    ] } },
+  { name: "Elapsed time", note: "MIL-PRF-46374, Type III: twelve hour marks, a dot for 12, minute marks only from 12 to 4 [3.4]", settings: {
+    dial_d: 30, c_plate: BLACK,
+    ...hands(WHITE, { shape: "baton", len: 7.4, w: 1.3, tail: 1.4, round: 0.65 }, { shape: "baton", len: 12.4, w: 1.0, tail: 1.6, round: 0.5 }, { shape: "lollipop", len: 13.2, w: 0.18, tail: 3.2, feature: 1.1, feature_at: 72 }, 1.3),
+    rings: [
+      { kind: "markers", name: "Dot at 12", r: 11.6, count: 1, shape: "dot", w: 1.5, c: LUME },
+      { kind: "markers", name: "Hour marks", r: 14.5, count: 12, len: 2.2, w: 0.75, c: WHITE },
+      { kind: "ticks", name: "Minutes, 12 to 4", r: 14.5, count: 21, start: 0, span: 120, len: 1.1, w: 0.2, c: WHITE, skip: 1 },
     ] } },
   { name: "World time", note: "After Cottier, 1948: an hour dial, a 24-hour ring split day and night, a ring of cities typed by hand [1.15]", settings: {
     dial_d: 38, c_plate: [0.93, 0.92, 0.88, 1],

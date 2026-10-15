@@ -269,6 +269,7 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 15 Oct | **Bauhaus third in the Gallery; the Gallery pill shuts the eye of Export a file** (beta 4.41.15, #237). The order is set where the cards are laid out (`row_gallery`), so the generated lists stay as they are; the fold is remembered like any other. | Okay, 10:47: "Bauhaus is a darling. Move it to 3rd on gallery. When gallery clicked, can you shuteye the export persistent?" Claude's reading: *the export persistent* = the pinned pane Export a file; *shuteye* = fold it (its eye closed). |
 | 15 Oct | **Guide step 4, edition 1's text** (`guide/text/edition-1.md`): how the tool thinks (five ideas, not four: true size and keeping split in two), the screen and its phone page, the first dial in ten steps, Find it (eleven questions and the signs without words), the maker page. 37 sentences name 26 behavioural checks (`guide/checks/checks.mjs`), all passing on 4.41.15; `guide/tools/claims.mjs` refuses a sentence whose check fails. | `guide/PLAN.md` step 4. |
 | 15 Oct | **The Gallery's diver is Okay's own, fourth** (beta 4.41.16): his link's settings replace the atlas diver, which goes; the card moves from seventh to fourth (after Bauhaus, third since 4.41.15); name and note kept. | Okay, 11:03: "4th option, replaces og"; 11:05, of three readings: "A". |
+| 15 Oct | **Montgomery right after 12 + 24 hours in the Gallery** (beta 4.41.17), before Elapsed time. | Okay, 11:16: "Montgomery comes after 12 24". |
 
 ## 5 · Open questions
 

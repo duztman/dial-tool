@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.41.17 (web version) · 15 Oct 2026
+
+- **Montgomery comes right after 12 + 24 hours** in the Gallery.
+
 ## beta 4.41.16 (web version) · 15 Oct 2026
 
 - **The Gallery's diver is Okay's own**, blue with a striped dial, and fourth.
