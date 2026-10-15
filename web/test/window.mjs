@@ -1234,7 +1234,7 @@ await page.click("#copy-link");
 await page.waitForFunction(() => window.dial_tool.log_lines[0].includes("link copied"), null, { timeout: 5000 }).catch(() => {});
 const link = await page.evaluate(() => location.href);
 check(await page.inputValue("#link") === link && (await page.$eval("#log", (e) => getComputedStyle(e).fontFamily)).toLowerCase().includes("mono"), "the link is spelled out above its Copy button; the log is monospaced");
-check(/#1\.[A-Za-z0-9_-]+$/.test(link), `Copy link: the address carries the dial (${link.split("#")[1].length} characters after #)`);
+check(/#1\.[A-Za-z0-9_~]+$/.test(link), `Copy link: the address carries the dial, no dashes in it (${link.split("#")[1].length} characters after #)`);
 const wanted = await S("JSON.stringify({ ...S, ui_section: 0, ui_ring: 0, ui_hand: 0 })");
 const other = await context.newPage();                               // someone else's browser: no last session of this dial
 await other.addInitScript(() => localStorage.removeItem("dial-tool-last"));
@@ -1242,6 +1242,11 @@ await other.goto(link);
 await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 const got = await other.evaluate(() => JSON.stringify({ ...window.dial_tool.S, ui_section: 0, ui_ring: 0, ui_hand: 0 }));
 check(got === wanted, "opening the link elsewhere gives the same dial, every setting");
+// a link written before 4.41.21, with "-" where "~" is written now, still opens (Okay's first B-Uhr link, 15 Oct 2026, 09:39)
+const OLD_LINK = "#1.lVTJjtswDP0VQ2ePocXyduyh7aWXorfBwNDYmkSIYhteJp0GBvoP_cN-SSlZXhIk0_Zi07T4-PhI8YxKJXReooyFPtoNqpQdyl6E7qSPirzRopcoe8QBjnHk44ASHsOLRGHskycftaraQcDjGR1UBSjER5U4Qgj61ipR7bT0RO8RigANjhGIjRMDMUVDAA8i-FcPVW-ju71opLW0rFAWBgn30QllFHL6qIefEIQhFCLKvB4gCgeMzw5VmW8ajv4NRqfaK-u-u-ASsg2XKCALFwpcetGC9RCD2QhAJqDRoaqLA8i1UKWWHwkwWZOyJennemi9QrWFli4vDlLuzw86505N6pMq-70pgEQGy0F8UdXQy-7dcKAeLtQj0Kc7qMbyWPlaQUkw8QWRVrr0gu4mE04TSBPyML1oOspik65TP6TtDMj_Io5KvwHCV-iJLL1Pdb9XBSA13eJ0vlt5XY0e__3zF-cLgShMTZsiGtty8VovsYMxzw1ZmsXw3CyGwdTiWWpgAC2shmP-0tZHlPGZumnTUO7AOiNiHiVAP8A8jT5i228OjvjakVw70o2Dj-N_i-K0-KhepXf856ZPnZ4vDA1i119zKfqT1K-m0Fuj-UFUpVfUzduaxPbZPSlcuDlReKH2dlBjtzXg416Ov8Nvh_cuOpzdi_xZiukQ2IUwhdvYyb4_snB6D6NtGrReWytY4i4ENdtFaQNoFo3RlNrV5GApwCVJxOZxJE-jhZ0adQMYRIvcauArduKwmUl7hR1dY3eyqI2eZ4fITa3T5Z0RZ-HMWiR2fd2XAUDNdoh5GlDGeUoZCTHMFNqVufi-LP7xDw";
+await other.goto(link.split("#")[0] + OLD_LINK);
+await other.waitForFunction(() => window.dial_tool && window.dial_tool.S.c_plate[0] === 0.0706, null, { timeout: 10000 }).catch(() => {});
+check(await other.evaluate(() => window.dial_tool.S.c_plate[0] === 0.0706 && window.dial_tool.S.rings.length === 9), "a link from before, with dashes, still opens its dial");
 await other.goto(link.split("#")[0] + "#1.not-a-dial");
 await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 check(await other.evaluate(() => window.dial_tool.S.rings.length > 0), "a broken link opens the tool anyway");

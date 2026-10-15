@@ -96,17 +96,6 @@ const DIALS = [
     "ha_hour": { "shape": 1, "len": 7.2, "w": 1.5, "tail": 1.4, "tip": 1.6, "c": [0.95, 0.95, 0.92, 1] },
     "ha_minute": { "shape": 1, "len": 12.2, "w": 1.1, "tail": 1.6, "tip": 1.8, "c": [0.95, 0.95, 0.92, 1] },
     "ha_second": { "len": 13.2, "w": 0.2, "tail": 3.4, "c": [0.95, 0.95, 0.92, 1] } } },
-  { name: "Elapsed time", note: "MIL-PRF-46374, Type III: twelve hour marks, a dot for 12, minute marks only from 12 to 4 [3.4]", settings: {
-    dial_d: 30, c_plate: BLACK,
-    ...hands(WHITE, { shape: "baton", len: 7.4, w: 1.3, tail: 1.4, round: 0.65 }, { shape: "baton", len: 12.4, w: 1.0, tail: 1.6, round: 0.5 }, { shape: "lollipop", len: 13.2, w: 0.18, tail: 3.2, feature: 1.1, feature_at: 72 }, 1.3),
-    rings: [
-      { kind: "markers", name: "Dot at 12", r: 11.6, count: 1, shape: "dot", w: 1.5, c: LUME },
-      { kind: "markers", name: "Hour marks", r: 14.5, count: 12, len: 2.2, w: 0.75, c: WHITE },
-      { kind: "ticks", name: "Minutes, 12 to 4", r: 14.5, count: 21, start: 0, span: 120, len: 1.1, w: 0.2, c: WHITE, skip: 1 },
-    ] } },
-  // Okay's own world time (15 Oct 2026, 12:08, his link: "This is"): after Cottier, 1948 — the hour hand and the minute
-  // hand dark red, the seconds hand off, larger day and night figures upright, on a greyed lilac backdrop. Lean settings,
-  // as his link carries them.
   { name: "World time", note: "After Cottier, 1948: an hour dial, a 24-hour ring split day and night, a ring of cities typed by hand [1.15]", settings: {
     "dial_d": 38, "guides": false, "c_plate": [0.93, 0.92, 0.88, 1], "c_backdrop": [0.5625, 0.5361, 0.5778, 1],
     "rings": [
@@ -124,6 +113,17 @@ const DIALS = [
     "ha_hour": { "shape": 5, "len": 10.15, "w": 1.6, "tail": 1.6, "tip": 2.75, "feature": 1.6, "round": 0.05, "c": [0.4784, 0.1216, 0.1216, 1] },
     "ha_minute": { "shape": 5, "len": 12.7, "w": 1.3, "tail": 1.7, "feature": 1.3, "c": [0.4784, 0.1216, 0.1216, 1], "disc_d": 30, "mark_len": 2.3, "mark_w": 1.88 },
     "ha_second": { "on": false, "len": 9, "w": 0.12, "tail": 2, "c": [0.08, 0.08, 0.08, 1] } } },
+  { name: "Elapsed time", note: "MIL-PRF-46374, Type III: twelve hour marks, a dot for 12, minute marks only from 12 to 4 [3.4]", settings: {
+    dial_d: 30, c_plate: BLACK,
+    ...hands(WHITE, { shape: "baton", len: 7.4, w: 1.3, tail: 1.4, round: 0.65 }, { shape: "baton", len: 12.4, w: 1.0, tail: 1.6, round: 0.5 }, { shape: "lollipop", len: 13.2, w: 0.18, tail: 3.2, feature: 1.1, feature_at: 72 }, 1.3),
+    rings: [
+      { kind: "markers", name: "Dot at 12", r: 11.6, count: 1, shape: "dot", w: 1.5, c: LUME },
+      { kind: "markers", name: "Hour marks", r: 14.5, count: 12, len: 2.2, w: 0.75, c: WHITE },
+      { kind: "ticks", name: "Minutes, 12 to 4", r: 14.5, count: 21, start: 0, span: 120, len: 1.1, w: 0.2, c: WHITE, skip: 1 },
+    ] } },
+  // Okay's own world time (15 Oct 2026, 12:08, his link: "This is"): after Cottier, 1948 — the hour hand and the minute
+  // hand dark red, the seconds hand off, larger day and night figures upright, on a greyed lilac backdrop. Lean settings,
+  // as his link carries them.
 ];
 
 const G = await engines();

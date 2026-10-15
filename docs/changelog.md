@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.41.21 (web version) · 15 Oct 2026
+
+- **Dial links have no dashes**: a tilde where a dash was, so a pasted link breaks only at its line's end. Old links still open.
+- **Gallery:** World time before Elapsed time.
+
 ## beta 4.41.20 (web version) · 15 Oct 2026
 
 - **Gallery:** World time is Okay's own version (dark red hands, larger day and night figures).

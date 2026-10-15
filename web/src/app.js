@@ -659,9 +659,12 @@ function save_file(name, data, type) {
 // ── a dial as a link: the settings, packed into the part of the address after # ──
 //   scheme 1: lean settings (only what differs from the start) → JSON → deflate → base64 for addresses.
 //   scheme 0: the same without deflate, for a browser that can't compress.
+//   The base64 is the address-safe kind, with "~" for "+" (Okay, 15 Oct 2026, 12:11: "can we omit dashes from it so it
+//   breaks evenly when pasted somewhere"): a dash lets a line break after it, a tilde doesn't. Links written before
+//   (with "-") still open: both are read as "+".
 
-const b64 = (bytes) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-const un_b64 = (text) => Uint8Array.from(atob(text.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
+const b64 = (bytes) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "~").replace(/\//g, "_").replace(/=+$/, "");
+const un_b64 = (text) => Uint8Array.from(atob(text.replace(/[~-]/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
 const through = async (bytes, stream) => new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer());
 
 async function pack(S) {
@@ -672,7 +675,7 @@ async function pack(S) {
 
 /** the part after # → settings, or null if it isn't a dial. */
 async function unpack(hash) {
-  const m = /^#?([01])\.([A-Za-z0-9_-]+)$/.exec(hash || "");
+  const m = /^#?([01])\.([A-Za-z0-9_~-]+)$/.exec(hash || "");
   if (!m) return null;
   try {
     const bytes = m[1] === "0" ? un_b64(m[2]) : await through(un_b64(m[2]), new DecompressionStream("deflate-raw"));
