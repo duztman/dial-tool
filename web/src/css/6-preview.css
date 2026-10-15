@@ -43,7 +43,7 @@
   /* Backdrop, standing on the Shadows switch (its row held the eye switch too until 15 Oct 2026, 03:41) */
   .backdrops { position: absolute; z-index: 3; left: var(--stop-short); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: flex; gap: var(--unit); }
   /* the eye switch, alone at the preview's bottom right, over the zoom in the bar (Okay, 15 Oct 2026, 03:41) */
-  .eyes { position: absolute; z-index: 3; right: var(--canvas-inset); bottom: var(--canvas-inset); display: flex; }
+  .eyes { position: absolute; z-index: 3; right: var(--canvas-inset); bottom: var(--canvas-inset); display: flex; gap: var(--unit); }      /* the switches' gap between them (05:43: "why these two touch?") */
   .eyebox { width: var(--control-large); padding: 0; overflow: hidden; border-radius: var(--round-switch); }      /* its sign fills the inside; the lashes run out and the box cuts them */
   .eyebox svg { display: block; flex: none; }
   .eyebox[aria-pressed="true"] > * { opacity: 1; }
@@ -124,7 +124,19 @@
   #app.show main { --on-canvas: var(--white); --off-canvas: var(--ink); }
   #app.show :is(.undos, .guides, .backdrops, .shadows, .tip) { visibility: hidden; }
   #app.show :is(#eye-box, .irisgo) { display: none; }
-  #app.show .eyes { position: fixed; }      /* the window's corner, from the first moment: it doesn't ride down with the preview */
+  /* in the showcase the X and Now are larger and less faint, and stand as far in from the window's edges as the mark
+     does at the top left: the margin (05:43: "too close to edges, too faint… fit them inside the imaginary padding logo
+     top left got") */
+  #app.show main { --line-faint: color-mix(in srgb, var(--on-canvas) calc(var(--show-faint) * 100%), transparent); }
+  #app.show .eyes { position: fixed; right: var(--margin); bottom: var(--margin); }      /* the window's corner, from the first moment */
+  #app.show .irisbox { height: var(--show-key); }
+  #app.show .iriskey { width: calc(var(--show-key) - 2 * var(--hair)); }
+  #app.show .iriskey svg { width: calc(var(--show-key) - 2 * var(--hair)); height: calc(var(--show-key) - 2 * var(--hair)); }
+  #app.show :is(.irisbox > *, .nowpill:not(.back) > .word) { opacity: var(--show-faint); }
+  #app.show .nowpill { bottom: var(--margin); width: var(--show-pill); height: var(--show-key); border-radius: calc(var(--show-key) / 2); font-size: var(--t-l); }
+  #app.show .nowpill.back { width: var(--show-key); }
+  #app.show .nowpill.back svg { opacity: var(--show-faint); }
+  @media (hover: hover) { #app.show :is(.irisbox:hover > *, .nowpill:not(.back):hover > .word, .nowpill.back:hover svg) { opacity: 1; } }
   #app.show :is(.preview, .preview path) { cursor: ew-resize; }      /* the sun goes left and right */
   /* the iris switch: the iris in a box; pressed, its words slide out to its left (ACTIVATE SHOWCASE), which alone go
      to the showcase (04:59: "we need affordance"); in the showcase an X, the way out */
@@ -149,10 +161,12 @@
   .nowpill.back svg { opacity: var(--faint); }
   @media (hover: hover) { .nowpill.back:hover svg { opacity: 1; } }
   #app.show .nowpill { visibility: visible; }
-  /* over Now, once the dial has arrived: a two-headed arrow comes, sways left and right, and goes (04:59) */
-  .sunhint { position: absolute; z-index: 3; left: 50%; bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); translate: -50% 0; color: var(--white); opacity: 0; pointer-events: none; }
+  /* over Now, once the dial has arrived: a two-headed arrow, white and glowing, comes, sways left and right, and goes;
+     centred between the dial and Now (app.js sets its top) (04:59; 05:43: "can't see it. Make it white and glow and
+     fade, 3x size") */
+  .sunhint { position: absolute; z-index: 3; left: 50%; translate: -50% 0; color: var(--white); opacity: 0; pointer-events: none; filter: drop-shadow(0 0 var(--u1) var(--white)) drop-shadow(0 0 var(--u3) color-mix(in srgb, var(--white) 60%, transparent)); }
   .sunhint svg { display: block; }
   .sunhint.go { animation: sway var(--hint-time) ease-in-out; }
-  @keyframes sway { 0% { opacity: 0; transform: translateX(0); } 15% { opacity: var(--faint); } 35% { transform: translateX(calc(-1 * var(--u2))); } 60% { transform: translateX(var(--u2)); } 80% { opacity: var(--faint); transform: translateX(0); } 100% { opacity: 0; } }
+  @keyframes sway { 0% { opacity: 0; transform: translateX(0); } 18% { opacity: 1; } 38% { transform: translateX(calc(-1 * var(--u4))); } 62% { transform: translateX(var(--u4)); } 82% { opacity: 1; transform: translateX(0); } 100% { opacity: 0; } }
   @media (prefers-reduced-motion: reduce) { .sunhint.go { animation: none; } }
 }

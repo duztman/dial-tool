@@ -63,6 +63,8 @@
     --iris-time: 250ms;                            /* the iris switch's words sliding out; Now shrinking into its undo sign */
     --iris-words: 160px;                           /* room enough for ACTIVATE SHOWCASE */
     --now-pill: 64px;                              /* the showcase's Now pill */
+    --show-key: 40px; --show-pill: 80px;           /* in the showcase the X and Now are a quarter larger (05:43: "now and x can grow too") */
+    --show-faint: 0.6;                             /* and less faint than the switches (05:43: "too faint") */
     --hint-time: 2400ms;                           /* the showcase's left-right hint, start to end */
     --mast-show: 0.5;                              /* the mark and "Dial Tool" in the showcase: fainter (Okay, 04:59) */
     --track-100: 0.1em;                            /* tracking 100 (Okay, 04:59: "now gets 100 tracking") */

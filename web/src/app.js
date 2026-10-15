@@ -207,10 +207,12 @@ const EYE_RAYS = 24, EYE_RAY = 0.5;      // the eye switch's rays: how many, how
 const SKY_TOP = 0.3;
 // its dial: 2/3 of the width of a portrait A4, centred on it; the A4 fitted in the window, centred ("a lovely proportion")
 const SHOWCASE_PAGE = { w: 210, h: 297, dial: 2 / 3 };
-// its sun: a day in ten seconds, then sunrise again — rising at the left (from 270°), at midday from the top but not
-// overhead (an autumn sun, 40° high), setting at the right (90°); low, it is 10° high. A drag across the window moves
-// it along that day, nothing else (04:59: "dragging only moves the action on the predetermined sunrise…")
-const SUN = { day: 10, low: 10, noon: 40 };
+// its sun: a day in twenty seconds, then sunrise again — rising at the left (from 270°), at midday from the top,
+// setting at the right (90°), always 40° high (an autumn sun) on its ray; at sunrise and sunset its light fades in and
+// out instead of the shadows growing long (05:43: "sunrise and sunset generate too extreme shadowage… keep sun constant
+// on a ray and fade in and out the light"); `fade`: the share of the day's half it takes. A drag across the window
+// moves it along that day, nothing else (04:59)
+const SUN = { day: 20, rise: 40, fade: 0.45 };
 // its spotlight: a pool of the backdrop's colour on the sky, behind the dial, a bit wider than it (size × its radius);
 // the dial casts its shadow into it from `lift` mm above. Through the day: an oval at sunrise and sunset (stretch,
 // the long way along the light), a circle at midday; the oval faintest and softest, midday brightest and almost crisp
@@ -265,8 +267,9 @@ const TOOL_ICONS = {
   // alone, where it stands in the eye. In the showcase it is the way out: two of the eye's rays cross on it, an X run
   // out to the box (04:59: "iris becomes an x (2rayiris)"); 1, not the eye's 0.5, so it reads while faint
   iris: `<circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/><path class="x" d="M-0.75 -1L31.25 31M31.25 -1L-0.75 31" stroke-width="1" stroke-linecap="butt"/>`,
-  // the showcase's hint over Now: a line with a head at each end — the sun can be moved left and right (04:59)
-  both_ways: `<path d="M1.75 6H34.25M5.75 2L1.75 6L5.75 10M30.25 2L34.25 6L30.25 10" stroke-width="1"/>`,
+  // the showcase's hint over Now: a line with a head at each end — the sun can be moved left and right (04:59); on 108
+  // by 36, three times its first size, white with a glow (05:43: "can't see it… 3x size")
+  both_ways: `<path d="M5.25 18.25H102.75M17.25 6.25L5.25 18.25L17.25 30.25M90.75 6.25L102.75 18.25L90.75 30.25"/>`,
   screen: `<rect x="2.75" y="3.25" width="10.5" height="7.5"/><path d="M8.25 10.75V13.25M5.75 13.25H10.75" ${sw(DENSE)}/>`,
   // the Guides switch, on 18: a target and its cross; its lines crowd, so DENSE. Okay's drawings (14 Oct 2026, 04:11):
   // guides: a target, its centre ring dashed in six, square-ended (a dash pattern is a texture, not line ends), ink
@@ -962,7 +965,8 @@ class DialTool {
     if (this.bio_open) this.bio_open(false);
     this.iris_open(false);
     const before = this.svg.getBoundingClientRect(), c0 = this.c.slice(), z0 = this.z;
-    app.classList.add("snap");                     // no eased layout: panel, bar and switches go (and come) at once
+    if (on) app.classList.add("snap");             // in: panel, bar and switches go at once, only the dial travels;
+                                                   // out, the long way: they come back eased while the dial travels home (05:43: "so sudden!")
     if (on) {
       this.show = { away: app.classList.contains("away"), playing: this.playing, speed: this.speed, phase: 0, at: performance.now(), spin: null, back: null,
         view: { c: c0, z: z0, fitted: this.fitted } };      // where the dial stood, to travel back to
@@ -1024,10 +1028,12 @@ class DialTool {
    *  shadows' soft edge waits for it to stop (Okay, 04:59 and 05:09: "blur off on all animations") */
   moving() { return !!(this.travel || this.sliding || (this.show && (this.show.spin || this.show.dragging))); }
 
-  /** the showcase's sun now: where it is in its day (0 sunrise … 1 sunset), the direction its light comes from and its height */
+  /** the showcase's sun now: where it is in its day (0 sunrise … 1 sunset), the direction its light comes from, its
+   *  height (always the same) and how much light it gives (0 at sunrise and sunset, 1 for most of the day) */
   sun() {
     const p = this.show.phase, k = Math.sin(Math.PI * p);      // k: 0 at sunrise and sunset, 1 at midday
-    return { p, k, from: (270 + 180 * p) % 360, rise: SUN.low + (SUN.noon - SUN.low) * k };
+    const t = clamp(k / SUN.fade, 0, 1), light = t * t * (3 - 2 * t);
+    return { p, k, light, from: (270 + 180 * p) % 360, rise: SUN.rise };
   }
 
   /** the sun along its day, from a point of the preview: the left edge is sunrise, the right sunset */
@@ -1043,7 +1049,7 @@ class DialTool {
     const S = this.S, sun = this.sun(), a = sun.from * Math.PI / 180, toward = [Math.sin(a), Math.cos(a)];
     const R = S.dial_d / 2, off = POOL.lift / Math.tan(sun.rise * Math.PI / 180), dim = 1 - sun.k;
     const mix = ([lo, hi], t) => lo + (hi - lo) * t;
-    const soft = mix(POOL.soft, dim), light = mix(POOL.light, sun.k), shade = mix(POOL.shade, sun.k);
+    const soft = mix(POOL.soft, dim), light = mix(POOL.light, sun.k) * sun.light, shade = mix(POOL.shade, sun.k) * sun.light;
     const f = (v) => v.toFixed(3), [L, D] = this.pool_parts;
     L.circle.setAttribute("r", f(R * POOL.size));
     L.circle.setAttribute("transform", `translate(${f(-toward[0] * off / 2)} ${f(-toward[1] * off / 2)}) rotate(${f(90 - sun.from)}) scale(${f(1 + POOL.stretch * dim)} 1)`);
@@ -1093,7 +1099,9 @@ class DialTool {
 
   /** the showcase's hint, once it has arrived: over Now a two-headed arrow comes, sways left and right, and goes */
   hint() {
-    const h = this.sun_hint;
+    const h = this.sun_hint, now = this.now_pill.getBoundingClientRect(), box = this.svg.getBoundingClientRect();
+    const below = this.c[1] + this.S.dial_d / 2 * this.z, above = now.top - box.top;      // the dial's bottom, Now's top, in the preview
+    h.style.top = ((below + above) / 2 - h.offsetHeight / 2).toFixed(1) + "px";            // centred between them (05:43)
     h.classList.remove("go");
     void h.offsetWidth;
     h.classList.add("go");
@@ -1219,7 +1227,7 @@ class DialTool {
     this.now_pill.insertAdjacentHTML("beforeend", icon(TOOL_ICONS.undo));
     // over it, the hint that the sun moves left and right (hint())
     this.sun_hint = el("div", { className: "sunhint", id: "sun-hint" });
-    this.sun_hint.innerHTML = icon(TOOL_ICONS.both_ways, 36, 12);
+    this.sun_hint.innerHTML = icon(TOOL_ICONS.both_ways, 108, 36);
     this.sun_hint.onanimationend = () => this.sun_hint.classList.remove("go");
     return el("div", { className: "backdrops" }, box);
   }
@@ -1382,8 +1390,9 @@ class DialTool {
    *  windows. Each surface's shadows are one group with one opacity, so where two overlap it is not darker. */
   draw_shadows(items) {
     const sun = this.show && this.sun();
-    // the showcase: shadows on, soft, from its own sun. Anywhere: the soft edge waits while something moves (moving())
-    const S = sun ? { ...this.S, sh_on: true, sh_blur: !this.moving(), sh_from: sun.from, sh_rise: sun.rise } : { ...this.S, sh_blur: this.S.sh_blur && !this.moving() };
+    // the showcase: shadows on, soft, from its own sun, as dark as its light. Anywhere: the soft edge waits while
+    // something moves (moving())
+    const S = sun ? { ...this.S, sh_on: true, sh_blur: !this.moving(), sh_from: sun.from, sh_rise: sun.rise, sh_dark: this.S.sh_dark * sun.light } : { ...this.S, sh_blur: this.S.sh_blur && !this.moving() };
     if (!this.shade) {
       const defs = svg_el("defs"), filter = svg_el("filter"), blur = svg_el("feGaussianBlur");
       filter.id = "shadow-soft";

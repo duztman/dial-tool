@@ -4,8 +4,8 @@
   html, body { height: 100%; margin: 0; touch-action: pan-x pan-y; }      /* fingers scroll, never zoom the window: only the dial zooms, inside the preview (Okay, 15 Oct 2026, 02:19) */
   body { background: var(--paper); color: var(--ink); overflow: hidden; }
   #app { display: grid; grid-template-columns: calc(var(--panel-w) * (1 - var(--away))) 1fr; grid-template-rows: 1fr calc(var(--bar-height) * (1 - var(--show))); height: 100%;
-    transition: --away var(--view-time) var(--view-ease); }
-  #app.snap { transition: none; }      /* into and out of the showcase the layout changes at once: only the dial travels (app.js) */
+    transition: --away var(--view-time) var(--view-ease), --show var(--view-time) var(--view-ease); }
+  #app.snap { transition: none; }      /* into the showcase the layout changes at once and only the dial travels; out, the long way: the bar rises and the panel slides back, eased (app.js) */
   #app.away { --away: 1; }
   #app.show { --show: 1; }      /* the showcase: the bar's row closes at once (showcase() in app.js) */      /* the dial alone: the panel's column closes, eased (the eye switch, dial_alone() in app.js) */
   @media (prefers-reduced-motion: reduce) { #app { transition: none; } }

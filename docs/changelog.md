@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.38.16 (web version) · 15 Oct 2026
+
+- **Out of the showcase the long way**: the bar rises and the panel slides back, eased, while the dial travels home.
+- **A gentler sun**: a day in twenty seconds, always 40° high on its ray; at sunrise and sunset its light (shadows and spotlight) fades out and in instead of the shadows growing long.
+- **The X and Now** are a quarter larger, less faint, and stand a margin in from the window's edges, like the mark at the top left.
+- **The arrow hint** is three times larger, white with a glow, centred between the dial and Now.
+- The iris and eye switches no longer touch: the unit between them, as between the other switches.
+
 ## beta 4.38.15 (web version) · 15 Oct 2026
 
 - **The showcase, reshaped.** The iris switch opens to ACTIVATE SHOWCASE first; only those words go in. Going in and out, the panel, the bar and the switches go (and come back) at once and only the dial travels, eased — to 2/3 of the width of a portrait A4 fitted in the window, centred; out, back exactly where it stood.
