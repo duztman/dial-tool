@@ -15,6 +15,7 @@ import fs from "fs";
 import path from "path";
 import { execFileSync } from "child_process";
 import { fileURLToPath, pathToFileURL } from "url";
+import { extract, make_package } from "./indesign.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url)), ROOT = path.resolve(HERE, "../..");
 const OUT = path.join(HERE, "out"), IMG = path.join(HERE, "img"), REV = path.join(OUT, "review");
@@ -625,6 +626,7 @@ for (const [no, ks] of Object.entries(scales)) for (const k of ks) check(k === 0
 const set = await pg.evaluate(() => document.documentElement.outerHTML);
 fs.writeFileSync(path.join(OUT, "index.html"), "<!doctype html>" + set.replace(/<html[^>]*>/, '<html lang="en">'));
 await pg.pdf({ path: path.join(OUT, "guide.pdf"), width: "297mm", height: "210mm", printBackground: true, preferCSSPageSize: true });
+const LAYOUT = await extract(pg);         // the pages' parts as set, for the InDesign package (made below, once the PDF exists)
 const nos = await pg.$$eval("section.page", (e) => e.map((x) => x.dataset.no));
 for (const [i, no] of nos.entries()) await (await pg.$$("section.page"))[i].screenshot({ path: path.join(REV, `page-${no}.png`) });
 await pg.addStyleTag({ content: ".lines, .nlabel, .layernote, .cap { visibility: hidden !important; }" });
@@ -639,6 +641,8 @@ await ph.evaluate(() => document.fonts.ready); await ph.waitForTimeout(300);
 const wide = await ph.evaluate(() => document.documentElement.scrollWidth);
 check(wide <= 390, `the phone page scrolls sideways (${wide} px wide)`);
 for (const no of nos) { const el = await ph.$(`#f${no}`); if (el) await el.screenshot({ path: path.join(REV, `phone-${no}.png`) }); }
+const pkg = await make_package(browser, LAYOUT, { HERE, OUT, IMG, VERSION });
+console.log(`InDesign package → ${path.relative(ROOT, pkg)} (+ .zip)`);
 await browser.close();
 // words written but not used on any page
 for (const no of nos) { const t = page_text(no), used = T[no] || new Set();

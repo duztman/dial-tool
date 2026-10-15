@@ -27,10 +27,16 @@ Then **look at `guide/look/out/review/page-NN.png` and `phone-NN.png`** before p
 | `diff.py` | The picture diff: `python3 guide/look/diff.py img img-new` compares every crop a page uses between two sets of shots, the version number covered; flags go to a human look. |
 | `style.css` | The look. A4 pages on a wide screen (scaled to the window), the stack under 760 px, the pages alone in print. |
 | `fonts/` | Inter (OFL). |
-| `out/` | What is published: `index.html`, `style.css`, `fonts/`, `img/`, `guide.pdf`. |
+| `indesign.mjs`, `idml.py`, `idml-template/` | The InDesign package (Okay, 15 Oct 2026: InDesign as his drafting table; the build stays the source). `indesign.mjs` reads every page's parts from the browser as set, makes the dial SVGs and the exploded dial into PDFs; `idml.py` writes `out/indesign/Dial-Tool-guide/` (the `.idml`, `Links/`, `Document fonts/`, the PDF, a README) and `Dial-Tool-guide-indesign.zip`. The template is a blank InDesign document (SimpleIDML's tests, BSD), its default font set to Inter. Checked by opening it in Scribus 1.6 (headless): 8 pages, every frame where the PDF has it. Not checked in InDesign itself (none here). |
+| `fonts/desktop/` | Inter Regular, Light, SemiBold as TTF (OFL), for the package's `Document fonts/`. |
+| `out/` | What is published: `index.html`, `style.css`, `fonts/`, `img/`, `guide.pdf`, and `indesign/Dial-Tool-guide-indesign.zip`. |
 
 ## Rules the build keeps
 
 - Interface crops are at **0.2 mm a point** (1 iPad point; `guide/BRIEF.md`), or **× 2 (0.4)** when the caption says so. The build measures every crop as set and prints its scale.
 - Dials are the app's own SVG exports and are links that open the dial in the app.
 - A word on a page comes from `edition-1.md`; a word written there and set nowhere is a `CHECK`.
+
+## Changes made in InDesign
+
+The package is a drafting table: Okay moves and restyles there, sends the `.idml` / `.indd` or screenshots, and the change is carried into `build.mjs` (places, sizes) or `style.css` (type, colour) or `edition-1.md` (words), so the next build from the app keeps it. Nothing is read back from InDesign automatically.
