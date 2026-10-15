@@ -1,5 +1,16 @@
 # Dial Tool — changelog
 
+## beta 4.40 (web version) · 15 Oct 2026 · released
+
+The night's work after 4.38 (4.38.1 to 4.38.16), released to `main` as 4.40 (Okay, 05:53: "Release this, it deserves a 4.4" — 4.4 is taken, by 12 Oct's review, so 4.40). Nothing in a dial changed; links and settings files open as before.
+
+- **The play button pulses with the movement's beat**, a light dot at its middle; the speed runs 1× to 720×.
+- **Your watch opens the tool** on a first visit (`web/src/opener.js`); Defaults still gives the plain starting dial.
+- **Okay's mark and bio** in the panel's first column: who made the tool, its source, the open-source work it stands on, and a contact link.
+- **Guides** start with pink centre lines and the selected ring; their sign has ink traps and stays the same off and on. **Shadows** has a sign. The window never zooms; only the dial does.
+- **The eye switch** (bottom right) shows the dial alone: the panel slides away, the dial grows to fit.
+- **The showcase** (the iris switch beside it, through ACTIVATE SHOWCASE): the dial at 2/3 of an A4 on a dark 45° sky, a spotlight through a twenty-second sun day (drag across to move the sun), the clock running; Now spins the hands to now and back; the X goes back the long way.
+
 ## beta 4.38.16 (web version) · 15 Oct 2026
 
 - **Out of the showcase the long way**: the bar rises and the panel slides back, eased, while the dial travels home.
