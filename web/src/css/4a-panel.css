@@ -10,7 +10,7 @@
      and so stays where it was, is over the backdrop once the panel is gone */
   .sheetgrip { display: none; }      /* a phone's drawer gripper (8-narrow.css); a wider screen has no drawer */
   .panel { position: relative; z-index: 5; width: var(--panel-w); translate: calc(-1 * var(--panel-w) * var(--away)) 0; }
-  .mast { display: flex; align-items: center; translate: calc(var(--panel-w) * var(--away)) 0; }
+  .mast { display: flex; align-items: center; translate: calc(var(--panel-w) * var(--away)) 0; z-index: 6; }      /* its translate makes it a stacking context, so the bio's z-index counts only inside it: the mast itself stands over the panel's rows, or a later stepper draws over the open bio (Okay, 15 Oct 2026, 10:45) */
   /* the mast on the backdrop (the dial alone): black or white like the switches, the version a little quieter. Its
      colour follows the slide: from paper's to the backdrop's while the panel's edge sweeps over it (--away 0.55 to
      0.95), both ways, so it shows on whichever is under it; a backdrop changed while away turns it at once */

@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.41.14 (web version) · 15 Oct 2026
+
+- **Fixed: steppers showed through the open bio.**
+
 ## beta 4.41.13 (web version) · 15 Oct 2026
 
 - **The size button's drawing lies level**: the small and large circle side by side on the radius line, larger than before.

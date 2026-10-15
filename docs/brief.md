@@ -265,6 +265,7 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 15 Oct | **Guide steps 1–2 done**: the inventory (`guide/inventory/`: 42 tasks placed in the editions, 20 behaviours to check, the words, a coverage walk of 153 states → 366 names in 14 s) and the one-page brief (`guide/BRIEF.md`, three questions for Okay). App faults found filed as build list #218–#233. | `guide/PLAN.md` steps 1–2. |
 | 15 Oct | **Guide step 3, baseline**: three fresh readers built the target with the app alone (`guide/tests/baseline.md`); all matched it (they measured pixels and started from the Gallery's Field), so their stalls are the finding: no blank start, unlabelled ring numbers and drawer icons, Every / Skip those instead, the 3 that vanishes at a window, a hidden window, 10:09:36 vs 10:10. A fault found: changes aren't kept while time plays (#234). | `guide/PLAN.md` step 3. |
 | 15 Oct | **The size button's drawing is level** (beta 4.41.13): small and large circle centred on the radius button's radius line, small left; r 8.5 and 15, centres 11.5 apart. | Okay, 10:33: "This icon bothers me… center both circles in the radius line of the one on the right"; 10:39, of five variants: "C, but tiny bit far apart for scale circles. Same size." |
+| 15 Oct | **The open bio stands over the panel's rows** (beta 4.41.14; a fault, no new decision). | Okay, 10:33 and 10:45, screenshots of − + steppers over the bio. |
 
 ## 5 · Open questions
 
