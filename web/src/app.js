@@ -835,6 +835,7 @@ class DialTool {
       // .mast: the mark, the title and the version — what stays when the panel slides away (dial_alone(), 15 Oct 2026)
       el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION }))), this.gallery_way(), this.unit_box()),
       this.tabs, this.pinned, this.form);
+    this.finger_anchor(panel);
 
     this.svg = svg_el("svg");
     this.svg.setAttribute("class", "preview");
@@ -2213,7 +2214,33 @@ class DialTool {
     wrap.className = "colourlist";
     const lines = el("div"), same = el("button", { type: "button", className: "btn", id: "sectors-same", textContent: "All as the ring", title: "Every sector in the ring’s colour again", onclick: () => this.set_value("ring", "cs", {}) });
     wrap.append(lines, el("div", { className: "row" }, el("span"), el("span", { className: "tools" }, same)));
-    out.refresh = () => this.swatch_lines(lines, () => [{ text: "Sectors", colours: this.sector_colours(this.S.ui_ring) }]);
+    out.refresh = () => this.swatch_lines(lines, () => {
+      const i = this.S.ui_ring, at = G.positions_of(this.S.rings[i]), out = [{ text: "Sectors", colours: this.sector_colours(i) }];
+      if (at.length % 2 === 0) out.push({ text: "Alternate", colours: this.alternate_colours(i) });
+      return out;
+    });
+  }
+
+  /** a band with an even number of sectors: two colours that alternate round it (Okay, 15 Oct 2026, 11:13: "Segmented
+   *  stuff coloring, if even; chose two color to alternate"; 11:32: "Good call on alternatings"). The first is the
+   *  ring's own colour and takes sectors 1, 3, 5…; the second takes 2, 4, 6…. Kept in the keys a band already has
+   *  (`c`, `cs`), so a link carries it as before. Choosing either puts the whole band in the pattern: sectors 1, 3, 5…
+   *  lose a colour of their own. */
+  alternate_colours(i) {
+    const ring = this.S.rings[i], name = ring.name || G.kind_of(ring);
+    const pattern = (R, second) => {
+      const cs = { ...R.cs };
+      G.positions_of(R).forEach((at, n) => { if (n % 2) cs[at] = second; else delete cs[at]; });
+      R.cs = cs;
+    };
+    return [
+      { id: `ring-${i}-alternate-1`, title: `${name} · sectors 1, 3, 5…`, alpha: true,
+        read: () => (this.S.rings[i] || {}).c,
+        write: (value) => { const R = this.S.rings[i], at = G.positions_of(R); R.c = value; pattern(R, G.sector_colour(R, at[1])); this.changed(true); } },
+      { id: `ring-${i}-alternate-2`, title: `${name} · sectors 2, 4, 6…`, alpha: true,
+        read: () => { const R = this.S.rings[i]; return R ? G.sector_colour(R, G.positions_of(R)[1]) : null; },
+        write: (value) => { pattern(this.S.rings[i], value); this.changed(true); } },
+    ];
   }
 
   /** Windows, on top: four cards, 12 · 3 · 6 · 9, starting on the second column. A card is a small dial with its window
@@ -2621,6 +2648,58 @@ class DialTool {
       this.sync_rows();
     });
     this.render();
+  }
+
+  /** keep what was pressed under the finger (Okay, 15 Oct 2026, 11:13: "Selecting reordering is impossible from
+   *  jumpiness"; 11:32, of the ways offered: "A and c together. Jumpiness is everywhere, not just on rings"). Safari,
+   *  on the iPad, has no scroll anchoring (caniuse, Oct 2026: no stable Safari nor iOS Safari has overflow-anchor), so
+   *  when rows show, hide or move above what was pressed — the ring line moving to the ring just chosen, a "more" that
+   *  opens — what is under the finger moves away. Here: a press in the rows (the pinned part or the scrolling form)
+   *  notes where the pressed thing stands on screen; until a moment after the finger lifts, every frame scrolls the
+   *  panel's scrolling parts, innermost first, so that it stands there again — as far as they can scroll (at the very
+   *  top of a list there is nothing to give). A press that moves, other than on a slider or a value button, is a
+   *  scroll or a drag: it lets go. Text fields are left alone (the iPad's keyboard moves the page itself). */
+  finger_anchor(panel) {
+    const SLOP = 8, AFTER_MS = 500;
+    let a = null;
+    const scrollers = (node) => {
+      const out = [];
+      for (let n = node.parentElement; n && n !== document.body; n = n.parentElement) {
+        const o = getComputedStyle(n).overflowY;
+        if ((o === "auto" || o === "scroll") && n.scrollHeight > n.clientHeight) out.push(n);
+      }
+      return out;
+    };
+    const frame = () => {
+      if (!a) return;
+      if (!a.down && performance.now() > a.until) { a = null; return; }
+      const el = a.el.isConnected ? a.el : a.ring != null ? this.ring_rows()[a.ring] : null;      // a ring's row is drawn again when it is chosen: the same place in the list
+      if (el) {
+        let d = el.getBoundingClientRect().top - a.y;
+        if (Math.abs(d) >= 1) for (const sc of scrollers(el)) {
+          const before = sc.scrollTop;
+          sc.scrollTop = before + d;
+          d -= sc.scrollTop - before;
+          if (Math.abs(d) < 1) break;
+        }
+      }
+      requestAnimationFrame(frame);
+    };
+    panel.addEventListener("pointerdown", (e) => {
+      const t = e.target;
+      if (!(t instanceof Element) || !t.closest(".form, .pinned") || t.closest("input[type=text], input:not([type]), textarea")) { a = null; return; }
+      const row = t.closest("li.ring"), el = row || t.closest("button, input, label, .valueb, [role=radio]") || t;
+      const going = !!a;
+      a = { el, y: el.getBoundingClientRect().top, ring: row ? this.ring_rows().indexOf(row) : null, down: true, x0: e.clientX, y0: e.clientY, until: 0, holds: !!t.closest("input[type=range], .valueb") };
+      if (!going) requestAnimationFrame(frame);
+    }, true);
+    panel.addEventListener("pointermove", (e) => {
+      if (a && a.down && !a.holds && Math.hypot(e.clientX - a.x0, e.clientY - a.y0) > SLOP) a = null;      // a scroll or a drag: not a press
+    }, true);
+    const up = () => { if (a) { a.down = false; a.until = performance.now() + AFTER_MS; } };
+    panel.addEventListener("pointerup", up, true);
+    panel.addEventListener("pointercancel", () => { a = null; }, true);
+    panel.addEventListener("wheel", () => { a = null; }, { passive: true, capture: true });
   }
 
   /** keep the panel's scrolling parts where they stand while the ring list and the rows are rebuilt (Okay, 15 Oct
@@ -3921,12 +4000,25 @@ class DialTool {
 
   /** start again with new settings (the simplest way to update every control). */
   reopen(settings) {
+    // the window is built again for the new dial: it keeps where it was scrolled, so a Gallery card pressed stays under
+    // the finger (Okay, 15 Oct 2026, 11:49: "Found the real jumper: selecting a gallery watch" — measured: the form went
+    // back to its top, the Gallery 550 points down, out of sight)
+    const panel = $(".panel"), keep = { form: this.form ? this.form.scrollTop : 0, panel: panel ? panel.scrollTop : 0, scrolls: { ...this.scrolls, ...(this.section_shown ? { [this.section_shown]: this.form.scrollTop } : {}) } };
     this.close();
     const fonts = this.catalog;
     tool = new DialTool(settings);
     for (const [ps, f] of fonts) if (!tool.catalog.has(ps)) tool.catalog.set(ps, f);
     tool.load_fonts_in_use();
     window.dial_tool = tool;
+    tool.scrolls = keep.scrolls;
+    let frames = 0;                                // on a phone or an iPad held upright, which part scrolls is settled a few frames later (.held): try until both stand
+    const back = () => {
+      const p = $(".panel");
+      tool.form.scrollTop = keep.form;
+      if (p) p.scrollTop = keep.panel;
+      if (++frames < 20 && (Math.abs(tool.form.scrollTop - keep.form) > 1 || (p && Math.abs(p.scrollTop - keep.panel) > 1))) requestAnimationFrame(back);
+    };
+    back();
   }
 
   /** undo and redo on the preview, top right, before the Guides switch (Okay, 13 Oct 2026): two outlined buttons,

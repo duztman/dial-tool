@@ -554,7 +554,7 @@ await page.fill("#ring-count-Count", "6"); await page.press("#ring-count-Count",
 await page.fill("#ring-width-Band-width", "4"); await page.press("#ring-width-Band-width", "Enter").catch(() => {});
 await frame();
 const band = await S("S.ui_ring");
-check(await page.$$eval(".form .colourlist .swatch", (b) => b.length) === 6, "six sectors: Sector colours shows six swatches");
+check(await page.$$eval(`.form .colourlist .swatch[id^="colour-ring-${band}-sector"]`, (b) => b.length) === 6, "six sectors: Sector colours shows six swatches");
 await page.click(`#colour-ring-${band}-sector-1`);
 check((await page.textContent("#colour-pop h2")).endsWith("sector 2"), "the second one opens the pop-out as “… · sector 2”");
 check(await page.isVisible(".alpharow"), "a ring's colour has an opacity strip");
@@ -575,6 +575,13 @@ await tab("Rings");
 await page.click("#sectors-same");
 await frame();
 check(await S(`Object.keys(S.rings[${band}].cs).length === 0 && t.items.filter((i) => i.role === 'ring' && i.index === ${band}).length === 1`), "All as the ring: one colour, one shape again");
+// two colours alternating (Okay, 15 Oct 2026, 11:13 and 11:32): an even count only
+await page.click(`#colour-ring-${band}-alternate-2`);
+await page.fill("#pop-hex", "#0E2A47"); await page.press("#pop-hex", "Enter"); await page.click("#pop-close");
+await frame();
+check(JSON.stringify(await S(`Object.keys(S.rings[${band}].cs)`)) === '["1","3","5"]' && (await S(`t.items.filter((i) => i.role === 'ring' && i.index === ${band}).length`)) === 2, "Alternate: the second colour takes sectors 2, 4, 6 — two shapes");
+await page.fill("#ring-count-Count", "5"); await page.press("#ring-count-Count", "Enter"); await frame();
+check(await page.isHidden(`#colour-ring-${band}-alternate-1`), "an odd number of sectors: no Alternate");
 await page.click("#ring-delete");
 await tab("Dial");
 // a line before and after every row: white on the scrolling grey, that grey on paper

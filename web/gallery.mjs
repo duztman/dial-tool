@@ -24,19 +24,19 @@ const DIALS = [
   // the dial the tool opens with, Okay's own watch (Okay, 15 Oct 2026, 07:45: "add this 'default' face to gallery as
   // well"; 07:48: "the purple you've been working with"): first, its settings as they are in src/opener.js
   { name: "Okay's watch", note: "The dial Dial Tool opens with: Okay's own watch, purple, a 24-hour ring inside the twelve (15 Oct 2026)", settings: OPENER },
-  // Okay's own B-Uhr (15 Oct 2026, 09:39, his link: "This is replacing nr 2 on the gallery. No new name"): green plate,
-  // yellow triangle and dots, orange hours and seconds hand, lilac minute numerals moved in, two thin bands framing the
-  // numerals. Lean settings, as his link carries them (only what differs from the starting values), without the time.
+  // Okay's own B-Uhr (15 Oct 2026, 09:39, his link: "This is replacing nr 2 on the gallery. No new name"; again 11:49,
+  // a second link: a navy plate on a dark red backdrop, the triangle and dots cyan, the minute numerals cream): orange
+  // hours and seconds hand, the minute numerals moved in, two thin bands framing them. Lean settings, as his link
+  // carries them (only what differs from the starting values), without the time.
   { name: "B-Uhr, type B", note: "Navigator's watch, 1941: minutes outside and large, hours inside and small [1.9]", settings: {
-    "dial_d": 34, "guides": false, "gd_axes": false, "c_plate": [0.0706, 0.2157, 0.1647, 1],
+    "dial_d": 34, "guides": false, "c_plate": [0.0549, 0.1647, 0.2784, 1], "c_backdrop": [0.4784, 0.1216, 0.1216, 1], "gd_axes": false,
     "rings": [
-      { "kind": 1, "name": "Triangle at 12", "c": [1, 0.7857, 0, 1], "r": 15.6, "count": 1, "shape": 1, "len": 4.85, "w": 2.16, "taper": 0, "round_out": 0.35, "round_in": 0.24 },
-      { "kind": 1, "name": "Two dots", "c": [1, 0.7843, 0, 1], "r": 16.1, "count": 2, "start": -7, "span": 14, "knock": 3, "shape": 2, "w": 1.01 },
+      { "kind": 1, "name": "Triangle at 12", "c": [0, 1, 0.8941, 1], "r": 15.6, "count": 1, "shape": 1, "len": 4.85, "w": 2.16, "taper": 0, "round_out": 0.35, "round_in": 0.24 },
+      { "kind": 1, "name": "Two dots", "c": [0, 1, 0.8929, 1], "r": 16.1, "count": 2, "start": -7, "span": 14, "knock": 3, "shape": 2, "w": 1.01 },
       { "kind": 3, "name": "Hour circle", "c": [0.95, 0.95, 0.92, 1], "r": 9.1, "width": 0.16 },
       { "name": "Minutes", "c": [0.95, 0.95, 0.92, 1], "r": 16.4, "count": 60, "skip": 3, "knock": 3, "len": 1.2, "w": 0.2 },
       { "kind": 2, "name": "Hours", "c": [0.9098, 0.4549, 0.1647, 1], "r": 7.4, "size": 2.15, "family": "Routed Gothic", "ps": "RoutedGothic" },
-      { "kind": 2, "name": "Minutes 5–55", "c": [0.6491, 0.6275, 0.902, 1], "r": 11.85, "count": 11, "start": 30, "span": 300, "labels": 7, "num_from": 5, "size": 3,
-        "nudge": { "1": { "dr": -0.3 }, "3": { "dr": -0.35 }, "7": { "dr": -0.35 }, "8": { "dr": -0.35 }, "9": { "dr": -0.5 } }, "family": "Routed Gothic", "ps": "RoutedGothic" },
+      { "kind": 2, "name": "Minutes 5–55", "c": [0.902, 0.8863, 0.6275, 1], "r": 11.85, "count": 11, "start": 30, "span": 300, "labels": 7, "num_from": 5, "size": 3, "nudge": { "1": { "dr": -0.3 }, "3": { "dr": -0.35 }, "7": { "dr": -0.35 }, "8": { "dr": -0.35 }, "9": { "dr": -0.5 } }, "family": "Routed Gothic", "ps": "RoutedGothic" },
       { "name": "Five minutes", "c": [0.95, 0.95, 0.92, 1], "r": 16.4, "skip": 1, "len": 2.7, "w": 0.35, "twelve": 3 },
       { "kind": 3, "name": "Band copy", "c": [0.949, 0.949, 0.9216, 1], "r": 14.85, "count": 1, "width": 0.17, "guide": 0 },
       { "kind": 3, "name": "Band", "c": [0.949, 0.949, 0.9216, 1], "r": 16.4, "count": 1, "width": 0.17, "guide": 0 },
