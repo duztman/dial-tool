@@ -45,6 +45,29 @@ const DIALS = [
     "ha_hour": { "shape": 2, "len": 8.2, "w": 2, "tail": 1.6, "tip": 2.6, "c": [0.902, 0.8863, 0.6275, 1] },
     "ha_minute": { "shape": 2, "len": 14.6, "w": 1.5, "tail": 1.8, "tip": 3.2, "c": [0.902, 0.8866, 0.6275, 1] },
     "ha_second": { "len": 15.4, "w": 0.2, "tail": 4, "counter": 1.1, "c": [0.9098, 0.4549, 0.1647, 1] } } },
+  // Okay's own diver (15 Oct 2026, 11:03, his link: "4th option, replaces og"; 11:05: fourth card, the atlas diver gone):
+  // the atlas diver on a blue plate, and under the dial's rings a band of twelve sectors, every other one the plate's
+  // blue — a sunburst of stripes. Lean settings, as his link carries them. Fourth with Bauhaus third (row_gallery).
+  { name: "Diver, bezel as rings", note: "A bezel drawn with rings on a larger plate, after ISO 6425: a scale to 60, minutes in the first 15 [1.13]", settings: {
+    "dial_d": 40, "guides": false, "c_plate": [0.0965, 0.1086, 0.4455, 1],
+    "rings": [
+      { "kind": 1, "name": "Bezel: triangle", "c": [0.8, 0.9, 0.66, 1], "r": 19.6, "count": 1, "shape": 1, "len": 2.6, "w": 3, "taper": 0 },
+      { "kind": 2, "name": "Bezel: 10–50", "c": [0.95, 0.95, 0.92, 1], "r": 18.25, "count": 5, "start": 60, "span": 240, "labels": 7, "num_from": 10, "num_step": 10, "mode": 1, "size": 1.9, "family": "Barlow", "ps": "Barlow-SemiBold" },
+      { "name": "Bezel: five minutes", "c": [0.95, 0.95, 0.92, 1], "r": 19.5, "skip": 2, "len": 2.4, "w": 0.6 },
+      { "name": "Bezel: first 15", "c": [0.95, 0.95, 0.92, 1], "r": 19.5, "count": 16, "span": 90, "skip": 3, "len": 1.3, "w": 0.22 },
+      { "kind": 3, "name": "Bezel", "c": [0.07, 0.07, 0.08, 1], "r": 20, "width": 3.6 },
+      { "kind": 3, "name": "Bezel edge", "c": [0.62, 0.64, 0.66, 1], "r": 16.4, "width": 0.25 },
+      { "kind": 1, "name": "Triangle at 12", "c": [0.8, 0.9, 0.66, 1], "r": 15.4, "count": 1, "shape": 1, "w": 2.8, "taper": 0 },
+      { "kind": 1, "name": "Bars 3 · 6 · 9", "c": [0.8, 0.9, 0.66, 1], "r": 15.4, "count": 4, "w": 1.3, "twelve": 3 },
+      { "kind": 1, "name": "Dots", "c": [0.8, 0.9, 0.66, 1], "r": 15.2, "every": 3, "invert": true, "shape": 2, "w": 1.9 },
+      { "name": "Minutes", "c": [0.95, 0.95, 0.92, 1], "r": 15.9, "count": 60, "skip": 1, "len": 0.8, "w": 0.16 },
+      { "kind": 3, "name": "Band", "c": [0.0549, 0.1647, 0.2784, 1], "r": 15.9, "width": 15.75, "guide": 3,
+        "cs": { "1": [0.098, 0.1098, 0.4471, 1], "3": [0.098, 0.1098, 0.4471, 1], "5": [0.098, 0.1098, 0.4471, 1], "7": [0.098, 0.1098, 0.4471, 1], "9": [0.098, 0.1098, 0.4471, 1], "11": [0.098, 0.1098, 0.4471, 1] } },
+    ],
+    "ha_cap": 1.5, "c_cap": [0.95, 0.95, 0.92, 1],
+    "ha_hour": { "shape": 5, "len": 7.6, "w": 1.4, "tail": 1.5, "tip": 3.2, "feature": 3.4, "c": [0.95, 0.95, 0.92, 1] },
+    "ha_minute": { "shape": 2, "len": 12.6, "w": 1.6, "tail": 1.8, "tip": 2.6, "c": [0.95, 0.95, 0.92, 1] },
+    "ha_second": { "shape": 8, "len": 13.4, "w": 0.18, "tail": 3.4, "feature": 1.3, "feature_at": 68, "c": [0.95, 0.95, 0.92, 1] } } },
   { name: "12 + 24 hours", note: "US general-purpose watch, MIL-PRF-46374: 13–24 inside 1–12, smaller [1.10]", settings: {
     dial_d: 30, c_plate: BLACK,
     ...hands(WHITE, { shape: "pencil", len: 7.2, w: 1.5, tail: 1.4, tip: 1.6 }, { shape: "pencil", len: 12.2, w: 1.1, tail: 1.6, tip: 1.8 }, { shape: "baton", len: 13.2, w: 0.2, tail: 3.4 }, 1.3),
@@ -90,21 +113,6 @@ const DIALS = [
       { kind: "band", name: "Day and night", r: 14.7, width: 2.3, count: 2, start: 82.5, c: [0.83, 0.80, 0.70, 1], cs: { 1: [0.12, 0.15, 0.24, 1] } },
       { kind: "markers", name: "Hours", r: 11.6, count: 12, len: 1.5, w: 0.45, c: INK, twelve: 1, twelve_gap: 0.35 },
       { kind: "ticks", name: "Minutes", r: 11.6, count: 60, len: 0.5, w: 0.1, c: INK, skip: 1 },
-    ] } },
-  { name: "Diver, bezel as rings", note: "A bezel drawn with rings on a larger plate, after ISO 6425: a scale to 60, minutes in the first 15 [1.13]", settings: {
-    dial_d: 40, c_plate: [0.05, 0.10, 0.17, 1],
-    ...hands(WHITE, { shape: "arrow", len: 7.6, w: 1.4, tail: 1.5, tip: 3.2, feature: 3.4 }, { shape: "sword", len: 12.6, w: 1.6, tail: 1.8, tip: 2.6 }, { shape: "lollipop", len: 13.4, w: 0.18, tail: 3.4, feature: 1.3, feature_at: 68 }, 1.5),
-    rings: [
-      { kind: "markers", name: "Bezel: triangle", r: 19.6, count: 1, shape: "wedge", taper: 0, len: 2.6, w: 3.0, c: LUME },
-      { kind: "numerals", name: "Bezel: 10–50", r: 18.25, count: 5, start: 60, span: 240, labels: NUMBERS, num_from: 10, num_step: 10, size: 1.9, mode: RADIAL, c: WHITE, ...type("Barlow", "Barlow-SemiBold") },
-      { kind: "ticks", name: "Bezel: five minutes", r: 19.5, count: 12, len: 2.4, w: 0.6, c: WHITE, skip: 2 },
-      { kind: "ticks", name: "Bezel: first 15", r: 19.5, count: 16, start: 0, span: 90, len: 1.3, w: 0.22, c: WHITE, skip: 3 },
-      { kind: "band", name: "Bezel", r: 20, width: 3.6, c: BLACK },
-      { kind: "band", name: "Bezel edge", r: 16.4, width: 0.25, c: [0.62, 0.64, 0.66, 1] },
-      { kind: "markers", name: "Triangle at 12", r: 15.4, count: 1, shape: "wedge", taper: 0, len: 2.8, w: 2.8, c: LUME },
-      { kind: "markers", name: "Bars 3 · 6 · 9", r: 15.4, count: 4, len: 2.8, w: 1.3, twelve: 3, c: LUME },
-      { kind: "markers", name: "Dots", r: 15.2, count: 12, shape: "dot", w: 1.9, every: 3, invert: true, c: LUME },
-      { kind: "ticks", name: "Minutes", r: 15.9, count: 60, len: 0.8, w: 0.16, c: WHITE, skip: 1 },
     ] } },
 ];
 

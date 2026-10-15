@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.41.16 (web version) · 15 Oct 2026
+
+- **The Gallery's diver is Okay's own**, blue with a striped dial, and fourth.
+
 ## beta 4.41.15 (web version) · 15 Oct 2026
 
 - **Bauhaus is the Gallery's third dial**, after Okay's watch and his B-Uhr.
