@@ -1,6 +1,6 @@
 {
- "when": "2026-10-15T09:07:15.429Z",
- "version": "beta 4.41.19",
+ "when": "2026-10-15T10:17:18.334Z",
+ "version": "beta 4.41.23",
  "results": {
   "B1": {
    "ok": true,
@@ -125,6 +125,10 @@
   "B31": {
    "ok": true,
    "note": "\"Window 3\" in Dial › Colours: true"
+  },
+  "B32": {
+   "ok": true,
+   "note": "new tab https://duztman.github.io/dial-tool/guide/; the tool still open: true"
   }
  }
 }

@@ -7,7 +7,7 @@ import { chromium } from "playwright";
 import fs from "fs";
 import path from "path";
 
-const WEB = process.cwd(), IMG = path.join(WEB, "../guide/web/img"), OUT = path.join(WEB, "../guide/checks/out");
+const WEB = process.cwd(), OUT = path.join(WEB, "../guide/checks/out"), IMG = path.join(OUT, "first");      // its screenshots are for looking at; the guide shows the app's own exports (guide/look/shots.mjs)
 fs.mkdirSync(IMG, { recursive: true }); fs.mkdirSync(OUT, { recursive: true });
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || "/opt/pw-browsers/chromium" });
 const context = await browser.newContext({ viewport: { width: 1180, height: 820 }, deviceScaleFactor: 2, hasTouch: true, acceptDownloads: true, reducedMotion: "reduce" });

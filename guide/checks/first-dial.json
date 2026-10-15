@@ -1,6 +1,6 @@
 {
- "when": "2026-10-15T09:08:00.780Z",
- "version": "beta 4.41.19",
+ "when": "2026-10-15T10:07:52.877Z",
+ "version": "beta 4.41.23",
  "ok": true,
  "pdf": "dial-34mm-2026-10-15.pdf",
  "page_mm": 40,
@@ -20,49 +20,49 @@
   {
    "n": 3,
    "title": "Colours",
-   "link": "#1.lY_LasMwEEV_pdz1IPRw_NA_pD8QghG23AgrSpBlujD-92I1Li2Uks5mNveeM7Ogd8a3PbQqCF179yZZ6BNnvKoL-rnEmRBdeJugTwtGF3poSQjmaqHxOl9tNH4CocuERlWKOGuEqoizupTVJwFa8JV2gPgCHE0cbXyqX7BiI-xFF-ZkX5LrxmfbhO42hwRdcsI0uns-xNuQ9zs0Z0KuZ8LFtJfbHKEXDC5BD8ZP9pGsmTzksNiAyTi_9ZqGkDagZLzcAoM1aY62NQla1H_et2bhNf_zq1IoJneVYIdaNd_nIVZM_c-6fgA",
+   "link": "#1.lY_LasMwEEV_pdz1IPRw_NA_pD8QghG23AgrSpBlujD~92I1Li2Uks5mNveeM7Ogd8a3PbQqCF179yZZ6BNnvKoL~rnEmRBdeJugTwtGF3poSQjmaqHxOl9tNH4CocuERlWKOGuEqoizupTVJwFa8JV2gPgCHE0cbXyqX7BiI~xFF~ZkX5LrxmfbhO42hwRdcsI0uns~xNuQ9zs0Z0KuZ8LFtJfbHKEXDC5BD8ZP9pGsmTzksNiAyTi_9ZqGkDagZLzcAoM1aY62NQla1H_et2bhNf_zq1IoJneVYIdaNd_nIVZM_c~6fgA",
    "picture": "first-03.png"
   },
   {
    "n": 4,
    "title": "A font that ships with the tool",
-   "link": "#1.lY_LasMwEEV_pdz1VEiW44eW3beLbkMwgyMnwrITZJlQjP-92E1CC6Wk2gyCe8-ZmbB37Ks9jE4JdXX2HC3MVgqZFyn9HGpHCK4_DDDbCa3r9zAJoefOwuBt7GxgP4BQr4RS55qkKJXOSYoiS_IvAoyShIY75z9g8MLBny4gnIf77_ndHkbPATPdROoueuXQ2vCQJxXpQrgVXT9G-xRd3T7aJtSnsY8wmSQMrTuvi3jbr_MCI4VK5h3hyNXxNAaYCY2LMA37wV6ThUg2a1gtwMjOL72yJMQFmAiZLYHGchyDrTjCqOLP_eZV2K33_KpUWiQ3lRKbQpff31Wshf6fdf4E",
+   "link": "#1.lY_LasMwEEV_pdz1VEiW44eW3beLbkMwgyMnwrITZJlQjP~92E1CC6Wk2gyCe8~ZmbB37Ks9jE4JdXX2HC3MVgqZFyn9HGpHCK4_DDDbCa3r9zAJoefOwuBt7GxgP4BQr4RS55qkKJXOSYoiS_IvAoyShIY75z9g8MLBny4gnIf77_ndHkbPATPdROoueuXQ2vCQJxXpQrgVXT9G~xRd3T7aJtSnsY8wmSQMrTuvi3jbr_MCI4VK5h3hyNXxNAaYCY2LMA37wV6ThUg2a1gtwMjOL72yJMQFmAiZLYHGchyDrTjCqOLP_eZV2K33_KpUWiQ3lRKbQpff31Wshf6fdf4E",
    "picture": "first-04.png"
   },
   {
    "n": 5,
    "title": "Numerals",
-   "link": "#1.lY9Ra4MwFIX_yjjPdyExWjWPfd8e9lqKBBvbYLQlxpVO_O_DrC0bjNHl5SZwzvfdTNhZ7aodlEwJdXVyOhioDWc8L1L6OcSW4G2_H6A2E1rb76ASQq87A4XXsTNeuwGEOhJKmUvirBQyJ86KVZJ_EaCEYBnBvBt_gZKEwX6YeGl0Z90FCmvt3fEMwmm4v57fzH502mOmm13c7S_at8Y_JE9ZuhBuRduPwTwFW7ePtgn1cewD1IoThtae4iLO9HGeoTgTybwlHHR1OI4eakJjA1Sj3WCuyYIlWQyLBRi0dUuvLAlhASaMr5ZAY3QYval0gBLFn_vNUdjF__yqFJIlN5VgWSHL7-cqlkz-zzp_Ag",
+   "link": "#1.lY9Ra4MwFIX_yjjPdyExWjWPfd8e9lqKBBvbYLQlxpVO_O_DrC0bjNHl5SZwzvfdTNhZ7aodlEwJdXVyOhioDWc8L1L6OcSW4G2_H6A2E1rb76ASQq87A4XXsTNeuwGEOhJKmUvirBQyJ86KVZJ_EaCEYBnBvBt_gZKEwX6YeGl0Z90FCmvt3fEMwmm4v57fzH502mOmm13c7S_at8Y_JE9ZuhBuRduPwTwFW7ePtgn1cewD1IoThtae4iLO9HGeoTgTybwlHHR1OI4eakJjA1Sj3WCuyYIlWQyLBRi0dUuvLAlhASaMr5ZAY3QYval0gBLFn_vNUdjF__yqFJIlN5VgWSHL7~cqlkz~zzp_Ag",
    "picture": "first-05.png"
   },
   {
    "n": 6,
    "title": "Markers and ticks",
-   "link": "#1.lY_LbsIwEEV_pbrrqRXHIY9Zsm8X3SIUWcEBK05AjgOiKP9eJRREpaqis5mxNHPO9QUbq125AauEUJUHp4MBryIRZXlCP5tcE7zttj14dUFjuw04JnS6NWC8D63x2vUgVDOhUJmiSBRSZRSJPI2zKwEspVgQzNH4M1gRevtp5qHWrXVnMJbau_0JhEN_f71-mO3gtMdIN7u829-0b4x_Sp6K-FFuu6PxARz8YAjOdOBYJJPjhrbdEMxLsFXzPL_aD10ApxGhb-xhjjqzJeEEjoSMxzVhp8vdfvDgC2obwLV2_S1FLuLFvCxFQgjauumuKAhhAsYiSqeF2ugweFPqAJb5n_nGWdjO__lVKdWU_aqSYpGr4rG-xUqo_1nHLw",
+   "link": "#1.lY_LbsIwEEV_pbrrqRXHIY9Zsm8X3SIUWcEBK05AjgOiKP9eJRREpaqis5mxNHPO9QUbq125AauEUJUHp4MBryIRZXlCP5tcE7zttj14dUFjuw04JnS6NWC8D63x2vUgVDOhUJmiSBRSZRSJPI2zKwEspVgQzNH4M1gRevtp5qHWrXVnMJbau_0JhEN_f71~mO3gtMdIN7u829~0b4x_Sp6K~FFuu6PxARz8YAjOdOBYJJPjhrbdEMxLsFXzPL_aD10ApxGhb~xhjjqzJeEEjoSMxzVhp8vdfvDgC2obwLV2_S1FLuLFvCxFQgjauumuKAhhAsYiSqeF2ugweFPqAJb5n_nGWdjO__lVKdWU_aqSYpGr4rG~xUqo_1nHLw",
    "picture": "first-06.png"
   },
   {
    "n": 7,
    "title": "The date at 3",
-   "link": "#1.lZDLasMwEEV_pdz1VFiW44eW2beLbkMwwpYTYVkOspyQBv97sdOEFEpJtZEGZs65owtqo2xZQ4qEUJUHq4KG3EQsyvKEfl58S_DG7QbIzQWtcTVkTHCq05B4HzvtlR1AqBZCITJBESu4yChieRpnVwIk52xF0Eftz5CCMJhPvTwa1Rl7hsRaedufQDgM9-r1Q-9Gqzwmutn53f6mfKv9U_KUxY9y447aB8jgR02w2kHGLJkdN7RxY9AvwVTt8_yqH12ATCPC0JrDEnVhc8IJMmI8nraEvSr3_eghL2hMgGyUHW4pchavlmbOEkJQxs5zRUEIMzBmUTo3NFqF0etSBUie_5lvWoTdss-vSi7m7FcVZ6tcFI_nWyyY-K-1VmXvrl88fQE",
+   "link": "#1.lZDLasMwEEV_pdz1VFiW44eW2beLbkMwwpYTYVkOspyQBv97sdOEFEpJtZEGZs65owtqo2xZQ4qEUJUHq4KG3EQsyvKEfl58S_DG7QbIzQWtcTVkTHCq05B4HzvtlR1AqBZCITJBESu4yChieRpnVwIk52xF0Eftz5CCMJhPvTwa1Rl7hsRaedufQDgM9~r1Q~9Gqzwmutn53f6mfKv9U_KUxY9y447aB8jgR02w2kHGLJkdN7RxY9AvwVTt8_yqH12ATCPC0JrDEnVhc8IJMmI8nraEvSr3_eghL2hMgGyUHW4pchavlmbOEkJQxs5zRUEIMzBmUTo3NFqF0etSBUie_5lvWoTdss~vSi7m7FcVZ6tcFI_nWyyY~K~1VmXvrl88fQE",
    "picture": "first-07.png"
   },
   {
    "n": 8,
    "title": "Hands",
-   "link": "#1.lZDLboMwEEV_pbrrqYUx4eFl9-2i2yhCFpjEwhhkTKI04t8rSBOlmz68GVvynHNnLqiNsmUNKRJCVQ5WBQ25jViU5Ql9L3xH8MbtR8jtBa1xNWRMcKrTkHibOu2VHUGoVkIhMkERK7jIKGJ5GmdXAiTnbEPQR-3PkIIwmg-9XhrVGXuGxIvytj-BMIz31_O73k9Wecx0s_O7_VX5Vvs_yVMWP8qNO2ofIIOfNMFqBxmzZHHc0MZNQT8FU7V_51f95AJkGhHG1gxr1JXNCSfIiPF43hEOqjz0k4e8YDyoQa8LbUyAbJQdb3lyFm_WNs4SQlDGLoSiIIQFHbMoXT40WoXJ61IFSJ7_mHRe1d062S9yLpZ5rlLONrkoHs9XBMHEf_21Knt3Xfv8CQ",
+   "link": "#1.lZDLboMwEEV_pbrrqYUx4eFl9~2i2yhCFpjEwhhkTKI04t8rSBOlmz68GVvynHNnLqiNsmUNKRJCVQ5WBQ25jViU5Ql9L3xH8MbtR8jtBa1xNWRMcKrTkHibOu2VHUGoVkIhMkERK7jIKGJ5GmdXAiTnbEPQR~3PkIIwmg~9XhrVGXuGxIvytj~BMIz31_O73k9Wecx0s_O7_VX5Vvs_yVMWP8qNO2ofIIOfNMFqBxmzZHHc0MZNQT8FU7V_51f95AJkGhHG1gxr1JXNCSfIiPF43hEOqjz0k4e8YDyoQa8LbUyAbJQdb3lyFm_WNs4SQlDGLoSiIIQFHbMoXT40WoXJ61IFSJ7_mHRe1d062S9yLpZ5rlLONrkoHs9XBMHEf_21Knt3Xfv8CQ",
    "picture": "first-08.png"
   },
   {
    "n": 9,
    "title": "The pose",
-   "link": "#1.lZDLbsMgEEV_pbrrKQLj-MGy-3bRbRRZyMEJMn4I40Rp5H-v7NRRuumDzYDEnHNnrthb7Yo9lIwJZdE7HQzUljOeZjF9L2JH8LY9DFDbK2rb7qEiQqsbA4W3sTFeuwGEciHkMpXEWS5kSpxlSZTeCFBCsA3BnIy_QEnCYD_Mcql0Y90FCi_au-4MQj_cX8_v5jA67THRahd3-6v2tfF_kicsepTb9mR8gAp-NARnWqiIxbNjRdt2DOYp2LL-O7_sxjZAJZww1LZfoi5sQThDcSaiaUc46uLYjR7qiuGoe7MstLIBqtJuWPNkLNosbYLFhKCtmwl5TggzOmI8mT9URofRm0IHKJH9mHRa1M0y2S9yIed5blLBNpnMH89XBMnkf_17XXTtuvYAJZOE8-kT",
+   "link": "#1.lZDLbsMgEEV_pbrrKQLj~MGy~3bRbRRZyMEJMn4I40Rp5H~v7NRRuumDzYDEnHNnrthb7Yo9lIwJZdE7HQzUljOeZjF9L2JH8LY9DFDbK2rb7qEiQqsbA4W3sTFeuwGEciHkMpXEWS5kSpxlSZTeCFBCsA3BnIy_QEnCYD_Mcql0Y90FCi_au~4MQj_cX8_v5jA67THRahd3~6v2tfF_kicsepTb9mR8gAp~NARnWqiIxbNjRdt2DOYp2LL~O7_sxjZAJZww1LZfoi5sQThDcSaiaUc46uLYjR7qiuGoe7MstLIBqtJuWPNkLNosbYLFhKCtmwl5TggzOmI8mT9URofRm0IHKJH9mHRa1M0y2S9yIed5blLBNpnMH89XBMnkf_17XXTtuvYAJZOE8~kT",
    "picture": "first-09.png"
   },
   {
    "n": 10,
    "title": "A file",
-   "link": "#1.lZDLbsMgEEV_pbrrKQLj-MGy-3bRbRRZyMEJMn4I40Rp5H-v7NRRuumDzYDEnHNnrthb7Yo9lIwJZdE7HQzUljOeZjF9L2JH8LY9DFDbK2rb7qEiQqsbA4W3sTFeuwGEciHkMpXEWS5kSpxlSZTeCFBCsA3BnIy_QEnCYD_Mcql0Y90FCi_au-4MQj_cX8_v5jA67THRahd3-6v2tfF_kicsepTb9mR8gAp-NARnWqiIxbNjRdt2DOYp2LL-O7_sxjZAJZww1LZfoi5sQThDcSaiaUc46uLYjR7qiuGoe7MstLIBqtJuWPNkLNosbYLFhKCtmwl5TggzOmI8mT9URofRm0IHKJH9mHRa1M0y2S9yIed5blLBNpnMH89XBMnkf_17XXTtuvYAJZOE8-kT",
+   "link": "#1.lZDLbsMgEEV_pbrrKQLj~MGy~3bRbRRZyMEJMn4I40Rp5H~v7NRRuumDzYDEnHNnrthb7Yo9lIwJZdE7HQzUljOeZjF9L2JH8LY9DFDbK2rb7qEiQqsbA4W3sTFeuwGEciHkMpXEWS5kSpxlSZTeCFBCsA3BnIy_QEnCYD_Mcql0Y90FCi_au~4MQj_cX8_v5jA67THRahd3~6v2tfF_kicsepTb9mR8gAp~NARnWqiIxbNjRdt2DOYp2LL~O7_sxjZAJZww1LZfoi5sQThDcSaiaUc46uLYjR7qiuGoe7MstLIBqtJuWPNkLNosbYLFhKCtmwl5TggzOmI8mT9URofRm0IHKJH9mHRa1M0y2S9yIed5blLBNpnMH89XBMnkf_17XXTtuvYAJZOE8~kT",
    "picture": "first-10.png"
   }
  ]

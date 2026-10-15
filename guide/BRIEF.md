@@ -31,7 +31,8 @@
 
 **Hours.** Logged per step in `guide/HOURS.md`; check scripts count as pipeline; pipeline at most a third.
 
-**Open, for Okay**
-1. The two humans for the last reader round: who?
-2. The help link (#230) is an app change: where should it sit (the mark's bio, the title line, the Export tab)?
-3. The old guide's files (`docs/guide/`, `tools/make_guide.py`, `tools/guide_dials.py`): archive them under `archive/`, or leave them where they are?
+**Answered by Okay** (15 Oct 2026, 12:50)
+1. The two humans: "Real people?" — yes; the kit to forward is `tests/humans.md`.
+2. The help link: "Help next to beta number same font but underlined" — done, beta 4.41.23.
+3. The old guide's files: "Archive them" — in `archive/guide/` since 15 Oct.
+4. Step 7: "Go ahead don't come back without finishing it" — steps 7 and 8 done the same day (`tests/look-gates.md`); edition 1 is out at `/guide/`, its human round still to run.

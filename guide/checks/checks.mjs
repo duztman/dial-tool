@@ -323,6 +323,13 @@ Object.assign(CHECKS, {
     await tab("Dial"); const w3 = await page.getByText("Window 3", { exact: false }).filter({ visible: true }).count(); await context.close();
     return { ok: w3 > 0, note: `"Window 3" in Dial › Colours: ${w3 > 0}` };
   },
+  async B32() {       // Help, in the title line, opens this guide in a new tab (the dial stays where it was)
+    const { page, context } = await fresh();
+    await context.route("https://duztman.github.io/dial-tool/guide/**", (r) => r.fulfill({ body: "<title>Dial Tool guide</title>guide", contentType: "text/html" }));
+    const [tab2] = await Promise.all([context.waitForEvent("page"), page.getByRole("link", { name: "Help", exact: true }).click()]);
+    await tab2.waitForLoadState(); const url = tab2.url(), title = await tab2.title(), stays = await page.getByRole("heading", { name: "Dial Tool" }).isVisible(); await context.close();
+    return { ok: url === "https://duztman.github.io/dial-tool/guide/" && title === "Dial Tool guide" && stays, note: `new tab ${url}; the tool still open: ${stays}` };
+  },
 });
 
 const results = {};

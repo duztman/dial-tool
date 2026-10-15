@@ -11,3 +11,8 @@
 | 4 Edition 1 text | 15 Oct, 10:35–11:00 | 3 | 0.6 | 0.4 | 26 checks (`checks/checks.mjs`, 1 m 50 s a run) and the gate (`tools/claims.mjs`); 37 sentences name them. Interrupted 10:47–10:58 for 4.41.15 (not counted) |
 | 5 First dial | 15 Oct, 11:00–11:25 | 2 | 0.4 | 0.3 | `checks/first-dial.mjs`: ten steps done like a person, a link and a picture each; the PDF checked (34 on 40 mm); plain page `web/build.mjs` |
 | 6 Reader test | 15 Oct, 11:25–12:15 | 3 | 0.8 | 0.2 | two AI rounds (`tests/round-1.md`, `round-2.md`), drafts 2 and 3; checks 27 → 31. Humans' round waits for edition 1 |
+| 7 The look | 15 Oct, 12:50–13:30 | 7 | 0.7 | 0.4 | composer `look/build.mjs` (from the 4.36.1 one), shots from cold start, diff, gates (`tests/look-gates.md`); pages 01–03 at A4 and 390 px. Includes 4.41.23 (Help, #230) and archiving the old guides |
+| 8 Edition 1 out | 15 Oct, 13:15–13:40 | 2 | 0.4 | 0.1 | pages 04–08 in the look, B32 (Help), ragged-ending pass, published to `/guide/`; the human round waits for two people (`tests/humans.md`) |
+
+*After edition 1 (step 5 of §5, re-estimate): steps 1–8 took ≈ 5.4 h against 23 h estimated, pipeline ≈ 1.9 h (35 %, a hair over the third — the composer came from the archive, the checks did not). Edition 2's 20 h estimate stands until its inventory is walked.*
+

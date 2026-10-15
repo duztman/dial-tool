@@ -1,115 +1,202 @@
-# Dial Tool guide — edition 1 (text, draft 3)
+# Dial Tool guide — edition 1 (text, draft 4)
 
-*15 Oct 2026. Steps 4–6 of `guide/PLAN.md`: the words only, no layout. Draft 2 answered the first reader round (`guide/tests/round-1.md`), draft 3 the second (`guide/tests/round-2.md`). A sentence that says "do this and that happens" carries its check, `<!-- check: B8 -->`; the checks are in `guide/checks/checks.mjs` and pass on the version the page names. Pages are separated by `---`. A line starting `Watch:` is a Watch note, set under the block it belongs to.*
+*15 Oct 2026. The words of edition 1, one section per page (`## NN · Title`). Draft 2 answered the first reader round (`guide/tests/round-1.md`), draft 3 the second (`guide/tests/round-2.md`), draft 4 sets the words into the look (step 7: blocks, labels and notes per page; no claim changed). A sentence that says "do this and that happens" carries its check, `<!-- check: B8 -->`; the checks are in `guide/checks/checks.mjs` and pass on the version the page names.*
 
----
+*Format, read by `guide/look/build.mjs`: `**Lead:**` the lines under the title, one sentence a line. `**Label.** words` a block. `**Watch: key.** words` a Watch note (shown as "Watch"). `**Note: key** words` a label on a picture or a caption. `**Step N · Title.** words` a step of the First dial. A table follows a `**Table: key**` line.*
 
-## How the tool thinks
+## 01 · How the tool thinks
 
-Five things explain almost everything the tool does. The rest of the guide leans on them.
+**Lead:** Five ideas explain almost everything the tool does.
+The rest of the guide leans on them.
 
-### Disc, plate, print, hands
+**Cap, hands, print, plate, disc.** A watch dial, seen from the side, is a short stack: from the top, the cap that holds the hands, the hands, the plate with its print, and the date disc under the plate. The tool draws that stack from the bottom up. The print on the plate is made of rings.
 
-A watch dial, seen from the side, is a short stack: the date disc at the bottom, the plate with its print, then the hands, then the cap that holds them. The tool draws that stack. The print on the plate is made of rings.
+**A ring repeats one thing round the centre.** A ring is ticks, markers, numerals or a band, repeated at its positions: *Count* of them, from *Start °*, across *Span °*. *Every* keeps one position in so many; *Skip those instead* keeps the others. Every 3 on twelve positions keeps 12, 3, 6, 9; with Skip those instead, the eight hours in between them. <!-- check: B21 -->
 
-### A ring repeats one thing round the centre
+**The higher ring wins.** A dial is a list of rings, top first. A ring below gives way to the rings above in one of two ways, under Rings › Give way to rings above. *Skip where* leaves out its own marks at the angles where a ring above has one: minute ticks that skip where markers stand. <!-- check: B7 --> *Knock out* keeps its marks but cuts them round the rings above, leaving a gap the width of the Clearance. <!-- check: B12b -->
 
-A ring is ticks, markers, numerals or a band, repeated at its positions: **Count** of them, from **Start °**, across **Span °**. **Every** keeps one position in so many; **Skip those instead** keeps the others. Every 3 on twelve positions keeps 12, 3, 6, 9; with Skip those instead, the eight hours between. <!-- check: B21 -->
+**The panel edits what is selected.** Select a ring in the list, or tap one of its marks on the dial: everything below the list now edits that ring. <!-- check: B5 --> The hand tabs in Hands and the window cards in Windows work in just the same way.
 
-### The higher ring wins
+**True size.** Every length is in millimetres, measured on the dial; files come out at true size. The page is the diameter plus twice the page margin: a 30 mm dial with a 3 mm margin makes a 36 mm page, and the file is still named after the dial. <!-- check: B10 -->
 
-A dial is a list of rings, top first. A ring below gives way to the rings above in one of two ways, under Rings › Give way to rings above. **Skip where** leaves out its own marks at the angles where a ring above has one: minute ticks that skip where markers stand. <!-- check: B7 --> **Knock out** keeps its marks but cuts them round the rings above, leaving a gap the width of the Clearance. <!-- check: B12b -->
+**Kept as you go.** There is no Save to press. About half a second after you stop, the dial is kept in this browser and written into the page's address. <!-- check: B1 --> The address is a link to the dial: send it and the dial opens at the time shown, though not on your tab or in your unit. <!-- check: B2 -->
 
-### The panel edits what is selected
+**Watch: kept.** While time is playing nothing is kept; the dial is kept once you stop it. <!-- check: B1p -->
 
-Select a ring in the list, or tap one of its marks on the dial: everything below the list now edits that ring. <!-- check: B5 --> The hand tabs in Hands and the window cards in Windows work the same way.
+**Note: together** The First dial (page 05), as the tool draws it.
 
-### True size, kept as you go
+**Note: exploded** Exploded, not to scale, top to bottom. A row's two numbers are its size and radius.
 
-Every length is in millimetres, measured on the dial; files come out at true size. The page around the dial is the diameter plus twice the page margin: a 30 mm dial with a 3 mm margin makes a 36 mm page, and the file is still named after the dial. <!-- check: B10 -->
+**Note: kind Ticks** Lines, as on a minute track.
 
-There is no Save to press. About half a second after you stop, the dial is kept in this browser and written into the page's address; reload, or come back later in the same browser, and it is there. <!-- check: B1 --> The address is a link to the dial: send it and the dial opens, at the time shown, but not on the tab or in the unit you were using. <!-- check: B2 -->
+**Note: kind Markers** Bars, wedges or dots, usually for the hours.
 
-Watch: while time is playing, nothing is kept until you stop it. <!-- check: B1p -->
+**Note: kind Numerals** Numbers or words, in any font.
 
----
+**Note: kind Band** A flat ring of colour, whole or in sectors.
 
-## The screen
+**Note: layer cap** The cap holds the hands.
 
-The panel on the left, the dial on the right, the bottom bar along the foot. *(Pictures from an iPad held landscape; a Mac is the same with more room. The phone is on the next page.)*
+**Note: layer hands** The hands, at the time shown (Hands tab).
 
-### The panel's five tabs
+**Note: layer Numerals** Top of the list, so drawn over everything below it. Every 3 keeps 12, 3, 6, 9; the 3 gives way to the window.
 
-**Dial** — its size (and **Scale everything with it**, which grows the whole print with it), the centre hole, the plate's colour, the page around it, and every colour on the dial in one list. **Rings** — the list of rings and the settings of the selected one. **Hands** — hour, minute and seconds hands, and the cap. **Windows** — up to four holes in the plate; their cards sit at 12, 3, 6 and 9, and each window can move anywhere round the dial. **Export** — files, the print mask, the link, settings files, the log, and the Gallery.
+**Note: layer Markers** Every 3 with Skip those instead: the eight hours between.
 
-### A ring's row
+**Note: layer Minute ticks** Sixty ticks that skip where a marker stands (Skip where).
 
-Each row reads: the eye (show or hide the ring), the grip (drag to reorder), the name, how many of what kind ("12 markers"), its colour, then two numbers: its size and its radius, in millimetres. On the selected row a small text-cursor sign beside the name renames the ring.
+**Note: layer plate** The plate, under every ring, with the window cut in it (Dial tab).
 
-Under the selected row sits the ring drawer: four tiles for its kind (ticks, markers, numerals, band) — a ring changed to another kind and back is as it was <!-- check: B6 --> — then its colour, then two round buttons. Press a round button and its number opens in a small pop-up: on a Mac it is ready to type over; on a touch screen, tap the number first. A tap anywhere else closes it. <!-- check: B24 -->
+**Note: layer disc** The date disc, under the plate: a file draws only what the window shows.
+
+## 02 · The screen
+
+**Lead:** The panel on the left, the dial on the right, the bottom bar along the foot.
+Pictures from an iPad held landscape; a Mac is the same with more room.
+
+**Note: tabs** Five tabs choose what the panel edits; the dial and the time stay as they are.
+
+**Note: rows** The rings, top first, and buttons to add, move, duplicate or delete one. Everything under the list edits the selected ring. <!-- check: B5 -->
+
+**Note: drawer** The drawer of the selected ring: kind, colour, size and radius (page 03).
+
+**Note: fold** The eye beside a pane's name folds it to one line, and opens it again. <!-- check: B29 -->
+
+**Note: title** The mark opens a note about the tool; Help opens this guide. <!-- check: B32 -->
+
+**Note: gallery** Gallery: dials you can open and take apart. <!-- check: B23 -->
+
+**Note: unit** The unit numbers are shown and typed in: mm, points, inches or lignes. The dial stays in millimetres. <!-- check: B2 -->
+
+**Note: undo** Undo and redo: step back and forth through your changes. <!-- check: B3 -->
+
+**Note: guides** Guides: construction lines, never exported. Press to hide them; the arrow picks which. <!-- check: B11 -->
+
+**Note: look** Backdrop and Shadows: how the dial is seen, never exported. <!-- check: B11 -->
+
+**Note: alone** The dial alone: the panel slides away. Beside it, the showcase: a dark view; press again to leave. <!-- check: B20 -->
+
+**Note: play** Play, and its speed from 1× to 720×. While time plays, nothing is kept. <!-- check: B1p -->
+
+**Note: time** The time: type it, or press NOW for the time it is.
+
+**Note: day** Drag across twelve hours; its steps are the hours and 10:10, the classic pose. <!-- check: B22 -->
+
+**Note: zoom** Zoom, and FIT to see the whole dial.
+
+**Typing numbers.** A number field takes sums: 1.2 sets, +0.5 adds, x0.5 multiplies, /2 divides. <!-- check: B15 -->
+
+**Gallery and mm.** Both are drawn light, but they are live: a press works.
+
+## 03 · A ring, close up
+
+**Lead:** Each ring has a row in the list, and a drawer under the row when it is selected.
+Most of what you change is in the drawer and the panes under it.
+
+**Note: eye** Shows or hides the ring.
+
+**Note: grip** Drag here to move the ring up or down.
+
+**Note: name** Its name; the sign beside it renames it.
+
+**Note: count** How many marks, of what kind.
+
+**Note: values** Its colour, size and radius in mm.
+
+**Note: kinds** Its kind. Change it and back, and the ring is as it was. <!-- check: B6 -->
+
+**Note: chip** Its colour: a tap opens the colour pop-out.
+
+**Note: buttons** Size and radius: press one to type.
+
+**Note: closeup** The Markers ring of the First dial, selected; twice its size on an iPad.
+
+**The round buttons.** Press one and its number opens in a small pop-up: on a Mac it is ready to type over; on a touch screen, tap the number first. A tap anywhere else on the screen closes it. <!-- check: B24 -->
+
+**Note: pop** The radius button, pressed: its pop-up.
+
+**Table: buttons**
 
 | The ring is | First button | Second button |
 |---|---|---|
 | ticks, markers | Length: of one mark, inward from its outer end | Outer radius: where the marks' outer ends sit |
-| numerals | Size: the type size, in mm, as in any layout program (figures stand a little shorter) | Centre radius: where the numerals' centres sit |
+| numerals | Size: the type size in mm, as in any layout program | Centre radius: where the numerals' centres sit |
 | band | Band width | Outer radius |
 
-Watch: a numerals ring's radius can measure to the numerals' centres, their baseline or their tops: the small menu in the radius button's pop-up. Centre is the start.
+**Watch: anchor.** A numerals ring's radius can measure to the numerals' centres, their baseline or their tops: the small menu in the radius button's pop-up. Centre is the start.
 
-### Over the dial
+**Colours.** A colour opens a pop-out beside it: its × closes it; the square beside the × makes it twice the size. <!-- check: B30 -->
 
-Top left, undo and redo. Top right, **Guides**: thin coloured construction lines, on to start, never exported; press Guides to hide them (the pictures in this guide leave them off). Bottom left, **Backdrop** and **Shadows**: how the dial is seen, never exported. <!-- check: B11 --> Bottom right, two square switches: **the dial alone** (the panel slides away) and **the showcase** (a dark view for presenting).
+**Fonts.** Change… opens the font sheet, which stays open after you choose: tap outside it to close it. <!-- check: B28 --> The fonts listed there ship with the tool and look the same everywhere. <!-- check: B4 -->
 
-### The bottom bar
+**Note: colour** The Markers ring's colour, from the chip in its drawer.
 
-Play and its speed, from 1× to 720×. The time, typed or set with the slider under it; its steps are the twelve hours and 10:10, the pose watches are photographed in. <!-- check: B22 --> **Now** sets the time it is. On the right: zoom, and **FIT** to see the whole dial.
+**Note: font** The font sheet's list, from Numerals › Type › Change….
 
-### Pop-ups and sheets
 
-A colour opens a pop-out beside it: its × closes it; the square beside the × makes it twice the size. <!-- check: B30 --> **Change…** opens the font sheet, which stays open after you choose: tap outside it to close it. <!-- check: B28 -->
+## 04 · The screen on a phone
 
-### Panes fold
+**Lead:** The same tool, stacked: the bar on top, the dial, the panel as a drawer.
+Everything works by finger.
 
-Each section is cut into panes, each with an eye beside its name. Press the eye to fold the pane to one line; a closed eye means folded, and a press opens it again. <!-- check: B29 -->
+**Note: bar** The bottom bar moves to the top. The round red button at its left is Play: a tap starts time, and while it runs nothing is kept, so tap it again to stop. <!-- check: B1p -->
 
-### The title line
+**Note: grip** Drag the grey pill on the drawer's top line to make the drawer taller or shorter.
 
-The mark opens a note about the tool. **Gallery** takes you to dials you can open and take apart. **mm** is the unit numbers are shown and typed in: millimetres, points, inches or lignes (the watchmakers' 2.2558 mm). The dial itself stays in millimetres. <!-- check: B2 -->
+**Note: title** The title line, with Help, Gallery and mm, shrinks once you scroll.
 
-Watch: Gallery and mm are drawn light, but they are live.
+**Note: rows** Long ring names are cut short; the row's "4 numerals" tells them apart.
 
----
+**Note: switches** The switches over the dial show only their signs.
 
-## The screen on a phone
+**The font sheet on a phone.** It covers the dial as well as the drawer, so a tap "outside" it can land on a font: close it with a tap on the dark bar at the top. <!-- check: B28p --> Colour pop-outs close with their ×.
 
-The bottom bar moves to the top: the round red button at its left is Play. A tap on it starts time running, and while it runs nothing is kept, so tap it again to stop. <!-- check: B1p --> The dial sits under the bar, and the panel becomes a drawer below: drag the grey pill on its top line to make it taller or shorter. The title line, with Gallery and mm, shrinks once you scroll. Long ring names are cut short; the row's "12 markers" tells them apart. The switches over the dial show only their signs.
+## 05 · Your first dial
 
-Colour pop-outs close with their ×. The font sheet covers the dial as well as the drawer, so a tap "outside" it can land on a font: close it with a tap on the dark bar at the top. <!-- check: B28p -->
+**Lead:** A black field watch, 34 mm, in ten steps; the pictures are about true size.
+Each picture is a link: tap it to open the dial as it is after that step.
 
----
+**Step 1 · Start from the starting dial.** Export › Settings file › *Defaults* (scroll the panel down to it). It replaces the dial you had; ⌘Z or the undo arrow brings it back. <!-- check: B3 -->
 
-## Your first dial
+**Step 2 · Size.** Dial › Diameter: type 34.
 
-A black field watch, 34 mm: numerals at 12, 3, 6 and 9, bars at the hours between, minute ticks, a date at 3, sword hands. Each step is a link: open it to see the dial as it should look after that step.
+**Step 3 · Colours.** Dial › Plate: #141414, a near-black. Then in Colours, set Numerals, Markers, Minute ticks, Hour hand and Minute hand to #EFE9DC, a warm white: tap the colour chip beside each name, then HEX, and type.
 
-1. **Start from the starting dial.** Export › Settings file › **Defaults** (scroll the panel down to it). It replaces the dial you had; ⌘Z or the undo arrow brings that one back. <!-- check: B3 -->
-2. **Size.** Dial › Diameter: type 34.
-3. **Colours.** Dial › Plate: #141414, a near-black. Then in Colours, set Numerals, Markers, Minute ticks, Hour hand and Minute hand to #EFE9DC, a warm white: tap the colour chip beside each name, then HEX, and type.
-4. **A font that ships with the tool.** Rings › select Numerals › Type › **Change…**, choose Barlow, then tap outside the sheet. <!-- check: B28 --> The starting dial asks for Helvetica Neue; where it isn't installed, the panel says "not loaded" and Inter stands in. <!-- check: B4 -->
-5. **Numerals.** With Numerals selected: its radius button, 11.5; its size button, 3. Under Positions, Every: 3. Now only 12, 3, 6 and 9 are left. <!-- check: B21 -->
-6. **Markers and ticks.** Select Markers: radius 16.2, length 2.4; Every 3 and **Skip those instead**, so the bars stand at the eight hours between. Select Minute ticks: radius 16.2. They already skip where markers stand.
-7. **The date at 3.** Windows › the card at 3 › **Show this window**. The numeral at 3 gives way to it: a shown window leaves out the numeral and the marker at its position. <!-- check: B8 -->
-8. **Hands.** Hands › Hour › shape **sword**; then Minute › **sword**. Length runs from the centre to the tip, Tail behind the centre, Width across the blade; Counter Ø is the disc on the seconds hand's tail. The seconds hand and the cap keep the starting red.
-9. **The pose.** In the bottom bar, the 10:10 step. <!-- check: B22 -->
-10. **A file.** Export › **PDF**. It opens at true size: a 34 mm dial on a 40 mm page. <!-- check: B10 --> For a file to print from, see *For the maker*.
+**Step 4 · A font that ships with the tool.** Rings › select Numerals › Type › *Change…*, choose Barlow, then tap outside the sheet. <!-- check: B28 --> The starting dial asks for Helvetica Neue; where it isn't installed, the panel says "not loaded" and Inter stands in. <!-- check: B4 -->
 
----
+**Step 5 · Numerals.** With Numerals selected: its radius button, 11.5; its size button, 3. Under Positions, Every: 3. Now only 12, 3, 6 and 9 are left. <!-- check: B21 -->
 
-## Find it
+**Step 6 · Markers and ticks.** Select Markers: radius 16.2, length 2.4; Every 3 and *Skip those instead*, so the bars stand at the eight hours between. Select Minute ticks: radius 16.2. They already skip where markers stand.
+
+**Step 7 · The date at 3.** Windows › the card at 3 › *Show this window*. The numeral at 3 gives way to it: a window that is shown leaves out the numeral and the marker at its position, at any radius. <!-- check: B8 -->
+
+**Step 8 · Hands.** Hands › Hour › shape *sword*; then Minute › *sword*. Length runs from the centre to the tip, Tail behind the centre, Width across the blade. The seconds hand and the cap keep their starting red.
+
+**Step 9 · The pose.** In the bottom bar, the 10:10 step. <!-- check: B22 -->
+
+**Step 10 · A file.** Export › *PDF*. It opens at true size: a 34 mm dial on a 40 mm page. <!-- check: B10 --> Before you print from it, read For the maker, on page 08.
+
+**Note: whole** The First dial: what the ten steps make.
+
+## 06 · Your first dial, continued
+
+**Lead:** The pose and a file, and what the ten steps make.
+The file is shown here at its true size.
+
+**Note: page40** The page: 40 mm, the diameter plus twice the 3 mm margin. <!-- check: B10 -->
+
+**Note: dial34** The dial: 34 mm, as typed in step 2.
+
+**Note: truesize** The PDF of step 10, printed at 100 %: true size.
+
+## 07 · Find it
+
+**Lead:** Questions readers asked, and where the answer is.
+Each answer was checked on the version named at the top.
 
 **I want to start fresh.** Export › Settings file › Defaults, or any dial in the Gallery. Either replaces your dial; ⌘Z brings it back. <!-- check: B3 --> <!-- check: B23 --> There is no empty dial yet.
 
-**Where do colours live?** Every colour on the dial is in one list: Dial › Colours, a chip beside each name. A ring's own colour is also in its drawer, a hand's in its pane.
+**Where do colours live?** Every colour on the dial is in one list: Dial › Colours, a chip beside each name. A ring's own colour is also in its drawer; a hand's colour is in its pane.
 
 **Why did the 3 disappear?** A window that is shown takes its place: the numeral and the marker at its position are left out, at any radius. <!-- check: B8 --> If a minute tick was hidden under that marker, it shows again. There is no way to keep the numeral yet.
 
@@ -119,7 +206,7 @@ A black field watch, 34 mm: numerals at 12, 3, 6 and 9, bars at the hours betwee
 
 **I asked for four numerals and got 12, 1, 2, 3.** Numerals follow the positions in order. For 12, 3, 6, 9 keep Count at 12 and set Every to 3. <!-- check: B21 -->
 
-**Skip where, or Every?** Every chooses a ring's positions by counting, whatever is above it. Skip where leaves out positions where a ring above has a mark, and follows that ring when it changes. Minute ticks under markers: Skip where. Bars between numerals: Every with Skip those instead.
+**Skip where, or Every?** Every chooses a ring's positions by counting, whatever is above it. Skip where leaves out positions where a ring above has a mark, and follows that ring when it changes. Minute ticks under markers: Skip where. Bars between the numerals: Every, and tick Skip those instead.
 
 **The panel says "not loaded".** The font isn't on this device. Inter stands in until you choose one with Change…; the fonts listed there ship with the tool and look the same everywhere. <!-- check: B4 -->
 
@@ -129,16 +216,16 @@ A black field watch, 34 mm: numerals at 12, 3, 6 and 9, bars at the hours betwee
 
 **How do I leave the showcase?** Press its switch again, bottom right. <!-- check: B20 -->
 
-**A number field takes sums.** Type 1.2 to set, +0.5 to add, x0.5 to multiply, /2 to divide. <!-- check: B15 -->
+**A number field takes sums.** Type 1.2 to set a value, +0.5 to add, x0.5 to multiply and /2 to divide. <!-- check: B15 -->
 
-**The signs without words.**
+**Table: signs**
 
 | Sign | Where | What it does |
 |---|---|---|
 | Eye | each ring's row | shows or hides the ring |
 | Grip (six dots) | each ring's row | drag to reorder |
 | Text cursor in a box | the selected row | renames the ring |
-| + ↑ ↓ ⧉ 🗑 | the ring list's heading | add a ring · move up · move down · duplicate · delete |
+| + ↑ ↓ and two more | the ring list's heading | add a ring · move up · move down · duplicate · delete |
 | Four tiles | the ring drawer | the ring's kind: ticks, markers, numerals, band |
 | Two round buttons | the ring drawer | size · radius: press to type |
 | Four small dials | Windows | the windows whose cards sit at 12, 3, 6, 9 |
@@ -146,23 +233,22 @@ A black field watch, 34 mm: numerals at 12, 3, 6 and 9, bars at the hours betwee
 | Square with a dot | over the dial, bottom right | the showcase |
 | Arrows | over the dial, top left | undo · redo |
 
----
+## 08 · For the maker
 
-## For the maker
-
-One page for whoever etches or prints the dial. File facts only; advice on each process waits for a first etch and a shop's questions.
+**Lead:** One page for whoever etches or prints the dial.
+File facts only; advice on each process waits for a first etch and a shop's questions.
 
 **What a file holds.** A colour export holds the plate, every ring, the windows with their content, the hands at the time shown, and the cap. Guides, the backdrop and shadows are never in a file. <!-- check: B11 --> Hide the hands (Hands › Show hands) before exporting a colour file for print: hidden hands are left out. <!-- check: B26 -->
 
-**Size.** True size, in millimetres. The page is the diameter plus twice the margin; the file name gives the diameter. <!-- check: B10 --> A PNG has its dpi written in (Export, the number under PNG), so it opens at true size. <!-- check: B18 --> The Export log names the size of every file written.
+**Size.** True size, in millimetres. The page is the diameter plus twice the margin; the file name gives the diameter. <!-- check: B10 --> A PNG has its dpi written in (Export, the number under PNG), so it opens at true size. <!-- check: B18 --> The Export log names each file and its size.
 
 **The print mask.** Export › Print › Mono print mask: every ring and the windows' frames in black on white, without plate, hands or window content. The edge of each window's hole and the centre hole are 0.05 mm cut lines. <!-- check: B12 --> The dial on screen shows the mask while it is on. <!-- check: B25 -->
 
 **Mirrored, for toner transfer only.** It flips the file left to right. <!-- check: B13 --> Never send a mirrored file to a pad or screen printer.
 
-Watch: marks lying on a band disappear in the mask, black on black, unless the band knocks them out (Rings › Give way to rings above › Knock out). <!-- check: B12b -->
+**Watch: band.** Marks lying on a band disappear in the mask, black on black, unless the band knocks them out (Rings › Give way to rings above › Knock out). <!-- check: B12b -->
 
-Watch: the cut lines are in the same black as the marks. Delete the layers "Window 1 cut line" and "Hole" from the PDF or SVG before printing a resist; the PNG has them baked in. Without "Hole" there is no centre mark, and there are no registration marks yet.
+**Watch: cut.** The cut lines are in the same black as the marks. Delete the layers "Window 1 cut line" and "Hole" from the PDF or SVG before printing a resist; the PNG has them baked in. Without "Hole" there is no centre mark; the tool has no registration marks yet.
 
 **One film per ink.** Export one PDF with everything shown and use its layers: one per ring, named as in the list. <!-- check: B27 --> Don't hide rings and export again: a ring only knocks out round rings that are shown. <!-- check: B14 -->
 
@@ -170,6 +256,10 @@ Watch: the cut lines are in the same black as the marks. Delete the layers "Wind
 
 **Text.** Numerals and dates are outlines in every file. Export › "Keep numerals as text in the SVG" writes them as text in the SVG only; the font must then be installed where the file is opened. <!-- check: B19 -->
 
-**The thinnest line.** For ticks and markers it is in the ring's settings, in its Shape pane: Width, and Inner width × if the marks taper. Numerals have no width setting: zoom into the PDF and measure the thinnest stroke. The tool doesn't report it yet.
+**The thinnest line.** For ticks and markers it is in the ring's settings, in its Shape pane: Width, and Inner width × if the marks taper. Numerals have no width setting: zoom into the PDF and measure the thinnest stroke yourself; the tool doesn't report it yet.
 
-**Process advice** (minimum line, clearance, ink order): pending a first etch and a shop's questions.
+**Process advice.** Minimum line, clearance, ink order: pending a first etch and a shop's questions.
+
+**Note: mask** The First dial as the print mask: the toner or resist.
+
+**Note: colourfile** The same dial as a colour file, hands hidden.
