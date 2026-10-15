@@ -1,8 +1,8 @@
 # Screens of the night of 14–15 October 2026
 
-*Archived 15 Oct 2026, 06:00 (Okay: "We now need the screenshots you grabbed while working (all versions if possible). All I sent, archive them."). From beta 4.37.1 to 4.41: the shadows trial, the bottom bar, the mark and bio, the dial alone, the showcase, the phone pass.*
+*Archived 15 Oct 2026, 06:00 (Okay: "We now need the screenshots you grabbed while working (all versions if possible). All I sent, archive them."). From beta 4.37.1 to 4.41: the shadows trial, the bottom bar, the mark and bio, the dial alone, the showcase, the phone pass. Added 15 Oct, 08:20 (Okay, 07:59: "take all the unarchived new screenshots and text, add them to appropriate places"): 4.41.1 to 4.41.10 — the phone's drawer and bar, the showcase's Now and 10:10, the Gallery pill.*
 
-- `versions/` — one picture per version, 4.38 to 4.41 (and `phone-v4.40.1.png`, `phone-v4.41.png`, the same on a phone), each opening Okay's watch from his link at 10:10, at an iPad's landscape size (1180 × 820, 2×). Rendered at archive time from each version's committed `web/dial-tool.html` (versions as renumbered in `docs/versions.md`: 4.38.12 = 4.39 … 4.38.16 = 4.39.4).
+- `versions/` — one picture per version, 4.38 to 4.41.10 (and `phone-v4.40.1.png`, `phone-v4.41.png`, `phone-v4.41.10.png`, the same on a phone), each opening Okay's watch from his link at 10:10, at an iPad's landscape size (1180 × 820, 2×). Rendered at archive time from each version's committed `web/dial-tool.html` (versions as renumbered in `docs/versions.md`: 4.38.12 = 4.39 … 4.38.16 = 4.39.4).
 - `claude/` — what Claude shot while working, named `time-version-name`: the version is the build being made then (the next one committed). A shot redone later under the same name kept only its last state; earlier states of those are gone.
 - `okay/` — what Okay sent, named `time-seen-version-id`: the version is the last one committed before he sent it.
 
@@ -37,6 +37,15 @@ Times are Istanbul (UTC+3); "trial-1/2" and "bar-1…7" are the passes on the br
 | 15 Oct 06:51 | `okay/0651-seen-4.40.1-540bafbd.jpg` | 4.40.1 | the gripper dot on the drawer's line |
 | 15 Oct 06:51 | `okay/0651-seen-4.40.1-e834acd6.png` | 4.40.1 | the phone's edges, a purple line left and a red one right ("meet each other halfway") |
 | 15 Oct 06:54 | `okay/0654-seen-4.40.1-e884363b.jpg` | 4.40.1 | the speed thumb, to carry the speed |
+| 15 Oct 07:02 | `okay/0702-seen-4.41-3f92707c.png` | 4.41 | the phone's title line with mm (07:02: "a compacted title bar for scrollers' delight. We may lose mm") |
+| 15 Oct 07:02 | `okay/0702-seen-4.41-18823f8d.jpg` | 4.41 | the phone's drawer scrolled: the tabs stuck over the panes, no line under them (07:02: "we still get the scroll past behavior and no bottom bar?") |
+| 15 Oct 07:07 | `okay/0707-seen-4.41.1-d9343d39.jpg` | 4.41.1 | the labelled switches over the dial (07:07: "these buttons get solid bg color when labels visible") |
+| 15 Oct 07:12 | `okay/0712-seen-4.41.2-09566f72.png` | 4.41.2 | the phone's font sheet, the abbreviations spilling from their box (07:12: "cutoff the text and leave it") |
+| 15 Oct 07:14 | `okay/0714-seen-4.41.3-fa807c57.png` | 4.41.3 | Installed back in the phone's font sheet (07:14: "solve this… and show me a screenshot") |
+| 15 Oct 07:21 | `okay/0721-seen-4.41.4-ec944c9e.png` | 4.41.4 | the phone, two purple circles: FIT squeezed, and the drawer's title line (07:21: "allow equal space from its sides") |
+| 15 Oct 07:29 | `okay/0729-seen-4.41.5-311bb6c1.jpg` | 4.41.5 | the stuck tabs and the pinned part's thick line running into the margins (07:29: "lower hr bar should be inset. Hard cut from white to gray on margins") |
+| 15 Oct 07:45 | `okay/0745-seen-4.41.7-ce81465e.png` | 4.41.7 | the phone's bar: the time large, AM cut, the red dot close to the speed box (07:45: "smaller, 'same size with all' digi clock. Wider time slider, red dot with more space") |
+| 15 Oct 07:59 | `okay/0759-seen-4.41.9-c220eb82.jpg` | 4.41.9 (the page says 4.41.8: a copy the phone had kept) | the phone's compact title line on load (07:59: "this squeezed state is persistent. However, the big size with mm? It is not") |
 
 ## Claude's
 
@@ -212,3 +221,59 @@ Times are Istanbul (UTC+3); "trial-1/2" and "bar-1…7" are the passes on the br
 | 15 Oct 06:56 | `claude/0656-4.41-mobile-thumb-420.png` | 4.41 |
 | 15 Oct 06:56 | `claude/0656-4.41-mobile-thumb-1000.png` | 4.41 |
 | 15 Oct 06:56 | `claude/0656-4.41-mobile-thumbs.png` | 4.41 |
+| 15 Oct 07:03 | `claude/0703-4.41.1-mobile-s-both.png` | 4.41.1 |
+| 15 Oct 07:03 | `claude/0703-4.41.1-mobile-s-top.png` | 4.41.1 |
+| 15 Oct 07:03 | `claude/0703-4.41.1-mobile-s-scrolled.png` | 4.41.1 |
+| 15 Oct 07:03 | `claude/0703-4.41.1-mobile-s-stuck.png` | 4.41.1 |
+| 15 Oct 07:10 | `claude/0710-4.41.2-mobile-fill-iris.png` | 4.41.2 |
+| 15 Oct 07:10 | `claude/0710-4.41.2-mobile-fill-words.png` | 4.41.2 |
+| 15 Oct 07:10 | `claude/0710-4.41.2-mobile-fill.png` | 4.41.2 |
+| 15 Oct 07:15 | `claude/0715-4.41.4-mobile-fonts.png` | 4.41.4 |
+| 15 Oct 07:21 | `claude/0721-4.41.5-mobile-bar-before.png` | 4.41.5 |
+| 15 Oct 07:21 | `claude/0721-4.41.5-mobile-fit.png` | 4.41.5 |
+| 15 Oct 07:25 | `claude/0725-4.41.6-mobile-load-local-390.png` | 4.41.6 |
+| 15 Oct 07:25 | `claude/0725-4.41.6-mobile-load-local-430.png` | 4.41.6 |
+| 15 Oct 07:30 | `claude/0730-4.41.6-mobile-inset-1280-Dial.png` | 4.41.6 |
+| 15 Oct 07:30 | `claude/0730-4.41.6-mobile-inset-1280-Dial-right.png` | 4.41.6 |
+| 15 Oct 07:30 | `claude/0730-4.41.6-mobile-inset-1280-Hands.png` | 4.41.6 |
+| 15 Oct 07:30 | `claude/0730-4.41.6-mobile-inset-1280-Hands-right.png` | 4.41.6 |
+| 15 Oct 07:30 | `claude/0730-4.41.6-mobile-inset-390-Dial.png` | 4.41.6 |
+| 15 Oct 07:30 | `claude/0730-4.41.6-mobile-inset-390-Dial-right.png` | 4.41.6 |
+| 15 Oct 07:30 | `claude/0730-4.41.6-mobile-inset-390-Hands.png` | 4.41.6 |
+| 15 Oct 07:30 | `claude/0730-4.41.6-mobile-inset-390-Hands-right.png` | 4.41.6 |
+| 15 Oct 07:30 | `claude/0730-4.41.6-mobile-inset-sheet.png` | 4.41.6 |
+| 15 Oct 07:38 | `claude/0738-4.41.7-view-spin-0.png` | 4.41.7 |
+| 15 Oct 07:38 | `claude/0738-4.41.7-view-spin-1.png` | 4.41.7 |
+| 15 Oct 07:38 | `claude/0738-4.41.7-view-spin-2.png` | 4.41.7 |
+| 15 Oct 07:38 | `claude/0738-4.41.7-view-spin-3.png` | 4.41.7 |
+| 15 Oct 07:38 | `claude/0738-4.41.7-view-spin-4.png` | 4.41.7 |
+| 15 Oct 07:38 | `claude/0738-4.41.7-view-spin-5.png` | 4.41.7 |
+| 15 Oct 07:38 | `claude/0738-4.41.7-view-spin-6.png` | 4.41.7 |
+| 15 Oct 07:38 | `claude/0738-4.41.7-view-spin-7.png` | 4.41.7 |
+| 15 Oct 07:38 | `claude/0738-4.41.7-view-spin-8.png` | 4.41.7 |
+| 15 Oct 07:38 | `claude/0738-4.41.7-view-spin-9.png` | 4.41.7 |
+| 15 Oct 07:38 | `claude/0738-4.41.7-view-spin-sheet.png` | 4.41.7 |
+| 15 Oct 07:42 | `claude/0742-4.41.8-view-ten-1180-on.png` | 4.41.8 |
+| 15 Oct 07:43 | `claude/0743-4.41.8-view-ten-1180-ten.png` | 4.41.8 |
+| 15 Oct 07:43 | `claude/0743-4.41.8-view-ten-1180-now.png` | 4.41.8 |
+| 15 Oct 07:43 | `claude/0743-4.41.8-view-ten-1180-nohands.png` | 4.41.8 |
+| 15 Oct 07:43 | `claude/0743-4.41.8-view-ten-strip.png` | 4.41.8 |
+| 15 Oct 07:43 | `claude/0743-4.41.8-view-ten-390-on.png` | 4.41.8 |
+| 15 Oct 07:43 | `claude/0743-4.41.8-view-ten-390-ten.png` | 4.41.8 |
+| 15 Oct 07:43 | `claude/0743-4.41.8-view-ten-390-now.png` | 4.41.8 |
+| 15 Oct 07:43 | `claude/0743-4.41.8-view-ten-390-nohands.png` | 4.41.8 |
+| 15 Oct 07:49 | `claude/0749-4.41.9-mobile-bar-before-390.png` | 4.41.9 |
+| 15 Oct 07:49 | `claude/0749-4.41.9-mobile-bar-before-375.png` | 4.41.9 |
+| 15 Oct 07:50 | `claude/0750-4.41.9-mobile-bar-after-390.png` | 4.41.9 |
+| 15 Oct 07:50 | `claude/0750-4.41.9-mobile-bar-after-375.png` | 4.41.9 |
+| 15 Oct 07:50 | `claude/0750-4.41.9-mobile-bar-compare.png` | 4.41.9 |
+| 15 Oct 07:51 | `claude/0751-4.41.9-mobile-gal-1280-head.png` | 4.41.9 |
+| 15 Oct 07:51 | `claude/0751-4.41.9-mobile-gal-1280-after.png` | 4.41.9 |
+| 15 Oct 07:51 | `claude/0751-4.41.9-mobile-gal-390-head.png` | 4.41.9 |
+| 15 Oct 07:51 | `claude/0751-4.41.9-mobile-gal-390-after.png` | 4.41.9 |
+| 15 Oct 07:51 | `claude/0751-4.41.9-mobile-gal-heads.png` | 4.41.9 |
+| 15 Oct 08:00 | `claude/0800-4.41.10-mobile-sq-390-load.png` | 4.41.10 |
+| 15 Oct 08:00 | `claude/0800-4.41.10-mobile-sq-390-scrolled.png` | 4.41.10 |
+| 15 Oct 08:00 | `claude/0800-4.41.10-mobile-sq-375-load.png` | 4.41.10 |
+| 15 Oct 08:00 | `claude/0800-4.41.10-mobile-sq-375-scrolled.png` | 4.41.10 |
+| 15 Oct 08:00 | `claude/0800-4.41.10-mobile-sq-compare.png` | 4.41.10 |
