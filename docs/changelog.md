@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.41.20 (web version) · 15 Oct 2026
+
+- **Gallery:** World time is Okay's own version (dark red hands, larger day and night figures).
+
 ## beta 4.41.19 (web version) · 15 Oct 2026
 
 - **Opening a Gallery dial keeps the panel where it was** (it jumped back to the top).

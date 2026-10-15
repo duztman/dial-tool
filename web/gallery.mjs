@@ -104,22 +104,26 @@ const DIALS = [
       { kind: "markers", name: "Hour marks", r: 14.5, count: 12, len: 2.2, w: 0.75, c: WHITE },
       { kind: "ticks", name: "Minutes, 12 to 4", r: 14.5, count: 21, start: 0, span: 120, len: 1.1, w: 0.2, c: WHITE, skip: 1 },
     ] } },
+  // Okay's own world time (15 Oct 2026, 12:08, his link: "This is"): after Cottier, 1948 — the hour hand and the minute
+  // hand dark red, the seconds hand off, larger day and night figures upright, on a greyed lilac backdrop. Lean settings,
+  // as his link carries them.
   { name: "World time", note: "After Cottier, 1948: an hour dial, a 24-hour ring split day and night, a ring of cities typed by hand [1.15]", settings: {
-    dial_d: 38, c_plate: [0.93, 0.92, 0.88, 1],
-    ...hands(INK, { shape: "leaf", len: 5.6, w: 1.5, tail: 0.8 }, { shape: "leaf", len: 8.6, w: 1.3, tail: 1.0 }, { shape: "baton", len: 9, w: 0.12, tail: 2, on: false }, 1.0),
-    rings: [
-      { kind: "numerals", name: "Cities", r: 16.9, count: 24, labels: CUSTOM, mode: ON_PATH, size: 0.9, tracking: 50, c: INK, ...type("Barlow Condensed", "BarlowCondensed-Medium"),
-        custom: "LONDON, PARIS, CAIRO, ISTANBUL, DUBAI, KARACHI, DHAKA, BANGKOK, HONG KONG, TOKYO, SYDNEY, NOUMEA, AUCKLAND, MIDWAY, HONOLULU, ALASKA, L. ANGELES, DENVER, CHICAGO, NEW YORK, CARACAS, RIO, S. GEORGIA, AZORES" },
-      { kind: "ticks", name: "City marks", r: 18.6, count: 24, len: 0.7, w: 0.12, start: 7.5, c: INK },
-      { kind: "band", name: "Cities, inner line", r: 15.2, width: 0.1, c: INK },
-      // hour h stands at h × 15°, 24 on top. Day is 6 to 17 (the lower half), night 18 to 5: three numerals rings, as the two halves differ in colour
-      { kind: "numerals", name: "Night hours 18–24", r: 13.55, count: 7, start: 270, span: 90, labels: NUMBERS, num_from: 18, num_step: 1, size: 1.2, c: WHITE, mode: FLIP, ...type("Barlow", "Barlow-SemiBold") },
-      { kind: "numerals", name: "Night hours 1–5", r: 13.55, count: 5, start: 15, span: 60, labels: NUMBERS, num_from: 1, num_step: 1, size: 1.2, c: WHITE, mode: FLIP, ...type("Barlow", "Barlow-SemiBold") },
-      { kind: "numerals", name: "Day hours 6–17", r: 13.55, count: 12, start: 90, span: 165, labels: NUMBERS, num_from: 6, num_step: 1, size: 1.2, c: INK, mode: FLIP, ...type("Barlow", "Barlow-SemiBold") },
-      { kind: "band", name: "Day and night", r: 14.7, width: 2.3, count: 2, start: 82.5, c: [0.83, 0.80, 0.70, 1], cs: { 1: [0.12, 0.15, 0.24, 1] } },
-      { kind: "markers", name: "Hours", r: 11.6, count: 12, len: 1.5, w: 0.45, c: INK, twelve: 1, twelve_gap: 0.35 },
-      { kind: "ticks", name: "Minutes", r: 11.6, count: 60, len: 0.5, w: 0.1, c: INK, skip: 1 },
-    ] } },
+    "dial_d": 38, "guides": false, "c_plate": [0.93, 0.92, 0.88, 1], "c_backdrop": [0.5625, 0.5361, 0.5778, 1],
+    "rings": [
+      { "kind": 2, "name": "Cities", "r": 16.9, "count": 24, "labels": 6, "custom": "LONDON, PARIS, CAIRO, ISTANBUL, DUBAI, KARACHI, DHAKA, BANGKOK, HONG KONG, TOKYO, SYDNEY, NOUMEA, AUCKLAND, MIDWAY, HONOLULU, ALASKA, L. ANGELES, DENVER, CHICAGO, NEW YORK, CARACAS, RIO, S. GEORGIA, AZORES", "mode": 3, "size": 0.9, "family": "Barlow Condensed", "ps": "BarlowCondensed-Medium", "tracking": 50 },
+      { "name": "City marks", "r": 18.6, "count": 24, "start": 7.5, "len": 0.7, "w": 0.12 },
+      { "kind": 3, "name": "Cities, inner line", "r": 15.2, "width": 0.1 },
+      { "kind": 2, "name": "Night hours 18–24", "c": [0.95, 0.95, 0.92, 1], "r": 13.55, "count": 7, "start": 270, "span": 90, "labels": 7, "num_from": 18, "num_step": 1, "mode": 2, "size": 1.5, "family": "Barlow", "ps": "Barlow-SemiBold" },
+      { "kind": 2, "name": "Night hours 1–5", "c": [0.95, 0.95, 0.92, 1], "r": 13.55, "count": 5, "start": 15, "span": 60, "labels": 7, "num_from": 1, "num_step": 1, "mode": 2, "size": 1.5, "family": "Barlow", "ps": "Barlow-SemiBold" },
+      { "kind": 2, "name": "Day hours 6–17", "r": 13.55, "start": 90, "span": 165, "labels": 7, "num_from": 6, "num_step": 1, "mode": 2, "size": 1.5, "family": "Barlow", "ps": "Barlow-SemiBold" },
+      { "kind": 3, "name": "Day and night", "c": [0.83, 0.8, 0.7, 1], "r": 14.7, "count": 2, "start": 82.5, "width": 2.3, "cs": { "1": [0.12, 0.15, 0.24, 1] } },
+      { "kind": 1, "name": "Hours", "r": 11.6, "len": 1.5, "w": 0.45, "twelve": 1, "twelve_gap": 0.35 },
+      { "name": "Minutes", "r": 11.6, "count": 60, "skip": 1, "len": 0.5, "w": 0.1 },
+    ],
+    "ha_cap": 1, "c_cap": [0.08, 0.08, 0.08, 1],
+    "ha_hour": { "shape": 5, "len": 10.15, "w": 1.6, "tail": 1.6, "tip": 2.75, "feature": 1.6, "round": 0.05, "c": [0.4784, 0.1216, 0.1216, 1] },
+    "ha_minute": { "shape": 5, "len": 12.7, "w": 1.3, "tail": 1.7, "feature": 1.3, "c": [0.4784, 0.1216, 0.1216, 1], "disc_d": 30, "mark_len": 2.3, "mark_w": 1.88 },
+    "ha_second": { "on": false, "len": 9, "w": 0.12, "tail": 2, "c": [0.08, 0.08, 0.08, 1] } } },
 ];
 
 const G = await engines();
