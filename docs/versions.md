@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.41.13 | 15 Oct 2026 | web | [`a81dffb`](https://github.com/duztman/dial-tool/tree/a81dffb3af41695cf60b53c4ca0fdefe2e52c128) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/a81dffb3af41695cf60b53c4ca0fdefe2e52c128/web/dial-tool.html) | beta 4.41.13: the size button's drawing level |
 | 4.41.12 | 15 Oct 2026 | web | [`bd39935`](https://github.com/duztman/dial-tool/tree/bd399354d5576bbe2ee53203e214637361e993cf) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/bd399354d5576bbe2ee53203e214637361e993cf/web/dial-tool.html) | beta 4.41.12: the Gallery's second dial is Okay's own B-Uhr |
 | 4.41.11 | 15 Oct 2026 | web | [`c35c138`](https://github.com/duztman/dial-tool/tree/c35c13869e796ad37981f50ceacdf93293a3414d) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/c35c13869e796ad37981f50ceacdf93293a3414d/web/dial-tool.html) | beta 4.41.11: on a phone the mark is larger on the full title line, the eyes' size squeeze |
 | 4.41.10 | 15 Oct 2026 | web | [`838df5a`](https://github.com/duztman/dial-tool/tree/838df5a6989b71349403ac6bf527c7fe00aa9cb2) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/838df5a6989b71349403ac6bf527c7fe00aa9cb2/web/dial-tool.html) | beta 4.41.10: a phone's title line full at the drawer's top, squeezed and held on top whil |
