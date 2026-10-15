@@ -11,12 +11,13 @@ tools/versions.sh open 4.30    # → ../dial-tool-versions/v4.30/, open web/dial
 
 Versions 1.x–2.x are the DrawBot tool (`dial.py`, frozen; now in `archive/drawbot/`). 3.0 onward is the web version (`web/dial-tool.html`). The commit is the last one of that version, with its follow-up fixes.
 
-Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screenshot per version from 4.38 to 4.40.1 (Okay's watch in each), every screenshot Claude made while working, and every one Okay sent, with an index (`archive/screens/2026-10-15/README.md`).
+Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screenshot per version from 4.38 to 4.41 (Okay's watch in each), every screenshot Claude made while working, and every one Okay sent, with an index (`archive/screens/2026-10-15/README.md`).
 
 **Renumbered, 15 Oct 2026** (Okay, 05:58: "cook the books a bit, bump up to 39 just before preview mode, done when finished"): the build just before the eye switch's dial-alone view, 4.38.12, is listed as **4.39**, and the four after it, 4.38.13–4.38.16, as **4.39.1–4.39.4**; 4.40 is the finished night. Only the books changed: those commits are not rewritten, so their pages still print 4.38.x.
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.41 | 15 Oct 2026 | web | [`1d67f78`](https://github.com/duztman/dial-tool/tree/1d67f78f9a0926ed1bf28fa5b87d41f61ee13b9f) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/1d67f78f9a0926ed1bf28fa5b87d41f61ee13b9f/web/dial-tool.html) | beta 4.41: a phone's edges on one margin, the bar's monospace tracked 50, the gripper a pill |
 | 4.40.1 | 15 Oct 2026 | web | [`ef2c1e0`](https://github.com/duztman/dial-tool/tree/ef2c1e0c80f7a78af97f0c351e05554e71a1869b) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/ef2c1e0c80f7a78af97f0c351e05554e71a1869b/web/dial-tool.html) | beta 4.40.1: phone pass — the drawer's gripper, switches folded to their signs, lists as bott |
 | 4.40 | 15 Oct 2026 | web | [`639c016`](https://github.com/duztman/dial-tool/tree/639c016d2959de6989bdbf74f87f7993995528d9) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/639c016d2959de6989bdbf74f87f7993995528d9/web/dial-tool.html) | beta 4.40: the night's work after 4.38 released — the beat, the opener, Okay's mark and bi |
 | 4.39.4 | 15 Oct 2026 | web | [`77f3da5`](https://github.com/duztman/dial-tool/tree/77f3da5c850b148086ef91f2cf768150340178b1) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/77f3da5c850b148086ef91f2cf768150340178b1/web/dial-tool.html) | beta 4.39.4 (its page says 4.38.16): the showcase out the long way; a constant sun whose light fades at sunrise a |
