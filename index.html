@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.38.14 · built 2026-10-15 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.38.15 · built 2026-10-15 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -96,7 +96,13 @@
     /* the dial alone (the eye switch, Okay, 15 Oct 2026, 04:02): the panel slides away and the dial grows to fit, eased */
     --panel-w: calc(var(--panel) + var(--hair));   /* the panel's column: its lines and its right hairline */
     --view-time: 700ms; --view-ease: cubic-bezier(0.65, 0, 0.35, 1);      /* slow out, slow in */
-    --show-time: 900ms;                            /* the showcase coming and going: the bar leaving, the sky darkening */
+    --show-time: 600ms;                            /* the showcase's sky and spotlight fading in and out */
+    --iris-time: 250ms;                            /* the iris switch's words sliding out; Now shrinking into its undo sign */
+    --iris-words: 160px;                           /* room enough for ACTIVATE SHOWCASE */
+    --now-pill: 64px;                              /* the showcase's Now pill */
+    --hint-time: 2400ms;                           /* the showcase's left-right hint, start to end */
+    --mast-show: 0.5;                              /* the mark and "Dial Tool" in the showcase: fainter (Okay, 04:59) */
+    --track-100: 0.1em;                            /* tracking 100 (Okay, 04:59: "now gets 100 tracking") */
     --title-end: 0px; --bar-h: 0px;                /* set by dial_alone(): where the title ends (undo · redo stop short of it); the bar's height on a phone */
     --speed-pad: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2);      /* the speed box's room inside, left and right: the thumb at either end stands as far from the wall as from the box's top and bottom (3; Okay, 15 Oct 2026, 03:18: "when the ball is in a terminal, the bounding box clears it as much as it clears from the top… both ends symmetry"). Was u3 + 4 − half a thumb (1.25; 01:03, "before plus four") */
     --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
@@ -183,9 +189,10 @@
   html, body { height: 100%; margin: 0; touch-action: pan-x pan-y; }      /* fingers scroll, never zoom the window: only the dial zooms, inside the preview (Okay, 15 Oct 2026, 02:19) */
   body { background: var(--paper); color: var(--ink); overflow: hidden; }
   #app { display: grid; grid-template-columns: calc(var(--panel-w) * (1 - var(--away))) 1fr; grid-template-rows: 1fr calc(var(--bar-height) * (1 - var(--show))); height: 100%;
-    transition: --away var(--view-time) var(--view-ease), --show var(--show-time) var(--view-ease); }
+    transition: --away var(--view-time) var(--view-ease); }
+  #app.snap { transition: none; }      /* into and out of the showcase the layout changes at once: only the dial travels (app.js) */
   #app.away { --away: 1; }
-  #app.show { --show: 1; }      /* the showcase: the bar's row closes as it leaves (showcase() in app.js) */      /* the dial alone: the panel's column closes, eased (the eye switch, dial_alone() in app.js) */
+  #app.show { --show: 1; }      /* the showcase: the bar's row closes at once (showcase() in app.js) */      /* the dial alone: the panel's column closes, eased (the eye switch, dial_alone() in app.js) */
   @media (prefers-reduced-motion: reduce) { #app { transition: none; } }
   .starting { padding: var(--margin); }
   h1 { font-size: var(--t-l); font-weight: 600; letter-spacing: -0.005em; margin: 0; }
@@ -332,6 +339,7 @@
   .mast :is(h1, .logo:not([aria-expanded="true"])) { color: color-mix(in srgb, var(--mast-ink) clamp(0%, (var(--away) - 0.55) * 250%, 100%), var(--ink)); }
   .mast .quiet { color: color-mix(in srgb, color-mix(in srgb, var(--mast-ink) 70%, transparent) clamp(0%, (var(--away) - 0.55) * 250%, 100%), var(--grey)); }
   .mast .quiet { opacity: calc(1 - var(--show)); }      /* the showcase keeps the mark and "Dial Tool" only */
+  #app.show .mast { opacity: var(--mast-show); pointer-events: none; }      /* the showcase: fainter, and not pressable (Okay, 04:59) */
   .panel .unit { opacity: calc(1 - 3 * var(--away)); }      /* the unit box goes first, before it slides under the version */
   /* Okay's mark in the first column, the title after it on the six columns (Okay, 15 Oct 2026, 02:42); a press opens the bio
      under it, a night part as wide as the panel's lines */
@@ -1004,24 +1012,46 @@
   .tip svg .a { stroke: var(--ink); stroke-width: var(--tip-arrow); }
   .tip svg .b { stroke: var(--white); stroke-width: var(--tip-arrow-in); }
   .tip svg .c { fill: var(--ink); }
-  /* ── the showcase (the iris switch; Okay, 15 Oct 2026, 04:26) ── over the dial alone: the sky (a gradient, black at
-     the bottom up to the backdrop darkened, set in app.js) fades in; what stands on the preview fades away but the iris
-     switch, at the bottom right, its iris twice as big, and a Now pill at the bottom centre on its line, both faint, in
-     white. A drag on the preview moves the sun */
-  .sky { opacity: var(--show); }
+  /* ── the showcase (the iris switch; Okay, 15 Oct 2026, 04:26, reshaped 04:59 and 05:09) ── What stood on the preview
+     goes at once (fading, it twitched while the sky darkened) and comes back at once; only the dial travels (app.js).
+     The sky (a 45° gradient, set in app.js) and the spotlight fade in; the iris switch is an X at the window's bottom
+     right, Now a pill at the bottom centre on its line, both faint, in white. A drag moves the sun along its day */
+  :is(.sky, .pool) { opacity: 0; transition: opacity var(--show-time) linear; }
+  #app.show :is(.sky, .pool) { opacity: 1; }
   #app.show main { --on-canvas: var(--white); --off-canvas: var(--ink); }
-  :is(.undos, .guides, .backdrops, .shadows) { opacity: calc(1 - var(--show)); }
-  #app.show :is(.undos, .guides, .backdrops, .shadows, #eye-box) { pointer-events: none; }
-  #app.show :is(.preview, .preview path) { cursor: grab; }
-  .eyes { gap: calc(var(--unit) * (1 - var(--show))); }
-  #eye-box { width: calc(var(--control-large) * (1 - var(--show))); opacity: calc(1 - var(--show)); }      /* the eye folds away; the iris takes the corner */
-  #app.show #eye-box { border-width: 0; }
-  .irisbox { width: var(--control-large); padding: 0; overflow: hidden; border-radius: var(--round-switch); }
-  .irisbox svg { display: block; flex: none; }
-  .irisbox circle { scale: calc(1 + var(--show)); transform-origin: 15.25px 15px; }      /* twice the iris in the showcase */
-  .nowpill { position: absolute; z-index: 3; left: 50%; bottom: var(--canvas-inset); translate: -50% 0; height: var(--control-large); padding: 0 var(--u4); border-radius: calc(var(--control-large) / 2);
-    font-family: var(--mono); text-transform: uppercase; opacity: var(--show); visibility: hidden; pointer-events: none; transition: visibility 0s var(--show-time); }
-  #app.show .nowpill { visibility: visible; pointer-events: auto; transition: visibility 0s 0s; }
+  #app.show :is(.undos, .guides, .backdrops, .shadows, .tip) { visibility: hidden; }
+  #app.show :is(#eye-box, .irisgo) { display: none; }
+  #app.show .eyes { position: fixed; }      /* the window's corner, from the first moment: it doesn't ride down with the preview */
+  #app.show :is(.preview, .preview path) { cursor: ew-resize; }      /* the sun goes left and right */
+  /* the iris switch: the iris in a box; pressed, its words slide out to its left (ACTIVATE SHOWCASE), which alone go
+     to the showcase (04:59: "we need affordance"); in the showcase an X, the way out */
+  .irisbox { padding: 0; overflow: hidden; border-radius: var(--round-switch); }
+  .iriskey { display: block; width: calc(var(--control-large) - 2 * var(--hair)); height: 100%; padding: 0; }
+  .iriskey svg { display: block; margin: 0 auto; }
+  .irisbox .x { display: none; }
+  #app.show .irisbox .x { display: inline; }
+  .irisgo { max-width: 0; height: 100%; padding: 0; overflow: hidden; white-space: nowrap; font-family: var(--mono); font-size: var(--t-s); text-transform: uppercase; letter-spacing: var(--track-100);
+    transition: max-width var(--iris-time) var(--view-ease), padding var(--iris-time) var(--view-ease); }
+  .irisgo > .ink { padding-left: var(--track-100); }      /* the tracking after the last letter, given back before the first, so the word stands centred */
+  .irisbox[aria-expanded="true"] .irisgo { max-width: var(--iris-words); padding: 0 var(--u2) 0 var(--u4); }
+  @media (hover: hover) { .irisgo:hover { text-decoration: underline; text-underline-offset: 0.2em; } }
+  /* Now: a pill, tracked 100; pressed, the hands spin to now and it shrinks into a round undo sign (.back), the way back */
+  .nowpill { position: absolute; z-index: 3; left: 50%; bottom: var(--canvas-inset); translate: -50% 0; display: grid; place-items: center; width: var(--now-pill); height: var(--control-large); padding: 0; border-radius: calc(var(--control-large) / 2);
+    font-family: var(--mono); text-transform: uppercase; letter-spacing: var(--track-100); visibility: hidden; transition: width var(--iris-time) var(--view-ease); }
+  .nowpill > * { grid-area: 1 / 1; transition: opacity var(--iris-time) linear; }
+  .nowpill .word > .ink { padding-left: var(--track-100); }
+  .nowpill svg { opacity: 0; }
+  .nowpill.back { width: var(--control-large); }
+  .nowpill.back .word { opacity: 0; }
+  .nowpill.back svg { opacity: var(--faint); }
+  @media (hover: hover) { .nowpill.back:hover svg { opacity: 1; } }
+  #app.show .nowpill { visibility: visible; }
+  /* over Now, once the dial has arrived: a two-headed arrow comes, sways left and right, and goes (04:59) */
+  .sunhint { position: absolute; z-index: 3; left: 50%; bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); translate: -50% 0; color: var(--white); opacity: 0; pointer-events: none; }
+  .sunhint svg { display: block; }
+  .sunhint.go { animation: sway var(--hint-time) ease-in-out; }
+  @keyframes sway { 0% { opacity: 0; transform: translateX(0); } 15% { opacity: var(--faint); } 35% { transform: translateX(calc(-1 * var(--u2))); } 60% { transform: translateX(var(--u2)); } 80% { opacity: var(--faint); transform: translateX(0); } 100% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .sunhint.go { animation: none; } }
 }
 
 @layer bar {
@@ -1041,10 +1071,10 @@
   /* low contrast under the panel: no fills, thin light lines; what is chosen is a shade lighter */
   /* the bar's lower line is all monospace (Okay, 14 Oct 2026, 23:55: "All mono on the lower line") */
   .bar { font-family: var(--mono); }
-  /* the showcase: the bar bids farewell — its row closes and it sinks with the row's top, out of the window (Okay,
-     15 Oct 2026, 04:26). Not faded: under it is the page's paper, which would show through */
+  /* the showcase: the bar's row closes at once and the bar is out of the window (Okay, 15 Oct 2026, 05:09: only the
+     dial travels); not faded: under it is the page's paper, which would show through */
   .bar { align-self: start; }
-  #app.show .bar { pointer-events: none; }
+  #app.show .bar { visibility: hidden; }      /* the 10:10 tag stands above the bar's top: it would peek in */
   /* under the panel: play · how fast · the time and its half of the day · NOW, a half-gap between each (Okay: "equalize
      all paddings red dot to now, then halve them"), from the first of the six columns to the last. Each box is as wide
      as its words and the same room on either side of them; how fast takes what is left ("slider can grow"). */
@@ -5530,7 +5560,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.38.14";
+var VERSION = "beta 4.38.15";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -7261,8 +7291,10 @@ var INKED = [
   // AM · PM, the time's own window
   ".fit > span",
   // Fit, beside its magnifier
-  "#show-now",
+  "#show-now > .word",
   // the showcase's Now pill (15 Oct 2026)
+  ".irisgo",
+  // ACTIVATE SHOWCASE, beside the iris
   "#now",
   // NOW, beside it (Okay, 14 Oct 2026: "make sure the inner type is centered with equal padding within buttons")
   "#unit"
@@ -7497,7 +7529,11 @@ var INK_TRAPS = (() => {
 var EYE_RAYS = 24;
 var EYE_RAY = 0.5;
 var SKY_TOP = 0.3;
-var SUN = { turn: 6 * 360 / 3600, low: 12, high: 72, mid: 42, swing: 30 };
+var SHOWCASE_PAGE = { w: 210, h: 297, dial: 2 / 3 };
+var SUN = { day: 10, low: 10, noon: 40 };
+var POOL = { size: 1.45, stretch: 1.4, soft: [0.06, 0.8], light: [0.08, 0.42], shade: [0.15, 0.55], lift: 1.5 };
+var TRAVEL_MS = 900;
+var SPIN_MS = 1600;
 var TOOL_ICONS = {
   // on 18; a quiet sign, thin and light (Okay, 11 Oct 2026; again 14 Oct, 04:11: "thinner lines"): DENSE, corners
   // a sixteenth heavier as on any box; light by its grey. Outer edge where it was (1 … 17)
@@ -7544,8 +7580,11 @@ var TOOL_ICONS = {
     return `<mask id="eye-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask><path d="${rays}" stroke-width="${EYE_RAY}" stroke-linecap="butt" mask="url(#eye-cut)"/><circle cx="${cx}" cy="${cy}" r="2.75" fill="currentColor" stroke="none"/>`;
   })(),
   // the showcase switch, left of the eye (Okay, 15 Oct 2026, 04:26: "just the iris inside same box"): the eye's iris
-  // alone, where it stands in the eye; in the showcase it grows to twice its size (the stylesheet)
-  iris: `<circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/>`,
+  // alone, where it stands in the eye. In the showcase it is the way out: two of the eye's rays cross on it, an X run
+  // out to the box (04:59: "iris becomes an x (2rayiris)"); 1, not the eye's 0.5, so it reads while faint
+  iris: `<circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/><path class="x" d="M-0.75 -1L31.25 31M31.25 -1L-0.75 31" stroke-width="1" stroke-linecap="butt"/>`,
+  // the showcase's hint over Now: a line with a head at each end — the sun can be moved left and right (04:59)
+  both_ways: `<path d="M1.75 6H34.25M5.75 2L1.75 6L5.75 10M30.25 2L34.25 6L30.25 10" stroke-width="1"/>`,
   screen: `<rect x="2.75" y="3.25" width="10.5" height="7.5"/><path d="M8.25 10.75V13.25M5.75 13.25H10.75" ${sw(DENSE)}/>`,
   // the Guides switch, on 18: a target and its cross; its lines crowd, so DENSE. Okay's drawings (14 Oct 2026, 04:11):
   // guides: a target, its centre ring dashed in six, square-ended (a dash pattern is a texture, not line ends), ink
@@ -8066,6 +8105,7 @@ var DialTool = class _DialTool {
     if (this.shadows_open && !$("#shadow-list").hidden && !on(".shadows")) this.shadows_open(false);
     if (this.bio_open && !$("#bio").hidden && !on(".about")) this.bio_open(false);
     if (this.unit_open && !$("#unit-menu").hidden && !on(".unit")) this.unit_open(false);
+    if (this.iris_box && !on(".irisbox")) this.iris_open(false);
     if (this.lang_opens && !on(".langs")) for (const shut of this.lang_opens) shut(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
     if (this.value_pop && !on("#value-pop") && !on(".valueb, .atmore")) this.value_pop_close();
@@ -8116,7 +8156,25 @@ var DialTool = class _DialTool {
     });
     const sky_defs = svg_el("defs"), sky = svg_el("linearGradient");
     sky.id = "show-sky";
-    for (const [k, v] of [["x1", "0"], ["y1", "0"], ["x2", "0"], ["y2", "1"]]) sky.setAttribute(k, v);
+    for (const [k, v] of [["gradientUnits", "userSpaceOnUse"], ["x1", "0"], ["y1", "0"], ["x2", "1"], ["y2", "1"]]) sky.setAttribute(k, v);
+    this.sky_grad = sky;
+    this.pool = svg_el("g");
+    this.pool.setAttribute("class", "pool");
+    this.pool.setAttribute("pointer-events", "none");
+    this.pool_parts = ["show-light", "show-shade"].map((id) => {
+      const g = svg_el("radialGradient");
+      g.id = id;
+      const stops = [0, 1, 2].map(() => {
+        const s = svg_el("stop");
+        g.append(s);
+        return s;
+      });
+      sky_defs.append(g);
+      const circle2 = svg_el("circle");
+      circle2.setAttribute("fill", `url(#${id})`);
+      this.pool.append(circle2);
+      return { circle: circle2, stops };
+    });
     this.sky_stops = [0, 1].map((o) => {
       const s = svg_el("stop");
       s.setAttribute("offset", String(o));
@@ -8126,7 +8184,7 @@ var DialTool = class _DialTool {
     sky_defs.append(sky);
     this.sky = svg_el("rect");
     for (const [k, v] of [["class", "sky"], ["width", "100%"], ["height", "100%"], ["fill", "url(#show-sky)"], ["pointer-events", "none"]]) this.sky.setAttribute(k, v);
-    this.svg.append(sky_defs, this.backdrop, this.sky, this.dial, this.over);
+    this.svg.append(sky_defs, this.backdrop, this.sky, this.pool, this.dial, this.over);
     this.tip = el("div", { className: "tip", hidden: true }, el("span"));
     this.tip.insertAdjacentHTML("beforeend", '<svg viewBox="0 0 20 10" width="20" height="10" aria-hidden="true"><path class="a" d="M0 0 L10 10 L20 0"/><path class="b" d="M0 0 L10 10 L20 0"/><path class="c" d="M-1 -3 L21 -3 L21 0 L10 9 L-1 0 Z"/></svg>');
     this.preview_events();
@@ -8225,7 +8283,7 @@ var DialTool = class _DialTool {
     );
     this.set_speed(1);
     const guides = this.guides_box();
-    this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill);
+    this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.sun_hint);
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     requestAnimationFrame(() => this.level_title());
     this.play_icon();
@@ -8251,54 +8309,175 @@ var DialTool = class _DialTool {
     const d = /* @__PURE__ */ new Date();
     this.set_time(d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1e3);
   }
-  /** the showcase, or back (Okay, 15 Oct 2026, 04:26): "a bigger preview mode… on top of regular preview mode": the
-   *  dial alone (dial_alone), and the backdrop darkens to a faint gradient — black at the bottom up to the backdrop's
-   *  colour, much darkened; the bar leaves; nothing stays but the mark and "Dial Tool" (top left), the iris switch at
-   *  twice its iris (bottom right) and a Now pill (bottom centre, on the iris's line). The clock runs at 1× from where
-   *  it was; shadows are on with the soft edge; the sun goes round on its own (SUN) and a press or drag on the preview
-   *  puts it there. Pressing the iris again goes back to where we were. Nothing of it is stored or part of the dial. */
+  /** the showcase, or back (Okay, 15 Oct 2026, 04:26, reshaped 04:59 and 05:09). In: the panel and the bar are gone at
+   *  once, what stood on the preview goes at once (fading, it twitched as the sky darkened), and the dial alone travels,
+   *  eased, to its showcase place (show_target: 2/3 of a portrait A4 fitted in the window). The sky darkens to a 45°
+   *  gradient; a spotlight pool lies behind the dial and takes its shadow; the sun crosses a day in SUN.day seconds;
+   *  the clock runs at 1× from where it was. What stays: the mark and "Dial Tool" (fainter, not pressable), the iris
+   *  switch as an X (bottom right; the way out) and Now (bottom centre). Out: the same, backwards, to where we were. The
+   *  shadows' soft edge is off while anything moves (moving()). Nothing of it is stored or changes the dial. */
   showcase(on) {
     const app = $("#app");
     if (on === !!this.show) return;
     this.hover(null);
     if (this.pop && this.pop.at) this.pop_close();
     if (this.bio_open) this.bio_open(false);
+    this.iris_open(false);
+    const before = this.svg.getBoundingClientRect(), c0 = this.c.slice(), z0 = this.z;
+    app.classList.add("snap");
     if (on) {
-      const S = this.S, rise = clamp(S.sh_rise, SUN.low, SUN.high);
       this.show = {
         away: app.classList.contains("away"),
         playing: this.playing,
         speed: this.speed,
-        sun: { from: S.sh_from, rise, phase: Math.acos(clamp((rise - SUN.mid) / SUN.swing, -1, 1)) * 180 / Math.PI },
-        at: performance.now()
+        phase: 0,
+        at: performance.now(),
+        spin: null,
+        back: null,
+        view: { c: c0, z: z0, fitted: this.fitted }
       };
-      if (!this.show.away) this.dial_alone(true);
-      app.style.setProperty("--bar-h", $(".bar").offsetHeight + "px");
-      this.fitted = true;
-      app.classList.add("show");
+      app.classList.add("away", "show");
+      this.eye_button.setAttribute("aria-pressed", "true");
       this.set_speed(1);
       if (!this.playing) this.play(true);
     } else {
       const was = this.show;
+      this.left_view = was.view;
       this.show = null;
       app.classList.remove("show");
-      this.fitted = true;
-      if (!was.away) this.dial_alone(false);
+      if (!was.away) {
+        app.classList.remove("away");
+        this.eye_button.setAttribute("aria-pressed", "false");
+      }
       this.set_speed(was.speed);
       if (!was.playing) this.play(false);
+      this.now_pill.classList.remove("back");
     }
     this.iris_button.setAttribute("aria-pressed", String(on));
+    app.style.setProperty("--title-end", this.title.getBoundingClientRect().right.toFixed(1) + "px");
+    const after = this.svg.getBoundingClientRect();
+    this.c = [c0[0] + before.left - after.left, c0[1] + before.top - after.top];
+    this.z = z0;
+    this.view = [after.width, after.height];
+    this.place();
+    const home = on ? null : this.left_view;
+    this.travel_to(on ? this.show_target() : { c: home.c, z: home.z }, () => {
+      if (this.show) this.hint();
+      else this.fitted = home.fitted;
+    });
+    requestAnimationFrame(() => requestAnimationFrame(() => app.classList.remove("snap")));
+  }
+  /** where the dial stands in the showcase: centred, as wide as 2/3 of a portrait A4 that is fitted in the window */
+  show_target() {
+    const [w, h] = this.size(), page = Math.min(w / SHOWCASE_PAGE.w, h / SHOWCASE_PAGE.h);
+    return { c: [w / 2, h / 2], z: SHOWCASE_PAGE.dial * SHOWCASE_PAGE.w * page / this.S.dial_d };
+  }
+  /** the dial travels to `to` ({c, z}), eased; the only thing that moves in and out of the showcase. Then it is fitted */
+  travel_to(to, done) {
+    this.travel = { from: { c: this.c.slice(), z: this.z }, to, t0: performance.now(), done };
+    this.fitted = false;
     this.render();
   }
-  /** the showcase's sun, from a point of the preview (a press or a drag, 04:26: "click and drag the sun anywhere"): the
-   *  light comes from that direction, seen from the dial's centre; at the centre it is high, at the dial's edge low */
+  /** a step of the travel, from frame(): true while it goes on */
+  travel_step() {
+    const T = this.travel, p = clamp((performance.now() - T.t0) / TRAVEL_MS, 0, 1), e = p < 0.5 ? 4 * p ** 3 : 1 - (-2 * p + 2) ** 3 / 2;
+    const to = this.show ? this.show_target() : T.to;
+    this.z = T.from.z * (to.z / T.from.z) ** e;
+    this.c = [T.from.c[0] + (to.c[0] - T.from.c[0]) * e, T.from.c[1] + (to.c[1] - T.from.c[1]) * e];
+    this.place();
+    if (p < 1) return true;
+    this.travel = null;
+    this.fitted = true;
+    if (T.done) T.done();
+    return false;
+  }
+  /** something is moving: the dial travelling, the panel sliding, the hands spinning, the sun being dragged. The
+   *  shadows' soft edge waits for it to stop (Okay, 04:59 and 05:09: "blur off on all animations") */
+  moving() {
+    return !!(this.travel || this.sliding || this.show && (this.show.spin || this.show.dragging));
+  }
+  /** the showcase's sun now: where it is in its day (0 sunrise … 1 sunset), the direction its light comes from and its height */
+  sun() {
+    const p = this.show.phase, k = Math.sin(Math.PI * p);
+    return { p, k, from: (270 + 180 * p) % 360, rise: SUN.low + (SUN.noon - SUN.low) * k };
+  }
+  /** the sun along its day, from a point of the preview: the left edge is sunrise, the right sunset */
   sun_to(p) {
-    const dx = p[0] - this.c[0], dy = p[1] - this.c[1], edge = this.S.dial_d / 2 * this.z;
-    const sun = this.show.sun;
-    sun.from = (Math.atan2(dx * (this.S.out_mirror ? -1 : 1), -dy) * 180 / Math.PI + 360) % 360;
-    sun.rise = clamp(SUN.high - (SUN.high - SUN.low) * Math.hypot(dx, dy) / edge, SUN.low, SUN.high);
-    sun.phase = Math.acos(clamp((sun.rise - SUN.mid) / SUN.swing, -1, 1)) * 180 / Math.PI;
+    const [w] = this.size();
+    this.show.phase = clamp(p[0] / w, 0, 0.999);
     this.render();
+  }
+  /** the showcase's spotlight and the dial's shadow in it, for the sun now (POOL); in the dial's millimetres */
+  draw_pool() {
+    if (!this.show) return;
+    const S = this.S, sun = this.sun(), a = sun.from * Math.PI / 180, toward = [Math.sin(a), Math.cos(a)];
+    const R = S.dial_d / 2, off = POOL.lift / Math.tan(sun.rise * Math.PI / 180), dim = 1 - sun.k;
+    const mix = ([lo, hi], t) => lo + (hi - lo) * t;
+    const soft = mix(POOL.soft, dim), light = mix(POOL.light, sun.k), shade = mix(POOL.shade, sun.k);
+    const f = (v) => v.toFixed(3), [L, D] = this.pool_parts;
+    L.circle.setAttribute("r", f(R * POOL.size));
+    L.circle.setAttribute("transform", `translate(${f(-toward[0] * off / 2)} ${f(-toward[1] * off / 2)}) rotate(${f(90 - sun.from)}) scale(${f(1 + POOL.stretch * dim)} 1)`);
+    const colour = to_hex(S.c_backdrop);
+    L.stops.forEach((s, i) => {
+      s.setAttribute("offset", f([0, 1 - soft, 1][i]));
+      s.setAttribute("stop-color", colour);
+      s.setAttribute("stop-opacity", f(i < 2 ? light : 0));
+    });
+    const r = R * (1 + soft * 0.4);
+    D.circle.setAttribute("r", f(r));
+    D.circle.setAttribute("transform", `translate(${f(-toward[0] * off)} ${f(-toward[1] * off)})`);
+    D.stops.forEach((s, i) => {
+      s.setAttribute("offset", f([0, R / r * (1 - soft * 0.3), 1][i]));
+      s.setAttribute("stop-color", "#000");
+      s.setAttribute("stop-opacity", f(i < 2 ? shade : 0));
+    });
+  }
+  /** Now in the showcase: every hand turns twice and lands on the time it is now; the pill shrinks into an undo sign.
+   *  Pressed then, the hands turn twice the other way, back to the time they showed (as it has run on since), and the
+   *  sign grows back into Now (Okay, 04:59; Okay's choice of the way back) */
+  show_now() {
+    const sh = this.show, beat = BEATS[this.S.ha_beat][1];
+    const from = hand_angles(this.S.t, beat);
+    if (!sh.back) {
+      const d = /* @__PURE__ */ new Date(), now = d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1e3;
+      sh.back = { t: this.S.t, at: performance.now() };
+      this.set_time(now);
+      sh.spin = { from, way: 1, t0: performance.now() };
+      this.now_pill.classList.add("back");
+    } else {
+      this.set_time(sh.back.t + (performance.now() - sh.back.at) / 1e3);
+      sh.back = null;
+      sh.spin = { from, way: -1, t0: performance.now() };
+      this.now_pill.classList.remove("back");
+    }
+    this.now_pill.title = this.now_pill.ariaLabel = sh.back ? "Back to the time it showed" : "The time it is now";
+    this.render();
+  }
+  /** the hands while they spin: from where they were, two whole turns and the way to where they are now (frame()) */
+  spin_hands(items) {
+    const sp = this.show && this.show.spin;
+    if (!sp) return;
+    const p = clamp((performance.now() - sp.t0) / SPIN_MS, 0, 1), e = p < 0.5 ? 4 * p ** 3 : 1 - (-2 * p + 2) ** 3 / 2;
+    const k = { hour: 0, minute: 1, second: 2 };
+    for (const item of items) {
+      if (item.role !== "hand") continue;
+      const a0 = sp.from[k[item.name]], gap = ((item.angle - a0) * sp.way % 360 + 360) % 360;
+      item.angle = p < 1 ? a0 + sp.way * e * (gap + 720) : item.angle;
+    }
+    if (p >= 1) this.show.spin = null;
+  }
+  /** the showcase's hint, once it has arrived: over Now a two-headed arrow comes, sways left and right, and goes */
+  hint() {
+    const h = this.sun_hint;
+    h.classList.remove("go");
+    void h.offsetWidth;
+    h.classList.add("go");
+  }
+  /** the iris switch opened (its words, ACTIVATE SHOWCASE, slid out to its left) or shut */
+  iris_open(on) {
+    if (!this.iris_box) return;
+    this.iris_box.setAttribute("aria-expanded", String(on));
+    this.iris_go.tabIndex = on ? 0 : -1;
   }
   /** the dial alone, or back (Okay, 15 Oct 2026, 04:02: "it immediately triggers a sliding away action of the left
    *  white column. Bottom bar stays. Backdrop and shadow stop short. Logo and dial tool and version number is what
@@ -8313,13 +8492,21 @@ var DialTool = class _DialTool {
     app.style.setProperty("--title-end", this.title.getBoundingClientRect().right.toFixed(1) + "px");
     app.style.setProperty("--bar-h", $(".bar").offsetHeight + "px");
     this.fitted = true;
+    this.sliding = true;
     if (this.view_end) app.removeEventListener("transitionend", this.view_end);
     this.view_end = (e) => {
       if (e.target === app) {
+        this.sliding = false;
         this.fit();
         this.render();
       }
     };
+    setTimeout(() => {
+      if (this.sliding) {
+        this.sliding = false;
+        this.render();
+      }
+    }, 1200);
     app.addEventListener("transitionend", this.view_end);
     app.classList.toggle("away", on);
   }
@@ -8412,13 +8599,23 @@ var DialTool = class _DialTool {
     eye2.setAttribute("aria-pressed", "false");
     eye2.onclick = () => this.dial_alone(eye2.getAttribute("aria-pressed") !== "true");
     this.eye_button = eye2;
-    const iris = el("button", { type: "button", className: "onview irisbox", id: "iris-box", title: "The dial on show: the clock runs, the sun goes round \u2014 drag it anywhere", ariaLabel: "The dial on show" });
+    const iris = el("button", { type: "button", className: "iriskey", id: "iris-box", title: "The showcase", ariaLabel: "The showcase" });
     iris.innerHTML = icon(TOOL_ICONS.iris, 30);
     iris.setAttribute("aria-pressed", "false");
-    iris.onclick = () => this.showcase(!this.show);
+    iris.onclick = () => {
+      if (this.show) this.showcase(false);
+      else this.iris_open(this.iris_box.getAttribute("aria-expanded") !== "true");
+    };
+    this.iris_go = el("button", { type: "button", className: "irisgo", id: "iris-go", textContent: "Activate showcase", onclick: () => this.showcase(true) });
+    this.iris_box = el("div", { className: "onview irisbox" }, this.iris_go, iris);
     this.iris_button = iris;
-    this.eye_box = el("div", { className: "eyes" }, iris, eye2);
-    this.now_pill = el("button", { type: "button", className: "onview nowpill", id: "show-now", title: "The time it is now", onclick: () => this.to_now() }, el("span", { textContent: "Now" }));
+    this.iris_open(false);
+    this.eye_box = el("div", { className: "eyes" }, this.iris_box, eye2);
+    this.now_pill = el("button", { type: "button", className: "onview nowpill", id: "show-now", title: "The time it is now", ariaLabel: "The time it is now", onclick: () => this.show_now() }, el("span", { className: "word", textContent: "Now" }));
+    this.now_pill.insertAdjacentHTML("beforeend", icon(TOOL_ICONS.undo));
+    this.sun_hint = el("div", { className: "sunhint", id: "sun-hint" });
+    this.sun_hint.innerHTML = icon(TOOL_ICONS.both_ways, 36, 12);
+    this.sun_hint.onanimationend = () => this.sun_hint.classList.remove("go");
     return el("div", { className: "backdrops" }, box2);
   }
   /** Okay's mark in the panel's first column, left of the title; a press opens a short bio: who made the tool, where
@@ -8639,7 +8836,8 @@ var DialTool = class _DialTool {
    *  cap's shadow, as wide as the cap. Nothing is drawn outside the dial: the plate's own shadow falls only into its
    *  windows. Each surface's shadows are one group with one opacity, so where two overlap it is not darker. */
   draw_shadows(items) {
-    const S = this.show ? { ...this.S, sh_on: true, sh_blur: true, sh_from: this.show.sun.from, sh_rise: this.show.sun.rise } : this.S;
+    const sun = this.show && this.sun();
+    const S = sun ? { ...this.S, sh_on: true, sh_blur: !this.moving(), sh_from: sun.from, sh_rise: sun.rise } : { ...this.S, sh_blur: this.S.sh_blur && !this.moving() };
     if (!this.shade) {
       const defs = svg_el("defs"), filter = svg_el("filter"), blur = svg_el("feGaussianBlur");
       filter.id = "shadow-soft";
@@ -10957,17 +11155,19 @@ var DialTool = class _DialTool {
         this.S.t = (t + (performance.now() - wall) / 1e3 * this.speed) % 86400;
         this.sync_time();
         this.pulse(t + (performance.now() - wall) / 1e3);
-        if (this.show) {
-          const now = performance.now(), turn = SUN.turn * (now - this.show.at) / 1e3, sun = this.show.sun;
-          this.show.at = now;
-          if (!this.show.dragging) {
-            sun.from = (sun.from + turn) % 360;
-            sun.phase = (sun.phase + turn) % 360;
-            sun.rise = SUN.mid + SUN.swing * Math.cos(sun.phase * Math.PI / 180);
-          }
-        }
         this.render();
       }
+      if (this.show) {
+        const now = performance.now();
+        if (!this.show.dragging) this.show.phase = (this.show.phase + (now - this.show.at) / 1e3 / SUN.day) % 1;
+        this.show.at = now;
+        this.render();
+      }
+      if (this.travel) {
+        this.travel_step();
+        this.render();
+      }
+      if (this.show && this.show.spin) this.render();
       this.draw();
     } catch (e) {
       this.play(false);
@@ -10988,11 +11188,16 @@ var DialTool = class _DialTool {
       this.build_ms = performance.now() - t0;
     }
     const items = scene(S, this.statik, S.t, true, S.ui_ring);
+    this.spin_hands(items);
     this.items = items;
     const backdrop = S.out_production ? [1, 1, 1, 1] : S.c_backdrop;
     this.backdrop.setAttribute("fill", to_hex(backdrop));
     this.sky_stops[0].setAttribute("stop-color", to_hex(backdrop.map((v, i) => i < 3 ? v * SKY_TOP : 1)));
     this.sky_stops[1].setAttribute("stop-color", "#000");
+    const [sw_, sh_] = this.size(), reach = ((sw_ + sh_) / 2).toFixed(1);
+    this.sky_grad.setAttribute("x2", reach);
+    this.sky_grad.setAttribute("y2", reach);
+    this.draw_pool();
     const lin = (v) => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4, L = 0.2126 * lin(backdrop[0]) + 0.7152 * lin(backdrop[1]) + 0.0722 * lin(backdrop[2]);
     this.main.classList.toggle("dark", 1.05 / (L + 0.05) > (L + 0.05) / 0.05);
     $("#app").classList.toggle("dark", this.main.classList.contains("dark"));
@@ -11061,13 +11266,16 @@ var DialTool = class _DialTool {
     const where = `translate(${this.c[0]} ${this.c[1]}) scale(${flip * this.z} ${-this.z})`;
     this.dial.setAttribute("transform", where);
     this.over.setAttribute("transform", where);
+    if (this.pool) this.pool.setAttribute("transform", where);
   }
   fit() {
     const [w, h] = this.size();
     if (w < 1 || h < 1) return;
+    if (this.travel) return;
     this.fitted = true;
-    this.z = this.fit_zoom();
-    this.c = [w / 2, h / 2];
+    const to = this.show ? this.show_target() : { c: [w / 2, h / 2], z: this.fit_zoom() };
+    this.z = to.z;
+    this.c = to.c;
     this.place();
   }
   /** zoom by k so that the spot under view point p stays there. */
@@ -11083,6 +11291,10 @@ var DialTool = class _DialTool {
     this.pop_cover();
     const [w, h] = this.size();
     if (w < 1 || h < 1) return;
+    if (this.travel) {
+      this.view = [w, h];
+      return;
+    }
     if (this.fitted) this.fit();
     else if (this.view) {
       this.c = [this.c[0] + (w - this.view[0]) / 2, this.c[1] + (h - this.view[1]) / 2];
@@ -11102,6 +11314,7 @@ var DialTool = class _DialTool {
     };
     this.svg.addEventListener("wheel", (e) => {
       e.preventDefault();
+      if (this.show) return;
       this.hover(null);
       if (e.ctrlKey || e.metaKey) this.zoom(Math.exp(-e.deltaY * 0.01), at(e));
       else {
@@ -11136,6 +11349,7 @@ var DialTool = class _DialTool {
       if (!pts.has(e.pointerId)) return e.pointerType === "mouse" ? this.hover(at(e), document.elementFromPoint(e.clientX, e.clientY)) : null;
       pts.set(e.pointerId, at(e));
       if (pts.size >= 2) {
+        if (this.show) return;
         const now = pair();
         this.hover(null);
         this.c = [this.c[0] + now.mid[0] - down.mid[0], this.c[1] + now.mid[1] - down.mid[1]];
@@ -11178,7 +11392,7 @@ var DialTool = class _DialTool {
     });
     this.svg.addEventListener("gesturechange", (e) => {
       e.preventDefault();
-      if (pts.size < 2) this.zoom(e.scale / pinch, at(e));
+      if (pts.size < 2 && !this.show) this.zoom(e.scale / pinch, at(e));
       pinch = e.scale;
     });
   }
