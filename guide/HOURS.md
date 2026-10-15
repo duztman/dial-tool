@@ -9,3 +9,5 @@
 | 2 Brief | 15 Oct, 09:51 | 0.5 | 0.05 | — | waiting for Okay's word |
 | 3 Baseline | 15 Oct, 09:55–10:35 | 1.5 | 0.7 | 0.2 | target + scorer (pipeline); three readers ran in parallel (≈30 min) |
 | 4 Edition 1 text | 15 Oct, 10:35–11:00 | 3 | 0.6 | 0.4 | 26 checks (`checks/checks.mjs`, 1 m 50 s a run) and the gate (`tools/claims.mjs`); 37 sentences name them. Interrupted 10:47–10:58 for 4.41.15 (not counted) |
+| 5 First dial | 15 Oct, 11:00–11:25 | 2 | 0.4 | 0.3 | `checks/first-dial.mjs`: ten steps done like a person, a link and a picture each; the PDF checked (34 on 40 mm); plain page `web/build.mjs` |
+| 6 Reader test | 15 Oct, 11:25–12:15 | 3 | 0.8 | 0.2 | two AI rounds (`tests/round-1.md`, `round-2.md`), drafts 2 and 3; checks 27 → 31. Humans' round waits for edition 1 |

@@ -1,0 +1,135 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dial Tool guide</title>
+<style>
+:root{--paper:#FCFCFA;--ink:#111;--grey:#5C5C58;--rule:#B9B9B4;--ground:#ECECE8}
+html{background:var(--paper);color:var(--ink);font:16px/1.5 Inter,"Helvetica Neue",Arial,sans-serif;-webkit-text-size-adjust:100%}
+body{margin:0 auto;max-width:720px;padding:24px 20px 96px}
+header{border-bottom:2px solid var(--ink);padding-bottom:12px;margin-bottom:8px}
+header h1{font-weight:300;font-size:40px;line-height:1.05;margin:0 0 8px}
+header p{margin:0;color:var(--grey);font-size:14px}
+nav{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:14px;margin:12px 0 0}
+nav a{color:var(--ink)}
+section{border-top:1px solid var(--rule);padding-top:8px;margin-top:40px}
+section:first-of-type{border:0;margin-top:0}
+h2{font-weight:300;font-size:30px;line-height:1.15;margin:16px 0 12px}
+h3{font-size:16px;margin:28px 0 4px;padding-top:8px;border-top:1px solid var(--ground)}
+p{margin:0 0 12px}
+.watch{font-size:14px;color:var(--grey);margin:-4px 0 16px 20px}
+ol.steps{padding-left:0;list-style:none;counter-reset:s}
+ol.steps li{counter-increment:s;margin:0 0 28px;padding-left:36px;position:relative}
+ol.steps li::before{content:counter(s);position:absolute;left:0;top:0;font-weight:600}
+figure{margin:8px 0 0}
+figure img{width:100%;max-width:420px;height:auto;display:block;background:var(--ground)}
+figcaption{font-size:13px;color:var(--grey);margin-top:4px}
+figcaption a{color:var(--ink)}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0 16px}
+th{text-align:left;border-bottom:1px solid var(--ink);padding:6px 8px 6px 0}
+td{border-bottom:1px solid var(--rule);padding:6px 8px 6px 0;vertical-align:top}
+code{font-size:.9em;background:var(--ground);padding:0 3px}
+a{color:var(--ink);text-underline-offset:3px}
+footer{margin-top:56px;font-size:13px;color:var(--grey);border-top:1px solid var(--rule);padding-top:8px}
+</style></head><body>
+<header><h1>Dial Tool guide</h1><p>Edition 1, draft · 2026-10-15 · for <a href="https://duztman.github.io/dial-tool/">Dial Tool</a> beta 4.41.17. Pictures from an iPad held landscape.</p>
+<nav><a href="#how-the-tool-thinks">How the tool thinks</a><a href="#the-screen">The screen</a><a href="#the-screen-on-a-phone">The screen on a phone</a><a href="#your-first-dial">Your first dial</a><a href="#find-it">Find it</a><a href="#for-the-maker">For the maker</a></nav></header>
+<section></section><section>
+<h2 id="how-the-tool-thinks">How the tool thinks</h2>
+<p>Five things explain almost everything the tool does. The rest of the guide leans on them.</p>
+<h3>Disc, plate, print, hands</h3>
+<p>A watch dial, seen from the side, is a short stack: the date disc at the bottom, the plate with its print, then the hands, then the cap that holds them. The tool draws that stack. The print on the plate is made of rings.</p>
+<h3>A ring repeats one thing round the centre</h3>
+<p>A ring is ticks, markers, numerals or a band, repeated at its positions: <strong>Count</strong> of them, from <strong>Start °</strong>, across <strong>Span °</strong>. <strong>Every</strong> keeps one position in so many; <strong>Skip those instead</strong> keeps the others. Every 3 on twelve positions keeps 12, 3, 6, 9; with Skip those instead, the eight hours between.</p>
+<h3>The higher ring wins</h3>
+<p>A dial is a list of rings, top first. A ring below gives way to the rings above in one of two ways, under Rings › Give way to rings above. <strong>Skip where</strong> leaves out its own marks at the angles where a ring above has one: minute ticks that skip where markers stand. <strong>Knock out</strong> keeps its marks but cuts them round the rings above, leaving a gap the width of the Clearance.</p>
+<h3>The panel edits what is selected</h3>
+<p>Select a ring in the list, or tap one of its marks on the dial: everything below the list now edits that ring. The hand tabs in Hands and the window cards in Windows work the same way.</p>
+<h3>True size, kept as you go</h3>
+<p>Every length is in millimetres, measured on the dial; files come out at true size. The page around the dial is the diameter plus twice the page margin: a 30 mm dial with a 3 mm margin makes a 36 mm page, and the file is still named after the dial.</p>
+<p>There is no Save to press. About half a second after you stop, the dial is kept in this browser and written into the page's address; reload, or come back later in the same browser, and it is there. The address is a link to the dial: send it and the dial opens, at the time shown, but not on the tab or in the unit you were using.</p>
+<p class="watch"><strong>Watch:</strong> while time is playing, nothing is kept until you stop it.</p>
+</section><section>
+<h2 id="the-screen">The screen</h2>
+<p>The panel on the left, the dial on the right, the bottom bar along the foot. <em>(Pictures from an iPad held landscape; a Mac is the same with more room. The phone is on the next page.)</em></p>
+<h3>The panel's five tabs</h3>
+<p><strong>Dial</strong> — its size (and <strong>Scale everything with it</strong>, which grows the whole print with it), the centre hole, the plate's colour, the page around it, and every colour on the dial in one list. <strong>Rings</strong> — the list of rings and the settings of the selected one. <strong>Hands</strong> — hour, minute and seconds hands, and the cap. <strong>Windows</strong> — up to four holes in the plate; their cards sit at 12, 3, 6 and 9, and each window can move anywhere round the dial. <strong>Export</strong> — files, the print mask, the link, settings files, the log, and the Gallery.</p>
+<h3>A ring's row</h3>
+<p>Each row reads: the eye (show or hide the ring), the grip (drag to reorder), the name, how many of what kind ("12 markers"), its colour, then two numbers: its size and its radius, in millimetres. On the selected row a small text-cursor sign beside the name renames the ring.</p>
+<p>Under the selected row sits the ring drawer: four tiles for its kind (ticks, markers, numerals, band) — a ring changed to another kind and back is as it was — then its colour, then two round buttons. Press a round button and its number opens in a small pop-up: on a Mac it is ready to type over; on a touch screen, tap the number first. A tap anywhere else closes it.</p>
+<table><thead><tr><th>The ring is</th><th>First button</th><th>Second button</th></tr></thead><tbody>
+<tr><td>ticks, markers</td><td>Length: of one mark, inward from its outer end</td><td>Outer radius: where the marks' outer ends sit</td></tr>
+<tr><td>numerals</td><td>Size: the type size, in mm, as in any layout program (figures stand a little shorter)</td><td>Centre radius: where the numerals' centres sit</td></tr>
+<tr><td>band</td><td>Band width</td><td>Outer radius</td></tr>
+</tbody></table>
+<p class="watch"><strong>Watch:</strong> a numerals ring's radius can measure to the numerals' centres, their baseline or their tops: the small menu in the radius button's pop-up. Centre is the start.</p>
+<h3>Over the dial</h3>
+<p>Top left, undo and redo. Top right, <strong>Guides</strong>: thin coloured construction lines, on to start, never exported; press Guides to hide them (the pictures in this guide leave them off). Bottom left, <strong>Backdrop</strong> and <strong>Shadows</strong>: how the dial is seen, never exported. Bottom right, two square switches: <strong>the dial alone</strong> (the panel slides away) and <strong>the showcase</strong> (a dark view for presenting).</p>
+<h3>The bottom bar</h3>
+<p>Play and its speed, from 1× to 720×. The time, typed or set with the slider under it; its steps are the twelve hours and 10:10, the pose watches are photographed in. <strong>Now</strong> sets the time it is. On the right: zoom, and <strong>FIT</strong> to see the whole dial.</p>
+<h3>Pop-ups and sheets</h3>
+<p>A colour opens a pop-out beside it: its × closes it; the square beside the × makes it twice the size. <strong>Change…</strong> opens the font sheet, which stays open after you choose: tap outside it to close it.</p>
+<h3>Panes fold</h3>
+<p>Each section is cut into panes, each with an eye beside its name. Press the eye to fold the pane to one line; a closed eye means folded, and a press opens it again.</p>
+<h3>The title line</h3>
+<p>The mark opens a note about the tool. <strong>Gallery</strong> takes you to dials you can open and take apart. <strong>mm</strong> is the unit numbers are shown and typed in: millimetres, points, inches or lignes (the watchmakers' 2.2558 mm). The dial itself stays in millimetres.</p>
+<p class="watch"><strong>Watch:</strong> Gallery and mm are drawn light, but they are live.</p>
+</section><section>
+<h2 id="the-screen-on-a-phone">The screen on a phone</h2>
+<p>The bottom bar moves to the top: the round red button at its left is Play. A tap on it starts time running, and while it runs nothing is kept, so tap it again to stop. The dial sits under the bar, and the panel becomes a drawer below: drag the grey pill on its top line to make it taller or shorter. The title line, with Gallery and mm, shrinks once you scroll. Long ring names are cut short; the row's "12 markers" tells them apart. The switches over the dial show only their signs.</p>
+<p>Colour pop-outs close with their ×. The font sheet covers the dial as well as the drawer, so a tap "outside" it can land on a font: close it with a tap on the dark bar at the top.</p>
+</section><section>
+<h2 id="your-first-dial">Your first dial</h2>
+<p>A black field watch, 34 mm: numerals at 12, 3, 6 and 9, bars at the hours between, minute ticks, a date at 3, sword hands. Each step is a link: open it to see the dial as it should look after that step.</p>
+<ol class="steps">
+<li><p><strong>Start from the starting dial.</strong> Export › Settings file › <strong>Defaults</strong> (scroll the panel down to it). It replaces the dial you had; ⌘Z or the undo arrow brings that one back.</p><figure><img src="img/first-01.png" alt="The dial after step 1: Start from the starting dial"><figcaption><a href="https://duztman.github.io/dial-tool/#1.q64FAA">Open the dial as it is after this step</a> · beta 4.41.17, iPad</figcaption></figure></li>
+<li><p><strong>Size.</strong> Dial › Diameter: type 34.</p><figure><img src="img/first-02.png" alt="The dial after step 2: Size"><figcaption><a href="https://duztman.github.io/dial-tool/#1.q1ZKyUzMiU9RsjI2qQUA">Open the dial as it is after this step</a> · beta 4.41.17, iPad</figcaption></figure></li>
+<li><p><strong>Colours.</strong> Dial › Plate: #141414, a near-black. Then in Colours, set Numerals, Markers, Minute ticks, Hour hand and Minute hand to #EFE9DC, a warm white: tap the colour chip beside each name, then HEX, and type.</p><figure><img src="img/first-03.png" alt="The dial after step 3: Colours"><figcaption><a href="https://duztman.github.io/dial-tool/#1.lY_LasMwEEV_pdz1IPRw_NA_pD8QghG23AgrSpBlujD-92I1Li2Uks5mNveeM7Ogd8a3PbQqCF179yZZ6BNnvKoL-rnEmRBdeJugTwtGF3poSQjmaqHxOl9tNH4CocuERlWKOGuEqoizupTVJwFa8JV2gPgCHE0cbXyqX7BiI-xFF-ZkX5LrxmfbhO42hwRdcsI0uns-xNuQ9zs0Z0KuZ8LFtJfbHKEXDC5BD8ZP9pGsmTzksNiAyTi_9ZqGkDagZLzcAoM1aY62NQla1H_et2bhNf_zq1IoJneVYIdaNd_nIVZM_c-6fgA">Open the dial as it is after this step</a> · beta 4.41.17, iPad</figcaption></figure></li>
+<li><p><strong>A font that ships with the tool.</strong> Rings › select Numerals › Type › <strong>Change…</strong>, choose Barlow, then tap outside the sheet. The starting dial asks for Helvetica Neue; where it isn't installed, the panel says "not loaded" and Inter stands in.</p><figure><img src="img/first-04.png" alt="The dial after step 4: A font that ships with the tool"><figcaption><a href="https://duztman.github.io/dial-tool/#1.lY_LasMwEEV_pdz1VEiW44eW3beLbkMwgyMnwrITZJlQjP-92E1CC6Wk2gyCe8-ZmbB37Ks9jE4JdXX2HC3MVgqZFyn9HGpHCK4_DDDbCa3r9zAJoefOwuBt7GxgP4BQr4RS55qkKJXOSYoiS_IvAoyShIY75z9g8MLBny4gnIf77_ndHkbPATPdROoueuXQ2vCQJxXpQrgVXT9G-xRd3T7aJtSnsY8wmSQMrTuvi3jbr_MCI4VK5h3hyNXxNAaYCY2LMA37wV6ThUg2a1gtwMjOL72yJMQFmAiZLYHGchyDrTjCqOLP_eZV2K33_KpUWiQ3lRKbQpff31Wshf6fdf4E">Open the dial as it is after this step</a> · beta 4.41.17, iPad</figcaption></figure></li>
+<li><p><strong>Numerals.</strong> With Numerals selected: its radius button, 11.5; its size button, 3. Under Positions, Every: 3. Now only 12, 3, 6 and 9 are left.</p><figure><img src="img/first-05.png" alt="The dial after step 5: Numerals"><figcaption><a href="https://duztman.github.io/dial-tool/#1.lY9Ra4MwFIX_yjjPdyExWjWPfd8e9lqKBBvbYLQlxpVO_O_DrC0bjNHl5SZwzvfdTNhZ7aodlEwJdXVyOhioDWc8L1L6OcSW4G2_H6A2E1rb76ASQq87A4XXsTNeuwGEOhJKmUvirBQyJ86KVZJ_EaCEYBnBvBt_gZKEwX6YeGl0Z90FCmvt3fEMwmm4v57fzH502mOmm13c7S_at8Y_JE9ZuhBuRduPwTwFW7ePtgn1cewD1IoThtae4iLO9HGeoTgTybwlHHR1OI4eakJjA1Sj3WCuyYIlWQyLBRi0dUuvLAlhASaMr5ZAY3QYval0gBLFn_vNUdjF__yqFJIlN5VgWSHL7-cqlkz-zzp_Ag">Open the dial as it is after this step</a> · beta 4.41.17, iPad</figcaption></figure></li>
+<li><p><strong>Markers and ticks.</strong> Select Markers: radius 16.2, length 2.4; Every 3 and <strong>Skip those instead</strong>, so the bars stand at the eight hours between. Select Minute ticks: radius 16.2. They already skip where markers stand.</p><figure><img src="img/first-06.png" alt="The dial after step 6: Markers and ticks"><figcaption><a href="https://duztman.github.io/dial-tool/#1.lY_LbsIwEEV_pbrrqRXHIY9Zsm8X3SIUWcEBK05AjgOiKP9eJRREpaqis5mxNHPO9QUbq125AauEUJUHp4MBryIRZXlCP5tcE7zttj14dUFjuw04JnS6NWC8D63x2vUgVDOhUJmiSBRSZRSJPI2zKwEspVgQzNH4M1gRevtp5qHWrXVnMJbau_0JhEN_f71-mO3gtMdIN7u829-0b4x_Sp6K-FFuu6PxARz8YAjOdOBYJJPjhrbdEMxLsFXzPL_aD10ApxGhb-xhjjqzJeEEjoSMxzVhp8vdfvDgC2obwLV2_S1FLuLFvCxFQgjauumuKAhhAsYiSqeF2ugweFPqAJb5n_nGWdjO__lVKdWU_aqSYpGr4rG-xUqo_1nHLw">Open the dial as it is after this step</a> · beta 4.41.17, iPad</figcaption></figure></li>
+<li><p><strong>The date at 3.</strong> Windows › the card at 3 › <strong>Show this window</strong>. The numeral at 3 gives way to it: a shown window leaves out the numeral and the marker at its position.</p><figure><img src="img/first-07.png" alt="The dial after step 7: The date at 3"><figcaption><a href="https://duztman.github.io/dial-tool/#1.lZDLasMwEEV_pdz1VFiW44eW2beLbkMwwpYTYVkOspyQBv97sdOEFEpJtZEGZs65owtqo2xZQ4qEUJUHq4KG3EQsyvKEfl58S_DG7QbIzQWtcTVkTHCq05B4HzvtlR1AqBZCITJBESu4yChieRpnVwIk52xF0Eftz5CCMJhPvTwa1Rl7hsRaedufQDgM9-r1Q-9Gqzwmutn53f6mfKv9U_KUxY9y447aB8jgR02w2kHGLJkdN7RxY9AvwVTt8_yqH12ATCPC0JrDEnVhc8IJMmI8nraEvSr3_eghL2hMgGyUHW4pchavlmbOEkJQxs5zRUEIMzBmUTo3NFqF0etSBUie_5lvWoTdss-vSi7m7FcVZ6tcFI_nWyyY-K-1VmXvrl88fQE">Open the dial as it is after this step</a> · beta 4.41.17, iPad</figcaption></figure></li>
+<li><p><strong>Hands.</strong> Hands › Hour › shape <strong>sword</strong>; then Minute › <strong>sword</strong>. Length runs from the centre to the tip, Tail behind the centre, Width across the blade; Counter Ø is the disc on the seconds hand's tail. The seconds hand and the cap keep the starting red.</p><figure><img src="img/first-08.png" alt="The dial after step 8: Hands"><figcaption><a href="https://duztman.github.io/dial-tool/#1.lZDLboMwEEV_pbrrqYUx4eFl9-2i2yhCFpjEwhhkTKI04t8rSBOlmz68GVvynHNnLqiNsmUNKRJCVQ5WBQ25jViU5Ql9L3xH8MbtR8jtBa1xNWRMcKrTkHibOu2VHUGoVkIhMkERK7jIKGJ5GmdXAiTnbEPQR-3PkIIwmg-9XhrVGXuGxIvytj-BMIz31_O73k9Wecx0s_O7_VX5Vvs_yVMWP8qNO2ofIIOfNMFqBxmzZHHc0MZNQT8FU7V_51f95AJkGhHG1gxr1JXNCSfIiPF43hEOqjz0k4e8YDyoQa8LbUyAbJQdb3lyFm_WNs4SQlDGLoSiIIQFHbMoXT40WoXJ61IFSJ7_mHRe1d062S9yLpZ5rlLONrkoHs9XBMHEf_21Knt3Xfv8CQ">Open the dial as it is after this step</a> · beta 4.41.17, iPad</figcaption></figure></li>
+<li><p><strong>The pose.</strong> In the bottom bar, the 10:10 step.</p><figure><img src="img/first-09.png" alt="The dial after step 9: The pose"><figcaption><a href="https://duztman.github.io/dial-tool/#1.lZDLbsMgEEV_pbrrKQLj-MGy-3bRbRRZyMEJMn4I40Rp5H-v7NRRuumDzYDEnHNnrthb7Yo9lIwJZdE7HQzUljOeZjF9L2JH8LY9DFDbK2rb7qEiQqsbA4W3sTFeuwGEciHkMpXEWS5kSpxlSZTeCFBCsA3BnIy_QEnCYD_Mcql0Y90FCi_au-4MQj_cX8_v5jA67THRahd3-6v2tfF_kicsepTb9mR8gAp-NARnWqiIxbNjRdt2DOYp2LL-O7_sxjZAJZww1LZfoi5sQThDcSaiaUc46uLYjR7qiuGoe7MstLIBqtJuWPNkLNosbYLFhKCtmwl5TggzOmI8mT9URofRm0IHKJH9mHRa1M0y2S9yIed5blLBNpnMH89XBMnkf_17XXTtuvYAJZOE8-kT">Open the dial as it is after this step</a> · beta 4.41.17, iPad</figcaption></figure></li>
+<li><p><strong>A file.</strong> Export › <strong>PDF</strong>. It opens at true size: a 34 mm dial on a 40 mm page. For a file to print from, see <em>For the maker</em>.</p><figure><img src="img/first-10.png" alt="The dial after step 10: A file"><figcaption><a href="https://duztman.github.io/dial-tool/#1.lZDLbsMgEEV_pbrrKQLj-MGy-3bRbRRZyMEJMn4I40Rp5H-v7NRRuumDzYDEnHNnrthb7Yo9lIwJZdE7HQzUljOeZjF9L2JH8LY9DFDbK2rb7qEiQqsbA4W3sTFeuwGEciHkMpXEWS5kSpxlSZTeCFBCsA3BnIy_QEnCYD_Mcql0Y90FCi_au-4MQj_cX8_v5jA67THRahd3-6v2tfF_kicsepTb9mR8gAp-NARnWqiIxbNjRdt2DOYp2LL-O7_sxjZAJZww1LZfoi5sQThDcSaiaUc46uLYjR7qiuGoe7MstLIBqtJuWPNkLNosbYLFhKCtmwl5TggzOmI8mT9URofRm0IHKJH9mHRa1M0y2S9yIed5blLBNpnMH89XBMnkf_17XXTtuvYAJZOE8-kT">Open the dial as it is after this step</a> · beta 4.41.17, iPad</figcaption></figure></li>
+</ol>
+</section><section>
+<h2 id="find-it">Find it</h2>
+<p><strong>I want to start fresh.</strong> Export › Settings file › Defaults, or any dial in the Gallery. Either replaces your dial; ⌘Z brings it back. There is no empty dial yet.</p>
+<p><strong>Where do colours live?</strong> Every colour on the dial is in one list: Dial › Colours, a chip beside each name. A ring's own colour is also in its drawer, a hand's in its pane.</p>
+<p><strong>Why did the 3 disappear?</strong> A window that is shown takes its place: the numeral and the marker at its position are left out, at any radius. If a minute tick was hidden under that marker, it shows again. There is no way to keep the numeral yet.</p>
+<p><strong>Why isn't my window showing?</strong> The four windows exist from the start but are hidden: Windows › its card › Show this window. A card says "(not shown)" in its name until then. Width and Height size the hole; Size % sizes the date in it, as a share of the hole's height.</p>
+<p><strong>Window at 6, or Window 3?</strong> The cards name a window by where it is; the colour list and the file's layers number them in the order they came: Window 1 is the card at 3, then 12, 6 and 9.</p>
+<p><strong>I asked for four numerals and got 12, 1, 2, 3.</strong> Numerals follow the positions in order. For 12, 3, 6, 9 keep Count at 12 and set Every to 3.</p>
+<p><strong>Skip where, or Every?</strong> Every chooses a ring's positions by counting, whatever is above it. Skip where leaves out positions where a ring above has a mark, and follows that ring when it changes. Minute ticks under markers: Skip where. Bars between numerals: Every with Skip those instead.</p>
+<p><strong>The panel says "not loaded".</strong> The font isn't on this device. Inter stands in until you choose one with Change…; the fonts listed there ship with the tool and look the same everywhere.</p>
+<p><strong>My time isn't 10:10.</strong> The time keeps its seconds. Press the 10:10 step in the bottom bar, or type 10:10:00.</p>
+<p><strong>Where did my dial go?</strong> It is kept in this browser and in the address. Another browser or device doesn't have it: send yourself the link (Export › Link to this dial › Copy link), or save a settings file (Export › Settings file › Save…).</p>
+<p><strong>How do I leave the showcase?</strong> Press its switch again, bottom right.</p>
+<p><strong>A number field takes sums.</strong> Type 1.2 to set, +0.5 to add, x0.5 to multiply, /2 to divide.</p>
+<p><strong>The signs without words.</strong></p>
+<table><thead><tr><th>Sign</th><th>Where</th><th>What it does</th></tr></thead><tbody>
+<tr><td>Eye</td><td>each ring's row</td><td>shows or hides the ring</td></tr>
+<tr><td>Grip (six dots)</td><td>each ring's row</td><td>drag to reorder</td></tr>
+<tr><td>Text cursor in a box</td><td>the selected row</td><td>renames the ring</td></tr>
+<tr><td>+ ↑ ↓ ⧉ 🗑</td><td>the ring list's heading</td><td>add a ring · move up · move down · duplicate · delete</td></tr>
+<tr><td>Four tiles</td><td>the ring drawer</td><td>the ring's kind: ticks, markers, numerals, band</td></tr>
+<tr><td>Two round buttons</td><td>the ring drawer</td><td>size · radius: press to type</td></tr>
+<tr><td>Four small dials</td><td>Windows</td><td>the windows whose cards sit at 12, 3, 6, 9</td></tr>
+<tr><td>Square with rays</td><td>over the dial, bottom right</td><td>the dial alone</td></tr>
+<tr><td>Square with a dot</td><td>over the dial, bottom right</td><td>the showcase</td></tr>
+<tr><td>Arrows</td><td>over the dial, top left</td><td>undo · redo</td></tr>
+</tbody></table>
+</section><section>
+<h2 id="for-the-maker">For the maker</h2>
+<p>One page for whoever etches or prints the dial. File facts only; advice on each process waits for a first etch and a shop's questions.</p>
+<p><strong>What a file holds.</strong> A colour export holds the plate, every ring, the windows with their content, the hands at the time shown, and the cap. Guides, the backdrop and shadows are never in a file. Hide the hands (Hands › Show hands) before exporting a colour file for print: hidden hands are left out.</p>
+<p><strong>Size.</strong> True size, in millimetres. The page is the diameter plus twice the margin; the file name gives the diameter. A PNG has its dpi written in (Export, the number under PNG), so it opens at true size. The Export log names the size of every file written.</p>
+<p><strong>The print mask.</strong> Export › Print › Mono print mask: every ring and the windows' frames in black on white, without plate, hands or window content. The edge of each window's hole and the centre hole are 0.05 mm cut lines. The dial on screen shows the mask while it is on.</p>
+<p><strong>Mirrored, for toner transfer only.</strong> It flips the file left to right. Never send a mirrored file to a pad or screen printer.</p>
+<p class="watch"><strong>Watch:</strong> marks lying on a band disappear in the mask, black on black, unless the band knocks them out (Rings › Give way to rings above › Knock out).</p>
+<p class="watch"><strong>Watch:</strong> the cut lines are in the same black as the marks. Delete the layers "Window 1 cut line" and "Hole" from the PDF or SVG before printing a resist; the PNG has them baked in. Without "Hole" there is no centre mark, and there are no registration marks yet.</p>
+<p><strong>One film per ink.</strong> Export one PDF with everything shown and use its layers: one per ring, named as in the list. Don't hide rings and export again: a ring only knocks out round rings that are shown.</p>
+<p><strong>Colour.</strong> Colours are plain RGB values, with no colour profile. Give the printer the hex codes from Dial › Colours and a physical colour reference.</p>
+<p><strong>Text.</strong> Numerals and dates are outlines in every file. Export › "Keep numerals as text in the SVG" writes them as text in the SVG only; the font must then be installed where the file is opened.</p>
+<p><strong>The thinnest line.</strong> For ticks and markers it is in the ring's settings, in its Shape pane: Width, and Inner width × if the marks taper. Numerals have no width setting: zoom into the PDF and measure the thinnest stroke. The tool doesn't report it yet.</p>
+<p><strong>Process advice</strong> (minimum line, clearance, ink order): pending a first etch and a shop's questions.</p></section>
+<footer>Every “do this and that happens” sentence here was checked against beta 4.41.17 by a script. Found something wrong? It is a fault: tell Okay.</footer>
+</body></html>

@@ -254,8 +254,10 @@ Object.assign(CHECKS, {
     await defaults(); await ring("Numerals");
     await page.getByRole("button", { name: /^Centre radius/ }).filter({ visible: true }).first().click(); await page.waitForTimeout(300);
     await type("Centre radius", 11.5); const r = await page.getByRole("button", { name: /^Centre radius/ }).filter({ visible: true }).first().getAttribute("aria-label");
-    await page.keyboard.press("Escape"); await context.close();
-    return { ok: /11\.5/.test(r || ""), note: `after typing 11.5 the button reads "${r}"` };
+    const field = page.getByRole("textbox", { name: /^(Centre radius|1\.2 sets)/ }).filter({ visible: true }), was = await field.count();
+    await page.getByRole("heading", { name: "Dial Tool" }).click(); await page.waitForTimeout(300);      // a tap elsewhere
+    const left = await page.locator("[aria-expanded='true'].valueb").count(); await context.close();
+    return { ok: /11\.5/.test(r || "") && left === 0, note: `after typing 11.5 the button reads "${r}"; after a tap elsewhere the pop-up is ${left ? "still open" : "closed"}` };
   },
   async B25() {       // with the mono print mask on, the dial on screen shows the mask (the plate goes white)
     const { page, tab, tick, context } = await fresh();
@@ -275,6 +277,51 @@ Object.assign(CHECKS, {
     await defaults(); const p = fs.readFileSync((await save("PDF")).file, "latin1"); await context.close();
     const names = [...p.matchAll(/\/OCG \/Name <FEFF([0-9A-F]*)>/g)].map((m) => Buffer.from(m[1], "hex").swap16().toString("utf16le"));      // UTF-16 names
     return { ok: ["Numerals", "Markers", "Minute ticks"].every((n) => names.includes(n)), note: names.join(" · ") };
+  },
+  async B28() {       // the font sheet stays open after a font is chosen; a tap outside it closes it
+    const { page, defaults, ring, context } = await fresh({ width: 1180, height: 820 });
+    await defaults(); await ring("Numerals");
+    await page.getByRole("button", { name: "Change…", exact: true }).filter({ visible: true }).first().click(); await page.waitForTimeout(300);
+    await page.getByRole("searchbox", { name: "Find a font" }).fill("Jost"); await page.waitForTimeout(300);
+    await page.getByRole("button", { name: /^Jost/ }).first().click(); await page.waitForTimeout(800);
+    const open = await page.getByRole("searchbox", { name: "Find a font" }).isVisible();
+    await page.mouse.click(1170, 810); await page.waitForTimeout(400);       // outside the sheet, the window's corner
+    const closed = !(await page.getByRole("searchbox", { name: "Find a font" }).isVisible());
+    const font = await page.getByText("Jost", { exact: true }).filter({ visible: true }).count(); await context.close();
+    return { ok: open && closed && font > 0, note: `after choosing: open ${open}; after a tap outside: closed ${closed}; Jost shown ${font > 0}` };
+  },
+  async B28p() {      // a phone: the font sheet covers the dial too; a tap on the dark bar at the top closes it
+    const { page, defaults, ring, context } = await fresh({ width: 390, height: 844 });
+    await defaults(); await ring("Numerals");
+    await page.getByRole("button", { name: "Change…", exact: true }).filter({ visible: true }).first().click(); await page.waitForTimeout(400);
+    await page.getByRole("searchbox", { name: "Find a font" }).fill("Jost"); await page.waitForTimeout(300);
+    await page.getByRole("button", { name: /^Jost/ }).first().click(); await page.waitForTimeout(800);
+    const open = await page.getByRole("searchbox", { name: "Find a font" }).isVisible();
+    await page.mouse.click(250, 12); await page.waitForTimeout(400);
+    const closed = !(await page.getByRole("searchbox", { name: "Find a font" }).isVisible()); await context.close();
+    return { ok: open && closed, note: `phone: open after choosing ${open}; a tap on the top bar closes it ${closed}` };
+  },
+  async B29() {       // the eye beside a pane's name folds the pane, and opens it again
+    const { page, field, context } = await fresh();
+    const head = page.getByRole("button", { name: /^Page/ }).filter({ visible: true }).first();
+    const tapHead = async () => { const b = await head.boundingBox(); await page.mouse.click(b.x + 12, b.y + b.height / 2); await page.waitForTimeout(500); };      // its eye, at the left
+    await tapHead(); const folded = !(await field("Page margin").isVisible());
+    await tapHead(); const open = await field("Page margin").isVisible(); await context.close();
+    return { ok: folded && open, note: `folded: ${folded}; open again: ${open}` };
+  },
+  async B30() {       // a colour's pop-out: its × closes it; the square beside it doubles its size
+    const { page, context } = await fresh();
+    await page.getByRole("button", { name: "Plate" }).first().click(); await page.waitForTimeout(300);
+    const box = await page.getByRole("button", { name: "Twice the size, and back" }).isVisible();
+    await page.getByRole("button", { name: "Close", exact: true }).click(); await page.waitForTimeout(300);
+    const gone = !(await page.getByRole("button", { name: "Twice the size, and back" }).isVisible()); await context.close();
+    return { ok: box && gone, note: `square "twice the size" ${box}; closed by × ${gone}` };
+  },
+  async B31() {       // the card at 6 is Window 3 in the colour list (Window 1 is the card at 3, then 12, 6, 9)
+    const { page, defaults, tab, tick, context } = await fresh();
+    await defaults(); await tab("Windows"); await page.getByRole("tab", { name: /The window at 6/ }).first().click(); await tick("Show this window", true);
+    await tab("Dial"); const w3 = await page.getByText("Window 3", { exact: false }).filter({ visible: true }).count(); await context.close();
+    return { ok: w3 > 0, note: `"Window 3" in Dial › Colours: ${w3 > 0}` };
   },
 });
 

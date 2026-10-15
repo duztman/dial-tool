@@ -1,6 +1,6 @@
 {
- "when": "2026-10-15T07:59:22.461Z",
- "version": "beta 4.41.15",
+ "when": "2026-10-15T09:02:55.974Z",
+ "version": "beta 4.41.17",
  "results": {
   "B1": {
    "ok": true,
@@ -92,7 +92,7 @@
   },
   "B24": {
    "ok": true,
-   "note": "after typing 11.5 the button reads \"Centre radius 11.5 mm\""
+   "note": "after typing 11.5 the button reads \"Centre radius 11.5 mm\"; after a tap elsewhere the pop-up is closed"
   },
   "B25": {
    "ok": true,
@@ -105,6 +105,26 @@
   "B27": {
    "ok": true,
    "note": "Plate · Minute ticks · Markers · Numerals · Hour hand · Minute hand · Seconds hand · Cap"
+  },
+  "B28": {
+   "ok": true,
+   "note": "after choosing: open true; after a tap outside: closed true; Jost shown true"
+  },
+  "B28p": {
+   "ok": true,
+   "note": "phone: open after choosing true; a tap on the top bar closes it true"
+  },
+  "B29": {
+   "ok": true,
+   "note": "folded: true; open again: true"
+  },
+  "B30": {
+   "ok": true,
+   "note": "square \"twice the size\" true; closed by × true"
+  },
+  "B31": {
+   "ok": true,
+   "note": "\"Window 3\" in Dial › Colours: true"
   }
  }
 }
