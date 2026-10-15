@@ -8,7 +8,7 @@ Built to explore, present and produce watch dials.
 **Version: beta 4.36.1 (14 Oct 2026).** `main` = released, `dev` = work in progress. Every earlier build, back to beta 1.0: [`docs/versions.md`](docs/versions.md).
 What it has and lacks: [`docs/changelog.md`](docs/changelog.md). What's next: [`docs/build-list.md`](docs/build-list.md).
 
-**Guidebook:** a new one for the web version is being written (build list #93). The 4 Oct 2026 guide describes the DrawBot version: [`archive/drawbot/Dial-Tool-guide-2026-10-04.pdf`](archive/drawbot/Dial-Tool-guide-2026-10-04.pdf).
+**Guidebook:** a new one for the web version is being built in `guide/` by its plan, `guide/PLAN.md` (build list #93). The 4 Oct 2026 guide describes the DrawBot version: [`archive/drawbot/Dial-Tool-guide-2026-10-04.pdf`](archive/drawbot/Dial-Tool-guide-2026-10-04.pdf).
 
 ## Files
 

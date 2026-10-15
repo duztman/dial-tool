@@ -261,6 +261,7 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 | 15 Oct | **On a phone the title line is full at the drawer's top and squeezed, held on top, while it scrolls** (beta 4.41.10); the Gallery pill and mm go with the squeeze. | Okay, 07:59. |
 | 15 Oct | **On a phone the mark is 22 on the full title line**, the eyes' size squeezed (beta 4.41.11). | Okay, 08:08. |
 | 15 Oct | **Gallery's second dial is Okay's own B-Uhr** (beta 4.41.12): his link's settings replace the atlas B-Uhr; name and note kept. | Okay, 09:39: "This is replacing nr 2 on the gallery. No new name". |
+| 15 Oct | **A new guide, by a plan made from scratch; the 4.36.1 lock ends** (#93). `guide/PLAN.md`: web edition first (four models · the screen · first dial · find it · maker sheet), then web + print; pictures and every "do X and Y happens" sentence made and checked by script against the current app, rebuilt when a picture diff says so; reader tests with fresh readers before the look is designed; a maker sheet. Okay's notes (`docs/guide/notes-okay.md`) stay canon for page design. The old guide's files stay where they are until Okay says. | Okay, 09:44, after the plan was reviewed by three fresh agents who saw only it and the live app: "Do it, go ahead. Dude no wasting time, who cares about an old version. Do it for now of course." |
 
 ## 5 · Open questions
 
