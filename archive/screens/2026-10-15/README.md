@@ -1,8 +1,8 @@
 # Screens of the night of 14–15 October 2026
 
-*Archived 15 Oct 2026, 06:00 (Okay: "We now need the screenshots you grabbed while working (all versions if possible). All I sent, archive them."). From beta 4.37.1 to 4.41: the shadows trial, the bottom bar, the mark and bio, the dial alone, the showcase, the phone pass. Added 15 Oct, 08:20 (Okay, 07:59: "take all the unarchived new screenshots and text, add them to appropriate places"): 4.41.1 to 4.41.10 — the phone's drawer and bar, the showcase's Now and 10:10, the Gallery pill.*
+*Archived 15 Oct 2026, 06:00 (Okay: "We now need the screenshots you grabbed while working (all versions if possible). All I sent, archive them."). From beta 4.37.1 to 4.41: the shadows trial, the bottom bar, the mark and bio, the dial alone, the showcase, the phone pass. Added 15 Oct, 08:20 (Okay, 07:59: "take all the unarchived new screenshots and text, add them to appropriate places"): 4.41.1 to 4.41.11 — the phone's drawer and bar, the showcase's Now and 10:10, the Gallery pill.*
 
-- `versions/` — one picture per version, 4.38 to 4.41.10 (and `phone-v4.40.1.png`, `phone-v4.41.png`, `phone-v4.41.10.png`, the same on a phone), each opening Okay's watch from his link at 10:10, at an iPad's landscape size (1180 × 820, 2×). Rendered at archive time from each version's committed `web/dial-tool.html` (versions as renumbered in `docs/versions.md`: 4.38.12 = 4.39 … 4.38.16 = 4.39.4).
+- `versions/` — one picture per version, 4.38 to 4.41.11 (and `phone-v4.40.1.png`, `phone-v4.41.png`, `phone-v4.41.10.png`, `phone-v4.41.11.png`, the same on a phone), each opening Okay's watch from his link at 10:10, at an iPad's landscape size (1180 × 820, 2×). Rendered at archive time from each version's committed `web/dial-tool.html` (versions as renumbered in `docs/versions.md`: 4.38.12 = 4.39 … 4.38.16 = 4.39.4).
 - `claude/` — what Claude shot while working, named `time-version-name`: the version is the build being made then (the next one committed). A shot redone later under the same name kept only its last state; earlier states of those are gone.
 - `okay/` — what Okay sent, named `time-seen-version-id`: the version is the last one committed before he sent it.
 
@@ -277,3 +277,4 @@ Times are Istanbul (UTC+3); "trial-1/2" and "bar-1…7" are the passes on the br
 | 15 Oct 08:00 | `claude/0800-4.41.10-mobile-sq-375-load.png` | 4.41.10 |
 | 15 Oct 08:00 | `claude/0800-4.41.10-mobile-sq-375-scrolled.png` | 4.41.10 |
 | 15 Oct 08:00 | `claude/0800-4.41.10-mobile-sq-compare.png` | 4.41.10 |
+| 15 Oct 08:08 | `claude/0808-4.41.11-mobile-logo-big.png` | 4.41.11 |

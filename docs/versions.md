@@ -11,12 +11,13 @@ tools/versions.sh open 4.30    # → ../dial-tool-versions/v4.30/, open web/dial
 
 Versions 1.x–2.x are the DrawBot tool (`dial.py`, frozen; now in `archive/drawbot/`). 3.0 onward is the web version (`web/dial-tool.html`). The commit is the last one of that version, with its follow-up fixes.
 
-Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screenshot per version from 4.38 to 4.41.10 (Okay's watch in each), every screenshot Claude made while working, and every one Okay sent, with an index (`archive/screens/2026-10-15/README.md`).
+Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screenshot per version from 4.38 to 4.41.11 (Okay's watch in each), every screenshot Claude made while working, and every one Okay sent, with an index (`archive/screens/2026-10-15/README.md`).
 
 **Renumbered, 15 Oct 2026** (Okay, 05:58: "cook the books a bit, bump up to 39 just before preview mode, done when finished"): the build just before the eye switch's dial-alone view, 4.38.12, is listed as **4.39**, and the four after it, 4.38.13–4.38.16, as **4.39.1–4.39.4**; 4.40 is the finished night. Only the books changed: those commits are not rewritten, so their pages still print 4.38.x.
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.41.11 | 15 Oct 2026 | web | [`c35c138`](https://github.com/duztman/dial-tool/tree/c35c13869e796ad37981f50ceacdf93293a3414d) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/c35c13869e796ad37981f50ceacdf93293a3414d/web/dial-tool.html) | beta 4.41.11: on a phone the mark is larger on the full title line, the eyes' size squeeze |
 | 4.41.10 | 15 Oct 2026 | web | [`838df5a`](https://github.com/duztman/dial-tool/tree/838df5a6989b71349403ac6bf527c7fe00aa9cb2) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/838df5a6989b71349403ac6bf527c7fe00aa9cb2/web/dial-tool.html) | beta 4.41.10: a phone's title line full at the drawer's top, squeezed and held on top whil |
 | 4.41.9 | 15 Oct 2026 | web | [`7f8925d`](https://github.com/duztman/dial-tool/tree/7f8925de30778a6eb8fea68e5db304355204aaf1) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/7f8925de30778a6eb8fea68e5db304355204aaf1/web/dial-tool.html) | beta 4.41.9: Okay's watch in the Gallery, a Gallery pill on the top line, a phone's bar ti |
 | 4.41.8 | 15 Oct 2026 | web | [`978753f`](https://github.com/duztman/dial-tool/tree/978753fa17ad0a727791dfb9daa3343e9a523bcd) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/978753fa17ad0a727791dfb9daa3343e9a523bcd/web/dial-tool.html) | beta 4.41.8: the showcase's 10:10 beside Now; a round hands key at its bottom left |
