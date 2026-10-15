@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.41.23 | 15 Oct 2026 | web | [`2802e1b`](https://github.com/duztman/dial-tool/tree/2802e1b903aac4cf33727b5e3f1acea1c675a06b) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/2802e1b903aac4cf33727b5e3f1acea1c675a06b/web/dial-tool.html) | beta 4.41.23: Help beside the version opens the guide |
 | 4.41.22 | 15 Oct 2026 | web | [`78c4381`](https://github.com/duztman/dial-tool/tree/78c4381d9d97a860c25c8764c79e735b1624cf82) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/78c4381d9d97a860c25c8764c79e735b1624cf82/web/dial-tool.html) | beta 4.41.22: Okay's sector dial in the Gallery |
 | 4.41.21 | 15 Oct 2026 | web | [`07c51c2`](https://github.com/duztman/dial-tool/tree/07c51c2c801c6405b3457ebc82a66cde36d30739) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/07c51c2c801c6405b3457ebc82a66cde36d30739/web/dial-tool.html) | beta 4.41.21: links without dashes; World time before Elapsed |
 | 4.41.20 | 15 Oct 2026 | web | [`2630f6c`](https://github.com/duztman/dial-tool/tree/2630f6c48be89fa79ab3f385e9e5bfedbadedb26) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/2630f6c48be89fa79ab3f385e9e5bfedbadedb26/web/dial-tool.html) | beta 4.41.20: Okay's world time in the Gallery |
