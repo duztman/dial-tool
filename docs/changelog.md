@@ -2,7 +2,7 @@
 
 ## beta 4.40 (web version) · 15 Oct 2026 · released
 
-The night's work after 4.38 (4.38.1 to 4.38.16), released to `main` as 4.40 (Okay, 05:53: "Release this, it deserves a 4.4" — 4.4 is taken, by 12 Oct's review, so 4.40). Nothing in a dial changed; links and settings files open as before.
+The night's work after 4.38 (4.38.1 to 4.38.11, 4.39, 4.39.1 to 4.39.4), released to `main` as 4.40 (Okay, 05:53: "Release this, it deserves a 4.4" — 4.4 is taken, by 12 Oct's review, so 4.40). Nothing in a dial changed; links and settings files open as before.
 
 - **The play button pulses with the movement's beat**, a light dot at its middle; the speed runs 1× to 720×.
 - **Your watch opens the tool** on a first visit (`web/src/opener.js`); Defaults still gives the plain starting dial.
@@ -11,7 +11,7 @@ The night's work after 4.38 (4.38.1 to 4.38.16), released to `main` as 4.40 (Oka
 - **The eye switch** (bottom right) shows the dial alone: the panel slides away, the dial grows to fit.
 - **The showcase** (the iris switch beside it, through ACTIVATE SHOWCASE): the dial at 2/3 of an A4 on a dark 45° sky, a spotlight through a twenty-second sun day (drag across to move the sun), the clock running; Now spins the hands to now and back; the X goes back the long way.
 
-## beta 4.38.16 (web version) · 15 Oct 2026
+## beta 4.39.4 (web version, printed as 4.38.16) · 15 Oct 2026
 
 - **Out of the showcase the long way**: the bar rises and the panel slides back, eased, while the dial travels home.
 - **A gentler sun**: a day in twenty seconds, always 40° high on its ray; at sunrise and sunset its light (shadows and spotlight) fades out and in instead of the shadows growing long.
@@ -19,7 +19,7 @@ The night's work after 4.38 (4.38.1 to 4.38.16), released to `main` as 4.40 (Oka
 - **The arrow hint** is three times larger, white with a glow, centred between the dial and Now.
 - The iris and eye switches no longer touch: the unit between them, as between the other switches.
 
-## beta 4.38.15 (web version) · 15 Oct 2026
+## beta 4.39.3 (web version, printed as 4.38.15) · 15 Oct 2026
 
 - **The showcase, reshaped.** The iris switch opens to ACTIVATE SHOWCASE first; only those words go in. Going in and out, the panel, the bar and the switches go (and come back) at once and only the dial travels, eased — to 2/3 of the width of a portrait A4 fitted in the window, centred; out, back exactly where it stood.
 - The sky is a 45° gradient, lightest at the top left. A spotlight lies behind the dial and takes its shadow: an oval at sunrise and sunset (faintest, softest), a circle at midday (brightest, almost crisp).
@@ -27,17 +27,17 @@ The night's work after 4.38 (4.38.1 to 4.38.16), released to `main` as 4.40 (Oka
 - The iris switch is an X in the showcase (the way out); Now is tracked 100. Pressed, every hand turns twice and lands on now, and Now shrinks into an undo sign; pressed, the hands turn twice back and it grows into Now again. Over Now, a left-right arrow sways once when the dial arrives. The mark and "Dial Tool" are fainter and can't be pressed.
 - The shadows' soft edge is off while anything moves (the dial travelling, the panel sliding, the hands spinning, a drag) and comes back when it stops.
 
-## beta 4.38.14 (web version) · 15 Oct 2026
+## beta 4.39.2 (web version, printed as 4.38.14) · 15 Oct 2026
 
 - **The showcase**: a new switch left of the eye, the iris alone. Pressed, it shows the dial alone and more: the backdrop darkens to a faint gradient (black at the bottom, the backdrop's colour much darkened at the top), the bar sinks away, and nothing stays but the mark and "Dial Tool" (top left), the iris (bottom right, twice as big) and a Now pill (bottom centre). The clock runs at 1× from where it was, shadows are on with the soft edge, and the sun goes round six times as fast as the minute hand, rising and setting once a round; a press or drag on the preview puts the sun there. Pressed again, back to where you were.
 - **The mark is aligned to the title's capitals** (it sat a point low).
 
-## beta 4.38.13 (web version) · 15 Oct 2026
+## beta 4.39.1 (web version, printed as 4.38.13) · 15 Oct 2026
 
 - **The eye switch shows the dial alone**: pressed, it fills (a hair inside its line) and the panel slides away to the left, eased; the dial grows and centres in step. The mark, "Dial Tool" and the version stay where they were, turning white on a dark backdrop; Backdrop and Shadows ride left and stop on the mark's line; undo · redo stop after the title; the bottom bar stays. Pressed again, all comes back. On a phone or a portrait iPad the preview grows down over the panel instead.
 - The speed box's growth toward play is now taken from play's margin, not by a negative margin (R32).
 
-## beta 4.38.12 (web version) · 15 Oct 2026
+## beta 4.39 (web version, printed as 4.38.12) · 15 Oct 2026
 
 - **The tool opens with Okay's watch** when there is no dial in the address and no last session (`web/src/opener.js`). "Defaults" still gives the plain starting dial.
 - **The Guides sign is one drawing**, on and off: off it is only fainter (the slash is gone).
