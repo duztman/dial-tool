@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.42.4 | 16 Oct 2026 | web | [`4b9afd4`](https://github.com/duztman/dial-tool/tree/4b9afd419b68ebadbe2640b523a688145849aaf5) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/4b9afd419b68ebadbe2640b523a688145849aaf5/web/dial-tool.html) | thou; the unit box in the pixel font; see-through shadows; the iris over the eye |
 | 4.42.3 | 16 Oct 2026 | web | [`7638e16`](https://github.com/duztman/dial-tool/tree/7638e1613216391b42a2d8eebf71184d7331b16d) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/7638e1613216391b42a2d8eebf71184d7331b16d/web/dial-tool.html) | Copy link on its heading line; Settings file explained; Defaults the First dial, Plain dial |
 | 4.42.2 | 16 Oct 2026 | web | [`289b700`](https://github.com/duztman/dial-tool/tree/289b7009acef21ffee1820102734c423d74444ae) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/289b7009acef21ffee1820102734c423d74444ae/web/dial-tool.html) | a first visit opens tidy; Colours as swatches; Reset on its heading line |
 | 4.42.1 | 16 Oct 2026 | web | [`e089789`](https://github.com/duztman/dial-tool/tree/e089789b111b791d0a6f9218980abea8704a8c1e) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/e089789b111b791d0a6f9218980abea8704a8c1e/web/dial-tool.html) | the title line quieter, mm and Gallery small (#285) |
