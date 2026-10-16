@@ -8,3 +8,9 @@ web/node_modules/
 web/test/out/
 web/test/same.json
 web/icons/out/
+tools/aapt2/
+tools/*.jar
+tools/*.zip
+tools/signed/
+tools/wff_template/compiled/
+build/

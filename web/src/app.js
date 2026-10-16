@@ -13,6 +13,9 @@ import { EXAMPLES } from "./examples.js";
 import { GALLERY } from "./gallery.js";
 import { OPENER } from "./opener.js";
 import { start_ink, offset as ink_offset } from "./ink.js";
+import { generate_watchface_xml } from "./wearos/wff_xml.js";
+import { svg_dial_face, svg_hand, svg_cap, svg_preview, svg_to_png_bytes } from "./wearos/wff_assets.js";
+import { build_signed_wearos_apk } from "./wearos/apk_packager.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const el = (tag, props = {}, ...children) => {
@@ -545,6 +548,8 @@ const ROWS = {
     custom("export_png"),
     num("out_dpi", "dpi", 72, 2400, 1, { tie: true, bare: true }),      // bare: no word before it (the line under it says "at 600 dpi"); the slider stands under the buttons
     custom("png_size"),
+    hdr("Wear OS"),
+    custom("export_wearos"),
     hdr("Print"),                                  // what only the printed or etched dial needs (was "For production" until beta 4.19)
     chk("out_production", "Mono print mask"),
     chk("out_mirror", "Mirrored, for toner transfer"),
@@ -3144,6 +3149,19 @@ class DialTool {
     out.refresh = () => { const mm = G.page_mm(this.S), px = Math.round(mm / 25.4 * this.S.out_dpi); text.textContent = `${this.in_unit(mm, 1)} ${this.unit()[0]} at ${Math.round(this.S.out_dpi)} dpi = ${px} × ${px} px`; };
   }
 
+  row_export_wearos(wrap) {
+    wrap.className = "row";
+    const btn = el("button", {
+      type: "button",
+      className: "btn main",
+      id: "export-wearos",
+      textContent: "Wear OS APK",
+      title: "Export an installable Wear OS Watch Face APK (.apk)",
+      onclick: () => this.export("wearos")
+    });
+    wrap.append(el("label", { textContent: "Watch Face" }), btn);
+  }
+
   row_settings(wrap) {
     wrap.className = "row";
     const file = el("input", { type: "file", accept: ".json,application/json", hidden: true, id: "load-file" });
@@ -3803,6 +3821,27 @@ class DialTool {
         save_file(name, png_with_dpi(new Uint8Array(await blob.arrayBuffer()), S.out_dpi), "image/png");
         this.log(`exported ${name} · ${px} × ${px} px · ${Math.round(S.out_dpi)} dpi is written in the file, so it opens at ${G.page_mm(S).toFixed(2)} mm`
           + (px * px > PNG_SAFE ? ` · large: if it is empty in Safari, lower the dpi` : ""));
+        return;
+      }
+      if (kind === "wearos") {
+        this.log("building Wear OS Watch Face APK…");
+        const xml = generate_watchface_xml(S);
+        const drawables = {
+          dial_face: await svg_to_png_bytes(svg_dial_face(S, statik)),
+          dial_face_ambient: await svg_to_png_bytes(svg_dial_face(S, statik, true)),
+          hour_hand: S.ha_on && S.ha_hour.on ? await svg_to_png_bytes(svg_hand(S, "hour")) : null,
+          hour_hand_ambient: S.ha_on && S.ha_hour.on ? await svg_to_png_bytes(svg_hand(S, "hour", true)) : null,
+          minute_hand: S.ha_on && S.ha_minute.on ? await svg_to_png_bytes(svg_hand(S, "minute")) : null,
+          minute_hand_ambient: S.ha_on && S.ha_minute.on ? await svg_to_png_bytes(svg_hand(S, "minute", true)) : null,
+          second_hand: S.ha_on && S.ha_second.on ? await svg_to_png_bytes(svg_hand(S, "second")) : null,
+          cap: S.ha_on && S.ha_cap > 0 ? await svg_to_png_bytes(svg_cap(S)) : null,
+          preview: await svg_to_png_bytes(svg_preview(S, statik)),
+          icon: await svg_to_png_bytes(svg_preview(S, statik)),
+        };
+        const apkBytes = await build_signed_wearos_apk(xml, drawables);
+        const apkName = `dial-wearos-${Math.round(S.dial_d)}mm.apk`;
+        save_file(apkName, apkBytes, "application/vnd.android.package-archive");
+        this.log(`exported ${apkName} · 450 × 450 px · signed (v2/v3) Watch Face Format APK for Wear OS 4/5+`);
         return;
       }
       this.log(`exported ${name} · ${G.page_mm(S).toFixed(2)} mm square, to your downloads`);
