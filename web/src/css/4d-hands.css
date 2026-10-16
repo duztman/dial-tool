@@ -15,27 +15,22 @@
   .pickt.own { border-style: dashed; color: var(--grey); cursor: default; }
   .pickt.own:hover { background: var(--field); }
   .pickt.more[aria-expanded="true"] svg { rotate: 180deg; }
-  /* the number box of a side row: the number, and joined to it a tiny plus over a tiny minus. With the keyboard in
-     the number it grows towards the slider, over it: a large minus · the number · a large plus. It hangs at the
-     row's right end, so growing moves nothing else. */
-  .row.side { position: relative; --num-open: calc((200% - var(--gap)) / 3); }
-  .numbox { position: absolute; right: 0; top: 50%; translate: 0 -50%; display: grid; grid-template: "f p" 1fr "f m" 1fr / minmax(0, 1fr) var(--side-tiny); width: var(--side-num); height: var(--control); background: var(--field); transition: width 0.12s ease-out, height 0.12s ease-out; }
-  .numbox > input { grid-area: f; width: 100%; min-width: 0; height: 100%; }
-  .numbox > .step { min-width: 0; height: auto; padding: 0; border-left: 0; font-size: var(--t-xs); line-height: 1; }
-  .numbox > .step:nth-of-type(1) { grid-area: m; border-top: 0; }
+  /* a side row's number, quiet (#250, beta 4.45.1): the number and, joined to it, a tiny plus over a tiny minus; no
+     box; grey until it differs from how the dial opened (.changed, build_row). A press on it opens its popup. */
+  .row.side { position: relative; }
+  .numbox { position: absolute; right: 0; top: 50%; translate: 0 -50%; display: grid; grid-template: "f p" 1fr "f m" 1fr / minmax(0, 1fr) var(--side-tiny); width: var(--side-num); height: var(--control); }
+  .numbox > input { grid-area: f; width: 100%; min-width: 0; height: 100%; padding: 0 var(--u1) 0 0; border: 0; background: none; color: var(--grey); text-align: right; cursor: pointer; }
+  .numbox > .step { min-width: 0; height: auto; padding: 0; border: 0; background: none; color: var(--grey); font-size: var(--t-xs); line-height: 1; }
+  .numbox > .step:nth-of-type(1) { grid-area: m; }
   .numbox > .step:nth-of-type(2) { grid-area: p; }
-  .numbox:focus-within { z-index: 2; grid-template: "m f p" 1fr / var(--control-large) minmax(0, 1fr) var(--control-large); width: var(--num-open); height: var(--control-large); box-shadow: 0 0 0 var(--unit) var(--surface); }
-  .numbox:focus-within > .step { border: var(--hair) solid var(--ink); font-size: var(--t-l); }
-  .numbox:focus-within > .step:nth-of-type(1) { border-right: 0; }
-  .numbox:focus-within > .step:nth-of-type(2) { border-left: 0; }
-  @media (prefers-reduced-motion: reduce) { .numbox { transition: none; } }
+  .numbox > .step:hover { background: var(--hover); color: var(--ink); }
+  .numbox.changed > :is(input, .step) { color: var(--ink); }
   @media (min-width: 861px) {
     /* wide: the box in the first two columns, as high as the rows beside it; the rows in the other four, each one
        line: label · slider · the number box */
     .body > .detail { grid-column: 2 / span 2; grid-row: 1 / span 40; align-self: start; height: calc(7 * var(--line)); }
     .body > .detail { position: sticky; top: var(--unit); }      /* it scrolls up with its pane until it is one unit (the gap between the shape tiles) under the line under the hand tabs, stays there while the rows beside it scroll, and the pane's end (the Cap pane) pushes it on (Okay, 14 Oct 2026: "stay still… until cap"; "align here after scroll") */      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
-    .body > .row.side { grid-column: 4 / -1; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--side-num); }
-    .row.side { --num-open: calc((100% + var(--side-num)) / 2); }      /* the row less its label and one gap: slider and number together */
+    .body > .row.side { grid-column: 4 / -1; grid-template-columns: var(--side-label) minmax(0, 1fr) var(--side-num); }      /* the name as narrow as the longest (Counter Ø), the slider the rest: bigger (#250) */
     .row.side > :first-child, .row.side > input[type="range"] { grid-column: auto; }
     .row.side > label { font-size: var(--t-s); }
     .row.side > label > .whole { display: none; }

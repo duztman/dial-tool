@@ -746,19 +746,21 @@ await page.click("#hand-tab-0");
   const box_high = await page.$eval("#hand-detail", (e) => Math.round(e.getBoundingClientRect().height));
   check(open.split(" ").length === 12 && open.endsWith("less SVG") && b.tiles === "baton pencil breguet more" && b.d !== a.d && box_high === a.high, `more opens all ten, the disc too (#164) (${open}); closed again, the chosen one has a place on the line (${b.tiles}), and the box shows it; the box keeps its height (${box_high})`);
   await page.click("#hand-shape-Shape-0");
-  // the number box: the number with a tiny plus over a tiny minus; a press on the number and it grows over the slider
-  const nb = () => page.evaluate(() => { const box = document.querySelector(".row.side .numbox"), r = box.getBoundingClientRect(), s = box.closest(".row").querySelector("input[type=range]").getBoundingClientRect(), [minus, plus] = [...box.querySelectorAll(".step")].map((e) => e.getBoundingClientRect()); return { w: Math.round(r.width), h: Math.round(r.height), over: r.left <= s.left + 1, stacked: plus.bottom <= minus.top + 1 && Math.round(plus.left) === Math.round(minus.left), step: Math.round(plus.width) + "x" + Math.round(plus.height) }; });
+  // the quiet number (#250, beta 4.45.1): the number and a tiny plus over a tiny minus, no box, grey until it differs
+  // from how the dial opened; they step it; a press on the number opens its popup
+  const nb = () => page.evaluate(() => { const box = document.querySelector(".row.side .numbox"), c = (e) => getComputedStyle(e), f = box.querySelector("input"), [minus, plus] = [...box.querySelectorAll(".step")];
+    return { w: Math.round(box.getBoundingClientRect().width), plain: c(f).borderTopWidth === "0px" && c(f).backgroundColor === "rgba(0, 0, 0, 0)" && c(plus).borderTopWidth === "0px", grey: c(f).color, stacked: plus.getBoundingClientRect().bottom <= minus.getBoundingClientRect().top + 0.5, changed: box.classList.contains("changed") }; });
   const shut = await nb(), len = await S("S.ha_hour.len");
   await page.click(".row.side .numbox .step >> nth=1");
-  const stepped = await S("S.ha_hour.len"), still = await nb();
+  const stepped = await S("S.ha_hour.len"), after = await nb();
   await page.click("#hand-len-Length");
-  const wide = await nb();
-  await page.click(".row.side .numbox .step >> nth=0");
-  const back = await S("S.ha_hour.len"), held = await nb();
+  const popped = await page.evaluate(() => { const e = document.querySelector("#value-pop"); return !!e && e.querySelector("label").textContent === "Length" && getComputedStyle(e.querySelector("input[type=range]")).display !== "none"; });
   await page.keyboard.press("Escape");
-  const closed = await nb();
-  check(shut.w === 60 && shut.h === 26 && shut.stacked && shut.step === "16x13" && near(stepped - len, 0.05, 1e-6) && still.w === 60, `beside the box a number has a tiny plus over a tiny minus (${shut.step}); they step it and the box stays small`);
-  check(wide.over && wide.h === 32 && wide.step === "32x32" && !wide.stacked && near(back, len, 1e-6) && held.w === wide.w && closed.w === 60, `a press on the number and its box grows over the slider (${wide.w} wide): a large minus and plus beside the number; it stays open while they are pressed, Escape closes it`);
+  await page.evaluate((v) => window.dial_tool.set_value("hand", "len", v), len);
+  const back = await nb();
+  check(shut.plain && shut.stacked && !shut.changed && shut.grey === "rgb(92, 92, 88)" && near(stepped - len, 0.05, 1e-6) && after.changed && !back.changed && shut.w === 60,
+    `beside the box a number is quiet: no box, grey until it changes (${shut.grey}), a tiny plus over a tiny minus that step it; changed it is in ink, back to how the dial opened grey again (#250)`);
+  check(popped && await page.$("#value-pop") === null, "a press on the number opens its popup, with its slider; Escape puts it away (#250, #249)");
 }
 { // one line through the top: the middle of the title's small letters, undo and Guides; the unit box's and the Gallery pill's words on the title's baseline, as Help's are (Okay, 16 Oct 2026, #285: "same baseline")
   const line = await page.evaluate(() => { const mid = (q) => { const r = document.querySelector(q).getBoundingClientRect(); return r.top + r.height / 2; }, h = document.querySelector("h1");

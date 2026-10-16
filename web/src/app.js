@@ -509,6 +509,7 @@ const ROWS = {
     // then its numbers and its colour. So what a number changes is seen right beside it, and on the dial at the right.
     // side: the row stands beside the box · short: the label when there is little room for it.
     custom("hand_detail", { ...H }),
+    col("c", "Colour", { ...H, side: true }),      // first beside the box (Okay's notes, p. 18, #250: "Colour to the top, Cap at the end")
     pick("shape", "Shape", G.HAND_SHAPES, hand_pic, { ...H, side: true, line: true, skip: [9] }),      // every shape but "file" (a shape of one's own: the SVG tile)
     num("len", "Length", 0.5, 30, 0.05, { ...H, side: true }),      // a disc's: where its marker's outer end is
     num("disc_d", "Disc Ø", 0.5, 30, 0.05, { ...H, side: true, show: hand_is("disc") }),
@@ -517,16 +518,15 @@ const ROWS = {
     num("mark_w", "Hole width", 0.02, 5, 0.01, { ...H, side: true, short: "Hole W", show: hand_is("disc") }),
     num("w", "Width", 0.02, 4, 0.01, { ...H, side: true, show: (H) => G.HAND_SHAPES[H.shape] !== "disc" }),
     num("tail", "Tail", 0, 10, 0.05, { ...H, side: true, show: (H) => G.HAND_SHAPES[H.shape] !== "disc" }),
-    num("round", "Round ends", 0, 2, 0.01, { ...H, side: true, show: hand_is("baton", "pencil", "sword", "arrow", "syringe", "breguet", "lollipop", "file", "disc") }),      // a disc: its marker's ends
-    num("tip", "Tip length", 0, 10, 0.05, { ...H, side: true, show: hand_is("pencil", "sword", "arrow", "syringe", "breguet") }),
-    num("feature", "Head width", 0, 6, 0.05, { ...H, side: true, show: hand_is("arrow", "syringe") }),
+    num("round", "Round ends", 0, 2, 0.01, { ...H, side: true, short: "Round", show: hand_is("baton", "pencil", "sword", "arrow", "syringe", "breguet", "lollipop", "file", "disc") }),      // a disc: its marker's ends
+    num("tip", "Tip length", 0, 10, 0.05, { ...H, side: true, short: "Tip", show: hand_is("pencil", "sword", "arrow", "syringe", "breguet") }),
+    num("feature", "Head width", 0, 6, 0.05, { ...H, side: true, short: "Head W", show: hand_is("arrow", "syringe") }),
     num("feature", "Ring · disc Ø", 0, 6, 0.05, { ...H, side: true, short: "Ring Ø", show: hand_is("breguet", "lollipop") }),
-    num("feature_at", "Widest at %", 0, 100, 1, { ...H, side: true, show: hand_is("dauphine") }),
+    num("feature_at", "Widest at %", 0, 100, 1, { ...H, side: true, short: "Widest %", show: hand_is("dauphine") }),
     num("feature_at", "Barrel from %", 0, 100, 1, { ...H, side: true, short: "Barrel %", show: hand_is("syringe") }),
     num("feature_at", "Ring · disc at %", 0, 100, 1, { ...H, side: true, short: "Ring at %", show: hand_is("breguet", "lollipop") }),
     num("counter", "Counterweight Ø", 0, 4, 0.05, { ...H, side: true, short: "Counter Ø" }),
-    num("wall", "Hollow wall", 0, 1, 0.01, { ...H, side: true }),
-    col("c", "Colour", { ...H, side: true }),
+    num("wall", "Hollow wall", 0, 1, 0.01, { ...H, side: true, short: "Wall" }),
     // the cap is part of the seconds hand (Okay's notes, p. 1, #262, beta 4.43; until then a pane of its own for all
     // three): its rows under the seconds hand's own. With no seconds hand they stand under the topmost hand's, where
     // the cap is off until "Cap on this hand" is ticked (G.cap_shows)
@@ -735,6 +735,7 @@ const dial_text = (S) => JSON.stringify(S, (key, value) => (key === "t" || key.s
 class DialTool {
   constructor(settings) {
     this.S = G.fresh_settings(settings);
+    this.opened = structuredClone(this.S);      // the dial as it opened: a quiet number is grey until it differs from this (#250)
     this.statik = null;                            // everything that doesn't move, rebuilt when geometry changes
     this.static_dirty = true;
     this.pending = false;                          // a frame has been asked for
@@ -855,7 +856,7 @@ class DialTool {
     if (this.iris_box && !on(".irisbox")) this.iris_open(false);
     if (this.lang_opens && !on(".langs")) for (const shut of this.lang_opens) shut(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
-    if (this.value_pop && !on("#value-pop") && !on(".valueb, .atmore, .popname")) this.value_pop_close();
+    if (this.value_pop && !on("#value-pop") && !on(".valueb, .atmore, .popname, .numbox > input")) this.value_pop_close();
     this.tag_hide();
   }
 
@@ -1980,9 +1981,17 @@ class DialTool {
         // beside a hand's box there is little room (Okay, 13 Oct 2026): the number with a tiny plus over a tiny minus
         // joined to it. A press on the number and the box grows towards the slider, over it, into a large field
         // between a large minus and plus; it goes back when one presses elsewhere, or Enter or Escape.
+        // the quiet look (Okay's notes, p. 18, #250, beta 4.45.1; R15 form A): the number and a compact ± beside it, no
+        // box, grey until the number differs from how the dial opened; a press on the number opens its popup (#249). With
+        // the keyboard (Tab) the number still takes typing and the arrows. (4.25 to 4.45: a box that grew over the slider)
         const box = el("span", { className: "numbox" }, field, step(-1), step(1));
-        for (const b of box.querySelectorAll(".step")) b.onmousedown = (e) => e.preventDefault();      // a press on minus or plus leaves the field as it is: closed stays closed, open stays open
+        for (const b of box.querySelectorAll(".step")) b.onmousedown = (e) => e.preventDefault();      // a press on minus or plus leaves the focus where it is
         field.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === "Escape") field.blur(); });
+        if (!row.inpop) {
+          field.onmousedown = (e) => e.preventDefault();      // a press opens the popup, whose own field takes the typing
+          field.onclick = () => this.value_pop_open(field, row);
+        }
+        out.quiet = box;
         wrap.append(lead, slider, box);
       } else wrap.append(lead, slider, field, el("span", { className: "steps" }, step(-1), step(1)));
       out.refresh = (T) => {
@@ -1993,6 +2002,10 @@ class DialTool {
         filled(slider);
         if (!typing) field.value = shown(v);
         if (menu) { menu.value = T[row.menu.key] ?? 0; label.textContent = label_of(row, T); }
+        if (out.quiet) {      // grey until it differs from how the dial opened (#250)
+          const was = row.scope === "hand" ? this.opened["ha_" + G.HANDS[this.S.ui_hand]] : this.opened;
+          out.quiet.classList.toggle("changed", Math.abs(v - (was?.[row.key] ?? v)) > 1e-9);
+        }
       };
     }
 

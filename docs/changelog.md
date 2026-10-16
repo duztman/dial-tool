@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.45.1 (web version) · 16 Oct 2026
+
+- **The hand rows, quiet** (#250; Okay's notes, p. 18):
+  - The number beside a hand's box has no box. It and its compact ± are grey until the number differs from how the dial opened, then ink.
+  - A press on the number opens its popup. With the keyboard (Tab) it still takes typing and the arrow keys.
+  - The box that grew over the slider (4.25) is gone.
+- **Names:** one line each, none longer than "Counter Ø": Round, Tip, Head W, Widest %, Wall, alongside the existing short ones. The names' column is that wide, so the sliders are longer.
+- **Order:** Colour stands first beside the box; the cap stays last.
+
 ## beta 4.45 (web version) · 16 Oct 2026
 
 Phase E, first push: the number popup.
