@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.44.6 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.45 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -131,7 +131,13 @@
     --row-end: calc(var(--frame-pad) - var(--hair) + var(--ringline-inner));      /* the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons */
     --line-button: 36px; --bare-dot: 16px;      /* in the ring drawer every control is this high (a value button this wide too) · the colour's swatch */
     --half: 30px;                                  /* AM · PM: its own window beside the time (Okay, 14 Oct 2026, 23:19) */
-    --value-pop: 132px;                            /* a value button's pop-up: about as wide as it is high */
+    --value-pop: 132px;                            /* a value button's tag: about as wide as it is high */
+    /* the number popup (#249, beta 4.45): three columns wide; a ground darker than the pane's, in a frame of the dark
+       grey two points thick; its corners as round as its pills (half a control); its slider's thumb a pill a fifth
+       larger than the panel's thumb, half as wide again as high */
+    --num-pop: calc(3 * var(--col) + 2 * var(--gap));
+    --num-pop-ground: color-mix(in srgb, var(--ink) 7%, var(--ground)); --num-pop-round: calc(var(--control) / 2);
+    --num-pop-thumb: calc(1.2 * var(--thumb));
     --dot-tiny: 10px;                              /* a colour inside a line of words: a folded pane's summary */
     --thumb: 18px; --track: 4px; --thumb-eye: 2px; --thumb-eye-edge: 2.75px;      /* sliders: a black disc on a thin track (Okay's sketch); the light centre of the disc, and where its edge softens */
     --grip: 18px;                                  /* the ring list's drag handle column */
@@ -778,15 +784,23 @@
      under the other. No slider: the button is dragged instead. */
   .tag.value { display: flex; justify-content: space-between; align-items: baseline; gap: var(--u3); width: var(--value-pop); }
   .tag.value .figure { color: var(--grey); font: 400 var(--t-xs)/1 var(--mono); }
-  .tag.valuepop { --row-rule: transparent; display: block; padding: var(--u1) var(--u3) var(--u3); pointer-events: auto; font-weight: 400; }
-  .tag.valuepop.growing { overflow: hidden; }
-  .valuepop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--unit); min-height: 0; }
-  .valuepop .row > *, .valuepop .row.txt > input { grid-column: 1; }
-  .valuepop .row input[type="range"] { display: none; }
-  .valuepop .row input[type="text"] { width: 100%; text-align: center; }
-  .valuepop .row .steps { display: grid; grid-template-columns: 1fr 1fr; }
-  .valuepop .row :is(label, .menulabel) { display: flex; justify-content: space-between; align-items: center; color: var(--ink); font: 600 var(--t-s)/1.3 var(--sans); }
-  .valuepop .row .menulabel > label { color: var(--ink); font: inherit; }
+  /* the number popup (#249): the number's row, stacked — name · slider · value in a pill · round − and + — in a frame */
+  .numpop { position: fixed; z-index: 30; translate: -50% 0; width: var(--num-pop); padding: var(--u3); border: var(--thick) solid var(--grey); border-radius: var(--num-pop-round); background: var(--num-pop-ground); color: var(--ink); --row-rule: transparent; --surface: var(--num-pop-ground); }
+  .numpop.sheet { inset: auto 0 0 0; translate: none; width: auto; padding: var(--u4) var(--margin) calc(var(--u4) + env(safe-area-inset-bottom)); border-width: var(--thick) 0 0; border-radius: var(--num-pop-round) var(--num-pop-round) 0 0; }      /* a phone: a sheet over the drawer, the dial in view */
+  .numpop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--u3); min-height: 0; padding: 0; }
+  .numpop .row > *, .numpop .row.txt > input { grid-column: 1; }
+  .numpop .row :is(label, .menulabel) { display: flex; justify-content: center; align-items: center; gap: var(--u1); color: var(--ink); font: 600 var(--t-s)/1.3 var(--sans); }
+  .numpop .row .menulabel > label { color: var(--ink); font: inherit; }
+  .numpop .row input[type="range"] { width: 100%; height: var(--num-pop-thumb); }
+  .numpop .row input[type="range"]::-webkit-slider-thumb { width: calc(1.5 * var(--num-pop-thumb)); height: var(--num-pop-thumb); margin-top: calc((var(--track) - var(--num-pop-thumb)) / 2); border-radius: calc(var(--num-pop-thumb) / 2); }
+  .numpop .row input[type="range"]::-moz-range-thumb { width: calc(1.5 * var(--num-pop-thumb)); height: var(--num-pop-thumb); border-radius: calc(var(--num-pop-thumb) / 2); }
+  .numpop .row input[type="text"] { justify-self: center; width: calc(2 * var(--col)); height: var(--control); border-radius: var(--num-pop-round); text-align: center; }
+  .numpop .row .steps { display: flex; justify-content: center; gap: var(--u4); }
+  .numpop .row .steps > .step { flex: none; width: var(--control); height: var(--control); padding: 0; border: var(--hair) solid var(--ink); border-radius: 50%; }
+  /* a number's name opens its popup; pressed and moved sideways it changes the value (#249, #170) */
+  .popname { cursor: ew-resize; }
+  .popname:hover { text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: var(--u1); }
+  .popname.dragging { color: var(--ink); }
 }
 
 /* fonts: the font box, the font sheet, stickers and their legend */
@@ -1072,6 +1086,13 @@
   .guidelast > .numcell { grid-column: 1 / 3; position: relative; height: var(--control); pointer-events: none; --num-open: 100%; }
   .guidelast .numbox { pointer-events: auto; }
   .guidelast > .resetall { grid-column: 3; display: flex; align-items: center; height: var(--control); padding-left: var(--gap); border-left: var(--hair) solid var(--row-rule); }
+  /* Reset All asks first, in its line's place (#271): the question at the left, round ✕ and ✓ at the right */
+  .guidelast.asking > :not(.ask) { visibility: hidden; }
+  .guidelast > .ask { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; color: var(--ink); }
+  .guidelast > .ask[hidden] { display: none; }
+  .guidelast .answers { display: flex; gap: var(--u2); }
+  .roundb { display: grid; place-items: center; width: var(--control); height: var(--control); padding: 0; border: var(--hair) solid var(--ink); border-radius: 50%; background: none; color: var(--ink); }
+  .roundb:hover { background: var(--ink); color: var(--paper); }
   .guidefoot { display: flex; justify-content: flex-end; padding-top: var(--pop-pad); }
   .shadelist .guidehead .name { grid-column: 1 / -1; }      /* its headings are words alone: the whole line, not the names' column */
   /* the Shadows list: the guides' list, opening upward from its switch at the bottom left (after .guidelist, which it overrides) */
@@ -5754,7 +5775,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.44.6";
+var VERSION = "beta 4.45";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -8662,7 +8683,7 @@ var DialTool = class _DialTool {
     if (this.iris_box && !on(".irisbox")) this.iris_open(false);
     if (this.lang_opens && !on(".langs")) for (const shut of this.lang_opens) shut(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
-    if (this.value_pop && !on("#value-pop") && !on(".valueb, .atmore")) this.value_pop_close();
+    if (this.value_pop && !on("#value-pop") && !on(".valueb, .atmore, .popname")) this.value_pop_close();
     this.tag_hide();
   }
   // ── building the window ──────────────────────────────────
@@ -9484,19 +9505,45 @@ var DialTool = class _DialTool {
       this.guide_more
     );
     this.guide_rows = [this.build_row({ ...num2("gd_w", "Thickness", 0.25, 6, 0.25), scope: "global", side: true })];
-    const reset = el("button", { type: "button", className: "btn", id: "guides-reset", textContent: "Reset All", title: "Every guide as it started", onclick: () => {
+    const ask = (on) => {
+      last.classList.toggle("asking", on);
+      question.hidden = !on;
+      if (on) yes.focus();
+    };
+    const reset = el("button", { type: "button", className: "btn", id: "guides-reset", textContent: "Reset All", title: "Every guide as it started", onclick: () => ask(true) });
+    const round2 = (id, text, title, act) => {
+      const b = el("button", { type: "button", className: "roundb", id, title, ariaLabel: title, onclick: act });
+      b.innerHTML = icon(text, 12);
+      return b;
+    };
+    const no = round2("guides-reset-no", `<path d="M3 3L9 9M9 3L3 9" ${sw(SLANT)}/>`, "Keep the guides", () => {
+      ask(false);
+      reset.focus();
+    });
+    const yes = round2("guides-reset-yes", `<path d="M2.5 6.25L5 8.75L9.5 3.5" ${sw(SLANT)}/>`, "Reset all guides", () => {
       for (const key of Object.keys(DEFAULTS)) if (key.startsWith("gd_")) this.S[key] = structuredClone(DEFAULTS[key]);
       for (const ring of this.S.rings) ring.guide = RING_BASE.guide;
       for (const w of windows_of(this.S)) w.guide = WINDOW_BASE.guide;
+      ask(false);
       this.sync_rows();
       this.render();
-    } });
+      reset.focus();
+    });
+    const question = el("span", { className: "ask", hidden: true }, el("span", { textContent: "Reset all guides?" }), el("span", { className: "answers" }, no, yes));
+    question.onkeydown = (e) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        ask(false);
+        reset.focus();
+      }
+    };
     const last = this.guide_rows[0].el, box_ = last.querySelector(".numbox");
+    this.name_opens(last.querySelector("label"), this.guide_rows[0].row);
     const cell = el("span", { className: "numcell" });
     box_.replaceWith(cell);
     cell.append(box_);
     last.classList.add("guidelast");
-    last.append(el("span", { className: "resetall" }, reset));
+    last.append(el("span", { className: "resetall" }, reset), question);
     list.append(last);
     const box2 = el("div", { className: "guides" }, this.guides_tick, more, list);
     box2.onkeydown = (e) => {
@@ -10018,6 +10065,7 @@ var DialTool = class _DialTool {
         slider.ariaLabel = field.ariaLabel = row.text;
         field.title = row.text + " \xB7 " + field.title;
       }
+      if (!row.inpop && !row.side && !row.bare && !row.button) this.name_opens(label, row);
       if (row.side) {
         const box2 = el("span", { className: "numbox" }, field, step(-1), step(1));
         for (const b of box2.querySelectorAll(".step")) b.onmousedown = (e) => e.preventDefault();
@@ -10768,6 +10816,41 @@ var DialTool = class _DialTool {
     };
     return { el: b, refresh };
   }
+  /** a number's name as the way into its popup (#249, #170): a press that doesn't move opens it; a press moved
+   *  sideways changes the value, two screen points a step (Shift: ten times finer), as a value button does. The name
+   *  keeps its field as its label for a screen reader, but a press on it no longer goes to the field. */
+  name_opens(label, row) {
+    label.classList.add("popname");
+    label.title = `${row.text} \u2014 press for its slider, drag sideways to change it`;
+    let press = null;
+    const now = () => {
+      const T = this.target(row.scope);
+      return T[row.key] ?? (row.or ? row.or(T) : 0);
+    };
+    label.onclick = (e) => e.preventDefault();
+    label.onpointerdown = (e) => {
+      press = { x: e.clientX, v: now(), moved: false };
+      label.setPointerCapture(e.pointerId);
+    };
+    label.onpointermove = (e) => {
+      if (!press) return;
+      const d = e.clientX - press.x;
+      if (!press.moved && Math.abs(d) < 4) return;
+      if (!press.moved) {
+        press.moved = true;
+        this.value_pop_close();
+        label.classList.add("dragging");
+      }
+      const v = press.v + Math.round(d / 2) * row.step * (e.shiftKey ? 0.1 : 1);
+      this.set_value(row.scope, row.key, row.whole ? clamp(Math.round(v), row.lo, row.hi) : +Math.max(v, row.lo).toFixed(6));
+    };
+    label.onpointerup = label.onpointercancel = () => {
+      const was = press;
+      press = null;
+      label.classList.remove("dragging");
+      if (was && !was.moved) this.value_pop_open(label, row);
+    };
+  }
   /** the tag: what a wordless button is, said under it while the pointer or the keyboard is on it. One for the whole
    *  tool, laid over everything, so a list that scrolls can't cut it off. A value button's tag is as wide as the
    *  pop-up it grows into on a click (value_pop_open): its name at the left, its value at the right. */
@@ -10794,26 +10877,24 @@ var DialTool = class _DialTool {
     box2.style.top = `${at.bottom + 7}px`;
     box2.style.setProperty("--point", `${at.left + at.width / 2 - x}px`);
   }
-  /** a value button's pop-up is its tag, grown (Okay, 13 Oct 2026: "do it out of our tooltip. consistent width,
-   *  closed/open, height grows on click"): the same box under the button, the same width, now holding the number's
-   *  row — its name (for a numeral's radius with the menu beside it), the field ready to type in, − +. Enter,
-   *  Escape or a press outside closes it. */
+  /** the number popup (Okay's notes, p. 5 and 18, #249, beta 4.45; R15's popup): one for every number that has one —
+   *  a value button's (form C), a row's name (form A), a quiet row's (form B). The number's own row, laid out as the
+   *  popup: its name, the slider (its thumb a pill, a fifth larger), the value in a pill, round − and + under it; in a
+   *  2-point dark-grey frame on a ground darker than the pane's, its corners as round as its pills. Under what opened
+   *  it, centred; on a phone a sheet at the bottom, over the drawer, so the dial stays in view. Being the row itself,
+   *  it does all the row does (R15: typing past the slider's range widens it). Enter, Escape or a press outside closes
+   *  it. (Until 4.45: the value button's tag, grown into a small square — 4.12.) */
   value_pop_open(button, row) {
     if (this.value_pop && this.value_pop.button === button) return this.value_pop_close();
     this.value_pop_close();
-    const closed = this.tag && !this.tag.hidden ? this.tag.offsetHeight : 0;
     this.tag_hide();
-    const r = this.build_row(row), box2 = el("div", { className: "tag value valuepop", id: "value-pop" }, r.el);
+    const sheet = this.pop_is_sheet();
+    const r = this.build_row({ ...row, inpop: true, side: false }), box2 = el("div", { className: "numpop" + (sheet ? " sheet" : ""), id: "value-pop", role: "dialog", ariaLabel: row.text || "" }, r.el);
     document.body.append(box2);
     button.setAttribute("aria-expanded", "true");
     this.value_pop = { button, box: box2, r };
     r.refresh(this.target(row.scope));
-    this.tag_place(box2, button);
-    if (box2.animate && closed && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      box2.classList.add("growing");
-      const grow = box2.animate([{ height: `${closed}px` }, { height: `${box2.offsetHeight}px` }], { duration: 120, easing: "ease-out" });
-      grow.onfinish = grow.oncancel = () => box2.classList.remove("growing");
-    }
+    if (!sheet) this.tag_place(box2, button);
     const field = box2.querySelector('input[type="text"]');
     box2.onkeydown = (e) => {
       if (!(e.key === "Escape" || e.key === "Enter" && e.target === field)) return;
@@ -10821,8 +10902,10 @@ var DialTool = class _DialTool {
       this.value_pop_close();
       button.focus();
     };
-    field.focus();
-    field.select();
+    if (!sheet) {
+      field.focus();
+      field.select();
+    }
   }
   value_pop_close() {
     if (!this.value_pop) return;
