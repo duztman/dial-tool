@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.42.2 | 16 Oct 2026 | web | [`289b700`](https://github.com/duztman/dial-tool/tree/289b7009acef21ffee1820102734c423d74444ae) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/289b7009acef21ffee1820102734c423d74444ae/web/dial-tool.html) | a first visit opens tidy; Colours as swatches; Reset on its heading line |
 | 4.42.1 | 16 Oct 2026 | web | [`e089789`](https://github.com/duztman/dial-tool/tree/e089789b111b791d0a6f9218980abea8704a8c1e) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/e089789b111b791d0a6f9218980abea8704a8c1e/web/dial-tool.html) | the title line quieter, mm and Gallery small (#285) |
 | 4.42 | 16 Oct 2026 | web | [`b59a092`](https://github.com/duztman/dial-tool/tree/b59a09243a8f64b75d9fb4840a0a849cfb066ab1) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/b59a09243a8f64b75d9fb4840a0a849cfb066ab1/web/dial-tool.html) | beta 4.42: phase A, the specials block (#290) |
 | 4.41.25 | 16 Oct 2026 | web | [`5066e14`](https://github.com/duztman/dial-tool/tree/5066e14a979eff80b5c4a27667365b91dd79af64) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/5066e14a979eff80b5c4a27667365b91dd79af64/web/dial-tool.html) | beta 4.41.25: Reset in the Dial tab, with a warning |
