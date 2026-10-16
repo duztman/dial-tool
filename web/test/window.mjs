@@ -507,7 +507,7 @@ const unit_box = async () => page.$eval("#unit", (e) => { const r = e.getBoundin
 const as_mm = await unit_box();
 check(as_mm[0] === "mm" && as_mm[3] === 0 && await page.isHidden("#unit-menu"), "the unit box says mm and ends on the panel's last column");
 await page.click("#unit");
-check(JSON.stringify(await page.$$eval("#unit-menu button span:first-child", (b) => b.map((x) => x.textContent))) === '["Millimetres","Points","Inches","Lignes"]', "its menu: millimetres, points, inches, lignes");
+check(JSON.stringify(await page.$$eval("#unit-menu button span:first-child", (b) => b.map((x) => x.textContent))) === '["Millimetres","Points","Inches","Lignes","Thou"]', "its menu: millimetres, points, inches, lignes, thou (#299)");
 await page.click("#unit-in");
 const as_in = await unit_box();
 check(as_in[0] === "in" && as_in[1] === as_mm[1] && as_in[2] === as_mm[2] && await page.isHidden("#unit-menu"), `Inches: the box says in and keeps its size (${as_in[1]} × ${as_in[2]})`);
@@ -1419,10 +1419,19 @@ await tab("Export");
     await tab("Dial");
     const w = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), version = r(".mast .title > .quiet:not(.help)"), help = r(".mast .help"), u = r("#unit"), p = r("#to-gallery");
       const shade = (q) => { const s = getComputedStyle(document.querySelector(q)).color, n = s.match(/[\d.]+/g).map(Number), rgb = (s.startsWith("color(") ? n.slice(0, 3).map((x) => x * 255) : n.slice(0, 3)), a = n.length > 3 ? n[3] : 1; return Math.round((rgb[0] + rgb[1] + rgb[2]) / 3 * a + 251.3 * (1 - a)); };      // how light it reads on the paper
-      return { gaps: [+(help.left - version.right).toFixed(2), +(p.left - help.right).toFixed(2)], high: p.height === u.height, shades: [shade("#unit"), shade("#to-gallery"), shade(".mast .help")] }; });
+      const uc = getComputedStyle(document.querySelector("#unit"));
+      return { gaps: [+(help.left - version.right).toFixed(2), +(p.left - help.right).toFixed(2)], high: p.height > u.height && uc.fontFamily.includes("Silkscreen") && uc.textTransform === "uppercase", shades: [shade("#unit"), shade("#to-gallery"), shade(".mast .help")] }; });
     await page.click("#to-gallery"); await page.waitForTimeout(900);
     const at = await page.evaluate(() => { const g = document.querySelector(".gallery").getBoundingClientRect(), f = document.querySelector(".form").getBoundingClientRect(); return [window.dial_tool.S.ui_section, g.top < f.bottom && g.bottom > f.top]; });
-    check(Math.abs(w.gaps[0] - w.gaps[1]) < 0.6 && w.high && w.shades[0] > w.shades[1] && w.shades[1] > w.shades[2] && at[0] === 4 && at[1], `the Gallery pill: right after Help, as far from it as Help from the version (${w.gaps.join(" · ")}), as high as the unit box, darker than mm and lighter than Help (${w.shades.join(" > ")}); pressed, Export with the Gallery in view`);
+    check(Math.abs(w.gaps[0] - w.gaps[1]) < 0.6 && w.high && w.shades[0] > w.shades[1] && w.shades[1] > w.shades[2] && at[0] === 4 && at[1], `the Gallery pill: right after Help, as far from it as Help from the version (${w.gaps.join(" · ")}), taller than the unit box, whose word is in the pixel font in capitals (#299), darker than mm and lighter than Help (${w.shades.join(" > ")}); pressed, Export with the Gallery in view`);
+  }
+  { // see-through shadows (Okay, 16 Oct 2026, #295): a see-through hand casts a lighter shadow, in its colour; a solid one as it always did; each multiplied onto the plate
+    const s = await page.evaluate(async () => { const t = window.dial_tool, was = t.S.ha_minute.c.slice(); t.S.ha_minute.c = [1, 0, 0, 0.5]; t.changed(); t.render(); await new Promise((r) => setTimeout(r, 400));
+      const g = document.querySelector('.preview g[clip-path="url(#shadow-clip-plate)"]'), fills = g ? [...g.querySelectorAll("path")].map((x) => x.getAttribute("fill")) : [];
+      const blend = g ? getComputedStyle(g).mixBlendMode : ""; t.S.ha_minute.c = was; t.changed(); t.render(); return { fills, blend, dark: t.S.sh_dark, on: t.S.sh_on }; });
+    const solid = `rgb(${Array(3).fill(Math.round(255 * (1 - s.dark / 100))).join(", ")})`, red = s.fills.find((f) => f !== solid) || "";
+    const [cr, cg, cb] = (red.match(/\d+/g) || []).map(Number);
+    check(s.on && s.blend === "multiply" && s.fills.includes(solid) && cr > cg && cg === cb && cg > Math.round(255 * (1 - s.dark / 100)), `a see-through red hand's shadow is lighter and red (${red}), a solid hand's as before (${solid}), multiplied onto the plate (${s.blend})`);
   }
   check(await page.evaluate(() => JSON.parse(localStorage.getItem("dial-tool-folds") || "{}")["Export/Export a file"] === true) && !(await page.isVisible("#export-pdf")), "the Gallery pill shuts the eye of Export a file, so the Gallery has the room (Okay, 15 Oct 2026, 10:47)");
   { const f = JSON.parse(await page.evaluate(() => localStorage.getItem("dial-tool-folds") || "{}")); delete f["Export/Export a file"]; await page.evaluate((x) => { localStorage.setItem("dial-tool-folds", x); window.dial_tool.folds = JSON.parse(x); window.dial_tool.show_section(); }, JSON.stringify(f)); }      // open again for the checks after
@@ -1459,7 +1468,7 @@ await shot("10-bar");
       iris: [Math.round(r(".irisbox").right), Math.round(r(".irisbox").bottom), r(".irisbox").top + r(".irisbox").height / 2], x: c(".irisbox .x").display, pill: [r("#show-now").left + r("#show-now").width / 2, r("#show-now").top + r("#show-now").height / 2, Math.round(r("#show-now").width), r("#show-now").right],
       mast: [c(".mast").opacity, c(".mast").pointerEvents], sky: c(".sky").opacity, guide_items: t.items.filter((i) => i.role === "guide").length,
       soft: [...document.querySelectorAll('.preview g[clip-path^="url(#shadow-clip"]')].some((g) => g.getAttribute("filter")), letter: c("#show-now").letterSpacing,
-      gap: r("#eye-box").left - r(".irisbox").right, hint_mid: (() => { const h = r("#sun-hint"), m = r("main"), below = m.top + t.c[1] + t.S.dial_d / 2 * t.z, above = r("#show-now").top; return Math.abs(h.top + h.height / 2 - (below + above) / 2) < 1 && h.width === 108; })() }; });
+      gap: Math.round(r("#eye-box").right) === Math.round(r(".irisbox").right) ? r("#eye-box").top - r(".irisbox").bottom : -1, hint_mid: (() => { const h = r("#sun-hint"), m = r("main"), below = m.top + t.c[1] + t.S.dial_d / 2 * t.z, above = r("#show-now").top; return Math.abs(h.top + h.height / 2 - (below + above) / 2) < 1 && h.width === 108; })() }; });
   const before = await q();
   await page.click("#iris-box"); await page.waitForTimeout(400);
   const opened = await q();

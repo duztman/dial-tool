@@ -202,7 +202,7 @@ const INK_TRAPS = (() => {
   }
   return out.join("");
 })();
-const EYE_RAYS = 24, EYE_RAY = 0.5;      // the eye switch's rays: how many, how thick (Okay, 15 Oct 2026, 03:41)
+const EYE_RAYS = 24, EYE_RAY = 0.625;      // the eye switch's rays: how many, how thick (Okay, 15 Oct 2026, 03:41; 0.5 until 16 Oct: "thicker lines, just barely visibly on 100%, not like +1px")
 // ── the showcase (Okay, 15 Oct 2026, 04:26 and 04:59) ──
 // its sky: a 45° gradient, the backdrop's colour at this share of its light at the top left, black at the bottom right
 const SKY_TOP = 0.3;
@@ -251,7 +251,7 @@ const TOOL_ICONS = {
   // 15 Oct, 02:42: mirrored (lit from the upper left, the shadow cast to the right) and its outline DENSE, as Guides',
   // the sign beside it on 18 ("ball stroke thickness too much… look at similar size icons, guides and such")
   shadows: `<circle cx="7.25" cy="7.75" r="5.5" ${sw(DENSE)}/><path d="M4.5 12.5A5.5 5.5 0 0 0 12 5A8 8 0 0 1 4.5 12.5Z" fill="currentColor" stroke="none"/>`
-    + `<path d="M16.75 15.5A5.625 1.25 0 0 1 5.5 15.5A5.625 1.25 0 0 1 16.75 15.5Z" fill="currentColor" stroke="none"/>`,
+    + `<path d="M16.75 15A5.625 1.25 0 0 1 5.5 15A5.625 1.25 0 0 1 16.75 15Z" fill="currentColor" stroke="none"/>`,      // the shadow up to the ball, ends still on half points (Okay, 16 Oct 2026: "Shadow moves up and touches the ball"; 15.5 until then, 0.62 apart, now 0.13)
   // Okay's own mark, on 16 in the panel's first column (15 Oct 2026, 02:42: "my personal logo. Draw this like an
   // icon"): a ring; a 45° diagonal from ring to ring; through its crossing with them a level line to the right and an
   // upright one down; a cell between them (3.5 × 4, as in his drawing); a 45° slant from the cell's corner to the
@@ -1292,7 +1292,7 @@ class DialTool {
 
   unit() { return G.UNITS[this.S.ui_unit] || G.UNITS[0]; }
   /** a length in mm → the text of it in the chosen unit. */
-  in_unit(mm, places) { const u = this.unit(); return (mm * u[2]).toFixed(places + u[3]); }
+  in_unit(mm, places) { const u = this.unit(); return (mm * u[2]).toFixed(Math.max(0, places + u[3])); }      // thou takes a decimal away: never fewer than none
 
   unit_box() {
     const menu = el("div", { className: "unitmenu", id: "unit-menu", hidden: true });
@@ -1565,6 +1565,13 @@ class DialTool {
     const hands = items.map((item, i) => ({ item, i })).filter((x) => x.item.role === "hand").map((x) => ({ ...x, z: height[x.item.name] ?? 0, d: this.slots[x.i].d }));
     const cap_r = S.ha_on && S.ha_cap > 0 ? S.ha_cap / 2 : 0;
     const top = Math.max(S.sh_cap, ...hands.map((h) => h.z));
+    // what a part's shadow does to the surface under it (Okay, 16 Oct 2026, #295: "shadow of transparent items are
+    // extreme. Realistic color shadows maybe?"): the shadow multiplies the surface, channel by channel, by
+    // 1 − dark × (1 − T), where T is the light that gets through the part: (1 − α)(1 + α × its colour). An opaque part
+    // lets none through, whatever its colour: the shadow it always cast. A see-through one casts less, and in its colour.
+    const dark = clamp(S.sh_dark, 0, 100) / 100;
+    const tint = (c = [0, 0, 0, 1]) => { const a = clamp(c[3] ?? 1, 0, 1); return `rgb(${[0, 1, 2].map((k) => Math.round(255 * (1 - dark * (1 - (1 - a) * (1 + a * c[k]))))).join(", ")})`; };
+    hands.sort((p, q) => (p.item.fill?.[3] ?? 1) - (q.item.fill?.[3] ?? 1));      // see-through first, so a solid part's shadow covers theirs where they cross: never darker twice
 
     // one surface: its group goes just before `before` (a node, or null for the end), clipped to its own outline
     const surface = (name, before, outline, from_z) => {
@@ -1572,19 +1579,20 @@ class DialTool {
       clip.id = "shadow-clip-" + name;
       outline.forEach(([d, turn], k) => { const p = part(`${name}/clip/${k}`, "path", clip); set(p, "d", d); set(p, "transform", turn ? `rotate(${f(-turn)})` : ""); });
       set(g, "clip-path", `url(#${clip.id})`);
-      set(g, "opacity", String(clamp(S.sh_dark, 0, 100) / 100));
-      set(g, "fill", "#000");
+      g.removeAttribute("opacity"); g.removeAttribute("fill");      // each shadow its own tint (#295), multiplied onto the surface
+      set(g, "style", "mix-blend-mode: multiply");
       set(g, "pointer-events", "none");
       if (S.sh_blur) set(g, "filter", "url(#shadow-soft)"); else g.removeAttribute("filter");
       if (g.nextSibling !== before) this.dial.insertBefore(g, before);
       // what falls on it: every hand higher than it, then the pipes' band up to the cap's top
       let k = 0;
-      const cast = (d, turn, dz) => {
+      const cast = (d, turn, dz, colour) => {
         const p = part(`${name}/cast/${k++}`, "path", g), [x, y] = away(dz);
         set(p, "d", d);
+        set(p, "fill", tint(colour));
         set(p, "transform", `translate(${f(x)} ${f(y)})` + (turn ? ` rotate(${f(-turn)})` : ""));
       };
-      for (const h of hands) if (h.z > from_z) cast(h.d, h.item.angle, h.z - from_z);
+      for (const h of hands) if (h.z > from_z) cast(h.d, h.item.angle, h.z - from_z, h.item.fill);
       if (cap_r && top > from_z) {
         // the pipes stand from the plate's face (0) to the cap's top: on a surface under the plate their band starts
         // where the face's height lands, not at the centre
@@ -1594,6 +1602,7 @@ class DialTool {
         for (const d of [ring(x0, y0), ring(x, y), `M${f(x0 + nx)} ${f(y0 + ny)}L${f(x + nx)} ${f(y + ny)}L${f(x - nx)} ${f(y - ny)}L${f(x0 - nx)} ${f(y0 - ny)}Z`]) {
           const p = part(`${name}/cast/${k++}`, "path", g);
           set(p, "d", d);
+          set(p, "fill", tint(S.c_cap));
           set(p, "transform", "");
         }
       }
@@ -1605,7 +1614,7 @@ class DialTool {
     const discs = items.map((x, i) => ({ x, i })).filter(({ x }) => x.role === "date disc");
     if (discs.length && plate_at >= 0) {
       const s = surface("discs", nodes[plate_at], discs.map(({ i }) => [this.slots[i].d, 0]), -S.sh_disc);
-      s.cast(this.slots[plate_at].d, 0, S.sh_disc);
+      s.cast(this.slots[plate_at].d, 0, S.sh_disc, S.c_plate);
     }
     // the plate's face, with everything printed on it: drawn after the last thing before the hands
     if (plate_at >= 0 && hands.length) {
@@ -1848,7 +1857,7 @@ class DialTool {
       };
       // a length is kept in mm and shown in the chosen unit: per = how many of that unit make a mm, places = decimals shown
       const length = is_length(row);
-      const per = () => (length ? this.unit()[2] : 1), places = () => decimals(row.step) + (length ? this.unit()[3] : 0);
+      const per = () => (length ? this.unit()[2] : 1), places = () => Math.max(0, decimals(row.step) + (length ? this.unit()[3] : 0));
       const shown = (v) => (v * per()).toFixed(places());
       const now = () => { const T = this.target(row.scope); return T[row.key] ?? (row.or ? row.or(T) : 0); };      // or: what an unset number is (a window's tracking: the numerals')
       let typing = false;                          // the field follows every change, except while you type in it

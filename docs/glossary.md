@@ -71,7 +71,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Pane** | A named part of a section, opened by a thick line (web version, beta 4.0; called a *group* in beta 3.0). Its eye folds it. The Dial section's panes: **Dial** (diameter, plate, background) and **Page** (margin, backdrop). |
 | **Sector colour** | A band's sector with a colour of its own (ring key `cs`). Without one, a sector has the ring's colour. **Alternate** (beta 4.41.19): with an even number of sectors, two colours round the band, the ring's own on sectors 1, 3, 5… and the other on 2, 4, 6… (stored as sector colours). |
 | **Scale everything** | The tick under Diameter: a change of diameter multiplies every measure on the dial (not the page margin). |
-| **Unit box** | The box at the panel's top right: the unit lengths are shown and typed in (mm, points, inches, lignes). Settings stay in mm. **Ligne**: the watchmakers' unit for movement sizes, 2.2558 mm. |
+| **Unit box** | The small box at the right of the title's line: the unit lengths are shown and typed in (mm, points, inches, lignes, thou), its short name in the pixel font, in capitals (beta 4.42.4). Settings stay in mm. **Ligne**: the watchmakers' unit for movement sizes, 2.2558 mm. **Thou**: a thousandth of an inch, 0.0254 mm (beta 4.42.4). |
 | **Reach** | The unseen frame round a small control that also takes a finger's press (web version, touch only). |
 | **Heading selector** | A pane's main selector, standing on its heading line with no name of its own (Labels, Position). |
 | **Backdrop switch** | The button at the preview's bottom left: the backdrop's colour as a chip; it opens the colour pop-out. |

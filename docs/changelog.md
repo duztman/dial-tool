@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.42.4 (web version) · 16 Oct 2026
+
+- **The title line, second look** (#299): a fifth unit, **thou** (a thousandth of an inch); the unit box says its unit in the pixel font, in capitals (MM · PT · IN · LIG · THOU), a smaller box (35 × 15.5), one width for all; the Gallery pill a hair taller, upward (1 px).
+- **See-through shadows** (#295): a hand that lets light through casts a lighter shadow, tinted with its colour, as light through coloured glass does; a solid hand casts the shadow it always did. Each shadow is multiplied onto what it falls on; see-through shadows are drawn first, so where a solid one crosses them nothing is darkened twice.
+- **The Shadows sign**: its cast shadow moved up to touch the ball (#281). **The eye switch**: its rays a hair thicker, 0.625 (was 0.5); **the showcase's iris stands over the eye**, one unit apart, as Backdrop over Shadows (#280).
+
 ## beta 4.42.3 (web version) · 16 Oct 2026
 
 - **Copy link** (#277) stands on the heading line of *Link to this dial*, flush right, with a link sign (a new icon, through the pipeline), and stays there when the pane is folded. The link stands on one line, cut at the box's edge (Copy link copies it whole); under it, its length and what "fonts travel by name" means. The beat travels in the link (it always did; now a test says so).

@@ -31,7 +31,7 @@ const PICTURED = [
   { host: /^ring-twelve-Style-3$/, widths: [2], why: "a dashed outline: dashes look lighter than a whole line" },
   { host: /^iris-box/, widths: [1], why: "the showcase's X, the eye's rays made readable while faint (Okay, 15 Oct 2026, 04:59: \"iris becomes an x\")" },
   { host: /^hands-key/, widths: [1], why: "the showcase's hands key, lines 1 as the X across from it (Okay, 15 Oct 2026, 07:40)" },
-  { host: /^eye-box/, widths: [0.5], why: "the eye switch's rays, thin on purpose (Okay, 15 Oct 2026, 03:41: \"I want to see thin lines\")" },
+  { host: /^eye-box/, widths: [0.625], why: "the eye switch's rays, thin on purpose (Okay, 15 Oct 2026, 03:41: \"I want to see thin lines\"; 0.5 until 16 Oct: \"thicker lines, just barely visibly\")" },
   { host: /^logo$/, widths: [1, 1.375], why: "Okay's own mark, at his weights: lines 1, ring 1.375 (15 Oct 2026, 03:06: \"a bit thinner\")" },
 ];
 const near = (a, b) => Math.abs(a - b) < 0.006;

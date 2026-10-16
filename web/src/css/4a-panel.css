@@ -45,14 +45,14 @@
      smaller button, as big as help, same baseline, much smaller box, flush right"; one column wide and 32 high until
      then). Its menu hangs under it, the units by their full names, a hairline between them. */
   .unit { position: relative; margin-left: auto; }
-  .unitbox { width: var(--head-unit-w); border: var(--hair) solid currentColor; color: color-mix(in srgb, var(--ink) calc(var(--faint) * 50%), transparent); text-align: center; }      /* as light as a switch on the preview that can't be pressed (undo with nothing to undo), its word and its line one colour (Okay, 15 Oct 2026, 03:18); dark under the pointer. Was: its word like the version, its line like the header's */
+  .unitbox { width: var(--head-unit-w); padding: var(--u1) 0; border: var(--hair) solid currentColor; color: color-mix(in srgb, var(--ink) calc(var(--faint) * 50%), transparent); font: 400 var(--t-pixel)/1 var(--pixel); text-transform: uppercase; text-align: center; opacity: var(--pixel-ink-unit); }      /* as light as a switch on the preview that can't be pressed (undo with nothing to undo), its word and its line one colour (Okay, 15 Oct 2026, 03:18); dark under the pointer. Was: its word like the version, its line like the header's */
   .unitbox:hover { background: var(--hover); color: var(--ink); border-color: var(--ink); }
   /* the way to the Gallery: a small pill right after Help, as far from it as Help from the version, at Help's size and
      on the title's baseline (placed by level_title), as high as the unit box; darker than the unit box, lighter than
      Help (Okay, 16 Oct 2026: "Do the same to Gallery pill and put it after help with equal gap. Gallery gets darker
      than mm but lighter than help"; from 15 Oct, 07:45, a pill in the middle of the room, 32 high) */
   .galleryway { flex: none; margin-left: var(--u4); }
-  .gallerypill { padding: 0 var(--u2); border: var(--hair) solid currentColor; border-radius: var(--round-pill); color: color-mix(in srgb, var(--ink) calc(var(--faint) * 100%), transparent); white-space: nowrap; }
+  .gallerypill { padding: var(--gallery-lift) var(--u2) 0; border: var(--hair) solid currentColor; border-radius: var(--round-pill); color: color-mix(in srgb, var(--ink) calc(var(--faint) * 100%), transparent); white-space: nowrap; }
   .gallerypill:hover { background: var(--hover); color: var(--ink); border-color: var(--ink); }
   /* a small menu hanging under its button (the units; the kinds of ring to add): lines a row high, a hairline between them */
   :is(.unitmenu, .addmenu) { position: absolute; z-index: 4; top: calc(100% + var(--unit)); right: 0; min-width: calc(2 * var(--col) + var(--gap)); border: var(--hair) solid var(--ink); background: var(--field); }
