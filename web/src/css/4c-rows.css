@@ -50,7 +50,15 @@
   .row.pick > label { line-height: var(--line); }
   .row > label > .short { display: none; }         /* a label's short wording: only where there is little room (a side row) */
   .linkrow .linknote { margin: var(--unit) 0 0; }      /* its length, and that fonts travel by name */
-  /* a window's width and height on one line (#265): name · number · name · number, the numbers quiet (#250's look) */
-  .row.wsize > label { grid-column: span 2; color: var(--grey); }      /* both names grey, as a row's first is */
-  .row.wsize > .numbox { position: relative; top: auto; right: auto; translate: none; grid-column: span 1; width: 100%; }
+  /* two numbers to a line (R15 form A2; a window's width and height, #265, 4.46.1): for each a column for its name,
+     one for its slider, one for its quiet number (#250's look) — the slider a column long, the least a slider gets */
+  .row.wsize > * { grid-column: auto; }
+  .row.wsize > label { color: var(--grey); }      /* both names grey, as a row's first is */
+  .row.wsize > .numbox { position: relative; top: auto; right: auto; translate: none; width: 100%; }
+  /* a window's colours on one line (#266, 4.46.1): a quiet word, then its pill; a third (Picture) only for am · pm and moon */
+  .row.colours { align-items: baseline; }      /* when Picture takes a second line, the name stays on the first */
+  .row.colours > .parts { grid-column: 3 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: var(--unit) var(--u3); padding: var(--u1) 0; }
+  .row.colours .part { display: inline-flex; align-items: center; gap: var(--u2); }
+  .row.colours .part[hidden] { display: none; }
+  .row.colours .part > i { font-style: normal; font-size: var(--t-s); color: var(--grey); }
 }

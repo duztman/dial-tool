@@ -858,7 +858,7 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
 {
   const was = await S("JSON.stringify([S.ui_window, S.da_on, S.da_at, S.da_shape, S.da_turn, S.da_ps, S.da_family, S.da_text_c, S.da_disc_c, S.da_w])");
   await page.evaluate(() => { const t = window.dial_tool; t.S.ui_window = 0; t.set_value("window", "on", true); t.sync_rows(); });
-  const tiles = await page.$$eval('[id^="window-shape-"]', (b) => b.map((x) => [x.textContent, x.classList.contains("on")]));
+  const tiles = await page.$$eval('[id^="window-shape-"]', (b) => b.map((x) => [x.title, x.classList.contains("on")]));
   const box = async () => { await frame(); return page.evaluate(() => { const b = window.dial_tool.statik.windows[0].window.bounds(); return [+(b[2] - b[0]).toFixed(3), +(b[3] - b[1]).toFixed(3)]; }); };
   const rect = await box();
   await page.click("#window-shape-circle");
@@ -871,23 +871,29 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
   const arch = await box();
   await page.click("#window-shape-rectangle");
   check(tiles.map((t) => t[0]).join(" ") === "rectangle circle polygon arch arc" && tiles[0][1] && Math.abs(circle[0][0] - circle[0][1]) < 0.01 && circle[1] && circle[2] && polygon[1] && polygon[2] && arc[1] && arc[0][0] !== rect[0] && arch[1] < arch[0] && await S("S.da_shape") === 1,
-    `Shape: five tiles, a date window starts as a rectangle (${rect.join(" × ")}); circle ${circle[0].join(" × ")}, polygon with Sides and Corner, arc ${arc[0].join(" × ")} (no turning), arch ${arch.join(" × ")}`);
-  { // a window's place: a square of the quarters, a white bar, the places between, and three dots for any time
-    const grid = await page.evaluate(() => { const r = (e) => e.getBoundingClientRect(), q = [...document.querySelectorAll(".atgrid .quarters button")].map(r), bar = r(document.querySelector(".atgrid .divide")), b = [...document.querySelectorAll(".atgrid .between button")].map(r);
-      return [q.length === 4 && Math.round(q[0].top) === Math.round(q[1].top) && Math.round(q[2].top) === Math.round(q[3].top) && q[2].top > q[0].top, bar.left > q[1].right && bar.right < b[0].left && bar.height > 50 && getComputedStyle(document.querySelector(".atgrid .divide")).backgroundColor, b.length === 6 && Math.round(b[3].top) > Math.round(b[0].top)].join(" "); });
+    `Shape: five buttons, a date window starts as a rectangle (${rect.join(" × ")}); circle ${circle[0].join(" × ")}, polygon with Sides and Corner, arc ${arc[0].join(" × ")} (no turning), arch ${arch.join(" × ")}`);
+  { // a window's place (#264, 4.46.1): on its pane's heading line, round buttons 3 · 6 · 9 · 12 · ··· spread from the
+    // controls' column to the end, as the shapes on the Shape line are; the heading says Position under its title;
+    // the dots open every place as a button and a field for any time
+    const line = await page.evaluate(() => { const r = (e) => e.getBoundingClientRect(), b = [...document.querySelectorAll(".pane > .circles button")], s = [...document.querySelectorAll(".pane > .btnline.shapes button")], w = b.map((x) => Math.round(r(x).width)), c = getComputedStyle(b[0]), pane = b[0].closest(".pane"), sub = pane.querySelector(".fold .sub"), h2 = pane.querySelector(".fold h2"), eye = pane.querySelector(".fold .eye");
+      return [b.map((x) => x.textContent).join(" "), new Set(w).size === 1 && w[0] === Math.round(r(b[0]).height) && c.borderTopLeftRadius === w[0] / 2 + "px", Math.round(r(b[0]).left - r(s[0]).left) + " " + Math.round(r(b.at(-1)).right - r(s.at(-1)).right), s[0].closest(".pane").querySelector("h2").textContent, Math.round(r(b[0]).height),
+        sub.textContent + " " + (r(sub).top >= r(h2).bottom - 1) + " " + (getComputedStyle(sub).fontWeight === "400") + " " + (Math.abs((r(eye).top + r(eye).bottom) / 2 - (r(h2).top + r(h2).bottom) / 2) < 2)]; });
     const before = await S("[S.da_at, S.da_at_deg]");
     await page.click("#window-at-more");
-    const open = await page.isVisible("#window-at-time");
+    const open = await page.isVisible("#window-at-time"), places = await page.$$eval("#value-pop .places button", (b) => b.map((x) => x.textContent).join(" "));
     await page.fill("#window-at-time", "2:15"); await page.press("#window-at-time", "Enter");
-    const own = [await S("S.da_at_deg"), await page.textContent("#window-at-more"), await page.textContent(".form .pane h2"), await page.$$eval(".atgrid button.on", (b) => b.map((x) => x.id).join())];
+    const own = [await S("S.da_at_deg"), await page.textContent("#window-at-more"), await page.textContent(".form .pane h2"), await page.$$eval(".circles button.on", (b) => b.map((x) => x.id).join())];
     await page.click("#window-at-more"); await page.fill("#window-at-time", "4:30"); await page.press("#window-at-time", "Enter");
     const named = await S("[S.da_at, S.da_at_deg]");
+    await page.click("#window-at-more"); await page.click("#window-at-place-7");      // 10:30, a button in the popup
+    const placed = [await S("[S.da_at, S.da_at_deg]"), await page.$("#value-pop"), await page.textContent("#window-at-more")];
     await page.click("#window-at-Position-" + before[0]);
-    check(grid === "true rgb(255, 255, 255) true", `a window's place: a square of 3 · 6 · 9 · 12, a white bar, the five between and three dots (${grid})`);
-    check(open && own[0] === 67.5 && own[1] === "2:15" && own[2] === "Window at 2:15" && own[3] === "window-at-more" && named[0] === 1 && named[1] === null && await S("S.da_at_deg === null"), `three dots open a field for any time: 2:15 puts the window at 67.5°, and the box says so; a named time typed there (4:30) is that place`);
+    check(line[0] === "3 6 9 12 ···" && line[1] && line[2] === "0 0" && line[3] === "Shape" && line[4] === 36 && line[5] === "Position true true true", `a window's place: five round buttons ${line[4]} across on its heading's line, spread as the shapes on the Shape line are (${line[2]}); "Position" under the title in a row's name's look, the eye level with the title (#264)`);
+    check(open && places === "12 1:30 3 4 4:30 6 7:30 9 10:30" && own[0] === 67.5 && own[1] === "2:15" && own[2] === "Window at 2:15" && own[3] === "window-at-more" && named[0] === 1 && named[1] === null && placed[0][0] === 7 && placed[0][1] === null && placed[1] === null && placed[2] === "10:30" && await S("S.da_at_deg === null"),
+      `the dots open every place as a button (${places}) and a field for any time: 2:15 puts the window at 67.5°, and the dots say so; a named time typed (4:30) is that place; a place pressed (10:30) is taken and the popup goes`);
   }
   // turned with its radius at 4: 30°; the text with it or level
-  await page.click("#window-at-Position-8");      // 4 o'clock: the ninth in the list (R9), a button now
+  await page.click("#window-at-more"); await page.click("#window-at-place-8");      // 4 o'clock: the ninth in the list (R9), a button in the dots' popup
   const level = await box();
   await page.check("#window-turn-Turn-it-with-its-radius");
   const turned = await box(), text_turned = await page.evaluate(() => { const b = window.dial_tool.statik.windows[0].number.bounds(); return b[3] - b[1]; });
@@ -938,8 +944,10 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
   await frame();
   const scene = await page.evaluate(() => { const t = window.dial_tool; return t.slots ? [...document.querySelectorAll("main svg path")].map((p) => p.getAttribute("fill")).filter(Boolean) : []; });
   await shot("4c18-window-colours");
-  check((await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))).join(" · ").endsWith("Colours · Shape") && await page.evaluate(() => { const rows = [...document.querySelectorAll(".form .pane .body")][0].children, ids = [...rows].filter((r) => r.offsetParent).map((r) => (r.querySelector("select, input, button") || {}).id); return ids[0] === "window-at-Position-0" && ids[1].startsWith("window-r-Radius") && [...document.querySelectorAll(".atgrid button")].map((b) => b.textContent).join(" ") === "3 6 9 12 1:30 4:30 7:30 10:30 4 ···"; }) && await page.$eval("#window-clear-Clearance", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape" && await page.$eval("#window-frame-Frame", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape" && await page.isVisible("#window-font-c") && await page.isHidden("#window-text-c-Picture") && await page.isVisible("#window-disc-c-Disc-under-it") && await page.isVisible("#window-ink-Frame"),
-    "Windows has the panes Colours · Shape, and no Print pane: position, radius and size come first in the window's own pane, right under Show this window; Frame and Clearance are in Shape; the text's colour is a small swatch beside its font's name; Colours: the disc under it, the frame (and the picture's, for a window that shows one)");
+  check(/Window at [^·]+ · Shape$/.test((await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))).join(" · ")) && await page.evaluate(() => { const rows = [...document.querySelectorAll(".form .pane .body")][0].children, ids = [...rows].filter((r) => r.offsetParent).map((r) => (r.querySelector("select, input, button") || {}).id); return ids[0] === "window-kind-Shows-0" && !!document.querySelector(".form .pane:first-of-type > .circles #window-at-Position-0"); })
+    && await page.$eval("#window-r-Radius", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape" && await page.$eval("#window-clear-Clearance", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape" && await page.$eval("#window-frame-Frame", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape"
+    && await page.isVisible("#window-font-c") && await page.isHidden("#window-text-c-Picture") && await page.isVisible("#window-disc-c-Disc-under-it") && await page.isVisible("#window-ink-Frame") && await page.$eval("#window-ink-Frame", (e) => e.closest(".row").classList.contains("colours") && e.closest(".row") === document.querySelector("#window-disc-c-Disc-under-it").closest(".row")),
+    "Windows (#263, 4.46.1): Window at x holds Position (on its heading line) and Shows; Shape holds Radius, the sizes, the colours on one line (the disc under it, the frame, and the picture's for a window that shows one), the text and its font, Frame and Clearance");
   await page.evaluate((was) => { const t = window.dial_tool, [ui, on, at, shape, turn, ps, family, text_c, disc_c, w] = JSON.parse(was); Object.assign(t.S, { da_at: at, da_shape: shape, da_turn: turn, da_ps: ps, da_family: family, da_text_c: text_c, da_disc_c: disc_c, da_w: w, da_text_turn: true, da_on: on, ui_window: ui }); t.static_dirty = true; t.sync_rows(); t.render(); }, was);
 }
 // an am · pm window follows the time shown: light at 10 in the morning, dark at 10 at night; AM · PM stands in the time's box
@@ -1871,7 +1879,7 @@ await page.setViewportSize({ width: 1440, height: 900 });
 await S("(t.S.da_on = true, t.S.ui_section = 3, t.show_section(), t.static_dirty = true, t.sync_rows(), t.render(), true)");
 await page.waitForTimeout(300);
 const inked = [];
-for (const sel of ['.atgrid button:has(.ink:text-is("10:30"))', '.atgrid button:has(.ink:text-is("1:30"))', '.atgrid button:has(.ink:text-is("12"))', ".atgrid button.on", "#ampm", '.steps12 button:has(.ink:text-is("1"))']) {
+for (const sel of ['.circles button:has(.ink:text-is("12"))', '.circles button:has(.ink:text-is("6"))', ".circles button.on", "#ampm", '.steps12 button:has(.ink:text-is("1"))']) {
   const box = page.locator(sel).first();
   const png = (await box.screenshot()).toString("base64");
   // the ink: dots that differ clearly from the box's own ground (its middle row's first dots inside the border)
@@ -1890,7 +1898,7 @@ for (const sel of ['.atgrid button:has(.ink:text-is("10:30"))', '.atgrid button:
 }
 const off = inked.filter(([, [dx, dy]]) => Math.abs(dx) > 0.75 || Math.abs(dy) > 0.75);
 check(off.length === 0, "short labels in boxes stand on their ink's centre, within ¾ px: " + inked.map(([s, [dx, dy]]) => `${(s.match(/"([^"]+)"/) || [0, s])[1]} ${dx.toFixed(1)},${dy.toFixed(1)}`).join(" · "));
-check(await page.$eval('.atgrid button:has(.ink:text-is("10:30"))', (b) => getComputedStyle(b.firstElementChild).fontVariantNumeric.includes("proportional")).catch(() => false), "their figures are proportional");
+check(await page.$eval('.circles button:has(.ink:text-is("12"))', (b) => getComputedStyle(b.firstElementChild).fontVariantNumeric.includes("proportional")).catch(() => false), "their figures are proportional");
 await page.evaluate(() => { const t = window.dial_tool; t.set_time((t.S.t + 43200) % 86400); });
 await page.waitForTimeout(100);
 check(await page.$eval("#ampm", (b) => b.firstElementChild && b.firstElementChild.classList.contains("ink")), "a label whose words change (AM → PM) is measured again");
@@ -1909,6 +1917,13 @@ const reach = await pad.evaluate(() => {
   return { coarse: matchMedia("(pointer: coarse)").matches, size: a.width, left: at(a.left - 5, a.top + a.height / 2) === dots[2], above: at(a.left + a.width / 2, a.top - 10) === dots[2], nearer_next: at(b.left - 5, b.top + b.height / 2) === dots[3] };
 });
 check(reach.coarse && reach.left && reach.above && reach.nearer_next, `under a finger a ${reach.size} dot is pressed from 5 beside it and 10 above it; nearer the next dot, the next one is`);
+{ // under a finger the number popup opens without taking the focus, so no keyboard comes up (4.46.1; Okay: "Value gets selected was the wrong choice, triggers the keypad on ipad")
+  await pad.tap("#guides-more");      // the guides' list away again
+  await pad.tap('label[for="global-dial-d-Diameter"]'); await pad.waitForTimeout(300);
+  const typing = await pad.evaluate(() => { const pop = document.querySelector("#value-pop"); return [!!pop, !!pop && pop.contains(document.activeElement) && document.activeElement.type === "text"]; });
+  check(typing[0] && !typing[1], "under a finger a number's popup opens with nothing chosen to type over: no keyboard comes up until the value is pressed");
+  await pad.tap("#guides-more"); await pad.waitForTimeout(200);      // a press outside puts the popup away; the guides' list open again for what follows
+}
 await pad.touchscreen.tap(...await pad.$eval('#guide-list .guidekind:nth-child(2) .tone:nth-child(5)', (e) => { const r = e.getBoundingClientRect(); return [r.left - 4, r.top - 8]; }));
 check(await pad.evaluate(() => window.dial_tool.S.gd_k_axes === 3), "a tap just outside a dot chooses it");
 await pad.tap("#global-c-plate-Plate-hex");

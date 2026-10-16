@@ -117,6 +117,11 @@
   .numpop .row input[type="text"] { width: 100%; height: var(--num-pop-pill); border: 0; border-radius: calc(var(--num-pop-pill) / 2); font-size: var(--t-num-pop); text-align: center; }
   .numpop .row input[type="text"]:focus { outline: 0; }      /* the value, chosen to be typed over, says it */
   .numpop .row input[type="text"]::selection { background: var(--ink); color: var(--field); }      /* chosen: black, its figures mid grey (no white) */
+  .numpop:not(:has(.steps)) { border-bottom-left-radius: var(--num-pop-round); border-bottom-right-radius: var(--num-pop-round); }      /* no discs at its foot (a window's places): the pills' round there too */
+  .numpop .places { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--num-pop-gap); }      /* a window's places, every one (#264), three to a line */
+  .numpop .places > button { height: var(--control-large); border-radius: calc(var(--control-large) / 2); background: var(--field); color: var(--ink); }
+  .numpop .places > button:hover { background: var(--hover); }
+  .numpop .places > button.on { background: var(--ink); color: var(--field); }
   .numpop .row .steps { display: flex; justify-content: space-between; }
   .numpop .row .steps > .step { flex: none; display: grid; place-items: center; width: var(--num-pop-step); height: var(--num-pop-step); padding: 0; border: 0; border-radius: 50%; }
   /* a number's name opens its popup; pressed and moved sideways it changes the value (#249, #170) */

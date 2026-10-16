@@ -19,7 +19,8 @@
 // is measured again; so is every label once the fonts have loaded.
 
 const INKED = [
-  ".atgrid button",          // a window's places: 3 · 6 · 9 · 12 · 1:30 … 10:30 · 4 · ···
+  ".circles button",         // a window's places: 3 · 6 · 9 · 12 · ··· (4.46.1)
+  ".numpop .places button",  // and every place, in the dots' popup
   ".steps12 button",         // the bottom bar's hours and 10:10
   "#ampm",                   // AM · PM, the time's own window
   ".fit > span",             // Fit, beside its magnifier

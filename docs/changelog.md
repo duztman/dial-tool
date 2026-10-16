@@ -1,5 +1,24 @@
 # Dial Tool — changelog
 
+## beta 4.46.1 (web version) · 16 Oct 2026
+
+The Windows page, reordered after Okay's marks on three mock-ups (#263–#266).
+
+- **Window at x** holds where the window is and what it shows:
+  - **Position** stands on its heading's line (Okay, on the mock-ups: "Move eye up with Window at… put Position after a tight br in its usual size and color, draw the white line below. If it's taller so be it, enlarge buttons. And 3 6 9 12 are circular buttons now"):
+    - the heading has two lines, "Window at x" and under it "Position" in a row name's size and grey, with the eye level with the title and the usual white line under it;
+    - the buttons are five rounds 36 px across, 3 · 6 · 9 · 12 · ···, spread from the controls' column to the end (#264).
+  - The dots open a popup with every place as a button, in the clock's order, and the field for any time. A place pressed is taken and the popup closes. When the window stands elsewhere, the dots say where ("4:30", "2:15") and grow into a pill to hold it.
+  - **Shows**, its pictures smaller (30 × 21, was 38 × 27; "smaller icons").
+- **Shape** holds the hole itself. On a first visit it is folded, as every pane but the one a tab is about (#270), and its shape buttons stay on its line:
+  - its five shapes are buttons without words on the heading's line, stretched across the same columns as Position's (#265; "stretch shapes like position, top-right"), their pictures redrawn at 26 × 18;
+  - **Radius** (Okay: "ok but below shapes"), then the sizes. **Width and Height on one line have their sliders again** (Okay: "they can have them"), as R15's new form A2, *two to a line*;
+  - Corner, Sides and the turning;
+  - the **colours on one line** (#266): Disc and Frame, and Picture for am · pm and moon. The Colours pane is gone;
+  - Text, its font, Frame and Clearance.
+- **The number popup under a finger** (#310) no longer chooses its value to be typed over, so an iPad's keyboard comes up only when the value is pressed (Okay: "Value gets selected was the wrong choice, triggers the keypad on ipad"). With a mouse it still does.
+- **The bar's sliders under a finger** (#309): they no longer drag or pull the page (`touch-action: none`), and the window is never pulled past its edge. The iPad's own edge gestures stay its own (Okay: "simple blocks are fine").
+
 ## beta 4.46 (web version) · 16 Oct 2026
 
 Phase F, first push: one tab look and the Show box.

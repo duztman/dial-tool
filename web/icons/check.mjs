@@ -123,7 +123,7 @@ await page.keyboard.press("Escape");
 await visit("Hands", () => tab("Hands"));
 await visit("all hand shapes", () => page.click("#hand-shape-Shape-more"));
 await page.click("#hand-shape-Shape-more").catch(() => {});
-await visit("Windows", async () => { await tab("Date"); await page.locator("label", { hasText: "Show this window" }).first().click(); await unfold(); });
+await visit("Windows", async () => { await tab("Date"); await page.check("#window-on-Show"); await unfold(); });      // the Show box (#261, 4.46)
 for (const kind of ["day", "am · pm", "moon"]) await visit("window " + kind, () => page.locator(".form .pickt:visible", { hasText: kind }).first().click());
 await visit("window off", () => page.click("#window-card-2"));
 await visit("Export", () => tab("Export"));

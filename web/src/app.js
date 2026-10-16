@@ -173,18 +173,22 @@ const PICS = {
     `<circle cx="19" cy="13.5" r="11.5" ${faint}/><path d="M16.75 8.75L19 3.5L21.25 8.75M16.75 23.5L19 18.25L21.25 23.5"/>`,
     `<path d="M4 23A15 15 0 0 1 34 23" ${faint}/>` + [0, -24, 24, -48, 48].map((t) => `<path d="M17 11.5L19 6.5L21 11.5" transform="rotate(${t} 19 23)"/>`).join(""),
   ],
-  hole: [                                          // a window's shape: rectangle · circle · polygon · arch · arc
-    box(8.25, 5.25, 21.5, 16.5, 2),
-    `<circle cx="19" cy="13.5" r="8.75" ${sw(CURVE)}/>`,
-    `<path d="M19 4L27.25 8.75V18.25L19 23L10.75 18.25V8.75Z" ${sw(SLANT)}/>`,
-    `<path d="M4 21.5A15 15 0 0 1 34 21.5A7.5 7.5 0 0 0 19 21.5A7.5 7.5 0 0 0 4 21.5Z" ${sw(CURVE)}/>`,
-    `<path d="M6 17A19 19 0 0 1 32 17L28.5 22.25A13 13 0 0 0 9.5 22.25Z" ${sw(CURVE)}/>`,
+  // a window's shape: rectangle · circle · polygon · arch · arc — on 26 × 18, inside the Shape line's buttons (#265,
+  // 4.46.1; 38 × 27 before, fitted down by icons/fit.mjs, the box redrawn on quarter points)
+  hole: [
+    box(5.75, 3.75, 14.5, 10.5, 1.5),
+    `<circle cx="13" cy="9" r="6" ${sw(CURVE)}/>`,
+    `<path d="M13 2.5L18.75 5.75V12.25L13 15.5L7.25 12.25V5.75Z" ${sw(SLANT)}/>`,
+    `<path d="M2.75 14.25A10.25 10.25 0 0 1 23.25 14.25A5.25 5.25 0 0 0 13 14.25A5.25 5.25 0 0 0 2.75 14.25Z" ${sw(CURVE)}/>`,
+    `<path d="M4 11.75A13 13 0 0 1 22 11.75L19.5 15.25A9 9 0 0 0 6.5 15.25Z" ${sw(CURVE)}/>`,
   ],
-  window: [                                        // what a window shows, in as few lines as say it: one figure · one letter · a half filled · a crescent
-    box(6.75, 3.25, 24.5, 20.5, 2) + `<path d="M16.25 10.5L19.5 8V19" ${sw(CURVE)}/>`,
-    box(2.75, 5.25, 32.5, 16.5, 2) + `<path d="M13.5 18V9L19 15.5L24.5 9V18" ${sw(SLANT)}/>`,
-    box(4.25, 4.75, 29.5, 17.5, 2) + `<path d="M19 4.75H6.25A2 2 0 0 0 4.25 6.75V20.25A2 2 0 0 0 6.25 22.25H19Z" ${solid}/>`,
-    `<path d="M19 1.75A11.75 11.75 0 0 0 19 25.25A15 15 0 0 1 19 1.75Z" ${solid}/><circle cx="19" cy="13.5" r="11.75"/>`,      // the crescent beside it makes the circle look heavier: it stays LINE
+  // what a window shows, in as few lines as say it: one figure · one letter · a half filled · a crescent — on 30 × 21
+  // (Okay, 16 Oct 2026, on the Windows page's mock-ups: "smaller icons"; 38 × 27 until 4.46.1)
+  window: [
+    box(5.25, 2.25, 19.5, 16.5, 1.5) + `<path d="M12.75 8L15.25 6V15" ${sw(CURVE)}/>`,
+    box(2.25, 4.25, 25.5, 12.5, 1.5) + `<path d="M10.75 14V7L15 12L19.25 7V14" ${sw(SLANT)}/>`,
+    box(3.75, 3.75, 22.5, 13.5, 1.5) + `<path d="M15 3.75H5.25A1.5 1.5 0 0 0 3.75 5.25V15.75A1.5 1.5 0 0 0 5.25 17.25H15Z" ${solid}/>`,
+    `<path d="M15 1.25A9.25 9.25 0 0 0 15 19.75A11.75 11.75 0 0 1 15 1.25Z" ${solid}/><circle cx="15" cy="10.5" r="9.25"/>`,      // the crescent beside it makes the circle look heavier: it stays LINE
   ],
 };
 /** a hand's picture is the hand itself, drawn by the geometry with a standard size (twice its units, so already on whole dots). */
@@ -571,31 +575,35 @@ const ROWS = {
     // the cards are tabs only; a window is shown by the tick on its heading line (Okay, 13 Oct 2026, after trying a
     // small switch on each card: "unnecessarily complex… enable window tickmark is the way to go. leave them as tabs")
     custom("show_box", { ...W, bar: true }),      // the Show box, as a hand's (#261): its tick, "Show this window" on the heading line until 4.46
-    hdr("Window", { title: (S) => `Window at ${G.window_place(G.windows_of(S)[S.ui_window])}` }),
-    // where it is and how big come first, right under the tick (Okay, 13 Oct 2026); a pane of their own, Place and size, until beta 4.22
-    custom("window_at", { ...W, show: win_on, text: "Position" }),
-    num("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
-    custom("window_size", { ...W, show: shape_is("rectangle", "arc") }),      // width and height on one line (#265)
-    num("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("arch"), id: "window-w-Width-arch" }),      // its own id: the line above has window-w-Width
-    num("w", "Ø", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
-    pick("kind", "Shows", G.WINDOW_KINDS, PICS.window, { ...W, show: win_on }),
-    txt("text", "Text", { ...W, show: win_is("date", "day") }),
-    custom("font", { ...W, show: win_is("date", "day") }),      // its own font, or the top numerals ring's (the start)
+    // the Windows page (#263, 4.46.1; Okay's marks on three mock-ups, 16 Oct 2026): first where it is and what it
+    // shows, under Window at x; then the hole itself under Shape — its shape buttons on that heading's line, then
+    // Radius ("ok but below shapes"), its sizes, its colours on one line, its text and font, its frame
+    // its heading in two lines, "Window at x" and under it "Position", the place buttons on its line (Okay, 16 Oct
+    // 2026, on the mock-ups: "Move eye up with Window at… put Position after a tight br in its usual size and color…
+    // If it's taller so be it, enlarge buttons. And 3 6 9 12 are circular buttons now")
+    hdr("Window", { title: (S) => `Window at ${G.window_place(G.windows_of(S)[S.ui_window])}`, sub: "Position" }),
+    custom("window_at", { ...W, head: true, show: win_on, text: "Position" }),
+    pick("kind", "Shows", G.WINDOW_KINDS, (i) => icon(PICS.window[i], 30, 21), { ...W, small: true, show: win_on }),
     info("Follows the time shown: AM · PM beside the time, under the panel.", { ...W, show: win_is("am · pm") }),
     num("age", "Moon age, days", 0, 29.5, 0.1, { ...W, show: win_is("moon phase") }),
     info("0 new moon · 14.8 full.", { ...W, show: win_is("moon phase") }),
-    hdr("Colours", { ...W, folded: true, show: win_on }),
-    col("text_c", "Picture", { ...W, show: win_is("am · pm", "moon phase"), or: (T) => T.ink }),       // or: what an unset colour is. A text's colour stands beside its font's name; this row is for the windows that show a picture       // or: what an unset colour is
-    col("disc_c", "Disc under it", { ...W, show: win_on, or: () => [1, 1, 1, 1] }),
-    col("ink", "Frame", { ...W, show: win_on }),
-    // the hole's shape, apart from what shows through it (Okay, 13 Oct 2026): one pane for every window
+    // the hole: its shape (buttons on the heading's line, #265), where and how big, its colours (one line, #266), what
+    // is written in it, its frame. Folded on a first visit, as every pane but the one the tab is about (#270); its shape
+    // buttons stay on its heading line
     hdr("Shape", { ...W, folded: true, show: win_on }),
-    custom("window_shape", { ...W, show: win_on }),
+    custom("window_shape", { ...W, head: true, text: "Shape", show: win_on }),
+    num("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
+    custom("window_size", { ...W, show: shape_is("rectangle", "arc") }),      // width and height on one line, each with its slider (#265; R15 form A2)
+    num("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("arch"), id: "window-w-Width-arch" }),      // its own id: the line above has window-w-Width
+    num("w", "Ø", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
     num("sides", "Sides", 3, 12, 1, { ...W, whole: true, show: shape_is("polygon") }),
     num("round", "Corner", 0, 2, 0.05, { ...W, show: shape_is("rectangle", "polygon") }),
     chk("turn", "Turn it with its radius", { ...W, show: (T) => T.on && G.window_shape(T) !== "arc" }),
     info("Only off the quarters: at 4 it turns 30°, at half past four 45°.", { ...W, show: (T) => T.on && T.turn && G.window_turn(T) === 0 && G.window_shape(T) !== "arc" }),
     chk("text_turn", "Turn the text with it", { ...W, nest: true, show: (T) => T.on && T.turn && G.window_shape(T) !== "arc" && ["date", "day"].includes(G.WINDOW_KINDS[T.kind]) }),
+    custom("window_colours", { ...W, show: win_on }),      // the disc under the hole · the frame · what an am · pm or moon window pictures, on one line (#266)
+    txt("text", "Text", { ...W, show: win_is("date", "day") }),
+    custom("font", { ...W, show: win_is("date", "day") }),      // its own font, or the top numerals ring's (the start)
     // the frame round the hole and the room kept clear round it are drawn on the dial: they are design, so they
     // stand here, not under a pane called Print (Okay, 13 Oct 2026: print things under Print, design among design)
     num("frame", "Frame", 0, 0.6, 0.01, { ...W, show: win_on }),
@@ -1977,6 +1985,7 @@ class DialTool {
       out.summary = el("span", { className: "summary quiet" });
       out.button = el("button", { type: "button", className: "fold", title: "Show or hide this pane", onclick: () => this.fold(out, !this.is_folded(out)) }, out.eye, title, out.summary);
       out.body = el("div", { className: "body" });
+      if (row.sub) { out.button.classList.add("twoline"); title.after(el("span", { className: "sub", textContent: row.sub })); }      // a second line under the title: the name of what stands on the heading's line
       out.el = el("section", { className: row.plain ? "pane plain" : "pane" }, out.button, out.body);
       if (row.plain) out.button.hidden = true;
       if (row.tools) {                             // tools on the heading line, at its right; folded, the summary stands there instead
@@ -2077,7 +2086,7 @@ class DialTool {
     }
 
     if (row.kind === "pick") {                     // a choice as pictures: one tile per item, on the columns
-      const group = el("span", { className: "picks", role: "radiogroup", ariaLabel: row.text });
+      const group = el("span", { className: row.small ? "picks small" : "picks", role: "radiogroup", ariaLabel: row.text });
       row.items.forEach((name, i) => {
         if (row.skip && row.skip.includes(i)) return;      // an item kept in the list for its place (R9) but not offered here
         const tile = el("button", { type: "button", className: "pickt", id: `${id}-${i}`, title: name, onclick: () => set(i) });
@@ -2502,19 +2511,21 @@ class DialTool {
   /** a window's shape as picture tiles: rectangle · circle · polygon · arch · arc. What is stored is the place in
    *  G.WINDOW_SHAPES; 0, "as its kind", shows as the shape that kind has had all along. */
   row_window_shape(wrap, out) {
+    // the shapes as buttons without words, stretched along the Shape heading's line as Position's are along theirs
+    // (#265, 4.46.1; Okay on the mock-ups: "stretch shapes like position, top-right"). The row goes on the heading line (head)
     wrap.className = "row pick";
-    const group = el("span", { className: "picks five", role: "radiogroup", ariaLabel: "Shape" });
+    const group = el("span", { className: "btnline shapes", role: "radiogroup", ariaLabel: "Shape" });
     const names = G.WINDOW_SHAPES.slice(1);
     names.forEach((name, i) => {
-      const tile = el("button", { type: "button", className: "pickt", id: `window-shape-${name}`, title: name, onclick: () => this.set_value("window", "shape", i + 1) });
+      const tile = el("button", { type: "button", id: `window-shape-${name}`, title: name, ariaLabel: name, onclick: () => this.set_value("window", "shape", i + 1) });
       tile.setAttribute("role", "radio");
-      tile.innerHTML = pic(PICS.hole[i]);
-      tile.append(el("span", { textContent: name }));
+      tile.innerHTML = icon(PICS.hole[i], 26, 18);
       group.append(tile);
     });
-    wrap.append(group);                            // no label: the pane's heading says Shape, and five tiles need all six columns for their words
+    wrap.append(el("span"), group);
     out.refresh = (T) => [...group.children].forEach((b, i) => { const on = names[i] === G.window_shape(T); b.classList.toggle("on", on); b.setAttribute("aria-checked", String(on)); });
   }
+
 
   /** Hands, on top and always in view: Hour · Minute · Seconds, as tabs for the panes below. */
   row_hand_tabs(wrap, out) {
@@ -2743,7 +2754,9 @@ class DialTool {
       this.value_pop_close();                      // (what was typed is taken as the field goes)
       button.focus();
     };
-    if (!sheet) { field.focus(); field.select(); }      // a phone's keyboard comes only when the value is pressed
+    // the value ready to type over, for a mouse or the keys only: under a finger (a phone, an iPad) the keyboard comes
+    // only when the value is pressed (Okay, 16 Oct 2026, 4.46.1: "Value gets selected was the wrong choice, triggers the keypad on ipad")
+    if (!sheet && document.documentElement.dataset.press !== "touch") { field.focus(); field.select(); }
   }
   value_pop_close() {
     if (!this.value_pop) return;
@@ -3026,15 +3039,35 @@ class DialTool {
   }
 
   row_window_size(wrap, out) {
+    // width and height on one line (#265), each its name, its slider and its quiet number (R15 form A2, two to a line;
+    // Okay, 16 Oct 2026: "width and height on the same line lost sliders, they can have them")
     wrap.className = "row wsize";
     const parts = [["w", "Width", 8], ["h", "Height", 5]].map(([key, text, hi]) => {
       const row = { ...num(key, text, 0.5, hi, 0.05), scope: "window", side: true }, built = this.build_row(row), label = built.el.querySelector("label");
       this.name_opens(label, row);
-      wrap.append(label, built.el.querySelector(".numbox"));
+      wrap.append(label, built.el.querySelector('input[type="range"]'), built.el.querySelector(".numbox"));
       return built;
     });
     out.refresh = (W) => parts.forEach((p) => p.refresh(W));
   }
+
+  /** a window's colours on one line (#266, 4.46.1; Okay's notes, p. 19: "one line; two colours to choose"): the disc
+   *  under the hole, the frame, and for an am · pm or moon window what it pictures. Each a word and its pill; the
+   *  pills are the colour rows' own, so they open the colour pop-out as before. */
+  row_window_colours(wrap, out) {
+    wrap.className = "row colours";
+    const parts = [
+      col("disc_c", "Disc under it", { ...W, word: "Disc", or: () => [1, 1, 1, 1] }),
+      col("ink", "Frame", { ...W, word: "Frame" }),
+      col("text_c", "Picture", { ...W, word: "Picture", only: win_is("am · pm", "moon phase"), or: (T) => T.ink }),      // or: what an unset colour is
+    ].map((row) => {
+      const built = this.build_row(row), pill = built.el.querySelector(".colour"), part = el("span", { className: "part" }, el("i", { textContent: row.word }), pill);
+      return { row, built, part };
+    });
+    wrap.append(el("label", { textContent: "Colours" }), el("span", { className: "parts" }, ...parts.map((p) => p.part)));
+    out.refresh = (T) => parts.forEach((p) => { const shown = !p.row.only || p.row.only(T); p.part.hidden = !shown; if (shown) p.built.refresh(T); });
+  }
+
 
   row_nudge(wrap, out) {                           // which numeral the rows under it nudge (scope "nudge", #252), and a way to undo its nudges
     wrap.className = "nudge";
@@ -3195,20 +3228,23 @@ class DialTool {
    *  that opens the tag with a field for any time ("2:15"). The window keeps the place in the list (at, R9), or the
    *  time's angle (at_deg) when it has one of its own. */
   row_window_at(wrap, out) {
+    // Position (#264, 4.46.1; Okay's notes, p. 19–20: "five square buttons, 3 · 6 · 9 · 12 and one with three dots";
+    // on the mock-ups, 16 Oct 2026: on the heading's line, "Position should not be small", "3 6 9 12 are circular
+    // buttons now"). The dots open the popup with every place as a button and a field for any time; when the window
+    // stands elsewhere they say where, and grow into a pill to hold it. The row goes on the heading line (head).
     wrap.className = "row windowat";
     const at = (name) => G.DATE_AT.findIndex((d) => d[0] === name);
     const press = (i) => { const w = this.window(); w.at = i; w.at_deg = null; this.changed(true); };
-    const button = (name) => el("button", { type: "button", id: "window-at-Position-" + at(name), textContent: name, onclick: () => press(at(name)) });
-    const quarters = ["3", "6", "9", "12"].map(button), between = ["1:30", "4:30", "7:30", "10:30", "4"].map(button);      // the half-hours together, then the rest (Okay, 13 Oct 2026: ":30s together")
-    const more = el("button", { type: "button", className: "atmore", id: "window-at-more", textContent: "···", title: "Any time: 2:15, 7:40…" });
+    const quarters = ["3", "6", "9", "12"].map((name) => el("button", { type: "button", id: "window-at-Position-" + at(name), textContent: name, onclick: () => press(at(name)) }));
+    const more = el("button", { type: "button", className: "atmore", id: "window-at-more", textContent: "···", title: "Every place, or any time: 2:15, 7:40…" });
     more.setAttribute("aria-expanded", "false");
-    more.onclick = () => this.value_pop_open(more, { kind: "custom", name: "at_time", scope: "window", key: "at_deg", text: "Time" });
-    wrap.append(el("label", { textContent: "Position" }),
-      el("span", { className: "atgrid" }, el("span", { className: "segs quarters" }, ...quarters), el("i", { className: "divide" }), el("span", { className: "segs between" }, ...between, more)));
+    more.onclick = () => this.value_pop_open(more, { kind: "custom", name: "at_time", scope: "window", key: "at_deg", text: "Position" });
+    wrap.append(el("label", { textContent: "Position" }), el("span", { className: "circles" }, ...quarters, more));
     out.refresh = (T) => {
-      for (const b of [...quarters, ...between]) b.classList.toggle("on", T.at_deg == null && b.id === "window-at-Position-" + T.at);
-      more.classList.toggle("on", T.at_deg != null);
-      more.textContent = T.at_deg != null ? G.window_place(T) : "···";
+      for (const b of quarters) b.classList.toggle("on", T.at_deg == null && b.id === "window-at-Position-" + T.at);
+      const elsewhere = T.at_deg != null || !["3", "6", "9", "12"].includes(G.DATE_AT[T.at]?.[0]);
+      more.classList.toggle("on", elsewhere);
+      more.textContent = elsewhere ? G.window_place(T) : "···";
     };
   }
 
@@ -3226,8 +3262,14 @@ class DialTool {
       this.changed(true);
     };
     field.onchange = take;
-    wrap.append(el("label", { htmlFor: "window-at-time", textContent: "Time" }), field);
-    out.refresh = (T) => { if (document.activeElement !== field) field.value = G.window_place(T); };
+    // every named place, in the clock's order, as a button (#264: "the dots open a popup with all the places pre-buttoned")
+    const order = ["12", "1:30", "3", "4", "4:30", "6", "7:30", "9", "10:30"], idx = (name) => G.DATE_AT.findIndex((d) => d[0] === name);
+    const places = order.map((name) => el("button", { type: "button", id: "window-at-place-" + idx(name), textContent: name, onclick: () => { const w = this.window(); w.at = idx(name); w.at_deg = null; this.changed(true); this.value_pop_close(); } }));
+    wrap.append(el("label", { htmlFor: "window-at-time", textContent: "Time" }), el("span", { className: "places" }, ...places), field);
+    out.refresh = (T) => {
+      if (document.activeElement !== field) field.value = G.window_place(T);
+      for (const b of places) b.classList.toggle("on", T.at_deg == null && b.id === "window-at-place-" + T.at);
+    };
   }
 
   /** the language the numerals are set in (a font may draw a figure differently for one): a small button saying its

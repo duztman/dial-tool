@@ -11,6 +11,7 @@
   .bar :is(.lead, .viewing) button:hover { background: var(--bar-field); }
   .bar :is(.lead, .viewing) button:active { background: var(--bar-light); color: var(--bar); }
   .bar :is(button, input):focus-visible, .bar input[type="text"]:focus { outline-color: var(--bar-light); }
+  .bar input[type="range"] { touch-action: none; }      /* a finger on the bar's sliders drags them, never the page (#309; Okay: "simple blocks are fine"); the iPad's own edge gestures stay its own */
   .bar .icon { display: inline-flex; align-items: center; justify-content: center; }
   /* low contrast under the panel: no fills, thin light lines; what is chosen is a shade lighter */
   /* the bar's lower line is all monospace (Okay, 14 Oct 2026, 23:55: "All mono on the lower line") */

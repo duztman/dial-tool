@@ -95,6 +95,14 @@
   .folded > .fold :is(.eye, h2) { color: var(--grey); }
   .fold:hover :is(.eye, h2) { color: var(--ink); }
   .fold .summary { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; font-size: var(--t-s); }
+  /* a heading in two lines (a window's: "Window at x", then "Position" for the buttons on its line, 4.46.1): the
+     second line tight under the title, a row's name in size and colour; the eye stays level with the title; as high
+     as its two lines need */
+  .fold.twoline { grid-template-rows: auto auto; height: auto; min-height: var(--head); padding: var(--u2) 0; line-height: 1.2; }
+  .fold.twoline > :is(.eye, h2) { grid-row: 1; }
+  .fold.twoline > .sub { grid-row: 2; grid-column: 2; color: var(--grey); font-weight: 400; }
+  .fold.twoline > .summary { grid-row: 1 / span 2; grid-column: 3; }
+  .pane:has(> .headcontrol[hidden]) > .fold > .sub { display: none; }      /* nothing on the line to name: a window not shown */
   .fold:focus-visible { outline-offset: -2px; }
   /* a pane's main selector stands on its heading line, on the four control columns, with no name of its own: the
      heading names it. The pane is laid on the columns so the selector can lie over the heading's right part; the
