@@ -180,6 +180,20 @@ check(sums.every((x) => /^(1 (tick|marker|numeral|band)|([2-9]|\d\d+) (ticks|mar
   check(few[0] <= 5 && few[1] === "none" && fitted[0] === few[0] + 5 && fitted[1] === "grid" && fitted[2] === 0 && fitted[3] === 0 && fitted[5] > fitted[4] && fitted[6] === fitted[8] - fitted[4] && dragged[7] === String(fitted[0]) && dragged[4] === dragged[5] && tapped[7] === "5" && tapped[4] === fitted[4] && tapped[9] === "5",
     `the list's pill (#256): none with ${few[0]} rings; with ${fitted[0]} it stands in the middle of the pinned part's line (${fitted[2]} / ${fitted[3]} off); selecting the last ring scrolls the list (${fitted[6]}) so its row and drawer end in view (${fitted[8]} in ${fitted[4]}); dragged three rows down the list shows all ${dragged[7]} (${dragged[4]} = ${dragged[5]}); a tap brings five back, kept by the browser`);
 }
+// names a screen reader hears (#244, 4.47.2): a ring's row is an option in a listbox, reached with Tab and taken with
+// Enter; every slider says its name; a colour pill says whose colour it is before its hex; in the showcase the panel
+// and the bar are inert
+{
+  const roles = await page.evaluate(() => { const ol = document.querySelector(".ringlist ol"), rows = [...ol.querySelectorAll("li.ring")]; return [ol.getAttribute("role"), ol.getAttribute("aria-label"), rows.map((r) => r.getAttribute("role") + ":" + r.getAttribute("aria-selected") + ":" + r.tabIndex).join(" "), [...document.querySelectorAll(".form input[type=range]")].every((s) => s.getAttribute("aria-label")), document.querySelector(".form input[type=range]").getAttribute("aria-label")]; });
+  const was = await S("S.ui_ring"), target = await S("S.rings.length - 1");
+  await page.focus(`.ringlist li.ring:nth-child(${target + 1} of .ring)`); await page.keyboard.press("Enter");
+  const by_key = await S("S.ui_ring");
+  await page.evaluate((i) => window.dial_tool.select_ring(i), was);
+  const pill = await page.evaluate(() => { const t = window.dial_tool, was = t.S.ui_section; t.S.ui_section = 0; t.show_section(); const name = document.querySelector(".colourlist button.colour").getAttribute("aria-label"); t.S.ui_section = was; t.show_section(); t.sync_rows(); return name; });
+  const inert = await page.evaluate(() => { const t = window.dial_tool, p = document.querySelector(".panel"), b = document.querySelector(".bar"); t.showcase(true); const on = [p.inert, b.inert]; t.showcase(false); return [...on, p.inert, b.inert]; });
+  check(roles[0] === "listbox" && roles[1] === "Rings, top first" && /^(option:(true|false):0 ?)+$/.test(roles[2]) && roles[3] && roles[4] && by_key === target && /^[A-Z][a-z]+ · Colour #[0-9A-F]{6}$|^[A-Za-z ]+ #[0-9A-F]{6}$/.test(pill) && inert.join() === "true,true,false,false",
+    `names a screen reader hears (#244): the ring list is a listbox of options (${roles[2]}), a row taken with Enter (ring ${by_key}); every slider named (${roles[4]}); a colour pill named by its owner, then its hex (${pill}); in the showcase the panel and the bar are inert (${inert.join(" ")})`);
+}
 const sum_before = await page.textContent(".ringlist li.ring.on .says-r");
 await page.evaluate(() => { const t = window.dial_tool; t.set_value("ring", "r", t.ring().r - 1); });
 check(await page.textContent(".ringlist li.ring.on .says-r") !== sum_before && await page.$$eval(".ringlist li.ring.on", (e) => e.length) === 1, `the row follows the ring: radius ${sum_before} → ${await page.textContent(".ringlist li.ring.on .says-r")}`);

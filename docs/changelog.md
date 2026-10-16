@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.47.2 (web version) · 17 Oct 2026
+
+- **Names a screen reader hears** (#244, from the guide's readers, 15 Oct 2026): a ring's row is an option in a listbox, reached with Tab (the controls' focus ring) and taken with Enter or Space; every slider says its row's name (only the field had it); a colour pill says whose colour it is before its hex ("Colour #141414", "Plate #FCFCFA"); in the showcase the panel and the bar are inert — out of reach for the keyboard and a screen reader. The size and radius popups' fields are already named by their row (4.45.2), and the font box's Size reads once; both are checked now.
+
 ## beta 4.47.1 (web version) · 17 Oct 2026
 
 - **Selecting a ring fits the list** (#256; Okay's notes, p. 2: "even if only a few pixels of it show, scrolls so its whole row and drawer are in the view box"): the ring list scrolls so the selected ring's row and the drawer under it are whole in view (the row wins when both can't fit). The finger's anchor (15 Oct) takes the row's new place as its own, so nothing fights.

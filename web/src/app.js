@@ -1183,6 +1183,7 @@ class DialTool {
       this.hands_key.setAttribute("aria-pressed", "false"); this.hands_key.title = "Hide the hands";
     }
     this.iris_button.setAttribute("aria-pressed", String(on));
+    for (const part of [$(".panel"), $(".bar")]) if (part) part.inert = on;      // what slid away is out of reach for the keyboard and a screen reader too (#244, 4.47.2)
     app.style.setProperty("--title-end", this.title.getBoundingClientRect().right.toFixed(1) + "px");
     // the layout has changed at once; the dial is put back where it stood on the screen, then travels from there
     const after = this.svg.getBoundingClientRect();
@@ -2038,6 +2039,7 @@ class DialTool {
         return b;
       };
       const label = el("label", { htmlFor: id, textContent: row.text });
+      slider.ariaLabel = row.text;                 // the label is the field's; the slider says its name itself (#244, 4.47.2)
       if (row.short) { label.textContent = ""; label.title = row.text; label.append(el("span", { className: "whole", textContent: row.text }), el("span", { className: "short", textContent: row.short })); }      // two wordings; the stylesheet shows the one there is room for
       let lead = label, menu = null;
       if (row.button) lead = el("button", { type: "button", className: "btn main", id: "export-" + row.button, textContent: row.button.toUpperCase(), title: `Export a ${row.button.toUpperCase()} at this dpi`, onclick: () => this.export(row.button) });
@@ -2236,7 +2238,7 @@ class DialTool {
     const dot = el("i", { className: "dot" }), hex = el("span", { className: "hex", id: id + "-hex" });
     const pill = el("button", { type: "button", className: "colour", id, title }, dot, hex);
     pill.setAttribute("aria-expanded", "false");
-    pill.show = (c) => { paint(dot, c); hex.textContent = to_hex(c).toUpperCase(); };
+    pill.show = (c) => { paint(dot, c); hex.textContent = to_hex(c).toUpperCase(); if (title) pill.ariaLabel = `${title} ${hex.textContent}`; };      // a screen reader hears whose colour it is, not the hex alone (#244, 4.47.2)
     return pill;
   }
 
@@ -2575,7 +2577,8 @@ class DialTool {
   /** the ring list: order = stacking order, top ring first. Its tools are on the pane's heading line (head_ring_tools). */
   row_ring_list(wrap, out) {
     wrap.className = "ringlist";
-    this.ring_list = el("ol");
+    this.ring_list = el("ol", { ariaLabel: "Rings, top first" });
+    this.ring_list.setAttribute("role", "listbox");      // its rows are options (#244)
     this.ring_list.onscroll = () => this.value_pop_close();      // the pop-up hangs where the ring line was
     wrap.append(this.ring_list);
     this.list_grip();
@@ -2863,7 +2866,11 @@ class DialTool {
       grip.onpointerdown = (e) => this.drag_ring(e, i);
       const name = el("span", { className: "name", textContent: ring.name || G.kind_of(ring) });
       const cell = el("span", { className: "namecell" }, name);       // the name and, right beside it, the rename box
-      const item = el("li", { className: "ring" + (selected ? " on" : "") + (ring.on ? "" : " off") }, show, grip, cell);
+      const item = el("li", { className: "ring" + (selected ? " on" : "") + (ring.on ? "" : " off"), tabIndex: 0 }, show, grip, cell);
+      // a row is a choice in a list, reached with Tab and taken with Enter or Space (#244, 4.47.2: rows had no role and no way in from the keyboard)
+      item.setAttribute("role", "option");
+      item.setAttribute("aria-selected", String(selected));
+      item.onkeydown = (e) => { if ((e.key === "Enter" || e.key === " ") && e.target === item) { e.preventDefault(); this.select_ring(i); } };
       let rename = null;
       if (selected && ring.on) {                   // the selected ring is renamed by a click on its name, or on the box beside it (Okay, 13 Oct 2026)
         const start = (e) => { e.stopPropagation(); this.rename_ring(i, item, cell); };
