@@ -20,7 +20,7 @@ if [ "$1" = main ]; then
   git push -q origin dev
   git push -q origin HEAD:main
   git branch -f main HEAD 2>/dev/null || true
-  echo "main is at dev: $(git rev-parse --short HEAD) ($(grep -o 'beta [0-9.]*' web/src/geometry.js))"
+  echo "main is at dev: $(git rev-parse --short HEAD) ($(sed -n 's/^export const VERSION = "\(.*\)";/\1/p' web/src/geometry.js))"
   exit 0
 fi
 
