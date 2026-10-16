@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.42.4 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.42.5 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -150,8 +150,9 @@
     --checker: repeating-conic-gradient(#BDBDB9 0 25%, var(--white) 0 50%) 0 0 / 8px 8px;      /* what shows through a see-through colour */
     --faint: 0.35;                                 /* how much of a switch on the preview shows at rest */
     --canvas-top: calc((var(--header) - var(--control-large)) / 2);      /* undo and Guides stand on the header's middle line, with the title and the unit box */
-    --guide-name: 92px; --guide-row: 42px;         /* the guides' list: the column of names · a line's height */
+    --guide-name: 92px; --guide-row: 38px;         /* the guides' list: the column of names · a line's height (42 until 4.42.5; Okay, 16 Oct 2026, #271: "-2px" above and below) */
     --guide-dot: 10px;                             /* a round colour in the guides' list (the room between two: a special) */
+    --guide-dim: 0.6;                              /* a colour not chosen in the guides' list: this much of it (Okay, 16 Oct 2026, #271: "dim all the unselected colors 40%") */
     --ring-thick: 3px;                             /* the chosen one: a ring of its own colour this thick, a ring of the ground inside it (a special) */
 
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
@@ -1032,6 +1033,8 @@
   .guidehead .segs { justify-self: end; margin-right: calc(var(--ring-gap-in) + var(--ring-thick)); }
   .guidehead .segs > button { padding: 0 var(--u3); }
   .guidekind.ring.selected .name { font-weight: 600; }
+  /* before Add, a band of the fields' colour, as wide as the lines (Okay, 16 Oct 2026, #271: "a colour separation") */
+  .guidehead.add { border-top: var(--u2) solid var(--field); }
   /* a guide you added takes two lines: its name, its measures and a cross to remove it; under them its colours */
   .guidekind.added { position: relative; grid-template-columns: 1fr; row-gap: var(--u1); padding: var(--unit) 0; }
   .guidekind.added .name { display: flex; align-items: center; gap: var(--unit); overflow: visible; }
@@ -1042,6 +1045,7 @@
   .dots { display: flex; justify-content: space-between; align-items: center; padding: 0 calc(var(--ring-gap-in) + var(--ring-thick)) 0 var(--guide-gap); }
   .dots button { flex: none; display: grid; place-items: center; width: var(--guide-dot); height: var(--guide-dot); border-radius: 50%; }
   .dots .tone { background: var(--c); box-shadow: 0 0 0 var(--hair) var(--chip-rule); }
+  .dots .tone:not(.on) { opacity: var(--guide-dim); }
   .dots .tone.on { box-shadow: 0 0 0 var(--ring-gap-in) var(--paper), 0 0 0 calc(var(--ring-gap-in) + var(--ring-thick)) var(--c), 0 0 0 calc(var(--ring-gap-in) + var(--ring-thick) + var(--hair)) var(--chip-rule); }
   .dots .none { color: var(--grey); }
   .dots .none svg { width: var(--guide-dot); height: var(--guide-dot); }
@@ -1050,6 +1054,17 @@
   /* Thickness, on the list's own columns: name · slider · value · stepper */
   .guidelist .row { grid-template-columns: var(--guide-name) minmax(0, 1fr) var(--col) var(--col); min-height: var(--guide-row); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
   .guidelist .row > :is(label, input[type="range"]) { grid-column: auto; }
+  /* the last line (#271): Thickness · its number with a compact plus and minus (a side row's box) · a rule, then Reset
+     All. Over it a thick line: its own hairline on the one above. No slider: with Reset All beside it, it had no room
+     left (0 px, measured); it comes back in the number popup (phase E; R15 form B). The number's cell reaches back over
+     the name, so a press on the number grows its box leftward (as beside a hand's box), not over Reset All. */
+  .guidelist .guidelast { grid-template-columns: var(--guide-name) minmax(0, 1fr) auto; box-shadow: inset 0 var(--hair) 0 var(--row-rule), inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  .guidelast > * { grid-row: 1; }
+  .guidelist .guidelast > label:first-child { grid-column: 1; }
+  .guidelast > input[type="range"] { display: none; }
+  .guidelast > .numcell { grid-column: 1 / 3; position: relative; height: var(--control); pointer-events: none; --num-open: 100%; }
+  .guidelast .numbox { pointer-events: auto; }
+  .guidelast > .resetall { grid-column: 3; display: flex; align-items: center; height: var(--control); padding-left: var(--gap); border-left: var(--hair) solid var(--row-rule); }
   .guidefoot { display: flex; justify-content: flex-end; padding-top: var(--pop-pad); }
   .shadelist .guidehead .name { grid-column: 1 / -1; }      /* its headings are words alone: the whole line, not the names' column */
   /* the Shadows list: the guides' list, opening upward from its switch at the bottom left (after .guidelist, which it overrides) */
@@ -5715,7 +5730,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.42.4";
+var VERSION = "beta 4.42.5";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -5861,8 +5876,10 @@ var WINDOW_BASE = {
   // its own tracking and language (beta 4.26); null = the top numerals ring's, as before
   features: null,
   // its own OpenType features (beta 4.30); null = none of its own. axes: {} likewise
-  at_deg: null
+  at_deg: null,
   // a place of its own, in clock degrees (beta 4.34); null = the named place, at
+  guide: -1
+  // its guide's colour, as a ring's (#271): a place in GUIDE_COLOURS · -1 = by its place (window_guide) · -2 = none
 };
 var FIRST_WINDOW = {
   on: "da_on",
@@ -5888,6 +5905,7 @@ var FIRST_WINDOW = {
   axes: "da_axes",
   text_c: "da_text_c",
   disc_c: "da_disc_c",
+  guide: "da_guide",
   tracking: "da_tracking",
   lang: "da_lang",
   features: "da_features",
@@ -5968,6 +5986,14 @@ var DEFAULTS = {
   gd_win: false,
   gd_rings: false,
   gd_sel: true,
+  gd_hole: true,
+  gd_k_hole: 1,
+  // the centre hole's own guide, first in the list (Okay, 16 Oct 2026, #267)
+  gd_wins: false,
+  gd_wsel: true,
+  // which windows show their guides: all · the chosen one (to start) · none, as rings (#271). gd_win, gd_k_win (the windows' radii) unread since
+  da_guide: -1,
+  // the first window's guide colour, as every window's `guide` (#271)
   gd_k_edge: 1,
   gd_k_axes: 0,
   gd_k_win: 1,
@@ -6016,13 +6042,47 @@ var GUIDE_KINDS = [
   ["gd_axes", "gd_k_axes", "Centre lines"],
   ["gd_win", "gd_k_win", "Window radii"],
   ["gd_rings", "gd_k_rings", "Ring edges"],
-  ["gd_sel", "gd_k_sel", "Selected ring"]
+  ["gd_sel", "gd_k_sel", "Selected ring"],
+  ["gd_hole", "gd_k_hole", "Centre hole"]
 ];
 var RING_GUIDE_ORDER = [4, 0, 2, 5, 3, 1];
 var ring_guide = (S, i) => {
   const g = S.rings[i] ? S.rings[i].guide : -2;
   return g === -2 ? null : g >= 0 && g < GUIDE_COLOURS.length ? g : RING_GUIDE_ORDER[i % RING_GUIDE_ORDER.length];
 };
+var window_guide = (S, i) => {
+  const w = windows_of(S)[i], g = w ? w.guide ?? -1 : -2;
+  return g === -2 ? null : g >= 0 && g < GUIDE_COLOURS.length ? g : RING_GUIDE_ORDER[RING_GUIDE_ORDER.length - 1 - i % RING_GUIDE_ORDER.length];
+};
+function radial_extent(path) {
+  let lo = Infinity, hi = 0, px = 0, py = 0;
+  const see = (x, y) => {
+    const r = Math.hypot(x, y);
+    if (r < lo) lo = r;
+    if (r > hi) hi = r;
+  };
+  for (const c of path ? path.d : []) {
+    if (c[0] === "M") {
+      see(c[1], c[2]);
+      px = c[1];
+      py = c[2];
+    } else if (c[0] === "L") {
+      const dx = c[1] - px, dy = c[2] - py, len = dx * dx + dy * dy, t = len ? Math.max(0, Math.min(1, -(px * dx + py * dy) / len)) : 0;
+      see(px + t * dx, py + t * dy);
+      see(c[1], c[2]);
+      px = c[1];
+      py = c[2];
+    } else if (c[0] === "C") {
+      for (let s = 1; s <= 8; s++) {
+        const t = s / 8, u = 1 - t;
+        see(u * u * u * px + 3 * u * u * t * c[1] + 3 * u * t * t * c[3] + t * t * t * c[5], u * u * u * py + 3 * u * u * t * c[2] + 3 * u * t * t * c[4] + t * t * t * c[6]);
+      }
+      px = c[5];
+      py = c[6];
+    }
+  }
+  return lo <= hi ? [lo, hi] : null;
+}
 var GUIDE_MORE = ["line", "crosshair", "circle"];
 var NOT_GEOMETRY = ["t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
 var NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_", "sh_"];
@@ -7205,7 +7265,7 @@ function scene(S, statik, t, preview = true, selected = null) {
     };
     const round_guide = (r, key, px) => add("guide", circle(2 * r), null, { stroke: colour(key), px });
     const line_guide = (p0, p1) => add("guide", new Path().line(p0, p1), null, { stroke: colour("gd_k_axes"), px: S.gd_w });
-    if (S.gd_win) for (const r of new Set(windows.map((x) => x.w.r))) round_guide(r, "gd_k_win", S.gd_w);
+    if ((S.gd_hole || S.gd_hole_live) && S.dial_hole > 0) round_guide(S.dial_hole / 2, "gd_k_hole", S.gd_w);
     if (S.gd_axes) {
       line_guide([-R, 0], [R, 0]);
       line_guide([0, -R], [0, R]);
@@ -7215,14 +7275,28 @@ function scene(S, statik, t, preview = true, selected = null) {
       return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).concat([1]);
     };
     const stroke_guide = (path, k, px = S.gd_w) => add("guide", path, null, { stroke: tone(k), px });
+    const built = new Map(statik.rings.map((d) => [d.ring, d]));
+    const edges = (k, outer, inner, px) => {
+      for (const r of [.../* @__PURE__ */ new Set([outer, inner])]) if (r > 0) stroke_guide(circle(2 * r), k, px);
+      const mid = (outer + inner) / 2;
+      if (outer - inner > 0.01 && mid > 0) add("guide", circle(2 * mid), null, { stroke: tone(k), px, dots: true });
+    };
     S.rings.forEach((ring, i) => {
       const chosen = i === selected && S.gd_sel, k = ring_guide(S, i);
       if (!ring.on || k === null || !(S.gd_rings || chosen)) return;
-      const inner = { ticks: ring.len, markers: ring.len, band: ring.width }[kind_of(ring)] || 0;
-      for (const r of [.../* @__PURE__ */ new Set([ring.r, ring.r - inner])].sort((a, b) => b - a)) {
-        if (r > 0) stroke_guide(circle(2 * r), k, chosen ? S.gd_w * 1.5 : S.gd_w);
+      const kind = kind_of(ring);
+      let outer = ring.r, inner = ring.r - ({ ticks: ring.len, markers: ring.len, band: ring.width }[kind] || 0);
+      if (kind === "numerals") {
+        const e = radial_extent(built.get(ring)?.path);
+        if (e) [inner, outer] = e;
       }
+      edges(k, outer, inner, chosen ? S.gd_w * 1.5 : S.gd_w);
     });
+    for (const x of windows) {
+      const chosen = x.index === (S.ui_window ?? 0) && S.gd_wsel, k = window_guide(S, x.index), e = radial_extent(x.window);
+      if (k === null || !e || !(S.gd_wins || chosen)) continue;
+      edges(k, e[1], e[0], chosen ? S.gd_w * 1.5 : S.gd_w);
+    }
     for (const g of S.gd_more || []) {
       if (!(g.k >= 0)) continue;
       const kind = GUIDE_MORE[g.kind], at = clock_point(g.r || 0, g.a || 0), arm = 1.2;
@@ -7619,7 +7693,7 @@ var EYE = {
 };
 var eye = (open) => icon(EYE[open ? "open" : "closed"]);
 var NONE_SIGN = SIGNS.sheet + `<path d="M6.75 8.25L9.75 11.25M9.75 8.25L6.75 11.25" ${sw(SLANT)}/>`;
-var none_dot = `<svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="round"><circle cx="5" cy="5" r="${4 - LINE / 2}"/><path d="M3.25 3.25L6.75 6.75"/></svg>`;
+var none_dot = `<svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="round"><path d="M5 ${1 + LINE / 2}A${4 - LINE / 2} ${4 - LINE / 2} 0 1 1 5 ${9 - LINE / 2}A${4 - LINE / 2} ${4 - LINE / 2} 0 1 1 5 ${1 + LINE / 2}M3.25 3.25L6.75 6.75"/></svg>`;
 var pic = (inside) => icon(inside, 38, 27);
 var solid = `fill="currentColor" stroke="none"`;
 var faint = `${sw(CURVE)} opacity="0.45"`;
@@ -7698,6 +7772,7 @@ var SHOWCASE_PAGE = { w: 210, h: 297, dial: 2 / 3 };
 var SUN = { day: 20, rise: 40, fade: 0.45 };
 var POOL = { size: 1.45, stretch: 1.4, soft: [0.06, 0.8], light: [0.08, 0.42], shade: [0.15, 0.55], lift: 1.5 };
 var TRAVEL_MS = 900;
+var HOLE_LIVE_MS = 1200;
 var WORDS_MS = 3e3;
 var SHEET = { shares: [0.42, 0.22], preview: 120, drawer: 160, room: 140 };
 var SPIN_MS = 1600;
@@ -8273,6 +8348,11 @@ var DialTool = class _DialTool {
       if (!quiet) this.static_dirty = true;
       if (key === "dial_d" || key === "margin") {
         if (this.fitted) this.fit();
+      }
+      if (key === "dial_hole") {
+        this.hole_at = performance.now();
+        clearTimeout(this.hole_timer);
+        this.hole_timer = setTimeout(() => this.render(), HOLE_LIVE_MS + 50);
       }
     }
     this.sync_rows();
@@ -9039,7 +9119,7 @@ var DialTool = class _DialTool {
       return { line, label, refresh };
     };
     this.guide_dots = dots_line;
-    this.guide_kinds = GUIDE_KINDS.slice(1, 3).map(([show, colour, name]) => {
+    this.guide_kinds = [GUIDE_KINDS[5], GUIDE_KINDS[1]].map(([show, colour, name]) => {
       const d = dots_line(name, () => this.S[show] ? this.S[colour] : null, (k) => {
         if (k === null) this.S[show] = false;
         else {
@@ -9063,6 +9143,19 @@ var DialTool = class _DialTool {
     });
     this.guide_which = which;
     this.guide_rings = el("div", { className: "guiderings" });
+    const which_w = el("span", { className: "segs", role: "radiogroup", ariaLabel: "Which windows show their guides" });
+    [["All", true, true], ["Selected", false, true], ["None", false, false]].forEach(([word2, wins, sel]) => {
+      const b = el("button", { type: "button", id: "guide-windows-" + word2.toLowerCase(), textContent: word2, onclick: () => {
+        this.S.gd_wins = wins;
+        this.S.gd_wsel = sel;
+        this.sync_rows();
+        this.render();
+      } });
+      b.setAttribute("role", "radio");
+      which_w.append(b);
+    });
+    this.guide_which_w = which_w;
+    this.guide_windows = el("div", { className: "guiderings" });
     this.guide_more = el("div", { className: "guidemore" });
     const adds = el("span", { className: "segs" });
     GUIDE_MORE.forEach((kind, i) => adds.append(el("button", { type: "button", id: "guide-add-" + kind, textContent: kind[0].toUpperCase() + kind.slice(1), onclick: () => {
@@ -9071,20 +9164,30 @@ var DialTool = class _DialTool {
       this.sync_rows();
       this.render();
     } })));
+    this.guide_windows_head = el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Windows" }), which_w);
     list.append(
       el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Rings" }), which),
       this.guide_rings,
-      el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Add" }), adds),
+      this.guide_windows_head,
+      this.guide_windows,
+      el("div", { className: "guidehead add" }, el("span", { className: "name", textContent: "Add" }), adds),
       this.guide_more
     );
-    this.guide_rows = [this.build_row({ ...num2("gd_w", "Thickness", 0.25, 6, 0.25), scope: "global" })];
-    const reset = el("button", { type: "button", className: "btn", id: "guides-reset", textContent: "Reset", title: "The guides as they started", onclick: () => {
+    this.guide_rows = [this.build_row({ ...num2("gd_w", "Thickness", 0.25, 6, 0.25), scope: "global", side: true })];
+    const reset = el("button", { type: "button", className: "btn", id: "guides-reset", textContent: "Reset All", title: "Every guide as it started", onclick: () => {
       for (const key of Object.keys(DEFAULTS)) if (key.startsWith("gd_")) this.S[key] = structuredClone(DEFAULTS[key]);
       for (const ring of this.S.rings) ring.guide = RING_BASE.guide;
+      for (const w of windows_of(this.S)) w.guide = WINDOW_BASE.guide;
       this.sync_rows();
       this.render();
     } });
-    list.append(...this.guide_rows.map((r) => r.el), el("div", { className: "guidefoot" }, reset));
+    const last = this.guide_rows[0].el, box_ = last.querySelector(".numbox");
+    const cell = el("span", { className: "numcell" });
+    box_.replaceWith(cell);
+    cell.append(box_);
+    last.classList.add("guidelast");
+    last.append(el("span", { className: "resetall" }, reset));
+    list.append(last);
     const box2 = el("div", { className: "guides" }, this.guides_tick, more, list);
     box2.onkeydown = (e) => {
       if (e.key === "Escape" && !list.hidden) {
@@ -9281,6 +9384,29 @@ var DialTool = class _DialTool {
     this.guide_ring_lines.forEach((d, i) => {
       d.refresh();
       d.line.classList.toggle("selected", i === S.ui_ring);
+    });
+    const which_w = S.gd_wins ? 0 : S.gd_wsel ? 1 : 2;
+    [...this.guide_which_w.children].forEach((b, n) => {
+      b.classList.toggle("on", n === which_w);
+      b.setAttribute("aria-checked", String(n === which_w));
+    });
+    const shown = windows_of(S).map((w, i) => w.on ? i : -1).filter((i) => i >= 0), wins = JSON.stringify(shown.map((i) => [i, window_place(windows_of(S)[i])]));
+    if (this.guide_windows.dataset.wins !== wins) {
+      this.guide_windows.dataset.wins = wins;
+      this.guide_window_lines = shown.map((i) => {
+        const d = this.guide_dots(`Window at ${window_place(windows_of(this.S)[i])}`, () => window_guide(this.S, i), (k) => {
+          windows_of(this.S)[i].guide = k === null ? -2 : k;
+        });
+        d.line.classList.add("ring");
+        d.index = i;
+        return d;
+      });
+      this.guide_windows.replaceChildren(...this.guide_window_lines.map((d) => d.line));
+    }
+    this.guide_windows_head.hidden = this.guide_windows.hidden = !shown.length;
+    this.guide_window_lines.forEach((d) => {
+      d.refresh();
+      d.line.classList.toggle("selected", d.index === S.ui_window);
     });
     const more = JSON.stringify((S.gd_more || []).map((g) => g.kind));
     if (this.guide_more.dataset.more !== more) {
@@ -11699,7 +11825,10 @@ var DialTool = class _DialTool {
     }
   }
   draw() {
-    const S = this.show ? { ...this.S, guides: false, ha_on: this.S.ha_on && !this.show.nohands } : this.S;
+    let S = this.show ? { ...this.S, guides: false, ha_on: this.S.ha_on && !this.show.nohands } : this.S;
+    if (!this.show && this.hole_at && performance.now() - this.hole_at < HOLE_LIVE_MS) {
+      S = S.guides ? { ...S, gd_hole_live: true } : { ...S, guides: true, gd_hole_live: true, gd_axes: false, gd_rings: false, gd_sel: false, gd_wins: false, gd_wsel: false, gd_more: [] };
+    }
     const day = shows_day(S) ? day_hour(S) : null;
     if (day !== this.day_drawn) {
       this.day_drawn = day;
@@ -11746,7 +11875,7 @@ var DialTool = class _DialTool {
         node.setAttribute("fill", item.fill ? to_hex(item.fill) : "none");
         node.setAttribute("fill-opacity", item.fill ? item.fill[3] : 1);
       }
-      const stroke = item.stroke ? to_hex(item.stroke) + "/" + item.stroke[3] + "/" + item.px : "none";
+      const stroke = item.stroke ? to_hex(item.stroke) + "/" + item.stroke[3] + "/" + item.px + (item.dots ? "/dots" : "") : "none";
       if (stroke !== slot.stroke) {
         slot.stroke = stroke;
         if (item.stroke) {
@@ -11755,7 +11884,14 @@ var DialTool = class _DialTool {
           node.setAttribute("stroke-width", item.px);
           node.setAttribute("vector-effect", "non-scaling-stroke");
           node.setAttribute("pointer-events", "none");
-        } else for (const a of ["stroke", "stroke-opacity", "stroke-width", "vector-effect", "pointer-events"]) node.removeAttribute(a);
+          if (item.dots) {
+            node.setAttribute("stroke-dasharray", `0 ${3 * item.px}`);
+            node.setAttribute("stroke-linecap", "round");
+          } else {
+            node.removeAttribute("stroke-dasharray");
+            node.removeAttribute("stroke-linecap");
+          }
+        } else for (const a of ["stroke", "stroke-opacity", "stroke-width", "vector-effect", "pointer-events", "stroke-dasharray", "stroke-linecap"]) node.removeAttribute(a);
       }
       if (item.angle !== slot.angle) {
         slot.angle = item.angle;

@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.42.4";
+export const VERSION = "beta 4.42.5";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -99,10 +99,11 @@ export const WINDOW_BASE = {
   tracking: null, lang: null,                      // its own tracking and language (beta 4.26); null = the top numerals ring's, as before
   features: null,                                  // its own OpenType features (beta 4.30); null = none of its own. axes: {} likewise
   at_deg: null,                                    // a place of its own, in clock degrees (beta 4.34); null = the named place, at
+  guide: -1,                                       // its guide's colour, as a ring's (#271): a place in GUIDE_COLOURS · -1 = by its place (window_guide) · -2 = none
 };
 const FIRST_WINDOW = { on: "da_on", kind: "da_kind", at: "da_at", r: "da_r", w: "da_w", h: "da_h", round: "da_round", frame: "da_frame",
   clear: "da_clear", text: "da_day", size: "da_size", ink: "da_ink", hour: "da_hour", age: "da_age",
-  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c", tracking: "da_tracking", lang: "da_lang", features: "da_features", at_deg: "da_at_deg" };
+  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c", guide: "da_guide", tracking: "da_tracking", lang: "da_lang", features: "da_features", at_deg: "da_at_deg" };
 
 export const DEFAULTS = {
   version: 2,
@@ -129,6 +130,9 @@ export const DEFAULTS = {
   // links that left them at the start see the new ones — preview only (R31 notes it). Dial edge: gone from the list
   // and never drawn; its keys stay for old links (R8).
   gd_edge: false, gd_axes: true, gd_win: false, gd_rings: false, gd_sel: true,
+  gd_hole: true, gd_k_hole: 1,                    // the centre hole's own guide, first in the list (Okay, 16 Oct 2026, #267)
+  gd_wins: false, gd_wsel: true,                  // which windows show their guides: all · the chosen one (to start) · none, as rings (#271). gd_win, gd_k_win (the windows' radii) unread since
+  da_guide: -1,                                   // the first window's guide colour, as every window's `guide` (#271)
   gd_k_edge: 1, gd_k_axes: 0, gd_k_win: 1, gd_k_rings: 1, gd_k_sel: 4, gd_w: 1.0,
   // shadows: preview only, never in a file (R5). A trial on branch try/shadows (Okay, 14 Oct 2026: "dummy preview
   // only, do not do this on the live page yet"). One light, far away: it comes from a clock angle (sh_from, degrees)
@@ -158,12 +162,32 @@ export const UNITS = [["mm", "Millimetres", 1, 0], ["pt", "Points", 72 / 25.4, 0
 export const GUIDE_COLOURS = ["#FF2D95", "#00E5FF", "#39FF14", "#FFE600", "#FF6A00", "#7A5CFF", "#111111", "#FFFFFF"];
 /** the five kinds of guide: [key of its eye, key of its colour, name]. */
 export const GUIDE_KINDS = [["gd_edge", "gd_k_edge", "Dial edge"], ["gd_axes", "gd_k_axes", "Centre lines"], ["gd_win", "gd_k_win", "Window radii"],
-  ["gd_rings", "gd_k_rings", "Ring edges"], ["gd_sel", "gd_k_sel", "Selected ring"]];
+  ["gd_rings", "gd_k_rings", "Ring edges"], ["gd_sel", "gd_k_sel", "Selected ring"], ["gd_hole", "gd_k_hole", "Centre hole"]];      // only grows (R9)
 /** a ring's guide has the ring's own colour (Okay, 13 Oct 2026: "connect guides to layers"). Rings that have none
  *  of their own yet take one by their place in the list, in this order — neighbours never alike ("default guide colors
  *  come scrambled"). → a place in GUIDE_COLOURS, or null for none */
 export const RING_GUIDE_ORDER = [4, 0, 2, 5, 3, 1];
 export const ring_guide = (S, i) => { const g = S.rings[i] ? S.rings[i].guide : -2; return g === -2 ? null : g >= 0 && g < GUIDE_COLOURS.length ? g : RING_GUIDE_ORDER[i % RING_GUIDE_ORDER.length]; };
+/** a window's guide, as a ring's (#271): its own colour, or one by its place — from the end of the rings' order, so a
+ *  window's first colours are not the first rings' */
+export const window_guide = (S, i) => { const w = windows_of(S)[i], g = w ? w.guide ?? -1 : -2; return g === -2 ? null : g >= 0 && g < GUIDE_COLOURS.length ? g : RING_GUIDE_ORDER[RING_GUIDE_ORDER.length - 1 - i % RING_GUIDE_ORDER.length]; };
+/** how near and how far from the centre a shape reaches: [least, most] radius in mm, or null. A straight edge counts
+ *  its nearest point; a curve is read at eight points along it (#272: a ring's and a window's guides). */
+export function radial_extent(path) {
+  let lo = Infinity, hi = 0, px = 0, py = 0;
+  const see = (x, y) => { const r = Math.hypot(x, y); if (r < lo) lo = r; if (r > hi) hi = r; };
+  for (const c of path ? path.d : []) {
+    if (c[0] === "M") { see(c[1], c[2]); px = c[1]; py = c[2]; }
+    else if (c[0] === "L") {
+      const dx = c[1] - px, dy = c[2] - py, len = dx * dx + dy * dy, t = len ? Math.max(0, Math.min(1, -(px * dx + py * dy) / len)) : 0;
+      see(px + t * dx, py + t * dy); see(c[1], c[2]); px = c[1]; py = c[2];
+    } else if (c[0] === "C") {
+      for (let s = 1; s <= 8; s++) { const t = s / 8, u = 1 - t; see(u * u * u * px + 3 * u * u * t * c[1] + 3 * u * t * t * c[3] + t * t * t * c[5], u * u * u * py + 3 * u * u * t * c[2] + 3 * u * t * t * c[4] + t * t * t * c[6]); }
+      px = c[5]; py = c[6];
+    }
+  }
+  return lo <= hi ? [lo, hi] : null;
+}
 /** guides you add yourself (S.gd_more): [{kind, a, r, k}] — kind: a place in this list · a: clock angle · r: radius in mm
  *  · k: a place in GUIDE_COLOURS, -2 = none. line: a diameter at angle a · crosshair: a small cross at angle a and
  *  radius r, to mark a point · circle: radius r. The list only grows at its end (R9). */
@@ -1352,8 +1376,10 @@ export function scene(S, statik, t, preview = true, selected = null) {
     };
     const round_guide = (r, key, px) => add("guide", circle(2 * r), null, { stroke: colour(key), px });
     const line_guide = (p0, p1) => add("guide", new Path().line(p0, p1), null, { stroke: colour("gd_k_axes"), px: S.gd_w });
-    // the dial edge's guide is gone (Okay, 15 Oct 2026): gd_edge is no longer read
-    if (S.gd_win) for (const r of new Set(windows.map((x) => x.w.r))) round_guide(r, "gd_k_win", S.gd_w);
+    // the dial edge's guide is gone (Okay, 15 Oct 2026): gd_edge is no longer read; nor the windows' radii (gd_win), since
+    // each window has guides of its own (below, #271). The centre hole has its own, first in the list; while the hole
+    // is being sized it shows whatever the guides are set to (gd_hole_live, from the window: Okay, 16 Oct 2026, #267)
+    if ((S.gd_hole || S.gd_hole_live) && S.dial_hole > 0) round_guide(S.dial_hole / 2, "gd_k_hole", S.gd_w);
     if (S.gd_axes) {
       line_guide([-R, 0], [R, 0]);
       line_guide([0, -R], [0, R]);
@@ -1362,14 +1388,28 @@ export function scene(S, statik, t, preview = true, selected = null) {
     const stroke_guide = (path, k, px = S.gd_w) => add("guide", path, null, { stroke: tone(k), px });
     // a ring's edges, in the ring's own guide colour; the selected ring's half as thick again. Which rings: all
     // (gd_rings), only the selected one (gd_sel alone), or none.
+    // its outer and inner edges whole, its middle dotted (Okay, 16 Oct 2026, #272: "center of the ring is dotted. All
+    // rings and windows get their own outer and inner guide circles in solid line"). Numerals: the edges their figures
+    // reach as drawn. A window: the edges its hole reaches; which windows, as for rings (gd_wins, gd_wsel)
+    const built = new Map(statik.rings.map((d) => [d.ring, d]));
+    const edges = (k, outer, inner, px) => {
+      for (const r of [...new Set([outer, inner])]) if (r > 0) stroke_guide(circle(2 * r), k, px);
+      const mid = (outer + inner) / 2;
+      if (outer - inner > 0.01 && mid > 0) add("guide", circle(2 * mid), null, { stroke: tone(k), px, dots: true });
+    };
     S.rings.forEach((ring, i) => {
       const chosen = i === selected && S.gd_sel, k = ring_guide(S, i);
       if (!ring.on || k === null || !(S.gd_rings || chosen)) return;
-      const inner = { ticks: ring.len, markers: ring.len, band: ring.width }[kind_of(ring)] || 0;
-      for (const r of [...new Set([ring.r, ring.r - inner])].sort((a, b) => b - a)) {
-        if (r > 0) stroke_guide(circle(2 * r), k, chosen ? S.gd_w * 1.5 : S.gd_w);
-      }
+      const kind = kind_of(ring);
+      let outer = ring.r, inner = ring.r - ({ ticks: ring.len, markers: ring.len, band: ring.width }[kind] || 0);
+      if (kind === "numerals") { const e = radial_extent(built.get(ring)?.path); if (e) [inner, outer] = e; }
+      edges(k, outer, inner, chosen ? S.gd_w * 1.5 : S.gd_w);
     });
+    for (const x of windows) {
+      const chosen = x.index === (S.ui_window ?? 0) && S.gd_wsel, k = window_guide(S, x.index), e = radial_extent(x.window);
+      if (k === null || !e || !(S.gd_wins || chosen)) continue;
+      edges(k, e[1], e[0], chosen ? S.gd_w * 1.5 : S.gd_w);
+    }
     for (const g of S.gd_more || []) {              // the guides added by hand
       if (!(g.k >= 0)) continue;
       const kind = GUIDE_MORE[g.kind], at = clock_point(g.r || 0, g.a || 0), arm = 1.2;      // a crosshair's arms, in mm

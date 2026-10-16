@@ -125,7 +125,7 @@ const EYE = {                                      // the left column's sign: op
 const eye = (open) => icon(EYE[open ? "open" : "closed"]);
 const NONE_SIGN = SIGNS.sheet + `<path d="M6.75 8.25L9.75 11.25M9.75 8.25L6.75 11.25" ${sw(SLANT)}/>`;      // the sheet with a cross: this font has none of it
 // a "none" in a row of colour dots: a slashed circle at the dot's own size (10), its outer edge where it was (4); so small, LINE is enough
-const none_dot = `<svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="round"><circle cx="5" cy="5" r="${4 - LINE / 2}"/><path d="M3.25 3.25L6.75 6.75"/></svg>`;
+const none_dot = `<svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="round"><path d="M5 ${1 + LINE / 2}A${4 - LINE / 2} ${4 - LINE / 2} 0 1 1 5 ${9 - LINE / 2}A${4 - LINE / 2} ${4 - LINE / 2} 0 1 1 5 ${1 + LINE / 2}M3.25 3.25L6.75 6.75"/></svg>`;      // ring and stroke one path: where they meet nothing doubles, at any opacity (Okay, 16 Oct 2026, #271)
 // small pictures for choices that are easier seen than read: drawn at the size they are shown, 38 × 27 (they were
 // drawn on 28 × 20 and enlarged 1.35 times; Okay, 13 Oct 2026: "bigger, better (less detail) icons… this goes for all")
 const pic = (inside) => icon(inside, 38, 27);
@@ -221,6 +221,7 @@ const POOL = { size: 1.45, stretch: 1.4, soft: [0.06, 0.8], light: [0.08, 0.42],
 // the dial's travel into and out of the showcase: the only thing that moves (04:59 and 05:09: "only dial travels with ease")
 const TRAVEL_MS = 900;
 // a phone (Okay, 15 Oct 2026, 06:20): the preview's switches unfold their words this long after a tap on the backdrop
+const HOLE_LIVE_MS = 1200;      // how long the centre hole's guide stays after its size last changed (#267)
 const WORDS_MS = 3000;
 // a phone's drawer: the preview's share of the screen at the two heights a tap on the gripper jumps between (the
 // drawer about half, then about three quarters); the least the preview and the drawer keep (px); and how much room for
@@ -802,6 +803,11 @@ class DialTool {
       const quiet = G.NOT_GEOMETRY.includes(key) || G.NOT_GEOMETRY_PREFIX.some((p) => key.startsWith(p));
       if (!quiet) this.static_dirty = true;
       if (key === "dial_d" || key === "margin") { if (this.fitted) this.fit(); }
+      if (key === "dial_hole") {                  // its guide shows while it is being sized, whatever the guides are set to (#267)
+        this.hole_at = performance.now();
+        clearTimeout(this.hole_timer);
+        this.hole_timer = setTimeout(() => this.render(), HOLE_LIVE_MS + 50);
+      }
     }
     this.sync_rows();
     this.render();
@@ -1446,8 +1452,9 @@ class DialTool {
       return { line, label, refresh };
     };
     this.guide_dots = dots_line;
-    // the dial's own three: its edge, its centre lines, the windows' radii
-    this.guide_kinds = G.GUIDE_KINDS.slice(1, 3).map(([show, colour, name]) => {      // centre lines and window radii; not the dial edge (gone, 15 Oct 2026)
+    // the dial's own: the centre hole (first, Okay, 16 Oct 2026, #267) and the centre lines. Not the dial edge (gone, 15 Oct
+    // 2026) nor the windows' radii (each window has its own guides since #271, under Windows)
+    this.guide_kinds = [G.GUIDE_KINDS[5], G.GUIDE_KINDS[1]].map(([show, colour, name]) => {
       const d = dots_line(name, () => (this.S[show] ? this.S[colour] : null), (k) => { if (k === null) this.S[show] = false; else { this.S[show] = true; this.S[colour] = k; } }, "guide-" + show);
       list.append(d.line);
       return d;
@@ -1462,6 +1469,16 @@ class DialTool {
     });
     this.guide_which = which;
     this.guide_rings = el("div", { className: "guiderings" });
+    // the windows' guides, as the rings' (Okay, 16 Oct 2026, #271: "Windows get their own sub category like rings.
+    // Selected comes default"): which windows show theirs, then a line per window that is on
+    const which_w = el("span", { className: "segs", role: "radiogroup", ariaLabel: "Which windows show their guides" });
+    [["All", true, true], ["Selected", false, true], ["None", false, false]].forEach(([word, wins, sel]) => {
+      const b = el("button", { type: "button", id: "guide-windows-" + word.toLowerCase(), textContent: word, onclick: () => { this.S.gd_wins = wins; this.S.gd_wsel = sel; this.sync_rows(); this.render(); } });
+      b.setAttribute("role", "radio");
+      which_w.append(b);
+    });
+    this.guide_which_w = which_w;
+    this.guide_windows = el("div", { className: "guiderings" });
     // guides you add: a line, a crosshair, a circle (Okay: "add an option to add others, crosshair, straight line etc.")
     this.guide_more = el("div", { className: "guidemore" });
     const adds = el("span", { className: "segs" });
@@ -1470,16 +1487,29 @@ class DialTool {
       this.S.gd_more = [...(this.S.gd_more || []), { kind: i, a: 0, r: +(this.S.dial_d / 4).toFixed(2), k: [3, 0, 2, 5, 4, 1].find((k) => !used.has(k)) ?? 3 }];
       this.sync_rows(); this.render();
     } })));
+    this.guide_windows_head = el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Windows" }), which_w);
     list.append(el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Rings" }), which), this.guide_rings,
-      el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Add" }), adds), this.guide_more);
-    this.guide_rows = [this.build_row({ ...num("gd_w", "Thickness", 0.25, 6, 0.25), scope: "global" })];
-    const reset = el("button", { type: "button", className: "btn", id: "guides-reset", textContent: "Reset", title: "The guides as they started", onclick: () => {
+      this.guide_windows_head, this.guide_windows,
+      el("div", { className: "guidehead add" }, el("span", { className: "name", textContent: "Add" }), adds), this.guide_more);
+    // the last line: Thickness, its number with a compact plus and minus (a side row's number box), and Reset All after
+    // a rule (Okay, 16 Oct 2026, #271: "Guide thickness and reset on the same line, value boxes get an attached compact
+    // plus minus to gain space … Reset also gets a vertical separator before. Written as 'Reset All'"). Its question
+    // ("Are you sure?") comes with the number popup (phase E)
+    this.guide_rows = [this.build_row({ ...num("gd_w", "Thickness", 0.25, 6, 0.25), scope: "global", side: true })];
+    const reset = el("button", { type: "button", className: "btn", id: "guides-reset", textContent: "Reset All", title: "Every guide as it started", onclick: () => {
       for (const key of Object.keys(G.DEFAULTS)) if (key.startsWith("gd_")) this.S[key] = structuredClone(G.DEFAULTS[key]);
       for (const ring of this.S.rings) ring.guide = G.RING_BASE.guide;       // the rings' own colours too: by their place again
+      for (const w of G.windows_of(this.S)) w.guide = G.WINDOW_BASE.guide;      // and the windows'
       this.sync_rows();
       this.render();
     } });
-    list.append(...this.guide_rows.map((r) => r.el), el("div", { className: "guidefoot" }, reset));
+    const last = this.guide_rows[0].el, box_ = last.querySelector(".numbox");
+    const cell = el("span", { className: "numcell" });
+    box_.replaceWith(cell);
+    cell.append(box_);
+    last.classList.add("guidelast");
+    last.append(el("span", { className: "resetall" }, reset));
+    list.append(last);
     const box = el("div", { className: "guides" }, this.guides_tick, more, list);
     box.onkeydown = (e) => { if (e.key === "Escape" && !list.hidden) { open(false); more.focus(); } };
     return box;
@@ -1648,6 +1678,22 @@ class DialTool {
       this.guide_rings.replaceChildren(...this.guide_ring_lines.map((d) => d.line));
     }
     this.guide_ring_lines.forEach((d, i) => { d.refresh(); d.line.classList.toggle("selected", i === S.ui_ring); });
+    // which windows show theirs, and a line per window that is on (#271)
+    const which_w = S.gd_wins ? 0 : S.gd_wsel ? 1 : 2;
+    [...this.guide_which_w.children].forEach((b, n) => { b.classList.toggle("on", n === which_w); b.setAttribute("aria-checked", String(n === which_w)); });
+    const shown = G.windows_of(S).map((w, i) => (w.on ? i : -1)).filter((i) => i >= 0), wins = JSON.stringify(shown.map((i) => [i, G.window_place(G.windows_of(S)[i])]));
+    if (this.guide_windows.dataset.wins !== wins) {
+      this.guide_windows.dataset.wins = wins;
+      this.guide_window_lines = shown.map((i) => {
+        const d = this.guide_dots(`Window at ${G.window_place(G.windows_of(this.S)[i])}`, () => G.window_guide(this.S, i), (k) => { G.windows_of(this.S)[i].guide = k === null ? -2 : k; });
+        d.line.classList.add("ring");
+        d.index = i;
+        return d;
+      });
+      this.guide_windows.replaceChildren(...this.guide_window_lines.map((d) => d.line));
+    }
+    this.guide_windows_head.hidden = this.guide_windows.hidden = !shown.length;      // no window on: nothing to say (R16)
+    this.guide_window_lines.forEach((d) => { d.refresh(); d.line.classList.toggle("selected", d.index === S.ui_window); });
     // the guides added by hand: name · its measures · remove, then its colours
     const more = JSON.stringify((S.gd_more || []).map((g) => g.kind));
     if (this.guide_more.dataset.more !== more) {
@@ -3666,7 +3712,10 @@ class DialTool {
   }
 
   draw() {
-    const S = this.show ? { ...this.S, guides: false, ha_on: this.S.ha_on && !this.show.nohands } : this.S;      // the showcase: no guides; its hands key may hide the hands
+    let S = this.show ? { ...this.S, guides: false, ha_on: this.S.ha_on && !this.show.nohands } : this.S;      // the showcase: no guides; its hands key may hide the hands
+    if (!this.show && this.hole_at && performance.now() - this.hole_at < HOLE_LIVE_MS) {      // the centre hole being sized: its guide, alone if the guides are off (#267)
+      S = S.guides ? { ...S, gd_hole_live: true } : { ...S, guides: true, gd_hole_live: true, gd_axes: false, gd_rings: false, gd_sel: false, gd_wins: false, gd_wsel: false, gd_more: [] };
+    }
     const day = G.shows_day(S) ? G.day_hour(S) : null;       // an am · pm window follows the time shown, in steps of six minutes
     if (day !== this.day_drawn) { this.day_drawn = day; this.static_dirty = true; }
     if (!this.statik || this.static_dirty) {
@@ -3711,7 +3760,7 @@ class DialTool {
         node.setAttribute("fill", item.fill ? to_hex(item.fill) : "none");
         node.setAttribute("fill-opacity", item.fill ? item.fill[3] : 1);
       }
-      const stroke = item.stroke ? to_hex(item.stroke) + "/" + item.stroke[3] + "/" + item.px : "none";
+      const stroke = item.stroke ? to_hex(item.stroke) + "/" + item.stroke[3] + "/" + item.px + (item.dots ? "/dots" : "") : "none";
       if (stroke !== slot.stroke) {
         slot.stroke = stroke;
         if (item.stroke) {
@@ -3720,7 +3769,9 @@ class DialTool {
           node.setAttribute("stroke-width", item.px);
           node.setAttribute("vector-effect", "non-scaling-stroke");      // guides keep their width on screen
           node.setAttribute("pointer-events", "none");
-        } else for (const a of ["stroke", "stroke-opacity", "stroke-width", "vector-effect", "pointer-events"]) node.removeAttribute(a);
+          if (item.dots) { node.setAttribute("stroke-dasharray", `0 ${3 * item.px}`); node.setAttribute("stroke-linecap", "round"); }      // a dotted guide: round dots three widths apart (#272)
+          else { node.removeAttribute("stroke-dasharray"); node.removeAttribute("stroke-linecap"); }
+        } else for (const a of ["stroke", "stroke-opacity", "stroke-width", "vector-effect", "pointer-events", "stroke-dasharray", "stroke-linecap"]) node.removeAttribute(a);
       }
       if (item.angle !== slot.angle) {             // hands turn about the pivot (R2: clockwise)
         slot.angle = item.angle;

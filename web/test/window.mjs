@@ -15,11 +15,16 @@ const check = (ok, what) => { console.log((ok ? "ok    " : "FAIL  ") + what); if
 const near = (a, b, tol = 0.02) => Math.abs(a - b) <= tol;
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || "/opt/pw-browsers/chromium" });
-const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2, acceptDownloads: true, reducedMotion: "reduce" });      // panes fold at once here; their slide has a check of its own
-await context.grantPermissions(["local-fonts"]).catch(() => {});
-await context.addInitScript(() => { if (!localStorage.getItem("dial-tool-folds")) localStorage.setItem("dial-tool-folds", '{"*":false}'); });      // every pane open, as for a visitor who has opened them; a first visit has a check of its own (#270)
-// the tool's own fonts come from its site; here they are served from web/fonts/, so the test needs no network
-await context.route("https://duztman.github.io/dial-tool/fonts/**", (route) => route.fulfill({ path: "fonts/" + decodeURIComponent(route.request().url().split("/fonts/")[1]), headers: { "access-control-allow-origin": "*" } }));
+/** a browser of its own: its own storage, so nothing one keeps is seen by another (the link test's "someone else") */
+const visitor = async () => {
+  const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2, acceptDownloads: true, reducedMotion: "reduce" });      // panes fold at once here; their slide has a check of its own
+  await c.grantPermissions(["local-fonts"]).catch(() => {});
+  await c.addInitScript(() => { if (!localStorage.getItem("dial-tool-folds")) localStorage.setItem("dial-tool-folds", '{"*":false}'); });      // every pane open, as for a visitor who has opened them; a first visit has a check of its own (#270)
+  // the tool's own fonts come from its site; here they are served from web/fonts/, so the test needs no network
+  await c.route("https://duztman.github.io/dial-tool/fonts/**", (route) => route.fulfill({ path: "fonts/" + decodeURIComponent(route.request().url().split("/fonts/")[1]), headers: { "access-control-allow-origin": "*" } }));
+  return c;
+};
+const context = await visitor();
 const page = await context.newPage();
 const errors = [];
 page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
@@ -403,7 +408,24 @@ check(await page.$("main .guides #guides") !== null && await page.$(".panel #gui
 const guides_at = await page.evaluate(() => { const g = document.querySelector(".guides").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); return [Math.round(m.right - g.right), Math.round(g.top - m.top)]; });
 check(guides_at[0] === 12 && guides_at[1] === 16, `it is 12 from the preview's right, and 16 from its top: on the header's middle line (${guides_at.join(" / ")})`);
 await page.click("#guides-more");
-check(await page.isVisible("#guide-list") && await page.$$eval("#guide-list > .guidekind", (r) => r.length) === 2 && await page.$$eval("#guide-list .guidekind >> nth=0 >> .dots .tone", (b) => b.length) === 8 && await page.$$eval("#guide-list .guiderings .guidekind.ring", (r) => r.length) === await S("S.rings.length") && await page.$("#guide-list .swatch") === null, "the arrow drops the list: the dial's two kinds of guide (no dial edge since 15 Oct 2026), then a line for every ring, each with None and eight round colours, no free colour");
+check(await page.isVisible("#guide-list") && (await page.$$eval("#guide-list > .guidekind .name", (n) => n.map((e) => e.textContent))).join() === "Centre hole,Centre lines" && await page.$$eval("#guide-list .guidekind >> nth=0 >> .dots .tone", (b) => b.length) === 8 && await page.$eval("#guide-list .guiderings", (e) => e.querySelectorAll(".guidekind.ring").length) === await S("S.rings.length") && await page.$("#guide-list .swatch") === null,
+  "the arrow drops the list: the centre hole's guide first, then the centre lines (no dial edge since 15 Oct 2026, no window radii since 4.42.5), then a line for every ring and every window that is on, each with None and eight round colours, no free colour");
+// the list's look (Okay, 16 Oct 2026, #271): lines 38 high (2 less above and below), a colour not chosen at 60 %, the "none" sign one path
+{
+  const look = await page.evaluate(() => { const q = (s) => document.querySelector("#guide-list " + s); return [Math.round(q(".guidekind").getBoundingClientRect().height), getComputedStyle(q(".tone:not(.on)")).opacity, getComputedStyle(q(".tone.on")).opacity, q(".none svg").querySelectorAll("path, circle, line").length]; });
+  check(look[0] === 38 && look[1] === "0.6" && look[2] === "1" && look[3] === 1, `a guide's line is ${look[0]} high; a colour not chosen shows at ${look[1]}, the chosen one whole; the "none" sign is ${look[3]} path, so nothing in it overlaps`);
+}
+// windows have their own section, as rings (#271): All · Selected · None, Selected to start; a line per window that is on, in its own colour; its edges drawn solid, its middle dotted, as a ring's (#272)
+{
+  const start = await page.evaluate(() => { const t = window.dial_tool, h = [...document.querySelectorAll("#guide-list .guidehead")].find((e) => e.textContent.startsWith("Windows")); return [!!h && !h.hidden, t.S.gd_wins, t.S.gd_wsel, document.querySelector("#guide-windows-selected").classList.contains("on"), [...document.querySelectorAll("#guide-list .guidekind .name")].map((e) => e.textContent).includes("Window at 3")]; });
+  const drawn = (await S("t.items.filter((i) => i.role === 'guide').map((i) => (i.dots ? 'd' : 's')).join('')"));
+  await page.click("#guide-windows-none");
+  await frame();
+  const none = await S("(t.draw(), [S.gd_wins, S.gd_wsel, t.items.filter((i) => i.role === 'guide' && i.dots).length])");
+  await page.click("#guide-windows-selected");
+  check(start.every((x) => x === true || x === false) && start[0] && !start[1] && start[2] && start[3] && start[4] && (drawn.match(/d/g) || []).length === 2 && !none[0] && !none[1] && none[2] === 1,
+    `Windows: its heading with All · Selected · None (Selected to start), a line for the date window; the selected ring and window each draw two solid edges and a dotted middle (${drawn}); None takes the window's away (${none[2]} dotted left, the ring's)`);
+}
 // guides are connected to the rings (13 Oct 2026): each ring's edges in its own colour, different ones to start with; the row in the ring list is tinted with it
 {
   const start = await page.evaluate(() => { const t = window.dial_tool, G = t.S.rings.map((r, i) => [r.guide, [...document.querySelectorAll("#guide-list .guidekind.ring")][i].querySelector(".tone.on").title]); return G; });
@@ -443,13 +465,33 @@ await page.click('#guide-list .guidekind:has-text("Centre lines") .tone >> nth=3
 await frame();
 check(await S("S.gd_axes === true && S.gd_k_axes === 3"), "pressing a colour shows that kind again, in that colour");
 await page.click("#guide-gd_axes");
-await page.click('#guide-list .guidekind:has-text("Window radii") .tone >> nth=0');
+await page.click('#guide-list .guidekind:has-text("Centre hole") .tone >> nth=0');
 await frame();
-check(await S("S.gd_win === true && S.gd_k_win === 0") && !(await page.$$eval("#guide-list .guidekind .name", (n) => n.map((e) => e.textContent))).includes("Dial edge"), "a colour pressed is the window radii's, the first of the eight; there is no dial edge any more");
+const names = await page.$$eval("#guide-list .guidekind .name", (n) => n.map((e) => e.textContent));
+check(await S("S.gd_hole === true && S.gd_k_hole === 0") && !names.includes("Dial edge") && !names.includes("Window radii"), "a colour pressed is the centre hole's, the first of the eight; there is no dial edge nor window radii any more");
+// the last line (#271): Thickness, its number with a compact plus and minus, a rule, then Reset All — on one line
+{
+  const last = await page.evaluate(() => { const r = (s) => document.querySelector("#guide-list .guidelast " + s).getBoundingClientRect(), a = r("label"), b = r(".numbox"), c = r("#guides-reset"), d = getComputedStyle(document.querySelector("#guide-list .resetall")); return [Math.abs((a.top + a.bottom) / 2 - (c.top + c.bottom) / 2) < 1 && Math.abs((b.top + b.bottom) / 2 - (c.top + c.bottom) / 2) < 1, a.right <= b.left && b.right <= c.left, d.borderLeftWidth, document.querySelector("#guides-reset").textContent, !!document.querySelector("#guide-list .guidelast .numbox .step")]; });
+  check(last[0] && last[1] && last[2] === "1px" && last[3] === "Reset All" && last[4], `Thickness, its number with a compact plus and minus, a rule (${last[2]}) and Reset All stand on one line, in that order`);
+}
 await shot("4c-guides");
 await page.click("#guides-reset");
 await frame();
-check(await S("S.gd_axes === true && S.gd_k_axes === 0 && S.gd_win === false && S.gd_rings === false && S.gd_sel === true && S.gd_w === 1"), "Reset: the guides as they start — centre lines pink, no window radii, the selected ring's (Okay, 15 Oct 2026)");
+check(await S("S.gd_axes === true && S.gd_k_axes === 0 && S.gd_hole === true && S.gd_k_hole === 1 && S.gd_rings === false && S.gd_sel === true && S.gd_wins === false && S.gd_wsel === true && S.gd_w === 1"), "Reset All: the guides as they start — centre hole cyan, centre lines pink, the selected ring's and the selected window's (Okay, 15–16 Oct 2026)");
+// the centre hole's guide shows while the hole is being sized, even with the guides off, then goes (#267)
+{
+  await page.click("#guides");      // off
+  const was = await S("S.dial_hole");
+  await page.evaluate(() => window.dial_tool.set_value("global", "dial_hole", 3));
+  await frame();
+  const live = await S("t.items.filter((i) => i.role === 'guide').length");
+  await page.waitForTimeout(1400);
+  const after = await S("t.items.filter((i) => i.role === 'guide').length");
+  await page.evaluate((v) => window.dial_tool.set_value("global", "dial_hole", v), was);
+  await page.waitForTimeout(1400);
+  await page.click("#guides");      // on again
+  check(live === 1 && after === 0, `sizing the centre hole with the guides off: its guide alone shows (${live}), and is gone ${1.2} s after (${after})`);
+}
 await page.click("#guides");
 await frame();
 check(await S("!t.items.some((i) => i.role === 'guide')") && await page.isVisible("#guide-list"), "the Guides switch, off: none drawn; the list stays where it is");
@@ -1257,8 +1299,8 @@ const link = await page.evaluate(() => location.href);
 }
 check(/#1\.[A-Za-z0-9_~]+$/.test(link), `Copy link: the address carries the dial, no dashes in it (${link.split("#")[1].length} characters after #)`);
 const wanted = await S("JSON.stringify({ ...S, ui_section: 0, ui_ring: 0, ui_hand: 0 })");
-const other = await context.newPage();                               // someone else's browser: no last session of this dial
-await other.addInitScript(() => localStorage.removeItem("dial-tool-last"));
+const other = await (await visitor()).newPage();      // someone else's browser: no last session of this dial. A browser of its own, not a second tab: a tab shares the first one's storage, where the first keeps saving its dial while its clock runs (found 16 Oct 2026, 4.42.5: a save landed while this page started)
+await other.addInitScript(() => localStorage.removeItem("dial-tool-last"));      // and what it keeps itself between the addresses below
 await other.goto(link);
 await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 const got = await other.evaluate(() => JSON.stringify({ ...window.dial_tool.S, ui_section: 0, ui_ring: 0, ui_hand: 0 }));
@@ -1289,7 +1331,7 @@ check(opener[0] === 34 && opener[1] === "Numerals · Markers · Minute ticks", `
   check(!r.inPreview && r.lastPane && r.afterColours && /Replaces everything/.test(r.warn) && r.described && back[0] === 34 && back[1] === "Numerals · Markers · Minute ticks" && undone === 25,
     `Reset: last in the Dial tab, after Colours, not on the preview, its warning under it (${JSON.stringify(r)}); brings back the opener (${back.join(", ")}); undo brings back 25 mm (${undone})`);
 }
-await other.close();
+await other.context().close();
 { // a first visit, in a browser that has kept nothing (Okay, 16 Oct 2026, #270): in every tab the pinned panes open and every pane under them folded, but the one a tab is about when only tabs are pinned (a hand, a window). Folded, Colours shows the colours it lists as tiny swatches (#268); Reset says Reset alone, and open, its button stands on its heading line (#269). Custom labels say how they work (#298)
   const fresh = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, reducedMotion: "reduce" });
   await fresh.route("https://duztman.github.io/dial-tool/fonts/**", (route) => route.fulfill({ path: "fonts/" + decodeURIComponent(route.request().url().split("/fonts/")[1]), headers: { "access-control-allow-origin": "*" } }));
@@ -1648,7 +1690,7 @@ const reach = await pad.evaluate(() => {
 });
 check(reach.coarse && reach.left && reach.above && reach.nearer_next, `under a finger a ${reach.size} dot is pressed from 5 beside it and 10 above it; nearer the next dot, the next one is`);
 await pad.touchscreen.tap(...await pad.$eval('#guide-list .guidekind:nth-child(2) .tone:nth-child(5)', (e) => { const r = e.getBoundingClientRect(); return [r.left - 4, r.top - 8]; }));
-check(await pad.evaluate(() => window.dial_tool.S.gd_k_win === 3), "a tap just outside a dot chooses it");
+check(await pad.evaluate(() => window.dial_tool.S.gd_k_axes === 3), "a tap just outside a dot chooses it");
 await pad.tap("#global-c-plate-Plate-hex");
 const chip_reach = await pad.evaluate(() => { const c = [...document.querySelectorAll("#pop-palette button")], r = c[4].getBoundingClientRect(); return [document.elementFromPoint(r.left - 4, r.top + 4) === c[4], document.querySelector("#global-c-plate-Plate-hex").tagName === "SPAN", !document.querySelector("#colour-pop").hidden]; });
 check(chip_reach.every(Boolean), "the hex in a pill opens the pop-out and isn't typed in; a chip is pressed from 4 beside it");

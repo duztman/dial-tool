@@ -79,6 +79,8 @@
   .guidehead .segs { justify-self: end; margin-right: calc(var(--ring-gap-in) + var(--ring-thick)); }
   .guidehead .segs > button { padding: 0 var(--u3); }
   .guidekind.ring.selected .name { font-weight: 600; }
+  /* before Add, a band of the fields' colour, as wide as the lines (Okay, 16 Oct 2026, #271: "a colour separation") */
+  .guidehead.add { border-top: var(--u2) solid var(--field); }
   /* a guide you added takes two lines: its name, its measures and a cross to remove it; under them its colours */
   .guidekind.added { position: relative; grid-template-columns: 1fr; row-gap: var(--u1); padding: var(--unit) 0; }
   .guidekind.added .name { display: flex; align-items: center; gap: var(--unit); overflow: visible; }
@@ -89,6 +91,7 @@
   .dots { display: flex; justify-content: space-between; align-items: center; padding: 0 calc(var(--ring-gap-in) + var(--ring-thick)) 0 var(--guide-gap); }
   .dots button { flex: none; display: grid; place-items: center; width: var(--guide-dot); height: var(--guide-dot); border-radius: 50%; }
   .dots .tone { background: var(--c); box-shadow: 0 0 0 var(--hair) var(--chip-rule); }
+  .dots .tone:not(.on) { opacity: var(--guide-dim); }
   .dots .tone.on { box-shadow: 0 0 0 var(--ring-gap-in) var(--paper), 0 0 0 calc(var(--ring-gap-in) + var(--ring-thick)) var(--c), 0 0 0 calc(var(--ring-gap-in) + var(--ring-thick) + var(--hair)) var(--chip-rule); }
   .dots .none { color: var(--grey); }
   .dots .none svg { width: var(--guide-dot); height: var(--guide-dot); }
@@ -97,6 +100,17 @@
   /* Thickness, on the list's own columns: name · slider · value · stepper */
   .guidelist .row { grid-template-columns: var(--guide-name) minmax(0, 1fr) var(--col) var(--col); min-height: var(--guide-row); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
   .guidelist .row > :is(label, input[type="range"]) { grid-column: auto; }
+  /* the last line (#271): Thickness · its number with a compact plus and minus (a side row's box) · a rule, then Reset
+     All. Over it a thick line: its own hairline on the one above. No slider: with Reset All beside it, it had no room
+     left (0 px, measured); it comes back in the number popup (phase E; R15 form B). The number's cell reaches back over
+     the name, so a press on the number grows its box leftward (as beside a hand's box), not over Reset All. */
+  .guidelist .guidelast { grid-template-columns: var(--guide-name) minmax(0, 1fr) auto; box-shadow: inset 0 var(--hair) 0 var(--row-rule), inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  .guidelast > * { grid-row: 1; }
+  .guidelist .guidelast > label:first-child { grid-column: 1; }
+  .guidelast > input[type="range"] { display: none; }
+  .guidelast > .numcell { grid-column: 1 / 3; position: relative; height: var(--control); pointer-events: none; --num-open: 100%; }
+  .guidelast .numbox { pointer-events: auto; }
+  .guidelast > .resetall { grid-column: 3; display: flex; align-items: center; height: var(--control); padding-left: var(--gap); border-left: var(--hair) solid var(--row-rule); }
   .guidefoot { display: flex; justify-content: flex-end; padding-top: var(--pop-pad); }
   .shadelist .guidehead .name { grid-column: 1 / -1; }      /* its headings are words alone: the whole line, not the names' column */
   /* the Shadows list: the guides' list, opening upward from its switch at the bottom left (after .guidelist, which it overrides) */

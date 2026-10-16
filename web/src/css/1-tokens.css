@@ -113,8 +113,9 @@
     --checker: repeating-conic-gradient(#BDBDB9 0 25%, var(--white) 0 50%) 0 0 / 8px 8px;      /* what shows through a see-through colour */
     --faint: 0.35;                                 /* how much of a switch on the preview shows at rest */
     --canvas-top: calc((var(--header) - var(--control-large)) / 2);      /* undo and Guides stand on the header's middle line, with the title and the unit box */
-    --guide-name: 92px; --guide-row: 42px;         /* the guides' list: the column of names · a line's height */
+    --guide-name: 92px; --guide-row: 38px;         /* the guides' list: the column of names · a line's height (42 until 4.42.5; Okay, 16 Oct 2026, #271: "-2px" above and below) */
     --guide-dot: 10px;                             /* a round colour in the guides' list (the room between two: a special) */
+    --guide-dim: 0.6;                              /* a colour not chosen in the guides' list: this much of it (Okay, 16 Oct 2026, #271: "dim all the unselected colors 40%") */
     --ring-thick: 3px;                             /* the chosen one: a ring of its own colour this thick, a ring of the ground inside it (a special) */
 
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */

@@ -1,5 +1,21 @@
 # Dial Tool — changelog
 
+## beta 4.42.5 (web version) · 16 Oct 2026
+
+The last push of phase B: the guides.
+
+- **The centre hole has a guide** (#267), first in the guide list, cyan to start. While the hole is being sized it shows live, even with the Guides switch off or this guide set to None, and goes 1.2 s after the last change.
+- **Every ring and every window has two solid circles at its edges and a dotted one at its middle** (#272). A ring's edges are where its marks, numerals or text actually reach as drawn.
+- **Windows have their own section in the guide list** (#271), like Rings: *All · Selected · None*, Selected to start, then a line for each window that is on, with its own colour. The section is hidden when no window is on. *Window radii* is gone; the top of the list keeps only Centre hole and Centre lines.
+- **The guide list, tidied** (#271):
+  - Lines 4 px shorter (38).
+  - A colour not chosen shows at 60 %.
+  - The "none" sign is one path, so nothing in it overlaps.
+  - A band of the fields' colour before *Add*.
+  - The last line: Thickness, its number with a compact plus and minus, a rule, then **Reset All**. Reset All also resets the rings' and windows' guide colours.
+  - Thickness lost its slider: next to Reset All it had no room left (0 px, measured). It comes back in the number popup (phase E). Reset All's "Are you sure?" comes with it too.
+- **Test fix** (`web/test/window.mjs`): the "someone else's browser" in the link checks is now a browser context of its own. As a second tab it shared the first tab's storage, and the first tab, its clock running, saved its dial while the second was starting. The check "no last session: it opens with the First dial" failed twice in a row because of this.
+
 ## beta 4.42.4 (web version) · 16 Oct 2026
 
 - **The title line, second look** (#299): a fifth unit, **thou** (a thousandth of an inch); the unit box says its unit in the pixel font, in capitals (MM · PT · IN · LIG · THOU), a smaller box (35 × 15.5), one width for all; the Gallery pill a hair taller, upward (1 px).
