@@ -20,7 +20,7 @@ const NUMBERS = 7, CUSTOM = 6, RADIAL = 1, FLIP = 2, ON_PATH = 3;      // places
 const type = (family, ps, axes = {}) => ({ family, ps, axes });
 const hands = (c, hour, minute, second, cap = 1.4, cap_c = c) => ({ ha_hour: { c, ...hour }, ha_minute: { c, ...minute }, ha_second: { c, ...second }, ha_cap: cap, c_cap: cap_c });
 
-const DIALS = [
+export const DIALS = [
   // the dial the tool opens with, Okay's own watch (Okay, 15 Oct 2026, 07:45: "add this 'default' face to gallery as
   // well"; 07:48: "the purple you've been working with"): first, its settings as they are in src/opener.js
   { name: "Okay's watch", note: "Okay's own watch, purple, a 24-hour ring inside the twelve (15 Oct 2026; the dial the tool opened with until 16 Oct)", settings: OKAYS_WATCH },
@@ -109,7 +109,7 @@ const DIALS = [
       { "kind": 1, "name": "Hours", "r": 11.6, "len": 1.5, "w": 0.45, "twelve": 1, "twelve_gap": 0.35 },
       { "name": "Minutes", "r": 11.6, "count": 60, "skip": 1, "len": 0.5, "w": 0.1 },
     ],
-    "ha_cap": 1, "c_cap": [0.08, 0.08, 0.08, 1],
+    "ha_cap": 1, "c_cap": [0.08, 0.08, 0.08, 1], "ha_cap_top": true,      // no seconds hand: its cap stays, on the minute hand (#262, beta 4.43)
     "ha_hour": { "shape": 5, "len": 10.15, "w": 1.6, "tail": 1.6, "tip": 2.75, "feature": 1.6, "round": 0.05, "c": [0.4784, 0.1216, 0.1216, 1] },
     "ha_minute": { "shape": 5, "len": 12.7, "w": 1.3, "tail": 1.7, "feature": 1.3, "c": [0.4784, 0.1216, 0.1216, 1], "disc_d": 30, "mark_len": 2.3, "mark_w": 1.88 },
     "ha_second": { "on": false, "len": 9, "w": 0.12, "tail": 2, "c": [0.08, 0.08, 0.08, 1] } } },
@@ -126,20 +126,23 @@ const DIALS = [
   // as his link carries them.
 ];
 
-const G = await engines();
-for (const f of FONT_LIST) G.add_font(fs.readFileSync(path.join(here, "fonts", f.file)));
-const hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(v * 255).toString(16).padStart(2, "0")).join("");
-const out = [];
-for (const { name, note, settings } of DIALS) {
-  for (const ring of settings.rings) if (ring.ps && !G.has_font(ring.ps)) throw new Error(`${name}: no font ${ring.ps}`);
-  const S = G.fresh_settings({ ...settings, guides: true });
-  const statik = G.build_static(S), R = S.dial_d / 2 + 0.6;
-  const shapes = G.scene(S, statik, S.t, false).map((i) => `<path d="${(i.role === "hand" ? G.turned(i.path, i.angle) : i.path).svg(2, true)}" fill="${hex(i.fill)}"${i.fill[3] < 1 ? ` fill-opacity="${i.fill[3]}"` : ""}/>`).join("");
-  out.push({ name, note, link: link(S), picture: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-R} ${-R} ${2 * R} ${2 * R}">${shapes}</svg>` });
-  while (G.NOTES.length) console.log("note:", G.NOTES.shift());
-}
-fs.writeFileSync(path.join(here, "src/gallery.js"), `// Written by web/gallery.mjs — do not edit. The Gallery's dials, as links, each with a small picture.
+// run as `node gallery.mjs`: write src/gallery.js (imported, as by test/links.mjs, it only gives DIALS)
+if (process.argv[1]?.endsWith("gallery.mjs")) {
+  const G = await engines();
+  for (const f of FONT_LIST) G.add_font(fs.readFileSync(path.join(here, "fonts", f.file)));
+  const hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(v * 255).toString(16).padStart(2, "0")).join("");
+  const out = [];
+  for (const { name, note, settings } of DIALS) {
+    for (const ring of settings.rings) if (ring.ps && !G.has_font(ring.ps)) throw new Error(`${name}: no font ${ring.ps}`);
+    const S = G.fresh_settings({ ...settings, guides: true });
+    const statik = G.build_static(S), R = S.dial_d / 2 + 0.6;
+    const shapes = G.scene(S, statik, S.t, false).map((i) => `<path d="${(i.role === "hand" ? G.turned(i.path, i.angle) : i.path).svg(2, true)}" fill="${hex(i.fill)}"${i.fill[3] < 1 ? ` fill-opacity="${i.fill[3]}"` : ""}/>`).join("");
+    out.push({ name, note, link: link(S), picture: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-R} ${-R} ${2 * R} ${2 * R}">${shapes}</svg>` });
+    while (G.NOTES.length) console.log("note:", G.NOTES.shift());
+  }
+  fs.writeFileSync(path.join(here, "src/gallery.js"), `// Written by web/gallery.mjs — do not edit. The Gallery's dials, as links, each with a small picture.
 export const GALLERY = ${JSON.stringify(out)};
 `);
-if (process.argv[2]) for (const e of out) fs.writeFileSync(path.join(process.argv[2], e.name.replace(/[^A-Za-z0-9]+/g, "-") + ".svg"), e.picture);      // node gallery.mjs <folder>: the pictures as files, to look at
-console.log(out.map((e) => `${e.name}: link ${e.link.length} · picture ${(e.picture.length / 1e3).toFixed(0)} kB`).join("\n"));
+  if (process.argv[2]) for (const e of out) fs.writeFileSync(path.join(process.argv[2], e.name.replace(/[^A-Za-z0-9]+/g, "-") + ".svg"), e.picture);      // node gallery.mjs <folder>: the pictures as files, to look at
+  console.log(out.map((e) => `${e.name}: link ${e.link.length} · picture ${(e.picture.length / 1e3).toFixed(0)} kB`).join("\n"));
+}

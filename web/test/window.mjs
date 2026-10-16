@@ -648,14 +648,30 @@ await tab("Hands");
 // Hands: Hour · Minute · Seconds are tabs on top of the pinned part; the panes below are about the chosen hand
 const hand_tabs = await page.evaluate(() => { const p = document.querySelector(".pinned"), t = p.querySelector(".tabsbar"); return [p.firstElementChild.classList.contains("handsbar"), p.firstElementChild.nextElementSibling === t, [...t.querySelectorAll("button")].map((b) => b.textContent).join(" "), [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent).join(" · ")]; });
 check(hand_tabs[0] && hand_tabs[1] && hand_tabs[2] === "Hour Minute Seconds", "All hands is the first pinned line, the hand tabs the second, right above the hand's panes");
-const tick_up = await page.evaluate(() => { const pane = document.querySelector(".form .pane"), t = pane.querySelector(".headcontrol").getBoundingClientRect(), h = pane.querySelector(".fold").getBoundingClientRect(); return [pane.querySelector(".headcontrol input").id, t.top >= h.top && t.bottom <= h.bottom, pane.querySelector(".body .check") === null]; });
+const tick_up = await page.evaluate(() => { const pane = document.querySelector(".form .pane"), t = pane.querySelector(".headcontrol").getBoundingClientRect(), h = pane.querySelector(".fold").getBoundingClientRect(); return [pane.querySelector(".headcontrol input").id, t.top >= h.top && t.bottom <= h.bottom, [...pane.querySelectorAll(".body .check")].every((c) => !c.checkVisibility())]; });      // (the cap's "Cap on this hand" waits there, hidden: #262)
 check(tick_up[0] === "hand-on-Show-this-hand" && tick_up[1] && tick_up[2], "Show this hand is on the heading line, beside the hand's name");
 const pill_gaps = await page.$eval(".form .colour", (e) => { const r = e.getBoundingClientRect(), d = e.querySelector(".dot").getBoundingClientRect(), h = e.querySelector(".hex").getBoundingClientRect(), row = e.closest(".row").getBoundingClientRect();
   return { gaps: [d.left - r.left, h.left - d.right, r.right - h.right, d.top - r.top, r.bottom - d.bottom, r.top - row.top, row.bottom - r.bottom], dot: d.height, type: parseFloat(getComputedStyle(e).fontSize) }; });
 check(pill_gaps.gaps.every((v) => Math.abs(v - 5.5) < 0.3) && pill_gaps.dot === pill_gaps.type, `a colour pill has one space seven times: beside, over and under its swatch, between swatch and hex, after the hex, from the pill to its row's two lines; the swatch is as high as the hex is set (${pill_gaps.gaps.map((v) => +v.toFixed(2)).join(" · ")}; ${pill_gaps.dot} = ${pill_gaps.type})`);
 await page.click("#hand-tab-2");
 check(await S("S.ui_hand === 2") && await page.textContent(".form .pane >> nth=0 >> h2") === "Seconds hand" && await page.$eval("#hand-tab-2", (e) => e.classList.contains("on")), "a tab chooses the hand; the first pane's heading says Seconds hand");
-check((await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))).at(-1) === "Cap", "Cap, which belongs to all three, comes after the hand's own panes");
+{ // the cap is part of the seconds hand (#262, beta 4.43): its rows in the seconds hand's pane, no pane of its own;
+  // with no seconds hand, "Cap on this hand" under the topmost hand's, off: then no cap is drawn until it is ticked
+  const seen = () => page.evaluate(() => { const v = (q) => { const e = document.querySelector(q); return !!e && e.checkVisibility(); }, t = window.dial_tool;
+    return [v('[id^="global-ha-cap-Cap"]'), v('[id^="global-c-cap"]'), v('[id^="global-ha-cap-top"]'), t.items.some((i) => i.role === "cap")]; });
+  const panes = await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent));
+  const second = await seen();
+  await page.click("#hand-tab-0");
+  const hour = await seen();
+  await page.evaluate(() => { const t = window.dial_tool; t.S.ha_second.on = false; t.sync_rows(); t.render(); });
+  await page.click("#hand-tab-1"); await frame();
+  const none = await seen();
+  await page.click('[id^="global-ha-cap-top"]'); await frame();
+  const asked = await seen();
+  await page.evaluate(() => { const t = window.dial_tool; t.S.ha_second.on = true; t.S.ha_cap_top = false; t.sync_rows(); t.render(); });
+  check(!panes.includes("Cap") && second.join() === "true,true,false,true" && hour.join() === "false,false,false,true" && none.join() === "false,false,true,false" && asked.join() === "true,true,true,true",
+    `the cap's size and colour stand in the seconds hand's pane (no Cap pane), not in the hour hand's; with no seconds hand the minute hand's pane offers "Cap on this hand", off, and the cap is drawn only once it is ticked (${[second, hour, none, asked].map((x) => x.map(Number).join("")).join(" · ")})`);
+}
 await page.click("#hand-tab-0");
 {
   const strip = await page.evaluate(() => { const tabs = [...document.querySelectorAll(".tabsbar .segs > button")], r = (e) => e.getBoundingClientRect(), p = r(document.querySelector(".pinned")), c = getComputedStyle(tabs[0]), v = (b) => getComputedStyle(b, "::before");
@@ -667,7 +683,7 @@ await page.click("#hand-tab-0");
   const look = () => page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), box = r("#hand-detail"), rows = [...document.querySelectorAll(".form .pane .body")][0].querySelectorAll(".row.side:not([hidden])"), first = rows[0].getBoundingClientRect(), last = rows[rows.length - 1].getBoundingClientRect(), tiles = [...document.querySelectorAll(".picks.line > *")].filter((e) => e.offsetParent).map((e) => e.textContent);
     return { beside: Math.round(first.left - box.right), top: Math.round(box.top - first.top), bottom: Math.round(last.bottom - box.bottom), high: Math.round(box.height), tiles: tiles.join(" "), panes: [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent).join(" · "), d: document.querySelector("#hand-detail .upright path").getAttribute("d"), centre: document.querySelectorAll("#hand-detail .upright .axis, #hand-detail .upright .pivot").length, one_line: [...rows].every((e) => e.getBoundingClientRect().height < 90) }; });
   const a = await look();
-  check(a.beside === 12 && a.top === 6 && a.high === 238 && a.panes === "Hour hand · Cap" && a.centre === 2, `a hand has one pane: at the left a box with the hand itself, its centre marked, seven rows high (${JSON.stringify({ ...a, d: 0 })})`);
+  check(a.beside === 12 && a.top === 6 && a.high === 238 && a.panes === "Hour hand" && a.centre === 2, `a hand has one pane: at the left a box with the hand itself, its centre marked, seven rows high (${JSON.stringify({ ...a, d: 0 })})`);
   check(a.tiles === "baton pencil sword more", `its shapes are one line, three and more; the SVG tile waits in the opened list: ${a.tiles}`);
   await page.click("#hand-shape-Shape-more");
   const open = (await look()).tiles;
@@ -837,9 +853,11 @@ check(await page.isVisible("#window-on-Show-this-window"), "folded, the pane sti
 await page.click(".form .pane >> nth=0 >> .fold h2");
 await page.click("#window-card-0");
 await shot("4h-window-cards");
+await tab("Dial");
+const controls_x = await page.evaluate(() => Math.round(document.querySelector("#global-dial-d-Diameter").closest(".row").querySelector("input[type=range]").getBoundingClientRect().left));      // the controls' column, on a plain row (the Cap pane, which had one here, is gone: #262)
 await tab("Hands");
 // All hands: one line, always in view — its name, the tick, the menu, on the columns
-const bar_line = await page.evaluate(() => { const b = document.querySelector(".pinned .handsbar"), tops = [...b.children].map((e) => Math.round(e.getBoundingClientRect().top + e.getBoundingClientRect().height / 2)); const x = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left); return [Math.max(...tops) - Math.min(...tops), x(".handsbar .check") - x(".form .pane:last-child .row.num input[type=range]"), b.querySelector("h2").textContent]; });
+const bar_line = await page.evaluate((controls_x) => { const b = document.querySelector(".pinned .handsbar"), tops = [...b.children].map((e) => Math.round(e.getBoundingClientRect().top + e.getBoundingClientRect().height / 2)); const x = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left); return [Math.max(...tops) - Math.min(...tops), x(".handsbar .check") - controls_x, b.querySelector("h2").textContent]; }, controls_x);
 check(bar_line[0] <= 1 && bar_line[1] === 0 && bar_line[2] === "All hands", "All hands is one pinned line: name · Show hands · Motion, the tick on the controls' column");
 await page.selectOption("#global-ha-beat-Motion", "1");
 await page.uncheck("#global-ha-on-Show-hands");
@@ -1297,21 +1315,38 @@ const link = await page.evaluate(() => location.href);
     return { input: box.tagName === "INPUT", cut: c.textOverflow === "ellipsis" && c.whiteSpace === "nowrap", head: r.top >= fold.top && r.bottom <= fold.bottom, right: Math.round(fold.right - r.right), sign: Boolean(b.querySelector("svg")), mono: getComputedStyle(document.getElementById("log")).fontFamily.toLowerCase().includes("mono") }; });
   check(await page.inputValue("#link") === link && l.input && l.cut && l.head && l.right <= 1 && l.sign && l.mono, `the link stands on one line, cut at the box's edge; Copy link, with its sign, flush right on the heading line (${JSON.stringify(l)}); the log is monospaced`);
 }
-check(/#1\.[A-Za-z0-9_~]+$/.test(link), `Copy link: the address carries the dial, no dashes in it (${link.split("#")[1].length} characters after #)`);
+check(/#2[0-9A-Z]+$/.test(link), `Copy link: the address carries the dial in capitals and digits only, link scheme 2 (#278; ${link.split("#")[1].length} characters after #)`);
 const wanted = await S("JSON.stringify({ ...S, ui_section: 0, ui_ring: 0, ui_hand: 0 })");
 const other = await (await visitor()).newPage();      // someone else's browser: no last session of this dial. A browser of its own, not a second tab: a tab shares the first one's storage, where the first keeps saving its dial while its clock runs (found 16 Oct 2026, 4.42.5: a save landed while this page started)
 await other.addInitScript(() => localStorage.removeItem("dial-tool-last"));      // and what it keeps itself between the addresses below
 await other.goto(link);
 await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 const got = await other.evaluate(() => JSON.stringify({ ...window.dial_tool.S, ui_section: 0, ui_ring: 0, ui_hand: 0 }));
-check(got === wanted && JSON.parse(got).ha_beat === 1, "opening the link elsewhere gives the same dial, every setting, the beat too (quartz)");
+{
+  // the same within what a link rounds (#246): a number to 3 decimals, a colour to hex, the time to the second (test/linktrip.mjs)
+  const apart = (a, b, at = "") => typeof a === "number" && typeof b === "number" ? (Math.abs(a - b) <= (at === ".t" ? 0.5 : 0.5 / 255 + 0.5e-4) ? [] : [at])
+    : Array.isArray(a) && Array.isArray(b) ? (a.length === b.length ? a.flatMap((x, i) => apart(x, b[i], `${at}[${i}]`)) : [at])
+    : a && b && typeof a === "object" && typeof b === "object" ? [...new Set([...Object.keys(a), ...Object.keys(b)])].flatMap((k) => apart(a[k], b[k], `${at}.${k}`))
+    : JSON.stringify(a) === JSON.stringify(b) ? [] : [at];
+  const off = apart(JSON.parse(wanted), JSON.parse(got));
+  check(off.length === 0 && JSON.parse(got).ha_beat === 1, `opening the link elsewhere gives the same dial, every setting within a link's rounding, the beat too (quartz)${off.length ? " — " + off.slice(0, 5).join(" ") : ""}`);
+}
 await page.evaluate(() => window.dial_tool.set_value("global", "ha_beat", 0));
-// a link written before 4.41.21, with "-" where "~" is written now, still opens (Okay's first B-Uhr link, 15 Oct 2026, 09:39)
+// a link of scheme 1 (until 4.42.5; Okay's first B-Uhr link, 15 Oct 2026, 09:39) is not read any more (R31 as replaced,
+// 16 Oct 2026): the First dial opens, and a note says why, on the preview and in the log
 const OLD_LINK = "#1.lVTJjtswDP0VQ2ePocXyduyh7aWXorfBwNDYmkSIYhteJp0GBvoP_cN-SSlZXhIk0_Zi07T4-PhI8YxKJXReooyFPtoNqpQdyl6E7qSPirzRopcoe8QBjnHk44ASHsOLRGHskycftaraQcDjGR1UBSjER5U4Qgj61ipR7bT0RO8RigANjhGIjRMDMUVDAA8i-FcPVW-ju71opLW0rFAWBgn30QllFHL6qIefEIQhFCLKvB4gCgeMzw5VmW8ajv4NRqfaK-u-u-ASsg2XKCALFwpcetGC9RCD2QhAJqDRoaqLA8i1UKWWHwkwWZOyJennemi9QrWFli4vDlLuzw86505N6pMq-70pgEQGy0F8UdXQy-7dcKAeLtQj0Kc7qMbyWPlaQUkw8QWRVrr0gu4mE04TSBPyML1oOspik65TP6TtDMj_Io5KvwHCV-iJLL1Pdb9XBSA13eJ0vlt5XY0e__3zF-cLgShMTZsiGtty8VovsYMxzw1ZmsXw3CyGwdTiWWpgAC2shmP-0tZHlPGZumnTUO7AOiNiHiVAP8A8jT5i228OjvjakVw70o2Dj-N_i-K0-KhepXf856ZPnZ4vDA1i119zKfqT1K-m0Fuj-UFUpVfUzduaxPbZPSlcuDlReKH2dlBjtzXg416Ov8Nvh_cuOpzdi_xZiukQ2IUwhdvYyb4_snB6D6NtGrReWytY4i4ENdtFaQNoFo3RlNrV5GApwCVJxOZxJE-jhZ0adQMYRIvcauArduKwmUl7hR1dY3eyqI2eZ4fITa3T5Z0RZ-HMWiR2fd2XAUDNdoh5GlDGeUoZCTHMFNqVufi-LP7xDw";
 await other.goto(link.split("#")[0] + OLD_LINK);
-await other.waitForFunction(() => window.dial_tool && window.dial_tool.S.c_plate[0] === 0.0706, null, { timeout: 10000 }).catch(() => {});
-check(await other.evaluate(() => window.dial_tool.S.c_plate[0] === 0.0706 && window.dial_tool.S.rings.length === 9), "a link from before, with dashes, still opens its dial");
-await other.goto(link.split("#")[0] + "#1.not-a-dial");
+await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
+{
+  const o = await other.evaluate(() => { const t = window.dial_tool, n = document.getElementById("preview-note"), r = n.getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect();
+    return { d: t.S.dial_d, rings: t.S.rings.map((x) => x.name).join(" · "), shown: !n.hidden, note: n.textContent, inside: r.left >= m.left && r.right <= m.right, centred: Math.abs((r.left + r.right) / 2 - (m.left + m.right) / 2) < 1, log: t.log_lines.some((l) => l.includes("older Dial Tool") && l.includes("scheme 1")) }; });
+  await other.screenshot({ path: path.join(OUT, "9b-old-link.png") });
+  await other.click("#preview-note");
+  const gone = await other.evaluate(() => document.getElementById("preview-note").hidden);
+  check(o.d === 34 && o.rings === "Numerals · Markers · Minute ticks" && o.shown && /older Dial Tool/.test(o.note) && o.inside && o.centred && o.log && gone,
+    `a scheme-1 link opens the First dial (${o.d} mm), and says so on the preview ("${o.note}", centred) and in the log; a press puts the note away`);
+}
+await other.goto(link.split("#")[0] + "#2NOTADIAL");
 await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 check(await other.evaluate(() => window.dial_tool.S.rings.length > 0), "a broken link opens the tool anyway");
 await other.goto(link.split("#")[0]);

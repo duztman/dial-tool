@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## beta 4.43 (web version) · 16 Oct 2026
+
+Phase C: the link system.
+
+- **Links in capitals and digits only** (#278, link scheme 2). A link is now `#2` followed by letters and digits (Crockford's base 32: no I, L, O or U, so nothing looks alike). No dashes, underscores or tildes, so it breaks evenly wherever it is pasted. Typed in small letters, or with O for 0, it still reads.
+- **And shorter** (#246, its lossless parts). Each key is written as a short code from a table that only grows. Colours are written as hex, numbers to 3 decimals, the time to the second. Every link kept in the repo got shorter, even with base 32's longer letters: Okay's watch 1214 → 1001 characters, the Gallery and the examples together 8092 → 7464. The most a value moves: a colour channel by half a hex step (0.9 → 0.902).
+- **Old links don't open any more** (R31 as replaced). A scheme-1 link opens the First dial, and a note says so on the preview (a press puts it away) and in the log. The Gallery's and the examples' links are written again. **The live guide's links are scheme 1: they open the First dial until the guide is rebuilt** (on Okay's word, R25).
+- **The cap is part of the seconds hand** (#262). Its size and colour are in the seconds hand's pane; the Cap pane is gone. With no seconds hand, the topmost hand's pane offers *Cap on this hand*, off: a dial without a seconds hand has no cap until it is ticked. Okay's World time (Gallery) and the Gauge example have no seconds hand; they keep their cap, ticked in their settings, and their pictures are unchanged.
+- **Tests:** `web/test/linktrip.mjs` (#291, in `npm test`, under a second). Every Gallery and example dial, the opener and Okay's watch go there and back as the same dial, and their links come out the same when written again. A text starting with "#" stays a text; the beat and the time travel; base 32 holds any bytes; every settings key has a code; the key table only grows.
+
 ## beta 4.42.5 (web version) · 16 Oct 2026
 
 The last push of phase B: the guides.

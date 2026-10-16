@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.42.5";
+export const VERSION = "beta 4.43";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -112,6 +112,7 @@ export const DEFAULTS = {
   c_plate: [0.93, 0.91, 0.86, 1], c_backdrop: [0.80, 0.80, 0.78, 1],
   rings: [],
   ha_on: true, ha_beat: 0, ha_cap: 1.6, c_cap: ACCENT, ha_hour: {}, ha_minute: {}, ha_second: {},
+  ha_cap_top: false,                               // the cap is part of the seconds hand (#262, beta 4.43); with no seconds hand it is drawn on the topmost hand only when this is on (web only, R30)
   da_on: false, da_at: 0, da_r: 10.5, da_w: 2.6, da_h: 2.0, da_round: 0.2, da_frame: 0.15,
   da_clear: 0.25, da_day: "17", da_size: 62.0, da_ink: INK,
   da_kind: 0, da_hour: 10.0, da_age: 14.8, windows: [WINDOW_BASE, WINDOW_BASE, WINDOW_BASE],
@@ -336,12 +337,127 @@ export function fresh_settings(over = null) {
 }
 
 // ── a dial as a link ─────────────────────────────────────────
-//   A link carries only what differs from the starting values, so it stays short.
-//   That makes the starting values part of every link ever copied: from now on
-//   DEFAULTS, RING_BASE, HAND_BASE and the starting rings and hands must not change (R31).
-//   To change one, add LINK_SCHEME 2 with its own table and keep reading scheme 1 with this one.
+//   A link carries only what differs from the starting values, so it stays short. The starting values may change
+//   (R31 as replaced, 16 Oct 2026: "previous links may die"), but a change that would make an existing link draw
+//   something else — a starting value, the key table, the alphabet — raises LINK_SCHEME, and a link of another
+//   scheme is not read: the tool opens the First dial and says so.
+//   Scheme 2 (beta 4.43, #278 and #246's lossless parts): the lean settings, every key written as its code from
+//   LINK_KEYS, colours as hex, numbers to 3 decimals, the time to the second → JSON → deflate → Crockford's base 32
+//   (capitals and digits, no I L O U), after "2". Scheme 1 (until 4.42.5) was base 64 after "1."; it is not read.
 
-export const LINK_SCHEME = 1;
+export const LINK_SCHEME = 2;
+
+/** the topmost hand that shows: its place in HANDS, or -1 */
+export const top_hand = (S) => [2, 1, 0].find((i) => S["ha_" + HANDS[i]].on) ?? -1;
+/** the cap is part of the seconds hand (#262, beta 4.43): drawn with it; with no seconds hand, on the topmost hand
+ *  only when asked (ha_cap_top). Until 4.43 it was drawn whatever the hands — a scheme-1 dial with no seconds hand
+ *  loses its cap, one reason for scheme 2 (R31). */
+export const cap_shows = (S) => S.ha_on && S.ha_cap > 0 && (S.ha_second.on || (S.ha_cap_top && top_hand(S) >= 0));
+
+// A key's code is its place in this list, written with CODE_DIGITS (one letter for the first 62, then two). The
+// most used keys first, as counted in the Gallery's and the examples' links (16 Oct 2026). The list only ever grows
+// at its end: a key moved or removed changes what every link says (then: a new scheme). The settings' keys inside
+// a ring, a hand, a window and an added guide are coded too; a font's axes and features, a band's sector colours and
+// a numeral's nudges are data and keep theirs.
+export const LINK_KEYS = [
+  "c", "r", "w", "name", "len", "kind", "count", "shape", "tail", "size", "family", "ps", "width", "start", "tip",
+  "labels", "skip", "feature", "span", "c_plate", "rings", "c_cap", "ha_hour", "ha_minute", "ha_second", "mode",
+  "ha_cap", "clear", "feature_at", "round", "num_from", "axes", "dial_d", "num_step", "twelve_gap", "taper",
+  "custom", "every", "c_backdrop", "tracking", "round_in", "on", "twelve", "guide", "h", "frame", "round_out",
+  "knock", "invert", "ha_beat", "da_on", "da_r", "da_w", "da_round", "da_frame", "da_clear", "da_day", "gd_axes",
+  "cs", "margin", "wall", "da_at", "da_h", "da_ink", "windows", "at", "text", "ink", "text_c", "disc_c", "da_text_c",
+  "da_disc_c", "gd_k_win", "gd_k_rings", "gd_k_sel", "gd_w", "nudge", "counter", "features", "disc_d", "mark_len",
+  "mark_w", "da_size", "num_digits", "t", "guides", "dial_hole", "ha_on", "da_kind", "da_hour", "da_age", "da_shape",
+  "da_sides", "da_turn", "da_text_turn", "da_family", "da_ps", "da_axes", "da_tracking", "da_lang", "da_features",
+  "da_at_deg", "out_production", "out_mirror", "out_live_text", "out_dpi", "out_seconds", "out_fps", "out_px",
+  "gd_edge", "gd_win", "gd_rings", "gd_sel", "gd_hole", "gd_k_hole", "gd_wins", "gd_wsel", "da_guide", "gd_k_edge",
+  "gd_k_axes", "sh_on", "sh_from", "sh_rise", "sh_dark", "sh_blur", "sh_hour", "sh_minute", "sh_second", "sh_cap",
+  "sh_disc", "gd_more", "gd_c", "gd_strength", "gd_sel_c", "gd_sel_strength", "gd_sel_w", "offset", "file", "scale",
+  "twelve_scale", "lang", "fill", "num_again", "anchor", "fit", "w_scale", "mark", "hour", "age", "sides", "turn",
+  "text_turn", "at_deg", "a", "k", "ha_cap_top",
+];
+const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
+const KEY_CODE = new Map(LINK_KEYS.map((k, i) => [k, code_of(i)]));
+const CODE_KEY = new Map(LINK_KEYS.map((k, i) => [code_of(i), k]));
+const SETTINGS_INSIDE = (k) => k === "rings" || k === "windows" || k === "gd_more" || k === "ha_hour" || k === "ha_minute" || k === "ha_second";
+
+const is_colour = (v) => Array.isArray(v) && v.length === 4 && v.every((x) => typeof x === "number" && x >= 0 && x <= 1);
+const COLOUR_TEXT = /^#([0-9a-f]{6}|[0-9a-f]{8})$/;
+const hex2 = (x) => Math.round(x * 255).toString(16).padStart(2, "0");
+/** a value as a link writes it: a colour as hex (its alpha only when not whole), a number to 3 decimals; a text
+ *  starting with "#" gets a second one, so no text is ever read back as a colour. */
+function squeeze(v) {
+  if (is_colour(v)) return "#" + v.slice(0, 3).map(hex2).join("") + (v[3] === 1 ? "" : hex2(v[3]));
+  if (typeof v === "number") return Math.round(v * 1000) / 1000;
+  if (typeof v === "string") return v.startsWith("#") ? "#" + v : v;
+  if (Array.isArray(v)) return v.map(squeeze);
+  if (v && typeof v === "object") { const out = {}; for (const k in v) out[k] = squeeze(v[k]); return out; }
+  return v;
+}
+function unsqueeze(v) {
+  if (typeof v === "string") {
+    if (!COLOUR_TEXT.test(v)) return v.startsWith("##") ? v.slice(1) : v;
+    const n = (i) => +(parseInt(v.slice(1 + 2 * i, 3 + 2 * i), 16) / 255).toFixed(4);      // as the colour pop-out keeps a colour: 4 decimals
+    return [n(0), n(1), n(2), v.length === 9 ? n(3) : 1];
+  }
+  if (Array.isArray(v)) return v.map(unsqueeze);
+  if (v && typeof v === "object") { const out = {}; for (const k in v) out[k] = unsqueeze(v[k]); return out; }
+  return v;
+}
+/** rename the settings' keys (with fn), at the top and inside a ring, a hand, a window, an added guide. */
+function rekey(o, fn) {
+  const out = {};
+  for (const k in o) {
+    const name = fn(k), v = o[k], inner = SETTINGS_INSIDE(fn === code_key ? name : k);
+    out[name] = !inner ? v : Array.isArray(v) ? v.map((x) => (x && typeof x === "object" && !Array.isArray(x) ? rekey(x, fn) : x)) : v && typeof v === "object" ? rekey(v, fn) : v;
+  }
+  return out;
+}
+const key_code = (k) => KEY_CODE.get(k) ?? "!" + k;      // a key not in the list (from a file of another tool) travels as it is, marked
+const code_key = (c) => (c.startsWith("!") ? c.slice(1) : CODE_KEY.get(c) ?? c);
+
+/** the dial as a link's text (before deflate): lean, coded, squeezed; the time to the second. */
+export function link_text(S) {
+  const L = lean(S);
+  if (typeof L.t === "number") L.t = Math.round(L.t);
+  return JSON.stringify(squeeze(rekey(L, key_code)));
+}
+/** a link's text back to (lean) settings, or null if it isn't any. */
+export function from_link_text(text) {
+  const o = JSON.parse(text);
+  return o && typeof o === "object" && !Array.isArray(o) ? unsqueeze(rekey(o, code_key)) : null;
+}
+
+// Crockford's base 32: five bits a letter; read forgiving — small letters, O for 0, I and L for 1, spaces and dashes skipped
+const B32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+export function base32(bytes) {
+  let out = "", acc = 0, bits = 0;
+  for (const b of bytes) {
+    acc = (acc << 8) | b; bits += 8;
+    while (bits >= 5) { bits -= 5; out += B32[(acc >> bits) & 31]; }
+    acc &= (1 << bits) - 1;
+  }
+  return bits ? out + B32[(acc << (5 - bits)) & 31] : out;
+}
+export function un_base32(text) {
+  const out = [];
+  let acc = 0, bits = 0;
+  for (const ch of text.toUpperCase().replace(/O/g, "0").replace(/[IL]/g, "1").replace(/[\s-]/g, "")) {
+    const v = B32.indexOf(ch);
+    if (v < 0) return null;
+    acc = (acc << 5) | v; bits += 5;
+    if (bits >= 8) { bits -= 8; out.push((acc >> bits) & 255); acc &= (1 << bits) - 1; }
+  }
+  return Uint8Array.from(out);
+}
+/** what the part after # is: a scheme-2 dial's letters, a link of an older scheme, or not a dial at all. */
+export function link_kind(hash) {
+  const h = (hash || "").replace(/^#/, "");
+  if (/^2[0-9A-Za-z]+$/.test(h)) return { scheme: 2, letters: h.slice(1) };
+  if (/^[01]\.[A-Za-z0-9_~-]+$/.test(h)) return { scheme: +h[0] };
+  return null;
+}
 
 function differing(d, base) {
   const out = {};
@@ -1364,7 +1480,7 @@ export function scene(S, statik, t, preview = true, selected = null) {
     for (const x of windows) add("date frame", x.frame, x.w.ink, { window: x.index });
     if (S.ha_on) {
       for (const [name, colour, path, a] of hand_items(S, t)) add("hand", path, colour, { name, angle: a });
-      if (S.ha_cap > 0) add("cap", circle(S.ha_cap), S.c_cap);
+      if (cap_shows(S)) add("cap", circle(S.ha_cap), S.c_cap);
     }
   }
 

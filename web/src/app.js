@@ -407,6 +407,7 @@ const WINDOW_CARDS = [{ slot: 1, at: 4 }, { slot: 0, at: 0 }, { slot: 2, at: 2 }
 const HAND_NAMES = ["Hour hand", "Minute hand", "Seconds hand"];
 const TAB_NAMES = { Date: "Windows" };            // the section's number and key stay "Date" (R8, R9); its tab says what it now holds
 const H = { scope: "hand" };
+const cap_rows = (S) => S.ui_hand === G.top_hand(S) && (S.ha_second.on || S.ha_cap_top);      // the cap's size and colour: under the hand it belongs to (#262)
 
 const ROWS = {
   Dial: [
@@ -517,9 +518,12 @@ const ROWS = {
     num("counter", "Counterweight Ø", 0, 4, 0.05, { ...H, side: true, short: "Counter Ø" }),
     num("wall", "Hollow wall", 0, 1, 0.01, { ...H, side: true }),
     col("c", "Colour", { ...H, side: true }),
-    hdr("Cap", { folded: true }),                  // after the hand's own panes: it belongs to all three. The hand's pane stays open on a first visit: with only tabs pinned above it, it is what the section is about (#270)
-    num("ha_cap", "Cap Ø", 0, 4, 0.05),
-    col("c_cap", "Colour"),
+    // the cap is part of the seconds hand (Okay's notes, p. 1, #262, beta 4.43; until then a pane of its own for all
+    // three): its rows under the seconds hand's own. With no seconds hand they stand under the topmost hand's, where
+    // the cap is off until "Cap on this hand" is ticked (G.cap_shows)
+    chk("ha_cap_top", "Cap on this hand", { side: true, show: (S) => !S.ha_second.on && S.ui_hand === G.top_hand(S) }),
+    num("ha_cap", "Cap Ø", 0, 4, 0.05, { side: true, show: cap_rows }),
+    col("c_cap", "Cap colour", { side: true, show: cap_rows }),
   ],
   Date: [                                          // "Windows" on its tab: up to four holes in the plate
     custom("window_cards", { pin: true, bar: true }),      // pin: always in view, like the hand tabs (Okay, 13 Oct 2026) ·         // four cards, 12 · 3 · 6 · 9: where each window is, and tabs for the panes below (Okay, 12 Oct 2026)
@@ -674,34 +678,29 @@ function save_file(name, data, type) {
 }
 
 // ── a dial as a link: the settings, packed into the part of the address after # ──
-//   scheme 1: lean settings (only what differs from the start) → JSON → deflate → base64 for addresses.
-//   scheme 0: the same without deflate, for a browser that can't compress.
-//   The base64 is the address-safe kind, with "~" for "+" (Okay, 15 Oct 2026, 12:11: "can we omit dashes from it so it
-//   breaks evenly when pasted somewhere"): a dash lets a line break after it, a tilde doesn't. Links written before
-//   (with "-") still open: both are read as "+".
+//   Scheme 2 (beta 4.43, #278): the link's text (G.link_text: lean, coded, squeezed) → deflate → Crockford's base 32,
+//   after "2" — capitals and digits only (Okay, p. 14: "no dashes, no underscores"; a line breaks evenly anywhere in
+//   it). A link of an older scheme is not read (R31): the First dial opens, with a note on the preview and in the log.
 
-const b64 = (bytes) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "~").replace(/\//g, "_").replace(/=+$/, "");
-const un_b64 = (text) => Uint8Array.from(atob(text.replace(/[~-]/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
 const through = async (bytes, stream) => new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer());
 
 async function pack(S) {
-  const bytes = new TextEncoder().encode(JSON.stringify(G.lean(S)));
-  try { return `${G.LINK_SCHEME}.` + b64(await through(bytes, new CompressionStream("deflate-raw"))); }
-  catch (e) { return "0." + b64(bytes); }
+  return `${G.LINK_SCHEME}` + G.base32(await through(new TextEncoder().encode(G.link_text(S)), new CompressionStream("deflate-raw")));
 }
 
-/** the part after # → settings, or null if it isn't a dial. */
+/** the part after # → { settings } for a dial, { old: scheme } for a link of an older scheme, or null. */
 async function unpack(hash) {
-  const m = /^#?([01])\.([A-Za-z0-9_~-]+)$/.exec(hash || "");
-  if (!m) return null;
+  const kind = G.link_kind(hash);
+  if (!kind) return null;
+  if (kind.scheme !== G.LINK_SCHEME) return { old: kind.scheme };
   try {
-    const bytes = m[1] === "0" ? un_b64(m[2]) : await through(un_b64(m[2]), new DecompressionStream("deflate-raw"));
-    const settings = JSON.parse(new TextDecoder().decode(bytes));
-    return settings && typeof settings === "object" && !Array.isArray(settings) ? settings : null;
+    const settings = G.from_link_text(new TextDecoder().decode(await through(G.un_base32(kind.letters), new DecompressionStream("deflate-raw"))));
+    return settings ? { settings } : null;
   } catch (e) {
     return null;
   }
 }
+const OLD_LINK_NOTE = "This link is from an older Dial Tool and can’t be opened: here is the First dial.";
 
 // ── undo ─────────────────────────────────────────────────────
 //   The dial as it was after each change, as text: PAST (oldest first) · NOW · FUTURE (what was undone, until the
@@ -966,7 +965,10 @@ class DialTool {
     this.set_speed(1);
     const guides = this.guides_box();
     // on the preview: undo · redo top left, beside the panel (Okay, 13 Oct 2026) · the Guides switch top right · Backdrop bottom left
-    this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.ten_pill, this.hands_key, this.sun_hint);
+    // a note on the preview (R17, R31: an old link): a dark pill under the header's line; a press puts it away, and so
+    // does the first change to the dial
+    this.note = el("button", { type: "button", className: "previewnote", id: "preview-note", hidden: true, title: "Put this note away", onclick: () => { this.note.hidden = true; } });
+    this.main = el("main", {}, this.svg, this.tip, this.note, this.undo_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.ten_pill, this.hands_key, this.sun_hint);
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     root.append(this.sheet());      // a phone's gripper, on the drawer's top line
     requestAnimationFrame(() => this.level_title());
@@ -1593,7 +1595,7 @@ class DialTool {
     const height = { hour: S.sh_hour, minute: S.sh_minute, second: S.sh_second };
     const nodes = items.map((_, i) => this.slots[i].node);
     const hands = items.map((item, i) => ({ item, i })).filter((x) => x.item.role === "hand").map((x) => ({ ...x, z: height[x.item.name] ?? 0, d: this.slots[x.i].d }));
-    const cap_r = S.ha_on && S.ha_cap > 0 ? S.ha_cap / 2 : 0;
+    const cap_r = G.cap_shows(S) ? S.ha_cap / 2 : 0;
     const top = Math.max(S.sh_cap, ...hands.map((h) => h.z));
     // what a part's shadow does to the surface under it (Okay, 16 Oct 2026, #295: "shadow of transparent items are
     // extreme. Realistic color shadows maybe?"): the shadow multiplies the surface, channel by channel, by
@@ -4167,6 +4169,7 @@ class DialTool {
   /** the dial has changed and stood still: that is one step to undo. */
   take_step() {
     const now = dial_text(this.S);
+    if (!this.note.hidden && now !== this.note_for) this.note.hidden = true;      // the dial changed since the note: it is said
     if (HISTORY.now === null) HISTORY.now = now;
     this.sync_undo();
     if (now === HISTORY.now) return;
@@ -4175,6 +4178,13 @@ class DialTool {
     HISTORY.now = now;
     HISTORY.future = [];
     this.sync_undo();
+  }
+
+  /** a note on the preview, as well as the log's line (R17). */
+  say(text) {
+    this.note.textContent = text;
+    this.note.hidden = false;
+    this.note_for = dial_text(this.S);
   }
 
   /** one step back (-1) or forward again (1). The time shown and the window's state stay as they are. */
@@ -4239,15 +4249,22 @@ let tool = null;
 export async function open_window(pathkit, harfbuzz, font_bytes) {
   G.start(pathkit, harfbuzz);
   G.add_font(font_bytes, 0, true);                 // the page's own font: stands in until yours are loaded
-  let settings = await unpack(location.hash);      // a dial in the address comes first…
-  const from_link = settings !== null;
+  const linked = await unpack(location.hash);      // a dial in the address comes first…
+  let settings = linked?.settings ?? (linked?.old !== undefined ? structuredClone(OPENER) : null);      // (a link of an older scheme: the First dial, R31)
   if (!settings) { try { settings = JSON.parse(localStorage.getItem(LAST)); } catch (e) { settings = null; } }   // …then the last session…
   if (!settings) settings = structuredClone(OPENER);      // …then the opener: the guide's First dial (opener.js; 16 Oct 2026)
   tool = new DialTool(settings);
-  if (from_link) tool.log("opened the dial in the address");
+  const opened = (link) => {
+    if (link.settings) { tool.log("opened the dial in the address"); return; }
+    tool.log(`${OLD_LINK_NOTE} (link scheme ${link.old}; this Dial Tool reads scheme ${G.LINK_SCHEME})`);
+    tool.say(OLD_LINK_NOTE);
+  };
+  if (linked) opened(linked);
   window.addEventListener("hashchange", async () => {              // another dial's link pasted into this tab
     const next = await unpack(location.hash);
-    if (next) { tool.reopen({ ...next, ui_section: tool.S.ui_section }); tool.log("opened the dial in the address"); }
+    if (!next) return;
+    tool.reopen({ ...(next.settings ?? structuredClone(OPENER)), ui_section: tool.S.ui_section });
+    opened(next);
   });
   tool.sync_time();
   start_ink();                                     // short labels in boxes, centred on their ink (ink.js)
