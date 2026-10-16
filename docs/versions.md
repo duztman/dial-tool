@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.48 | 17 Oct 2026 | web | [`5c6cda8`](https://github.com/duztman/dial-tool/tree/5c6cda818b6410466bfd79863d6cb3885c23b015) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/5c6cda818b6410466bfd79863d6cb3885c23b015/web/dial-tool.html) | the text ring: a fifth kind, words at every position, snapping to the indices |
 | 4.47.2 | 17 Oct 2026 | web | [`e758c5a`](https://github.com/duztman/dial-tool/tree/e758c5adfb29275fece3ebbcdbc953c011cf64bd) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/e758c5adfb29275fece3ebbcdbc953c011cf64bd/web/dial-tool.html) | names a screen reader hears |
 | 4.47.1 | 17 Oct 2026 | web | [`f0ada04`](https://github.com/duztman/dial-tool/tree/f0ada04ec189691b4767e70568f1752cd3ed126a) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/f0ada04ec189691b4767e70568f1752cd3ed126a/web/dial-tool.html) | selecting a ring fits the list; the list's pill |
 | 4.47 | 17 Oct 2026 | web | [`261a3c1`](https://github.com/duztman/dial-tool/tree/261a3c1555004f8dfaa2867d5a4042b08286e991) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/261a3c1555004f8dfaa2867d5a4042b08286e991/web/dial-tool.html) | Type first in a numerals ring; a Resize pane first; resize from outer, middle or inner |
