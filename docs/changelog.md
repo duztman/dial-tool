@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.42.1 (web version) · 16 Oct 2026
+
+- **The title line, quieter** (#285): the unit box is a small box at Help's size, one width for every unit, flush right; the Gallery pill stands right after Help, as far from it as Help is from the version, a small pill as high as the unit box, darker than the unit box and lighter than Help. Both stand on the title's baseline (placed by measuring, like the title).
+
 ## beta 4.42 (web version) · 16 Oct 2026
 
 Phase A of Okay's notes (build list #290). Nothing on screen changes: the look-check (`web/test/same.mjs`, 489 states) finds no difference but six readings of the showcase's Now and 10:10 pills caught mid-fade (a 250 ms opacity transition, read at another moment; none of their tokens moved).

@@ -1266,6 +1266,18 @@ class DialTool {
     // baseline (Okay, 15 Oct 2026, 04:26: "align icon better"; it was on the header's middle, a point low)
     const logo = $("#logo"), cap = pen.measureText("D").actualBoundingBoxAscent, moved = header.top + header.height / 2 - (baseline - x_height / 2);
     if (logo && cap) { logo.style.translate = ""; const r = logo.getBoundingClientRect(); logo.style.translate = `0 ${(baseline + moved - cap / 2 - (r.top + r.height / 2)).toFixed(2)}px`; }
+    // the Gallery pill and the unit box: their words on the title's baseline, as Help's are (Okay, 16 Oct 2026: "same
+    // baseline"). Each is moved as a whole (its menu with it); one that isn't shown (a phone's squeezed line) stays put
+    for (const box of document.querySelectorAll(".panel > header :is(.galleryway, .unit)")) {
+      box.style.translate = "";
+      const word = box.querySelector("button"), dot = el("span");
+      dot.style.cssText = "display:inline-block;width:0;height:0";
+      word.append(dot);
+      const at = dot.getBoundingClientRect();
+      dot.remove();
+      if (at.height === 0 && at.top === 0) continue;
+      box.style.translate = `0 ${(baseline + moved - at.top).toFixed(2)}px`;
+    }
   }
 
   unit() { return G.UNITS[this.S.ui_unit] || G.UNITS[0]; }

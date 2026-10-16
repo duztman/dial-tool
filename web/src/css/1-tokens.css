@@ -44,6 +44,7 @@
     --num-columns: var(--col) var(--gap) var(--col) var(--gap) minmax(0, 1fr) var(--gap) var(--tile-w) var(--unit) var(--tile-w);
     --control: 26px;                               /* a control's height: field, button, swatch */
     --control-large: 32px;                         /* the Guides switch, the hex line */
+    --head-unit-w: calc(2em + 2 * var(--u2));      /* the unit box on the title's line: as wide for every unit (its longest, "mm", and a space either side), at Help's size (Okay, 16 Oct 2026: "much smaller box") */
     --line: 34px;                                  /* a row's height */
     --head: 40px;                                  /* a pane's heading */
     --header: 64px;                                /* the panel's top: title and Guides */

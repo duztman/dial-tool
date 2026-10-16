@@ -648,11 +648,12 @@ await page.click("#hand-tab-0");
   check(shut.w === 60 && shut.h === 26 && shut.stacked && shut.step === "16x13" && near(stepped - len, 0.05, 1e-6) && still.w === 60, `beside the box a number has a tiny plus over a tiny minus (${shut.step}); they step it and the box stays small`);
   check(wide.over && wide.h === 32 && wide.step === "32x32" && !wide.stacked && near(back, len, 1e-6) && held.w === wide.w && closed.w === 60, `a press on the number and its box grows over the slider (${wide.w} wide): a large minus and plus beside the number; it stays open while they are pressed, Escape closes it`);
 }
-{ // one line through the top: the middle of the title's small letters, the unit box, undo and Guides
-  const line = await page.evaluate(() => { const mid = (q) => { const r = document.querySelector(q).getBoundingClientRect(); return r.top + r.height / 2; }, h = document.querySelector("h1"), probe = document.createElement("span"); probe.style.cssText = "display:inline-block;width:0;height:0"; h.append(probe);
-    const base = probe.getBoundingClientRect().top; probe.remove(); const c = getComputedStyle(h), pen = document.createElement("canvas").getContext("2d"); pen.font = `${c.fontWeight} ${c.fontSize} ${c.fontFamily}`;
-    return [base - pen.measureText("x").actualBoundingBoxAscent / 2, mid("#unit"), mid("#undo"), mid("#guides")]; });
-  check(line.every((y) => Math.abs(y - line[1]) < 0.6), `the title's small letters, the unit box, undo and Guides are centred on one line (${line.map((y) => +y.toFixed(1)).join(" · ")})`);
+{ // one line through the top: the middle of the title's small letters, undo and Guides; the unit box's and the Gallery pill's words on the title's baseline, as Help's are (Okay, 16 Oct 2026, #285: "same baseline")
+  const line = await page.evaluate(() => { const mid = (q) => { const r = document.querySelector(q).getBoundingClientRect(); return r.top + r.height / 2; }, h = document.querySelector("h1");
+    const base_of = (e) => { const probe = document.createElement("span"); probe.style.cssText = "display:inline-block;width:0;height:0"; e.append(probe); const y = probe.getBoundingClientRect().top; probe.remove(); return y; };
+    const base = base_of(h), c = getComputedStyle(h), pen = document.createElement("canvas").getContext("2d"); pen.font = `${c.fontWeight} ${c.fontSize} ${c.fontFamily}`;
+    return { mids: [base - pen.measureText("x").actualBoundingBoxAscent / 2, mid("#undo"), mid("#guides")], bases: [base, base_of(document.querySelector(".mast .help")), base_of(document.querySelector("#unit")), base_of(document.querySelector("#to-gallery"))] }; });
+  check(line.mids.every((y) => Math.abs(y - line.mids[0]) < 0.6) && line.bases.every((y) => Math.abs(y - line.bases[0]) < 0.6), `the title's small letters, undo and Guides are centred on one line (${line.mids.map((y) => +y.toFixed(1)).join(" · ")}); Help's, the unit box's and the Gallery pill's words stand on the title's baseline (${line.bases.map((y) => +y.toFixed(1)).join(" · ")})`);
 }
 await shot("4g-hand-tabs");
 { // 10:10 stands on its own thick line, its middle bottom on the line's top (Okay, 15 Oct 2026, 00:51; over the bar, clear of the ruler, before)
@@ -1357,12 +1358,14 @@ await tab("Export");
       return a && { href: a.href, blank: a.target === "_blank", after: v.nextElementSibling === a, same: sa.fontFamily === sv.fontFamily && sa.fontSize === sv.fontSize && sa.color === sv.color, under: sa.textDecorationLine.includes("underline") }; });
     check(h && h.href === "https://duztman.github.io/dial-tool/guide/" && h.blank && h.after && h.same && h.under, `Help beside the version, in its type and colour, underlined, opens the guide in a new tab (${JSON.stringify(h)})`);
   }
-  { // the way to the Gallery from the panel's top line (07:45): centred between the title line's end (Help, since 4.41.23) and the unit box; pressed, Export with the Gallery in view
+  { // the way to the Gallery from the panel's top line: right after Help, as far from it as Help is from the version, as high as the unit box, darker than it and lighter than Help (Okay, 16 Oct 2026, #285; centred between Help and the unit box from 15 Oct, 07:45); pressed, Export with the Gallery in view
     await tab("Dial");
-    const w = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), v = r(".panel .title > :last-child"), u = r("#unit"), p = r("#to-gallery"); return { mid: (p.left + p.right) / 2 - (v.right + u.left) / 2, high: p.height === u.height }; });
+    const w = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), version = r(".mast .title > .quiet:not(.help)"), help = r(".mast .help"), u = r("#unit"), p = r("#to-gallery");
+      const shade = (q) => { const s = getComputedStyle(document.querySelector(q)).color, n = s.match(/[\d.]+/g).map(Number), rgb = (s.startsWith("color(") ? n.slice(0, 3).map((x) => x * 255) : n.slice(0, 3)), a = n.length > 3 ? n[3] : 1; return Math.round((rgb[0] + rgb[1] + rgb[2]) / 3 * a + 251.3 * (1 - a)); };      // how light it reads on the paper
+      return { gaps: [+(help.left - version.right).toFixed(2), +(p.left - help.right).toFixed(2)], high: p.height === u.height, shades: [shade("#unit"), shade("#to-gallery"), shade(".mast .help")] }; });
     await page.click("#to-gallery"); await page.waitForTimeout(900);
     const at = await page.evaluate(() => { const g = document.querySelector(".gallery").getBoundingClientRect(), f = document.querySelector(".form").getBoundingClientRect(); return [window.dial_tool.S.ui_section, g.top < f.bottom && g.bottom > f.top]; });
-    check(Math.abs(w.mid) < 0.6 && w.high && at[0] === 4 && at[1], `the Gallery pill: centred between Help and the unit box (${w.mid.toFixed(1)}), as high; pressed, Export with the Gallery in view`);
+    check(Math.abs(w.gaps[0] - w.gaps[1]) < 0.6 && w.high && w.shades[0] > w.shades[1] && w.shades[1] > w.shades[2] && at[0] === 4 && at[1], `the Gallery pill: right after Help, as far from it as Help from the version (${w.gaps.join(" · ")}), as high as the unit box, darker than mm and lighter than Help (${w.shades.join(" > ")}); pressed, Export with the Gallery in view`);
   }
   check(await page.evaluate(() => JSON.parse(localStorage.getItem("dial-tool-folds") || "{}")["Export/Export a file"] === true) && !(await page.isVisible("#export-pdf")), "the Gallery pill shuts the eye of Export a file, so the Gallery has the room (Okay, 15 Oct 2026, 10:47)");
   { const f = JSON.parse(await page.evaluate(() => localStorage.getItem("dial-tool-folds") || "{}")); delete f["Export/Export a file"]; await page.evaluate((x) => { localStorage.setItem("dial-tool-folds", x); window.dial_tool.folds = JSON.parse(x); window.dial_tool.show_section(); }, JSON.stringify(f)); }      // open again for the checks after
