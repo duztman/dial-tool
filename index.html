@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.42.3 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.42.4 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -81,7 +81,7 @@
     --num-columns: var(--col) var(--gap) var(--col) var(--gap) minmax(0, 1fr) var(--gap) var(--tile-w) var(--unit) var(--tile-w);
     --control: 26px;                               /* a control's height: field, button, swatch */
     --control-large: 32px;                         /* the Guides switch, the hex line */
-    --head-unit-w: calc(2em + 2 * var(--u2));      /* the unit box on the title's line: as wide for every unit (its longest, "mm", and a space either side), at Help's size (Okay, 16 Oct 2026: "much smaller box") */
+    --head-unit-w: calc(4ch + 2 * var(--u2));      /* the unit box on the title's line: as wide for every unit, its longest (THOU) and a space either side, in the pixel font (Okay, 16 Oct 2026: "much smaller box"; "silkscreen uppercase … smaller button") */
     --line: 34px;                                  /* a row's height */
     --head: 40px;                                  /* a pane's heading */
     --header: 64px;                                /* the panel's top: title and Guides */
@@ -192,6 +192,8 @@
     --pop-chip-gap: 12px;                          /* between two colours in the colour pop-out's rows (Okay, 12 Oct 2026: "×3 gaps") */
     --speed-pad: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2);      /* the speed box's room inside, left and right: the thumb at either end stands as far from the wall as from the box's top and bottom (3; Okay, 15 Oct 2026, 03:18: "when the ball is in a terminal, the bounding box clears it as much as it clears from the top… both ends symmetry"). Was u3 + 4 − half a thumb (1.25; 01:03, "before plus four") */
     --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
+    --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
+    --pixel-ink-unit: 1;                           /* the unit box's word in the pixel font at full strength of its colour, already as light as a dead switch (not --pixel-ink) */
 
     /* off the scale as found, with no figure from Okay (16 Oct 2026): kept as they are, each to be put on the scale or
        kept when Okay looks through this list (#294) */
@@ -397,14 +399,14 @@
      smaller button, as big as help, same baseline, much smaller box, flush right"; one column wide and 32 high until
      then). Its menu hangs under it, the units by their full names, a hairline between them. */
   .unit { position: relative; margin-left: auto; }
-  .unitbox { width: var(--head-unit-w); border: var(--hair) solid currentColor; color: color-mix(in srgb, var(--ink) calc(var(--faint) * 50%), transparent); text-align: center; }      /* as light as a switch on the preview that can't be pressed (undo with nothing to undo), its word and its line one colour (Okay, 15 Oct 2026, 03:18); dark under the pointer. Was: its word like the version, its line like the header's */
+  .unitbox { width: var(--head-unit-w); padding: var(--u1) 0; border: var(--hair) solid currentColor; color: color-mix(in srgb, var(--ink) calc(var(--faint) * 50%), transparent); font: 400 var(--t-pixel)/1 var(--pixel); text-transform: uppercase; text-align: center; opacity: var(--pixel-ink-unit); }      /* as light as a switch on the preview that can't be pressed (undo with nothing to undo), its word and its line one colour (Okay, 15 Oct 2026, 03:18); dark under the pointer. Was: its word like the version, its line like the header's */
   .unitbox:hover { background: var(--hover); color: var(--ink); border-color: var(--ink); }
   /* the way to the Gallery: a small pill right after Help, as far from it as Help from the version, at Help's size and
      on the title's baseline (placed by level_title), as high as the unit box; darker than the unit box, lighter than
      Help (Okay, 16 Oct 2026: "Do the same to Gallery pill and put it after help with equal gap. Gallery gets darker
      than mm but lighter than help"; from 15 Oct, 07:45, a pill in the middle of the room, 32 high) */
   .galleryway { flex: none; margin-left: var(--u4); }
-  .gallerypill { padding: 0 var(--u2); border: var(--hair) solid currentColor; border-radius: var(--round-pill); color: color-mix(in srgb, var(--ink) calc(var(--faint) * 100%), transparent); white-space: nowrap; }
+  .gallerypill { padding: var(--gallery-lift) var(--u2) 0; border: var(--hair) solid currentColor; border-radius: var(--round-pill); color: color-mix(in srgb, var(--ink) calc(var(--faint) * 100%), transparent); white-space: nowrap; }
   .gallerypill:hover { background: var(--hover); color: var(--ink); border-color: var(--ink); }
   /* a small menu hanging under its button (the units; the kinds of ring to add): lines a row high, a hairline between them */
   :is(.unitmenu, .addmenu) { position: absolute; z-index: 4; top: calc(100% + var(--unit)); right: 0; min-width: calc(2 * var(--col) + var(--gap)); border: var(--hair) solid var(--ink); background: var(--field); }
@@ -994,7 +996,7 @@
   /* Backdrop, standing on the Shadows switch (its row held the eye switch too until 15 Oct 2026, 03:41) */
   .backdrops { position: absolute; z-index: 3; left: var(--stop-short); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: flex; gap: var(--unit); }
   /* the eye switch, alone at the preview's bottom right, over the zoom in the bar (Okay, 15 Oct 2026, 03:41) */
-  .eyes { position: absolute; z-index: 3; right: var(--canvas-inset); bottom: var(--canvas-inset); display: flex; gap: var(--unit); }      /* the switches' gap between them (05:43: "why these two touch?") */
+  .eyes { position: absolute; z-index: 3; right: var(--canvas-inset); bottom: var(--canvas-inset); display: flex; flex-direction: column; align-items: flex-end; gap: var(--unit); }      /* the switches' gap between them (05:43: "why these two touch?"); the showcase's iris over the eye, one unit apart, as Backdrop over Shadows (Okay, 16 Oct 2026: "stack the old showcase/new preview icon on top, same padding between"; side by side until then) */
   .eyebox { width: var(--control-large); padding: 0; overflow: hidden; border-radius: var(--round-switch); }      /* its sign fills the inside; the lashes run out and the box cuts them */
   .eyebox svg { display: block; flex: none; }
   .eyebox[aria-pressed="true"] > * { opacity: 1; }
@@ -5713,7 +5715,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.42.3";
+var VERSION = "beta 4.42.4";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -6001,7 +6003,13 @@ var DEFAULTS = {
   gd_sel_strength: 95,
   gd_sel_w: 1.5
 };
-var UNITS = [["mm", "Millimetres", 1, 0], ["pt", "Points", 72 / 25.4, 0], ["in", "Inches", 1 / 25.4, 2], ["lig", "Lignes", 1 / 2.2558, 1]];
+var UNITS = [
+  ["mm", "Millimetres", 1, 0],
+  ["pt", "Points", 72 / 25.4, 0],
+  ["in", "Inches", 1 / 25.4, 2],
+  ["lig", "Lignes", 1 / 2.2558, 1],
+  ["thou", "Thou", 1 / 0.0254, -1]
+];
 var GUIDE_COLOURS = ["#FF2D95", "#00E5FF", "#39FF14", "#FFE600", "#FF6A00", "#7A5CFF", "#111111", "#FFFFFF"];
 var GUIDE_KINDS = [
   ["gd_edge", "gd_k_edge", "Dial edge"],
@@ -7684,7 +7692,7 @@ var INK_TRAPS = (() => {
   return out.join("");
 })();
 var EYE_RAYS = 24;
-var EYE_RAY = 0.5;
+var EYE_RAY = 0.625;
 var SKY_TOP = 0.3;
 var SHOWCASE_PAGE = { w: 210, h: 297, dial: 2 / 3 };
 var SUN = { day: 20, rise: 40, fade: 0.45 };
@@ -7717,7 +7725,8 @@ var TOOL_ICONS = {
   // (CURVE, centre on a quarter, radius on a half); the shade and the shadow are filled, their ends on half points
   // 15 Oct, 02:42: mirrored (lit from the upper left, the shadow cast to the right) and its outline DENSE, as Guides',
   // the sign beside it on 18 ("ball stroke thickness too much… look at similar size icons, guides and such")
-  shadows: `<circle cx="7.25" cy="7.75" r="5.5" ${sw(DENSE)}/><path d="M4.5 12.5A5.5 5.5 0 0 0 12 5A8 8 0 0 1 4.5 12.5Z" fill="currentColor" stroke="none"/><path d="M16.75 15.5A5.625 1.25 0 0 1 5.5 15.5A5.625 1.25 0 0 1 16.75 15.5Z" fill="currentColor" stroke="none"/>`,
+  shadows: `<circle cx="7.25" cy="7.75" r="5.5" ${sw(DENSE)}/><path d="M4.5 12.5A5.5 5.5 0 0 0 12 5A8 8 0 0 1 4.5 12.5Z" fill="currentColor" stroke="none"/><path d="M16.75 15A5.625 1.25 0 0 1 5.5 15A5.625 1.25 0 0 1 16.75 15Z" fill="currentColor" stroke="none"/>`,
+  // the shadow up to the ball, ends still on half points (Okay, 16 Oct 2026: "Shadow moves up and touches the ball"; 15.5 until then, 0.62 apart, now 0.13)
   // Okay's own mark, on 16 in the panel's first column (15 Oct 2026, 02:42: "my personal logo. Draw this like an
   // icon"): a ring; a 45° diagonal from ring to ring; through its crossing with them a level line to the right and an
   // upright one down; a cell between them (3.5 × 4, as in his drawing); a 45° slant from the cell's corner to the
@@ -8846,8 +8855,9 @@ var DialTool = class _DialTool {
   /** a length in mm → the text of it in the chosen unit. */
   in_unit(mm, places) {
     const u = this.unit();
-    return (mm * u[2]).toFixed(places + u[3]);
+    return (mm * u[2]).toFixed(Math.max(0, places + u[3]));
   }
+  // thou takes a decimal away: never fewer than none
   unit_box() {
     const menu = el("div", { className: "unitmenu", id: "unit-menu", hidden: true });
     menu.setAttribute("role", "menu");
@@ -9188,6 +9198,12 @@ var DialTool = class _DialTool {
     const hands = items.map((item, i) => ({ item, i })).filter((x) => x.item.role === "hand").map((x) => ({ ...x, z: height[x.item.name] ?? 0, d: this.slots[x.i].d }));
     const cap_r = S.ha_on && S.ha_cap > 0 ? S.ha_cap / 2 : 0;
     const top = Math.max(S.sh_cap, ...hands.map((h) => h.z));
+    const dark = clamp(S.sh_dark, 0, 100) / 100;
+    const tint = (c = [0, 0, 0, 1]) => {
+      const a2 = clamp(c[3] ?? 1, 0, 1);
+      return `rgb(${[0, 1, 2].map((k) => Math.round(255 * (1 - dark * (1 - (1 - a2) * (1 + a2 * c[k]))))).join(", ")})`;
+    };
+    hands.sort((p, q) => (p.item.fill?.[3] ?? 1) - (q.item.fill?.[3] ?? 1));
     const surface = (name, before, outline, from_z) => {
       const g = part(name, "g", this.dial), clip = part(name + "/clip", "clipPath", shade.defs);
       clip.id = "shadow-clip-" + name;
@@ -9197,19 +9213,21 @@ var DialTool = class _DialTool {
         set(p, "transform", turn ? `rotate(${f(-turn)})` : "");
       });
       set(g, "clip-path", `url(#${clip.id})`);
-      set(g, "opacity", String(clamp(S.sh_dark, 0, 100) / 100));
-      set(g, "fill", "#000");
+      g.removeAttribute("opacity");
+      g.removeAttribute("fill");
+      set(g, "style", "mix-blend-mode: multiply");
       set(g, "pointer-events", "none");
       if (S.sh_blur) set(g, "filter", "url(#shadow-soft)");
       else g.removeAttribute("filter");
       if (g.nextSibling !== before) this.dial.insertBefore(g, before);
       let k = 0;
-      const cast = (d, turn, dz) => {
+      const cast = (d, turn, dz, colour) => {
         const p = part(`${name}/cast/${k++}`, "path", g), [x, y] = away(dz);
         set(p, "d", d);
+        set(p, "fill", tint(colour));
         set(p, "transform", `translate(${f(x)} ${f(y)})` + (turn ? ` rotate(${f(-turn)})` : ""));
       };
-      for (const h of hands) if (h.z > from_z) cast(h.d, h.item.angle, h.z - from_z);
+      for (const h of hands) if (h.z > from_z) cast(h.d, h.item.angle, h.z - from_z, h.item.fill);
       if (cap_r && top > from_z) {
         const [x0, y0] = away(Math.max(0, -from_z)), [x, y] = away(top - from_z);
         const len = Math.hypot(x - x0, y - y0) || 1, nx = -(y - y0) / len * cap_r, ny = (x - x0) / len * cap_r;
@@ -9217,6 +9235,7 @@ var DialTool = class _DialTool {
         for (const d of [ring(x0, y0), ring(x, y), `M${f(x0 + nx)} ${f(y0 + ny)}L${f(x + nx)} ${f(y + ny)}L${f(x - nx)} ${f(y - ny)}L${f(x0 - nx)} ${f(y0 - ny)}Z`]) {
           const p = part(`${name}/cast/${k++}`, "path", g);
           set(p, "d", d);
+          set(p, "fill", tint(S.c_cap));
           set(p, "transform", "");
         }
       }
@@ -9226,7 +9245,7 @@ var DialTool = class _DialTool {
     const discs = items.map((x, i) => ({ x, i })).filter(({ x }) => x.role === "date disc");
     if (discs.length && plate_at >= 0) {
       const s = surface("discs", nodes[plate_at], discs.map(({ i }) => [this.slots[i].d, 0]), -S.sh_disc);
-      s.cast(this.slots[plate_at].d, 0, S.sh_disc);
+      s.cast(this.slots[plate_at].d, 0, S.sh_disc, S.c_plate);
     }
     if (plate_at >= 0 && hands.length) {
       const first = items.findIndex((x) => x.role === "hand" || x.role === "cap" || x.role === "guide");
@@ -9510,7 +9529,7 @@ var DialTool = class _DialTool {
         set(row.whole ? clamp(v, row.lo, row.hi) : v);
       };
       const length = is_length(row);
-      const per = () => length ? this.unit()[2] : 1, places = () => decimals(row.step) + (length ? this.unit()[3] : 0);
+      const per = () => length ? this.unit()[2] : 1, places = () => Math.max(0, decimals(row.step) + (length ? this.unit()[3] : 0));
       const shown = (v) => (v * per()).toFixed(places());
       const now = () => {
         const T = this.target(row.scope);
