@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.43.1 (web version) · 16 Oct 2026
+
+- **A disc hand's marker is called its hole** (#300): *Hole*, *Hole length*, *Hole width*. It is cut out of the disc, and Okay liked it that way ("work as holes now, perfect, just call it that"). Only the row names changed; the settings keys stay (R8). A mark drawn on the disc as well is on the list (phase E).
+
 ## beta 4.43 (web version) · 16 Oct 2026
 
 Phase C: the link system.

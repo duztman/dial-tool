@@ -503,9 +503,9 @@ const ROWS = {
     pick("shape", "Shape", G.HAND_SHAPES, hand_pic, { ...H, side: true, line: true, skip: [9] }),      // every shape but "file" (a shape of one's own: the SVG tile)
     num("len", "Length", 0.5, 30, 0.05, { ...H, side: true }),      // a disc's: where its marker's outer end is
     num("disc_d", "Disc Ø", 0.5, 30, 0.05, { ...H, side: true, show: hand_is("disc") }),
-    seg("mark", "Marker", G.SHAPES.slice(0, 3), { ...H, side: true, show: hand_is("disc") }),      // the markers ring's shapes (#164)
-    num("mark_len", "Marker length", 0.05, 10, 0.05, { ...H, side: true, short: "Marker L", show: hand_is("disc") }),
-    num("mark_w", "Marker width", 0.02, 5, 0.01, { ...H, side: true, short: "Marker W", show: hand_is("disc") }),
+    seg("mark", "Hole", G.SHAPES.slice(0, 3), { ...H, side: true, show: hand_is("disc") }),      // the markers ring's shapes (#164); cut out of the disc, so named "Hole" (Okay, 16 Oct 2026: "work as holes now, perfect, just call it that")
+    num("mark_len", "Hole length", 0.05, 10, 0.05, { ...H, side: true, short: "Hole L", show: hand_is("disc") }),
+    num("mark_w", "Hole width", 0.02, 5, 0.01, { ...H, side: true, short: "Hole W", show: hand_is("disc") }),
     num("w", "Width", 0.02, 4, 0.01, { ...H, side: true, show: (H) => G.HAND_SHAPES[H.shape] !== "disc" }),
     num("tail", "Tail", 0, 10, 0.05, { ...H, side: true, show: (H) => G.HAND_SHAPES[H.shape] !== "disc" }),
     num("round", "Round ends", 0, 2, 0.01, { ...H, side: true, show: hand_is("baton", "pencil", "sword", "arrow", "syringe", "breguet", "lollipop", "file", "disc") }),      // a disc: its marker's ends
