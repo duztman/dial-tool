@@ -119,7 +119,7 @@ check(await S("S.ui_section === 2 && S.ui_hand === 1"), "click the minute hand �
 await click_mm(0.5, 3);
 check(await S("S.ui_section === 0"), "click the bare plate → Dial");
 await tab("Date");
-await page.check("#window-on-Show-this-window");
+await page.check("#window-on-Show");
 await frame();
 await click_mm(...clock(await S("S.da_r"), 90));
 check(await S("S.ui_section === 3"), "click the date window → Date");
@@ -741,13 +741,14 @@ await tab("Hands");
 // Hands: Hour · Minute · Seconds are tabs on top of the pinned part; the panes below are about the chosen hand
 const hand_tabs = await page.evaluate(() => { const p = document.querySelector(".pinned"), t = p.querySelector(".tabsbar"); return [p.firstElementChild.classList.contains("handsbar"), p.firstElementChild.nextElementSibling === t, [...t.querySelectorAll("button")].map((b) => b.textContent).join(" "), [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent).join(" · ")]; });
 check(hand_tabs[0] && hand_tabs[1] && hand_tabs[2] === "Hour Minute Seconds", "All hands is the first pinned line, the hand tabs the second, right above the hand's panes");
-const tick_up = await page.evaluate(() => { const pane = document.querySelector(".form .pane"), t = pane.querySelector(".headcontrol").getBoundingClientRect(), h = pane.querySelector(".fold").getBoundingClientRect(); return [pane.querySelector(".headcontrol input").id, t.top >= h.top && t.bottom <= h.bottom, [...pane.querySelectorAll(".body .check")].every((c) => !c.checkVisibility())]; });      // (the cap's "Cap on this hand" waits there, hidden: #262)
-check(tick_up[0] === "hand-on-Show-this-hand" && tick_up[1] && tick_up[2], "Show this hand is on the heading line, beside the hand's name");
+const tick_up = await page.evaluate(() => { const box = document.querySelector(".form").firstElementChild, pane = box.nextElementSibling, b = box.getBoundingClientRect(), t = document.querySelector(".tabsbar .segs").getBoundingClientRect();
+  return [box.classList.contains("showbox") && box.querySelector("input").id, box.textContent.trim(), pane.classList.contains("plain") && pane.querySelector(".fold").hidden && getComputedStyle(pane).borderTopWidth === "0px", Math.round(b.left - t.left) + " " + Math.round(b.right - t.right), getComputedStyle(box).backgroundColor !== getComputedStyle(document.querySelector(".form")).backgroundColor, [...pane.querySelectorAll(".body .check")].every((c) => !c.checkVisibility())]; });      // (the cap's "Cap on this hand" waits there, hidden: #262)
+check(tick_up[0] === "hand-on-Show" && tick_up[1] === "Show" && tick_up[2] && tick_up[3] === "0 0" && tick_up[4] && tick_up[5], `the Show box (#261, 4.46): under the hand tabs, as wide as they are (${tick_up[3]}), a ground of its own, it holds Show; the hand's pane under it has no name line and no thick line`);
 const pill_gaps = await page.$eval(".form .colour", (e) => { const r = e.getBoundingClientRect(), d = e.querySelector(".dot").getBoundingClientRect(), h = e.querySelector(".hex").getBoundingClientRect(), row = e.closest(".row").getBoundingClientRect();
   return { gaps: [d.left - r.left, h.left - d.right, r.right - h.right, d.top - r.top, r.bottom - d.bottom, r.top - row.top, row.bottom - r.bottom], dot: d.height, type: parseFloat(getComputedStyle(e).fontSize) }; });
 check(pill_gaps.gaps.every((v) => Math.abs(v - 5.5) < 0.3) && pill_gaps.dot === pill_gaps.type, `a colour pill has one space seven times: beside, over and under its swatch, between swatch and hex, after the hex, from the pill to its row's two lines; the swatch is as high as the hex is set (${pill_gaps.gaps.map((v) => +v.toFixed(2)).join(" · ")}; ${pill_gaps.dot} = ${pill_gaps.type})`);
 await page.click("#hand-tab-2");
-check(await S("S.ui_hand === 2") && await page.textContent(".form .pane >> nth=0 >> h2") === "Seconds hand" && await page.$eval("#hand-tab-2", (e) => e.classList.contains("on")), "a tab chooses the hand; the first pane's heading says Seconds hand");
+check(await S("S.ui_hand === 2") && await page.$eval("#hand-tab-2", (e) => e.classList.contains("on")) && await page.$eval(".form .pane", (e) => e.classList.contains("plain")), "a tab chooses the hand; the tab names it, the pane under it has no name line (#261)");
 { // the cap is part of the seconds hand (#262, beta 4.43): its rows in the seconds hand's pane, no pane of its own;
   // with no seconds hand, "Cap on this hand" under the topmost hand's, off: then no cap is drawn until it is ticked
   const seen = () => page.evaluate(() => { const v = (q) => { const e = document.querySelector(q); return !!e && e.checkVisibility(); }, t = window.dial_tool;
@@ -769,14 +770,14 @@ await page.click("#hand-tab-0");
 {
   const strip = await page.evaluate(() => { const tabs = [...document.querySelectorAll(".tabsbar .segs > button")], r = (e) => e.getBoundingClientRect(), p = r(document.querySelector(".pinned")), c = getComputedStyle(tabs[0]), v = (b) => getComputedStyle(b, "::before");
     const cut = (b) => getComputedStyle(b, "::before").clipPath.replace(/calc\(|\)/g, "");      // the tab's shape: its cut corners
-    return { touch: tabs.every((b, i) => !i || Math.abs(r(b).left - r(tabs[i - 1]).right) <= 1), on_line: Math.round(p.bottom - r(tabs[0]).bottom), line: getComputedStyle(document.querySelector(".pinned")).borderBottomWidth, round: [c.borderTopLeftRadius, getComputedStyle(tabs.at(-1)).borderTopRightRadius].join(" "), notch: [cut(tabs[0]).startsWith("polygon(0px 0px, 100% - 5.5px 0px, 100% 5.5px"), cut(tabs[1]).startsWith("polygon(5.5px 0px, 100% - 5.5px 0px, 100% 5.5px"), cut(tabs[2]).startsWith("polygon(5.5px 0px, 100% 0px, 100% 0px"), getComputedStyle(tabs[0], "::after").backgroundColor].join(" "), high: Math.round(r(tabs[0]).height) }; });
-  check(strip.touch && strip.on_line === 2 && strip.line === "2px" && strip.round === "0px 0px" && strip.notch === "true true true rgb(17, 17, 17)" && strip.high === 40, `the hand tabs are tabs: touching, on a thick line, each cutting its top corners one unit deep so a sharp V stands over each joint, the first and last corner square, the chosen one ink (${strip.notch}), ${strip.high} high`);
+    return { touch: tabs.every((b, i) => !i || Math.abs(r(b).left - r(tabs[i - 1]).right) <= 1), on_line: Math.round(p.bottom - r(tabs[0]).bottom), line: getComputedStyle(document.querySelector(".pinned")).borderBottomWidth, round: [c.borderTopLeftRadius, getComputedStyle(tabs.at(-1)).borderTopRightRadius].join(" "), notch: [cut(tabs[0]).startsWith("polygon(0px 0px, 100%") && !cut(tabs[0]).includes("5.5px"), cut(tabs[1]).startsWith("polygon(5.5px 0px, 100% - 5.5px 0px, 100% 5.5px"), cut(tabs[2]).startsWith("polygon(5.5px 0px, 100% 0px, 100% 0px"), getComputedStyle(tabs[0], "::after").backgroundColor].join(" "), high: Math.round(r(tabs[0]).height) }; });
+  check(strip.touch && strip.on_line === 2 && strip.line === "2px" && strip.round === "0px 0px" && strip.notch === "true true true rgb(17, 17, 17)" && strip.high === 40, `the hand tabs are tabs: touching, on a thick line, each cutting its top corners one unit deep so a sharp V stands over each joint, the first and last corner square, the chosen one ink and square (#260, 4.46) (${strip.notch}), ${strip.high} high`);
 }
 { // a hand's pane (13 Oct 2026): a box with the hand itself at the left, its rows beside it: a line of tiles that opens, numbers, colour
   const look = () => page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), box = r("#hand-detail"), rows = [...document.querySelectorAll(".form .pane .body")][0].querySelectorAll(".row.side:not([hidden])"), first = rows[0].getBoundingClientRect(), last = rows[rows.length - 1].getBoundingClientRect(), tiles = [...document.querySelectorAll(".picks.line > *")].filter((e) => e.offsetParent).map((e) => e.textContent);
-    return { beside: Math.round(first.left - box.right), top: Math.round(box.top - first.top), bottom: Math.round(last.bottom - box.bottom), high: Math.round(box.height), tiles: tiles.join(" "), panes: [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent).join(" · "), d: document.querySelector("#hand-detail .upright path").getAttribute("d"), centre: document.querySelectorAll("#hand-detail .upright .axis, #hand-detail .upright .pivot").length, one_line: [...rows].every((e) => e.getBoundingClientRect().height < 90) }; });
+    return { beside: Math.round(first.left - box.right), top: Math.round(box.top - first.top), bottom: Math.round(last.bottom - box.bottom), high: Math.round(box.height), tiles: tiles.join(" "), panes: [...document.querySelectorAll(".form .pane h2")].filter((h) => h.checkVisibility()).map((h) => h.textContent).join(" · "), d: document.querySelector("#hand-detail .upright path").getAttribute("d"), centre: document.querySelectorAll("#hand-detail .upright .axis, #hand-detail .upright .pivot").length, one_line: [...rows].every((e) => e.getBoundingClientRect().height < 90) }; });
   const a = await look();
-  check(a.beside === 12 && a.top === 6 && a.high === 238 && a.panes === "Hour hand" && a.centre === 2, `a hand has one pane: at the left a box with the hand itself, its centre marked, seven rows high (${JSON.stringify({ ...a, d: 0 })})`);
+  check(a.beside === 12 && a.top === 6 && a.high === 238 && a.panes === "" && a.centre === 2, `a hand has one pane: at the left a box with the hand itself, its centre marked, seven rows high (${JSON.stringify({ ...a, d: 0 })})`);
   check(a.tiles === "baton pencil sword more", `its shapes are one line, three and more; the SVG tile waits in the opened list: ${a.tiles}`);
   await page.click("#hand-shape-Shape-more");
   const open = (await look()).tiles;
@@ -968,13 +969,19 @@ await tab("Date");
 }
 await page.click("#window-card-2");
 check(await S("S.ui_window === 2 && S.windows[1].at === 2 && S.windows[1].on === false") && await page.textContent(".form .pane >> nth=0 >> h2") === "Window at 6" && await page.$eval("#window-card-2", (e) => e.classList.contains("on") && e.classList.contains("off")), "the card at 6 chooses its window: the pane says Window at 6; not in use yet, it takes the card's place");
-const on_head = await page.evaluate(() => { const pane = document.querySelector(".form .pane"), c = pane.querySelector(".headcontrol").getBoundingClientRect(), h = pane.querySelector(".fold").getBoundingClientRect(); return [c.top >= h.top && c.bottom <= h.bottom, pane.querySelector(".headcontrol input").id]; });
-check(on_head[0] && on_head[1] === "window-on-Show-this-window", "Show this window is on the heading line: the cards are tabs only");
+const on_box = await page.evaluate(() => { const box = document.querySelector(".form").firstElementChild; return [box.classList.contains("showbox"), box.querySelector("input").id, box.nextElementSibling.querySelector("h2").textContent, !document.querySelector(".form .pane .headcontrol input")]; });
+check(on_box[0] && on_box[1] === "window-on-Show" && on_box[2] === "Window at 6" && on_box[3], "Show stands in the Show box under the cards, over the window's pane (#261, 4.46): the cards are tabs only");
 await page.click(".form .pane >> nth=0 >> .fold h2");
-check(await page.isVisible("#window-on-Show-this-window"), "folded, the pane still shows it");
+check(await page.isVisible("#window-on-Show"), "the window's pane folded, Show stays in view");
 await page.click(".form .pane >> nth=0 >> .fold h2");
 await page.click("#window-card-0");
 await shot("4h-window-cards");
+{ // one tab look (#260, 4.46): a chosen tab squares up, a window card as a hand tab; the others keep the notch between them
+  const cuts = await page.evaluate(() => { const c = (e) => { const s = getComputedStyle(e); return s.getPropertyValue("--cut-l").trim() + "/" + s.getPropertyValue("--cut-r").trim(); };
+    const cards = [...document.querySelectorAll(".windowcards .card > .tab")], on = cards.find((t) => t.classList.contains("on")), off = cards.filter((t) => !t.classList.contains("on"))[1];
+    return [c(on), c(off)]; });
+  check(cuts[0] === "0px/0px" && cuts[1] !== "0px/0px", `a chosen window card squares up as a chosen hand tab does (${cuts[0]}); the others keep their cut corners (${cuts[1]}) (#260)`);
+}
 await tab("Dial");
 const controls_x = await page.evaluate(() => Math.round(document.querySelector("#global-dial-d-Diameter").closest(".row").querySelector("input[type=range]").getBoundingClientRect().left));      // the controls' column, on a plain row (the Cap pane, which had one here, is gone: #262)
 await tab("Hands");
@@ -1068,7 +1075,7 @@ await tab("Date");
 const kinds = [["1", "1", "9"], ["2", "2", "6"], ["3", "3", "12"]];          // window (its card's number), kind, position
 for (const [n, kind, at] of kinds) {
   await page.click("#window-card-" + n);
-  await page.check("#window-on-Show-this-window");
+  await page.check("#window-on-Show");
   await page.click("#window-kind-Shows-" + kind);
   await page.click("#window-at-Position-" + ["3", "4:30", "6", "9", "12", "1:30", "7:30", "10:30", "4"].indexOf(at));
 }
@@ -1094,7 +1101,7 @@ check(await S("S.ui_section === 3 && S.ui_window === 3") && await page.isVisible
   check(ws && ws.line && ws.names === "Width:rgb(92, 92, 88) Height:rgb(92, 92, 88)" && popped, `a window's width and height stand on one line, quiet numbers with a compact ±, their names grey; a press on Height opens its popup (#265; ${ws && ws.names})`);
 }
 await shot("4d-windows");
-for (const n of ["1", "2", "3"]) { await page.click("#window-card-" + n); await page.uncheck("#window-on-Show-this-window"); }
+for (const n of ["1", "2", "3"]) { await page.click("#window-card-" + n); await page.uncheck("#window-on-Show"); }
 await page.click("#window-card-0");
 check(await S("t.statik.windows.length === 1"), "windows 2 to 4 switched off again");
 

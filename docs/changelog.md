@@ -1,5 +1,16 @@
 # Dial Tool — changelog
 
+## beta 4.46 (web version) · 16 Oct 2026
+
+Phase F, first push: one tab look and the Show box.
+
+- **One tab look** (#260; Okay, notes p. 1–2: "hands do it better"). A chosen tab squares up, losing its cut corners, and lies over its neighbours. The hand tabs already did this, but only by chance: the chosen layer filled their whole button. The window cards did not. Now it is the tabs' own rule, for both.
+- **The Show box** (#261; notes p. 2: "Show this window moves with the tab and says just Show: a thin box, darker than the pane's grey, grows down from the tab and holds it").
+  - Under the tabs, on top of the grey page, a thin box a little darker than the page holds one tick: **Show**, for a hand and a window alike. It runs from where the tabs start to the pane's end, with a white line under it.
+  - **Hands:** the hand's name line ("Hour hand", its eye, *Show this hand*) is gone, since the tab names the hand. Everything under the box is the tab's content: a pane with no heading, so no thick line either.
+  - **Windows:** *Show this window* left the heading line for the box. The *Window at x* pane stays under it until the Windows page is reordered (#263, sketch first).
+  - Their ids are now `hand-on-Show` and `window-on-Show`.
+
 ## beta 4.45.5 (web version) · 16 Oct 2026
 
 The bar's time, second look (#306; Okay, on 4.45.3, a screenshot marked in three colours).

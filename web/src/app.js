@@ -527,8 +527,10 @@ const ROWS = {
   Hands: [
     custom("hands_bar", { pin: true, bar: true }),      // bar: one line of its own, always in view: All hands · Show hands · Motion
     custom("hand_tabs", { pin: true, bar: true }),      // under it, always in view: which hand the panes below are about (Okay, 12 Oct 2026: "acts as a tab system for what's below")
-    hdr("One hand", { title: (S) => HAND_NAMES[S.ui_hand] }),      // its heading says which: Hour hand · Minute hand · Seconds hand
-    chk("on", "Show this hand", { ...H, head: true }),      // on the heading line, beside the hand's name
+    // the Show box (#261, 4.46; Okay's notes, p. 2): under the tabs, on top of the grey page, Show — the tab says which
+    // hand, so the hand's name line goes and everything under it is the tab's content: a pane with no heading (plain)
+    custom("show_box", { ...H, bar: true }),
+    hdr("One hand", { plain: true }),
     // one pane for a hand (Okay's drawings, 13 Oct 2026): at the left a box with the hand itself, as it is now; beside
     // it everything that makes it — its shape (one line of tiles that opens; a plus for a shape of one's own, later),
     // then its numbers and its colour. So what a number changes is seen right beside it, and on the dial at the right.
@@ -568,8 +570,8 @@ const ROWS = {
     custom("window_cards", { pin: true, bar: true }),      // pin: always in view, like the hand tabs (Okay, 13 Oct 2026) ·         // four cards, 12 · 3 · 6 · 9: where each window is, and tabs for the panes below (Okay, 12 Oct 2026)
     // the cards are tabs only; a window is shown by the tick on its heading line (Okay, 13 Oct 2026, after trying a
     // small switch on each card: "unnecessarily complex… enable window tickmark is the way to go. leave them as tabs")
+    custom("show_box", { ...W, bar: true }),      // the Show box, as a hand's (#261): its tick, "Show this window" on the heading line until 4.46
     hdr("Window", { title: (S) => `Window at ${G.window_place(G.windows_of(S)[S.ui_window])}` }),
-    chk("on", "Show this window", { ...W, head: true }),
     // where it is and how big come first, right under the tick (Okay, 13 Oct 2026); a pane of their own, Place and size, until beta 4.22
     custom("window_at", { ...W, show: win_on, text: "Position" }),
     num("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
@@ -1850,6 +1852,7 @@ class DialTool {
    *  folded or opened starts as its row says (`folded`: a first visit, #270), unless "*" is kept: one fold for every
    *  such pane (the tests keep "*": false, a visitor who has opened them all). */
   is_folded(r) {
+    if (r.row.plain) return false;                 // a pane with no heading has nothing to fold it (the hand's, #261)
     if (!this.folds) { try { this.folds = JSON.parse(localStorage.getItem("dial-tool-folds")) || {}; } catch (e) { this.folds = {}; } }
     return this.folds[r.fold] ?? this.folds["*"] ?? Boolean(r.row.folded);
   }
@@ -1974,7 +1977,8 @@ class DialTool {
       out.summary = el("span", { className: "summary quiet" });
       out.button = el("button", { type: "button", className: "fold", title: "Show or hide this pane", onclick: () => this.fold(out, !this.is_folded(out)) }, out.eye, title, out.summary);
       out.body = el("div", { className: "body" });
-      out.el = el("section", { className: "pane" }, out.button, out.body);
+      out.el = el("section", { className: row.plain ? "pane plain" : "pane" }, out.button, out.body);
+      if (row.plain) out.button.hidden = true;
       if (row.tools) {                             // tools on the heading line, at its right; folded, the summary stands there instead
         out.el.classList.add("tooled");
         out.button.after(this["head_" + row.tools]());
@@ -2140,7 +2144,7 @@ class DialTool {
       out.refresh = (T) => { if (!active(field)) field.value = T[row.key]; };
     }
 
-    if (row.kind === "custom") this["row_" + row.name](wrap, out);
+    if (row.kind === "custom") this["row_" + row.name](wrap, out, row);
     tied();
     return out;
   }
@@ -3010,6 +3014,17 @@ class DialTool {
   /** a window's width and height on one line (Okay's notes, p. 20, #265, beta 4.45.2; R15 form B): four cells — a
    *  name and its quiet number with a compact ±, twice. A press on a name or a number opens its popup, the slider
    *  there. The two are a side row's parts, each still its own row (build_row), so they do all a number does. */
+  /** the Show box (#261, 4.46; Okay's notes, p. 2: "Show this window moves with the tab and says just Show: a thin box,
+   *  darker than the pane's grey, grows down from the tab and holds it"; one word for windows and hands alike): the
+   *  tick that shows the chosen hand or window, on top of the grey page under the tabs. */
+  row_show_box(wrap, out, row) {
+    const id = `${row.scope}-on-Show`, box = el("input", { type: "checkbox", id });
+    box.onchange = () => this.set_value(row.scope, "on", box.checked);
+    wrap.className = "showbox";
+    wrap.append(el("label", { className: "check", htmlFor: id, title: row.scope === "hand" ? "Show this hand" : "Show this window" }, box, " Show"));
+    out.refresh = (T) => { box.checked = Boolean(T.on); };
+  }
+
   row_window_size(wrap, out) {
     wrap.className = "row wsize";
     const parts = [["w", "Width", 8], ["h", "Height", 5]].map(([key, text, hi]) => {

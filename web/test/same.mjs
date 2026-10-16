@@ -144,7 +144,7 @@ async function walk(page, screen, with_pointer) {
   await attempt("hand shapes open", async () => { await page.click("#hand-shape-Shape-more"); await snap(page, S("Hands, all shapes")); await page.click("#hand-shape-Shape-more"); });
   await attempt("number box", async () => { await page.focus(".row.side .numbox input"); await snap(page, S("Hands, a number box open")); await page.keyboard.press("Escape"); await page.evaluate(() => document.activeElement.blur()); });
   await tab(page, "Date");
-  await attempt("window on", async () => { await page.check("#window-on-Show-this-window"); await unfold(page); });
+  await attempt("window on", async () => { await page.check("#window-on-Show"); await unfold(page); });
   await look("Windows, the date");
   for (const kind of ["day", "am · pm", "moon"]) await attempt("window " + kind, async () => { await page.locator(".form .pickt:visible", { hasText: kind }).first().click(); await snap(page, S("Windows, " + kind)); });
   await attempt("window date again", async () => { await page.locator(".form .pickt:visible", { hasText: "date" }).first().click(); });

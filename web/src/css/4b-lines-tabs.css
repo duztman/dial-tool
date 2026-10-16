@@ -24,7 +24,9 @@
      chamfer as deep as the notch, --tab-notch), so two neighbours make the V between them; the first tab's left
      corner and the last tab's right corner stay square. A tab is drawn in two layers under its words: its line
      (::before, clipped to the cut shape) and, a hairline inside it, its fill (::after); the chosen tab is ink in
-     both and lies over its neighbours, so its line wins where they meet. */
+     both, squares up (no cut corners) and lies over its neighbours, so its line wins where they meet — the hand tabs
+     did so by chance (the chosen layer fills a .segs button whole), the window cards did not (#260, 4.46: "hands do it
+     better", one tab look). */
   .tab { --cut-l: var(--tab-notch); --cut-r: var(--tab-notch); --tab-line: var(--rule); --tab-fill: var(--field);
     position: relative; isolation: isolate; border: 0; background: none; }
   .tab::before, .tab::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; }
@@ -36,7 +38,13 @@
   :is(.tabsbar .segs > .tab:last-child, .windowcards .card:last-child > .tab) { --cut-r: 0px; }
   :is(.tabsbar .segs > .tab, .windowcards .card) + :is(.tab, .card) { margin-left: calc(-1 * var(--hair)); }      /* one line between two tabs, not two */
   .tab:hover { --tab-fill: var(--hover); }
-  .tab.on { --tab-line: var(--ink); --tab-fill: var(--ink); z-index: 1; color: var(--paper); }
+  .tab.on { --cut-l: 0px; --cut-r: 0px; --tab-line: var(--ink); --tab-fill: var(--ink); z-index: 1; color: var(--paper); }
+  /* the Show box (#261, 4.46): the chosen tab's first line, on top of the grey page under the tabs — a thin box a
+     little darker than the page, from where the tabs start to the pane's end, holding Show; a white line under it,
+     then the adjustments. A hand's pane under it has no heading (.plain), so no thick line either */
+  .form > .showbox { display: flex; align-items: center; min-height: var(--show-high); margin-left: var(--lead); padding: 0 var(--u3); background: var(--show-ground); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--line-on-grey); font-size: var(--t-s); }
+  .form > .showbox > .check { display: flex; align-items: center; }
+  .form > .showbox + .pane.plain { border-top: 0; }
   .handsbar > h2 { grid-column: 2 / span 2; }
   .handsbar > .check { grid-column: 4 / span 2; white-space: nowrap; }
   .handsbar > select { grid-column: 6 / span 2; }
