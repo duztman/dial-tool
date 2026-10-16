@@ -12,7 +12,7 @@ import path from "path";
 import { engines } from "./test/engines.mjs";
 import { link } from "./links.mjs";
 import { FONT_LIST } from "./src/font_list.js";
-import { OPENER } from "./src/opener.js";
+import { OKAYS_WATCH } from "./src/opener.js";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 const BLACK = [0.07, 0.07, 0.08, 1], WHITE = [0.95, 0.95, 0.92, 1], LUME = [0.80, 0.90, 0.66, 1], RED = [0.78, 0.16, 0.12, 1], PAPER = [0.97, 0.96, 0.93, 1], INK = [0.08, 0.08, 0.08, 1];
@@ -23,7 +23,7 @@ const hands = (c, hour, minute, second, cap = 1.4, cap_c = c) => ({ ha_hour: { c
 const DIALS = [
   // the dial the tool opens with, Okay's own watch (Okay, 15 Oct 2026, 07:45: "add this 'default' face to gallery as
   // well"; 07:48: "the purple you've been working with"): first, its settings as they are in src/opener.js
-  { name: "Okay's watch", note: "The dial Dial Tool opens with: Okay's own watch, purple, a 24-hour ring inside the twelve (15 Oct 2026)", settings: OPENER },
+  { name: "Okay's watch", note: "Okay's own watch, purple, a 24-hour ring inside the twelve (15 Oct 2026; the dial the tool opened with until 16 Oct)", settings: OKAYS_WATCH },
   // Okay's own B-Uhr (15 Oct 2026, 09:39, his link: "This is replacing nr 2 on the gallery. No new name"; again 11:49,
   // a second link: a navy plate on a dark red backdrop, the triangle and dots cyan, the minute numerals cream): orange
   // hours and seconds hand, the minute numerals moved in, two thin bands framing them. Lean settings, as his link

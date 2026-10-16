@@ -945,7 +945,7 @@ class DialTool {
     this.set_speed(1);
     const guides = this.guides_box();
     // on the preview: undo · redo top left, beside the panel (Okay, 13 Oct 2026) · the Guides switch top right · Backdrop bottom left
-    this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.ten_pill, this.hands_key, this.sun_hint);
+    this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.reset_pill, this.now_pill, this.ten_pill, this.hands_key, this.sun_hint);
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     root.append(this.sheet());      // a phone's gripper, on the drawer's top line
     requestAnimationFrame(() => this.level_title());
@@ -1324,6 +1324,10 @@ class DialTool {
       b.dataset.says = says;
       return b;
     };
+    // Reset: a pill at the bottom centre (the showcase's Now and 10:10 take that place there, so it gives way to them).
+    // A press brings back the opener, every setting — the guide's First dial (Okay, 16 Oct 2026, 10:18). Undo brings
+    // back what was there, as after Defaults
+    this.reset_pill = el("button", { type: "button", className: "onview resetpill", id: "reset", title: "Back to the opener, every setting (the guide’s First dial)", ariaLabel: "Reset to the opener", onclick: () => { this.reopen({ ...structuredClone(OPENER), ui_section: this.S.ui_section }); tool.log("reset to the opener"); } }, el("span", { className: "word", textContent: "Reset" }));
     this.now_pill = pill("now", "show-now", "Now", "The time it is now");
     this.ten_pill = pill("ten", "show-ten", "10:10", "10:10, the classic pose");
     // the showcase's bottom left corner: the hands shown or hidden, a round key with the Hands sign inside (Okay, 07:40:
@@ -4116,7 +4120,7 @@ export async function open_window(pathkit, harfbuzz, font_bytes) {
   let settings = await unpack(location.hash);      // a dial in the address comes first…
   const from_link = settings !== null;
   if (!settings) { try { settings = JSON.parse(localStorage.getItem(LAST)); } catch (e) { settings = null; } }   // …then the last session…
-  if (!settings) settings = structuredClone(OPENER);      // …then Okay's watch (opener.js; 15 Oct 2026)
+  if (!settings) settings = structuredClone(OPENER);      // …then the opener: the guide's First dial (opener.js; 16 Oct 2026)
   tool = new DialTool(settings);
   if (from_link) tool.log("opened the dial in the address");
   window.addEventListener("hashchange", async () => {              // another dial's link pasted into this tab

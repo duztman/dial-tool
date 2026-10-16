@@ -149,6 +149,10 @@
     transition: max-width var(--iris-time) var(--view-ease), padding var(--iris-time) var(--view-ease); }
   .irisbox[aria-expanded="true"] .irisgo { max-width: var(--iris-words); padding: 0 var(--u2) 0 var(--u4); }
   @media (hover: hover) { .irisgo:hover { text-decoration: underline; text-underline-offset: 0.2em; } }
+  /* Reset: a pill at the bottom centre, on the eye switch's line, outlined like Backdrop (Okay, 16 Oct 2026, 10:18:
+     "underdial put a reset to default face (complete) button"); the showcase's Now and 10:10 stand there instead */
+  .resetpill { position: absolute; z-index: 3; left: 50%; bottom: var(--canvas-inset); translate: -50% 0; padding: 0 var(--u4); border-radius: var(--round-switch); }
+  #app.show .resetpill { visibility: hidden; }
   /* Now: a pill, tracked 100; pressed, the hands spin to now and it shrinks into a round undo sign (.back), the way back */
   .nowpill { position: absolute; z-index: 3; left: 50%; bottom: var(--canvas-inset); translate: -50% 0; display: grid; place-items: center; width: var(--now-pill); height: var(--control-large); padding: 0; border-radius: calc(var(--control-large) / 2);
     font-family: var(--mono); text-transform: uppercase; letter-spacing: var(--track-100); visibility: hidden; transition: width var(--iris-time) var(--view-ease); }
@@ -185,5 +189,5 @@
   /* a switch whose words show is filled with the backdrop's colour, so what is under it (the dial) doesn't show through
      its words (Okay, 15 Oct 2026, 07:07: "these buttons get solid bg color when labels visible"): the iris switch open
      (ACTIVATE SHOWCASE), the labelled switches — always on a wide screen, on a phone while unfolded (8-narrow.css) */
-  .irisbox[aria-expanded="true"], :is(.guidesbox, .guidesmore, .backdropbox) { background: var(--canvas-fill); }
+  .irisbox[aria-expanded="true"], :is(.guidesbox, .guidesmore, .backdropbox, .resetpill) { background: var(--canvas-fill); }
 }

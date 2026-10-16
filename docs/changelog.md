@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.41.24 (web version) · 16 Oct 2026
+
+- **The tool opens with the guide's First dial** (the black field watch, 34 mm) when the address has no dial and nothing was kept. Okay's watch stays first in the Gallery.
+- **Reset**, a pill at the foot of the dial: brings back the First dial, every setting. Undo brings back what you had.
+
 ## beta 4.41.23 (web version) · 15 Oct 2026
 
 - **Help**, beside the version in the title line: opens the guide (duztman.github.io/dial-tool/guide/) in a new tab.

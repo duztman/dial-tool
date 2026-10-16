@@ -1253,7 +1253,17 @@ check(await other.evaluate(() => window.dial_tool.S.rings.length > 0), "a broken
 await other.goto(link.split("#")[0]);
 await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 const opener = await other.evaluate(() => [window.dial_tool.S.dial_d, window.dial_tool.S.rings.map((r) => r.name).join(" · ")]);
-check(opener[0] === 19.1 && opener[1].startsWith("Hours · 24 hours"), `no dial in the address and no last session: it opens with Okay's watch (${opener[0]} mm: ${opener[1]})`);
+check(opener[0] === 34 && opener[1] === "Numerals · Markers · Minute ticks", `no dial in the address and no last session: it opens with the guide's First dial (${opener[0]} mm: ${opener[1]})`);
+{ // Reset, at the bottom centre over the dial: back to the opener, every setting; undo brings back what was there (Okay, 16 Oct 2026, 10:18)
+  await other.evaluate(() => { const t = window.dial_tool; t.set_value("global", "dial_d", 25); });
+  await other.waitForTimeout(700);
+  const r = await other.evaluate(() => { const b = document.getElementById("reset").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); return { centre: Math.abs((b.left + b.right) / 2 - (m.left + m.right) / 2), foot: m.bottom - b.bottom }; });
+  await other.click("#reset"); await other.waitForTimeout(500);
+  const back = await other.evaluate(() => [window.dial_tool.S.dial_d, window.dial_tool.S.rings.map((x) => x.name).join(" · ")]);
+  await other.click("#undo"); await other.waitForTimeout(500);
+  const undone = await other.evaluate(() => window.dial_tool.S.dial_d);
+  check(r.centre < 1 && r.foot < 20 && back[0] === 34 && back[1] === "Numerals · Markers · Minute ticks" && undone === 25, `Reset: centred at the dial's foot (${r.centre.toFixed(1)} off, ${r.foot.toFixed(0)} up), brings back the opener (${back.join(", ")}); undo brings back 25 mm (${undone})`);
+}
 await other.close();
 await page.click('button:text-is("Defaults")');
 await page.waitForFunction(() => window.dial_tool.statik && window.dial_tool.S.ha_hour.round === 0);
@@ -1338,7 +1348,7 @@ await tab("Export");
 {
   const g = await page.evaluate(() => { const panes = [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent), cards = [...document.querySelectorAll(".gallery a")]; return { last: panes.at(-1), n: cards.length, names: cards.map((c) => c.textContent).join(" · "), pictures: cards.every((c) => c.querySelector("svg path")), across: new Set(cards.slice(0, 3).map((c) => Math.round(c.getBoundingClientRect().top))).size }; });
   check(g.last === "Gallery" && g.n >= 6 && g.pictures && g.across === 1, `the Gallery is the last pane of Export: ${g.n} dials, three to a line (${g.names})`);
-  check(g.names.startsWith("Okay's watch · "), "the Gallery opens with Okay's watch, the dial the tool opens with (07:45)");
+  check(g.names.startsWith("Okay's watch · "), "the Gallery opens with Okay's watch (07:45; the tool opened with it until 16 Oct)");
   { // Help (#230; Okay, 15 Oct 2026, 12:50: "next to beta number same font but underlined"): the guide, in a new tab
     const h = await page.evaluate(() => { const a = [...document.querySelectorAll(".panel .title a")].find((e) => e.textContent === "Help"), v = document.querySelector(".panel .title .quiet"), sa = a && getComputedStyle(a), sv = getComputedStyle(v);
       return a && { href: a.href, blank: a.target === "_blank", after: v.nextElementSibling === a, same: sa.fontFamily === sv.fontFamily && sa.fontSize === sv.fontSize && sa.color === sv.color, under: sa.textDecorationLine.includes("underline") }; });
