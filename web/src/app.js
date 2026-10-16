@@ -551,8 +551,6 @@ const ROWS = {
     custom("export_wearos"),
     custom("wearos_name"),
     custom("wearos_pkg"),
-    custom("wearos_aod"),
-    custom("wearos_aod_note"),
     hdr("Print"),                                  // what only the printed or etched dial needs (was "For production" until beta 4.19)
     chk("out_production", "Mono print mask"),
     chk("out_mirror", "Mirrored, for toner transfer"),
@@ -3196,47 +3194,6 @@ class DialTool {
     };
   }
 
-  row_wearos_aod(wrap, out) {
-    wrap.className = "row tied";
-    const options = [
-      ["black", "Pure black"],
-      ["dimmed", "Dimmed"],
-      ["plate", "Same as dial"],
-    ];
-    const select = el("select", {
-      id: "wearos-aod",
-      title: "How the dial background appears in Always-On Display (AOD) ambient mode",
-    });
-    for (const [val, title] of options) {
-      select.append(el("option", { value: val, textContent: title }));
-    }
-    select.onchange = () => {
-      this.S.wearos_aod = select.value;
-      this.sync_rows();
-      this.autosave();
-    };
-    wrap.append(el("label", { htmlFor: "wearos-aod", textContent: "AOD plate" }), select);
-    out.refresh = (T) => {
-      select.value = T.wearos_aod || "black";
-    };
-  }
-
-  row_wearos_aod_note(wrap, out) {
-    wrap.className = "row note under";
-    const text = el("span", { className: "quiet", id: "wearos-aod-note" });
-    wrap.append(el("span"), text);
-    out.refresh = (T) => {
-      const mode = T.wearos_aod || "black";
-      if (mode === "black") {
-        text.textContent = "Recommended · OLED battery saver (<5% OPR)";
-      } else if (mode === "dimmed") {
-        text.textContent = "Darkened plate in standby · balanced battery";
-      } else {
-        text.textContent = "Full plate color · higher battery use in AOD";
-      }
-    };
-  }
-
   row_settings(wrap) {
     wrap.className = "row";
     const file = el("input", { type: "file", accept: ".json,application/json", hidden: true, id: "load-file" });
@@ -3900,15 +3857,16 @@ class DialTool {
       }
       if (kind === "wearos") {
         this.log("building Wear OS Watch Face APK…");
-        const aodMode = S.wearos_aod || "black";
         const xml = generate_watchface_xml(S);
         const drawables = {
           dial_face: await svg_to_png_bytes(svg_dial_face(S, statik)),
-          dial_face_ambient: await svg_to_png_bytes(svg_dial_face(S, statik, aodMode)),
+          dial_face_ambient: await svg_to_png_bytes(svg_dial_face(S, statik, "black")),
+          dial_face_ambient_black: await svg_to_png_bytes(svg_dial_face(S, statik, "black")),
+          dial_face_ambient_dimmed: await svg_to_png_bytes(svg_dial_face(S, statik, "dimmed")),
           hour_hand: S.ha_on && S.ha_hour.on ? await svg_to_png_bytes(svg_hand(S, "hour")) : null,
-          hour_hand_ambient: S.ha_on && S.ha_hour.on ? await svg_to_png_bytes(svg_hand(S, "hour", aodMode)) : null,
+          hour_hand_ambient: S.ha_on && S.ha_hour.on ? await svg_to_png_bytes(svg_hand(S, "hour", "black")) : null,
           minute_hand: S.ha_on && S.ha_minute.on ? await svg_to_png_bytes(svg_hand(S, "minute")) : null,
-          minute_hand_ambient: S.ha_on && S.ha_minute.on ? await svg_to_png_bytes(svg_hand(S, "minute", aodMode)) : null,
+          minute_hand_ambient: S.ha_on && S.ha_minute.on ? await svg_to_png_bytes(svg_hand(S, "minute", "black")) : null,
           second_hand: S.ha_on && S.ha_second.on ? await svg_to_png_bytes(svg_hand(S, "second")) : null,
           cap: S.ha_on && S.ha_cap > 0 ? await svg_to_png_bytes(svg_cap(S)) : null,
           preview: await svg_to_png_bytes(svg_preview(S, statik)),

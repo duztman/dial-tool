@@ -33,20 +33,19 @@ if (!xml.includes("<MinuteHand resource=\"minute_hand\"")) {
 if (!xml.includes("<SecondHand resource=\"second_hand\"")) {
   throw new Error("Missing SecondHand element in WFF XML");
 }
-if (!xml.includes('<Variant mode="AMBIENT" target="alpha" value="0" />')) {
-  throw new Error("Missing alpha=0 AMBIENT variant in WFF XML");
+if (!xml.includes('<UserConfigurations>')) {
+  throw new Error("Missing UserConfigurations in WFF XML");
 }
-if (!xml.includes('<Variant mode="AMBIENT" target="alpha" value="255" />')) {
-  throw new Error("Missing alpha=255 AMBIENT variant in WFF XML");
+if (!xml.includes('<ListConfiguration id="aod_plate"')) {
+  throw new Error("Missing ListConfiguration id='aod_plate' in WFF XML");
 }
-if (xml.includes('target="resource"')) {
-  throw new Error("Invalid target='resource' found in WFF XML (Wear OS ignores resource variants)");
+if (!xml.includes('defaultValue="0"')) {
+  throw new Error("Default AOD option should be 0 (Pure Black)");
 }
-const xmlPlate = generate_watchface_xml({ ...S, wearos_aod: "plate" });
-if (xmlPlate.includes("dial_face_ambient")) {
-  throw new Error("Plate mode should not generate separate dial_face_ambient layer");
+if (!xml.includes('displayName="@string/aod_plate_setting"')) {
+  throw new Error("Missing displayName reference in ListConfiguration");
 }
-console.log("✓ WFF XML structure and AOD alpha variants validated successfully");
+console.log("✓ WFF XML structure, UserConfigurations, and AOD variants validated successfully");
 
 // 3. Generate Layer SVGs (including upstream beta 4.41 disc hand and AOD modes)
 const svgFace = svg_dial_face(S, statik);

@@ -34,6 +34,10 @@ $strings = @"
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Dial Tool</string>
+    <string name="aod_plate_setting">Dimming Options</string>
+    <string name="aod_plate_black">Pure Black</string>
+    <string name="aod_plate_dimmed">Dimmed</string>
+    <string name="aod_plate_plate">Same as Dial</string>
 </resources>
 "@
 Set-Content -Path "$baseDir/res/values/strings.xml" -Value $strings -Encoding UTF8
@@ -73,7 +77,7 @@ Set-Content -Path "$baseDir/res/raw/watchface.xml" -Value $dummyWff -Encoding UT
 
 # 1x1 transparent PNG bytes
 $pngBytes = [Convert]::FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")
-$drawables = @("icon", "preview", "dial_face", "dial_face_ambient", "hour_hand", "hour_hand_ambient", "minute_hand", "minute_hand_ambient", "second_hand", "cap")
+$drawables = @("icon", "preview", "dial_face", "dial_face_ambient", "dial_face_ambient_black", "dial_face_ambient_dimmed", "hour_hand", "hour_hand_ambient", "minute_hand", "minute_hand_ambient", "second_hand", "cap")
 
 foreach ($d in $drawables) {
     [IO.File]::WriteAllBytes("$baseDir/res/drawable-nodpi/$d.png", $pngBytes)

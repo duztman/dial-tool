@@ -1,4 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Dial Tool</string>
+    <string name="aod_plate_setting">Dimming Options</string>
+    <string name="aod_plate_black">Pure Black</string>
+    <string name="aod_plate_dimmed">Dimmed</string>
+    <string name="aod_plate_plate">Same as Dial</string>
 </resources>

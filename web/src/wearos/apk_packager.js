@@ -456,6 +456,8 @@ export function build_wearos_apk(watchfaceXml, drawables = {}, metadata = {}) {
   const mapping = {
     dial_face: "res/drawable-nodpi-v4/dial_face.png",
     dial_face_ambient: "res/drawable-nodpi-v4/dial_face_ambient.png",
+    dial_face_ambient_black: "res/drawable-nodpi-v4/dial_face_ambient_black.png",
+    dial_face_ambient_dimmed: "res/drawable-nodpi-v4/dial_face_ambient_dimmed.png",
     hour_hand: "res/drawable-nodpi-v4/hour_hand.png",
     hour_hand_ambient: "res/drawable-nodpi-v4/hour_hand_ambient.png",
     minute_hand: "res/drawable-nodpi-v4/minute_hand.png",
