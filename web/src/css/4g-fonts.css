@@ -98,10 +98,10 @@
     grid-template-columns: calc(50% + var(--unit) / 2) minmax(0, 1fr); overflow-y: auto; margin: 0; padding: var(--u6);
     border: var(--hair) solid var(--rule); background: var(--hover); box-shadow: var(--shadow-light); color: var(--ink); font-size: var(--t-xxs); line-height: 1.3; }      /* a size under the buttons' words */
   .legend[hidden] { display: none; }
-  .legendhead { grid-column: 1 / -1; padding-bottom: var(--unit); color: var(--grey); font: 400 calc(1.5 * var(--t-pixel))/1.25 var(--pixel); text-transform: uppercase; white-space: nowrap; opacity: var(--pixel-ink); }      /* its title across both columns from the top left, on one line, in the pixel font at half a size more (R32's one exception) */
+  .legendhead { grid-column: 1 / -1; padding-bottom: var(--unit); color: var(--grey); font: 400 var(--t-pixel-legend)/1.25 var(--pixel); text-transform: uppercase; white-space: nowrap; opacity: var(--pixel-ink); }      /* its title across both columns from the top left, on one line, in the pixel font at half a size more (R32's one exception) */
   .legend :is(dt, dd) { padding: var(--unit) 0; border-top: var(--hair) solid var(--rule); }
   .legend dt { display: flex; justify-content: flex-end; align-items: flex-start; padding-right: var(--u3); }
-  .legend dt .sticker { padding: calc(0.375 * var(--unit)) calc(0.75 * var(--unit)); font-size: calc(1.5 * var(--t-pixel)); }      /* half a size more than in the list (R32's one exception; Okay, 14 Oct 2026, 01:14: ".5 more size on all silkscreen") */
+  .legend dt .sticker { padding: var(--legend-sticker-pad); font-size: var(--t-pixel-legend); }      /* half a size more than in the list (R32's one exception; Okay, 14 Oct 2026, 01:14: ".5 more size on all silkscreen") */
   .legend dd { margin: 0; }
   .legend dd small { color: var(--wait); font-size: inherit; }
   .legend .together { white-space: nowrap; }      /* the last word and its bracket: never an orphan */

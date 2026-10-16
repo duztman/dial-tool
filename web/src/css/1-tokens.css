@@ -30,7 +30,6 @@
     --margin: 24px;                                /* the panel's side space, left and right: where every line starts and ends */
     --eye: 16px;                                   /* the toggle column */
     --gap: 12px; --col: 54px;
-    --nudge: 2px;                                  /* the eyes stand this much right of the margin */
     --lead: calc(var(--eye) + var(--gap));         /* the toggle column and the gap after it: where the six columns start */
     --columns: var(--eye) repeat(6, minmax(0, 1fr));
     --panel: calc(2 * var(--margin) + var(--lead) + 6 * var(--col) + 5 * var(--gap));
@@ -43,9 +42,7 @@
     --tile-w: calc((4 * var(--col) + 3 * var(--gap) - 3 * var(--unit)) / 4);      /* a tile: four stand on the four control columns one unit apart, so each is a little wider than a column. A number's field and its stepper are the third and the fourth tile */
     /* a number's row, as tracks with the gaps written in (no gap of its own): label 2 columns · slider · field · stepper, the last three on the tiles' edges */
     --num-columns: var(--col) var(--gap) var(--col) var(--gap) minmax(0, 1fr) var(--gap) var(--tile-w) var(--unit) var(--tile-w);
-    --btn-pad: 10px;                               /* from a button's or a box's edge to its words */
     --control: 26px;                               /* a control's height: field, button, swatch */
-    --control-s: calc(0.75 * var(--control));      /* a quiet button at three quarters: Lang. and Change… in the font box (Okay, 14 Oct 2026) */
     --control-large: 32px;                         /* the Guides switch, the hex line */
     --line: 34px;                                  /* a row's height */
     --head: 40px;                                  /* a pane's heading */
@@ -55,7 +52,6 @@
     --play: #CC381A; --play-dark: #7A1E0C; --play-light: #F28A6C;      /* the play button, an arcade button from above: its cap (the seconds hand's red, geometry.js ACCENT), the shade round it and under it, the light on it (Okay, 14 Oct 2026: "3 colors and a black outline") */
     --speed-thumb: 22px; --speed-ball: 9px;        /* how fast: its thumb (14 until Okay, 15 Oct 2026, 02:42: "this nubbin should grow 160%, eye stays still"); the knobs at its ends (6 until 00:42) */
     --bio-width: calc(var(--panel) - 2 * var(--margin));      /* the bio under Okay's mark: as wide as the panel's lines */
-    --logo-disc: 2px;                              /* the bio open: how far the mark's night disc reaches past its 16 box (ring to disc edge ≈ 2.3) */
     /* the dial alone (the eye switch, Okay, 15 Oct 2026, 04:02): the panel slides away and the dial grows to fit, eased */
     --panel-w: calc(var(--panel) + var(--hair));   /* the panel's column: its lines and its right hairline */
     --view-time: 700ms; --view-ease: cubic-bezier(0.65, 0, 0.35, 1);      /* slow out, slow in */
@@ -78,26 +74,18 @@
     --track-50: 0.05em;                            /* tracking 50: every monospace word of the bottom bar (Okay, 15 Oct 2026, 06:51: "all mono text around here gets +50 tracking") */
     --track-100: 0.1em;                            /* tracking 100 (Okay, 04:59: "now gets 100 tracking") */
     --title-end: 0px; --bar-h: 0px;                /* set by dial_alone(): where the title ends (undo · redo stop short of it); the bar's height on a phone */
-    --speed-pad: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2);      /* the speed box's room inside, left and right: the thumb at either end stands as far from the wall as from the box's top and bottom (3; Okay, 15 Oct 2026, 03:18: "when the ball is in a terminal, the bounding box clears it as much as it clears from the top… both ends symmetry"). Was u3 + 4 − half a thumb (1.25; 01:03, "before plus four") */
-    --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
     --play-size: 34px; --play-pulse: 22%;          /* the play button: a section tab's box (Okay, 00:42); how far its cap goes toward its light colour at a beat (faint: Okay, 01:20) */
-    --t-time: 17px;                                /* the time in the bar: larger than --t-l (Okay, 14 Oct 2026, 23:55: "larger digital time"); R32 lists it */
     --time-chars: calc(8ch + 8 * var(--track-50));      /* the time's field: "10:09:36", eight characters of the mono face and their tracking */
     --day-wide: 518px;                             /* the day slider at its widest: as wide as on an iPad (1180 wide), so a big screen doesn't stretch it (Okay, 23:19) */
     --tile: 50px;                                  /* a picture tile's least height */
-    --frame-pad: 8px;                              /* inside a frame (a ring row, the font box): from its edge to what is in it, where a pane's row would have none */
-    --ring-gap: 4px;                               /* between framed rows */
     --guide-tint: 22%; --guide-edge: 65%;          /* the selected ring's row: this much of its guide's colour in its ground, and in its frame */
     --tab-notch: var(--unit);                      /* how deep the notch between two tabs is cut (a V, twice as wide): one unit */
     --tab-high: 40px; --tab-pad: 11px;             /* a word tab's height (Hour · Minute · Seconds) · above and under a picture tab's picture (the window cards): room to breathe */
     --round-pill: 999px;                           /* fully round: the signs on the Rings heading line, a value button */
     --menu-box: 18px;                              /* the boxed arrow beside a label that opens a small menu */
-    --foot-gap: 4px;                               /* between the round signs on the Rings heading line */
-    --ringline-pad: 8px; --ringline-gap: 8px; --ringline-join: 2px;      /* the selected ring's line: inside its frame · between its parts · between it and its ring's row */
     --ringline-inner: var(--triple);               /* its second, inner line: three times the outer */
     --row-end: calc(var(--frame-pad) - var(--hair) + var(--ringline-inner));      /* the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons */
     --line-button: 36px; --bare-dot: 16px;      /* in the ring drawer every control is this high (a value button this wide too) · the colour's swatch */
-    --name-in: 6px;                                /* a ring's name starts this far into its column; the ring line's buttons too */
     --half: 30px;                                  /* AM · PM: its own window beside the time (Okay, 14 Oct 2026, 23:19) */
     --value-pop: 132px;                            /* a value button's pop-up: about as wide as it is high */
     --dot-tiny: 10px;                              /* a colour inside a line of words: a folded pane's summary */
@@ -105,14 +93,12 @@
     --grip: 18px;                                  /* the ring list's drag handle column */
     --log-least: 96px; --log-most: 260px;          /* the Export log: at least this high, at most this */
     --round-switch: 10px;                          /* the switches on the preview: undo, Guides, Backdrop */
-    --glow-line: 1.5px; --glow-under: 4px;         /* the outline of what the pointer is on, and the white line under it */
-    --tip-arrow: 5px; --tip-arrow-in: 2.6px;       /* the pointer label's arrow: its dark line and the white line inside it */
     --ruler: 22px; --names: 18px; --handle: var(--triple);      /* the day's ruler: its height, the hours' names under it, the handle's width */
     --bar-lead-narrow: 46px; --bar-day-narrow: 48px;      /* on a phone the bar is two lines: the panel's controls, then the day */
     --tick: 16px;                                  /* a tick box */
     --reach: calc((var(--line) - var(--control)) / 2);      /* what a row leaves above and under a control: under a finger, a press there counts too */
-    --chip: 22px; --chip-gap: 4px;                 /* a colour to pick: in the pop-out's two rows, in the guides' list */
-    --pop-pad: 16px; --pop-gap: 12px; --pop-label: 72px;      /* a night part (colour pop-out, guides' list): the space inside its edge, the space between its blocks; the column of the pop-out's row names */
+    --chip: 22px;                                  /* a colour to pick: in the pop-out's two rows, in the guides' list (the gap between two: a special) */
+    --pop-label: 72px;                             /* a night part (colour pop-out, guides' list): the column of the pop-out's row names (its spaces: specials) */
     --pop-field: 140px; --pop-hue: 22px;           /* its field of one hue, and the strip of hues under it */
     --knob: 20px;                                  /* the handle on the field and on the strip */
     /* the colour pop-out is near black; inside it the usual names (--ink, --paper, --field…) are set to these */
@@ -122,18 +108,16 @@
     --dot: 14px;                                   /* a swatch to pick from (a band's sectors) */
     --pill-gap: var(--unit);                       /* a colour pill: this one space everywhere. Around its swatch, between swatch and hex, and from the pill to its row's lines: a row is the swatch and four of these */
     --pill: calc(1em + 2 * var(--pill-gap));       /* its height. The swatch is as high as the hex is set (1em) */
-    --pop-width: 388px; --pop-chips: 11; --pop-chip-gap: 12px;      /* the colour pop-out: its width; colours to a row (the palette's ten and its +), which share the row's width; the room between two */
+    --pop-width: 388px; --pop-chips: 11;           /* the colour pop-out: its width; colours to a row (the palette's ten and its +), which share the row's width (the room between two: a special) */
     --checker: repeating-conic-gradient(#BDBDB9 0 25%, var(--white) 0 50%) 0 0 / 8px 8px;      /* what shows through a see-through colour */
     --faint: 0.35;                                 /* how much of a switch on the preview shows at rest */
-    --canvas-inset: 12px;                          /* from the preview's edge to what stands on it */
     --canvas-top: calc((var(--header) - var(--control-large)) / 2);      /* undo and Guides stand on the header's middle line, with the title and the unit box */
     --guide-name: 92px; --guide-row: 42px;         /* the guides' list: the column of names · a line's height */
-    --guide-dot: 10px; --guide-gap: 10px;           /* a round colour in the guides' list, and the room between two: the chosen one's ring needs it */
-    --ring-gap-in: 2px; --ring-thick: 3px;         /* the chosen one: a ring of the ground this wide, then a ring of its own colour this thick */
+    --guide-dot: 10px;                             /* a round colour in the guides' list (the room between two: a special) */
+    --ring-thick: 3px;                             /* the chosen one: a ring of its own colour this thick, a ring of the ground inside it (a special) */
 
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
-    --t-xs: 11px; --t-s: 12px; --t-m: 13px; --t-l: 15px;
-    --t-xxs: 10px;                                 /* the smallest: the words in the font sheet's legend, and the font box's quiet buttons (Okay, 14 Oct 2026) */
+    --t-xs: 11px; --t-s: 12px; --t-m: 13px; --t-l: 15px;      /* two more, asked for by Okay, stand with the specials: --t-xxs, --t-time */
     --find: calc(3 * var(--col) + 2 * var(--gap)); /* the font sheet's Find field: three columns, the sheet's right half */
     /* stickers: one colour for a kind of thing a font family has. Pale: a guide's colour, as much of it as in the
        selected ring's row */
@@ -153,6 +137,41 @@
     --sans: system-ui, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
     --pixel: "Silkscreen", ui-monospace, Menlo, monospace;      /* tiny numbers inside small drawings (a value button, the numerals picture): Silkscreen, packed into the page by build.mjs (SIL OFL) */
     --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;      /* only for what the tool says: the log, a link, a hex value, a feature's tag — and everything on the bottom bar (Okay, 14 Oct 2026, 23:55: "All mono on the lower line") */
+
+    /* ── specials (R32) ──────────────────────────────────────────────────────────────────────────────────
+       Every value that leaves the scale of spaces (--u1 … --u8), the three lines (--hair, --thick, --triple) or the
+       type sizes (--t-xs … --t-l, --t-pixel and its double) stands here, by name, with why. Gathered 16 Oct 2026
+       (build list #290); the layout check (#188) will hold the stylesheet to this list. Not specials: the grid's own
+       measures (--margin, --eye, --gap, --col) and sizes of things (heights, widths), which no scale governs. */
+
+    /* asked for by Okay */
+    --control-s: calc(0.75 * var(--control));      /* a quiet button at three quarters: Lang. and Change… in the font box (Okay, 14 Oct 2026: "scale down to 75%") */
+    --t-xxs: 10px;                                 /* a fifth type size, the smallest: the words in the font sheet's legend, and the font box's quiet buttons (Okay, 14 Oct 2026) */
+    --t-time: 17px;                                /* a sixth, for the bar's time alone: larger than --t-l (Okay, 14 Oct 2026, 23:55: "larger digital time") */
+    --t-pixel-legend: calc(1.5 * var(--t-pixel));  /* the pixel font at 12, neither 8 nor 16: the font sheet's legend, its title and stickers (Okay, 14 Oct 2026, 01:14: ".5 more size on all silkscreen"; on a 2× screen its dots still fall on the screen's) */
+    --legend-sticker-pad: calc(0.375 * var(--unit)) calc(0.75 * var(--unit));      /* a legend sticker's padding, grown with its size */
+    --pixel-ink-bar: 1;                            /* the bar's 1X, 720X and the speed riding over the thumb: the pixel font at full strength in their own colours, not --pixel-ink (Okay, 15 Oct 2026, 00:18: "same color as the ball") */
+    --pop-chip-gap: 12px;                          /* between two colours in the colour pop-out's rows (Okay, 12 Oct 2026: "×3 gaps") */
+    --speed-pad: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2);      /* the speed box's room inside, left and right: the thumb at either end stands as far from the wall as from the box's top and bottom (3; Okay, 15 Oct 2026, 03:18: "when the ball is in a terminal, the bounding box clears it as much as it clears from the top… both ends symmetry"). Was u3 + 4 − half a thumb (1.25; 01:03, "before plus four") */
+    --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
+
+    /* off the scale as found, with no figure from Okay (16 Oct 2026): kept as they are, each to be put on the scale or
+       kept when Okay looks through this list (#294) */
+    --nudge: 2px;                                  /* the eyes stand this much right of the margin */
+    --btn-pad: 10px;                               /* from a button's or a box's edge to its words */
+    --frame-pad: 8px;                              /* inside a frame (a ring row, the font box): from its edge to what is in it, where a pane's row would have none */
+    --ring-gap: 4px;                               /* between framed rows */
+    --foot-gap: 4px;                               /* between the round signs on the Rings heading line */
+    --ringline-pad: 8px; --ringline-gap: 8px; --ringline-join: 2px;      /* the selected ring's line: inside its frame · between its parts · between it and its ring's row (Okay asked for more room inside, 13 Oct, beta 4.10; 8 was Claude's figure) */
+    --name-in: 6px;                                /* a ring's name starts this far into its column; the ring line's buttons too */
+    --chip-gap: 4px;                               /* between two colours to pick */
+    --pop-pad: 16px; --pop-gap: 12px;              /* a night part (colour pop-out, guides' list): the space inside its edge, the space between its blocks */
+    --guide-gap: 10px;                             /* the room between two round colours in the guides' list: the chosen one's ring needs it */
+    --ring-gap-in: 2px;                            /* the chosen guide colour: a ring of the ground this wide, inside its own ring */
+    --logo-disc: 2px;                              /* the bio open: how far the mark's night disc reaches past its 16 box (ring to disc edge ≈ 2.3) */
+    --canvas-inset: 12px;                          /* from the preview's edge to what stands on it (a phone sets it to --u5) */
+    --glow-line: 1.5px; --glow-under: 4px;         /* lines, but not one of the three: the outline of what the pointer is on, and the white line under it */
+    --tip-arrow: 5px; --tip-arrow-in: 2.6px;       /* lines, but not one of the three: the pointer label's arrow, its dark line and the white line inside it */
   }
   @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --pop-width: 454px; --dot: 18px; --guide-dot: 14px; --guide-gap: 13px; --pop-field: 180px; --pop-hue: 32px; --knob: 28px; } }      /* a finger needs more to hold than a pointer */
 }

@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.42 (web version) · 16 Oct 2026
+
+Phase A of Okay's notes (build list #290). Nothing on screen changes: the look-check (`web/test/same.mjs`, 489 states) finds no difference but six readings of the showcase's Now and 10:10 pills caught mid-fade (a 250 ms opacity transition, read at another moment; none of their tokens moved).
+
+- **Specials, in one place** (R32): every value in the stylesheet that leaves the scale of spaces, the three line widths or the type sizes now stands in one labelled block at the end of `1-tokens.css`, by name, with why — first the ones Okay asked for (the quiet buttons at 75 %, the type sizes 10 and 17, the pixel font at 12 in the legend, the bar's pixel labels at full strength, the pop-out's chip gap, the speed box's padding), then the ones found off the scale with no figure from him (#294, to look through). Three bare values in rules became tokens there (the legend's pixel size and sticker padding, the bar labels' strength).
+
 ## beta 4.41.25 (web version) · 16 Oct 2026
 
 - **Reset moved into the Dial tab**, last, under Colours, with a warning under it: it replaces the whole dial with the guide's First dial (undo brings yours back). The pill over the dial is gone: a view option it is not.
