@@ -1,10 +1,15 @@
 # Fonts that come with the web version
 
 Open-licence fonts the web version offers in its font list. All are under the SIL Open Font Licence 1.1,
-which allows passing them on with their licence. Each family's own licence file, with its copyright line, is in `licences/`.
-Taken from github.com/google/fonts (folder `ofl/`) and github.com/dse/routed-gothic on 11 Oct 2026; unchanged, only renamed
-(`Jost[wght].ttf` → `Jost-wght.ttf`). Inter, the page's stand-in font, is packed inside the page itself (also OFL).
-The list is written by `web/fonts.mjs`.
+which allows passing them on with their licence — but one: GL-Nummernschild is Gutenberg Labo's free-software font
+("unlimited permission is granted to use, copy, and distribute it, with or without modification"; its licence is only in
+the font's own name table, copied into `licences/`). Each family's own licence file, with its copyright line, is in `licences/`.
+Taken from github.com/google/fonts (folder `ofl/`) and github.com/dse/routed-gothic on 11 Oct 2026, and on 17 Oct 2026
+(the font research's top tier, `docs/font-tiers-2026-10-16.md`) from google/fonts again, from Peter Wiegel's zips at
+peter-wiegel.de, and — D-DIN — from github.com/amcchord/datto-d-din, a copy of Datto's own `D-DIN_complete.zip` (Datto's
+page is not reachable from a session); unchanged, only renamed (`Jost[wght].ttf` → `Jost-wght.ttf`, spaces to dashes).
+Most carry Reserved Font Names: a file is passed on whole, never subset (docs/font-research-2026-10-16.md §4).
+Inter, the page's stand-in font, is packed inside the page itself (also OFL). The list is written by `web/fonts.mjs`.
 
 | Family | Files | Copyright | Licence |
 |---|---|---|---|
@@ -28,3 +33,24 @@ The list is written by `web/fonts.mjs`.
 | Cormorant | `Cormorant-wght.ttf` | Copyright 2015 the Cormorant Project Authors (github.com/CatharsisFonts/Cormorant) | [licence](licences/Cormorant-OFL.txt) |
 | Poiret One | `PoiretOne-Regular.ttf` | Copyright 2011 The Poiret One Project Authors (https://github.com/alexeiva/poiretone) | [licence](licences/PoiretOne-OFL.txt) |
 | Allerta Stencil | `AllertaStencil-Regular.ttf` | Copyright (c) 2010, Matt McInerney (matt@pixelspread.com), | [licence](licences/AllertaStencil-OFL.txt) |
+| Anybody | `Anybody-wdth-wght.ttf` | Copyright 2020 The Anybody Project Authors (https://github.com/Etcetera-Type-Co/Anybody) | [licence](licences/Anybody-OFL.txt) |
+| Bebas Neue | `BebasNeue-Regular.ttf` | Copyright © 2010 by Dharma Type. | [licence](licences/BebasNeue-OFL.txt) |
+| Cinzel | `Cinzel-wght.ttf` | Copyright 2020 The Cinzel Project Authors (https://github.com/NDISCOVER/Cinzel) | [licence](licences/Cinzel-OFL.txt) |
+| Italiana | `Italiana-Regular.ttf` | Copyright (c) 2011, Santiago Orozco (hi@typemade.mx), with Reserved Font Name "Italiana". | [licence](licences/Italiana-OFL.txt) |
+| Marcellus | `Marcellus-Regular.ttf` | Copyright (c) 2012, Brian J. Bonislawsky DBA Astigmatic (AOETI) (astigma@astigmatic.com), with Reserved Font Names "Marcellus" | [licence](licences/Marcellus-OFL.txt) |
+| Public Sans | `PublicSans-wght.ttf` | Copyright 2015 The Public Sans Project Authors (https://github.com/uswds/public-sans) | [licence](licences/PublicSans-OFL.txt) |
+| Sometype Mono | `SometypeMono-wght.ttf` | Copyright 2018 The Sometype Mono Project Authors (https://github.com/googlefonts/sometype-mono) | [licence](licences/SometypeMono-OFL.txt) |
+| Space Grotesk | `SpaceGrotesk-wght.ttf` | Copyright 2020 The Space Grotesk Project Authors (https://github.com/floriankarsten/space-grotesk) | [licence](licences/SpaceGrotesk-OFL.txt) |
+| Tourney | `Tourney-wdth-wght.ttf` | Copyright 2020 The Tourney Project Authors (https://github.com/Etcetera-Type-Co/Tourney) | [licence](licences/Tourney-OFL.txt) |
+| Unica One | `UnicaOne-Regular.ttf` | Copyright 2012 The Unica One Project Authors (https://github.com/etunni/unica) | [licence](licences/UnicaOne-OFL.txt) |
+| D-DIN | `D-DIN.ttf` `D-DIN-Bold.ttf` `D-DINCondensed.ttf` `D-DINExp.ttf` | Copyright (C) 2017 Datto Inc. https://www.datto.com/fonts/d-din, | [licence](licences/D-DIN-OFL.txt) |
+| Alte DIN 1451 Mittelschrift | `din1451alt.ttf` | Copyright (c) 2017, Peter Wiegel, www.peter-wiegel.de, wiegel@peter-wiegel.de | [licence](licences/AlteDIN1451Mittelschrift-OFL.txt) |
+| Apollo | `ApolloASM.ttf` | Copyright (c) 2010, Peter Wiegel, www.peter-wiegel.de, wiegel@peter-wiegel.de | [licence](licences/Apollo-OFL.txt) |
+| Bernardo Moda Contrast | `Bernardo-Moda-contrast.ttf` | Copyright (c) 2017, Peter Wiegel, www.peter-wiegel.de, wiegel@peter-wiegel.de | [licence](licences/BernardoModaContrast-OFL.txt) |
+| CAT DyFa | `CAT_DyFa.ttf` | Copyright (c) 2015, CAT-Fonts, Peter Wiegel (http://www.catfonts.de | wiegel@peter-wiegel.de), | [licence](licences/CATDyFa-OFL.txt) |
+| CAT Kurier | `CATKurier.ttf` | Copyright (c) 2015, CAT-Fonts, Peter Wiegel (http://www.catfonts.de | wiegel@peter-wiegel.de), | [licence](licences/CATKurier-OFL.txt) |
+| Erika Type | `Erika-Type.ttf` `Erika-Type_B.ttf` | Copyright (c) 2009, Peter Wiegel, www.peter-wiegel.de, wiegel@peter-wiegel.de | [licence](licences/ErikaType-OFL.txt) |
+| GL-Nummernschild | `GL-Nummernschild-Mtl.ttf` `GL-Nummernschild-Eng.ttf` | (C)2009-2011 Gutenberg Labo, All rights reserved. http://gutenberg.sourceforge.jp/ | [licence](licences/GL-Nummernschild-free-software.txt) |
+| Immermann | `immermann.ttf` | Copyright (c) 2012, Peter Wiegel, www.peter-wiegel.de, wiegel@peter-wiegel.de | [licence](licences/Immermann-OFL.txt) |
+| Koch-Fraktur | `Koch-Fraktur_UNZ1A.ttf` | Copyright (c) 2009, Peter Wiegel, www.peter-wiegel.de, wiegel@peter-wiegel.de | [licence](licences/Koch-Fraktur-OFL.txt) |
+| TGL 0-16 | `TGL-0-16.ttf` `TGL-0-17.ttf` | Copyright (c) 2010, Peter Wiegel, www.peter-wiegel.de, wiegel@peter-wiegel.de | [licence](licences/TGL0-16-OFL.txt) |

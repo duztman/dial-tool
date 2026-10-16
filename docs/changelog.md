@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## beta 4.46.7 (web version) · 17 Oct 2026
+
+- **Twenty-one fonts join the list** (#313; the font research of 16 Oct, `docs/font-tiers-2026-10-16.md`, its top tier; Okay, 17 Oct: "incorporate it, push the design ui stuff for later. Add just font list to defaults in these versions nothing else"). The font sheet lists 42 families (21 before). Nothing else changes: the sheet's design (phase H, #273–#276) waits.
+  - From Google Fonts (OFL): Anybody · Bebas Neue · Cinzel · Italiana · Marcellus · Public Sans · Sometype Mono · Space Grotesk · Tourney · Unica One.
+  - D-DIN (Datto, OFL), in four cuts: Regular · Bold · Condensed · Expanded — from a GitHub copy of Datto's own archive, since Datto's page is not reachable from a session.
+  - From Peter Wiegel's zips (OFL): Alte DIN 1451 Mittelschrift · Apollo · Bernardo Moda Contrast · CAT DyFa · CAT Kurier · Erika Type (Regular, Bold) · Immermann · Koch-Fraktur · TGL 0-16 (Regular; DIN 17 as its Slanted style). And GL-Nummernschild (Mittelschrift, Engschrift), Gutenberg Labo's free-software font: its licence lives only in the font's own name table, so that text is kept by hand in `web/fonts/licences/`.
+  - `web/fonts.mjs` has three sources more (`wiegel`, a zip opened with `unzip`; `gutenberg`; `datto`), and a space in a file's name becomes a dash. Alte DIN's bolder `_g` file is left out: it carries the same PostScript name as the regular, so the catalogue (keyed by it) could hold only one.
+  - The page grows by the new families' outlines (about 300 kB); the fonts themselves are fetched when first chosen, as before, from the live page's `fonts/`.
+  - Reserved Font Names on most: files are passed on whole, never subset (research §4).
+
 ## beta 4.46.6 (web version) · 17 Oct 2026
 
 Three small ones left over from Okay's marks on 4.46 (handoff §1).
