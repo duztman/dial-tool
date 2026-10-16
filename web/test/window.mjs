@@ -550,14 +550,17 @@ await type_hex("global-c-backdrop-Backdrop", "#CCCCC7");
 // the Dial section: two panes, Dial (diameter, plate, background) and Page (margin, backdrop); no Guides pane
 check(JSON.stringify(await page.$$eval(".pinned .pane h2", (h) => h.map((x) => x.textContent))) === '["Dial","Page"]' && JSON.stringify(await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))) === '["Colours","Reset"]' && await page.isVisible("#background-add"), "Dial has four panes (Reset last since 4.41.25): Dial and Page stay in view, Colours scrolls under them; Background is a button");
 // units: a box at the panel's top right; lengths are shown and typed in the unit, kept in mm
-const unit_box = async () => page.$eval("#unit", (e) => { const r = e.getBoundingClientRect(), row = document.querySelector(".form .row").getBoundingClientRect(); return [e.textContent, Math.round(r.width), Math.round(r.height), Math.round(row.right - r.right)]; });
+// the unit box round its word's ink, 2 px all round and a line (#302): [word, width, height, from the column's end, the ink's room on each side]
+const unit_box = async () => page.$eval("#unit", (e) => { const r = e.getBoundingClientRect(), row = document.querySelector(".form .row").getBoundingClientRect(), pen = document.createElement("canvas").getContext("2d"), c = getComputedStyle(e);
+  pen.font = `${c.fontWeight} ${c.fontSize} ${c.fontFamily}`; const m = pen.measureText(e.textContent);
+  return [e.textContent, Math.round(r.width), Math.round(r.height), Math.round(row.right - r.right), [r.width - 2 - (m.actualBoundingBoxLeft + m.actualBoundingBoxRight), r.height - 2 - (m.actualBoundingBoxAscent + m.actualBoundingBoxDescent)].map((v) => +(v / 2).toFixed(1))]; });
 const as_mm = await unit_box();
 check(as_mm[0] === "mm" && as_mm[3] === 0 && await page.isHidden("#unit-menu"), "the unit box says mm and ends on the panel's last column");
 await page.click("#unit");
 check(JSON.stringify(await page.$$eval("#unit-menu button span:first-child", (b) => b.map((x) => x.textContent))) === '["Millimetres","Points","Inches","Lignes","Thou"]', "its menu: millimetres, points, inches, lignes, thou (#299)");
 await page.click("#unit-in");
 const as_in = await unit_box();
-check(as_in[0] === "in" && as_in[1] === as_mm[1] && as_in[2] === as_mm[2] && await page.isHidden("#unit-menu"), `Inches: the box says in and keeps its size (${as_in[1]} × ${as_in[2]})`);
+check(as_in[0] === "in" && [as_mm[4], as_in[4]].flat().every((v) => v >= 2 && v < 2.3) && await page.isHidden("#unit-menu"), `Inches: the box says in; each word's box stands 2 px round its letters (mm ${as_mm[4].join(" × ")}, in ${as_in[4].join(" × ")}; #302)`);
 check(await page.inputValue("#global-dial-d-Diameter") === "1.181" && await S("S.dial_d") === 30, "a 30 mm diameter shows as 1.181; the setting is still 30");
 await page.fill("#global-dial-d-Diameter", "1.5"); await page.press("#global-dial-d-Diameter", "Enter");
 check(near(await S("S.dial_d"), 38.1, 1e-6), "1.5 typed in inches is 38.1 mm");
@@ -1531,10 +1534,10 @@ await tab("Export");
     const w = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), version = r(".mast .title > .quiet:not(.help)"), help = r(".mast .help"), u = r("#unit"), p = r("#to-gallery");
       const shade = (q) => { const s = getComputedStyle(document.querySelector(q)).color, n = s.match(/[\d.]+/g).map(Number), rgb = (s.startsWith("color(") ? n.slice(0, 3).map((x) => x * 255) : n.slice(0, 3)), a = n.length > 3 ? n[3] : 1; return Math.round((rgb[0] + rgb[1] + rgb[2]) / 3 * a + 251.3 * (1 - a)); };      // how light it reads on the paper
       const uc = getComputedStyle(document.querySelector("#unit"));
-      return { gaps: [+(help.left - version.right).toFixed(2), +(p.left - help.right).toFixed(2)], high: p.height > u.height && uc.fontFamily.includes("Silkscreen") && uc.textTransform === "uppercase", shades: [shade("#unit"), shade("#to-gallery"), shade(".mast .help")] }; });
+      return { gaps: [+(help.left - version.right).toFixed(2), +(p.left - help.right).toFixed(2)], high: p.height > u.height && uc.fontFamily.startsWith('"Dial Mono"') && document.fonts.check('10px "Dial Mono"') && uc.textTransform === "none" && uc.paddingTop === "2px" && uc.paddingLeft === "2px" && uc.borderTopColor === uc.color, shades: [shade("#unit"), shade("#to-gallery"), shade(".mast .help")] }; });
     await page.click("#to-gallery"); await page.waitForTimeout(900);
     const at = await page.evaluate(() => { const g = document.querySelector(".gallery").getBoundingClientRect(), f = document.querySelector(".form").getBoundingClientRect(); return [window.dial_tool.S.ui_section, g.top < f.bottom && g.bottom > f.top]; });
-    check(Math.abs(w.gaps[0] - w.gaps[1]) < 0.6 && w.high && w.shades[0] > w.shades[1] && w.shades[1] > w.shades[2] && at[0] === 4 && at[1], `the Gallery pill: right after Help, as far from it as Help from the version (${w.gaps.join(" · ")}), taller than the unit box, whose word is in the pixel font in capitals (#299), darker than mm and lighter than Help (${w.shades.join(" > ")}); pressed, Export with the Gallery in view`);
+    check(Math.abs(w.gaps[0] - w.gaps[1]) < 0.6 && w.high && w.shades[0] > w.shades[1] && w.shades[1] > w.shades[2] && at[0] === 4 && at[1], `the Gallery pill: right after Help, as far from it as Help from the version (${w.gaps.join(" · ")}), taller than the unit box, whose word is in Dial Mono (packed), small letters, 2 px all round, its line the word's colour (#302), darker than mm and lighter than Help (${w.shades.join(" > ")}); pressed, Export with the Gallery in view`);
   }
   { // see-through shadows (Okay, 16 Oct 2026, #295): a see-through hand casts a lighter shadow, in its colour; a solid one as it always did; each multiplied onto the plate
     const s = await page.evaluate(async () => { const t = window.dial_tool, was = t.S.ha_minute.c.slice(); t.S.ha_minute.c = [1, 0, 0, 0.5]; t.changed(); t.render(); await new Promise((r) => setTimeout(r, 400));

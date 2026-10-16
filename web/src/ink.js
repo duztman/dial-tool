@@ -55,6 +55,14 @@ export function offset(text, style) {
   return known.get(key);
 }
 
+/** how large a label's ink is: [width, height], in CSS pixels, rounded up to whole screen dots — for a box drawn round
+ *  the letters alone (the unit box, #302). Without tracking: such a box has none. */
+export function ink_size(text, style) {
+  pen.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+  const m = pen.measureText(text), dot = 1 / (window.devicePixelRatio || 1), up = (v) => Math.ceil(v / dot - 1e-6) * dot;
+  return [up(m.actualBoundingBoxLeft + m.actualBoundingBoxRight), up(m.actualBoundingBoxAscent + m.actualBoundingBoxDescent)];
+}
+
 /** wrap and place one label; a box with anything but plain text in it is left alone. */
 function centre(box) {
   let span = box.firstElementChild;

@@ -12,7 +12,7 @@ import { FONT_LIST, FONT_SITE } from "./font_list.js";
 import { EXAMPLES } from "./examples.js";
 import { GALLERY } from "./gallery.js";
 import { OPENER } from "./opener.js";
-import { start_ink, offset as ink_offset } from "./ink.js";
+import { start_ink, offset as ink_offset, ink_size } from "./ink.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const el = (tag, props = {}, ...children) => {
@@ -1334,6 +1334,7 @@ class DialTool {
     menu.setAttribute("role", "menu");
     this.unit_button = el("button", { type: "button", className: "unitbox", id: "unit", title: "The unit lengths are shown in" });
     this.unit_button.setAttribute("aria-haspopup", "menu");
+    if (document.fonts) document.fonts.ready.then(() => this.size_unit());      // Dial Mono arrived: its ink measured again
     const open = (on) => { menu.hidden = !on; this.unit_button.setAttribute("aria-expanded", String(on)); };
     this.unit_open = open;
     this.unit_button.onclick = () => open(menu.hidden);
@@ -1830,7 +1831,7 @@ class DialTool {
     this.sync_shadows();
     this.sync_ring_summaries();
     paint(this.backdrop_dot, this.S.c_backdrop);
-    this.unit_button.textContent = this.unit()[0];
+    if (this.unit_button.textContent !== this.unit()[0]) { this.unit_button.textContent = this.unit()[0]; this.size_unit(); }
     this.unit_items.forEach((b, i) => { b.classList.toggle("on", i === this.S.ui_unit); b.setAttribute("aria-checked", String(i === this.S.ui_unit)); });
     for (const r of this.rows) {
       const T = this.target(r.row.scope);
@@ -4069,6 +4070,14 @@ class DialTool {
     this.speed_name.style.setProperty("--at", (+this.speed_slider.value / 1000).toFixed(4));      // where the thumb stands
     this.speed_slider.title = `How fast time runs: ${speed_word(k)}× (0.1× to 720×)`;
     this.speeds.classList.toggle("real", k === 1);
+  }
+
+  /** the unit box round its word's ink, as large as the letters and no more (Okay, 16 Oct 2026, #302: "2px padding
+   *  around letters"); the padding is the stylesheet's (--unit-pad) */
+  size_unit() {
+    const [w, h] = ink_size(this.unit()[0], getComputedStyle(this.unit_button));
+    this.unit_button.style.setProperty("--ink-w", w + "px");
+    this.unit_button.style.setProperty("--ink-h", h + "px");
   }
 
   /** how much of the speed track the slow steps take: two thumbs of the thumb's travel (#283: "at least as wide as two

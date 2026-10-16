@@ -41,7 +41,10 @@ const sheets = fs.readdirSync(path.join(here, "src/css")).filter((f) => f.endsWi
 // Dial Time (fonts/ui/time_font.py: Barlow Condensed Light, SIL OFL, cut down, its colon smaller and centred): the
 // bar's time and AM · PM (#284, beta 4.44)
 const time_face = `@font-face { font-family: "Dial Time"; font-weight: 300; src: url(data:font/ttf;base64,${b64(path.join(here, "fonts/ui/DialTime-Light.ttf"))}) format("truetype"); font-display: block; }`;
-const css = sheets.map((f) => fs.readFileSync(path.join(here, "src/css", f), "utf8")).join("\n") + pixel + time_face;
+// Dial Mono (fonts/ui/mono_font.py: JetBrains Mono, SIL OFL, at the weight whose stem is a line at 10 px, cut down):
+// the unit box's word (#302, beta 4.44.1)
+const unit_face = `@font-face { font-family: "Dial Mono"; font-weight: 400; src: url(data:font/ttf;base64,${b64(path.join(here, "fonts/ui/DialMono.ttf"))}) format("truetype"); font-display: block; }`;
+const css = sheets.map((f) => fs.readFileSync(path.join(here, "src/css", f), "utf8")).join("\n") + pixel + time_face + unit_face;
 const version = /VERSION = "([^"]+)"/.exec(fs.readFileSync(path.join(here, "src/geometry.js"), "utf8"))[1];
 
 const html = `<!doctype html>
@@ -51,7 +54,7 @@ const html = `<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
 <!-- Dial Tool, web version · ${version} · built ${new Date().toISOString().slice(0, 10)} · source: github.com/duztman/dial-tool, web/src
-     One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL) and the time's face (Barlow Condensed, OFL) are all inside. -->
+     One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 ${css}</style>
 </head>

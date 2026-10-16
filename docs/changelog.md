@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.44.1 (web version) · 16 Oct 2026
+
+- **The unit box, third look** (#302; Okay: "mm button sucks … use mono, abort silkscreen, border and letters should match, small"; then "Not system font, something universal … match the box please, and mm lowercase"):
+  - The word is in small letters ("mm") in **Dial Mono**, a packed cut of JetBrains Mono (3 KB). It is the same on every machine, and its weight (456) makes its stems exactly as thick as the box's 1 px line at 10 px.
+  - The box stands 2 px round the letters' ink on every side, so each unit's box is its own size; "thou" is taller for its ascenders.
+  - Line and letters are one colour.
+
 ## beta 4.44 (web version) · 16 Oct 2026
 
 Phase D: the bottom bar.

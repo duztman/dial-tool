@@ -44,7 +44,7 @@
     --num-columns: var(--col) var(--gap) var(--col) var(--gap) minmax(0, 1fr) var(--gap) var(--tile-w) var(--unit) var(--tile-w);
     --control: 26px;                               /* a control's height: field, button, swatch */
     --control-large: 32px;                         /* the Guides switch, the hex line */
-    --head-unit-w: calc(4ch + 2 * var(--u2));      /* the unit box on the title's line: as wide for every unit, its longest (THOU) and a space either side, in the pixel font (Okay, 16 Oct 2026: "much smaller box"; "silkscreen uppercase … smaller button") */
+    --unit-face: "Dial Mono", var(--mono);       /* the unit box's word: JetBrains Mono at the weight whose stem is the box's line at 10 px, packed (#302, beta 4.44.1; fonts/ui/mono_font.py) */
     --line: 34px;                                  /* a row's height */
     --head: 40px;                                  /* a pane's heading */
     --header: 64px;                                /* the panel's top: title and Guides */
@@ -163,7 +163,7 @@
     --speed-pad: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2);      /* the speed box's room inside, left and right: the thumb at either end stands as far from the wall as from the box's top and bottom (3; Okay, 15 Oct 2026, 03:18: "when the ball is in a terminal, the bounding box clears it as much as it clears from the top… both ends symmetry"). Was u3 + 4 − half a thumb (1.25; 01:03, "before plus four") */
     --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
     --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
-    --pixel-ink-unit: 1;                           /* the unit box's word in the pixel font at full strength of its colour, already as light as a dead switch (not --pixel-ink) */
+    --unit-pad: 2px;                               /* the unit box: this much round its word, on every side (Okay, 16 Oct 2026, on 4.44: "mm button sucks, 2px padding around letters, use mono, abort silkscreen, border and letters should match, small") */
 
     /* off the scale as found, with no figure from Okay (16 Oct 2026): kept as they are, each to be put on the scale or
        kept when Okay looks through this list (#294) */
