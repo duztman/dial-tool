@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.44.3 (web version) · 16 Oct 2026
+
+- **The unit box: the same room on every side, on every screen** (#302). Counted on Okay's screen (4.44.1), "mm" stood on the box's bottom line: 4.5 px above it, 0 below, 3 left, 2.5 right.
+  - The box was the right size; his browser placed the word inside a button differently from Chromium.
+  - Now the word is placed by the page, not by the button. The letters' size and place come from Dial Mono's own outlines (`UNIT_INK`, printed by `fonts/ui/mono_font.py`). The baseline is measured with a dot on the word's line, once the face has loaded; browsers round a face's ascent and descent each their own way (8 px down a 10 px line here, 8.6 by the face's figures).
+  - The box, the word and the box's place on the title's line are snapped to whole screen dots, so its line stays crisp.
+  - Counted again at 2× (Chromium): every side 2 px, to a screen dot, for all five units.
+- **The Shadows sign: no seam round the ball** (Okay: "There's a single faint line around the ball"). Its shadow was cut at the ball's outer edge, where two smoothed edges met and let a hairline of the ground through. It is now cut at the middle of the ball's line, so the cut lies under the line.
+
 ## beta 4.44.2 (web version) · 16 Oct 2026
 
 - **Reset's button stands flush left with its warning** (Okay: "reset button flush left with explaner text"), on the heading line where the warning starts, the controls' column. It was at the line's right (#269).

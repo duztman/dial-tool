@@ -52,3 +52,21 @@ sub.subset(font)
 out = os.path.join(HERE, "DialMono.ttf")
 font.save(out)
 print(f"{out}: {os.path.getsize(out)} bytes; weight {weight}, its stem {stem(weight):.1f} of 1000")
+
+# each unit's ink, from the outlines themselves (4.44.3; Okay, on 4.44.1: the box's room uneven — a canvas measures
+# a web face's ink differently from browser to browser): [left of the advance's start, width, top over the baseline,
+# height], in em. app.js keeps them as UNIT_INK; the box is drawn round them (size_unit)
+font = TTFont(out)
+glyphs, cmap, hmtx, upm = font.getGlyphSet(), font.getBestCmap(), font["hmtx"], font["head"].unitsPerEm
+ink = {}
+for word in ["mm", "pt", "in", "lig", "thou"]:
+    x, lo_x, hi_x, lo_y, hi_y = 0, None, None, None, None
+    for ch in word:
+        name = cmap[ord(ch)]; pen = BoundsPen(glyphs); glyphs[name].draw(pen); b = pen.bounds
+        lo_x = x + b[0] if lo_x is None else min(lo_x, x + b[0]); hi_x = x + b[2] if hi_x is None else max(hi_x, x + b[2])
+        lo_y = b[1] if lo_y is None else min(lo_y, b[1]); hi_y = b[3] if hi_y is None else max(hi_y, b[3])
+        x += hmtx[name][0]
+    ink[word] = [round(v / upm, 4) for v in (lo_x, hi_x - lo_x, hi_y, hi_y - lo_y)]
+hhea = font["hhea"]
+print(f"line: ascent {hhea.ascent / upm} · descent {-hhea.descent / upm} (hhea = typo = win, USE_TYPO_METRICS)")
+print("const UNIT_INK = " + "{ " + ", ".join(f"{w}: [{', '.join(str(v) for v in ink[w])}]" for w in ink) + " };")

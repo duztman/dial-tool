@@ -27,7 +27,6 @@ const INKED = [
   "#show-ten > .word",       // and its 10:10 pill (15 Oct 2026, 07:40)
   ".irisgo",                 // ACTIVATE SHOWCASE, beside the iris
   "#now",                    // NOW, beside it (Okay, 14 Oct 2026: "make sure the inner type is centered with equal padding within buttons")
-  "#unit",                   // mm · pt · in · lig
 ].join(", ");
 
 const canvas = document.createElement("canvas");
@@ -53,14 +52,6 @@ export function offset(text, style) {
     known.set(key, [snap(m.width / 2 - ink_x + track / 2), snap(box_y - ink_y)]);
   }
   return known.get(key);
-}
-
-/** how large a label's ink is: [width, height], in CSS pixels, rounded up to whole screen dots — for a box drawn round
- *  the letters alone (the unit box, #302). Without tracking: such a box has none. */
-export function ink_size(text, style) {
-  pen.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
-  const m = pen.measureText(text), dot = 1 / (window.devicePixelRatio || 1), up = (v) => Math.ceil(v / dot - 1e-6) * dot;
-  return [up(m.actualBoundingBoxLeft + m.actualBoundingBoxRight), up(m.actualBoundingBoxAscent + m.actualBoundingBoxDescent)];
 }
 
 /** wrap and place one label; a box with anything but plain text in it is left alone. */

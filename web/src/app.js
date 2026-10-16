@@ -12,7 +12,7 @@ import { FONT_LIST, FONT_SITE } from "./font_list.js";
 import { EXAMPLES } from "./examples.js";
 import { GALLERY } from "./gallery.js";
 import { OPENER } from "./opener.js";
-import { start_ink, offset as ink_offset, ink_size } from "./ink.js";
+import { start_ink, offset as ink_offset } from "./ink.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const el = (tag, props = {}, ...children) => {
@@ -252,7 +252,7 @@ const TOOL_ICONS = {
   // 15 Oct, 02:42: mirrored (lit from the upper left, the shadow cast to the right) and its outline DENSE, as Guides',
   // the sign beside it on 18 ("ball stroke thickness too much… look at similar size icons, guides and such")
   shadows: `<circle cx="7.25" cy="9.75" r="5.5" ${sw(DENSE)}/><path d="M4.5 14.5A5.5 5.5 0 0 0 12 7A8 8 0 0 1 4.5 14.5Z" fill="currentColor" stroke="none"/>`
-    + `<path d="M11.88 13.76A5.625 1.25 0 0 1 16.75 15A5.625 1.25 0 0 1 7.1 15.87A6.125 6.125 0 0 0 11.88 13.76Z" fill="currentColor" stroke="none"/>`,      // the ball sunk 2 into its shadow (Okay, 16 Oct 2026, on 4.44: "Shadow's ball sinks 2px down into its shadow"; it touched it from 4.42.4): the shadow the same ellipse (11.125 15, 5.625 × 1.25), the ball's disc (to its line's outer edge, 6.125) cut out of it — it stands in front. The two meeting points are where ellipse and edge cross, to a hundredth
+    + `<path d="M11.03 13.75A5.625 1.25 0 0 1 16.75 15A5.625 1.25 0 0 1 5.5 15A5.5 5.5 0 0 0 11.03 13.75Z" fill="currentColor" stroke="none"/>`,      // the ball sunk 2 into its shadow (Okay, 16 Oct 2026, on 4.44: "Shadow's ball sinks 2px down into its shadow"; it touched it from 4.42.4): the shadow the same ellipse (11.125 15, 5.625 × 1.25), the ball's disc cut out of it — it stands in front. Cut at the middle of the ball's line (5.5), so the cut's edge lies under the line: cut at its outer edge (6.125, 4.44.2) the two edges met and left a faint light seam round the ball (Okay: "a single faint line around the ball"). The rim crosses the shadow's top at 11.03 and at its left end
   // Okay's own mark, on 16 in the panel's first column (15 Oct 2026, 02:42: "my personal logo. Draw this like an
   // icon"): a ring; a 45° diagonal from ring to ring; through its crossing with them a level line to the right and an
   // upright one down; a cell between them (3.5 × 4, as in his drawing); a 45° slant from the cell's corner to the
@@ -610,7 +610,10 @@ const speed_place = (k, split) => (k < 1 ? split * SPEED_SLOW.reduce((best, x, i
 const speed_at = (p, split) => (p < split ? SPEED_SLOW[Math.round(p / split * (SPEED_SLOW.length - 1))] : SPEED_HI ** ((p - split) / (1 - split)));
 const speed_word = (k) => (k >= 10 ? String(Math.round(k)) : String(+k.toFixed(k < 1 ? 2 : 1)));      // the figures: 0.25, 1, 2.5, 60
 const frac = (x) => ((x % 1) + 1) % 1;
-const PULSE_MOST = 3;      // the play button's pulse: at most this many a second, unless the movement's own beat is more (#282)
+const PULSE_MOST = 3;
+// each unit's ink in Dial Mono, in em, from its outlines (fonts/ui/mono_font.py prints it): [left of the advance's
+// start, width, top over the baseline, height]. The unit box is drawn round it (size_unit, #302)
+const UNIT_INK = { mm: [0.062, 1.076, 0.56, 0.56], pt: [0.088, 1.035, 0.705, 0.885], in: [0.082, 1.032, 0.78, 0.78], lig: [0.029, 1.683, 0.78, 0.96], thou: [0.052, 2.262, 0.73, 0.74] };      // the play button's pulse: at most this many a second, unless the movement's own beat is more (#282)
 const SECTIONS = Object.keys(ROWS);                // their numbers are what ui_section stores (R9)
 const TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];      // left to right. Guides is a switch on the preview (Okay, 12 Oct 2026)
 for (const name of SECTIONS) for (const row of ROWS[name]) row.scope ??= name === "Rings" ? "ring" : "global";
@@ -1315,13 +1318,14 @@ class DialTool {
     // baseline"). Each is moved as a whole (its menu with it); one that isn't shown (a phone's squeezed line) stays put
     for (const box of document.querySelectorAll(".panel > header :is(.galleryway, .unit)")) {
       box.style.translate = "";
-      const word = box.querySelector("button"), dot = el("span");
+      const word = box.querySelector("button .word") || box.querySelector("button"), dot = el("span");      // the unit box: its word's own line
       dot.style.cssText = "display:inline-block;width:0;height:0";
       word.append(dot);
       const at = dot.getBoundingClientRect();
       dot.remove();
       if (at.height === 0 && at.top === 0) continue;
-      box.style.translate = `0 ${(baseline + moved - at.top).toFixed(2)}px`;
+      const dots = window.devicePixelRatio || 1;
+      box.style.translate = `0 ${Math.round((baseline + moved - at.top) * dots) / dots}px`;      // in whole screen dots: a hairline box stays crisp (the unit box, #302)
     }
   }
 
@@ -1334,7 +1338,7 @@ class DialTool {
     menu.setAttribute("role", "menu");
     this.unit_button = el("button", { type: "button", className: "unitbox", id: "unit", title: "The unit lengths are shown in" });
     this.unit_button.setAttribute("aria-haspopup", "menu");
-    if (document.fonts) document.fonts.ready.then(() => this.size_unit());      // Dial Mono arrived: its ink measured again
+    if (document.fonts) document.fonts.load('10px "Dial Mono"').then(() => this.size_unit(), () => {});      // measured again once Dial Mono is in (fonts.ready can come before a face is even asked for)
     const open = (on) => { menu.hidden = !on; this.unit_button.setAttribute("aria-expanded", String(on)); };
     this.unit_open = open;
     this.unit_button.onclick = () => open(menu.hidden);
@@ -1831,7 +1835,7 @@ class DialTool {
     this.sync_shadows();
     this.sync_ring_summaries();
     paint(this.backdrop_dot, this.S.c_backdrop);
-    if (this.unit_button.textContent !== this.unit()[0]) { this.unit_button.textContent = this.unit()[0]; this.size_unit(); }
+    if (this.unit_button.textContent !== this.unit()[0]) this.size_unit();
     this.unit_items.forEach((b, i) => { b.classList.toggle("on", i === this.S.ui_unit); b.setAttribute("aria-checked", String(i === this.S.ui_unit)); });
     for (const r of this.rows) {
       const T = this.target(r.row.scope);
@@ -4072,12 +4076,28 @@ class DialTool {
     this.speeds.classList.toggle("real", k === 1);
   }
 
-  /** the unit box round its word's ink, as large as the letters and no more (Okay, 16 Oct 2026, #302: "2px padding
-   *  around letters"); the padding is the stylesheet's (--unit-pad) */
+  /** the unit box round its word's ink, 2 px from every side (Okay, 16 Oct 2026, #302). The ink's size and place on its
+   *  line come from Dial Mono's outlines (UNIT_INK); where the browser puts the line's baseline is measured, with a dot
+   *  on it — browsers round a face's ascent and descent each their own way (counted 16 Oct 2026: 8 px down a 10 px line
+   *  in Chromium, where the face's figures say 8.6; on Okay's screen "mm" stood on the box's bottom line) */
   size_unit() {
-    const [w, h] = ink_size(this.unit()[0], getComputedStyle(this.unit_button));
-    this.unit_button.style.setProperty("--ink-w", w + "px");
-    this.unit_button.style.setProperty("--ink-h", h + "px");
+    const word = this.unit()[0], ink = UNIT_INK[word] || UNIT_INK.mm, box = this.unit_button, b = box.style;
+    const span = el("span", { className: "word", textContent: word }), dot = el("span");
+    box.replaceChildren(span);
+    dot.style.cssText = "display:inline-block;width:0;height:0";
+    span.append(dot);
+    const line = span.getBoundingClientRect(), base = dot.getBoundingClientRect().top - line.top;
+    dot.remove();
+    if (!line.height) return;      // not shown (a phone's squeezed line): placed when it is
+    // in whole screen dots, so the line is crisp and the room the same on every side: the box round the ink, the ink's
+    // leftover fraction shared out, the word placed so its ink starts the padding in
+    const size = parseFloat(getComputedStyle(box).fontSize), dots = window.devicePixelRatio || 1, snap = (v) => Math.round(v * dots) / dots;
+    const [l, w, t, h] = ink.map((v) => v * size), W = Math.round(w * dots) / dots, H = Math.round(h * dots) / dots;
+    b.setProperty("--ink-w", W + "px");
+    b.setProperty("--ink-h", H + "px");
+    b.setProperty("--word-x", snap((W - w) / 2 - l) + "px");      // from the padding's inner edge to the word's line
+    b.setProperty("--word-y", snap((H - h) / 2 + t - base) + "px");
+    requestAnimationFrame(() => this.level_title());      // a box of another height: its word on the title's baseline again
   }
 
   /** how much of the speed track the slow steps take: two thumbs of the thumb's travel (#283: "at least as wide as two

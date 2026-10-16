@@ -550,17 +550,33 @@ await type_hex("global-c-backdrop-Backdrop", "#CCCCC7");
 // the Dial section: two panes, Dial (diameter, plate, background) and Page (margin, backdrop); no Guides pane
 check(JSON.stringify(await page.$$eval(".pinned .pane h2", (h) => h.map((x) => x.textContent))) === '["Dial","Page"]' && JSON.stringify(await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))) === '["Colours","Reset"]' && await page.isVisible("#background-add"), "Dial has four panes (Reset last since 4.41.25): Dial and Page stay in view, Colours scrolls under them; Background is a button");
 // units: a box at the panel's top right; lengths are shown and typed in the unit, kept in mm
-// the unit box round its word's ink, 2 px all round and a line (#302): [word, width, height, from the column's end, the ink's room on each side]
-const unit_box = async () => page.$eval("#unit", (e) => { const r = e.getBoundingClientRect(), row = document.querySelector(".form .row").getBoundingClientRect(), pen = document.createElement("canvas").getContext("2d"), c = getComputedStyle(e);
-  pen.font = `${c.fontWeight} ${c.fontSize} ${c.fontFamily}`; const m = pen.measureText(e.textContent);
-  return [e.textContent, Math.round(r.width), Math.round(r.height), Math.round(row.right - r.right), [r.width - 2 - (m.actualBoundingBoxLeft + m.actualBoundingBoxRight), r.height - 2 - (m.actualBoundingBoxAscent + m.actualBoundingBoxDescent)].map((v) => +(v / 2).toFixed(1))]; });
+// the unit box round its word's ink, 2 px all round and a line (#302): [word, width, height, from the column's end, the room
+// between its line and its letters — top, bottom, left, right — counted on its own picture, in px (a canvas's measure of
+// the ink is not trusted: it is what disagreed with the screen, 4.44.1)
+const unit_box = async () => {
+  await page.mouse.move(700, 500);
+  const b = await (await page.$("#unit")).boundingBox(), png = await page.screenshot({ clip: { x: b.x - 2, y: b.y - 2, width: b.width + 4, height: b.height + 4 } });
+  const room = await page.evaluate(async (src) => {
+    const img = new Image(); img.src = "data:image/png;base64," + src; await img.decode();
+    const c = document.createElement("canvas"); c.width = img.width; c.height = img.height; const x = c.getContext("2d"); x.drawImage(img, 0, 0);
+    const d = x.getImageData(0, 0, c.width, c.height).data, W = c.width, H = c.height, bg = d[0], ink = (i, j) => d[(j * W + i) * 4] < bg - 30;
+    const rows = [], cols = [];      // the line: rows and columns mostly ink
+    for (let j = 0; j < H; j++) { let n = 0; for (let i = 0; i < W; i++) n += ink(i, j); if (n > W * 0.6) rows.push(j); }
+    for (let i = 0; i < W; i++) { let n = 0; for (let j = 0; j < H; j++) n += ink(i, j); if (n > H * 0.6) cols.push(i); }
+    const top = Math.max(...rows.filter((j) => j < H / 2)) + 1, bottom = Math.min(...rows.filter((j) => j > H / 2)) - 1, left = Math.max(...cols.filter((i) => i < W / 2)) + 1, right = Math.min(...cols.filter((i) => i > W / 2)) - 1;
+    let t = Infinity, u = -1, l = Infinity, r = -1;
+    for (let j = top; j <= bottom; j++) for (let i = left; i <= right; i++) if (ink(i, j)) { t = Math.min(t, j); u = Math.max(u, j); l = Math.min(l, i); r = Math.max(r, i); }
+    return [t - top, bottom - u, l - left, right - r].map((v) => v / devicePixelRatio);
+  }, png.toString("base64"));
+  return page.$eval("#unit", (e, room) => { const r = e.getBoundingClientRect(), row = document.querySelector(".form .row").getBoundingClientRect(); return [e.textContent, Math.round(r.width), Math.round(r.height), Math.round(row.right - r.right), room]; }, room);
+};
 const as_mm = await unit_box();
 check(as_mm[0] === "mm" && as_mm[3] === 0 && await page.isHidden("#unit-menu"), "the unit box says mm and ends on the panel's last column");
 await page.click("#unit");
 check(JSON.stringify(await page.$$eval("#unit-menu button span:first-child", (b) => b.map((x) => x.textContent))) === '["Millimetres","Points","Inches","Lignes","Thou"]', "its menu: millimetres, points, inches, lignes, thou (#299)");
 await page.click("#unit-in");
 const as_in = await unit_box();
-check(as_in[0] === "in" && [as_mm[4], as_in[4]].flat().every((v) => v >= 2 && v < 2.3) && await page.isHidden("#unit-menu"), `Inches: the box says in; each word's box stands 2 px round its letters (mm ${as_mm[4].join(" × ")}, in ${as_in[4].join(" × ")}; #302)`);
+check(as_in[0] === "in" && [as_mm[4], as_in[4]].flat().every((v) => v >= 1.5 && v <= 2.5) && await page.isHidden("#unit-menu"), `Inches: the box says in; each word's box stands 2 px round its letters, to a screen dot, counted on its picture (top · bottom · left · right: mm ${as_mm[4].join(" · ")}, in ${as_in[4].join(" · ")}; #302, 4.44.3)`);
 check(await page.inputValue("#global-dial-d-Diameter") === "1.181" && await S("S.dial_d") === 30, "a 30 mm diameter shows as 1.181; the setting is still 30");
 await page.fill("#global-dial-d-Diameter", "1.5"); await page.press("#global-dial-d-Diameter", "Enter");
 check(near(await S("S.dial_d"), 38.1, 1e-6), "1.5 typed in inches is 38.1 mm");
