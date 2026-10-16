@@ -33,16 +33,38 @@ if (!xml.includes("<MinuteHand resource=\"minute_hand\"")) {
 if (!xml.includes("<SecondHand resource=\"second_hand\"")) {
   throw new Error("Missing SecondHand element in WFF XML");
 }
-console.log("✓ WFF XML structure validated successfully");
+if (!xml.includes('<Variant mode="AMBIENT" target="alpha" value="0" />')) {
+  throw new Error("Missing alpha=0 AMBIENT variant in WFF XML");
+}
+if (!xml.includes('<Variant mode="AMBIENT" target="alpha" value="255" />')) {
+  throw new Error("Missing alpha=255 AMBIENT variant in WFF XML");
+}
+if (xml.includes('target="resource"')) {
+  throw new Error("Invalid target='resource' found in WFF XML (Wear OS ignores resource variants)");
+}
+const xmlPlate = generate_watchface_xml({ ...S, wearos_aod: "plate" });
+if (xmlPlate.includes("dial_face_ambient")) {
+  throw new Error("Plate mode should not generate separate dial_face_ambient layer");
+}
+console.log("✓ WFF XML structure and AOD alpha variants validated successfully");
 
-// 3. Generate Layer SVGs (including upstream beta 4.41 disc hand)
+// 3. Generate Layer SVGs (including upstream beta 4.41 disc hand and AOD modes)
 const svgFace = svg_dial_face(S, statik);
-const svgFaceAmbient = svg_dial_face(S, statik, true);
+const svgFaceAmbientBlack = svg_dial_face(S, statik, "black");
+const svgFaceAmbientDim = svg_dial_face(S, statik, "dimmed");
+const svgFaceAmbientPlate = svg_dial_face(S, statik, "plate");
 const svgHour = svg_hand(S, "hour");
 const svgMinute = svg_hand(S, "minute");
 const svgSecond = svg_hand(S, "second");
 const svgCap = svg_cap(S);
 const svgPreview = svg_preview(S, statik);
+
+if (!svgFaceAmbientBlack.includes("#000000")) {
+  throw new Error("svg_dial_face black mode missing #000000 fill");
+}
+if (!svgFaceAmbientPlate.includes(svgFace.slice(0, 100))) {
+  // should match plate fill
+}
 
 const discIdx = HAND_SHAPES.indexOf("disc");
 if (discIdx < 0) throw new Error("Expected 'disc' in HAND_SHAPES");

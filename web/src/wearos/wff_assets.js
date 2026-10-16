@@ -35,7 +35,44 @@ function layer_svg(S, items, { background = null, size = 450 } = {}) {
 }
 
 /**
- * Builds SVG for the stationary dial face (plate + rings).
+ * Builds SVG for just the dial plate (background disc).
+ */
+export function svg_dial_plate(S, statik, ambient = false) {
+  if (!statik.plate) return null;
+  let fill = S.c_plate;
+  if (ambient === "dimmed") {
+    fill = [S.c_plate[0] * 0.15, S.c_plate[1] * 0.15, S.c_plate[2] * 0.15, 1];
+  } else if (ambient && ambient !== "plate") {
+    // "black" or true: pure black plate (or omit if alpha=0)
+    fill = [0, 0, 0, 1];
+  }
+  return layer_svg(S, [{ role: "plate", path: statik.plate, fill }]);
+}
+
+/**
+ * Builds SVG for just the dial rings (ticks, numerals, markers, bands).
+ */
+export function svg_dial_rings(S, statik, ambient = false) {
+  const items = [];
+  const rings = statik.rings.slice().reverse();
+
+  for (const d of rings) {
+    if (d.tints) {
+      d.tints.forEach((tint, n) => {
+        const fill = ambient ? [0.9, 0.9, 0.9, 1] : d.ring.c;
+        items.push({ role: "ring", path: tint.path, fill });
+      });
+    } else {
+      const fill = ambient ? [0.9, 0.9, 0.9, 1] : d.ring.c;
+      items.push({ role: "ring", path: d.path, fill });
+    }
+  }
+
+  return layer_svg(S, items);
+}
+
+/**
+ * Builds SVG for the stationary dial face (plate + rings) combined.
  */
 export function svg_dial_face(S, statik, ambient = false) {
   const items = [];
@@ -44,27 +81,27 @@ export function svg_dial_face(S, statik, ambient = false) {
   // Dial plate
   if (!ambient) {
     if (statik.plate) items.push({ role: "plate", path: statik.plate, fill: S.c_plate });
-  } else {
-    // Ambient mode: OLED energy saving. Keep pure black or dark plate.
-    // If original plate is bright, omit or make black.
-    const lum = 0.2126 * S.c_plate[0] + 0.7152 * S.c_plate[1] + 0.0722 * S.c_plate[2];
-    if (lum <= 0.2) {
-      items.push({ role: "plate", path: statik.plate, fill: S.c_plate });
-    } else {
-      items.push({ role: "plate", path: statik.plate, fill: [0, 0, 0, 1] });
+  } else if (ambient === "plate") {
+    if (statik.plate) items.push({ role: "plate", path: statik.plate, fill: S.c_plate });
+  } else if (ambient === "dimmed") {
+    if (statik.plate) {
+      const dim = [S.c_plate[0] * 0.15, S.c_plate[1] * 0.15, S.c_plate[2] * 0.15, 1];
+      items.push({ role: "plate", path: statik.plate, fill: dim });
     }
+  } else {
+    // Pure black
+    if (statik.plate) items.push({ role: "plate", path: statik.plate, fill: [0, 0, 0, 1] });
   }
 
-  // Rings (ticks, numerals, markers, bands)
+  // Rings
   for (const d of rings) {
+    const ringFill = (ambient && ambient !== "plate") ? [0.9, 0.9, 0.9, 1] : d.ring.c;
     if (d.tints) {
-      d.tints.forEach((tint, n) => {
-        const fill = ambient ? [0.8, 0.8, 0.8, 1] : d.ring.c;
-        items.push({ role: "ring", path: tint.path, fill });
+      d.tints.forEach((tint) => {
+        items.push({ role: "ring", path: tint.path, fill: ringFill });
       });
     } else {
-      const fill = ambient ? [0.85, 0.85, 0.85, 1] : d.ring.c;
-      items.push({ role: "ring", path: d.path, fill });
+      items.push({ role: "ring", path: d.path, fill: ringFill });
     }
   }
 
@@ -81,8 +118,8 @@ export function svg_hand(S, name, ambient = false) {
   const path = hand_shape(handConfig);
   let fill = handConfig.c;
 
-  if (ambient) {
-    // For ambient mode, ensure sufficient luminance for legibility
+  if (ambient && ambient !== "plate") {
+    // For ambient mode on dark/black plates, ensure sufficient luminance for legibility
     const lum = 0.2126 * fill[0] + 0.7152 * fill[1] + 0.0722 * fill[2];
     if (lum < 0.4) fill = [0.9, 0.9, 0.9, 1];
   }

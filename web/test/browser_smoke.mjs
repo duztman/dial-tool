@@ -46,6 +46,13 @@ if (!pkgNote.includes("com.dialtool.watchface.bauhaus_38")) {
   throw new Error(`Expected package note to contain com.dialtool.watchface.bauhaus_38, got: ${pkgNote}`);
 }
 
+await page.selectOption("#wearos-aod", "dimmed");
+const aodNote = await page.textContent("#wearos-aod-note");
+console.log(`✓ AOD mode note preview: ${aodNote}`);
+if (!aodNote.includes("Darkened plate")) {
+  throw new Error(`Expected Darkened plate note, got: ${aodNote}`);
+}
+
 const [download] = await Promise.all([
   page.waitForEvent("download", { timeout: 15000 }),
   page.click("#export-wearos"),
