@@ -78,10 +78,13 @@
   .bar .lead .timewell .time { width: var(--time-chars); height: 100%; padding: 0; border: 0; background: none; font-family: var(--time-face); font-size: var(--t-time); font-weight: 300; font-variant-numeric: tabular-nums; letter-spacing: var(--time-track); color: var(--bar-light); translate: var(--ink-dx, 0) var(--ink-dy, 0); }      /* Dial Time, its figures as thin as the box's line (#284) */
   /* AM · PM in the same face and size as the time, its box attached to the time's (Okay, 16 Oct 2026, on 4.44: "am
      attached to time and same size barlow"; a smaller box beside it in 4.44), one width for both words. A frame,
-     never filled (Okay, 15 Oct 2026, 00:18) */
-  .bar .lead .timebox .half { box-sizing: content-box; width: var(--time-pm); height: calc(var(--bar-control) - 2 * var(--hair)); padding: 0 var(--u3); border: var(--hair) solid var(--bar-light); border-left: 0; font-family: var(--time-face); font-size: var(--t-time); font-weight: 300; letter-spacing: var(--time-track); background: none; color: var(--bar-light); }
-  /* NOW: capitals, at AM · PM's size (Okay: "Now uppercase and in pm's font size which grows 1px") */
-  .bar .lead #now { padding: 0 var(--u3); font-size: var(--t-s); text-transform: uppercase; }
+     never filled (Okay, 15 Oct 2026, 00:18); less room beside its word since 4.45.5 (#306: "Reds reduce hor padding") */
+  .bar .lead .timebox .half { box-sizing: content-box; width: var(--time-pm); height: calc(var(--bar-control) - 2 * var(--hair)); padding: 0 var(--u2); border: var(--hair) solid var(--bar-light); border-left: 0; font-family: var(--time-face); font-size: var(--t-time); font-weight: 300; letter-spacing: var(--time-pm-track); background: none; color: var(--bar-light); }
+  /* NOW: capitals, at AM · PM's size (Okay: "Now uppercase and in pm's font size which grows 1px"); filled, light, its
+     word dark (#306, 4.45.5) */
+  .bar .lead #now { padding: 0 var(--u3); border-color: var(--bar-now); background: var(--bar-now); color: var(--bar); font-size: var(--t-s); text-transform: uppercase; }
+  .bar .lead #now:hover { border-color: var(--bar-now-hover); background: var(--bar-now-hover); }
+  .bar .lead #now:active { border-color: var(--bar-light); background: var(--bar-light); }
   .bar .time { width: 100%; text-align: center; }
   .bar .viewing { margin-left: auto; padding: 0 0 0 var(--margin); }      /* at the right; the room the day slider doesn't take lies before it. From its divider to what follows as far as from Fit to the window's right edge: the margin (Okay, 15 Oct 2026, 01:03: "equalize those gaps") */
   /* how to zoom: words and a faint magnifier, nothing to press. A pointer zooms with ⌘ + scroll, a finger pinches */

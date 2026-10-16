@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.45.5 (web version) · 16 Oct 2026
+
+The bar's time, second look (#306; Okay, on 4.45.3, a screenshot marked in three colours).
+
+- **The time** has more room between its figures ("Greens add tracking"): tracking +0.04em, −0.02em before, about 1 px more per figure at 20 px. Its window grows by that. AM · PM keeps its −0.02em (the greens were under the figures; its box width is set for that).
+- **AM · PM** has less room beside its word ("Reds reduce hor padding"): 5.5 px each side, 8.25 px before.
+- **NOW** is filled ("fill bg, invert type, make button much lighter colored, now still readable?"). Its fill is a light grey (#B9B9B4, the panel's rule tone), much lighter than the bar's light tone, and its word is the bar's dark (#333). Contrast is about 6.5 : 1, so it still reads. Lighter under the pointer, the bar's light tone when pressed. It is the bar's one filled button: an exception, asked for, to "nothing on this bar is white" (#B9B9B4 is not white).
+
 ## beta 4.45.4 (web version) · 16 Oct 2026
 
 - **A disc hand's mark** (#300; Okay, on 4.43: "Mark if also possible easily"). A new row, *Marker*, has two choices, **Hole** and **Mark**:

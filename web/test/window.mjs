@@ -1366,6 +1366,10 @@ const fits = await page.evaluate(() => { const w = (q) => Math.round(document.qu
     return { play: w("#play"), zooms: w(".zooms"), fit: w("#fit"), gaps, touch: +(box("#ampm").left - box(".timewell").right).toFixed(1), half: [+box("#ampm").width.toFixed(1), +box("#ampm").height.toFixed(1), +((box("#ampm").top + box("#ampm").bottom) / 2 - (box(".timewell").top + box(".timewell").bottom) / 2).toFixed(1)], end: Math.round(box(".bar .lead").right - pad - box("#now").right) }; });
 check(fits.play === 34 && fits.zooms === 54 && fits.fit === 54 && fits.gaps[0] === 24 - 3.5 && fits.gaps[1] === fits.gaps[2] && fits.touch === 0 && fits.half[1] === 30 && Math.abs(fits.half[2]) < 0.5 && fits.end === 0,
   `under the panel: play, a margin less what the speed box grew toward it (24 − 3.5, Okay 15 Oct 03:18), how fast · the time with AM · PM attached, as high, its word the time's size (#284, 4.44.6) · NOW one equal gap apart, NOW ending on the panel's last column (${JSON.stringify(fits)})`);
+{ // the bar's time, second look (#306, 4.45.5): the figures tracked +0.04em, AM · PM 5.5 each side, NOW filled light with a dark word
+  const look = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c("#time").letterSpacing, c("#ampm").paddingLeft, c("#ampm").paddingRight, c("#now").backgroundColor, c("#now").color]; });
+  check(look.join(" ") === "0.8px 5.5px 5.5px rgb(185, 185, 180) rgb(51, 51, 51)", `the bar's time: its figures tracked +0.04em, AM · PM closer to its word, NOW filled light with its word dark (${look.join(" · ")}) (#306)`);
+}
 await shot("7b-bar");
 await page.fill("#time", "3:20:10");
 await page.press("#time", "Enter");

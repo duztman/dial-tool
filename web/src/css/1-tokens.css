@@ -82,7 +82,7 @@
        measures, as the face draws them: a tabular figure, the colon (made 80 % in that face), the caps; the widest of
        AM and PM in ink. The tracking tight (Okay's notes, p. 15) */
     --time-face: "Dial Time", var(--mono);
-    --time-figure: 0.418em; --time-colon: 0.24em; --time-cap: 0.7em; --time-pm: 0.8em; --time-track: -0.02em;
+    --time-figure: 0.418em; --time-colon: 0.24em; --time-cap: 0.7em; --time-pm: 0.8em; --time-track: 0.04em; --time-pm-track: -0.02em;      /* the time's tracking: −0.02em until 4.45.5 (Okay, 16 Oct 2026, #306: "Greens add tracking", marked under its figures); AM · PM keeps −0.02em, which its width (--time-pm) was set for */
     --time-chars: calc(6 * var(--time-figure) + 2 * var(--time-colon) + 8 * var(--time-track));      /* the time's field: "10:09:36" — monospace until 4.44: 8ch and the bar's +50 tracking */
     --day-wide: 518px;                             /* the day slider at its widest: as wide as on an iPad (1180 wide), so a big screen doesn't stretch it (Okay, 23:19) */
     --tile: 50px;                                  /* a picture tile's least height */
@@ -95,6 +95,7 @@
     --row-end: calc(var(--frame-pad) - var(--hair) + var(--ringline-inner));      /* the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons */
     --line-button: 36px; --bare-dot: 16px;      /* in the ring drawer every control is this high (a value button this wide too) · the colour's swatch */
     --half: 30px;                                  /* AM · PM: its own window beside the time (Okay, 14 Oct 2026, 23:19) */
+    --bar-now: var(--rule); --bar-now-hover: var(--rule-light);      /* NOW: filled, much lighter than the bar's light tone, its word in the bar's dark — the bar's one filled button (Okay, 16 Oct 2026, #306: "fill bg, invert type, make button much lighter colored"); a press: the light tone */
     --value-pop: 132px;                            /* a value button's tag: about as wide as it is high */
     /* the number popup (#249; Okay's drawing, 16 Oct 2026, 4.45.3): on a dark ground, two pills a finger high (44,
        the least a finger is given) — the slider, the value — and under them − and + as two discs half as high again;
