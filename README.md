@@ -27,6 +27,7 @@ What it has and lacks: [`docs/changelog.md`](docs/changelog.md). What's next: [`
 | `docs/glossary.md` | Watch terms and tool terms, and which word means what here. |
 | `docs/build-list.md` | Numbered open items, things to verify, ideas. |
 | `docs/changelog.md` | Versions, what changed in each. |
+| `docs/font-research-2026-10-16.md`, `docs/font-tiers-2026-10-16.md` | The font research of 16 Oct 2026: which fonts Okay accepted (Peter Wiegel's 46, Font Picks' 49), how, their licences, and a draft of tiers for the font list. |
 | `docs/project-prompt.md` | Start-off prompt for the Claude Project. |
 | `archive/drawbot/` | **The DrawBot version, frozen since 12 Oct 2026 (R30)** — kept, not edited: `dial.py` (beta 2.3), its off-Mac tests (`tools/test_harness.py`, `ui_smoke.py`, `dial_probe.py`, `bool_bench.py`, `vanilla-0.5.0-api.json`), its preview plan (`docs/preview.md`), reference renders, and the 4 Oct guidebook. `web/test/parity.py` still uses `dial.py` and `test_harness.py` from here. |
 
