@@ -1,5 +1,20 @@
 # Dial Tool — changelog
 
+## beta 4.45.3 (web version) · 16 Oct 2026
+
+- **The number popup, after Okay's drawing** (#304; "tighter, dark background. Thicker plus minus, rounded ends, text larger, no white despite the drawing, all colors mid grays, text, buttons, dial excluded, they are black"):
+  - a dark ground (the night colour). The pills and the − and + discs are mid grey. The value, the signs and the slider's knob are black. The chosen value is black with mid-grey figures.
+  - the slider and the value in pills 44 px high. Under them, − and + as two discs 66 px across, the signs thick (3) with round ends.
+  - tighter: 11 px round them, 8 between them. It is 166 × 197.
+  - its corners follow what they hold: 35 at the top (a pill's round + the room + the frame) and 46 at the bottom (a disc's round + the room + the frame), Okay's "plus minus roundness + some offset".
+  - the value at 23 px (20 before).
+- **The Guides popup, tighter** (#305; "tighter spacing overall, fit all in one line, all selected… line fits better. Small like beta version allowed"):
+  - lines 30 high (38 before; under a finger still 38); no extra room over the headings;
+  - **an added guide is one line**: its name and values as quiet numbers to type in (grey, no box), its colours, and in the none sign's place a ✕ that removes it. An added guide is removed, no longer hidden;
+  - **All · Selected · None** is smaller and spans the colours exactly, from the none sign to the last colour;
+  - the names' column 106 wide (92), the room between colours 9 (10), so the list keeps its width and "Window at 4:30" is no longer cut. The Shadows list keeps its 92 for its sliders.
+- **A popup's bottom section** (#305, for Guides and Shadows; Okay: "whole bottom section hr line color, top line gone, perpendicular same thickness touches box bottom, lowest line gone"). It is filled with the line colour from edge to edge and down to the box's bottom, cut by its round corners, with no line over or under it. Guides' rule before Reset All is a hairline of the ground, from the section's top to the box's bottom.
+
 ## beta 4.45.2 (web version) · 16 Oct 2026
 
 - **The number popup, a square** (#249, #304; Okay, on 4.45: "everything bigger … three pills inside a square … plus minus roundness + some offset to draw the square"):

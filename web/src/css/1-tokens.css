@@ -96,14 +96,18 @@
     --line-button: 36px; --bare-dot: 16px;      /* in the ring drawer every control is this high (a value button this wide too) · the colour's swatch */
     --half: 30px;                                  /* AM · PM: its own window beside the time (Okay, 14 Oct 2026, 23:19) */
     --value-pop: 132px;                            /* a value button's tag: about as wide as it is high */
-    /* the number popup (#249; a square since 4.45.2): three pills a finger high (44, the least a finger is given),
-       --pop-gap between them and --pop-pad round them, in a frame two points thick; its corners a pill's round plus
-       that room and the frame, so they run parallel to the pills'; a ground darker than the pane's; its slider's
-       thumb a pill, as far inside its pill as --u3, half as wide again as high */
-    --num-pop-pill: 44px;
-    --num-pop: calc(3 * var(--num-pop-pill) + 2 * var(--pop-gap) + 2 * var(--pop-pad) + 2 * var(--thick));
-    --num-pop-ground: color-mix(in srgb, var(--ink) 7%, var(--ground)); --num-pop-round: calc(var(--num-pop-pill) / 2 + var(--pop-pad) + var(--thick));
-    --num-pop-thumb: calc(var(--num-pop-pill) - 2 * var(--u3));
+    /* the number popup (#249; Okay's drawing, 16 Oct 2026, 4.45.3): on a dark ground, two pills a finger high (44,
+       the least a finger is given) — the slider, the value — and under them − and + as two discs half as high again;
+       a unit (--u4) round them and a little less (--u3) between them; in a frame two points thick. Its corners: at the
+       top a pill's round plus that room and the frame, at the bottom a disc's ("plus minus roundness + some offset"),
+       so each runs parallel to what it holds. The pills and discs mid grey ("no white … all colors mid grays"), the
+       words, the signs and the slider's knob, a disc, black. */
+    --num-pop-pill: 44px; --num-pop-step: calc(1.5 * var(--num-pop-pill));
+    --num-pop-pad: var(--u4); --num-pop-gap: var(--u3);
+    --num-pop: calc(2 * var(--num-pop-step) + var(--num-pop-gap) + 2 * var(--num-pop-pad) + 2 * var(--thick));
+    --num-pop-round: calc(var(--num-pop-pill) / 2 + var(--num-pop-pad) + var(--thick)); --num-pop-round-foot: calc(var(--num-pop-step) / 2 + var(--num-pop-pad) + var(--thick));
+    --num-pop-ground: var(--night); --num-pop-fill: color-mix(in srgb, var(--grey), var(--rule)); --num-pop-hover: color-mix(in srgb, var(--num-pop-fill) 85%, var(--black));
+    --num-pop-thumb: calc(var(--num-pop-pill) - 2 * var(--u2));
     --dot-tiny: 10px;                              /* a colour inside a line of words: a folded pane's summary */
     --thumb: 18px; --track: 4px; --thumb-eye: 2px; --thumb-eye-edge: 2.75px;      /* sliders: a black disc on a thin track (Okay's sketch); the light centre of the disc, and where its edge softens */
     --grip: 18px;                                  /* the ring list's drag handle column */
@@ -128,7 +132,8 @@
     --checker: repeating-conic-gradient(#BDBDB9 0 25%, var(--white) 0 50%) 0 0 / 8px 8px;      /* what shows through a see-through colour */
     --faint: 0.35;                                 /* how much of a switch on the preview shows at rest */
     --canvas-top: calc((var(--header) - var(--control-large)) / 2);      /* undo and Guides stand on the header's middle line, with the title and the unit box */
-    --guide-name: 92px; --guide-row: 38px;         /* the guides' list: the column of names · a line's height (42 until 4.42.5; Okay, 16 Oct 2026, #271: "-2px" above and below) */
+    --guide-name: 106px; --guide-row: 30px;        /* the guides' list: the column of names, wide enough for an added guide's name and values on one line (92 until 4.45.3) · a line's height (42 until 4.42.5, Okay, #271: "-2px" above and below; 38 until 4.45.3, Okay, 16 Oct 2026, #305: "tighter spacing overall … small like beta version allowed"; under a finger still 38) */
+    --shade-name: 92px;                            /* the Shadows list's names: the guides' list's column until 4.45.3, when that one grew for an added guide's values; its sliders keep the room */
     --guide-dot: 10px;                             /* a round colour in the guides' list (the room between two: a special) */
     --guide-dim: 0.6;                              /* a colour not chosen in the guides' list: this much of it (Okay, 16 Oct 2026, #271: "dim all the unselected colors 40%") */
     --ring-thick: 3px;                             /* the chosen one: a ring of its own colour this thick, a ring of the ground inside it (a special) */
@@ -172,7 +177,7 @@
     --speed-pad: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2);      /* the speed box's room inside, left and right: the thumb at either end stands as far from the wall as from the box's top and bottom (3; Okay, 15 Oct 2026, 03:18: "when the ball is in a terminal, the bounding box clears it as much as it clears from the top… both ends symmetry"). Was u3 + 4 − half a thumb (1.25; 01:03, "before plus four") */
     --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
     --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
-    --t-num-pop: 20px;                             /* the number popup's value, in its pill: larger than --t-l (Okay, 16 Oct 2026, on 4.45: "everything bigger … larger everything within square") */
+    --t-num-pop: 23px;                             /* the number popup's value, in its pill: larger than --t-l (Okay, 16 Oct 2026, on 4.45: "everything bigger … larger everything within square"; 20 in 4.45.2, then "text larger") */
     --unit-pad: 4px;                               /* the unit box: this much round its word, on every side — round mm's letters; the other units keep mm's height (Okay, 16 Oct 2026, on 4.44: "2px padding around letters"; on 4.44.3: "Mm looks perfect now add 2px more padding … Others use the same height, width can change") */
 
     /* off the scale as found, with no figure from Okay (16 Oct 2026): kept as they are, each to be put on the scale or
@@ -186,12 +191,13 @@
     --name-in: 6px;                                /* a ring's name starts this far into its column; the ring line's buttons too */
     --chip-gap: 4px;                               /* between two colours to pick */
     --pop-pad: 16px; --pop-gap: 12px;              /* a night part (colour pop-out, guides' list) and the number popup: the space inside its edge, the space between its blocks */
-    --guide-gap: 10px;                             /* the room between two round colours in the guides' list: the chosen one's ring needs it */
+    --pop-foot: calc(var(--control) + 2 * var(--u2));      /* a popup's bottom section (#305): a control, a unit over and under it */
+    --guide-gap: 9px;                              /* the room between two round colours in the guides' list: the chosen one's ring needs it (2 px clear of the next; 10 until 4.45.3, #305: tighter) */
     --ring-gap-in: 2px;                            /* the chosen guide colour: a ring of the ground this wide, inside its own ring */
     --logo-disc: 2px;                              /* the bio open: how far the mark's night disc reaches past its 16 box (ring to disc edge ≈ 2.3) */
     --canvas-inset: 12px;                          /* from the preview's edge to what stands on it (a phone sets it to --u5) */
     --glow-line: 1.5px; --glow-under: 4px;         /* lines, but not one of the three: the outline of what the pointer is on, and the white line under it */
     --tip-arrow: 5px; --tip-arrow-in: 2.6px;       /* lines, but not one of the three: the pointer label's arrow, its dark line and the white line inside it */
   }
-  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --pop-width: 454px; --dot: 18px; --guide-dot: 14px; --guide-gap: 13px; --pop-field: 180px; --pop-hue: 32px; --knob: 28px; } }      /* a finger needs more to hold than a pointer */
+  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --pop-width: 454px; --dot: 18px; --guide-dot: 14px; --guide-gap: 13px; --guide-row: 38px; --pop-field: 180px; --pop-hue: 32px; --knob: 28px; } }      /* a finger needs more to hold than a pointer */
 }

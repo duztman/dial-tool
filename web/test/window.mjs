@@ -313,14 +313,15 @@ await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before)
   const pop = await page.evaluate(() => { const e = document.querySelector("#value-pop"), p = e.getBoundingClientRect(), b = document.querySelector("#ring-size").getBoundingClientRect(), c = getComputedStyle(e), steps = [...e.querySelectorAll(".step")].map((x) => x.getBoundingClientRect()), pills = ["input[type=range]", "input[type=text]", ".steps"].map((q) => e.querySelector(q).getBoundingClientRect());
     return [e.querySelector("label").textContent, Math.round(p.top - b.bottom), e.parentElement === document.body && e.classList.contains("numpop"), Math.round((p.left + p.right) / 2 - (b.left + b.right) / 2), Math.round(p.width), Math.round(p.height), getComputedStyle(e.querySelector("input[type=range]")).display,
       [c.borderTopWidth, c.borderTopColor, c.borderTopLeftRadius, getComputedStyle(e.querySelector("input[type=text]")).borderTopLeftRadius, getComputedStyle(e.querySelector("input[type=range]")).borderTopLeftRadius].join(" "),
-      steps.length === 2 && Math.abs(steps[0].right - steps[1].left) < 0.5 && steps[0].top === steps[1].top && e.querySelectorAll(".step svg").length === 2,
-      getComputedStyle(e.querySelector("label")).display, pills.map((r) => Math.round(r.width) + "×" + Math.round(r.height)).join(" "), pills.every((r, i) => i === 0 || Math.round(r.top - pills[i - 1].bottom) === 12)]; });
+      steps.length === 2 && steps.every((r) => Math.abs(r.width - r.height) < 0.5) && Math.round(steps[1].left - steps[0].right) === 8 && steps[0].top === steps[1].top && e.querySelectorAll(".step svg").length === 2,
+      getComputedStyle(e.querySelector("label")).display, pills.map((r) => Math.round(r.width) + "×" + Math.round(r.height)).join(" "), pills.every((r, i) => i === 0 || Math.round(r.top - pills[i - 1].bottom) === 8),
+      [c.backgroundColor, c.borderBottomLeftRadius, getComputedStyle(e.querySelector("input[type=text]")).color]]; });
   await shot("4c19-size-pop");
   await page.keyboard.type("x2"); await page.keyboard.press("Enter");
   const w_after = await S("S.rings[S.ui_ring].width");
   await page.evaluate((w) => window.dial_tool.set_value("ring", "width", w), w_before);
-  check(Math.abs(dragged - (w_before + 0.4)) < 1e-9 && pop[0] === "Band width" && pop[1] === 7 && pop[2] && Math.abs(pop[3]) <= 1 && pop[4] === 192 && pop[5] === 192 && pop[6] !== "none" && pop[7] === "2px rgb(92, 92, 88) 40px 22px 22px" && pop[8] && pop[9] === "none" && pop[10] === "156×44 156×44 156×44" && pop[11] && Math.abs(w_after - 2 * w_before) < 1e-9 && await page.$("#value-pop") === null,
-    `the size button, before the radius: dragged 16 to the right a band is 0.4 wider; a click opens the number popup under it (#249): a square (${pop[4]} × ${pop[5]}), no name (${pop[0]}, unseen), three pills (${pop[10]}) 12 apart — the slider, the value, − and + split — its corners a pill's round plus the room round them (${pop[7]}); it takes x2 (4.45.2)`);
+  check(Math.abs(dragged - (w_before + 0.4)) < 1e-9 && pop[0] === "Band width" && pop[1] === 7 && pop[2] && Math.abs(pop[3]) <= 1 && pop[4] === 166 && pop[5] === 197 && pop[6] !== "none" && pop[7] === "2px rgb(92, 92, 88) 35px 22px 22px" && pop[8] && pop[9] === "none" && pop[10] === "140×44 140×44 140×66" && pop[11] && pop[12].join(" ") === "rgb(20, 20, 19) 46px rgb(0, 0, 0)" && Math.abs(w_after - 2 * w_before) < 1e-9 && await page.$("#value-pop") === null,
+    `the size button, before the radius: dragged 16 to the right a band is 0.4 wider; a click opens the number popup under it (#249): after Okay's drawing (4.45.3), on a dark ground (${pop[12][0]}), no name (${pop[0]}, unseen), the slider and the value in pills, − and + two discs (${pop[10]}), 8 apart; its corners a pill's round plus the room at the top (${pop[7]}), a disc's at the bottom (${pop[12][1]}); words black; it takes x2`);
   // sliding in it shows the guides, as set, even with Guides off, and they go a moment after (Okay, on 4.45: "activate guides on slide. Even if off")
   await page.evaluate(() => window.dial_tool.set_value("global", "guides", false));
   await page.click("#ring-size"); await page.waitForTimeout(200);
@@ -458,10 +459,10 @@ check(guides_at[0] === 12 && guides_at[1] === 16, `it is 12 from the preview's r
 await page.click("#guides-more");
 check(await page.isVisible("#guide-list") && (await page.$$eval("#guide-list > .guidekind .name", (n) => n.map((e) => e.textContent))).join() === "Centre hole,Centre lines" && await page.$$eval("#guide-list .guidekind >> nth=0 >> .dots .tone", (b) => b.length) === 8 && await page.$eval("#guide-list .guiderings", (e) => e.querySelectorAll(".guidekind.ring").length) === await S("S.rings.length") && await page.$("#guide-list .swatch") === null,
   "the arrow drops the list: the centre hole's guide first, then the centre lines (no dial edge since 15 Oct 2026, no window radii since 4.42.5), then a line for every ring and every window that is on, each with None and eight round colours, no free colour");
-// the list's look (Okay, 16 Oct 2026, #271): lines 38 high (2 less above and below), a colour not chosen at 60 %, the "none" sign one path
+// the list's look (Okay, 16 Oct 2026, #271): a colour not chosen at 60 %, the "none" sign one path; lines 30 high (#305, 4.45.3: "tighter"; 38 before)
 {
   const look = await page.evaluate(() => { const q = (s) => document.querySelector("#guide-list " + s); return [Math.round(q(".guidekind").getBoundingClientRect().height), getComputedStyle(q(".tone:not(.on)")).opacity, getComputedStyle(q(".tone.on")).opacity, q(".none svg").querySelectorAll("path, circle, line").length]; });
-  check(look[0] === 38 && look[1] === "0.6" && look[2] === "1" && look[3] === 1, `a guide's line is ${look[0]} high; a colour not chosen shows at ${look[1]}, the chosen one whole; the "none" sign is ${look[3]} path, so nothing in it overlaps`);
+  check(look[0] === 30 && look[1] === "0.6" && look[2] === "1" && look[3] === 1, `a guide's line is ${look[0]} high; a colour not chosen shows at ${look[1]}, the chosen one whole; the "none" sign is ${look[3]} path, so nothing in it overlaps`);
 }
 // windows have their own section, as rings (#271): All · Selected · None, Selected to start; a line per window that is on, in its own colour; its edges drawn solid, its middle dotted, as a ring's (#272).
 // One thing in focus (#301): the tab says which — Rings its selected ring, Windows its selected window, the others neither; with All the rest show faded
@@ -499,12 +500,14 @@ check(await page.isVisible("#guide-list") && (await page.$$eval("#guide-list > .
   await page.fill("#guide-more-0-a", "45"); await page.press("#guide-more-0-a", "Enter");
   await page.fill("#guide-more-1-r", "8"); await page.press("#guide-more-1-r", "Enter");
   await frame();
-  const added = await page.evaluate(() => { const t = window.dial_tool; return [t.S.gd_more.map((g) => g.kind).join(""), t.S.gd_more[0].a, t.S.gd_more[1].r, t.items.filter((i) => i.role === "guide").length, document.querySelectorAll("#guide-list .guidekind.added").length]; });
+  const added = await page.evaluate(() => { const t = window.dial_tool, lines = [...document.querySelectorAll("#guide-list .guidekind.added")]; return [t.S.gd_more.map((g) => g.kind).join(""), t.S.gd_more[0].a, t.S.gd_more[1].r, t.items.filter((i) => i.role === "guide").length, lines.length,
+    lines.every((l) => Math.round(l.getBoundingClientRect().height) === 30 && l.querySelector(".dots > :first-child").classList.contains("remove") && !l.querySelector(".none")), lines.map((l) => l.querySelector(".name").scrollWidth <= l.querySelector(".name").clientWidth).join(" ")]; });
   await shot("4c20-guides");
   await page.click("#guide-more-1-remove");
   const left = await S("S.gd_more.map((g) => g.kind).join('')");
   await page.evaluate(() => { const t = window.dial_tool; t.S.gd_more = []; t.sync_rows(); t.render(); });
   check(added[0] === "012" && added[1] === 45 && added[2] === 8 && added[4] === 3 && left === "02", `Add: Line · Crosshair · Circle put a guide of that kind in the list, with its angle or radius, its colours and a way to remove it (${added[3]} guides drawn)`);
+  check(added[5] && added[6] === "true true true", `an added guide is one line, 30 high: its name and values whole (${added[6]}), its colours, a cross in the none sign's place (#305, 4.45.3)`);
 }
 const list_look = await page.evaluate(() => { const c = getComputedStyle(document.querySelector("#guide-list")), on = getComputedStyle(document.querySelector("#guide-list .tone.on")); return [c.backgroundColor, parseFloat(c.borderTopLeftRadius), on.borderTopLeftRadius, on.boxShadow.split("rgb").length - 1]; });
 check(list_look[0] === "rgb(20, 20, 19)" && list_look[1] >= 12 && list_look[2] === "50%" && list_look[3] === 3, "the list is near black and round; the chosen colour is a disc in a thick ring of its own colour");
@@ -526,6 +529,10 @@ check(await S("S.gd_hole === true && S.gd_k_hole === 0") && !names.includes("Dia
 {
   const last = await page.evaluate(() => { const r = (s) => document.querySelector("#guide-list .guidelast " + s).getBoundingClientRect(), a = r("label"), b = r(".numbox"), c = r("#guides-reset"), d = getComputedStyle(document.querySelector("#guide-list .resetall")); return [Math.abs((a.top + a.bottom) / 2 - (c.top + c.bottom) / 2) < 1 && Math.abs((b.top + b.bottom) / 2 - (c.top + c.bottom) / 2) < 1, a.right <= b.left && b.right <= c.left, d.borderLeftWidth, document.querySelector("#guides-reset").textContent, !!document.querySelector("#guide-list .guidelast .numbox .step")]; });
   check(last[0] && last[1] && last[2] === "1px" && last[3] === "Reset All" && last[4], `Thickness, its number with a compact plus and minus, a rule (${last[2]}) and Reset All stand on one line, in that order`);
+  const foot = await page.evaluate(() => { const list = document.querySelector("#guide-list"), f = list.querySelector(".guidelast"), r = f.getBoundingClientRect(), l = list.getBoundingClientRect(), c = getComputedStyle(f), rule = list.querySelector(".resetall").getBoundingClientRect(), s = getComputedStyle(list.querySelector(".resetall"));
+    list.scrollTop = list.scrollHeight; const r2 = f.getBoundingClientRect();
+    return [c.backgroundColor, c.boxShadow, Math.round(r2.bottom - (l.bottom - 1)), Math.round(r.left - (l.left + 1)), Math.round((l.right - 1) - r.right), Math.round(rule.top - r.top), Math.round(r.bottom - rule.bottom), s.borderLeftColor, getComputedStyle(list).backgroundColor]; });
+  check(foot[0] === "rgb(74, 74, 70)" && foot[1] === "none" && foot.slice(2, 7).every((v) => v === 0) && foot[7] === foot[8], `the bottom section (#305): filled with the line colour (${foot[0]}), no line over or under it, from edge to edge and down to the box's bottom; its rule the ground's colour, from its top to the bottom`);
   await page.click("#guide-list .guidelast label");
   const slider = await page.evaluate(() => { const e = document.querySelector("#value-pop"); return !!e && e.querySelector("label").textContent === "Thickness" && getComputedStyle(e.querySelector("input[type=range]")).display !== "none"; });
   await page.keyboard.press("Escape");

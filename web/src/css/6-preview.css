@@ -69,25 +69,31 @@
      round choices with room between them — none, then the eight colours. The chosen one stands in a thick ring of its own colour, a
      little of the ground between them. A hairline under every line. */
   .guidelist { position: absolute; top: calc(100% + var(--unit)); right: 0; width: calc(2 * var(--pop-pad) + 2 * var(--hair) + var(--guide-name) + 9 * var(--guide-dot) + 9 * var(--guide-gap)); max-width: calc(100vw - 2 * var(--canvas-inset));
-    max-height: calc(100vh - var(--bar-height) - 2 * var(--canvas-inset) - var(--control-large) - var(--unit)); overflow-y: auto; padding: var(--unit) var(--pop-pad) var(--pop-pad); }      /* less on top: a line's own height already stands its dots off the edge */
+    max-height: calc(100vh - var(--bar-height) - 2 * var(--canvas-inset) - var(--control-large) - var(--unit)); overflow-y: auto; padding: var(--unit) 0 0; }      /* less on top: a line's own height already stands its dots off the edge. Its room at the sides is its parts' (next rule), so its bottom section can reach both edges */
+  .guidelist > * { margin-inline: var(--pop-pad); }
   .guidekind { display: grid; grid-template-columns: var(--guide-name) 1fr; align-items: center; min-height: var(--guide-row); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
   .guidekind.off .name { color: var(--grey); }
   .guidekind .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   /* the rings' guides and the guides you add: a small heading line with a choice at its right, then a line each */
-  .guidehead { display: grid; grid-template-columns: var(--guide-name) 1fr; align-items: center; min-height: var(--guide-row); margin-top: var(--unit); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  .guidehead { display: grid; grid-template-columns: var(--guide-name) 1fr; align-items: center; min-height: var(--guide-row); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
   .guidehead .name { font-weight: 600; }
-  .guidehead .segs { justify-self: end; margin-right: calc(var(--ring-gap-in) + var(--ring-thick)); }
-  .guidehead .segs > button { padding: 0 var(--u3); }
+  /* All · Selected · None over the colours, from the none sign's left edge to the last colour's right, small (#305:
+     "all selected… line fits better"; "small like beta version allowed") */
+  .guidehead .segs { justify-self: stretch; height: var(--control-s); margin: 0 calc(var(--ring-gap-in) + var(--ring-thick)) 0 var(--guide-gap); }
+  .guidehead .segs > button { flex: 1 1 auto; height: 100%; padding: 0 var(--u1); font-size: var(--t-s); }
   .guidekind.ring.selected .name { font-weight: 600; }
   /* before Add, a band of the fields' colour, as wide as the lines (Okay, 16 Oct 2026, #271: "a colour separation") */
   .guidehead.add { border-top: var(--u2) solid var(--field); }
-  /* a guide you added takes two lines: its name, its measures and a cross to remove it; under them its colours */
-  .guidekind.added { position: relative; grid-template-columns: 1fr; row-gap: var(--u1); padding: var(--unit) 0; }
-  .guidekind.added .name { display: flex; align-items: center; gap: var(--unit); overflow: visible; }
-  .guidekind.added .dots { padding-left: var(--guide-name); }
-  .guidekind.added > .sign { position: absolute; top: var(--unit); right: 0; }
-  .guidefield { display: inline-flex; align-items: center; gap: var(--unit); color: var(--grey); }
-  .guidefield input { width: var(--col); height: var(--control); text-align: center; }
+  /* a guide you added is one line, as every other (#305: "fit all in one line"): its name and its measures, quiet
+     numbers to type in (grey, no box, as wide as they are); its colours; in the none sign's place a cross that removes
+     it (an added guide is taken away, not hidden). A long name gives way to its numbers. (Two lines until 4.45.3) */
+  .guidekind.added .name { display: flex; align-items: center; gap: var(--u1); }
+  .guidekind.added .name > .word { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .guidefield { flex: none; display: inline-flex; align-items: center; color: var(--grey); }
+  .guidefield input { height: var(--control); padding: 0; border: 0; background: none; color: inherit; text-align: right; }
+  .guidefield input:focus { color: var(--ink); outline-offset: var(--u1); }      /* typing: its ring stands off the figures */
+  .dots .remove { color: var(--grey); }
+  .dots .remove:hover { color: var(--ink); }
   .dots { display: flex; justify-content: space-between; align-items: center; padding: 0 calc(var(--ring-gap-in) + var(--ring-thick)) 0 var(--guide-gap); }
   .dots button { flex: none; display: grid; place-items: center; width: var(--guide-dot); height: var(--guide-dot); border-radius: 50%; }
   .dots .tone { background: var(--c); box-shadow: 0 0 0 var(--hair) var(--chip-rule); }
@@ -104,13 +110,13 @@
      All. Over it a thick line: its own hairline on the one above. No slider: with Reset All beside it, it had no room
      left (0 px, measured); it comes back in the number popup (phase E; R15 form B). The number's cell reaches back over
      the name; a press on the number opens its popup (#249). */
-  .guidelist .guidelast { grid-template-columns: var(--guide-name) minmax(0, 1fr) auto; box-shadow: inset 0 var(--hair) 0 var(--row-rule), inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  .guidelist .guidelast { grid-template-columns: var(--guide-name) minmax(0, 1fr) auto; }
   .guidelast > * { grid-row: 1; }
   .guidelist .guidelast > label:first-child { grid-column: 1; }
   .guidelast > input[type="range"] { display: none; }
   .guidelast > .numcell { grid-column: 1 / 3; position: relative; height: var(--control); pointer-events: none; }
   .guidelast .numbox { pointer-events: auto; }
-  .guidelast > .resetall { grid-column: 3; display: flex; align-items: center; height: var(--control); padding-left: var(--gap); border-left: var(--hair) solid var(--row-rule); }
+  .guidelast > .resetall { grid-column: 3; align-self: stretch; display: flex; align-items: center; padding-left: var(--gap); border-left: var(--hair) solid var(--paper); }      /* its rule: the ground's, from the section's top to the box's bottom (#305) */
   /* Reset All asks first, in its line's place (#271): the question at the left, round ✕ and ✓ at the right */
   .guidelast.asking > :not(.ask) { visibility: hidden; }
   .guidelast > .ask { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; color: var(--ink); }
@@ -118,12 +124,19 @@
   .guidelast .answers { display: flex; gap: var(--u2); }
   .roundb { display: grid; place-items: center; width: var(--control); height: var(--control); padding: 0; border: var(--hair) solid var(--ink); border-radius: 50%; background: none; color: var(--ink); }
   .roundb:hover { background: var(--ink); color: var(--paper); }
-  .guidefoot { display: flex; justify-content: flex-end; padding-top: var(--pop-pad); }
+  .guidefoot { display: flex; justify-content: flex-end; align-items: center; }
+  /* a popup's bottom section (#305; Okay, 16 Oct 2026: "whole bottom section hr line color, top line gone,
+     perpendicular same thickness touches box bottom, lowest line gone. This is a bottom section rule. For these
+     popups"): the Guides' Thickness · Reset All, the Shadows' Reset. Filled with the line colour from edge to edge and
+     down to the box's bottom (the list is cut to its round corners); no line over or under it; a rule in it is a
+     hairline of the ground, from its top to the box's bottom (.resetall) */
+  .guidelist > .popfoot { min-height: var(--pop-foot); margin-inline: 0; padding: 0 var(--pop-pad) env(safe-area-inset-bottom); background: var(--row-rule); box-shadow: none; }
   .shadelist .guidehead .name { grid-column: 1 / -1; }      /* its headings are words alone: the whole line, not the names' column */
   /* the Shadows list: the guides' list, opening upward from its switch at the bottom left (after .guidelist, which it overrides) */
   .shadelist { top: auto; right: auto; bottom: calc(100% + var(--unit)); left: 0;
     max-height: calc(100vh - var(--bar-height) - var(--canvas-inset) - var(--canvas-top) - 2 * var(--control-large) - 2 * var(--unit)); }      /* from over its switch up to under undo · redo */
   .shadelist .row.chk > label.check { grid-column: 1 / -1; }      /* Soft edge and its warning on one line, the whole width */
+  .shadelist .row { grid-template-columns: var(--shade-name) minmax(0, 1fr) var(--col) var(--col); }      /* its own names' column (4.45.3) */
   /* the outline of what the pointer is on: an orange line on a white one, so it shows on any colour */
   .glow { fill: none; stroke: var(--glow); stroke-width: var(--glow-line); vector-effect: non-scaling-stroke; stroke-linejoin: round; }
   .glow.under { stroke: var(--white); stroke-width: var(--glow-under); }

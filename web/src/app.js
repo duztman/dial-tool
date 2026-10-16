@@ -104,6 +104,13 @@ const SIGNS = {
 // closer, parallels on baseline ascender"): 6 points wide, the plus 6 high, each drawn ink to edge (its round caps
 // inside the box), so the stylesheet stands the plus's top on the figures' top and the minus on their baseline.
 // Quiet signs, so DENSE.
+// the number popup's − and + (Okay's drawing, 16 Oct 2026, on 4.45.2: "thicker plus minus, rounded ends"): 22 points,
+// the sign 20 across, its line 3 — twice LINE, a pictured width (icons/check.mjs) — centred on whole points, so a 3
+// line covers whole screen dots
+const BIG = {
+  plus: icon(`<path d="M11 2.5V19.5M2.5 11H19.5" ${sw(3)}/>`, 22),
+  minus: icon(`<path d="M2.5 11H19.5" ${sw(3)}/>`, 22),
+};
 const TINY = {
   plus: icon(`<path d="M3 0.625V5.375M0.625 3H5.375" ${sw(DENSE)}/>`, 6),
   minus: icon(`<path d="M0.625 0.625H5.375" ${sw(DENSE)}/>`, 6, 1.25),
@@ -134,6 +141,8 @@ const eye = (open) => icon(EYE[open ? "open" : "closed"]);
 const NONE_SIGN = SIGNS.sheet + `<path d="M6.75 8.25L9.75 11.25M9.75 8.25L6.75 11.25" ${sw(SLANT)}/>`;      // the sheet with a cross: this font has none of it
 // a "none" in a row of colour dots: a slashed circle at the dot's own size (10), its outer edge where it was (4); so small, LINE is enough
 const none_dot = `<svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="round"><path d="M5 ${1 + LINE / 2}A${4 - LINE / 2} ${4 - LINE / 2} 0 1 1 5 ${9 - LINE / 2}A${4 - LINE / 2} ${4 - LINE / 2} 0 1 1 5 ${1 + LINE / 2}M3.25 3.25L6.75 6.75"/></svg>`;      // ring and stroke one path: where they meet nothing doubles, at any opacity (Okay, 16 Oct 2026, #271)
+// a cross at the same size, in its place on an added guide's line: remove it (#305, 4.45.3)
+const cross_dot = icon(`<path d="M2.25 2.25L7.75 7.75M7.75 2.25L2.25 7.75" ${sw(SLANT)}/>`, 10);
 // small pictures for choices that are easier seen than read: drawn at the size they are shown, 38 × 27 (they were
 // drawn on 28 × 20 and enlarged 1.35 times; Okay, 13 Oct 2026: "bigger, better (less detail) icons… this goes for all")
 const pic = (inside) => icon(inside, 38, 27);
@@ -1492,10 +1501,12 @@ class DialTool {
       const dots = el("span", { className: "dots", role: "radiogroup", ariaLabel: name });
       const none = el("button", { type: "button", className: "none", id: none_id, title: "None: hide " + name.toLowerCase(), ariaLabel: "None", onclick: () => { set(null); this.sync_rows(); this.render(); } });
       none.innerHTML = none_dot;
+      none.dataset.k = "none";
       dots.append(none);
       G.GUIDE_COLOURS.forEach((hex, i) => {
         const b = el("button", { type: "button", className: "tone", title: hex, ariaLabel: hex, onclick: () => { set(i); this.sync_rows(); this.render(); } });
         b.style.setProperty("--c", hex);
+        b.dataset.k = i;
         dots.append(b);
       });
       for (const b of dots.children) b.setAttribute("role", "radio");
@@ -1504,7 +1515,7 @@ class DialTool {
       const refresh = () => {
         const k = get();
         line.classList.toggle("off", k === null);
-        [...dots.children].forEach((b, n) => { const on = n === 0 ? k === null : n - 1 === k; b.classList.toggle("on", on); b.setAttribute("aria-checked", String(on)); });
+        for (const b of dots.querySelectorAll("[data-k]")) { const on = b.dataset.k === "none" ? k === null : +b.dataset.k === k; b.classList.toggle("on", on); b.setAttribute("aria-checked", String(on)); }
       };
       return { line, label, refresh };
     };
@@ -1575,7 +1586,7 @@ class DialTool {
     const cell = el("span", { className: "numcell" });
     box_.replaceWith(cell);
     cell.append(box_);
-    last.classList.add("guidelast");
+    last.classList.add("guidelast", "popfoot");
     last.append(el("span", { className: "resetall" }, reset), question);
     list.append(last);
     const box = el("div", { className: "guides" }, this.guides_tick, more, list);
@@ -1613,7 +1624,7 @@ class DialTool {
       this.render();
     } });
     list.append(head("Light · degrees"), ...light.map((r) => r.el), head("Over the plate · mm"), ...heights.map((r) => r.el),
-      head("Under the plate · mm"), ...under.map((r) => r.el), el("div", { className: "guidefoot" }, reset));
+      head("Under the plate · mm"), ...under.map((r) => r.el), el("div", { className: "guidefoot popfoot" }, reset));
     const box = el("div", { className: "shadows" }, this.shadows_tick, more, list);
     box.onkeydown = (e) => { if (e.key === "Escape" && !list.hidden) { open(false); more.focus(); } };
     return box;
@@ -1762,30 +1773,33 @@ class DialTool {
     }
     this.guide_windows_head.hidden = this.guide_windows.hidden = !shown.length;      // no window on: nothing to say (R16)
     this.guide_window_lines.forEach((d) => { d.refresh(); d.line.classList.toggle("selected", d.index === S.ui_window); });
-    // the guides added by hand: name · its measures · remove, then its colours
+    // the guides added by hand, one line each (#305): its name and measures (quiet numbers to type in), its colours,
+    // and in the none sign's place a cross that removes it
     const more = JSON.stringify((S.gd_more || []).map((g) => g.kind));
     if (this.guide_more.dataset.more !== more) {
       this.guide_more.dataset.more = more;
       this.guide_more_lines = (S.gd_more || []).map((g, i) => {
         const kind = G.GUIDE_MORE[g.kind], d = this.guide_dots(kind[0].toUpperCase() + kind.slice(1), () => (this.S.gd_more[i].k >= 0 ? this.S.gd_more[i].k : null), (k) => { this.S.gd_more[i].k = k === null ? -2 : k; });
-        const field = (key, word, length) => {
-          const input = el("input", { type: "text", inputMode: "decimal", id: `guide-more-${i}-${key}`, title: word, ariaLabel: word });
+        const field = (key, word, length) => {      // the angle: 45°; the radius: r 8
+          const input = el("input", { type: "text", inputMode: "decimal", id: `guide-more-${i}-${key}`, title: key === "a" ? "Angle, degrees" : "Radius", ariaLabel: key === "a" ? "Angle" : "Radius" });
           input.onchange = () => { const now = this.S.gd_more[i][key] * (length ? this.unit()[2] : 1); this.S.gd_more[i][key] = +(parse_number(input.value, now) / (length ? this.unit()[2] : 1)).toFixed(4); this.sync_rows(); this.render(); };
-          return { key, length, input, el: el("label", { className: "guidefield" }, el("span", { textContent: word }), input) };
+          input.oninput = () => { input.style.width = `${Math.max(1, input.value.length)}ch`; };      // as wide as it is
+          const words = key === "a" ? [input, el("span", { textContent: word })] : [el("span", { textContent: word }), input];
+          return { key, length, input, el: el("label", { className: "guidefield" }, ...words) };
         };
         const fields = [...(kind !== "circle" ? [field("a", "°", false)] : []), ...(kind !== "line" ? [field("r", "r", true)] : [])];
-        const gone = el("button", { type: "button", className: "sign", id: `guide-more-${i}-remove`, title: "Remove this guide", ariaLabel: "Remove this guide", onclick: () => { this.S.gd_more = this.S.gd_more.filter((_, n) => n !== i); this.sync_rows(); this.render(); } });
-        gone.innerHTML = icon(SIGNS.cross);
-        d.label.replaceChildren(d.label.textContent, ...fields.map((f) => f.el));
+        const gone = el("button", { type: "button", className: "remove", id: `guide-more-${i}-remove`, title: "Remove this guide", ariaLabel: "Remove this guide", onclick: () => { this.S.gd_more = this.S.gd_more.filter((_, n) => n !== i); this.sync_rows(); this.render(); } });
+        gone.innerHTML = cross_dot;
+        d.label.replaceChildren(el("span", { className: "word", textContent: d.label.textContent }), ...fields.map((f) => f.el));
         d.line.classList.add("added");
-        d.line.append(gone);
+        d.line.querySelector(".dots .none").replaceWith(gone);
         return { ...d, fields };
       });
       this.guide_more.replaceChildren(...this.guide_more_lines.map((d) => d.line));
     }
     this.guide_more_lines.forEach((d, i) => {
       d.refresh();
-      for (const f of d.fields) if (document.activeElement !== f.input) f.input.value = f.length ? String(parseFloat(this.in_unit(S.gd_more[i][f.key], 2))) : String(+(+S.gd_more[i][f.key]).toFixed(1));
+      for (const f of d.fields) if (document.activeElement !== f.input) { f.input.value = f.length ? String(parseFloat(this.in_unit(S.gd_more[i][f.key], 2))) : String(+(+S.gd_more[i][f.key]).toFixed(1)); f.input.oninput(); }
     });
     for (const r of this.guide_rows) r.refresh(S);
   }
@@ -1982,11 +1996,12 @@ class DialTool {
       field.onkeydown = (e) => {
         if (e.key === "ArrowUp" || e.key === "ArrowDown") { e.preventDefault(); commit(now() + (e.key === "ArrowUp" ? 1 : -1) * row.step * (e.shiftKey ? 10 : 1)); }
       };
-      // − and +: as typed signs in a full row; in the popup the shared signs (SIGNS); beside a quiet number the tiny ones
+      // − and +: as typed signs in a full row; in the popup the thick ones (BIG); beside a quiet number the tiny ones
       const step = (dir) => {
         const b = el("button", { type: "button", className: "step", tabIndex: -1, onclick: () => commit(now() + dir * row.step) });
-        const sign = row.inpop ? icon(dir > 0 ? SIGNS.plus : SIGNS.minus) : row.side ? TINY[dir > 0 ? "plus" : "minus"] : null;
+        const sign = (row.inpop ? BIG : row.side ? TINY : null)?.[dir > 0 ? "plus" : "minus"];
         if (sign) { b.innerHTML = sign; b.ariaLabel = dir > 0 ? "Plus" : "Minus"; } else b.textContent = dir > 0 ? "+" : "−";
+        if (row.inpop) b.id = "value-pop-" + (dir > 0 ? "plus" : "minus");
         return b;
       };
       const label = el("label", { htmlFor: id, textContent: row.text });
