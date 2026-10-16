@@ -22,9 +22,7 @@ What it has and lacks: [`docs/changelog.md`](docs/changelog.md). What's next: [`
 | `archive/guide/` | The old guides (the 4 Oct DrawBot guidebook and the 4.36.1 web review pages), archived 15 Oct 2026. |
 | `docs/versions.md`, `tools/versions.sh` | Every build and its commit. `tools/versions.sh tag` makes a tag per version; `tools/versions.sh open 4.30` puts that version, whole, in a folder beside the clone. |
 | `docs/brief.md` | Goals, decisions, open questions, parked ideas. |
-| `docs/rules.md` | Standing rules — check code against these in reviews. |
-| `docs/waivers.md` | Every time an old link was allowed to draw differently (R31): date, Okay's words, what changed. |
-| `docs/design.md` | The design canon: type, grid, colour, pictures, redrawn controls, icons — for the guide, the tool and anything else shown. |
+| `docs/rules.md` | Standing rules — check code against these in reviews. || `docs/design.md` | The design canon: type, grid, colour, pictures, redrawn controls, icons — for the guide, the tool and anything else shown. |
 | `docs/glossary.md` | Watch terms and tool terms, and which word means what here. |
 | `docs/build-list.md` | Numbered open items, things to verify, ideas. |
 | `docs/changelog.md` | Versions, what changed in each. |
