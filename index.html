@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.45.3 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.45.4 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -5813,7 +5813,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.45.3";
+var VERSION = "beta 4.45.4";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -5925,7 +5925,11 @@ var HAND_BASE = {
   disc_d: 8,
   mark: 0,
   mark_len: 1.6,
-  mark_w: 0.6
+  mark_w: 0.6,
+  // the marker as a hole or a mark (#300, beta 4.45.4; Okay, 16 Oct 2026: "Mark if also possible easily"): mark_as 0 —
+  // cut out of the disc (the dial shows through), as before; 1 — painted on it, whole, in mark_c
+  mark_as: 0,
+  mark_c: [1, 1, 1, 1]
 };
 var WINDOW_BASE = {
   on: false,
@@ -6568,7 +6572,10 @@ var LINK_KEYS = [
   "at_deg",
   "a",
   "k",
-  "ha_cap_top"
+  "ha_cap_top",
+  "mark_as",
+  "mark_c"
+  // 4.45.4 (#300): appended; starting as a hole, so every scheme-2 link draws as before
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i) => i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62];
@@ -7550,16 +7557,22 @@ function hand_shape(h) {
   });
 }
 function disc_hand(h) {
-  const disc = circle(max(h.disc_d, 0.1));
-  const mark_ring = { ...RING_BASE, shape: h.mark, len: h.mark_len, w: h.mark_w, round_out: h.round || 0, round_in: h.round || 0 };
-  const mark = mark_outline(mark_ring, h.mark_len, h.mark_w), b = mark.bounds();
-  if (!b) return disc;
-  const placed = place(mark, max(h.len - (b[3] - b[1]) / 2, 0.1), 0);
-  return disc.difference(placed).union(placed.difference(circle(max(h.disc_d, 0.1))));
+  const disc = circle(max(h.disc_d, 0.1)), placed = disc_mark(h);
+  if (!placed) return disc;
+  if (h.mark_as === 1) return disc.union(placed);
+  return disc.difference(placed).union(placed.difference(disc));
 }
+function disc_mark(h) {
+  return memo("mark" + key_of(h), () => {
+    const mark_ring = { ...RING_BASE, shape: h.mark, len: h.mark_len, w: h.mark_w, round_out: h.round || 0, round_in: h.round || 0 };
+    const mark = mark_outline(mark_ring, h.mark_len, h.mark_w), b = mark.bounds();
+    return b ? place(mark, max(h.len - (b[3] - b[1]) / 2, 0.1), 0) : null;
+  });
+}
+var paints_mark = (h) => HAND_SHAPES[h.shape] === "disc" && h.mark_as === 1;
 function hand_items(S, t) {
   const angles = hand_angles(t, BEATS[S.ha_beat][1]);
-  return HANDS.map((name, i) => [name, S["ha_" + name].c, S["ha_" + name], angles[i]]).filter(([, , h]) => h.on).map(([name, c, h, a]) => [name, c, hand_shape(h), a]);
+  return HANDS.map((name, i) => [name, S["ha_" + name].c, S["ha_" + name], angles[i]]).filter(([, , h]) => h.on).map(([name, c, h, a]) => [name, c, hand_shape(h), a, h]);
 }
 function scene(S, statik, t, preview = true, selected = null) {
   const items = [];
@@ -7589,7 +7602,10 @@ function scene(S, statik, t, preview = true, selected = null) {
     }
     for (const x of windows) add("date frame", x.frame, x.w.ink, { window: x.index });
     if (S.ha_on) {
-      for (const [name, colour, path, a] of hand_items(S, t)) add("hand", path, colour, { name, angle: a });
+      for (const [name, colour, path, a, h] of hand_items(S, t)) {
+        add("hand", path, colour, { name, angle: a });
+        if (paints_mark(h) && disc_mark(h)) add("mark", disc_mark(h), h.mark_c, { name, angle: a });
+      }
       if (cap_shows(S)) add("cap", circle(S.ha_cap), S.c_cap);
     }
   }
@@ -7682,6 +7698,7 @@ var rgb = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Math.max(v, 
 function item_name(item) {
   if (item.role === "ring") return (item.ring.ring.name || item.ring.kind) + (item.part ? ` colour ${item.part}` : "");
   if (item.role === "hand") return { hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name] || item.name;
+  if (item.role === "mark") return ({ hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name] || item.name) + " mark";
   if (item.window !== void 0) return `Window ${item.window + 1} ${{ "date disc": "disc", "date number": "content", "date frame": "frame", cutline: "cut line" }[item.role] || item.role}`;
   return item.role[0].toUpperCase() + item.role.slice(1);
 }
@@ -7691,7 +7708,7 @@ function file_name(S, ext, now = /* @__PURE__ */ new Date()) {
   return `dial-${num(S.dial_d, 2)}mm${what}-${day}.${ext}`;
 }
 function drawn(S, statik, t, preview, selected) {
-  return scene(S, statik, t, preview, selected).map((item) => item.role === "hand" ? { ...item, path: turned(item.path, item.angle) } : item);
+  return scene(S, statik, t, preview, selected).map((item) => item.role === "hand" || item.role === "mark" ? { ...item, path: turned(item.path, item.angle) } : item);
 }
 var WEIGHTS = [
   ["extralight", 200],
@@ -8097,7 +8114,9 @@ var hand_detail = (h) => {
   const w = b[2] - b[0], high = b[3] - b[1], m = high * 0.03, f = (v) => v.toFixed(3);
   const d = p.svg(3, true), ring = f(Math.max(high * 0.012, 0.12));
   const centre2 = (line) => `<path class="axis" d="${line}"/><circle class="pivot" r="${ring}"/>`;
-  return `<svg class="upright" viewBox="${f(b[0] - m)} ${f(-b[3] - m)} ${f(w + 2 * m)} ${f(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${centre2("M-999 0L999 0")}</svg><svg class="lying" viewBox="${f(b[1] - m)} ${f(b[0] - m)} ${f(high + 2 * m)} ${f(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${centre2("M0 -999L0 999")}</svg>`;
+  const mark = paints_mark(h) && disc_mark(h), md = mark ? mark.svg(3, true) : "";
+  const marked = (turn) => mark ? `<path class="mark" d="${md}"${turn} fill="${to_hex(h.mark_c)}"/>` : "";
+  return `<svg class="upright" viewBox="${f(b[0] - m)} ${f(-b[3] - m)} ${f(w + 2 * m)} ${f(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${marked("")}${centre2("M-999 0L999 0")}</svg><svg class="lying" viewBox="${f(b[1] - m)} ${f(b[0] - m)} ${f(high + 2 * m)} ${f(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${marked(' transform="rotate(90)"')}${centre2("M0 -999L0 999")}</svg>`;
 };
 var INK_TRAPS = (() => {
   const c = 9.25, r = 5.5, half = DENSE / 2, cut = 0.45, out = [];
@@ -8403,10 +8422,16 @@ var ROWS = {
     num2("len", "Length", 0.5, 30, 0.05, { ...H, side: true }),
     // a disc's: where its marker's outer end is
     num2("disc_d", "Disc \xD8", 0.5, 30, 0.05, { ...H, side: true, show: hand_is("disc") }),
-    seg("mark", "Hole", SHAPES.slice(0, 3), { ...H, side: true, show: hand_is("disc") }),
-    // the markers ring's shapes (#164); cut out of the disc, so named "Hole" (Okay, 16 Oct 2026: "work as holes now, perfect, just call it that")
-    num2("mark_len", "Hole length", 0.05, 10, 0.05, { ...H, side: true, short: "Hole L", show: hand_is("disc") }),
-    num2("mark_w", "Hole width", 0.02, 5, 0.01, { ...H, side: true, short: "Hole W", show: hand_is("disc") }),
+    // the marker: cut out of the disc, named "Hole" (Okay, 16 Oct 2026: "work as holes now, perfect, just call it
+    // that"), or painted on it in a colour of its own, named "Mark" (#300, 4.45.4: "Mark if also possible easily");
+    // its rows say which (say: their names as [whole, short], by the choice)
+    seg("mark_as", "Marker", ["Hole", "Mark"], { ...H, side: true, show: hand_is("disc") }),
+    seg("mark", "Hole", SHAPES.slice(0, 3), { ...H, side: true, say: (T) => [T.mark_as === 1 ? "Mark" : "Hole"], show: hand_is("disc") }),
+    // the markers ring's shapes (#164)
+    num2("mark_len", "Hole length", 0.05, 10, 0.05, { ...H, side: true, short: "Hole L", say: (T) => T.mark_as === 1 ? ["Mark length", "Mark L"] : ["Hole length", "Hole L"], show: hand_is("disc") }),
+    num2("mark_w", "Hole width", 0.02, 5, 0.01, { ...H, side: true, short: "Hole W", say: (T) => T.mark_as === 1 ? ["Mark width", "Mark W"] : ["Hole width", "Hole W"], show: hand_is("disc") }),
+    col("mark_c", "Mark ink", { ...H, side: true, show: (T) => paints_mark(T) }),
+    // "ink": "Mark colour" is longer than the names' column (Counter Ø)
     num2("w", "Width", 0.02, 4, 0.01, { ...H, side: true, show: (H2) => HAND_SHAPES[H2.shape] !== "disc" }),
     num2("tail", "Tail", 0, 10, 0.05, { ...H, side: true, show: (H2) => HAND_SHAPES[H2.shape] !== "disc" }),
     num2("round", "Round ends", 0, 2, 0.01, { ...H, side: true, short: "Round", show: hand_is("baton", "pencil", "sword", "arrow", "syringe", "breguet", "lollipop", "file", "disc") }),
@@ -8517,7 +8542,7 @@ function parse_number(text, current) {
   return Number.isFinite(out) ? out : current;
 }
 var LENGTH_KEYS = { ring: RING_MM, hand: HAND_MM, window: WINDOW_MM, global: ["dial_d", "margin", "ha_cap", "dial_hole", "sh_hour", "sh_minute", "sh_second", "sh_cap", "sh_disc"], nudge: ["dr"] };
-var label_of = (row, T) => row.menu ? `${(row.menu.items.find(([v]) => v === (T[row.menu.key] ?? 0)) || row.menu.items[0])[1]} ${row.text.split(" ").pop()}` : row.text;
+var label_of = (row, T) => row.say ? row.say(T)[0] : row.menu ? `${(row.menu.items.find(([v]) => v === (T[row.menu.key] ?? 0)) || row.menu.items[0])[1]} ${row.text.split(" ").pop()}` : row.text;
 var NUDGE_NEUTRAL = { dr: 0, da: 0, rot: 0, s: 1 };
 var is_length = (row) => row.kind === "num" && (LENGTH_KEYS[row.scope] || []).includes(row.key);
 var decimals = (step) => (String(step).split(".")[1] || "").length;
@@ -9221,7 +9246,7 @@ var DialTool = class _DialTool {
     const p = clamp((performance.now() - sp.t0) / SPIN_MS, 0, 1), e = p < 0.5 ? 4 * p ** 3 : 1 - (-2 * p + 2) ** 3 / 2;
     const k = { hour: 0, minute: 1, second: 2 }, way = { hour: sp.way, minute: -sp.way };
     for (const item of items) {
-      if (item.role !== "hand" || !(item.name in k) || p >= 1) continue;
+      if (item.role !== "hand" && item.role !== "mark" || !(item.name in k) || p >= 1) continue;
       const a0 = sp.from[k[item.name]], d = item.angle - a0;
       if (item.name === "second") {
         item.angle = a0 + e * ((d % 360 + 540) % 360 - 180);
@@ -9780,7 +9805,12 @@ var DialTool = class _DialTool {
       const first = items.findIndex((x) => x.role === "hand" || x.role === "cap" || x.role === "guide");
       surface("plate", first >= 0 ? nodes[first] : null, [[this.slots[plate_at].d, 0]], 0);
     }
-    for (const h of hands) if (hands.some((o) => o.z > h.z) || cap_r && top > h.z) surface("hand-" + h.item.name, nodes[h.i + 1] || null, [[h.d, h.item.angle]], h.z);
+    const after = (i) => {
+      let n = i + 1;
+      while (items[n]?.role === "mark" && items[n].name === items[i].name) n++;
+      return n;
+    };
+    for (const h of hands) if (hands.some((o) => o.z > h.z) || cap_r && top > h.z) surface("hand-" + h.item.name, nodes[after(h.i)] || null, [[h.d, h.item.angle]], h.z);
     finish();
   }
   /** the guides' switch and list show the settings. */
@@ -10179,6 +10209,14 @@ var DialTool = class _DialTool {
           menu.value = T[row.menu.key] ?? 0;
           label.textContent = label_of(row, T);
         }
+        if (row.say) {
+          const [whole, short] = row.say(T);
+          if (row.short) {
+            label.querySelector(".whole").textContent = whole;
+            label.querySelector(".short").textContent = short;
+            label.title = whole;
+          } else label.textContent = whole;
+        }
         if (out.quiet) {
           const was = row.scope === "hand" ? this.opened["ha_" + HANDS[this.S.ui_hand]] : this.opened;
           out.quiet.classList.toggle("changed", Math.abs(v - (was?.[row.key] ?? v)) > 1e-9);
@@ -10238,13 +10276,17 @@ var DialTool = class _DialTool {
     }
     if (row.kind === "seg") {
       const group = el("span", { className: row.many ? "segs many" : "segs" });
-      const buttons = row.items.map((name, i) => el("button", { type: "button", id: `${id}-${i}`, textContent: name, onclick: () => {
+      const buttons = row.items.map((name2, i) => el("button", { type: "button", id: `${id}-${i}`, textContent: name2, onclick: () => {
         set(i);
         if (row.key.startsWith("ui_")) this.sync_rows();
       } }));
       group.append(...(row.order || buttons.map((b, i) => i)).map((i) => buttons[i]));
-      wrap.append(el("label", { textContent: row.text }), group);
-      out.refresh = (T) => buttons.forEach((b, i) => b.classList.toggle("on", i === T[row.key]));
+      const name = el("label", { textContent: row.text });
+      wrap.append(name, group);
+      out.refresh = (T) => {
+        buttons.forEach((b, i) => b.classList.toggle("on", i === T[row.key]));
+        if (row.say) name.textContent = label_of(row, T);
+      };
     }
     if (row.kind === "chk") {
       const box2 = el("input", { type: "checkbox", id });
@@ -12553,7 +12595,7 @@ var DialTool = class _DialTool {
     const S = this.S, mm = this.to_mm(p), r = Math.hypot(mm[0], mm[1]);
     const item = node && node.dataset && node.dataset.i !== void 0 ? this.items[+node.dataset.i] : null;
     const role = item ? item.role : null;
-    if (role === "hand") return { kind: "hand", hand: HANDS.indexOf(item.name), name: { hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name], path: item.path, angle: item.angle };
+    if (role === "hand" || role === "mark") return { kind: "hand", hand: HANDS.indexOf(item.name), name: { hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name], path: item.path, angle: item.angle };
     if (role === "cap") return { kind: "cap", name: "Cap", path: item.path, angle: 0 };
     if (role && (role.startsWith("date") || role === "cutline")) {
       const x = this.statik.windows.find((b) => b.index === item.window), kind = WINDOW_KINDS[x.w.kind];
