@@ -1,0 +1,19 @@
+GL-Nummernschild licence text, copied verbatim from the font files' own name table (name IDs 0 and 13)
+of GL-Nummernschild-Mtl.ttf in https://www.peter-wiegel.de/Fonts/GL_Nummernschild.zip (fetched 16 Oct 2026).
+The zip ships no separate licence file; the same text is printed on the last page of "Nummernschild Anleitung.pdf" in the zip.
+Peter Wiegel's page (https://www.peter-wiegel.de/GL_Nummernschild.html) says his edit (the framed/coloured glyphs moved to normal code points, shipped as the "Italic" files) is allowed by this licence.
+
+--- name ID 0 (copyright) ---
+(C)2009-2011 Gutenberg Labo, All rights reserved. http://gutenberg.sourceforge.jp/
+
+"FE-Mittelschrift" designed by Karlgeorg Hoefer.
+We refered to "FZV - Anlange 4" (http://bundesrecht.juris.de/fzv/anlage_4_62.html , http://www.stvzo.de/stvzo/fzv/anlange_4.htm)
+and image file from Wikipedia Commons (http://commons.wikimedia.org/wiki/File:FE-Schrift.svg)
+
+--- name ID 13 (licence) ---
+These fonts are free softwares.
+Unlimited permission is granted to use, copy, and distribute it, with or without modification, either commercially and noncommercially.
+THESE FONTS ARE PROVIDED ''AS IS'' WITHOUT WARRANTY.
+
+--- name ID 14 (licence URL) ---
+
