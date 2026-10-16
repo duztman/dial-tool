@@ -102,14 +102,6 @@
   .pane.has > :is(.circles, .btnline.shapes) { margin-block: var(--unit); }
   .pane > .btnline.shapes { container-type: inline-size; }
   .pane > .btnline.shapes > button { height: calc((100cqw - (var(--places) - 1) * var(--unit)) / var(--places)); }      /* as high as a place's circle: the shapes' line is as long as the places' line, which holds --places */
-  /* a heading in two lines (a window's: "Window at x", then "Position" for the buttons on its line, 4.46.1): the
-     title where every heading has it, the second line tight under it, a row's name in size and colour; the eye level
-     with the title */
-  .fold.twoline { grid-template-rows: auto auto; align-content: start; height: auto; min-height: var(--head); padding: calc((var(--head) - 1lh) / 2) 0 0; }
-  .fold.twoline > :is(.eye, h2) { grid-row: 1; }
-  .fold.twoline > .sub { grid-row: 2; grid-column: 2; color: var(--grey); font-weight: 400; }
-  .fold.twoline > .summary { grid-row: 1 / span 2; grid-column: 3; }
-  .pane:has(> .headcontrol[hidden]) > .fold > .sub { display: none; }      /* nothing on the line to name: a window not shown */
   .fold:focus-visible { outline-offset: -2px; }
   /* a pane's main selector stands on its heading line, on the four control columns, with no name of its own: the
      heading names it. The pane is laid on the columns so the selector can lie over the heading's right part; the

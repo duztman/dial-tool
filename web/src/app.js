@@ -568,6 +568,9 @@ const ROWS = {
     chk("ha_cap_top", "Cap on this hand", { side: true, show: (S) => !S.ha_second.on && S.ui_hand === G.top_hand(S) }),
     num("ha_cap", "Cap Ø", 0, 4, 0.05, { side: true, show: cap_rows }),
     col("c_cap", "Cap colour", { side: true, show: cap_rows }),
+    // its shapes: a row of thumbs under the box and every row beside it, from the box's left to the end (4.46.4; Okay:
+    // "Put hand type as a row spanning preview to end, after wall"; under the box in 4.46.3), the SVG tile last
+    pick("shape", "Shape", G.HAND_SHAPES, hand_pic, { ...H, thumbs: true, skip: [9] }),      // every shape but "file": the SVG tile stands for it
   ],
   Date: [                                          // "Windows" on its tab: up to four holes in the plate
     custom("window_cards", { pin: true, bar: true }),      // pin: always in view, like the hand tabs (Okay, 13 Oct 2026) ·         // four cards, 12 · 3 · 6 · 9: where each window is, and tabs for the panes below (Okay, 12 Oct 2026)
@@ -577,10 +580,9 @@ const ROWS = {
     // the Windows page (#263, 4.46.1; Okay's marks on three mock-ups, 16 Oct 2026): first where it is and what it
     // shows, under Window at x; then the hole itself under Shape — its shape buttons on that heading's line, then
     // Radius ("ok but below shapes"), its sizes, its colours on one line, its text and font, its frame
-    // its heading in two lines, "Window at x" and under it "Position", the place buttons on its line (Okay, 16 Oct
-    // 2026, on the mock-ups: "Move eye up with Window at… put Position after a tight br in its usual size and color…
-    // If it's taller so be it, enlarge buttons. And 3 6 9 12 are circular buttons now")
-    hdr("Window", { title: (S) => `Window at ${G.window_place(G.windows_of(S)[S.ui_window])}`, sub: "Position" }),
+    // the place buttons on its heading's line (Okay, 16 Oct 2026, on the mock-ups: "If it's taller so be it, enlarge
+    // buttons. And 3 6 9 12 are circular buttons now")
+    hdr("Window", { title: (S) => `Window at ${G.window_place(G.windows_of(S)[S.ui_window])}` }),      // "Position" under it in 4.46.1–2 (Okay: "Delete position name, that works without")
     custom("window_at", { ...W, head: true, show: win_on, text: "Position" }),
     pick("kind", "Shows", G.WINDOW_KINDS, (i) => icon(PICS.window[i], 30, 21), { ...W, small: true, show: win_on }),
     info("Follows the time shown: AM · PM beside the time, under the panel.", { ...W, show: win_is("am · pm") }),
@@ -1984,7 +1986,6 @@ class DialTool {
       out.summary = el("span", { className: "summary quiet" });
       out.button = el("button", { type: "button", className: "fold", title: "Show or hide this pane", onclick: () => this.fold(out, !this.is_folded(out)) }, out.eye, title, out.summary);
       out.body = el("div", { className: "body" });
-      if (row.sub) { out.button.classList.add("twoline"); title.after(el("span", { className: "sub", textContent: row.sub })); }      // a second line under the title: the name of what stands on the heading's line
       out.el = el("section", { className: row.headless ? "pane headless" : "pane" }, out.button, out.body);      // ("plain" is a button's class)
       if (row.headless) out.button.hidden = true;
       if (row.tools) {                             // tools on the heading line, at its right; folded, the summary stands there instead
@@ -2085,7 +2086,7 @@ class DialTool {
     }
 
     if (row.kind === "pick") {                     // a choice as pictures: one tile per item, on the columns
-      const group = el("span", { className: row.small ? "picks small" : "picks", role: "radiogroup", ariaLabel: row.text });
+      const group = el("span", { className: row.small ? "picks small" : row.thumbs ? "picks thumbs" : "picks", role: "radiogroup", ariaLabel: row.text });
       row.items.forEach((name, i) => {
         if (row.skip && row.skip.includes(i)) return;      // an item kept in the list for its place (R9) but not offered here
         const tile = el("button", { type: "button", className: "pickt", id: `${id}-${i}`, title: name, onclick: () => set(i) });
@@ -2095,7 +2096,14 @@ class DialTool {
         group.append(tile);
       });
       const label = el("label", { textContent: row.text, className: row.label ? "strong" : "" });
-      wrap.append(label, group);
+      if (row.thumbs) {                            // thumbs: pictures alone, a row of their own without a name (a hand's shapes, 4.46.3), and the dashed SVG tile last — a shape of one's own, not built yet
+        const own = el("button", { type: "button", className: "pickt own", id: id + "-own", title: "A shape of your own, from an SVG file: not built yet" });
+        own.innerHTML = icon(SIGNS.plus);
+        own.setAttribute("aria-disabled", "true");
+        group.append(own);
+        wrap.classList.add("thumbs");
+        wrap.append(group);
+      } else wrap.append(label, group);
       out.refresh = (T) => {
         if (row.label) label.textContent = row.label(T);
         const tiles = [...group.querySelectorAll('[role="radio"]')];
@@ -3206,22 +3214,10 @@ class DialTool {
 
   /** the chosen hand in detail: a box of its own, at the left of the hand's rows (on a phone: over them, the hand lying). */
   row_hand_detail(wrap, out) {
-    // the hand's column: its box, and under it every shape as a thumb, four to a line, no words (each says its name
-    // when pointed at), the dashed SVG tile last — a shape of one's own, not built yet (4.46.3; Okay, 16 Oct 2026:
-    // "type of hand moves under preview. Fit sensibly, rectangular thumbs would work there"; a line of tiles beside
-    // the box that opened, "more", until then)
-    wrap.className = "handcol";
-    const box = el("div", { className: "detail", id: "hand-detail" });
-    const shapes = this.build_row(pick("shape", "Shape", G.HAND_SHAPES, hand_pic, { ...H, skip: [9] }));      // every shape but "file": the SVG tile stands for it
-    const group = shapes.el.querySelector(".picks");
-    const own = el("button", { type: "button", className: "pickt own", id: "hand-shape-Shape-own", title: "A shape of your own, from an SVG file: not built yet" });
-    own.innerHTML = icon(SIGNS.plus);
-    own.setAttribute("aria-disabled", "true");
-    group.classList.add("thumbs");
-    group.append(own);
-    wrap.append(box, group);
+    wrap.className = "detail";
+    wrap.id = "hand-detail";
     let drawn = "";
-    out.refresh = (T) => { const now = hand_detail(T); if (now !== drawn) { drawn = now; box.innerHTML = now; } shapes.refresh(T); };
+    out.refresh = (T) => { const now = hand_detail(T); if (now !== drawn) { drawn = now; wrap.innerHTML = now; } };
   }
 
   /** a window's place (Okay, 13 Oct 2026): every named place is a button, so the others are seen and pressed — first

@@ -40,18 +40,18 @@
   :is(.tabsbar .segs > .tab, .windowcards .card) + :is(.tab, .card) { margin-left: calc(-1 * var(--hair)); }      /* one line between two tabs, not two */
   .tab:hover { --tab-fill: var(--hover); }
   .tab.on { --cut-l: 0px; --cut-r: 0px; --tab-line: var(--ink); --tab-fill: var(--ink); z-index: 1; color: var(--paper); }
-  /* the Show box (#261, 4.46; 4.46.2): it grows down from the chosen tab and goes with it — a thin box a little darker
-     than the page, under that tab alone and as wide as it, holding Show (Okay: "the top tab attaches traveling show
-     ticker"). It stands in the tabs' own columns (--tabs, --tab: set by app.js), and where the tabs share a line
-     (one line between two, above) it shares it too. Then the room under an open pane, and the panes. A hand's pane
-     under it has no heading (.headless): a thin black line opens it instead, from where the tabs start, two units
-     under the box, and the room under an open pane before what it holds (Okay, 16 Oct 2026, on 4.46.1: "black line,
-     new black line, thin") */
-  .form > .showbox { display: grid; grid-template-columns: repeat(var(--tabs, 1), minmax(0, 1fr)); margin: 0 0 var(--air) var(--lead); }
+  /* the Show box (#261, 4.46; 4.46.2): it grows down from the chosen tab and goes with it — a thin box darker than the
+     page, under that tab alone and as wide as it, holding Show, its tick 3 smaller (Okay: "the top tab attaches
+     traveling show ticker"; "Shows bg darker, tick 3px smaller"). It stands in the tabs' own columns (--tabs, --tab:
+     set by app.js), and where the tabs share a line (one line between two, above) it shares it too. Under it the
+     line that opens what follows — a hand's thin black line (its pane has no heading: .headless), a window's pane's
+     thick one — with the same room over the line as under it (4.46.4; Okay: "Vertical gaps before after same";
+     "Thick line stands here"): two units, as over the title on every heading — under the thin line counted from its
+     foot to the first row's own white line, which stand a hairline each */
+  .form > .showbox { display: grid; grid-template-columns: repeat(var(--tabs, 1), minmax(0, 1fr)); margin: 0 0 var(--u4) var(--lead); --tick: var(--show-tick); }
   .form > .showbox > .check { grid-column: var(--tab, 1); display: flex; align-items: center; height: var(--show-high); padding: 0 var(--u3); background: var(--show-ground); font-size: var(--t-s);
     margin-left: calc(-1 * var(--hair) * min(var(--tab, 1) - 1, 1)); }      /* past the first tab: the hairline it shares with the tab before it */
-  .form > .showbox:has(+ .pane.headless) { margin-bottom: var(--u4); }
-  .form > .showbox + .pane.headless { border-top: 0; padding-top: var(--air); background: linear-gradient(var(--ink) 0 0) right top / calc(100% - var(--lead)) var(--hair) no-repeat; }
+  .form > .showbox + .pane.headless { border-top: 0; padding-top: calc(var(--u4) + 2 * var(--hair)); background: linear-gradient(var(--ink) 0 0) right top / calc(100% - var(--lead)) var(--hair) no-repeat; }
   .handsbar > h2 { grid-column: 2 / span 2; }
   .handsbar > .check { grid-column: 4 / span 2; white-space: nowrap; }
   .handsbar > select { grid-column: 6 / span 2; }

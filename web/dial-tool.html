@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.46.3 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.46.4 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -126,7 +126,7 @@
     --guide-tint: 22%; --guide-edge: 65%;          /* the selected ring's row: this much of its guide's colour in its ground, and in its frame */
     --tab-notch: var(--unit);                      /* how deep the notch between two tabs is cut (a V, twice as wide): one unit */
     --places: 6;                                   /* a window's place circles on their heading's line: 3 · 6 · 9 · 12 · 4 · ··· (4.46.2); the Shape line's buttons are as high as one */
-    --show-high: var(--control); --show-ground: color-mix(in srgb, var(--ink) 7%, var(--ground));      /* the Show box (#261): a thin box, a little darker than the grey page under it (a control high since 4.46.2, Okay: "less"; a control and a half-unit over and under it in 4.46) */
+    --show-high: var(--control); --show-ground: color-mix(in srgb, var(--ink) 12%, var(--ground));      /* the Show box (#261): a thin box, darker than the grey page under it (7 % ink until 4.46.4, Okay: "Shows bg darker"; a control high since 4.46.2, Okay: "less") */
     --tab-high: 40px; --tab-pad: 11px;             /* a word tab's height (Hour · Minute · Seconds) · above and under a picture tab's picture (the window cards): room to breathe */
     --round-pill: 999px;                           /* fully round: the signs on the Rings heading line, a value button */
     --menu-box: 18px;                              /* the boxed arrow beside a label that opens a small menu */
@@ -218,6 +218,7 @@
     --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
     --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
     --t-num-pop: 23px;                             /* the number popup's value, in its pill: larger than --t-l (Okay, 16 Oct 2026, on 4.45: "everything bigger … larger everything within square"; 20 in 4.45.2, then "text larger") */
+    --show-tick: calc(var(--tick) - 3px);          /* the Show box's tick, 3 smaller than a tick box (Okay, 16 Oct 2026, on 4.46.3: "tick 3px smaller") */
     --unit-pad: 4px;                               /* the unit box: this much round its word, on every side — round mm's letters; the other units keep mm's height (Okay, 16 Oct 2026, on 4.44: "2px padding around letters"; on 4.44.3: "Mm looks perfect now add 2px more padding … Others use the same height, width can change") */
 
     /* off the scale as found, with no figure from Okay (16 Oct 2026): kept as they are, each to be put on the scale or
@@ -487,14 +488,6 @@
   .pane.has > :is(.circles, .btnline.shapes) { margin-block: var(--unit); }
   .pane > .btnline.shapes { container-type: inline-size; }
   .pane > .btnline.shapes > button { height: calc((100cqw - (var(--places) - 1) * var(--unit)) / var(--places)); }      /* as high as a place's circle: the shapes' line is as long as the places' line, which holds --places */
-  /* a heading in two lines (a window's: "Window at x", then "Position" for the buttons on its line, 4.46.1): the
-     title where every heading has it, the second line tight under it, a row's name in size and colour; the eye level
-     with the title */
-  .fold.twoline { grid-template-rows: auto auto; align-content: start; height: auto; min-height: var(--head); padding: calc((var(--head) - 1lh) / 2) 0 0; }
-  .fold.twoline > :is(.eye, h2) { grid-row: 1; }
-  .fold.twoline > .sub { grid-row: 2; grid-column: 2; color: var(--grey); font-weight: 400; }
-  .fold.twoline > .summary { grid-row: 1 / span 2; grid-column: 3; }
-  .pane:has(> .headcontrol[hidden]) > .fold > .sub { display: none; }      /* nothing on the line to name: a window not shown */
   .fold:focus-visible { outline-offset: -2px; }
   /* a pane's main selector stands on its heading line, on the four control columns, with no name of its own: the
      heading names it. The pane is laid on the columns so the selector can lie over the heading's right part; the
@@ -557,18 +550,18 @@
   :is(.tabsbar .segs > .tab, .windowcards .card) + :is(.tab, .card) { margin-left: calc(-1 * var(--hair)); }      /* one line between two tabs, not two */
   .tab:hover { --tab-fill: var(--hover); }
   .tab.on { --cut-l: 0px; --cut-r: 0px; --tab-line: var(--ink); --tab-fill: var(--ink); z-index: 1; color: var(--paper); }
-  /* the Show box (#261, 4.46; 4.46.2): it grows down from the chosen tab and goes with it — a thin box a little darker
-     than the page, under that tab alone and as wide as it, holding Show (Okay: "the top tab attaches traveling show
-     ticker"). It stands in the tabs' own columns (--tabs, --tab: set by app.js), and where the tabs share a line
-     (one line between two, above) it shares it too. Then the room under an open pane, and the panes. A hand's pane
-     under it has no heading (.headless): a thin black line opens it instead, from where the tabs start, two units
-     under the box, and the room under an open pane before what it holds (Okay, 16 Oct 2026, on 4.46.1: "black line,
-     new black line, thin") */
-  .form > .showbox { display: grid; grid-template-columns: repeat(var(--tabs, 1), minmax(0, 1fr)); margin: 0 0 var(--air) var(--lead); }
+  /* the Show box (#261, 4.46; 4.46.2): it grows down from the chosen tab and goes with it — a thin box darker than the
+     page, under that tab alone and as wide as it, holding Show, its tick 3 smaller (Okay: "the top tab attaches
+     traveling show ticker"; "Shows bg darker, tick 3px smaller"). It stands in the tabs' own columns (--tabs, --tab:
+     set by app.js), and where the tabs share a line (one line between two, above) it shares it too. Under it the
+     line that opens what follows — a hand's thin black line (its pane has no heading: .headless), a window's pane's
+     thick one — with the same room over the line as under it (4.46.4; Okay: "Vertical gaps before after same";
+     "Thick line stands here"): two units, as over the title on every heading — under the thin line counted from its
+     foot to the first row's own white line, which stand a hairline each */
+  .form > .showbox { display: grid; grid-template-columns: repeat(var(--tabs, 1), minmax(0, 1fr)); margin: 0 0 var(--u4) var(--lead); --tick: var(--show-tick); }
   .form > .showbox > .check { grid-column: var(--tab, 1); display: flex; align-items: center; height: var(--show-high); padding: 0 var(--u3); background: var(--show-ground); font-size: var(--t-s);
     margin-left: calc(-1 * var(--hair) * min(var(--tab, 1) - 1, 1)); }      /* past the first tab: the hairline it shares with the tab before it */
-  .form > .showbox:has(+ .pane.headless) { margin-bottom: var(--u4); }
-  .form > .showbox + .pane.headless { border-top: 0; padding-top: var(--air); background: linear-gradient(var(--ink) 0 0) right top / calc(100% - var(--lead)) var(--hair) no-repeat; }
+  .form > .showbox + .pane.headless { border-top: 0; padding-top: calc(var(--u4) + 2 * var(--hair)); background: linear-gradient(var(--ink) 0 0) right top / calc(100% - var(--lead)) var(--hair) no-repeat; }
   .handsbar > h2 { grid-column: 2 / span 2; }
   .handsbar > .check { grid-column: 4 / span 2; white-space: nowrap; }
   .handsbar > select { grid-column: 6 / span 2; }
@@ -648,9 +641,15 @@
   .detail .lying { display: none; }
   .detail .axis { stroke: var(--rule); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
   .detail .pivot { fill: var(--surface); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
-  /* the hand's shapes as thumbs under its box (4.46.3, "rectangular thumbs"): every one shown, upright pictures in
-     upright tiles, no words (a tile's title names it), a unit apart; the dashed SVG tile last (a shape of one's own) */
-  .handcol > .picks.thumbs { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  /* the hand's shapes as thumbs (4.46.3, "rectangular thumbs"; a row of their own after the rows since 4.46.4): every
+     one shown, upright pictures in upright tiles, no words (a tile's title names it), a unit apart, all on one line
+     from the box's left to the end; the dashed SVG tile last (a shape of one's own) */
+  .row.thumbs > .picks.thumbs { grid-column: 1 / -1; grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: minmax(0, 1fr); padding: var(--u4) 0; }
+  /* framed by thin black lines (Okay, on 4.46.4: "a thin black after thin white which mistakenly touches preview box";
+     "End of hand types, black thin bar to finish instead of white"): over it, on the line the box and the last row
+     end on (it lies over theirs, sharing it as two tabs share theirs), and under it; two units from the thumbs to each,
+     as the line under the Show box has */
+  .row.thumbs { position: relative; z-index: 1; margin-top: calc(-1 * var(--hair)); border-block: var(--hair) solid var(--ink); box-shadow: none; }
   .picks.thumbs > .pickt { align-content: center; padding: var(--unit) 0; }
   .picks.thumbs > .pickt > span { display: none; }
   .pickt.own { border-style: dashed; color: var(--grey); cursor: default; }
@@ -676,10 +675,11 @@
   @media (min-width: 861px) {
     /* wide: the box in the first two columns, as high as the rows beside it; the rows in the other four, each one
        line: label · slider · the number box */
-    .body > .handcol { grid-column: 2 / span 2; grid-row: 1 / span 40; align-self: start; translate: 0 calc(-1 * var(--hair)); }      /* its box's top line on the first row's line, beside it (Okay, on 4.46.1: "Blue lines, align") */
-    .handcol > .detail { height: calc(7 * var(--line)); margin: 0; }
-    .handcol > .picks.thumbs { grid-template-columns: repeat(4, minmax(0, 1fr)); }      /* four to a line under the box: three lines hold them all */
-    .body > .handcol { position: sticky; top: var(--unit); }      /* it scrolls up with its pane until it is one unit (the gap between the shape tiles) under the line under the hand tabs, stays there while the rows beside it scroll, and the pane's end (the Cap pane) pushes it on (Okay, 14 Oct 2026: "stay still… until cap"; "align here after scroll") */      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
+    /* the box beside the rows, as high as they are, its top line the first row's, its foot the last row's (Okay, on
+       4.46.3: "Enlarge the preview to fit the area"; "Blue lines, align"): it spans the rows' lines (40: more than a
+       hand has; the ones it doesn't use have no height) and shares the first row's line, as two tabs share theirs.
+       Seven rows high and held in view while the rows scrolled until 4.46.4. The thumbs' row goes under it all */
+    .body > .detail { grid-column: 2 / span 2; grid-row: 1 / span 40; align-self: stretch; margin: calc(-1 * var(--hair)) 0 0; }      /* it scrolls up with its pane until it is one unit (the gap between the shape tiles) under the line under the hand tabs, stays there while the rows beside it scroll, and the pane's end (the Cap pane) pushes it on (Okay, 14 Oct 2026: "stay still… until cap"; "align here after scroll") */      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
     .body > .row.side { grid-column: 4 / -1; grid-template-columns: var(--side-label) minmax(0, 1fr) var(--side-num); }      /* the name as narrow as the longest (Counter Ø), the slider the rest: bigger (#250) */
     .row.side > :first-child, .row.side > input[type="range"] { grid-column: auto; }
     .row.side > label { font-size: var(--t-s); }
@@ -5867,7 +5867,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.46.3";
+var VERSION = "beta 4.46.4";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -8504,7 +8504,11 @@ var ROWS = {
     // the cap is off until "Cap on this hand" is ticked (G.cap_shows)
     chk("ha_cap_top", "Cap on this hand", { side: true, show: (S) => !S.ha_second.on && S.ui_hand === top_hand(S) }),
     num2("ha_cap", "Cap \xD8", 0, 4, 0.05, { side: true, show: cap_rows }),
-    col("c_cap", "Cap colour", { side: true, show: cap_rows })
+    col("c_cap", "Cap colour", { side: true, show: cap_rows }),
+    // its shapes: a row of thumbs under the box and every row beside it, from the box's left to the end (4.46.4; Okay:
+    // "Put hand type as a row spanning preview to end, after wall"; under the box in 4.46.3), the SVG tile last
+    pick("shape", "Shape", HAND_SHAPES, hand_pic, { ...H, thumbs: true, skip: [9] })
+    // every shape but "file": the SVG tile stands for it
   ],
   Date: [
     // "Windows" on its tab: up to four holes in the plate
@@ -8517,10 +8521,10 @@ var ROWS = {
     // the Windows page (#263, 4.46.1; Okay's marks on three mock-ups, 16 Oct 2026): first where it is and what it
     // shows, under Window at x; then the hole itself under Shape — its shape buttons on that heading's line, then
     // Radius ("ok but below shapes"), its sizes, its colours on one line, its text and font, its frame
-    // its heading in two lines, "Window at x" and under it "Position", the place buttons on its line (Okay, 16 Oct
-    // 2026, on the mock-ups: "Move eye up with Window at… put Position after a tight br in its usual size and color…
-    // If it's taller so be it, enlarge buttons. And 3 6 9 12 are circular buttons now")
-    hdr("Window", { title: (S) => `Window at ${window_place(windows_of(S)[S.ui_window])}`, sub: "Position" }),
+    // the place buttons on its heading's line (Okay, 16 Oct 2026, on the mock-ups: "If it's taller so be it, enlarge
+    // buttons. And 3 6 9 12 are circular buttons now")
+    hdr("Window", { title: (S) => `Window at ${window_place(windows_of(S)[S.ui_window])}` }),
+    // "Position" under it in 4.46.1–2 (Okay: "Delete position name, that works without")
     custom("window_at", { ...W, head: true, show: win_on, text: "Position" }),
     pick("kind", "Shows", WINDOW_KINDS, (i) => icon(PICS.window[i], 30, 21), { ...W, small: true, show: win_on }),
     info("Follows the time shown: AM \xB7 PM beside the time, under the panel.", { ...W, show: win_is("am \xB7 pm") }),
@@ -10160,10 +10164,6 @@ var DialTool = class _DialTool {
       out.summary = el("span", { className: "summary quiet" });
       out.button = el("button", { type: "button", className: "fold", title: "Show or hide this pane", onclick: () => this.fold(out, !this.is_folded(out)) }, out.eye, title, out.summary);
       out.body = el("div", { className: "body" });
-      if (row.sub) {
-        out.button.classList.add("twoline");
-        title.after(el("span", { className: "sub", textContent: row.sub }));
-      }
       out.el = el("section", { className: row.headless ? "pane headless" : "pane" }, out.button, out.body);
       if (row.headless) out.button.hidden = true;
       if (row.tools) {
@@ -10299,7 +10299,7 @@ var DialTool = class _DialTool {
       };
     }
     if (row.kind === "pick") {
-      const group = el("span", { className: row.small ? "picks small" : "picks", role: "radiogroup", ariaLabel: row.text });
+      const group = el("span", { className: row.small ? "picks small" : row.thumbs ? "picks thumbs" : "picks", role: "radiogroup", ariaLabel: row.text });
       row.items.forEach((name, i) => {
         if (row.skip && row.skip.includes(i)) return;
         const tile = el("button", { type: "button", className: "pickt", id: `${id}-${i}`, title: name, onclick: () => set(i) });
@@ -10309,7 +10309,14 @@ var DialTool = class _DialTool {
         group.append(tile);
       });
       const label = el("label", { textContent: row.text, className: row.label ? "strong" : "" });
-      wrap.append(label, group);
+      if (row.thumbs) {
+        const own = el("button", { type: "button", className: "pickt own", id: id + "-own", title: "A shape of your own, from an SVG file: not built yet" });
+        own.innerHTML = icon(SIGNS.plus);
+        own.setAttribute("aria-disabled", "true");
+        group.append(own);
+        wrap.classList.add("thumbs");
+        wrap.append(group);
+      } else wrap.append(label, group);
       out.refresh = (T) => {
         if (row.label) label.textContent = row.label(T);
         const tiles = [...group.querySelectorAll('[role="radio"]')];
@@ -11627,24 +11634,15 @@ var DialTool = class _DialTool {
   }
   /** the chosen hand in detail: a box of its own, at the left of the hand's rows (on a phone: over them, the hand lying). */
   row_hand_detail(wrap, out) {
-    wrap.className = "handcol";
-    const box2 = el("div", { className: "detail", id: "hand-detail" });
-    const shapes = this.build_row(pick("shape", "Shape", HAND_SHAPES, hand_pic, { ...H, skip: [9] }));
-    const group = shapes.el.querySelector(".picks");
-    const own = el("button", { type: "button", className: "pickt own", id: "hand-shape-Shape-own", title: "A shape of your own, from an SVG file: not built yet" });
-    own.innerHTML = icon(SIGNS.plus);
-    own.setAttribute("aria-disabled", "true");
-    group.classList.add("thumbs");
-    group.append(own);
-    wrap.append(box2, group);
+    wrap.className = "detail";
+    wrap.id = "hand-detail";
     let drawn2 = "";
     out.refresh = (T) => {
       const now = hand_detail(T);
       if (now !== drawn2) {
         drawn2 = now;
-        box2.innerHTML = now;
+        wrap.innerHTML = now;
       }
-      shapes.refresh(T);
     };
   }
   /** a window's place (Okay, 13 Oct 2026): every named place is a button, so the others are seen and pressed — first

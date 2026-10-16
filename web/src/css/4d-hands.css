@@ -7,9 +7,15 @@
   .detail .lying { display: none; }
   .detail .axis { stroke: var(--rule); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
   .detail .pivot { fill: var(--surface); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
-  /* the hand's shapes as thumbs under its box (4.46.3, "rectangular thumbs"): every one shown, upright pictures in
-     upright tiles, no words (a tile's title names it), a unit apart; the dashed SVG tile last (a shape of one's own) */
-  .handcol > .picks.thumbs { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  /* the hand's shapes as thumbs (4.46.3, "rectangular thumbs"; a row of their own after the rows since 4.46.4): every
+     one shown, upright pictures in upright tiles, no words (a tile's title names it), a unit apart, all on one line
+     from the box's left to the end; the dashed SVG tile last (a shape of one's own) */
+  .row.thumbs > .picks.thumbs { grid-column: 1 / -1; grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: minmax(0, 1fr); padding: var(--u4) 0; }
+  /* framed by thin black lines (Okay, on 4.46.4: "a thin black after thin white which mistakenly touches preview box";
+     "End of hand types, black thin bar to finish instead of white"): over it, on the line the box and the last row
+     end on (it lies over theirs, sharing it as two tabs share theirs), and under it; two units from the thumbs to each,
+     as the line under the Show box has */
+  .row.thumbs { position: relative; z-index: 1; margin-top: calc(-1 * var(--hair)); border-block: var(--hair) solid var(--ink); box-shadow: none; }
   .picks.thumbs > .pickt { align-content: center; padding: var(--unit) 0; }
   .picks.thumbs > .pickt > span { display: none; }
   .pickt.own { border-style: dashed; color: var(--grey); cursor: default; }
@@ -35,10 +41,11 @@
   @media (min-width: 861px) {
     /* wide: the box in the first two columns, as high as the rows beside it; the rows in the other four, each one
        line: label · slider · the number box */
-    .body > .handcol { grid-column: 2 / span 2; grid-row: 1 / span 40; align-self: start; translate: 0 calc(-1 * var(--hair)); }      /* its box's top line on the first row's line, beside it (Okay, on 4.46.1: "Blue lines, align") */
-    .handcol > .detail { height: calc(7 * var(--line)); margin: 0; }
-    .handcol > .picks.thumbs { grid-template-columns: repeat(4, minmax(0, 1fr)); }      /* four to a line under the box: three lines hold them all */
-    .body > .handcol { position: sticky; top: var(--unit); }      /* it scrolls up with its pane until it is one unit (the gap between the shape tiles) under the line under the hand tabs, stays there while the rows beside it scroll, and the pane's end (the Cap pane) pushes it on (Okay, 14 Oct 2026: "stay still… until cap"; "align here after scroll") */      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
+    /* the box beside the rows, as high as they are, its top line the first row's, its foot the last row's (Okay, on
+       4.46.3: "Enlarge the preview to fit the area"; "Blue lines, align"): it spans the rows' lines (40: more than a
+       hand has; the ones it doesn't use have no height) and shares the first row's line, as two tabs share theirs.
+       Seven rows high and held in view while the rows scrolled until 4.46.4. The thumbs' row goes under it all */
+    .body > .detail { grid-column: 2 / span 2; grid-row: 1 / span 40; align-self: stretch; margin: calc(-1 * var(--hair)) 0 0; }      /* it scrolls up with its pane until it is one unit (the gap between the shape tiles) under the line under the hand tabs, stays there while the rows beside it scroll, and the pane's end (the Cap pane) pushes it on (Okay, 14 Oct 2026: "stay still… until cap"; "align here after scroll") */      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
     .body > .row.side { grid-column: 4 / -1; grid-template-columns: var(--side-label) minmax(0, 1fr) var(--side-num); }      /* the name as narrow as the longest (Counter Ø), the slider the rest: bigger (#250) */
     .row.side > :first-child, .row.side > input[type="range"] { grid-column: auto; }
     .row.side > label { font-size: var(--t-s); }

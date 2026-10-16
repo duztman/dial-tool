@@ -1,5 +1,19 @@
 # Dial Tool — changelog
 
+## beta 4.46.4 (web version) · 16 Oct 2026
+
+After Okay's marks on 4.46.3.
+
+- **The Show box**: a darker ground (12 % ink, was 7 %), its tick 3 px smaller ("Shows bg darker, tick 3px smaller").
+- **The line under it, the same room over and under** ("Vertical gaps before after same"): two units (11 px) from the box to the line, and two from the line to what follows.
+  - On a hand's page that is the thin black line, then the rows. The room under it is counted to the first row's own white line.
+  - On a window's page it is the pane's thick line ("Thick line stands here"), with the title as far under it as on every heading.
+- **Window at x** loses its "Position" line ("Delete position name, that works without"); the circles stand on the title's line.
+- **A hand's page**:
+  - its shapes are a row of their own after every row (after Wall, and the cap's rows on the seconds hand), from the box's left to the end, all eleven thumbs on one line ("Put hand type as a row spanning preview to end, after wall");
+  - the box is as high as the rows beside it, from the first row's line to the last row's foot ("Enlarge the preview to fit the area"). It grows with a shape that has more rows (breguet: three more), and no longer stays in view while the rows scroll, since it is as tall as they are.
+  - the thumbs stand between two thin black lines ("a thin black after thin white which mistakenly touches preview box"; "End of hand types, black thin bar to finish instead of white"). The first lies on the line where the box and the last row end, so the white line no longer meets the box. Two units separate the thumbs from each line.
+
 ## beta 4.46.3 (web version) · 16 Oct 2026
 
 - **A hand's shapes move under its box** (#311; Okay: "type of hand moves under preview. Fit sensibly, rectangular thumbs would work there"):
