@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.45.2 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.45.3 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -133,14 +133,18 @@
     --line-button: 36px; --bare-dot: 16px;      /* in the ring drawer every control is this high (a value button this wide too) · the colour's swatch */
     --half: 30px;                                  /* AM · PM: its own window beside the time (Okay, 14 Oct 2026, 23:19) */
     --value-pop: 132px;                            /* a value button's tag: about as wide as it is high */
-    /* the number popup (#249; a square since 4.45.2): three pills a finger high (44, the least a finger is given),
-       --pop-gap between them and --pop-pad round them, in a frame two points thick; its corners a pill's round plus
-       that room and the frame, so they run parallel to the pills'; a ground darker than the pane's; its slider's
-       thumb a pill, as far inside its pill as --u3, half as wide again as high */
-    --num-pop-pill: 44px;
-    --num-pop: calc(3 * var(--num-pop-pill) + 2 * var(--pop-gap) + 2 * var(--pop-pad) + 2 * var(--thick));
-    --num-pop-ground: color-mix(in srgb, var(--ink) 7%, var(--ground)); --num-pop-round: calc(var(--num-pop-pill) / 2 + var(--pop-pad) + var(--thick));
-    --num-pop-thumb: calc(var(--num-pop-pill) - 2 * var(--u3));
+    /* the number popup (#249; Okay's drawing, 16 Oct 2026, 4.45.3): on a dark ground, two pills a finger high (44,
+       the least a finger is given) — the slider, the value — and under them − and + as two discs half as high again;
+       a unit (--u4) round them and a little less (--u3) between them; in a frame two points thick. Its corners: at the
+       top a pill's round plus that room and the frame, at the bottom a disc's ("plus minus roundness + some offset"),
+       so each runs parallel to what it holds. The pills and discs mid grey ("no white … all colors mid grays"), the
+       words, the signs and the slider's knob, a disc, black. */
+    --num-pop-pill: 44px; --num-pop-step: calc(1.5 * var(--num-pop-pill));
+    --num-pop-pad: var(--u4); --num-pop-gap: var(--u3);
+    --num-pop: calc(2 * var(--num-pop-step) + var(--num-pop-gap) + 2 * var(--num-pop-pad) + 2 * var(--thick));
+    --num-pop-round: calc(var(--num-pop-pill) / 2 + var(--num-pop-pad) + var(--thick)); --num-pop-round-foot: calc(var(--num-pop-step) / 2 + var(--num-pop-pad) + var(--thick));
+    --num-pop-ground: var(--night); --num-pop-fill: color-mix(in srgb, var(--grey), var(--rule)); --num-pop-hover: color-mix(in srgb, var(--num-pop-fill) 85%, var(--black));
+    --num-pop-thumb: calc(var(--num-pop-pill) - 2 * var(--u2));
     --dot-tiny: 10px;                              /* a colour inside a line of words: a folded pane's summary */
     --thumb: 18px; --track: 4px; --thumb-eye: 2px; --thumb-eye-edge: 2.75px;      /* sliders: a black disc on a thin track (Okay's sketch); the light centre of the disc, and where its edge softens */
     --grip: 18px;                                  /* the ring list's drag handle column */
@@ -165,7 +169,8 @@
     --checker: repeating-conic-gradient(#BDBDB9 0 25%, var(--white) 0 50%) 0 0 / 8px 8px;      /* what shows through a see-through colour */
     --faint: 0.35;                                 /* how much of a switch on the preview shows at rest */
     --canvas-top: calc((var(--header) - var(--control-large)) / 2);      /* undo and Guides stand on the header's middle line, with the title and the unit box */
-    --guide-name: 92px; --guide-row: 38px;         /* the guides' list: the column of names · a line's height (42 until 4.42.5; Okay, 16 Oct 2026, #271: "-2px" above and below) */
+    --guide-name: 106px; --guide-row: 30px;        /* the guides' list: the column of names, wide enough for an added guide's name and values on one line (92 until 4.45.3) · a line's height (42 until 4.42.5, Okay, #271: "-2px" above and below; 38 until 4.45.3, Okay, 16 Oct 2026, #305: "tighter spacing overall … small like beta version allowed"; under a finger still 38) */
+    --shade-name: 92px;                            /* the Shadows list's names: the guides' list's column until 4.45.3, when that one grew for an added guide's values; its sliders keep the room */
     --guide-dot: 10px;                             /* a round colour in the guides' list (the room between two: a special) */
     --guide-dim: 0.6;                              /* a colour not chosen in the guides' list: this much of it (Okay, 16 Oct 2026, #271: "dim all the unselected colors 40%") */
     --ring-thick: 3px;                             /* the chosen one: a ring of its own colour this thick, a ring of the ground inside it (a special) */
@@ -209,7 +214,7 @@
     --speed-pad: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2);      /* the speed box's room inside, left and right: the thumb at either end stands as far from the wall as from the box's top and bottom (3; Okay, 15 Oct 2026, 03:18: "when the ball is in a terminal, the bounding box clears it as much as it clears from the top… both ends symmetry"). Was u3 + 4 − half a thumb (1.25; 01:03, "before plus four") */
     --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
     --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
-    --t-num-pop: 20px;                             /* the number popup's value, in its pill: larger than --t-l (Okay, 16 Oct 2026, on 4.45: "everything bigger … larger everything within square") */
+    --t-num-pop: 23px;                             /* the number popup's value, in its pill: larger than --t-l (Okay, 16 Oct 2026, on 4.45: "everything bigger … larger everything within square"; 20 in 4.45.2, then "text larger") */
     --unit-pad: 4px;                               /* the unit box: this much round its word, on every side — round mm's letters; the other units keep mm's height (Okay, 16 Oct 2026, on 4.44: "2px padding around letters"; on 4.44.3: "Mm looks perfect now add 2px more padding … Others use the same height, width can change") */
 
     /* off the scale as found, with no figure from Okay (16 Oct 2026): kept as they are, each to be put on the scale or
@@ -223,14 +228,15 @@
     --name-in: 6px;                                /* a ring's name starts this far into its column; the ring line's buttons too */
     --chip-gap: 4px;                               /* between two colours to pick */
     --pop-pad: 16px; --pop-gap: 12px;              /* a night part (colour pop-out, guides' list) and the number popup: the space inside its edge, the space between its blocks */
-    --guide-gap: 10px;                             /* the room between two round colours in the guides' list: the chosen one's ring needs it */
+    --pop-foot: calc(var(--control) + 2 * var(--u2));      /* a popup's bottom section (#305): a control, a unit over and under it */
+    --guide-gap: 9px;                              /* the room between two round colours in the guides' list: the chosen one's ring needs it (2 px clear of the next; 10 until 4.45.3, #305: tighter) */
     --ring-gap-in: 2px;                            /* the chosen guide colour: a ring of the ground this wide, inside its own ring */
     --logo-disc: 2px;                              /* the bio open: how far the mark's night disc reaches past its 16 box (ring to disc edge ≈ 2.3) */
     --canvas-inset: 12px;                          /* from the preview's edge to what stands on it (a phone sets it to --u5) */
     --glow-line: 1.5px; --glow-under: 4px;         /* lines, but not one of the three: the outline of what the pointer is on, and the white line under it */
     --tip-arrow: 5px; --tip-arrow-in: 2.6px;       /* lines, but not one of the three: the pointer label's arrow, its dark line and the white line inside it */
   }
-  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --pop-width: 454px; --dot: 18px; --guide-dot: 14px; --guide-gap: 13px; --pop-field: 180px; --pop-hue: 32px; --knob: 28px; } }      /* a finger needs more to hold than a pointer */
+  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --pop-width: 454px; --dot: 18px; --guide-dot: 14px; --guide-gap: 13px; --guide-row: 38px; --pop-field: 180px; --pop-hue: 32px; --knob: 28px; } }      /* a finger needs more to hold than a pointer */
 }
 
 @layer base {
@@ -794,26 +800,28 @@
      under the other. No slider: the button is dragged instead. */
   .tag.value { display: flex; justify-content: space-between; align-items: baseline; gap: var(--u3); width: var(--value-pop); }
   .tag.value .figure { color: var(--grey); font: 400 var(--t-xs)/1 var(--mono); }
-  /* the number popup (#249): the number's row as a square of three pills a finger high — the slider in a pill, the
-     value in a pill, − and + one pill split in two — in a frame whose corners are a pill's round plus the room round
-     the pills, so they run parallel (4.45.2, Okay, on 4.45: "three pills inside a square … plus minus roundness + some
-     offset to draw the square"). No name: the row it opens from says it ("forget the label"); a row with a menu keeps
-     its menu, over the pills. */
-  .numpop { position: fixed; z-index: 30; translate: -50% 0; width: var(--num-pop); padding: var(--pop-pad); border: var(--thick) solid var(--grey); border-radius: var(--num-pop-round); background: var(--num-pop-ground); color: var(--ink); --row-rule: transparent; --surface: var(--num-pop-ground); }
-  .numpop.sheet { inset: auto 0 0 0; translate: none; width: auto; padding: var(--pop-pad) var(--margin) calc(var(--pop-pad) + env(safe-area-inset-bottom)); border-width: var(--thick) 0 0; border-radius: var(--num-pop-round) var(--num-pop-round) 0 0; }      /* a phone: a sheet over the drawer, the dial in view */
-  .numpop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--pop-gap); min-height: 0; padding: 0; }
+  /* the number popup (#249; Okay's drawing, 16 Oct 2026, 4.45.3; tokens --num-pop-…): on a dark ground the slider in
+     a pill, the value in a pill, then − and + as two discs; the frame's corners follow the pills at the top and the
+     discs at the bottom ("plus minus roundness + some offset to draw the square"). No name: the row it opens from says
+     it ("forget the label"); a row with a menu keeps its menu, over the pills. Inside it ink is black and a field mid
+     grey, so the slider, its knob and the steps take them as they are. */
+  .numpop { position: fixed; z-index: 30; translate: -50% 0; width: var(--num-pop); padding: var(--num-pop-pad); border: var(--thick) solid var(--grey);
+    border-radius: var(--num-pop-round) var(--num-pop-round) var(--num-pop-round-foot) var(--num-pop-round-foot); background: var(--num-pop-ground);
+    --ink: var(--black); --paper: var(--num-pop-fill); --field: var(--num-pop-fill); --well: var(--grey); --hover: var(--num-pop-hover); --row-rule: transparent; --surface: var(--num-pop-ground); color: var(--ink); }
+  .numpop.sheet { inset: auto 0 0 0; translate: none; width: auto; padding: var(--num-pop-pad) var(--margin) calc(var(--num-pop-pad) + env(safe-area-inset-bottom)); border-width: var(--thick) 0 0; border-radius: var(--num-pop-round) var(--num-pop-round) 0 0; }      /* a phone: a sheet over the drawer, the dial in view */
+  .numpop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--num-pop-gap); min-height: 0; padding: 0; }
   .numpop .row > *, .numpop .row.txt > input { grid-column: 1; }
   .numpop .row > label { display: none; }
-  .numpop .row .menulabel { display: flex; justify-content: center; align-items: center; gap: var(--u1); color: var(--ink); font: 600 var(--t-s)/1.3 var(--sans); }
-  .numpop .row .menulabel > label { color: var(--ink); font: inherit; }
-  .numpop .row input[type="range"] { width: 100%; height: var(--num-pop-pill); padding: 0 calc((var(--num-pop-pill) - var(--num-pop-thumb)) / 2 - var(--hair)); border: var(--hair) solid var(--rule); border-radius: calc(var(--num-pop-pill) / 2); background: var(--field); }      /* the thumb as far from the pill's ends as from its top and bottom */
-  .numpop .row input[type="range"]::-webkit-slider-thumb { width: calc(1.5 * var(--num-pop-thumb)); height: var(--num-pop-thumb); margin-top: calc((var(--track) - var(--num-pop-thumb)) / 2); border-radius: calc(var(--num-pop-thumb) / 2); }
-  .numpop .row input[type="range"]::-moz-range-thumb { width: calc(1.5 * var(--num-pop-thumb)); height: var(--num-pop-thumb); border-radius: calc(var(--num-pop-thumb) / 2); }
-  .numpop .row input[type="text"] { width: 100%; height: var(--num-pop-pill); border-radius: calc(var(--num-pop-pill) / 2); font-size: var(--t-num-pop); text-align: center; }
-  .numpop .row .steps { display: flex; height: var(--num-pop-pill); }
-  .numpop .row .steps > .step { flex: 1; display: grid; place-items: center; height: 100%; padding: 0; border: var(--hair) solid var(--rule); background: var(--field); }
-  .numpop .row .steps > .step:first-child { border-radius: calc(var(--num-pop-pill) / 2) 0 0 calc(var(--num-pop-pill) / 2); }
-  .numpop .row .steps > .step:last-child { border-radius: 0 calc(var(--num-pop-pill) / 2) calc(var(--num-pop-pill) / 2) 0; border-left: 0; }      /* one hairline between them */
+  .numpop .row .menulabel { display: flex; justify-content: center; align-items: center; gap: var(--u1); font: 600 var(--t-s)/1.3 var(--sans); }
+  .numpop .row .menulabel > label { color: var(--num-pop-fill); font: inherit; }
+  .numpop .row input[type="range"] { width: 100%; height: var(--num-pop-pill); padding: 0 calc((var(--num-pop-pill) - var(--num-pop-thumb)) / 2); border-radius: calc(var(--num-pop-pill) / 2); background: var(--field); }      /* the knob as far from the pill's ends as from its top and bottom */
+  .numpop .row input[type="range"]::-webkit-slider-thumb { width: var(--num-pop-thumb); height: var(--num-pop-thumb); margin-top: calc((var(--track) - var(--num-pop-thumb)) / 2); }
+  .numpop .row input[type="range"]::-moz-range-thumb { width: var(--num-pop-thumb); height: var(--num-pop-thumb); }
+  .numpop .row input[type="text"] { width: 100%; height: var(--num-pop-pill); border: 0; border-radius: calc(var(--num-pop-pill) / 2); font-size: var(--t-num-pop); text-align: center; }
+  .numpop .row input[type="text"]:focus { outline: 0; }      /* the value, chosen to be typed over, says it */
+  .numpop .row input[type="text"]::selection { background: var(--ink); color: var(--field); }      /* chosen: black, its figures mid grey (no white) */
+  .numpop .row .steps { display: flex; justify-content: space-between; }
+  .numpop .row .steps > .step { flex: none; display: grid; place-items: center; width: var(--num-pop-step); height: var(--num-pop-step); padding: 0; border: 0; border-radius: 50%; }
   /* a number's name opens its popup; pressed and moved sideways it changes the value (#249, #170) */
   .popname { cursor: ew-resize; }
   .popname:hover { text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: var(--u1); }
@@ -1061,25 +1069,31 @@
      round choices with room between them — none, then the eight colours. The chosen one stands in a thick ring of its own colour, a
      little of the ground between them. A hairline under every line. */
   .guidelist { position: absolute; top: calc(100% + var(--unit)); right: 0; width: calc(2 * var(--pop-pad) + 2 * var(--hair) + var(--guide-name) + 9 * var(--guide-dot) + 9 * var(--guide-gap)); max-width: calc(100vw - 2 * var(--canvas-inset));
-    max-height: calc(100vh - var(--bar-height) - 2 * var(--canvas-inset) - var(--control-large) - var(--unit)); overflow-y: auto; padding: var(--unit) var(--pop-pad) var(--pop-pad); }      /* less on top: a line's own height already stands its dots off the edge */
+    max-height: calc(100vh - var(--bar-height) - 2 * var(--canvas-inset) - var(--control-large) - var(--unit)); overflow-y: auto; padding: var(--unit) 0 0; }      /* less on top: a line's own height already stands its dots off the edge. Its room at the sides is its parts' (next rule), so its bottom section can reach both edges */
+  .guidelist > * { margin-inline: var(--pop-pad); }
   .guidekind { display: grid; grid-template-columns: var(--guide-name) 1fr; align-items: center; min-height: var(--guide-row); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
   .guidekind.off .name { color: var(--grey); }
   .guidekind .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   /* the rings' guides and the guides you add: a small heading line with a choice at its right, then a line each */
-  .guidehead { display: grid; grid-template-columns: var(--guide-name) 1fr; align-items: center; min-height: var(--guide-row); margin-top: var(--unit); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  .guidehead { display: grid; grid-template-columns: var(--guide-name) 1fr; align-items: center; min-height: var(--guide-row); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
   .guidehead .name { font-weight: 600; }
-  .guidehead .segs { justify-self: end; margin-right: calc(var(--ring-gap-in) + var(--ring-thick)); }
-  .guidehead .segs > button { padding: 0 var(--u3); }
+  /* All · Selected · None over the colours, from the none sign's left edge to the last colour's right, small (#305:
+     "all selected… line fits better"; "small like beta version allowed") */
+  .guidehead .segs { justify-self: stretch; height: var(--control-s); margin: 0 calc(var(--ring-gap-in) + var(--ring-thick)) 0 var(--guide-gap); }
+  .guidehead .segs > button { flex: 1 1 auto; height: 100%; padding: 0 var(--u1); font-size: var(--t-s); }
   .guidekind.ring.selected .name { font-weight: 600; }
   /* before Add, a band of the fields' colour, as wide as the lines (Okay, 16 Oct 2026, #271: "a colour separation") */
   .guidehead.add { border-top: var(--u2) solid var(--field); }
-  /* a guide you added takes two lines: its name, its measures and a cross to remove it; under them its colours */
-  .guidekind.added { position: relative; grid-template-columns: 1fr; row-gap: var(--u1); padding: var(--unit) 0; }
-  .guidekind.added .name { display: flex; align-items: center; gap: var(--unit); overflow: visible; }
-  .guidekind.added .dots { padding-left: var(--guide-name); }
-  .guidekind.added > .sign { position: absolute; top: var(--unit); right: 0; }
-  .guidefield { display: inline-flex; align-items: center; gap: var(--unit); color: var(--grey); }
-  .guidefield input { width: var(--col); height: var(--control); text-align: center; }
+  /* a guide you added is one line, as every other (#305: "fit all in one line"): its name and its measures, quiet
+     numbers to type in (grey, no box, as wide as they are); its colours; in the none sign's place a cross that removes
+     it (an added guide is taken away, not hidden). A long name gives way to its numbers. (Two lines until 4.45.3) */
+  .guidekind.added .name { display: flex; align-items: center; gap: var(--u1); }
+  .guidekind.added .name > .word { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .guidefield { flex: none; display: inline-flex; align-items: center; color: var(--grey); }
+  .guidefield input { height: var(--control); padding: 0; border: 0; background: none; color: inherit; text-align: right; }
+  .guidefield input:focus { color: var(--ink); outline-offset: var(--u1); }      /* typing: its ring stands off the figures */
+  .dots .remove { color: var(--grey); }
+  .dots .remove:hover { color: var(--ink); }
   .dots { display: flex; justify-content: space-between; align-items: center; padding: 0 calc(var(--ring-gap-in) + var(--ring-thick)) 0 var(--guide-gap); }
   .dots button { flex: none; display: grid; place-items: center; width: var(--guide-dot); height: var(--guide-dot); border-radius: 50%; }
   .dots .tone { background: var(--c); box-shadow: 0 0 0 var(--hair) var(--chip-rule); }
@@ -1096,13 +1110,13 @@
      All. Over it a thick line: its own hairline on the one above. No slider: with Reset All beside it, it had no room
      left (0 px, measured); it comes back in the number popup (phase E; R15 form B). The number's cell reaches back over
      the name; a press on the number opens its popup (#249). */
-  .guidelist .guidelast { grid-template-columns: var(--guide-name) minmax(0, 1fr) auto; box-shadow: inset 0 var(--hair) 0 var(--row-rule), inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  .guidelist .guidelast { grid-template-columns: var(--guide-name) minmax(0, 1fr) auto; }
   .guidelast > * { grid-row: 1; }
   .guidelist .guidelast > label:first-child { grid-column: 1; }
   .guidelast > input[type="range"] { display: none; }
   .guidelast > .numcell { grid-column: 1 / 3; position: relative; height: var(--control); pointer-events: none; }
   .guidelast .numbox { pointer-events: auto; }
-  .guidelast > .resetall { grid-column: 3; display: flex; align-items: center; height: var(--control); padding-left: var(--gap); border-left: var(--hair) solid var(--row-rule); }
+  .guidelast > .resetall { grid-column: 3; align-self: stretch; display: flex; align-items: center; padding-left: var(--gap); border-left: var(--hair) solid var(--paper); }      /* its rule: the ground's, from the section's top to the box's bottom (#305) */
   /* Reset All asks first, in its line's place (#271): the question at the left, round ✕ and ✓ at the right */
   .guidelast.asking > :not(.ask) { visibility: hidden; }
   .guidelast > .ask { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; color: var(--ink); }
@@ -1110,12 +1124,19 @@
   .guidelast .answers { display: flex; gap: var(--u2); }
   .roundb { display: grid; place-items: center; width: var(--control); height: var(--control); padding: 0; border: var(--hair) solid var(--ink); border-radius: 50%; background: none; color: var(--ink); }
   .roundb:hover { background: var(--ink); color: var(--paper); }
-  .guidefoot { display: flex; justify-content: flex-end; padding-top: var(--pop-pad); }
+  .guidefoot { display: flex; justify-content: flex-end; align-items: center; }
+  /* a popup's bottom section (#305; Okay, 16 Oct 2026: "whole bottom section hr line color, top line gone,
+     perpendicular same thickness touches box bottom, lowest line gone. This is a bottom section rule. For these
+     popups"): the Guides' Thickness · Reset All, the Shadows' Reset. Filled with the line colour from edge to edge and
+     down to the box's bottom (the list is cut to its round corners); no line over or under it; a rule in it is a
+     hairline of the ground, from its top to the box's bottom (.resetall) */
+  .guidelist > .popfoot { min-height: var(--pop-foot); margin-inline: 0; padding: 0 var(--pop-pad) env(safe-area-inset-bottom); background: var(--row-rule); box-shadow: none; }
   .shadelist .guidehead .name { grid-column: 1 / -1; }      /* its headings are words alone: the whole line, not the names' column */
   /* the Shadows list: the guides' list, opening upward from its switch at the bottom left (after .guidelist, which it overrides) */
   .shadelist { top: auto; right: auto; bottom: calc(100% + var(--unit)); left: 0;
     max-height: calc(100vh - var(--bar-height) - var(--canvas-inset) - var(--canvas-top) - 2 * var(--control-large) - 2 * var(--unit)); }      /* from over its switch up to under undo · redo */
   .shadelist .row.chk > label.check { grid-column: 1 / -1; }      /* Soft edge and its warning on one line, the whole width */
+  .shadelist .row { grid-template-columns: var(--shade-name) minmax(0, 1fr) var(--col) var(--col); }      /* its own names' column (4.45.3) */
   /* the outline of what the pointer is on: an orange line on a white one, so it shows on any colour */
   .glow { fill: none; stroke: var(--glow); stroke-width: var(--glow-line); vector-effect: non-scaling-stroke; stroke-linejoin: round; }
   .glow.under { stroke: var(--white); stroke-width: var(--glow-under); }
@@ -5792,7 +5813,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.45.2";
+var VERSION = "beta 4.45.3";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -7987,6 +8008,10 @@ var SIGNS = {
   copy: `<rect x="5.75" y="5.75" width="7.5" height="7.5"/><path d="M10.25 5.75V2.75H2.75V10.25H5.75"/>`,
   sheet: `<path d="M4.25 2.75H9.25L12.25 5.75V13.25H4.25ZM9.25 2.75V5.75H12.25"/>`
 };
+var BIG = {
+  plus: icon(`<path d="M11 2.5V19.5M2.5 11H19.5" ${sw(3)}/>`, 22),
+  minus: icon(`<path d="M2.5 11H19.5" ${sw(3)}/>`, 22)
+};
 var TINY = {
   plus: icon(`<path d="M3 0.625V5.375M0.625 3H5.375" ${sw(DENSE)}/>`, 6),
   minus: icon(`<path d="M0.625 0.625H5.375" ${sw(DENSE)}/>`, 6, 1.25)
@@ -8013,6 +8038,7 @@ var EYE = {
 var eye = (open) => icon(EYE[open ? "open" : "closed"]);
 var NONE_SIGN = SIGNS.sheet + `<path d="M6.75 8.25L9.75 11.25M9.75 8.25L6.75 11.25" ${sw(SLANT)}/>`;
 var none_dot = `<svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="round"><path d="M5 ${1 + LINE / 2}A${4 - LINE / 2} ${4 - LINE / 2} 0 1 1 5 ${9 - LINE / 2}A${4 - LINE / 2} ${4 - LINE / 2} 0 1 1 5 ${1 + LINE / 2}M3.25 3.25L6.75 6.75"/></svg>`;
+var cross_dot = icon(`<path d="M2.25 2.25L7.75 7.75M7.75 2.25L2.25 7.75" ${sw(SLANT)}/>`, 10);
 var pic = (inside) => icon(inside, 38, 27);
 var solid = `fill="currentColor" stroke="none"`;
 var faint = `${sw(CURVE)} opacity="0.45"`;
@@ -9466,6 +9492,7 @@ var DialTool = class _DialTool {
         this.render();
       } });
       none.innerHTML = none_dot;
+      none.dataset.k = "none";
       dots.append(none);
       GUIDE_COLOURS.forEach((hex, i) => {
         const b = el("button", { type: "button", className: "tone", title: hex, ariaLabel: hex, onclick: () => {
@@ -9474,6 +9501,7 @@ var DialTool = class _DialTool {
           this.render();
         } });
         b.style.setProperty("--c", hex);
+        b.dataset.k = i;
         dots.append(b);
       });
       for (const b of dots.children) b.setAttribute("role", "radio");
@@ -9482,11 +9510,11 @@ var DialTool = class _DialTool {
       const refresh = () => {
         const k = get();
         line.classList.toggle("off", k === null);
-        [...dots.children].forEach((b, n) => {
-          const on = n === 0 ? k === null : n - 1 === k;
+        for (const b of dots.querySelectorAll("[data-k]")) {
+          const on = b.dataset.k === "none" ? k === null : +b.dataset.k === k;
           b.classList.toggle("on", on);
           b.setAttribute("aria-checked", String(on));
-        });
+        }
       };
       return { line, label, refresh };
     };
@@ -9583,7 +9611,7 @@ var DialTool = class _DialTool {
     const cell = el("span", { className: "numcell" });
     box_.replaceWith(cell);
     cell.append(box_);
-    last.classList.add("guidelast");
+    last.classList.add("guidelast", "popfoot");
     last.append(el("span", { className: "resetall" }, reset), question);
     list.append(last);
     const box2 = el("div", { className: "guides" }, this.guides_tick, more, list);
@@ -9638,7 +9666,7 @@ var DialTool = class _DialTool {
       ...heights.map((r) => r.el),
       head("Under the plate \xB7 mm"),
       ...under.map((r) => r.el),
-      el("div", { className: "guidefoot" }, reset)
+      el("div", { className: "guidefoot popfoot" }, reset)
     );
     const box2 = el("div", { className: "shadows" }, this.shadows_tick, more, list);
     box2.onkeydown = (e) => {
@@ -9814,32 +9842,39 @@ var DialTool = class _DialTool {
           this.S.gd_more[i].k = k === null ? -2 : k;
         });
         const field = (key, word, length) => {
-          const input = el("input", { type: "text", inputMode: "decimal", id: `guide-more-${i}-${key}`, title: word, ariaLabel: word });
+          const input = el("input", { type: "text", inputMode: "decimal", id: `guide-more-${i}-${key}`, title: key === "a" ? "Angle, degrees" : "Radius", ariaLabel: key === "a" ? "Angle" : "Radius" });
           input.onchange = () => {
             const now = this.S.gd_more[i][key] * (length ? this.unit()[2] : 1);
             this.S.gd_more[i][key] = +(parse_number(input.value, now) / (length ? this.unit()[2] : 1)).toFixed(4);
             this.sync_rows();
             this.render();
           };
-          return { key, length, input, el: el("label", { className: "guidefield" }, el("span", { textContent: word }), input) };
+          input.oninput = () => {
+            input.style.width = `${Math.max(1, input.value.length)}ch`;
+          };
+          const words = key === "a" ? [input, el("span", { textContent: word })] : [el("span", { textContent: word }), input];
+          return { key, length, input, el: el("label", { className: "guidefield" }, ...words) };
         };
         const fields = [...kind !== "circle" ? [field("a", "\xB0", false)] : [], ...kind !== "line" ? [field("r", "r", true)] : []];
-        const gone = el("button", { type: "button", className: "sign", id: `guide-more-${i}-remove`, title: "Remove this guide", ariaLabel: "Remove this guide", onclick: () => {
+        const gone = el("button", { type: "button", className: "remove", id: `guide-more-${i}-remove`, title: "Remove this guide", ariaLabel: "Remove this guide", onclick: () => {
           this.S.gd_more = this.S.gd_more.filter((_, n) => n !== i);
           this.sync_rows();
           this.render();
         } });
-        gone.innerHTML = icon(SIGNS.cross);
-        d.label.replaceChildren(d.label.textContent, ...fields.map((f) => f.el));
+        gone.innerHTML = cross_dot;
+        d.label.replaceChildren(el("span", { className: "word", textContent: d.label.textContent }), ...fields.map((f) => f.el));
         d.line.classList.add("added");
-        d.line.append(gone);
+        d.line.querySelector(".dots .none").replaceWith(gone);
         return { ...d, fields };
       });
       this.guide_more.replaceChildren(...this.guide_more_lines.map((d) => d.line));
     }
     this.guide_more_lines.forEach((d, i) => {
       d.refresh();
-      for (const f of d.fields) if (document.activeElement !== f.input) f.input.value = f.length ? String(parseFloat(this.in_unit(S.gd_more[i][f.key], 2))) : String(+(+S.gd_more[i][f.key]).toFixed(1));
+      for (const f of d.fields) if (document.activeElement !== f.input) {
+        f.input.value = f.length ? String(parseFloat(this.in_unit(S.gd_more[i][f.key], 2))) : String(+(+S.gd_more[i][f.key]).toFixed(1));
+        f.input.oninput();
+      }
     });
     for (const r of this.guide_rows) r.refresh(S);
   }
@@ -10084,11 +10119,12 @@ var DialTool = class _DialTool {
       };
       const step = (dir) => {
         const b = el("button", { type: "button", className: "step", tabIndex: -1, onclick: () => commit(now() + dir * row.step) });
-        const sign = row.inpop ? icon(dir > 0 ? SIGNS.plus : SIGNS.minus) : row.side ? TINY[dir > 0 ? "plus" : "minus"] : null;
+        const sign = (row.inpop ? BIG : row.side ? TINY : null)?.[dir > 0 ? "plus" : "minus"];
         if (sign) {
           b.innerHTML = sign;
           b.ariaLabel = dir > 0 ? "Plus" : "Minus";
         } else b.textContent = dir > 0 ? "+" : "\u2212";
+        if (row.inpop) b.id = "value-pop-" + (dir > 0 ? "plus" : "minus");
         return b;
       };
       const label = el("label", { htmlFor: id, textContent: row.text });
