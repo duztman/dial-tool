@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.46.5 (web version) · 16 Oct 2026
+
+- **A hand's page, the shapes' first black line moves down** (#311; Okay: "Short black line is part of hand selector. Comes after wall and preview box … THERE'S A SPACE. THEN COMES BLACK LINE. BUT THAT SPACE, IS THE SAME WITH ALL WHITES AND BLACK AROUND HERE"). The box and the last row (Wall) end on one line. Then come two units of space (11 px), then the thin black line that opens the shapes' row. In 4.46.4 that line lay on the box's foot. The thumbs keep two units to each black line, so every space here is the same.
+
 ## beta 4.46.4 (web version) · 16 Oct 2026
 
 After Okay's marks on 4.46.3.

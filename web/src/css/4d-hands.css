@@ -11,11 +11,11 @@
      one shown, upright pictures in upright tiles, no words (a tile's title names it), a unit apart, all on one line
      from the box's left to the end; the dashed SVG tile last (a shape of one's own) */
   .row.thumbs > .picks.thumbs { grid-column: 1 / -1; grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: minmax(0, 1fr); padding: var(--u4) 0; }
-  /* framed by thin black lines (Okay, on 4.46.4: "a thin black after thin white which mistakenly touches preview box";
-     "End of hand types, black thin bar to finish instead of white"): over it, on the line the box and the last row
-     end on (it lies over theirs, sharing it as two tabs share theirs), and under it; two units from the thumbs to each,
-     as the line under the Show box has */
-  .row.thumbs { position: relative; z-index: 1; margin-top: calc(-1 * var(--hair)); border-block: var(--hair) solid var(--ink); box-shadow: none; }
+  /* framed by thin black lines, over it and under it (4.46.5, Okay: "Short black line is part of hand selector. Comes
+     after wall and preview box … THERE'S A SPACE. THEN COMES BLACK LINE. BUT THAT SPACE, IS THE SAME WITH ALL WHITES
+     AND BLACK AROUND HERE"): the box and the last row end on one line, then two units of space, then the black line;
+     two units from it to the thumbs and from them to the closing line, as round the line under the Show box */
+  .row.thumbs { margin-top: var(--u4); border-block: var(--hair) solid var(--ink); box-shadow: none; }
   .picks.thumbs > .pickt { align-content: center; padding: var(--unit) 0; }
   .picks.thumbs > .pickt > span { display: none; }
   .pickt.own { border-style: dashed; color: var(--grey); cursor: default; }
