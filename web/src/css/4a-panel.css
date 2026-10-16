@@ -105,6 +105,8 @@
   .pane.has > .fold .summary, .pane.tooled:not(.folded) > .fold .summary { visibility: hidden; }
   .pane.tooled > .headtools { justify-self: end; }      /* the ring list's tools: at the right; folded, the summary stands there instead */
   .pane.tooled.folded > .headtools { display: none; }
+  .pane > .headcontrol.reset { justify-self: end; }      /* Reset's button: at the right of its heading line, and only while the pane is open (Okay, 16 Oct 2026, #269) */
+  .pane.folded > .headcontrol.reset { display: none; }
   .body { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); padding-bottom: var(--air); }
   .body > * { grid-column: 2 / -1; }
   .body > :is(.ringlist, .examples) { grid-column: 1 / -1; }

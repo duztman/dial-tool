@@ -11,7 +11,10 @@
   .windowcards .card > button:first-child { display: grid; justify-items: center; gap: var(--u1); padding: var(--tab-pad) var(--unit); font-weight: 600; }
   .windowcards .card > button:first-child svg { display: block; }
   .windowcards .card > button:first-child.off:not(.on) { color: var(--grey); font-weight: 400; }
-  .handsbar + .tabsbar { border-top: var(--hair) solid var(--rule); }
+  /* the line between All hands and the hand tabs starts and ends where the tabs do (Okay, 16 Oct 2026: "Line under All
+     Hands: should end with the tabs"; it ran from margin to margin until then). The border keeps its hair of room, clear,
+     and the line is a stripe on it from the tabs' column on — as the pinned part's thick line is drawn (4.41.6) */
+  .handsbar + .tabsbar { border-top: var(--hair) solid transparent; background: linear-gradient(var(--rule) 0 0) 100% 0 / calc(100% - var(--lead)) var(--hair) no-repeat border-box; }
   /* tabs inside a section, always in view (Hands: Hour · Minute · Seconds): one line across the six columns */
   .tabsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: end; min-height: calc(var(--head) + var(--unit)); padding-top: calc(1.5 * var(--unit)); border-top: var(--thick) solid var(--ink); }
   .tabsbar > .segs { grid-column: 2 / -1; }

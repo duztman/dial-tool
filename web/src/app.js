@@ -417,12 +417,17 @@ const ROWS = {
     hdr("Page", { pin: true }),                    // around the dial: preview and page only
     num("margin", "Page margin", 0, 10, 0.5),
     col("c_backdrop", "Backdrop"),
-    hdr("Colours"),                                // every coloured part on the plate, in one list; a band's sectors one by one
+    // every coloured part on the plate, in one list; a band's sectors one by one. Folded (as it starts, #270), its line
+    // shows the colours that fit on it as tiny swatches (Okay, 16 Oct 2026: "when compacted: show all the colors that
+    // fit in that line as tiny swatches. Default: compacted")
+    hdr("Colours", { folded: true, summary: (S, tool) => tool.dial_colours(false).map((c) => ({ c })) }),
     custom("colours"),
     // under Colours, last in the Dial tab: back to the opener, the whole dial, with a warning beside it (Okay, 16 Oct
     // 2026, 10:46: "under the dial tab under colors. And a warning should be placed near it. Not under the dial like a
-    // view option! That is dangerous")
-    hdr("Reset"),
+    // view option! That is dangerous"). Open, its button stands on the heading line and the warning under it; folded,
+    // the line says Reset and nothing else (Okay, 16 Oct 2026, #269)
+    hdr("Reset", { folded: true }),
+    custom("reset_go", { head: true }),
     custom("reset"),
   ],
   Rings: [                                         // one list; rows that don't apply hide (R16)
@@ -434,10 +439,11 @@ const ROWS = {
       summary: (S, tool) => { const R = S.rings[S.ui_ring]; return R ? [G.kind_of(R), { c: R.c }, `${label_of(radius_row(R), R).toLowerCase()} ${tool.in_unit(R.r, 2)}`] : []; } }),
     custom("ring_list", { scope: "global", pin: true }),
     custom("ring_line", { pin: true }),
-    hdr("Sector colours", { show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
+    // first visit: every pane under the pinned part folded, its line saying what is in it (Okay, 16 Oct 2026, #270)
+    hdr("Sector colours", { folded: true, show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
     custom("sectors", { show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
     // what one mark is comes first (Okay, 13 Oct 2026: "moves up to the top"), then where the marks are
-    hdr("Shape", { show: kind_in("ticks", "markers") }),
+    hdr("Shape", { folded: true, show: kind_in("ticks", "markers") }),
     pick("shape", "Shape", G.SHAPES.slice(0, 3), PICS.shape, { show: kind_in("ticks", "markers") }),
     num("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
     num("w", "Width · Ø", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "dot", "file") }),
@@ -447,36 +453,37 @@ const ROWS = {
     num("round_out", "Round outer", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
     num("round_in", "Round inner", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
     custom("round_ends", { show: marks_with("bar", "wedge", "file") }),
-    hdr("Positions"),
+    hdr("Positions", { folded: true }),
     num("count", "Count", 1, 360, 1, { whole: true }),
     num("start", "Start °", -180, 180, 0.5),
     num("span", "Span °", 1, 360, 1),
     num("every", "Every", 1, 60, 1, { whole: true }),
     num("offset", "Offset", 0, 59, 1, { whole: true }),
     chk("invert", "Skip those instead", { nest: true }),
-    hdr("Give way to rings above"),
+    hdr("Give way to rings above", { folded: true }),
     pop("skip", "Skip where", G.SKIP_FROM),
     pop("knock", "Knock out", G.KNOCK_FROM),
     num("clear", "Clearance", 0, 2, 0.01, { show: (R) => R.knock !== 0 }),
-    hdr("12 o’clock · first position", { show: kind_in("markers") }),
+    hdr("12 o’clock · first position", { folded: true, show: kind_in("markers") }),
     pick("twelve", "Style", G.TWELVES, PICS.twelve, { show: kind_in("markers") }),
     num("twelve_scale", "Scale ×", 0.5, 2.5, 0.05, { show: (R) => G.kind_of(R) === "markers" && R.twelve !== 3 }),
     num("twelve_gap", "Gap", 0, 3, 0.05, { show: (R) => G.kind_of(R) === "markers" && R.twelve === 1 }),
-    hdr("Numerals", { show: numerals_only }),
+    hdr("Numerals", { folded: true, show: numerals_only }),
     pop("labels", "Labels", G.LABEL_SETS.map((s) => s[0]), { show: numerals_only, head: true }),      // head: a pane's main selector stands on its heading line, without a name of its own (Okay, 12 Oct 2026)
     txt("custom", "Custom", { show: labels_are("Custom") }),
+    info("Commas between labels: one label for each position, the rest stay empty.", { show: labels_are("Custom") }),      // Faruk Koç, 16 Oct 2026: "MLB" with Count 12 drew once and nothing said why (#298; a text ring is #297)
     num("num_from", "First number", -1000, 1000, 1, { show: labels_are("Numbers") }),
     num("num_step", "Step", -100, 100, 1, { show: labels_are("Numbers") }),
     num("num_digits", "Digits", 0, 4, 1, { whole: true, show: labels_are("Numbers") }),
     num("num_again", "Start again after", 0, 60, 1, { whole: true, show: labels_are("Numbers") }),      // positions; 0 = never
     info("0 counts on. 12 with first 5, step 5: 5 to 60, then 5 again.", { show: labels_are("Numbers") }),
     pick("mode", "Placement", G.MODES, PICS.mode, { show: numerals_only }),
-    hdr("Band", { show: kind_in("band") }),
+    hdr("Band", { folded: true, show: kind_in("band") }),
     num("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),
     num("fill", "Fill % of step", 1, 100, 1, { show: kind_in("band") }),
-    hdr("Nudge one numeral", { show: numerals_only }),
+    hdr("Nudge one numeral", { folded: true, show: numerals_only }),
     custom("nudge", { show: numerals_only }),
-    hdr("Type", { show: numerals_only }),
+    hdr("Type", { folded: true, show: numerals_only }),
     custom("font", { show: numerals_only }),
   ],
   Hands: [
@@ -507,7 +514,7 @@ const ROWS = {
     num("counter", "Counterweight Ø", 0, 4, 0.05, { ...H, side: true, short: "Counter Ø" }),
     num("wall", "Hollow wall", 0, 1, 0.01, { ...H, side: true }),
     col("c", "Colour", { ...H, side: true }),
-    hdr("Cap"),                                    // after the hand's own panes: it belongs to all three
+    hdr("Cap", { folded: true }),                  // after the hand's own panes: it belongs to all three. The hand's pane stays open on a first visit: with only tabs pinned above it, it is what the section is about (#270)
     num("ha_cap", "Cap Ø", 0, 4, 0.05),
     col("c_cap", "Colour"),
   ],
@@ -529,12 +536,12 @@ const ROWS = {
     info("Follows the time shown: AM · PM beside the time, under the panel.", { ...W, show: win_is("am · pm") }),
     num("age", "Moon age, days", 0, 29.5, 0.1, { ...W, show: win_is("moon phase") }),
     info("0 new moon · 14.8 full.", { ...W, show: win_is("moon phase") }),
-    hdr("Colours", { ...W, show: win_on }),
+    hdr("Colours", { ...W, folded: true, show: win_on }),
     col("text_c", "Picture", { ...W, show: win_is("am · pm", "moon phase"), or: (T) => T.ink }),       // or: what an unset colour is. A text's colour stands beside its font's name; this row is for the windows that show a picture       // or: what an unset colour is
     col("disc_c", "Disc under it", { ...W, show: win_on, or: () => [1, 1, 1, 1] }),
     col("ink", "Frame", { ...W, show: win_on }),
     // the hole's shape, apart from what shows through it (Okay, 13 Oct 2026): one pane for every window
-    hdr("Shape", { ...W, show: win_on }),
+    hdr("Shape", { ...W, folded: true, show: win_on }),
     custom("window_shape", { ...W, show: win_on }),
     num("sides", "Sides", 3, 12, 1, { ...W, whole: true, show: shape_is("polygon") }),
     num("round", "Corner", 0, 2, 0.05, { ...W, show: shape_is("rectangle", "polygon") }),
@@ -557,16 +564,16 @@ const ROWS = {
     custom("export_png"),
     num("out_dpi", "dpi", 72, 2400, 1, { tie: true, bare: true }),      // bare: no word before it (the line under it says "at 600 dpi"); the slider stands under the buttons
     custom("png_size"),
-    hdr("Print"),                                  // what only the printed or etched dial needs (was "For production" until beta 4.19)
+    hdr("Print", { folded: true }),                                  // what only the printed or etched dial needs (was "For production" until beta 4.19)
     chk("out_production", "Mono print mask"),
     chk("out_mirror", "Mirrored, for toner transfer"),
-    hdr("Link to this dial"),
+    hdr("Link to this dial", { folded: true }),
     custom("link"),
-    hdr("Settings file"),
+    hdr("Settings file", { folded: true }),
     custom("settings"),
-    hdr("Log"),
+    hdr("Log", { folded: true }),
     custom("log"),
-    hdr("Gallery"),                                // under everything else: dials to open and take apart (Okay, 13 Oct 2026), the five first examples among them
+    hdr("Gallery", { folded: true }),                                // under everything else: dials to open and take apart (Okay, 13 Oct 2026), the five first examples among them
     custom("gallery"),
   ],
 };
@@ -1691,10 +1698,12 @@ class DialTool {
     this.form.scrollTop = this.scrolls[name] || 0;
   }
 
-  /** folded groups are remembered by this browser (a convenience, not part of the dial). */
+  /** folded groups are remembered by this browser (a convenience, not part of the dial). A pane this browser has never
+   *  folded or opened starts as its row says (`folded`: a first visit, #270), unless "*" is kept: one fold for every
+   *  such pane (the tests keep "*": false, a visitor who has opened them all). */
   is_folded(r) {
     if (!this.folds) { try { this.folds = JSON.parse(localStorage.getItem("dial-tool-folds")) || {}; } catch (e) { this.folds = {}; } }
-    return this.folds[r.fold] ?? Boolean(r.row.folded);
+    return this.folds[r.fold] ?? this.folds["*"] ?? Boolean(r.row.folded);
   }
   fold(r, folded) {
     this.is_folded(r);
@@ -1776,11 +1785,23 @@ class DialTool {
     return parts.filter(Boolean);
   }
 
-  /** a summary's parts in a line, a dot between them: words as words, a colour as a tiny swatch. */
+  /** this dial's colours: every part that has one, each colour once — in the order the Colours pane lists them (rings
+   *  and their sectors, hands, cap, windows), or with the page: plate, backdrop, cap, then the rest (the colour
+   *  pop-out's "On this dial", in its own order). */
+  dial_colours(page = true) {
+    const S = this.S, rings = S.rings.flatMap((r) => [r.c, ...Object.values(r.cs || {})]), hands = G.HANDS.map((h) => S["ha_" + h].c), windows = G.windows_of(S).filter((w) => w.on).map((w) => w.ink);
+    const all = page ? [S.c_plate, S.c_backdrop, S.c_cap, ...rings, ...hands, ...windows] : [...rings, ...hands, S.c_cap, ...windows];      // the pop-out's order as it was (4.38)
+    const once = new Map();
+    for (const c of all) if (Array.isArray(c)) { const hex = to_hex(c).toUpperCase(); if (!once.has(hex)) once.set(hex, c); }
+    return [...once.values()];
+  }
+
+  /** a summary's parts in a line, a dot between them: words as words, a colour as a tiny swatch (colours side by side
+   *  with a space between, no dot). */
   show_summary(box, parts) {
     box.replaceChildren();
     parts.forEach((part, i) => {
-      if (i) box.append(" · ");
+      if (i) box.append(typeof part === "string" || typeof parts[i - 1] === "string" ? " · " : " ");
       if (typeof part === "string") return box.append(part);
       const dot = el("i", { className: "dot tiny", title: to_hex(part.c).toUpperCase() });
       paint(dot, part.c);
@@ -2112,9 +2133,7 @@ class DialTool {
     P.title.textContent = P.at.label();
     const put = (c) => P.pick(c);
     const chip = (c) => { const b = el("button", { type: "button", title: c, ariaLabel: c, onclick: () => put(c) }); b.style.background = c; b.dataset.colour = c; return b; };
-    // this dial's colours: every part that has one, each colour once
-    const all = [S.c_plate, S.c_backdrop, S.c_cap, ...S.rings.flatMap((r) => [r.c, ...Object.values(r.cs || {})]), ...G.HANDS.map((h) => S["ha_" + h].c), ...G.windows_of(S).filter((w) => w.on).map((w) => w.ink)];
-    const used = [...new Set(all.map((c) => to_hex(c).toUpperCase()))];
+    const used = this.dial_colours().map((c) => to_hex(c).toUpperCase());      // this dial's colours, each once
     if (P.used !== used.join()) { P.used = used.join(); P.used_chips.replaceChildren(...used.map(chip)); }
     // the palette, then its + (or −, when the colour in hand is already in it)
     const kept = this.palette.includes(value), list = this.palette.join() + kept;
@@ -2346,11 +2365,13 @@ class DialTool {
 
   /** Reset: the opener back, every setting — the guide's First dial (opener.js). It replaces the whole dial, so it
    *  stands last in the Dial tab, apart from what is changed often, with its warning under it; undo brings the dial back. */
-  row_reset(wrap) {
-    const go = el("button", { type: "button", className: "btn", id: "reset", textContent: "Reset to the First dial", title: "Replaces the whole dial with the guide’s First dial", onclick: () => { this.reopen({ ...structuredClone(OPENER), ui_section: this.S.ui_section }); tool.log("reset to the opener: the First dial"); } });
-    wrap.append(el("label", { textContent: "Whole dial" }), el("span", { className: "tools" }, go),      // a label not tied to the button: the button keeps its own words as its name
-      el("p", { className: "warn", id: "reset-warning", textContent: "Replaces everything on this dial — size, rings, hands, windows, colours — with the guide’s First dial. Undo brings yours back." }));
+  row_reset_go(wrap) {                             // the button, on the pane's heading line (head)
+    const go = el("button", { type: "button", className: "btn reset", id: "reset", textContent: "Reset to the First dial", title: "Replaces the whole dial with the guide’s First dial", onclick: () => { this.reopen({ ...structuredClone(OPENER), ui_section: this.S.ui_section }); tool.log("reset to the opener: the First dial"); } });
     go.setAttribute("aria-describedby", "reset-warning");
+    wrap.append(go);
+  }
+  row_reset(wrap) {                                // its warning, under the heading line
+    wrap.append(el("p", { className: "warn", id: "reset-warning", textContent: "Replaces everything on this dial — size, rings, hands, windows, colours — with the guide’s First dial. Undo brings yours back." }));
   }
 
   /** the plate's background: only the button for now (Okay, 12 Oct 2026: "no background image functionality now. Just the button"). */
@@ -3857,6 +3878,10 @@ class DialTool {
     if (piece.kind === "hand") S.ui_hand = piece.hand;
     if (piece.kind === "date") S.ui_window = piece.window;
     if (same) { this.fill_ring_list(); this.sync_rows(); } else this.show_section();
+    if (piece.numeral !== undefined) {             // a numeral picked for Nudge: its pane opens, since it starts folded (#270)
+      const nudge = this.rows.find((r) => r.fold && r.row.text === "Nudge one numeral");
+      if (nudge && this.is_folded(nudge)) this.fold(nudge, false);
+    }
     this.render();
   }
 

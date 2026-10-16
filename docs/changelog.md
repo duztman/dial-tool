@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.42.2 (web version) · 16 Oct 2026
+
+- **A first visit opens tidy** (#270): in every tab the pinned panes are open and the panes under them folded, each saying in its line what it holds — but for the pane a tab is about when only tabs are pinned above it (a hand's, a window's). What a visitor opens or folds is remembered, as before. A click on a numeral in the preview opens Nudge, since it starts folded.
+- **Colours, folded, shows its colours** (#268) as tiny swatches, as many as fit on its line; it starts folded.
+- **Reset** (#269): open, its button stands at the right of the pane's heading line, the warning under it; folded, the line says Reset and nothing else.
+- **Custom labels say how they work** (#298): "Commas between labels: one label for each position, the rest stay empty" (found by Faruk Koç).
+- **Hands:** the line between All hands and the hand tabs starts and ends where the tabs do (#260).
+
 ## beta 4.42.1 (web version) · 16 Oct 2026
 
 - **The title line, quieter** (#285): the unit box is a small box at Help's size, one width for every unit, flush right; the Gallery pill stands right after Help, as far from it as Help is from the version, a small pill as high as the unit box, darker than the unit box and lighter than Help. Both stand on the title's baseline (placed by measuring, like the title).

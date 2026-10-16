@@ -17,6 +17,7 @@ const near = (a, b, tol = 0.02) => Math.abs(a - b) <= tol;
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || "/opt/pw-browsers/chromium" });
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2, acceptDownloads: true, reducedMotion: "reduce" });      // panes fold at once here; their slide has a check of its own
 await context.grantPermissions(["local-fonts"]).catch(() => {});
+await context.addInitScript(() => { if (!localStorage.getItem("dial-tool-folds")) localStorage.setItem("dial-tool-folds", '{"*":false}'); });      // every pane open, as for a visitor who has opened them; a first visit has a check of its own (#270)
 // the tool's own fonts come from its site; here they are served from web/fonts/, so the test needs no network
 await context.route("https://duztman.github.io/dial-tool/fonts/**", (route) => route.fulfill({ path: "fonts/" + decodeURIComponent(route.request().url().split("/fonts/")[1]), headers: { "access-control-allow-origin": "*" } }));
 const page = await context.newPage();
@@ -655,6 +656,13 @@ await page.click("#hand-tab-0");
     return { mids: [base - pen.measureText("x").actualBoundingBoxAscent / 2, mid("#undo"), mid("#guides")], bases: [base, base_of(document.querySelector(".mast .help")), base_of(document.querySelector("#unit")), base_of(document.querySelector("#to-gallery"))] }; });
   check(line.mids.every((y) => Math.abs(y - line.mids[0]) < 0.6) && line.bases.every((y) => Math.abs(y - line.bases[0]) < 0.6), `the title's small letters, undo and Guides are centred on one line (${line.mids.map((y) => +y.toFixed(1)).join(" · ")}); Help's, the unit box's and the Gallery pill's words stand on the title's baseline (${line.bases.map((y) => +y.toFixed(1)).join(" · ")})`);
 }
+{ // the line between All hands and the hand tabs starts and ends where the tabs do (Okay, 16 Oct 2026, #260)
+  await tab("Hands");
+  const l = await page.evaluate(() => { const bar = document.querySelector(".handsbar + .tabsbar"), b = bar.getBoundingClientRect(), tabs = [...bar.querySelectorAll(".tab")].map((t) => t.getBoundingClientRect()), size = getComputedStyle(bar).backgroundSize;
+    const cut = parseFloat((size.match(/100% - ([\d.]+)px/) || [])[1]);
+    return { line: [+(b.left + cut).toFixed(1), +b.right.toFixed(1)], tabs: [+tabs[0].left.toFixed(1), +tabs.at(-1).right.toFixed(1)], border: getComputedStyle(bar).borderTopColor }; });
+  check(Math.abs(l.line[0] - l.tabs[0]) < 0.6 && Math.abs(l.line[1] - l.tabs[1]) < 0.6 && l.border === "rgba(0, 0, 0, 0)", `the line under All hands runs where the tabs run (${l.line.join("–")} · ${l.tabs.join("–")})`);
+}
 await shot("4g-hand-tabs");
 { // 10:10 stands on its own thick line, its middle bottom on the line's top (Okay, 15 Oct 2026, 00:51; over the bar, clear of the ruler, before)
   const p = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), pill = r(".steps12 .special"), line = r(".ruler .pose");
@@ -1269,6 +1277,32 @@ check(opener[0] === 34 && opener[1] === "Numerals · Markers · Minute ticks", `
     `Reset: last in the Dial tab, after Colours, not on the preview, its warning under it (${JSON.stringify(r)}); brings back the opener (${back.join(", ")}); undo brings back 25 mm (${undone})`);
 }
 await other.close();
+{ // a first visit, in a browser that has kept nothing (Okay, 16 Oct 2026, #270): in every tab the pinned panes open and every pane under them folded, but the one a tab is about when only tabs are pinned (a hand, a window). Folded, Colours shows the colours it lists as tiny swatches (#268); Reset says Reset alone, and open, its button stands on its heading line (#269). Custom labels say how they work (#298)
+  const fresh = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, reducedMotion: "reduce" });
+  await fresh.route("https://duztman.github.io/dial-tool/fonts/**", (route) => route.fulfill({ path: "fonts/" + decodeURIComponent(route.request().url().split("/fonts/")[1]), headers: { "access-control-allow-origin": "*" } }));
+  const p = await fresh.newPage();
+  await p.goto("file://" + process.cwd() + "/dial-tool.html");
+  await p.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
+  const panes = async (name) => { await p.click(`button[data-tab="${name}"]`); await p.waitForTimeout(200); return p.$$eval(".pane", (ps) => ps.filter((x) => x.offsetParent).map((x) => ({ name: x.querySelector("h2").textContent.trim(), pinned: Boolean(x.closest(".pinned")), shut: x.classList.contains("folded") }))); };
+  const seen = {}, wrong = [];
+  for (const name of ["Dial", "Rings", "Hands", "Date", "Export"]) {
+    seen[name] = await panes(name);
+    const loose = seen[name].filter((x) => !x.pinned), main = (name === "Hands" || name === "Date") ? loose[0] : null;
+    for (const x of seen[name]) if (x.shut !== (!x.pinned && x !== main)) wrong.push(`${name}/${x.name}`);
+  }
+  await p.click('button[data-tab="Dial"]'); await p.waitForTimeout(200);
+  const colours = await p.evaluate(() => { const pane = [...document.querySelectorAll(".form .pane")].find((x) => x.querySelector("h2").textContent.trim() === "Colours"); return [pane.querySelectorAll(".fold .summary .dot.tiny").length, window.dial_tool.dial_colours(false).length]; });
+  const reset_shut = await p.isHidden("#reset");
+  await p.click('.form .pane:has(#reset) .fold'); await p.waitForTimeout(300);
+  const reset_open = await p.evaluate(() => { const b = document.getElementById("reset").getBoundingClientRect(), f = document.querySelector(".form .pane:has(#reset) .fold").getBoundingClientRect(); return [b.height > 0 && b.top >= f.top && b.bottom <= f.bottom, Math.round(f.right - b.right)]; });
+  await p.click('button[data-tab="Rings"]'); await p.waitForTimeout(200);
+  await p.evaluate(() => [...document.querySelectorAll(".form .pane")].find((x) => x.querySelector("h2").textContent.trim() === "Numerals").querySelector(".fold").click()); await p.waitForTimeout(300);
+  await p.selectOption("#ring-labels-Labels", { label: "Custom" }); await p.waitForTimeout(300);
+  const hint = await p.evaluate(() => [...document.querySelectorAll(".form .row.note")].filter((n) => n.offsetParent).map((n) => n.textContent).join(" | "));
+  await fresh.close();
+  check(!wrong.length && colours[0] > 0 && colours[0] === colours[1] && reset_shut && reset_open[0] && reset_open[1] <= 1 && /Commas between labels/.test(hint),
+    `a first visit: pinned panes open, the rest folded but a hand's and a window's pane (${wrong.length ? "wrong: " + wrong.join(", ") : Object.entries(seen).map(([k, v]) => k + ": " + v.map((x) => x.name + (x.shut ? " ▸" : " ▾")).join(", ")).join(" · ")}); folded Colours shows its ${colours[0]} colours as swatches; Reset folded says Reset alone, open its button stands at the right of its heading line (${reset_open[1]}); Custom labels say how they work`);
+}
 await page.click('button:text-is("Defaults")');
 await page.waitForFunction(() => window.dial_tool.statik && window.dial_tool.S.ha_hour.round === 0);
 await page.waitForTimeout(600);
@@ -1571,6 +1605,7 @@ check(await page.$eval("#ampm", (b) => b.firstElementChild && b.firstElementChil
 const touch = await browser.newContext({ viewport: { width: 1180, height: 820 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true });
 const pad = await touch.newPage();
 await pad.addInitScript(() => { if (!localStorage.getItem("dial-tool-last")) localStorage.setItem("dial-tool-last", "{}"); });      // the plain starting dial, not the opener (Okay's watch, 4.38.12)
+await pad.addInitScript(() => { if (!localStorage.getItem("dial-tool-folds")) localStorage.setItem("dial-tool-folds", '{"*":false}'); });      // every pane open (#270)
 await pad.goto("file://" + process.cwd() + "/dial-tool.html");
 await pad.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
 await pad.tap("#guides-more");

@@ -51,6 +51,7 @@ async function open(options) {
   page.on("pageerror", (e) => console.log("page error:", e.message));
   await page.addInitScript(() => { Date.now = () => 1791900000000; });      // a still clock, so nothing differs by the hour
   await page.addInitScript(() => { if (!localStorage.getItem("dial-tool-last")) localStorage.setItem("dial-tool-last", "{}"); });      // the plain starting dial, not the opener (Okay's watch, 4.38.12)
+  await page.addInitScript(() => { if (!localStorage.getItem("dial-tool-folds")) localStorage.setItem("dial-tool-folds", '{"*":false}'); });      // every pane open, as for a visitor who has opened them (#270)
   await page.goto("file://" + (process.env.PAGE || process.cwd() + "/dial-tool.html"));      // PAGE=…: another build, to keep its look
   await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 30000 });
   await page.waitForTimeout(300);
