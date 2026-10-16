@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.43.2 | 16 Oct 2026 | web | [`402342a`](https://github.com/duztman/dial-tool/tree/402342acbd633b221425673666a25f6a0de14d83) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/402342acbd633b221425673666a25f6a0de14d83/web/dial-tool.html) | The guides follow the tab you're in; All fades what is out of focus |
 | 4.43.1 | 16 Oct 2026 | web | [`a7dbb1e`](https://github.com/duztman/dial-tool/tree/a7dbb1e5b783e7e14f67c3bdcc25f52fa67d66ec) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/a7dbb1e5b783e7e14f67c3bdcc25f52fa67d66ec/web/dial-tool.html) | A disc hand's marker is called its Hole |
 | 4.43 | 16 Oct 2026 | web | [`af10359`](https://github.com/duztman/dial-tool/tree/af10359788a83f727ae56e9f78eefde3e77a4d07) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/af10359788a83f727ae56e9f78eefde3e77a4d07/web/dial-tool.html) | Link scheme 2 (capitals and digits, shorter; old links open the First dial with a note); the cap in the seconds hand |
 | 4.42.5 | 16 Oct 2026 | web | [`4f97e80`](https://github.com/duztman/dial-tool/tree/4f97e807a9fb94d0b887195b578f7d163f30e511) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/4f97e807a9fb94d0b887195b578f7d163f30e511/web/dial-tool.html) | The guides: centre hole guide, windows' section, ring and window edges with a dotted middle, Reset All |
