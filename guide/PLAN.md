@@ -18,7 +18,7 @@ App: https://duztman.github.io/dial-tool/
 - One source: HTML blocks on a 12-column grid. A4 landscape: spreads. Phone: blocks stack.
 - **Edition 1 · web, the core (~10 screens):** four models · the screen · first dial · find it · maker sheet.
 - **Edition 2 · web + print (~26 A4 landscape pages, ~6 generated).** Print is for presenting and for the maker. It does not wait for the production round; the sheet's process part stays blank and dated until then.
-- Rebuilds are decided by the picture diff, run on every release; version numbers decide nothing.
+- Rebuilt only when Okay asks (16 Oct 2026; `guide/make.sh`), not on each release; the picture diff then shows what changed since the last guide. *Before: the diff, run on every release, decided.*
 - The look: the project's design canon (Braun printed matter, one grotesque, strict grid, real values), decided on three spreads in iteration 7.
 - Released only with a help link in the app (release condition for edition 1) and per-pane anchors (edition 2).
 

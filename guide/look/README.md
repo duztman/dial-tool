@@ -2,7 +2,9 @@
 
 *15 Oct 2026, `guide/PLAN.md` steps 7–8. The composer that sets edition 1 as A4 landscape pages and, from the same words and pictures, as a stack for a phone. Started from the 4.36.1 web guide's composer (`archive/guide/web/`), whose look Okay settled over ten rounds (`guide/notes-okay.md`).*
 
-## Build, in this order (each step refuses to run on a different app version than the one before)
+## Build — only when Okay asks (16 Oct 2026: not on each app release)
+
+`bash guide/make.sh` runs all of it in order and ends with the picture diff against the last guide made in this clone. By hand, in this order (each step refuses to run on a different app version than the one before):
 
 ```
 cd web

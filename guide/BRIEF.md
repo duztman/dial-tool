@@ -10,7 +10,7 @@
 - Address: `https://duztman.github.io/dial-tool/guide/` (the `gh-pages` branch, beside the app). Source: `guide/` on `dev`.
 - English only.
 
-**What it follows.** The current app; rebuilt when the picture diff on a release flags a change. Captions carry the app version.
+**What it follows.** The app as it is when Okay asks for a new guide (16 Oct 2026: rebuilt only on his word, `guide/make.sh`; not on each release). Captions carry the app version it was made on.
 
 **Devices.**
 - Interface pictures: iPad landscape, 1180 × 820 points at 2×, stated on each.
