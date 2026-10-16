@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.45 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.45.1 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -76,6 +76,7 @@
     --hair: 1px; --thick: 2px; --triple: calc(3 * var(--hair));      /* a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle */
     --nest-from: calc((100% + var(--gap)) / 3);     /* where a row's controls start, from its left edge: two of its six columns and their gaps. A half line starts here */
     --side-num: 60px; --side-tiny: 16px;           /* beside a hand's box: a number with its tiny plus and minus (the whole · the two alone) */
+    --side-label: 4.75em;                          /* …and the names there: as wide as the longest allowed, "Counter Ø" at 12 (Okay's notes, p. 18, #250) */
     --tile-w: calc((4 * var(--col) + 3 * var(--gap) - 3 * var(--unit)) / 4);      /* a tile: four stand on the four control columns one unit apart, so each is a little wider than a column. A number's field and its stepper are the third and the fourth tile */
     /* a number's row, as tracks with the gaps written in (no gap of its own): label 2 columns · slider · field · stepper, the last three on the tiles' edges */
     --num-columns: var(--col) var(--gap) var(--col) var(--gap) minmax(0, 1fr) var(--gap) var(--tile-w) var(--unit) var(--tile-w);
@@ -597,27 +598,22 @@
   .pickt.own { border-style: dashed; color: var(--grey); cursor: default; }
   .pickt.own:hover { background: var(--field); }
   .pickt.more[aria-expanded="true"] svg { rotate: 180deg; }
-  /* the number box of a side row: the number, and joined to it a tiny plus over a tiny minus. With the keyboard in
-     the number it grows towards the slider, over it: a large minus · the number · a large plus. It hangs at the
-     row's right end, so growing moves nothing else. */
-  .row.side { position: relative; --num-open: calc((200% - var(--gap)) / 3); }
-  .numbox { position: absolute; right: 0; top: 50%; translate: 0 -50%; display: grid; grid-template: "f p" 1fr "f m" 1fr / minmax(0, 1fr) var(--side-tiny); width: var(--side-num); height: var(--control); background: var(--field); transition: width 0.12s ease-out, height 0.12s ease-out; }
-  .numbox > input { grid-area: f; width: 100%; min-width: 0; height: 100%; }
-  .numbox > .step { min-width: 0; height: auto; padding: 0; border-left: 0; font-size: var(--t-xs); line-height: 1; }
-  .numbox > .step:nth-of-type(1) { grid-area: m; border-top: 0; }
+  /* a side row's number, quiet (#250, beta 4.45.1): the number and, joined to it, a tiny plus over a tiny minus; no
+     box; grey until it differs from how the dial opened (.changed, build_row). A press on it opens its popup. */
+  .row.side { position: relative; }
+  .numbox { position: absolute; right: 0; top: 50%; translate: 0 -50%; display: grid; grid-template: "f p" 1fr "f m" 1fr / minmax(0, 1fr) var(--side-tiny); width: var(--side-num); height: var(--control); }
+  .numbox > input { grid-area: f; width: 100%; min-width: 0; height: 100%; padding: 0 var(--u1) 0 0; border: 0; background: none; color: var(--grey); text-align: right; cursor: pointer; }
+  .numbox > .step { min-width: 0; height: auto; padding: 0; border: 0; background: none; color: var(--grey); font-size: var(--t-xs); line-height: 1; }
+  .numbox > .step:nth-of-type(1) { grid-area: m; }
   .numbox > .step:nth-of-type(2) { grid-area: p; }
-  .numbox:focus-within { z-index: 2; grid-template: "m f p" 1fr / var(--control-large) minmax(0, 1fr) var(--control-large); width: var(--num-open); height: var(--control-large); box-shadow: 0 0 0 var(--unit) var(--surface); }
-  .numbox:focus-within > .step { border: var(--hair) solid var(--ink); font-size: var(--t-l); }
-  .numbox:focus-within > .step:nth-of-type(1) { border-right: 0; }
-  .numbox:focus-within > .step:nth-of-type(2) { border-left: 0; }
-  @media (prefers-reduced-motion: reduce) { .numbox { transition: none; } }
+  .numbox > .step:hover { background: var(--hover); color: var(--ink); }
+  .numbox.changed > :is(input, .step) { color: var(--ink); }
   @media (min-width: 861px) {
     /* wide: the box in the first two columns, as high as the rows beside it; the rows in the other four, each one
        line: label · slider · the number box */
     .body > .detail { grid-column: 2 / span 2; grid-row: 1 / span 40; align-self: start; height: calc(7 * var(--line)); }
     .body > .detail { position: sticky; top: var(--unit); }      /* it scrolls up with its pane until it is one unit (the gap between the shape tiles) under the line under the hand tabs, stays there while the rows beside it scroll, and the pane's end (the Cap pane) pushes it on (Okay, 14 Oct 2026: "stay still… until cap"; "align here after scroll") */      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
-    .body > .row.side { grid-column: 4 / -1; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--side-num); }
-    .row.side { --num-open: calc((100% + var(--side-num)) / 2); }      /* the row less its label and one gap: slider and number together */
+    .body > .row.side { grid-column: 4 / -1; grid-template-columns: var(--side-label) minmax(0, 1fr) var(--side-num); }      /* the name as narrow as the longest (Counter Ø), the slider the rest: bigger (#250) */
     .row.side > :first-child, .row.side > input[type="range"] { grid-column: auto; }
     .row.side > label { font-size: var(--t-s); }
     .row.side > label > .whole { display: none; }
@@ -1078,12 +1074,12 @@
   /* the last line (#271): Thickness · its number with a compact plus and minus (a side row's box) · a rule, then Reset
      All. Over it a thick line: its own hairline on the one above. No slider: with Reset All beside it, it had no room
      left (0 px, measured); it comes back in the number popup (phase E; R15 form B). The number's cell reaches back over
-     the name, so a press on the number grows its box leftward (as beside a hand's box), not over Reset All. */
+     the name; a press on the number opens its popup (#249). */
   .guidelist .guidelast { grid-template-columns: var(--guide-name) minmax(0, 1fr) auto; box-shadow: inset 0 var(--hair) 0 var(--row-rule), inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
   .guidelast > * { grid-row: 1; }
   .guidelist .guidelast > label:first-child { grid-column: 1; }
   .guidelast > input[type="range"] { display: none; }
-  .guidelast > .numcell { grid-column: 1 / 3; position: relative; height: var(--control); pointer-events: none; --num-open: 100%; }
+  .guidelast > .numcell { grid-column: 1 / 3; position: relative; height: var(--control); pointer-events: none; }
   .guidelast .numbox { pointer-events: auto; }
   .guidelast > .resetall { grid-column: 3; display: flex; align-items: center; height: var(--control); padding-left: var(--gap); border-left: var(--hair) solid var(--row-rule); }
   /* Reset All asks first, in its line's place (#271): the question at the left, round ✕ and ✓ at the right */
@@ -5775,7 +5771,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.45";
+var VERSION = "beta 4.45.1";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -8342,6 +8338,8 @@ var ROWS = {
     // then its numbers and its colour. So what a number changes is seen right beside it, and on the dial at the right.
     // side: the row stands beside the box · short: the label when there is little room for it.
     custom("hand_detail", { ...H }),
+    col("c", "Colour", { ...H, side: true }),
+    // first beside the box (Okay's notes, p. 18, #250: "Colour to the top, Cap at the end")
     pick("shape", "Shape", HAND_SHAPES, hand_pic, { ...H, side: true, line: true, skip: [9] }),
     // every shape but "file" (a shape of one's own: the SVG tile)
     num2("len", "Length", 0.5, 30, 0.05, { ...H, side: true }),
@@ -8353,17 +8351,16 @@ var ROWS = {
     num2("mark_w", "Hole width", 0.02, 5, 0.01, { ...H, side: true, short: "Hole W", show: hand_is("disc") }),
     num2("w", "Width", 0.02, 4, 0.01, { ...H, side: true, show: (H2) => HAND_SHAPES[H2.shape] !== "disc" }),
     num2("tail", "Tail", 0, 10, 0.05, { ...H, side: true, show: (H2) => HAND_SHAPES[H2.shape] !== "disc" }),
-    num2("round", "Round ends", 0, 2, 0.01, { ...H, side: true, show: hand_is("baton", "pencil", "sword", "arrow", "syringe", "breguet", "lollipop", "file", "disc") }),
+    num2("round", "Round ends", 0, 2, 0.01, { ...H, side: true, short: "Round", show: hand_is("baton", "pencil", "sword", "arrow", "syringe", "breguet", "lollipop", "file", "disc") }),
     // a disc: its marker's ends
-    num2("tip", "Tip length", 0, 10, 0.05, { ...H, side: true, show: hand_is("pencil", "sword", "arrow", "syringe", "breguet") }),
-    num2("feature", "Head width", 0, 6, 0.05, { ...H, side: true, show: hand_is("arrow", "syringe") }),
+    num2("tip", "Tip length", 0, 10, 0.05, { ...H, side: true, short: "Tip", show: hand_is("pencil", "sword", "arrow", "syringe", "breguet") }),
+    num2("feature", "Head width", 0, 6, 0.05, { ...H, side: true, short: "Head W", show: hand_is("arrow", "syringe") }),
     num2("feature", "Ring \xB7 disc \xD8", 0, 6, 0.05, { ...H, side: true, short: "Ring \xD8", show: hand_is("breguet", "lollipop") }),
-    num2("feature_at", "Widest at %", 0, 100, 1, { ...H, side: true, show: hand_is("dauphine") }),
+    num2("feature_at", "Widest at %", 0, 100, 1, { ...H, side: true, short: "Widest %", show: hand_is("dauphine") }),
     num2("feature_at", "Barrel from %", 0, 100, 1, { ...H, side: true, short: "Barrel %", show: hand_is("syringe") }),
     num2("feature_at", "Ring \xB7 disc at %", 0, 100, 1, { ...H, side: true, short: "Ring at %", show: hand_is("breguet", "lollipop") }),
     num2("counter", "Counterweight \xD8", 0, 4, 0.05, { ...H, side: true, short: "Counter \xD8" }),
-    num2("wall", "Hollow wall", 0, 1, 0.01, { ...H, side: true }),
-    col("c", "Colour", { ...H, side: true }),
+    num2("wall", "Hollow wall", 0, 1, 0.01, { ...H, side: true, short: "Wall" }),
     // the cap is part of the seconds hand (Okay's notes, p. 1, #262, beta 4.43; until then a pane of its own for all
     // three): its rows under the seconds hand's own. With no seconds hand they stand under the topmost hand's, where
     // the cap is off until "Cap on this hand" is ticked (G.cap_shows)
@@ -8546,6 +8543,7 @@ var dial_text = (S) => JSON.stringify(S, (key, value) => key === "t" || key.star
 var DialTool = class _DialTool {
   constructor(settings) {
     this.S = fresh_settings(settings);
+    this.opened = structuredClone(this.S);
     this.statik = null;
     this.static_dirty = true;
     this.pending = false;
@@ -8683,7 +8681,7 @@ var DialTool = class _DialTool {
     if (this.iris_box && !on(".irisbox")) this.iris_open(false);
     if (this.lang_opens && !on(".langs")) for (const shut of this.lang_opens) shut(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
-    if (this.value_pop && !on("#value-pop") && !on(".valueb, .atmore, .popname")) this.value_pop_close();
+    if (this.value_pop && !on("#value-pop") && !on(".valueb, .atmore, .popname, .numbox > input")) this.value_pop_close();
     this.tag_hide();
   }
   // ── building the window ──────────────────────────────────
@@ -10072,6 +10070,11 @@ var DialTool = class _DialTool {
         field.addEventListener("keydown", (e) => {
           if (e.key === "Enter" || e.key === "Escape") field.blur();
         });
+        if (!row.inpop) {
+          field.onmousedown = (e) => e.preventDefault();
+          field.onclick = () => this.value_pop_open(field, row);
+        }
+        out.quiet = box2;
         wrap.append(lead, slider, box2);
       } else wrap.append(lead, slider, field, el("span", { className: "steps" }, step(-1), step(1)));
       out.refresh = (T) => {
@@ -10084,6 +10087,10 @@ var DialTool = class _DialTool {
         if (menu) {
           menu.value = T[row.menu.key] ?? 0;
           label.textContent = label_of(row, T);
+        }
+        if (out.quiet) {
+          const was = row.scope === "hand" ? this.opened["ha_" + HANDS[this.S.ui_hand]] : this.opened;
+          out.quiet.classList.toggle("changed", Math.abs(v - (was?.[row.key] ?? v)) > 1e-9);
         }
       };
     }
