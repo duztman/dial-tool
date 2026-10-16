@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.46 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.46.1 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -244,7 +244,7 @@
 @layer base {
   :root { font: var(--t-m)/1.4 var(--sans); font-variant-numeric: tabular-nums lining-nums; }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }      /* no grey box flashing under a finger (#153) */
-  html, body { height: 100%; margin: 0; touch-action: pan-x pan-y; }      /* fingers scroll, never zoom the window: only the dial zooms, inside the preview (Okay, 15 Oct 2026, 02:19) */
+  html, body { height: 100%; margin: 0; touch-action: pan-x pan-y; overscroll-behavior: none; }      /* fingers scroll, never zoom the window: only the dial zooms, inside the preview (Okay, 15 Oct 2026, 02:19); and the window is never pulled past its edge (#309, 4.46.1) */
   body { background: var(--paper); color: var(--ink); overflow: hidden; }
   #app { display: grid; grid-template-columns: calc(var(--panel-w) * (1 - var(--away))) 1fr; grid-template-rows: 1fr calc(var(--bar-height) * (1 - var(--show))); height: 100%;
     transition: --away var(--view-time) var(--view-ease), --show var(--view-time) var(--view-ease); }
@@ -287,16 +287,18 @@
   .steps { width: 100%; }
   .step, .segs > button { flex: 1; border-color: var(--rule); }
   .segs > button { padding: 0 var(--unit); }
-  /* a window's places: a square of the four quarters · a white bar · the places between and a box of three dots
-     for any time. Each a box of its own, one unit apart. */
-  .atgrid { grid-column: 3 / -1; display: grid; grid-template-columns: 2fr auto 3fr; gap: var(--unit); align-items: stretch; padding: var(--unit) 0; }
-  .atgrid > .segs { display: grid; gap: var(--unit); }
-  .atgrid > .quarters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .atgrid > .between { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .atgrid > .segs > button { padding: 0; }      /* "10:30" needs the whole box */
-  .atgrid > .segs > button + button { border-left: var(--hair) solid var(--rule); }
-  .atgrid > .segs > button.on { border-color: var(--ink); }
-  .atgrid > .divide { width: var(--thick); background: var(--row-rule); }
+  /* a line of buttons stretched along a row's controls (4.46.1: a window's Position, #264, and its shapes on the Shape
+     heading's line, #265; Okay on the mock-ups: "Position should not be small", "stretch shapes like position"):
+     each as wide as the others, a unit between them, as high as a large control; the chosen one ink (chosen layer) */
+  .btnline { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--unit); }
+  .btnline > button { display: grid; place-items: center; height: var(--control-large); padding: 0; border: var(--hair) solid var(--rule); background: var(--field); }
+  .btnline > button:hover { background: var(--hover); }
+  .row > .btnline { grid-column: 3 / -1; }
+  /* a line of round buttons (a window's places on its heading's line, 4.46.1: "3 6 9 12 are circular buttons now"),
+     spread from the controls' column to the end; one whose words need more room grows into a pill */
+  .circles { display: flex; justify-content: space-between; align-items: center; gap: var(--unit); }
+  .circles > button { display: grid; place-items: center; min-width: var(--line-button); height: var(--line-button); padding: 0 var(--u2); border: var(--hair) solid var(--rule); border-radius: calc(var(--line-button) / 2); background: var(--field); }
+  .circles > button:hover { background: var(--hover); }
   .atmore:not(.on) { letter-spacing: 0.1em; }      /* the three dots, a little apart */
   :is(.step, .segs > button) + button { border-left: 0; }
   .tools { display: flex; flex-wrap: wrap; gap: var(--unit); align-items: center; }
@@ -330,6 +332,7 @@
   .picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--unit); padding: var(--unit) 0; }      /* one small space, the unit: between the tiles, both ways, and from them to the row's lines. The tiles are wider than a column for it */
   .picks.five { grid-template-columns: repeat(5, minmax(0, 1fr)); }      /* five choices (a window's shape) */
   .pickt { justify-items: center; align-content: start; gap: calc(var(--unit) / 2); min-height: var(--tile); padding: var(--unit) var(--hair); font-size: var(--t-xs); line-height: 1.15; }
+  .picks.small .pickt { min-height: 0; }      /* smaller pictures, a tile no higher than they need (a window's Shows, 4.46.1) */
   .pickt span { white-space: nowrap; text-align: center; }      /* a tile's word is one line; a name too long for it has a short one in TILE_WORDS */
   .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--unit) var(--gap); }
   .tile { align-content: space-between; justify-items: start; gap: var(--unit); min-height: calc(var(--tile) + var(--u1)); padding: var(--unit) var(--u3); text-align: left; line-height: 1.25; }
@@ -474,6 +477,14 @@
   .folded > .fold :is(.eye, h2) { color: var(--grey); }
   .fold:hover :is(.eye, h2) { color: var(--ink); }
   .fold .summary { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; font-size: var(--t-s); }
+  /* a heading in two lines (a window's: "Window at x", then "Position" for the buttons on its line, 4.46.1): the
+     second line tight under the title, a row's name in size and colour; the eye stays level with the title; as high
+     as its two lines need */
+  .fold.twoline { grid-template-rows: auto auto; height: auto; min-height: var(--head); padding: var(--u2) 0; line-height: 1.2; }
+  .fold.twoline > :is(.eye, h2) { grid-row: 1; }
+  .fold.twoline > .sub { grid-row: 2; grid-column: 2; color: var(--grey); font-weight: 400; }
+  .fold.twoline > .summary { grid-row: 1 / span 2; grid-column: 3; }
+  .pane:has(> .headcontrol[hidden]) > .fold > .sub { display: none; }      /* nothing on the line to name: a window not shown */
   .fold:focus-visible { outline-offset: -2px; }
   /* a pane's main selector stands on its heading line, on the four control columns, with no name of its own: the
      heading names it. The pane is laid on the columns so the selector can lie over the heading's right part; the
@@ -598,9 +609,17 @@
   .row.pick > label { line-height: var(--line); }
   .row > label > .short { display: none; }         /* a label's short wording: only where there is little room (a side row) */
   .linkrow .linknote { margin: var(--unit) 0 0; }      /* its length, and that fonts travel by name */
-  /* a window's width and height on one line (#265): name · number · name · number, the numbers quiet (#250's look) */
-  .row.wsize > label { grid-column: span 2; color: var(--grey); }      /* both names grey, as a row's first is */
-  .row.wsize > .numbox { position: relative; top: auto; right: auto; translate: none; grid-column: span 1; width: 100%; }
+  /* two numbers to a line (R15 form A2; a window's width and height, #265, 4.46.1): for each a column for its name,
+     one for its slider, one for its quiet number (#250's look) — the slider a column long, the least a slider gets */
+  .row.wsize > * { grid-column: auto; }
+  .row.wsize > label { color: var(--grey); }      /* both names grey, as a row's first is */
+  .row.wsize > .numbox { position: relative; top: auto; right: auto; translate: none; width: 100%; }
+  /* a window's colours on one line (#266, 4.46.1): a quiet word, then its pill; a third (Picture) only for am · pm and moon */
+  .row.colours { align-items: baseline; }      /* when Picture takes a second line, the name stays on the first */
+  .row.colours > .parts { grid-column: 3 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: var(--unit) var(--u3); padding: var(--u1) 0; }
+  .row.colours .part { display: inline-flex; align-items: center; gap: var(--u2); }
+  .row.colours .part[hidden] { display: none; }
+  .row.colours .part > i { font-style: normal; font-size: var(--t-s); color: var(--grey); }
 }
 
 /* a hand's pane: its detail box, the line of shapes, side rows with their number box */
@@ -830,6 +849,11 @@
   .numpop .row input[type="text"] { width: 100%; height: var(--num-pop-pill); border: 0; border-radius: calc(var(--num-pop-pill) / 2); font-size: var(--t-num-pop); text-align: center; }
   .numpop .row input[type="text"]:focus { outline: 0; }      /* the value, chosen to be typed over, says it */
   .numpop .row input[type="text"]::selection { background: var(--ink); color: var(--field); }      /* chosen: black, its figures mid grey (no white) */
+  .numpop:not(:has(.steps)) { border-bottom-left-radius: var(--num-pop-round); border-bottom-right-radius: var(--num-pop-round); }      /* no discs at its foot (a window's places): the pills' round there too */
+  .numpop .places { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--num-pop-gap); }      /* a window's places, every one (#264), three to a line */
+  .numpop .places > button { height: var(--control-large); border-radius: calc(var(--control-large) / 2); background: var(--field); color: var(--ink); }
+  .numpop .places > button:hover { background: var(--hover); }
+  .numpop .places > button.on { background: var(--ink); color: var(--field); }
   .numpop .row .steps { display: flex; justify-content: space-between; }
   .numpop .row .steps > .step { flex: none; display: grid; place-items: center; width: var(--num-pop-step); height: var(--num-pop-step); padding: 0; border: 0; border-radius: 50%; }
   /* a number's name opens its popup; pressed and moved sideways it changes the value (#249, #170) */
@@ -1001,7 +1025,7 @@
    A layer of its own after the controls and the panel, so no control has to say it again and nothing there
    (a hover, a quiet colour) can undo it. The bar and the night parts have their own colours for it; a tab (.tab) draws its own. */
 @layer chosen {
-  .segs > button.on, .pickt.on, .tile[aria-pressed="true"], .kinds button.on, .sticker.ui[aria-pressed="true"],
+  .segs > button.on, .btnline > button.on, .circles > button.on, .pickt.on, .tile[aria-pressed="true"], .kinds button.on, .sticker.ui[aria-pressed="true"],
   .unitbox[aria-expanded="true"], .headtools .sign[aria-expanded="true"],
   .fontbox .btn[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
   .headtools .sign[aria-expanded="true"] .rim { stroke: var(--ink); }
@@ -1249,6 +1273,7 @@
   .bar :is(.lead, .viewing) button:hover { background: var(--bar-field); }
   .bar :is(.lead, .viewing) button:active { background: var(--bar-light); color: var(--bar); }
   .bar :is(button, input):focus-visible, .bar input[type="text"]:focus { outline-color: var(--bar-light); }
+  .bar input[type="range"] { touch-action: none; }      /* a finger on the bar's sliders drags them, never the page (#309; Okay: "simple blocks are fine"); the iPad's own edge gestures stay its own */
   .bar .icon { display: inline-flex; align-items: center; justify-content: center; }
   /* low contrast under the panel: no fills, thin light lines; what is chosen is a shade lighter */
   /* the bar's lower line is all monospace (Okay, 14 Oct 2026, 23:55: "All mono on the lower line") */
@@ -5826,7 +5851,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.46";
+var VERSION = "beta 4.46.1";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -7886,8 +7911,10 @@ var OPENER = { "dial_d": 34, "c_plate": [0.0784, 0.0784, 0.0784, 1], "rings": [{
 
 // src/ink.js
 var INKED = [
-  ".atgrid button",
-  // a window's places: 3 · 6 · 9 · 12 · 1:30 … 10:30 · 4 · ···
+  ".circles button",
+  // a window's places: 3 · 6 · 9 · 12 · ··· (4.46.1)
+  ".numpop .places button",
+  // and every place, in the dots' popup
   ".steps12 button",
   // the bottom bar's hours and 10:10
   "#ampm",
@@ -8100,20 +8127,22 @@ var PICS = {
     `<circle cx="19" cy="13.5" r="11.5" ${faint}/><path d="M16.75 8.75L19 3.5L21.25 8.75M16.75 23.5L19 18.25L21.25 23.5"/>`,
     `<path d="M4 23A15 15 0 0 1 34 23" ${faint}/>` + [0, -24, 24, -48, 48].map((t) => `<path d="M17 11.5L19 6.5L21 11.5" transform="rotate(${t} 19 23)"/>`).join("")
   ],
+  // a window's shape: rectangle · circle · polygon · arch · arc — on 26 × 18, inside the Shape line's buttons (#265,
+  // 4.46.1; 38 × 27 before, fitted down by icons/fit.mjs, the box redrawn on quarter points)
   hole: [
-    // a window's shape: rectangle · circle · polygon · arch · arc
-    box(8.25, 5.25, 21.5, 16.5, 2),
-    `<circle cx="19" cy="13.5" r="8.75" ${sw(CURVE)}/>`,
-    `<path d="M19 4L27.25 8.75V18.25L19 23L10.75 18.25V8.75Z" ${sw(SLANT)}/>`,
-    `<path d="M4 21.5A15 15 0 0 1 34 21.5A7.5 7.5 0 0 0 19 21.5A7.5 7.5 0 0 0 4 21.5Z" ${sw(CURVE)}/>`,
-    `<path d="M6 17A19 19 0 0 1 32 17L28.5 22.25A13 13 0 0 0 9.5 22.25Z" ${sw(CURVE)}/>`
+    box(5.75, 3.75, 14.5, 10.5, 1.5),
+    `<circle cx="13" cy="9" r="6" ${sw(CURVE)}/>`,
+    `<path d="M13 2.5L18.75 5.75V12.25L13 15.5L7.25 12.25V5.75Z" ${sw(SLANT)}/>`,
+    `<path d="M2.75 14.25A10.25 10.25 0 0 1 23.25 14.25A5.25 5.25 0 0 0 13 14.25A5.25 5.25 0 0 0 2.75 14.25Z" ${sw(CURVE)}/>`,
+    `<path d="M4 11.75A13 13 0 0 1 22 11.75L19.5 15.25A9 9 0 0 0 6.5 15.25Z" ${sw(CURVE)}/>`
   ],
+  // what a window shows, in as few lines as say it: one figure · one letter · a half filled · a crescent — on 30 × 21
+  // (Okay, 16 Oct 2026, on the Windows page's mock-ups: "smaller icons"; 38 × 27 until 4.46.1)
   window: [
-    // what a window shows, in as few lines as say it: one figure · one letter · a half filled · a crescent
-    box(6.75, 3.25, 24.5, 20.5, 2) + `<path d="M16.25 10.5L19.5 8V19" ${sw(CURVE)}/>`,
-    box(2.75, 5.25, 32.5, 16.5, 2) + `<path d="M13.5 18V9L19 15.5L24.5 9V18" ${sw(SLANT)}/>`,
-    box(4.25, 4.75, 29.5, 17.5, 2) + `<path d="M19 4.75H6.25A2 2 0 0 0 4.25 6.75V20.25A2 2 0 0 0 6.25 22.25H19Z" ${solid}/>`,
-    `<path d="M19 1.75A11.75 11.75 0 0 0 19 25.25A15 15 0 0 1 19 1.75Z" ${solid}/><circle cx="19" cy="13.5" r="11.75"/>`
+    box(5.25, 2.25, 19.5, 16.5, 1.5) + `<path d="M12.75 8L15.25 6V15" ${sw(CURVE)}/>`,
+    box(2.25, 4.25, 25.5, 12.5, 1.5) + `<path d="M10.75 14V7L15 12L19.25 7V14" ${sw(SLANT)}/>`,
+    box(3.75, 3.75, 22.5, 13.5, 1.5) + `<path d="M15 3.75H5.25A1.5 1.5 0 0 0 3.75 5.25V15.75A1.5 1.5 0 0 0 5.25 17.25H15Z" ${solid}/>`,
+    `<path d="M15 1.25A9.25 9.25 0 0 0 15 19.75A11.75 11.75 0 0 1 15 1.25Z" ${solid}/><circle cx="15" cy="10.5" r="9.25"/>`
     // the crescent beside it makes the circle look heavier: it stays LINE
   ]
 };
@@ -8471,35 +8500,39 @@ var ROWS = {
     // small switch on each card: "unnecessarily complex… enable window tickmark is the way to go. leave them as tabs")
     custom("show_box", { ...W, bar: true }),
     // the Show box, as a hand's (#261): its tick, "Show this window" on the heading line until 4.46
-    hdr("Window", { title: (S) => `Window at ${window_place(windows_of(S)[S.ui_window])}` }),
-    // where it is and how big come first, right under the tick (Okay, 13 Oct 2026); a pane of their own, Place and size, until beta 4.22
-    custom("window_at", { ...W, show: win_on, text: "Position" }),
-    num2("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
-    custom("window_size", { ...W, show: shape_is("rectangle", "arc") }),
-    // width and height on one line (#265)
-    num2("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("arch"), id: "window-w-Width-arch" }),
-    // its own id: the line above has window-w-Width
-    num2("w", "\xD8", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
-    pick("kind", "Shows", WINDOW_KINDS, PICS.window, { ...W, show: win_on }),
-    txt("text", "Text", { ...W, show: win_is("date", "day") }),
-    custom("font", { ...W, show: win_is("date", "day") }),
-    // its own font, or the top numerals ring's (the start)
+    // the Windows page (#263, 4.46.1; Okay's marks on three mock-ups, 16 Oct 2026): first where it is and what it
+    // shows, under Window at x; then the hole itself under Shape — its shape buttons on that heading's line, then
+    // Radius ("ok but below shapes"), its sizes, its colours on one line, its text and font, its frame
+    // its heading in two lines, "Window at x" and under it "Position", the place buttons on its line (Okay, 16 Oct
+    // 2026, on the mock-ups: "Move eye up with Window at… put Position after a tight br in its usual size and color…
+    // If it's taller so be it, enlarge buttons. And 3 6 9 12 are circular buttons now")
+    hdr("Window", { title: (S) => `Window at ${window_place(windows_of(S)[S.ui_window])}`, sub: "Position" }),
+    custom("window_at", { ...W, head: true, show: win_on, text: "Position" }),
+    pick("kind", "Shows", WINDOW_KINDS, (i) => icon(PICS.window[i], 30, 21), { ...W, small: true, show: win_on }),
     info("Follows the time shown: AM \xB7 PM beside the time, under the panel.", { ...W, show: win_is("am \xB7 pm") }),
     num2("age", "Moon age, days", 0, 29.5, 0.1, { ...W, show: win_is("moon phase") }),
     info("0 new moon \xB7 14.8 full.", { ...W, show: win_is("moon phase") }),
-    hdr("Colours", { ...W, folded: true, show: win_on }),
-    col("text_c", "Picture", { ...W, show: win_is("am \xB7 pm", "moon phase"), or: (T) => T.ink }),
-    // or: what an unset colour is. A text's colour stands beside its font's name; this row is for the windows that show a picture       // or: what an unset colour is
-    col("disc_c", "Disc under it", { ...W, show: win_on, or: () => [1, 1, 1, 1] }),
-    col("ink", "Frame", { ...W, show: win_on }),
-    // the hole's shape, apart from what shows through it (Okay, 13 Oct 2026): one pane for every window
+    // the hole: its shape (buttons on the heading's line, #265), where and how big, its colours (one line, #266), what
+    // is written in it, its frame. Folded on a first visit, as every pane but the one the tab is about (#270); its shape
+    // buttons stay on its heading line
     hdr("Shape", { ...W, folded: true, show: win_on }),
-    custom("window_shape", { ...W, show: win_on }),
+    custom("window_shape", { ...W, head: true, text: "Shape", show: win_on }),
+    num2("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
+    custom("window_size", { ...W, show: shape_is("rectangle", "arc") }),
+    // width and height on one line, each with its slider (#265; R15 form A2)
+    num2("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("arch"), id: "window-w-Width-arch" }),
+    // its own id: the line above has window-w-Width
+    num2("w", "\xD8", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
     num2("sides", "Sides", 3, 12, 1, { ...W, whole: true, show: shape_is("polygon") }),
     num2("round", "Corner", 0, 2, 0.05, { ...W, show: shape_is("rectangle", "polygon") }),
     chk("turn", "Turn it with its radius", { ...W, show: (T) => T.on && window_shape(T) !== "arc" }),
     info("Only off the quarters: at 4 it turns 30\xB0, at half past four 45\xB0.", { ...W, show: (T) => T.on && T.turn && window_turn(T) === 0 && window_shape(T) !== "arc" }),
     chk("text_turn", "Turn the text with it", { ...W, nest: true, show: (T) => T.on && T.turn && window_shape(T) !== "arc" && ["date", "day"].includes(WINDOW_KINDS[T.kind]) }),
+    custom("window_colours", { ...W, show: win_on }),
+    // the disc under the hole · the frame · what an am · pm or moon window pictures, on one line (#266)
+    txt("text", "Text", { ...W, show: win_is("date", "day") }),
+    custom("font", { ...W, show: win_is("date", "day") }),
+    // its own font, or the top numerals ring's (the start)
     // the frame round the hole and the room kept clear round it are drawn on the dial: they are design, so they
     // stand here, not under a pane called Print (Okay, 13 Oct 2026: print things under Print, design among design)
     num2("frame", "Frame", 0, 0.6, 0.01, { ...W, show: win_on }),
@@ -10113,6 +10146,10 @@ var DialTool = class _DialTool {
       out.summary = el("span", { className: "summary quiet" });
       out.button = el("button", { type: "button", className: "fold", title: "Show or hide this pane", onclick: () => this.fold(out, !this.is_folded(out)) }, out.eye, title, out.summary);
       out.body = el("div", { className: "body" });
+      if (row.sub) {
+        out.button.classList.add("twoline");
+        title.after(el("span", { className: "sub", textContent: row.sub }));
+      }
       out.el = el("section", { className: row.plain ? "pane plain" : "pane" }, out.button, out.body);
       if (row.plain) out.button.hidden = true;
       if (row.tools) {
@@ -10248,7 +10285,7 @@ var DialTool = class _DialTool {
       };
     }
     if (row.kind === "pick") {
-      const group = el("span", { className: "picks", role: "radiogroup", ariaLabel: row.text });
+      const group = el("span", { className: row.small ? "picks small" : "picks", role: "radiogroup", ariaLabel: row.text });
       row.items.forEach((name, i) => {
         if (row.skip && row.skip.includes(i)) return;
         const tile = el("button", { type: "button", className: "pickt", id: `${id}-${i}`, title: name, onclick: () => set(i) });
@@ -10777,16 +10814,15 @@ var DialTool = class _DialTool {
    *  G.WINDOW_SHAPES; 0, "as its kind", shows as the shape that kind has had all along. */
   row_window_shape(wrap, out) {
     wrap.className = "row pick";
-    const group = el("span", { className: "picks five", role: "radiogroup", ariaLabel: "Shape" });
+    const group = el("span", { className: "btnline shapes", role: "radiogroup", ariaLabel: "Shape" });
     const names = WINDOW_SHAPES.slice(1);
     names.forEach((name, i) => {
-      const tile = el("button", { type: "button", className: "pickt", id: `window-shape-${name}`, title: name, onclick: () => this.set_value("window", "shape", i + 1) });
+      const tile = el("button", { type: "button", id: `window-shape-${name}`, title: name, ariaLabel: name, onclick: () => this.set_value("window", "shape", i + 1) });
       tile.setAttribute("role", "radio");
-      tile.innerHTML = pic(PICS.hole[i]);
-      tile.append(el("span", { textContent: name }));
+      tile.innerHTML = icon(PICS.hole[i], 26, 18);
       group.append(tile);
     });
-    wrap.append(group);
+    wrap.append(el("span"), group);
     out.refresh = (T) => [...group.children].forEach((b, i) => {
       const on = names[i] === window_shape(T);
       b.classList.toggle("on", on);
@@ -11069,7 +11105,7 @@ var DialTool = class _DialTool {
       this.value_pop_close();
       button.focus();
     };
-    if (!sheet) {
+    if (!sheet && document.documentElement.dataset.press !== "touch") {
       field.focus();
       field.select();
     }
@@ -11406,10 +11442,31 @@ var DialTool = class _DialTool {
     const parts = [["w", "Width", 8], ["h", "Height", 5]].map(([key, text, hi]) => {
       const row = { ...num2(key, text, 0.5, hi, 0.05), scope: "window", side: true }, built = this.build_row(row), label = built.el.querySelector("label");
       this.name_opens(label, row);
-      wrap.append(label, built.el.querySelector(".numbox"));
+      wrap.append(label, built.el.querySelector('input[type="range"]'), built.el.querySelector(".numbox"));
       return built;
     });
     out.refresh = (W2) => parts.forEach((p) => p.refresh(W2));
+  }
+  /** a window's colours on one line (#266, 4.46.1; Okay's notes, p. 19: "one line; two colours to choose"): the disc
+   *  under the hole, the frame, and for an am · pm or moon window what it pictures. Each a word and its pill; the
+   *  pills are the colour rows' own, so they open the colour pop-out as before. */
+  row_window_colours(wrap, out) {
+    wrap.className = "row colours";
+    const parts = [
+      col("disc_c", "Disc under it", { ...W, word: "Disc", or: () => [1, 1, 1, 1] }),
+      col("ink", "Frame", { ...W, word: "Frame" }),
+      col("text_c", "Picture", { ...W, word: "Picture", only: win_is("am \xB7 pm", "moon phase"), or: (T) => T.ink })
+      // or: what an unset colour is
+    ].map((row) => {
+      const built = this.build_row(row), pill = built.el.querySelector(".colour"), part = el("span", { className: "part" }, el("i", { textContent: row.word }), pill);
+      return { row, built, part };
+    });
+    wrap.append(el("label", { textContent: "Colours" }), el("span", { className: "parts" }, ...parts.map((p) => p.part)));
+    out.refresh = (T) => parts.forEach((p) => {
+      const shown = !p.row.only || p.row.only(T);
+      p.part.hidden = !shown;
+      if (shown) p.built.refresh(T);
+    });
   }
   row_nudge(wrap, out) {
     wrap.className = "nudge";
@@ -11598,19 +11655,16 @@ var DialTool = class _DialTool {
       w.at_deg = null;
       this.changed(true);
     };
-    const button = (name) => el("button", { type: "button", id: "window-at-Position-" + at(name), textContent: name, onclick: () => press(at(name)) });
-    const quarters = ["3", "6", "9", "12"].map(button), between = ["1:30", "4:30", "7:30", "10:30", "4"].map(button);
-    const more = el("button", { type: "button", className: "atmore", id: "window-at-more", textContent: "\xB7\xB7\xB7", title: "Any time: 2:15, 7:40\u2026" });
+    const quarters = ["3", "6", "9", "12"].map((name) => el("button", { type: "button", id: "window-at-Position-" + at(name), textContent: name, onclick: () => press(at(name)) }));
+    const more = el("button", { type: "button", className: "atmore", id: "window-at-more", textContent: "\xB7\xB7\xB7", title: "Every place, or any time: 2:15, 7:40\u2026" });
     more.setAttribute("aria-expanded", "false");
-    more.onclick = () => this.value_pop_open(more, { kind: "custom", name: "at_time", scope: "window", key: "at_deg", text: "Time" });
-    wrap.append(
-      el("label", { textContent: "Position" }),
-      el("span", { className: "atgrid" }, el("span", { className: "segs quarters" }, ...quarters), el("i", { className: "divide" }), el("span", { className: "segs between" }, ...between, more))
-    );
+    more.onclick = () => this.value_pop_open(more, { kind: "custom", name: "at_time", scope: "window", key: "at_deg", text: "Position" });
+    wrap.append(el("label", { textContent: "Position" }), el("span", { className: "circles" }, ...quarters, more));
     out.refresh = (T) => {
-      for (const b of [...quarters, ...between]) b.classList.toggle("on", T.at_deg == null && b.id === "window-at-Position-" + T.at);
-      more.classList.toggle("on", T.at_deg != null);
-      more.textContent = T.at_deg != null ? window_place(T) : "\xB7\xB7\xB7";
+      for (const b of quarters) b.classList.toggle("on", T.at_deg == null && b.id === "window-at-Position-" + T.at);
+      const elsewhere = T.at_deg != null || !["3", "6", "9", "12"].includes(DATE_AT[T.at]?.[0]);
+      more.classList.toggle("on", elsewhere);
+      more.textContent = elsewhere ? window_place(T) : "\xB7\xB7\xB7";
     };
   }
   /** inside the tag that the three dots open: the window's place as a time, typed. "2:15", "2.25" and "14:15" all
@@ -11633,9 +11687,18 @@ var DialTool = class _DialTool {
       this.changed(true);
     };
     field.onchange = take;
-    wrap.append(el("label", { htmlFor: "window-at-time", textContent: "Time" }), field);
+    const order = ["12", "1:30", "3", "4", "4:30", "6", "7:30", "9", "10:30"], idx = (name) => DATE_AT.findIndex((d) => d[0] === name);
+    const places = order.map((name) => el("button", { type: "button", id: "window-at-place-" + idx(name), textContent: name, onclick: () => {
+      const w = this.window();
+      w.at = idx(name);
+      w.at_deg = null;
+      this.changed(true);
+      this.value_pop_close();
+    } }));
+    wrap.append(el("label", { htmlFor: "window-at-time", textContent: "Time" }), el("span", { className: "places" }, ...places), field);
     out.refresh = (T) => {
       if (document.activeElement !== field) field.value = window_place(T);
+      for (const b of places) b.classList.toggle("on", T.at_deg == null && b.id === "window-at-place-" + T.at);
     };
   }
   /** the language the numerals are set in (a font may draw a figure differently for one): a small button saying its
