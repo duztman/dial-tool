@@ -49,6 +49,7 @@ export function example_dials() {
   return PICK.map(([file, name]) => {
     const settings = OKAY[file] ? structuredClone(OKAY[file]) : JSON.parse(fs.readFileSync(path.join(here, "../web/presets", file + ".json"), "utf8"));
     for (const ring of settings.rings || []) if (ring.ps in OPEN) [ring.family, ring.ps, ring.axes] = OPEN[ring.ps];
+    if (file === "field") for (const ring of settings.rings) if (ring.name === "24 hours") { ring.ps = "Barlow-Bold"; ring.tracking = 40; }      // small figures a weight up and tracked (#288, 4.49: "the field watch we have for example it fails"); the preset stays as it is (R30)
     if (file === "gauge") settings.ha_cap_top = true;      // no seconds hand: its cap stays, on the minute hand (#262, beta 4.43; the preset is dial.py's, R30)
     return { file, name, settings };
   });
@@ -65,7 +66,8 @@ if (process.argv[1]?.endsWith("examples.mjs")) {
     const S = G.fresh_settings({ ...settings, guides: true });
     const statik = G.build_static(S), size = G.page_mm(S), R = S.dial_d / 2 + 0.6;
     const shapes = G.scene(S, statik, S.t, false).map((i) => `<path d="${(i.role === "hand" ? G.turned(i.path, i.angle) : i.path).svg(2, true)}" fill="${hex(i.fill)}"/>`).join("");
-    out.push({ name, link: link(S), picture: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-R} ${-R} ${2 * R} ${2 * R}">${shapes}</svg>` });
+    const plate = S.c_plate, light = 0.2126 * plate[0] + 0.7152 * plate[1] + 0.0722 * plate[2] > 0.5;      // a white dial (#286)
+    out.push({ name, light, link: link(S), picture: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-R} ${-R} ${2 * R} ${2 * R}">${shapes}</svg>` });
     while (G.NOTES.length) console.log("note:", G.NOTES.shift());
   }
   const text = `// Written by web/examples.mjs — do not edit. Five of the guidebook's classic dials, as links, each with a small picture.

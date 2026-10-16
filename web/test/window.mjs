@@ -1577,9 +1577,15 @@ await shot("8-reopened");
 
 // ── examples: the five first dials, now in the Gallery, each a link ──
 await tab("Export");
-check(await page.$$eval(".examples a svg", (e) => e.length) === await page.$$eval(".gallery a svg", (e) => e.length) && (await page.$$eval(".gallery a", (a) => a.map((x) => x.textContent))).slice(-4).join(" ") === "Field Diver Sector Gauge" && (await page.$$eval(".gallery a", (a) => a[2].textContent)) === "Bauhaus", "the five first examples are part of the Gallery now, after its own dials; Bauhaus third (Okay, 15 Oct 2026, 10:47)");
+{ const names = await page.$$eval(".gallery a", (a) => a.map((x) => x.querySelector("span").textContent)), lights = await page.$$eval(".gallery a", (a) => a.map((x) => x.dataset.light === "true"));
+  const zig = lights.map((l, i) => [l, i]).filter(([l]) => l).map(([, i]) => i), slots = [2, 4, 6, 10, 14, 16, 18, 22].filter((s) => s < names.length - 1);
+  check(names[0] === "First dial" && names.at(-1) === "Okay's watch" && ["Field", "Diver", "Bauhaus", "Sector", "Gauge"].every((n) => names.includes(n)) && zig.slice(0, slots.length).join() === slots.join(), `the Gallery (#286, 4.49): the First dial first, Okay's watch last, the five first examples among its own dials, the white dials on the diagonals (${zig.join(" ")}; ${names.join(" · ")})`); }
 const example = await page.getAttribute('.gallery a:has-text("Diver") >> nth=-1', "href");
 await page.click('.gallery a:has-text("Diver") >> nth=-1');
+{ // a card walks into focus first (#289, 4.49): lifted, with its two choices; the first opens it here
+  const f = await page.evaluate(() => { const a = [...document.querySelectorAll(".gallery a")].filter((x) => x.textContent.includes("Diver")).at(-1), b = [...a.querySelectorAll(".choices button")]; return [a.classList.contains("focus"), getComputedStyle(a).outlineWidth, b.map((x) => x.textContent).join(" · "), getComputedStyle(a.querySelector(".choices")).display, window.dial_tool.S.rings.length]; });
+  check(f[0] && f[1] === "2px" && f[2] === "Edit this dial · In a new tab" && f[3] === "grid", `a press on a card lifts it with two choices (${f[2]}); the dial is not taken yet (${f.join(" · ")})`);
+  await page.click('.gallery a:has-text("Diver") >> nth=-1 >> text=Edit this dial'); }
 await page.waitForFunction((h) => location.hash === h && window.dial_tool.statik && window.dial_tool.S.ui_section === 4, example, { timeout: 8000 }).catch(() => {});
 await page.waitForTimeout(700);
 check(await page.evaluate((h) => location.hash === h, example) && await S("t.log_lines.slice(0, 3).every((l) => !l.includes('stands in'))"), "clicking Diver opens it: the address is its link and its fonts are drawn");
@@ -1777,9 +1783,9 @@ check(errors.length === 0, "no errors in the browser's console" + (errors.length
 // ── the gallery: under everything else in Export; a card opens its dial ──
 await tab("Export");
 {
-  const g = await page.evaluate(() => { const panes = [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent), cards = [...document.querySelectorAll(".gallery a")]; return { last: panes.at(-1), n: cards.length, names: cards.map((c) => c.textContent).join(" · "), pictures: cards.every((c) => c.querySelector("svg path")), across: new Set(cards.slice(0, 3).map((c) => Math.round(c.getBoundingClientRect().top))).size }; });
+  const g = await page.evaluate(() => { const panes = [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent), cards = [...document.querySelectorAll(".gallery a")]; return { last: panes.at(-1), n: cards.length, names: cards.map((c) => c.querySelector("span").textContent).join(" · "), pictures: cards.every((c) => c.querySelector("svg path")), across: new Set(cards.slice(0, 3).map((c) => Math.round(c.getBoundingClientRect().top))).size }; });
   check(g.last === "Gallery" && g.n >= 6 && g.pictures && g.across === 1, `the Gallery is the last pane of Export: ${g.n} dials, three to a line (${g.names})`);
-  check(g.names.startsWith("Okay's watch · "), "the Gallery opens with Okay's watch (07:45; the tool opened with it until 16 Oct)");
+  check(g.names.startsWith("First dial · ") && g.names.endsWith(" · Okay's watch"), "the Gallery opens with the First dial and ends with Okay's watch (#286; the other way round from 15 Oct to 4.48)");
   { // Help (#230; Okay, 15 Oct 2026, 12:50: "next to beta number same font but underlined"): the guide, in a new tab
     const h = await page.evaluate(() => { const a = [...document.querySelectorAll(".panel .title a")].find((e) => e.textContent === "Help"), v = document.querySelector(".panel .title .quiet"), sa = a && getComputedStyle(a), sv = getComputedStyle(v);
       return a && { href: a.href, blank: a.target === "_blank", after: v.nextElementSibling === a, same: sa.fontFamily === sv.fontFamily && sa.fontSize === sv.fontSize && sa.color === sv.color, under: sa.textDecorationLine.includes("underline") }; });
@@ -1808,7 +1814,8 @@ await tab("Export");
   await page.$eval(".gallery", (e) => e.scrollIntoView());
   await shot("4c13-gallery");
   const before = await S("JSON.stringify(S.rings.map((r) => r.name))");
-  await page.click(".gallery a >> text=Montgomery");      // by its name: the cards' order changes (Bauhaus third, 4.41.14)
+  await page.click(".gallery a >> text=Montgomery");      // by its name: the cards' order changes (Bauhaus third, 4.41.14; the zigzag, 4.49)
+  await page.click('.gallery a:has-text("Montgomery") >> text=Edit this dial');      // the card walks into focus first (#289, 4.49)
   await page.waitForFunction((b) => JSON.stringify(window.dial_tool.S.rings.map((r) => r.name)) !== b, before);
   check(await S("S.rings[0].name === 'Every fifth minute' && S.dial_d === 38"), "a card opens its dial: Montgomery, 38 mm, every fifth minute on top");
   await frame(); await shot("4c14-gallery-montgomery");

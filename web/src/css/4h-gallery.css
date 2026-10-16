@@ -8,4 +8,10 @@
   .examples svg { display: block; width: 100%; height: auto; }
   .gallery .cards { grid-template-columns: repeat(3, 1fr); }      /* the gallery: three to a line, so a dial can be read */
   .gallery a { padding: var(--u3) var(--u3) var(--unit); gap: var(--unit); }
+  /* a card in focus (#289, 4.49): lifted by the chosen tint and the thick ink line every focused control has, its two
+     choices under its name — Edit this dial · In a new tab — a unit apart; out of focus the choices are not there */
+  .gallery a .choices { display: none; gap: var(--u1); }
+  .gallery a .choices > .btn { width: 100%; }      /* one under the other, each the card's width: a card is too narrow for the two side by side */
+  .gallery a.focus { position: relative; z-index: 1; background: var(--select); outline: var(--thick) solid var(--ink); outline-offset: 0; }
+  .gallery a.focus .choices { display: grid; }
 }

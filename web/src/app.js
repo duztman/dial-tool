@@ -3669,16 +3669,44 @@ class DialTool {
   row_gallery(wrap) {
     wrap.className = "examples gallery";
     const grid = el("div", { className: "cards" });
-    const cards = [...GALLERY, ...EXAMPLES.map((x) => ({ ...x, note: `${x.name}: one of the guidebook's classic dials` }))];
-    const bauhaus = cards.findIndex((e) => e.name === "Bauhaus");      // third, after Okay's watch and his B-Uhr (Okay, 15 Oct 2026, 10:47: "Bauhaus is a darling. Move it to 3rd on gallery")
-    if (bauhaus > 2) cards.splice(2, 0, ...cards.splice(bauhaus, 1));
+    const cards = this.gallery_order([...GALLERY, ...EXAMPLES.map((x) => ({ ...x, note: `${x.name}: one of the guidebook's classic dials` }))]);
+    // a card walks into focus (#289, 4.49; Okay's notes, p. 18: "choosing a dial no longer takes it over; it comes forward
+    // with two choices, take over editing or open in a new window"): a press lifts the card and shows the two; Escape or
+    // a press elsewhere puts it back. The card is still a link, so a middle click or the keyboard's menu opens it as before.
+    const unfocus = () => { for (const c of grid.querySelectorAll("a.focus")) c.classList.remove("focus"); };
     for (const e of cards) {
       const card = el("a", { href: e.link, title: e.note });
+      card.dataset.light = String(Boolean(e.light));
       card.innerHTML = e.picture;
-      card.append(el("span", { textContent: e.name }));
+      const go = (blank) => { if (blank) window.open(e.link, "_blank"); else location.hash = e.link.replace(/^#/, ""); };
+      card.append(el("span", { textContent: e.name }), el("span", { className: "choices" },
+        el("button", { type: "button", className: "btn main", textContent: "Edit this dial", title: "Open it here, in place of the dial you have", onclick: (ev) => { ev.preventDefault(); ev.stopPropagation(); go(false); } }),
+        el("button", { type: "button", className: "btn", textContent: "In a new tab", title: "Keep the dial you have; this one opens in a new tab beside it", onclick: (ev) => { ev.preventDefault(); ev.stopPropagation(); go(true); } })));
+      card.onclick = (ev) => { if (ev.metaKey || ev.ctrlKey || ev.shiftKey) return; ev.preventDefault(); const was = card.classList.contains("focus"); unfocus(); if (!was) card.classList.add("focus"); };
+      card.onkeydown = (ev) => { if (ev.key === "Escape") { unfocus(); card.blur(); } };
       grid.append(card);
     }
     wrap.append(grid);
+    document.addEventListener("pointerdown", (ev) => { if (!grid.contains(ev.target)) unfocus(); }, true);
+  }
+
+  /** the Gallery's order (#286, 4.49; Okay's notes, p. 17–18): the First dial first, Okay's watch last, and the white
+   *  dials on the diagonals of the three-column grid — "just whites zigzag diagonally": the third slot, then the middle
+   *  of the next line, then the first of the line after, and back. The rest keep their order in the slots between.
+   *  (Until 4.49: Okay's watch first, Bauhaus third — 15 Oct 2026, 10:47; his notes reversed it.) */
+  gallery_order(cards) {
+    const first = cards.find((c) => c.name === "First dial") || cards[0], last = cards.find((c) => c.name === "Okay's watch");
+    const rest = cards.filter((c) => c !== first && c !== last), whites = rest.filter((c) => c.light), others = rest.filter((c) => !c.light);
+    const n = cards.length, out = new Array(n).fill(null);
+    out[0] = first;
+    if (last) out[n - 1] = last;
+    for (let r = 0, k = 0; r * 3 < n && whites.length; r++) {      // the zigzag: column 2 · 1 · 0 · 1 · 2 …
+      const col = [2, 1, 0, 1][r % 4], at = r * 3 + col;
+      if (at < n && !out[at]) out[at] = whites.shift();
+    }
+    const left = [...others, ...whites];           // a white dial with no slot left on the diagonal comes after the rest
+    for (let i = 0; i < n; i++) if (!out[i]) out[i] = left.shift();
+    return out.filter(Boolean);
   }
 
   /** files that stay drawings. The PNG button is on its own row, with its dpi. */

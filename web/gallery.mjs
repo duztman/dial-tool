@@ -12,7 +12,7 @@ import path from "path";
 import { engines } from "./test/engines.mjs";
 import { link } from "./links.mjs";
 import { FONT_LIST } from "./src/font_list.js";
-import { OKAYS_WATCH } from "./src/opener.js";
+import { OKAYS_WATCH, OPENER } from "./src/opener.js";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 const BLACK = [0.07, 0.07, 0.08, 1], WHITE = [0.95, 0.95, 0.92, 1], LUME = [0.80, 0.90, 0.66, 1], RED = [0.78, 0.16, 0.12, 1], PAPER = [0.97, 0.96, 0.93, 1], INK = [0.08, 0.08, 0.08, 1];
@@ -21,30 +21,33 @@ const type = (family, ps, axes = {}) => ({ family, ps, axes });
 const hands = (c, hour, minute, second, cap = 1.4, cap_c = c) => ({ ha_hour: { c, ...hour }, ha_minute: { c, ...minute }, ha_second: { c, ...second }, ha_cap: cap, c_cap: cap_c });
 
 export const DIALS = [
-  // the dial the tool opens with, Okay's own watch (Okay, 15 Oct 2026, 07:45: "add this 'default' face to gallery as
-  // well"; 07:48: "the purple you've been working with"): first, its settings as they are in src/opener.js
-  { name: "Okay's watch", note: "Okay's own watch, purple, a 24-hour ring inside the twelve (15 Oct 2026; the dial the tool opened with until 16 Oct)", settings: OKAYS_WATCH },
+  // the dial the tool opens with — the guide's First dial — first (Okay's notes, p. 17–18, #286: "the new default watch
+  // first"; 4.49), its settings as they are in src/opener.js; Okay's own watch, the opener until 16 Oct, is last (below)
+  { name: "First dial", note: "The guide's First dial: the dial the tool opens with (16 Oct 2026)", settings: OPENER },
   // Okay's own B-Uhr (15 Oct 2026, 09:39, his link: "This is replacing nr 2 on the gallery. No new name"; again 11:49,
   // a second link: a navy plate on a dark red backdrop, the triangle and dots cyan, the minute numerals cream): orange
   // hours and seconds hand, the minute numerals moved in, two thin bands framing them. Lean settings, as his link
   // carries them (only what differs from the starting values), without the time.
+  // …in neutral colours since 4.49 (#288, Okay's notes: "B-Uhr in neutral colours"; the answer chosen: on his own version — his
+  // layout, a black plate, white marks, cream figures): the navy plate, the red backdrop, the cyan triangle and dots and
+  // the orange hours of his link are gone; its layout and nudges are his.
   { name: "B-Uhr, type B", note: "Navigator's watch, 1941: minutes outside and large, hours inside and small [1.9]", settings: {
-    "dial_d": 34, "guides": false, "c_plate": [0.0549, 0.1647, 0.2784, 1], "c_backdrop": [0.4784, 0.1216, 0.1216, 1], "gd_axes": false,
+    "dial_d": 34, "guides": false, "c_plate": BLACK, "gd_axes": false,
     "rings": [
-      { "kind": 1, "name": "Triangle at 12", "c": [0, 1, 0.8941, 1], "r": 15.6, "count": 1, "shape": 1, "len": 4.85, "w": 2.16, "taper": 0, "round_out": 0.35, "round_in": 0.24 },
-      { "kind": 1, "name": "Two dots", "c": [0, 1, 0.8929, 1], "r": 16.1, "count": 2, "start": -7, "span": 14, "knock": 3, "shape": 2, "w": 1.01 },
+      { "kind": 1, "name": "Triangle at 12", "c": WHITE, "r": 15.6, "count": 1, "shape": 1, "len": 4.85, "w": 2.16, "taper": 0, "round_out": 0.35, "round_in": 0.24 },
+      { "kind": 1, "name": "Two dots", "c": WHITE, "r": 16.1, "count": 2, "start": -7, "span": 14, "knock": 3, "shape": 2, "w": 1.01 },
       { "kind": 3, "name": "Hour circle", "c": [0.95, 0.95, 0.92, 1], "r": 9.1, "width": 0.16 },
       { "name": "Minutes", "c": [0.95, 0.95, 0.92, 1], "r": 16.4, "count": 60, "skip": 3, "knock": 3, "len": 1.2, "w": 0.2 },
-      { "kind": 2, "name": "Hours", "c": [0.9098, 0.4549, 0.1647, 1], "r": 7.4, "size": 2.15, "family": "Routed Gothic", "ps": "RoutedGothic" },
+      { "kind": 2, "name": "Hours", "c": [0.902, 0.8863, 0.6275, 1], "r": 7.4, "size": 2.15, "family": "Routed Gothic", "ps": "RoutedGothic" },
       { "kind": 2, "name": "Minutes 5–55", "c": [0.902, 0.8863, 0.6275, 1], "r": 11.85, "count": 11, "start": 30, "span": 300, "labels": 7, "num_from": 5, "size": 3, "nudge": { "1": { "dr": -0.3 }, "3": { "dr": -0.35 }, "7": { "dr": -0.35 }, "8": { "dr": -0.35 }, "9": { "dr": -0.5 } }, "family": "Routed Gothic", "ps": "RoutedGothic" },
       { "name": "Five minutes", "c": [0.95, 0.95, 0.92, 1], "r": 16.4, "skip": 1, "len": 2.7, "w": 0.35, "twelve": 3 },
       { "kind": 3, "name": "Band copy", "c": [0.949, 0.949, 0.9216, 1], "r": 14.85, "count": 1, "width": 0.17, "guide": 0 },
       { "kind": 3, "name": "Band", "c": [0.949, 0.949, 0.9216, 1], "r": 16.4, "count": 1, "width": 0.17, "guide": 0 },
     ],
-    "ha_beat": 1, "ha_cap": 1.4, "c_cap": [0.9098, 0.4549, 0.1647, 1],
+    "ha_beat": 1, "ha_cap": 1.4, "c_cap": [0.902, 0.8863, 0.6275, 1],
     "ha_hour": { "shape": 2, "len": 8.2, "w": 2, "tail": 1.6, "tip": 2.6, "c": [0.902, 0.8863, 0.6275, 1] },
     "ha_minute": { "shape": 2, "len": 14.6, "w": 1.5, "tail": 1.8, "tip": 3.2, "c": [0.902, 0.8866, 0.6275, 1] },
-    "ha_second": { "len": 15.4, "w": 0.2, "tail": 4, "counter": 1.1, "c": [0.9098, 0.4549, 0.1647, 1] } } },
+    "ha_second": { "len": 15.4, "w": 0.2, "tail": 4, "counter": 1.1, "c": [0.902, 0.8863, 0.6275, 1] } } },
   // Okay's own diver (15 Oct 2026, 11:03, his link: "4th option, replaces og"; 11:05: fourth card, the atlas diver gone):
   // the atlas diver on a blue plate, and under the dial's rings a band of twelve sectors, every other one the plate's
   // blue — a sunburst of stripes. Lean settings, as his link carries them. Fourth with Bauhaus third (row_gallery).
@@ -73,7 +76,7 @@ export const DIALS = [
     ...hands(INK, { shape: "breguet", len: 9.6, w: 0.55, tail: 1.6, tip: 2.2, feature: 2.4, feature_at: 72 }, { shape: "breguet", len: 14.2, w: 0.45, tail: 1.8, tip: 2.6, feature: 2.2, feature_at: 76 }, { shape: "baton", len: 15, w: 0.14, tail: 3.6 }, 1.2),
     rings: [
       { kind: "numerals", name: "Every fifth minute", r: 17.5, count: 12, start: 30, labels: NUMBERS, num_from: 5, num_step: 5, size: 1.5, c: RED, ...type("Barlow", "Barlow-Bold") },
-      { kind: "numerals", name: "Every minute", r: 17.5, count: 60, start: 6, labels: NUMBERS, num_from: 1, num_step: 1, size: 0.82, c: INK, skip: 2, ...type("Barlow", "Barlow-Medium") },
+      { kind: "numerals", name: "Every minute", r: 17.5, count: 60, start: 6, labels: NUMBERS, num_from: 1, num_step: 1, size: 0.82, c: INK, skip: 2, tracking: 40, ...type("Barlow", "Barlow-SemiBold") },      // small: a weight up and tracked (#288, 4.49; Medium, untracked, before)
       { kind: "band", name: "Outer rail", r: 16.5, width: 0.1, c: INK },
       { kind: "ticks", name: "Five minutes", r: 16.5, count: 12, len: 1.1, w: 0.42, c: INK },
       { kind: "ticks", name: "Minutes", r: 16.5, count: 60, len: 1.1, w: 0.14, c: INK, skip: 3 },
@@ -124,6 +127,9 @@ export const DIALS = [
   // Okay's own world time (15 Oct 2026, 12:08, his link: "This is"): after Cottier, 1948 — the hour hand and the minute
   // hand dark red, the seconds hand off, larger day and night figures upright, on a greyed lilac backdrop. Lean settings,
   // as his link carries them.
+  // Okay's own watch (15 Oct 2026, 07:45: "add this 'default' face to gallery as well"; 07:48: "the purple you've been
+  // working with"): first until 4.49, last since (#286: "Okay's watch last")
+  { name: "Okay's watch", note: "Okay's own watch, purple, a 24-hour ring inside the twelve (15 Oct 2026; the dial the tool opened with until 16 Oct)", settings: OKAYS_WATCH },
 ];
 
 // run as `node gallery.mjs`: write src/gallery.js (imported, as by test/links.mjs, it only gives DIALS)
@@ -137,7 +143,8 @@ if (process.argv[1]?.endsWith("gallery.mjs")) {
     const S = G.fresh_settings({ ...settings, guides: true });
     const statik = G.build_static(S), R = S.dial_d / 2 + 0.6;
     const shapes = G.scene(S, statik, S.t, false).map((i) => `<path d="${(i.role === "hand" ? G.turned(i.path, i.angle) : i.path).svg(2, true)}" fill="${hex(i.fill)}"${i.fill[3] < 1 ? ` fill-opacity="${i.fill[3]}"` : ""}/>`).join("");
-    out.push({ name, note, link: link(S), picture: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-R} ${-R} ${2 * R} ${2 * R}">${shapes}</svg>` });
+    const plate = S.c_plate, light = 0.2126 * plate[0] + 0.7152 * plate[1] + 0.0722 * plate[2] > 0.5;      // a white dial: its plate reads light (#286: the whites zigzag)
+    out.push({ name, note, light, link: link(S), picture: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-R} ${-R} ${2 * R} ${2 * R}">${shapes}</svg>` });
     while (G.NOTES.length) console.log("note:", G.NOTES.shift());
   }
   fs.writeFileSync(path.join(here, "src/gallery.js"), `// Written by web/gallery.mjs — do not edit. The Gallery's dials, as links, each with a small picture.

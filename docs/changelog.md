@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.49 (web version) · 17 Oct 2026
+
+Phase J, the Gallery: its order, a card in focus, a tuning pass. (#287, six new dials, still to draw.)
+
+- **The Gallery's order** (#286; Okay's notes, p. 17–18: "the new default watch first; Okay's watch last; just whites zigzag diagonally"): the First dial first, Okay's watch last, and the white dials on the diagonals of the three-column grid — the third slot, the middle of the next line, the first of the line after, and back (`gallery_order`); the rest keep their order between. Each card says whether its plate is light (`light`, from the plate's luminance, written by `gallery.mjs` and `examples.mjs`). Bauhaus-third (15 Oct) goes with it.
+- **A card walks into focus** (#289: "choosing a dial no longer takes it over; it comes forward with two choices, take over editing or open in a new window"): a press lifts the card (the chosen tint, the thick ink line) and shows **Edit this dial** · **In a new tab** (short, so it fits a card); Escape or a press elsewhere puts it back. The card is still a link, so a middle click or ⌘-click opens it as before.
+- **Okay's watch, tweaked** (Okay, 17 Oct 2026, his link: "Tweaked my dial in the meantime, replace"): the Gallery's last card is his new version — a window, a ring of numerals he calls Band — in `src/opener.js` (`OKAYS_WATCH`), lean as his link carries it.
+- **Tuned** (#288: "small numerals get a heavier weight and gradually more tracking … the field watch we have for example it fails; B-Uhr in neutral colours"): the Field's 24-hour figures in Barlow Bold, tracked +40 (SemiBold, untracked); Montgomery's every-minute figures in Barlow SemiBold, tracked +40 (Medium); the B-Uhr — Okay's layout — on a black plate with white marks and cream figures, hands and cap, no coloured backdrop (navy, red, cyan and orange before). The optical-size axis: none of the Gallery's fonts has one but Bodoni Moda, unused there.
+
 ## beta 4.48 (web version) · 17 Oct 2026
 
 Phase I: the text ring. (Phase H, the font sheet's design, waits: Okay, 17 Oct, "push the design ui stuff for later".)
