@@ -242,6 +242,8 @@ const TOOL_ICONS = {
   redo: `<path d="M13.25 6.75H6.75A3.25 3.25 0 0 0 6.75 13.25H10.25M10.25 3.75L13.25 6.75L10.25 9.75" ${sw(SLANT)}/>`,
   wide: `<rect x="2.75" y="2.75" width="10.5" height="10.5"/><path d="M6.25 10.25L10.25 6.25M7.25 6.25H10.25V9.25" ${sw(DENSE)}/>`,
   find: `<circle cx="7" cy="7" r="4.25" ${sw(CURVE)}/><path d="M10.25 10.25L13.25 13.25" ${sw(SLANT)}/>`,
+  // a link, beside Copy link (Okay, 16 Oct 2026, #277): two open halves facing each other, a bar between (fit.mjs; look.py 0.5 %)
+  link: `<path d="M6.75 4.75H4.25A3.25 3.25 0 0 0 4.25 11.25H6.75" ${sw(CURVE)}/><path d="M9.25 4.75H11.75A3.25 3.25 0 0 1 11.75 11.25H9.25" ${sw(CURVE)}/><path d="M5.25 8.25H10.75"/>`,
   // the Shadows switch, on 18 like Guides: a sphere lit from the upper right — its outline, its shade a crescent on the
   // lower left — and its shadow cast to the left on the ground, a flat ellipse it stands on (after a photograph Okay
   // sent, 15 Oct 2026, 02:13: "make it 2d icon like others… fit a square"). The outline goes through fit.mjs's rules
@@ -568,8 +570,9 @@ const ROWS = {
     chk("out_production", "Mono print mask"),
     chk("out_mirror", "Mirrored, for toner transfer"),
     hdr("Link to this dial", { folded: true }),
+    custom("link_copy", { head: true }),           // Copy link, flush right on the heading line, open or folded (#277)
     custom("link"),
-    hdr("Settings file", { folded: true }),
+    hdr("Settings file", { folded: true, title: () => tool && tool.loaded_name ? `Settings file · ${tool.loaded_name}` : "Settings file" }),      // after Load it names the file (#279)
     custom("settings"),
     hdr("Log", { folded: true }),
     custom("log"),
@@ -3361,32 +3364,42 @@ class DialTool {
     out.refresh = () => { const mm = G.page_mm(this.S), px = Math.round(mm / 25.4 * this.S.out_dpi); text.textContent = `${this.in_unit(mm, 1)} ${this.unit()[0]} at ${Math.round(this.S.out_dpi)} dpi = ${px} × ${px} px`; };
   }
 
+  /** a settings file: the whole dial, every value, kept to open again (R31: a link is for sharing, a file for keeping).
+   *  A sentence says so; after Load the pane's heading names the file, and Save… offers that name again (a browser can't
+   *  write over it). Defaults is the guide's First dial ("Guide default wins"); Plain dial the tool's plain starting
+   *  values, where the guide's First dial begins (Okay's notes, 16 Oct 2026, #279). */
   row_settings(wrap) {
     wrap.className = "row";
     const file = el("input", { type: "file", accept: ".json,application/json", hidden: true, id: "load-file" });
     file.onchange = async () => { if (file.files[0]) this.load_text(await file.files[0].text(), file.files[0].name); file.value = ""; };
-    wrap.append(el("span", { className: "tools wide" },
-      el("button", { type: "button", className: "btn", id: "save", textContent: "Save…", onclick: () => { const name = file_name(this.S, "json"); save_file(name, JSON.stringify({ ...this.S, ui_section: Math.min(this.S.ui_section, 4) }, null, 1), "application/json"); this.log(`saved ${name} to your downloads`); } }),   // dial.py knows sections 0–4
+    wrap.append(el("p", { className: "quiet setnote", id: "settings-note", textContent: "A settings file keeps this dial with every value, to open again here or on another computer." }), el("span", { className: "tools wide" },
+      el("button", { type: "button", className: "btn", id: "save", textContent: "Save…", onclick: () => { const name = this.loaded_name || file_name(this.S, "json"); save_file(name, JSON.stringify({ ...this.S, ui_section: Math.min(this.S.ui_section, 4) }, null, 1), "application/json"); this.log(`saved ${name} to your downloads`); } }),   // dial.py knows sections 0–4
       el("button", { type: "button", className: "btn", textContent: "Load…", onclick: () => file.click() }),
-      el("button", { type: "button", className: "btn", textContent: "Defaults", onclick: () => this.reopen({ ui_section: this.S.ui_section }) }), file));
+      el("button", { type: "button", className: "btn", id: "defaults", textContent: "Defaults", title: "The guide’s First dial, as the tool opens with", onclick: () => { this.reopen({ ...structuredClone(OPENER), ui_section: this.S.ui_section }); tool.log("defaults: the guide’s First dial"); } }),
+      el("button", { type: "button", className: "btn", id: "plain", textContent: "Plain dial", title: "The tool’s plain starting dial, where the guide’s First dial begins", onclick: () => this.reopen({ ui_section: this.S.ui_section }) }), file));
   }
 
-  /** the dial's link, spelled out, and a button that copies it. */
+  /** the dial's link, spelled out on one line (cut at the box's edge: Copy link copies it whole), and how long it is.
+   *  Its Copy button stands on the pane's heading line (Okay, 16 Oct 2026, #277: "copy link moves to top line flush
+   *  right, gets a link icon"; under the link, beside its length, until then). */
   row_link(wrap, out) {
     wrap.className = "linkrow";
-    this.link_box = el("textarea", { id: "link", className: "link", readOnly: true, rows: 3, spellcheck: false, ariaLabel: "Link to this dial" });
+    this.link_box = el("input", { type: "text", id: "link", className: "link", readOnly: true, spellcheck: false, ariaLabel: "Link to this dial" });
     this.link_box.onfocus = () => this.link_box.select();
-    wrap.append(this.link_box, el("div", { className: "tools" },
-      el("button", { type: "button", className: "btn", id: "copy-link", textContent: "Copy link", onclick: () => this.copy_link() }),
-      el("span", { className: "quiet", id: "link-size" })));
+    wrap.append(this.link_box, el("p", { className: "quiet linknote", id: "link-size" }));
     out.refresh = () => this.show_link();
+  }
+  row_link_copy(wrap) {                            // on the heading line (head)
+    const copy = el("button", { type: "button", className: "btn copylink", id: "copy-link", title: "Copy the link to this dial", onclick: () => this.copy_link() }, el("span", { textContent: "Copy link" }));
+    copy.insertAdjacentHTML("afterbegin", icon(TOOL_ICONS.link));
+    wrap.append(copy);
   }
 
   async show_link() {
     const link = location.href.split("#")[0] + "#" + await pack(this.S);
     if (this.link_box && this.link_box.isConnected) {
       this.link_box.value = link;
-      $("#link-size").textContent = `${link.length} characters · fonts travel by name`;
+      $("#link-size").textContent = `${link.length} characters. Fonts travel by name: whoever opens it needs the same fonts.`;      // Okay, 16 Oct 2026: "Explain fonts travel by name"
     }
     return link;
   }
@@ -4038,6 +4051,8 @@ class DialTool {
       const settings = JSON.parse(text);
       if (typeof settings !== "object" || Array.isArray(settings)) throw new Error("not a settings file");
       this.reopen(settings);
+      tool.loaded_name = name;                     // the new tool says which file it came from, and Save… offers that name (#279)
+      tool.sync_rows();
       tool.log(`loaded ${name}`);
     } catch (e) {
       this.log(`couldn’t load ${name}: ${e.message}`);

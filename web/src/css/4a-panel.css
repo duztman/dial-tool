@@ -107,6 +107,7 @@
   .pane.tooled.folded > .headtools { display: none; }
   .pane > .headcontrol.reset { justify-self: end; }      /* Reset's button: at the right of its heading line, and only while the pane is open (Okay, 16 Oct 2026, #269) */
   .pane.folded > .headcontrol.reset { display: none; }
+  .pane > .headcontrol.copylink { justify-self: end; display: inline-flex; align-items: center; gap: var(--u1); }      /* Copy link with its sign, flush right on its heading line, open or folded (Okay, 16 Oct 2026, #277) */
   .body { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); padding-bottom: var(--air); }
   .body > * { grid-column: 2 / -1; }
   .body > :is(.ringlist, .examples) { grid-column: 1 / -1; }

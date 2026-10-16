@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.42.3 (web version) · 16 Oct 2026
+
+- **Copy link** (#277) stands on the heading line of *Link to this dial*, flush right, with a link sign (a new icon, through the pipeline), and stays there when the pane is folded. The link stands on one line, cut at the box's edge (Copy link copies it whole); under it, its length and what "fonts travel by name" means. The beat travels in the link (it always did; now a test says so).
+- **Settings file** (#279): a sentence says what a settings file is; after Load the pane's heading names the file and Save… offers that name again. **Defaults** now gives the guide's First dial, as the tool opens with ("Guide default wins"); a new **Plain dial** gives the plain starting values, where the guide's First dial begins.
+
 ## beta 4.42.2 (web version) · 16 Oct 2026
 
 - **A first visit opens tidy** (#270): in every tab the pinned panes are open and the panes under them folded, each saying in its line what it holds — but for the pane a tab is about when only tabs are pinned above it (a hand's, a window's). What a visitor opens or folds is remembered, as before. A click on a numeral in the preview opens Nudge, since it starts folded.

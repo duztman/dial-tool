@@ -51,7 +51,7 @@ const download = async (selector) => {
 
 // ── start with the default dial ──
 await tab("Export");
-await page.click('button:text-is("Defaults")');
+await page.click("#plain");
 await page.waitForFunction(() => window.dial_tool.statik);
 await frame();
 check(await S("S.rings.length === 3 && S.dial_d === 30"), "Defaults: the starting dial, three rings");
@@ -1212,13 +1212,19 @@ await page.uncheck("#global-out-production-Mono-print-mask");
 const saved = await download("#save");
 const before_save = await S("JSON.stringify(S)");
 check(JSON.stringify(JSON.parse(fs.readFileSync(saved, "utf8"))) === before_save, "Save… writes the settings as they are");
-await page.click('button:text-is("Defaults")');
+await page.click("#plain");
 await page.waitForFunction(() => window.dial_tool.statik);
-check(await S("S.ha_hour.round === 0"), "Defaults clears them");
+check(await S("S.ha_hour.round === 0"), "Plain dial clears them");
 await page.setInputFiles("#load-file", saved);
 await page.waitForFunction(() => window.dial_tool.S.ha_hour.round === 2);
 const after_load = await S("JSON.stringify({ ...S, ui_section: 0 })");
 check(after_load === JSON.stringify({ ...JSON.parse(before_save), ui_section: 0 }), "Load… brings every setting back");
+{ // after Load the pane names the file and Save… offers that name again; a sentence says what a settings file is (Okay, 16 Oct 2026, #279)
+  const named = await page.evaluate(() => [...document.querySelectorAll(".pane h2")].map((h) => h.textContent).find((t) => t.startsWith("Settings file")));
+  const again = await download("#save");
+  check(named === `Settings file · ${path.basename(saved)}` && path.basename(again) === path.basename(saved) && /keeps this dial with every value/.test(await page.textContent("#settings-note")),
+    `after Load the pane names the file (${named}) and Save… offers that name again (${path.basename(again)}); a sentence says what a settings file is`);
+}
 await page.reload();
 await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 check(await S("S.ha_hour.round === 2"), "the last session is back after closing and reopening the page");
@@ -1239,10 +1245,16 @@ await page.waitForFunction(() => window.dial_tool.S.ha_hour.round === 2);
 // ── a dial as a link ──
 await context.grantPermissions(["local-fonts", "clipboard-read", "clipboard-write"]).catch(() => {});
 await tab("Export");
+await page.evaluate(() => window.dial_tool.set_value("global", "ha_beat", 1));      // quartz: the beat travels in the link too (Okay, 16 Oct 2026, #277)
+await page.waitForTimeout(300);
 await page.click("#copy-link");
 await page.waitForFunction(() => window.dial_tool.log_lines[0].includes("link copied"), null, { timeout: 5000 }).catch(() => {});
 const link = await page.evaluate(() => location.href);
-check(await page.inputValue("#link") === link && (await page.$eval("#log", (e) => getComputedStyle(e).fontFamily)).toLowerCase().includes("mono"), "the link is spelled out above its Copy button; the log is monospaced");
+{ // the link on one line, cut at the box's edge; Copy link with its sign, flush right on the pane's heading line (#277)
+  const l = await page.evaluate(() => { const box = document.getElementById("link"), c = getComputedStyle(box), b = document.getElementById("copy-link"), fold = b.closest(".pane").querySelector(".fold").getBoundingClientRect(), r = b.getBoundingClientRect();
+    return { input: box.tagName === "INPUT", cut: c.textOverflow === "ellipsis" && c.whiteSpace === "nowrap", head: r.top >= fold.top && r.bottom <= fold.bottom, right: Math.round(fold.right - r.right), sign: Boolean(b.querySelector("svg")), mono: getComputedStyle(document.getElementById("log")).fontFamily.toLowerCase().includes("mono") }; });
+  check(await page.inputValue("#link") === link && l.input && l.cut && l.head && l.right <= 1 && l.sign && l.mono, `the link stands on one line, cut at the box's edge; Copy link, with its sign, flush right on the heading line (${JSON.stringify(l)}); the log is monospaced`);
+}
 check(/#1\.[A-Za-z0-9_~]+$/.test(link), `Copy link: the address carries the dial, no dashes in it (${link.split("#")[1].length} characters after #)`);
 const wanted = await S("JSON.stringify({ ...S, ui_section: 0, ui_ring: 0, ui_hand: 0 })");
 const other = await context.newPage();                               // someone else's browser: no last session of this dial
@@ -1250,7 +1262,8 @@ await other.addInitScript(() => localStorage.removeItem("dial-tool-last"));
 await other.goto(link);
 await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 const got = await other.evaluate(() => JSON.stringify({ ...window.dial_tool.S, ui_section: 0, ui_ring: 0, ui_hand: 0 }));
-check(got === wanted, "opening the link elsewhere gives the same dial, every setting");
+check(got === wanted && JSON.parse(got).ha_beat === 1, "opening the link elsewhere gives the same dial, every setting, the beat too (quartz)");
+await page.evaluate(() => window.dial_tool.set_value("global", "ha_beat", 0));
 // a link written before 4.41.21, with "-" where "~" is written now, still opens (Okay's first B-Uhr link, 15 Oct 2026, 09:39)
 const OLD_LINK = "#1.lVTJjtswDP0VQ2ePocXyduyh7aWXorfBwNDYmkSIYhteJp0GBvoP_cN-SSlZXhIk0_Zi07T4-PhI8YxKJXReooyFPtoNqpQdyl6E7qSPirzRopcoe8QBjnHk44ASHsOLRGHskycftaraQcDjGR1UBSjER5U4Qgj61ipR7bT0RO8RigANjhGIjRMDMUVDAA8i-FcPVW-ju71opLW0rFAWBgn30QllFHL6qIefEIQhFCLKvB4gCgeMzw5VmW8ajv4NRqfaK-u-u-ASsg2XKCALFwpcetGC9RCD2QhAJqDRoaqLA8i1UKWWHwkwWZOyJennemi9QrWFli4vDlLuzw86505N6pMq-70pgEQGy0F8UdXQy-7dcKAeLtQj0Kc7qMbyWPlaQUkw8QWRVrr0gu4mE04TSBPyML1oOspik65TP6TtDMj_Io5KvwHCV-iJLL1Pdb9XBSA13eJ0vlt5XY0e__3zF-cLgShMTZsiGtty8VovsYMxzw1ZmsXw3CyGwdTiWWpgAC2shmP-0tZHlPGZumnTUO7AOiNiHiVAP8A8jT5i228OjvjakVw70o2Dj-N_i-K0-KhepXf856ZPnZ4vDA1i119zKfqT1K-m0Fuj-UFUpVfUzduaxPbZPSlcuDlReKH2dlBjtzXg416Ov8Nvh_cuOpzdi_xZiukQ2IUwhdvYyb4_snB6D6NtGrReWytY4i4ENdtFaQNoFo3RlNrV5GApwCVJxOZxJE-jhZ0adQMYRIvcauArduKwmUl7hR1dY3eyqI2eZ4fITa3T5Z0RZ-HMWiR2fd2XAUDNdoh5GlDGeUoZCTHMFNqVufi-LP7xDw";
 await other.goto(link.split("#")[0] + OLD_LINK);
@@ -1299,11 +1312,21 @@ await other.close();
   await p.evaluate(() => [...document.querySelectorAll(".form .pane")].find((x) => x.querySelector("h2").textContent.trim() === "Numerals").querySelector(".fold").click()); await p.waitForTimeout(300);
   await p.selectOption("#ring-labels-Labels", { label: "Custom" }); await p.waitForTimeout(300);
   const hint = await p.evaluate(() => [...document.querySelectorAll(".form .row.note")].filter((n) => n.offsetParent).map((n) => n.textContent).join(" | "));
+  // Export: Copy link stays on its folded pane's heading line; Defaults gives the guide's First dial, Plain dial the plain starting values (#277, #279)
+  await p.click('button[data-tab="Export"]'); await p.waitForTimeout(200);
+  const copy_folded = await p.isVisible("#copy-link") && await p.evaluate(() => document.getElementById("copy-link").closest(".pane").classList.contains("folded"));
+  await p.evaluate(() => window.dial_tool.set_value("global", "dial_d", 25)); await p.waitForTimeout(300);
+  await p.click(".form .pane:has(#defaults) .fold"); await p.waitForTimeout(300);
+  await p.click("#defaults"); await p.waitForTimeout(500);
+  const defaults = await p.evaluate(() => [window.dial_tool.S.dial_d, window.dial_tool.S.rings.map((r) => r.name).join(" · ")]);
+  await p.click("#plain"); await p.waitForTimeout(500);
+  const plain = await p.evaluate(() => location.hash);
+  if (!(copy_folded && defaults[0] === 34 && defaults[1] === "Numerals · Markers · Minute ticks" && plain.length < 12)) wrong.push(`Export: copy on the folded line ${copy_folded}, Defaults ${defaults.join(" ")}, Plain dial ${plain}`);
   await fresh.close();
   check(!wrong.length && colours[0] > 0 && colours[0] === colours[1] && reset_shut && reset_open[0] && reset_open[1] <= 1 && /Commas between labels/.test(hint),
-    `a first visit: pinned panes open, the rest folded but a hand's and a window's pane (${wrong.length ? "wrong: " + wrong.join(", ") : Object.entries(seen).map(([k, v]) => k + ": " + v.map((x) => x.name + (x.shut ? " ▸" : " ▾")).join(", ")).join(" · ")}); folded Colours shows its ${colours[0]} colours as swatches; Reset folded says Reset alone, open its button stands at the right of its heading line (${reset_open[1]}); Custom labels say how they work`);
+    `a first visit: pinned panes open, the rest folded but a hand's and a window's pane (${wrong.length ? "wrong: " + wrong.join(", ") : Object.entries(seen).map(([k, v]) => k + ": " + v.map((x) => x.name + (x.shut ? " ▸" : " ▾")).join(", ")).join(" · ")}); folded Colours shows its ${colours[0]} colours as swatches; Reset folded says Reset alone, open its button stands at the right of its heading line (${reset_open[1]}); Custom labels say how they work; Copy link stays on its folded line, Defaults gives the First dial, Plain dial the plain start`);
 }
-await page.click('button:text-is("Defaults")');
+await page.click("#plain");
 await page.waitForFunction(() => window.dial_tool.statik && window.dial_tool.S.ha_hour.round === 0);
 await page.waitForTimeout(600);
 const short = await page.evaluate(() => location.hash);
