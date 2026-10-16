@@ -1,5 +1,22 @@
 # Dial Tool — changelog
 
+## beta 4.45 (web version) · 16 Oct 2026
+
+Phase E, first push: the number popup.
+
+- **The number popup** (#249; R15's popup). It holds:
+  - the number's name;
+  - the slider, its thumb a pill a fifth larger than the panel's;
+  - the value in a pill;
+  - round − and + under it.
+  It sits in a 2 px dark-grey frame on a ground darker than the pane's, its corners as round as its pills. It is the number's own row laid out anew, so it does everything the row does (typing past the slider's range widens it). It opens under what was pressed. On a phone it is a sheet at the bottom, over the drawer, so the dial stays in view, and the keyboard comes only when the value is pressed. Enter, Escape or a press outside closes it.
+- **It opens from:**
+  - a value button, which no longer grows its tag into a small square;
+  - **a full row's name**: a press on "Diameter" opens Diameter's popup;
+  - **the guides' Thickness**, whose slider is back, in the popup (R15 form B, #271).
+  A press on a name moved sideways changes the value instead, two screen points a step, as a value button does (#170).
+- **Reset All asks first** (#271): "Reset all guides?" in its line's place, with round ✕ and ✓. ✕ keeps the guides.
+
 ## beta 4.44.6 (web version) · 16 Oct 2026
 
 - **The time larger, its colons roomier, AM · PM attached** (Okay: "Barlow larger, don't worry optically will be better, more spaces both sides of :s, am attached to time and same size barlow"):

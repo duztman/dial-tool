@@ -94,7 +94,13 @@
     --row-end: calc(var(--frame-pad) - var(--hair) + var(--ringline-inner));      /* the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons */
     --line-button: 36px; --bare-dot: 16px;      /* in the ring drawer every control is this high (a value button this wide too) · the colour's swatch */
     --half: 30px;                                  /* AM · PM: its own window beside the time (Okay, 14 Oct 2026, 23:19) */
-    --value-pop: 132px;                            /* a value button's pop-up: about as wide as it is high */
+    --value-pop: 132px;                            /* a value button's tag: about as wide as it is high */
+    /* the number popup (#249, beta 4.45): three columns wide; a ground darker than the pane's, in a frame of the dark
+       grey two points thick; its corners as round as its pills (half a control); its slider's thumb a pill a fifth
+       larger than the panel's thumb, half as wide again as high */
+    --num-pop: calc(3 * var(--col) + 2 * var(--gap));
+    --num-pop-ground: color-mix(in srgb, var(--ink) 7%, var(--ground)); --num-pop-round: calc(var(--control) / 2);
+    --num-pop-thumb: calc(1.2 * var(--thumb));
     --dot-tiny: 10px;                              /* a colour inside a line of words: a folded pane's summary */
     --thumb: 18px; --track: 4px; --thumb-eye: 2px; --thumb-eye-edge: 2.75px;      /* sliders: a black disc on a thin track (Okay's sketch); the light centre of the disc, and where its edge softens */
     --grip: 18px;                                  /* the ring list's drag handle column */

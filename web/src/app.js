@@ -855,7 +855,7 @@ class DialTool {
     if (this.iris_box && !on(".irisbox")) this.iris_open(false);
     if (this.lang_opens && !on(".langs")) for (const shut of this.lang_opens) shut(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
-    if (this.value_pop && !on("#value-pop") && !on(".valueb, .atmore")) this.value_pop_close();
+    if (this.value_pop && !on("#value-pop") && !on(".valueb, .atmore, .popname")) this.value_pop_close();
     this.tag_hide();
   }
 
@@ -1531,19 +1531,30 @@ class DialTool {
     // plus minus to gain space … Reset also gets a vertical separator before. Written as 'Reset All'"). Its question
     // ("Are you sure?") comes with the number popup (phase E)
     this.guide_rows = [this.build_row({ ...num("gd_w", "Thickness", 0.25, 6, 0.25), scope: "global", side: true })];
-    const reset = el("button", { type: "button", className: "btn", id: "guides-reset", textContent: "Reset All", title: "Every guide as it started", onclick: () => {
+    // Reset All asks first, in its line's place: "Reset all guides?" and round ✕ and ✓ (#271; answer: it resets the
+    // guides only, and says so)
+    const ask = (on) => { last.classList.toggle("asking", on); question.hidden = !on; if (on) yes.focus(); };
+    const reset = el("button", { type: "button", className: "btn", id: "guides-reset", textContent: "Reset All", title: "Every guide as it started", onclick: () => ask(true) });
+    const round = (id, text, title, act) => { const b = el("button", { type: "button", className: "roundb", id, title, ariaLabel: title, onclick: act }); b.innerHTML = icon(text, 12); return b; };
+    const no = round("guides-reset-no", `<path d="M3 3L9 9M9 3L3 9" ${sw(SLANT)}/>`, "Keep the guides", () => { ask(false); reset.focus(); });
+    const yes = round("guides-reset-yes", `<path d="M2.5 6.25L5 8.75L9.5 3.5" ${sw(SLANT)}/>`, "Reset all guides", () => {
       for (const key of Object.keys(G.DEFAULTS)) if (key.startsWith("gd_")) this.S[key] = structuredClone(G.DEFAULTS[key]);
       for (const ring of this.S.rings) ring.guide = G.RING_BASE.guide;       // the rings' own colours too: by their place again
       for (const w of G.windows_of(this.S)) w.guide = G.WINDOW_BASE.guide;      // and the windows'
+      ask(false);
       this.sync_rows();
       this.render();
-    } });
+      reset.focus();
+    });
+    const question = el("span", { className: "ask", hidden: true }, el("span", { textContent: "Reset all guides?" }), el("span", { className: "answers" }, no, yes));
+    question.onkeydown = (e) => { if (e.key === "Escape") { e.stopPropagation(); ask(false); reset.focus(); } };
     const last = this.guide_rows[0].el, box_ = last.querySelector(".numbox");
+    this.name_opens(last.querySelector("label"), this.guide_rows[0].row);      // its slider is in its popup (R15 form B, #271)
     const cell = el("span", { className: "numcell" });
     box_.replaceWith(cell);
     cell.append(box_);
     last.classList.add("guidelast");
-    last.append(el("span", { className: "resetall" }, reset));
+    last.append(el("span", { className: "resetall" }, reset), question);
     list.append(last);
     const box = el("div", { className: "guides" }, this.guides_tick, more, list);
     box.onkeydown = (e) => { if (e.key === "Escape" && !list.hidden) { open(false); more.focus(); } };
@@ -1964,6 +1975,7 @@ class DialTool {
       }
       if (row.button) { slider.ariaLabel = field.ariaLabel = row.text; field.title = row.text + " · " + field.title; }
       if (row.bare) { label.textContent = ""; label.className = "blank"; slider.ariaLabel = field.ariaLabel = row.text; field.title = row.text + " · " + field.title; }
+      if (!row.inpop && !row.side && !row.bare && !row.button) this.name_opens(label, row);      // form A: its name opens the popup (#249)
       if (row.side) {
         // beside a hand's box there is little room (Okay, 13 Oct 2026): the number with a tiny plus over a tiny minus
         // joined to it. A press on the number and the box grows towards the slider, over it, into a large field
@@ -2577,6 +2589,27 @@ class DialTool {
     return { el: b, refresh };
   }
 
+  /** a number's name as the way into its popup (#249, #170): a press that doesn't move opens it; a press moved
+   *  sideways changes the value, two screen points a step (Shift: ten times finer), as a value button does. The name
+   *  keeps its field as its label for a screen reader, but a press on it no longer goes to the field. */
+  name_opens(label, row) {
+    label.classList.add("popname");
+    label.title = `${row.text} — press for its slider, drag sideways to change it`;
+    let press = null;
+    const now = () => { const T = this.target(row.scope); return T[row.key] ?? (row.or ? row.or(T) : 0); };
+    label.onclick = (e) => e.preventDefault();
+    label.onpointerdown = (e) => { press = { x: e.clientX, v: now(), moved: false }; label.setPointerCapture(e.pointerId); };
+    label.onpointermove = (e) => {
+      if (!press) return;
+      const d = e.clientX - press.x;
+      if (!press.moved && Math.abs(d) < 4) return;
+      if (!press.moved) { press.moved = true; this.value_pop_close(); label.classList.add("dragging"); }
+      const v = press.v + Math.round(d / 2) * row.step * (e.shiftKey ? 0.1 : 1);
+      this.set_value(row.scope, row.key, row.whole ? clamp(Math.round(v), row.lo, row.hi) : +Math.max(v, row.lo).toFixed(6));
+    };
+    label.onpointerup = label.onpointercancel = () => { const was = press; press = null; label.classList.remove("dragging"); if (was && !was.moved) this.value_pop_open(label, row); };
+  }
+
   /** the tag: what a wordless button is, said under it while the pointer or the keyboard is on it. One for the whole
    *  tool, laid over everything, so a list that scrolls can't cut it off. A value button's tag is as wide as the
    *  pop-up it grows into on a click (value_pop_open): its name at the left, its value at the right. */
@@ -2599,26 +2632,24 @@ class DialTool {
     box.style.setProperty("--point", `${at.left + at.width / 2 - x}px`);
   }
 
-  /** a value button's pop-up is its tag, grown (Okay, 13 Oct 2026: "do it out of our tooltip. consistent width,
-   *  closed/open, height grows on click"): the same box under the button, the same width, now holding the number's
-   *  row — its name (for a numeral's radius with the menu beside it), the field ready to type in, − +. Enter,
-   *  Escape or a press outside closes it. */
+  /** the number popup (Okay's notes, p. 5 and 18, #249, beta 4.45; R15's popup): one for every number that has one —
+   *  a value button's (form C), a row's name (form A), a quiet row's (form B). The number's own row, laid out as the
+   *  popup: its name, the slider (its thumb a pill, a fifth larger), the value in a pill, round − and + under it; in a
+   *  2-point dark-grey frame on a ground darker than the pane's, its corners as round as its pills. Under what opened
+   *  it, centred; on a phone a sheet at the bottom, over the drawer, so the dial stays in view. Being the row itself,
+   *  it does all the row does (R15: typing past the slider's range widens it). Enter, Escape or a press outside closes
+   *  it. (Until 4.45: the value button's tag, grown into a small square — 4.12.) */
   value_pop_open(button, row) {
     if (this.value_pop && this.value_pop.button === button) return this.value_pop_close();
     this.value_pop_close();
-    const closed = this.tag && !this.tag.hidden ? this.tag.offsetHeight : 0;      // as high as the tag it grows from
     this.tag_hide();
-    const r = this.build_row(row), box = el("div", { className: "tag value valuepop", id: "value-pop" }, r.el);
+    const sheet = this.pop_is_sheet();
+    const r = this.build_row({ ...row, inpop: true, side: false }), box = el("div", { className: "numpop" + (sheet ? " sheet" : ""), id: "value-pop", role: "dialog", ariaLabel: row.text || "" }, r.el);
     document.body.append(box);
     button.setAttribute("aria-expanded", "true");
     this.value_pop = { button, box, r };
     r.refresh(this.target(row.scope));
-    this.tag_place(box, button);
-    if (box.animate && closed && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      box.classList.add("growing");
-      const grow = box.animate([{ height: `${closed}px` }, { height: `${box.offsetHeight}px` }], { duration: 120, easing: "ease-out" });
-      grow.onfinish = grow.oncancel = () => box.classList.remove("growing");
-    }
+    if (!sheet) this.tag_place(box, button);
     const field = box.querySelector('input[type="text"]');
     box.onkeydown = (e) => {
       if (!(e.key === "Escape" || (e.key === "Enter" && e.target === field))) return;
@@ -2626,7 +2657,7 @@ class DialTool {
       this.value_pop_close();                      // (what was typed is taken as the field goes)
       button.focus();
     };
-    field.focus(); field.select();
+    if (!sheet) { field.focus(); field.select(); }      // a phone's keyboard comes only when the value is pressed
   }
   value_pop_close() {
     if (!this.value_pop) return;

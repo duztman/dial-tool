@@ -111,6 +111,13 @@
   .guidelast > .numcell { grid-column: 1 / 3; position: relative; height: var(--control); pointer-events: none; --num-open: 100%; }
   .guidelast .numbox { pointer-events: auto; }
   .guidelast > .resetall { grid-column: 3; display: flex; align-items: center; height: var(--control); padding-left: var(--gap); border-left: var(--hair) solid var(--row-rule); }
+  /* Reset All asks first, in its line's place (#271): the question at the left, round ✕ and ✓ at the right */
+  .guidelast.asking > :not(.ask) { visibility: hidden; }
+  .guidelast > .ask { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; color: var(--ink); }
+  .guidelast > .ask[hidden] { display: none; }
+  .guidelast .answers { display: flex; gap: var(--u2); }
+  .roundb { display: grid; place-items: center; width: var(--control); height: var(--control); padding: 0; border: var(--hair) solid var(--ink); border-radius: 50%; background: none; color: var(--ink); }
+  .roundb:hover { background: var(--ink); color: var(--paper); }
   .guidefoot { display: flex; justify-content: flex-end; padding-top: var(--pop-pad); }
   .shadelist .guidehead .name { grid-column: 1 / -1; }      /* its headings are words alone: the whole line, not the names' column */
   /* the Shadows list: the guides' list, opening upward from its switch at the bottom left (after .guidelist, which it overrides) */

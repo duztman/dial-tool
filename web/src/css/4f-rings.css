@@ -97,13 +97,21 @@
      under the other. No slider: the button is dragged instead. */
   .tag.value { display: flex; justify-content: space-between; align-items: baseline; gap: var(--u3); width: var(--value-pop); }
   .tag.value .figure { color: var(--grey); font: 400 var(--t-xs)/1 var(--mono); }
-  .tag.valuepop { --row-rule: transparent; display: block; padding: var(--u1) var(--u3) var(--u3); pointer-events: auto; font-weight: 400; }
-  .tag.valuepop.growing { overflow: hidden; }
-  .valuepop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--unit); min-height: 0; }
-  .valuepop .row > *, .valuepop .row.txt > input { grid-column: 1; }
-  .valuepop .row input[type="range"] { display: none; }
-  .valuepop .row input[type="text"] { width: 100%; text-align: center; }
-  .valuepop .row .steps { display: grid; grid-template-columns: 1fr 1fr; }
-  .valuepop .row :is(label, .menulabel) { display: flex; justify-content: space-between; align-items: center; color: var(--ink); font: 600 var(--t-s)/1.3 var(--sans); }
-  .valuepop .row .menulabel > label { color: var(--ink); font: inherit; }
+  /* the number popup (#249): the number's row, stacked — name · slider · value in a pill · round − and + — in a frame */
+  .numpop { position: fixed; z-index: 30; translate: -50% 0; width: var(--num-pop); padding: var(--u3); border: var(--thick) solid var(--grey); border-radius: var(--num-pop-round); background: var(--num-pop-ground); color: var(--ink); --row-rule: transparent; --surface: var(--num-pop-ground); }
+  .numpop.sheet { inset: auto 0 0 0; translate: none; width: auto; padding: var(--u4) var(--margin) calc(var(--u4) + env(safe-area-inset-bottom)); border-width: var(--thick) 0 0; border-radius: var(--num-pop-round) var(--num-pop-round) 0 0; }      /* a phone: a sheet over the drawer, the dial in view */
+  .numpop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--u3); min-height: 0; padding: 0; }
+  .numpop .row > *, .numpop .row.txt > input { grid-column: 1; }
+  .numpop .row :is(label, .menulabel) { display: flex; justify-content: center; align-items: center; gap: var(--u1); color: var(--ink); font: 600 var(--t-s)/1.3 var(--sans); }
+  .numpop .row .menulabel > label { color: var(--ink); font: inherit; }
+  .numpop .row input[type="range"] { width: 100%; height: var(--num-pop-thumb); }
+  .numpop .row input[type="range"]::-webkit-slider-thumb { width: calc(1.5 * var(--num-pop-thumb)); height: var(--num-pop-thumb); margin-top: calc((var(--track) - var(--num-pop-thumb)) / 2); border-radius: calc(var(--num-pop-thumb) / 2); }
+  .numpop .row input[type="range"]::-moz-range-thumb { width: calc(1.5 * var(--num-pop-thumb)); height: var(--num-pop-thumb); border-radius: calc(var(--num-pop-thumb) / 2); }
+  .numpop .row input[type="text"] { justify-self: center; width: calc(2 * var(--col)); height: var(--control); border-radius: var(--num-pop-round); text-align: center; }
+  .numpop .row .steps { display: flex; justify-content: center; gap: var(--u4); }
+  .numpop .row .steps > .step { flex: none; width: var(--control); height: var(--control); padding: 0; border: var(--hair) solid var(--ink); border-radius: 50%; }
+  /* a number's name opens its popup; pressed and moved sideways it changes the value (#249, #170) */
+  .popname { cursor: ew-resize; }
+  .popname:hover { text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: var(--u1); }
+  .popname.dragging { color: var(--ink); }
 }

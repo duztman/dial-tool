@@ -290,13 +290,28 @@ await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before)
   await page.evaluate((w) => window.dial_tool.set_value("ring", "width", w), w_before);
   await page.click("#ring-size");
   await page.waitForTimeout(200);
-  const pop = await page.evaluate(() => { const e = document.querySelector("#value-pop"), p = e.getBoundingClientRect(), b = document.querySelector("#ring-size").getBoundingClientRect(); return [e.querySelector("label").textContent, Math.round(p.top - b.bottom), e.parentElement === document.body && e.classList.contains("tag"), Math.round((p.left + p.right) / 2 - (b.left + b.right) / 2), Math.round(p.width), Math.round(p.height), getComputedStyle(e.querySelector("input[type=range]")).display]; });
+  const pop = await page.evaluate(() => { const e = document.querySelector("#value-pop"), p = e.getBoundingClientRect(), b = document.querySelector("#ring-size").getBoundingClientRect(), c = getComputedStyle(e), steps = [...e.querySelectorAll(".step")].map((x) => x.getBoundingClientRect());
+    return [e.querySelector("label").textContent, Math.round(p.top - b.bottom), e.parentElement === document.body && e.classList.contains("numpop"), Math.round((p.left + p.right) / 2 - (b.left + b.right) / 2), Math.round(p.width), Math.round(p.height), getComputedStyle(e.querySelector("input[type=range]")).display,
+      [c.borderTopWidth, c.borderTopColor, c.borderTopLeftRadius, getComputedStyle(e.querySelector("input[type=text]")).borderTopLeftRadius].join(" "), steps.length === 2 && steps.every((r) => Math.abs(r.width - r.height) < 0.5) && steps[0].top === steps[1].top]; });
   await shot("4c19-size-pop");
   await page.keyboard.type("x2"); await page.keyboard.press("Enter");
   const w_after = await S("S.rings[S.ui_ring].width");
   await page.evaluate((w) => window.dial_tool.set_value("ring", "width", w), w_before);
-  check(Math.abs(dragged - (w_before + 0.4)) < 1e-9 && pop[0] === "Band width" && pop[1] === 7 && pop[2] && Math.abs(pop[3]) <= 1 && pop[4] === vtag[1] && pop[5] > vtag[2] + 40 && pop[6] === "none" && Math.abs(w_after - 2 * w_before) < 1e-9 && await page.$("#value-pop") === null,
-    `the size button, before the radius: dragged 16 to the right a band is 0.4 wider; a click grows its tag into the pop-up — the same box under the button, as wide as the tag (${pop[4]}), now ${pop[5]} high: ${pop[0]}, the field, − +; it takes x2`);
+  check(Math.abs(dragged - (w_before + 0.4)) < 1e-9 && pop[0] === "Band width" && pop[1] === 7 && pop[2] && Math.abs(pop[3]) <= 1 && pop[4] === 186 && pop[6] !== "none" && pop[7] === "2px rgb(92, 92, 88) 13px 13px" && pop[8] && Math.abs(w_after - 2 * w_before) < 1e-9 && await page.$("#value-pop") === null,
+    `the size button, before the radius: dragged 16 to the right a band is 0.4 wider; a click opens the number popup under it (#249): ${pop[0]}, the slider, the value in a pill, round − and + (${pop[4]} × ${pop[5]}, a 2 px dark-grey frame, corners as round as its pills: ${pop[7]}); it takes x2`);
+}
+{ // a full row's name opens the popup; pressed and moved, it changes the value (#249, #170)
+  await page.click('button[data-tab="Dial"]'); await frame();
+  const lab = await page.$('label[for="global-dial-d-Diameter"]');
+  await lab.click(); await frame();
+  const opened = await page.evaluate(() => { const e = document.querySelector("#value-pop"); return !!e && e.querySelector("label").textContent === "Diameter" && document.activeElement.id === "global-dial-d-Diameter" && document.activeElement.closest("#value-pop") !== null; });
+  await page.keyboard.press("Escape");
+  const before = await S("S.dial_d"), b = await lab.boundingBox();
+  await page.mouse.move(b.x + 10, b.y + b.height / 2); await page.mouse.down(); await page.mouse.move(b.x + 30, b.y + b.height / 2, { steps: 5 }); await page.mouse.up();
+  const after = await S("S.dial_d"), still = await page.$("#value-pop");
+  await page.evaluate((v) => window.dial_tool.set_value("global", "dial_d", v), before);
+  check(opened && after === before + 1 && still === null, `a row's name opens its popup, the field ready (Diameter); pressed and moved 20 to the right it is 1 more (${before} → ${after}) and nothing opens`);
+  await page.click('button[data-tab="Rings"]'); await frame();
 }
 // undo: ⌘Z takes one step back, ⇧⌘Z forward again; a drag is one step; the window's state stays (13 Oct 2026)
 {
@@ -478,9 +493,20 @@ check(await S("S.gd_hole === true && S.gd_k_hole === 0") && !names.includes("Dia
 {
   const last = await page.evaluate(() => { const r = (s) => document.querySelector("#guide-list .guidelast " + s).getBoundingClientRect(), a = r("label"), b = r(".numbox"), c = r("#guides-reset"), d = getComputedStyle(document.querySelector("#guide-list .resetall")); return [Math.abs((a.top + a.bottom) / 2 - (c.top + c.bottom) / 2) < 1 && Math.abs((b.top + b.bottom) / 2 - (c.top + c.bottom) / 2) < 1, a.right <= b.left && b.right <= c.left, d.borderLeftWidth, document.querySelector("#guides-reset").textContent, !!document.querySelector("#guide-list .guidelast .numbox .step")]; });
   check(last[0] && last[1] && last[2] === "1px" && last[3] === "Reset All" && last[4], `Thickness, its number with a compact plus and minus, a rule (${last[2]}) and Reset All stand on one line, in that order`);
+  await page.click("#guide-list .guidelast label");
+  const slider = await page.evaluate(() => { const e = document.querySelector("#value-pop"); return !!e && e.querySelector("label").textContent === "Thickness" && getComputedStyle(e.querySelector("input[type=range]")).display !== "none"; });
+  await page.keyboard.press("Escape");
+  check(slider && await page.$("#value-pop") === null && await page.isVisible("#guide-list"), "a press on Thickness opens its popup, its slider there (R15 form B, #271); Escape puts it away, the list stays");
 }
 await shot("4c-guides");
 await page.click("#guides-reset");
+{ // Reset All asks first (#271): the question in its line's place, round ✕ and ✓; ✕ keeps the guides, ✓ resets them
+  const asked = await page.evaluate(() => { const q = document.querySelector("#guide-list .guidelast .ask"); return !!q && !q.hidden && q.textContent.includes("Reset all guides?") && [...q.querySelectorAll(".roundb")].every((b) => getComputedStyle(b).borderRadius === "50%"); });
+  await page.click("#guides-reset-no");
+  const kept = await S("S.gd_k_hole === 0 && S.gd_w === 3");
+  await page.click("#guides-reset"); await page.click("#guides-reset-yes");
+  check(asked && kept, "Reset All asks first, in its line's place: \"Reset all guides?\", round ✕ and ✓; ✕ keeps the guides as they are");
+}
 await frame();
 check(await S("S.gd_axes === true && S.gd_k_axes === 0 && S.gd_hole === true && S.gd_k_hole === 1 && S.gd_rings === false && S.gd_sel === true && S.gd_wins === false && S.gd_wsel === true && S.gd_w === 1"), "Reset All: the guides as they start — centre hole cyan, centre lines pink, the selected ring's and the selected window's (Okay, 15–16 Oct 2026)");
 // the centre hole's guide shows while the hole is being sized, even with the guides off, then goes (#267)
