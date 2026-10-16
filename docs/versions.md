@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.44 | 16 Oct 2026 | web | [`6051fad`](https://github.com/duztman/dial-tool/tree/6051fadf1b3bba0e9511fc52086fca9f3bd64784) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/6051fadf1b3bba0e9511fc52086fca9f3bd64784/web/dial-tool.html) | The bottom bar: play triangle and pulse, slow motion, the time in Barlow Condensed |
 | 4.43.2 | 16 Oct 2026 | web | [`402342a`](https://github.com/duztman/dial-tool/tree/402342acbd633b221425673666a25f6a0de14d83) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/402342acbd633b221425673666a25f6a0de14d83/web/dial-tool.html) | The guides follow the tab you're in; All fades what is out of focus |
 | 4.43.1 | 16 Oct 2026 | web | [`a7dbb1e`](https://github.com/duztman/dial-tool/tree/a7dbb1e5b783e7e14f67c3bdcc25f52fa67d66ec) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/a7dbb1e5b783e7e14f67c3bdcc25f52fa67d66ec/web/dial-tool.html) | A disc hand's marker is called its Hole |
 | 4.43 | 16 Oct 2026 | web | [`af10359`](https://github.com/duztman/dial-tool/tree/af10359788a83f727ae56e9f78eefde3e77a4d07) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/af10359788a83f727ae56e9f78eefde3e77a4d07/web/dial-tool.html) | Link scheme 2 (capitals and digits, shorter; old links open the First dial with a note); the cap in the seconds hand |
