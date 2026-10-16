@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.44.3 | 16 Oct 2026 | web | [`a9a2978`](https://github.com/duztman/dial-tool/tree/a9a2978abcf6bf532d357dc0c103a2e891c8dbfc) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/a9a2978abcf6bf532d357dc0c103a2e891c8dbfc/web/dial-tool.html) | The unit box's room even on every screen; no seam round the Shadows ball |
 | 4.44.2 | 16 Oct 2026 | web | [`a4fe6f6`](https://github.com/duztman/dial-tool/tree/a4fe6f652def6581b0b6ec580970f16338d0a4c8) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/a4fe6f652def6581b0b6ec580970f16338d0a4c8/web/dial-tool.html) | Reset flush left with its warning; the Shadows ball sunk into its shadow |
 | 4.44.1 | 16 Oct 2026 | web | [`24cd235`](https://github.com/duztman/dial-tool/tree/24cd2350441bc4c3d5438cf6dfefa89bd304f4bd) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/24cd2350441bc4c3d5438cf6dfefa89bd304f4bd/web/dial-tool.html) | The unit box in Dial Mono, small letters, 2 px round its word |
 | 4.44 | 16 Oct 2026 | web | [`6051fad`](https://github.com/duztman/dial-tool/tree/6051fadf1b3bba0e9511fc52086fca9f3bd64784) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/6051fadf1b3bba0e9511fc52086fca9f3bd64784/web/dial-tool.html) | The bottom bar: play triangle and pulse, slow motion, the time in Barlow Condensed |
