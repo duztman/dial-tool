@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.47.1 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.47.2 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -272,6 +272,7 @@
      offsets; Okay, 14 Oct 2026: "proportional ink box it is"; design canon §2) */
   .ink { display: inline-block; font-variant-numeric: proportional-nums lining-nums; transform: translate(var(--ink-dx, 0), var(--ink-dy, 0)); }
   :is(button, select, input[type="text"], input[type="checkbox"], textarea):focus-visible { outline: var(--thick) solid var(--ink); outline-offset: 0; }
+  [role="option"]:focus-visible { outline: var(--thick) solid var(--ink); outline-offset: 0; }      /* a ring's row, reached with Tab (#244, 4.47.2) */
   [data-press="touch"] :is(button, input[type="checkbox"]):focus-visible { outline: none; }      /* a finger's tap leaves no focus ring; a key brings it back (#153) */
   input[type="text"]:focus, select:focus { outline: var(--thick) solid var(--ink); outline-offset: 0; }
 
@@ -5882,7 +5883,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.47.1";
+var VERSION = "beta 4.47.2";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -9229,6 +9230,7 @@ var DialTool = class _DialTool {
       this.hands_key.title = "Hide the hands";
     }
     this.iris_button.setAttribute("aria-pressed", String(on));
+    for (const part of [$(".panel"), $(".bar")]) if (part) part.inert = on;
     app.style.setProperty("--title-end", this.title.getBoundingClientRect().right.toFixed(1) + "px");
     const after = this.svg.getBoundingClientRect();
     this.c = [c0[0] + before.left - after.left, c0[1] + before.top - after.top];
@@ -10259,6 +10261,7 @@ var DialTool = class _DialTool {
         return b;
       };
       const label = el("label", { htmlFor: id, textContent: row.text });
+      slider.ariaLabel = row.text;
       if (row.short) {
         label.textContent = "";
         label.title = row.text;
@@ -10517,6 +10520,7 @@ var DialTool = class _DialTool {
     pill.show = (c) => {
       paint(dot, c);
       hex.textContent = to_hex(c).toUpperCase();
+      if (title) pill.ariaLabel = `${title} ${hex.textContent}`;
     };
     return pill;
   }
@@ -10919,7 +10923,8 @@ var DialTool = class _DialTool {
   /** the ring list: order = stacking order, top ring first. Its tools are on the pane's heading line (head_ring_tools). */
   row_ring_list(wrap, out) {
     wrap.className = "ringlist";
-    this.ring_list = el("ol");
+    this.ring_list = el("ol", { ariaLabel: "Rings, top first" });
+    this.ring_list.setAttribute("role", "listbox");
     this.ring_list.onscroll = () => this.value_pop_close();
     wrap.append(this.ring_list);
     this.list_grip();
@@ -11262,7 +11267,15 @@ var DialTool = class _DialTool {
       grip.onpointerdown = (e) => this.drag_ring(e, i);
       const name = el("span", { className: "name", textContent: ring.name || kind_of(ring) });
       const cell = el("span", { className: "namecell" }, name);
-      const item = el("li", { className: "ring" + (selected ? " on" : "") + (ring.on ? "" : " off") }, show, grip, cell);
+      const item = el("li", { className: "ring" + (selected ? " on" : "") + (ring.on ? "" : " off"), tabIndex: 0 }, show, grip, cell);
+      item.setAttribute("role", "option");
+      item.setAttribute("aria-selected", String(selected));
+      item.onkeydown = (e) => {
+        if ((e.key === "Enter" || e.key === " ") && e.target === item) {
+          e.preventDefault();
+          this.select_ring(i);
+        }
+      };
       let rename = null;
       if (selected && ring.on) {
         const start2 = (e) => {
