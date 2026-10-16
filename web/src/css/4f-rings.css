@@ -67,7 +67,7 @@
   .ringline > #ring-size { grid-column: 6; }
   .ringline > #ring-r { grid-column: 7; }
   .nothing { display: none; }
-  .kinds { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .kinds { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }      /* five kinds since the text ring (#297, 4.48) */
   .kinds button { display: grid; place-items: center; height: var(--line-button); border: var(--hair) solid var(--rule); background: var(--field); }
   .kinds button + button { margin-left: calc(-1 * var(--hair)); }
   .kinds button:hover { background: var(--hover); }

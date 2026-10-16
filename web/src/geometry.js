@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.47.2";
+export const VERSION = "beta 4.48";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -25,12 +25,14 @@ const clone = (v) => JSON.parse(JSON.stringify(v));
 //  1 · SETTINGS
 // ═════════════════════════════════════════════════════════════
 
-export const KINDS = ["ticks", "markers", "numerals", "band"];
+export const KINDS = ["ticks", "markers", "numerals", "band", "text"];      // text: a line of words at every position, with a font of its own (#297, 4.48; appended, R9)
+/** the kinds that draw words through the text pipeline (numeral_at): numerals, and a text ring (#297). */
+export const has_text = (ring) => kind_of(ring) === "numerals" || kind_of(ring) === "text";
 export const SHAPES = ["bar", "wedge", "dot", "file"];
 export const TWELVES = ["same", "double", "triangle", "none"];
 export const SKIP_FROM = ["nothing", "markers above", "markers & numerals above", "all marks above"];
 export const KNOCK_FROM = ["nothing", "markers above", "markers & numerals above", "everything above"];
-const FROM_KINDS = [[], ["markers"], ["markers", "numerals"], ["ticks", "markers", "numerals", "band"]];
+const FROM_KINDS = [[], ["markers"], ["markers", "numerals", "text"], ["ticks", "markers", "numerals", "band", "text"]];      // a text ring counts with the numerals (#297)
 export const MODES = ["upright", "radial", "radial, auto-flip", "on path"];
 export const ANCHORS = ["centre", "baseline", "ascender"];      // the point of a numeral that sits on its ring's radius (web version, 13 Oct 2026). Only grows at its end (R9)
 export const FROM = ["outer", "middle", "inner"];               // the point of a mark or a band that sits on its ring's radius: its outer end, its middle, its inner end (#257, 4.47). Only grows at its end (R9)
@@ -224,6 +226,7 @@ const KIND_START = {                               // a new ring, sized for a di
   markers: (R) => ({ r: R - 1.6, count: 12, len: 2.8, w: 0.7 }),
   numerals: (R) => ({ r: round(R * 0.67 * 100) / 100, count: 12 }),
   band: (R) => ({ r: R, count: 1, width: 1.0, c: ACCENT }),
+  text: (R) => ({ r: round(R * 0.35 * 100) / 100, count: 1, start: 180, custom: "AUTOMATIC", size: 1.2 }),      // one word under the centre, as a dial's remark (#297)
 };
 
 /** a fresh ring; numerals copy the type of `like` (another numerals ring). */
@@ -1011,6 +1014,7 @@ function number_label(v, digits) {
 /** one label per position. */
 export function ring_labels(ring) {
   const n = max(parseInt(ring.count) || 1, 1);
+  if (kind_of(ring) === "text") return Array.from({ length: n }, () => ring.custom || "");      // a text ring says its words at every position (#297)
   const [name, txt] = LABEL_SETS[ring.labels];
   if (name === "Custom") {
     const parts = ring.custom.split(",").map((s) => s.trim());
@@ -1131,7 +1135,7 @@ function numeral_live(ring, i, a0, label) {
  *  and the windows' clear zones cut away from the outlines; live text can't be cut, so a file
  *  hides that area with a clipping mask. */
 export function live_texts(S, statik, item) {
-  if (item.role === "ring" && item.ring.kind === "numerals") {
+  if (item.role === "ring" && has_text(item.ring.ring)) {
     const d = item.ring, ring = d.ring, angles = ring_angles(ring), labels = ring_labels(ring);
     const removed = d.path !== d.shape ? d.shape.difference(d.path) : null;
     return { texts: d.keep.filter((i) => labels[i]).flatMap((i) => numeral_live(ring, i, angles[i], labels[i])), removed: removed && !empty(removed) ? removed : null };
@@ -1163,7 +1167,7 @@ function ring_shapes(ring, keep, grow = 0, solid = false) {
       }
       return [merge(parts).removeOverlap(), taken, at, parts];
     }
-    if (kind === "numerals") {
+    if (kind === "numerals" || kind === "text") {
       const labels = ring_labels(ring);
       for (const i of keep) {
         if (labels[i]) { parts.push(numeral_at(ring, i, angles[i], labels[i])); taken.push(angles[i]); at.push(i); }
@@ -1211,7 +1215,7 @@ function build_rings(S, cut = null) {
     if (!ring.on) continue;
     const kind = kind_of(ring), angles = ring_angles(ring);
     let keep = angles.map((_, i) => i).filter((i) => picked(ring, i));
-    if (kind === "markers" || kind === "numerals") keep = keep.filter((i) => !holes.some((a) => near(angles[i], a)));
+    if (kind === "markers" || kind === "numerals" || kind === "text") keep = keep.filter((i) => !holes.some((a) => near(angles[i], a)));
     if (ring.skip) {
       const taken = done.filter((d) => FROM_KINDS[ring.skip].includes(d.kind)).flatMap((d) => d.taken);
       keep = keep.filter((i) => !taken.some((a) => near(angles[i], a, 0.01)));
@@ -1552,7 +1556,7 @@ export function scene(S, statik, t, preview = true, selected = null) {
       const kind = kind_of(ring);
       const extent = { ticks: ring.len, markers: ring.len, band: ring.width }[kind] || 0;
       let outer = ring.r + from_shift(ring, extent), inner = outer - extent;
-      if (kind === "numerals") { const e = radial_extent(built.get(ring)?.path); if (e) [inner, outer] = e; }
+      if (has_text(ring)) { const e = radial_extent(built.get(ring)?.path); if (e) [inner, outer] = e; }
       edges(k, outer, inner, focused ? S.gd_w * 1.5 : S.gd_w, faded(focused), ring.r);
     });
     for (const x of windows) {

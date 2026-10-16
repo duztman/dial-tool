@@ -1,11 +1,11 @@
 # Dial Tool
 
-A parametric watch-dial design tool that runs on the web. Rings of ticks, markers, numerals and bands; hands; up to four windows; export to PDF, SVG and PNG.
+A parametric watch-dial design tool that runs on the web. Rings of ticks, markers, numerals, bands and text; hands; up to four windows; export to PDF, SVG and PNG.
 Built to explore, present and produce watch dials.
 
 **Use it: <https://duztman.github.io/dial-tool/>**, or open [`web/dial-tool.html`](web/dial-tool.html) from disk (one file, no install; Chrome or Edge for the fonts installed on the computer).
 
-**Version: beta 4.47.2 (17 Oct 2026, on `dev` and the live page; `main` is 4.46.5).** `main` = released, `dev` = work in progress. Every earlier build, back to beta 1.0: [`docs/versions.md`](docs/versions.md).
+**Version: beta 4.48 (17 Oct 2026, on `dev` and the live page; `main` is 4.46.5).** `main` = released, `dev` = work in progress. Every earlier build, back to beta 1.0: [`docs/versions.md`](docs/versions.md).
 What it has and lacks: [`docs/changelog.md`](docs/changelog.md). What's next: [`docs/build-list.md`](docs/build-list.md).
 
 **Guidebook:** a new one for the web version is being built in `guide/` by its plan, `guide/PLAN.md` (build list #93). The 4 Oct 2026 guide describes the DrawBot version: [`archive/drawbot/Dial-Tool-guide-2026-10-04.pdf`](archive/drawbot/Dial-Tool-guide-2026-10-04.pdf).

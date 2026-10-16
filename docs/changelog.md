@@ -1,5 +1,16 @@
 # Dial Tool — changelog
 
+## beta 4.48 (web version) · 17 Oct 2026
+
+Phase I: the text ring. (Phase H, the font sheet's design, waits: Okay, 17 Oct, "push the design ui stuff for later".)
+
+- **A text ring** (#297; Faruk Koç's finding of 16 Oct, Okay: "makes perfect sense … Snap to indice is a great idea for this"): a fifth kind, `text` (appended, R9): a line of words — a brand, *AUTOMATIC*, *SWISS MADE* — said at every one of its positions, with a font of its own. It is the numerals' pipeline with one label: HarfBuzz, the anchor (centre · baseline · ascender), the four placements (level, radial, auto-flip, along the circle), Nudge, live text in exports, the guides' edges, a click on the dial, Give way (it counts with the numerals: "markers & numerals above").
+  - A new one starts as *AUTOMATIC*, once, under the centre (start 180°, radius a third of the dial's, size 1.2 mm), with the top numerals ring's type.
+  - Its panes: **Text** (the words) · Type · Resize · Positions · Give way · Nudge. Its row says "1 text", "3 texts".
+  - **Snapping to the indices**: its Start ° holds to the positions of the other rings — the hours' markers, the minute ticks — when it comes within 2° of one (`SNAP_DEG`), typed or slid alike.
+  - The kinds' menu and the drawer show five kinds; the picture: words on the dial, in the pixel font, under 12 and over 6 (the drawer's icons are reworked later, #255).
+  - `dial.py` does not know the kind (R30): a settings file with a text ring is the web version's alone.
+
 ## beta 4.47.2 (web version) · 17 Oct 2026
 
 - **Names a screen reader hears** (#244, from the guide's readers, 15 Oct 2026): a ring's row is an option in a listbox, reached with Tab (the controls' focus ring) and taken with Enter or Space; every slider says its row's name (only the field had it); a colour pill says whose colour it is before its hex ("Colour #141414", "Plate #FCFCFA"); in the showcase the panel and the bar are inert — out of reach for the keyboard and a screen reader. The size and radius popups' fields are already named by their row (4.45.2), and the font box's Size reads once; both are checked now.

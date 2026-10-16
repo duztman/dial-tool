@@ -242,12 +242,12 @@ const eyes = await page.$$eval(".ringlist button.eye svg, .pinned button.fold .e
 const starts = await page.evaluate(() => { const l = (q) => Math.round(document.querySelector(q).getBoundingClientRect().left), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); return { row: l(".ringlist li.ring"), row_end: r(".ringlist li.ring"), line: l(".lineholder"), line_end: r(".lineholder"), heading: l(".pinned h2"), tools: r(".headtools"), pane: r(".pinned .pane"), name: l(".ringlist li.ring.on .name") + 6, kinds: l(".ringline .kinds") }; });
 check(eyes.length === 2 && starts.row === starts.heading && starts.line === starts.row && starts.line_end === starts.row_end && starts.tools === starts.pane && starts.kinds === starts.name,
   `ring rows start where the heading starts, a ring's eye inside its row; the ring line is as wide as the rows and its buttons start where the names start; the tools end on the pane's line (${JSON.stringify(starts)})`);
-// the heading line carries the tools: a plus and four signs, all the same outlined circle; the plus opens the four kinds.
+// the heading line carries the tools: a plus and four signs, all the same outlined circle; the plus opens the five kinds (four until the text ring, #297, 4.48).
 // Since 4.36 the circle is drawn in the sign (its rim, as heavy as the sign: R33), not a border
 const tools = await page.evaluate(() => { const signs = [...document.querySelectorAll(".headtools .sign")], h = document.querySelector(".pinned .fold").getBoundingClientRect(); return { rims: document.querySelectorAll(".headtools .sign svg .rim").length, ids: signs.map((b) => b.id).join(" "), look: [...new Set(signs.map((b) => { const c = getComputedStyle(b), r = b.getBoundingClientRect(); return [c.borderTopWidth, parseFloat(c.borderTopLeftRadius) >= 13, r.width, r.height].join("/"); }))], on_line: signs.every((b) => { const r = b.getBoundingClientRect(); return r.top >= h.top && r.bottom <= h.bottom; }), foot: document.querySelectorAll(".listfoot").length }; });
 check(tools.ids === "ring-add ring-up ring-down ring-duplicate ring-delete" && tools.look.length === 1 && tools.look[0] === "0px/true/26/26" && tools.rims === 5 && tools.on_line && tools.foot === 0, `plus · up · down · duplicate · delete stand on the heading line, five outlined circles of one size (${tools.look.join(" ")}); no line under the list`);
 await page.click("#ring-add");
-check(await page.isVisible("#add-menu") && (await page.$$eval("#add-menu button > span", (b) => b.map((x) => x.textContent).join(" "))) === "Ticks Markers Numerals Band", "the plus opens a menu of the four kinds");
+check(await page.isVisible("#add-menu") && (await page.$$eval("#add-menu button > span", (b) => b.map((x) => x.textContent).join(" "))) === "Ticks Markers Numerals Band Text", "the plus opens a menu of the four kinds");
 await shot("4c9-add-menu");
 await page.mouse.click(60, 44);      // on the tool's name: nothing to press there
 check(await page.isHidden("#add-menu"), "a press outside puts the menu away");
@@ -262,9 +262,9 @@ const one = await page.evaluate(() => {
     over: [[".chipcell", ".colour"], [".says-size", "#ring-size"], [".says-r", "#ring-r"]].map(([a, b]) => { const m = (e) => { const r = e.getBoundingClientRect(); return (r.left + r.right) / 2; }; return Math.abs(m(on.querySelector(a)) - m(line.querySelector(b))); }), small: line.querySelectorAll("#ring-size svg .small").length,
     ground: c.backgroundColor, frame: c.borderTopColor, row_frame: row.borderTopColor, tip: line.querySelector(".kinds button").dataset.tip, kinds_end: Math.abs(line.querySelector(".kinds").getBoundingClientRect().right - on.querySelector(".says-kind").getBoundingClientRect().right), rows: p.querySelectorAll(".ringlist li.ring").length, all: p.querySelectorAll(".ringlist li").length };
 });
-check(one.panes === 1 && one.under && one.gap === 2 && one.order === "kinds ring-c-Colour ring-size ring-r" && one.kinds === 4 && one.words === 0 && one.hex === "none" && one.heights.length === 1 && one.round && one.title === "Rings, top first" && one.all === one.rows + 1
+check(one.panes === 1 && one.under && one.gap === 2 && one.order === "kinds ring-c-Colour ring-size ring-r" && one.kinds === 5 && one.words === 0 && one.hex === "none" && one.heights.length === 1 && one.round && one.title === "Rings, top first" && one.all === one.rows + 1
   && one.radius === String(await S("S.rings[S.ui_ring].r")) && one.size === String(await S("S.rings[S.ui_ring].width")) && one.small === 1 && one.figures === 0 && one.kinds_end <= 1 && one.over.every((d) => d <= 1) && one.ground === "rgb(255, 255, 255)" && one.frame === one.row_frame && one.tip === "Ticks",
-  `the ring drawer stands in the list, ${one.gap} under the selected ring's row: four kinds (ending where the kinds' words end) · colour · size (Okay's scale drawing) · radius, all ${one.heights[0]} high, no numbers in them; the row's colour, size ${one.size} and radius ${one.radius} stand right over their buttons; white, its frame the guide's colour like its row's (${one.frame})`);
+  `the ring drawer stands in the list, ${one.gap} under the selected ring's row: five kinds (ending where the kinds' words end) · colour · size (Okay's scale drawing) · radius, all ${one.heights[0]} high, no numbers in them; the row's colour, size ${one.size} and radius ${one.radius} stand right over their buttons; white, its frame the guide's colour like its row's (${one.frame})`);
 // its frame: an outer line in the guide's colour and, inside it, a line three times as thick in the selected row's ground; the tiny numbers are in Silkscreen
 {
   const look = await page.evaluate(async () => {
@@ -463,6 +463,22 @@ check(Math.abs(at12[0][0]) < 0.06 && at12[0][1] > 1 && Math.abs(at12[1][1]) < 0.
   await page.evaluate(([ring, all]) => { const t = window.dial_tool; t.S.ui_ring = ring; t.S.gd_rings = all; t.show_section(); t.sync_rows(); t.draw(); }, was);
   check(from[0][1] === 0 && from[0][0] < 0 && Math.abs(from[1][0] + from[1][1]) < 0.001 && from[2][0] === 0 && from[2][1] > 0 && from[0][2] === 0 && Math.abs(from[1][2] - 0.5) < 0.001 && from[2][2] === 1 && from.every((f) => f[4]) && from.map((f) => f[5]).join(" | ") === "Outer radius | Middle radius | Inner radius" && from[0][6] === "Resize · Shape" && numerals_panes === "Type · Resize",
     `resize from (#257): a marker's outer end on the radius (${from[0].slice(0, 2)}), then its middle (${from[1].slice(0, 2)}), then its inner end (${from[2].slice(0, 2)}); a band likewise (its outer edge ${from.map((f) => f[2]).join(" · ")} past its radius); the ring's dotted guide at its radius each time (dotted at ${from[0][7]}); the label follows (${from.map((f) => f[5]).join(" → ")}); Resize first under the pinned part (${from[0][6]}), Type first for numerals (${numerals_panes}, #296)`);
+}
+// a text ring (#297, 4.48): a fifth kind, its words at every position; its panes Text · Type · Resize; its angle snaps to the other rings' indices
+{
+  const was = await S("[S.ui_ring, S.rings.length]");
+  await page.click("#ring-add"); await page.click("#add-text"); await page.waitForTimeout(200);
+  const t1 = await page.evaluate(() => { const t = window.dial_tool, R = t.ring(), d = t.statik.rings.find((x) => x.ring === R), panes = [...document.querySelectorAll(".form .pane h2")].filter((h) => h.closest(".pane").offsetParent).map((h) => h.textContent).slice(0, 3).join(" · ");
+    const b = d.parts[0].bounds();
+    return [t.G ? "" : "", R.kind, R.custom, R.count, R.start, document.querySelector(".ringlist li.ring.on .says-kind").textContent, panes, d.parts.length, Math.round((b[1] + b[3]) / 2), document.querySelector("#ring-custom-Text") !== null]; });
+  await page.evaluate(() => { const t = window.dial_tool; t.set_value("ring", "custom", "SWISS MADE"); t.set_value("ring", "count", 3); t.set_value("ring", "start", 31); });
+  await frame();
+  const t2 = await page.evaluate(() => { const t = window.dial_tool, R = t.ring(), d = t.statik.rings.find((x) => x.ring === R); return [R.start, d.parts.length, document.querySelector(".ringlist li.ring.on .says-kind").textContent]; });
+  await page.evaluate(() => window.dial_tool.set_value("ring", "start", 44));
+  const t3 = await S("S.rings[S.ui_ring].start");
+  await page.evaluate(([ring, n]) => { const t = window.dial_tool; t.ring_tool("delete"); if (t.S.rings.length !== n) throw new Error("the text ring was not the one deleted"); t.select_ring(ring); }, was);
+  check(t1[1] === 4 && t1[2] === "AUTOMATIC" && t1[3] === 1 && t1[4] === 180 && t1[5] === "1 text" && t1[6] === "Text · Type · Resize" && t1[7] === 1 && t1[8] < 0 && t1[9] && t2[0] === 30 && t2[1] === 3 && t2[2] === "3 texts" && t3 === 44,
+    `a text ring (#297): added as the fifth kind, "${t1[2]}" once under the centre (its middle ${t1[8]} mm, start ${t1[4]}°), its row says "${t1[5]}", its panes ${t1[6]}; with Count 3 the words stand at every position (${t2[1]}, "${t2[2]}"); Start 31° snaps to the markers' 30° (${t2[0]}), 44° stays (${t3}) — within ${2}°`);
 }
 check(await page.$$eval(".row.pick .pickt svg", (e) => e.length) >= 4, "Kind is a row of picture tiles");
 await page.click("#ring-kind-Kind-0");
