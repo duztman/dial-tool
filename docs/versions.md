@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.47.1 | 17 Oct 2026 | web | [`f0ada04`](https://github.com/duztman/dial-tool/tree/f0ada04ec189691b4767e70568f1752cd3ed126a) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/f0ada04ec189691b4767e70568f1752cd3ed126a/web/dial-tool.html) | selecting a ring fits the list; the list's pill |
 | 4.47 | 17 Oct 2026 | web | [`261a3c1`](https://github.com/duztman/dial-tool/tree/261a3c1555004f8dfaa2867d5a4042b08286e991) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/261a3c1555004f8dfaa2867d5a4042b08286e991/web/dial-tool.html) | Type first in a numerals ring; a Resize pane first; resize from outer, middle or inner |
 | 4.46.7 | 17 Oct 2026 | web | [`2e332b7`](https://github.com/duztman/dial-tool/tree/2e332b7a4379e0efee258d82a7b598600f7bbc0f) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/2e332b7a4379e0efee258d82a7b598600f7bbc0f/web/dial-tool.html) | the font research's top tier joins the font list: 42 families |
 | 4.46.6 | 17 Oct 2026 | web | [`b9a81e7`](https://github.com/duztman/dial-tool/tree/b9a81e7ed270b4fe6690174787f352a6717c82d4) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/b9a81e7ed270b4fe6690174787f352a6717c82d4/web/dial-tool.html) | the number popup's third look; NOW darker; the play pulse at slow speeds |
