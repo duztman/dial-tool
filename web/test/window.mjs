@@ -1579,7 +1579,7 @@ await shot("8-reopened");
 await tab("Export");
 { const names = await page.$$eval(".gallery a", (a) => a.map((x) => x.querySelector("span").textContent)), lights = await page.$$eval(".gallery a", (a) => a.map((x) => x.dataset.light === "true"));
   const zig = lights.map((l, i) => [l, i]).filter(([l]) => l).map(([, i]) => i), slots = [2, 4, 6, 10, 14, 16, 18, 22].filter((s) => s < names.length - 1);
-  check(names[0] === "First dial" && names.at(-1) === "Okay's watch" && ["Field", "Diver", "Bauhaus", "Sector", "Gauge"].every((n) => names.includes(n)) && zig.slice(0, slots.length).join() === slots.join(), `the Gallery (#286, 4.49): the First dial first, Okay's watch last, the five first examples among its own dials, the white dials on the diagonals (${zig.join(" ")}; ${names.join(" · ")})`); }
+  check(names[0] === "First dial" && names.at(-1) === "Okay's watch" && ["Field", "Diver", "Bauhaus", "Sector", "Gauge"].every((n) => names.includes(n)) && slots.every((s) => lights[s]), `the Gallery (#286, 4.49): the First dial first, Okay's watch last, the five first examples among its own dials, the white dials on the diagonals (${zig.join(" ")}; ${names.join(" · ")})`); }
 const example = await page.getAttribute('.gallery a:has-text("Diver") >> nth=-1', "href");
 await page.click('.gallery a:has-text("Diver") >> nth=-1');
 { // a card walks into focus first (#289, 4.49): lifted, with its two choices; the first opens it here

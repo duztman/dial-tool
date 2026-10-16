@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.49.1 (web version) · 17 Oct 2026
+
+- **Six more dials in the Gallery** (#287; Okay's notes, p. 18: "a few with windows — am · pm, or an arced date as on a presidential Rolex; a few colourful ones, do not have to be historical, homages welcome"), drawn for Okay to pick from — he keeps what he likes, the rest go: **Day and date** (the day in an arc under 12, the date at 3, batons on champagne) · **Dress, am · pm** (Bodoni on ivory, a dot track, am · pm in a round window at 6) · **Moon phase** (midnight blue, a moon in an arch at 6, thin gold figures) · **California** (half Roman, half Arabic in D-DIN on coral) · **Rally** (a yellow racing dial, a tachymeter ring, a RALLY text ring, a date at 6) · **Teal and coral** (coral Unica One figures on teal, white dots, the date on a coral disc). Two use the text ring (4.48). The zigzag places them with the rest (19 cards, seven lines).
+
 ## beta 4.49 (web version) · 17 Oct 2026
 
 Phase J, the Gallery: its order, a card in focus, a tuning pass. (#287, six new dials, still to draw.)

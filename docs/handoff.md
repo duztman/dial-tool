@@ -1,21 +1,22 @@
 # Handoff — taking over the Dial Tool
 
-*Written 16 Oct 2026, night, at beta 4.46.5, by the session that built 4.42–4.46.5 (Okay: "devise way to handoff to another agent"); §1 rewritten 17 Oct 2026 at beta 4.48 by the session that built 4.46.6–4.48. For the next Claude session on this repo. §1 is rewritten at every handover; the rest changes when something new is learnt.*
+*Written 16 Oct 2026, night, at beta 4.46.5, by the session that built 4.42–4.46.5 (Okay: "devise way to handoff to another agent"); §1 rewritten 17 Oct 2026 at beta 4.49.1 by the session that built 4.46.6–4.49.1. For the next Claude session on this repo. §1 is rewritten at every handover; the rest changes when something new is learnt.*
 
 A new session starts with no memory of the last one: the transcript stays in the old container. Everything a successor needs is in the repo. Use this page to find it.
 
-## 1 · Where things stand (17 Oct 2026)
+## 1 · Where things stand (17 Oct 2026, late)
 
-- **Beta 4.48** is on `dev` and the live page (https://duztman.github.io/dial-tool/); **`main` is 4.46.5** (Okay releases to `main` on his word: `tools/release.sh main`).
-- **Today's pushes** (all on the live page): 4.46.6 (#310 popup third look, #307 NOW darker, #308 pulse at slow speeds) · 4.46.7 (#313: the font research's top tier joined the list, 42 families) · 4.47 (#296 Type first, #257 Resize pane and *resize from*, #185) · 4.47.1 (#256 the list fits the selected ring, the list's pill) · 4.47.2 (#244 screen-reader names) · 4.48 (#297 the text ring, phase I).
-- **The plan** is the phases A–J in `docs/build-list.md`. A–F done; G half done; I done; H and J open. What's left:
-  1. **G's rest waits for Okay** — don't build from the words: #251 (Positions preview), #253 (the drawer) and #258 (Give way) want his sketches; #254 (unselected rows) goes with #253; #255 (kind icons) and #259 (placement icons) are redraws for his eye — make mock-ups through `web/icons/` and show him before pasting. Asked for once on 17 Oct; he said his later messages are notes, not answers ("Report later").
-  2. **H · fonts** #273–#276: on hold by his word (17 Oct: "push the design ui stuff for later").
-  3. **J · Gallery** #286–#289: buildable now (the text ring is there for brand names and remarks); #287 needs his picks.
-- **Open readings to say to him** (brief §4, 17 Oct rows): "add … to defaults" read as *join* (42 fonts, not compete); a numeral's Size stays in the font box, not in Resize (#257); the text ring's snap is 2° (`SNAP_DEG`), typed values too.
-- **Loose ends:** #294 (specials with no figure from him, for him to look through) · #231 (a window's two names) · the guide is still built on 4.36.1 and rebuilt only on his word (R25).
+- **Beta 4.49.1** is on `dev` and the live page (https://duztman.github.io/dial-tool/); **`main` is 4.46.5** (Okay releases to `main` on his word: `tools/release.sh main`).
+- **17 Oct's pushes** (all live): 4.46.6 (#310, #307, #308) · 4.46.7 (#313: 42 fonts) · 4.47 (#296, #257 Resize and *resize from*, #185, #182 closed) · 4.47.1 (#256 fit and the list's pill) · 4.47.2 (#244) · 4.48 (#297 the text ring, phase I) · 4.49 (#286, #289, #288, Okay's watch tweaked) · 4.49.1 (#287: six new dials drawn).
+- **The plan** (phases A–J, `docs/build-list.md`): A–F, I and J done; G half done; H on hold. **Everything left waits for Okay:**
+  1. **His picks**: the six new Gallery dials (#287) — he deletes what he doesn't want (`web/gallery.mjs`, then `node gallery.mjs && node build.mjs`).
+  2. **His sketches**: #251 (Positions preview), #253 (the drawer) with #254 (unselected rows), #258 (Give way). Don't build from the words.
+  3. **His eye**: #255 (kind icons, smaller, the numerals in a fat Inter) and #259 (placement icons) — make mock-ups through `web/icons/` and show him first.
+  4. **H · fonts** #273–#276: on hold (17 Oct: "push the design ui stuff for later").
+  5. **Loose ends** for him: #294 (specials with no figure), #231 (a window's two names); the guide is still built on 4.36.1, rebuilt only on his word (R25).
+- **Readings to confirm with him** (brief §4, 17 Oct rows): fonts *joined* (42), not competed; a numeral's Size stays in the font box (#257); the text ring's snap is 2°, typed values too; "add a line" (#286) read as the rows the new dials add; the B-Uhr neutral on *his* layout.
 - **His Mac copy**: not reachable from a session; brief §5 question 14 — **not to be raised again**.
-- **Okay's last words** (17 Oct): "Don't check the fonts too deep, they are vetted"; "Do not take my interjections as stopping matter … I'm just putting down notes, not to do now in this session. Report later. Go ahead."
+- **Okay's last words** (17 Oct): "Go on without me, my jobs at the end"; "Tweaked my dial in the meantime, replace: <link>" (done, 4.49).
 
 ## 2 · First steps in a new session
 
