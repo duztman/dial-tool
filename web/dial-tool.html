@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.46.2 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.46.3 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -648,14 +648,13 @@
   .detail .lying { display: none; }
   .detail .axis { stroke: var(--rule); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
   .detail .pivot { fill: var(--surface); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
-  /* a line of tiles that opens: closed, the first few and the chosen one; then "more" and a dashed plus for one's own */
-  .picks.line:not(.open) > [role="radio"]:not(.in4) { display: none; }
-  .picks.line:not(.open) > .own { display: none; }      /* closed: the shapes and "more"; the SVG tile stands at the end of the opened list (Okay, 13 Oct 2026) */
-  .picks.line { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-  .row > .picks.line { grid-column: 1 / -1; }
+  /* the hand's shapes as thumbs under its box (4.46.3, "rectangular thumbs"): every one shown, upright pictures in
+     upright tiles, no words (a tile's title names it), a unit apart; the dashed SVG tile last (a shape of one's own) */
+  .handcol > .picks.thumbs { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .picks.thumbs > .pickt { align-content: center; padding: var(--unit) 0; }
+  .picks.thumbs > .pickt > span { display: none; }
   .pickt.own { border-style: dashed; color: var(--grey); cursor: default; }
   .pickt.own:hover { background: var(--field); }
-  .pickt.more[aria-expanded="true"] svg { rotate: 180deg; }
   /* a side row's number, quiet (#250, beta 4.45.1): the number and, joined to it, a tiny plus over a tiny minus; no
      box; grey until it differs from how the dial opened (.changed, build_row). A press on it opens its popup.
      The two signs stand on the figures (4.45.2, Okay: "Compact minusplus too far apart, closer, parallels on baseline
@@ -677,8 +676,10 @@
   @media (min-width: 861px) {
     /* wide: the box in the first two columns, as high as the rows beside it; the rows in the other four, each one
        line: label · slider · the number box */
-    .body > .detail { grid-column: 2 / span 2; grid-row: 1 / span 40; align-self: start; height: calc(7 * var(--line)); margin-top: 0; translate: 0 calc(-1 * var(--hair)); }      /* its top line on the first row's line, beside it (Okay, on 4.46.1: "Blue lines, align") */
-    .body > .detail { position: sticky; top: var(--unit); }      /* it scrolls up with its pane until it is one unit (the gap between the shape tiles) under the line under the hand tabs, stays there while the rows beside it scroll, and the pane's end (the Cap pane) pushes it on (Okay, 14 Oct 2026: "stay still… until cap"; "align here after scroll") */      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
+    .body > .handcol { grid-column: 2 / span 2; grid-row: 1 / span 40; align-self: start; translate: 0 calc(-1 * var(--hair)); }      /* its box's top line on the first row's line, beside it (Okay, on 4.46.1: "Blue lines, align") */
+    .handcol > .detail { height: calc(7 * var(--line)); margin: 0; }
+    .handcol > .picks.thumbs { grid-template-columns: repeat(4, minmax(0, 1fr)); }      /* four to a line under the box: three lines hold them all */
+    .body > .handcol { position: sticky; top: var(--unit); }      /* it scrolls up with its pane until it is one unit (the gap between the shape tiles) under the line under the hand tabs, stays there while the rows beside it scroll, and the pane's end (the Cap pane) pushes it on (Okay, 14 Oct 2026: "stay still… until cap"; "align here after scroll") */      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
     .body > .row.side { grid-column: 4 / -1; grid-template-columns: var(--side-label) minmax(0, 1fr) var(--side-num); }      /* the name as narrow as the longest (Counter Ø), the slider the rest: bigger (#250) */
     .row.side > :first-child, .row.side > input[type="range"] { grid-column: auto; }
     .row.side > label { font-size: var(--t-s); }
@@ -686,8 +687,6 @@
     .row.side > label > .short { display: inline; }
     .row.side > .colour { grid-column: 2 / -1; }
     .row.side > .segs { grid-column: 2 / -1; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }      /* a choice of words beside the box (a disc hand's marker, #164): over the slider and number, its words sharing the width */
-    .row.side > .picks.line { grid-column: 1 / -1; grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .picks.line:not(.open) > [role="radio"]:not(.in3) { display: none; }      /* three shapes and "more" */
   }
 }
 
@@ -5868,7 +5867,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.46.2";
+var VERSION = "beta 4.46.3";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -8475,8 +8474,6 @@ var ROWS = {
     custom("hand_detail", { ...H }),
     col("c", "Colour", { ...H, side: true }),
     // first beside the box (Okay's notes, p. 18, #250: "Colour to the top, Cap at the end")
-    pick("shape", "Shape", HAND_SHAPES, hand_pic, { ...H, side: true, line: true, skip: [9] }),
-    // every shape but "file" (a shape of one's own: the SVG tile)
     num2("len", "Length", 0.5, 30, 0.05, { ...H, side: true }),
     // a disc's: where its marker's outer end is
     num2("disc_d", "Disc \xD8", 0.5, 30, 0.05, { ...H, side: true, show: hand_is("disc") }),
@@ -10312,24 +10309,7 @@ var DialTool = class _DialTool {
         group.append(tile);
       });
       const label = el("label", { textContent: row.text, className: row.label ? "strong" : "" });
-      let more = null;
-      if (row.line) {
-        more = el("button", { type: "button", className: "pickt more", id: id + "-more", title: "All the shapes" });
-        more.innerHTML = icon(`<path d="M7.75 11L13.75 17L19.75 11" ${sw(SLANT)}/>`, 27) + "<span>more</span>";
-        more.setAttribute("aria-expanded", "false");
-        more.onclick = () => {
-          const open = !group.classList.contains("open");
-          group.classList.toggle("open", open);
-          more.setAttribute("aria-expanded", String(open));
-          more.lastChild.textContent = open ? "less" : "more";
-        };
-        const own = el("button", { type: "button", className: "pickt own", id: id + "-own", title: "A shape of your own, from an SVG file: not built yet" });
-        own.innerHTML = icon(`<path d="M13.75 6.25V21.25M6.25 13.75H21.25"/>`, 27) + "<span>SVG</span>";
-        own.setAttribute("aria-disabled", "true");
-        group.classList.add("line");
-        group.append(more, own);
-        wrap.append(group);
-      } else wrap.append(label, group);
+      wrap.append(label, group);
       out.refresh = (T) => {
         if (row.label) label.textContent = row.label(T);
         const tiles = [...group.querySelectorAll('[role="radio"]')];
@@ -10337,10 +10317,6 @@ var DialTool = class _DialTool {
           b.classList.toggle("on", i === T[row.key]);
           b.setAttribute("aria-checked", String(i === T[row.key]));
         });
-        if (row.line) for (const [name, n] of [["in3", 3], ["in4", 4]]) {
-          const chosen = T[row.key] || 0, shown = chosen < n ? tiles.slice(0, n) : [...tiles.slice(0, n - 1), tiles[chosen]];
-          tiles.forEach((b) => b.classList.toggle(name, shown.includes(b)));
-        }
       };
     }
     if (row.kind === "seg") {
@@ -11651,15 +11627,24 @@ var DialTool = class _DialTool {
   }
   /** the chosen hand in detail: a box of its own, at the left of the hand's rows (on a phone: over them, the hand lying). */
   row_hand_detail(wrap, out) {
-    wrap.className = "detail";
-    wrap.id = "hand-detail";
+    wrap.className = "handcol";
+    const box2 = el("div", { className: "detail", id: "hand-detail" });
+    const shapes = this.build_row(pick("shape", "Shape", HAND_SHAPES, hand_pic, { ...H, skip: [9] }));
+    const group = shapes.el.querySelector(".picks");
+    const own = el("button", { type: "button", className: "pickt own", id: "hand-shape-Shape-own", title: "A shape of your own, from an SVG file: not built yet" });
+    own.innerHTML = icon(SIGNS.plus);
+    own.setAttribute("aria-disabled", "true");
+    group.classList.add("thumbs");
+    group.append(own);
+    wrap.append(box2, group);
     let drawn2 = "";
     out.refresh = (T) => {
       const now = hand_detail(T);
       if (now !== drawn2) {
         drawn2 = now;
-        wrap.innerHTML = now;
+        box2.innerHTML = now;
       }
+      shapes.refresh(T);
     };
   }
   /** a window's place (Okay, 13 Oct 2026): every named place is a button, so the others are seen and pressed — first

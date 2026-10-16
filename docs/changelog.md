@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.46.3 (web version) · 16 Oct 2026
+
+- **A hand's shapes move under its box** (#311; Okay: "type of hand moves under preview. Fit sensibly, rectangular thumbs would work there"):
+  - every shape shows at once as an upright thumb, its picture in a tall tile with no word (pointing at a thumb names it), the dashed SVG tile last;
+  - four to a line on a wide screen, in the box's own column, so three lines hold all of them; six to a line on a phone, under the box lying flat;
+  - the line of tiles beside the box that opened with "more" is gone. The rows beside the box are now exactly its height (Colour and the numbers).
+
 ## beta 4.46.2 (web version) · 16 Oct 2026
 
 After Okay's marks on 4.46.1.

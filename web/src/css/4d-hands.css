@@ -7,14 +7,13 @@
   .detail .lying { display: none; }
   .detail .axis { stroke: var(--rule); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
   .detail .pivot { fill: var(--surface); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
-  /* a line of tiles that opens: closed, the first few and the chosen one; then "more" and a dashed plus for one's own */
-  .picks.line:not(.open) > [role="radio"]:not(.in4) { display: none; }
-  .picks.line:not(.open) > .own { display: none; }      /* closed: the shapes and "more"; the SVG tile stands at the end of the opened list (Okay, 13 Oct 2026) */
-  .picks.line { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-  .row > .picks.line { grid-column: 1 / -1; }
+  /* the hand's shapes as thumbs under its box (4.46.3, "rectangular thumbs"): every one shown, upright pictures in
+     upright tiles, no words (a tile's title names it), a unit apart; the dashed SVG tile last (a shape of one's own) */
+  .handcol > .picks.thumbs { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .picks.thumbs > .pickt { align-content: center; padding: var(--unit) 0; }
+  .picks.thumbs > .pickt > span { display: none; }
   .pickt.own { border-style: dashed; color: var(--grey); cursor: default; }
   .pickt.own:hover { background: var(--field); }
-  .pickt.more[aria-expanded="true"] svg { rotate: 180deg; }
   /* a side row's number, quiet (#250, beta 4.45.1): the number and, joined to it, a tiny plus over a tiny minus; no
      box; grey until it differs from how the dial opened (.changed, build_row). A press on it opens its popup.
      The two signs stand on the figures (4.45.2, Okay: "Compact minusplus too far apart, closer, parallels on baseline
@@ -36,8 +35,10 @@
   @media (min-width: 861px) {
     /* wide: the box in the first two columns, as high as the rows beside it; the rows in the other four, each one
        line: label · slider · the number box */
-    .body > .detail { grid-column: 2 / span 2; grid-row: 1 / span 40; align-self: start; height: calc(7 * var(--line)); margin-top: 0; translate: 0 calc(-1 * var(--hair)); }      /* its top line on the first row's line, beside it (Okay, on 4.46.1: "Blue lines, align") */
-    .body > .detail { position: sticky; top: var(--unit); }      /* it scrolls up with its pane until it is one unit (the gap between the shape tiles) under the line under the hand tabs, stays there while the rows beside it scroll, and the pane's end (the Cap pane) pushes it on (Okay, 14 Oct 2026: "stay still… until cap"; "align here after scroll") */      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
+    .body > .handcol { grid-column: 2 / span 2; grid-row: 1 / span 40; align-self: start; translate: 0 calc(-1 * var(--hair)); }      /* its box's top line on the first row's line, beside it (Okay, on 4.46.1: "Blue lines, align") */
+    .handcol > .detail { height: calc(7 * var(--line)); margin: 0; }
+    .handcol > .picks.thumbs { grid-template-columns: repeat(4, minmax(0, 1fr)); }      /* four to a line under the box: three lines hold them all */
+    .body > .handcol { position: sticky; top: var(--unit); }      /* it scrolls up with its pane until it is one unit (the gap between the shape tiles) under the line under the hand tabs, stays there while the rows beside it scroll, and the pane's end (the Cap pane) pushes it on (Okay, 14 Oct 2026: "stay still… until cap"; "align here after scroll") */      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
     .body > .row.side { grid-column: 4 / -1; grid-template-columns: var(--side-label) minmax(0, 1fr) var(--side-num); }      /* the name as narrow as the longest (Counter Ø), the slider the rest: bigger (#250) */
     .row.side > :first-child, .row.side > input[type="range"] { grid-column: auto; }
     .row.side > label { font-size: var(--t-s); }
@@ -45,7 +46,5 @@
     .row.side > label > .short { display: inline; }
     .row.side > .colour { grid-column: 2 / -1; }
     .row.side > .segs { grid-column: 2 / -1; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }      /* a choice of words beside the box (a disc hand's marker, #164): over the slider and number, its words sharing the width */
-    .row.side > .picks.line { grid-column: 1 / -1; grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .picks.line:not(.open) > [role="radio"]:not(.in3) { display: none; }      /* three shapes and "more" */
   }
 }

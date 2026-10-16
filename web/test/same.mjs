@@ -141,7 +141,6 @@ async function walk(page, screen, with_pointer) {
   });
   await tab(page, "Hands");
   for (const n of [0, 1, 2]) await attempt("hand " + n, async () => { await page.click("#hand-tab-" + n); await unfold(page); await look("Hands, " + n); });
-  await attempt("hand shapes open", async () => { await page.click("#hand-shape-Shape-more"); await snap(page, S("Hands, all shapes")); await page.click("#hand-shape-Shape-more"); });
   await attempt("number box", async () => { await page.focus(".row.side .numbox input"); await snap(page, S("Hands, a number box open")); await page.keyboard.press("Escape"); await page.evaluate(() => document.activeElement.blur()); });
   await tab(page, "Date");
   await attempt("window on", async () => { await page.check("#window-on-Show"); await unfold(page); });

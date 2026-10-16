@@ -541,7 +541,6 @@ const ROWS = {
     // side: the row stands beside the box · short: the label when there is little room for it.
     custom("hand_detail", { ...H }),
     col("c", "Colour", { ...H, side: true }),      // first beside the box (Okay's notes, p. 18, #250: "Colour to the top, Cap at the end")
-    pick("shape", "Shape", G.HAND_SHAPES, hand_pic, { ...H, side: true, line: true, skip: [9] }),      // every shape but "file" (a shape of one's own: the SVG tile)
     num("len", "Length", 0.5, 30, 0.05, { ...H, side: true }),      // a disc's: where its marker's outer end is
     num("disc_d", "Disc Ø", 0.5, 30, 0.05, { ...H, side: true, show: hand_is("disc") }),
     // the marker: cut out of the disc, named "Hole" (Okay, 16 Oct 2026: "work as holes now, perfect, just call it
@@ -2096,29 +2095,11 @@ class DialTool {
         group.append(tile);
       });
       const label = el("label", { textContent: row.text, className: row.label ? "strong" : "" });
-      // line: the tiles alone on one line, without their label; the line shows the chosen one and the first few others,
-      // a "more" tile opens all of them, and a dashed plus stands for a shape of one's own (an SVG file: not built yet)
-      let more = null;
-      if (row.line) {
-        more = el("button", { type: "button", className: "pickt more", id: id + "-more", title: "All the shapes" });
-        more.innerHTML = icon(`<path d="M7.75 11L13.75 17L19.75 11" ${sw(SLANT)}/>`, 27) + "<span>more</span>";
-        more.setAttribute("aria-expanded", "false");
-        more.onclick = () => { const open = !group.classList.contains("open"); group.classList.toggle("open", open); more.setAttribute("aria-expanded", String(open)); more.lastChild.textContent = open ? "less" : "more"; };
-        const own = el("button", { type: "button", className: "pickt own", id: id + "-own", title: "A shape of your own, from an SVG file: not built yet" });
-        own.innerHTML = icon(`<path d="M13.75 6.25V21.25M6.25 13.75H21.25"/>`, 27) + "<span>SVG</span>";
-        own.setAttribute("aria-disabled", "true");
-        group.classList.add("line");
-        group.append(more, own);
-        wrap.append(group);
-      } else wrap.append(label, group);
+      wrap.append(label, group);
       out.refresh = (T) => {
         if (row.label) label.textContent = row.label(T);
         const tiles = [...group.querySelectorAll('[role="radio"]')];
         tiles.forEach((b, i) => { b.classList.toggle("on", i === T[row.key]); b.setAttribute("aria-checked", String(i === T[row.key])); });
-        if (row.line) for (const [name, n] of [["in3", 3], ["in4", 4]]) {      // which tiles the closed line shows: the first n, the last of them giving its place to the chosen one
-          const chosen = T[row.key] || 0, shown = chosen < n ? tiles.slice(0, n) : [...tiles.slice(0, n - 1), tiles[chosen]];
-          tiles.forEach((b) => b.classList.toggle(name, shown.includes(b)));
-        }
       };
     }
 
@@ -3225,10 +3206,22 @@ class DialTool {
 
   /** the chosen hand in detail: a box of its own, at the left of the hand's rows (on a phone: over them, the hand lying). */
   row_hand_detail(wrap, out) {
-    wrap.className = "detail";
-    wrap.id = "hand-detail";
+    // the hand's column: its box, and under it every shape as a thumb, four to a line, no words (each says its name
+    // when pointed at), the dashed SVG tile last — a shape of one's own, not built yet (4.46.3; Okay, 16 Oct 2026:
+    // "type of hand moves under preview. Fit sensibly, rectangular thumbs would work there"; a line of tiles beside
+    // the box that opened, "more", until then)
+    wrap.className = "handcol";
+    const box = el("div", { className: "detail", id: "hand-detail" });
+    const shapes = this.build_row(pick("shape", "Shape", G.HAND_SHAPES, hand_pic, { ...H, skip: [9] }));      // every shape but "file": the SVG tile stands for it
+    const group = shapes.el.querySelector(".picks");
+    const own = el("button", { type: "button", className: "pickt own", id: "hand-shape-Shape-own", title: "A shape of your own, from an SVG file: not built yet" });
+    own.innerHTML = icon(SIGNS.plus);
+    own.setAttribute("aria-disabled", "true");
+    group.classList.add("thumbs");
+    group.append(own);
+    wrap.append(box, group);
     let drawn = "";
-    out.refresh = (T) => { const now = hand_detail(T); if (now !== drawn) { drawn = now; wrap.innerHTML = now; } };
+    out.refresh = (T) => { const now = hand_detail(T); if (now !== drawn) { drawn = now; box.innerHTML = now; } shapes.refresh(T); };
   }
 
   /** a window's place (Okay, 13 Oct 2026): every named place is a button, so the others are seen and pressed — first

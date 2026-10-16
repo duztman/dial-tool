@@ -783,18 +783,19 @@ await page.click("#hand-tab-0");
   check(strip.touch && strip.on_line === 2 && strip.line === "2px" && strip.round === "0px 0px" && strip.notch === "true true true rgb(17, 17, 17)" && strip.high === 40, `the hand tabs are tabs: touching, on a thick line, each cutting its top corners one unit deep so a sharp V stands over each joint, the first and last corner square, the chosen one ink and square (#260, 4.46) (${strip.notch}), ${strip.high} high`);
 }
 { // a hand's pane (13 Oct 2026): a box with the hand itself at the left, its rows beside it: a line of tiles that opens, numbers, colour
-  const look = () => page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), box = r("#hand-detail"), rows = [...document.querySelectorAll(".form .pane .body")][0].querySelectorAll(".row.side:not([hidden])"), first = rows[0].getBoundingClientRect(), last = rows[rows.length - 1].getBoundingClientRect(), tiles = [...document.querySelectorAll(".picks.line > *")].filter((e) => e.offsetParent).map((e) => e.textContent);
+  const look = () => page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), box = r("#hand-detail"), rows = [...document.querySelectorAll(".form .pane .body")][0].querySelectorAll(".row.side:not([hidden])"), first = rows[0].getBoundingClientRect(), last = rows[rows.length - 1].getBoundingClientRect(), tiles = [...document.querySelectorAll(".handcol > .picks.thumbs > *")].filter((e) => e.offsetParent).map((e) => e.title);
     return { beside: Math.round(first.left - box.right), top: Math.round(box.top - first.top), bottom: Math.round(last.bottom - box.bottom), high: Math.round(box.height), tiles: tiles.join(" "), panes: [...document.querySelectorAll(".form .pane h2")].filter((h) => h.checkVisibility()).map((h) => h.textContent).join(" · "), d: document.querySelector("#hand-detail .upright path").getAttribute("d"), centre: document.querySelectorAll("#hand-detail .upright .axis, #hand-detail .upright .pivot").length, one_line: [...rows].every((e) => e.getBoundingClientRect().height < 90) }; });
   const a = await look();
   check(a.beside === 12 && a.top === -1 && a.high === 238 && a.panes === "" && a.centre === 2, `a hand has one pane: at the left a box with the hand itself, its centre marked, seven rows high (${JSON.stringify({ ...a, d: 0 })})`);      // top −1: its line on the first row's (4.46.2; 6 below it until then)
-  check(a.tiles === "baton pencil sword more", `its shapes are one line, three and more; the SVG tile waits in the opened list: ${a.tiles}`);
-  await page.click("#hand-shape-Shape-more");
-  const open = (await look()).tiles;
+  // its shapes as thumbs under its box, every one shown, four to a line, in the box's column, the SVG tile last (4.46.3; Okay: "type of hand moves under preview. Fit sensibly, rectangular thumbs would work there")
+  const thumbs = await page.evaluate(() => { const r = (e) => e.getBoundingClientRect(), box = r(document.querySelector("#hand-detail")), t = [...document.querySelectorAll(".handcol > .picks.thumbs > *")].map(r);
+    return [t.length, t.every((x) => x.top >= box.bottom && x.left >= box.left - 0.5 && x.right <= box.right + 0.5 && x.height > x.width), new Set(t.map((x) => Math.round(x.top))).size, [...document.querySelectorAll(".handcol .pickt > span")].every((e) => !e.checkVisibility())]; });
+  check(a.tiles.startsWith("baton pencil sword") && a.tiles.includes("disc") && a.tiles.endsWith("not built yet") && thumbs[0] === 11 && thumbs[1] && thumbs[2] === 3 && thumbs[3],
+    `a hand's shapes stand under its box as upright thumbs without words, every one (${thumbs[0]}, the disc and the SVG tile among them), four to a line in the box's column (${thumbs[2]} lines; ${thumbs.join(" ")})`);
   await page.click("#hand-shape-Shape-7");
-  await page.click("#hand-shape-Shape-more");
   const b = await look();
   const box_high = await page.$eval("#hand-detail", (e) => Math.round(e.getBoundingClientRect().height));
-  check(open.split(" ").length === 12 && open.endsWith("less SVG") && b.tiles === "baton pencil breguet more" && b.d !== a.d && box_high === a.high, `more opens all ten, the disc too (#164) (${open}); closed again, the chosen one has a place on the line (${b.tiles}), and the box shows it; the box keeps its height (${box_high})`);
+  check(b.d !== a.d && box_high === a.high && await page.$eval("#hand-shape-Shape-7", (e) => e.classList.contains("on")), `a thumb pressed (breguet) is chosen and the box shows it; the box keeps its height (${box_high})`);
   await page.click("#hand-shape-Shape-0");
   // the quiet number (#250, beta 4.45.1): the number and a tiny plus over a tiny minus, no box, grey until it differs
   // from how the dial opened; they step it; a press on the number opens its popup
