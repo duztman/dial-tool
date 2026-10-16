@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.47.2 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.48 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -817,7 +817,7 @@
   .ringline > #ring-size { grid-column: 6; }
   .ringline > #ring-r { grid-column: 7; }
   .nothing { display: none; }
-  .kinds { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .kinds { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }      /* five kinds since the text ring (#297, 4.48) */
   .kinds button { display: grid; place-items: center; height: var(--line-button); border: var(--hair) solid var(--rule); background: var(--field); }
   .kinds button + button { margin-left: calc(-1 * var(--hair)); }
   .kinds button:hover { background: var(--hover); }
@@ -5883,19 +5883,20 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.47.2";
+var VERSION = "beta 4.48";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
 var degrees = (a) => a * 180 / PI;
 var clone = (v) => JSON.parse(JSON.stringify(v));
-var KINDS = ["ticks", "markers", "numerals", "band"];
+var KINDS = ["ticks", "markers", "numerals", "band", "text"];
+var has_text = (ring) => kind_of(ring) === "numerals" || kind_of(ring) === "text";
 var SHAPES = ["bar", "wedge", "dot", "file"];
 var TWELVES = ["same", "double", "triangle", "none"];
 var SKIP_FROM = ["nothing", "markers above", "markers & numerals above", "all marks above"];
 var KNOCK_FROM = ["nothing", "markers above", "markers & numerals above", "everything above"];
-var FROM_KINDS = [[], ["markers"], ["markers", "numerals"], ["ticks", "markers", "numerals", "band"]];
+var FROM_KINDS = [[], ["markers"], ["markers", "numerals", "text"], ["ticks", "markers", "numerals", "band", "text"]];
 var MODES = ["upright", "radial", "radial, auto-flip", "on path"];
 var ANCHORS = ["centre", "baseline", "ascender"];
 var from_shift = (ring, extent) => extent * (ring.from || 0) / 2;
@@ -6263,7 +6264,9 @@ var KIND_START = {
   ticks: (R) => ({ r: R - 0.6, count: 60, len: 1, w: 0.12 }),
   markers: (R) => ({ r: R - 1.6, count: 12, len: 2.8, w: 0.7 }),
   numerals: (R) => ({ r: round(R * 0.67 * 100) / 100, count: 12 }),
-  band: (R) => ({ r: R, count: 1, width: 1, c: ACCENT })
+  band: (R) => ({ r: R, count: 1, width: 1, c: ACCENT }),
+  text: (R) => ({ r: round(R * 0.35 * 100) / 100, count: 1, start: 180, custom: "AUTOMATIC", size: 1.2 })
+  // one word under the centre, as a dial's remark (#297)
 };
 function new_ring(kind, S, like = null) {
   const ring = complete(RING_BASE, { kind: KINDS.indexOf(kind), ...KIND_START[kind](S.dial_d / 2) });
@@ -7261,6 +7264,7 @@ function number_label(v, digits) {
 }
 function ring_labels(ring) {
   const n = max(parseInt(ring.count) || 1, 1);
+  if (kind_of(ring) === "text") return Array.from({ length: n }, () => ring.custom || "");
   const [name, txt2] = LABEL_SETS[ring.labels];
   if (name === "Custom") {
     const parts2 = ring.custom.split(",").map((s) => s.trim());
@@ -7359,7 +7363,7 @@ function numeral_live(ring, i, a0, label) {
   return [{ ...base, txt: label, at: [-c[0], numeral_dy(ring, label, size)], steps }];
 }
 function live_texts(S, statik, item) {
-  if (item.role === "ring" && item.ring.kind === "numerals") {
+  if (item.role === "ring" && has_text(item.ring.ring)) {
     const d = item.ring, ring = d.ring, angles = ring_angles(ring), labels = ring_labels(ring);
     const removed = d.path !== d.shape ? d.shape.difference(d.path) : null;
     return { texts: d.keep.filter((i) => labels[i]).flatMap((i) => numeral_live(ring, i, angles[i], labels[i])), removed: removed && !empty(removed) ? removed : null };
@@ -7390,7 +7394,7 @@ function ring_shapes(ring, keep, grow = 0, solid2 = false) {
       }
       return [merge(parts).removeOverlap(), taken, at, parts];
     }
-    if (kind === "numerals") {
+    if (kind === "numerals" || kind === "text") {
       const labels = ring_labels(ring);
       for (const i of keep) {
         if (labels[i]) {
@@ -7437,7 +7441,7 @@ function build_rings(S, cut = null) {
     if (!ring.on) continue;
     const kind = kind_of(ring), angles = ring_angles(ring);
     let keep = angles.map((_, i) => i).filter((i) => picked(ring, i));
-    if (kind === "markers" || kind === "numerals") keep = keep.filter((i) => !holes.some((a) => near(angles[i], a)));
+    if (kind === "markers" || kind === "numerals" || kind === "text") keep = keep.filter((i) => !holes.some((a) => near(angles[i], a)));
     if (ring.skip) {
       const taken2 = done.filter((d2) => FROM_KINDS[ring.skip].includes(d2.kind)).flatMap((d2) => d2.taken);
       keep = keep.filter((i) => !taken2.some((a) => near(angles[i], a, 0.01)));
@@ -7716,7 +7720,7 @@ function scene(S, statik, t, preview = true, selected = null) {
       const kind = kind_of(ring);
       const extent = { ticks: ring.len, markers: ring.len, band: ring.width }[kind] || 0;
       let outer = ring.r + from_shift(ring, extent), inner = outer - extent;
-      if (kind === "numerals") {
+      if (has_text(ring)) {
         const e = radial_extent(built.get(ring)?.path);
         if (e) [inner, outer] = e;
       }
@@ -8147,7 +8151,9 @@ var PICS = {
     `<path d="${ticks(24, 7, 11, 12)}" stroke-width="1" stroke-linecap="butt"/>`,
     `<path d="${ticks(8, 7, 11, 12)}" stroke-width="2" stroke-linecap="butt"/>`,
     [["12", 12, 5], ["3", 20, 12], ["6", 12, 19], ["9", 4, 12]].map(([t, x, y]) => `<text class="pixel" x="${x}" y="${y}" font-size="8" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">${t}</text>`).join(""),
-    `<circle cx="12" cy="12" r="8.5" stroke-width="3"/>`
+    `<circle cx="12" cy="12" r="8.5" stroke-width="3"/>`,
+    [["ABC", 12, 6], ["XYZ", 12, 18]].map(([t, x, y]) => `<text class="pixel" x="${x}" y="${y}" font-size="8" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">${t}</text>`).join("")
+    // text (#297): words on the dial, under 12 and over 6
   ][i], KIND_PIC),
   shape: [`<rect x="16.5" y="4" width="5" height="19" ${solid}/>`, `<path d="M14.5 4H23.5L20.5 23H17.5Z" ${solid}/>`, `<circle cx="19" cy="13.5" r="6" ${solid}/>`],
   twelve: [
@@ -8219,6 +8225,7 @@ var TRAVEL_MS = 900;
 var HOLE_LIVE_MS = 1200;
 var WORDS_MS = 3e3;
 var SHEET = { shares: [0.42, 0.22], preview: 120, drawer: 160, room: 140 };
+var SNAP_DEG = 2;
 var RING_ROWS = 5;
 var SPIN_MS = 1600;
 var TOOL_ICONS = {
@@ -8320,14 +8327,14 @@ var RADIUS_ROWS = {
   outer: num2("r", "Outer radius", 0, 25, 0.05, { scope: "ring", menu: { key: "from", title: "What the radius measures to", items: [[0, "Outer"], [1, "Middle"], [2, "Inner"]] } }),
   numerals: num2("r", "Centre radius", 0, 25, 0.05, { scope: "ring", menu: { key: "anchor", title: "What the radius measures to", items: [[1, "Baseline"], [2, "Ascender"], [0, "Centre"]] } })
 };
-var radius_row = (R) => RADIUS_ROWS[kind_of(R) === "numerals" ? "numerals" : "outer"];
+var radius_row = (R) => RADIUS_ROWS[has_text(R) ? "numerals" : "outer"];
 var SIZE_ROWS = {
   len: num2("len", "Length", 0.05, 10, 0.05, { scope: "ring" }),
   dot: num2("w", "\xD8", 0.02, 5, 0.01, { scope: "ring" }),
   numerals: num2("size", "Size", 0.3, 8, 0.05, { scope: "ring" }),
   band: num2("width", "Band width", 0.02, 25, 0.05, { scope: "ring" })
 };
-var size_row = (R) => SIZE_ROWS[kind_of(R) === "numerals" ? "numerals" : kind_of(R) === "band" ? "band" : SHAPES[R.shape] === "dot" ? "dot" : "len"];
+var size_row = (R) => SIZE_ROWS[has_text(R) ? "numerals" : kind_of(R) === "band" ? "band" : SHAPES[R.shape] === "dot" ? "dot" : "len"];
 var VALUE_PICS = {
   // a value button's drawing, at its size (36), centre 18. Its disc is the button's edge and, since the audit's second round, a line as heavy as the others (Okay, 14 Oct 2026: "same thicknesses"); outer edges where they were
   radius: `<circle class="disc" cx="18" cy="18" r="${18 - CURVE / 2}" ${sw(CURVE)}/><path d="M18 18.25H35.5" ${sw(LINE)}/><circle class="pivot" cx="18" cy="18.25" r="2"/>`,
@@ -8370,6 +8377,7 @@ var marks_with = (...shapes) => (R) => ["ticks", "markers"].includes(kind_of(R))
 var labels_are = (name) => (R) => kind_of(R) === "numerals" && LABEL_SETS[R.labels][0] === name;
 var hand_is = (...shapes) => (H2) => shapes.includes(HAND_SHAPES[H2.shape]);
 var numerals_only = kind_in("numerals");
+var with_text = kind_in("numerals", "text");
 var W = { scope: "window" };
 var win_on = (T) => T.on;
 var win_is = (...kinds) => (T) => T.on && kinds.includes(WINDOW_KINDS[T.kind]);
@@ -8427,8 +8435,11 @@ var ROWS = {
     // first visit: every pane under the pinned part folded, its line saying what is in it (Okay, 16 Oct 2026, #270)
     // a numerals ring opens with its font (Okay, 16 Oct 2026, #296: "Move fonts top of adjustments in rings that
     // involves fonts"); at the end of the page until 4.47
-    hdr("Type", { folded: true, show: numerals_only }),
-    custom("font", { show: numerals_only }),
+    // a text ring's words come first (#297, 4.48): what it says, then its font
+    hdr("Text", { folded: true, show: kind_in("text") }),
+    txt("custom", "Text", { show: kind_in("text") }),
+    hdr("Type", { folded: true, show: with_text }),
+    custom("font", { show: with_text }),
     // then Resize (Okay's notes, p. 9, #257: "a proper pane below the quick size and radius buttons … shown first"):
     // how big one thing is — the size button's number — and the radius, with what it measures to: for marks and bands
     // the outer end (as always), the middle or the inner end ("resize from"); for numerals the anchor (13 Oct 2026)
@@ -8438,7 +8449,7 @@ var ROWS = {
     num2("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),
     // a numeral's size stays in the font box, among the type's settings (and in the size button's popup)
     { ...RADIUS_ROWS.outer, show: kind_in("ticks", "markers", "band") },
-    { ...RADIUS_ROWS.numerals, show: numerals_only },
+    { ...RADIUS_ROWS.numerals, show: with_text },
     hdr("Sector colours", { folded: true, show: (R) => kind_of(R) === "band" && positions_of(R).length > 1 }),
     custom("sectors", { show: (R) => kind_of(R) === "band" && positions_of(R).length > 1 }),
     // what one mark is comes first (Okay, 13 Oct 2026: "moves up to the top"), then where the marks are
@@ -8479,12 +8490,12 @@ var ROWS = {
     num2("num_again", "Start again after", 0, 60, 1, { whole: true, show: labels_are("Numbers") }),
     // positions; 0 = never
     info("0 counts on. 12 with first 5, step 5: 5 to 60, then 5 again.", { show: labels_are("Numbers") }),
-    pick("mode", "Placement", MODES, PICS.mode, { show: numerals_only }),
+    pick("mode", "Placement", MODES, PICS.mode, { show: with_text }),
     hdr("Band", { folded: true, show: kind_in("band") }),
     num2("fill", "Fill % of step", 1, 100, 1, { show: kind_in("band") }),
     // its width stands in Resize (4.47)
-    hdr("Nudge one numeral", { folded: true, show: numerals_only }),
-    custom("nudge", { show: numerals_only }),
+    hdr("Nudge one numeral", { folded: true, show: with_text }),
+    custom("nudge", { show: with_text }),
     // which numeral, and Reset this numeral
     // its four adjusters, number rows on the numeral chosen above (Okay's notes, p. 6–7, #252, beta 4.45.2: "every
     // adjuster gets ±; angle and radius get sliders"): each a full row, its name opening the popup (#249)
@@ -8817,6 +8828,7 @@ var DialTool = class _DialTool {
     return scope === "ring" ? this.ring() : scope === "hand" ? this.hand() : scope === "window" ? this.window() : scope === "nudge" ? { ...NUDGE_NEUTRAL, ...this.ring().nudge[this.nudge_at] || {} } : this.S;
   }
   set_value(scope, key, value) {
+    if (scope === "ring" && key === "start" && this.ring() && kind_of(this.ring()) === "text") value = this.snapped_angle(value);
     if (scope === "nudge") {
       const R = this.ring(), n = { ...R.nudge[this.nudge_at] || {} }, all = { ...R.nudge };
       if (Math.abs(value - NUDGE_NEUTRAL[key]) < 1e-9) delete n[key];
@@ -11024,6 +11036,23 @@ var DialTool = class _DialTool {
     open(false);
     return tools;
   }
+  /** a text ring's angle snaps to the positions of the other rings — the hours' markers, the minute ticks — when
+   *  it comes within SNAP_DEG of one (#297; Okay: "Snap to indice is a great idea for this"). Typed or slid alike. */
+  snapped_angle(a) {
+    let best = null, off = SNAP_DEG;
+    for (const r of this.S.rings) {
+      if (r === this.ring() || !r.on || kind_of(r) === "band") continue;
+      const angles = ring_angles(r);
+      for (const i of positions_of(r)) {
+        const d = Math.abs(((a - angles[i]) % 360 + 540) % 360 - 180);
+        if (d < off) {
+          off = d;
+          best = angles[i];
+        }
+      }
+    }
+    return best === null ? a : +(((best + 180) % 360 + 360) % 360 - 180).toFixed(6);
+  }
   /** the selected ring's line (Okay's design, 13 Oct 2026): a framed line in the list, right under the selected
    *  ring's row, its buttons starting where the names start — four kinds, pictures only · its colour · how big one
    *  of its things is and its radius, two round value buttons. All one height. No words: a tag says what a button
@@ -11222,8 +11251,8 @@ var DialTool = class _DialTool {
    *  Lengths in the unit box's unit, without trailing zeros. → {kind, size, r} as text */
   ring_summary(ring) {
     const kind = kind_of(ring), len = (mm) => String(parseFloat(this.in_unit(mm, 2))), n = positions_of(ring).length;
-    const one = kind === "numerals" ? ring.size : kind === "band" ? ring.width : SHAPES[ring.shape] === "dot" ? ring.w : ring.len;
-    const word = kind === "band" ? n === 1 ? "band" : "sectors" : n === 1 ? kind.slice(0, -1) : kind;
+    const one = has_text(ring) ? ring.size : kind === "band" ? ring.width : SHAPES[ring.shape] === "dot" ? ring.w : ring.len;
+    const word = kind === "band" ? n === 1 ? "band" : "sectors" : kind === "text" ? n === 1 ? "text" : "texts" : n === 1 ? kind.slice(0, -1) : kind;
     return { kind: `${n} ${word}`, size: len(one), r: len(ring.r) };
   }
   /** the summaries follow every change without the list being built again (a name may be being typed in it). */
@@ -11498,7 +11527,7 @@ var DialTool = class _DialTool {
   ring_tool(action, kind) {
     const rings = this.S.rings, i = this.S.ui_ring;
     if (action === "add") {
-      rings.splice(i, 0, new_ring(kind, this.S, kind === "numerals" ? rings.find((r) => kind_of(r) === "numerals") : null));
+      rings.splice(i, 0, new_ring(kind, this.S, kind === "numerals" || kind === "text" ? rings.find((r) => kind_of(r) === "numerals") : null));
     } else if (action === "duplicate") {
       const copy = JSON.parse(JSON.stringify(rings[i]));
       copy.name += " copy";
@@ -12407,7 +12436,7 @@ var DialTool = class _DialTool {
     const names = [...new Set(added.map((f) => f.family))];
     this.say_font(`Added ${names.slice(0, 3).join(", ")}${names.length > 3 ? "\u2026" : ""}: ${added.length} style${added.length > 1 ? "s" : ""}.`);
     const R = this.ring();
-    if (kind_of(R) === "numerals" && !added.some((f) => f.ps === R.ps)) {
+    if (has_text(R) && !added.some((f) => f.ps === R.ps)) {
       await this.use_font(added.find((f) => /^(regular|roman|book|normal)$/i.test(f.style)) || added[0]);
     }
     forget();
@@ -12642,7 +12671,7 @@ var DialTool = class _DialTool {
     this.draw_shadows(items);
     this.place();
     const ring = this.ring();
-    const font = kind_of(ring) === "numerals" ? `   \xB7   ${ring.ps}` : "";
+    const font = has_text(ring) ? `   \xB7   ${ring.ps}` : "";
     this.status.textContent = `${ring.name}${font} \xB7 \xD8 ${this.in_unit(S.dial_d, 1)} ${this.unit()[0]} \xB7 build ${this.build_ms.toFixed(0)} ms`;
     while (NOTES.length) {
       const note2 = NOTES.shift(), ps = (/\(([^)]+)\) isn’t loaded|\(([^)]+)\) isn't loaded/.exec(note2) || []).slice(1).find(Boolean);
@@ -12815,7 +12844,7 @@ var DialTool = class _DialTool {
       let best = Infinity;
       for (const x of this.statik.rings) {
         const R = x.ring;
-        const [lo, hi] = x.kind === "numerals" ? [R.r - R.size / 2, R.r + R.size / 2] : [R.r - (x.kind === "band" ? R.width : R.len), R.r];
+        const [lo, hi] = has_text(R) ? [R.r - R.size / 2, R.r + R.size / 2] : [R.r - (x.kind === "band" ? R.width : R.len), R.r];
         if (r < lo - slack || r > hi + slack) continue;
         const away = x.kind === "band" ? 1e6 : Math.min(...x.taken.map((a) => Math.abs((angle - a + 540) % 360 - 180))) * Math.PI / 180 * r;
         if (away < best) {
@@ -12826,7 +12855,7 @@ var DialTool = class _DialTool {
     }
     if (!d) return r <= S.dial_d / 2 && !S.out_production ? { kind: "plate", name: "Plate", path: this.statik.plate, angle: 0 } : null;
     const piece = { kind: "ring", ring: S.rings.indexOf(d.ring), name: d.ring.name || kind_of(d.ring), path: d.path, angle: 0 };
-    if (d.kind === "numerals") {
+    if (has_text(d.ring)) {
       let best = Infinity;
       d.parts.forEach((part, k) => {
         const b = part.bounds();
@@ -13021,7 +13050,7 @@ var DialTool = class _DialTool {
       if (kind === "svg") {
         const live = S.out_live_text && !S.out_production;
         save_file(name, svg_document(S, statik, S.t, { live }), "image/svg+xml");
-        if (live) return this.log(`exported ${name} \xB7 ${page_mm(S).toFixed(2)} mm square \xB7 numerals are text: ${[...new Set(S.rings.filter((r) => r.on && kind_of(r) === "numerals").map((r) => r.family))].join(", ") || "no numerals"} must be installed to open it`);
+        if (live) return this.log(`exported ${name} \xB7 ${page_mm(S).toFixed(2)} mm square \xB7 numerals are text: ${[...new Set(S.rings.filter((r) => r.on && has_text(r)).map((r) => r.family))].join(", ") || "no numerals"} must be installed to open it`);
       }
       if (kind === "pdf") save_file(name, pdf_document(S, statik, S.t), "application/pdf");
       if (kind === "png") {
