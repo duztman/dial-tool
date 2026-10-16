@@ -34,7 +34,11 @@
   .bar .lead .play { margin-right: calc(var(--margin) - var(--u2) - var(--speed-grow)); }      /* from play to how fast as far as from NOW to the bar's divider: the margin (Okay, 15 Oct 2026, 00:32, his H marks), less what the speed box grew toward play (03:18) — taken here, not by a negative margin on the box (R32) */
   .play .arc-out { fill: var(--black); }
   .play .arc-lo { fill: none; stroke: var(--play-dark); stroke-linecap: round; }
-  .play .arc-dot { fill: var(--play-light); opacity: var(--pulse, 0); }      /* the beat's dot in the middle: there only as the cap pulses, brightest at the beat */
+  /* the play triangle (#282, beta 4.44; the beat's dot before it): white, soft, centred on its ink. Still, at rest;
+     while time runs it pulses with the beat between its two bounds, faster than the cap fades (--pulse-tri, app.js) */
+  .play .arc-play { fill: var(--white); opacity: var(--play-tri-rest); }
+  .play[aria-pressed="true"] .arc-play { opacity: calc(var(--play-tri-low) + var(--pulse-tri, 0) * (var(--play-tri-high) - var(--play-tri-low))); }
+  @media (prefers-reduced-motion: reduce) { .play[aria-pressed="true"] .arc-play { opacity: var(--play-tri-rest); } }      /* no pulse there (pulse()): the triangle as at rest */
   .play .arc-cap { fill: color-mix(in srgb, var(--play-light) calc(var(--pulse, 0) * var(--play-pulse)), var(--play)); }      /* --pulse: 0 to 1, set by app.js (pulse) with each beat while time runs */
   .play .arc-hi { fill: none; stroke: var(--play-light); stroke-linecap: round; }
   .bar .lead .play:hover .arc-cap { fill: color-mix(in srgb, var(--play-light) calc(12% + var(--pulse, 0) * var(--play-pulse)), var(--play)); }
@@ -53,6 +57,9 @@
   .bar .knob { position: absolute; top: 50%; width: var(--speed-ball); height: var(--speed-ball); translate: -50% -50%; border-radius: 50%; background: radial-gradient(circle, transparent 0 var(--thumb-eye), var(--black) var(--thumb-eye-edge)); }      /* the black line's two ends, a knob each (Okay: "time speed line in black, has a beginning and end knob") */      /* each end a black ring with an empty eye (Okay, 15 Oct 2026, 01:59: "empty the eye holes") */
   .bar .humpname.rider { color: var(--white); }      /* the one white thing on the bar: how fast now (Okay, 15 Oct 2026, 01:59); it covers an end's name when the thumb is there */
   .bar .humpname.rider { z-index: 1; padding: 0 var(--u1); background: var(--bar); }      /* on the bar's own ground, so an end's name under it doesn't show through */
+  /* while the speed is being changed, its name is a pill exactly like 10:10's (#283; .steps12 button.special) */
+  .bar .humpname.rider.sliding { height: var(--names); padding: 0 var(--unit); border-radius: calc(var(--names) / 2); background: var(--bar-light); color: var(--bar); opacity: 1;
+    font-family: var(--mono); font-size: var(--t-xs); font-weight: 600; line-height: var(--names); letter-spacing: var(--track-50); }
   .bar .knob.first { left: 0; }      /* where the thumb's middle stops at each end: at the end the thumb sits on its knob (Okay, 15 Oct 2026, 01:03) */
   .bar .knob.last { left: 100%; }
   .bar .speedtrack input[type="range"] { position: absolute; inset: 0; height: 100%; }
@@ -64,11 +71,13 @@
   /* the time sings: large, regular weight, bright, centred on its ink (app.js measures it with every figure a 0, so
      it stands still), more room left and right than the other boxes. Its AM · PM window touches it, one colour always
      (Okay: "Pm window touches the time"; "Am/pm does not change color"). */
-  .bar .timebox { display: flex; }
+  .bar .timebox { display: flex; align-items: center; gap: var(--u2); }
   .bar .timewell { display: grid; height: var(--bar-control); padding: 0 var(--u4); overflow: hidden; border: var(--hair) solid var(--bar-light); }
   .bar .timewell:hover { background: var(--bar-field); }
-  .bar .lead .timewell .time { width: var(--time-chars); height: 100%; padding: 0; border: 0; background: none; font-size: var(--t-time); font-weight: 400; color: var(--bar-light); translate: var(--ink-dx, 0) var(--ink-dy, 0); }
-  .bar .lead .timebox .half { height: var(--bar-control); padding: 0 var(--u3); border-left: 0; font-size: var(--t-s); background: none; color: var(--bar-light); border-color: var(--bar-light); }      /* a frame, never filled (Okay, 15 Oct 2026, 00:18) */
+  .bar .lead .timewell .time { width: var(--time-chars); height: 100%; padding: 0; border: 0; background: none; font-family: var(--time-face); font-size: var(--t-time); font-weight: 300; font-variant-numeric: tabular-nums; letter-spacing: var(--time-track); color: var(--bar-light); translate: var(--ink-dx, 0) var(--ink-dy, 0); }      /* Dial Time, its figures as thin as the box's line (#284) */
+  /* AM · PM in the same face: a smaller box beside the time, as much room round its word on every side, one size for
+     both words (#284; Okay's notes, p. 15). A frame, never filled (Okay, 15 Oct 2026, 00:18) */
+  .bar .lead .timebox .half { box-sizing: content-box; width: var(--time-pm); height: var(--time-cap); padding: var(--u2); border: var(--hair) solid var(--bar-light); font-family: var(--time-face); font-size: var(--t-s); font-weight: 300; letter-spacing: var(--time-track); line-height: var(--time-cap); background: none; color: var(--bar-light); }
   /* NOW: capitals, at AM · PM's size (Okay: "Now uppercase and in pm's font size which grows 1px") */
   .bar .lead #now { padding: 0 var(--u3); font-size: var(--t-s); text-transform: uppercase; }
   .bar .time { width: 100%; text-align: center; }

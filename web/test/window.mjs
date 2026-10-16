@@ -520,7 +520,7 @@ check(await page.isHidden("#guide-list"), "a press outside the list puts it away
 await page.click("#guides-more");
 const looks = await page.evaluate(() => { const c = (q, p) => getComputedStyle(document.querySelector(q))[p]; return [c(".bar", "backgroundColor"), c(".bar", "color")]; });
 const whites = await page.evaluate(() => [...document.querySelectorAll(".bar, .bar *:not(.rider)")].filter((e) => e.getClientRects().length).flatMap((e) => { const c = getComputedStyle(e); return [c.color, c.backgroundColor, c.borderTopColor].filter((v) => /^rgba?\((2[3-5]\d), (2[3-5]\d), (2[3-5]\d)/.test(v)).map((v) => (e.id || e.className.baseVal || e.className) + " " + v); }));
-check(looks[0] === "rgb(51, 51, 51)" && looks[1] === "rgb(115, 115, 115)" && whites.length === 0, `the bar is 80 % black, its light tone 55 % grey, nothing on it white but the speed riding over its thumb (Okay, 15 Oct 2026) ${whites.slice(0, 3).join(" · ")}`);
+check(looks[0] === "rgb(51, 51, 51)" && looks[1] === "rgb(115, 115, 115)" && whites.length === 0, `the bar is 80 % black, its light tone 55 % grey, nothing on it white but the speed riding over its thumb (Okay, 15 Oct 2026) and the play triangle (#282, its fill) ${whites.slice(0, 3).join(" · ")}`);
 await page.mouse.move(900, 400);
 const off_look = await page.evaluate(`(() => { const e = document.querySelector("#guides"), c = getComputedStyle(e); return [e.getAttribute("aria-pressed"), c.backgroundColor === ${FILL}, e.textContent, c.borderTopStyle]; })()`);
 check(off_look[0] === "false" && off_look[1] && off_look[2] === "Guides" && off_look[3] === "solid", "off: filled with the backdrop's colour only, no dashes");
@@ -1151,22 +1151,51 @@ const t1 = await S("S.t");
 check(await page.getAttribute("#play", "title") === "Pause", "while playing, the button offers Pause");
 await page.click("#play");
 check(t1 - t0 > 0.4 && t1 - t0 < 1.5, `Play moves the time (${(t1 - t0).toFixed(2)} s in 0.6 s)`);
-// how fast: a slider on a log scale; near a hump (1×, 6×, 60×, 720×) it snaps onto it
-const at_speed = async (k) => page.$eval("#speed", (e, k) => { e.value = Math.round(Math.log(k) / Math.log(720) * 1000) + 8; e.dispatchEvent(new Event("input", { bubbles: true })); }, k);
+// the play button (#282, beta 4.44): a soft white triangle on the cap, no beat's dot; while time runs the cap pulses
+// with the beat and fades the whole way, the triangle flares and fades by half the beat; faster with the time, held
+// at three a second (or the movement's own beat). Checked on the pulse itself, with motion allowed for a moment
+{
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  const p = await page.evaluate(() => {
+    const t = window.dial_tool, was = [t.playing, t.speed, t.S.ha_beat], v = () => { const s = t.play_button.style; return [+s.getPropertyValue("--pulse"), +s.getPropertyValue("--pulse-tri")]; };
+    t.playing = true; t.S.ha_beat = 1; t.speed = 1;
+    t.pulse(100, 0); const beat = v(); t.pulse(100.25, 0); const quarter = v(); t.pulse(100.5, 0); const half = v();
+    t.speed = 720; t.pulse(100.5, 0); const held = v(); t.pulse(100.5, 1 / 6); const held_half = v();
+    [t.playing, t.speed, t.S.ha_beat] = was; t.pulse(0);
+    const tri = t.play_button.querySelector(".arc-play"), r = tri.getBoundingClientRect(), b = t.play_button.getBoundingClientRect();
+    return { beat, quarter, half, held, held_half, dot: !!t.play_button.querySelector(".arc-dot"), rest: getComputedStyle(tri).opacity, fill: getComputedStyle(tri).fill, blur: !!tri.getAttribute("filter"), off: [((r.left + r.right) / 2 - (b.left + b.right) / 2).toFixed(1), ((r.top + r.bottom) / 2 - (b.top + b.bottom) / 2).toFixed(1)] };
+  });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  check(p.beat.join() === "1,1" && p.quarter[0] > p.quarter[1] && p.quarter[1] > 0 && p.half[1] === 0 && p.half[0] > 0 && p.held.join() === "1,1" && p.held_half[1] === 0 && !p.dot && p.rest === "0.4" && p.fill === "rgb(255, 255, 255)" && p.blur,
+    `the play button: a soft white triangle (${p.rest} at rest, its box ${p.off.join(" / ")} off the cap's middle, as its ink is centred), no beat's dot; at a beat cap and triangle full, the triangle gone by half the beat (${p.quarter.join(" / ")} at a quarter, ${p.half.join(" / ")} at half); at 720× the flashes held at three a second (${p.held_half.join(" / ")} a sixth of a second on)`);
+}
+// how fast: one slider — slow motion's four steps first (0.1 · 0.25 · 0.5 · 1×, #283), then a log scale to 720×
+const at_speed = async (k) => page.$eval("#speed", (e, k) => { const split = window.dial_tool.speed_split(); e.value = Math.round((split + (1 - split) * Math.log(k) / Math.log(720)) * 1000) + 8; e.dispatchEvent(new Event("input", { bubbles: true })); }, k);
 await at_speed(60);
 const near60 = await S("t.speed");
 check(near60 > 55 && near60 < 70 && near60 !== 60 && /^\d+×$/.test(await page.getAttribute("#speed", "aria-valuetext")), `the speed slider is free between its ends (${near60.toFixed(1)}× near 60), and tells a screen reader (no words in the box since 15 Oct 2026)`);
 const ends = await page.$$eval(".humpname.end", (n) => n.map((e) => e.textContent + " " + getComputedStyle(e).color).join(" · "));
-check(ends === "1X rgb(115, 115, 115) · 720X rgb(115, 115, 115)" && await page.$eval(".humpname.rider", (e) => e.textContent + " " + getComputedStyle(e).color) === Math.round(near60) + "X rgb(255, 255, 255)",
-  `its ends are named in the bar's grey, the speed rides over the thumb in white (${ends})`);
+const pill = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)), r = c(".humpname.rider"), ten = c(".steps12 button.special"); return [r.backgroundColor === ten.backgroundColor, r.color === ten.color, r.fontWeight === ten.fontWeight, r.fontSize === ten.fontSize, r.height === ten.height, r.borderRadius === ten.borderRadius].every(Boolean); });
+await page.waitForTimeout(1000);
+check(ends === "0.1X rgb(115, 115, 115) · 720X rgb(115, 115, 115)" && pill && await page.$eval(".humpname.rider", (e) => e.textContent + " " + getComputedStyle(e).color) === Math.round(near60) + "X rgb(255, 255, 255)",
+  `its ends are named in the bar's grey (${ends}); while it is moved the speed over the thumb is a pill exactly like 10:10's (#283), then white again`);
 await at_speed(60);
 await page.click("#play");
 await page.waitForTimeout(600);
 const t2 = await S("S.t");
 await page.click("#play");
 check(t2 - t1 > 20 && t2 - t1 < 90, `about 60×: a minute every second (${(t2 - t1).toFixed(0)} s in 0.6 s)`);
-await page.$eval("#speed", (e) => { e.value = 0; e.dispatchEvent(new Event("input", { bubbles: true })); });
-check(await S("t.speed === 1") && await page.getAttribute("#speed", "aria-valuetext") === "1×", "at its left end the slider is 1×: no slow motion (Okay, 15 Oct 2026)");
+{ // slow motion (#283): the first part of the track, two thumbs wide, snaps to its four steps; the thumb starts at 1×
+  const slow = await page.evaluate(() => {
+    const t = window.dial_tool, e = t.speed_slider, split = t.speed_split(), go = (v) => { e.value = v; e.dispatchEvent(new Event("input", { bubbles: true })); return [t.speed, +e.value, e.getAttribute("aria-valuetext"), t.speed_name.textContent]; };
+    const thumb = parseFloat(getComputedStyle(t.speeds).getPropertyValue("--speed-thumb")), travel = e.getBoundingClientRect().width - thumb;
+    const out = { split: +split.toFixed(3), wide: +(split * travel).toFixed(1), thumb, left: go(0), near_quarter: go(Math.round(split * 1000 / 3) + 20), half: go(Math.round(split * 2000 / 3) - 20) };
+    t.set_speed(1); out.one = [+e.value, Math.round(split * 1000)];
+    return out;
+  });
+  check(slow.left.join() === "0.1,0,0.1×,0.1X" && slow.near_quarter[0] === 0.25 && slow.near_quarter[1] === Math.round(slow.split * 1000 / 3) && slow.half[0] === 0.5 && slow.half[3] === "0.5X" && slow.one[0] === slow.one[1] && slow.wide >= 2 * slow.thumb - 1,
+    `slow motion: the track's first ${slow.wide} (two ${slow.thumb} thumbs) holds 0.1 · 0.25 · 0.5 · 1×, the thumb snapping onto them (${slow.near_quarter[0]}× at its step); 1× is ${slow.one[0] / 10} % along`);
+}
 await at_speed(1);
 const z1 = await S("t.z");
 await page.click("#zoom-in");
@@ -1202,9 +1231,9 @@ check(pane_lines.length > 0 && pane_lines.every((x) => x === "24/26"), `a pane's
 // the bar keeps the columns: widths of one or two columns, and the Guides switch ends on the panel's last column
 const fits = await page.evaluate(() => { const w = (q) => Math.round(document.querySelector(q).getBoundingClientRect().width), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); const box = (q) => document.querySelector(q).getBoundingClientRect(), lead = document.querySelector(".bar .lead"), pad = parseFloat(getComputedStyle(lead).paddingRight);
     const gaps = [["#play", ".speeds"], [".speeds", ".timewell"], ["#ampm", "#now"]].map(([a, b]) => +(box(b).left - box(a).right).toFixed(1));
-    return { play: w("#play"), zooms: w(".zooms"), fit: w("#fit"), gaps, touch: +(box("#ampm").left - box(".timewell").right).toFixed(1), end: Math.round(box(".bar .lead").right - pad - box("#now").right) }; });
-check(fits.play === 34 && fits.zooms === 54 && fits.fit === 54 && fits.gaps[0] === 24 - 3.5 && fits.gaps[1] === fits.gaps[2] && fits.touch === 0 && fits.end === 0,
-  `under the panel: play, a margin less what the speed box grew toward it (24 − 3.5, Okay 15 Oct 03:18), how fast · the time touching AM · PM · NOW one equal gap apart, NOW ending on the panel's last column (${JSON.stringify(fits)})`);
+    return { play: w("#play"), zooms: w(".zooms"), fit: w("#fit"), gaps, touch: +(box("#ampm").left - box(".timewell").right).toFixed(1), half: [+box("#ampm").width.toFixed(1), +box("#ampm").height.toFixed(1), +((box("#ampm").top + box("#ampm").bottom) / 2 - (box(".timewell").top + box(".timewell").bottom) / 2).toFixed(1)], end: Math.round(box(".bar .lead").right - pad - box("#now").right) }; });
+check(fits.play === 34 && fits.zooms === 54 && fits.fit === 54 && fits.gaps[0] === 24 - 3.5 && fits.gaps[1] === fits.gaps[2] && fits.touch === 5.5 && fits.half[1] < 30 && Math.abs(fits.half[2]) < 0.5 && fits.end === 0,
+  `under the panel: play, a margin less what the speed box grew toward it (24 − 3.5, Okay 15 Oct 03:18), how fast · the time · AM · PM, a smaller box a unit beside it and on its middle (#284) · NOW one equal gap apart, NOW ending on the panel's last column (${JSON.stringify(fits)})`);
 await shot("7b-bar");
 await page.fill("#time", "3:20:10");
 await page.press("#time", "Enter");
@@ -1538,10 +1567,10 @@ await tab("Export");
     `the speed thumb at an end stands as far from the box's wall (${m.side.join(" · ")}) as from its top (${m.top}); mm's word and line one light colour (${m.unit[0]})`);
 }
 const look = await page.evaluate(() => { const q = (s) => document.querySelector(s), r = (s) => q(s).getBoundingClientRect(), c = (s) => getComputedStyle(q(s));
-  return { square: !q("#panel-toggle"), bar: Math.round(r(".bar").height), play: [Math.round(r("#play").width), Math.round(r("#play").height), c("#play").borderRadius], mono: c("#time").fontFamily.includes("monospace"),
+  return { square: !q("#panel-toggle"), bar: Math.round(r(".bar").height), play: [Math.round(r("#play").width), Math.round(r("#play").height), c("#play").borderRadius], time: c("#time").fontFamily.startsWith('"Dial Time"') && document.fonts.check('300 17px "Dial Time"'),
     status: c(".bar .status").display, hint: q(".zoomhint").textContent, ruler: Math.round(r("#time-slider").width) }; });
-check(look.square && look.bar === 62 && look.play[0] === look.play[1] && look.play[2] === "50%" && look.mono && look.status === "none" && look.hint.includes("⌘ + scroll") && look.ruler <= 518,
-  `the bar: a fifth higher (${look.bar}), no panel square, a round play, the time in monospace, no status line, how to zoom beside the zoom, the day slider no wider than an iPad's (${look.ruler})`);
+check(look.square && look.bar === 62 && look.play[0] === look.play[1] && look.play[2] === "50%" && look.time && look.status === "none" && look.hint.includes("⌘ + scroll") && look.ruler <= 518,
+  `the bar: a fifth higher (${look.bar}), no panel square, a round play, the time in Dial Time (Barlow Condensed Light, #284), no status line, how to zoom beside the zoom, the day slider no wider than an iPad's (${look.ruler})`);
 await shot("10-bar");
 { // the showcase (Okay, 15 Oct 2026, 04:26, reshaped 04:59 and 05:09)
   const q = () => page.evaluate(() => { const t = window.dial_tool, r = (s) => document.querySelector(s).getBoundingClientRect(), c = (s) => getComputedStyle(document.querySelector(s));

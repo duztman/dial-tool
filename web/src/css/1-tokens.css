@@ -75,8 +75,14 @@
     --track-50: 0.05em;                            /* tracking 50: every monospace word of the bottom bar (Okay, 15 Oct 2026, 06:51: "all mono text around here gets +50 tracking") */
     --track-100: 0.1em;                            /* tracking 100 (Okay, 04:59: "now gets 100 tracking") */
     --title-end: 0px; --bar-h: 0px;                /* set by dial_alone(): where the title ends (undo · redo stop short of it); the bar's height on a phone */
-    --play-size: 34px; --play-pulse: 22%;          /* the play button: a section tab's box (Okay, 00:42); how far its cap goes toward its light colour at a beat (faint: Okay, 01:20) */
-    --time-chars: calc(8ch + 8 * var(--track-50));      /* the time's field: "10:09:36", eight characters of the mono face and their tracking */
+    --play-size: 34px; --play-pulse: 30%;          /* the play button: a section tab's box (Okay, 00:42); how far its cap goes toward its light colour at a beat, then fades the whole way to 0 (22 % until Okay's notes, p. 14, #282: "from 30 % to 0") */
+    --play-tri-rest: 0.4; --play-tri-low: 0.1; --play-tri-high: 0.7;      /* the play triangle on the cap (#282): still, and its pulse's two bounds ("never below 10 % or above 70 %") */
+    /* the time and AM · PM in Dial Time (#284, beta 4.44: Barlow Condensed Light, packed; fonts/ui/time_font.py). Its
+       measures, as the face draws them: a tabular figure, the colon (made 80 % in that face), the caps; the widest of
+       AM and PM in ink. The tracking tight (Okay's notes, p. 15) */
+    --time-face: "Dial Time", var(--mono);
+    --time-figure: 0.418em; --time-colon: 0.155em; --time-cap: 0.7em; --time-pm: 0.8em; --time-track: -0.02em;
+    --time-chars: calc(6 * var(--time-figure) + 2 * var(--time-colon) + 8 * var(--time-track));      /* the time's field: "10:09:36" — monospace until 4.44: 8ch and the bar's +50 tracking */
     --day-wide: 518px;                             /* the day slider at its widest: as wide as on an iPad (1180 wide), so a big screen doesn't stretch it (Okay, 23:19) */
     --tile: 50px;                                  /* a picture tile's least height */
     --guide-tint: 22%; --guide-edge: 65%;          /* the selected ring's row: this much of its guide's colour in its ground, and in its frame */

@@ -302,7 +302,7 @@ const TOOL_ICONS = {
 // sausages as thick as the ring, touching it: light on the upper left, dark red on the lower right. Pressed — time
 // running — they change places: lit from inside.
 const ARCADE = (down) => {
-  const RING = 0.75 * 2, CAP = RIM + CURVE / 2, R = CAP + RING, C = R, mid = CAP - RING / 2, DOT = 7.5;      // DOT: the beat's light in the middle (2.5 until Okay, 15 Oct 2026, 01:29: "enlarge dot 3x")      // 1.5 · 15.5 · 17 · the sausages' middle circle
+  const RING = 0.75 * 2, CAP = RIM + CURVE / 2, R = CAP + RING, C = R, mid = CAP - RING / 2;      // 1.5 · 15.5 · 17 · the sausages' middle circle
   const arc = (from, to) => {      // a sausage along the circle of radius mid; angles: 0 = right, growing downward
     const p = (a) => `${(C + mid * Math.cos(a * Math.PI / 180)).toFixed(3)} ${(C + mid * Math.sin(a * Math.PI / 180)).toFixed(3)}`;
     return `M${p(from)}A${mid} ${mid} 0 0 1 ${p(to)}`;
@@ -311,7 +311,16 @@ const ARCADE = (down) => {
   return `<svg viewBox="0 0 ${2 * R} ${2 * R}" width="${2 * R}" height="${2 * R}" aria-hidden="true">`
     + `<circle class="arc-out" cx="${C}" cy="${C}" r="${R}"/><circle class="arc-cap" cx="${C}" cy="${C}" r="${CAP}"/>`
     + `<path class="arc-hi" d="${light}" stroke-width="${RING}"/><path class="arc-lo" d="${dark}" stroke-width="${RING}"/>`
-    + `<circle class="arc-dot" cx="${C}" cy="${C}" r="${DOT}"/></svg>`;      // lit by the beat (pulse): Okay, 15 Oct 2026, 01:26: "a centered lighter accent dot on that pulse"
+    + `<filter id="play-soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1"/></filter>`
+    + `<path class="arc-play" d="${play_triangle(C, 0.45 * CAP)}" filter="url(#play-soft)"/></svg>`;
+};
+// the play triangle on the cap (Okay's notes, p. 14, #282; it takes the place of the beat's dot, 4.38.2): pointing
+// right, its corners on a circle a bit less than half the cap's radius (0.45), centred on its ink — its centroid on
+// the cap's middle, as a play sign is centred by eye. Soft: blurred "2 px" as a design tool counts a blur, a
+// deviation of 1 here (a few dots of a 31-point cap, so the blur costs nothing worth a picture instead)
+const play_triangle = (c, r) => {
+  const p = (a) => `${(c + r * Math.cos(a * Math.PI / 180)).toFixed(3)} ${(c + r * Math.sin(a * Math.PI / 180)).toFixed(3)}`;
+  return `M${p(0)}L${p(120)}L${p(240)}Z`;
 };
 // a window card: a small dial with the window where it is. The window keeps four points from the rim's inner edge at
 // every angle (as on the Windows tab; Okay, 13 Oct 2026, #149): its distance from the centre is found from its own
@@ -591,9 +600,17 @@ const DAY_STEPS = [...Array.from({ length: 12 }, (_, h) => [h * 3600, String(h |
 // 6×, 60× and 720× (Okay, 14 Oct 2026, 23:26: "a regular sliding track with humps on it on 1 (larger), 6 then
 // logarithmicly up to 720"; "slightly slower is acceptable": it starts at 0.5×). Near a hump the slider snaps onto
 // it. The speed is written beside the track, not on its thumb, which a finger covers.
-const SPEED_LO = 1, SPEED_HI = 720;      // no slow motion: 1× to 720× (Okay, 15 Oct 2026, 01:59: "Remove slow motion from the clock"; 0.5× before). Its two ends are marked 1X and 720X; no ball, no snapping
-const speed_place = (k) => Math.log(k / SPEED_LO) / Math.log(SPEED_HI / SPEED_LO);      // a speed → 0 to 1 along the track
-const speed_word = (k) => (k >= 10 ? String(Math.round(k)) : String(+k.toFixed(1)));      // the figures; the × follows in a span of its own, drawn larger
+// Slow motion is back below 1× (Okay's notes, p. 15, #283; removed 15 Oct 2026, 01:59): the track's first part, two
+// thumbs wide, holds four steps — 0.1 · 0.25 · 0.5 · 1× ("not many steps") — and the thumb snaps onto them; from 1×
+// the rest runs on a log scale to 720× as before. The thumb starts at 1×; the ends are marked 0.1X and 720X.
+const SPEED_SLOW = [0.1, 0.25, 0.5, 1], SPEED_HI = 720;
+/** a speed → 0 to 1 along the track, whose first `split` holds the slow steps */
+const speed_place = (k, split) => (k < 1 ? split * SPEED_SLOW.reduce((best, x, i) => (Math.abs(x - k) < Math.abs(SPEED_SLOW[best] - k) ? i : best), 0) / (SPEED_SLOW.length - 1) : split + (1 - split) * Math.log(k) / Math.log(SPEED_HI));
+/** …and back: a place on the track → its speed (a slow step, or anything from 1× up) */
+const speed_at = (p, split) => (p < split ? SPEED_SLOW[Math.round(p / split * (SPEED_SLOW.length - 1))] : SPEED_HI ** ((p - split) / (1 - split)));
+const speed_word = (k) => (k >= 10 ? String(Math.round(k)) : String(+k.toFixed(k < 1 ? 2 : 1)));      // the figures: 0.25, 1, 2.5, 60
+const frac = (x) => ((x % 1) + 1) % 1;
+const PULSE_MOST = 3;      // the play button's pulse: at most this many a second, unless the movement's own beat is more (#282)
 const SECTIONS = Object.keys(ROWS);                // their numbers are what ui_section stores (R9)
 const TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];      // left to right. Guides is a switch on the preview (Okay, 12 Oct 2026)
 for (const name of SECTIONS) for (const row of ROWS[name]) row.scope ??= name === "Rings" ? "ring" : "global";
@@ -898,6 +915,7 @@ class DialTool {
     this.preview_events();
 
     this.time_field = el("input", { id: "time", className: "time", type: "text", title: "Time shown, h:mm:ss" });
+    if (document.fonts) document.fonts.ready.then(() => { this.time_zeros = null; this.sync_time(); });      // Dial Time arrived: measure the time's ink again
     this.time_field.onchange = () => { const t = parse_time(this.time_field.value, this.S.t >= 43200); if (t !== null) this.set_time(t); else this.sync_time(); this.time_field.value = fmt_time(this.S.t); };      // "15:20" reads back as 3:20:00, PM
     // which half of the day: the hands can't say, an am · pm window can (it follows the time shown). Typing "15:20" or "3:20 pm" sets it too.
     this.half_button = el("button", { type: "button", id: "ampm", className: "half", title: "Morning or afternoon: an am · pm window follows it", onclick: () => this.set_time((this.S.t + 43200) % 86400) });
@@ -910,15 +928,22 @@ class DialTool {
     // (how to zoom, zoom out, in, fit). The panel's square left the bar (Okay, 14 Oct 2026, 23:19: it "doesn't work
     // anyway"; build list #190)
     this.speed = 1;
-    this.speed_slider = el("input", { id: "speed", type: "range", min: 0, max: 1000, step: 1, ariaLabel: "How fast time runs", title: "How fast time runs: 1× to 720×" });
-    this.speed_slider.oninput = () => {      // (set_speed puts the rider over the thumb)
-      this.set_speed(SPEED_LO * (SPEED_HI / SPEED_LO) ** (+this.speed_slider.value / 1000));
+    this.speed_slider = el("input", { id: "speed", type: "range", min: 0, max: 1000, step: 1, ariaLabel: "How fast time runs", title: "How fast time runs: 0.1× to 720×" });
+    // while the speed is being changed its name over the thumb looks like the 10:10 pill (#283): a press on the track
+    // until it is let go; a key, for a moment
+    let sliding = 0, pressing = false;
+    const slide = (on) => { clearTimeout(sliding); this.speed_name.classList.toggle("sliding", on); if (on && !pressing) sliding = setTimeout(() => slide(false), 900); };
+    this.speed_slider.oninput = () => {      // (set_speed puts the rider over the thumb, and a slow speed's thumb onto its step)
+      this.set_speed(speed_at(+this.speed_slider.value / 1000, this.speed_split()));
+      slide(true);
     };
+    this.speed_slider.onpointerdown = () => { pressing = true; slide(true); };
+    this.speed_slider.onpointerup = this.speed_slider.onpointercancel = () => { pressing = false; slide(false); };
     // no words for the speed in the box any more (Okay, 15 Oct 2026, 00:18: "Remove 1x next to red button"): the slider
     // tells a screen reader its speed (aria-valuetext); the eye has the ball at 1× and where the thumb stands
     const humps = el("span", { className: "humps", ariaHidden: "true" }, el("i", { className: "knob first" }), el("i", { className: "knob last" }));
-    // its two ends named in the bar's grey, 1X and 720X (Okay, 15 Oct 2026, 01:59: "denote them 1x and 720x with the bar's gray")
-    for (const [at, word] of [[0, SPEED_LO + "X"], [1, SPEED_HI + "X"]]) { const name = el("span", { className: "humpname end", textContent: word }); name.style.setProperty("--at", at); humps.append(name); }
+    // its two ends named in the bar's grey, 0.1X and 720X (Okay, 15 Oct 2026, 01:59: "denote them 1x and 720x with the bar's gray"; 0.1X since #283)
+    for (const [at, word] of [[0, SPEED_SLOW[0] + "X"], [1, SPEED_HI + "X"]]) { const name = el("span", { className: "humpname end", textContent: word }); name.style.setProperty("--at", at); humps.append(name); }
     // the speed's name rides over the thumb, the one white thing on the bar: how many X (Okay, 15 Oct 2026, 01:08: "1X
     // follows the dot. Indicates how many Xs"; 01:59: "It is the only white thing there")
     this.speed_name = el("span", { className: "humpname rider", ariaHidden: "true" });
@@ -949,6 +974,8 @@ class DialTool {
     this.day_ticks = DAY_STEPS.map((x) => x[0]);
     this.watchers = [new ResizeObserver(() => this.draw_ruler())];      // closed with the tool (close)
     this.watchers[0].observe(this.time_slider);
+    this.watchers.push(new ResizeObserver(() => this.set_speed(this.speed)));      // the slow steps' share of the track follows its width
+    this.watchers.at(-1).observe(this.speed_slider);
     // Fit: a plain magnifier at the left of its word (Okay, 15 Oct 2026, 00:51: "fit gets a regular magnifier icon on its left")
     const fit_button = el("button", { type: "button", id: "fit", className: "fit", title: "Show the whole page", onclick: () => { this.fit(); this.render(); } });
     fit_button.innerHTML = icon(TOOL_ICONS.find);
@@ -3695,7 +3722,7 @@ class DialTool {
         const [wall, t] = this.play_from;
         this.S.t = (t + (performance.now() - wall) / 1000 * this.speed) % 86400;
         this.sync_time();
-        this.pulse(t + (performance.now() - wall) / 1000);
+        this.pulse(this.S.t, performance.now() / 1000);
         this.render();
       }
       if (this.show) {      // the showcase's sun crosses its day (SUN.day seconds), then rises again; held while dragged
@@ -4034,28 +4061,41 @@ class DialTool {
   set_speed(k) {
     this.speed = k;
     if (this.playing) this.play_from = [performance.now(), this.S.t];
-    const p = Math.round(speed_place(k) * 1000);
-    if (document.activeElement !== this.speed_slider) this.speed_slider.value = p;
+    const p = Math.round(speed_place(k, this.speed_split()) * 1000);
+    if (document.activeElement !== this.speed_slider || k < 1) this.speed_slider.value = p;      // a slow speed: the thumb onto its step, even while dragged
     this.speed_slider.setAttribute("aria-valuetext", speed_word(k) + "×");
-    this.speed_name.textContent = speed_word(k) + "X";
+    const word = speed_word(k) + "X";      // a slow speed's leading 0 in a span of its own: a phone's thumb, which holds the word, leaves it out (".25X")
+    if (this.speed_name.textContent !== word) this.speed_name.replaceChildren(...(k < 1 ? [el("span", { className: "zero", textContent: "0" }), word.slice(1)] : [word]));
     this.speed_name.style.setProperty("--at", (+this.speed_slider.value / 1000).toFixed(4));      // where the thumb stands
-    this.speed_slider.title = `How fast time runs: ${speed_word(k)}× (0.5× to 720×)`;
+    this.speed_slider.title = `How fast time runs: ${speed_word(k)}× (0.1× to 720×)`;
     this.speeds.classList.toggle("real", k === 1);
   }
 
-  /** while time runs the play button's cap brightens faintly with each beat of the movement and fades before the next
-   *  (Okay, 15 Oct 2026, 01:20: "Red button faintly pulses with the beat of the movement when pressed"). The beat is the
-   *  movement's own (Hands: 1/s quartz, 6 or 8 a second), counted in real seconds — at 1× it falls with the seconds
-   *  hand's steps; faster speeds don't make it flicker. A sweep has no beat: the cap breathes once every two seconds.
-   *  at = seconds since midnight, as if time ran at 1×. Not where the system asks for less motion. */
-  pulse(at) {
-    let p = 0;
+  /** how much of the speed track the slow steps take: two thumbs of the thumb's travel (#283: "at least as wide as two
+   *  thumbs"), a fifth to a half of it; before the bar is laid out, two fifths */
+  speed_split() {
+    const thumb = parseFloat(getComputedStyle(this.speeds).getPropertyValue("--speed-thumb")) || 0, travel = this.speed_slider.getBoundingClientRect().width - thumb;
+    return thumb > 0 && travel > 0 ? Math.min(0.5, Math.max(0.2, 2 * thumb / travel)) : 0.4;
+  }
+
+  /** while time runs the play button pulses with each beat of the movement (Okay, 15 Oct 2026, 01:20; his notes, p. 14,
+   *  #282): its cap brightens and fades the whole way before the next beat, eased (--pulse, 0 to 1 of --play-pulse);
+   *  the triangle flares with it and fades faster, gone by half the beat (--pulse-tri, between its two bounds). The beat
+   *  is the movement's own (Hands: 1/s quartz, 6 or 8 a second); a sweep has none, and breathes once every two seconds.
+   *  It follows the time shown, so it falls with the seconds hand's steps and goes faster as time does — up to three
+   *  a second, or the movement's own beat if that is more; past that it holds, in real seconds (720× would otherwise
+   *  flash hundreds of times a second; answer to #282, the three-flash limit of WCAG 2.3.1).
+   *  t = the time shown, in seconds · now = real seconds. Not where the system asks for less motion. */
+  pulse(t, now = 0) {
+    let cap = 0, tri = 0;
     if (this.playing && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      const beat = G.BEATS[this.S.ha_beat] ? G.BEATS[this.S.ha_beat][1] : 0;
-      if (beat > 0) p = (1 - (((at * beat) % 1) + 1) % 1) ** 3;      // a flash at the beat, gone before the next
-      else p = 0.5 - 0.5 * Math.cos(at * Math.PI);                  // sweep: a slow breath, two seconds long
+      const beat = G.BEATS[this.S.ha_beat] ? G.BEATS[this.S.ha_beat][1] : 0, rate = beat || 0.5, most = Math.max(beat, PULSE_MOST);
+      const f = rate * this.speed <= most ? frac(t * rate) : frac(now * most);      // how far from the last beat, 0 to 1
+      if (beat > 0) { cap = (1 - f) ** 3; tri = Math.max(0, 1 - 2 * f) ** 2; }    // a flash at the beat, gone before the next
+      else { cap = 0.5 - 0.5 * Math.cos(2 * Math.PI * f); tri = cap ** 3; }        // sweep: a slow breath
     }
-    this.play_button.style.setProperty("--pulse", p.toFixed(3));
+    this.play_button.style.setProperty("--pulse", cap.toFixed(3));
+    this.play_button.style.setProperty("--pulse-tri", tri.toFixed(3));
   }
 
   play(on) {

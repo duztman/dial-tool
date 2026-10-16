@@ -1,5 +1,20 @@
 # Dial Tool — changelog
 
+## beta 4.44 (web version) · 16 Oct 2026
+
+Phase D: the bottom bar.
+
+- **A play triangle on the red cap** (#282), in place of the beat's dot. It is white and soft, 40 % at rest, its corners on a circle 0.45 of the cap's radius, centred on its ink. While time runs:
+  - At each beat the cap lightens by up to 30 % and fades the whole way to the next beat, eased.
+  - The triangle flares to 70 % with it and fades faster, back to 10 % by half the beat.
+  - The pulse follows the time shown, so it falls with the seconds hand's steps and quickens as time runs faster. Above three a second (or the movement's own beat, if that is more) it holds, in real seconds; 720× no longer means hundreds of flashes a second.
+  - Where the system asks for less motion, nothing pulses and the triangle stays at 40 %.
+- **Slow motion is back** (#283). The speed slider's first part, two thumbs wide, holds 0.1 · 0.25 · 0.5 · 1×, and the thumb snaps onto them; from 1× the log scale runs to 720× as before. The thumb starts at 1×; the left end says 0.1X. While the speed is being moved, its name over the thumb is a pill exactly like 10:10's. On a phone, where the speed is written in the thumb, a slow speed loses its leading 0 (".25X") to fit.
+- **The time in Barlow Condensed** (#284). Light, whose strokes are 0.90 px at the time's 17 px, against the box's 1 px line. Tabular figures, tight tracking (−0.02 em), the colons 80 % as large and centred on the figures.
+  - It is packed into the page as **Dial Time**: cut down to what the time needs (11.8 KB) and renamed, so it can't clash with a ring's Barlow Condensed (`web/fonts/ui/time_font.py`, SIL OFL).
+  - The time's box is narrower (113 → 69 px), so the speed track is wider (123 → 171 px).
+  - AM · PM is in the same face, in a smaller box beside the time with the same room on every side, one size for both words. NOW is untouched.
+
 ## beta 4.43.2 (web version) · 16 Oct 2026
 
 - **The guides follow the tab you're in** (#301; Okay, on 4.43: "both window and [ring] active gives us a complex look"). *Selected* now means the selected one in the tab you work in: the Rings tab shows the selected ring's guides, the Windows tab the selected window's, the other tabs neither. The dial's own guides (centre hole, centre lines) show in every tab while on. With *All*, every ring's or window's guides show, and those out of focus are faded to 40 %. Researched first: Glyphs' local and global guides, Fusion 360's sketch dimensions, Blender's *Fade Inactive Geometry*, Illustrator's smart guides and Figma's measuring lines all show one thing in focus at a time.

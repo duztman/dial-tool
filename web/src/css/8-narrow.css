@@ -26,6 +26,8 @@
     /* here the speed is written in the thumb itself, in the pixel face, black on its grey, in place of its eye (Okay,
        15 Oct 2026, 06:54: "write the speed in silkscreen into this guy instead of the dot") */
     .bar .humpname.rider { display: block; bottom: auto; top: 50%; height: auto; padding: 0; translate: -50% -50%; line-height: 1; background: none; color: var(--black); pointer-events: none; }
+    .bar .humpname.rider .zero { display: none; }      /* "0.25X" is wider than the thumb: ".25X" */
+    .bar .humpname.rider.sliding { height: auto; padding: 0; border-radius: 0; background: none; color: var(--black); opacity: var(--pixel-ink-bar); font-family: var(--pixel); font-size: var(--t-pixel); font-weight: 400; line-height: 1; letter-spacing: 0; }      /* here the speed is written in the thumb, sliding or not: no pill */
     .bar .speeds { --speed-thumb: var(--speed-thumb-narrow); }      /* room for "720X" (25 px of the pixel face) */
     .bar .speedtrack input[type="range"]::-webkit-slider-thumb { background: var(--bar-light); box-shadow: none; }      /* no ring of the bar's ground: it would cut the box's line */
     .bar .speedtrack input[type="range"]::-moz-range-thumb { background: var(--bar-light); box-shadow: none; }
