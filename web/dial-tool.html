@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.46.5 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.46.6 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -114,7 +114,7 @@
     --track-100: 0.1em;                            /* tracking 100 (Okay, 04:59: "now gets 100 tracking") */
     --title-end: 0px; --bar-h: 0px;                /* set by dial_alone(): where the title ends (undo · redo stop short of it); the bar's height on a phone */
     --play-size: 34px; --play-pulse: 30%;          /* the play button: a section tab's box (Okay, 00:42); how far its cap goes toward its light colour at a beat, then fades the whole way to 0 (22 % until Okay's notes, p. 14, #282: "from 30 % to 0") */
-    --play-tri-rest: 0.4; --play-tri-low: 0.1; --play-tri-high: 0.7;      /* the play triangle on the cap (#282): still, and its pulse's two bounds ("never below 10 % or above 70 %") */
+    --play-tri-rest: 0.4; --play-tri-low: 0.1; --play-tri-high: 0.7; --play-tri-slow: 1;      /* the play triangle on the cap (#282): still, and its pulse's two bounds ("never below 10 % or above 70 %"); below 1× its peak, full (#308, Okay, 16 Oct 2026: "flash brighter") */
     /* the time and AM · PM in Dial Time (#284, beta 4.44: Barlow Condensed Light, packed; fonts/ui/time_font.py). Its
        measures, as the face draws them: a tabular figure, the colon (made 80 % in that face), the caps; the widest of
        AM and PM in ink. The tracking tight (Okay's notes, p. 15) */
@@ -134,7 +134,7 @@
     --row-end: calc(var(--frame-pad) - var(--hair) + var(--ringline-inner));      /* the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons */
     --line-button: 36px; --bare-dot: 16px;      /* in the ring drawer every control is this high (a value button this wide too) · the colour's swatch */
     --half: 30px;                                  /* AM · PM: its own window beside the time (Okay, 14 Oct 2026, 23:19) */
-    --bar-now: var(--rule); --bar-now-hover: var(--rule-light);      /* NOW: filled, much lighter than the bar's light tone, its word in the bar's dark — the bar's one filled button (Okay, 16 Oct 2026, #306: "fill bg, invert type, make button much lighter colored"); a press: the light tone */
+    --bar-now: color-mix(in srgb, var(--bar-light) 80%, var(--black)); --bar-now-hover: color-mix(in srgb, var(--bar-light) 90%, var(--black)); --bar-now-ink: var(--rule-light);      /* NOW: filled, the bar's one filled button (Okay, 16 Oct 2026, #306: "fill bg, invert type"); its fill 20 % darker than AM's outline, the bar's light tone (#307, on 4.46: "darker than ams outlines by 20%" → #5C5C5C; #B9B9B4 in 4.45.5), so its word is the panel's light rule tone, #D4D4CF (4.5 : 1; the bar's dark would read 1.7 : 1, and nothing on the bar is white — Okay, 15 Oct 2026); a hover 10 % darker than the outline; a press: the light tone */
     --value-pop: 132px;                            /* a value button's tag: about as wide as it is high */
     /* the number popup (#249; Okay's drawing, 16 Oct 2026, 4.45.3): on a dark ground, two pills a finger high (44,
        the least a finger is given) — the slider, the value — and under them − and + as two discs half as high again;
@@ -142,8 +142,9 @@
        top a pill's round plus that room and the frame, at the bottom a disc's ("plus minus roundness + some offset"),
        so each runs parallel to what it holds. The pills and discs mid grey ("no white … all colors mid grays"), the
        words, the signs and the slider's knob, a disc, black. */
-    --num-pop-pill: 44px; --num-pop-step: calc(1.5 * var(--num-pop-pill));
+    --num-pop-pill: 44px; --num-pop-step: calc(1.5 * var(--num-pop-pill)); --num-pop-value: var(--num-pop-step);      /* the value's pill as high as the discs (#310, Okay, 16 Oct 2026, on 4.46: "pill height equals the plus and minus. But that growth does not affect slider") */
     --num-pop-pad: var(--u4); --num-pop-gap: var(--u3);
+    --num-pop-name: var(--rule);                    /* a popup with a name (a row with a menu): the name on top, lighter than the pills, its chevron without a box (#310: "Name is on top, lighter, chevron boxless") */
     --num-pop: calc(2 * var(--num-pop-step) + var(--num-pop-gap) + 2 * var(--num-pop-pad) + 2 * var(--thick));
     --num-pop-round: calc(var(--num-pop-pill) / 2 + var(--num-pop-pad) + var(--thick)); --num-pop-round-foot: calc(var(--num-pop-step) / 2 + var(--num-pop-pad) + var(--thick));
     --num-pop-ground: var(--night); --num-pop-fill: color-mix(in srgb, var(--grey), var(--rule)); --num-pop-hover: color-mix(in srgb, var(--num-pop-fill) 85%, var(--black));
@@ -857,12 +858,17 @@
   .numpop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--num-pop-gap); min-height: 0; padding: 0; }
   .numpop .row > *, .numpop .row.txt > input { grid-column: 1; }
   .numpop .row > label { display: none; }
-  .numpop .row .menulabel { display: flex; justify-content: center; align-items: center; gap: var(--u1); font: 600 var(--t-s)/1.3 var(--sans); }
-  .numpop .row .menulabel > label { color: var(--num-pop-fill); font: inherit; }
+  /* a row with a menu keeps its name, on top, lighter than the pills, its chevron without a box (#310, 4.46.6: "Name is on
+     top, lighter, chevron boxless"); its line as high as its words alone, so its ink stands about as far from the frame
+     as the discs do at the foot ("top padding equals the bottom") */
+  .numpop .row .menulabel { display: flex; justify-content: center; align-items: center; gap: var(--u1); font: 600 var(--t-s)/1 var(--sans); }
+  .numpop .row .menulabel > label { color: var(--num-pop-name); font: inherit; }
+  .numpop .row .labelmenu { width: auto; height: auto; border: 0; background: none; color: var(--num-pop-name); }
+  .numpop .row .labelmenu:hover { color: var(--ink); }
   .numpop .row input[type="range"] { width: 100%; height: var(--num-pop-pill); padding: 0 calc((var(--num-pop-pill) - var(--num-pop-thumb)) / 2); border-radius: calc(var(--num-pop-pill) / 2); background: var(--field); }      /* the knob as far from the pill's ends as from its top and bottom */
   .numpop .row input[type="range"]::-webkit-slider-thumb { width: var(--num-pop-thumb); height: var(--num-pop-thumb); margin-top: calc((var(--track) - var(--num-pop-thumb)) / 2); }
   .numpop .row input[type="range"]::-moz-range-thumb { width: var(--num-pop-thumb); height: var(--num-pop-thumb); }
-  .numpop .row input[type="text"] { width: 100%; height: var(--num-pop-pill); border: 0; border-radius: calc(var(--num-pop-pill) / 2); font-size: var(--t-num-pop); text-align: center; }
+  .numpop .row input[type="text"] { width: 100%; height: var(--num-pop-value); border: 0; border-radius: calc(var(--num-pop-value) / 2); font-size: var(--t-num-pop); text-align: center; }      /* as high as the discs under it (#310) */
   .numpop .row input[type="text"]:focus { outline: 0; }      /* the value, chosen to be typed over, says it */
   .numpop .row input[type="text"]::selection { background: var(--ink); color: var(--field); }      /* chosen: black, its figures mid grey (no white) */
   .numpop:not(:has(.steps)) { border-bottom-left-radius: var(--num-pop-round); border-bottom-right-radius: var(--num-pop-round); }      /* no discs at its foot (a window's places): the pills' round there too */
@@ -1317,6 +1323,7 @@
      while time runs it pulses with the beat between its two bounds, faster than the cap fades (--pulse-tri, app.js) */
   .play .arc-play { fill: var(--white); opacity: var(--play-tri-rest); }
   .play[aria-pressed="true"] .arc-play { opacity: calc(var(--play-tri-low) + var(--pulse-tri, 0) * (var(--play-tri-high) - var(--play-tri-low))); }
+  .play.slow { --play-tri-high: var(--play-tri-slow); }      /* below 1× (slow motion) the flash peaks brighter (#308) */
   @media (prefers-reduced-motion: reduce) { .play[aria-pressed="true"] .arc-play { opacity: var(--play-tri-rest); } }      /* no pulse there (pulse()): the triangle as at rest */
   .play .arc-cap { fill: color-mix(in srgb, var(--play-light) calc(var(--pulse, 0) * var(--play-pulse)), var(--play)); }      /* --pulse: 0 to 1, set by app.js (pulse) with each beat while time runs */
   .play .arc-hi { fill: none; stroke: var(--play-light); stroke-linecap: round; }
@@ -1361,7 +1368,7 @@
   .bar .lead .timebox .half { box-sizing: content-box; width: var(--time-pm); height: calc(var(--bar-control) - 2 * var(--hair)); padding: 0 var(--u2); border: var(--hair) solid var(--bar-light); border-left: 0; font-family: var(--time-face); font-size: var(--t-time); font-weight: 300; letter-spacing: var(--time-pm-track); background: none; color: var(--bar-light); }
   /* NOW: capitals, at AM · PM's size (Okay: "Now uppercase and in pm's font size which grows 1px"); filled, light, its
      word dark (#306, 4.45.5) */
-  .bar .lead #now { padding: 0 var(--u3); border-color: var(--bar-now); background: var(--bar-now); color: var(--bar); font-size: var(--t-s); text-transform: uppercase; }
+  .bar .lead #now { padding: 0 var(--u3); border-color: var(--bar-now); background: var(--bar-now); color: var(--bar-now-ink); font-size: var(--t-s); text-transform: uppercase; }      /* filled, 20 % darker than AM's outline, its word light (#307) */
   .bar .lead #now:hover { border-color: var(--bar-now-hover); background: var(--bar-now-hover); }
   .bar .lead #now:active { border-color: var(--bar-light); background: var(--bar-light); }
   .bar .time { width: 100%; text-align: center; }
@@ -5867,7 +5874,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.46.5";
+var VERSION = "beta 4.46.6";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -8595,6 +8602,7 @@ var speed_at = (p, split) => p < split ? SPEED_SLOW[Math.round(p / split * (SPEE
 var speed_word = (k) => k >= 10 ? String(Math.round(k)) : String(+k.toFixed(k < 1 ? 2 : 1));
 var frac = (x) => (x % 1 + 1) % 1;
 var PULSE_MOST = 6;
+var PULSE_RISE = 0.2;
 var UNIT_INK = { mm: [0.062, 1.076, 0.56, 0.56], pt: [0.088, 1.035, 0.705, 0.885], in: [0.082, 1.032, 0.78, 0.78], lig: [0.029, 1.683, 0.78, 0.96], thou: [0.052, 2.262, 0.73, 0.74] };
 var SECTIONS = Object.keys(ROWS);
 var TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];
@@ -12861,20 +12869,28 @@ var DialTool = class _DialTool {
    *  It follows the time shown, so it falls with the seconds hand's steps and goes faster as time does — up to six
    *  a second (PULSE_MOST), or the movement's own beat if that is more; past that it holds, in real seconds (720× would
    *  otherwise flash hundreds of times a second; answer to #282).
+   *  Below 1× (slow motion) the triangle's flash keeps its own pace (#308; Okay, 16 Oct 2026, on 4.46: "flash and dim
+   *  the arrow much faster on slow speeds, flash brighter. Like an analog fade. Eased over the line and comes back"):
+   *  it starts at the beat as before, but lasts as long in real seconds as it does at 1× (half a beat), and peaks
+   *  brighter (the button's class slow: --play-tri-slow); a sweep's breath runs in real seconds there too. The flash
+   *  itself is a lamp's: a short eased rise (a fifth of it), then an eased fall — not a blink.
    *  t = the time shown, in seconds · now = real seconds. Not where the system asks for less motion. */
   pulse(t, now = 0) {
     let cap = 0, tri = 0;
+    const slow = this.speed < 1;
     if (this.playing && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
       const beat = BEATS[this.S.ha_beat] ? BEATS[this.S.ha_beat][1] : 0, rate = beat || 0.5, most = Math.max(beat, PULSE_MOST);
       const f = rate * this.speed <= most ? frac(t * rate) : frac(now * most);
       if (beat > 0) {
         cap = (1 - f) ** 3;
-        tri = Math.max(0, 1 - 2 * f) ** 2;
+        const h = Math.min(1, 2 * (slow ? f / this.speed : f));
+        tri = h < PULSE_RISE ? 0.5 - 0.5 * Math.cos(Math.PI * h / PULSE_RISE) : (1 - (h - PULSE_RISE) / (1 - PULSE_RISE)) ** 2;
       } else {
-        cap = 0.5 - 0.5 * Math.cos(2 * Math.PI * f);
+        cap = 0.5 - 0.5 * Math.cos(2 * Math.PI * (slow ? frac(now * rate) : f));
         tri = cap ** 3;
       }
     }
+    this.play_button.classList.toggle("slow", this.playing && slow);
     this.play_button.style.setProperty("--pulse", cap.toFixed(3));
     this.play_button.style.setProperty("--pulse-tri", tri.toFixed(3));
   }

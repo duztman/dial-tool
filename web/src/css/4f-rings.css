@@ -109,12 +109,17 @@
   .numpop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--num-pop-gap); min-height: 0; padding: 0; }
   .numpop .row > *, .numpop .row.txt > input { grid-column: 1; }
   .numpop .row > label { display: none; }
-  .numpop .row .menulabel { display: flex; justify-content: center; align-items: center; gap: var(--u1); font: 600 var(--t-s)/1.3 var(--sans); }
-  .numpop .row .menulabel > label { color: var(--num-pop-fill); font: inherit; }
+  /* a row with a menu keeps its name, on top, lighter than the pills, its chevron without a box (#310, 4.46.6: "Name is on
+     top, lighter, chevron boxless"); its line as high as its words alone, so its ink stands about as far from the frame
+     as the discs do at the foot ("top padding equals the bottom") */
+  .numpop .row .menulabel { display: flex; justify-content: center; align-items: center; gap: var(--u1); font: 600 var(--t-s)/1 var(--sans); }
+  .numpop .row .menulabel > label { color: var(--num-pop-name); font: inherit; }
+  .numpop .row .labelmenu { width: auto; height: auto; border: 0; background: none; color: var(--num-pop-name); }
+  .numpop .row .labelmenu:hover { color: var(--ink); }
   .numpop .row input[type="range"] { width: 100%; height: var(--num-pop-pill); padding: 0 calc((var(--num-pop-pill) - var(--num-pop-thumb)) / 2); border-radius: calc(var(--num-pop-pill) / 2); background: var(--field); }      /* the knob as far from the pill's ends as from its top and bottom */
   .numpop .row input[type="range"]::-webkit-slider-thumb { width: var(--num-pop-thumb); height: var(--num-pop-thumb); margin-top: calc((var(--track) - var(--num-pop-thumb)) / 2); }
   .numpop .row input[type="range"]::-moz-range-thumb { width: var(--num-pop-thumb); height: var(--num-pop-thumb); }
-  .numpop .row input[type="text"] { width: 100%; height: var(--num-pop-pill); border: 0; border-radius: calc(var(--num-pop-pill) / 2); font-size: var(--t-num-pop); text-align: center; }
+  .numpop .row input[type="text"] { width: 100%; height: var(--num-pop-value); border: 0; border-radius: calc(var(--num-pop-value) / 2); font-size: var(--t-num-pop); text-align: center; }      /* as high as the discs under it (#310) */
   .numpop .row input[type="text"]:focus { outline: 0; }      /* the value, chosen to be typed over, says it */
   .numpop .row input[type="text"]::selection { background: var(--ink); color: var(--field); }      /* chosen: black, its figures mid grey (no white) */
   .numpop:not(:has(.steps)) { border-bottom-left-radius: var(--num-pop-round); border-bottom-right-radius: var(--num-pop-round); }      /* no discs at its foot (a window's places): the pills' round there too */

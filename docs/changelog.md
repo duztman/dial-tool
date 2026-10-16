@@ -1,5 +1,20 @@
 # Dial Tool — changelog
 
+## beta 4.46.6 (web version) · 17 Oct 2026
+
+Three small ones left over from Okay's marks on 4.46 (handoff §1).
+
+- **The number popup, third look** (#310; Okay: "pill height equals the plus and minus. But that growth does not affect slider, it may move up for good padding. Name is on top, lighter, chevron boxless"):
+  - the value's pill is as high as the − and + discs (66, was 44); the slider's pill stays 44. The popup is 219 high (was 197);
+  - a popup with a name (a row with a menu, such as *Centre radius*) shows it on top in a lighter grey (`--num-pop-name`, the rule grey #B9B9B4; the pills' mid grey before) with its chevron bare, no box;
+  - the name's line is as high as its words (12, was 18), so its ink stands 13 from the frame, as the discs do at the foot ("top padding equals the bottom"); the slider follows it at the usual gap (8.25), 6 higher than in 4.46.5.
+- **NOW darker** (#307; Okay: "darker than ams outlines by 20%"): its fill is the bar's light tone (AM's outline, #737373) made 20 % darker, #5C5C5C (`--bar-now`; #B9B9B4 since 4.45.5). Its word turns light (`--bar-now-ink`, the panel's light rule tone #D4D4CF — not white: nothing on the bar is, 15 Oct): the bar's dark on that fill would read 1.7 : 1; now 4.5 : 1. A hover 10 % darker than the outline; a press still the outline's tone.
+- **The play pulse at slow speeds** (#308; Okay: "the play animation flash and dim the arrow much faster on slow speeds, flash brighter. Like an analog fade. Eased over the line and comes back kind"):
+  - below 1× the triangle's flash lasts as long in real seconds as it does at 1× — half a beat (half a second on a quartz movement) — instead of stretching with the slow motion (five seconds at 0.1×). It still starts on the beat, with the seconds hand's step;
+  - its peak there is full (`--play-tri-slow` 1; 0.7 otherwise), set by the button's class `slow`;
+  - the flash itself is a lamp's: an eased rise over its first fifth, then an eased fall (`PULSE_RISE`; a jump to full and a fall before). At 1× the rise is a tenth of a second. A sweep's breath runs in real seconds below 1× too.
+  - The cap's own fade (the whole beat) is as it was.
+
 ## beta 4.46.5 (web version) · 16 Oct 2026
 
 - **A hand's page, the shapes' first black line moves down** (#311; Okay: "Short black line is part of hand selector. Comes after wall and preview box … THERE'S A SPACE. THEN COMES BLACK LINE. BUT THAT SPACE, IS THE SAME WITH ALL WHITES AND BLACK AROUND HERE"). The box and the last row (Wall) end on one line. Then come two units of space (11 px), then the thin black line that opens the shapes' row. In 4.46.4 that line lay on the box's foot. The thumbs keep two units to each black line, so every space here is the same.

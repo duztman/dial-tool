@@ -77,7 +77,7 @@
     --track-100: 0.1em;                            /* tracking 100 (Okay, 04:59: "now gets 100 tracking") */
     --title-end: 0px; --bar-h: 0px;                /* set by dial_alone(): where the title ends (undo · redo stop short of it); the bar's height on a phone */
     --play-size: 34px; --play-pulse: 30%;          /* the play button: a section tab's box (Okay, 00:42); how far its cap goes toward its light colour at a beat, then fades the whole way to 0 (22 % until Okay's notes, p. 14, #282: "from 30 % to 0") */
-    --play-tri-rest: 0.4; --play-tri-low: 0.1; --play-tri-high: 0.7;      /* the play triangle on the cap (#282): still, and its pulse's two bounds ("never below 10 % or above 70 %") */
+    --play-tri-rest: 0.4; --play-tri-low: 0.1; --play-tri-high: 0.7; --play-tri-slow: 1;      /* the play triangle on the cap (#282): still, and its pulse's two bounds ("never below 10 % or above 70 %"); below 1× its peak, full (#308, Okay, 16 Oct 2026: "flash brighter") */
     /* the time and AM · PM in Dial Time (#284, beta 4.44: Barlow Condensed Light, packed; fonts/ui/time_font.py). Its
        measures, as the face draws them: a tabular figure, the colon (made 80 % in that face), the caps; the widest of
        AM and PM in ink. The tracking tight (Okay's notes, p. 15) */
@@ -97,7 +97,7 @@
     --row-end: calc(var(--frame-pad) - var(--hair) + var(--ringline-inner));      /* the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons */
     --line-button: 36px; --bare-dot: 16px;      /* in the ring drawer every control is this high (a value button this wide too) · the colour's swatch */
     --half: 30px;                                  /* AM · PM: its own window beside the time (Okay, 14 Oct 2026, 23:19) */
-    --bar-now: var(--rule); --bar-now-hover: var(--rule-light);      /* NOW: filled, much lighter than the bar's light tone, its word in the bar's dark — the bar's one filled button (Okay, 16 Oct 2026, #306: "fill bg, invert type, make button much lighter colored"); a press: the light tone */
+    --bar-now: color-mix(in srgb, var(--bar-light) 80%, var(--black)); --bar-now-hover: color-mix(in srgb, var(--bar-light) 90%, var(--black)); --bar-now-ink: var(--rule-light);      /* NOW: filled, the bar's one filled button (Okay, 16 Oct 2026, #306: "fill bg, invert type"); its fill 20 % darker than AM's outline, the bar's light tone (#307, on 4.46: "darker than ams outlines by 20%" → #5C5C5C; #B9B9B4 in 4.45.5), so its word is the panel's light rule tone, #D4D4CF (4.5 : 1; the bar's dark would read 1.7 : 1, and nothing on the bar is white — Okay, 15 Oct 2026); a hover 10 % darker than the outline; a press: the light tone */
     --value-pop: 132px;                            /* a value button's tag: about as wide as it is high */
     /* the number popup (#249; Okay's drawing, 16 Oct 2026, 4.45.3): on a dark ground, two pills a finger high (44,
        the least a finger is given) — the slider, the value — and under them − and + as two discs half as high again;
@@ -105,8 +105,9 @@
        top a pill's round plus that room and the frame, at the bottom a disc's ("plus minus roundness + some offset"),
        so each runs parallel to what it holds. The pills and discs mid grey ("no white … all colors mid grays"), the
        words, the signs and the slider's knob, a disc, black. */
-    --num-pop-pill: 44px; --num-pop-step: calc(1.5 * var(--num-pop-pill));
+    --num-pop-pill: 44px; --num-pop-step: calc(1.5 * var(--num-pop-pill)); --num-pop-value: var(--num-pop-step);      /* the value's pill as high as the discs (#310, Okay, 16 Oct 2026, on 4.46: "pill height equals the plus and minus. But that growth does not affect slider") */
     --num-pop-pad: var(--u4); --num-pop-gap: var(--u3);
+    --num-pop-name: var(--rule);                    /* a popup with a name (a row with a menu): the name on top, lighter than the pills, its chevron without a box (#310: "Name is on top, lighter, chevron boxless") */
     --num-pop: calc(2 * var(--num-pop-step) + var(--num-pop-gap) + 2 * var(--num-pop-pad) + 2 * var(--thick));
     --num-pop-round: calc(var(--num-pop-pill) / 2 + var(--num-pop-pad) + var(--thick)); --num-pop-round-foot: calc(var(--num-pop-step) / 2 + var(--num-pop-pad) + var(--thick));
     --num-pop-ground: var(--night); --num-pop-fill: color-mix(in srgb, var(--grey), var(--rule)); --num-pop-hover: color-mix(in srgb, var(--num-pop-fill) 85%, var(--black));

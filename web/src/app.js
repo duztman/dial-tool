@@ -652,6 +652,7 @@ const speed_at = (p, split) => (p < split ? SPEED_SLOW[Math.round(p / split * (S
 const speed_word = (k) => (k >= 10 ? String(Math.round(k)) : String(+k.toFixed(k < 1 ? 2 : 1)));      // the figures: 0.25, 1, 2.5, 60
 const frac = (x) => ((x % 1) + 1) % 1;
 const PULSE_MOST = 6;      // the play button's pulse: at most this many a second, unless the movement's own beat is more (#282; 3 in 4.44 — Okay: "Play button can go faster in animation"; the three-flash limit is for flashes over a large part of the view, not a 31-point button)
+const PULSE_RISE = 0.2;    // the triangle's flash: how much of it is the rise, eased, before the eased fall (#308: "like an analog fade")
 // each unit's ink in Dial Mono, in em, from its outlines (fonts/ui/mono_font.py prints it): [left of the advance's
 // start, width, top over the baseline, height]. The unit box is drawn round it (size_unit, #302)
 const UNIT_INK = { mm: [0.062, 1.076, 0.56, 0.56], pt: [0.088, 1.035, 0.705, 0.885], in: [0.082, 1.032, 0.78, 0.78], lig: [0.029, 1.683, 0.78, 0.96], thou: [0.052, 2.262, 0.73, 0.74] };      // the play button's pulse: at most this many a second, unless the movement's own beat is more (#282)
@@ -4281,15 +4282,27 @@ class DialTool {
    *  It follows the time shown, so it falls with the seconds hand's steps and goes faster as time does — up to six
    *  a second (PULSE_MOST), or the movement's own beat if that is more; past that it holds, in real seconds (720× would
    *  otherwise flash hundreds of times a second; answer to #282).
+   *  Below 1× (slow motion) the triangle's flash keeps its own pace (#308; Okay, 16 Oct 2026, on 4.46: "flash and dim
+   *  the arrow much faster on slow speeds, flash brighter. Like an analog fade. Eased over the line and comes back"):
+   *  it starts at the beat as before, but lasts as long in real seconds as it does at 1× (half a beat), and peaks
+   *  brighter (the button's class slow: --play-tri-slow); a sweep's breath runs in real seconds there too. The flash
+   *  itself is a lamp's: a short eased rise (a fifth of it), then an eased fall — not a blink.
    *  t = the time shown, in seconds · now = real seconds. Not where the system asks for less motion. */
   pulse(t, now = 0) {
     let cap = 0, tri = 0;
+    const slow = this.speed < 1;
     if (this.playing && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
       const beat = G.BEATS[this.S.ha_beat] ? G.BEATS[this.S.ha_beat][1] : 0, rate = beat || 0.5, most = Math.max(beat, PULSE_MOST);
       const f = rate * this.speed <= most ? frac(t * rate) : frac(now * most);      // how far from the last beat, 0 to 1
-      if (beat > 0) { cap = (1 - f) ** 3; tri = Math.max(0, 1 - 2 * f) ** 2; }    // a flash at the beat, gone before the next
-      else { cap = 0.5 - 0.5 * Math.cos(2 * Math.PI * f); tri = cap ** 3; }        // sweep: a slow breath
+      if (beat > 0) {
+        cap = (1 - f) ** 3;                                                         // the cap: a flash at the beat, fading the whole beat
+        const h = Math.min(1, 2 * (slow ? f / this.speed : f));                     // the flash's own clock: 0 at the beat, 1 when it is over (half a beat; at 0.1× still half a beat of real time)
+        tri = h < PULSE_RISE ? 0.5 - 0.5 * Math.cos(Math.PI * h / PULSE_RISE) : (1 - (h - PULSE_RISE) / (1 - PULSE_RISE)) ** 2;
+      } else {                                                                      // sweep: a slow breath (in real seconds below 1×)
+        cap = 0.5 - 0.5 * Math.cos(2 * Math.PI * (slow ? frac(now * rate) : f)); tri = cap ** 3;
+      }
     }
+    this.play_button.classList.toggle("slow", this.playing && slow);
     this.play_button.style.setProperty("--pulse", cap.toFixed(3));
     this.play_button.style.setProperty("--pulse-tri", tri.toFixed(3));
   }

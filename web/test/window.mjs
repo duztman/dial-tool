@@ -320,8 +320,8 @@ await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before)
   await page.keyboard.type("x2"); await page.keyboard.press("Enter");
   const w_after = await S("S.rings[S.ui_ring].width");
   await page.evaluate((w) => window.dial_tool.set_value("ring", "width", w), w_before);
-  check(Math.abs(dragged - (w_before + 0.4)) < 1e-9 && pop[0] === "Band width" && pop[1] === 7 && pop[2] && Math.abs(pop[3]) <= 1 && pop[4] === 166 && pop[5] === 197 && pop[6] !== "none" && pop[7] === "2px rgb(92, 92, 88) 35px 22px 22px" && pop[8] && pop[9] === "none" && pop[10] === "140×44 140×44 140×66" && pop[11] && pop[12].join(" ") === "rgb(20, 20, 19) 46px rgb(0, 0, 0)" && Math.abs(w_after - 2 * w_before) < 1e-9 && await page.$("#value-pop") === null,
-    `the size button, before the radius: dragged 16 to the right a band is 0.4 wider; a click opens the number popup under it (#249): after Okay's drawing (4.45.3), on a dark ground (${pop[12][0]}), no name (${pop[0]}, unseen), the slider and the value in pills, − and + two discs (${pop[10]}), 8 apart; its corners a pill's round plus the room at the top (${pop[7]}), a disc's at the bottom (${pop[12][1]}); words black; it takes x2`);
+  check(Math.abs(dragged - (w_before + 0.4)) < 1e-9 && pop[0] === "Band width" && pop[1] === 7 && pop[2] && Math.abs(pop[3]) <= 1 && pop[4] === 166 && pop[5] === 219 && pop[6] !== "none" && pop[7] === "2px rgb(92, 92, 88) 35px 33px 22px" && pop[8] && pop[9] === "none" && pop[10] === "140×44 140×66 140×66" && pop[11] && pop[12].join(" ") === "rgb(20, 20, 19) 46px rgb(0, 0, 0)" && Math.abs(w_after - 2 * w_before) < 1e-9 && await page.$("#value-pop") === null,
+    `the size button, before the radius: dragged 16 to the right a band is 0.4 wider; a click opens the number popup under it (#249): after Okay's drawing (4.45.3), on a dark ground (${pop[12][0]}), no name (${pop[0]}, unseen), the slider in a pill, the value in a pill as high as the discs (#310, 4.46.6: "pill height equals the plus and minus"), − and + two discs (${pop[10]}), 8 apart; its corners a pill's round plus the room at the top (${pop[7]}), a disc's at the bottom (${pop[12][1]}); words black; it takes x2`);
   // sliding in it shows the guides, as set, even with Guides off, and they go a moment after (Okay, on 4.45: "activate guides on slide. Even if off")
   await page.evaluate(() => window.dial_tool.set_value("global", "guides", false));
   await page.click("#ring-size"); await page.waitForTimeout(200);
@@ -389,13 +389,16 @@ const anchors = await page.evaluate(() => {
   const t = window.dial_tool, ring = t.ring(), menu = document.querySelector("#value-pop .menulabel select"), label = () => document.querySelector("#value-pop .menulabel label").textContent;
   const out = { options: [...menu.options].map((o) => o.textContent).join(" "), labels: [label()], r: ring.r };
   for (const v of ["1", "2", "0"]) { menu.value = v; menu.dispatchEvent(new Event("change")); out.labels.push(label()); out["a" + v] = ring.anchor; }
+  // the name on top, lighter, its chevron boxless; the popup's ink as far from the frame at the top as the discs at the foot (#310, 4.46.6)
+  const pop = document.querySelector("#value-pop"), p = pop.getBoundingClientRect(), name = pop.querySelector(".menulabel"), n = name.getBoundingClientRect(), chev = pop.querySelector(".labelmenu"), cs = getComputedStyle(chev), steps = pop.querySelector(".steps").getBoundingClientRect();
+  out.look = [getComputedStyle(pop.querySelector(".menulabel label")).color, cs.borderTopWidth, cs.backgroundColor, Math.round(n.height), Math.round(n.top - p.top), Math.round(p.bottom - steps.bottom), Math.round(p.height), Math.round(pop.querySelector("input[type=range]").getBoundingClientRect().top - n.bottom)];
   return out;
 });
 await shot("4c10-radius-pop");
 await page.keyboard.press("Escape");
 await page.click(`.ringlist li:nth-child(${ring_before + 1} of .ring) .name`);
-check(anchors.options === "Baseline Ascender Centre" && anchors.labels.join(" | ") === "Centre radius | Baseline radius | Ascender radius | Centre radius" && anchors.a1 === 1 && anchors.a2 === 2 && anchors.a0 === 0,
-  `the radius of numerals has a menu beside its label: ${anchors.options}; the label follows: ${anchors.labels.join(" → ")}`);
+check(anchors.options === "Baseline Ascender Centre" && anchors.labels.join(" | ") === "Centre radius | Baseline radius | Ascender radius | Centre radius" && anchors.a1 === 1 && anchors.a2 === 2 && anchors.a0 === 0 && anchors.look.join(" ") === "rgb(185, 185, 180) 0px rgba(0, 0, 0, 0) 12 13 13 239 8",
+  `the radius of numerals has a menu beside its label: ${anchors.options}; the label follows: ${anchors.labels.join(" → ")}; in the popup the name stands on top, lighter, its chevron without a box, a line as high as its words, 13 from the frame as the discs are at the foot (${anchors.look.join(" · ")}) (#310: "Name is on top, lighter, chevron boxless")`);
 // …and the drawing follows: the numeral at 12 stands on the radius (baseline), hangs from it (ascender), or is centred on it
 const at12 = [];
 for (const v of [1, 2, 0]) {
@@ -1325,15 +1328,19 @@ check(t1 - t0 > 0.4 && t1 - t0 < 1.5, `Play moves the time (${(t1 - t0).toFixed(
   const p = await page.evaluate(() => {
     const t = window.dial_tool, was = [t.playing, t.speed, t.S.ha_beat], v = () => { const s = t.play_button.style; return [+s.getPropertyValue("--pulse"), +s.getPropertyValue("--pulse-tri")]; };
     t.playing = true; t.S.ha_beat = 1; t.speed = 1;
-    t.pulse(100, 0); const beat = v(); t.pulse(100.25, 0); const quarter = v(); t.pulse(100.5, 0); const half = v();
+    t.pulse(100, 0); const beat = v(); t.pulse(100.05, 0); const rise = v(); t.pulse(100.1, 0); const peak = v(); t.pulse(100.25, 0); const quarter = v(); t.pulse(100.5, 0); const half = v();
     t.speed = 720; t.pulse(100.5, 0); const held = v(); t.pulse(100.5, 1 / 12); const held_half = v();
+    // slow motion (#308, 4.46.6): the flash as long in real seconds as at 1× — at 0.1× over by 0.05 of a beat (half a real second), its peak full; one beat later still a flash
+    t.speed = 0.1; t.pulse(100.01, 0); const slow_peak = [...v(), t.play_button.classList.contains("slow"), getComputedStyle(t.play_button).getPropertyValue("--play-tri-high").trim()]; t.pulse(100.05, 0); const slow_over = v(); t.pulse(101.01, 0); const slow_next = v();
+    t.speed = 1; t.pulse(100.1, 0); const fast_class = t.play_button.classList.contains("slow");
     [t.playing, t.speed, t.S.ha_beat] = was; t.pulse(0);
     const tri = t.play_button.querySelector(".arc-play"), r = tri.getBoundingClientRect(), b = t.play_button.getBoundingClientRect();
-    return { beat, quarter, half, held, held_half, dot: !!t.play_button.querySelector(".arc-dot"), rest: getComputedStyle(tri).opacity, fill: getComputedStyle(tri).fill, blur: !!tri.getAttribute("filter"), off: [((r.left + r.right) / 2 - (b.left + b.right) / 2).toFixed(1), ((r.top + r.bottom) / 2 - (b.top + b.bottom) / 2).toFixed(1)] };
+    return { beat, rise, peak, quarter, half, held, held_half, slow_peak, slow_over, slow_next, fast_class, dot: !!t.play_button.querySelector(".arc-dot"), rest: getComputedStyle(tri).opacity, fill: getComputedStyle(tri).fill, blur: !!tri.getAttribute("filter"), off: [((r.left + r.right) / 2 - (b.left + b.right) / 2).toFixed(1), ((r.top + r.bottom) / 2 - (b.top + b.bottom) / 2).toFixed(1)] };
   });
   await page.emulateMedia({ reducedMotion: "reduce" });
-  check(p.beat.join() === "1,1" && p.quarter[0] > p.quarter[1] && p.quarter[1] > 0 && p.half[1] === 0 && p.half[0] > 0 && p.held.join() === "1,1" && p.held_half[1] === 0 && !p.dot && p.rest === "0.4" && p.fill === "rgb(255, 255, 255)" && p.blur,
-    `the play button: a soft white triangle (${p.rest} at rest, its box ${p.off.join(" / ")} off the cap's middle, as its ink is centred), no beat's dot; at a beat cap and triangle full, the triangle gone by half the beat (${p.quarter.join(" / ")} at a quarter, ${p.half.join(" / ")} at half); at 720× the flashes held at six a second (${p.held_half.join(" / ")} a twelfth of a second on; three until 4.44.5)`);
+  check(p.beat.join() === "1,0" && p.rise[1] > 0 && p.rise[1] < 1 && p.peak[1] === 1 && p.quarter[0] > p.quarter[1] && p.quarter[1] > 0 && p.half[1] === 0 && p.half[0] > 0 && p.held.join() === "1,0" && p.held_half[1] === 0 && !p.dot && p.rest === "0.4" && p.fill === "rgb(255, 255, 255)" && p.blur
+    && p.slow_peak.join() === "0.97,1,true,1" && p.slow_over[1] === 0 && p.slow_next[1] === 1 && !p.fast_class,
+    `the play button: a soft white triangle (${p.rest} at rest, its box ${p.off.join(" / ")} off the cap's middle, as its ink is centred), no beat's dot; at a beat the cap full and the triangle rising, eased, full a tenth of the beat on (${p.rise[1]} at a twentieth), gone by half the beat (${p.quarter.join(" / ")} at a quarter, ${p.half.join(" / ")} at half); at 720× the flashes held at six a second (${p.held_half.join(" / ")} a twelfth of a second on; three until 4.44.5); at 0.1× the flash lasts half a real second, not five (${p.slow_over[1]} at 0.05 of a beat), and peaks at full (${p.slow_peak.slice(2).join(" · ")}) (#308)`);
 }
 // how fast: one slider — slow motion's four steps first (0.1 · 0.25 · 0.5 · 1×, #283), then a log scale to 720×
 const at_speed = async (k) => page.$eval("#speed", (e, k) => { const split = window.dial_tool.speed_split(); e.value = Math.round((split + (1 - split) * Math.log(k) / Math.log(720)) * 1000) + 8; e.dispatchEvent(new Event("input", { bubbles: true })); }, k);
@@ -1404,7 +1411,7 @@ check(fits.play === 34 && fits.zooms === 54 && fits.fit === 54 && fits.gaps[0] =
   `under the panel: play, a margin less what the speed box grew toward it (24 − 3.5, Okay 15 Oct 03:18), how fast · the time with AM · PM attached, as high, its word the time's size (#284, 4.44.6) · NOW one equal gap apart, NOW ending on the panel's last column (${JSON.stringify(fits)})`);
 { // the bar's time, second look (#306, 4.45.5): the figures tracked +0.04em, AM · PM 5.5 each side, NOW filled light with a dark word
   const look = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c("#time").letterSpacing, c("#ampm").paddingLeft, c("#ampm").paddingRight, c("#now").backgroundColor, c("#now").color]; });
-  check(look.join(" ") === "0.8px 5.5px 5.5px rgb(185, 185, 180) rgb(51, 51, 51)", `the bar's time: its figures tracked +0.04em, AM · PM closer to its word, NOW filled light with its word dark (${look.join(" · ")}) (#306)`);
+  check(look.join(" ") === "0.8px 5.5px 5.5px color(srgb 0.360784 0.360784 0.360784) rgb(212, 212, 207)", `the bar's time: its figures tracked +0.04em, AM · PM closer to its word, NOW filled 20 % darker than AM's outline (#5C5C5C) with its word the light rule tone, not white (${look.join(" · ")}) (#306, #307)`);
 }
 await shot("7b-bar");
 await page.fill("#time", "3:20:10");
