@@ -1,31 +1,25 @@
 # Handoff — taking over the Dial Tool
 
-*Written 16 Oct 2026, night, at beta 4.46.5, by the session that built 4.42–4.46.5 (Okay: "devise way to handoff to another agent"). For the next Claude session on this repo. §1 is rewritten at every handover; the rest changes when something new is learnt.*
+*Written 16 Oct 2026, night, at beta 4.46.5, by the session that built 4.42–4.46.5 (Okay: "devise way to handoff to another agent"); §1 rewritten 17 Oct 2026 at beta 4.48 by the session that built 4.46.6–4.48. For the next Claude session on this repo. §1 is rewritten at every handover; the rest changes when something new is learnt.*
 
 A new session starts with no memory of the last one: the transcript stays in the old container. Everything a successor needs is in the repo. Use this page to find it.
 
-## 1 · Where things stand (16 Oct 2026, night)
+## 1 · Where things stand (17 Oct 2026)
 
-- **Beta 4.46.5** is on `dev`, on `main` and on the live page (https://duztman.github.io/dial-tool/). `main` was 4.41 until tonight.
-- **The plan** is the phases A–J in `docs/build-list.md`, under *From Okay's notes on the dial app* (16 Oct 2026). A–F are done. What's left, in order:
-  1. **One small push, no sketch needed** (4.46.6):
-     - #310: the number popup, third look: the name on top, lighter; the chevron without a box; the value pill as tall as the ± discs; the slider moved up.
-     - #307: NOW darker. The reading is still open: "darker than AM's outlines by 20 %" ≈ a fill of #5C5C5C, with a light word. Say the value when it's built.
-     - #308: the play pulse at slow speeds: much faster, brighter, and an eased fade.
-  2. **G · rings** (4.47–4.48):
-     - #251, #253 and #258 wait for Okay's sketches: ask for them, don't build from the words alone.
-     - #254–#257, #259 and #296 can be built.
-  3. **H · fonts** #273–#276 · **I · text ring** #297 · **J · Gallery** #286–#289.
-- **Loose ends:**
-  - #244: names a screen reader hears.
-  - #294: the specials with no figure from Okay, for him to look through.
-  - #182 and #185: two bugs from 4.36.1, maybe gone since. Check them before fixing.
-- **Okay's Mac copy** is due for a `git pull` (CLAUDE.md, last line). It needs the session linked to his Mac.
-- **Okay's last words**, after 4.46.5: "Release on main, devise way to handoff to another agent."
+- **Beta 4.48** is on `dev` and the live page (https://duztman.github.io/dial-tool/); **`main` is 4.46.5** (Okay releases to `main` on his word: `tools/release.sh main`).
+- **Today's pushes** (all on the live page): 4.46.6 (#310 popup third look, #307 NOW darker, #308 pulse at slow speeds) · 4.46.7 (#313: the font research's top tier joined the list, 42 families) · 4.47 (#296 Type first, #257 Resize pane and *resize from*, #185) · 4.47.1 (#256 the list fits the selected ring, the list's pill) · 4.47.2 (#244 screen-reader names) · 4.48 (#297 the text ring, phase I).
+- **The plan** is the phases A–J in `docs/build-list.md`. A–F done; G half done; I done; H and J open. What's left:
+  1. **G's rest waits for Okay** — don't build from the words: #251 (Positions preview), #253 (the drawer) and #258 (Give way) want his sketches; #254 (unselected rows) goes with #253; #255 (kind icons) and #259 (placement icons) are redraws for his eye — make mock-ups through `web/icons/` and show him before pasting. Asked for once on 17 Oct; he said his later messages are notes, not answers ("Report later").
+  2. **H · fonts** #273–#276: on hold by his word (17 Oct: "push the design ui stuff for later").
+  3. **J · Gallery** #286–#289: buildable now (the text ring is there for brand names and remarks); #287 needs his picks.
+- **Open readings to say to him** (brief §4, 17 Oct rows): "add … to defaults" read as *join* (42 fonts, not compete); a numeral's Size stays in the font box, not in Resize (#257); the text ring's snap is 2° (`SNAP_DEG`), typed values too.
+- **Loose ends:** #294 (specials with no figure from him, for him to look through) · #231 (a window's two names) · the guide is still built on 4.36.1 and rebuilt only on his word (R25).
+- **His Mac copy**: not reachable from a session; brief §5 question 14 — **not to be raised again**.
+- **Okay's last words** (17 Oct): "Don't check the fonts too deep, they are vetted"; "Do not take my interjections as stopping matter … I'm just putting down notes, not to do now in this session. Report later. Go ahead."
 
 ## 2 · First steps in a new session
 
-1. `bash tools/setup.sh`: the system library, the Python packages, the two test fonts, `npm install`. Safe to run twice.
+1. `bash tools/setup.sh`: the system library, the Python packages, the two test fonts, `npm install`, and the clone's fetch widened to every branch (a session's clone is shallow, so single-branch; without that `release.sh` builds the live page on a stale `gh-pages` — found 17 Oct). Safe to run twice.
 2. Read what CLAUDE.md lists, in its order. Two places hold the recent work:
    - the last ~25 rows of `docs/brief.md` §4;
    - the build list's rows #249–#311 with the phases above them.
@@ -74,6 +68,10 @@ A new session starts with no memory of the last one: the transcript stays in the
 - **"Note and move on"**: the note goes to the build list, not into the push at hand.
 - **On round three** of the same fix: stop, measure, ask. It's his rule.
 - **The bigger picture.** He says he dives into details and loses it; flag it when you see it. Tonight's case: `main` was 53 versions behind `dev`.
+- **His notes mid-work are notes, not stops** (17 Oct): "if new chats come in that means I'm just putting down notes, not to do now in this session. Report later. Go ahead." Put them in the build list under the phase they belong to and carry on.
+- **Minimal input, push through** (17 Oct): "I trust you to push through … Check back with approved fittings before proposing new views. Old stuff trumps what you don't get from my instructions, distances centerings all under rule." So: reuse a fitting he has passed (a menu beside a label, the gripper's measures, the tab look) before drawing anything new; when a reading is open, take the smaller one and say it.
+- **No access → give it up early** and put it under brief §5 (17 Oct: "Quit stuff early like no access and put them under open questions"). His Mac and `try/shadows` are the two so far.
+- **Long jobs in parallel** (17 Oct: "Long processes may happen, do other things in parallel"): run `npm test` in the background and read or write docs meanwhile; a subagent fetched the 21 fonts while 4.46.6 was built.
 - **Don'ts:**
   - Never bring up `try/shadows` again.
   - Don't commit his notes or PDFs as files: quote them into the docs.
