@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.45.4 (web version) · 16 Oct 2026
+
+- **A disc hand's mark** (#300; Okay, on 4.43: "Mark if also possible easily"). A new row, *Marker*, has two choices, **Hole** and **Mark**:
+  - **Hole** cuts the marker out of the disc, so the dial shows through. This is what disc hands did before.
+  - **Mark** paints the marker on the disc, whole, in a colour of its own (*Mark ink*, white to start). On the dial it is a part of its own that turns with its hand, catches the shadows of the hands above, and is named "… hand mark" in an exported SVG. The hand's box shows it in its colour.
+  - The rows below follow the choice: *Hole*, *Hole length*, *Hole width* or *Mark*, *Mark length*, *Mark width*.
+- Two keys are appended to the link table, `mark_as` and `mark_c`. They start as a hole, so every scheme-2 link still draws as before (R31; no new scheme).
+
 ## beta 4.45.3 (web version) · 16 Oct 2026
 
 - **The number popup, after Okay's drawing** (#304; "tighter, dark background. Thicker plus minus, rounded ends, text larger, no white despite the drawing, all colors mid grays, text, buttons, dial excluded, they are black"):

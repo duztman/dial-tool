@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.45.3";
+export const VERSION = "beta 4.45.4";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -83,6 +83,9 @@ export const HAND_BASE = {
   // on the pivot, carrying one marker drawn as a markers ring draws its marks — mark: a place in SHAPES (bar · wedge ·
   // dot), mark_len · mark_w its length and width — with its outer end at the hand's Length. Used only by shape "disc"
   disc_d: 8.0, mark: 0, mark_len: 1.6, mark_w: 0.6,
+  // the marker as a hole or a mark (#300, beta 4.45.4; Okay, 16 Oct 2026: "Mark if also possible easily"): mark_as 0 —
+  // cut out of the disc (the dial shows through), as before; 1 — painted on it, whole, in mark_c
+  mark_as: 0, mark_c: [1, 1, 1, 1],
 };
 
 // windows 2 to 4 (web version, beta 3.0). Window 1 is the date window both tools know: its keys are da_….
@@ -379,6 +382,7 @@ export const LINK_KEYS = [
   "sh_disc", "gd_more", "gd_c", "gd_strength", "gd_sel_c", "gd_sel_strength", "gd_sel_w", "offset", "file", "scale",
   "twelve_scale", "lang", "fill", "num_again", "anchor", "fit", "w_scale", "mark", "hour", "age", "sides", "turn",
   "text_turn", "at_deg", "a", "k", "ha_cap_top",
+  "mark_as", "mark_c",      // 4.45.4 (#300): appended; starting as a hole, so every scheme-2 link draws as before
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -1425,19 +1429,27 @@ export function hand_shape(h) {
 /** a disc hand, pointing at 12: the disc with its one marker. Disc and marker are one colour, so where the marker lies
  *  on the disc it is cut out of it (the dial shows through), and where it reaches past the disc it is ink. */
 function disc_hand(h) {
-  const disc = circle(max(h.disc_d, 0.1));
-  const mark_ring = { ...RING_BASE, shape: h.mark, len: h.mark_len, w: h.mark_w, round_out: h.round || 0, round_in: h.round || 0 };
-  const mark = mark_outline(mark_ring, h.mark_len, h.mark_w), b = mark.bounds();
-  if (!b) return disc;
-  const placed = place(mark, max(h.len - (b[3] - b[1]) / 2, 0.1), 0);
-  return disc.difference(placed).union(placed.difference(circle(max(h.disc_d, 0.1))));
+  const disc = circle(max(h.disc_d, 0.1)), placed = disc_mark(h);
+  if (!placed) return disc;
+  if (h.mark_as === 1) return disc.union(placed);      // a mark: the disc whole and the marker with it; the scene paints the marker again, in its own colour
+  return disc.difference(placed).union(placed.difference(disc));
 }
+/** a disc hand's marker, upright, its outer end at the hand's Length (null if it has no size). */
+export function disc_mark(h) {
+  return memo("mark" + key_of(h), () => {
+    const mark_ring = { ...RING_BASE, shape: h.mark, len: h.mark_len, w: h.mark_w, round_out: h.round || 0, round_in: h.round || 0 };
+    const mark = mark_outline(mark_ring, h.mark_len, h.mark_w), b = mark.bounds();
+    return b ? place(mark, max(h.len - (b[3] - b[1]) / 2, 0.1), 0) : null;
+  });
+}
+/** a disc hand whose marker is painted on (#300) */
+export const paints_mark = (h) => HAND_SHAPES[h.shape] === "disc" && h.mark_as === 1;
 
 /** the hands that are on, bottom first: [name, colour, upright shape, clock angle]. */
 function hand_items(S, t) {
   const angles = hand_angles(t, BEATS[S.ha_beat][1]);
   return HANDS.map((name, i) => [name, S["ha_" + name].c, S["ha_" + name], angles[i]])
-    .filter(([, , h]) => h.on).map(([name, c, h, a]) => [name, c, hand_shape(h), a]);
+    .filter(([, , h]) => h.on).map(([name, c, h, a]) => [name, c, hand_shape(h), a, h]);
 }
 
 // ═════════════════════════════════════════════════════════════
@@ -1483,7 +1495,10 @@ export function scene(S, statik, t, preview = true, selected = null) {
     }
     for (const x of windows) add("date frame", x.frame, x.w.ink, { window: x.index });
     if (S.ha_on) {
-      for (const [name, colour, path, a] of hand_items(S, t)) add("hand", path, colour, { name, angle: a });
+      for (const [name, colour, path, a, h] of hand_items(S, t)) {
+        add("hand", path, colour, { name, angle: a });
+        if (paints_mark(h) && disc_mark(h)) add("mark", disc_mark(h), h.mark_c, { name, angle: a });      // a disc's painted mark turns with it (#300)
+      }
       if (cap_shows(S)) add("cap", circle(S.ha_cap), S.c_cap);
     }
   }

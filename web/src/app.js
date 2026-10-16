@@ -201,8 +201,10 @@ const hand_detail = (h) => {
   const w = b[2] - b[0], high = b[3] - b[1], m = high * 0.03, f = (v) => v.toFixed(3);      // m: a little room round it
   const d = p.svg(3, true), ring = f(Math.max(high * 0.012, 0.12));
   const centre = (line) => `<path class="axis" d="${line}"/><circle class="pivot" r="${ring}"/>`;
-  return `<svg class="upright" viewBox="${f(b[0] - m)} ${f(-b[3] - m)} ${f(w + 2 * m)} ${f(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${centre("M-999 0L999 0")}</svg>`
-    + `<svg class="lying" viewBox="${f(b[1] - m)} ${f(b[0] - m)} ${f(high + 2 * m)} ${f(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${centre("M0 -999L0 999")}</svg>`;
+  const mark = G.paints_mark(h) && G.disc_mark(h), md = mark ? mark.svg(3, true) : "";      // a disc's painted mark, in its own colour (#300)
+  const marked = (turn) => (mark ? `<path class="mark" d="${md}"${turn} fill="${to_hex(h.mark_c)}"/>` : "");
+  return `<svg class="upright" viewBox="${f(b[0] - m)} ${f(-b[3] - m)} ${f(w + 2 * m)} ${f(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${marked("")}${centre("M-999 0L999 0")}</svg>`
+    + `<svg class="lying" viewBox="${f(b[1] - m)} ${f(b[0] - m)} ${f(high + 2 * m)} ${f(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${marked(' transform="rotate(90)"')}${centre("M0 -999L0 999")}</svg>`;
 };
 // the Guides sign's ink traps (Okay, 15 Oct 2026, 02:42: "Guides icon needs them, see if you can figure out where"):
 // where each of the four arms crosses the ring the two lines make four inside corners, and at a small size ink (light,
@@ -536,9 +538,14 @@ const ROWS = {
     pick("shape", "Shape", G.HAND_SHAPES, hand_pic, { ...H, side: true, line: true, skip: [9] }),      // every shape but "file" (a shape of one's own: the SVG tile)
     num("len", "Length", 0.5, 30, 0.05, { ...H, side: true }),      // a disc's: where its marker's outer end is
     num("disc_d", "Disc Ø", 0.5, 30, 0.05, { ...H, side: true, show: hand_is("disc") }),
-    seg("mark", "Hole", G.SHAPES.slice(0, 3), { ...H, side: true, show: hand_is("disc") }),      // the markers ring's shapes (#164); cut out of the disc, so named "Hole" (Okay, 16 Oct 2026: "work as holes now, perfect, just call it that")
-    num("mark_len", "Hole length", 0.05, 10, 0.05, { ...H, side: true, short: "Hole L", show: hand_is("disc") }),
-    num("mark_w", "Hole width", 0.02, 5, 0.01, { ...H, side: true, short: "Hole W", show: hand_is("disc") }),
+    // the marker: cut out of the disc, named "Hole" (Okay, 16 Oct 2026: "work as holes now, perfect, just call it
+    // that"), or painted on it in a colour of its own, named "Mark" (#300, 4.45.4: "Mark if also possible easily");
+    // its rows say which (say: their names as [whole, short], by the choice)
+    seg("mark_as", "Marker", ["Hole", "Mark"], { ...H, side: true, show: hand_is("disc") }),
+    seg("mark", "Hole", G.SHAPES.slice(0, 3), { ...H, side: true, say: (T) => [T.mark_as === 1 ? "Mark" : "Hole"], show: hand_is("disc") }),      // the markers ring's shapes (#164)
+    num("mark_len", "Hole length", 0.05, 10, 0.05, { ...H, side: true, short: "Hole L", say: (T) => (T.mark_as === 1 ? ["Mark length", "Mark L"] : ["Hole length", "Hole L"]), show: hand_is("disc") }),
+    num("mark_w", "Hole width", 0.02, 5, 0.01, { ...H, side: true, short: "Hole W", say: (T) => (T.mark_as === 1 ? ["Mark width", "Mark W"] : ["Hole width", "Hole W"]), show: hand_is("disc") }),
+    col("mark_c", "Mark ink", { ...H, side: true, show: (T) => G.paints_mark(T) }),      // "ink": "Mark colour" is longer than the names' column (Counter Ø)
     num("w", "Width", 0.02, 4, 0.01, { ...H, side: true, show: (H) => G.HAND_SHAPES[H.shape] !== "disc" }),
     num("tail", "Tail", 0, 10, 0.05, { ...H, side: true, show: (H) => G.HAND_SHAPES[H.shape] !== "disc" }),
     num("round", "Round ends", 0, 2, 0.01, { ...H, side: true, short: "Round", show: hand_is("baton", "pencil", "sword", "arrow", "syringe", "breguet", "lollipop", "file", "disc") }),      // a disc: its marker's ends
@@ -654,7 +661,7 @@ function parse_number(text, current) {
 const LENGTH_KEYS = { ring: G.RING_MM, hand: G.HAND_MM, window: G.WINDOW_MM, global: ["dial_d", "margin", "ha_cap", "dial_hole", "sh_hour", "sh_minute", "sh_second", "sh_cap", "sh_disc"], nudge: ["dr"] };
 /** a row's label: its own words, or, with a menu beside it, the chosen item's word before the last of its own
  *  ("Centre radius" → "Baseline radius"). */
-const label_of = (row, T) => (row.menu ? `${(row.menu.items.find(([v]) => v === (T[row.menu.key] ?? 0)) || row.menu.items[0])[1]} ${row.text.split(" ").pop()}` : row.text);
+const label_of = (row, T) => (row.say ? row.say(T)[0] : row.menu ? `${(row.menu.items.find(([v]) => v === (T[row.menu.key] ?? 0)) || row.menu.items[0])[1]} ${row.text.split(" ").pop()}` : row.text);
 const NUDGE_NEUTRAL = { dr: 0, da: 0, rot: 0, s: 1 };      // a numeral's nudge, untouched (#252)
 const is_length = (row) => row.kind === "num" && (LENGTH_KEYS[row.scope] || []).includes(row.key);
 const decimals = (step) => (String(step).split(".")[1] || "").length;
@@ -1266,7 +1273,7 @@ class DialTool {
     const p = clamp((performance.now() - sp.t0) / SPIN_MS, 0, 1), e = p < 0.5 ? 4 * p ** 3 : 1 - (-2 * p + 2) ** 3 / 2;
     const k = { hour: 0, minute: 1, second: 2 }, way = { hour: sp.way, minute: -sp.way };
     for (const item of items) {
-      if (item.role !== "hand" || !(item.name in k) || p >= 1) continue;
+      if ((item.role !== "hand" && item.role !== "mark") || !(item.name in k) || p >= 1) continue;      // a disc's painted mark turns with its hand
       const a0 = sp.from[k[item.name]], d = item.angle - a0;
       if (item.name === "second") { item.angle = a0 + e * ((d % 360 + 540) % 360 - 180); continue; }      // the short way, under half a turn
       const w = way[item.name], gap = ((d * w) % 360 + 360) % 360;      // how far round it is, going its own way
@@ -1731,7 +1738,8 @@ class DialTool {
       surface("plate", first >= 0 ? nodes[first] : null, [[this.slots[plate_at].d, 0]], 0);
     }
     // each hand catches the hands above it
-    for (const h of hands) if (hands.some((o) => o.z > h.z) || (cap_r && top > h.z)) surface("hand-" + h.item.name, nodes[h.i + 1] || null, [[h.d, h.item.angle]], h.z);
+    const after = (i) => { let n = i + 1; while (items[n]?.role === "mark" && items[n].name === items[i].name) n++; return n; };      // past a disc's painted mark, which catches the shadow too (#300)
+    for (const h of hands) if (hands.some((o) => o.z > h.z) || (cap_r && top > h.z)) surface("hand-" + h.item.name, nodes[after(h.i)] || null, [[h.d, h.item.angle]], h.z);
     finish();
   }
 
@@ -2045,6 +2053,10 @@ class DialTool {
         filled(slider);
         if (!typing) field.value = shown(v);
         if (menu) { menu.value = T[row.menu.key] ?? 0; label.textContent = label_of(row, T); }
+        if (row.say) {                             // a name that follows another setting (a disc's Hole or Mark, #300)
+          const [whole, short] = row.say(T);
+          if (row.short) { label.querySelector(".whole").textContent = whole; label.querySelector(".short").textContent = short; label.title = whole; } else label.textContent = whole;
+        }
         if (out.quiet) {      // grey until it differs from how the dial opened (#250)
           const was = row.scope === "hand" ? this.opened["ha_" + G.HANDS[this.S.ui_hand]] : this.opened;
           out.quiet.classList.toggle("changed", Math.abs(v - (was?.[row.key] ?? v)) > 1e-9);
@@ -2102,8 +2114,9 @@ class DialTool {
       const group = el("span", { className: row.many ? "segs many" : "segs" });
       const buttons = row.items.map((name, i) => el("button", { type: "button", id: `${id}-${i}`, textContent: name, onclick: () => { set(i); if (row.key.startsWith("ui_")) this.sync_rows(); } }));
       group.append(...(row.order || buttons.map((b, i) => i)).map((i) => buttons[i]));
-      wrap.append(el("label", { textContent: row.text }), group);
-      out.refresh = (T) => buttons.forEach((b, i) => b.classList.toggle("on", i === T[row.key]));
+      const name = el("label", { textContent: row.text });
+      wrap.append(name, group);
+      out.refresh = (T) => { buttons.forEach((b, i) => b.classList.toggle("on", i === T[row.key])); if (row.say) name.textContent = label_of(row, T); };
     }
 
     if (row.kind === "chk") {
@@ -4039,7 +4052,7 @@ class DialTool {
     const S = this.S, mm = this.to_mm(p), r = Math.hypot(mm[0], mm[1]);
     const item = node && node.dataset && node.dataset.i !== undefined ? this.items[+node.dataset.i] : null;
     const role = item ? item.role : null;
-    if (role === "hand") return { kind: "hand", hand: G.HANDS.indexOf(item.name), name: { hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name], path: item.path, angle: item.angle };
+    if (role === "hand" || role === "mark") return { kind: "hand", hand: G.HANDS.indexOf(item.name), name: { hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name], path: item.path, angle: item.angle };
     if (role === "cap") return { kind: "cap", name: "Cap", path: item.path, angle: 0 };
     if (role && (role.startsWith("date") || role === "cutline")) {
       const x = this.statik.windows.find((b) => b.index === item.window), kind = G.WINDOW_KINDS[x.w.kind];

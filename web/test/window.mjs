@@ -818,6 +818,17 @@ await page.click("#hand-tab-0");
   check(fig.every((v) => Math.abs(v) <= 1), `the tiny plus's top on the figures' top, the minus on their baseline, within a dot (${fig.join(", ")} dots) (4.45.2)`);
   check(popped && await page.$("#value-pop") === null, "a press on the number opens its popup, with its slider; Escape puts it away (#250, #249)");
 }
+{ // a disc's marker: Hole or Mark, its rows named by the choice; Mark brings its colour (#300, 4.45.4)
+  const was = await S("JSON.stringify(S.ha_hour)");
+  await page.evaluate(() => { const t = window.dial_tool; t.S.ui_hand = 0; t.S.ha_hour.shape = 10; t.static_dirty = true; t.sync_rows(); t.render(); });
+  const names = () => page.evaluate(() => [...document.querySelectorAll(".row.side")].filter((r) => r.offsetParent).map((r) => r.querySelector("label .whole")?.textContent || r.querySelector("label")?.textContent).join(" · "));
+  const hole = await names();
+  await page.click("#hand-mark-as-Marker-1");
+  const mark = await names(), as = await S("S.ha_hour.mark_as");
+  await page.evaluate((h) => { const t = window.dial_tool; t.S.ha_hour = JSON.parse(h); t.static_dirty = true; t.sync_rows(); t.render(); }, was);
+  check(hole.includes("Marker · Hole · Hole length · Hole width · Round ends") && mark.includes("Marker · Mark · Mark length · Mark width · Mark ink · Round ends") && as === 1,
+    `a disc's marker is a Hole or a Mark; its rows say which (${mark.split(" · ").slice(3, 8).join(" · ")}), and a mark has its colour (#300)`);
+}
 { // one line through the top: the middle of the title's small letters, undo and Guides; the unit box's and the Gallery pill's words on the title's baseline, as Help's are (Okay, 16 Oct 2026, #285: "same baseline")
   const line = await page.evaluate(() => { const mid = (q) => { const r = document.querySelector(q).getBoundingClientRect(); return r.top + r.height / 2; }, h = document.querySelector("h1");
     const base_of = (e) => { const probe = document.createElement("span"); probe.style.cssText = "display:inline-block;width:0;height:0"; e.append(probe); const y = probe.getBoundingClientRect().top; probe.remove(); return y; };
@@ -1634,6 +1645,14 @@ await page.emulateMedia({ reducedMotion: "reduce" });
   const disc = await page.evaluate(() => { const b = window.dial_tool.items.find((i) => i.role === "hand" && i.name === "hour").path.bounds(); return [b[2] - b[0], b[3] - b[1]]; });
   await page.evaluate((h) => { const t = window.dial_tool; t.S.ha_hour = JSON.parse(h); t.static_dirty = true; t.render(); }, was_hour); await frame();
   check(Math.abs(disc[0] - 8) < 0.01 && Math.abs(disc[1] - 8) < 0.01, `a disc hand is its disc, the marker cut into it (${disc.map((v) => v.toFixed(2)).join(" × ")} mm)`);
+  // the marker painted on instead (#300, 4.45.4): the disc whole, the marker an item of its own right after it, in its
+  // own colour, turning with it; as a hole, no such item and the disc has the hole
+  const disc_mark = (as) => page.evaluate((as) => { const t = window.dial_tool; Object.assign(t.S.ha_hour, { on: true, shape: 10, len: 3, disc_d: 8, mark: 0, mark_len: 1.5, mark_w: 0.6, mark_as: as, mark_c: [0.8, 0.2, 0.1, 1] }); t.S.ha_on = true; t.static_dirty = true; t.render(); t.draw();
+    const hand = t.items.find((i) => i.role === "hand" && i.name === "hour"), mark = t.items.find((i) => i.role === "mark" && i.name === "hour");
+    return [hand.path.d.filter((c) => c[0] === "M").length, !!mark && t.items[t.items.indexOf(hand) + 1] === mark && mark.angle === hand.angle, mark ? mark.fill.join() : ""]; }, as);
+  const holed = await disc_mark(0), painted = await disc_mark(1);
+  await page.evaluate((h) => { const t = window.dial_tool; t.S.ha_hour = JSON.parse(h); t.static_dirty = true; t.render(); }, was_hour); await frame();
+  check(holed[0] === 2 && !holed[1] && painted[0] === 1 && painted[1] && painted[2] === "0.8,0.2,0.1,1", `a disc's marker as a hole: two outlines (${holed[0]}), no mark; as a mark: the disc whole (${painted[0]}), the marker painted on it in its colour, turning with it (#300)`);
 }
 check(errors.length === 0, "no errors in the browser's console" + (errors.length ? ": " + errors.slice(0, 3).join(" | ") : ""));
 // ── the gallery: under everything else in Export; a card opens its dial ──
