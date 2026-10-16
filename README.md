@@ -5,7 +5,7 @@ Built to explore, present and produce watch dials.
 
 **Use it: <https://duztman.github.io/dial-tool/>**, or open [`web/dial-tool.html`](web/dial-tool.html) from disk (one file, no install; Chrome or Edge for the fonts installed on the computer).
 
-**Version: beta 4.36.1 (14 Oct 2026).** `main` = released, `dev` = work in progress. Every earlier build, back to beta 1.0: [`docs/versions.md`](docs/versions.md).
+**Version: beta 4.41.25 (16 Oct 2026, on `dev` and the live page; `main` is beta 4.41).** `main` = released, `dev` = work in progress. Every earlier build, back to beta 1.0: [`docs/versions.md`](docs/versions.md).
 What it has and lacks: [`docs/changelog.md`](docs/changelog.md). What's next: [`docs/build-list.md`](docs/build-list.md).
 
 **Guidebook:** a new one for the web version is being built in `guide/` by its plan, `guide/PLAN.md` (build list #93). The 4 Oct 2026 guide describes the DrawBot version: [`archive/drawbot/Dial-Tool-guide-2026-10-04.pdf`](archive/drawbot/Dial-Tool-guide-2026-10-04.pdf).
@@ -23,6 +23,7 @@ What it has and lacks: [`docs/changelog.md`](docs/changelog.md). What's next: [`
 | `docs/versions.md`, `tools/versions.sh` | Every build and its commit. `tools/versions.sh tag` makes a tag per version; `tools/versions.sh open 4.30` puts that version, whole, in a folder beside the clone. |
 | `docs/brief.md` | Goals, decisions, open questions, parked ideas. |
 | `docs/rules.md` | Standing rules — check code against these in reviews. |
+| `docs/waivers.md` | Every time an old link was allowed to draw differently (R31): date, Okay's words, what changed. |
 | `docs/design.md` | The design canon: type, grid, colour, pictures, redrawn controls, icons — for the guide, the tool and anything else shown. |
 | `docs/glossary.md` | Watch terms and tool terms, and which word means what here. |
 | `docs/build-list.md` | Numbered open items, things to verify, ideas. |
