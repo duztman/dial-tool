@@ -62,6 +62,7 @@
     font-family: var(--mono); font-size: var(--t-xs); font-weight: 600; line-height: var(--names); letter-spacing: var(--track-50); }
   .bar .knob.first { left: 0; }      /* where the thumb's middle stops at each end: at the end the thumb sits on its knob (Okay, 15 Oct 2026, 01:03) */
   .bar .knob.last { left: 100%; }
+  .bar .knob.one { left: calc(var(--at) * 100%); background: var(--black); }      /* 1×: a dot on the line, the ends' size, filled (#283; Okay, 16 Oct 2026: "1x needs a dot") */
   .bar .speedtrack input[type="range"] { position: absolute; inset: 0; height: 100%; }
   .bar .speedtrack input[type="range"]::-webkit-slider-runnable-track { height: 100%; background: none; }
   .bar .speedtrack input[type="range"]::-webkit-slider-thumb { width: var(--speed-thumb); height: var(--speed-thumb); margin-top: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2); background: radial-gradient(circle, var(--black) 0 var(--thumb-eye), var(--bar-light) var(--thumb-eye-edge)); box-shadow: 0 0 0 var(--thick) var(--bar); }

@@ -1182,14 +1182,14 @@ check(t1 - t0 > 0.4 && t1 - t0 < 1.5, `Play moves the time (${(t1 - t0).toFixed(
     const t = window.dial_tool, was = [t.playing, t.speed, t.S.ha_beat], v = () => { const s = t.play_button.style; return [+s.getPropertyValue("--pulse"), +s.getPropertyValue("--pulse-tri")]; };
     t.playing = true; t.S.ha_beat = 1; t.speed = 1;
     t.pulse(100, 0); const beat = v(); t.pulse(100.25, 0); const quarter = v(); t.pulse(100.5, 0); const half = v();
-    t.speed = 720; t.pulse(100.5, 0); const held = v(); t.pulse(100.5, 1 / 6); const held_half = v();
+    t.speed = 720; t.pulse(100.5, 0); const held = v(); t.pulse(100.5, 1 / 12); const held_half = v();
     [t.playing, t.speed, t.S.ha_beat] = was; t.pulse(0);
     const tri = t.play_button.querySelector(".arc-play"), r = tri.getBoundingClientRect(), b = t.play_button.getBoundingClientRect();
     return { beat, quarter, half, held, held_half, dot: !!t.play_button.querySelector(".arc-dot"), rest: getComputedStyle(tri).opacity, fill: getComputedStyle(tri).fill, blur: !!tri.getAttribute("filter"), off: [((r.left + r.right) / 2 - (b.left + b.right) / 2).toFixed(1), ((r.top + r.bottom) / 2 - (b.top + b.bottom) / 2).toFixed(1)] };
   });
   await page.emulateMedia({ reducedMotion: "reduce" });
   check(p.beat.join() === "1,1" && p.quarter[0] > p.quarter[1] && p.quarter[1] > 0 && p.half[1] === 0 && p.half[0] > 0 && p.held.join() === "1,1" && p.held_half[1] === 0 && !p.dot && p.rest === "0.4" && p.fill === "rgb(255, 255, 255)" && p.blur,
-    `the play button: a soft white triangle (${p.rest} at rest, its box ${p.off.join(" / ")} off the cap's middle, as its ink is centred), no beat's dot; at a beat cap and triangle full, the triangle gone by half the beat (${p.quarter.join(" / ")} at a quarter, ${p.half.join(" / ")} at half); at 720× the flashes held at three a second (${p.held_half.join(" / ")} a sixth of a second on)`);
+    `the play button: a soft white triangle (${p.rest} at rest, its box ${p.off.join(" / ")} off the cap's middle, as its ink is centred), no beat's dot; at a beat cap and triangle full, the triangle gone by half the beat (${p.quarter.join(" / ")} at a quarter, ${p.half.join(" / ")} at half); at 720× the flashes held at six a second (${p.held_half.join(" / ")} a twelfth of a second on; three until 4.44.5)`);
 }
 // how fast: one slider — slow motion's four steps first (0.1 · 0.25 · 0.5 · 1×, #283), then a log scale to 720×
 const at_speed = async (k) => page.$eval("#speed", (e, k) => { const split = window.dial_tool.speed_split(); e.value = Math.round((split + (1 - split) * Math.log(k) / Math.log(720)) * 1000) + 8; e.dispatchEvent(new Event("input", { bubbles: true })); }, k);
@@ -1213,10 +1213,12 @@ check(t2 - t1 > 20 && t2 - t1 < 90, `about 60×: a minute every second (${(t2 - 
     const thumb = parseFloat(getComputedStyle(t.speeds).getPropertyValue("--speed-thumb")), travel = e.getBoundingClientRect().width - thumb;
     const out = { split: +split.toFixed(3), wide: +(split * travel).toFixed(1), thumb, left: go(0), near_quarter: go(Math.round(split * 1000 / 3) + 20), half: go(Math.round(split * 2000 / 3) - 20) };
     t.set_speed(1); out.one = [+e.value, Math.round(split * 1000)];
+    const dot = t.speeds.querySelector(".knob.one").getBoundingClientRect(), track = t.speeds.querySelector(".humps").getBoundingClientRect();
+    out.dot = [+(((dot.left + dot.right) / 2 - track.left) / track.width).toFixed(3), +split.toFixed(3), getComputedStyle(t.speeds.querySelector(".knob.one")).backgroundColor];
     return out;
   });
-  check(slow.left.join() === "0.1,0,0.1×,0.1X" && slow.near_quarter[0] === 0.25 && slow.near_quarter[1] === Math.round(slow.split * 1000 / 3) && slow.half[0] === 0.5 && slow.half[3] === "0.5X" && slow.one[0] === slow.one[1] && slow.wide >= 2 * slow.thumb - 1,
-    `slow motion: the track's first ${slow.wide} (two ${slow.thumb} thumbs) holds 0.1 · 0.25 · 0.5 · 1×, the thumb snapping onto them (${slow.near_quarter[0]}× at its step); 1× is ${slow.one[0] / 10} % along`);
+  check(slow.left.join() === "0.1,0,0.1×,0.1X" && slow.near_quarter[0] === 0.25 && slow.near_quarter[1] === Math.round(slow.split * 1000 / 3) && slow.half[0] === 0.5 && slow.half[3] === "0.5X" && slow.one[0] === slow.one[1] && slow.wide >= 2 * slow.thumb - 1 && Math.abs(slow.dot[0] - slow.dot[1]) < 0.01 && slow.dot[2] === "rgb(0, 0, 0)",
+    `slow motion: the track's first ${slow.wide} (two ${slow.thumb} thumbs) holds 0.1 · 0.25 · 0.5 · 1×, the thumb snapping onto them (${slow.near_quarter[0]}× at its step); 1× is ${slow.one[0] / 10} % along, marked by a black dot on the line (4.44.5)`);
 }
 await at_speed(1);
 const z1 = await S("t.z");

@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.44.5 (web version) · 16 Oct 2026
+
+- **1× has a dot on the speed line** (Okay: "1x needs a dot"): a filled black dot, the end rings' size, where slow motion ends.
+- **The play button's pulse goes faster** (Okay: "Play button can go faster in animation"): it now follows the time up to six flashes a second, not three. The three-flash limit (WCAG 2.3.1) is for flashes over a large part of the view; a 31-point button is far under it.
+
 ## beta 4.44.4 (web version) · 16 Oct 2026
 
 - **The unit box, done** (#302; Okay: "Mm looks perfect now add 2px more padding and we are done. Others use the same height, width can change"):

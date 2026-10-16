@@ -610,7 +610,7 @@ const speed_place = (k, split) => (k < 1 ? split * SPEED_SLOW.reduce((best, x, i
 const speed_at = (p, split) => (p < split ? SPEED_SLOW[Math.round(p / split * (SPEED_SLOW.length - 1))] : SPEED_HI ** ((p - split) / (1 - split)));
 const speed_word = (k) => (k >= 10 ? String(Math.round(k)) : String(+k.toFixed(k < 1 ? 2 : 1)));      // the figures: 0.25, 1, 2.5, 60
 const frac = (x) => ((x % 1) + 1) % 1;
-const PULSE_MOST = 3;
+const PULSE_MOST = 6;      // the play button's pulse: at most this many a second, unless the movement's own beat is more (#282; 3 in 4.44 — Okay: "Play button can go faster in animation"; the three-flash limit is for flashes over a large part of the view, not a 31-point button)
 // each unit's ink in Dial Mono, in em, from its outlines (fonts/ui/mono_font.py prints it): [left of the advance's
 // start, width, top over the baseline, height]. The unit box is drawn round it (size_unit, #302)
 const UNIT_INK = { mm: [0.062, 1.076, 0.56, 0.56], pt: [0.088, 1.035, 0.705, 0.885], in: [0.082, 1.032, 0.78, 0.78], lig: [0.029, 1.683, 0.78, 0.96], thou: [0.052, 2.262, 0.73, 0.74] };      // the play button's pulse: at most this many a second, unless the movement's own beat is more (#282)
@@ -944,7 +944,8 @@ class DialTool {
     this.speed_slider.onpointerup = this.speed_slider.onpointercancel = () => { pressing = false; slide(false); };
     // no words for the speed in the box any more (Okay, 15 Oct 2026, 00:18: "Remove 1x next to red button"): the slider
     // tells a screen reader its speed (aria-valuetext); the eye has the ball at 1× and where the thumb stands
-    const humps = el("span", { className: "humps", ariaHidden: "true" }, el("i", { className: "knob first" }), el("i", { className: "knob last" }));
+    this.one_knob = el("i", { className: "knob one" });      // 1×, now that slow motion stands before it: a dot on the line (Okay, 16 Oct 2026, on 4.44: "1x needs a dot")
+    const humps = el("span", { className: "humps", ariaHidden: "true" }, el("i", { className: "knob first" }), this.one_knob, el("i", { className: "knob last" }));
     // its two ends named in the bar's grey, 0.1X and 720X (Okay, 15 Oct 2026, 01:59: "denote them 1x and 720x with the bar's gray"; 0.1X since #283)
     for (const [at, word] of [[0, SPEED_SLOW[0] + "X"], [1, SPEED_HI + "X"]]) { const name = el("span", { className: "humpname end", textContent: word }); name.style.setProperty("--at", at); humps.append(name); }
     // the speed's name rides over the thumb, the one white thing on the bar: how many X (Okay, 15 Oct 2026, 01:08: "1X
@@ -4066,7 +4067,8 @@ class DialTool {
   set_speed(k) {
     this.speed = k;
     if (this.playing) this.play_from = [performance.now(), this.S.t];
-    const p = Math.round(speed_place(k, this.speed_split()) * 1000);
+    const split = this.speed_split(), p = Math.round(speed_place(k, split) * 1000);
+    this.one_knob.style.setProperty("--at", split.toFixed(4));      // 1× is where the slow steps end
     if (document.activeElement !== this.speed_slider || k < 1) this.speed_slider.value = p;      // a slow speed: the thumb onto its step, even while dragged
     this.speed_slider.setAttribute("aria-valuetext", speed_word(k) + "×");
     const word = speed_word(k) + "X";      // a slow speed's leading 0 in a span of its own: a phone's thumb, which holds the word, leaves it out (".25X")
@@ -4113,9 +4115,9 @@ class DialTool {
    *  #282): its cap brightens and fades the whole way before the next beat, eased (--pulse, 0 to 1 of --play-pulse);
    *  the triangle flares with it and fades faster, gone by half the beat (--pulse-tri, between its two bounds). The beat
    *  is the movement's own (Hands: 1/s quartz, 6 or 8 a second); a sweep has none, and breathes once every two seconds.
-   *  It follows the time shown, so it falls with the seconds hand's steps and goes faster as time does — up to three
-   *  a second, or the movement's own beat if that is more; past that it holds, in real seconds (720× would otherwise
-   *  flash hundreds of times a second; answer to #282, the three-flash limit of WCAG 2.3.1).
+   *  It follows the time shown, so it falls with the seconds hand's steps and goes faster as time does — up to six
+   *  a second (PULSE_MOST), or the movement's own beat if that is more; past that it holds, in real seconds (720× would
+   *  otherwise flash hundreds of times a second; answer to #282).
    *  t = the time shown, in seconds · now = real seconds. Not where the system asks for less motion. */
   pulse(t, now = 0) {
     let cap = 0, tri = 0;
