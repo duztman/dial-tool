@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.44.3 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.44.4 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -200,7 +200,7 @@
     --speed-pad: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2);      /* the speed box's room inside, left and right: the thumb at either end stands as far from the wall as from the box's top and bottom (3; Okay, 15 Oct 2026, 03:18: "when the ball is in a terminal, the bounding box clears it as much as it clears from the top… both ends symmetry"). Was u3 + 4 − half a thumb (1.25; 01:03, "before plus four") */
     --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
     --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
-    --unit-pad: 2px;                               /* the unit box: this much round its word, on every side (Okay, 16 Oct 2026, on 4.44: "mm button sucks, 2px padding around letters, use mono, abort silkscreen, border and letters should match, small") */
+    --unit-pad: 4px;                               /* the unit box: this much round its word, on every side — round mm's letters; the other units keep mm's height (Okay, 16 Oct 2026, on 4.44: "2px padding around letters"; on 4.44.3: "Mm looks perfect now add 2px more padding … Others use the same height, width can change") */
 
     /* off the scale as found, with no figure from Okay (16 Oct 2026): kept as they are, each to be put on the scale or
        kept when Okay looks through this list (#294) */
@@ -405,7 +405,7 @@
      and on the title's baseline (placed by level_title), one width whatever it says (Okay, 16 Oct 2026: "Make mm a
      smaller button, as big as help, same baseline, much smaller box, flush right"; one column wide and 32 high until
      then). Its menu hangs under it, the units by their full names, a hairline between them. */
-  .unit { position: relative; margin-left: auto; }
+  .unit { position: relative; z-index: 6; margin-left: auto; }      /* a layer of its own, as the mast's: its translate (level_title) makes it one, and at 0 its menu fell under the rows below (Okay, 16 Oct 2026: "Thou falls under") */
   .unitbox { position: relative; box-sizing: content-box; width: var(--ink-w, 1.1em); height: var(--ink-h, 0.6em); padding: var(--unit-pad); border: var(--hair) solid currentColor; color: color-mix(in srgb, var(--ink) calc(var(--faint) * 50%), transparent); font: 400 var(--t-xxs)/1 var(--unit-face); letter-spacing: 0; text-transform: none; }      /* the word in Dial Mono, small letters, its box round their ink (size_unit), its stems as thick as its line, one colour (#302; the pixel font in capitals until 4.44.1) */
   .unitbox > .word { position: absolute; left: calc(var(--unit-pad) + var(--word-x, 0px)); top: calc(var(--unit-pad) + var(--word-y, 0px)); line-height: 1; white-space: nowrap; }      /* its ink the padding from every side, placed by size_unit, whatever the browser does with a button's word (4.44.3) */      /* as light as a switch on the preview that can't be pressed (undo with nothing to undo), its word and its line one colour (Okay, 15 Oct 2026, 03:18); dark under the pointer. Was: its word like the version, its line like the header's */
   .unitbox:hover { background: var(--hover); color: var(--ink); border-color: var(--ink); }
@@ -5752,7 +5752,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.44.3";
+var VERSION = "beta 4.44.4";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -12522,7 +12522,7 @@ var DialTool = class _DialTool {
     dot.remove();
     if (!line.height) return;
     const size = parseFloat(getComputedStyle(box2).fontSize), dots = window.devicePixelRatio || 1, snap = (v) => Math.round(v * dots) / dots;
-    const [l, w, t, h] = ink.map((v) => v * size), W2 = Math.round(w * dots) / dots, H2 = Math.round(h * dots) / dots;
+    const [l, w] = ink.map((v) => v * size), [, , t, h] = UNIT_INK.mm.map((v) => v * size), W2 = Math.round(w * dots) / dots, H2 = Math.round(h * dots) / dots;
     b.setProperty("--ink-w", W2 + "px");
     b.setProperty("--ink-h", H2 + "px");
     b.setProperty("--word-x", snap((W2 - w) / 2 - l) + "px");

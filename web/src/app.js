@@ -4092,7 +4092,9 @@ class DialTool {
     // in whole screen dots, so the line is crisp and the room the same on every side: the box round the ink, the ink's
     // leftover fraction shared out, the word placed so its ink starts the padding in
     const size = parseFloat(getComputedStyle(box).fontSize), dots = window.devicePixelRatio || 1, snap = (v) => Math.round(v * dots) / dots;
-    const [l, w, t, h] = ink.map((v) => v * size), W = Math.round(w * dots) / dots, H = Math.round(h * dots) / dots;
+    // its width the word's own; its height mm's for every unit, on mm's baseline, so a unit's ascenders and descenders
+    // reach into the padding (Okay, on 4.44.3: "Others use the same height, width can change")
+    const [l, w] = ink.map((v) => v * size), [, , t, h] = UNIT_INK.mm.map((v) => v * size), W = Math.round(w * dots) / dots, H = Math.round(h * dots) / dots;
     b.setProperty("--ink-w", W + "px");
     b.setProperty("--ink-h", H + "px");
     b.setProperty("--word-x", snap((W - w) / 2 - l) + "px");      // from the padding's inner edge to the word's line

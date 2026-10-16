@@ -576,7 +576,7 @@ await page.click("#unit");
 check(JSON.stringify(await page.$$eval("#unit-menu button span:first-child", (b) => b.map((x) => x.textContent))) === '["Millimetres","Points","Inches","Lignes","Thou"]', "its menu: millimetres, points, inches, lignes, thou (#299)");
 await page.click("#unit-in");
 const as_in = await unit_box();
-check(as_in[0] === "in" && [as_mm[4], as_in[4]].flat().every((v) => v >= 1.5 && v <= 2.5) && await page.isHidden("#unit-menu"), `Inches: the box says in; each word's box stands 2 px round its letters, to a screen dot, counted on its picture (top · bottom · left · right: mm ${as_mm[4].join(" · ")}, in ${as_in[4].join(" · ")}; #302, 4.44.3)`);
+check(as_in[0] === "in" && as_mm[4].every((v) => v >= 3.5 && v <= 4.5) && as_in[2] === as_mm[2] && as_in[4].every((v) => v >= 2) && await page.isHidden("#unit-menu"), `Inches: the box says in; mm's box stands 4 px round its letters, to a screen dot, counted on its picture (top · bottom · left · right: ${as_mm[4].join(" · ")}); every unit's box mm's height, its own width (in: ${as_in[1]} × ${as_in[2]}, its dot ${as_in[4][0]} from the top; #302, 4.44.4)`);
 check(await page.inputValue("#global-dial-d-Diameter") === "1.181" && await S("S.dial_d") === 30, "a 30 mm diameter shows as 1.181; the setting is still 30");
 await page.fill("#global-dial-d-Diameter", "1.5"); await page.press("#global-dial-d-Diameter", "Enter");
 check(near(await S("S.dial_d"), 38.1, 1e-6), "1.5 typed in inches is 38.1 mm");
@@ -585,6 +585,9 @@ check(await page.inputValue("#global-dial-d-Diameter") === "108.0", "in points i
 await shot("4b-units");
 await page.click("#unit"); await page.mouse.click(640, 30);
 check(await page.isHidden("#unit-menu"), "a press outside the menu puts it away");
+await page.click("#unit");
+check(await page.evaluate(() => { const b = document.querySelector("#unit-menu button:last-child").getBoundingClientRect(), hit = document.elementFromPoint(b.right - 8, b.top + b.height / 2); return !!hit && !!hit.closest("#unit-menu"); }), "the unit menu stands over the rows under it: its last line (Thou) is pressed, not a row's minus or plus (Okay, 16 Oct 2026: \"Thou falls under\")");
+await page.mouse.click(640, 30);
 await page.click("#unit"); await page.click("#unit-mm");
 await page.fill("#global-dial-d-Diameter", "30"); await page.press("#global-dial-d-Diameter", "Enter");
 // scale everything with the diameter: off, the rings stay; on, every measure follows, and comes back
@@ -1550,10 +1553,10 @@ await tab("Export");
     const w = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), version = r(".mast .title > .quiet:not(.help)"), help = r(".mast .help"), u = r("#unit"), p = r("#to-gallery");
       const shade = (q) => { const s = getComputedStyle(document.querySelector(q)).color, n = s.match(/[\d.]+/g).map(Number), rgb = (s.startsWith("color(") ? n.slice(0, 3).map((x) => x * 255) : n.slice(0, 3)), a = n.length > 3 ? n[3] : 1; return Math.round((rgb[0] + rgb[1] + rgb[2]) / 3 * a + 251.3 * (1 - a)); };      // how light it reads on the paper
       const uc = getComputedStyle(document.querySelector("#unit"));
-      return { gaps: [+(help.left - version.right).toFixed(2), +(p.left - help.right).toFixed(2)], high: p.height > u.height && uc.fontFamily.startsWith('"Dial Mono"') && document.fonts.check('10px "Dial Mono"') && uc.textTransform === "none" && uc.paddingTop === "2px" && uc.paddingLeft === "2px" && uc.borderTopColor === uc.color, shades: [shade("#unit"), shade("#to-gallery"), shade(".mast .help")] }; });
+      return { gaps: [+(help.left - version.right).toFixed(2), +(p.left - help.right).toFixed(2)], high: p.height > u.height && uc.fontFamily.startsWith('"Dial Mono"') && document.fonts.check('10px "Dial Mono"') && uc.textTransform === "none" && uc.paddingTop === "4px" && uc.paddingLeft === "4px" && uc.borderTopColor === uc.color, shades: [shade("#unit"), shade("#to-gallery"), shade(".mast .help")] }; });
     await page.click("#to-gallery"); await page.waitForTimeout(900);
     const at = await page.evaluate(() => { const g = document.querySelector(".gallery").getBoundingClientRect(), f = document.querySelector(".form").getBoundingClientRect(); return [window.dial_tool.S.ui_section, g.top < f.bottom && g.bottom > f.top]; });
-    check(Math.abs(w.gaps[0] - w.gaps[1]) < 0.6 && w.high && w.shades[0] > w.shades[1] && w.shades[1] > w.shades[2] && at[0] === 4 && at[1], `the Gallery pill: right after Help, as far from it as Help from the version (${w.gaps.join(" · ")}), taller than the unit box, whose word is in Dial Mono (packed), small letters, 2 px all round, its line the word's colour (#302), darker than mm and lighter than Help (${w.shades.join(" > ")}); pressed, Export with the Gallery in view`);
+    check(Math.abs(w.gaps[0] - w.gaps[1]) < 0.6 && w.high && w.shades[0] > w.shades[1] && w.shades[1] > w.shades[2] && at[0] === 4 && at[1], `the Gallery pill: right after Help, as far from it as Help from the version (${w.gaps.join(" · ")}), taller than the unit box, whose word is in Dial Mono (packed), small letters, 4 px all round mm, its line the word's colour (#302), darker than mm and lighter than Help (${w.shades.join(" > ")}); pressed, Export with the Gallery in view`);
   }
   { // see-through shadows (Okay, 16 Oct 2026, #295): a see-through hand casts a lighter shadow, in its colour; a solid one as it always did; each multiplied onto the plate
     const s = await page.evaluate(async () => { const t = window.dial_tool, was = t.S.ha_minute.c.slice(); t.S.ha_minute.c = [1, 0, 0, 0.5]; t.changed(); t.render(); await new Promise((r) => setTimeout(r, 400));

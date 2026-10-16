@@ -163,7 +163,7 @@
     --speed-pad: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2);      /* the speed box's room inside, left and right: the thumb at either end stands as far from the wall as from the box's top and bottom (3; Okay, 15 Oct 2026, 03:18: "when the ball is in a terminal, the bounding box clears it as much as it clears from the top… both ends symmetry"). Was u3 + 4 − half a thumb (1.25; 01:03, "before plus four") */
     --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
     --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
-    --unit-pad: 2px;                               /* the unit box: this much round its word, on every side (Okay, 16 Oct 2026, on 4.44: "mm button sucks, 2px padding around letters, use mono, abort silkscreen, border and letters should match, small") */
+    --unit-pad: 4px;                               /* the unit box: this much round its word, on every side — round mm's letters; the other units keep mm's height (Okay, 16 Oct 2026, on 4.44: "2px padding around letters"; on 4.44.3: "Mm looks perfect now add 2px more padding … Others use the same height, width can change") */
 
     /* off the scale as found, with no figure from Okay (16 Oct 2026): kept as they are, each to be put on the scale or
        kept when Okay looks through this list (#294) */

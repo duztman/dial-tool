@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.44.4 (web version) · 16 Oct 2026
+
+- **The unit box, done** (#302; Okay: "Mm looks perfect now add 2px more padding and we are done. Others use the same height, width can change"):
+  - 4 px round mm's letters.
+  - Every unit's box is mm's height on mm's baseline, as wide as its own word; ascenders and descenders reach into the padding (2.5 px or more left).
+- **The unit menu stands over the rows under it** (Okay: "Thou falls under, this top bar here needs a z index of its own"). The unit box is moved onto the title's baseline with a `translate`, which made it a layer of its own at 0, so its menu fell under the − + of the row below. It now has its own level, as the title has.
+
 ## beta 4.44.3 (web version) · 16 Oct 2026
 
 - **The unit box: the same room on every side, on every screen** (#302). Counted on Okay's screen (4.44.1), "mm" stood on the box's bottom line: 4.5 px above it, 0 below, 3 left, 2.5 right.
