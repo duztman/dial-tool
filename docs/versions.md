@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.46.1 | 16 Oct 2026 | web | [`f231d85`](https://github.com/duztman/dial-tool/tree/f231d8556623cfddde0392739322c8c49fa697d1) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/f231d8556623cfddde0392739322c8c49fa697d1/web/dial-tool.html) | the Windows page reordered; touch blocks; no keyboard on a popup |
 | 4.46 | 16 Oct 2026 | web | [`50c5a73`](https://github.com/duztman/dial-tool/tree/50c5a73c48c0c0fcf961138150ab6d862ed80318) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/50c5a73c48c0c0fcf961138150ab6d862ed80318/web/dial-tool.html) | one tab look; the Show box |
 | 4.45.5 | 16 Oct 2026 | web | [`8dea22f`](https://github.com/duztman/dial-tool/tree/8dea22faf59665b8236b6418dfd8528d39a6a130) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/8dea22faf59665b8236b6418dfd8528d39a6a130/web/dial-tool.html) | the bar's time, second look: tracking, AM · PM, NOW filled |
 | 4.45.4 | 16 Oct 2026 | web | [`7fffa86`](https://github.com/duztman/dial-tool/tree/7fffa864dd6752045afea5e9450a3a14e4edc60f) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/7fffa864dd6752045afea5e9450a3a14e4edc60f/web/dial-tool.html) | a disc hand's mark: Hole · Mark |
