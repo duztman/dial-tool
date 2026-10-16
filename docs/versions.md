@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.45.4 | 16 Oct 2026 | web | [`7fffa86`](https://github.com/duztman/dial-tool/tree/7fffa864dd6752045afea5e9450a3a14e4edc60f) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/7fffa864dd6752045afea5e9450a3a14e4edc60f/web/dial-tool.html) | a disc hand's mark: Hole · Mark |
 | 4.45.3 | 16 Oct 2026 | web | [`1e927b4`](https://github.com/duztman/dial-tool/tree/1e927b4718118abadea8b09e24eb60b6e507d1e5) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/1e927b4718118abadea8b09e24eb60b6e507d1e5/web/dial-tool.html) | the number popup after Okay's drawing; the Guides popup tighter; a popup's bottom section |
 | 4.45.2 | 16 Oct 2026 | web | [`b03b964`](https://github.com/duztman/dial-tool/tree/b03b9640c3ca8cbc8b32b4b98baa9e37ad17a176) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/b03b9640c3ca8cbc8b32b4b98baa9e37ad17a176/web/dial-tool.html) | the number popup a square; guides while sliding; ± on the figures; Nudge; a window's W × H |
 | 4.45.1 | 16 Oct 2026 | web | [`2f462b7`](https://github.com/duztman/dial-tool/tree/2f462b77faf473c20fafe3ddc21672e06fa00eb8) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/2f462b77faf473c20fafe3ddc21672e06fa00eb8/web/dial-tool.html) | The hand rows, quiet: grey numbers, compact ±, a press opens the popup |
