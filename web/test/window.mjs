@@ -415,16 +415,21 @@ check(await page.isVisible("#guide-list") && (await page.$$eval("#guide-list > .
   const look = await page.evaluate(() => { const q = (s) => document.querySelector("#guide-list " + s); return [Math.round(q(".guidekind").getBoundingClientRect().height), getComputedStyle(q(".tone:not(.on)")).opacity, getComputedStyle(q(".tone.on")).opacity, q(".none svg").querySelectorAll("path, circle, line").length]; });
   check(look[0] === 38 && look[1] === "0.6" && look[2] === "1" && look[3] === 1, `a guide's line is ${look[0]} high; a colour not chosen shows at ${look[1]}, the chosen one whole; the "none" sign is ${look[3]} path, so nothing in it overlaps`);
 }
-// windows have their own section, as rings (#271): All · Selected · None, Selected to start; a line per window that is on, in its own colour; its edges drawn solid, its middle dotted, as a ring's (#272)
+// windows have their own section, as rings (#271): All · Selected · None, Selected to start; a line per window that is on, in its own colour; its edges drawn solid, its middle dotted, as a ring's (#272).
+// One thing in focus (#301): the tab says which — Rings its selected ring, Windows its selected window, the others neither; with All the rest show faded
 {
   const start = await page.evaluate(() => { const t = window.dial_tool, h = [...document.querySelectorAll("#guide-list .guidehead")].find((e) => e.textContent.startsWith("Windows")); return [!!h && !h.hidden, t.S.gd_wins, t.S.gd_wsel, document.querySelector("#guide-windows-selected").classList.contains("on"), [...document.querySelectorAll("#guide-list .guidekind .name")].map((e) => e.textContent).includes("Window at 3")]; });
-  const drawn = (await S("t.items.filter((i) => i.role === 'guide').map((i) => (i.dots ? 'd' : 's')).join('')"));
+  // in a tab (0 Dial · 1 Rings · 3 Windows): the dotted middles drawn, "f" for a faded one
+  const dotted = (n) => S(`(() => { const was = S.ui_section; S.ui_section = ${n}; t.draw(); const d = t.items.filter((i) => i.role === "guide" && i.dots).map((i) => (i.stroke[3] < 1 ? "f" : "d")).join(""); S.ui_section = was; t.draw(); return d; })()`);
+  const sel = [await dotted(0), await dotted(1), await dotted(3)];
+  await page.click("#guide-windows-all");
+  const all = [await dotted(0), await dotted(1), await dotted(3)];
   await page.click("#guide-windows-none");
-  await frame();
-  const none = await S("(t.draw(), [S.gd_wins, S.gd_wsel, t.items.filter((i) => i.role === 'guide' && i.dots).length])");
+  const none = [await S("[S.gd_wins, S.gd_wsel]"), await dotted(3)];
   await page.click("#guide-windows-selected");
-  check(start.every((x) => x === true || x === false) && start[0] && !start[1] && start[2] && start[3] && start[4] && (drawn.match(/d/g) || []).length === 2 && !none[0] && !none[1] && none[2] === 1,
-    `Windows: its heading with All · Selected · None (Selected to start), a line for the date window; the selected ring and window each draw two solid edges and a dotted middle (${drawn}); None takes the window's away (${none[2]} dotted left, the ring's)`);
+  const tones = await page.evaluate(() => { const on = (name) => [...document.querySelectorAll("#guide-list .guidekind")].find((e) => e.querySelector(".name").textContent === name).querySelector(".tone.on").title; return [on("Centre hole"), on("Window at 3")]; });
+  check(start.every((x) => x === true || x === false) && start[0] && !start[1] && start[2] && start[3] && start[4] && sel.join() === ",d,d" && all.join() === "f,df,d" && !none[0][0] && !none[0][1] && none[1] === "" && tones[0] !== tones[1],
+    `Windows: its heading with All · Selected · None (Selected to start), a line for the date window. The guides follow the tab (#301): Dial none, Rings the selected ring's, Windows the selected window's (${sel.map((x) => x || "–").join(" · ")}); with All the window's shows everywhere, faded out of its tab (${all.map((x) => x || "–").join(" · ")}); None takes it away; the first window's guide starts in a colour of its own (${tones[1]}; the centre hole's ${tones[0]})`);
 }
 // guides are connected to the rings (13 Oct 2026): each ring's edges in its own colour, different ones to start with; the row in the ring list is tinted with it
 {

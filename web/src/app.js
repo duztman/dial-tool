@@ -1465,7 +1465,7 @@ class DialTool {
     // One switch for which rings show theirs, then a line per ring; built again when the ring list changes (sync_guides).
     const which = el("span", { className: "segs", role: "radiogroup", ariaLabel: "Which rings show their guides" });
     [["All", true, true], ["Selected", false, true], ["None", false, false]].forEach(([word, rings, sel]) => {
-      const b = el("button", { type: "button", id: "guide-rings-" + word.toLowerCase(), textContent: word, onclick: () => { this.S.gd_rings = rings; this.S.gd_sel = sel; this.sync_rows(); this.render(); } });
+      const b = el("button", { type: "button", id: "guide-rings-" + word.toLowerCase(), textContent: word, title: { All: "Every ring’s; the selected one’s stronger while the Rings tab is open", Selected: "The selected ring’s, while the Rings tab is open (#301)", None: "No ring’s" }[word], onclick: () => { this.S.gd_rings = rings; this.S.gd_sel = sel; this.sync_rows(); this.render(); } });
       b.setAttribute("role", "radio");
       which.append(b);
     });
@@ -1475,7 +1475,7 @@ class DialTool {
     // Selected comes default"): which windows show theirs, then a line per window that is on
     const which_w = el("span", { className: "segs", role: "radiogroup", ariaLabel: "Which windows show their guides" });
     [["All", true, true], ["Selected", false, true], ["None", false, false]].forEach(([word, wins, sel]) => {
-      const b = el("button", { type: "button", id: "guide-windows-" + word.toLowerCase(), textContent: word, onclick: () => { this.S.gd_wins = wins; this.S.gd_wsel = sel; this.sync_rows(); this.render(); } });
+      const b = el("button", { type: "button", id: "guide-windows-" + word.toLowerCase(), textContent: word, title: { All: "Every window’s; the selected one’s stronger while the Windows tab is open", Selected: "The selected window’s, while the Windows tab is open (#301)", None: "No window’s" }[word], onclick: () => { this.S.gd_wins = wins; this.S.gd_wsel = sel; this.sync_rows(); this.render(); } });
       b.setAttribute("role", "radio");
       which_w.append(b);
     });

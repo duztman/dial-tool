@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.43.1 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.43.2 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL) and the pixel font (Silkscreen, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -5734,7 +5734,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.43.1";
+var VERSION = "beta 4.43.2";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -6052,13 +6052,15 @@ var GUIDE_KINDS = [
   ["gd_hole", "gd_k_hole", "Centre hole"]
 ];
 var RING_GUIDE_ORDER = [4, 0, 2, 5, 3, 1];
+var WINDOW_GUIDE_ORDER = [3, 5, 2, 0, 4, 1];
+var GUIDE_FADE = 0.4;
 var ring_guide = (S, i) => {
   const g = S.rings[i] ? S.rings[i].guide : -2;
   return g === -2 ? null : g >= 0 && g < GUIDE_COLOURS.length ? g : RING_GUIDE_ORDER[i % RING_GUIDE_ORDER.length];
 };
 var window_guide = (S, i) => {
   const w = windows_of(S)[i], g = w ? w.guide ?? -1 : -2;
-  return g === -2 ? null : g >= 0 && g < GUIDE_COLOURS.length ? g : RING_GUIDE_ORDER[RING_GUIDE_ORDER.length - 1 - i % RING_GUIDE_ORDER.length];
+  return g === -2 ? null : g >= 0 && g < GUIDE_COLOURS.length ? g : WINDOW_GUIDE_ORDER[i % WINDOW_GUIDE_ORDER.length];
 };
 function radial_extent(path) {
   let lo = Infinity, hi = 0, px = 0, py = 0;
@@ -7525,19 +7527,21 @@ function scene(S, statik, t, preview = true, selected = null) {
       line_guide([-R, 0], [R, 0]);
       line_guide([0, -R], [0, R]);
     }
-    const tone = (k) => {
+    const tone = (k, a = 1) => {
       const hex = GUIDE_COLOURS[k] || GUIDE_COLOURS[0];
-      return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).concat([1]);
+      return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).concat([a]);
     };
-    const stroke_guide = (path, k, px = S.gd_w) => add("guide", path, null, { stroke: tone(k), px });
+    const stroke_guide = (path, k, px = S.gd_w, a = 1) => add("guide", path, null, { stroke: tone(k, a), px });
     const built = new Map(statik.rings.map((d) => [d.ring, d]));
-    const edges = (k, outer, inner, px) => {
-      for (const r of [.../* @__PURE__ */ new Set([outer, inner])]) if (r > 0) stroke_guide(circle(2 * r), k, px);
+    const edges = (k, outer, inner, px, a) => {
+      for (const r of [.../* @__PURE__ */ new Set([outer, inner])]) if (r > 0) stroke_guide(circle(2 * r), k, px, a);
       const mid = (outer + inner) / 2;
-      if (outer - inner > 0.01 && mid > 0) add("guide", circle(2 * mid), null, { stroke: tone(k), px, dots: true });
+      if (outer - inner > 0.01 && mid > 0) add("guide", circle(2 * mid), null, { stroke: tone(k, a), px, dots: true });
     };
+    const focus = { 1: "rings", 3: "windows" }[S.ui_section];
+    const faded = (focused) => focused ? 1 : GUIDE_FADE;
     S.rings.forEach((ring, i) => {
-      const chosen = i === selected && S.gd_sel, k = ring_guide(S, i);
+      const focused = focus === "rings" && i === selected, chosen = focused && S.gd_sel, k = ring_guide(S, i);
       if (!ring.on || k === null || !(S.gd_rings || chosen)) return;
       const kind = kind_of(ring);
       let outer = ring.r, inner = ring.r - ({ ticks: ring.len, markers: ring.len, band: ring.width }[kind] || 0);
@@ -7545,12 +7549,12 @@ function scene(S, statik, t, preview = true, selected = null) {
         const e = radial_extent(built.get(ring)?.path);
         if (e) [inner, outer] = e;
       }
-      edges(k, outer, inner, chosen ? S.gd_w * 1.5 : S.gd_w);
+      edges(k, outer, inner, focused ? S.gd_w * 1.5 : S.gd_w, faded(focused));
     });
     for (const x of windows) {
-      const chosen = x.index === (S.ui_window ?? 0) && S.gd_wsel, k = window_guide(S, x.index), e = radial_extent(x.window);
+      const focused = focus === "windows" && x.index === (S.ui_window ?? 0), chosen = focused && S.gd_wsel, k = window_guide(S, x.index), e = radial_extent(x.window);
       if (k === null || !e || !(S.gd_wins || chosen)) continue;
-      edges(k, e[1], e[0], chosen ? S.gd_w * 1.5 : S.gd_w);
+      edges(k, e[1], e[0], focused ? S.gd_w * 1.5 : S.gd_w, faded(focused));
     }
     for (const g of S.gd_more || []) {
       if (!(g.k >= 0)) continue;
@@ -9387,7 +9391,7 @@ var DialTool = class _DialTool {
     });
     const which = el("span", { className: "segs", role: "radiogroup", ariaLabel: "Which rings show their guides" });
     [["All", true, true], ["Selected", false, true], ["None", false, false]].forEach(([word2, rings, sel]) => {
-      const b = el("button", { type: "button", id: "guide-rings-" + word2.toLowerCase(), textContent: word2, onclick: () => {
+      const b = el("button", { type: "button", id: "guide-rings-" + word2.toLowerCase(), textContent: word2, title: { All: "Every ring\u2019s; the selected one\u2019s stronger while the Rings tab is open", Selected: "The selected ring\u2019s, while the Rings tab is open (#301)", None: "No ring\u2019s" }[word2], onclick: () => {
         this.S.gd_rings = rings;
         this.S.gd_sel = sel;
         this.sync_rows();
@@ -9400,7 +9404,7 @@ var DialTool = class _DialTool {
     this.guide_rings = el("div", { className: "guiderings" });
     const which_w = el("span", { className: "segs", role: "radiogroup", ariaLabel: "Which windows show their guides" });
     [["All", true, true], ["Selected", false, true], ["None", false, false]].forEach(([word2, wins, sel]) => {
-      const b = el("button", { type: "button", id: "guide-windows-" + word2.toLowerCase(), textContent: word2, onclick: () => {
+      const b = el("button", { type: "button", id: "guide-windows-" + word2.toLowerCase(), textContent: word2, title: { All: "Every window\u2019s; the selected one\u2019s stronger while the Windows tab is open", Selected: "The selected window\u2019s, while the Windows tab is open (#301)", None: "No window\u2019s" }[word2], onclick: () => {
         this.S.gd_wins = wins;
         this.S.gd_wsel = sel;
         this.sync_rows();

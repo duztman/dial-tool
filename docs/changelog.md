@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.43.2 (web version) · 16 Oct 2026
+
+- **The guides follow the tab you're in** (#301; Okay, on 4.43: "both window and [ring] active gives us a complex look"). *Selected* now means the selected one in the tab you work in: the Rings tab shows the selected ring's guides, the Windows tab the selected window's, the other tabs neither. The dial's own guides (centre hole, centre lines) show in every tab while on. With *All*, every ring's or window's guides show, and those out of focus are faded to 40 %. Researched first: Glyphs' local and global guides, Fusion 360's sketch dimensions, Blender's *Fade Inactive Geometry*, Illustrator's smart guides and Figma's measuring lines all show one thing in focus at a time.
+- **The first window's guide starts yellow**, a colour no other guide starts with (it was cyan, the centre hole's).
+
 ## beta 4.43.1 (web version) · 16 Oct 2026
 
 - **A disc hand's marker is called its hole** (#300): *Hole*, *Hole length*, *Hole width*. It is cut out of the disc, and Okay liked it that way ("work as holes now, perfect, just call it that"). Only the row names changed; the settings keys stay (R8). A mark drawn on the disc as well is on the list (phase E).

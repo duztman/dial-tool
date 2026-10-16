@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.43.1";
+export const VERSION = "beta 4.43.2";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -168,10 +168,14 @@ export const GUIDE_KINDS = [["gd_edge", "gd_k_edge", "Dial edge"], ["gd_axes", "
  *  of their own yet take one by their place in the list, in this order — neighbours never alike ("default guide colors
  *  come scrambled"). → a place in GUIDE_COLOURS, or null for none */
 export const RING_GUIDE_ORDER = [4, 0, 2, 5, 3, 1];
+// the windows' own order (#301, beta 4.43.2): yellow first, so the first window's guide is no other guide's colour to
+// start with (until then the rings' order from its end: cyan, the centre hole's)
+export const WINDOW_GUIDE_ORDER = [3, 5, 2, 0, 4, 1];
+export const GUIDE_FADE = 0.4;                     // a ring's or window's guide out of focus, with "All": this much of it (#301)
 export const ring_guide = (S, i) => { const g = S.rings[i] ? S.rings[i].guide : -2; return g === -2 ? null : g >= 0 && g < GUIDE_COLOURS.length ? g : RING_GUIDE_ORDER[i % RING_GUIDE_ORDER.length]; };
 /** a window's guide, as a ring's (#271): its own colour, or one by its place — from the end of the rings' order, so a
  *  window's first colours are not the first rings' */
-export const window_guide = (S, i) => { const w = windows_of(S)[i], g = w ? w.guide ?? -1 : -2; return g === -2 ? null : g >= 0 && g < GUIDE_COLOURS.length ? g : RING_GUIDE_ORDER[RING_GUIDE_ORDER.length - 1 - i % RING_GUIDE_ORDER.length]; };
+export const window_guide = (S, i) => { const w = windows_of(S)[i], g = w ? w.guide ?? -1 : -2; return g === -2 ? null : g >= 0 && g < GUIDE_COLOURS.length ? g : WINDOW_GUIDE_ORDER[i % WINDOW_GUIDE_ORDER.length]; };
 /** how near and how far from the centre a shape reaches: [least, most] radius in mm, or null. A straight edge counts
  *  its nearest point; a curve is read at eight points along it (#272: a ring's and a window's guides). */
 export function radial_extent(path) {
@@ -1500,31 +1504,37 @@ export function scene(S, statik, t, preview = true, selected = null) {
       line_guide([-R, 0], [R, 0]);
       line_guide([0, -R], [0, R]);
     }
-    const tone = (k) => { const hex = GUIDE_COLOURS[k] || GUIDE_COLOURS[0]; return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).concat([1]); };
-    const stroke_guide = (path, k, px = S.gd_w) => add("guide", path, null, { stroke: tone(k), px });
+    const tone = (k, a = 1) => { const hex = GUIDE_COLOURS[k] || GUIDE_COLOURS[0]; return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).concat([a]); };
+    const stroke_guide = (path, k, px = S.gd_w, a = 1) => add("guide", path, null, { stroke: tone(k, a), px });
     // a ring's edges, in the ring's own guide colour; the selected ring's half as thick again. Which rings: all
     // (gd_rings), only the selected one (gd_sel alone), or none.
     // its outer and inner edges whole, its middle dotted (Okay, 16 Oct 2026, #272: "center of the ring is dotted. All
     // rings and windows get their own outer and inner guide circles in solid line"). Numerals: the edges their figures
     // reach as drawn. A window: the edges its hole reaches; which windows, as for rings (gd_wins, gd_wsel)
     const built = new Map(statik.rings.map((d) => [d.ring, d]));
-    const edges = (k, outer, inner, px) => {
-      for (const r of [...new Set([outer, inner])]) if (r > 0) stroke_guide(circle(2 * r), k, px);
+    const edges = (k, outer, inner, px, a) => {
+      for (const r of [...new Set([outer, inner])]) if (r > 0) stroke_guide(circle(2 * r), k, px, a);
       const mid = (outer + inner) / 2;
-      if (outer - inner > 0.01 && mid > 0) add("guide", circle(2 * mid), null, { stroke: tone(k), px, dots: true });
+      if (outer - inner > 0.01 && mid > 0) add("guide", circle(2 * mid), null, { stroke: tone(k, a), px, dots: true });
     };
+    // one thing in focus (#301; Okay, 16 Oct 2026, on 4.43: "both window and [ring] active gives us a complex look"):
+    // the tab one works in says what — on Rings its selected ring, on Windows its selected window, on the others
+    // neither (the dial's own guides, centre hole and lines, show in every tab). "All" still shows every ring or
+    // window, those out of focus faded, as Blender fades what one isn't editing.
+    const focus = { 1: "rings", 3: "windows" }[S.ui_section];      // ui_section: the tab's place (app.js SECTIONS; R9)
+    const faded = (focused) => (focused ? 1 : GUIDE_FADE);
     S.rings.forEach((ring, i) => {
-      const chosen = i === selected && S.gd_sel, k = ring_guide(S, i);
+      const focused = focus === "rings" && i === selected, chosen = focused && S.gd_sel, k = ring_guide(S, i);
       if (!ring.on || k === null || !(S.gd_rings || chosen)) return;
       const kind = kind_of(ring);
       let outer = ring.r, inner = ring.r - ({ ticks: ring.len, markers: ring.len, band: ring.width }[kind] || 0);
       if (kind === "numerals") { const e = radial_extent(built.get(ring)?.path); if (e) [inner, outer] = e; }
-      edges(k, outer, inner, chosen ? S.gd_w * 1.5 : S.gd_w);
+      edges(k, outer, inner, focused ? S.gd_w * 1.5 : S.gd_w, faded(focused));
     });
     for (const x of windows) {
-      const chosen = x.index === (S.ui_window ?? 0) && S.gd_wsel, k = window_guide(S, x.index), e = radial_extent(x.window);
+      const focused = focus === "windows" && x.index === (S.ui_window ?? 0), chosen = focused && S.gd_wsel, k = window_guide(S, x.index), e = radial_extent(x.window);
       if (k === null || !e || !(S.gd_wins || chosen)) continue;
-      edges(k, e[1], e[0], chosen ? S.gd_w * 1.5 : S.gd_w);
+      edges(k, e[1], e[0], focused ? S.gd_w * 1.5 : S.gd_w, faded(focused));
     }
     for (const g of S.gd_more || []) {              // the guides added by hand
       if (!(g.k >= 0)) continue;
