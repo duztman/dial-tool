@@ -1,8 +1,11 @@
-// apk_packager.js — Injects dynamic WFF XML and dial assets into the Wear OS APK container,
-// 4-byte zipaligns uncompressed resources, and signs with APK Signature Scheme v2 & v3 via Web Crypto API.
+// apk_packager.js — Injects dynamic WFF XML, custom package ID, watch face label, and dial assets
+// into the Wear OS APK container, 4-byte zipaligns uncompressed resources, and signs with v2 & v3 via Web Crypto API.
 import { unzipSync, zipSync, strToU8 } from "./fflate.js";
 import { BASE_WFF_APK_B64 } from "./base_template.js";
 import { APK_SIG_BLOCK_B64, DEBUG_PKCS8_B64 } from "./apk_sig_template.js";
+
+export const DEFAULT_PACKAGE_PREFIX = "com.dialtool.watchface";
+export const DEFAULT_WATCHFACE_LABEL = "Dial Tool";
 
 /**
  * Base64 string to Uint8Array helper
@@ -28,6 +31,225 @@ function concat_u8(arrays) {
     out.set(a, offset);
     offset += a.length;
   }
+  return out;
+}
+
+/**
+ * Sanitizes a user-provided watch face name or ID into a valid Android package suffix
+ * (lowercase ASCII letters, digits, and underscores, starting with a letter).
+ */
+export function sanitize_package_suffix(input, fallback = "custom") {
+  const cleaned = String(input || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+  if (!cleaned) return fallback;
+  const validStart = /^[a-z]/.test(cleaned) ? cleaned : "wf_" + cleaned;
+  return validStart.slice(0, 48);
+}
+
+/**
+ * Formats a full Android package name from an optional suffix or full package string.
+ */
+export function format_package_name(packageOrSuffix, label = "") {
+  const raw = String(packageOrSuffix || "").trim();
+  if (raw.includes(".")) {
+    const parts = raw
+      .split(".")
+      .map((p) => sanitize_package_suffix(p, "wf"))
+      .filter(Boolean);
+    if (parts.length >= 2) return parts.slice(0, 6).join(".").slice(0, 120);
+  }
+  const source = raw || label;
+  if (!source || source.trim().toLowerCase() === "dial tool") {
+    return DEFAULT_PACKAGE_PREFIX;
+  }
+  return `${DEFAULT_PACKAGE_PREFIX}.${sanitize_package_suffix(source)}`;
+}
+
+/**
+ * Encodes a JS string as UTF-16LE bytes.
+ */
+function encode_utf16le(str) {
+  const out = new Uint8Array(str.length * 2);
+  const view = new DataView(out.buffer);
+  for (let i = 0; i < str.length; i++) {
+    view.setUint16(i * 2, str.charCodeAt(i), true);
+  }
+  return out;
+}
+
+/**
+ * Decodes a UTF-16LE Uint8Array into a JS string.
+ */
+function decode_utf16le(bytes) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let out = "";
+  for (let i = 0; i < bytes.byteLength; i += 2) {
+    out += String.fromCharCode(view.getUint16(i, true));
+  }
+  return out;
+}
+
+/**
+ * Rebuilds a ResStringPool_header chunk (type 0x0001) encoded in UTF-16LE (used in binary AndroidManifest.xml),
+ * replacing any string equal to `targetStr` with `replacementStr`.
+ */
+function patch_utf16_string_pool(poolChunk, targetStr, replacementStr) {
+  const view = new DataView(poolChunk.buffer, poolChunk.byteOffset, poolChunk.byteLength);
+  const stringCount = view.getUint32(8, true);
+  const styleCount = view.getUint32(12, true);
+  const flags = view.getUint32(16, true);
+  const stringsStart = view.getUint32(20, true);
+
+  const strings = [];
+  for (let i = 0; i < stringCount; i++) {
+    const off = view.getUint32(28 + i * 4, true);
+    const absOff = stringsStart + off;
+    const charLen = view.getUint16(absOff, true);
+    const strBytes = poolChunk.subarray(absOff + 2, absOff + 2 + charLen * 2);
+    const s = decode_utf16le(strBytes);
+    strings.push(s === targetStr ? replacementStr : s);
+  }
+
+  const encoded = [];
+  const offsets = [];
+  let curOff = 0;
+  for (const s of strings) {
+    offsets.push(curOff);
+    const strBytes = encode_utf16le(s);
+    const entry = new Uint8Array(2 + strBytes.length + 2);
+    new DataView(entry.buffer).setUint16(0, s.length, true);
+    entry.set(strBytes, 2);
+    encoded.push(entry);
+    curOff += entry.length;
+  }
+
+  const pad = (4 - (curOff % 4)) % 4;
+  if (pad > 0) encoded.push(new Uint8Array(pad));
+
+  const poolData = concat_u8(encoded);
+  const newChunkSize = 28 + stringCount * 4 + poolData.length;
+  const out = new Uint8Array(newChunkSize);
+  const outView = new DataView(out.buffer);
+  outView.setUint16(0, 0x0001, true);
+  outView.setUint16(2, 28, true);
+  outView.setUint32(4, newChunkSize, true);
+  outView.setUint32(8, stringCount, true);
+  outView.setUint32(12, styleCount, true);
+  outView.setUint32(16, flags, true);
+  outView.setUint32(20, 28 + stringCount * 4, true);
+  outView.setUint32(24, 0, true);
+  for (let i = 0; i < stringCount; i++) {
+    outView.setUint32(28 + i * 4, offsets[i], true);
+  }
+  out.set(poolData, 28 + stringCount * 4);
+  return out;
+}
+
+/**
+ * Rebuilds a ResStringPool_header chunk (type 0x0001) encoded in UTF-8 (used in resources.arsc),
+ * replacing any string equal to `targetStr` with `replacementStr`.
+ */
+function patch_utf8_string_pool(poolChunk, targetStr, replacementStr) {
+  const view = new DataView(poolChunk.buffer, poolChunk.byteOffset, poolChunk.byteLength);
+  const stringCount = view.getUint32(8, true);
+  const styleCount = view.getUint32(12, true);
+  const flags = view.getUint32(16, true);
+  const stringsStart = view.getUint32(20, true);
+  const decoder = new TextDecoder("utf-8");
+
+  const strings = [];
+  for (let i = 0; i < stringCount; i++) {
+    const off = view.getUint32(28 + i * 4, true);
+    const absOff = stringsStart + off;
+    const byteLen = poolChunk[absOff + 1];
+    const s = decoder.decode(poolChunk.subarray(absOff + 2, absOff + 2 + byteLen));
+    strings.push(s === targetStr ? replacementStr : s);
+  }
+
+  const encoded = [];
+  const offsets = [];
+  let curOff = 0;
+  for (const s of strings) {
+    offsets.push(curOff);
+    const clipped = [...s].slice(0, 120).join("");
+    const strBytes = strToU8(clipped).slice(0, 125);
+    const charLen = Math.min([...clipped].length, 125);
+    const entry = new Uint8Array(2 + strBytes.length + 1);
+    entry[0] = charLen;
+    entry[1] = strBytes.length;
+    entry.set(strBytes, 2);
+    encoded.push(entry);
+    curOff += entry.length;
+  }
+
+  const pad = (4 - (curOff % 4)) % 4;
+  if (pad > 0) encoded.push(new Uint8Array(pad));
+
+  const poolData = concat_u8(encoded);
+  const newChunkSize = 28 + stringCount * 4 + poolData.length;
+  const out = new Uint8Array(newChunkSize);
+  const outView = new DataView(out.buffer);
+  outView.setUint16(0, 0x0001, true);
+  outView.setUint16(2, 28, true);
+  outView.setUint32(4, newChunkSize, true);
+  outView.setUint32(8, stringCount, true);
+  outView.setUint32(12, styleCount, true);
+  outView.setUint32(16, flags, true);
+  outView.setUint32(20, 28 + stringCount * 4, true);
+  outView.setUint32(24, 0, true);
+  for (let i = 0; i < stringCount; i++) {
+    outView.setUint32(28 + i * 4, offsets[i], true);
+  }
+  out.set(poolData, 28 + stringCount * 4);
+  return out;
+}
+
+/**
+ * Patches binary AndroidManifest.xml with a custom package name.
+ */
+export function patch_binary_manifest(manifestBytes, packageName) {
+  if (!packageName || packageName === DEFAULT_PACKAGE_PREFIX) return manifestBytes;
+  const view = new DataView(manifestBytes.buffer, manifestBytes.byteOffset, manifestBytes.byteLength);
+  const oldPoolSize = view.getUint32(8 + 4, true);
+  const newPool = patch_utf16_string_pool(
+    manifestBytes.subarray(8, 8 + oldPoolSize),
+    DEFAULT_PACKAGE_PREFIX,
+    packageName
+  );
+  const out = concat_u8([manifestBytes.subarray(0, 8), newPool, manifestBytes.subarray(8 + oldPoolSize)]);
+  new DataView(out.buffer).setUint32(4, out.length, true);
+  return out;
+}
+
+/**
+ * Patches binary resources.arsc with a custom watch face label (`@string/app_name`) and package name.
+ */
+export function patch_resources_arsc(arscBytes, { label = DEFAULT_WATCHFACE_LABEL, packageName = DEFAULT_PACKAGE_PREFIX } = {}) {
+  const cleanLabel = String(label || DEFAULT_WATCHFACE_LABEL).trim() || DEFAULT_WATCHFACE_LABEL;
+  const cleanPkg = packageName || DEFAULT_PACKAGE_PREFIX;
+  if (cleanLabel === DEFAULT_WATCHFACE_LABEL && cleanPkg === DEFAULT_PACKAGE_PREFIX) {
+    return arscBytes;
+  }
+
+  const view = new DataView(arscBytes.buffer, arscBytes.byteOffset, arscBytes.byteLength);
+  const oldPoolSize = view.getUint32(12 + 4, true);
+  const newPool = patch_utf8_string_pool(
+    arscBytes.subarray(12, 12 + oldPoolSize),
+    DEFAULT_WATCHFACE_LABEL,
+    cleanLabel
+  );
+
+  // ResTable_package chunk immediately follows the global string pool; its 256-byte UTF-16LE name starts at +12
+  const pkgChunk = arscBytes.slice(12 + oldPoolSize);
+  pkgChunk.fill(0, 12, 12 + 256);
+  const pkgUtf16 = encode_utf16le(cleanPkg.slice(0, 127));
+  pkgChunk.set(pkgUtf16, 12);
+
+  const out = concat_u8([arscBytes.subarray(0, 12), newPool, pkgChunk]);
+  new DataView(out.buffer).setUint32(4, out.length, true);
   return out;
 }
 
@@ -214,16 +436,23 @@ export async function sign_apk_v2_v3(alignedApkBytes) {
  *
  * @param {string} watchfaceXml - The WFF XML content
  * @param {Object} drawables - Map of drawable name to Uint8Array PNG bytes
+ * @param {Object} metadata - Optional { label, packageId } overrides
  * @returns {Uint8Array} The zipaligned APK binary
  */
-export function build_wearos_apk(watchfaceXml, drawables = {}) {
+export function build_wearos_apk(watchfaceXml, drawables = {}, metadata = {}) {
   const baseApkBytes = b64_to_u8(BASE_WFF_APK_B64);
   const files = unzipSync(baseApkBytes);
 
-  // 1. Inject WFF watchface.xml
+  // 1. Patch binary AndroidManifest.xml and resources.arsc if custom label or packageId provided
+  const label = String(metadata.label || DEFAULT_WATCHFACE_LABEL).trim() || DEFAULT_WATCHFACE_LABEL;
+  const packageName = format_package_name(metadata.packageId, label);
+  files["AndroidManifest.xml"] = patch_binary_manifest(files["AndroidManifest.xml"], packageName);
+  files["resources.arsc"] = patch_resources_arsc(files["resources.arsc"], { label, packageName });
+
+  // 2. Inject WFF watchface.xml
   files["res/raw/watchface.xml"] = strToU8(watchfaceXml);
 
-  // 2. Inject drawables
+  // 3. Inject drawables
   const mapping = {
     dial_face: "res/drawable-nodpi-v4/dial_face.png",
     dial_face_ambient: "res/drawable-nodpi-v4/dial_face_ambient.png",
@@ -243,7 +472,7 @@ export function build_wearos_apk(watchfaceXml, drawables = {}) {
     }
   }
 
-  // 3. Re-zip archive with STORE (level 0) for resources.arsc and PNGs, DEFLATE (level 6) for XML/Manifest
+  // 4. Re-zip archive with STORE (level 0) for resources.arsc and PNGs, DEFLATE (level 6) for XML/Manifest
   const zipEntries = {};
   for (const [name, data] of Object.entries(files)) {
     const uncompressed = name === "resources.arsc" || name.endsWith(".png");
@@ -260,9 +489,10 @@ export function build_wearos_apk(watchfaceXml, drawables = {}) {
  *
  * @param {string} watchfaceXml - The WFF XML content
  * @param {Object} drawables - Map of drawable name to Uint8Array PNG bytes
+ * @param {Object} metadata - Optional { label, packageId } overrides
  * @returns {Promise<Uint8Array>} The signed & zipaligned APK binary
  */
-export async function build_signed_wearos_apk(watchfaceXml, drawables = {}) {
-  const alignedApk = build_wearos_apk(watchfaceXml, drawables);
+export async function build_signed_wearos_apk(watchfaceXml, drawables = {}, metadata = {}) {
+  const alignedApk = build_wearos_apk(watchfaceXml, drawables, metadata);
   return await sign_apk_v2_v3(alignedApk);
 }

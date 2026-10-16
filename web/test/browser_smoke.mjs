@@ -36,10 +36,15 @@ await page.goto("file:///" + htmlPath.replace(/\\/g, "/"));
 await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
 console.log("✓ App loaded and initialized");
 
-// Switch to Export section and click button
+// Switch to Export section, type a custom Watch Face Name, and click button
 await page.click('button[data-tab="Export"]');
 await page.waitForSelector("#export-wearos", { state: "visible", timeout: 5000 });
-console.log("✓ Switched to Export tab and #export-wearos button is visible");
+await page.fill("#wearos-name", "Bauhaus 38");
+const pkgNote = await page.textContent("#wearos-pkg");
+console.log(`✓ Custom watch face package preview: ${pkgNote}`);
+if (!pkgNote.includes("com.dialtool.watchface.bauhaus_38")) {
+  throw new Error(`Expected package note to contain com.dialtool.watchface.bauhaus_38, got: ${pkgNote}`);
+}
 
 const [download] = await Promise.all([
   page.waitForEvent("download", { timeout: 15000 }),
@@ -48,8 +53,8 @@ const [download] = await Promise.all([
 
 const downloadName = download.suggestedFilename();
 console.log(`✓ Triggered download: ${downloadName}`);
-if (!downloadName.endsWith(".apk")) {
-  throw new Error(`Expected .apk download, got: ${downloadName}`);
+if (downloadName !== "dial-wearos-bauhaus_38.apk") {
+  throw new Error(`Expected dial-wearos-bauhaus_38.apk download, got: ${downloadName}`);
 }
 const savedApk = path.resolve(__dirname, "../../build/browser-exported.apk");
 await download.saveAs(savedApk);

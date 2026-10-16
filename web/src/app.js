@@ -15,7 +15,7 @@ import { OPENER } from "./opener.js";
 import { start_ink, offset as ink_offset } from "./ink.js";
 import { generate_watchface_xml } from "./wearos/wff_xml.js";
 import { svg_dial_face, svg_hand, svg_cap, svg_preview, svg_to_png_bytes } from "./wearos/wff_assets.js";
-import { build_signed_wearos_apk } from "./wearos/apk_packager.js";
+import { build_signed_wearos_apk, format_package_name, sanitize_package_suffix } from "./wearos/apk_packager.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const el = (tag, props = {}, ...children) => {
@@ -548,8 +548,9 @@ const ROWS = {
     custom("export_png"),
     num("out_dpi", "dpi", 72, 2400, 1, { tie: true, bare: true }),      // bare: no word before it (the line under it says "at 600 dpi"); the slider stands under the buttons
     custom("png_size"),
-    hdr("Wear OS"),
     custom("export_wearos"),
+    custom("wearos_name"),
+    custom("wearos_pkg"),
     hdr("Print"),                                  // what only the printed or etched dial needs (was "For production" until beta 4.19)
     chk("out_production", "Mono print mask"),
     chk("out_mirror", "Mirrored, for toner transfer"),
@@ -3155,11 +3156,42 @@ class DialTool {
       type: "button",
       className: "btn main",
       id: "export-wearos",
-      textContent: "Wear OS APK",
+      textContent: "APK",
       title: "Export an installable Wear OS Watch Face APK (.apk)",
       onclick: () => this.export("wearos")
     });
-    wrap.append(el("label", { textContent: "Watch Face" }), btn);
+    wrap.append(el("label", { textContent: "Wear OS" }), btn);
+  }
+
+  row_wearos_name(wrap, out) {
+    wrap.className = "row txt tied";
+    const field = el("input", {
+      type: "text",
+      id: "wearos-name",
+      placeholder: "Watch face name (default: Dial Tool)",
+      ariaLabel: "Watch face name",
+      title: "Watch face label shown on the watch and generates a unique package ID so multiple dials can coexist",
+    });
+    field.oninput = () => {
+      this.S.wearos_name = field.value;
+      this.sync_rows();
+      this.autosave();
+    };
+    wrap.append(el("span"), field);
+    out.refresh = (T) => {
+      if (document.activeElement !== field) field.value = T.wearos_name || "";
+    };
+  }
+
+  row_wearos_pkg(wrap, out) {
+    wrap.className = "row note under";
+    const text = el("span", { className: "quiet", id: "wearos-pkg" });
+    wrap.append(el("span"), text);
+    out.refresh = (T) => {
+      const label = (T.wearos_name || "").trim() || "Dial Tool";
+      const pkg = format_package_name(T.wearos_pkg || "", label);
+      text.textContent = `${label} · ${pkg}`;
+    };
   }
 
   row_settings(wrap) {
@@ -3838,10 +3870,13 @@ class DialTool {
           preview: await svg_to_png_bytes(svg_preview(S, statik)),
           icon: await svg_to_png_bytes(svg_preview(S, statik)),
         };
-        const apkBytes = await build_signed_wearos_apk(xml, drawables);
-        const apkName = `dial-wearos-${Math.round(S.dial_d)}mm.apk`;
+        const label = (S.wearos_name || "").trim() || "Dial Tool";
+        const pkg = format_package_name(S.wearos_pkg || "", label);
+        const apkBytes = await build_signed_wearos_apk(xml, drawables, { label, packageId: pkg });
+        const slug = S.wearos_name && S.wearos_name.trim() ? sanitize_package_suffix(S.wearos_name) : `${Math.round(S.dial_d)}mm`;
+        const apkName = `dial-wearos-${slug}.apk`;
         save_file(apkName, apkBytes, "application/vnd.android.package-archive");
-        this.log(`exported ${apkName} · 450 × 450 px · signed (v2/v3) Watch Face Format APK for Wear OS 4/5+`);
+        this.log(`exported ${apkName} · "${label}" (${pkg}) · 450 × 450 px · signed (v2/v3) WFF APK`);
         return;
       }
       this.log(`exported ${name} · ${G.page_mm(S).toFixed(2)} mm square, to your downloads`);

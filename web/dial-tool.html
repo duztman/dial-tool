@@ -8554,6 +8554,8 @@ var APK_SIG_BLOCK_B64 = "+A8AAAAAAAD1BQAAAAAAABqHCXHtBQAA6QUAAKsDAAAsAAAAKAAAAAM
 var DEBUG_PKCS8_B64 = "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCixwaadS6TxWcHtSuBA4LH0USZQ2EY0GK9EiuvEw9lzoBmZk/LCklYmIlDmLKmGi3ao6Q91ES/94jFNvEVd/yD2LijzTpan4ukQ9ZZgPanWxXr4qj2JEBExh9MKpgWD4MLuc6mNzEuCmPvkix89MB9KXxq0aSSXCtdyM9yGwiOTuuCseW+sj+Ojt1E0wrYZ5L9EWauHvFhmprZHapnWV9AJzsLqW91ipIoLVfQXqGudRWYYWWP0xLlZCCmFuO9a+v5f9WATp2vbw9s1lKX5/39fy0nKeYq/otpchwiwUZoUHhAoGg2QfG8OqaupeYbmluda8CzFTec6PnDnN6yPDoBAgMBAAECggEAP/OZsI1hY0UnGWwgT2ulsgORw/Uo7KrSYB4Hc501a3YaFCEWMFs2PcyQATK43XFjmoa4PGJtME58OZ9AUIL3foVi5Vf4GSqdnkfYqwlz3oR2tFo0r5/GcD62hSIm5mPpxG2Xts3wUHpckP8I4371MTdfXkhHNAlqMEp41gew8NeIYK3Y7ZFwGU4OdgmtciNct3gIujmENSafYyfajFz4s6zHdZatgFqzJp7NILYKAsTe7eIZ50wJStpkrI8dsC9JpmgaXuzde2aXoqFf+gszrIZ/l3sYY3DGczReEL5l+V4VMnMuxMrbBUS8L6uXj6dnGfRjUGu3h/+W20lB3QY2UQKBgQDMIoS1B1GJ7GYko9NdgOlMUTptrC3wudmvYz0oAiYsHV0Lesza1PvMQkVlqJOE6IhqvvovGm8/pG/sKBfr95XvQQWG53QJTgopWHo42FLV0CPu9MCbT76Bpa8F1Ev4wvzyyHqy4T0tpsQ6mCxYLN5ovuweSTKHQxHgFSGU+77EbwKBgQDMIoLCcJBCCMjCIg0f4aWAML5uvoxwirF7zuPVRiTzk66sa52YBGsarLytt0rJfI9PY/OuyfYsWYjzKQyWLxj7RaTknpabxmjOSOz/MA+DLH/o6QI/2s0VdRGe03wJhaEB+/EKZoqDvA/XOW9XVfKlGuoWGMOhAKUKilRXc1uAjwKBgGcgxTSDlwD76fp2vXCOkM5adw8zHh5wdfYyR5Ivy8Mbrob/KgEf+nmNvWuHR8eshkaPZutnCm73jwealcNDWH7/tWAbDDcrMt0CcvTG7MpSFeVBxxBvsAnlf0+Nmjf5ojqxZ7N5MSQgDSChAj4lpNL8KWN/jURicORpKIcQy6aHAoGAZftTwhoEJ8lFqp7iWawcR4eSi7cMaGkRtB2u+uyZJ0r/d8onqDuE2oWzmUG5ziE5Y1s28XqaTpvIbFp0nE8ZNucbMs/7xAUCdRQ/ulljVpATsuM9qXMBBBhBXkyfag5lWp1oVV7XEmsQquBZvJMGru9cRP/INBYjXbmv2ySZcQcCgYEAyi2AkgFTotd+gVlrrk7szA8XjCBJdlH0FhA+zdArLg8PQBFDl4+UcaAJe7s1WbI8v1pqn1iJLfMYQJSM7D8OZYH1nH7jZwv859zIj3nqN2eQvuZLw6DiUlQe3qRXCa8l4Dheht9tgGGaqfAQLbBZq2rlV2V7AIIyU/MwUN6MZdc=";
 
 // web/src/wearos/apk_packager.js
+var DEFAULT_PACKAGE_PREFIX = "com.dialtool.watchface";
+var DEFAULT_WATCHFACE_LABEL = "Dial Tool";
 function b64_to_u8(base64) {
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
@@ -8571,6 +8573,171 @@ function concat_u8(arrays) {
     out.set(a, offset3);
     offset3 += a.length;
   }
+  return out;
+}
+function sanitize_package_suffix(input, fallback = "custom") {
+  const cleaned = String(input || "").trim().toLowerCase().replace(/[^a-z0-9_]+/g, "_").replace(/^_+|_+$/g, "");
+  if (!cleaned) return fallback;
+  const validStart = /^[a-z]/.test(cleaned) ? cleaned : "wf_" + cleaned;
+  return validStart.slice(0, 48);
+}
+function format_package_name(packageOrSuffix, label = "") {
+  const raw = String(packageOrSuffix || "").trim();
+  if (raw.includes(".")) {
+    const parts = raw.split(".").map((p) => sanitize_package_suffix(p, "wf")).filter(Boolean);
+    if (parts.length >= 2) return parts.slice(0, 6).join(".").slice(0, 120);
+  }
+  const source = raw || label;
+  if (!source || source.trim().toLowerCase() === "dial tool") {
+    return DEFAULT_PACKAGE_PREFIX;
+  }
+  return `${DEFAULT_PACKAGE_PREFIX}.${sanitize_package_suffix(source)}`;
+}
+function encode_utf16le(str) {
+  const out = new Uint8Array(str.length * 2);
+  const view = new DataView(out.buffer);
+  for (let i = 0; i < str.length; i++) {
+    view.setUint16(i * 2, str.charCodeAt(i), true);
+  }
+  return out;
+}
+function decode_utf16le(bytes) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let out = "";
+  for (let i = 0; i < bytes.byteLength; i += 2) {
+    out += String.fromCharCode(view.getUint16(i, true));
+  }
+  return out;
+}
+function patch_utf16_string_pool(poolChunk, targetStr, replacementStr) {
+  const view = new DataView(poolChunk.buffer, poolChunk.byteOffset, poolChunk.byteLength);
+  const stringCount = view.getUint32(8, true);
+  const styleCount = view.getUint32(12, true);
+  const flags = view.getUint32(16, true);
+  const stringsStart = view.getUint32(20, true);
+  const strings = [];
+  for (let i = 0; i < stringCount; i++) {
+    const off = view.getUint32(28 + i * 4, true);
+    const absOff = stringsStart + off;
+    const charLen = view.getUint16(absOff, true);
+    const strBytes = poolChunk.subarray(absOff + 2, absOff + 2 + charLen * 2);
+    const s = decode_utf16le(strBytes);
+    strings.push(s === targetStr ? replacementStr : s);
+  }
+  const encoded = [];
+  const offsets = [];
+  let curOff = 0;
+  for (const s of strings) {
+    offsets.push(curOff);
+    const strBytes = encode_utf16le(s);
+    const entry = new Uint8Array(2 + strBytes.length + 2);
+    new DataView(entry.buffer).setUint16(0, s.length, true);
+    entry.set(strBytes, 2);
+    encoded.push(entry);
+    curOff += entry.length;
+  }
+  const pad = (4 - curOff % 4) % 4;
+  if (pad > 0) encoded.push(new Uint8Array(pad));
+  const poolData = concat_u8(encoded);
+  const newChunkSize = 28 + stringCount * 4 + poolData.length;
+  const out = new Uint8Array(newChunkSize);
+  const outView = new DataView(out.buffer);
+  outView.setUint16(0, 1, true);
+  outView.setUint16(2, 28, true);
+  outView.setUint32(4, newChunkSize, true);
+  outView.setUint32(8, stringCount, true);
+  outView.setUint32(12, styleCount, true);
+  outView.setUint32(16, flags, true);
+  outView.setUint32(20, 28 + stringCount * 4, true);
+  outView.setUint32(24, 0, true);
+  for (let i = 0; i < stringCount; i++) {
+    outView.setUint32(28 + i * 4, offsets[i], true);
+  }
+  out.set(poolData, 28 + stringCount * 4);
+  return out;
+}
+function patch_utf8_string_pool(poolChunk, targetStr, replacementStr) {
+  const view = new DataView(poolChunk.buffer, poolChunk.byteOffset, poolChunk.byteLength);
+  const stringCount = view.getUint32(8, true);
+  const styleCount = view.getUint32(12, true);
+  const flags = view.getUint32(16, true);
+  const stringsStart = view.getUint32(20, true);
+  const decoder = new TextDecoder("utf-8");
+  const strings = [];
+  for (let i = 0; i < stringCount; i++) {
+    const off = view.getUint32(28 + i * 4, true);
+    const absOff = stringsStart + off;
+    const byteLen = poolChunk[absOff + 1];
+    const s = decoder.decode(poolChunk.subarray(absOff + 2, absOff + 2 + byteLen));
+    strings.push(s === targetStr ? replacementStr : s);
+  }
+  const encoded = [];
+  const offsets = [];
+  let curOff = 0;
+  for (const s of strings) {
+    offsets.push(curOff);
+    const clipped = [...s].slice(0, 120).join("");
+    const strBytes = strToU8(clipped).slice(0, 125);
+    const charLen = Math.min([...clipped].length, 125);
+    const entry = new Uint8Array(2 + strBytes.length + 1);
+    entry[0] = charLen;
+    entry[1] = strBytes.length;
+    entry.set(strBytes, 2);
+    encoded.push(entry);
+    curOff += entry.length;
+  }
+  const pad = (4 - curOff % 4) % 4;
+  if (pad > 0) encoded.push(new Uint8Array(pad));
+  const poolData = concat_u8(encoded);
+  const newChunkSize = 28 + stringCount * 4 + poolData.length;
+  const out = new Uint8Array(newChunkSize);
+  const outView = new DataView(out.buffer);
+  outView.setUint16(0, 1, true);
+  outView.setUint16(2, 28, true);
+  outView.setUint32(4, newChunkSize, true);
+  outView.setUint32(8, stringCount, true);
+  outView.setUint32(12, styleCount, true);
+  outView.setUint32(16, flags, true);
+  outView.setUint32(20, 28 + stringCount * 4, true);
+  outView.setUint32(24, 0, true);
+  for (let i = 0; i < stringCount; i++) {
+    outView.setUint32(28 + i * 4, offsets[i], true);
+  }
+  out.set(poolData, 28 + stringCount * 4);
+  return out;
+}
+function patch_binary_manifest(manifestBytes, packageName) {
+  if (!packageName || packageName === DEFAULT_PACKAGE_PREFIX) return manifestBytes;
+  const view = new DataView(manifestBytes.buffer, manifestBytes.byteOffset, manifestBytes.byteLength);
+  const oldPoolSize = view.getUint32(8 + 4, true);
+  const newPool = patch_utf16_string_pool(
+    manifestBytes.subarray(8, 8 + oldPoolSize),
+    DEFAULT_PACKAGE_PREFIX,
+    packageName
+  );
+  const out = concat_u8([manifestBytes.subarray(0, 8), newPool, manifestBytes.subarray(8 + oldPoolSize)]);
+  new DataView(out.buffer).setUint32(4, out.length, true);
+  return out;
+}
+function patch_resources_arsc(arscBytes, { label = DEFAULT_WATCHFACE_LABEL, packageName = DEFAULT_PACKAGE_PREFIX } = {}) {
+  const cleanLabel = String(label || DEFAULT_WATCHFACE_LABEL).trim() || DEFAULT_WATCHFACE_LABEL;
+  const cleanPkg = packageName || DEFAULT_PACKAGE_PREFIX;
+  if (cleanLabel === DEFAULT_WATCHFACE_LABEL && cleanPkg === DEFAULT_PACKAGE_PREFIX) {
+    return arscBytes;
+  }
+  const view = new DataView(arscBytes.buffer, arscBytes.byteOffset, arscBytes.byteLength);
+  const oldPoolSize = view.getUint32(12 + 4, true);
+  const newPool = patch_utf8_string_pool(
+    arscBytes.subarray(12, 12 + oldPoolSize),
+    DEFAULT_WATCHFACE_LABEL,
+    cleanLabel
+  );
+  const pkgChunk = arscBytes.slice(12 + oldPoolSize);
+  pkgChunk.fill(0, 12, 12 + 256);
+  const pkgUtf16 = encode_utf16le(cleanPkg.slice(0, 127));
+  pkgChunk.set(pkgUtf16, 12);
+  const out = concat_u8([arscBytes.subarray(0, 12), newPool, pkgChunk]);
+  new DataView(out.buffer).setUint32(4, out.length, true);
   return out;
 }
 function zipalign_apk(zipBytes) {
@@ -8713,9 +8880,13 @@ async function sign_apk_v2_v3(alignedApkBytes) {
     eocdFinal
   ]);
 }
-function build_wearos_apk(watchfaceXml, drawables = {}) {
+function build_wearos_apk(watchfaceXml, drawables = {}, metadata = {}) {
   const baseApkBytes = b64_to_u8(BASE_WFF_APK_B64);
   const files = unzipSync(baseApkBytes);
+  const label = String(metadata.label || DEFAULT_WATCHFACE_LABEL).trim() || DEFAULT_WATCHFACE_LABEL;
+  const packageName = format_package_name(metadata.packageId, label);
+  files["AndroidManifest.xml"] = patch_binary_manifest(files["AndroidManifest.xml"], packageName);
+  files["resources.arsc"] = patch_resources_arsc(files["resources.arsc"], { label, packageName });
   files["res/raw/watchface.xml"] = strToU8(watchfaceXml);
   const mapping = {
     dial_face: "res/drawable-nodpi-v4/dial_face.png",
@@ -8742,8 +8913,8 @@ function build_wearos_apk(watchfaceXml, drawables = {}) {
   const rawZip = zipSync(zipEntries);
   return zipalign_apk(rawZip);
 }
-async function build_signed_wearos_apk(watchfaceXml, drawables = {}) {
-  const alignedApk = build_wearos_apk(watchfaceXml, drawables);
+async function build_signed_wearos_apk(watchfaceXml, drawables = {}, metadata = {}) {
+  const alignedApk = build_wearos_apk(watchfaceXml, drawables, metadata);
   return await sign_apk_v2_v3(alignedApk);
 }
 
@@ -9249,8 +9420,9 @@ var ROWS = {
     num3("out_dpi", "dpi", 72, 2400, 1, { tie: true, bare: true }),
     // bare: no word before it (the line under it says "at 600 dpi"); the slider stands under the buttons
     custom("png_size"),
-    hdr("Wear OS"),
     custom("export_wearos"),
+    custom("wearos_name"),
+    custom("wearos_pkg"),
     hdr("Print"),
     // what only the printed or etched dial needs (was "For production" until beta 4.19)
     chk("out_production", "Mono print mask"),
@@ -12335,11 +12507,40 @@ var DialTool = class _DialTool {
       type: "button",
       className: "btn main",
       id: "export-wearos",
-      textContent: "Wear OS APK",
+      textContent: "APK",
       title: "Export an installable Wear OS Watch Face APK (.apk)",
       onclick: () => this.export("wearos")
     });
-    wrap.append(el("label", { textContent: "Watch Face" }), btn);
+    wrap.append(el("label", { textContent: "Wear OS" }), btn);
+  }
+  row_wearos_name(wrap, out) {
+    wrap.className = "row txt tied";
+    const field = el("input", {
+      type: "text",
+      id: "wearos-name",
+      placeholder: "Watch face name (default: Dial Tool)",
+      ariaLabel: "Watch face name",
+      title: "Watch face label shown on the watch and generates a unique package ID so multiple dials can coexist"
+    });
+    field.oninput = () => {
+      this.S.wearos_name = field.value;
+      this.sync_rows();
+      this.autosave();
+    };
+    wrap.append(el("span"), field);
+    out.refresh = (T) => {
+      if (document.activeElement !== field) field.value = T.wearos_name || "";
+    };
+  }
+  row_wearos_pkg(wrap, out) {
+    wrap.className = "row note under";
+    const text = el("span", { className: "quiet", id: "wearos-pkg" });
+    wrap.append(el("span"), text);
+    out.refresh = (T) => {
+      const label = (T.wearos_name || "").trim() || "Dial Tool";
+      const pkg = format_package_name(T.wearos_pkg || "", label);
+      text.textContent = `${label} \xB7 ${pkg}`;
+    };
   }
   row_settings(wrap) {
     wrap.className = "row";
@@ -13088,10 +13289,13 @@ var DialTool = class _DialTool {
           preview: await svg_to_png_bytes(svg_preview(S, statik)),
           icon: await svg_to_png_bytes(svg_preview(S, statik))
         };
-        const apkBytes = await build_signed_wearos_apk(xml, drawables);
-        const apkName = `dial-wearos-${Math.round(S.dial_d)}mm.apk`;
+        const label = (S.wearos_name || "").trim() || "Dial Tool";
+        const pkg = format_package_name(S.wearos_pkg || "", label);
+        const apkBytes = await build_signed_wearos_apk(xml, drawables, { label, packageId: pkg });
+        const slug = S.wearos_name && S.wearos_name.trim() ? sanitize_package_suffix(S.wearos_name) : `${Math.round(S.dial_d)}mm`;
+        const apkName = `dial-wearos-${slug}.apk`;
         save_file(apkName, apkBytes, "application/vnd.android.package-archive");
-        this.log(`exported ${apkName} \xB7 450 \xD7 450 px \xB7 signed (v2/v3) Watch Face Format APK for Wear OS 4/5+`);
+        this.log(`exported ${apkName} \xB7 "${label}" (${pkg}) \xB7 450 \xD7 450 px \xB7 signed (v2/v3) WFF APK`);
         return;
       }
       this.log(`exported ${name} \xB7 ${page_mm(S).toFixed(2)} mm square, to your downloads`);
