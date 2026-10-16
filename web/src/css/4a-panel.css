@@ -75,7 +75,7 @@
   .tabs button.on .hub { fill: currentColor; }      /* Dial chosen: its centre hole a dot of paper (Okay's drawing, 14 Oct 2026) */
 
   .pinned, .form { padding: 0 var(--margin); }
-  .pinned { border-bottom: var(--thick) solid var(--ink); }      /* what stays put ends on a thick line, on every tab and screen (Okay, 15 Oct 2026, 06:20: "the thick black bars… seems good. Do all adhere?"); a hairline until then on Dial, Rings and Export */
+  .pinned { position: relative; border-bottom: var(--thick) solid var(--ink); }      /* positioned: the ring list's pill stands on its line (4f-rings.css, #256) */      /* what stays put ends on a thick line, on every tab and screen (Okay, 15 Oct 2026, 06:20: "the thick black bars… seems good. Do all adhere?"); a hairline until then on Dial, Rings and Export */
   /* …inside the margins, like every other thick line (Okay, 15 Oct 2026, 07:29: "lower hr bar should be inset. Hard cut from
      white to gray on margins. Desktop included"): the border's band stays (nothing under it moves) but is clear, so the
      panel's paper shows in the margins and meets the grey below with no line; the ink is drawn across the content only */

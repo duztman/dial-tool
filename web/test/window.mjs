@@ -159,6 +159,27 @@ check(row_look.every((x) => x.includes("1px")) && row_look.filter((x) => x.start
 const sums = await page.$$eval(".ringlist li.ring", (l) => l.map((e) => { const t = (q) => e.querySelector(q).textContent, x = (q) => Math.round(e.querySelector(q).getBoundingClientRect().left); return [t(".says-kind"), t(".says-size"), t(".says-r"), [x(".name") < x(".says-kind"), x(".says-kind") < x(".chipcell"), x(".chipcell") < x(".says-size"), x(".says-size") < x(".says-r")].every(Boolean), x(".says-size") + "/" + x(".says-r") + "/" + x(".chipcell"), e.getBoundingClientRect().height, e.querySelectorAll(".dot.tiny").length === (e.classList.contains("on") ? 0 : 1)]; }));
 check(sums.every((x) => /^(1 (tick|marker|numeral|band)|([2-9]|\d\d+) (ticks|markers|numerals|sectors))$/.test(x[0]) && /^[\d.]+$/.test(x[1]) && /^[\d.]+$/.test(x[2]) && x[3] && x[6]) && new Set(sums.map((x) => x[4])).size === 1 && new Set(sums.map((x) => x[5])).size === 1,
   `every ring's row reads kind · colour · size · radius after its name, each in one column down the list; every row but the selected one has its colour (the drawer's button is right under): ${sums.map((x) => x.slice(0, 3).join(" · ")).join(" | ")}`);
+// the list's pill and the fit (#256, 4.47.1): with more than five rings a black pill stands in the middle of the pinned
+// part's line; selecting a ring scrolls its row and drawer whole into the list; a drag on the pill shows more rows, a
+// tap jumps between five and all
+{
+  const m = () => page.evaluate(() => { const t = window.dial_tool, ol = t.ring_list, g = document.querySelector("#list-grip"), p = document.querySelector(".pinned").getBoundingClientRect(), gb = g.getBoundingClientRect(), h = t.ring_line_holder;
+    return [t.S.rings.length, getComputedStyle(g).display, Math.round((gb.left + gb.right) / 2 - (p.left + p.right) / 2), +((gb.top + gb.bottom) / 2 - p.bottom + 1).toFixed(1), ol.clientHeight, ol.scrollHeight, ol.scrollTop, ol.style.getPropertyValue("--ring-rows"), h.offsetTop + h.offsetHeight]; });
+  const was = await S("[S.ui_ring, S.rings.length]");
+  const few = await m();
+  await page.evaluate(() => { const t = window.dial_tool; for (let i = 0; i < 5; i++) t.S.rings.push({ ...t.S.rings[0], name: "Copy " + i }); t.static_dirty = true; t.fill_ring_list(); t.ring_list.scrollTop = 0; t.select_ring(t.S.rings.length - 1); });
+  await page.waitForTimeout(100);
+  const fitted = await m();
+  const g = await page.$eval("#list-grip", (e) => { const b = e.getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; });
+  await page.mouse.move(g[0], g[1]); await page.mouse.down(); await page.mouse.move(g[0], g[1] + 60, { steps: 6 }); await page.mouse.move(g[0], g[1] + 114, { steps: 6 }); await page.mouse.up();
+  const dragged = await m();
+  const g2 = await page.$eval("#list-grip", (e) => { const b = e.getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; });
+  await page.mouse.click(g2[0], g2[1]);
+  const tapped = [...await m(), await page.evaluate(() => localStorage.getItem("dial-tool-ring-rows"))];
+  await page.evaluate(([ring, n]) => { const t = window.dial_tool; t.S.rings.length = n; t.static_dirty = true; t.select_ring(ring); localStorage.removeItem("dial-tool-ring-rows"); }, was);
+  check(few[0] <= 5 && few[1] === "none" && fitted[0] === few[0] + 5 && fitted[1] === "grid" && fitted[2] === 0 && fitted[3] === 0 && fitted[5] > fitted[4] && fitted[6] === fitted[8] - fitted[4] && dragged[7] === String(fitted[0]) && dragged[4] === dragged[5] && tapped[7] === "5" && tapped[4] === fitted[4] && tapped[9] === "5",
+    `the list's pill (#256): none with ${few[0]} rings; with ${fitted[0]} it stands in the middle of the pinned part's line (${fitted[2]} / ${fitted[3]} off); selecting the last ring scrolls the list (${fitted[6]}) so its row and drawer end in view (${fitted[8]} in ${fitted[4]}); dragged three rows down the list shows all ${dragged[7]} (${dragged[4]} = ${dragged[5]}); a tap brings five back, kept by the browser`);
+}
 const sum_before = await page.textContent(".ringlist li.ring.on .says-r");
 await page.evaluate(() => { const t = window.dial_tool; t.set_value("ring", "r", t.ring().r - 1); });
 check(await page.textContent(".ringlist li.ring.on .says-r") !== sum_before && await page.$$eval(".ringlist li.ring.on", (e) => e.length) === 1, `the row follows the ring: radius ${sum_before} → ${await page.textContent(".ringlist li.ring.on .says-r")}`);

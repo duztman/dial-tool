@@ -6,7 +6,15 @@
      and every row borrows them (subgrid), so summaries and kinds stand under each other whatever the words' widths. */
   .ringlist { margin: 0 0 0 var(--lead); }      /* rows start where the labels start (the toggle column is the panes' alone) and end on the pane's line */
   .ringlist ol { position: relative; list-style: none; margin: 0; padding: var(--u1) 0 0; display: grid; row-gap: var(--ring-gap);
-    grid-template-columns: calc(var(--frame-pad) + var(--lead)) var(--grip) minmax(0, 1fr) auto calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--ringline-gap)) var(--row-end);      /* eye · grip · name · kind · colour · size · radius · the room at the end: rows and the ring drawer share them */ max-height: calc(5 * (var(--line) + var(--ring-gap)) + var(--line-button) + 2 * var(--ringline-pad) + 2 * var(--ringline-inner) + 2 * var(--hair) + var(--ringline-join) + var(--unit)); overflow-y: auto; }      /* five rings and the ring line, then it scrolls */
+    grid-template-columns: calc(var(--frame-pad) + var(--lead)) var(--grip) minmax(0, 1fr) auto calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--ringline-gap)) var(--row-end);      /* eye · grip · name · kind · colour · size · radius · the room at the end: rows and the ring drawer share them */ max-height: calc(var(--ring-rows, 5) * (var(--line) + var(--ring-gap)) + var(--line-button) + 2 * var(--ringline-pad) + 2 * var(--ringline-inner) + 2 * var(--hair) + var(--ringline-join) + var(--unit)); overflow-y: auto; }      /* five rings and the ring line, then it scrolls; the pill on the pinned part's line sets the rows (--ring-rows, app.js list_grip, #256) */
+  /* the list's pill (#256; Okay's notes, p. 2: "a resize pill … like the phone's gripper but black"): in the middle of
+     the pinned part's black line, only when there are more rings than the list shows (.ring-scrolls); the gripper's
+     measures (--grip-…), black with a groove of paper; held, a hairline of paper round it */
+  .listgrip { display: none; position: absolute; left: 50%; bottom: 0; z-index: 6; translate: -50% calc(50% + var(--thick) / 2); place-items: center; width: var(--grip-hit); height: var(--grip-hit); touch-action: none; cursor: ns-resize; }
+  .pinned.ring-scrolls .listgrip { display: grid; }
+  .listgrip::before { content: ""; grid-area: 1 / 1; width: var(--grip-w); height: var(--grip-h); border-radius: calc(var(--grip-h) / 2); background: var(--ink); }
+  .listgrip::after { content: ""; grid-area: 1 / 1; width: var(--grip-groove); height: var(--hair); background: var(--paper); }
+  .listgrip.gripping::before { box-shadow: 0 0 0 var(--hair) var(--paper); }
   .ringlist li.ring { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; height: var(--line);
     border: var(--hair) solid var(--rule); border-radius: var(--round-small); background: var(--field); cursor: pointer; }
   .ringlist li.ring:hover { border-color: var(--grey); }

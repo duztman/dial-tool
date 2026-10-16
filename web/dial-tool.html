@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.47 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.47.1 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -462,7 +462,7 @@
   .tabs button.on .hub { fill: currentColor; }      /* Dial chosen: its centre hole a dot of paper (Okay's drawing, 14 Oct 2026) */
 
   .pinned, .form { padding: 0 var(--margin); }
-  .pinned { border-bottom: var(--thick) solid var(--ink); }      /* what stays put ends on a thick line, on every tab and screen (Okay, 15 Oct 2026, 06:20: "the thick black bars… seems good. Do all adhere?"); a hairline until then on Dial, Rings and Export */
+  .pinned { position: relative; border-bottom: var(--thick) solid var(--ink); }      /* positioned: the ring list's pill stands on its line (4f-rings.css, #256) */      /* what stays put ends on a thick line, on every tab and screen (Okay, 15 Oct 2026, 06:20: "the thick black bars… seems good. Do all adhere?"); a hairline until then on Dial, Rings and Export */
   /* …inside the margins, like every other thick line (Okay, 15 Oct 2026, 07:29: "lower hr bar should be inset. Hard cut from
      white to gray on margins. Desktop included"): the border's band stays (nothing under it moves) but is clear, so the
      panel's paper shows in the margins and meets the grey below with no line; the ink is drawn across the content only */
@@ -755,7 +755,15 @@
      and every row borrows them (subgrid), so summaries and kinds stand under each other whatever the words' widths. */
   .ringlist { margin: 0 0 0 var(--lead); }      /* rows start where the labels start (the toggle column is the panes' alone) and end on the pane's line */
   .ringlist ol { position: relative; list-style: none; margin: 0; padding: var(--u1) 0 0; display: grid; row-gap: var(--ring-gap);
-    grid-template-columns: calc(var(--frame-pad) + var(--lead)) var(--grip) minmax(0, 1fr) auto calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--ringline-gap)) var(--row-end);      /* eye · grip · name · kind · colour · size · radius · the room at the end: rows and the ring drawer share them */ max-height: calc(5 * (var(--line) + var(--ring-gap)) + var(--line-button) + 2 * var(--ringline-pad) + 2 * var(--ringline-inner) + 2 * var(--hair) + var(--ringline-join) + var(--unit)); overflow-y: auto; }      /* five rings and the ring line, then it scrolls */
+    grid-template-columns: calc(var(--frame-pad) + var(--lead)) var(--grip) minmax(0, 1fr) auto calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--ringline-gap)) var(--row-end);      /* eye · grip · name · kind · colour · size · radius · the room at the end: rows and the ring drawer share them */ max-height: calc(var(--ring-rows, 5) * (var(--line) + var(--ring-gap)) + var(--line-button) + 2 * var(--ringline-pad) + 2 * var(--ringline-inner) + 2 * var(--hair) + var(--ringline-join) + var(--unit)); overflow-y: auto; }      /* five rings and the ring line, then it scrolls; the pill on the pinned part's line sets the rows (--ring-rows, app.js list_grip, #256) */
+  /* the list's pill (#256; Okay's notes, p. 2: "a resize pill … like the phone's gripper but black"): in the middle of
+     the pinned part's black line, only when there are more rings than the list shows (.ring-scrolls); the gripper's
+     measures (--grip-…), black with a groove of paper; held, a hairline of paper round it */
+  .listgrip { display: none; position: absolute; left: 50%; bottom: 0; z-index: 6; translate: -50% calc(50% + var(--thick) / 2); place-items: center; width: var(--grip-hit); height: var(--grip-hit); touch-action: none; cursor: ns-resize; }
+  .pinned.ring-scrolls .listgrip { display: grid; }
+  .listgrip::before { content: ""; grid-area: 1 / 1; width: var(--grip-w); height: var(--grip-h); border-radius: calc(var(--grip-h) / 2); background: var(--ink); }
+  .listgrip::after { content: ""; grid-area: 1 / 1; width: var(--grip-groove); height: var(--hair); background: var(--paper); }
+  .listgrip.gripping::before { box-shadow: 0 0 0 var(--hair) var(--paper); }
   .ringlist li.ring { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; height: var(--line);
     border: var(--hair) solid var(--rule); border-radius: var(--round-small); background: var(--field); cursor: pointer; }
   .ringlist li.ring:hover { border-color: var(--grey); }
@@ -5874,7 +5882,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.47";
+var VERSION = "beta 4.47.1";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -8210,6 +8218,7 @@ var TRAVEL_MS = 900;
 var HOLE_LIVE_MS = 1200;
 var WORDS_MS = 3e3;
 var SHEET = { shares: [0.42, 0.22], preview: 120, drawer: 160, room: 140 };
+var RING_ROWS = 5;
 var SPIN_MS = 1600;
 var TOOL_ICONS = {
   // on 18; a quiet sign, thin and light (Okay, 11 Oct 2026; again 14 Oct, 04:11: "thinner lines"): DENSE, corners
@@ -10913,7 +10922,63 @@ var DialTool = class _DialTool {
     this.ring_list = el("ol");
     this.ring_list.onscroll = () => this.value_pop_close();
     wrap.append(this.ring_list);
+    this.list_grip();
     this.fill_ring_list();
+  }
+  /** the ring list holds five rings and the drawer, then scrolls (4f-rings.css). With more rings than that a pill
+   *  stands in the middle of the pinned part's black line — the phone's gripper, but black — and dragging it shows
+   *  more or fewer rows; a tap jumps between five and all. Remembered by this browser, not by the dial (Okay's notes,
+   *  p. 2, #256: "there's a limit to it … a resize pill"). */
+  list_grip() {
+    const ol = this.ring_list, set = (n) => {
+      this.ring_rows_shown = n;
+      ol.style.setProperty("--ring-rows", String(n));
+    };
+    try {
+      const kept = parseInt(localStorage.getItem("dial-tool-ring-rows"));
+      if (kept >= 1) set(kept);
+    } catch (e) {
+    }
+    const grip = el("div", { className: "listgrip", id: "list-grip", title: "Drag to show more or fewer rings", ariaLabel: "Rings shown" });
+    grip.setAttribute("role", "separator");
+    const most = () => Math.max(this.S.rings.length, 1), rows = () => this.ring_rows_shown ?? RING_ROWS;
+    let down = null;
+    grip.onpointerdown = (e) => {
+      grip.setPointerCapture(e.pointerId);
+      down = { y: e.clientY, moved: false };
+      grip.classList.add("gripping");
+    };
+    grip.onpointermove = (e) => {
+      if (!down) return;
+      if (Math.abs(e.clientY - down.y) > 4) down.moved = true;
+      if (!down.moved) return;
+      const c = getComputedStyle(ol), pitch = parseFloat(c.getPropertyValue("--line")) + parseFloat(c.getPropertyValue("--ring-gap")), top = ol.getBoundingClientRect().top + parseFloat(c.paddingTop);
+      const drawer = this.ring_line_holder ? this.ring_line_holder.offsetHeight : 0;
+      set(clamp(Math.round((e.clientY - top - drawer) / pitch), 1, most()));
+    };
+    grip.onpointerup = grip.onpointercancel = (e) => {
+      if (!down) return;
+      if (!down.moved && e.type === "pointerup") set(rows() === RING_ROWS ? most() : RING_ROWS);
+      down = null;
+      grip.classList.remove("gripping");
+      try {
+        localStorage.setItem("dial-tool-ring-rows", String(this.ring_rows_shown));
+      } catch (er) {
+      }
+    };
+    this.pinned.append(grip);
+  }
+  /** the selected ring's row and the drawer under it, whole in the list's view (Okay's notes, p. 2, #256: "even if
+   *  only a few pixels of it show, scrolls so its whole row and drawer are in the view box"); the row wins when both
+   *  can't fit. Only the list scrolls here (on a phone it has no height of its own). */
+  fit_ring() {
+    const ol = this.ring_list, row = this.ring_rows()[this.S.ui_ring], holder = this.ring_line_holder;
+    if (!ol || !row || ol.scrollHeight <= ol.clientHeight) return;
+    const top = row.offsetTop, bottom = (holder && holder.isConnected ? holder : row).offsetTop + (holder && holder.isConnected ? holder : row).offsetHeight;
+    let at = ol.scrollTop;
+    if (bottom > at + ol.clientHeight) at = bottom - ol.clientHeight;
+    if (top < at) at = top;
+    if (at !== ol.scrollTop) ol.scrollTop = at;
   }
   /** the list's tools, on the heading line: a plus that opens the four kinds (add one above the selected ring),
    *  then what you can do to the selected ring. All five are the same outlined circle (Okay, 13 Oct 2026). */
@@ -11182,6 +11247,7 @@ var DialTool = class _DialTool {
    *  radius (ring_summary). A click on the selected ring's name renames it; a click anywhere else on a row selects it. */
   fill_ring_list() {
     if (!this.ring_list) return;
+    this.pinned.classList.toggle("ring-scrolls", this.S.rings.length > RING_ROWS);
     this.ring_list.replaceChildren();
     this.S.rings.forEach((ring, i) => {
       const selected = i === this.S.ui_ring;
@@ -11329,6 +11395,8 @@ var DialTool = class _DialTool {
       }
       this.sync_rows();
     });
+    this.fit_ring();
+    if (this.anchor_rebase) this.anchor_rebase();
     this.render();
   }
   /** keep what was pressed under the finger (Okay, 15 Oct 2026, 11:13: "Selecting reordering is impossible from
@@ -11387,6 +11455,12 @@ var DialTool = class _DialTool {
       if (a) {
         a.down = false;
         a.until = performance.now() + AFTER_MS;
+      }
+    };
+    this.anchor_rebase = () => {
+      if (a && a.ring != null) {
+        const row = this.ring_rows()[a.ring];
+        if (row) a.y = row.getBoundingClientRect().top;
       }
     };
     panel.addEventListener("pointerup", up, true);

@@ -250,6 +250,7 @@ const WORDS_MS = 3000;
 // drawer about half, then about three quarters); the least the preview and the drawer keep (px); and how much room for
 // scrolling the drawer must have left under its title, tabs and pinned panes before those stay put
 const SHEET = { shares: [0.42, 0.22], preview: 120, drawer: 160, room: 140 };
+const RING_ROWS = 5;       // the ring list shows this many rings (and the drawer) before it scrolls; its pill makes it taller or shorter (#256)
 const SPIN_MS = 1600;      // Now and back: the big hands turn once, opposite ways, and land; the seconds hand goes straight there (07:36)
 const TOOL_ICONS = {
   // on 18; a quiet sign, thin and light (Okay, 11 Oct 2026; again 14 Oct, 04:11: "thinner lines"): DENSE, corners
@@ -2577,7 +2578,51 @@ class DialTool {
     this.ring_list = el("ol");
     this.ring_list.onscroll = () => this.value_pop_close();      // the pop-up hangs where the ring line was
     wrap.append(this.ring_list);
+    this.list_grip();
     this.fill_ring_list();
+  }
+
+  /** the ring list holds five rings and the drawer, then scrolls (4f-rings.css). With more rings than that a pill
+   *  stands in the middle of the pinned part's black line — the phone's gripper, but black — and dragging it shows
+   *  more or fewer rows; a tap jumps between five and all. Remembered by this browser, not by the dial (Okay's notes,
+   *  p. 2, #256: "there's a limit to it … a resize pill"). */
+  list_grip() {
+    const ol = this.ring_list, set = (n) => { this.ring_rows_shown = n; ol.style.setProperty("--ring-rows", String(n)); };
+    try { const kept = parseInt(localStorage.getItem("dial-tool-ring-rows")); if (kept >= 1) set(kept); } catch (e) { /* not kept */ }
+    const grip = el("div", { className: "listgrip", id: "list-grip", title: "Drag to show more or fewer rings", ariaLabel: "Rings shown" });
+    grip.setAttribute("role", "separator");
+    const most = () => Math.max(this.S.rings.length, 1), rows = () => this.ring_rows_shown ?? RING_ROWS;
+    let down = null;
+    grip.onpointerdown = (e) => { grip.setPointerCapture(e.pointerId); down = { y: e.clientY, moved: false }; grip.classList.add("gripping"); };
+    grip.onpointermove = (e) => {
+      if (!down) return;
+      if (Math.abs(e.clientY - down.y) > 4) down.moved = true;
+      if (!down.moved) return;
+      const c = getComputedStyle(ol), pitch = parseFloat(c.getPropertyValue("--line")) + parseFloat(c.getPropertyValue("--ring-gap")), top = ol.getBoundingClientRect().top + parseFloat(c.paddingTop);
+      const drawer = this.ring_line_holder ? this.ring_line_holder.offsetHeight : 0;
+      set(clamp(Math.round((e.clientY - top - drawer) / pitch), 1, most()));      // whole rows: the pill snaps
+    };
+    grip.onpointerup = grip.onpointercancel = (e) => {
+      if (!down) return;
+      if (!down.moved && e.type === "pointerup") set(rows() === RING_ROWS ? most() : RING_ROWS);
+      down = null;
+      grip.classList.remove("gripping");
+      try { localStorage.setItem("dial-tool-ring-rows", String(this.ring_rows_shown)); } catch (er) { /* not kept */ }
+    };
+    this.pinned.append(grip);
+  }
+
+  /** the selected ring's row and the drawer under it, whole in the list's view (Okay's notes, p. 2, #256: "even if
+   *  only a few pixels of it show, scrolls so its whole row and drawer are in the view box"); the row wins when both
+   *  can't fit. Only the list scrolls here (on a phone it has no height of its own). */
+  fit_ring() {
+    const ol = this.ring_list, row = this.ring_rows()[this.S.ui_ring], holder = this.ring_line_holder;
+    if (!ol || !row || ol.scrollHeight <= ol.clientHeight) return;
+    const top = row.offsetTop, bottom = (holder && holder.isConnected ? holder : row).offsetTop + (holder && holder.isConnected ? holder : row).offsetHeight;
+    let at = ol.scrollTop;
+    if (bottom > at + ol.clientHeight) at = bottom - ol.clientHeight;
+    if (top < at) at = top;
+    if (at !== ol.scrollTop) ol.scrollTop = at;
   }
 
   /** the list's tools, on the heading line: a plus that opens the four kinds (add one above the selected ring),
@@ -2806,6 +2851,7 @@ class DialTool {
    *  radius (ring_summary). A click on the selected ring's name renames it; a click anywhere else on a row selects it. */
   fill_ring_list() {
     if (!this.ring_list) return;
+    this.pinned.classList.toggle("ring-scrolls", this.S.rings.length > RING_ROWS);      // more rings than the list shows: its pill (#256)
     this.ring_list.replaceChildren();
     this.S.rings.forEach((ring, i) => {
       const selected = i === this.S.ui_ring;
@@ -2923,6 +2969,8 @@ class DialTool {
       else { this.ring_rows().forEach((li, k) => li.classList.toggle("on", k === this.S.ui_ring)); this.place_ring_line(); }
       this.sync_rows();
     });
+    this.fit_ring();                               // the row and its drawer whole in view (#256)
+    if (this.anchor_rebase) this.anchor_rebase();  // …and the finger's anchor holds that place, not the old one
     this.render();
   }
 
@@ -2973,6 +3021,8 @@ class DialTool {
       if (a && a.down && !a.holds && Math.hypot(e.clientX - a.x0, e.clientY - a.y0) > SLOP) a = null;      // a scroll or a drag: not a press
     }, true);
     const up = () => { if (a) { a.down = false; a.until = performance.now() + AFTER_MS; } };
+    // the list scrolled on purpose under the finger (fit_ring, #256): the anchor takes the row's new place as its own
+    this.anchor_rebase = () => { if (a && a.ring != null) { const row = this.ring_rows()[a.ring]; if (row) a.y = row.getBoundingClientRect().top; } };
     panel.addEventListener("pointerup", up, true);
     panel.addEventListener("pointercancel", () => { a = null; }, true);
     panel.addEventListener("wheel", () => { a = null; }, { passive: true, capture: true });

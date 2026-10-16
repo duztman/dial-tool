@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.47.1 (web version) · 17 Oct 2026
+
+- **Selecting a ring fits the list** (#256; Okay's notes, p. 2: "even if only a few pixels of it show, scrolls so its whole row and drawer are in the view box"): the ring list scrolls so the selected ring's row and the drawer under it are whole in view (the row wins when both can't fit). The finger's anchor (15 Oct) takes the row's new place as its own, so nothing fights.
+- **The list's pill** (#256: "when its scrollbar comes on … a resize pill appears in the middle of its bottom black line, like the phone's gripper but black"): with more than five rings a black pill with a paper groove stands in the middle of the pinned part's line, the gripper's measures (`--grip-…`). Dragging it shows more or fewer rows (whole rows, it snaps; one to all); a tap jumps between five and all. Kept by the browser (`dial-tool-ring-rows`), not by the dial. The list's height is `--ring-rows` on the list (five to start).
+
 ## beta 4.47 (web version) · 17 Oct 2026
 
 Phase G's first push: the panes' order and *resize from*.
