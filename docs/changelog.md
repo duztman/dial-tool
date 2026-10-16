@@ -1,5 +1,21 @@
 # Dial Tool — changelog
 
+## beta 4.46.2 (web version) · 16 Oct 2026
+
+After Okay's marks on 4.46.1.
+
+- **The Show box grows down from the chosen tab** (#261; "the top tab attaches traveling show ticker"). It sits under that tab alone, as wide as it, and moves when another tab is chosen. It keeps its darker grey; the rest of the strip is gone. It is less tall, a control high (26, was 31.5), with the room of an open pane under it. The hand tabs now stand in equal columns, as the window cards do, so the box finds their edges exactly.
+- **Window at x** (#264):
+  - a **4** joins the circles before the dots: 3 · 6 · 9 · 12 · 4 · ··· ("Add 4 to the circles before …");
+  - the circles fill their line a unit apart, as large as that allows (37 px at the panel's width, was 36), with a unit over and under them;
+  - the heading grows to hold them; its title keeps the gap every heading has over its title ("top gap stays same"), with "Position" tight under it;
+  - a time in the dots ("2:15") is set a size smaller so it fits the circle.
+- **The hand's page** (Okay: "Blue lines, align, black line, new black line, thin"):
+  - under the Show box a thin black line opens the hand's pane, from where the tabs start, with the room of an open pane under it;
+  - the hand's box starts where the tabs do, and its top is the first row's line.
+  - A fix found on the way: in 4.46 the headless pane carried the class `plain`, which is a button's class, so it took a button's border and padding and stood 6.5 px in from everything else. It is now `headless`.
+- **Shape**: its buttons are as high as a place's circle, with a unit over and under them, and the heading grows to hold them, its title in its usual place ("either shrink or enlarge height to fit shape buttons and appropriate vertical padding like all the rows"). As a rule: R32, a heading that carries controls.
+
 ## beta 4.46.1 (web version) · 16 Oct 2026
 
 The Windows page, reordered after Okay's marks on three mock-ups (#263–#266).

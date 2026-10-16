@@ -18,6 +18,7 @@
   /* tabs inside a section, always in view (Hands: Hour · Minute · Seconds): one line across the six columns */
   .tabsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: end; min-height: calc(var(--head) + var(--unit)); padding-top: calc(1.5 * var(--unit)); border-top: var(--thick) solid var(--ink); }
   .tabsbar > .segs { grid-column: 2 / -1; }
+  .tabsbar .segs { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }      /* equal columns, as the window cards': the Show box under a tab finds its edges (4.46.2) */
   .tabsbar .segs > button { height: var(--tab-high); font-weight: 600; }
   /* tabs: the hand tabs and the window cards. They touch each other and stand on the line under them with no foot
      of their own; between two tabs the top has a sharp notch, a V. Each tab cuts its own two top corners (a
@@ -39,12 +40,18 @@
   :is(.tabsbar .segs > .tab, .windowcards .card) + :is(.tab, .card) { margin-left: calc(-1 * var(--hair)); }      /* one line between two tabs, not two */
   .tab:hover { --tab-fill: var(--hover); }
   .tab.on { --cut-l: 0px; --cut-r: 0px; --tab-line: var(--ink); --tab-fill: var(--ink); z-index: 1; color: var(--paper); }
-  /* the Show box (#261, 4.46): the chosen tab's first line, on top of the grey page under the tabs — a thin box a
-     little darker than the page, from where the tabs start to the pane's end, holding Show; a white line under it,
-     then the adjustments. A hand's pane under it has no heading (.plain), so no thick line either */
-  .form > .showbox { display: flex; align-items: center; min-height: var(--show-high); margin-left: var(--lead); padding: 0 var(--u3); background: var(--show-ground); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--line-on-grey); font-size: var(--t-s); }
-  .form > .showbox > .check { display: flex; align-items: center; }
-  .form > .showbox + .pane.plain { border-top: 0; }
+  /* the Show box (#261, 4.46; 4.46.2): it grows down from the chosen tab and goes with it — a thin box a little darker
+     than the page, under that tab alone and as wide as it, holding Show (Okay: "the top tab attaches traveling show
+     ticker"). It stands in the tabs' own columns (--tabs, --tab: set by app.js), and where the tabs share a line
+     (one line between two, above) it shares it too. Then the room under an open pane, and the panes. A hand's pane
+     under it has no heading (.headless): a thin black line opens it instead, from where the tabs start, two units
+     under the box, and the room under an open pane before what it holds (Okay, 16 Oct 2026, on 4.46.1: "black line,
+     new black line, thin") */
+  .form > .showbox { display: grid; grid-template-columns: repeat(var(--tabs, 1), minmax(0, 1fr)); margin: 0 0 var(--air) var(--lead); }
+  .form > .showbox > .check { grid-column: var(--tab, 1); display: flex; align-items: center; height: var(--show-high); padding: 0 var(--u3); background: var(--show-ground); font-size: var(--t-s);
+    margin-left: calc(-1 * var(--hair) * min(var(--tab, 1) - 1, 1)); }      /* past the first tab: the hairline it shares with the tab before it */
+  .form > .showbox:has(+ .pane.headless) { margin-bottom: var(--u4); }
+  .form > .showbox + .pane.headless { border-top: 0; padding-top: var(--air); background: linear-gradient(var(--ink) 0 0) right top / calc(100% - var(--lead)) var(--hair) no-repeat; }
   .handsbar > h2 { grid-column: 2 / span 2; }
   .handsbar > .check { grid-column: 4 / span 2; white-space: nowrap; }
   .handsbar > select { grid-column: 6 / span 2; }

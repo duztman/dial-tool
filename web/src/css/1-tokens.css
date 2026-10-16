@@ -88,7 +88,8 @@
     --tile: 50px;                                  /* a picture tile's least height */
     --guide-tint: 22%; --guide-edge: 65%;          /* the selected ring's row: this much of its guide's colour in its ground, and in its frame */
     --tab-notch: var(--unit);                      /* how deep the notch between two tabs is cut (a V, twice as wide): one unit */
-    --show-high: calc(var(--control) + 2 * var(--u1)); --show-ground: color-mix(in srgb, var(--ink) 7%, var(--ground));      /* the Show box (#261): a thin box, a little darker than the grey page under it */
+    --places: 6;                                   /* a window's place circles on their heading's line: 3 · 6 · 9 · 12 · 4 · ··· (4.46.2); the Shape line's buttons are as high as one */
+    --show-high: var(--control); --show-ground: color-mix(in srgb, var(--ink) 7%, var(--ground));      /* the Show box (#261): a thin box, a little darker than the grey page under it (a control high since 4.46.2, Okay: "less"; a control and a half-unit over and under it in 4.46) */
     --tab-high: 40px; --tab-pad: 11px;             /* a word tab's height (Hour · Minute · Seconds) · above and under a picture tab's picture (the window cards): room to breathe */
     --round-pill: 999px;                           /* fully round: the signs on the Rings heading line, a value button */
     --menu-box: 18px;                              /* the boxed arrow beside a label that opens a small menu */

@@ -532,9 +532,9 @@ const ROWS = {
     custom("hands_bar", { pin: true, bar: true }),      // bar: one line of its own, always in view: All hands · Show hands · Motion
     custom("hand_tabs", { pin: true, bar: true }),      // under it, always in view: which hand the panes below are about (Okay, 12 Oct 2026: "acts as a tab system for what's below")
     // the Show box (#261, 4.46; Okay's notes, p. 2): under the tabs, on top of the grey page, Show — the tab says which
-    // hand, so the hand's name line goes and everything under it is the tab's content: a pane with no heading (plain)
+    // hand, so the hand's name line goes and everything under it is the tab's content: a pane with no heading (headless)
     custom("show_box", { ...H, bar: true }),
-    hdr("One hand", { plain: true }),
+    hdr("One hand", { headless: true }),
     // one pane for a hand (Okay's drawings, 13 Oct 2026): at the left a box with the hand itself, as it is now; beside
     // it everything that makes it — its shape (one line of tiles that opens; a plus for a shape of one's own, later),
     // then its numbers and its colour. So what a number changes is seen right beside it, and on the dial at the right.
@@ -1860,7 +1860,7 @@ class DialTool {
    *  folded or opened starts as its row says (`folded`: a first visit, #270), unless "*" is kept: one fold for every
    *  such pane (the tests keep "*": false, a visitor who has opened them all). */
   is_folded(r) {
-    if (r.row.plain) return false;                 // a pane with no heading has nothing to fold it (the hand's, #261)
+    if (r.row.headless) return false;              // a pane with no heading has nothing to fold it (the hand's, #261)
     if (!this.folds) { try { this.folds = JSON.parse(localStorage.getItem("dial-tool-folds")) || {}; } catch (e) { this.folds = {}; } }
     return this.folds[r.fold] ?? this.folds["*"] ?? Boolean(r.row.folded);
   }
@@ -1986,8 +1986,8 @@ class DialTool {
       out.button = el("button", { type: "button", className: "fold", title: "Show or hide this pane", onclick: () => this.fold(out, !this.is_folded(out)) }, out.eye, title, out.summary);
       out.body = el("div", { className: "body" });
       if (row.sub) { out.button.classList.add("twoline"); title.after(el("span", { className: "sub", textContent: row.sub })); }      // a second line under the title: the name of what stands on the heading's line
-      out.el = el("section", { className: row.plain ? "pane plain" : "pane" }, out.button, out.body);
-      if (row.plain) out.button.hidden = true;
+      out.el = el("section", { className: row.headless ? "pane headless" : "pane" }, out.button, out.body);      // ("plain" is a button's class)
+      if (row.headless) out.button.hidden = true;
       if (row.tools) {                             // tools on the heading line, at its right; folded, the summary stands there instead
         out.el.classList.add("tooled");
         out.button.after(this["head_" + row.tools]());
@@ -3031,11 +3031,19 @@ class DialTool {
    *  darker than the pane's grey, grows down from the tab and holds it"; one word for windows and hands alike): the
    *  tick that shows the chosen hand or window, on top of the grey page under the tabs. */
   row_show_box(wrap, out, row) {
+    // under the chosen tab alone, as wide as it, and it travels with it (4.46.2; Okay on 4.46.1: "the top tab attaches
+    // traveling show ticker"; what #261 said: "grows down from the tab"): the box stands in the same columns as the
+    // tabs, in the chosen one's (--tabs, --tab)
     const id = `${row.scope}-on-Show`, box = el("input", { type: "checkbox", id });
     box.onchange = () => this.set_value(row.scope, "on", box.checked);
     wrap.className = "showbox";
     wrap.append(el("label", { className: "check", htmlFor: id, title: row.scope === "hand" ? "Show this hand" : "Show this window" }, box, " Show"));
-    out.refresh = (T) => { box.checked = Boolean(T.on); };
+    out.refresh = (T) => {
+      box.checked = Boolean(T.on);
+      const tabs = [...document.querySelectorAll(row.scope === "hand" ? ".tabsbar .segs > .tab" : ".windowcards .card > .tab")];
+      wrap.style.setProperty("--tabs", Math.max(tabs.length, 1));
+      wrap.style.setProperty("--tab", Math.max(tabs.findIndex((t) => t.classList.contains("on")), 0) + 1);
+    };
   }
 
   row_window_size(wrap, out) {
@@ -3235,14 +3243,14 @@ class DialTool {
     wrap.className = "row windowat";
     const at = (name) => G.DATE_AT.findIndex((d) => d[0] === name);
     const press = (i) => { const w = this.window(); w.at = i; w.at_deg = null; this.changed(true); };
-    const quarters = ["3", "6", "9", "12"].map((name) => el("button", { type: "button", id: "window-at-Position-" + at(name), textContent: name, onclick: () => press(at(name)) }));
+    const quarters = ["3", "6", "9", "12", "4"].map((name) => el("button", { type: "button", id: "window-at-Position-" + at(name), textContent: name, onclick: () => press(at(name)) }));      // and 4 (Okay, on 4.46.1: "Add 4 to the circles before …")
     const more = el("button", { type: "button", className: "atmore", id: "window-at-more", textContent: "···", title: "Every place, or any time: 2:15, 7:40…" });
     more.setAttribute("aria-expanded", "false");
     more.onclick = () => this.value_pop_open(more, { kind: "custom", name: "at_time", scope: "window", key: "at_deg", text: "Position" });
     wrap.append(el("label", { textContent: "Position" }), el("span", { className: "circles" }, ...quarters, more));
     out.refresh = (T) => {
       for (const b of quarters) b.classList.toggle("on", T.at_deg == null && b.id === "window-at-Position-" + T.at);
-      const elsewhere = T.at_deg != null || !["3", "6", "9", "12"].includes(G.DATE_AT[T.at]?.[0]);
+      const elsewhere = T.at_deg != null || !["3", "6", "9", "12", "4"].includes(G.DATE_AT[T.at]?.[0]);
       more.classList.toggle("on", elsewhere);
       more.textContent = elsewhere ? G.window_place(T) : "···";
     };

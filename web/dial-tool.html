@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.46.1 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.46.2 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -125,7 +125,8 @@
     --tile: 50px;                                  /* a picture tile's least height */
     --guide-tint: 22%; --guide-edge: 65%;          /* the selected ring's row: this much of its guide's colour in its ground, and in its frame */
     --tab-notch: var(--unit);                      /* how deep the notch between two tabs is cut (a V, twice as wide): one unit */
-    --show-high: calc(var(--control) + 2 * var(--u1)); --show-ground: color-mix(in srgb, var(--ink) 7%, var(--ground));      /* the Show box (#261): a thin box, a little darker than the grey page under it */
+    --places: 6;                                   /* a window's place circles on their heading's line: 3 · 6 · 9 · 12 · 4 · ··· (4.46.2); the Shape line's buttons are as high as one */
+    --show-high: var(--control); --show-ground: color-mix(in srgb, var(--ink) 7%, var(--ground));      /* the Show box (#261): a thin box, a little darker than the grey page under it (a control high since 4.46.2, Okay: "less"; a control and a half-unit over and under it in 4.46) */
     --tab-high: 40px; --tab-pad: 11px;             /* a word tab's height (Hour · Minute · Seconds) · above and under a picture tab's picture (the window cards): room to breathe */
     --round-pill: 999px;                           /* fully round: the signs on the Rings heading line, a value button */
     --menu-box: 18px;                              /* the boxed arrow beside a label that opens a small menu */
@@ -294,11 +295,13 @@
   .btnline > button { display: grid; place-items: center; height: var(--control-large); padding: 0; border: var(--hair) solid var(--rule); background: var(--field); }
   .btnline > button:hover { background: var(--hover); }
   .row > .btnline { grid-column: 3 / -1; }
-  /* a line of round buttons (a window's places on its heading's line, 4.46.1: "3 6 9 12 are circular buttons now"),
-     spread from the controls' column to the end; one whose words need more room grows into a pill */
-  .circles { display: flex; justify-content: space-between; align-items: center; gap: var(--unit); }
-  .circles > button { display: grid; place-items: center; min-width: var(--line-button); height: var(--line-button); padding: 0 var(--u2); border: var(--hair) solid var(--rule); border-radius: calc(var(--line-button) / 2); background: var(--field); }
+  /* a line of round buttons (a window's places on its heading's line, 4.46.1: "3 6 9 12 are circular buttons now";
+     4.46.2: "add 4… scale up circles"): from the controls' column to the end, a unit between them as between tiles,
+     each as large as its share of the line allows. A time in the dots (2:15) is set a size smaller to fit */
+  .circles { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--unit); }
+  .circles > button { display: grid; place-items: center; aspect-ratio: 1; padding: 0; border: var(--hair) solid var(--rule); border-radius: 50%; background: var(--field); }
   .circles > button:hover { background: var(--hover); }
+  .circles > .atmore.on { font-size: var(--t-xs); }
   .atmore:not(.on) { letter-spacing: 0.1em; }      /* the three dots, a little apart */
   :is(.step, .segs > button) + button { border-left: 0; }
   .tools { display: flex; flex-wrap: wrap; gap: var(--unit); align-items: center; }
@@ -477,10 +480,17 @@
   .folded > .fold :is(.eye, h2) { color: var(--grey); }
   .fold:hover :is(.eye, h2) { color: var(--ink); }
   .fold .summary { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; font-size: var(--t-s); }
+  /* a heading that carries controls on its line (a window's places, its shapes; 4.46.2, Okay: "these rows are allowed
+     height growth now… appropriate vertical padding like all the rows"): they get a unit over and under them, as the
+     tiles in a row do, and the heading grows to hold them; its title keeps the place it has on every heading — the
+     same gap over it ("top gap stays same") */
+  .pane.has > :is(.circles, .btnline.shapes) { margin-block: var(--unit); }
+  .pane > .btnline.shapes { container-type: inline-size; }
+  .pane > .btnline.shapes > button { height: calc((100cqw - (var(--places) - 1) * var(--unit)) / var(--places)); }      /* as high as a place's circle: the shapes' line is as long as the places' line, which holds --places */
   /* a heading in two lines (a window's: "Window at x", then "Position" for the buttons on its line, 4.46.1): the
-     second line tight under the title, a row's name in size and colour; the eye stays level with the title; as high
-     as its two lines need */
-  .fold.twoline { grid-template-rows: auto auto; height: auto; min-height: var(--head); padding: var(--u2) 0; line-height: 1.2; }
+     title where every heading has it, the second line tight under it, a row's name in size and colour; the eye level
+     with the title */
+  .fold.twoline { grid-template-rows: auto auto; align-content: start; height: auto; min-height: var(--head); padding: calc((var(--head) - 1lh) / 2) 0 0; }
   .fold.twoline > :is(.eye, h2) { grid-row: 1; }
   .fold.twoline > .sub { grid-row: 2; grid-column: 2; color: var(--grey); font-weight: 400; }
   .fold.twoline > .summary { grid-row: 1 / span 2; grid-column: 3; }
@@ -525,6 +535,7 @@
   /* tabs inside a section, always in view (Hands: Hour · Minute · Seconds): one line across the six columns */
   .tabsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: end; min-height: calc(var(--head) + var(--unit)); padding-top: calc(1.5 * var(--unit)); border-top: var(--thick) solid var(--ink); }
   .tabsbar > .segs { grid-column: 2 / -1; }
+  .tabsbar .segs { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }      /* equal columns, as the window cards': the Show box under a tab finds its edges (4.46.2) */
   .tabsbar .segs > button { height: var(--tab-high); font-weight: 600; }
   /* tabs: the hand tabs and the window cards. They touch each other and stand on the line under them with no foot
      of their own; between two tabs the top has a sharp notch, a V. Each tab cuts its own two top corners (a
@@ -546,12 +557,18 @@
   :is(.tabsbar .segs > .tab, .windowcards .card) + :is(.tab, .card) { margin-left: calc(-1 * var(--hair)); }      /* one line between two tabs, not two */
   .tab:hover { --tab-fill: var(--hover); }
   .tab.on { --cut-l: 0px; --cut-r: 0px; --tab-line: var(--ink); --tab-fill: var(--ink); z-index: 1; color: var(--paper); }
-  /* the Show box (#261, 4.46): the chosen tab's first line, on top of the grey page under the tabs — a thin box a
-     little darker than the page, from where the tabs start to the pane's end, holding Show; a white line under it,
-     then the adjustments. A hand's pane under it has no heading (.plain), so no thick line either */
-  .form > .showbox { display: flex; align-items: center; min-height: var(--show-high); margin-left: var(--lead); padding: 0 var(--u3); background: var(--show-ground); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--line-on-grey); font-size: var(--t-s); }
-  .form > .showbox > .check { display: flex; align-items: center; }
-  .form > .showbox + .pane.plain { border-top: 0; }
+  /* the Show box (#261, 4.46; 4.46.2): it grows down from the chosen tab and goes with it — a thin box a little darker
+     than the page, under that tab alone and as wide as it, holding Show (Okay: "the top tab attaches traveling show
+     ticker"). It stands in the tabs' own columns (--tabs, --tab: set by app.js), and where the tabs share a line
+     (one line between two, above) it shares it too. Then the room under an open pane, and the panes. A hand's pane
+     under it has no heading (.headless): a thin black line opens it instead, from where the tabs start, two units
+     under the box, and the room under an open pane before what it holds (Okay, 16 Oct 2026, on 4.46.1: "black line,
+     new black line, thin") */
+  .form > .showbox { display: grid; grid-template-columns: repeat(var(--tabs, 1), minmax(0, 1fr)); margin: 0 0 var(--air) var(--lead); }
+  .form > .showbox > .check { grid-column: var(--tab, 1); display: flex; align-items: center; height: var(--show-high); padding: 0 var(--u3); background: var(--show-ground); font-size: var(--t-s);
+    margin-left: calc(-1 * var(--hair) * min(var(--tab, 1) - 1, 1)); }      /* past the first tab: the hairline it shares with the tab before it */
+  .form > .showbox:has(+ .pane.headless) { margin-bottom: var(--u4); }
+  .form > .showbox + .pane.headless { border-top: 0; padding-top: var(--air); background: linear-gradient(var(--ink) 0 0) right top / calc(100% - var(--lead)) var(--hair) no-repeat; }
   .handsbar > h2 { grid-column: 2 / span 2; }
   .handsbar > .check { grid-column: 4 / span 2; white-space: nowrap; }
   .handsbar > select { grid-column: 6 / span 2; }
@@ -660,7 +677,7 @@
   @media (min-width: 861px) {
     /* wide: the box in the first two columns, as high as the rows beside it; the rows in the other four, each one
        line: label · slider · the number box */
-    .body > .detail { grid-column: 2 / span 2; grid-row: 1 / span 40; align-self: start; height: calc(7 * var(--line)); }
+    .body > .detail { grid-column: 2 / span 2; grid-row: 1 / span 40; align-self: start; height: calc(7 * var(--line)); margin-top: 0; translate: 0 calc(-1 * var(--hair)); }      /* its top line on the first row's line, beside it (Okay, on 4.46.1: "Blue lines, align") */
     .body > .detail { position: sticky; top: var(--unit); }      /* it scrolls up with its pane until it is one unit (the gap between the shape tiles) under the line under the hand tabs, stays there while the rows beside it scroll, and the pane's end (the Cap pane) pushes it on (Okay, 14 Oct 2026: "stay still… until cap"; "align here after scroll") */      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
     .body > .row.side { grid-column: 4 / -1; grid-template-columns: var(--side-label) minmax(0, 1fr) var(--side-num); }      /* the name as narrow as the longest (Counter Ø), the slider the rest: bigger (#250) */
     .row.side > :first-child, .row.side > input[type="range"] { grid-column: auto; }
@@ -5851,7 +5868,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.46.1";
+var VERSION = "beta 4.46.2";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -8448,9 +8465,9 @@ var ROWS = {
     custom("hand_tabs", { pin: true, bar: true }),
     // under it, always in view: which hand the panes below are about (Okay, 12 Oct 2026: "acts as a tab system for what's below")
     // the Show box (#261, 4.46; Okay's notes, p. 2): under the tabs, on top of the grey page, Show — the tab says which
-    // hand, so the hand's name line goes and everything under it is the tab's content: a pane with no heading (plain)
+    // hand, so the hand's name line goes and everything under it is the tab's content: a pane with no heading (headless)
     custom("show_box", { ...H, bar: true }),
-    hdr("One hand", { plain: true }),
+    hdr("One hand", { headless: true }),
     // one pane for a hand (Okay's drawings, 13 Oct 2026): at the left a box with the hand itself, as it is now; beside
     // it everything that makes it — its shape (one line of tiles that opens; a plus for a shape of one's own, later),
     // then its numbers and its colour. So what a number changes is seen right beside it, and on the dial at the right.
@@ -9997,7 +10014,7 @@ var DialTool = class _DialTool {
    *  folded or opened starts as its row says (`folded`: a first visit, #270), unless "*" is kept: one fold for every
    *  such pane (the tests keep "*": false, a visitor who has opened them all). */
   is_folded(r) {
-    if (r.row.plain) return false;
+    if (r.row.headless) return false;
     if (!this.folds) {
       try {
         this.folds = JSON.parse(localStorage.getItem("dial-tool-folds")) || {};
@@ -10150,8 +10167,8 @@ var DialTool = class _DialTool {
         out.button.classList.add("twoline");
         title.after(el("span", { className: "sub", textContent: row.sub }));
       }
-      out.el = el("section", { className: row.plain ? "pane plain" : "pane" }, out.button, out.body);
-      if (row.plain) out.button.hidden = true;
+      out.el = el("section", { className: row.headless ? "pane headless" : "pane" }, out.button, out.body);
+      if (row.headless) out.button.hidden = true;
       if (row.tools) {
         out.el.classList.add("tooled");
         out.button.after(this["head_" + row.tools]());
@@ -11435,6 +11452,9 @@ var DialTool = class _DialTool {
     wrap.append(el("label", { className: "check", htmlFor: id, title: row.scope === "hand" ? "Show this hand" : "Show this window" }, box2, " Show"));
     out.refresh = (T) => {
       box2.checked = Boolean(T.on);
+      const tabs = [...document.querySelectorAll(row.scope === "hand" ? ".tabsbar .segs > .tab" : ".windowcards .card > .tab")];
+      wrap.style.setProperty("--tabs", Math.max(tabs.length, 1));
+      wrap.style.setProperty("--tab", Math.max(tabs.findIndex((t) => t.classList.contains("on")), 0) + 1);
     };
   }
   row_window_size(wrap, out) {
@@ -11655,14 +11675,14 @@ var DialTool = class _DialTool {
       w.at_deg = null;
       this.changed(true);
     };
-    const quarters = ["3", "6", "9", "12"].map((name) => el("button", { type: "button", id: "window-at-Position-" + at(name), textContent: name, onclick: () => press(at(name)) }));
+    const quarters = ["3", "6", "9", "12", "4"].map((name) => el("button", { type: "button", id: "window-at-Position-" + at(name), textContent: name, onclick: () => press(at(name)) }));
     const more = el("button", { type: "button", className: "atmore", id: "window-at-more", textContent: "\xB7\xB7\xB7", title: "Every place, or any time: 2:15, 7:40\u2026" });
     more.setAttribute("aria-expanded", "false");
     more.onclick = () => this.value_pop_open(more, { kind: "custom", name: "at_time", scope: "window", key: "at_deg", text: "Position" });
     wrap.append(el("label", { textContent: "Position" }), el("span", { className: "circles" }, ...quarters, more));
     out.refresh = (T) => {
       for (const b of quarters) b.classList.toggle("on", T.at_deg == null && b.id === "window-at-Position-" + T.at);
-      const elsewhere = T.at_deg != null || !["3", "6", "9", "12"].includes(DATE_AT[T.at]?.[0]);
+      const elsewhere = T.at_deg != null || !["3", "6", "9", "12", "4"].includes(DATE_AT[T.at]?.[0]);
       more.classList.toggle("on", elsewhere);
       more.textContent = elsewhere ? window_place(T) : "\xB7\xB7\xB7";
     };

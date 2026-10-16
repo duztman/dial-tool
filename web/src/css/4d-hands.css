@@ -36,7 +36,7 @@
   @media (min-width: 861px) {
     /* wide: the box in the first two columns, as high as the rows beside it; the rows in the other four, each one
        line: label · slider · the number box */
-    .body > .detail { grid-column: 2 / span 2; grid-row: 1 / span 40; align-self: start; height: calc(7 * var(--line)); }
+    .body > .detail { grid-column: 2 / span 2; grid-row: 1 / span 40; align-self: start; height: calc(7 * var(--line)); margin-top: 0; translate: 0 calc(-1 * var(--hair)); }      /* its top line on the first row's line, beside it (Okay, on 4.46.1: "Blue lines, align") */
     .body > .detail { position: sticky; top: var(--unit); }      /* it scrolls up with its pane until it is one unit (the gap between the shape tiles) under the line under the hand tabs, stays there while the rows beside it scroll, and the pane's end (the Cap pane) pushes it on (Okay, 14 Oct 2026: "stay still… until cap"; "align here after scroll") */      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
     .body > .row.side { grid-column: 4 / -1; grid-template-columns: var(--side-label) minmax(0, 1fr) var(--side-num); }      /* the name as narrow as the longest (Counter Ø), the slider the rest: bigger (#250) */
     .row.side > :first-child, .row.side > input[type="range"] { grid-column: auto; }

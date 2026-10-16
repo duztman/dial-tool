@@ -33,11 +33,13 @@
   .btnline > button { display: grid; place-items: center; height: var(--control-large); padding: 0; border: var(--hair) solid var(--rule); background: var(--field); }
   .btnline > button:hover { background: var(--hover); }
   .row > .btnline { grid-column: 3 / -1; }
-  /* a line of round buttons (a window's places on its heading's line, 4.46.1: "3 6 9 12 are circular buttons now"),
-     spread from the controls' column to the end; one whose words need more room grows into a pill */
-  .circles { display: flex; justify-content: space-between; align-items: center; gap: var(--unit); }
-  .circles > button { display: grid; place-items: center; min-width: var(--line-button); height: var(--line-button); padding: 0 var(--u2); border: var(--hair) solid var(--rule); border-radius: calc(var(--line-button) / 2); background: var(--field); }
+  /* a line of round buttons (a window's places on its heading's line, 4.46.1: "3 6 9 12 are circular buttons now";
+     4.46.2: "add 4… scale up circles"): from the controls' column to the end, a unit between them as between tiles,
+     each as large as its share of the line allows. A time in the dots (2:15) is set a size smaller to fit */
+  .circles { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--unit); }
+  .circles > button { display: grid; place-items: center; aspect-ratio: 1; padding: 0; border: var(--hair) solid var(--rule); border-radius: 50%; background: var(--field); }
   .circles > button:hover { background: var(--hover); }
+  .circles > .atmore.on { font-size: var(--t-xs); }
   .atmore:not(.on) { letter-spacing: 0.1em; }      /* the three dots, a little apart */
   :is(.step, .segs > button) + button { border-left: 0; }
   .tools { display: flex; flex-wrap: wrap; gap: var(--unit); align-items: center; }
