@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.46.7";
+export const VERSION = "beta 4.47";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -33,6 +33,10 @@ export const KNOCK_FROM = ["nothing", "markers above", "markers & numerals above
 const FROM_KINDS = [[], ["markers"], ["markers", "numerals"], ["ticks", "markers", "numerals", "band"]];
 export const MODES = ["upright", "radial", "radial, auto-flip", "on path"];
 export const ANCHORS = ["centre", "baseline", "ascender"];      // the point of a numeral that sits on its ring's radius (web version, 13 Oct 2026). Only grows at its end (R9)
+export const FROM = ["outer", "middle", "inner"];               // the point of a mark or a band that sits on its ring's radius: its outer end, its middle, its inner end (#257, 4.47). Only grows at its end (R9)
+/** how far a mark's or band's outer edge lies outside the ring's radius: nothing when the radius measures to the outer
+ *  end, half its extent from the middle, all of it from the inner end (#257). extent: the mark's length or the band's width. */
+export const from_shift = (ring, extent) => extent * (ring.from || 0) / 2;
 export const HANDS = ["hour", "minute", "second"];
 export const HAND_SHAPES = ["baton", "pencil", "sword", "dauphine", "leaf", "arrow", "syringe", "breguet", "lollipop", "file", "disc"];      // disc: #164, 14 Oct 2026 (appended, R9)
 export const DATE_AT = [["3", 90], ["4:30", 135], ["6", 180], ["9", 270], ["12", 0], ["1:30", 45], ["7:30", 225], ["10:30", 315], ["4", 120]];      // only grows at its end (R9); 4 added 13 Oct 2026 (Ronda's 4H dial drawing)
@@ -70,6 +74,7 @@ export const RING_BASE = {
   num_again: 0,                                    // Numbers: the count starts again after this many positions (0 = never), as on Ferguson's dial or a two-hour track (13 Oct 2026)
   guide: -1,                                       // its guide's colour (preview only, R5): a place in GUIDE_COLOURS · -1 = one by its place in the list (ring_guide) · -2 = none (13 Oct 2026)
   anchor: 0,                                       // numerals: what the radius measures to, a place in ANCHORS. 0 = the text's centre, as before (R31)
+  from: 0,                                         // ticks, markers, bands: what the radius measures to, a place in FROM — the mark's or band's outer end (as always until 4.47), its middle, or its inner end (Okay's notes, p. 9, #257: "resize from"). Starting at outer, every link draws as before (R31)
   cs: {},                                          // a band's sectors with a colour of their own: position → RGBA. Empty = all in the ring's colour (beta 4.6)
 };
 export const TYPE_KEYS = ["family", "ps", "size", "tracking", "lang", "axes", "features"];
@@ -383,6 +388,7 @@ export const LINK_KEYS = [
   "twelve_scale", "lang", "fill", "num_again", "anchor", "fit", "w_scale", "mark", "hour", "age", "sides", "turn",
   "text_turn", "at_deg", "a", "k", "ha_cap_top",
   "mark_as", "mark_c",      // 4.45.4 (#300): appended; starting as a hole, so every scheme-2 link draws as before
+  "from",                   // 4.47 (#257): appended; starting at the outer end, as always, so every scheme-2 link draws as before
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -976,7 +982,7 @@ function mark_outline(ring, L, W, shape = null, taper = null, grow = 0, solid = 
   return p;
 }
 
-/** the mark at position i: its outer end on the ring's radius. */
+/** the mark at position i: its outer end on the ring's radius — or its middle, or its inner end (ring.from, #257). */
 function mark_at(ring, i, a, grow = 0, solid = false) {
   const first = kind_of(ring) === "markers" && i === 0;
   const style = first ? TWELVES[ring.twelve] : "same";
@@ -987,7 +993,7 @@ function mark_at(ring, i, a, grow = 0, solid = false) {
   const b = shape.bounds();
   if (!b) return null;
   const extent = (b[3] - b[1]) - 2 * grow, width = (b[2] - b[0]) - 2 * grow;
-  const r_mid = max(ring.r - extent / 2, 0.1);
+  const r_mid = max(ring.r + from_shift(ring, extent) - extent / 2, 0.1);
   if (style === "double") {
     const da = degrees((ring.twelve_gap + width) / 2 / r_mid);
     return merge([place(shape.copy(), r_mid, a - da), place(shape, r_mid, a + da)]);
@@ -1165,7 +1171,8 @@ function ring_shapes(ring, keep, grow = 0, solid = false) {
     } else {                                       // band
       const n = max(parseInt(ring.count) || 1, 1);
       const length = ring.span / n * min(max(ring.fill, 0), 100) / 100;
-      for (const i of keep) { parts.push(sector(ring.r - ring.width, ring.r, angles[i], angles[i] + length)); at.push(i); }
+      const outer = ring.r + from_shift(ring, ring.width);      // the radius measures to the band's outer edge, its middle or its inner edge (#257)
+      for (const i of keep) { parts.push(sector(outer - ring.width, outer, angles[i], angles[i] + length)); at.push(i); }
     }
     const out = merge(parts);
     return [grow ? offset(out, grow) : out, taken, at, parts];
@@ -1525,12 +1532,13 @@ export function scene(S, statik, t, preview = true, selected = null) {
     // (gd_rings), only the selected one (gd_sel alone), or none.
     // its outer and inner edges whole, its middle dotted (Okay, 16 Oct 2026, #272: "center of the ring is dotted. All
     // rings and windows get their own outer and inner guide circles in solid line"). Numerals: the edges their figures
-    // reach as drawn. A window: the edges its hole reaches; which windows, as for rings (gd_wins, gd_wsel)
+    // reach as drawn. A window: the edges its hole reaches; which windows, as for rings (gd_wins, gd_wsel).
+    // A ring's dotted line is its radius — where it is resized from (#257, 4.47: the outer end, the middle or the inner
+    // end of its marks; a numeral's anchor); a window's is its middle.
     const built = new Map(statik.rings.map((d) => [d.ring, d]));
-    const edges = (k, outer, inner, px, a) => {
+    const edges = (k, outer, inner, px, a, at = (outer + inner) / 2) => {
       for (const r of [...new Set([outer, inner])]) if (r > 0) stroke_guide(circle(2 * r), k, px, a);
-      const mid = (outer + inner) / 2;
-      if (outer - inner > 0.01 && mid > 0) add("guide", circle(2 * mid), null, { stroke: tone(k, a), px, dots: true });
+      if (outer - inner > 0.01 && at > 0) add("guide", circle(2 * at), null, { stroke: tone(k, a), px, dots: true });
     };
     // one thing in focus (#301; Okay, 16 Oct 2026, on 4.43: "both window and [ring] active gives us a complex look"):
     // the tab one works in says what — on Rings its selected ring, on Windows its selected window, on the others
@@ -1542,9 +1550,10 @@ export function scene(S, statik, t, preview = true, selected = null) {
       const focused = focus === "rings" && i === selected, chosen = focused && S.gd_sel, k = ring_guide(S, i);
       if (!ring.on || k === null || !(S.gd_rings || chosen)) return;
       const kind = kind_of(ring);
-      let outer = ring.r, inner = ring.r - ({ ticks: ring.len, markers: ring.len, band: ring.width }[kind] || 0);
+      const extent = { ticks: ring.len, markers: ring.len, band: ring.width }[kind] || 0;
+      let outer = ring.r + from_shift(ring, extent), inner = outer - extent;
       if (kind === "numerals") { const e = radial_extent(built.get(ring)?.path); if (e) [inner, outer] = e; }
-      edges(k, outer, inner, focused ? S.gd_w * 1.5 : S.gd_w, faded(focused));
+      edges(k, outer, inner, focused ? S.gd_w * 1.5 : S.gd_w, faded(focused), ring.r);
     });
     for (const x of windows) {
       const focused = focus === "windows" && x.index === (S.ui_window ?? 0), chosen = focused && S.gd_wsel, k = window_guide(S, x.index), e = radial_extent(x.window);

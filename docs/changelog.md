@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.47 (web version) · 17 Oct 2026
+
+Phase G's first push: the panes' order and *resize from*.
+
+- **Type first in a numerals ring** (#296; Okay: "Move fonts top of adjustments in rings that involves fonts"): the font box is the first pane under the pinned part (it was the last).
+- **Resize, the first pane for every ring** (#257; Okay's notes, p. 9: "a proper pane below the quick size and radius buttons … shown first"): how big one thing is — Length for a mark, Ø for a dot, Band width — and the radius, as full rows. Length and Ø leave the Shape pane (which keeps Width for bars and wedges), Band width leaves the Band pane. A numeral's size stays in the font box, among the type's settings (and in the size button's popup); open for Okay whether it should stand here too.
+- **Resize from** (#257: "resize from — outer end · middle · inner end"): a new ring key `from` (appended to the link table; starting at the outer end, so every link draws as before, R31). The radius of ticks, markers and bands measures to the mark's or band's outer end, its middle or its inner end: the small menu beside the radius' label, as the numerals' anchor menu (13 Oct); the label reads Outer · Middle · Inner radius, and the ring's row and the radius button's tag say it. A ring's dotted guide is now that radius (a numeral's anchor), not the middle of its extent; a window's is still its middle. `dial.py` ignores the key (R30).
+
 ## beta 4.46.7 (web version) · 17 Oct 2026
 
 - **Twenty-one fonts join the list** (#313; the font research of 16 Oct, `docs/font-tiers-2026-10-16.md`, its top tier; Okay, 17 Oct: "incorporate it, push the design ui stuff for later. Add just font list to defaults in these versions nothing else"). The font sheet lists 42 families (21 before). Nothing else changes: the sheet's design (phase H, #273–#276) waits.

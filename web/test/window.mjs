@@ -130,8 +130,8 @@ await click_mm(...clock(13, 150));
 await page.click('button:text-is("Round both ends")');
 check(await S("S.rings[S.ui_ring].round_out === 0.35 && S.rings[S.ui_ring].round_in === 0.35"), "Round both ends → both radii = half the marker's width");
 await click_mm(...clock(13.9, 93));
-await page.fill("#ring-w-Width-", "0.3");
-await page.press("#ring-w-Width-", "Enter");
+await page.fill("#ring-w-Width", "0.3");
+await page.press("#ring-w-Width", "Enter");
 await page.click('button:text-is("Round both ends")');
 await click_mm(...clock(6, hands[0]));
 await page.fill("#hand-round-Round-ends", "2");
@@ -157,7 +157,7 @@ check(row_look.every((x) => x.includes("1px")) && row_look.filter((x) => x.start
   `every ring is a framed row; the selected one is tinted with its own guide's colour (${guide_row[0]}), light blue when it has none`);
 // a ring's row says what the ring is, in the drawer's order (13 Oct 2026): name · how many of what kind · its colour · its size · its radius
 const sums = await page.$$eval(".ringlist li.ring", (l) => l.map((e) => { const t = (q) => e.querySelector(q).textContent, x = (q) => Math.round(e.querySelector(q).getBoundingClientRect().left); return [t(".says-kind"), t(".says-size"), t(".says-r"), [x(".name") < x(".says-kind"), x(".says-kind") < x(".chipcell"), x(".chipcell") < x(".says-size"), x(".says-size") < x(".says-r")].every(Boolean), x(".says-size") + "/" + x(".says-r") + "/" + x(".chipcell"), e.getBoundingClientRect().height, e.querySelectorAll(".dot.tiny").length === (e.classList.contains("on") ? 0 : 1)]; }));
-check(sums.every((x) => /^\d+ (ticks|markers|numerals|band)$/.test(x[0]) && /^[\d.]+$/.test(x[1]) && /^[\d.]+$/.test(x[2]) && x[3] && x[6]) && new Set(sums.map((x) => x[4])).size === 1 && new Set(sums.map((x) => x[5])).size === 1,
+check(sums.every((x) => /^(1 (tick|marker|numeral|band)|([2-9]|\d\d+) (ticks|markers|numerals|sectors))$/.test(x[0]) && /^[\d.]+$/.test(x[1]) && /^[\d.]+$/.test(x[2]) && x[3] && x[6]) && new Set(sums.map((x) => x[4])).size === 1 && new Set(sums.map((x) => x[5])).size === 1,
   `every ring's row reads kind · colour · size · radius after its name, each in one column down the list; every row but the selected one has its colour (the drawer's button is right under): ${sums.map((x) => x.slice(0, 3).join(" · ")).join(" | ")}`);
 const sum_before = await page.textContent(".ringlist li.ring.on .says-r");
 await page.evaluate(() => { const t = window.dial_tool; t.set_value("ring", "r", t.ring().r - 1); });
@@ -408,6 +408,27 @@ for (const v of [1, 2, 0]) {
 }
 check(Math.abs(at12[0][0]) < 0.06 && at12[0][1] > 1 && Math.abs(at12[1][1]) < 0.01 && at12[1][0] < -1 && Math.abs(at12[2][2]) < 0.001,
   `at 12 the numeral's foot is on the radius with Baseline (${at12[0][0].toFixed(3)}), its top with Ascender (${at12[1][1].toFixed(3)}), its middle with Centre (${at12[2][2].toFixed(4)})`);
+// resize from (#257, 4.47): a mark's or a band's radius measures to its outer end, its middle or its inner end — the
+// same menu beside the radius' label; the ring's dotted guide is that radius; the Resize pane stands first (Type first
+// in a numerals ring, #296)
+{
+  const from = [], was = await S("[S.ui_ring, S.gd_rings]");
+  for (const v of [0, 1, 2]) {
+    from.push(await page.evaluate((v) => {
+      const t = window.dial_tool, S = t.S, ring = S.rings.find((r) => r.kind === 1), band = S.rings.find((r) => r.kind === 3);
+      ring.from = band.from = v; S.gd_rings = true; S.ui_ring = S.rings.indexOf(ring); t.show_section(); t.sync_rows(); t.static_dirty = true; t.render(); t.draw();
+      const d = t.statik.rings.find((x) => x.ring === ring), b = d.parts[0].bounds(), e = t.statik.rings.find((x) => x.ring === band).parts[0].bounds();
+      const dots = t.items.filter((i) => i.role === "guide" && i.dots).map((i) => +(i.path.bounds()[3]).toFixed(2));
+      const panes = [...document.querySelectorAll(".form .pane h2")].filter((h) => h.closest(".pane").offsetParent).map((h) => h.textContent);
+      return [+(b[1] - ring.r).toFixed(3), +(b[3] - ring.r).toFixed(3), +(e[3] - band.r).toFixed(3), +(e[3] - e[1] - band.width).toFixed(3), dots.includes(+ring.r.toFixed(2)) && dots.includes(+band.r.toFixed(2)), document.querySelector("#ring-r-Outer-radius").closest(".row").querySelector("label").textContent, panes.slice(0, 2).join(" · "), dots.join(" ")];
+    }, v));
+  }
+  await page.evaluate(() => { const t = window.dial_tool; for (const r of t.S.rings) r.from = 0; t.static_dirty = true; t.render(); });
+  const numerals_panes = await page.evaluate(() => { const t = window.dial_tool; t.S.ui_ring = t.S.rings.findIndex((r) => r.kind === 2); t.show_section(); t.sync_rows(); return [...document.querySelectorAll(".form .pane h2")].filter((h) => h.closest(".pane").offsetParent).map((h) => h.textContent).slice(0, 2).join(" · "); });
+  await page.evaluate(([ring, all]) => { const t = window.dial_tool; t.S.ui_ring = ring; t.S.gd_rings = all; t.show_section(); t.sync_rows(); t.draw(); }, was);
+  check(from[0][1] === 0 && from[0][0] < 0 && Math.abs(from[1][0] + from[1][1]) < 0.001 && from[2][0] === 0 && from[2][1] > 0 && from[0][2] === 0 && Math.abs(from[1][2] - 0.5) < 0.001 && from[2][2] === 1 && from.every((f) => f[4]) && from.map((f) => f[5]).join(" | ") === "Outer radius | Middle radius | Inner radius" && from[0][6] === "Resize · Shape" && numerals_panes === "Type · Resize",
+    `resize from (#257): a marker's outer end on the radius (${from[0].slice(0, 2)}), then its middle (${from[1].slice(0, 2)}), then its inner end (${from[2].slice(0, 2)}); a band likewise (its outer edge ${from.map((f) => f[2]).join(" · ")} past its radius); the ring's dotted guide at its radius each time (dotted at ${from[0][7]}); the label follows (${from.map((f) => f[5]).join(" → ")}); Resize first under the pinned part (${from[0][6]}), Type first for numerals (${numerals_panes}, #296)`);
+}
 check(await page.$$eval(".row.pick .pickt svg", (e) => e.length) >= 4, "Kind is a row of picture tiles");
 await page.click("#ring-kind-Kind-0");
 check(await S("S.rings[S.ui_ring].kind === 0 && S.rings[S.ui_ring].width === 1"), "changing a ring's kind keeps its settings");

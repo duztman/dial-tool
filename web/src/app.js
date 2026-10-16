@@ -369,11 +369,12 @@ const hdr = (text, o = {}) => ({ kind: "hdr", text, ...o });
 const info = (text, o = {}) => ({ kind: "note", text, ...o });
 const custom = (name, o = {}) => ({ kind: "custom", name, ...o });
 
-// a ring's radius as a number row: what the radius button's pop-up shows. A numeral's radius can measure to its
-// centre, its baseline or its top: the small menu beside the label, in the order Okay wrote them; what is stored is
-// the place in G.ANCHORS (R9).
+// a ring's radius as a number row: what the radius button's pop-up shows, and the Resize pane's row. A numeral's
+// radius can measure to its centre, its baseline or its top: the small menu beside the label, in the order Okay wrote
+// them; what is stored is the place in G.ANCHORS (R9). A mark's or a band's, since 4.47 (#257, "resize from"), to its
+// outer end (as always), its middle or its inner end: the same menu, a place in G.FROM.
 const RADIUS_ROWS = {
-  outer: num("r", "Outer radius", 0, 25, 0.05, { scope: "ring" }),
+  outer: num("r", "Outer radius", 0, 25, 0.05, { scope: "ring", menu: { key: "from", title: "What the radius measures to", items: [[0, "Outer"], [1, "Middle"], [2, "Inner"]] } }),
   numerals: num("r", "Centre radius", 0, 25, 0.05, { scope: "ring", menu: { key: "anchor", title: "What the radius measures to", items: [[1, "Baseline"], [2, "Ascender"], [0, "Centre"]] } }),
 };
 const radius_row = (R) => RADIUS_ROWS[G.kind_of(R) === "numerals" ? "numerals" : "outer"];
@@ -476,13 +477,25 @@ const ROWS = {
     custom("ring_list", { scope: "global", pin: true }),
     custom("ring_line", { pin: true }),
     // first visit: every pane under the pinned part folded, its line saying what is in it (Okay, 16 Oct 2026, #270)
+    // a numerals ring opens with its font (Okay, 16 Oct 2026, #296: "Move fonts top of adjustments in rings that
+    // involves fonts"); at the end of the page until 4.47
+    hdr("Type", { folded: true, show: numerals_only }),
+    custom("font", { show: numerals_only }),
+    // then Resize (Okay's notes, p. 9, #257: "a proper pane below the quick size and radius buttons … shown first"):
+    // how big one thing is — the size button's number — and the radius, with what it measures to: for marks and bands
+    // the outer end (as always), the middle or the inner end ("resize from"); for numerals the anchor (13 Oct 2026)
+    hdr("Resize", { folded: true }),
+    num("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
+    num("w", "Ø", 0.02, 5, 0.01, { show: marks_with("dot"), id: "ring-w-dot" }),
+    num("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),      // a numeral's size stays in the font box, among the type's settings (and in the size button's popup)
+    { ...RADIUS_ROWS.outer, show: kind_in("ticks", "markers", "band") },
+    { ...RADIUS_ROWS.numerals, show: numerals_only },
     hdr("Sector colours", { folded: true, show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
     custom("sectors", { show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
     // what one mark is comes first (Okay, 13 Oct 2026: "moves up to the top"), then where the marks are
     hdr("Shape", { folded: true, show: kind_in("ticks", "markers") }),
     pick("shape", "Shape", G.SHAPES.slice(0, 3), PICS.shape, { show: kind_in("ticks", "markers") }),
-    num("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
-    num("w", "Width · Ø", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "dot", "file") }),
+    num("w", "Width", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "file") }),      // a dot's Ø, and a mark's length, stand in Resize (4.47)
     num("taper", "Inner width ×", 0, 2, 0.01, { show: marks_with("wedge") }),
     num("wall", "Hollow wall", 0, 1.5, 0.01, { show: kind_in("ticks", "markers") }),
     // the ends belong to the shape: nested under it, no pane of their own (Okay, 13 Oct 2026)
@@ -515,8 +528,7 @@ const ROWS = {
     info("0 counts on. 12 with first 5, step 5: 5 to 60, then 5 again.", { show: labels_are("Numbers") }),
     pick("mode", "Placement", G.MODES, PICS.mode, { show: numerals_only }),
     hdr("Band", { folded: true, show: kind_in("band") }),
-    num("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),
-    num("fill", "Fill % of step", 1, 100, 1, { show: kind_in("band") }),
+    num("fill", "Fill % of step", 1, 100, 1, { show: kind_in("band") }),      // its width stands in Resize (4.47)
     hdr("Nudge one numeral", { folded: true, show: numerals_only }),
     custom("nudge", { show: numerals_only }),      // which numeral, and Reset this numeral
     // its four adjusters, number rows on the numeral chosen above (Okay's notes, p. 6–7, #252, beta 4.45.2: "every
@@ -525,8 +537,6 @@ const ROWS = {
     num("da", "Angle ± °", -30, 30, 0.1, { scope: "nudge" }),
     num("rot", "Rotate °", -180, 180, 1, { scope: "nudge" }),
     num("s", "Size ×", 0.2, 3, 0.01, { scope: "nudge" }),
-    hdr("Type", { folded: true, show: numerals_only }),
-    custom("font", { show: numerals_only }),
   ],
   Hands: [
     custom("hands_bar", { pin: true, bar: true }),      // bar: one line of its own, always in view: All hands · Show hands · Motion
@@ -2764,9 +2774,11 @@ class DialTool {
    *  would name first for its kind: a tick's or marker's length (a dot's Ø), a numeral's size, a band's width.
    *  Lengths in the unit box's unit, without trailing zeros. → {kind, size, r} as text */
   ring_summary(ring) {
-    const kind = G.kind_of(ring), len = (mm) => String(parseFloat(this.in_unit(mm, 2)));
+    const kind = G.kind_of(ring), len = (mm) => String(parseFloat(this.in_unit(mm, 2))), n = G.positions_of(ring).length;
     const one = kind === "numerals" ? ring.size : kind === "band" ? ring.width : G.SHAPES[ring.shape] === "dot" ? ring.w : ring.len;
-    return { kind: `${G.positions_of(ring).length} ${kind}`, size: len(one), r: len(ring.r) };
+    // the count's word: "1 marker", "60 ticks"; a band is one, more are sectors (#185: "1 markers", "12 band" until 4.47)
+    const word = kind === "band" ? (n === 1 ? "band" : "sectors") : n === 1 ? kind.slice(0, -1) : kind;
+    return { kind: `${n} ${word}`, size: len(one), r: len(ring.r) };
   }
 
   /** the summaries follow every change without the list being built again (a name may be being typed in it). */

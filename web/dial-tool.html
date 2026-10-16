@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.46.7 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.47 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -5874,7 +5874,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.46.7";
+var VERSION = "beta 4.47";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -5889,6 +5889,7 @@ var KNOCK_FROM = ["nothing", "markers above", "markers & numerals above", "every
 var FROM_KINDS = [[], ["markers"], ["markers", "numerals"], ["ticks", "markers", "numerals", "band"]];
 var MODES = ["upright", "radial", "radial, auto-flip", "on path"];
 var ANCHORS = ["centre", "baseline", "ascender"];
+var from_shift = (ring, extent) => extent * (ring.from || 0) / 2;
 var HANDS = ["hour", "minute", "second"];
 var HAND_SHAPES = ["baton", "pencil", "sword", "dauphine", "leaf", "arrow", "syringe", "breguet", "lollipop", "file", "disc"];
 var DATE_AT = [["3", 90], ["4:30", 135], ["6", 180], ["9", 270], ["12", 0], ["1:30", 45], ["7:30", 225], ["10:30", 315], ["4", 120]];
@@ -5959,6 +5960,8 @@ var RING_BASE = {
   // its guide's colour (preview only, R5): a place in GUIDE_COLOURS · -1 = one by its place in the list (ring_guide) · -2 = none (13 Oct 2026)
   anchor: 0,
   // numerals: what the radius measures to, a place in ANCHORS. 0 = the text's centre, as before (R31)
+  from: 0,
+  // ticks, markers, bands: what the radius measures to, a place in FROM — the mark's or band's outer end (as always until 4.47), its middle, or its inner end (Okay's notes, p. 9, #257: "resize from"). Starting at outer, every link draws as before (R31)
   cs: {}
   // a band's sectors with a colour of their own: position → RGBA. Empty = all in the ring's colour (beta 4.6)
 };
@@ -6635,8 +6638,10 @@ var LINK_KEYS = [
   "k",
   "ha_cap_top",
   "mark_as",
-  "mark_c"
+  "mark_c",
   // 4.45.4 (#300): appended; starting as a hole, so every scheme-2 link draws as before
+  "from"
+  // 4.47 (#257): appended; starting at the outer end, as always, so every scheme-2 link draws as before
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i) => i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62];
@@ -7234,7 +7239,7 @@ function mark_at(ring, i, a, grow = 0, solid2 = false) {
   const b = shape2.bounds();
   if (!b) return null;
   const extent = b[3] - b[1] - 2 * grow, width = b[2] - b[0] - 2 * grow;
-  const r_mid = max(ring.r - extent / 2, 0.1);
+  const r_mid = max(ring.r + from_shift(ring, extent) - extent / 2, 0.1);
   if (style === "double") {
     const da = degrees((ring.twelve_gap + width) / 2 / r_mid);
     return merge([place(shape2.copy(), r_mid, a - da), place(shape2, r_mid, a + da)]);
@@ -7388,8 +7393,9 @@ function ring_shapes(ring, keep, grow = 0, solid2 = false) {
     } else {
       const n = max(parseInt(ring.count) || 1, 1);
       const length = ring.span / n * min(max(ring.fill, 0), 100) / 100;
+      const outer = ring.r + from_shift(ring, ring.width);
       for (const i of keep) {
-        parts.push(sector(ring.r - ring.width, ring.r, angles[i], angles[i] + length));
+        parts.push(sector(outer - ring.width, outer, angles[i], angles[i] + length));
         at.push(i);
       }
     }
@@ -7689,10 +7695,9 @@ function scene(S, statik, t, preview = true, selected = null) {
     };
     const stroke_guide = (path, k, px = S.gd_w, a = 1) => add("guide", path, null, { stroke: tone(k, a), px });
     const built = new Map(statik.rings.map((d) => [d.ring, d]));
-    const edges = (k, outer, inner, px, a) => {
+    const edges = (k, outer, inner, px, a, at = (outer + inner) / 2) => {
       for (const r of [.../* @__PURE__ */ new Set([outer, inner])]) if (r > 0) stroke_guide(circle(2 * r), k, px, a);
-      const mid = (outer + inner) / 2;
-      if (outer - inner > 0.01 && mid > 0) add("guide", circle(2 * mid), null, { stroke: tone(k, a), px, dots: true });
+      if (outer - inner > 0.01 && at > 0) add("guide", circle(2 * at), null, { stroke: tone(k, a), px, dots: true });
     };
     const focus = { 1: "rings", 3: "windows" }[S.ui_section];
     const faded = (focused) => focused ? 1 : GUIDE_FADE;
@@ -7700,12 +7705,13 @@ function scene(S, statik, t, preview = true, selected = null) {
       const focused = focus === "rings" && i === selected, chosen = focused && S.gd_sel, k = ring_guide(S, i);
       if (!ring.on || k === null || !(S.gd_rings || chosen)) return;
       const kind = kind_of(ring);
-      let outer = ring.r, inner = ring.r - ({ ticks: ring.len, markers: ring.len, band: ring.width }[kind] || 0);
+      const extent = { ticks: ring.len, markers: ring.len, band: ring.width }[kind] || 0;
+      let outer = ring.r + from_shift(ring, extent), inner = outer - extent;
       if (kind === "numerals") {
         const e = radial_extent(built.get(ring)?.path);
         if (e) [inner, outer] = e;
       }
-      edges(k, outer, inner, focused ? S.gd_w * 1.5 : S.gd_w, faded(focused));
+      edges(k, outer, inner, focused ? S.gd_w * 1.5 : S.gd_w, faded(focused), ring.r);
     });
     for (const x of windows) {
       const focused = focus === "windows" && x.index === (S.ui_window ?? 0), chosen = focused && S.gd_wsel, k = window_guide(S, x.index), e = radial_extent(x.window);
@@ -8301,7 +8307,7 @@ var hdr = (text, o = {}) => ({ kind: "hdr", text, ...o });
 var info = (text, o = {}) => ({ kind: "note", text, ...o });
 var custom = (name, o = {}) => ({ kind: "custom", name, ...o });
 var RADIUS_ROWS = {
-  outer: num2("r", "Outer radius", 0, 25, 0.05, { scope: "ring" }),
+  outer: num2("r", "Outer radius", 0, 25, 0.05, { scope: "ring", menu: { key: "from", title: "What the radius measures to", items: [[0, "Outer"], [1, "Middle"], [2, "Inner"]] } }),
   numerals: num2("r", "Centre radius", 0, 25, 0.05, { scope: "ring", menu: { key: "anchor", title: "What the radius measures to", items: [[1, "Baseline"], [2, "Ascender"], [0, "Centre"]] } })
 };
 var radius_row = (R) => RADIUS_ROWS[kind_of(R) === "numerals" ? "numerals" : "outer"];
@@ -8409,13 +8415,27 @@ var ROWS = {
     custom("ring_list", { scope: "global", pin: true }),
     custom("ring_line", { pin: true }),
     // first visit: every pane under the pinned part folded, its line saying what is in it (Okay, 16 Oct 2026, #270)
+    // a numerals ring opens with its font (Okay, 16 Oct 2026, #296: "Move fonts top of adjustments in rings that
+    // involves fonts"); at the end of the page until 4.47
+    hdr("Type", { folded: true, show: numerals_only }),
+    custom("font", { show: numerals_only }),
+    // then Resize (Okay's notes, p. 9, #257: "a proper pane below the quick size and radius buttons … shown first"):
+    // how big one thing is — the size button's number — and the radius, with what it measures to: for marks and bands
+    // the outer end (as always), the middle or the inner end ("resize from"); for numerals the anchor (13 Oct 2026)
+    hdr("Resize", { folded: true }),
+    num2("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
+    num2("w", "\xD8", 0.02, 5, 0.01, { show: marks_with("dot"), id: "ring-w-dot" }),
+    num2("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),
+    // a numeral's size stays in the font box, among the type's settings (and in the size button's popup)
+    { ...RADIUS_ROWS.outer, show: kind_in("ticks", "markers", "band") },
+    { ...RADIUS_ROWS.numerals, show: numerals_only },
     hdr("Sector colours", { folded: true, show: (R) => kind_of(R) === "band" && positions_of(R).length > 1 }),
     custom("sectors", { show: (R) => kind_of(R) === "band" && positions_of(R).length > 1 }),
     // what one mark is comes first (Okay, 13 Oct 2026: "moves up to the top"), then where the marks are
     hdr("Shape", { folded: true, show: kind_in("ticks", "markers") }),
     pick("shape", "Shape", SHAPES.slice(0, 3), PICS.shape, { show: kind_in("ticks", "markers") }),
-    num2("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
-    num2("w", "Width \xB7 \xD8", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "dot", "file") }),
+    num2("w", "Width", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "file") }),
+    // a dot's Ø, and a mark's length, stand in Resize (4.47)
     num2("taper", "Inner width \xD7", 0, 2, 0.01, { show: marks_with("wedge") }),
     num2("wall", "Hollow wall", 0, 1.5, 0.01, { show: kind_in("ticks", "markers") }),
     // the ends belong to the shape: nested under it, no pane of their own (Okay, 13 Oct 2026)
@@ -8451,8 +8471,8 @@ var ROWS = {
     info("0 counts on. 12 with first 5, step 5: 5 to 60, then 5 again.", { show: labels_are("Numbers") }),
     pick("mode", "Placement", MODES, PICS.mode, { show: numerals_only }),
     hdr("Band", { folded: true, show: kind_in("band") }),
-    num2("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),
     num2("fill", "Fill % of step", 1, 100, 1, { show: kind_in("band") }),
+    // its width stands in Resize (4.47)
     hdr("Nudge one numeral", { folded: true, show: numerals_only }),
     custom("nudge", { show: numerals_only }),
     // which numeral, and Reset this numeral
@@ -8461,9 +8481,7 @@ var ROWS = {
     num2("dr", "Radius \xB1", -3, 3, 0.05, { scope: "nudge" }),
     num2("da", "Angle \xB1 \xB0", -30, 30, 0.1, { scope: "nudge" }),
     num2("rot", "Rotate \xB0", -180, 180, 1, { scope: "nudge" }),
-    num2("s", "Size \xD7", 0.2, 3, 0.01, { scope: "nudge" }),
-    hdr("Type", { folded: true, show: numerals_only }),
-    custom("font", { show: numerals_only })
+    num2("s", "Size \xD7", 0.2, 3, 0.01, { scope: "nudge" })
   ],
   Hands: [
     custom("hands_bar", { pin: true, bar: true }),
@@ -11133,9 +11151,10 @@ var DialTool = class _DialTool {
    *  would name first for its kind: a tick's or marker's length (a dot's Ø), a numeral's size, a band's width.
    *  Lengths in the unit box's unit, without trailing zeros. → {kind, size, r} as text */
   ring_summary(ring) {
-    const kind = kind_of(ring), len = (mm) => String(parseFloat(this.in_unit(mm, 2)));
+    const kind = kind_of(ring), len = (mm) => String(parseFloat(this.in_unit(mm, 2))), n = positions_of(ring).length;
     const one = kind === "numerals" ? ring.size : kind === "band" ? ring.width : SHAPES[ring.shape] === "dot" ? ring.w : ring.len;
-    return { kind: `${positions_of(ring).length} ${kind}`, size: len(one), r: len(ring.r) };
+    const word = kind === "band" ? n === 1 ? "band" : "sectors" : n === 1 ? kind.slice(0, -1) : kind;
+    return { kind: `${n} ${word}`, size: len(one), r: len(ring.r) };
   }
   /** the summaries follow every change without the list being built again (a name may be being typed in it). */
   sync_ring_summaries() {
