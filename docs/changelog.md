@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.44.6 (web version) · 16 Oct 2026
+
+- **The time larger, its colons roomier, AM · PM attached** (Okay: "Barlow larger, don't worry optically will be better, more spaces both sides of :s, am attached to time and same size barlow"):
+  - The time is 20 px (17 before).
+  - Each colon is 0.24 em wide (0.155), so it has about twice the room either side.
+  - AM · PM is attached to the time's box again, as high, its word the time's size, one width for both.
+  - On a phone both are 12 px.
+
 ## beta 4.44.5 (web version) · 16 Oct 2026
 
 - **1× has a dot on the speed line** (Okay: "1x needs a dot"): a filled black dot, the end rings' size, where slow motion ends.

@@ -1256,8 +1256,8 @@ check(pane_lines.length > 0 && pane_lines.every((x) => x === "24/26"), `a pane's
 const fits = await page.evaluate(() => { const w = (q) => Math.round(document.querySelector(q).getBoundingClientRect().width), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); const box = (q) => document.querySelector(q).getBoundingClientRect(), lead = document.querySelector(".bar .lead"), pad = parseFloat(getComputedStyle(lead).paddingRight);
     const gaps = [["#play", ".speeds"], [".speeds", ".timewell"], ["#ampm", "#now"]].map(([a, b]) => +(box(b).left - box(a).right).toFixed(1));
     return { play: w("#play"), zooms: w(".zooms"), fit: w("#fit"), gaps, touch: +(box("#ampm").left - box(".timewell").right).toFixed(1), half: [+box("#ampm").width.toFixed(1), +box("#ampm").height.toFixed(1), +((box("#ampm").top + box("#ampm").bottom) / 2 - (box(".timewell").top + box(".timewell").bottom) / 2).toFixed(1)], end: Math.round(box(".bar .lead").right - pad - box("#now").right) }; });
-check(fits.play === 34 && fits.zooms === 54 && fits.fit === 54 && fits.gaps[0] === 24 - 3.5 && fits.gaps[1] === fits.gaps[2] && fits.touch === 5.5 && fits.half[1] < 30 && Math.abs(fits.half[2]) < 0.5 && fits.end === 0,
-  `under the panel: play, a margin less what the speed box grew toward it (24 − 3.5, Okay 15 Oct 03:18), how fast · the time · AM · PM, a smaller box a unit beside it and on its middle (#284) · NOW one equal gap apart, NOW ending on the panel's last column (${JSON.stringify(fits)})`);
+check(fits.play === 34 && fits.zooms === 54 && fits.fit === 54 && fits.gaps[0] === 24 - 3.5 && fits.gaps[1] === fits.gaps[2] && fits.touch === 0 && fits.half[1] === 30 && Math.abs(fits.half[2]) < 0.5 && fits.end === 0,
+  `under the panel: play, a margin less what the speed box grew toward it (24 − 3.5, Okay 15 Oct 03:18), how fast · the time with AM · PM attached, as high, its word the time's size (#284, 4.44.6) · NOW one equal gap apart, NOW ending on the panel's last column (${JSON.stringify(fits)})`);
 await shot("7b-bar");
 await page.fill("#time", "3:20:10");
 await page.press("#time", "Enter");

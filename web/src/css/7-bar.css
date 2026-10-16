@@ -72,13 +72,14 @@
   /* the time sings: large, regular weight, bright, centred on its ink (app.js measures it with every figure a 0, so
      it stands still), more room left and right than the other boxes. Its AM · PM window touches it, one colour always
      (Okay: "Pm window touches the time"; "Am/pm does not change color"). */
-  .bar .timebox { display: flex; align-items: center; gap: var(--u2); }
+  .bar .timebox { display: flex; }
   .bar .timewell { display: grid; height: var(--bar-control); padding: 0 var(--u4); overflow: hidden; border: var(--hair) solid var(--bar-light); }
   .bar .timewell:hover { background: var(--bar-field); }
   .bar .lead .timewell .time { width: var(--time-chars); height: 100%; padding: 0; border: 0; background: none; font-family: var(--time-face); font-size: var(--t-time); font-weight: 300; font-variant-numeric: tabular-nums; letter-spacing: var(--time-track); color: var(--bar-light); translate: var(--ink-dx, 0) var(--ink-dy, 0); }      /* Dial Time, its figures as thin as the box's line (#284) */
-  /* AM · PM in the same face: a smaller box beside the time, as much room round its word on every side, one size for
-     both words (#284; Okay's notes, p. 15). A frame, never filled (Okay, 15 Oct 2026, 00:18) */
-  .bar .lead .timebox .half { box-sizing: content-box; width: var(--time-pm); height: var(--time-cap); padding: var(--u2); border: var(--hair) solid var(--bar-light); font-family: var(--time-face); font-size: var(--t-s); font-weight: 300; letter-spacing: var(--time-track); line-height: var(--time-cap); background: none; color: var(--bar-light); }
+  /* AM · PM in the same face and size as the time, its box attached to the time's (Okay, 16 Oct 2026, on 4.44: "am
+     attached to time and same size barlow"; a smaller box beside it in 4.44), one width for both words. A frame,
+     never filled (Okay, 15 Oct 2026, 00:18) */
+  .bar .lead .timebox .half { box-sizing: content-box; width: var(--time-pm); height: calc(var(--bar-control) - 2 * var(--hair)); padding: 0 var(--u3); border: var(--hair) solid var(--bar-light); border-left: 0; font-family: var(--time-face); font-size: var(--t-time); font-weight: 300; letter-spacing: var(--time-track); background: none; color: var(--bar-light); }
   /* NOW: capitals, at AM · PM's size (Okay: "Now uppercase and in pm's font size which grows 1px") */
   .bar .lead #now { padding: 0 var(--u3); font-size: var(--t-s); text-transform: uppercase; }
   .bar .time { width: 100%; text-align: center; }
