@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.44.6 | 16 Oct 2026 | web | [`c08985c`](https://github.com/duztman/dial-tool/tree/c08985cf17a5e598d19aa6dd9c8c44367f54117e) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/c08985cf17a5e598d19aa6dd9c8c44367f54117e/web/dial-tool.html) | The time larger, its colons roomier, AM · PM attached at its size |
 | 4.44.5 | 16 Oct 2026 | web | [`6d593d0`](https://github.com/duztman/dial-tool/tree/6d593d063cb63212a8ba1cd6bff67702bb087106) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/6d593d063cb63212a8ba1cd6bff67702bb087106/web/dial-tool.html) | A dot at 1× on the speed line; the play pulse up to six a second |
 | 4.44.4 | 16 Oct 2026 | web | [`f0607cf`](https://github.com/duztman/dial-tool/tree/f0607cfab9736fcdbbf4d7bcb2af9074e47444c3) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/f0607cfab9736fcdbbf4d7bcb2af9074e47444c3/web/dial-tool.html) | The unit box done: 4 px round mm, one height; its menu over the rows |
 | 4.44.3 | 16 Oct 2026 | web | [`a9a2978`](https://github.com/duztman/dial-tool/tree/a9a2978abcf6bf532d357dc0c103a2e891c8dbfc) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/a9a2978abcf6bf532d357dc0c103a2e891c8dbfc/web/dial-tool.html) | The unit box's room even on every screen; no seam round the Shadows ball |
