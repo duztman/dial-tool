@@ -500,7 +500,7 @@ for (const grey of ["#808080", "#F2F2EE", "#141413", "#4B317F", "#C8E6A0", "#CC3
 await shot("4c4-guides-dark");
 await type_hex("global-c-backdrop-Backdrop", "#CCCCC7");
 // the Dial section: two panes, Dial (diameter, plate, background) and Page (margin, backdrop); no Guides pane
-check(JSON.stringify(await page.$$eval(".pinned .pane h2", (h) => h.map((x) => x.textContent))) === '["Dial","Page"]' && JSON.stringify(await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))) === '["Colours"]' && await page.isVisible("#background-add"), "Dial has three panes: Dial and Page stay in view, Colours scrolls under them; Background is a button");
+check(JSON.stringify(await page.$$eval(".pinned .pane h2", (h) => h.map((x) => x.textContent))) === '["Dial","Page"]' && JSON.stringify(await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))) === '["Colours","Reset"]' && await page.isVisible("#background-add"), "Dial has four panes (Reset last since 4.41.25): Dial and Page stay in view, Colours scrolls under them; Background is a button");
 // units: a box at the panel's top right; lengths are shown and typed in the unit, kept in mm
 const unit_box = async () => page.$eval("#unit", (e) => { const r = e.getBoundingClientRect(), row = document.querySelector(".form .row").getBoundingClientRect(); return [e.textContent, Math.round(r.width), Math.round(r.height), Math.round(row.right - r.right)]; });
 const as_mm = await unit_box();
@@ -1254,15 +1254,18 @@ await other.goto(link.split("#")[0]);
 await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 const opener = await other.evaluate(() => [window.dial_tool.S.dial_d, window.dial_tool.S.rings.map((r) => r.name).join(" · ")]);
 check(opener[0] === 34 && opener[1] === "Numerals · Markers · Minute ticks", `no dial in the address and no last session: it opens with the guide's First dial (${opener[0]} mm: ${opener[1]})`);
-{ // Reset, at the bottom centre over the dial: back to the opener, every setting; undo brings back what was there (Okay, 16 Oct 2026, 10:18)
+{ // Reset, last in the Dial tab under Colours, its warning under it; not on the preview (Okay, 16 Oct 2026, 10:46: "Not under the dial like a view option! That is dangerous")
   await other.evaluate(() => { const t = window.dial_tool; t.set_value("global", "dial_d", 25); });
   await other.waitForTimeout(700);
-  const r = await other.evaluate(() => { const b = document.getElementById("reset").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); return { centre: Math.abs((b.left + b.right) / 2 - (m.left + m.right) / 2), foot: m.bottom - b.bottom }; });
+  await other.click('button[data-tab="Dial"]'); await other.waitForTimeout(300);
+  const r = await other.evaluate(() => { const b = document.getElementById("reset"), panes = [...document.querySelectorAll(".form .pane")], last = panes.at(-1), before = panes.at(-2);
+    return { inPreview: !!document.querySelector("main #reset"), lastPane: last && last.contains(b), afterColours: before && before.textContent.trim().startsWith("Colours"), warn: (document.getElementById("reset-warning") || {}).textContent || "", described: b.getAttribute("aria-describedby") === "reset-warning" }; });
   await other.click("#reset"); await other.waitForTimeout(500);
   const back = await other.evaluate(() => [window.dial_tool.S.dial_d, window.dial_tool.S.rings.map((x) => x.name).join(" · ")]);
   await other.click("#undo"); await other.waitForTimeout(500);
   const undone = await other.evaluate(() => window.dial_tool.S.dial_d);
-  check(r.centre < 1 && r.foot < 20 && back[0] === 34 && back[1] === "Numerals · Markers · Minute ticks" && undone === 25, `Reset: centred at the dial's foot (${r.centre.toFixed(1)} off, ${r.foot.toFixed(0)} up), brings back the opener (${back.join(", ")}); undo brings back 25 mm (${undone})`);
+  check(!r.inPreview && r.lastPane && r.afterColours && /Replaces everything/.test(r.warn) && r.described && back[0] === 34 && back[1] === "Numerals · Markers · Minute ticks" && undone === 25,
+    `Reset: last in the Dial tab, after Colours, not on the preview, its warning under it (${JSON.stringify(r)}); brings back the opener (${back.join(", ")}); undo brings back 25 mm (${undone})`);
 }
 await other.close();
 await page.click('button:text-is("Defaults")');

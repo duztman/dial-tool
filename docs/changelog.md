@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.41.25 (web version) · 16 Oct 2026
+
+- **Reset moved into the Dial tab**, last, under Colours, with a warning under it: it replaces the whole dial with the guide's First dial (undo brings yours back). The pill over the dial is gone: a view option it is not.
+
 ## beta 4.41.24 (web version) · 16 Oct 2026
 
 - **The tool opens with the guide's First dial** (the black field watch, 34 mm) when the address has no dial and nothing was kept. Okay's watch stays first in the Gallery.

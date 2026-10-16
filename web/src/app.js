@@ -419,6 +419,11 @@ const ROWS = {
     col("c_backdrop", "Backdrop"),
     hdr("Colours"),                                // every coloured part on the plate, in one list; a band's sectors one by one
     custom("colours"),
+    // under Colours, last in the Dial tab: back to the opener, the whole dial, with a warning beside it (Okay, 16 Oct
+    // 2026, 10:46: "under the dial tab under colors. And a warning should be placed near it. Not under the dial like a
+    // view option! That is dangerous")
+    hdr("Reset"),
+    custom("reset"),
   ],
   Rings: [                                         // one list; rows that don't apply hide (R16)
     // one pinned pane (Okay's drawings, 13 Oct 2026). Its heading line carries the list's tools: a plus that opens
@@ -945,7 +950,7 @@ class DialTool {
     this.set_speed(1);
     const guides = this.guides_box();
     // on the preview: undo · redo top left, beside the panel (Okay, 13 Oct 2026) · the Guides switch top right · Backdrop bottom left
-    this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.reset_pill, this.now_pill, this.ten_pill, this.hands_key, this.sun_hint);
+    this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.ten_pill, this.hands_key, this.sun_hint);
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     root.append(this.sheet());      // a phone's gripper, on the drawer's top line
     requestAnimationFrame(() => this.level_title());
@@ -1324,10 +1329,6 @@ class DialTool {
       b.dataset.says = says;
       return b;
     };
-    // Reset: a pill at the bottom centre (the showcase's Now and 10:10 take that place there, so it gives way to them).
-    // A press brings back the opener, every setting — the guide's First dial (Okay, 16 Oct 2026, 10:18). Undo brings
-    // back what was there, as after Defaults
-    this.reset_pill = el("button", { type: "button", className: "onview resetpill", id: "reset", title: "Back to the opener, every setting (the guide’s First dial)", ariaLabel: "Reset to the opener", onclick: () => { this.reopen({ ...structuredClone(OPENER), ui_section: this.S.ui_section }); tool.log("reset to the opener"); } }, el("span", { className: "word", textContent: "Reset" }));
     this.now_pill = pill("now", "show-now", "Now", "The time it is now");
     this.ten_pill = pill("ten", "show-ten", "10:10", "10:10, the classic pose");
     // the showcase's bottom left corner: the hands shown or hidden, a round key with the Hands sign inside (Okay, 07:40:
@@ -2329,6 +2330,15 @@ class DialTool {
     motion.onchange = () => this.set_value("global", "ha_beat", +motion.value);
     wrap.append(el("h2", { textContent: "All hands" }), el("label", { className: "check", htmlFor: tick.id }, tick, " Show hands"), motion);
     out.refresh = (S) => { tick.checked = Boolean(S.ha_on); motion.value = S.ha_beat; };
+  }
+
+  /** Reset: the opener back, every setting — the guide's First dial (opener.js). It replaces the whole dial, so it
+   *  stands last in the Dial tab, apart from what is changed often, with its warning under it; undo brings the dial back. */
+  row_reset(wrap) {
+    const go = el("button", { type: "button", className: "btn", id: "reset", textContent: "Reset to the First dial", title: "Replaces the whole dial with the guide’s First dial", onclick: () => { this.reopen({ ...structuredClone(OPENER), ui_section: this.S.ui_section }); tool.log("reset to the opener: the First dial"); } });
+    wrap.append(el("label", { textContent: "Whole dial" }), el("span", { className: "tools" }, go),      // a label not tied to the button: the button keeps its own words as its name
+      el("p", { className: "warn", id: "reset-warning", textContent: "Replaces everything on this dial — size, rings, hands, windows, colours — with the guide’s First dial. Undo brings yours back." }));
+    go.setAttribute("aria-describedby", "reset-warning");
   }
 
   /** the plate's background: only the button for now (Okay, 12 Oct 2026: "no background image functionality now. Just the button"). */
