@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.46.6 | 17 Oct 2026 | web | [`b9a81e7`](https://github.com/duztman/dial-tool/tree/b9a81e7ed270b4fe6690174787f352a6717c82d4) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/b9a81e7ed270b4fe6690174787f352a6717c82d4/web/dial-tool.html) | the number popup's third look; NOW darker; the play pulse at slow speeds |
 | 4.46.5 | 16 Oct 2026 | web | [`d58fbb5`](https://github.com/duztman/dial-tool/tree/d58fbb5fff3b57519cf3668d3794bb776c350088) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/d58fbb5fff3b57519cf3668d3794bb776c350088/web/dial-tool.html) | the hand shapes' black line after a space |
 | 4.46.4 | 16 Oct 2026 | web | [`7815cc7`](https://github.com/duztman/dial-tool/tree/7815cc771536fdd7b07b922db96d58e470cf8fe1) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/7815cc771536fdd7b07b922db96d58e470cf8fe1/web/dial-tool.html) | Show box darker; the hand's shapes as a framed row; the box fits its rows |
 | 4.46.3 | 16 Oct 2026 | web | [`dbf43fc`](https://github.com/duztman/dial-tool/tree/dbf43fc06f965ecabaa593b9bc2ad40fed687da6) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/dbf43fc06f965ecabaa593b9bc2ad40fed687da6/web/dial-tool.html) | a hand's shapes under its box |
