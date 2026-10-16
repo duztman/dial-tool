@@ -87,6 +87,26 @@ await page.press("#global-dial-d-Diameter", "Enter");
 // ── clicking the preview opens the settings of what was clicked ──
 await click_mm(...clock(10, 120));                                  // the numeral 4
 check(await S("S.ui_section === 1 && ['ticks','markers','numerals','band'][S.rings[S.ui_ring].kind] === 'numerals' && t.nudge_at === '4'"), "click the numeral 4 → Rings, the numerals ring, and Nudge is set to that numeral");
+{ // Nudge's adjusters are number rows on the chosen numeral (#252): a slider, the value, ±; a neutral value is not kept
+  await page.fill("#nudge-da-Angle-", "5"); await page.press("#nudge-da-Angle-", "Enter");
+  const set = await S("JSON.stringify(t.ring().nudge[t.nudge_at])");
+  await page.click("#nudge-da-Angle- ~ .steps .step >> nth=1");
+  const plus = await S("t.ring().nudge[t.nudge_at].da");
+  await page.fill("#nudge-da-Angle-", "0"); await page.press("#nudge-da-Angle-", "Enter");
+  const gone = await S("t.ring().nudge[t.nudge_at] === undefined");
+  const rows = await page.$$eval('[id^="nudge-"][id$="-slider"]', (e) => e.length);
+  check(set === '{"da":5}' && Math.abs(plus - 5.1) < 1e-9 && gone && rows === 4, `Nudge: its four adjusters are number rows with a slider and ± (${rows}); the angle typed 5, plus 0.1, back to 0 leaves nothing kept (#252)`);
+  // sliding one hides the guides; a moment after, they are back (#252: "when a numeral is being nudged hide all guides")
+  const guides = () => S("t.items.filter((i) => i.role === 'guide').length");
+  const shown = await guides();
+  await page.$eval('[id^="nudge-dr-"][id$="-slider"]', (e) => { e.value = 0.5; e.dispatchEvent(new Event("input", { bubbles: true })); });
+  await frame();
+  const hid = await guides();
+  await page.waitForTimeout(1400);
+  const back = await guides();
+  await page.evaluate(() => window.dial_tool.set_value("nudge", "dr", 0));
+  check(shown > 0 && hid === 0 && back === shown, `sliding a numeral's nudge hides the guides (${shown} → ${hid}), back a moment after (${back}) (#252, 4.45.2)`);
+}
 await click_mm(...clock(13, 150));                                  // the marker at 5
 check(await S("['ticks','markers','numerals','band'][S.rings[S.ui_ring].kind] === 'markers'"), "click a marker → the markers ring");
 await click_mm(...clock(13.9, 94));                                 // beside a thin tick (in its zone); 93° until the bar grew (#190): with the preview 10 shorter it fell to the marker at 3
@@ -290,15 +310,28 @@ await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before)
   await page.evaluate((w) => window.dial_tool.set_value("ring", "width", w), w_before);
   await page.click("#ring-size");
   await page.waitForTimeout(200);
-  const pop = await page.evaluate(() => { const e = document.querySelector("#value-pop"), p = e.getBoundingClientRect(), b = document.querySelector("#ring-size").getBoundingClientRect(), c = getComputedStyle(e), steps = [...e.querySelectorAll(".step")].map((x) => x.getBoundingClientRect());
+  const pop = await page.evaluate(() => { const e = document.querySelector("#value-pop"), p = e.getBoundingClientRect(), b = document.querySelector("#ring-size").getBoundingClientRect(), c = getComputedStyle(e), steps = [...e.querySelectorAll(".step")].map((x) => x.getBoundingClientRect()), pills = ["input[type=range]", "input[type=text]", ".steps"].map((q) => e.querySelector(q).getBoundingClientRect());
     return [e.querySelector("label").textContent, Math.round(p.top - b.bottom), e.parentElement === document.body && e.classList.contains("numpop"), Math.round((p.left + p.right) / 2 - (b.left + b.right) / 2), Math.round(p.width), Math.round(p.height), getComputedStyle(e.querySelector("input[type=range]")).display,
-      [c.borderTopWidth, c.borderTopColor, c.borderTopLeftRadius, getComputedStyle(e.querySelector("input[type=text]")).borderTopLeftRadius].join(" "), steps.length === 2 && steps.every((r) => Math.abs(r.width - r.height) < 0.5) && steps[0].top === steps[1].top]; });
+      [c.borderTopWidth, c.borderTopColor, c.borderTopLeftRadius, getComputedStyle(e.querySelector("input[type=text]")).borderTopLeftRadius, getComputedStyle(e.querySelector("input[type=range]")).borderTopLeftRadius].join(" "),
+      steps.length === 2 && Math.abs(steps[0].right - steps[1].left) < 0.5 && steps[0].top === steps[1].top && e.querySelectorAll(".step svg").length === 2,
+      getComputedStyle(e.querySelector("label")).display, pills.map((r) => Math.round(r.width) + "×" + Math.round(r.height)).join(" "), pills.every((r, i) => i === 0 || Math.round(r.top - pills[i - 1].bottom) === 12)]; });
   await shot("4c19-size-pop");
   await page.keyboard.type("x2"); await page.keyboard.press("Enter");
   const w_after = await S("S.rings[S.ui_ring].width");
   await page.evaluate((w) => window.dial_tool.set_value("ring", "width", w), w_before);
-  check(Math.abs(dragged - (w_before + 0.4)) < 1e-9 && pop[0] === "Band width" && pop[1] === 7 && pop[2] && Math.abs(pop[3]) <= 1 && pop[4] === 186 && pop[6] !== "none" && pop[7] === "2px rgb(92, 92, 88) 13px 13px" && pop[8] && Math.abs(w_after - 2 * w_before) < 1e-9 && await page.$("#value-pop") === null,
-    `the size button, before the radius: dragged 16 to the right a band is 0.4 wider; a click opens the number popup under it (#249): ${pop[0]}, the slider, the value in a pill, round − and + (${pop[4]} × ${pop[5]}, a 2 px dark-grey frame, corners as round as its pills: ${pop[7]}); it takes x2`);
+  check(Math.abs(dragged - (w_before + 0.4)) < 1e-9 && pop[0] === "Band width" && pop[1] === 7 && pop[2] && Math.abs(pop[3]) <= 1 && pop[4] === 192 && pop[5] === 192 && pop[6] !== "none" && pop[7] === "2px rgb(92, 92, 88) 40px 22px 22px" && pop[8] && pop[9] === "none" && pop[10] === "156×44 156×44 156×44" && pop[11] && Math.abs(w_after - 2 * w_before) < 1e-9 && await page.$("#value-pop") === null,
+    `the size button, before the radius: dragged 16 to the right a band is 0.4 wider; a click opens the number popup under it (#249): a square (${pop[4]} × ${pop[5]}), no name (${pop[0]}, unseen), three pills (${pop[10]}) 12 apart — the slider, the value, − and + split — its corners a pill's round plus the room round them (${pop[7]}); it takes x2 (4.45.2)`);
+  // sliding in it shows the guides, as set, even with Guides off, and they go a moment after (Okay, on 4.45: "activate guides on slide. Even if off")
+  await page.evaluate(() => window.dial_tool.set_value("global", "guides", false));
+  await page.click("#ring-size"); await page.waitForTimeout(200);
+  await page.evaluate(() => { const s = document.querySelector("#value-pop input[type=range]"); s.value = +s.value + 0.2; s.dispatchEvent(new Event("input", { bubbles: true })); });
+  await frame();
+  const live = await S("t.items.filter((i) => i.role === 'guide').length");
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(1400);
+  const gone = await S("t.items.filter((i) => i.role === 'guide').length");
+  await page.evaluate((w) => { window.dial_tool.set_value("ring", "width", w); window.dial_tool.set_value("global", "guides", true); }, w_before);
+  check(live > 0 && gone === 0, `sliding in the popup with Guides off shows the guides (${live} drawn), gone a moment after (${gone}) (4.45.2)`);
 }
 { // a full row's name opens the popup; pressed and moved, it changes the value (#249, #170)
   await page.click('button[data-tab="Dial"]'); await frame();
@@ -750,6 +783,21 @@ await page.click("#hand-tab-0");
   // from how the dial opened; they step it; a press on the number opens its popup
   const nb = () => page.evaluate(() => { const box = document.querySelector(".row.side .numbox"), c = (e) => getComputedStyle(e), f = box.querySelector("input"), [minus, plus] = [...box.querySelectorAll(".step")];
     return { w: Math.round(box.getBoundingClientRect().width), plain: c(f).borderTopWidth === "0px" && c(f).backgroundColor === "rgba(0, 0, 0, 0)" && c(plus).borderTopWidth === "0px", grey: c(f).color, stacked: plus.getBoundingClientRect().bottom <= minus.getBoundingClientRect().top + 0.5, changed: box.classList.contains("changed") }; });
+  // the plus's top on the figures' top, the minus on their baseline (4.45.2, Okay: "parallels on baseline ascender"):
+  // counted on the box's own picture, in screen dots — the ink rows of the figures and of the two signs
+  const on_figures = async () => {
+    const b = await (await page.$(".row.side .numbox")).boundingBox(), png = await page.screenshot({ clip: { x: b.x, y: b.y, width: b.width, height: b.height } });
+    const cut = await page.$eval(".row.side .numbox", (e) => e.querySelector(".pm").getBoundingClientRect().left - e.getBoundingClientRect().left);
+    return page.evaluate(async ([src, cut]) => {
+      const img = new Image(); img.src = "data:image/png;base64," + src; await img.decode();
+      const c = document.createElement("canvas"); c.width = img.width; c.height = img.height; const x = c.getContext("2d"); x.drawImage(img, 0, 0);
+      const d = x.getImageData(0, 0, c.width, c.height).data, W = c.width, H = c.height, bg = d[0], ink = (i, j) => d[(j * W + i) * 4] < bg - 40;
+      const rows = (i0, i1) => { const r = []; for (let j = 0; j < H; j++) for (let i = i0; i < i1; i++) if (ink(i, j)) { r.push(j); break; } return [Math.min(...r), Math.max(...r)]; };
+      const k = Math.round(cut * devicePixelRatio), [ft, fb] = rows(0, k), [st, sb] = rows(k, W);
+      return [st - ft, sb - fb];
+    }, [png.toString("base64"), cut]);
+  };
+  const fig = await on_figures();
   const shut = await nb(), len = await S("S.ha_hour.len");
   await page.click(".row.side .numbox .step >> nth=1");
   const stepped = await S("S.ha_hour.len"), after = await nb();
@@ -760,6 +808,7 @@ await page.click("#hand-tab-0");
   const back = await nb();
   check(shut.plain && shut.stacked && !shut.changed && shut.grey === "rgb(92, 92, 88)" && near(stepped - len, 0.05, 1e-6) && after.changed && !back.changed && shut.w === 60,
     `beside the box a number is quiet: no box, grey until it changes (${shut.grey}), a tiny plus over a tiny minus that step it; changed it is in ink, back to how the dial opened grey again (#250)`);
+  check(fig.every((v) => Math.abs(v) <= 1), `the tiny plus's top on the figures' top, the minus on their baseline, within a dot (${fig.join(", ")} dots) (4.45.2)`);
   check(popped && await page.$("#value-pop") === null, "a press on the number opens its popup, with its slider; Escape puts it away (#250, #249)");
 }
 { // one line through the top: the middle of the title's small letters, undo and Guides; the unit box's and the Gallery pill's words on the title's baseline, as Help's are (Okay, 16 Oct 2026, #285: "same baseline")
@@ -992,6 +1041,10 @@ await page.click("#global-c-plate-Plate");
 await shot("4c2-colour");
 check(await page.$$eval(".tabs button", (b) => b.map((x) => x.textContent.trim()).join(" ")) === "Dial Rings Hands Windows Export" && await page.$("main button.guidesbox#guides svg") !== null, "tabs: Export last; Guides is a rounded switch with a bullseye at the top right");
 
+{ // no two parts of the window share an id (a label's for, a test's #id find the first; 4.45.2 had two window-w-Width)
+  const twice = await page.evaluate(() => { const n = {}; for (const e of document.querySelectorAll("[id]")) if (e.id) n[e.id] = (n[e.id] || 0) + 1; return Object.keys(n).filter((k) => n[k] > 1); });
+  check(twice.length === 0, `every id once (${twice.join(" ") || "none twice"})`);
+}
 // ── windows: up to four, each a date, a day, am · pm or a moon phase ──
 await tab("Date");
 const kinds = [["1", "1", "9"], ["2", "2", "6"], ["3", "3", "12"]];          // window (its card's number), kind, position
@@ -1003,8 +1056,8 @@ for (const [n, kind, at] of kinds) {
 }
 await page.fill("#window-age-Moon-age-days", "6");
 await page.press("#window-age-Moon-age-days", "Enter");
-await page.fill("#window-w-Width", "4");
-await page.press("#window-w-Width", "Enter");
+await page.fill("#window-w-Width-arch", "4");
+await page.press("#window-w-Width-arch", "Enter");
 await frame();
 check(await S("t.statik.windows.length === 4 && S.windows[0].text === 'MON' && S.windows.map((w) => w.kind).join('') === '123'"), "four windows: date, day (its text became MON), am · pm, moon phase");
 check(await S("t.statik.windows.every((x) => x.number.bounds() !== null && x.window.bounds() !== null)") && await S("t.items.filter((i) => i.role === 'date disc').length === 4"), "each window has a hole and something showing through it");
@@ -1013,6 +1066,15 @@ await over_mm(...moon_at);
 check((await page.textContent(".tip span")) === "Moon phase window", "pointer on the fourth window: Moon phase window");
 await click_mm(...moon_at);
 check(await S("S.ui_section === 3 && S.ui_window === 3") && await page.isVisible("#window-age-Moon-age-days") && await page.isHidden("#window-h-Height"), "click it: Windows, window 4, with the moon's rows");
+{ // a window's width and height on one line (#265): two quiet numbers, each name opening its popup
+  await page.evaluate(() => { const t = window.dial_tool; t.S.ui_window = 0; t.show_section(); t.sync_rows(); });
+  await frame();
+  const ws = await page.evaluate(() => { const r = document.querySelector(".row.wsize"); if (!r || !r.offsetParent) return null; const [w, h] = [...r.querySelectorAll(".numbox")].map((b) => b.getBoundingClientRect()), names = [...r.querySelectorAll("label")].map((l) => l.textContent + ":" + getComputedStyle(l).color); return { line: Math.abs(w.top - h.top) < 1, names: names.join(" ") }; });
+  if (ws) await page.click(".row.wsize label >> nth=1");
+  const popped = ws && await page.evaluate(() => { const e = document.querySelector("#value-pop"); return !!e && e.querySelector("label").textContent === "Height"; });
+  await page.keyboard.press("Escape");
+  check(ws && ws.line && ws.names === "Width:rgb(92, 92, 88) Height:rgb(92, 92, 88)" && popped, `a window's width and height stand on one line, quiet numbers with a compact ±, their names grey; a press on Height opens its popup (#265; ${ws && ws.names})`);
+}
 await shot("4d-windows");
 for (const n of ["1", "2", "3"]) { await page.click("#window-card-" + n); await page.uncheck("#window-on-Show-this-window"); }
 await page.click("#window-card-0");

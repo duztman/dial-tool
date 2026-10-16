@@ -100,6 +100,14 @@ const SIGNS = {
   copy: `<rect x="5.75" y="5.75" width="7.5" height="7.5"/><path d="M10.25 5.75V2.75H2.75V10.25H5.75"/>`,
   sheet: `<path d="M4.25 2.75H9.25L12.25 5.75V13.25H4.25ZM9.25 2.75V5.75H12.25"/>`,
 };
+// the tiny plus over the tiny minus beside a quiet number (#250; 4.45.2, Okay: "Compact minusplus too far apart,
+// closer, parallels on baseline ascender"): 6 points wide, the plus 6 high, each drawn ink to edge (its round caps
+// inside the box), so the stylesheet stands the plus's top on the figures' top and the minus on their baseline.
+// Quiet signs, so DENSE.
+const TINY = {
+  plus: icon(`<path d="M3 0.625V5.375M0.625 3H5.375" ${sw(DENSE)}/>`, 6),
+  minus: icon(`<path d="M0.625 0.625H5.375" ${sw(DENSE)}/>`, 6, 1.25),
+};
 // a section's sign: a small picture inside a ring. Signs of circles share the ring's centre (17); signs with
 // straight lines sit on the grid (17.25).
 const C = 17.25;
@@ -221,7 +229,7 @@ const POOL = { size: 1.45, stretch: 1.4, soft: [0.06, 0.8], light: [0.08, 0.42],
 // the dial's travel into and out of the showcase: the only thing that moves (04:59 and 05:09: "only dial travels with ease")
 const TRAVEL_MS = 900;
 // a phone (Okay, 15 Oct 2026, 06:20): the preview's switches unfold their words this long after a tap on the backdrop
-const HOLE_LIVE_MS = 1200;      // how long the centre hole's guide stays after its size last changed (#267)
+const HOLE_LIVE_MS = 1200;      // how long the centre hole's guide stays after its size last changed (#267); and the guides after a number was last slid (#249)
 const WORDS_MS = 3000;
 // a phone's drawer: the preview's share of the screen at the two heights a tap on the gripper jumps between (the
 // drawer about half, then about three quarters); the least the preview and the drawer keep (px); and how much room for
@@ -495,7 +503,13 @@ const ROWS = {
     num("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),
     num("fill", "Fill % of step", 1, 100, 1, { show: kind_in("band") }),
     hdr("Nudge one numeral", { folded: true, show: numerals_only }),
-    custom("nudge", { show: numerals_only }),
+    custom("nudge", { show: numerals_only }),      // which numeral, and Reset this numeral
+    // its four adjusters, number rows on the numeral chosen above (Okay's notes, p. 6–7, #252, beta 4.45.2: "every
+    // adjuster gets ±; angle and radius get sliders"): each a full row, its name opening the popup (#249)
+    num("dr", "Radius ±", -3, 3, 0.05, { scope: "nudge" }),
+    num("da", "Angle ± °", -30, 30, 0.1, { scope: "nudge" }),
+    num("rot", "Rotate °", -180, 180, 1, { scope: "nudge" }),
+    num("s", "Size ×", 0.2, 3, 0.01, { scope: "nudge" }),
     hdr("Type", { folded: true, show: numerals_only }),
     custom("font", { show: numerals_only }),
   ],
@@ -543,9 +557,9 @@ const ROWS = {
     // where it is and how big come first, right under the tick (Okay, 13 Oct 2026); a pane of their own, Place and size, until beta 4.22
     custom("window_at", { ...W, show: win_on, text: "Position" }),
     num("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
-    num("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("rectangle", "arch", "arc") }),
+    custom("window_size", { ...W, show: shape_is("rectangle", "arc") }),      // width and height on one line (#265)
+    num("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("arch"), id: "window-w-Width-arch" }),      // its own id: the line above has window-w-Width
     num("w", "Ø", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
-    num("h", "Height", 0.5, 5, 0.05, { ...W, show: shape_is("rectangle", "arc") }),
     pick("kind", "Shows", G.WINDOW_KINDS, PICS.window, { ...W, show: win_on }),
     txt("text", "Text", { ...W, show: win_is("date", "day") }),
     custom("font", { ...W, show: win_is("date", "day") }),      // its own font, or the top numerals ring's (the start)
@@ -628,10 +642,11 @@ function parse_number(text, current) {
   return Number.isFinite(out) ? out : current;
 }
 /** is this row a length (kept in mm, shown in the chosen unit)? Decided by its key, where the scale tick decides it too. */
-const LENGTH_KEYS = { ring: G.RING_MM, hand: G.HAND_MM, window: G.WINDOW_MM, global: ["dial_d", "margin", "ha_cap", "dial_hole", "sh_hour", "sh_minute", "sh_second", "sh_cap", "sh_disc"] };
+const LENGTH_KEYS = { ring: G.RING_MM, hand: G.HAND_MM, window: G.WINDOW_MM, global: ["dial_d", "margin", "ha_cap", "dial_hole", "sh_hour", "sh_minute", "sh_second", "sh_cap", "sh_disc"], nudge: ["dr"] };
 /** a row's label: its own words, or, with a menu beside it, the chosen item's word before the last of its own
  *  ("Centre radius" → "Baseline radius"). */
 const label_of = (row, T) => (row.menu ? `${(row.menu.items.find(([v]) => v === (T[row.menu.key] ?? 0)) || row.menu.items[0])[1]} ${row.text.split(" ").pop()}` : row.text);
+const NUDGE_NEUTRAL = { dr: 0, da: 0, rot: 0, s: 1 };      // a numeral's nudge, untouched (#252)
 const is_length = (row) => row.kind === "num" && (LENGTH_KEYS[row.scope] || []).includes(row.key);
 const decimals = (step) => (String(step).split(".")[1] || "").length;
 const fmt = (v, step) => (+v).toFixed(Math.max(decimals(step), 0));
@@ -802,9 +817,15 @@ class DialTool {
   ring() { return this.S.rings[this.S.ui_ring]; }
   hand() { return this.S["ha_" + G.HANDS[this.S.ui_hand]]; }
   window() { return G.windows_of(this.S)[this.S.ui_window]; }
-  target(scope) { return scope === "ring" ? this.ring() : scope === "hand" ? this.hand() : scope === "window" ? this.window() : this.S; }
+  target(scope) { return scope === "ring" ? this.ring() : scope === "hand" ? this.hand() : scope === "window" ? this.window() : scope === "nudge" ? { ...NUDGE_NEUTRAL, ...(this.ring().nudge[this.nudge_at] || {}) } : this.S; }
 
   set_value(scope, key, value) {
+    if (scope === "nudge") {                       // the chosen numeral's own: a neutral value is not kept (#252)
+      const R = this.ring(), n = { ...(R.nudge[this.nudge_at] || {}) }, all = { ...R.nudge };
+      if (Math.abs(value - NUDGE_NEUTRAL[key]) < 1e-9) delete n[key]; else n[key] = +(+value).toFixed(4);
+      if (Object.keys(n).length) all[this.nudge_at] = n; else delete all[this.nudge_at];
+      return this.set_value("ring", "nudge", all);
+    }
     const T = this.target(scope);
     if (JSON.stringify(T[key]) === JSON.stringify(value)) return;
     // the diameter, with "scale everything" ticked: every measure on the dial grows or shrinks by the same factor
@@ -1920,7 +1941,7 @@ class DialTool {
     const tied = () => { if (row.tie) out.el.classList.add("tied"); };      // tie: this row belongs to the one above it, no line between them
     const out = { row, el: wrap, refresh: () => {} };
     const set = (v) => this.set_value(row.scope, row.key, v);
-    const id = `${row.scope}-${row.key}-${row.text || row.name}`.replace(/[^A-Za-z0-9]+/g, "-");
+    const id = row.id || `${row.scope}-${row.key}-${row.text || row.name}`.replace(/[^A-Za-z0-9]+/g, "-");      // id: when two rows would share one
     const active = (e) => document.activeElement === e;
 
     if (row.kind === "hdr") {                      // a heading: click it to fold or unfold its group
@@ -1954,14 +1975,20 @@ class DialTool {
       const shown = (v) => (v * per()).toFixed(places());
       const now = () => { const T = this.target(row.scope); return T[row.key] ?? (row.or ? row.or(T) : 0); };      // or: what an unset number is (a window's tracking: the numerals')
       let typing = false;                          // the field follows every change, except while you type in it
-      slider.oninput = () => commit(+slider.value);
+      slider.oninput = () => { if (row.inpop || row.scope === "nudge") this.guides_live(row.scope !== "nudge"); commit(+slider.value); };
       field.oninput = () => { typing = true; };
       field.onblur = () => { typing = false; out.refresh(this.target(row.scope)); };
       field.onchange = () => { typing = false; commit(parse_number(field.value, now() * per()) / per()); out.refresh(this.target(row.scope)); };
       field.onkeydown = (e) => {
         if (e.key === "ArrowUp" || e.key === "ArrowDown") { e.preventDefault(); commit(now() + (e.key === "ArrowUp" ? 1 : -1) * row.step * (e.shiftKey ? 10 : 1)); }
       };
-      const step = (dir) => el("button", { type: "button", className: "step", textContent: dir > 0 ? "+" : "−", tabIndex: -1, onclick: () => commit(now() + dir * row.step) });
+      // − and +: as typed signs in a full row; in the popup the shared signs (SIGNS); beside a quiet number the tiny ones
+      const step = (dir) => {
+        const b = el("button", { type: "button", className: "step", tabIndex: -1, onclick: () => commit(now() + dir * row.step) });
+        const sign = row.inpop ? icon(dir > 0 ? SIGNS.plus : SIGNS.minus) : row.side ? TINY[dir > 0 ? "plus" : "minus"] : null;
+        if (sign) { b.innerHTML = sign; b.ariaLabel = dir > 0 ? "Plus" : "Minus"; } else b.textContent = dir > 0 ? "+" : "−";
+        return b;
+      };
       const label = el("label", { htmlFor: id, textContent: row.text });
       if (row.short) { label.textContent = ""; label.title = row.text; label.append(el("span", { className: "whole", textContent: row.text }), el("span", { className: "short", textContent: row.short })); }      // two wordings; the stylesheet shows the one there is room for
       let lead = label, menu = null;
@@ -1976,6 +2003,7 @@ class DialTool {
       }
       if (row.button) { slider.ariaLabel = field.ariaLabel = row.text; field.title = row.text + " · " + field.title; }
       if (row.bare) { label.textContent = ""; label.className = "blank"; slider.ariaLabel = field.ariaLabel = row.text; field.title = row.text + " · " + field.title; }
+      if (row.inpop) slider.ariaLabel = field.ariaLabel = row.text;      // its name is not shown in the popup (4.45.2)
       if (!row.inpop && !row.side && !row.bare && !row.button) this.name_opens(label, row);      // form A: its name opens the popup (#249)
       if (row.side) {
         // beside a hand's box there is little room (Okay, 13 Oct 2026): the number with a tiny plus over a tiny minus
@@ -1984,7 +2012,7 @@ class DialTool {
         // the quiet look (Okay's notes, p. 18, #250, beta 4.45.1; R15 form A): the number and a compact ± beside it, no
         // box, grey until the number differs from how the dial opened; a press on the number opens its popup (#249). With
         // the keyboard (Tab) the number still takes typing and the arrows. (4.25 to 4.45: a box that grew over the slider)
-        const box = el("span", { className: "numbox" }, field, step(-1), step(1));
+        const box = el("span", { className: "numbox" }, field, el("span", { className: "pm" }, step(-1), step(1)));
         for (const b of box.querySelectorAll(".step")) b.onmousedown = (e) => e.preventDefault();      // a press on minus or plus leaves the focus where it is
         field.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === "Escape") field.blur(); });
         if (!row.inpop) {
@@ -2595,6 +2623,7 @@ class DialTool {
       if (!press.moved && Math.abs(d) < 4) return;
       if (!press.moved) { press.moved = true; this.value_pop_close(); this.tag_hide(); b.classList.add("dragging"); }
       const r = row(), step = r.step * (e.shiftKey ? 0.1 : 1);
+      this.guides_live(r.scope !== "nudge");
       this.set_value(r.scope, r.key, +Math.max(press.v + Math.round(d / 2) * step, r.lo).toFixed(6));       // two screen points a step
     };
     b.onpointerup = b.onpointercancel = () => { const was = press; press = null; b.classList.remove("dragging"); if (was && !was.moved) this.value_pop_open(b, row()); };
@@ -2618,9 +2647,21 @@ class DialTool {
       if (!press.moved && Math.abs(d) < 4) return;
       if (!press.moved) { press.moved = true; this.value_pop_close(); label.classList.add("dragging"); }
       const v = press.v + Math.round(d / 2) * row.step * (e.shiftKey ? 0.1 : 1);
+      this.guides_live(row.scope !== "nudge");
       this.set_value(row.scope, row.key, row.whole ? clamp(Math.round(v), row.lo, row.hi) : +Math.max(v, row.lo).toFixed(6));
     };
     label.onpointerup = label.onpointercancel = () => { const was = press; press = null; label.classList.remove("dragging"); if (was && !was.moved) this.value_pop_open(label, row); };
+  }
+
+  /** the guides while a number is slid — the popup's slider, a name or a value button dragged — even with Guides off
+   *  (Okay, 16 Oct 2026, on 4.45: "activate guides on slide. Even if off"): as they are set, until a moment after the
+   *  last change (draw). A numeral being nudged hides them instead, whatever slides it (on = false; #252: "when a
+   *  numeral is being nudged hide all guides"). Call before the change, which draws. */
+  guides_live(on = true) {
+    this.guides_at = performance.now();
+    this.guides_on = on;
+    clearTimeout(this.guides_timer);
+    this.guides_timer = setTimeout(() => this.render(), HOLE_LIVE_MS + 50);
   }
 
   /** the tag: what a wordless button is, said under it while the pointer or the keyboard is on it. One for the whole
@@ -2938,27 +2979,25 @@ class DialTool {
   }
 
   /** a correction for one numeral: radius ±, angle ±, rotate, size ×. Click a numeral in the preview to pick it. */
-  row_nudge(wrap, out) {
+  /** a window's width and height on one line (Okay's notes, p. 20, #265, beta 4.45.2; R15 form B): four cells — a
+   *  name and its quiet number with a compact ±, twice. A press on a name or a number opens its popup, the slider
+   *  there. The two are a side row's parts, each still its own row (build_row), so they do all a number does. */
+  row_window_size(wrap, out) {
+    wrap.className = "row wsize";
+    const parts = [["w", "Width", 8], ["h", "Height", 5]].map(([key, text, hi]) => {
+      const row = { ...num(key, text, 0.5, hi, 0.05), scope: "window", side: true }, built = this.build_row(row), label = built.el.querySelector("label");
+      this.name_opens(label, row);
+      wrap.append(label, built.el.querySelector(".numbox"));
+      return built;
+    });
+    out.refresh = (W) => parts.forEach((p) => p.refresh(W));
+  }
+
+  row_nudge(wrap, out) {                           // which numeral the rows under it nudge (scope "nudge", #252), and a way to undo its nudges
     wrap.className = "nudge";
     const pick = el("select", { id: "nudge-pick" });
     pick.onchange = () => { this.nudge_at = pick.value; this.sync_rows(); };
-    const fields = {};
-    const line = (key, text, step, neutral) => {
-      const f = el("input", { type: "text", id: "nudge-" + key, inputMode: "decimal" });
-      f.onchange = () => {
-        const R = this.ring(), n = { ...(R.nudge[this.nudge_at] || {}) };
-        const per = key === "dr" ? this.unit()[2] : 1;      // the radius ± is a length: typed in the chosen unit, kept in mm
-        const v = parse_number(f.value, (n[key] ?? neutral) * per) / per;
-        if (Math.abs(v - neutral) < 1e-9) delete n[key]; else n[key] = +v.toFixed(4);
-        const all = { ...R.nudge };
-        if (Object.keys(n).length) all[this.nudge_at] = n; else delete all[this.nudge_at];
-        this.set_value("ring", "nudge", all);
-      };
-      fields[key] = [f, step, neutral];
-      return el("div", { className: "row txt" }, el("label", { htmlFor: "nudge-" + key, textContent: text }), f);
-    };
     wrap.append(el("div", { className: "row pop" }, el("label", { htmlFor: "nudge-pick", textContent: "Numeral" }), pick),
-      line("dr", "Radius ±", 0.05, 0), line("da", "Angle ± °", 0.1, 0), line("rot", "Rotate °", 1, 0), line("s", "Size ×", 0.01, 1),
       el("div", { className: "row" }, el("span"), el("button", { type: "button", className: "btn", textContent: "Reset this numeral", onclick: () => {
         const all = { ...this.ring().nudge };
         delete all[this.nudge_at];
@@ -2973,8 +3012,6 @@ class DialTool {
         pick.dataset.items = want;
       }
       pick.value = this.nudge_at;
-      const n = R.nudge[this.nudge_at] || {};
-      for (const key in fields) { const [f, step, neutral] = fields[key]; if (document.activeElement !== f) f.value = key === "dr" ? this.in_unit(n[key] ?? neutral, decimals(step / 10)) : fmt(n[key] ?? neutral, step / 10); }
     };
   }
 
@@ -3794,7 +3831,7 @@ class DialTool {
     let S = this.show ? { ...this.S, guides: false, ha_on: this.S.ha_on && !this.show.nohands } : this.S;      // the showcase: no guides; its hands key may hide the hands
     if (!this.show && this.hole_at && performance.now() - this.hole_at < HOLE_LIVE_MS) {      // the centre hole being sized: its guide, alone if the guides are off (#267)
       S = S.guides ? { ...S, gd_hole_live: true } : { ...S, guides: true, gd_hole_live: true, gd_axes: false, gd_rings: false, gd_sel: false, gd_wins: false, gd_wsel: false, gd_more: [] };
-    }
+    } else if (!this.show && this.guides_at && performance.now() - this.guides_at < HOLE_LIVE_MS) S = { ...S, guides: this.guides_on };      // a number being slid: the guides as set; a numeral being nudged: none (guides_live)
     const day = G.shows_day(S) ? G.day_hour(S) : null;       // an am · pm window follows the time shown, in steps of six minutes
     if (day !== this.day_drawn) { this.day_drawn = day; this.static_dirty = true; }
     if (!this.statik || this.static_dirty) {

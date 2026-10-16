@@ -50,4 +50,7 @@
   .row.pick > label { line-height: var(--line); }
   .row > label > .short { display: none; }         /* a label's short wording: only where there is little room (a side row) */
   .linkrow .linknote { margin: var(--unit) 0 0; }      /* its length, and that fonts travel by name */
+  /* a window's width and height on one line (#265): name · number · name · number, the numbers quiet (#250's look) */
+  .row.wsize > label { grid-column: span 2; color: var(--grey); }      /* both names grey, as a row's first is */
+  .row.wsize > .numbox { position: relative; top: auto; right: auto; translate: none; grid-column: span 1; width: 100%; }
 }

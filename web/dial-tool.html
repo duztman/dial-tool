@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.45.1 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.45.2 · built 2026-10-16 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -133,12 +133,14 @@
     --line-button: 36px; --bare-dot: 16px;      /* in the ring drawer every control is this high (a value button this wide too) · the colour's swatch */
     --half: 30px;                                  /* AM · PM: its own window beside the time (Okay, 14 Oct 2026, 23:19) */
     --value-pop: 132px;                            /* a value button's tag: about as wide as it is high */
-    /* the number popup (#249, beta 4.45): three columns wide; a ground darker than the pane's, in a frame of the dark
-       grey two points thick; its corners as round as its pills (half a control); its slider's thumb a pill a fifth
-       larger than the panel's thumb, half as wide again as high */
-    --num-pop: calc(3 * var(--col) + 2 * var(--gap));
-    --num-pop-ground: color-mix(in srgb, var(--ink) 7%, var(--ground)); --num-pop-round: calc(var(--control) / 2);
-    --num-pop-thumb: calc(1.2 * var(--thumb));
+    /* the number popup (#249; a square since 4.45.2): three pills a finger high (44, the least a finger is given),
+       --pop-gap between them and --pop-pad round them, in a frame two points thick; its corners a pill's round plus
+       that room and the frame, so they run parallel to the pills'; a ground darker than the pane's; its slider's
+       thumb a pill, as far inside its pill as --u3, half as wide again as high */
+    --num-pop-pill: 44px;
+    --num-pop: calc(3 * var(--num-pop-pill) + 2 * var(--pop-gap) + 2 * var(--pop-pad) + 2 * var(--thick));
+    --num-pop-ground: color-mix(in srgb, var(--ink) 7%, var(--ground)); --num-pop-round: calc(var(--num-pop-pill) / 2 + var(--pop-pad) + var(--thick));
+    --num-pop-thumb: calc(var(--num-pop-pill) - 2 * var(--u3));
     --dot-tiny: 10px;                              /* a colour inside a line of words: a folded pane's summary */
     --thumb: 18px; --track: 4px; --thumb-eye: 2px; --thumb-eye-edge: 2.75px;      /* sliders: a black disc on a thin track (Okay's sketch); the light centre of the disc, and where its edge softens */
     --grip: 18px;                                  /* the ring list's drag handle column */
@@ -207,6 +209,7 @@
     --speed-pad: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2);      /* the speed box's room inside, left and right: the thumb at either end stands as far from the wall as from the box's top and bottom (3; Okay, 15 Oct 2026, 03:18: "when the ball is in a terminal, the bounding box clears it as much as it clears from the top… both ends symmetry"). Was u3 + 4 − half a thumb (1.25; 01:03, "before plus four") */
     --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
     --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
+    --t-num-pop: 20px;                             /* the number popup's value, in its pill: larger than --t-l (Okay, 16 Oct 2026, on 4.45: "everything bigger … larger everything within square") */
     --unit-pad: 4px;                               /* the unit box: this much round its word, on every side — round mm's letters; the other units keep mm's height (Okay, 16 Oct 2026, on 4.44: "2px padding around letters"; on 4.44.3: "Mm looks perfect now add 2px more padding … Others use the same height, width can change") */
 
     /* off the scale as found, with no figure from Okay (16 Oct 2026): kept as they are, each to be put on the scale or
@@ -219,7 +222,7 @@
     --ringline-pad: 8px; --ringline-gap: 8px; --ringline-join: 2px;      /* the selected ring's line: inside its frame · between its parts · between it and its ring's row (Okay asked for more room inside, 13 Oct, beta 4.10; 8 was Claude's figure) */
     --name-in: 6px;                                /* a ring's name starts this far into its column; the ring line's buttons too */
     --chip-gap: 4px;                               /* between two colours to pick */
-    --pop-pad: 16px; --pop-gap: 12px;              /* a night part (colour pop-out, guides' list): the space inside its edge, the space between its blocks */
+    --pop-pad: 16px; --pop-gap: 12px;              /* a night part (colour pop-out, guides' list) and the number popup: the space inside its edge, the space between its blocks */
     --guide-gap: 10px;                             /* the room between two round colours in the guides' list: the chosen one's ring needs it */
     --ring-gap-in: 2px;                            /* the chosen guide colour: a ring of the ground this wide, inside its own ring */
     --logo-disc: 2px;                              /* the bio open: how far the mark's night disc reaches past its 16 box (ring to disc edge ≈ 2.3) */
@@ -579,6 +582,9 @@
   .row.pick > label { line-height: var(--line); }
   .row > label > .short { display: none; }         /* a label's short wording: only where there is little room (a side row) */
   .linkrow .linknote { margin: var(--unit) 0 0; }      /* its length, and that fonts travel by name */
+  /* a window's width and height on one line (#265): name · number · name · number, the numbers quiet (#250's look) */
+  .row.wsize > label { grid-column: span 2; color: var(--grey); }      /* both names grey, as a row's first is */
+  .row.wsize > .numbox { position: relative; top: auto; right: auto; translate: none; grid-column: span 1; width: 100%; }
 }
 
 /* a hand's pane: its detail box, the line of shapes, side rows with their number box */
@@ -599,15 +605,23 @@
   .pickt.own:hover { background: var(--field); }
   .pickt.more[aria-expanded="true"] svg { rotate: 180deg; }
   /* a side row's number, quiet (#250, beta 4.45.1): the number and, joined to it, a tiny plus over a tiny minus; no
-     box; grey until it differs from how the dial opened (.changed, build_row). A press on it opens its popup. */
+     box; grey until it differs from how the dial opened (.changed, build_row). A press on it opens its popup.
+     The two signs stand on the figures (4.45.2, Okay: "Compact minusplus too far apart, closer, parallels on baseline
+     ascender"): .pm is a band a capital high (1cap), its foot on the number's baseline (the box lines its parts up
+     on their baselines, and a band with nothing in flow has its baseline at its foot); the plus's top on the band's
+     top, the minus on its foot. Each sign's button reaches half a control from the band's middle, up for the plus,
+     down for the minus, so it is as easy to hit as before. */
   .row.side { position: relative; }
-  .numbox { position: absolute; right: 0; top: 50%; translate: 0 -50%; display: grid; grid-template: "f p" 1fr "f m" 1fr / minmax(0, 1fr) var(--side-tiny); width: var(--side-num); height: var(--control); }
-  .numbox > input { grid-area: f; width: 100%; min-width: 0; height: 100%; padding: 0 var(--u1) 0 0; border: 0; background: none; color: var(--grey); text-align: right; cursor: pointer; }
-  .numbox > .step { min-width: 0; height: auto; padding: 0; border: 0; background: none; color: var(--grey); font-size: var(--t-xs); line-height: 1; }
-  .numbox > .step:nth-of-type(1) { grid-area: m; }
-  .numbox > .step:nth-of-type(2) { grid-area: p; }
-  .numbox > .step:hover { background: var(--hover); color: var(--ink); }
-  .numbox.changed > :is(input, .step) { color: var(--ink); }
+  .numbox { position: absolute; right: 0; top: 50%; translate: 0 -50%; display: flex; align-items: baseline; width: var(--side-num); height: var(--control); }
+  .numbox > input { flex: 1 1 0; width: 100%; min-width: 0; height: 100%; padding: 0 var(--u1) 0 0; border: 0; background: none; color: var(--grey); text-align: right; cursor: pointer; }
+  .numbox > .pm { flex: none; position: relative; width: var(--side-tiny); height: 1cap; }
+  .pm > .step { position: absolute; left: 0; right: 0; min-width: 0; height: auto; padding: 0; border: 0; background: none; color: var(--grey); }
+  .pm > .step:first-child { top: 50%; bottom: calc(50% - var(--control) / 2); }      /* the minus */
+  .pm > .step:last-child { top: calc(50% - var(--control) / 2); bottom: 50%; }      /* the plus */
+  .pm > .step > svg { position: absolute; inset-inline: 0; margin-inline: auto; }
+  .pm > .step:first-child > svg { bottom: calc(var(--control) / 2 - 0.5cap); }
+  .pm > .step:last-child > svg { top: calc(var(--control) / 2 - 0.5cap); }
+  .pm > .step:hover, .numbox.changed > input, .numbox.changed .step { color: var(--ink); }
   @media (min-width: 861px) {
     /* wide: the box in the first two columns, as high as the rows beside it; the rows in the other four, each one
        line: label · slider · the number box */
@@ -780,19 +794,26 @@
      under the other. No slider: the button is dragged instead. */
   .tag.value { display: flex; justify-content: space-between; align-items: baseline; gap: var(--u3); width: var(--value-pop); }
   .tag.value .figure { color: var(--grey); font: 400 var(--t-xs)/1 var(--mono); }
-  /* the number popup (#249): the number's row, stacked — name · slider · value in a pill · round − and + — in a frame */
-  .numpop { position: fixed; z-index: 30; translate: -50% 0; width: var(--num-pop); padding: var(--u3); border: var(--thick) solid var(--grey); border-radius: var(--num-pop-round); background: var(--num-pop-ground); color: var(--ink); --row-rule: transparent; --surface: var(--num-pop-ground); }
-  .numpop.sheet { inset: auto 0 0 0; translate: none; width: auto; padding: var(--u4) var(--margin) calc(var(--u4) + env(safe-area-inset-bottom)); border-width: var(--thick) 0 0; border-radius: var(--num-pop-round) var(--num-pop-round) 0 0; }      /* a phone: a sheet over the drawer, the dial in view */
-  .numpop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--u3); min-height: 0; padding: 0; }
+  /* the number popup (#249): the number's row as a square of three pills a finger high — the slider in a pill, the
+     value in a pill, − and + one pill split in two — in a frame whose corners are a pill's round plus the room round
+     the pills, so they run parallel (4.45.2, Okay, on 4.45: "three pills inside a square … plus minus roundness + some
+     offset to draw the square"). No name: the row it opens from says it ("forget the label"); a row with a menu keeps
+     its menu, over the pills. */
+  .numpop { position: fixed; z-index: 30; translate: -50% 0; width: var(--num-pop); padding: var(--pop-pad); border: var(--thick) solid var(--grey); border-radius: var(--num-pop-round); background: var(--num-pop-ground); color: var(--ink); --row-rule: transparent; --surface: var(--num-pop-ground); }
+  .numpop.sheet { inset: auto 0 0 0; translate: none; width: auto; padding: var(--pop-pad) var(--margin) calc(var(--pop-pad) + env(safe-area-inset-bottom)); border-width: var(--thick) 0 0; border-radius: var(--num-pop-round) var(--num-pop-round) 0 0; }      /* a phone: a sheet over the drawer, the dial in view */
+  .numpop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--pop-gap); min-height: 0; padding: 0; }
   .numpop .row > *, .numpop .row.txt > input { grid-column: 1; }
-  .numpop .row :is(label, .menulabel) { display: flex; justify-content: center; align-items: center; gap: var(--u1); color: var(--ink); font: 600 var(--t-s)/1.3 var(--sans); }
+  .numpop .row > label { display: none; }
+  .numpop .row .menulabel { display: flex; justify-content: center; align-items: center; gap: var(--u1); color: var(--ink); font: 600 var(--t-s)/1.3 var(--sans); }
   .numpop .row .menulabel > label { color: var(--ink); font: inherit; }
-  .numpop .row input[type="range"] { width: 100%; height: var(--num-pop-thumb); }
+  .numpop .row input[type="range"] { width: 100%; height: var(--num-pop-pill); padding: 0 calc((var(--num-pop-pill) - var(--num-pop-thumb)) / 2 - var(--hair)); border: var(--hair) solid var(--rule); border-radius: calc(var(--num-pop-pill) / 2); background: var(--field); }      /* the thumb as far from the pill's ends as from its top and bottom */
   .numpop .row input[type="range"]::-webkit-slider-thumb { width: calc(1.5 * var(--num-pop-thumb)); height: var(--num-pop-thumb); margin-top: calc((var(--track) - var(--num-pop-thumb)) / 2); border-radius: calc(var(--num-pop-thumb) / 2); }
   .numpop .row input[type="range"]::-moz-range-thumb { width: calc(1.5 * var(--num-pop-thumb)); height: var(--num-pop-thumb); border-radius: calc(var(--num-pop-thumb) / 2); }
-  .numpop .row input[type="text"] { justify-self: center; width: calc(2 * var(--col)); height: var(--control); border-radius: var(--num-pop-round); text-align: center; }
-  .numpop .row .steps { display: flex; justify-content: center; gap: var(--u4); }
-  .numpop .row .steps > .step { flex: none; width: var(--control); height: var(--control); padding: 0; border: var(--hair) solid var(--ink); border-radius: 50%; }
+  .numpop .row input[type="text"] { width: 100%; height: var(--num-pop-pill); border-radius: calc(var(--num-pop-pill) / 2); font-size: var(--t-num-pop); text-align: center; }
+  .numpop .row .steps { display: flex; height: var(--num-pop-pill); }
+  .numpop .row .steps > .step { flex: 1; display: grid; place-items: center; height: 100%; padding: 0; border: var(--hair) solid var(--rule); background: var(--field); }
+  .numpop .row .steps > .step:first-child { border-radius: calc(var(--num-pop-pill) / 2) 0 0 calc(var(--num-pop-pill) / 2); }
+  .numpop .row .steps > .step:last-child { border-radius: 0 calc(var(--num-pop-pill) / 2) calc(var(--num-pop-pill) / 2) 0; border-left: 0; }      /* one hairline between them */
   /* a number's name opens its popup; pressed and moved sideways it changes the value (#249, #170) */
   .popname { cursor: ew-resize; }
   .popname:hover { text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: var(--u1); }
@@ -5771,7 +5792,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.45.1";
+var VERSION = "beta 4.45.2";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -7966,6 +7987,10 @@ var SIGNS = {
   copy: `<rect x="5.75" y="5.75" width="7.5" height="7.5"/><path d="M10.25 5.75V2.75H2.75V10.25H5.75"/>`,
   sheet: `<path d="M4.25 2.75H9.25L12.25 5.75V13.25H4.25ZM9.25 2.75V5.75H12.25"/>`
 };
+var TINY = {
+  plus: icon(`<path d="M3 0.625V5.375M0.625 3H5.375" ${sw(DENSE)}/>`, 6),
+  minus: icon(`<path d="M0.625 0.625H5.375" ${sw(DENSE)}/>`, 6, 1.25)
+};
 var C = 17.25;
 var SECTION_ICONS = {
   // a dial: the plate and its centre hole (Okay's drawing, 14 Oct 2026, after the guilloché rings: "Dial → a circle
@@ -8321,6 +8346,13 @@ var ROWS = {
     num2("fill", "Fill % of step", 1, 100, 1, { show: kind_in("band") }),
     hdr("Nudge one numeral", { folded: true, show: numerals_only }),
     custom("nudge", { show: numerals_only }),
+    // which numeral, and Reset this numeral
+    // its four adjusters, number rows on the numeral chosen above (Okay's notes, p. 6–7, #252, beta 4.45.2: "every
+    // adjuster gets ±; angle and radius get sliders"): each a full row, its name opening the popup (#249)
+    num2("dr", "Radius \xB1", -3, 3, 0.05, { scope: "nudge" }),
+    num2("da", "Angle \xB1 \xB0", -30, 30, 0.1, { scope: "nudge" }),
+    num2("rot", "Rotate \xB0", -180, 180, 1, { scope: "nudge" }),
+    num2("s", "Size \xD7", 0.2, 3, 0.01, { scope: "nudge" }),
     hdr("Type", { folded: true, show: numerals_only }),
     custom("font", { show: numerals_only })
   ],
@@ -8379,9 +8411,11 @@ var ROWS = {
     // where it is and how big come first, right under the tick (Okay, 13 Oct 2026); a pane of their own, Place and size, until beta 4.22
     custom("window_at", { ...W, show: win_on, text: "Position" }),
     num2("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
-    num2("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("rectangle", "arch", "arc") }),
+    custom("window_size", { ...W, show: shape_is("rectangle", "arc") }),
+    // width and height on one line (#265)
+    num2("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("arch"), id: "window-w-Width-arch" }),
+    // its own id: the line above has window-w-Width
     num2("w", "\xD8", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
-    num2("h", "Height", 0.5, 5, 0.05, { ...W, show: shape_is("rectangle", "arc") }),
     pick("kind", "Shows", WINDOW_KINDS, PICS.window, { ...W, show: win_on }),
     txt("text", "Text", { ...W, show: win_is("date", "day") }),
     custom("font", { ...W, show: win_is("date", "day") }),
@@ -8456,8 +8490,9 @@ function parse_number(text, current) {
   let out = s[0] === "+" ? current + v : s[0] === "x" || s[0] === "*" ? current * v : s[0] === "/" ? current / v : parseFloat(s);
   return Number.isFinite(out) ? out : current;
 }
-var LENGTH_KEYS = { ring: RING_MM, hand: HAND_MM, window: WINDOW_MM, global: ["dial_d", "margin", "ha_cap", "dial_hole", "sh_hour", "sh_minute", "sh_second", "sh_cap", "sh_disc"] };
+var LENGTH_KEYS = { ring: RING_MM, hand: HAND_MM, window: WINDOW_MM, global: ["dial_d", "margin", "ha_cap", "dial_hole", "sh_hour", "sh_minute", "sh_second", "sh_cap", "sh_disc"], nudge: ["dr"] };
 var label_of = (row, T) => row.menu ? `${(row.menu.items.find(([v]) => v === (T[row.menu.key] ?? 0)) || row.menu.items[0])[1]} ${row.text.split(" ").pop()}` : row.text;
+var NUDGE_NEUTRAL = { dr: 0, da: 0, rot: 0, s: 1 };
 var is_length = (row) => row.kind === "num" && (LENGTH_KEYS[row.scope] || []).includes(row.key);
 var decimals = (step) => (String(step).split(".")[1] || "").length;
 var fmt = (v, step) => (+v).toFixed(Math.max(decimals(step), 0));
@@ -8628,9 +8663,17 @@ var DialTool = class _DialTool {
     return windows_of(this.S)[this.S.ui_window];
   }
   target(scope) {
-    return scope === "ring" ? this.ring() : scope === "hand" ? this.hand() : scope === "window" ? this.window() : this.S;
+    return scope === "ring" ? this.ring() : scope === "hand" ? this.hand() : scope === "window" ? this.window() : scope === "nudge" ? { ...NUDGE_NEUTRAL, ...this.ring().nudge[this.nudge_at] || {} } : this.S;
   }
   set_value(scope, key, value) {
+    if (scope === "nudge") {
+      const R = this.ring(), n = { ...R.nudge[this.nudge_at] || {} }, all = { ...R.nudge };
+      if (Math.abs(value - NUDGE_NEUTRAL[key]) < 1e-9) delete n[key];
+      else n[key] = +(+value).toFixed(4);
+      if (Object.keys(n).length) all[this.nudge_at] = n;
+      else delete all[this.nudge_at];
+      return this.set_value("ring", "nudge", all);
+    }
     const T = this.target(scope);
     if (JSON.stringify(T[key]) === JSON.stringify(value)) return;
     if (scope === "global" && key === "dial_d" && this.S.ui_scale && T.dial_d > 0 && value > 0) this.scale_with(T.dial_d, value);
@@ -9982,7 +10025,7 @@ var DialTool = class _DialTool {
     const out = { row, el: wrap, refresh: () => {
     } };
     const set = (v) => this.set_value(row.scope, row.key, v);
-    const id = `${row.scope}-${row.key}-${row.text || row.name}`.replace(/[^A-Za-z0-9]+/g, "-");
+    const id = row.id || `${row.scope}-${row.key}-${row.text || row.name}`.replace(/[^A-Za-z0-9]+/g, "-");
     const active = (e) => document.activeElement === e;
     if (row.kind === "hdr") {
       out.fold = `${SECTIONS[this.S.ui_section]}/${row.text || row.name}`;
@@ -10017,7 +10060,10 @@ var DialTool = class _DialTool {
         return T[row.key] ?? (row.or ? row.or(T) : 0);
       };
       let typing = false;
-      slider.oninput = () => commit(+slider.value);
+      slider.oninput = () => {
+        if (row.inpop || row.scope === "nudge") this.guides_live(row.scope !== "nudge");
+        commit(+slider.value);
+      };
       field.oninput = () => {
         typing = true;
       };
@@ -10036,7 +10082,15 @@ var DialTool = class _DialTool {
           commit(now() + (e.key === "ArrowUp" ? 1 : -1) * row.step * (e.shiftKey ? 10 : 1));
         }
       };
-      const step = (dir) => el("button", { type: "button", className: "step", textContent: dir > 0 ? "+" : "\u2212", tabIndex: -1, onclick: () => commit(now() + dir * row.step) });
+      const step = (dir) => {
+        const b = el("button", { type: "button", className: "step", tabIndex: -1, onclick: () => commit(now() + dir * row.step) });
+        const sign = row.inpop ? icon(dir > 0 ? SIGNS.plus : SIGNS.minus) : row.side ? TINY[dir > 0 ? "plus" : "minus"] : null;
+        if (sign) {
+          b.innerHTML = sign;
+          b.ariaLabel = dir > 0 ? "Plus" : "Minus";
+        } else b.textContent = dir > 0 ? "+" : "\u2212";
+        return b;
+      };
       const label = el("label", { htmlFor: id, textContent: row.text });
       if (row.short) {
         label.textContent = "";
@@ -10063,9 +10117,10 @@ var DialTool = class _DialTool {
         slider.ariaLabel = field.ariaLabel = row.text;
         field.title = row.text + " \xB7 " + field.title;
       }
+      if (row.inpop) slider.ariaLabel = field.ariaLabel = row.text;
       if (!row.inpop && !row.side && !row.bare && !row.button) this.name_opens(label, row);
       if (row.side) {
-        const box2 = el("span", { className: "numbox" }, field, step(-1), step(1));
+        const box2 = el("span", { className: "numbox" }, field, el("span", { className: "pm" }, step(-1), step(1)));
         for (const b of box2.querySelectorAll(".step")) b.onmousedown = (e) => e.preventDefault();
         field.addEventListener("keydown", (e) => {
           if (e.key === "Enter" || e.key === "Escape") field.blur();
@@ -10810,6 +10865,7 @@ var DialTool = class _DialTool {
         b.classList.add("dragging");
       }
       const r = row(), step = r.step * (e.shiftKey ? 0.1 : 1);
+      this.guides_live(r.scope !== "nudge");
       this.set_value(r.scope, r.key, +Math.max(press.v + Math.round(d / 2) * step, r.lo).toFixed(6));
     };
     b.onpointerup = b.onpointercancel = () => {
@@ -10849,6 +10905,7 @@ var DialTool = class _DialTool {
         label.classList.add("dragging");
       }
       const v = press.v + Math.round(d / 2) * row.step * (e.shiftKey ? 0.1 : 1);
+      this.guides_live(row.scope !== "nudge");
       this.set_value(row.scope, row.key, row.whole ? clamp(Math.round(v), row.lo, row.hi) : +Math.max(v, row.lo).toFixed(6));
     };
     label.onpointerup = label.onpointercancel = () => {
@@ -10857,6 +10914,16 @@ var DialTool = class _DialTool {
       label.classList.remove("dragging");
       if (was && !was.moved) this.value_pop_open(label, row);
     };
+  }
+  /** the guides while a number is slid — the popup's slider, a name or a value button dragged — even with Guides off
+   *  (Okay, 16 Oct 2026, on 4.45: "activate guides on slide. Even if off"): as they are set, until a moment after the
+   *  last change (draw). A numeral being nudged hides them instead, whatever slides it (on = false; #252: "when a
+   *  numeral is being nudged hide all guides"). Call before the change, which draws. */
+  guides_live(on = true) {
+    this.guides_at = performance.now();
+    this.guides_on = on;
+    clearTimeout(this.guides_timer);
+    this.guides_timer = setTimeout(() => this.render(), HOLE_LIVE_MS + 50);
   }
   /** the tag: what a wordless button is, said under it while the pointer or the keyboard is on it. One for the whole
    *  tool, laid over everything, so a list that scrolls can't cut it off. A value button's tag is as wide as the
@@ -11226,6 +11293,19 @@ var DialTool = class _DialTool {
     ));
   }
   /** a correction for one numeral: radius ±, angle ±, rotate, size ×. Click a numeral in the preview to pick it. */
+  /** a window's width and height on one line (Okay's notes, p. 20, #265, beta 4.45.2; R15 form B): four cells — a
+   *  name and its quiet number with a compact ±, twice. A press on a name or a number opens its popup, the slider
+   *  there. The two are a side row's parts, each still its own row (build_row), so they do all a number does. */
+  row_window_size(wrap, out) {
+    wrap.className = "row wsize";
+    const parts = [["w", "Width", 8], ["h", "Height", 5]].map(([key, text, hi]) => {
+      const row = { ...num2(key, text, 0.5, hi, 0.05), scope: "window", side: true }, built = this.build_row(row), label = built.el.querySelector("label");
+      this.name_opens(label, row);
+      wrap.append(label, built.el.querySelector(".numbox"));
+      return built;
+    });
+    out.refresh = (W2) => parts.forEach((p) => p.refresh(W2));
+  }
   row_nudge(wrap, out) {
     wrap.className = "nudge";
     const pick2 = el("select", { id: "nudge-pick" });
@@ -11233,29 +11313,8 @@ var DialTool = class _DialTool {
       this.nudge_at = pick2.value;
       this.sync_rows();
     };
-    const fields = {};
-    const line = (key, text, step, neutral) => {
-      const f = el("input", { type: "text", id: "nudge-" + key, inputMode: "decimal" });
-      f.onchange = () => {
-        const R = this.ring(), n = { ...R.nudge[this.nudge_at] || {} };
-        const per = key === "dr" ? this.unit()[2] : 1;
-        const v = parse_number(f.value, (n[key] ?? neutral) * per) / per;
-        if (Math.abs(v - neutral) < 1e-9) delete n[key];
-        else n[key] = +v.toFixed(4);
-        const all = { ...R.nudge };
-        if (Object.keys(n).length) all[this.nudge_at] = n;
-        else delete all[this.nudge_at];
-        this.set_value("ring", "nudge", all);
-      };
-      fields[key] = [f, step, neutral];
-      return el("div", { className: "row txt" }, el("label", { htmlFor: "nudge-" + key, textContent: text }), f);
-    };
     wrap.append(
       el("div", { className: "row pop" }, el("label", { htmlFor: "nudge-pick", textContent: "Numeral" }), pick2),
-      line("dr", "Radius \xB1", 0.05, 0),
-      line("da", "Angle \xB1 \xB0", 0.1, 0),
-      line("rot", "Rotate \xB0", 1, 0),
-      line("s", "Size \xD7", 0.01, 1),
       el("div", { className: "row" }, el("span"), el("button", { type: "button", className: "btn", textContent: "Reset this numeral", onclick: () => {
         const all = { ...this.ring().nudge };
         delete all[this.nudge_at];
@@ -11271,11 +11330,6 @@ var DialTool = class _DialTool {
         pick2.dataset.items = want;
       }
       pick2.value = this.nudge_at;
-      const n = R.nudge[this.nudge_at] || {};
-      for (const key in fields) {
-        const [f, step, neutral] = fields[key];
-        if (document.activeElement !== f) f.value = key === "dr" ? this.in_unit(n[key] ?? neutral, decimals(step / 10)) : fmt(n[key] ?? neutral, step / 10);
-      }
     };
   }
   // ── fonts: the Type group shows the ring's font; the list of all fonts is a sheet of its own ──
@@ -12228,7 +12282,7 @@ var DialTool = class _DialTool {
     let S = this.show ? { ...this.S, guides: false, ha_on: this.S.ha_on && !this.show.nohands } : this.S;
     if (!this.show && this.hole_at && performance.now() - this.hole_at < HOLE_LIVE_MS) {
       S = S.guides ? { ...S, gd_hole_live: true } : { ...S, guides: true, gd_hole_live: true, gd_axes: false, gd_rings: false, gd_sel: false, gd_wins: false, gd_wsel: false, gd_more: [] };
-    }
+    } else if (!this.show && this.guides_at && performance.now() - this.guides_at < HOLE_LIVE_MS) S = { ...S, guides: this.guides_on };
     const day = shows_day(S) ? day_hour(S) : null;
     if (day !== this.day_drawn) {
       this.day_drawn = day;

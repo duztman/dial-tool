@@ -1,5 +1,17 @@
 # Dial Tool — changelog
 
+## beta 4.45.2 (web version) · 16 Oct 2026
+
+- **The number popup, a square** (#249, #304; Okay, on 4.45: "everything bigger … three pills inside a square … plus minus roundness + some offset to draw the square"):
+  - three pills 44 px high (a finger's size), 12 px apart: the slider, the value (at 20 px), and − and + as one pill split in two, with the shared plus and minus signs;
+  - 16 px round them, inside the 2 px frame: 192 × 192;
+  - its corners 40 px, a pill's round (22) plus the room (16) and the frame (2), so they run parallel to the pills';
+  - no name: the row it opens from already says it ("forget the label"). A row with a menu keeps its menu, over the pills.
+- **Guides while sliding** (Okay: "activate guides on slide. Even if off"): sliding in the popup, or dragging a name or a value button, shows the guides as they are set, even with Guides off, until 1.2 s after the last change, as the centre hole's guide does. A numeral being nudged hides them instead (#252: "when a numeral is being nudged hide all guides").
+- **The tiny ± on the figures** (#250; Okay: "Compact minusplus too far apart, closer, parallels on baseline ascender, plus's top pushes past"): the plus's top on the top of the number's figures, the minus on their baseline. They are drawn signs now (6 points, `DENSE`), not typed characters. Each still answers to half the number's height.
+- **Nudge's adjusters** (#252): Radius ±, Angle ± °, Rotate ° and Size × are number rows on the chosen numeral: a slider, the value, ±, and the popup from their names. A neutral value (0, or ×1) is not kept.
+- **A window's width and height on one line** (#265, R15 form B): W and H, two quiet numbers whose names open their popups. The arch keeps its one Width row.
+
 ## beta 4.45.1 (web version) · 16 Oct 2026
 
 - **The hand rows, quiet** (#250; Okay's notes, p. 18):

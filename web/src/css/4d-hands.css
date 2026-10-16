@@ -16,15 +16,23 @@
   .pickt.own:hover { background: var(--field); }
   .pickt.more[aria-expanded="true"] svg { rotate: 180deg; }
   /* a side row's number, quiet (#250, beta 4.45.1): the number and, joined to it, a tiny plus over a tiny minus; no
-     box; grey until it differs from how the dial opened (.changed, build_row). A press on it opens its popup. */
+     box; grey until it differs from how the dial opened (.changed, build_row). A press on it opens its popup.
+     The two signs stand on the figures (4.45.2, Okay: "Compact minusplus too far apart, closer, parallels on baseline
+     ascender"): .pm is a band a capital high (1cap), its foot on the number's baseline (the box lines its parts up
+     on their baselines, and a band with nothing in flow has its baseline at its foot); the plus's top on the band's
+     top, the minus on its foot. Each sign's button reaches half a control from the band's middle, up for the plus,
+     down for the minus, so it is as easy to hit as before. */
   .row.side { position: relative; }
-  .numbox { position: absolute; right: 0; top: 50%; translate: 0 -50%; display: grid; grid-template: "f p" 1fr "f m" 1fr / minmax(0, 1fr) var(--side-tiny); width: var(--side-num); height: var(--control); }
-  .numbox > input { grid-area: f; width: 100%; min-width: 0; height: 100%; padding: 0 var(--u1) 0 0; border: 0; background: none; color: var(--grey); text-align: right; cursor: pointer; }
-  .numbox > .step { min-width: 0; height: auto; padding: 0; border: 0; background: none; color: var(--grey); font-size: var(--t-xs); line-height: 1; }
-  .numbox > .step:nth-of-type(1) { grid-area: m; }
-  .numbox > .step:nth-of-type(2) { grid-area: p; }
-  .numbox > .step:hover { background: var(--hover); color: var(--ink); }
-  .numbox.changed > :is(input, .step) { color: var(--ink); }
+  .numbox { position: absolute; right: 0; top: 50%; translate: 0 -50%; display: flex; align-items: baseline; width: var(--side-num); height: var(--control); }
+  .numbox > input { flex: 1 1 0; width: 100%; min-width: 0; height: 100%; padding: 0 var(--u1) 0 0; border: 0; background: none; color: var(--grey); text-align: right; cursor: pointer; }
+  .numbox > .pm { flex: none; position: relative; width: var(--side-tiny); height: 1cap; }
+  .pm > .step { position: absolute; left: 0; right: 0; min-width: 0; height: auto; padding: 0; border: 0; background: none; color: var(--grey); }
+  .pm > .step:first-child { top: 50%; bottom: calc(50% - var(--control) / 2); }      /* the minus */
+  .pm > .step:last-child { top: calc(50% - var(--control) / 2); bottom: 50%; }      /* the plus */
+  .pm > .step > svg { position: absolute; inset-inline: 0; margin-inline: auto; }
+  .pm > .step:first-child > svg { bottom: calc(var(--control) / 2 - 0.5cap); }
+  .pm > .step:last-child > svg { top: calc(var(--control) / 2 - 0.5cap); }
+  .pm > .step:hover, .numbox.changed > input, .numbox.changed .step { color: var(--ink); }
   @media (min-width: 861px) {
     /* wide: the box in the first two columns, as high as the rows beside it; the rows in the other four, each one
        line: label · slider · the number box */

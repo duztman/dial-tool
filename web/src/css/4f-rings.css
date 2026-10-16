@@ -97,19 +97,26 @@
      under the other. No slider: the button is dragged instead. */
   .tag.value { display: flex; justify-content: space-between; align-items: baseline; gap: var(--u3); width: var(--value-pop); }
   .tag.value .figure { color: var(--grey); font: 400 var(--t-xs)/1 var(--mono); }
-  /* the number popup (#249): the number's row, stacked — name · slider · value in a pill · round − and + — in a frame */
-  .numpop { position: fixed; z-index: 30; translate: -50% 0; width: var(--num-pop); padding: var(--u3); border: var(--thick) solid var(--grey); border-radius: var(--num-pop-round); background: var(--num-pop-ground); color: var(--ink); --row-rule: transparent; --surface: var(--num-pop-ground); }
-  .numpop.sheet { inset: auto 0 0 0; translate: none; width: auto; padding: var(--u4) var(--margin) calc(var(--u4) + env(safe-area-inset-bottom)); border-width: var(--thick) 0 0; border-radius: var(--num-pop-round) var(--num-pop-round) 0 0; }      /* a phone: a sheet over the drawer, the dial in view */
-  .numpop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--u3); min-height: 0; padding: 0; }
+  /* the number popup (#249): the number's row as a square of three pills a finger high — the slider in a pill, the
+     value in a pill, − and + one pill split in two — in a frame whose corners are a pill's round plus the room round
+     the pills, so they run parallel (4.45.2, Okay, on 4.45: "three pills inside a square … plus minus roundness + some
+     offset to draw the square"). No name: the row it opens from says it ("forget the label"); a row with a menu keeps
+     its menu, over the pills. */
+  .numpop { position: fixed; z-index: 30; translate: -50% 0; width: var(--num-pop); padding: var(--pop-pad); border: var(--thick) solid var(--grey); border-radius: var(--num-pop-round); background: var(--num-pop-ground); color: var(--ink); --row-rule: transparent; --surface: var(--num-pop-ground); }
+  .numpop.sheet { inset: auto 0 0 0; translate: none; width: auto; padding: var(--pop-pad) var(--margin) calc(var(--pop-pad) + env(safe-area-inset-bottom)); border-width: var(--thick) 0 0; border-radius: var(--num-pop-round) var(--num-pop-round) 0 0; }      /* a phone: a sheet over the drawer, the dial in view */
+  .numpop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--pop-gap); min-height: 0; padding: 0; }
   .numpop .row > *, .numpop .row.txt > input { grid-column: 1; }
-  .numpop .row :is(label, .menulabel) { display: flex; justify-content: center; align-items: center; gap: var(--u1); color: var(--ink); font: 600 var(--t-s)/1.3 var(--sans); }
+  .numpop .row > label { display: none; }
+  .numpop .row .menulabel { display: flex; justify-content: center; align-items: center; gap: var(--u1); color: var(--ink); font: 600 var(--t-s)/1.3 var(--sans); }
   .numpop .row .menulabel > label { color: var(--ink); font: inherit; }
-  .numpop .row input[type="range"] { width: 100%; height: var(--num-pop-thumb); }
+  .numpop .row input[type="range"] { width: 100%; height: var(--num-pop-pill); padding: 0 calc((var(--num-pop-pill) - var(--num-pop-thumb)) / 2 - var(--hair)); border: var(--hair) solid var(--rule); border-radius: calc(var(--num-pop-pill) / 2); background: var(--field); }      /* the thumb as far from the pill's ends as from its top and bottom */
   .numpop .row input[type="range"]::-webkit-slider-thumb { width: calc(1.5 * var(--num-pop-thumb)); height: var(--num-pop-thumb); margin-top: calc((var(--track) - var(--num-pop-thumb)) / 2); border-radius: calc(var(--num-pop-thumb) / 2); }
   .numpop .row input[type="range"]::-moz-range-thumb { width: calc(1.5 * var(--num-pop-thumb)); height: var(--num-pop-thumb); border-radius: calc(var(--num-pop-thumb) / 2); }
-  .numpop .row input[type="text"] { justify-self: center; width: calc(2 * var(--col)); height: var(--control); border-radius: var(--num-pop-round); text-align: center; }
-  .numpop .row .steps { display: flex; justify-content: center; gap: var(--u4); }
-  .numpop .row .steps > .step { flex: none; width: var(--control); height: var(--control); padding: 0; border: var(--hair) solid var(--ink); border-radius: 50%; }
+  .numpop .row input[type="text"] { width: 100%; height: var(--num-pop-pill); border-radius: calc(var(--num-pop-pill) / 2); font-size: var(--t-num-pop); text-align: center; }
+  .numpop .row .steps { display: flex; height: var(--num-pop-pill); }
+  .numpop .row .steps > .step { flex: 1; display: grid; place-items: center; height: 100%; padding: 0; border: var(--hair) solid var(--rule); background: var(--field); }
+  .numpop .row .steps > .step:first-child { border-radius: calc(var(--num-pop-pill) / 2) 0 0 calc(var(--num-pop-pill) / 2); }
+  .numpop .row .steps > .step:last-child { border-radius: 0 calc(var(--num-pop-pill) / 2) calc(var(--num-pop-pill) / 2) 0; border-left: 0; }      /* one hairline between them */
   /* a number's name opens its popup; pressed and moved sideways it changes the value (#249, #170) */
   .popname { cursor: ew-resize; }
   .popname:hover { text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: var(--u1); }
