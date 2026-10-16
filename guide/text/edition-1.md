@@ -23,7 +23,7 @@ The rest of the guide leans on them.
 
 **Watch: kept.** While time is playing nothing is kept; the dial is kept once you stop it. <!-- check: B1p -->
 
-**Note: together** The First dial (page 05), as the tool draws it.
+**Note: together** The First dial (page 05): the tool opens with it.
 
 **Note: exploded** Exploded, not to scale, top to bottom. A row's two numbers are its size and radius.
 
@@ -87,6 +87,8 @@ Pictures from an iPad held landscape; a Mac is the same with more room.
 **Typing numbers.** A number field takes sums: 1.2 sets, +0.5 adds, x0.5 multiplies, /2 divides. <!-- check: B15 -->
 
 **Gallery and mm.** Both are drawn light, but they are live: a press works.
+
+**Reset.** The pill at the dial's foot: the First dial back, every setting; undo goes back. <!-- check: B33 -->
 
 ## 03 · A ring, close up
 
@@ -194,7 +196,7 @@ The file is shown here at its true size.
 **Lead:** Questions readers asked, and where the answer is.
 Each answer was checked on the version named at the top.
 
-**I want to start fresh.** Export › Settings file › Defaults, or any dial in the Gallery. Either replaces your dial; ⌘Z brings it back. <!-- check: B3 --> <!-- check: B23 --> There is no empty dial yet.
+**I want to start fresh.** Reset, at the foot of the dial, brings back the First dial. <!-- check: B33 --> Export › Settings file › Defaults gives the plain starting dial, and the Gallery other dials. Each replaces your dial; ⌘Z brings it back. <!-- check: B3 --> <!-- check: B23 --> There is no empty dial yet.
 
 **Where do colours live?** Every colour on the dial is in one list: Dial › Colours, a chip beside each name. A ring's own colour is also in its drawer; a hand's colour is in its pane.
 

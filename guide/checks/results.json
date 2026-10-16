@@ -1,6 +1,6 @@
 {
- "when": "2026-10-15T10:17:18.334Z",
- "version": "beta 4.41.23",
+ "when": "2026-10-16T07:28:50.246Z",
+ "version": "beta 4.41.24",
  "results": {
   "B1": {
    "ok": true,
@@ -8,7 +8,7 @@
   },
   "B1p": {
    "ok": true,
-   "note": "while playing another tab saw 19.1; after stopping 25.0"
+   "note": "while playing another tab saw 34.0; after stopping 25.0"
   },
   "B2": {
    "ok": true,
@@ -16,7 +16,7 @@
   },
   "B3": {
    "ok": true,
-   "note": "19.1 → Defaults 30.0 → undo 19.1"
+   "note": "34.0 → Defaults 30.0 → undo 34.0"
   },
   "B4": {
    "ok": true,
@@ -40,7 +40,7 @@
   },
   "B10": {
    "ok": true,
-   "note": "page 36 mm, file dial-30mm-2026-10-15.svg"
+   "note": "page 36 mm, file dial-30mm-2026-10-16.svg"
   },
   "B11": {
    "ok": true,
@@ -56,7 +56,7 @@
   },
   "B13": {
    "ok": true,
-   "note": "dial-30mm-mirrored-2026-10-15.svg"
+   "note": "dial-30mm-mirrored-2026-10-16.svg"
   },
   "B14": {
    "ok": true,
@@ -88,7 +88,7 @@
   },
   "B23": {
    "ok": true,
-   "note": "19.1 → Field 30.0 → undo 19.1"
+   "note": "34.0 → Field 30.0 → undo 34.0"
   },
   "B24": {
    "ok": true,
@@ -129,6 +129,10 @@
   "B32": {
    "ok": true,
    "note": "new tab https://duztman.github.io/dial-tool/guide/; the tool still open: true"
+  },
+  "B33": {
+   "ok": true,
+   "note": "opens with Numerals · Markers · Minute ticks · 34; 25 → Reset 34.0 → undo 25.0"
   }
  }
 }

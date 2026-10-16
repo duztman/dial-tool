@@ -310,11 +310,11 @@ const pages = [];
   down(union(Wr.zoom, Wr.fit), "zoom", "l", 34, 3, Wr.zoom[0] + Wr.zoom[2] / 2);
   h += leaders(L);
   // the three small blocks, under the labels at left
-  const sb = { x: X(1), y: Y(10), w: img.x - 7 - X(1), h: H(3), bottom: Y(12) + ROW };
-  h += block(sb, text(t, "Typing numbers"), { small: true, flow: "s", bottom: sb.bottom }) + block(sb, text(t, "Gallery and mm"), { small: true, flow: "s", bottom: sb.bottom });
+  const sb = { x: X(1), y: Y(10), w: img.x - 7 - X(1), h: H(3), bottom: Y(12) + ROW + 0.5 };
+  h += block(sb, text(t, "Typing numbers"), { small: true, flow: "s", bottom: sb.bottom }) + block(sb, text(t, "Gallery and mm"), { small: true, flow: "s", bottom: sb.bottom }) + block(sb, text(t, "Reset"), { small: true, flow: "s", bottom: sb.bottom });
   pages.push(page(P, h));
   fl_fig(img, FL, "", {});
-  for (const k of ["Typing numbers", "Gallery and mm"]) fl_block(text(t, k));
+  for (const k of ["Typing numbers", "Gallery and mm", "Reset"]) fl_block(text(t, k));
 }
 
 // ════════════════════════ 03 · A ring, close up ════════════════════════

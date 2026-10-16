@@ -330,6 +330,16 @@ Object.assign(CHECKS, {
     await tab2.waitForLoadState(); const url = tab2.url(), title = await tab2.title(), stays = await page.getByRole("heading", { name: "Dial Tool" }).isVisible(); await context.close();
     return { ok: url === "https://duztman.github.io/dial-tool/guide/" && title === "Dial Tool guide" && stays, note: `new tab ${url}; the tool still open: ${stays}` };
   },
+  async B33() {       // a first visit opens with the First dial; Reset, at the foot of the dial, brings it back, every setting; undo goes back
+    const { page, type, value, context } = await fresh();
+    const opens = await page.evaluate(() => window.dial_tool.S.rings.map((r) => r.name).join(" · ") + " · " + window.dial_tool.S.dial_d);
+    await type("Diameter", 25); await page.waitForTimeout(700);
+    await page.getByRole("button", { name: "Reset to the opener" }).click(); await page.waitForTimeout(500);
+    const reset = await value("Diameter");
+    await page.getByRole("button", { name: /^Undo/ }).click(); await page.waitForTimeout(500);
+    const undone = await value("Diameter"); await context.close();
+    return { ok: opens === "Numerals · Markers · Minute ticks · 34" && reset.startsWith("34") && undone.startsWith("25"), note: `opens with ${opens}; 25 → Reset ${reset} → undo ${undone}` };
+  },
 });
 
 const results = {};
