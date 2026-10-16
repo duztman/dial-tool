@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.42 | 16 Oct 2026 | web | [`b59a092`](https://github.com/duztman/dial-tool/tree/b59a09243a8f64b75d9fb4840a0a849cfb066ab1) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/b59a09243a8f64b75d9fb4840a0a849cfb066ab1/web/dial-tool.html) | beta 4.42: phase A, the specials block (#290) |
 | 4.41.25 | 16 Oct 2026 | web | [`5066e14`](https://github.com/duztman/dial-tool/tree/5066e14a979eff80b5c4a27667365b91dd79af64) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/5066e14a979eff80b5c4a27667365b91dd79af64/web/dial-tool.html) | beta 4.41.25: Reset in the Dial tab, with a warning |
 | 4.41.24 | 16 Oct 2026 | web | [`968a2dd`](https://github.com/duztman/dial-tool/tree/968a2ddd054e841b13a8fcf0e211ae687f5019fb) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/968a2ddd054e841b13a8fcf0e211ae687f5019fb/web/dial-tool.html) | beta 4.41.24: the guide's First dial opens the tool; Reset under the dial |
 | 4.41.23 | 15 Oct 2026 | web | [`2802e1b`](https://github.com/duztman/dial-tool/tree/2802e1b903aac4cf33727b5e3f1acea1c675a06b) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/2802e1b903aac4cf33727b5e3f1acea1c675a06b/web/dial-tool.html) | beta 4.41.23: Help beside the version opens the guide |
