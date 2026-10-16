@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.46.4 | 16 Oct 2026 | web | [`7815cc7`](https://github.com/duztman/dial-tool/tree/7815cc771536fdd7b07b922db96d58e470cf8fe1) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/7815cc771536fdd7b07b922db96d58e470cf8fe1/web/dial-tool.html) | Show box darker; the hand's shapes as a framed row; the box fits its rows |
 | 4.46.3 | 16 Oct 2026 | web | [`dbf43fc`](https://github.com/duztman/dial-tool/tree/dbf43fc06f965ecabaa593b9bc2ad40fed687da6) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/dbf43fc06f965ecabaa593b9bc2ad40fed687da6/web/dial-tool.html) | a hand's shapes under its box |
 | 4.46.2 | 16 Oct 2026 | web | [`816631f`](https://github.com/duztman/dial-tool/tree/816631f28f7f88612e342da80e3f2390f19dea1d) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/816631f28f7f88612e342da80e3f2390f19dea1d/web/dial-tool.html) | the Show box under its tab; headings with controls; the hand's page aligned |
 | 4.46.1 | 16 Oct 2026 | web | [`f231d85`](https://github.com/duztman/dial-tool/tree/f231d8556623cfddde0392739322c8c49fa697d1) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/f231d8556623cfddde0392739322c8c49fa697d1/web/dial-tool.html) | the Windows page reordered; touch blocks; no keyboard on a popup |
