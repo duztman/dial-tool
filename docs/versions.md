@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.45 | 16 Oct 2026 | web | [`d32fde1`](https://github.com/duztman/dial-tool/tree/d32fde15189f5633737a395424a692c424023904) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/d32fde15189f5633737a395424a692c424023904/web/dial-tool.html) | The number popup: from value buttons, a row's name, the guides' Thickness; Reset All asks first |
 | 4.44.6 | 16 Oct 2026 | web | [`c08985c`](https://github.com/duztman/dial-tool/tree/c08985cf17a5e598d19aa6dd9c8c44367f54117e) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/c08985cf17a5e598d19aa6dd9c8c44367f54117e/web/dial-tool.html) | The time larger, its colons roomier, AM · PM attached at its size |
 | 4.44.5 | 16 Oct 2026 | web | [`6d593d0`](https://github.com/duztman/dial-tool/tree/6d593d063cb63212a8ba1cd6bff67702bb087106) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/6d593d063cb63212a8ba1cd6bff67702bb087106/web/dial-tool.html) | A dot at 1× on the speed line; the play pulse up to six a second |
 | 4.44.4 | 16 Oct 2026 | web | [`f0607cf`](https://github.com/duztman/dial-tool/tree/f0607cfab9736fcdbbf4d7bcb2af9074e47444c3) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/f0607cfab9736fcdbbf4d7bcb2af9074e47444c3/web/dial-tool.html) | The unit box done: 4 px round mm, one height; its menu over the rows |
