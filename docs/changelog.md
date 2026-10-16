@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.44.2 (web version) · 16 Oct 2026
+
+- **Reset's button stands flush left with its warning** (Okay: "reset button flush left with explaner text"), on the heading line where the warning starts, the controls' column. It was at the line's right (#269).
+- **The Shadows sign: the ball sunk 2 px into its shadow** (Okay: "Shadow's ball sinks 2px down into its shadow"). The ball stands in front, its disc cut out of the shadow, which shows to its right and under it. It touched the shadow from 4.42.4.
+
 ## beta 4.44.1 (web version) · 16 Oct 2026
 
 - **The unit box, third look** (#302; Okay: "mm button sucks … use mono, abort silkscreen, border and letters should match, small"; then "Not system font, something universal … match the box please, and mm lowercase"):

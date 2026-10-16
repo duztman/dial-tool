@@ -251,8 +251,8 @@ const TOOL_ICONS = {
   // (CURVE, centre on a quarter, radius on a half); the shade and the shadow are filled, their ends on half points
   // 15 Oct, 02:42: mirrored (lit from the upper left, the shadow cast to the right) and its outline DENSE, as Guides',
   // the sign beside it on 18 ("ball stroke thickness too much… look at similar size icons, guides and such")
-  shadows: `<circle cx="7.25" cy="7.75" r="5.5" ${sw(DENSE)}/><path d="M4.5 12.5A5.5 5.5 0 0 0 12 5A8 8 0 0 1 4.5 12.5Z" fill="currentColor" stroke="none"/>`
-    + `<path d="M16.75 15A5.625 1.25 0 0 1 5.5 15A5.625 1.25 0 0 1 16.75 15Z" fill="currentColor" stroke="none"/>`,      // the shadow up to the ball, ends still on half points (Okay, 16 Oct 2026: "Shadow moves up and touches the ball"; 15.5 until then, 0.62 apart, now 0.13)
+  shadows: `<circle cx="7.25" cy="9.75" r="5.5" ${sw(DENSE)}/><path d="M4.5 14.5A5.5 5.5 0 0 0 12 7A8 8 0 0 1 4.5 14.5Z" fill="currentColor" stroke="none"/>`
+    + `<path d="M11.88 13.76A5.625 1.25 0 0 1 16.75 15A5.625 1.25 0 0 1 7.1 15.87A6.125 6.125 0 0 0 11.88 13.76Z" fill="currentColor" stroke="none"/>`,      // the ball sunk 2 into its shadow (Okay, 16 Oct 2026, on 4.44: "Shadow's ball sinks 2px down into its shadow"; it touched it from 4.42.4): the shadow the same ellipse (11.125 15, 5.625 × 1.25), the ball's disc (to its line's outer edge, 6.125) cut out of it — it stands in front. The two meeting points are where ellipse and edge cross, to a hundredth
   // Okay's own mark, on 16 in the panel's first column (15 Oct 2026, 02:42: "my personal logo. Draw this like an
   // icon"): a ring; a 45° diagonal from ring to ring; through its crossing with them a level line to the right and an
   // upright one down; a cell between them (3.5 × 4, as in his drawing); a 45° slant from the cell's corner to the

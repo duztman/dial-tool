@@ -1421,7 +1421,7 @@ await other.context().close();
   const colours = await p.evaluate(() => { const pane = [...document.querySelectorAll(".form .pane")].find((x) => x.querySelector("h2").textContent.trim() === "Colours"); return [pane.querySelectorAll(".fold .summary .dot.tiny").length, window.dial_tool.dial_colours(false).length]; });
   const reset_shut = await p.isHidden("#reset");
   await p.click('.form .pane:has(#reset) .fold'); await p.waitForTimeout(300);
-  const reset_open = await p.evaluate(() => { const b = document.getElementById("reset").getBoundingClientRect(), f = document.querySelector(".form .pane:has(#reset) .fold").getBoundingClientRect(); return [b.height > 0 && b.top >= f.top && b.bottom <= f.bottom, Math.round(f.right - b.right)]; });
+  const reset_open = await p.evaluate(() => { const b = document.getElementById("reset").getBoundingClientRect(), f = document.querySelector(".form .pane:has(#reset) .fold").getBoundingClientRect(); return [b.height > 0 && b.top >= f.top && b.bottom <= f.bottom, Math.round(document.getElementById("reset-warning").getBoundingClientRect().left - b.left)]; });
   await p.click('button[data-tab="Rings"]'); await p.waitForTimeout(200);
   await p.evaluate(() => [...document.querySelectorAll(".form .pane")].find((x) => x.querySelector("h2").textContent.trim() === "Numerals").querySelector(".fold").click()); await p.waitForTimeout(300);
   await p.selectOption("#ring-labels-Labels", { label: "Custom" }); await p.waitForTimeout(300);
@@ -1437,8 +1437,8 @@ await other.context().close();
   const plain = await p.evaluate(() => location.hash);
   if (!(copy_folded && defaults[0] === 34 && defaults[1] === "Numerals · Markers · Minute ticks" && plain.length < 12)) wrong.push(`Export: copy on the folded line ${copy_folded}, Defaults ${defaults.join(" ")}, Plain dial ${plain}`);
   await fresh.close();
-  check(!wrong.length && colours[0] > 0 && colours[0] === colours[1] && reset_shut && reset_open[0] && reset_open[1] <= 1 && /Commas between labels/.test(hint),
-    `a first visit: pinned panes open, the rest folded but a hand's and a window's pane (${wrong.length ? "wrong: " + wrong.join(", ") : Object.entries(seen).map(([k, v]) => k + ": " + v.map((x) => x.name + (x.shut ? " ▸" : " ▾")).join(", ")).join(" · ")}); folded Colours shows its ${colours[0]} colours as swatches; Reset folded says Reset alone, open its button stands at the right of its heading line (${reset_open[1]}); Custom labels say how they work; Copy link stays on its folded line, Defaults gives the First dial, Plain dial the plain start`);
+  check(!wrong.length && colours[0] > 0 && colours[0] === colours[1] && reset_shut && reset_open[0] && reset_open[1] === 0 && /Commas between labels/.test(hint),
+    `a first visit: pinned panes open, the rest folded but a hand's and a window's pane (${wrong.length ? "wrong: " + wrong.join(", ") : Object.entries(seen).map(([k, v]) => k + ": " + v.map((x) => x.name + (x.shut ? " ▸" : " ▾")).join(", ")).join(" · ")}); folded Colours shows its ${colours[0]} colours as swatches; Reset folded says Reset alone, open its button stands on its heading line flush left with its warning (${reset_open[1]} apart; 4.44.2); Custom labels say how they work; Copy link stays on its folded line, Defaults gives the First dial, Plain dial the plain start`);
 }
 await page.click("#plain");
 await page.waitForFunction(() => window.dial_tool.statik && window.dial_tool.S.ha_hour.round === 0);
