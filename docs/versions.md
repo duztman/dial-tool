@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.51.1 | 17 Oct 2026 | web | [`26d9c3b`](https://github.com/duztman/dial-tool/tree/26d9c3befbe80f81a5c90ac2b0df324860281b0a) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/26d9c3befbe80f81a5c90ac2b0df324860281b0a/web/dial-tool.html) | the magnifier out of FIT |
 | 4.51 | 17 Oct 2026 | web | [`992dd39`](https://github.com/duztman/dial-tool/tree/992dd398a7fbf57709305ed6c642e3570a136d9a) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/992dd398a7fbf57709305ed6c642e3570a136d9a/web/dial-tool.html) | phase H: EN, wide sliders, style tabs, Light · Dark |
 | 4.50.2 | 17 Oct 2026 | web | [`99ba659`](https://github.com/duztman/dial-tool/tree/99ba65943b8ffe448a1bed834aef1720a6ced6f5) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/99ba65943b8ffe448a1bed834aef1720a6ced6f5/web/dial-tool.html) | Give way pictured, Placement's micro dials |
 | 4.50.1 | 17 Oct 2026 | web | [`010d886`](https://github.com/duztman/dial-tool/tree/010d886866fed64f7fbf3ecd209a5fdc9a88b2d6) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/010d886866fed64f7fbf3ecd209a5fdc9a88b2d6/web/dial-tool.html) | Positions with a round preview and quiet rows |
