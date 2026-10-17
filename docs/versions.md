@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.50.1 | 17 Oct 2026 | web | [`010d886`](https://github.com/duztman/dial-tool/tree/010d886866fed64f7fbf3ecd209a5fdc9a88b2d6) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/010d886866fed64f7fbf3ecd209a5fdc9a88b2d6/web/dial-tool.html) | Positions with a round preview and quiet rows |
 | 4.50 | 17 Oct 2026 | web | [`6042d7c`](https://github.com/duztman/dial-tool/tree/6042d7ca8cf60a924bdf369a40ea1bc5561a86e6) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/6042d7ca8cf60a924bdf369a40ea1bc5561a86e6/web/dial-tool.html) | the ring drawer and the rows from Okay's notes; the kind pictures reworked |
 | 4.49.2 | 17 Oct 2026 | web | [`68fb67f`](https://github.com/duztman/dial-tool/tree/68fb67f41330f094868c65c7a9080451418c31ac) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/68fb67f41330f094868c65c7a9080451418c31ac/web/dial-tool.html) | the controller: the number popup after Okay's drawing; the play flash |
 | 4.49.1 | 17 Oct 2026 | web | [`bd61676`](https://github.com/duztman/dial-tool/tree/bd61676430f6100c3398d8a122fe864a8c4c683f) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/bd61676430f6100c3398d8a122fe864a8c4c683f/web/dial-tool.html) | six more Gallery dials, for Okay to pick from |
