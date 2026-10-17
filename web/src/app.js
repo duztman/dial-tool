@@ -960,8 +960,9 @@ class DialTool {
     this.sky_stops = [0, 1].map((o) => { const s = svg_el("stop"); s.setAttribute("offset", String(o)); sky.append(s); return s; });
     sky_defs.append(sky);
     this.sky = svg_el("rect");
-    for (const [k, v] of [["class", "sky"], ["width", "100%"], ["height", "100%"], ["fill", "url(#show-sky)"], ["pointer-events", "none"]]) this.sky.setAttribute(k, v);
-    this.svg.append(sky_defs, this.backdrop, this.sky, this.pool, this.dial, this.over);
+    this.gizmo = svg_el("g");
+    this.gizmo.setAttribute("class", "gizmo");
+    this.svg.append(sky_defs, this.backdrop, this.sky, this.pool, this.dial, this.over, this.gizmo);
     this.tip = el("div", { className: "tip", hidden: true }, el("span"));       // the name of what the pointer is on
     this.tip.insertAdjacentHTML("beforeend", '<svg viewBox="0 0 20 10" width="20" height="10" aria-hidden="true"><path class="a" d="M0 0 L10 10 L20 0"/><path class="b" d="M0 0 L10 10 L20 0"/><path class="c" d="M-1 -3 L21 -3 L21 0 L10 9 L-1 0 Z"/></svg>');
     this.preview_events();
@@ -3979,6 +3980,7 @@ class DialTool {
     });
     this.draw_shadows(items);
     this.place();
+    this.draw_gizmo();
     const ring = this.ring();
     const font = G.kind_of(ring) === "numerals" ? `   ·   ${ring.ps}` : "";
     this.status.textContent = `${ring.name}${font} · Ø ${this.in_unit(S.dial_d, 1)} ${this.unit()[0]} · build ${this.build_ms.toFixed(0)} ms`;
@@ -4001,7 +4003,319 @@ class DialTool {
     const where = `translate(${this.c[0]} ${this.c[1]}) scale(${flip * this.z} ${-this.z})`;
     this.dial.setAttribute("transform", where);
     this.over.setAttribute("transform", where);
+    if (this.gizmo) this.gizmo.setAttribute("transform", where);
     if (this.pool) this.pool.setAttribute("transform", where);
+  }
+
+  show_gizmo_tip(p, text) {
+    this.tip.hidden = false;
+    this.tip.firstChild.textContent = text;
+    const [w] = this.size(), box = this.tip.getBoundingClientRect(), half = box.width / 2, gap = 12, edge = 6;
+    const below = p[1] - gap - box.height - 8 < edge;
+    const x = clamp(p[0], edge + half, Math.max(edge + half, w - edge - half));
+    this.tip.classList.toggle("below", below);
+    this.tip.style.left = `${x - half}px`;
+    this.tip.style.top = `${below ? p[1] + gap + 8 : p[1] - gap - 8 - box.height}px`;
+    this.tip.style.setProperty("--arrow", `${clamp(p[0] - (x - half), 12, box.width - 12)}px`);
+  }
+
+  draw_gizmo() {
+    if (!this.gizmo) return;
+    if (this.show || this.S.ui_section !== 1 || !this.S.guides || this.S.out_production) {
+      this.gizmo.replaceChildren();
+      return;
+    }
+    const ring = this.ring();
+    if (!ring || !ring.on) {
+      this.gizmo.replaceChildren();
+      return;
+    }
+
+    const kind = G.kind_of(ring);
+    let outer = ring.r;
+    let inner = ring.r - ({ ticks: ring.len, markers: ring.len, band: ring.width, numerals: ring.size }[kind] || 0);
+    if (kind === "numerals") {
+      const statikRing = this.statik?.rings?.find((d) => d.ring === ring);
+      const e = G.radial_extent(statikRing?.path);
+      if (e) [inner, outer] = e;
+    }
+    const mid = (outer + inner) / 2;
+    const start = ring.start ?? 0;
+    const span = ring.span ?? 360;
+    const end = start + span;
+    const mid_angle = span >= 360 ? (start + 180) % 360 : (start + span / 2);
+
+    const k = G.ring_guide(this.S, this.S.ui_ring);
+    const tone = G.GUIDE_COLOURS[k] || G.GUIDE_COLOURS[0] || "#2680eb";
+    const flip = this.S.out_mirror ? -1 : 1;
+    const scaleFactor = 1 / Math.max(0.001, this.z);
+
+    this.gizmo.replaceChildren();
+
+    const make_handle = (id, type, clockR, clockA, title, buildSvg) => {
+      const g = svg_el("g");
+      g.setAttribute("class", `gizmo-handle gizmo-${type}`);
+      g.setAttribute("data-type", type);
+      g.setAttribute("data-id", id);
+      g._gizmo_title = title;
+      const pt = G.clock_point(clockR, clockA);
+      g.setAttribute("transform", `translate(${pt[0].toFixed(4)} ${pt[1].toFixed(4)}) rotate(${(-clockA).toFixed(2)}) scale(${(flip * scaleFactor).toFixed(5)} ${(-scaleFactor).toFixed(5)})`);
+      g.style.cursor = type === "radius" || type === "size" ? "ns-resize" : "ew-resize";
+      g.style.pointerEvents = "all";
+
+      buildSvg(g, tone);
+
+      g.addEventListener("pointerdown", (e) => this.gizmo_pointerdown(type, e));
+      g.addEventListener("pointerenter", (e) => {
+        if (this.gizmo_dragging) return;
+        const r = this.svg.getBoundingClientRect();
+        this.show_gizmo_tip([e.clientX - r.left, e.clientY - r.top], title());
+      });
+      g.addEventListener("pointermove", (e) => {
+        if (this.gizmo_dragging) return;
+        const r = this.svg.getBoundingClientRect();
+        this.show_gizmo_tip([e.clientX - r.left, e.clientY - r.top], title());
+      });
+      g.addEventListener("pointerleave", () => {
+        if (!this.gizmo_dragging) this.tip.hidden = true;
+      });
+
+      this.gizmo.append(g);
+      return g;
+    };
+
+    // 1. Center Radius Handle (on dotted middle guide circle)
+    make_handle("center_radius", "radius", mid, mid_angle,
+      () => `Center Radius · ${this.in_unit(ring.r, 2)} ${this.unit()[0]}`,
+      (g, col) => {
+        const c = svg_el("circle");
+        c.setAttribute("r", "11");
+        c.setAttribute("fill", col);
+        c.setAttribute("stroke", "#FFFFFF");
+        c.setAttribute("stroke-width", "1.5");
+        const path = svg_el("path");
+        path.setAttribute("d", "M-4 -2.5 L0 -7.5 L4 -2.5 Z M-4 2.5 L0 7.5 L4 2.5 Z");
+        path.setAttribute("fill", "#FFFFFF");
+        const line = svg_el("line");
+        line.setAttribute("x1", "0");
+        line.setAttribute("y1", "-3");
+        line.setAttribute("x2", "0");
+        line.setAttribute("y2", "3");
+        line.setAttribute("stroke", "#FFFFFF");
+        line.setAttribute("stroke-width", "1.5");
+        g.append(c, path, line);
+      }
+    );
+
+    // 2. Ring Size / Thickness Handle (on inner guide circle)
+    const sizeOffsetDeg = Math.min(20, Math.max(8, 30 / Math.max(1, inner)));
+    const sizeAngle = span >= 360 ? (mid_angle + sizeOffsetDeg) % 360 : Math.min(end - 2, mid_angle + sizeOffsetDeg);
+    const sizeKey = kind === "band" ? "width" : (kind === "numerals" ? "size" : "len");
+    const sizeLabel = kind === "band" ? "Band Width" : (kind === "numerals" ? "Numeral Size" : (kind === "markers" ? "Marker Length" : "Tick Length"));
+
+    // Dotted connector from mid to inner
+    const connLine = svg_el("line");
+    const cp1 = G.clock_point(inner, sizeAngle);
+    const cp2 = G.clock_point(mid, sizeAngle);
+    connLine.setAttribute("x1", cp1[0].toFixed(4));
+    connLine.setAttribute("y1", cp1[1].toFixed(4));
+    connLine.setAttribute("x2", cp2[0].toFixed(4));
+    connLine.setAttribute("y2", cp2[1].toFixed(4));
+    connLine.setAttribute("stroke", tone);
+    connLine.setAttribute("stroke-width", "1.5");
+    connLine.setAttribute("stroke-dasharray", "2 2");
+    connLine.setAttribute("vector-effect", "non-scaling-stroke");
+    connLine.setAttribute("pointer-events", "none");
+    this.gizmo.append(connLine);
+
+    make_handle("ring_size", "size", inner, sizeAngle,
+      () => `${sizeLabel} · ${this.in_unit(ring[sizeKey], 2)} ${this.unit()[0]}`,
+      (g, col) => {
+        const rect = svg_el("rect");
+        rect.setAttribute("x", "-9");
+        rect.setAttribute("y", "-9");
+        rect.setAttribute("width", "18");
+        rect.setAttribute("height", "18");
+        rect.setAttribute("rx", "4");
+        rect.setAttribute("fill", col);
+        rect.setAttribute("stroke", "#FFFFFF");
+        rect.setAttribute("stroke-width", "1.5");
+        const base = svg_el("line");
+        base.setAttribute("x1", "-5");
+        base.setAttribute("y1", "5.5");
+        base.setAttribute("x2", "5");
+        base.setAttribute("y2", "5.5");
+        base.setAttribute("stroke", "#FFFFFF");
+        base.setAttribute("stroke-width", "1.5");
+        base.setAttribute("stroke-linecap", "round");
+        const arr = svg_el("path");
+        arr.setAttribute("d", "M-4 3.5 L0 -4.5 L4 3.5 Z");
+        arr.setAttribute("fill", "#FFFFFF");
+        const stem = svg_el("line");
+        stem.setAttribute("x1", "0");
+        stem.setAttribute("y1", "3.5");
+        stem.setAttribute("x2", "0");
+        stem.setAttribute("y2", "-0.5");
+        stem.setAttribute("stroke", "#FFFFFF");
+        stem.setAttribute("stroke-width", "1.5");
+        g.append(rect, base, stem, arr);
+      }
+    );
+
+    // 3. Start Angle Handle
+    const startR = span >= 360 ? outer : mid;
+    if (span < 360) {
+      const bLine = svg_el("line");
+      const bp1 = G.clock_point(inner, start);
+      const bp2 = G.clock_point(outer, start);
+      bLine.setAttribute("x1", bp1[0].toFixed(4));
+      bLine.setAttribute("y1", bp1[1].toFixed(4));
+      bLine.setAttribute("x2", bp2[0].toFixed(4));
+      bLine.setAttribute("y2", bp2[1].toFixed(4));
+      bLine.setAttribute("stroke", tone);
+      bLine.setAttribute("stroke-width", "1.5");
+      bLine.setAttribute("vector-effect", "non-scaling-stroke");
+      bLine.setAttribute("pointer-events", "none");
+      this.gizmo.append(bLine);
+    }
+
+    make_handle("ring_start", "start", startR, start,
+      () => `Start Angle · ${(ring.start ?? 0).toFixed(1)}°`,
+      (g, col) => {
+        const c = svg_el("circle");
+        c.setAttribute("r", "10.5");
+        c.setAttribute("fill", col);
+        c.setAttribute("stroke", "#FFFFFF");
+        c.setAttribute("stroke-width", "1.5");
+        const bar = svg_el("line");
+        bar.setAttribute("x1", "-4");
+        bar.setAttribute("y1", "-5");
+        bar.setAttribute("x2", "-4");
+        bar.setAttribute("y2", "5");
+        bar.setAttribute("stroke", "#FFFFFF");
+        bar.setAttribute("stroke-width", "2");
+        bar.setAttribute("stroke-linecap", "round");
+        const arr = svg_el("path");
+        arr.setAttribute("d", "M-1.5 -4.5 L4 0 L-1.5 4.5 Z");
+        arr.setAttribute("fill", "#FFFFFF");
+        g.append(c, bar, arr);
+      }
+    );
+
+    // 4. Span Angle Handle
+    const spanR = span >= 360 ? inner : mid;
+    if (span < 360) {
+      const bLine = svg_el("line");
+      const bp1 = G.clock_point(inner, end);
+      const bp2 = G.clock_point(outer, end);
+      bLine.setAttribute("x1", bp1[0].toFixed(4));
+      bLine.setAttribute("y1", bp1[1].toFixed(4));
+      bLine.setAttribute("x2", bp2[0].toFixed(4));
+      bLine.setAttribute("y2", bp2[1].toFixed(4));
+      bLine.setAttribute("stroke", tone);
+      bLine.setAttribute("stroke-width", "1.5");
+      bLine.setAttribute("vector-effect", "non-scaling-stroke");
+      bLine.setAttribute("pointer-events", "none");
+      this.gizmo.append(bLine);
+    }
+
+    make_handle("ring_span", "span", spanR, end,
+      () => `Span Angle · ${(ring.span ?? 360).toFixed(0)}°`,
+      (g, col) => {
+        const c = svg_el("circle");
+        c.setAttribute("r", "10.5");
+        c.setAttribute("fill", col);
+        c.setAttribute("stroke", "#FFFFFF");
+        c.setAttribute("stroke-width", "1.5");
+        const tail = svg_el("line");
+        tail.setAttribute("x1", "-6");
+        tail.setAttribute("y1", "0");
+        tail.setAttribute("x2", "-1");
+        tail.setAttribute("y2", "0");
+        tail.setAttribute("stroke", "#FFFFFF");
+        tail.setAttribute("stroke-width", "2");
+        tail.setAttribute("stroke-linecap", "round");
+        const arr = svg_el("path");
+        arr.setAttribute("d", "M-2 -5 L4.5 0 L-2 5 Z");
+        arr.setAttribute("fill", "#FFFFFF");
+        g.append(c, tail, arr);
+      }
+    );
+  }
+
+  gizmo_pointerdown(type, e) {
+    e.stopPropagation();
+    e.preventDefault();
+    const ring = this.ring();
+    if (!ring) return;
+
+    this.gizmo_dragging = true;
+    const r = this.svg.getBoundingClientRect();
+    const at = (ev) => [ev.clientX - r.left, ev.clientY - r.top];
+    const p0 = at(e);
+    const mm0 = this.to_mm(p0);
+    const dist0 = Math.hypot(mm0[0], mm0[1]);
+    const angle0 = (Math.atan2(mm0[0], mm0[1]) * 180 / Math.PI + 360) % 360;
+
+    const kind = G.kind_of(ring);
+    const sizeKey = kind === "band" ? "width" : (kind === "numerals" ? "size" : "len");
+
+    const initValues = {
+      r: ring.r,
+      size: ring[sizeKey],
+      start: ring.start ?? 0,
+      span: ring.span ?? 360,
+    };
+
+    const on_move = (ev) => {
+      ev.preventDefault();
+      const p = at(ev);
+      const mm = this.to_mm(p);
+      const dist = Math.hypot(mm[0], mm[1]);
+      const angle = (Math.atan2(mm[0], mm[1]) * 180 / Math.PI + 360) % 360;
+
+      if (type === "radius") {
+        const delta = dist - dist0;
+        const newR = Math.max(1, +(initValues.r + delta).toFixed(2));
+        this.set_value("ring", "r", newR);
+        this.show_gizmo_tip(p, `Center Radius · ${this.in_unit(newR, 2)} ${this.unit()[0]}`);
+      } else if (type === "size") {
+        const delta = dist0 - dist;
+        const minVal = sizeKey === "size" ? 0.3 : (sizeKey === "width" ? 0.02 : 0.05);
+        const maxVal = sizeKey === "size" ? 8 : (sizeKey === "width" ? 25 : 10);
+        const newSize = clamp(+(initValues.size + delta).toFixed(2), minVal, maxVal);
+        this.set_value("ring", sizeKey, newSize);
+        const sizeLabel = kind === "band" ? "Band Width" : (kind === "numerals" ? "Numeral Size" : (kind === "markers" ? "Marker Length" : "Tick Length"));
+        this.show_gizmo_tip(p, `${sizeLabel} · ${this.in_unit(newSize, 2)} ${this.unit()[0]}`);
+      } else if (type === "start") {
+        const dAngle = ((angle - angle0 + 540) % 360) - 180;
+        let newStart = initValues.start + dAngle;
+        newStart = Math.round(newStart * 2) / 2;
+        while (newStart > 180) newStart -= 360;
+        while (newStart < -180) newStart += 360;
+        this.set_value("ring", "start", newStart);
+        this.show_gizmo_tip(p, `Start Angle · ${newStart.toFixed(1)}°`);
+      } else if (type === "span") {
+        const dAngle = ((angle - angle0 + 540) % 360) - 180;
+        let newSpan = Math.round(initValues.span + dAngle);
+        newSpan = clamp(newSpan, 1, 360);
+        this.set_value("ring", "span", newSpan);
+        this.show_gizmo_tip(p, `Span Angle · ${newSpan.toFixed(0)}°`);
+      }
+    };
+
+    const on_up = () => {
+      window.removeEventListener("pointermove", on_move);
+      window.removeEventListener("pointerup", on_up);
+      window.removeEventListener("pointercancel", on_up);
+      this.gizmo_dragging = false;
+      this.tip.hidden = true;
+      this.take_step();
+    };
+
+    window.addEventListener("pointermove", on_move);
+    window.addEventListener("pointerup", on_up);
+    window.addEventListener("pointercancel", on_up);
   }
 
   fit() {
@@ -4064,6 +4378,7 @@ class DialTool {
     };
     this.svg.addEventListener("pointerdown", (e) => { pts.set(e.pointerId, at(e)); this.svg.setPointerCapture(e.pointerId); if (pts.size === 1) down = null; restart(); if (this.show && pts.size === 1) { this.show.dragging = true; this.sun_to(at(e)); } });      // the showcase: the sun to the pointer, along its day
     this.svg.addEventListener("pointermove", (e) => {
+      if (this.gizmo_dragging) return;
       if (!pts.has(e.pointerId)) return e.pointerType === "mouse" ? this.hover(at(e), document.elementFromPoint(e.clientX, e.clientY)) : null;
       pts.set(e.pointerId, at(e));
       if (pts.size >= 2) {
@@ -4090,7 +4405,7 @@ class DialTool {
     };
     this.svg.addEventListener("pointerup", up);
     this.svg.addEventListener("pointercancel", up);
-    this.svg.addEventListener("pointerleave", () => this.hover(null));
+    this.svg.addEventListener("pointerleave", () => { if (!this.gizmo_dragging) this.hover(null); });
     let pinch = 1;                                 // Safari reports a pinch as gesture events
     this.svg.addEventListener("gesturestart", (e) => { e.preventDefault(); pinch = 1; });
     this.svg.addEventListener("gesturechange", (e) => {      // a Mac trackpad in Safari; on a touch screen the two pointers above already pinch
@@ -4141,6 +4456,7 @@ class DialTool {
 
   /** a click on the preview opens the settings of what was clicked. */
   clicked(p, node) {
+    if (node?.closest?.(".gizmo-handle")) return;
     const piece = this.piece_at(p, node), S = this.S;
     if (!piece) return this.words_unfold();
     const section = { ring: 1, hand: 2, cap: 2, date: 3, plate: 0 }[piece.kind], same = section === S.ui_section;
@@ -4158,6 +4474,15 @@ class DialTool {
 
   /** the pointer rests on something that can be edited: outline it, and say its name beside the pointer. */
   hover(p, node) {
+    if (this.gizmo_dragging) return;
+    const handle = node?.closest?.(".gizmo-handle");
+    if (handle) {
+      for (const line of this.glow) line.setAttribute("d", "");
+      if (handle._gizmo_title && p) {
+        this.show_gizmo_tip(p, handle._gizmo_title());
+      }
+      return;
+    }
     const piece = p && !this.show ? this.piece_at(p, node) : null;      // the showcase: no outlines, no names
     this.tip.hidden = !piece;
     for (const line of this.glow) line.setAttribute("d", piece ? piece.path.svg(4) : "");

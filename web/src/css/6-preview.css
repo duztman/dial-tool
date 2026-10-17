@@ -224,4 +224,18 @@
      its words (Okay, 15 Oct 2026, 07:07: "these buttons get solid bg color when labels visible"): the iris switch open
      (ACTIVATE SHOWCASE), the labelled switches — always on a wide screen, on a phone while unfolded (8-narrow.css) */
   .irisbox[aria-expanded="true"], :is(.guidesbox, .guidesmore, .backdropbox) { background: var(--canvas-fill); }
+
+  /* on-canvas interactive guide handles */
+  .gizmo-handle {
+    cursor: pointer;
+    touch-action: none;
+    transition: filter 0.12s ease;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
+  }
+  .gizmo-handle:hover {
+    filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.7)) brightness(1.12);
+  }
+  .gizmo-handle:active {
+    cursor: grabbing !important;
+  }
 }
