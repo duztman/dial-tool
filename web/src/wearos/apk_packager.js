@@ -464,6 +464,10 @@ export function build_wearos_apk(watchfaceXml, drawables = {}, metadata = {}) {
     minute_hand_ambient: "res/drawable-nodpi-v4/minute_hand_ambient.png",
     second_hand: "res/drawable-nodpi-v4/second_hand.png",
     cap: "res/drawable-nodpi-v4/cap.png",
+    window_0: "res/drawable-nodpi-v4/window_0.png",
+    window_1: "res/drawable-nodpi-v4/window_1.png",
+    window_2: "res/drawable-nodpi-v4/window_2.png",
+    window_3: "res/drawable-nodpi-v4/window_3.png",
     preview: "res/drawable-nodpi-v4/preview.png",
     icon: "res/drawable-nodpi-v4/icon.png",
   };

@@ -38,6 +38,16 @@ $strings = @"
     <string name="aod_plate_black">Pure Black</string>
     <string name="aod_plate_dimmed">Dimmed</string>
     <string name="aod_plate_plate">Same as Dial</string>
+    <string name="win_0_setting">Window 1</string>
+    <string name="win_1_setting">Window 2</string>
+    <string name="win_2_setting">Window 3</string>
+    <string name="win_3_setting">Window 4</string>
+    <string name="win_opt_on">Dial Tool</string>
+    <string name="win_opt_off">Off</string>
+    <string name="comp_slot_0">Window 1</string>
+    <string name="comp_slot_1">Window 2</string>
+    <string name="comp_slot_2">Window 3</string>
+    <string name="comp_slot_3">Window 4</string>
 </resources>
 "@
 Set-Content -Path "$baseDir/res/values/strings.xml" -Value $strings -Encoding UTF8
@@ -77,7 +87,7 @@ Set-Content -Path "$baseDir/res/raw/watchface.xml" -Value $dummyWff -Encoding UT
 
 # 1x1 transparent PNG bytes
 $pngBytes = [Convert]::FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")
-$drawables = @("icon", "preview", "dial_face", "dial_face_ambient", "dial_face_ambient_black", "dial_face_ambient_dimmed", "hour_hand", "hour_hand_ambient", "minute_hand", "minute_hand_ambient", "second_hand", "cap")
+$drawables = @("icon", "preview", "dial_face", "dial_face_ambient", "dial_face_ambient_black", "dial_face_ambient_dimmed", "hour_hand", "hour_hand_ambient", "minute_hand", "minute_hand_ambient", "second_hand", "cap", "window_0", "window_1", "window_2", "window_3")
 
 foreach ($d in $drawables) {
     [IO.File]::WriteAllBytes("$baseDir/res/drawable-nodpi/$d.png", $pngBytes)

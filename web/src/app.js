@@ -14,7 +14,7 @@ import { GALLERY } from "./gallery.js";
 import { OPENER } from "./opener.js";
 import { start_ink, offset as ink_offset } from "./ink.js";
 import { generate_watchface_xml } from "./wearos/wff_xml.js";
-import { svg_dial_face, svg_hand, svg_cap, svg_preview, svg_to_png_bytes } from "./wearos/wff_assets.js";
+import { svg_dial_face, svg_hand, svg_cap, svg_preview, svg_window_sheet, svg_to_png_bytes } from "./wearos/wff_assets.js";
 import { build_signed_wearos_apk, format_package_name, sanitize_package_suffix } from "./wearos/apk_packager.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -3857,7 +3857,7 @@ class DialTool {
       }
       if (kind === "wearos") {
         this.log("building Wear OS Watch Face APK…");
-        const xml = generate_watchface_xml(S);
+        const xml = generate_watchface_xml(S, statik);
         const drawables = {
           dial_face: await svg_to_png_bytes(svg_dial_face(S, statik)),
           dial_face_ambient: await svg_to_png_bytes(svg_dial_face(S, statik, "black")),
@@ -3872,6 +3872,9 @@ class DialTool {
           preview: await svg_to_png_bytes(svg_preview(S, statik)),
           icon: await svg_to_png_bytes(svg_preview(S, statik)),
         };
+        for (const x of statik.windows || []) {
+          drawables["window_" + x.index] = await svg_to_png_bytes(svg_window_sheet(S, x));
+        }
         const label = (S.wearos_name || "").trim() || "Dial Tool";
         const pkg = format_package_name(S.wearos_pkg || "", label);
         const apkBytes = await build_signed_wearos_apk(xml, drawables, { label, packageId: pkg });

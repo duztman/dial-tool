@@ -7421,10 +7421,284 @@ function start_ink(root = document.body) {
   }).observe(root, { childList: true, subtree: true, characterData: true });
 }
 
+// web/src/wearos/wff_assets.js
+var num2 = (v, digits = 4) => {
+  const s = (v + 0).toFixed(digits).replace(/^-(0(\.0+)?)$/, "$1");
+  return s.includes(".") ? s.replace(/\.?0+$/, "") || "0" : s;
+};
+var rgb2 = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Math.max(v, 0), 1) * 255).toString(16).padStart(2, "0")).join("").toUpperCase();
+function layer_svg(S, items, { background = null, size = 450 } = {}) {
+  const scale = size / S.dial_d;
+  const center = size / 2;
+  const out = [
+    `<?xml version="1.0" encoding="UTF-8"?>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">`
+  ];
+  if (background) {
+    out.push(`  <rect width="${size}" height="${size}" fill="${background}"/>`);
+  }
+  out.push(`  <g transform="translate(${center} ${center}) scale(${num2(scale)})">`);
+  for (const item of items) {
+    if (!item.path) continue;
+    const alpha = item.fill && item.fill[3] < 1 ? ` fill-opacity="${num2(item.fill[3])}"` : "";
+    const fill = item.fill ? rgb2(item.fill) : "#FFFFFF";
+    out.push(`    <path d="${item.path.svg(5, true)}" fill="${fill}"${alpha}/>`);
+  }
+  out.push(`  </g>`, `</svg>`);
+  return out.join("\n");
+}
+function svg_dial_face(S, statik, ambient = false) {
+  const items = [];
+  const rings = statik.rings.slice().reverse();
+  const plate = statik.plate ? circle(S.dial_d) : null;
+  if (!ambient || ambient === "plate") {
+    if (plate) items.push({ role: "plate", path: plate, fill: S.c_plate });
+  } else if (ambient === "dimmed") {
+    if (plate) {
+      const dim = [S.c_plate[0] * 0.15, S.c_plate[1] * 0.15, S.c_plate[2] * 0.15, 1];
+      items.push({ role: "plate", path: plate, fill: dim });
+    }
+  } else {
+    if (plate) items.push({ role: "plate", path: plate, fill: [0, 0, 0, 1] });
+  }
+  for (const d of rings) {
+    if (d.tints) {
+      d.tints.forEach((tint) => {
+        const ringFill = ambient && ambient !== "plate" ? [0.9, 0.9, 0.9, 1] : sector_colour(d.ring, tint.at);
+        items.push({ role: "ring", path: tint.path, fill: ringFill });
+      });
+    } else {
+      const ringFill = ambient && ambient !== "plate" ? [0.9, 0.9, 0.9, 1] : d.ring.c;
+      items.push({ role: "ring", path: d.path, fill: ringFill });
+    }
+  }
+  return layer_svg(S, items);
+}
+var DAYS_FULL = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+function day_labels_for(sampleText) {
+  const raw = String(sampleText || "MON").trim();
+  const s = /^\d+$/.test(raw) || !raw ? "MON" : raw;
+  const len = s.length;
+  const base = DAYS_FULL.map((d) => {
+    if (len === 1) return d.slice(0, 1);
+    if (len === 2) return d.slice(0, 2);
+    if (len === 3) return d.slice(0, 3);
+    return d;
+  });
+  if (s === s.toLowerCase()) {
+    return base.map((d) => d.toLowerCase());
+  }
+  if (len >= 2 && s[0] === s[0].toUpperCase() && s.slice(1) === s.slice(1).toLowerCase()) {
+    return base.map((d) => d[0] + d.slice(1).toLowerCase());
+  }
+  return base;
+}
+function build_single_window(S, winIndex, mutate) {
+  const S_copy = {
+    ...S,
+    rings: S.rings.map((r) => ({ ...r, on: false })),
+    da_on: false,
+    windows: S.windows.map((w2) => ({ ...w2, on: false })),
+    dial_hole: 0
+  };
+  const w = windows_of(S_copy)[winIndex];
+  w.on = true;
+  mutate(w, S_copy);
+  return build_static(S_copy).windows[0];
+}
+function compute_window_layout(S, x) {
+  const scale = 450 / S.dial_d;
+  const b = (x.frame ? x.window.union(x.frame).bounds() : x.window.bounds()) || [-5, -5, 5, 5];
+  const [x0, y0, x1, y1] = b;
+  const boxX = Math.max(0, Math.floor(225 + x0 * scale) - 1);
+  const boxY = Math.max(0, Math.floor(225 - y1 * scale) - 1);
+  const boxW = Math.max(2, Math.min(450, Math.ceil(225 + x1 * scale) + 1) - boxX);
+  const boxH = Math.max(2, Math.min(450, Math.ceil(225 - y0 * scale) + 1) - boxY);
+  const kind = WINDOW_KINDS[x.w.kind] || "date";
+  let frames, cols, rows, colExpr, rowExpr;
+  if (kind === "date") {
+    frames = 31;
+    cols = 6;
+    rows = 6;
+    colExpr = "(([DAY] - 1) % 6)";
+    rowExpr = "floor(([DAY] - 1) / 6)";
+  } else if (kind === "day") {
+    frames = 7;
+    cols = 1;
+    rows = 7;
+    colExpr = "0";
+    rowExpr = "([DAY_OF_WEEK] - 1)";
+  } else if (kind === "am \xB7 pm") {
+    frames = 48;
+    cols = 6;
+    rows = 8;
+    colExpr = "(([HOUR_0_23] * 2 + floor([MINUTE] / 30)) % 6)";
+    rowExpr = "floor(([HOUR_0_23] * 2 + floor([MINUTE] / 30)) / 6)";
+  } else {
+    frames = 29;
+    cols = 6;
+    rows = 5;
+    colExpr = "(clamp([MOON_PHASE_POSITION], 0, 28) % 6)";
+    rowExpr = "floor(clamp([MOON_PHASE_POSITION], 0, 28) / 6)";
+  }
+  return {
+    index: x.index,
+    kind,
+    boxX,
+    boxY,
+    boxW,
+    boxH,
+    frames,
+    cols,
+    rows,
+    sheetW: cols * boxW,
+    sheetH: rows * boxH,
+    colExpr,
+    rowExpr
+  };
+}
+function svg_window_sheet(S, x) {
+  const layout = compute_window_layout(S, x);
+  const { kind, boxX, boxY, boxW, boxH, frames, cols, sheetW, sheetH } = layout;
+  const scale = 450 / S.dial_d;
+  const discColor = x.w.disc_c || [1, 1, 1, 1];
+  const discFill = rgb2(discColor);
+  const discAlpha = discColor[3] < 1 ? ` fill-opacity="${num2(discColor[3])}"` : "";
+  const textColor = x.w.text_c || x.w.ink || [0, 0, 0, 1];
+  const textFill = rgb2(textColor);
+  const textAlpha = textColor[3] < 1 ? ` fill-opacity="${num2(textColor[3])}"` : "";
+  const discD = x.window.svg(5, true);
+  const frameColor = x.w.ink || [0, 0, 0, 1];
+  const frameD = x.frame && !empty(x.frame) ? x.frame.svg(5, true) : null;
+  const frameFill = rgb2(frameColor);
+  const frameAlpha = frameColor[3] < 1 ? ` fill-opacity="${num2(frameColor[3])}"` : "";
+  const zeroPadDate = kind === "date" && /^0\d$/.test(String(x.w.text || "").trim());
+  const dayLabels = kind === "day" ? day_labels_for(x.w.text) : null;
+  const out = [
+    `<?xml version="1.0" encoding="UTF-8"?>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${sheetW}" height="${sheetH}" viewBox="0 0 ${sheetW} ${sheetH}">`
+  ];
+  for (let k = 0; k < frames; k++) {
+    const col2 = k % cols;
+    const row = Math.floor(k / cols);
+    const tx = col2 * boxW + (225 - boxX);
+    const ty = row * boxH + (225 - boxY);
+    const frameWin = build_single_window(S, x.index, (w, S_copy) => {
+      if (kind === "date") {
+        const d = k + 1;
+        w.text = zeroPadDate && d < 10 ? `0${d}` : String(d);
+      } else if (kind === "day") {
+        w.text = dayLabels[k];
+      } else if (kind === "am \xB7 pm") {
+        S_copy.t = k * 1800;
+      } else if (kind === "moon phase") {
+        w.age = k / 28 * 29.53;
+      }
+    });
+    out.push(`  <g transform="translate(${num2(tx)} ${num2(ty)}) scale(${num2(scale)})">`);
+    out.push(`    <path d="${discD}" fill="${discFill}"${discAlpha}/>`);
+    if (frameWin && frameWin.number && !empty(frameWin.number)) {
+      out.push(`    <path d="${frameWin.number.svg(5, true)}" fill="${textFill}"${textAlpha}/>`);
+    }
+    if (frameD) out.push(`    <path d="${frameD}" fill="${frameFill}"${frameAlpha}/>`);
+    out.push(`  </g>`);
+  }
+  out.push(`</svg>`);
+  return out.join("\n");
+}
+function svg_hand(S, name, ambient = false) {
+  const handConfig = S["ha_" + name];
+  if (!handConfig || !handConfig.on) return null;
+  const path = hand_shape(handConfig);
+  let fill = handConfig.c;
+  if (ambient && ambient !== "plate") {
+    const lum = 0.2126 * fill[0] + 0.7152 * fill[1] + 0.0722 * fill[2];
+    if (lum < 0.4) fill = [0.9, 0.9, 0.9, 1];
+  }
+  return layer_svg(S, [{ role: "hand", path, fill }]);
+}
+function svg_cap(S) {
+  if (!S.ha_on || S.ha_cap <= 0) return null;
+  const path = circle(S.ha_cap);
+  return layer_svg(S, [{ role: "cap", path, fill: S.c_cap }]);
+}
+function svg_preview(S, statik) {
+  const items = [];
+  const rings = statik.rings.slice().reverse();
+  for (const x of statik.windows || []) {
+    items.push({ role: "date disc", path: x.window, fill: x.w.disc_c || [1, 1, 1, 1] });
+    items.push({ role: "date number", path: x.number, fill: x.w.text_c || x.w.ink });
+  }
+  if (statik.plate) items.push({ role: "plate", path: statik.plate, fill: S.c_plate });
+  for (const d of rings) {
+    if (d.tints) {
+      d.tints.forEach((tint) => items.push({ role: "ring", path: tint.path, fill: sector_colour(d.ring, tint.at) }));
+    } else {
+      items.push({ role: "ring", path: d.path, fill: d.ring.c });
+    }
+  }
+  for (const x of statik.windows || []) {
+    if (x.frame) items.push({ role: "date frame", path: x.frame, fill: x.w.ink });
+  }
+  if (S.ha_on) {
+    const angles = hand_angles(10 * 3600 + 10 * 60 + 31, (BEATS[S.ha_beat] || BEATS[0])[1]);
+    const hands = ["hour", "minute", "second"];
+    hands.forEach((name, i) => {
+      const h = S["ha_" + name];
+      if (h && h.on) {
+        items.push({ role: "hand", path: turned(hand_shape(h), angles[i]), fill: h.c });
+      }
+    });
+    if (S.ha_cap > 0) {
+      items.push({ role: "cap", path: circle(S.ha_cap), fill: S.c_cap });
+    }
+  }
+  return layer_svg(S, items, { size: 450 });
+}
+async function svg_to_png_bytes(svgString, width = null, height = null) {
+  if (typeof document === "undefined") {
+    throw new Error("svg_to_png_bytes requires a browser DOM environment");
+  }
+  const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  try {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    const w = width || img.naturalWidth || 450;
+    const h = height || width || img.naturalHeight || 450;
+    const canvas2 = document.createElement("canvas");
+    canvas2.width = w;
+    canvas2.height = h;
+    const ctx = canvas2.getContext("2d");
+    ctx.drawImage(img, 0, 0, w, h);
+    const pngBlob = await new Promise((resolve) => canvas2.toBlob(resolve, "image/png"));
+    if (!pngBlob) throw new Error("Canvas PNG export failed");
+    return new Uint8Array(await pngBlob.arrayBuffer());
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
 // web/src/wearos/wff_xml.js
-function generate_watchface_xml(S) {
+function generate_watchface_xml(S, statik = null) {
   const beat = (BEATS[S.ha_beat] || BEATS[0])[1];
   const secondMovement = beat === 1 ? "<Tick />" : beat > 1 ? `<Sweep frequency="${beat}" />` : "<Sweep />";
+  const activeWindows = statik ? statik.windows || [] : windows_of(S).some((w) => w.on) ? build_static(S).windows : [];
+  const plateLum = 0.2126 * S.c_plate[0] + 0.7152 * S.c_plate[1] + 0.0722 * S.c_plate[2];
+  const dayInk = plateLum > 0.5 ? "#1A1A1A" : "#F0F0F0";
+  const aodInk = "#E6E6E6";
+  const windowSlots = activeWindows.map((x) => {
+    const { index, kind, boxX, boxY, boxW, boxH, sheetW, sheetH, colExpr, rowExpr } = compute_window_layout(S, x);
+    return window_slot_xml({ index, kind, boxX, boxY, boxW, boxH, sheetW, sheetH, colExpr, rowExpr, dayInk, aodInk });
+  });
+  const windowSettings = activeWindows.map((x) => `        <ListConfiguration
+            id="win_${x.index}"
+            displayName="@string/win_${x.index}_setting"
+            defaultValue="0">
+            <ListOption id="0" displayName="@string/win_opt_on" />
+            <ListOption id="1" displayName="@string/win_opt_off" />
+        </ListConfiguration>`);
   const hands = [];
   if (S.ha_on) {
     if (S.ha_hour && S.ha_hour.on) {
@@ -7470,7 +7744,7 @@ function generate_watchface_xml(S) {
             <ListOption id="1" displayName="@string/aod_plate_dimmed" />
             <ListOption id="2" displayName="@string/aod_plate_plate" />
         </ListConfiguration>
-    </UserConfigurations>
+${windowSettings.length ? windowSettings.join("\n") + "\n" : ""}    </UserConfigurations>
 
     <Scene>
         <!-- Interactive Dial Face -->
@@ -7505,7 +7779,7 @@ function generate_watchface_xml(S) {
                 </PartImage>
             </ListOption>
         </ListConfiguration>
-
+${windowSlots.length ? "\n" + windowSlots.join("\n\n") + "\n" : ""}
         <!-- Analog Clock Hands -->
         <AnalogClock x="0" y="0" width="450" height="450">
 ${hands.join("\n")}
@@ -7515,123 +7789,118 @@ ${cap ? "\n" + cap : ""}
 </WatchFace>
 `;
 }
+var DAY_ALPHA_AOD = "[CONFIGURATION.aod_plate] == '2' ? 255 : 0";
+var AOD_ALPHA_AOD = "[CONFIGURATION.aod_plate] == '2' ? 0 : 255";
+function inked(name, w, h, dayInk, aodInk, body, pad) {
+  return `${pad}<Group name="${name}_day" x="0" y="0" width="${w}" height="${h}" alpha="255">
+${pad}    <Variant mode="AMBIENT" target="alpha" value="${DAY_ALPHA_AOD}" />
+${body(dayInk, pad + "    ")}
+${pad}</Group>
+${pad}<Group name="${name}_aod" x="0" y="0" width="${w}" height="${h}" alpha="0">
+${pad}    <Variant mode="AMBIENT" target="alpha" value="${AOD_ALPHA_AOD}" />
+${body(aodInk, pad + "    ")}
+${pad}</Group>`;
+}
+function text_part(x, y, w, h, size, color, expr, pad) {
+  return `${pad}<PartText x="${x}" y="${y}" width="${w}" height="${h}">
+${pad}    <Text align="CENTER" ellipsis="TRUE">
+${pad}        <Font family="SYNC_TO_DEVICE" size="${size}" weight="MEDIUM" color="${color}">
+${pad}            <Template>%s<Parameter expression="${expr}" /></Template>
+${pad}        </Font>
+${pad}    </Text>
+${pad}</PartText>`;
+}
+function icon_part(x, y, s, color, resource, pad) {
+  const tint = color ? ` tintColor="${color}"` : "";
+  return `${pad}<PartImage x="${x}" y="${y}" width="${s}" height="${s}"${tint}>
+${pad}    <Image resource="${resource}" />
+${pad}</PartImage>`;
+}
+function window_slot_xml({ index, kind, boxX, boxY, boxW, boxH, sheetW, sheetH, colExpr, rowExpr, dayInk, aodInk }) {
+  const w = boxW;
+  const h = boxH;
+  const fs = Math.max(10, Math.min(24, Math.round(Math.min(h * 0.42, w / 3.2))));
+  const P = "                ";
+  const n = `win${index}`;
+  const shortText = (c, pad) => {
+    if (h >= 56) {
+      const s = Math.round(h * 0.36);
+      const ty = Math.round(h * 0.48);
+      return icon_part(Math.round((w - s) / 2), Math.round(h * 0.08), s, c, "[COMPLICATION.MONOCHROMATIC_IMAGE]", pad) + "\n" + text_part(0, ty, w, h - ty, Math.min(fs, Math.round(h * 0.34)), c, "[COMPLICATION.TEXT]", pad);
+    }
+    return text_part(0, 0, w, h, fs, c, "[COMPLICATION.TEXT]", pad);
+  };
+  const barW = Math.max(4, w - 8);
+  const barH = Math.max(2, Math.round(h * 0.07));
+  const barY = h - barH - Math.max(2, Math.round(h * 0.1));
+  const frac = "clamp(([COMPLICATION.RANGED_VALUE_VALUE] - [COMPLICATION.RANGED_VALUE_MIN]) / max([COMPLICATION.RANGED_VALUE_MAX] - [COMPLICATION.RANGED_VALUE_MIN], 0.0001), 0, 1)";
+  const ranged = (c, pad) => text_part(0, 0, w, barY, Math.min(fs, Math.round(barY * 0.6)), c, "[COMPLICATION.TEXT]", pad) + `
+${pad}<PartDraw x="4" y="${barY}" width="${barW}" height="${barH}" alpha="80">
+${pad}    <Rectangle x="0" y="0" width="${barW}" height="${barH}">
+${pad}        <Fill color="${c}" />
+${pad}    </Rectangle>
+${pad}</PartDraw>
+${pad}<PartDraw x="4" y="${barY}" width="${barW}" height="${barH}">
+${pad}    <Rectangle x="0" y="0" width="${barW}" height="${barH}">
+${pad}        <Transform target="width" value="${barW} * ${frac}" />
+${pad}        <Fill color="${c}" />
+${pad}    </Rectangle>
+${pad}</PartDraw>`;
+  const iconS = Math.round(Math.min(w, h) * 0.7);
+  const mono = (c, pad) => icon_part(Math.round((w - iconS) / 2), Math.round((h - iconS) / 2), iconS, c, "[COMPLICATION.MONOCHROMATIC_IMAGE]", pad);
+  const imgS = Math.round(Math.min(w, h) * 0.8);
+  return `        <!-- Window ${index + 1} (${kind}): Dial Tool visualization by default, swappable for any stock complication -->
+        <ComplicationSlot slotId="${index}" name="window_${index}" displayName="@string/comp_slot_${index}"
+            x="${boxX}" y="${boxY}" width="${w}" height="${h}"
+            supportedTypes="SHORT_TEXT RANGED_VALUE MONOCHROMATIC_IMAGE SMALL_IMAGE EMPTY"
+            isCustomizable="TRUE">
+            <DefaultProviderPolicy defaultSystemProvider="EMPTY" defaultSystemProviderType="EMPTY" />
+            <BoundingBox x="0" y="0" width="${w}" height="${h}" />
 
-// web/src/wearos/wff_assets.js
-var num2 = (v, digits = 4) => {
-  const s = (v + 0).toFixed(digits).replace(/^-(0(\.0+)?)$/, "$1");
-  return s.includes(".") ? s.replace(/\.?0+$/, "") || "0" : s;
-};
-var rgb2 = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Math.max(v, 0), 1) * 255).toString(16).padStart(2, "0")).join("").toUpperCase();
-function layer_svg(S, items, { background = null, size = 450 } = {}) {
-  const scale = size / S.dial_d;
-  const center = size / 2;
-  const out = [
-    `<?xml version="1.0" encoding="UTF-8"?>`,
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">`
-  ];
-  if (background) {
-    out.push(`  <rect width="${size}" height="${size}" fill="${background}"/>`);
-  }
-  out.push(`  <g transform="translate(${center} ${center}) scale(${num2(scale)})">`);
-  for (const item of items) {
-    if (!item.path) continue;
-    const alpha = item.fill && item.fill[3] < 1 ? ` fill-opacity="${num2(item.fill[3])}"` : "";
-    const fill = item.fill ? rgb2(item.fill) : "#FFFFFF";
-    out.push(`    <path d="${item.path.svg(5, true)}" fill="${fill}"${alpha}/>`);
-  }
-  out.push(`  </g>`, `</svg>`);
-  return out.join("\n");
-}
-function svg_dial_face(S, statik, ambient = false) {
-  const items = [];
-  const rings = statik.rings.slice().reverse();
-  if (!ambient) {
-    if (statik.plate) items.push({ role: "plate", path: statik.plate, fill: S.c_plate });
-  } else if (ambient === "plate") {
-    if (statik.plate) items.push({ role: "plate", path: statik.plate, fill: S.c_plate });
-  } else if (ambient === "dimmed") {
-    if (statik.plate) {
-      const dim = [S.c_plate[0] * 0.15, S.c_plate[1] * 0.15, S.c_plate[2] * 0.15, 1];
-      items.push({ role: "plate", path: statik.plate, fill: dim });
-    }
-  } else {
-    if (statik.plate) items.push({ role: "plate", path: statik.plate, fill: [0, 0, 0, 1] });
-  }
-  for (const d of rings) {
-    const ringFill = ambient && ambient !== "plate" ? [0.9, 0.9, 0.9, 1] : d.ring.c;
-    if (d.tints) {
-      d.tints.forEach((tint) => {
-        items.push({ role: "ring", path: tint.path, fill: ringFill });
-      });
-    } else {
-      items.push({ role: "ring", path: d.path, fill: ringFill });
-    }
-  }
-  return layer_svg(S, items);
-}
-function svg_hand(S, name, ambient = false) {
-  const handConfig = S["ha_" + name];
-  if (!handConfig || !handConfig.on) return null;
-  const path = hand_shape(handConfig);
-  let fill = handConfig.c;
-  if (ambient && ambient !== "plate") {
-    const lum = 0.2126 * fill[0] + 0.7152 * fill[1] + 0.0722 * fill[2];
-    if (lum < 0.4) fill = [0.9, 0.9, 0.9, 1];
-  }
-  return layer_svg(S, [{ role: "hand", path, fill }]);
-}
-function svg_cap(S) {
-  if (!S.ha_on || S.ha_cap <= 0) return null;
-  const path = circle(S.ha_cap);
-  return layer_svg(S, [{ role: "cap", path, fill: S.c_cap }]);
-}
-function svg_preview(S, statik) {
-  const items = [];
-  const rings = statik.rings.slice().reverse();
-  if (statik.plate) items.push({ role: "plate", path: statik.plate, fill: S.c_plate });
-  for (const d of rings) {
-    if (d.tints) {
-      d.tints.forEach((tint) => items.push({ role: "ring", path: tint.path, fill: d.ring.c }));
-    } else {
-      items.push({ role: "ring", path: d.path, fill: d.ring.c });
-    }
-  }
-  if (S.ha_on) {
-    const angles = hand_angles(10 * 3600 + 10 * 60 + 31, (BEATS[S.ha_beat] || BEATS[0])[1]);
-    const hands = ["hour", "minute", "second"];
-    hands.forEach((name, i) => {
-      const h = S["ha_" + name];
-      if (h && h.on) {
-        items.push({ role: "hand", path: turned(hand_shape(h), angles[i]), fill: h.c });
-      }
-    });
-    if (S.ha_cap > 0) {
-      items.push({ role: "cap", path: circle(S.ha_cap), fill: S.c_cap });
-    }
-  }
-  return layer_svg(S, items, { size: 450 });
-}
-async function svg_to_png_bytes(svgString, size = 450) {
-  if (typeof document === "undefined") {
-    throw new Error("svg_to_png_bytes requires a browser DOM environment");
-  }
-  const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  try {
-    const img = new Image();
-    img.src = url;
-    await img.decode();
-    const canvas2 = document.createElement("canvas");
-    canvas2.width = size;
-    canvas2.height = size;
-    const ctx = canvas2.getContext("2d");
-    ctx.drawImage(img, 0, 0, size, size);
-    const pngBlob = await new Promise((resolve) => canvas2.toBlob(resolve, "image/png"));
-    if (!pngBlob) throw new Error("Canvas PNG export failed");
-    return new Uint8Array(await pngBlob.arrayBuffer());
-  } finally {
-    URL.revokeObjectURL(url);
-  }
+            <!-- No provider picked: Dial Tool built-in window (or nothing, if turned off) -->
+            <Complication type="EMPTY">
+                <Group name="${n}_builtin" x="0" y="0" width="${w}" height="${h}">
+                    <ListConfiguration id="win_${index}">
+                        <ListOption id="0">
+                            <Group name="${n}_sprite" x="0" y="0" width="${w}" height="${h}" alpha="255">
+                                <Variant mode="AMBIENT" target="alpha" value="[CONFIGURATION.aod_plate] == '2' ? 255 : 200" />
+                                <PartImage x="0" y="0" width="${sheetW}" height="${sheetH}" renderMode="SOURCE">
+                                    <Transform target="x" value="-(${colExpr}) * ${w}" />
+                                    <Transform target="y" value="-(${rowExpr}) * ${h}" />
+                                    <Image resource="window_${index}" />
+                                </PartImage>
+                                <PartDraw x="0" y="0" width="${w}" height="${h}" renderMode="MASK">
+                                    <Rectangle x="0" y="0" width="${w}" height="${h}">
+                                        <Fill color="#FFFFFF" />
+                                    </Rectangle>
+                                </PartDraw>
+                            </Group>
+                        </ListOption>
+                        <ListOption id="1">
+                            <PartDraw x="0" y="0" width="1" height="1" alpha="0">
+                                <Rectangle x="0" y="0" width="1" height="1">
+                                    <Fill color="#00000000" />
+                                </Rectangle>
+                            </PartDraw>
+                        </ListOption>
+                    </ListConfiguration>
+                </Group>
+            </Complication>
+
+            <!-- Stock complications -->
+            <Complication type="SHORT_TEXT">
+${inked(`${n}_st`, w, h, dayInk, aodInk, shortText, P)}
+            </Complication>
+            <Complication type="RANGED_VALUE">
+${inked(`${n}_rv`, w, h, dayInk, aodInk, ranged, P)}
+            </Complication>
+            <Complication type="MONOCHROMATIC_IMAGE">
+${inked(`${n}_mi`, w, h, dayInk, aodInk, mono, P)}
+            </Complication>
+            <Complication type="SMALL_IMAGE">
+${icon_part(Math.round((w - imgS) / 2), Math.round((h - imgS) / 2), imgS, null, "[COMPLICATION.SMALL_IMAGE]", P)}
+            </Complication>
+        </ComplicationSlot>`;
 }
 
 // web/src/wearos/fflate.js
@@ -8597,7 +8866,7 @@ function unzipSync(data, opts) {
 }
 
 // web/src/wearos/base_template.js
-var BASE_WFF_APK_B64 = "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";
+var BASE_WFF_APK_B64 = "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kAwAAA4AAgByZXNvdXJjZXMuYXJzYwAAAgAMAJAMAAABAAAAAQAcAMQDAAAcAAAAAAAAAAABAACMAAAAAAAAAAAAAAAMAAAAFQAAACcAAAAtAAAAOgAAAEkAAABUAAAAXwAAAGoAAAB1AAAAlQAAALsAAADpAAAAHQEAAFIBAAB4AQAApgEAAMcBAADvAQAAHwIAAEMCAABrAgAAkAIAALUCAADaAgAA/wIAABcDAAAJCURpYWwgVG9vbAAGBkRpbW1lZAAPD0RpbW1pbmcgT3B0aW9ucwADA09mZgAKClB1cmUgQmxhY2sADAxTYW1lIGFzIERpYWwACAhXaW5kb3cgMQAICFdpbmRvdyAyAAgIV2luZG93IDMACAhXaW5kb3cgNAAdHXJlcy9kcmF3YWJsZS1ub2RwaS12NC9jYXAucG5nACMjcmVzL2RyYXdhYmxlLW5vZHBpLXY0L2RpYWxfZmFjZS5wbmcAKytyZXMvZHJhd2FibGUtbm9kcGktdjQvZGlhbF9mYWNlX2FtYmllbnQucG5nADExcmVzL2RyYXdhYmxlLW5vZHBpLXY0L2RpYWxfZmFjZV9hbWJpZW50X2JsYWNrLnBuZwAyMnJlcy9kcmF3YWJsZS1ub2RwaS12NC9kaWFsX2ZhY2VfYW1iaWVudF9kaW1tZWQucG5nACMjcmVzL2RyYXdhYmxlLW5vZHBpLXY0L2hvdXJfaGFuZC5wbmcAKytyZXMvZHJhd2FibGUtbm9kcGktdjQvaG91cl9oYW5kX2FtYmllbnQucG5nAB4ecmVzL2RyYXdhYmxlLW5vZHBpLXY0L2ljb24ucG5nACUlcmVzL2RyYXdhYmxlLW5vZHBpLXY0L21pbnV0ZV9oYW5kLnBuZwAtLXJlcy9kcmF3YWJsZS1ub2RwaS12NC9taW51dGVfaGFuZF9hbWJpZW50LnBuZwAhIXJlcy9kcmF3YWJsZS1ub2RwaS12NC9wcmV2aWV3LnBuZwAlJXJlcy9kcmF3YWJsZS1ub2RwaS12NC9zZWNvbmRfaGFuZC5wbmcAIiJyZXMvZHJhd2FibGUtbm9kcGktdjQvd2luZG93XzAucG5nACIicmVzL2RyYXdhYmxlLW5vZHBpLXY0L3dpbmRvd18xLnBuZwAiInJlcy9kcmF3YWJsZS1ub2RwaS12NC93aW5kb3df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";
 
 // web/src/wearos/apk_sig_template.js
 var APK_SIG_BLOCK_B64 = "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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPgPAAAAAAAAQVBLIFNpZyBCbG9jayA0Mg==";
@@ -8949,6 +9218,10 @@ function build_wearos_apk(watchfaceXml, drawables = {}, metadata = {}) {
     minute_hand_ambient: "res/drawable-nodpi-v4/minute_hand_ambient.png",
     second_hand: "res/drawable-nodpi-v4/second_hand.png",
     cap: "res/drawable-nodpi-v4/cap.png",
+    window_0: "res/drawable-nodpi-v4/window_0.png",
+    window_1: "res/drawable-nodpi-v4/window_1.png",
+    window_2: "res/drawable-nodpi-v4/window_2.png",
+    window_3: "res/drawable-nodpi-v4/window_3.png",
     preview: "res/drawable-nodpi-v4/preview.png",
     icon: "res/drawable-nodpi-v4/icon.png"
   };
@@ -13328,7 +13601,7 @@ var DialTool = class _DialTool {
       }
       if (kind === "wearos") {
         this.log("building Wear OS Watch Face APK\u2026");
-        const xml = generate_watchface_xml(S);
+        const xml = generate_watchface_xml(S, statik);
         const drawables = {
           dial_face: await svg_to_png_bytes(svg_dial_face(S, statik)),
           dial_face_ambient: await svg_to_png_bytes(svg_dial_face(S, statik, "black")),
@@ -13343,6 +13616,9 @@ var DialTool = class _DialTool {
           preview: await svg_to_png_bytes(svg_preview(S, statik)),
           icon: await svg_to_png_bytes(svg_preview(S, statik))
         };
+        for (const x of statik.windows || []) {
+          drawables["window_" + x.index] = await svg_to_png_bytes(svg_window_sheet(S, x));
+        }
         const label = (S.wearos_name || "").trim() || "Dial Tool";
         const pkg = format_package_name(S.wearos_pkg || "", label);
         const apkBytes = await build_signed_wearos_apk(xml, drawables, { label, packageId: pkg });
