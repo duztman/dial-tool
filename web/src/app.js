@@ -1068,10 +1068,13 @@ class DialTool {
     this.watchers[0].observe(this.time_slider);
     this.watchers.push(new ResizeObserver(() => this.set_speed(this.speed)));      // the slow steps' share of the track follows its width
     this.watchers.at(-1).observe(this.speed_slider);
-    // Fit: a plain magnifier at the left of its word (Okay, 15 Oct 2026, 00:51: "fit gets a regular magnifier icon on its left")
-    const fit_button = el("button", { type: "button", id: "fit", className: "fit", title: "Show the whole page", onclick: () => { this.fit(); this.render(); } });
-    fit_button.innerHTML = icon(TOOL_ICONS.find);
-    fit_button.append(el("span", { textContent: "Fit" }));
+    // Fit: a word button padded like NOW and AM; the magnifier stands alone before it, between the zoom steps and FIT
+    // (#315, 4.51.1; Okay, 17 Oct 2026: "icon moves out of the fit box, sits in between plusminus and fit, the horizontal
+    // padding like now and am"). Inside the button at its word's left from 15 Oct to 4.51.
+    const fit_button = el("button", { type: "button", id: "fit", className: "fit", title: "Show the whole page" }, el("span", { textContent: "Fit" }));
+    fit_button.onclick = () => { this.fit(); this.render(); };
+    const zoom_sign = el("span", { className: "zoomsign", ariaHidden: "true" });
+    zoom_sign.innerHTML = icon(TOOL_ICONS.find);
     const bar = el("footer", { className: "bar" },
       el("div", { className: "lead" }, this.play_button, this.speeds, time_box,
         el("button", { type: "button", id: "now", textContent: "Now", title: "The time it is now", onclick: () => this.to_now() })),
@@ -1080,7 +1083,7 @@ class DialTool {
         el("span", { className: "zooms" },
           view("zoom-out", "Zoom out", SIGNS.minus, () => { this.zoom(1 / 1.4, middle()); this.render(); }),
           view("zoom-in", "Zoom in", SIGNS.plus, () => { this.zoom(1.4, middle()); this.render(); })),
-        fit_button));
+        zoom_sign, fit_button));
     this.set_speed(1);
     const guides = this.guides_box();
     // on the preview: undo · redo top left, beside the panel (Okay, 13 Oct 2026) · the Guides switch top right · Backdrop bottom left

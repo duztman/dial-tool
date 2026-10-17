@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.51.1 (web version) · 17 Oct 2026
+
+- **The magnifier out of FIT** (#315; Okay, 17 Oct: "icon moves out of the fit box, sits in between plusminus and fit; the horizontal padding like now and am"): at the bar's right the zoom area is now − + · the magnifier alone, in the bar's light tone · **FIT**, a word button as wide as its word and NOW's padding either side (a column wide, with the magnifier inside, since 15 Oct). The phone's own rule for FIT's width went with it: the one rule serves both.
+
 ## beta 4.51 (web version) · 17 Oct 2026
 
 Phase H, the fonts, from Okay's notes (p. 12–13) alone (17 Oct: "draw me all the sketches … proceed with plan").

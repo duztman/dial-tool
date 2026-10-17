@@ -1,29 +1,28 @@
 # Handoff — taking over the Dial Tool
 
-*Written 16 Oct 2026, night, at beta 4.46.5, by the session that built 4.42–4.46.5 (Okay: "devise way to handoff to another agent"); §1 rewritten 17 Oct 2026 at beta 4.49.1 by the session that built 4.46.6–4.49.1. For the next Claude session on this repo. §1 is rewritten at every handover; the rest changes when something new is learnt.*
+*Written 16 Oct 2026, night, at beta 4.46.5, by the session that built 4.42–4.46.5 (Okay: "devise way to handoff to another agent"); §1 rewritten 17 Oct 2026 at beta 4.51.1 (and before at 4.49.1) by the session that built 4.46.6–4.49.1. For the next Claude session on this repo. §1 is rewritten at every handover; the rest changes when something new is learnt.*
 
 A new session starts with no memory of the last one: the transcript stays in the old container. Everything a successor needs is in the repo. Use this page to find it.
 
-## 1 · Where things stand (17 Oct 2026, late)
+## 1 · Where things stand (17 Oct 2026, night)
 
-- **Beta 4.49.1** is on `dev` and the live page (https://duztman.github.io/dial-tool/); **`main` is 4.46.5** (Okay releases to `main` on his word: `tools/release.sh main`).
-- **17 Oct's pushes** (all live): 4.46.6 (#310, #307, #308) · 4.46.7 (#313: 42 fonts) · 4.47 (#296, #257 Resize and *resize from*, #185, #182 closed) · 4.47.1 (#256 fit and the list's pill) · 4.47.2 (#244) · 4.48 (#297 the text ring, phase I) · 4.49 (#286, #289, #288, Okay's watch tweaked) · 4.49.1 (#287: six new dials drawn).
-- **The plan** (phases A–J, `docs/build-list.md`): A–F, I and J done; G half done; H on hold. **Everything left waits for Okay:**
-  1. **His picks**: the six new Gallery dials (#287) — he deletes what he doesn't want (`web/gallery.mjs`, then `node gallery.mjs && node build.mjs`).
-  2. **His sketches**: #251 (Positions preview), #253 (the drawer) with #254 (unselected rows), #258 (Give way). Don't build from the words.
-  3. **His eye**: #255 (kind icons, smaller, the numerals in a fat Inter) and #259 (placement icons) — make mock-ups through `web/icons/` and show him first.
-  4. **H · fonts** #273–#276: on hold (17 Oct: "push the design ui stuff for later").
-  5. **Loose ends** for him: #294 (specials with no figure), #231 (a window's two names); the guide is still built on 4.36.1, rebuilt only on his word (R25).
-- **Readings to confirm with him** (brief §4, 17 Oct rows): fonts *joined* (42), not competed; a numeral's Size stays in the font box (#257); the text ring's snap is 2°, typed values too; "add a line" (#286) read as the rows the new dials add; the B-Uhr neutral on *his* layout.
+- **Beta 4.51.1** is on `dev` and the live page (https://duztman.github.io/dial-tool/); **`main` is 4.46.5** (Okay releases to `main` on his word: `tools/release.sh main`).
+- **17 Oct's pushes** (all live): 4.46.6 · 4.46.7 (42 fonts) · 4.47 · 4.47.1 · 4.47.2 · 4.48 (the text ring) · 4.49 · 4.49.1 (six new dials) · 4.49.2 (the controller from Okay's SVG, the play flash) · 4.50 (the ring drawer, the rows, the kind icons) · 4.50.1 (Positions preview, quiet rows) · 4.50.2 (Give way pictured, the placement icons) · 4.51 (phase H: EN, wide sliders, style tabs, Light · Dark) · 4.51.1 (#315: the magnifier out of FIT).
+- **The plan** (phases A–J, `docs/build-list.md`) is **built through**. Okay, 17 Oct: "now draw me all the sketches. gallery needs none of my approval right now. proceed with plan" — so G's rest and H were built from his notes alone (brief §4, 17 Oct rows say which readings were Claude's). **What waits for Okay:**
+  1. **His eye** on what was drawn from the words: the kind icons (#255), the placement micro dials (#259), Give way's square and drawing (#258), the Positions preview (#251), the drawer (#253/#254), the controller (#314), the font box's hanging tabs and EN (#273, #275), Light · Dark (#276). Each is one push to change; the sketches are in `web/test/out/` (4-rings, 4c22-font, 4c1-picker).
+  2. **His picks**: the six new Gallery dials (#287) — he deletes what he doesn't want (`web/gallery.mjs`, then `node gallery.mjs && node build.mjs`).
+  3. **Loose ends** for him: #294 (specials with no figure), #231 (a window's two names), #273's unread line ("end gray lines with the text as shown here"); the guide is still built on 4.36.1, rebuilt only on his word (R25).
+  4. **Release to `main`** when he says so.
+- **Readings to confirm with him** (brief §4, 17 Oct rows): fonts *joined* (42), not competed; a numeral's Size stays in the font box (#257); the text ring's snap is 2°; the B-Uhr neutral on *his* layout; on path's placement arrows run along the ring; a weight axis without named styles gets Regular · Bold tabs; EN says what the font does, nothing stored.
 - **His Mac copy**: not reachable from a session; brief §5 question 14 — **not to be raised again**.
-- **Okay's last words** (17 Oct): "Go on without me, my jobs at the end"; "Tweaked my dial in the meantime, replace: <link>" (done, 4.49).
+- **Okay's last words** (17 Oct): "Go on without me, my jobs at the end"; "proceed with plan … ok go now, well done until now"; then the note that became #315.
 
 ## 2 · First steps in a new session
 
 1. `bash tools/setup.sh`: the system library, the Python packages, the two test fonts, `npm install`, and the clone's fetch widened to every branch (a session's clone is shallow, so single-branch; without that `release.sh` builds the live page on a stale `gh-pages` — found 17 Oct). Safe to run twice.
 2. Read what CLAUDE.md lists, in its order. Two places hold the recent work:
    - the last ~25 rows of `docs/brief.md` §4;
-   - the build list's rows #249–#311 with the phases above them.
+   - the build list's rows #249–#315 with the phases above them.
 3. `git log --oneline -15 dev` and `docs/versions.md`'s top rows confirm where things stand.
 4. `cd web && npm test > some.log 2>&1` (about 6 minutes). See it pass before changing anything, and look at `web/test/out/`.
 
