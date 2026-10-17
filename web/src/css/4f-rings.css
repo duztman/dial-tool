@@ -148,4 +148,24 @@
   .popname { cursor: ew-resize; }
   .popname:hover { text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: var(--u1); }
   .popname.dragging { color: var(--ink); }
+
+  /* Give way to rings above (#258, 4.50.2; Okay's notes, p. 4: "what's happening should be visible here"): at the
+     left two side tabs, Skip where over Knock out, cells drawn with the rows' white lines; the open one lights up white
+     and its right side is open onto the square beside it. The square has the same white line round it; inside, the
+     drawing (the icons' line, R33, twice an icon's size), the choices as radio buttons at its foot, and Clearance as
+     a quiet row (form B) under them when something is knocked out */
+  .giveway { grid-column: 2 / -1; display: grid; grid-template-columns: subgrid; align-items: start; margin: var(--u2) 0 var(--unit); }      /* the tabs two columns wide, the square the other four */
+  .givetabs { grid-column: 1 / span 2; display: grid; }
+  .givetab { height: var(--line); padding: 0 var(--name-in); border: var(--hair) solid var(--row-rule); border-bottom: 0; background: none; color: var(--grey); text-align: left; font: inherit; font-size: var(--t-s); }
+  .givetab:last-child { border-bottom: var(--hair) solid var(--row-rule); }
+  .givetab:hover { background: var(--hover); }
+  .givetab.on { position: relative; z-index: 1; width: calc(100% + var(--gap) + var(--hair)); border-right-color: var(--field); background: var(--field); color: var(--ink); font-weight: 600; }      /* lit white and reaching across the gap onto the square's line: joined to it */
+  .givebox { grid-column: 3 / -1; display: grid; gap: var(--u2); padding: var(--u2) 0 0; border: var(--hair) solid var(--row-rule); background: var(--field); }
+  .givepic { display: flex; justify-content: center; padding: 0 var(--u3); }
+  .givepic svg { display: block; max-width: 100%; height: auto; }
+  .givepic .above { opacity: 0.45; }      /* the rings above: context, as the dial's edge behind the A's */
+  .givechoices { display: grid; padding: 0 var(--u3); }
+  .givechoices .check { height: var(--control); font-size: var(--t-s); }
+  .givebox > .row.side.quiet { grid-template-columns: var(--side-label) minmax(0, 1fr) var(--side-num); padding: 0 var(--u3); }
+  .givebox > .row.side.quiet > label { font-size: var(--t-s); }
 }

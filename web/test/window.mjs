@@ -506,6 +506,28 @@ check(Math.abs(at12[0][0]) < 0.06 && at12[0][1] > 1 && Math.abs(at12[1][1]) < 0.
   check(pos[0] && pos[1] === "0px" && pos[2] === "none" && pos[3] + pos[4] === pos[5] && pos[3] === Math.ceil(pos[5] / 3) && pos[7] === 15 && pos[8] === "Count Start ° Span ° Every Offset" && pos[9] && pos[10] === "img" && pos[11].startsWith(`${pos[3]} of ${pos[5]} positions used`) && popped,
     `Positions (#251): a round preview, no frame (${pos[1]}, ${pos[2]}): ${pos[3]} marks in ink and ${pos[4]} faint of ${pos[5]} with Every 3, the first marked at ${pos[7]}°; the numbers quiet rows without sliders (${pos[8]}), a name opening the controller with the slider (${popped}); it says "${pos[11]}"`);
 }
+// Give way (#258, 4.50.2): two side tabs, the open one white and joined to a white-bordered square; in it a drawing of the choice, the choices as radio buttons, Clearance a quiet row only when something is knocked out
+{
+  const was = await S("[S.rings[S.ui_ring].skip, S.rings[S.ui_ring].knock, S.rings[S.ui_ring].clear]");
+  await page.evaluate(() => { const t = window.dial_tool; t.set_value("ring", "skip", 2); t.set_value("ring", "knock", 0); });
+  await frame();
+  const g1 = await page.evaluate(() => { const w = document.querySelector("#give-way"), tabs = [...w.querySelectorAll(".givetab")], box = w.querySelector("#give-box"), t0 = tabs[0].getBoundingClientRect(), b = box.getBoundingClientRect(), own = w.querySelector(".givepic path.own").getAttribute("d");
+    return [tabs.map((x) => x.textContent).join(" · "), tabs[0].classList.contains("on"), getComputedStyle(tabs[0]).backgroundColor, getComputedStyle(box).backgroundColor, getComputedStyle(box).borderTopColor, Math.round(t0.right) >= Math.round(b.left), (own.match(/M/g) || []).length, [...w.querySelectorAll(".givechoices input[type=radio]")].length, w.querySelector(".givechoices input:checked").id, w.querySelector(".row.side.quiet").hidden, tabs[0].getAttribute("role"), w.querySelector(".givepic").getAttribute("role")]; });
+  await page.click("#give-tab-1");
+  await page.click("#ring-give-knock-3");
+  await page.evaluate(() => window.dial_tool.set_value("ring", "clear", 0.3));
+  await frame();
+  const g2 = await page.evaluate(() => { const w = document.querySelector("#give-way"), own = w.querySelector(".givepic path.own").getAttribute("d"), t = window.dial_tool.ring();
+    return [w.querySelector("#give-tab-1").classList.contains("on"), t.knock, (own.match(/M/g) || []).length, own.includes("V60"), w.querySelector(".row.side.quiet").hidden, w.querySelector(".row.side.quiet label").textContent, getComputedStyle(w.querySelector(".row.side.quiet input[type=range]")).display]; });
+  await page.evaluate(([skip, knock, clear]) => { const t = window.dial_tool; t.set_value("ring", "skip", skip); t.set_value("ring", "knock", knock); t.set_value("ring", "clear", clear); t.give_tab = null; }, was);
+  check(g1[0] === "Skip where · Knock out" && g1[1] && g1[2] === "rgb(255, 255, 255)" && g1[3] === "rgb(255, 255, 255)" && g1[4] === "rgb(255, 255, 255)" && g1[5] && g1[6] === 7 && g1[7] === 4 && g1[8] === "ring-give-skip-2" && g1[9] && g1[10] === "tab" && g1[11] === "img"
+    && g2[0] && g2[1] === 3 && g2[2] === 9 && g2[3] && !g2[4] && g2[5] === "Clearance" && g2[6] === "none",
+    `Give way (#258): tabs ${g1[0]}, the open one white (${g1[2]}) and touching the white-bordered square (${g1[3]}, ${g1[4]}); Skip where "markers & numerals above" draws ${g1[6]} of 9 ticks, four radio buttons with ${g1[8]} chosen, no Clearance (hidden ${g1[9]}); Knock out "everything above" draws all ${g2[2]} ticks, some cut short, and Clearance as a quiet row (${g2[5]}, slider ${g2[6]})`);
+}
+{
+  const tiles = await page.$$eval("[id^=ring-mode-Placement-] svg", (es) => es.map((e) => { const d = e.querySelector("path").getAttribute("d"); return [(d.match(/M/g) || []).length, e.querySelector("circle") !== null, d.split(/[ML]/).filter(Boolean).every((pt) => pt.trim().split(" ").every((v) => Math.abs((+v * 4) % 2) === 1))]; }));
+  check(tiles.length === 4 && tiles.every((t) => t[0] === 12 && t[1] && t[2]), `Placement's four tiles are micro dials (#259): a circle and six stemmed arrows each, every point on the quarter points (${tiles.map((t) => t.join("/")).join(" · ")})`);
+}
 check(await page.$$eval(".row.pick .pickt svg", (e) => e.length) >= 4, "Kind is a row of picture tiles");
 await page.click("#ring-kind-square"); await page.click("#ring-kind-Kind-0");
 check(await S("S.rings[S.ui_ring].kind === 0 && S.rings[S.ui_ring].width === 1"), "changing a ring's kind keeps its settings");

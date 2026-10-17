@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.50.1";
+export const VERSION = "beta 4.50.2";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -32,7 +32,7 @@ export const SHAPES = ["bar", "wedge", "dot", "file"];
 export const TWELVES = ["same", "double", "triangle", "none"];
 export const SKIP_FROM = ["nothing", "markers above", "markers & numerals above", "all marks above"];
 export const KNOCK_FROM = ["nothing", "markers above", "markers & numerals above", "everything above"];
-const FROM_KINDS = [[], ["markers"], ["markers", "numerals", "text"], ["ticks", "markers", "numerals", "band", "text"]];      // a text ring counts with the numerals (#297)
+export const FROM_KINDS = [[], ["markers"], ["markers", "numerals", "text"], ["ticks", "markers", "numerals", "band", "text"]];      // a text ring counts with the numerals (#297)
 export const MODES = ["upright", "radial", "radial, auto-flip", "on path"];
 export const ANCHORS = ["centre", "baseline", "ascender"];      // the point of a numeral that sits on its ring's radius (web version, 13 Oct 2026). Only grows at its end (R9)
 export const FROM = ["outer", "middle", "inner"];               // the point of a mark or a band that sits on its ring's radius: its outer end, its middle, its inner end (#257, 4.47). Only grows at its end (R9)

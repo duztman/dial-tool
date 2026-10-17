@@ -150,6 +150,14 @@ const solid = `fill="currentColor" stroke="none"`;
 const faint = `${sw(CURVE)} opacity="0.45"`;       // context (the dial's edge behind the A's): as heavy as any line, fainter in colour
 const KIND_PIC = 24;                               // a kind's picture, a square this wide: the ring line and the Add menu
 const A = (x) => `M${x - 2.75} 12.25L${x} 5.5L${x + 2.75} 12.25`;      // an A, as a chevron: how a numeral stands
+// an arrow with a stem, 5 long, its head's legs 1.75, centred on (px, py) and pointing dir degrees clockwise from up;
+// every point snapped to the quarter points (R33 rule 3), so an upright arrow's stem covers whole dots
+const quarter = (v) => Math.floor(v) + (v - Math.floor(v) < 0.5 ? 0.25 : 0.75);
+const arrow_at = (px, py, dir) => {
+  const t = dir * Math.PI / 180, ux = Math.sin(t), uy = -Math.cos(t), L = 5, H = 1.75;
+  const pt = (k, side) => [quarter(px + ux * k - uy * side), quarter(py + uy * k + ux * side)].join(" ");
+  return `M${pt(-L / 2, 0)}L${pt(L / 2, 0)}M${pt(L / 2 - H, -H)}L${pt(L / 2, 0)}L${pt(L / 2 - H, H)}`;
+};
 const PICS = {
   // a ring's kind: the whole circle, as on a dial (Okay's drawing, 13 Oct 2026), centre 12. The four weigh about the
   // same (Okay, 13 Oct 2026: "equalize contrast"): many thin ticks (1), eight thicker marks (2), four numbers in the
@@ -170,12 +178,12 @@ const PICS = {
     `<path d="M11 4H27L19 23Z" ${solid}/>`,
     `<rect x="16.75" y="4.75" width="4.5" height="17.5" stroke-width="2" stroke-dasharray="1.5 2.5"/>`,      // the baton, outlined and dashed (a place left empty): a dashed line looks lighter than a whole one, so 2
   ],
-  mode: [                                          // an A at 3 and at 6 o'clock: how it stands
-    `<path d="M4 23A15 15 0 0 1 34 23" ${faint}/><path d="M5.5 17L8.25 10.25L11 17M16.25 12.25L19 5.5L21.75 12.25M27 17L29.75 10.25L32.5 17"/>`,
-    `<path d="M4 23A15 15 0 0 1 34 23" ${faint}/><path d="${A(19)}"/><path d="${A(19)}" transform="rotate(-52 19 23)"/><path d="${A(19)}" transform="rotate(52 19 23)"/>`,
-    `<circle cx="19" cy="13.5" r="11.5" ${faint}/><path d="M16.75 8.75L19 3.5L21.25 8.75M16.75 23.5L19 18.25L21.25 23.5"/>`,
-    `<path d="M4 23A15 15 0 0 1 34 23" ${faint}/>` + [0, -24, 24, -48, 48].map((t) => `<path d="M17 11.5L19 6.5L21 11.5" transform="rotate(${t} 19 23)"/>`).join(""),
-  ],
+  // Placement (#259, 4.50.3; Okay's notes, p. 6: "each shows what it does on a ring, as auto-flip's does; no clash
+  // with the dial's ring; cleaner arrows with stems, six arrows each"): a micro dial — the ring as a faint circle, and
+  // on it six arrows, each the way up of a numeral standing there: all up (upright) · pointing out (radial) · out above,
+  // in below (auto-flip) · along the ring (on path). The A's at 3 and 6 o'clock of 4.36–4.50.2 are gone.
+  mode: [(a) => 0, (a) => a, (a) => (a > 90 && a < 270 ? a + 180 : a), (a) => a + 90].map((way) =>
+    `<circle cx="19" cy="13.5" r="11.5" ${faint}/><path d="${[0, 60, 120, 180, 240, 300].map((a) => arrow_at(19 + 7.5 * Math.sin(a * Math.PI / 180), 13.5 - 7.5 * Math.cos(a * Math.PI / 180), way(a))).join("")}"/>`),
   // a window's shape: rectangle · circle · polygon · arch · arc — on 26 × 18, inside the Shape line's buttons (#265,
   // 4.46.1; 38 × 27 before, fitted down by icons/fit.mjs, the box redrawn on quarter points)
   hole: [
@@ -523,10 +531,12 @@ const ROWS = {
     num("every", "Every", 1, 60, 1, { whole: true, side: true, quiet: true }),
     num("offset", "Offset", 0, 59, 1, { whole: true, side: true, quiet: true }),
     chk("invert", "Skip those instead", { side: true }),
-    hdr("Give way to rings above", { folded: true }),
-    pop("skip", "Skip where", G.SKIP_FROM),
-    pop("knock", "Knock out", G.KNOCK_FROM),
-    num("clear", "Clearance", 0, 2, 0.01, { show: (R) => R.knock !== 0 }),
+    // Give way (Okay's notes, p. 4, #258, 4.50.2: "what's happening should be visible here"): Skip where and Knock out
+    // as side tabs, the open one lit white and attached to a white-bordered square that shows what the choice does, a
+    // drawing in the icons' style; the choices at its foot as radio buttons; Clearance a quiet row under them (R15 B),
+    // shown only when something is knocked out (R16)
+    hdr("Give way to rings above", { folded: true, summary: (S, app) => { const R = app.ring(); return [G.SKIP_FROM[R.skip], G.KNOCK_FROM[R.knock], R.knock ? `clearance ${fmt(R.clear, 0.01)}` : ""]; } }),
+    custom("give_way"),
     hdr("12 o’clock · first position", { folded: true, show: kind_in("markers") }),
     pick("twelve", "Style", G.TWELVES, PICS.twelve, { show: kind_in("markers") }),
     num("twelve_scale", "Scale ×", 0.5, 2.5, 0.05, { show: (R) => G.kind_of(R) === "markers" && R.twelve !== 3 }),
@@ -2558,6 +2568,61 @@ class DialTool {
     });
     wrap.append(tabs);
     out.refresh = (S) => [...tabs.children].forEach((b, i) => { b.classList.toggle("on", i === S.ui_hand); b.setAttribute("aria-selected", String(i === S.ui_hand)); });
+  }
+
+  /** Give way to rings above (#258, 4.50.2): two side tabs (Skip where · Knock out) and a square that pictures the
+   *  choice. The picture: a row of this ring's ticks, and over them three marks of rings above, faint — a marker, a
+   *  numeral, a tick. Skip where drops the tick under each mark the choice names; Knock out cuts it back by the
+   *  clearance instead. Which tab is open is this session's, not the dial's (nothing stored, R31 free). */
+  row_give_way(wrap, out) {
+    wrap.className = "giveway";
+    wrap.id = "give-way";
+    const NAMES = ["Skip where", "Knock out"], KEYS = ["skip", "knock"], LISTS = [G.SKIP_FROM, G.KNOCK_FROM];
+    const tabs = el("div", { className: "givetabs", role: "tablist", ariaLabel: "How this ring gives way" });
+    const box = el("div", { className: "givebox", id: "give-box" });
+    const picture = el("div", { className: "givepic", role: "img" });
+    const choices = el("div", { className: "givechoices", role: "radiogroup" });
+    const clear = this.build_row(num("clear", "Clearance", 0, 2, 0.01, { scope: "ring", side: true, quiet: true }));
+    box.append(picture, choices, clear.el);
+    wrap.append(tabs, box);
+    NAMES.forEach((name, i) => {
+      const b = el("button", { type: "button", className: "givetab", id: "give-tab-" + i, textContent: name, role: "tab", onclick: () => { this.give_tab = i; this.sync_rows(); } });
+      tabs.append(b);
+    });
+    // the drawing, 2 : 1, the icons' line (R33): this ring's ticks along the foot, the marks above in a lighter tone
+    const TICKS = [16, 30, 44, 58, 72, 86, 100, 114, 128], ABOVE = { 30: "markers", 72: "numerals", 114: "ticks" }, BOTTOM = { 30: 46, 72: 47, 114: 44 };
+    const draw = (tab, i) => {
+      const kinds = G.FROM_KINDS[i], gap = tab === 1 ? Math.max(2, 20 * (this.ring().clear || 0)) : 0;      // the clearance in the drawing: 20 px a mm, never less than a line's width
+      const ticks = TICKS.map((x) => {                   // a tick's line on the quarter points, as every icon line (R33 rule 3)
+        const kind = ABOVE[x];
+        if (!kind || !kinds.includes(kind)) return `M${x + 0.25} 40V60`;
+        if (tab === 0) return "";
+        return `M${x + 0.25} ${Math.min(60, BOTTOM[x] + gap)}V60`;
+      }).join("");
+      return `<svg viewBox="0 0 144 72" width="144" height="72" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="butt">`
+        + `<g class="above"><rect x="27.5" y="20" width="6" height="26" fill="currentColor" stroke="none"/><text class="figure" x="72.25" y="35" font-size="24" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">6</text><path d="M114.25 28V44"/></g>`
+        + `<path class="own" d="${ticks}"/></svg>`;
+    };
+    let drawn = "";
+    out.refresh = (R) => {
+      const tab = this.give_tab ?? (R.knock && !R.skip ? 1 : 0), key = KEYS[tab], list = LISTS[tab], at = R[key] || 0;
+      [...tabs.children].forEach((b, i) => { b.classList.toggle("on", i === tab); b.setAttribute("aria-selected", String(i === tab)); });
+      const now = `${tab}:${at}:${R.clear}`;
+      if (now !== drawn) {
+        drawn = now;
+        picture.innerHTML = draw(tab, at);
+        choices.ariaLabel = NAMES[tab];
+        choices.replaceChildren(...list.map((text, i) => {
+          const id = `ring-give-${key}-${i}`;
+          const r = el("input", { type: "radio", name: "give-" + key, id, checked: i === at });
+          r.onchange = () => { if (r.checked) this.set_value("ring", key, i); };
+          return el("label", { className: "check", htmlFor: id }, r, " " + text);
+        }));
+      }
+      picture.ariaLabel = `${NAMES[tab]}: ${list[at]}`;
+      clear.el.hidden = !(tab === 1 && R.knock !== 0);
+      clear.refresh(R);
+    };
   }
 
   /** Hands, always in view, one line (Okay, 12 Oct 2026): the name, a tick to show the hands, how they move. */

@@ -105,5 +105,12 @@
     .panel:not(.held) .tabs::before { content: ""; position: absolute; z-index: -1; inset: 0 calc(-1 * var(--margin)); background: var(--paper); }
     .panel.stuck:not(.held) .tabs::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: var(--thick); background: var(--ink); }      /* under the tabs, the chosen one standing on it, as when the drawer is at its top */
     #app.show .mast { position: fixed; z-index: 6; top: var(--margin); left: var(--margin); }
+    /* Give way on a phone (#258): the two tabs side by side over the square, the open one joined to it from above */
+    .giveway { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; }
+    .givetabs { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; }
+    .givetab, .givetab:last-child { border: var(--hair) solid var(--row-rule); border-bottom: 0; }
+    .givetab + .givetab { border-left: 0; }
+    .givetab.on { width: auto; height: calc(var(--line) + var(--hair)); border-right-color: var(--row-rule); border-bottom: var(--hair) solid var(--field); }      /* a hairline taller, so it lies over the square's top line */
+    .givebox { grid-column: 1 / -1; }
   }
 }
