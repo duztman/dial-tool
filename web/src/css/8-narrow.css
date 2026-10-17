@@ -49,6 +49,7 @@
        fonts (Chrome, Edge on a desktop), never on a phone; in a narrow desktop window it would squeeze the others into
        three lines each (Okay, 15 Oct 2026, 07:14: "Installed is back. Solve this") — so here it isn't shown, and the two
        keep their second lines */
+    .picker header > .find { width: auto; flex: 1; }      /* Fonts · the Light/Dark pill · Find share the line (#276) */
     .picker .squares .adds > #local-fonts { display: none; }
     .picker .squares .adds.three > .pickt :is(small, br) { display: revert; }
     .picker .squares .adds.three > .pickt span { white-space: nowrap; }

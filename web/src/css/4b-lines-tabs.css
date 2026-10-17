@@ -38,6 +38,15 @@
   :is(.tabsbar .segs > .tab:first-child, .windowcards .card:first-child > .tab) { --cut-l: 0px; }
   :is(.tabsbar .segs > .tab:last-child, .windowcards .card:last-child > .tab) { --cut-r: 0px; }
   :is(.tabsbar .segs > .tab, .windowcards .card) + :is(.tab, .card) { margin-left: calc(-1 * var(--hair)); }      /* one line between two tabs, not two */
+  /* a hanging tab (the font box's styles, #275): the same tab turned over, hanging from the line over it — its cuts at
+     the bottom corners, no line of its own at the top (the line it hangs from is the box's). Neighbours share one line:
+     every tab but the last leaves its right side open (--line-r: 0), so the next one's left line is the line between */
+  .tab.hang { --line-r: var(--hair); }
+  .tab.hang:not(:last-child) { --line-r: 0px; }
+  .tab.hang::before { clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut-r)), calc(100% - var(--cut-r)) 100%, var(--cut-l) 100%, 0 calc(100% - var(--cut-l))); }
+  .tab.hang::after { clip-path: polygon(var(--hair) 0, calc(100% - var(--line-r)) 0, calc(100% - var(--line-r)) calc(100% - var(--in-r)), calc(100% - var(--in-r)) calc(100% - var(--hair)), var(--in-l) calc(100% - var(--hair)), var(--hair) calc(100% - var(--in-l))); }
+  .tab.hang:first-child { --cut-l: 0px; }
+  .tab.hang:last-child { --cut-r: 0px; }
   .tab:hover { --tab-fill: var(--hover); }
   .tab.on { --cut-l: 0px; --cut-r: 0px; --tab-line: var(--ink); --tab-fill: var(--ink); z-index: 1; color: var(--paper); }
   /* the Show box (#261, 4.46; 4.46.2): it grows down from the chosen tab and goes with it — a thin box darker than the

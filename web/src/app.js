@@ -411,8 +411,9 @@ const VALUE_PICS = {                               // a value button's drawing, 
 };
 
 // a language in the list, by its name; on its button, by two letters ("zh-Hans" → ZH; the font's own choice → "Lang.")
+const FONT_DARK_KEY = "dial-tool-font-dark";      // the font sheet's ground, light or dark, kept for the session (#276)
 const LANG_NAMES = { default: "As the font sets it", tr: "Turkish", nl: "Dutch", de: "German", pl: "Polish", ro: "Romanian", ca: "Catalan", ar: "Arabic", fa: "Persian", "zh-Hans": "Chinese, simplified", ja: "Japanese" };
-const lang_short = (code) => (code === "default" ? "Lang." : code.slice(0, 2).toUpperCase());      // none chosen: the button says what it is for (Okay, 13 Oct 2026: "Lang.", case and point as written; "LAN" before, a dash before that)
+const lang_short = (code) => (code === "default" ? "EN" : code.slice(0, 2).toUpperCase());      // none chosen: EN, what the font sets by itself (#273, 4.51; Okay's notes, p. 12); "Lang." until 4.50.2: the button said what it was for (Okay, 13 Oct 2026: "Lang.", case and point as written; "LAN" before, a dash before that)
 
 // a tile's word is one line: a name too long for a tile is said shorter there (its tag still says it whole)
 const TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip" };
@@ -3379,8 +3380,10 @@ class DialTool {
     swatch.classList.add("mini");
     swatch.onclick = () => this.pop_open(this.colour_of_row(crow), swatch);
     const tracking = this.build_row(own ? { ...num("tracking", "Tracking", -200, 800, 5), scope: "window", or: () => numerals().tracking } : { ...num("tracking", "Tracking", -200, 800, 5), scope: "ring" });      // the box's last line
-    const named = el("div", { className: "fontname", onclick: (e) => { if (!e.target.closest(".colour, .langs, button")) open(); } }, name, ...(lang ? [lang.el] : []), swatch, el("button", { type: "button", className: "btn", id: pre + "font-change", textContent: "Change…", onclick: open }));
-    const styles = el("div", { className: "segs styles" });
+    // the language stands at the right inside the preview's cell, on the cell's grey, knocking the preview out where it reaches (#273, 4.51; Okay's notes, p. 12)
+    const shown_cell = el("div", { className: "currentwrap" }, current, ...(lang ? [lang.el] : []));
+    const named = el("div", { className: "fontname", onclick: (e) => { if (!e.target.closest(".colour, .langs, button")) open(); } }, name, swatch, el("button", { type: "button", className: "btn", id: pre + "font-change", textContent: "Change…", onclick: open }));
+    const styles = el("div", { className: "styles", role: "tablist", ariaLabel: "Style" });      // tabs hanging from the name's line (#275, 4.51)
     const state = el("div", { className: "quiet note", id: pre + "font-note" });
     const back = el("button", { type: "button", className: "btn", id: "window-font-back", innerHTML: icon(SIGNS.copy) + "<span>Copy style of <i>Numerals</i></span>", title: "Use the top numerals ring’s font again", hidden: true,
       onclick: () => { const w = this.window(); w.family = ""; w.ps = ""; w.axes = {}; w.features = null; w.tracking = null; w.lang = null; this.changed(true); } });
@@ -3390,7 +3393,7 @@ class DialTool {
     const size = this.build_row(own ? { ...num("size", "Size %", 20, 100, 1), scope: "window" } : { ...num("size", "Size", 0.3, 8, 0.05), scope: "ring" });      // a window's text is sized in % of its height
     const axes = this.axes_part(pre, own);
     const features = this.box_part("font/features", "OpenType features", this.features_part(pre, own), true);
-    wrap.append(el("div", { className: "fontbox" }, current, named, styles, size.el, tracking.el, axes.el, features.el), ...(own ? [back] : []), state);
+    wrap.append(el("div", { className: "fontbox" }, shown_cell, named, styles, size.el, tracking.el, axes.el, features.el), ...(own ? [back] : []), state);
     let shown = null;
     out.refresh = (T) => {
       const R = own ? G.window_type(this.S, T) : T;
@@ -3409,12 +3412,22 @@ class DialTool {
         current.replaceChildren(f ? this.sample(f, "preview") : el("span", { className: "sample quiet", textContent: "not loaded" }));
         name.textContent = R.family;                // a window without a font of its own shows the numerals' font, plainly (Okay, 13 Oct 2026: no "· as the numerals" after it)
       }
-      styles.hidden = mine.length < 2;             // the family's styles, as buttons
-      styles.replaceChildren(...mine.map((x) => {
-        const b = el("button", { type: "button", textContent: x.style || x.ps, onclick: () => choose(() => this.use_font(x)) });
-        b.classList.toggle("on", x.ps === R.ps);
-        return b;
-      }));
+      // the family's styles as tabs of the name's box, hanging from its line (#275, 4.51; Okay, 16 Oct 2026: "it is a part of
+      // the font so it needs to look like tabs of the upper box which is the font name"). A variable font with a weight
+      // axis and no named styles gets Regular and Bold here, which set the axis (what a font may offer here is limited
+      // to bold and italic; its other axes stay down with the sliders)
+      const tab = (text, on, act, id) => { const b = el("button", { type: "button", className: "tab hang", textContent: text, role: "tab", id, onclick: act }); b.classList.toggle("on", on); b.setAttribute("aria-selected", String(on)); return b; };
+      let tabs = mine.length > 1 ? mine.map((x, i) => tab(x.style || x.ps, x.ps === R.ps, () => choose(() => this.use_font(x)), `${pre}font-style-${i}`)) : [];
+      if (!tabs.length && G.has_font(R.ps)) {
+        const a = G.font_axes(G.font_of(R)).wght;
+        if (a && a.max >= 600) {
+          const side = this.font_side(own), H = this.target(side.scope), now = (H.axes || {}).wght ?? side.base_axis(H, "wght", a), bold = Math.min(700, a.max);
+          const put = (v) => { const all = { ...(this.target(side.scope).axes || {}) }; if (Math.abs(v - side.base_axis(this.target(side.scope), "wght", a)) < 1e-6) delete all.wght; else all.wght = v; this.set_value(side.scope, "axes", all); };
+          tabs = [tab("Regular", now < 600, () => put(a.default), `${pre}font-style-0`), tab("Bold", now >= 600, () => put(bold), `${pre}font-style-1`)];
+        }
+      }
+      styles.hidden = tabs.length < 2;
+      styles.replaceChildren(...tabs);
       const missing = G.has_font(R.ps) ? "" : this.catalog.has(R.ps) ? "Loading… "
         : `${R.family} isn’t loaded yet, so ${G.font_list()[0].family} stands in. Press Change… to choose another or to add it. `;
       state.textContent = missing + (this.font_note || "");
@@ -3580,8 +3593,19 @@ class DialTool {
     // no Done button (Okay, 13 Oct 2026): a press beside the sheet, or Escape, puts it away. Adding fonts: a field
     // for a link or a name, and three square buttons.
     const square = (id, word, title, d, act, o = {}) => { const b = el("button", { type: "button", className: "pickt", id, title, onclick: act, ...o }); const [what, takes] = word.split(" ("); b.innerHTML = icon(d) + `<span>${what}${takes ? `<br><small>(${takes}</small>` : ""}</span>`; return b; };      // the second line, light: what it takes (Okay, 13 Oct 2026)
+    // light or dark (#276, 4.51; Okay's notes, p. 13): a pill at the top middle shows the previews on white or on a dark
+    // ground, kept for this session; the font boxes follow it, in the inverse of their present ground, never pitch black
+    // (Okay, 16 Oct 2026: "inverse of existing block can't be black")
+    const ground = el("div", { className: "pillswitch", role: "radiogroup", ariaLabel: "The previews' ground" });
+    const grounds = ["Light", "Dark"].map((w, i) => { const b = el("button", { type: "button", id: "font-ground-" + w.toLowerCase(), textContent: w, role: "radio", onclick: () => this.font_ground(i === 1) }); ground.append(b); return b; });
+    this.font_ground = (dark) => {
+      this.font_dark = dark;
+      try { sessionStorage.setItem(FONT_DARK_KEY, dark ? "1" : ""); } catch (e) { /* not kept */ }
+      $("#app").classList.toggle("font-dark", dark);
+      grounds.forEach((b, i) => { b.classList.toggle("on", (i === 1) === dark); b.setAttribute("aria-checked", String((i === 1) === dark)); });
+    };
     this.picker = el("dialog", { className: "picker", id: "font-picker" },
-      el("header", {}, el("h2", { textContent: "Fonts" }), finder),      // the search stands at the sheet's top right
+      el("header", {}, el("h2", { textContent: "Fonts" }), ground, finder),      // the search stands at the sheet's top right
       el("div", { className: "listwrap" }, list, rail),
       el("div", { className: "adding" },
         paste,
@@ -3596,6 +3620,9 @@ class DialTool {
             square("font-file-open", "Add font file (woff, ttf, otf)", "A font file from this computer: .ttf · .otf · .woff", SIGNS.sheet, () => file.click())),
           file, legend_button)));
     this.picker.tabIndex = -1;
+    let dark = false;
+    try { dark = sessionStorage.getItem(FONT_DARK_KEY) === "1"; } catch (e) { /* not kept */ }
+    this.font_ground(dark);
     window.addEventListener("resize", () => { if (this.picker.open) { this.rail_place(); this.legend_fit(); } });
     this.picker.addEventListener("click", (e) => { if (e.target === this.picker) this.picker.close(); });      // a click outside closes it
     // the legend's window closes at a press anywhere outside it (but its own button, which toggles it) (Okay, 14 Oct 2026)

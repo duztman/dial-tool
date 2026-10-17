@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.50.2 · built 2026-10-17 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.51 · built 2026-10-17 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -166,6 +166,9 @@
     --knob: 20px;                                  /* the handle on the field and on the strip */
     /* the colour pop-out is near black; inside it the usual names (--ink, --paper, --field…) are set to these */
     --night: #141413; --night-field: #262624; --night-hover: #34342F; --night-rule: #4A4A46; --night-chip-rule: rgba(255, 255, 255, 0.28);
+    /* the font sheet's dark ground (#276, 4.51): the inverse of the font box's white and the panel's grey, never pitch
+       black (Okay, 16 Oct 2026: "inverse of existing block can't be black"); the words near white, the lines a lighter grey */
+    --font-night: #3F3F3E; --font-night-well: #2F2F2E; --font-night-hover: #4B4B49; --font-night-rule: #66665F; --font-night-select: #4E6478; --font-night-ink: #ECECE8; --font-night-grey: #C6C6C1;
     /* round corners belong to colour things only: the pop-out, its field, a colour pill, a swatch */
     --round-large: 14px; --round: 8px; --round-small: 5px; --round-tiny: 3px;      /* …and a sticker's corners, a small swatch's */
     --dot: 14px;                                   /* a swatch to pick from (a band's sectors) */
@@ -222,6 +225,7 @@
     --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
     --t-num-pop: 25px;                             /* the number popup's value, in its pill: larger than --t-l (Okay, 16 Oct 2026, on 4.45: "everything bigger … larger everything within square"; 20 in 4.45.2, then "text larger") */
     --show-tick: calc(var(--tick) - 3px);          /* the Show box's tick, 3 smaller than a tick box (Okay, 16 Oct 2026, on 4.46.3: "tick 3px smaller") */
+    --font-label: calc(6.5em + var(--btn-pad));    /* the font box's rows (#274, 4.51; Okay's notes, p. 12: "break the rules: stretch the sliders as wide as the longest label allows; labels over 12 characters are cut"): a name column of twelve characters, the slider taking all the rest */
     --unit-pad: 4px;                               /* the unit box: this much round its word, on every side — round mm's letters; the other units keep mm's height (Okay, 16 Oct 2026, on 4.44: "2px padding around letters"; on 4.44.3: "Mm looks perfect now add 2px more padding … Others use the same height, width can change") */
 
     /* off the scale as found, with no figure from Okay (16 Oct 2026): kept as they are, each to be put on the scale or
@@ -556,6 +560,15 @@
   :is(.tabsbar .segs > .tab:first-child, .windowcards .card:first-child > .tab) { --cut-l: 0px; }
   :is(.tabsbar .segs > .tab:last-child, .windowcards .card:last-child > .tab) { --cut-r: 0px; }
   :is(.tabsbar .segs > .tab, .windowcards .card) + :is(.tab, .card) { margin-left: calc(-1 * var(--hair)); }      /* one line between two tabs, not two */
+  /* a hanging tab (the font box's styles, #275): the same tab turned over, hanging from the line over it — its cuts at
+     the bottom corners, no line of its own at the top (the line it hangs from is the box's). Neighbours share one line:
+     every tab but the last leaves its right side open (--line-r: 0), so the next one's left line is the line between */
+  .tab.hang { --line-r: var(--hair); }
+  .tab.hang:not(:last-child) { --line-r: 0px; }
+  .tab.hang::before { clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut-r)), calc(100% - var(--cut-r)) 100%, var(--cut-l) 100%, 0 calc(100% - var(--cut-l))); }
+  .tab.hang::after { clip-path: polygon(var(--hair) 0, calc(100% - var(--line-r)) 0, calc(100% - var(--line-r)) calc(100% - var(--in-r)), calc(100% - var(--in-r)) calc(100% - var(--hair)), var(--in-l) calc(100% - var(--hair)), var(--hair) calc(100% - var(--in-l))); }
+  .tab.hang:first-child { --cut-l: 0px; }
+  .tab.hang:last-child { --cut-r: 0px; }
   .tab:hover { --tab-fill: var(--hover); }
   .tab.on { --cut-l: 0px; --cut-r: 0px; --tab-line: var(--ink); --tab-fill: var(--ink); z-index: 1; color: var(--paper); }
   /* the Show box (#261, 4.46; 4.46.2): it grows down from the chosen tab and goes with it — a thin box darker than the
@@ -937,21 +950,39 @@
      --frame-pad, so the fields and steppers end that much inside the box's edge. The labels take what is left,
      one --btn-pad in from the edge. The frame is an outline drawn inside the box's edge, so it takes no room. */
   .font { display: grid; gap: var(--unit); margin: var(--unit) 0; }
-  .font .styles { flex-wrap: wrap; gap: var(--unit); }
-  .font .styles > button { flex: 0 0 auto; padding: 0 var(--btn-pad); white-space: nowrap; border-left: var(--hair) solid var(--rule); }
-  .font .styles > button.on { border-color: var(--ink); }
+  /* the family's styles: tabs of the name's box, hanging from the line under the name (#275, 4.51; Okay, 16 Oct 2026:
+     "it is a part of the font so it needs to look like tabs of the upper box"); more than fit slide sideways */
+  .font .styles { display: flex; overflow-x: auto; scrollbar-width: none; padding: 0 var(--frame-pad) var(--unit) var(--btn-pad); }
+  .font .styles::-webkit-scrollbar { display: none; }
+  .font .styles > .tab { flex: 0 0 auto; height: var(--control); padding: 0 var(--btn-pad); white-space: nowrap; color: var(--grey); }
+  .font .styles > .tab.on { color: var(--paper); }
   .font .note:empty, .picker .note:empty { display: none; }
   .font > .btn { justify-self: start; }
   /* a font's three lines stand in one white box, a hairline between them; what is in it is quiet: grey lines, grey words */
   .fontbox { --well: var(--ground); display: grid; outline: var(--hair) solid var(--rule); outline-offset: calc(-1 * var(--hair)); background: var(--field); }      /* a slider's track must show on the white: the ground's grey (build list #128: it was white on white) */
   .fontbox > * + * { border-top: var(--hair) solid var(--rule); }
-  .fontbox > .styles { padding: var(--btn-pad) var(--frame-pad) var(--btn-pad) var(--btn-pad); }      /* as much room under the style buttons as before them (Okay, 14 Oct 2026: X and X) */
   .fontbox .row { padding-right: var(--frame-pad); box-shadow: none; }      /* size, tracking, an axis: rows like any other, between the box's own lines, their steppers ending --frame-pad inside the box */
   .fontbox .row > :first-child { padding-left: var(--btn-pad); }
   /* the chosen font's numerals and letters, the box's first line: in a thick light frame one unit inside the box (Okay's sketch, 13 Oct 2026: "thick border, no bg") */
-  .fontbox > .fontrow.current { width: auto; margin: var(--unit); border: var(--ringline-inner) solid var(--ground); background: var(--ground); }      /* the whole cell in the ground's grey (Okay, 13 Oct 2026) */
-  .fontbox > .fontrow.current:hover { background: var(--ground); border-color: var(--rule); }
-  .fontbox > .fontrow.current + * { border-top: var(--hair) solid var(--rule); }
+  .fontbox > .currentwrap { position: relative; margin: var(--unit); }
+  .fontbox .fontrow.current { width: 100%; border: var(--ringline-inner) solid var(--ground); background: var(--ground); }      /* the whole cell in the ground's grey (Okay, 13 Oct 2026) */
+  .fontbox .fontrow.current:hover { background: var(--ground); border-color: var(--rule); }
+  .fontbox > .currentwrap + * { border-top: var(--hair) solid var(--rule); }
+  /* the language: at the right inside the preview's cell, on the cell's grey, so it knocks the preview out where it reaches (#273, 4.51; Okay's notes, p. 12) */
+  .fontbox .currentwrap > .langs { position: absolute; top: var(--ringline-inner); bottom: var(--ringline-inner); right: var(--ringline-inner); display: flex; align-items: center; padding: 0 var(--frame-pad) 0 var(--u3); background: var(--ground); }
+  .fontbox .currentwrap .langbox { height: var(--control-s); padding: 0 calc(0.75 * var(--btn-pad)); border-color: var(--rule-light); color: var(--wait); font-size: var(--t-xxs); }      /* as Change… is set */
+  /* the box's rows (#274, 4.51; "break the rules"): a name column of twelve characters, cut past them; the slider the whole rest */
+  .fontbox .row.num:not(.side) { grid-template-columns: var(--font-label) minmax(0, 1fr) var(--gap) var(--tile-w) var(--unit) var(--tile-w); }
+  .fontbox .row.num:not(.side) > :first-child { grid-column: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fontbox .row.num:not(.side) > input[type="range"] { grid-column: 2; }
+  .fontbox .row.num:not(.side) > input[type="text"] { grid-column: 4; }
+  .fontbox .row.num:not(.side) > .steps { grid-column: 6; }
+  /* light or dark (#276, 4.51): with the pill on Dark, the sheet's list and every font box take the dark ground and the
+     usual names inside them turn over (ink light, paper dark), so what is chosen is light with dark words */
+  .pillswitch { display: flex; border: var(--hair) solid var(--rule); border-radius: var(--round-pill); padding: var(--u1); background: var(--field); }
+  .pillswitch > button { height: calc(var(--control) - 2 * var(--u1) - 2 * var(--hair)); padding: 0 var(--u4); border-radius: var(--round-pill); color: var(--grey); font-size: var(--t-s); }
+  .pillswitch > button.on { background: var(--ink); color: var(--paper); }
+  .font-dark :is(.fontlist, .fontbox) { --field: var(--font-night); --paper: var(--font-night); --ground: var(--font-night-well); --well: var(--font-night-well); --hover: var(--font-night-hover); --select: var(--font-night-select); --rule: var(--font-night-rule); --rule-light: var(--font-night-rule); --ink: var(--font-night-ink); --grey: var(--font-night-grey); --wait: var(--font-night-grey); background: var(--field); color: var(--ink); }
   /* a part of the box that can be put away: the variable axes, the OpenType features. A line with an eye and its name. */
   .partfold { display: flex; align-items: center; gap: var(--unit); width: 100%; height: var(--line); padding: 0 var(--btn-pad); font-weight: 600; text-align: left; }
   .partfold:hover { background: var(--hover); }
@@ -1510,6 +1541,7 @@
        fonts (Chrome, Edge on a desktop), never on a phone; in a narrow desktop window it would squeeze the others into
        three lines each (Okay, 15 Oct 2026, 07:14: "Installed is back. Solve this") — so here it isn't shown, and the two
        keep their second lines */
+    .picker header > .find { width: auto; flex: 1; }      /* Fonts · the Light/Dark pill · Find share the line (#276) */
     .picker .squares .adds > #local-fonts { display: none; }
     .picker .squares .adds.three > .pickt :is(small, br) { display: revert; }
     .picker .squares .adds.three > .pickt span { white-space: nowrap; }
@@ -5929,7 +5961,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.50.2";
+var VERSION = "beta 4.51";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -8406,8 +8438,9 @@ var VALUE_PICS = {
   // fills when the button is pressed (Okay's drawing, 14 Oct 2026). Tangents and hull computed from the circles.
   size: `<path class="hull" d="M4.45 11.24L12.27 5.88A15 15 0 1 1 12.27 30.62L4.45 25.26A8.5 8.5 0 0 1 4.45 11.24Z"/><circle class="disc" cx="20.75" cy="18.25" r="15" ${sw(CURVE)}/><circle class="small" cx="9.25" cy="18.25" r="8.5" ${sw(CURVE)}/><path class="tangent" d="M4.45 11.24L12.27 5.88M4.45 25.26L12.27 30.62" ${sw(SLANT)}/><path class="dark" d="M9.25 18.25H20.75" ${sw(LINE)}/><circle class="pivot" cx="20.75" cy="18.25" r="2"/>`
 };
+var FONT_DARK_KEY = "dial-tool-font-dark";
 var LANG_NAMES = { default: "As the font sets it", tr: "Turkish", nl: "Dutch", de: "German", pl: "Polish", ro: "Romanian", ca: "Catalan", ar: "Arabic", fa: "Persian", "zh-Hans": "Chinese, simplified", ja: "Japanese" };
-var lang_short = (code) => code === "default" ? "Lang." : code.slice(0, 2).toUpperCase();
+var lang_short = (code) => code === "default" ? "EN" : code.slice(0, 2).toUpperCase();
 var TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip" };
 function no_orphan(says, code) {
   const words = says.split(" "), keep = code ? 1 : 2, tail = words.splice(-keep);
@@ -11908,10 +11941,11 @@ var DialTool = class _DialTool {
     swatch.classList.add("mini");
     swatch.onclick = () => this.pop_open(this.colour_of_row(crow), swatch);
     const tracking = this.build_row(own ? { ...num2("tracking", "Tracking", -200, 800, 5), scope: "window", or: () => numerals().tracking } : { ...num2("tracking", "Tracking", -200, 800, 5), scope: "ring" });
+    const shown_cell = el("div", { className: "currentwrap" }, current, ...lang ? [lang.el] : []);
     const named = el("div", { className: "fontname", onclick: (e) => {
       if (!e.target.closest(".colour, .langs, button")) open();
-    } }, name, ...lang ? [lang.el] : [], swatch, el("button", { type: "button", className: "btn", id: pre + "font-change", textContent: "Change\u2026", onclick: open }));
-    const styles = el("div", { className: "segs styles" });
+    } }, name, swatch, el("button", { type: "button", className: "btn", id: pre + "font-change", textContent: "Change\u2026", onclick: open }));
+    const styles = el("div", { className: "styles", role: "tablist", ariaLabel: "Style" });
     const state = el("div", { className: "quiet note", id: pre + "font-note" });
     const back = el("button", {
       type: "button",
@@ -11934,7 +11968,7 @@ var DialTool = class _DialTool {
     const size = this.build_row(own ? { ...num2("size", "Size %", 20, 100, 1), scope: "window" } : { ...num2("size", "Size", 0.3, 8, 0.05), scope: "ring" });
     const axes = this.axes_part(pre, own);
     const features = this.box_part("font/features", "OpenType features", this.features_part(pre, own), true);
-    wrap.append(el("div", { className: "fontbox" }, current, named, styles, size.el, tracking.el, axes.el, features.el), ...own ? [back] : [], state);
+    wrap.append(el("div", { className: "fontbox" }, shown_cell, named, styles, size.el, tracking.el, axes.el, features.el), ...own ? [back] : [], state);
     let shown = null;
     out.refresh = (T) => {
       const R = own ? window_type(this.S, T) : T;
@@ -11953,12 +11987,28 @@ var DialTool = class _DialTool {
         current.replaceChildren(f ? this.sample(f, "preview") : el("span", { className: "sample quiet", textContent: "not loaded" }));
         name.textContent = R.family;
       }
-      styles.hidden = mine.length < 2;
-      styles.replaceChildren(...mine.map((x) => {
-        const b = el("button", { type: "button", textContent: x.style || x.ps, onclick: () => choose(() => this.use_font(x)) });
-        b.classList.toggle("on", x.ps === R.ps);
+      const tab = (text, on, act, id) => {
+        const b = el("button", { type: "button", className: "tab hang", textContent: text, role: "tab", id, onclick: act });
+        b.classList.toggle("on", on);
+        b.setAttribute("aria-selected", String(on));
         return b;
-      }));
+      };
+      let tabs = mine.length > 1 ? mine.map((x, i) => tab(x.style || x.ps, x.ps === R.ps, () => choose(() => this.use_font(x)), `${pre}font-style-${i}`)) : [];
+      if (!tabs.length && has_font(R.ps)) {
+        const a = font_axes(font_of(R)).wght;
+        if (a && a.max >= 600) {
+          const side = this.font_side(own), H2 = this.target(side.scope), now = (H2.axes || {}).wght ?? side.base_axis(H2, "wght", a), bold = Math.min(700, a.max);
+          const put = (v) => {
+            const all = { ...this.target(side.scope).axes || {} };
+            if (Math.abs(v - side.base_axis(this.target(side.scope), "wght", a)) < 1e-6) delete all.wght;
+            else all.wght = v;
+            this.set_value(side.scope, "axes", all);
+          };
+          tabs = [tab("Regular", now < 600, () => put(a.default), `${pre}font-style-0`), tab("Bold", now >= 600, () => put(bold), `${pre}font-style-1`)];
+        }
+      }
+      styles.hidden = tabs.length < 2;
+      styles.replaceChildren(...tabs);
       const missing = has_font(R.ps) ? "" : this.catalog.has(R.ps) ? "Loading\u2026 " : `${R.family} isn\u2019t loaded yet, so ${font_list()[0].family} stands in. Press Change\u2026 to choose another or to add it. `;
       state.textContent = missing + (this.font_note || "");
       if (this.picker && this.picker.open) this.fill_picker();
@@ -12175,10 +12225,28 @@ var DialTool = class _DialTool {
       b.innerHTML = icon(d) + `<span>${what}${takes ? `<br><small>(${takes}</small>` : ""}</span>`;
       return b;
     };
+    const ground = el("div", { className: "pillswitch", role: "radiogroup", ariaLabel: "The previews' ground" });
+    const grounds = ["Light", "Dark"].map((w, i) => {
+      const b = el("button", { type: "button", id: "font-ground-" + w.toLowerCase(), textContent: w, role: "radio", onclick: () => this.font_ground(i === 1) });
+      ground.append(b);
+      return b;
+    });
+    this.font_ground = (dark2) => {
+      this.font_dark = dark2;
+      try {
+        sessionStorage.setItem(FONT_DARK_KEY, dark2 ? "1" : "");
+      } catch (e) {
+      }
+      $("#app").classList.toggle("font-dark", dark2);
+      grounds.forEach((b, i) => {
+        b.classList.toggle("on", i === 1 === dark2);
+        b.setAttribute("aria-checked", String(i === 1 === dark2));
+      });
+    };
     this.picker = el(
       "dialog",
       { className: "picker", id: "font-picker" },
-      el("header", {}, el("h2", { textContent: "Fonts" }), finder),
+      el("header", {}, el("h2", { textContent: "Fonts" }), ground, finder),
       // the search stands at the sheet's top right
       el("div", { className: "listwrap" }, list, rail),
       el(
@@ -12212,6 +12280,12 @@ var DialTool = class _DialTool {
       )
     );
     this.picker.tabIndex = -1;
+    let dark = false;
+    try {
+      dark = sessionStorage.getItem(FONT_DARK_KEY) === "1";
+    } catch (e) {
+    }
+    this.font_ground(dark);
     window.addEventListener("resize", () => {
       if (this.picker.open) {
         this.rail_place();

@@ -9,21 +9,39 @@
      --frame-pad, so the fields and steppers end that much inside the box's edge. The labels take what is left,
      one --btn-pad in from the edge. The frame is an outline drawn inside the box's edge, so it takes no room. */
   .font { display: grid; gap: var(--unit); margin: var(--unit) 0; }
-  .font .styles { flex-wrap: wrap; gap: var(--unit); }
-  .font .styles > button { flex: 0 0 auto; padding: 0 var(--btn-pad); white-space: nowrap; border-left: var(--hair) solid var(--rule); }
-  .font .styles > button.on { border-color: var(--ink); }
+  /* the family's styles: tabs of the name's box, hanging from the line under the name (#275, 4.51; Okay, 16 Oct 2026:
+     "it is a part of the font so it needs to look like tabs of the upper box"); more than fit slide sideways */
+  .font .styles { display: flex; overflow-x: auto; scrollbar-width: none; padding: 0 var(--frame-pad) var(--unit) var(--btn-pad); }
+  .font .styles::-webkit-scrollbar { display: none; }
+  .font .styles > .tab { flex: 0 0 auto; height: var(--control); padding: 0 var(--btn-pad); white-space: nowrap; color: var(--grey); }
+  .font .styles > .tab.on { color: var(--paper); }
   .font .note:empty, .picker .note:empty { display: none; }
   .font > .btn { justify-self: start; }
   /* a font's three lines stand in one white box, a hairline between them; what is in it is quiet: grey lines, grey words */
   .fontbox { --well: var(--ground); display: grid; outline: var(--hair) solid var(--rule); outline-offset: calc(-1 * var(--hair)); background: var(--field); }      /* a slider's track must show on the white: the ground's grey (build list #128: it was white on white) */
   .fontbox > * + * { border-top: var(--hair) solid var(--rule); }
-  .fontbox > .styles { padding: var(--btn-pad) var(--frame-pad) var(--btn-pad) var(--btn-pad); }      /* as much room under the style buttons as before them (Okay, 14 Oct 2026: X and X) */
   .fontbox .row { padding-right: var(--frame-pad); box-shadow: none; }      /* size, tracking, an axis: rows like any other, between the box's own lines, their steppers ending --frame-pad inside the box */
   .fontbox .row > :first-child { padding-left: var(--btn-pad); }
   /* the chosen font's numerals and letters, the box's first line: in a thick light frame one unit inside the box (Okay's sketch, 13 Oct 2026: "thick border, no bg") */
-  .fontbox > .fontrow.current { width: auto; margin: var(--unit); border: var(--ringline-inner) solid var(--ground); background: var(--ground); }      /* the whole cell in the ground's grey (Okay, 13 Oct 2026) */
-  .fontbox > .fontrow.current:hover { background: var(--ground); border-color: var(--rule); }
-  .fontbox > .fontrow.current + * { border-top: var(--hair) solid var(--rule); }
+  .fontbox > .currentwrap { position: relative; margin: var(--unit); }
+  .fontbox .fontrow.current { width: 100%; border: var(--ringline-inner) solid var(--ground); background: var(--ground); }      /* the whole cell in the ground's grey (Okay, 13 Oct 2026) */
+  .fontbox .fontrow.current:hover { background: var(--ground); border-color: var(--rule); }
+  .fontbox > .currentwrap + * { border-top: var(--hair) solid var(--rule); }
+  /* the language: at the right inside the preview's cell, on the cell's grey, so it knocks the preview out where it reaches (#273, 4.51; Okay's notes, p. 12) */
+  .fontbox .currentwrap > .langs { position: absolute; top: var(--ringline-inner); bottom: var(--ringline-inner); right: var(--ringline-inner); display: flex; align-items: center; padding: 0 var(--frame-pad) 0 var(--u3); background: var(--ground); }
+  .fontbox .currentwrap .langbox { height: var(--control-s); padding: 0 calc(0.75 * var(--btn-pad)); border-color: var(--rule-light); color: var(--wait); font-size: var(--t-xxs); }      /* as Change… is set */
+  /* the box's rows (#274, 4.51; "break the rules"): a name column of twelve characters, cut past them; the slider the whole rest */
+  .fontbox .row.num:not(.side) { grid-template-columns: var(--font-label) minmax(0, 1fr) var(--gap) var(--tile-w) var(--unit) var(--tile-w); }
+  .fontbox .row.num:not(.side) > :first-child { grid-column: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fontbox .row.num:not(.side) > input[type="range"] { grid-column: 2; }
+  .fontbox .row.num:not(.side) > input[type="text"] { grid-column: 4; }
+  .fontbox .row.num:not(.side) > .steps { grid-column: 6; }
+  /* light or dark (#276, 4.51): with the pill on Dark, the sheet's list and every font box take the dark ground and the
+     usual names inside them turn over (ink light, paper dark), so what is chosen is light with dark words */
+  .pillswitch { display: flex; border: var(--hair) solid var(--rule); border-radius: var(--round-pill); padding: var(--u1); background: var(--field); }
+  .pillswitch > button { height: calc(var(--control) - 2 * var(--u1) - 2 * var(--hair)); padding: 0 var(--u4); border-radius: var(--round-pill); color: var(--grey); font-size: var(--t-s); }
+  .pillswitch > button.on { background: var(--ink); color: var(--paper); }
+  .font-dark :is(.fontlist, .fontbox) { --field: var(--font-night); --paper: var(--font-night); --ground: var(--font-night-well); --well: var(--font-night-well); --hover: var(--font-night-hover); --select: var(--font-night-select); --rule: var(--font-night-rule); --rule-light: var(--font-night-rule); --ink: var(--font-night-ink); --grey: var(--font-night-grey); --wait: var(--font-night-grey); background: var(--field); color: var(--ink); }
   /* a part of the box that can be put away: the variable axes, the OpenType features. A line with an eye and its name. */
   .partfold { display: flex; align-items: center; gap: var(--unit); width: 100%; height: var(--line); padding: 0 var(--btn-pad); font-weight: 600; text-align: left; }
   .partfold:hover { background: var(--hover); }
