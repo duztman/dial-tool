@@ -134,6 +134,20 @@ try {
     throw new Error(`Span did not change after drag! Was ${initSpan}, now ${newSpan}`);
   }
 
+  // Verify that the dotted guide path is an arc (open path, not full circle)
+  const arcD = await page.evaluate(() => {
+    const dottedPaths = Array.from(document.querySelectorAll("svg.preview path")).filter((p) => {
+      const dash = p.getAttribute("stroke-dasharray");
+      return dash && dash.startsWith("0 ");
+    });
+    return dottedPaths.map((p) => p.getAttribute("d"));
+  });
+  console.log("Dotted guide path d:", arcD[0]);
+  if (!arcD.length || arcD[0].includes("Z")) {
+    throw new Error("Dotted center radius guide should be an open arc when span < 360°");
+  }
+  console.log("✓ Dotted center radius circle becomes an open arc following the span handle!");
+
   console.log("✓ Dragging on-canvas handles updates ring values and preview smoothly!");
   console.log("All guide handle tests passed successfully!");
 } finally {

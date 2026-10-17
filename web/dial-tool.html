@@ -9662,12 +9662,17 @@ var DialTool = class _DialTool {
     this.guide_windows = el("div", { className: "guiderings" });
     this.guide_more = el("div", { className: "guidemore" });
     const adds = el("span", { className: "segs" });
-    GUIDE_MORE.forEach((kind, i) => adds.append(el("button", { type: "button", id: "guide-add-" + kind, textContent: kind[0].toUpperCase() + kind.slice(1), onclick: () => {
-      const used = new Set((this.S.gd_more || []).map((g) => g.k));
-      this.S.gd_more = [...this.S.gd_more || [], { kind: i, a: 0, r: +(this.S.dial_d / 4).toFixed(2), k: [3, 0, 2, 5, 4, 1].find((k) => !used.has(k)) ?? 3 }];
-      this.sync_rows();
-      this.render();
-    } })));
+    GUIDE_MORE.forEach((kind, i) => adds.append(el("button", {
+      type: "button",
+      id: "guide-add-" + kind,
+      textContent: kind[0].toUpperCase() + kind.slice(1),
+      onclick: () => {
+        const used = new Set((this.S.gd_more || []).map((g) => g.k));
+        this.S.gd_more = [...this.S.gd_more || [], { kind: i, a: 0, r: +(this.S.dial_d / 4).toFixed(2), k: [3, 0, 2, 5, 4, 1].find((k) => !used.has(k)) ?? 3 }];
+        this.sync_rows();
+        this.render();
+      }
+    })));
     this.guide_windows_head = el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Windows" }), which_w);
     list.append(
       el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Rings" }), which),
@@ -9758,11 +9763,18 @@ var DialTool = class _DialTool {
     const under = [row(num2("sh_disc", "Date discs", 0, 2, 0.05))];
     this.shadow_rows = [...light, ...heights, ...under];
     light[3].el.querySelector("label.check").append(el("span", { className: "quiet", textContent: "\xA0\xB7 may stutter while time runs" }));
-    const reset = el("button", { type: "button", className: "btn", id: "shadows-reset", textContent: "Reset", title: "The shadows as they started", onclick: () => {
-      for (const key of Object.keys(DEFAULTS)) if (key.startsWith("sh_") && key !== "sh_on") this.S[key] = structuredClone(DEFAULTS[key]);
-      this.sync_rows();
-      this.render();
-    } });
+    const reset = el("button", {
+      type: "button",
+      className: "btn",
+      id: "shadows-reset",
+      textContent: "Reset",
+      title: "The shadows as they started",
+      onclick: () => {
+        for (const key of Object.keys(DEFAULTS)) if (key.startsWith("sh_") && key !== "sh_on") this.S[key] = structuredClone(DEFAULTS[key]);
+        this.sync_rows();
+        this.render();
+      }
+    });
     list.append(
       head("Light \xB7 degrees"),
       ...light.map((r) => r.el),
@@ -10433,17 +10445,24 @@ var DialTool = class _DialTool {
       this.pop_refresh();
     } }));
     P.numbers = el("span", { className: "numbers" });
-    P.copy = el("button", { type: "button", className: "btn copy", id: "pop-copy", textContent: "COPY", title: "Copy the values shown", onclick: async () => {
-      try {
-        await navigator.clipboard.writeText(this.pop_text());
-        P.copy.textContent = "COPIED";
-      } catch (e) {
-        P.copy.textContent = "NO";
+    P.copy = el("button", {
+      type: "button",
+      className: "btn copy",
+      id: "pop-copy",
+      textContent: "COPY",
+      title: "Copy the values shown",
+      onclick: async () => {
+        try {
+          await navigator.clipboard.writeText(this.pop_text());
+          P.copy.textContent = "COPIED";
+        } catch (e) {
+          P.copy.textContent = "NO";
+        }
+        setTimeout(() => {
+          P.copy.textContent = "COPY";
+        }, 1200);
       }
-      setTimeout(() => {
-        P.copy.textContent = "COPY";
-      }, 1200);
-    } });
+    });
     P.el = el(
       "div",
       { className: "colourpop night", id: "colour-pop", hidden: true },
@@ -10595,15 +10614,22 @@ var DialTool = class _DialTool {
     const kept = this.palette.includes(value), list = this.palette.join() + kept;
     if (P.listed !== list) {
       P.listed = list;
-      const change = el("button", { type: "button", className: "add", id: "pop-add", textContent: kept ? "\u2212" : "+", title: kept ? "Take this colour out of the palette" : "Add this colour to the palette", onclick: () => {
-        const now = to_hex(P.at.read()).toUpperCase();
-        this.palette = this.palette.includes(now) ? this.palette.filter((c) => c !== now) : [...this.palette, now];
-        try {
-          localStorage.setItem(PALETTE_KEY, JSON.stringify(this.palette));
-        } catch (e) {
+      const change = el("button", {
+        type: "button",
+        className: "add",
+        id: "pop-add",
+        textContent: kept ? "\u2212" : "+",
+        title: kept ? "Take this colour out of the palette" : "Add this colour to the palette",
+        onclick: () => {
+          const now = to_hex(P.at.read()).toUpperCase();
+          this.palette = this.palette.includes(now) ? this.palette.filter((c) => c !== now) : [...this.palette, now];
+          try {
+            localStorage.setItem(PALETTE_KEY, JSON.stringify(this.palette));
+          } catch (e) {
+          }
+          this.pop_refresh();
         }
-        this.pop_refresh();
-      } });
+      });
       P.palette_chips.replaceChildren(...this.palette.map(chip), change);
     }
     for (const b of P.el.querySelectorAll(".chips button[data-colour]")) b.classList.toggle("on", b.dataset.colour === value);
@@ -10793,16 +10819,21 @@ var DialTool = class _DialTool {
     const grid = el("div", { className: "cards", role: "tablist", ariaLabel: "Which window" });
     const cards = WINDOW_CARDS.map((c) => {
       const pic2 = el("span", { className: "pic" });
-      const b = el("button", { type: "button", className: "tab", id: "window-card-" + c.slot, onclick: () => {
-        const w = windows_of(this.S)[c.slot];
-        this.S.ui_window = c.slot;
-        if (!w.on && w.at === WINDOW_BASE.at && c.at !== w.at) {
-          w.at = c.at;
-          this.static_dirty = true;
+      const b = el("button", {
+        type: "button",
+        className: "tab",
+        id: "window-card-" + c.slot,
+        onclick: () => {
+          const w = windows_of(this.S)[c.slot];
+          this.S.ui_window = c.slot;
+          if (!w.on && w.at === WINDOW_BASE.at && c.at !== w.at) {
+            w.at = c.at;
+            this.static_dirty = true;
+          }
+          this.sync_rows();
+          this.render();
         }
-        this.sync_rows();
-        this.render();
-      } }, pic2);
+      }, pic2);
       b.setAttribute("role", "tab");
       grid.append(el("div", { className: "card" }, b));
       return { ...c, b, pic: pic2, drawn: "" };
@@ -11495,11 +11526,16 @@ var DialTool = class _DialTool {
     };
     wrap.append(
       el("div", { className: "row pop" }, el("label", { htmlFor: "nudge-pick", textContent: "Numeral" }), pick2),
-      el("div", { className: "row" }, el("span"), el("button", { type: "button", className: "btn", textContent: "Reset this numeral", onclick: () => {
-        const all = { ...this.ring().nudge };
-        delete all[this.nudge_at];
-        this.set_value("ring", "nudge", all);
-      } }))
+      el("div", { className: "row" }, el("span"), el("button", {
+        type: "button",
+        className: "btn",
+        textContent: "Reset this numeral",
+        onclick: () => {
+          const all = { ...this.ring().nudge };
+          delete all[this.nudge_at];
+          this.set_value("ring", "nudge", all);
+        }
+      }))
     );
     out.refresh = (R) => {
       const labels = ring_labels(R);
@@ -12482,6 +12518,7 @@ var DialTool = class _DialTool {
     }
     const items = scene(S, this.statik, S.t, true, S.ui_ring);
     this.spin_hands(items);
+    if (S.guides) this.update_ring_guide_arcs(items, S);
     this.items = items;
     const backdrop = S.out_production ? [1, 1, 1, 1] : S.c_backdrop;
     this.backdrop.setAttribute("fill", to_hex(backdrop));
@@ -12582,6 +12619,46 @@ var DialTool = class _DialTool {
     this.tip.style.top = `${below ? p[1] + gap + 8 : p[1] - gap - 8 - box2.height}px`;
     this.tip.style.setProperty("--arrow", `${clamp(p[0] - (x - half), 12, box2.width - 12)}px`);
   }
+  arc_path(r, a0, a1) {
+    const p = new Path();
+    p.moveTo(clock_point(r, a0));
+    const n = Math.max(1, Math.ceil(Math.abs(a1 - a0) / 90 - 1e-9));
+    const step = (a1 - a0) / n;
+    for (let k = 0; k < n; k++) {
+      const u = (a0 + k * step) * Math.PI / 180;
+      const v = (a0 + (k + 1) * step) * Math.PI / 180;
+      const h = 4 / 3 * Math.tan((v - u) / 4) * r;
+      const x0 = r * Math.sin(u), y0 = r * Math.cos(u);
+      const x3 = r * Math.sin(v), y3 = r * Math.cos(v);
+      p.curveTo([x0 + h * Math.cos(u), y0 - h * Math.sin(u)], [x3 - h * Math.cos(v), y3 + h * Math.sin(v)], [x3, y3]);
+    }
+    return p;
+  }
+  update_ring_guide_arcs(items, S) {
+    const built = new Map(this.statik?.rings?.map((d) => [d.ring, d]) || []);
+    const dotItems = items.filter((it) => it.role === "guide" && it.dots && it.path);
+    if (!dotItems.length) return;
+    const usedDots = /* @__PURE__ */ new Set();
+    S.rings.forEach((ring) => {
+      if (!ring.on) return;
+      const kind = kind_of(ring);
+      let outer = ring.r, inner = ring.r - ({ ticks: ring.len, markers: ring.len, band: ring.width }[kind] || 0);
+      if (kind === "numerals") {
+        const e = radial_extent(built.get(ring)?.path);
+        if (e) [inner, outer] = e;
+      }
+      const mid = (outer + inner) / 2;
+      if (mid <= 0.01) return;
+      const dotItem = dotItems.find((it) => !usedDots.has(it) && Math.abs((it.path.bounds()?.[2] || 0) - mid) < 0.15);
+      if (!dotItem) return;
+      usedDots.add(dotItem);
+      const span = ring.span ?? 360;
+      if (span < 360) {
+        const start2 = ring.start ?? 0;
+        dotItem.path = this.arc_path(mid, start2, start2 + span);
+      }
+    });
+  }
   draw_gizmo() {
     if (!this.gizmo) return;
     if (this.show || this.S.ui_section !== 1 || !this.S.guides || this.S.out_production) {
@@ -12648,8 +12725,8 @@ var DialTool = class _DialTool {
       (g, col2) => {
         const c = svg_el("circle");
         c.setAttribute("r", "11");
-        c.setAttribute("fill", col2);
-        c.setAttribute("stroke", "#FFFFFF");
+        c.setAttribute("fill", "#000000");
+        c.setAttribute("stroke", "#000000");
         c.setAttribute("stroke-width", "1.5");
         const path = svg_el("path");
         path.setAttribute("d", "M-4 -2.5 L0 -7.5 L4 -2.5 Z M-4 2.5 L0 7.5 L4 2.5 Z");
@@ -12694,8 +12771,8 @@ var DialTool = class _DialTool {
         rect.setAttribute("width", "18");
         rect.setAttribute("height", "18");
         rect.setAttribute("rx", "4");
-        rect.setAttribute("fill", col2);
-        rect.setAttribute("stroke", "#FFFFFF");
+        rect.setAttribute("fill", "#000000");
+        rect.setAttribute("stroke", "#000000");
         rect.setAttribute("stroke-width", "1.5");
         const base = svg_el("line");
         base.setAttribute("x1", "-5");
@@ -12742,8 +12819,8 @@ var DialTool = class _DialTool {
       (g, col2) => {
         const c = svg_el("circle");
         c.setAttribute("r", "10.5");
-        c.setAttribute("fill", col2);
-        c.setAttribute("stroke", "#FFFFFF");
+        c.setAttribute("fill", "#000000");
+        c.setAttribute("stroke", "#000000");
         c.setAttribute("stroke-width", "1.5");
         const bar = svg_el("line");
         bar.setAttribute("x1", "-4");
@@ -12783,8 +12860,8 @@ var DialTool = class _DialTool {
       (g, col2) => {
         const c = svg_el("circle");
         c.setAttribute("r", "10.5");
-        c.setAttribute("fill", col2);
-        c.setAttribute("stroke", "#FFFFFF");
+        c.setAttribute("fill", "#000000");
+        c.setAttribute("stroke", "#000000");
         c.setAttribute("stroke-width", "1.5");
         const tail = svg_el("line");
         tail.setAttribute("x1", "-6");

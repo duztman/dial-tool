@@ -413,11 +413,11 @@ function no_orphan(says, code) {
   return [words.length ? words.join(" ") + " " : "", end];
 }
 const STICKER_LEGEND = [["w. 100–900", "weight", "Any weight in the range.", "wght"], ["bold", "weight", "Has a bold.", ""],
-  ["italic", "italic", "Has an italic, axis or style.", "ital, slnt"], ["wd", "width", "Any width, narrow to wide.", "wdth"],
-  ["opt", "optical", "Shapes made for small and large sizes.", "opsz"], ["tab", "figure", "Tabular figures, all one width.", "tnum"],
-  ["old", "figure", "Oldstyle figures, which rise and fall.", "onum"], ["zero", "figure", "A slashed zero.", "zero"],
-  ["frac", "figure", "Fractions: ½ made from 1/2.", "frac"], ["2 ss", "sets", "Stylistic sets: other shapes.", "ss01–ss20"],
-  ["5 cv", "sets", "Single letters redrawn.", "cv01–cv99"], ["3 st", "styles", "Separate styles: Regular, Bold…", ""]];      // short, so the window rarely scrolls (Okay, 14 Oct 2026)
+["italic", "italic", "Has an italic, axis or style.", "ital, slnt"], ["wd", "width", "Any width, narrow to wide.", "wdth"],
+["opt", "optical", "Shapes made for small and large sizes.", "opsz"], ["tab", "figure", "Tabular figures, all one width.", "tnum"],
+["old", "figure", "Oldstyle figures, which rise and fall.", "onum"], ["zero", "figure", "A slashed zero.", "zero"],
+["frac", "figure", "Fractions: ½ made from 1/2.", "frac"], ["2 ss", "sets", "Stylistic sets: other shapes.", "ss01–ss20"],
+["5 cv", "sets", "Single letters redrawn.", "cv01–cv99"], ["3 st", "styles", "Separate styles: Regular, Bold…", ""]];      // short, so the window rarely scrolls (Okay, 14 Oct 2026)
 // the OpenType switches that change numerals, in a short word each, for the stickers
 const FIGURE_WORDS = [["tnum", "tab"], ["onum", "old"], ["zero", "zero"], ["frac", "frac"]];
 // a variable font's axes, in words, for the font sheet's stickers
@@ -470,9 +470,11 @@ const ROWS = {
     // one pinned pane (Okay's drawings, 13 Oct 2026). Its heading line carries the list's tools: a plus that opens
     // the four kinds, and move up · move down · duplicate · delete. Then the list. Then the selected ring in one
     // line: its name · its kind · its colour · its radius. Folded, the pane is one line: "Rings: Hours   numerals · ■ · …".
-    hdr("Rings, top first", { scope: "global", pin: true, tools: "ring_tools",       // pin: stays in view while the rest scrolls
+    hdr("Rings, top first", {
+      scope: "global", pin: true, tools: "ring_tools",       // pin: stays in view while the rest scrolls
       title: (S, folded) => (folded && S.rings[S.ui_ring] ? `Rings: ${S.rings[S.ui_ring].name || G.kind_of(S.rings[S.ui_ring])}` : "Rings, top first"),
-      summary: (S, tool) => { const R = S.rings[S.ui_ring]; return R ? [G.kind_of(R), { c: R.c }, `${label_of(radius_row(R), R).toLowerCase()} ${tool.in_unit(R.r, 2)}`] : []; } }),
+      summary: (S, tool) => { const R = S.rings[S.ui_ring]; return R ? [G.kind_of(R), { c: R.c }, `${label_of(radius_row(R), R).toLowerCase()} ${tool.in_unit(R.r, 2)}`] : []; }
+    }),
     custom("ring_list", { scope: "global", pin: true }),
     custom("ring_line", { pin: true }),
     // first visit: every pane under the pinned part folded, its line saying what is in it (Okay, 16 Oct 2026, #270)
@@ -1152,10 +1154,12 @@ class DialTool {
     this.iris_open(false);
     const before = this.svg.getBoundingClientRect(), c0 = this.c.slice(), z0 = this.z;
     if (on) app.classList.add("snap");             // in: panel, bar and switches go at once, only the dial travels;
-                                                   // out, the long way: they come back eased while the dial travels home (05:43: "so sudden!")
+    // out, the long way: they come back eased while the dial travels home (05:43: "so sudden!")
     if (on) {
-      this.show = { away: app.classList.contains("away"), playing: this.playing, speed: this.speed, phase: 0, at: performance.now(), spin: null, back: null,
-        view: { c: c0, z: z0, fitted: this.fitted } };      // where the dial stood, to travel back to
+      this.show = {
+        away: app.classList.contains("away"), playing: this.playing, speed: this.speed, phase: 0, at: performance.now(), spin: null, back: null,
+        view: { c: c0, z: z0, fitted: this.fitted }
+      };      // where the dial stood, to travel back to
       app.classList.add("away", "show");
       this.eye_button.setAttribute("aria-pressed", "true");
       this.set_speed(1);
@@ -1389,7 +1393,7 @@ class DialTool {
     menu.setAttribute("role", "menu");
     this.unit_button = el("button", { type: "button", className: "unitbox", id: "unit", title: "The unit lengths are shown in" });
     this.unit_button.setAttribute("aria-haspopup", "menu");
-    if (document.fonts) document.fonts.load('10px "Dial Mono"').then(() => this.size_unit(), () => {});      // measured again once Dial Mono is in (fonts.ready can come before a face is even asked for)
+    if (document.fonts) document.fonts.load('10px "Dial Mono"').then(() => this.size_unit(), () => { });      // measured again once Dial Mono is in (fonts.ready can come before a face is even asked for)
     const open = (on) => { menu.hidden = !on; this.unit_button.setAttribute("aria-expanded", String(on)); };
     this.unit_open = open;
     this.unit_button.onclick = () => open(menu.hidden);
@@ -1569,11 +1573,13 @@ class DialTool {
     // guides you add: a line, a crosshair, a circle (Okay: "add an option to add others, crosshair, straight line etc.")
     this.guide_more = el("div", { className: "guidemore" });
     const adds = el("span", { className: "segs" });
-    G.GUIDE_MORE.forEach((kind, i) => adds.append(el("button", { type: "button", id: "guide-add-" + kind, textContent: kind[0].toUpperCase() + kind.slice(1), onclick: () => {
-      const used = new Set((this.S.gd_more || []).map((g) => g.k));
-      this.S.gd_more = [...(this.S.gd_more || []), { kind: i, a: 0, r: +(this.S.dial_d / 4).toFixed(2), k: [3, 0, 2, 5, 4, 1].find((k) => !used.has(k)) ?? 3 }];
-      this.sync_rows(); this.render();
-    } })));
+    G.GUIDE_MORE.forEach((kind, i) => adds.append(el("button", {
+      type: "button", id: "guide-add-" + kind, textContent: kind[0].toUpperCase() + kind.slice(1), onclick: () => {
+        const used = new Set((this.S.gd_more || []).map((g) => g.k));
+        this.S.gd_more = [...(this.S.gd_more || []), { kind: i, a: 0, r: +(this.S.dial_d / 4).toFixed(2), k: [3, 0, 2, 5, 4, 1].find((k) => !used.has(k)) ?? 3 }];
+        this.sync_rows(); this.render();
+      }
+    })));
     this.guide_windows_head = el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Windows" }), which_w);
     list.append(el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Rings" }), which), this.guide_rings,
       this.guide_windows_head, this.guide_windows,
@@ -1631,17 +1637,19 @@ class DialTool {
     const row = (r) => this.build_row({ ...r, scope: "global" });
     const head = (text) => el("div", { className: "guidehead" }, el("span", { className: "name", textContent: text }));
     const light = [row(num("sh_from", "From", 0, 359, 1, { whole: true })), row(num("sh_rise", "Height", 5, 85, 1, { whole: true })),
-      row(num("sh_dark", "Darkness", 0, 100, 1, { whole: true })), row(chk("sh_blur", "Soft edge"))];
+    row(num("sh_dark", "Darkness", 0, 100, 1, { whole: true })), row(chk("sh_blur", "Soft edge"))];
     const heights = [row(num("sh_hour", "Hour hand", 0, 3, 0.05)), row(num("sh_minute", "Minute hand", 0, 3, 0.05)), row(num("sh_second", "Seconds hand", 0, 3, 0.05)), row(num("sh_cap", "Cap’s top", 0, 4, 0.05))];
     const under = [row(num("sh_disc", "Date discs", 0, 2, 0.05))];
     this.shadow_rows = [...light, ...heights, ...under];
     // the soft edge blurs every shadow again on every frame: a warning beside it (Okay, 23:05: "we don't even need blur but keep it, write a warning beside it")
     light[3].el.querySelector("label.check").append(el("span", { className: "quiet", textContent: "\u00a0· may stutter while time runs" }));
-    const reset = el("button", { type: "button", className: "btn", id: "shadows-reset", textContent: "Reset", title: "The shadows as they started", onclick: () => {
-      for (const key of Object.keys(G.DEFAULTS)) if (key.startsWith("sh_") && key !== "sh_on") this.S[key] = structuredClone(G.DEFAULTS[key]);
-      this.sync_rows();
-      this.render();
-    } });
+    const reset = el("button", {
+      type: "button", className: "btn", id: "shadows-reset", textContent: "Reset", title: "The shadows as they started", onclick: () => {
+        for (const key of Object.keys(G.DEFAULTS)) if (key.startsWith("sh_") && key !== "sh_on") this.S[key] = structuredClone(G.DEFAULTS[key]);
+        this.sync_rows();
+        this.render();
+      }
+    });
     list.append(head("Light · degrees"), ...light.map((r) => r.el), head("Over the plate · mm"), ...heights.map((r) => r.el),
       head("Under the plate · mm"), ...under.map((r) => r.el), el("div", { className: "guidefoot popfoot" }, reset));
     const box = el("div", { className: "shadows" }, this.shadows_tick, more, list);
@@ -1974,7 +1982,7 @@ class DialTool {
   build_row(row) {
     const wrap = el("div", { className: "row " + row.kind + (row.nest ? " nest" : "") + (row.side ? " side" : "") });
     const tied = () => { if (row.tie) out.el.classList.add("tied"); };      // tie: this row belongs to the one above it, no line between them
-    const out = { row, el: wrap, refresh: () => {} };
+    const out = { row, el: wrap, refresh: () => { } };
     const set = (v) => this.set_value(row.scope, row.key, v);
     const id = row.id || `${row.scope}-${row.key}-${row.text || row.name}`.replace(/[^A-Za-z0-9]+/g, "-");      // id: when two rows would share one
     const active = (e) => document.activeElement === e;
@@ -2186,10 +2194,12 @@ class DialTool {
     P.modes = el("span", { className: "segs" });
     for (const mode of ["RGB", "CMYK", "HEX"]) P.modes.append(el("button", { type: "button", textContent: mode, id: "pop-as-" + mode, onclick: () => { this.colour_mode = mode; this.pop_refresh(); } }));
     P.numbers = el("span", { className: "numbers" });
-    P.copy = el("button", { type: "button", className: "btn copy", id: "pop-copy", textContent: "COPY", title: "Copy the values shown", onclick: async () => {
-      try { await navigator.clipboard.writeText(this.pop_text()); P.copy.textContent = "COPIED"; } catch (e) { P.copy.textContent = "NO"; }
-      setTimeout(() => { P.copy.textContent = "COPY"; }, 1200);
-    } });
+    P.copy = el("button", {
+      type: "button", className: "btn copy", id: "pop-copy", textContent: "COPY", title: "Copy the values shown", onclick: async () => {
+        try { await navigator.clipboard.writeText(this.pop_text()); P.copy.textContent = "COPIED"; } catch (e) { P.copy.textContent = "NO"; }
+        setTimeout(() => { P.copy.textContent = "COPY"; }, 1200);
+      }
+    });
     P.el = el("div", { className: "colourpop night", id: "colour-pop", hidden: true },
       head,
       el("div", { className: "chiprow" }, el("span", { className: "quiet", textContent: "On this dial" }), P.used_chips),
@@ -2316,12 +2326,14 @@ class DialTool {
     const kept = this.palette.includes(value), list = this.palette.join() + kept;
     if (P.listed !== list) {
       P.listed = list;
-      const change = el("button", { type: "button", className: "add", id: "pop-add", textContent: kept ? "−" : "+", title: kept ? "Take this colour out of the palette" : "Add this colour to the palette", onclick: () => {
-        const now = to_hex(P.at.read()).toUpperCase();
-        this.palette = this.palette.includes(now) ? this.palette.filter((c) => c !== now) : [...this.palette, now];
-        try { localStorage.setItem(PALETTE_KEY, JSON.stringify(this.palette)); } catch (e) { /* not kept */ }
-        this.pop_refresh();
-      } });
+      const change = el("button", {
+        type: "button", className: "add", id: "pop-add", textContent: kept ? "−" : "+", title: kept ? "Take this colour out of the palette" : "Add this colour to the palette", onclick: () => {
+          const now = to_hex(P.at.read()).toUpperCase();
+          this.palette = this.palette.includes(now) ? this.palette.filter((c) => c !== now) : [...this.palette, now];
+          try { localStorage.setItem(PALETTE_KEY, JSON.stringify(this.palette)); } catch (e) { /* not kept */ }
+          this.pop_refresh();
+        }
+      });
       P.palette_chips.replaceChildren(...this.palette.map(chip), change);
     }
     for (const b of P.el.querySelectorAll(".chips button[data-colour]")) b.classList.toggle("on", b.dataset.colour === value);
@@ -2451,12 +2463,16 @@ class DialTool {
       R.cs = cs;
     };
     return [
-      { id: `ring-${i}-alternate-1`, title: `${name} · sectors 1, 3, 5…`, alpha: true,
+      {
+        id: `ring-${i}-alternate-1`, title: `${name} · sectors 1, 3, 5…`, alpha: true,
         read: () => (this.S.rings[i] || {}).c,
-        write: (value) => { const R = this.S.rings[i], at = G.positions_of(R); R.c = value; pattern(R, G.sector_colour(R, at[1])); this.changed(true); } },
-      { id: `ring-${i}-alternate-2`, title: `${name} · sectors 2, 4, 6…`, alpha: true,
+        write: (value) => { const R = this.S.rings[i], at = G.positions_of(R); R.c = value; pattern(R, G.sector_colour(R, at[1])); this.changed(true); }
+      },
+      {
+        id: `ring-${i}-alternate-2`, title: `${name} · sectors 2, 4, 6…`, alpha: true,
         read: () => { const R = this.S.rings[i]; return R ? G.sector_colour(R, G.positions_of(R)[1]) : null; },
-        write: (value) => { pattern(this.S.rings[i], value); this.changed(true); } },
+        write: (value) => { pattern(this.S.rings[i], value); this.changed(true); }
+      },
     ];
   }
 
@@ -2468,13 +2484,15 @@ class DialTool {
     const grid = el("div", { className: "cards", role: "tablist", ariaLabel: "Which window" });
     const cards = WINDOW_CARDS.map((c) => {
       const pic = el("span", { className: "pic" });       // the card is its picture alone: a small dial with the window in its place, filled when the window is shown (Okay, 13 Oct 2026: no number under it)
-      const b = el("button", { type: "button", className: "tab", id: "window-card-" + c.slot, onclick: () => {
-        const w = G.windows_of(this.S)[c.slot];
-        this.S.ui_window = c.slot;
-        if (!w.on && w.at === G.WINDOW_BASE.at && c.at !== w.at) { w.at = c.at; this.static_dirty = true; }      // never used: it starts at its card's place
-        this.sync_rows();
-        this.render();
-      } }, pic);
+      const b = el("button", {
+        type: "button", className: "tab", id: "window-card-" + c.slot, onclick: () => {
+          const w = G.windows_of(this.S)[c.slot];
+          this.S.ui_window = c.slot;
+          if (!w.on && w.at === G.WINDOW_BASE.at && c.at !== w.at) { w.at = c.at; this.static_dirty = true; }      // never used: it starts at its card's place
+          this.sync_rows();
+          this.render();
+        }
+      }, pic);
       b.setAttribute("role", "tab");
       grid.append(el("div", { className: "card" }, b));
       return { ...c, b, pic, drawn: "" };
@@ -3072,11 +3090,13 @@ class DialTool {
     const pick = el("select", { id: "nudge-pick" });
     pick.onchange = () => { this.nudge_at = pick.value; this.sync_rows(); };
     wrap.append(el("div", { className: "row pop" }, el("label", { htmlFor: "nudge-pick", textContent: "Numeral" }), pick),
-      el("div", { className: "row" }, el("span"), el("button", { type: "button", className: "btn", textContent: "Reset this numeral", onclick: () => {
-        const all = { ...this.ring().nudge };
-        delete all[this.nudge_at];
-        this.set_value("ring", "nudge", all);
-      } })));
+      el("div", { className: "row" }, el("span"), el("button", {
+        type: "button", className: "btn", textContent: "Reset this numeral", onclick: () => {
+          const all = { ...this.ring().nudge };
+          delete all[this.nudge_at];
+          this.set_value("ring", "nudge", all);
+        }
+      })));
     out.refresh = (R) => {
       const labels = G.ring_labels(R);
       if (+this.nudge_at >= labels.length) this.nudge_at = "0";
@@ -3173,8 +3193,10 @@ class DialTool {
     const named = el("div", { className: "fontname", onclick: (e) => { if (!e.target.closest(".colour, .langs, button")) open(); } }, name, ...(lang ? [lang.el] : []), swatch, el("button", { type: "button", className: "btn", id: pre + "font-change", textContent: "Change…", onclick: open }));
     const styles = el("div", { className: "segs styles" });
     const state = el("div", { className: "quiet note", id: pre + "font-note" });
-    const back = el("button", { type: "button", className: "btn", id: "window-font-back", innerHTML: icon(SIGNS.copy) + "<span>Copy style of <i>Numerals</i></span>", title: "Use the top numerals ring’s font again", hidden: true,
-      onclick: () => { const w = this.window(); w.family = ""; w.ps = ""; w.axes = {}; w.features = null; w.tracking = null; w.lang = null; this.changed(true); } });
+    const back = el("button", {
+      type: "button", className: "btn", id: "window-font-back", innerHTML: icon(SIGNS.copy) + "<span>Copy style of <i>Numerals</i></span>", title: "Use the top numerals ring’s font again", hidden: true,
+      onclick: () => { const w = this.window(); w.family = ""; w.ps = ""; w.axes = {}; w.features = null; w.tracking = null; w.lang = null; this.changed(true); }
+    });
     // every font box has all of it (Okay, 13 Oct 2026): numerals and letters · name, colour · styles, language · size ·
     // tracking · the variable axes · the OpenType features. The last can be put away.
     // size · tracking · the variable axes, one under the other without a heading (Okay's drawing, 13 Oct 2026)
@@ -3925,6 +3947,7 @@ class DialTool {
     }
     const items = G.scene(S, this.statik, S.t, true, S.ui_ring);
     this.spin_hands(items);      // the showcase's Now: the big hands whirl opposite ways, the seconds go straight
+    if (S.guides) this.update_ring_guide_arcs(items, S);
     this.items = items;
     const backdrop = S.out_production ? [1, 1, 1, 1] : S.c_backdrop;
     this.backdrop.setAttribute("fill", to_hex(backdrop));
@@ -4019,6 +4042,51 @@ class DialTool {
     this.tip.style.setProperty("--arrow", `${clamp(p[0] - (x - half), 12, box.width - 12)}px`);
   }
 
+  arc_path(r, a0, a1) {
+    const p = new G.Path();
+    p.moveTo(G.clock_point(r, a0));
+    const n = Math.max(1, Math.ceil(Math.abs(a1 - a0) / 90 - 1e-9));
+    const step = (a1 - a0) / n;
+    for (let k = 0; k < n; k++) {
+      const u = (a0 + k * step) * Math.PI / 180;
+      const v = (a0 + (k + 1) * step) * Math.PI / 180;
+      const h = 4 / 3 * Math.tan((v - u) / 4) * r;
+      const x0 = r * Math.sin(u), y0 = r * Math.cos(u);
+      const x3 = r * Math.sin(v), y3 = r * Math.cos(v);
+      p.curveTo([x0 + h * Math.cos(u), y0 - h * Math.sin(u)], [x3 - h * Math.cos(v), y3 + h * Math.sin(v)], [x3, y3]);
+    }
+    return p;
+  }
+
+  update_ring_guide_arcs(items, S) {
+    const built = new Map(this.statik?.rings?.map((d) => [d.ring, d]) || []);
+    const dotItems = items.filter((it) => it.role === "guide" && it.dots && it.path);
+    if (!dotItems.length) return;
+
+    const usedDots = new Set();
+    S.rings.forEach((ring) => {
+      if (!ring.on) return;
+      const kind = G.kind_of(ring);
+      let outer = ring.r, inner = ring.r - ({ ticks: ring.len, markers: ring.len, band: ring.width }[kind] || 0);
+      if (kind === "numerals") {
+        const e = G.radial_extent(built.get(ring)?.path);
+        if (e) [inner, outer] = e;
+      }
+      const mid = (outer + inner) / 2;
+      if (mid <= 0.01) return;
+
+      const dotItem = dotItems.find((it) => !usedDots.has(it) && Math.abs((it.path.bounds()?.[2] || 0) - mid) < 0.15);
+      if (!dotItem) return;
+      usedDots.add(dotItem);
+
+      const span = ring.span ?? 360;
+      if (span < 360) {
+        const start = ring.start ?? 0;
+        dotItem.path = this.arc_path(mid, start, start + span);
+      }
+    });
+  }
+
   draw_gizmo() {
     if (!this.gizmo) return;
     if (this.show || this.S.ui_section !== 1 || !this.S.guides || this.S.out_production) {
@@ -4090,8 +4158,8 @@ class DialTool {
       (g, col) => {
         const c = svg_el("circle");
         c.setAttribute("r", "11");
-        c.setAttribute("fill", col);
-        c.setAttribute("stroke", "#FFFFFF");
+        c.setAttribute("fill", "#000000");
+        c.setAttribute("stroke", "#000000");
         c.setAttribute("stroke-width", "1.5");
         const path = svg_el("path");
         path.setAttribute("d", "M-4 -2.5 L0 -7.5 L4 -2.5 Z M-4 2.5 L0 7.5 L4 2.5 Z");
@@ -4137,8 +4205,8 @@ class DialTool {
         rect.setAttribute("width", "18");
         rect.setAttribute("height", "18");
         rect.setAttribute("rx", "4");
-        rect.setAttribute("fill", col);
-        rect.setAttribute("stroke", "#FFFFFF");
+        rect.setAttribute("fill", "#000000");
+        rect.setAttribute("stroke", "#000000");
         rect.setAttribute("stroke-width", "1.5");
         const base = svg_el("line");
         base.setAttribute("x1", "-5");
@@ -4184,8 +4252,8 @@ class DialTool {
       (g, col) => {
         const c = svg_el("circle");
         c.setAttribute("r", "10.5");
-        c.setAttribute("fill", col);
-        c.setAttribute("stroke", "#FFFFFF");
+        c.setAttribute("fill", "#000000");
+        c.setAttribute("stroke", "#000000");
         c.setAttribute("stroke-width", "1.5");
         const bar = svg_el("line");
         bar.setAttribute("x1", "-4");
@@ -4224,8 +4292,8 @@ class DialTool {
       (g, col) => {
         const c = svg_el("circle");
         c.setAttribute("r", "10.5");
-        c.setAttribute("fill", col);
-        c.setAttribute("stroke", "#FFFFFF");
+        c.setAttribute("fill", "#000000");
+        c.setAttribute("stroke", "#000000");
         c.setAttribute("stroke-width", "1.5");
         const tail = svg_el("line");
         tail.setAttribute("x1", "-6");
