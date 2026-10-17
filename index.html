@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.51 · built 2026-10-17 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.51.1 · built 2026-10-17 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -1456,8 +1456,9 @@
   .bar .zoomhint { display: flex; align-items: center; gap: var(--u2); white-space: nowrap; font-size: var(--t-s); color: var(--bar-light); }
   @media (hover: none), (pointer: coarse) { .bar .zoomhint { display: none; } }      /* a desktop's only: no sign or words on an iPad or a phone (Okay, 15 Oct 2026, 00:32) */
   .bar .viewing > button, .bar .zooms { flex: none; width: var(--col); }
-  .bar .fit { display: inline-flex; align-items: center; justify-content: center; gap: var(--u1); }      /* the magnifier, then the word */
-  .bar .fit > span { font-size: var(--t-s); text-transform: uppercase; }      /* FIT, as NOW and AM are set (Okay, 06:21: "is fit alright? It's looking pale": 13 px lower case beside 12 px capitals) */
+  /* the zoom area (#315, 4.51.1): − + · the magnifier on its own, the bar's light tone · FIT, a word button with NOW's room either side (Okay, 17 Oct 2026: "the horizontal padding like now and am") */
+  .bar .zoomsign { display: flex; align-items: center; color: var(--bar-light); }
+  .bar .viewing > .fit { width: auto; padding: 0 var(--u3); font-size: var(--t-s); text-transform: uppercase; }      /* FIT, as NOW and AM are set (Okay, 06:21: "is fit alright? It's looking pale": 13 px lower case beside 12 px capitals) */
   .bar .zooms { display: flex; }
   .bar .zooms button { flex: 1; min-width: 0; }
   .bar .zooms button + button { border-left: 0; }
@@ -1508,7 +1509,6 @@
     .bar .group { border-left: 0; }
     .bar .day { flex: 1 1 0; height: var(--bar-day-narrow); padding: 0 var(--margin); }
     .bar .viewing { padding: 0 var(--margin) 0 0; }
-    .bar .viewing > .fit { width: auto; padding: 0 var(--u3); }      /* as wide as its sign and word need, with NOW's room either side; the day slider gives way (Okay, 15 Oct 2026, 07:21: "why so squeezed? Allow equal space from its sides") */
     .bar .lead { padding-left: var(--u6); }      /* the red dot with room either side, as much left as right (Okay, 15 Oct 2026, 07:45: "red dot with more space on both sides"); was: the row started at the margin */
     .bar .lead .play { margin-right: calc(var(--u6) - var(--u2)); }      /* the row's own gap (u2) makes the rest */
     /* the time at the size of everything else in the bar, AM and FIT (07:45: "smaller, 'same size with all' digi
@@ -5961,7 +5961,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.51";
+var VERSION = "beta 4.51.1";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -9148,12 +9148,13 @@ var DialTool = class _DialTool {
     this.watchers[0].observe(this.time_slider);
     this.watchers.push(new ResizeObserver(() => this.set_speed(this.speed)));
     this.watchers.at(-1).observe(this.speed_slider);
-    const fit_button = el("button", { type: "button", id: "fit", className: "fit", title: "Show the whole page", onclick: () => {
+    const fit_button = el("button", { type: "button", id: "fit", className: "fit", title: "Show the whole page" }, el("span", { textContent: "Fit" }));
+    fit_button.onclick = () => {
       this.fit();
       this.render();
-    } });
-    fit_button.innerHTML = icon(TOOL_ICONS.find);
-    fit_button.append(el("span", { textContent: "Fit" }));
+    };
+    const zoom_sign = el("span", { className: "zoomsign", ariaHidden: "true" });
+    zoom_sign.innerHTML = icon(TOOL_ICONS.find);
     const bar = el(
       "footer",
       { className: "bar" },
@@ -9183,6 +9184,7 @@ var DialTool = class _DialTool {
             this.render();
           })
         ),
+        zoom_sign,
         fit_button
       )
     );
