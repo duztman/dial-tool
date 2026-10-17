@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.50 · built 2026-10-17 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.50.1 · built 2026-10-17 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -887,6 +887,15 @@
   .numpop .row .steps { display: flex; justify-content: space-between; }
   .numpop .row .steps > .step { flex: none; display: grid; place-items: center; width: var(--num-pop-step); height: var(--num-pop-step); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); }
   .numpop .row .steps > .step:hover { background: var(--num-pop-hover); }
+  /* the Positions preview (#251, 4.50.1): the hand's detail box, round — no frame, the circle as large as the box allows
+     with a unit round it; a mark at every position, used in ink, skipped faint, the first a dot */
+  .detail.round { border: 0; }
+  .detail.round svg { fill: none; }      /* lines only; the first position's dot fills itself */
+  .detail.round .used { stroke: currentColor; stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
+  .detail.round .skipped { stroke: var(--rule); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
+  .detail.round .first { fill: currentColor; }
+  /* a quiet row (R15 form B, #251): the number with its compact ±, no slider on the row — the slider stands in the controller its name or its number opens */
+  .row.side.quiet > input[type="range"] { display: none; }
   /* a number's name opens its popup; pressed and moved sideways it changes the value (#249, #170) */
   .popname { cursor: ew-resize; }
   .popname:hover { text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: var(--u1); }
@@ -5889,7 +5898,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.50";
+var VERSION = "beta 4.50.1";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -8479,13 +8488,17 @@ var ROWS = {
     num2("round_out", "Round outer", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
     num2("round_in", "Round inner", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
     custom("round_ends", { show: marks_with("bar", "wedge", "file") }),
+    // Positions (Okay's notes, p. 5, #251, 4.50.1): at the left a round preview of the ring's positions, like the hand's
+    // box — the used ones as marks, the skipped ones faint, the first one marked; beside it the numbers as quiet rows
+    // (R15 form B: "none of these need slider"), their sliders in the controller a name or a number opens
     hdr("Positions", { folded: true }),
-    num2("count", "Count", 1, 360, 1, { whole: true }),
-    num2("start", "Start \xB0", -180, 180, 0.5),
-    num2("span", "Span \xB0", 1, 360, 1),
-    num2("every", "Every", 1, 60, 1, { whole: true }),
-    num2("offset", "Offset", 0, 59, 1, { whole: true }),
-    chk("invert", "Skip those instead", { nest: true }),
+    custom("ring_positions"),
+    num2("count", "Count", 1, 360, 1, { whole: true, side: true, quiet: true }),
+    num2("start", "Start \xB0", -180, 180, 0.5, { side: true, quiet: true }),
+    num2("span", "Span \xB0", 1, 360, 1, { side: true, quiet: true }),
+    num2("every", "Every", 1, 60, 1, { whole: true, side: true, quiet: true }),
+    num2("offset", "Offset", 0, 59, 1, { whole: true, side: true, quiet: true }),
+    chk("invert", "Skip those instead", { side: true }),
     hdr("Give way to rings above", { folded: true }),
     pop("skip", "Skip where", SKIP_FROM),
     pop("knock", "Knock out", KNOCK_FROM),
@@ -10331,6 +10344,10 @@ var DialTool = class _DialTool {
         }
         out.quiet = box2;
         wrap.append(lead, slider, box2);
+        if (row.quiet) {
+          wrap.classList.add("quiet");
+          this.name_opens(label, row);
+        }
       } else wrap.append(lead, slider, field, el("span", { className: "steps" }, step(-1), step(1)));
       out.refresh = (T) => {
         const v = T[row.key] ?? (row.or ? row.or(T) : 0);
@@ -11850,6 +11867,31 @@ var DialTool = class _DialTool {
     };
   }
   /** the chosen hand in detail: a box of its own, at the left of the hand's rows (on a phone: over them, the hand lying). */
+  /** the ring's positions, drawn (Okay's notes, p. 5, #251, 4.50.1: "a ring-specific preview at the left, like the
+   *  hands' detail box: round, not in a square box, with even padding"): a faint circle; a mark at every position, the
+   *  used ones in ink, the ones skipped (Every, Offset, Skip those instead) faint; the first position marked with a dot,
+   *  so Start is seen. The count, start, span, every and offset are all read from it. */
+  row_ring_positions(wrap, out) {
+    wrap.className = "detail round";
+    wrap.id = "ring-positions";
+    wrap.setAttribute("role", "img");
+    let drawn2 = "";
+    out.refresh = (R) => {
+      const angles = ring_angles(R), used = new Set(positions_of(R)), f = (v) => v.toFixed(4);
+      const at = (a, r) => [f(r * Math.sin(a * Math.PI / 180)), f(-r * Math.cos(a * Math.PI / 180))];
+      const marks = angles.map((a, i) => {
+        const [x0, y0] = at(a, 0.84), [x1, y1] = at(a, 1);
+        return `<path class="${used.has(i) ? "used" : "skipped"}" d="M${x0} ${y0}L${x1} ${y1}"/>`;
+      }).join("");
+      const [fx, fy] = at(angles[0] || 0, 0.68);
+      const now = `<svg viewBox="-1.1 -1.1 2.2 2.2" aria-hidden="true"><circle class="axis" r="1"/>${marks}<circle class="first" cx="${fx}" cy="${fy}" r="0.07"/></svg>`;
+      if (now !== drawn2) {
+        drawn2 = now;
+        wrap.innerHTML = now;
+      }
+      wrap.ariaLabel = `${used.size} of ${angles.length} positions used, the first at ${(angles[0] || 0).toFixed(1)}\xB0`;
+    };
+  }
   row_hand_detail(wrap, out) {
     wrap.className = "detail";
     wrap.id = "hand-detail";

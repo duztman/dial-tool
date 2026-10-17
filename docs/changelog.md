@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.50.1 (web version) · 17 Oct 2026
+
+- **Positions, with a preview** (#251; Okay's notes, p. 5: "none of these need slider — text boxes and ±; a ring-specific preview at the left, like the hands' detail box: round, not in a square box, with even padding, it may use the eye's column"): at the pane's left a round drawing of the ring's positions — a faint circle, a mark at every position, the used ones in ink, the ones Every · Offset · Skip leave out faint, the first position a dot, so Start is seen (the answer chosen on 16 Oct). It stands where the hand's box stands (the eye's column and the next), as high as the rows beside it, the circle as large as that allows with a unit round it, no frame. Beside it Count · Start ° · Span ° · Every · Offset as **quiet rows** (R15 form B, declared as such now: `quiet`): the name and the number with its compact ±, no slider on the row; the name or the number opens the controller, whose slider does the sweeping. *Skip those instead* beside the box too.
+
 ## beta 4.50 (web version) · 17 Oct 2026
 
 Phase G's rest begins, from Okay's notes alone (17 Oct: "now draw me all the sketches … proceed with plan"): the ring drawer and the rows.

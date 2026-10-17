@@ -492,6 +492,20 @@ check(Math.abs(at12[0][0]) < 0.06 && at12[0][1] > 1 && Math.abs(at12[1][1]) < 0.
   check(t1[1] === 4 && t1[2] === "AUTOMATIC" && t1[3] === 1 && t1[4] === 180 && t1[5] === "1 text" && t1[6] === "Text · Type · Resize" && t1[7] === 1 && t1[8] < 0 && t1[9] && t2[0] === 30 && t2[1] === 3 && t2[2] === "3 texts" && t3 === 44,
     `a text ring (#297): added as the fifth kind, "${t1[2]}" once under the centre (its middle ${t1[8]} mm, start ${t1[4]}°), its row says "${t1[5]}", its panes ${t1[6]}; with Count 3 the words stand at every position (${t2[1]}, "${t2[2]}"); Start 31° snaps to the markers' 30° (${t2[0]}), 44° stays (${t3}) — within ${2}°`);
 }
+// Positions (#251, 4.50.1): a round preview at the left — a mark at every position, the used ones in ink, the skipped faint, the first a dot; the numbers quiet rows (form B), their sliders in the controller a name opens
+{
+  const was = await S("[S.ui_ring, S.rings[S.ui_ring].every, S.rings[S.ui_ring].start]");
+  await page.evaluate(() => { const t = window.dial_tool; t.set_value("ring", "every", 3); t.set_value("ring", "start", 15); });
+  const pos = await page.evaluate(() => { const e = document.querySelector("#ring-positions"), t = window.dial_tool, R = t.ring(), r = e.getBoundingClientRect(), c = e.querySelector("circle.axis"), cs = getComputedStyle(c), rows = [...e.parentElement.querySelectorAll(".row.side.quiet")];
+    const first = e.querySelector(".first"), fx = +first.getAttribute("cx"), fy = +first.getAttribute("cy");
+    return [e.classList.contains("detail") && e.classList.contains("round"), getComputedStyle(e).borderTopWidth, cs.fill, e.querySelectorAll(".used").length, e.querySelectorAll(".skipped").length, R.count, 0, Math.round(Math.atan2(fx, -fy) * 180 / Math.PI), rows.map((x) => x.querySelector("label").textContent).join(" "), rows.every((x) => getComputedStyle(x.querySelector("input[type=range]")).display === "none" && x.querySelector("label").classList.contains("popname")), e.getAttribute("role"), e.ariaLabel, Math.round(r.left)]; });
+  await page.click("#ring-positions ~ .row.side.quiet label");
+  const popped = await page.evaluate(() => { const p = document.querySelector("#value-pop"); return !!p && p.querySelector("label").textContent === "Count" && getComputedStyle(p.querySelector("input[type=range]")).display !== "none"; });
+  await page.keyboard.press("Escape");
+  await page.evaluate(([i, every, start]) => { const t = window.dial_tool; t.set_value("ring", "every", every); t.set_value("ring", "start", start); }, was);
+  check(pos[0] && pos[1] === "0px" && pos[2] === "none" && pos[3] + pos[4] === pos[5] && pos[3] === Math.ceil(pos[5] / 3) && pos[7] === 15 && pos[8] === "Count Start ° Span ° Every Offset" && pos[9] && pos[10] === "img" && pos[11].startsWith(`${pos[3]} of ${pos[5]} positions used`) && popped,
+    `Positions (#251): a round preview, no frame (${pos[1]}, ${pos[2]}): ${pos[3]} marks in ink and ${pos[4]} faint of ${pos[5]} with Every 3, the first marked at ${pos[7]}°; the numbers quiet rows without sliders (${pos[8]}), a name opening the controller with the slider (${popped}); it says "${pos[11]}"`);
+}
 check(await page.$$eval(".row.pick .pickt svg", (e) => e.length) >= 4, "Kind is a row of picture tiles");
 await page.click("#ring-kind-square"); await page.click("#ring-kind-Kind-0");
 check(await S("S.rings[S.ui_ring].kind === 0 && S.rings[S.ui_ring].width === 1"), "changing a ring's kind keeps its settings");

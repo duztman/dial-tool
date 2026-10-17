@@ -135,6 +135,15 @@
   .numpop .row .steps { display: flex; justify-content: space-between; }
   .numpop .row .steps > .step { flex: none; display: grid; place-items: center; width: var(--num-pop-step); height: var(--num-pop-step); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); }
   .numpop .row .steps > .step:hover { background: var(--num-pop-hover); }
+  /* the Positions preview (#251, 4.50.1): the hand's detail box, round — no frame, the circle as large as the box allows
+     with a unit round it; a mark at every position, used in ink, skipped faint, the first a dot */
+  .detail.round { border: 0; }
+  .detail.round svg { fill: none; }      /* lines only; the first position's dot fills itself */
+  .detail.round .used { stroke: currentColor; stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
+  .detail.round .skipped { stroke: var(--rule); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
+  .detail.round .first { fill: currentColor; }
+  /* a quiet row (R15 form B, #251): the number with its compact ±, no slider on the row — the slider stands in the controller its name or its number opens */
+  .row.side.quiet > input[type="range"] { display: none; }
   /* a number's name opens its popup; pressed and moved sideways it changes the value (#249, #170) */
   .popname { cursor: ew-resize; }
   .popname:hover { text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: var(--u1); }

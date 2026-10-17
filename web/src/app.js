@@ -512,13 +512,17 @@ const ROWS = {
     num("round_out", "Round outer", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
     num("round_in", "Round inner", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
     custom("round_ends", { show: marks_with("bar", "wedge", "file") }),
+    // Positions (Okay's notes, p. 5, #251, 4.50.1): at the left a round preview of the ring's positions, like the hand's
+    // box — the used ones as marks, the skipped ones faint, the first one marked; beside it the numbers as quiet rows
+    // (R15 form B: "none of these need slider"), their sliders in the controller a name or a number opens
     hdr("Positions", { folded: true }),
-    num("count", "Count", 1, 360, 1, { whole: true }),
-    num("start", "Start °", -180, 180, 0.5),
-    num("span", "Span °", 1, 360, 1),
-    num("every", "Every", 1, 60, 1, { whole: true }),
-    num("offset", "Offset", 0, 59, 1, { whole: true }),
-    chk("invert", "Skip those instead", { nest: true }),
+    custom("ring_positions"),
+    num("count", "Count", 1, 360, 1, { whole: true, side: true, quiet: true }),
+    num("start", "Start °", -180, 180, 0.5, { side: true, quiet: true }),
+    num("span", "Span °", 1, 360, 1, { side: true, quiet: true }),
+    num("every", "Every", 1, 60, 1, { whole: true, side: true, quiet: true }),
+    num("offset", "Offset", 0, 59, 1, { whole: true, side: true, quiet: true }),
+    chk("invert", "Skip those instead", { side: true }),
     hdr("Give way to rings above", { folded: true }),
     pop("skip", "Skip where", G.SKIP_FROM),
     pop("knock", "Knock out", G.KNOCK_FROM),
@@ -2083,6 +2087,7 @@ class DialTool {
         }
         out.quiet = box;
         wrap.append(lead, slider, box);
+        if (row.quiet) { wrap.classList.add("quiet"); this.name_opens(label, row); }      // form B: no slider on the row; the name opens the controller too (#251)
       } else wrap.append(lead, slider, field, el("span", { className: "steps" }, step(-1), step(1)));
       out.refresh = (T) => {
         const v = T[row.key] ?? (row.or ? row.or(T) : 0);
@@ -3353,6 +3358,26 @@ class DialTool {
   }
 
   /** the chosen hand in detail: a box of its own, at the left of the hand's rows (on a phone: over them, the hand lying). */
+  /** the ring's positions, drawn (Okay's notes, p. 5, #251, 4.50.1: "a ring-specific preview at the left, like the
+   *  hands' detail box: round, not in a square box, with even padding"): a faint circle; a mark at every position, the
+   *  used ones in ink, the ones skipped (Every, Offset, Skip those instead) faint; the first position marked with a dot,
+   *  so Start is seen. The count, start, span, every and offset are all read from it. */
+  row_ring_positions(wrap, out) {
+    wrap.className = "detail round";
+    wrap.id = "ring-positions";
+    wrap.setAttribute("role", "img");
+    let drawn = "";
+    out.refresh = (R) => {
+      const angles = G.ring_angles(R), used = new Set(G.positions_of(R)), f = (v) => v.toFixed(4);
+      const at = (a, r) => [f(r * Math.sin(a * Math.PI / 180)), f(-r * Math.cos(a * Math.PI / 180))];
+      const marks = angles.map((a, i) => { const [x0, y0] = at(a, 0.84), [x1, y1] = at(a, 1); return `<path class="${used.has(i) ? "used" : "skipped"}" d="M${x0} ${y0}L${x1} ${y1}"/>`; }).join("");
+      const [fx, fy] = at(angles[0] || 0, 0.68);
+      const now = `<svg viewBox="-1.1 -1.1 2.2 2.2" aria-hidden="true"><circle class="axis" r="1"/>${marks}<circle class="first" cx="${fx}" cy="${fy}" r="0.07"/></svg>`;
+      if (now !== drawn) { drawn = now; wrap.innerHTML = now; }
+      wrap.ariaLabel = `${used.size} of ${angles.length} positions used, the first at ${(angles[0] || 0).toFixed(1)}°`;
+    };
+  }
+
   row_hand_detail(wrap, out) {
     wrap.className = "detail";
     wrap.id = "hand-detail";
