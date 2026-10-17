@@ -66,7 +66,7 @@ const collect = async (state) => {
       if (r.width < 2 || r.height < 2) return;
       for (let p = s; p && p !== document.body; p = p.parentElement) if (getComputedStyle(p).display === "none" || getComputedStyle(p).visibility === "hidden") return;
       const vb = s.viewBox.baseVal, scale = vb && vb.width ? r.width / vb.width : 1;
-      const host = s.closest("button, a, label, li, summary, .card, h2") || s.parentElement;
+      const host = s.closest(".kindicon, button, a, label, li, summary, .card, h2") || s.parentElement;      // .kindicon: a ring row's kind picture names itself (ring-kind-row-…), not its row (4.50)
       const name = host.id || host.getAttribute("data-tab") || host.title || host.getAttribute("aria-label") || (host.textContent || "").trim().slice(0, 24);
       const root = s.getCTM();
       const parts = [...s.querySelectorAll("path,circle,rect,line,polyline,polygon,ellipse")].filter((e) => !e.closest("mask, clipPath, defs")).map((e) => {

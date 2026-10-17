@@ -6,7 +6,7 @@
      and every row borrows them (subgrid), so summaries and kinds stand under each other whatever the words' widths. */
   .ringlist { margin: 0 0 0 var(--lead); }      /* rows start where the labels start (the toggle column is the panes' alone) and end on the pane's line */
   .ringlist ol { position: relative; list-style: none; margin: 0; padding: var(--u1) 0 0; display: grid; row-gap: var(--ring-gap);
-    grid-template-columns: calc(var(--frame-pad) + var(--lead)) var(--grip) minmax(0, 1fr) auto calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--ringline-gap)) var(--row-end);      /* eye · grip · name · kind · colour · size · radius · the room at the end: rows and the ring drawer share them */ max-height: calc(var(--ring-rows, 5) * (var(--line) + var(--ring-gap)) + var(--line-button) + 2 * var(--ringline-pad) + 2 * var(--ringline-inner) + 2 * var(--hair) + var(--ringline-join) + var(--unit)); overflow-y: auto; }      /* five rings and the ring line, then it scrolls; the pill on the pinned part's line sets the rows (--ring-rows, app.js list_grip, #256) */
+    grid-template-columns: calc(var(--frame-pad) + var(--lead)) var(--grip) var(--line-button) minmax(0, 1fr) auto calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--ringline-gap)) calc(var(--line-button) + var(--ringline-gap)) var(--row-end);      /* eye · grip · kind (a row's icon, the drawer's square) · name (the drawer's details) · Change · colour · size · radius · the room at the end: rows and the ring drawer share them (4.50, #253, #254) */ max-height: calc(var(--ring-rows, 5) * (var(--line) + var(--ring-gap)) + var(--line-button) + 2 * var(--ringline-pad) + 2 * var(--ringline-inner) + 2 * var(--hair) + var(--ringline-join) + var(--unit)); overflow-y: auto; }      /* five rings and the ring line, then it scrolls; the pill on the pinned part's line sets the rows (--ring-rows, app.js list_grip, #256) */
   /* the list's pill (#256; Okay's notes, p. 2: "a resize pill … like the phone's gripper but black"): in the middle of
      the pinned part's black line, only when there are more rings than the list shows (.ring-scrolls); the gripper's
      measures (--grip-…), black with a groove of paper; held, a hairline of paper round it */
@@ -29,19 +29,14 @@
   .ringlist li.ring.dragged { opacity: 0.45; }
   .ringlist li.ring.dragged .grip { cursor: grabbing; }
   .ringlist .dropline { position: absolute; left: 0; right: 0; height: var(--triple); background: var(--ink); pointer-events: none; }
-  .ringlist .namecell { display: flex; align-items: center; min-width: 0; padding-right: var(--u3); }
+  .ringlist .kindicon { grid-column: 3; display: grid; place-items: center; height: 100%; color: var(--ink); }      /* the kind, pictured, where the drawer's square stands (#254) */
+  .ringlist li.ring.off .kindicon { color: var(--rule); }
+  .ringlist .namecell { grid-column: 4 / 9; display: flex; align-items: center; min-width: 0; padding-right: var(--u3); }
   .ringlist span.name { min-width: 0; padding: 0 var(--unit) 0 var(--name-in); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ringlist span.name.renames { cursor: text; }
-  .ringlist input.name { grid-column: 3; margin-left: var(--u1); padding: 0 var(--unit); }
+  .ringlist input.name { grid-column: 4 / 9; margin-left: var(--u1); padding: 0 var(--unit); }
   .ringlist .rename { flex: none; display: grid; place-items: center; width: var(--control); height: var(--control); color: var(--wait); }
   .ringlist .rename:hover { color: var(--ink); background: var(--veil-strong); }
-  /* after the name, in the ring drawer's order: kind (with how many) · colour · size · radius. The last three each
-     stand in a column as wide as the drawer's button under it, centred on it; the numbers quiet, in the mono face. */
-  .ringlist .kind { grid-column: 4; justify-self: end; padding-left: var(--u3); white-space: nowrap; font-size: var(--t-s); }
-  .ringlist .says { justify-self: end; width: var(--line-button); text-align: center; white-space: nowrap; font: var(--t-xs)/1 var(--mono); }
-  .ringlist .chipcell { grid-column: 5; display: grid; place-items: center; }
-  .ringlist .says-size { grid-column: 6; }
-  .ringlist .says-r { grid-column: 7; }
   /* the list's tools stand on the pane's heading line, at its right: a plus that opens the four kinds, then move up ·
      move down · duplicate · delete, all five the same outlined circle. The pane is laid on the
      columns so they can lie over the heading's right part; folded, the summary stands there instead. */
@@ -60,17 +55,21 @@
     border: var(--hair) solid var(--select-rule); border-radius: var(--round-small); background: var(--field); box-shadow: inset 0 0 0 var(--ringline-inner) var(--select); }
   /* inside its outer line a second one, three times as thick, in the selected row's ground: the box reads as that row's */
   .guided .ringlist li.lineholder { border-color: color-mix(in srgb, var(--guide) var(--guide-edge), var(--grey)); box-shadow: inset 0 0 0 var(--ringline-inner) color-mix(in srgb, var(--guide) var(--guide-tint), var(--field)); }
-  .ringline { display: contents; }                 /* its buttons stand on the list's columns: the kinds from the name's column on, then colour · size · radius each under its place in the row */
-  .ringline > .kinds { grid-column: 3 / 5; justify-self: stretch; margin-left: var(--name-in); }      /* the four fill the name's and the kind's columns, ending where the kinds' words end */
+  .ringline { display: contents; }                 /* its parts stand on the list's columns: the kind square under the rows' icons, the details and Change in the names' room, then colour · size · radius */
+  .ringline > .kindcell { grid-column: 3; position: relative; display: grid; }
+  .kindsquare { display: grid; place-items: center; width: var(--line-button); height: var(--line-button); padding: 0; border: var(--hair) solid var(--ink); background: var(--ink); color: var(--paper); }      /* lit with the ring's kind (#253) */
+  .kindsquare:hover { background: var(--grey); border-color: var(--grey); }
+  .kindmenu { position: fixed; z-index: 30; top: auto; right: auto; }      /* the kinds, under the square (placed by app.js: the list scrolls and would cut it), over everything, as the add menu is under its plus */
+  .kindmenu button.on { background: var(--ink); color: var(--paper); }
+  .kindmenu .note { margin: 0; padding: var(--u2) var(--u4); border-top: var(--hair) solid var(--rule); font-size: var(--t-s); white-space: normal; }
+  .ringline > .details { grid-column: 4; min-width: 0; padding: 0 var(--unit) 0 var(--name-in); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--t-s); }      /* left-aligned, a long line cut (#253) */
+  .ringline > .change { grid-column: 5; justify-self: start; height: var(--line-button); padding: 0 var(--u2); font-size: var(--t-s); color: var(--ink); text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: var(--u1); white-space: nowrap; }      /* never cut */
+  .ringline > .change:hover { text-decoration-color: var(--ink); }
   .ringline > :is(.colour, .valueb) { justify-self: end; }
-  .ringline > .colour { grid-column: 5; }
-  .ringline > #ring-size { grid-column: 6; }
-  .ringline > #ring-r { grid-column: 7; }
+  .ringline > .colour { grid-column: 6; }
+  .ringline > #ring-size { grid-column: 7; }
+  .ringline > #ring-r { grid-column: 8; }
   .nothing { display: none; }
-  .kinds { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }      /* five kinds since the text ring (#297, 4.48) */
-  .kinds button { display: grid; place-items: center; height: var(--line-button); border: var(--hair) solid var(--rule); background: var(--field); }
-  .kinds button + button { margin-left: calc(-1 * var(--hair)); }
-  .kinds button:hover { background: var(--hover); }
   .colour.bare { flex: none; justify-content: center; width: var(--line-button); height: var(--line-button); padding: 0; border: var(--hair) solid var(--rule); border-radius: 0; background: var(--field); }
   .colour.bare .hex, .colour.mini .hex { display: none; }
   .colour.mini { flex: none; height: auto; padding: var(--hair); background: none; }      /* a colour beside the name of what it colours: the swatch alone, as large as the words (a text's, in its font box) */
@@ -100,6 +99,7 @@
   .valueb:is([aria-expanded="true"], .dragging) svg path:not(.hull, .tangent), .valueb#ring-size:is([aria-expanded="true"], .dragging) svg .dark { stroke: var(--paper); }
   .valueb:is([aria-expanded="true"], .dragging) svg .pivot { fill: var(--paper); }
   svg text.pixel { font-family: var(--pixel); opacity: var(--pixel-ink); }
+  svg text.figure { font-family: var(--sans); font-weight: 700; }      /* a kind's figures and words: the tool's sans, bold, not the pixel font (#255, 4.50) */
   /* a value button's tag is as wide as the pop-up it grows into: its name at the left, its value at the right, quiet,
      in the mono face. The pop-up is the same box, higher: the number's name (and its menu) · the field · − +, one
      under the other. No slider: the button is dragged instead. */

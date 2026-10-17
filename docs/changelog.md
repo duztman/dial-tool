@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.50 (web version) · 17 Oct 2026
+
+Phase G's rest begins, from Okay's notes alone (17 Oct: "now draw me all the sketches … proceed with plan"): the ring drawer and the rows.
+
+- **The ring drawer** (#253; Okay's notes, p. 2–3): the five kind buttons are gone. At the left a **square lit with the ring's kind** (ink, its picture in paper, 36 like the other buttons); beside it the **details** in words — "12 numerals · size 2.4 · radius 10", in the unit box's unit — left-aligned and cut with an ellipsis when the line is short; then **Change**, underlined, never cut, which takes you to the ring's settings (the first pane under the pinned part); then colour · size · radius as before (the answer chosen on 16 Oct). A press on the square opens the five kinds under it, over everything (the list scrolls and would cut it), the ring's kind marked, ending with the note "Settings stay with the ring. Switch back any time." (Okay, 16 Oct: "ok, recommended"; his warning line was not true, R7).
+- **The rows** (#254; "no text details, only the kind icon … no adjustments, just an indicator"): a row is eye · grip · the kind as an icon · the name (and the selected ring's rename box). The summary of 4.7–4.49.2 (how many, colour, size, radius) and the colour chip are gone from the rows; the drawer says them. The name stays (the answer chosen). The list's columns: eye · grip · kind (the icon, the drawer's square) · name (the details) · Change · colour · size · radius.
+- **The kind pictures** (#255; "a smaller optical size; abort silkscreen there"): the five drawings a size smaller in their 24 box (radius 9.75, was 11), the numerals' 12 · 3 · 6 · 9 and the text ring's ABC · XYZ in the tool's sans, bold (`.figure`), not the pixel font, which now stays for the stickers and the tiny numbers elsewhere.
+
 ## beta 4.49.2 (web version) · 17 Oct 2026
 
 - **The number popup is the controller** (#314; Okay's drawing of 17 Oct 2026, "to replace with our current one"): a light head — the name (with its bare chevron where the row has a menu) on a line of 28 over a hairline, inset 22, and the value in bold 25 standing over the slider's knob and moving with it — and under it a dark square (#3F3F3E) holding the slider in a white pill and − and + as two grey discs with white signs (8 thick, 40 long), all three 66 high, a unit and a half round and between them, no frame. 157 × 223 (166 × 219 before). The track is a unit and a half thick, dark to the knob and light after; the knob 44 with a white eye of 12.
