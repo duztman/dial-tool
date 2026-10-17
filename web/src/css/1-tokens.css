@@ -99,19 +99,21 @@
     --half: 30px;                                  /* AM · PM: its own window beside the time (Okay, 14 Oct 2026, 23:19) */
     --bar-now: color-mix(in srgb, var(--bar-light) 80%, var(--black)); --bar-now-hover: color-mix(in srgb, var(--bar-light) 90%, var(--black)); --bar-now-ink: var(--rule-light);      /* NOW: filled, the bar's one filled button (Okay, 16 Oct 2026, #306: "fill bg, invert type"); its fill 20 % darker than AM's outline, the bar's light tone (#307, on 4.46: "darker than ams outlines by 20%" → #5C5C5C; #B9B9B4 in 4.45.5), so its word is the panel's light rule tone, #D4D4CF (4.5 : 1; the bar's dark would read 1.7 : 1, and nothing on the bar is white — Okay, 15 Oct 2026); a hover 10 % darker than the outline; a press: the light tone */
     --value-pop: 132px;                            /* a value button's tag: about as wide as it is high */
-    /* the number popup (#249; Okay's drawing, 16 Oct 2026, 4.45.3): on a dark ground, two pills a finger high (44,
-       the least a finger is given) — the slider, the value — and under them − and + as two discs half as high again;
-       a unit (--u4) round them and a little less (--u3) between them; in a frame two points thick. Its corners: at the
-       top a pill's round plus that room and the frame, at the bottom a disc's ("plus minus roundness + some offset"),
-       so each runs parallel to what it holds. The pills and discs mid grey ("no white … all colors mid grays"), the
-       words, the signs and the slider's knob, a disc, black. */
-    --num-pop-pill: 44px; --num-pop-step: calc(1.5 * var(--num-pop-pill)); --num-pop-value: var(--num-pop-step);      /* the value's pill as high as the discs (#310, Okay, 16 Oct 2026, on 4.46: "pill height equals the plus and minus. But that growth does not affect slider") */
-    --num-pop-pad: var(--u4); --num-pop-gap: var(--u3);
-    --num-pop-name: var(--rule);                    /* a popup with a name (a row with a menu): the name on top, lighter than the pills, its chevron without a box (#310: "Name is on top, lighter, chevron boxless") */
-    --num-pop: calc(2 * var(--num-pop-step) + var(--num-pop-gap) + 2 * var(--num-pop-pad) + 2 * var(--thick));
-    --num-pop-round: calc(var(--num-pop-pill) / 2 + var(--num-pop-pad) + var(--thick)); --num-pop-round-foot: calc(var(--num-pop-step) / 2 + var(--num-pop-pad) + var(--thick));
-    --num-pop-ground: var(--night); --num-pop-fill: color-mix(in srgb, var(--grey), var(--rule)); --num-pop-hover: color-mix(in srgb, var(--num-pop-fill) 85%, var(--black));
-    --num-pop-thumb: calc(var(--num-pop-pill) - 2 * var(--u2));
+    /* the number popup — the controller (#249; Okay's drawing of 17 Oct 2026, 4.49.2, replacing his drawing of 16 Oct):
+       a light head with the name, a hairline and the value in bold over the knob; under it a dark square holding the
+       slider in a white pill and − and + as two grey discs, all three the same height (a finger and a half, 66 — his
+       drawing's three equal rounds); a unit and a half round and between them; no frame. The drawing's measures, at a
+       disc of 66: its top corners 28, its name line 28 with the hairline at its foot, inset 22; the knob 44 with a white
+       eye of 12; the track a unit and a half thick, dark to the knob and light after; the signs 8 thick, 40 long. */
+    --num-pop-step: 66px; --num-pop-pill: var(--num-pop-step);      /* the discs and the slider's pill: one height */
+    --num-pop-pad: var(--u3); --num-pop-gap: var(--u3);
+    --num-pop: calc(2 * var(--num-pop-step) + var(--num-pop-gap) + 2 * var(--num-pop-pad));
+    --num-pop-round: calc(var(--num-pop-step) / 2 + var(--num-pop-pad));      /* the dark square's corners follow the discs */
+    --num-pop-head: var(--num-pop-step); --num-pop-head-round: 28px; --num-pop-name-line: 28px; --num-pop-name-inset: var(--u8);
+    --num-pop-ground: #3F3F3E; --num-pop-head-ground: var(--rule-light); --num-pop-name: var(--rule); --num-pop-disc: var(--rule); --num-pop-well: var(--rule-light);
+    --num-pop-hover: color-mix(in srgb, var(--num-pop-disc) 85%, var(--black));
+    --num-pop-thumb: calc(var(--num-pop-step) - 2 * var(--u4)); --num-pop-eye: 6px; --num-pop-track: var(--u3);
+    --num-pop-fade: 120ms; --num-pop-linger: 1200ms;      /* it comes at once; after its last use it fades away, quickish (Okay, 17 Oct 2026: "comes lightning fast, fade away quickish after use") */
     --dot-tiny: 10px;                              /* a colour inside a line of words: a folded pane's summary */
     --thumb: 18px; --track: 4px; --thumb-eye: 2px; --thumb-eye-edge: 2.75px;      /* sliders: a black disc on a thin track (Okay's sketch); the light centre of the disc, and where its edge softens */
     --grip: 18px;                                  /* the ring list's drag handle column */
@@ -181,7 +183,7 @@
     --speed-pad: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2);      /* the speed box's room inside, left and right: the thumb at either end stands as far from the wall as from the box's top and bottom (3; Okay, 15 Oct 2026, 03:18: "when the ball is in a terminal, the bounding box clears it as much as it clears from the top… both ends symmetry"). Was u3 + 4 − half a thumb (1.25; 01:03, "before plus four") */
     --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
     --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
-    --t-num-pop: 23px;                             /* the number popup's value, in its pill: larger than --t-l (Okay, 16 Oct 2026, on 4.45: "everything bigger … larger everything within square"; 20 in 4.45.2, then "text larger") */
+    --t-num-pop: 25px;                             /* the number popup's value, in its pill: larger than --t-l (Okay, 16 Oct 2026, on 4.45: "everything bigger … larger everything within square"; 20 in 4.45.2, then "text larger") */
     --show-tick: calc(var(--tick) - 3px);          /* the Show box's tick, 3 smaller than a tick box (Okay, 16 Oct 2026, on 4.46.3: "tick 3px smaller") */
     --unit-pad: 4px;                               /* the unit box: this much round its word, on every side — round mm's letters; the other units keep mm's height (Okay, 16 Oct 2026, on 4.44: "2px padding around letters"; on 4.44.3: "Mm looks perfect now add 2px more padding … Others use the same height, width can change") */
 

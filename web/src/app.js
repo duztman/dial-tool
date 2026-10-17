@@ -23,7 +23,7 @@ const el = (tag, props = {}, ...children) => {
 const svg_el = (tag) => document.createElementNS("http://www.w3.org/2000/svg", tag);
 const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
 /** a slider tells its stylesheet how far along it is (--p, 0 to 1): the filled part of its track. */
-const filled = (slider) => slider.style.setProperty("--p", clamp((slider.value - slider.min) / ((slider.max - slider.min) || 1), 0, 1).toFixed(4));
+const filled = (slider) => { const p = clamp((slider.value - slider.min) / ((slider.max - slider.min) || 1), 0, 1).toFixed(4); slider.style.setProperty("--p", p); const pop = slider.closest(".numpop"); if (pop) pop.style.setProperty("--p", p); };      // in the popup the value follows the knob: the box knows --p too
 
 const PNG_MOST = 16384;                            // a browser's canvas is at most this many pixels a side
 const PNG_SAFE = 4096 * 4096;                      // Safari on a phone or tablet draws nothing past this many pixels in all
@@ -107,9 +107,9 @@ const SIGNS = {
 // the number popup's − and + (Okay's drawing, 16 Oct 2026, on 4.45.2: "thicker plus minus, rounded ends"): 22 points,
 // the sign 20 across, its line 3 — twice LINE, a pictured width (icons/check.mjs) — centred on whole points, so a 3
 // line covers whole screen dots
-const BIG = {
-  plus: icon(`<path d="M11 2.5V19.5M2.5 11H19.5" ${sw(3)}/>`, 22),
-  minus: icon(`<path d="M2.5 11H19.5" ${sw(3)}/>`, 22),
+const BIG = {                                      // the controller's − and + (Okay's drawing, 17 Oct 2026): 8 thick, 40 long, round ends, white on the discs
+  plus: icon(`<path d="M22 1.75V42.25M1.75 22H42.25" ${sw(8)}/>`, 44),
+  minus: icon(`<path d="M1.75 22H42.25" ${sw(8)}/>`, 44),
 };
 const TINY = {
   plus: icon(`<path d="M3 0.625V5.375M0.625 3H5.375" ${sw(DENSE)}/>`, 6),
@@ -251,6 +251,7 @@ const WORDS_MS = 3000;
 // drawer about half, then about three quarters); the least the preview and the drawer keep (px); and how much room for
 // scrolling the drawer must have left under its title, tabs and pinned panes before those stay put
 const SHEET = { shares: [0.42, 0.22], preview: 120, drawer: 160, room: 140 };
+const POP_LINGER_MS = 1200, POP_FADE_MS = 120;      // the number popup: after its last use it fades, quickish (Okay, 17 Oct 2026); the stylesheet's --num-pop-linger and --num-pop-fade say the same
 const SNAP_DEG = 2;        // a text ring's angle snaps to an index this close (#297)
 const RING_ROWS = 5;       // the ring list shows this many rings (and the drawer) before it scrolls; its pill makes it taller or shorter (#256)
 const SPIN_MS = 1600;      // Now and back: the big hands turn once, opposite ways, and land; the seconds hand goes straight there (07:36)
@@ -669,7 +670,8 @@ const speed_at = (p, split) => (p < split ? SPEED_SLOW[Math.round(p / split * (S
 const speed_word = (k) => (k >= 10 ? String(Math.round(k)) : String(+k.toFixed(k < 1 ? 2 : 1)));      // the figures: 0.25, 1, 2.5, 60
 const frac = (x) => ((x % 1) + 1) % 1;
 const PULSE_MOST = 6;      // the play button's pulse: at most this many a second, unless the movement's own beat is more (#282; 3 in 4.44 — Okay: "Play button can go faster in animation"; the three-flash limit is for flashes over a large part of the view, not a 31-point button)
-const PULSE_RISE = 0.2;    // the triangle's flash: how much of it is the rise, eased, before the eased fall (#308: "like an analog fade")
+const PULSE_RISE = 0.03;   // the triangle's flash: how much of it is the rise — next to nothing, a few milliseconds — before the eased fall (#308; Okay, 17 Oct 2026: "like a flash: zero to bright in milliseconds, then slow descent. but all very quickly"; a fifth until 4.49.2)
+const PULSE_FLASH = 0.4;   // …and how much of a beat the whole flash takes (half until 4.49.2: "all very quickly")
 // each unit's ink in Dial Mono, in em, from its outlines (fonts/ui/mono_font.py prints it): [left of the advance's
 // start, width, top over the baseline, height]. The unit box is drawn round it (size_unit, #302)
 const UNIT_INK = { mm: [0.062, 1.076, 0.56, 0.56], pt: [0.088, 1.035, 0.705, 0.885], in: [0.082, 1.032, 0.78, 0.78], lig: [0.029, 1.683, 0.78, 0.96], thou: [0.052, 2.262, 0.73, 0.74] };      // the play button's pulse: at most this many a second, unless the movement's own beat is more (#282)
@@ -2060,7 +2062,7 @@ class DialTool {
       }
       if (row.button) { slider.ariaLabel = field.ariaLabel = row.text; field.title = row.text + " · " + field.title; }
       if (row.bare) { label.textContent = ""; label.className = "blank"; slider.ariaLabel = field.ariaLabel = row.text; field.title = row.text + " · " + field.title; }
-      if (row.inpop) slider.ariaLabel = field.ariaLabel = row.text;      // its name is not shown in the popup (4.45.2)
+      if (row.inpop) slider.ariaLabel = field.ariaLabel = row.text;      // the popup's head says its name too (4.49.2)
       if (!row.inpop && !row.side && !row.bare && !row.button) this.name_opens(label, row);      // form A: its name opens the popup (#249)
       if (row.side) {
         // beside a hand's box there is little room (Okay, 13 Oct 2026): the number with a tiny plus over a tiny minus
@@ -2074,7 +2076,7 @@ class DialTool {
         field.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === "Escape") field.blur(); });
         if (!row.inpop) {
           field.onmousedown = (e) => e.preventDefault();      // a press opens the popup, whose own field takes the typing
-          field.onclick = () => this.value_pop_open(field, row);
+          field.onclick = (e) => this.value_pop_open(field, row, e.detail ? { x: e.clientX, y: e.clientY } : null);
         }
         out.quiet = box;
         wrap.append(lead, slider, box);
@@ -2736,7 +2738,7 @@ class DialTool {
       this.guides_live(r.scope !== "nudge");
       this.set_value(r.scope, r.key, +Math.max(press.v + Math.round(d / 2) * step, r.lo).toFixed(6));       // two screen points a step
     };
-    b.onpointerup = b.onpointercancel = () => { const was = press; press = null; b.classList.remove("dragging"); if (was && !was.moved) this.value_pop_open(b, row()); };
+    b.onpointerup = b.onpointercancel = (e) => { const was = press; press = null; b.classList.remove("dragging"); if (was && !was.moved) this.value_pop_open(b, row(), { x: e.clientX, y: e.clientY }); };
     b.onclick = (e) => { if (!e.detail && !this.value_pop) this.value_pop_open(b, row()); };      // the keyboard (Enter, Space) opens it too
     return { el: b, refresh };
   }
@@ -2760,7 +2762,7 @@ class DialTool {
       this.guides_live(row.scope !== "nudge");
       this.set_value(row.scope, row.key, row.whole ? clamp(Math.round(v), row.lo, row.hi) : +Math.max(v, row.lo).toFixed(6));
     };
-    label.onpointerup = label.onpointercancel = () => { const was = press; press = null; label.classList.remove("dragging"); if (was && !was.moved) this.value_pop_open(label, row); };
+    label.onpointerup = label.onpointercancel = (e) => { const was = press; press = null; label.classList.remove("dragging"); if (was && !was.moved) this.value_pop_open(label, row, { x: e.clientX, y: e.clientY }); };
   }
 
   /** the guides while a number is slid — the popup's slider, a name or a value button dragged — even with Guides off
@@ -2803,18 +2805,37 @@ class DialTool {
    *  it, centred; on a phone a sheet at the bottom, over the drawer, so the dial stays in view. Being the row itself,
    *  it does all the row does (R15: typing past the slider's range widens it). Enter, Escape or a press outside closes
    *  it. (Until 4.45: the value button's tag, grown into a small square — 4.12.) */
-  value_pop_open(button, row) {
+  value_pop_open(button, row, at = null) {
     if (this.value_pop && this.value_pop.button === button) return this.value_pop_close();
     this.value_pop_close();
+    for (const old of document.querySelectorAll(".numpop.fading")) old.remove();      // one on its way out: gone now
     this.tag_hide();
-    const sheet = this.pop_is_sheet();
-    const r = this.build_row({ ...row, inpop: true, side: false }), box = el("div", { className: "numpop" + (sheet ? " sheet" : ""), id: "value-pop", role: "dialog", ariaLabel: row.text || "" }, r.el);
+    const r = this.build_row({ ...row, inpop: true, side: false });
+    // the controller (Okay's drawing, 17 Oct 2026): the head holds the name (the row's label, or its menu) and the value;
+    // the row's body — the slider and the discs, or a window's places — stands in the dark square under it
+    const name = r.el.querySelector(":scope > .menulabel, :scope > label"), field = r.el.querySelector('input[type="text"]');
+    const head = el("div", { className: "pophead" }, el("div", { className: "popname-line" }, ...(name ? [name] : [])), ...(field ? [el("div", { className: "popvalue" }, field)] : []));
+    const box = el("div", { className: "numpop", id: "value-pop", role: "dialog", ariaLabel: row.text || "" }, head, r.el);
     document.body.append(box);
     button.setAttribute("aria-expanded", "true");
-    this.value_pop = { button, box, r };
+    this.value_pop = { button, box, r, timer: 0 };
     r.refresh(this.target(row.scope));
-    if (!sheet) this.tag_place(box, button);
-    const field = box.querySelector('input[type="text"]');
+    // where it stands: the knob under the finger that opened it (at: the press's point), kept inside the window; opened
+    // from the keyboard, or with no slider (a window's places), under its button, centred
+    const slider = box.querySelector('input[type="range"]'), w = box.offsetWidth, h = box.offsetHeight, bb = button.getBoundingClientRect();
+    let left = (at ? at.x : bb.left + bb.width / 2) - w / 2, top = bb.bottom + 7;
+    if (at && slider) {
+      const k = slider.getBoundingClientRect(), p = +slider.style.getPropertyValue("--p") || 0, b0 = box.getBoundingClientRect();
+      const knob = [k.left + k.height / 2 + p * (k.width - k.height), k.top + k.height / 2];      // the knob's centre: its travel is the pill's width less its height
+      left = b0.left + (at.x - knob[0]); top = b0.top + (at.y - knob[1]);
+    }
+    box.style.left = `${clamp(left, 4, innerWidth - w - 4)}px`;
+    box.style.top = `${clamp(top, 4, innerHeight - h - 4)}px`;
+    // after its last use it fades away: a press or a slide inside starts the clock again; a press held, or typing, holds it
+    const later = () => { clearTimeout(this.value_pop?.timer); if (this.value_pop) this.value_pop.timer = setTimeout(() => this.value_pop_close(true), POP_LINGER_MS); };
+    const hold = () => clearTimeout(this.value_pop?.timer);
+    box.addEventListener("pointerdown", hold); box.addEventListener("pointerup", later); box.addEventListener("keydown", hold);
+    box.addEventListener("input", (e) => { if (e.target.type === "range") later(); });
     box.onkeydown = (e) => {
       if (!(e.key === "Escape" || (e.key === "Enter" && e.target === field))) return;
       e.preventDefault();                          // or the same key press would go on to the button and open it again
@@ -2823,15 +2844,18 @@ class DialTool {
     };
     // the value ready to type over, for a mouse or the keys only: under a finger (a phone, an iPad) the keyboard comes
     // only when the value is pressed (Okay, 16 Oct 2026, 4.46.1: "Value gets selected was the wrong choice, triggers the keypad on ipad")
-    if (!sheet && document.documentElement.dataset.press !== "touch") { field.focus(); field.select(); }
+    if (field && document.documentElement.dataset.press !== "touch") { field.focus(); field.select(); }
   }
-  value_pop_close() {
+  /** fade: it goes in a short fade (its last use is over); otherwise at once (a press elsewhere, Escape, another opening) */
+  value_pop_close(fade = false) {
     if (!this.value_pop) return;
-    const { button, box } = this.value_pop;
+    const { button, box, timer } = this.value_pop;
+    clearTimeout(timer);
     this.value_pop = null;
     const field = box.querySelector('input[type="text"]');
     if (document.activeElement === field) field.blur();      // what was typed is taken before the field goes
-    box.remove();
+    if (fade && !matchMedia("(prefers-reduced-motion: reduce)").matches) { box.classList.add("fading"); setTimeout(() => box.remove(), POP_FADE_MS); }
+    else box.remove();
     button.setAttribute("aria-expanded", "false");
   }
 
@@ -4402,7 +4426,7 @@ class DialTool {
    *  the arrow much faster on slow speeds, flash brighter. Like an analog fade. Eased over the line and comes back"):
    *  it starts at the beat as before, but lasts as long in real seconds as it does at 1× (half a beat), and peaks
    *  brighter (the button's class slow: --play-tri-slow); a sweep's breath runs in real seconds there too. The flash
-   *  itself is a lamp's: a short eased rise (a fifth of it), then an eased fall — not a blink.
+   *  itself is a flash: zero to bright in milliseconds (PULSE_RISE), then an eased descent, all within PULSE_FLASH of a beat.
    *  t = the time shown, in seconds · now = real seconds. Not where the system asks for less motion. */
   pulse(t, now = 0) {
     let cap = 0, tri = 0;
@@ -4412,7 +4436,7 @@ class DialTool {
       const f = rate * this.speed <= most ? frac(t * rate) : frac(now * most);      // how far from the last beat, 0 to 1
       if (beat > 0) {
         cap = (1 - f) ** 3;                                                         // the cap: a flash at the beat, fading the whole beat
-        const h = Math.min(1, 2 * (slow ? f / this.speed : f));                     // the flash's own clock: 0 at the beat, 1 when it is over (half a beat; at 0.1× still half a beat of real time)
+        const h = Math.min(1, (slow ? f / this.speed : f) / PULSE_FLASH);           // the flash's own clock: 0 at the beat, 1 when it is over (PULSE_FLASH of a beat; at 0.1× still that much of a beat in real time)
         tri = h < PULSE_RISE ? 0.5 - 0.5 * Math.cos(Math.PI * h / PULSE_RISE) : (1 - (h - PULSE_RISE) / (1 - PULSE_RISE)) ** 2;
       } else {                                                                      // sweep: a slow breath (in real seconds below 1×)
         cap = 0.5 - 0.5 * Math.cos(2 * Math.PI * (slow ? frac(now * rate) : f)); tri = cap ** 3;
