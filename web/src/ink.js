@@ -19,14 +19,15 @@
 // is measured again; so is every label once the fonts have loaded.
 
 const INKED = [
-  ".atgrid button",          // a window's places: 3 · 6 · 9 · 12 · 1:30 … 10:30 · 4 · ···
+  ".circles button",         // a window's places: 3 · 6 · 9 · 12 · ··· (4.46.1)
+  ".numpop .places button",  // and every place, in the dots' popup
   ".steps12 button",         // the bottom bar's hours and 10:10
   "#ampm",                   // AM · PM, the time's own window
   ".fit > span",             // Fit, beside its magnifier
   "#show-now > .word",       // the showcase's Now pill (15 Oct 2026)
+  "#show-ten > .word",       // and its 10:10 pill (15 Oct 2026, 07:40)
   ".irisgo",                 // ACTIVATE SHOWCASE, beside the iris
   "#now",                    // NOW, beside it (Okay, 14 Oct 2026: "make sure the inner type is centered with equal padding within buttons")
-  "#unit",                   // mm · pt · in · lig
 ].join(", ");
 
 const canvas = document.createElement("canvas");

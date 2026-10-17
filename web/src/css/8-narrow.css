@@ -16,11 +16,18 @@
     .bar .group { border-left: 0; }
     .bar .day { flex: 1 1 0; height: var(--bar-day-narrow); padding: 0 var(--margin); }
     .bar .viewing { padding: 0 var(--margin) 0 0; }
-    .bar .lead { padding-left: var(--margin); }      /* a phone has no room to keep: the row starts at the margin */
+    .bar .viewing > .fit { width: auto; padding: 0 var(--u3); }      /* as wide as its sign and word need, with NOW's room either side; the day slider gives way (Okay, 15 Oct 2026, 07:21: "why so squeezed? Allow equal space from its sides") */
+    .bar .lead { padding-left: var(--u6); }      /* the red dot with room either side, as much left as right (Okay, 15 Oct 2026, 07:45: "red dot with more space on both sides"); was: the row started at the margin */
+    .bar .lead .play { margin-right: calc(var(--u6) - var(--u2)); }      /* the row's own gap (u2) makes the rest */
+    /* the time at the size of everything else in the bar, AM and FIT (07:45: "smaller, 'same size with all' digi
+       clock"); its field shrinks with it (--time-chars counts its own characters) and how fast takes the room */
+    .bar .lead :is(.timewell .time, .timebox .half) { font-size: var(--t-s); }      /* the time and AM · PM, one size here too */
     .bar .humpname { display: none; }               /* the bar's top line is too close here for "1×" over the ball */
     /* here the speed is written in the thumb itself, in the pixel face, black on its grey, in place of its eye (Okay,
        15 Oct 2026, 06:54: "write the speed in silkscreen into this guy instead of the dot") */
     .bar .humpname.rider { display: block; bottom: auto; top: 50%; height: auto; padding: 0; translate: -50% -50%; line-height: 1; background: none; color: var(--black); pointer-events: none; }
+    .bar .humpname.rider .zero { display: none; }      /* "0.25X" is wider than the thumb: ".25X" */
+    .bar .humpname.rider.sliding { height: auto; padding: 0; border-radius: 0; background: none; color: var(--black); opacity: var(--pixel-ink-bar); font-family: var(--pixel); font-size: var(--t-pixel); font-weight: 400; line-height: 1; letter-spacing: 0; }      /* here the speed is written in the thumb, sliding or not: no pill */
     .bar .speeds { --speed-thumb: var(--speed-thumb-narrow); }      /* room for "720X" (25 px of the pixel face) */
     .bar .speedtrack input[type="range"]::-webkit-slider-thumb { background: var(--bar-light); box-shadow: none; }      /* no ring of the bar's ground: it would cut the box's line */
     .bar .speedtrack input[type="range"]::-moz-range-thumb { background: var(--bar-light); box-shadow: none; }
@@ -37,7 +44,14 @@
     .detail .upright { display: none; }
     .detail .lying { display: block; }      /* picture tiles under their label, on all six columns: room for their words */
     .row.pick > label { line-height: 1.4; padding-top: var(--unit); }
-    .picker { inset: auto 0 0 0; width: 100%; max-width: 100vw; height: 58%; border-width: var(--hair) 0 0; box-shadow: none; }
+    .picker { inset: var(--bar-h) 0 0 0; width: 100%; max-width: 100vw; height: auto; border-width: var(--hair) 0 0; box-shadow: none; }      /* the font sheet up to the bar: over the whole preview (Okay, 15 Oct 2026, 07:12) */
+    /* the ways to add a font on a phone: link and file only. Installed exists where the browser can read the computer's
+       fonts (Chrome, Edge on a desktop), never on a phone; in a narrow desktop window it would squeeze the others into
+       three lines each (Okay, 15 Oct 2026, 07:14: "Installed is back. Solve this") — so here it isn't shown, and the two
+       keep their second lines */
+    .picker .squares .adds > #local-fonts { display: none; }
+    .picker .squares .adds.three > .pickt :is(small, br) { display: revert; }
+    .picker .squares .adds.three > .pickt span { white-space: nowrap; }
     /* the colour pop-out is a sheet from the bottom; wide, it is the whole screen */
     .colourpop { inset: auto 0 0 0; width: auto; border-width: var(--hair) 0 0; border-radius: var(--round-large) var(--round-large) 0 0; }
     .colourpop.wide { inset: 0; grid-template-rows: auto auto auto 1fr; border-radius: 0; }      /* wide, a sheet is the whole screen; the field takes the height that is left */
@@ -70,12 +84,26 @@
     .backdropbox { --sign-w: var(--dot); }
     :is(.guidesbox, .backdropbox) > .word { display: inline-block; max-width: 0; overflow: hidden; white-space: nowrap; transition: max-width var(--iris-time) var(--view-ease), margin var(--iris-time) var(--view-ease); }
     main.words :is(.guidesbox, .backdropbox) { padding-right: var(--u4); }
+    main:not(.words) :is(.guidesbox, .guidesmore, .backdropbox) { background: none; }      /* folded to their signs, the switches are outlines again */
     main.words :is(.guidesbox, .backdropbox) > .word { max-width: var(--word-max); margin-left: var(--unit); }
-    /* Okay's mark larger here; in the showcase the mark and "Dial Tool" stand at the top left (the drawer is gone) */
-    .about, .logo { width: var(--logo-narrow); }
-    .logo { height: var(--logo-narrow); }
-    .logo svg { width: 100%; height: 100%; }
-    .bio { padding-left: calc(var(--logo-narrow) + var(--gap) - var(--hair)); }      /* its text on the title's line, beside the larger mark */
+    /* in the showcase the mark (larger here) and "Dial Tool" stand at the top left: the drawer is gone */
+    #app.show :is(.about, .logo), .panel:not(.squeezed) :is(.about, .logo) { width: var(--logo-narrow); }
+    #app.show .logo, .panel:not(.squeezed) .logo { height: var(--logo-narrow); }
+    #app.show .logo svg, .panel:not(.squeezed) .logo svg { width: 100%; height: 100%; }      /* …and on the drawer's full title line (Okay, 15 Oct 2026, 08:08: "you forgot the icon resize on the big version"); squeezed, it is the eyes' size again */
+    /* the drawer's title line, squeezed once the drawer scrolls (.squeezed, app.js) and staying on top while it does,
+       the tabs held under it (Okay, 15 Oct 2026, 07:02: "a compacted title bar for scrollers' delight. We may lose mm…
+       smaller, actually proportional to eyes okay icon and same text"; 07:59: full on load and back at the very top,
+       "Gallery hides together with mm"): a pane heading's height, the title at the panes' size; no Gallery pill, no unit box */
+    .panel.squeezed > header { height: var(--head); }
+    .panel.squeezed .title h1 { font-size: var(--t-m); }
+    .panel.squeezed .title .quiet { font-size: var(--t-s); }
+    .panel.squeezed :is(.unit, .galleryway) { display: none; }
+    .panel.squeezed:not(.held) > header { position: sticky; top: 0; z-index: 4; background: var(--paper); }
+    .panel.squeezed:not(.held) .tabs { top: var(--head); }
+    /* the drawer scrolling as one (not .held): once its top has gone, the tabs stand on paper the drawer's whole width,
+       on the thick line that ends what stays put (.stuck, app.js) (07:02: "we still get the scroll past… and no bottom bar") */
+    .panel:not(.held) .tabs::before { content: ""; position: absolute; z-index: -1; inset: 0 calc(-1 * var(--margin)); background: var(--paper); }
+    .panel.stuck:not(.held) .tabs::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: var(--thick); background: var(--ink); }      /* under the tabs, the chosen one standing on it, as when the drawer is at its top */
     #app.show .mast { position: fixed; z-index: 6; top: var(--margin); left: var(--margin); }
   }
 }

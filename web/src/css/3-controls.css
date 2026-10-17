@@ -26,16 +26,20 @@
   .steps { width: 100%; }
   .step, .segs > button { flex: 1; border-color: var(--rule); }
   .segs > button { padding: 0 var(--unit); }
-  /* a window's places: a square of the four quarters · a white bar · the places between and a box of three dots
-     for any time. Each a box of its own, one unit apart. */
-  .atgrid { grid-column: 3 / -1; display: grid; grid-template-columns: 2fr auto 3fr; gap: var(--unit); align-items: stretch; padding: var(--unit) 0; }
-  .atgrid > .segs { display: grid; gap: var(--unit); }
-  .atgrid > .quarters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .atgrid > .between { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .atgrid > .segs > button { padding: 0; }      /* "10:30" needs the whole box */
-  .atgrid > .segs > button + button { border-left: var(--hair) solid var(--rule); }
-  .atgrid > .segs > button.on { border-color: var(--ink); }
-  .atgrid > .divide { width: var(--thick); background: var(--row-rule); }
+  /* a line of buttons stretched along a row's controls (4.46.1: a window's Position, #264, and its shapes on the Shape
+     heading's line, #265; Okay on the mock-ups: "Position should not be small", "stretch shapes like position"):
+     each as wide as the others, a unit between them, as high as a large control; the chosen one ink (chosen layer) */
+  .btnline { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--unit); }
+  .btnline > button { display: grid; place-items: center; height: var(--control-large); padding: 0; border: var(--hair) solid var(--rule); background: var(--field); }
+  .btnline > button:hover { background: var(--hover); }
+  .row > .btnline { grid-column: 3 / -1; }
+  /* a line of round buttons (a window's places on its heading's line, 4.46.1: "3 6 9 12 are circular buttons now";
+     4.46.2: "add 4… scale up circles"): from the controls' column to the end, a unit between them as between tiles,
+     each as large as its share of the line allows. A time in the dots (2:15) is set a size smaller to fit */
+  .circles { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--unit); }
+  .circles > button { display: grid; place-items: center; aspect-ratio: 1; padding: 0; border: var(--hair) solid var(--rule); border-radius: 50%; background: var(--field); }
+  .circles > button:hover { background: var(--hover); }
+  .circles > .atmore.on { font-size: var(--t-xs); }
   .atmore:not(.on) { letter-spacing: 0.1em; }      /* the three dots, a little apart */
   :is(.step, .segs > button) + button { border-left: 0; }
   .tools { display: flex; flex-wrap: wrap; gap: var(--unit); align-items: center; }
@@ -69,6 +73,7 @@
   .picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--unit); padding: var(--unit) 0; }      /* one small space, the unit: between the tiles, both ways, and from them to the row's lines. The tiles are wider than a column for it */
   .picks.five { grid-template-columns: repeat(5, minmax(0, 1fr)); }      /* five choices (a window's shape) */
   .pickt { justify-items: center; align-content: start; gap: calc(var(--unit) / 2); min-height: var(--tile); padding: var(--unit) var(--hair); font-size: var(--t-xs); line-height: 1.15; }
+  .picks.small .pickt { min-height: 0; }      /* smaller pictures, a tile no higher than they need (a window's Shows, 4.46.1) */
   .pickt span { white-space: nowrap; text-align: center; }      /* a tile's word is one line; a name too long for it has a short one in TILE_WORDS */
   .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--unit) var(--gap); }
   .tile { align-content: space-between; justify-items: start; gap: var(--unit); min-height: calc(var(--tile) + var(--u1)); padding: var(--unit) var(--u3); text-align: left; line-height: 1.25; }
@@ -81,8 +86,8 @@
   /* reach: under a finger, a small control is pressed from a little outside its edge too — up to half-way to its
      neighbour, so two never overlap. What you see doesn't change: the reach is an unseen frame round the control
      (--reach-x to the sides, --reach-y above and under; nothing for a mouse). Every small control is listed here. */
-  :is(.dots button, .chips button, .swatches .swatch, .sign, .step, .rename, .fontname .btn) { position: relative; }
-  :is(.dots button, .chips button, .swatches .swatch, .sign, .step, .rename, .fontname .btn)::after { content: ""; position: absolute; inset: calc(-1 * var(--reach-y, 0px)) calc(-1 * var(--reach-x, 0px)); }
+  :is(.dots button, .chips button, .swatches .swatch, .sign, .step, .rename, .fontname .btn, .ringlist .grip) { position: relative; }
+  :is(.dots button, .chips button, .swatches .swatch, .sign, .step, .rename, .fontname .btn, .ringlist .grip)::after { content: ""; position: absolute; inset: calc(-1 * var(--reach-y, 0px)) calc(-1 * var(--reach-right, var(--reach-x, 0px))) calc(-1 * var(--reach-y, 0px)) calc(-1 * var(--reach-x, 0px)); }
   @media (pointer: coarse) {
     .dots button { --reach-x: calc(var(--guide-gap) / 2); --reach-y: calc((var(--guide-row) - var(--guide-dot)) / 2); }      /* a guide's colour: the whole height of its line */
     .chiprow .chips button { --reach-x: calc(var(--pop-chip-gap) / 2); --reach-y: calc(var(--pop-chip-gap) / 2); }      /* a colour in the pop-out */
@@ -90,6 +95,7 @@
     .sign, .rename, .step, .labelmenu { --reach-y: var(--reach); }      /* signs under the ring list, the pop-out's square and cross, the rename box, − and + */
     .fontname .btn { --reach-y: calc((var(--control) - var(--control-s)) / 2 + var(--unit)); }      /* Lang. and Change…: the font name line's whole height */
     .colourpop header .sign { --reach-y: calc((var(--head) - var(--control)) / 2); }
+    .ringlist .grip { --reach-right: var(--u4); z-index: 1; }      /* a ring's grip: into the start of its name, which a press there still selects (a press that doesn't move); the eye on its left keeps its own (Okay, 15 Oct 2026, 11:32: "A and c together") */
   }
 
   /* night: a part that is near black with light words (the colour pop-out, the guides' list). Inside it the usual
@@ -112,5 +118,5 @@
   .chips button.add:hover { background: var(--hover); border-color: var(--ink); }
   .log, .link { display: block; width: 100%; margin: 0; padding: var(--u3) var(--u4); border: 0; color: var(--grey); font: var(--t-xs)/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
   .log { min-height: var(--log-least); max-height: var(--log-most); overflow-y: auto; }
-  .link { resize: none; overflow-y: auto; color: var(--ink); }
+  .link { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }      /* the link on one line, cut at the box's edge; Copy link copies it whole (Okay, 16 Oct 2026, #277; three lines that wrapped before) */
 }

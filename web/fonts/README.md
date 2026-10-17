@@ -18,6 +18,7 @@ The list is written by `web/fonts.mjs`.
 | Jost | `Jost-wght.ttf` | Copyright 2020 The Jost Project Authors (https://github.com/indestructible-type) | [licence](licences/Jost-OFL.txt) |
 | Josefin Sans | `JosefinSans-wght.ttf` | Copyright 2010 The Josefin Sans Project Authors (https://github.com/ThomasJockin/JosefinSansFont-master), with Reserved Font Name "Josefin Sans". | [licence](licences/JosefinSans-OFL.txt) |
 | Montserrat | `Montserrat-wght.ttf` | Copyright 2024 The Montserrat.Git Project Authors (https://github.com/JulietaUla/Montserrat.git) | [licence](licences/Montserrat-OFL.txt) |
+| Rubik | `Rubik-wght.ttf` | Copyright 2015 The Rubik Project Authors (https://github.com/googlefonts/rubik) | [licence](licences/Rubik-OFL.txt) |
 | Oswald | `Oswald-wght.ttf` | Copyright 2016 The Oswald Project Authors (https://github.com/googlefonts/OswaldFont) | [licence](licences/Oswald-OFL.txt) |
 | Antonio | `Antonio-wght.ttf` | Copyright 2013 The Antonio Project Authors (https://github.com/googlefonts/antonioFont) | [licence](licences/Antonio-OFL.txt) |
 | Michroma | `Michroma-Regular.ttf` | Copyright 2011 The Michroma Project Authors (https://github.com/googlefonts/Michroma-font) | [licence](licences/Michroma-OFL.txt) |

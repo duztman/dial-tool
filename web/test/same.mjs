@@ -51,6 +51,7 @@ async function open(options) {
   page.on("pageerror", (e) => console.log("page error:", e.message));
   await page.addInitScript(() => { Date.now = () => 1791900000000; });      // a still clock, so nothing differs by the hour
   await page.addInitScript(() => { if (!localStorage.getItem("dial-tool-last")) localStorage.setItem("dial-tool-last", "{}"); });      // the plain starting dial, not the opener (Okay's watch, 4.38.12)
+  await page.addInitScript(() => { if (!localStorage.getItem("dial-tool-folds")) localStorage.setItem("dial-tool-folds", '{"*":false}'); });      // every pane open, as for a visitor who has opened them (#270)
   await page.goto("file://" + (process.env.PAGE || process.cwd() + "/dial-tool.html"));      // PAGE=…: another build, to keep its look
   await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 30000 });
   await page.waitForTimeout(300);
@@ -140,10 +141,9 @@ async function walk(page, screen, with_pointer) {
   });
   await tab(page, "Hands");
   for (const n of [0, 1, 2]) await attempt("hand " + n, async () => { await page.click("#hand-tab-" + n); await unfold(page); await look("Hands, " + n); });
-  await attempt("hand shapes open", async () => { await page.click("#hand-shape-Shape-more"); await snap(page, S("Hands, all shapes")); await page.click("#hand-shape-Shape-more"); });
   await attempt("number box", async () => { await page.focus(".row.side .numbox input"); await snap(page, S("Hands, a number box open")); await page.keyboard.press("Escape"); await page.evaluate(() => document.activeElement.blur()); });
   await tab(page, "Date");
-  await attempt("window on", async () => { await page.check("#window-on-Show-this-window"); await unfold(page); });
+  await attempt("window on", async () => { await page.check("#window-on-Show"); await unfold(page); });
   await look("Windows, the date");
   for (const kind of ["day", "am · pm", "moon"]) await attempt("window " + kind, async () => { await page.locator(".form .pickt:visible", { hasText: kind }).first().click(); await snap(page, S("Windows, " + kind)); });
   await attempt("window date again", async () => { await page.locator(".form .pickt:visible", { hasText: "date" }).first().click(); });

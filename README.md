@@ -5,10 +5,10 @@ Built to explore, present and produce watch dials.
 
 **Use it: <https://duztman.github.io/dial-tool/>**, or open [`web/dial-tool.html`](web/dial-tool.html) from disk (one file, no install; Chrome or Edge for the fonts installed on the computer).
 
-**Version: beta 4.36.1 (14 Oct 2026).** `main` = released, `dev` = work in progress. Every earlier build, back to beta 1.0: [`docs/versions.md`](docs/versions.md).
+**Version: beta 4.46.5 (16 Oct 2026, on `dev`, `main` and the live page).** `main` = released, `dev` = work in progress. Every earlier build, back to beta 1.0: [`docs/versions.md`](docs/versions.md).
 What it has and lacks: [`docs/changelog.md`](docs/changelog.md). What's next: [`docs/build-list.md`](docs/build-list.md).
 
-**Guidebook:** a new one for the web version is being written (build list #93). The 4 Oct 2026 guide describes the DrawBot version: [`archive/drawbot/Dial-Tool-guide-2026-10-04.pdf`](archive/drawbot/Dial-Tool-guide-2026-10-04.pdf).
+**Guidebook:** a new one for the web version is being built in `guide/` by its plan, `guide/PLAN.md` (build list #93). The 4 Oct 2026 guide describes the DrawBot version: [`archive/drawbot/Dial-Tool-guide-2026-10-04.pdf`](archive/drawbot/Dial-Tool-guide-2026-10-04.pdf).
 
 ## Files
 
@@ -16,14 +16,14 @@ What it has and lacks: [`docs/changelog.md`](docs/changelog.md). What's next: [`
 |---|---|
 | `web/dial-tool.html` | **The tool, built**: one file with everything inside. Open it in a browser. |
 | `web/src/` | Its source: `geometry.js` (settings, geometry, drawing) · `output.js` (SVG, PDF) · `app.js` (the window) · `css/` (the stylesheet, one file per layer and part, R32) · `main.js`. `web/build.mjs` packs them into the one file. |
-| `web/fonts/` | The twenty open-licence font families the tool offers (SIL OFL; `README.md` and `licences/` inside). `web/fonts/ui/` holds Silkscreen (SIL OFL), the pixel font of the tool's own tiny numbers, packed into the page by `build.mjs`; `web/fonts.mjs` fetches the twenty and writes `src/font_list.js`; `web/examples.mjs` writes the example dials (`src/examples.js`); `web/gallery.mjs` holds and writes the Gallery's dials (`src/gallery.js`); `web/links.mjs` turns settings files into links. |
+| `web/fonts/` | The twenty-one open-licence font families the tool offers (SIL OFL; `README.md` and `licences/` inside). `web/fonts/ui/` holds Silkscreen (SIL OFL), the pixel font of the tool's own tiny numbers, packed into the page by `build.mjs`; `web/fonts.mjs` fetches the twenty and writes `src/font_list.js`; `web/examples.mjs` writes the example dials (`src/examples.js`); `web/gallery.mjs` holds and writes the Gallery's dials (`src/gallery.js`); `web/links.mjs` turns settings files into links. |
 | `web/icons/` | The icon pipeline (R33, design canon §9): `fit.mjs` puts a new drawing on the icon grid and prints the code; `check.mjs` checks every icon in the running window (in `npm test`); `look.py` reads how heavy each line looks. How: its `README.md`. |
 | `web/test/` | `npm test` runs them all. `parity.py` draws every harness dial with the frozen `dial.py` and with the web geometry and compares the pictures; `window.mjs` uses the built page in Chromium (rows, ring list, clicks on the preview, fonts, exports, save and load); `same.mjs` keeps the look of the window (every element's computed style) and compares it, for changes that must not change the look. |
-| `docs/guide/`, `tools/make_guide.py`, `tools/guide_dials.py` | The guidebook's source and build (how: `docs/guide/README.md`). Still the 4 Oct pages; being rewritten for the web version. |
+| `archive/guide/` | The old guides (the 4 Oct DrawBot guidebook and the 4.36.1 web review pages), archived 15 Oct 2026. |
 | `docs/versions.md`, `tools/versions.sh` | Every build and its commit. `tools/versions.sh tag` makes a tag per version; `tools/versions.sh open 4.30` puts that version, whole, in a folder beside the clone. |
+| `docs/handoff.md`, `tools/release.sh`, `tools/setup.sh` | For the next Claude session: where things stand and how the work runs (`handoff.md`); a fresh container made ready for the tests (`setup.sh`); a version put on the live page, or `main` brought up to `dev` (`release.sh`). |
 | `docs/brief.md` | Goals, decisions, open questions, parked ideas. |
-| `docs/rules.md` | Standing rules — check code against these in reviews. |
-| `docs/design.md` | The design canon: type, grid, colour, pictures, redrawn controls, icons — for the guide, the tool and anything else shown. |
+| `docs/rules.md` | Standing rules — check code against these in reviews. || `docs/design.md` | The design canon: type, grid, colour, pictures, redrawn controls, icons — for the guide, the tool and anything else shown. |
 | `docs/glossary.md` | Watch terms and tool terms, and which word means what here. |
 | `docs/build-list.md` | Numbered open items, things to verify, ideas. |
 | `docs/changelog.md` | Versions, what changed in each. |
@@ -32,10 +32,11 @@ What it has and lacks: [`docs/changelog.md`](docs/changelog.md). What's next: [`
 
 ## For agents
 
+Taking over from another session: start with [`docs/handoff.md`](docs/handoff.md).
 Read in this order: `README.md` → `docs/rules.md` → `docs/brief.md` → `docs/glossary.md` → `docs/build-list.md`.
 Keep the docs up to date after every decision and flag inconsistencies between them.
 After any change in `web/`: `cd web && npm install && npm test`, and look at the screenshots in `web/test/out/` (R19).
-A new version gets a row in `docs/versions.md` (version, date, commit) when it is released to `main`.
+Every version gets a row in `docs/versions.md` (version, date, commit) as it goes live: `tools/release.sh X "first line"`; `tools/release.sh main` brings `main` up to `dev`.
 
 ## Licence
 

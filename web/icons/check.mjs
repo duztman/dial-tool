@@ -30,7 +30,9 @@ const PICTURED = [
   { host: /^ring-kind-|^add-/, widths: [1, 2, 3], why: "a ring kind: ticks 1, marks 2, band 3, as on the dial" },
   { host: /^ring-twelve-Style-3$/, widths: [2], why: "a dashed outline: dashes look lighter than a whole line" },
   { host: /^iris-box/, widths: [1], why: "the showcase's X, the eye's rays made readable while faint (Okay, 15 Oct 2026, 04:59: \"iris becomes an x\")" },
-  { host: /^eye-box/, widths: [0.5], why: "the eye switch's rays, thin on purpose (Okay, 15 Oct 2026, 03:41: \"I want to see thin lines\")" },
+  { host: /^hands-key/, widths: [1], why: "the showcase's hands key, lines 1 as the X across from it (Okay, 15 Oct 2026, 07:40)" },
+  { host: /^eye-box/, widths: [0.625], why: "the eye switch's rays, thin on purpose (Okay, 15 Oct 2026, 03:41: \"I want to see thin lines\"; 0.5 until 16 Oct: \"thicker lines, just barely visibly\")" },
+  { host: /^value-pop-(plus|minus)$/, widths: [3], why: "the number popup's − and +, thick with round ends, in discs half as high again as a pill (Okay's drawing, 16 Oct 2026: \"Thicker plus minus, rounded ends\")" },
   { host: /^logo$/, widths: [1, 1.375], why: "Okay's own mark, at his weights: lines 1, ring 1.375 (15 Oct 2026, 03:06: \"a bit thinner\")" },
 ];
 const near = (a, b) => Math.abs(a - b) < 0.006;
@@ -42,6 +44,7 @@ const errors = [];
 page.on("pageerror", (e) => errors.push(e.message));
 await page.addInitScript(() => { Date.now = () => 1791900000000; });
 await page.addInitScript(() => { if (!localStorage.getItem("dial-tool-last")) localStorage.setItem("dial-tool-last", "{}"); });      // the plain starting dial, not the opener (Okay's watch, 4.38.12)
+await page.addInitScript(() => { if (!localStorage.getItem("dial-tool-folds")) localStorage.setItem("dial-tool-folds", '{"*":false}'); });      // every pane open, as for a visitor who has opened them (#270)
 await page.goto("file://" + process.cwd() + "/dial-tool.html");
 await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
 await page.waitForTimeout(300);
@@ -118,9 +121,8 @@ await visit("font box", async () => { await page.click('.ringlist li.ring:has-te
 await visit("font sheet", async () => { await page.click("#font-change"); await page.waitForTimeout(400); });
 await page.keyboard.press("Escape");
 await visit("Hands", () => tab("Hands"));
-await visit("all hand shapes", () => page.click("#hand-shape-Shape-more"));
-await page.click("#hand-shape-Shape-more").catch(() => {});
-await visit("Windows", async () => { await tab("Date"); await page.locator("label", { hasText: "Show this window" }).first().click(); await unfold(); });
+await visit("hand shapes", () => page.click("#hand-shape-Shape-7"));      // every shape is shown under the box since 4.46.3: one chosen, so a chosen thumb is looked at too
+await visit("Windows", async () => { await tab("Date"); await page.check("#window-on-Show"); await unfold(); });      // the Show box (#261, 4.46)
 for (const kind of ["day", "am · pm", "moon"]) await visit("window " + kind, () => page.locator(".form .pickt:visible", { hasText: kind }).first().click());
 await visit("window off", () => page.click("#window-card-2"));
 await visit("Export", () => tab("Export"));

@@ -1,5 +1,380 @@
 # Dial Tool — changelog
 
+## beta 4.46.5 (web version) · 16 Oct 2026
+
+- **A hand's page, the shapes' first black line moves down** (#311; Okay: "Short black line is part of hand selector. Comes after wall and preview box … THERE'S A SPACE. THEN COMES BLACK LINE. BUT THAT SPACE, IS THE SAME WITH ALL WHITES AND BLACK AROUND HERE"). The box and the last row (Wall) end on one line. Then come two units of space (11 px), then the thin black line that opens the shapes' row. In 4.46.4 that line lay on the box's foot. The thumbs keep two units to each black line, so every space here is the same.
+
+## beta 4.46.4 (web version) · 16 Oct 2026
+
+After Okay's marks on 4.46.3.
+
+- **The Show box**: a darker ground (12 % ink, was 7 %), its tick 3 px smaller ("Shows bg darker, tick 3px smaller").
+- **The line under it, the same room over and under** ("Vertical gaps before after same"): two units (11 px) from the box to the line, and two from the line to what follows.
+  - On a hand's page that is the thin black line, then the rows. The room under it is counted to the first row's own white line.
+  - On a window's page it is the pane's thick line ("Thick line stands here"), with the title as far under it as on every heading.
+- **Window at x** loses its "Position" line ("Delete position name, that works without"); the circles stand on the title's line.
+- **A hand's page**:
+  - its shapes are a row of their own after every row (after Wall, and the cap's rows on the seconds hand), from the box's left to the end, all eleven thumbs on one line ("Put hand type as a row spanning preview to end, after wall");
+  - the box is as high as the rows beside it, from the first row's line to the last row's foot ("Enlarge the preview to fit the area"). It grows with a shape that has more rows (breguet: three more), and no longer stays in view while the rows scroll, since it is as tall as they are.
+  - the thumbs stand between two thin black lines ("a thin black after thin white which mistakenly touches preview box"; "End of hand types, black thin bar to finish instead of white"). The first lies on the line where the box and the last row end, so the white line no longer meets the box. Two units separate the thumbs from each line.
+
+## beta 4.46.3 (web version) · 16 Oct 2026
+
+- **A hand's shapes move under its box** (#311; Okay: "type of hand moves under preview. Fit sensibly, rectangular thumbs would work there"):
+  - every shape shows at once as an upright thumb, its picture in a tall tile with no word (pointing at a thumb names it), the dashed SVG tile last;
+  - four to a line on a wide screen, in the box's own column, so three lines hold all of them; six to a line on a phone, under the box lying flat;
+  - the line of tiles beside the box that opened with "more" is gone. The rows beside the box are now exactly its height (Colour and the numbers).
+
+## beta 4.46.2 (web version) · 16 Oct 2026
+
+After Okay's marks on 4.46.1.
+
+- **The Show box grows down from the chosen tab** (#261; "the top tab attaches traveling show ticker"). It sits under that tab alone, as wide as it, and moves when another tab is chosen. It keeps its darker grey; the rest of the strip is gone. It is less tall, a control high (26, was 31.5), with the room of an open pane under it. The hand tabs now stand in equal columns, as the window cards do, so the box finds their edges exactly.
+- **Window at x** (#264):
+  - a **4** joins the circles before the dots: 3 · 6 · 9 · 12 · 4 · ··· ("Add 4 to the circles before …");
+  - the circles fill their line a unit apart, as large as that allows (37 px at the panel's width, was 36), with a unit over and under them;
+  - the heading grows to hold them; its title keeps the gap every heading has over its title ("top gap stays same"), with "Position" tight under it;
+  - a time in the dots ("2:15") is set a size smaller so it fits the circle.
+- **The hand's page** (Okay: "Blue lines, align, black line, new black line, thin"):
+  - under the Show box a thin black line opens the hand's pane, from where the tabs start, with the room of an open pane under it;
+  - the hand's box starts where the tabs do, and its top is the first row's line.
+  - A fix found on the way: in 4.46 the headless pane carried the class `plain`, which is a button's class, so it took a button's border and padding and stood 6.5 px in from everything else. It is now `headless`.
+- **Shape**: its buttons are as high as a place's circle, with a unit over and under them, and the heading grows to hold them, its title in its usual place ("either shrink or enlarge height to fit shape buttons and appropriate vertical padding like all the rows"). As a rule: R32, a heading that carries controls.
+
+## beta 4.46.1 (web version) · 16 Oct 2026
+
+The Windows page, reordered after Okay's marks on three mock-ups (#263–#266).
+
+- **Window at x** holds where the window is and what it shows:
+  - **Position** stands on its heading's line (Okay, on the mock-ups: "Move eye up with Window at… put Position after a tight br in its usual size and color, draw the white line below. If it's taller so be it, enlarge buttons. And 3 6 9 12 are circular buttons now"):
+    - the heading has two lines, "Window at x" and under it "Position" in a row name's size and grey, with the eye level with the title and the usual white line under it;
+    - the buttons are five rounds 36 px across, 3 · 6 · 9 · 12 · ···, spread from the controls' column to the end (#264).
+  - The dots open a popup with every place as a button, in the clock's order, and the field for any time. A place pressed is taken and the popup closes. When the window stands elsewhere, the dots say where ("4:30", "2:15") and grow into a pill to hold it.
+  - **Shows**, its pictures smaller (30 × 21, was 38 × 27; "smaller icons").
+- **Shape** holds the hole itself. On a first visit it is folded, as every pane but the one a tab is about (#270), and its shape buttons stay on its line:
+  - its five shapes are buttons without words on the heading's line, stretched across the same columns as Position's (#265; "stretch shapes like position, top-right"), their pictures redrawn at 26 × 18;
+  - **Radius** (Okay: "ok but below shapes"), then the sizes. **Width and Height on one line have their sliders again** (Okay: "they can have them"), as R15's new form A2, *two to a line*;
+  - Corner, Sides and the turning;
+  - the **colours on one line** (#266): Disc and Frame, and Picture for am · pm and moon. The Colours pane is gone;
+  - Text, its font, Frame and Clearance.
+- **The number popup under a finger** (#310) no longer chooses its value to be typed over, so an iPad's keyboard comes up only when the value is pressed (Okay: "Value gets selected was the wrong choice, triggers the keypad on ipad"). With a mouse it still does.
+- **The bar's sliders under a finger** (#309): they no longer drag or pull the page (`touch-action: none`), and the window is never pulled past its edge. The iPad's own edge gestures stay its own (Okay: "simple blocks are fine").
+
+## beta 4.46 (web version) · 16 Oct 2026
+
+Phase F, first push: one tab look and the Show box.
+
+- **One tab look** (#260; Okay, notes p. 1–2: "hands do it better"). A chosen tab squares up, losing its cut corners, and lies over its neighbours. The hand tabs already did this, but only by chance: the chosen layer filled their whole button. The window cards did not. Now it is the tabs' own rule, for both.
+- **The Show box** (#261; notes p. 2: "Show this window moves with the tab and says just Show: a thin box, darker than the pane's grey, grows down from the tab and holds it").
+  - Under the tabs, on top of the grey page, a thin box a little darker than the page holds one tick: **Show**, for a hand and a window alike. It runs from where the tabs start to the pane's end, with a white line under it.
+  - **Hands:** the hand's name line ("Hour hand", its eye, *Show this hand*) is gone, since the tab names the hand. Everything under the box is the tab's content: a pane with no heading, so no thick line either.
+  - **Windows:** *Show this window* left the heading line for the box. The *Window at x* pane stays under it until the Windows page is reordered (#263, sketch first).
+  - Their ids are now `hand-on-Show` and `window-on-Show`.
+
+## beta 4.45.5 (web version) · 16 Oct 2026
+
+The bar's time, second look (#306; Okay, on 4.45.3, a screenshot marked in three colours).
+
+- **The time** has more room between its figures ("Greens add tracking"): tracking +0.04em, −0.02em before, about 1 px more per figure at 20 px. Its window grows by that. AM · PM keeps its −0.02em (the greens were under the figures; its box width is set for that).
+- **AM · PM** has less room beside its word ("Reds reduce hor padding"): 5.5 px each side, 8.25 px before.
+- **NOW** is filled ("fill bg, invert type, make button much lighter colored, now still readable?"). Its fill is a light grey (#B9B9B4, the panel's rule tone), much lighter than the bar's light tone, and its word is the bar's dark (#333). Contrast is about 6.5 : 1, so it still reads. Lighter under the pointer, the bar's light tone when pressed. It is the bar's one filled button: an exception, asked for, to "nothing on this bar is white" (#B9B9B4 is not white).
+
+## beta 4.45.4 (web version) · 16 Oct 2026
+
+- **A disc hand's mark** (#300; Okay, on 4.43: "Mark if also possible easily"). A new row, *Marker*, has two choices, **Hole** and **Mark**:
+  - **Hole** cuts the marker out of the disc, so the dial shows through. This is what disc hands did before.
+  - **Mark** paints the marker on the disc, whole, in a colour of its own (*Mark ink*, white to start). On the dial it is a part of its own that turns with its hand, catches the shadows of the hands above, and is named "… hand mark" in an exported SVG. The hand's box shows it in its colour.
+  - The rows below follow the choice: *Hole*, *Hole length*, *Hole width* or *Mark*, *Mark length*, *Mark width*.
+- Two keys are appended to the link table, `mark_as` and `mark_c`. They start as a hole, so every scheme-2 link still draws as before (R31; no new scheme).
+
+## beta 4.45.3 (web version) · 16 Oct 2026
+
+- **The number popup, after Okay's drawing** (#304; "tighter, dark background. Thicker plus minus, rounded ends, text larger, no white despite the drawing, all colors mid grays, text, buttons, dial excluded, they are black"):
+  - a dark ground (the night colour). The pills and the − and + discs are mid grey. The value, the signs and the slider's knob are black. The chosen value is black with mid-grey figures.
+  - the slider and the value in pills 44 px high. Under them, − and + as two discs 66 px across, the signs thick (3) with round ends.
+  - tighter: 11 px round them, 8 between them. It is 166 × 197.
+  - its corners follow what they hold: 35 at the top (a pill's round + the room + the frame) and 46 at the bottom (a disc's round + the room + the frame), Okay's "plus minus roundness + some offset".
+  - the value at 23 px (20 before).
+- **The Guides popup, tighter** (#305; "tighter spacing overall, fit all in one line, all selected… line fits better. Small like beta version allowed"):
+  - lines 30 high (38 before; under a finger still 38); no extra room over the headings;
+  - **an added guide is one line**: its name and values as quiet numbers to type in (grey, no box), its colours, and in the none sign's place a ✕ that removes it. An added guide is removed, no longer hidden;
+  - **All · Selected · None** is smaller and spans the colours exactly, from the none sign to the last colour;
+  - the names' column 106 wide (92), the room between colours 9 (10), so the list keeps its width and "Window at 4:30" is no longer cut. The Shadows list keeps its 92 for its sliders.
+- **A popup's bottom section** (#305, for Guides and Shadows; Okay: "whole bottom section hr line color, top line gone, perpendicular same thickness touches box bottom, lowest line gone"). It is filled with the line colour from edge to edge and down to the box's bottom, cut by its round corners, with no line over or under it. Guides' rule before Reset All is a hairline of the ground, from the section's top to the box's bottom.
+
+## beta 4.45.2 (web version) · 16 Oct 2026
+
+- **The number popup, a square** (#249, #304; Okay, on 4.45: "everything bigger … three pills inside a square … plus minus roundness + some offset to draw the square"):
+  - three pills 44 px high (a finger's size), 12 px apart: the slider, the value (at 20 px), and − and + as one pill split in two, with the shared plus and minus signs;
+  - 16 px round them, inside the 2 px frame: 192 × 192;
+  - its corners 40 px, a pill's round (22) plus the room (16) and the frame (2), so they run parallel to the pills';
+  - no name: the row it opens from already says it ("forget the label"). A row with a menu keeps its menu, over the pills.
+- **Guides while sliding** (Okay: "activate guides on slide. Even if off"): sliding in the popup, or dragging a name or a value button, shows the guides as they are set, even with Guides off, until 1.2 s after the last change, as the centre hole's guide does. A numeral being nudged hides them instead (#252: "when a numeral is being nudged hide all guides").
+- **The tiny ± on the figures** (#250; Okay: "Compact minusplus too far apart, closer, parallels on baseline ascender, plus's top pushes past"): the plus's top on the top of the number's figures, the minus on their baseline. They are drawn signs now (6 points, `DENSE`), not typed characters. Each still answers to half the number's height.
+- **Nudge's adjusters** (#252): Radius ±, Angle ± °, Rotate ° and Size × are number rows on the chosen numeral: a slider, the value, ±, and the popup from their names. A neutral value (0, or ×1) is not kept.
+- **A window's width and height on one line** (#265, R15 form B): W and H, two quiet numbers whose names open their popups. The arch keeps its one Width row.
+
+## beta 4.45.1 (web version) · 16 Oct 2026
+
+- **The hand rows, quiet** (#250; Okay's notes, p. 18):
+  - The number beside a hand's box has no box. It and its compact ± are grey until the number differs from how the dial opened, then ink.
+  - A press on the number opens its popup. With the keyboard (Tab) it still takes typing and the arrow keys.
+  - The box that grew over the slider (4.25) is gone.
+- **Names:** one line each, none longer than "Counter Ø": Round, Tip, Head W, Widest %, Wall, alongside the existing short ones. The names' column is that wide, so the sliders are longer.
+- **Order:** Colour stands first beside the box; the cap stays last.
+
+## beta 4.45 (web version) · 16 Oct 2026
+
+Phase E, first push: the number popup.
+
+- **The number popup** (#249; R15's popup). It holds:
+  - the number's name;
+  - the slider, its thumb a pill a fifth larger than the panel's;
+  - the value in a pill;
+  - round − and + under it.
+  It sits in a 2 px dark-grey frame on a ground darker than the pane's, its corners as round as its pills. It is the number's own row laid out anew, so it does everything the row does (typing past the slider's range widens it). It opens under what was pressed. On a phone it is a sheet at the bottom, over the drawer, so the dial stays in view, and the keyboard comes only when the value is pressed. Enter, Escape or a press outside closes it.
+- **It opens from:**
+  - a value button, which no longer grows its tag into a small square;
+  - **a full row's name**: a press on "Diameter" opens Diameter's popup;
+  - **the guides' Thickness**, whose slider is back, in the popup (R15 form B, #271).
+  A press on a name moved sideways changes the value instead, two screen points a step, as a value button does (#170).
+- **Reset All asks first** (#271): "Reset all guides?" in its line's place, with round ✕ and ✓. ✕ keeps the guides.
+
+## beta 4.44.6 (web version) · 16 Oct 2026
+
+- **The time larger, its colons roomier, AM · PM attached** (Okay: "Barlow larger, don't worry optically will be better, more spaces both sides of :s, am attached to time and same size barlow"):
+  - The time is 20 px (17 before).
+  - Each colon is 0.24 em wide (0.155), so it has about twice the room either side.
+  - AM · PM is attached to the time's box again, as high, its word the time's size, one width for both.
+  - On a phone both are 12 px.
+
+## beta 4.44.5 (web version) · 16 Oct 2026
+
+- **1× has a dot on the speed line** (Okay: "1x needs a dot"): a filled black dot, the end rings' size, where slow motion ends.
+- **The play button's pulse goes faster** (Okay: "Play button can go faster in animation"): it now follows the time up to six flashes a second, not three. The three-flash limit (WCAG 2.3.1) is for flashes over a large part of the view; a 31-point button is far under it.
+
+## beta 4.44.4 (web version) · 16 Oct 2026
+
+- **The unit box, done** (#302; Okay: "Mm looks perfect now add 2px more padding and we are done. Others use the same height, width can change"):
+  - 4 px round mm's letters.
+  - Every unit's box is mm's height on mm's baseline, as wide as its own word; ascenders and descenders reach into the padding (2.5 px or more left).
+- **The unit menu stands over the rows under it** (Okay: "Thou falls under, this top bar here needs a z index of its own"). The unit box is moved onto the title's baseline with a `translate`, which made it a layer of its own at 0, so its menu fell under the − + of the row below. It now has its own level, as the title has.
+
+## beta 4.44.3 (web version) · 16 Oct 2026
+
+- **The unit box: the same room on every side, on every screen** (#302). Counted on Okay's screen (4.44.1), "mm" stood on the box's bottom line: 4.5 px above it, 0 below, 3 left, 2.5 right.
+  - The box was the right size; his browser placed the word inside a button differently from Chromium.
+  - Now the word is placed by the page, not by the button. The letters' size and place come from Dial Mono's own outlines (`UNIT_INK`, printed by `fonts/ui/mono_font.py`). The baseline is measured with a dot on the word's line, once the face has loaded; browsers round a face's ascent and descent each their own way (8 px down a 10 px line here, 8.6 by the face's figures).
+  - The box, the word and the box's place on the title's line are snapped to whole screen dots, so its line stays crisp.
+  - Counted again at 2× (Chromium): every side 2 px, to a screen dot, for all five units.
+- **The Shadows sign: no seam round the ball** (Okay: "There's a single faint line around the ball"). Its shadow was cut at the ball's outer edge, where two smoothed edges met and let a hairline of the ground through. It is now cut at the middle of the ball's line, so the cut lies under the line.
+
+## beta 4.44.2 (web version) · 16 Oct 2026
+
+- **Reset's button stands flush left with its warning** (Okay: "reset button flush left with explaner text"), on the heading line where the warning starts, the controls' column. It was at the line's right (#269).
+- **The Shadows sign: the ball sunk 2 px into its shadow** (Okay: "Shadow's ball sinks 2px down into its shadow"). The ball stands in front, its disc cut out of the shadow, which shows to its right and under it. It touched the shadow from 4.42.4.
+
+## beta 4.44.1 (web version) · 16 Oct 2026
+
+- **The unit box, third look** (#302; Okay: "mm button sucks … use mono, abort silkscreen, border and letters should match, small"; then "Not system font, something universal … match the box please, and mm lowercase"):
+  - The word is in small letters ("mm") in **Dial Mono**, a packed cut of JetBrains Mono (3 KB). It is the same on every machine, and its weight (456) makes its stems exactly as thick as the box's 1 px line at 10 px.
+  - The box stands 2 px round the letters' ink on every side, so each unit's box is its own size; "thou" is taller for its ascenders.
+  - Line and letters are one colour.
+
+## beta 4.44 (web version) · 16 Oct 2026
+
+Phase D: the bottom bar.
+
+- **A play triangle on the red cap** (#282), in place of the beat's dot. It is white and soft, 40 % at rest, its corners on a circle 0.45 of the cap's radius, centred on its ink. While time runs:
+  - At each beat the cap lightens by up to 30 % and fades the whole way to the next beat, eased.
+  - The triangle flares to 70 % with it and fades faster, back to 10 % by half the beat.
+  - The pulse follows the time shown, so it falls with the seconds hand's steps and quickens as time runs faster. Above three a second (or the movement's own beat, if that is more) it holds, in real seconds; 720× no longer means hundreds of flashes a second.
+  - Where the system asks for less motion, nothing pulses and the triangle stays at 40 %.
+- **Slow motion is back** (#283). The speed slider's first part, two thumbs wide, holds 0.1 · 0.25 · 0.5 · 1×, and the thumb snaps onto them; from 1× the log scale runs to 720× as before. The thumb starts at 1×; the left end says 0.1X. While the speed is being moved, its name over the thumb is a pill exactly like 10:10's. On a phone, where the speed is written in the thumb, a slow speed loses its leading 0 (".25X") to fit.
+- **The time in Barlow Condensed** (#284). Light, whose strokes are 0.90 px at the time's 17 px, against the box's 1 px line. Tabular figures, tight tracking (−0.02 em), the colons 80 % as large and centred on the figures.
+  - It is packed into the page as **Dial Time**: cut down to what the time needs (11.8 KB) and renamed, so it can't clash with a ring's Barlow Condensed (`web/fonts/ui/time_font.py`, SIL OFL).
+  - The time's box is narrower (113 → 69 px), so the speed track is wider (123 → 171 px).
+  - AM · PM is in the same face, in a smaller box beside the time with the same room on every side, one size for both words. NOW is untouched.
+
+## beta 4.43.2 (web version) · 16 Oct 2026
+
+- **The guides follow the tab you're in** (#301; Okay, on 4.43: "both window and [ring] active gives us a complex look"). *Selected* now means the selected one in the tab you work in: the Rings tab shows the selected ring's guides, the Windows tab the selected window's, the other tabs neither. The dial's own guides (centre hole, centre lines) show in every tab while on. With *All*, every ring's or window's guides show, and those out of focus are faded to 40 %. Researched first: Glyphs' local and global guides, Fusion 360's sketch dimensions, Blender's *Fade Inactive Geometry*, Illustrator's smart guides and Figma's measuring lines all show one thing in focus at a time.
+- **The first window's guide starts yellow**, a colour no other guide starts with (it was cyan, the centre hole's).
+
+## beta 4.43.1 (web version) · 16 Oct 2026
+
+- **A disc hand's marker is called its hole** (#300): *Hole*, *Hole length*, *Hole width*. It is cut out of the disc, and Okay liked it that way ("work as holes now, perfect, just call it that"). Only the row names changed; the settings keys stay (R8). A mark drawn on the disc as well is on the list (phase E).
+
+## beta 4.43 (web version) · 16 Oct 2026
+
+Phase C: the link system.
+
+- **Links in capitals and digits only** (#278, link scheme 2). A link is now `#2` followed by letters and digits (Crockford's base 32: no I, L, O or U, so nothing looks alike). No dashes, underscores or tildes, so it breaks evenly wherever it is pasted. Typed in small letters, or with O for 0, it still reads.
+- **And shorter** (#246, its lossless parts). Each key is written as a short code from a table that only grows. Colours are written as hex, numbers to 3 decimals, the time to the second. Every link kept in the repo got shorter, even with base 32's longer letters: Okay's watch 1214 → 1001 characters, the Gallery and the examples together 8092 → 7464. The most a value moves: a colour channel by half a hex step (0.9 → 0.902).
+- **Old links don't open any more** (R31 as replaced). A scheme-1 link opens the First dial, and a note says so on the preview (a press puts it away) and in the log. The Gallery's and the examples' links are written again. **The live guide's links are scheme 1: they open the First dial until the guide is rebuilt** (on Okay's word, R25).
+- **The cap is part of the seconds hand** (#262). Its size and colour are in the seconds hand's pane; the Cap pane is gone. With no seconds hand, the topmost hand's pane offers *Cap on this hand*, off: a dial without a seconds hand has no cap until it is ticked. Okay's World time (Gallery) and the Gauge example have no seconds hand; they keep their cap, ticked in their settings, and their pictures are unchanged.
+- **Tests:** `web/test/linktrip.mjs` (#291, in `npm test`, under a second). Every Gallery and example dial, the opener and Okay's watch go there and back as the same dial, and their links come out the same when written again. A text starting with "#" stays a text; the beat and the time travel; base 32 holds any bytes; every settings key has a code; the key table only grows.
+
+## beta 4.42.5 (web version) · 16 Oct 2026
+
+The last push of phase B: the guides.
+
+- **The centre hole has a guide** (#267), first in the guide list, cyan to start. While the hole is being sized it shows live, even with the Guides switch off or this guide set to None, and goes 1.2 s after the last change.
+- **Every ring and every window has two solid circles at its edges and a dotted one at its middle** (#272). A ring's edges are where its marks, numerals or text actually reach as drawn.
+- **Windows have their own section in the guide list** (#271), like Rings: *All · Selected · None*, Selected to start, then a line for each window that is on, with its own colour. The section is hidden when no window is on. *Window radii* is gone; the top of the list keeps only Centre hole and Centre lines.
+- **The guide list, tidied** (#271):
+  - Lines 4 px shorter (38).
+  - A colour not chosen shows at 60 %.
+  - The "none" sign is one path, so nothing in it overlaps.
+  - A band of the fields' colour before *Add*.
+  - The last line: Thickness, its number with a compact plus and minus, a rule, then **Reset All**. Reset All also resets the rings' and windows' guide colours.
+  - Thickness lost its slider: next to Reset All it had no room left (0 px, measured). It comes back in the number popup (phase E). Reset All's "Are you sure?" comes with it too.
+- **Test fix** (`web/test/window.mjs`): the "someone else's browser" in the link checks is now a browser context of its own. As a second tab it shared the first tab's storage, and the first tab, its clock running, saved its dial while the second was starting. The check "no last session: it opens with the First dial" failed twice in a row because of this.
+
+## beta 4.42.4 (web version) · 16 Oct 2026
+
+- **The title line, second look** (#299): a fifth unit, **thou** (a thousandth of an inch); the unit box says its unit in the pixel font, in capitals (MM · PT · IN · LIG · THOU), a smaller box (35 × 15.5), one width for all; the Gallery pill a hair taller, upward (1 px).
+- **See-through shadows** (#295): a hand that lets light through casts a lighter shadow, tinted with its colour, as light through coloured glass does; a solid hand casts the shadow it always did. Each shadow is multiplied onto what it falls on; see-through shadows are drawn first, so where a solid one crosses them nothing is darkened twice.
+- **The Shadows sign**: its cast shadow moved up to touch the ball (#281). **The eye switch**: its rays a hair thicker, 0.625 (was 0.5); **the showcase's iris stands over the eye**, one unit apart, as Backdrop over Shadows (#280).
+
+## beta 4.42.3 (web version) · 16 Oct 2026
+
+- **Copy link** (#277) stands on the heading line of *Link to this dial*, flush right, with a link sign (a new icon, through the pipeline), and stays there when the pane is folded. The link stands on one line, cut at the box's edge (Copy link copies it whole); under it, its length and what "fonts travel by name" means. The beat travels in the link (it always did; now a test says so).
+- **Settings file** (#279): a sentence says what a settings file is; after Load the pane's heading names the file and Save… offers that name again. **Defaults** now gives the guide's First dial, as the tool opens with ("Guide default wins"); a new **Plain dial** gives the plain starting values, where the guide's First dial begins.
+
+## beta 4.42.2 (web version) · 16 Oct 2026
+
+- **A first visit opens tidy** (#270): in every tab the pinned panes are open and the panes under them folded, each saying in its line what it holds — but for the pane a tab is about when only tabs are pinned above it (a hand's, a window's). What a visitor opens or folds is remembered, as before. A click on a numeral in the preview opens Nudge, since it starts folded.
+- **Colours, folded, shows its colours** (#268) as tiny swatches, as many as fit on its line; it starts folded.
+- **Reset** (#269): open, its button stands at the right of the pane's heading line, the warning under it; folded, the line says Reset and nothing else.
+- **Custom labels say how they work** (#298): "Commas between labels: one label for each position, the rest stay empty" (found by Faruk Koç).
+- **Hands:** the line between All hands and the hand tabs starts and ends where the tabs do (#260).
+
+## beta 4.42.1 (web version) · 16 Oct 2026
+
+- **The title line, quieter** (#285): the unit box is a small box at Help's size, one width for every unit, flush right; the Gallery pill stands right after Help, as far from it as Help is from the version, a small pill as high as the unit box, darker than the unit box and lighter than Help. Both stand on the title's baseline (placed by measuring, like the title).
+
+## beta 4.42 (web version) · 16 Oct 2026
+
+Phase A of Okay's notes (build list #290). Nothing on screen changes: the look-check (`web/test/same.mjs`, 489 states) finds no difference but six readings of the showcase's Now and 10:10 pills caught mid-fade (a 250 ms opacity transition, read at another moment; none of their tokens moved).
+
+- **Specials, in one place** (R32): every value in the stylesheet that leaves the scale of spaces, the three line widths or the type sizes now stands in one labelled block at the end of `1-tokens.css`, by name, with why — first the ones Okay asked for (the quiet buttons at 75 %, the type sizes 10 and 17, the pixel font at 12 in the legend, the bar's pixel labels at full strength, the pop-out's chip gap, the speed box's padding), then the ones found off the scale with no figure from him (#294, to look through). Three bare values in rules became tokens there (the legend's pixel size and sticker padding, the bar labels' strength).
+
+## beta 4.41.25 (web version) · 16 Oct 2026
+
+- **Reset moved into the Dial tab**, last, under Colours, with a warning under it: it replaces the whole dial with the guide's First dial (undo brings yours back). The pill over the dial is gone: a view option it is not.
+
+## beta 4.41.24 (web version) · 16 Oct 2026
+
+- **The tool opens with the guide's First dial** (the black field watch, 34 mm) when the address has no dial and nothing was kept. Okay's watch stays first in the Gallery.
+- **Reset**, a pill at the foot of the dial: brings back the First dial, every setting. Undo brings back what you had.
+
+## beta 4.41.23 (web version) · 15 Oct 2026
+
+- **Help**, beside the version in the title line: opens the guide (duztman.github.io/dial-tool/guide/) in a new tab.
+
+## beta 4.41.22 (web version) · 15 Oct 2026
+
+- **Gallery:** Sector is Okay's own version (a thin band round the inner pies).
+
+## beta 4.41.21 (web version) · 15 Oct 2026
+
+- **Dial links have no dashes**: a tilde where a dash was, so a pasted link breaks only at its line's end. Old links still open.
+- **Gallery:** World time before Elapsed time.
+
+## beta 4.41.20 (web version) · 15 Oct 2026
+
+- **Gallery:** World time is Okay's own version (dark red hands, larger day and night figures).
+
+## beta 4.41.19 (web version) · 15 Oct 2026
+
+- **Opening a Gallery dial keeps the panel where it was** (it jumped back to the top).
+- **What you press stays under your finger** while rows above it appear, go or move (the ring line, more/less, folds), as far as the panel can scroll.
+- **A ring's grip is easier to catch** by finger (it reaches into the start of the name).
+- **Alternate**: a band with an even number of sectors can take two colours that alternate.
+- **Gallery:** the B-Uhr is Okay's second version (navy, cyan marks).
+
+## beta 4.41.18 (web version) · 15 Oct 2026
+
+- **Gallery:** Montgomery fifth; the 12 + 24 is Okay's own, in Rubik.
+- **Rubik** joins the font list (twenty-one).
+- **Selecting, showing or moving a ring keeps the panel where it was scrolled** (it could jump by hundreds of points).
+
+## beta 4.41.17 (web version) · 15 Oct 2026
+
+- **Montgomery comes right after 12 + 24 hours** in the Gallery.
+
+## beta 4.41.16 (web version) · 15 Oct 2026
+
+- **The Gallery's diver is Okay's own**, blue with a striped dial, and fourth.
+
+## beta 4.41.15 (web version) · 15 Oct 2026
+
+- **Bauhaus is the Gallery's third dial**, after Okay's watch and his B-Uhr.
+- **The Gallery pill folds Export a file** (its eye shut), so the Gallery has the room; open it again with its eye.
+
+## beta 4.41.14 (web version) · 15 Oct 2026
+
+- **Fixed: steppers showed through the open bio.**
+
+## beta 4.41.13 (web version) · 15 Oct 2026
+
+- **The size button's drawing lies level**: the small and large circle side by side on the radius line, larger than before.
+
+## beta 4.41.12 (web version) · 15 Oct 2026
+
+- **The Gallery's B-Uhr is Okay's own**: green plate, yellow triangle, orange hours, lilac minute numerals; same name.
+
+## beta 4.41.11 (web version) · 15 Oct 2026
+
+- **On a phone the mark is larger on the full title line** (22, as in the showcase); squeezed, it is the eyes' size again.
+
+## beta 4.41.10 (web version) · 15 Oct 2026
+
+- **A phone's title line, full and squeezed**: at the drawer's top it is full — the title at its size, the Gallery pill, mm; once the drawer scrolls it squeezes (no Gallery, no mm) and stays on top with the tabs held under it; back at the very top it is full again.
+
+## beta 4.41.9 (web version) · 15 Oct 2026
+
+- **Okay's watch opens the Gallery**: the dial the tool opens with, first of its cards.
+- **A Gallery pill on the panel's top line**, centred between the version and the unit box, dressed like the unit box: pressed, Export with the Gallery open and in view.
+- **A phone's bar**: the time at the bar's text size (12, as AM); how fast takes the room it gives; the red dot has 16.5 either side (was 14 and 10).
+
+## beta 4.41.8 (web version) · 15 Oct 2026
+
+- **The showcase has 10:10 beside Now**: the same whirl, to the classic pose. Whichever is pressed turns into the undo sign; the other stays where it is. The way back is always to the time first shown.
+- **A hands key at the showcase's bottom left**, across from the X: round, the Hands sign inside. Pressed, it hides the hands (filled, the sign dark); the dial's own Show hands is left as it is.
+
+## beta 4.41.7 (web version) · 15 Oct 2026
+
+- **The showcase's Now, rechoreographed**: the hour hand turns once clockwise, the minute hand once anticlockwise, both landing on the time; the seconds hand makes no turn and goes the short way to its place meanwhile. Slow to start, slow to land. Going back, each big hand turns the other way. (Was: every hand two turns, the same way.)
+
+## beta 4.41.6 (web version) · 15 Oct 2026
+
+- **The thick line under what stays put stops at the margins**, like every other thick line; in the margins the white meets the grey with no line. Desktop and phone.
+
+## beta 4.41.5 (web version) · 15 Oct 2026
+
+- **On a phone FIT is as wide as its sign and word need**, with equal room either side (9 px, as NOW has); the day slider gives way.
+
+## beta 4.41.4 (web version) · 15 Oct 2026
+
+- **The narrow layout's font sheet offers link and file only**: Installed (a desktop Chrome or Edge thing) isn't shown there, and the two keep their second lines.
+
+## beta 4.41.3 (web version) · 15 Oct 2026
+
+- **On a phone the font sheet reaches up to the bar**, over the whole preview.
+- **A word longer than its box in the font sheet's buttons is cut at the box's edge** (Legend's "(OpenType abbr.)").
+
+## beta 4.41.2 (web version) · 15 Oct 2026
+
+- **A switch whose words show is filled with the backdrop's colour**, so the dial under it doesn't show through: the iris switch opened to ACTIVATE SHOWCASE, and Guides, Backdrop and Shadows (always on a wide screen; on a phone while their words are unfolded).
+
+## beta 4.41.1 (web version) · 15 Oct 2026
+
+On a phone:
+- **The drawer's title line is compact**: a pane heading's height, the mark at the eyes' size, "Dial Tool" at the panes' size; the unit box is gone (lengths in mm).
+- **Scrolling the whole drawer**, the tabs stay on paper across its whole width and on the thick line, as at its top (the panes no longer show past their edges).
+
 ## beta 4.41 (web version) · 15 Oct 2026 · released
 
 - **A phone's edges meet halfway**: the bar, the switches on the preview and the drawer all stand 2.5 units (13.75) in from both sides (the bar and drawer had 16.5, the switches 12).

@@ -1,13 +1,14 @@
 // fonts.mjs — the web version's own font list: fetches the files once, and writes src/font_list.js.
 //
-// Twenty open-licence families that suit dial numerals. The files live in web/fonts/ (and are
+// Twenty-one open-licence families that suit dial numerals. The files live in web/fonts/ (and are
 // published with the page), so choosing one never depends on another site staying as it is.
 // For each file this reads its names and axes with HarfBuzz and draws "1234567890" once, as a
 // small outline — the picker shows that, so no font has to be downloaded just to be looked at.
 //
 //   cd web && node fonts.mjs          (downloads only what is missing)
 //
-// To add a family: add a line to FAMILIES, run this, run build.mjs. Keep the list at 20 (Okay, 11 Oct 2026).
+// To add a family: add a line to FAMILIES, run this, run build.mjs. Keep the list at 20 (Okay, 11 Oct 2026) — 21 since
+// Rubik (Okay, 15 Oct 2026, 11:29: "Ad rubik to the roster").
 
 import fs from "fs";
 import path from "path";
@@ -33,6 +34,7 @@ const FAMILIES = [
   ["Jost", "geometric, after Futura", "google", "jost", ["Jost[wght].ttf", "Regular"]],
   ["Josefin Sans", "geometric, 1920s", "google", "josefinsans", ["JosefinSans[wght].ttf", "Regular"]],
   ["Montserrat", "wide geometric", "google", "montserrat", ["Montserrat[wght].ttf", "Regular"]],
+  ["Rubik", "grotesque with softly rounded corners", "google", "rubik", ["Rubik[wght].ttf", "Regular"]],      // added 15 Oct 2026 (Okay, 11:29: "Ad rubik to the roster"): the list is 21
   ["Oswald", "condensed gothic", "google", "oswald", ["Oswald[wght].ttf", "Regular"]],
   ["Antonio", "tall condensed", "google", "antonio", ["Antonio[wght].ttf", "Regular"]],
   ["Michroma", "square, after Microgramma", "google", "michroma", ["Michroma-Regular.ttf", "Regular"]],
@@ -42,7 +44,7 @@ const FAMILIES = [
   ["Cormorant", "light Garamond-like serif", "google", "cormorant", ["Cormorant[wght].ttf", "Regular"]],
   ["Poiret One", "art deco, hairline", "google", "poiretone", ["PoiretOne-Regular.ttf", "Regular"]],
   ["Allerta Stencil", "stencil", "google", "allertastencil", ["AllertaStencil-Regular.ttf", "Regular"]],
-];                                                                // + Inter, inside the page = 20
+];                                                                // + Inter, inside the page = 21
 
 const local = (file) => file.replace(/[\[\],]+/g, "-").replace(/-\./, ".");
 async function get(url, to) {

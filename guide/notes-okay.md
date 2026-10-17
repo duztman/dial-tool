@@ -63,4 +63,4 @@
 - Big type: tighter tracking/kerning; the title must not overlap the dial. A richer, aesthetic dial; Okay will guide. Etching is not the focus; ring building and design help are. [r1, r4 00]
 
 ## Content facts
-- Production not tested yet; no production figures. Hide-panel button does not work in 4.36.1 (#182). Guide locked to beta 4.36.1.
+- Production not tested yet; no production figures. Hide-panel button does not work in 4.36.1 (#182). The 4.36.1 lock ended 15 Oct 2026: the guide now follows the current app (`guide/PLAN.md`).

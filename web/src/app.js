@@ -30,6 +30,7 @@ const filled = (slider) => slider.style.setProperty("--p", clamp((slider.value -
 
 const PNG_MOST = 16384;                            // a browser's canvas is at most this many pixels a side
 const PNG_SAFE = 4096 * 4096;                      // Safari on a phone or tablet draws nothing past this many pixels in all
+const GUIDE = "https://duztman.github.io/dial-tool/guide/";      // the guide (#230): "Help" beside the version, in its type, underlined (Okay, 15 Oct 2026, 12:50)
 const LAST = "dial-tool-last";                     // the last session, kept by the browser
 const FEATURE_NAMES = {
   kern: "kerning", liga: "ligatures", calt: "contextual alternates", dlig: "discretionary ligatures",
@@ -102,6 +103,21 @@ const SIGNS = {
   copy: `<rect x="5.75" y="5.75" width="7.5" height="7.5"/><path d="M10.25 5.75V2.75H2.75V10.25H5.75"/>`,
   sheet: `<path d="M4.25 2.75H9.25L12.25 5.75V13.25H4.25ZM9.25 2.75V5.75H12.25"/>`,
 };
+// the tiny plus over the tiny minus beside a quiet number (#250; 4.45.2, Okay: "Compact minusplus too far apart,
+// closer, parallels on baseline ascender"): 6 points wide, the plus 6 high, each drawn ink to edge (its round caps
+// inside the box), so the stylesheet stands the plus's top on the figures' top and the minus on their baseline.
+// Quiet signs, so DENSE.
+// the number popup's − and + (Okay's drawing, 16 Oct 2026, on 4.45.2: "thicker plus minus, rounded ends"): 22 points,
+// the sign 20 across, its line 3 — twice LINE, a pictured width (icons/check.mjs) — centred on whole points, so a 3
+// line covers whole screen dots
+const BIG = {
+  plus: icon(`<path d="M11 2.5V19.5M2.5 11H19.5" ${sw(3)}/>`, 22),
+  minus: icon(`<path d="M2.5 11H19.5" ${sw(3)}/>`, 22),
+};
+const TINY = {
+  plus: icon(`<path d="M3 0.625V5.375M0.625 3H5.375" ${sw(DENSE)}/>`, 6),
+  minus: icon(`<path d="M0.625 0.625H5.375" ${sw(DENSE)}/>`, 6, 1.25),
+};
 // a section's sign: a small picture inside a ring. Signs of circles share the ring's centre (17); signs with
 // straight lines sit on the grid (17.25).
 const C = 17.25;
@@ -127,7 +143,9 @@ const EYE = {                                      // the left column's sign: op
 const eye = (open) => icon(EYE[open ? "open" : "closed"]);
 const NONE_SIGN = SIGNS.sheet + `<path d="M6.75 8.25L9.75 11.25M9.75 8.25L6.75 11.25" ${sw(SLANT)}/>`;      // the sheet with a cross: this font has none of it
 // a "none" in a row of colour dots: a slashed circle at the dot's own size (10), its outer edge where it was (4); so small, LINE is enough
-const none_dot = `<svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="round"><circle cx="5" cy="5" r="${4 - LINE / 2}"/><path d="M3.25 3.25L6.75 6.75"/></svg>`;
+const none_dot = `<svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="round"><path d="M5 ${1 + LINE / 2}A${4 - LINE / 2} ${4 - LINE / 2} 0 1 1 5 ${9 - LINE / 2}A${4 - LINE / 2} ${4 - LINE / 2} 0 1 1 5 ${1 + LINE / 2}M3.25 3.25L6.75 6.75"/></svg>`;      // ring and stroke one path: where they meet nothing doubles, at any opacity (Okay, 16 Oct 2026, #271)
+// a cross at the same size, in its place on an added guide's line: remove it (#305, 4.45.3)
+const cross_dot = icon(`<path d="M2.25 2.25L7.75 7.75M7.75 2.25L2.25 7.75" ${sw(SLANT)}/>`, 10);
 // small pictures for choices that are easier seen than read: drawn at the size they are shown, 38 × 27 (they were
 // drawn on 28 × 20 and enlarged 1.35 times; Okay, 13 Oct 2026: "bigger, better (less detail) icons… this goes for all")
 const pic = (inside) => icon(inside, 38, 27);
@@ -158,18 +176,22 @@ const PICS = {
     `<circle cx="19" cy="13.5" r="11.5" ${faint}/><path d="M16.75 8.75L19 3.5L21.25 8.75M16.75 23.5L19 18.25L21.25 23.5"/>`,
     `<path d="M4 23A15 15 0 0 1 34 23" ${faint}/>` + [0, -24, 24, -48, 48].map((t) => `<path d="M17 11.5L19 6.5L21 11.5" transform="rotate(${t} 19 23)"/>`).join(""),
   ],
-  hole: [                                          // a window's shape: rectangle · circle · polygon · arch · arc
-    box(8.25, 5.25, 21.5, 16.5, 2),
-    `<circle cx="19" cy="13.5" r="8.75" ${sw(CURVE)}/>`,
-    `<path d="M19 4L27.25 8.75V18.25L19 23L10.75 18.25V8.75Z" ${sw(SLANT)}/>`,
-    `<path d="M4 21.5A15 15 0 0 1 34 21.5A7.5 7.5 0 0 0 19 21.5A7.5 7.5 0 0 0 4 21.5Z" ${sw(CURVE)}/>`,
-    `<path d="M6 17A19 19 0 0 1 32 17L28.5 22.25A13 13 0 0 0 9.5 22.25Z" ${sw(CURVE)}/>`,
+  // a window's shape: rectangle · circle · polygon · arch · arc — on 26 × 18, inside the Shape line's buttons (#265,
+  // 4.46.1; 38 × 27 before, fitted down by icons/fit.mjs, the box redrawn on quarter points)
+  hole: [
+    box(5.75, 3.75, 14.5, 10.5, 1.5),
+    `<circle cx="13" cy="9" r="6" ${sw(CURVE)}/>`,
+    `<path d="M13 2.5L18.75 5.75V12.25L13 15.5L7.25 12.25V5.75Z" ${sw(SLANT)}/>`,
+    `<path d="M2.75 14.25A10.25 10.25 0 0 1 23.25 14.25A5.25 5.25 0 0 0 13 14.25A5.25 5.25 0 0 0 2.75 14.25Z" ${sw(CURVE)}/>`,
+    `<path d="M4 11.75A13 13 0 0 1 22 11.75L19.5 15.25A9 9 0 0 0 6.5 15.25Z" ${sw(CURVE)}/>`,
   ],
-  window: [                                        // what a window shows, in as few lines as say it: one figure · one letter · a half filled · a crescent
-    box(6.75, 3.25, 24.5, 20.5, 2) + `<path d="M16.25 10.5L19.5 8V19" ${sw(CURVE)}/>`,
-    box(2.75, 5.25, 32.5, 16.5, 2) + `<path d="M13.5 18V9L19 15.5L24.5 9V18" ${sw(SLANT)}/>`,
-    box(4.25, 4.75, 29.5, 17.5, 2) + `<path d="M19 4.75H6.25A2 2 0 0 0 4.25 6.75V20.25A2 2 0 0 0 6.25 22.25H19Z" ${solid}/>`,
-    `<path d="M19 1.75A11.75 11.75 0 0 0 19 25.25A15 15 0 0 1 19 1.75Z" ${solid}/><circle cx="19" cy="13.5" r="11.75"/>`,      // the crescent beside it makes the circle look heavier: it stays LINE
+  // what a window shows, in as few lines as say it: one figure · one letter · a half filled · a crescent — on 30 × 21
+  // (Okay, 16 Oct 2026, on the Windows page's mock-ups: "smaller icons"; 38 × 27 until 4.46.1)
+  window: [
+    box(5.25, 2.25, 19.5, 16.5, 1.5) + `<path d="M12.75 8L15.25 6V15" ${sw(CURVE)}/>`,
+    box(2.25, 4.25, 25.5, 12.5, 1.5) + `<path d="M10.75 14V7L15 12L19.25 7V14" ${sw(SLANT)}/>`,
+    box(3.75, 3.75, 22.5, 13.5, 1.5) + `<path d="M15 3.75H5.25A1.5 1.5 0 0 0 3.75 5.25V15.75A1.5 1.5 0 0 0 5.25 17.25H15Z" ${solid}/>`,
+    `<path d="M15 1.25A9.25 9.25 0 0 0 15 19.75A11.75 11.75 0 0 1 15 1.25Z" ${solid}/><circle cx="15" cy="10.5" r="9.25"/>`,      // the crescent beside it makes the circle look heavier: it stays LINE
   ],
 };
 /** a hand's picture is the hand itself, drawn by the geometry with a standard size (twice its units, so already on whole dots). */
@@ -186,8 +208,10 @@ const hand_detail = (h) => {
   const w = b[2] - b[0], high = b[3] - b[1], m = high * 0.03, f = (v) => v.toFixed(3);      // m: a little room round it
   const d = p.svg(3, true), ring = f(Math.max(high * 0.012, 0.12));
   const centre = (line) => `<path class="axis" d="${line}"/><circle class="pivot" r="${ring}"/>`;
-  return `<svg class="upright" viewBox="${f(b[0] - m)} ${f(-b[3] - m)} ${f(w + 2 * m)} ${f(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${centre("M-999 0L999 0")}</svg>`
-    + `<svg class="lying" viewBox="${f(b[1] - m)} ${f(b[0] - m)} ${f(high + 2 * m)} ${f(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${centre("M0 -999L0 999")}</svg>`;
+  const mark = G.paints_mark(h) && G.disc_mark(h), md = mark ? mark.svg(3, true) : "";      // a disc's painted mark, in its own colour (#300)
+  const marked = (turn) => (mark ? `<path class="mark" d="${md}"${turn} fill="${to_hex(h.mark_c)}"/>` : "");
+  return `<svg class="upright" viewBox="${f(b[0] - m)} ${f(-b[3] - m)} ${f(w + 2 * m)} ${f(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${marked("")}${centre("M-999 0L999 0")}</svg>`
+    + `<svg class="lying" viewBox="${f(b[1] - m)} ${f(b[0] - m)} ${f(high + 2 * m)} ${f(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${marked(' transform="rotate(90)"')}${centre("M0 -999L0 999")}</svg>`;
 };
 // the Guides sign's ink traps (Okay, 15 Oct 2026, 02:42: "Guides icon needs them, see if you can figure out where"):
 // where each of the four arms crosses the ring the two lines make four inside corners, and at a small size ink (light,
@@ -204,7 +228,7 @@ const INK_TRAPS = (() => {
   }
   return out.join("");
 })();
-const EYE_RAYS = 24, EYE_RAY = 0.5;      // the eye switch's rays: how many, how thick (Okay, 15 Oct 2026, 03:41)
+const EYE_RAYS = 24, EYE_RAY = 0.625;      // the eye switch's rays: how many, how thick (Okay, 15 Oct 2026, 03:41; 0.5 until 16 Oct: "thicker lines, just barely visibly on 100%, not like +1px")
 // ── the showcase (Okay, 15 Oct 2026, 04:26 and 04:59) ──
 // its sky: a 45° gradient, the backdrop's colour at this share of its light at the top left, black at the bottom right
 const SKY_TOP = 0.3;
@@ -223,12 +247,13 @@ const POOL = { size: 1.45, stretch: 1.4, soft: [0.06, 0.8], light: [0.08, 0.42],
 // the dial's travel into and out of the showcase: the only thing that moves (04:59 and 05:09: "only dial travels with ease")
 const TRAVEL_MS = 900;
 // a phone (Okay, 15 Oct 2026, 06:20): the preview's switches unfold their words this long after a tap on the backdrop
+const HOLE_LIVE_MS = 1200;      // how long the centre hole's guide stays after its size last changed (#267); and the guides after a number was last slid (#249)
 const WORDS_MS = 3000;
 // a phone's drawer: the preview's share of the screen at the two heights a tap on the gripper jumps between (the
 // drawer about half, then about three quarters); the least the preview and the drawer keep (px); and how much room for
 // scrolling the drawer must have left under its title, tabs and pinned panes before those stay put
 const SHEET = { shares: [0.42, 0.22], preview: 120, drawer: 160, room: 140 };
-const SPIN_MS = 1600;      // Now and back: every hand turns twice and lands (04:59: "hands do a double turn and come to now")
+const SPIN_MS = 1600;      // Now and back: the big hands turn once, opposite ways, and land; the seconds hand goes straight there (07:36)
 const TOOL_ICONS = {
   // on 18; a quiet sign, thin and light (Okay, 11 Oct 2026; again 14 Oct, 04:11: "thinner lines"): DENSE, corners
   // a sixteenth heavier as on any box; light by its grey. Outer edge where it was (1 … 17)
@@ -244,14 +269,16 @@ const TOOL_ICONS = {
   redo: `<path d="M13.25 6.75H6.75A3.25 3.25 0 0 0 6.75 13.25H10.25M10.25 3.75L13.25 6.75L10.25 9.75" ${sw(SLANT)}/>`,
   wide: `<rect x="2.75" y="2.75" width="10.5" height="10.5"/><path d="M6.25 10.25L10.25 6.25M7.25 6.25H10.25V9.25" ${sw(DENSE)}/>`,
   find: `<circle cx="7" cy="7" r="4.25" ${sw(CURVE)}/><path d="M10.25 10.25L13.25 13.25" ${sw(SLANT)}/>`,
+  // a link, beside Copy link (Okay, 16 Oct 2026, #277): two open halves facing each other, a bar between (fit.mjs; look.py 0.5 %)
+  link: `<path d="M6.75 4.75H4.25A3.25 3.25 0 0 0 4.25 11.25H6.75" ${sw(CURVE)}/><path d="M9.25 4.75H11.75A3.25 3.25 0 0 1 11.75 11.25H9.25" ${sw(CURVE)}/><path d="M5.25 8.25H10.75"/>`,
   // the Shadows switch, on 18 like Guides: a sphere lit from the upper right — its outline, its shade a crescent on the
   // lower left — and its shadow cast to the left on the ground, a flat ellipse it stands on (after a photograph Okay
   // sent, 15 Oct 2026, 02:13: "make it 2d icon like others… fit a square"). The outline goes through fit.mjs's rules
   // (CURVE, centre on a quarter, radius on a half); the shade and the shadow are filled, their ends on half points
   // 15 Oct, 02:42: mirrored (lit from the upper left, the shadow cast to the right) and its outline DENSE, as Guides',
   // the sign beside it on 18 ("ball stroke thickness too much… look at similar size icons, guides and such")
-  shadows: `<circle cx="7.25" cy="7.75" r="5.5" ${sw(DENSE)}/><path d="M4.5 12.5A5.5 5.5 0 0 0 12 5A8 8 0 0 1 4.5 12.5Z" fill="currentColor" stroke="none"/>`
-    + `<path d="M16.75 15.5A5.625 1.25 0 0 1 5.5 15.5A5.625 1.25 0 0 1 16.75 15.5Z" fill="currentColor" stroke="none"/>`,
+  shadows: `<circle cx="7.25" cy="9.75" r="5.5" ${sw(DENSE)}/><path d="M4.5 14.5A5.5 5.5 0 0 0 12 7A8 8 0 0 1 4.5 14.5Z" fill="currentColor" stroke="none"/>`
+    + `<path d="M11.03 13.75A5.625 1.25 0 0 1 16.75 15A5.625 1.25 0 0 1 5.5 15A5.5 5.5 0 0 0 11.03 13.75Z" fill="currentColor" stroke="none"/>`,      // the ball sunk 2 into its shadow (Okay, 16 Oct 2026, on 4.44: "Shadow's ball sinks 2px down into its shadow"; it touched it from 4.42.4): the shadow the same ellipse (11.125 15, 5.625 × 1.25), the ball's disc cut out of it — it stands in front. Cut at the middle of the ball's line (5.5), so the cut's edge lies under the line: cut at its outer edge (6.125, 4.44.2) the two edges met and left a faint light seam round the ball (Okay: "a single faint line around the ball"). The rim crosses the shadow's top at 11.03 and at its left end
   // Okay's own mark, on 16 in the panel's first column (15 Oct 2026, 02:42: "my personal logo. Draw this like an
   // icon"): a ring; a 45° diagonal from ring to ring; through its crossing with them a level line to the right and an
   // upright one down; a cell between them (3.5 × 4, as in his drawing); a 45° slant from the cell's corner to the
@@ -275,6 +302,9 @@ const TOOL_ICONS = {
   // the showcase switch, left of the eye (Okay, 15 Oct 2026, 04:26: "just the iris inside same box"): the eye's iris
   // alone, where it stands in the eye. In the showcase it is the way out: two of the eye's rays cross on it, an X run
   // out to the box (04:59: "iris becomes an x (2rayiris)"); 1, not the eye's 0.5, so it reads while faint
+  // the showcase's hands key (07:40): the Hands section's sign drawn again for a 38 inside a round key, lines 1 as the
+  // X beside it; the minute hand up, the hour hand at four, the hub a dot
+  hands_key: `<path d="M19 19V8.75M19 19L25.5 23.25" stroke-width="1"/><circle cx="19" cy="19" r="1.75" fill="currentColor" stroke="none"/>`,
   iris: `<circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/><path class="x" d="M-0.75 -1L31.25 31M31.25 -1L-0.75 31" stroke-width="1" stroke-linecap="butt"/>`,
   // the showcase's hint over Now: a line with a head at each end — the sun can be moved left and right (04:59); on 108
   // by 36, three times its first size, white with a glow (05:43: "can't see it… 3x size")
@@ -298,7 +328,7 @@ const TOOL_ICONS = {
 // sausages as thick as the ring, touching it: light on the upper left, dark red on the lower right. Pressed — time
 // running — they change places: lit from inside.
 const ARCADE = (down) => {
-  const RING = 0.75 * 2, CAP = RIM + CURVE / 2, R = CAP + RING, C = R, mid = CAP - RING / 2, DOT = 7.5;      // DOT: the beat's light in the middle (2.5 until Okay, 15 Oct 2026, 01:29: "enlarge dot 3x")      // 1.5 · 15.5 · 17 · the sausages' middle circle
+  const RING = 0.75 * 2, CAP = RIM + CURVE / 2, R = CAP + RING, C = R, mid = CAP - RING / 2;      // 1.5 · 15.5 · 17 · the sausages' middle circle
   const arc = (from, to) => {      // a sausage along the circle of radius mid; angles: 0 = right, growing downward
     const p = (a) => `${(C + mid * Math.cos(a * Math.PI / 180)).toFixed(3)} ${(C + mid * Math.sin(a * Math.PI / 180)).toFixed(3)}`;
     return `M${p(from)}A${mid} ${mid} 0 0 1 ${p(to)}`;
@@ -307,7 +337,16 @@ const ARCADE = (down) => {
   return `<svg viewBox="0 0 ${2 * R} ${2 * R}" width="${2 * R}" height="${2 * R}" aria-hidden="true">`
     + `<circle class="arc-out" cx="${C}" cy="${C}" r="${R}"/><circle class="arc-cap" cx="${C}" cy="${C}" r="${CAP}"/>`
     + `<path class="arc-hi" d="${light}" stroke-width="${RING}"/><path class="arc-lo" d="${dark}" stroke-width="${RING}"/>`
-    + `<circle class="arc-dot" cx="${C}" cy="${C}" r="${DOT}"/></svg>`;      // lit by the beat (pulse): Okay, 15 Oct 2026, 01:26: "a centered lighter accent dot on that pulse"
+    + `<filter id="play-soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1"/></filter>`
+    + `<path class="arc-play" d="${play_triangle(C, 0.45 * CAP)}" filter="url(#play-soft)"/></svg>`;
+};
+// the play triangle on the cap (Okay's notes, p. 14, #282; it takes the place of the beat's dot, 4.38.2): pointing
+// right, its corners on a circle a bit less than half the cap's radius (0.45), centred on its ink — its centroid on
+// the cap's middle, as a play sign is centred by eye. Soft: blurred "2 px" as a design tool counts a blur, a
+// deviation of 1 here (a few dots of a 31-point cap, so the blur costs nothing worth a picture instead)
+const play_triangle = (c, r) => {
+  const p = (a) => `${(c + r * Math.cos(a * Math.PI / 180)).toFixed(3)} ${(c + r * Math.sin(a * Math.PI / 180)).toFixed(3)}`;
+  return `M${p(0)}L${p(120)}L${p(240)}Z`;
 };
 // a window card: a small dial with the window where it is. The window keeps four points from the rim's inner edge at
 // every angle (as on the Windows tab; Okay, 13 Oct 2026, #149): its distance from the centre is found from its own
@@ -351,9 +390,12 @@ const size_row = (R) => SIZE_ROWS[G.kind_of(R) === "numerals" ? "numerals" : G.k
 const VALUE_PICS = {                               // a value button's drawing, at its size (36), centre 18. Its disc is the button's edge and, since the audit's second round, a line as heavy as the others (Okay, 14 Oct 2026: "same thicknesses"); outer edges where they were
   radius: `<circle class="disc" cx="18" cy="18" r="${18 - CURVE / 2}" ${sw(CURVE)}/><path d="M18 18.25H35.5" ${sw(LINE)}/><circle class="pivot" cx="18" cy="18.25" r="2"/>`,     // a radius, from the centre to the edge
   // scale: a small circle growing into the large one, joined by their two tangents (Okay's drawing, Asset_1.svg, 13 Oct
-  // 2026, turned 25° to fit the height; 22:52). The hull (both circles and what lies between the tangents) fills when
-  // the button is pressed (Okay's drawing, 14 Oct 2026). Tangents and hull computed from the circles.
-  size: `<path class="hull" d="M14.05 33.01L26.89 26.99A12.6875 12.6875 0 1 0 9.78 10.65L4.36 23.75A7.1875 7.1875 0 0 0 14.05 33.01Z"/><circle class="disc" cx="21.5" cy="15.5" r="12.6875" ${sw(CURVE)}/><circle class="small" cx="11" cy="26.5" r="7.1875" ${sw(CURVE)}/><path class="tangent" d="M4.36 23.75L9.78 10.65M14.05 33.01L26.89 26.99" ${sw(SLANT)}/><path class="dark" d="M11 26.5L21.5 15.5" ${sw(SLANT)}/><circle class="pivot" cx="21.5" cy="15.5" r="2"/>`,
+  // 2026). Level since beta 4.41.13: both centres on the radius button's radius line (18.25), small left, large right
+  // (Okay, 15 Oct 2026, 10:39, of the variants: "C, but tiny bit far apart for scale circles. Same size."): r 8.5 and
+  // 15, centres 11.5 apart (C was 10.875; the grid allows 11 or 11.5), placed by fit.mjs; the small one's edge on the
+  // button's, the large one 0.56 past it on the right. The hull (both circles and what lies between the tangents)
+  // fills when the button is pressed (Okay's drawing, 14 Oct 2026). Tangents and hull computed from the circles.
+  size: `<path class="hull" d="M4.45 11.24L12.27 5.88A15 15 0 1 1 12.27 30.62L4.45 25.26A8.5 8.5 0 0 1 4.45 11.24Z"/><circle class="disc" cx="20.75" cy="18.25" r="15" ${sw(CURVE)}/><circle class="small" cx="9.25" cy="18.25" r="8.5" ${sw(CURVE)}/><path class="tangent" d="M4.45 11.24L12.27 5.88M4.45 25.26L12.27 30.62" ${sw(SLANT)}/><path class="dark" d="M9.25 18.25H20.75" ${sw(LINE)}/><circle class="pivot" cx="20.75" cy="18.25" r="2"/>`,
 };
 
 // a language in the list, by its name; on its button, by two letters ("zh-Hans" → ZH; the font's own choice → "Lang.")
@@ -400,6 +442,7 @@ const WINDOW_CARDS = [{ slot: 1, at: 4 }, { slot: 0, at: 0 }, { slot: 2, at: 2 }
 const HAND_NAMES = ["Hour hand", "Minute hand", "Seconds hand"];
 const TAB_NAMES = { Date: "Windows" };            // the section's number and key stay "Date" (R8, R9); its tab says what it now holds
 const H = { scope: "hand" };
+const cap_rows = (S) => S.ui_hand === G.top_hand(S) && (S.ha_second.on || S.ha_cap_top);      // the cap's size and colour: under the hand it belongs to (#262)
 
 const ROWS = {
   Dial: [
@@ -413,8 +456,18 @@ const ROWS = {
     hdr("Page", { pin: true }),                    // around the dial: preview and page only
     num("margin", "Page margin", 0, 10, 0.5),
     col("c_backdrop", "Backdrop"),
-    hdr("Colours"),                                // every coloured part on the plate, in one list; a band's sectors one by one
+    // every coloured part on the plate, in one list; a band's sectors one by one. Folded (as it starts, #270), its line
+    // shows the colours that fit on it as tiny swatches (Okay, 16 Oct 2026: "when compacted: show all the colors that
+    // fit in that line as tiny swatches. Default: compacted")
+    hdr("Colours", { folded: true, summary: (S, tool) => tool.dial_colours(false).map((c) => ({ c })) }),
     custom("colours"),
+    // under Colours, last in the Dial tab: back to the opener, the whole dial, with a warning beside it (Okay, 16 Oct
+    // 2026, 10:46: "under the dial tab under colors. And a warning should be placed near it. Not under the dial like a
+    // view option! That is dangerous"). Open, its button stands on the heading line and the warning under it; folded,
+    // the line says Reset and nothing else (Okay, 16 Oct 2026, #269)
+    hdr("Reset", { folded: true }),
+    custom("reset_go", { head: true }),
+    custom("reset"),
   ],
   Rings: [                                         // one list; rows that don't apply hide (R16)
     // one pinned pane (Okay's drawings, 13 Oct 2026). Its heading line carries the list's tools: a plus that opens
@@ -425,10 +478,11 @@ const ROWS = {
       summary: (S, tool) => { const R = S.rings[S.ui_ring]; return R ? [G.kind_of(R), { c: R.c }, `${label_of(radius_row(R), R).toLowerCase()} ${tool.in_unit(R.r, 2)}`] : []; } }),
     custom("ring_list", { scope: "global", pin: true }),
     custom("ring_line", { pin: true }),
-    hdr("Sector colours", { show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
+    // first visit: every pane under the pinned part folded, its line saying what is in it (Okay, 16 Oct 2026, #270)
+    hdr("Sector colours", { folded: true, show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
     custom("sectors", { show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
     // what one mark is comes first (Okay, 13 Oct 2026: "moves up to the top"), then where the marks are
-    hdr("Shape", { show: kind_in("ticks", "markers") }),
+    hdr("Shape", { folded: true, show: kind_in("ticks", "markers") }),
     pick("shape", "Shape", G.SHAPES.slice(0, 3), PICS.shape, { show: kind_in("ticks", "markers") }),
     num("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
     num("w", "Width · Ø", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "dot", "file") }),
@@ -438,100 +492,122 @@ const ROWS = {
     num("round_out", "Round outer", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
     num("round_in", "Round inner", 0, 2, 0.01, { show: marks_with("bar", "wedge", "file") }),
     custom("round_ends", { show: marks_with("bar", "wedge", "file") }),
-    hdr("Positions"),
+    hdr("Positions", { folded: true }),
     num("count", "Count", 1, 360, 1, { whole: true }),
     num("start", "Start °", -180, 180, 0.5),
     num("span", "Span °", 1, 360, 1),
     num("every", "Every", 1, 60, 1, { whole: true }),
     num("offset", "Offset", 0, 59, 1, { whole: true }),
     chk("invert", "Skip those instead", { nest: true }),
-    hdr("Give way to rings above"),
+    hdr("Give way to rings above", { folded: true }),
     pop("skip", "Skip where", G.SKIP_FROM),
     pop("knock", "Knock out", G.KNOCK_FROM),
     num("clear", "Clearance", 0, 2, 0.01, { show: (R) => R.knock !== 0 }),
-    hdr("12 o’clock · first position", { show: kind_in("markers") }),
+    hdr("12 o’clock · first position", { folded: true, show: kind_in("markers") }),
     pick("twelve", "Style", G.TWELVES, PICS.twelve, { show: kind_in("markers") }),
     num("twelve_scale", "Scale ×", 0.5, 2.5, 0.05, { show: (R) => G.kind_of(R) === "markers" && R.twelve !== 3 }),
     num("twelve_gap", "Gap", 0, 3, 0.05, { show: (R) => G.kind_of(R) === "markers" && R.twelve === 1 }),
-    hdr("Numerals", { show: numerals_only }),
+    hdr("Numerals", { folded: true, show: numerals_only }),
     pop("labels", "Labels", G.LABEL_SETS.map((s) => s[0]), { show: numerals_only, head: true }),      // head: a pane's main selector stands on its heading line, without a name of its own (Okay, 12 Oct 2026)
     txt("custom", "Custom", { show: labels_are("Custom") }),
+    info("Commas between labels: one label for each position, the rest stay empty.", { show: labels_are("Custom") }),      // Faruk Koç, 16 Oct 2026: "MLB" with Count 12 drew once and nothing said why (#298; a text ring is #297)
     num("num_from", "First number", -1000, 1000, 1, { show: labels_are("Numbers") }),
     num("num_step", "Step", -100, 100, 1, { show: labels_are("Numbers") }),
     num("num_digits", "Digits", 0, 4, 1, { whole: true, show: labels_are("Numbers") }),
     num("num_again", "Start again after", 0, 60, 1, { whole: true, show: labels_are("Numbers") }),      // positions; 0 = never
     info("0 counts on. 12 with first 5, step 5: 5 to 60, then 5 again.", { show: labels_are("Numbers") }),
     pick("mode", "Placement", G.MODES, PICS.mode, { show: numerals_only }),
-    hdr("Band", { show: kind_in("band") }),
+    hdr("Band", { folded: true, show: kind_in("band") }),
     num("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),
     num("fill", "Fill % of step", 1, 100, 1, { show: kind_in("band") }),
-    hdr("Nudge one numeral", { show: numerals_only }),
-    custom("nudge", { show: numerals_only }),
-    hdr("Type", { show: numerals_only }),
+    hdr("Nudge one numeral", { folded: true, show: numerals_only }),
+    custom("nudge", { show: numerals_only }),      // which numeral, and Reset this numeral
+    // its four adjusters, number rows on the numeral chosen above (Okay's notes, p. 6–7, #252, beta 4.45.2: "every
+    // adjuster gets ±; angle and radius get sliders"): each a full row, its name opening the popup (#249)
+    num("dr", "Radius ±", -3, 3, 0.05, { scope: "nudge" }),
+    num("da", "Angle ± °", -30, 30, 0.1, { scope: "nudge" }),
+    num("rot", "Rotate °", -180, 180, 1, { scope: "nudge" }),
+    num("s", "Size ×", 0.2, 3, 0.01, { scope: "nudge" }),
+    hdr("Type", { folded: true, show: numerals_only }),
     custom("font", { show: numerals_only }),
   ],
   Hands: [
     custom("hands_bar", { pin: true, bar: true }),      // bar: one line of its own, always in view: All hands · Show hands · Motion
     custom("hand_tabs", { pin: true, bar: true }),      // under it, always in view: which hand the panes below are about (Okay, 12 Oct 2026: "acts as a tab system for what's below")
-    hdr("One hand", { title: (S) => HAND_NAMES[S.ui_hand] }),      // its heading says which: Hour hand · Minute hand · Seconds hand
-    chk("on", "Show this hand", { ...H, head: true }),      // on the heading line, beside the hand's name
+    // the Show box (#261, 4.46; Okay's notes, p. 2): under the tabs, on top of the grey page, Show — the tab says which
+    // hand, so the hand's name line goes and everything under it is the tab's content: a pane with no heading (headless)
+    custom("show_box", { ...H, bar: true }),
+    hdr("One hand", { headless: true }),
     // one pane for a hand (Okay's drawings, 13 Oct 2026): at the left a box with the hand itself, as it is now; beside
     // it everything that makes it — its shape (one line of tiles that opens; a plus for a shape of one's own, later),
     // then its numbers and its colour. So what a number changes is seen right beside it, and on the dial at the right.
     // side: the row stands beside the box · short: the label when there is little room for it.
     custom("hand_detail", { ...H }),
-    pick("shape", "Shape", G.HAND_SHAPES, hand_pic, { ...H, side: true, line: true, skip: [9] }),      // every shape but "file" (a shape of one's own: the SVG tile)
+    col("c", "Colour", { ...H, side: true }),      // first beside the box (Okay's notes, p. 18, #250: "Colour to the top, Cap at the end")
     num("len", "Length", 0.5, 30, 0.05, { ...H, side: true }),      // a disc's: where its marker's outer end is
     num("disc_d", "Disc Ø", 0.5, 30, 0.05, { ...H, side: true, show: hand_is("disc") }),
-    seg("mark", "Marker", G.SHAPES.slice(0, 3), { ...H, side: true, show: hand_is("disc") }),      // the markers ring's shapes (#164)
-    num("mark_len", "Marker length", 0.05, 10, 0.05, { ...H, side: true, short: "Marker L", show: hand_is("disc") }),
-    num("mark_w", "Marker width", 0.02, 5, 0.01, { ...H, side: true, short: "Marker W", show: hand_is("disc") }),
+    // the marker: cut out of the disc, named "Hole" (Okay, 16 Oct 2026: "work as holes now, perfect, just call it
+    // that"), or painted on it in a colour of its own, named "Mark" (#300, 4.45.4: "Mark if also possible easily");
+    // its rows say which (say: their names as [whole, short], by the choice)
+    seg("mark_as", "Marker", ["Hole", "Mark"], { ...H, side: true, show: hand_is("disc") }),
+    seg("mark", "Hole", G.SHAPES.slice(0, 3), { ...H, side: true, say: (T) => [T.mark_as === 1 ? "Mark" : "Hole"], show: hand_is("disc") }),      // the markers ring's shapes (#164)
+    num("mark_len", "Hole length", 0.05, 10, 0.05, { ...H, side: true, short: "Hole L", say: (T) => (T.mark_as === 1 ? ["Mark length", "Mark L"] : ["Hole length", "Hole L"]), show: hand_is("disc") }),
+    num("mark_w", "Hole width", 0.02, 5, 0.01, { ...H, side: true, short: "Hole W", say: (T) => (T.mark_as === 1 ? ["Mark width", "Mark W"] : ["Hole width", "Hole W"]), show: hand_is("disc") }),
+    col("mark_c", "Mark ink", { ...H, side: true, show: (T) => G.paints_mark(T) }),      // "ink": "Mark colour" is longer than the names' column (Counter Ø)
     num("w", "Width", 0.02, 4, 0.01, { ...H, side: true, show: (H) => G.HAND_SHAPES[H.shape] !== "disc" }),
     num("tail", "Tail", 0, 10, 0.05, { ...H, side: true, show: (H) => G.HAND_SHAPES[H.shape] !== "disc" }),
-    num("round", "Round ends", 0, 2, 0.01, { ...H, side: true, show: hand_is("baton", "pencil", "sword", "arrow", "syringe", "breguet", "lollipop", "file", "disc") }),      // a disc: its marker's ends
-    num("tip", "Tip length", 0, 10, 0.05, { ...H, side: true, show: hand_is("pencil", "sword", "arrow", "syringe", "breguet") }),
-    num("feature", "Head width", 0, 6, 0.05, { ...H, side: true, show: hand_is("arrow", "syringe") }),
+    num("round", "Round ends", 0, 2, 0.01, { ...H, side: true, short: "Round", show: hand_is("baton", "pencil", "sword", "arrow", "syringe", "breguet", "lollipop", "file", "disc") }),      // a disc: its marker's ends
+    num("tip", "Tip length", 0, 10, 0.05, { ...H, side: true, short: "Tip", show: hand_is("pencil", "sword", "arrow", "syringe", "breguet") }),
+    num("feature", "Head width", 0, 6, 0.05, { ...H, side: true, short: "Head W", show: hand_is("arrow", "syringe") }),
     num("feature", "Ring · disc Ø", 0, 6, 0.05, { ...H, side: true, short: "Ring Ø", show: hand_is("breguet", "lollipop") }),
-    num("feature_at", "Widest at %", 0, 100, 1, { ...H, side: true, show: hand_is("dauphine") }),
+    num("feature_at", "Widest at %", 0, 100, 1, { ...H, side: true, short: "Widest %", show: hand_is("dauphine") }),
     num("feature_at", "Barrel from %", 0, 100, 1, { ...H, side: true, short: "Barrel %", show: hand_is("syringe") }),
     num("feature_at", "Ring · disc at %", 0, 100, 1, { ...H, side: true, short: "Ring at %", show: hand_is("breguet", "lollipop") }),
     num("counter", "Counterweight Ø", 0, 4, 0.05, { ...H, side: true, short: "Counter Ø" }),
-    num("wall", "Hollow wall", 0, 1, 0.01, { ...H, side: true }),
-    col("c", "Colour", { ...H, side: true }),
-    hdr("Cap"),                                    // after the hand's own panes: it belongs to all three
-    num("ha_cap", "Cap Ø", 0, 4, 0.05),
-    col("c_cap", "Colour"),
+    num("wall", "Hollow wall", 0, 1, 0.01, { ...H, side: true, short: "Wall" }),
+    // the cap is part of the seconds hand (Okay's notes, p. 1, #262, beta 4.43; until then a pane of its own for all
+    // three): its rows under the seconds hand's own. With no seconds hand they stand under the topmost hand's, where
+    // the cap is off until "Cap on this hand" is ticked (G.cap_shows)
+    chk("ha_cap_top", "Cap on this hand", { side: true, show: (S) => !S.ha_second.on && S.ui_hand === G.top_hand(S) }),
+    num("ha_cap", "Cap Ø", 0, 4, 0.05, { side: true, show: cap_rows }),
+    col("c_cap", "Cap colour", { side: true, show: cap_rows }),
+    // its shapes: a row of thumbs under the box and every row beside it, from the box's left to the end (4.46.4; Okay:
+    // "Put hand type as a row spanning preview to end, after wall"; under the box in 4.46.3), the SVG tile last
+    pick("shape", "Shape", G.HAND_SHAPES, hand_pic, { ...H, thumbs: true, skip: [9] }),      // every shape but "file": the SVG tile stands for it
   ],
   Date: [                                          // "Windows" on its tab: up to four holes in the plate
     custom("window_cards", { pin: true, bar: true }),      // pin: always in view, like the hand tabs (Okay, 13 Oct 2026) ·         // four cards, 12 · 3 · 6 · 9: where each window is, and tabs for the panes below (Okay, 12 Oct 2026)
     // the cards are tabs only; a window is shown by the tick on its heading line (Okay, 13 Oct 2026, after trying a
     // small switch on each card: "unnecessarily complex… enable window tickmark is the way to go. leave them as tabs")
-    hdr("Window", { title: (S) => `Window at ${G.window_place(G.windows_of(S)[S.ui_window])}` }),
-    chk("on", "Show this window", { ...W, head: true }),
-    // where it is and how big come first, right under the tick (Okay, 13 Oct 2026); a pane of their own, Place and size, until beta 4.22
-    custom("window_at", { ...W, show: win_on, text: "Position" }),
-    num("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
-    num("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("rectangle", "arch", "arc") }),
-    num("w", "Ø", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
-    num("h", "Height", 0.5, 5, 0.05, { ...W, show: shape_is("rectangle", "arc") }),
-    pick("kind", "Shows", G.WINDOW_KINDS, PICS.window, { ...W, show: win_on }),
-    txt("text", "Text", { ...W, show: win_is("date", "day") }),
-    custom("font", { ...W, show: win_is("date", "day") }),      // its own font, or the top numerals ring's (the start)
+    custom("show_box", { ...W, bar: true }),      // the Show box, as a hand's (#261): its tick, "Show this window" on the heading line until 4.46
+    // the Windows page (#263, 4.46.1; Okay's marks on three mock-ups, 16 Oct 2026): first where it is and what it
+    // shows, under Window at x; then the hole itself under Shape — its shape buttons on that heading's line, then
+    // Radius ("ok but below shapes"), its sizes, its colours on one line, its text and font, its frame
+    // the place buttons on its heading's line (Okay, 16 Oct 2026, on the mock-ups: "If it's taller so be it, enlarge
+    // buttons. And 3 6 9 12 are circular buttons now")
+    hdr("Window", { title: (S) => `Window at ${G.window_place(G.windows_of(S)[S.ui_window])}` }),      // "Position" under it in 4.46.1–2 (Okay: "Delete position name, that works without")
+    custom("window_at", { ...W, head: true, show: win_on, text: "Position" }),
+    pick("kind", "Shows", G.WINDOW_KINDS, (i) => icon(PICS.window[i], 30, 21), { ...W, small: true, show: win_on }),
     info("Follows the time shown: AM · PM beside the time, under the panel.", { ...W, show: win_is("am · pm") }),
     num("age", "Moon age, days", 0, 29.5, 0.1, { ...W, show: win_is("moon phase") }),
     info("0 new moon · 14.8 full.", { ...W, show: win_is("moon phase") }),
-    hdr("Colours", { ...W, show: win_on }),
-    col("text_c", "Picture", { ...W, show: win_is("am · pm", "moon phase"), or: (T) => T.ink }),       // or: what an unset colour is. A text's colour stands beside its font's name; this row is for the windows that show a picture       // or: what an unset colour is
-    col("disc_c", "Disc under it", { ...W, show: win_on, or: () => [1, 1, 1, 1] }),
-    col("ink", "Frame", { ...W, show: win_on }),
-    // the hole's shape, apart from what shows through it (Okay, 13 Oct 2026): one pane for every window
-    hdr("Shape", { ...W, show: win_on }),
-    custom("window_shape", { ...W, show: win_on }),
+    // the hole: its shape (buttons on the heading's line, #265), where and how big, its colours (one line, #266), what
+    // is written in it, its frame. Folded on a first visit, as every pane but the one the tab is about (#270); its shape
+    // buttons stay on its heading line
+    hdr("Shape", { ...W, folded: true, show: win_on }),
+    custom("window_shape", { ...W, head: true, text: "Shape", show: win_on }),
+    num("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
+    custom("window_size", { ...W, show: shape_is("rectangle", "arc") }),      // width and height on one line, each with its slider (#265; R15 form A2)
+    num("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("arch"), id: "window-w-Width-arch" }),      // its own id: the line above has window-w-Width
+    num("w", "Ø", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
     num("sides", "Sides", 3, 12, 1, { ...W, whole: true, show: shape_is("polygon") }),
     num("round", "Corner", 0, 2, 0.05, { ...W, show: shape_is("rectangle", "polygon") }),
     chk("turn", "Turn it with its radius", { ...W, show: (T) => T.on && G.window_shape(T) !== "arc" }),
     info("Only off the quarters: at 4 it turns 30°, at half past four 45°.", { ...W, show: (T) => T.on && T.turn && G.window_turn(T) === 0 && G.window_shape(T) !== "arc" }),
     chk("text_turn", "Turn the text with it", { ...W, nest: true, show: (T) => T.on && T.turn && G.window_shape(T) !== "arc" && ["date", "day"].includes(G.WINDOW_KINDS[T.kind]) }),
+    custom("window_colours", { ...W, show: win_on }),      // the disc under the hole · the frame · what an am · pm or moon window pictures, on one line (#266)
+    txt("text", "Text", { ...W, show: win_is("date", "day") }),
+    custom("font", { ...W, show: win_is("date", "day") }),      // its own font, or the top numerals ring's (the start)
     // the frame round the hole and the room kept clear round it are drawn on the dial: they are design, so they
     // stand here, not under a pane called Print (Okay, 13 Oct 2026: print things under Print, design among design)
     num("frame", "Frame", 0, 0.6, 0.01, { ...W, show: win_on }),
@@ -551,16 +627,17 @@ const ROWS = {
     custom("export_wearos"),
     custom("wearos_name"),
     custom("wearos_pkg"),
-    hdr("Print"),                                  // what only the printed or etched dial needs (was "For production" until beta 4.19)
+    hdr("Print", { folded: true }),                                  // what only the printed or etched dial needs (was "For production" until beta 4.19)
     chk("out_production", "Mono print mask"),
     chk("out_mirror", "Mirrored, for toner transfer"),
-    hdr("Link to this dial"),
+    hdr("Link to this dial", { folded: true }),
+    custom("link_copy", { head: true }),           // Copy link, flush right on the heading line, open or folded (#277)
     custom("link"),
-    hdr("Settings file"),
+    hdr("Settings file", { folded: true, title: () => tool && tool.loaded_name ? `Settings file · ${tool.loaded_name}` : "Settings file" }),      // after Load it names the file (#279)
     custom("settings"),
-    hdr("Log"),
+    hdr("Log", { folded: true }),
     custom("log"),
-    hdr("Gallery"),                                // under everything else: dials to open and take apart (Okay, 13 Oct 2026), the five first examples among them
+    hdr("Gallery", { folded: true }),                                // under everything else: dials to open and take apart (Okay, 13 Oct 2026), the five first examples among them
     custom("gallery"),
   ],
 };
@@ -570,9 +647,20 @@ const DAY_STEPS = [...Array.from({ length: 12 }, (_, h) => [h * 3600, String(h |
 // 6×, 60× and 720× (Okay, 14 Oct 2026, 23:26: "a regular sliding track with humps on it on 1 (larger), 6 then
 // logarithmicly up to 720"; "slightly slower is acceptable": it starts at 0.5×). Near a hump the slider snaps onto
 // it. The speed is written beside the track, not on its thumb, which a finger covers.
-const SPEED_LO = 1, SPEED_HI = 720;      // no slow motion: 1× to 720× (Okay, 15 Oct 2026, 01:59: "Remove slow motion from the clock"; 0.5× before). Its two ends are marked 1X and 720X; no ball, no snapping
-const speed_place = (k) => Math.log(k / SPEED_LO) / Math.log(SPEED_HI / SPEED_LO);      // a speed → 0 to 1 along the track
-const speed_word = (k) => (k >= 10 ? String(Math.round(k)) : String(+k.toFixed(1)));      // the figures; the × follows in a span of its own, drawn larger
+// Slow motion is back below 1× (Okay's notes, p. 15, #283; removed 15 Oct 2026, 01:59): the track's first part, two
+// thumbs wide, holds four steps — 0.1 · 0.25 · 0.5 · 1× ("not many steps") — and the thumb snaps onto them; from 1×
+// the rest runs on a log scale to 720× as before. The thumb starts at 1×; the ends are marked 0.1X and 720X.
+const SPEED_SLOW = [0.1, 0.25, 0.5, 1], SPEED_HI = 720;
+/** a speed → 0 to 1 along the track, whose first `split` holds the slow steps */
+const speed_place = (k, split) => (k < 1 ? split * SPEED_SLOW.reduce((best, x, i) => (Math.abs(x - k) < Math.abs(SPEED_SLOW[best] - k) ? i : best), 0) / (SPEED_SLOW.length - 1) : split + (1 - split) * Math.log(k) / Math.log(SPEED_HI));
+/** …and back: a place on the track → its speed (a slow step, or anything from 1× up) */
+const speed_at = (p, split) => (p < split ? SPEED_SLOW[Math.round(p / split * (SPEED_SLOW.length - 1))] : SPEED_HI ** ((p - split) / (1 - split)));
+const speed_word = (k) => (k >= 10 ? String(Math.round(k)) : String(+k.toFixed(k < 1 ? 2 : 1)));      // the figures: 0.25, 1, 2.5, 60
+const frac = (x) => ((x % 1) + 1) % 1;
+const PULSE_MOST = 6;      // the play button's pulse: at most this many a second, unless the movement's own beat is more (#282; 3 in 4.44 — Okay: "Play button can go faster in animation"; the three-flash limit is for flashes over a large part of the view, not a 31-point button)
+// each unit's ink in Dial Mono, in em, from its outlines (fonts/ui/mono_font.py prints it): [left of the advance's
+// start, width, top over the baseline, height]. The unit box is drawn round it (size_unit, #302)
+const UNIT_INK = { mm: [0.062, 1.076, 0.56, 0.56], pt: [0.088, 1.035, 0.705, 0.885], in: [0.082, 1.032, 0.78, 0.78], lig: [0.029, 1.683, 0.78, 0.96], thou: [0.052, 2.262, 0.73, 0.74] };      // the play button's pulse: at most this many a second, unless the movement's own beat is more (#282)
 const SECTIONS = Object.keys(ROWS);                // their numbers are what ui_section stores (R9)
 const TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];      // left to right. Guides is a switch on the preview (Okay, 12 Oct 2026)
 for (const name of SECTIONS) for (const row of ROWS[name]) row.scope ??= name === "Rings" ? "ring" : "global";
@@ -587,10 +675,11 @@ function parse_number(text, current) {
   return Number.isFinite(out) ? out : current;
 }
 /** is this row a length (kept in mm, shown in the chosen unit)? Decided by its key, where the scale tick decides it too. */
-const LENGTH_KEYS = { ring: G.RING_MM, hand: G.HAND_MM, window: G.WINDOW_MM, global: ["dial_d", "margin", "ha_cap", "dial_hole", "sh_hour", "sh_minute", "sh_second", "sh_cap", "sh_disc"] };
+const LENGTH_KEYS = { ring: G.RING_MM, hand: G.HAND_MM, window: G.WINDOW_MM, global: ["dial_d", "margin", "ha_cap", "dial_hole", "sh_hour", "sh_minute", "sh_second", "sh_cap", "sh_disc"], nudge: ["dr"] };
 /** a row's label: its own words, or, with a menu beside it, the chosen item's word before the last of its own
  *  ("Centre radius" → "Baseline radius"). */
-const label_of = (row, T) => (row.menu ? `${(row.menu.items.find(([v]) => v === (T[row.menu.key] ?? 0)) || row.menu.items[0])[1]} ${row.text.split(" ").pop()}` : row.text);
+const label_of = (row, T) => (row.say ? row.say(T)[0] : row.menu ? `${(row.menu.items.find(([v]) => v === (T[row.menu.key] ?? 0)) || row.menu.items[0])[1]} ${row.text.split(" ").pop()}` : row.text);
+const NUDGE_NEUTRAL = { dr: 0, da: 0, rot: 0, s: 1 };      // a numeral's nudge, untouched (#252)
 const is_length = (row) => row.kind === "num" && (LENGTH_KEYS[row.scope] || []).includes(row.key);
 const decimals = (step) => (String(step).split(".")[1] || "").length;
 const fmt = (v, step) => (+v).toFixed(Math.max(decimals(step), 0));
@@ -657,31 +746,29 @@ function save_file(name, data, type) {
 }
 
 // ── a dial as a link: the settings, packed into the part of the address after # ──
-//   scheme 1: lean settings (only what differs from the start) → JSON → deflate → base64 for addresses.
-//   scheme 0: the same without deflate, for a browser that can't compress.
+//   Scheme 2 (beta 4.43, #278): the link's text (G.link_text: lean, coded, squeezed) → deflate → Crockford's base 32,
+//   after "2" — capitals and digits only (Okay, p. 14: "no dashes, no underscores"; a line breaks evenly anywhere in
+//   it). A link of an older scheme is not read (R31): the First dial opens, with a note on the preview and in the log.
 
-const b64 = (bytes) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-const un_b64 = (text) => Uint8Array.from(atob(text.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
 const through = async (bytes, stream) => new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer());
 
 async function pack(S) {
-  const bytes = new TextEncoder().encode(JSON.stringify(G.lean(S)));
-  try { return `${G.LINK_SCHEME}.` + b64(await through(bytes, new CompressionStream("deflate-raw"))); }
-  catch (e) { return "0." + b64(bytes); }
+  return `${G.LINK_SCHEME}` + G.base32(await through(new TextEncoder().encode(G.link_text(S)), new CompressionStream("deflate-raw")));
 }
 
-/** the part after # → settings, or null if it isn't a dial. */
+/** the part after # → { settings } for a dial, { old: scheme } for a link of an older scheme, or null. */
 async function unpack(hash) {
-  const m = /^#?([01])\.([A-Za-z0-9_-]+)$/.exec(hash || "");
-  if (!m) return null;
+  const kind = G.link_kind(hash);
+  if (!kind) return null;
+  if (kind.scheme !== G.LINK_SCHEME) return { old: kind.scheme };
   try {
-    const bytes = m[1] === "0" ? un_b64(m[2]) : await through(un_b64(m[2]), new DecompressionStream("deflate-raw"));
-    const settings = JSON.parse(new TextDecoder().decode(bytes));
-    return settings && typeof settings === "object" && !Array.isArray(settings) ? settings : null;
+    const settings = G.from_link_text(new TextDecoder().decode(await through(G.un_base32(kind.letters), new DecompressionStream("deflate-raw"))));
+    return settings ? { settings } : null;
   } catch (e) {
     return null;
   }
 }
+const OLD_LINK_NOTE = "This link is from an older Dial Tool and can’t be opened: here is the First dial.";
 
 // ── undo ─────────────────────────────────────────────────────
 //   The dial as it was after each change, as text: PAST (oldest first) · NOW · FUTURE (what was undone, until the
@@ -696,6 +783,7 @@ const dial_text = (S) => JSON.stringify(S, (key, value) => (key === "t" || key.s
 class DialTool {
   constructor(settings) {
     this.S = G.fresh_settings(settings);
+    this.opened = structuredClone(this.S);      // the dial as it opened: a quiet number is grey until it differs from this (#250)
     this.statik = null;                            // everything that doesn't move, rebuilt when geometry changes
     this.static_dirty = true;
     this.pending = false;                          // a frame has been asked for
@@ -762,9 +850,15 @@ class DialTool {
   ring() { return this.S.rings[this.S.ui_ring]; }
   hand() { return this.S["ha_" + G.HANDS[this.S.ui_hand]]; }
   window() { return G.windows_of(this.S)[this.S.ui_window]; }
-  target(scope) { return scope === "ring" ? this.ring() : scope === "hand" ? this.hand() : scope === "window" ? this.window() : this.S; }
+  target(scope) { return scope === "ring" ? this.ring() : scope === "hand" ? this.hand() : scope === "window" ? this.window() : scope === "nudge" ? { ...NUDGE_NEUTRAL, ...(this.ring().nudge[this.nudge_at] || {}) } : this.S; }
 
   set_value(scope, key, value) {
+    if (scope === "nudge") {                       // the chosen numeral's own: a neutral value is not kept (#252)
+      const R = this.ring(), n = { ...(R.nudge[this.nudge_at] || {}) }, all = { ...R.nudge };
+      if (Math.abs(value - NUDGE_NEUTRAL[key]) < 1e-9) delete n[key]; else n[key] = +(+value).toFixed(4);
+      if (Object.keys(n).length) all[this.nudge_at] = n; else delete all[this.nudge_at];
+      return this.set_value("ring", "nudge", all);
+    }
     const T = this.target(scope);
     if (JSON.stringify(T[key]) === JSON.stringify(value)) return;
     // the diameter, with "scale everything" ticked: every measure on the dial grows or shrinks by the same factor
@@ -783,6 +877,11 @@ class DialTool {
       const quiet = G.NOT_GEOMETRY.includes(key) || G.NOT_GEOMETRY_PREFIX.some((p) => key.startsWith(p));
       if (!quiet) this.static_dirty = true;
       if (key === "dial_d" || key === "margin") { if (this.fitted) this.fit(); }
+      if (key === "dial_hole") {                  // its guide shows while it is being sized, whatever the guides are set to (#267)
+        this.hole_at = performance.now();
+        clearTimeout(this.hole_timer);
+        this.hole_timer = setTimeout(() => this.render(), HOLE_LIVE_MS + 50);
+      }
     }
     this.sync_rows();
     this.render();
@@ -811,7 +910,7 @@ class DialTool {
     if (this.iris_box && !on(".irisbox")) this.iris_open(false);
     if (this.lang_opens && !on(".langs")) for (const shut of this.lang_opens) shut(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
-    if (this.value_pop && !on("#value-pop") && !on(".valueb, .atmore")) this.value_pop_close();
+    if (this.value_pop && !on("#value-pop") && !on(".valueb, .atmore, .popname, .numbox > input")) this.value_pop_close();
     this.tag_hide();
   }
 
@@ -833,8 +932,9 @@ class DialTool {
     this.form = el("div", { className: "form" });                  // rows that scroll
     const panel = el("aside", { className: "panel" },
       // .mast: the mark, the title and the version — what stays when the panel slides away (dial_alone(), 15 Oct 2026)
-      el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION }))), this.unit_box()),
+      el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION }), el("a", { className: "quiet help", href: GUIDE, target: "_blank", rel: "noopener", textContent: "Help" }))), this.gallery_way(), this.unit_box()),
       this.tabs, this.pinned, this.form);
+    this.finger_anchor(panel);
 
     this.svg = svg_el("svg");
     this.svg.setAttribute("class", "preview");
@@ -873,6 +973,7 @@ class DialTool {
     this.preview_events();
 
     this.time_field = el("input", { id: "time", className: "time", type: "text", title: "Time shown, h:mm:ss" });
+    if (document.fonts) document.fonts.ready.then(() => { this.time_zeros = null; this.sync_time(); });      // Dial Time arrived: measure the time's ink again
     this.time_field.onchange = () => { const t = parse_time(this.time_field.value, this.S.t >= 43200); if (t !== null) this.set_time(t); else this.sync_time(); this.time_field.value = fmt_time(this.S.t); };      // "15:20" reads back as 3:20:00, PM
     // which half of the day: the hands can't say, an am · pm window can (it follows the time shown). Typing "15:20" or "3:20 pm" sets it too.
     this.half_button = el("button", { type: "button", id: "ampm", className: "half", title: "Morning or afternoon: an am · pm window follows it", onclick: () => this.set_time((this.S.t + 43200) % 86400) });
@@ -885,15 +986,23 @@ class DialTool {
     // (how to zoom, zoom out, in, fit). The panel's square left the bar (Okay, 14 Oct 2026, 23:19: it "doesn't work
     // anyway"; build list #190)
     this.speed = 1;
-    this.speed_slider = el("input", { id: "speed", type: "range", min: 0, max: 1000, step: 1, ariaLabel: "How fast time runs", title: "How fast time runs: 1× to 720×" });
-    this.speed_slider.oninput = () => {      // (set_speed puts the rider over the thumb)
-      this.set_speed(SPEED_LO * (SPEED_HI / SPEED_LO) ** (+this.speed_slider.value / 1000));
+    this.speed_slider = el("input", { id: "speed", type: "range", min: 0, max: 1000, step: 1, ariaLabel: "How fast time runs", title: "How fast time runs: 0.1× to 720×" });
+    // while the speed is being changed its name over the thumb looks like the 10:10 pill (#283): a press on the track
+    // until it is let go; a key, for a moment
+    let sliding = 0, pressing = false;
+    const slide = (on) => { clearTimeout(sliding); this.speed_name.classList.toggle("sliding", on); if (on && !pressing) sliding = setTimeout(() => slide(false), 900); };
+    this.speed_slider.oninput = () => {      // (set_speed puts the rider over the thumb, and a slow speed's thumb onto its step)
+      this.set_speed(speed_at(+this.speed_slider.value / 1000, this.speed_split()));
+      slide(true);
     };
+    this.speed_slider.onpointerdown = () => { pressing = true; slide(true); };
+    this.speed_slider.onpointerup = this.speed_slider.onpointercancel = () => { pressing = false; slide(false); };
     // no words for the speed in the box any more (Okay, 15 Oct 2026, 00:18: "Remove 1x next to red button"): the slider
     // tells a screen reader its speed (aria-valuetext); the eye has the ball at 1× and where the thumb stands
-    const humps = el("span", { className: "humps", ariaHidden: "true" }, el("i", { className: "knob first" }), el("i", { className: "knob last" }));
-    // its two ends named in the bar's grey, 1X and 720X (Okay, 15 Oct 2026, 01:59: "denote them 1x and 720x with the bar's gray")
-    for (const [at, word] of [[0, SPEED_LO + "X"], [1, SPEED_HI + "X"]]) { const name = el("span", { className: "humpname end", textContent: word }); name.style.setProperty("--at", at); humps.append(name); }
+    this.one_knob = el("i", { className: "knob one" });      // 1×, now that slow motion stands before it: a dot on the line (Okay, 16 Oct 2026, on 4.44: "1x needs a dot")
+    const humps = el("span", { className: "humps", ariaHidden: "true" }, el("i", { className: "knob first" }), this.one_knob, el("i", { className: "knob last" }));
+    // its two ends named in the bar's grey, 0.1X and 720X (Okay, 15 Oct 2026, 01:59: "denote them 1x and 720x with the bar's gray"; 0.1X since #283)
+    for (const [at, word] of [[0, SPEED_SLOW[0] + "X"], [1, SPEED_HI + "X"]]) { const name = el("span", { className: "humpname end", textContent: word }); name.style.setProperty("--at", at); humps.append(name); }
     // the speed's name rides over the thumb, the one white thing on the bar: how many X (Okay, 15 Oct 2026, 01:08: "1X
     // follows the dot. Indicates how many Xs"; 01:59: "It is the only white thing there")
     this.speed_name = el("span", { className: "humpname rider", ariaHidden: "true" });
@@ -924,6 +1033,8 @@ class DialTool {
     this.day_ticks = DAY_STEPS.map((x) => x[0]);
     this.watchers = [new ResizeObserver(() => this.draw_ruler())];      // closed with the tool (close)
     this.watchers[0].observe(this.time_slider);
+    this.watchers.push(new ResizeObserver(() => this.set_speed(this.speed)));      // the slow steps' share of the track follows its width
+    this.watchers.at(-1).observe(this.speed_slider);
     // Fit: a plain magnifier at the left of its word (Okay, 15 Oct 2026, 00:51: "fit gets a regular magnifier icon on its left")
     const fit_button = el("button", { type: "button", id: "fit", className: "fit", title: "Show the whole page", onclick: () => { this.fit(); this.render(); } });
     fit_button.innerHTML = icon(TOOL_ICONS.find);
@@ -940,7 +1051,10 @@ class DialTool {
     this.set_speed(1);
     const guides = this.guides_box();
     // on the preview: undo · redo top left, beside the panel (Okay, 13 Oct 2026) · the Guides switch top right · Backdrop bottom left
-    this.main = el("main", {}, this.svg, this.tip, this.undo_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.sun_hint);
+    // a note on the preview (R17, R31: an old link): a dark pill under the header's line; a press puts it away, and so
+    // does the first change to the dial
+    this.note = el("button", { type: "button", className: "previewnote", id: "preview-note", hidden: true, title: "Put this note away", onclick: () => { this.note.hidden = true; } });
+    this.main = el("main", {}, this.svg, this.tip, this.note, this.undo_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.ten_pill, this.hands_key, this.sun_hint);
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     root.append(this.sheet());      // a phone's gripper, on the drawer's top line
     requestAnimationFrame(() => this.level_title());
@@ -998,10 +1112,26 @@ class DialTool {
     };
     // tall enough to hold its top still? measured whenever the drawer or its pinned part changes size
     const panel = $(".panel"), hold = () => {
-      const narrow = matchMedia("(max-width: 860px)").matches, parts = [panel.querySelector(":scope > header"), this.tabs, this.pinned].filter(Boolean);
-      const top = parts.reduce((sum, x) => sum + (x.hidden ? 0 : x.offsetHeight), 0);
+      const narrow = matchMedia("(max-width: 860px)").matches, parts = [this.tabs, this.pinned].filter(Boolean);
+      const top = head_full() + parts.reduce((sum, x) => sum + (x.hidden ? 0 : x.offsetHeight), 0);      // the title line counted at its full height, so squeezing it never tips the drawer into holding
       panel.classList.toggle("held", narrow && panel.clientHeight - top >= SHEET.room);
     };
+    // a phone (8-narrow.css): at the drawer's top its title line is full, with the Gallery pill and the unit box; once it
+    // scrolls, the line squeezes (.squeezed) and stays on top, the tabs held under it (.stuck); back at the very top it is
+    // full again (Okay, 15 Oct 2026, 07:59: "this squeezed state is persistent. However, the big size with mm… comes up
+    // when the user loads the page first or scrolls back all the way. Gallery hides together with mm. Only mobile").
+    // Squeezed past 32 px, full again only at 0: the line's own 24 px can't tip it back and forth
+    const head = panel.querySelector(":scope > header"), form = panel.querySelector(".form");
+    let full_h = 0;
+    const head_full = () => (panel.classList.contains("squeezed") && full_h) || (full_h = head.offsetHeight);
+    const squeeze = () => {
+      const held = panel.classList.contains("held"), top = held ? form.scrollTop : panel.scrollTop;
+      if (top > 32) panel.classList.add("squeezed");
+      else if (top < 1) panel.classList.remove("squeezed");
+      panel.classList.toggle("stuck", !held && panel.classList.contains("squeezed"));
+    };
+    panel.addEventListener("scroll", squeeze, { passive: true });
+    form.addEventListener("scroll", squeeze, { passive: true });
     this.watchers.push(new ResizeObserver(hold));
     this.watchers.at(-1).observe(panel);
     this.watchers.at(-1).observe(this.pinned);
@@ -1043,7 +1173,8 @@ class DialTool {
       if (!was.away) { app.classList.remove("away"); this.eye_button.setAttribute("aria-pressed", "false"); }
       this.set_speed(was.speed);
       if (!was.playing) this.play(false);
-      this.now_pill.classList.remove("back");
+      for (const b of [this.now_pill, this.ten_pill]) { b.classList.remove("back"); b.title = b.ariaLabel = b.dataset.says; }
+      this.hands_key.setAttribute("aria-pressed", "false"); this.hands_key.title = "Hide the hands";
     }
     this.iris_button.setAttribute("aria-pressed", String(on));
     app.style.setProperty("--title-end", this.title.getBoundingClientRect().right.toFixed(1) + "px");
@@ -1122,38 +1253,48 @@ class DialTool {
     D.stops.forEach((s, i) => { s.setAttribute("offset", f([0, R / r * (1 - soft * 0.3), 1][i])); s.setAttribute("stop-color", "#000"); s.setAttribute("stop-opacity", f(i < 2 ? shade : 0)); });
   }
 
-  /** Now in the showcase: every hand turns twice and lands on the time it is now; the pill shrinks into an undo sign.
-   *  Pressed then, the hands turn twice the other way, back to the time they showed (as it has run on since), and the
-   *  sign grows back into Now (Okay, 04:59; Okay's choice of the way back) */
-  show_now() {
+  /** Now in the showcase: the hands land on the time it is now; the pill shrinks into an undo sign. Pressed then, they
+   *  go back to the time they showed (as it has run on since), each the other way, and the sign grows back into Now
+   *  (Okay, 04:59; Okay's choice of the way back) */
+  //  10:10 does the same, to 10:10 (07:40). The one pressed turns into the undo sign; the other stays as it is. The other
+  //  pressed then takes the hands to its time and the sign moves to it; the way back is still to the time first shown.
+  show_now(kind = "now") {
     const sh = this.show, beat = G.BEATS[this.S.ha_beat][1];
     const from = G.hand_angles(this.S.t, beat);
-    if (!sh.back) {
-      const d = new Date(), now = d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000;
-      sh.back = { t: this.S.t, at: performance.now() };
-      this.set_time(now);
-      sh.spin = { from, way: 1, t0: performance.now() };
-      this.now_pill.classList.add("back");
-    } else {
+    if (sh.back && sh.back.by === kind) {
       this.set_time(sh.back.t + (performance.now() - sh.back.at) / 1000);
       sh.back = null;
       sh.spin = { from, way: -1, t0: performance.now() };
-      this.now_pill.classList.remove("back");
+    } else {
+      const d = new Date(), now = d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000;
+      sh.back = sh.back ? { ...sh.back, by: kind } : { t: this.S.t, at: performance.now(), by: kind };
+      this.set_time(kind === "now" ? now : 10 * 3600 + 600 + this.half());
+      sh.spin = { from, way: 1, t0: performance.now() };
     }
-    this.now_pill.title = this.now_pill.ariaLabel = sh.back ? "Back to the time it showed" : "The time it is now";
+    for (const b of [this.now_pill, this.ten_pill]) {
+      const back = !!sh.back && b.classList.contains(sh.back.by);
+      b.classList.toggle("back", back);
+      b.title = b.ariaLabel = back ? "Back to the time it showed" : b.dataset.says;
+    }
     this.render();
   }
 
-  /** the hands while they spin: from where they were, two whole turns and the way to where they are now (frame()) */
+  /** the hands while they spin (frame()). The hour hand turns one whole turn clockwise and on to where it lands, the
+   *  minute hand the same anticlockwise (going back, each the other way); the seconds hand makes no turn, it goes the
+   *  short way to its place while the big hands whirl. One easing for all, slow to start and slow to land (Okay, 15 Oct
+   *  2026, 07:36: "big arms move different wises, one clock one anticlock. One turn, ease to stop on position. Seconds?
+   *  Only moves to position slowly as the chaos ensues. Eases both start and end"; was: every hand two turns, one way) */
   spin_hands(items) {
     const sp = this.show && this.show.spin;
     if (!sp) return;
     const p = clamp((performance.now() - sp.t0) / SPIN_MS, 0, 1), e = p < 0.5 ? 4 * p ** 3 : 1 - (-2 * p + 2) ** 3 / 2;
-    const k = { hour: 0, minute: 1, second: 2 };
+    const k = { hour: 0, minute: 1, second: 2 }, way = { hour: sp.way, minute: -sp.way };
     for (const item of items) {
-      if (item.role !== "hand") continue;
-      const a0 = sp.from[k[item.name]], gap = (((item.angle - a0) * sp.way) % 360 + 360) % 360;
-      item.angle = p < 1 ? a0 + sp.way * e * (gap + 720) : item.angle;
+      if ((item.role !== "hand" && item.role !== "mark") || !(item.name in k) || p >= 1) continue;      // a disc's painted mark turns with its hand
+      const a0 = sp.from[k[item.name]], d = item.angle - a0;
+      if (item.name === "second") { item.angle = a0 + e * ((d % 360 + 540) % 360 - 180); continue; }      // the short way, under half a turn
+      const w = way[item.name], gap = ((d * w) % 360 + 360) % 360;      // how far round it is, going its own way
+      item.angle = a0 + w * e * (gap + 360);
     }
     if (p >= 1) this.show.spin = null;
   }
@@ -1229,17 +1370,31 @@ class DialTool {
     // baseline (Okay, 15 Oct 2026, 04:26: "align icon better"; it was on the header's middle, a point low)
     const logo = $("#logo"), cap = pen.measureText("D").actualBoundingBoxAscent, moved = header.top + header.height / 2 - (baseline - x_height / 2);
     if (logo && cap) { logo.style.translate = ""; const r = logo.getBoundingClientRect(); logo.style.translate = `0 ${(baseline + moved - cap / 2 - (r.top + r.height / 2)).toFixed(2)}px`; }
+    // the Gallery pill and the unit box: their words on the title's baseline, as Help's are (Okay, 16 Oct 2026: "same
+    // baseline"). Each is moved as a whole (its menu with it); one that isn't shown (a phone's squeezed line) stays put
+    for (const box of document.querySelectorAll(".panel > header :is(.galleryway, .unit)")) {
+      box.style.translate = "";
+      const word = box.querySelector("button .word") || box.querySelector("button"), dot = el("span");      // the unit box: its word's own line
+      dot.style.cssText = "display:inline-block;width:0;height:0";
+      word.append(dot);
+      const at = dot.getBoundingClientRect();
+      dot.remove();
+      if (at.height === 0 && at.top === 0) continue;
+      const dots = window.devicePixelRatio || 1;
+      box.style.translate = `0 ${Math.round((baseline + moved - at.top) * dots) / dots}px`;      // in whole screen dots: a hairline box stays crisp (the unit box, #302)
+    }
   }
 
   unit() { return G.UNITS[this.S.ui_unit] || G.UNITS[0]; }
   /** a length in mm → the text of it in the chosen unit. */
-  in_unit(mm, places) { const u = this.unit(); return (mm * u[2]).toFixed(places + u[3]); }
+  in_unit(mm, places) { const u = this.unit(); return (mm * u[2]).toFixed(Math.max(0, places + u[3])); }      // thou takes a decimal away: never fewer than none
 
   unit_box() {
     const menu = el("div", { className: "unitmenu", id: "unit-menu", hidden: true });
     menu.setAttribute("role", "menu");
     this.unit_button = el("button", { type: "button", className: "unitbox", id: "unit", title: "The unit lengths are shown in" });
     this.unit_button.setAttribute("aria-haspopup", "menu");
+    if (document.fonts) document.fonts.load('10px "Dial Mono"').then(() => this.size_unit(), () => {});      // measured again once Dial Mono is in (fonts.ready can come before a face is even asked for)
     const open = (on) => { menu.hidden = !on; this.unit_button.setAttribute("aria-expanded", String(on)); };
     this.unit_open = open;
     this.unit_button.onclick = () => open(menu.hidden);
@@ -1284,8 +1439,29 @@ class DialTool {
     this.eye_box = el("div", { className: "eyes" }, this.iris_box, eye);
     // the showcase's Now: a pill at the bottom centre, on the iris's line (04:26: "a button appeared bottom center:
     // NOW!"); pressed, the hands spin to now and it shrinks into an undo sign, the way back (show_now)
-    this.now_pill = el("button", { type: "button", className: "onview nowpill", id: "show-now", title: "The time it is now", ariaLabel: "The time it is now", onclick: () => this.show_now() }, el("span", { className: "word", textContent: "Now" }));
-    this.now_pill.insertAdjacentHTML("beforeend", icon(TOOL_ICONS.undo));
+    // Beside it, 10:10, the pose watches are shown in (Okay, 15 Oct 2026, 07:40): the same whirl to 10:10. Whichever was
+    // pressed turns into the undo sign; the other stays as it is (show_now)
+    const pill = (kind, id, word, says) => {
+      const b = el("button", { type: "button", className: "onview nowpill " + kind, id, title: says, ariaLabel: says, onclick: () => this.show_now(kind) }, el("span", { className: "word", textContent: word }));
+      b.insertAdjacentHTML("beforeend", icon(TOOL_ICONS.undo));
+      b.dataset.says = says;
+      return b;
+    };
+    this.now_pill = pill("now", "show-now", "Now", "The time it is now");
+    this.ten_pill = pill("ten", "show-ten", "10:10", "10:10, the classic pose");
+    // the showcase's bottom left corner: the hands shown or hidden, a round key with the Hands sign inside (Okay, 07:40:
+    // "show/hide hands. We have a hands icon, adapt to size. Round with hands inside"). The showcase's alone; the
+    // dial's own Show hands is left as it is
+    this.hands_key = el("button", { type: "button", className: "onview handskey", id: "hands-key", title: "Hide the hands", ariaLabel: "Hands" });
+    this.hands_key.innerHTML = icon(TOOL_ICONS.hands_key, 38);
+    this.hands_key.setAttribute("aria-pressed", "false");
+    this.hands_key.onclick = () => {
+      const hide = !this.show.nohands;
+      this.show.nohands = hide;
+      this.hands_key.setAttribute("aria-pressed", String(hide));
+      this.hands_key.title = hide ? "Show the hands" : "Hide the hands";
+      this.render();
+    };
     // over it, the hint that the sun moves left and right (hint())
     this.sun_hint = el("div", { className: "sunhint", id: "sun-hint" });
     this.sun_hint.innerHTML = icon(TOOL_ICONS.both_ways, 108, 36);
@@ -1310,7 +1486,7 @@ class DialTool {
         el("li", {}, a("https://harfbuzz.github.io", "HarfBuzz"), " sets the type (harfbuzzjs, MIT)."),
         el("li", {}, a("https://skia.org", "Skia"), "’s PathKit joins and cuts the shapes (BSD 3-clause)."),
         el("li", {}, a("https://rsms.me/inter/", "Inter"), " by Rasmus Andersson is the stand-in typeface; ", a("https://fonts.google.com/specimen/Silkscreen", "Silkscreen"), " by Jason Kottke sets the tiny figures (SIL OFL)."),
-        el("li", {}, "The twenty dial typefaces, each under its designers’ SIL Open Font License, most of them from ", a("https://fonts.google.com", "Google Fonts"), "."),
+        el("li", {}, "The twenty-one dial typefaces, each under its designers’ SIL Open Font License, most of them from ", a("https://fonts.google.com", "Google Fonts"), "."),
         el("li", {}, a("https://www.drawbot.com", "DrawBot"), " is where the tool began; ", a("https://esbuild.github.io", "esbuild"), " builds it and ", a("https://playwright.dev", "Playwright"), " tests it.")));
     // contact: Okay's address, kept from address-harvesting robots that read pages and repositories (Okay, 03:18:
     // "encrypt it somehow so no one can get it. Reasonably"): stored as its letters' codes, each XOR 23, back to front,
@@ -1349,10 +1525,12 @@ class DialTool {
       const dots = el("span", { className: "dots", role: "radiogroup", ariaLabel: name });
       const none = el("button", { type: "button", className: "none", id: none_id, title: "None: hide " + name.toLowerCase(), ariaLabel: "None", onclick: () => { set(null); this.sync_rows(); this.render(); } });
       none.innerHTML = none_dot;
+      none.dataset.k = "none";
       dots.append(none);
       G.GUIDE_COLOURS.forEach((hex, i) => {
         const b = el("button", { type: "button", className: "tone", title: hex, ariaLabel: hex, onclick: () => { set(i); this.sync_rows(); this.render(); } });
         b.style.setProperty("--c", hex);
+        b.dataset.k = i;
         dots.append(b);
       });
       for (const b of dots.children) b.setAttribute("role", "radio");
@@ -1361,13 +1539,14 @@ class DialTool {
       const refresh = () => {
         const k = get();
         line.classList.toggle("off", k === null);
-        [...dots.children].forEach((b, n) => { const on = n === 0 ? k === null : n - 1 === k; b.classList.toggle("on", on); b.setAttribute("aria-checked", String(on)); });
+        for (const b of dots.querySelectorAll("[data-k]")) { const on = b.dataset.k === "none" ? k === null : +b.dataset.k === k; b.classList.toggle("on", on); b.setAttribute("aria-checked", String(on)); }
       };
       return { line, label, refresh };
     };
     this.guide_dots = dots_line;
-    // the dial's own three: its edge, its centre lines, the windows' radii
-    this.guide_kinds = G.GUIDE_KINDS.slice(1, 3).map(([show, colour, name]) => {      // centre lines and window radii; not the dial edge (gone, 15 Oct 2026)
+    // the dial's own: the centre hole (first, Okay, 16 Oct 2026, #267) and the centre lines. Not the dial edge (gone, 15 Oct
+    // 2026) nor the windows' radii (each window has its own guides since #271, under Windows)
+    this.guide_kinds = [G.GUIDE_KINDS[5], G.GUIDE_KINDS[1]].map(([show, colour, name]) => {
       const d = dots_line(name, () => (this.S[show] ? this.S[colour] : null), (k) => { if (k === null) this.S[show] = false; else { this.S[show] = true; this.S[colour] = k; } }, "guide-" + show);
       list.append(d.line);
       return d;
@@ -1376,12 +1555,22 @@ class DialTool {
     // One switch for which rings show theirs, then a line per ring; built again when the ring list changes (sync_guides).
     const which = el("span", { className: "segs", role: "radiogroup", ariaLabel: "Which rings show their guides" });
     [["All", true, true], ["Selected", false, true], ["None", false, false]].forEach(([word, rings, sel]) => {
-      const b = el("button", { type: "button", id: "guide-rings-" + word.toLowerCase(), textContent: word, onclick: () => { this.S.gd_rings = rings; this.S.gd_sel = sel; this.sync_rows(); this.render(); } });
+      const b = el("button", { type: "button", id: "guide-rings-" + word.toLowerCase(), textContent: word, title: { All: "Every ring’s; the selected one’s stronger while the Rings tab is open", Selected: "The selected ring’s, while the Rings tab is open (#301)", None: "No ring’s" }[word], onclick: () => { this.S.gd_rings = rings; this.S.gd_sel = sel; this.sync_rows(); this.render(); } });
       b.setAttribute("role", "radio");
       which.append(b);
     });
     this.guide_which = which;
     this.guide_rings = el("div", { className: "guiderings" });
+    // the windows' guides, as the rings' (Okay, 16 Oct 2026, #271: "Windows get their own sub category like rings.
+    // Selected comes default"): which windows show theirs, then a line per window that is on
+    const which_w = el("span", { className: "segs", role: "radiogroup", ariaLabel: "Which windows show their guides" });
+    [["All", true, true], ["Selected", false, true], ["None", false, false]].forEach(([word, wins, sel]) => {
+      const b = el("button", { type: "button", id: "guide-windows-" + word.toLowerCase(), textContent: word, title: { All: "Every window’s; the selected one’s stronger while the Windows tab is open", Selected: "The selected window’s, while the Windows tab is open (#301)", None: "No window’s" }[word], onclick: () => { this.S.gd_wins = wins; this.S.gd_wsel = sel; this.sync_rows(); this.render(); } });
+      b.setAttribute("role", "radio");
+      which_w.append(b);
+    });
+    this.guide_which_w = which_w;
+    this.guide_windows = el("div", { className: "guiderings" });
     // guides you add: a line, a crosshair, a circle (Okay: "add an option to add others, crosshair, straight line etc.")
     this.guide_more = el("div", { className: "guidemore" });
     const adds = el("span", { className: "segs" });
@@ -1390,16 +1579,40 @@ class DialTool {
       this.S.gd_more = [...(this.S.gd_more || []), { kind: i, a: 0, r: +(this.S.dial_d / 4).toFixed(2), k: [3, 0, 2, 5, 4, 1].find((k) => !used.has(k)) ?? 3 }];
       this.sync_rows(); this.render();
     } })));
+    this.guide_windows_head = el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Windows" }), which_w);
     list.append(el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Rings" }), which), this.guide_rings,
-      el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Add" }), adds), this.guide_more);
-    this.guide_rows = [this.build_row({ ...num("gd_w", "Thickness", 0.25, 6, 0.25), scope: "global" })];
-    const reset = el("button", { type: "button", className: "btn", id: "guides-reset", textContent: "Reset", title: "The guides as they started", onclick: () => {
+      this.guide_windows_head, this.guide_windows,
+      el("div", { className: "guidehead add" }, el("span", { className: "name", textContent: "Add" }), adds), this.guide_more);
+    // the last line: Thickness, its number with a compact plus and minus (a side row's number box), and Reset All after
+    // a rule (Okay, 16 Oct 2026, #271: "Guide thickness and reset on the same line, value boxes get an attached compact
+    // plus minus to gain space … Reset also gets a vertical separator before. Written as 'Reset All'"). Its question
+    // ("Are you sure?") comes with the number popup (phase E)
+    this.guide_rows = [this.build_row({ ...num("gd_w", "Thickness", 0.25, 6, 0.25), scope: "global", side: true })];
+    // Reset All asks first, in its line's place: "Reset all guides?" and round ✕ and ✓ (#271; answer: it resets the
+    // guides only, and says so)
+    const ask = (on) => { last.classList.toggle("asking", on); question.hidden = !on; if (on) yes.focus(); };
+    const reset = el("button", { type: "button", className: "btn", id: "guides-reset", textContent: "Reset All", title: "Every guide as it started", onclick: () => ask(true) });
+    const round = (id, text, title, act) => { const b = el("button", { type: "button", className: "roundb", id, title, ariaLabel: title, onclick: act }); b.innerHTML = icon(text, 12); return b; };
+    const no = round("guides-reset-no", `<path d="M3 3L9 9M9 3L3 9" ${sw(SLANT)}/>`, "Keep the guides", () => { ask(false); reset.focus(); });
+    const yes = round("guides-reset-yes", `<path d="M2.5 6.25L5 8.75L9.5 3.5" ${sw(SLANT)}/>`, "Reset all guides", () => {
       for (const key of Object.keys(G.DEFAULTS)) if (key.startsWith("gd_")) this.S[key] = structuredClone(G.DEFAULTS[key]);
       for (const ring of this.S.rings) ring.guide = G.RING_BASE.guide;       // the rings' own colours too: by their place again
+      for (const w of G.windows_of(this.S)) w.guide = G.WINDOW_BASE.guide;      // and the windows'
+      ask(false);
       this.sync_rows();
       this.render();
-    } });
-    list.append(...this.guide_rows.map((r) => r.el), el("div", { className: "guidefoot" }, reset));
+      reset.focus();
+    });
+    const question = el("span", { className: "ask", hidden: true }, el("span", { textContent: "Reset all guides?" }), el("span", { className: "answers" }, no, yes));
+    question.onkeydown = (e) => { if (e.key === "Escape") { e.stopPropagation(); ask(false); reset.focus(); } };
+    const last = this.guide_rows[0].el, box_ = last.querySelector(".numbox");
+    this.name_opens(last.querySelector("label"), this.guide_rows[0].row);      // its slider is in its popup (R15 form B, #271)
+    const cell = el("span", { className: "numcell" });
+    box_.replaceWith(cell);
+    cell.append(box_);
+    last.classList.add("guidelast", "popfoot");
+    last.append(el("span", { className: "resetall" }, reset), question);
+    list.append(last);
     const box = el("div", { className: "guides" }, this.guides_tick, more, list);
     box.onkeydown = (e) => { if (e.key === "Escape" && !list.hidden) { open(false); more.focus(); } };
     return box;
@@ -1435,7 +1648,7 @@ class DialTool {
       this.render();
     } });
     list.append(head("Light · degrees"), ...light.map((r) => r.el), head("Over the plate · mm"), ...heights.map((r) => r.el),
-      head("Under the plate · mm"), ...under.map((r) => r.el), el("div", { className: "guidefoot" }, reset));
+      head("Under the plate · mm"), ...under.map((r) => r.el), el("div", { className: "guidefoot popfoot" }, reset));
     const box = el("div", { className: "shadows" }, this.shadows_tick, more, list);
     box.onkeydown = (e) => { if (e.key === "Escape" && !list.hidden) { open(false); more.focus(); } };
     return box;
@@ -1483,8 +1696,15 @@ class DialTool {
     const height = { hour: S.sh_hour, minute: S.sh_minute, second: S.sh_second };
     const nodes = items.map((_, i) => this.slots[i].node);
     const hands = items.map((item, i) => ({ item, i })).filter((x) => x.item.role === "hand").map((x) => ({ ...x, z: height[x.item.name] ?? 0, d: this.slots[x.i].d }));
-    const cap_r = S.ha_on && S.ha_cap > 0 ? S.ha_cap / 2 : 0;
+    const cap_r = G.cap_shows(S) ? S.ha_cap / 2 : 0;
     const top = Math.max(S.sh_cap, ...hands.map((h) => h.z));
+    // what a part's shadow does to the surface under it (Okay, 16 Oct 2026, #295: "shadow of transparent items are
+    // extreme. Realistic color shadows maybe?"): the shadow multiplies the surface, channel by channel, by
+    // 1 − dark × (1 − T), where T is the light that gets through the part: (1 − α)(1 + α × its colour). An opaque part
+    // lets none through, whatever its colour: the shadow it always cast. A see-through one casts less, and in its colour.
+    const dark = clamp(S.sh_dark, 0, 100) / 100;
+    const tint = (c = [0, 0, 0, 1]) => { const a = clamp(c[3] ?? 1, 0, 1); return `rgb(${[0, 1, 2].map((k) => Math.round(255 * (1 - dark * (1 - (1 - a) * (1 + a * c[k]))))).join(", ")})`; };
+    hands.sort((p, q) => (p.item.fill?.[3] ?? 1) - (q.item.fill?.[3] ?? 1));      // see-through first, so a solid part's shadow covers theirs where they cross: never darker twice
 
     // one surface: its group goes just before `before` (a node, or null for the end), clipped to its own outline
     const surface = (name, before, outline, from_z) => {
@@ -1492,19 +1712,20 @@ class DialTool {
       clip.id = "shadow-clip-" + name;
       outline.forEach(([d, turn], k) => { const p = part(`${name}/clip/${k}`, "path", clip); set(p, "d", d); set(p, "transform", turn ? `rotate(${f(-turn)})` : ""); });
       set(g, "clip-path", `url(#${clip.id})`);
-      set(g, "opacity", String(clamp(S.sh_dark, 0, 100) / 100));
-      set(g, "fill", "#000");
+      g.removeAttribute("opacity"); g.removeAttribute("fill");      // each shadow its own tint (#295), multiplied onto the surface
+      set(g, "style", "mix-blend-mode: multiply");
       set(g, "pointer-events", "none");
       if (S.sh_blur) set(g, "filter", "url(#shadow-soft)"); else g.removeAttribute("filter");
       if (g.nextSibling !== before) this.dial.insertBefore(g, before);
       // what falls on it: every hand higher than it, then the pipes' band up to the cap's top
       let k = 0;
-      const cast = (d, turn, dz) => {
+      const cast = (d, turn, dz, colour) => {
         const p = part(`${name}/cast/${k++}`, "path", g), [x, y] = away(dz);
         set(p, "d", d);
+        set(p, "fill", tint(colour));
         set(p, "transform", `translate(${f(x)} ${f(y)})` + (turn ? ` rotate(${f(-turn)})` : ""));
       };
-      for (const h of hands) if (h.z > from_z) cast(h.d, h.item.angle, h.z - from_z);
+      for (const h of hands) if (h.z > from_z) cast(h.d, h.item.angle, h.z - from_z, h.item.fill);
       if (cap_r && top > from_z) {
         // the pipes stand from the plate's face (0) to the cap's top: on a surface under the plate their band starts
         // where the face's height lands, not at the centre
@@ -1514,6 +1735,7 @@ class DialTool {
         for (const d of [ring(x0, y0), ring(x, y), `M${f(x0 + nx)} ${f(y0 + ny)}L${f(x + nx)} ${f(y + ny)}L${f(x - nx)} ${f(y - ny)}L${f(x0 - nx)} ${f(y0 - ny)}Z`]) {
           const p = part(`${name}/cast/${k++}`, "path", g);
           set(p, "d", d);
+          set(p, "fill", tint(S.c_cap));
           set(p, "transform", "");
         }
       }
@@ -1525,7 +1747,7 @@ class DialTool {
     const discs = items.map((x, i) => ({ x, i })).filter(({ x }) => x.role === "date disc");
     if (discs.length && plate_at >= 0) {
       const s = surface("discs", nodes[plate_at], discs.map(({ i }) => [this.slots[i].d, 0]), -S.sh_disc);
-      s.cast(this.slots[plate_at].d, 0, S.sh_disc);
+      s.cast(this.slots[plate_at].d, 0, S.sh_disc, S.c_plate);
     }
     // the plate's face, with everything printed on it: drawn after the last thing before the hands
     if (plate_at >= 0 && hands.length) {
@@ -1533,7 +1755,8 @@ class DialTool {
       surface("plate", first >= 0 ? nodes[first] : null, [[this.slots[plate_at].d, 0]], 0);
     }
     // each hand catches the hands above it
-    for (const h of hands) if (hands.some((o) => o.z > h.z) || (cap_r && top > h.z)) surface("hand-" + h.item.name, nodes[h.i + 1] || null, [[h.d, h.item.angle]], h.z);
+    const after = (i) => { let n = i + 1; while (items[n]?.role === "mark" && items[n].name === items[i].name) n++; return n; };      // past a disc's painted mark, which catches the shadow too (#300)
+    for (const h of hands) if (hands.some((o) => o.z > h.z) || (cap_r && top > h.z)) surface("hand-" + h.item.name, nodes[after(h.i)] || null, [[h.d, h.item.angle]], h.z);
     finish();
   }
 
@@ -1559,30 +1782,49 @@ class DialTool {
       this.guide_rings.replaceChildren(...this.guide_ring_lines.map((d) => d.line));
     }
     this.guide_ring_lines.forEach((d, i) => { d.refresh(); d.line.classList.toggle("selected", i === S.ui_ring); });
-    // the guides added by hand: name · its measures · remove, then its colours
+    // which windows show theirs, and a line per window that is on (#271)
+    const which_w = S.gd_wins ? 0 : S.gd_wsel ? 1 : 2;
+    [...this.guide_which_w.children].forEach((b, n) => { b.classList.toggle("on", n === which_w); b.setAttribute("aria-checked", String(n === which_w)); });
+    const shown = G.windows_of(S).map((w, i) => (w.on ? i : -1)).filter((i) => i >= 0), wins = JSON.stringify(shown.map((i) => [i, G.window_place(G.windows_of(S)[i])]));
+    if (this.guide_windows.dataset.wins !== wins) {
+      this.guide_windows.dataset.wins = wins;
+      this.guide_window_lines = shown.map((i) => {
+        const d = this.guide_dots(`Window at ${G.window_place(G.windows_of(this.S)[i])}`, () => G.window_guide(this.S, i), (k) => { G.windows_of(this.S)[i].guide = k === null ? -2 : k; });
+        d.line.classList.add("ring");
+        d.index = i;
+        return d;
+      });
+      this.guide_windows.replaceChildren(...this.guide_window_lines.map((d) => d.line));
+    }
+    this.guide_windows_head.hidden = this.guide_windows.hidden = !shown.length;      // no window on: nothing to say (R16)
+    this.guide_window_lines.forEach((d) => { d.refresh(); d.line.classList.toggle("selected", d.index === S.ui_window); });
+    // the guides added by hand, one line each (#305): its name and measures (quiet numbers to type in), its colours,
+    // and in the none sign's place a cross that removes it
     const more = JSON.stringify((S.gd_more || []).map((g) => g.kind));
     if (this.guide_more.dataset.more !== more) {
       this.guide_more.dataset.more = more;
       this.guide_more_lines = (S.gd_more || []).map((g, i) => {
         const kind = G.GUIDE_MORE[g.kind], d = this.guide_dots(kind[0].toUpperCase() + kind.slice(1), () => (this.S.gd_more[i].k >= 0 ? this.S.gd_more[i].k : null), (k) => { this.S.gd_more[i].k = k === null ? -2 : k; });
-        const field = (key, word, length) => {
-          const input = el("input", { type: "text", inputMode: "decimal", id: `guide-more-${i}-${key}`, title: word, ariaLabel: word });
+        const field = (key, word, length) => {      // the angle: 45°; the radius: r 8
+          const input = el("input", { type: "text", inputMode: "decimal", id: `guide-more-${i}-${key}`, title: key === "a" ? "Angle, degrees" : "Radius", ariaLabel: key === "a" ? "Angle" : "Radius" });
           input.onchange = () => { const now = this.S.gd_more[i][key] * (length ? this.unit()[2] : 1); this.S.gd_more[i][key] = +(parse_number(input.value, now) / (length ? this.unit()[2] : 1)).toFixed(4); this.sync_rows(); this.render(); };
-          return { key, length, input, el: el("label", { className: "guidefield" }, el("span", { textContent: word }), input) };
+          input.oninput = () => { input.style.width = `${Math.max(1, input.value.length)}ch`; };      // as wide as it is
+          const words = key === "a" ? [input, el("span", { textContent: word })] : [el("span", { textContent: word }), input];
+          return { key, length, input, el: el("label", { className: "guidefield" }, ...words) };
         };
         const fields = [...(kind !== "circle" ? [field("a", "°", false)] : []), ...(kind !== "line" ? [field("r", "r", true)] : [])];
-        const gone = el("button", { type: "button", className: "sign", id: `guide-more-${i}-remove`, title: "Remove this guide", ariaLabel: "Remove this guide", onclick: () => { this.S.gd_more = this.S.gd_more.filter((_, n) => n !== i); this.sync_rows(); this.render(); } });
-        gone.innerHTML = icon(SIGNS.cross);
-        d.label.replaceChildren(d.label.textContent, ...fields.map((f) => f.el));
+        const gone = el("button", { type: "button", className: "remove", id: `guide-more-${i}-remove`, title: "Remove this guide", ariaLabel: "Remove this guide", onclick: () => { this.S.gd_more = this.S.gd_more.filter((_, n) => n !== i); this.sync_rows(); this.render(); } });
+        gone.innerHTML = cross_dot;
+        d.label.replaceChildren(el("span", { className: "word", textContent: d.label.textContent }), ...fields.map((f) => f.el));
         d.line.classList.add("added");
-        d.line.append(gone);
+        d.line.querySelector(".dots .none").replaceWith(gone);
         return { ...d, fields };
       });
       this.guide_more.replaceChildren(...this.guide_more_lines.map((d) => d.line));
     }
     this.guide_more_lines.forEach((d, i) => {
       d.refresh();
-      for (const f of d.fields) if (document.activeElement !== f.input) f.input.value = f.length ? String(parseFloat(this.in_unit(S.gd_more[i][f.key], 2))) : String(+(+S.gd_more[i][f.key]).toFixed(1));
+      for (const f of d.fields) if (document.activeElement !== f.input) { f.input.value = f.length ? String(parseFloat(this.in_unit(S.gd_more[i][f.key], 2))) : String(+(+S.gd_more[i][f.key]).toFixed(1)); f.input.oninput(); }
     });
     for (const r of this.guide_rows) r.refresh(S);
   }
@@ -1621,10 +1863,13 @@ class DialTool {
     this.form.scrollTop = this.scrolls[name] || 0;
   }
 
-  /** folded groups are remembered by this browser (a convenience, not part of the dial). */
+  /** folded groups are remembered by this browser (a convenience, not part of the dial). A pane this browser has never
+   *  folded or opened starts as its row says (`folded`: a first visit, #270), unless "*" is kept: one fold for every
+   *  such pane (the tests keep "*": false, a visitor who has opened them all). */
   is_folded(r) {
+    if (r.row.headless) return false;              // a pane with no heading has nothing to fold it (the hand's, #261)
     if (!this.folds) { try { this.folds = JSON.parse(localStorage.getItem("dial-tool-folds")) || {}; } catch (e) { this.folds = {}; } }
-    return this.folds[r.fold] ?? Boolean(r.row.folded);
+    return this.folds[r.fold] ?? this.folds["*"] ?? Boolean(r.row.folded);
   }
   fold(r, folded) {
     this.is_folded(r);
@@ -1664,7 +1909,7 @@ class DialTool {
     this.sync_shadows();
     this.sync_ring_summaries();
     paint(this.backdrop_dot, this.S.c_backdrop);
-    this.unit_button.textContent = this.unit()[0];
+    if (this.unit_button.textContent !== this.unit()[0]) this.size_unit();
     this.unit_items.forEach((b, i) => { b.classList.toggle("on", i === this.S.ui_unit); b.setAttribute("aria-checked", String(i === this.S.ui_unit)); });
     for (const r of this.rows) {
       const T = this.target(r.row.scope);
@@ -1706,11 +1951,23 @@ class DialTool {
     return parts.filter(Boolean);
   }
 
-  /** a summary's parts in a line, a dot between them: words as words, a colour as a tiny swatch. */
+  /** this dial's colours: every part that has one, each colour once — in the order the Colours pane lists them (rings
+   *  and their sectors, hands, cap, windows), or with the page: plate, backdrop, cap, then the rest (the colour
+   *  pop-out's "On this dial", in its own order). */
+  dial_colours(page = true) {
+    const S = this.S, rings = S.rings.flatMap((r) => [r.c, ...Object.values(r.cs || {})]), hands = G.HANDS.map((h) => S["ha_" + h].c), windows = G.windows_of(S).filter((w) => w.on).map((w) => w.ink);
+    const all = page ? [S.c_plate, S.c_backdrop, S.c_cap, ...rings, ...hands, ...windows] : [...rings, ...hands, S.c_cap, ...windows];      // the pop-out's order as it was (4.38)
+    const once = new Map();
+    for (const c of all) if (Array.isArray(c)) { const hex = to_hex(c).toUpperCase(); if (!once.has(hex)) once.set(hex, c); }
+    return [...once.values()];
+  }
+
+  /** a summary's parts in a line, a dot between them: words as words, a colour as a tiny swatch (colours side by side
+   *  with a space between, no dot). */
   show_summary(box, parts) {
     box.replaceChildren();
     parts.forEach((part, i) => {
-      if (i) box.append(" · ");
+      if (i) box.append(typeof part === "string" || typeof parts[i - 1] === "string" ? " · " : " ");
       if (typeof part === "string") return box.append(part);
       const dot = el("i", { className: "dot tiny", title: to_hex(part.c).toUpperCase() });
       paint(dot, part.c);
@@ -1724,7 +1981,7 @@ class DialTool {
     const tied = () => { if (row.tie) out.el.classList.add("tied"); };      // tie: this row belongs to the one above it, no line between them
     const out = { row, el: wrap, refresh: () => {} };
     const set = (v) => this.set_value(row.scope, row.key, v);
-    const id = `${row.scope}-${row.key}-${row.text || row.name}`.replace(/[^A-Za-z0-9]+/g, "-");
+    const id = row.id || `${row.scope}-${row.key}-${row.text || row.name}`.replace(/[^A-Za-z0-9]+/g, "-");      // id: when two rows would share one
     const active = (e) => document.activeElement === e;
 
     if (row.kind === "hdr") {                      // a heading: click it to fold or unfold its group
@@ -1735,7 +1992,8 @@ class DialTool {
       out.summary = el("span", { className: "summary quiet" });
       out.button = el("button", { type: "button", className: "fold", title: "Show or hide this pane", onclick: () => this.fold(out, !this.is_folded(out)) }, out.eye, title, out.summary);
       out.body = el("div", { className: "body" });
-      out.el = el("section", { className: "pane" }, out.button, out.body);
+      out.el = el("section", { className: row.headless ? "pane headless" : "pane" }, out.button, out.body);      // ("plain" is a button's class)
+      if (row.headless) out.button.hidden = true;
       if (row.tools) {                             // tools on the heading line, at its right; folded, the summary stands there instead
         out.el.classList.add("tooled");
         out.button.after(this["head_" + row.tools]());
@@ -1754,18 +2012,25 @@ class DialTool {
       };
       // a length is kept in mm and shown in the chosen unit: per = how many of that unit make a mm, places = decimals shown
       const length = is_length(row);
-      const per = () => (length ? this.unit()[2] : 1), places = () => decimals(row.step) + (length ? this.unit()[3] : 0);
+      const per = () => (length ? this.unit()[2] : 1), places = () => Math.max(0, decimals(row.step) + (length ? this.unit()[3] : 0));
       const shown = (v) => (v * per()).toFixed(places());
       const now = () => { const T = this.target(row.scope); return T[row.key] ?? (row.or ? row.or(T) : 0); };      // or: what an unset number is (a window's tracking: the numerals')
       let typing = false;                          // the field follows every change, except while you type in it
-      slider.oninput = () => commit(+slider.value);
+      slider.oninput = () => { if (row.inpop || row.scope === "nudge") this.guides_live(row.scope !== "nudge"); commit(+slider.value); };
       field.oninput = () => { typing = true; };
       field.onblur = () => { typing = false; out.refresh(this.target(row.scope)); };
       field.onchange = () => { typing = false; commit(parse_number(field.value, now() * per()) / per()); out.refresh(this.target(row.scope)); };
       field.onkeydown = (e) => {
         if (e.key === "ArrowUp" || e.key === "ArrowDown") { e.preventDefault(); commit(now() + (e.key === "ArrowUp" ? 1 : -1) * row.step * (e.shiftKey ? 10 : 1)); }
       };
-      const step = (dir) => el("button", { type: "button", className: "step", textContent: dir > 0 ? "+" : "−", tabIndex: -1, onclick: () => commit(now() + dir * row.step) });
+      // − and +: as typed signs in a full row; in the popup the thick ones (BIG); beside a quiet number the tiny ones
+      const step = (dir) => {
+        const b = el("button", { type: "button", className: "step", tabIndex: -1, onclick: () => commit(now() + dir * row.step) });
+        const sign = (row.inpop ? BIG : row.side ? TINY : null)?.[dir > 0 ? "plus" : "minus"];
+        if (sign) { b.innerHTML = sign; b.ariaLabel = dir > 0 ? "Plus" : "Minus"; } else b.textContent = dir > 0 ? "+" : "−";
+        if (row.inpop) b.id = "value-pop-" + (dir > 0 ? "plus" : "minus");
+        return b;
+      };
       const label = el("label", { htmlFor: id, textContent: row.text });
       if (row.short) { label.textContent = ""; label.title = row.text; label.append(el("span", { className: "whole", textContent: row.text }), el("span", { className: "short", textContent: row.short })); }      // two wordings; the stylesheet shows the one there is room for
       let lead = label, menu = null;
@@ -1780,13 +2045,23 @@ class DialTool {
       }
       if (row.button) { slider.ariaLabel = field.ariaLabel = row.text; field.title = row.text + " · " + field.title; }
       if (row.bare) { label.textContent = ""; label.className = "blank"; slider.ariaLabel = field.ariaLabel = row.text; field.title = row.text + " · " + field.title; }
+      if (row.inpop) slider.ariaLabel = field.ariaLabel = row.text;      // its name is not shown in the popup (4.45.2)
+      if (!row.inpop && !row.side && !row.bare && !row.button) this.name_opens(label, row);      // form A: its name opens the popup (#249)
       if (row.side) {
         // beside a hand's box there is little room (Okay, 13 Oct 2026): the number with a tiny plus over a tiny minus
         // joined to it. A press on the number and the box grows towards the slider, over it, into a large field
         // between a large minus and plus; it goes back when one presses elsewhere, or Enter or Escape.
-        const box = el("span", { className: "numbox" }, field, step(-1), step(1));
-        for (const b of box.querySelectorAll(".step")) b.onmousedown = (e) => e.preventDefault();      // a press on minus or plus leaves the field as it is: closed stays closed, open stays open
+        // the quiet look (Okay's notes, p. 18, #250, beta 4.45.1; R15 form A): the number and a compact ± beside it, no
+        // box, grey until the number differs from how the dial opened; a press on the number opens its popup (#249). With
+        // the keyboard (Tab) the number still takes typing and the arrows. (4.25 to 4.45: a box that grew over the slider)
+        const box = el("span", { className: "numbox" }, field, el("span", { className: "pm" }, step(-1), step(1)));
+        for (const b of box.querySelectorAll(".step")) b.onmousedown = (e) => e.preventDefault();      // a press on minus or plus leaves the focus where it is
         field.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === "Escape") field.blur(); });
+        if (!row.inpop) {
+          field.onmousedown = (e) => e.preventDefault();      // a press opens the popup, whose own field takes the typing
+          field.onclick = () => this.value_pop_open(field, row);
+        }
+        out.quiet = box;
         wrap.append(lead, slider, box);
       } else wrap.append(lead, slider, field, el("span", { className: "steps" }, step(-1), step(1)));
       out.refresh = (T) => {
@@ -1797,6 +2072,14 @@ class DialTool {
         filled(slider);
         if (!typing) field.value = shown(v);
         if (menu) { menu.value = T[row.menu.key] ?? 0; label.textContent = label_of(row, T); }
+        if (row.say) {                             // a name that follows another setting (a disc's Hole or Mark, #300)
+          const [whole, short] = row.say(T);
+          if (row.short) { label.querySelector(".whole").textContent = whole; label.querySelector(".short").textContent = short; label.title = whole; } else label.textContent = whole;
+        }
+        if (out.quiet) {      // grey until it differs from how the dial opened (#250)
+          const was = row.scope === "hand" ? this.opened["ha_" + G.HANDS[this.S.ui_hand]] : this.opened;
+          out.quiet.classList.toggle("changed", Math.abs(v - (was?.[row.key] ?? v)) > 1e-9);
+        }
       };
     }
 
@@ -1809,7 +2092,7 @@ class DialTool {
     }
 
     if (row.kind === "pick") {                     // a choice as pictures: one tile per item, on the columns
-      const group = el("span", { className: "picks", role: "radiogroup", ariaLabel: row.text });
+      const group = el("span", { className: row.small ? "picks small" : row.thumbs ? "picks thumbs" : "picks", role: "radiogroup", ariaLabel: row.text });
       row.items.forEach((name, i) => {
         if (row.skip && row.skip.includes(i)) return;      // an item kept in the list for its place (R9) but not offered here
         const tile = el("button", { type: "button", className: "pickt", id: `${id}-${i}`, title: name, onclick: () => set(i) });
@@ -1819,29 +2102,18 @@ class DialTool {
         group.append(tile);
       });
       const label = el("label", { textContent: row.text, className: row.label ? "strong" : "" });
-      // line: the tiles alone on one line, without their label; the line shows the chosen one and the first few others,
-      // a "more" tile opens all of them, and a dashed plus stands for a shape of one's own (an SVG file: not built yet)
-      let more = null;
-      if (row.line) {
-        more = el("button", { type: "button", className: "pickt more", id: id + "-more", title: "All the shapes" });
-        more.innerHTML = icon(`<path d="M7.75 11L13.75 17L19.75 11" ${sw(SLANT)}/>`, 27) + "<span>more</span>";
-        more.setAttribute("aria-expanded", "false");
-        more.onclick = () => { const open = !group.classList.contains("open"); group.classList.toggle("open", open); more.setAttribute("aria-expanded", String(open)); more.lastChild.textContent = open ? "less" : "more"; };
+      if (row.thumbs) {                            // thumbs: pictures alone, a row of their own without a name (a hand's shapes, 4.46.3), and the dashed SVG tile last — a shape of one's own, not built yet
         const own = el("button", { type: "button", className: "pickt own", id: id + "-own", title: "A shape of your own, from an SVG file: not built yet" });
-        own.innerHTML = icon(`<path d="M13.75 6.25V21.25M6.25 13.75H21.25"/>`, 27) + "<span>SVG</span>";
+        own.innerHTML = icon(SIGNS.plus);
         own.setAttribute("aria-disabled", "true");
-        group.classList.add("line");
-        group.append(more, own);
+        group.append(own);
+        wrap.classList.add("thumbs");
         wrap.append(group);
       } else wrap.append(label, group);
       out.refresh = (T) => {
         if (row.label) label.textContent = row.label(T);
         const tiles = [...group.querySelectorAll('[role="radio"]')];
         tiles.forEach((b, i) => { b.classList.toggle("on", i === T[row.key]); b.setAttribute("aria-checked", String(i === T[row.key])); });
-        if (row.line) for (const [name, n] of [["in3", 3], ["in4", 4]]) {      // which tiles the closed line shows: the first n, the last of them giving its place to the chosen one
-          const chosen = T[row.key] || 0, shown = chosen < n ? tiles.slice(0, n) : [...tiles.slice(0, n - 1), tiles[chosen]];
-          tiles.forEach((b) => b.classList.toggle(name, shown.includes(b)));
-        }
       };
     }
 
@@ -1850,8 +2122,9 @@ class DialTool {
       const group = el("span", { className: row.many ? "segs many" : "segs" });
       const buttons = row.items.map((name, i) => el("button", { type: "button", id: `${id}-${i}`, textContent: name, onclick: () => { set(i); if (row.key.startsWith("ui_")) this.sync_rows(); } }));
       group.append(...(row.order || buttons.map((b, i) => i)).map((i) => buttons[i]));
-      wrap.append(el("label", { textContent: row.text }), group);
-      out.refresh = (T) => buttons.forEach((b, i) => b.classList.toggle("on", i === T[row.key]));
+      const name = el("label", { textContent: row.text });
+      wrap.append(name, group);
+      out.refresh = (T) => { buttons.forEach((b, i) => b.classList.toggle("on", i === T[row.key])); if (row.say) name.textContent = label_of(row, T); };
     }
 
     if (row.kind === "chk") {
@@ -1875,7 +2148,7 @@ class DialTool {
       out.refresh = (T) => { if (!active(field)) field.value = T[row.key]; };
     }
 
-    if (row.kind === "custom") this["row_" + row.name](wrap, out);
+    if (row.kind === "custom") this["row_" + row.name](wrap, out, row);
     tied();
     return out;
   }
@@ -2042,9 +2315,7 @@ class DialTool {
     P.title.textContent = P.at.label();
     const put = (c) => P.pick(c);
     const chip = (c) => { const b = el("button", { type: "button", title: c, ariaLabel: c, onclick: () => put(c) }); b.style.background = c; b.dataset.colour = c; return b; };
-    // this dial's colours: every part that has one, each colour once
-    const all = [S.c_plate, S.c_backdrop, S.c_cap, ...S.rings.flatMap((r) => [r.c, ...Object.values(r.cs || {})]), ...G.HANDS.map((h) => S["ha_" + h].c), ...G.windows_of(S).filter((w) => w.on).map((w) => w.ink)];
-    const used = [...new Set(all.map((c) => to_hex(c).toUpperCase()))];
+    const used = this.dial_colours().map((c) => to_hex(c).toUpperCase());      // this dial's colours, each once
     if (P.used !== used.join()) { P.used = used.join(); P.used_chips.replaceChildren(...used.map(chip)); }
     // the palette, then its + (or −, when the colour in hand is already in it)
     const kept = this.palette.includes(value), list = this.palette.join() + kept;
@@ -2165,7 +2436,33 @@ class DialTool {
     wrap.className = "colourlist";
     const lines = el("div"), same = el("button", { type: "button", className: "btn", id: "sectors-same", textContent: "All as the ring", title: "Every sector in the ring’s colour again", onclick: () => this.set_value("ring", "cs", {}) });
     wrap.append(lines, el("div", { className: "row" }, el("span"), el("span", { className: "tools" }, same)));
-    out.refresh = () => this.swatch_lines(lines, () => [{ text: "Sectors", colours: this.sector_colours(this.S.ui_ring) }]);
+    out.refresh = () => this.swatch_lines(lines, () => {
+      const i = this.S.ui_ring, at = G.positions_of(this.S.rings[i]), out = [{ text: "Sectors", colours: this.sector_colours(i) }];
+      if (at.length % 2 === 0) out.push({ text: "Alternate", colours: this.alternate_colours(i) });
+      return out;
+    });
+  }
+
+  /** a band with an even number of sectors: two colours that alternate round it (Okay, 15 Oct 2026, 11:13: "Segmented
+   *  stuff coloring, if even; chose two color to alternate"; 11:32: "Good call on alternatings"). The first is the
+   *  ring's own colour and takes sectors 1, 3, 5…; the second takes 2, 4, 6…. Kept in the keys a band already has
+   *  (`c`, `cs`), so a link carries it as before. Choosing either puts the whole band in the pattern: sectors 1, 3, 5…
+   *  lose a colour of their own. */
+  alternate_colours(i) {
+    const ring = this.S.rings[i], name = ring.name || G.kind_of(ring);
+    const pattern = (R, second) => {
+      const cs = { ...R.cs };
+      G.positions_of(R).forEach((at, n) => { if (n % 2) cs[at] = second; else delete cs[at]; });
+      R.cs = cs;
+    };
+    return [
+      { id: `ring-${i}-alternate-1`, title: `${name} · sectors 1, 3, 5…`, alpha: true,
+        read: () => (this.S.rings[i] || {}).c,
+        write: (value) => { const R = this.S.rings[i], at = G.positions_of(R); R.c = value; pattern(R, G.sector_colour(R, at[1])); this.changed(true); } },
+      { id: `ring-${i}-alternate-2`, title: `${name} · sectors 2, 4, 6…`, alpha: true,
+        read: () => { const R = this.S.rings[i]; return R ? G.sector_colour(R, G.positions_of(R)[1]) : null; },
+        write: (value) => { pattern(this.S.rings[i], value); this.changed(true); } },
+    ];
   }
 
   /** Windows, on top: four cards, 12 · 3 · 6 · 9, starting on the second column. A card is a small dial with its window
@@ -2209,19 +2506,21 @@ class DialTool {
   /** a window's shape as picture tiles: rectangle · circle · polygon · arch · arc. What is stored is the place in
    *  G.WINDOW_SHAPES; 0, "as its kind", shows as the shape that kind has had all along. */
   row_window_shape(wrap, out) {
+    // the shapes as buttons without words, stretched along the Shape heading's line as Position's are along theirs
+    // (#265, 4.46.1; Okay on the mock-ups: "stretch shapes like position, top-right"). The row goes on the heading line (head)
     wrap.className = "row pick";
-    const group = el("span", { className: "picks five", role: "radiogroup", ariaLabel: "Shape" });
+    const group = el("span", { className: "btnline shapes", role: "radiogroup", ariaLabel: "Shape" });
     const names = G.WINDOW_SHAPES.slice(1);
     names.forEach((name, i) => {
-      const tile = el("button", { type: "button", className: "pickt", id: `window-shape-${name}`, title: name, onclick: () => this.set_value("window", "shape", i + 1) });
+      const tile = el("button", { type: "button", id: `window-shape-${name}`, title: name, ariaLabel: name, onclick: () => this.set_value("window", "shape", i + 1) });
       tile.setAttribute("role", "radio");
-      tile.innerHTML = pic(PICS.hole[i]);
-      tile.append(el("span", { textContent: name }));
+      tile.innerHTML = icon(PICS.hole[i], 26, 18);
       group.append(tile);
     });
-    wrap.append(group);                            // no label: the pane's heading says Shape, and five tiles need all six columns for their words
+    wrap.append(el("span"), group);
     out.refresh = (T) => [...group.children].forEach((b, i) => { const on = names[i] === G.window_shape(T); b.classList.toggle("on", on); b.setAttribute("aria-checked", String(on)); });
   }
+
 
   /** Hands, on top and always in view: Hour · Minute · Seconds, as tabs for the panes below. */
   row_hand_tabs(wrap, out) {
@@ -2246,6 +2545,17 @@ class DialTool {
     motion.onchange = () => this.set_value("global", "ha_beat", +motion.value);
     wrap.append(el("h2", { textContent: "All hands" }), el("label", { className: "check", htmlFor: tick.id }, tick, " Show hands"), motion);
     out.refresh = (S) => { tick.checked = Boolean(S.ha_on); motion.value = S.ha_beat; };
+  }
+
+  /** Reset: the opener back, every setting — the guide's First dial (opener.js). It replaces the whole dial, so it
+   *  stands last in the Dial tab, apart from what is changed often, with its warning under it; undo brings the dial back. */
+  row_reset_go(wrap) {                             // the button, on the pane's heading line (head)
+    const go = el("button", { type: "button", className: "btn reset", id: "reset", textContent: "Reset to the First dial", title: "Replaces the whole dial with the guide’s First dial", onclick: () => { this.reopen({ ...structuredClone(OPENER), ui_section: this.S.ui_section }); tool.log("reset to the opener: the First dial"); } });
+    go.setAttribute("aria-describedby", "reset-warning");
+    wrap.append(go);
+  }
+  row_reset(wrap) {                                // its warning, under the heading line
+    wrap.append(el("p", { className: "warn", id: "reset-warning", textContent: "Replaces everything on this dial — size, rings, hands, windows, colours — with the guide’s First dial. Undo brings yours back." }));
   }
 
   /** the plate's background: only the button for now (Okay, 12 Oct 2026: "no background image functionality now. Just the button"). */
@@ -2351,11 +2661,45 @@ class DialTool {
       if (!press.moved && Math.abs(d) < 4) return;
       if (!press.moved) { press.moved = true; this.value_pop_close(); this.tag_hide(); b.classList.add("dragging"); }
       const r = row(), step = r.step * (e.shiftKey ? 0.1 : 1);
+      this.guides_live(r.scope !== "nudge");
       this.set_value(r.scope, r.key, +Math.max(press.v + Math.round(d / 2) * step, r.lo).toFixed(6));       // two screen points a step
     };
     b.onpointerup = b.onpointercancel = () => { const was = press; press = null; b.classList.remove("dragging"); if (was && !was.moved) this.value_pop_open(b, row()); };
     b.onclick = (e) => { if (!e.detail && !this.value_pop) this.value_pop_open(b, row()); };      // the keyboard (Enter, Space) opens it too
     return { el: b, refresh };
+  }
+
+  /** a number's name as the way into its popup (#249, #170): a press that doesn't move opens it; a press moved
+   *  sideways changes the value, two screen points a step (Shift: ten times finer), as a value button does. The name
+   *  keeps its field as its label for a screen reader, but a press on it no longer goes to the field. */
+  name_opens(label, row) {
+    label.classList.add("popname");
+    label.title = `${row.text} — press for its slider, drag sideways to change it`;
+    let press = null;
+    const now = () => { const T = this.target(row.scope); return T[row.key] ?? (row.or ? row.or(T) : 0); };
+    label.onclick = (e) => e.preventDefault();
+    label.onpointerdown = (e) => { press = { x: e.clientX, v: now(), moved: false }; label.setPointerCapture(e.pointerId); };
+    label.onpointermove = (e) => {
+      if (!press) return;
+      const d = e.clientX - press.x;
+      if (!press.moved && Math.abs(d) < 4) return;
+      if (!press.moved) { press.moved = true; this.value_pop_close(); label.classList.add("dragging"); }
+      const v = press.v + Math.round(d / 2) * row.step * (e.shiftKey ? 0.1 : 1);
+      this.guides_live(row.scope !== "nudge");
+      this.set_value(row.scope, row.key, row.whole ? clamp(Math.round(v), row.lo, row.hi) : +Math.max(v, row.lo).toFixed(6));
+    };
+    label.onpointerup = label.onpointercancel = () => { const was = press; press = null; label.classList.remove("dragging"); if (was && !was.moved) this.value_pop_open(label, row); };
+  }
+
+  /** the guides while a number is slid — the popup's slider, a name or a value button dragged — even with Guides off
+   *  (Okay, 16 Oct 2026, on 4.45: "activate guides on slide. Even if off"): as they are set, until a moment after the
+   *  last change (draw). A numeral being nudged hides them instead, whatever slides it (on = false; #252: "when a
+   *  numeral is being nudged hide all guides"). Call before the change, which draws. */
+  guides_live(on = true) {
+    this.guides_at = performance.now();
+    this.guides_on = on;
+    clearTimeout(this.guides_timer);
+    this.guides_timer = setTimeout(() => this.render(), HOLE_LIVE_MS + 50);
   }
 
   /** the tag: what a wordless button is, said under it while the pointer or the keyboard is on it. One for the whole
@@ -2380,26 +2724,24 @@ class DialTool {
     box.style.setProperty("--point", `${at.left + at.width / 2 - x}px`);
   }
 
-  /** a value button's pop-up is its tag, grown (Okay, 13 Oct 2026: "do it out of our tooltip. consistent width,
-   *  closed/open, height grows on click"): the same box under the button, the same width, now holding the number's
-   *  row — its name (for a numeral's radius with the menu beside it), the field ready to type in, − +. Enter,
-   *  Escape or a press outside closes it. */
+  /** the number popup (Okay's notes, p. 5 and 18, #249, beta 4.45; R15's popup): one for every number that has one —
+   *  a value button's (form C), a row's name (form A), a quiet row's (form B). The number's own row, laid out as the
+   *  popup: its name, the slider (its thumb a pill, a fifth larger), the value in a pill, round − and + under it; in a
+   *  2-point dark-grey frame on a ground darker than the pane's, its corners as round as its pills. Under what opened
+   *  it, centred; on a phone a sheet at the bottom, over the drawer, so the dial stays in view. Being the row itself,
+   *  it does all the row does (R15: typing past the slider's range widens it). Enter, Escape or a press outside closes
+   *  it. (Until 4.45: the value button's tag, grown into a small square — 4.12.) */
   value_pop_open(button, row) {
     if (this.value_pop && this.value_pop.button === button) return this.value_pop_close();
     this.value_pop_close();
-    const closed = this.tag && !this.tag.hidden ? this.tag.offsetHeight : 0;      // as high as the tag it grows from
     this.tag_hide();
-    const r = this.build_row(row), box = el("div", { className: "tag value valuepop", id: "value-pop" }, r.el);
+    const sheet = this.pop_is_sheet();
+    const r = this.build_row({ ...row, inpop: true, side: false }), box = el("div", { className: "numpop" + (sheet ? " sheet" : ""), id: "value-pop", role: "dialog", ariaLabel: row.text || "" }, r.el);
     document.body.append(box);
     button.setAttribute("aria-expanded", "true");
     this.value_pop = { button, box, r };
     r.refresh(this.target(row.scope));
-    this.tag_place(box, button);
-    if (box.animate && closed && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      box.classList.add("growing");
-      const grow = box.animate([{ height: `${closed}px` }, { height: `${box.offsetHeight}px` }], { duration: 120, easing: "ease-out" });
-      grow.onfinish = grow.oncancel = () => box.classList.remove("growing");
-    }
+    if (!sheet) this.tag_place(box, button);
     const field = box.querySelector('input[type="text"]');
     box.onkeydown = (e) => {
       if (!(e.key === "Escape" || (e.key === "Enter" && e.target === field))) return;
@@ -2407,7 +2749,9 @@ class DialTool {
       this.value_pop_close();                      // (what was typed is taken as the field goes)
       button.focus();
     };
-    field.focus(); field.select();
+    // the value ready to type over, for a mouse or the keys only: under a finger (a phone, an iPad) the keyboard comes
+    // only when the value is pressed (Okay, 16 Oct 2026, 4.46.1: "Value gets selected was the wrong choice, triggers the keypad on ipad")
+    if (!sheet && document.documentElement.dataset.press !== "touch") { field.focus(); field.select(); }
   }
   value_pop_close() {
     if (!this.value_pop) return;
@@ -2497,8 +2841,7 @@ class DialTool {
     if (!ring || ring.on === on) return;
     ring.on = on;
     this.static_dirty = true;
-    this.fill_ring_list();
-    this.sync_rows();
+    this.steady(() => { this.fill_ring_list(); this.sync_rows(); });
     this.render();
   }
 
@@ -2555,8 +2898,7 @@ class DialTool {
       rings.splice(to, 0, ring);
       this.S.ui_ring = to;
       this.static_dirty = true;
-      this.fill_ring_list();
-      this.sync_rows();
+      this.steady(() => { this.fill_ring_list(); this.sync_rows(); });
       this.render();
     };
     grip.onpointermove = move;
@@ -2569,10 +2911,74 @@ class DialTool {
     if (i === this.S.ui_ring && !refill) return;
     this.value_pop_close();                        // it was about the ring that was selected
     this.S.ui_ring = clamp(i, 0, this.S.rings.length - 1);
-    if (refill) this.fill_ring_list();
-    else { this.ring_rows().forEach((li, k) => li.classList.toggle("on", k === this.S.ui_ring)); this.place_ring_line(); }
-    this.sync_rows();
+    this.steady(() => {
+      if (refill) this.fill_ring_list();
+      else { this.ring_rows().forEach((li, k) => li.classList.toggle("on", k === this.S.ui_ring)); this.place_ring_line(); }
+      this.sync_rows();
+    });
     this.render();
+  }
+
+  /** keep what was pressed under the finger (Okay, 15 Oct 2026, 11:13: "Selecting reordering is impossible from
+   *  jumpiness"; 11:32, of the ways offered: "A and c together. Jumpiness is everywhere, not just on rings"). Safari,
+   *  on the iPad, has no scroll anchoring (caniuse, Oct 2026: no stable Safari nor iOS Safari has overflow-anchor), so
+   *  when rows show, hide or move above what was pressed — the ring line moving to the ring just chosen, a "more" that
+   *  opens — what is under the finger moves away. Here: a press in the rows (the pinned part or the scrolling form)
+   *  notes where the pressed thing stands on screen; until a moment after the finger lifts, every frame scrolls the
+   *  panel's scrolling parts, innermost first, so that it stands there again — as far as they can scroll (at the very
+   *  top of a list there is nothing to give). A press that moves, other than on a slider or a value button, is a
+   *  scroll or a drag: it lets go. Text fields are left alone (the iPad's keyboard moves the page itself). */
+  finger_anchor(panel) {
+    const SLOP = 8, AFTER_MS = 500;
+    let a = null;
+    const scrollers = (node) => {
+      const out = [];
+      for (let n = node.parentElement; n && n !== document.body; n = n.parentElement) {
+        const o = getComputedStyle(n).overflowY;
+        if ((o === "auto" || o === "scroll") && n.scrollHeight > n.clientHeight) out.push(n);
+      }
+      return out;
+    };
+    const frame = () => {
+      if (!a) return;
+      if (!a.down && performance.now() > a.until) { a = null; return; }
+      const el = a.el.isConnected ? a.el : a.ring != null ? this.ring_rows()[a.ring] : null;      // a ring's row is drawn again when it is chosen: the same place in the list
+      if (el) {
+        let d = el.getBoundingClientRect().top - a.y;
+        if (Math.abs(d) >= 1) for (const sc of scrollers(el)) {
+          const before = sc.scrollTop;
+          sc.scrollTop = before + d;
+          d -= sc.scrollTop - before;
+          if (Math.abs(d) < 1) break;
+        }
+      }
+      requestAnimationFrame(frame);
+    };
+    panel.addEventListener("pointerdown", (e) => {
+      const t = e.target;
+      if (!(t instanceof Element) || !t.closest(".form, .pinned") || t.closest("input[type=text], input:not([type]), textarea")) { a = null; return; }
+      const row = t.closest("li.ring"), el = row || t.closest("button, input, label, .valueb, [role=radio]") || t;
+      const going = !!a;
+      a = { el, y: el.getBoundingClientRect().top, ring: row ? this.ring_rows().indexOf(row) : null, down: true, x0: e.clientX, y0: e.clientY, until: 0, holds: !!t.closest("input[type=range], .valueb") };
+      if (!going) requestAnimationFrame(frame);
+    }, true);
+    panel.addEventListener("pointermove", (e) => {
+      if (a && a.down && !a.holds && Math.hypot(e.clientX - a.x0, e.clientY - a.y0) > SLOP) a = null;      // a scroll or a drag: not a press
+    }, true);
+    const up = () => { if (a) { a.down = false; a.until = performance.now() + AFTER_MS; } };
+    panel.addEventListener("pointerup", up, true);
+    panel.addEventListener("pointercancel", () => { a = null; }, true);
+    panel.addEventListener("wheel", () => { a = null; }, { passive: true, capture: true });
+  }
+
+  /** keep the panel's scrolling parts where they stand while the ring list and the rows are rebuilt (Okay, 15 Oct
+   *  2026, 11:13: "Menu jumps up down too much on ipad"). Rebuilding empties the list for a moment, so the form is
+   *  briefly shorter and its scroll is cut back, and Chrome's scroll anchoring moves it again when the rows of
+   *  another kind show: measured, 366 → 32 px on a selection. What is restored is clamped by the browser. */
+  steady(fn) {
+    const parts = [this.form, this.form && this.form.closest(".panel"), this.ring_list].filter(Boolean), at = parts.map((p) => p.scrollTop);
+    fn();
+    parts.forEach((p, k) => { if (p.scrollTop !== at[k]) p.scrollTop = at[k]; });
   }
 
   ring_tool(action, kind) {
@@ -2613,27 +3019,64 @@ class DialTool {
   }
 
   /** a correction for one numeral: radius ±, angle ±, rotate, size ×. Click a numeral in the preview to pick it. */
-  row_nudge(wrap, out) {
+  /** a window's width and height on one line (Okay's notes, p. 20, #265, beta 4.45.2; R15 form B): four cells — a
+   *  name and its quiet number with a compact ±, twice. A press on a name or a number opens its popup, the slider
+   *  there. The two are a side row's parts, each still its own row (build_row), so they do all a number does. */
+  /** the Show box (#261, 4.46; Okay's notes, p. 2: "Show this window moves with the tab and says just Show: a thin box,
+   *  darker than the pane's grey, grows down from the tab and holds it"; one word for windows and hands alike): the
+   *  tick that shows the chosen hand or window, on top of the grey page under the tabs. */
+  row_show_box(wrap, out, row) {
+    // under the chosen tab alone, as wide as it, and it travels with it (4.46.2; Okay on 4.46.1: "the top tab attaches
+    // traveling show ticker"; what #261 said: "grows down from the tab"): the box stands in the same columns as the
+    // tabs, in the chosen one's (--tabs, --tab)
+    const id = `${row.scope}-on-Show`, box = el("input", { type: "checkbox", id });
+    box.onchange = () => this.set_value(row.scope, "on", box.checked);
+    wrap.className = "showbox";
+    wrap.append(el("label", { className: "check", htmlFor: id, title: row.scope === "hand" ? "Show this hand" : "Show this window" }, box, " Show"));
+    out.refresh = (T) => {
+      box.checked = Boolean(T.on);
+      const tabs = [...document.querySelectorAll(row.scope === "hand" ? ".tabsbar .segs > .tab" : ".windowcards .card > .tab")];
+      wrap.style.setProperty("--tabs", Math.max(tabs.length, 1));
+      wrap.style.setProperty("--tab", Math.max(tabs.findIndex((t) => t.classList.contains("on")), 0) + 1);
+    };
+  }
+
+  row_window_size(wrap, out) {
+    // width and height on one line (#265), each its name, its slider and its quiet number (R15 form A2, two to a line;
+    // Okay, 16 Oct 2026: "width and height on the same line lost sliders, they can have them")
+    wrap.className = "row wsize";
+    const parts = [["w", "Width", 8], ["h", "Height", 5]].map(([key, text, hi]) => {
+      const row = { ...num(key, text, 0.5, hi, 0.05), scope: "window", side: true }, built = this.build_row(row), label = built.el.querySelector("label");
+      this.name_opens(label, row);
+      wrap.append(label, built.el.querySelector('input[type="range"]'), built.el.querySelector(".numbox"));
+      return built;
+    });
+    out.refresh = (W) => parts.forEach((p) => p.refresh(W));
+  }
+
+  /** a window's colours on one line (#266, 4.46.1; Okay's notes, p. 19: "one line; two colours to choose"): the disc
+   *  under the hole, the frame, and for an am · pm or moon window what it pictures. Each a word and its pill; the
+   *  pills are the colour rows' own, so they open the colour pop-out as before. */
+  row_window_colours(wrap, out) {
+    wrap.className = "row colours";
+    const parts = [
+      col("disc_c", "Disc under it", { ...W, word: "Disc", or: () => [1, 1, 1, 1] }),
+      col("ink", "Frame", { ...W, word: "Frame" }),
+      col("text_c", "Picture", { ...W, word: "Picture", only: win_is("am · pm", "moon phase"), or: (T) => T.ink }),      // or: what an unset colour is
+    ].map((row) => {
+      const built = this.build_row(row), pill = built.el.querySelector(".colour"), part = el("span", { className: "part" }, el("i", { textContent: row.word }), pill);
+      return { row, built, part };
+    });
+    wrap.append(el("label", { textContent: "Colours" }), el("span", { className: "parts" }, ...parts.map((p) => p.part)));
+    out.refresh = (T) => parts.forEach((p) => { const shown = !p.row.only || p.row.only(T); p.part.hidden = !shown; if (shown) p.built.refresh(T); });
+  }
+
+
+  row_nudge(wrap, out) {                           // which numeral the rows under it nudge (scope "nudge", #252), and a way to undo its nudges
     wrap.className = "nudge";
     const pick = el("select", { id: "nudge-pick" });
     pick.onchange = () => { this.nudge_at = pick.value; this.sync_rows(); };
-    const fields = {};
-    const line = (key, text, step, neutral) => {
-      const f = el("input", { type: "text", id: "nudge-" + key, inputMode: "decimal" });
-      f.onchange = () => {
-        const R = this.ring(), n = { ...(R.nudge[this.nudge_at] || {}) };
-        const per = key === "dr" ? this.unit()[2] : 1;      // the radius ± is a length: typed in the chosen unit, kept in mm
-        const v = parse_number(f.value, (n[key] ?? neutral) * per) / per;
-        if (Math.abs(v - neutral) < 1e-9) delete n[key]; else n[key] = +v.toFixed(4);
-        const all = { ...R.nudge };
-        if (Object.keys(n).length) all[this.nudge_at] = n; else delete all[this.nudge_at];
-        this.set_value("ring", "nudge", all);
-      };
-      fields[key] = [f, step, neutral];
-      return el("div", { className: "row txt" }, el("label", { htmlFor: "nudge-" + key, textContent: text }), f);
-    };
     wrap.append(el("div", { className: "row pop" }, el("label", { htmlFor: "nudge-pick", textContent: "Numeral" }), pick),
-      line("dr", "Radius ±", 0.05, 0), line("da", "Angle ± °", 0.1, 0), line("rot", "Rotate °", 1, 0), line("s", "Size ×", 0.01, 1),
       el("div", { className: "row" }, el("span"), el("button", { type: "button", className: "btn", textContent: "Reset this numeral", onclick: () => {
         const all = { ...this.ring().nudge };
         delete all[this.nudge_at];
@@ -2648,8 +3091,6 @@ class DialTool {
         pick.dataset.items = want;
       }
       pick.value = this.nudge_at;
-      const n = R.nudge[this.nudge_at] || {};
-      for (const key in fields) { const [f, step, neutral] = fields[key]; if (document.activeElement !== f) f.value = key === "dr" ? this.in_unit(n[key] ?? neutral, decimals(step / 10)) : fmt(n[key] ?? neutral, step / 10); }
     };
   }
 
@@ -2790,20 +3231,23 @@ class DialTool {
    *  that opens the tag with a field for any time ("2:15"). The window keeps the place in the list (at, R9), or the
    *  time's angle (at_deg) when it has one of its own. */
   row_window_at(wrap, out) {
+    // Position (#264, 4.46.1; Okay's notes, p. 19–20: "five square buttons, 3 · 6 · 9 · 12 and one with three dots";
+    // on the mock-ups, 16 Oct 2026: on the heading's line, "Position should not be small", "3 6 9 12 are circular
+    // buttons now"). The dots open the popup with every place as a button and a field for any time; when the window
+    // stands elsewhere they say where, and grow into a pill to hold it. The row goes on the heading line (head).
     wrap.className = "row windowat";
     const at = (name) => G.DATE_AT.findIndex((d) => d[0] === name);
     const press = (i) => { const w = this.window(); w.at = i; w.at_deg = null; this.changed(true); };
-    const button = (name) => el("button", { type: "button", id: "window-at-Position-" + at(name), textContent: name, onclick: () => press(at(name)) });
-    const quarters = ["3", "6", "9", "12"].map(button), between = ["1:30", "4:30", "7:30", "10:30", "4"].map(button);      // the half-hours together, then the rest (Okay, 13 Oct 2026: ":30s together")
-    const more = el("button", { type: "button", className: "atmore", id: "window-at-more", textContent: "···", title: "Any time: 2:15, 7:40…" });
+    const quarters = ["3", "6", "9", "12", "4"].map((name) => el("button", { type: "button", id: "window-at-Position-" + at(name), textContent: name, onclick: () => press(at(name)) }));      // and 4 (Okay, on 4.46.1: "Add 4 to the circles before …")
+    const more = el("button", { type: "button", className: "atmore", id: "window-at-more", textContent: "···", title: "Every place, or any time: 2:15, 7:40…" });
     more.setAttribute("aria-expanded", "false");
-    more.onclick = () => this.value_pop_open(more, { kind: "custom", name: "at_time", scope: "window", key: "at_deg", text: "Time" });
-    wrap.append(el("label", { textContent: "Position" }),
-      el("span", { className: "atgrid" }, el("span", { className: "segs quarters" }, ...quarters), el("i", { className: "divide" }), el("span", { className: "segs between" }, ...between, more)));
+    more.onclick = () => this.value_pop_open(more, { kind: "custom", name: "at_time", scope: "window", key: "at_deg", text: "Position" });
+    wrap.append(el("label", { textContent: "Position" }), el("span", { className: "circles" }, ...quarters, more));
     out.refresh = (T) => {
-      for (const b of [...quarters, ...between]) b.classList.toggle("on", T.at_deg == null && b.id === "window-at-Position-" + T.at);
-      more.classList.toggle("on", T.at_deg != null);
-      more.textContent = T.at_deg != null ? G.window_place(T) : "···";
+      for (const b of quarters) b.classList.toggle("on", T.at_deg == null && b.id === "window-at-Position-" + T.at);
+      const elsewhere = T.at_deg != null || !["3", "6", "9", "12", "4"].includes(G.DATE_AT[T.at]?.[0]);
+      more.classList.toggle("on", elsewhere);
+      more.textContent = elsewhere ? G.window_place(T) : "···";
     };
   }
 
@@ -2821,8 +3265,14 @@ class DialTool {
       this.changed(true);
     };
     field.onchange = take;
-    wrap.append(el("label", { htmlFor: "window-at-time", textContent: "Time" }), field);
-    out.refresh = (T) => { if (document.activeElement !== field) field.value = G.window_place(T); };
+    // every named place, in the clock's order, as a button (#264: "the dots open a popup with all the places pre-buttoned")
+    const order = ["12", "1:30", "3", "4", "4:30", "6", "7:30", "9", "10:30"], idx = (name) => G.DATE_AT.findIndex((d) => d[0] === name);
+    const places = order.map((name) => el("button", { type: "button", id: "window-at-place-" + idx(name), textContent: name, onclick: () => { const w = this.window(); w.at = idx(name); w.at_deg = null; this.changed(true); this.value_pop_close(); } }));
+    wrap.append(el("label", { htmlFor: "window-at-time", textContent: "Time" }), el("span", { className: "places" }, ...places), field);
+    out.refresh = (T) => {
+      if (document.activeElement !== field) field.value = G.window_place(T);
+      for (const b of places) b.classList.toggle("on", T.at_deg == null && b.id === "window-at-place-" + T.at);
+    };
   }
 
   /** the language the numerals are set in (a font may draw a figure differently for one): a small button saying its
@@ -2855,7 +3305,7 @@ class DialTool {
     return { el: box, refresh };
   }
 
-  /** the font sheet: every font with its numerals — the tool's own twenty, then yours, then (Chrome, Edge)
+  /** the font sheet: every font with its numerals — the tool’s own twenty-one, then yours, then (Chrome, Edge)
    *  this computer's — and the ways to add more. It lies over the panel, so the dial stays in view. */
   build_picker() {
     // Find: a field with a magnifier, no words in it (Okay, 13 Oct 2026)
@@ -3111,12 +3561,35 @@ class DialTool {
   }
 
   /** five dials to start from: each is a link (R31), so it can also be copied or opened in a new tab. */
+  /** a way to the Gallery from the panel's top line: a pill dressed as the unit box, centred in the room between the
+   *  version and the unit box (Okay, 15 Oct 2026, 07:45: "a shortcut to the gallery centered between beta blabla and mm.
+   *  A pill of mm complexion"). Pressed: the Export tab, the Gallery pane open and brought into view */
+  gallery_way() {
+    const go = el("button", { type: "button", className: "gallerypill", id: "to-gallery", textContent: "Gallery", title: "Dials to open and take apart" });
+    go.onclick = () => {
+      const i = SECTIONS.indexOf("Export");
+      if (this.S.ui_section !== i) { this.S.ui_section = i; this.show_section(); this.render(); }
+      const pane = this.rows.find((r) => r.fold === "Export/Gallery");
+      if (pane && this.is_folded(pane)) this.fold(pane, false);
+      const files = this.rows.find((r) => r.fold === "Export/Export a file");      // the pinned pane shuts its eye, so the Gallery has the room (Okay, 15 Oct 2026, 10:47: "When gallery clicked, can you shuteye the export persistent?")
+      if (files && !this.is_folded(files)) this.fold(files, true);
+      const tabs = $(".panel .tabs"), held = getComputedStyle(tabs).position === "sticky";      // a phone: the tabs stay on top, so the pane stops under them
+      const target = $(".gallery").closest(".pane");
+      target.style.scrollMarginTop = held ? tabs.offsetHeight + "px" : "";
+      requestAnimationFrame(() => target.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }));
+    };
+    return el("div", { className: "galleryway" }, go);
+  }
+
   /** the gallery: dials drawn after documents (web/gallery.mjs), then the five first examples (web/examples.mjs), three to
    *  a line, each with a line saying what it is. */
   row_gallery(wrap) {
     wrap.className = "examples gallery";
     const grid = el("div", { className: "cards" });
-    for (const e of [...GALLERY, ...EXAMPLES.map((x) => ({ ...x, note: `${x.name}: one of the guidebook's classic dials` }))]) {
+    const cards = [...GALLERY, ...EXAMPLES.map((x) => ({ ...x, note: `${x.name}: one of the guidebook's classic dials` }))];
+    const bauhaus = cards.findIndex((e) => e.name === "Bauhaus");      // third, after Okay's watch and his B-Uhr (Okay, 15 Oct 2026, 10:47: "Bauhaus is a darling. Move it to 3rd on gallery")
+    if (bauhaus > 2) cards.splice(2, 0, ...cards.splice(bauhaus, 1));
+    for (const e of cards) {
       const card = el("a", { href: e.link, title: e.note });
       card.innerHTML = e.picture;
       card.append(el("span", { textContent: e.name }));
@@ -3194,32 +3667,42 @@ class DialTool {
     };
   }
 
+  /** a settings file: the whole dial, every value, kept to open again (R31: a link is for sharing, a file for keeping).
+   *  A sentence says so; after Load the pane's heading names the file, and Save… offers that name again (a browser can't
+   *  write over it). Defaults is the guide's First dial ("Guide default wins"); Plain dial the tool's plain starting
+   *  values, where the guide's First dial begins (Okay's notes, 16 Oct 2026, #279). */
   row_settings(wrap) {
     wrap.className = "row";
     const file = el("input", { type: "file", accept: ".json,application/json", hidden: true, id: "load-file" });
     file.onchange = async () => { if (file.files[0]) this.load_text(await file.files[0].text(), file.files[0].name); file.value = ""; };
-    wrap.append(el("span", { className: "tools wide" },
-      el("button", { type: "button", className: "btn", id: "save", textContent: "Save…", onclick: () => { const name = file_name(this.S, "json"); save_file(name, JSON.stringify({ ...this.S, ui_section: Math.min(this.S.ui_section, 4) }, null, 1), "application/json"); this.log(`saved ${name} to your downloads`); } }),   // dial.py knows sections 0–4
+    wrap.append(el("p", { className: "quiet setnote", id: "settings-note", textContent: "A settings file keeps this dial with every value, to open again here or on another computer." }), el("span", { className: "tools wide" },
+      el("button", { type: "button", className: "btn", id: "save", textContent: "Save…", onclick: () => { const name = this.loaded_name || file_name(this.S, "json"); save_file(name, JSON.stringify({ ...this.S, ui_section: Math.min(this.S.ui_section, 4) }, null, 1), "application/json"); this.log(`saved ${name} to your downloads`); } }),   // dial.py knows sections 0–4
       el("button", { type: "button", className: "btn", textContent: "Load…", onclick: () => file.click() }),
-      el("button", { type: "button", className: "btn", textContent: "Defaults", onclick: () => this.reopen({ ui_section: this.S.ui_section }) }), file));
+      el("button", { type: "button", className: "btn", id: "defaults", textContent: "Defaults", title: "The guide’s First dial, as the tool opens with", onclick: () => { this.reopen({ ...structuredClone(OPENER), ui_section: this.S.ui_section }); tool.log("defaults: the guide’s First dial"); } }),
+      el("button", { type: "button", className: "btn", id: "plain", textContent: "Plain dial", title: "The tool’s plain starting dial, where the guide’s First dial begins", onclick: () => this.reopen({ ui_section: this.S.ui_section }) }), file));
   }
 
-  /** the dial's link, spelled out, and a button that copies it. */
+  /** the dial's link, spelled out on one line (cut at the box's edge: Copy link copies it whole), and how long it is.
+   *  Its Copy button stands on the pane's heading line (Okay, 16 Oct 2026, #277: "copy link moves to top line flush
+   *  right, gets a link icon"; under the link, beside its length, until then). */
   row_link(wrap, out) {
     wrap.className = "linkrow";
-    this.link_box = el("textarea", { id: "link", className: "link", readOnly: true, rows: 3, spellcheck: false, ariaLabel: "Link to this dial" });
+    this.link_box = el("input", { type: "text", id: "link", className: "link", readOnly: true, spellcheck: false, ariaLabel: "Link to this dial" });
     this.link_box.onfocus = () => this.link_box.select();
-    wrap.append(this.link_box, el("div", { className: "tools" },
-      el("button", { type: "button", className: "btn", id: "copy-link", textContent: "Copy link", onclick: () => this.copy_link() }),
-      el("span", { className: "quiet", id: "link-size" })));
+    wrap.append(this.link_box, el("p", { className: "quiet linknote", id: "link-size" }));
     out.refresh = () => this.show_link();
+  }
+  row_link_copy(wrap) {                            // on the heading line (head)
+    const copy = el("button", { type: "button", className: "btn copylink", id: "copy-link", title: "Copy the link to this dial", onclick: () => this.copy_link() }, el("span", { textContent: "Copy link" }));
+    copy.insertAdjacentHTML("afterbegin", icon(TOOL_ICONS.link));
+    wrap.append(copy);
   }
 
   async show_link() {
     const link = location.href.split("#")[0] + "#" + await pack(this.S);
     if (this.link_box && this.link_box.isConnected) {
       this.link_box.value = link;
-      $("#link-size").textContent = `${link.length} characters · fonts travel by name`;
+      $("#link-size").textContent = `${link.length} characters. Fonts travel by name: whoever opens it needs the same fonts.`;      // Okay, 16 Oct 2026: "Explain fonts travel by name"
     }
     return link;
   }
@@ -3321,7 +3804,7 @@ class DialTool {
       for (let i = 0; i < 64; i++) {               // a collection (.ttc) holds several fonts
         const got = G.add_font(src.bytes, i);
         if (!got) break;
-        if (!this.catalog.has(got.ps) || this.catalog.get(got.ps).group !== "list") {       // the tool's own twenty keep their entry
+        if (!this.catalog.has(got.ps) || this.catalog.get(got.ps).group !== "list") {       // the tool’s own twenty-one keep their entry
           this.catalog.set(got.ps, { family: family || got.family, style: src.style || got.style, ps: got.ps, group: "added", url: src.url, start: this.start_of(got.ps) });
         }
         added.push(this.catalog.get(got.ps));
@@ -3458,7 +3941,7 @@ class DialTool {
         const [wall, t] = this.play_from;
         this.S.t = (t + (performance.now() - wall) / 1000 * this.speed) % 86400;
         this.sync_time();
-        this.pulse(t + (performance.now() - wall) / 1000);
+        this.pulse(this.S.t, performance.now() / 1000);
         this.render();
       }
       if (this.show) {      // the showcase's sun crosses its day (SUN.day seconds), then rises again; held while dragged
@@ -3477,7 +3960,10 @@ class DialTool {
   }
 
   draw() {
-    const S = this.show ? { ...this.S, guides: false } : this.S;      // the showcase: no guides
+    let S = this.show ? { ...this.S, guides: false, ha_on: this.S.ha_on && !this.show.nohands } : this.S;      // the showcase: no guides; its hands key may hide the hands
+    if (!this.show && this.hole_at && performance.now() - this.hole_at < HOLE_LIVE_MS) {      // the centre hole being sized: its guide, alone if the guides are off (#267)
+      S = S.guides ? { ...S, gd_hole_live: true } : { ...S, guides: true, gd_hole_live: true, gd_axes: false, gd_rings: false, gd_sel: false, gd_wins: false, gd_wsel: false, gd_more: [] };
+    } else if (!this.show && this.guides_at && performance.now() - this.guides_at < HOLE_LIVE_MS) S = { ...S, guides: this.guides_on };      // a number being slid: the guides as set; a numeral being nudged: none (guides_live)
     const day = G.shows_day(S) ? G.day_hour(S) : null;       // an am · pm window follows the time shown, in steps of six minutes
     if (day !== this.day_drawn) { this.day_drawn = day; this.static_dirty = true; }
     if (!this.statik || this.static_dirty) {
@@ -3487,10 +3973,11 @@ class DialTool {
       this.build_ms = performance.now() - t0;
     }
     const items = G.scene(S, this.statik, S.t, true, S.ui_ring);
-    this.spin_hands(items);      // the showcase's Now: the hands on their double turn
+    this.spin_hands(items);      // the showcase's Now: the big hands whirl opposite ways, the seconds go straight
     this.items = items;
     const backdrop = S.out_production ? [1, 1, 1, 1] : S.c_backdrop;
     this.backdrop.setAttribute("fill", to_hex(backdrop));
+    this.main.style.setProperty("--canvas-fill", to_hex(backdrop));      // the backdrop's colour, for a switch whose words show (6-preview.css)
     this.sky_stops[0].setAttribute("stop-color", to_hex(backdrop.map((v, i) => (i < 3 ? v * SKY_TOP : 1))));      // the showcase's sky: the backdrop, much darker, at the top left…
     this.sky_stops[1].setAttribute("stop-color", "#000");                                                          // …to black at the bottom right,
     const [sw_, sh_] = this.size(), reach = ((sw_ + sh_) / 2).toFixed(1);                                         // at 45°: along (1, 1), as far as the far corner
@@ -3521,7 +4008,7 @@ class DialTool {
         node.setAttribute("fill", item.fill ? to_hex(item.fill) : "none");
         node.setAttribute("fill-opacity", item.fill ? item.fill[3] : 1);
       }
-      const stroke = item.stroke ? to_hex(item.stroke) + "/" + item.stroke[3] + "/" + item.px : "none";
+      const stroke = item.stroke ? to_hex(item.stroke) + "/" + item.stroke[3] + "/" + item.px + (item.dots ? "/dots" : "") : "none";
       if (stroke !== slot.stroke) {
         slot.stroke = stroke;
         if (item.stroke) {
@@ -3530,7 +4017,9 @@ class DialTool {
           node.setAttribute("stroke-width", item.px);
           node.setAttribute("vector-effect", "non-scaling-stroke");      // guides keep their width on screen
           node.setAttribute("pointer-events", "none");
-        } else for (const a of ["stroke", "stroke-opacity", "stroke-width", "vector-effect", "pointer-events"]) node.removeAttribute(a);
+          if (item.dots) { node.setAttribute("stroke-dasharray", `0 ${3 * item.px}`); node.setAttribute("stroke-linecap", "round"); }      // a dotted guide: round dots three widths apart (#272)
+          else { node.removeAttribute("stroke-dasharray"); node.removeAttribute("stroke-linecap"); }
+        } else for (const a of ["stroke", "stroke-opacity", "stroke-width", "vector-effect", "pointer-events", "stroke-dasharray", "stroke-linecap"]) node.removeAttribute(a);
       }
       if (item.angle !== slot.angle) {             // hands turn about the pivot (R2: clockwise)
         slot.angle = item.angle;
@@ -3667,7 +4156,7 @@ class DialTool {
     const S = this.S, mm = this.to_mm(p), r = Math.hypot(mm[0], mm[1]);
     const item = node && node.dataset && node.dataset.i !== undefined ? this.items[+node.dataset.i] : null;
     const role = item ? item.role : null;
-    if (role === "hand") return { kind: "hand", hand: G.HANDS.indexOf(item.name), name: { hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name], path: item.path, angle: item.angle };
+    if (role === "hand" || role === "mark") return { kind: "hand", hand: G.HANDS.indexOf(item.name), name: { hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name], path: item.path, angle: item.angle };
     if (role === "cap") return { kind: "cap", name: "Cap", path: item.path, angle: 0 };
     if (role && (role.startsWith("date") || role === "cutline")) {
       const x = this.statik.windows.find((b) => b.index === item.window), kind = G.WINDOW_KINDS[x.w.kind];
@@ -3710,6 +4199,10 @@ class DialTool {
     if (piece.kind === "hand") S.ui_hand = piece.hand;
     if (piece.kind === "date") S.ui_window = piece.window;
     if (same) { this.fill_ring_list(); this.sync_rows(); } else this.show_section();
+    if (piece.numeral !== undefined) {             // a numeral picked for Nudge: its pane opens, since it starts folded (#270)
+      const nudge = this.rows.find((r) => r.fold && r.row.text === "Nudge one numeral");
+      if (nudge && this.is_folded(nudge)) this.fold(nudge, false);
+    }
     this.render();
   }
 
@@ -3787,28 +4280,68 @@ class DialTool {
   set_speed(k) {
     this.speed = k;
     if (this.playing) this.play_from = [performance.now(), this.S.t];
-    const p = Math.round(speed_place(k) * 1000);
-    if (document.activeElement !== this.speed_slider) this.speed_slider.value = p;
+    const split = this.speed_split(), p = Math.round(speed_place(k, split) * 1000);
+    this.one_knob.style.setProperty("--at", split.toFixed(4));      // 1× is where the slow steps end
+    if (document.activeElement !== this.speed_slider || k < 1) this.speed_slider.value = p;      // a slow speed: the thumb onto its step, even while dragged
     this.speed_slider.setAttribute("aria-valuetext", speed_word(k) + "×");
-    this.speed_name.textContent = speed_word(k) + "X";
+    const word = speed_word(k) + "X";      // a slow speed's leading 0 in a span of its own: a phone's thumb, which holds the word, leaves it out (".25X")
+    if (this.speed_name.textContent !== word) this.speed_name.replaceChildren(...(k < 1 ? [el("span", { className: "zero", textContent: "0" }), word.slice(1)] : [word]));
     this.speed_name.style.setProperty("--at", (+this.speed_slider.value / 1000).toFixed(4));      // where the thumb stands
-    this.speed_slider.title = `How fast time runs: ${speed_word(k)}× (0.5× to 720×)`;
+    this.speed_slider.title = `How fast time runs: ${speed_word(k)}× (0.1× to 720×)`;
     this.speeds.classList.toggle("real", k === 1);
   }
 
-  /** while time runs the play button's cap brightens faintly with each beat of the movement and fades before the next
-   *  (Okay, 15 Oct 2026, 01:20: "Red button faintly pulses with the beat of the movement when pressed"). The beat is the
-   *  movement's own (Hands: 1/s quartz, 6 or 8 a second), counted in real seconds — at 1× it falls with the seconds
-   *  hand's steps; faster speeds don't make it flicker. A sweep has no beat: the cap breathes once every two seconds.
-   *  at = seconds since midnight, as if time ran at 1×. Not where the system asks for less motion. */
-  pulse(at) {
-    let p = 0;
+  /** the unit box round its word's ink, 2 px from every side (Okay, 16 Oct 2026, #302). The ink's size and place on its
+   *  line come from Dial Mono's outlines (UNIT_INK); where the browser puts the line's baseline is measured, with a dot
+   *  on it — browsers round a face's ascent and descent each their own way (counted 16 Oct 2026: 8 px down a 10 px line
+   *  in Chromium, where the face's figures say 8.6; on Okay's screen "mm" stood on the box's bottom line) */
+  size_unit() {
+    const word = this.unit()[0], ink = UNIT_INK[word] || UNIT_INK.mm, box = this.unit_button, b = box.style;
+    const span = el("span", { className: "word", textContent: word }), dot = el("span");
+    box.replaceChildren(span);
+    dot.style.cssText = "display:inline-block;width:0;height:0";
+    span.append(dot);
+    const line = span.getBoundingClientRect(), base = dot.getBoundingClientRect().top - line.top;
+    dot.remove();
+    if (!line.height) return;      // not shown (a phone's squeezed line): placed when it is
+    // in whole screen dots, so the line is crisp and the room the same on every side: the box round the ink, the ink's
+    // leftover fraction shared out, the word placed so its ink starts the padding in
+    const size = parseFloat(getComputedStyle(box).fontSize), dots = window.devicePixelRatio || 1, snap = (v) => Math.round(v * dots) / dots;
+    // its width the word's own; its height mm's for every unit, on mm's baseline, so a unit's ascenders and descenders
+    // reach into the padding (Okay, on 4.44.3: "Others use the same height, width can change")
+    const [l, w] = ink.map((v) => v * size), [, , t, h] = UNIT_INK.mm.map((v) => v * size), W = Math.round(w * dots) / dots, H = Math.round(h * dots) / dots;
+    b.setProperty("--ink-w", W + "px");
+    b.setProperty("--ink-h", H + "px");
+    b.setProperty("--word-x", snap((W - w) / 2 - l) + "px");      // from the padding's inner edge to the word's line
+    b.setProperty("--word-y", snap((H - h) / 2 + t - base) + "px");
+    requestAnimationFrame(() => this.level_title());      // a box of another height: its word on the title's baseline again
+  }
+
+  /** how much of the speed track the slow steps take: two thumbs of the thumb's travel (#283: "at least as wide as two
+   *  thumbs"), a fifth to a half of it; before the bar is laid out, two fifths */
+  speed_split() {
+    const thumb = parseFloat(getComputedStyle(this.speeds).getPropertyValue("--speed-thumb")) || 0, travel = this.speed_slider.getBoundingClientRect().width - thumb;
+    return thumb > 0 && travel > 0 ? Math.min(0.5, Math.max(0.2, 2 * thumb / travel)) : 0.4;
+  }
+
+  /** while time runs the play button pulses with each beat of the movement (Okay, 15 Oct 2026, 01:20; his notes, p. 14,
+   *  #282): its cap brightens and fades the whole way before the next beat, eased (--pulse, 0 to 1 of --play-pulse);
+   *  the triangle flares with it and fades faster, gone by half the beat (--pulse-tri, between its two bounds). The beat
+   *  is the movement's own (Hands: 1/s quartz, 6 or 8 a second); a sweep has none, and breathes once every two seconds.
+   *  It follows the time shown, so it falls with the seconds hand's steps and goes faster as time does — up to six
+   *  a second (PULSE_MOST), or the movement's own beat if that is more; past that it holds, in real seconds (720× would
+   *  otherwise flash hundreds of times a second; answer to #282).
+   *  t = the time shown, in seconds · now = real seconds. Not where the system asks for less motion. */
+  pulse(t, now = 0) {
+    let cap = 0, tri = 0;
     if (this.playing && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      const beat = G.BEATS[this.S.ha_beat] ? G.BEATS[this.S.ha_beat][1] : 0;
-      if (beat > 0) p = (1 - (((at * beat) % 1) + 1) % 1) ** 3;      // a flash at the beat, gone before the next
-      else p = 0.5 - 0.5 * Math.cos(at * Math.PI);                  // sweep: a slow breath, two seconds long
+      const beat = G.BEATS[this.S.ha_beat] ? G.BEATS[this.S.ha_beat][1] : 0, rate = beat || 0.5, most = Math.max(beat, PULSE_MOST);
+      const f = rate * this.speed <= most ? frac(t * rate) : frac(now * most);      // how far from the last beat, 0 to 1
+      if (beat > 0) { cap = (1 - f) ** 3; tri = Math.max(0, 1 - 2 * f) ** 2; }    // a flash at the beat, gone before the next
+      else { cap = 0.5 - 0.5 * Math.cos(2 * Math.PI * f); tri = cap ** 3; }        // sweep: a slow breath
     }
-    this.play_button.style.setProperty("--pulse", p.toFixed(3));
+    this.play_button.style.setProperty("--pulse", cap.toFixed(3));
+    this.play_button.style.setProperty("--pulse-tri", tri.toFixed(3));
   }
 
   play(on) {
@@ -3895,6 +4428,8 @@ class DialTool {
       const settings = JSON.parse(text);
       if (typeof settings !== "object" || Array.isArray(settings)) throw new Error("not a settings file");
       this.reopen(settings);
+      tool.loaded_name = name;                     // the new tool says which file it came from, and Save… offers that name (#279)
+      tool.sync_rows();
       tool.log(`loaded ${name}`);
     } catch (e) {
       this.log(`couldn’t load ${name}: ${e.message}`);
@@ -3912,12 +4447,25 @@ class DialTool {
 
   /** start again with new settings (the simplest way to update every control). */
   reopen(settings) {
+    // the window is built again for the new dial: it keeps where it was scrolled, so a Gallery card pressed stays under
+    // the finger (Okay, 15 Oct 2026, 11:49: "Found the real jumper: selecting a gallery watch" — measured: the form went
+    // back to its top, the Gallery 550 points down, out of sight)
+    const panel = $(".panel"), keep = { form: this.form ? this.form.scrollTop : 0, panel: panel ? panel.scrollTop : 0, scrolls: { ...this.scrolls, ...(this.section_shown ? { [this.section_shown]: this.form.scrollTop } : {}) } };
     this.close();
     const fonts = this.catalog;
     tool = new DialTool(settings);
     for (const [ps, f] of fonts) if (!tool.catalog.has(ps)) tool.catalog.set(ps, f);
     tool.load_fonts_in_use();
     window.dial_tool = tool;
+    tool.scrolls = keep.scrolls;
+    let frames = 0;                                // on a phone or an iPad held upright, which part scrolls is settled a few frames later (.held): try until both stand
+    const back = () => {
+      const p = $(".panel");
+      tool.form.scrollTop = keep.form;
+      if (p) p.scrollTop = keep.panel;
+      if (++frames < 20 && (Math.abs(tool.form.scrollTop - keep.form) > 1 || (p && Math.abs(p.scrollTop - keep.panel) > 1))) requestAnimationFrame(back);
+    };
+    back();
   }
 
   /** undo and redo on the preview, top right, before the Guides switch (Okay, 13 Oct 2026): two outlined buttons,
@@ -3936,6 +4484,7 @@ class DialTool {
   /** the dial has changed and stood still: that is one step to undo. */
   take_step() {
     const now = dial_text(this.S);
+    if (!this.note.hidden && now !== this.note_for) this.note.hidden = true;      // the dial changed since the note: it is said
     if (HISTORY.now === null) HISTORY.now = now;
     this.sync_undo();
     if (now === HISTORY.now) return;
@@ -3944,6 +4493,13 @@ class DialTool {
     HISTORY.now = now;
     HISTORY.future = [];
     this.sync_undo();
+  }
+
+  /** a note on the preview, as well as the log's line (R17). */
+  say(text) {
+    this.note.textContent = text;
+    this.note.hidden = false;
+    this.note_for = dial_text(this.S);
   }
 
   /** one step back (-1) or forward again (1). The time shown and the window's state stay as they are. */
@@ -4008,15 +4564,22 @@ let tool = null;
 export async function open_window(pathkit, harfbuzz, font_bytes) {
   G.start(pathkit, harfbuzz);
   G.add_font(font_bytes, 0, true);                 // the page's own font: stands in until yours are loaded
-  let settings = await unpack(location.hash);      // a dial in the address comes first…
-  const from_link = settings !== null;
+  const linked = await unpack(location.hash);      // a dial in the address comes first…
+  let settings = linked?.settings ?? (linked?.old !== undefined ? structuredClone(OPENER) : null);      // (a link of an older scheme: the First dial, R31)
   if (!settings) { try { settings = JSON.parse(localStorage.getItem(LAST)); } catch (e) { settings = null; } }   // …then the last session…
-  if (!settings) settings = structuredClone(OPENER);      // …then Okay's watch (opener.js; 15 Oct 2026)
+  if (!settings) settings = structuredClone(OPENER);      // …then the opener: the guide's First dial (opener.js; 16 Oct 2026)
   tool = new DialTool(settings);
-  if (from_link) tool.log("opened the dial in the address");
+  const opened = (link) => {
+    if (link.settings) { tool.log("opened the dial in the address"); return; }
+    tool.log(`${OLD_LINK_NOTE} (link scheme ${link.old}; this Dial Tool reads scheme ${G.LINK_SCHEME})`);
+    tool.say(OLD_LINK_NOTE);
+  };
+  if (linked) opened(linked);
   window.addEventListener("hashchange", async () => {              // another dial's link pasted into this tab
     const next = await unpack(location.hash);
-    if (next) { tool.reopen({ ...next, ui_section: tool.S.ui_section }); tool.log("opened the dial in the address"); }
+    if (!next) return;
+    tool.reopen({ ...(next.settings ?? structuredClone(OPENER)), ui_section: tool.S.ui_section });
+    opened(next);
   });
   tool.sync_time();
   start_ink();                                     // short labels in boxes, centred on their ink (ink.js)

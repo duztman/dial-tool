@@ -98,10 +98,10 @@
     grid-template-columns: calc(50% + var(--unit) / 2) minmax(0, 1fr); overflow-y: auto; margin: 0; padding: var(--u6);
     border: var(--hair) solid var(--rule); background: var(--hover); box-shadow: var(--shadow-light); color: var(--ink); font-size: var(--t-xxs); line-height: 1.3; }      /* a size under the buttons' words */
   .legend[hidden] { display: none; }
-  .legendhead { grid-column: 1 / -1; padding-bottom: var(--unit); color: var(--grey); font: 400 calc(1.5 * var(--t-pixel))/1.25 var(--pixel); text-transform: uppercase; white-space: nowrap; opacity: var(--pixel-ink); }      /* its title across both columns from the top left, on one line, in the pixel font at half a size more (R32's one exception) */
+  .legendhead { grid-column: 1 / -1; padding-bottom: var(--unit); color: var(--grey); font: 400 var(--t-pixel-legend)/1.25 var(--pixel); text-transform: uppercase; white-space: nowrap; opacity: var(--pixel-ink); }      /* its title across both columns from the top left, on one line, in the pixel font at half a size more (R32's one exception) */
   .legend :is(dt, dd) { padding: var(--unit) 0; border-top: var(--hair) solid var(--rule); }
   .legend dt { display: flex; justify-content: flex-end; align-items: flex-start; padding-right: var(--u3); }
-  .legend dt .sticker { padding: calc(0.375 * var(--unit)) calc(0.75 * var(--unit)); font-size: calc(1.5 * var(--t-pixel)); }      /* half a size more than in the list (R32's one exception; Okay, 14 Oct 2026, 01:14: ".5 more size on all silkscreen") */
+  .legend dt .sticker { padding: var(--legend-sticker-pad); font-size: var(--t-pixel-legend); }      /* half a size more than in the list (R32's one exception; Okay, 14 Oct 2026, 01:14: ".5 more size on all silkscreen") */
   .legend dd { margin: 0; }
   .legend dd small { color: var(--wait); font-size: inherit; }
   .legend .together { white-space: nowrap; }      /* the last word and its bracket: never an orphan */
@@ -135,6 +135,7 @@
   .picker .squares .adds.three > .pickt span { white-space: normal; }
   .picker .squares .pickt { grid-template-columns: auto minmax(0, 1fr); justify-items: start; align-items: center; align-content: center; column-gap: var(--unit); min-height: var(--u8); padding: var(--unit) var(--u3); text-align: left; }
   .picker .squares .pickt span { white-space: nowrap; text-align: left; }
+  .picker .squares .pickt { overflow: hidden; }      /* a word longer than its box is cut at the box's edge (Okay, 15 Oct 2026, 07:12: "cutoff the text and leave it") */
   .picker .squares .pickt small { color: var(--wait); font-size: inherit; }      /* lighter (Okay, 14 Oct 2026) */
   .picker .squares > .legendbutton { grid-column: 3; grid-row: 1; }      /* always the third */
   .picker .squares > .legendbutton[aria-expanded="true"] svg { rotate: 180deg; }

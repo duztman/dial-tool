@@ -2,8 +2,8 @@ __pycache__/
 *.pyc
 .DS_Store
 test-renders/
-docs/guide/cache/
-docs/guide/_built.html
+archive/guide/cache/
+archive/guide/_built.html
 web/node_modules/
 web/test/out/
 web/test/same.json
@@ -14,3 +14,9 @@ tools/*.zip
 tools/signed/
 tools/wff_template/compiled/
 build/
+guide/node_modules
+guide/checks/out/
+guide/look/img/
+guide/look/img-*/
+guide/look/out/review/
+guide/look/out/indesign/Dial-Tool-guide/

@@ -35,7 +35,9 @@
   .labelmenu:hover { border-color: var(--ink); }
   .labelmenu > select { position: absolute; inset: calc(-1 * var(--reach-y, 0px)); width: calc(100% + 2 * var(--reach-y, 0px)); height: calc(100% + 2 * var(--reach-y, 0px)); opacity: 0; cursor: pointer; }      /* under a finger the unseen menu is larger than its box (reach) */
   .row > :is(select, .segs, .colour, .single, .tools, .picks, .swatches), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
-  .row > :is(.check, .wide, .picks.five), .row.note > .quiet { grid-column: 1 / -1; }      /* a tick and its words start at the left edge */
+  .row > :is(.check, .wide, .picks.five), .row.note > .quiet { grid-column: 1 / -1; }
+  .row > .setnote { grid-column: 1 / -1; margin: var(--unit) 0 0; }      /* what a settings file is, over its buttons (#279) */
+  .row > .warn { grid-column: 3 / -1; margin: var(--u1) 0 var(--unit); font-size: var(--t-s); color: var(--ink); }      /* the warning under a button that replaces the whole dial (Reset): in ink, not quiet, on the controls' column (Okay, 16 Oct 2026, 10:46) */      /* a tick and its words start at the left edge */
   .row > span:first-child:empty { display: none; }
   .row.nest > .check { grid-column: 3 / -1; }       /* a question about the row above: it starts where the controls start */
   /* a note is a row of words: as much room over them as under, and a hairline closes it like any row (the row
@@ -47,5 +49,16 @@
   .row.pick { align-items: start; }
   .row.pick > label { line-height: var(--line); }
   .row > label > .short { display: none; }         /* a label's short wording: only where there is little room (a side row) */
-  .linkrow .tools { margin-top: var(--unit); gap: calc(var(--unit) * 2); }
+  .linkrow .linknote { margin: var(--unit) 0 0; }      /* its length, and that fonts travel by name */
+  /* two numbers to a line (R15 form A2; a window's width and height, #265, 4.46.1): for each a column for its name,
+     one for its slider, one for its quiet number (#250's look) — the slider a column long, the least a slider gets */
+  .row.wsize > * { grid-column: auto; }
+  .row.wsize > label { color: var(--grey); }      /* both names grey, as a row's first is */
+  .row.wsize > .numbox { position: relative; top: auto; right: auto; translate: none; width: 100%; }
+  /* a window's colours on one line (#266, 4.46.1): a quiet word, then its pill; a third (Picture) only for am · pm and moon */
+  .row.colours { align-items: baseline; }      /* when Picture takes a second line, the name stays on the first */
+  .row.colours > .parts { grid-column: 3 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: var(--unit) var(--u3); padding: var(--u1) 0; }
+  .row.colours .part { display: inline-flex; align-items: center; gap: var(--u2); }
+  .row.colours .part[hidden] { display: none; }
+  .row.colours .part > i { font-style: normal; font-size: var(--t-s); color: var(--grey); }
 }

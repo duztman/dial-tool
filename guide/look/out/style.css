@@ -1,0 +1,133 @@
+/* The guide's look (guide/PLAN.md step 7). Rules: docs/design.md (type §2, grid §3, colour §4, pictures §5) and
+   guide/notes-okay.md, which wins where they differ. One source, two layouts:
+   · .page — an A4 landscape page, everything placed by build.mjs in millimetres on the 12 × 14 grid; on a wide screen
+     the pages are shown whole, scaled to the window (index.html sets --z), and printed as they are.
+   · .flow — the same words and pictures stacked for a phone (390 px): pictures full width, the labels on a picture
+     become a numbered list under it, its dots numbered.
+   Started 15 Oct 2026 from the 4.36.1 web guide's stylesheet (archive/guide/web/style.css, Okay's rounds 1–10). */
+@page { size: 297mm 210mm; margin: 0; }
+@font-face { font-family: "Inter"; src: url("fonts/inter-latin-wght-normal.woff2") format("woff2"); font-weight: 100 900; }
+:root { --paper: #FCFCFA; --ground: #ECECE8; --ink: #111111; --grey: #5C5C58; --line: #B9B9B4; --b: 1.375mm; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; -webkit-text-size-adjust: 100%; }
+body { font-family: "Inter", "Helvetica Neue", Arial, sans-serif; font-weight: 400; font-size: 9.5pt; line-height: calc(var(--b) * 3.25); color: var(--ink);
+       background: #D9D9D4; font-feature-settings: "kern", "calt"; text-wrap: pretty; }
+em { font-style: normal; font-weight: 600; }
+a { color: inherit; text-decoration: underline; text-decoration-thickness: .15mm; text-underline-offset: .6mm; }
+
+/* ── the web around the pages ── */
+.sheets { padding: 16px 0 48px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.sheets .page { zoom: var(--z, 1); box-shadow: 0 1px 6px rgba(0, 0, 0, .18); }
+.flows { display: none; }
+@media (max-width: 760px) {
+  body { background: var(--paper); }
+  .sheets { display: none; }
+  .flows { display: block; }
+}
+@media print { body { background: none; } .sheets { padding: 0; gap: 0; display: block; } .sheets .page { zoom: 1; box-shadow: none; } .flows { display: none !important; } }
+
+/* ── an A4 page ── */
+.page { width: 297mm; height: 210mm; position: relative; overflow: hidden; background: var(--paper); break-after: page; }
+.page > * { position: absolute; }
+
+/* head (Okay, 14 Oct): the part's tab above the rule, one grid row; the guide's name beside it, the address at the far
+   right; under the rule the title (32 pt light) and the lead, one sentence a line */
+.tabline { display: flex; align-items: flex-end; gap: 3mm; font-size: 8pt; line-height: calc(var(--b) * 2.7); }
+.tabline .ptab { align-self: stretch; background: var(--sig); font-weight: 600; padding: 0 0 1.6mm 2mm; display: flex; align-items: flex-end; font-feature-settings: "tnum"; }
+.tabline .ptab span { margin-left: 1.4mm; font-weight: 400; }
+.tabline .gname { color: var(--grey); padding-bottom: 1.6mm; }
+.tabline .gurl { margin-left: auto; color: var(--grey); padding-bottom: 1.6mm; }
+.head { border-top: .3mm solid var(--ink); }
+.head h1 { position: absolute; top: calc(var(--b) * 1.4); font-size: 32pt; font-weight: 300; line-height: calc(var(--b) * 8); letter-spacing: -.022em; white-space: nowrap; }
+.head .lead { position: absolute; top: calc(var(--b) * 10); font-size: 10pt; font-weight: 600; line-height: calc(var(--b) * 3.4); }
+.head .lead.right { top: 1.33mm; font-size: 14pt; font-weight: 400; line-height: 5.6mm; letter-spacing: -.01em; white-space: nowrap; }
+
+/* blocks: a hairline above, the label in semibold, the words */
+.block { border-top: .2mm solid var(--line); padding-top: calc(var(--b) * 1); overflow: hidden; }
+.block p b { font-weight: 600; }
+.block.bare { border-top: none; padding-top: 0; }
+.block.small { font-size: 7pt; line-height: calc(var(--b) * 2.45); }      /* lesser than the labels (Okay, r4 03) */
+.block.watch { padding-left: 7mm; }
+.block.watch.attached { border-top: none; padding-top: 0; padding-left: 5mm; font-size: 8pt; line-height: calc(var(--b) * 2.7); }
+.block.attached .tri { left: 0; top: .35mm; width: 3.4mm; height: 3.4mm; }
+.block .tri { position: absolute; left: 0; top: calc(var(--b) * 1.2); width: 4.6mm; height: 4.6mm; fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; }
+.block table, .ptable { border-collapse: collapse; width: 100%; font-size: 8pt; line-height: calc(var(--b) * 2.7); }
+.ptable th { text-align: left; font-weight: 600; border-bottom: .2mm solid var(--ink); padding: .4mm 2mm .6mm 0; vertical-align: bottom; }
+.ptable td { border-bottom: .2mm solid var(--line); padding: .6mm 2mm .7mm 0; vertical-align: top; }
+
+/* pictures (Okay, 14 Oct): the window under, through a gradient map of the part's colour (cards.py); the part that
+   matters cut out with a margin of its own background, rounded, lifted by a soft shadow; lines and labels in ink */
+.ground { overflow: hidden; background: var(--sig); }
+.ground img { position: absolute; display: block; }
+.ground.flat { background: var(--sig); }
+.ground.plain { background: var(--ground); }
+.shot { overflow: hidden; }
+.shot img { width: 100%; display: block; }
+.shot.framed { outline: .2mm solid var(--line); }
+.card { border-radius: 1.1mm; box-shadow: 0 .3mm 1.06mm rgba(0, 0, 0, .3); display: block; }
+.card.row { border-radius: .7mm; box-shadow: 0 .2mm .6mm rgba(0, 0, 0, .35); }
+.card.cut { -webkit-mask-image: linear-gradient(to bottom, #000 var(--fade, 80%), transparent 100%); mask-image: linear-gradient(to bottom, #000 var(--fade, 80%), transparent 100%); box-shadow: none; }
+.card.icon { box-shadow: none; border-radius: .8mm; outline: .2mm solid var(--line); }
+.svgdial { display: block; }
+a.diallink { display: block; text-decoration: none; }
+a.diallink img { width: 100%; height: 100%; display: block; }
+.lines { left: 0; top: 0; width: 297mm; height: 210mm; overflow: visible; pointer-events: none; }
+.lines polyline, .lines line { fill: none; stroke: var(--sig-ink); stroke-width: .2; }
+.lines circle { fill: var(--sig-ink); }
+.lines .ring { fill: none; stroke: var(--sig-ring); stroke-width: .4; }
+.lines rect.wash { fill: var(--sig-ink); fill-opacity: .16; stroke: none; }
+.lines rect.wash.light { fill: #FFFFFF; fill-opacity: .3; }
+.lines rect.outline { fill: none; stroke: var(--sig-ring); stroke-width: .4; }
+.lines rect.outline.light { stroke: #FFFFFF; stroke-opacity: .75; }
+.nlabel { font-size: 8pt; line-height: calc(var(--b) * 2.7); text-wrap: balance; }
+.nlabel.l { text-align: left; } .nlabel.r { text-align: right; } .nlabel.c { text-align: center; }
+.nlabel .sub { color: var(--grey); }
+.cap { font-size: 7pt; line-height: calc(var(--b) * 2.5); color: var(--grey); }
+.cap.c { text-align: center; } .cap.r { text-align: right; }
+.kcell { font-size: 8pt; line-height: calc(var(--b) * 2.7); text-wrap: balance; }
+.kcell b { font-weight: 600; }
+
+/* page 01: the list and the dial taken apart (Okay, 21:31–21:47, page 06 of the 4.36.1 guide) */
+.stack { left: 0; top: 0; width: 297mm; height: 210mm; overflow: visible; pointer-events: none; }
+.stack .sheet { fill: var(--paper); fill-opacity: .55; stroke: var(--ink); stroke-opacity: .28; stroke-width: .12; }
+.layernote { font-size: 7.5pt; line-height: calc(var(--b) * 2.6); color: var(--grey); text-wrap: balance; }
+.layernote b { color: var(--ink); font-weight: 600; }
+
+/* the First dial's steps */
+.step .n { font-weight: 600; }
+.stepcap { font-size: 8pt; line-height: calc(var(--b) * 2.7); }
+.stepcap b { font-weight: 600; }
+
+/* ── a phone: the same words and pictures, stacked ── */
+.flow { padding: 20px 16px 36px; border-bottom: 1px solid var(--line); max-width: 560px; margin: 0 auto; font-size: 15px; line-height: 1.45; }
+.flow .ftab { font-size: 12px; color: var(--grey); display: flex; gap: 8px; align-items: baseline; margin-bottom: 6px; }
+.flow .ftab b { background: var(--sig); color: var(--ink); padding: 2px 6px; font-weight: 600; }
+.flow h1 { font-size: 30px; font-weight: 300; letter-spacing: -.02em; line-height: 1.1; border-top: 2px solid var(--ink); padding-top: 8px; margin-bottom: 6px; }
+.flow .lead { font-weight: 600; margin-bottom: 18px; }
+.flow .pblock { border-top: 1px solid var(--line); padding-top: 6px; margin: 0 0 16px; }
+.flow .pblock b { font-weight: 600; }
+.flow .pblock.watch { border-top: none; padding-left: 22px; position: relative; font-size: 13.5px; margin-top: -8px; }
+.flow .pblock.watch svg { position: absolute; left: 0; top: 2px; width: 16px; height: 16px; fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; }
+.flow figure { margin: 4px 0 18px; }
+.flow .fig { position: relative; background: var(--sig); padding: 14px; border-radius: 4px; }
+.flow .fig.plain { background: var(--ground); }
+.flow .fig img { display: block; width: 100%; height: auto; }
+.flow .fig img.card { border-radius: 4px; box-shadow: 0 1px 4px rgba(0, 0, 0, .3); }
+.flow .fig .in { position: relative; }
+.flow .dot { position: absolute; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: var(--sig-ink); color: #FFF; font-size: 11px; line-height: 18px; text-align: center; font-weight: 600; font-feature-settings: "tnum"; }
+.flow ol.labels { list-style: none; counter-reset: l; margin: 8px 0 0; font-size: 13.5px; line-height: 1.4; }
+.flow ol.labels li { counter-increment: l; position: relative; padding-left: 26px; margin-bottom: 5px; }
+.flow ol.labels li::before { content: counter(l); position: absolute; left: 0; top: 1px; width: 18px; height: 18px; border-radius: 50%; background: var(--sig-ink); color: #FFF; font-size: 11px; line-height: 18px; text-align: center; font-weight: 600; }
+.flow figcaption { font-size: 12.5px; color: var(--grey); margin-top: 6px; }
+.flow .ptable { font-size: 13px; line-height: 1.35; margin: 0 0 16px; }
+.flow .ptable th, .flow .ptable td { padding: 4px 8px 5px 0; }
+.flow .layer { display: grid; grid-template-columns: 1fr 34%; gap: 10px; align-items: center; margin-bottom: 10px; }
+.flow .layer img.card { width: 100%; border-radius: 3px; box-shadow: 0 1px 3px rgba(0, 0, 0, .3); }
+.flow .layer .note { font-size: 12.5px; color: var(--grey); line-height: 1.35; margin-top: 4px; }
+.flow .layer .note b { color: var(--ink); }
+.flow .layer svg { width: 100%; height: auto; display: block; }
+.flow .steps { display: grid; gap: 14px; margin-bottom: 18px; }
+.flow .steps .s { display: grid; grid-template-columns: 36% 1fr; gap: 12px; align-items: start; }
+.flow .steps .s img { width: 100%; display: block; background: var(--ground); border-radius: 3px; }
+.flow .steps .s p { font-size: 14px; line-height: 1.4; }
+.flow .foot { font-size: 12px; color: var(--grey); padding: 16px; max-width: 560px; margin: 0 auto; }

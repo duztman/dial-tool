@@ -8,6 +8,7 @@ page.on("console", (m) => { if (m.type() === "error") console.log("console error
 await page.route("https://duztman.github.io/dial-tool/fonts/**", (route) => route.fulfill({ path: "fonts/" + decodeURIComponent(route.request().url().split("/fonts/")[1]), headers: { "access-control-allow-origin": "*" } }));
 if (process.argv[2]) await page.addInitScript((s) => localStorage.setItem("dial-tool-last", s), fs.readFileSync(process.argv[2], "utf8"));
 else await page.addInitScript(() => { if (!localStorage.getItem("dial-tool-last")) localStorage.setItem("dial-tool-last", "{}"); });      // the plain starting dial, not the opener (Okay's watch, 4.38.12)
+await page.addInitScript(() => { if (!localStorage.getItem("dial-tool-folds")) localStorage.setItem("dial-tool-folds", '{"*":false}'); });      // every pane open, as for a visitor who has opened them (#270)
 await page.goto("file://" + process.cwd() + "/dial-tool.html");
 await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 for (const name of ["Dial", "Rings", "Hands", "Date", "Export"]) {
