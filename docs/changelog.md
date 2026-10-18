@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## beta 4.74 (web version) · 19 Oct 2026
+
+Date discs (#346; the disc sketches D1 and D2). The last of the twelve.
+
+- **Neighbours** (D1): a date or day window's new tick, *Its neighbours show where the hole allows*. Its disc's places either side of the shown one are drawn where the hole lets them — make the hole tall at 3 or 9, wide at 12 or 6 — cut by its edges, in a *Neighbours* colour of their own (a grey to start). With them showing, the text is sized from the disc's step from one place to the next (no more than the hole's height), so a hole made tall keeps the shown date its size.
+- **Big date** (D2), a fifth complication: two square holes side by side (Width is both together, an eighth of it the gap between), the tens in the left (none before the 10th), the units in the right, each in the window's font. It follows the bar's date or takes typed text, as a date. Its own icon in the Complication row. No X-ray disc for it yet (its two discs, tens and units, are a mechanism of their own).
+- A moon window's Phase now names its disc's colour *Moon*.
+- The Wear OS export carries the pictures' further colours and the neighbours into its window frames, and builds a big date's frames as a date's.
+- New keys `neighbours`, `da_neighbours` (off); the kind *big date* appended to the complications (R9).
+
 ## beta 4.73 (web version) · 19 Oct 2026
 
 The moon's and am · pm's pictures (#346; the disc sketches B and C, Okay, 18 Oct 2026, 23:52: "All are good"). B and C in one version: they share their making.

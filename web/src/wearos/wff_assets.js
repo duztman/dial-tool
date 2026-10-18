@@ -182,7 +182,7 @@ export function compute_window_layout(S, x) {
   const kind = WINDOW_KINDS[x.w.kind] || "date";
   let frames, cols, rows, colExpr, rowExpr;
 
-  if (kind === "date") {
+  if (kind === "date" || kind === "big date") {      // a big date (4.74): one frame a day, as a date
     frames = 31;
     cols = 6;
     rows = 6;
@@ -266,7 +266,7 @@ export function svg_window_sheet(S, x) {
     const ty = row * boxH + (225 - boxY);
 
     const frameWin = build_single_window(S, x.index, (w, S_copy) => {
-      if (kind === "date") {
+      if (kind === "date" || kind === "big date") {
         const d = k + 1;
         w.text = zeroPadDate && d < 10 ? `0${d}` : String(d);
       } else if (kind === "day") {
@@ -282,6 +282,10 @@ export function svg_window_sheet(S, x) {
     out.push(`    <path d="${discD}" fill="${discFill}"${discAlpha}/>`);
     if (frameWin && frameWin.number && !empty(frameWin.number)) {
       out.push(`    <path d="${frameWin.number.svg(5, true)}" fill="${textFill}"${textAlpha}/>`);
+    }
+    for (const m of (frameWin && frameWin.more) || []) {      // a picture's further colours, a date's neighbours (4.73, 4.74)
+      const c = x.w[m.key] || m.or;
+      if (m.path && !empty(m.path)) out.push(`    <path d="${m.path.svg(5, true)}" fill="${rgb(c)}"${c[3] < 1 ? ` fill-opacity="${num(c[3])}"` : ""}/>`);
     }
     if (frameD) out.push(`    <path d="${frameD}" fill="${frameFill}"${frameAlpha}/>`);
     out.push(`  </g>`);

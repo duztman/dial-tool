@@ -59,7 +59,7 @@ export function moon_age(ms) {
  *  language, AM or PM. The moon shows a picture: its age is in the moment. */
 export function window_text(kind, mo, lang = "en") {
   const N = NAMES[lang] || NAMES.en;
-  if (kind === "date") return String(mo.d);
+  if (kind === "date" || kind === "big date") return String(mo.d);
   if (kind === "day") return N.days[mo.wd];
   if (kind === "month") return N.months[mo.m - 1];
   if (kind === "am · pm") return mo.pm ? "PM" : "AM";

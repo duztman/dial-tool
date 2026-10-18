@@ -2306,6 +2306,21 @@ await touch.close();
     && sky.pictures === 0 && half.pictures === 1 && half.hole === 0.5 && half.words.includes("Sun · moon") && band.pictures === 2 && band.words.includes("Dawn") && band.words.includes("Dusk") && band.frame > 0.3,
     `pictures: moon Arch · Phase (a round hole, ${phase.words}) · Line, one ink; am · pm Sky · Half (a half-round hole, ${half.words}) · Band (${band.words}; its now-mark over the hole)`);
 }
+{ // a date's neighbours and the big date (4.74, #346; the disc sketches D1, D2): a tall date window shows the places either side, cut by its edges, in their own colour, the shown date its size; a big date is two square holes, the tens and the units
+  await tab("Date");
+  const was = await page.evaluate(() => { const t = window.dial_tool; return JSON.stringify([t.S.ui_window, t.S.da_on, t.S.da_kind, t.S.da_h, t.S.da_neighbours, t.S.da_follows, t.S.da_day, t.S.da_w]); });
+  const one = () => page.evaluate(() => { const t = window.dial_tool; t.render(); t.frame(); const x = t.statik.windows.find((v) => v.index === 0), n = x.number.bounds(); return { more: (x.more || []).length, high: +(n[3] - n[1]).toFixed(2), holes: x.window.d.filter((c) => c[0] === "M").length }; });
+  await page.evaluate(() => { const t = window.dial_tool; t.S.ui_window = 0; t.set_value("window", "on", true); t.set_value("window", "kind", 0); t.set_value("window", "follows", false); t.set_value("window", "text", "18"); });
+  const plain = await one();
+  await page.evaluate(() => { const t = window.dial_tool; t.set_value("window", "h", 4.4); t.set_value("window", "neighbours", true); });
+  const near = await one(), colour = await page.evaluate(() => [...document.querySelectorAll(".row.colours .part")].filter((e) => !e.hidden).map((e) => e.querySelector("i").textContent).join(" "));
+  await page.evaluate(() => { const t = window.dial_tool; t.set_value("window", "neighbours", false); t.set_value("window", "h", 2.6); t.set_value("window", "w", 4.4); t.set_value("window", "kind", 4); t.set_value("window", "follows", false); t.set_value("window", "text", "18"); });
+  const big = await one(), kinds = await page.evaluate(() => [...document.querySelectorAll('[id^="window-kind-Complication"]')].map((b) => b.textContent.trim()).join(","));
+  await shot("15-big-date");
+  await page.evaluate((w) => { const t = window.dial_tool, v = JSON.parse(w); t.S.ui_window = 0; for (const [k, i] of [["neighbours", 4], ["h", 3], ["w", 7], ["kind", 2], ["text", 6], ["follows", 5], ["on", 1]]) t.set_value("window", k, v[i]); t.S.ui_window = v[0]; t.sync_rows(); t.render(); }, was);
+  check(plain.more === 0 && near.more === 1 && Math.abs(near.high - plain.high) < 0.35 && colour.includes("Neighbours") && kinds.endsWith("big date") && big.holes === 2,
+    `a tall date window with its neighbours: one more colour (${colour}), the 18 still ${near.high} high (${plain.high} in its own hole); a big date: two holes (${big.holes}); the kinds ${kinds}`);
+}
 { // Tiny Preview (#337, 4.59): its button top right where Guides stood; the dial at its own size (the browser's mm) with its margins, over everything; dragged anywhere; its eye puts it away. Guides at the bottom left, between Backdrop and Shadows, their list opening upward
   const corner = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), m = r("main"), o = r("#tiny-open"), g = r("#guides"), b = r("#backdrop"), sh = r("#shadows"); return [Math.round(m.right - o.right) === Math.round(m.bottom - m.bottom) || o.top - m.top < 40, b.bottom <= g.top + 1 && g.bottom <= sh.top + 1 && Math.abs(g.left - sh.left) < 1]; });
   await page.click("#tiny-open"); await page.waitForTimeout(250);
