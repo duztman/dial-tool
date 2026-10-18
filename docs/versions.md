@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.72 | 19 Oct 2026 | web | [`8ba4f75`](https://github.com/duztman/dial-tool/tree/8ba4f753b9e72d531b5df69a0ca90fa8b7b3db82) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/8ba4f753b9e72d531b5df69a0ca90fa8b7b3db82/web/dial-tool.html) | Windows' discs: X-ray, disc edges as guides, physics with a red edge when a disc passes the case |
 | 4.71 | 18 Oct 2026 | web | [`efd3515`](https://github.com/duztman/dial-tool/tree/efd3515c8920a40fb75af6ffe530eebf9e84509f) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/efd3515c8920a40fb75af6ffe530eebf9e84509f/web/dial-tool.html) | Handles on the hand's picture: drag length, tail, width (both sides) |
 | 4.70 | 18 Oct 2026 | web | [`e97db57`](https://github.com/duztman/dial-tool/tree/e97db571e37aee67a8d968ceffeac6c58e41a64c) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/e97db571e37aee67a8d968ceffeac6c58e41a64c/web/dial-tool.html) | Hover a hand's number: its part lights up on the hand's picture |
 | 4.69 | 18 Oct 2026 | web | [`c3e5d36`](https://github.com/duztman/dial-tool/tree/c3e5d3673a139371667d59cbcc7a977fa8e4f671) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/c3e5d3673a139371667d59cbcc7a977fa8e4f671/web/dial-tool.html) | Straps and bracelets for the cases, strap colour; the view fits the dial again |
