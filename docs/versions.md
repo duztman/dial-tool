@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.55 | 18 Oct 2026 | web | [`1718986`](https://github.com/duztman/dial-tool/tree/1718986540f70547086a20b141d7af33ba9624ff) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/1718986540f70547086a20b141d7af33ba9624ff/web/dial-tool.html) | The selected ring after Okay's PSD: size and radius in mono in the row, details written out |
 | 4.54 | 18 Oct 2026 | web | [`b6991d6`](https://github.com/duztman/dial-tool/tree/b6991d624feacff9aa2d76fe97fcd3565a602f22) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/b6991d624feacff9aa2d76fe97fcd3565a602f22/web/dial-tool.html) | the font box after Okay's drawing |
 | 4.53 | 18 Oct 2026 | web | [`d2a0f3b`](https://github.com/duztman/dial-tool/tree/d2a0f3b4936007a5a73db74435c0e86dad42b335) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/d2a0f3b4936007a5a73db74435c0e86dad42b335/web/dial-tool.html) | tangent numerals, the needle, the eye pass (with 4.52.1, 4.52.2) |
 | 4.52 | 18 Oct 2026 | web | [`97e135a`](https://github.com/duztman/dial-tool/tree/97e135af54150a1c78c809912e027fe7c676f533) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/97e135af54150a1c78c809912e027fe7c676f533/web/dial-tool.html) | notes 2: the small ones |
