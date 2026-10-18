@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.82 | 19 Oct 2026 | web | [`4642250`](https://github.com/duztman/dial-tool/tree/464225081c952ef2ecad7f7795b854e866991dc6) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/464225081c952ef2ecad7f7795b854e866991dc6/web/dial-tool.html) | the cases as technical drawings; Case and Strap top left; Tiny Preview bottom right; the date without its year |
 | 4.81 | 19 Oct 2026 | web | [`cc0815e`](https://github.com/duztman/dial-tool/tree/cc0815e8942bedfdcda4e25774112f757a1e19d9) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/cc0815e8942bedfdcda4e25774112f757a1e19d9/web/dial-tool.html) | the ring of shine redrawn; the selected ring one box; None dotted |
 | 4.80 | 19 Oct 2026 | web | [`163929d`](https://github.com/duztman/dial-tool/tree/163929db6f222261b7424624455ca22479e7f3dc) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/163929db6f222261b7424624455ca22479e7f3dc/web/dial-tool.html) | a hub on the hands; the side handles move where a hand is widest |
 | 4.79 | 19 Oct 2026 | web | [`adaea67`](https://github.com/duztman/dial-tool/tree/adaea67dbbb427497779da74a496581334dbcfaf) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/adaea67dbbb427497779da74a496581334dbcfaf/web/dial-tool.html) | Okay's notes on 4.78: the guides' list, bevels off by default, hand names on touch, Case and Strap in the bottom-left list |
