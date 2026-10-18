@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.57 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.58 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -223,6 +223,7 @@
     --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
     --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
     --t-num-pop: 41px;                             /* the controller's value, in its grey pill: his 14 where a disc is 22.68 (controller 2.svg, Okay, 18 Oct 2026); 25 from 4.45.3 to 4.51.1, 20 in 4.45.2 */
+    --pm-lift: 4px;                                /* a quiet number's tiny plus, this much over the figures' top (Okay's notes 2, #317: "plus moves up 4px") */
     --link-pill: 14px;                             /* the LINK pill on the line between width and height (#358): the pixel font at 8 with three over and under */
     --pos-box: 78px; --pos-step: 18px;            /* Positions' small controls (#357: "controls smaller"): a box, value and − + or ⌄ together, and one of its cells */
     --pos-dot: 2px; --pos-dot-gap: 5px;            /* the span's dotted arc: a dot this wide, this far apart, centre to centre */
@@ -708,8 +709,12 @@
   .pm > .step:last-child { top: calc(50% - var(--control) / 2); bottom: 50%; }      /* the plus */
   .pm > .step > svg { position: absolute; inset-inline: 0; margin-inline: auto; }
   .pm > .step:first-child > svg { bottom: calc(var(--control) / 2 - 0.5cap); }
-  .pm > .step:last-child > svg { top: calc(var(--control) / 2 - 0.5cap); }
-  .pm > .step:hover, .numbox.changed > input, .numbox.changed .step { color: var(--ink); }
+  .pm > .step:last-child > svg { top: calc(var(--control) / 2 - 0.5cap - var(--pm-lift)); }      /* the plus a little higher (#317: "plus moves up 4px") */
+  .numbox.changed > input, .numbox.changed .step { color: var(--ink); }
+  /* the whole box is one press (#317): the signs only picture the controller's − and +, the number isn't typed here */
+  .row.side > .numbox, .guidelast .numbox { cursor: pointer; }
+  .numbox > .pm { pointer-events: none; }
+  .numbox:hover > input, .numbox:hover .step { color: var(--ink); }
   @media (min-width: 861px) {
     /* wide: the box in the first two columns, as high as the rows beside it; the rows in the other four, each one
        line: label · slider · the number box */
@@ -6045,7 +6050,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.57";
+var VERSION = "beta 4.58";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -9172,7 +9177,7 @@ var DialTool = class _DialTool {
     if (this.lang_opens && !on(".langs")) for (const shut of this.lang_opens) shut(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
     if (this.kind_open && $("#kind-menu") && !$("#kind-menu").hidden && !on("#ring-kind-square") && !on("#kind-menu")) this.kind_open(false);
-    if (this.value_pop && !on("#value-pop") && !on(".valueb, .atmore, .popname, .numbox > input")) this.value_pop_close();
+    if (this.value_pop && !on("#value-pop") && !on(".valueb, .atmore, .popname, .numbox")) this.value_pop_close();
     this.tag_hide();
   }
   // ── building the window ──────────────────────────────────
@@ -10620,8 +10625,16 @@ var DialTool = class _DialTool {
           if (e.key === "Enter" || e.key === "Escape") field.blur();
         });
         if (!row.inpop) {
+          field.readOnly = true;
           field.onmousedown = (e) => e.preventDefault();
-          field.onclick = (e) => this.value_pop_open(field, row, e.detail ? { x: e.clientX, y: e.clientY } : null);
+          box2.onclick = (e) => this.value_pop_open(field, row, e.detail ? { x: e.clientX, y: e.clientY } : null);
+          field.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              this.value_pop_open(field, row);
+            }
+          });
+          for (const b of box2.querySelectorAll(".step")) b.tabIndex = -1;
         }
         out.quiet = box2;
         wrap.append(lead, slider, box2);
