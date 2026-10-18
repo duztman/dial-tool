@@ -1347,10 +1347,12 @@ check(await page.$eval("#font-picker", (d) => d.open) && sheet_at === "184 64 -1
   check(fam[0] === 42 && fam[1] === 42, `the sheet lists the tool's forty-two families (twenty-one until 4.46.7, #313), each showing numerals in its own outlines (${fam[0]} · ${fam[1]} ${fam[2]})`); }
 await page.click('.fontrow[data-family="Jost"]');
 await page.waitForFunction(() => window.dial_tool.ring().ps === "Jost-Regular" && document.querySelector("#axis-wght"), null, { timeout: 8000 }).catch(() => {});
-check(await S("S.rings[S.ui_ring].ps === 'Jost-Regular'") && await page.$("#axis-wght") !== null && await page.$eval("#font-picker", (d) => d.open), "click Jost: fetched and drawn, the sheet stays open to compare");
+check(await S("S.rings[S.ui_ring].ps === 'Jost-Regular'") && await page.$("#axis-wght") !== null && await page.$eval("#font-picker", (d) => !d.open), "click Jost: fetched and drawn, and the sheet closes (4.68; Okay, 18 Oct 2026, 22:35: \"Font window, selecting font closes window\"; it stayed open to compare until 4.67)");
+await page.click("#font-current");
 await page.click('.fontrow[data-family="Josefin Sans"]');
 await page.waitForFunction(() => window.dial_tool.ring().family === "Josefin Sans");
 check(await S("S.rings[S.ui_ring].axes.wght === 400"), "a variable font that rests at Thin starts at regular weight");
+await page.click("#font-current");
 await shot("5a-font-sheet");
 
 // add fonts: a Google Fonts link (served here from this machine: the test needs no network)
@@ -1387,7 +1389,7 @@ check(await S("S.rings[S.ui_ring].ps === 'Poppins-Light'") && (await page.textCo
 await page.click('#font-picker .fontrow[data-family="Lora"]');
 await page.waitForFunction(() => window.dial_tool.ring().family === "Lora");
 await page.keyboard.press("Escape");
-check(await page.$eval("#font-picker", (d) => !d.open) && (await page.textContent("#font-name")) === "Lora" && await page.$("#font-current .sample svg") !== null, "Done closes the sheet; Type shows Lora with its numerals");
+check(await page.$eval("#font-picker", (d) => !d.open) && (await page.textContent("#font-name")) === "Lora" && await page.$("#font-current .sample svg") !== null, "choosing Lora closes the sheet; Type shows Lora with its numerals");
 await frame();
 check(await page.$("#axis-wght") !== null, "Lora's weight axis has a slider");
 { // a variable axis is named by a sticker, in the tool's colours, that is a button: it sets the axis back
@@ -2107,6 +2109,16 @@ await shot("11-phone");
 await page.click('.form .fold:visible >> nth=0');
 await shot("11b-phone-folded");
 await page.click('.form .fold:visible >> nth=0');
+{ // a phone (4.68; Okay, 18 Oct 2026, 22:35): the controller at three quarters ("Controller too big on the phones, 75% scale"); a hand's rows give the slider all the room between the name and the box ("Hands sliders squeezed, use all row width")
+  await tab("Dial"); await page.$eval('label[for="global-dial-d-Diameter"]', (e) => e.scrollIntoView({ block: "center" }));
+  await page.click('label[for="global-dial-d-Diameter"]'); await page.waitForTimeout(200);
+  const pop = await page.evaluate(() => { const v = document.querySelector("#value-pop"), w = v ? v.getBoundingClientRect().width : 0; window.dial_tool.value_pop_close(); return w; });
+  const k = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--num-pop-k").trim());
+  await tab("Hands");
+  const side = await page.evaluate(() => { const r = [...document.querySelectorAll(".body > .row.side")].find((x) => x.offsetParent && x.querySelector('input[type="range"]')), q = (s) => r.querySelector(s).getBoundingClientRect(); return [Math.round(r.getBoundingClientRect().width), Math.round(q("label").width), Math.round(q('input[type="range"]').width), Math.round(q(".numbox").width), Math.round(parseFloat(getComputedStyle(r).gridTemplateColumns.split(" ")[1]))]; });
+  await tab("Dial");
+  check(k === "0.75" && pop > 150 && pop < 200 && side[2] === side[4] && side[2] > side[0] / 3, `a phone: the controller at ${k} (${Math.round(pop)} px wide); a hand's row ${side[0]} wide: name ${side[1]}, slider ${side[2]} (its whole column, ${side[4]}), box ${side[3]}`);
+}
 await page.setViewportSize({ width: 1440, height: 900 });
 
 // ── labels centred on their ink (ink.js, #186): measured from the screen's dots, not from the code's numbers ──
@@ -2163,16 +2175,20 @@ check(await pad.evaluate(() => window.dial_tool.S.gd_k_axes === 3), "a tap just 
 await pad.tap("#global-c-plate-Plate-hex");
 const chip_reach = await pad.evaluate(() => { const c = [...document.querySelectorAll("#pop-palette button")], r = c[4].getBoundingClientRect(); return [document.elementFromPoint(r.left - 4, r.top + 4) === c[4], document.querySelector("#global-c-plate-Plate-hex").tagName === "SPAN", !document.querySelector("#colour-pop").hidden]; });
 check(chip_reach.every(Boolean), "the hex in a pill opens the pop-out and isn't typed in; a chip is pressed from 4 beside it");
-{ // under a finger a row's − + and its field open the controller: no stepping in place, no keyboard (4.60; Okay, on the iPad: "All these + - buttons on mobile, they get the new controller, not the desktop")
+{ // under a finger a row's slider and its name open the controller; its field takes typing and its − + step in place (4.68; Okay, 18 Oct 2026, 22:35: "On phones and ipad tapping or sliding slider or title opens controller, you can type in box or tap plusminus"; 4.60–4.67 the field and − + opened it)
   await pad.evaluate(() => { const t = window.dial_tool; t.pop_close && t.pop_close(); t.value_pop_close(); if (t.guides_open) t.guides_open(false); });
   const d0 = await pad.evaluate(() => window.dial_tool.S.dial_d);
   await pad.tap("#global-dial-d-Diameter ~ .steps .step:last-child"); await pad.waitForTimeout(200);
-  const plus = await pad.evaluate((d0) => [window.dial_tool.S.dial_d === d0, !!document.querySelector("#value-pop")], d0);
-  await pad.evaluate(() => window.dial_tool.value_pop_close());
+  const plus = await pad.evaluate((d0) => [window.dial_tool.S.dial_d > d0, !document.querySelector("#value-pop")], d0);
+  await pad.evaluate((d0) => window.dial_tool.set_value("global", "dial_d", d0), d0);
   await pad.tap("#global-dial-d-Diameter"); await pad.waitForTimeout(200);
-  const field = await pad.evaluate(() => [!!document.querySelector("#value-pop"), document.activeElement !== document.querySelector("#global-dial-d-Diameter"), document.querySelector("#global-dial-d-Diameter").readOnly]);
+  const field = await pad.evaluate(() => [!document.querySelector("#value-pop"), document.activeElement === document.querySelector("#global-dial-d-Diameter")]);
+  await pad.evaluate(() => document.activeElement.blur());
+  const v0 = await pad.evaluate(() => window.dial_tool.S.dial_d);
+  await pad.tap('#global-dial-d-Diameter ~ input[type="range"], .row:has(#global-dial-d-Diameter) input[type="range"]'); await pad.waitForTimeout(200);
+  const slider = await pad.evaluate((v0) => [!!document.querySelector("#value-pop"), window.dial_tool.S.dial_d === v0], v0);
   await pad.evaluate(() => window.dial_tool.value_pop_close());
-  check(plus.every(Boolean) && field[0] && field[1] && !field[2], `under a finger a row's + opens the controller and steps nothing (${plus.join(" ")}); its field too, not focused, typable again after (${field.join(" ")})`);
+  check(plus.every(Boolean) && field.every(Boolean) && slider.every(Boolean), `under a finger a row's + steps in place, no controller (${plus.join(" ")}); its field is focused to type (${field.join(" ")}); its slider opens the controller and moves nothing (${slider.join(" ")})`);
 }
 await pad.screenshot({ path: path.join(OUT, "12-touch.png") });
 await touch.close();

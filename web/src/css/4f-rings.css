@@ -146,6 +146,7 @@
   .numpop .row .steps { display: flex; justify-content: space-between; width: 100%; }
   .numpop .row .steps > .step { flex: none; display: grid; place-items: center; width: var(--num-pop-step); height: var(--num-pop-step); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); }
   .numpop .row .steps > .step:hover { background: var(--num-pop-hover); }
+  .numpop .row .steps > .step > svg { width: var(--num-pop-sign); height: var(--num-pop-sign); }      /* the − and +, as the controller is scaled */
   /* the Positions preview (#251, 4.50.1): the hand's detail box, round — no frame, the circle as large as the box allows
      with a unit round it; a mark at every position, used in ink, skipped faint, the first a dot */
   .detail.round { border: 0; }

@@ -107,13 +107,14 @@
        drawing's three equal rounds); a unit and a half round and between them; no frame. The drawing's measures, at a
        disc of 66: its top corners 28, its name line 28 with the hairline at its foot, inset 22; the knob 44 with a white
        eye of 12; the track a unit and a half thick, dark to the knob and light after; the signs 8 thick, 40 long. */
-    --num-pop-step: 66px; --num-pop-pill: var(--num-pop-step);      /* the discs and the slider's pill: one height */
-    --num-pop-pad: var(--u6); --num-pop-gap: var(--u3);      /* controller 2.svg (Okay, 18 Oct 2026), at a disc of 66: its 5.67 edge is 16.5, its 2.83 gaps 8.2 */
+    --num-pop-k: 1;      /* the controller's scale: three quarters on a phone (8-narrow; Okay, 18 Oct 2026, 22:35) — every measure below is times it */
+    --num-pop-step: calc(66px * var(--num-pop-k)); --num-pop-pill: var(--num-pop-step);      /* the discs and the slider's pill: one height */
+    --num-pop-pad: calc(var(--u6) * var(--num-pop-k)); --num-pop-gap: calc(var(--u3) * var(--num-pop-k));      /* controller 2.svg (Okay, 18 Oct 2026), at a disc of 66: its 5.67 edge is 16.5, its 2.83 gaps 8.2 */
     --num-pop: calc(var(--num-pop-inner) + 2 * var(--num-pop-pad));
     --num-pop-round: calc(var(--num-pop-step) / 2 + var(--num-pop-pad));      /* the square's corners follow the discs: his 17.01 is 49.5 */
     --num-pop-ground: var(--grey); --num-pop-value: var(--rule); --num-pop-disc: #3F3F3E; --num-pop-well: var(--rule);      /* his #585857 square, #B1B1B1 value pill and track, #3F3F3E discs and knob — on the rule's tones where they are near */
     --num-pop-hover: color-mix(in srgb, var(--num-pop-disc) 85%, var(--white));
-    --num-pop-thumb: calc(var(--num-pop-step) - 2 * var(--u4)); --num-pop-eye: 6px;      /* the knob's white eye, a radius: his 2.13 */
+    --num-pop-thumb: calc(var(--num-pop-step) - 2 * var(--u4) * var(--num-pop-k)); --num-pop-eye: calc(6px * var(--num-pop-k)); --num-pop-sign: calc(44px * var(--num-pop-k));      /* the knob's white eye, a radius: his 2.13 */
     --num-pop-fade: 120ms; --num-pop-linger: 1200ms;      /* it comes at once; after its last use it fades away, quickish (Okay, 17 Oct 2026: "comes lightning fast, fade away quickish after use") */
     --dot-tiny: 10px;                              /* a colour inside a line of words: a folded pane's summary */
     --thumb: 18px; --track: 4px; --thumb-eye: 2px; --thumb-eye-edge: 2.75px;      /* sliders: a black disc on a thin track (Okay's sketch); the light centre of the disc, and where its edge softens */
@@ -187,7 +188,7 @@
     --speed-pad: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2);      /* the speed box's room inside, left and right: the thumb at either end stands as far from the wall as from the box's top and bottom (3; Okay, 15 Oct 2026, 03:18: "when the ball is in a terminal, the bounding box clears it as much as it clears from the top… both ends symmetry"). Was u3 + 4 − half a thumb (1.25; 01:03, "before plus four") */
     --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
     --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
-    --t-num-pop: 41px;                             /* the controller's value, in its grey pill: his 14 where a disc is 22.68 (controller 2.svg, Okay, 18 Oct 2026); 25 from 4.45.3 to 4.51.1, 20 in 4.45.2 */
+    --t-num-pop: calc(41px * var(--num-pop-k));                             /* the controller's value, in its grey pill: his 14 where a disc is 22.68 (controller 2.svg, Okay, 18 Oct 2026); 25 from 4.45.3 to 4.51.1, 20 in 4.45.2 */
     --t-date: 9px; --date-line: 9px; --date-track: 0.02em; --date-face: "Dial Date", var(--sans);      /* the bar's stacked date: three lines in the bar's 28 inside, Inter SemiBold since 4.63 (Barlow Bold in 4.62; Okay: "try inter with appropriate weight for that size") */
     --t-time-narrow: 17px;                         /* the time and AM · PM on a phone: 12 until 4.62 ("too small"), the desktop's 20 leaves how fast too little room */
     --tag-max: 240px;                              /* a tag's longest line: longer words wrap (Okay, 18 Oct 2026, 21:20: "constrict the width to avoid these unreadable lines") */
@@ -199,8 +200,8 @@
     --details-line: 17px;                          /* the ring drawer's two lines of details, baseline to baseline (the same drawing: 16–17) */
     --rename-dim: 0.5;                             /* the rename box at half its grey until the pointer is on it (the same drawing) */
     --font-head-in: 4px;                           /* the font box's preview, this far in from the box's edge on the grey head (Okay's drawing, font-selector_171026, 18 Oct 2026) */
-    --num-pop-inner: 218px;                        /* the controller's pills, 75.05 where a disc is 22.68 (controller 2.svg, Okay, 18 Oct 2026: "The new controller is in")  */
-    --num-pop-track: 10px;                         /* the controller's slider line, 3.4 where a disc is 22.68 (the same drawing) */
+    --num-pop-inner: calc(218px * var(--num-pop-k));                        /* the controller's pills, 75.05 where a disc is 22.68 (controller 2.svg, Okay, 18 Oct 2026: "The new controller is in")  */
+    --num-pop-track: calc(10px * var(--num-pop-k));                         /* the controller's slider line, 3.4 where a disc is 22.68 (the same drawing) */
     --show-tick: 9px;                              /* the Show box's tick, as tall as the word's ascender at 12 (Okay, 18 Oct 2026, notes 2: "Show checkmarks much smaller, just as big as shows ascender … The outer gray box does not change size. Padding of gray box to tick is equal top, left, bottom"); 3 smaller than a tick box from 4.46.4 to 4.51.1 */
     --font-label: calc(6.5em + var(--btn-pad));    /* the font box's rows (#274, 4.51; Okay's notes, p. 12: "break the rules: stretch the sliders as wide as the longest label allows; labels over 12 characters are cut"): a name column of twelve characters, the slider taking all the rest */
     --unit-pad: 4px;                               /* the unit box: this much round its word, on every side — round mm's letters; the other units keep mm's height (Okay, 16 Oct 2026, on 4.44: "2px padding around letters"; on 4.44.3: "Mm looks perfect now add 2px more padding … Others use the same height, width can change") */

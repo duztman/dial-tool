@@ -2347,13 +2347,15 @@ class DialTool {
     if (row.kind === "num") {                      // label · slider · typed field · stepper (R15)
       const slider = el("input", { type: "range", min: row.lo, max: row.hi, step: row.step, id: id + "-slider" });
       const field = el("input", { type: "text", id, inputMode: "decimal", title: "1.2 sets · +0.5 adds · x0.5 multiplies · /2 divides" });
-      // under a finger (or a pen) a row's field and its − + open the controller instead: no keyboard comes up, and the
-      // big − + and the slider are there (Okay, 18 Oct 2026, on the iPad: "All these + - buttons on mobile, they get the
-      // new controller, not the desktop"). A mouse keeps typing and stepping in place.
-      const by_finger = !row.inpop;
-      let finger = null;                           // the last press, when it came from a finger: where
-      const pressed = (e) => { finger = e.pointerType === "touch" || e.pointerType === "pen" ? { x: e.clientX, y: e.clientY } : null; };
-      const to_controller = () => { const at = finger; finger = null; this.value_pop_open(field, row, at); };
+      // under a finger (or a pen) a row's slider opens the controller, tapped or slid — its knob is small for a fingertip;
+      // the field takes typing and − + step, as with a mouse (Okay, 18 Oct 2026, 22:35: "On phones and ipad tapping or
+      // sliding slider or title opens controller, you can type in box or tap plusminus"; from 4.60 to 4.67 the field and
+      // the − + opened it instead)
+      if (!row.inpop) slider.addEventListener("touchstart", (e) => {
+        e.preventDefault();      // the slider itself doesn't move
+        const t = e.touches[0];
+        this.value_pop_open(field, row, { x: t.clientX, y: t.clientY });
+      }, { passive: false });
       const commit = (v) => {
         v = row.whole ? Math.round(v) : +(+v).toFixed(6);
         set(row.whole ? clamp(v, row.lo, row.hi) : v);       // typing past the slider's range is allowed
@@ -2366,11 +2368,6 @@ class DialTool {
       let typing = false;                          // the field follows every change, except while you type in it
       slider.oninput = () => { if (row.inpop || row.scope === "nudge") this.guides_live(row.scope !== "nudge"); commit(+slider.value); };
       field.oninput = () => { typing = true; };
-      if (by_finger) {
-        // read-only while a finger is on it, so it takes no typing and no keyboard comes up (WebKit focuses on the tap)
-        field.addEventListener("pointerdown", (e) => { pressed(e); if (finger) { field.readOnly = true; e.preventDefault(); } });
-        field.addEventListener("click", (e) => { if (finger) { e.preventDefault(); field.blur(); to_controller(); setTimeout(() => { field.readOnly = false; }, 0); } });
-      }
       field.onblur = () => { typing = false; out.refresh(this.target(row.scope)); };
       field.onchange = () => { typing = false; commit(parse_number(field.value, now() * per()) / per()); out.refresh(this.target(row.scope)); };
       field.onkeydown = (e) => {
@@ -2378,8 +2375,7 @@ class DialTool {
       };
       // − and +: as typed signs in a full row; in the popup the thick ones (BIG); beside a quiet number the tiny ones
       const step = (dir) => {
-        const b = el("button", { type: "button", className: "step", tabIndex: -1, onclick: () => { if (by_finger && finger) return to_controller(); commit(now() + dir * row.step); } });
-        if (by_finger) b.addEventListener("pointerdown", pressed);
+        const b = el("button", { type: "button", className: "step", tabIndex: -1, onclick: () => commit(now() + dir * row.step) });
         const sign = (row.inpop ? BIG : row.side || row.block ? SIGNS : STEP)[dir > 0 ? "plus" : "minus"];      // a narrow box (beside a hand's box, a quiet row, Positions) the shared 9-across signs, so they keep their room
         const svg_sign = !row.inpop && (row.side || row.block);
         b.innerHTML = svg_sign ? icon(sign) : sign; b.ariaLabel = dir > 0 ? "Plus" : "Minus";
@@ -3278,7 +3274,10 @@ class DialTool {
     let press = null;
     const now = () => { const T = this.target(row.scope); return T[row.key] ?? (row.or ? row.or(T) : 0); };
     label.onclick = (e) => e.preventDefault();
-    label.onpointerdown = (e) => { press = { x: e.clientX, v: now(), moved: false }; label.setPointerCapture(e.pointerId); };
+    label.onpointerdown = (e) => {
+      if (e.pointerType === "touch" || e.pointerType === "pen") { e.preventDefault(); press = null; return this.value_pop_open(label, row, { x: e.clientX, y: e.clientY }); }      // a finger: the controller at once, tapped or slid (22:35)
+      press = { x: e.clientX, v: now(), moved: false }; label.setPointerCapture(e.pointerId);
+    };
     label.onpointermove = (e) => {
       if (!press) return;
       const d = e.clientX - press.x;
@@ -4124,7 +4123,7 @@ class DialTool {
         const named = this.sample(fonts.find((x) => x.name) || f, "name");
         named.classList.add("name");
         named.setAttribute("aria-label", family);
-        const row = el("button", { type: "button", className: "fontrow", title: f.what ? `${family} · ${f.what}` : family, onclick: () => { this.font_note = ""; this.use_font(f); } },
+        const row = el("button", { type: "button", className: "fontrow", title: f.what ? `${family} · ${f.what}` : family, onclick: () => { this.font_note = ""; this.use_font(f); this.picker.close(); } },      // choosing a font closes the sheet (Okay, 18 Oct 2026, 22:35)
           named, this.sample(f), el("span", { className: "has" }, ...this.family_says(fonts).map(([word, kind]) => el("span", { className: "sticker " + kind, textContent: word }))));
         row.dataset.family = family;
         row.dataset.group = f.group;

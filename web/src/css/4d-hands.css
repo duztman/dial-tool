@@ -37,12 +37,16 @@
        hand has; the ones it doesn't use have no height) and shares the first row's line, as two tabs share theirs.
        Seven rows high and held in view while the rows scrolled until 4.46.4. The thumbs' row goes under it all */
     .body > .detail { grid-column: 2 / span 2; grid-row: 1 / span 40; align-self: stretch; margin: calc(-1 * var(--hair)) 0 0; }      /* it scrolls up with its pane until it is one unit (the gap between the shape tiles) under the line under the hand tabs, stays there while the rows beside it scroll, and the pane's end (the Cap pane) pushes it on (Okay, 14 Oct 2026: "stay still… until cap"; "align here after scroll") */      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
-    .body > .row.side { grid-column: 4 / -1; grid-template-columns: var(--side-label) minmax(0, 1fr) var(--side-num); }      /* the name as narrow as the longest (Counter Ø), the slider the rest: bigger (#250) */
-    .row.side > :first-child, .row.side > input[type="range"] { grid-column: auto; }
-    .row.side > label { font-size: var(--t-s); }
-    .row.side > label > .whole { display: none; }
-    .row.side > label > .short { display: inline; }
-    .row.side > .colour { grid-column: 2 / -1; }
-    .row.side > .segs { grid-column: 2 / -1; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }      /* a choice of words beside the box (a disc hand's marker, #164): over the slider and number, its words sharing the width */
+    .body > .row.side { grid-column: 4 / -1; }      /* beside the box */
   }
+  /* a side row, at every width: the name as narrow as the longest (Counter Ø), the slider the rest: bigger (#250); the
+     number box. Narrow, the rows go under the box (8-narrow) and keep this line — until 4.67 they fell to the panel's
+     six tiles there, the slider one tile (Okay, 18 Oct 2026, 22:35, on the iPad: "Hands sliders squeezed, use all row width") */
+  .body > .row.side { grid-template-columns: var(--side-label) minmax(0, 1fr) var(--side-num); }
+  .row.side > :first-child, .row.side > input[type="range"] { grid-column: auto; }
+  .row.side > label { font-size: var(--t-s); }
+  .row.side > label > .whole { display: none; }
+  .row.side > label > .short { display: inline; }
+  .row.side > .colour { grid-column: 2 / -1; }
+  .row.side > .segs { grid-column: 2 / -1; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }      /* a choice of words beside the box (a disc hand's marker, #164): over the slider and number, its words sharing the width */
 }

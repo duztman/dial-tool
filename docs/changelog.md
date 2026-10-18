@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.68 (web version) · 18 Oct 2026
+
+Okay's notes of 22:35 on 4.67, phones and iPad.
+
+- **Under a finger, the slider and the name open the controller** — tapped or slid; the slider itself doesn't move. The number's field takes typing (the keyboard comes up) and − + step in place, as with a mouse. From 4.60 to 4.67 it was the other way round: the field and − + opened the controller ("On phones and ipad tapping or sliding slider or title opens controller, you can type in box or tap plusminus").
+- **The controller at three quarters on a phone** (narrower than 600): one scale token, `--num-pop-k`, multiplies every measure of it — discs, pills, value, signs, gaps. An iPad keeps it whole ("Controller too big on the phones, 75% scale").
+- **A hand's rows on a narrow screen**: name · slider · number box on one line, the slider taking all the room between, the short names (Round, Counter Ø) as on a wide screen. Until 4.67 they fell to the panel's six tiles there and the slider got one ("Hands sliders squeezed, use all row width").
+- **Choosing a font closes the font sheet** ("Font window, selecting font closes window").
+
 ## beta 4.67 (web version) · 18 Oct 2026
 
 A Wear OS watch face (farukahmet's PR #1, ported; Okay, 21:20: "All three great on pull request").
