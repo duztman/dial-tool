@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.55 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.56 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -223,6 +223,8 @@
     --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
     --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
     --t-num-pop: 41px;                             /* the controller's value, in its grey pill: his 14 where a disc is 22.68 (controller 2.svg, Okay, 18 Oct 2026); 25 from 4.45.3 to 4.51.1, 20 in 4.45.2 */
+    --pos-box: 78px; --pos-step: 18px;            /* Positions' small controls (#357: "controls smaller"): a box, value and − + or ⌄ together, and one of its cells */
+    --pos-dot: 2px; --pos-dot-gap: 5px;            /* the span's dotted arc: a dot this wide, this far apart, centre to centre */
     --t-fig: 14px;                                 /* a selected ring's size and radius over their buttons, in Dial Mono: his digits are 10 high where the name's capitals are 9 (selected-ring_181026, Okay, 18 Oct 2026: "Large mono numbers for size and radius") */
     --details-line: 17px;                          /* the ring drawer's two lines of details, baseline to baseline (the same drawing: 16–17) */
     --rename-dim: 0.5;                             /* the rename box at half its grey until the pointer is on it (the same drawing) */
@@ -932,6 +934,39 @@
   .detail.round .used { stroke: currentColor; stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
   .detail.round .skipped { stroke: var(--rule); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
   .detail.round .first { fill: currentColor; }
+  /* Positions, drawn (Okay's notes 2, 18 Oct 2026, #357: "Preview big, controls smaller"): the preview square in the
+     first two columns, three rows high; beside it two columns of small controls — Count · Every, Offset · Skip those,
+     Start · Span — each a name and its box, the boxes as wide as each other. The preview is a control: the start and
+     the span's end are dragged round it (app.js row_ring_positions); the span a dotted arc inside the marks */
+  .pane.positions > .body > .detail.round { grid-column: 2 / span 2; grid-row: 1 / span 3; align-self: start; aspect-ratio: 1; min-height: 0; margin: 0; touch-action: none; cursor: grab; }
+  .pane.positions > .body > .detail.round.dragging { cursor: grabbing; }
+  .detail.round .span { stroke: var(--grey); stroke-width: var(--pos-dot); stroke-linecap: round; stroke-dasharray: 0 var(--pos-dot-gap); vector-effect: non-scaling-stroke; }      /* "Span ruler: make it dotted instead of ruler" */
+  .detail.round .spanend { fill: var(--field); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
+  .pane.positions > .body > .row { grid-column: span 2; column-gap: var(--u1); min-width: 0; }
+  .pane.positions > .body > .row > :first-child { grid-column: auto; }
+  .pane.positions > .body > .row > label:first-child { font-size: var(--t-s); }
+  .pane.positions > .body > .row:is(.nummenu, .block) { grid-template-columns: minmax(0, 1fr) var(--pos-box); }
+  .pane.positions > .body > .row.chk { grid-template-columns: auto auto minmax(0, 1fr); }
+  .pane.positions > .body > .row.chk > span:first-child { display: none; }
+  .pane.positions > .body > .row.chk > .check { grid-column: auto; font-size: var(--t-s); white-space: nowrap; }
+  /* the number block (#317; the font box's, 4.54): the value and its − + one block, a thick line of the rule's grey
+     round all three, hairlines between; the menu box the same, its arrow where the − + stand */
+  .body .row.num.block:not(.side) { grid-template-columns: minmax(0, 1fr) var(--pos-box); column-gap: var(--u1); }
+  .body .row.num.block:not(.side) > :first-child { grid-column: 1; }
+  .body .row.num.block:not(.side) > input[type="text"] { grid-column: 2; grid-row: 1; width: calc(var(--pos-box) - 2 * var(--pos-step)); justify-self: start; height: var(--control); padding: 0 var(--u1); border: var(--thick) solid var(--rule); border-right-width: var(--hair); border-radius: 0; font-size: var(--t-s); }
+  .body .row.num.block:not(.side) > .steps { grid-column: 2; grid-row: 1; justify-self: end; display: flex; width: auto; }
+  .body .row.num.block:not(.side) > .steps > .step { width: var(--pos-step); min-width: 0; height: var(--control); padding: 0; border: var(--thick) solid var(--rule); border-left-width: var(--hair); border-radius: 0; color: var(--ink); }
+  .body .row.num.block:not(.side) > .steps > .step + .step { border-left-width: 0; }
+  .menubox { position: relative; display: flex; height: var(--control); border: var(--thick) solid var(--rule); background: var(--field); font-size: var(--t-s); }
+  .menubox > .v { flex: 1 1 0; display: grid; align-items: center; justify-content: end; padding: 0 var(--u1); }
+  .menubox > .arrow { flex: none; display: grid; place-items: center; width: var(--pos-step); border-left: var(--hair) solid var(--rule); }
+  .menubox > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }      /* the browser's own list, unseen over the box */
+  .menubox > input { flex: 1 1 0; min-width: 0; height: 100%; padding: 0 var(--u1); border: 0; text-align: right; font-size: var(--t-s); }
+  .menubox > .go { flex: none; display: grid; place-items: center; width: var(--pos-step); padding: 0; border: 0; border-left: var(--hair) solid var(--rule); background: var(--ink); color: var(--paper); }
+  .menubox:hover, .body .row.num.block:not(.side) > .steps > .step:hover { border-color: var(--grey); }
+  /* an (i): what a setting does, in a tag (#357: "Offset and skip need tooltip details") */
+  .infosign { display: grid; place-items: center; height: var(--control); padding: 0 var(--u1); color: var(--wait); }
+  .infosign:hover, .infosign:focus-visible { color: var(--ink); }
   /* a quiet row (R15 form B, #251): the number with its compact ±, no slider on the row — the slider stands in the controller its name or its number opens */
   .row.side.quiet > input[type="range"] { display: none; }
   /* a number's name opens its popup; pressed and moved sideways it changes the value (#249, #170) */
@@ -1577,7 +1612,9 @@
     .tabs { position: sticky; top: 0; z-index: 3; background: var(--paper); }      /* over what scrolls under it: the tabs' notches, an open number box */
     .ringlist ol { max-height: none; }
     .row.pick > label, .row.pick > .picks { grid-column: 1 / -1; }
-    .detail { min-height: 0; height: calc(1.5 * var(--tile)); }      /* over its rows here: a wide box, the hand lying in it, its tip to the right */
+    .detail { min-height: 0; height: calc(1.5 * var(--tile)); }
+    .pane.positions .detail.round { height: auto; grid-row: 1 / span 6; }      /* Positions keeps its square beside the controls (#357), now one column of them: */
+    .pane.positions > .body > .row { grid-column: 4 / -1; }      /* two would cut their names on a phone */      /* over its rows here: a wide box, the hand lying in it, its tip to the right */
     .detail .upright { display: none; }
     .detail .lying { display: block; }      /* picture tiles under their label, on all six columns: room for their words */
     .row.pick > label { line-height: 1.4; padding-top: var(--unit); }
@@ -6004,7 +6041,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.55";
+var VERSION = "beta 4.56";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -8427,6 +8464,10 @@ var TOOL_ICONS = {
   redo: `<path d="M13.25 6.75H6.75A3.25 3.25 0 0 0 6.75 13.25H10.25M10.25 3.75L13.25 6.75L10.25 9.75" ${sw(SLANT)}/>`,
   wide: `<rect x="2.75" y="2.75" width="10.5" height="10.5"/><path d="M6.25 10.25L10.25 6.25M7.25 6.25H10.25V9.25" ${sw(DENSE)}/>`,
   find: `<circle cx="7" cy="7" r="4.25" ${sw(CURVE)}/><path d="M10.25 10.25L13.25 13.25" ${sw(SLANT)}/>`,
+  // an (i) beside a setting's name: what it does, in a tag (#357). A ring holding a stem and a dot; quiet by its grey
+  info: `<circle cx="8.25" cy="8.25" r="6" ${sw(CURVE)}/><path d="M8.25 7.25V11.25"/><circle cx="8.25" cy="4.75" r="1" fill="currentColor" stroke="none"/>`,
+  // →: take what was typed (a Custom count, #357): the up arrow turned
+  go: `<path d="M3.25 8.25H13.25M9.25 4.25L13.25 8.25L9.25 12.25"/>`,
   // a link, beside Copy link (Okay, 16 Oct 2026, #277): two open halves facing each other, a bar between (fit.mjs; look.py 0.5 %)
   link: `<path d="M6.75 4.75H4.25A3.25 3.25 0 0 0 4.25 11.25H6.75" ${sw(CURVE)}/><path d="M9.25 4.75H11.75A3.25 3.25 0 0 1 11.75 11.25H9.25" ${sw(CURVE)}/><path d="M5.25 8.25H10.75"/>`,
   // the Shadows switch, on 18 like Guides: a sphere lit from the upper right — its outline, its shade a crescent on the
@@ -8668,14 +8709,18 @@ var ROWS = {
     // Positions (Okay's notes, p. 5, #251, 4.50.1): at the left a round preview of the ring's positions, like the hand's
     // box — the used ones as marks, the skipped ones faint, the first one marked; beside it the numbers as quiet rows
     // (R15 form B: "none of these need slider"), their sliders in the controller a name or a number opens
-    hdr("Positions", { folded: true }),
+    // Positions, drawn (Okay's notes 2, 18 Oct 2026, #357: "The new positions pane just dropped. Preview big, controls
+    // smaller. Offset and skip need tooltip details"): the round preview at the left, large, its first position and
+    // its span's end dragged round it; beside it two columns of small controls, Count · Every as menus (1, 2, 3 …
+    // then Custom, a typed field with →), Offset · Start · Span as number blocks, Skip those a tick with an (i)
+    hdr("Positions", { folded: true, cls: "positions" }),
     custom("ring_positions"),
-    num2("count", "Count", 1, 360, 1, { whole: true, side: true, quiet: true }),
-    num2("start", "Start \xB0", -180, 180, 0.5, { side: true, quiet: true }),
-    num2("span", "Span \xB0", 1, 360, 1, { side: true, quiet: true }),
-    num2("every", "Every", 1, 60, 1, { whole: true, side: true, quiet: true }),
-    num2("offset", "Offset", 0, 59, 1, { whole: true, side: true, quiet: true }),
-    chk("invert", "Skip those instead", { side: true }),
+    custom("num_menu", { key: "count", text: "Count", lo: 1, hi: 360, items: [1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 24, 30, 36, 48, 60, 72, 90, 120, 180, 240, 300, 360] }),
+    custom("num_menu", { key: "every", text: "Every", lo: 1, hi: 60, items: [1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30] }),
+    num2("offset", "Offset", 0, 59, 1, { whole: true, block: true, tip: "Which of every few is used: with Every 3, Offset 1 takes the 2nd, 5th, 8th\u2026" }),
+    chk("invert", "Skip those", { tip: "Turns it over: the positions Every and Offset take are left out, the others drawn" }),
+    num2("start", "Start", -180, 180, 0.5, { block: true, suffix: "\xB0" }),
+    num2("span", "Span", 1, 360, 1, { block: true, suffix: "\xB0" }),
     // Give way (Okay's notes, p. 4, #258, 4.50.2: "what's happening should be visible here"): Skip where and Knock out
     // as side tabs, the open one lit white and attached to a white-bordered square that shows what the choice does, a
     // drawing in the icons' style; the choices at its foot as radio buttons; Clearance a quiet row under them (R15 B),
@@ -10460,7 +10505,7 @@ var DialTool = class _DialTool {
       out.summary = el("span", { className: "summary quiet" });
       out.button = el("button", { type: "button", className: "fold", title: "Show or hide this pane", onclick: () => this.fold(out, !this.is_folded(out)) }, out.eye, title, out.summary);
       out.body = el("div", { className: "body" });
-      out.el = el("section", { className: row.headless ? "pane headless" : row.bare ? "pane bare" : "pane" }, out.button, out.body);
+      out.el = el("section", { className: (row.headless ? "pane headless" : row.bare ? "pane bare" : "pane") + (row.cls ? " " + row.cls : "") }, out.button, out.body);
       if (row.headless) out.button.hidden = true;
       if (row.tools) {
         out.el.classList.add("tooled");
@@ -10481,7 +10526,7 @@ var DialTool = class _DialTool {
       };
       const length = is_length(row);
       const per = () => length ? this.unit()[2] : 1, places = () => Math.max(0, decimals(row.step) + (length ? this.unit()[3] : 0));
-      const shown = (v) => (v * per()).toFixed(places());
+      const shown = (v) => (v * per()).toFixed(places()) + (row.suffix || "");
       const now = () => {
         const T = this.target(row.scope);
         return T[row.key] ?? (row.or ? row.or(T) : 0);
@@ -10547,7 +10592,7 @@ var DialTool = class _DialTool {
         field.title = row.text + " \xB7 " + field.title;
       }
       if (row.inpop) slider.ariaLabel = field.ariaLabel = row.text;
-      if (!row.inpop && !row.side && !row.bare && !row.button) this.name_opens(label, row);
+      if (!row.inpop && !row.side && !row.bare && !row.button && !row.block) this.name_opens(label, row);
       if (row.side) {
         const box2 = el("span", { className: "numbox" }, field, el("span", { className: "pm" }, step(-1), step(1)));
         for (const b of box2.querySelectorAll(".step")) b.onmousedown = (e) => e.preventDefault();
@@ -10564,6 +10609,11 @@ var DialTool = class _DialTool {
           wrap.classList.add("quiet");
           this.name_opens(label, row);
         }
+      } else if (row.block) {
+        wrap.classList.add("block");
+        wrap.append(lead, field, el("span", { className: "steps" }, step(-1), step(1)));
+        this.name_opens(label, row);
+        if (row.tip) label.dataset.tip = row.tip;
       } else wrap.append(lead, slider, field, el("span", { className: "steps" }, step(-1), step(1)));
       out.refresh = (T) => {
         const v = T[row.key] ?? (row.or ? row.or(T) : 0);
@@ -10645,6 +10695,7 @@ var DialTool = class _DialTool {
       const box2 = el("input", { type: "checkbox", id });
       box2.onchange = () => set(box2.checked);
       wrap.append(el("span"), el("label", { className: "check", htmlFor: id }, box2, " " + row.text));
+      if (row.tip) wrap.append(this.info_sign(row.tip));
       out.refresh = (T) => {
         box2.checked = Boolean(T[row.key]);
       };
@@ -11481,6 +11532,92 @@ var DialTool = class _DialTool {
     }
     return [what, where];
   }
+  /** an (i): what a setting does, in a tag — under the pointer, or a moment after a tap (a finger has no hover), as
+   *  the magnifier's (Okay's notes 2, #357: "Offset and skip need tooltip details"). */
+  info_sign(text) {
+    const b = el("button", { type: "button", className: "infosign", ariaLabel: text });
+    b.dataset.tip = text;
+    b.innerHTML = icon(TOOL_ICONS.info);
+    b.onpointerdown = (e) => e.stopPropagation();
+    b.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.tag_show(b);
+      clearTimeout(this.info_tip);
+      this.info_tip = setTimeout(() => this.tag_hide(), 2400);
+    };
+    return b;
+  }
+  /** a whole number picked from a menu (#357, Okay's drawing: "4 ⌄" opening 1, 2, 3, 4 … Custom; "Custom … line turns
+   *  into" a typed field with →): the browser's own menu lies over the box, unseen, so a finger gets the system's
+   *  list. Custom turns the box into a field: Enter or → takes what is typed, Escape or a press elsewhere puts the
+   *  menu back. A value not in the list is put in it, so the box always says the value. The name opens the
+   *  controller and drags the value (#249), as every number's name does. */
+  row_num_menu(wrap, out, row) {
+    const spec = { kind: "num", scope: "ring", key: row.key, text: row.text, lo: row.lo, hi: row.hi, step: 1, whole: true };
+    wrap.className = "row nummenu";
+    const id = `ring-${row.key}-${row.text}`;
+    const label = el("label", { htmlFor: id + "-menu", textContent: row.text });
+    this.name_opens(label, spec);
+    if (row.tip) label.append(this.info_sign(row.tip));
+    const menu = el("select", { id: id + "-menu", ariaLabel: row.text });
+    const shown = el("span", { className: "v" });
+    const arrow = el("span", { className: "arrow" });
+    arrow.innerHTML = icon(SIGNS.down);
+    const field = el("input", { type: "text", id, inputMode: "numeric", ariaLabel: row.text, hidden: true });
+    const go = el("button", { type: "button", className: "go", ariaLabel: "Take it", hidden: true });
+    go.innerHTML = icon(TOOL_ICONS.go);
+    const box2 = el("span", { className: "menubox" }, shown, arrow, menu, field, go);
+    const typing = (on) => {
+      box2.classList.toggle("typing", on);
+      for (const e of [shown, arrow, menu]) e.hidden = on;
+      field.hidden = go.hidden = !on;
+      if (on) {
+        field.value = String(this.ring()[row.key]);
+        field.focus();
+        field.select();
+      }
+    };
+    const take = () => {
+      const v = Math.round(parse_number(field.value, this.ring()[row.key]));
+      typing(false);
+      this.set_value("ring", row.key, clamp(v, row.lo, row.hi));
+      out.refresh(this.ring());
+    };
+    menu.onchange = () => {
+      if (menu.value === "custom") typing(true);
+      else this.set_value("ring", row.key, +menu.value);
+    };
+    field.onkeydown = (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        take();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        typing(false);
+        out.refresh(this.ring());
+      }
+    };
+    field.onblur = (e) => {
+      if (e.relatedTarget !== go) {
+        typing(false);
+        out.refresh(this.ring());
+      }
+    };
+    go.onmousedown = (e) => e.preventDefault();
+    go.onclick = take;
+    wrap.append(label, box2);
+    let listed = "";
+    out.refresh = (R) => {
+      const v = parseInt(R[row.key]) || row.lo, items = [.../* @__PURE__ */ new Set([...row.items, v])].sort((x, y) => x - y), now = items.join();
+      if (now !== listed) {
+        listed = now;
+        menu.replaceChildren(...items.map((n) => el("option", { value: String(n), textContent: String(n) })), el("option", { value: "custom", textContent: "Custom\u2026" }));
+      }
+      menu.value = String(v);
+      shown.textContent = String(v);
+    };
+  }
   // ── a value as a button ──────────────────────────────────
   //   A number as a small round drawing (Okay, 13 Oct 2026; first: a ring's radius and size). A click pops up a
   //   small square at its corner, the field ready to type in; pressing and moving the pointer changes the value
@@ -11613,7 +11750,7 @@ var DialTool = class _DialTool {
     this.value_pop_close();
     for (const old of document.querySelectorAll(".numpop.fading")) old.remove();
     this.tag_hide();
-    const r = this.build_row({ ...row, inpop: true, side: false });
+    const r = this.build_row({ ...row, inpop: true, side: false, block: false, tip: null });
     const name = r.el.querySelector(":scope > .menulabel, :scope > label"), field = r.el.querySelector('input[type="text"]');
     if (name) name.hidden = true;
     const head = el("div", { className: "pophead" }, ...field ? [el("div", { className: "popvalue" }, field)] : []);
@@ -12235,12 +12372,16 @@ var DialTool = class _DialTool {
   /** the chosen hand in detail: a box of its own, at the left of the hand's rows (on a phone: over them, the hand lying). */
   /** the ring's positions, drawn (Okay's notes, p. 5, #251, 4.50.1: "a ring-specific preview at the left, like the
    *  hands' detail box: round, not in a square box, with even padding"): a faint circle; a mark at every position, the
-   *  used ones in ink, the ones skipped (Every, Offset, Skip those instead) faint; the first position marked with a dot,
-   *  so Start is seen. The count, start, span, every and offset are all read from it. */
+   *  used ones in ink, the ones skipped (Every, Offset, Skip those) faint; the first position marked with a dot, so
+   *  Start is seen. Since 4.56 (notes 2, #357: "start point" · "Span ruler: make it dotted instead of ruler" · "these
+   *  are controls, click/tap dragable") also the span, a dotted arc inside, from the start round to its end, which a
+   *  small ring marks. A press in the outer band (the marks and the dot) drags the start round the dial; a press
+   *  inside it drags the span's end. Whole degrees; the rows beside it say the numbers. */
   row_ring_positions(wrap, out) {
     wrap.className = "detail round";
     wrap.id = "ring-positions";
     wrap.setAttribute("role", "img");
+    const DOT = 0.68, ARC = 0.52;
     let drawn2 = "";
     out.refresh = (R) => {
       const angles = ring_angles(R), used = new Set(positions_of(R)), f = (v) => v.toFixed(4);
@@ -12249,13 +12390,46 @@ var DialTool = class _DialTool {
         const [x0, y0] = at(a, 0.84), [x1, y1] = at(a, 1);
         return `<path class="${used.has(i) ? "used" : "skipped"}" d="M${x0} ${y0}L${x1} ${y1}"/>`;
       }).join("");
-      const [fx, fy] = at(angles[0] || 0, 0.68);
-      const now = `<svg viewBox="-1.1 -1.1 2.2 2.2" aria-hidden="true"><circle class="axis" r="1"/>${marks}<circle class="first" cx="${fx}" cy="${fy}" r="0.07"/></svg>`;
+      const a0 = +R.start || 0, span = Math.min(Math.max(+R.span || 360, 1), 360), [fx, fy] = at(angles[0] ?? a0, DOT);
+      const [sx, sy] = at(a0, ARC), [ex, ey] = at(a0 + span, ARC);
+      const arc2 = span >= 360 ? `<circle class="span" r="${ARC}"/>` : `<path class="span" d="M${sx} ${sy}A${ARC} ${ARC} 0 ${span > 180 ? 1 : 0} 1 ${ex} ${ey}"/>`;
+      const now = `<svg viewBox="-1.1 -1.1 2.2 2.2" aria-hidden="true"><circle class="axis" r="1"/>${marks}${arc2}<circle class="spanend" cx="${ex}" cy="${ey}" r="0.06"/><circle class="first" cx="${fx}" cy="${fy}" r="0.07"/></svg>`;
       if (now !== drawn2) {
         drawn2 = now;
         wrap.innerHTML = now;
       }
       wrap.ariaLabel = `${used.size} of ${angles.length} positions used, the first at ${(angles[0] || 0).toFixed(1)}\xB0`;
+    };
+    const polar = (e) => {
+      const b = wrap.getBoundingClientRect(), x = (e.clientX - b.left) / b.width * 2.2 - 1.1, y = (e.clientY - b.top) / b.height * 2.2 - 1.1;
+      return [Math.atan2(x, -y) * 180 / Math.PI, Math.hypot(x, y)];
+    };
+    let grab = null;
+    wrap.onpointerdown = (e) => {
+      const [, rho] = polar(e);
+      grab = { what: rho > (DOT + ARC) / 2 ? "start" : "span", span: null };
+      wrap.setPointerCapture(e.pointerId);
+      wrap.classList.add("dragging");
+      wrap.onpointermove(e);
+    };
+    wrap.onpointermove = (e) => {
+      if (!grab) return;
+      const [a] = polar(e), R = this.ring();
+      this.guides_live();
+      if (grab.what === "start") {
+        this.set_value("ring", "start", Math.round((a + 540) % 360 - 180));
+        return;
+      }
+      let d = ((a - (+R.start || 0)) % 360 + 360) % 360;
+      if (grab.span === null) {
+      } else if (grab.span - d > 180) d = 360;
+      else if (d - grab.span > 180) d = 1;
+      grab.span = Math.min(Math.max(Math.round(d), 1), 360);
+      this.set_value("ring", "span", grab.span);
+    };
+    wrap.onpointerup = wrap.onpointercancel = () => {
+      grab = null;
+      wrap.classList.remove("dragging");
     };
   }
   row_hand_detail(wrap, out) {
