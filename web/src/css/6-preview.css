@@ -179,6 +179,8 @@
   /* the outline of what the pointer is on: an orange line on a white one, so it shows on any colour */
   .glow { fill: none; stroke: var(--glow); stroke-width: var(--glow-line); vector-effect: non-scaling-stroke; stroke-linejoin: round; }
   .glow.under { stroke: var(--white); stroke-width: var(--glow-under); }
+  .picked { fill: none; stroke: var(--picked); stroke-width: var(--glow-line); stroke-dasharray: 3 2; vector-effect: non-scaling-stroke; stroke-linejoin: round; }      /* the numeral or mark Nudge works on (4.78): dashed in its ring's guide colour, on a white line */
+  .picked.under { stroke: var(--white); stroke-width: var(--glow-under); stroke-dasharray: none; }
   /* its name: black inside, then a white line, then a black line — readable on any dial. --arrow: where the arrow sits. */
   /* a note on the preview (an old link, R31): the tip's look, centred under the header's line, as wide as it needs
      up to the preview less its switches; a press puts it away */

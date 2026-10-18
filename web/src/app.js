@@ -510,7 +510,8 @@ const marks_with = (...shapes) => (R) => ["ticks", "markers"].includes(G.kind_of
 const labels_are = (name) => (R) => G.kind_of(R) === "numerals" && G.LABEL_SETS[R.labels][0] === name;
 const hand_is = (...shapes) => (H) => shapes.includes(G.HAND_SHAPES[H.shape]);
 const numerals_only = kind_in("numerals");
-const with_text = kind_in("numerals", "text");      // rings that draw words: numerals, and a text ring (#297)
+const with_text = kind_in("numerals", "text");
+const nudgeable = kind_in("ticks", "markers", "numerals", "text");      // what has positions of its own to nudge: all but a band (4.78, #349)      // rings that draw words: numerals, and a text ring (#297)
 const W = { scope: "window" };
 const win_on = (T) => T.on;
 const win_is = (...kinds) => (T) => T.on && kinds.includes(G.WINDOW_KINDS[T.kind]);
@@ -627,14 +628,19 @@ const ROWS = {
     pick("mode", "Placement", G.MODES, PICS.mode, { show: with_text }),
     hdr("Band", { folded: true, show: kind_in("band") }),
     num("fill", "Fill % of step", 1, 100, 1, { show: kind_in("band") }),      // its width stands in Resize (4.47)
-    hdr("Nudge one numeral", { folded: true, show: with_text }),
-    custom("nudge", { show: with_text }),      // which numeral, and Reset this numeral
+    // one numeral or one mark of its own (#252; every kind but a band since 4.78, #349: "Each marker selectable and
+    // editable … a tick can grow or become anything else, a wedge"): which one — picked in the list, or on the dial, a
+    // first press choosing the ring and a second the one pressed — and its own radius, angle, turn and size; a mark
+    // also its own shape. The one chosen is outlined on the dial while this pane is open
+    hdr("Nudge one numeral", { folded: true, show: nudgeable, title: (R) => (G.has_text(R) ? "Nudge one numeral" : "Nudge one mark") }),
+    custom("nudge", { show: nudgeable }),      // which one, and Reset
     // its four adjusters, number rows on the numeral chosen above (Okay's notes, p. 6–7, #252, beta 4.45.2: "every
     // adjuster gets ±; angle and radius get sliders"): each a full row, its name opening the popup (#249)
     num("dr", "Radius ±", -3, 3, 0.05, { scope: "nudge" }),
     num("da", "Angle ± °", -30, 30, 0.1, { scope: "nudge" }),
     num("rot", "Rotate °", -180, 180, 1, { scope: "nudge" }),
     num("s", "Size ×", 0.2, 3, 0.01, { scope: "nudge" }),
+    seg("shape", "Shape", ["As the ring", "Bar", "Wedge", "Dot"], { scope: "nudge", id: "nudge-shape", show: () => tool && tool.ring() && !G.has_text(tool.ring()) }),      // a mark's own shape (4.78)
   ],
   Hands: [
     custom("hands_bar", { pin: true, bar: true }),      // bar: one line of its own, always in view: All hands · Show hands · Motion
@@ -833,7 +839,7 @@ const moon_look = (T) => (T && T.on && G.WINDOW_KINDS[T.kind] === "moon phase" ?
 const KIND_TAB_KEYS = Object.keys(G.WINDOW_BASE).filter((k) => !["on", "kind", "at", "at_deg", "r", "guide", "wh_link"].includes(k));      // what each complication keeps of its own (#328)
 const HANDLE_R = 5.5, HANDLE_OUT = 14, HANDLE_REACH = 14;      // a guide handle (4.65): its half-size, how far beyond the ring's outer edge the angle handles stand, the radius a press reaches it within — screen points at any zoom
 const TINY_EVERY = 200;                            // the Tiny Preview redrawn at most this often, in ms (#337)
-const NUDGE_NEUTRAL = { dr: 0, da: 0, rot: 0, s: 1 };      // a numeral's nudge, untouched (#252)
+const NUDGE_NEUTRAL = { dr: 0, da: 0, rot: 0, s: 1, shape: 0 };      // a numeral's or a mark's nudge, untouched (#252; shape, a mark's own, 4.78)
 const is_length = (row) => row.kind === "num" && (LENGTH_KEYS[row.scope] || []).includes(row.key);
 const decimals = (step) => (String(step).split(".")[1] || "").length;
 const fmt = (v, step) => (+v).toFixed(Math.max(decimals(step), 0));
@@ -1126,6 +1132,7 @@ class DialTool {
     this.over = svg_el("g");                       // above the dial, same place and zoom: the outline of what the pointer is on
     this.over.setAttribute("pointer-events", "none");
     this.glow = ["glow under", "glow"].map((name) => { const line = svg_el("path"); line.setAttribute("class", name); this.over.append(line); return line; });
+    this.picked = ["picked under", "picked"].map((name) => { const line = svg_el("path"); line.setAttribute("class", name); this.over.append(line); return line; });      // the numeral or mark Nudge works on (4.78)
     // the showcase's sky: over the backdrop, a gradient from black at the bottom up to the backdrop's colour, much
     // darkened; there always, seen only in the showcase (the stylesheet fades it in). Its colours are set in draw()
     const sky_defs = svg_el("defs"), sky = svg_el("linearGradient");
@@ -1460,6 +1467,17 @@ class DialTool {
     const [w] = this.size();
     this.show.phase = clamp(p[0] / w, 0, 0.999);
     this.render();
+  }
+
+  /** the numeral or mark Nudge works on, outlined on the dial in its ring's guide colour while the Nudge pane is open
+   *  on the Rings tab (4.78, #349) — so the one a press chose, or the list chose, is seen. */
+  draw_picked() {
+    const S = this.S, R = this.ring(), nudge = this.rows && this.rows.find((r) => r.fold && r.row.text === "Nudge one numeral");
+    const d = !this.show && S.ui_section === 1 && R && nudge && !nudge.el.hidden && !this.is_folded(nudge) ? this.statik.rings.find((x) => x.ring === R) : null;
+    const k = d ? d.at.indexOf(+this.nudge_at) : -1, part = k >= 0 && d.parts ? d.parts[k] : null;
+    const path = part ? part.svg(4) : "", tone = G.GUIDE_COLOURS[G.ring_guide(S, S.ui_ring) ?? S.gd_k_sel] || G.GUIDE_COLOURS[0];
+    for (const line of this.picked) { if (line.getAttribute("d") !== path) line.setAttribute("d", path); }
+    this.picked[1].style.setProperty("--picked", tone);
   }
 
   /** the light on the dial (4.77): in the showcase a ring of shine (SHINE) over the dial and the hands; wherever shadows
@@ -3902,14 +3920,19 @@ class DialTool {
     wrap.className = "nudge";
     const pick = el("select", { id: "nudge-pick" });
     pick.onchange = () => { this.nudge_at = pick.value; this.sync_rows(); };
-    wrap.append(el("div", { className: "row pop" }, el("label", { htmlFor: "nudge-pick", textContent: "Numeral" }), pick),
-      el("div", { className: "row" }, el("span"), el("button", { type: "button", className: "btn", textContent: "Reset this numeral", onclick: () => {
+    const word = el("label", { htmlFor: "nudge-pick", textContent: "Numeral" }), reset = el("button", { type: "button", className: "btn", id: "nudge-reset", textContent: "Reset this numeral" });
+    wrap.append(el("div", { className: "row pop" }, word, pick),
+      el("div", { className: "row" }, el("span"), Object.assign(reset, { onclick: () => {
         const all = { ...this.ring().nudge };
         delete all[this.nudge_at];
         this.set_value("ring", "nudge", all);
       } })));
     out.refresh = (R) => {
-      const labels = G.ring_labels(R);
+      const text = G.has_text(R);
+      word.textContent = text ? "Numeral" : "Mark"; reset.textContent = text ? "Reset this numeral" : "Reset this mark";
+      // a numeral by its words; a mark by the time it stands at (1:00, 1:12 …)
+      const at = (a) => { const m = Math.round((((a % 360) + 360) % 360) * 2), h = Math.floor(m / 60) % 12 || 12; return `${h}:${String(m % 60).padStart(2, "0")}`; };
+      const labels = text ? G.ring_labels(R) : G.ring_angles(R).map(at);
       if (+this.nudge_at >= labels.length) this.nudge_at = "0";
       const want = labels.map((l, i) => `${i + 1} · ${l || "—"}${R.nudge[String(i)] ? "  •" : ""}`).join("|");
       if (pick.dataset.items !== want) {
@@ -5103,6 +5126,7 @@ class DialTool {
       }
       node.dataset.i = i;
     });
+    this.draw_picked();
     this.draw_light(items);      // a ring of shine and the hands' bevels, before the shadows that fall over them (4.77)
     this.draw_shadows(items);
     this.place();
@@ -5259,13 +5283,13 @@ class DialTool {
     }
     if (!d) return r <= S.dial_d / 2 && !S.out_production ? { kind: "plate", name: "Plate", path: this.statik.plate, angle: 0 } : null;
     const piece = { kind: "ring", ring: S.rings.indexOf(d.ring), name: d.ring.name || G.kind_of(d.ring), path: d.path, angle: 0 };
-    if (G.has_text(d.ring)) {                      // which numeral? the nearest one's centre
+    if (d.kind !== "band" && d.parts) {            // which numeral or mark? the nearest one's centre (marks since 4.78, #349)
       let best = Infinity;
       d.parts.forEach((part, k) => {
-        const b = part.bounds();
+        const b = part && part.bounds();
         if (!b) return;
         const dist = Math.hypot((b[0] + b[2]) / 2 - mm[0], (b[1] + b[3]) / 2 - mm[1]);
-        if (dist < best) { best = dist; piece.numeral = String(d.at[k]); }
+        if (dist < best) { best = dist; piece.position = String(d.at[k]); }
       });
     }
     return piece;
@@ -5276,12 +5300,15 @@ class DialTool {
     const piece = this.piece_at(p, node), S = this.S;
     if (!piece) return this.words_unfold();
     const section = { ring: 1, hand: 2, cap: 2, date: 3, plate: 0 }[piece.kind], same = section === S.ui_section;
+    // a ring: a first press chooses it; a press on the ring already chosen chooses the numeral or mark pressed (4.78,
+    // #349; Okay's notes 2: "a double click or tap selects the ring, a second what was clicked")
+    const second = piece.kind === "ring" && same && S.ui_ring === piece.ring && piece.position !== undefined;
     S.ui_section = section;
-    if (piece.kind === "ring") { S.ui_ring = piece.ring; if (piece.numeral !== undefined) this.nudge_at = piece.numeral; }
+    if (piece.kind === "ring") { S.ui_ring = piece.ring; if (second) this.nudge_at = piece.position; }
     if (piece.kind === "hand") S.ui_hand = piece.hand;
     if (piece.kind === "date") S.ui_window = piece.window;
     if (same) { this.fill_ring_list(); this.sync_rows(); } else this.show_section();
-    if (piece.numeral !== undefined) {             // a numeral picked for Nudge: its pane opens, since it starts folded (#270)
+    if (second) {                                  // a numeral or mark picked for Nudge: its pane opens, since it starts folded (#270)
       const nudge = this.rows.find((r) => r.fold && r.row.text === "Nudge one numeral");
       if (nudge && this.is_folded(nudge)) this.fold(nudge, false);
     }

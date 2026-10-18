@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.77";
+export const VERSION = "beta 4.78";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -1035,7 +1035,11 @@ function mark_at(ring, i, a, grow = 0, solid = false) {
   const n = (ring.nudge && ring.nudge[String(i)]) || {};
   const k = (first ? ring.twelve_scale : 1) * (n.s ?? 1);
   const L = ring.len * k, W = ring.w * k;
-  const shape = style === "triangle" ? mark_outline(ring, L * 1.1, W * 2.4, "wedge", 0, grow, solid) : mark_outline(ring, L, W, null, null, grow, solid);
+  // its own shape (4.78, #349: "a tick can grow or become anything else … a wedge"): nudge.shape, a place in SHAPES
+  // after "as the ring" (0); a mark of its own shape keeps the ring's length, width and rounding
+  const own = n.shape > 0 && SHAPES[n.shape - 1] && SHAPES[n.shape - 1] !== "file" ? SHAPES[n.shape - 1] : null;
+  const shape = own ? mark_outline(ring, L, W, own, own === "wedge" ? 0 : null, grow, solid)
+    : style === "triangle" ? mark_outline(ring, L * 1.1, W * 2.4, "wedge", 0, grow, solid) : mark_outline(ring, L, W, null, null, grow, solid);
   const b = shape.bounds();
   if (!b) return null;
   if (n.rot) shape.rotate(-n.rot, [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2]);

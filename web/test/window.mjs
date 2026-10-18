@@ -86,8 +86,10 @@ check(await S("S.dial_d === 31") && await page.inputValue("#global-dial-d-Diamet
 await enter_value("#global-dial-d-Diameter", "30");
 
 // ── clicking the preview opens the settings of what was clicked ──
-await click_mm(...clock(10, 120));                                  // the numeral 4
-check(await S("S.ui_section === 1 && ['ticks','markers','numerals','band'][S.rings[S.ui_ring].kind] === 'numerals' && t.nudge_at === '4'"), "click the numeral 4 → Rings, the numerals ring, and Nudge is set to that numeral");
+await click_mm(...clock(10, 120));                                  // the numeral 4: a first press chooses its ring (4.78, #349)
+const first_press = await S("S.ui_section === 1 && ['ticks','markers','numerals','band'][S.rings[S.ui_ring].kind] === 'numerals' && t.nudge_at !== '4'");
+await click_mm(...clock(10, 120));                                  // …a second, on the ring chosen, the numeral pressed
+check(first_press && await S("t.nudge_at === '4'"), "click the numeral 4 → Rings and the numerals ring; click it again → Nudge is set to that numeral (a first press the ring, a second what was pressed: 4.78)");
 { // Nudge's adjusters are number rows on the chosen numeral (#252): a slider, the value, ±; a neutral value is not kept
   await enter_value("#nudge-da-Angle-", "5");
   const set = await S("JSON.stringify(t.ring().nudge[t.nudge_at])");
@@ -110,6 +112,17 @@ check(await S("S.ui_section === 1 && ['ticks','markers','numerals','band'][S.rin
 }
 await click_mm(...clock(13, 150));                                  // the marker at 5
 check(await S("['ticks','markers','numerals','band'][S.rings[S.ui_ring].kind] === 'markers'"), "click a marker → the markers ring");
+{ // one mark of its own (4.78, #349; Okay's notes 2: "Each marker selectable and editable … a tick can grow or become anything else, a wedge"): a second press picks the marker, Nudge one mark opens on it, outlined on the dial; its own shape and size
+  await click_mm(...clock(13, 150));
+  const picked = await page.evaluate(() => { const t = window.dial_tool; return [t.nudge_at, document.querySelector("#nudge-pick").selectedOptions[0].textContent, [...document.querySelectorAll(".form .pane h2")].some((h) => h.textContent === "Nudge one mark" && h.checkVisibility()), document.querySelector(".picked").getAttribute("d").length > 10]; });
+  const before = await S("t.statik.rings.find((d) => d.ring === t.ring()).parts[5].bounds()");
+  await page.click("#nudge-shape-2"); await enter_value("#nudge-s-Size-", "1.8"); await frame();
+  const after = await S("[t.statik.rings.find((d) => d.ring === t.ring()).parts[5].bounds(), JSON.stringify(t.ring().nudge['5'])]");
+  await page.click("#nudge-reset"); await frame();
+  const wide = (b) => Math.hypot(b[2] - b[0], b[3] - b[1]);
+  check(picked[0] === "5" && picked[1].includes("5:00") && picked[2] && picked[3] && after[1] === '{"shape":2,"s":1.8}' && wide(after[0]) > wide(before) * 1.4 && await S("t.ring().nudge['5'] === undefined"),
+    `a second press picks the marker at 5 (${picked[1]}); Nudge one mark opens on it, outlined on the dial; a wedge 1.8 × as big (${after[1]}); Reset this mark undoes it`);
+}
 await click_mm(...clock(13.9, 94));                                 // beside a thin tick (in its zone); 93° until the bar grew (#190): with the preview 10 shorter it fell to the marker at 3
 check(await S("['ticks','markers','numerals','band'][S.rings[S.ui_ring].kind] === 'ticks'"), "click in the ticks' zone → the ticks ring");
 const hands = await S("(() => { const a = [S.t / 43200 * 360, (S.t % 3600) / 3600 * 360]; return a; })()");

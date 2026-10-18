@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.78 (web version) · 19 Oct 2026
+
+Every mark selectable and editable, mechanism first (#349; Okay's notes 2: "a double click or tap selects the ring, a second what was clicked … a tick can grow or become anything else (an SVG later), a wedge").
+
+- **On the dial**: a first press on a ring chooses the ring (as before); a press on the ring already chosen chooses the numeral or mark pressed, and opens its Nudge pane. Until 4.77 a single press chose a numeral at once, and marks could not be chosen.
+- **Nudge one mark**: the Nudge pane, until now for numerals only, works on every ring but a band — ticks and markers too: Radius ±, Angle ±, Rotate, Size ×, and for a mark a **Shape of its own** (As the ring · Bar · Wedge · Dot). The list names a mark by the time it stands at (6 · 5:00); a dot marks those with nudges; Reset this mark.
+- **The one chosen is outlined on the dial**, dashed in its ring's guide colour on a white line, while the Nudge pane is open on the Rings tab — whether a press or the list chose it.
+- Left for the next steps of #349: a numeral's preview at the left of its controls, an SVG of one's own for a mark.
+
 ## beta 4.77 (web version) · 19 Oct 2026
 
 The showcase, a step further, and bevels on the hands (#351, #354; Okay, 19 Oct 2026, 00:29: "1 and 3, go").
