@@ -77,6 +77,7 @@
   :is(.pickt, .tile):hover { background: var(--hover); }
   .picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--unit); padding: var(--unit) 0; }      /* one small space, the unit: between the tiles, both ways, and from them to the row's lines. The tiles are wider than a column for it */
   .picks.five { grid-template-columns: repeat(5, minmax(0, 1fr)); }      /* five choices (a window's shape) */
+  .picks.across { grid-template-columns: repeat(var(--across), minmax(0, 1fr)); }      /* a line of all its tiles, however many (4.79) */
   .pickt { justify-items: center; align-content: start; gap: calc(var(--unit) / 2); min-height: var(--tile); padding: var(--unit) var(--hair); font-size: var(--t-xs); line-height: 1.15; }
   .picks.small .pickt { min-height: 0; }      /* smaller pictures, a tile no higher than they need (a window's Shows, 4.46.1) */
   .pickt span { white-space: nowrap; text-align: center; }      /* a tile's word is one line; a name too long for it has a short one in TILE_WORDS */

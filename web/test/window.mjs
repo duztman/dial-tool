@@ -643,7 +643,7 @@ check(await page.$("main .guides #guides") !== null && await page.$(".panel #gui
 const guides_at = await page.evaluate(() => { const g = document.querySelector("#tiny-open").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); return [Math.round(m.right - g.right), Math.round(g.top - m.top)]; });
 check(guides_at[0] === 12 && guides_at[1] === 16, `the Tiny Preview's eye, where Guides stood, is 12 from the preview's right, and 16 from its top: on the header's middle line (${guides_at.join(" / ")})`);
 await page.click("#guides-more");
-check(await page.isVisible("#guide-list") && (await page.$$eval("#guide-list > .guidekind .name", (n) => n.map((e) => e.textContent))).join() === "Centre hole,Centre lines" && await page.$$eval("#guide-list .guidekind >> nth=0 >> .dots .tone", (b) => b.length) === 8 && await page.$eval("#guide-list .guiderings", (e) => e.querySelectorAll(".guidekind.ring").length) === await S("S.rings.length") && await page.$("#guide-list .swatch") === null,
+check(await page.isVisible("#guide-list") && (await page.$$eval("#guide-list .guidescroll > .guidekind .name", (n) => n.map((e) => e.textContent))).join() === "Centre hole,Centre lines" && await page.$$eval("#guide-list .guidekind >> nth=0 >> .dots .tone", (b) => b.length) === 8 && await page.$eval("#guide-list .guiderings", (e) => e.querySelectorAll(".guidekind.ring").length) === await S("S.rings.length") && await page.$("#guide-list .swatch") === null,
   "the arrow drops the list: the centre hole's guide first, then the centre lines (no dial edge since 15 Oct 2026, no window radii since 4.42.5), then a line for every ring and every window that is on, each with None and eight round colours, no free colour");
 // the list's look (Okay, 16 Oct 2026, #271; 18 Oct, notes 2: "fainter"): a colour not chosen at 40 % (60 % until 4.52), the "none" sign one path; lines 30 high (#305, 4.45.3: "tighter"; 38 before)
 {
@@ -2116,7 +2116,8 @@ await shot("10-bar");
 }
 { // the showcase's light (4.77, #351, #354): a very dim backdrop still makes a spotlight (its colour lifted); a ring of shine, three bands, moves with the sun; each hand's bevel, a lighter and a darker half; the showcase's shadows a touch darker; out of the showcase the bevels stay, the shine goes
   const was = await page.evaluate(() => JSON.stringify([window.dial_tool.S.c_backdrop, window.dial_tool.S.c_plate]));
-  await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "c_backdrop", [0.05, 0.05, 0.06, 1]); t.set_value("global", "c_plate", [0.08, 0.09, 0.12, 1]); });
+  const no_bevels = await page.evaluate(() => { const t = window.dial_tool; t.frame(); return [t.S.sh_bevel, document.querySelectorAll("g[clip-path^='url(#bevel-clip-'] rect").length]; });      // off to start (4.79)
+  await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "sh_bevel", 100); t.set_value("global", "c_backdrop", [0.05, 0.05, 0.06, 1]); t.set_value("global", "c_plate", [0.08, 0.09, 0.12, 1]); });
   await page.click("#iris-box"); await page.waitForTimeout(300); await page.click("#iris-go"); await page.waitForTimeout(1600);
   const look = async (phase) => page.evaluate((ph) => { const t = window.dial_tool; t.show.phase = ph; t.show.dragging = true; t.render(); t.frame();
     const band = document.querySelector('#shine-clip') && [...document.querySelectorAll("g[clip-path='url(#shine-clip)'] path")], c = band ? band.map((p) => p.getAttribute("d").split("a")[0]) : [];
@@ -2124,9 +2125,9 @@ await shot("10-bar");
   const morning = await look(0.2), evening = await look(0.8);
   await page.click("#iris-box"); await page.waitForTimeout(1300);
   const after = await page.evaluate(() => [document.querySelectorAll("g[clip-path='url(#shine-clip)'] path").length, document.querySelectorAll("g[clip-path^='url(#bevel-clip-'] rect").length]);
-  await page.evaluate((w) => { const t = window.dial_tool, v = JSON.parse(w); t.set_value("global", "c_backdrop", v[0]); t.set_value("global", "c_plate", v[1]); }, was);
-  check(morning.bands === 3 && morning.at !== evening.at && morning.pool !== "#0D0D0F" && morning.bevels >= 4 && after[0] === 0 && after[1] >= 4,
-    `the showcase's light: a dim backdrop's spotlight lifted (${morning.pool}); three bands of shine, moving with the sun (${morning.at} → ${evening.at}); ${morning.bevels / 2} hands bevelled; out of it the shine goes, the bevels stay (${after.join(" ")})`);
+  await page.evaluate((w) => { const t = window.dial_tool, v = JSON.parse(w); t.set_value("global", "c_backdrop", v[0]); t.set_value("global", "c_plate", v[1]); t.set_value("global", "sh_bevel", 0); }, was);
+  check(no_bevels.join() === "0,0" && morning.bands === 3 && morning.at !== evening.at && morning.pool !== "#0D0D0F" && morning.bevels >= 4 && after[0] === 0 && after[1] >= 4,
+    `the showcase's light: a dim backdrop's spotlight lifted (${morning.pool}); three bands of shine, moving with the sun (${morning.at} → ${evening.at}); ${morning.bevels / 2} hands bevelled; out of it the shine goes, the bevels stay (${after.join(" ")}); Bevels % at 0 to start: none drawn (${no_bevels.join(" ")})`);
 }
 { // the showcase's Now (Okay, 15 Oct 2026, 07:36): the hour hand one turn clockwise, the minute hand one anticlockwise, the seconds the short way; halfway through the spin (eased, so half the way)
   const half = await page.evaluate(() => { const t = window.dial_tool, kept = t.show, items = ["hour", "minute", "second"].map((name) => ({ role: "hand", name, angle: 100 }));

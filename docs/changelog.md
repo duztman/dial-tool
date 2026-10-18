@@ -1,5 +1,19 @@
 # Dial Tool — changelog
 
+## beta 4.79 (web version) · 19 Oct 2026
+
+Okay's notes on 4.78 (19 Oct, 00:59 and 01:03), the parts that were clear.
+
+- **The guides' list** (#372): the guides scroll in a box of their own, with a thin scrollbar (and on touch a fade at the bottom while more is below), measured to stand between the top of the window and the Guides button; the settings — Rings · Windows · Add, Thickness, Reset All — sit under it on a lighter ground and never scroll away. The colour dots 7 px (8 before; 11 under a finger), the none sign ⊘ 14 px (it had shrunk with the dots). Headings for Windows and Added name only; their choices moved to the settings.
+- **Bevels on the hands off by default** (#367): Shadows → **Bevels %** (0–100, 0 = flat; 4.77 drew them at full strength whenever shadows were on). New key `sh_bevel`.
+- **The hand's shape named under its picture** (#371): a finger cannot hover the shape tiles to read their names, so the chosen one's name is written under the picture ("Your SVG" for a file).
+- **The orange slivers on a hand's picture** (#369, Claude's reading: the lit part stuck on after a tap): a part lights only while a mouse points at its row; under a finger it goes off when the controller closes or a handle is let go.
+- **LINKED on a big date** (#366): the pair's width and height now keep their ratio too (4.57's link only knew the other shapes).
+- **Case and Strap** (#375) stack in the list at the bottom left with Backdrop and X-ray, each with an icon; on a phone only the icons show (the words come back where the panel shows words).
+- **The font box flush with the eye** (#374): a bare pane's eye stands at the top of the box, not centred on it.
+- A window's **Complication** picker keeps its five kinds on one line (the big date had fallen to a line of its own).
+- **Links' key codes**: 4.72–4.75 added their keys above 4.69's instead of under them, so a link made in 4.69–4.74 with a strap, X-ray, a window's picture or neighbours reads those wrongly in later versions. The 4.75–4.78 order (the live page's, and saved dials') is kept; `test/link-keys.json` now holds the released list and `linktrip.mjs` fails if a key moves.
+
 ## beta 4.78 (web version) · 19 Oct 2026
 
 Every mark selectable and editable, mechanism first (#349; Okay's notes 2: "a double click or tap selects the ring, a second what was clicked … a tick can grow or become anything else (an SVG later), a wedge").

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.78 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.79 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -183,7 +183,7 @@
     --canvas-top: calc((var(--header) - var(--control-large)) / 2);      /* undo and Guides stand on the header's middle line, with the title and the unit box */
     --guide-name: 106px; --guide-row: 30px;        /* the guides' list: the column of names, wide enough for an added guide's name and values on one line (92 until 4.45.3) · a line's height (42 until 4.42.5, Okay, #271: "-2px" above and below; 38 until 4.45.3, Okay, 16 Oct 2026, #305: "tighter spacing overall … small like beta version allowed"; under a finger still 38) */
     --shade-name: 92px;                            /* the Shadows list's names: the guides' list's column until 4.45.3, when that one grew for an added guide's values; its sliders keep the room */
-    --guide-dot: 8px;                              /* a round colour in the guides' list (the room between two: a special); 10 until 4.51.1 (Okay, 18 Oct 2026, notes 2: "Smaller color dots, closer, much compacter width") */
+    --guide-dot: 7px; --guide-none: 14px; --scroll-w: 6px;      /* a round colour in the guides' list (the room between two: a special): 7 since 4.79 (Okay, 19 Oct 2026: "Still smaller balls"), 8 until then, 10 until 4.51.1 (notes 2: "Smaller color dots, closer, much compacter width") · the none sign ⊘, 14 (at 10 it went too small) · a list's scrollbar */
     --guide-dim: 0.4;                              /* a colour not chosen in the guides' list: this much of it (Okay, 18 Oct 2026, notes 2: "Fainter unselected swatches"; 0.6 from #271, 16 Oct: "dim all the unselected colors 40%") */
     --ring-thick: 3px;                             /* the chosen one: a ring of its own colour this thick, a ring of the ground inside it (a special) */
 
@@ -263,7 +263,7 @@
     --glow-line: 1.5px; --glow-under: 4px;         /* lines, but not one of the three: the outline of what the pointer is on, and the white line under it */
     --tip-arrow: 5px; --tip-arrow-in: 2.6px;       /* lines, but not one of the three: the pointer label's arrow, its dark line and the white line inside it */
   }
-  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --pop-width: 454px; --dot: 18px; --guide-dot: 14px; --guide-gap: 13px; --guide-row: 38px; --pop-field: 180px; --pop-hue: 32px; --knob: 28px; } }      /* a finger needs more to hold than a pointer */
+  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --pop-width: 454px; --dot: 18px; --guide-dot: 11px; --guide-gap: 13px; --guide-row: 38px; --pop-field: 180px; --pop-hue: 32px; --knob: 28px; } }      /* a finger needs more to hold than a pointer */
 }
 
 @layer base {
@@ -363,6 +363,7 @@
   :is(.pickt, .tile):hover { background: var(--hover); }
   .picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--unit); padding: var(--unit) 0; }      /* one small space, the unit: between the tiles, both ways, and from them to the row's lines. The tiles are wider than a column for it */
   .picks.five { grid-template-columns: repeat(5, minmax(0, 1fr)); }      /* five choices (a window's shape) */
+  .picks.across { grid-template-columns: repeat(var(--across), minmax(0, 1fr)); }      /* a line of all its tiles, however many (4.79) */
   .pickt { justify-items: center; align-content: start; gap: calc(var(--unit) / 2); min-height: var(--tile); padding: var(--unit) var(--hair); font-size: var(--t-xs); line-height: 1.15; }
   .picks.small .pickt { min-height: 0; }      /* smaller pictures, a tile no higher than they need (a window's Shows, 4.46.1) */
   .pickt span { white-space: nowrap; text-align: center; }      /* a tile's word is one line; a name too long for it has a short one in TILE_WORDS */
@@ -513,7 +514,7 @@
      type block moves up"): its heading is the eye alone, in the eyes' column, beside what the pane holds, which starts
      at the pane's top. Folded, it is a heading like any other, with its summary. */
   .pane.bare:not(.folded) { position: relative; }
-  .pane.bare:not(.folded) > .fold { position: absolute; z-index: 1; top: 0; left: 0; width: auto; grid-template-columns: var(--eye); }
+  .pane.bare:not(.folded) > .fold { position: absolute; z-index: 1; top: 0; left: 0; width: auto; min-height: 0; align-items: start; grid-template-columns: var(--eye); }      /* its eye's top flush with the box's top (4.79; Okay, 19 Oct 2026: "align flush top with eye"; centred on a line's height until 4.78, 6 lower) */
   .pane.bare:not(.folded) > .fold > :not(.eye) { display: none; }
   /* a heading that carries controls on its line (a window's places, its shapes; 4.46.2, Okay: "these rows are allowed
      height growth now… appropriate vertical padding like all the rows"): they get a unit over and under them, as the
@@ -669,6 +670,7 @@
   .labelmenu > select { position: absolute; inset: calc(-1 * var(--reach-y, 0px)); width: calc(100% + 2 * var(--reach-y, 0px)); height: calc(100% + 2 * var(--reach-y, 0px)); opacity: 0; cursor: pointer; }      /* under a finger the unseen menu is larger than its box (reach) */
   .row > :is(select, .segs, .colour, .single, .tools, .picks, .swatches), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
   .row > :is(.check, .wide, .picks.five), .row.note > .quiet { grid-column: 1 / -1; }
+  .row:has(> .picks.across) > label, .row > .picks.across { grid-column: 1 / -1; }      /* a line of all its tiles (4.79): its name over it and the tiles the whole line, so five words fit (as a phone lays every picker) */
   .row > .setnote { grid-column: 1 / -1; margin: var(--unit) 0 0; }      /* what a settings file is, over its buttons (#279) */
   .row > .warn { grid-column: 3 / -1; margin: var(--u1) 0 var(--unit); font-size: var(--t-s); color: var(--ink); }      /* the warning under a button that replaces the whole dial (Reset): in ink, not quiet, on the controls' column (Okay, 16 Oct 2026, 10:46) */      /* a tick and its words start at the left edge */
   .row > span:first-child:empty { display: none; }
@@ -714,6 +716,7 @@
   .detail .grips .handle { fill: var(--handle); stroke: var(--white); stroke-width: 1.5; cursor: grab; pointer-events: all; touch-action: none; }
   .detail .grips .handle .reach { fill: transparent; stroke: none; }
   .detail.dragging .grips .handle { cursor: grabbing; }
+  .detail .handname { position: absolute; left: var(--unit); bottom: var(--u1); font-size: var(--t-s); color: var(--grey); pointer-events: none; }      /* the shape's name, small, at its bottom left (4.79) */
   .detail .lit { fill: var(--lit); }      /* a number's part, lit while its row is pointed at (#329), in the selected guide's colour */
   .detail .pivot { fill: var(--surface); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
   /* the hand's shapes as thumbs (4.46.3, "rectangular thumbs"; a row of their own after the rows since 4.46.4): every
@@ -1324,7 +1327,8 @@
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 var(--round-switch) var(--round-switch) 0; }
   .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }      /* open, only its arrow turns */
   /* Backdrop, standing on the Shadows switch (its row held the eye switch too until 15 Oct 2026, 03:41) */
-  .backdrops { position: absolute; z-index: 3; left: var(--stop-short); bottom: calc(var(--canvas-inset) + 2 * (var(--control-large) + var(--unit))); display: flex; gap: var(--unit); }
+  .backdrops { position: absolute; z-index: 3; left: var(--stop-short); bottom: calc(var(--canvas-inset) + 2 * (var(--control-large) + var(--unit))); display: flex; flex-direction: column-reverse; align-items: flex-start; gap: var(--unit); }      /* stacked over Guides and Shadows (4.79; Okay, 19 Oct 2026, 01:03: "Strap and case: stack on that left bottom list"): Backdrop, then Case, its Strap and X-ray up the column; side by side from 4.66 to 4.78 */
+  .casebox .sign, .xraybox > svg { display: grid; flex: none; }
   /* the eye switch, alone at the preview's bottom right, over the zoom in the bar (Okay, 15 Oct 2026, 03:41) */
   .eyes { position: absolute; z-index: 3; right: var(--canvas-inset); bottom: var(--canvas-inset); display: flex; align-items: flex-end; gap: var(--unit); }      /* the switches' gap between them (05:43: "why these two touch?"); the showcase's iris left of the eye, one unit apart (Okay, 18 Oct 2026, notes 2: "Showcase button back to the left of the preview button"; over it from 4.42.4 to 4.52.1, #280) */
   .eyebox { width: var(--control-large); padding: 0; overflow: hidden; border-radius: var(--round-switch); }      /* its sign fills the inside; the lashes run out and the box cuts them */
@@ -1351,7 +1355,7 @@
   /* the list: near black and round, like the colour pop-out (.night). A kind of guide is one line: its name, then
      round choices with room between them — none, then the eight colours. The chosen one stands in a thick ring of its own colour, a
      little of the ground between them. A hairline under every line. */
-  .guidelist { position: absolute; top: calc(100% + var(--unit)); right: 0; width: calc(2 * var(--pop-pad) + 2 * var(--hair) + var(--guide-name) + 9 * var(--guide-dot) + 9 * var(--guide-gap)); max-width: calc(100vw - 2 * var(--canvas-inset));
+  .guidelist { position: absolute; top: calc(100% + var(--unit)); right: 0; width: calc(2 * var(--pop-pad) + 2 * var(--hair) + var(--guide-name) + var(--guide-none) + 8 * var(--guide-dot) + 9 * var(--guide-gap) + 2 * var(--ring-thick)); max-width: calc(100vw - 2 * var(--canvas-inset));
     max-height: calc(100vh - var(--bar-height) - 2 * var(--canvas-inset) - var(--control-large) - var(--unit)); overflow-y: auto; padding: var(--unit) 0 0; }      /* less on top: a line's own height already stands its dots off the edge. Its room at the sides is its parts' (next rule), so its bottom section can reach both edges */
   .guidelist > * { margin-inline: var(--pop-pad); }
   .guidekind { display: grid; grid-template-columns: var(--guide-name) 1fr; align-items: center; min-height: var(--guide-row); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
@@ -1369,9 +1373,20 @@
      little more room over it (Okay, 18 Oct 2026, notes 2: "the functions are below, grouped under a lighter bg color
      area. The grey area grows to include add line, the bottom block needs just a little more padding from top"; until
      4.51.1 a band of the fields' colour over Add, the ground under Thickness · Reset All only, #271, #305) */
-  .guidelist > :is(.guidehead.add, .guidemore) { margin-inline: 0; padding-inline: var(--pop-pad); background: var(--row-rule); box-shadow: none; }
-  .guidelist > .guidehead.add { padding-top: var(--u2); }
-  .guidelist > .guidemore > .guidekind { box-shadow: none; }
+  /* the Guides list in two (4.79; Okay, 19 Oct 2026: "they need a scrollbar … use the lower part for all adjustments
+     and settings"): its guides scroll, with a scrollbar a finger can drag; its settings stay under them on the lighter
+     ground, every one of them — which rings and windows show theirs, Add, Thickness · Reset All. dvh: a phone's or an
+     iPad's browser bars are left out of the height, so the list's top never goes under them */
+  .guidesheet { display: flex; flex-direction: column; overflow: hidden; padding: 0;
+    --list-gap: var(--canvas-inset); max-height: min(var(--list-room, 100dvh), calc(100dvh - var(--bar-height) - 2 * var(--canvas-inset) - var(--control-large) - var(--unit))); }      /* --list-room: measured when it opens, from the preview's top to its switch, less a gap each side */
+  .guidesheet > * { margin-inline: 0; }
+  .guidescroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-top: var(--unit); touch-action: pan-y; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--grey) transparent; }
+  .guidescroll::-webkit-scrollbar { width: var(--scroll-w); }
+  .guidescroll::-webkit-scrollbar-thumb { background: var(--grey); border-radius: calc(var(--scroll-w) / 2); }
+  .guidescroll > * { margin-inline: var(--pop-pad); }
+  .guidescroll.more { mask-image: linear-gradient(to bottom, #000 calc(100% - var(--u6)), transparent); }      /* more under the fold: the last line fades out */
+  .guidesettings { flex: none; padding-top: var(--u2); background: var(--row-rule); }
+  .guidesettings > .guidehead { margin-inline: var(--pop-pad); box-shadow: none; }
   /* a guide you added is one line, as every other (#305: "fit all in one line"): its name and its measures, quiet
      numbers to type in (grey, no box, as wide as they are); its colours; in the none sign's place a cross that removes
      it (an added guide is taken away, not hidden). A long name gives way to its numbers. (Two lines until 4.45.3) */
@@ -1388,7 +1403,8 @@
   .dots .tone:not(.on) { opacity: var(--guide-dim); }
   .dots .tone.on { box-shadow: 0 0 0 var(--ring-gap-in) var(--paper), 0 0 0 calc(var(--ring-gap-in) + var(--ring-thick)) var(--c), 0 0 0 calc(var(--ring-gap-in) + var(--ring-thick) + var(--hair)) var(--chip-rule); }
   .dots .none { color: var(--grey); }
-  .dots .none svg { flex: none; }      /* the none sign at the size it is drawn, 10, whatever a colour's size (R33 rule 1: since 4.52 the colours are 8) */
+  .dots .none { width: var(--guide-none); height: var(--guide-none); }      /* the none sign: larger than a colour (4.79, "the oslashes for no went too small"), drawn at 14 */
+  .dots .none svg { flex: none; }
   .dots .none:hover { color: var(--ink); }
   .dots .none.on { background: var(--ink); color: var(--paper); box-shadow: 0 0 0 var(--ring-thick) var(--ink); }
   /* Thickness, on the list's own columns: name · slider · value · stepper */
@@ -1418,7 +1434,7 @@
      popups"): the Guides' Thickness · Reset All, the Shadows' Reset. Filled with the line colour from edge to edge and
      down to the box's bottom (the list is cut to its round corners); no line over or under it; a rule in it is a
      hairline of the ground, from its top to the box's bottom (.resetall) */
-  .guidelist > .popfoot { min-height: var(--pop-foot); margin-inline: 0; padding: 0 var(--pop-pad) env(safe-area-inset-bottom); background: var(--row-rule); box-shadow: none; }
+  .guidelist > .popfoot, .guidesettings > .popfoot { min-height: var(--pop-foot); margin-inline: 0; padding: 0 var(--pop-pad) env(safe-area-inset-bottom); background: var(--row-rule); box-shadow: none; }
   .shadelist .guidehead .name { grid-column: 1 / -1; }      /* its headings are words alone: the whole line, not the names' column */
   /* the Shadows list: the guides' list, opening upward from its switch at the bottom left (after .guidelist, which it overrides) */
   .shadelist { top: auto; right: auto; bottom: calc(100% + var(--unit)); left: 0;
@@ -1746,6 +1762,12 @@
     main.words :is(.guidesbox, .backdropbox) { padding-right: var(--u4); }
     main:not(.words) :is(.guidesbox, .guidesmore, .backdropbox) { background: none; }      /* folded to their signs, the switches are outlines again */
     main.words :is(.guidesbox, .backdropbox) > .word { max-width: var(--word-max); margin-left: var(--unit); }
+    /* the case, its strap and X-ray too, their signs alone (4.79: "on mobile icon them"); a tap on the backdrop unfolds their words as the others' */
+    .casebox { --sign-w: 18px; gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); }
+    .strapbox { padding-left: var(--u2); }
+    .casebox :is(.word, .arrow) { display: inline-block; max-width: 0; overflow: hidden; white-space: nowrap; transition: max-width var(--iris-time) var(--view-ease), margin var(--iris-time) var(--view-ease); }
+    main.words .casebox :is(.word, .arrow) { max-width: var(--word-max); margin-left: var(--unit); }
+    main:not(.words) .casebox { background: none; }
     /* in the showcase the mark (larger here) and "Dial Tool" stand at the top left: the drawer is gone */
     #app.show :is(.about, .logo), .panel:not(.squeezed) :is(.about, .logo) { width: var(--logo-narrow); }
     #app.show .logo, .panel:not(.squeezed) .logo { height: var(--logo-narrow); }
@@ -6201,7 +6223,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.78";
+var VERSION = "beta 4.79";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -6550,6 +6572,8 @@ var DEFAULTS = {
   sh_rise: 35,
   sh_dark: 25,
   sh_blur: false,
+  sh_bevel: 0,
+  // the hands' bevels, 0–100 % (4.79; Okay, 19 Oct 2026: "Hand bevel off on default, add an adjuster"); 100 = as 4.77 drew them
   sh_hour: 0.15,
   sh_minute: 0.35,
   sh_second: 0.6,
@@ -7064,8 +7088,14 @@ var LINK_KEYS = [
   "da_physics",
   // 4.72: appended; X-ray off and physics on to start, so every older link looks as before
   "strap",
-  "c_strap"
+  "c_strap",
   // 4.69: appended; a case's strap — drawn only with a case, which older links don't have
+  // ↑ 4.72–4.75 put their keys above 4.69's instead of under them, so each moved the codes of the ones before it: a
+  // link made in 4.69–4.74 with a case's strap, X-ray, a window's picture or neighbours reads those wrongly since
+  // (found 19 Oct 2026, 4.79). The order above is 4.75–4.78's, kept as it is, since the live page and saved dials
+  // (#347) carry it. From here on: only ever under the last line, and test/link-keys.json says so (linktrip.mjs).
+  "sh_bevel"
+  // 4.79: appended; off to start
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i) => i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62];
@@ -10737,7 +10767,7 @@ var EYE = {
 };
 var eye = (open) => icon(EYE[open ? "open" : "closed"]);
 var NONE_SIGN = SIGNS.sheet + `<path d="M6.75 8.25L9.75 11.25M9.75 8.25L6.75 11.25" ${sw(SLANT)}/>`;
-var none_dot = `<svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="round"><path d="M5 ${1 + LINE / 2}A${4 - LINE / 2} ${4 - LINE / 2} 0 1 1 5 ${9 - LINE / 2}A${4 - LINE / 2} ${4 - LINE / 2} 0 1 1 5 ${1 + LINE / 2}M3.25 3.25L6.75 6.75"/></svg>`;
+var none_dot = `<svg viewBox="0 0 14 14" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="round"><path d="M7 ${1 + LINE / 2}A${6 - LINE / 2} ${6 - LINE / 2} 0 1 1 7 ${13 - LINE / 2}A${6 - LINE / 2} ${6 - LINE / 2} 0 1 1 7 ${1 + LINE / 2}M4.25 4.25L9.75 9.75"/></svg>`;
 var cross_dot = icon(`<path d="M2.25 2.25L7.75 7.75M7.75 2.25L2.25 7.75" ${sw(SLANT)}/>`, 10);
 var pic = (inside) => icon(inside, 38, 27);
 var solid = `fill="currentColor" stroke="none"`;
@@ -10892,6 +10922,12 @@ var TOOL_ICONS = {
   // (CURVE, centre on a quarter, radius on a half); the shade and the shadow are filled, their ends on half points
   // 15 Oct, 02:42: mirrored (lit from the upper left, the shadow cast to the right) and its outline DENSE, as Guides',
   // the sign beside it on 18 ("ball stroke thickness too much… look at similar size icons, guides and such")
+  // a case, its strap, X-ray (4.79; Okay, 19 Oct 2026, 01:03: "Strap and case: stack on that left bottom list, on mobile
+  // icon them"): on 18, DENSE, as the Guides and Shadows signs — a case with its four lugs and crown; a strap's two edges
+  // through a buckle; a disc's edge whole round a dashed one under it
+  case: `<g ${sw(DENSE)}><circle cx="9.25" cy="9.25" r="4.75"/><path d="M6.25 1.25V4.25M12.25 1.25V4.25M6.25 14.25V17.25M12.25 14.25V17.25M14.75 9.25H16.75"/></g>`,
+  strap: `<g ${sw(DENSE)}><path d="M6.25 1.25V6.25M12.25 1.25V6.25M6.25 12.25V17.25M12.25 12.25V17.25"/><rect x="4.75" y="6.25" width="9" height="6"/><path d="M9.25 6.25V12.25"/></g>`,
+  xray: `<g ${sw(DENSE)}><circle cx="9.25" cy="9.25" r="6.5"/><circle cx="9.25" cy="9.25" r="3.25" stroke-dasharray="1.25 1.3" stroke-linecap="butt"/></g>`,
   shadows: `<circle cx="7.25" cy="9.75" r="5.5" ${sw(DENSE)}/><path d="M4.5 14.5A5.5 5.5 0 0 0 12 7A8 8 0 0 1 4.5 14.5Z" fill="currentColor" stroke="none"/><path d="M11.03 13.75A5.625 1.25 0 0 1 16.75 15A5.625 1.25 0 0 1 5.5 15A5.5 5.5 0 0 0 11.03 13.75Z" fill="currentColor" stroke="none"/>`,
   // the ball sunk 2 into its shadow (Okay, 16 Oct 2026, on 4.44: "Shadow's ball sinks 2px down into its shadow"; it touched it from 4.42.4): the shadow the same ellipse (11.125 15, 5.625 × 1.25), the ball's disc cut out of it — it stands in front. Cut at the middle of the ball's line (5.5), so the cut's edge lies under the line: cut at its outer edge (6.125, 4.44.2) the two edges met and left a faint light seam round the ball (Okay: "a single faint line around the ball"). The rim crosses the shadow's top at 11.03 and at its left end
   // Okay's own mark, on 16 in the panel's first column (15 Oct 2026, 02:42: "my personal logo. Draw this like an
@@ -11253,7 +11289,8 @@ var ROWS = {
     hdr("Window", { title: (S) => `Window at ${window_place(windows_of(S)[S.ui_window])}` }),
     // "Position" under it in 4.46.1–2 (Okay: "Delete position name, that works without")
     custom("window_at", { ...W, head: true, show: win_on, text: "Position" }),
-    pick("kind", "Complication", WINDOW_KINDS, (i) => icon(PICS.window[i], 30, 21), { ...W, small: true, show: win_on }),
+    pick("kind", "Complication", WINDOW_KINDS, (i) => icon(PICS.window[i], 30, 21), { ...W, small: true, across: WINDOW_KINDS.length, show: win_on }),
+    // all on one line (4.79: the fifth, big date, fell to a line of its own)
     info("Follows the time shown: AM \xB7 PM beside the time, under the panel.", { ...W, show: win_is("am \xB7 pm") }),
     // its picture (4.73; the disc sketches C): Sky as before · Half, a half-round hole over a two-colour disc · Band, the day's colours along a strip
     seg("look", "Picture", PICTURES["am \xB7 pm"], { ...W, id: "window-look-day", show: win_is("am \xB7 pm") }),
@@ -11376,7 +11413,7 @@ function parse_number(text, current) {
 }
 var LENGTH_KEYS = { ring: RING_MM, hand: HAND_MM, window: WINDOW_MM, global: ["dial_d", "margin", "ha_cap", "dial_hole", "sh_hour", "sh_minute", "sh_second", "sh_cap", "sh_disc"], nudge: ["dr"] };
 var label_of = (row, T) => row.say ? row.say(T)[0] : row.menu ? `${(row.menu.items.find(([v]) => v === (T[row.menu.key] ?? 0)) || row.menu.items[0])[1]} ${row.text.split(" ").pop()}` : row.text;
-var LINKED_PAIRS = { window: [{ link: "wh_link", keys: ["w", "h"], when: (T) => ["rectangle", "arc"].includes(window_shape(T)) }] };
+var LINKED_PAIRS = { window: [{ link: "wh_link", keys: ["w", "h"], when: (T) => ["rectangle", "arc", "pair"].includes(window_shape(T)) }] };
 var day_look = (T) => T && T.on && WINDOW_KINDS[T.kind] === "am \xB7 pm" ? T.look || 0 : -1;
 var moon_look = (T) => T && T.on && WINDOW_KINDS[T.kind] === "moon phase" ? T.look || 0 : -1;
 var KIND_TAB_KEYS = Object.keys(WINDOW_BASE).filter((k) => !["on", "kind", "at", "at_deg", "r", "guide", "wh_link"].includes(k));
@@ -12186,7 +12223,7 @@ var DialTool = class _DialTool {
       bands(g, "shine");
     }
     items.forEach((item, i) => {
-      if (item.role !== "hand" || HAND_SHAPES[S["ha_" + item.name]?.shape] === "disc") return;
+      if (item.role !== "hand" || HAND_SHAPES[S["ha_" + item.name]?.shape] === "disc" || !(+S.sh_bevel > 0 || sun)) return;
       const side = Math.sin((from - item.angle) * Math.PI / 180);
       const key = "bevel-" + item.name, clip = part(key + "/clip", "clipPath", this.light_defs), shape2 = part(key + "/clip/hand", "path", clip);
       clip.id = "bevel-clip-" + item.name;
@@ -12207,7 +12244,8 @@ var DialTool = class _DialTool {
         r.setAttribute("fill", colour);
         r.setAttribute("fill-opacity", f2(k));
       };
-      const lit = BEVEL.light * Math.abs(side) * Math.min(on, 1), dark = BEVEL.dark * Math.abs(side) * Math.min(on, 1);
+      const amount = clamp(+S.sh_bevel || 0, 0, 100) / 100;
+      const lit = BEVEL.light * Math.abs(side) * Math.min(on, 1) * amount, dark = BEVEL.dark * Math.abs(side) * Math.min(on, 1) * amount;
       half("right", 0, side > 0 ? "#fff" : "#000", side > 0 ? lit : dark);
       half("left", -50, side > 0 ? "#000" : "#fff", side > 0 ? dark : lit);
       if (sun) {
@@ -12736,7 +12774,9 @@ var DialTool = class _DialTool {
       this.set_value("global", "bezel", +menu.value);
       this.render();
     };
-    const box2 = el("span", { className: "onview casebox", id: "case" }, word, arrow, menu);
+    const sign = el("span", { className: "sign" });
+    sign.innerHTML = icon(TOOL_ICONS.case, 18);
+    const box2 = el("span", { className: "onview casebox", id: "case" }, sign, word, arrow, menu);
     const dot = el("button", { type: "button", className: "dot strapdot", id: "strap-colour", title: "The strap\u2019s colour", ariaLabel: "The strap\u2019s colour" });
     dot.onclick = () => this.pop_open({ read: () => this.S.c_strap, write: (v) => this.set_value("global", "c_strap", v), label: () => "Strap" }, dot);
     const sword = el("span", { className: "word" }), sarrow = el("span", { className: "arrow" });
@@ -12747,7 +12787,9 @@ var DialTool = class _DialTool {
       this.set_value("global", "strap", +smenu.value);
       this.render();
     };
-    const strap = el("span", { className: "onview casebox strapbox", id: "strap" }, dot, el("span", { className: "strapkind" }, sword, sarrow, smenu));
+    const ssign = el("span", { className: "sign" });
+    ssign.innerHTML = icon(TOOL_ICONS.strap, 18);
+    const strap = el("span", { className: "onview casebox strapbox", id: "strap" }, dot, el("span", { className: "strapkind" }, ssign, sword, sarrow, smenu));
     this.case_sync = () => {
       const S = this.S, i = S.bezel || 0, k = S.strap || 0;
       word.textContent = i ? BEZELS[i] : "Case";
@@ -12768,6 +12810,7 @@ var DialTool = class _DialTool {
    *  drawn whole under the plate, the plate a veil over it (G.XRAY_VEIL). Preview only: never in an export (R5, R26). */
   xray_box() {
     const b = el("button", { type: "button", className: "onview casebox xraybox", id: "xray", title: "X-ray: the windows' discs under the plate (preview only)", onclick: () => this.set_value("global", "xray", !this.S.xray) }, el("span", { className: "word", textContent: "X-ray" }));
+    b.insertAdjacentHTML("afterbegin", icon(TOOL_ICONS.xray, 18));
     this.xray_sync = () => {
       const S = this.S, has = windows_of(S).some((w) => w.on && ["date", "day", "am \xB7 pm"].includes(WINDOW_KINDS[w.kind]));
       b.hidden = !has;
@@ -12799,7 +12842,11 @@ var DialTool = class _DialTool {
     const open = (on) => {
       list.hidden = !on;
       more.setAttribute("aria-expanded", String(on));
-      if (on) this.sync_guides();
+      if (!on) return;
+      this.sync_guides();
+      const m = this.main.getBoundingClientRect(), g = this.guides_tick.getBoundingClientRect();
+      list.style.setProperty("--list-room", `${Math.max(g.top - m.top - 2 * parseFloat(getComputedStyle(list).getPropertyValue("--list-gap") || 0), 120)}px`);
+      requestAnimationFrame(() => this.guides_more_below && this.guides_more_below());
     };
     more.onclick = () => open(list.hidden);
     this.guides_open = open;
@@ -12883,15 +12930,31 @@ var DialTool = class _DialTool {
       this.sync_rows();
       this.render();
     } })));
-    this.guide_windows_head = el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Windows" }), which_w);
-    list.append(
-      el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Rings" }), which),
+    this.guide_windows_head = el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Windows" }));
+    this.guide_more_head = el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Added" }));
+    this.guide_windows_which = el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Windows" }), which_w);
+    const scroll = el(
+      "div",
+      { className: "guidescroll" },
+      ...list.children,
+      el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Rings" })),
       this.guide_rings,
       this.guide_windows_head,
       this.guide_windows,
-      el("div", { className: "guidehead add" }, el("span", { className: "name", textContent: "Add" }), adds),
+      this.guide_more_head,
       this.guide_more
     );
+    const settings = el(
+      "div",
+      { className: "guidesettings" },
+      el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Rings" }), which),
+      this.guide_windows_which,
+      el("div", { className: "guidehead add" }, el("span", { className: "name", textContent: "Add" }), adds)
+    );
+    list.append(scroll, settings);
+    list.classList.add("guidesheet");
+    this.guides_more_below = () => scroll.classList.toggle("more", scroll.scrollTop + scroll.clientHeight < scroll.scrollHeight - 2);
+    scroll.addEventListener("scroll", this.guides_more_below, { passive: true });
     this.guide_rows = [this.build_row({ ...num3("gd_w", "Thickness", 0.25, 6, 0.25), scope: "global", side: true })];
     const ask = (on) => {
       last.classList.toggle("asking", on);
@@ -12932,7 +12995,7 @@ var DialTool = class _DialTool {
     cell.append(box_);
     last.classList.add("guidelast", "popfoot");
     last.append(el("span", { className: "resetall" }, reset), question);
-    list.append(last);
+    settings.append(last);
     const box2 = el("div", { className: "guides" }, this.guides_tick, more, list);
     box2.onkeydown = (e) => {
       if (e.key === "Escape" && !list.hidden) {
@@ -12967,7 +13030,8 @@ var DialTool = class _DialTool {
       row(num3("sh_from", "From", 0, 359, 1, { whole: true })),
       row(num3("sh_rise", "Height", 5, 85, 1, { whole: true })),
       row(num3("sh_dark", "Darkness", 0, 100, 1, { whole: true })),
-      row(chk("sh_blur", "Soft edge"))
+      row(chk("sh_blur", "Soft edge")),
+      row(num3("sh_bevel", "Bevels %", 0, 100, 1, { whole: true }))
     ];
     const heights = [row(num3("sh_hour", "Hour hand", 0, 3, 0.05)), row(num3("sh_minute", "Minute hand", 0, 3, 0.05)), row(num3("sh_second", "Seconds hand", 0, 3, 0.05)), row(num3("sh_cap", "Cap\u2019s top", 0, 4, 0.05))];
     const under = [row(num3("sh_disc", "Date discs", 0, 2, 0.05))];
@@ -13153,7 +13217,7 @@ var DialTool = class _DialTool {
       });
       this.guide_windows.replaceChildren(...this.guide_window_lines.map((d) => d.line));
     }
-    this.guide_windows_head.hidden = this.guide_windows.hidden = !shown.length;
+    this.guide_windows_head.hidden = this.guide_windows.hidden = this.guide_windows_which.hidden = !shown.length;
     this.guide_window_lines.forEach((d) => {
       d.refresh();
       d.line.classList.toggle("selected", d.index === S.ui_window);
@@ -13193,6 +13257,7 @@ var DialTool = class _DialTool {
       });
       this.guide_more.replaceChildren(...this.guide_more_lines.map((d) => d.line));
     }
+    this.guide_more_head.hidden = !(S.gd_more || []).length;
     this.guide_more_lines.forEach((d, i) => {
       d.refresh();
       for (const f2 of d.fields) if (document.activeElement !== f2.input) {
@@ -13550,7 +13615,8 @@ var DialTool = class _DialTool {
       };
     }
     if (row.kind === "pick") {
-      const group = el("span", { className: row.small ? "picks small" : row.thumbs ? "picks thumbs" : "picks", role: "radiogroup", ariaLabel: row.text });
+      const group = el("span", { className: (row.small ? "picks small" : row.thumbs ? "picks thumbs" : "picks") + (row.across ? " across" : ""), role: "radiogroup", ariaLabel: row.text });
+      if (row.across) group.style.setProperty("--across", row.across);
       row.items.forEach((name, i) => {
         if (row.skip && row.skip.includes(i)) return;
         const tile = el("button", { type: "button", className: "pickt", id: `${id}-${i}`, title: name, onclick: () => set(i) });
@@ -14715,7 +14781,7 @@ var DialTool = class _DialTool {
     if (!this.value_pop) return;
     const { button, box: box2, timer } = this.value_pop;
     clearTimeout(timer);
-    if (this.value_pop.row?.scope === "hand" && !button.closest(".row")?.matches(":hover")) this.hand_light(null);
+    if (this.value_pop.row?.scope === "hand" && (!matchMedia("(hover: hover)").matches || !button.closest(".row")?.matches(":hover"))) this.hand_light(null);
     this.value_pop = null;
     const field = box2.querySelector('input[type="text"]');
     if (document.activeElement === field) field.blur();
@@ -15363,15 +15429,19 @@ var DialTool = class _DialTool {
     let drawn2 = "";
     const grips = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     grips.setAttribute("class", "grips");
+    const named = el("span", { className: "handname", id: "hand-shape-name" });
     this.hand_grips = grips;
     this.hand_grip_events(wrap, grips);
     out.refresh = (T) => {
       const now = hand_detail(T);
       if (now !== drawn2) {
         drawn2 = now;
-        for (const old of [...wrap.children]) if (old !== grips) old.remove();
+        for (const old of [...wrap.children]) if (old !== grips && old !== named) old.remove();
         if (!grips.parentElement) wrap.append(grips);
         grips.insertAdjacentHTML("beforebegin", now);
+        if (named.parentElement !== wrap) wrap.append(named);
+        const shape2 = HAND_SHAPES[T.shape] || "baton";
+        named.textContent = shape2 === "file" ? "Your SVG" : shape2[0].toUpperCase() + shape2.slice(1);
       }
       this.hand_lit_draw();
       grips_soon();
@@ -15438,7 +15508,7 @@ var DialTool = class _DialTool {
       if (!this.hand_drag) return;
       this.hand_drag = null;
       box2.classList.remove("dragging");
-      if (!box2.matches(":hover")) this.hand_light(null);
+      if (!matchMedia("(hover: hover)").matches || !box2.matches(":hover")) this.hand_light(null);
     };
     g.addEventListener("pointerup", end);
     g.addEventListener("pointercancel", end);

@@ -13,6 +13,7 @@
   .detail .grips .handle { fill: var(--handle); stroke: var(--white); stroke-width: 1.5; cursor: grab; pointer-events: all; touch-action: none; }
   .detail .grips .handle .reach { fill: transparent; stroke: none; }
   .detail.dragging .grips .handle { cursor: grabbing; }
+  .detail .handname { position: absolute; left: var(--unit); bottom: var(--u1); font-size: var(--t-s); color: var(--grey); pointer-events: none; }      /* the shape's name, small, at its bottom left (4.79) */
   .detail .lit { fill: var(--lit); }      /* a number's part, lit while its row is pointed at (#329), in the selected guide's colour */
   .detail .pivot { fill: var(--surface); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
   /* the hand's shapes as thumbs (4.46.3, "rectangular thumbs"; a row of their own after the rows since 4.46.4): every

@@ -88,6 +88,12 @@
     main.words :is(.guidesbox, .backdropbox) { padding-right: var(--u4); }
     main:not(.words) :is(.guidesbox, .guidesmore, .backdropbox) { background: none; }      /* folded to their signs, the switches are outlines again */
     main.words :is(.guidesbox, .backdropbox) > .word { max-width: var(--word-max); margin-left: var(--unit); }
+    /* the case, its strap and X-ray too, their signs alone (4.79: "on mobile icon them"); a tap on the backdrop unfolds their words as the others' */
+    .casebox { --sign-w: 18px; gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); }
+    .strapbox { padding-left: var(--u2); }
+    .casebox :is(.word, .arrow) { display: inline-block; max-width: 0; overflow: hidden; white-space: nowrap; transition: max-width var(--iris-time) var(--view-ease), margin var(--iris-time) var(--view-ease); }
+    main.words .casebox :is(.word, .arrow) { max-width: var(--word-max); margin-left: var(--unit); }
+    main:not(.words) .casebox { background: none; }
     /* in the showcase the mark (larger here) and "Dial Tool" stand at the top left: the drawer is gone */
     #app.show :is(.about, .logo), .panel:not(.squeezed) :is(.about, .logo) { width: var(--logo-narrow); }
     #app.show .logo, .panel:not(.squeezed) .logo { height: var(--logo-narrow); }

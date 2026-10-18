@@ -146,7 +146,7 @@
     --canvas-top: calc((var(--header) - var(--control-large)) / 2);      /* undo and Guides stand on the header's middle line, with the title and the unit box */
     --guide-name: 106px; --guide-row: 30px;        /* the guides' list: the column of names, wide enough for an added guide's name and values on one line (92 until 4.45.3) · a line's height (42 until 4.42.5, Okay, #271: "-2px" above and below; 38 until 4.45.3, Okay, 16 Oct 2026, #305: "tighter spacing overall … small like beta version allowed"; under a finger still 38) */
     --shade-name: 92px;                            /* the Shadows list's names: the guides' list's column until 4.45.3, when that one grew for an added guide's values; its sliders keep the room */
-    --guide-dot: 8px;                              /* a round colour in the guides' list (the room between two: a special); 10 until 4.51.1 (Okay, 18 Oct 2026, notes 2: "Smaller color dots, closer, much compacter width") */
+    --guide-dot: 7px; --guide-none: 14px; --scroll-w: 6px;      /* a round colour in the guides' list (the room between two: a special): 7 since 4.79 (Okay, 19 Oct 2026: "Still smaller balls"), 8 until then, 10 until 4.51.1 (notes 2: "Smaller color dots, closer, much compacter width") · the none sign ⊘, 14 (at 10 it went too small) · a list's scrollbar */
     --guide-dim: 0.4;                              /* a colour not chosen in the guides' list: this much of it (Okay, 18 Oct 2026, notes 2: "Fainter unselected swatches"; 0.6 from #271, 16 Oct: "dim all the unselected colors 40%") */
     --ring-thick: 3px;                             /* the chosen one: a ring of its own colour this thick, a ring of the ground inside it (a special) */
 
@@ -226,5 +226,5 @@
     --glow-line: 1.5px; --glow-under: 4px;         /* lines, but not one of the three: the outline of what the pointer is on, and the white line under it */
     --tip-arrow: 5px; --tip-arrow-in: 2.6px;       /* lines, but not one of the three: the pointer label's arrow, its dark line and the white line inside it */
   }
-  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --pop-width: 454px; --dot: 18px; --guide-dot: 14px; --guide-gap: 13px; --guide-row: 38px; --pop-field: 180px; --pop-hue: 32px; --knob: 28px; } }      /* a finger needs more to hold than a pointer */
+  @media (pointer: coarse) { :root { --thumb: 26px; --tick: 20px; --chip: 30px; --pop-width: 454px; --dot: 18px; --guide-dot: 11px; --guide-gap: 13px; --guide-row: 38px; --pop-field: 180px; --pop-hue: 32px; --knob: 28px; } }      /* a finger needs more to hold than a pointer */
 }

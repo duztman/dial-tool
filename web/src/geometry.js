@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.78";
+export const VERSION = "beta 4.79";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -183,6 +183,7 @@ export const DEFAULTS = {
   // 2026, 23:05, a picture of the list: "these in the image are the default values"); the movement, not chosen yet,
   // will fix the real heights.
   sh_on: true, sh_from: 270, sh_rise: 35, sh_dark: 25, sh_blur: false,
+  sh_bevel: 0,                                     // the hands' bevels, 0–100 % (4.79; Okay, 19 Oct 2026: "Hand bevel off on default, add an adjuster"); 100 = as 4.77 drew them
   sh_hour: 0.15, sh_minute: 0.35, sh_second: 0.6, sh_cap: 0.75, sh_disc: 0.15,
   gd_more: [],                                     // guides added by hand: lines, crosshairs, circles (GUIDE_MORE). gd_k_rings and gd_k_sel: unread since 13 Oct 2026, a ring's guide has the ring's own colour
   // until beta 4.4 guides had two free colours with a strength each. Kept because old links and files carry
@@ -432,6 +433,11 @@ export const LINK_KEYS = [
   "look", "c2", "c3", "da_look", "da_c2", "da_c3",      // 4.73: appended; the picture as before (0) and its own colours (null), so every older link looks as before
   "xray", "physics", "da_physics",      // 4.72: appended; X-ray off and physics on to start, so every older link looks as before
   "strap", "c_strap",       // 4.69: appended; a case's strap — drawn only with a case, which older links don't have
+  // ↑ 4.72–4.75 put their keys above 4.69's instead of under them, so each moved the codes of the ones before it: a
+  // link made in 4.69–4.74 with a case's strap, X-ray, a window's picture or neighbours reads those wrongly since
+  // (found 19 Oct 2026, 4.79). The order above is 4.75–4.78's, kept as it is, since the live page and saved dials
+  // (#347) carry it. From here on: only ever under the last line, and test/link-keys.json says so (linktrip.mjs).
+  "sh_bevel",               // 4.79: appended; off to start
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);

@@ -14,6 +14,16 @@ import { example_dials } from "../examples.mjs";
 const problems = [];
 const check = (ok, what) => { console.log((ok ? "ok    " : "FAIL  ") + what); if (!ok) problems.push(what); };
 
+// a key's code is its place in LINK_KEYS, so the list only grows at its end (R31). test/link-keys.json is the list as
+// released; it must stand at the start of LINK_KEYS, unchanged. After appending keys, append them to the file too.
+// (4.72–4.75 put theirs higher up and moved the codes of 4.69's: found 19 Oct 2026, 4.79.)
+{
+  const frozen = JSON.parse(await import("fs").then((fs) => fs.readFileSync(new URL("./link-keys.json", import.meta.url), "utf8")));
+  const moved = frozen.findIndex((k, i) => G.LINK_KEYS[i] !== k);
+  check(moved < 0, moved < 0 ? `LINK_KEYS keeps the ${frozen.length} released keys in their places (${G.LINK_KEYS.length - frozen.length} appended since)`
+    : `LINK_KEYS changed at ${moved}: "${frozen[moved]}" became "${G.LINK_KEYS[moved]}" — new keys go at the list's end only`);
+}
+
 /** a link → settings, as the page reads one */
 const read = (l) => {
   const kind = G.link_kind(l);

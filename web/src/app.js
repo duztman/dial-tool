@@ -148,7 +148,8 @@ const EYE = {                                      // the left column's sign: op
 const eye = (open) => icon(EYE[open ? "open" : "closed"]);
 const NONE_SIGN = SIGNS.sheet + `<path d="M6.75 8.25L9.75 11.25M9.75 8.25L6.75 11.25" ${sw(SLANT)}/>`;      // the sheet with a cross: this font has none of it
 // a "none" in a row of colour dots: a slashed circle at the dot's own size (10), its outer edge where it was (4); so small, LINE is enough
-const none_dot = `<svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="round"><path d="M5 ${1 + LINE / 2}A${4 - LINE / 2} ${4 - LINE / 2} 0 1 1 5 ${9 - LINE / 2}A${4 - LINE / 2} ${4 - LINE / 2} 0 1 1 5 ${1 + LINE / 2}M3.25 3.25L6.75 6.75"/></svg>`;      // ring and stroke one path: where they meet nothing doubles, at any opacity (Okay, 16 Oct 2026, #271)
+// on 14 since 4.79 (Okay, 19 Oct 2026, 00:59: "the oslashes for no went too small"; on 10 from #271 to 4.78)
+const none_dot = `<svg viewBox="0 0 14 14" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="round"><path d="M7 ${1 + LINE / 2}A${6 - LINE / 2} ${6 - LINE / 2} 0 1 1 7 ${13 - LINE / 2}A${6 - LINE / 2} ${6 - LINE / 2} 0 1 1 7 ${1 + LINE / 2}M4.25 4.25L9.75 9.75"/></svg>`;      // ring and stroke one path: where they meet nothing doubles, at any opacity (Okay, 16 Oct 2026, #271)
 // a cross at the same size, in its place on an added guide's line: remove it (#305, 4.45.3)
 const cross_dot = icon(`<path d="M2.25 2.25L7.75 7.75M7.75 2.25L2.25 7.75" ${sw(SLANT)}/>`, 10);
 // small pictures for choices that are easier seen than read: drawn at the size they are shown, 38 × 27 (they were
@@ -344,6 +345,12 @@ const TOOL_ICONS = {
   // (CURVE, centre on a quarter, radius on a half); the shade and the shadow are filled, their ends on half points
   // 15 Oct, 02:42: mirrored (lit from the upper left, the shadow cast to the right) and its outline DENSE, as Guides',
   // the sign beside it on 18 ("ball stroke thickness too much… look at similar size icons, guides and such")
+  // a case, its strap, X-ray (4.79; Okay, 19 Oct 2026, 01:03: "Strap and case: stack on that left bottom list, on mobile
+  // icon them"): on 18, DENSE, as the Guides and Shadows signs — a case with its four lugs and crown; a strap's two edges
+  // through a buckle; a disc's edge whole round a dashed one under it
+  case: `<g ${sw(DENSE)}><circle cx="9.25" cy="9.25" r="4.75"/><path d="M6.25 1.25V4.25M12.25 1.25V4.25M6.25 14.25V17.25M12.25 14.25V17.25M14.75 9.25H16.75"/></g>`,
+  strap: `<g ${sw(DENSE)}><path d="M6.25 1.25V6.25M12.25 1.25V6.25M6.25 12.25V17.25M12.25 12.25V17.25"/><rect x="4.75" y="6.25" width="9" height="6"/><path d="M9.25 6.25V12.25"/></g>`,
+  xray: `<g ${sw(DENSE)}><circle cx="9.25" cy="9.25" r="6.5"/><circle cx="9.25" cy="9.25" r="3.25" stroke-dasharray="1.25 1.3" stroke-linecap="butt"/></g>`,
   shadows: `<circle cx="7.25" cy="9.75" r="5.5" ${sw(DENSE)}/><path d="M4.5 14.5A5.5 5.5 0 0 0 12 7A8 8 0 0 1 4.5 14.5Z" fill="currentColor" stroke="none"/>`
     + `<path d="M11.03 13.75A5.625 1.25 0 0 1 16.75 15A5.625 1.25 0 0 1 5.5 15A5.5 5.5 0 0 0 11.03 13.75Z" fill="currentColor" stroke="none"/>`,      // the ball sunk 2 into its shadow (Okay, 16 Oct 2026, on 4.44: "Shadow's ball sinks 2px down into its shadow"; it touched it from 4.42.4): the shadow the same ellipse (11.125 15, 5.625 × 1.25), the ball's disc cut out of it — it stands in front. Cut at the middle of the ball's line (5.5), so the cut's edge lies under the line: cut at its outer edge (6.125, 4.44.2) the two edges met and left a faint light seam round the ball (Okay: "a single faint line around the ball"). The rim crosses the shadow's top at 11.03 and at its left end
   // Okay's own mark, on 16 in the panel's first column (15 Oct 2026, 02:42: "my personal logo. Draw this like an
@@ -699,7 +706,7 @@ const ROWS = {
     // buttons. And 3 6 9 12 are circular buttons now")
     hdr("Window", { title: (S) => `Window at ${G.window_place(G.windows_of(S)[S.ui_window])}` }),      // "Position" under it in 4.46.1–2 (Okay: "Delete position name, that works without")
     custom("window_at", { ...W, head: true, show: win_on, text: "Position" }),
-    pick("kind", "Complication", G.WINDOW_KINDS, (i) => icon(PICS.window[i], 30, 21), { ...W, small: true, show: win_on }),
+    pick("kind", "Complication", G.WINDOW_KINDS, (i) => icon(PICS.window[i], 30, 21), { ...W, small: true, across: G.WINDOW_KINDS.length, show: win_on }),      // all on one line (4.79: the fifth, big date, fell to a line of its own)
     info("Follows the time shown: AM · PM beside the time, under the panel.", { ...W, show: win_is("am · pm") }),
     // its picture (4.73; the disc sketches C): Sky as before · Half, a half-round hole over a two-colour disc · Band, the day's colours along a strip
     seg("look", "Picture", G.PICTURES["am · pm"], { ...W, id: "window-look-day", show: win_is("am · pm") }),
@@ -833,7 +840,7 @@ const LENGTH_KEYS = { ring: G.RING_MM, hand: G.HAND_MM, window: G.WINDOW_MM, glo
 const label_of = (row, T) => (row.say ? row.say(T)[0] : row.menu ? `${(row.menu.items.find(([v]) => v === (T[row.menu.key] ?? 0)) || row.menu.items[0])[1]} ${row.text.split(" ").pop()}` : row.text);
 // two measures that may be linked, so changing one keeps their ratio (#358; Okay's notes 2: "a link/unlink like in
 // illustrator … other width-height or linkable stuff get this too"): its switch key, the pair, and when it applies
-const LINKED_PAIRS = { window: [{ link: "wh_link", keys: ["w", "h"], when: (T) => ["rectangle", "arc"].includes(G.window_shape(T)) }] };
+const LINKED_PAIRS = { window: [{ link: "wh_link", keys: ["w", "h"], when: (T) => ["rectangle", "arc", "pair"].includes(G.window_shape(T)) }] };      // a big date's pair too (4.79: its pill showed LINKED and held nothing)
 const day_look = (T) => (T && T.on && G.WINDOW_KINDS[T.kind] === "am · pm" ? T.look || 0 : -1);      // an am · pm window's picture (4.73), -1 for any other window
 const moon_look = (T) => (T && T.on && G.WINDOW_KINDS[T.kind] === "moon phase" ? T.look || 0 : -1);      // a moon window's picture (4.73), -1 for any other window
 const KIND_TAB_KEYS = Object.keys(G.WINDOW_BASE).filter((k) => !["on", "kind", "at", "at_deg", "r", "guide", "wh_link"].includes(k));      // what each complication keeps of its own (#328)
@@ -1520,7 +1527,7 @@ class DialTool {
     }
     // each hand's bevel: its right and left halves (as it points) lighter and darker by where the light comes from, and the shine's bands on it
     items.forEach((item, i) => {
-      if (item.role !== "hand" || G.HAND_SHAPES[S["ha_" + item.name]?.shape] === "disc") return;      // a disc hand is flat
+      if (item.role !== "hand" || G.HAND_SHAPES[S["ha_" + item.name]?.shape] === "disc" || !(+S.sh_bevel > 0 || sun)) return;      // a disc hand is flat; with Bevels at 0 only the showcase's shine reaches the hands
       const side = Math.sin((from - item.angle) * Math.PI / 180);      // + : the light comes from the hand's right
       const key = "bevel-" + item.name, clip = part(key + "/clip", "clipPath", this.light_defs), shape = part(key + "/clip/hand", "path", clip);
       clip.id = "bevel-clip-" + item.name; shape.setAttribute("d", this.slots[i].d);
@@ -1530,7 +1537,8 @@ class DialTool {
       const inner = part(key + "/in", "g", g);
       inner.setAttribute("clip-path", `url(#${clip.id})`);
       const half = (name, x, colour, k) => { const r = part(`${key}/${name}`, "rect", inner); r.setAttribute("x", f(x)); r.setAttribute("y", "-50"); r.setAttribute("width", "50"); r.setAttribute("height", "100"); r.setAttribute("fill", colour); r.setAttribute("fill-opacity", f(k)); };
-      const lit = BEVEL.light * Math.abs(side) * Math.min(on, 1), dark = BEVEL.dark * Math.abs(side) * Math.min(on, 1);
+      const amount = clamp(+S.sh_bevel || 0, 0, 100) / 100;      // Shadows → Bevels % (4.79): none to start
+      const lit = BEVEL.light * Math.abs(side) * Math.min(on, 1) * amount, dark = BEVEL.dark * Math.abs(side) * Math.min(on, 1) * amount;
       half("right", 0, side > 0 ? "#fff" : "#000", side > 0 ? lit : dark);
       half("left", -50, side > 0 ? "#000" : "#fff", side > 0 ? dark : lit);
       if (sun) { const sh = part(key + "/shine", "g", inner); sh.setAttribute("transform", `rotate(${f(item.angle)})`); sh.setAttribute("style", "mix-blend-mode: screen"); bands(sh, key + "/shine"); }
@@ -1984,7 +1992,8 @@ class DialTool {
     const menu = el("select", { id: "case-pick", ariaLabel: "A case round the dial (preview only)", title: "A case round the dial (preview only)" });
     BEZELS.forEach((name, i) => menu.append(el("option", { value: String(i), textContent: i ? name : "No case" })));
     menu.onchange = () => { this.set_value("global", "bezel", +menu.value); this.render(); };      // the view stays on the dial (4.69; it fitted the case in 4.66–4.68)
-    const box = el("span", { className: "onview casebox", id: "case" }, word, arrow, menu);
+    const sign = el("span", { className: "sign" }); sign.innerHTML = icon(TOOL_ICONS.case, 18);
+    const box = el("span", { className: "onview casebox", id: "case" }, sign, word, arrow, menu);
     // its strap (4.69; Okay, 18 Oct 2026, 22:35: "Add straps to bezels metal bands too … Add strap color change option"):
     // a second switch beside it while a case is on — the strap's colour as a chip (a press opens the colour pop-out),
     // then its kind's name and a chevron over the system's list: No strap · Strap · Bracelet. A bracelet is the case's metal: no chip
@@ -1995,7 +2004,8 @@ class DialTool {
     const smenu = el("select", { id: "strap-pick", ariaLabel: "The case’s strap (preview only)", title: "The case’s strap (preview only)" });
     STRAPS.forEach((name, i) => smenu.append(el("option", { value: String(i), textContent: i ? name : "No strap" })));
     smenu.onchange = () => { this.set_value("global", "strap", +smenu.value); this.render(); };
-    const strap = el("span", { className: "onview casebox strapbox", id: "strap" }, dot, el("span", { className: "strapkind" }, sword, sarrow, smenu));
+    const ssign = el("span", { className: "sign" }); ssign.innerHTML = icon(TOOL_ICONS.strap, 18);
+    const strap = el("span", { className: "onview casebox strapbox", id: "strap" }, dot, el("span", { className: "strapkind" }, ssign, sword, sarrow, smenu));
     this.case_sync = () => {
       const S = this.S, i = S.bezel || 0, k = S.strap || 0;
       word.textContent = i ? BEZELS[i] : "Case"; menu.value = String(i); box.classList.toggle("on", i > 0);
@@ -2011,6 +2021,7 @@ class DialTool {
    *  drawn whole under the plate, the plate a veil over it (G.XRAY_VEIL). Preview only: never in an export (R5, R26). */
   xray_box() {
     const b = el("button", { type: "button", className: "onview casebox xraybox", id: "xray", title: "X-ray: the windows' discs under the plate (preview only)", onclick: () => this.set_value("global", "xray", !this.S.xray) }, el("span", { className: "word", textContent: "X-ray" }));
+    b.insertAdjacentHTML("afterbegin", icon(TOOL_ICONS.xray, 18));
     this.xray_sync = () => {
       const S = this.S, has = G.windows_of(S).some((w) => w.on && ["date", "day", "am · pm"].includes(G.WINDOW_KINDS[w.kind]));
       b.hidden = !has; b.classList.toggle("on", Boolean(S.xray)); b.setAttribute("aria-pressed", String(Boolean(S.xray)));
@@ -2039,7 +2050,15 @@ class DialTool {
     const more = el("button", { type: "button", className: "onview guidesmore", id: "guides-more", title: "Which guides, and their colours", ariaLabel: "Which guides, and their colours" });
     more.innerHTML = icon(SIGNS.down);
     more.setAttribute("aria-expanded", "false");
-    const open = (on) => { list.hidden = !on; more.setAttribute("aria-expanded", String(on)); if (on) this.sync_guides(); };
+    const open = (on) => {
+      list.hidden = !on; more.setAttribute("aria-expanded", String(on));
+      if (!on) return;
+      this.sync_guides();
+      // its room: from the preview's top edge down to its switch, measured now (4.79: a long list ran past the top of an iPad's screen)
+      const m = this.main.getBoundingClientRect(), g = this.guides_tick.getBoundingClientRect();
+      list.style.setProperty("--list-room", `${Math.max(g.top - m.top - 2 * parseFloat(getComputedStyle(list).getPropertyValue("--list-gap") || 0), 120)}px`);
+      requestAnimationFrame(() => this.guides_more_below && this.guides_more_below());
+    };
     more.onclick = () => open(list.hidden);
     this.guides_open = open;
     // a guide is one line: its name, then nine round choices — none (a struck circle), then the eight colours. The
@@ -2103,10 +2122,22 @@ class DialTool {
       this.S.gd_more = [...(this.S.gd_more || []), { kind: i, a: 0, r: +(this.S.dial_d / 4).toFixed(2), k: [3, 0, 2, 5, 4, 1].find((k) => !used.has(k)) ?? 3 }];
       this.sync_rows(); this.render();
     } })));
-    this.guide_windows_head = el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Windows" }), which_w);
-    list.append(el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Rings" }), which), this.guide_rings,
-      this.guide_windows_head, this.guide_windows,
-      el("div", { className: "guidehead add" }, el("span", { className: "name", textContent: "Add" }), adds), this.guide_more);
+    // the list in two (4.79; Okay, 19 Oct 2026, 00:59: "they need a scrollbar … That window can use the lower part for
+    // all adjustments and settings"): over, the guides themselves, one line each, scrolling when there are many; under,
+    // always in view on the lighter ground, every setting — which rings and windows show theirs, Add, Thickness · Reset All
+    this.guide_windows_head = el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Windows" }));
+    this.guide_more_head = el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Added" }));
+    this.guide_windows_which = el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Windows" }), which_w);
+    const scroll = el("div", { className: "guidescroll" }, ...list.children, el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Rings" })), this.guide_rings,
+      this.guide_windows_head, this.guide_windows, this.guide_more_head, this.guide_more);
+    const settings = el("div", { className: "guidesettings" }, el("div", { className: "guidehead" }, el("span", { className: "name", textContent: "Rings" }), which), this.guide_windows_which,
+      el("div", { className: "guidehead add" }, el("span", { className: "name", textContent: "Add" }), adds));
+    list.append(scroll, settings);
+    list.classList.add("guidesheet");
+    // more under the fold: its last line fades into the settings, so a finger knows it scrolls (a phone's and an iPad's
+    // scrollbar only shows while it moves)
+    this.guides_more_below = () => scroll.classList.toggle("more", scroll.scrollTop + scroll.clientHeight < scroll.scrollHeight - 2);
+    scroll.addEventListener("scroll", this.guides_more_below, { passive: true });
     // the last line: Thickness, its number with a compact plus and minus (a side row's number box), and Reset All after
     // a rule (Okay, 16 Oct 2026, #271: "Guide thickness and reset on the same line, value boxes get an attached compact
     // plus minus to gain space … Reset also gets a vertical separator before. Written as 'Reset All'"). Its question
@@ -2136,7 +2167,7 @@ class DialTool {
     cell.append(box_);
     last.classList.add("guidelast", "popfoot");
     last.append(el("span", { className: "resetall" }, reset), question);
-    list.append(last);
+    settings.append(last);
     const box = el("div", { className: "guides" }, this.guides_tick, more, list);
     box.onkeydown = (e) => { if (e.key === "Escape" && !list.hidden) { open(false); more.focus(); } };
     return box;
@@ -2160,7 +2191,8 @@ class DialTool {
     const row = (r) => this.build_row({ ...r, scope: "global" });
     const head = (text) => el("div", { className: "guidehead" }, el("span", { className: "name", textContent: text }));
     const light = [row(num("sh_from", "From", 0, 359, 1, { whole: true })), row(num("sh_rise", "Height", 5, 85, 1, { whole: true })),
-      row(num("sh_dark", "Darkness", 0, 100, 1, { whole: true })), row(chk("sh_blur", "Soft edge"))];
+      row(num("sh_dark", "Darkness", 0, 100, 1, { whole: true })), row(chk("sh_blur", "Soft edge")),
+      row(num("sh_bevel", "Bevels %", 0, 100, 1, { whole: true }))];      // the hands' bevels, off to start (4.79)
     const heights = [row(num("sh_hour", "Hour hand", 0, 3, 0.05)), row(num("sh_minute", "Minute hand", 0, 3, 0.05)), row(num("sh_second", "Seconds hand", 0, 3, 0.05)), row(num("sh_cap", "Cap’s top", 0, 4, 0.05))];
     const under = [row(num("sh_disc", "Date discs", 0, 2, 0.05))];
     this.shadow_rows = [...light, ...heights, ...under];
@@ -2320,7 +2352,7 @@ class DialTool {
       });
       this.guide_windows.replaceChildren(...this.guide_window_lines.map((d) => d.line));
     }
-    this.guide_windows_head.hidden = this.guide_windows.hidden = !shown.length;      // no window on: nothing to say (R16)
+    this.guide_windows_head.hidden = this.guide_windows.hidden = this.guide_windows_which.hidden = !shown.length;      // no window on: nothing to say (R16)
     this.guide_window_lines.forEach((d) => { d.refresh(); d.line.classList.toggle("selected", d.index === S.ui_window); });
     // the guides added by hand, one line each (#305): its name and measures (quiet numbers to type in), its colours,
     // and in the none sign's place a cross that removes it
@@ -2346,6 +2378,7 @@ class DialTool {
       });
       this.guide_more.replaceChildren(...this.guide_more_lines.map((d) => d.line));
     }
+    this.guide_more_head.hidden = !(S.gd_more || []).length;      // "Added" over the guides added by hand, when there are any (4.79)
     this.guide_more_lines.forEach((d, i) => {
       d.refresh();
       for (const f of d.fields) if (document.activeElement !== f.input) { f.input.value = f.length ? String(parseFloat(this.in_unit(S.gd_more[i][f.key], 2))) : String(+(+S.gd_more[i][f.key]).toFixed(1)); f.input.oninput(); }
@@ -2640,7 +2673,8 @@ class DialTool {
     }
 
     if (row.kind === "pick") {                     // a choice as pictures: one tile per item, on the columns
-      const group = el("span", { className: row.small ? "picks small" : row.thumbs ? "picks thumbs" : "picks", role: "radiogroup", ariaLabel: row.text });
+      const group = el("span", { className: (row.small ? "picks small" : row.thumbs ? "picks thumbs" : "picks") + (row.across ? " across" : ""), role: "radiogroup", ariaLabel: row.text });
+      if (row.across) group.style.setProperty("--across", row.across);      // as many tiles to a line as it has (a window's complications, five since 4.74)
       row.items.forEach((name, i) => {
         if (row.skip && row.skip.includes(i)) return;      // an item kept in the list for its place (R9) but not offered here
         const tile = el("button", { type: "button", className: "pickt", id: `${id}-${i}`, title: name, onclick: () => set(i) });
@@ -3578,7 +3612,7 @@ class DialTool {
     if (!this.value_pop) return;
     const { button, box, timer } = this.value_pop;
     clearTimeout(timer);
-    if (this.value_pop.row?.scope === "hand" && !button.closest(".row")?.matches(":hover")) this.hand_light(null);      // its part stays lit only while its row is still pointed at
+    if (this.value_pop.row?.scope === "hand" && (!matchMedia("(hover: hover)").matches || !button.closest(".row")?.matches(":hover"))) this.hand_light(null);      // its part stays lit only while a mouse still points at its row (a finger's :hover sticks after a tap: 4.79)
     this.value_pop = null;
     const field = box.querySelector('input[type="text"]');
     if (document.activeElement === field) field.blur();      // what was typed is taken before the field goes
@@ -4138,6 +4172,9 @@ class DialTool {
     // its handles (#345): an overlay of its own, kept when the drawing under it is replaced
     const grips = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     grips.setAttribute("class", "grips");
+    // the shape's name under its picture (4.79; Okay, 19 Oct 2026: on an iPad or a phone a tile's name — its title —
+    // never shows, so the shapes went by guesses: "leaf", "diamond")
+    const named = el("span", { className: "handname", id: "hand-shape-name" });
     this.hand_grips = grips;
     this.hand_grip_events(wrap, grips);
     out.refresh = (T) => {
@@ -4145,9 +4182,12 @@ class DialTool {
       if (now !== drawn) {
         drawn = now;
         // the drawings under the handles replaced, the handles' own layer kept in place (moving it would drop a drag's hold on the pointer)
-        for (const old of [...wrap.children]) if (old !== grips) old.remove();
+        for (const old of [...wrap.children]) if (old !== grips && old !== named) old.remove();
         if (!grips.parentElement) wrap.append(grips);
         grips.insertAdjacentHTML("beforebegin", now);
+        if (named.parentElement !== wrap) wrap.append(named);
+        const shape = G.HAND_SHAPES[T.shape] || "baton";
+        named.textContent = shape === "file" ? "Your SVG" : shape[0].toUpperCase() + shape.slice(1);
       }
       this.hand_lit_draw();
       grips_soon();
@@ -4213,7 +4253,7 @@ class DialTool {
     const end = () => {
       if (!this.hand_drag) return;
       this.hand_drag = null; box.classList.remove("dragging");
-      if (!box.matches(":hover")) this.hand_light(null);
+      if (!matchMedia("(hover: hover)").matches || !box.matches(":hover")) this.hand_light(null);      // a finger's :hover sticks (4.79)
     };
     g.addEventListener("pointerup", end);
     g.addEventListener("pointercancel", end);
