@@ -19,6 +19,13 @@
   .guides:has(.guidelist:not([hidden])) { z-index: 7; }      /* open, its list over Backdrop above it */
   .guides .guidesmore svg { rotate: 180deg; }
   .guides .guidesmore[aria-expanded="true"] svg { rotate: 0deg; }
+  /* the selected ring's handles on its guides (4.65; farukahmet's PR #2, Okay: "all these handles should be in guide
+     color"): filled with the ring's guide colour (--handle, app.js), a hairline of white round them so they read on any
+     dial; a reach of a fingertip round each, unseen */
+  .handles .handle { fill: var(--handle); stroke: var(--white); stroke-width: 1.5; cursor: grab; pointer-events: all; }
+  .handles .handle .reach { fill: transparent; stroke: none; }
+  .handles.dragging .handle { cursor: grabbing; }
+  #app.show .handles { display: none; }
   /* Tiny Preview (#337): its button where Guides stood, a plain eye; the dial at its own size in a little window over
      everything, the backdrop round it, a hard shadow, dragged anywhere; the eye at its top left puts it away */
   .tinyopen { position: absolute; z-index: 3; top: var(--canvas-top); right: var(--canvas-inset); width: var(--control-large); border-radius: var(--round-switch); }

@@ -761,6 +761,7 @@ const label_of = (row, T) => (row.say ? row.say(T)[0] : row.menu ? `${(row.menu.
 // illustrator … other width-height or linkable stuff get this too"): its switch key, the pair, and when it applies
 const LINKED_PAIRS = { window: [{ link: "wh_link", keys: ["w", "h"], when: (T) => ["rectangle", "arc"].includes(G.window_shape(T)) }] };
 const KIND_TAB_KEYS = Object.keys(G.WINDOW_BASE).filter((k) => !["on", "kind", "at", "at_deg", "r", "guide", "wh_link"].includes(k));      // what each complication keeps of its own (#328)
+const HANDLE_R = 5.5, HANDLE_OUT = 14, HANDLE_REACH = 14;      // a guide handle (4.65): its half-size, how far beyond the ring's outer edge the angle handles stand, the radius a press reaches it within — screen points at any zoom
 const TINY_EVERY = 200;                            // the Tiny Preview redrawn at most this often, in ms (#337)
 const NUDGE_NEUTRAL = { dr: 0, da: 0, rot: 0, s: 1 };      // a numeral's nudge, untouched (#252)
 const is_length = (row) => row.kind === "num" && (LENGTH_KEYS[row.scope] || []).includes(row.key);
@@ -1065,7 +1066,10 @@ class DialTool {
     sky_defs.append(sky);
     this.sky = svg_el("rect");
     for (const [k, v] of [["class", "sky"], ["width", "100%"], ["height", "100%"], ["fill", "url(#show-sky)"], ["pointer-events", "none"]]) this.sky.setAttribute(k, v);
-    this.svg.append(sky_defs, this.backdrop, this.sky, this.pool, this.dial, this.over);
+    this.handles = svg_el("g");                    // the selected ring's handles on its guides (4.65, draw_handles), over everything on the dial
+    this.handles.setAttribute("class", "handles");
+    this.handle_events();
+    this.svg.append(sky_defs, this.backdrop, this.sky, this.pool, this.dial, this.over, this.handles);
     this.tip = el("div", { className: "tip", hidden: true }, el("span"));       // the name of what the pointer is on
     this.tip.insertAdjacentHTML("beforeend", '<svg viewBox="0 0 20 10" width="20" height="10" aria-hidden="true"><path class="a" d="M0 0 L10 10 L20 0"/><path class="b" d="M0 0 L10 10 L20 0"/><path class="c" d="M-1 -3 L21 -3 L21 0 L10 9 L-1 0 Z"/></svg>');
     this.preview_events();
@@ -1713,6 +1717,92 @@ class DialTool {
     if (!back) return false;
     for (const [k, v] of Object.entries(back)) T[k] = structuredClone(v);
     return true;
+  }
+
+  /** handles on the selected ring's guides (4.65; farukahmet's PR #2, 18 Oct 2026, redrawn: Okay, 21:20: "Drag handles
+   *  great as an idea, needs to be implemented in our ways and design, inner outer thing already has dotted line, all
+   *  these handles should be in guide color, adapted"). On the Rings tab, with guides on, over the selected ring:
+   *    · a disc on its dotted line (where its radius measures to: outer, middle or inner end, a numeral's anchor) —
+   *      dragged in or out, it sets the radius;
+   *    · a square on the edge away from it — dragged, it sets how big one of its things is (a mark's length or a dot's
+   *      Ø, a numeral's size, a band's width), the edge following the pointer;
+   *    · a triangle just outside the ring at its first position — dragged round, it sets Start;
+   *    · with a span under 360°, a second triangle at its end — dragged round, it sets Span.
+   *  All in the ring's guide colour, a hairline of white round them, the size of a fingertip on any zoom. The radius
+   *  and size handles stand halfway between the first two positions, so they never sit on a mark. They go through
+   *  set_value, as the panel's rows do: undo, the controller, the guides live while dragged. */
+  draw_handles() {
+    const H = this.handles;
+    if (!H) return;
+    const R = this.ring(), k = R ? G.ring_guide(this.S, this.S.ui_ring) : null;
+    if (this.show || this.S.ui_section !== 1 || !this.S.guides || !(this.S.gd_rings || this.S.gd_sel) || !R || !R.on || k === null) { H.replaceChildren(); this.handles_key = ""; return; }      // only where its guide shows
+    const kind = G.kind_of(R), ext = { ticks: R.len, markers: R.len, band: R.width }[kind] || 0;
+    let outer = R.r + G.from_shift(R, ext), inner = outer - ext;
+    if (G.has_text(R)) { const e = G.radial_extent(this.statik?.rings?.find((d) => d.ring === R)?.path); if (e) [inner, outer] = e; }
+    const angles = G.ring_angles(R), a0 = angles[0] ?? (+R.start || 0);
+    const free = angles.length > 1 ? a0 + ((((angles[1] - a0) % 360) + 360) % 360) / 2 : a0 + 15;
+    const edge = Math.abs(outer - R.r) >= Math.abs(R.r - inner) ? outer : inner;      // the edge away from the dotted line
+    const span = Math.min(Math.max(+R.span || 360, 1), 360), out = outer + HANDLE_OUT / this.z;
+    const key = [this.S.ui_ring, R.r, edge, outer, a0, free, span, this.z, this.S.out_mirror, k].join();
+    if (key === this.handles_key) return;          // nothing moved: the handles stay as they are
+    this.handles_key = key;
+    const tone = G.GUIDE_COLOURS[k], s = 1 / this.z, flip = this.S.out_mirror ? -1 : 1;
+    const at = (r, a) => G.clock_point(r, a).map((v) => v.toFixed(4)).join(" ");
+    const shape = { radius: `<circle r="${HANDLE_R}"/>`, size: `<rect x="${-HANDLE_R}" y="${-HANDLE_R}" width="${2 * HANDLE_R}" height="${2 * HANDLE_R}"/>`,
+      start: `<path d="M${-HANDLE_R} ${-HANDLE_R}L${HANDLE_R} 0L${-HANDLE_R} ${HANDLE_R}Z"/>`, span: `<path d="M${HANDLE_R} ${-HANDLE_R}L${-HANDLE_R} 0L${HANDLE_R} ${HANDLE_R}Z"/>` };
+    const tip = { radius: "Radius: drag in or out", size: { numerals: "Size", text: "Size", band: "Band width", ticks: "Length", markers: G.SHAPES[R.shape] === "dot" ? "Ø" : "Length" }[kind] + ": drag in or out", start: "Start: drag round", span: "Span: drag round" };
+    const place = { radius: [R.r, free], size: [edge, free], start: [out, a0], span: [out, (+R.start || 0) + span] };
+    const parts = Object.keys(place).filter((w) => w !== "span" || span < 360).map((w) => {
+      const [r, a] = place[w];
+      // a handle stands upright on the screen; the triangles turn with their angle, pointing round the ring
+      const turn = w === "start" || w === "span" ? a : 0;
+      return `<g class="handle ${w}" data-handle="${w}" data-tip="${tip[w]}" transform="translate(${at(r, a)}) scale(${(flip * s).toFixed(6)} ${(-s).toFixed(6)}) rotate(${(flip * turn).toFixed(3)})"><circle class="reach" r="${HANDLE_REACH}"/>${shape[w]}</g>`;
+    });
+    H.style.setProperty("--handle", tone);
+    H.innerHTML = parts.join("");
+  }
+
+  /** a handle dragged: the pointer, in mm on the dial, sets its value as the row would (set_value). */
+  handle_events() {
+    const H = this.handles;
+    H.addEventListener("pointerdown", (e) => {
+      const g = e.target.closest("[data-handle]");
+      if (!g) return;
+      e.stopPropagation(); e.preventDefault();      // not a pan, not a press on the dial
+      const R = this.ring(), what = g.dataset.handle, kind = G.kind_of(R);
+      const key = what === "size" ? (G.has_text(R) ? "size" : kind === "band" ? "width" : G.SHAPES[R.shape] === "dot" ? "w" : "len") : what === "radius" ? "r" : what;
+      const ext = { ticks: R.len, markers: R.len, band: R.width }[kind] || 0;
+      let outer = R.r + G.from_shift(R, ext), inner = outer - ext;
+      if (G.has_text(R)) { const x = G.radial_extent(this.statik?.rings?.find((d) => d.ring === R)?.path); if (x) [inner, outer] = x; }
+      const edge = Math.abs(outer - R.r) >= Math.abs(R.r - inner) ? outer : inner;
+      this.handle_drag = { what, key, v0: R[key], reach: Math.abs(edge - R.r) || 0.01, side: Math.sign(edge - R.r) || -1, r0: R.r, prev: null, x: e.clientX, y: e.clientY, moved: false };
+      H.setPointerCapture(e.pointerId);
+      H.classList.add("dragging");
+      this.tag_hide();
+    });
+    H.addEventListener("pointermove", (e) => {
+      const d = this.handle_drag;
+      if (!d) return;
+      if (!d.moved && Math.hypot(e.clientX - d.x, e.clientY - d.y) < 3) return;      // a press that hasn't moved changes nothing
+      d.moved = true;
+      const b = this.svg.getBoundingClientRect(), [x, y] = this.to_mm([e.clientX - b.left, e.clientY - b.top]);
+      const dist = Math.hypot(x, y), angle = ((Math.atan2(x, y) * 180 / Math.PI) + 360) % 360;
+      this.guides_live();
+      if (d.what === "radius") return this.set_value("ring", "r", +Math.max(dist, 0.05).toFixed(2));
+      if (d.what === "size") {                       // the edge follows the pointer: the value grows as its reach from the dotted line does
+        const reach = Math.max((dist - d.r0) * d.side, 0.02);
+        return this.set_value("ring", d.key, +(d.v0 * reach / d.reach).toFixed(3));
+      }
+      if (d.what === "start") return this.set_value("ring", "start", Math.round(((angle + 540) % 360) - 180));
+      const R = this.ring(), s0 = ((+R.start || 0) % 360 + 360) % 360;
+      let span = ((angle - s0) % 360 + 360) % 360;
+      if (d.prev !== null && d.prev - span > 180) span = 360; else if (d.prev !== null && span - d.prev > 180) span = 1;
+      d.prev = span = Math.min(Math.max(Math.round(span), 1), 360);
+      this.set_value("ring", "span", span);
+    });
+    const end = () => { this.handle_drag = null; H.classList.remove("dragging"); };
+    H.addEventListener("pointerup", end);
+    H.addEventListener("pointercancel", end);
   }
 
   /** guides, at the preview's bottom left since 4.59 (its top right from 12 Oct 2026, Okay, to 4.58): a switch (a bullseye and the word; solid outline = on,
@@ -4524,6 +4614,7 @@ class DialTool {
       if (this.travel) { this.travel_step(); this.render(); }      // the dial on its way into or out of the showcase
       if (this.show && this.show.spin) this.render();
       this.draw();
+      this.draw_handles();
       this.tiny_draw();
     } catch (e) {
       this.play(false);
@@ -4623,6 +4714,7 @@ class DialTool {
     const where = `translate(${this.c[0]} ${this.c[1]}) scale(${flip * this.z} ${-this.z})`;
     this.dial.setAttribute("transform", where);
     this.over.setAttribute("transform", where);
+    if (this.handles) { this.handles.setAttribute("transform", where); this.handles_key = ""; }
     if (this.pool) this.pool.setAttribute("transform", where);
   }
 

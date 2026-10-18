@@ -2177,6 +2177,29 @@ check(chip_reach.every(Boolean), "the hex in a pill opens the pop-out and isn't 
 await pad.screenshot({ path: path.join(OUT, "12-touch.png") });
 await touch.close();
 
+{ // the selected ring's handles on its guides (4.65; farukahmet's PR #2, Okay: "implemented in our ways and design … all these handles should be in guide color"): radius on the dotted line, size on the far edge, start and span round the outside; dragged, they set the ring as its rows do
+  await tab("Rings");
+  const was = await page.evaluate(() => { const t = window.dial_tool; t.S.guides = true; t.select_ring(0); t.render(); const R = t.ring(); return [R.r, R.size, R.start, R.span]; });
+  await page.evaluate(() => window.dial_tool.set_value("ring", "span", 270)); await frame();
+  const hs = await page.evaluate(() => { return [...document.querySelectorAll(".handles .handle")].map((g) => { const r = g.querySelector(":not(.reach)").getBoundingClientRect(); return [g.dataset.handle, r.left + r.width / 2, r.top + r.height / 2, getComputedStyle(g).fill]; }); });
+  const tone = await page.evaluate(() => { const t = window.dial_tool, h = window.getComputedStyle(document.querySelector(".handles")).getPropertyValue("--handle").trim(); return h; });
+  const mm = await page.evaluate(() => window.dial_tool.z);
+  const move = async (name, dx, dy) => { const h = hs.find((x) => x[0] === name); await page.mouse.move(h[1], h[2]); await page.mouse.down(); await page.mouse.move(h[1] + dx / 2, h[2] + dy / 2, { steps: 3 }); await page.mouse.move(h[1] + dx, h[2] + dy, { steps: 3 }); await page.mouse.up(); await frame(); };
+  const c = await page.evaluate(() => { const b = document.querySelector("svg.preview, main svg").getBoundingClientRect(), t = window.dial_tool; return [b.left + t.c[0], b.top + t.c[1]]; });
+  const radial = (name, k) => { const h = hs.find((x) => x[0] === name), dx = h[1] - c[0], dy = h[2] - c[1], l = Math.hypot(dx, dy); return [dx / l * k, dy / l * k]; };
+  const r0 = await S("S.rings[S.ui_ring].r"); await move("radius", ...radial("radius", mm)); const r1 = await S("S.rings[S.ui_ring].r");
+  await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r0); await frame();
+  const hs2 = await page.evaluate(() => [...document.querySelectorAll(".handles .handle")].map((g) => { const r = g.querySelector(":not(.reach)").getBoundingClientRect(); return [g.dataset.handle, r.left + r.width / 2, r.top + r.height / 2]; }));
+  hs.splice(0, hs.length, ...hs2);
+  const z0 = await S("S.rings[S.ui_ring].size"); await move("size", ...radial("size", -mm * 0.5)); const z1 = await S("S.rings[S.ui_ring].size");
+  const st = hs.find((x) => x[0] === "start"), rr = Math.hypot(st[1] - c[0], st[2] - c[1]);
+  await page.mouse.move(st[1], st[2]); await page.mouse.down(); await page.mouse.move(c[0] + rr * 0.7, c[1] - rr * 0.7, { steps: 4 }); await page.mouse.move(c[0] + rr, c[1], { steps: 4 }); await page.mouse.up(); await frame();
+  const start = await S("S.rings[S.ui_ring].start");
+  await page.evaluate((w) => { const t = window.dial_tool; for (const [k, v] of [["r", w[0]], ["size", w[1]], ["start", w[2]], ["span", w[3]]]) t.set_value("ring", k, v); }, was);
+  await tab("Dial"); const gone = await page.$$eval(".handles .handle", (e) => e.length);
+  check(hs.length === 4 && hs.map((x) => x[0]).join() === "radius,size,start,span" && tone.length > 0 && Math.abs(r1 - r0 - 1) < 0.15 && z1 !== z0 && Math.abs(start - 90) <= 1 && gone === 0,
+    `on the Rings tab the selected ring has four handles in its guide colour (${tone}): radius, size, start, span; dragged a mm out the radius goes ${r0} → ${r1}, the size handle ${z0} → ${z1}, the start round to ${start}°; on another tab none`);
+}
 { // the date in the bar (4.62; Okay: "Date best set at the bar, short date, 07/10/28 style, stacked barlow medium or bold, next to am, touching. Default from system date"); a window that follows it says it
   const look = await page.evaluate(() => { const d = document.querySelector("#date"), a = document.querySelector("#ampm").getBoundingClientRect(), r = d.getBoundingClientRect(), c = getComputedStyle(d), spans = [...d.children].map((e) => e.textContent), n = new Date();
     const today = [String(n.getDate()).padStart(2, "0"), String(n.getMonth() + 1).padStart(2, "0"), String(n.getFullYear()).slice(-2)];

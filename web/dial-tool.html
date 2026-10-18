@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.64 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.65 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -1241,6 +1241,13 @@
   .guides:has(.guidelist:not([hidden])) { z-index: 7; }      /* open, its list over Backdrop above it */
   .guides .guidesmore svg { rotate: 180deg; }
   .guides .guidesmore[aria-expanded="true"] svg { rotate: 0deg; }
+  /* the selected ring's handles on its guides (4.65; farukahmet's PR #2, Okay: "all these handles should be in guide
+     color"): filled with the ring's guide colour (--handle, app.js), a hairline of white round them so they read on any
+     dial; a reach of a fingertip round each, unseen */
+  .handles .handle { fill: var(--handle); stroke: var(--white); stroke-width: 1.5; cursor: grab; pointer-events: all; }
+  .handles .handle .reach { fill: transparent; stroke: none; }
+  .handles.dragging .handle { cursor: grabbing; }
+  #app.show .handles { display: none; }
   /* Tiny Preview (#337): its button where Guides stood, a plain eye; the dial at its own size in a little window over
      everything, the backdrop round it, a hard shadow, dragged anywhere; the eye at its top left puts it away */
   .tinyopen { position: absolute; z-index: 3; top: var(--canvas-top); right: var(--canvas-inset); width: var(--control-large); border-radius: var(--round-switch); }
@@ -6147,7 +6154,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.64";
+var VERSION = "beta 4.65";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -9064,6 +9071,9 @@ var LENGTH_KEYS = { ring: RING_MM, hand: HAND_MM, window: WINDOW_MM, global: ["d
 var label_of = (row, T) => row.say ? row.say(T)[0] : row.menu ? `${(row.menu.items.find(([v]) => v === (T[row.menu.key] ?? 0)) || row.menu.items[0])[1]} ${row.text.split(" ").pop()}` : row.text;
 var LINKED_PAIRS = { window: [{ link: "wh_link", keys: ["w", "h"], when: (T) => ["rectangle", "arc"].includes(window_shape(T)) }] };
 var KIND_TAB_KEYS = Object.keys(WINDOW_BASE).filter((k) => !["on", "kind", "at", "at_deg", "r", "guide", "wh_link"].includes(k));
+var HANDLE_R = 5.5;
+var HANDLE_OUT = 14;
+var HANDLE_REACH = 14;
 var TINY_EVERY = 200;
 var NUDGE_NEUTRAL = { dr: 0, da: 0, rot: 0, s: 1 };
 var is_length = (row) => row.kind === "num" && (LENGTH_KEYS[row.scope] || []).includes(row.key);
@@ -9389,7 +9399,10 @@ var DialTool = class _DialTool {
     sky_defs.append(sky);
     this.sky = svg_el("rect");
     for (const [k, v] of [["class", "sky"], ["width", "100%"], ["height", "100%"], ["fill", "url(#show-sky)"], ["pointer-events", "none"]]) this.sky.setAttribute(k, v);
-    this.svg.append(sky_defs, this.backdrop, this.sky, this.pool, this.dial, this.over);
+    this.handles = svg_el("g");
+    this.handles.setAttribute("class", "handles");
+    this.handle_events();
+    this.svg.append(sky_defs, this.backdrop, this.sky, this.pool, this.dial, this.over, this.handles);
     this.tip = el("div", { className: "tip", hidden: true }, el("span"));
     this.tip.insertAdjacentHTML("beforeend", '<svg viewBox="0 0 20 10" width="20" height="10" aria-hidden="true"><path class="a" d="M0 0 L10 10 L20 0"/><path class="b" d="M0 0 L10 10 L20 0"/><path class="c" d="M-1 -3 L21 -3 L21 0 L10 9 L-1 0 Z"/></svg>');
     this.preview_events();
@@ -10159,6 +10172,108 @@ var DialTool = class _DialTool {
     if (!back) return false;
     for (const [k, v] of Object.entries(back)) T[k] = structuredClone(v);
     return true;
+  }
+  /** handles on the selected ring's guides (4.65; farukahmet's PR #2, 18 Oct 2026, redrawn: Okay, 21:20: "Drag handles
+   *  great as an idea, needs to be implemented in our ways and design, inner outer thing already has dotted line, all
+   *  these handles should be in guide color, adapted"). On the Rings tab, with guides on, over the selected ring:
+   *    · a disc on its dotted line (where its radius measures to: outer, middle or inner end, a numeral's anchor) —
+   *      dragged in or out, it sets the radius;
+   *    · a square on the edge away from it — dragged, it sets how big one of its things is (a mark's length or a dot's
+   *      Ø, a numeral's size, a band's width), the edge following the pointer;
+   *    · a triangle just outside the ring at its first position — dragged round, it sets Start;
+   *    · with a span under 360°, a second triangle at its end — dragged round, it sets Span.
+   *  All in the ring's guide colour, a hairline of white round them, the size of a fingertip on any zoom. The radius
+   *  and size handles stand halfway between the first two positions, so they never sit on a mark. They go through
+   *  set_value, as the panel's rows do: undo, the controller, the guides live while dragged. */
+  draw_handles() {
+    const H2 = this.handles;
+    if (!H2) return;
+    const R = this.ring(), k = R ? ring_guide(this.S, this.S.ui_ring) : null;
+    if (this.show || this.S.ui_section !== 1 || !this.S.guides || !(this.S.gd_rings || this.S.gd_sel) || !R || !R.on || k === null) {
+      H2.replaceChildren();
+      this.handles_key = "";
+      return;
+    }
+    const kind = kind_of(R), ext = { ticks: R.len, markers: R.len, band: R.width }[kind] || 0;
+    let outer = R.r + from_shift(R, ext), inner = outer - ext;
+    if (has_text(R)) {
+      const e = radial_extent(this.statik?.rings?.find((d) => d.ring === R)?.path);
+      if (e) [inner, outer] = e;
+    }
+    const angles = ring_angles(R), a0 = angles[0] ?? (+R.start || 0);
+    const free = angles.length > 1 ? a0 + ((angles[1] - a0) % 360 + 360) % 360 / 2 : a0 + 15;
+    const edge = Math.abs(outer - R.r) >= Math.abs(R.r - inner) ? outer : inner;
+    const span = Math.min(Math.max(+R.span || 360, 1), 360), out = outer + HANDLE_OUT / this.z;
+    const key = [this.S.ui_ring, R.r, edge, outer, a0, free, span, this.z, this.S.out_mirror, k].join();
+    if (key === this.handles_key) return;
+    this.handles_key = key;
+    const tone = GUIDE_COLOURS[k], s = 1 / this.z, flip = this.S.out_mirror ? -1 : 1;
+    const at = (r, a) => clock_point(r, a).map((v) => v.toFixed(4)).join(" ");
+    const shape2 = {
+      radius: `<circle r="${HANDLE_R}"/>`,
+      size: `<rect x="${-HANDLE_R}" y="${-HANDLE_R}" width="${2 * HANDLE_R}" height="${2 * HANDLE_R}"/>`,
+      start: `<path d="M${-HANDLE_R} ${-HANDLE_R}L${HANDLE_R} 0L${-HANDLE_R} ${HANDLE_R}Z"/>`,
+      span: `<path d="M${HANDLE_R} ${-HANDLE_R}L${-HANDLE_R} 0L${HANDLE_R} ${HANDLE_R}Z"/>`
+    };
+    const tip = { radius: "Radius: drag in or out", size: { numerals: "Size", text: "Size", band: "Band width", ticks: "Length", markers: SHAPES[R.shape] === "dot" ? "\xD8" : "Length" }[kind] + ": drag in or out", start: "Start: drag round", span: "Span: drag round" };
+    const place2 = { radius: [R.r, free], size: [edge, free], start: [out, a0], span: [out, (+R.start || 0) + span] };
+    const parts = Object.keys(place2).filter((w) => w !== "span" || span < 360).map((w) => {
+      const [r, a] = place2[w];
+      const turn = w === "start" || w === "span" ? a : 0;
+      return `<g class="handle ${w}" data-handle="${w}" data-tip="${tip[w]}" transform="translate(${at(r, a)}) scale(${(flip * s).toFixed(6)} ${(-s).toFixed(6)}) rotate(${(flip * turn).toFixed(3)})"><circle class="reach" r="${HANDLE_REACH}"/>${shape2[w]}</g>`;
+    });
+    H2.style.setProperty("--handle", tone);
+    H2.innerHTML = parts.join("");
+  }
+  /** a handle dragged: the pointer, in mm on the dial, sets its value as the row would (set_value). */
+  handle_events() {
+    const H2 = this.handles;
+    H2.addEventListener("pointerdown", (e) => {
+      const g = e.target.closest("[data-handle]");
+      if (!g) return;
+      e.stopPropagation();
+      e.preventDefault();
+      const R = this.ring(), what = g.dataset.handle, kind = kind_of(R);
+      const key = what === "size" ? has_text(R) ? "size" : kind === "band" ? "width" : SHAPES[R.shape] === "dot" ? "w" : "len" : what === "radius" ? "r" : what;
+      const ext = { ticks: R.len, markers: R.len, band: R.width }[kind] || 0;
+      let outer = R.r + from_shift(R, ext), inner = outer - ext;
+      if (has_text(R)) {
+        const x = radial_extent(this.statik?.rings?.find((d) => d.ring === R)?.path);
+        if (x) [inner, outer] = x;
+      }
+      const edge = Math.abs(outer - R.r) >= Math.abs(R.r - inner) ? outer : inner;
+      this.handle_drag = { what, key, v0: R[key], reach: Math.abs(edge - R.r) || 0.01, side: Math.sign(edge - R.r) || -1, r0: R.r, prev: null, x: e.clientX, y: e.clientY, moved: false };
+      H2.setPointerCapture(e.pointerId);
+      H2.classList.add("dragging");
+      this.tag_hide();
+    });
+    H2.addEventListener("pointermove", (e) => {
+      const d = this.handle_drag;
+      if (!d) return;
+      if (!d.moved && Math.hypot(e.clientX - d.x, e.clientY - d.y) < 3) return;
+      d.moved = true;
+      const b = this.svg.getBoundingClientRect(), [x, y] = this.to_mm([e.clientX - b.left, e.clientY - b.top]);
+      const dist = Math.hypot(x, y), angle = (Math.atan2(x, y) * 180 / Math.PI + 360) % 360;
+      this.guides_live();
+      if (d.what === "radius") return this.set_value("ring", "r", +Math.max(dist, 0.05).toFixed(2));
+      if (d.what === "size") {
+        const reach = Math.max((dist - d.r0) * d.side, 0.02);
+        return this.set_value("ring", d.key, +(d.v0 * reach / d.reach).toFixed(3));
+      }
+      if (d.what === "start") return this.set_value("ring", "start", Math.round((angle + 540) % 360 - 180));
+      const R = this.ring(), s0 = ((+R.start || 0) % 360 + 360) % 360;
+      let span = ((angle - s0) % 360 + 360) % 360;
+      if (d.prev !== null && d.prev - span > 180) span = 360;
+      else if (d.prev !== null && span - d.prev > 180) span = 1;
+      d.prev = span = Math.min(Math.max(Math.round(span), 1), 360);
+      this.set_value("ring", "span", span);
+    });
+    const end = () => {
+      this.handle_drag = null;
+      H2.classList.remove("dragging");
+    };
+    H2.addEventListener("pointerup", end);
+    H2.addEventListener("pointercancel", end);
   }
   /** guides, at the preview's bottom left since 4.59 (its top right from 12 Oct 2026, Okay, to 4.58): a switch (a bullseye and the word; solid outline = on,
    *  dashed = off) and, joined to it, an arrow that drops their list: the five kinds of guide, each with an eye and
@@ -13607,6 +13722,7 @@ var DialTool = class _DialTool {
       }
       if (this.show && this.show.spin) this.render();
       this.draw();
+      this.draw_handles();
       this.tiny_draw();
     } catch (e) {
       this.play(false);
@@ -13716,6 +13832,10 @@ var DialTool = class _DialTool {
     const where = `translate(${this.c[0]} ${this.c[1]}) scale(${flip * this.z} ${-this.z})`;
     this.dial.setAttribute("transform", where);
     this.over.setAttribute("transform", where);
+    if (this.handles) {
+      this.handles.setAttribute("transform", where);
+      this.handles_key = "";
+    }
     if (this.pool) this.pool.setAttribute("transform", where);
   }
   fit() {

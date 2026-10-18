@@ -1,5 +1,16 @@
 # Dial Tool — changelog
 
+## beta 4.65 (web version) · 18 Oct 2026
+
+Handles on the guides (farukahmet's PR #2, redrawn our way; Okay, 21:20: "Drag handles great as an idea, needs to be implemented in our ways and design, inner outer thing already has dotted line, all these handles should be in guide color, adapted").
+
+- On the Rings tab, with the selected ring's guide showing, **four handles in the ring's guide colour**, a hairline of white round them:
+  - a **disc on its dotted line** (what its radius measures to): dragged in or out it sets the radius;
+  - a **square on the far edge**: dragged, it sets how big one of its things is (a mark's length or a dot's Ø, a numeral's size, a band's width) — the edge follows the pointer;
+  - a **triangle outside the ring at its first position**: dragged round, Start;
+  - with a span under 360°, **a triangle at its end**: dragged round, Span.
+- The radius and size handles stand between the first two positions, never on a mark. Each says what it does in a tag; a press that doesn't move changes nothing. They set the ring as its rows do (undo, the guides live while dragged).
+
 ## beta 4.64 (web version) · 18 Oct 2026
 
 One number box for the whole tool (Okay, 18 Oct, 21:20: "This version of boxes win: small plusminus and these new thick border ones are retired, these replace all with two changes. Number box touches minus box. Signs grow inside the box as much as these new thick bordered ones. Also add the chevron version with only one box same style").
