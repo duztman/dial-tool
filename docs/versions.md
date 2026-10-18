@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.77 | 19 Oct 2026 | web | [`de2a7c4`](https://github.com/duztman/dial-tool/tree/de2a7c49f5c68248e5cbdd423a5aebcd9e1ae920) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/de2a7c49f5c68248e5cbdd423a5aebcd9e1ae920/web/dial-tool.html) | Showcase light: spotlight on dim backdrops, a ring of shine, darker shadows; bevels on hands |
 | 4.76 | 19 Oct 2026 | web | [`15515eb`](https://github.com/duztman/dial-tool/tree/15515eb4c210737fe3633fb7ac833ea25412075c) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/15515eb4c210737fe3633fb7ac833ea25412075c/web/dial-tool.html) | Save this dial: your own dials over the Gallery, in this browser |
 | 4.75 | 19 Oct 2026 | web | [`4c38bee`](https://github.com/duztman/dial-tool/tree/4c38beee03ce8a4e6d6e2a816d80015cbe37c140) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/4c38beee03ce8a4e6d6e2a816d80015cbe37c140/web/dial-tool.html) | Print sheet: copies at true size on A4, Letter or A5, staggered rows, cut lines |
 | 4.74 | 19 Oct 2026 | web | [`d8f8a92`](https://github.com/duztman/dial-tool/tree/d8f8a9240011790da36ed96265f1302d4478344e) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/d8f8a9240011790da36ed96265f1302d4478344e/web/dial-tool.html) | Date neighbours peek through a tall hole; Big date, a fifth complication |
