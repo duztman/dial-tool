@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.82 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.83 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -6234,7 +6234,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.82";
+var VERSION = "beta 4.83";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -10957,7 +10957,7 @@ var SKY_TOP = 0.3;
 var SHOWCASE_PAGE = { w: 210, h: 297, dial: 2 / 3 };
 var SUN = { day: 20, rise: 40, fade: 0.45 };
 var POOL = { size: 1.45, stretch: 1.4, soft: [0.06, 0.8], light: [0.08, 0.42], shade: [0.15, 0.55], lift: 1.5, least: 0.2 };
-var SHINE = { r: 1.5, behind: 1.5 - 1 / 3, bright: 0.11, dark: 0.07, width: [0.16, 0.05] };
+var SHINE = { r: 1.275, top: 1 / 3, bright: 0.11, dark: 0.07, width: [0.8, 0.05 / 3], bands: 3, fall: 0.55 };
 var BEVEL = { light: 0.22, dark: 0.26 };
 var SHOW_DARKER = 1.25;
 var TRAVEL_MS = 900;
@@ -12281,20 +12281,43 @@ var DialTool = class _DialTool {
       this.svg.prepend(this.light_defs);
     }
     const from = sun ? sun.from : S.sh_from, R = S.dial_d / 2, nodes = items.map((_, i) => this.slots[i].node);
+    if (sun) {
+      const a = from * Math.PI / 180, behind = (SHINE.r - SHINE.top) * R, c = [-Math.sin(a) * behind, -Math.cos(a) * behind];
+      const w = (SHINE.width[0] + (SHINE.width[1] - SHINE.width[0]) * sun.k) * R, strong = sun.k * on, r0 = R * SHINE.r, n = 2 * SHINE.bands, reach = r0 + (n + 1) * w / 2;
+      const grad = (name, colour, alpha) => {
+        const gr = part(`shine/grad/${name}`, "radialGradient", this.light_defs);
+        gr.id = `shine-${name}`;
+        gr.setAttribute("gradientUnits", "userSpaceOnUse");
+        gr.setAttribute("cx", f2(c[0]));
+        gr.setAttribute("cy", f2(c[1]));
+        gr.setAttribute("r", f2(reach));
+        const stops = [[0, 0]];
+        for (let k = -n; k <= n; k++) {
+          const at = (r0 + k * w / 2) / reach;
+          if (at > 0) stops.push([at, alpha(k) * strong]);
+        }
+        stops.push([1, 0]);
+        stops.forEach(([at, op], i) => {
+          const s = part(`shine/grad/${name}/${i}`, "stop", gr);
+          s.setAttribute("offset", f2(at));
+          s.setAttribute("stop-color", colour);
+          s.setAttribute("stop-opacity", f2(op));
+        });
+      };
+      const even = (k) => k % 2 === 0;
+      grad("light", "#fff", (k) => even(k) ? SHINE.bright * SHINE.fall ** (Math.abs(k) / 2) : 0);
+      grad("dark", "#000", (k) => even(k) ? 0 : SHINE.dark * SHINE.fall ** ((Math.abs(k) - 1) / 2));
+    }
     const bands = (g, under, key) => {
       if (!sun) return;
-      const a = from * Math.PI / 180, c = [-Math.sin(a) * SHINE.behind * R, -Math.cos(a) * SHINE.behind * R];
-      const w = (SHINE.width[0] + (SHINE.width[1] - SHINE.width[0]) * sun.k) * R, strong = sun.k * on;
-      const ring2 = (name, parent, mid, colour, k) => {
-        const r0 = R * SHINE.r + mid - w / 2, r1 = r0 + w, p = part(`${key}/${name}`, "path", parent);
-        p.setAttribute("d", `M${f2(c[0] - r1)} ${f2(c[1])}a${f2(r1)} ${f2(r1)} 0 1 0 ${f2(2 * r1)} 0a${f2(r1)} ${f2(r1)} 0 1 0 ${f2(-2 * r1)} 0ZM${f2(c[0] - r0)} ${f2(c[1])}a${f2(r0)} ${f2(r0)} 0 1 1 ${f2(2 * r0)} 0a${f2(r0)} ${f2(r0)} 0 1 1 ${f2(-2 * r0)} 0Z`);
-        p.setAttribute("fill", colour);
-        p.setAttribute("fill-opacity", f2(k * strong));
-        p.setAttribute("fill-rule", "evenodd");
-      };
-      ring2("light", g, 0, "#fff", SHINE.bright);
-      ring2("dark-in", under, -w, "#000", SHINE.dark);
-      ring2("dark-out", under, w, "#000", SHINE.dark);
+      for (const [name, parent] of [["light", g], ["dark", under]]) {
+        const p = part(`${key}/${name}`, "rect", parent);
+        p.setAttribute("x", f2(-R));
+        p.setAttribute("y", f2(-R));
+        p.setAttribute("width", f2(2 * R));
+        p.setAttribute("height", f2(2 * R));
+        p.setAttribute("fill", `url(#shine-${name})`);
+      }
     };
     const first_hand = items.findIndex((x) => x.role === "hand" || x.role === "cap" || x.role === "guide");
     if (sun && items.some((x) => x.role === "plate")) {

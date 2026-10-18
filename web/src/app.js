@@ -310,7 +310,13 @@ const POOL = { size: 1.45, stretch: 1.4, soft: [0.06, 0.8], light: [0.08, 0.42],
 // the top). Its middle band lightens (screened: it shows on a dark dial), a band either side darkens (it shows on a
 // light one); each band `width` wide, a share of the radius, wide at dawn and dusk and narrow at noon; all of it
 // as strong as the sun is high (0 at sunrise and sunset)
-const SHINE = { r: 1.5, behind: 1.5 - 1 / 3, bright: 0.11, dark: 0.07, width: [0.16, 0.05] };
+// 4.83 (Okay, 19 Oct 2026, 01:59: "more bands, wider (5x) on dusk and dawn, sharpest (3x) on noon. Smaller shine
+// diameter"): seven soft bands — light in the middle, dark either side, then fainter light and fainter dark, each pair
+// out `fall` as strong as the one inside it — drawn as two radial gradients round the centre (light screened, dark
+// laid on), so a wide band is soft and a narrow one crisp; widths ×5 at dawn and dusk (0.16 → 0.8), ÷3 at noon (0.05 →
+// 0.05 / 3); the circle 15 % smaller (1.5 → 1.275 × the dial's radius), still crossing the dial at noon a third of the
+// radius above its centre (`top`), so its centre comes nearer
+const SHINE = { r: 1.275, top: 1 / 3, bright: 0.11, dark: 0.07, width: [0.8, 0.05 / 3], bands: 3, fall: 0.55 };
 // the hands' bevels (#354, 4.77; notes 2: "a height simply shaded in a few tones of the hand's colour by the shadows'
 // light … not 3d like all facets shifted"): each hand split along its length, the side the light falls on lighter, the
 // other darker, by as much as the light comes from the side; preview only (R5, R26)
@@ -1524,18 +1530,31 @@ class DialTool {
     const from = sun ? sun.from : S.sh_from, R = S.dial_d / 2, nodes = items.map((_, i) => this.slots[i].node);
     // the ring of shine (SHINE): round a centre on the side away from the sun; the light band screened in `g`, the two
     // dark ones laid in `under` (a screen of black does nothing, so they need a group of their own)
+    // the ring of shine (SHINE): two radial gradients round a centre on the side away from the sun, made once a frame
+    // in the dial's space; `bands` lays a square of each over what it shines on — the light one screened in `g`, the
+    // dark one in `under` (a screen of black does nothing)
+    if (sun) {
+      const a = from * Math.PI / 180, behind = (SHINE.r - SHINE.top) * R, c = [-Math.sin(a) * behind, -Math.cos(a) * behind];
+      const w = (SHINE.width[0] + (SHINE.width[1] - SHINE.width[0]) * sun.k) * R, strong = sun.k * on, r0 = R * SHINE.r, n = 2 * SHINE.bands, reach = r0 + (n + 1) * w / 2;
+      const grad = (name, colour, alpha) => {      // alpha(k): how strong at the k-th half band from the middle (−n … n)
+        const gr = part(`shine/grad/${name}`, "radialGradient", this.light_defs);
+        gr.id = `shine-${name}`; gr.setAttribute("gradientUnits", "userSpaceOnUse");
+        gr.setAttribute("cx", f(c[0])); gr.setAttribute("cy", f(c[1])); gr.setAttribute("r", f(reach));
+        const stops = [[0, 0]];
+        for (let k = -n; k <= n; k++) { const at = (r0 + k * w / 2) / reach; if (at > 0) stops.push([at, alpha(k) * strong]); }
+        stops.push([1, 0]);
+        stops.forEach(([at, op], i) => { const s = part(`shine/grad/${name}/${i}`, "stop", gr); s.setAttribute("offset", f(at)); s.setAttribute("stop-color", colour); s.setAttribute("stop-opacity", f(op)); });
+      };
+      const even = (k) => k % 2 === 0;
+      grad("light", "#fff", (k) => (even(k) ? SHINE.bright * SHINE.fall ** (Math.abs(k) / 2) : 0));
+      grad("dark", "#000", (k) => (even(k) ? 0 : SHINE.dark * SHINE.fall ** ((Math.abs(k) - 1) / 2)));
+    }
     const bands = (g, under, key) => {
       if (!sun) return;
-      const a = from * Math.PI / 180, c = [-Math.sin(a) * SHINE.behind * R, -Math.cos(a) * SHINE.behind * R];
-      const w = (SHINE.width[0] + (SHINE.width[1] - SHINE.width[0]) * sun.k) * R, strong = sun.k * on;
-      const ring = (name, parent, mid, colour, k) => {
-        const r0 = R * SHINE.r + mid - w / 2, r1 = r0 + w, p = part(`${key}/${name}`, "path", parent);
-        p.setAttribute("d", `M${f(c[0] - r1)} ${f(c[1])}a${f(r1)} ${f(r1)} 0 1 0 ${f(2 * r1)} 0a${f(r1)} ${f(r1)} 0 1 0 ${f(-2 * r1)} 0ZM${f(c[0] - r0)} ${f(c[1])}a${f(r0)} ${f(r0)} 0 1 1 ${f(2 * r0)} 0a${f(r0)} ${f(r0)} 0 1 1 ${f(-2 * r0)} 0Z`);
-        p.setAttribute("fill", colour); p.setAttribute("fill-opacity", f(k * strong)); p.setAttribute("fill-rule", "evenodd");
-      };
-      ring("light", g, 0, "#fff", SHINE.bright);
-      ring("dark-in", under, -w, "#000", SHINE.dark);
-      ring("dark-out", under, w, "#000", SHINE.dark);
+      for (const [name, parent] of [["light", g], ["dark", under]]) {
+        const p = part(`${key}/${name}`, "rect", parent);
+        p.setAttribute("x", f(-R)); p.setAttribute("y", f(-R)); p.setAttribute("width", f(2 * R)); p.setAttribute("height", f(2 * R)); p.setAttribute("fill", `url(#shine-${name})`);
+      }
     };
     const first_hand = items.findIndex((x) => x.role === "hand" || x.role === "cap" || x.role === "guide");
     if (sun && items.some((x) => x.role === "plate")) {

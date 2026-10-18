@@ -2134,14 +2134,14 @@ await shot("10-bar");
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "sh_bevel", 100); t.set_value("global", "c_backdrop", [0.05, 0.05, 0.06, 1]); t.set_value("global", "c_plate", [0.08, 0.09, 0.12, 1]); });
   await page.click("#iris-box"); await page.waitForTimeout(300); await page.click("#iris-go"); await page.waitForTimeout(1600);
   const look = async (phase) => page.evaluate((ph) => { const t = window.dial_tool; t.show.phase = ph; t.show.dragging = true; t.render(); t.frame();
-    const band = document.querySelector('#shine-clip') && [...document.querySelectorAll("g[clip-path='url(#shine-clip)'] path")], c = band ? band.map((p) => p.getAttribute("d").split("a")[0]) : [];
-    return { bands: c.length, at: c[1] || "", pool: document.querySelector("#show-light stop").getAttribute("stop-color"), bevels: document.querySelectorAll("g[clip-path^='url(#bevel-clip-'] rect").length }; }, phase);
+    const band = document.querySelector('#shine-clip') && [...document.querySelectorAll("g[clip-path='url(#shine-clip)'] rect")], gr = document.querySelector("#shine-light");
+    return { bands: band ? band.length : 0, stops: gr ? gr.querySelectorAll("stop").length : 0, at: gr ? `${gr.getAttribute("cx")} ${gr.getAttribute("cy")} r ${gr.getAttribute("r")}` : "", pool: document.querySelector("#show-light stop").getAttribute("stop-color"), bevels: document.querySelectorAll("g[clip-path^='url(#bevel-clip-'] rect").length }; }, phase);
   const morning = await look(0.2), evening = await look(0.8);
   await page.click("#iris-box"); await page.waitForTimeout(1300);
-  const after = await page.evaluate(() => [document.querySelectorAll("g[clip-path='url(#shine-clip)'] path").length, document.querySelectorAll("g[clip-path^='url(#bevel-clip-'] rect").length]);
+  const after = await page.evaluate(() => [document.querySelectorAll("g[clip-path='url(#shine-clip)'] rect").length, document.querySelectorAll("g[clip-path^='url(#bevel-clip-'] rect").length]);
   await page.evaluate((w) => { const t = window.dial_tool, v = JSON.parse(w); t.set_value("global", "c_backdrop", v[0]); t.set_value("global", "c_plate", v[1]); t.set_value("global", "sh_bevel", 0); }, was);
-  check(no_bevels.join() === "0,0" && morning.bands === 3 && morning.at !== evening.at && morning.pool !== "#0D0D0F" && morning.bevels >= 4 && after[0] === 0 && after[1] >= 4,
-    `the showcase's light: a dim backdrop's spotlight lifted (${morning.pool}); three bands of shine, moving with the sun (${morning.at} → ${evening.at}); ${morning.bevels / 2} hands bevelled; out of it the shine goes, the bevels stay (${after.join(" ")}); Bevels % at 0 to start: none drawn (${no_bevels.join(" ")})`);
+  check(no_bevels.join() === "0,0" && morning.bands === 2 && morning.stops >= 9 && morning.at !== evening.at && morning.pool !== "#0D0D0F" && morning.bevels >= 4 && after[0] === 0 && after[1] >= 4,
+    `the showcase's light: a dim backdrop's spotlight lifted (${morning.pool}); a ring of shine, its light and dark bands two gradients of ${morning.stops} stops, moving with the sun (${morning.at} → ${evening.at}) (4.83); ${morning.bevels / 2} hands bevelled; out of it the shine goes, the bevels stay (${after.join(" ")}); Bevels % at 0 to start: none drawn (${no_bevels.join(" ")})`);
 }
 { // the showcase's Now (Okay, 15 Oct 2026, 07:36): the hour hand one turn clockwise, the minute hand one anticlockwise, the seconds the short way; halfway through the spin (eased, so half the way)
   const half = await page.evaluate(() => { const t = window.dial_tool, kept = t.show, items = ["hour", "minute", "second"].map((name) => ({ role: "hand", name, angle: 100 }));

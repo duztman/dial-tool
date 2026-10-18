@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.83 (web version) · 19 Oct 2026
+
+The ring of shine, after Okay's look at 4.81 (19 Oct, 01:59: "almost perfect, bring in more bands, wider (5x) on dusk and dawn, sharpest (3x) on noon. Smaller shine diameter").
+
+- **Seven bands** in place of three: light in the middle, dark either side, then a fainter light and a fainter dark, each pair 0.55 as strong as the one inside it. Drawn as two radial gradients (the light screened, the dark laid on), so the bands are soft: a wide one blurs, a narrow one is crisp.
+- **Their width**: × 5 at dawn and dusk (0.16 → 0.8 of the dial's radius), ÷ 3 at noon (0.05 → 0.017); between, in step with the sun's height.
+- **The circle 15 % smaller**: 1.275 × the dial's radius (1.5 in 4.81), still crossing the dial at noon a third of the radius above its centre, so its centre comes nearer (0.94 R behind, 1.17 R in 4.81).
+
 ## beta 4.82 (web version) · 19 Oct 2026
 
 Okay's notes on 4.81 (19 Oct, 01:40: "Do these and advance").
