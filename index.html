@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.68 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.69 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -1253,6 +1253,13 @@
   .casebox > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
   .casebox:not(.on) { border-style: dashed; }
   .casebox.on > :not(select) { opacity: 1; }
+  /* its strap's switch (4.69): the strap's chip, a button of its own, then its kind's name and chevron with the list over
+     those only — so a press on the chip opens the colour, a press on the words the list */
+  .strapbox { padding-left: var(--u3); }
+  .strapbox .strapkind { position: relative; display: flex; align-items: center; gap: var(--unit); align-self: stretch; }
+  .strapbox .strapkind > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+  .strapbox .dot { padding: 0; border-color: var(--on-canvas); cursor: pointer; }
+  .strapbox.on > * { opacity: 1; }
   /* the selected ring's handles on its guides (4.65; farukahmet's PR #2, Okay: "all these handles should be in guide
      color"): filled with the ring's guide colour (--handle, app.js), a hairline of white round them so they read on any
      dial; a reach of a fingertip round each, unseen */
@@ -6171,7 +6178,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.68";
+var VERSION = "beta 4.69";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -6463,6 +6470,9 @@ var DEFAULTS = {
   // the first window's `follows` and `names` (4.62)
   wearos_name: "",
   // a Wear OS watch face's name (4.67, farukahmet's PR #1); "" = Dial Tool. Its package's name follows from it
+  strap: 1,
+  c_strap: [0.29, 0.2, 0.14, 1],
+  // its strap (4.69, bezels.js STRAPS): 0 none, 1 a leather strap in c_strap, 2 a metal bracelet in the case's metal. Shown only with a case
   bezel: 0,
   // a case round the dial on the preview (4.66, bezels.js BEZELS): 0 none, 1 diver, 2 pilot, 3 dress, 4 sport. Preview only, like the backdrop (R26)
   date: "",
@@ -6561,7 +6571,7 @@ function radial_extent(path) {
   return lo <= hi ? [lo, hi] : null;
 }
 var GUIDE_MORE = ["line", "crosshair", "circle"];
-var NOT_GEOMETRY = ["t", "guides", "bezel", "wearos_name", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
+var NOT_GEOMETRY = ["t", "guides", "bezel", "strap", "c_strap", "wearos_name", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
 var NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_", "sh_"];
 function complete(base, d) {
   const out = Object.assign(clone(base), clone(d || {}));
@@ -6979,8 +6989,11 @@ var LINK_KEYS = [
   // 4.62: appended; a window follows the bar's date only when asked, so every older link shows its typed text
   "bezel",
   // 4.66: appended; no case to start, so every older link looks as before
-  "wearos_name"
+  "wearos_name",
   // 4.67: appended; empty to start
+  "strap",
+  "c_strap"
+  // 4.69: appended; a case's strap — drawn only with a case, which older links don't have
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i) => i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62];
@@ -8062,8 +8075,8 @@ function scene(S, statik, t, preview = true, selected = null) {
   if (preview && S.guides) {
     const R = S.dial_d / 2;
     const colour = (key) => {
-      const hex = GUIDE_COLOURS[S[key]] || GUIDE_COLOURS[0];
-      return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).concat([1]);
+      const hex3 = GUIDE_COLOURS[S[key]] || GUIDE_COLOURS[0];
+      return [1, 3, 5].map((i) => parseInt(hex3.slice(i, i + 2), 16) / 255).concat([1]);
     };
     const round_guide = (r, key, px) => add("guide", circle(2 * r), null, { stroke: colour(key), px });
     const line_guide = (p0, p1) => add("guide", new Path().line(p0, p1), null, { stroke: colour("gd_k_axes"), px: S.gd_w });
@@ -8073,8 +8086,8 @@ function scene(S, statik, t, preview = true, selected = null) {
       line_guide([0, -R], [0, R]);
     }
     const tone = (k, a = 1) => {
-      const hex = GUIDE_COLOURS[k] || GUIDE_COLOURS[0];
-      return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).concat([a]);
+      const hex3 = GUIDE_COLOURS[k] || GUIDE_COLOURS[0];
+      return [1, 3, 5].map((i) => parseInt(hex3.slice(i, i + 2), 16) / 255).concat([a]);
     };
     const stroke_guide = (path, k, px = S.gd_w, a = 1) => add("guide", path, null, { stroke: tone(k, a), px });
     const built = new Map(statik.rings.map((d) => [d.ring, d]));
@@ -8310,9 +8323,14 @@ function png_with_dpi(bytes, dpi) {
 
 // src/bezels.js
 var BEZELS = ["None", "Diver", "Pilot", "Dress", "Sport"];
+var STRAPS = ["None", "Strap", "Bracelet"];
 var STEEL = { body: "#8F8F8B", light: "#D6D6D1", shade: "#55554F", insert: "#161616", mark: "#E8E6DF" };
 var GOLD = { body: "#C2A063", light: "#EDD9A3", shade: "#86672F", insert: "#161616", mark: "#E8E6DF" };
 var f = (v) => (+v).toFixed(3);
+var hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Math.max(v, 0), 1) * 255).toString(16).padStart(2, "0")).join("").toUpperCase();
+var mix = (c, to, k) => c.slice(0, 3).map((v) => v + (to - v) * k);
+var strap_tones = (c) => ({ body: hex(c), light: hex(mix(c, 1, 0.33)), shade: hex(mix(c, 0, 0.4)) });
+var poly2 = (pts) => `M${pts.map(([x, y]) => `${f(x)} ${f(y)}`).join("L")}Z`;
 var pt = (r, a) => [r * Math.sin(a * Math.PI / 180), r * Math.cos(a * Math.PI / 180)];
 var circle2 = (r) => `M${f(-r)} 0A${f(r)} ${f(r)} 0 1 0 ${f(r)} 0A${f(r)} ${f(r)} 0 1 0 ${f(-r)} 0Z`;
 var ring = (r0, r1) => circle2(r1) + circle2(r0);
@@ -8326,7 +8344,46 @@ var bar = (r0, r1, w, a) => {
   const q = [p(r0, -1), p(r1, -1), p(r1, 1), p(r0, 1)];
   return `M${q.map(([x, y]) => `${f(x)} ${f(y)}`).join("L")}Z`;
 };
-function bezel_parts(i, d) {
+function strap_parts(kind, R, y0, W2, metal, colour, lug_end) {
+  const parts = [], add = (path, fill) => parts.push({ d: path, fill, rule: "nonzero" });
+  const taper = (y) => W2 * (1 - 0.2 * Math.min(Math.max((y - y0) / (R * 2.4), 0), 1)) / 2;
+  const band = (ya, yb, s0, s1) => poly2([[s0 * taper(ya), ya], [s1 * taper(ya), ya], [s1 * taper(yb), yb], [s0 * taper(yb), yb]]);
+  for (const side of [1, -1]) {
+    const at = (ya, yb, s0, s1) => band(ya, yb, s0, s1).replace(/(-?[\d.]+) (-?[\d.]+)/g, (m, x, y) => `${x} ${f(side * y)}`);
+    const len = side > 0 ? R * 3.6 : R * 5.2, y1 = y0 + len;
+    if (kind === 1) {
+      const T = strap_tones(colour);
+      add(at(y0, y1, -1, 1), T.body);
+      add(at(y0, y1, -1, -0.72), T.light);
+      add(at(y0, y1, 0.72, 1), T.shade);
+      if (side < 0) {
+        const yk = lug_end + R * 0.3, kw = taper(yk) * 1.12;
+        add(poly2([[-kw, -yk], [kw, -yk], [kw, -yk - R * 0.16], [-kw, -yk - R * 0.16]]), T.shade);
+        for (let h = 0; h < 5; h++) {
+          const yh = y1 - R * (0.7 + 0.32 * h), r = R * 0.045;
+          add(`M${f(-r)} ${f(-yh)}a${f(r)} ${f(r)} 0 1 0 ${f(2 * r)} 0a${f(r)} ${f(r)} 0 1 0 ${f(-2 * r)} 0Z`, T.shade);
+        }
+        const tw = taper(y1);
+        add(`M${f(-tw)} ${f(-y1)}A${f(tw)} ${f(tw)} 0 0 0 ${f(tw)} ${f(-y1)}Z`, T.body);
+      } else {
+        const bw = taper(y1) * 1.18, bh = R * 0.42, t = R * 0.07;
+        add(poly2([[-bw, y1 - bh / 2], [bw, y1 - bh / 2], [bw, y1 + bh / 2], [-bw, y1 + bh / 2]]) + poly2([[-bw + t, y1 - bh / 2 + t], [-bw + t, y1 + bh / 2 - t], [bw - t, y1 + bh / 2 - t], [bw - t, y1 - bh / 2 + t]]), metal.body);
+        add(poly2([[-R * 0.025, y1], [R * 0.025, y1], [R * 0.025, y1 - bh * 0.9], [-R * 0.025, y1 - bh * 0.9]]), metal.light);
+      }
+    } else {
+      const pitch = R * 0.3, gap = R * 0.035;
+      add(at(y0, y1, -1, 1), metal.shade);
+      for (let y = y0; y < y1; y += pitch) {
+        const yb = Math.min(y + pitch - gap, y1);
+        add(at(y, yb, -1, -0.36), metal.body);
+        add(at(y, yb, -0.32, 0.32), metal.light);
+        add(at(y, yb, 0.36, 1), metal.body);
+      }
+    }
+  }
+  return parts;
+}
+function bezel_parts(i, d, strap = 0, colour = [0.29, 0.2, 0.14, 1]) {
   const R = d / 2, name = BEZELS[i];
   if (!name || name === "None") return { parts: [], reach: R };
   const T = name === "Dress" ? GOLD : STEEL;
@@ -8338,6 +8395,7 @@ function bezel_parts(i, d) {
     Sport: { case: 1.3, lug: 0.3, lw: 0.13, crown: [0.15, 0.19] }
   }[name];
   const Rc = R * P.case, half = R * 0.72, lw = R * 2 * P.lw, out = R * 2 * P.lug;
+  if (strap) parts.push(...strap_parts(strap, R, Rc * 0.55, 2 * (half - lw), T, colour, Rc * 0.55 + out));
   for (const sy of [1, -1]) for (const sx of [1, -1]) add(rect(sx > 0 ? half - lw : -half, sy > 0 ? Rc * 0.55 : -Rc * 0.55 - out, lw, out), "body");
   const [cw, ch] = P.crown.map((k) => k * d);
   add(rect(Rc - cw * 0.2, -ch / 2, cw, ch), "body");
@@ -8360,8 +8418,8 @@ function bezel_parts(i, d) {
   }
   return { parts, reach: Math.max(Rc + (name === "Sport" ? R * 0.14 : 0) + cw * 0.8, Rc * 0.55 + out) };
 }
-function bezel_svg(i, d) {
-  return bezel_parts(i, d).parts.map((p) => `<path d="${p.d}" fill="${p.fill}"${p.rule === "evenodd" ? ' fill-rule="evenodd"' : ""}/>`).join("");
+function bezel_svg(i, d, strap = 0, colour) {
+  return bezel_parts(i, d, strap, colour).parts.map((p) => `<path d="${p.d}" fill="${p.fill}"${p.rule === "evenodd" ? ' fill-rule="evenodd"' : ""}/>`).join("");
 }
 
 // src/wearos/wff_assets.js
@@ -11198,7 +11256,7 @@ var DialTool = class _DialTool {
         if (this.fitted) this.fit();
       }
       if (key === "date") this.sync_time();
-      if (key === "bezel" && this.case_sync) this.case_sync();
+      if ((key === "bezel" || key === "strap" || key === "c_strap") && this.case_sync) this.case_sync();
       if (key === "dial_hole") {
         this.hole_at = performance.now();
         clearTimeout(this.hole_timer);
@@ -11222,7 +11280,7 @@ var DialTool = class _DialTool {
    *  swatch or a colour pill is left to that swatch: it opens, moves or closes the pop-out itself. */
   pressed(e) {
     const on = (q) => e.target.closest && e.target.closest(q);
-    if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox")) this.pop_close();
+    if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox, .strapdot")) this.pop_close();
     if (this.guides_open && !$("#guide-list").hidden && !on(".guides")) this.guides_open(false);
     if (this.shadows_open && !$("#shadow-list").hidden && !on(".shadows")) this.shadows_open(false);
     if (this.bio_open && !$("#bio").hidden && !on(".about")) this.bio_open(false);
@@ -11695,8 +11753,8 @@ var DialTool = class _DialTool {
     if (!this.show) return;
     const S = this.S, sun = this.sun(), a = sun.from * Math.PI / 180, toward = [Math.sin(a), Math.cos(a)];
     const R = S.dial_d / 2, off = POOL.lift / Math.tan(sun.rise * Math.PI / 180), dim = 1 - sun.k;
-    const mix = ([lo, hi], t) => lo + (hi - lo) * t;
-    const soft = mix(POOL.soft, dim), light = mix(POOL.light, sun.k) * sun.light, shade = mix(POOL.shade, sun.k) * sun.light;
+    const mix2 = ([lo, hi], t) => lo + (hi - lo) * t;
+    const soft = mix2(POOL.soft, dim), light = mix2(POOL.light, sun.k) * sun.light, shade = mix2(POOL.shade, sun.k) * sun.light;
     const f2 = (v) => v.toFixed(3), [L, D] = this.pool_parts;
     L.circle.setAttribute("r", f2(R * POOL.size));
     L.circle.setAttribute("transform", `translate(${f2(-toward[0] * off / 2)} ${f2(-toward[1] * off / 2)}) rotate(${f2(90 - sun.from)}) scale(${f2(1 + POOL.stretch * dim)} 1)`);
@@ -11944,7 +12002,7 @@ var DialTool = class _DialTool {
     this.sun_hint = el("div", { className: "sunhint", id: "sun-hint" });
     this.sun_hint.innerHTML = icon(TOOL_ICONS.both_ways, 108, 36);
     this.sun_hint.onanimationend = () => this.sun_hint.classList.remove("go");
-    return el("div", { className: "backdrops" }, box2, this.case_box());
+    return el("div", { className: "backdrops" }, box2, ...this.case_box());
   }
   /** Okay's mark in the panel's first column, left of the title; a press opens a short bio: who made the tool, where
    *  its source is, and the open-source work it stands on (Okay, 15 Oct 2026, 02:42: "This triggers bio. Make it short,
@@ -12190,10 +12248,10 @@ var DialTool = class _DialTool {
   /** a case round the dial (4.66; farukahmet's PR #3, "abstractified" — bezels.js), drawn again only when its kind or
    *  the dial's size changes. Preview only: never in an export or the Tiny Preview (R26). */
   draw_bezel() {
-    const key = `${this.S.bezel || 0}/${this.S.dial_d}`;
+    const S = this.S, key = `${S.bezel || 0}/${S.dial_d}/${S.strap}/${S.c_strap}`;
     if (key === this.bezel_key) return;
     this.bezel_key = key;
-    this.bezel_g.innerHTML = this.S.bezel ? bezel_svg(this.S.bezel, this.S.dial_d) : "";
+    this.bezel_g.innerHTML = S.bezel ? bezel_svg(S.bezel, S.dial_d, S.strap, S.c_strap) : "";
   }
   /** the case's switch, beside Backdrop (4.66): its kind's name and a chevron; the system's list over it, unseen. */
   case_box() {
@@ -12204,18 +12262,34 @@ var DialTool = class _DialTool {
     BEZELS.forEach((name, i) => menu.append(el("option", { value: String(i), textContent: i ? name : "No case" })));
     menu.onchange = () => {
       this.set_value("global", "bezel", +menu.value);
-      this.fit();
       this.render();
     };
     const box2 = el("span", { className: "onview casebox", id: "case" }, word, arrow, menu);
+    const dot = el("button", { type: "button", className: "dot strapdot", id: "strap-colour", title: "The strap\u2019s colour", ariaLabel: "The strap\u2019s colour" });
+    dot.onclick = () => this.pop_open({ read: () => this.S.c_strap, write: (v) => this.set_value("global", "c_strap", v), label: () => "Strap" }, dot);
+    const sword = el("span", { className: "word" }), sarrow = el("span", { className: "arrow" });
+    sarrow.innerHTML = icon(SIGNS.up);
+    const smenu = el("select", { id: "strap-pick", ariaLabel: "The case\u2019s strap (preview only)", title: "The case\u2019s strap (preview only)" });
+    STRAPS.forEach((name, i) => smenu.append(el("option", { value: String(i), textContent: i ? name : "No strap" })));
+    smenu.onchange = () => {
+      this.set_value("global", "strap", +smenu.value);
+      this.render();
+    };
+    const strap = el("span", { className: "onview casebox strapbox", id: "strap" }, dot, el("span", { className: "strapkind" }, sword, sarrow, smenu));
     this.case_sync = () => {
-      const i = this.S.bezel || 0;
+      const S = this.S, i = S.bezel || 0, k = S.strap || 0;
       word.textContent = i ? BEZELS[i] : "Case";
       menu.value = String(i);
       box2.classList.toggle("on", i > 0);
+      strap.hidden = !i;
+      sword.textContent = k ? STRAPS[k] : "Strap";
+      smenu.value = String(k);
+      strap.classList.toggle("on", k > 0);
+      dot.hidden = k !== 1;
+      paint(dot, S.c_strap);
     };
     this.case_sync();
-    return box2;
+    return [box2, strap];
   }
   /** guides, at the preview's bottom left since 4.59 (its top right from 12 Oct 2026, Okay, to 4.58): a switch (a bullseye and the word; solid outline = on,
    *  dashed = off) and, joined to it, an arrow that drops their list: the five kinds of guide, each with an eye and
@@ -12247,13 +12321,13 @@ var DialTool = class _DialTool {
       none.innerHTML = none_dot;
       none.dataset.k = "none";
       dots.append(none);
-      GUIDE_COLOURS.forEach((hex, i) => {
-        const b = el("button", { type: "button", className: "tone", title: hex, ariaLabel: hex, onclick: () => {
+      GUIDE_COLOURS.forEach((hex3, i) => {
+        const b = el("button", { type: "button", className: "tone", title: hex3, ariaLabel: hex3, onclick: () => {
           set(i);
           this.sync_rows();
           this.render();
         } });
-        b.style.setProperty("--c", hex);
+        b.style.setProperty("--c", hex3);
         b.dataset.k = i;
         dots.append(b);
       });
@@ -12794,8 +12868,8 @@ var DialTool = class _DialTool {
     const all = page ? [S.c_plate, S.c_backdrop, S.c_cap, ...rings, ...hands, ...windows] : [...rings, ...hands, S.c_cap, ...windows];
     const once = /* @__PURE__ */ new Map();
     for (const c of all) if (Array.isArray(c)) {
-      const hex = to_hex(c).toUpperCase();
-      if (!once.has(hex)) once.set(hex, c);
+      const hex3 = to_hex(c).toUpperCase();
+      if (!once.has(hex3)) once.set(hex3, c);
     }
     return [...once.values()];
   }
@@ -13061,7 +13135,7 @@ var DialTool = class _DialTool {
     this.colour_mode = "HEX";
     const put = (rgb3) => P.at.write(rgb3.map((v) => +clamp(v, 0, 1).toFixed(4)).concat([P.at.read()[3] ?? 1]));
     P.put = put;
-    P.pick = (hex) => put(from_hex(hex).slice(0, 3));
+    P.pick = (hex3) => put(from_hex(hex3).slice(0, 3));
     P.title = el("h2");
     const wide = el("button", { type: "button", className: "sign", id: "pop-wide", title: "Twice the size, and back", ariaLabel: "Twice the size, and back", onclick: () => this.pop_wide(!P.wide) });
     wide.innerHTML = icon(TOOL_ICONS.wide);
@@ -13155,13 +13229,13 @@ var DialTool = class _DialTool {
   /** a colour pill: one small button — a swatch and the hex in monospace (Okay, 12 Oct 2026: "all sleek"). It only
    *  opens the pop-out, on every device. While the pop-out is open for it, it is black. show(rgba) fills it. */
   colour_pill(id, title) {
-    const dot = el("i", { className: "dot" }), hex = el("span", { className: "hex", id: id + "-hex" });
-    const pill = el("button", { type: "button", className: "colour", id, title }, dot, hex);
+    const dot = el("i", { className: "dot" }), hex3 = el("span", { className: "hex", id: id + "-hex" });
+    const pill = el("button", { type: "button", className: "colour", id, title }, dot, hex3);
     pill.setAttribute("aria-expanded", "false");
     pill.show = (c) => {
       paint(dot, c);
-      hex.textContent = to_hex(c).toUpperCase();
-      if (title) pill.ariaLabel = `${title} ${hex.textContent}`;
+      hex3.textContent = to_hex(c).toUpperCase();
+      if (title) pill.ariaLabel = `${title} ${hex3.textContent}`;
     };
     return pill;
   }
@@ -13295,8 +13369,8 @@ var DialTool = class _DialTool {
       const commit = () => {
         const fields = [...P.numbers.querySelectorAll("input")];
         if (mode === "HEX") {
-          const hex = parse_hex(fields[0].value);
-          if (hex) P.pick(hex);
+          const hex3 = parse_hex(fields[0].value);
+          if (hex3) P.pick(hex3);
           else this.pop_refresh();
           return;
         }
@@ -15773,9 +15847,9 @@ var DialTool = class _DialTool {
   }
   fit_zoom() {
     const [w, h] = this.size();
-    return Math.min(w, h) / Math.max(page_mm(this.S), this.S.bezel ? 2 * (bezel_parts(this.S.bezel, this.S.dial_d).reach + this.S.margin) : 0);
+    return Math.min(w, h) / page_mm(this.S);
   }
-  // with a case (4.66), room for it too
+  // the dial, never its case (4.69; Okay, 22:35: "Fit and previews care about the dial still, the bezel and strap secondary"; 4.66–4.68 made room for the case)
   /** put the dial at c, scaled to z; mirrored for toner transfer. y grows upward inside. */
   place() {
     const flip = this.S.out_mirror ? -1 : 1;
