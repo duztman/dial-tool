@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.71 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.72 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -6186,7 +6186,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.71";
+var VERSION = "beta 4.72";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -6352,6 +6352,8 @@ var WINDOW_BASE = {
   // a date, day or moon window shows the bar's date (beta 4.62); off, so every older link shows its typed text and its moon age as before
   names: 0,
   // a day window following the date: its names' language, a place in moment.js LANGS (EN · TR · DE · FR · IT; 4.62)
+  physics: true,
+  // its disc stays inside the case (4.72, #346): passing it, its guide shows red and the panel says so; off for a face on a screen, where a disc may be bigger than the dial
   wh_link: false
   // width and height linked: one changed, the other keeps their ratio (#358, beta 4.57); off, so every link draws and behaves as before
 };
@@ -6386,7 +6388,8 @@ var FIRST_WINDOW = {
   at_deg: "da_at_deg",
   wh_link: "da_wh_link",
   follows: "da_follows",
-  names: "da_names"
+  names: "da_names",
+  physics: "da_physics"
 };
 var DEFAULTS = {
   version: 2,
@@ -6485,6 +6488,9 @@ var DEFAULTS = {
   // a case round the dial on the preview (4.66, bezels.js BEZELS): 0 none, 1 diver, 2 pilot, 3 dress, 4 sport. Preview only, like the backdrop (R26)
   date: "",
   // the day the dial shows, "2026-10-18", set in the bar (4.62; Okay, 18 Oct 2026: "Date best set at the bar … Default from system date"); "" = today, wherever the dial is opened
+  da_physics: true,
+  xray: false,
+  // the first window's `physics` · X-ray, every window's disc seen under a veil of the plate, preview only (4.72, #346)
   da_wh_link: false,
   // the first window's width and height linked, as every window's `wh_link` (#358, beta 4.57)
   gd_k_edge: 1,
@@ -6529,6 +6535,8 @@ var UNITS = [
   ["lig", "Lignes", 1 / 2.2558, 1],
   ["thou", "Thou", 1 / 0.0254, -1]
 ];
+var XRAY_VEIL = 0.82;
+var DISC_WARN = [0.9, 0.22, 0.17];
 var GUIDE_COLOURS = ["#FF2D95", "#00E5FF", "#39FF14", "#FFE600", "#FF6A00", "#7A5CFF", "#111111", "#FFFFFF"];
 var GUIDE_KINDS = [
   ["gd_edge", "gd_k_edge", "Dial edge"],
@@ -6579,7 +6587,7 @@ function radial_extent(path) {
   return lo <= hi ? [lo, hi] : null;
 }
 var GUIDE_MORE = ["line", "crosshair", "circle"];
-var NOT_GEOMETRY = ["t", "guides", "bezel", "strap", "c_strap", "wearos_name", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
+var NOT_GEOMETRY = ["t", "guides", "xray", "bezel", "strap", "c_strap", "wearos_name", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
 var NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_", "sh_"];
 function complete(base, d) {
   const out = Object.assign(clone(base), clone(d || {}));
@@ -6999,6 +7007,10 @@ var LINK_KEYS = [
   // 4.66: appended; no case to start, so every older link looks as before
   "wearos_name",
   // 4.67: appended; empty to start
+  "xray",
+  "physics",
+  "da_physics",
+  // 4.72: appended; X-ray off and physics on to start, so every older link looks as before
   "strap",
   "c_strap"
   // 4.69: appended; a case's strap — drawn only with a case, which older links don't have
@@ -7909,8 +7921,8 @@ function window_hole(w) {
   const hole = moon_parts(w.w, 0).opening;
   return [hole, (d) => offset(hole.copy(), d)];
 }
-function day_night(w, h, hour) {
-  const opening = new Path().rect(-w / 2, -h / 2, w, h), pivot = [0, -h / 2];
+function day_night(w, h, hour, area = null) {
+  const opening = area || new Path().rect(-w / 2, -h / 2, w, h), pivot = [0, -h / 2];
   const turn = (hour % 24 + 24) % 24 / 24 * 360, reach = 0.55 * h;
   const night = sector(0, 2 * (w + h), -90, 90).rotate(-turn).translate(...pivot).intersection(opening);
   const at = (a, r) => [pivot[0] + r * sin(radians(a)), pivot[1] + r * cos(radians(a))];
@@ -7961,6 +7973,40 @@ function build_window(S, w, index) {
     clear: put(grown(w.frame + w.clear))
     // keep print clear of the hole
   };
+}
+var DISC_PAD = 0.3;
+var DISC_RIM = 0.5;
+function window_disc(S, x) {
+  const w = x.w, kind = WINDOW_KINDS[w.kind], R = S.dial_d / 2, room = R - DISC_RIM;
+  const centre2 = clock_point(w.r, window_angle(w)), turn = window_turn(w);
+  const put = (p, turned2 = true) => (turn && turned2 ? p.rotate(-turn) : p).translate(...centre2);
+  const shape2 = window_shape(w), high = shape2 === "rectangle" || shape2 === "arc" ? w.h : shape2 === "arch" ? w.w / 2 : w.w;
+  if (kind === "date" || kind === "day") {
+    const e = radial_extent(x.window);
+    if (!e) return null;
+    const inner = Math.max(e[0] - DISC_PAD, 0), outer = e[1] + DISC_PAD;
+    const lang = LANGS[w.names] || "en";
+    const list = kind === "date" ? Array.from({ length: 31 }, (_, i) => String(i + 1)) : NAMES[w.follows ? lang : LANGS.find((l) => NAMES[l].days.includes(w.text)) || "en"].days;
+    const now = Math.max(list.indexOf(String(w.text)), 0), n = list.length, type = window_type(S, w), size = high * w.size / 100;
+    const print = memo("disc" + JSON.stringify([kind, list, now, w.r, w.at, w.at_deg, w.turn, w.text_turn, shape2, size, type]), () => merge(list.map((t, p) => {
+      const a = window_angle(w), step = (p - now) * 360 / n;
+      const one = shape2 === "arc" ? on_path(t, w.r, a, type, size) : put(centred(text_path(t, type, size)), w.text_turn);
+      return one.rotate(-step);
+    })));
+    return { band: circle(2 * outer).difference(circle(2 * inner)), print, inner, outer, centre: [0, 0], reach: outer, fits: w.physics === false || outer <= room };
+  }
+  if (kind === "am \xB7 pm") {
+    const rho = Math.hypot(w.w / 2, high) + DISC_PAD, area = circle(2 * rho).translate(0, -high / 2);
+    const band = put(area.copy()), print = put(day_night(w.w, high, day_hour(S), area));
+    const pivot = put(new Path().rect(-1e-3, -high / 2 - 1e-3, 2e-3, 2e-3)).bounds(), c = [(pivot[0] + pivot[2]) / 2, (pivot[1] + pivot[3]) / 2];
+    const reach = Math.hypot(...c) + rho;
+    return { band, print, inner: 0, outer: rho, centre: c, reach, fits: w.physics === false || reach <= room };
+  }
+  return null;
+}
+function disc_of(S, i) {
+  const w = windows_of(S)[i];
+  return w && w.on ? window_disc(S, build_window(S, shown_window(S, w), i)) : null;
 }
 function build_static(S) {
   const windows = windows_of(S).map((w, i) => w.on ? build_window(S, shown_window(S, w), i) : null).filter(Boolean);
@@ -8062,11 +8108,18 @@ function scene(S, statik, t, preview = true, selected = null) {
     }
     if (statik.hole_line) add("hole", statik.hole_line, black);
   } else {
+    if (preview && S.xray) for (const x of windows) {
+      const d = window_disc(S, x);
+      if (!d) continue;
+      add("disc", d.band, x.w.disc_c || [1, 1, 1, 1], { window: x.index });
+      add("disc print", d.print, x.w.text_c || x.w.ink, { window: x.index });
+    }
     for (const x of windows) {
       add("date disc", x.window, x.w.disc_c || [1, 1, 1, 1], { window: x.index });
       add("date number", x.number, x.w.text_c || x.w.ink, { window: x.index });
     }
-    add("plate", S.ha_on ? statik.plate : statik.plate_holed, S.c_plate);
+    const veil = preview && S.xray && windows.some((x) => window_disc(S, x)) ? XRAY_VEIL : 1;
+    add("plate", S.ha_on ? statik.plate : statik.plate_holed, veil < 1 ? [...S.c_plate.slice(0, 3), S.c_plate[3] * veil] : S.c_plate);
     for (const d of rings) {
       if (d.tints) d.tints.forEach((tint, n) => add("ring", tint.path, sector_colour(d.ring, tint.at), { ring: d, index: index(d), part: n + 1 }));
       else add("ring", d.path, d.ring.c, { ring: d, index: index(d) });
@@ -8121,6 +8174,11 @@ function scene(S, statik, t, preview = true, selected = null) {
       const focused = focus === "windows" && x.index === (S.ui_window ?? 0), chosen = focused && S.gd_wsel, k = window_guide(S, x.index), e = radial_extent(x.window);
       if (k === null || !e || !(S.gd_wins || chosen)) continue;
       edges(k, e[1], e[0], focused ? S.gd_w * 1.5 : S.gd_w, faded(focused));
+      const d = window_disc(S, x);
+      if (d) {
+        const px = focused ? S.gd_w * 1.5 : S.gd_w, a = faded(focused);
+        for (const r of [d.inner, d.outer]) if (r > 0) add("guide", circle(2 * r).translate(...d.centre), null, { stroke: r === d.outer && !d.fits ? [...DISC_WARN, a] : tone(k, a), px, dashes: true });
+      }
     }
     for (const g of S.gd_more || []) {
       if (!(g.k >= 0)) continue;
@@ -10988,6 +11046,10 @@ var ROWS = {
     // waits underneath, for when it doesn't follow
     chk("follows", "Follows the date in the bar", { ...W, show: win_is("date", "day", "moon phase") }),
     seg("names", "Names", ["EN", "TR", "DE", "FR", "IT"], { ...W, show: (T) => T.on && T.follows && WINDOW_KINDS[T.kind] === "day" }),
+    // physics (4.72, #346: "their discs obey physics or not, chosen by the user"): on, a disc must end inside the case —
+    // passing it, its outer guide shows red and this says by how much; off, it may (a face on a screen)
+    chk("physics", "Its disc stays inside the case", { ...W, show: win_is("date", "day", "am \xB7 pm") }),
+    info((T) => `Its disc passes the case by ${tool ? tool.disc_past().toFixed(2) : "?"} mm: move the window in, or untick to let it.`, { ...W, nest: true, show: (T) => win_is("date", "day", "am \xB7 pm")(T) && T.physics !== false && tool && tool.disc_past() > 0 }),
     txt("text", "Text", { ...W, show: (T) => win_is("date", "day")(T) && !T.follows }),
     custom("font", { ...W, show: win_is("date", "day") }),
     // its own font, or the top numerals ring's (the start)
@@ -12021,7 +12083,7 @@ var DialTool = class _DialTool {
     this.sun_hint = el("div", { className: "sunhint", id: "sun-hint" });
     this.sun_hint.innerHTML = icon(TOOL_ICONS.both_ways, 108, 36);
     this.sun_hint.onanimationend = () => this.sun_hint.classList.remove("go");
-    return el("div", { className: "backdrops" }, box2, ...this.case_box());
+    return el("div", { className: "backdrops" }, box2, ...this.case_box(), this.xray_box());
   }
   /** Okay's mark in the panel's first column, left of the title; a press opens a short bio: who made the tool, where
    *  its source is, and the open-source work it stands on (Okay, 15 Oct 2026, 02:42: "This triggers bio. Make it short,
@@ -12309,6 +12371,26 @@ var DialTool = class _DialTool {
     };
     this.case_sync();
     return [box2, strap];
+  }
+  /** X-ray (4.72, #346; Okay, 18 Oct 2026, on the disc sketches: "a3 not enough, a2 and others"): a switch beside the
+   *  case's, shown while a window with a disc is on — a date, day or am · pm window. On, every such window's disc is
+   *  drawn whole under the plate, the plate a veil over it (G.XRAY_VEIL). Preview only: never in an export (R5, R26). */
+  xray_box() {
+    const b = el("button", { type: "button", className: "onview casebox xraybox", id: "xray", title: "X-ray: the windows' discs under the plate (preview only)", onclick: () => this.set_value("global", "xray", !this.S.xray) }, el("span", { className: "word", textContent: "X-ray" }));
+    this.xray_sync = () => {
+      const S = this.S, has = windows_of(S).some((w) => w.on && ["date", "day", "am \xB7 pm"].includes(WINDOW_KINDS[w.kind]));
+      b.hidden = !has;
+      b.classList.toggle("on", Boolean(S.xray));
+      b.setAttribute("aria-pressed", String(Boolean(S.xray)));
+    };
+    this.xray_sync();
+    return b;
+  }
+  /** the selected window's disc past the case, with physics on (4.72): how far, in mm, or 0. (The panel shows the
+   *  selected window's rows; its settings come as a fresh object each time, so they are found by the selection.) */
+  disc_past() {
+    const d = disc_of(this.S, this.S.ui_window);
+    return d && !d.fits ? d.reach - (this.S.dial_d / 2 - DISC_RIM) : 0;
   }
   /** guides, at the preview's bottom left since 4.59 (its top right from 12 Oct 2026, Okay, to 4.58): a switch (a bullseye and the word; solid outline = on,
    *  dashed = off) and, joined to it, an arrow that drops their list: the five kinds of guide, each with an eye and
@@ -12825,6 +12907,7 @@ var DialTool = class _DialTool {
    *  when it is folded, and everything in it when its heading doesn't apply. */
   sync_rows() {
     if (this.case_sync) this.case_sync();
+    if (this.xray_sync) this.xray_sync();
     this.sync_guides();
     this.sync_shadows();
     this.sync_ring_summaries();
@@ -12933,7 +13016,13 @@ var DialTool = class _DialTool {
       };
       return out;
     }
-    if (row.kind === "note") wrap.append(el("span"), el("span", { className: "quiet", textContent: row.text }));
+    if (row.kind === "note") {
+      const words = el("span", { className: "quiet", textContent: typeof row.text === "function" ? "" : row.text });
+      wrap.append(el("span"), words);
+      if (typeof row.text === "function") out.refresh = (T) => {
+        words.textContent = row.text(T);
+      };
+    }
     if (row.kind === "num") {
       const slider = el("input", { type: "range", min: row.lo, max: row.hi, step: row.step, id: id + "-slider" });
       const field = el("input", { type: "text", id, inputMode: "decimal", title: "1.2 sets \xB7 +0.5 adds \xB7 x0.5 multiplies \xB7 /2 divides" });
@@ -15933,7 +16022,7 @@ var DialTool = class _DialTool {
         node.setAttribute("fill", item.fill ? to_hex(item.fill) : "none");
         node.setAttribute("fill-opacity", item.fill ? item.fill[3] : 1);
       }
-      const stroke = item.stroke ? to_hex(item.stroke) + "/" + item.stroke[3] + "/" + item.px + (item.dots ? "/dots" : "") : "none";
+      const stroke = item.stroke ? to_hex(item.stroke) + "/" + item.stroke[3] + "/" + item.px + (item.dots ? "/dots" : item.dashes ? "/dashes" : "") : "none";
       if (stroke !== slot.stroke) {
         slot.stroke = stroke;
         if (item.stroke) {
@@ -15945,6 +16034,9 @@ var DialTool = class _DialTool {
           if (item.dots) {
             node.setAttribute("stroke-dasharray", `0 ${3 * item.px}`);
             node.setAttribute("stroke-linecap", "round");
+          } else if (item.dashes) {
+            node.setAttribute("stroke-dasharray", `${3 * item.px} ${3 * item.px}`);
+            node.removeAttribute("stroke-linecap");
           } else {
             node.removeAttribute("stroke-dasharray");
             node.removeAttribute("stroke-linecap");
