@@ -8,6 +8,7 @@
 
 import * as G from "./geometry.js";
 import { svg_document, pdf_document, png_with_dpi, file_name } from "./output.js";
+import { BEZELS, bezel_parts, bezel_svg } from "./bezels.js";
 import { FONT_LIST, FONT_SITE } from "./font_list.js";
 import { EXAMPLES } from "./examples.js";
 import { GALLERY } from "./gallery.js";
@@ -975,6 +976,7 @@ class DialTool {
       if (!quiet) this.static_dirty = true;
       if (key === "dial_d" || key === "margin") { if (this.fitted) this.fit(); }
       if (key === "date") this.sync_time();      // the bar's stacked date (4.62)
+      if (key === "bezel" && this.case_sync) this.case_sync();
       if (key === "dial_hole") {                  // its guide shows while it is being sized, whatever the guides are set to (#267)
         this.hole_at = performance.now();
         clearTimeout(this.hole_timer);
@@ -1069,7 +1071,10 @@ class DialTool {
     this.handles = svg_el("g");                    // the selected ring's handles on its guides (4.65, draw_handles), over everything on the dial
     this.handles.setAttribute("class", "handles");
     this.handle_events();
-    this.svg.append(sky_defs, this.backdrop, this.sky, this.pool, this.dial, this.over, this.handles);
+    this.bezel_g = svg_el("g");                    // a case round the dial, preview only (4.66, bezels.js), under it
+    this.bezel_g.setAttribute("class", "bezel");
+    this.bezel_g.setAttribute("pointer-events", "none");
+    this.svg.append(sky_defs, this.backdrop, this.sky, this.pool, this.bezel_g, this.dial, this.over, this.handles);
     this.tip = el("div", { className: "tip", hidden: true }, el("span"));       // the name of what the pointer is on
     this.tip.insertAdjacentHTML("beforeend", '<svg viewBox="0 0 20 10" width="20" height="10" aria-hidden="true"><path class="a" d="M0 0 L10 10 L20 0"/><path class="b" d="M0 0 L10 10 L20 0"/><path class="c" d="M-1 -3 L21 -3 L21 0 L10 9 L-1 0 Z"/></svg>');
     this.preview_events();
@@ -1608,7 +1613,7 @@ class DialTool {
     this.sun_hint = el("div", { className: "sunhint", id: "sun-hint" });
     this.sun_hint.innerHTML = icon(TOOL_ICONS.both_ways, 108, 36);
     this.sun_hint.onanimationend = () => this.sun_hint.classList.remove("go");
-    return el("div", { className: "backdrops" }, box);
+    return el("div", { className: "backdrops" }, box, this.case_box());
   }
 
   /** Okay's mark in the panel's first column, left of the title; a press opens a short bio: who made the tool, where
@@ -1803,6 +1808,29 @@ class DialTool {
     const end = () => { this.handle_drag = null; H.classList.remove("dragging"); };
     H.addEventListener("pointerup", end);
     H.addEventListener("pointercancel", end);
+  }
+
+  /** a case round the dial (4.66; farukahmet's PR #3, "abstractified" — bezels.js), drawn again only when its kind or
+   *  the dial's size changes. Preview only: never in an export or the Tiny Preview (R26). */
+  draw_bezel() {
+    const key = `${this.S.bezel || 0}/${this.S.dial_d}`;
+    if (key === this.bezel_key) return;
+    this.bezel_key = key;
+    this.bezel_g.innerHTML = this.S.bezel ? bezel_svg(this.S.bezel, this.S.dial_d) : "";
+  }
+
+  /** the case's switch, beside Backdrop (4.66): its kind's name and a chevron; the system's list over it, unseen. */
+  case_box() {
+    const word = el("span", { className: "word" });
+    const arrow = el("span", { className: "arrow" });
+    arrow.innerHTML = icon(SIGNS.up);
+    const menu = el("select", { id: "case-pick", ariaLabel: "A case round the dial (preview only)", title: "A case round the dial (preview only)" });
+    BEZELS.forEach((name, i) => menu.append(el("option", { value: String(i), textContent: i ? name : "No case" })));
+    menu.onchange = () => { this.set_value("global", "bezel", +menu.value); this.fit(); this.render(); };      // the view fits the case (or the dial again)
+    const box = el("span", { className: "onview casebox", id: "case" }, word, arrow, menu);
+    this.case_sync = () => { const i = this.S.bezel || 0; word.textContent = i ? BEZELS[i] : "Case"; menu.value = String(i); box.classList.toggle("on", i > 0); };
+    this.case_sync();
+    return box;
   }
 
   /** guides, at the preview's bottom left since 4.59 (its top right from 12 Oct 2026, Okay, to 4.58): a switch (a bullseye and the word; solid outline = on,
@@ -2208,6 +2236,7 @@ class DialTool {
   /** every row: hidden if it doesn't apply (R16); its controls showing the scope's value. A pane hides its rows
    *  when it is folded, and everything in it when its heading doesn't apply. */
   sync_rows() {
+    if (this.case_sync) this.case_sync();      // the case's switch follows an undo, a link, a file (4.66)
     this.sync_guides();
     this.sync_shadows();
     this.sync_ring_summaries();
@@ -4614,6 +4643,7 @@ class DialTool {
       if (this.travel) { this.travel_step(); this.render(); }      // the dial on its way into or out of the showcase
       if (this.show && this.show.spin) this.render();
       this.draw();
+      this.draw_bezel();
       this.draw_handles();
       this.tiny_draw();
     } catch (e) {
@@ -4706,7 +4736,7 @@ class DialTool {
   // ── the preview: zoom, pan, click ────────────────────────
 
   size() { const r = this.svg.getBoundingClientRect(); return [r.width, r.height]; }
-  fit_zoom() { const [w, h] = this.size(); return Math.min(w, h) / G.page_mm(this.S); }
+  fit_zoom() { const [w, h] = this.size(); return Math.min(w, h) / Math.max(G.page_mm(this.S), this.S.bezel ? 2 * (bezel_parts(this.S.bezel, this.S.dial_d).reach + this.S.margin) : 0); }      // with a case (4.66), room for it too
 
   /** put the dial at c, scaled to z; mirrored for toner transfer. y grows upward inside. */
   place() {
@@ -4715,6 +4745,7 @@ class DialTool {
     this.dial.setAttribute("transform", where);
     this.over.setAttribute("transform", where);
     if (this.handles) { this.handles.setAttribute("transform", where); this.handles_key = ""; }
+    if (this.bezel_g) this.bezel_g.setAttribute("transform", where);
     if (this.pool) this.pool.setAttribute("transform", where);
   }
 

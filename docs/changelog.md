@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.66 (web version) · 18 Oct 2026
+
+A case round the dial, preview only (farukahmet's PR #3, "abstractified"; Okay, 21:20: "low number of colors, thick lines, minimal, maybe just sillhouettes of classics. One highlight one shadow").
+
+- **Case**, beside Backdrop: No case · Diver · Pilot · Dress · Sport. Each a silhouette of its kind, not of a model — a flat body, one lighter band on its upper left, one darker on its lower right; a diver's dark insert with its pip and five-minute bars and a coin edge; a sport case's flat bezel with sixty marks and two pushers; a pilot's onion crown; a slim gold dress case. Sized from the dial, so it fits any dial.
+- The view fits the case when one is chosen, and the dial again without it. Never in an export or the Tiny Preview (R26 updated). A new key `bezel`, none to start: older links look as before.
+
 ## beta 4.65 (web version) · 18 Oct 2026
 
 Handles on the guides (farukahmet's PR #2, redrawn our way; Okay, 21:20: "Drag handles great as an idea, needs to be implemented in our ways and design, inner outer thing already has dotted line, all these handles should be in guide color, adapted").

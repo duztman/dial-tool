@@ -2214,6 +2214,16 @@ await touch.close();
   check(look[0] && look[1] && look[2] && look[3] === "600" && look[4] === "" && follow.join() === "7,07/10/28,CMT,",
     `the date stands touching AM · PM, today's to start, stacked day · month · year in Inter SemiBold (Barlow Bold in 4.62) (${look.join(" ")}); 7 Oct 2028 set, a following date window says ${follow[0]} and the bar ${follow[1]}; a day window in Turkish ${follow[2]}; Now brings today back`);
 }
+{ // a case round the dial, preview only (4.66; farukahmet's PR #3 "abstractified": "low number of colors, thick lines, minimal … One highlight one shadow")
+  const z0 = await page.evaluate(() => window.dial_tool.z);
+  await page.selectOption("#case-pick", "1"); await frame();
+  const on = await page.evaluate(() => { const t = window.dial_tool, g = document.querySelector("g.bezel"), fills = new Set([...g.querySelectorAll("path")].map((p) => p.getAttribute("fill"))), svg = t.statik && window.dial_tool;
+    return [t.S.bezel, g.querySelectorAll("path").length, fills.size, document.querySelector("#case .word").textContent, t.z, g.compareDocumentPosition(t.dial) & Node.DOCUMENT_POSITION_FOLLOWING ? true : false]; });
+  await page.selectOption("#case-pick", "0"); await frame();
+  const off = await page.evaluate(() => [window.dial_tool.S.bezel, document.querySelector("g.bezel").childElementCount, document.querySelector("#case .word").textContent, window.dial_tool.z]);
+  check(on[0] === 1 && on[1] > 20 && on[2] <= 5 && on[3] === "Diver" && on[4] < z0 && on[5] && off[0] === 0 && off[1] === 0 && off[2] === "Case" && Math.abs(off[3] - z0) < 1e-6,
+    `a case round the dial: Diver drawn under the dial in ${on[2]} tones (${on[1]} parts), the view fitted to it (${z0.toFixed(2)} → ${on[4].toFixed(2)}); No case takes it away and fits the dial again`);
+}
 { // Tiny Preview (#337, 4.59): its button top right where Guides stood; the dial at its own size (the browser's mm) with its margins, over everything; dragged anywhere; its eye puts it away. Guides at the bottom left, between Backdrop and Shadows, their list opening upward
   const corner = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), m = r("main"), o = r("#tiny-open"), g = r("#guides"), b = r("#backdrop"), sh = r("#shadows"); return [Math.round(m.right - o.right) === Math.round(m.bottom - m.bottom) || o.top - m.top < 40, b.bottom <= g.top + 1 && g.bottom <= sh.top + 1 && Math.abs(g.left - sh.left) < 1]; });
   await page.click("#tiny-open"); await page.waitForTimeout(250);

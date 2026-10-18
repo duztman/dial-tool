@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.65";
+export const VERSION = "beta 4.66";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -153,6 +153,7 @@ export const DEFAULTS = {
   gd_wins: false, gd_wsel: true,                  // which windows show their guides: all · the chosen one (to start) · none, as rings (#271). gd_win, gd_k_win (the windows' radii) unread since
   da_guide: -1,                                   // the first window's guide colour, as every window's `guide` (#271)
   da_follows: false, da_names: 0,                  // the first window's `follows` and `names` (4.62)
+  bezel: 0,                                        // a case round the dial on the preview (4.66, bezels.js BEZELS): 0 none, 1 diver, 2 pilot, 3 dress, 4 sport. Preview only, like the backdrop (R26)
   date: "",                                        // the day the dial shows, "2026-10-18", set in the bar (4.62; Okay, 18 Oct 2026: "Date best set at the bar … Default from system date"); "" = today, wherever the dial is opened
   da_wh_link: false,                               // the first window's width and height linked, as every window's `wh_link` (#358, beta 4.57)
   gd_k_edge: 1, gd_k_axes: 0, gd_k_win: 1, gd_k_rings: 1, gd_k_sel: 4, gd_w: 1.0,
@@ -218,7 +219,7 @@ export function radial_extent(path) {
  *  · k: a place in GUIDE_COLOURS, -2 = none. line: a diameter at angle a · crosshair: a small cross at angle a and
  *  radius r, to mark a point · circle: radius r. The list only grows at its end (R9). */
 export const GUIDE_MORE = ["line", "crosshair", "circle"];
-export const NOT_GEOMETRY = ["t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
+export const NOT_GEOMETRY = ["t", "guides", "bezel", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
 export const NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_", "sh_"];
 
 /** base values + d's values (deep copies), names turned into popup indexes. */
@@ -406,6 +407,7 @@ export const LINK_KEYS = [
   "mark_in",                // 4.52.2 (#344): appended; off to start, so every scheme-2 link draws as before
   "wh_link", "da_wh_link",  // 4.57 (#358): appended; off to start, and they draw nothing: only how W and H move together
   "follows", "names", "da_follows", "da_names", "date",      // 4.62: appended; a window follows the bar's date only when asked, so every older link shows its typed text
+  "bezel",                  // 4.66: appended; no case to start, so every older link looks as before
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
