@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.62 (web version) · 18 Oct 2026
+
+The date (Okay, 18 Oct: "Date best set at the bar, short date, 07/10/28 style, stacked barlow medium or bold, next to am, touching. Default from system date").
+
+- **A date in the bar**, touching AM · PM: day, month and year stacked in Barlow Bold (18 · 10 · 26). Today's to start, wherever the dial is opened; a press opens the system's date picker; **Now** brings today back.
+- **Windows follow it**: a date or day window with *Follows the date in the bar* says the day of the month or the weekday; a moon window shows the moon's age for that day. A day window's **Names**: EN · TR · DE · FR · IT. The typed text (and the moon's age) wait underneath for when the window doesn't follow.
+- The default watch's date window follows the date; a window switched on with its starting text (17, MON) follows too. Older links keep their typed text: new keys `date`, `follows`, `names`, off to start.
+- The engine behind it: `web/src/moment.js` (one moment — a date and the time — for every complication).
+
 ## beta 4.61 (web version) · 18 Oct 2026
 
 - **The complications act like tabs** (#328: "selecting them changes settings accordingly"): each kind — date, day, AM · PM, moon — keeps its own settings for the window (shape, size, text, colours, font). Taking a kind back brings its own back; a kind taken for the first time starts from what the window has. Where the window stands (its place and radius) is shared. Kept while the tool is open; a link keeps the window as it is shown.

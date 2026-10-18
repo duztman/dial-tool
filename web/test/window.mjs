@@ -1286,6 +1286,7 @@ for (const [n, kind, at] of kinds) {
   await page.click("#window-kind-Complication-" + kind);
   await page.click("#window-at-Position-" + ["3", "4:30", "6", "9", "12", "1:30", "7:30", "10:30", "4"].indexOf(at));
 }
+await page.uncheck("#window-follows-Follows-the-date-in-the-bar");      // switched on, the moon followed the date (4.62): its own age, typed
 await enter_value("#window-age-Moon-age-days", "6");
 await enter_value("#window-w-Width-arch", "4");
 await frame();
@@ -1612,10 +1613,10 @@ const pane_lines = await page.$$eval(".form .pane", (h) => h.filter((e) => e.off
 check(pane_lines.length > 0 && pane_lines.every((x) => x === "24/26"), `a pane's line starts at the margin, over its eye, which stands 2 further in (${pane_lines[0]})`);
 // the bar keeps the columns: widths of one or two columns, and the Guides switch ends on the panel's last column
 const fits = await page.evaluate(() => { const w = (q) => Math.round(document.querySelector(q).getBoundingClientRect().width), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); const box = (q) => document.querySelector(q).getBoundingClientRect(), lead = document.querySelector(".bar .lead"), pad = parseFloat(getComputedStyle(lead).paddingRight);
-    const gaps = [["#play", ".speeds"], [".speeds", ".timewell"], ["#ampm", "#now"]].map(([a, b]) => +(box(b).left - box(a).right).toFixed(1));
+    const gaps = [["#play", ".speeds"], [".speeds", ".timewell"], ["#date", "#now"]].map(([a, b]) => +(box(b).left - box(a).right).toFixed(1));
     return { play: w("#play"), zooms: w("#zoom-out") + w("#zoom-in"), fit: w("#fit"), fitpad: getComputedStyle(document.querySelector("#fit")).paddingLeft === getComputedStyle(document.querySelector("#now")).paddingLeft && Math.abs(box("#fit").width - (box("#fit span").width + 2 * parseFloat(getComputedStyle(document.querySelector("#fit")).paddingLeft) + parseFloat(getComputedStyle(document.querySelector("#fit")).borderLeftWidth) + parseFloat(getComputedStyle(document.querySelector("#fit")).borderRightWidth))) < 0.5, sign: box(".zoomsign").right <= box(".zooms").left && Math.abs(box("#zoom-in").right - box("#fit").left) < 0.5 && document.querySelector("#fit svg") === null, gaps, touch: +(box("#ampm").left - box(".timewell").right).toFixed(1), half: [+box("#ampm").width.toFixed(1), +box("#ampm").height.toFixed(1), +((box("#ampm").top + box("#ampm").bottom) / 2 - (box(".timewell").top + box(".timewell").bottom) / 2).toFixed(1)], end: Math.round(box(".bar .lead").right - pad - box("#now").right) }; });
 check(fits.play === 34 && fits.zooms === 54 && fits.fitpad && fits.sign && fits.gaps[0] === 24 - 3.5 && fits.gaps[1] === fits.gaps[2] && fits.touch === 0 && fits.half[1] === 30 && Math.abs(fits.half[2]) < 0.5 && fits.end === 0,
-  `under the panel: play, a margin less what the speed box grew toward it (24 − 3.5, Okay 15 Oct 03:18), how fast · the time with AM · PM attached, as high, its word the time's size (#284, 4.44.6) · NOW one equal gap apart, NOW ending on the panel's last column; at the right the magnifier first, then − + FIT side by side (notes 2, 18 Oct 2026), FIT a word with NOW's padding (#315) (${JSON.stringify(fits)})`);
+  `under the panel: play, a margin less what the speed box grew toward it (24 − 3.5, Okay 15 Oct 03:18), how fast · the time with AM · PM attached, as high, its word the time's size (#284, 4.44.6), then the date touching it (4.62) · NOW one equal gap apart, NOW ending on the panel's last column; at the right the magnifier first, then − + FIT side by side (notes 2, 18 Oct 2026), FIT a word with NOW's padding (#315) (${JSON.stringify(fits)})`);
 { // the bar's time, second look (#306, 4.45.5): the figures tracked +0.04em, AM · PM 5.5 each side, NOW filled light with a dark word
   const look = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c("#time").letterSpacing, c("#ampm").paddingLeft, c("#ampm").paddingRight, c("#now").backgroundColor, c("#now").color]; });
   check(look.join(" ") === "0.8px 5.5px 5.5px color(srgb 0.360784 0.360784 0.360784) rgb(212, 212, 207)", `the bar's time: its figures tracked +0.04em, AM · PM closer to its word, NOW filled 20 % darker than AM's outline (#5C5C5C) with its word the light rule tone, not white (${look.join(" · ")}) (#306, #307)`);
@@ -2199,6 +2200,20 @@ check(chip_reach.every(Boolean), "the hex in a pill opens the pop-out and isn't 
 await pad.screenshot({ path: path.join(OUT, "12-touch.png") });
 await touch.close();
 
+{ // the date in the bar (4.62; Okay: "Date best set at the bar, short date, 07/10/28 style, stacked barlow medium or bold, next to am, touching. Default from system date"); a window that follows it says it
+  const look = await page.evaluate(() => { const d = document.querySelector("#date"), a = document.querySelector("#ampm").getBoundingClientRect(), r = d.getBoundingClientRect(), c = getComputedStyle(d), spans = [...d.children].map((e) => e.textContent), n = new Date();
+    const today = [String(n.getDate()).padStart(2, "0"), String(n.getMonth() + 1).padStart(2, "0"), String(n.getFullYear()).slice(-2)];
+    return [Math.abs(r.left - a.right) < 0.5 && Math.abs(r.top - a.top) < 0.5, spans.join("/") === today.join("/"), c.fontFamily.includes("Dial Date"), c.fontWeight, window.dial_tool.S.date]; });
+  const follow = await page.evaluate(() => { const t = window.dial_tool, was = [t.S.ui_window, t.S.da_on, t.S.da_kind, t.S.da_follows, t.S.da_names, t.S.date]; t.S.ui_window = 0;
+    t.set_value("window", "on", true); t.set_value("window", "kind", 0); t.set_value("window", "follows", true); t.set_value("global", "date", "2028-10-07"); t.frame();
+    const date = t.statik.windows[0].w.text, bar = [...document.querySelector("#date").children].map((e) => e.textContent).join("/");
+    t.set_value("window", "kind", 1); t.set_value("window", "names", 1); t.frame(); const day = t.statik.windows[0].w.text;
+    t.to_now(); const now = t.S.date;
+    t.set_value("window", "kind", was[2]); t.set_value("window", "follows", was[3]); t.set_value("window", "names", was[4]); t.set_value("window", "on", was[1]); t.S.date = was[5]; t.S.ui_window = was[0]; t.sync_rows(); t.sync_time(); t.render();
+    return [date, bar, day, now]; });
+  check(look[0] && look[1] && look[2] && look[3] === "700" && look[4] === "" && follow.join() === "7,07/10/28,CMT,",
+    `the date stands touching AM · PM, today's to start, stacked day · month · year in Barlow Bold (${look.join(" ")}); 7 Oct 2028 set, a following date window says ${follow[0]} and the bar ${follow[1]}; a day window in Turkish ${follow[2]}; Now brings today back`);
+}
 { // Tiny Preview (#337, 4.59): its button top right where Guides stood; the dial at its own size (the browser's mm) with its margins, over everything; dragged anywhere; its eye puts it away. Guides at the bottom left, between Backdrop and Shadows, their list opening upward
   const corner = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), m = r("main"), o = r("#tiny-open"), g = r("#guides"), b = r("#backdrop"), sh = r("#shadows"); return [Math.round(m.right - o.right) === Math.round(m.bottom - m.bottom) || o.top - m.top < 40, b.bottom <= g.top + 1 && g.bottom <= sh.top + 1 && Math.abs(g.left - sh.left) < 1]; });
   await page.click("#tiny-open"); await page.waitForTimeout(250);

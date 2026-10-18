@@ -12,10 +12,11 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.61";
+export const VERSION = "beta 4.62";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
+import { moment, window_text, LANGS as MOMENT_LANGS } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
 const { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 const radians = (a) => a * PI / 180;
 const degrees = (a) => a * 180 / PI;
@@ -114,11 +115,13 @@ export const WINDOW_BASE = {
   features: null,                                  // its own OpenType features (beta 4.30); null = none of its own. axes: {} likewise
   at_deg: null,                                    // a place of its own, in clock degrees (beta 4.34); null = the named place, at
   guide: -1,                                       // its guide's colour, as a ring's (#271): a place in GUIDE_COLOURS · -1 = by its place (window_guide) · -2 = none
+  follows: false,                                  // a date, day or moon window shows the bar's date (beta 4.62); off, so every older link shows its typed text and its moon age as before
+  names: 0,                                        // a day window following the date: its names' language, a place in moment.js LANGS (EN · TR · DE · FR · IT; 4.62)
   wh_link: false,                                  // width and height linked: one changed, the other keeps their ratio (#358, beta 4.57); off, so every link draws and behaves as before
 };
 const FIRST_WINDOW = { on: "da_on", kind: "da_kind", at: "da_at", r: "da_r", w: "da_w", h: "da_h", round: "da_round", frame: "da_frame",
   clear: "da_clear", text: "da_day", size: "da_size", ink: "da_ink", hour: "da_hour", age: "da_age",
-  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c", guide: "da_guide", tracking: "da_tracking", lang: "da_lang", features: "da_features", at_deg: "da_at_deg", wh_link: "da_wh_link" };
+  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c", guide: "da_guide", tracking: "da_tracking", lang: "da_lang", features: "da_features", at_deg: "da_at_deg", wh_link: "da_wh_link", follows: "da_follows", names: "da_names" };
 
 export const DEFAULTS = {
   version: 2,
@@ -149,6 +152,8 @@ export const DEFAULTS = {
   gd_hole: true, gd_k_hole: 1,                    // the centre hole's own guide, first in the list (Okay, 16 Oct 2026, #267)
   gd_wins: false, gd_wsel: true,                  // which windows show their guides: all · the chosen one (to start) · none, as rings (#271). gd_win, gd_k_win (the windows' radii) unread since
   da_guide: -1,                                   // the first window's guide colour, as every window's `guide` (#271)
+  da_follows: false, da_names: 0,                  // the first window's `follows` and `names` (4.62)
+  date: "",                                        // the day the dial shows, "2026-10-18", set in the bar (4.62; Okay, 18 Oct 2026: "Date best set at the bar … Default from system date"); "" = today, wherever the dial is opened
   da_wh_link: false,                               // the first window's width and height linked, as every window's `wh_link` (#358, beta 4.57)
   gd_k_edge: 1, gd_k_axes: 0, gd_k_win: 1, gd_k_rings: 1, gd_k_sel: 4, gd_w: 1.0,
   // shadows: preview only, never in a file (R5). A trial on branch try/shadows (Okay, 14 Oct 2026: "dummy preview
@@ -400,6 +405,7 @@ export const LINK_KEYS = [
   "from",                   // 4.47 (#257): appended; starting at the outer end, as always, so every scheme-2 link draws as before
   "mark_in",                // 4.52.2 (#344): appended; off to start, so every scheme-2 link draws as before
   "wh_link", "da_wh_link",  // 4.57 (#358): appended; off to start, and they draw nothing: only how W and H move together
+  "follows", "names", "da_follows", "da_names", "date",      // 4.62: appended; a window follows the bar's date only when asked, so every older link shows its typed text
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -1389,6 +1395,23 @@ function day_night(w, h, hour) {
 export const day_hour = (S) => Math.floor((((S.t % 86400) + 86400) % 86400) / 360) / 10;
 export const shows_day = (S) => windows_of(S).some((w) => w.on && WINDOW_KINDS[w.kind] === "am · pm");
 
+/** the day the dial shows: the bar's date, or today where it is opened (S.date "", 4.62). */
+export function shown_day(S) {
+  if (S.date) return S.date;
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+/** a window as it shows now: one that follows the date (4.62) says the moment's date or weekday, and a moon window its
+ *  age, from the bar's date and the time (moment.js); any other shows its own typed text and age, as before. */
+export function shown_window(S, w) {
+  if (!w.follows) return w;
+  const kind = WINDOW_KINDS[w.kind], mo = moment(shown_day(S), S.t);
+  if (kind === "date" || kind === "day") return { ...w, text: window_text(kind, mo, MOMENT_LANGS[w.names] || "en") };
+  if (kind === "moon phase") return { ...w, age: +mo.moon.toFixed(1) };
+  return w;
+}
+
 /** one window, built: {w (its settings), index, window (the hole), frame, cutline, number (what shows through it),
  *  clear (keep-out zone)}. Everything is made upright in the window's own space, then turned (if it turns with its
  *  radius) and moved to its place. */
@@ -1419,7 +1442,7 @@ function build_window(S, w, index) {
 // ── everything that doesn't move ─────────────────────────────
 
 export function build_static(S) {
-  const windows = windows_of(S).map((w, i) => (w.on ? build_window(S, w, i) : null)).filter(Boolean);
+  const windows = windows_of(S).map((w, i) => (w.on ? build_window(S, shown_window(S, w), i) : null)).filter(Boolean);
   const cut = windows.length === 0 ? null : windows.length === 1 ? windows[0].clear : merge(windows.map((x) => x.clear)).removeOverlap();
   let plate = circle(S.dial_d);
   for (const x of windows) plate = plate.difference(x.window);

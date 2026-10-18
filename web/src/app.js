@@ -658,8 +658,8 @@ const ROWS = {
     custom("window_at", { ...W, head: true, show: win_on, text: "Position" }),
     pick("kind", "Complication", G.WINDOW_KINDS, (i) => icon(PICS.window[i], 30, 21), { ...W, small: true, show: win_on }),
     info("Follows the time shown: AM · PM beside the time, under the panel.", { ...W, show: win_is("am · pm") }),
-    num("age", "Moon age, days", 0, 29.5, 0.1, { ...W, show: win_is("moon phase") }),
-    info("0 new moon · 14.8 full.", { ...W, show: win_is("moon phase") }),
+    num("age", "Moon age, days", 0, 29.5, 0.1, { ...W, show: (T) => win_is("moon phase")(T) && !T.follows }),
+    info("0 new moon · 14.8 full.", { ...W, show: (T) => win_is("moon phase")(T) && !T.follows }),
     // the hole: its shape (buttons on the heading's line, #265), where and how big, its colours (one line, #266), what
     // is written in it, its frame. Folded on a first visit, as every pane but the one the tab is about (#270); its shape
     // buttons stay on its heading line
@@ -678,7 +678,11 @@ const ROWS = {
     info("Only off the quarters: at 4 it turns 30°, at half past four 45°.", { ...W, show: (T) => T.on && T.turn && G.window_turn(T) === 0 && G.window_shape(T) !== "arc" }),
     chk("text_turn", "Turn the text with it", { ...W, nest: true, show: (T) => T.on && T.turn && G.window_shape(T) !== "arc" && ["date", "day"].includes(G.WINDOW_KINDS[T.kind]) }),
     custom("window_colours", { ...W, show: win_on }),      // the disc under the hole · the frame · what an am · pm or moon window pictures, on one line (#266)
-    txt("text", "Text", { ...W, show: win_is("date", "day") }),
+    // following the bar's date (4.62): a date or day window says it, a moon window shows its age; its typed text or age
+    // waits underneath, for when it doesn't follow
+    chk("follows", "Follows the date in the bar", { ...W, show: win_is("date", "day", "moon phase") }),
+    seg("names", "Names", ["EN", "TR", "DE", "FR", "IT"], { ...W, show: (T) => T.on && T.follows && G.WINDOW_KINDS[T.kind] === "day" }),
+    txt("text", "Text", { ...W, show: (T) => win_is("date", "day")(T) && !T.follows }),
     custom("font", { ...W, show: win_is("date", "day") }),      // its own font, or the top numerals ring's (the start)
     // the frame round the hole and the room kept clear round it are drawn on the dial: they are design, so they
     // stand here, not under a pane called Print (Okay, 13 Oct 2026: print things under Print, design among design)
@@ -950,6 +954,7 @@ class DialTool {
     if (pair && T[key] > 0 && value > 0) { const other = pair.keys.find((k) => k !== key); T[other] = +(T[other] * value / T[key]).toFixed(4); }
     // the diameter, with "scale everything" ticked: every measure on the dial grows or shrinks by the same factor
     if (scope === "global" && key === "dial_d" && this.S.ui_scale && T.dial_d > 0 && value > 0) this.scale_with(T.dial_d, value);
+    if (scope === "window" && key === "on" && value && !T.on && ["17", "MON"].includes(T.text)) T.follows = true;      // a window switched on with its starting text follows the date (4.62: "Default from system date"); one with typed text keeps it
     const restored = scope === "window" && key === "kind" && value !== T.kind ? this.kind_tab(T, value) : false;
     T[key] = value;
     if (scope === "ring") {
@@ -965,6 +970,7 @@ class DialTool {
       const quiet = G.NOT_GEOMETRY.includes(key) || G.NOT_GEOMETRY_PREFIX.some((p) => key.startsWith(p));
       if (!quiet) this.static_dirty = true;
       if (key === "dial_d" || key === "margin") { if (this.fitted) this.fit(); }
+      if (key === "date") this.sync_time();      // the bar's stacked date (4.62)
       if (key === "dial_hole") {                  // its guide shows while it is being sized, whatever the guides are set to (#267)
         this.hole_at = performance.now();
         clearTimeout(this.hole_timer);
@@ -1066,7 +1072,20 @@ class DialTool {
     this.time_field.onchange = () => { const t = parse_time(this.time_field.value, this.S.t >= 43200); if (t !== null) this.set_time(t); else this.sync_time(); this.time_field.value = fmt_time(this.S.t); };      // "15:20" reads back as 3:20:00, PM
     // which half of the day: the hands can't say, an am · pm window can (it follows the time shown). Typing "15:20" or "3:20 pm" sets it too.
     this.half_button = el("button", { type: "button", id: "ampm", className: "half", title: "Morning or afternoon: an am · pm window follows it", onclick: () => this.set_time((this.S.t + 43200) % 86400) });
-    const time_box = el("span", { className: "timebox" }, el("span", { className: "timewell" }, this.time_field), this.half_button);
+    // the date (4.62; Okay, 18 Oct 2026: "Date best set at the bar, short date, 07/10/28 style, stacked barlow medium or
+    // bold, next to am, touching. Default from system date"): day, month and year stacked, touching AM · PM. A press opens
+    // the system's date picker (an input under it, unseen); a date or day window that follows the date shows it. Until a
+    // date is picked it is today's, wherever the dial is opened (S.date ""); Now brings today back.
+    this.date_button = el("button", { type: "button", id: "date", className: "date", title: "The day the dial shows: a window that follows the date shows it" });
+    this.date_lines = [el("span"), el("span"), el("span")];
+    this.date_button.append(...this.date_lines);
+    this.date_pick = el("input", { type: "date", id: "date-pick", className: "datepick", tabIndex: -1, ariaLabel: "The day the dial shows" });
+    this.date_pick.onchange = () => this.set_value("global", "date", this.date_pick.value || "");
+    this.date_button.onclick = () => {
+      this.date_pick.value = G.shown_day(this.S);
+      try { this.date_pick.showPicker(); } catch (e) { this.date_pick.focus(); this.date_pick.click(); }      // older browsers: the input itself
+    };
+    const time_box = el("span", { className: "timebox" }, el("span", { className: "timewell" }, this.time_field), this.half_button, el("span", { className: "datewell" }, this.date_button, this.date_pick));
     this.time_slider = el("input", { id: "time-slider", type: "range", min: 0, max: 43199, step: 1 });
     this.time_slider.oninput = () => this.set_time(+this.time_slider.value + this.half());
     this.play_button = el("button", { type: "button", className: "icon play", id: "play", onclick: () => this.play(!this.playing) });
@@ -1254,7 +1273,7 @@ class DialTool {
   }
 
   /** the clock to the time it is now (the bar's Now, the showcase's Now pill) */
-  to_now() { const d = new Date(); this.set_time(d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000); }
+  to_now() { const d = new Date(); if (this.S.date) this.set_value("global", "date", ""); this.set_time(d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000); }
 
   /** the showcase, or back (Okay, 15 Oct 2026, 04:26, reshaped 04:59 and 05:09). In: the panel and the bar are gone at
    *  once, what stood on the preview goes at once (fading, it twitched as the sky darkened), and the dial alone travels,
@@ -4802,6 +4821,12 @@ class DialTool {
 
   sync_time() {
     const t12 = ((this.S.t % 43200) + 43200) % 43200;
+    if (this.date_lines) {                         // the date, stacked: day · month · year, two figures each (07/10/28)
+      const [y, m, d] = G.shown_day(this.S).split("-");
+      [d, m, y.slice(-2)].forEach((v, i) => { if (this.date_lines[i].textContent !== v) this.date_lines[i].textContent = v; });
+      this.date_button.classList.toggle("today", !this.S.date);
+      this.date_button.ariaLabel = `Date ${d}/${m}/${y.slice(-2)}${this.S.date ? "" : ", today"}`;
+    }
     if (document.activeElement !== this.time_field) this.time_field.value = fmt_time(this.S.t);
     // centred on its ink, measured with every figure a 0, so it stands still while its figures change (ink.js)
     const zeros = this.time_field.value.replace(/[0-9]/g, "0");
