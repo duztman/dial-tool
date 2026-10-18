@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.72 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.73 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -6186,7 +6186,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.72";
+var VERSION = "beta 4.73";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -6208,7 +6208,8 @@ var HAND_SHAPES = ["baton", "pencil", "sword", "dauphine", "leaf", "arrow", "syr
 var DATE_AT = [["3", 90], ["4:30", 135], ["6", 180], ["9", 270], ["12", 0], ["1:30", 45], ["7:30", 225], ["10:30", 315], ["4", 120]];
 var WINDOW_KINDS = ["date", "day", "am \xB7 pm", "moon phase"];
 var WINDOW_SHAPES = ["as its kind", "rectangle", "circle", "polygon", "arch", "arc"];
-var window_shape = (w) => WINDOW_SHAPES[w.shape] && w.shape ? WINDOW_SHAPES[w.shape] : WINDOW_KINDS[w.kind] === "moon phase" ? "arch" : "rectangle";
+var window_shape = (w) => WINDOW_SHAPES[w.shape] && w.shape ? WINDOW_SHAPES[w.shape] : WINDOW_KINDS[w.kind] === "moon phase" ? w.look ? "circle" : "arch" : WINDOW_KINDS[w.kind] === "am \xB7 pm" && w.look === 1 ? "half" : "rectangle";
+var PICTURES = { "moon phase": ["Arch", "Phase", "Line"], "am \xB7 pm": ["Sky", "Half", "Band"] };
 var LANGS2 = ["default", "tr", "nl", "de", "pl", "ro", "ca", "ar", "fa", "zh-Hans", "ja"];
 var BEATS = [["sweep", 0], ["quartz \xB7 1/s", 1], ["6 beats/s", 6], ["8 beats/s", 8]];
 var LABEL_SETS = [
@@ -6352,6 +6353,11 @@ var WINDOW_BASE = {
   // a date, day or moon window shows the bar's date (beta 4.62); off, so every older link shows its typed text and its moon age as before
   names: 0,
   // a day window following the date: its names' language, a place in moment.js LANGS (EN · TR · DE · FR · IT; 4.62)
+  look: 0,
+  // its picture, a place in PICTURES[its kind] (4.73); 0 = as before
+  c2: null,
+  c3: null,
+  // its picture's further colours (4.73): a moon's shade · an am · pm half's sun and moon · a band's dawn and dusk; null = the picture's own (PICTURE_TONES)
   physics: true,
   // its disc stays inside the case (4.72, #346): passing it, its guide shows red and the panel says so; off for a face on a screen, where a disc may be bigger than the dial
   wh_link: false
@@ -6389,7 +6395,10 @@ var FIRST_WINDOW = {
   wh_link: "da_wh_link",
   follows: "da_follows",
   names: "da_names",
-  physics: "da_physics"
+  physics: "da_physics",
+  look: "da_look",
+  c2: "da_c2",
+  c3: "da_c3"
 };
 var DEFAULTS = {
   version: 2,
@@ -6488,6 +6497,10 @@ var DEFAULTS = {
   // a case round the dial on the preview (4.66, bezels.js BEZELS): 0 none, 1 diver, 2 pilot, 3 dress, 4 sport. Preview only, like the backdrop (R26)
   date: "",
   // the day the dial shows, "2026-10-18", set in the bar (4.62; Okay, 18 Oct 2026: "Date best set at the bar … Default from system date"); "" = today, wherever the dial is opened
+  da_look: 0,
+  da_c2: null,
+  da_c3: null,
+  // the first window's `look`, `c2`, `c3` (4.73)
   da_physics: true,
   xray: false,
   // the first window's `physics` · X-ray, every window's disc seen under a veil of the plate, preview only (4.72, #346)
@@ -7007,6 +7020,13 @@ var LINK_KEYS = [
   // 4.66: appended; no case to start, so every older link looks as before
   "wearos_name",
   // 4.67: appended; empty to start
+  "look",
+  "c2",
+  "c3",
+  "da_look",
+  "da_c2",
+  "da_c3",
+  // 4.73: appended; the picture as before (0) and its own colours (null), so every older link looks as before
   "xray",
   "physics",
   "da_physics",
@@ -7894,6 +7914,30 @@ function moon_parts(w, age) {
   const stars = merge([[-0.3, 0.5], [0.33, 0.42], [0.08, 0.63]].map(([x, y]) => circle(0.07 * w).translate(x * w, base + y * w)));
   return { opening, moon, stars };
 }
+function moon_lit(rm, age) {
+  const f2 = (age % SYNODIC_DAYS + SYNODIC_DAYS) % SYNODIC_DAYS / SYNODIC_DAYS, c = cos(2 * PI * f2), wx = Math.max(Math.abs(c) * rm, 1e-3);
+  const disc = circle(2 * rm), half = disc.intersection(new Path().rect(0, -rm - 1, rm + 1, 2 * rm + 2));
+  const ell = new Path().oval(-wx, -rm, 2 * wx, 2 * rm);
+  let lit = c > 0 ? half.difference(ell) : half.union(ell);
+  if (f2 > 0.5) lit = lit.scale(-1, 1);
+  return { disc, lit, dark: disc.difference(lit) };
+}
+var SYNODIC_DAYS = 29.530588853;
+function half_disc(w, hour) {
+  const R = w / 2, pivot = [0, -w / 4], turn = (hour % 24 + 24) % 24 / 24 * 360;
+  const at = (a, r) => [pivot[0] + r * sin(radians(a)), pivot[1] + r * cos(radians(a))];
+  const moon = circle(0.34 * R).difference(circle(0.3 * R).translate(0.1 * R, 0.05 * R)).translate(...at(turn, 0.6 * R));
+  const stars = merge([[-34, 0.78], [30, 0.82], [12, 0.38]].map(([da, k]) => circle(0.06 * R).translate(...at(turn + da, k * R))));
+  const sun = circle(0.36 * R).translate(...at(turn + 180, 0.6 * R));
+  const night = sector(0, R + DISC_PAD, -90, 90).rotate(-turn).translate(...pivot);
+  return { night: night.difference(moon).difference(stars), light: merge([moon, stars, sun]), r: R };
+}
+function band_mark(w, put, frame) {
+  if (!(WINDOW_KINDS[w.kind] === "am \xB7 pm" && w.look === 2)) return frame;
+  const h = w.h, top = h / 2 + Math.max(w.frame, 0), mark = put(new Path().polygon([0, h / 2], [0.22 * h, top + 0.38 * h], [-0.22 * h, top + 0.38 * h]));
+  return frame ? frame.union(mark) : mark;
+}
+var PICTURE_TONES = { shade: [0.5, 0.5, 0.52, 1], light: [0.95, 0.86, 0.6, 1], dawn: [0.91, 0.65, 0.71, 1], dusk: [0.91, 0.59, 0.35, 1] };
 function window_hole(w) {
   const shape2 = window_shape(w);
   if (shape2 === "rectangle") return [rounded_rect(w.w, w.h, w.round), (d) => rounded_rect(w.w + 2 * d, w.h + 2 * d, w.round + d)];
@@ -7916,6 +7960,10 @@ function window_hole(w) {
       const half = degrees((w.w / 2 + d) / max(w.r, 0.1));
       return sector(max(w.r - w.h / 2 - d, 0), w.r + w.h / 2 + d, a - half, a + half).translate(-c[0], -c[1]);
     };
+    return [make(0), make];
+  }
+  if (shape2 === "half") {
+    const make = (d) => circle(w.w + 2 * d).intersection(new Path().rect(-w.w, -d, 2 * w.w, w.w)).translate(0, -w.w / 4);
     return [make(0), make];
   }
   const hole = moon_parts(w.w, 0).opening;
@@ -7950,9 +7998,29 @@ function build_window(S, w, index) {
   const [opening, grown] = window_hole(w);
   const high = shape2 === "rectangle" || shape2 === "arc" ? w.h : shape2 === "arch" ? w.w / 2 : w.w;
   let content;
-  if (kind === "moon phase") {
+  let more = [];
+  if (kind === "moon phase" && w.look === 1) {
+    const rm = 0.36 * high, { disc, dark } = moon_lit(rm, w.age);
+    const stars = merge([[-0.3, 0.3], [0.31, -0.3]].map(([x, y]) => circle(0.06 * high).translate(x * high, y * high)));
+    content = opening.copy().difference(disc).difference(stars);
+    more = [{ path: dark, key: "c2", or: PICTURE_TONES.shade }];
+  } else if (kind === "moon phase" && w.look === 2) {
+    const rm = 0.36 * high, t = Math.max(0.05 * high, 0.06), { dark } = moon_lit(rm, w.age);
+    const ring2 = circle(2 * rm).difference(circle(2 * (rm - t)));
+    const star = (x, y, s) => new Path().rect(x - s, y - t / 2, 2 * s, t).union(new Path().rect(x - t / 2, y - s, t, 2 * s));
+    content = merge([ring2, dark, star(-0.3 * high, 0.31 * high, 0.07 * high), star(0.31 * high, -0.31 * high, 0.055 * high)]).intersection(opening);
+  } else if (kind === "moon phase") {
     const { moon, stars } = moon_parts(w.w, w.age);
     content = opening.copy().difference(moon).difference(stars);
+  } else if (kind === "am \xB7 pm" && w.look === 1) {
+    const { night, light } = half_disc(w.w, day_hour(S));
+    content = night.intersection(opening);
+    more = [{ path: light, key: "c2", or: PICTURE_TONES.light }];
+  } else if (kind === "am \xB7 pm" && w.look === 2) {
+    const hour = day_hour(S), per = w.w / 12, x = (hr) => (hr - hour) * per;
+    const spans = (from, to) => merge([-24, 0, 24].map((d) => new Path().rect(x(from + d), -w.h, (to - from) * per, 2 * w.h)));
+    content = merge([spans(-3, 5), spans(21, 29)]).intersection(opening);
+    more = [{ path: spans(5, 7), key: "c2", or: PICTURE_TONES.dawn }, { path: spans(18, 21), key: "c3", or: PICTURE_TONES.dusk }];
   } else if (kind === "am \xB7 pm") content = day_night(w.w, high, day_hour(S)).intersection(opening);
   else if (shape2 === "arc") {
     const a = window_angle(w);
@@ -7967,7 +8035,8 @@ function build_window(S, w, index) {
     window: win,
     number: put(content, !shows_text || w.text_turn),
     // a hole's picture turns with it; its text only if asked
-    frame: w.frame > 0 ? put(grown(w.frame)).difference(win) : null,
+    more: more.map((m) => ({ ...m, path: put(m.path.intersection(opening)) })),
+    frame: band_mark(w, put, w.frame > 0 ? put(grown(w.frame)).difference(win) : null),
     cutline: put(grown(0.05)).difference(win),
     // aperture outline for production
     clear: put(grown(w.frame + w.clear))
@@ -7994,6 +8063,13 @@ function window_disc(S, x) {
       return one.rotate(-step);
     })));
     return { band: circle(2 * outer).difference(circle(2 * inner)), print, inner, outer, centre: [0, 0], reach: outer, fits: w.physics === false || outer <= room };
+  }
+  if (kind === "am \xB7 pm" && w.look === 1) {
+    const { night, light, r } = half_disc(w.w, day_hour(S)), rho = r + DISC_PAD;
+    const band = put(circle(2 * rho).translate(0, -w.w / 4)), print = put(night.copy());
+    const off = put(new Path().rect(-1e-3, -w.w / 4 - 1e-3, 2e-3, 2e-3)).bounds(), pv = [(off[0] + off[2]) / 2, (off[1] + off[3]) / 2];
+    const reach = Math.hypot(...pv) + rho;
+    return { band, print, light: put(light.copy()), inner: 0, outer: rho, centre: pv, reach, fits: w.physics === false || reach <= room };
   }
   if (kind === "am \xB7 pm") {
     const rho = Math.hypot(w.w / 2, high) + DISC_PAD, area = circle(2 * rho).translate(0, -high / 2);
@@ -8113,10 +8189,12 @@ function scene(S, statik, t, preview = true, selected = null) {
       if (!d) continue;
       add("disc", d.band, x.w.disc_c || [1, 1, 1, 1], { window: x.index });
       add("disc print", d.print, x.w.text_c || x.w.ink, { window: x.index });
+      if (d.light) add("disc print", d.light, x.w.c2 || PICTURE_TONES.light, { window: x.index });
     }
     for (const x of windows) {
       add("date disc", x.window, x.w.disc_c || [1, 1, 1, 1], { window: x.index });
       add("date number", x.number, x.w.text_c || x.w.ink, { window: x.index });
+      for (const m of x.more || []) add("date picture", m.path, x.w[m.key] || m.or, { window: x.index });
     }
     const veil = preview && S.xray && windows.some((x) => window_disc(S, x)) ? XRAY_VEIL : 1;
     add("plate", S.ha_on ? statik.plate : statik.plate_holed, veil < 1 ? [...S.c_plate.slice(0, 3), S.c_plate[3] * veil] : S.c_plate);
@@ -8228,7 +8306,7 @@ function item_name(item) {
   if (item.role === "ring") return (item.ring.ring.name || item.ring.kind) + (item.part ? ` colour ${item.part}` : "");
   if (item.role === "hand") return { hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name] || item.name;
   if (item.role === "mark") return ({ hour: "Hour hand", minute: "Minute hand", second: "Seconds hand" }[item.name] || item.name) + " mark";
-  if (item.window !== void 0) return `Window ${item.window + 1} ${{ "date disc": "disc", "date number": "content", "date frame": "frame", cutline: "cut line" }[item.role] || item.role}`;
+  if (item.window !== void 0) return `Window ${item.window + 1} ${{ "date disc": "disc", "date number": "content", "date picture": "picture", "date frame": "frame", cutline: "cut line" }[item.role] || item.role}`;
   return item.role[0].toUpperCase() + item.role.slice(1);
 }
 function file_name(S, ext, now = /* @__PURE__ */ new Date()) {
@@ -8695,6 +8773,7 @@ function svg_preview(S, statik) {
   for (const x of statik.windows || []) {
     items.push({ role: "date disc", path: x.window, fill: x.w.disc_c || [1, 1, 1, 1] });
     items.push({ role: "date number", path: x.number, fill: x.w.text_c || x.w.ink });
+    for (const m of x.more || []) items.push({ role: "date picture", path: m.path, fill: x.w[m.key] || m.or });
   }
   if (statik.plate) items.push({ role: "plate", path: statik.plate, fill: S.c_plate });
   for (const d of rings) {
@@ -11020,6 +11099,11 @@ var ROWS = {
     custom("window_at", { ...W, head: true, show: win_on, text: "Position" }),
     pick("kind", "Complication", WINDOW_KINDS, (i) => icon(PICS.window[i], 30, 21), { ...W, small: true, show: win_on }),
     info("Follows the time shown: AM \xB7 PM beside the time, under the panel.", { ...W, show: win_is("am \xB7 pm") }),
+    // its picture (4.73; the disc sketches C): Sky as before · Half, a half-round hole over a two-colour disc · Band, the day's colours along a strip
+    seg("look", "Picture", PICTURES["am \xB7 pm"], { ...W, id: "window-look-day", show: win_is("am \xB7 pm") }),
+    // its picture (4.73, #346; the disc sketches B: "All are good"): Arch as before · Phase, the moon lit as it is, in
+    // the disc's colour, its dark side in the shade's, the sky in the picture's · Line, its outline and dark side in one ink
+    seg("look", "Picture", PICTURES["moon phase"], { ...W, id: "window-look-moon", show: win_is("moon phase") }),
     num3("age", "Moon age, days", 0, 29.5, 0.1, { ...W, show: (T) => win_is("moon phase")(T) && !T.follows }),
     info("0 new moon \xB7 14.8 full.", { ...W, show: (T) => win_is("moon phase")(T) && !T.follows }),
     // the hole: its shape (buttons on the heading's line, #265), where and how big, its colours (one line, #266), what
@@ -11032,7 +11116,7 @@ var ROWS = {
     // is not a good idea … two stories tall … like in illustrator"); one line from 4.46 to 4.55 (#265)
     num3("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("rectangle", "arc"), link: "wh_link" }),
     num3("h", "Height", 0.5, 5, 0.05, { ...W, show: shape_is("rectangle", "arc") }),
-    num3("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("arch"), id: "window-w-Width-arch" }),
+    num3("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("arch", "half"), id: "window-w-Width-arch" }),
     // its own id: the line above has window-w-Width
     num3("w", "\xD8", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
     num3("sides", "Sides", 3, 12, 1, { ...W, whole: true, show: shape_is("polygon") }),
@@ -11117,6 +11201,8 @@ function parse_number(text, current) {
 var LENGTH_KEYS = { ring: RING_MM, hand: HAND_MM, window: WINDOW_MM, global: ["dial_d", "margin", "ha_cap", "dial_hole", "sh_hour", "sh_minute", "sh_second", "sh_cap", "sh_disc"], nudge: ["dr"] };
 var label_of = (row, T) => row.say ? row.say(T)[0] : row.menu ? `${(row.menu.items.find(([v]) => v === (T[row.menu.key] ?? 0)) || row.menu.items[0])[1]} ${row.text.split(" ").pop()}` : row.text;
 var LINKED_PAIRS = { window: [{ link: "wh_link", keys: ["w", "h"], when: (T) => ["rectangle", "arc"].includes(window_shape(T)) }] };
+var day_look = (T) => T && T.on && WINDOW_KINDS[T.kind] === "am \xB7 pm" ? T.look || 0 : -1;
+var moon_look = (T) => T && T.on && WINDOW_KINDS[T.kind] === "moon phase" ? T.look || 0 : -1;
 var KIND_TAB_KEYS = Object.keys(WINDOW_BASE).filter((k) => !["on", "kind", "at", "at_deg", "r", "guide", "wh_link"].includes(k));
 var HANDLE_R = 5.5;
 var HANDLE_OUT = 14;
@@ -14693,19 +14779,25 @@ var DialTool = class _DialTool {
   row_window_colours(wrap, out) {
     wrap.className = "row colours";
     const parts = [
-      col("disc_c", "Disc under it", { ...W, word: "Disc", or: () => [1, 1, 1, 1] }),
+      col("disc_c", "Disc under it", { ...W, word: (T) => day_look(T) > 0 ? "Day" : "Disc", or: () => [1, 1, 1, 1] }),
       col("ink", "Frame", { ...W, word: "Frame" }),
-      col("text_c", "Picture", { ...W, word: "Picture", only: win_is("am \xB7 pm", "moon phase"), or: (T) => T.ink })
+      col("text_c", "Picture", { ...W, word: (T) => moon_look(T) === 1 ? "Sky" : day_look(T) > 0 ? "Night" : "Picture", only: win_is("am \xB7 pm", "moon phase"), or: (T) => T.ink }),
       // or: what an unset colour is
+      // a picture's further colours (4.73): a moon's dark side in Phase · an am · pm Half's sun and moon · a Band's dawn and dusk
+      col("c2", "Shade", { ...W, word: (T) => moon_look(T) === 1 ? "Shade" : day_look(T) === 1 ? "Sun \xB7 moon" : "Dawn", only: (T) => moon_look(T) === 1 || day_look(T) > 0, or: (T) => PICTURE_TONES[moon_look(T) === 1 ? "shade" : day_look(T) === 1 ? "light" : "dawn"] }),
+      col("c3", "Dusk", { ...W, word: "Dusk", only: (T) => day_look(T) === 2, or: () => PICTURE_TONES.dusk })
     ].map((row) => {
-      const built = this.build_row(row), pill = built.el.querySelector(".colour"), part = el("span", { className: "part" }, el("i", { textContent: row.word }), pill);
-      return { row, built, part };
+      const word = el("i", { textContent: typeof row.word === "function" ? "" : row.word });
+      const built = this.build_row(row), pill = built.el.querySelector(".colour"), part = el("span", { className: "part" }, word, pill);
+      return { row, built, part, word };
     });
     wrap.append(el("label", { textContent: "Colours" }), el("span", { className: "parts" }, ...parts.map((p) => p.part)));
     out.refresh = (T) => parts.forEach((p) => {
       const shown = !p.row.only || p.row.only(T);
       p.part.hidden = !shown;
-      if (shown) p.built.refresh(T);
+      if (!shown) return;
+      p.built.refresh(T);
+      if (typeof p.row.word === "function") p.word.textContent = p.row.word(T);
     });
   }
   row_nudge(wrap, out) {

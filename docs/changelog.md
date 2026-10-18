@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.73 (web version) · 19 Oct 2026
+
+The moon's and am · pm's pictures (#346; the disc sketches B and C, Okay, 18 Oct 2026, 23:52: "All are good"). B and C in one version: they share their making.
+
+- **A moon window's Picture**: *Arch* (as before) · *Phase* — the moon as it is lit that night (waxing on the right, waning on the left, its terminator half an ellipse), in a round hole: the sky in the picture's colour, the lit moon the disc's, its dark side a *Shade* of its own, two small stars · *Line* — one ink: the moon's outline, its dark side filled, two small crosses for stars (for etching).
+- **An am · pm window's Picture**: *Sky* (as before) · *Half* — a half-round hole, flat side down, over a disc turning on that side once a day: night in the picture's colour, day the disc's, the moon, three stars and the sun in a *Sun · moon* colour of their own · *Band* — the day's colours along a strip, twelve hours across the hole, now at its middle: night (21–5) in the picture's colour, *Dawn* (5–7) and *Dusk* (18–21) their own, day the disc's; a small triangle in the frame's ink over the hole marks now.
+- The Colours line names each colour by what it paints (Sky, Shade; Day, Night, Sun · moon, Dawn, Dusk). X-ray draws a Half's disc whole.
+- New keys `look`, `c2`, `c3` (and `da_look`, `da_c2`, `da_c3`): the picture as before and its own tones to start, so every older link looks as before. Width row for the half-round hole.
+
 ## beta 4.72 (web version) · 18 Oct 2026
 
 The windows' discs (#346; Okay, 23:52, on the disc sketches: "All are good but a3 not enough, a2 and others"). Sketches A2, A3 and A4.

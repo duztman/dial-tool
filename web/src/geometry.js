@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.72";
+export const VERSION = "beta 4.73";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -47,7 +47,13 @@ export const WINDOW_KINDS = ["date", "day", "am · pm", "moon phase"];      // w
 // the hole's shape, apart from what shows through it (Okay, 13 Oct 2026). 0, the start, is "as its kind": an arch for a
 // moon phase, a rectangle for the others — what was drawn before there was a choice (R31). Only grows at its end (R9).
 export const WINDOW_SHAPES = ["as its kind", "rectangle", "circle", "polygon", "arch", "arc"];
-export const window_shape = (w) => WINDOW_SHAPES[w.shape] && w.shape ? WINDOW_SHAPES[w.shape] : (WINDOW_KINDS[w.kind] === "moon phase" ? "arch" : "rectangle");
+export const window_shape = (w) => WINDOW_SHAPES[w.shape] && w.shape ? WINDOW_SHAPES[w.shape]
+  : WINDOW_KINDS[w.kind] === "moon phase" ? (w.look ? "circle" : "arch") : WINDOW_KINDS[w.kind] === "am · pm" && w.look === 1 ? "half" : "rectangle";      // a moon's Phase and Line sit in a round hole, an am · pm Half in a half-round one (4.73)      // a moon's Phase and Line pictures sit in a round hole (4.73)
+// what a moon or am · pm window pictures (4.73, #346; the disc sketches B and C, Okay, 18 Oct 2026: "All are good"):
+// a moon window's Arch (the humps, as before) · Phase (the moon as it is lit, in three colours) · Line (its outline and
+// dark side, one ink); an am · pm window's Sky (as before) · Half (a half-round hole over a two-colour disc) · Band (the
+// day's colours along a strip). Only grows at its end (R9)
+export const PICTURES = { "moon phase": ["Arch", "Phase", "Line"], "am · pm": ["Sky", "Half", "Band"] };
 export const LANGS = ["default", "tr", "nl", "de", "pl", "ro", "ca", "ar", "fa", "zh-Hans", "ja"];
 export const BEATS = [["sweep", 0], ["quartz · 1/s", 1], ["6 beats/s", 6], ["8 beats/s", 8]];
 export const LABEL_SETS = [                        // popups store the index (R9): only ever append
@@ -117,12 +123,14 @@ export const WINDOW_BASE = {
   guide: -1,                                       // its guide's colour, as a ring's (#271): a place in GUIDE_COLOURS · -1 = by its place (window_guide) · -2 = none
   follows: false,                                  // a date, day or moon window shows the bar's date (beta 4.62); off, so every older link shows its typed text and its moon age as before
   names: 0,                                        // a day window following the date: its names' language, a place in moment.js LANGS (EN · TR · DE · FR · IT; 4.62)
+  look: 0,                                         // its picture, a place in PICTURES[its kind] (4.73); 0 = as before
+  c2: null, c3: null,                              // its picture's further colours (4.73): a moon's shade · an am · pm half's sun and moon · a band's dawn and dusk; null = the picture's own (PICTURE_TONES)
   physics: true,                                   // its disc stays inside the case (4.72, #346): passing it, its guide shows red and the panel says so; off for a face on a screen, where a disc may be bigger than the dial
   wh_link: false,                                  // width and height linked: one changed, the other keeps their ratio (#358, beta 4.57); off, so every link draws and behaves as before
 };
 const FIRST_WINDOW = { on: "da_on", kind: "da_kind", at: "da_at", r: "da_r", w: "da_w", h: "da_h", round: "da_round", frame: "da_frame",
   clear: "da_clear", text: "da_day", size: "da_size", ink: "da_ink", hour: "da_hour", age: "da_age",
-  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c", guide: "da_guide", tracking: "da_tracking", lang: "da_lang", features: "da_features", at_deg: "da_at_deg", wh_link: "da_wh_link", follows: "da_follows", names: "da_names", physics: "da_physics" };
+  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c", guide: "da_guide", tracking: "da_tracking", lang: "da_lang", features: "da_features", at_deg: "da_at_deg", wh_link: "da_wh_link", follows: "da_follows", names: "da_names", physics: "da_physics", look: "da_look", c2: "da_c2", c3: "da_c3" };
 
 export const DEFAULTS = {
   version: 2,
@@ -158,6 +166,7 @@ export const DEFAULTS = {
   strap: 1, c_strap: [0.29, 0.2, 0.14, 1],      // its strap (4.69, bezels.js STRAPS): 0 none, 1 a leather strap in c_strap, 2 a metal bracelet in the case's metal. Shown only with a case
   bezel: 0,                                        // a case round the dial on the preview (4.66, bezels.js BEZELS): 0 none, 1 diver, 2 pilot, 3 dress, 4 sport. Preview only, like the backdrop (R26)
   date: "",                                        // the day the dial shows, "2026-10-18", set in the bar (4.62; Okay, 18 Oct 2026: "Date best set at the bar … Default from system date"); "" = today, wherever the dial is opened
+  da_look: 0, da_c2: null, da_c3: null,            // the first window's `look`, `c2`, `c3` (4.73)
   da_physics: true, xray: false,                   // the first window's `physics` · X-ray, every window's disc seen under a veil of the plate, preview only (4.72, #346)
   da_wh_link: false,                               // the first window's width and height linked, as every window's `wh_link` (#358, beta 4.57)
   gd_k_edge: 1, gd_k_axes: 0, gd_k_win: 1, gd_k_rings: 1, gd_k_sel: 4, gd_w: 1.0,
@@ -415,6 +424,7 @@ export const LINK_KEYS = [
   "follows", "names", "da_follows", "da_names", "date",      // 4.62: appended; a window follows the bar's date only when asked, so every older link shows its typed text
   "bezel",                  // 4.66: appended; no case to start, so every older link looks as before
   "wearos_name",            // 4.67: appended; empty to start
+  "look", "c2", "c3", "da_look", "da_c2", "da_c3",      // 4.73: appended; the picture as before (0) and its own colours (null), so every older link looks as before
   "xray", "physics", "da_physics",      // 4.72: appended; X-ray off and physics on to start, so every older link looks as before
   "strap", "c_strap",       // 4.69: appended; a case's strap — drawn only with a case, which older links don't have
 ];
@@ -1357,6 +1367,39 @@ function moon_parts(w, age) {
   return { opening, moon, stars };
 }
 
+/** the moon as it is lit at an age (days), a disc of radius rm round the origin: {disc, lit, dark}. Waxing the right
+ *  side is lit, waning the left (as seen from the north); the terminator is half an ellipse, as wide as the cosine of
+ *  the phase angle (4.73). */
+function moon_lit(rm, age) {
+  const f = (((age % SYNODIC_DAYS) + SYNODIC_DAYS) % SYNODIC_DAYS) / SYNODIC_DAYS, c = cos(2 * PI * f), wx = Math.max(Math.abs(c) * rm, 0.001);
+  const disc = circle(2 * rm), half = disc.intersection(new Path().rect(0, -rm - 1, rm + 1, 2 * rm + 2));
+  const ell = new Path().oval(-wx, -rm, 2 * wx, 2 * rm);
+  let lit = c > 0 ? half.difference(ell) : half.union(ell);
+  if (f > 0.5) lit = lit.scale(-1, 1);
+  return { disc, lit, dark: disc.difference(lit) };
+}
+const SYNODIC_DAYS = 29.530588853;
+/** an am · pm Half's disc (4.73), for a hole w wide: it turns on the hole's flat side, (0, -w/4), once a day — hour 0
+ *  all night, 12 all day. → {night (what is dark), light (the moon, three stars and the sun), r (its radius)} */
+function half_disc(w, hour) {
+  const R = w / 2, pivot = [0, -w / 4], turn = (((hour % 24) + 24) % 24) / 24 * 360;
+  const at = (a, r) => [pivot[0] + r * sin(radians(a)), pivot[1] + r * cos(radians(a))];
+  const moon = circle(0.34 * R).difference(circle(0.3 * R).translate(0.1 * R, 0.05 * R)).translate(...at(turn, 0.6 * R));
+  const stars = merge([[-34, 0.78], [30, 0.82], [12, 0.38]].map(([da, k]) => circle(0.06 * R).translate(...at(turn + da, k * R))));
+  const sun = circle(0.36 * R).translate(...at(turn + 180, 0.6 * R));
+  const night = sector(0, R + DISC_PAD, -90, 90).rotate(-turn).translate(...pivot);
+  return { night: night.difference(moon).difference(stars), light: merge([moon, stars, sun]), r: R };
+}
+/** an am · pm Band's "now": a small triangle in the frame's ink over the hole's middle, its point on the hole's top
+ *  edge (4.73; the disc sketch C3). Any other window: its frame as it is. */
+function band_mark(w, put, frame) {
+  if (!(WINDOW_KINDS[w.kind] === "am · pm" && w.look === 2)) return frame;
+  const h = w.h, top = h / 2 + Math.max(w.frame, 0), mark = put(new Path().polygon([0, h / 2], [0.22 * h, top + 0.38 * h], [-0.22 * h, top + 0.38 * h]));
+  return frame ? frame.union(mark) : mark;
+}
+/** a picture's colours not set by the person (4.73): the moon's shade · an am · pm half's sun and moon · a band's dawn and dusk. */
+export const PICTURE_TONES = { shade: [0.5, 0.5, 0.52, 1], light: [0.95, 0.86, 0.6, 1], dawn: [0.91, 0.65, 0.71, 1], dusk: [0.91, 0.59, 0.35, 1] };
+
 /** a window's hole, in its own space (centre at the origin, upright), and the same hole grown by d all round.
  *  rectangle: width × height, corners rounded · circle: Ø = width · polygon: sides, inscribed in Ø = width, a flat
  *  side down, corners rounded · arch: the moon's, from its width · arc: a piece of a ring through the window's
@@ -1382,6 +1425,10 @@ function window_hole(w) {
       const half = degrees((w.w / 2 + d) / max(w.r, 0.1));
       return sector(max(w.r - w.h / 2 - d, 0), w.r + w.h / 2 + d, a - half, a + half).translate(-c[0], -c[1]);
     };
+    return [make(0), make];
+  }
+  if (shape === "half") {                          // half a circle, its flat side down, as wide as the window (an am · pm Half, 4.73); its middle on the window's place
+    const make = (d) => circle(w.w + 2 * d).intersection(new Path().rect(-w.w, -d, 2 * w.w, w.w)).translate(0, -w.w / 4);
     return [make(0), make];
   }
   const hole = moon_parts(w.w, 0).opening;         // the arch: its humps are hollow, so it grows by stroking
@@ -1431,9 +1478,29 @@ function build_window(S, w, index) {
   const [opening, grown] = window_hole(w);
   const high = shape === "rectangle" || shape === "arc" ? w.h : shape === "arch" ? w.w / 2 : w.w;       // the room for what shows, top to bottom
   let content;
-  if (kind === "moon phase") {
+  let more = [];                                   // a picture's further colours: [{path, key, or}] (4.73)
+  if (kind === "moon phase" && w.look === 1) {      // Phase: the sky in the picture's colour, the lit moon the disc's, its dark side the shade
+    const rm = 0.36 * high, { disc, dark } = moon_lit(rm, w.age);
+    const stars = merge([[-0.3, 0.3], [0.31, -0.3]].map(([x, y]) => circle(0.06 * high).translate(x * high, y * high)));
+    content = opening.copy().difference(disc).difference(stars);
+    more = [{ path: dark, key: "c2", or: PICTURE_TONES.shade }];
+  } else if (kind === "moon phase" && w.look === 2) {      // Line: one ink — the moon's outline, its dark side filled, two small stars
+    const rm = 0.36 * high, t = Math.max(0.05 * high, 0.06), { dark } = moon_lit(rm, w.age);
+    const ring = circle(2 * rm).difference(circle(2 * (rm - t)));
+    const star = (x, y, s) => new Path().rect(x - s, y - t / 2, 2 * s, t).union(new Path().rect(x - t / 2, y - s, t, 2 * s));
+    content = merge([ring, dark, star(-0.3 * high, 0.31 * high, 0.07 * high), star(0.31 * high, -0.31 * high, 0.055 * high)]).intersection(opening);
+  } else if (kind === "moon phase") {
     const { moon, stars } = moon_parts(w.w, w.age);
     content = opening.copy().difference(moon).difference(stars);
+  } else if (kind === "am · pm" && w.look === 1) {      // Half: a disc under a half-round hole, turning on the hole's flat side once a day — night in the picture's colour, day the disc's, the sun and moon in a light of their own
+    const { night, light } = half_disc(w.w, day_hour(S));
+    content = night.intersection(opening);
+    more = [{ path: light, key: "c2", or: PICTURE_TONES.light }];
+  } else if (kind === "am · pm" && w.look === 2) {      // Band: the day's colours along a strip, twelve hours across the hole, now at its middle — night in the picture's colour, dawn and dusk their own, day the disc's
+    const hour = day_hour(S), per = w.w / 12, x = (hr) => (hr - hour) * per;      // an hour's width; where an hour stands
+    const spans = (from, to) => merge([-24, 0, 24].map((d) => new Path().rect(x(from + d), -w.h, (to - from) * per, 2 * w.h)));
+    content = merge([spans(-3, 5), spans(21, 29)]).intersection(opening);      // night: 21:00 to 05:00
+    more = [{ path: spans(5, 7), key: "c2", or: PICTURE_TONES.dawn }, { path: spans(18, 21), key: "c3", or: PICTURE_TONES.dusk }];
   } else if (kind === "am · pm") content = day_night(w.w, high, day_hour(S)).intersection(opening);
   else if (shape === "arc") {                     // an arc window's word bends along its middle circle, as numerals on path do;
     const a = window_angle(w);                     // read left → right at the bottom too (#166, atlas 2.1, 14 Oct 2026)
@@ -1444,7 +1511,8 @@ function build_window(S, w, index) {
   const win = put(opening.copy());
   return {
     w, index, window: win, number: put(content, !shows_text || w.text_turn),      // a hole's picture turns with it; its text only if asked
-    frame: w.frame > 0 ? put(grown(w.frame)).difference(win) : null,
+    more: more.map((m) => ({ ...m, path: put(m.path.intersection(opening)) })),
+    frame: band_mark(w, put, w.frame > 0 ? put(grown(w.frame)).difference(win) : null),
     cutline: put(grown(0.05)).difference(win),                 // aperture outline for production
     clear: put(grown(w.frame + w.clear)),                      // keep print clear of the hole
   };
@@ -1479,6 +1547,13 @@ export function window_disc(S, x) {
       return one.rotate(-step);
     })));
     return { band: circle(2 * outer).difference(circle(2 * inner)), print, inner, outer, centre: [0, 0], reach: outer, fits: w.physics === false || outer <= room };
+  }
+  if (kind === "am · pm" && w.look === 1) {      // Half: its disc turns on the hole's flat side
+    const { night, light, r } = half_disc(w.w, day_hour(S)), rho = r + DISC_PAD;
+    const band = put(circle(2 * rho).translate(0, -w.w / 4)), print = put(night.copy());
+    const off = put(new Path().rect(-0.001, -w.w / 4 - 0.001, 0.002, 0.002)).bounds(), pv = [(off[0] + off[2]) / 2, (off[1] + off[3]) / 2];
+    const reach = Math.hypot(...pv) + rho;
+    return { band, print, light: put(light.copy()), inner: 0, outer: rho, centre: pv, reach, fits: w.physics === false || reach <= room };
   }
   if (kind === "am · pm") {
     const rho = Math.hypot(w.w / 2, high) + DISC_PAD, area = circle(2 * rho).translate(0, -high / 2);
@@ -1631,10 +1706,12 @@ export function scene(S, statik, t, preview = true, selected = null) {
       if (!d) continue;
       add("disc", d.band, x.w.disc_c || [1, 1, 1, 1], { window: x.index });
       add("disc print", d.print, x.w.text_c || x.w.ink, { window: x.index });
+      if (d.light) add("disc print", d.light, x.w.c2 || PICTURE_TONES.light, { window: x.index });      // an am · pm Half's sun and moon
     }
     for (const x of windows) {                     // what shows through each hole, on white
       add("date disc", x.window, x.w.disc_c || [1, 1, 1, 1], { window: x.index });
       add("date number", x.number, x.w.text_c || x.w.ink, { window: x.index });
+      for (const m of x.more || []) add("date picture", m.path, x.w[m.key] || m.or, { window: x.index });      // a picture's further colours (4.73)
     }
     const veil = preview && S.xray && windows.some((x) => window_disc(S, x)) ? XRAY_VEIL : 1;      // X-ray: the plate a veil, the discs seen through it
     add("plate", S.ha_on ? statik.plate : statik.plate_holed, veil < 1 ? [...S.c_plate.slice(0, 3), S.c_plate[3] * veil] : S.c_plate);      // the hole shows when the hands are hidden

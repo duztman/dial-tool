@@ -683,6 +683,11 @@ const ROWS = {
     custom("window_at", { ...W, head: true, show: win_on, text: "Position" }),
     pick("kind", "Complication", G.WINDOW_KINDS, (i) => icon(PICS.window[i], 30, 21), { ...W, small: true, show: win_on }),
     info("Follows the time shown: AM · PM beside the time, under the panel.", { ...W, show: win_is("am · pm") }),
+    // its picture (4.73; the disc sketches C): Sky as before · Half, a half-round hole over a two-colour disc · Band, the day's colours along a strip
+    seg("look", "Picture", G.PICTURES["am · pm"], { ...W, id: "window-look-day", show: win_is("am · pm") }),
+    // its picture (4.73, #346; the disc sketches B: "All are good"): Arch as before · Phase, the moon lit as it is, in
+    // the disc's colour, its dark side in the shade's, the sky in the picture's · Line, its outline and dark side in one ink
+    seg("look", "Picture", G.PICTURES["moon phase"], { ...W, id: "window-look-moon", show: win_is("moon phase") }),
     num("age", "Moon age, days", 0, 29.5, 0.1, { ...W, show: (T) => win_is("moon phase")(T) && !T.follows }),
     info("0 new moon · 14.8 full.", { ...W, show: (T) => win_is("moon phase")(T) && !T.follows }),
     // the hole: its shape (buttons on the heading's line, #265), where and how big, its colours (one line, #266), what
@@ -695,7 +700,7 @@ const ROWS = {
     // is not a good idea … two stories tall … like in illustrator"); one line from 4.46 to 4.55 (#265)
     num("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("rectangle", "arc"), link: "wh_link" }),
     num("h", "Height", 0.5, 5, 0.05, { ...W, show: shape_is("rectangle", "arc") }),
-    num("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("arch"), id: "window-w-Width-arch" }),      // its own id: the line above has window-w-Width
+    num("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("arch", "half"), id: "window-w-Width-arch" }),      // its own id: the line above has window-w-Width
     num("w", "Ø", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
     num("sides", "Sides", 3, 12, 1, { ...W, whole: true, show: shape_is("polygon") }),
     num("round", "Corner", 0, 2, 0.05, { ...W, show: shape_is("rectangle", "polygon") }),
@@ -791,6 +796,8 @@ const label_of = (row, T) => (row.say ? row.say(T)[0] : row.menu ? `${(row.menu.
 // two measures that may be linked, so changing one keeps their ratio (#358; Okay's notes 2: "a link/unlink like in
 // illustrator … other width-height or linkable stuff get this too"): its switch key, the pair, and when it applies
 const LINKED_PAIRS = { window: [{ link: "wh_link", keys: ["w", "h"], when: (T) => ["rectangle", "arc"].includes(G.window_shape(T)) }] };
+const day_look = (T) => (T && T.on && G.WINDOW_KINDS[T.kind] === "am · pm" ? T.look || 0 : -1);      // an am · pm window's picture (4.73), -1 for any other window
+const moon_look = (T) => (T && T.on && G.WINDOW_KINDS[T.kind] === "moon phase" ? T.look || 0 : -1);      // a moon window's picture (4.73), -1 for any other window
 const KIND_TAB_KEYS = Object.keys(G.WINDOW_BASE).filter((k) => !["on", "kind", "at", "at_deg", "r", "guide", "wh_link"].includes(k));      // what each complication keeps of its own (#328)
 const HANDLE_R = 5.5, HANDLE_OUT = 14, HANDLE_REACH = 14;      // a guide handle (4.65): its half-size, how far beyond the ring's outer edge the angle handles stand, the radius a press reaches it within — screen points at any zoom
 const TINY_EVERY = 200;                            // the Tiny Preview redrawn at most this often, in ms (#337)
@@ -3767,15 +3774,24 @@ class DialTool {
   row_window_colours(wrap, out) {
     wrap.className = "row colours";
     const parts = [
-      col("disc_c", "Disc under it", { ...W, word: "Disc", or: () => [1, 1, 1, 1] }),
+      col("disc_c", "Disc under it", { ...W, word: (T) => (day_look(T) > 0 ? "Day" : "Disc"), or: () => [1, 1, 1, 1] }),
       col("ink", "Frame", { ...W, word: "Frame" }),
-      col("text_c", "Picture", { ...W, word: "Picture", only: win_is("am · pm", "moon phase"), or: (T) => T.ink }),      // or: what an unset colour is
+      col("text_c", "Picture", { ...W, word: (T) => (moon_look(T) === 1 ? "Sky" : day_look(T) > 0 ? "Night" : "Picture"), only: win_is("am · pm", "moon phase"), or: (T) => T.ink }),      // or: what an unset colour is
+      // a picture's further colours (4.73): a moon's dark side in Phase · an am · pm Half's sun and moon · a Band's dawn and dusk
+      col("c2", "Shade", { ...W, word: (T) => (moon_look(T) === 1 ? "Shade" : day_look(T) === 1 ? "Sun · moon" : "Dawn"), only: (T) => moon_look(T) === 1 || day_look(T) > 0, or: (T) => G.PICTURE_TONES[moon_look(T) === 1 ? "shade" : day_look(T) === 1 ? "light" : "dawn"] }),
+      col("c3", "Dusk", { ...W, word: "Dusk", only: (T) => day_look(T) === 2, or: () => G.PICTURE_TONES.dusk }),
     ].map((row) => {
-      const built = this.build_row(row), pill = built.el.querySelector(".colour"), part = el("span", { className: "part" }, el("i", { textContent: row.word }), pill);
-      return { row, built, part };
+      const word = el("i", { textContent: typeof row.word === "function" ? "" : row.word });
+      const built = this.build_row(row), pill = built.el.querySelector(".colour"), part = el("span", { className: "part" }, word, pill);
+      return { row, built, part, word };
     });
     wrap.append(el("label", { textContent: "Colours" }), el("span", { className: "parts" }, ...parts.map((p) => p.part)));
-    out.refresh = (T) => parts.forEach((p) => { const shown = !p.row.only || p.row.only(T); p.part.hidden = !shown; if (shown) p.built.refresh(T); });
+    out.refresh = (T) => parts.forEach((p) => {
+      const shown = !p.row.only || p.row.only(T); p.part.hidden = !shown;
+      if (!shown) return;
+      p.built.refresh(T);
+      if (typeof p.row.word === "function") p.word.textContent = p.row.word(T);      // a disc's colour is the lit moon in Phase: its words say what each paints
+    });
   }
 
 

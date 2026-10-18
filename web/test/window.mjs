@@ -2291,6 +2291,21 @@ await touch.close();
   check(shown && look[0] === true && look[1] === 1 && look[2] === 1 && look[3] && look[4] === 2 && broken[0] && /passes the case by 0\.\d\d mm/.test(broken[1]) && !free[0] && !free[1],
     `X-ray: a date window's disc drawn whole with its print, the plate a veil (${look.join(" ")}); its edges two dashed guides; at r 13.5 its outer edge red and "${broken[1]}"; physics off, neither (${free.join(" ")})`);
 }
+{ // the moon's and am · pm's pictures (4.73, #346; the disc sketches B and C: "All are good"): a moon window's Arch · Phase (three colours, a round hole) · Line (one ink); an am · pm window's Sky · Half (a half-round hole, its sun and moon in a light of their own) · Band (the day's colours, dawn and dusk their own, a mark for now)
+  await tab("Date");
+  const was = await page.evaluate(() => { const t = window.dial_tool; return JSON.stringify([t.S.ui_window, t.S.da_on, t.S.da_kind, t.S.da_look, t.S.da_follows, t.S.da_age, t.S.da_w, t.S.da_h]); });
+  const pic = (look) => page.evaluate((l) => { const t = window.dial_tool; t.set_value("window", "look", l); t.frame && t.frame(); t.render(); const x = t.statik.windows.find((v) => v.index === 0), it = t.items.filter((i) => i.window === 0), b = x.window.bounds();
+    return { pictures: it.filter((i) => i.role === "date picture").length, hole: +((b[3] - b[1]) / (b[2] - b[0])).toFixed(2), words: [...document.querySelectorAll(".row.colours .part")].filter((e) => !e.hidden).map((e) => e.querySelector("i").textContent).join(" "), frame: x.frame ? x.frame.bounds()[3] - b[3] : 0 }; }, look);
+  await page.evaluate(() => { const t = window.dial_tool; t.S.ui_window = 0; t.set_value("window", "on", true); t.set_value("window", "kind", 3); t.set_value("window", "follows", false); t.set_value("window", "age", 7.6); });
+  const arch = await pic(0), phase = await pic(1), line = await pic(2);
+  await page.evaluate(() => { const t = window.dial_tool; t.set_value("window", "kind", 2); t.set_value("window", "w", 4); t.set_value("window", "h", 1.6); });
+  const sky = await pic(0), half = await pic(1), band = await pic(2);
+  await shot("14-pictures");
+  await page.evaluate((w) => { const t = window.dial_tool, v = JSON.parse(w); t.S.ui_window = 0; for (const [k, i] of [["look", 3], ["follows", 4], ["age", 5], ["w", 6], ["h", 7], ["kind", 2], ["on", 1]]) t.set_value("window", k, v[i]); t.S.ui_window = v[0]; t.sync_rows(); t.render(); }, was);
+  check(arch.pictures === 0 && phase.pictures === 1 && phase.hole === 1 && phase.words.includes("Sky") && phase.words.includes("Shade") && line.pictures === 0 && line.hole === 1
+    && sky.pictures === 0 && half.pictures === 1 && half.hole === 0.5 && half.words.includes("Sun · moon") && band.pictures === 2 && band.words.includes("Dawn") && band.words.includes("Dusk") && band.frame > 0.3,
+    `pictures: moon Arch · Phase (a round hole, ${phase.words}) · Line, one ink; am · pm Sky · Half (a half-round hole, ${half.words}) · Band (${band.words}; its now-mark over the hole)`);
+}
 { // Tiny Preview (#337, 4.59): its button top right where Guides stood; the dial at its own size (the browser's mm) with its margins, over everything; dragged anywhere; its eye puts it away. Guides at the bottom left, between Backdrop and Shadows, their list opening upward
   const corner = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), m = r("main"), o = r("#tiny-open"), g = r("#guides"), b = r("#backdrop"), sh = r("#shadows"); return [Math.round(m.right - o.right) === Math.round(m.bottom - m.bottom) || o.top - m.top < 40, b.bottom <= g.top + 1 && g.bottom <= sh.top + 1 && Math.abs(g.left - sh.left) < 1]; });
   await page.click("#tiny-open"); await page.waitForTimeout(250);

@@ -330,6 +330,7 @@ export function svg_preview(S, statik) {
   for (const x of statik.windows || []) {
     items.push({ role: "date disc", path: x.window, fill: x.w.disc_c || [1, 1, 1, 1] });
     items.push({ role: "date number", path: x.number, fill: x.w.text_c || x.w.ink });
+    for (const m of x.more || []) items.push({ role: "date picture", path: m.path, fill: x.w[m.key] || m.or });      // a picture's further colours (4.73)
   }
 
   if (statik.plate) items.push({ role: "plate", path: statik.plate, fill: S.c_plate });
