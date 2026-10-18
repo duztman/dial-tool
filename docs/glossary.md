@@ -47,6 +47,8 @@ If a term is used differently in conversation, ask, then update this file.
 | **Neighbours** | A date or day window's tick (4.74): its disc's places either side of the shown one, drawn where the hole lets them, in their own colour. |
 | **Big date** | A fifth complication (4.74): two square holes side by side, the tens and the units of the date. |
 | **Yours** (saved dials) | Dials kept in this browser with Save this dial, over the Gallery (4.76, #347); Okay's word was *instances*. |
+| **Shine** | In the showcase, a ring of three bands of light round a centre moved toward the sun, on the dial and the hands (4.77). |
+| **Bevel** | A hand's two long halves, lighter and darker by where the light comes from (4.77); wherever shadows are drawn, preview only. |
 | **Print sheet** | A page of copies of the dial at true size, for printing (4.75, #348): Export → Print → Sheet PDF; A4, Letter or A5, straight or staggered rows, cut lines if asked. |
 | **Picture** | What a moon or am · pm window shows (4.73): a moon's Arch (the humps), Phase (the moon lit as it is, three colours) or Line (one ink); an am · pm's Sky, Half (a half-round hole over a two-colour disc) or Band (the day's colours along a strip, a mark for now). Key `look`; its further colours `c2`, `c3`. |
 | **Physics** | A window's tick (4.72): its disc must end inside the case, the dial's edge less a 0.5 mm rim. Passing it, the disc's outer guide shows red and the panel says by how much; off, a disc may be bigger than the dial (a face on a screen). |

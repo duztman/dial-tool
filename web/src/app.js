@@ -293,7 +293,17 @@ const SUN = { day: 20, rise: 40, fade: 0.45 };
 // its spotlight: a pool of the backdrop's colour on the sky, behind the dial, a bit wider than it (size × its radius);
 // the dial casts its shadow into it from `lift` mm above. Through the day: an oval at sunrise and sunset (stretch,
 // the long way along the light), a circle at midday; the oval faintest and softest, midday brightest and almost crisp
-const POOL = { size: 1.45, stretch: 1.4, soft: [0.06, 0.8], light: [0.08, 0.42], shade: [0.15, 0.55], lift: 1.5 };
+const POOL = { size: 1.45, stretch: 1.4, soft: [0.06, 0.8], light: [0.08, 0.42], shade: [0.15, 0.55], lift: 1.5, least: 0.2 };      // least: the pool's colour is the backdrop's, lifted toward white until its lightness is at least this (0–1), so a very dim backdrop still makes a spotlight (#351, 4.77)
+// the showcase's ring of shine (#351, 4.77; Okay's notes 2: "a ring of shine on the dial moving with the sun ('just a
+// ring', two or three bands of brightness) that also shows the hands' shadows on dark dials"): three bands round a
+// centre moved toward the sun, the middle one brightest, each a share of the dial's radius; screened onto the dial and
+// the hands, so a dark dial lightens there and the hands' shadows read on it
+const SHINE = { r: 0.66, toward: 0.3, bands: [[-0.07, 0.03], [0, 0.075], [0.07, 0.03]], width: 0.07 };      // bands: [where, from the ring's radius, as a share of R · how bright]
+// the hands' bevels (#354, 4.77; notes 2: "a height simply shaded in a few tones of the hand's colour by the shadows'
+// light … not 3d like all facets shifted"): each hand split along its length, the side the light falls on lighter, the
+// other darker, by as much as the light comes from the side; preview only (R5, R26)
+const BEVEL = { light: 0.22, dark: 0.26 };
+const SHOW_DARKER = 1.25;                          // the showcase's shadows, this much darker than the user's setting (#351)
 // the dial's travel into and out of the showcase: the only thing that moves (04:59 and 05:09: "only dial travels with ease")
 const TRAVEL_MS = 900;
 // a phone (Okay, 15 Oct 2026, 06:20): the preview's switches unfold their words this long after a tap on the backdrop
@@ -1452,6 +1462,64 @@ class DialTool {
     this.render();
   }
 
+  /** the light on the dial (4.77): in the showcase a ring of shine (SHINE) over the dial and the hands; wherever shadows
+   *  are drawn, each hand's bevel (BEVEL) — its two long halves lighter and darker by where the light comes from.
+   *  Drawn into groups kept by name, just under the shadows that fall on the same surfaces. Preview only (R5, R26). */
+  draw_light(items) {
+    const S = this.S, sun = this.show && this.sun();
+    if (!this.light_parts) this.light_parts = new Map();
+    const parts = this.light_parts, used = new Set(), f = (v) => v.toFixed(4);
+    const part = (name, tag, parent, before = null) => {
+      let n = parts.get(name);
+      if (!n) { n = svg_el(tag); parts.set(name, n); }
+      if (n.parentNode !== parent || (before && n.nextSibling !== before)) parent.insertBefore(n, before);
+      used.add(name);
+      return n;
+    };
+    const finish = () => { for (const [name, n] of parts) if (!used.has(name)) { n.remove(); parts.delete(name); } };
+    const on = sun ? sun.light : S.sh_on ? Math.min(S.sh_dark / 25, 2) : 0;      // how much light there is to shade by
+    if (S.out_production || !(on > 0)) return finish();
+    if (!this.light_defs) { this.light_defs = svg_el("defs"); this.svg.prepend(this.light_defs); }
+    const from = sun ? sun.from : S.sh_from, R = S.dial_d / 2, nodes = items.map((_, i) => this.slots[i].node);
+    // the ring of shine: bands round a centre moved toward the sun, screened onto everything before the hands
+    const bands = (g, key) => {
+      if (!sun) return;
+      const a = from * Math.PI / 180, c = [Math.sin(a) * SHINE.toward * R, Math.cos(a) * SHINE.toward * R];
+      SHINE.bands.forEach(([at, bright], k) => {
+        const r0 = R * (SHINE.r + at - SHINE.width / 2), r1 = R * (SHINE.r + at + SHINE.width / 2);
+        const p = part(`${key}/band/${k}`, "path", g);
+        p.setAttribute("d", `M${f(c[0] - r1)} ${f(c[1])}a${f(r1)} ${f(r1)} 0 1 0 ${f(2 * r1)} 0a${f(r1)} ${f(r1)} 0 1 0 ${f(-2 * r1)} 0ZM${f(c[0] - r0)} ${f(c[1])}a${f(r0)} ${f(r0)} 0 1 1 ${f(2 * r0)} 0a${f(r0)} ${f(r0)} 0 1 1 ${f(-2 * r0)} 0Z`);
+        p.setAttribute("fill", "#fff"); p.setAttribute("fill-opacity", f(bright * on)); p.setAttribute("fill-rule", "evenodd");
+      });
+    };
+    const first_hand = items.findIndex((x) => x.role === "hand" || x.role === "cap" || x.role === "guide");
+    if (sun && items.some((x) => x.role === "plate")) {
+      const clip = part("shine/clip", "clipPath", this.light_defs), dial = part("shine/clip/dial", "circle", clip);
+      clip.id = "shine-clip"; dial.setAttribute("r", f(R));
+      const g = part("shine", "g", this.dial, first_hand >= 0 ? nodes[first_hand] : null);
+      g.setAttribute("clip-path", "url(#shine-clip)"); g.setAttribute("style", "mix-blend-mode: screen"); g.setAttribute("pointer-events", "none");
+      bands(g, "shine");
+    }
+    // each hand's bevel: its right and left halves (as it points) lighter and darker by where the light comes from, and the shine's bands on it
+    items.forEach((item, i) => {
+      if (item.role !== "hand" || G.HAND_SHAPES[S["ha_" + item.name]?.shape] === "disc") return;      // a disc hand is flat
+      const side = Math.sin((from - item.angle) * Math.PI / 180);      // + : the light comes from the hand's right
+      const key = "bevel-" + item.name, clip = part(key + "/clip", "clipPath", this.light_defs), shape = part(key + "/clip/hand", "path", clip);
+      clip.id = "bevel-clip-" + item.name; shape.setAttribute("d", this.slots[i].d);
+      let n = i + 1; while (items[n]?.role === "mark" && items[n].name === item.name) n++;
+      const g = part(key, "g", this.dial, nodes[n] || null);
+      g.setAttribute("transform", `rotate(${f(-item.angle)})`); g.setAttribute("pointer-events", "none");
+      const inner = part(key + "/in", "g", g);
+      inner.setAttribute("clip-path", `url(#${clip.id})`);
+      const half = (name, x, colour, k) => { const r = part(`${key}/${name}`, "rect", inner); r.setAttribute("x", f(x)); r.setAttribute("y", "-50"); r.setAttribute("width", "50"); r.setAttribute("height", "100"); r.setAttribute("fill", colour); r.setAttribute("fill-opacity", f(k)); };
+      const lit = BEVEL.light * Math.abs(side) * Math.min(on, 1), dark = BEVEL.dark * Math.abs(side) * Math.min(on, 1);
+      half("right", 0, side > 0 ? "#fff" : "#000", side > 0 ? lit : dark);
+      half("left", -50, side > 0 ? "#000" : "#fff", side > 0 ? dark : lit);
+      if (sun) { const sh = part(key + "/shine", "g", inner); sh.setAttribute("transform", `rotate(${f(item.angle)})`); sh.setAttribute("style", "mix-blend-mode: screen"); bands(sh, key + "/shine"); }
+    });
+    finish();
+  }
+
   /** the showcase's spotlight and the dial's shadow in it, for the sun now (POOL); in the dial's millimetres */
   draw_pool() {
     if (!this.show) return;
@@ -1462,7 +1530,8 @@ class DialTool {
     const f = (v) => v.toFixed(3), [L, D] = this.pool_parts;
     L.circle.setAttribute("r", f(R * POOL.size));
     L.circle.setAttribute("transform", `translate(${f(-toward[0] * off / 2)} ${f(-toward[1] * off / 2)}) rotate(${f(90 - sun.from)}) scale(${f(1 + POOL.stretch * dim)} 1)`);
-    const colour = to_hex(S.c_backdrop);
+    const lum = (c) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2], b = S.c_backdrop, lift = lum(b) < POOL.least ? (POOL.least - lum(b)) / (1 - lum(b)) : 0;
+    const colour = to_hex(b.map((v, i) => (i < 3 ? v + (1 - v) * lift : v)));      // a very dim backdrop: its colour lifted toward white, so the pool still lights (#351)
     L.stops.forEach((s, i) => { s.setAttribute("offset", f([0, 1 - soft, 1][i])); s.setAttribute("stop-color", colour); s.setAttribute("stop-opacity", f(i < 2 ? light : 0)); });
     const r = R * (1 + soft * 0.4);
     D.circle.setAttribute("r", f(r));
@@ -2103,7 +2172,7 @@ class DialTool {
     const sun = this.show && this.sun();
     // the showcase: shadows on, soft, from its own sun, as dark as its light. Anywhere: the soft edge waits while
     // something moves (moving())
-    const S = sun ? { ...this.S, sh_on: true, sh_blur: !this.moving(), sh_from: sun.from, sh_rise: sun.rise, sh_dark: this.S.sh_dark * sun.light } : { ...this.S, sh_blur: this.S.sh_blur && !this.moving() };
+    const S = sun ? { ...this.S, sh_on: true, sh_blur: !this.moving(), sh_from: sun.from, sh_rise: sun.rise, sh_dark: Math.min(this.S.sh_dark * SHOW_DARKER, 100) * sun.light } : { ...this.S, sh_blur: this.S.sh_blur && !this.moving() };
     if (!this.shade) {
       const defs = svg_el("defs"), filter = svg_el("filter"), blur = svg_el("feGaussianBlur");
       filter.id = "shadow-soft";
@@ -5034,6 +5103,7 @@ class DialTool {
       }
       node.dataset.i = i;
     });
+    this.draw_light(items);      // a ring of shine and the hands' bevels, before the shadows that fall over them (4.77)
     this.draw_shadows(items);
     this.place();
     const ring = this.ring();

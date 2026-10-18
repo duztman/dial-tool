@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.77 (web version) · 19 Oct 2026
+
+The showcase, a step further, and bevels on the hands (#351, #354; Okay, 19 Oct 2026, 00:29: "1 and 3, go").
+
+- **A dim backdrop still makes a spotlight**: the pool's colour is the backdrop's, lifted toward white until it is at least 20 % light, so a near-black backdrop gives a grey pool instead of none.
+- **A ring of shine** in the showcase: three bands round a centre moved toward the sun (the middle one brightest), screened onto the dial and onto the hands, moving with the sun through its day. On a dark dial it lightens a ring, and the hands' shadows read on it.
+- **The showcase's shadows** are a quarter darker than the Shadows setting.
+- **Bevels on the hands** (#354), wherever shadows are drawn: each hand split along its length, the half the light falls on lighter, the other darker, by as much as the light comes from the side — two tones of the hand's own colour, not facets in 3D. A disc hand stays flat. Preview only (R26).
+
 ## beta 4.76 (web version) · 19 Oct 2026
 
 Your own dials (#347; Okay's notes 2: "Instances of a watch: a save instance button; a gallery of them; printable; shown big or at actual size").
