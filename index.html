@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.56 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.57 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -223,6 +223,7 @@
     --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
     --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
     --t-num-pop: 41px;                             /* the controller's value, in its grey pill: his 14 where a disc is 22.68 (controller 2.svg, Okay, 18 Oct 2026); 25 from 4.45.3 to 4.51.1, 20 in 4.45.2 */
+    --link-pill: 14px;                             /* the LINK pill on the line between width and height (#358): the pixel font at 8 with three over and under */
     --pos-box: 78px; --pos-step: 18px;            /* Positions' small controls (#357: "controls smaller"): a box, value and − + or ⌄ together, and one of its cells */
     --pos-dot: 2px; --pos-dot-gap: 5px;            /* the span's dotted arc: a dot this wide, this far apart, centre to centre */
     --t-fig: 14px;                                 /* a selected ring's size and radius over their buttons, in Dial Mono: his digits are 10 high where the name's capitals are 9 (selected-ring_181026, Okay, 18 Oct 2026: "Large mono numbers for size and radius") */
@@ -653,11 +654,14 @@
   .row.pick > label { line-height: var(--line); }
   .row > label > .short { display: none; }         /* a label's short wording: only where there is little room (a side row) */
   .linkrow .linknote { margin: var(--unit) 0 0; }      /* its length, and that fonts travel by name */
-  /* two numbers to a line (R15 form A2; a window's width and height, #265, 4.46.1): for each a column for its name,
-     one for its slider, one for its quiet number (#250's look) — the slider a column long, the least a slider gets */
-  .row.wsize > * { grid-column: auto; }
-  .row.wsize > label { color: var(--grey); }      /* both names grey, as a row's first is */
-  .row.wsize > .numbox { position: relative; top: auto; right: auto; translate: none; width: 100%; }
+  /* a linked pair (#358; Okay's notes 2: "between their names on the white line a white outline pill appears, knocking
+     out bg. Inside, in text color silkscreen: LINK. Selected, the pill becomes dark filled. Text turns LINKED white"):
+     the pill stands on the line under the first row, starting where the names start, over the next row's line. Width and
+     height were one line, two numbers to it, from 4.46.1 to 4.56 (#265) */
+  .row.haslink { position: relative; }
+  .row.haslink > .linkpill { position: absolute; z-index: 1; grid-column: 1 / -1; grid-row: 1; justify-self: start; left: 0; bottom: 0; translate: 0 50%; display: grid; place-items: center; height: var(--link-pill); padding: 0 var(--u2); border: var(--hair) solid var(--row-rule); border-radius: var(--round-pill); background: var(--surface); color: var(--ink); font: 400 var(--t-pixel)/1 var(--pixel); letter-spacing: 0; }
+  .row.haslink > .linkpill:hover { border-color: var(--grey); }
+  .row.haslink > .linkpill.on { border-color: var(--ink); background: var(--ink); color: var(--white); }
   /* a window's colours on one line (#266, 4.46.1): a quiet word, then its pill; a third (Picture) only for am · pm and moon */
   .row.colours { align-items: baseline; }      /* when Picture takes a second line, the name stays on the first */
   .row.colours > .parts { grid-column: 3 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: var(--unit) var(--u3); padding: var(--u1) 0; }
@@ -6041,7 +6045,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.56";
+var VERSION = "beta 4.57";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -6201,8 +6205,10 @@ var WINDOW_BASE = {
   // its own OpenType features (beta 4.30); null = none of its own. axes: {} likewise
   at_deg: null,
   // a place of its own, in clock degrees (beta 4.34); null = the named place, at
-  guide: -1
+  guide: -1,
   // its guide's colour, as a ring's (#271): a place in GUIDE_COLOURS · -1 = by its place (window_guide) · -2 = none
+  wh_link: false
+  // width and height linked: one changed, the other keeps their ratio (#358, beta 4.57); off, so every link draws and behaves as before
 };
 var FIRST_WINDOW = {
   on: "da_on",
@@ -6232,7 +6238,8 @@ var FIRST_WINDOW = {
   tracking: "da_tracking",
   lang: "da_lang",
   features: "da_features",
-  at_deg: "da_at_deg"
+  at_deg: "da_at_deg",
+  wh_link: "da_wh_link"
 };
 var DEFAULTS = {
   version: 2,
@@ -6319,6 +6326,8 @@ var DEFAULTS = {
   // which windows show their guides: all · the chosen one (to start) · none, as rings (#271). gd_win, gd_k_win (the windows' radii) unread since
   da_guide: -1,
   // the first window's guide colour, as every window's `guide` (#271)
+  da_wh_link: false,
+  // the first window's width and height linked, as every window's `wh_link` (#358, beta 4.57)
   gd_k_edge: 1,
   gd_k_axes: 0,
   gd_k_win: 1,
@@ -6816,8 +6825,11 @@ var LINK_KEYS = [
   // 4.45.4 (#300): appended; starting as a hole, so every scheme-2 link draws as before
   "from",
   // 4.47 (#257): appended; starting at the outer end, as always, so every scheme-2 link draws as before
-  "mark_in"
+  "mark_in",
   // 4.52.2 (#344): appended; off to start, so every scheme-2 link draws as before
+  "wh_link",
+  "da_wh_link"
+  // 4.57 (#358): appended; off to start, and they draw nothing: only how W and H move together
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i) => i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62];
@@ -8840,8 +8852,10 @@ var ROWS = {
     hdr("Shape", { ...W, folded: true, show: win_on }),
     custom("window_shape", { ...W, head: true, text: "Shape", show: win_on }),
     num2("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
-    custom("window_size", { ...W, show: shape_is("rectangle", "arc") }),
-    // width and height on one line, each with its slider (#265; R15 form A2)
+    // width over height, two rows, a LINK pill on the line between them (Okay's notes 2, #358: "Two sliders on one line
+    // is not a good idea … two stories tall … like in illustrator"); one line from 4.46 to 4.55 (#265)
+    num2("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("rectangle", "arc"), link: "wh_link" }),
+    num2("h", "Height", 0.5, 5, 0.05, { ...W, show: shape_is("rectangle", "arc") }),
     num2("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("arch"), id: "window-w-Width-arch" }),
     // its own id: the line above has window-w-Width
     num2("w", "\xD8", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
@@ -8913,6 +8927,7 @@ function parse_number(text, current) {
 }
 var LENGTH_KEYS = { ring: RING_MM, hand: HAND_MM, window: WINDOW_MM, global: ["dial_d", "margin", "ha_cap", "dial_hole", "sh_hour", "sh_minute", "sh_second", "sh_cap", "sh_disc"], nudge: ["dr"] };
 var label_of = (row, T) => row.say ? row.say(T)[0] : row.menu ? `${(row.menu.items.find(([v]) => v === (T[row.menu.key] ?? 0)) || row.menu.items[0])[1]} ${row.text.split(" ").pop()}` : row.text;
+var LINKED_PAIRS = { window: [{ link: "wh_link", keys: ["w", "h"], when: (T) => ["rectangle", "arc"].includes(window_shape(T)) }] };
 var NUDGE_NEUTRAL = { dr: 0, da: 0, rot: 0, s: 1 };
 var is_length = (row) => row.kind === "num" && (LENGTH_KEYS[row.scope] || []).includes(row.key);
 var decimals = (step) => (String(step).split(".")[1] || "").length;
@@ -9103,6 +9118,11 @@ var DialTool = class _DialTool {
     }
     const T = this.target(scope);
     if (JSON.stringify(T[key]) === JSON.stringify(value)) return;
+    const pair = (LINKED_PAIRS[scope] || []).find((p) => p.keys.includes(key) && T[p.link] && p.when(T));
+    if (pair && T[key] > 0 && value > 0) {
+      const other = pair.keys.find((k) => k !== key);
+      T[other] = +(T[other] * value / T[key]).toFixed(4);
+    }
     if (scope === "global" && key === "dial_d" && this.S.ui_scale && T.dial_d > 0 && value > 0) this.scale_with(T.dial_d, value);
     T[key] = value;
     if (scope === "ring") {
@@ -10609,6 +10629,13 @@ var DialTool = class _DialTool {
           wrap.classList.add("quiet");
           this.name_opens(label, row);
         }
+      } else if (row.link) {
+        wrap.append(lead, slider, field, el("span", { className: "steps" }, step(-1), step(1)));
+        const pill = el("button", { type: "button", className: "linkpill", id: id + "-link" });
+        pill.onclick = () => this.set_value(row.scope, row.link, !this.target(row.scope)[row.link]);
+        wrap.classList.add("haslink");
+        wrap.append(pill);
+        out.link = pill;
       } else if (row.block) {
         wrap.classList.add("block");
         wrap.append(lead, field, el("span", { className: "steps" }, step(-1), step(1)));
@@ -10617,6 +10644,13 @@ var DialTool = class _DialTool {
       } else wrap.append(lead, slider, field, el("span", { className: "steps" }, step(-1), step(1)));
       out.refresh = (T) => {
         const v = T[row.key] ?? (row.or ? row.or(T) : 0);
+        if (out.link) {
+          const on = Boolean(T[row.link]);
+          out.link.classList.toggle("on", on);
+          out.link.textContent = on ? "LINKED" : "LINK";
+          out.link.setAttribute("aria-pressed", String(on));
+          out.link.ariaLabel = on ? "Width and height linked: press to unlink" : "Link width and height";
+        }
         if (v > +slider.max) slider.max = v;
         if (v < +slider.min) slider.min = v;
         if (+slider.value !== v) slider.value = v;
@@ -12158,16 +12192,6 @@ var DialTool = class _DialTool {
       wrap.style.setProperty("--tabs", Math.max(tabs.length, 1));
       wrap.style.setProperty("--tab", Math.max(tabs.findIndex((t) => t.classList.contains("on")), 0) + 1);
     };
-  }
-  row_window_size(wrap, out) {
-    wrap.className = "row wsize";
-    const parts = [["w", "Width", 8], ["h", "Height", 5]].map(([key, text, hi]) => {
-      const row = { ...num2(key, text, 0.5, hi, 0.05), scope: "window", side: true }, built = this.build_row(row), label = built.el.querySelector("label");
-      this.name_opens(label, row);
-      wrap.append(label, built.el.querySelector('input[type="range"]'), built.el.querySelector(".numbox"));
-      return built;
-    });
-    out.refresh = (W2) => parts.forEach((p) => p.refresh(W2));
   }
   /** a window's colours on one line (#266, 4.46.1; Okay's notes, p. 19: "one line; two colours to choose"): the disc
    *  under the hole, the frame, and for an am · pm or moon window what it pictures. Each a word and its pill; the
