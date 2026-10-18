@@ -372,8 +372,8 @@ Imports: SVG, PDF and AI (PDF-compatible) files as marker and hand shapes (rules
 22. ~~**A disc hand's window always inside the disc**~~ (#344) — settled 18 Oct: "Off in old links for window" — a new key, on for new disc hands, off in old links, so nothing dies (R31).
 23. ~~**What "ascender" means for upright numerals**~~ (#326, #338) — settled 18 Oct: "do not overthink. My comment applies to reverse auto reverse. Tangent to inner or outer" — keeping the drawing still applies to radial and auto-flip numerals; the anchors gain *outer edge* and *inner edge*, tangent.
 24. **Which other pairs get the LINK pill?** (#358: "Other width-height or linkable stuff get this too.") Candidates: a mark's length × width (Resize and Shape are different panes now), a hand's length × width, a disc hand's disc Ø × hole. The mechanism takes any two numbers of one ring, hand or window.
-26. **Where is the day set, and do the windows follow it?** (#346) The engine is in: one moment gives every complication. A window could follow the moment (its text written for it) or keep its typed text, as now; the day could be set beside the time in the bar (a date under the clock, the ruler's days) or in the window's pane.
 25. **"Complication buttons act like tabs"** (#328): like the hand tabs (hanging from a line, the panes below them belonging to the chosen one), or only their look (joined, the chosen one open)? The window cards above are already tabs, so two rows of tabs would stand there.
+26. **Where is the day set, and do the windows follow it?** (#346) The engine is in: one moment gives every complication. A window could follow the moment (its text written for it) or keep its typed text, as now; the day could be set beside the time in the bar (a date under the clock, the ruler's days) or in the window's pane.
 
 ## 6 · Avenues (ideas, not commitments)
 
