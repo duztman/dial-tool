@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.69 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.70 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -699,6 +699,7 @@
   .detail svg { position: absolute; inset: var(--unit); width: calc(100% - 2 * var(--unit)); height: calc(100% - 2 * var(--unit)); overflow: visible; }
   .detail .lying { display: none; }
   .detail .axis { stroke: var(--rule); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
+  .detail .lit { fill: var(--lit); }      /* a number's part, lit while its row is pointed at (#329), in the selected guide's colour */
   .detail .pivot { fill: var(--surface); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
   /* the hand's shapes as thumbs (4.46.3, "rectangular thumbs"; a row of their own after the rows since 4.46.4): every
      one shown, upright pictures in upright tiles, no words (a tile's title names it), a unit apart, all on one line
@@ -6178,7 +6179,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.69";
+var VERSION = "beta 4.70";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -10531,7 +10532,18 @@ var hand_detail = (h) => {
   const centre2 = (line) => `<path class="axis" d="${line}"/><circle class="pivot" r="${ring2}"/>`;
   const mark = paints_mark(h) && disc_mark(h), md = mark ? mark.svg(3, true) : "";
   const marked = (turn) => mark ? `<path class="mark" d="${md}"${turn} fill="${to_hex(h.mark_c)}"/>` : "";
-  return `<svg class="upright" viewBox="${f2(b[0] - m)} ${f2(-b[3] - m)} ${f2(w + 2 * m)} ${f2(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${marked("")}${centre2("M-999 0L999 0")}</svg><svg class="lying" viewBox="${f2(b[1] - m)} ${f2(b[0] - m)} ${f2(high + 2 * m)} ${f2(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${marked(' transform="rotate(90)"')}${centre2("M0 -999L0 999")}</svg>`;
+  return `<svg class="upright" viewBox="${f2(b[0] - m)} ${f2(-b[3] - m)} ${f2(w + 2 * m)} ${f2(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${marked("")}<path class="lit"/>${centre2("M-999 0L999 0")}</svg><svg class="lying" viewBox="${f2(b[1] - m)} ${f2(b[0] - m)} ${f2(high + 2 * m)} ${f2(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${marked(' transform="rotate(90)"')}<path class="lit" transform="rotate(90)"/>${centre2("M0 -999L0 999")}</svg>`;
+};
+var hand_part = (h, row) => {
+  const v = +h[row.key] || 0, d = v ? Math.abs(v) * 0.15 : (row.hi - row.lo) / 2;
+  const base = hand_shape(h);
+  let lit = null;
+  for (const n of [v - d, v + d]) {
+    if (n < row.lo - 1e-9 && n < v) continue;
+    const other = hand_shape({ ...h, [row.key]: n }), changed = base.difference(other).union(other.difference(base));
+    lit = lit ? lit.union(changed) : changed;
+  }
+  return lit && lit.bounds() ? lit : null;
 };
 var INK_TRAPS = (() => {
   const c = 9.25, r = 5.5, half = DENSE / 2, cut = 0.45, out = [];
@@ -13116,6 +13128,18 @@ var DialTool = class _DialTool {
       };
     }
     if (row.kind === "custom") this["row_" + row.name](wrap, out, row);
+    if (row.scope === "hand" && row.kind === "num") {
+      wrap.addEventListener("pointerenter", (e) => {
+        if (e.pointerType === "mouse") this.hand_light(row);
+      });
+      wrap.addEventListener("pointerleave", (e) => {
+        if (e.pointerType === "mouse" && this.value_pop?.row !== row) this.hand_light(null);
+      });
+      wrap.addEventListener("focusin", () => this.hand_light(row));
+      wrap.addEventListener("focusout", () => {
+        if (this.value_pop?.row !== row) this.hand_light(null);
+      });
+    }
     tied();
     return out;
   }
@@ -14164,7 +14188,8 @@ var DialTool = class _DialTool {
     const box2 = el("div", { className: "numpop", id: "value-pop", role: "dialog", ariaLabel: row.text || "" }, head, r.el);
     document.body.append(box2);
     button.setAttribute("aria-expanded", "true");
-    this.value_pop = { button, box: box2, r, timer: 0 };
+    this.value_pop = { button, box: box2, r, row, timer: 0 };
+    if (row.scope === "hand") this.hand_light(row);
     r.refresh(this.target(row.scope));
     const slider = box2.querySelector('input[type="range"]'), w = box2.offsetWidth, h = box2.offsetHeight, bb = button.getBoundingClientRect();
     let left = (at ? at.x : bb.left + bb.width / 2) - w / 2, top = bb.bottom + 7;
@@ -14203,6 +14228,7 @@ var DialTool = class _DialTool {
     if (!this.value_pop) return;
     const { button, box: box2, timer } = this.value_pop;
     clearTimeout(timer);
+    if (this.value_pop.row?.scope === "hand" && !button.closest(".row")?.matches(":hover")) this.hand_light(null);
     this.value_pop = null;
     const field = box2.querySelector('input[type="text"]');
     if (document.activeElement === field) field.blur();
@@ -14838,7 +14864,31 @@ var DialTool = class _DialTool {
         drawn2 = now;
         wrap.innerHTML = now;
       }
+      this.hand_lit_draw();
     };
+  }
+  /** light a hand number's part on the hand's picture, or none (#329): while its row is pointed at, holds the focus,
+   *  or has its controller open. In the selected guide's colour, as the ring handles are (4.65). */
+  hand_light(row) {
+    if (row === this.lit_row) return;
+    this.lit_row = row;
+    this.hand_lit_draw();
+  }
+  hand_lit_draw() {
+    const box2 = document.querySelector("#hand-detail");
+    if (!box2) return;
+    const row = this.lit_row, h = this.hand(), key = row && h ? `${row.key}/${JSON.stringify(h)}` : "";
+    if (key !== this.lit_key) {
+      const part = key ? hand_part(h, row) : null;
+      this.lit_key = key;
+      this.lit_d = part ? part.svg(3, true) : "";
+    }
+    const d = this.lit_d;
+    box2.style.setProperty("--lit", GUIDE_COLOURS[this.S.gd_k_sel] || GUIDE_COLOURS[0]);
+    for (const p of box2.querySelectorAll(".lit")) {
+      if (d) p.setAttribute("d", d);
+      else p.removeAttribute("d");
+    }
   }
   /** a window's place (Okay, 13 Oct 2026): every named place is a button, so the others are seen and pressed — first
    *  the four quarters, a square of 3 · 6 · 9 · 12; a white bar; then the places between; and a last box, three dots,
