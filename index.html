@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.65 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.66 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -1241,6 +1241,12 @@
   .guides:has(.guidelist:not([hidden])) { z-index: 7; }      /* open, its list over Backdrop above it */
   .guides .guidesmore svg { rotate: 180deg; }
   .guides .guidesmore[aria-expanded="true"] svg { rotate: 0deg; }
+  /* the case's switch beside Backdrop (4.66): its kind's name and a chevron, as Backdrop is a word and its chip; the
+     system's list over it, unseen; with a case on, its outline solid like a switch that is on */
+  .casebox { position: relative; gap: var(--unit); padding: 0 var(--u3) 0 var(--u4); border-radius: var(--round-switch); }
+  .casebox > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+  .casebox:not(.on) { border-style: dashed; }
+  .casebox.on > :not(select) { opacity: 1; }
   /* the selected ring's handles on its guides (4.65; farukahmet's PR #2, Okay: "all these handles should be in guide
      color"): filled with the ring's guide colour (--handle, app.js), a hairline of white round them so they read on any
      dial; a reach of a fingertip round each, unseen */
@@ -1471,7 +1477,7 @@
   /* a switch whose words show is filled with the backdrop's colour, so what is under it (the dial) doesn't show through
      its words (Okay, 15 Oct 2026, 07:07: "these buttons get solid bg color when labels visible"): the iris switch open
      (ACTIVATE SHOWCASE), the labelled switches — always on a wide screen, on a phone while unfolded (8-narrow.css) */
-  .irisbox[aria-expanded="true"], :is(.guidesbox, .guidesmore, .backdropbox) { background: var(--canvas-fill); }
+  .irisbox[aria-expanded="true"], :is(.guidesbox, .guidesmore, .backdropbox, .casebox) { background: var(--canvas-fill); }
 }
 
 @layer bar {
@@ -1793,10 +1799,10 @@ var require_pathkit = __commonJS({
       return (function(PathKitInit3) {
         PathKitInit3 = PathKitInit3 || {};
         null;
-        var f;
-        f || (f = typeof PathKitInit3 !== "undefined" ? PathKitInit3 : {});
+        var f2;
+        f2 || (f2 = typeof PathKitInit3 !== "undefined" ? PathKitInit3 : {});
         var aa = Object.assign, ba, ca;
-        f.ready = new Promise(function(b, a) {
+        f2.ready = new Promise(function(b, a) {
           ba = b;
           ca = a;
         });
@@ -1832,7 +1838,7 @@ var require_pathkit = __commonJS({
             c && d === h && e === l && g === m && k === n || (c && c.delete(), c = new b._SkCubicMap([h, l], [m, n]), d = h, e = l, g = m, k = n);
             return c.computePtFromT(p);
           };
-        })(f);
+        })(f2);
         (function(b) {
           b.onRuntimeInitialized = function() {
             b.SkPath.prototype.addPath = function() {
@@ -1927,8 +1933,8 @@ var require_pathkit = __commonJS({
               return this._trim(a, c, !!d) ? this : null;
             };
           };
-        })(f);
-        var da = aa({}, f), ea = "object" === typeof window, q = "function" === typeof importScripts, v = "", fa, ha, ia, fs, ja, ka;
+        })(f2);
+        var da = aa({}, f2), ea = "object" === typeof window, q = "function" === typeof importScripts, v = "", fa, ha, ia, fs, ja, ka;
         if ("object" === typeof process && "object" === typeof process.versions && "string" === typeof process.versions.node) v = q ? __require("path").dirname(v) + "/" : __dirname + "/", ka = () => {
           ja || (fs = __require("fs"), ja = __require("path"));
         }, fa = function(b, a) {
@@ -1949,7 +1955,7 @@ var require_pathkit = __commonJS({
           throw b;
         }), process.on("unhandledRejection", function(b) {
           throw b;
-        }), f.inspect = function() {
+        }), f2.inspect = function() {
           return "[Emscripten Module object]";
         };
         else if (ea || q) q ? v = self.location.href : "undefined" !== typeof document && document.currentScript && (v = document.currentScript.src), _scriptDir && (v = _scriptDir), 0 !== v.indexOf("blob:") ? v = v.substr(0, v.replace(/[?#].*/, "").lastIndexOf("/") + 1) : v = "", fa = (b) => {
@@ -1973,12 +1979,12 @@ var require_pathkit = __commonJS({
           d.onerror = c;
           d.send(null);
         };
-        var la = f.print || console.log.bind(console), w = f.printErr || console.warn.bind(console);
-        aa(f, da);
+        var la = f2.print || console.log.bind(console), w = f2.printErr || console.warn.bind(console);
+        aa(f2, da);
         da = null;
         var z;
-        f.wasmBinary && (z = f.wasmBinary);
-        var noExitRuntime = f.noExitRuntime || true;
+        f2.wasmBinary && (z = f2.wasmBinary);
+        var noExitRuntime = f2.noExitRuntime || true;
         "object" !== typeof WebAssembly && A("no native wasm support detected");
         var ma, na = false, oa = "undefined" !== typeof TextDecoder ? new TextDecoder("utf8") : void 0;
         function pa(b, a, c) {
@@ -2099,25 +2105,25 @@ var require_pathkit = __commonJS({
         function Ca() {
           var b = ma.buffer;
           ya = b;
-          f.HEAP8 = za = new Int8Array(b);
-          f.HEAP16 = D = new Int16Array(b);
-          f.HEAP32 = F = new Int32Array(b);
-          f.HEAPU8 = B = new Uint8Array(b);
-          f.HEAPU16 = C2 = new Uint16Array(b);
-          f.HEAPU32 = G = new Uint32Array(b);
-          f.HEAPF32 = Aa = new Float32Array(b);
-          f.HEAPF64 = Ba = new Float64Array(b);
+          f2.HEAP8 = za = new Int8Array(b);
+          f2.HEAP16 = D = new Int16Array(b);
+          f2.HEAP32 = F = new Int32Array(b);
+          f2.HEAPU8 = B = new Uint8Array(b);
+          f2.HEAPU16 = C2 = new Uint16Array(b);
+          f2.HEAPU32 = G = new Uint32Array(b);
+          f2.HEAPF32 = Aa = new Float32Array(b);
+          f2.HEAPF64 = Ba = new Float64Array(b);
         }
         var H2, Da = [], Ea = [], Fa = [];
         function Ga() {
-          var b = f.preRun.shift();
+          var b = f2.preRun.shift();
           Da.unshift(b);
         }
         var I = 0, Ha = null, J = null;
-        f.preloadedImages = {};
-        f.preloadedAudios = {};
+        f2.preloadedImages = {};
+        f2.preloadedAudios = {};
         function A(b) {
-          if (f.onAbort) f.onAbort(b);
+          if (f2.onAbort) f2.onAbort(b);
           b = "Aborted(" + b + ")";
           w(b);
           na = true;
@@ -2132,7 +2138,7 @@ var require_pathkit = __commonJS({
         K = "pathkit.wasm";
         if (!Ia()) {
           var Ja = K;
-          K = f.locateFile ? f.locateFile(Ja, v) : v + Ja;
+          K = f2.locateFile ? f2.locateFile(Ja, v) : v + Ja;
         }
         function Ka() {
           var b = K;
@@ -2165,7 +2171,7 @@ var require_pathkit = __commonJS({
         function Ma(b) {
           for (; 0 < b.length; ) {
             var a = b.shift();
-            if ("function" == typeof a) a(f);
+            if ("function" == typeof a) a(f2);
             else {
               var c = a.Wa;
               "number" === typeof c ? void 0 === a.xa ? H2.get(c)() : H2.get(c)(a.xa) : c(void 0 === a.xa ? null : a.xa);
@@ -2318,7 +2324,7 @@ var require_pathkit = __commonJS({
           }
         }
         function hb(b, a, c) {
-          f.hasOwnProperty(b) ? ((void 0 === c || void 0 !== f[b].ia && void 0 !== f[b].ia[c]) && T("Cannot register public name '" + b + "' twice"), gb(f, b, b), f.hasOwnProperty(c) && T("Cannot register multiple overloads of a function with the same number of arguments (" + c + ")!"), f[b].ia[c] = a) : (f[b] = a, void 0 !== c && (f[b].Xa = c));
+          f2.hasOwnProperty(b) ? ((void 0 === c || void 0 !== f2[b].ia && void 0 !== f2[b].ia[c]) && T("Cannot register public name '" + b + "' twice"), gb(f2, b, b), f2.hasOwnProperty(c) && T("Cannot register multiple overloads of a function with the same number of arguments (" + c + ")!"), f2[b].ia[c] = a) : (f2[b] = a, void 0 !== c && (f2[b].Xa = c));
         }
         function ib(b, a, c, d, e, g, k, h) {
           this.name = b;
@@ -2411,15 +2417,15 @@ var require_pathkit = __commonJS({
           void 0 !== a.na ? this.toWireType = mb : (this.toWireType = d ? kb : nb, this.ja = null);
         }
         function sb(b, a, c) {
-          f.hasOwnProperty(b) || Ua("Replacing nonexistant public symbol");
-          void 0 !== f[b].ia && void 0 !== c ? f[b].ia[c] = a : (f[b] = a, f[b].ua = c);
+          f2.hasOwnProperty(b) || Ua("Replacing nonexistant public symbol");
+          void 0 !== f2[b].ia && void 0 !== c ? f2[b].ia[c] = a : (f2[b] = a, f2[b].ua = c);
         }
         function tb(b, a) {
           var c = [];
           return function() {
             c.length = arguments.length;
             for (var d = 0; d < arguments.length; d++) c[d] = arguments[d];
-            b.includes("j") ? (d = f["dynCall_" + b], d = c && c.length ? d.apply(null, [a].concat(c)) : d.call(null, a)) : d = H2.get(a).apply(null, c);
+            b.includes("j") ? (d = f2["dynCall_" + b], d = c && c.length ? d.apply(null, [a].concat(c)) : d.call(null, a)) : d = H2.get(a).apply(null, c);
             return d;
           };
         }
@@ -2610,10 +2616,10 @@ var require_pathkit = __commonJS({
           };
         }
         var Rb = {}, Sb = [null, [], []];
-        Ta = f.InternalError = Sa("InternalError");
+        Ta = f2.InternalError = Sa("InternalError");
         for (var Tb = Array(256), Ub = 0; 256 > Ub; ++Ub) Tb[Ub] = String.fromCharCode(Ub);
         Xa = Tb;
-        S = f.BindingError = Sa("BindingError");
+        S = f2.BindingError = Sa("BindingError");
         U.prototype.isAliasOf = function(b) {
           if (!(this instanceof U && b instanceof U)) return false;
           var a = this.ea.ha.fa, c = this.ea.ga, d = b.ea.ha.fa;
@@ -2683,25 +2689,25 @@ var require_pathkit = __commonJS({
             { ha: d, ga: e }
           );
         };
-        f.getInheritedInstanceCount = function() {
+        f2.getInheritedInstanceCount = function() {
           return Object.keys(pb).length;
         };
-        f.getLiveInheritedInstances = function() {
+        f2.getLiveInheritedInstances = function() {
           var b = [], a;
           for (a in pb) pb.hasOwnProperty(a) && b.push(pb[a]);
           return b;
         };
-        f.flushPendingDeletes = eb;
-        f.setDelayFunction = function(b) {
+        f2.flushPendingDeletes = eb;
+        f2.setDelayFunction = function(b) {
           cb = b;
           db.length && cb && cb(eb);
         };
-        ub = f.UnboundTypeError = Sa("UnboundTypeError");
-        f.count_emval_handles = function() {
+        ub = f2.UnboundTypeError = Sa("UnboundTypeError");
+        f2.count_emval_handles = function() {
           for (var b = 0, a = 5; a < Z.length; ++a) void 0 !== Z[a] && ++b;
           return b;
         };
-        f.get_first_emval = function() {
+        f2.get_first_emval = function() {
           for (var b = 5; b < Z.length; ++b) if (void 0 !== Z[b]) return Z[b];
           return null;
         };
@@ -2866,7 +2872,7 @@ var require_pathkit = __commonJS({
           b = R(b);
           O([], [a], function(d) {
             d = d[0];
-            f[b] = d.fromWireType(c);
+            f2[b] = d.fromWireType(c);
             return [];
           });
         }, E: function(b, a) {
@@ -3120,13 +3126,13 @@ var require_pathkit = __commonJS({
         } };
         (function() {
           function b(e) {
-            f.asm = e.exports;
-            ma = f.asm.L;
+            f2.asm = e.exports;
+            ma = f2.asm.L;
             Ca();
-            H2 = f.asm._;
-            Ea.unshift(f.asm.M);
+            H2 = f2.asm._;
+            Ea.unshift(f2.asm.M);
             I--;
-            f.monitorRunDependencies && f.monitorRunDependencies(I);
+            f2.monitorRunDependencies && f2.monitorRunDependencies(I);
             0 == I && (null !== Ha && (clearInterval(Ha), Ha = null), J && (e = J, J = null, e()));
           }
           function a(e) {
@@ -3144,9 +3150,9 @@ var require_pathkit = __commonJS({
           }
           var d = { a: Wb };
           I++;
-          f.monitorRunDependencies && f.monitorRunDependencies(I);
-          if (f.instantiateWasm) try {
-            return f.instantiateWasm(
+          f2.monitorRunDependencies && f2.monitorRunDependencies(I);
+          if (f2.instantiateWasm) try {
+            return f2.instantiateWasm(
               d,
               b
             );
@@ -3164,60 +3170,60 @@ var require_pathkit = __commonJS({
           })().catch(ca);
           return {};
         })();
-        f.___wasm_call_ctors = function() {
-          return (f.___wasm_call_ctors = f.asm.M).apply(null, arguments);
+        f2.___wasm_call_ctors = function() {
+          return (f2.___wasm_call_ctors = f2.asm.M).apply(null, arguments);
         };
-        f.__Z6ToCmdsRK6SkPath = function() {
-          return (f.__Z6ToCmdsRK6SkPath = f.asm.N).apply(null, arguments);
+        f2.__Z6ToCmdsRK6SkPath = function() {
+          return (f2.__Z6ToCmdsRK6SkPath = f2.asm.N).apply(null, arguments);
         };
-        f.__Z8FromCmdsmi = function() {
-          return (f.__Z8FromCmdsmi = f.asm.O).apply(null, arguments);
+        f2.__Z8FromCmdsmi = function() {
+          return (f2.__Z8FromCmdsmi = f2.asm.O).apply(null, arguments);
         };
-        f.__Z7NewPathv = function() {
-          return (f.__Z7NewPathv = f.asm.P).apply(null, arguments);
+        f2.__Z7NewPathv = function() {
+          return (f2.__Z7NewPathv = f2.asm.P).apply(null, arguments);
         };
-        f.__Z8CopyPathRK6SkPath = function() {
-          return (f.__Z8CopyPathRK6SkPath = f.asm.Q).apply(null, arguments);
+        f2.__Z8CopyPathRK6SkPath = function() {
+          return (f2.__Z8CopyPathRK6SkPath = f2.asm.Q).apply(null, arguments);
         };
-        f.__Z6EqualsRK6SkPathS1_ = function() {
-          return (f.__Z6EqualsRK6SkPathS1_ = f.asm.R).apply(null, arguments);
+        f2.__Z6EqualsRK6SkPathS1_ = function() {
+          return (f2.__Z6EqualsRK6SkPathS1_ = f2.asm.R).apply(null, arguments);
         };
-        f.__Z11ToSVGStringRK6SkPath = function() {
-          return (f.__Z11ToSVGStringRK6SkPath = f.asm.S).apply(null, arguments);
+        f2.__Z11ToSVGStringRK6SkPath = function() {
+          return (f2.__Z11ToSVGStringRK6SkPath = f2.asm.S).apply(null, arguments);
         };
-        f.__Z13FromSVGStringNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEE = function() {
-          return (f.__Z13FromSVGStringNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEE = f.asm.T).apply(null, arguments);
+        f2.__Z13FromSVGStringNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEE = function() {
+          return (f2.__Z13FromSVGStringNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEE = f2.asm.T).apply(null, arguments);
         };
-        f.__Z13ApplySimplifyR6SkPath = function() {
-          return (f.__Z13ApplySimplifyR6SkPath = f.asm.U).apply(null, arguments);
+        f2.__Z13ApplySimplifyR6SkPath = function() {
+          return (f2.__Z13ApplySimplifyR6SkPath = f2.asm.U).apply(null, arguments);
         };
-        f.__Z11ApplyPathOpR6SkPathRKS_8SkPathOp = function() {
-          return (f.__Z11ApplyPathOpR6SkPathRKS_8SkPathOp = f.asm.V).apply(null, arguments);
+        f2.__Z11ApplyPathOpR6SkPathRKS_8SkPathOp = function() {
+          return (f2.__Z11ApplyPathOpR6SkPathRKS_8SkPathOp = f2.asm.V).apply(null, arguments);
         };
-        f.__Z10MakeFromOpRK6SkPathS1_8SkPathOp = function() {
-          return (f.__Z10MakeFromOpRK6SkPathS1_8SkPathOp = f.asm.W).apply(null, arguments);
+        f2.__Z10MakeFromOpRK6SkPathS1_8SkPathOp = function() {
+          return (f2.__Z10MakeFromOpRK6SkPathS1_8SkPathOp = f2.asm.W).apply(null, arguments);
         };
-        f.__Z14ResolveBuilderR11SkOpBuilder = function() {
-          return (f.__Z14ResolveBuilderR11SkOpBuilder = f.asm.X).apply(null, arguments);
+        f2.__Z14ResolveBuilderR11SkOpBuilder = function() {
+          return (f2.__Z14ResolveBuilderR11SkOpBuilder = f2.asm.X).apply(null, arguments);
         };
-        f.__Z8ToCanvasRK6SkPathN10emscripten3valE = function() {
-          return (f.__Z8ToCanvasRK6SkPathN10emscripten3valE = f.asm.Y).apply(null, arguments);
+        f2.__Z8ToCanvasRK6SkPathN10emscripten3valE = function() {
+          return (f2.__Z8ToCanvasRK6SkPathN10emscripten3valE = f2.asm.Y).apply(null, arguments);
         };
-        f.__Z8ToPath2DRK6SkPath = function() {
-          return (f.__Z8ToPath2DRK6SkPath = f.asm.Z).apply(null, arguments);
+        f2.__Z8ToPath2DRK6SkPath = function() {
+          return (f2.__Z8ToPath2DRK6SkPath = f2.asm.Z).apply(null, arguments);
         };
-        var Y = f._free = function() {
-          return (Y = f._free = f.asm.$).apply(null, arguments);
-        }, Vb = f._malloc = function() {
-          return (Vb = f._malloc = f.asm.aa).apply(null, arguments);
-        }, wb = f.___getTypeName = function() {
-          return (wb = f.___getTypeName = f.asm.ba).apply(null, arguments);
+        var Y = f2._free = function() {
+          return (Y = f2._free = f2.asm.$).apply(null, arguments);
+        }, Vb = f2._malloc = function() {
+          return (Vb = f2._malloc = f2.asm.aa).apply(null, arguments);
+        }, wb = f2.___getTypeName = function() {
+          return (wb = f2.___getTypeName = f2.asm.ba).apply(null, arguments);
         };
-        f.___embind_register_native_and_builtin_types = function() {
-          return (f.___embind_register_native_and_builtin_types = f.asm.ca).apply(null, arguments);
+        f2.___embind_register_native_and_builtin_types = function() {
+          return (f2.___embind_register_native_and_builtin_types = f2.asm.ca).apply(null, arguments);
         };
-        f.dynCall_jiji = function() {
-          return (f.dynCall_jiji = f.asm.da).apply(null, arguments);
+        f2.dynCall_jiji = function() {
+          return (f2.dynCall_jiji = f2.asm.da).apply(null, arguments);
         };
         var Xb;
         J = function Yb() {
@@ -3226,30 +3232,30 @@ var require_pathkit = __commonJS({
         };
         function Zb() {
           function b() {
-            if (!Xb && (Xb = true, f.calledRun = true, !na)) {
+            if (!Xb && (Xb = true, f2.calledRun = true, !na)) {
               Ma(Ea);
-              ba(f);
-              if (f.onRuntimeInitialized) f.onRuntimeInitialized();
-              if (f.postRun) for ("function" == typeof f.postRun && (f.postRun = [f.postRun]); f.postRun.length; ) {
-                var a = f.postRun.shift();
+              ba(f2);
+              if (f2.onRuntimeInitialized) f2.onRuntimeInitialized();
+              if (f2.postRun) for ("function" == typeof f2.postRun && (f2.postRun = [f2.postRun]); f2.postRun.length; ) {
+                var a = f2.postRun.shift();
                 Fa.unshift(a);
               }
               Ma(Fa);
             }
           }
           if (!(0 < I)) {
-            if (f.preRun) for ("function" == typeof f.preRun && (f.preRun = [f.preRun]); f.preRun.length; ) Ga();
+            if (f2.preRun) for ("function" == typeof f2.preRun && (f2.preRun = [f2.preRun]); f2.preRun.length; ) Ga();
             Ma(Da);
-            0 < I || (f.setStatus ? (f.setStatus("Running..."), setTimeout(function() {
+            0 < I || (f2.setStatus ? (f2.setStatus("Running..."), setTimeout(function() {
               setTimeout(function() {
-                f.setStatus("");
+                f2.setStatus("");
               }, 1);
               b();
             }, 1)) : b());
           }
         }
-        f.run = Zb;
-        if (f.preInit) for ("function" == typeof f.preInit && (f.preInit = [f.preInit]); 0 < f.preInit.length; ) f.preInit.pop()();
+        f2.run = Zb;
+        if (f2.preInit) for ("function" == typeof f2.preInit && (f2.preInit = [f2.preInit]); 0 < f2.preInit.length; ) f2.preInit.pop()();
         Zb();
         return PathKitInit3.ready;
       });
@@ -6154,7 +6160,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.65";
+var VERSION = "beta 4.66";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -6162,7 +6168,7 @@ var radians = (a) => a * PI / 180;
 var degrees = (a) => a * 180 / PI;
 var clone = (v) => JSON.parse(JSON.stringify(v));
 var KINDS = ["ticks", "markers", "numerals", "band", "text"];
-var has_text = (ring) => kind_of(ring) === "numerals" || kind_of(ring) === "text";
+var has_text = (ring2) => kind_of(ring2) === "numerals" || kind_of(ring2) === "text";
 var SHAPES = ["bar", "wedge", "dot", "file"];
 var TWELVES = ["same", "double", "triangle", "none"];
 var SKIP_FROM = ["nothing", "markers above", "markers & numerals above", "all marks above"];
@@ -6170,7 +6176,7 @@ var KNOCK_FROM = ["nothing", "markers above", "markers & numerals above", "every
 var FROM_KINDS = [[], ["markers"], ["markers", "numerals", "text"], ["ticks", "markers", "numerals", "band", "text"]];
 var MODES = ["upright", "radial", "radial, auto-flip", "on path"];
 var ANCHORS = ["centre", "baseline", "ascender", "outer edge", "inner edge"];
-var from_shift = (ring, extent) => extent * (ring.from || 0) / 2;
+var from_shift = (ring2, extent) => extent * (ring2.from || 0) / 2;
 var HANDS = ["hour", "minute", "second"];
 var HAND_SHAPES = ["baton", "pencil", "sword", "dauphine", "leaf", "arrow", "syringe", "breguet", "lollipop", "file", "disc"];
 var DATE_AT = [["3", 90], ["4:30", 135], ["6", 180], ["9", 270], ["12", 0], ["1:30", 45], ["7:30", 225], ["10:30", 315], ["4", 120]];
@@ -6444,6 +6450,8 @@ var DEFAULTS = {
   da_follows: false,
   da_names: 0,
   // the first window's `follows` and `names` (4.62)
+  bezel: 0,
+  // a case round the dial on the preview (4.66, bezels.js BEZELS): 0 none, 1 diver, 2 pilot, 3 dress, 4 sport. Preview only, like the backdrop (R26)
   date: "",
   // the day the dial shows, "2026-10-18", set in the bar (4.62; Okay, 18 Oct 2026: "Date best set at the bar … Default from system date"); "" = today, wherever the dial is opened
   da_wh_link: false,
@@ -6540,7 +6548,7 @@ function radial_extent(path) {
   return lo <= hi ? [lo, hi] : null;
 }
 var GUIDE_MORE = ["line", "crosshair", "circle"];
-var NOT_GEOMETRY = ["t", "guides", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
+var NOT_GEOMETRY = ["t", "guides", "bezel", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
 var NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_", "sh_"];
 function complete(base, d) {
   const out = Object.assign(clone(base), clone(d || {}));
@@ -6549,7 +6557,7 @@ function complete(base, d) {
   }
   return out;
 }
-var kind_of = (ring) => KINDS[ring.kind];
+var kind_of = (ring2) => KINDS[ring2.kind];
 var KIND_START = {
   // a new ring, sized for a dial of radius R
   ticks: (R) => ({ r: R - 0.6, count: 60, len: 1, w: 0.12 }),
@@ -6560,16 +6568,16 @@ var KIND_START = {
   // one word under the centre, as a dial's remark (#297)
 };
 function new_ring(kind, S, like = null) {
-  const ring = complete(RING_BASE, { kind: KINDS.indexOf(kind), ...KIND_START[kind](S.dial_d / 2) });
-  if (like) for (const k of TYPE_KEYS) ring[k] = clone(like[k]);
+  const ring2 = complete(RING_BASE, { kind: KINDS.indexOf(kind), ...KIND_START[kind](S.dial_d / 2) });
+  if (like) for (const k of TYPE_KEYS) ring2[k] = clone(like[k]);
   const names = new Set(S.rings.map((r) => r.name));
   const base = kind[0].toUpperCase() + kind.slice(1);
   let n = 2;
-  ring.name = base;
-  while (names.has(ring.name)) ring.name = `${base} ${n++}`;
+  ring2.name = base;
+  while (names.has(ring2.name)) ring2.name = `${base} ${n++}`;
   const taken = new Set(S.rings.map((r, i) => ring_guide(S, i)));
-  ring.guide = RING_GUIDE_ORDER.find((k) => !taken.has(k)) ?? RING_GUIDE_ORDER[S.rings.length % RING_GUIDE_ORDER.length];
-  return ring;
+  ring2.guide = RING_GUIDE_ORDER.find((k) => !taken.has(k)) ?? RING_GUIDE_ORDER[S.rings.length % RING_GUIDE_ORDER.length];
+  return ring2;
 }
 var BETA1_DEFAULTS = {
   dial_d: 30,
@@ -6662,12 +6670,12 @@ function from_beta1(old) {
     const [every, invert] = { cardinals: [3, false], "non-cardinals": [3, true], "12 only": [12, false], "12 & 6": [6, false] }[name] || [1, false];
     return { every, offset: 0, invert, on: name !== "none" };
   };
-  const ring = (kind, name, kw) => complete(RING_BASE, { kind: KINDS.indexOf(kind), name, c: ink, ...kw });
+  const ring2 = (kind, name, kw) => complete(RING_BASE, { kind: KINDS.indexOf(kind), name, c: ink, ...kw });
   const typ = { family: o.ty_family, ps: o.ty_ps, size: o.ty_size, tracking: o.ty_tracking, lang: o.ty_lang, axes: o.ty_axes, features: o.ty_features };
   const nudge = {};
   for (const k in o.nu_nudge) nudge[k === "12" ? "0" : String(parseInt(k))] = o.nu_nudge[k];
   const rings = [
-    ring("numerals", "Numerals", {
+    ring2("numerals", "Numerals", {
       r: o.nu_r,
       count: 12,
       labels: o.nu_set,
@@ -6677,7 +6685,7 @@ function from_beta1(old) {
       ...typ,
       ...show(["all", "cardinals", "non-cardinals", "12 only", "12 & 6", "none"][o.nu_at])
     }),
-    ring("markers", "Markers", {
+    ring2("markers", "Markers", {
       r: rule === "one ring" ? t_out : t_in - o.mk_offset,
       count: 12,
       shape: o.mk_shape,
@@ -6693,14 +6701,14 @@ function from_beta1(old) {
       twelve_gap: o.mk_twelve_gap,
       ...show(["all", "cardinals", "non-cardinals", "12 only", "none"][o.mk_at])
     }),
-    ring("ticks", "Minute ticks", { r: t_out, count: 60, len: o.tr_len, w: o.tr_w, skip, knock, clear })
+    ring2("ticks", "Minute ticks", { r: t_out, count: 60, len: o.tr_len, w: o.tr_w, skip, knock, clear })
   ];
   const div = [60, 120, 240, 300][o.tr_div];
-  if (div > 60) rings.push(ring("ticks", "Fine ticks", { r: t_out, count: div, len: o.tr_minor_len, w: o.tr_w * o.tr_minor_w, skip: 3, knock, clear }));
+  if (div > 60) rings.push(ring2("ticks", "Fine ticks", { r: t_out, count: div, len: o.tr_minor_len, w: o.tr_w * o.tr_minor_w, skip: 3, knock, clear }));
   if (o.tr_rail) {
     const rw = o.tr_rail_w;
-    rings.push(ring("band", "Outer rail", { r: t_out, count: 1, width: rw, knock, clear }));
-    rings.push(ring("band", "Inner rail", { r: t_in + rw, count: 1, width: rw, knock, clear }));
+    rings.push(ring2("band", "Outer rail", { r: t_out, count: 1, width: rw, knock, clear }));
+    rings.push(ring2("band", "Inner rail", { r: t_in + rw, count: 1, width: rw, knock, clear }));
   }
   const style = ["baton", "dauphine", "sword", "leaf", "file"][o.ha_style];
   const hand = (kw) => complete(HAND_BASE, kw);
@@ -6954,8 +6962,10 @@ var LINK_KEYS = [
   "names",
   "da_follows",
   "da_names",
-  "date"
+  "date",
   // 4.62: appended; a window follows the bar's date only when asked, so every older link shows its typed text
+  "bezel"
+  // 4.66: appended; no case to start, so every older link looks as before
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i) => i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62];
@@ -7174,14 +7184,14 @@ var Path = class _Path {
   }
   /** the path as SVG path data. flip: SVG's y grows downward. */
   svg(digits = 5, flip = false) {
-    const f = (v) => {
+    const f2 = (v) => {
       const s = v.toFixed(digits);
       return s.includes(".") ? s.replace(/\.?0+$/, "") || "0" : s;
     };
     let out = "";
     for (const c of this.d) {
       out += c[0];
-      for (let i = 1; i < c.length; i += 2) out += (i > 1 ? " " : "") + f(c[i]) + " " + f(flip ? -c[i + 1] : c[i + 1]);
+      for (let i = 1; i < c.length; i += 2) out += (i > 1 ? " " : "") + f2(c[i]) + " " + f2(flip ? -c[i + 1] : c[i + 1]);
     }
     return out;
   }
@@ -7510,24 +7520,24 @@ function centred(p) {
   if (b) p.translate(-(b[0] + b[2]) / 2, -(b[1] + b[3]) / 2);
   return p;
 }
-function ring_angles(ring) {
-  const n = max(parseInt(ring.count) || 1, 1), span = ring.span;
-  const step = kind_of(ring) === "band" || span >= 360 ? span / n : n > 1 ? span / (n - 1) : 0;
-  return Array.from({ length: n }, (_, i) => ring.start + i * step);
+function ring_angles(ring2) {
+  const n = max(parseInt(ring2.count) || 1, 1), span = ring2.span;
+  const step = kind_of(ring2) === "band" || span >= 360 ? span / n : n > 1 ? span / (n - 1) : 0;
+  return Array.from({ length: n }, (_, i) => ring2.start + i * step);
 }
-var positions_of = (ring) => ring_angles(ring).map((_, i) => i).filter((i) => picked(ring, i));
-var sector_colour = (ring, i) => ring.cs && ring.cs[String(i)] || ring.c;
-function picked(ring, i) {
-  const every = max(parseInt(ring.every) || 1, 1);
-  const hit = ((i - (parseInt(ring.offset) || 0)) % every + every) % every === 0;
-  return hit !== Boolean(ring.invert);
+var positions_of = (ring2) => ring_angles(ring2).map((_, i) => i).filter((i) => picked(ring2, i));
+var sector_colour = (ring2, i) => ring2.cs && ring2.cs[String(i)] || ring2.c;
+function picked(ring2, i) {
+  const every = max(parseInt(ring2.every) || 1, 1);
+  const hit = ((i - (parseInt(ring2.offset) || 0)) % every + every) % every === 0;
+  return hit !== Boolean(ring2.invert);
 }
-function mark_outline(ring, L, W2, shape2 = null, taper = null, grow = 0, solid2 = false) {
-  shape2 = shape2 || SHAPES[ring.shape];
-  taper = taper === null ? ring.taper : taper;
-  const wall = solid2 ? 0 : ring.wall;
+function mark_outline(ring2, L, W2, shape2 = null, taper = null, grow = 0, solid2 = false) {
+  shape2 = shape2 || SHAPES[ring2.shape];
+  taper = taper === null ? ring2.taper : taper;
+  const wall = solid2 ? 0 : ring2.wall;
   if (shape2 === "file") {
-    file_shape(ring.file);
+    file_shape(ring2.file);
     shape2 = "bar";
   }
   const outline = (L2, W3, ro2, ri2) => {
@@ -7536,29 +7546,29 @@ function mark_outline(ring, L, W2, shape2 = null, taper = null, grow = 0, solid2
     if (wi < 1e-3) return poly([[0, -L2 / 2], [W3 / 2, L2 / 2], [-W3 / 2, L2 / 2]], [ri2, ro2, ro2]);
     return poly([[-wi / 2, -L2 / 2], [wi / 2, -L2 / 2], [W3 / 2, L2 / 2], [-W3 / 2, L2 / 2]], [ri2, ri2, ro2, ro2]);
   };
-  const ro = ring.round_out, ri = ring.round_in;
+  const ro = ring2.round_out, ri = ring2.round_in;
   let p = outline(L + 2 * grow, W2 + 2 * grow, ro + grow, ri + grow);
   if (wall > 0 && W2 - 2 * wall > 0.01 && (shape2 === "dot" || L - 2 * wall > 0.01)) {
     p = p.difference(outline(L - 2 * wall, W2 - 2 * wall, max(ro - wall, 0), max(ri - wall, 0)));
   }
   return p;
 }
-function mark_at(ring, i, a, grow = 0, solid2 = false) {
-  const first = kind_of(ring) === "markers" && i === 0;
-  const style = first ? TWELVES[ring.twelve] : "same";
+function mark_at(ring2, i, a, grow = 0, solid2 = false) {
+  const first = kind_of(ring2) === "markers" && i === 0;
+  const style = first ? TWELVES[ring2.twelve] : "same";
   if (style === "none") return null;
-  const n = ring.nudge && ring.nudge[String(i)] || {};
-  const k = (first ? ring.twelve_scale : 1) * (n.s ?? 1);
-  const L = ring.len * k, W2 = ring.w * k;
-  const shape2 = style === "triangle" ? mark_outline(ring, L * 1.1, W2 * 2.4, "wedge", 0, grow, solid2) : mark_outline(ring, L, W2, null, null, grow, solid2);
+  const n = ring2.nudge && ring2.nudge[String(i)] || {};
+  const k = (first ? ring2.twelve_scale : 1) * (n.s ?? 1);
+  const L = ring2.len * k, W2 = ring2.w * k;
+  const shape2 = style === "triangle" ? mark_outline(ring2, L * 1.1, W2 * 2.4, "wedge", 0, grow, solid2) : mark_outline(ring2, L, W2, null, null, grow, solid2);
   const b = shape2.bounds();
   if (!b) return null;
   if (n.rot) shape2.rotate(-n.rot, [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2]);
   if (n.da) a += n.da;
   const extent = b[3] - b[1] - 2 * grow, width = b[2] - b[0] - 2 * grow;
-  const r_mid = max(ring.r + (n.dr || 0) + from_shift(ring, extent) - extent / 2, 0.1);
+  const r_mid = max(ring2.r + (n.dr || 0) + from_shift(ring2, extent) - extent / 2, 0.1);
   if (style === "double") {
-    const da = degrees((ring.twelve_gap + width) / 2 / r_mid);
+    const da = degrees((ring2.twelve_gap + width) / 2 / r_mid);
     return merge([place(shape2.copy(), r_mid, a - da), place(shape2, r_mid, a + da)]);
   }
   return place(shape2, r_mid, a);
@@ -7567,17 +7577,17 @@ function number_label(v, digits) {
   const s = abs(v - round(v)) < 1e-9 ? String(round(v)) : String(parseFloat(v.toPrecision(6)));
   return digits ? s.padStart(parseInt(digits), "0") : s;
 }
-function ring_labels(ring) {
-  const n = max(parseInt(ring.count) || 1, 1);
-  if (kind_of(ring) === "text") return Array.from({ length: n }, () => ring.custom || "");
-  const [name, txt2] = LABEL_SETS[ring.labels];
+function ring_labels(ring2) {
+  const n = max(parseInt(ring2.count) || 1, 1);
+  if (kind_of(ring2) === "text") return Array.from({ length: n }, () => ring2.custom || "");
+  const [name, txt2] = LABEL_SETS[ring2.labels];
   if (name === "Custom") {
-    const parts2 = ring.custom.split(",").map((s) => s.trim());
+    const parts2 = ring2.custom.split(",").map((s) => s.trim());
     return Array.from({ length: n }, (_, i) => parts2[i] || "");
   }
   if (name === "Numbers") {
-    const again = max(parseInt(ring.num_again) || 0, 0);
-    return Array.from({ length: n }, (_, i) => number_label(ring.num_from + (again ? i % again : i) * ring.num_step, ring.num_digits));
+    const again = max(parseInt(ring2.num_again) || 0, 0);
+    return Array.from({ length: n }, (_, i) => number_label(ring2.num_from + (again ? i % again : i) * ring2.num_step, ring2.num_digits));
   }
   const parts = txt2.split(" ");
   return Array.from({ length: n }, (_, i) => parts[i % parts.length]);
@@ -7608,58 +7618,58 @@ function on_path(txt2, r, a, t, size) {
   }
   return merge(out);
 }
-function ring_top(ring) {
-  return memo("top" + JSON.stringify([ring_labels(ring), TYPE_KEYS.map((k) => ring[k])]), () => max(0, ...ring_labels(ring).filter(Boolean).map((txt2) => {
-    const b = text_path(txt2, ring, ring.size).bounds();
+function ring_top(ring2) {
+  return memo("top" + JSON.stringify([ring_labels(ring2), TYPE_KEYS.map((k) => ring2[k])]), () => max(0, ...ring_labels(ring2).filter(Boolean).map((txt2) => {
+    const b = text_path(txt2, ring2, ring2.size).bounds();
     return b ? b[3] : 0;
   })));
 }
-function numeral_dy(ring, txt2, size) {
-  const anchor = ANCHORS[ring.anchor] || "centre";
+function numeral_dy(ring2, txt2, size) {
+  const anchor = ANCHORS[ring2.anchor] || "centre";
   if (anchor === "baseline") return 0;
-  if (anchor === "ascender") return -ring_top(ring) * size / (ring.size || 1);
-  const b = text_path(txt2, ring, size).bounds();
+  if (anchor === "ascender") return -ring_top(ring2) * size / (ring2.size || 1);
+  const b = text_path(txt2, ring2, size).bounds();
   return b ? -(b[1] + b[3]) / 2 : 0;
 }
-function radius_kept(ring, key, to) {
+function radius_kept(ring2, key, to) {
   if (key === "from") {
-    const extent = kind_of(ring) === "band" ? ring.width : ring.len;
-    return max(ring.r + extent * ((ring.from || 0) - to) / 2, 0);
+    const extent = kind_of(ring2) === "band" ? ring2.width : ring2.len;
+    return max(ring2.r + extent * ((ring2.from || 0) - to) / 2, 0);
   }
-  const label = ring_labels(ring).find(Boolean);
-  if (!label) return ring.r;
-  const mode = MODES[ring.mode], a = ring.start || 0, size = ring.size;
+  const label = ring_labels(ring2).find(Boolean);
+  if (!label) return ring2.r;
+  const mode = MODES[ring2.mode], a = ring2.start || 0, size = ring2.size;
   const middle = (anchor) => {
-    const R = { ...ring, anchor }, b = text_path(label, R, size).bounds();
+    const R = { ...ring2, anchor }, b = text_path(label, R, size).bounds();
     const up = b ? numeral_dy(R, label, size) + (b[1] + b[3]) / 2 : 0;
     const out = mode === "upright" ? up * cos(a * PI / 180) : mode === "on path" ? 0 : up * (mode === "radial, auto-flip" && a % 360 > 90 && a % 360 < 270 ? -1 : 1);
-    return ring.r + out + (mode === "on path" ? 0 : tangent_shift(R, mode, a, label, size));
+    return ring2.r + out + (mode === "on path" ? 0 : tangent_shift(R, mode, a, label, size));
   };
-  return max(ring.r + middle(ring.anchor || 0) - middle(to), 0);
+  return max(ring2.r + middle(ring2.anchor || 0) - middle(to), 0);
 }
-function numeral_setup(ring, i, a) {
-  const n = ring.nudge[String(i)] || {};
-  return [MODES[ring.mode], ring.r + (n.dr || 0), a + (n.da || 0), ring.size * (n.s ?? 1), n.rot || 0];
+function numeral_setup(ring2, i, a) {
+  const n = ring2.nudge[String(i)] || {};
+  return [MODES[ring2.mode], ring2.r + (n.dr || 0), a + (n.da || 0), ring2.size * (n.s ?? 1), n.rot || 0];
 }
-function tangent_shift(ring, mode, a, label, size) {
-  const anchor = ANCHORS[ring.anchor];
+function tangent_shift(ring2, mode, a, label, size) {
+  const anchor = ANCHORS[ring2.anchor];
   if (anchor !== "outer edge" && anchor !== "inner edge") return 0;
-  const b = text_path(label, ring, size).bounds();
+  const b = text_path(label, ring2, size).bounds();
   if (!b) return 0;
   const w = b[2] - b[0], h = b[3] - b[1], t = a * PI / 180;
   const reach = mode === "upright" ? abs(sin(t)) * w / 2 + abs(cos(t)) * h / 2 : h / 2;
   return anchor === "outer edge" ? -reach : reach;
 }
-function numeral_at(ring, i, a0, label) {
-  const [mode, r0, a, size, rot] = numeral_setup(ring, i, a0);
-  const r = mode === "on path" ? r0 : r0 + tangent_shift(ring, mode, a, label, size);
+function numeral_at(ring2, i, a0, label) {
+  const [mode, r0, a, size, rot] = numeral_setup(ring2, i, a0);
+  const r = mode === "on path" ? r0 : r0 + tangent_shift(ring2, mode, a, label, size);
   if (mode === "on path") {
-    const p2 = on_path(label, r, a, ring, size);
+    const p2 = on_path(label, r, a, ring2, size);
     if (rot) p2.rotate(-rot, clock_point(r, a));
     return p2;
   }
-  const p = text_path(label, ring, size), b = p.bounds();
-  if (b) p.translate(-(b[0] + b[2]) / 2, numeral_dy(ring, label, size));
+  const p = text_path(label, ring2, size), b = p.bounds();
+  if (b) p.translate(-(b[0] + b[2]) / 2, numeral_dy(ring2, label, size));
   if (mode === "upright") {
     p.rotate(-rot);
     p.translate(...clock_point(r, a));
@@ -7675,29 +7685,29 @@ function text_centre(txt2, t, size) {
   const b = text_path(txt2, t, size).bounds();
   return b ? [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2] : null;
 }
-function numeral_live(ring, i, a0, label) {
-  const [mode, r, a, size, rot] = numeral_setup(ring, i, a0);
-  const base = { t: ring, size, fill: ring.c };
+function numeral_live(ring2, i, a0, label) {
+  const [mode, r, a, size, rot] = numeral_setup(ring2, i, a0);
+  const base = { t: ring2, size, fill: ring2.c };
   if (mode === "on path") {
-    return path_letters(label, r, a, ring, size).map(([ch, angle, flip2, pos]) => ({
+    return path_letters(label, r, a, ring2, size).map(([ch, angle, flip2, pos]) => ({
       ...base,
       txt: ch,
       at: pos,
       steps: [...rot ? [["r", -rot, ...clock_point(r, a)]] : [], ["r", -angle, 0, 0], ["t", 0, r], ...flip2 ? [["r", 180, 0, 0]] : []]
     }));
   }
-  const c = text_centre(label, ring, size);
+  const c = text_centre(label, ring2, size);
   if (!c) return [];
   const turn = (a % 360 + 360) % 360;
   const flip = mode === "radial, auto-flip" && turn > 90 && turn < 270 ? 180 : 0;
   const steps = mode === "upright" ? [["t", ...clock_point(r, a)], ["r", -rot, 0, 0]] : [["r", -a, 0, 0], ["t", 0, r], ["r", -(flip + rot), 0, 0]];
-  return [{ ...base, txt: label, at: [-c[0], numeral_dy(ring, label, size)], steps }];
+  return [{ ...base, txt: label, at: [-c[0], numeral_dy(ring2, label, size)], steps }];
 }
 function live_texts(S, statik, item) {
   if (item.role === "ring" && has_text(item.ring.ring)) {
-    const d = item.ring, ring = d.ring, angles = ring_angles(ring), labels = ring_labels(ring);
+    const d = item.ring, ring2 = d.ring, angles = ring_angles(ring2), labels = ring_labels(ring2);
     const removed = d.path !== d.shape ? d.shape.difference(d.path) : null;
-    return { texts: d.keep.filter((i) => labels[i]).flatMap((i) => numeral_live(ring, i, angles[i], labels[i])), removed: removed && !empty(removed) ? removed : null };
+    return { texts: d.keep.filter((i) => labels[i]).flatMap((i) => numeral_live(ring2, i, angles[i], labels[i])), removed: removed && !empty(removed) ? removed : null };
   }
   if (item.role === "date number") {
     const x = statik.windows.find((w) => w.index === item.window);
@@ -7710,13 +7720,13 @@ function live_texts(S, statik, item) {
   }
   return null;
 }
-function ring_shapes(ring, keep, grow = 0, solid2 = false) {
-  return memo("shapes" + key_of(ring) + JSON.stringify([keep, round(grow * 1e6), solid2]), () => {
-    const kind = kind_of(ring), angles = ring_angles(ring);
+function ring_shapes(ring2, keep, grow = 0, solid2 = false) {
+  return memo("shapes" + key_of(ring2) + JSON.stringify([keep, round(grow * 1e6), solid2]), () => {
+    const kind = kind_of(ring2), angles = ring_angles(ring2);
     const parts = [], taken = [], at = [];
     if (kind === "ticks" || kind === "markers") {
       for (const i of keep) {
-        const m = mark_at(ring, i, angles[i], grow, solid2);
+        const m = mark_at(ring2, i, angles[i], grow, solid2);
         if (m) {
           parts.push(m);
           taken.push(angles[i]);
@@ -7726,20 +7736,20 @@ function ring_shapes(ring, keep, grow = 0, solid2 = false) {
       return [merge(parts).removeOverlap(), taken, at, parts];
     }
     if (kind === "numerals" || kind === "text") {
-      const labels = ring_labels(ring);
+      const labels = ring_labels(ring2);
       for (const i of keep) {
         if (labels[i]) {
-          parts.push(numeral_at(ring, i, angles[i], labels[i]));
+          parts.push(numeral_at(ring2, i, angles[i], labels[i]));
           taken.push(angles[i]);
           at.push(i);
         }
       }
     } else {
-      const n = max(parseInt(ring.count) || 1, 1);
-      const length = ring.span / n * min(max(ring.fill, 0), 100) / 100;
-      const outer = ring.r + from_shift(ring, ring.width);
+      const n = max(parseInt(ring2.count) || 1, 1);
+      const length = ring2.span / n * min(max(ring2.fill, 0), 100) / 100;
+      const outer = ring2.r + from_shift(ring2, ring2.width);
       for (const i of keep) {
-        parts.push(sector(outer - ring.width, outer, angles[i], angles[i] + length));
+        parts.push(sector(outer - ring2.width, outer, angles[i], angles[i] + length));
         at.push(i);
       }
     }
@@ -7768,32 +7778,32 @@ var window_place = (w) => {
 };
 function build_rings(S, cut = null) {
   const holes = windows_of(S).filter((w) => w.on).map(window_angle), done = [];
-  for (const ring of S.rings) {
-    if (!ring.on) continue;
-    const kind = kind_of(ring), angles = ring_angles(ring);
-    let keep = angles.map((_, i) => i).filter((i) => picked(ring, i));
+  for (const ring2 of S.rings) {
+    if (!ring2.on) continue;
+    const kind = kind_of(ring2), angles = ring_angles(ring2);
+    let keep = angles.map((_, i) => i).filter((i) => picked(ring2, i));
     if (kind === "markers" || kind === "numerals" || kind === "text") keep = keep.filter((i) => !holes.some((a) => near(angles[i], a)));
-    if (ring.skip) {
-      const taken2 = done.filter((d2) => FROM_KINDS[ring.skip].includes(d2.kind)).flatMap((d2) => d2.taken);
+    if (ring2.skip) {
+      const taken2 = done.filter((d2) => FROM_KINDS[ring2.skip].includes(d2.kind)).flatMap((d2) => d2.taken);
       keep = keep.filter((i) => !taken2.some((a) => near(angles[i], a, 0.01)));
     }
-    const [shape2, taken, at, parts] = ring_shapes(ring, keep);
-    const sources = done.filter((d2) => FROM_KINDS[ring.knock].includes(d2.kind));
+    const [shape2, taken, at, parts] = ring_shapes(ring2, keep);
+    const sources = done.filter((d2) => FROM_KINDS[ring2.knock].includes(d2.kind));
     const final = () => {
       let out = shape2;
       if (sources.length && !empty(out)) {
-        const cutter = merge(sources.map((d2) => ring_shapes(d2.ring, d2.keep, ring.clear, true)[0]));
+        const cutter = merge(sources.map((d2) => ring_shapes(d2.ring, d2.keep, ring2.clear, true)[0]));
         if (!empty(cutter)) out = out.difference(cutter.removeOverlap());
       }
       if (cut && !empty(out)) out = out.difference(cut);
       return out;
     };
-    const key = "final" + key_of(ring) + JSON.stringify([keep, sources.map((d2) => [key_of(d2.ring), d2.keep]), cut ? date_key(S) : null]);
-    const d = { ring, kind, keep, taken, shape: shape2, at, parts, path: memo(key, final) };
-    if (kind === "band" && at.some((i) => ring.cs && ring.cs[String(i)])) {
+    const key = "final" + key_of(ring2) + JSON.stringify([keep, sources.map((d2) => [key_of(d2.ring), d2.keep]), cut ? date_key(S) : null]);
+    const d = { ring: ring2, kind, keep, taken, shape: shape2, at, parts, path: memo(key, final) };
+    if (kind === "band" && at.some((i) => ring2.cs && ring2.cs[String(i)])) {
       const groups = /* @__PURE__ */ new Map();
       at.forEach((i, j) => {
-        const c = JSON.stringify(sector_colour(ring, i));
+        const c = JSON.stringify(sector_colour(ring2, i));
         groups.set(c, [...groups.get(c) || [], j]);
       });
       d.tints = [...groups.values()].map((js) => ({
@@ -7817,7 +7827,7 @@ function date_key(S) {
   return JSON.stringify(all) + JSON.stringify(TYPE_KEYS.map((a) => date_type(S)[a]));
 }
 function date_type(S) {
-  return S.rings.find((ring) => kind_of(ring) === "numerals") || RING_BASE;
+  return S.rings.find((ring2) => kind_of(ring2) === "numerals") || RING_BASE;
 }
 function window_type(S, w) {
   const t = date_type(S);
@@ -7831,8 +7841,8 @@ function moon_parts(w, age) {
   const m = w / 4, base = -0.36 * w;
   const arch = circle(2 * 0.5336 * w).translate(0, base + 0.1864 * w).intersection(new Path().rect(-w, base, 2 * w, 2 * w));
   const opening = arch.difference(circle(2 * m).translate(-m, base)).difference(circle(2 * m).translate(m, base));
-  const f = (age % 29.53 + 29.53) % 29.53 / 29.53;
-  const moon = circle(2 * m).translate(-m * cos(PI * f), base - 0.3 * m + (Math.sqrt(3) + 0.3) * m * sin(PI * f));
+  const f2 = (age % 29.53 + 29.53) % 29.53 / 29.53;
+  const moon = circle(2 * m).translate(-m * cos(PI * f2), base - 0.3 * m + (Math.sqrt(3) + 0.3) * m * sin(PI * f2));
   const stars = merge([[-0.3, 0.5], [0.33, 0.42], [0.08, 0.63]].map(([x, y]) => circle(0.07 * w).translate(x * w, base + y * w)));
   return { opening, moon, stars };
 }
@@ -8059,17 +8069,17 @@ function scene(S, statik, t, preview = true, selected = null) {
     };
     const focus = { 1: "rings", 3: "windows" }[S.ui_section];
     const faded = (focused) => focused ? 1 : GUIDE_FADE;
-    S.rings.forEach((ring, i) => {
+    S.rings.forEach((ring2, i) => {
       const focused = focus === "rings" && i === selected, chosen = focused && S.gd_sel, k = ring_guide(S, i);
-      if (!ring.on || k === null || !(S.gd_rings || chosen)) return;
-      const kind = kind_of(ring);
-      const extent = { ticks: ring.len, markers: ring.len, band: ring.width }[kind] || 0;
-      let outer = ring.r + from_shift(ring, extent), inner = outer - extent;
-      if (has_text(ring)) {
-        const e = radial_extent(built.get(ring)?.path);
+      if (!ring2.on || k === null || !(S.gd_rings || chosen)) return;
+      const kind = kind_of(ring2);
+      const extent = { ticks: ring2.len, markers: ring2.len, band: ring2.width }[kind] || 0;
+      let outer = ring2.r + from_shift(ring2, extent), inner = outer - extent;
+      if (has_text(ring2)) {
+        const e = radial_extent(built.get(ring2)?.path);
         if (e) [inner, outer] = e;
       }
-      edges(k, outer, inner, focused ? S.gd_w * 1.5 : S.gd_w, faded(focused), ring.r);
+      edges(k, outer, inner, focused ? S.gd_w * 1.5 : S.gd_w, faded(focused), ring2.r);
     });
     for (const x of windows) {
       const focused = focus === "windows" && x.index === (S.ui_window ?? 0), chosen = focused && S.gd_wsel, k = window_guide(S, x.index), e = radial_extent(x.window);
@@ -8093,9 +8103,9 @@ var RING_MM = ["r", "len", "w", "width", "clear", "round_out", "round_in", "wall
 var HAND_MM = ["len", "w", "tail", "tip", "feature", "counter", "wall", "round", "disc_d", "mark_len", "mark_w"];
 var WINDOW_MM = ["r", "w", "h", "round", "frame", "clear"];
 function each_measure(S, visit) {
-  for (const ring of S.rings) {
-    for (const key of RING_MM) visit(ring, key);
-    for (const at of Object.keys(ring.nudge).sort()) if (ring.nudge[at].dr) visit(ring.nudge[at], "dr");
+  for (const ring2 of S.rings) {
+    for (const key of RING_MM) visit(ring2, key);
+    for (const at of Object.keys(ring2.nudge).sort()) if (ring2.nudge[at].dr) visit(ring2.nudge[at], "dr");
   }
   for (const h of HANDS) for (const key of HAND_MM) visit(S["ha_" + h], key);
   for (const w of windows_of(S)) for (const key of WINDOW_MM) visit(w, key);
@@ -8281,6 +8291,62 @@ function png_with_dpi(bytes, dpi) {
   out.set(chunk, at);
   out.set(bytes.subarray(at), at + chunk.length);
   return out;
+}
+
+// src/bezels.js
+var BEZELS = ["None", "Diver", "Pilot", "Dress", "Sport"];
+var STEEL = { body: "#8F8F8B", light: "#D6D6D1", shade: "#55554F", insert: "#161616", mark: "#E8E6DF" };
+var GOLD = { body: "#C2A063", light: "#EDD9A3", shade: "#86672F", insert: "#161616", mark: "#E8E6DF" };
+var f = (v) => (+v).toFixed(3);
+var pt = (r, a) => [r * Math.sin(a * Math.PI / 180), r * Math.cos(a * Math.PI / 180)];
+var circle2 = (r) => `M${f(-r)} 0A${f(r)} ${f(r)} 0 1 0 ${f(r)} 0A${f(r)} ${f(r)} 0 1 0 ${f(-r)} 0Z`;
+var ring = (r0, r1) => circle2(r1) + circle2(r0);
+var arc2 = (r0, r1, a0, a1) => {
+  const big = (a1 - a0 + 360) % 360 > 180 ? 1 : 0, [x0, y0] = pt(r1, a0), [x1, y1] = pt(r1, a1), [x2, y2] = pt(r0, a1), [x3, y3] = pt(r0, a0);
+  return `M${f(x0)} ${f(y0)}A${f(r1)} ${f(r1)} 0 ${big} 0 ${f(x1)} ${f(y1)}L${f(x2)} ${f(y2)}A${f(r0)} ${f(r0)} 0 ${big} 1 ${f(x3)} ${f(y3)}Z`;
+};
+var rect = (x, y, w, h) => `M${f(x)} ${f(y)}h${f(w)}v${f(h)}h${f(-w)}Z`;
+var bar = (r0, r1, w, a) => {
+  const [sx, sy] = pt(1, a), nx = sy, ny = -sx, p = (r, s) => [r * sx + s * nx * w / 2, r * sy + s * ny * w / 2];
+  const q = [p(r0, -1), p(r1, -1), p(r1, 1), p(r0, 1)];
+  return `M${q.map(([x, y]) => `${f(x)} ${f(y)}`).join("L")}Z`;
+};
+function bezel_parts(i, d) {
+  const R = d / 2, name = BEZELS[i];
+  if (!name || name === "None") return { parts: [], reach: R };
+  const T = name === "Dress" ? GOLD : STEEL;
+  const parts = [], add = (path, tone, rule = "nonzero") => parts.push({ d: path, fill: T[tone], rule });
+  const P = {
+    Diver: { case: 1.36, lug: 0.3, lw: 0.13, crown: [0.16, 0.2] },
+    Pilot: { case: 1.2, lug: 0.36, lw: 0.11, crown: [0.26, 0.3] },
+    Dress: { case: 1.1, lug: 0.26, lw: 0.08, crown: [0.1, 0.12] },
+    Sport: { case: 1.3, lug: 0.3, lw: 0.13, crown: [0.15, 0.19] }
+  }[name];
+  const Rc = R * P.case, half = R * 0.72, lw = R * 2 * P.lw, out = R * 2 * P.lug;
+  for (const sy of [1, -1]) for (const sx of [1, -1]) add(rect(sx > 0 ? half - lw : -half, sy > 0 ? Rc * 0.55 : -Rc * 0.55 - out, lw, out), "body");
+  const [cw, ch] = P.crown.map((k) => k * d);
+  add(rect(Rc - cw * 0.2, -ch / 2, cw, ch), "body");
+  if (name === "Pilot") for (let k = 1; k < 6; k++) add(rect(Rc - cw * 0.2 + cw * k / 6 - d * 4e-3, -ch / 2, d * 8e-3, ch), "shade");
+  if (name === "Sport") for (const a of [60, 120]) add(bar(Rc - R * 0.05, Rc + R * 0.14, R * 0.16, a), "body");
+  add(ring(R, Rc), "body", "evenodd");
+  add(arc2(R, Rc, 290, 20), "light");
+  add(arc2(R, Rc, 110, 200), "shade");
+  if (name === "Diver") {
+    const ri = R * 1.02, ro = R * 1.24;
+    add(ring(ri, ro), "insert", "evenodd");
+    for (let k = 0; k < 60; k++) add(bar(Rc - R * 0.05, Rc + 1e-3, R * 0.035, k * 6), "shade");
+    add(`M0 ${f(ro - R * 0.03)}L${f(R * 0.07)} ${f(ri + R * 0.07)}L${f(-R * 0.07)} ${f(ri + R * 0.07)}Z`, "mark");
+    for (let k = 1; k < 12; k++) add(bar(ri + R * 0.06, ro - R * 0.05, R * 0.05, k * 30), "mark");
+  }
+  if (name === "Sport") {
+    const ri = R * 1.03, ro = R * 1.2;
+    add(ring(ri, ro), "insert", "evenodd");
+    for (let k = 0; k < 60; k++) add(bar(ro - (k % 5 ? R * 0.05 : R * 0.1), ro - R * 0.015, R * 0.018, k * 6), "mark");
+  }
+  return { parts, reach: Math.max(Rc + (name === "Sport" ? R * 0.14 : 0) + cw * 0.8, Rc * 0.55 + out) };
+}
+function bezel_svg(i, d) {
+  return bezel_parts(i, d).parts.map((p) => `<path d="${p.d}" fill="${p.fill}"${p.rule === "evenodd" ? ' fill-rule="evenodd"' : ""}/>`).join("");
 }
 
 // src/font_list.js
@@ -8494,13 +8560,13 @@ var solid = `fill="currentColor" stroke="none"`;
 var faint = `${sw(CURVE)} opacity="0.45"`;
 var KIND_PIC = 24;
 var stem_at = (px, py, dir) => {
-  const t = dir * Math.PI / 180, ux = Math.sin(t), uy = -Math.cos(t), f = (v) => +v.toFixed(3);
-  return `M${f(px - ux * 3)} ${f(py - uy * 3)}L${f(px + ux * 0.5)} ${f(py + uy * 0.5)}`;
+  const t = dir * Math.PI / 180, ux = Math.sin(t), uy = -Math.cos(t), f2 = (v) => +v.toFixed(3);
+  return `M${f2(px - ux * 3)} ${f2(py - uy * 3)}L${f2(px + ux * 0.5)} ${f2(py + uy * 0.5)}`;
 };
 var head_at = (px, py, dir) => {
-  const t = dir * Math.PI / 180, ux = Math.sin(t), uy = -Math.cos(t), f = (v) => +v.toFixed(3);
+  const t = dir * Math.PI / 180, ux = Math.sin(t), uy = -Math.cos(t), f2 = (v) => +v.toFixed(3);
   const tip = [px + ux * 3, py + uy * 3], base = [px + ux * 0.25, py + uy * 0.25], half = 1.75;
-  return `M${f(tip[0])} ${f(tip[1])}L${f(base[0] - uy * half)} ${f(base[1] + ux * half)}L${f(base[0] + uy * half)} ${f(base[1] - ux * half)}Z`;
+  return `M${f2(tip[0])} ${f2(tip[1])}L${f2(base[0] - uy * half)} ${f2(base[1] + ux * half)}L${f2(base[0] + uy * half)} ${f2(base[1] - ux * half)}Z`;
 };
 var PICS = {
   // a ring's kind: the whole circle, as on a dial (Okay's drawing, 13 Oct 2026), centre 12. The four weigh about the
@@ -8565,12 +8631,12 @@ var hand_pic = (i) => {
 var hand_detail = (h) => {
   const p = hand_shape(h), b = p.bounds();
   if (!b) return "";
-  const w = b[2] - b[0], high = b[3] - b[1], m = high * 0.03, f = (v) => v.toFixed(3);
-  const d = p.svg(3, true), ring = f(Math.max(high * 0.012, 0.12));
-  const centre2 = (line) => `<path class="axis" d="${line}"/><circle class="pivot" r="${ring}"/>`;
+  const w = b[2] - b[0], high = b[3] - b[1], m = high * 0.03, f2 = (v) => v.toFixed(3);
+  const d = p.svg(3, true), ring2 = f2(Math.max(high * 0.012, 0.12));
+  const centre2 = (line) => `<path class="axis" d="${line}"/><circle class="pivot" r="${ring2}"/>`;
   const mark = paints_mark(h) && disc_mark(h), md = mark ? mark.svg(3, true) : "";
   const marked = (turn) => mark ? `<path class="mark" d="${md}"${turn} fill="${to_hex(h.mark_c)}"/>` : "";
-  return `<svg class="upright" viewBox="${f(b[0] - m)} ${f(-b[3] - m)} ${f(w + 2 * m)} ${f(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${marked("")}${centre2("M-999 0L999 0")}</svg><svg class="lying" viewBox="${f(b[1] - m)} ${f(b[0] - m)} ${f(high + 2 * m)} ${f(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${marked(' transform="rotate(90)"')}${centre2("M0 -999L0 999")}</svg>`;
+  return `<svg class="upright" viewBox="${f2(b[0] - m)} ${f2(-b[3] - m)} ${f2(w + 2 * m)} ${f2(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${marked("")}${centre2("M-999 0L999 0")}</svg><svg class="lying" viewBox="${f2(b[1] - m)} ${f2(b[0] - m)} ${f2(high + 2 * m)} ${f2(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${marked(' transform="rotate(90)"')}${centre2("M0 -999L0 999")}</svg>`;
 };
 var INK_TRAPS = (() => {
   const c = 9.25, r = 5.5, half = DENSE / 2, cut = 0.45, out = [];
@@ -8677,11 +8743,11 @@ var TOOL_ICONS = {
 };
 var ARCADE = (down) => {
   const RING = 0.75 * 2, CAP = RIM + CURVE / 2, R = CAP + RING, C2 = R, mid = CAP - RING / 2;
-  const arc2 = (from, to) => {
+  const arc3 = (from, to) => {
     const p = (a) => `${(C2 + mid * Math.cos(a * Math.PI / 180)).toFixed(3)} ${(C2 + mid * Math.sin(a * Math.PI / 180)).toFixed(3)}`;
     return `M${p(from)}A${mid} ${mid} 0 0 1 ${p(to)}`;
   };
-  const [light, dark] = down ? [arc2(15, 135), arc2(195, 315)] : [arc2(195, 315), arc2(15, 135)];
+  const [light, dark] = down ? [arc3(15, 135), arc3(195, 315)] : [arc3(195, 315), arc3(15, 135)];
   return `<svg viewBox="0 0 ${2 * R} ${2 * R}" width="${2 * R}" height="${2 * R}" aria-hidden="true"><circle class="arc-out" cx="${C2}" cy="${C2}" r="${R}"/><circle class="arc-cap" cx="${C2}" cy="${C2}" r="${CAP}"/><path class="arc-hi" d="${light}" stroke-width="${RING}"/><path class="arc-lo" d="${dark}" stroke-width="${RING}"/><filter id="play-soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1"/></filter><path class="arc-play" d="${play_triangle(C2, 0.45 * CAP)}" filter="url(#play-soft)"/></svg>`;
 };
 var play_triangle = (c, r) => {
@@ -8828,8 +8894,8 @@ var ROWS = {
     // style and size (Okay, 18 Oct 2026, notes 2: "When expanded, type block header disappears and type block moves up";
     // "Type boxes, when they are collapsed, should have summaries like others")
     hdr("Type", { folded: true, bare: true, show: with_text, summary: (S, tool2) => {
-      const R = tool2.ring(), f = tool2.catalog.get(R.ps);
-      return [R.family, f && f.style, `size ${fmt(R.size, 0.01)}`].filter(Boolean);
+      const R = tool2.ring(), f2 = tool2.catalog.get(R.ps);
+      return [R.family, f2 && f2.style, `size ${fmt(R.size, 0.01)}`].filter(Boolean);
     } }),
     // filter: a font not in the catalog has no style (4.54 broke selecting such a ring; 4.55)
     custom("font", { show: with_text }),
@@ -9098,11 +9164,11 @@ function rgb_hsv([r, g, b]) {
   return [h * 60, hi === 0 ? 0 : d / hi, hi];
 }
 function hsv_rgb([h, s, v]) {
-  const f = (n) => {
+  const f2 = (n) => {
     const k = (n + h / 60) % 6;
     return v - v * s * Math.max(0, Math.min(k, 4 - k, 1));
   };
-  return [f(5), f(3), f(1)];
+  return [f2(5), f2(3), f2(1)];
 }
 function rgb_cmyk([r, g, b]) {
   const k = 1 - Math.max(r, g, b);
@@ -9290,6 +9356,7 @@ var DialTool = class _DialTool {
         if (this.fitted) this.fit();
       }
       if (key === "date") this.sync_time();
+      if (key === "bezel" && this.case_sync) this.case_sync();
       if (key === "dial_hole") {
         this.hole_at = performance.now();
         clearTimeout(this.hole_timer);
@@ -9385,10 +9452,10 @@ var DialTool = class _DialTool {
         return s;
       });
       sky_defs.append(g);
-      const circle2 = svg_el("circle");
-      circle2.setAttribute("fill", `url(#${id})`);
-      this.pool.append(circle2);
-      return { circle: circle2, stops };
+      const circle3 = svg_el("circle");
+      circle3.setAttribute("fill", `url(#${id})`);
+      this.pool.append(circle3);
+      return { circle: circle3, stops };
     });
     this.sky_stops = [0, 1].map((o) => {
       const s = svg_el("stop");
@@ -9402,7 +9469,10 @@ var DialTool = class _DialTool {
     this.handles = svg_el("g");
     this.handles.setAttribute("class", "handles");
     this.handle_events();
-    this.svg.append(sky_defs, this.backdrop, this.sky, this.pool, this.dial, this.over, this.handles);
+    this.bezel_g = svg_el("g");
+    this.bezel_g.setAttribute("class", "bezel");
+    this.bezel_g.setAttribute("pointer-events", "none");
+    this.svg.append(sky_defs, this.backdrop, this.sky, this.pool, this.bezel_g, this.dial, this.over, this.handles);
     this.tip = el("div", { className: "tip", hidden: true }, el("span"));
     this.tip.insertAdjacentHTML("beforeend", '<svg viewBox="0 0 20 10" width="20" height="10" aria-hidden="true"><path class="a" d="M0 0 L10 10 L20 0"/><path class="b" d="M0 0 L10 10 L20 0"/><path class="c" d="M-1 -3 L21 -3 L21 0 L10 9 L-1 0 Z"/></svg>');
     this.preview_events();
@@ -9532,7 +9602,7 @@ var DialTool = class _DialTool {
       clearTimeout(this.zoom_tip);
       this.zoom_tip = setTimeout(() => this.tag_hide(), 2400);
     };
-    const bar = el(
+    const bar2 = el(
       "footer",
       { className: "bar" },
       el(
@@ -9571,7 +9641,7 @@ var DialTool = class _DialTool {
     } });
     this.main = el("main", {}, this.svg, this.tip, this.note, this.undo_box(), this.tiny_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.ten_pill, this.hands_key, this.sun_hint);
     this.day_strip(this.day_box);
-    root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
+    root.append(panel, this.main, bar2, this.build_picker(), this.build_pop());
     root.append(this.sheet());
     requestAnimationFrame(() => this.level_title());
     this.play_icon();
@@ -9582,9 +9652,9 @@ var DialTool = class _DialTool {
     this.watchers.push(new ResizeObserver(() => this.resized()));
     this.watchers.at(-1).observe(this.svg);
     this.watchers.push(new ResizeObserver(() => {
-      if (!this.show && bar.offsetHeight) root.style.setProperty("--bar-h", bar.offsetHeight + "px");
+      if (!this.show && bar2.offsetHeight) root.style.setProperty("--bar-h", bar2.offsetHeight + "px");
     }));
-    this.watchers.at(-1).observe(bar);
+    this.watchers.at(-1).observe(bar2);
   }
   /** how to zoom, beside the zoom buttons: words, then a faint magnifier, nothing to press (Okay, 14 Oct 2026,
    *  23:19: "say cmd+scroll is zoom in out attached to the zoom area. Put a magnifier icon at the end"; 23:26: "at the
@@ -9615,8 +9685,8 @@ var DialTool = class _DialTool {
     } catch (e) {
     }
     const limits = () => {
-      const h = app.clientHeight, bar = $(".bar").offsetHeight;
-      return [SHEET.preview / h, (h - bar - SHEET.drawer) / h];
+      const h = app.clientHeight, bar2 = $(".bar").offsetHeight;
+      return [SHEET.preview / h, (h - bar2 - SHEET.drawer) / h];
     };
     let down = null;
     grip.onpointerdown = (e) => {
@@ -9629,8 +9699,8 @@ var DialTool = class _DialTool {
       if (!down) return;
       if (Math.abs(e.clientY - down.y) > 4) down.moved = true;
       if (!down.moved) return;
-      const [lo, hi] = limits(), top = app.getBoundingClientRect().top, bar = $(".bar").offsetHeight;
-      set(clamp((e.clientY - top - bar) / app.clientHeight, lo, hi));
+      const [lo, hi] = limits(), top = app.getBoundingClientRect().top, bar2 = $(".bar").offsetHeight;
+      set(clamp((e.clientY - top - bar2) / app.clientHeight, lo, hi));
     };
     grip.onpointerup = grip.onpointercancel = (e) => {
       if (!down) return;
@@ -9785,22 +9855,22 @@ var DialTool = class _DialTool {
     const R = S.dial_d / 2, off = POOL.lift / Math.tan(sun.rise * Math.PI / 180), dim = 1 - sun.k;
     const mix = ([lo, hi], t) => lo + (hi - lo) * t;
     const soft = mix(POOL.soft, dim), light = mix(POOL.light, sun.k) * sun.light, shade = mix(POOL.shade, sun.k) * sun.light;
-    const f = (v) => v.toFixed(3), [L, D] = this.pool_parts;
-    L.circle.setAttribute("r", f(R * POOL.size));
-    L.circle.setAttribute("transform", `translate(${f(-toward[0] * off / 2)} ${f(-toward[1] * off / 2)}) rotate(${f(90 - sun.from)}) scale(${f(1 + POOL.stretch * dim)} 1)`);
+    const f2 = (v) => v.toFixed(3), [L, D] = this.pool_parts;
+    L.circle.setAttribute("r", f2(R * POOL.size));
+    L.circle.setAttribute("transform", `translate(${f2(-toward[0] * off / 2)} ${f2(-toward[1] * off / 2)}) rotate(${f2(90 - sun.from)}) scale(${f2(1 + POOL.stretch * dim)} 1)`);
     const colour = to_hex(S.c_backdrop);
     L.stops.forEach((s, i) => {
-      s.setAttribute("offset", f([0, 1 - soft, 1][i]));
+      s.setAttribute("offset", f2([0, 1 - soft, 1][i]));
       s.setAttribute("stop-color", colour);
-      s.setAttribute("stop-opacity", f(i < 2 ? light : 0));
+      s.setAttribute("stop-opacity", f2(i < 2 ? light : 0));
     });
     const r = R * (1 + soft * 0.4);
-    D.circle.setAttribute("r", f(r));
-    D.circle.setAttribute("transform", `translate(${f(-toward[0] * off)} ${f(-toward[1] * off)})`);
+    D.circle.setAttribute("r", f2(r));
+    D.circle.setAttribute("transform", `translate(${f2(-toward[0] * off)} ${f2(-toward[1] * off)})`);
     D.stops.forEach((s, i) => {
-      s.setAttribute("offset", f([0, R / r * (1 - soft * 0.3), 1][i]));
+      s.setAttribute("offset", f2([0, R / r * (1 - soft * 0.3), 1][i]));
       s.setAttribute("stop-color", "#000");
-      s.setAttribute("stop-opacity", f(i < 2 ? shade : 0));
+      s.setAttribute("stop-opacity", f2(i < 2 ? shade : 0));
     });
   }
   /** Now in the showcase: the hands land on the time it is now; the pill shrinks into an undo sign. Pressed then, they
@@ -10032,7 +10102,7 @@ var DialTool = class _DialTool {
     this.sun_hint = el("div", { className: "sunhint", id: "sun-hint" });
     this.sun_hint.innerHTML = icon(TOOL_ICONS.both_ways, 108, 36);
     this.sun_hint.onanimationend = () => this.sun_hint.classList.remove("go");
-    return el("div", { className: "backdrops" }, box2);
+    return el("div", { className: "backdrops" }, box2, this.case_box());
   }
   /** Okay's mark in the panel's first column, left of the title; a press opens a short bio: who made the tool, where
    *  its source is, and the open-source work it stands on (Okay, 15 Oct 2026, 02:42: "This triggers bio. Make it short,
@@ -10275,6 +10345,36 @@ var DialTool = class _DialTool {
     H2.addEventListener("pointerup", end);
     H2.addEventListener("pointercancel", end);
   }
+  /** a case round the dial (4.66; farukahmet's PR #3, "abstractified" — bezels.js), drawn again only when its kind or
+   *  the dial's size changes. Preview only: never in an export or the Tiny Preview (R26). */
+  draw_bezel() {
+    const key = `${this.S.bezel || 0}/${this.S.dial_d}`;
+    if (key === this.bezel_key) return;
+    this.bezel_key = key;
+    this.bezel_g.innerHTML = this.S.bezel ? bezel_svg(this.S.bezel, this.S.dial_d) : "";
+  }
+  /** the case's switch, beside Backdrop (4.66): its kind's name and a chevron; the system's list over it, unseen. */
+  case_box() {
+    const word = el("span", { className: "word" });
+    const arrow = el("span", { className: "arrow" });
+    arrow.innerHTML = icon(SIGNS.up);
+    const menu = el("select", { id: "case-pick", ariaLabel: "A case round the dial (preview only)", title: "A case round the dial (preview only)" });
+    BEZELS.forEach((name, i) => menu.append(el("option", { value: String(i), textContent: i ? name : "No case" })));
+    menu.onchange = () => {
+      this.set_value("global", "bezel", +menu.value);
+      this.fit();
+      this.render();
+    };
+    const box2 = el("span", { className: "onview casebox", id: "case" }, word, arrow, menu);
+    this.case_sync = () => {
+      const i = this.S.bezel || 0;
+      word.textContent = i ? BEZELS[i] : "Case";
+      menu.value = String(i);
+      box2.classList.toggle("on", i > 0);
+    };
+    this.case_sync();
+    return box2;
+  }
   /** guides, at the preview's bottom left since 4.59 (its top right from 12 Oct 2026, Okay, to 4.58): a switch (a bullseye and the word; solid outline = on,
    *  dashed = off) and, joined to it, an arrow that drops their list: the five kinds of guide, each with an eye and
    *  one of eight colours; one thickness; Reset. No free colours here. */
@@ -10402,7 +10502,7 @@ var DialTool = class _DialTool {
     });
     const yes = round2("guides-reset-yes", `<path d="M2.5 6.25L5 8.75L9.5 3.5" ${sw(SLANT)}/>`, "Reset all guides", () => {
       for (const key of Object.keys(DEFAULTS)) if (key.startsWith("gd_")) this.S[key] = structuredClone(DEFAULTS[key]);
-      for (const ring of this.S.rings) ring.guide = RING_BASE.guide;
+      for (const ring2 of this.S.rings) ring2.guide = RING_BASE.guide;
       for (const w of windows_of(this.S)) w.guide = WINDOW_BASE.guide;
       ask(false);
       this.sync_rows();
@@ -10532,7 +10632,7 @@ var DialTool = class _DialTool {
     set(shade.blur, "stdDeviation", "0.07");
     const a = S.sh_from * Math.PI / 180, per = 1 / Math.tan(clamp(S.sh_rise, 1, 89) * Math.PI / 180);
     const away = (dz) => [-Math.sin(a) * per * dz, -Math.cos(a) * per * dz];
-    const f = (v) => v.toFixed(4);
+    const f2 = (v) => v.toFixed(4);
     const height = { hour: S.sh_hour, minute: S.sh_minute, second: S.sh_second };
     const nodes = items.map((_, i) => this.slots[i].node);
     const hands = items.map((item, i) => ({ item, i })).filter((x) => x.item.role === "hand").map((x) => ({ ...x, z: height[x.item.name] ?? 0, d: this.slots[x.i].d }));
@@ -10550,7 +10650,7 @@ var DialTool = class _DialTool {
       outline.forEach(([d, turn], k2) => {
         const p = part(`${name}/clip/${k2}`, "path", clip);
         set(p, "d", d);
-        set(p, "transform", turn ? `rotate(${f(-turn)})` : "");
+        set(p, "transform", turn ? `rotate(${f2(-turn)})` : "");
       });
       set(g, "clip-path", `url(#${clip.id})`);
       g.removeAttribute("opacity");
@@ -10565,14 +10665,14 @@ var DialTool = class _DialTool {
         const p = part(`${name}/cast/${k++}`, "path", g), [x, y] = away(dz);
         set(p, "d", d);
         set(p, "fill", tint(colour));
-        set(p, "transform", `translate(${f(x)} ${f(y)})` + (turn ? ` rotate(${f(-turn)})` : ""));
+        set(p, "transform", `translate(${f2(x)} ${f2(y)})` + (turn ? ` rotate(${f2(-turn)})` : ""));
       };
       for (const h of hands) if (h.z > from_z) cast(h.d, h.item.angle, h.z - from_z, h.item.fill);
       if (cap_r && top > from_z) {
         const [x0, y0] = away(Math.max(0, -from_z)), [x, y] = away(top - from_z);
         const len = Math.hypot(x - x0, y - y0) || 1, nx = -(y - y0) / len * cap_r, ny = (x - x0) / len * cap_r;
-        const ring = (cx, cy) => `M${f(cx - cap_r)} ${f(cy)}A${f(cap_r)} ${f(cap_r)} 0 1 0 ${f(cx + cap_r)} ${f(cy)}A${f(cap_r)} ${f(cap_r)} 0 1 0 ${f(cx - cap_r)} ${f(cy)}Z`;
-        for (const d of [ring(x0, y0), ring(x, y), `M${f(x0 + nx)} ${f(y0 + ny)}L${f(x + nx)} ${f(y + ny)}L${f(x - nx)} ${f(y - ny)}L${f(x0 - nx)} ${f(y0 - ny)}Z`]) {
+        const ring2 = (cx, cy) => `M${f2(cx - cap_r)} ${f2(cy)}A${f2(cap_r)} ${f2(cap_r)} 0 1 0 ${f2(cx + cap_r)} ${f2(cy)}A${f2(cap_r)} ${f2(cap_r)} 0 1 0 ${f2(cx - cap_r)} ${f2(cy)}Z`;
+        for (const d of [ring2(x0, y0), ring2(x, y), `M${f2(x0 + nx)} ${f2(y0 + ny)}L${f2(x + nx)} ${f2(y + ny)}L${f2(x - nx)} ${f2(y - ny)}L${f2(x0 - nx)} ${f2(y0 - ny)}Z`]) {
           const p = part(`${name}/cast/${k++}`, "path", g);
           set(p, "d", d);
           set(p, "fill", tint(S.c_cap));
@@ -10614,8 +10714,8 @@ var DialTool = class _DialTool {
     const rings = JSON.stringify(S.rings.map((r) => r.name));
     if (this.guide_rings.dataset.rings !== rings) {
       this.guide_rings.dataset.rings = rings;
-      this.guide_ring_lines = S.rings.map((ring, i) => {
-        const d = this.guide_dots(ring.name || kind_of(ring), () => ring_guide(this.S, i), (k) => {
+      this.guide_ring_lines = S.rings.map((ring2, i) => {
+        const d = this.guide_dots(ring2.name || kind_of(ring2), () => ring_guide(this.S, i), (k) => {
           this.S.rings[i].guide = k === null ? -2 : k;
         });
         d.line.classList.add("ring");
@@ -10678,7 +10778,7 @@ var DialTool = class _DialTool {
           this.render();
         } });
         gone.innerHTML = cross_dot;
-        d.label.replaceChildren(el("span", { className: "word", textContent: d.label.textContent }), ...fields.map((f) => f.el));
+        d.label.replaceChildren(el("span", { className: "word", textContent: d.label.textContent }), ...fields.map((f2) => f2.el));
         d.line.classList.add("added");
         d.line.querySelector(".dots .none").replaceWith(gone);
         return { ...d, fields };
@@ -10687,9 +10787,9 @@ var DialTool = class _DialTool {
     }
     this.guide_more_lines.forEach((d, i) => {
       d.refresh();
-      for (const f of d.fields) if (document.activeElement !== f.input) {
-        f.input.value = f.length ? String(parseFloat(this.in_unit(S.gd_more[i][f.key], 2))) : String(+(+S.gd_more[i][f.key]).toFixed(1));
-        f.input.oninput();
+      for (const f2 of d.fields) if (document.activeElement !== f2.input) {
+        f2.input.value = f2.length ? String(parseFloat(this.in_unit(S.gd_more[i][f2.key], 2))) : String(+(+S.gd_more[i][f2.key]).toFixed(1));
+        f2.input.oninput();
       }
     });
     for (const r of this.guide_rows) r.refresh(S);
@@ -10789,6 +10889,7 @@ var DialTool = class _DialTool {
   /** every row: hidden if it doesn't apply (R16); its controls showing the scope's value. A pane hides its rows
    *  when it is folded, and everything in it when its heading doesn't apply. */
   sync_rows() {
+    if (this.case_sync) this.case_sync();
     this.sync_guides();
     this.sync_shadows();
     this.sync_ring_summaries();
@@ -11391,13 +11492,13 @@ var DialTool = class _DialTool {
         this.pop_refresh();
       };
       P.numbers.replaceChildren(...(mode === "HEX" ? ["hex"] : [...mode]).map((letter, i) => {
-        const f = el("input", { type: "text", inputMode: mode === "HEX" ? "text" : "numeric", ariaLabel: letter, id: "pop-" + letter, spellcheck: false, onchange: commit });
-        f.dataset.i = i;
-        return f;
+        const f2 = el("input", { type: "text", inputMode: mode === "HEX" ? "text" : "numeric", ariaLabel: letter, id: "pop-" + letter, spellcheck: false, onchange: commit });
+        f2.dataset.i = i;
+        return f2;
       }));
     }
     const values = mode === "HEX" ? [value] : mode === "RGB" ? rgb2.map((v) => Math.round(v * 255)) : rgb_cmyk(rgb2).map((v) => Math.round(v * 100));
-    for (const f of P.numbers.querySelectorAll("input")) if (!has_focus(f)) f.value = values[f.dataset.i];
+    for (const f2 of P.numbers.querySelectorAll("input")) if (!has_focus(f2)) f2.value = values[f2.dataset.i];
   }
   // ── rows built by hand ───────────────────────────────────
   // ── colours in lists: small swatches, each opening the pop-out ──
@@ -11409,8 +11510,8 @@ var DialTool = class _DialTool {
   }
   /** a band's sectors as colours: [{id, title, read, write}], one per position it uses. */
   sector_colours(i) {
-    const ring = this.S.rings[i], name = ring.name || kind_of(ring);
-    return positions_of(ring).map((at, n) => ({
+    const ring2 = this.S.rings[i], name = ring2.name || kind_of(ring2);
+    return positions_of(ring2).map((at, n) => ({
       id: `ring-${i}-sector-${at}`,
       title: `${name} \xB7 sector ${n + 1}`,
       alpha: true,
@@ -11454,8 +11555,8 @@ var DialTool = class _DialTool {
     const one = (id, title, read, write, alpha = false) => [{ id, title, read, write, alpha }];
     out.refresh = () => this.swatch_lines(wrap, () => {
       const S = this.S, lines = [];
-      S.rings.forEach((ring, i) => {
-        const text = ring.name || kind_of(ring), sectors = kind_of(ring) === "band" && positions_of(ring).length > 1;
+      S.rings.forEach((ring2, i) => {
+        const text = ring2.name || kind_of(ring2), sectors = kind_of(ring2) === "band" && positions_of(ring2).length > 1;
         lines.push({ text, colours: sectors ? this.sector_colours(i) : one(`ring-${i}`, text, () => (this.S.rings[i] || {}).c, (v) => {
           this.S.rings[i].c = v;
           this.changed();
@@ -11498,7 +11599,7 @@ var DialTool = class _DialTool {
    *  (`c`, `cs`), so a link carries it as before. Choosing either puts the whole band in the pattern: sectors 1, 3, 5…
    *  lose a colour of their own. */
   alternate_colours(i) {
-    const ring = this.S.rings[i], name = ring.name || kind_of(ring);
+    const ring2 = this.S.rings[i], name = ring2.name || kind_of(ring2);
     const pattern = (R, second) => {
       const cs = { ...R.cs };
       positions_of(R).forEach((at, n) => {
@@ -12223,11 +12324,11 @@ var DialTool = class _DialTool {
    *  drawer's button for it, so the row is the read-out and the drawer under it the controls. "How big" is what you
    *  would name first for its kind: a tick's or marker's length (a dot's Ø), a numeral's size, a band's width.
    *  Lengths in the unit box's unit, without trailing zeros. → {kind, size, r} as text */
-  ring_summary(ring) {
-    const kind = kind_of(ring), len = (mm) => String(parseFloat(this.in_unit(mm, 2))), n = positions_of(ring).length;
-    const one = has_text(ring) ? ring.size : kind === "band" ? ring.width : SHAPES[ring.shape] === "dot" ? ring.w : ring.len;
+  ring_summary(ring2) {
+    const kind = kind_of(ring2), len = (mm) => String(parseFloat(this.in_unit(mm, 2))), n = positions_of(ring2).length;
+    const one = has_text(ring2) ? ring2.size : kind === "band" ? ring2.width : SHAPES[ring2.shape] === "dot" ? ring2.w : ring2.len;
     const word = kind === "band" ? n === 1 ? "band" : "sectors" : kind === "text" ? n === 1 ? "text" : "texts" : n === 1 ? kind.slice(0, -1) : kind;
-    return { kind: `${n} ${word}`, size: len(one), r: len(ring.r) };
+    return { kind: `${n} ${word}`, size: len(one), r: len(ring2.r) };
   }
   /** the rows follow every change without the list being built again (a name may be being typed in it). */
   sync_ring_summaries() {
@@ -12240,15 +12341,15 @@ var DialTool = class _DialTool {
     this.place_ring_line();
     const R = this.ring(), says = R ? this.ring_summary(R) : null;
     for (const [id, text] of [["#ring-size-fig", says && says.size], ["#ring-r-fig", says && says.r]]) {
-      const f = $(id);
-      if (f && f.textContent !== text) f.textContent = text;
+      const f2 = $(id);
+      if (f2 && f2.textContent !== text) f2.textContent = text;
     }
     this.ring_rows().forEach((li, i) => {
-      const ring = this.S.rings[i], k2 = li.querySelector(".kindicon");
-      if (!ring || !k2 || k2.dataset.kind === String(ring.kind)) return;
-      k2.dataset.kind = String(ring.kind);
-      k2.innerHTML = PICS.kind(ring.kind, KIND_PIC);
-      k2.title = kind_of(ring);
+      const ring2 = this.S.rings[i], k2 = li.querySelector(".kindicon");
+      if (!ring2 || !k2 || k2.dataset.kind === String(ring2.kind)) return;
+      k2.dataset.kind = String(ring2.kind);
+      k2.innerHTML = PICS.kind(ring2.kind, KIND_PIC);
+      k2.title = kind_of(ring2);
     });
   }
   /** one row per ring: eye (show or hide it on the dial) · grip · name, with the rename box right beside it (selected
@@ -12258,20 +12359,20 @@ var DialTool = class _DialTool {
     if (!this.ring_list) return;
     this.pinned.classList.toggle("ring-scrolls", this.S.rings.length > RING_ROWS);
     this.ring_list.replaceChildren();
-    this.S.rings.forEach((ring, i) => {
+    this.S.rings.forEach((ring2, i) => {
       const selected = i === this.S.ui_ring;
-      const show = el("button", { type: "button", className: "eye", title: ring.on ? "Hide this ring" : "Show this ring", ariaLabel: `Show ${ring.name}`, onclick: (e) => {
+      const show = el("button", { type: "button", className: "eye", title: ring2.on ? "Hide this ring" : "Show this ring", ariaLabel: `Show ${ring2.name}`, onclick: (e) => {
         e.stopPropagation();
-        this.show_ring(i, !ring.on);
+        this.show_ring(i, !ring2.on);
       } });
-      show.setAttribute("aria-pressed", String(ring.on));
-      show.innerHTML = eye(ring.on);
+      show.setAttribute("aria-pressed", String(ring2.on));
+      show.innerHTML = eye(ring2.on);
       const grip = el("span", { className: "grip", title: "Drag to change the order" });
       grip.innerHTML = icon(TOOL_ICONS.grip);
       grip.onpointerdown = (e) => this.drag_ring(e, i);
-      const kind = el(selected ? "button" : "span", { className: "kindicon", id: selected ? "ring-kind-square" : `ring-kind-row-${i}`, title: kind_of(ring) });
-      kind.dataset.kind = String(ring.kind);
-      kind.innerHTML = PICS.kind(ring.kind, KIND_PIC);
+      const kind = el(selected ? "button" : "span", { className: "kindicon", id: selected ? "ring-kind-square" : `ring-kind-row-${i}`, title: kind_of(ring2) });
+      kind.dataset.kind = String(ring2.kind);
+      kind.innerHTML = PICS.kind(ring2.kind, KIND_PIC);
       if (selected) {
         kind.type = "button";
         kind.dataset.tip = "Kind";
@@ -12289,11 +12390,11 @@ var DialTool = class _DialTool {
           }
         };
       }
-      const name = el("span", { className: "name", textContent: ring.name || kind_of(ring) });
+      const name = el("span", { className: "name", textContent: ring2.name || kind_of(ring2) });
       const cell = el("span", { className: "namecell" }, name);
-      const says = selected && this.ring_summary(ring);
+      const says = selected && this.ring_summary(ring2);
       const figs = selected ? [el("span", { className: "fig", id: "ring-size-fig", textContent: says.size }), el("span", { className: "fig", id: "ring-r-fig", textContent: says.r })] : [];
-      const item = el("li", { className: "ring" + (selected ? " on" : "") + (ring.on ? "" : " off"), tabIndex: 0 }, show, grip, kind, cell, ...figs);
+      const item = el("li", { className: "ring" + (selected ? " on" : "") + (ring2.on ? "" : " off"), tabIndex: 0 }, show, grip, kind, cell, ...figs);
       item.setAttribute("role", "option");
       item.setAttribute("aria-selected", String(selected));
       item.onkeydown = (e) => {
@@ -12303,7 +12404,7 @@ var DialTool = class _DialTool {
         }
       };
       let rename = null;
-      if (selected && ring.on) {
+      if (selected && ring2.on) {
         const start2 = (e) => {
           e.stopPropagation();
           this.rename_ring(i, item, cell);
@@ -12329,9 +12430,9 @@ var DialTool = class _DialTool {
   }
   /** show or hide ring i on the dial without selecting it (the eye's job; a click on the row selects). */
   show_ring(i, on) {
-    const ring = this.S.rings[i];
-    if (!ring || ring.on === on) return;
-    ring.on = on;
+    const ring2 = this.S.rings[i];
+    if (!ring2 || ring2.on === on) return;
+    ring2.on = on;
     this.static_dirty = true;
     this.steady(() => {
       this.fill_ring_list();
@@ -12346,19 +12447,19 @@ var DialTool = class _DialTool {
   }
   /** the name becomes a field: Enter or a click elsewhere keeps it, Esc puts the old name back. */
   rename_ring(i, item, name) {
-    const ring = this.S.rings[i], before = ring.name;
-    const field = el("input", { type: "text", value: ring.name, className: "name", ariaLabel: "Ring name" });
+    const ring2 = this.S.rings[i], before = ring2.name;
+    const field = el("input", { type: "text", value: ring2.name, className: "name", ariaLabel: "Ring name" });
     let done = false;
     const end = (keep) => {
       if (done) return;
       done = true;
-      ring.name = keep ? field.value.trim() || before : before;
+      ring2.name = keep ? field.value.trim() || before : before;
       this.fill_ring_list();
       this.sync_rows();
       this.autosave();
     };
     field.oninput = () => {
-      ring.name = field.value;
+      ring2.name = field.value;
       this.sync_rows();
     };
     field.onblur = () => end(true);
@@ -12395,8 +12496,8 @@ var DialTool = class _DialTool {
       line.remove();
       rows[from].classList.remove("dragged");
       if (to === from) return this.select_ring(from);
-      const rings = this.S.rings, [ring] = rings.splice(from, 1);
-      rings.splice(to, 0, ring);
+      const rings = this.S.rings, [ring2] = rings.splice(from, 1);
+      rings.splice(to, 0, ring2);
       this.S.ui_ring = to;
       this.static_dirty = true;
       this.steady(() => {
@@ -12622,19 +12723,19 @@ var DialTool = class _DialTool {
   /** family → its fonts, in the catalogue's order. */
   families() {
     const by = /* @__PURE__ */ new Map();
-    for (const f of this.catalog.values()) {
-      if (!by.has(f.family)) by.set(f.family, []);
-      by.get(f.family).push(f);
+    for (const f2 of this.catalog.values()) {
+      if (!by.has(f2.family)) by.set(f2.family, []);
+      by.get(f2.family).push(f2);
     }
     return by;
   }
   /** "1234567890" in the font itself: the outline made with the list, or drawn now, or set by the browser.
    *  what = "name": the family's name in its own face instead, likewise. */
-  sample(f, what = "sample", fits = what === "name") {
+  sample(f2, what = "sample", fits = what === "name") {
     const box2 = el("span", { className: what === "name" ? "face" : "sample" });
-    const t = has_font(f.ps) ? { ...RING_BASE, ps: f.ps, axes: f.start || {}, features: {}, tracking: 0, lang: 0 } : null;
-    const text = what === "name" ? f.family : what === "preview" ? "1234567890 Abcdefg" + (t && has_chars("\u2026", t) ? "\u2026" : "...") : "1234567890", high = what === "name" ? 16 : 20;
-    let s = what === "preview" ? t ? null : f.sample : f[what];
+    const t = has_font(f2.ps) ? { ...RING_BASE, ps: f2.ps, axes: f2.start || {}, features: {}, tracking: 0, lang: 0 } : null;
+    const text = what === "name" ? f2.family : what === "preview" ? "1234567890 Abcdefg" + (t && has_chars("\u2026", t) ? "\u2026" : "...") : "1234567890", high = what === "name" ? 16 : 20;
+    let s = what === "preview" ? t ? null : f2.sample : f2[what];
     if (!s && t) {
       s = { d: text_path(text, t, 1e3).svg(0, true), w: Math.round(advance(text, t, 1e3)) };
     }
@@ -12642,7 +12743,7 @@ var DialTool = class _DialTool {
     if (s && s.d) box2.innerHTML = `<svg viewBox="0 -1000 ${s.w} 1250" width="${wide}" height="${tall}"${fits ? ` style="min-width:${Math.ceil(wide * NAME_LEAST)}px"` : ""} aria-hidden="true"><path d="${s.d}" fill="currentColor"/></svg>`;
     else {
       box2.textContent = text;
-      box2.style.fontFamily = `"${f.family}"`;
+      box2.style.fontFamily = `"${f2.family}"`;
     }
     return box2;
   }
@@ -12650,7 +12751,7 @@ var DialTool = class _DialTool {
    *  → [[word, kind]…]. The kind gives the sticker its colour (the legend under the list says which is which).
    *  Short words, spelled out in the legend: "w. 100–900", "tab", "2 ss". */
   family_says(fonts2) {
-    const styles = fonts2.map((f) => f.style || ""), first = fonts2[0];
+    const styles = fonts2.map((f2) => f2.style || ""), first = fonts2[0];
     const ranges = first.axes || (has_font(first.ps) ? Object.fromEntries(Object.entries(font_axes(font_of({ ps: first.ps, axes: {} }))).map(([tag, x]) => [tag, [x.min, x.max]])) : {});
     const axes = Object.keys(ranges);
     const said = [];
@@ -12737,11 +12838,11 @@ var DialTool = class _DialTool {
       axes.el.hidden = !axes.refresh(R, T);
       features.refresh(R, T);
       swatch.show(T[crow.key] || (crow.or ? crow.or(T) : [0, 0, 0, 1]));
-      const mine = this.families().get(R.family) || [], f = this.catalog.get(R.ps) || mine[0];
+      const mine = this.families().get(R.family) || [], f2 = this.catalog.get(R.ps) || mine[0];
       const key = R.ps + "/" + has_font(R.ps) + "/" + Boolean(T.ps);
       if (key !== shown) {
         shown = key;
-        current.replaceChildren(f ? this.sample(f, "preview") : el("span", { className: "sample quiet", textContent: "not loaded" }));
+        current.replaceChildren(f2 ? this.sample(f2, "preview") : el("span", { className: "sample quiet", textContent: "not loaded" }));
         name.textContent = R.family;
       }
       const tab = (text, on, act, id) => {
@@ -12786,16 +12887,16 @@ var DialTool = class _DialTool {
     const DOT = 0.68, ARC = 0.52;
     let drawn2 = "";
     out.refresh = (R) => {
-      const angles = ring_angles(R), used = new Set(positions_of(R)), f = (v) => v.toFixed(4);
-      const at = (a, r) => [f(r * Math.sin(a * Math.PI / 180)), f(-r * Math.cos(a * Math.PI / 180))];
+      const angles = ring_angles(R), used = new Set(positions_of(R)), f2 = (v) => v.toFixed(4);
+      const at = (a, r) => [f2(r * Math.sin(a * Math.PI / 180)), f2(-r * Math.cos(a * Math.PI / 180))];
       const marks = angles.map((a, i) => {
         const [x0, y0] = at(a, 0.84), [x1, y1] = at(a, 1);
         return `<path class="${used.has(i) ? "used" : "skipped"}" d="M${x0} ${y0}L${x1} ${y1}"/>`;
       }).join("");
       const a0 = +R.start || 0, span = Math.min(Math.max(+R.span || 360, 1), 360), [fx, fy] = at(angles[0] ?? a0, DOT);
       const [sx, sy] = at(a0, ARC), [ex, ey] = at(a0 + span, ARC);
-      const arc2 = span >= 360 ? `<circle class="span" r="${ARC}"/>` : `<path class="span" d="M${sx} ${sy}A${ARC} ${ARC} 0 ${span > 180 ? 1 : 0} 1 ${ex} ${ey}"/>`;
-      const now = `<svg viewBox="-1.1 -1.1 2.2 2.2" aria-hidden="true"><circle class="axis" r="1"/>${marks}${arc2}<circle class="spanend" cx="${ex}" cy="${ey}" r="0.06"/><circle class="first" cx="${fx}" cy="${fy}" r="0.07"/></svg>`;
+      const arc3 = span >= 360 ? `<circle class="span" r="${ARC}"/>` : `<path class="span" d="M${sx} ${sy}A${ARC} ${ARC} 0 ${span > 180 ? 1 : 0} 1 ${ex} ${ey}"/>`;
+      const now = `<svg viewBox="-1.1 -1.1 2.2 2.2" aria-hidden="true"><circle class="axis" r="1"/>${marks}${arc3}<circle class="spanend" cx="${ex}" cy="${ey}" r="0.06"/><circle class="first" cx="${fx}" cy="${fy}" r="0.07"/></svg>`;
       if (now !== drawn2) {
         drawn2 = now;
         wrap.innerHTML = now;
@@ -13105,7 +13206,7 @@ var DialTool = class _DialTool {
   }
   fill_picker(again = false) {
     const list = $("#font-list"), R = this.font_shown(), by = this.families(), q = $("#font-find").value.trim().toLowerCase();
-    const regular = (fonts2) => fonts2.find((f) => /^(regular|roman|book|normal)$/i.test(f.style)) || fonts2[0];
+    const regular = (fonts2) => fonts2.find((f2) => /^(regular|roman|book|normal)$/i.test(f2.style)) || fonts2[0];
     const key = [...by.keys()].join("|") + "/" + q + "/" + font_list().length;
     if (again || list.dataset.shown !== key) {
       list.dataset.shown = key;
@@ -13113,27 +13214,27 @@ var DialTool = class _DialTool {
       let group = null;
       for (const [family, fonts2] of by) {
         if (q && !family.toLowerCase().includes(q)) continue;
-        const f = regular(fonts2);
-        if (f.group !== group) {
-          group = f.group;
+        const f2 = regular(fonts2);
+        if (f2.group !== group) {
+          group = f2.group;
           const title = { added: "Added by you", computer: "On this computer" }[group];
           if (title) list.append(el("div", { className: "group quiet", textContent: title }));
         }
-        const named = this.sample(fonts2.find((x) => x.name) || f, "name");
+        const named = this.sample(fonts2.find((x) => x.name) || f2, "name");
         named.classList.add("name");
         named.setAttribute("aria-label", family);
         const row = el(
           "button",
-          { type: "button", className: "fontrow", title: f.what ? `${family} \xB7 ${f.what}` : family, onclick: () => {
+          { type: "button", className: "fontrow", title: f2.what ? `${family} \xB7 ${f2.what}` : family, onclick: () => {
             this.font_note = "";
-            this.use_font(f);
+            this.use_font(f2);
           } },
           named,
-          this.sample(f),
+          this.sample(f2),
           el("span", { className: "has" }, ...this.family_says(fonts2).map(([word, kind]) => el("span", { className: "sticker " + kind, textContent: word })))
         );
         row.dataset.family = family;
-        row.dataset.group = f.group;
+        row.dataset.group = f2.group;
         list.append(row);
       }
       const on = list.querySelector(`.fontrow[data-family="${CSS.escape(R.family)}"]`);
@@ -13466,12 +13567,12 @@ var DialTool = class _DialTool {
   // ── fonts ────────────────────────────────────────────────
   /** fonts are needed before the first numerals are right: load what the settings name, if we may. */
   async fonts_at_start() {
-    for (const f of font_list()) {
-      const listed = FONT_LIST.find((x) => x.ps === f.ps);
-      this.catalog.set(f.ps, { family: listed ? listed.family : f.family, style: listed ? listed.style : f.style, ps: f.ps, group: "list" });
+    for (const f2 of font_list()) {
+      const listed = FONT_LIST.find((x) => x.ps === f2.ps);
+      this.catalog.set(f2.ps, { family: listed ? listed.family : f2.family, style: listed ? listed.style : f2.style, ps: f2.ps, group: "list" });
     }
-    for (const f of FONT_LIST) if (!this.catalog.has(f.ps)) this.catalog.set(f.ps, { ...f, group: "list" });
-    for (const f of this.remembered()) if (!this.catalog.has(f.ps)) this.catalog.set(f.ps, { ...f, group: "added" });
+    for (const f2 of FONT_LIST) if (!this.catalog.has(f2.ps)) this.catalog.set(f2.ps, { ...f2, group: "list" });
+    for (const f2 of this.remembered()) if (!this.catalog.has(f2.ps)) this.catalog.set(f2.ps, { ...f2, group: "added" });
     await this.load_fonts_in_use();
     try {
       const status = await navigator.permissions.query({ name: "local-fonts" });
@@ -13488,8 +13589,8 @@ var DialTool = class _DialTool {
     say("Asking the browser for this computer\u2019s fonts\u2026 (it may show a question near the address bar)");
     try {
       const list = await window.queryLocalFonts();
-      for (const f of list) {
-        if (!this.catalog.has(f.postscriptName)) this.catalog.set(f.postscriptName, { family: f.family, style: f.style, ps: f.postscriptName, data: f, group: "computer" });
+      for (const f2 of list) {
+        if (!this.catalog.has(f2.postscriptName)) this.catalog.set(f2.postscriptName, { family: f2.family, style: f2.style, ps: f2.postscriptName, data: f2, group: "computer" });
       }
       if (list.length) say(`${list.length} installed fonts are now listed under Family.`);
       else say("The browser gave no fonts: it isn\u2019t allowed to for this page. Click the icon at the left of the address bar \u2192 Site settings \u2192 Fonts \u2192 Allow, reload, and press Installed fonts again. Or use Add font file\u2026 (Helvetica Neue is /System/Library/Fonts/HelveticaNeue.ttc).");
@@ -13518,10 +13619,10 @@ var DialTool = class _DialTool {
   }
   async load_fonts_in_use() {
     let loaded = false;
-    for (const ring of [...this.S.rings, ...windows_of(this.S).filter((w) => w.ps)]) {
-      const entry = this.catalog.get(ring.ps);
+    for (const ring2 of [...this.S.rings, ...windows_of(this.S).filter((w) => w.ps)]) {
+      const entry = this.catalog.get(ring2.ps);
       try {
-        if (entry && !has_font(ring.ps)) loaded = await this.load_font(entry) || loaded;
+        if (entry && !has_font(ring2.ps)) loaded = await this.load_font(entry) || loaded;
       } catch (e) {
         this.font_note = `Couldn\u2019t fetch ${entry.family} (${e.message}). Are you online?`;
         this.log(this.font_note);
@@ -13540,7 +13641,7 @@ var DialTool = class _DialTool {
       for (const file of files) got.push({ name: file.name, bytes: new Uint8Array(await file.arrayBuffer()) });
       await this.take_fonts(got);
     } catch (e) {
-      this.say_font(`Couldn\u2019t read ${files.map((f) => f.name).join(", ")} (${e.name}: ${e.message}).`);
+      this.say_font(`Couldn\u2019t read ${files.map((f2) => f2.name).join(", ")} (${e.name}: ${e.message}).`);
     }
   }
   say_font(text) {
@@ -13568,11 +13669,11 @@ var DialTool = class _DialTool {
       return 0;
     }
     this.remember(added);
-    const names = [...new Set(added.map((f) => f.family))];
+    const names = [...new Set(added.map((f2) => f2.family))];
     this.say_font(`Added ${names.slice(0, 3).join(", ")}${names.length > 3 ? "\u2026" : ""}: ${added.length} style${added.length > 1 ? "s" : ""}.`);
     const R = this.ring();
-    if (has_text(R) && !added.some((f) => f.ps === R.ps)) {
-      await this.use_font(added.find((f) => /^(regular|roman|book|normal)$/i.test(f.style)) || added[0]);
+    if (has_text(R) && !added.some((f2) => f2.ps === R.ps)) {
+      await this.use_font(added.find((f2) => /^(regular|roman|book|normal)$/i.test(f2.style)) || added[0]);
     }
     forget();
     this.static_dirty = true;
@@ -13590,11 +13691,11 @@ var DialTool = class _DialTool {
       const u = new URL(text);
       names = [];
       if (/\.(ttf|otf|ttc|otc)$/i.test(u.pathname)) file = text;
-      else if (u.hostname === "fonts.googleapis.com") names = u.searchParams.getAll("family").map((f) => f.split(":")[0]);
+      else if (u.hostname === "fonts.googleapis.com") names = u.searchParams.getAll("family").map((f2) => f2.split(":")[0]);
       else if (u.hostname.endsWith("fonts.google.com")) {
         const page = /\/specimen\/([^/?]+)/.exec(u.pathname);
         if (page) names = [decodeURIComponent(page[1]).replace(/\+/g, " ")];
-        else names = u.searchParams.getAll("selection.family").flatMap((v) => v.split("|")).map((f) => f.split(":")[0]);
+        else names = u.searchParams.getAll("selection.family").flatMap((v) => v.split("|")).map((f2) => f2.split(":")[0]);
       }
       if (!file && !names.length) {
         this.say_font("That link isn\u2019t one I can read: use a Google Fonts page (fonts.google.com/specimen/\u2026), its embed link, or a link that ends in .ttf or .otf.");
@@ -13630,13 +13731,13 @@ var DialTool = class _DialTool {
       const about = await answer.text();
       const family = (/^name: "([^"]+)"/m.exec(about) || [])[1] || name;
       const fonts2 = [...about.matchAll(/fonts \{([^}]*)\}/g)].map((m) => Object.fromEntries([...m[1].matchAll(/(\w+): "?([^"\n]*)"?/g)].map((x) => [x[1], x[2]])));
-      const upright = fonts2.filter((f) => f.style === "normal").slice(0, 12);
+      const upright = fonts2.filter((f2) => f2.style === "normal").slice(0, 12);
       const sources = [];
-      for (const f of upright) {
-        const url = base + encodeURIComponent(f.filename);
+      for (const f2 of upright) {
+        const url = base + encodeURIComponent(f2.filename);
         const file = await fetch(url);
-        if (!file.ok) throw new Error(`${f.filename}: ${file.status}`);
-        sources.push({ name: f.filename, bytes: new Uint8Array(await file.arrayBuffer()), url, style: upright.length > 1 ? (f.full_name || "").replace(family, "").trim() || "Regular" : "Regular" });
+        if (!file.ok) throw new Error(`${f2.filename}: ${file.status}`);
+        sources.push({ name: f2.filename, bytes: new Uint8Array(await file.arrayBuffer()), url, style: upright.length > 1 ? (f2.full_name || "").replace(family, "").trim() || "Regular" : "Regular" });
       }
       return this.take_fonts(sources, family);
     }
@@ -13646,8 +13747,8 @@ var DialTool = class _DialTool {
   /** fonts added from a link are remembered by this browser as their addresses, and fetched again when wanted. */
   remember(added) {
     try {
-      const kept = JSON.parse(localStorage.getItem("dial-tool-fonts") || "[]").filter((k) => !added.some((f) => f.ps === k.ps));
-      for (const f of added) if (f.url) kept.push({ family: f.family, style: f.style, ps: f.ps, url: f.url });
+      const kept = JSON.parse(localStorage.getItem("dial-tool-fonts") || "[]").filter((k) => !added.some((f2) => f2.ps === k.ps));
+      for (const f2 of added) if (f2.url) kept.push({ family: f2.family, style: f2.style, ps: f2.ps, url: f2.url });
       localStorage.setItem("dial-tool-fonts", JSON.stringify(kept));
     } catch (e) {
     }
@@ -13662,10 +13763,10 @@ var DialTool = class _DialTool {
   /** when the sheet opens: fetch the remembered fonts that aren't here yet, so each can show its numerals. */
   async load_remembered() {
     let any = false;
-    for (const f of this.catalog.values()) {
-      if (f.url && !has_font(f.ps)) {
+    for (const f2 of this.catalog.values()) {
+      if (f2.url && !has_font(f2.ps)) {
         try {
-          any = await this.load_font(f) || any;
+          any = await this.load_font(f2) || any;
         } catch (e) {
         }
       }
@@ -13722,6 +13823,7 @@ var DialTool = class _DialTool {
       }
       if (this.show && this.show.spin) this.render();
       this.draw();
+      this.draw_bezel();
       this.draw_handles();
       this.tiny_draw();
     } catch (e) {
@@ -13807,9 +13909,9 @@ var DialTool = class _DialTool {
     });
     this.draw_shadows(items);
     this.place();
-    const ring = this.ring();
-    const font = has_text(ring) ? `   \xB7   ${ring.ps}` : "";
-    this.status.textContent = `${ring.name}${font} \xB7 \xD8 ${this.in_unit(S.dial_d, 1)} ${this.unit()[0]} \xB7 build ${this.build_ms.toFixed(0)} ms`;
+    const ring2 = this.ring();
+    const font = has_text(ring2) ? `   \xB7   ${ring2.ps}` : "";
+    this.status.textContent = `${ring2.name}${font} \xB7 \xD8 ${this.in_unit(S.dial_d, 1)} ${this.unit()[0]} \xB7 build ${this.build_ms.toFixed(0)} ms`;
     while (NOTES.length) {
       const note2 = NOTES.shift(), ps = (/\(([^)]+)\) isn’t loaded|\(([^)]+)\) isn't loaded/.exec(note2) || []).slice(1).find(Boolean);
       const coming = ps && this.catalog.has(ps) && (this.catalog.get(ps).file || this.catalog.get(ps).data);
@@ -13824,8 +13926,9 @@ var DialTool = class _DialTool {
   }
   fit_zoom() {
     const [w, h] = this.size();
-    return Math.min(w, h) / page_mm(this.S);
+    return Math.min(w, h) / Math.max(page_mm(this.S), this.S.bezel ? 2 * (bezel_parts(this.S.bezel, this.S.dial_d).reach + this.S.margin) : 0);
   }
+  // with a case (4.66), room for it too
   /** put the dial at c, scaled to z; mirrored for toner transfer. y grows upward inside. */
   place() {
     const flip = this.S.out_mirror ? -1 : 1;
@@ -13836,6 +13939,7 @@ var DialTool = class _DialTool {
       this.handles.setAttribute("transform", where);
       this.handles_key = "";
     }
+    if (this.bezel_g) this.bezel_g.setAttribute("transform", where);
     if (this.pool) this.pool.setAttribute("transform", where);
   }
   fit() {
@@ -14093,10 +14197,10 @@ var DialTool = class _DialTool {
   place_needle(t12 = (this.S.t % 43200 + 43200) % 43200) {
     const n = this.needle, s = this.time_slider;
     if (!n || !n.isConnected || !s.clientWidth) return;
-    const THUMB = 3, bar = n.closest(".bar");
+    const THUMB = 3, bar2 = n.closest(".bar");
     n.style.left = `${s.offsetLeft + THUMB / 2 + (s.clientWidth - THUMB) * t12 / 43200}px`;
     n.style.top = `${s.offsetTop}px`;
-    n.style.height = `${bar.getBoundingClientRect().bottom - s.getBoundingClientRect().top}px`;
+    n.style.height = `${bar2.getBoundingClientRect().bottom - s.getBoundingClientRect().top}px`;
   }
   /** the day's ruler. An hour gets as many cuts as its width allows: none, halves, quarters, ten or five minutes.
    *  Hour lines are long, the others shorter; all cross the line. A click on the slider snaps to the nearest cut. */
@@ -14177,13 +14281,13 @@ var DialTool = class _DialTool {
     const slow = this.speed < 1;
     if (this.playing && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
       const beat = BEATS[this.S.ha_beat] ? BEATS[this.S.ha_beat][1] : 0, rate = beat || 0.5, most = Math.max(beat, PULSE_MOST);
-      const f = rate * this.speed <= most ? frac(t * rate) : frac(now * most);
+      const f2 = rate * this.speed <= most ? frac(t * rate) : frac(now * most);
       if (beat > 0) {
-        cap = (1 - f) ** 3;
-        const h = Math.min(1, (slow ? f / this.speed : f) / PULSE_FLASH);
+        cap = (1 - f2) ** 3;
+        const h = Math.min(1, (slow ? f2 / this.speed : f2) / PULSE_FLASH);
         tri = h < PULSE_RISE ? 0.5 - 0.5 * Math.cos(Math.PI * h / PULSE_RISE) : (1 - (h - PULSE_RISE) / (1 - PULSE_RISE)) ** 2;
       } else {
-        cap = 0.5 - 0.5 * Math.cos(2 * Math.PI * (slow ? frac(now * rate) : f));
+        cap = 0.5 - 0.5 * Math.cos(2 * Math.PI * (slow ? frac(now * rate) : f2));
         tri = cap ** 3;
       }
     }
@@ -14266,7 +14370,7 @@ var DialTool = class _DialTool {
     this.close();
     const fonts2 = this.catalog;
     tool = new _DialTool(settings);
-    for (const [ps, f] of fonts2) if (!tool.catalog.has(ps)) tool.catalog.set(ps, f);
+    for (const [ps, f2] of fonts2) if (!tool.catalog.has(ps)) tool.catalog.set(ps, f2);
     tool.load_fonts_in_use();
     window.dial_tool = tool;
     tool.scrolls = keep.scrolls;
@@ -14450,9 +14554,9 @@ async function open_window(pathkit2, harfbuzz, font_bytes) {
   window.addEventListener("drop", async (e) => {
     e.preventDefault();
     const files = [...e.dataTransfer.files];
-    const json = files.find((f) => f.name.toLowerCase().endsWith(".json"));
+    const json = files.find((f2) => f2.name.toLowerCase().endsWith(".json"));
     if (json) tool.load_text(await json.text(), json.name);
-    const fonts2 = files.filter((f) => /\.(ttf|otf|ttc|otc)$/i.test(f.name));
+    const fonts2 = files.filter((f2) => /\.(ttf|otf|ttc|otc)$/i.test(f2.name));
     if (fonts2.length) tool.add_font_files(fonts2);
   });
 }
