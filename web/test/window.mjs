@@ -1313,6 +1313,17 @@ check(await S("S.ui_section === 3 && S.ui_window === 3") && await page.isVisible
   check(look[0] && look[1] && look[2] === "LINK" && look[3] && look[6] && on[0] === true && on[1] === "LINKED" && on[2] === "rgb(255, 255, 255)" && Math.abs(twice[0] - 2 * was[0]) < 1e-9 && Math.abs(twice[1] - 2 * was[1]) < 1e-3 && free[0] === was[0] && Math.abs(free[1] - 2 * was[1]) < 1e-3 && free[2] === false,
     `a window's width over its height, each with its slider; LINK in the pixel font on the line between them; pressed it says LINKED, white on dark, and width ×2 takes height ×2 (${was.join(" × ")} → ${twice.join(" × ")}); unlinked, width alone (#358)`);
 }
+{ // the complications act like tabs (#328, 4.61: "selecting them changes settings accordingly"): each kind keeps its own settings, its place is shared
+  const was = await S("JSON.stringify([S.da_kind, S.da_w, S.da_day, S.da_r])");
+  const tabs = await page.evaluate(() => { const t = window.dial_tool, v = (k, x) => t.set_value("window", k, x), S = t.S; t.S.ui_window = 0;
+    v("kind", 0); v("w", 3.3); v("text", "21");
+    v("kind", 1); const day_first = [S.da_day, S.da_w]; v("w", 5); v("r", 9.5);
+    v("kind", 0); const date_back = [S.da_day, S.da_w, S.da_r];
+    v("kind", 1); const day_back = [S.da_day, S.da_w, S.da_r];
+    return [day_first, date_back, day_back]; });
+  await page.evaluate((was) => { const [k, w, d, r] = JSON.parse(was), t = window.dial_tool; t.set_value("window", "kind", k); Object.assign(t.S, { da_w: w, da_day: d, da_r: r }); t.static_dirty = true; t.sync_rows(); t.render(); }, was);
+  check(tabs[0].join() === "21,3.3" && tabs[1].join() === "21,3.3,9.5" && tabs[2].join() === "21,5,9.5", `the complications act like tabs: a day taken first starts from the date's settings, a typed text kept (${tabs[0]}); each kind keeps its own (date ${tabs[1]}, day ${tabs[2]}), the radius shared (#328)`);
+}
 await shot("4d-windows");
 for (const n of ["1", "2", "3"]) { await page.click("#window-card-" + n); await page.uncheck("#window-on-Show"); }
 await page.click("#window-card-0");

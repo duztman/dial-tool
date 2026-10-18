@@ -753,6 +753,7 @@ const label_of = (row, T) => (row.say ? row.say(T)[0] : row.menu ? `${(row.menu.
 // two measures that may be linked, so changing one keeps their ratio (#358; Okay's notes 2: "a link/unlink like in
 // illustrator … other width-height or linkable stuff get this too"): its switch key, the pair, and when it applies
 const LINKED_PAIRS = { window: [{ link: "wh_link", keys: ["w", "h"], when: (T) => ["rectangle", "arc"].includes(G.window_shape(T)) }] };
+const KIND_TAB_KEYS = Object.keys(G.WINDOW_BASE).filter((k) => !["on", "kind", "at", "at_deg", "r", "guide", "wh_link"].includes(k));      // what each complication keeps of its own (#328)
 const TINY_EVERY = 200;                            // the Tiny Preview redrawn at most this often, in ms (#337)
 const NUDGE_NEUTRAL = { dr: 0, da: 0, rot: 0, s: 1 };      // a numeral's nudge, untouched (#252)
 const is_length = (row) => row.kind === "num" && (LENGTH_KEYS[row.scope] || []).includes(row.key);
@@ -949,13 +950,14 @@ class DialTool {
     if (pair && T[key] > 0 && value > 0) { const other = pair.keys.find((k) => k !== key); T[other] = +(T[other] * value / T[key]).toFixed(4); }
     // the diameter, with "scale everything" ticked: every measure on the dial grows or shrinks by the same factor
     if (scope === "global" && key === "dial_d" && this.S.ui_scale && T.dial_d > 0 && value > 0) this.scale_with(T.dial_d, value);
+    const restored = scope === "window" && key === "kind" && value !== T.kind ? this.kind_tab(T, value) : false;
     T[key] = value;
     if (scope === "ring") {
       if (!["c", "name", "guide"].includes(key)) this.static_dirty = true;      // (cs too: which sectors share a colour decides the shapes)
       if (key === "kind" || key === "name" || key === "on") this.fill_ring_list();
     } else if (scope === "window") {
       if (!["ink", "text_c", "disc_c"].includes(key)) this.static_dirty = true;
-      if (key === "kind") {                        // a date shows a number, a day a word: swap the untouched starting text
+      if (key === "kind" && !restored) {           // a kind taken for the first time: a date shows a number, a day a word, so swap the untouched starting text
         if (G.WINDOW_KINDS[value] === "day" && T.text === "17") T.text = "MON";
         if (G.WINDOW_KINDS[value] === "date" && T.text === "MON") T.text = "17";
       }
@@ -1677,7 +1679,21 @@ class DialTool {
     if (!T.timer) T.timer = setTimeout(go, Math.max(0, TINY_EVERY - (performance.now() - T.at)));
   }
 
-  /** guides, at the preview's top right (Okay, 12 Oct 2026): a switch (a bullseye and the word; solid outline = on,
+  /** the complications act like tabs (Okay, 18 Oct 2026: "Act like tabs, selecting them changes settings accordingly",
+   *  #328): each kind keeps its own settings for the window — its shape and size, its text, colours and font — and a kind
+   *  taken again brings its own back. Where the window stands (on, place, radius, guide, link) is shared by its kinds.
+   *  Kept for this visit (a link keeps the window as it is shown); a kind never taken starts from what the window has.
+   *  → whether the kind's own settings came back. */
+  kind_tab(T, to) {
+    const mine = ((this.kind_tabs ||= {})[this.S.ui_window] ||= {});
+    mine[T.kind ?? 0] = Object.fromEntries(KIND_TAB_KEYS.map((k) => [k, structuredClone(T[k])]));
+    const back = mine[to];
+    if (!back) return false;
+    for (const [k, v] of Object.entries(back)) T[k] = structuredClone(v);
+    return true;
+  }
+
+  /** guides, at the preview's bottom left since 4.59 (its top right from 12 Oct 2026, Okay, to 4.58): a switch (a bullseye and the word; solid outline = on,
    *  dashed = off) and, joined to it, an arrow that drops their list: the five kinds of guide, each with an eye and
    *  one of eight colours; one thickness; Reset. No free colours here. */
   guides_box() {

@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.61 (web version) · 18 Oct 2026
+
+- **The complications act like tabs** (#328: "selecting them changes settings accordingly"): each kind — date, day, AM · PM, moon — keeps its own settings for the window (shape, size, text, colours, font). Taking a kind back brings its own back; a kind taken for the first time starts from what the window has. Where the window stands (its place and radius) is shared. Kept while the tool is open; a link keeps the window as it is shown.
+
 ## beta 4.60 (web version) · 18 Oct 2026
 
 Okay's notes on 4.59 from the iPad (18 Oct, 20:39).
