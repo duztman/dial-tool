@@ -1006,6 +1006,20 @@ await page.click("#hand-tab-0");
     await page.evaluate((v) => { const t = window.dial_tool; t.set_value("hand", "len", v[0]); t.set_value("hand", "w", v[1]); t.set_value("hand", "tail", v[2]); }, was);
     check(names === "len,tail,w1,w2" && frame_dash && Math.abs(len - was[0] - 1) < 0.11 && Math.abs(w - was[1] - 0.4) < 0.03 && Math.abs(tail - was[2] - 0.5) < 0.11 && disc === "len,w1,w2",
       `the hand's picture has a dotted box and four handles (${names}); dragged, the tip sets the length (${was[0]} → ${len}, a mm out), an edge the width by twice its travel (${was[1]} → ${w}, 0.2 mm out), the tail the tail (${was[2]} → ${tail}); a disc hand: ${disc}`);
+    // the width handles stand where a leaf bulges, and dragged along the hand move that place (#368, 4.80); a hub (#370)
+    const keep = await S("JSON.stringify(S.ha_hour)");
+    await page.click("#hand-shape-Shape-4"); await frame();
+    const L = await S("S.ha_hour.len"), b0 = await S("S.ha_hour.bulge"), w0 = await S("S.ha_hour.w");
+    const stands = async () => { const g = (await grips()).find((x) => x[0] === "w2"); return page.evaluate(([gy]) => { const h = window.dial_tool.hand(), path = [...document.querySelectorAll("#hand-detail svg:not(.grips)")].find((v) => v.getBoundingClientRect().width > 0).querySelector("path");
+      const p = new DOMPoint(0, -G_widest(h)).matrixTransform(path.getScreenCTM()); return Math.abs(p.y - gy); function G_widest(h) { return (6 * h.bulge / 100 * h.len + h.len - h.tail) / 8; } }, [g[2]]); };
+    const off0 = await stands();
+    await drag("w2", 0.05, -1); const b1 = await S("S.ha_hour.bulge"), w1 = await S("S.ha_hour.w"), off1 = await stands();
+    await page.evaluate(() => window.dial_tool.set_value("hand", "hub", 2.5)); await frame();
+    const hub = await page.evaluate(() => { const t = window.dial_tool, row = document.querySelector("#hand-hub-Hub-")?.closest(".row"); return [!!row && row.offsetParent !== null, t.statik ? 1 : 0]; });
+    const wide = await page.evaluate(() => { const p = [...document.querySelectorAll("#hand-detail svg:not(.grips)")].find((v) => v.getBoundingClientRect().width > 0).querySelector("path").getBBox(); return +p.width.toFixed(2); });
+    await page.evaluate((h) => { const t = window.dial_tool; t.S.ha_hour = JSON.parse(h); t.static_dirty = true; t.sync_rows(); t.render(); }, keep); await frame();
+    check(b0 === 37.5 && off0 < 1 && off1 < 1 && Math.abs(b1 - b0 - 800 / (6 * L)) < 1 && w1 === w0 && hub[0] && wide >= 2.5,
+      `a leaf's width handles stand where it bulges (${off0.toFixed(2)}, ${off1.toFixed(2)} points off); dragged along the hand a mm, the bulge moves (${b0} → ${b1}) and the width stays (${w1}); a Hub Ø of 2.5 makes the hand at least that wide (${wide}) (#368, #370, 4.80)`);
   }
   // the one number box beside a hand's box (4.64; Okay, 18 Oct 2026, 21:20: "This version of boxes win … these replace
   // all … Number box touches minus box"; the quiet number with its tiny ± of 4.45.1–4.63 retired): the value's box, then

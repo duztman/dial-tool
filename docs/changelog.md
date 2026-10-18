@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## beta 4.80 (web version) · 19 Oct 2026
+
+Hands that sit on something, and handles that move where a hand is widest (#370, #368; Okay, 19 Oct 2026, 00:59).
+
+- **A hub on each hand** (#370; "these hands need a disc to attach to the mechanism … a ball that the leaf attaches to"): Hands → **Hub Ø**, a round boss at the pivot joined to the hand's shape, solid even on a hollow hand. 0 = none, as every hand before; a disc hand has none. The First dial now opens with hubs: the hour hand's 2.4, the minute's 2.0, each a ring round the one above it, the cap (1.6) on top. New key `hub`.
+- **The side handles on a hand's picture move up and down** (#368; "centre buttons on preview allowed to go up/down to adjust eg where the leaf bulges"): on a leaf, a dauphine, a pencil and a sword they stand where the hand is widest, and a drag along the hand moves that place — a leaf's bulge, a dauphine's corners, the shoulder of a pencil's or sword's point. Across, they set the width as before. The first 4 points of a drag decide which, held to the end.
+- **A leaf's Widest at %** in the rows (20–70; 37.5 is the leaf of every version before). New key `bulge`.
+- The handles' box leaves the hub out, so a hub wider than the hand does not pull the width handles off its edges.
+- Every handle on a hand's picture stood a point down and right of its place since 4.71 (measured from the box, not from the overlay inside its border); now on it.
+
 ## beta 4.79 (web version) · 19 Oct 2026
 
 Okay's notes on 4.78 (19 Oct, 00:59 and 01:03), the parts that were clear.

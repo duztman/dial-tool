@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.79";
+export const VERSION = "beta 4.80";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -94,6 +94,11 @@ export const HAND_BASE = {
   on: true, shape: 0, file: "", fit: true, scale: 1.0, w_scale: 1.0,
   len: 10.0, w: 1.0, tail: 1.0, tip: 1.0, feature: 1.2, feature_at: 75.0,
   counter: 0.0, wall: 0.0, round: 0.0, c: [0.10, 0.10, 0.12, 1],
+  // (4.80, #370, #368; Okay, 19 Oct 2026: "These hands need a disc to attach to the mechanism … a ball that the leaf
+  // attaches to"; "centre buttons on preview allowed to go up/down to adjust eg where the leaf bulges"): hub — the
+  // round boss the hand sits on at the pivot, its Ø (0: none, as every hand before 4.80; a disc hand has none) ·
+  // bulge — where a leaf is widest, its two curves' middle as a share of the length (37.5: the leaf as it always was)
+  hub: 0.0, bulge: 37.5,
   // a disc hand (#164, 14 Oct 2026; Okay: "disk just gets a marker now… one marker as the arrow"): a disc of Ø disc_d
   // on the pivot, carrying one marker drawn as a markers ring draws its marks — mark: a place in SHAPES (bar · wedge ·
   // dot), mark_len · mark_w its length and width — with its outer end at the hand's Length. Used only by shape "disc"
@@ -438,6 +443,7 @@ export const LINK_KEYS = [
   // (found 19 Oct 2026, 4.79). The order above is 4.75–4.78's, kept as it is, since the live page and saved dials
   // (#347) carry it. From here on: only ever under the last line, and test/link-keys.json says so (linktrip.mjs).
   "sh_bevel",               // 4.79: appended; off to start
+  "hub", "bulge",           // 4.80: appended; no hub and the leaf as always to start, so every older link looks as before
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -1648,7 +1654,7 @@ export function hand_angles(t, beats_per_second = 0) {
 /** drawn pointing at 12, pivot at the origin. T tail, tip point length,
  *  F head / barrel width or ring / disc Ø, at = where that feature sits.
  *  R rounds the flat ends: the tail's corners, and the tip's where the tip is flat. */
-function hand_outline(shape, L, W, T, tip, F, at, R = 0) {
+function hand_outline(shape, L, W, T, tip, F, at, R = 0, bulge = 37.5) {
   tip = min(max(tip, 0), L);
   const shaft = (top, r_top) => poly([[-W / 2, -T], [W / 2, -T], [W / 2, top], [-W / 2, top]], [R, R, r_top, r_top]);
   const pointed = () => poly([[-W / 2, -T], [W / 2, -T], [W / 2, L - tip], [0, L], [-W / 2, L - tip]], [R, R, 0, 0, 0]);
@@ -1657,9 +1663,9 @@ function hand_outline(shape, L, W, T, tip, F, at, R = 0) {
   if (shape === "sword") return poly([[0, L], [W / 2, L - tip], [W * 0.4, -T], [-W * 0.4, -T], [-W / 2, L - tip]], [0, 0, R, R, 0]);
   if (shape === "dauphine") return new Path().polygon([0, L], [W / 2, at], [0, -T], [-W / 2, at]);
   if (shape === "leaf") {
-    const k = 0.55;
-    return new Path().moveTo([0, -T]).curveTo([W * k, L * 0.15], [W * k, L * 0.6], [0, L])
-      .curveTo([-W * k, L * 0.6], [-W * k, L * 0.15], [0, -T]).closePath();
+    const k = 0.55, a = (bulge / 100 - 0.225) * L, b = (bulge / 100 + 0.225) * L;      // at 37.5: 0.15 L and 0.6 L, the leaf of every version before 4.80
+    return new Path().moveTo([0, -T]).curveTo([W * k, a], [W * k, b], [0, L])
+      .curveTo([-W * k, b], [-W * k, a], [0, -T]).closePath();
   }
   if (shape === "arrow") return shaft(L - tip, 0).union(new Path().polygon([-F / 2, L - tip], [F / 2, L - tip], [0, L]));
   if (shape === "syringe") {
@@ -1681,11 +1687,23 @@ export function hand_shape(h) {
   return memo("hand" + key_of(h), () => {
     let shape = HAND_SHAPES[h.shape];
     if (shape === "file") { file_shape(h.file); shape = "baton"; }       // no file: a baton (R17)
-    let p = shape === "disc" ? disc_hand(h) : hand_outline(shape, h.len, h.w, h.tail, h.tip, h.feature, h.feature_at / 100 * h.len, h.round || 0);
+    let p = shape === "disc" ? disc_hand(h) : hand_outline(shape, h.len, h.w, h.tail, h.tip, h.feature, h.feature_at / 100 * h.len, h.round || 0, h.bulge ?? 37.5);
     if (h.wall > 0) p = p.difference(offset(p, -h.wall));
+    if (h.hub > 0 && shape !== "disc") p = p.union(circle(h.hub));      // its hub, solid even on a hollow hand (#370)
     if (h.counter > 0) p = p.union(place(circle(h.counter), -h.tail * COUNTER_AT, 0));
     return p;
   });
+}
+
+/** where a hand is widest, for the handles on its picture (#368): its height up the hand in mm, the number that moves
+ *  it and how much that number changes per mm. Only for the shapes whose widest place is their width's own (a
+ *  dauphine's corners, a leaf's bulge, the shoulder of a pencil's or a sword's point); null for the rest. */
+export function hand_widest(h) {
+  const shape = HAND_SHAPES[h.shape], L = h.len, T = h.tail;
+  if (shape === "dauphine") return { at: h.feature_at / 100 * L, key: "feature_at", per_mm: 100 / L };
+  if (shape === "leaf") return { at: (6 * (h.bulge ?? 37.5) / 100 * L + L - T) / 8, key: "bulge", per_mm: 100 * 8 / (6 * L) };      // the curves' middle (t = ½): (P0 + 3 P1 + 3 P2 + P3) / 8
+  if (shape === "pencil" || shape === "sword") return { at: L - min(max(h.tip, 0), L), key: "tip", per_mm: -1 };
+  return null;
 }
 
 /** a disc hand, pointing at 12: the disc with its one marker. Disc and marker are one colour, so where the marker lies
@@ -1850,7 +1868,7 @@ export const turned = (path, angle) => path.copy().rotate(-angle);
  *  counts, percentages or the page margin; and not the diameter itself, which the caller sets.
  *  measures(S) → the values, in a fixed order; set_measures(S, values) puts a list of the same length back. */
 export const RING_MM = ["r", "len", "w", "width", "clear", "round_out", "round_in", "wall", "size", "twelve_gap"];
-export const HAND_MM = ["len", "w", "tail", "tip", "feature", "counter", "wall", "round", "disc_d", "mark_len", "mark_w"];
+export const HAND_MM = ["len", "w", "tail", "tip", "feature", "counter", "wall", "round", "disc_d", "mark_len", "mark_w", "hub"];
 export const WINDOW_MM = ["r", "w", "h", "round", "frame", "clear"];
 function each_measure(S, visit) {
   for (const ring of S.rings) {

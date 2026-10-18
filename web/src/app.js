@@ -680,8 +680,10 @@ const ROWS = {
     num("feature", "Head width", 0, 6, 0.05, { ...H, side: true, short: "Head W", show: hand_is("arrow", "syringe") }),
     num("feature", "Ring · disc Ø", 0, 6, 0.05, { ...H, side: true, short: "Ring Ø", show: hand_is("breguet", "lollipop") }),
     num("feature_at", "Widest at %", 0, 100, 1, { ...H, side: true, short: "Widest %", show: hand_is("dauphine") }),
+    num("bulge", "Widest at %", 20, 70, 0.5, { ...H, side: true, short: "Widest %", show: hand_is("leaf") }),      // where the leaf bulges (#368, 4.80): its curves' middle as a share of the length
     num("feature_at", "Barrel from %", 0, 100, 1, { ...H, side: true, short: "Barrel %", show: hand_is("syringe") }),
     num("feature_at", "Ring · disc at %", 0, 100, 1, { ...H, side: true, short: "Ring at %", show: hand_is("breguet", "lollipop") }),
+    num("hub", "Hub Ø", 0, 4, 0.05, { ...H, side: true, show: (H) => G.HAND_SHAPES[H.shape] !== "disc" }),      // the round boss the hand sits on (#370, 4.80; Okay: "a ball that the leaf attaches to")
     num("counter", "Counterweight Ø", 0, 4, 0.05, { ...H, side: true, short: "Counter Ø" }),
     num("wall", "Hollow wall", 0, 1, 0.01, { ...H, side: true, short: "Wall" }),
     // the cap is part of the seconds hand (Okay's notes, p. 1, #262, beta 4.43; until then a pane of its own for all
@@ -844,6 +846,7 @@ const LINKED_PAIRS = { window: [{ link: "wh_link", keys: ["w", "h"], when: (T) =
 const day_look = (T) => (T && T.on && G.WINDOW_KINDS[T.kind] === "am · pm" ? T.look || 0 : -1);      // an am · pm window's picture (4.73), -1 for any other window
 const moon_look = (T) => (T && T.on && G.WINDOW_KINDS[T.kind] === "moon phase" ? T.look || 0 : -1);      // a moon window's picture (4.73), -1 for any other window
 const KIND_TAB_KEYS = Object.keys(G.WINDOW_BASE).filter((k) => !["on", "kind", "at", "at_deg", "r", "guide", "wh_link"].includes(k));      // what each complication keeps of its own (#328)
+const HANDLE_AXIS = 4;      // a hand's width handle (#368, 4.80): how far it is dragged, in screen points, before it is known whether across or along
 const HANDLE_R = 5.5, HANDLE_OUT = 14, HANDLE_REACH = 14;      // a guide handle (4.65): its half-size, how far beyond the ring's outer edge the angle handles stand, the radius a press reaches it within — screen points at any zoom
 const TINY_EVERY = 200;                            // the Tiny Preview redrawn at most this often, in ms (#337)
 const NUDGE_NEUTRAL = { dr: 0, da: 0, rot: 0, s: 1, shape: 0 };      // a numeral's or a mark's nudge, untouched (#252; shape, a mark's own, 4.78)
@@ -4208,12 +4211,21 @@ class DialTool {
     if (!box || !h) return;
     const pic = [...box.querySelectorAll("svg:not(.grips)")].find((v) => v.getBoundingClientRect().width > 0), hand = pic?.querySelector("path");
     if (!hand) return g.replaceChildren();
-    const B = box.getBoundingClientRect(), r = hand.getBoundingClientRect(), lying = pic.classList.contains("lying");
-    const x0 = r.left - B.left, y0 = r.top - B.top, x1 = r.right - B.left, y1 = r.bottom - B.top, mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
+    const B = g.getBoundingClientRect(), lying = pic.classList.contains("lying"), M = hand.getScreenCTM();      // measured from the overlay itself: it stands inside the box's border (from the box, 4.71–4.79 put every handle a point off)
+    // the box round the hand without its hub (#370): a hub wider than the hand would pull the width handles off its edges
+    const b = G.hand_shape({ ...h, hub: 0 }).bounds() || [0, 0, 0, 0];
+    const corners = [[b[0], -b[3]], [b[2], -b[1]]].map(([x, y]) => new DOMPoint(x, y).matrixTransform(M));
+    const x0 = Math.min(...corners.map((p) => p.x)) - B.left, x1 = Math.max(...corners.map((p) => p.x)) - B.left;
+    const y0 = Math.min(...corners.map((p) => p.y)) - B.top, y1 = Math.max(...corners.map((p) => p.y)) - B.top, mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
     const disc = G.HAND_SHAPES[h.shape] === "disc";
     // where each stands: upright the tip is up; lying (a wide box) the tip is to the right
-    const at = lying ? { len: [x1, my], tail: [x0, my], w1: [mx, y0], w2: [mx, y1] } : { len: [mx, y0], tail: [mx, y1], w1: [x0, my], w2: [x1, my] };
-    const tips = { len: "Length: drag", tail: "Tail: drag", w: disc ? "Disc Ø: drag, both sides together" : "Width: drag, both sides together" };
+    // the width pair stands where the hand is widest, when its shape has such a place (#368): found through the
+    // drawing's own matrix, so it sits on the outline whatever the picture's scale or way round
+    const widest = G.hand_widest(h), wp = widest && new DOMPoint(0, -widest.at).matrixTransform(hand.getScreenCTM());
+    const wx = wp ? wp.x - B.left : mx, wy = wp ? wp.y - B.top : my;
+    const at = lying ? { len: [x1, my], tail: [x0, my], w1: [wx, y0], w2: [wx, y1] } : { len: [mx, y0], tail: [mx, y1], w1: [x0, wy], w2: [x1, wy] };
+    const along = widest ? { feature_at: "where it is widest", bulge: "where it bulges", tip: "where its point starts" }[widest.key] : "";
+    const tips = { len: "Length: drag", tail: "Tail: drag", w: disc ? "Disc Ø: drag, both sides together" : "Width: drag across, both sides together" + (along ? ` · along: ${along}` : "") };
     const sq = (name, [x, y], key) => `<g class="handle" data-grip="${name}" data-tip="${tips[key]}" transform="translate(${x.toFixed(2)} ${y.toFixed(2)})"><circle class="reach" r="${HANDLE_REACH}"/><rect x="${-HANDLE_R}" y="${-HANDLE_R}" width="${2 * HANDLE_R}" height="${2 * HANDLE_R}"/></g>`;
     g.style.setProperty("--handle", G.GUIDE_COLOURS[this.S.gd_k_sel] || G.GUIDE_COLOURS[0]);
     g.innerHTML = `<rect class="frame" x="${x0.toFixed(2)}" y="${y0.toFixed(2)}" width="${(x1 - x0).toFixed(2)}" height="${(y1 - y0).toFixed(2)}"/>`
@@ -4234,7 +4246,10 @@ class DialTool {
       const key = name === "len" ? "len" : name === "tail" ? "tail" : disc ? "disc_d" : "w";
       const pic = [...box.querySelectorAll("svg:not(.grips)")];
       const shown = pic.find((v) => v.getBoundingClientRect().width > 0), scale = shown.getScreenCTM().a;      // screen points per mm
-      this.hand_drag = { key, name, row: ROW(key), v0: +h[key], x: e.clientX, y: e.clientY, scale, lying: shown.classList.contains("lying") };
+      // a width handle on a shape with a widest place (#368) waits to see which way it is first dragged: across, the
+      // width; along the hand, that place (an axis held for the rest of the drag, so the one does not nudge the other)
+      const widest = (name === "w1" || name === "w2") && G.hand_widest(h);
+      this.hand_drag = { key, name, row: ROW(key), v0: +h[key], x: e.clientX, y: e.clientY, scale, lying: shown.classList.contains("lying"), widest, axis: widest ? null : "across" };
       g.setPointerCapture(e.pointerId);
       box.classList.add("dragging");
       this.hand_light(this.hand_drag.row);
@@ -4244,6 +4259,21 @@ class DialTool {
       const d = this.hand_drag;
       if (!d) return;
       const dx = (e.clientX - d.x) / d.scale, dy = (e.clientY - d.y) / d.scale;
+      if (!d.axis) {
+        const across = Math.abs(d.lying ? e.clientY - d.y : e.clientX - d.x), up = Math.abs(d.lying ? e.clientX - d.x : e.clientY - d.y);
+        if (Math.max(across, up) < HANDLE_AXIS) return;      // not yet far enough to tell
+        d.axis = across >= up ? "across" : "along";
+        if (d.axis === "along") {
+          const R = ROWS.Hands.find((r) => r.key === d.widest.key && r.kind === "num" && (!r.show || r.show(this.hand())));
+          Object.assign(d, { key: d.widest.key, row: R, v0: +this.hand()[d.widest.key] });
+          this.hand_light(R);
+        }
+      }
+      if (d.axis === "along") {      // up the hand in mm, turned into the number that moves the widest place
+        const v = d.v0 + (d.lying ? dx : -dy) * d.widest.per_mm, R = d.row, step = R.step;
+        this.set_value("hand", d.key, +clamp(Math.round(v / step) * step, R.lo, R.hi).toFixed(4));
+        return;
+      }
       // how far the handle's own side moved outwards: the tip away from the centre, the tail the other way, an edge out
       const out = { len: d.lying ? dx : -dy, tail: d.lying ? -dx : dy, w1: d.lying ? -dy : -dx, w2: d.lying ? dy : dx }[d.name];
       const v = d.v0 + (d.key === "w" || d.key === "disc_d" ? 2 * out : out);      // both edges move: the width grows twice the travel

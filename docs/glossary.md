@@ -49,6 +49,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Yours** (saved dials) | Dials kept in this browser with Save this dial, over the Gallery (4.76, #347); Okay's word was *instances*. |
 | **Shine** | In the showcase, a ring of three bands of light round a centre moved toward the sun, on the dial and the hands (4.77). |
 | **Bevel** | A hand's two long halves, lighter and darker by where the light comes from (4.77); preview only. Its strength is Shadows → Bevels % (key `sh_bevel`), 0 by default since 4.79. |
+| **Hub** | The round boss a hand sits on at the pivot, its Ø per hand (Hands → Hub Ø, key `hub`, 4.80); joined to the hand's shape, in its colour; the cap stands over the topmost. 0 = none. Not a disc hand (whose disc is the hand). |
 | **Print sheet** | A page of copies of the dial at true size, for printing (4.75, #348): Export → Print → Sheet PDF; A4, Letter or A5, straight or staggered rows, cut lines if asked. |
 | **Picture** | What a moon or am · pm window shows (4.73): a moon's Arch (the humps), Phase (the moon lit as it is, three colours) or Line (one ink); an am · pm's Sky, Half (a half-round hole over a two-colour disc) or Band (the day's colours along a strip, a mark for now). Key `look`; its further colours `c2`, `c3`. |
 | **Physics** | A window's tick (4.72): its disc must end inside the case, the dial's edge less a 0.5 mm rim. Passing it, the disc's outer guide shows red and the panel says by how much; off, a disc may be bigger than the dial (a face on a screen). |
