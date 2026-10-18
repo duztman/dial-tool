@@ -978,6 +978,22 @@ await page.click("#hand-tab-0");
     const gone = await page.evaluate(() => !document.querySelector("#hand-detail .lit").getAttribute("d"));
     check(len && wide && counter && wide[1] > len[1] && len[2] <= wide[2] + 0.01 && tone && gone, `pointing at a hand's number lights its part in the selected guide's colour: the length a band at the tip (${len}), the width the edges along it (${wide}), a counterweight at 0 where it would come (${counter}); gone when the pointer leaves`);
   }
+  { // handles on the hand's picture (4.71, #345; Okay's notes 2: "draggable dots at the extremes of what can be edited, a dotted bounding box like Photoshop's transform; one side's width drag edits the other symmetrically"): a dotted box round the hand, a square at each side's middle; the tip's drags the length, an edge's the width by twice its travel, the tail's the tail; a disc hand has no tail handle
+    const grips = () => page.evaluate(() => [...document.querySelectorAll("#hand-detail .grips .handle")].map((g) => { const r = g.querySelector("rect").getBoundingClientRect(); return [g.dataset.grip, r.left + r.width / 2, r.top + r.height / 2]; }));
+    const scale = () => page.evaluate(() => [...document.querySelectorAll("#hand-detail svg:not(.grips)")].find((v) => v.getBoundingClientRect().width > 0).getScreenCTM().a);
+    const was = await page.evaluate(() => { const h = window.dial_tool.hand(); return [h.len, h.w, h.tail]; });
+    const drag = async (name, mm_x, mm_y) => { const k = await scale(), g = (await grips()).find((x) => x[0] === name); await page.mouse.move(g[1], g[2]); await page.mouse.down(); await page.mouse.move(g[1] + mm_x * k / 2, g[2] + mm_y * k / 2, { steps: 3 }); await page.mouse.move(g[1] + mm_x * k, g[2] + mm_y * k, { steps: 3 }); await page.mouse.up(); await frame(); };
+    const names = (await grips()).map((g) => g[0]).join(), frame_dash = await page.$eval("#hand-detail .grips .frame", (r) => getComputedStyle(r).strokeDasharray !== "none");
+    await drag("len", 0, -1); const len = await S("S.ha_hour.len");
+    await drag("w2", 0.2, 0); const w = await S("S.ha_hour.w");
+    await drag("tail", 0, 0.5); const tail = await S("S.ha_hour.tail");
+    await page.click("#hand-shape-Shape-10"); await frame();
+    const disc = (await grips()).map((g) => g[0]).join();
+    await page.click("#hand-shape-Shape-0"); await frame();
+    await page.evaluate((v) => { const t = window.dial_tool; t.set_value("hand", "len", v[0]); t.set_value("hand", "w", v[1]); t.set_value("hand", "tail", v[2]); }, was);
+    check(names === "len,tail,w1,w2" && frame_dash && Math.abs(len - was[0] - 1) < 0.11 && Math.abs(w - was[1] - 0.4) < 0.03 && Math.abs(tail - was[2] - 0.5) < 0.11 && disc === "len,w1,w2",
+      `the hand's picture has a dotted box and four handles (${names}); dragged, the tip sets the length (${was[0]} → ${len}, a mm out), an edge the width by twice its travel (${was[1]} → ${w}, 0.2 mm out), the tail the tail (${was[2]} → ${tail}); a disc hand: ${disc}`);
+  }
   // the one number box beside a hand's box (4.64; Okay, 18 Oct 2026, 21:20: "This version of boxes win … these replace
   // all … Number box touches minus box"; the quiet number with its tiny ± of 4.45.1–4.63 retired): the value's box, then
   // − and + in theirs, touching, the hairline of the rule's grey; + steps it; the name opens the controller

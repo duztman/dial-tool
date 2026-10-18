@@ -3964,7 +3964,88 @@ class DialTool {
     wrap.className = "detail";
     wrap.id = "hand-detail";
     let drawn = "";
-    out.refresh = (T) => { const now = hand_detail(T); if (now !== drawn) { drawn = now; wrap.innerHTML = now; } this.hand_lit_draw(); };
+    // its handles (#345): an overlay of its own, kept when the drawing under it is replaced
+    const grips = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    grips.setAttribute("class", "grips");
+    this.hand_grips = grips;
+    this.hand_grip_events(wrap, grips);
+    out.refresh = (T) => {
+      const now = hand_detail(T);
+      if (now !== drawn) {
+        drawn = now;
+        // the drawings under the handles replaced, the handles' own layer kept in place (moving it would drop a drag's hold on the pointer)
+        for (const old of [...wrap.children]) if (old !== grips) old.remove();
+        if (!grips.parentElement) wrap.append(grips);
+        grips.insertAdjacentHTML("beforebegin", now);
+      }
+      this.hand_lit_draw();
+      grips_soon();
+    };
+    // drawn once the panel has settled — the rows round the box show or hide after it, and its size follows them
+    let soon = 0;
+    const grips_soon = () => { if (!soon) soon = requestAnimationFrame(() => { soon = 0; this.hand_grips_draw(); }); };
+    new ResizeObserver(grips_soon).observe(wrap);
+  }
+
+  /** the hand's handles on its picture (#345; Okay's notes 2: "draggable dots at the extremes of what can be edited, a
+   *  dotted bounding box like Photoshop's transform; one side's width drag edits the other symmetrically"): a dotted
+   *  box round the hand and a square at the middle of each of its sides — at the tip the length, at the other end the
+   *  tail, at the two edges the width (a disc hand's: its Ø), both edges moving together. In the selected guide's
+   *  colour, as the ring handles (4.65). Dragged, a handle sets its number as the row does (set_value), its part lit. */
+  hand_grips_draw() {
+    const g = this.hand_grips, box = g?.parentElement, h = this.hand();
+    if (!box || !h) return;
+    const pic = [...box.querySelectorAll("svg:not(.grips)")].find((v) => v.getBoundingClientRect().width > 0), hand = pic?.querySelector("path");
+    if (!hand) return g.replaceChildren();
+    const B = box.getBoundingClientRect(), r = hand.getBoundingClientRect(), lying = pic.classList.contains("lying");
+    const x0 = r.left - B.left, y0 = r.top - B.top, x1 = r.right - B.left, y1 = r.bottom - B.top, mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
+    const disc = G.HAND_SHAPES[h.shape] === "disc";
+    // where each stands: upright the tip is up; lying (a wide box) the tip is to the right
+    const at = lying ? { len: [x1, my], tail: [x0, my], w1: [mx, y0], w2: [mx, y1] } : { len: [mx, y0], tail: [mx, y1], w1: [x0, my], w2: [x1, my] };
+    const tips = { len: "Length: drag", tail: "Tail: drag", w: disc ? "Disc Ø: drag, both sides together" : "Width: drag, both sides together" };
+    const sq = (name, [x, y], key) => `<g class="handle" data-grip="${name}" data-tip="${tips[key]}" transform="translate(${x.toFixed(2)} ${y.toFixed(2)})"><circle class="reach" r="${HANDLE_REACH}"/><rect x="${-HANDLE_R}" y="${-HANDLE_R}" width="${2 * HANDLE_R}" height="${2 * HANDLE_R}"/></g>`;
+    g.style.setProperty("--handle", G.GUIDE_COLOURS[this.S.gd_k_sel] || G.GUIDE_COLOURS[0]);
+    g.innerHTML = `<rect class="frame" x="${x0.toFixed(2)}" y="${y0.toFixed(2)}" width="${(x1 - x0).toFixed(2)}" height="${(y1 - y0).toFixed(2)}"/>`
+      + sq("len", at.len, "len") + (disc ? "" : sq("tail", at.tail, "tail")) + sq("w1", at.w1, "w") + sq("w2", at.w2, "w");
+  }
+
+  /** a handle on the hand's picture dragged: the pointer's travel, in mm at the picture's scale when the drag began,
+   *  added to the number it had (so it works the same for every shape, whatever its outline does at that edge). The
+   *  picture keeps fitting the hand as it changes, so a handle drifts from the pointer as the hand grows a lot; kept so
+   *  the whole hand stays in its box (a picture held at its scale let the tip leave the box after a millimetre). */
+  hand_grip_events(box, g) {
+    const ROW = (key) => ROWS.Hands.find((r) => r.key === key && r.kind === "num");
+    g.addEventListener("pointerdown", (e) => {
+      const grip = e.target.closest("[data-grip]");
+      if (!grip) return;
+      e.preventDefault(); e.stopPropagation();
+      const h = this.hand(), disc = G.HAND_SHAPES[h.shape] === "disc", name = grip.dataset.grip;
+      const key = name === "len" ? "len" : name === "tail" ? "tail" : disc ? "disc_d" : "w";
+      const pic = [...box.querySelectorAll("svg:not(.grips)")];
+      const shown = pic.find((v) => v.getBoundingClientRect().width > 0), scale = shown.getScreenCTM().a;      // screen points per mm
+      this.hand_drag = { key, name, row: ROW(key), v0: +h[key], x: e.clientX, y: e.clientY, scale, lying: shown.classList.contains("lying") };
+      g.setPointerCapture(e.pointerId);
+      box.classList.add("dragging");
+      this.hand_light(this.hand_drag.row);
+      this.tag_hide();
+    });
+    g.addEventListener("pointermove", (e) => {
+      const d = this.hand_drag;
+      if (!d) return;
+      const dx = (e.clientX - d.x) / d.scale, dy = (e.clientY - d.y) / d.scale;
+      // how far the handle's own side moved outwards: the tip away from the centre, the tail the other way, an edge out
+      const out = { len: d.lying ? dx : -dy, tail: d.lying ? -dx : dy, w1: d.lying ? -dy : -dx, w2: d.lying ? dy : dx }[d.name];
+      const v = d.v0 + (d.key === "w" || d.key === "disc_d" ? 2 * out : out);      // both edges move: the width grows twice the travel
+      const R = d.row, step = R.step;
+      this.set_value("hand", d.key, +clamp(Math.round(v / step) * step, R.lo, R.hi).toFixed(4));
+    });
+    const end = () => {
+      if (!this.hand_drag) return;
+      this.hand_drag = null; box.classList.remove("dragging");
+      if (!box.matches(":hover")) this.hand_light(null);
+    };
+    g.addEventListener("pointerup", end);
+    g.addEventListener("pointercancel", end);
   }
 
   /** light a hand number's part on the hand's picture, or none (#329): while its row is pointed at, holds the focus,

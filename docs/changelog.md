@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.71 (web version) · 18 Oct 2026
+
+Handles on the hand's picture (#345; Okay's notes 2: "draggable dots at the extremes of what can be edited, a dotted bounding box like Photoshop's transform; one side's width drag edits the other symmetrically").
+
+- **A dotted box round the hand** in its detail box, and **a square at the middle of each side**, in the selected guide's colour with a white hairline (as the ring handles of 4.65): at the tip, Length; at the other end, Tail; at the two edges, Width — both edges together, so the width grows by twice the travel. A disc hand: Length (its marker's end) and, at the edges, Disc Ø; no tail.
+- Dragged, a handle adds the pointer's travel (in mm at the picture's scale when the drag began) to its number, through the row (undo, the dial, the number box all follow), its part lit (4.70). The picture keeps fitting the hand as it changes, so the whole hand stays in view; a handle drifts a little from the pointer when the hand grows a lot.
+- Each handle's tag says what it sets; a fingertip's reach round each.
+
 ## beta 4.70 (web version) · 18 Oct 2026
 
 A hand's number lights its part (#329; Okay's notes 2: "hovering a row lights its part on the hand's picture at the left").

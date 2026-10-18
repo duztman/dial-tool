@@ -6,6 +6,13 @@
   .detail svg { position: absolute; inset: var(--unit); width: calc(100% - 2 * var(--unit)); height: calc(100% - 2 * var(--unit)); overflow: visible; }
   .detail .lying { display: none; }
   .detail .axis { stroke: var(--rule); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
+  /* the hand's handles (#345): a dotted box round the hand, a square at each side's middle, in the selected guide's colour
+     with a white hairline, as the ring handles (6-preview); a fingertip's reach round each, unseen */
+  .detail svg.grips { inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .detail .grips .frame { fill: none; stroke: var(--handle); stroke-width: 1; stroke-dasharray: 2 2; }
+  .detail .grips .handle { fill: var(--handle); stroke: var(--white); stroke-width: 1.5; cursor: grab; pointer-events: all; touch-action: none; }
+  .detail .grips .handle .reach { fill: transparent; stroke: none; }
+  .detail.dragging .grips .handle { cursor: grabbing; }
   .detail .lit { fill: var(--lit); }      /* a number's part, lit while its row is pointed at (#329), in the selected guide's colour */
   .detail .pivot { fill: var(--surface); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
   /* the hand's shapes as thumbs (4.46.3, "rectangular thumbs"; a row of their own after the rows since 4.46.4): every
