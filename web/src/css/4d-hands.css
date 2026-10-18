@@ -6,6 +6,7 @@
   .detail svg { position: absolute; inset: var(--unit); width: calc(100% - 2 * var(--unit)); height: calc(100% - 2 * var(--unit)); overflow: visible; }
   .detail .lying { display: none; }
   .detail .axis { stroke: var(--rule); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
+  .detail .lit { fill: var(--lit); }      /* a number's part, lit while its row is pointed at (#329), in the selected guide's colour */
   .detail .pivot { fill: var(--surface); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
   /* the hand's shapes as thumbs (4.46.3, "rectangular thumbs"; a row of their own after the rows since 4.46.4): every
      one shown, upright pictures in upright tiles, no words (a tile's title names it), a unit apart, all on one line

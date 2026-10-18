@@ -970,6 +970,14 @@ await page.click("#hand-tab-0");
   const box_high = await page.$eval("#hand-detail", (e) => Math.round(e.getBoundingClientRect().height));
   check(b.d !== a.d && b.top === -1 && b.bottom === 0 && box_high > a.high && await page.$eval("#hand-shape-Shape-7", (e) => e.classList.contains("on")), `a thumb pressed (breguet) is chosen and the box shows it; with its three more rows the box grows to their height (${a.high} → ${box_high})`);
   await page.click("#hand-shape-Shape-0");
+  { // pointing at a hand's number lights its part on the picture (4.70, #329; Okay's notes 2: "hovering a row lights its part on the hand's picture at the left"): the length its tip, the width its edges, a counterweight at 0 where it would be; in the selected guide's colour; gone when the pointer leaves
+    const lit = async (name) => { await page.hover(`.form .row.side:not([hidden]):has(label:has-text("${name}"))`); await page.waitForTimeout(80);
+      return page.evaluate(() => { const p = document.querySelector("#hand-detail .upright .lit"); if (!p.getAttribute("d")) return null; const b = p.getBBox(); return [+b.y.toFixed(2), +b.height.toFixed(2), +b.width.toFixed(2), getComputedStyle(p).fill]; }); };
+    const len = await lit("Length"), wide = await lit("Width"), counter = await lit("Counter"), tone = await page.evaluate(() => { const t = window.dial_tool; return window.getComputedStyle(document.querySelector("#hand-detail")).getPropertyValue("--lit").trim().toUpperCase() === ["#FF2D95", "#00E5FF", "#39FF14", "#FFE600", "#FF6A00", "#7A5CFF", "#111111", "#FFFFFF"][t.S.gd_k_sel]; });
+    await page.mouse.move(5, 5); await page.waitForTimeout(80);
+    const gone = await page.evaluate(() => !document.querySelector("#hand-detail .lit").getAttribute("d"));
+    check(len && wide && counter && wide[1] > len[1] && len[2] <= wide[2] + 0.01 && tone && gone, `pointing at a hand's number lights its part in the selected guide's colour: the length a band at the tip (${len}), the width the edges along it (${wide}), a counterweight at 0 where it would come (${counter}); gone when the pointer leaves`);
+  }
   // the one number box beside a hand's box (4.64; Okay, 18 Oct 2026, 21:20: "This version of boxes win … these replace
   // all … Number box touches minus box"; the quiet number with its tiny ± of 4.45.1–4.63 retired): the value's box, then
   // − and + in theirs, touching, the hairline of the rule's grey; + steps it; the name opens the controller

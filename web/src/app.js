@@ -241,8 +241,25 @@ const hand_detail = (h) => {
   const centre = (line) => `<path class="axis" d="${line}"/><circle class="pivot" r="${ring}"/>`;
   const mark = G.paints_mark(h) && G.disc_mark(h), md = mark ? mark.svg(3, true) : "";      // a disc's painted mark, in its own colour (#300)
   const marked = (turn) => (mark ? `<path class="mark" d="${md}"${turn} fill="${to_hex(h.mark_c)}"/>` : "");
-  return `<svg class="upright" viewBox="${f(b[0] - m)} ${f(-b[3] - m)} ${f(w + 2 * m)} ${f(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${marked("")}${centre("M-999 0L999 0")}</svg>`
-    + `<svg class="lying" viewBox="${f(b[1] - m)} ${f(b[0] - m)} ${f(high + 2 * m)} ${f(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${marked(' transform="rotate(90)"')}${centre("M0 -999L0 999")}</svg>`;
+  return `<svg class="upright" viewBox="${f(b[0] - m)} ${f(-b[3] - m)} ${f(w + 2 * m)} ${f(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${marked("")}<path class="lit"/>${centre("M-999 0L999 0")}</svg>`
+    + `<svg class="lying" viewBox="${f(b[1] - m)} ${f(b[0] - m)} ${f(high + 2 * m)} ${f(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${marked(' transform="rotate(90)"')}<path class="lit" transform="rotate(90)"/>${centre("M0 -999L0 999")}</svg>`;
+};
+/** the part of a hand that one of its numbers makes (#329; Okay's notes 2, 18 Oct 2026: "hovering a row lights its part
+ *  on the hand's picture at the left"): what changes when that number changes. The hand is drawn again with the number a
+ *  little less and a little more, and the part is where those differ from the hand as it is — so the length lights the
+ *  tip, the width both edges, the tail its end, round ends the ends, the wall the hollow, and a number at 0 shows where
+ *  its part would come (a counterweight's circle, a wall's ring). A step of 15 % of the value, or half the row's range
+ *  when the value is 0 (a tenth hid a counterweight inside the hand). → a path in the hand's own space, or null. */
+const hand_part = (h, row) => {
+  const v = +h[row.key] || 0, d = v ? Math.abs(v) * 0.15 : (row.hi - row.lo) / 2;
+  const base = G.hand_shape(h);
+  let lit = null;
+  for (const n of [v - d, v + d]) {
+    if (n < row.lo - 1e-9 && n < v) continue;      // never below the row's least
+    const other = G.hand_shape({ ...h, [row.key]: n }), changed = base.difference(other).union(other.difference(base));
+    lit = lit ? lit.union(changed) : changed;
+  }
+  return lit && lit.bounds() ? lit : null;
 };
 // the Guides sign's ink traps (Okay, 15 Oct 2026, 02:42: "Guides icon needs them, see if you can figure out where"):
 // where each of the four arms crosses the ring the two lines make four inside corners, and at a small size ink (light,
@@ -2525,6 +2542,12 @@ class DialTool {
     }
 
     if (row.kind === "custom") this["row_" + row.name](wrap, out, row);
+    if (row.scope === "hand" && row.kind === "num") {      // pointing at a hand's number, or in its field, lights its part on the picture (#329)
+      wrap.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") this.hand_light(row); });
+      wrap.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse" && this.value_pop?.row !== row) this.hand_light(null); });
+      wrap.addEventListener("focusin", () => this.hand_light(row));
+      wrap.addEventListener("focusout", () => { if (this.value_pop?.row !== row) this.hand_light(null); });
+    }
     tied();
     return out;
   }
@@ -3365,7 +3388,8 @@ class DialTool {
     const box = el("div", { className: "numpop", id: "value-pop", role: "dialog", ariaLabel: row.text || "" }, head, r.el);
     document.body.append(box);
     button.setAttribute("aria-expanded", "true");
-    this.value_pop = { button, box, r, timer: 0 };
+    this.value_pop = { button, box, r, row, timer: 0 };
+    if (row.scope === "hand") this.hand_light(row);      // its part lit while the controller is open (#329)
     r.refresh(this.target(row.scope));
     // where it stands: the knob under the finger that opened it (at: the press's point), kept inside the window; opened
     // from the keyboard, or with no slider (a window's places), under its button, centred
@@ -3398,6 +3422,7 @@ class DialTool {
     if (!this.value_pop) return;
     const { button, box, timer } = this.value_pop;
     clearTimeout(timer);
+    if (this.value_pop.row?.scope === "hand" && !button.closest(".row")?.matches(":hover")) this.hand_light(null);      // its part stays lit only while its row is still pointed at
     this.value_pop = null;
     const field = box.querySelector('input[type="text"]');
     if (document.activeElement === field) field.blur();      // what was typed is taken before the field goes
@@ -3939,7 +3964,27 @@ class DialTool {
     wrap.className = "detail";
     wrap.id = "hand-detail";
     let drawn = "";
-    out.refresh = (T) => { const now = hand_detail(T); if (now !== drawn) { drawn = now; wrap.innerHTML = now; } };
+    out.refresh = (T) => { const now = hand_detail(T); if (now !== drawn) { drawn = now; wrap.innerHTML = now; } this.hand_lit_draw(); };
+  }
+
+  /** light a hand number's part on the hand's picture, or none (#329): while its row is pointed at, holds the focus,
+   *  or has its controller open. In the selected guide's colour, as the ring handles are (4.65). */
+  hand_light(row) {
+    if (row === this.lit_row) return;
+    this.lit_row = row;
+    this.hand_lit_draw();
+  }
+  hand_lit_draw() {
+    const box = document.querySelector("#hand-detail");
+    if (!box) return;
+    const row = this.lit_row, h = this.hand(), key = row && h ? `${row.key}/${JSON.stringify(h)}` : "";
+    if (key !== this.lit_key) {      // worked out again only when the number or the hand changed
+      const part = key ? hand_part(h, row) : null;
+      this.lit_key = key; this.lit_d = part ? part.svg(3, true) : "";
+    }
+    const d = this.lit_d;
+    box.style.setProperty("--lit", G.GUIDE_COLOURS[this.S.gd_k_sel] || G.GUIDE_COLOURS[0]);
+    for (const p of box.querySelectorAll(".lit")) { if (d) p.setAttribute("d", d); else p.removeAttribute("d"); }
   }
 
   /** a window's place (Okay, 13 Oct 2026): every named place is a button, so the others are seen and pressed — first

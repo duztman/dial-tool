@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.70 (web version) · 18 Oct 2026
+
+A hand's number lights its part (#329; Okay's notes 2: "hovering a row lights its part on the hand's picture at the left").
+
+- **Pointing at a hand's number lights the part it makes** on the hand's picture, in the selected guide's colour: Length a band at the tip, Width both edges, Tail its end, Round ends the corners, Hollow wall the hollow, Tip length and Head width their head. It stays lit while the row holds the focus or its controller is open (so on a phone or iPad too).
+- How: the hand is drawn again with that number a little less and a little more (15 % of it), and the part is where those differ from the hand as it is — so it is always true to the shape, whatever the shape. A number at 0 shows where its part would come, at half its range (a counterweight's circle, a wall's hollow).
+
 ## beta 4.69 (web version) · 18 Oct 2026
 
 Straps for the cases (Okay, 22:35: "Add straps to bezels metal bands too, same style, style very good. Fit and previews care about the dial still, the bezel and strap secondary. Add strap color change option").
