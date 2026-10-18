@@ -35,8 +35,15 @@ await page.goto("file://" + process.cwd() + "/dial-tool.html");
 await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
 
 const S = (expr) => page.evaluate(`(() => { const t = window.dial_tool, S = t.S; return ${expr}; })()`);
+// a value typed: in its own field, or — a quiet number, which is not typed in place since 4.58 (#317) — in the controller its press opens
+const enter_value = async (id, v) => {
+  if (!(await page.$eval(id, (e) => e.readOnly))) { await page.fill(id, v); await page.press(id, "Enter"); return; }
+  await page.click(id); await page.waitForSelector("#value-pop");
+  await page.fill('#value-pop input[type="text"]', v); await page.press('#value-pop input[type="text"]', "Enter");
+  await page.evaluate(() => window.dial_tool.value_pop_close());
+};
 /** set a colour the way a person does: open its pill's pop-out, type the hex there, close it. */
-const type_hex = async (id, hex) => { await page.click("#" + id); await page.click("#pop-as-HEX"); await page.fill("#pop-hex", hex); await page.press("#pop-hex", "Enter"); await page.click("#pop-close"); };
+const type_hex = async (id, hex) => { await page.click("#" + id); await page.click("#pop-as-HEX"); await enter_value("#pop-hex", hex); await page.click("#pop-close"); };
 const frame = () => page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
 const tab = async (name) => { await page.click(`button[data-tab="${name}"]`); await frame(); };
 const shot = async (name) => { await frame(); await page.screenshot({ path: path.join(OUT, name + ".png") }); };
@@ -64,35 +71,29 @@ await shot("1-default");
 
 // ── a number row: slider, typed field with shorthand, stepper ──
 await tab("Dial");
-await page.fill("#global-dial-d-Diameter", "36");
-await page.press("#global-dial-d-Diameter", "Enter");
+await enter_value("#global-dial-d-Diameter", "36");
 check(await S("S.dial_d === 36"), "typed 36 → diameter 36");
-await page.fill("#global-dial-d-Diameter", "+0.5");
-await page.press("#global-dial-d-Diameter", "Enter");
+await enter_value("#global-dial-d-Diameter", "+0.5");
 check(await S("S.dial_d === 36.5"), "typed +0.5 → 36.5");
-await page.fill("#global-dial-d-Diameter", "x2");
-await page.press("#global-dial-d-Diameter", "Enter");
+await enter_value("#global-dial-d-Diameter", "x2");
 check(await S("S.dial_d === 73") && await page.$eval("#global-dial-d-Diameter-slider", (e) => +e.max === 73), "typed x2 → 73, and the slider grew to hold it");
-await page.fill("#global-dial-d-Diameter", "30");
-await page.press("#global-dial-d-Diameter", "Enter");
+await enter_value("#global-dial-d-Diameter", "30");
 await page.click(".row.num:has(#global-dial-d-Diameter) .step >> nth=1");
 check(near(await S("S.dial_d"), 30.1, 1e-9), "stepper + → 30.1");
-await page.fill("#global-dial-d-Diameter", "30");
-await page.press("#global-dial-d-Diameter", "Enter");
+await enter_value("#global-dial-d-Diameter", "30");
 await page.$eval("#global-dial-d-Diameter-slider", (e) => { e.value = 31; e.dispatchEvent(new Event("input", { bubbles: true })); });
 check(await S("S.dial_d === 31") && await page.inputValue("#global-dial-d-Diameter") === "31.0", "slider → 31, the field follows");
-await page.fill("#global-dial-d-Diameter", "30");
-await page.press("#global-dial-d-Diameter", "Enter");
+await enter_value("#global-dial-d-Diameter", "30");
 
 // ── clicking the preview opens the settings of what was clicked ──
 await click_mm(...clock(10, 120));                                  // the numeral 4
 check(await S("S.ui_section === 1 && ['ticks','markers','numerals','band'][S.rings[S.ui_ring].kind] === 'numerals' && t.nudge_at === '4'"), "click the numeral 4 → Rings, the numerals ring, and Nudge is set to that numeral");
 { // Nudge's adjusters are number rows on the chosen numeral (#252): a slider, the value, ±; a neutral value is not kept
-  await page.fill("#nudge-da-Angle-", "5"); await page.press("#nudge-da-Angle-", "Enter");
+  await enter_value("#nudge-da-Angle-", "5");
   const set = await S("JSON.stringify(t.ring().nudge[t.nudge_at])");
   await page.click("#nudge-da-Angle- ~ .steps .step >> nth=1");
   const plus = await S("t.ring().nudge[t.nudge_at].da");
-  await page.fill("#nudge-da-Angle-", "0"); await page.press("#nudge-da-Angle-", "Enter");
+  await enter_value("#nudge-da-Angle-", "0");
   const gone = await S("t.ring().nudge[t.nudge_at] === undefined");
   const rows = await page.$$eval('[id^="nudge-"][id$="-slider"]', (e) => e.length);
   check(set === '{"da":5}' && Math.abs(plus - 5.1) < 1e-9 && gone && rows === 4, `Nudge: its four adjusters are number rows with a slider and ± (${rows}); the angle typed 5, plus 0.1, back to 0 leaves nothing kept (#252)`);
@@ -130,15 +131,12 @@ await click_mm(...clock(13, 150));
 await page.click('button:text-is("Round both ends")');
 check(await S("S.rings[S.ui_ring].round_out === 0.35 && S.rings[S.ui_ring].round_in === 0.35"), "Round both ends → both radii = half the marker's width");
 await click_mm(...clock(13.9, 93));
-await page.fill("#ring-w-Width", "0.3");
-await page.press("#ring-w-Width", "Enter");
+await enter_value("#ring-w-Width", "0.3");
 await page.click('button:text-is("Round both ends")');
 await click_mm(...clock(6, hands[0]));
-await page.fill("#hand-round-Round-ends", "2");
-await page.press("#hand-round-Round-ends", "Enter");
+await enter_value("#hand-round-Round-ends", "2");
 await page.click('.segs button:text-is("Minute")');
-await page.fill("#hand-round-Round-ends", "2");
-await page.press("#hand-round-Round-ends", "Enter");
+await enter_value("#hand-round-Round-ends", "2");
 check(await S("S.ha_hour.round === 2 && S.ha_minute.round === 2"), "Round ends on the hour and minute hands");
 const hour = await S("(() => { const p = t.items.find((i) => i.role === 'hand' && i.name === 'hour').path; return { curves: p.d.filter((c) => c[0] === 'C').length, b: p.bounds() }; })()");
 check(hour.curves === 4 && near(hour.b[3], await S("S.ha_hour.len"), 1e-6), "the hour hand has four rounded corners and keeps its length");
@@ -205,8 +203,7 @@ await page.click(`.ringlist li:nth-child(${other_ring + 1} of .ring) .name`);
 check(await S(`S.ui_ring === ${other_ring}`) && await page.$$eval(".ringlist input", (e) => e.length) === 0, "a click on another ring's name selects it and renames nothing");
 await page.click(`.ringlist li:nth-child(${mine + 1} of .ring) .name`);
 await page.click(".ringlist li.ring.on .rename");
-await page.fill(".ringlist li.ring.on input.name", "Edge");
-await page.press(".ringlist li.ring.on input.name", "Enter");
+await enter_value(".ringlist li.ring.on input.name", "Edge");
 check(await S("S.rings[S.ui_ring].name === 'Edge'") && await page.textContent(".ringlist li.ring.on span.name") === "Edge", "the rename box turns the name into a field; Enter keeps it: Edge");
 await page.click(".ringlist li.ring.on .rename");
 await page.fill(".ringlist li.ring.on input.name", "Nope");
@@ -673,8 +670,8 @@ check(await page.isVisible("#guide-list") && (await page.$$eval("#guide-list > .
     `every ring has a guide colour of its own to start with (${start.map((x) => x[1]).join(" ")}); a ring's line in the list changes it or hides it; Rings: All · Selected · None says which rings show theirs`);
   // guides you add: a line, a crosshair, a circle
   await page.click("#guide-add-line"); await page.click("#guide-add-crosshair"); await page.click("#guide-add-circle");
-  await page.fill("#guide-more-0-a", "45"); await page.press("#guide-more-0-a", "Enter");
-  await page.fill("#guide-more-1-r", "8"); await page.press("#guide-more-1-r", "Enter");
+  await enter_value("#guide-more-0-a", "45");
+  await enter_value("#guide-more-1-r", "8");
   await frame();
   const added = await page.evaluate(() => { const t = window.dial_tool, lines = [...document.querySelectorAll("#guide-list .guidekind.added")]; return [t.S.gd_more.map((g) => g.kind).join(""), t.S.gd_more[0].a, t.S.gd_more[1].r, t.items.filter((i) => i.role === "guide").length, lines.length,
     lines.every((l) => Math.round(l.getBoundingClientRect().height) === 30 && l.querySelector(".dots > :first-child").classList.contains("remove") && !l.querySelector(".none")), lines.map((l) => l.querySelector(".name").scrollWidth <= l.querySelector(".name").clientWidth).join(" ")]; });
@@ -687,8 +684,7 @@ check(await page.isVisible("#guide-list") && (await page.$$eval("#guide-list > .
 }
 const list_look = await page.evaluate(() => { const c = getComputedStyle(document.querySelector("#guide-list")), on = getComputedStyle(document.querySelector("#guide-list .tone.on")); return [c.backgroundColor, parseFloat(c.borderTopLeftRadius), on.borderTopLeftRadius, on.boxShadow.split("rgb").length - 1]; });
 check(list_look[0] === "rgb(20, 20, 19)" && list_look[1] >= 12 && list_look[2] === "50%" && list_look[3] === 3, "the list is near black and round; the chosen colour is a disc in a thick ring of its own colour");
-await page.fill("#global-gd-w-Thickness", "3");
-await page.press("#global-gd-w-Thickness", "Enter");
+await enter_value("#global-gd-w-Thickness", "3");
 await page.click("#guide-gd_axes");
 await frame();
 check(await S("t.items.filter((i) => i.role === 'guide' && i.px === 3).length > 0 && !t.items.some((i) => i.role === 'guide' && i.path.d.length === 2)"), "Guides: thickness 3, and None on centre lines takes them off the preview");
@@ -776,7 +772,7 @@ const bd = await page.evaluate(() => { const b = document.querySelector("#backdr
 check(bd[0] === 12 && bd[1] === 12 && bd[4] === 12 && bd[5] === 0 && bd[2] === "solid" && bd[3].includes("204, 204, 199"), "the Shadows switch is 12 from the preview's bottom left, the Backdrop switch a unit over it, solid-lined, its chip the backdrop's colour");
 await page.click("#backdrop");
 check(await page.isVisible("#colour-pop") && await page.textContent("#colour-pop h2") === "Backdrop" && await page.$eval("#colour-pop", (e) => e.getBoundingClientRect().bottom <= innerHeight), "a press opens the colour pop-out for the backdrop, inside the window");
-await page.click("#pop-as-HEX"); await page.fill("#pop-hex", "#808080"); await page.press("#pop-hex", "Enter");
+await page.click("#pop-as-HEX"); await enter_value("#pop-hex", "#808080");
 check(await S("Math.round(S.c_backdrop[0] * 255) === 128") && (await page.$eval("#backdrop .dot", (e) => getComputedStyle(e).getPropertyValue("--c"))).includes("128, 128, 128"), "typing a colour there changes the backdrop and the chip");
 await shot("4c6-backdrop-switch");
 await page.click("#backdrop");
@@ -820,7 +816,7 @@ await page.click("#unit-in");
 const as_in = await unit_box();
 check(as_in[0] === "in" && as_mm[4].every((v) => v >= 3.5 && v <= 4.5) && as_in[2] === as_mm[2] && as_in[4].every((v) => v >= 2) && await page.isHidden("#unit-menu"), `Inches: the box says in; mm's box stands 4 px round its letters, to a screen dot, counted on its picture (top · bottom · left · right: ${as_mm[4].join(" · ")}); every unit's box mm's height, its own width (in: ${as_in[1]} × ${as_in[2]}, its dot ${as_in[4][0]} from the top; #302, 4.44.4)`);
 check(await page.inputValue("#global-dial-d-Diameter") === "1.181" && await S("S.dial_d") === 30, "a 30 mm diameter shows as 1.181; the setting is still 30");
-await page.fill("#global-dial-d-Diameter", "1.5"); await page.press("#global-dial-d-Diameter", "Enter");
+await enter_value("#global-dial-d-Diameter", "1.5");
 check(near(await S("S.dial_d"), 38.1, 1e-6), "1.5 typed in inches is 38.1 mm");
 await page.click("#unit"); await page.click("#unit-pt");
 check(await page.inputValue("#global-dial-d-Diameter") === "108.0", "in points it reads 108.0");
@@ -831,19 +827,19 @@ await page.click("#unit");
 check(await page.evaluate(() => { const b = document.querySelector("#unit-menu button:last-child").getBoundingClientRect(), hit = document.elementFromPoint(b.right - 8, b.top + b.height / 2); return !!hit && !!hit.closest("#unit-menu"); }), "the unit menu stands over the rows under it: its last line (Thou) is pressed, not a row's minus or plus (Okay, 16 Oct 2026: \"Thou falls under\")");
 await page.mouse.click(640, 30);
 await page.click("#unit"); await page.click("#unit-mm");
-await page.fill("#global-dial-d-Diameter", "30"); await page.press("#global-dial-d-Diameter", "Enter");
+await enter_value("#global-dial-d-Diameter", "30");
 // scale everything with the diameter: off, the rings stay; on, every measure follows, and comes back
 const measures = () => S("[S.rings[0].r, S.rings[0].size, S.rings[1].len, S.ha_hour.len, S.ha_cap, S.rings[0].count, S.margin]");
 const at_30 = await measures();
-await page.fill("#global-dial-d-Diameter", "36"); await page.press("#global-dial-d-Diameter", "Enter");
+await enter_value("#global-dial-d-Diameter", "36");
 check(JSON.stringify(await measures()) === JSON.stringify(at_30), "the diameter alone leaves rings and hands where they are");
-await page.fill("#global-dial-d-Diameter", "30"); await page.press("#global-dial-d-Diameter", "Enter");
+await enter_value("#global-dial-d-Diameter", "30");
 await page.check("#global-ui-scale-Scale-everything-with-it");
-await page.fill("#global-dial-d-Diameter", "36"); await page.press("#global-dial-d-Diameter", "Enter");
+await enter_value("#global-dial-d-Diameter", "36");
 const at_36 = await measures();
 check(at_36.slice(0, 5).every((v, i) => near(v, at_30[i] * 1.2, 1e-4)) && at_36[5] === at_30[5] && at_36[6] === at_30[6], `with "scale everything" ticked, 30 → 36 makes radii, sizes, lengths and the cap 1.2× (count and margin stay)`);
 await shot("4d-scaled");
-for (const d of ["41.3", "22", "30"]) { await page.fill("#global-dial-d-Diameter", d); await page.press("#global-dial-d-Diameter", "Enter"); }
+for (const d of ["41.3", "22", "30"]) { await enter_value("#global-dial-d-Diameter", d); }
 check(JSON.stringify(await measures()) === JSON.stringify(at_30), "36 → 41.3 → 22 → 30: everything is back exactly where it was");
 await page.uncheck("#global-ui-scale-Scale-everything-with-it");
 check(await page.evaluate(() => Math.round(document.querySelector(".row.nest .check").getBoundingClientRect().left) === Math.round(document.querySelector(".row.num input[type=range]").getBoundingClientRect().left)), "a nested question starts on the controls' column");
@@ -853,9 +849,9 @@ const listed = await page.$$eval(".colourlist .row label", (l) => l.map((x) => x
 check(listed.length === await S("S.rings.length + 4 + [S.da_on, ...S.windows.map((w) => w.on)].filter(Boolean).length") && listed.join().includes("Hour hand,Minute hand,Seconds hand,Cap"), `Colours lists every ring, the hands, the cap and the windows that are on (${listed.join(" · ")})`);
 await page.click("#colour-hand-second");
 check(await page.textContent("#colour-pop h2") === "Seconds hand", "a swatch in the list opens the pop-out for that part");
-await page.click("#pop-as-HEX"); await page.fill("#pop-hex", "#39FF14"); await page.press("#pop-hex", "Enter");
+await page.click("#pop-as-HEX"); await enter_value("#pop-hex", "#39FF14");
 check(JSON.stringify(await S("S.ha_second.c.slice(0, 3).map((v) => Math.round(v * 255))")) === "[57,255,20]", "and sets its colour");
-await page.fill("#pop-hex", "#CC381A"); await page.press("#pop-hex", "Enter");
+await enter_value("#pop-hex", "#CC381A");
 await page.click("#pop-close");
 // a band's sectors, one colour each
 await tab("Rings");
@@ -863,20 +859,20 @@ await page.click("#ring-add");
 await page.click("#add-band");
 check(await page.isHidden("#sectors-same"), "a band of one piece has no sector colours");
 await page.selectOption("#ring-count-Count-menu", "6");
-await page.fill("#ring-width-Band-width", "4"); await page.press("#ring-width-Band-width", "Enter").catch(() => {});
+await enter_value("#ring-width-Band-width", "4");
 await frame();
 const band = await S("S.ui_ring");
 check(await page.$$eval(`.form .colourlist .swatch[id^="colour-ring-${band}-sector"]`, (b) => b.length) === 6, "six sectors: Sector colours shows six swatches");
 await page.click(`#colour-ring-${band}-sector-1`);
 check((await page.textContent("#colour-pop h2")).endsWith("sector 2"), "the second one opens the pop-out as “… · sector 2”");
 check(await page.isVisible(".alpharow"), "a ring's colour has an opacity strip");
-await page.fill("#pop-alpha", "50"); await page.press("#pop-alpha", "Enter");
+await enter_value("#pop-alpha", "50");
 await frame();
 check(await S(`S.rings[${band}].cs["1"][3] === 0.5`) && await page.$eval(".preview path[fill-opacity='0.5']", (e) => e !== null) && await page.inputValue("#pop-alpha") === "50%", "opacity 50: the sector is half see-through in the preview");
-await page.fill("#pop-alpha", "100"); await page.press("#pop-alpha", "Enter");
-await page.fill("#pop-hex", "#0E2A47"); await page.press("#pop-hex", "Enter");
+await enter_value("#pop-alpha", "100");
+await enter_value("#pop-hex", "#0E2A47");
 await page.click(`#colour-ring-${band}-sector-3`);
-await page.fill("#pop-hex", "#0E2A47"); await page.press("#pop-hex", "Enter");
+await enter_value("#pop-hex", "#0E2A47");
 await frame();
 const parts = await S(`t.items.filter((i) => i.role === 'ring' && i.index === ${band}).map((i) => [i.part, Math.round(i.fill[2] * 255)])`);
 check(JSON.stringify(await S(`Object.keys(S.rings[${band}].cs)`)) === '["1","3"]' && parts.length === 2 && parts.some((p) => p[1] === 71), `two sectors navy: the band is drawn as two shapes, one per colour (${JSON.stringify(parts)})`);
@@ -889,7 +885,7 @@ await frame();
 check(await S(`Object.keys(S.rings[${band}].cs).length === 0 && t.items.filter((i) => i.role === 'ring' && i.index === ${band}).length === 1`), "All as the ring: one colour, one shape again");
 // two colours alternating (Okay, 15 Oct 2026, 11:13 and 11:32): an even count only
 await page.click(`#colour-ring-${band}-alternate-2`);
-await page.fill("#pop-hex", "#0E2A47"); await page.press("#pop-hex", "Enter"); await page.click("#pop-close");
+await enter_value("#pop-hex", "#0E2A47"); await page.click("#pop-close");
 await frame();
 check(JSON.stringify(await S(`Object.keys(S.rings[${band}].cs)`)) === '["1","3","5"]' && (await S(`t.items.filter((i) => i.role === 'ring' && i.index === ${band}).length`)) === 2, "Alternate: the second colour takes sectors 2, 4, 6 — two shapes");
 await page.selectOption("#ring-count-Count-menu", "5"); await frame();
@@ -994,7 +990,11 @@ await page.click("#hand-tab-0");
   };
   const fig = await on_figures();
   const shut = await nb(), len = await S("S.ha_hour.len");
-  await page.click(".row.side .numbox .step >> nth=1");
+  // the whole box is one press (#317, 4.58): a press on the plus opens the controller, steps nothing; the number isn't typed
+  { const p = await (await page.$(".row.side .numbox .step >> nth=1")).boundingBox(); await page.mouse.click(p.x + p.width / 2, p.y + p.height / 2); }      // where the plus is drawn: the press falls through the picture to the box
+  const on_plus = [await S("S.ha_hour.len") === len, await page.evaluate(() => { const e = document.querySelector("#value-pop"); return !!e && e.querySelector("label").textContent === "Length"; }), await page.$eval("#hand-len-Length", (f) => f.readOnly)];
+  await page.keyboard.press("Escape"); await page.evaluate(() => window.dial_tool.value_pop_close());
+  await page.evaluate((v) => window.dial_tool.set_value("hand", "len", v + 0.05), len);
   const stepped = await S("S.ha_hour.len"), after = await nb();
   await page.click("#hand-len-Length");
   const popped = await page.evaluate(() => { const e = document.querySelector("#value-pop"); return !!e && e.querySelector("label").textContent === "Length" && getComputedStyle(e.querySelector("input[type=range]")).display !== "none"; });
@@ -1002,8 +1002,10 @@ await page.click("#hand-tab-0");
   await page.evaluate((v) => window.dial_tool.set_value("hand", "len", v), len);
   const back = await nb();
   check(shut.plain && shut.stacked && !shut.changed && shut.grey === "rgb(92, 92, 88)" && near(stepped - len, 0.05, 1e-6) && after.changed && !back.changed && shut.w === 60,
-    `beside the box a number is quiet: no box, grey until it changes (${shut.grey}), a tiny plus over a tiny minus that step it; changed it is in ink, back to how the dial opened grey again (#250)`);
-  check(fig.every((v) => Math.abs(v) <= 1), `the tiny plus's top on the figures' top, the minus on their baseline, within a dot (${fig.join(", ")} dots) (4.45.2)`);
+    `beside the box a number is quiet: no box, grey until it changes (${shut.grey}), a tiny plus over a tiny minus; changed it is in ink, back to how the dial opened grey again (#250)`);
+  check(on_plus.every(Boolean), `the number and its ± are one press: on the plus it opens the controller and steps nothing; the number is not typed there (#317: ${on_plus.join(" ")})`);
+  const dpr = await page.evaluate(() => devicePixelRatio);
+  check(Math.abs(fig[0] + 4 * dpr) <= 1 && Math.abs(fig[1]) <= 1, `the tiny plus 4 over the figures' top (#317: "plus moves up 4px"), the minus on their baseline, within a dot (${fig.join(", ")} dots) (4.45.2)`);
   check(popped && await page.$("#value-pop") === null, "a press on the number opens its popup, with its slider; Escape puts it away (#250, #249)");
 }
 { // a disc's marker: Hole or Mark, its rows named by the choice; Mark brings its colour (#300, 4.45.4)
@@ -1069,9 +1071,9 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
     const before = await S("[S.da_at, S.da_at_deg]");
     await page.click("#window-at-more");
     const open = await page.isVisible("#window-at-time"), places = await page.$$eval("#value-pop .places button", (b) => b.map((x) => x.textContent).join(" "));
-    await page.fill("#window-at-time", "2:15"); await page.press("#window-at-time", "Enter");
+    await enter_value("#window-at-time", "2:15");
     const own = [await S("S.da_at_deg"), await page.textContent("#window-at-more"), await page.textContent(".form .pane h2"), await page.$$eval(".circles button.on", (b) => b.map((x) => x.id).join())];
-    await page.click("#window-at-more"); await page.fill("#window-at-time", "4:30"); await page.press("#window-at-time", "Enter");
+    await page.click("#window-at-more"); await enter_value("#window-at-time", "4:30");
     const named = await S("[S.da_at, S.da_at_deg]");
     await page.click("#window-at-more"); await page.click("#window-at-place-7");      // 10:30, a button in the popup
     const placed = [await S("[S.da_at, S.da_at_deg]"), await page.$("#value-pop"), await page.textContent("#window-at-more")];
@@ -1106,14 +1108,14 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
   if (await page.$eval("#font-picker", (d) => d.open)) await page.keyboard.press("Escape");
   { // a window's own tracking and language (beta 4.26): unset they are the numerals'; As the numerals takes them back
     const before = await S("S.da_tracking === null && S.da_lang === null");
-    await page.fill("#window-tracking-Tracking", "40"); await page.press("#window-tracking-Tracking", "Enter");
+    await enter_value("#window-tracking-Tracking", "40");
     await page.click("#window-lang"); await page.click("#window-lang-tr");
     check(before && await S("S.da_tracking === 40 && S.da_lang === 1 && S.rings.find((r) => r.kind === 2).tracking === 0") && await page.textContent("#window-lang") === "TR", "a window has tracking and a language of its own, in its font box; the numerals keep theirs");
   }
   { // every font box has all of it (beta 4.30): a window's box has the variable axes and the OpenType features too, and both can be put away
     await page.waitForFunction(() => document.querySelector("#window-axis-wght"), null, { timeout: 8000 }).catch(() => {});
     const ring_before = await S("JSON.stringify(S.rings.find((r) => r.kind === 2).axes)");
-    await page.fill("#window-axis-wght", "600"); await page.press("#window-axis-wght", "Enter");
+    await enter_value("#window-axis-wght", "600");
     check(await page.isHidden(".fontbox .features"), "the OpenType features are put away until asked for");
     await page.click('.fontbox .partfold:has-text("OpenType")');
     const tile = await page.$("#window-feature-tnum") ? "tnum" : await page.$eval(".boxpart .features .tile", (e) => e.dataset.tag);
@@ -1149,14 +1151,14 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
 {
   const was = await page.evaluate(() => { const t = window.dial_tool, was = [t.S.ui_window, t.S.da_on, t.S.da_kind, t.S.t]; t.S.ui_window = 0; t.set_value("window", "on", true); t.set_value("window", "kind", 2); return was; });
   const dark = async () => { await frame(); return page.evaluate(() => { const t = window.dial_tool, x = t.statik.windows[0], b = x.number.bounds(), w = x.window.bounds(); return b ? (b[2] - b[0]) * (b[3] - b[1]) / ((w[2] - w[0]) * (w[3] - w[1])) : 0; }); };
-  await page.fill("#time", "10:00"); await page.press("#time", "Enter");
+  await enter_value("#time", "10:00");
   const am = [await S("S.t"), await page.textContent("#ampm"), await dark()];
   await page.click("#ampm");
   const pm = [await S("S.t"), await page.textContent("#ampm"), await dark(), await page.inputValue("#time")];
   await shot("4c12-ampm");
-  await page.fill("#time", "15:20"); await page.press("#time", "Enter");
+  await enter_value("#time", "15:20");
   const typed = [await S("S.t"), await page.inputValue("#time")];
-  await page.fill("#time", "3:20 am"); await page.press("#time", "Enter");
+  await enter_value("#time", "3:20 am");
   const said = await S("S.t");
   check(am[0] === 36000 && am[1] === "AM" && pm[0] === 79200 && pm[1] === "PM" && pm[3] === "10:00:00" && pm[2] > am[2] + 0.3 && typed[0] === 55200 && typed[1] === "3:20:00" && said === 12000 && await page.$('[id*="Hour-of-the-day"]') === null,
     `an am · pm window follows the time: at 10 AM ${(am[2] * 100).toFixed(0)} % of it is drawn dark, at 10 PM ${(pm[2] * 100).toFixed(0)} %; "15:20" is 3:20 PM, "3:20 am" the morning; no Hour of the day row`);
@@ -1236,13 +1238,11 @@ check(await page.$$eval("#pop-palette button[data-colour]", (b) => b.length) ===
 await page.click("#pop-add");
 check(await page.$$eval("#pop-palette button[data-colour]", (b) => b.length) === 10, "− takes it out again");
 await page.click("#pop-as-CMYK");
-await page.fill("#pop-K", "100");
-await page.press("#pop-K", "Enter");
+await enter_value("#pop-K", "100");
 await page.click("#pop-as-HEX");
 check(JSON.stringify(await S("S.c_plate.slice(0, 3)")) === "[0,0,0]" && await page.inputValue("#pop-hex") === "#000000", "CMYK: K 100 is black, and HEX says #000000");
 await page.click("#pop-as-RGB");
-await page.fill("#pop-R", "255");
-await page.press("#pop-R", "Enter");
+await enter_value("#pop-R", "255");
 check(await page.textContent("#global-c-plate-Plate-hex") === "#FF0000", "RGB: R 255 → #FF0000");
 const one_line = await page.evaluate(() => { const tops = [...document.querySelectorAll("#colour-pop .asnumbers button, #colour-pop .asnumbers input")].map((e) => Math.round(e.getBoundingClientRect().top)); const c = getComputedStyle(document.querySelector("#pop-copy")); return [new Set(tops).size, c.textTransform, document.querySelector("#pop-copy").textContent]; });
 check(one_line[0] === 1 && one_line[2] === "COPY", "RGB · CMYK · HEX, the values and COPY stand on one line, in capitals");
@@ -1267,7 +1267,7 @@ check(pop_back[0] === pop_before[2] && near(pop_back[1], pop_size[1], 1), "and b
 await shot("4c1-picker");
 await page.click('#colour-pop [data-colour="#0E2A47"]');
 check(JSON.stringify(await S("S.c_plate.map((v) => Math.round(v * 255))")) === "[14,42,71,255]" && await page.textContent("#global-c-plate-Plate-hex") === "#0E2A47", "picking navy sets the plate, and the value shows as text");
-await page.click("#pop-as-HEX"); await page.fill("#pop-hex", "ede8db"); await page.press("#pop-hex", "Enter");
+await page.click("#pop-as-HEX"); await enter_value("#pop-hex", "ede8db");
 check(JSON.stringify(await S("S.c_plate.map((v) => Math.round(v * 255))")) === "[237,232,219,255]", "a typed value sets it too");
 await page.click("#global-c-plate-Plate");
 await shot("4c2-colour");
@@ -1286,10 +1286,8 @@ for (const [n, kind, at] of kinds) {
   await page.click("#window-kind-Complication-" + kind);
   await page.click("#window-at-Position-" + ["3", "4:30", "6", "9", "12", "1:30", "7:30", "10:30", "4"].indexOf(at));
 }
-await page.fill("#window-age-Moon-age-days", "6");
-await page.press("#window-age-Moon-age-days", "Enter");
-await page.fill("#window-w-Width-arch", "4");
-await page.press("#window-w-Width-arch", "Enter");
+await enter_value("#window-age-Moon-age-days", "6");
+await enter_value("#window-w-Width-arch", "4");
 await frame();
 check(await S("t.statik.windows.length === 4 && S.windows[0].text === 'MON' && S.windows.map((w) => w.kind).join('') === '123'"), "four windows: date, day (its text became MON), am · pm, moon phase");
 check(await S("t.statik.windows.every((x) => x.number.bounds() !== null && x.window.bounds() !== null)") && await S("t.items.filter((i) => i.role === 'date disc').length === 4"), "each window has a hole and something showing through it");
@@ -1384,13 +1382,11 @@ await page.waitForFunction(() => window.dial_tool.ring().family === "Lora" && wi
 check(await S("S.rings[S.ui_ring].ps === 'Lora-Regular'") && asked_for.includes("ofl/lora/Lora[wght].ttf") && !asked_for.includes("ofl/lora/Italic.ttf"), "a Google Fonts page link adds the family's upright fonts and uses it");
 check((await page.textContent("#picker-note")).includes("Added Lora") && await page.$('#font-picker .fontrow[data-family="Lora"][data-group="added"] .sample svg') !== null && await S("JSON.parse(localStorage.getItem('dial-tool-fonts')).some((f) => f.ps === 'Lora-Regular' && f.url.includes('raw.githubusercontent.com'))"), "the sheet says so; Lora is listed under Added by you with its numerals, and this browser remembers where it came from");
 if (await page.isHidden("#font-link")) await page.click("#font-add");
-await page.fill("#font-link", "Nonesuch Grotesk");
-await page.press("#font-link", "Enter");
+await enter_value("#font-link", "Nonesuch Grotesk");
 await page.waitForFunction(() => document.querySelector("#picker-note").textContent.includes("no family"), null, { timeout: 8000 }).catch(() => {});
 check((await page.textContent("#picker-note")).includes("no family spelled"), "a name Google Fonts doesn't have is answered plainly");
 if (await page.isHidden("#font-link")) await page.click("#font-add");
-await page.fill("#font-link", "https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap");
-await page.press("#font-link", "Enter");
+await enter_value("#font-link", "https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap");
 await page.waitForFunction(() => document.querySelector("#picker-note").textContent.includes("Added Lora"), null, { timeout: 8000 }).catch(() => {});
 check((await page.textContent("#picker-note")).includes("Added Lora"), "an embed link (fonts.googleapis.com/css2?family=…) works too");
 errors.length = 0;                                   // the three "not found" answers above are the browser's, and expected
@@ -1406,7 +1402,7 @@ check(await page.$eval("#font-picker", (d) => !d.open) && (await page.textConten
 await frame();
 check(await page.$("#axis-wght") !== null, "Lora's weight axis has a slider");
 { // a variable axis is named by a sticker, in the tool's colours, that is a button: it sets the axis back
-  await page.fill("#axis-wght", "650"); await page.press("#axis-wght", "Enter");
+  await enter_value("#axis-wght", "650");
   const moved = await S("S.rings[S.ui_ring].axes.wght");
   const look = await page.$eval("#axis-wght-back", (e) => { const c = getComputedStyle(e); const st = getComputedStyle(e.querySelector(".sticker")); return [e.firstChild.textContent, st.fontFamily.includes("Silkscreen"), e.querySelector(".sticker").textContent, st.fontSize + " " + (c.color === getComputedStyle(document.querySelector(".fontbox .row > label")).color) + " " + (getComputedStyle(e).fontFamily === getComputedStyle(document.querySelector(".fontbox .row > label")).fontFamily)]; });
   await page.click("#axis-wght-back");
@@ -1449,8 +1445,7 @@ check(await page.$("#axis-wght") !== null, "Lora's weight axis has a slider");
   await page.keyboard.press("Escape");
 }
 const light = await S("t.statik.rings.find((d) => d.kind === 'numerals').path.svg(3).length");
-await page.fill("#axis-wght", "700");
-await page.press("#axis-wght", "Enter");
+await enter_value("#axis-wght", "700");
 await frame();
 check(await S("S.rings[S.ui_ring].axes.wght === 700") && (await S("t.statik.rings.find((d) => d.kind === 'numerals').path.svg(3).length")) !== light, "weight 700 changes the numerals' outlines");
 const wide = await S("(() => { const b = t.statik.rings.find((d) => d.kind === 'numerals').parts[0].bounds(); return b[2] - b[0]; })()");
@@ -1615,8 +1610,7 @@ check(fits.play === 34 && fits.zooms === 54 && fits.fitpad && fits.sign && fits.
   check(look.join(" ") === "0.8px 5.5px 5.5px color(srgb 0.360784 0.360784 0.360784) rgb(212, 212, 207)", `the bar's time: its figures tracked +0.04em, AM · PM closer to its word, NOW filled 20 % darker than AM's outline (#5C5C5C) with its word the light rule tone, not white (${look.join(" · ")}) (#306, #307)`);
 }
 await shot("7b-bar");
-await page.fill("#time", "3:20:10");
-await page.press("#time", "Enter");
+await enter_value("#time", "3:20:10");
 check(await S("S.t === 3 * 3600 + 20 * 60 + 10"), "typed time 3:20:10");
 
 // ── files: PDF, SVG, PNG, save, load ──

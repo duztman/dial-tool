@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.58 (web version) · 18 Oct 2026
+
+The small ± adjusters (notes 2, #317).
+
+- **A quiet number and its ± are one press**: anywhere on them opens the controller. The signs are a picture of the controller's − and +, and the number is not typed there (from the keyboard: Tab to it, Enter opens the controller, the arrows still step it).
+- **The tiny plus 4 px higher** than the figures' top.
+
 ## beta 4.57 (web version) · 18 Oct 2026
 
 A window's width and height, linked (notes 2, #358).

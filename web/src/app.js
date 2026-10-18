@@ -996,7 +996,7 @@ class DialTool {
     if (this.lang_opens && !on(".langs")) for (const shut of this.lang_opens) shut(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
     if (this.kind_open && $("#kind-menu") && !$("#kind-menu").hidden && !on("#ring-kind-square") && !on("#kind-menu")) this.kind_open(false);
-    if (this.value_pop && !on("#value-pop") && !on(".valueb, .atmore, .popname, .numbox > input")) this.value_pop_close();
+    if (this.value_pop && !on("#value-pop") && !on(".valueb, .atmore, .popname, .numbox")) this.value_pop_close();
     this.tag_hide();
   }
 
@@ -2171,8 +2171,15 @@ class DialTool {
         for (const b of box.querySelectorAll(".step")) b.onmousedown = (e) => e.preventDefault();      // a press on minus or plus leaves the focus where it is
         field.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === "Escape") field.blur(); });
         if (!row.inpop) {
-          field.onmousedown = (e) => e.preventDefault();      // a press opens the popup, whose own field takes the typing
-          field.onclick = (e) => this.value_pop_open(field, row, e.detail ? { x: e.clientX, y: e.clientY } : null);
+          // the whole box — the number and its ± — is one press that opens the controller; nothing is typed here and
+          // the signs are a picture of what the controller does (Okay's notes 2, #317: "whole number box (number and
+          // plusminus) brings up the big adjuster. Buttons are not real plus or minus, text not typable here"). The
+          // keyboard: Tab reaches the number, Enter opens the controller, the arrows still step it.
+          field.readOnly = true;
+          field.onmousedown = (e) => e.preventDefault();
+          box.onclick = (e) => this.value_pop_open(field, row, e.detail ? { x: e.clientX, y: e.clientY } : null);
+          field.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); this.value_pop_open(field, row); } });
+          for (const b of box.querySelectorAll(".step")) b.tabIndex = -1;
         }
         out.quiet = box;
         wrap.append(lead, slider, box);
