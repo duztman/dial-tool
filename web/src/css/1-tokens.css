@@ -214,7 +214,7 @@
     --frame-pad: 8px;                              /* inside a frame (a ring row, the font box): from its edge to what is in it, where a pane's row would have none */
     --ring-gap: 4px;                               /* between framed rows */
     --foot-gap: 4px;                               /* between the round signs on the Rings heading line */
-    --ringline-pad: 8px; --ringline-gap: 8px; --ringline-join: 2px;      /* the selected ring's line: inside its frame · between its parts · between it and its ring's row (Okay asked for more room inside, 13 Oct, beta 4.10; 8 was Claude's figure) */
+    --ringline-pad: 8px; --ringline-gap: 8px; --ringline-join: calc(-1 * var(--hair));      /* the selected ring's line: inside its frame · between its parts · between it and its ring's row: none, the two one box sharing a line (4.81; Okay, 19 Oct 2026: "two boxes, yours is not connected, mine is"; 2 until then) (Okay asked for more room inside, 13 Oct, beta 4.10; 8 was Claude's figure) */
     --name-in: 6px;                                /* a ring's name starts this far into its column; the ring line's buttons too */
     --chip-gap: 4px;                               /* between two colours to pick */
     --pop-pad: 16px; --pop-gap: 12px;              /* a night part (colour pop-out, guides' list) and the number popup: the space inside its edge, the space between its blocks */

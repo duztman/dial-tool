@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.81 (web version) · 19 Oct 2026
+
+Okay's notes on 4.80 (19 Oct, 01:26), the small ones.
+
+- **The ring of shine redrawn** (#365; "centre is about 6 on noon", "circle extends to be 150% dial size", "horizontally starts from 2/3 way from top of dial on the radius"): a circle 1.5 × the dial's radius, its centre on the side away from the sun — at noon just past 6 — so it crosses the dial a third of the radius above the centre. Unseen at sunrise and sunset, strongest at noon; its bands wide while the sun is low, narrow at noon. A light middle band (screened: it shows on a dark dial) between two dark ones (they show on a light dial).
+- **The selected ring and its line are one box** (#364; "two boxes, yours is not connected, mine is"): no gap between them, one line shared, the corners square where they meet.
+- **None, dotted** (a numerals ring's 12 left empty): the baton's outline as dots, one at each corner and the rest evenly spaced along the sides (2 apart), in place of dashes.
+
 ## beta 4.80 (web version) · 19 Oct 2026
 
 Hands that sit on something, and handles that move where a hand is widest (#370, #368; Okay, 19 Oct 2026, 00:59).

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.80 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.81 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -251,7 +251,7 @@
     --frame-pad: 8px;                              /* inside a frame (a ring row, the font box): from its edge to what is in it, where a pane's row would have none */
     --ring-gap: 4px;                               /* between framed rows */
     --foot-gap: 4px;                               /* between the round signs on the Rings heading line */
-    --ringline-pad: 8px; --ringline-gap: 8px; --ringline-join: 2px;      /* the selected ring's line: inside its frame · between its parts · between it and its ring's row (Okay asked for more room inside, 13 Oct, beta 4.10; 8 was Claude's figure) */
+    --ringline-pad: 8px; --ringline-gap: 8px; --ringline-join: calc(-1 * var(--hair));      /* the selected ring's line: inside its frame · between its parts · between it and its ring's row: none, the two one box sharing a line (4.81; Okay, 19 Oct 2026: "two boxes, yours is not connected, mine is"; 2 until then) (Okay asked for more room inside, 13 Oct, beta 4.10; 8 was Claude's figure) */
     --name-in: 6px;                                /* a ring's name starts this far into its column; the ring line's buttons too */
     --chip-gap: 4px;                               /* between two colours to pick */
     --pop-pad: 16px; --pop-gap: 12px;              /* a night part (colour pop-out, guides' list) and the number popup: the space inside its edge, the space between its blocks */
@@ -880,9 +880,12 @@
      narrow gap. It borrows the list's columns (subgrid), so its buttons start where the names start: four kinds
      (pictures only) · its colour (a swatch) · its size and its radius (two value buttons), all one height. The
      frame has the colour of the selected ring's guide, as the row above has, on white. */
+  /* the selected row and its line are one box (4.81): the row's lower corners and the line's upper ones square, their
+     two lines lying on each other */
+  .ringlist li.ring.on:has(+ li.lineholder) { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
   .ringlist li.lineholder { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; margin-top: calc(var(--ringline-join) - var(--ring-gap));
     padding: calc(var(--ringline-pad) + var(--ringline-inner)) 0;
-    border: var(--hair) solid var(--select-rule); border-radius: var(--round-small); background: var(--field); box-shadow: inset 0 0 0 var(--ringline-inner) var(--select); }
+    border: var(--hair) solid var(--select-rule); border-radius: 0 0 var(--round-small) var(--round-small); background: var(--field); box-shadow: inset 0 0 0 var(--ringline-inner) var(--select); }
   /* inside its outer line a second one, three times as thick, in the selected row's ground: the box reads as that row's */
   .guided .ringlist li.lineholder { border-color: color-mix(in srgb, var(--guide) var(--guide-edge), var(--grey)); box-shadow: inset 0 0 0 var(--ringline-inner) color-mix(in srgb, var(--guide) var(--guide-tint), var(--field)); }
   .ringline { display: contents; }                 /* its parts stand on the list's columns: the kind square under the rows' icons, the details and Change in the names' room, then colour · size · radius */
@@ -6223,7 +6226,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.80";
+var VERSION = "beta 4.81";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -10822,8 +10825,11 @@ var PICS = {
     `<rect x="16.5" y="4" width="5" height="19" ${solid}/>`,
     `<rect x="11.5" y="4" width="5" height="19" ${solid}/><rect x="21.5" y="4" width="5" height="19" ${solid}/>`,
     `<path d="M11 4H27L19 23Z" ${solid}/>`,
-    `<rect x="16.75" y="4.75" width="4.5" height="17.5" stroke-width="2" stroke-dasharray="1.5 2.5"/>`
-    // the baton, outlined and dashed (a place left empty): a dashed line looks lighter than a whole one, so 2
+    // none: the baton's outline in dots (a place left empty). 19 Oct 2026 (Okay: "This none icon needs to be dotted.
+    // each dot on corners, fill sides with dots with equal spaces"): a dot at each corner of a 4 × 18 outline inside
+    // the baton's 5 × 19 and every 2 along its sides — the short sides two steps, the long nine; dashes until 4.80
+    // (3.5 apart with no middle dot on the short sides, it read as two columns, the grip's sign)
+    [[17, 19, 21].flatMap((x) => [[x, 4.5], [x, 22.5]]), [1, 2, 3, 4, 5, 6, 7, 8].flatMap((i) => [[17, 4.5 + 2 * i], [21, 4.5 + 2 * i]])].flat().map(([x, y]) => `<circle cx="${x}" cy="${y}" r="0.625" ${solid}/>`).join("")
   ],
   // Placement (#259, 4.50.3; Okay's notes, p. 6: "each shows what it does on a ring, as auto-flip's does; no clash
   // with the dial's ring; cleaner arrows with stems, six arrows each"): a micro dial — the ring as a faint circle, and
@@ -10899,7 +10905,7 @@ var SKY_TOP = 0.3;
 var SHOWCASE_PAGE = { w: 210, h: 297, dial: 2 / 3 };
 var SUN = { day: 20, rise: 40, fade: 0.45 };
 var POOL = { size: 1.45, stretch: 1.4, soft: [0.06, 0.8], light: [0.08, 0.42], shade: [0.15, 0.55], lift: 1.5, least: 0.2 };
-var SHINE = { r: 0.66, toward: 0.3, bands: [[-0.07, 0.03], [0, 0.075], [0.07, 0.03]], width: 0.07 };
+var SHINE = { r: 1.5, behind: 1.5 - 1 / 3, bright: 0.11, dark: 0.07, width: [0.16, 0.05] };
 var BEVEL = { light: 0.22, dark: 0.26 };
 var SHOW_DARKER = 1.25;
 var TRAVEL_MS = 900;
@@ -12221,28 +12227,34 @@ var DialTool = class _DialTool {
       this.svg.prepend(this.light_defs);
     }
     const from = sun ? sun.from : S.sh_from, R = S.dial_d / 2, nodes = items.map((_, i) => this.slots[i].node);
-    const bands = (g, key) => {
+    const bands = (g, under, key) => {
       if (!sun) return;
-      const a = from * Math.PI / 180, c = [Math.sin(a) * SHINE.toward * R, Math.cos(a) * SHINE.toward * R];
-      SHINE.bands.forEach(([at, bright], k) => {
-        const r0 = R * (SHINE.r + at - SHINE.width / 2), r1 = R * (SHINE.r + at + SHINE.width / 2);
-        const p = part(`${key}/band/${k}`, "path", g);
+      const a = from * Math.PI / 180, c = [-Math.sin(a) * SHINE.behind * R, -Math.cos(a) * SHINE.behind * R];
+      const w = (SHINE.width[0] + (SHINE.width[1] - SHINE.width[0]) * sun.k) * R, strong = sun.k * on;
+      const ring2 = (name, parent, mid, colour, k) => {
+        const r0 = R * SHINE.r + mid - w / 2, r1 = r0 + w, p = part(`${key}/${name}`, "path", parent);
         p.setAttribute("d", `M${f2(c[0] - r1)} ${f2(c[1])}a${f2(r1)} ${f2(r1)} 0 1 0 ${f2(2 * r1)} 0a${f2(r1)} ${f2(r1)} 0 1 0 ${f2(-2 * r1)} 0ZM${f2(c[0] - r0)} ${f2(c[1])}a${f2(r0)} ${f2(r0)} 0 1 1 ${f2(2 * r0)} 0a${f2(r0)} ${f2(r0)} 0 1 1 ${f2(-2 * r0)} 0Z`);
-        p.setAttribute("fill", "#fff");
-        p.setAttribute("fill-opacity", f2(bright * on));
+        p.setAttribute("fill", colour);
+        p.setAttribute("fill-opacity", f2(k * strong));
         p.setAttribute("fill-rule", "evenodd");
-      });
+      };
+      ring2("light", g, 0, "#fff", SHINE.bright);
+      ring2("dark-in", under, -w, "#000", SHINE.dark);
+      ring2("dark-out", under, w, "#000", SHINE.dark);
     };
     const first_hand = items.findIndex((x) => x.role === "hand" || x.role === "cap" || x.role === "guide");
     if (sun && items.some((x) => x.role === "plate")) {
       const clip = part("shine/clip", "clipPath", this.light_defs), dial = part("shine/clip/dial", "circle", clip);
       clip.id = "shine-clip";
       dial.setAttribute("r", f2(R));
-      const g = part("shine", "g", this.dial, first_hand >= 0 ? nodes[first_hand] : null);
-      g.setAttribute("clip-path", "url(#shine-clip)");
+      const before = first_hand >= 0 ? nodes[first_hand] : null;
+      const under = part("shine-dark", "g", this.dial, before), g = part("shine", "g", this.dial, before);
+      for (const x of [under, g]) {
+        x.setAttribute("clip-path", "url(#shine-clip)");
+        x.setAttribute("pointer-events", "none");
+      }
       g.setAttribute("style", "mix-blend-mode: screen");
-      g.setAttribute("pointer-events", "none");
-      bands(g, "shine");
+      bands(g, under, "shine");
     }
     items.forEach((item, i) => {
       if (item.role !== "hand" || HAND_SHAPES[S["ha_" + item.name]?.shape] === "disc" || !(+S.sh_bevel > 0 || sun)) return;
@@ -12271,10 +12283,10 @@ var DialTool = class _DialTool {
       half("right", 0, side > 0 ? "#fff" : "#000", side > 0 ? lit : dark);
       half("left", -50, side > 0 ? "#000" : "#fff", side > 0 ? dark : lit);
       if (sun) {
-        const sh = part(key + "/shine", "g", inner);
-        sh.setAttribute("transform", `rotate(${f2(item.angle)})`);
+        const dk = part(key + "/shine-dark", "g", inner), sh = part(key + "/shine", "g", inner);
+        for (const x of [dk, sh]) x.setAttribute("transform", `rotate(${f2(item.angle)})`);
         sh.setAttribute("style", "mix-blend-mode: screen");
-        bands(sh, key + "/shine");
+        bands(sh, dk, key + "/shine");
       }
     });
     finish();

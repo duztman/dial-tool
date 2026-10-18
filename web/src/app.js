@@ -192,7 +192,12 @@ const PICS = {
     `<rect x="16.5" y="4" width="5" height="19" ${solid}/>`,
     `<rect x="11.5" y="4" width="5" height="19" ${solid}/><rect x="21.5" y="4" width="5" height="19" ${solid}/>`,
     `<path d="M11 4H27L19 23Z" ${solid}/>`,
-    `<rect x="16.75" y="4.75" width="4.5" height="17.5" stroke-width="2" stroke-dasharray="1.5 2.5"/>`,      // the baton, outlined and dashed (a place left empty): a dashed line looks lighter than a whole one, so 2
+    // none: the baton's outline in dots (a place left empty). 19 Oct 2026 (Okay: "This none icon needs to be dotted.
+    // each dot on corners, fill sides with dots with equal spaces"): a dot at each corner of a 4 × 18 outline inside
+    // the baton's 5 × 19 and every 2 along its sides — the short sides two steps, the long nine; dashes until 4.80
+    // (3.5 apart with no middle dot on the short sides, it read as two columns, the grip's sign)
+    [[17, 19, 21].flatMap((x) => [[x, 4.5], [x, 22.5]]), [1, 2, 3, 4, 5, 6, 7, 8].flatMap((i) => [[17, 4.5 + 2 * i], [21, 4.5 + 2 * i]])].flat()
+      .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="0.625" ${solid}/>`).join(""),
   ],
   // Placement (#259, 4.50.3; Okay's notes, p. 6: "each shows what it does on a ring, as auto-flip's does; no clash
   // with the dial's ring; cleaner arrows with stems, six arrows each"): a micro dial — the ring as a faint circle, and
@@ -296,10 +301,16 @@ const SUN = { day: 20, rise: 40, fade: 0.45 };
 // the long way along the light), a circle at midday; the oval faintest and softest, midday brightest and almost crisp
 const POOL = { size: 1.45, stretch: 1.4, soft: [0.06, 0.8], light: [0.08, 0.42], shade: [0.15, 0.55], lift: 1.5, least: 0.2 };      // least: the pool's colour is the backdrop's, lifted toward white until its lightness is at least this (0–1), so a very dim backdrop still makes a spotlight (#351, 4.77)
 // the showcase's ring of shine (#351, 4.77; Okay's notes 2: "a ring of shine on the dial moving with the sun ('just a
-// ring', two or three bands of brightness) that also shows the hands' shadows on dark dials"): three bands round a
-// centre moved toward the sun, the middle one brightest, each a share of the dial's radius; screened onto the dial and
-// the hands, so a dark dial lightens there and the hands' shadows read on it
-const SHINE = { r: 0.66, toward: 0.3, bands: [[-0.07, 0.03], [0, 0.075], [0.07, 0.03]], width: 0.07 };      // bands: [where, from the ring's radius, as a share of R · how bright]
+// ring', two or three bands of brightness) that also shows the hands' shadows on dark dials"). Redrawn in 4.81 (#365;
+// Okay, 19 Oct 2026: "much bigger than the watch … horizontally starts from 2/3 way from top of dial on the radius,
+// circle extends to be 150% dial size", "centre is about 6 on noon", "not visible at dusk and dawn, max vis at midday",
+// "thicker circles while dim, thinner at noon", "better shine on dark and light bgs"): a circle of radius `r` × the
+// dial's (150 % of the dial), its centre `behind` × the dial's radius from the dial's centre on the side away from the
+// sun — at noon just past 6, so its top crosses the dial a third of the radius above the centre (two thirds down from
+// the top). Its middle band lightens (screened: it shows on a dark dial), a band either side darkens (it shows on a
+// light one); each band `width` wide, a share of the radius, wide at dawn and dusk and narrow at noon; all of it
+// as strong as the sun is high (0 at sunrise and sunset)
+const SHINE = { r: 1.5, behind: 1.5 - 1 / 3, bright: 0.11, dark: 0.07, width: [0.16, 0.05] };
 // the hands' bevels (#354, 4.77; notes 2: "a height simply shaded in a few tones of the hand's colour by the shadows'
 // light … not 3d like all facets shifted"): each hand split along its length, the side the light falls on lighter, the
 // other darker, by as much as the light comes from the side; preview only (R5, R26)
@@ -1509,24 +1520,30 @@ class DialTool {
     if (S.out_production || !(on > 0)) return finish();
     if (!this.light_defs) { this.light_defs = svg_el("defs"); this.svg.prepend(this.light_defs); }
     const from = sun ? sun.from : S.sh_from, R = S.dial_d / 2, nodes = items.map((_, i) => this.slots[i].node);
-    // the ring of shine: bands round a centre moved toward the sun, screened onto everything before the hands
-    const bands = (g, key) => {
+    // the ring of shine (SHINE): round a centre on the side away from the sun; the light band screened in `g`, the two
+    // dark ones laid in `under` (a screen of black does nothing, so they need a group of their own)
+    const bands = (g, under, key) => {
       if (!sun) return;
-      const a = from * Math.PI / 180, c = [Math.sin(a) * SHINE.toward * R, Math.cos(a) * SHINE.toward * R];
-      SHINE.bands.forEach(([at, bright], k) => {
-        const r0 = R * (SHINE.r + at - SHINE.width / 2), r1 = R * (SHINE.r + at + SHINE.width / 2);
-        const p = part(`${key}/band/${k}`, "path", g);
+      const a = from * Math.PI / 180, c = [-Math.sin(a) * SHINE.behind * R, -Math.cos(a) * SHINE.behind * R];
+      const w = (SHINE.width[0] + (SHINE.width[1] - SHINE.width[0]) * sun.k) * R, strong = sun.k * on;
+      const ring = (name, parent, mid, colour, k) => {
+        const r0 = R * SHINE.r + mid - w / 2, r1 = r0 + w, p = part(`${key}/${name}`, "path", parent);
         p.setAttribute("d", `M${f(c[0] - r1)} ${f(c[1])}a${f(r1)} ${f(r1)} 0 1 0 ${f(2 * r1)} 0a${f(r1)} ${f(r1)} 0 1 0 ${f(-2 * r1)} 0ZM${f(c[0] - r0)} ${f(c[1])}a${f(r0)} ${f(r0)} 0 1 1 ${f(2 * r0)} 0a${f(r0)} ${f(r0)} 0 1 1 ${f(-2 * r0)} 0Z`);
-        p.setAttribute("fill", "#fff"); p.setAttribute("fill-opacity", f(bright * on)); p.setAttribute("fill-rule", "evenodd");
-      });
+        p.setAttribute("fill", colour); p.setAttribute("fill-opacity", f(k * strong)); p.setAttribute("fill-rule", "evenodd");
+      };
+      ring("light", g, 0, "#fff", SHINE.bright);
+      ring("dark-in", under, -w, "#000", SHINE.dark);
+      ring("dark-out", under, w, "#000", SHINE.dark);
     };
     const first_hand = items.findIndex((x) => x.role === "hand" || x.role === "cap" || x.role === "guide");
     if (sun && items.some((x) => x.role === "plate")) {
       const clip = part("shine/clip", "clipPath", this.light_defs), dial = part("shine/clip/dial", "circle", clip);
       clip.id = "shine-clip"; dial.setAttribute("r", f(R));
-      const g = part("shine", "g", this.dial, first_hand >= 0 ? nodes[first_hand] : null);
-      g.setAttribute("clip-path", "url(#shine-clip)"); g.setAttribute("style", "mix-blend-mode: screen"); g.setAttribute("pointer-events", "none");
-      bands(g, "shine");
+      const before = first_hand >= 0 ? nodes[first_hand] : null;
+      const under = part("shine-dark", "g", this.dial, before), g = part("shine", "g", this.dial, before);
+      for (const x of [under, g]) { x.setAttribute("clip-path", "url(#shine-clip)"); x.setAttribute("pointer-events", "none"); }
+      g.setAttribute("style", "mix-blend-mode: screen");
+      bands(g, under, "shine");
     }
     // each hand's bevel: its right and left halves (as it points) lighter and darker by where the light comes from, and the shine's bands on it
     items.forEach((item, i) => {
@@ -1544,7 +1561,12 @@ class DialTool {
       const lit = BEVEL.light * Math.abs(side) * Math.min(on, 1) * amount, dark = BEVEL.dark * Math.abs(side) * Math.min(on, 1) * amount;
       half("right", 0, side > 0 ? "#fff" : "#000", side > 0 ? lit : dark);
       half("left", -50, side > 0 ? "#000" : "#fff", side > 0 ? dark : lit);
-      if (sun) { const sh = part(key + "/shine", "g", inner); sh.setAttribute("transform", `rotate(${f(item.angle)})`); sh.setAttribute("style", "mix-blend-mode: screen"); bands(sh, key + "/shine"); }
+      if (sun) {
+        const dk = part(key + "/shine-dark", "g", inner), sh = part(key + "/shine", "g", inner);
+        for (const x of [dk, sh]) x.setAttribute("transform", `rotate(${f(item.angle)})`);
+        sh.setAttribute("style", "mix-blend-mode: screen");
+        bands(sh, dk, key + "/shine");
+      }
     });
     finish();
   }

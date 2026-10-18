@@ -59,9 +59,12 @@
      narrow gap. It borrows the list's columns (subgrid), so its buttons start where the names start: four kinds
      (pictures only) · its colour (a swatch) · its size and its radius (two value buttons), all one height. The
      frame has the colour of the selected ring's guide, as the row above has, on white. */
+  /* the selected row and its line are one box (4.81): the row's lower corners and the line's upper ones square, their
+     two lines lying on each other */
+  .ringlist li.ring.on:has(+ li.lineholder) { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
   .ringlist li.lineholder { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; margin-top: calc(var(--ringline-join) - var(--ring-gap));
     padding: calc(var(--ringline-pad) + var(--ringline-inner)) 0;
-    border: var(--hair) solid var(--select-rule); border-radius: var(--round-small); background: var(--field); box-shadow: inset 0 0 0 var(--ringline-inner) var(--select); }
+    border: var(--hair) solid var(--select-rule); border-radius: 0 0 var(--round-small) var(--round-small); background: var(--field); box-shadow: inset 0 0 0 var(--ringline-inner) var(--select); }
   /* inside its outer line a second one, three times as thick, in the selected row's ground: the box reads as that row's */
   .guided .ringlist li.lineholder { border-color: color-mix(in srgb, var(--guide) var(--guide-edge), var(--grey)); box-shadow: inset 0 0 0 var(--ringline-inner) color-mix(in srgb, var(--guide) var(--guide-tint), var(--field)); }
   .ringline { display: contents; }                 /* its parts stand on the list's columns: the kind square under the rows' icons, the details and Change in the names' room, then colour · size · radius */
