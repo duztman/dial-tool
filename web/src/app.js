@@ -763,6 +763,9 @@ const ROWS = {
     hdr("Log", { folded: true }),
     custom("log"),
     hdr("Gallery", { folded: true }),                                // under everything else: dials to open and take apart (Okay, 13 Oct 2026), the five first examples among them
+    // your own dials first (4.76, #347; Okay's notes 2: "Instances of a watch: a save instance button; a gallery of them"):
+    // Save this dial keeps it, with a small picture, in this browser; each opens as a Gallery card does, or goes
+    custom("instances"),
     custom("gallery"),
   ],
 };
@@ -892,6 +895,17 @@ function save_file(name, data, type) {
 //   it). A link of an older scheme is not read (R31): the First dial opens, with a note on the preview and in the log.
 
 const through = async (bytes, stream) => new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer());
+
+// your saved dials (4.76, #347): in this browser only, newest first, at most INSTANCES_MOST
+const INSTANCES_KEY = "dial-tool-instances", INSTANCES_MOST = 60;
+const instances_read = () => { try { const v = JSON.parse(localStorage.getItem(INSTANCES_KEY) || "[]"); return Array.isArray(v) ? v : []; } catch (e) { return []; } };
+const instances_write = (list) => { try { localStorage.setItem(INSTANCES_KEY, JSON.stringify(list)); return true; } catch (e) { return false; } };
+/** a dial's small picture, as the Gallery's (gallery.mjs): every shape of its scene, no guides. */
+function dial_picture(S, statik) {
+  const R = S.dial_d / 2 + 0.6, hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Math.max(v, 0), 1) * 255).toString(16).padStart(2, "0")).join("");
+  const shapes = G.scene(S, statik, S.t, false).map((i) => `<path d="${(i.role === "hand" || i.role === "mark" ? G.turned(i.path, i.angle) : i.path).svg(2, true)}" fill="${hex(i.fill)}"${i.fill[3] < 1 ? ` fill-opacity="${i.fill[3]}"` : ""}/>`).join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-R} ${-R} ${2 * R} ${2 * R}" aria-hidden="true">${shapes}</svg>`;
+}
 
 async function pack(S) {
   return `${G.LINK_SCHEME}` + G.base32(await through(new TextEncoder().encode(G.link_text(S)), new CompressionStream("deflate-raw")));
@@ -4526,6 +4540,54 @@ class DialTool {
     }
     wrap.append(grid);
     document.addEventListener("pointerdown", (ev) => { if (!grid.contains(ev.target)) unfocus(); }, true);
+  }
+
+  /** your own dials, over the Gallery (4.76, #347): Save this dial, then a card for each saved one — its picture, its
+   *  size and when; pressed, it comes forward as a Gallery card does, with Edit this dial · In a new tab · Remove. */
+  row_instances(wrap) {
+    wrap.className = "examples gallery instances";
+    const save = el("button", { type: "button", className: "btn main", id: "instance-save", textContent: "Save this dial", title: "Keep this dial here, in this browser, as it is now" });
+    const note = el("p", { className: "quiet", id: "instance-note" });
+    const grid = el("div", { className: "cards", id: "instance-cards" });
+    const when = (at) => new Date(at).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+    const unfocus = () => { for (const c of grid.querySelectorAll("a.focus")) c.classList.remove("focus"); };
+    const draw = () => {
+      const list = instances_read();
+      note.textContent = list.length ? `${list.length} saved in this browser.` : "Dials you save stay in this browser; a link or a settings file takes one elsewhere.";
+      grid.replaceChildren(...list.map((e) => {
+        const card = el("a", { href: e.link, title: e.name });
+        card.dataset.light = String(Boolean(e.light));
+        card.innerHTML = e.picture;
+        // opened here straight from its link, not by changing the address: the address may already hold this very link
+        // (it follows the dial a moment late), and then no change is seen
+        const go = async (blank) => {
+          unfocus();
+          if (blank) return window.open(e.link, "_blank");
+          const next = await unpack(e.link);
+          if (next && next.settings) { this.reopen({ ...next.settings, ui_section: this.S.ui_section }); this.log(`opened ${e.name}`); }
+        };
+        const remove = () => { instances_write(instances_read().filter((x) => x.id !== e.id)); draw(); this.log(`removed ${e.name}`); };
+        card.append(el("span", { textContent: e.name }), el("span", { className: "choices" },
+          el("button", { type: "button", className: "btn main", textContent: "Edit this dial", onclick: (ev) => { ev.preventDefault(); ev.stopPropagation(); go(false); } }),
+          el("button", { type: "button", className: "btn", textContent: "In a new tab", onclick: (ev) => { ev.preventDefault(); ev.stopPropagation(); go(true); } }),
+          el("button", { type: "button", className: "btn", textContent: "Remove", onclick: (ev) => { ev.preventDefault(); ev.stopPropagation(); remove(); } })));
+        card.onclick = (ev) => { if (ev.metaKey || ev.ctrlKey || ev.shiftKey) return; ev.preventDefault(); const was = card.classList.contains("focus"); unfocus(); if (!was) card.classList.add("focus"); };
+        card.onkeydown = (ev) => { if (ev.key === "Escape") { unfocus(); card.blur(); } };
+        return card;
+      }));
+    };
+    save.onclick = async () => {
+      const S = this.S, statik = G.build_static(S), plate = S.c_plate;
+      const e = { id: Date.now().toString(36), at: Date.now(), link: "#" + await pack(S), picture: dial_picture(S, statik), light: 0.2126 * plate[0] + 0.7152 * plate[1] + 0.0722 * plate[2] > 0.5 };
+      e.name = `${+S.dial_d.toFixed(2)} mm · ${when(e.at)}`;
+      const list = [e, ...instances_read()].slice(0, INSTANCES_MOST);
+      if (!instances_write(list)) return this.log("not saved: this browser's storage is full or closed (a private window?) — Copy link keeps it instead");
+      draw();
+      this.log(`saved ${e.name} — under Gallery, in this browser`);
+    };
+    wrap.append(el("div", { className: "row" }, el("label", { textContent: "Yours" }), save), note, grid);
+    document.addEventListener("pointerdown", (ev) => { if (!grid.contains(ev.target)) unfocus(); }, true);
+    draw();
   }
 
   /** the Gallery's order (#286, 4.49; Okay's notes, p. 17–18): the First dial first, Okay's watch last, and the white

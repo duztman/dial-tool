@@ -1703,6 +1703,20 @@ await page.uncheck("#global-out-production-Mono-print-mask");
   check(n > 10 && drawn === n && placed === n && near(+box[1] / 72 * 25.4, 210, 0.01) && near(+box[2] / 72 * 25.4, 297, 0.01) && !/ S\n|BT\n/.test(text) && six.startsWith("6 copies") && six_drawn === 6 && path.basename(sheet).includes("-sheet-"),
     `a print sheet: "${all}" — ${placed} copies placed on an A4 (${(+box[1] / 72 * 25.4).toFixed(1)} × ${(+box[2] / 72 * 25.4).toFixed(1)} mm), filled paths only, drawn beside its button; Copies 6: "${six}"; ${path.basename(sheet)}`);
 }
+{ // your own dials (4.76, #347; Okay's notes 2: "Instances of a watch: a save instance button; a gallery of them"): Save this dial keeps it with a picture in this browser, over the Gallery; its card opens it again, or goes
+  await page.evaluate(() => localStorage.removeItem("dial-tool-instances"));
+  await page.$eval("#instance-save", (e) => e.scrollIntoView({ block: "center" }));
+  const plate = await S("JSON.stringify(S.c_plate)");
+  await page.click("#instance-save"); await page.waitForFunction(() => document.querySelectorAll("#instance-cards a").length === 1);
+  await page.evaluate(() => window.dial_tool.set_value("global", "c_plate", [0.15, 0.2, 0.35, 1]));
+  await page.click("#instance-cards a"); await page.click("#instance-cards a.focus .btn.main");
+  await page.waitForFunction((p) => JSON.stringify(window.dial_tool.S.c_plate) === p, plate, { timeout: 5000 }).catch(() => {});
+  const back = await S("JSON.stringify(S.c_plate)"), card = await page.$eval("#instance-cards a", (a) => [a.querySelectorAll("svg path").length > 10, a.textContent.includes("mm ·")]);
+  await page.$eval("#instance-cards a", (a) => a.scrollIntoView({ block: "center" }));
+  await page.click("#instance-cards a"); await page.click('#instance-cards a.focus .btn:text-is("Remove")');
+  const gone = await page.evaluate(() => [document.querySelectorAll("#instance-cards a").length, JSON.parse(localStorage.getItem("dial-tool-instances")).length]);
+  check(back === plate && card.every(Boolean) && gone.join() === "0,0", `Save this dial keeps it with its picture (${card.join(" ")}); its card's Edit this dial brings it back (plate ${back}); Remove takes it away (${gone.join(" ")})`);
+}
 const saved = await download("#save");
 const before_save = await S("JSON.stringify(S)");
 check(JSON.stringify(JSON.parse(fs.readFileSync(saved, "utf8"))) === before_save, "Save… writes the settings as they are");

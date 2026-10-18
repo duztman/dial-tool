@@ -17,5 +17,10 @@
   .gallery a .choices { display: none; gap: var(--u1); }
   .gallery a .choices > .btn { width: 100%; }      /* one under the other, each the card's width: a card is too narrow for the two side by side */
   .gallery a.focus { z-index: 1; background: var(--select); outline: 0; }
+  /* your own dials over the Gallery (4.76): Save this dial on a row of its own, a line saying where they are kept, their cards as the Gallery's */
+  .instances { padding-bottom: var(--u3); }
+  .instances > .row > .btn { grid-column: 3 / span 2; justify-self: start; }
+  .instances > p { margin: var(--unit) 0; }
+  .instances .cards:empty { display: none; }
   .gallery a.focus .choices { display: grid; position: absolute; top: 100%; left: 0; right: 0; padding: 0 var(--u4) var(--u4); background: var(--select); }
 }

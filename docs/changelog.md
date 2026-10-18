@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.76 (web version) · 19 Oct 2026
+
+Your own dials (#347; Okay's notes 2: "Instances of a watch: a save instance button; a gallery of them; printable; shown big or at actual size").
+
+- **Export → Gallery → Yours · Save this dial**: the dial as it is now, kept in this browser with a small picture (its scene, as the Gallery's are drawn), named by its size and when. Newest first, sixty at most.
+- Each is a card as the Gallery's: pressed, it comes forward with *Edit this dial*, *In a new tab* and *Remove*. A link or a settings file still takes a dial to another browser — the line under the button says so.
+- Printable and at actual size: open one, then Sheet PDF (4.75) or the Tiny Preview (4.59). A print sheet of several different dials is not built.
+- Stored under `dial-tool-instances`; a full or closed storage (a private window) says so in the log instead of failing.
+
 ## beta 4.75 (web version) · 19 Oct 2026
 
 A print sheet (#348; Okay's notes 2: "Printing: print page preparation, preview, copies, stacks — something simple, elegant, efficient and paper savingly"). The first of "other work" after the discs (Okay, 18 Oct, 23:52).
