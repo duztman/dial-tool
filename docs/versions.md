@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.62 | 18 Oct 2026 | web | [`ebea96d`](https://github.com/duztman/dial-tool/tree/ebea96d1ee7f6c00c3658597910d032b52bbefe4) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/ebea96d1ee7f6c00c3658597910d032b52bbefe4/web/dial-tool.html) | The date in the bar; windows follow it |
 | 4.61 | 18 Oct 2026 | web | [`0d7752d`](https://github.com/duztman/dial-tool/tree/0d7752da8d4c0945a47b3a3e276cbfa5e2799c9c) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/0d7752da8d4c0945a47b3a3e276cbfa5e2799c9c/web/dial-tool.html) | The complications act like tabs |
 | 4.60 | 18 Oct 2026 | web | [`24dd14d`](https://github.com/duztman/dial-tool/tree/24dd14ddc3f066b941447130d41212cd4f09ae88) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/24dd14ddc3f066b941447130d41212cd4f09ae88/web/dial-tool.html) | A finger opens the controller from any − + or field; no note in the kinds menu |
 | 4.59 | 18 Oct 2026 | web | [`b6cb0cf`](https://github.com/duztman/dial-tool/tree/b6cb0cfe945afddb0133da382aeb8f63e2bea5f0) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/b6cb0cfe945afddb0133da382aeb8f63e2bea5f0/web/dial-tool.html) | Tiny Preview; Guides at the bottom left |
