@@ -485,7 +485,7 @@ Okay's Google Doc *Dial tool notes 2* (text and 23 pictures; on his Google Drive
 | 370 | **A hub on the hands**: "a disc to attach to the mechanism … a ball that the leaf attaches to" | **done — 4.80** (Hub Ø, key `hub`; the First dial's hour 2.4, minute 2.0) |
 | 371 | **The hands' shape names cannot be read on iPad or iPhone** | **done — 4.79** (the name under the picture) |
 | 372 | **Guides: broken, a scrollbar, guide settings in the lower part, smaller dots, the ⊘ bigger** | **done — 4.79** |
-| 373 | **Check 4.70–4.78 end to end; immediate improvements** | after 4.80 |
+| 373 | **Check 4.70–4.78 end to end; immediate improvements** | first pass 19 Oct (4.79–4.80): two bugs found and fixed — links' key codes moved by 4.72–4.75 (4.79), the hand's handles a point off since 4.71 (4.80); the test shots of X-ray, pictures, big date, touch and the phone show nothing broken. Open: the big date's discs in X-ray (the X-ray switch hides on a big date) |
 | 374 | **"Text sits too high up on its area, align flush top with eye"** (the font box) | **done — 4.79** |
 | 375 | **Case and Strap stacked in the left bottom list; icons on a phone** (01:03: "becoming hard to fit things there") | **done — 4.79** |
 
