@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.74 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.75 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -67,6 +67,7 @@
     --margin: 24px;                                /* the panel's side space, left and right: where every line starts and ends */
     --eye: 16px;                                   /* the toggle column */
     --gap: 12px; --col: 54px;
+    --sheet-w: 60px;                               /* the print sheet's page, drawn small beside its button (4.75, #348) */
     --lead: calc(var(--eye) + var(--gap));         /* the toggle column and the gap after it: where the six columns start */
     --columns: var(--eye) repeat(6, minmax(0, 1fr));
     --panel: calc(2 * var(--margin) + var(--lead) + 6 * var(--col) + 5 * var(--gap));
@@ -638,6 +639,13 @@
      A full row's: value a tile and a unit wide, − + a tile; beside a hand's box (side) and in a quiet row, narrower
      (--box-side-*); in Positions, Positions' own (--pos-*). The signs are drawn, 12 across (STEP, app.js) */
   .row.resetblank { padding: var(--unit) 0; row-gap: var(--unit); }
+  /* a print sheet (4.75): Sheet · its button · the page drawn small at the right, the paper white on its hairline, every copy a disc of ink */
+  .row.sheetrow { padding: var(--unit) 0; }
+  .row.sheetrow > .btn { grid-column: 3 / span 2; justify-self: start; }
+  .row.sheetrow > .sheetpage { grid-column: 5 / -1; justify-self: end; width: var(--sheet-w); }
+  .sheetpage svg { display: block; width: 100%; height: auto; }
+  .sheetpage .paper { fill: var(--white); stroke: var(--rule); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .sheetpage .copy { fill: var(--ink); }
   .row.resetblank > .btn { grid-column: 3 / -1; justify-self: start; }
   .row.resetblank > .quiet { grid-column: 3 / -1; }
   .numbox { display: flex; min-width: 0; }
@@ -6186,7 +6194,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.74";
+var VERSION = "beta 4.75";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -6455,6 +6463,11 @@ var DEFAULTS = {
   out_production: false,
   out_mirror: false,
   out_live_text: false,
+  out_paper: 0,
+  out_copies: 0,
+  out_gap: 3,
+  out_cutline: false,
+  // a print sheet (4.75, #348): its paper (output.js PAPERS: A4 · Letter · A5), how many (0 = as many as fit), the room between, a cut line round each
   out_dpi: 600,
   out_seconds: 4,
   out_fps: 30,
@@ -7024,6 +7037,11 @@ var LINK_KEYS = [
   // 4.66: appended; no case to start, so every older link looks as before
   "wearos_name",
   // 4.67: appended; empty to start
+  "out_paper",
+  "out_copies",
+  "out_gap",
+  "out_cutline",
+  // 4.75: appended; a print sheet's settings
   "neighbours",
   "da_neighbours",
   // 4.74: appended; off to start, so every older link looks as before
@@ -8344,6 +8362,7 @@ function item_name(item) {
 function file_name(S, ext, now = /* @__PURE__ */ new Date()) {
   const day = [now.getFullYear(), now.getMonth() + 1, now.getDate()].map((v) => String(v).padStart(2, "0")).join("-");
   const what = ext === "json" ? "" : (S.out_production ? "-mask" : "") + (S.out_mirror ? "-mirrored" : "");
+  if (ext === "sheet") return `dial-${num(S.dial_d, 2)}mm-sheet${what}-${day}.pdf`;
   return `dial-${num(S.dial_d, 2)}mm${what}-${day}.${ext}`;
 }
 function drawn(S, statik, t, preview, selected) {
@@ -8496,6 +8515,87 @@ function png_with_dpi(bytes, dpi) {
   out.set(bytes.subarray(at), at + chunk.length);
   return out;
 }
+var PAPERS = [["A4", 210, 297], ["Letter", 215.9, 279.4], ["A5", 148, 210]];
+var SHEET_EDGE = 8;
+var CUT_AT = 0.4;
+var CUT_W = 0.1;
+function sheet_layout(S) {
+  const paper = PAPERS[S.out_paper] || PAPERS[0], [, W2, H2] = paper, D = S.dial_d, gap = Math.max(+S.out_gap || 0, 0), pitch = D + gap;
+  const aw = W2 - 2 * SHEET_EDGE, ah = H2 - 2 * SHEET_EDGE;
+  const across = (w) => w + 1e-9 >= D ? Math.floor((w - D) / pitch + 1e-9) + 1 : 0;
+  const straight = () => {
+    const c = across(aw), r = across(ah), out = [];
+    for (let j = 0; j < r; j++) for (let i = 0; i < c; i++) out.push([i * pitch, j * pitch]);
+    return out;
+  };
+  const staggered = () => {
+    const rise = pitch * Math.sqrt(3) / 2, rows = ah + 1e-9 >= D ? Math.floor((ah - D) / rise + 1e-9) + 1 : 0, out = [];
+    for (let j = 0; j < rows; j++) {
+      const off = j % 2 ? pitch / 2 : 0, c = across(aw - off);
+      for (let i = 0; i < c; i++) out.push([off + i * pitch, j * rise]);
+    }
+    return out;
+  };
+  const a = straight(), b = staggered(), use = b.length > a.length ? b : a;
+  const want = +S.out_copies > 0 ? Math.min(Math.round(+S.out_copies), use.length) : use.length;
+  const places = use.slice(0, want);
+  if (!places.length) return { places, fits: 0, staggered: false, paper };
+  const xs = places.map((p) => p[0]), ys = places.map((p) => p[1]);
+  const dx = (W2 - (Math.max(...xs) - Math.min(...xs))) / 2 - Math.min(...xs), dy = (H2 - (Math.max(...ys) - Math.min(...ys))) / 2 - Math.min(...ys);
+  return { places: places.map(([x, y]) => [x + dx, H2 - (y + dy)]), fits: use.length, staggered: use === b && b.length > a.length, paper };
+}
+function pdf_sheet(S, statik, t) {
+  const L = sheet_layout(S), [, W2, H2] = L.paper, flip = S.out_mirror ? -1 : 1, R = S.dial_d / 2;
+  const alphas = [], dial = [];
+  for (const item of drawn(S, statik, t, false, null)) {
+    const [r, g, b, a] = item.fill;
+    if (a < 1 && !alphas.includes(a)) alphas.push(a);
+    dial.push(a < 1 ? `q /A${alphas.indexOf(a)} gs` : "q", S.out_production ? `${num(r)} g` : `${num(r)} ${num(g)} ${num(b)} rg`, ...path_ops(item.path), "f", "Q");
+  }
+  if (S.out_cutline) dial.push("q", S.out_production ? "0 g" : "0 0 0 rg", ...path_ops(circle(2 * (R + CUT_AT + CUT_W)).difference(circle(2 * (R + CUT_AT)))), "f", "Q");
+  const form = dial.join("\n"), reach = R + CUT_AT + CUT_W + 0.5;
+  const page = L.places.map(([x, y]) => `q ${num(MM * flip, 6)} 0 0 ${num(MM, 6)} ${num(x * MM, 3)} ${num(y * MM, 3)} cm /Dial Do Q`).join("\n");
+  const states = alphas.map((a, i) => `/A${i} << /ca ${num(a)} >>`).join(" ");
+  const objects = [
+    `<< /Type /Catalog /Pages 2 0 R >>`,
+    `<< /Type /Pages /Kids [3 0 R] /Count 1 >>`,
+    `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${num(W2 * MM)} ${num(H2 * MM)}] /Contents 4 0 R /Resources << /XObject << /Dial 6 0 R >> >> >>`,
+    `<< /Length ${page.length} >>
+stream
+${page}
+endstream`,
+    `<< /Title ${pdf_text(`Dial Tool \xB7 ${num(S.dial_d, 2)} mm dial \xB7 ${L.places.length} on ${L.paper[0]}${S.out_production ? " \xB7 print mask" : ""}${S.out_mirror ? " \xB7 mirrored" : ""}`)} /Creator (Dial Tool, web version) >>`,
+    `<< /Type /XObject /Subtype /Form /BBox [${num(-reach)} ${num(-reach)} ${num(reach)} ${num(reach)}] /Resources << /ExtGState << ${states} >> >> /Length ${form.length} >>
+stream
+${form}
+endstream`
+  ];
+  let text = "%PDF-1.5\n";
+  const starts = [];
+  objects.forEach((o, i) => {
+    starts.push(text.length);
+    text += `${i + 1} 0 obj
+${o}
+endobj
+`;
+  });
+  const xref = text.length;
+  text += `xref
+0 ${objects.length + 1}
+0000000000 65535 f 
+` + starts.map((s) => String(s).padStart(10, "0") + " 00000 n \n").join("");
+  text += `trailer
+<< /Size ${objects.length + 1} /Root 1 0 R /Info 5 0 R >>
+startxref
+${xref}
+%%EOF
+`;
+  return new TextEncoder().encode(text);
+}
+var path_ops = (p) => p.d.map((c) => {
+  const v = c.slice(1).map((x) => num(x, 5)).join(" ");
+  return c[0] === "M" ? `${v} m` : c[0] === "L" ? `${v} l` : c[0] === "C" ? `${v} c` : "h";
+});
 
 // src/bezels.js
 var BEZELS = ["None", "Diver", "Pilot", "Dress", "Sport"];
@@ -11205,6 +11305,15 @@ var ROWS = {
     // what only the printed or etched dial needs (was "For production" until beta 4.19)
     chk("out_production", "Mono print mask"),
     chk("out_mirror", "Mirrored, for toner transfer"),
+    // a print sheet (4.75, #348; Okay's notes 2: "print page preparation, preview, copies, stacks — something simple,
+    // elegant, efficient and paper savingly"): one page of copies at true size, packed straight or staggered —
+    // whichever holds more — mirrored and as a mask as the two ticks above say; a drawing of the page beside the button
+    custom("print_sheet"),
+    seg("out_paper", "Paper", PAPERS.map((p) => p[0])),
+    num3("out_copies", "Copies", 0, 60, 1, { whole: true }),
+    info((S) => sheet_says(S), { scope: "global" }),
+    num3("out_gap", "Room between", 0, 20, 0.5),
+    chk("out_cutline", "A cut line round each"),
     hdr("Link to this dial", { folded: true }),
     custom("link_copy", { head: true }),
     // Copy link, flush right on the heading line, open or folded (#277)
@@ -11218,6 +11327,11 @@ var ROWS = {
     // under everything else: dials to open and take apart (Okay, 13 Oct 2026), the five first examples among them
     custom("gallery")
   ]
+};
+var sheet_says = (S) => {
+  const L = sheet_layout(S), n = L.places.length;
+  if (!n) return `A ${S.dial_d} mm dial doesn't fit on ${L.paper[0]}.`;
+  return `${n} ${n === 1 ? "copy" : "copies"} on ${L.paper[0]}${L.staggered ? ", rows staggered" : ""}${+S.out_copies > 0 && +S.out_copies > L.fits ? ` \u2014 ${L.fits} fit` : +S.out_copies > 0 ? "" : " \u2014 as many as fit (Copies 0)"}.`;
 };
 var DAY_STEPS = [...Array.from({ length: 12 }, (_, h) => [h * 3600, String(h || 12), false]), [10 * 3600 + 10 * 60, "10:10", true]].sort((a, b) => a[0] - b[0]);
 var SPEED_SLOW = [0.1, 0.25, 0.5, 1];
@@ -15743,6 +15857,17 @@ var DialTool = class _DialTool {
   export_button(kind) {
     return el("button", { type: "button", className: "btn main", id: "export-" + kind.toLowerCase(), textContent: kind, title: `Export a ${kind}`, onclick: () => this.export(kind.toLowerCase()) });
   }
+  /** a print sheet (4.75, #348): its button, and the page drawn small beside it — the paper, every copy where it will stand. */
+  row_print_sheet(wrap, out) {
+    wrap.className = "row sheetrow";
+    const btn = el("button", { type: "button", className: "btn main", id: "export-sheet", textContent: "Sheet PDF", title: "A page of copies, at true size, to print", onclick: () => this.export("sheet") });
+    const page = el("span", { className: "sheetpage", id: "sheet-page" });
+    wrap.append(el("label", { textContent: "Sheet" }), btn, page);
+    out.refresh = (S) => {
+      const L = sheet_layout(S), [, W2, H2] = L.paper, r = S.dial_d / 2;
+      page.innerHTML = `<svg viewBox="0 0 ${W2} ${H2}" aria-hidden="true"><rect class="paper" width="${W2}" height="${H2}"/>${L.places.map(([x, y]) => `<circle class="copy" cx="${x.toFixed(2)}" cy="${(H2 - y).toFixed(2)}" r="${r}"/>`).join("")}</svg>`;
+    };
+  }
   /** under the PNG row: what that dpi comes to. */
   /** the Wear OS export (4.67, farukahmet's PR #1): a watch face (Watch Face Format) as an APK to sideload — over adb, or
    *  a sideloading app. Signed with a shared debug key: right for one's own watch, never for the Play Store. */
@@ -16597,6 +16722,12 @@ var DialTool = class _DialTool {
         if (live) return this.log(`exported ${name} \xB7 ${page_mm(S).toFixed(2)} mm square \xB7 numerals are text: ${[...new Set(S.rings.filter((r) => r.on && has_text(r)).map((r) => r.family))].join(", ") || "no numerals"} must be installed to open it`);
       }
       if (kind === "pdf") save_file(name, pdf_document(S, statik, S.t), "application/pdf");
+      if (kind === "sheet") {
+        const L = sheet_layout(S);
+        if (!L.places.length) return this.log(`sheet not made: a ${S.dial_d} mm dial doesn't fit on ${L.paper[0]}`);
+        save_file(name, pdf_sheet(S, statik, S.t), "application/pdf");
+        return this.log(`exported ${name} \xB7 ${L.places.length} \xD7 ${S.dial_d.toFixed(2)} mm on ${L.paper[0]}${L.staggered ? ", staggered" : ""}${S.out_mirror ? " \xB7 mirrored" : ""}${S.out_production ? " \xB7 mask" : ""}${S.out_cutline ? " \xB7 cut lines" : ""} \xB7 print at 100 %, not "fit to page"`);
+      }
       if (kind === "png") {
         const px = Math.round(page_mm(S) / 25.4 * S.out_dpi);
         if (px > PNG_MOST) return this.log(`PNG not made: ${px} \xD7 ${px} px is more than a browser can draw (${PNG_MOST} a side). Lower the dpi to ${Math.floor(PNG_MOST / page_mm(S) * 25.4)} or less, or use the PDF.`);
