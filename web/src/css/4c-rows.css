@@ -20,8 +20,22 @@
   .body .row.num:not(.side) { grid-template-columns: var(--num-columns); column-gap: 0; }      /* in the panel; the guides' list and a value pop-up lay their rows their own way */
   .body .row.num:not(.side) > :first-child { grid-column: 1 / 4; }
   .body .row.num:not(.side) > input[type="range"] { grid-column: 5; }
-  .body .row.num:not(.side) > input[type="text"] { grid-column: 7; }
-  .body .row.num:not(.side) > .steps { grid-column: 9; }
+  .body .row.num:not(.side) > .numbox { grid-column: 7 / -1; }      /* the value and its − + touching, over the third and fourth tiles' places: the value takes the gap between them */
+  /* one number box for the whole tool (4.64; Okay, 18 Oct 2026, 21:20: "This version of boxes win … these replace all
+     with two changes. Number box touches minus box. Signs grow inside the box as much as these new thick bordered
+     ones"): the value in its box, − and + in theirs, all touching, one hairline of the rule's grey round and between.
+     A full row's: value a tile and a unit wide, − + a tile; beside a hand's box (side) and in a quiet row, narrower
+     (--box-side-*); in Positions, Positions' own (--pos-*). The signs are drawn, 12 across (STEP, app.js) */
+  .row.resetblank { padding: var(--unit) 0; row-gap: var(--unit); }
+  .row.resetblank > .btn { grid-column: 3 / -1; justify-self: start; }
+  .row.resetblank > .quiet { grid-column: 3 / -1; }
+  .numbox { display: flex; min-width: 0; }
+  .numbox > input[type="text"] { flex: none; width: var(--box-value); }
+  .numbox > .steps { flex: none; width: var(--box-steps); }
+  .numbox > .steps > .step { display: grid; place-items: center; min-width: 0; padding: 0; color: var(--ink); }
+  .numbox > .steps > .step:first-child { border-left: 0; }      /* touching the value: its line is the one between */
+  .numbox > .steps > .step > svg { flex: none; }
+  .numbox.alone > input[type="text"] { width: calc(var(--box-value) + var(--box-steps)); }      /* a number with no − + (a font's axis): its box as wide as a whole number box */
   .row.num input[type="text"] { text-align: right; }
   /* the font sheet's two fields (Find a font, a link) are larger than a row's, with a darker line. A row's field for
      words (a window's text, custom labels) is a field like any other (Okay, 13 Oct 2026: "remove input height") */

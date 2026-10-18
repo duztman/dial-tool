@@ -111,9 +111,12 @@ const BIG = {                                      // the controller's − and +
   plus: icon(`<path d="M22 2V42M2 22H42" ${sw(8)} stroke-linecap="butt"/>`, 44),
   minus: icon(`<path d="M2 22H42" ${sw(8)} stroke-linecap="butt"/>`, 44),
 };
-const TINY = {
-  plus: icon(`<path d="M3 0.625V5.375M0.625 3H5.375" ${sw(DENSE)}/>`, 6),
-  minus: icon(`<path d="M0.625 0.625H5.375" ${sw(DENSE)}/>`, 6, 1.25),
+// the − and + of every number box (4.64; Okay, 18 Oct 2026, 21:20: "Signs grow inside the box as much as these new thick
+// bordered ones"): 12 across on 16, LINE, round ends — half the box's cell, as the Positions blocks' signs were. (The
+// tiny ± beside a quiet number, 6 across in DENSE, went with it: "small plusminus … retired".)
+const STEP = {
+  plus: icon(`<path d="M8.25 2.25V14.25M2.25 8.25H14.25"/>`),
+  minus: icon(`<path d="M2.25 8.25H14.25"/>`),
 };
 // a section's sign: a small picture inside a ring. Signs of circles share the ring's centre (17); signs with
 // straight lines sit on the grid (17.25).
@@ -1005,7 +1008,7 @@ class DialTool {
     if (this.lang_opens && !on(".langs")) for (const shut of this.lang_opens) shut(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
     if (this.kind_open && $("#kind-menu") && !$("#kind-menu").hidden && !on("#ring-kind-square") && !on("#kind-menu")) this.kind_open(false);
-    if (this.value_pop && !on("#value-pop") && !on(".valueb, .atmore, .popname, .numbox")) this.value_pop_close();
+    if (this.value_pop && !on("#value-pop") && !on(".valueb, .atmore, .popname")) this.value_pop_close();
     this.tag_hide();
   }
 
@@ -2219,7 +2222,7 @@ class DialTool {
       // under a finger (or a pen) a row's field and its − + open the controller instead: no keyboard comes up, and the
       // big − + and the slider are there (Okay, 18 Oct 2026, on the iPad: "All these + - buttons on mobile, they get the
       // new controller, not the desktop"). A mouse keeps typing and stepping in place.
-      const by_finger = !row.inpop && !row.side;
+      const by_finger = !row.inpop;
       let finger = null;                           // the last press, when it came from a finger: where
       const pressed = (e) => { finger = e.pointerType === "touch" || e.pointerType === "pen" ? { x: e.clientX, y: e.clientY } : null; };
       const to_controller = () => { const at = finger; finger = null; this.value_pop_open(field, row, at); };
@@ -2249,8 +2252,9 @@ class DialTool {
       const step = (dir) => {
         const b = el("button", { type: "button", className: "step", tabIndex: -1, onclick: () => { if (by_finger && finger) return to_controller(); commit(now() + dir * row.step); } });
         if (by_finger) b.addEventListener("pointerdown", pressed);
-        const sign = (row.inpop ? BIG : row.side ? TINY : null)?.[dir > 0 ? "plus" : "minus"];
-        if (sign) { b.innerHTML = sign; b.ariaLabel = dir > 0 ? "Plus" : "Minus"; } else b.textContent = dir > 0 ? "+" : "−";
+        const sign = (row.inpop ? BIG : row.side || row.block ? SIGNS : STEP)[dir > 0 ? "plus" : "minus"];      // a narrow box (beside a hand's box, a quiet row, Positions) the shared 9-across signs, so they keep their room
+        const svg_sign = !row.inpop && (row.side || row.block);
+        b.innerHTML = svg_sign ? icon(sign) : sign; b.ariaLabel = dir > 0 ? "Plus" : "Minus";
         if (row.inpop) b.id = "value-pop-" + (dir > 0 ? "plus" : "minus");
         return b;
       };
@@ -2271,34 +2275,20 @@ class DialTool {
       if (row.bare) { label.textContent = ""; label.className = "blank"; slider.ariaLabel = field.ariaLabel = row.text; field.title = row.text + " · " + field.title; }
       if (row.inpop) slider.ariaLabel = field.ariaLabel = row.text;      // the popup's head says its name too (4.49.2)
       if (!row.inpop && !row.side && !row.bare && !row.button && !row.block) this.name_opens(label, row);      // form A: its name opens the popup (#249)
+      // one number box for the whole tool (4.64; Okay, 18 Oct 2026, 21:20: "This version of boxes win: small plusminus and
+      // these new thick border ones are retired, these replace all … Number box touches minus box"): the value in its
+      // box, then − and + in theirs, all touching. A full row: name · slider · box. Beside a hand's box (side), the same,
+      // narrower. A quiet row (form B) and a Positions block: name · box, the slider in the controller its name opens.
+      // (Until 4.63: a quiet number with a tiny ± beside a hand's box, #250; thick-lined blocks in Positions and the font box.)
+      const numbox = () => el("span", { className: "numbox" }, field, el("span", { className: "steps" }, step(-1), step(1)));
       if (row.side) {
-        // beside a hand's box there is little room (Okay, 13 Oct 2026): the number with a tiny plus over a tiny minus
-        // joined to it. A press on the number and the box grows towards the slider, over it, into a large field
-        // between a large minus and plus; it goes back when one presses elsewhere, or Enter or Escape.
-        // the quiet look (Okay's notes, p. 18, #250, beta 4.45.1; R15 form A): the number and a compact ± beside it, no
-        // box, grey until the number differs from how the dial opened; a press on the number opens its popup (#249). With
-        // the keyboard (Tab) the number still takes typing and the arrows. (4.25 to 4.45: a box that grew over the slider)
-        const box = el("span", { className: "numbox" }, field, el("span", { className: "pm" }, step(-1), step(1)));
-        for (const b of box.querySelectorAll(".step")) b.onmousedown = (e) => e.preventDefault();      // a press on minus or plus leaves the focus where it is
-        field.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === "Escape") field.blur(); });
-        if (!row.inpop) {
-          // the whole box — the number and its ± — is one press that opens the controller; nothing is typed here and
-          // the signs are a picture of what the controller does (Okay's notes 2, #317: "whole number box (number and
-          // plusminus) brings up the big adjuster. Buttons are not real plus or minus, text not typable here"). The
-          // keyboard: Tab reaches the number, Enter opens the controller, the arrows still step it.
-          field.readOnly = true;
-          field.onmousedown = (e) => e.preventDefault();
-          box.onclick = (e) => this.value_pop_open(field, row, e.detail ? { x: e.clientX, y: e.clientY } : null);
-          field.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); this.value_pop_open(field, row); } });
-          for (const b of box.querySelectorAll(".step")) b.tabIndex = -1;
-        }
-        out.quiet = box;
-        wrap.append(lead, slider, box);
-        if (row.quiet) { wrap.classList.add("quiet"); this.name_opens(label, row); }      // form B: no slider on the row; the name opens the controller too (#251)
+        wrap.append(lead, slider, numbox());
+        if (!row.inpop) this.name_opens(label, row);      // its name opens the controller, as a full row's does (#249)
+        if (row.quiet) wrap.classList.add("quiet");      // form B: no slider on the row (#251)
       } else if (row.link) {
         // the LINK pill on the line under this row, between its name and the next row's (#358): a white outline on the
         // pane's ground, LINK in the pixel font; pressed, dark with LINKED in white
-        wrap.append(lead, slider, field, el("span", { className: "steps" }, step(-1), step(1)));
+        wrap.append(lead, slider, numbox());
         const pill = el("button", { type: "button", className: "linkpill", id: id + "-link" });
         pill.onclick = () => this.set_value(row.scope, row.link, !this.target(row.scope)[row.link]);
         wrap.classList.add("haslink");
@@ -2308,10 +2298,10 @@ class DialTool {
         // a number block (#357, #317; the font box's of 4.54): the name, then the value and its − + joined, no slider
         // on the row; the name opens the controller and drags the value, as a quiet row's does (#249)
         wrap.classList.add("block");
-        wrap.append(lead, field, el("span", { className: "steps" }, step(-1), step(1)));
+        wrap.append(lead, numbox());
         this.name_opens(label, row);
         if (row.tip) label.dataset.tip = row.tip;      // what it does, in a tag over the name (#357: "Offset and skip need tooltip details")
-      } else wrap.append(lead, slider, field, el("span", { className: "steps" }, step(-1), step(1)));
+      } else wrap.append(lead, slider, numbox());
       out.refresh = (T) => {
         const v = T[row.key] ?? (row.or ? row.or(T) : 0);
         if (out.link) { const on = Boolean(T[row.link]); out.link.classList.toggle("on", on); out.link.textContent = on ? "LINKED" : "LINK"; out.link.setAttribute("aria-pressed", String(on)); out.link.ariaLabel = on ? "Width and height linked: press to unlink" : "Link width and height"; }
@@ -2324,10 +2314,6 @@ class DialTool {
         if (row.say) {                             // a name that follows another setting (a disc's Hole or Mark, #300)
           const [whole, short] = row.say(T);
           if (row.short) { label.querySelector(".whole").textContent = whole; label.querySelector(".short").textContent = short; label.title = whole; } else label.textContent = whole;
-        }
-        if (out.quiet) {      // grey until it differs from how the dial opened (#250)
-          const was = row.scope === "hand" ? this.opened["ha_" + G.HANDS[this.S.ui_hand]] : this.opened;
-          out.quiet.classList.toggle("changed", Math.abs(v - (was?.[row.key] ?? v)) > 1e-9);
         }
       };
     }
@@ -2877,6 +2863,7 @@ class DialTool {
   row_reset_blank(wrap) {
     const go = el("button", { type: "button", className: "btn", id: "reset-blank", textContent: "Blank face", title: "A white plate with hands and nothing else",
       onclick: () => { this.reopen({ c_plate: [1, 1, 1, 1], rings: [{ on: false }], da_on: false, ui_section: this.S.ui_section }); tool.log("a blank face: white plate, hands, no rings, no windows"); } });
+    wrap.classList.add("resetblank");      // laid out as Reset's First dial: the button on the controls' column, its words under it (4.64; it wrapped a word a line)
     wrap.append(go, el("span", { className: "quiet", textContent: "White plate and hands, nothing else." }));
   }
 
@@ -4082,7 +4069,7 @@ class DialTool {
           const back = el("button", { type: "button", className: "axisname", id: id + "-back", title: `${a.name} (${tag}), ${a.min}–${a.max}: press to set it back to ${a.default}`, onclick: () => commit(a.default) },
             el("span", { textContent: word }), el("span", { className: "sticker " + kind, textContent: tag }));
           slider.ariaLabel = field.ariaLabel = a.name;
-          wrap.append(el("div", { className: "row num" }, el("span", { className: "stickerlabel" }, back), slider, field, el("span")));
+          wrap.append(el("div", { className: "row num" }, el("span", { className: "stickerlabel" }, back), slider, el("span", { className: "numbox alone" }, field)));      // the number box without − + (4.64): an axis is swept or typed
         }
       }
       for (const input of wrap.querySelectorAll("input")) {

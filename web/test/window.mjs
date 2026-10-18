@@ -970,43 +970,20 @@ await page.click("#hand-tab-0");
   const box_high = await page.$eval("#hand-detail", (e) => Math.round(e.getBoundingClientRect().height));
   check(b.d !== a.d && b.top === -1 && b.bottom === 0 && box_high > a.high && await page.$eval("#hand-shape-Shape-7", (e) => e.classList.contains("on")), `a thumb pressed (breguet) is chosen and the box shows it; with its three more rows the box grows to their height (${a.high} → ${box_high})`);
   await page.click("#hand-shape-Shape-0");
-  // the quiet number (#250, beta 4.45.1): the number and a tiny plus over a tiny minus, no box, grey until it differs
-  // from how the dial opened; they step it; a press on the number opens its popup
-  const nb = () => page.evaluate(() => { const box = document.querySelector(".row.side .numbox"), c = (e) => getComputedStyle(e), f = box.querySelector("input"), [minus, plus] = [...box.querySelectorAll(".step")];
-    return { w: Math.round(box.getBoundingClientRect().width), plain: c(f).borderTopWidth === "0px" && c(f).backgroundColor === "rgba(0, 0, 0, 0)" && c(plus).borderTopWidth === "0px", grey: c(f).color, stacked: plus.getBoundingClientRect().bottom <= minus.getBoundingClientRect().top + 0.5, changed: box.classList.contains("changed") }; });
-  // the plus's top on the figures' top, the minus on their baseline (4.45.2, Okay: "parallels on baseline ascender"):
-  // counted on the box's own picture, in screen dots — the ink rows of the figures and of the two signs
-  const on_figures = async () => {
-    const b = await (await page.$(".row.side .numbox")).boundingBox(), png = await page.screenshot({ clip: { x: b.x, y: b.y, width: b.width, height: b.height } });
-    const cut = await page.$eval(".row.side .numbox", (e) => e.querySelector(".pm").getBoundingClientRect().left - e.getBoundingClientRect().left);
-    return page.evaluate(async ([src, cut]) => {
-      const img = new Image(); img.src = "data:image/png;base64," + src; await img.decode();
-      const c = document.createElement("canvas"); c.width = img.width; c.height = img.height; const x = c.getContext("2d"); x.drawImage(img, 0, 0);
-      const d = x.getImageData(0, 0, c.width, c.height).data, W = c.width, H = c.height, bg = d[0], ink = (i, j) => d[(j * W + i) * 4] < bg - 40;
-      const rows = (i0, i1) => { const r = []; for (let j = 0; j < H; j++) for (let i = i0; i < i1; i++) if (ink(i, j)) { r.push(j); break; } return [Math.min(...r), Math.max(...r)]; };
-      const k = Math.round(cut * devicePixelRatio), [ft, fb] = rows(0, k), [st, sb] = rows(k, W);
-      return [st - ft, sb - fb];
-    }, [png.toString("base64"), cut]);
-  };
-  const fig = await on_figures();
-  const shut = await nb(), len = await S("S.ha_hour.len");
-  // the whole box is one press (#317, 4.58): a press on the plus opens the controller, steps nothing; the number isn't typed
-  { const p = await (await page.$(".row.side .numbox .step >> nth=1")).boundingBox(); await page.mouse.click(p.x + p.width / 2, p.y + p.height / 2); }      // where the plus is drawn: the press falls through the picture to the box
-  const on_plus = [await S("S.ha_hour.len") === len, await page.evaluate(() => { const e = document.querySelector("#value-pop"); return !!e && e.querySelector("label").textContent === "Length"; }), await page.$eval("#hand-len-Length", (f) => f.readOnly)];
-  await page.keyboard.press("Escape"); await page.evaluate(() => window.dial_tool.value_pop_close());
-  await page.evaluate((v) => window.dial_tool.set_value("hand", "len", v + 0.05), len);
-  const stepped = await S("S.ha_hour.len"), after = await nb();
-  await page.click("#hand-len-Length");
+  // the one number box beside a hand's box (4.64; Okay, 18 Oct 2026, 21:20: "This version of boxes win … these replace
+  // all … Number box touches minus box"; the quiet number with its tiny ± of 4.45.1–4.63 retired): the value's box, then
+  // − and + in theirs, touching, the hairline of the rule's grey; + steps it; the name opens the controller
+  const len = await S("S.ha_hour.len");
+  const nb = await page.evaluate(() => { const box = document.querySelector(".row.side .numbox"), f = box.querySelector("input"), st = [...box.querySelectorAll(".step")], r = (e) => e.getBoundingClientRect(), c = getComputedStyle(f);
+    return [st.length, Math.abs(r(f).right - r(st[0]).left) < 0.5 && Math.abs(r(st[0]).right - r(st[1]).left) < 0.5, c.borderTopWidth, c.borderTopColor, st.every((b) => b.querySelector("svg") !== null), !f.readOnly, Math.round(r(box).width)]; });
+  await page.click(".row.side .numbox .step >> nth=1");
+  const stepped = await S("S.ha_hour.len");
+  await page.click("label[for='hand-len-Length']");
   const popped = await page.evaluate(() => { const e = document.querySelector("#value-pop"); return !!e && e.querySelector("label").textContent === "Length" && getComputedStyle(e.querySelector("input[type=range]")).display !== "none"; });
-  await page.keyboard.press("Escape");
+  await page.keyboard.press("Escape"); await page.evaluate(() => window.dial_tool.value_pop_close());
   await page.evaluate((v) => window.dial_tool.set_value("hand", "len", v), len);
-  const back = await nb();
-  check(shut.plain && shut.stacked && !shut.changed && shut.grey === "rgb(92, 92, 88)" && near(stepped - len, 0.05, 1e-6) && after.changed && !back.changed && shut.w === 60,
-    `beside the box a number is quiet: no box, grey until it changes (${shut.grey}), a tiny plus over a tiny minus; changed it is in ink, back to how the dial opened grey again (#250)`);
-  check(on_plus.every(Boolean), `the number and its ± are one press: on the plus it opens the controller and steps nothing; the number is not typed there (#317: ${on_plus.join(" ")})`);
-  const dpr = await page.evaluate(() => devicePixelRatio);
-  check(Math.abs(fig[0] + 4 * dpr) <= 1 && Math.abs(fig[1]) <= 1, `the tiny plus 4 over the figures' top (#317: "plus moves up 4px"), the minus on their baseline, within a dot (${fig.join(", ")} dots) (4.45.2)`);
-  check(popped && await page.$("#value-pop") === null, "a press on the number opens its popup, with its slider; Escape puts it away (#250, #249)");
+  check(nb[0] === 2 && nb[1] && nb[2] === "1px" && nb[3] === "rgb(185, 185, 180)" && nb[4] && nb[5] && near(stepped - len, 0.05, 1e-6) && popped,
+    `beside a hand's box the one number box: the value, − and + touching, a hairline of the rule's grey, drawn signs, typed in place (${nb.join(" ")}); + steps it; the name opens the controller (4.64)`);
 }
 { // a disc's marker: Hole or Mark, its rows named by the choice; Mark brings its colour (#300, 4.45.4)
   const was = await S("JSON.stringify(S.ha_hour)");

@@ -37,14 +37,11 @@
   .fontbox .row.num:not(.side) { grid-template-columns: var(--font-label) minmax(0, 1fr) var(--gap) var(--tile-w) var(--unit) var(--tile-w); }
   .fontbox .row.num:not(.side) > :first-child { grid-column: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .fontbox .row.num:not(.side) > input[type="range"] { grid-column: 2; }
-  .fontbox .row.num:not(.side) > input[type="text"] { grid-column: 4; }
-  .fontbox .row.num:not(.side) > .steps { grid-column: 6; }
+  .fontbox .row.num:not(.side) > .numbox { grid-column: 4 / -1; --box-value: var(--tile-w); --box-steps: var(--tile-w); }
   /* the number block (Okay's drawing, 18 Oct 2026: "new number entering blocks (to be implemented throughout the site)"):
      the value and its − + as one block — no gap, one thick line of the rule's grey round all three, hairlines between */
   .fontbox .row.num:not(.side) { grid-template-columns: var(--font-label) minmax(0, 1fr) var(--gap) var(--tile-w) 0 var(--tile-w); }
-  .fontbox .row.num:not(.side) > input[type="text"] { border: var(--thick) solid var(--rule); border-right-width: var(--hair); }
-  .fontbox .row.num:not(.side) > .steps > .step { border: var(--thick) solid var(--rule); border-left-width: var(--hair); color: var(--ink); }
-  .fontbox .row.num:not(.side) > .steps > .step + .step { border-left-width: 0; }
+  /* (its thick-lined number blocks of 4.54 gave way to the one number box in 4.64) */
   /* light or dark (#276, 4.51): with the pill on Dark, the sheet's list and every font box take the dark ground and the
      usual names inside them turn over (ink light, paper dark), so what is chosen is light with dark words */
   .pillswitch { display: flex; border: var(--hair) solid var(--rule); border-radius: var(--round-pill); padding: var(--u1); background: var(--field); }

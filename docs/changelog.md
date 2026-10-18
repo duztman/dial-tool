@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## beta 4.64 (web version) · 18 Oct 2026
+
+One number box for the whole tool (Okay, 18 Oct, 21:20: "This version of boxes win: small plusminus and these new thick border ones are retired, these replace all with two changes. Number box touches minus box. Signs grow inside the box as much as these new thick bordered ones. Also add the chevron version with only one box same style").
+
+- **Every number** is the full row's box: the value, then − and +, touching, one hairline of the rule's grey. In a full row the value takes the unit that stood between it and its − +.
+- **Beside a hand's box, in a quiet row and in Positions** the same box, narrower. The quiet number with its tiny ± (4.45.1–4.63) and the thick-lined blocks of the font box and Positions (4.54, 4.56) are gone. A side row's name opens the controller, as a full row's does.
+- **The signs are drawn**: 12 across in a full row's box, 9 in a narrow one.
+- **The chevron box** (Count, Every): the value and one ⌄ box in the same style.
+- The Blank face row lays its words under its button, as Reset's First dial does (they wrapped a word a line).
+
 ## beta 4.63 (web version) · 18 Oct 2026
 
 Okay's notes of 21:20.

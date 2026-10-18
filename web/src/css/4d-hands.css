@@ -28,20 +28,7 @@
      top, the minus on its foot. Each sign's button reaches half a control from the band's middle, up for the plus,
      down for the minus, so it is as easy to hit as before. */
   .row.side { position: relative; }
-  .numbox { position: absolute; right: 0; top: 50%; translate: 0 -50%; display: flex; align-items: baseline; width: var(--side-num); height: var(--control); }
-  .numbox > input { flex: 1 1 0; width: 100%; min-width: 0; height: 100%; padding: 0 var(--u1) 0 0; border: 0; background: none; color: var(--grey); text-align: right; cursor: pointer; }
-  .numbox > .pm { flex: none; position: relative; width: var(--side-tiny); height: 1cap; }
-  .pm > .step { position: absolute; left: 0; right: 0; min-width: 0; height: auto; padding: 0; border: 0; background: none; color: var(--grey); }
-  .pm > .step:first-child { top: 50%; bottom: calc(50% - var(--control) / 2); }      /* the minus */
-  .pm > .step:last-child { top: calc(50% - var(--control) / 2); bottom: 50%; }      /* the plus */
-  .pm > .step > svg { position: absolute; inset-inline: 0; margin-inline: auto; }
-  .pm > .step:first-child > svg { bottom: calc(var(--control) / 2 - 0.5cap); }
-  .pm > .step:last-child > svg { top: calc(var(--control) / 2 - 0.5cap - var(--pm-lift)); }      /* the plus a little higher (#317: "plus moves up 4px") */
-  .numbox.changed > input, .numbox.changed .step { color: var(--ink); }
-  /* the whole box is one press (#317): the signs only picture the controller's − and +, the number isn't typed here */
-  .row.side > .numbox, .guidelast .numbox { cursor: pointer; }
-  .numbox > .pm { pointer-events: none; }
-  .numbox:hover > input, .numbox:hover .step { color: var(--ink); }
+  .row.side .numbox { --box-value: var(--box-side-value); --box-steps: calc(2 * var(--box-side-step)); }      /* beside a hand's box, and a quiet row: the one number box, narrower (4.64; the quiet number with a tiny ± from 4.45.1 to 4.63, #250, #317) */
   @media (min-width: 861px) {
     /* wide: the box in the first two columns, as high as the rows beside it; the rows in the other four, each one
        line: label · slider · the number box */

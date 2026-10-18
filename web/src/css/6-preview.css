@@ -133,7 +133,7 @@
   .guidelast > * { grid-row: 1; }
   .guidelist .guidelast > label:first-child { grid-column: 1; }
   .guidelast > input[type="range"] { display: none; }
-  .guidelast > .numcell { grid-column: 1 / 3; position: relative; height: var(--control); pointer-events: none; }
+  .guidelast > .numcell { grid-column: 2; display: flex; justify-content: flex-end; height: var(--control); pointer-events: none; }
   .guidelast .numbox { pointer-events: auto; }
   .guidelast > .resetall { grid-column: 3; align-self: stretch; display: flex; align-items: center; padding-left: var(--gap); border-left: var(--hair) solid var(--paper); }      /* its rule: the ground's, from the section's top to the box's bottom (#305) */
   /* Reset All asks first, in its line's place (#271): the question at the left, round ✕ and ✓ at the right */

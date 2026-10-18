@@ -142,7 +142,8 @@
   .numpop .places > button { height: var(--control-large); border-radius: calc(var(--control-large) / 2); background: var(--white); color: var(--black); }
   .numpop .places > button:hover { background: var(--num-pop-well); }
   .numpop .places > button.on { background: var(--black); color: var(--white); }
-  .numpop .row .steps { display: flex; justify-content: space-between; }
+  .numpop .numbox { display: contents; }      /* the row's number box: its value went to the head, its − + are the discs */
+  .numpop .row .steps { display: flex; justify-content: space-between; width: 100%; }
   .numpop .row .steps > .step { flex: none; display: grid; place-items: center; width: var(--num-pop-step); height: var(--num-pop-step); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); }
   .numpop .row .steps > .step:hover { background: var(--num-pop-hover); }
   /* the Positions preview (#251, 4.50.1): the hand's detail box, round — no frame, the circle as large as the box allows
@@ -167,21 +168,21 @@
   .pane.positions > .body > .row.chk { grid-template-columns: auto auto minmax(0, 1fr); }
   .pane.positions > .body > .row.chk > span:first-child { display: none; }
   .pane.positions > .body > .row.chk > .check { grid-column: auto; font-size: var(--t-s); white-space: nowrap; }
-  /* the number block (#317; the font box's, 4.54): the value and its − + one block, a thick line of the rule's grey
-     round all three, hairlines between; the menu box the same, its arrow where the − + stand */
+  /* Positions' boxes (4.56; one number box since 4.64): the name, then the box, as wide as the menu boxes */
   .body .row.num.block:not(.side) { grid-template-columns: minmax(0, 1fr) var(--pos-box); column-gap: var(--u1); }
   .body .row.num.block:not(.side) > :first-child { grid-column: 1; }
-  .body .row.num.block:not(.side) > input[type="text"] { grid-column: 2; grid-row: 1; width: calc(var(--pos-box) - 2 * var(--pos-step)); justify-self: start; height: var(--control); padding: 0 var(--u1); border: var(--thick) solid var(--rule); border-right-width: var(--hair); border-radius: 0; font-size: var(--t-s); }
-  .body .row.num.block:not(.side) > .steps { grid-column: 2; grid-row: 1; justify-self: end; display: flex; width: auto; }
-  .body .row.num.block:not(.side) > .steps > .step { width: var(--pos-step); min-width: 0; height: var(--control); padding: 0; border: var(--thick) solid var(--rule); border-left-width: var(--hair); border-radius: 0; color: var(--ink); }
-  .body .row.num.block:not(.side) > .steps > .step + .step { border-left-width: 0; }
-  .menubox { position: relative; display: flex; height: var(--control); border: var(--thick) solid var(--rule); background: var(--field); font-size: var(--t-s); }
+  .body .row.num.block:not(.side) > .numbox { grid-column: 2; }
+  .row.block .numbox { --box-value: calc(var(--pos-box) - 2 * var(--pos-step)); --box-steps: calc(2 * var(--pos-step)); }
+  .row.block .numbox > input[type="text"] { padding: 0 var(--u1); font-size: var(--t-s); }
+  /* the chevron box (4.64: "Also add the chevron version with only one box same style"): the value's box and a ⌄ box,
+     touching, the number box's hairline */
+  .menubox { position: relative; display: flex; height: var(--control); border: var(--hair) solid var(--rule); background: var(--field); font-size: var(--t-s); }
   .menubox > .v { flex: 1 1 0; display: grid; align-items: center; justify-content: end; padding: 0 var(--u1); }
   .menubox > .arrow { flex: none; display: grid; place-items: center; width: var(--pos-step); border-left: var(--hair) solid var(--rule); }
   .menubox > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }      /* the browser's own list, unseen over the box */
   .menubox > input { flex: 1 1 0; min-width: 0; height: 100%; padding: 0 var(--u1); border: 0; text-align: right; font-size: var(--t-s); }
   .menubox > .go { flex: none; display: grid; place-items: center; width: var(--pos-step); padding: 0; border: 0; border-left: var(--hair) solid var(--rule); background: var(--ink); color: var(--paper); }
-  .menubox:hover, .body .row.num.block:not(.side) > .steps > .step:hover { border-color: var(--grey); }
+  .menubox:hover { background: var(--hover); }
   /* an (i): what a setting does, in a tag (#357: "Offset and skip need tooltip details") */
   .infosign { display: grid; place-items: center; height: var(--control); padding: 0 var(--u1); color: var(--wait); }
   .infosign:hover, .infosign:focus-visible { color: var(--ink); }
@@ -213,5 +214,6 @@
   .givechoices { display: grid; padding: 0 var(--u3); }
   .givechoices .check { height: var(--control); font-size: var(--t-s); }
   .givebox > .row.side.quiet { grid-template-columns: var(--side-label) minmax(0, 1fr) var(--side-num); padding: 0 var(--u3); }
+  .givebox > .row.side.quiet > .numbox { grid-column: 3; }
   .givebox > .row.side.quiet > label { font-size: var(--t-s); }
 }

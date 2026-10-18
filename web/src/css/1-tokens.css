@@ -38,7 +38,9 @@
     --air: calc(4 * var(--unit));                  /* under an open pane */
     --hair: 1px; --thick: 2px; --triple: calc(3 * var(--hair));      /* a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle */
     --nest-from: calc((100% + var(--gap)) / 3);     /* where a row's controls start, from its left edge: two of its six columns and their gaps. A half line starts here */
-    --side-num: 60px; --side-tiny: 16px;           /* beside a hand's box: a number with its tiny plus and minus (the whole · the two alone) */
+    --box-side-value: 44px; --box-side-step: 22px;      /* the number box beside a hand's box and in a quiet row (4.64): its value · each of − + */
+    --side-num: calc(var(--box-side-value) + 2 * var(--box-side-step));      /* …so that column is this wide (60 with the tiny ± until 4.63) */
+    --box-value: calc(var(--tile-w) + var(--unit)); --box-steps: var(--tile-w);      /* a full row's number box (4.64): the value takes the unit that stood between it and its − + */
     --side-label: 4.75em;                          /* …and the names there: as wide as the longest allowed, "Counter Ø" at 12 (Okay's notes, p. 18, #250) */
     --tile-w: calc((4 * var(--col) + 3 * var(--gap) - 3 * var(--unit)) / 4);      /* a tile: four stand on the four control columns one unit apart, so each is a little wider than a column. A number's field and its stepper are the third and the fourth tile */
     /* a number's row, as tracks with the gaps written in (no gap of its own): label 2 columns · slider · field · stepper, the last three on the tiles' edges */
@@ -186,7 +188,6 @@
     --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
     --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
     --t-num-pop: 41px;                             /* the controller's value, in its grey pill: his 14 where a disc is 22.68 (controller 2.svg, Okay, 18 Oct 2026); 25 from 4.45.3 to 4.51.1, 20 in 4.45.2 */
-    --pm-lift: 4px;                                /* a quiet number's tiny plus, this much over the figures' top (Okay's notes 2, #317: "plus moves up 4px") */
     --t-date: 9px; --date-line: 9px; --date-track: 0.02em; --date-face: "Dial Date", var(--sans);      /* the bar's stacked date: three lines in the bar's 28 inside, Inter SemiBold since 4.63 (Barlow Bold in 4.62; Okay: "try inter with appropriate weight for that size") */
     --t-time-narrow: 17px;                         /* the time and AM · PM on a phone: 12 until 4.62 ("too small"), the desktop's 20 leaves how fast too little room */
     --tag-max: 240px;                              /* a tag's longest line: longer words wrap (Okay, 18 Oct 2026, 21:20: "constrict the width to avoid these unreadable lines") */
