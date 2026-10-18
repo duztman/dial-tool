@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.58 | 18 Oct 2026 | web | [`0a41768`](https://github.com/duztman/dial-tool/tree/0a41768569398dc3e20bcacdade50a1c310cd907) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/0a41768569398dc3e20bcacdade50a1c310cd907/web/dial-tool.html) | The quiet number and its ± are one press that opens the controller |
 | 4.57 | 18 Oct 2026 | web | [`4e8556b`](https://github.com/duztman/dial-tool/tree/4e8556b541dcfef2b7ebc91837d8b693e115280c) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/4e8556b541dcfef2b7ebc91837d8b693e115280c/web/dial-tool.html) | A window's width and height linked by a LINK pill |
 | 4.56 | 18 Oct 2026 | web | [`7f94256`](https://github.com/duztman/dial-tool/tree/7f942563ade37985d640edc25d2079ee37ac0d8a) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/7f942563ade37985d640edc25d2079ee37ac0d8a/web/dial-tool.html) | Positions after Okay's drawing: a draggable preview, menus and number blocks |
 | 4.55 | 18 Oct 2026 | web | [`1718986`](https://github.com/duztman/dial-tool/tree/1718986540f70547086a20b141d7af33ba9624ff) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/1718986540f70547086a20b141d7af33ba9624ff/web/dial-tool.html) | The selected ring after Okay's PSD: size and radius in mono in the row, details written out |
