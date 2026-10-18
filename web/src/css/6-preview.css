@@ -12,7 +12,21 @@
   main.dark { --on-canvas: var(--white); }
   /* the dial alone: Backdrop and Shadows ride left with the preview's edge and stop short, on the mark's line (the margin) */
   main { --stop-short: max(var(--canvas-inset), calc(var(--margin) - var(--panel-w) * (1 - var(--away)))); }
-  .guides { position: absolute; z-index: 3; top: var(--canvas-top); right: var(--canvas-inset); display: flex; justify-content: flex-end; }
+  /* Guides at the bottom left, between Backdrop and Shadows, their list opening upward as Shadows' does (4.59, #337: "Guides
+     move left bottom under backdrop, above shadows"; at the top right, its list dropping, until 4.58) */
+  .guides { position: absolute; z-index: 3; left: var(--stop-short); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: flex; }
+  .guides > .guidelist:not(.shadelist) { top: auto; right: auto; bottom: calc(100% + var(--unit)); left: 0; }
+  .guides:has(.guidelist:not([hidden])) { z-index: 7; }      /* open, its list over Backdrop above it */
+  .guides .guidesmore svg { rotate: 180deg; }
+  .guides .guidesmore[aria-expanded="true"] svg { rotate: 0deg; }
+  /* Tiny Preview (#337): its button where Guides stood, a plain eye; the dial at its own size in a little window over
+     everything, the backdrop round it, a hard shadow, dragged anywhere; the eye at its top left puts it away */
+  .tinyopen { position: absolute; z-index: 3; top: var(--canvas-top); right: var(--canvas-inset); width: var(--control-large); border-radius: var(--round-switch); }
+  .tinywin { position: fixed; z-index: 60; overflow: hidden; border: var(--thick) solid var(--ink); border-radius: var(--tiny-round); box-shadow: var(--tiny-cast) var(--tiny-cast) 0 var(--tiny-shade); cursor: grab; touch-action: none; user-select: none; }
+  .tinywin.held { cursor: grabbing; }
+  .tinyface > svg { display: block; }
+  .tinyshut { position: absolute; top: var(--u2); left: var(--u2); display: grid; place-items: center; width: var(--control); height: var(--control); padding: 0; border-radius: 50%; background: var(--paper); color: var(--ink); opacity: 0; transition: opacity 0.15s; }
+  .tinywin:hover .tinyshut, .tinywin.awake .tinyshut, .tinyshut:focus-visible { opacity: 1; }
   .onview { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: var(--hair) solid var(--line-faint); color: var(--on-canvas); user-select: none; }
   @media (hover: hover) { .onview:hover { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); } }      /* under the pointer its line is twice as thick: still no fill */
   /* undo · redo, before the Guides switch: two joined outlined buttons; pale when there is no step that way */
@@ -41,7 +55,7 @@
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 var(--round-switch) var(--round-switch) 0; }
   .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }      /* open, only its arrow turns */
   /* Backdrop, standing on the Shadows switch (its row held the eye switch too until 15 Oct 2026, 03:41) */
-  .backdrops { position: absolute; z-index: 3; left: var(--stop-short); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: flex; gap: var(--unit); }
+  .backdrops { position: absolute; z-index: 3; left: var(--stop-short); bottom: calc(var(--canvas-inset) + 2 * (var(--control-large) + var(--unit))); display: flex; gap: var(--unit); }
   /* the eye switch, alone at the preview's bottom right, over the zoom in the bar (Okay, 15 Oct 2026, 03:41) */
   .eyes { position: absolute; z-index: 3; right: var(--canvas-inset); bottom: var(--canvas-inset); display: flex; align-items: flex-end; gap: var(--unit); }      /* the switches' gap between them (05:43: "why these two touch?"); the showcase's iris left of the eye, one unit apart (Okay, 18 Oct 2026, notes 2: "Showcase button back to the left of the preview button"; over it from 4.42.4 to 4.52.1, #280) */
   .eyebox { width: var(--control-large); padding: 0; overflow: hidden; border-radius: var(--round-switch); }      /* its sign fills the inside; the lashes run out and the box cuts them */
@@ -165,7 +179,7 @@
   :is(.sky, .pool) { opacity: 0; transition: opacity var(--show-time) linear; }
   #app.show :is(.sky, .pool) { opacity: 1; }
   #app.show main { --on-canvas: var(--white); --off-canvas: var(--ink); }
-  #app.show :is(.undos, .guides, .backdrops, .shadows, .tip) { visibility: hidden; }
+  #app.show :is(.undos, .guides, .backdrops, .shadows, .tip, .tinyopen) { visibility: hidden; }
   #app.show :is(#eye-box, .irisgo) { display: none; }
   /* in the showcase the X and Now are larger and less faint, and stand as far in from the window's edges as the mark
      does at the top left: the margin (05:43: "too close to edges, too faint… fit them inside the imaginary padding logo

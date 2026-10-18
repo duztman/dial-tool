@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.58 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.59 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -224,6 +224,7 @@
     --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
     --t-num-pop: 41px;                             /* the controller's value, in its grey pill: his 14 where a disc is 22.68 (controller 2.svg, Okay, 18 Oct 2026); 25 from 4.45.3 to 4.51.1, 20 in 4.45.2 */
     --pm-lift: 4px;                                /* a quiet number's tiny plus, this much over the figures' top (Okay's notes 2, #317: "plus moves up 4px") */
+    --tiny-round: 18px; --tiny-cast: 8px; --tiny-shade: rgb(0 0 0 / 0.22);      /* the Tiny Preview's corners and its hard shadow, down and right (#337, Okay's picture in notes 2) */
     --link-pill: 14px;                             /* the LINK pill on the line between width and height (#358): the pixel font at 8 with three over and under */
     --pos-box: 78px; --pos-step: 18px;            /* Positions' small controls (#357: "controls smaller"): a box, value and − + or ⌄ together, and one of its cells */
     --pos-dot: 2px; --pos-dot-gap: 5px;            /* the span's dotted arc: a dot this wide, this far apart, centre to centre */
@@ -1229,7 +1230,21 @@
   main.dark { --on-canvas: var(--white); }
   /* the dial alone: Backdrop and Shadows ride left with the preview's edge and stop short, on the mark's line (the margin) */
   main { --stop-short: max(var(--canvas-inset), calc(var(--margin) - var(--panel-w) * (1 - var(--away)))); }
-  .guides { position: absolute; z-index: 3; top: var(--canvas-top); right: var(--canvas-inset); display: flex; justify-content: flex-end; }
+  /* Guides at the bottom left, between Backdrop and Shadows, their list opening upward as Shadows' does (4.59, #337: "Guides
+     move left bottom under backdrop, above shadows"; at the top right, its list dropping, until 4.58) */
+  .guides { position: absolute; z-index: 3; left: var(--stop-short); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: flex; }
+  .guides > .guidelist:not(.shadelist) { top: auto; right: auto; bottom: calc(100% + var(--unit)); left: 0; }
+  .guides:has(.guidelist:not([hidden])) { z-index: 7; }      /* open, its list over Backdrop above it */
+  .guides .guidesmore svg { rotate: 180deg; }
+  .guides .guidesmore[aria-expanded="true"] svg { rotate: 0deg; }
+  /* Tiny Preview (#337): its button where Guides stood, a plain eye; the dial at its own size in a little window over
+     everything, the backdrop round it, a hard shadow, dragged anywhere; the eye at its top left puts it away */
+  .tinyopen { position: absolute; z-index: 3; top: var(--canvas-top); right: var(--canvas-inset); width: var(--control-large); border-radius: var(--round-switch); }
+  .tinywin { position: fixed; z-index: 60; overflow: hidden; border: var(--thick) solid var(--ink); border-radius: var(--tiny-round); box-shadow: var(--tiny-cast) var(--tiny-cast) 0 var(--tiny-shade); cursor: grab; touch-action: none; user-select: none; }
+  .tinywin.held { cursor: grabbing; }
+  .tinyface > svg { display: block; }
+  .tinyshut { position: absolute; top: var(--u2); left: var(--u2); display: grid; place-items: center; width: var(--control); height: var(--control); padding: 0; border-radius: 50%; background: var(--paper); color: var(--ink); opacity: 0; transition: opacity 0.15s; }
+  .tinywin:hover .tinyshut, .tinywin.awake .tinyshut, .tinyshut:focus-visible { opacity: 1; }
   .onview { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: var(--hair) solid var(--line-faint); color: var(--on-canvas); user-select: none; }
   @media (hover: hover) { .onview:hover { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); } }      /* under the pointer its line is twice as thick: still no fill */
   /* undo · redo, before the Guides switch: two joined outlined buttons; pale when there is no step that way */
@@ -1258,7 +1273,7 @@
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 var(--round-switch) var(--round-switch) 0; }
   .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }      /* open, only its arrow turns */
   /* Backdrop, standing on the Shadows switch (its row held the eye switch too until 15 Oct 2026, 03:41) */
-  .backdrops { position: absolute; z-index: 3; left: var(--stop-short); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: flex; gap: var(--unit); }
+  .backdrops { position: absolute; z-index: 3; left: var(--stop-short); bottom: calc(var(--canvas-inset) + 2 * (var(--control-large) + var(--unit))); display: flex; gap: var(--unit); }
   /* the eye switch, alone at the preview's bottom right, over the zoom in the bar (Okay, 15 Oct 2026, 03:41) */
   .eyes { position: absolute; z-index: 3; right: var(--canvas-inset); bottom: var(--canvas-inset); display: flex; align-items: flex-end; gap: var(--unit); }      /* the switches' gap between them (05:43: "why these two touch?"); the showcase's iris left of the eye, one unit apart (Okay, 18 Oct 2026, notes 2: "Showcase button back to the left of the preview button"; over it from 4.42.4 to 4.52.1, #280) */
   .eyebox { width: var(--control-large); padding: 0; overflow: hidden; border-radius: var(--round-switch); }      /* its sign fills the inside; the lashes run out and the box cuts them */
@@ -1382,7 +1397,7 @@
   :is(.sky, .pool) { opacity: 0; transition: opacity var(--show-time) linear; }
   #app.show :is(.sky, .pool) { opacity: 1; }
   #app.show main { --on-canvas: var(--white); --off-canvas: var(--ink); }
-  #app.show :is(.undos, .guides, .backdrops, .shadows, .tip) { visibility: hidden; }
+  #app.show :is(.undos, .guides, .backdrops, .shadows, .tip, .tinyopen) { visibility: hidden; }
   #app.show :is(#eye-box, .irisgo) { display: none; }
   /* in the showcase the X and Now are larger and less faint, and stand as far in from the window's edges as the mark
      does at the top left: the margin (05:43: "too close to edges, too faint… fit them inside the imaginary padding logo
@@ -6050,7 +6065,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.58";
+var VERSION = "beta 4.59";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -8933,6 +8948,7 @@ function parse_number(text, current) {
 var LENGTH_KEYS = { ring: RING_MM, hand: HAND_MM, window: WINDOW_MM, global: ["dial_d", "margin", "ha_cap", "dial_hole", "sh_hour", "sh_minute", "sh_second", "sh_cap", "sh_disc"], nudge: ["dr"] };
 var label_of = (row, T) => row.say ? row.say(T)[0] : row.menu ? `${(row.menu.items.find(([v]) => v === (T[row.menu.key] ?? 0)) || row.menu.items[0])[1]} ${row.text.split(" ").pop()}` : row.text;
 var LINKED_PAIRS = { window: [{ link: "wh_link", keys: ["w", "h"], when: (T) => ["rectangle", "arc"].includes(window_shape(T)) }] };
+var TINY_EVERY = 200;
 var NUDGE_NEUTRAL = { dr: 0, da: 0, rot: 0, s: 1 };
 var is_length = (row) => row.kind === "num" && (LENGTH_KEYS[row.scope] || []).includes(row.key);
 var decimals = (step) => (String(step).split(".")[1] || "").length;
@@ -9407,7 +9423,7 @@ var DialTool = class _DialTool {
     this.note = el("button", { type: "button", className: "previewnote", id: "preview-note", hidden: true, title: "Put this note away", onclick: () => {
       this.note.hidden = true;
     } });
-    this.main = el("main", {}, this.svg, this.tip, this.note, this.undo_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.ten_pill, this.hands_key, this.sun_hint);
+    this.main = el("main", {}, this.svg, this.tip, this.note, this.undo_box(), this.tiny_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.ten_pill, this.hands_key, this.sun_hint);
     this.day_strip(this.day_box);
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     root.append(this.sheet());
@@ -9918,6 +9934,84 @@ var DialTool = class _DialTool {
       }
     };
     return box2;
+  }
+  /** Tiny Preview (#337; Okay's notes 2, 18 Oct 2026: "Its button is top-right where 'Guides' are, regular eye as icon
+   *  for now … pops up in place when clicked, not editable, just a 100% preview. If the dial is 40mm, this guy is
+   *  40mm + appropriate padding. Has a shadow, and like a window it can be dragged and dropped anywhere. Top of
+   *  everything. On its top left an eye appears on hover or tap, that hides it, it goes back to its place"). The dial
+   *  as its SVG file draws it — at the browser's millimetres (96 to the inch: "approximation fine for now", 18 Oct),
+   *  its margins round it on the backdrop — redrawn at most five times a second while the dial changes. */
+  tiny_box() {
+    const button = el("button", { type: "button", className: "onview tinyopen", id: "tiny-open", ariaLabel: "Tiny preview" });
+    button.dataset.tip = "Tiny preview: the dial at its own size";
+    button.innerHTML = eye(true);
+    const shut = el("button", { type: "button", className: "tinyshut", id: "tiny-shut", ariaLabel: "Put the tiny preview away" });
+    shut.innerHTML = eye(true);
+    const face = el("div", { className: "tinyface" });
+    const win = el("div", { className: "tinywin", id: "tiny", hidden: true, role: "img", ariaLabel: "The dial at its own size" }, face, shut);
+    if ($("#tiny")) $("#tiny").remove();
+    document.body.append(win);
+    const show = (on) => {
+      const b = button.getBoundingClientRect();
+      win.hidden = !on;
+      button.hidden = on;
+      if (!on) {
+        button.focus({ preventScroll: true });
+        return;
+      }
+      this.tiny_draw(true);
+      if (!this.tiny.placed) {
+        win.style.left = `${Math.max(b.right - win.offsetWidth, 0)}px`;
+        win.style.top = `${b.top}px`;
+      }
+    };
+    button.onclick = () => show(true);
+    shut.onclick = (e) => {
+      e.stopPropagation();
+      show(false);
+    };
+    shut.onpointerdown = (e) => e.stopPropagation();
+    let grab = null;
+    win.onpointerdown = (e) => {
+      const b = win.getBoundingClientRect();
+      grab = { dx: e.clientX - b.left, dy: e.clientY - b.top, moved: false };
+      win.setPointerCapture(e.pointerId);
+      win.classList.add("held");
+    };
+    win.onpointermove = (e) => {
+      if (!grab) return;
+      const x = clamp(e.clientX - grab.dx, 0, innerWidth - win.offsetWidth), y = clamp(e.clientY - grab.dy, 0, innerHeight - win.offsetHeight);
+      win.style.left = `${x}px`;
+      win.style.top = `${y}px`;
+      grab.moved = true;
+      this.tiny.placed = true;
+    };
+    win.onpointerup = win.onpointercancel = () => {
+      if (grab && !grab.moved) {
+        win.classList.add("awake");
+        clearTimeout(this.tiny.wake);
+        this.tiny.wake = setTimeout(() => win.classList.remove("awake"), 2400);
+      }
+      grab = null;
+      win.classList.remove("held");
+    };
+    this.tiny = { win, face, show, button, at: 0, timer: 0, placed: false, wake: 0 };
+    return button;
+  }
+  /** the Tiny Preview follows the dial: now, or at most five times a second (it is a whole SVG each time). */
+  tiny_draw(now = false) {
+    const T = this.tiny;
+    if (!T || T.win.hidden || !this.statik) return;
+    const go = () => {
+      T.at = performance.now();
+      T.timer = 0;
+      T.face.innerHTML = svg_document({ ...this.S, guides: false, out_production: false, out_mirror: false }, this.statik, this.S.t, { preview: true }).replace(/^<\?xml[^>]*>\s*/, "");
+    };
+    if (now) {
+      clearTimeout(T.timer);
+      return go();
+    }
+    if (!T.timer) T.timer = setTimeout(go, Math.max(0, TINY_EVERY - (performance.now() - T.at)));
   }
   /** guides, at the preview's top right (Okay, 12 Oct 2026): a switch (a bullseye and the word; solid outline = on,
    *  dashed = off) and, joined to it, an arrow that drops their list: the five kinds of guide, each with an eye and
@@ -13357,6 +13451,7 @@ var DialTool = class _DialTool {
       }
       if (this.show && this.show.spin) this.render();
       this.draw();
+      this.tiny_draw();
     } catch (e) {
       this.play(false);
       this.log("error while drawing a frame: " + (e.stack || e));

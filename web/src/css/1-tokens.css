@@ -187,6 +187,7 @@
     --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
     --t-num-pop: 41px;                             /* the controller's value, in its grey pill: his 14 where a disc is 22.68 (controller 2.svg, Okay, 18 Oct 2026); 25 from 4.45.3 to 4.51.1, 20 in 4.45.2 */
     --pm-lift: 4px;                                /* a quiet number's tiny plus, this much over the figures' top (Okay's notes 2, #317: "plus moves up 4px") */
+    --tiny-round: 18px; --tiny-cast: 8px; --tiny-shade: rgb(0 0 0 / 0.22);      /* the Tiny Preview's corners and its hard shadow, down and right (#337, Okay's picture in notes 2) */
     --link-pill: 14px;                             /* the LINK pill on the line between width and height (#358): the pixel font at 8 with three over and under */
     --pos-box: 78px; --pos-step: 18px;            /* Positions' small controls (#357: "controls smaller"): a box, value and − + or ⌄ together, and one of its cells */
     --pos-dot: 2px; --pos-dot-gap: 5px;            /* the span's dotted arc: a dot this wide, this far apart, centre to centre */

@@ -421,11 +421,11 @@ await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before)
   await settle();
   await page.keyboard.press("Meta+z");
   check((await state())[3] === s0[3], "⌘Z does the same");
-  const place = await page.evaluate(() => { const u = document.querySelector(".undos").getBoundingClientRect(), g = document.querySelector("#guides").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); return [u.right <= g.left, Math.round(u.top - m.top) === Math.round(g.top - m.top), Math.round(u.left - m.left) === 12, document.querySelector("#redo").classList.contains("none")]; });
+  const place = await page.evaluate(() => { const u = document.querySelector(".undos").getBoundingClientRect(), g = document.querySelector("#tiny-open").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); return [u.right <= g.left, Math.round(u.top - m.top) === Math.round(g.top - m.top), Math.round(u.left - m.left) === 12, document.querySelector("#redo").classList.contains("none")]; });
   await page.click("#redo");
   const fwd = (await state())[3];
   await page.click("#undo");
-  check(place[0] && place[1] && place[2] && !place[3] && fwd === 31 && (await state())[3] === s0[3], "Undo and Redo stand on the preview's top left, 12 from its left edge, level with the Guides switch, and do the same");
+  check(place[0] && place[1] && place[2] && !place[3] && fwd === 31 && (await state())[3] === s0[3], "Undo and Redo stand on the preview's top left, 12 from its left edge, level with the Tiny Preview's eye (the Guides switch's place until 4.58), and do the same");
   await shot("4c16-undo");
 }
 // a numeral's radius measures to its centre, its baseline or its top: the menu beside the label, in the pop-up (13 Oct 2026)
@@ -624,11 +624,11 @@ await page.mouse.up();
 await frame();
 check(JSON.stringify(await S("S.rings.map((r) => r.name)")) === JSON.stringify(order), "dragged back to the top: the first order again");
 
-// ── guides: a switch on the preview's top right, with an arrow that drops their list (five kinds, eight colours) ──
+// ── guides: a switch on the preview's bottom left (top right until 4.58), with an arrow that opens their list (five kinds, eight colours) ──
 await tab("Dial");
 check(await page.$("main .guides #guides") !== null && await page.$(".panel #guides") === null && await page.isHidden("#guide-list"), "the Guides switch stands on the preview, not in the panel; its list is shut");
-const guides_at = await page.evaluate(() => { const g = document.querySelector(".guides").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); return [Math.round(m.right - g.right), Math.round(g.top - m.top)]; });
-check(guides_at[0] === 12 && guides_at[1] === 16, `it is 12 from the preview's right, and 16 from its top: on the header's middle line (${guides_at.join(" / ")})`);
+const guides_at = await page.evaluate(() => { const g = document.querySelector("#tiny-open").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); return [Math.round(m.right - g.right), Math.round(g.top - m.top)]; });
+check(guides_at[0] === 12 && guides_at[1] === 16, `the Tiny Preview's eye, where Guides stood, is 12 from the preview's right, and 16 from its top: on the header's middle line (${guides_at.join(" / ")})`);
 await page.click("#guides-more");
 check(await page.isVisible("#guide-list") && (await page.$$eval("#guide-list > .guidekind .name", (n) => n.map((e) => e.textContent))).join() === "Centre hole,Centre lines" && await page.$$eval("#guide-list .guidekind >> nth=0 >> .dots .tone", (b) => b.length) === 8 && await page.$eval("#guide-list .guiderings", (e) => e.querySelectorAll(".guidekind.ring").length) === await S("S.rings.length") && await page.$("#guide-list .swatch") === null,
   "the arrow drops the list: the centre hole's guide first, then the centre lines (no dial edge since 15 Oct 2026, no window radii since 4.42.5), then a line for every ring and every window that is on, each with None and eight round colours, no free colour");
@@ -768,8 +768,8 @@ await page.click("#guides-more");
 await page.mouse.move(900, 400);
 check(await S("S.guides === true && S.ui_section === 0") && await page.isHidden("#guide-list") && await page.evaluate(`(() => { const e = document.querySelector("#guides"), c = getComputedStyle(e); return (c.backgroundColor === ${FILL}) + c.color + c.fontWeight + getComputedStyle(e.querySelector(".word")).opacity + e.querySelectorAll(".slash").length; })()`) === "truergb(17, 17, 17)40010", "pressed again it is on: still only the backdrop's fill; the word whole, not bolder (Okay, 14 Oct 2026, 23:05), the sign whole");
 // the backdrop's colour: a switch at the preview's bottom left, showing the colour as a chip
-const bd = await page.evaluate(() => { const b = document.querySelector("#backdrop").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(), c = getComputedStyle(document.querySelector("#backdrop")); const sh = document.querySelector("#shadows").getBoundingClientRect(), unit = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit")); return [Math.round(sh.left - m.left), Math.round(m.bottom - sh.bottom), c.borderTopStyle, getComputedStyle(document.querySelector("#backdrop .dot")).getPropertyValue("--c"), Math.round(b.left - m.left), Math.round(sh.top - b.bottom - unit)]; });
-check(bd[0] === 12 && bd[1] === 12 && bd[4] === 12 && bd[5] === 0 && bd[2] === "solid" && bd[3].includes("204, 204, 199"), "the Shadows switch is 12 from the preview's bottom left, the Backdrop switch a unit over it, solid-lined, its chip the backdrop's colour");
+const bd = await page.evaluate(() => { const b = document.querySelector("#backdrop").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(), c = getComputedStyle(document.querySelector("#backdrop")); const sh = document.querySelector("#shadows").getBoundingClientRect(), unit = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit")); const g = document.querySelector("#guides").getBoundingClientRect(); return [Math.round(sh.left - m.left), Math.round(m.bottom - sh.bottom), c.borderTopStyle, getComputedStyle(document.querySelector("#backdrop .dot")).getPropertyValue("--c"), Math.round(b.left - m.left), Math.round(g.top - b.bottom - unit) + Math.round(sh.top - g.bottom - unit), Math.round(g.left - m.left)]; });
+check(bd[0] === 12 && bd[1] === 12 && bd[4] === 12 && bd[5] === 0 && bd[6] === 12 && bd[2] === "solid" && bd[3].includes("204, 204, 199"), "the Shadows switch is 12 from the preview's bottom left, Guides a unit over it, the Backdrop switch a unit over that, solid-lined, its chip the backdrop's colour (4.59)");
 await page.click("#backdrop");
 check(await page.isVisible("#colour-pop") && await page.textContent("#colour-pop h2") === "Backdrop" && await page.$eval("#colour-pop", (e) => e.getBoundingClientRect().bottom <= innerHeight), "a press opens the colour pop-out for the backdrop, inside the window");
 await page.click("#pop-as-HEX"); await enter_value("#pop-hex", "#808080");
@@ -1023,8 +1023,8 @@ await page.click("#hand-tab-0");
   const line = await page.evaluate(() => { const mid = (q) => { const r = document.querySelector(q).getBoundingClientRect(); return r.top + r.height / 2; }, h = document.querySelector("h1");
     const base_of = (e) => { const probe = document.createElement("span"); probe.style.cssText = "display:inline-block;width:0;height:0"; e.append(probe); const y = probe.getBoundingClientRect().top; probe.remove(); return y; };
     const base = base_of(h), c = getComputedStyle(h), pen = document.createElement("canvas").getContext("2d"); pen.font = `${c.fontWeight} ${c.fontSize} ${c.fontFamily}`;
-    return { mids: [base - pen.measureText("x").actualBoundingBoxAscent / 2, mid("#undo"), mid("#guides")], bases: [base, base_of(document.querySelector(".mast .help")), base_of(document.querySelector("#unit")), base_of(document.querySelector("#to-gallery"))] }; });
-  check(line.mids.every((y) => Math.abs(y - line.mids[0]) < 0.6) && line.bases.every((y) => Math.abs(y - line.bases[0]) < 0.6), `the title's small letters, undo and Guides are centred on one line (${line.mids.map((y) => +y.toFixed(1)).join(" · ")}); Help's, the unit box's and the Gallery pill's words stand on the title's baseline (${line.bases.map((y) => +y.toFixed(1)).join(" · ")})`);
+    return { mids: [base - pen.measureText("x").actualBoundingBoxAscent / 2, mid("#undo"), mid("#tiny-open")], bases: [base, base_of(document.querySelector(".mast .help")), base_of(document.querySelector("#unit")), base_of(document.querySelector("#to-gallery"))] }; });
+  check(line.mids.every((y) => Math.abs(y - line.mids[0]) < 0.6) && line.bases.every((y) => Math.abs(y - line.bases[0]) < 0.6), `the title's small letters, undo and the Tiny Preview's eye are centred on one line (${line.mids.map((y) => +y.toFixed(1)).join(" · ")}); Help's, the unit box's and the Gallery pill's words stand on the title's baseline (${line.bases.map((y) => +y.toFixed(1)).join(" · ")})`);
 }
 { // the line between All hands and the hand tabs starts and ends where the tabs do (Okay, 16 Oct 2026, #260)
   await tab("Hands");
@@ -2177,6 +2177,20 @@ check(chip_reach.every(Boolean), "the hex in a pill opens the pop-out and isn't 
 await pad.screenshot({ path: path.join(OUT, "12-touch.png") });
 await touch.close();
 
+{ // Tiny Preview (#337, 4.59): its button top right where Guides stood; the dial at its own size (the browser's mm) with its margins, over everything; dragged anywhere; its eye puts it away. Guides at the bottom left, between Backdrop and Shadows, their list opening upward
+  const corner = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), m = r("main"), o = r("#tiny-open"), g = r("#guides"), b = r("#backdrop"), sh = r("#shadows"); return [Math.round(m.right - o.right) === Math.round(m.bottom - m.bottom) || o.top - m.top < 40, b.bottom <= g.top + 1 && g.bottom <= sh.top + 1 && Math.abs(g.left - sh.left) < 1]; });
+  await page.click("#tiny-open"); await page.waitForTimeout(250);
+  const tiny = await page.evaluate(() => { const t = document.querySelector("#tiny"), s = t.querySelector("svg"), S = window.dial_tool.S, mm = parseFloat(s.getAttribute("width")); return [!t.hidden, document.querySelector("#tiny-open").hidden, mm, Math.abs(s.getBoundingClientRect().width - mm * 96 / 25.4) < 1, Math.abs(mm - (S.dial_d + 2 * S.margin)) < 0.01, +getComputedStyle(t).zIndex, t.parentElement === document.body, !t.querySelector('[id^="guide"]')]; });
+  const b0 = await page.$eval("#tiny", (e) => { const r = e.getBoundingClientRect(); return [r.left, r.top]; });
+  await page.mouse.move(b0[0] + 60, b0[1] + 60); await page.mouse.down(); await page.mouse.move(b0[0] - 140, b0[1] + 160, { steps: 5 }); await page.mouse.up();
+  const b1 = await page.$eval("#tiny", (e) => { const r = e.getBoundingClientRect(); return [r.left, r.top]; });
+  await page.hover("#tiny"); await page.waitForTimeout(250); const shown = await page.$eval("#tiny-shut", (e) => getComputedStyle(e).opacity);
+  await page.click("#tiny-shut");
+  const away = [await page.isHidden("#tiny"), await page.isVisible("#tiny-open")];
+  await page.click(".guides .guidesmore"); const up = await page.evaluate(() => document.querySelector("#guide-list").getBoundingClientRect().bottom <= document.querySelector("#guides").getBoundingClientRect().top); await page.click(".guides .guidesmore");
+  check(corner.every(Boolean) && tiny[0] && tiny[1] && tiny[3] && tiny[4] && tiny[5] >= 60 && tiny[6] && tiny[7] && Math.round(b1[0] - b0[0]) === -200 && Math.round(b1[1] - b0[1]) === 100 && shown === "1" && away.every(Boolean) && up,
+    `Tiny Preview (#337): its button top right; open, the dial and its margins at ${tiny[2]} mm in the browser's mm, over everything, no guides; dragged (−200, +100), its eye shows under the pointer and puts it away; Guides at the bottom left between Backdrop and Shadows, the list opening upward`);
+}
 await browser.close();
 console.log(problems.length ? `\n${problems.length} problem(s).` : "\nWindow test passed.");
 process.exit(problems.length ? 1 : 0);

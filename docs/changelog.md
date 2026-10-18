@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.59 (web version) · 18 Oct 2026
+
+Tiny Preview (notes 2, #337).
+
+- **An eye at the preview's top right** opens the Tiny Preview: the dial with its margins at its own size — the browser's millimetres, about right on most screens ("approximation fine for now") — on the backdrop, framed in ink with round corners and a hard shadow, over everything. It follows the dial as it changes.
+- **Drag it anywhere.** Its eye, at its top left on hover or after a tap, puts it away; it opens again where you left it.
+- **Guides moved to the bottom left**, between Backdrop and Shadows; their list opens upward.
+
 ## beta 4.58 (web version) · 18 Oct 2026
 
 The small ± adjusters (notes 2, #317).

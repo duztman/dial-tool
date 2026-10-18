@@ -753,6 +753,7 @@ const label_of = (row, T) => (row.say ? row.say(T)[0] : row.menu ? `${(row.menu.
 // two measures that may be linked, so changing one keeps their ratio (#358; Okay's notes 2: "a link/unlink like in
 // illustrator … other width-height or linkable stuff get this too"): its switch key, the pair, and when it applies
 const LINKED_PAIRS = { window: [{ link: "wh_link", keys: ["w", "h"], when: (T) => ["rectangle", "arc"].includes(G.window_shape(T)) }] };
+const TINY_EVERY = 200;                            // the Tiny Preview redrawn at most this often, in ms (#337)
 const NUDGE_NEUTRAL = { dr: 0, da: 0, rot: 0, s: 1 };      // a numeral's nudge, untouched (#252)
 const is_length = (row) => row.kind === "num" && (LENGTH_KEYS[row.scope] || []).includes(row.key);
 const decimals = (step) => (String(step).split(".")[1] || "").length;
@@ -1164,11 +1165,12 @@ class DialTool {
           fit_button)));
     this.set_speed(1);
     const guides = this.guides_box();
-    // on the preview: undo · redo top left, beside the panel (Okay, 13 Oct 2026) · the Guides switch top right · Backdrop bottom left
+    // on the preview: undo · redo top left, beside the panel (Okay, 13 Oct 2026) · Tiny Preview top right (4.59, #337; the
+    // Guides switch stood there until 4.58) · bottom left, top to bottom: Backdrop, Guides, Shadows
     // a note on the preview (R17, R31: an old link): a dark pill under the header's line; a press puts it away, and so
     // does the first change to the dial
     this.note = el("button", { type: "button", className: "previewnote", id: "preview-note", hidden: true, title: "Put this note away", onclick: () => { this.note.hidden = true; } });
-    this.main = el("main", {}, this.svg, this.tip, this.note, this.undo_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.ten_pill, this.hands_key, this.sun_hint);
+    this.main = el("main", {}, this.svg, this.tip, this.note, this.undo_box(), this.tiny_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.ten_pill, this.hands_key, this.sun_hint);
     this.day_strip(this.day_box);
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     root.append(this.sheet());      // a phone's gripper, on the drawer's top line
@@ -1612,6 +1614,67 @@ class DialTool {
     const box = el("div", { className: "about" }, button, bio);
     box.onkeydown = (e) => { if (e.key === "Escape" && !bio.hidden) { open(false); button.focus(); } };
     return box;
+  }
+
+  /** Tiny Preview (#337; Okay's notes 2, 18 Oct 2026: "Its button is top-right where 'Guides' are, regular eye as icon
+   *  for now … pops up in place when clicked, not editable, just a 100% preview. If the dial is 40mm, this guy is
+   *  40mm + appropriate padding. Has a shadow, and like a window it can be dragged and dropped anywhere. Top of
+   *  everything. On its top left an eye appears on hover or tap, that hides it, it goes back to its place"). The dial
+   *  as its SVG file draws it — at the browser's millimetres (96 to the inch: "approximation fine for now", 18 Oct),
+   *  its margins round it on the backdrop — redrawn at most five times a second while the dial changes. */
+  tiny_box() {
+    const button = el("button", { type: "button", className: "onview tinyopen", id: "tiny-open", ariaLabel: "Tiny preview" });
+    button.dataset.tip = "Tiny preview: the dial at its own size";
+    button.innerHTML = eye(true);
+    const shut = el("button", { type: "button", className: "tinyshut", id: "tiny-shut", ariaLabel: "Put the tiny preview away" });
+    shut.innerHTML = eye(true);
+    const face = el("div", { className: "tinyface" });
+    const win = el("div", { className: "tinywin", id: "tiny", hidden: true, role: "img", ariaLabel: "The dial at its own size" }, face, shut);
+    if ($("#tiny")) $("#tiny").remove();           // the last tool's, left in the body (a dial opened anew builds the tool again)
+    document.body.append(win);
+    const show = (on) => {
+      const b = button.getBoundingClientRect();    // measured while the button still stands
+      win.hidden = !on; button.hidden = on;
+      if (!on) { button.focus({ preventScroll: true }); return; }
+      this.tiny_draw(true);
+      if (!this.tiny.placed) {                     // until it is dragged: in place of its button, their right edges together
+        win.style.left = `${Math.max(b.right - win.offsetWidth, 0)}px`; win.style.top = `${b.top}px`;
+      }
+    };
+    button.onclick = () => show(true);
+    shut.onclick = (e) => { e.stopPropagation(); show(false); };
+    shut.onpointerdown = (e) => e.stopPropagation();
+    // dragged anywhere, kept inside the window; a tap (a finger has no hover) wakes the eye a moment
+    let grab = null;
+    win.onpointerdown = (e) => {
+      const b = win.getBoundingClientRect();
+      grab = { dx: e.clientX - b.left, dy: e.clientY - b.top, moved: false };
+      win.setPointerCapture(e.pointerId);
+      win.classList.add("held");
+    };
+    win.onpointermove = (e) => {
+      if (!grab) return;
+      const x = clamp(e.clientX - grab.dx, 0, innerWidth - win.offsetWidth), y = clamp(e.clientY - grab.dy, 0, innerHeight - win.offsetHeight);
+      win.style.left = `${x}px`; win.style.top = `${y}px`; grab.moved = true; this.tiny.placed = true;
+    };
+    win.onpointerup = win.onpointercancel = () => {
+      if (grab && !grab.moved) { win.classList.add("awake"); clearTimeout(this.tiny.wake); this.tiny.wake = setTimeout(() => win.classList.remove("awake"), 2400); }
+      grab = null; win.classList.remove("held");
+    };
+    this.tiny = { win, face, show, button, at: 0, timer: 0, placed: false, wake: 0 };
+    return button;
+  }
+
+  /** the Tiny Preview follows the dial: now, or at most five times a second (it is a whole SVG each time). */
+  tiny_draw(now = false) {
+    const T = this.tiny;
+    if (!T || T.win.hidden || !this.statik) return;
+    const go = () => {
+      T.at = performance.now(); T.timer = 0;
+      T.face.innerHTML = svg_document({ ...this.S, guides: false, out_production: false, out_mirror: false }, this.statik, this.S.t, { preview: true }).replace(/^<\?xml[^>]*>\s*/, "");
+    };
+    if (now) { clearTimeout(T.timer); return go(); }
+    if (!T.timer) T.timer = setTimeout(go, Math.max(0, TINY_EVERY - (performance.now() - T.at)));
   }
 
   /** guides, at the preview's top right (Okay, 12 Oct 2026): a switch (a bullseye and the word; solid outline = on,
@@ -4426,6 +4489,7 @@ class DialTool {
       if (this.travel) { this.travel_step(); this.render(); }      // the dial on its way into or out of the showcase
       if (this.show && this.show.spin) this.render();
       this.draw();
+      this.tiny_draw();
     } catch (e) {
       this.play(false);
       this.log("error while drawing a frame: " + (e.stack || e));
