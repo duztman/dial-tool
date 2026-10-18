@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.74 | 19 Oct 2026 | web | [`d8f8a92`](https://github.com/duztman/dial-tool/tree/d8f8a9240011790da36ed96265f1302d4478344e) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/d8f8a9240011790da36ed96265f1302d4478344e/web/dial-tool.html) | Date neighbours peek through a tall hole; Big date, a fifth complication |
 | 4.73 | 19 Oct 2026 | web | [`9b929ba`](https://github.com/duztman/dial-tool/tree/9b929ba2ec1b57b5001bde0dab0ec540cd9a95fa) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/9b929ba2ec1b57b5001bde0dab0ec540cd9a95fa/web/dial-tool.html) | Window pictures: moon Phase and Line, am·pm Half and Band, colours named by what they paint |
 | 4.72 | 19 Oct 2026 | web | [`8ba4f75`](https://github.com/duztman/dial-tool/tree/8ba4f753b9e72d531b5df69a0ca90fa8b7b3db82) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/8ba4f753b9e72d531b5df69a0ca90fa8b7b3db82/web/dial-tool.html) | Windows' discs: X-ray, disc edges as guides, physics with a red edge when a disc passes the case |
 | 4.71 | 18 Oct 2026 | web | [`efd3515`](https://github.com/duztman/dial-tool/tree/efd3515c8920a40fb75af6ffe530eebf9e84509f) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/efd3515c8920a40fb75af6ffe530eebf9e84509f/web/dial-tool.html) | Handles on the hand's picture: drag length, tail, width (both sides) |
