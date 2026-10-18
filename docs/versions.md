@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.53 | 18 Oct 2026 | web | [`d2a0f3b`](https://github.com/duztman/dial-tool/tree/d2a0f3b4936007a5a73db74435c0e86dad42b335) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/d2a0f3b4936007a5a73db74435c0e86dad42b335/web/dial-tool.html) | tangent numerals, the needle, the eye pass (with 4.52.1, 4.52.2) |
 | 4.52 | 18 Oct 2026 | web | [`97e135a`](https://github.com/duztman/dial-tool/tree/97e135af54150a1c78c809912e027fe7c676f533) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/97e135af54150a1c78c809912e027fe7c676f533/web/dial-tool.html) | notes 2: the small ones |
 | 4.51.1 | 17 Oct 2026 | web | [`26d9c3b`](https://github.com/duztman/dial-tool/tree/26d9c3befbe80f81a5c90ac2b0df324860281b0a) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/26d9c3befbe80f81a5c90ac2b0df324860281b0a/web/dial-tool.html) | the magnifier out of FIT |
 | 4.51 | 17 Oct 2026 | web | [`992dd39`](https://github.com/duztman/dial-tool/tree/992dd398a7fbf57709305ed6c642e3570a136d9a) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/992dd398a7fbf57709305ed6c642e3570a136d9a/web/dial-tool.html) | phase H: EN, wide sliders, style tabs, Light · Dark |
