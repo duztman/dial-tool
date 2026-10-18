@@ -14,34 +14,44 @@
   .font .styles { display: flex; overflow-x: auto; scrollbar-width: none; padding: 0 var(--frame-pad) var(--unit) var(--btn-pad); }
   .font .styles::-webkit-scrollbar { display: none; }
   .font .styles > .tab { flex: 0 0 auto; height: var(--control); padding: 0 var(--btn-pad); white-space: nowrap; color: var(--grey); }
-  .font .styles > .tab.on { color: var(--paper); }
+  .font .styles > .tab.on { --tab-line: var(--wait); --tab-fill: var(--wait); color: var(--white); }      /* the chosen style filled mid grey, its word white (Okay's drawing, 18 Oct 2026; ink until 4.52.2) */
   .font .note:empty, .picker .note:empty { display: none; }
   .font > .btn { justify-self: start; }
   /* a font's three lines stand in one white box, a hairline between them; what is in it is quiet: grey lines, grey words */
-  .fontbox { --well: var(--ground); display: grid; outline: var(--hair) solid var(--rule); outline-offset: calc(-1 * var(--hair)); background: var(--field); }      /* a slider's track must show on the white: the ground's grey (build list #128: it was white on white) */
+  .fontbox { --well: var(--ground); position: relative; display: grid; background: var(--field); }
+  .fontbox::after { content: ""; position: absolute; inset: 0; border: var(--hair) solid var(--rule); pointer-events: none; }      /* its frame, drawn over what is in it — the grey head reaches the edge (18 Oct 2026); an outline until 4.52.2, which the head now covered */      /* a slider's track must show on the white: the ground's grey (build list #128: it was white on white) */
   .fontbox > * + * { border-top: var(--hair) solid var(--rule); }
   .fontbox .row { padding-right: var(--frame-pad); box-shadow: none; }      /* size, tracking, an axis: rows like any other, between the box's own lines, their steppers ending --frame-pad inside the box */
   .fontbox .row > :first-child { padding-left: var(--btn-pad); }
   /* the chosen font's numerals and letters, the box's first line: in a thick light frame one unit inside the box (Okay's sketch, 13 Oct 2026: "thick border, no bg") */
-  .fontbox > .currentwrap { position: relative; margin: var(--unit); }
-  .fontbox .fontrow.current { width: 100%; border: var(--ringline-inner) solid var(--ground); background: var(--ground); }      /* the whole cell in the ground's grey (Okay, 13 Oct 2026) */
-  .fontbox .fontrow.current:hover { background: var(--ground); border-color: var(--rule); }
-  .fontbox > .currentwrap + * { border-top: var(--hair) solid var(--rule); }
-  /* the language: at the right inside the preview's cell, on the cell's grey, so it knocks the preview out where it reaches (#273, 4.51; Okay's notes, p. 12) */
-  .fontbox .currentwrap > .langs { position: absolute; top: var(--ringline-inner); bottom: var(--ringline-inner); right: var(--ringline-inner); display: flex; align-items: center; padding: 0 var(--frame-pad) 0 var(--u3); background: var(--ground); }
-  .fontbox .currentwrap .langbox { height: var(--control-s); padding: 0 calc(0.75 * var(--btn-pad)); border-color: var(--rule-light); color: var(--wait); font-size: var(--t-xxs); }      /* as Change… is set */
+  /* the box's head (Okay's drawing, font-selector_171026, 18 Oct 2026): on the panel's grey, the preview on white a little
+     way in, then the name's line on the same grey; no line between them. (13 Oct to 4.52.2: the preview's cell grey on
+     the white box.) */
+  .fontbox > .currentwrap { position: relative; padding: var(--font-head-in) var(--font-head-in) 0; background: var(--scroll); }
+  .fontbox .fontrow.current { width: 100%; border: 0; background: var(--field); }
+  .fontbox .fontrow.current:hover { background: var(--field); outline: var(--hair) solid var(--rule); outline-offset: calc(-1 * var(--hair)); }
+  .fontbox > .currentwrap + .fontname { border-top: 0; background: var(--scroll); }
+  /* the language: at the name line's right end, a small white box (Okay's drawing, 18 Oct 2026: "the red marked box has a new place"; inside the preview's cell in 4.51–4.52.2, #273) */
+  .fontname .langbox { height: var(--control-s); padding: 0 calc(0.75 * var(--btn-pad)); border-color: var(--rule-light); background: var(--field); color: var(--wait); font-size: var(--t-xxs); }
   /* the box's rows (#274, 4.51; "break the rules"): a name column of twelve characters, cut past them; the slider the whole rest */
   .fontbox .row.num:not(.side) { grid-template-columns: var(--font-label) minmax(0, 1fr) var(--gap) var(--tile-w) var(--unit) var(--tile-w); }
   .fontbox .row.num:not(.side) > :first-child { grid-column: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .fontbox .row.num:not(.side) > input[type="range"] { grid-column: 2; }
   .fontbox .row.num:not(.side) > input[type="text"] { grid-column: 4; }
   .fontbox .row.num:not(.side) > .steps { grid-column: 6; }
+  /* the number block (Okay's drawing, 18 Oct 2026: "new number entering blocks (to be implemented throughout the site)"):
+     the value and its − + as one block — no gap, one thick line of the rule's grey round all three, hairlines between */
+  .fontbox .row.num:not(.side) { grid-template-columns: var(--font-label) minmax(0, 1fr) var(--gap) var(--tile-w) 0 var(--tile-w); }
+  .fontbox .row.num:not(.side) > input[type="text"] { border: var(--thick) solid var(--rule); border-right-width: var(--hair); }
+  .fontbox .row.num:not(.side) > .steps > .step { border: var(--thick) solid var(--rule); border-left-width: var(--hair); color: var(--ink); }
+  .fontbox .row.num:not(.side) > .steps > .step + .step { border-left-width: 0; }
   /* light or dark (#276, 4.51): with the pill on Dark, the sheet's list and every font box take the dark ground and the
      usual names inside them turn over (ink light, paper dark), so what is chosen is light with dark words */
   .pillswitch { display: flex; border: var(--hair) solid var(--rule); border-radius: var(--round-pill); padding: var(--u1); background: var(--field); }
   .pillswitch > button { height: calc(var(--control) - 2 * var(--u1) - 2 * var(--hair)); padding: 0 var(--u4); border-radius: var(--round-pill); color: var(--grey); font-size: var(--t-s); }
   .pillswitch > button.on { background: var(--ink); color: var(--paper); }
-  .font-dark :is(.fontlist, .fontbox) { --field: var(--font-night); --paper: var(--font-night); --ground: var(--font-night-well); --well: var(--font-night-well); --hover: var(--font-night-hover); --select: var(--font-night-select); --rule: var(--font-night-rule); --rule-light: var(--font-night-rule); --ink: var(--font-night-ink); --grey: var(--font-night-grey); --wait: var(--font-night-grey); background: var(--field); color: var(--ink); }
+  .font-dark :is(.fontlist, .fontbox .fontrow.current) { --field: var(--font-night); --paper: var(--font-night); --ground: var(--font-night-well); --well: var(--font-night-well); --hover: var(--font-night-hover); --select: var(--font-night-select); --rule: var(--font-night-rule); --rule-light: var(--font-night-rule); --ink: var(--font-night-ink); --grey: var(--font-night-grey); --wait: var(--font-night-grey); background: var(--field); color: var(--ink); }      /* a font box: only its preview turns dark; the rest of the box keeps its look (Okay, 18 Oct 2026, notes 2: "On dark mode for fonts … on the left, this should not change the whole block color: only the 1234…, the preview rectangle"; the whole box 4.51–4.53) */
+  .font-dark .fontbox .fontrow.current { background: var(--font-night); color: var(--font-night-ink); }
   /* a part of the box that can be put away: the variable axes, the OpenType features. A line with an eye and its name. */
   .partfold { display: flex; align-items: center; gap: var(--unit); width: 100%; height: var(--line); padding: 0 var(--btn-pad); font-weight: 600; text-align: left; }
   .partfold:hover { background: var(--hover); }
@@ -53,9 +63,8 @@
   /* the font's name · the language · the text's colour · Change…. The whole line opens the font sheet, but for the
      language and the colour. The colour stands in the ring list's colour column, wherever the line is; the place kept for it is that column's width. */
   .fontname { position: relative; display: grid; grid-template-columns: var(--num-columns); align-items: center; padding: var(--unit) var(--frame-pad) var(--unit) 0; cursor: pointer; }
-  .fontname .name { grid-column: 1 / 4; padding-left: var(--btn-pad); }      /* the font's name is the box's heading */
-  .fontname .langs { grid-column: 5; justify-self: start; }      /* the language: on the controls' column, a button like Change… */
-  .fontname > .btn { grid-column: 7 / 10; justify-self: end; }      /* Change…, ending where the rows' steppers end */
+  .fontname .name { grid-column: 1 / 7; padding: 0 calc(var(--swatch-col) - var(--frame-pad)) 0 var(--btn-pad); color: var(--wait); }      /* the font's name, grey and bold, running up to the colour (Okay, 18 Oct 2026: "We can write the name of the typeface all the way to the swatch now") */
+  .fontname .langs { grid-column: 7 / 10; justify-self: end; }      /* EN, ending where the rows' steppers end */
   .fontname .colour.mini { position: absolute; top: 50%; translate: 0 -50%; right: calc(var(--swatch-col) + (var(--line-button) - var(--t-m) - 2 * var(--hair)) / 2); }      /* the colour stands in the ring list's colour column ; Change… leaves it room */
   .langs { position: relative; }
   .langbox { min-width: var(--control); }

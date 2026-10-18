@@ -186,6 +186,7 @@
     --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
     --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
     --t-num-pop: 41px;                             /* the controller's value, in its grey pill: his 14 where a disc is 22.68 (controller 2.svg, Okay, 18 Oct 2026); 25 from 4.45.3 to 4.51.1, 20 in 4.45.2 */
+    --font-head-in: 4px;                           /* the font box's preview, this far in from the box's edge on the grey head (Okay's drawing, font-selector_171026, 18 Oct 2026) */
     --num-pop-inner: 218px;                        /* the controller's pills, 75.05 where a disc is 22.68 (controller 2.svg, Okay, 18 Oct 2026: "The new controller is in")  */
     --num-pop-track: 10px;                         /* the controller's slider line, 3.4 where a disc is 22.68 (the same drawing) */
     --show-tick: 9px;                              /* the Show box's tick, as tall as the word's ascender at 12 (Okay, 18 Oct 2026, notes 2: "Show checkmarks much smaller, just as big as shows ascender … The outer gray box does not change size. Padding of gray box to tick is equal top, left, bottom"); 3 smaller than a tick box from 4.46.4 to 4.51.1 */

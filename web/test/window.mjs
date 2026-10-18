@@ -889,10 +889,10 @@ check(await page.isVisible("#global-dial-d-Diameter") && (await page.textContent
 // folding must not leave uneven gaps: folded panes stack line on line, whatever they hold
 await tab("Rings");
 const gaps = async () => page.$$eval(".form .pane", (h) => h.filter((e) => e.offsetParent).map((e, i, all) => (i ? Math.round(e.getBoundingClientRect().top - all[i - 1].getBoundingClientRect().top) : 0)).slice(1));
-for (const i of [0, 1, 2]) await page.click(`.form .pane:visible >> nth=${i} >> .fold h2`);
+for (const i of [0, 1, 2]) await page.click(`.form .pane:visible >> nth=${i} >> .fold`);
 const folded_gaps = await gaps();
 check(folded_gaps[1] === 42 && folded_gaps[2] === 42, `folded panes in a row are 42 apart, and so is the open one after them (${folded_gaps.join(", ")})`);
-for (const i of [0, 1, 2]) await page.click(`.form .pane:visible >> nth=${i} >> .fold h2`);
+for (const i of [0, 1, 2]) await page.click(`.form .pane:visible >> nth=${i} >> .fold`);
 await tab("Hands");
 // Hands: Hour · Minute · Seconds are tabs on top of the pinned part; the panes below are about the chosen hand
 const hand_tabs = await page.evaluate(() => { const p = document.querySelector(".pinned"), t = p.querySelector(".tabsbar"); return [p.firstElementChild.classList.contains("handsbar"), p.firstElementChild.nextElementSibling === t, [...t.querySelectorAll("button")].map((b) => b.textContent).join(" "), [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent).join(" · ")]; });
@@ -1312,7 +1312,7 @@ check(await page.$eval("#font-picker", (d) => d.open) && sheet_at === "184 64 -1
   check(row.squares === "Installed true · Add font link(gfonts, url) true · Add font file(woff, ttf, otf) true · Legend(OpenType abbr.) true" && row.three, `the buttons for adding a font: where the browser reads installed fonts, Installed first and the three sharing the first two columns on one line, without their second lines; short (no higher than 46); the legend's button in the third column (${row.squares})`);
   await page.keyboard.press("Escape");
   { // the text's colour stands in the ring list's colour column; the name's whole line opens the sheet
-    const col = await page.evaluate(() => { const mid = (e) => { const r = e.getBoundingClientRect(); return r.left + r.width / 2; }; return [mid(document.querySelector(".ringline .colour")), mid(document.querySelector("#font-c")), document.querySelector("#font-c").getBoundingClientRect().right <= document.querySelector("#font-change").getBoundingClientRect().left, true]; });
+    const col = await page.evaluate(() => { const mid = (e) => { const r = e.getBoundingClientRect(); return r.left + r.width / 2; }; return [mid(document.querySelector(".ringline .colour")), mid(document.querySelector("#font-c")), document.querySelector("#font-c").getBoundingClientRect().right <= document.querySelector("#lang").getBoundingClientRect().left, document.querySelector("#font-name").getBoundingClientRect().right <= document.querySelector("#font-c").getBoundingClientRect().left + 0.5 && document.querySelector("#font-change") === null]; });
     const name = await page.$eval("#font-name", (e) => { const r = e.getBoundingClientRect(); return [r.right - 6, r.top + r.height / 2]; });
     await page.mouse.click(name[0], name[1]);
     const opened = await page.$eval("#font-picker", (d) => d.open);
@@ -1320,9 +1320,9 @@ check(await page.$eval("#font-picker", (d) => d.open) && sheet_at === "184 64 -1
     await page.click("#font-c");
     const colour_only = await page.$eval("#font-picker", (d) => !d.open) && await page.isVisible("#colour-pop");
     await page.keyboard.press("Escape"); await page.mouse.click(640, 30);
-    check(Math.abs(col[0] - col[1]) < 0.6 && col[2] && col[3], `the text's colour beside the font's name stands in the ring list's colour column (${col[0]} = ${col[1]}), before Change…`);
+    check(Math.abs(col[0] - col[1]) < 0.6 && col[2] && col[3], `the text's colour beside the font's name stands in the ring list's colour column (${col[0]} = ${col[1]}), before EN; the name runs up to it; no Change… (Okay's drawing, 18 Oct 2026)`);
     check(opened && colour_only, "a press anywhere on the name's line opens the font sheet; a press on the colour opens the colour instead");
-    await page.click("#font-change");
+    await page.click("#font-name");
   }
   const shut = await page.isHidden("#font-link");
   await page.click("#font-add");
@@ -1385,26 +1385,28 @@ check(await page.$("#axis-wght") !== null, "Lora's weight axis has a slider");
   check(moved === 650 && look[0] === "Weight" && look[1] && look[2] === "wght" && look[3] === "8px true true" && await S("S.rings[S.ui_ring].axes.wght === undefined"), "an axis is named in the tool's own type, grey like the labels, with its code as a small sticker; the name is a button: a press sets the axis back to where the font rests");
 }
 {
-  const f = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), box = r(".fontbox"), top = r("#font-current"), name = r("#font-name"), change = r("#font-change"), lang = r("#lang"), styles = r(".font .styles"), numerals = r("#font-current svg"), c = (q) => getComputedStyle(document.querySelector(q));
-    return { order: top.bottom <= name.top && name.bottom <= styles.top, right: Math.round(box.right - change.right), left: Math.round(name.left - box.left + parseFloat(c("#font-name").paddingLeft)), whole: numerals.right <= top.right, lang: lang.left >= numerals.right && lang.right <= top.right && lang.top >= top.top && lang.bottom <= top.bottom && c(".currentwrap > .langs").backgroundColor === c("#font-current").backgroundColor,
-      white: c(".fontbox").backgroundColor, lines: [c(".fontname").borderTopWidth, c(".font .styles").borderTopWidth].join(" "), quiet: c("#font-change").borderTopColor === "rgb(212, 212, 207)" && c("#font-change").fontSize === "10px" && Math.round(parseFloat(c("#font-change").height)) === 20 }; });
-  check(f.order && f.right === 8 && f.left === 10 && f.lang && f.white === "rgb(255, 255, 255)" && f.lines === "1px 1px" && f.quiet, `a font stands in a white box of lines with a hairline between them: its numerals and letters, as far as the box goes · its name, then the language and Change… ending on the pane's line, 8 inside the box's edge (a ring row's frame) · its styles; Lang. and Change… at three quarters (20 high, 10 type), their lines lighter than the box's (${JSON.stringify(f)})`);
-  check(await page.textContent("#lang") === "EN" && await page.$eval("#lang", (e) => { const r = e.getBoundingClientRect(), n = document.querySelector("#font-name").getBoundingClientRect(), c = document.querySelector("#font-change"), k = c.getBoundingClientRect(); const cellEl = document.querySelector("#font-current"), cell = cellEl.getBoundingClientRect(); return Math.round(cell.right - parseFloat(getComputedStyle(cellEl).borderRightWidth) - r.right) === 8 && r.height === k.height && getComputedStyle(e).font === getComputedStyle(c).font && getComputedStyle(e).paddingLeft === getComputedStyle(c).paddingLeft; }) && await page.isHidden("#lang-menu") && await page.$("select[id*=lang]") === null, "the language is a small button (it says EN while the font sets it, #273) at the right inside the preview's cell, 8 in from its edge, as high and set like Change…, not a row with a menu");
+  // the font box after Okay's drawing (font-selector_171026, 18 Oct 2026): a grey head — the preview on white, then the
+  // name's line, grey and bold, the colour, EN at its right end — then the styles, the rows; no Change…
+  const f = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), box = r(".fontbox"), top = r("#font-current"), name = r("#font-name"), line = r(".fontname"), lang = r("#lang"), styles = r(".font .styles"), c = (q) => getComputedStyle(document.querySelector(q));
+    return { order: top.bottom <= name.top && name.bottom <= styles.top, right: Math.round(box.right - lang.right), on_line: lang.top >= line.top && lang.bottom <= line.bottom, head: [c(".currentwrap").backgroundColor, c(".fontname").backgroundColor, c("#font-current").backgroundColor, c("#font-name").color].join(" "),
+      white: c(".fontbox").backgroundColor, quiet: c("#lang").fontSize === "10px" && Math.round(parseFloat(c("#lang").height)) === 20, change: document.querySelector("#font-change") === null }; });
+  check(f.order && f.right === 8 && f.on_line && f.head === "rgb(232, 232, 230) rgb(232, 232, 230) rgb(255, 255, 255) rgb(142, 142, 137)" && f.white === "rgb(255, 255, 255)" && f.quiet && f.change && await page.textContent("#lang") === "EN" && await page.isHidden("#lang-menu"),
+    `a font's box after Okay's drawing: a grey head with the preview on white and the name's line under it (the name grey), EN at the line's right end, 8 inside the box (20 high, 10 type), no Change… (${JSON.stringify(f)})`);
   // the font box, 4.51 (phase H): the styles as tabs hanging from the name's line (#275); the sliders as wide as the longest label allows (#274); Light · Dark on the sheet (#276)
   {
     const h = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)), r = (q) => document.querySelector(q).getBoundingClientRect(), tabs = [...document.querySelectorAll(".font .styles > .tab")], on = tabs.find((t) => t.classList.contains("on"));
       const slider = r("#ring-size-Size-slider"), plain = [...document.querySelectorAll(".pane .body > .row.num:not(.side) input[type=range]")].find((e) => e.offsetParent && !e.closest(".fontbox")).getBoundingClientRect(), label = r("#ring-size-Size-slider").left - r(".fontbox .row.num").left;
       return [tabs.length, tabs.every((t) => t.classList.contains("hang") && t.getAttribute("role") === "tab"), on && on.textContent, on && getComputedStyle(on).color, Math.round(r(".font .styles").top - r(".fontname").bottom), Math.round(slider.width), Math.round(plain.width), Math.round(label)]; });
-    check(h[0] >= 2 && h[1] && h[2] === "Regular" && h[3] === "rgb(252, 252, 250)" && h[4] <= 1 && h[5] > h[6] * 1.2 && h[7] < 110,
-      `the family's ${h[0]} styles are tabs hanging from the name's line (${h[4]} apart; #275), the chosen one ink with paper words (${h[2]}, ${h[3]}); the box's slider is ${h[5]} wide where a pane's is ${h[6]} (#274), its name column ${h[7]}`);
-    await page.click("#font-change");
+    check(h[0] >= 2 && h[1] && h[2] === "Regular" && h[3] === "rgb(255, 255, 255)" && h[4] <= 1 && h[5] > h[6] * 1.2 && h[7] < 110,
+      `the family's ${h[0]} styles are tabs hanging from the name's line (${h[4]} apart; #275), the chosen one mid grey with white words (${h[2]}, ${h[3]}; Okay's drawing, 18 Oct 2026); the box's slider is ${h[5]} wide where a pane's is ${h[6]} (#274), its name column ${h[7]}`);
+    await page.click("#font-name");
     await page.click("#font-ground-dark");
-    const d = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c("#font-list").backgroundColor, c(".fontbox").backgroundColor, c("#font-name").color, c("#font-ground-dark").backgroundColor, document.querySelector("#font-ground-dark").getAttribute("aria-checked"), sessionStorage.getItem("dial-tool-font-dark"), c(".font .styles > .tab.on").color]; });
+    const d = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c("#font-list").backgroundColor, c("#font-current").backgroundColor, c("#font-current").color, c("#font-ground-dark").backgroundColor, document.querySelector("#font-ground-dark").getAttribute("aria-checked"), sessionStorage.getItem("dial-tool-font-dark"), c(".fontbox").backgroundColor]; });
     await page.click("#font-ground-light");
-    const l = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c("#font-list").backgroundColor, c(".fontbox").backgroundColor]; });
+    const l = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c("#font-list").backgroundColor, c("#font-current").backgroundColor]; });
     await page.keyboard.press("Escape");
-    check(d[0] === "rgb(63, 63, 62)" && d[1] === "rgb(63, 63, 62)" && d[2] === "rgb(236, 236, 232)" && d[3] === "rgb(17, 17, 17)" && d[4] === "true" && d[5] === "1" && d[6] === "rgb(63, 63, 62)" && l[0] === "rgb(255, 255, 255)" && l[1] === "rgb(255, 255, 255)",
-      `the sheet's Light · Dark pill (#276): Dark puts the list and the font box on a dark grey (${d[0]}, ${d[1]}), the words near white (${d[2]}), the chosen tab light with dark words (${d[6]}), kept for the session (${d[5]}); Light brings the white back (${l.join(", ")})`);
+    check(d[0] === "rgb(63, 63, 62)" && d[1] === "rgb(63, 63, 62)" && d[2] === "rgb(236, 236, 232)" && d[3] === "rgb(17, 17, 17)" && d[4] === "true" && d[5] === "1" && d[6] === "rgb(255, 255, 255)" && l[0] === "rgb(255, 255, 255)" && l[1] === "rgb(255, 255, 255)",
+      `the sheet's Light · Dark pill (#276): Dark puts the list and a font box's preview on a dark grey (${d[0]}, ${d[1]}), its figures near white (${d[2]}), the rest of the box as it was (${d[6]}; notes 2, 18 Oct 2026: "only the 1234…, the preview rectangle"), kept for the session (${d[5]}); Light brings the white back (${l.join(", ")})`);
   }
   await page.click("#lang");
   const langs = await page.$$eval("#lang-menu button", (b) => b.map((x) => x.textContent).join(" | "));
@@ -1414,7 +1416,7 @@ check(await page.$("#axis-wght") !== null, "Lora's weight axis has a slider");
   check(await S("S.rings[S.ui_ring].lang === 0"), "and back to the font's own");
   await page.$eval(".font", (e) => e.scrollIntoView({ block: "center" }));
   await shot("4c22-font");
-  await page.click("#font-change");
+  await page.click("#font-name");
   check(await page.$eval("#font-picker", (d) => d.open), "Change… opens the font sheet");
   await page.keyboard.press("Escape");
 }

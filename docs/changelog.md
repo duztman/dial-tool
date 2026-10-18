@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## beta 4.54 (web version) · 18 Oct 2026
+
+The font box after Okay's Photoshop drawing (`font-selector_171026`, light and dark; notes 2).
+
+- **A grey head** (#334, #321): on the panel's grey, the preview on white 4 in from the box's edge, then the name's line — the family's name grey and bold, running up to the text's colour, and **EN** at the line's right end (it was inside the preview's cell). **No Change…**: the preview and the name open the font sheet, as they did.
+- **The chosen style** mid grey with white words (was ink).
+- **Number blocks** for Size and Tracking: the value and its − + joined, one thick line of the rule's grey round them ("new number entering blocks", to come elsewhere: #317).
+- **The Type pane** (#318, #319): open, its heading is just the eye, the box beside it from the pane's top; folded, its line says the family, style and size.
+- **Dark** (#320) darkens a font box's preview only; the rest of the box keeps its look.
+
 ## beta 4.53 (web version) · 18 Oct 2026
 
 Mechanisms after Okay's answers (18 Oct, 19:02). Goes live with 4.52.1 and 4.52.2.

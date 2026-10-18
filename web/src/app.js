@@ -523,7 +523,10 @@ const ROWS = {
     // a text ring's words come first (#297, 4.48): what it says, then its font
     hdr("Text", { folded: true, show: kind_in("text") }),
     txt("custom", "Text", { show: kind_in("text") }),
-    hdr("Type", { folded: true, show: with_text }),
+    // the Type pane: open, its heading goes and the font box moves up beside the eye; folded, it says the font, its
+    // style and size (Okay, 18 Oct 2026, notes 2: "When expanded, type block header disappears and type block moves up";
+    // "Type boxes, when they are collapsed, should have summaries like others")
+    hdr("Type", { folded: true, bare: true, show: with_text, summary: (S, tool) => { const R = tool.ring(), f = tool.catalog.get(R.ps); return [R.family, f && f.style, `size ${fmt(R.size, 0.01)}`]; } }),
     custom("font", { show: with_text }),
     // then Resize (Okay's notes, p. 9, #257: "a proper pane below the quick size and radius buttons … shown first"):
     // how big one thing is — the size button's number — and the radius, with what it measures to: for marks and bands
@@ -2084,7 +2087,7 @@ class DialTool {
       out.summary = el("span", { className: "summary quiet" });
       out.button = el("button", { type: "button", className: "fold", title: "Show or hide this pane", onclick: () => this.fold(out, !this.is_folded(out)) }, out.eye, title, out.summary);
       out.body = el("div", { className: "body" });
-      out.el = el("section", { className: row.headless ? "pane headless" : "pane" }, out.button, out.body);      // ("plain" is a button's class)
+      out.el = el("section", { className: row.headless ? "pane headless" : row.bare ? "pane bare" : "pane" }, out.button, out.body);      // ("plain" is a button's class) · bare: open, the heading gives way to what is in it (the Type pane, #319)
       if (row.headless) out.button.hidden = true;
       if (row.tools) {                             // tools on the heading line, at its right; folded, the summary stands there instead
         out.el.classList.add("tooled");
@@ -3462,8 +3465,11 @@ class DialTool {
     swatch.onclick = () => this.pop_open(this.colour_of_row(crow), swatch);
     const tracking = this.build_row(own ? { ...num("tracking", "Tracking", -200, 800, 5), scope: "window", or: () => numerals().tracking } : { ...num("tracking", "Tracking", -200, 800, 5), scope: "ring" });      // the box's last line
     // the language stands at the right inside the preview's cell, on the cell's grey, knocking the preview out where it reaches (#273, 4.51; Okay's notes, p. 12)
-    const shown_cell = el("div", { className: "currentwrap" }, current, ...(lang ? [lang.el] : []));
-    const named = el("div", { className: "fontname", onclick: (e) => { if (!e.target.closest(".colour, .langs, button")) open(); } }, name, swatch, el("button", { type: "button", className: "btn", id: pre + "font-change", textContent: "Change…", onclick: open }));
+    // Okay's drawing of the box (font-selector_171026, 18 Oct 2026): a grey head holding the preview on white and, under
+    // it, the name — grey, bold, running to the colour — and EN at the line's right end; no Change…: the preview and the
+    // name open the font sheet. (4.51: EN inside the preview's cell; Change… on the name's line until 4.53.)
+    const shown_cell = el("div", { className: "currentwrap" }, current);
+    const named = el("div", { className: "fontname", title: "Choose a font", onclick: (e) => { if (!e.target.closest(".colour, .langs, button")) open(); } }, name, swatch, ...(lang ? [lang.el] : []));
     const styles = el("div", { className: "styles", role: "tablist", ariaLabel: "Style" });      // tabs hanging from the name's line (#275, 4.51)
     const state = el("div", { className: "quiet note", id: pre + "font-note" });
     const back = el("button", { type: "button", className: "btn", id: "window-font-back", innerHTML: icon(SIGNS.copy) + "<span>Same font as <i>Numerals</i></span>", title: "Use the top numerals ring’s font again", hidden: true,      // "Copy style of" until 4.52.1: it never copied, it gives the window the ring's font again (Okay, 18 Oct 2026: "Same font as hours, yes")
@@ -3510,7 +3516,7 @@ class DialTool {
       styles.hidden = tabs.length < 2;
       styles.replaceChildren(...tabs);
       const missing = G.has_font(R.ps) ? "" : this.catalog.has(R.ps) ? "Loading… "
-        : `${R.family} isn’t loaded yet, so ${G.font_list()[0].family} stands in. Press Change… to choose another or to add it. `;
+        : `${R.family} isn’t loaded yet, so ${G.font_list()[0].family} stands in. Press its name to choose another or to add it. `;
       state.textContent = missing + (this.font_note || "");
       if (this.picker && this.picker.open) this.fill_picker();
     };

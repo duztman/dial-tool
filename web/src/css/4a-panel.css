@@ -95,6 +95,12 @@
   .folded > .fold :is(.eye, h2) { color: var(--grey); }
   .fold:hover :is(.eye, h2) { color: var(--ink); }
   .fold .summary { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; font-size: var(--t-s); }
+  /* a bare pane, open (the Type pane, #319; Okay, 18 Oct 2026, notes 2: "When expanded, type block header disappears and
+     type block moves up"): its heading is the eye alone, in the eyes' column, beside what the pane holds, which starts
+     at the pane's top. Folded, it is a heading like any other, with its summary. */
+  .pane.bare:not(.folded) { position: relative; }
+  .pane.bare:not(.folded) > .fold { position: absolute; z-index: 1; top: 0; left: 0; width: auto; grid-template-columns: var(--eye); }
+  .pane.bare:not(.folded) > .fold > :not(.eye) { display: none; }
   /* a heading that carries controls on its line (a window's places, its shapes; 4.46.2, Okay: "these rows are allowed
      height growth now… appropriate vertical padding like all the rows"): they get a unit over and under them, as the
      tiles in a row do, and the heading grows to hold them; its title keeps the place it has on every heading — the
