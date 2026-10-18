@@ -1298,14 +1298,22 @@ await over_mm(...moon_at);
 check((await page.textContent(".tip span")) === "Moon phase window", "pointer on the fourth window: Moon phase window");
 await click_mm(...moon_at);
 check(await S("S.ui_section === 3 && S.ui_window === 3") && await page.isVisible("#window-age-Moon-age-days") && await page.isHidden("#window-h-Height"), "click it: Windows, window 4, with the moon's rows");
-{ // a window's width and height on one line (#265): two quiet numbers, each name opening its popup
+{ // a window's width over its height, a LINK pill on the line between them (#358, 4.57); linked, one changed keeps their ratio
   await page.evaluate(() => { const t = window.dial_tool; t.S.ui_window = 0; t.show_section(); t.sync_rows(); });
   await frame();
-  const ws = await page.evaluate(() => { const r = document.querySelector(".row.wsize"); if (!r || !r.offsetParent) return null; const [w, h] = [...r.querySelectorAll(".numbox")].map((b) => b.getBoundingClientRect()), names = [...r.querySelectorAll("label")].map((l) => l.textContent + ":" + getComputedStyle(l).color); return { line: Math.abs(w.top - h.top) < 1, names: names.join(" ") }; });
-  if (ws) await page.click(".row.wsize label >> nth=1");
-  const popped = ws && await page.evaluate(() => { const e = document.querySelector("#value-pop"); return !!e && e.querySelector("label").textContent === "Height"; });
-  await page.keyboard.press("Escape");
-  check(ws && ws.line && ws.names === "Width:rgb(92, 92, 88) Height:rgb(92, 92, 88)" && popped, `a window's width and height stand on one line, quiet numbers with a compact ±, their names grey; a press on Height opens its popup (#265; ${ws && ws.names})`);
+  const look = await page.evaluate(() => { const w = document.querySelector("#window-w-Width").closest(".row"), h = document.querySelector("#window-h-Height").closest(".row"), p = document.querySelector("#window-w-Width-link"), wr = w.getBoundingClientRect(), hr = h.getBoundingClientRect(), pr = p.getBoundingClientRect(), ps = getComputedStyle(p);
+    return [hr.top >= wr.bottom - 1, Math.abs((pr.top + pr.bottom) / 2 - wr.bottom) <= 1, p.textContent, ps.fontFamily.includes("Silkscreen"), ps.borderTopColor, ps.backgroundColor === getComputedStyle(document.querySelector(".form")).getPropertyValue("--surface").trim() || ps.backgroundColor, w.querySelector('input[type="range"]') !== null && h.querySelector('input[type="range"]') !== null]; });
+  const was = await S("[S.da_w, S.da_h]");
+  await page.click("#window-w-Width-link");
+  const on = [await S("S.da_wh_link"), await page.textContent("#window-w-Width-link"), await page.$eval("#window-w-Width-link", (p) => getComputedStyle(p).color)];
+  await page.evaluate((w) => window.dial_tool.set_value("window", "w", w * 2), was[0]);
+  const twice = await S("[S.da_w, S.da_h]");
+  await page.click("#window-w-Width-link");
+  await page.evaluate((w) => window.dial_tool.set_value("window", "w", w), was[0]);
+  const free = await S("[S.da_w, S.da_h, S.da_wh_link]");
+  await page.evaluate((h) => window.dial_tool.set_value("window", "h", h), was[1]);
+  check(look[0] && look[1] && look[2] === "LINK" && look[3] && look[6] && on[0] === true && on[1] === "LINKED" && on[2] === "rgb(255, 255, 255)" && Math.abs(twice[0] - 2 * was[0]) < 1e-9 && Math.abs(twice[1] - 2 * was[1]) < 1e-3 && free[0] === was[0] && Math.abs(free[1] - 2 * was[1]) < 1e-3 && free[2] === false,
+    `a window's width over its height, each with its slider; LINK in the pixel font on the line between them; pressed it says LINKED, white on dark, and width ×2 takes height ×2 (${was.join(" × ")} → ${twice.join(" × ")}); unlinked, width alone (#358)`);
 }
 await shot("4d-windows");
 for (const n of ["1", "2", "3"]) { await page.click("#window-card-" + n); await page.uncheck("#window-on-Show"); }

@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.57 (web version) · 18 Oct 2026
+
+A window's width and height, linked (notes 2, #358).
+
+- **Two rows again**, Width over Height, each with its slider ("Two sliders on one line is not a good idea … two stories tall").
+- **A LINK pill** on the line between them, at their names: a white outline on the pane's grey, LINK in the pixel font. Pressed it turns ink with **LINKED** in white, and changing one keeps their ratio, as in Illustrator.
+- Kept with the dial: new keys `wh_link` and `da_wh_link`, off in every older link.
+
 ## beta 4.56 (web version) · 18 Oct 2026
 
 Positions after Okay's drawing (notes 2, #357).

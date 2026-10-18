@@ -50,11 +50,14 @@
   .row.pick > label { line-height: var(--line); }
   .row > label > .short { display: none; }         /* a label's short wording: only where there is little room (a side row) */
   .linkrow .linknote { margin: var(--unit) 0 0; }      /* its length, and that fonts travel by name */
-  /* two numbers to a line (R15 form A2; a window's width and height, #265, 4.46.1): for each a column for its name,
-     one for its slider, one for its quiet number (#250's look) — the slider a column long, the least a slider gets */
-  .row.wsize > * { grid-column: auto; }
-  .row.wsize > label { color: var(--grey); }      /* both names grey, as a row's first is */
-  .row.wsize > .numbox { position: relative; top: auto; right: auto; translate: none; width: 100%; }
+  /* a linked pair (#358; Okay's notes 2: "between their names on the white line a white outline pill appears, knocking
+     out bg. Inside, in text color silkscreen: LINK. Selected, the pill becomes dark filled. Text turns LINKED white"):
+     the pill stands on the line under the first row, starting where the names start, over the next row's line. Width and
+     height were one line, two numbers to it, from 4.46.1 to 4.56 (#265) */
+  .row.haslink { position: relative; }
+  .row.haslink > .linkpill { position: absolute; z-index: 1; grid-column: 1 / -1; grid-row: 1; justify-self: start; left: 0; bottom: 0; translate: 0 50%; display: grid; place-items: center; height: var(--link-pill); padding: 0 var(--u2); border: var(--hair) solid var(--row-rule); border-radius: var(--round-pill); background: var(--surface); color: var(--ink); font: 400 var(--t-pixel)/1 var(--pixel); letter-spacing: 0; }
+  .row.haslink > .linkpill:hover { border-color: var(--grey); }
+  .row.haslink > .linkpill.on { border-color: var(--ink); background: var(--ink); color: var(--white); }
   /* a window's colours on one line (#266, 4.46.1): a quiet word, then its pill; a third (Picture) only for am · pm and moon */
   .row.colours { align-items: baseline; }      /* when Picture takes a second line, the name stays on the first */
   .row.colours > .parts { grid-column: 3 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: var(--unit) var(--u3); padding: var(--u1) 0; }

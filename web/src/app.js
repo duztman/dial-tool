@@ -666,7 +666,10 @@ const ROWS = {
     hdr("Shape", { ...W, folded: true, show: win_on }),
     custom("window_shape", { ...W, head: true, text: "Shape", show: win_on }),
     num("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
-    custom("window_size", { ...W, show: shape_is("rectangle", "arc") }),      // width and height on one line, each with its slider (#265; R15 form A2)
+    // width over height, two rows, a LINK pill on the line between them (Okay's notes 2, #358: "Two sliders on one line
+    // is not a good idea … two stories tall … like in illustrator"); one line from 4.46 to 4.55 (#265)
+    num("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("rectangle", "arc"), link: "wh_link" }),
+    num("h", "Height", 0.5, 5, 0.05, { ...W, show: shape_is("rectangle", "arc") }),
     num("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("arch"), id: "window-w-Width-arch" }),      // its own id: the line above has window-w-Width
     num("w", "Ø", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
     num("sides", "Sides", 3, 12, 1, { ...W, whole: true, show: shape_is("polygon") }),
@@ -747,6 +750,9 @@ const LENGTH_KEYS = { ring: G.RING_MM, hand: G.HAND_MM, window: G.WINDOW_MM, glo
 /** a row's label: its own words, or, with a menu beside it, the chosen item's word before the last of its own
  *  ("Centre radius" → "Baseline radius"). */
 const label_of = (row, T) => (row.say ? row.say(T)[0] : row.menu ? `${(row.menu.items.find(([v]) => v === (T[row.menu.key] ?? 0)) || row.menu.items[0])[1]} ${row.text.split(" ").pop()}` : row.text);
+// two measures that may be linked, so changing one keeps their ratio (#358; Okay's notes 2: "a link/unlink like in
+// illustrator … other width-height or linkable stuff get this too"): its switch key, the pair, and when it applies
+const LINKED_PAIRS = { window: [{ link: "wh_link", keys: ["w", "h"], when: (T) => ["rectangle", "arc"].includes(G.window_shape(T)) }] };
 const NUDGE_NEUTRAL = { dr: 0, da: 0, rot: 0, s: 1 };      // a numeral's nudge, untouched (#252)
 const is_length = (row) => row.kind === "num" && (LENGTH_KEYS[row.scope] || []).includes(row.key);
 const decimals = (step) => (String(step).split(".")[1] || "").length;
@@ -937,6 +943,9 @@ class DialTool {
     }
     const T = this.target(scope);
     if (JSON.stringify(T[key]) === JSON.stringify(value)) return;
+    // a linked pair (#358, LINKED_PAIRS): the other one keeps their ratio, as in Illustrator
+    const pair = (LINKED_PAIRS[scope] || []).find((p) => p.keys.includes(key) && T[p.link] && p.when(T));
+    if (pair && T[key] > 0 && value > 0) { const other = pair.keys.find((k) => k !== key); T[other] = +(T[other] * value / T[key]).toFixed(4); }
     // the diameter, with "scale everything" ticked: every measure on the dial grows or shrinks by the same factor
     if (scope === "global" && key === "dial_d" && this.S.ui_scale && T.dial_d > 0 && value > 0) this.scale_with(T.dial_d, value);
     T[key] = value;
@@ -2168,6 +2177,15 @@ class DialTool {
         out.quiet = box;
         wrap.append(lead, slider, box);
         if (row.quiet) { wrap.classList.add("quiet"); this.name_opens(label, row); }      // form B: no slider on the row; the name opens the controller too (#251)
+      } else if (row.link) {
+        // the LINK pill on the line under this row, between its name and the next row's (#358): a white outline on the
+        // pane's ground, LINK in the pixel font; pressed, dark with LINKED in white
+        wrap.append(lead, slider, field, el("span", { className: "steps" }, step(-1), step(1)));
+        const pill = el("button", { type: "button", className: "linkpill", id: id + "-link" });
+        pill.onclick = () => this.set_value(row.scope, row.link, !this.target(row.scope)[row.link]);
+        wrap.classList.add("haslink");
+        wrap.append(pill);
+        out.link = pill;
       } else if (row.block) {
         // a number block (#357, #317; the font box's of 4.54): the name, then the value and its − + joined, no slider
         // on the row; the name opens the controller and drags the value, as a quiet row's does (#249)
@@ -2178,6 +2196,7 @@ class DialTool {
       } else wrap.append(lead, slider, field, el("span", { className: "steps" }, step(-1), step(1)));
       out.refresh = (T) => {
         const v = T[row.key] ?? (row.or ? row.or(T) : 0);
+        if (out.link) { const on = Boolean(T[row.link]); out.link.classList.toggle("on", on); out.link.textContent = on ? "LINKED" : "LINK"; out.link.setAttribute("aria-pressed", String(on)); out.link.ariaLabel = on ? "Width and height linked: press to unlink" : "Link width and height"; }
         if (v > +slider.max) slider.max = v;       // the slider grows to hold a typed value
         if (v < +slider.min) slider.min = v;
         if (+slider.value !== v) slider.value = v;
@@ -3438,19 +3457,6 @@ class DialTool {
       wrap.style.setProperty("--tabs", Math.max(tabs.length, 1));
       wrap.style.setProperty("--tab", Math.max(tabs.findIndex((t) => t.classList.contains("on")), 0) + 1);
     };
-  }
-
-  row_window_size(wrap, out) {
-    // width and height on one line (#265), each its name, its slider and its quiet number (R15 form A2, two to a line;
-    // Okay, 16 Oct 2026: "width and height on the same line lost sliders, they can have them")
-    wrap.className = "row wsize";
-    const parts = [["w", "Width", 8], ["h", "Height", 5]].map(([key, text, hi]) => {
-      const row = { ...num(key, text, 0.5, hi, 0.05), scope: "window", side: true }, built = this.build_row(row), label = built.el.querySelector("label");
-      this.name_opens(label, row);
-      wrap.append(label, built.el.querySelector('input[type="range"]'), built.el.querySelector(".numbox"));
-      return built;
-    });
-    out.refresh = (W) => parts.forEach((p) => p.refresh(W));
   }
 
   /** a window's colours on one line (#266, 4.46.1; Okay's notes, p. 19: "one line; two colours to choose"): the disc

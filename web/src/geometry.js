@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.56";
+export const VERSION = "beta 4.57";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -114,10 +114,11 @@ export const WINDOW_BASE = {
   features: null,                                  // its own OpenType features (beta 4.30); null = none of its own. axes: {} likewise
   at_deg: null,                                    // a place of its own, in clock degrees (beta 4.34); null = the named place, at
   guide: -1,                                       // its guide's colour, as a ring's (#271): a place in GUIDE_COLOURS · -1 = by its place (window_guide) · -2 = none
+  wh_link: false,                                  // width and height linked: one changed, the other keeps their ratio (#358, beta 4.57); off, so every link draws and behaves as before
 };
 const FIRST_WINDOW = { on: "da_on", kind: "da_kind", at: "da_at", r: "da_r", w: "da_w", h: "da_h", round: "da_round", frame: "da_frame",
   clear: "da_clear", text: "da_day", size: "da_size", ink: "da_ink", hour: "da_hour", age: "da_age",
-  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c", guide: "da_guide", tracking: "da_tracking", lang: "da_lang", features: "da_features", at_deg: "da_at_deg" };
+  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c", guide: "da_guide", tracking: "da_tracking", lang: "da_lang", features: "da_features", at_deg: "da_at_deg", wh_link: "da_wh_link" };
 
 export const DEFAULTS = {
   version: 2,
@@ -148,6 +149,7 @@ export const DEFAULTS = {
   gd_hole: true, gd_k_hole: 1,                    // the centre hole's own guide, first in the list (Okay, 16 Oct 2026, #267)
   gd_wins: false, gd_wsel: true,                  // which windows show their guides: all · the chosen one (to start) · none, as rings (#271). gd_win, gd_k_win (the windows' radii) unread since
   da_guide: -1,                                   // the first window's guide colour, as every window's `guide` (#271)
+  da_wh_link: false,                               // the first window's width and height linked, as every window's `wh_link` (#358, beta 4.57)
   gd_k_edge: 1, gd_k_axes: 0, gd_k_win: 1, gd_k_rings: 1, gd_k_sel: 4, gd_w: 1.0,
   // shadows: preview only, never in a file (R5). A trial on branch try/shadows (Okay, 14 Oct 2026: "dummy preview
   // only, do not do this on the live page yet"). One light, far away: it comes from a clock angle (sh_from, degrees)
@@ -397,6 +399,7 @@ export const LINK_KEYS = [
   "mark_as", "mark_c",      // 4.45.4 (#300): appended; starting as a hole, so every scheme-2 link draws as before
   "from",                   // 4.47 (#257): appended; starting at the outer end, as always, so every scheme-2 link draws as before
   "mark_in",                // 4.52.2 (#344): appended; off to start, so every scheme-2 link draws as before
+  "wh_link", "da_wh_link",  // 4.57 (#358): appended; off to start, and they draw nothing: only how W and H move together
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
