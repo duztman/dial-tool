@@ -108,9 +108,7 @@
     /* Give way on a phone (#258): the two tabs side by side over the square, the open one joined to it from above */
     .giveway { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; }
     .givetabs { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; }
-    .givetab, .givetab:last-child { border: var(--hair) solid var(--row-rule); border-bottom: 0; }
-    .givetab + .givetab { border-left: 0; }
-    .givetab.on { width: auto; height: calc(var(--line) + var(--hair)); border-right-color: var(--row-rule); border-bottom: var(--hair) solid var(--field); }      /* a hairline taller, so it lies over the square's top line */
+    .givetab.on { width: auto; height: calc(var(--line) + var(--hair)); }      /* a hairline taller, so it lies over the square's top line */
     .givebox { grid-column: 1 / -1; }
   }
 }

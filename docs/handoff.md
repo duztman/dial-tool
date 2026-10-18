@@ -6,11 +6,11 @@ A new session starts with no memory of the last one: the transcript stays in the
 
 ## 1 · Where things stand (18 Oct 2026, evening)
 
-- **Beta 4.52** is on `dev` and the live page (pushed once Okay granted access, 18 Oct, 18:55); **`main` is 4.46.5**.
+- **Beta 4.53** is on `dev` and the live page (4.52 pushed once Okay granted access, 18 Oct, 18:55; 4.52.1 his eye pass and 4.52.2 his answers went live with 4.53; 4.53 tangent numerals, a still drawing on an anchor change, a mark's nudge); **`main` is 4.46.5**.
 - **4.52** = Okay's *Dial tool notes 2* (a Google Doc with 23 pictures; his Photoshop drawings `font-selector_171026`, `selected-ring_181026` and `svg/controller 2.svg` in his Mac's `dial-maker/`), written down as **build list #316–#359**, each ranked *now · next · mechanism · later*. The *now* ones are built (the controller's second drawing, his link as the opener, Copy link for WebKit, Blank face, Complication, the Show tick, the Guides list's bottom section, the zoom area and two-finger moving, G for guides, the Gallery card, tags, the showcase's arrow and ✕, the icon archive). Changelog 4.52 lists them.
 - **Next, in order** (the build list's ranks): the font box after his PSD (#334 with #318–#321, #317's number blocks) · the selected ring after his PSD (#335, #327) · Positions after his drawing (#357) · W × H linked (#358) · Complication as tabs (#328) · then the mechanisms (#326 after a picture, #338, #349, #346) · the later ones need his eye.
 - **Waiting for Okay** (brief §5, 15–23): what "Jev" is; five languages; the blank face's hands; Tiny Preview's calibration; which button Showcase goes left of; what "stopped counting" means on the ruler; renaming *Copy style of*; a disc hand's window inside its disc (R31: new scheme or new key); what "ascender" means for upright numerals (a picture).
-- **The eye pass** on 4.51.1's drawn-from-words items (18 Oct): #251, #253, #254, #273, #275, #276 are overtaken by notes 2; #255, #258, #259 and the Gallery picks (#287) were sent to him with pictures — no answer yet.
+- **The eye pass** on 4.51.1's drawn-from-words items (18 Oct): #251, #253, #254, #273, #275, #276 are overtaken by notes 2; #255, #258, #259 redone after his answers (4.52.1); all six new Gallery dials kept (#287).
 - **Okay's last words** (18 Oct): "Give me the eye pass first, in the meantime start working on small things." Earlier the same day he planned a two-hour run alone ("say go … you'll do all that you can without asking me") — not started; the plan is the build list's ranks.
 
 ## 2 · First steps in a new session

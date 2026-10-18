@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.52 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.53 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -873,7 +873,8 @@
   .valueb:is([aria-expanded="true"], .dragging) svg path:not(.hull, .tangent), .valueb#ring-size:is([aria-expanded="true"], .dragging) svg .dark { stroke: var(--paper); }
   .valueb:is([aria-expanded="true"], .dragging) svg .pivot { fill: var(--paper); }
   svg text.pixel { font-family: var(--pixel); opacity: var(--pixel-ink); }
-  svg text.figure { font-family: var(--sans); font-weight: 700; }      /* a kind's figures and words: the tool's sans, bold, not the pixel font (#255, 4.50) */
+  svg text.figure { font-family: var(--sans); font-weight: 700; font-variant-numeric: proportional-nums; }      /* a kind's figures and words: the tool's sans, bold, not the pixel font (#255, 4.50); proportional figures, so 12 is no wider than it must be (notes 2, 18 Oct 2026) */
+  svg text.figure.words { font-weight: 800; }      /* the text ring's words, a weight heavier (notes 2, 18 Oct 2026: "bolder text") */
   /* a value button's tag is as wide as the pop-up it grows into: its name at the left, its value at the right, quiet,
      in the mono face. The pop-up is the same box, higher: the number's name (and its menu) · the field · − +, one
      under the other. No slider: the button is dragged instead. */
@@ -926,14 +927,17 @@
      a quiet row (form B) under them when something is knocked out */
   .giveway { grid-column: 2 / -1; display: grid; grid-template-columns: subgrid; align-items: start; margin: var(--u2) 0 var(--unit); }      /* the tabs two columns wide, the square the other four */
   .givetabs { grid-column: 1 / span 2; display: grid; }
-  .givetab { height: var(--line); padding: 0 var(--name-in); border: var(--hair) solid var(--row-rule); border-bottom: 0; background: none; color: var(--grey); text-align: left; font: inherit; font-size: var(--t-s); }
-  .givetab:last-child { border-bottom: var(--hair) solid var(--row-rule); }
-  .givetab:hover { background: var(--hover); }
-  .givetab.on { position: relative; z-index: 1; width: calc(100% + var(--gap) + var(--hair)); border-right-color: var(--field); background: var(--field); color: var(--ink); font-weight: 600; }      /* lit white and reaching across the gap onto the square's line: joined to it */
+  /* Skip where · Knock out: regular rows, not buttons (Okay, 18 Oct 2026, on 4.51.1: "left knockout not a button, these
+     are regular rows, changing to fit this view") — a row's name in a row's grey, the rows' white lines over and under,
+     no frame; the chosen one in ink, lit white and reaching across the gap onto the square: joined to it (#258) */
+  .givetab { height: var(--line); padding: 0 var(--name-in); border: 0; background: none; box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); color: var(--grey); text-align: left; font: inherit; }
+  .givetab:first-child { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule), inset 0 var(--hair) 0 var(--row-rule); }
+  .givetab:hover { color: var(--ink); }
+  .givetab.on { position: relative; z-index: 1; width: calc(100% + var(--gap) + var(--hair)); background: var(--field); color: var(--ink); font-weight: 600; }
   .givebox { grid-column: 3 / -1; display: grid; gap: var(--u2); padding: var(--u2) 0 0; border: var(--hair) solid var(--row-rule); background: var(--field); }
   .givepic { display: flex; justify-content: center; padding: 0 var(--u3); }
   .givepic svg { display: block; max-width: 100%; height: auto; }
-  .givepic .above { opacity: 0.45; }      /* the rings above: context, as the dial's edge behind the A's */
+  .givepic .above { opacity: 0.45; }      /* the rings above: context, as the dial's edge behind the A's — outlines, so what lies under them shows */
   .givechoices { display: grid; padding: 0 var(--u3); }
   .givechoices .check { height: var(--control); font-size: var(--t-s); }
   .givebox > .row.side.quiet { grid-template-columns: var(--side-label) minmax(0, 1fr) var(--side-num); padding: 0 var(--u3); }
@@ -1184,7 +1188,7 @@
   /* Backdrop, standing on the Shadows switch (its row held the eye switch too until 15 Oct 2026, 03:41) */
   .backdrops { position: absolute; z-index: 3; left: var(--stop-short); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: flex; gap: var(--unit); }
   /* the eye switch, alone at the preview's bottom right, over the zoom in the bar (Okay, 15 Oct 2026, 03:41) */
-  .eyes { position: absolute; z-index: 3; right: var(--canvas-inset); bottom: var(--canvas-inset); display: flex; flex-direction: column; align-items: flex-end; gap: var(--unit); }      /* the switches' gap between them (05:43: "why these two touch?"); the showcase's iris over the eye, one unit apart, as Backdrop over Shadows (Okay, 16 Oct 2026: "stack the old showcase/new preview icon on top, same padding between"; side by side until then) */
+  .eyes { position: absolute; z-index: 3; right: var(--canvas-inset); bottom: var(--canvas-inset); display: flex; align-items: flex-end; gap: var(--unit); }      /* the switches' gap between them (05:43: "why these two touch?"); the showcase's iris left of the eye, one unit apart (Okay, 18 Oct 2026, notes 2: "Showcase button back to the left of the preview button"; over it from 4.42.4 to 4.52.1, #280) */
   .eyebox { width: var(--control-large); padding: 0; overflow: hidden; border-radius: var(--round-switch); }      /* its sign fills the inside; the lashes run out and the box cuts them */
   .eyebox svg { display: block; flex: none; }
   .eyebox[aria-pressed="true"] > * { opacity: 1; }
@@ -1482,12 +1486,16 @@
   .ruler .half { opacity: 0.6; }
   .ruler .small { opacity: 0.38; }
   .ruler .pose { stroke-width: var(--triple); }      /* 10:10 has a thick line of its own, the 10:10 step stands on it (Okay, 15 Oct 2026, 00:51); hidden before */
-  .bar .day input[type="range"] { grid-area: 1 / 1; height: var(--ruler); cursor: ew-resize; }
+  .bar .day { touch-action: none; cursor: ew-resize; }      /* the strip reads presses itself (app.js day_strip): no pan, no swipe */
+  .bar .day input[type="range"] { grid-area: 1 / 1; height: var(--ruler); pointer-events: none; }      /* the keyboard's and a screen reader's way in; presses go to the strip */
+  /* the needle (Okay, 18 Oct 2026, notes 2: "The moving needle is 1px wide and red, starts from the bottom of the screen
+     unlike the ruler which has room below"): placed by app.js (place_needle) from the ruler's top to the bar's foot */
+  .bar .day .needle { position: absolute; z-index: 1; width: var(--hair); translate: -50% 0; background: var(--play); pointer-events: none; }
   .bar .day input[type="range"]::-webkit-slider-runnable-track { height: var(--ruler); border-radius: 0; background: none; }
-  .bar .day input[type="range"]::-webkit-slider-thumb { width: var(--handle); height: var(--ruler); margin-top: 0; border-radius: 0; background: var(--bar-light); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  .bar .day input[type="range"]::-webkit-slider-thumb { width: var(--handle); height: var(--ruler); margin-top: 0; border-radius: 0; background: none; box-shadow: none; }      /* not drawn: the needle stands in its place */
   .bar .day input[type="range"]::-moz-range-track { height: var(--ruler); background: none; }
   .bar .day input[type="range"]::-moz-range-progress { background: none; }
-  .bar .day input[type="range"]::-moz-range-thumb { width: var(--handle); height: var(--ruler); border-radius: 0; background: var(--bar-light); box-shadow: 0 0 0 var(--thick) var(--bar); }
+  .bar .day input[type="range"]::-moz-range-thumb { width: var(--handle); height: var(--ruler); border-radius: 0; background: none; box-shadow: none; }
   .bar .day input[type="range"]:focus-visible { outline: var(--thick) solid var(--bar-light); }
   /* the steps' names: --at = how far along the day (0 to 1); the side margins keep them on the handle's path */
   .steps12 { position: relative; height: var(--names); margin: 0 calc(var(--handle) / 2); }
@@ -1610,9 +1618,7 @@
     /* Give way on a phone (#258): the two tabs side by side over the square, the open one joined to it from above */
     .giveway { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; }
     .givetabs { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; }
-    .givetab, .givetab:last-child { border: var(--hair) solid var(--row-rule); border-bottom: 0; }
-    .givetab + .givetab { border-left: 0; }
-    .givetab.on { width: auto; height: calc(var(--line) + var(--hair)); border-right-color: var(--row-rule); border-bottom: var(--hair) solid var(--field); }      /* a hairline taller, so it lies over the square's top line */
+    .givetab.on { width: auto; height: calc(var(--line) + var(--hair)); }      /* a hairline taller, so it lies over the square's top line */
     .givebox { grid-column: 1 / -1; }
   }
 }
@@ -5970,7 +5976,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.52";
+var VERSION = "beta 4.53";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -5985,7 +5991,7 @@ var SKIP_FROM = ["nothing", "markers above", "markers & numerals above", "all ma
 var KNOCK_FROM = ["nothing", "markers above", "markers & numerals above", "everything above"];
 var FROM_KINDS = [[], ["markers"], ["markers", "numerals", "text"], ["ticks", "markers", "numerals", "band", "text"]];
 var MODES = ["upright", "radial", "radial, auto-flip", "on path"];
-var ANCHORS = ["centre", "baseline", "ascender"];
+var ANCHORS = ["centre", "baseline", "ascender", "outer edge", "inner edge"];
 var from_shift = (ring, extent) => extent * (ring.from || 0) / 2;
 var HANDS = ["hour", "minute", "second"];
 var HAND_SHAPES = ["baton", "pencil", "sword", "dauphine", "leaf", "arrow", "syringe", "breguet", "lollipop", "file", "disc"];
@@ -6090,7 +6096,11 @@ var HAND_BASE = {
   // the marker as a hole or a mark (#300, beta 4.45.4; Okay, 16 Oct 2026: "Mark if also possible easily"): mark_as 0 —
   // cut out of the disc (the dial shows through), as before; 1 — painted on it, whole, in mark_c
   mark_as: 0,
-  mark_c: [1, 1, 1, 1]
+  mark_c: [1, 1, 1, 1],
+  // the window kept inside the disc (#344; Okay, 18 Oct 2026: "Window is always inside disc hands, constrain" — "Off in
+  // old links for window"): its outer end at the hand's Length, or at the disc's edge if Length reaches past it. Off to
+  // start, as every older dial was drawn (R31: no new scheme); a hand made a disc in the tool turns it on (app.js)
+  mark_in: false
 };
 var WINDOW_BASE = {
   on: false,
@@ -6739,8 +6749,10 @@ var LINK_KEYS = [
   "mark_as",
   "mark_c",
   // 4.45.4 (#300): appended; starting as a hole, so every scheme-2 link draws as before
-  "from"
+  "from",
   // 4.47 (#257): appended; starting at the outer end, as always, so every scheme-2 link draws as before
+  "mark_in"
+  // 4.52.2 (#344): appended; off to start, so every scheme-2 link draws as before
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i) => i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62];
@@ -7332,13 +7344,16 @@ function mark_at(ring, i, a, grow = 0, solid2 = false) {
   const first = kind_of(ring) === "markers" && i === 0;
   const style = first ? TWELVES[ring.twelve] : "same";
   if (style === "none") return null;
-  const k = first ? ring.twelve_scale : 1;
+  const n = ring.nudge && ring.nudge[String(i)] || {};
+  const k = (first ? ring.twelve_scale : 1) * (n.s ?? 1);
   const L = ring.len * k, W2 = ring.w * k;
   const shape2 = style === "triangle" ? mark_outline(ring, L * 1.1, W2 * 2.4, "wedge", 0, grow, solid2) : mark_outline(ring, L, W2, null, null, grow, solid2);
   const b = shape2.bounds();
   if (!b) return null;
+  if (n.rot) shape2.rotate(-n.rot, [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2]);
+  if (n.da) a += n.da;
   const extent = b[3] - b[1] - 2 * grow, width = b[2] - b[0] - 2 * grow;
-  const r_mid = max(ring.r + from_shift(ring, extent) - extent / 2, 0.1);
+  const r_mid = max(ring.r + (n.dr || 0) + from_shift(ring, extent) - extent / 2, 0.1);
   if (style === "double") {
     const da = degrees((ring.twelve_gap + width) / 2 / r_mid);
     return merge([place(shape2.copy(), r_mid, a - da), place(shape2, r_mid, a + da)]);
@@ -7403,12 +7418,38 @@ function numeral_dy(ring, txt2, size) {
   const b = text_path(txt2, ring, size).bounds();
   return b ? -(b[1] + b[3]) / 2 : 0;
 }
+function radius_kept(ring, key, to) {
+  if (key === "from") {
+    const extent = kind_of(ring) === "band" ? ring.width : ring.len;
+    return max(ring.r + extent * ((ring.from || 0) - to) / 2, 0);
+  }
+  const label = ring_labels(ring).find(Boolean);
+  if (!label) return ring.r;
+  const mode = MODES[ring.mode], a = ring.start || 0, size = ring.size;
+  const middle = (anchor) => {
+    const R = { ...ring, anchor }, b = text_path(label, R, size).bounds();
+    const up = b ? numeral_dy(R, label, size) + (b[1] + b[3]) / 2 : 0;
+    const out = mode === "upright" ? up * cos(a * PI / 180) : mode === "on path" ? 0 : up * (mode === "radial, auto-flip" && a % 360 > 90 && a % 360 < 270 ? -1 : 1);
+    return ring.r + out + (mode === "on path" ? 0 : tangent_shift(R, mode, a, label, size));
+  };
+  return max(ring.r + middle(ring.anchor || 0) - middle(to), 0);
+}
 function numeral_setup(ring, i, a) {
   const n = ring.nudge[String(i)] || {};
   return [MODES[ring.mode], ring.r + (n.dr || 0), a + (n.da || 0), ring.size * (n.s ?? 1), n.rot || 0];
 }
+function tangent_shift(ring, mode, a, label, size) {
+  const anchor = ANCHORS[ring.anchor];
+  if (anchor !== "outer edge" && anchor !== "inner edge") return 0;
+  const b = text_path(label, ring, size).bounds();
+  if (!b) return 0;
+  const w = b[2] - b[0], h = b[3] - b[1], t = a * PI / 180;
+  const reach = mode === "upright" ? abs(sin(t)) * w / 2 + abs(cos(t)) * h / 2 : h / 2;
+  return anchor === "outer edge" ? -reach : reach;
+}
 function numeral_at(ring, i, a0, label) {
-  const [mode, r, a, size, rot] = numeral_setup(ring, i, a0);
+  const [mode, r0, a, size, rot] = numeral_setup(ring, i, a0);
+  const r = mode === "on path" ? r0 : r0 + tangent_shift(ring, mode, a, label, size);
   if (mode === "on path") {
     const p2 = on_path(label, r, a, ring, size);
     if (rot) p2.rotate(-rot, clock_point(r, a));
@@ -7733,7 +7774,9 @@ function disc_mark(h) {
   return memo("mark" + key_of(h), () => {
     const mark_ring = { ...RING_BASE, shape: h.mark, len: h.mark_len, w: h.mark_w, round_out: h.round || 0, round_in: h.round || 0 };
     const mark = mark_outline(mark_ring, h.mark_len, h.mark_w), b = mark.bounds();
-    return b ? place(mark, max(h.len - (b[3] - b[1]) / 2, 0.1), 0) : null;
+    if (!b) return null;
+    const outer = h.mark_in ? min(h.len, max(h.disc_d, 0.1) / 2) : h.len;
+    return place(mark, max(outer - (b[3] - b[1]) / 2, 0.1), 0);
   });
 }
 var paints_mark = (h) => HAND_SHAPES[h.shape] === "disc" && h.mark_as === 1;
@@ -8235,11 +8278,14 @@ var pic = (inside) => icon(inside, 38, 27);
 var solid = `fill="currentColor" stroke="none"`;
 var faint = `${sw(CURVE)} opacity="0.45"`;
 var KIND_PIC = 24;
-var quarter = (v) => Math.floor(v) + (v - Math.floor(v) < 0.5 ? 0.25 : 0.75);
-var arrow_at = (px, py, dir) => {
-  const t = dir * Math.PI / 180, ux = Math.sin(t), uy = -Math.cos(t), L = 5, H2 = 1.75;
-  const pt = (k, side) => [quarter(px + ux * k - uy * side), quarter(py + uy * k + ux * side)].join(" ");
-  return `M${pt(-L / 2, 0)}L${pt(L / 2, 0)}M${pt(L / 2 - H2, -H2)}L${pt(L / 2, 0)}L${pt(L / 2 - H2, H2)}`;
+var stem_at = (px, py, dir) => {
+  const t = dir * Math.PI / 180, ux = Math.sin(t), uy = -Math.cos(t), f = (v) => +v.toFixed(3);
+  return `M${f(px - ux * 3)} ${f(py - uy * 3)}L${f(px + ux * 0.5)} ${f(py + uy * 0.5)}`;
+};
+var head_at = (px, py, dir) => {
+  const t = dir * Math.PI / 180, ux = Math.sin(t), uy = -Math.cos(t), f = (v) => +v.toFixed(3);
+  const tip = [px + ux * 3, py + uy * 3], base = [px + ux * 0.25, py + uy * 0.25], half = 1.75;
+  return `M${f(tip[0])} ${f(tip[1])}L${f(base[0] - uy * half)} ${f(base[1] + ux * half)}L${f(base[0] + uy * half)} ${f(base[1] - ux * half)}Z`;
 };
 var PICS = {
   // a ring's kind: the whole circle, as on a dial (Okay's drawing, 13 Oct 2026), centre 12. The four weigh about the
@@ -8250,10 +8296,13 @@ var PICS = {
   kind: (i) => icon([
     `<path d="${ticks(24, 6.75, 9.75, 12)}" stroke-width="1" stroke-linecap="butt"/>`,
     `<path d="${ticks(8, 6.25, 9.75, 12)}" stroke-width="2" stroke-linecap="butt"/>`,
-    [["12", 12, 6.25], ["3", 17.75, 12], ["6", 12, 17.75], ["9", 6.25, 12]].map(([t, x, y]) => `<text class="figure" x="${x}" y="${y}" font-size="6.5" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">${t}</text>`).join(""),
+    // 18 Oct 2026 (notes 2: "12 is too wide. No tabular, much less tracking (almost touching 1 and 2)"; in his drawing
+    // "pushing 1 and 2 together 2 pixels"): proportional figures (.figure) and the 12 drawn 0.75 tighter
+    [["12", 12, 6.25, -0.75], ["3", 17.75, 12, 0], ["6", 12, 17.75, 0], ["9", 6.25, 12, 0]].map(([t, x, y, k]) => `<text class="figure" x="${x}" y="${y}" font-size="6.5"${k ? ` letter-spacing="${k}"` : ""} text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">${t}</text>`).join(""),
     `<circle cx="12" cy="12" r="8.25" stroke-width="3"/>`,
-    [["ABC", 12, 7.5], ["XYZ", 12, 16.5]].map(([t, x, y]) => `<text class="figure" x="${x}" y="${y}" font-size="5.5" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">${t}</text>`).join("")
-    // text (#297): words on the dial, under 12 and over 6
+    // text (#297): words on the dial, under 12 and over 6. 18 Oct 2026 (notes 2: "bolder text, bit more tracking and
+    // less line height to the lines"): heavier (.words), tracked 0.5, the two lines 7.5 apart (were 9)
+    [["ABC", 12, 8.25], ["XYZ", 12, 15.75]].map(([t, x, y]) => `<text class="figure words" x="${x}" y="${y}" font-size="5.5" letter-spacing="0.5" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">${t}</text>`).join("")
   ][i], KIND_PIC),
   shape: [`<rect x="16.5" y="4" width="5" height="19" ${solid}/>`, `<path d="M14.5 4H23.5L20.5 23H17.5Z" ${solid}/>`, `<circle cx="19" cy="13.5" r="6" ${solid}/>`],
   twelve: [
@@ -8268,7 +8317,12 @@ var PICS = {
   // with the dial's ring; cleaner arrows with stems, six arrows each"): a micro dial — the ring as a faint circle, and
   // on it six arrows, each the way up of a numeral standing there: all up (upright) · pointing out (radial) · out above,
   // in below (auto-flip) · along the ring (on path). The A's at 3 and 6 o'clock of 4.36–4.50.2 are gone.
-  mode: [(a) => 0, (a) => a, (a) => a > 90 && a < 270 ? a + 180 : a, (a) => a + 90].map((way) => `<circle cx="19" cy="13.5" r="11.5" ${faint}/><path d="${[0, 60, 120, 180, 240, 300].map((a) => arrow_at(19 + 7.5 * Math.sin(a * Math.PI / 180), 13.5 - 7.5 * Math.cos(a * Math.PI / 180), way(a))).join("")}"/>`),
+  // 18 Oct 2026 (Okay, on 4.50.2's tiles: "Thinner lines overall, thinner but big headed arrows, try again"): the
+  // circle and the stems DENSE, each arrow's head a filled triangle, 2.75 long and 3.5 across (were LINE, legs of 1.75)
+  mode: [(a) => 0, (a) => a, (a) => a > 90 && a < 270 ? a + 180 : a, (a) => a + 90].map((way) => {
+    const at = [0, 60, 120, 180, 240, 300].map((a) => [19 + 7.5 * Math.sin(a * Math.PI / 180), 13.5 - 7.5 * Math.cos(a * Math.PI / 180), way(a)]);
+    return `<circle cx="19" cy="13.5" r="11.5" ${sw(DENSE)} opacity="0.45"/><path d="${at.map(([x, y, d]) => stem_at(x, y, d)).join("")}" ${sw(DENSE)}/><path d="${at.map(([x, y, d]) => head_at(x, y, d)).join("")}" ${solid}/>`;
+  }),
   // a window's shape: rectangle · circle · polygon · arch · arc — on 26 × 18, inside the Shape line's buttons (#265,
   // 4.46.1; 38 × 27 before, fitted down by icons/fit.mjs, the box redrawn on quarter points)
   hole: [
@@ -8434,7 +8488,8 @@ var info = (text, o = {}) => ({ kind: "note", text, ...o });
 var custom = (name, o = {}) => ({ kind: "custom", name, ...o });
 var RADIUS_ROWS = {
   outer: num2("r", "Outer radius", 0, 25, 0.05, { scope: "ring", menu: { key: "from", title: "What the radius measures to", items: [[0, "Outer"], [1, "Middle"], [2, "Inner"]] } }),
-  numerals: num2("r", "Centre radius", 0, 25, 0.05, { scope: "ring", menu: { key: "anchor", title: "What the radius measures to", items: [[1, "Baseline"], [2, "Ascender"], [0, "Centre"]] } })
+  numerals: num2("r", "Centre radius", 0, 25, 0.05, { scope: "ring", menu: { key: "anchor", title: "What the radius measures to", items: [[1, "Baseline"], [2, "Ascender"], [0, "Centre"], [3, "Outer edge"], [4, "Inner edge"]] } })
+  // the edges: tangent (#338, 4.53)
 };
 var radius_row = (R) => RADIUS_ROWS[has_text(R) ? "numerals" : "outer"];
 var SIZE_ROWS = {
@@ -8654,6 +8709,8 @@ var ROWS = {
     num2("mark_w", "Hole width", 0.02, 5, 0.01, { ...H, side: true, short: "Hole W", say: (T) => T.mark_as === 1 ? ["Mark width", "Mark W"] : ["Hole width", "Hole W"], show: hand_is("disc") }),
     col("mark_c", "Mark ink", { ...H, side: true, show: (T) => paints_mark(T) }),
     // "ink": "Mark colour" is longer than the names' column (Counter Ø)
+    chk("mark_in", "Inside the disc", { ...H, side: true, show: hand_is("disc") }),
+    // #344 (Okay, 18 Oct 2026: "Window is always inside disc hands"); on for a hand made a disc here, off in older links
     num2("w", "Width", 0.02, 4, 0.01, { ...H, side: true, show: (H2) => HAND_SHAPES[H2.shape] !== "disc" }),
     num2("tail", "Tail", 0, 10, 0.05, { ...H, side: true, show: (H2) => HAND_SHAPES[H2.shape] !== "disc" }),
     num2("round", "Round ends", 0, 2, 0.01, { ...H, side: true, short: "Round", show: hand_is("baton", "pencil", "sword", "arrow", "syringe", "breguet", "lollipop", "file", "disc") }),
@@ -8954,6 +9011,8 @@ var DialTool = class _DialTool {
   }
   set_value(scope, key, value) {
     if (scope === "ring" && key === "start" && this.ring() && kind_of(this.ring()) === "text") value = this.snapped_angle(value);
+    if (scope === "ring" && (key === "anchor" || key === "from") && this.ring() && value !== (this.ring()[key] || 0)) this.ring().r = +radius_kept(this.ring(), key, value).toFixed(4);
+    if (scope === "hand" && key === "shape" && HAND_SHAPES[value] === "disc") this.target("hand").mark_in = true;
     if (scope === "nudge") {
       const R = this.ring(), n = { ...R.nudge[this.nudge_at] || {} }, all = { ...R.nudge };
       if (Math.abs(value - NUDGE_NEUTRAL[key]) < 1e-9) delete n[key];
@@ -9154,15 +9213,36 @@ var DialTool = class _DialTool {
       b.dataset.t = t;
       steps.append(b);
     }
+    const at_x = (x) => {
+      const r = this.time_slider.getBoundingClientRect(), THUMB = 3;
+      return Math.round(clamp((x - r.left - THUMB / 2) / (r.width - THUMB), 0, 1) * 43199);
+    };
     let pressed = null;
-    this.time_slider.onpointerdown = (e) => {
-      pressed = [e.clientX, e.clientY];
+    const scrub = (e) => {
+      if (!pressed) return;
+      if (Math.abs(e.clientX - pressed.x) > 3) pressed.moved = true;
+      if (pressed.moved) this.set_time(at_x(e.clientX) + this.half());
     };
-    this.time_slider.onpointerup = (e) => {
-      if (!pressed || Math.hypot(e.clientX - pressed[0], e.clientY - pressed[1]) > 3) return;
-      const t = +this.time_slider.value;
-      this.set_time([...this.day_ticks, 10 * 3600 + 600].reduce((best, x) => Math.abs(x - t) < Math.abs(best - t) ? x : best) + this.half());
+    this.day_strip = (strip) => {
+      strip.addEventListener("pointerdown", (e) => {
+        if (e.button > 0 || e.target.closest(".steps12 button")) return;
+        pressed = { x: e.clientX, id: e.pointerId, moved: false };
+        strip.setPointerCapture(e.pointerId);
+        e.preventDefault();
+      });
+      strip.addEventListener("pointermove", scrub);
+      const up = (e) => {
+        if (!pressed || e.pointerId !== pressed.id) return;
+        if (!pressed.moved && e.type === "pointerup") {
+          const t = at_x(e.clientX);
+          this.set_time([...this.day_ticks, 10 * 3600 + 600].reduce((best, x) => Math.abs(x - t) < Math.abs(best - t) ? x : best) + this.half());
+        }
+        pressed = null;
+      };
+      strip.addEventListener("pointerup", up);
+      strip.addEventListener("pointercancel", up);
     };
+    this.needle = el("span", { className: "needle", ariaHidden: "true" });
     this.ruler = svg_el("svg");
     this.ruler.setAttribute("class", "ruler");
     this.ruler.setAttribute("aria-hidden", "true");
@@ -9196,7 +9276,7 @@ var DialTool = class _DialTool {
         time_box,
         el("button", { type: "button", id: "now", textContent: "Now", title: "The time it is now", onclick: () => this.to_now() })
       ),
-      el("div", { className: "group day" }, this.ruler, this.time_slider, steps),
+      this.day_box = el("div", { className: "group day" }, this.ruler, this.time_slider, steps, this.needle),
       el(
         "div",
         { className: "group viewing" },
@@ -9223,6 +9303,7 @@ var DialTool = class _DialTool {
       this.note.hidden = true;
     } });
     this.main = el("main", {}, this.svg, this.tip, this.note, this.undo_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.ten_pill, this.hands_key, this.sun_hint);
+    this.day_strip(this.day_box);
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     root.append(this.sheet());
     requestAnimationFrame(() => this.level_title());
@@ -11052,16 +11133,16 @@ var DialTool = class _DialTool {
       } });
       tabs.append(b);
     });
-    const TICKS = [16, 30, 44, 58, 72, 86, 100, 114, 128], ABOVE = { 30: "markers", 72: "numerals", 114: "ticks" }, BOTTOM = { 30: 46, 72: 47, 114: 44 };
+    const TICKS = [16, 30, 44, 58, 72, 86, 100, 114, 128], ABOVE = { 30: "markers", 72: "numerals", 114: "ticks" }, BOTTOM = { 30: 48.25, 72: 44, 114: 48.25 };
     const draw = (tab, i) => {
       const kinds = FROM_KINDS[i], gap = tab === 1 ? Math.max(2, 20 * (this.ring().clear || 0)) : 0;
       const ticks2 = TICKS.map((x) => {
         const kind = ABOVE[x];
-        if (!kind || !kinds.includes(kind)) return `M${x + 0.25} 40V60`;
+        if (!kind || !kinds.includes(kind)) return `M${x + 0.5} 34V62`;
         if (tab === 0) return "";
-        return `M${x + 0.25} ${Math.min(60, BOTTOM[x] + gap)}V60`;
+        return BOTTOM[x] + gap >= 62 ? "" : `M${x + 0.5} ${BOTTOM[x] + gap}V62`;
       }).join("");
-      return `<svg viewBox="0 0 144 72" width="144" height="72" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="butt"><g class="above"><rect x="27.5" y="20" width="6" height="26" fill="currentColor" stroke="none"/><text class="figure" x="72.25" y="35" font-size="24" text-anchor="middle" dominant-baseline="central" fill="currentColor" stroke="none">6</text><path d="M114.25 28V44"/></g><path class="own" d="${ticks2}"/></svg>`;
+      return `<svg viewBox="0 0 144 72" width="144" height="72" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="butt"><path class="own" d="${ticks2}" stroke-width="3"/><g class="above"><rect x="26.75" y="20.75" width="7.5" height="27.5"/><text class="figure" x="72.5" y="34" font-size="26" text-anchor="middle" dominant-baseline="central" fill="none" stroke="currentColor" stroke-width="${DENSE}">6</text><rect x="112.25" y="24.75" width="4.5" height="23.5"/></g></svg>`;
     };
     let drawn2 = "";
     out.refresh = (R) => {
@@ -12002,9 +12083,10 @@ var DialTool = class _DialTool {
       type: "button",
       className: "btn",
       id: "window-font-back",
-      innerHTML: icon(SIGNS.copy) + "<span>Copy style of <i>Numerals</i></span>",
+      innerHTML: icon(SIGNS.copy) + "<span>Same font as <i>Numerals</i></span>",
       title: "Use the top numerals ring\u2019s font again",
       hidden: true,
+      // "Copy style of" until 4.52.1: it never copied, it gives the window the ring's font again (Okay, 18 Oct 2026: "Same font as hours, yes")
       onclick: () => {
         const w = this.window();
         w.family = "";
@@ -13320,6 +13402,7 @@ var DialTool = class _DialTool {
       this.time_field.style.setProperty("--ink-dy", dy + "px");
     }
     if (document.activeElement !== this.time_slider || this.playing) this.time_slider.value = Math.floor(t12);
+    this.place_needle(t12);
     for (const b of document.querySelectorAll(".steps12 button")) b.classList.toggle("on", Math.abs(+b.dataset.t - t12) < 0.5);
     const word = this.half() ? "PM" : "AM";
     if (this.half_button.textContent !== word) this.half_button.textContent = word;
@@ -13329,6 +13412,16 @@ var DialTool = class _DialTool {
     if (this.playing) this.play_from = [performance.now(), t];
     this.sync_time();
     this.render();
+  }
+  /** the needle on the ruler, from the time itself (t12: seconds into the half day): over the slider's thumb's place,
+   *  from the ruler's top down to the bar's foot. */
+  place_needle(t12 = (this.S.t % 43200 + 43200) % 43200) {
+    const n = this.needle, s = this.time_slider;
+    if (!n || !n.isConnected || !s.clientWidth) return;
+    const THUMB = 3, bar = n.closest(".bar");
+    n.style.left = `${s.offsetLeft + THUMB / 2 + (s.clientWidth - THUMB) * t12 / 43200}px`;
+    n.style.top = `${s.offsetTop}px`;
+    n.style.height = `${bar.getBoundingClientRect().bottom - s.getBoundingClientRect().top}px`;
   }
   /** the day's ruler. An hour gets as many cuts as its width allows: none, halves, quarters, ten or five minutes.
    *  Hour lines are long, the others shorter; all cross the line. A click on the slider snaps to the nearest cut. */
@@ -13345,6 +13438,7 @@ var DialTool = class _DialTool {
       lines[kind] += `M${x(m * 60)} ${(H2 - h) / 2}V${(H2 + h) / 2}`;
       this.day_ticks.push(m * 60);
     }
+    this.place_needle();
     this.ruler.setAttribute("viewBox", `0 0 ${W2} ${H2}`);
     this.ruler.dataset.minutes = minutes;
     this.ruler.innerHTML = `<path class="line" d="M0 ${H2 / 2}H${W2}"/>` + Object.entries(lines).map(([kind, d]) => `<path class="${kind}" d="${d}"/>`).join("") + `<path class="pose" d="M${x(36600)} 1V${H2 - 1}"/>`;

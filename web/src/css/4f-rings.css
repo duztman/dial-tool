@@ -103,7 +103,8 @@
   .valueb:is([aria-expanded="true"], .dragging) svg path:not(.hull, .tangent), .valueb#ring-size:is([aria-expanded="true"], .dragging) svg .dark { stroke: var(--paper); }
   .valueb:is([aria-expanded="true"], .dragging) svg .pivot { fill: var(--paper); }
   svg text.pixel { font-family: var(--pixel); opacity: var(--pixel-ink); }
-  svg text.figure { font-family: var(--sans); font-weight: 700; }      /* a kind's figures and words: the tool's sans, bold, not the pixel font (#255, 4.50) */
+  svg text.figure { font-family: var(--sans); font-weight: 700; font-variant-numeric: proportional-nums; }      /* a kind's figures and words: the tool's sans, bold, not the pixel font (#255, 4.50); proportional figures, so 12 is no wider than it must be (notes 2, 18 Oct 2026) */
+  svg text.figure.words { font-weight: 800; }      /* the text ring's words, a weight heavier (notes 2, 18 Oct 2026: "bolder text") */
   /* a value button's tag is as wide as the pop-up it grows into: its name at the left, its value at the right, quiet,
      in the mono face. The pop-up is the same box, higher: the number's name (and its menu) · the field · − +, one
      under the other. No slider: the button is dragged instead. */
@@ -156,14 +157,17 @@
      a quiet row (form B) under them when something is knocked out */
   .giveway { grid-column: 2 / -1; display: grid; grid-template-columns: subgrid; align-items: start; margin: var(--u2) 0 var(--unit); }      /* the tabs two columns wide, the square the other four */
   .givetabs { grid-column: 1 / span 2; display: grid; }
-  .givetab { height: var(--line); padding: 0 var(--name-in); border: var(--hair) solid var(--row-rule); border-bottom: 0; background: none; color: var(--grey); text-align: left; font: inherit; font-size: var(--t-s); }
-  .givetab:last-child { border-bottom: var(--hair) solid var(--row-rule); }
-  .givetab:hover { background: var(--hover); }
-  .givetab.on { position: relative; z-index: 1; width: calc(100% + var(--gap) + var(--hair)); border-right-color: var(--field); background: var(--field); color: var(--ink); font-weight: 600; }      /* lit white and reaching across the gap onto the square's line: joined to it */
+  /* Skip where · Knock out: regular rows, not buttons (Okay, 18 Oct 2026, on 4.51.1: "left knockout not a button, these
+     are regular rows, changing to fit this view") — a row's name in a row's grey, the rows' white lines over and under,
+     no frame; the chosen one in ink, lit white and reaching across the gap onto the square: joined to it (#258) */
+  .givetab { height: var(--line); padding: 0 var(--name-in); border: 0; background: none; box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); color: var(--grey); text-align: left; font: inherit; }
+  .givetab:first-child { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule), inset 0 var(--hair) 0 var(--row-rule); }
+  .givetab:hover { color: var(--ink); }
+  .givetab.on { position: relative; z-index: 1; width: calc(100% + var(--gap) + var(--hair)); background: var(--field); color: var(--ink); font-weight: 600; }
   .givebox { grid-column: 3 / -1; display: grid; gap: var(--u2); padding: var(--u2) 0 0; border: var(--hair) solid var(--row-rule); background: var(--field); }
   .givepic { display: flex; justify-content: center; padding: 0 var(--u3); }
   .givepic svg { display: block; max-width: 100%; height: auto; }
-  .givepic .above { opacity: 0.45; }      /* the rings above: context, as the dial's edge behind the A's */
+  .givepic .above { opacity: 0.45; }      /* the rings above: context, as the dial's edge behind the A's — outlines, so what lies under them shows */
   .givechoices { display: grid; padding: 0 var(--u3); }
   .givechoices .check { height: var(--control); font-size: var(--t-s); }
   .givebox > .row.side.quiet { grid-template-columns: var(--side-label) minmax(0, 1fr) var(--side-num); padding: 0 var(--u3); }

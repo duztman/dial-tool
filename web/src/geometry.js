@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.52";
+export const VERSION = "beta 4.53";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -34,7 +34,7 @@ export const SKIP_FROM = ["nothing", "markers above", "markers & numerals above"
 export const KNOCK_FROM = ["nothing", "markers above", "markers & numerals above", "everything above"];
 export const FROM_KINDS = [[], ["markers"], ["markers", "numerals", "text"], ["ticks", "markers", "numerals", "band", "text"]];      // a text ring counts with the numerals (#297)
 export const MODES = ["upright", "radial", "radial, auto-flip", "on path"];
-export const ANCHORS = ["centre", "baseline", "ascender"];      // the point of a numeral that sits on its ring's radius (web version, 13 Oct 2026). Only grows at its end (R9)
+export const ANCHORS = ["centre", "baseline", "ascender", "outer edge", "inner edge"];      // the point of a numeral that sits on its ring's radius (web version, 13 Oct 2026). Only grows at its end (R9). The edges (4.53, #338; Okay, 18 Oct 2026: "Tangent to inner or outer"): every numeral's ink touches the radius from inside, or from outside
 export const FROM = ["outer", "middle", "inner"];               // the point of a mark or a band that sits on its ring's radius: its outer end, its middle, its inner end (#257, 4.47). Only grows at its end (R9)
 /** how far a mark's or band's outer edge lies outside the ring's radius: nothing when the radius measures to the outer
  *  end, half its extent from the middle, all of it from the inner end (#257). extent: the mark's length or the band's width. */
@@ -93,6 +93,10 @@ export const HAND_BASE = {
   // the marker as a hole or a mark (#300, beta 4.45.4; Okay, 16 Oct 2026: "Mark if also possible easily"): mark_as 0 —
   // cut out of the disc (the dial shows through), as before; 1 — painted on it, whole, in mark_c
   mark_as: 0, mark_c: [1, 1, 1, 1],
+  // the window kept inside the disc (#344; Okay, 18 Oct 2026: "Window is always inside disc hands, constrain" — "Off in
+  // old links for window"): its outer end at the hand's Length, or at the disc's edge if Length reaches past it. Off to
+  // start, as every older dial was drawn (R31: no new scheme); a hand made a disc in the tool turns it on (app.js)
+  mark_in: false,
 };
 
 // windows 2 to 4 (web version, beta 3.0). Window 1 is the date window both tools know: its keys are da_….
@@ -392,6 +396,7 @@ export const LINK_KEYS = [
   "text_turn", "at_deg", "a", "k", "ha_cap_top",
   "mark_as", "mark_c",      // 4.45.4 (#300): appended; starting as a hole, so every scheme-2 link draws as before
   "from",                   // 4.47 (#257): appended; starting at the outer end, as always, so every scheme-2 link draws as before
+  "mark_in",                // 4.52.2 (#344): appended; off to start, so every scheme-2 link draws as before
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -990,13 +995,18 @@ function mark_at(ring, i, a, grow = 0, solid = false) {
   const first = kind_of(ring) === "markers" && i === 0;
   const style = first ? TWELVES[ring.twelve] : "same";
   if (style === "none") return null;
-  const k = first ? ring.twelve_scale : 1;
+  // a mark's own nudge, as a numeral's (#349, groundwork for editing one mark; Okay, 18 Oct 2026, notes 2: "Each individual
+  // marker could be selected and edited"): radius ±, angle ±, size ×, turn — stored per position in the ring's `nudge`
+  const n = (ring.nudge && ring.nudge[String(i)]) || {};
+  const k = (first ? ring.twelve_scale : 1) * (n.s ?? 1);
   const L = ring.len * k, W = ring.w * k;
   const shape = style === "triangle" ? mark_outline(ring, L * 1.1, W * 2.4, "wedge", 0, grow, solid) : mark_outline(ring, L, W, null, null, grow, solid);
   const b = shape.bounds();
   if (!b) return null;
+  if (n.rot) shape.rotate(-n.rot, [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2]);
+  if (n.da) a += n.da;
   const extent = (b[3] - b[1]) - 2 * grow, width = (b[2] - b[0]) - 2 * grow;
-  const r_mid = max(ring.r + from_shift(ring, extent) - extent / 2, 0.1);
+  const r_mid = max(ring.r + (n.dr || 0) + from_shift(ring, extent) - extent / 2, 0.1);
   if (style === "double") {
     const da = degrees((ring.twelve_gap + width) / 2 / r_mid);
     return merge([place(shape.copy(), r_mid, a - da), place(shape, r_mid, a + da)]);
@@ -1076,14 +1086,50 @@ function numeral_dy(ring, txt, size) {
   return b ? -(b[1] + b[3]) / 2 : 0;
 }
 
+/** the radius that keeps the drawing still when what it measures to changes (#326; Okay, 18 Oct 2026: "Nothing changed …
+ *  just the dotted line moves", and "My comment applies to reverse auto reverse"): marks and bands keep their outer edge
+ *  (resize from: outer · middle · inner); numerals keep the middle of the label at the first position — exact for numerals
+ *  turned with the ring (radial, auto-flip), whose anchors all lie on one line through the middle; for upright ones it
+ *  holds the first label still. → the new radius for `ring` (as it is now) measured to `to`. */
+export function radius_kept(ring, key, to) {
+  if (key === "from") {
+    const extent = kind_of(ring) === "band" ? ring.width : ring.len;
+    return max(ring.r + extent * ((ring.from || 0) - to) / 2, 0);
+  }
+  const label = ring_labels(ring).find(Boolean);
+  if (!label) return ring.r;
+  const mode = MODES[ring.mode], a = ring.start || 0, size = ring.size;
+  const middle = (anchor) => {      // the label's middle, as a distance from the centre, with the ring measured to `anchor`
+    const R = { ...ring, anchor }, b = text_path(label, R, size).bounds();
+    const up = b ? numeral_dy(R, label, size) + (b[1] + b[3]) / 2 : 0;      // how far the middle stands above the radius, in the numeral's own up
+    const out = mode === "upright" ? up * cos(a * PI / 180) : mode === "on path" ? 0 : up * (mode === "radial, auto-flip" && a % 360 > 90 && a % 360 < 270 ? -1 : 1);
+    return ring.r + out + (mode === "on path" ? 0 : tangent_shift(R, mode, a, label, size));
+  };
+  return max(ring.r + middle(ring.anchor || 0) - middle(to), 0);
+}
+
 /** placement, radius, angle, size and rotation of the numeral at position i, nudge included. */
 function numeral_setup(ring, i, a) {
   const n = ring.nudge[String(i)] || {};
   return [MODES[ring.mode], ring.r + (n.dr || 0), a + (n.da || 0), ring.size * (n.s ?? 1), n.rot || 0];
 }
 
+/** how far a numeral's middle stands from the radius when the ring is tangent (#338): its ink's reach toward the dial's
+ *  edge — the box's corner in that direction for an upright numeral, half its height for one turned with the ring.
+ *  → 0 for the other anchors. Outer edge: inward (−), inner edge: outward (+). */
+function tangent_shift(ring, mode, a, label, size) {
+  const anchor = ANCHORS[ring.anchor];
+  if (anchor !== "outer edge" && anchor !== "inner edge") return 0;
+  const b = text_path(label, ring, size).bounds();
+  if (!b) return 0;
+  const w = b[2] - b[0], h = b[3] - b[1], t = a * PI / 180;
+  const reach = mode === "upright" ? abs(sin(t)) * w / 2 + abs(cos(t)) * h / 2 : h / 2;
+  return anchor === "outer edge" ? -reach : reach;
+}
+
 function numeral_at(ring, i, a0, label) {
-  const [mode, r, a, size, rot] = numeral_setup(ring, i, a0);
+  const [mode, r0, a, size, rot] = numeral_setup(ring, i, a0);
+  const r = mode === "on path" ? r0 : r0 + tangent_shift(ring, mode, a, label, size);
   if (mode === "on path") {
     const p = on_path(label, r, a, ring, size);
     if (rot) p.rotate(-rot, clock_point(r, a));
@@ -1450,7 +1496,9 @@ export function disc_mark(h) {
   return memo("mark" + key_of(h), () => {
     const mark_ring = { ...RING_BASE, shape: h.mark, len: h.mark_len, w: h.mark_w, round_out: h.round || 0, round_in: h.round || 0 };
     const mark = mark_outline(mark_ring, h.mark_len, h.mark_w), b = mark.bounds();
-    return b ? place(mark, max(h.len - (b[3] - b[1]) / 2, 0.1), 0) : null;
+    if (!b) return null;
+    const outer = h.mark_in ? min(h.len, max(h.disc_d, 0.1) / 2) : h.len;      // kept inside the disc (#344)
+    return place(mark, max(outer - (b[3] - b[1]) / 2, 0.1), 0);
   });
 }
 /** a disc hand whose marker is painted on (#300) */

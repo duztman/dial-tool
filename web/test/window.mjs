@@ -445,7 +445,7 @@ const anchors = await page.evaluate(() => {
 await shot("4c10-radius-pop");
 await page.keyboard.press("Escape");
 await page.click(`.ringlist li:nth-child(${ring_before + 1} of .ring) .name`);
-check(anchors.options === "Baseline Ascender Centre" && anchors.labels.join(" | ") === "Centre radius | Baseline radius | Ascender radius | Centre radius" && anchors.a1 === 1 && anchors.a2 === 2 && anchors.a0 === 0 && anchors.look.join(" ") === "true 17 17 248 66",
+check(anchors.options === "Baseline Ascender Centre Outer edge Inner edge" && anchors.labels.join(" | ") === "Centre radius | Baseline radius | Ascender radius | Centre radius" && anchors.a1 === 1 && anchors.a2 === 2 && anchors.a0 === 0 && anchors.look.join(" ") === "true 17 17 248 66",
   `the radius of numerals has a menu beside its label: ${anchors.options}; the label follows: ${anchors.labels.join(" → ")}; in the controller no name, the value's pill as far from the top as the discs from the foot (${anchors.look.join(" · ")}) (controller 2.svg, 18 Oct 2026)`);
 // …and the drawing follows: the numeral at 12 stands on the radius (baseline), hangs from it (ascender), or is centred on it
 const at12 = [];
@@ -456,6 +456,38 @@ for (const v of [1, 2, 0]) {
 }
 check(Math.abs(at12[0][0]) < 0.06 && at12[0][1] > 1 && Math.abs(at12[1][1]) < 0.01 && at12[1][0] < -1 && Math.abs(at12[2][2]) < 0.001,
   `at 12 the numeral's foot is on the radius with Baseline (${at12[0][0].toFixed(3)}), its top with Ascender (${at12[1][1].toFixed(3)}), its middle with Centre (${at12[2][2].toFixed(4)})`);
+{ // the edges, tangent (#338; Okay, 18 Oct 2026: "Tangent to inner or outer"), and a change of anchor that moves nothing on
+  // the dial, only the dotted line (#326: "Nothing changed … just the dotted line moves"; "applies to reverse auto reverse")
+  const r = await page.evaluate(() => {
+    const t = window.dial_tool, S = t.S, ring = S.rings.find((x) => x.kind === 2), keep = { anchor: ring.anchor, r: ring.r, mode: ring.mode, i: S.ui_ring };
+    const part = (k = 0) => { t.static_dirty = true; t.render(); t.draw(); return t.statik.rings.find((x) => x.ring === ring).parts[k].bounds(); };
+    S.ui_ring = S.rings.indexOf(ring);
+    ring.anchor = 3; ring.mode = 0; const out12 = part(0);
+    ring.anchor = 4; const in12 = part(0);
+    ring.anchor = 0; ring.mode = 1; const before = part(0), before3 = part(1);
+    t.set_value("ring", "anchor", 2); const after = part(0), after3 = part(1), r2 = ring.r;
+    t.set_value("ring", "anchor", 4); const after_in = part(0);
+    Object.assign(ring, { anchor: keep.anchor, r: keep.r, mode: keep.mode }); S.ui_ring = keep.i; t.static_dirty = true; t.render();
+    const moved = (a, b) => Math.max(...a.map((v, i) => Math.abs(v - b[i])));
+    return { top: out12[3] - keep.r, inner: in12[1] - keep.r, still: Math.max(moved(before, after), moved(before3, after3), moved(before, after_in)), r2: r2 - keep.r };
+  });
+  check(Math.abs(r.top) < 0.01 && Math.abs(r.inner) < 0.01 && r.still < 0.02 && Math.abs(r.r2) > 0.1,      // 0.02: labels of different heights hang from one line with Ascender, each from its own middle with Centre — a hundredth, seen at 400 %
+    `Outer edge: the numeral at 12 touches the radius with its top (${r.top.toFixed(3)}); Inner edge: the 12's foot (${r.inner.toFixed(3)}); a radial ring changed from Centre to Ascender and Inner edge doesn't move (${r.still.toFixed(4)}), its radius does (${r.r2.toFixed(3)})`);
+}
+{ // one mark nudged (#349, groundwork: "Each individual marker could be selected and edited"): a mark keeps its own radius ±,
+  // angle ±, size × and turn in the ring's nudge, as a numeral does
+  const m = await page.evaluate(() => { const t = window.dial_tool, ring = t.S.rings.find((x) => x.kind === 1), keep = JSON.stringify(ring.nudge || {});
+    const part = () => { t.static_dirty = true; t.render(); t.draw(); return t.statik.rings.find((x) => x.ring === ring).parts[0].bounds(); };
+    const a = part(); ring.nudge = { "0": { dr: 1 } }; const b = part(); ring.nudge = { "0": { s: 2 } }; const c = part();
+    ring.nudge = JSON.parse(keep); part(); return [b[3] - a[3], (c[3] - c[1]) / (a[3] - a[1])]; });
+  check(Math.abs(m[0] - 1) < 0.01 && Math.abs(m[1] - 2) < 0.05, `a mark nudged: 1 further out (${m[0].toFixed(3)}), twice as long (${m[1].toFixed(2)}) — the numerals' Nudge, for every mark`);
+}
+{ // a disc hand's window inside its disc (#344; "Off in old links for window"): off to start, on for a hand made a disc here
+  const d = await page.evaluate(() => { const t = window.dial_tool, i = t.S.ui_hand, keep = JSON.stringify(t.S.ha_minute);
+    t.S.ui_hand = 1; const was = t.S.ha_minute.mark_in; t.set_value("hand", "shape", 10); const now = t.S.ha_minute.mark_in;
+    Object.assign(t.S.ha_minute, JSON.parse(keep)); t.S.ui_hand = i; t.render(); return [was, now]; });
+  check(d[0] === false && d[1] === true, `a disc hand's window: off to start (${d[0]}), on once a hand is made a disc in the tool (${d[1]}), so older links draw as they did`);
+}
 // resize from (#257, 4.47): a mark's or a band's radius measures to its outer end, its middle or its inner end — the
 // same menu beside the radius' label; the ring's dotted guide is that radius; the Resize pane stands first (Type first
 // in a numerals ring, #296)
@@ -519,15 +551,15 @@ check(Math.abs(at12[0][0]) < 0.06 && at12[0][1] > 1 && Math.abs(at12[1][1]) < 0.
   await page.evaluate(() => window.dial_tool.set_value("ring", "clear", 0.3));
   await frame();
   const g2 = await page.evaluate(() => { const w = document.querySelector("#give-way"), own = w.querySelector(".givepic path.own").getAttribute("d"), t = window.dial_tool.ring();
-    return [w.querySelector("#give-tab-1").classList.contains("on"), t.knock, (own.match(/M/g) || []).length, own.includes("V60"), w.querySelector(".row.side.quiet").hidden, w.querySelector(".row.side.quiet label").textContent, getComputedStyle(w.querySelector(".row.side.quiet input[type=range]")).display]; });
+    return [w.querySelector("#give-tab-1").classList.contains("on"), t.knock, (own.match(/M/g) || []).length, own.includes("V62"), w.querySelector(".row.side.quiet").hidden, w.querySelector(".row.side.quiet label").textContent, getComputedStyle(w.querySelector(".row.side.quiet input[type=range]")).display]; });
   await page.evaluate(([skip, knock, clear]) => { const t = window.dial_tool; t.set_value("ring", "skip", skip); t.set_value("ring", "knock", knock); t.set_value("ring", "clear", clear); t.give_tab = null; }, was);
   check(g1[0] === "Skip where · Knock out" && g1[1] && g1[2] === "rgb(255, 255, 255)" && g1[3] === "rgb(255, 255, 255)" && g1[4] === "rgb(255, 255, 255)" && g1[5] && g1[6] === 7 && g1[7] === 4 && g1[8] === "ring-give-skip-2" && g1[9] && g1[10] === "tab" && g1[11] === "img"
     && g2[0] && g2[1] === 3 && g2[2] === 9 && g2[3] && !g2[4] && g2[5] === "Clearance" && g2[6] === "none",
     `Give way (#258): tabs ${g1[0]}, the open one white (${g1[2]}) and touching the white-bordered square (${g1[3]}, ${g1[4]}); Skip where "markers & numerals above" draws ${g1[6]} of 9 ticks, four radio buttons with ${g1[8]} chosen, no Clearance (hidden ${g1[9]}); Knock out "everything above" draws all ${g2[2]} ticks, some cut short, and Clearance as a quiet row (${g2[5]}, slider ${g2[6]})`);
 }
 {
-  const tiles = await page.$$eval("[id^=ring-mode-Placement-] svg", (es) => es.map((e) => { const d = e.querySelector("path").getAttribute("d"); return [(d.match(/M/g) || []).length, e.querySelector("circle") !== null, d.split(/[ML]/).filter(Boolean).every((pt) => pt.trim().split(" ").every((v) => Math.abs((+v * 4) % 2) === 1))]; }));
-  check(tiles.length === 4 && tiles.every((t) => t[0] === 12 && t[1] && t[2]), `Placement's four tiles are micro dials (#259): a circle and six stemmed arrows each, every point on the quarter points (${tiles.map((t) => t.join("/")).join(" · ")})`);
+  const tiles = await page.$$eval("[id^=ring-mode-Placement-] svg", (es) => es.map((e) => { const [stems, heads] = [...e.querySelectorAll("path")].map((p) => p.getAttribute("d")); return [(stems.match(/M/g) || []).length, (heads.match(/Z/g) || []).length, e.querySelector("circle") !== null, e.querySelector("path").getAttribute("stroke-width")]; }));
+  check(tiles.length === 4 && tiles.every((t) => t[0] === 6 && t[1] === 6 && t[2] && t[3] === "1.25"), `Placement's four tiles are micro dials (#259): a circle and six arrows each, thin stems (DENSE) and big filled heads (Okay, 18 Oct 2026: "thinner but big headed arrows") (${tiles.map((t) => t.join("/")).join(" · ")})`);
 }
 check(await page.$$eval(".row.pick .pickt svg", (e) => e.length) >= 4, "Kind is a row of picture tiles");
 await page.click("#ring-kind-square"); await page.click("#ring-kind-Kind-0");
@@ -962,7 +994,7 @@ await page.click("#hand-tab-0");
   await page.click("#hand-mark-as-Marker-1");
   const mark = await names(), as = await S("S.ha_hour.mark_as");
   await page.evaluate((h) => { const t = window.dial_tool; t.S.ha_hour = JSON.parse(h); t.static_dirty = true; t.sync_rows(); t.render(); }, was);
-  check(hole.includes("Marker · Hole · Hole length · Hole width · Round ends") && mark.includes("Marker · Mark · Mark length · Mark width · Mark ink · Round ends") && as === 1,
+  check(hole.includes("Marker · Hole · Hole length · Hole width · ") && hole.includes("Inside the disc · Round ends") && mark.includes("Marker · Mark · Mark length · Mark width · Mark ink · ") && as === 1,
     `a disc's marker is a Hole or a Mark; its rows say which (${mark.split(" · ").slice(3, 8).join(" · ")}), and a mark has its colour (#300)`);
 }
 { // one line through the top: the middle of the title's small letters, undo and Guides; the unit box's and the Gallery pill's words on the title's baseline, as Help's are (Okay, 16 Oct 2026, #285: "same baseline")
@@ -1079,7 +1111,7 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
   }
   await page.click("#window-font-back");
   check(await S("S.da_tracking === null && S.da_lang === null && S.da_features === null && Object.keys(S.da_axes).length === 0"), "As the numerals takes the window's tracking, language, axes and features back too");
-  check(await page.$eval("#window-font-back", (b) => b.hidden || (b.textContent === "Copy style of Numerals" && b.querySelector("i").textContent === "Numerals" && getComputedStyle(b).backgroundColor === "rgba(0, 0, 0, 0)" && b.querySelector("svg") !== null)), "its button says Copy style of Numerals — the ring's name as written, in italic — beside a copy sign, a box with no fill");
+  check(await page.$eval("#window-font-back", (b) => b.hidden || (b.textContent === "Same font as Numerals" && b.querySelector("i").textContent === "Numerals" && getComputedStyle(b).backgroundColor === "rgba(0, 0, 0, 0)" && b.querySelector("svg") !== null)), "its button says Copy style of Numerals — the ring's name as written, in italic — beside a copy sign, a box with no fill");
   check(own[0] === "Oswald" && own[1] === ring_font && own[2] && await S("S.da_ps === ''") && !(await page.textContent("#window-font-name")).includes("as the numerals"), "a window can have a font of its own (Oswald) without touching the numerals' font; As the numerals takes it back");
   // three colours
   const fills = async () => { await frame(); return page.evaluate(() => { const t = window.dial_tool, items = [...document.querySelectorAll("main svg [fill]")]; const S = t.S; return [S.da_text_c, S.da_disc_c, S.da_ink]; }); };
@@ -1905,6 +1937,20 @@ const look = await page.evaluate(() => { const q = (s) => document.querySelector
     status: c(".bar .status").display, hint: q(".zoomsign").dataset.tip, first: q(".viewing").children[1] === q(".zoomsign") && q(".zooms").lastElementChild === q("#fit"), ruler: Math.round(r("#time-slider").width) }; });
 check(look.square && look.bar === 62 && look.play[0] === look.play[1] && look.play[2] === "50%" && look.time && look.status === "none" && look.hint.includes("⌘ + scroll") && look.first && look.ruler <= 518,
   `the bar: a fifth higher (${look.bar}), no panel square, a round play, the time in Dial Time (Barlow Condensed Light, #284), no status line, the magnifier first with how to zoom in its tag, then − + FIT together (notes 2, 18 Oct 2026), the day slider no wider than an iPad's (${look.ruler})`);
+{ // the needle (notes 2, 18 Oct 2026: "Ruler pin does not move on bottom bar"; "1px wide and red, starts from the bottom of
+  // the screen"): placed from the time, whatever has the focus; a press and a drag on the strip set the time (an iPad's own
+  // range control did not scrub)
+  await page.focus("#time-slider");
+  const n0 = await page.evaluate(() => document.querySelector(".needle").getBoundingClientRect().left);
+  await page.evaluate(() => window.dial_tool.set_time(3 * 3600));
+  const n = await page.evaluate(() => { const e = document.querySelector(".needle"), r = e.getBoundingClientRect(), c = getComputedStyle(e), bar = document.querySelector(".bar").getBoundingClientRect(); return [r.left, r.width, c.backgroundColor, Math.round(bar.bottom - r.bottom)]; });
+  const s = await page.locator("#time-slider").boundingBox();
+  await page.mouse.move(s.x + s.width * 0.25, s.y + s.height / 2); await page.mouse.down(); await page.mouse.move(s.x + s.width * 0.75, s.y + s.height / 2, { steps: 6 }); await page.mouse.up();
+  const dragged = await S("Math.round(S.t % 43200)");
+  check(Math.abs(n[0] - n0) > 20 && n[1] === 1 && n[2] === "rgb(204, 56, 26)" && n[3] === 0 && Math.abs(dragged - 32400) < 120,
+    `the needle follows the time with the slider focused (${Math.round(n0)} → ${Math.round(n[0])}), 1 wide, red (${n[2]}), down to the bar's foot (${n[3]}); dragged to three quarters the time is ${dragged} s (9:00)`);
+  await page.evaluate(() => window.dial_tool.set_time(10 * 3600 + 600));
+}
 await shot("10-bar");
 { // the showcase (Okay, 15 Oct 2026, 04:26, reshaped 04:59 and 05:09)
   const q = () => page.evaluate(() => { const t = window.dial_tool, r = (s) => document.querySelector(s).getBoundingClientRect(), c = (s) => getComputedStyle(document.querySelector(s));
@@ -1913,7 +1959,7 @@ await shot("10-bar");
       iris: [Math.round(r(".irisbox").right), Math.round(r(".irisbox").bottom), r(".irisbox").top + r(".irisbox").height / 2], x: c(".irisbox .x").display, pill: [r("#show-now").left + r("#show-now").width / 2, r("#show-now").top + r("#show-now").height / 2, Math.round(r("#show-now").width), r("#show-now").right],
       mast: [c(".mast").opacity, c(".mast").pointerEvents], sky: c(".sky").opacity, guide_items: t.items.filter((i) => i.role === "guide").length,
       soft: [...document.querySelectorAll('.preview g[clip-path^="url(#shadow-clip"]')].some((g) => g.getAttribute("filter")), letter: c("#show-now").letterSpacing,
-      gap: Math.round(r("#eye-box").right) === Math.round(r(".irisbox").right) ? r("#eye-box").top - r(".irisbox").bottom : -1, hint_mid: (() => { const h = r("#sun-hint"), m = r("main"), below = m.top + t.c[1] + t.S.dial_d / 2 * t.z, above = r("#show-now").top; return Math.abs(h.top + h.height / 2 - (below + above) / 2) < 1 && h.width === 108; })() }; });
+      gap: Math.round(r("#eye-box").bottom) === Math.round(r(".irisbox").bottom) ? r("#eye-box").left - r(".irisbox").right : -1, hint_mid: (() => { const h = r("#sun-hint"), m = r("main"), below = m.top + t.c[1] + t.S.dial_d / 2 * t.z, above = r("#show-now").top; return Math.abs(h.top + h.height / 2 - (below + above) / 2) < 1 && h.width === 108; })() }; });
   const before = await q();
   await page.click("#iris-box"); await page.waitForTimeout(400);
   const opened = await q();

@@ -1,5 +1,30 @@
 # Dial Tool — changelog
 
+## beta 4.53 (web version) · 18 Oct 2026
+
+Mechanisms after Okay's answers (18 Oct, 19:02). Goes live with 4.52.1 and 4.52.2.
+
+- **Numerals tangent to the ring** (#338: "Tangent to inner or outer"): the radius' menu gains **Outer edge** and **Inner edge**: every numeral's ink touches the radius, from inside or from outside — an upright numeral by the corner of its box that faces the edge, one turned with the ring by its top or foot. Like Illustrator's paragraph alignment for a ring of figures.
+- **A change of what the radius measures to moves nothing on the dial** (#326: "Nothing changed … just the dotted line moves"; "applies to reverse auto reverse"): the radius changes with it, so only the dotted line goes. Marks and bands keep their outer edge (outer · middle · inner); numerals keep the first label's middle — exact for radial and auto-flip, where every anchor lies on one line. Undo takes both back.
+- **One mark nudged** (#349, groundwork): ticks and markers read the ring's per-position Nudge as numerals do — radius ±, angle ±, size ×, turn. Nothing in the window sets it yet: picking and editing one mark comes with its design.
+
+## beta 4.52.2 (web version) · 18 Oct 2026
+
+Okay's answers of 18 Oct, 19:02 ("Rest is good, common sense wins go"). Goes live with 4.52.1.
+
+- **The day's needle** (#343: "Ruler pin does not move on bottom bar"; notes 2: "The moving needle is 1px wide and red, starts from the bottom of the screen"): the slider's own thumb kept its place whenever the slider had the focus — after a tap on it, on an iPad — so the time moved and the pin didn't. Now a red needle, 1 wide, from the ruler's top to the bar's foot, placed from the time itself; the slider's thumb is not drawn. Presses and drags on the day's strip are read by the tool and set the time (a press that doesn't move still goes to the nearest step), so scrubbing works the same in every browser; the slider stays for the keyboard and a screen reader.
+- **Showcase left of the eye** (#341): the iris switch stands left of the eye switch, a unit apart (over it since 4.42.4).
+- **Same font as Hours** (#359): a window's way back to the numerals' font was called *Copy style of*; it never copied.
+- **A disc hand's window inside its disc** (#344): *Inside the disc*, a tick in the disc hand's rows; its window then ends at the disc's edge however long the hand is. A new key (`mark_in`), off in older links so they draw as before, on for a hand made a disc in the tool.
+
+## beta 4.52.1 (web version) · 18 Oct 2026
+
+Okay's eye on 4.51.1's items drawn from his words (18 Oct, 18:55).
+
+- **The kind pictures** (#255, "Do my notes"): the numerals' 12 in proportional figures, 0.75 tighter; the text ring's ABC · XYZ a weight heavier (800), tracked 0.5, the two lines 7.5 apart (were 9).
+- **Give way** (#258: "thicker indices, better indication of the actual state on watch. And left knockout not a button, these are regular rows, changing to fit this view"): this ring's ticks 3 thick, in ink; the marks of the rings above drawn as faint outlines lying on the ticks where they really would, so the ticks run through them (nothing), are gone under them (Skip where) or stop the clearance short of them (Knock out). *Skip where* and *Knock out* are rows now — a row's grey, the rows' white lines, no frames — the chosen one in ink, lit white and joined to the square as before.
+- **Placement's pictures** (#259: "Thinner lines overall, thinner but big headed arrows, try again"): the circle and the arrows' stems 1.25 (were 1.5), each head a filled triangle, 2.75 long and 3.5 across.
+
 ## beta 4.52 (web version) · 18 Oct 2026
 
 From Okay's notes 2 (18 Oct 2026; build list #316–#359, all of them ranked there), the small ones (Okay: "in the meantime start working on small things").
