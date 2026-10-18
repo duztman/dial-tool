@@ -8,7 +8,7 @@
 
 import * as G from "./geometry.js";
 import { svg_document, pdf_document, png_with_dpi, file_name } from "./output.js";
-import { BEZELS, bezel_parts, bezel_svg } from "./bezels.js";
+import { BEZELS, STRAPS, bezel_svg } from "./bezels.js";
 // a Wear OS watch face (4.67; farukahmet's PR #1, 18 Oct 2026): the dial as Watch Face Format, packed and signed in the browser
 import { generate_watchface_xml } from "./wearos/wff_xml.js";
 import { svg_dial_face, svg_hand, svg_cap, svg_preview, svg_window_sheet, svg_to_png_bytes } from "./wearos/wff_assets.js";
@@ -985,7 +985,7 @@ class DialTool {
       if (!quiet) this.static_dirty = true;
       if (key === "dial_d" || key === "margin") { if (this.fitted) this.fit(); }
       if (key === "date") this.sync_time();      // the bar's stacked date (4.62)
-      if (key === "bezel" && this.case_sync) this.case_sync();
+      if ((key === "bezel" || key === "strap" || key === "c_strap") && this.case_sync) this.case_sync();
       if (key === "dial_hole") {                  // its guide shows while it is being sized, whatever the guides are set to (#267)
         this.hole_at = performance.now();
         clearTimeout(this.hole_timer);
@@ -1011,7 +1011,7 @@ class DialTool {
    *  swatch or a colour pill is left to that swatch: it opens, moves or closes the pop-out itself. */
   pressed(e) {
     const on = (q) => e.target.closest && e.target.closest(q);
-    if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox")) this.pop_close();
+    if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox, .strapdot")) this.pop_close();
     if (this.guides_open && !$("#guide-list").hidden && !on(".guides")) this.guides_open(false);
     if (this.shadows_open && !$("#shadow-list").hidden && !on(".shadows")) this.shadows_open(false);
     if (this.bio_open && !$("#bio").hidden && !on(".about")) this.bio_open(false);
@@ -1622,7 +1622,7 @@ class DialTool {
     this.sun_hint = el("div", { className: "sunhint", id: "sun-hint" });
     this.sun_hint.innerHTML = icon(TOOL_ICONS.both_ways, 108, 36);
     this.sun_hint.onanimationend = () => this.sun_hint.classList.remove("go");
-    return el("div", { className: "backdrops" }, box, this.case_box());
+    return el("div", { className: "backdrops" }, box, ...this.case_box());
   }
 
   /** Okay's mark in the panel's first column, left of the title; a press opens a short bio: who made the tool, where
@@ -1822,10 +1822,10 @@ class DialTool {
   /** a case round the dial (4.66; farukahmet's PR #3, "abstractified" — bezels.js), drawn again only when its kind or
    *  the dial's size changes. Preview only: never in an export or the Tiny Preview (R26). */
   draw_bezel() {
-    const key = `${this.S.bezel || 0}/${this.S.dial_d}`;
+    const S = this.S, key = `${S.bezel || 0}/${S.dial_d}/${S.strap}/${S.c_strap}`;
     if (key === this.bezel_key) return;
     this.bezel_key = key;
-    this.bezel_g.innerHTML = this.S.bezel ? bezel_svg(this.S.bezel, this.S.dial_d) : "";
+    this.bezel_g.innerHTML = S.bezel ? bezel_svg(S.bezel, S.dial_d, S.strap, S.c_strap) : "";
   }
 
   /** the case's switch, beside Backdrop (4.66): its kind's name and a chevron; the system's list over it, unseen. */
@@ -1835,11 +1835,27 @@ class DialTool {
     arrow.innerHTML = icon(SIGNS.up);
     const menu = el("select", { id: "case-pick", ariaLabel: "A case round the dial (preview only)", title: "A case round the dial (preview only)" });
     BEZELS.forEach((name, i) => menu.append(el("option", { value: String(i), textContent: i ? name : "No case" })));
-    menu.onchange = () => { this.set_value("global", "bezel", +menu.value); this.fit(); this.render(); };      // the view fits the case (or the dial again)
+    menu.onchange = () => { this.set_value("global", "bezel", +menu.value); this.render(); };      // the view stays on the dial (4.69; it fitted the case in 4.66–4.68)
     const box = el("span", { className: "onview casebox", id: "case" }, word, arrow, menu);
-    this.case_sync = () => { const i = this.S.bezel || 0; word.textContent = i ? BEZELS[i] : "Case"; menu.value = String(i); box.classList.toggle("on", i > 0); };
+    // its strap (4.69; Okay, 18 Oct 2026, 22:35: "Add straps to bezels metal bands too … Add strap color change option"):
+    // a second switch beside it while a case is on — the strap's colour as a chip (a press opens the colour pop-out),
+    // then its kind's name and a chevron over the system's list: No strap · Strap · Bracelet. A bracelet is the case's metal: no chip
+    const dot = el("button", { type: "button", className: "dot strapdot", id: "strap-colour", title: "The strap’s colour", ariaLabel: "The strap’s colour" });
+    dot.onclick = () => this.pop_open({ read: () => this.S.c_strap, write: (v) => this.set_value("global", "c_strap", v), label: () => "Strap" }, dot);
+    const sword = el("span", { className: "word" }), sarrow = el("span", { className: "arrow" });
+    sarrow.innerHTML = icon(SIGNS.up);
+    const smenu = el("select", { id: "strap-pick", ariaLabel: "The case’s strap (preview only)", title: "The case’s strap (preview only)" });
+    STRAPS.forEach((name, i) => smenu.append(el("option", { value: String(i), textContent: i ? name : "No strap" })));
+    smenu.onchange = () => { this.set_value("global", "strap", +smenu.value); this.render(); };
+    const strap = el("span", { className: "onview casebox strapbox", id: "strap" }, dot, el("span", { className: "strapkind" }, sword, sarrow, smenu));
+    this.case_sync = () => {
+      const S = this.S, i = S.bezel || 0, k = S.strap || 0;
+      word.textContent = i ? BEZELS[i] : "Case"; menu.value = String(i); box.classList.toggle("on", i > 0);
+      strap.hidden = !i; sword.textContent = k ? STRAPS[k] : "Strap"; smenu.value = String(k); strap.classList.toggle("on", k > 0);
+      dot.hidden = k !== 1; paint(dot, S.c_strap);
+    };
     this.case_sync();
-    return box;
+    return [box, strap];
   }
 
   /** guides, at the preview's bottom left since 4.59 (its top right from 12 Oct 2026, Okay, to 4.58): a switch (a bullseye and the word; solid outline = on,
@@ -4768,7 +4784,7 @@ class DialTool {
   // ── the preview: zoom, pan, click ────────────────────────
 
   size() { const r = this.svg.getBoundingClientRect(); return [r.width, r.height]; }
-  fit_zoom() { const [w, h] = this.size(); return Math.min(w, h) / Math.max(G.page_mm(this.S), this.S.bezel ? 2 * (bezel_parts(this.S.bezel, this.S.dial_d).reach + this.S.margin) : 0); }      // with a case (4.66), room for it too
+  fit_zoom() { const [w, h] = this.size(); return Math.min(w, h) / G.page_mm(this.S); }      // the dial, never its case (4.69; Okay, 22:35: "Fit and previews care about the dial still, the bezel and strap secondary"; 4.66–4.68 made room for the case)
 
   /** put the dial at c, scaled to z; mirrored for toner transfer. y grows upward inside. */
   place() {

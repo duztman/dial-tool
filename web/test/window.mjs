@@ -2235,10 +2235,20 @@ await touch.close();
   await page.selectOption("#case-pick", "1"); await frame();
   const on = await page.evaluate(() => { const t = window.dial_tool, g = document.querySelector("g.bezel"), fills = new Set([...g.querySelectorAll("path")].map((p) => p.getAttribute("fill"))), svg = t.statik && window.dial_tool;
     return [t.S.bezel, g.querySelectorAll("path").length, fills.size, document.querySelector("#case .word").textContent, t.z, g.compareDocumentPosition(t.dial) & Node.DOCUMENT_POSITION_FOLLOWING ? true : false]; });
+  // its strap (4.69; Okay, 22:35: "Add straps to bezels metal bands too, same style … Add strap color change option"; "Fit and previews care about the dial still")
+  const fills = () => page.evaluate(() => [...document.querySelectorAll("g.bezel path")].map((p) => p.getAttribute("fill")));
+  const leather = await fills(), strap_on = await page.evaluate(() => [!document.querySelector("#strap").hidden, document.querySelector("#strap .word").textContent, !document.querySelector("#strap-colour").hidden]);
+  await page.evaluate(() => window.dial_tool.set_value("global", "c_strap", [0.1, 0.25, 0.45, 1])); await frame();
+  const blue = await fills();
+  await page.selectOption("#strap-pick", "2"); await frame();
+  const bracelet = await fills(), chip = await page.evaluate(() => document.querySelector("#strap-colour").hidden);
+  await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "strap", 1); t.set_value("global", "c_strap", [0.29, 0.2, 0.14, 1]); }); await frame();
   await page.selectOption("#case-pick", "0"); await frame();
-  const off = await page.evaluate(() => [window.dial_tool.S.bezel, document.querySelector("g.bezel").childElementCount, document.querySelector("#case .word").textContent, window.dial_tool.z]);
-  check(on[0] === 1 && on[1] > 20 && on[2] <= 5 && on[3] === "Diver" && on[4] < z0 && on[5] && off[0] === 0 && off[1] === 0 && off[2] === "Case" && Math.abs(off[3] - z0) < 1e-6,
-    `a case round the dial: Diver drawn under the dial in ${on[2]} tones (${on[1]} parts), the view fitted to it (${z0.toFixed(2)} → ${on[4].toFixed(2)}); No case takes it away and fits the dial again`);
+  const off = await page.evaluate(() => [window.dial_tool.S.bezel, document.querySelector("g.bezel").childElementCount, document.querySelector("#case .word").textContent, window.dial_tool.z, document.querySelector("#strap").hidden]);
+  check(on[0] === 1 && on[1] > 20 && on[2] <= 8 && on[3] === "Diver" && Math.abs(on[4] - z0) < 1e-6 && on[5] && off[0] === 0 && off[1] === 0 && off[2] === "Case" && Math.abs(off[3] - z0) < 1e-6 && off[4],
+    `a case round the dial: Diver drawn under the dial in ${on[2]} tones (${on[1]} parts) with its strap; the view stays on the dial (${z0.toFixed(2)} → ${on[4].toFixed(2)}); No case takes both away`);
+  check(strap_on.join() === "true,Strap,true" && blue.includes("#1A4073") && !leather.includes("#1A4073") && bracelet.length > leather.length && !bracelet.includes("#1A4073") && chip,
+    `its strap: a switch beside Case while a case is on (${strap_on.join(" ")}); a new strap colour repaints it; a bracelet is links in the case's metal (${bracelet.length} parts), no chip`);
 }
 { // Tiny Preview (#337, 4.59): its button top right where Guides stood; the dial at its own size (the browser's mm) with its margins, over everything; dragged anywhere; its eye puts it away. Guides at the bottom left, between Backdrop and Shadows, their list opening upward
   const corner = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), m = r("main"), o = r("#tiny-open"), g = r("#guides"), b = r("#backdrop"), sh = r("#shadows"); return [Math.round(m.right - o.right) === Math.round(m.bottom - m.bottom) || o.top - m.top < 40, b.bottom <= g.top + 1 && g.bottom <= sh.top + 1 && Math.abs(g.left - sh.left) < 1]; });

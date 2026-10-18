@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.68";
+export const VERSION = "beta 4.69";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -154,6 +154,7 @@ export const DEFAULTS = {
   da_guide: -1,                                   // the first window's guide colour, as every window's `guide` (#271)
   da_follows: false, da_names: 0,                  // the first window's `follows` and `names` (4.62)
   wearos_name: "",                                 // a Wear OS watch face's name (4.67, farukahmet's PR #1); "" = Dial Tool. Its package's name follows from it
+  strap: 1, c_strap: [0.29, 0.2, 0.14, 1],      // its strap (4.69, bezels.js STRAPS): 0 none, 1 a leather strap in c_strap, 2 a metal bracelet in the case's metal. Shown only with a case
   bezel: 0,                                        // a case round the dial on the preview (4.66, bezels.js BEZELS): 0 none, 1 diver, 2 pilot, 3 dress, 4 sport. Preview only, like the backdrop (R26)
   date: "",                                        // the day the dial shows, "2026-10-18", set in the bar (4.62; Okay, 18 Oct 2026: "Date best set at the bar … Default from system date"); "" = today, wherever the dial is opened
   da_wh_link: false,                               // the first window's width and height linked, as every window's `wh_link` (#358, beta 4.57)
@@ -220,7 +221,7 @@ export function radial_extent(path) {
  *  · k: a place in GUIDE_COLOURS, -2 = none. line: a diameter at angle a · crosshair: a small cross at angle a and
  *  radius r, to mark a point · circle: radius r. The list only grows at its end (R9). */
 export const GUIDE_MORE = ["line", "crosshair", "circle"];
-export const NOT_GEOMETRY = ["t", "guides", "bezel", "wearos_name", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
+export const NOT_GEOMETRY = ["t", "guides", "bezel", "strap", "c_strap", "wearos_name", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
 export const NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_", "sh_"];
 
 /** base values + d's values (deep copies), names turned into popup indexes. */
@@ -410,6 +411,7 @@ export const LINK_KEYS = [
   "follows", "names", "da_follows", "da_names", "date",      // 4.62: appended; a window follows the bar's date only when asked, so every older link shows its typed text
   "bezel",                  // 4.66: appended; no case to start, so every older link looks as before
   "wearos_name",            // 4.67: appended; empty to start
+  "strap", "c_strap",       // 4.69: appended; a case's strap — drawn only with a case, which older links don't have
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);

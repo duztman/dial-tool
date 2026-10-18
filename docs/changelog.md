@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.69 (web version) · 18 Oct 2026
+
+Straps for the cases (Okay, 22:35: "Add straps to bezels metal bands too, same style, style very good. Fit and previews care about the dial still, the bezel and strap secondary. Add strap color change option").
+
+- **A strap or a bracelet** on every case, drawn as the cases are: a leather strap in its colour with a lighter band on its left and a darker one on its right, a keeper past the lugs, holes and a rounded tip at the bottom, a buckle at the top; or a bracelet of three links to a row in the case's own metal (steel, or gold for the dress case), its middle links polished, its gaps in shade. Both run from between the lugs and narrow a fifth.
+- **A Strap switch** beside Case while a case is on: the strap's colour as a chip (a press opens the colour pop-out), then No strap · Strap · Bracelet. New keys `strap` (a strap to start) and `c_strap` (a dark brown).
+- **The view fits the dial again**, never the case: the case and strap run off the edges as they will. From 4.66 to 4.68 the view made room for the case.
+
 ## beta 4.68 (web version) · 18 Oct 2026
 
 Okay's notes of 22:35 on 4.67, phones and iPad.

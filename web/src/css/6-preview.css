@@ -25,6 +25,13 @@
   .casebox > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
   .casebox:not(.on) { border-style: dashed; }
   .casebox.on > :not(select) { opacity: 1; }
+  /* its strap's switch (4.69): the strap's chip, a button of its own, then its kind's name and chevron with the list over
+     those only — so a press on the chip opens the colour, a press on the words the list */
+  .strapbox { padding-left: var(--u3); }
+  .strapbox .strapkind { position: relative; display: flex; align-items: center; gap: var(--unit); align-self: stretch; }
+  .strapbox .strapkind > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+  .strapbox .dot { padding: 0; border-color: var(--on-canvas); cursor: pointer; }
+  .strapbox.on > * { opacity: 1; }
   /* the selected ring's handles on its guides (4.65; farukahmet's PR #2, Okay: "all these handles should be in guide
      color"): filled with the ring's guide colour (--handle, app.js), a hairline of white round them so they read on any
      dial; a reach of a fingertip round each, unseen */
