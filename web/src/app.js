@@ -359,7 +359,9 @@ const TOOL_ICONS = {
   // a case, its strap, X-ray (4.79; Okay, 19 Oct 2026, 01:03: "Strap and case: stack on that left bottom list, on mobile
   // icon them"): on 18, DENSE, as the Guides and Shadows signs — a case with its four lugs and crown; a strap's two edges
   // through a buckle; a disc's edge whole round a dashed one under it
-  case: `<g ${sw(DENSE)}><circle cx="9.25" cy="9.25" r="4.75"/><path d="M6.25 1.25V4.25M12.25 1.25V4.25M6.25 14.25V17.25M12.25 14.25V17.25M14.75 9.25H16.75"/></g>`,
+  // a case from above (4.82; Okay, 19 Oct 2026: "Case icon … need work"): its bezel and dial opening, the lugs running
+  // out of it (they floated a dot clear of it until 4.81), the crown at 3
+  case: `<g ${sw(DENSE)}><circle cx="9.25" cy="9.25" r="5"/><circle cx="9.25" cy="9.25" r="2.5"/><path d="M6.25 1.25V5.25M12.25 1.25V5.25M6.25 13.25V17.25M12.25 13.25V17.25M14.25 9.25H16.75"/></g>`,
   strap: `<g ${sw(DENSE)}><path d="M6.25 1.25V6.25M12.25 1.25V6.25M6.25 12.25V17.25M12.25 12.25V17.25"/><rect x="4.75" y="6.25" width="9" height="6"/><path d="M9.25 6.25V12.25"/></g>`,
   xray: `<g ${sw(DENSE)}><circle cx="9.25" cy="9.25" r="6.5"/><circle cx="9.25" cy="9.25" r="3.25" stroke-dasharray="1.25 1.3" stroke-linecap="butt"/></g>`,
   shadows: `<circle cx="7.25" cy="9.75" r="5.5" ${sw(DENSE)}/><path d="M4.5 14.5A5.5 5.5 0 0 0 12 7A8 8 0 0 1 4.5 14.5Z" fill="currentColor" stroke="none"/>`
@@ -1197,7 +1199,7 @@ class DialTool {
     // the system's date picker (an input under it, unseen); a date or day window that follows the date shows it. Until a
     // date is picked it is today's, wherever the dial is opened (S.date ""); Now brings today back.
     this.date_button = el("button", { type: "button", id: "date", className: "date", title: "The day the dial shows: a window that follows the date shows it" });
-    this.date_lines = [el("span"), el("span"), el("span")];
+    this.date_lines = [el("span"), el("span")];      // day over month: the year left out (4.82; Okay, 19 Oct 2026: "i don't want it there"); the picker still sets it
     this.date_button.append(...this.date_lines);
     this.date_pick = el("input", { type: "date", id: "date-pick", className: "datepick", tabIndex: -1, ariaLabel: "The day the dial shows" });
     this.date_pick.onchange = () => this.set_value("global", "date", this.date_pick.value || "");
@@ -1803,7 +1805,7 @@ class DialTool {
     this.sun_hint = el("div", { className: "sunhint", id: "sun-hint" });
     this.sun_hint.innerHTML = icon(TOOL_ICONS.both_ways, 108, 36);
     this.sun_hint.onanimationend = () => this.sun_hint.classList.remove("go");
-    return el("div", { className: "backdrops" }, box, ...this.case_box(), this.xray_box());
+    return el("div", { className: "backdrops" }, box, this.xray_box());
   }
 
   /** Okay's mark in the panel's first column, left of the title; a press opens a short bio: who made the tool, where
@@ -5434,9 +5436,9 @@ class DialTool {
 
   sync_time() {
     const t12 = ((this.S.t % 43200) + 43200) % 43200;
-    if (this.date_lines) {                         // the date, stacked: day · month · year, two figures each (07/10/28)
+    if (this.date_lines) {                         // the date, stacked: day over month, two figures each (07/10; the year until 4.81)
       const [y, m, d] = G.shown_day(this.S).split("-");
-      [d, m, y.slice(-2)].forEach((v, i) => { if (this.date_lines[i].textContent !== v) this.date_lines[i].textContent = v; });
+      [d, m].forEach((v, i) => { if (this.date_lines[i].textContent !== v) this.date_lines[i].textContent = v; });
       this.date_button.classList.toggle("today", !this.S.date);
       this.date_button.ariaLabel = `Date ${d}/${m}/${y.slice(-2)}${this.S.date ? "" : ", today"}`;
     }
@@ -5708,7 +5710,9 @@ class DialTool {
     const make = (id, title, way, d) => { const b = el("button", { type: "button", className: "onview undobox", id, title, ariaLabel: title, onclick: () => this.undo(way) }); b.innerHTML = icon(d); return b; };
     this.undo_buttons = [make("undo", "Undo (⌘Z)", -1, TOOL_ICONS.undo), make("redo", "Redo (⇧⌘Z)", 1, TOOL_ICONS.redo)];
     this.sync_undo();
-    return el("span", { className: "undos" }, ...this.undo_buttons);
+    // after them, the case and (with a case) its strap (4.82; Okay, 19 Oct 2026: "Top left gets case and strap if case";
+    // in the bottom-left column in 4.79–4.81, beside Backdrop from 4.66)
+    return el("span", { className: "undos" }, el("span", { className: "undopair" }, ...this.undo_buttons), ...this.case_box());
   }
   sync_undo() {
     if (!this.undo_buttons) return;

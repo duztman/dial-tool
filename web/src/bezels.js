@@ -1,134 +1,198 @@
 // bezels.js — a case round the dial, on the preview only (4.66). The idea is farukahmet's PR #3 (18 Oct 2026); Okay,
-// 21:20: "Bezel had a very positive effect on people … I don't like the designs he uses but we can 'abstractify' a few
-// bezels and see how they work. Abstractify meaning low number of colors, thick lines, minimal, maybe just silhouettes
-// of classics. One highlight one shadow."
+// 21:20: "Bezel had a very positive effect on people … 'abstractify' a few bezels … maybe just silhouettes of classics."
 //
-// So each case is a silhouette of a classic kind, not of a model: a flat body, one lighter band on its upper left (the
-// highlight) and one darker band on its lower right (the shadow), and at most one more colour (a diver's insert, its
-// marks). Everything is measured from the dial's radius, so a case fits any dial. Millimetres, y up, the dial's centre
-// at the origin — the dial's own space (R1, R2). Never in an export (R5, R26): app.js draws it under the dial.
+// Redrawn in 4.82 (Okay, 19 Oct 2026, 01:26: "Case illustrations awesome, but need better proportions. Silhouette nearly
+// identical to known watches, real lug widths etc in relation to the dial size. Detail level perfect, less
+// illustrationy, more technical drawingy. … bracelet needs to look as if loop closed"). Each case is now a drawing
+// of its kind as a watch is drawn in a technical sheet, seen from above: flat fills, an ink outline round every part
+// and finer lines for the edges inside a part (a bezel's step, a lug's chamfer, a crown's knurl, a strap's stitching),
+// the spring bars as hidden lines (dashed). Its measures are the kinds' own, as a share of the case's diameter
+// (OD) — from real cases (19 Oct 2026; Aquastar's and Lucius Atelier's proportion guides): the strap between the lugs
+// half the case (20 mm on a 40 mm case), lug tip to lug tip 1.16–1.22 times it, a diver's bezel opening about three
+// quarters of it. The case's diameter itself is the dial's times the kind's `od`. Kinds, not models: no maker's case.
 //
-// A case is a list of parts, each a path in SVG's own words and a tone: body · light · shade · insert · mark.
+// Millimetres, y up, the dial's centre at the origin — the dial's own space (R1, R2). Never in an export (R5, R26):
+// app.js draws it under the dial. A case is a list of parts in drawing order, each a path with a fill (or none) and
+// a line: OUT (the outline, 1 screen point), FINE (an edge inside, 0.6) or HIDDEN (dashed, 0.6); lines keep their
+// width at every zoom (non-scaling strokes), as a drawing's pen does.
 //
-// Its strap (4.69; Okay, 18 Oct 2026, 22:35: "Add straps to bezels metal bands too, same style, style very good …
-// Add strap color change option") is drawn the same way: a leather strap in the strap's colour, its light band on the
-// left and its shade on the right, a keeper, a buckle at the top end and holes at the bottom; or a metal bracelet of
-// three links to a row in the case's own metal, its centre links polished (the light), its gaps the shade. Each runs
-// from between the lugs out past the view: the view fits the dial, not the case (22:35: "Fit and previews care about
-// the dial still, the bezel and strap secondary").
+// Its strap (4.69; Okay, 22:35: "Add straps to bezels metal bands too … Add strap color change option"): a leather
+// strap in the strap's colour, stitched along both edges, the buckle and its two keepers on the 12 side, the holes and
+// the rounded tip on the 6 side; or a three-link bracelet in the case's metal whose ends are finished — the folding
+// clasp at the 6 end, the clasp's tongue at the 12 end — so it reads as one closed loop (01:26).
 
 export const BEZELS = ["None", "Diver", "Pilot", "Dress", "Sport"];
 export const STRAPS = ["None", "Strap", "Bracelet"];
 
-// the tones: steel for all but the dress case, which is warm (gold); the insert and its marks for the diver and sport
-const STEEL = { body: "#8F8F8B", light: "#D6D6D1", shade: "#55554F", insert: "#161616", mark: "#E8E6DF" };
-const GOLD = { body: "#C2A063", light: "#EDD9A3", shade: "#86672F", insert: "#161616", mark: "#E8E6DF" };
+// the tones: steel for all but the dress case, which is gold; a polished part a little lighter; a diver's or sport
+// bezel's insert and its marks; the ink every line is drawn in
+const STEEL = { body: "#C9C9C4", polish: "#E2E2DD", under: "#8E8E89", insert: "#1A1A1A", mark: "#ECEAE3" };
+const GOLD = { body: "#D3B978", polish: "#E8D7A6", under: "#9C8346", insert: "#1A1A1A", mark: "#ECEAE3" };
+const INK = "#1C1C1C";
+// a kind's measures, as shares of the case's diameter (OD) but od (the case's diameter over the dial's): strap — the
+// room between the lugs; l2l — lug tip to lug tip; lug — one lug's width at its tip; flare — how much wider it is
+// where it leaves the case; crown — how far it stands out and how tall it is; bezel — the opening's ring (insert or
+// step) as a share of the room between the dial and the case's edge
+const KINDS = {
+  Diver: { od: 1.36, strap: 0.5, l2l: 1.18, lug: 0.1, flare: 0.25, crown: [0.075, 0.18], guards: true, insert: true },
+  Pilot: { od: 1.14, strap: 0.5, l2l: 1.22, lug: 0.085, flare: 0.2, crown: [0.1, 0.22], onion: true },
+  Dress: { od: 1.1, strap: 0.5, l2l: 1.16, lug: 0.065, flare: 0.45, crown: [0.055, 0.12] },
+  Sport: { od: 1.3, strap: 0.5, l2l: 1.17, lug: 0.1, flare: 0.2, crown: [0.065, 0.15], pushers: true, tachy: true },
+};
 
 const f = (v) => (+v).toFixed(3);
-// a strap's three tones from its colour (R, G, B, A from 0 to 1): itself, a third of the way to white, two fifths to black
 const hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Math.max(v, 0), 1) * 255).toString(16).padStart(2, "0")).join("").toUpperCase();
 const mix = (c, to, k) => c.slice(0, 3).map((v) => v + (to - v) * k);
-const strap_tones = (c) => ({ body: hex(c), light: hex(mix(c, 1, 0.33)), shade: hex(mix(c, 0, 0.4)) });
+const lum = (c) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
 const poly = (pts) => `M${pts.map(([x, y]) => `${f(x)} ${f(y)}`).join("L")}Z`;
+const line = (pts) => `M${pts.map(([x, y]) => `${f(x)} ${f(y)}`).join("L")}`;
 const pt = (r, a) => [r * Math.sin(a * Math.PI / 180), r * Math.cos(a * Math.PI / 180)];      // clock degrees, y up
-const circle = (r) => `M${f(-r)} 0A${f(r)} ${f(r)} 0 1 0 ${f(r)} 0A${f(r)} ${f(r)} 0 1 0 ${f(-r)} 0Z`;
+const circle = (r, cx = 0, cy = 0) => `M${f(cx - r)} ${f(cy)}A${f(r)} ${f(r)} 0 1 0 ${f(cx + r)} ${f(cy)}A${f(r)} ${f(r)} 0 1 0 ${f(cx - r)} ${f(cy)}Z`;
 const ring = (r0, r1) => circle(r1) + circle(r0);                    // evenodd: the band between
-// a band of a ring between two clock angles, a0 to a1 clockwise
-const arc = (r0, r1, a0, a1) => {
-  const big = ((a1 - a0 + 360) % 360) > 180 ? 1 : 0, [x0, y0] = pt(r1, a0), [x1, y1] = pt(r1, a1), [x2, y2] = pt(r0, a1), [x3, y3] = pt(r0, a0);
-  return `M${f(x0)} ${f(y0)}A${f(r1)} ${f(r1)} 0 ${big} 0 ${f(x1)} ${f(y1)}L${f(x2)} ${f(y2)}A${f(r0)} ${f(r0)} 0 ${big} 1 ${f(x3)} ${f(y3)}Z`;
+const rrect = (x, y, w, h, r) => {                                   // a box with round corners, x y its lower left
+  r = Math.min(r, w / 2, h / 2);
+  return `M${f(x + r)} ${f(y)}H${f(x + w - r)}A${f(r)} ${f(r)} 0 0 1 ${f(x + w)} ${f(y + r)}V${f(y + h - r)}A${f(r)} ${f(r)} 0 0 1 ${f(x + w - r)} ${f(y + h)}H${f(x + r)}A${f(r)} ${f(r)} 0 0 1 ${f(x)} ${f(y + h - r)}V${f(y + r)}A${f(r)} ${f(r)} 0 0 1 ${f(x + r)} ${f(y)}Z`;
 };
-const rect = (x, y, w, h) => `M${f(x)} ${f(y)}h${f(w)}v${f(h)}h${f(-w)}Z`;
 // a mark standing on the clock, from r0 out to r1, w wide, at clock angle a
 const bar = (r0, r1, w, a) => {
   const [sx, sy] = pt(1, a), nx = sy, ny = -sx, p = (r, s) => [r * sx + s * nx * w / 2, r * sy + s * ny * w / 2];
-  const q = [p(r0, -1), p(r1, -1), p(r1, 1), p(r0, 1)];
-  return `M${q.map(([x, y]) => `${f(x)} ${f(y)}`).join("L")}Z`;
+  return poly([p(r0, -1), p(r1, -1), p(r1, 1), p(r0, 1)]);
 };
-/** a strap (strap 1) or a bracelet (strap 2) between the lugs, both ends: from under the case at y0 out to the far end;
- *  W wide between the lugs, narrowing to four fifths. Parts in drawing order, before the case's. */
-function strap_parts(kind, R, y0, W, metal, colour, lug_end) {
-  const parts = [], add = (path, fill) => parts.push({ d: path, fill, rule: "nonzero" });
-  const taper = (y) => W * (1 - 0.2 * Math.min(Math.max((y - y0) / (R * 2.4), 0), 1)) / 2;      // the half width at y
-  const band = (ya, yb, s0, s1) => poly([[s0 * taper(ya), ya], [s1 * taper(ya), ya], [s1 * taper(yb), yb], [s0 * taper(yb), yb]]);      // between two fractions of the half width, s0 to s1 (−1 left … 1 right)
-  for (const side of [1, -1]) {      // 1 the top strap, −1 the bottom one
-    const at = (ya, yb, s0, s1) => band(ya, yb, s0, s1).replace(/(-?[\d.]+) (-?[\d.]+)/g, (m, x, y) => `${x} ${f(side * y)}`);
-    const len = side > 0 ? R * 3.6 : R * 5.2, y1 = y0 + len;
-    if (kind === 1) {
-      const T = strap_tones(colour);
-      add(at(y0, y1, -1, 1), T.body);
-      add(at(y0, y1, -1, -0.72), T.light);
-      add(at(y0, y1, 0.72, 1), T.shade);
-      if (side < 0) {
-        // the keeper just past the lugs, the holes near the tip, the tip rounded
-        const yk = lug_end + R * 0.3, kw = taper(yk) * 1.12;
-        add(poly([[-kw, -yk], [kw, -yk], [kw, -yk - R * 0.16], [-kw, -yk - R * 0.16]]), T.shade);
-        for (let h = 0; h < 5; h++) { const yh = y1 - R * (0.7 + 0.32 * h), r = R * 0.045; add(`M${f(-r)} ${f(-yh)}a${f(r)} ${f(r)} 0 1 0 ${f(2 * r)} 0a${f(r)} ${f(r)} 0 1 0 ${f(-2 * r)} 0Z`, T.shade); }
-        const tw = taper(y1);
-        add(`M${f(-tw)} ${f(-y1)}A${f(tw)} ${f(tw)} 0 0 0 ${f(tw)} ${f(-y1)}Z`, T.body);
-      } else {
-        // the buckle at the top end: a frame in the case's metal, its pin across the strap's middle
-        const bw = taper(y1) * 1.18, bh = R * 0.42, t = R * 0.07;
-        add(poly([[-bw, y1 - bh / 2], [bw, y1 - bh / 2], [bw, y1 + bh / 2], [-bw, y1 + bh / 2]]) + poly([[-bw + t, y1 - bh / 2 + t], [-bw + t, y1 + bh / 2 - t], [bw - t, y1 + bh / 2 - t], [bw - t, y1 - bh / 2 + t]]), metal.body);
-        add(poly([[-R * 0.025, y1], [R * 0.025, y1], [R * 0.025, y1 - bh * 0.9], [-R * 0.025, y1 - bh * 0.9]]), metal.light);
-      }
-    } else {
-      // three links to a row: the outer ones the metal's body, the middle one polished (its light); the gaps between
-      // rows and links the metal's shade, as the bracelet's underside showing through
-      const pitch = R * 0.3, gap = R * 0.035;
-      add(at(y0, y1, -1, 1), metal.shade);
-      for (let y = y0; y < y1; y += pitch) {
-        const yb = Math.min(y + pitch - gap, y1);
-        add(at(y, yb, -1, -0.36), metal.body);
-        add(at(y, yb, -0.32, 0.32), metal.light);
-        add(at(y, yb, 0.36, 1), metal.body);
-      }
+const tick = (r0, r1, a) => line([pt(r0, a), pt(r1, a)]);
+// the three pens
+const OUT = { sw: 1 }, FINE = { sw: 0.6 }, HIDDEN = { sw: 0.6, dash: true };
+
+/** a strap or bracelet, both ends, between the lugs: from y0 (under the case) outward; W wide at the lugs, narrowing to
+ *  four fifths; sb the spring bars' height. Parts in drawing order, before the lugs and the case. */
+function strap_parts(kind, OD, y0, W, sb, metal, colour, add) {
+  const taper = (y) => W * (1 - 0.2 * Math.min(Math.max((Math.abs(y) - y0) / (OD * 1.8), 0), 1)) / 2;      // the half width at height y (either end)
+  const span = (ya, yb, s0 = -1, s1 = 1) => poly([[s0 * taper(ya), ya], [s1 * taper(ya), ya], [s1 * taper(yb), yb], [s0 * taper(yb), yb]]);
+  const top = y0 + OD * 1.35, bottom = -(y0 + OD * 1.95);      // where each end stops: the 6 side the longer (it carries the holes)
+  if (kind === 1) {
+    const body = hex(colour), stitch = hex(lum(colour) > 0.45 ? mix(colour, 0, 0.45) : mix(colour, 1, 0.55)), hole = hex(mix(colour, 0, 0.5));
+    // the 12 side: straight out to the buckle
+    add(span(y0, top), body, OUT);
+    // the 6 side: out to a rounded tip
+    const tw = taper(bottom);
+    add(span(-y0, bottom) .replace(/Z$/, "") + "Z", body, OUT);
+    add(`M${f(-tw)} ${f(bottom)}A${f(tw)} ${f(tw)} 0 0 0 ${f(tw)} ${f(bottom)}Z`, body, OUT);
+    // its stitching: a dashed line along each edge, a twelfth of the width in
+    for (const [ya, yb] of [[sb + OD * 0.03, top - OD * 0.05], [-sb - OD * 0.03, bottom + OD * 0.02]]) for (const s of [-1, 1]) {
+      const k = 1 - 0.16;
+      add(line([[s * k * taper(ya), ya], [s * k * taper(yb), yb]]), "none", { sw: 0.6, dash: true, colour: stitch });
     }
+    // five holes towards the tip, the middle one worn
+    for (let h = 0; h < 5; h++) { const y = bottom + OD * (0.22 + 0.11 * h); add(circle(OD * 0.016, 0, y), hole, FINE); }
+    // the buckle at the 12 end: its frame and the tongue lying down the strap's middle; two keepers just under it
+    const bw = taper(top) + OD * 0.025, bh = OD * 0.16, t = OD * 0.028;
+    add(rrect(-bw, top - bh / 2, 2 * bw, bh, OD * 0.03) + rrect(-bw + t, top - bh / 2 + t, 2 * (bw - t), bh - 2 * t, OD * 0.012), metal.body, OUT, "evenodd");
+    add(rrect(-OD * 0.008, top - bh * 0.62, OD * 0.016, bh * 0.62 + t * 0.5, OD * 0.008), metal.polish, FINE);
+    for (const k of [0.16, 0.3]) { const y = top - OD * k, kw = taper(y) + OD * 0.012; add(rrect(-kw, y - OD * 0.035, 2 * kw, OD * 0.035, OD * 0.006), body, OUT); }
+  } else {
+    // a three-link bracelet: rows of an outer link either side and a polished middle one, every part outlined
+    const pitch = OD * 0.11, rows = (from, to, way) => {
+      for (let y = from; way > 0 ? y < to : y > to; y += way * pitch) {
+        const ya = y, yb = y + way * Math.min(pitch, Math.abs(to - y));
+        add(span(ya, yb, -1, -0.34), metal.body, OUT);
+        add(span(ya, yb, -0.34, 0.34), metal.polish, OUT);
+        add(span(ya, yb, 0.34, 1), metal.body, OUT);
+      }
+    };
+    rows(y0, top - OD * 0.12, 1);
+    rows(-y0, bottom + OD * 0.42, -1);
+    // its ends, finished, as the two halves of one clasp: at 12 the tongue that goes into it (a link with a round end);
+    // at 6 the folding clasp itself (a long plate over the links, its cover's edge and the hinge's line)
+    const yt = top - OD * 0.12, tw = taper(yt) * 0.86;
+    add(`M${f(-tw)} ${f(yt)}H${f(tw)}V${f(top - tw * 0.6)}A${f(tw)} ${f(tw * 0.6)} 0 0 1 ${f(-tw)} ${f(top - tw * 0.6)}Z`, metal.body, OUT);
+    add(line([[-tw * 0.55, yt + OD * 0.03], [tw * 0.55, yt + OD * 0.03]]), "none", FINE);
+    const yc = bottom + OD * 0.42, cw = taper(yc), r = cw * 0.5;
+    add(`M${f(-cw)} ${f(yc)}H${f(cw)}V${f(bottom + r)}A${f(cw)} ${f(r)} 0 0 1 ${f(-cw)} ${f(bottom + r)}Z`, metal.body, OUT);
+    add(`M${f(-cw * 0.78)} ${f(yc - OD * 0.04)}H${f(cw * 0.78)}V${f(bottom + r + OD * 0.03)}A${f(cw * 0.78)} ${f(r * 0.8)} 0 0 1 ${f(-cw * 0.78)} ${f(bottom + r + OD * 0.03)}Z`, metal.polish, FINE);
+    add(line([[-cw, yc - OD * 0.015], [cw, yc - OD * 0.015]]), "none", FINE);
   }
-  return parts;
 }
 
 /** the parts of a case for a dial of diameter d (mm), style i (BEZELS), with its strap (STRAPS: 0 none · 1 strap · 2
- *  bracelet; the strap in `colour`, R G B A from 0 to 1) → {parts: [{d, fill, rule}] in drawing order, reach: how far
- *  the case reaches from the centre}. */
+ *  bracelet; the strap in `colour`, R G B A from 0 to 1) → {parts: [{d, fill, rule, sw, dash, colour}] in drawing
+ *  order, reach: how far the case reaches from the centre}. */
 export function bezel_parts(i, d, strap = 0, colour = [0.29, 0.2, 0.14, 1]) {
   const R = d / 2, name = BEZELS[i];
   if (!name || name === "None") return { parts: [], reach: R };
-  const T = name === "Dress" ? GOLD : STEEL;
-  const parts = [], add = (path, tone, rule = "nonzero") => parts.push({ d: path, fill: T[tone], rule });
-  // the classics' proportions, by eye from the kinds: a case this much bigger than its dial, lugs this long and wide
-  const P = { Diver: { case: 1.36, lug: 0.3, lw: 0.13, crown: [0.16, 0.2] }, Pilot: { case: 1.2, lug: 0.36, lw: 0.11, crown: [0.26, 0.3] },
-    Dress: { case: 1.1, lug: 0.26, lw: 0.08, crown: [0.1, 0.12] }, Sport: { case: 1.3, lug: 0.3, lw: 0.13, crown: [0.15, 0.19] } }[name];
-  const Rc = R * P.case, half = R * 0.72, lw = R * 2 * P.lw, out = R * 2 * P.lug;
-  // the strap first, under everything: between the lugs' inner edges, from under the case to past the lugs' ends
-  if (strap) parts.push(...strap_parts(strap, R, Rc * 0.55, 2 * (half - lw), T, colour, Rc * 0.55 + out));
-  // the lugs and the crown, under the case's body; then the body; its light and its shade
-  for (const sy of [1, -1]) for (const sx of [1, -1]) add(rect(sx > 0 ? half - lw : -half, sy > 0 ? Rc * 0.55 : -Rc * 0.55 - out, lw, out), "body");
-  const [cw, ch] = P.crown.map((k) => k * d);
-  add(rect(Rc - cw * 0.2, -ch / 2, cw, ch), "body");
-  if (name === "Pilot") for (let k = 1; k < 6; k++) add(rect(Rc - cw * 0.2 + cw * k / 6 - d * 0.004, -ch / 2, d * 0.008, ch), "shade");      // an onion crown's ribs
-  if (name === "Sport") for (const a of [60, 120]) add(bar(Rc - R * 0.05, Rc + R * 0.14, R * 0.16, a), "body");      // pushers at 2 and 4
-  add(ring(R, Rc), "body", "evenodd");
-  add(arc(R, Rc, 290, 20), "light");
-  add(arc(R, Rc, 110, 200), "shade");
-  if (name === "Diver") {
-    // the turning bezel: a dark insert, a coin edge of sixty notches, a pip at 12 and a bar every five minutes
-    const ri = R * 1.02, ro = R * 1.24;
-    add(ring(ri, ro), "insert", "evenodd");
-    for (let k = 0; k < 60; k++) add(bar(Rc - R * 0.05, Rc + 0.001, R * 0.035, k * 6), "shade");
-    add(`M0 ${f(ro - R * 0.03)}L${f(R * 0.07)} ${f(ri + R * 0.07)}L${f(-R * 0.07)} ${f(ri + R * 0.07)}Z`, "mark");
-    for (let k = 1; k < 12; k++) add(bar(ri + R * 0.06, ro - R * 0.05, R * 0.05, k * 30), "mark");
+  const K = KINDS[name], T = name === "Dress" ? GOLD : STEEL;
+  const OD = d * K.od, Rc = OD / 2, W = OD * K.strap, lw = OD * K.lug, tip = OD * K.l2l / 2;
+  const parts = [], add = (path, fill, pen = null, rule = "nonzero") => parts.push({ d: path, fill, rule, sw: pen ? pen.sw : 0, dash: Boolean(pen && pen.dash), colour: pen && pen.colour || INK });
+  const sb = tip - OD * 0.035;                                       // the spring bars, a little in from the lugs' tips
+  // the strap first, under everything, from under the case
+  if (strap) strap_parts(strap, OD, Rc * 0.8, W, sb, T, colour, add);
+  // the four lugs: the inner edge straight along the strap, the outer edge flaring as it runs into the case, the tip's
+  // corners rounded; a chamfer's line along the outer edge (the polished bevel most cases have there)
+  const xi = W / 2, xo = W / 2 + lw, xr = xo + lw * K.flare, y_root = Math.sqrt(Math.max(Rc * Rc - xr * xr, 0)) - OD * 0.02, cr = lw * 0.35;
+  for (const sy of [1, -1]) for (const sx of [1, -1]) {
+    const P = ([x, y]) => [sx * x, sy * y];
+    const pts = [[xi, Rc * 0.7], [xi, tip], [xo - cr, tip], [xo, tip - cr], [xr, y_root]].map(P);
+    const [a, b, c, e, g] = pts, sweep = sx * sy > 0 ? 0 : 1;
+    add(`M${f(a[0])} ${f(a[1])}L${f(b[0])} ${f(b[1])}L${f(c[0])} ${f(c[1])}A${f(cr)} ${f(cr)} 0 0 ${sweep} ${f(e[0])} ${f(e[1])}Q${f(sx * (xo + lw * K.flare * 0.15))} ${f(sy * (tip + y_root) / 2)} ${f(g[0])} ${f(g[1])}Z`, T.body, OUT);
+    const k = 0.32;      // the chamfer: this share of the lug in from its outer edge
+    add(line([P([xo - lw * k, tip - cr * 0.6]), P([xr - lw * k, y_root + OD * 0.01])]), "none", FINE);
   }
-  if (name === "Sport") {
-    // a flat bezel with sixty short marks, the fifth ones longer: a tachymeter's rhythm without its words
-    const ri = R * 1.03, ro = R * 1.2;
-    add(ring(ri, ro), "insert", "evenodd");
-    for (let k = 0; k < 60; k++) add(bar(ro - (k % 5 ? R * 0.05 : R * 0.1), ro - R * 0.015, R * 0.018, k * 6), "mark");
+  // the spring bars: hidden lines across, under the strap's end
+  for (const sy of [1, -1]) add(line([[-xo + lw * 0.5, sy * sb], [xo - lw * 0.5, sy * sb]]), "none", HIDDEN);
+  // the crown at 3 (and its tube), under the case; a diver's guards either side of it; a chronograph's pushers at 2 and 4
+  const [cw, ch] = K.crown.map((k) => k * OD), cx = Rc - OD * 0.008;
+  add(rrect(cx - OD * 0.01, -ch * 0.28, OD * 0.03, ch * 0.56, 0), T.body, OUT);      // the tube
+  const c0 = cx + OD * 0.018;
+  if (K.onion) {
+    // an onion crown: three swellings along it
+    const n = 3, step = cw / n;
+    let p = `M${f(c0)} ${f(-ch * 0.32)}`;
+    for (let k = 0; k < n; k++) p += `Q${f(c0 + step * (k + 0.5))} ${f(-ch / 2)} ${f(c0 + step * (k + 1))} ${f(-ch * 0.32)}`;
+    p += `V${f(ch * 0.32)}`;
+    for (let k = n; k > 0; k--) p += `Q${f(c0 + step * (k - 0.5))} ${f(ch / 2)} ${f(c0 + step * (k - 1))} ${f(ch * 0.32)}`;
+    add(p + "Z", T.body, OUT);
+    for (let k = 1; k < n; k++) add(line([[c0 + step * k, -ch * 0.32], [c0 + step * k, ch * 0.32]]), "none", FINE);
+  } else {
+    add(rrect(c0, -ch / 2, cw, ch, OD * 0.008), T.body, OUT);
+    for (let k = 1; k < 8; k++) add(line([[c0 + cw * 0.18, -ch / 2 + ch * k / 8], [c0 + cw, -ch / 2 + ch * k / 8]]), "none", FINE);      // the knurl, seen from above: grooves along it
   }
-  return { parts, reach: Math.max(Rc + (name === "Sport" ? R * 0.14 : 0) + cw * 0.8, Rc * 0.55 + out) };
+  if (K.guards) for (const s of [1, -1]) {
+    // a shoulder rising out of the case's side to half the crown's length, its end square to the crown
+    const y0 = s * (ch / 2 + OD * 0.008), y1 = s * (ch / 2 + OD * 0.07), xg = c0 + cw * 0.5, ya = s * (ch / 2 + OD * 0.16);
+    add(`M${f(Rc * 0.9)} ${f(y0)}L${f(xg)} ${f(y0)}L${f(xg)} ${f(y1)}Q${f(Rc + OD * 0.01)} ${f(y1 + s * OD * 0.02)} ${f(Math.sqrt(Math.max(Rc * Rc - ya * ya, 0)) - OD * 0.01)} ${f(ya)}Z`, T.body, OUT);
+  }
+  if (K.pushers) for (const a of [60, 120]) {
+    add(bar(Rc - OD * 0.01, Rc + OD * 0.025, OD * 0.04, a), T.body, OUT);      // its tube
+    add(bar(Rc + OD * 0.02, Rc + OD * 0.075, OD * 0.075, a), T.body, OUT);
+  }
+  // the case: its body, then the bezel's edges
+  add(circle(Rc), T.body, OUT);
+  if (K.insert) {
+    // a turning bezel: its edge's grips (short lines round the rim), the insert, a triangle at 12, a bar every five
+    // minutes and minute marks for the first fifteen
+    const ro = Rc - OD * 0.035, ri = R * 1.02;
+    for (let k = 0; k < 120; k++) add(tick(Rc - OD * 0.022, Rc, k * 3), "none", FINE);
+    add(circle(ro), "none", FINE);
+    add(ring(ri, ro), T.insert, OUT, "evenodd");
+    const mid = (ri + ro) / 2, h = (ro - ri) * 0.6;
+    add(poly([pt(mid + h / 2, 0), [h * 0.5, mid - h / 2], [-h * 0.5, mid - h / 2]]), T.mark, null);
+    for (let k = 1; k < 12; k++) add(bar(mid - h / 2, mid + h / 2, OD * 0.012, k * 30), T.mark, null);
+    for (let k = 1; k < 15; k++) if (k % 5) add(bar(mid + h * 0.1, mid + h / 2, OD * 0.004, k * 6), T.mark, null);
+  } else if (K.tachy) {
+    // a flat bezel with sixty marks, the fifth ones longer (a tachymeter's rhythm without its words)
+    const ro = Rc - OD * 0.02, ri = R * 1.03;
+    add(ring(ri, ro), T.insert, OUT, "evenodd");
+    for (let k = 0; k < 60; k++) add(bar(ro - (k % 5 ? OD * 0.018 : OD * 0.035), ro - OD * 0.006, OD * 0.0045, k * 6), T.mark, null);
+  } else {
+    // a plain bezel: its step (a pilot's wide, a dress case's narrow) and the opening's edge
+    add(circle(R + (Rc - R) * (K.onion ? 0.55 : 0.4)), "none", FINE);
+    add(circle(R * 1.006), "none", OUT);
+  }
+  const reach = Math.max(Rc + cw + OD * 0.03, tip);
+  return { parts, reach };
 }
 
-/** a case (and its strap) as SVG markup in the dial's space. */
+/** a case (and its strap) as SVG markup in the dial's space; its lines a pen's, the same width at every zoom. */
 export function bezel_svg(i, d, strap = 0, colour) {
-  return bezel_parts(i, d, strap, colour).parts.map((p) => `<path d="${p.d}" fill="${p.fill}"${p.rule === "evenodd" ? ' fill-rule="evenodd"' : ""}/>`).join("");
+  const dash = [4, 3];      // a pen's dashes: screen points, as the lines' widths (a non-scaling stroke dashes in the screen's space)
+  return bezel_parts(i, d, strap, colour).parts.map((p) => `<path d="${p.d}" fill="${p.fill}"${p.rule === "evenodd" ? ' fill-rule="evenodd"' : ""}`
+    + (p.sw ? ` stroke="${p.colour}" stroke-width="${p.sw}" vector-effect="non-scaling-stroke" stroke-linejoin="round"${p.dash ? ` stroke-dasharray="${dash.join(" ")}"` : ""}` : "") + "/>").join("");
 }

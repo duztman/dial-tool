@@ -434,11 +434,11 @@ await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before)
   await settle();
   await page.keyboard.press("Meta+z");
   check((await state())[3] === s0[3], "⌘Z does the same");
-  const place = await page.evaluate(() => { const u = document.querySelector(".undos").getBoundingClientRect(), g = document.querySelector("#tiny-open").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); return [u.right <= g.left, Math.round(u.top - m.top) === Math.round(g.top - m.top), Math.round(u.left - m.left) === 12, document.querySelector("#redo").classList.contains("none")]; });
+  const place = await page.evaluate(() => { const u = document.querySelector(".undopair").getBoundingClientRect(), g = document.querySelector("#case").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); return [u.right <= g.left, Math.round(u.top - m.top) === Math.round(g.top - m.top), Math.round(u.left - m.left) === 12, document.querySelector("#redo").classList.contains("none")]; });
   await page.click("#redo");
   const fwd = (await state())[3];
   await page.click("#undo");
-  check(place[0] && place[1] && place[2] && !place[3] && fwd === 31 && (await state())[3] === s0[3], "Undo and Redo stand on the preview's top left, 12 from its left edge, level with the Tiny Preview's eye (the Guides switch's place until 4.58), and do the same");
+  check(place[0] && place[1] && place[2] && !place[3] && fwd === 31 && (await state())[3] === s0[3], "Undo and Redo stand on the preview's top left, 12 from its left edge, the Case switch beside them on their line (4.82), and do the same");
   await shot("4c16-undo");
 }
 // a numeral's radius measures to its centre, its baseline or its top: the menu beside the label, in the pop-up (13 Oct 2026)
@@ -640,8 +640,8 @@ check(JSON.stringify(await S("S.rings.map((r) => r.name)")) === JSON.stringify(o
 // ── guides: a switch on the preview's bottom left (top right until 4.58), with an arrow that opens their list (five kinds, eight colours) ──
 await tab("Dial");
 check(await page.$("main .guides #guides") !== null && await page.$(".panel #guides") === null && await page.isHidden("#guide-list"), "the Guides switch stands on the preview, not in the panel; its list is shut");
-const guides_at = await page.evaluate(() => { const g = document.querySelector("#tiny-open").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); return [Math.round(m.right - g.right), Math.round(g.top - m.top)]; });
-check(guides_at[0] === 12 && guides_at[1] === 16, `the Tiny Preview's eye, where Guides stood, is 12 from the preview's right, and 16 from its top: on the header's middle line (${guides_at.join(" / ")})`);
+const guides_at = await page.evaluate(() => { const g = document.querySelector("#tiny-open").getBoundingClientRect(), e = document.querySelector("#eye-box").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(), u = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit")); return [Math.round(m.right - g.right), Math.round(m.right - e.right), +(e.top - g.bottom).toFixed(1), u]; });
+check(guides_at[0] === 12 && guides_at[1] === 12 && Math.abs(guides_at[2] - guides_at[3]) < 0.6, `the Tiny Preview's eye stands over the dial-alone eye at the bottom right, both 12 from the preview's right, a unit apart (${guides_at.join(" / ")}) (4.82; top right until 4.81)`);
 await page.click("#guides-more");
 check(await page.isVisible("#guide-list") && (await page.$$eval("#guide-list .guidescroll > .guidekind .name", (n) => n.map((e) => e.textContent))).join() === "Centre hole,Centre lines" && await page.$$eval("#guide-list .guidekind >> nth=0 >> .dots .tone", (b) => b.length) === 8 && await page.$eval("#guide-list .guiderings", (e) => e.querySelectorAll(".guidekind.ring").length) === await S("S.rings.length") && await page.$("#guide-list .swatch") === null,
   "the arrow drops the list: the centre hole's guide first, then the centre lines (no dial edge since 15 Oct 2026, no window radii since 4.42.5), then a line for every ring and every window that is on, each with None and eight round colours, no free colour");
@@ -1051,8 +1051,8 @@ await page.click("#hand-tab-0");
   const line = await page.evaluate(() => { const mid = (q) => { const r = document.querySelector(q).getBoundingClientRect(); return r.top + r.height / 2; }, h = document.querySelector("h1");
     const base_of = (e) => { const probe = document.createElement("span"); probe.style.cssText = "display:inline-block;width:0;height:0"; e.append(probe); const y = probe.getBoundingClientRect().top; probe.remove(); return y; };
     const base = base_of(h), c = getComputedStyle(h), pen = document.createElement("canvas").getContext("2d"); pen.font = `${c.fontWeight} ${c.fontSize} ${c.fontFamily}`;
-    return { mids: [base - pen.measureText("x").actualBoundingBoxAscent / 2, mid("#undo"), mid("#tiny-open")], bases: [base, base_of(document.querySelector(".mast .help")), base_of(document.querySelector("#unit")), base_of(document.querySelector("#to-gallery"))] }; });
-  check(line.mids.every((y) => Math.abs(y - line.mids[0]) < 0.6) && line.bases.every((y) => Math.abs(y - line.bases[0]) < 0.6), `the title's small letters, undo and the Tiny Preview's eye are centred on one line (${line.mids.map((y) => +y.toFixed(1)).join(" · ")}); Help's, the unit box's and the Gallery pill's words stand on the title's baseline (${line.bases.map((y) => +y.toFixed(1)).join(" · ")})`);
+    return { mids: [base - pen.measureText("x").actualBoundingBoxAscent / 2, mid("#undo"), mid("#case")], bases: [base, base_of(document.querySelector(".mast .help")), base_of(document.querySelector("#unit")), base_of(document.querySelector("#to-gallery"))] }; });
+  check(line.mids.every((y) => Math.abs(y - line.mids[0]) < 0.6) && line.bases.every((y) => Math.abs(y - line.bases[0]) < 0.6), `the title's small letters, undo and the Case switch are centred on one line (${line.mids.map((y) => +y.toFixed(1)).join(" · ")}); Help's, the unit box's and the Gallery pill's words stand on the title's baseline (${line.bases.map((y) => +y.toFixed(1)).join(" · ")})`);
 }
 { // the line between All hands and the hand tabs starts and ends where the tabs do (Okay, 16 Oct 2026, #260)
   await tab("Hands");
@@ -2309,7 +2309,7 @@ await touch.close();
 }
 { // the date in the bar (4.62; Okay: "Date best set at the bar, short date, 07/10/28 style, stacked barlow medium or bold, next to am, touching. Default from system date"); a window that follows it says it
   const look = await page.evaluate(() => { const d = document.querySelector("#date"), a = document.querySelector("#ampm").getBoundingClientRect(), r = d.getBoundingClientRect(), c = getComputedStyle(d), spans = [...d.children].map((e) => e.textContent), n = new Date();
-    const today = [String(n.getDate()).padStart(2, "0"), String(n.getMonth() + 1).padStart(2, "0"), String(n.getFullYear()).slice(-2)];
+    const today = [String(n.getDate()).padStart(2, "0"), String(n.getMonth() + 1).padStart(2, "0")];      // day over month (the year left out since 4.82)
     return [Math.abs(r.left - a.right) < 0.5 && Math.abs(r.top - a.top) < 0.5, spans.join("/") === today.join("/"), c.fontFamily.includes("Dial Date"), c.fontWeight, window.dial_tool.S.date]; });
   const follow = await page.evaluate(() => { const t = window.dial_tool, was = [t.S.ui_window, t.S.da_on, t.S.da_kind, t.S.da_follows, t.S.da_names, t.S.date]; t.S.ui_window = 0;
     t.set_value("window", "on", true); t.set_value("window", "kind", 0); t.set_value("window", "follows", true); t.set_value("global", "date", "2028-10-07"); t.frame();
@@ -2318,8 +2318,8 @@ await touch.close();
     t.to_now(); const now = t.S.date;
     t.set_value("window", "kind", was[2]); t.set_value("window", "follows", was[3]); t.set_value("window", "names", was[4]); t.set_value("window", "on", was[1]); t.S.date = was[5]; t.S.ui_window = was[0]; t.sync_rows(); t.sync_time(); t.render();
     return [date, bar, day, now]; });
-  check(look[0] && look[1] && look[2] && look[3] === "600" && look[4] === "" && follow.join() === "7,07/10/28,CMT,",
-    `the date stands touching AM · PM, today's to start, stacked day · month · year in Inter SemiBold (Barlow Bold in 4.62) (${look.join(" ")}); 7 Oct 2028 set, a following date window says ${follow[0]} and the bar ${follow[1]}; a day window in Turkish ${follow[2]}; Now brings today back`);
+  check(look[0] && look[1] && look[2] && look[3] === "600" && look[4] === "" && follow.join() === "7,07/10,CMT,",
+    `the date stands touching AM · PM, today's to start, stacked day over month in Inter SemiBold (the year left out since 4.82) (Barlow Bold in 4.62) (${look.join(" ")}); 7 Oct 2028 set, a following date window says ${follow[0]} and the bar ${follow[1]}; a day window in Turkish ${follow[2]}; Now brings today back`);
 }
 { // a case round the dial, preview only (4.66; farukahmet's PR #3 "abstractified": "low number of colors, thick lines, minimal … One highlight one shadow")
   const z0 = await page.evaluate(() => window.dial_tool.z);
@@ -2389,18 +2389,18 @@ await touch.close();
     `a tall date window with its neighbours: one more colour (${colour}), the 18 still ${near.high} high (${plain.high} in its own hole); a big date: two holes (${big.holes}); the kinds ${kinds}`);
 }
 { // Tiny Preview (#337, 4.59): its button top right where Guides stood; the dial at its own size (the browser's mm) with its margins, over everything; dragged anywhere; its eye puts it away. Guides at the bottom left, between Backdrop and Shadows, their list opening upward
-  const corner = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), m = r("main"), o = r("#tiny-open"), g = r("#guides"), b = r("#backdrop"), sh = r("#shadows"); return [Math.round(m.right - o.right) === Math.round(m.bottom - m.bottom) || o.top - m.top < 40, b.bottom <= g.top + 1 && g.bottom <= sh.top + 1 && Math.abs(g.left - sh.left) < 1]; });
+  const corner = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), m = r("main"), o = r("#tiny-open"), g = r("#guides"), b = r("#backdrop"), sh = r("#shadows"); return [m.bottom - o.bottom > 0 && m.right - o.right < 20, b.bottom <= g.top + 1 && g.bottom <= sh.top + 1 && Math.abs(g.left - sh.left) < 1]; });
   await page.click("#tiny-open"); await page.waitForTimeout(250);
   const tiny = await page.evaluate(() => { const t = document.querySelector("#tiny"), s = t.querySelector("svg"), S = window.dial_tool.S, mm = parseFloat(s.getAttribute("width")); return [!t.hidden, document.querySelector("#tiny-open").hidden, mm, Math.abs(s.getBoundingClientRect().width - mm * 96 / 25.4) < 1, Math.abs(mm - (S.dial_d + 2 * S.margin)) < 0.01, +getComputedStyle(t).zIndex, t.parentElement === document.body, !t.querySelector('[id^="guide"]')]; });
   const b0 = await page.$eval("#tiny", (e) => { const r = e.getBoundingClientRect(); return [r.left, r.top]; });
-  await page.mouse.move(b0[0] + 60, b0[1] + 60); await page.mouse.down(); await page.mouse.move(b0[0] - 140, b0[1] + 160, { steps: 5 }); await page.mouse.up();
+  await page.mouse.move(b0[0] + 60, b0[1] + 60); await page.mouse.down(); await page.mouse.move(b0[0] - 140, b0[1] - 40, { steps: 5 }); await page.mouse.up();      // up and left: it opens by its button at the bottom right (4.82)
   const b1 = await page.$eval("#tiny", (e) => { const r = e.getBoundingClientRect(); return [r.left, r.top]; });
   await page.hover("#tiny"); await page.waitForTimeout(250); const shown = await page.$eval("#tiny-shut", (e) => getComputedStyle(e).opacity);
   await page.click("#tiny-shut");
   const away = [await page.isHidden("#tiny"), await page.isVisible("#tiny-open")];
   await page.click(".guides .guidesmore"); const up = await page.evaluate(() => document.querySelector("#guide-list").getBoundingClientRect().bottom <= document.querySelector("#guides").getBoundingClientRect().top); await page.click(".guides .guidesmore");
-  check(corner.every(Boolean) && tiny[0] && tiny[1] && tiny[3] && tiny[4] && tiny[5] >= 60 && tiny[6] && tiny[7] && Math.round(b1[0] - b0[0]) === -200 && Math.round(b1[1] - b0[1]) === 100 && shown === "1" && away.every(Boolean) && up,
-    `Tiny Preview (#337): its button top right; open, the dial and its margins at ${tiny[2]} mm in the browser's mm, over everything, no guides; dragged (−200, +100), its eye shows under the pointer and puts it away; Guides at the bottom left between Backdrop and Shadows, the list opening upward`);
+  check(corner.every(Boolean) && tiny[0] && tiny[1] && tiny[3] && tiny[4] && tiny[5] >= 60 && tiny[6] && tiny[7] && Math.round(b1[0] - b0[0]) === -200 && Math.round(b1[1] - b0[1]) === -100 && shown === "1" && away.every(Boolean) && up,
+    `Tiny Preview (#337): its button at the bottom right (top right until 4.81); open, the dial and its margins at ${tiny[2]} mm in the browser's mm, over everything, no guides; dragged (−200, −100), its eye shows under the pointer and puts it away; Guides at the bottom left between Backdrop and Shadows, the list opening upward`);
 }
 await browser.close();
 console.log(problems.length ? `\n${problems.length} problem(s).` : "\nWindow test passed.");

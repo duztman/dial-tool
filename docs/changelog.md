@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## beta 4.82 (web version) · 19 Oct 2026
+
+Okay's notes on 4.81 (19 Oct, 01:40: "Do these and advance").
+
+- **The cases redrawn as technical drawings** (#377, #379; "better proportions … real lug widths etc in relation to the dial size … less illustrationy, more technical drawingy"): seen from above, flat fills, an ink outline round every part (1 screen point at any zoom), finer lines for the edges inside one (a bezel's step, a lug's chamfer, a crown's grooves), the spring bars as dashed hidden lines. Proportions from real cases, as shares of the case's diameter: the strap between the lugs half of it (20 mm on 40), lug tip to lug tip 1.16–1.22 of it, a diver's opening about three quarters. Each kind's own: the diver's guards and turning bezel with its grips, the pilot's onion crown and long lugs, the dress case's slim flaring lugs and narrow gold bezel, the sport case's pushers at 2 and 4. No highlight or shadow bands any more.
+- **Straps**: stitched along both edges (a dashed thread a shade off the leather), the buckle with its tongue and two keepers on the 12 side, the holes and a round tip on the 6 side. **The bracelet's ends are finished** — the folding clasp at 6, the clasp's tongue at 12 — so it reads as one closed loop.
+- **Case and Strap at the top left**, beside undo and redo (in the bottom-left column since 4.79). **The case's sign** redrawn: the lugs now run out of the case (they floated clear of it), a dial opening inside; its box spaced as Guides' — the sign as far in, the chevron in a square of its own behind a line; a sign's 26-point room was leaving 4 empty either side of its 18.
+- **Tiny Preview's eye at the bottom right**, over the dial-alone eye (top right until 4.81). The showcase stays where it is.
+- **The bar's date: day over month**, no year (Okay: "i don't want it there"), 10 on 11 so it stands clear inside its box (three lines of 9 touched its lines).
+
 ## beta 4.81 (web version) · 19 Oct 2026
 
 Okay's notes on 4.80 (19 Oct, 01:26), the small ones.
