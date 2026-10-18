@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.76 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.77 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -6199,7 +6199,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.76";
+var VERSION = "beta 4.77";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -10848,7 +10848,10 @@ var EYE_RAY = 0.625;
 var SKY_TOP = 0.3;
 var SHOWCASE_PAGE = { w: 210, h: 297, dial: 2 / 3 };
 var SUN = { day: 20, rise: 40, fade: 0.45 };
-var POOL = { size: 1.45, stretch: 1.4, soft: [0.06, 0.8], light: [0.08, 0.42], shade: [0.15, 0.55], lift: 1.5 };
+var POOL = { size: 1.45, stretch: 1.4, soft: [0.06, 0.8], light: [0.08, 0.42], shade: [0.15, 0.55], lift: 1.5, least: 0.2 };
+var SHINE = { r: 0.66, toward: 0.3, bands: [[-0.07, 0.03], [0, 0.075], [0.07, 0.03]], width: 0.07 };
+var BEVEL = { light: 0.22, dark: 0.26 };
+var SHOW_DARKER = 1.25;
 var TRAVEL_MS = 900;
 var HOLE_LIVE_MS = 1200;
 var WORDS_MS = 3e3;
@@ -12101,6 +12104,93 @@ var DialTool = class _DialTool {
     this.show.phase = clamp(p[0] / w, 0, 0.999);
     this.render();
   }
+  /** the light on the dial (4.77): in the showcase a ring of shine (SHINE) over the dial and the hands; wherever shadows
+   *  are drawn, each hand's bevel (BEVEL) — its two long halves lighter and darker by where the light comes from.
+   *  Drawn into groups kept by name, just under the shadows that fall on the same surfaces. Preview only (R5, R26). */
+  draw_light(items) {
+    const S = this.S, sun = this.show && this.sun();
+    if (!this.light_parts) this.light_parts = /* @__PURE__ */ new Map();
+    const parts = this.light_parts, used = /* @__PURE__ */ new Set(), f2 = (v) => v.toFixed(4);
+    const part = (name, tag, parent, before = null) => {
+      let n = parts.get(name);
+      if (!n) {
+        n = svg_el(tag);
+        parts.set(name, n);
+      }
+      if (n.parentNode !== parent || before && n.nextSibling !== before) parent.insertBefore(n, before);
+      used.add(name);
+      return n;
+    };
+    const finish = () => {
+      for (const [name, n] of parts) if (!used.has(name)) {
+        n.remove();
+        parts.delete(name);
+      }
+    };
+    const on = sun ? sun.light : S.sh_on ? Math.min(S.sh_dark / 25, 2) : 0;
+    if (S.out_production || !(on > 0)) return finish();
+    if (!this.light_defs) {
+      this.light_defs = svg_el("defs");
+      this.svg.prepend(this.light_defs);
+    }
+    const from = sun ? sun.from : S.sh_from, R = S.dial_d / 2, nodes = items.map((_, i) => this.slots[i].node);
+    const bands = (g, key) => {
+      if (!sun) return;
+      const a = from * Math.PI / 180, c = [Math.sin(a) * SHINE.toward * R, Math.cos(a) * SHINE.toward * R];
+      SHINE.bands.forEach(([at, bright], k) => {
+        const r0 = R * (SHINE.r + at - SHINE.width / 2), r1 = R * (SHINE.r + at + SHINE.width / 2);
+        const p = part(`${key}/band/${k}`, "path", g);
+        p.setAttribute("d", `M${f2(c[0] - r1)} ${f2(c[1])}a${f2(r1)} ${f2(r1)} 0 1 0 ${f2(2 * r1)} 0a${f2(r1)} ${f2(r1)} 0 1 0 ${f2(-2 * r1)} 0ZM${f2(c[0] - r0)} ${f2(c[1])}a${f2(r0)} ${f2(r0)} 0 1 1 ${f2(2 * r0)} 0a${f2(r0)} ${f2(r0)} 0 1 1 ${f2(-2 * r0)} 0Z`);
+        p.setAttribute("fill", "#fff");
+        p.setAttribute("fill-opacity", f2(bright * on));
+        p.setAttribute("fill-rule", "evenodd");
+      });
+    };
+    const first_hand = items.findIndex((x) => x.role === "hand" || x.role === "cap" || x.role === "guide");
+    if (sun && items.some((x) => x.role === "plate")) {
+      const clip = part("shine/clip", "clipPath", this.light_defs), dial = part("shine/clip/dial", "circle", clip);
+      clip.id = "shine-clip";
+      dial.setAttribute("r", f2(R));
+      const g = part("shine", "g", this.dial, first_hand >= 0 ? nodes[first_hand] : null);
+      g.setAttribute("clip-path", "url(#shine-clip)");
+      g.setAttribute("style", "mix-blend-mode: screen");
+      g.setAttribute("pointer-events", "none");
+      bands(g, "shine");
+    }
+    items.forEach((item, i) => {
+      if (item.role !== "hand" || HAND_SHAPES[S["ha_" + item.name]?.shape] === "disc") return;
+      const side = Math.sin((from - item.angle) * Math.PI / 180);
+      const key = "bevel-" + item.name, clip = part(key + "/clip", "clipPath", this.light_defs), shape2 = part(key + "/clip/hand", "path", clip);
+      clip.id = "bevel-clip-" + item.name;
+      shape2.setAttribute("d", this.slots[i].d);
+      let n = i + 1;
+      while (items[n]?.role === "mark" && items[n].name === item.name) n++;
+      const g = part(key, "g", this.dial, nodes[n] || null);
+      g.setAttribute("transform", `rotate(${f2(-item.angle)})`);
+      g.setAttribute("pointer-events", "none");
+      const inner = part(key + "/in", "g", g);
+      inner.setAttribute("clip-path", `url(#${clip.id})`);
+      const half = (name, x, colour, k) => {
+        const r = part(`${key}/${name}`, "rect", inner);
+        r.setAttribute("x", f2(x));
+        r.setAttribute("y", "-50");
+        r.setAttribute("width", "50");
+        r.setAttribute("height", "100");
+        r.setAttribute("fill", colour);
+        r.setAttribute("fill-opacity", f2(k));
+      };
+      const lit = BEVEL.light * Math.abs(side) * Math.min(on, 1), dark = BEVEL.dark * Math.abs(side) * Math.min(on, 1);
+      half("right", 0, side > 0 ? "#fff" : "#000", side > 0 ? lit : dark);
+      half("left", -50, side > 0 ? "#000" : "#fff", side > 0 ? dark : lit);
+      if (sun) {
+        const sh = part(key + "/shine", "g", inner);
+        sh.setAttribute("transform", `rotate(${f2(item.angle)})`);
+        sh.setAttribute("style", "mix-blend-mode: screen");
+        bands(sh, key + "/shine");
+      }
+    });
+    finish();
+  }
   /** the showcase's spotlight and the dial's shadow in it, for the sun now (POOL); in the dial's millimetres */
   draw_pool() {
     if (!this.show) return;
@@ -12111,7 +12201,8 @@ var DialTool = class _DialTool {
     const f2 = (v) => v.toFixed(3), [L, D] = this.pool_parts;
     L.circle.setAttribute("r", f2(R * POOL.size));
     L.circle.setAttribute("transform", `translate(${f2(-toward[0] * off / 2)} ${f2(-toward[1] * off / 2)}) rotate(${f2(90 - sun.from)}) scale(${f2(1 + POOL.stretch * dim)} 1)`);
-    const colour = to_hex(S.c_backdrop);
+    const lum = (c) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2], b = S.c_backdrop, lift = lum(b) < POOL.least ? (POOL.least - lum(b)) / (1 - lum(b)) : 0;
+    const colour = to_hex(b.map((v, i) => i < 3 ? v + (1 - v) * lift : v));
     L.stops.forEach((s, i) => {
       s.setAttribute("offset", f2([0, 1 - soft, 1][i]));
       s.setAttribute("stop-color", colour);
@@ -12887,7 +12978,7 @@ var DialTool = class _DialTool {
    *  windows. Each surface's shadows are one group with one opacity, so where two overlap it is not darker. */
   draw_shadows(items) {
     const sun = this.show && this.sun();
-    const S = sun ? { ...this.S, sh_on: true, sh_blur: !this.moving(), sh_from: sun.from, sh_rise: sun.rise, sh_dark: this.S.sh_dark * sun.light } : { ...this.S, sh_blur: this.S.sh_blur && !this.moving() };
+    const S = sun ? { ...this.S, sh_on: true, sh_blur: !this.moving(), sh_from: sun.from, sh_rise: sun.rise, sh_dark: Math.min(this.S.sh_dark * SHOW_DARKER, 100) * sun.light } : { ...this.S, sh_blur: this.S.sh_blur && !this.moving() };
     if (!this.shade) {
       const defs = svg_el("defs"), filter = svg_el("filter"), blur = svg_el("feGaussianBlur");
       filter.id = "shadow-soft";
@@ -16423,6 +16514,7 @@ var DialTool = class _DialTool {
       }
       node.dataset.i = i;
     });
+    this.draw_light(items);
     this.draw_shadows(items);
     this.place();
     const ring2 = this.ring();
