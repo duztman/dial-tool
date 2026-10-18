@@ -526,7 +526,7 @@ const ROWS = {
     // the Type pane: open, its heading goes and the font box moves up beside the eye; folded, it says the font, its
     // style and size (Okay, 18 Oct 2026, notes 2: "When expanded, type block header disappears and type block moves up";
     // "Type boxes, when they are collapsed, should have summaries like others")
-    hdr("Type", { folded: true, bare: true, show: with_text, summary: (S, tool) => { const R = tool.ring(), f = tool.catalog.get(R.ps); return [R.family, f && f.style, `size ${fmt(R.size, 0.01)}`]; } }),
+    hdr("Type", { folded: true, bare: true, show: with_text, summary: (S, tool) => { const R = tool.ring(), f = tool.catalog.get(R.ps); return [R.family, f && f.style, `size ${fmt(R.size, 0.01)}`].filter(Boolean); } }),      // filter: a font not in the catalog has no style (4.54 broke selecting such a ring; 4.55)
     custom("font", { show: with_text }),
     // then Resize (Okay's notes, p. 9, #257: "a proper pane below the quick size and radius buttons … shown first"):
     // how big one thing is — the size button's number — and the radius, with what it measures to: for marks and bands
@@ -978,7 +978,7 @@ class DialTool {
     if (this.iris_box && !on(".irisbox")) this.iris_open(false);
     if (this.lang_opens && !on(".langs")) for (const shut of this.lang_opens) shut(false);
     if (this.add_open && $("#add-menu") && !$("#add-menu").hidden && !on(".adder")) this.add_open(false);
-    if (this.kind_open && $("#kind-menu") && !$("#kind-menu").hidden && !on(".kindcell") && !on("#kind-menu")) this.kind_open(false);
+    if (this.kind_open && $("#kind-menu") && !$("#kind-menu").hidden && !on("#ring-kind-square") && !on("#kind-menu")) this.kind_open(false);
     if (this.value_pop && !on("#value-pop") && !on(".valueb, .atmore, .popname, .numbox > input")) this.value_pop_close();
     this.tag_hide();
   }
@@ -2061,7 +2061,7 @@ class DialTool {
    *  with a space between, no dot). */
   show_summary(box, parts) {
     box.replaceChildren();
-    parts.forEach((part, i) => {
+    parts.filter((part) => part !== undefined && part !== null && part !== false && part !== "").forEach((part, i, parts) => {      // an empty part says nothing and takes no dot
       if (i) box.append(typeof part === "string" || typeof parts[i - 1] === "string" ? " · " : " ");
       if (typeof part === "string") return box.append(part);
       const dot = el("i", { className: "dot tiny", title: to_hex(part.c).toUpperCase() });
@@ -2830,30 +2830,28 @@ class DialTool {
     return best === null ? a : +(((best + 180) % 360 + 360) % 360 - 180).toFixed(6);
   }
 
-  /** the selected ring's line (Okay's design, 13 Oct 2026): a framed line in the list, right under the selected
-   *  ring's row, its buttons starting where the names start — four kinds, pictures only · its colour · how big one
-   *  of its things is and its radius, two round value buttons. All one height. No words: a tag says what a button
-   *  is while the pointer is on it (data-tip). The frame has the colour of the selected ring's guide, like the row
-   *  above it, on white. */
+  /** the selected ring's line (Okay's design, 13 Oct 2026; redrawn after his PSD of 18 Oct 2026, notes 2, #335 #327): a
+   *  framed line in the list, right under the selected ring's row: the ring's details written out in full on two lines
+   *  (grey names, dark values) in the names' room · its colour, a bare swatch · its size and its radius, two round value
+   *  buttons that a click opens and a drag changes. Their numbers stand above them, in the selected row (fill_ring_list:
+   *  "Numbers update above the icons, that's enough"), so they have no tag. The kind is changed from the row's kind
+   *  icon, which opens the kinds (the drawer's kind square and its Change button are gone: "This 'change' is
+   *  meaningless, remove it, write the details in full"). The frame has the colour of the selected ring's guide. */
   row_ring_line(wrap, out) {
     wrap.className = "ringline";
-    // the kind: a square lit with the ring's kind; a press opens the five kinds, with the note that nothing is lost by a
-    // change (#253, 4.50; Okay's notes, p. 2–3: "a square button lit with the ring's kind … a click on the kind square
-    // opens a selector of the kinds"; the note: "Settings stay with the ring. Switch back any time." — Okay, 16 Oct: "ok,
-    // recommended"). The five kind buttons of 4.7–4.49.2 are gone.
-    const square = el("button", { type: "button", className: "kindsquare", id: "ring-kind-square", ariaLabel: "Kind" });
-    square.dataset.tip = "Kind";
-    square.setAttribute("aria-haspopup", "menu");
+    // the kinds, opened from the selected row's kind icon (#ring-kind-square), with the note that nothing is lost by a
+    // change (#253, 4.50: "Settings stay with the ring. Switch back any time."). The menu lies over everything, under
+    // the icon (the list scrolls and would cut it): in the body, placed on opening.
     if ($("#kind-menu")) $("#kind-menu").remove();      // the last drawer's menu, left in the body
     const menu = el("div", { className: "addmenu kindmenu", id: "kind-menu", hidden: true });
     menu.setAttribute("role", "menu");
-    // the menu lies over everything, under the square (the list scrolls and would cut it): in the body, placed on opening
     const open = (on) => {
-      if (on) { document.body.append(menu); const at = square.getBoundingClientRect(); menu.style.left = `${at.left}px`; menu.style.top = `${at.bottom + 5.5}px`; }
-      menu.hidden = !on; square.setAttribute("aria-expanded", String(on));
+      const icon_at = $("#ring-kind-square");
+      if (on && icon_at) { document.body.append(menu); const at = icon_at.getBoundingClientRect(); menu.style.left = `${at.left}px`; menu.style.top = `${at.bottom + 5.5}px`; }
+      menu.hidden = !(on && icon_at); if (icon_at) icon_at.setAttribute("aria-expanded", String(!menu.hidden));
     };
     this.kind_open = open;
-    square.onclick = () => open(menu.hidden);
+    this.kind_menu = menu;
     G.KINDS.forEach((kind, i) => {
       const b = el("button", { type: "button", id: `ring-kind-Kind-${i}`, onclick: () => { open(false); this.set_value("ring", "kind", i); } });
       b.setAttribute("role", "menuitemradio");
@@ -2862,30 +2860,59 @@ class DialTool {
       menu.append(b);
     });
     menu.append(el("p", { className: "quiet note", textContent: "Settings stay with the ring. Switch back any time." }));
-    const kindcell = el("span", { className: "kindcell" }, square);
-    for (const part of [kindcell, menu]) part.onkeydown = (e) => { if (e.key === "Escape" && !menu.hidden) { open(false); square.focus(); } };
-    // the details: what the ring is, in words, left-aligned, cut when long; then Change, never cut, which takes you to
-    // the ring's settings — the first pane under the pinned part
-    const details = el("span", { className: "details quiet", id: "ring-details", title: "How many, of what kind, how big, how far out" });
-    const change = el("button", { type: "button", className: "change", id: "ring-change", textContent: "Change", title: "Its settings, below", onclick: () => { this.select_ring(this.S.ui_ring, false); this.form.scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); } });
+    menu.onkeydown = (e) => { if (e.key === "Escape" && !menu.hidden) { open(false); const k = $("#ring-kind-square"); if (k) k.focus(); } };
+    // the details: two lines, each cut at its end when long (ring_details)
+    const details = el("div", { className: "details", id: "ring-details" });
     const colour = this.colour_pill("ring-c-Colour", "");
     colour.classList.add("bare");                  // the swatch alone: no hex
     colour.dataset.tip = colour.ariaLabel = "Colour";
     colour.onclick = () => this.pop_open(this.colour_of_row({ scope: "ring", key: "c", text: "Colour" }), colour);
-    const size = this.value_button("ring-size", () => size_row(this.ring()), VALUE_PICS.size);
-    const radius = this.value_button("ring-r", () => radius_row(this.ring()), VALUE_PICS.radius);
-    wrap.append(kindcell, details, change, colour, size.el, radius.el);
+    const size = this.value_button("ring-size", () => size_row(this.ring()), VALUE_PICS.size, false);
+    const radius = this.value_button("ring-r", () => radius_row(this.ring()), VALUE_PICS.radius, false);
+    wrap.append(details, colour, size.el, radius.el);
     this.ring_line_holder = el("li", { className: "lineholder" }, wrap);      // it lives in the list (place_ring_line), not among the pane's rows
     out.el = el("span", { className: "nothing" });
     out.refresh = (R) => {
-      if (square.dataset.kind !== String(R.kind)) { square.dataset.kind = String(R.kind); square.innerHTML = PICS.kind(R.kind, KIND_PIC); }
       [...menu.querySelectorAll("button")].forEach((b, i) => { b.classList.toggle("on", i === R.kind); b.setAttribute("aria-checked", String(i === R.kind)); });
-      const says = this.ring_summary(R);
-      details.textContent = `${says.kind} · size ${says.size} · radius ${says.r}`;
+      const lines = this.ring_details(R), said = JSON.stringify(lines);
+      if (details.dataset.said !== said) {
+        details.dataset.said = said;
+        details.replaceChildren(...lines.map((line) => el("span", { className: "line" }, ...line.flatMap(([name, value], k) =>
+          [...(k ? [" · "] : []), el("span", { className: "k", textContent: `${name}: ` }), value]))));
+        details.title = lines.map((line) => line.map(([n, v]) => `${n}: ${v}`).join(" · ")).join("\n");
+      }
       colour.show(R.c);
       size.refresh();
       radius.refresh();
     };
+  }
+
+  /** a ring written out in full for its drawer (#327; Okay's PSD, 18 Oct 2026: "Custom: LONDON, PARIS, CAIRO…" over
+   *  "Positions: 24 · Nudge One Numeral: 1-…"): two lines of [name, value] pairs. The first says what it draws — a
+   *  numeral ring its set and the labels it draws, a text ring its words, ticks and markers their shape and its
+   *  measures, a band its width and fill. The second says where: how many positions, and what departs from a whole
+   *  turn — a start, a span, a give-way, nudged numerals. The names are the panes' and rows' own words. */
+  ring_details(R) {
+    const kind = G.kind_of(R), len = (mm) => `${parseFloat(this.in_unit(mm, 2))}`, at = G.positions_of(R);
+    const what = [], where = [["Positions", String(parseInt(R.count) || 1)]];      // the Positions pane's count (a give-way may draw fewer; it is said after)
+    if (kind === "numerals") {
+      const labels = G.ring_labels(R);
+      what.push([G.LABEL_SETS[R.labels][0], at.map((i) => labels[i]).filter(Boolean).join(", ") || "—"]);
+    } else if (kind === "text") what.push(["Text", R.custom || "—"]);
+    else if (kind === "band") what.push(["Width", len(R.width)], ["Fill", `${parseFloat(R.fill)}%`]);
+    else {
+      const shape = G.SHAPES[R.shape];
+      what.push(["Shape", shape[0].toUpperCase() + shape.slice(1)]);
+      if (shape === "dot") what.push(["Diameter", len(R.w)]);
+      else what.push(["Length", len(R.len)], ["Width", len(R.w)]);
+    }
+    if (+R.start) where.push(["Start", `${parseFloat((+R.start).toFixed(2))}°`]);
+    if (+R.span !== 360) where.push(["Span", `${parseFloat((+R.span).toFixed(2))}°`]);
+    if (R.skip) where.push(["Skip where", G.SKIP_FROM[R.skip]]);
+    if (R.knock) where.push(["Knock out", G.KNOCK_FROM[R.knock]]);
+    const nudged = Object.keys(R.nudge || {}).filter((k) => R.nudge[k] && Object.values(R.nudge[k]).some((v) => +v));
+    if (G.has_text(R) && nudged.length) { const labels = G.ring_labels(R); where.push(["Nudge one numeral", nudged.map((k) => labels[+k] || +k + 1).join(", ")]); }
+    return [what, where];
   }
 
   // ── a value as a button ──────────────────────────────────
@@ -2895,13 +2922,13 @@ class DialTool {
   //   The value itself is read in the ring's row above, and in the tag.
   //   row() says which number row it stands for right now.
 
-  value_button(id, row, drawing) {
+  value_button(id, row, drawing, tagged = true) {      // tagged: false for the ring drawer's two, whose numbers stand in the row above (4.55)
     const b = el("button", { type: "button", className: "valueb", id });
     b.innerHTML = `<svg viewBox="0 0 36 36" aria-hidden="true">${drawing}</svg>`;
     const T = () => this.target(row().scope);
     const refresh = () => {                        // no number in it (Okay, 13 Oct 2026): the ring's row, right above, says it; so does the tag
       const r = row(), v = T()[r.key] ?? 0, text = String(parseFloat(this.in_unit(v, decimals(r.step))));
-      b.dataset.tip = label_of(r, T());
+      if (tagged) b.dataset.tip = label_of(r, T());
       b.dataset.value = text;
       b.ariaLabel = `${label_of(r, T())} ${text} ${this.unit()[0]}`;
     };
@@ -3066,7 +3093,9 @@ class DialTool {
     wrap.classList.toggle("guided", Boolean(guide));
     if (guide) wrap.style.setProperty("--guide", guide); else wrap.style.removeProperty("--guide");
     this.place_ring_line();
-    this.ring_rows().forEach((li, i) => {         // a row's kind icon follows a change of kind (#254); its numbers are the drawer's now
+    const R = this.ring(), says = R ? this.ring_summary(R) : null;
+    for (const [id, text] of [["#ring-size-fig", says && says.size], ["#ring-r-fig", says && says.r]]) { const f = $(id); if (f && f.textContent !== text) f.textContent = text; }
+    this.ring_rows().forEach((li, i) => {         // a row's kind icon follows a change of kind (#254); the selected row's size and radius (4.55) just above
       const ring = this.S.rings[i], k = li.querySelector(".kindicon");
       if (!ring || !k || k.dataset.kind === String(ring.kind)) return;
       k.dataset.kind = String(ring.kind); k.innerHTML = PICS.kind(ring.kind, KIND_PIC); k.title = G.kind_of(ring);
@@ -3090,12 +3119,24 @@ class DialTool {
       grip.onpointerdown = (e) => this.drag_ring(e, i);
       // the kind as an icon where the drawer's square stands, then the name; no numbers in a row (#254, 4.50; Okay's
       // notes, p. 3: "no text details, only the kind icon … no adjustments, just an indicator"; the summary of 4.7–4.49.2)
-      const kind = el("span", { className: "kindicon", id: `ring-kind-row-${i}`, title: G.kind_of(ring) });
+      // the selected row's kind icon is a button that opens the kinds (4.55, Okay's PSD of 18 Oct: the drawer's square went)
+      const kind = el(selected ? "button" : "span", { className: "kindicon", id: selected ? "ring-kind-square" : `ring-kind-row-${i}`, title: G.kind_of(ring) });
       kind.dataset.kind = String(ring.kind);
       kind.innerHTML = PICS.kind(ring.kind, KIND_PIC);
+      if (selected) {
+        kind.type = "button";
+        kind.dataset.tip = "Kind"; kind.title = ""; kind.ariaLabel = "Kind";
+        kind.setAttribute("aria-haspopup", "menu");
+        kind.onclick = (e) => { e.stopPropagation(); if (this.kind_open) this.kind_open(this.kind_menu.hidden); };
+        kind.onkeydown = (e) => { if (e.key === "Escape" && this.kind_menu && !this.kind_menu.hidden) { e.stopPropagation(); this.kind_open(false); } };
+      }
       const name = el("span", { className: "name", textContent: ring.name || G.kind_of(ring) });
       const cell = el("span", { className: "namecell" }, name);       // the name and, right beside it, the rename box
-      const item = el("li", { className: "ring" + (selected ? " on" : "") + (ring.on ? "" : " off"), tabIndex: 0 }, show, grip, kind, cell);
+      // the selected ring's size and radius, large, in Dial Mono, each over its button in the drawer below (4.55, Okay's
+      // PSD: "Large mono numbers for size and radius, slashless 0 if possible"); sync_ring_summaries keeps them current
+      const says = selected && this.ring_summary(ring);
+      const figs = selected ? [el("span", { className: "fig", id: "ring-size-fig", textContent: says.size }), el("span", { className: "fig", id: "ring-r-fig", textContent: says.r })] : [];
+      const item = el("li", { className: "ring" + (selected ? " on" : "") + (ring.on ? "" : " off"), tabIndex: 0 }, show, grip, kind, cell, ...figs);
       // a row is a choice in a list, reached with Tab and taken with Enter or Space (#244, 4.47.2: rows had no role and no way in from the keyboard)
       item.setAttribute("role", "option");
       item.setAttribute("aria-selected", String(selected));

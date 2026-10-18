@@ -29,13 +29,22 @@
   .ringlist li.ring.dragged { opacity: 0.45; }
   .ringlist li.ring.dragged .grip { cursor: grabbing; }
   .ringlist .dropline { position: absolute; left: 0; right: 0; height: var(--triple); background: var(--ink); pointer-events: none; }
-  .ringlist .kindicon { grid-column: 3; display: grid; place-items: center; height: 100%; color: var(--ink); }      /* the kind, pictured, where the drawer's square stands (#254) */
+  .ringlist .kindicon { grid-column: 3; display: grid; place-items: center; height: 100%; color: var(--ink); }      /* the kind, pictured (#254) */
+  .ringlist button.kindicon { width: 100%; padding: 0; }      /* the selected row's: it opens the kinds (4.55) */
+  .ringlist button.kindicon:hover, .ringlist button.kindicon[aria-expanded="true"] { background: var(--veil-strong); }
   .ringlist li.ring.off .kindicon { color: var(--rule); }
   .ringlist .namecell { grid-column: 4 / 9; display: flex; align-items: center; min-width: 0; padding-right: var(--u3); }
   .ringlist span.name { min-width: 0; padding: 0 var(--unit) 0 var(--name-in); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ringlist span.name.renames { cursor: text; }
   .ringlist input.name { grid-column: 4 / 9; margin-left: var(--u1); padding: 0 var(--unit); }
   .ringlist .rename { flex: none; display: grid; place-items: center; width: var(--control); height: var(--control); color: var(--wait); }
+  .ringlist .rename svg { opacity: var(--rename-dim); }      /* half its grey (Okay's PSD, 18 Oct 2026) */
+  .ringlist .rename:hover svg { opacity: 1; }
+  /* the selected ring's size and radius, large, in Dial Mono, each centred over its button in the drawer (4.55) */
+  .ringlist li.ring.on .namecell { grid-column: 4 / 7; }
+  .ringlist .fig { justify-self: end; display: flex; justify-content: center; width: var(--line-button); font: 400 var(--t-fig)/1 var(--unit-face); letter-spacing: 0; white-space: nowrap; }
+  .ringlist .fig#ring-size-fig { grid-column: 7; }
+  .ringlist .fig#ring-r-fig { grid-column: 8; }
   .ringlist .rename:hover { color: var(--ink); background: var(--veil-strong); }
   /* the list's tools stand on the pane's heading line, at its right: a plus that opens the four kinds, then move up ·
      move down · duplicate · delete, all five the same outlined circle. The pane is laid on the
@@ -56,15 +65,13 @@
   /* inside its outer line a second one, three times as thick, in the selected row's ground: the box reads as that row's */
   .guided .ringlist li.lineholder { border-color: color-mix(in srgb, var(--guide) var(--guide-edge), var(--grey)); box-shadow: inset 0 0 0 var(--ringline-inner) color-mix(in srgb, var(--guide) var(--guide-tint), var(--field)); }
   .ringline { display: contents; }                 /* its parts stand on the list's columns: the kind square under the rows' icons, the details and Change in the names' room, then colour · size · radius */
-  .ringline > .kindcell { grid-column: 3; position: relative; display: grid; }
-  .kindsquare { display: grid; place-items: center; width: var(--line-button); height: var(--line-button); padding: 0; border: var(--hair) solid var(--ink); background: var(--ink); color: var(--paper); }      /* lit with the ring's kind (#253) */
-  .kindsquare:hover { background: var(--grey); border-color: var(--grey); }
-  .kindmenu { position: fixed; z-index: 30; top: auto; right: auto; }      /* the kinds, under the square (placed by app.js: the list scrolls and would cut it), over everything, as the add menu is under its plus */
+  .kindmenu { position: fixed; z-index: 30; top: auto; right: auto; }      /* the kinds, under the selected row's kind icon (placed by app.js: the list scrolls and would cut it), over everything, as the add menu is under its plus */
   .kindmenu button.on { background: var(--ink); color: var(--paper); }
   .kindmenu .note { margin: 0; padding: var(--u2) var(--u4); border-top: var(--hair) solid var(--rule); font-size: var(--t-s); white-space: normal; }
-  .ringline > .details { grid-column: 4; min-width: 0; padding: 0 var(--unit) 0 var(--name-in); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--t-s); }      /* left-aligned, a long line cut (#253) */
-  .ringline > .change { grid-column: 5; justify-self: start; height: var(--line-button); padding: 0 var(--u2); font-size: var(--t-s); color: var(--ink); text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: var(--u1); white-space: nowrap; }      /* never cut */
-  .ringline > .change:hover { text-decoration-color: var(--ink); }
+  /* the details written out (#327, 4.55): two lines, grey names and dark values, each line cut at its end */
+  .ringline > .details { grid-column: 1 / 6; display: grid; min-width: 0; padding: 0 var(--unit) 0 calc(var(--frame-pad) - var(--hair) + var(--nudge)); font-size: var(--t-s); line-height: var(--details-line); color: var(--ink); }
+  .ringline > .details .line { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ringline > .details .k { color: var(--wait); }
   .ringline > :is(.colour, .valueb) { justify-self: end; }
   .ringline > .colour { grid-column: 6; }
   .ringline > #ring-size { grid-column: 7; }
@@ -76,6 +83,8 @@
   .colour.mini .dot { width: var(--t-m); height: var(--t-m); }
   .colour.bare .dot { width: var(--bare-dot); height: var(--bare-dot); border-color: var(--rule); }
   .colour.bare[aria-expanded="true"] { border-color: var(--ink); }
+  .ringline > .colour.bare { border-color: transparent; background: none; }      /* the swatch alone, filled, no box round it (Okay's PSD, 18 Oct 2026) */
+  .ringline > .colour.bare:hover { border-color: var(--rule); }
   /* the tag: what a wordless button is, under it while the pointer is on it. One for the whole tool, over everything. */
   /* more room inside, the words centred, a hairline round it (Okay, 18 Oct 2026, notes 2: "they need more inner padding
      and centeredness and 1px borders"; until 4.51.1 a unit and a half less room and a --thick line). The arrow's square

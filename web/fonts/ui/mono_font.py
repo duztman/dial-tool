@@ -20,7 +20,9 @@ from fontTools import subset
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SOURCE = os.path.join(HERE, "JetBrainsMono[wght].ttf")
-STEM, KEEP = 100, "mptinlghou"      # a stem of 1 px at 10 px; the letters of mm · pt · in · lig · thou
+STEM, KEEP = 100, "mptinlghou0123456789.-"      # a stem of 1 px at 10 px; the letters of mm · pt · in · lig · thou; and since
+# 4.55 the figures, for a selected ring's size and radius (Okay, 18 Oct 2026, notes 2: "Large mono numbers for size and
+# radius, slashless 0 if possible") — JetBrains Mono's 0 has a dot, taken out below
 
 
 def stem(weight):
@@ -49,6 +51,27 @@ options.notdef_outline = True
 sub = subset.Subsetter(options)
 sub.populate(text=KEEP)
 sub.subset(font)
+# a plain 0: JetBrains Mono's has a dot in its counter (and a slash as its "zero" feature); its smallest contour, the
+# dot, goes, so the figure is a plain oval (notes 2: "slashless 0 if possible")
+from fontTools.pens.recordingPen import RecordingPen
+from fontTools.pens.ttGlyphPen import TTGlyphPen
+from fontTools.pens.boundsPen import BoundsPen
+glyphs, name = font.getGlyphSet(), font.getBestCmap()[ord("0")]
+rec = RecordingPen(); glyphs[name].draw(rec)
+contours, now = [], []                             # the drawing split into its contours
+for op in rec.value:
+    now.append(op)
+    if op[0] in ("closePath", "endPath"): contours.append(now); now = []
+def area(c):
+    b = BoundsPen(None); RecordingPen.replay(type("R", (), {"value": c})(), b)
+    x0, y0, x1, y1 = b.bounds; return (x1 - x0) * (y1 - y0)
+if len(contours) > 2:
+    dot = min(contours, key=area)
+    out_pen = TTGlyphPen(None)
+    for c in contours:
+        if c is not dot: RecordingPen.replay(type("R", (), {"value": c})(), out_pen)
+    font["glyf"][name] = out_pen.glyph()
+    font["glyf"][name].recalcBounds(font["glyf"])
 out = os.path.join(HERE, "DialMono.ttf")
 font.save(out)
 print(f"{out}: {os.path.getsize(out)} bytes; weight {weight}, its stem {stem(weight):.1f} of 1000")

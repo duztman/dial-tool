@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## beta 4.55 (web version) · 18 Oct 2026
+
+The selected ring after Okay's Photoshop drawing (`selected-ring_181026`; notes 2, #335, #327).
+
+- **The selected row** carries the ring's **size and radius** at its right, in Dial Mono, each over its button in the drawer ("Large mono numbers for size and radius, slashless 0 if possible"). Dial Mono, cut from JetBrains Mono for the unit box, now has the figures; its 0 has no dot (`web/fonts/ui/mono_font.py`).
+- **The kind** is changed from the selected row's kind icon: a press opens the kinds. The drawer's kind square is gone.
+- **The drawer** writes the ring out on two lines, grey names and dark values: what it draws (*Arabic: 12, 3, 6, 9*, *Text: AUTOMATIC*, *Shape: Bar · Length: 2.4 · Width: 0.7*, *Width · Fill* for a band), then where (*Positions: 12*, and a start, a span, a give-way or nudged numerals when there are some). **Change** is gone ("meaningless").
+- The colour is a **bare swatch**; size and radius are pressed (the controller) or dragged, with **no tag**: their numbers are right above. The rename box at half its grey.
+- **Fixed**: in 4.54, selecting a ring whose font is not in the catalog (a markers ring of the default watch) stopped the panel — the Type pane's summary had an empty part.
+
 ## beta 4.54 (web version) · 18 Oct 2026
 
 The font box after Okay's Photoshop drawing (`font-selector_171026`, light and dark; notes 2).
