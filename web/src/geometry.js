@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.74";
+export const VERSION = "beta 4.75";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
@@ -148,6 +148,7 @@ export const DEFAULTS = {
   da_shape: 0, da_sides: 6, da_turn: false, da_text_turn: true, da_family: "", da_ps: "", da_axes: {}, da_text_c: null, da_disc_c: null, da_tracking: null, da_lang: null, da_features: null, da_at_deg: null,      // window 1's share of WINDOW_BASE's keys of 13 Oct 2026
   t: 10 * 3600 + 9 * 60 + 36,
   out_production: false, out_mirror: false, out_live_text: false,
+  out_paper: 0, out_copies: 0, out_gap: 3.0, out_cutline: false,      // a print sheet (4.75, #348): its paper (output.js PAPERS: A4 · Letter · A5), how many (0 = as many as fit), the room between, a cut line round each
   out_dpi: 600.0, out_seconds: 4.0, out_fps: 30.0, out_px: 1080,
   ui_section: 0, ui_ring: 0, ui_hand: 0, ui_preview: 0, ui_window: 0,
   ui_unit: 0,                                      // the unit lengths are shown and typed in: a place in UNITS. Settings stay in mm (R1)
@@ -426,6 +427,7 @@ export const LINK_KEYS = [
   "follows", "names", "da_follows", "da_names", "date",      // 4.62: appended; a window follows the bar's date only when asked, so every older link shows its typed text
   "bezel",                  // 4.66: appended; no case to start, so every older link looks as before
   "wearos_name",            // 4.67: appended; empty to start
+  "out_paper", "out_copies", "out_gap", "out_cutline",      // 4.75: appended; a print sheet's settings
   "neighbours", "da_neighbours",      // 4.74: appended; off to start, so every older link looks as before
   "look", "c2", "c3", "da_look", "da_c2", "da_c3",      // 4.73: appended; the picture as before (0) and its own colours (null), so every older link looks as before
   "xray", "physics", "da_physics",      // 4.72: appended; X-ray off and physics on to start, so every older link looks as before

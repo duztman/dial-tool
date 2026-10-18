@@ -1,6 +1,6 @@
 // icons/check.mjs — the icon check (R33). Opens the built page (dial-tool.html) in Chromium at 2×, visits the window's
 // states, finds every icon (an <svg> in the panel, the bars and the pop-outs: not the preview, the ruler, font samples,
-// hand details or the Gallery), and checks it against the icon grid written in src/app.js (docs/design.md §9):
+// hand details, the print sheet's page (4.75) or the Gallery), and checks it against the icon grid written in src/app.js (docs/design.md §9):
 //   1. one unit, one point: the viewBox is the icon's size on screen (hand tiles: twice, drawn by the geometry)
 //   2. every stroked line has one of the four widths, LINE · SLANT · CURVE · DENSE (or DENSE + 1/8: the round corners of
 //      a quiet box, drawn with box(…, DENSE, DENSE + 1 / 8)), or is a pictured width (PICTURED)
@@ -58,7 +58,7 @@ let n = 0;
 // what an icon is, read in the page: size, scale, every drawn child with its width, path and the transform it sits in
 const collect = async (state) => {
   const found = await page.evaluate(() => {
-    const skip = (s) => s.closest(".preview, .ruler, .fontrow, .examples, .detail, .sample, .face, .tip, .fontname") || s.classList.contains("preview") || s.classList.contains("ruler");
+    const skip = (s) => s.closest(".preview, .ruler, .fontrow, .examples, .detail, .sample, .face, .tip, .fontname, .sheetpage") || s.classList.contains("preview") || s.classList.contains("ruler");
     document.querySelectorAll("[data-icon]").forEach((e) => e.removeAttribute("data-icon"));
     const res = [];
     document.querySelectorAll("svg").forEach((s, i) => {

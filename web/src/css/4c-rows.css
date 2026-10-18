@@ -27,6 +27,13 @@
      A full row's: value a tile and a unit wide, − + a tile; beside a hand's box (side) and in a quiet row, narrower
      (--box-side-*); in Positions, Positions' own (--pos-*). The signs are drawn, 12 across (STEP, app.js) */
   .row.resetblank { padding: var(--unit) 0; row-gap: var(--unit); }
+  /* a print sheet (4.75): Sheet · its button · the page drawn small at the right, the paper white on its hairline, every copy a disc of ink */
+  .row.sheetrow { padding: var(--unit) 0; }
+  .row.sheetrow > .btn { grid-column: 3 / span 2; justify-self: start; }
+  .row.sheetrow > .sheetpage { grid-column: 5 / -1; justify-self: end; width: var(--sheet-w); }
+  .sheetpage svg { display: block; width: 100%; height: auto; }
+  .sheetpage .paper { fill: var(--white); stroke: var(--rule); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .sheetpage .copy { fill: var(--ink); }
   .row.resetblank > .btn { grid-column: 3 / -1; justify-self: start; }
   .row.resetblank > .quiet { grid-column: 3 / -1; }
   .numbox { display: flex; min-width: 0; }

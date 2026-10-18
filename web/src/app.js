@@ -7,7 +7,7 @@
 // controls. Controls change the settings S and ask for a frame; the frame draws (R28).
 
 import * as G from "./geometry.js";
-import { svg_document, pdf_document, png_with_dpi, file_name } from "./output.js";
+import { svg_document, pdf_document, png_with_dpi, file_name, pdf_sheet, sheet_layout, PAPERS } from "./output.js";
 import { BEZELS, STRAPS, bezel_svg } from "./bezels.js";
 // a Wear OS watch face (4.67; farukahmet's PR #1, 18 Oct 2026): the dial as Watch Face Format, packed and signed in the browser
 import { generate_watchface_xml } from "./wearos/wff_xml.js";
@@ -746,6 +746,15 @@ const ROWS = {
     hdr("Print", { folded: true }),                                  // what only the printed or etched dial needs (was "For production" until beta 4.19)
     chk("out_production", "Mono print mask"),
     chk("out_mirror", "Mirrored, for toner transfer"),
+    // a print sheet (4.75, #348; Okay's notes 2: "print page preparation, preview, copies, stacks — something simple,
+    // elegant, efficient and paper savingly"): one page of copies at true size, packed straight or staggered —
+    // whichever holds more — mirrored and as a mask as the two ticks above say; a drawing of the page beside the button
+    custom("print_sheet"),
+    seg("out_paper", "Paper", PAPERS.map((p) => p[0])),
+    num("out_copies", "Copies", 0, 60, 1, { whole: true }),
+    info((S) => sheet_says(S), { scope: "global" }),
+    num("out_gap", "Room between", 0, 20, 0.5),
+    chk("out_cutline", "A cut line round each"),
     hdr("Link to this dial", { folded: true }),
     custom("link_copy", { head: true }),           // Copy link, flush right on the heading line, open or folded (#277)
     custom("link"),
@@ -756,6 +765,12 @@ const ROWS = {
     hdr("Gallery", { folded: true }),                                // under everything else: dials to open and take apart (Okay, 13 Oct 2026), the five first examples among them
     custom("gallery"),
   ],
+};
+/** what a print sheet will hold, in words (4.75). */
+const sheet_says = (S) => {
+  const L = sheet_layout(S), n = L.places.length;
+  if (!n) return `A ${S.dial_d} mm dial doesn't fit on ${L.paper[0]}.`;
+  return `${n} ${n === 1 ? "copy" : "copies"} on ${L.paper[0]}${L.staggered ? ", rows staggered" : ""}${+S.out_copies > 0 && +S.out_copies > L.fits ? ` — ${L.fits} fit` : +S.out_copies > 0 ? "" : " — as many as fit (Copies 0)"}.`;
 };
 // the day slider's steps: every hour, and 10:10 — hands spread like a smile, the pose watches are photographed in
 const DAY_STEPS = [...Array.from({ length: 12 }, (_, h) => [h * 3600, String(h || 12), false]), [10 * 3600 + 10 * 60, "10:10", true]].sort((a, b) => a[0] - b[0]);
@@ -4549,6 +4564,18 @@ class DialTool {
     return el("button", { type: "button", className: "btn main", id: "export-" + kind.toLowerCase(), textContent: kind, title: `Export a ${kind}`, onclick: () => this.export(kind.toLowerCase()) });
   }
 
+  /** a print sheet (4.75, #348): its button, and the page drawn small beside it — the paper, every copy where it will stand. */
+  row_print_sheet(wrap, out) {
+    wrap.className = "row sheetrow";
+    const btn = el("button", { type: "button", className: "btn main", id: "export-sheet", textContent: "Sheet PDF", title: "A page of copies, at true size, to print", onclick: () => this.export("sheet") });
+    const page = el("span", { className: "sheetpage", id: "sheet-page" });
+    wrap.append(el("label", { textContent: "Sheet" }), btn, page);
+    out.refresh = (S) => {
+      const L = sheet_layout(S), [, W, H] = L.paper, r = S.dial_d / 2;
+      page.innerHTML = `<svg viewBox="0 0 ${W} ${H}" aria-hidden="true"><rect class="paper" width="${W}" height="${H}"/>${L.places.map(([x, y]) => `<circle class="copy" cx="${x.toFixed(2)}" cy="${(H - y).toFixed(2)}" r="${r}"/>`).join("")}</svg>`;
+    };
+  }
+
   /** under the PNG row: what that dpi comes to. */
   /** the Wear OS export (4.67, farukahmet's PR #1): a watch face (Watch Face Format) as an APK to sideload — over adb, or
    *  a sideloading app. Signed with a shared debug key: right for one's own watch, never for the Play Store. */
@@ -5325,6 +5352,12 @@ class DialTool {
         if (live) return this.log(`exported ${name} · ${G.page_mm(S).toFixed(2)} mm square · numerals are text: ${[...new Set(S.rings.filter((r) => r.on && G.has_text(r)).map((r) => r.family))].join(", ") || "no numerals"} must be installed to open it`);
       }
       if (kind === "pdf") save_file(name, pdf_document(S, statik, S.t), "application/pdf");
+      if (kind === "sheet") {                      // a print sheet (4.75)
+        const L = sheet_layout(S);
+        if (!L.places.length) return this.log(`sheet not made: a ${S.dial_d} mm dial doesn't fit on ${L.paper[0]}`);
+        save_file(name, pdf_sheet(S, statik, S.t), "application/pdf");
+        return this.log(`exported ${name} · ${L.places.length} × ${S.dial_d.toFixed(2)} mm on ${L.paper[0]}${L.staggered ? ", staggered" : ""}${S.out_mirror ? " · mirrored" : ""}${S.out_production ? " · mask" : ""}${S.out_cutline ? " · cut lines" : ""} · print at 100 %, not "fit to page"`);
+      }
       if (kind === "png") {
         const px = Math.round(G.page_mm(S) / 25.4 * S.out_dpi);
         if (px > PNG_MOST) return this.log(`PNG not made: ${px} × ${px} px is more than a browser can draw (${PNG_MOST} a side). Lower the dpi to ${Math.floor(PNG_MOST / G.page_mm(S) * 25.4)} or less, or use the PDF.`);

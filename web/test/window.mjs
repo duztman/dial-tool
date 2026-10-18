@@ -1692,6 +1692,17 @@ const mask_png = await download("#export-png");
 const corner = await page.evaluate(async (b64) => { const i = new Image(); i.src = "data:image/png;base64," + b64; await i.decode(); const c = document.createElement("canvas"); c.width = c.height = 4; const x = c.getContext("2d"); x.drawImage(i, 0, 0); return [...x.getImageData(0, 0, 1, 1).data]; }, fs.readFileSync(mask_png).toString("base64"));
 check(corner.join() === "255,255,255,255", "a mask's PNG has a white ground");
 await page.uncheck("#global-out-production-Mono-print-mask");
+{ // a print sheet (4.75, #348; Okay's notes 2: "print page preparation, preview, copies, stacks — something simple, elegant, efficient and paper savingly"): an A4 of copies at true size, packed staggered when that holds more; Copies caps it; the page drawn beside the button
+  const says = () => page.evaluate(() => [...document.querySelectorAll(".row.note .quiet")].map((e) => e.textContent).find((t) => / on (A4|Letter|A5)/.test(t)) || "");
+  const all = await says(), drawn = await page.$$eval("#sheet-page circle", (c) => c.length);
+  const sheet = await download("#export-sheet"), text = fs.readFileSync(sheet, "latin1"), box = /MediaBox \[0 0 ([\d.]+) ([\d.]+)\]/.exec(text), placed = (text.match(/\/Dial Do/g) || []).length;
+  await page.evaluate(() => window.dial_tool.set_value("global", "out_copies", 6));
+  const six = await says(), six_drawn = await page.$$eval("#sheet-page circle", (c) => c.length);
+  await page.evaluate(() => window.dial_tool.set_value("global", "out_copies", 0));
+  const n = +(/^(\d+) cop/.exec(all) || [0, 0])[1];
+  check(n > 10 && drawn === n && placed === n && near(+box[1] / 72 * 25.4, 210, 0.01) && near(+box[2] / 72 * 25.4, 297, 0.01) && !/ S\n|BT\n/.test(text) && six.startsWith("6 copies") && six_drawn === 6 && path.basename(sheet).includes("-sheet-"),
+    `a print sheet: "${all}" — ${placed} copies placed on an A4 (${(+box[1] / 72 * 25.4).toFixed(1)} × ${(+box[2] / 72 * 25.4).toFixed(1)} mm), filled paths only, drawn beside its button; Copies 6: "${six}"; ${path.basename(sheet)}`);
+}
 const saved = await download("#save");
 const before_save = await S("JSON.stringify(S)");
 check(JSON.stringify(JSON.parse(fs.readFileSync(saved, "utf8"))) === before_save, "Save… writes the settings as they are");

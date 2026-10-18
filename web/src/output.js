@@ -1,7 +1,7 @@
 // Dial Tool, web version — files out: SVG and PDF, both vector and at true size.
 // Both draw the scene (R26) and nothing else; guides and backdrop never reach a file (R5).
 
-import { MM, scene, turned, page_mm, live_texts, font_of, has_font, Path } from "./geometry.js";
+import { MM, scene, turned, page_mm, live_texts, font_of, has_font, Path, circle } from "./geometry.js";
 
 const num = (v, digits = 4) => {
   const s = (v + 0).toFixed(digits).replace(/^-(0(\.0+)?)$/, "$1");       // no "-0"
@@ -23,6 +23,7 @@ function item_name(item) {
 export function file_name(S, ext, now = new Date()) {
   const day = [now.getFullYear(), now.getMonth() + 1, now.getDate()].map((v) => String(v).padStart(2, "0")).join("-");
   const what = ext === "json" ? "" : (S.out_production ? "-mask" : "") + (S.out_mirror ? "-mirrored" : "");
+  if (ext === "sheet") return `dial-${num(S.dial_d, 2)}mm-sheet${what}-${day}.pdf`;      // a print sheet (4.75)
   return `dial-${num(S.dial_d, 2)}mm${what}-${day}.${ext}`;
 }
 
@@ -158,3 +159,66 @@ export function png_with_dpi(bytes, dpi) {
   out.set(bytes.subarray(0, at)); out.set(chunk, at); out.set(bytes.subarray(at), at + chunk.length);
   return out;
 }
+
+// ── a print sheet (#348, 4.75) ──────────────────────────────
+// Okay's notes 2: "Printing: print page preparation, preview, copies, stacks — something simple, elegant, efficient and
+// paper savingly". One page of a paper size, as many copies of the dial as asked (or as fit), each at its true size,
+// packed in straight rows or staggered ones — whichever holds more, as circles stack tighter staggered — the block
+// centred on the page. Each copy is the same drawing as the PDF export (one form, placed again and again), mirrored or
+// a print mask as Print says. A cut line round each, if asked: a hairline ring just outside the dial, filled (R4).
+export const PAPERS = [["A4", 210, 297], ["Letter", 215.9, 279.4], ["A5", 148, 210]];
+export const SHEET_EDGE = 8;                       // mm kept clear at the paper's edges, where a printer can't reach
+const CUT_AT = 0.4, CUT_W = 0.1;                   // the cut line: this far outside the dial, this thick (mm)
+
+/** where the copies stand on a sheet: {places: [[x, y] mm from the page's bottom left, each a dial's centre], fits,
+ *  staggered, paper: [name, w, h]}. copies 0 = as many as fit. */
+export function sheet_layout(S) {
+  const paper = PAPERS[S.out_paper] || PAPERS[0], [, W, H] = paper, D = S.dial_d, gap = Math.max(+S.out_gap || 0, 0), pitch = D + gap;
+  const aw = W - 2 * SHEET_EDGE, ah = H - 2 * SHEET_EDGE;
+  const across = (w) => (w + 1e-9 >= D ? Math.floor((w - D) / pitch + 1e-9) + 1 : 0);
+  const straight = () => { const c = across(aw), r = across(ah), out = []; for (let j = 0; j < r; j++) for (let i = 0; i < c; i++) out.push([i * pitch, j * pitch]); return out; };
+  const staggered = () => {                        // rows a hexagon's height apart, every other one half a pitch along
+    const rise = pitch * Math.sqrt(3) / 2, rows = ah + 1e-9 >= D ? Math.floor((ah - D) / rise + 1e-9) + 1 : 0, out = [];
+    for (let j = 0; j < rows; j++) { const off = j % 2 ? pitch / 2 : 0, c = across(aw - off); for (let i = 0; i < c; i++) out.push([off + i * pitch, j * rise]); }
+    return out;
+  };
+  const a = straight(), b = staggered(), use = b.length > a.length ? b : a;
+  const want = +S.out_copies > 0 ? Math.min(Math.round(+S.out_copies), use.length) : use.length;
+  const places = use.slice(0, want);
+  if (!places.length) return { places, fits: 0, staggered: false, paper };
+  const xs = places.map((p) => p[0]), ys = places.map((p) => p[1]);
+  const dx = (W - (Math.max(...xs) - Math.min(...xs))) / 2 - Math.min(...xs), dy = (H - (Math.max(...ys) - Math.min(...ys))) / 2 - Math.min(...ys);
+  return { places: places.map(([x, y]) => [x + dx, H - (y + dy)]), fits: use.length, staggered: use === b && b.length > a.length, paper };      // first copies at the top
+}
+
+/** the print sheet as PDF bytes: the dial drawn once as a form, placed at every copy. */
+export function pdf_sheet(S, statik, t) {
+  const L = sheet_layout(S), [, W, H] = L.paper, flip = S.out_mirror ? -1 : 1, R = S.dial_d / 2;
+  const alphas = [], dial = [];
+  for (const item of drawn(S, statik, t, false, null)) {
+    const [r, g, b, a] = item.fill;
+    if (a < 1 && !alphas.includes(a)) alphas.push(a);
+    dial.push(a < 1 ? `q /A${alphas.indexOf(a)} gs` : "q", S.out_production ? `${num(r)} g` : `${num(r)} ${num(g)} ${num(b)} rg`, ...path_ops(item.path), "f", "Q");
+  }
+  if (S.out_cutline) dial.push("q", S.out_production ? "0 g" : "0 0 0 rg", ...path_ops(circle(2 * (R + CUT_AT + CUT_W)).difference(circle(2 * (R + CUT_AT)))), "f", "Q");      // the cut line: a ring, filled (R4)
+  const form = dial.join("\n"), reach = R + CUT_AT + CUT_W + 0.5;
+  const page = L.places.map(([x, y]) => `q ${num(MM * flip, 6)} 0 0 ${num(MM, 6)} ${num(x * MM, 3)} ${num(y * MM, 3)} cm /Dial Do Q`).join("\n");
+  const states = alphas.map((a, i) => `/A${i} << /ca ${num(a)} >>`).join(" ");
+  const objects = [
+    `<< /Type /Catalog /Pages 2 0 R >>`,
+    `<< /Type /Pages /Kids [3 0 R] /Count 1 >>`,
+    `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${num(W * MM)} ${num(H * MM)}] /Contents 4 0 R /Resources << /XObject << /Dial 6 0 R >> >> >>`,
+    `<< /Length ${page.length} >>\nstream\n${page}\nendstream`,
+    `<< /Title ${pdf_text(`Dial Tool · ${num(S.dial_d, 2)} mm dial · ${L.places.length} on ${L.paper[0]}${S.out_production ? " · print mask" : ""}${S.out_mirror ? " · mirrored" : ""}`)} /Creator (Dial Tool, web version) >>`,
+    `<< /Type /XObject /Subtype /Form /BBox [${num(-reach)} ${num(-reach)} ${num(reach)} ${num(reach)}] /Resources << /ExtGState << ${states} >> >> /Length ${form.length} >>\nstream\n${form}\nendstream`,
+  ];
+  let text = "%PDF-1.5\n";
+  const starts = [];
+  objects.forEach((o, i) => { starts.push(text.length); text += `${i + 1} 0 obj\n${o}\nendobj\n`; });
+  const xref = text.length;
+  text += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n` + starts.map((s) => String(s).padStart(10, "0") + " 00000 n \n").join("");
+  text += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R /Info 5 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+  return new TextEncoder().encode(text);
+}
+/** a path as PDF drawing operators. */
+const path_ops = (p) => p.d.map((c) => { const v = c.slice(1).map((x) => num(x, 5)).join(" "); return c[0] === "M" ? `${v} m` : c[0] === "L" ? `${v} l` : c[0] === "C" ? `${v} c` : "h"; });

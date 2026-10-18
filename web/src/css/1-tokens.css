@@ -30,6 +30,7 @@
     --margin: 24px;                                /* the panel's side space, left and right: where every line starts and ends */
     --eye: 16px;                                   /* the toggle column */
     --gap: 12px; --col: 54px;
+    --sheet-w: 60px;                               /* the print sheet's page, drawn small beside its button (4.75, #348) */
     --lead: calc(var(--eye) + var(--gap));         /* the toggle column and the gap after it: where the six columns start */
     --columns: var(--eye) repeat(6, minmax(0, 1fr));
     --panel: calc(2 * var(--margin) + var(--lead) + 6 * var(--col) + 5 * var(--gap));

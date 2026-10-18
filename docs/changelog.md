@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.75 (web version) · 19 Oct 2026
+
+A print sheet (#348; Okay's notes 2: "Printing: print page preparation, preview, copies, stacks — something simple, elegant, efficient and paper savingly"). The first of "other work" after the discs (Okay, 18 Oct, 23:52).
+
+- **Export → Print → Sheet PDF**: one page of copies of the dial at true size — A4, Letter or A5 — packed in straight rows or staggered ones, whichever holds more (circles stack tighter staggered: 45 of a 30 mm dial on an A4 with 3 mm between, against 40), the block centred, 8 mm clear at the paper's edges. Mirrored and as a print mask as the two ticks above say, so a toner-transfer sheet is one click.
+- **Copies** (0 = as many as fit), **Room between** (mm), **A cut line round each** (a hairline ring 0.4 mm outside the dial, filled, R4). A line under Copies says what the page will hold; the page is drawn small beside the button, every copy where it will stand.
+- The dial is drawn once in the file and placed at every copy, so a full sheet stays small (16 KB for 45). Print at 100 %, not "fit to page" — the log says so.
+- New keys `out_paper`, `out_copies`, `out_gap`, `out_cutline`.
+
 ## beta 4.74 (web version) · 19 Oct 2026
 
 Date discs (#346; the disc sketches D1 and D2). The last of the twelve.
