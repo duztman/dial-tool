@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.73 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.74 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -6178,7 +6178,7 @@ function moon_age(ms) {
 }
 function window_text(kind, mo, lang = "en") {
   const N = NAMES[lang] || NAMES.en;
-  if (kind === "date") return String(mo.d);
+  if (kind === "date" || kind === "big date") return String(mo.d);
   if (kind === "day") return N.days[mo.wd];
   if (kind === "month") return N.months[mo.m - 1];
   if (kind === "am \xB7 pm") return mo.pm ? "PM" : "AM";
@@ -6186,7 +6186,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.73";
+var VERSION = "beta 4.74";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -6206,9 +6206,9 @@ var from_shift = (ring2, extent) => extent * (ring2.from || 0) / 2;
 var HANDS = ["hour", "minute", "second"];
 var HAND_SHAPES = ["baton", "pencil", "sword", "dauphine", "leaf", "arrow", "syringe", "breguet", "lollipop", "file", "disc"];
 var DATE_AT = [["3", 90], ["4:30", 135], ["6", 180], ["9", 270], ["12", 0], ["1:30", 45], ["7:30", 225], ["10:30", 315], ["4", 120]];
-var WINDOW_KINDS = ["date", "day", "am \xB7 pm", "moon phase"];
+var WINDOW_KINDS = ["date", "day", "am \xB7 pm", "moon phase", "big date"];
 var WINDOW_SHAPES = ["as its kind", "rectangle", "circle", "polygon", "arch", "arc"];
-var window_shape = (w) => WINDOW_SHAPES[w.shape] && w.shape ? WINDOW_SHAPES[w.shape] : WINDOW_KINDS[w.kind] === "moon phase" ? w.look ? "circle" : "arch" : WINDOW_KINDS[w.kind] === "am \xB7 pm" && w.look === 1 ? "half" : "rectangle";
+var window_shape = (w) => WINDOW_SHAPES[w.shape] && w.shape ? WINDOW_SHAPES[w.shape] : WINDOW_KINDS[w.kind] === "moon phase" ? w.look ? "circle" : "arch" : WINDOW_KINDS[w.kind] === "am \xB7 pm" && w.look === 1 ? "half" : WINDOW_KINDS[w.kind] === "big date" ? "pair" : "rectangle";
 var PICTURES = { "moon phase": ["Arch", "Phase", "Line"], "am \xB7 pm": ["Sky", "Half", "Band"] };
 var LANGS2 = ["default", "tr", "nl", "de", "pl", "ro", "ca", "ar", "fa", "zh-Hans", "ja"];
 var BEATS = [["sweep", 0], ["quartz \xB7 1/s", 1], ["6 beats/s", 6], ["8 beats/s", 8]];
@@ -6353,6 +6353,8 @@ var WINDOW_BASE = {
   // a date, day or moon window shows the bar's date (beta 4.62); off, so every older link shows its typed text and its moon age as before
   names: 0,
   // a day window following the date: its names' language, a place in moment.js LANGS (EN · TR · DE · FR · IT; 4.62)
+  neighbours: false,
+  // a date or day window shows its disc's places either side of the shown one, where the hole lets them (4.74; the disc sketch D1), in c2
   look: 0,
   // its picture, a place in PICTURES[its kind] (4.73); 0 = as before
   c2: null,
@@ -6398,7 +6400,8 @@ var FIRST_WINDOW = {
   physics: "da_physics",
   look: "da_look",
   c2: "da_c2",
-  c3: "da_c3"
+  c3: "da_c3",
+  neighbours: "da_neighbours"
 };
 var DEFAULTS = {
   version: 2,
@@ -6500,7 +6503,8 @@ var DEFAULTS = {
   da_look: 0,
   da_c2: null,
   da_c3: null,
-  // the first window's `look`, `c2`, `c3` (4.73)
+  da_neighbours: false,
+  // … and `neighbours` (4.74)            // the first window's `look`, `c2`, `c3` (4.73)
   da_physics: true,
   xray: false,
   // the first window's `physics` · X-ray, every window's disc seen under a veil of the plate, preview only (4.72, #346)
@@ -7020,6 +7024,9 @@ var LINK_KEYS = [
   // 4.66: appended; no case to start, so every older link looks as before
   "wearos_name",
   // 4.67: appended; empty to start
+  "neighbours",
+  "da_neighbours",
+  // 4.74: appended; off to start, so every older link looks as before
   "look",
   "c2",
   "c3",
@@ -7780,8 +7787,7 @@ function live_texts(S, statik, item) {
   if (item.role === "date number") {
     const x = statik.windows.find((w) => w.index === item.window);
     if (!x || !["date", "day"].includes(WINDOW_KINDS[x.w.kind]) || window_shape(x.w) === "arc") return null;
-    const shape2 = window_shape(x.w), high = shape2 === "rectangle" || shape2 === "arc" ? x.w.h : shape2 === "arch" ? x.w.w / 2 : x.w.w;
-    const t = window_type(S, x.w), size = high * x.w.size / 100, c = text_centre(x.w.text, t, size);
+    const t = window_type(S, x.w), size = text_room(x.w) * x.w.size / 100, c = text_centre(x.w.text, t, size);
     if (!c) return null;
     const turn = x.w.text_turn ? window_turn(x.w) : 0;
     return { texts: [{ txt: x.w.text, t, size, fill: x.w.text_c || x.w.ink, at: [-c[0], -c[1]], steps: [["t", ...clock_point(x.w.r, window_angle(x.w))], ...turn ? [["r", -turn, 0, 0]] : []] }], removed: null };
@@ -7932,12 +7938,31 @@ function half_disc(w, hour) {
   const night = sector(0, R + DISC_PAD, -90, 90).rotate(-turn).translate(...pivot);
   return { night: night.difference(moon).difference(stars), light: merge([moon, stars, sun]), r: R };
 }
+function text_room(w) {
+  const shape2 = window_shape(w), high = shape2 === "rectangle" || shape2 === "arc" ? w.h : shape2 === "arch" ? w.w / 2 : w.w;
+  if (!w.neighbours) return high;
+  const n = WINDOW_KINDS[w.kind] === "day" ? 7 : 31;
+  return Math.min(high, 2 * PI * w.r / n);
+}
+var pair_gap = (w) => w.w / 8;
+function disc_places(S, w) {
+  const kind = WINDOW_KINDS[w.kind], shape2 = window_shape(w), high = text_room(w);
+  const lang = LANGS[w.names] || "en";
+  const list = kind === "date" ? Array.from({ length: 31 }, (_, i) => String(i + 1)) : NAMES[w.follows ? lang : LANGS.find((l) => NAMES[l].days.includes(w.text)) || "en"].days;
+  const now = Math.max(list.indexOf(kind === "date" ? String(parseInt(w.text, 10)) : String(w.text)), 0), n = list.length;
+  const type = window_type(S, w), size = high * w.size / 100, centre2 = clock_point(w.r, window_angle(w)), turn = window_turn(w), a = window_angle(w);
+  const at = (p) => {
+    const t = list[(p % n + n) % n], one = shape2 === "arc" ? on_path(t, w.r, a, type, size) : (turn && w.text_turn ? centred(text_path(t, type, size)).rotate(-turn) : centred(text_path(t, type, size))).translate(...centre2);
+    return one.rotate(-(p - now) * 360 / n);
+  };
+  return { list, now, n, at, key: JSON.stringify([kind, list, now, w.r, w.at, w.at_deg, w.turn, w.text_turn, shape2, size, type]) };
+}
 function band_mark(w, put, frame) {
   if (!(WINDOW_KINDS[w.kind] === "am \xB7 pm" && w.look === 2)) return frame;
   const h = w.h, top = h / 2 + Math.max(w.frame, 0), mark = put(new Path().polygon([0, h / 2], [0.22 * h, top + 0.38 * h], [-0.22 * h, top + 0.38 * h]));
   return frame ? frame.union(mark) : mark;
 }
-var PICTURE_TONES = { shade: [0.5, 0.5, 0.52, 1], light: [0.95, 0.86, 0.6, 1], dawn: [0.91, 0.65, 0.71, 1], dusk: [0.91, 0.59, 0.35, 1] };
+var PICTURE_TONES = { near: [0.62, 0.62, 0.6, 1], shade: [0.5, 0.5, 0.52, 1], light: [0.95, 0.86, 0.6, 1], dawn: [0.91, 0.65, 0.71, 1], dusk: [0.91, 0.59, 0.35, 1] };
 function window_hole(w) {
   const shape2 = window_shape(w);
   if (shape2 === "rectangle") return [rounded_rect(w.w, w.h, w.round), (d) => rounded_rect(w.w + 2 * d, w.h + 2 * d, w.round + d)];
@@ -7960,6 +7985,11 @@ function window_hole(w) {
       const half = degrees((w.w / 2 + d) / max(w.r, 0.1));
       return sector(max(w.r - w.h / 2 - d, 0), w.r + w.h / 2 + d, a - half, a + half).translate(-c[0], -c[1]);
     };
+    return [make(0), make];
+  }
+  if (shape2 === "pair") {
+    const gap = pair_gap(w), cw = (w.w - gap) / 2, dx = (cw + gap) / 2;
+    const make = (d) => rounded_rect(cw + 2 * d, w.h + 2 * d, w.round + d).translate(-dx, 0).union(rounded_rect(cw + 2 * d, w.h + 2 * d, w.round + d).translate(dx, 0));
     return [make(0), make];
   }
   if (shape2 === "half") {
@@ -7989,7 +8019,7 @@ function shown_day(S) {
 function shown_window(S, w) {
   if (!w.follows) return w;
   const kind = WINDOW_KINDS[w.kind], mo = moment(shown_day(S), S.t);
-  if (kind === "date" || kind === "day") return { ...w, text: window_text(kind, mo, LANGS[w.names] || "en") };
+  if (kind === "date" || kind === "day" || kind === "big date") return { ...w, text: window_text(kind === "big date" ? "date" : kind, mo, LANGS[w.names] || "en") };
   if (kind === "moon phase") return { ...w, age: +mo.moon.toFixed(1) };
   return w;
 }
@@ -8022,20 +8052,29 @@ function build_window(S, w, index) {
     content = merge([spans(-3, 5), spans(21, 29)]).intersection(opening);
     more = [{ path: spans(5, 7), key: "c2", or: PICTURE_TONES.dawn }, { path: spans(18, 21), key: "c3", or: PICTURE_TONES.dusk }];
   } else if (kind === "am \xB7 pm") content = day_night(w.w, high, day_hour(S)).intersection(opening);
-  else if (shape2 === "arc") {
+  else if (kind === "big date") {
+    const n = parseInt(w.text, 10), [tens, units] = Number.isFinite(n) ? [n >= 10 ? String(Math.floor(n / 10) % 10) : "", String(n % 10)] : [String(w.text)[0] || "", String(w.text)[1] || ""];
+    const dx = ((w.w - pair_gap(w)) / 2 + pair_gap(w)) / 2, t = window_type(S, w), size = w.h * w.size / 100;
+    content = merge([tens && centred(text_path(tens, t, size)).translate(-dx, 0), units && centred(text_path(units, t, size)).translate(dx, 0)].filter(Boolean));
+  } else if (shape2 === "arc") {
     const a = window_angle(w);
-    content = on_path(w.text, w.r, a, window_type(S, w), high * w.size / 100).translate(...centre2.map((v) => -v));
-  } else content = centred(text_path(w.text, window_type(S, w), high * w.size / 100));
+    content = on_path(w.text, w.r, a, window_type(S, w), text_room(w) * w.size / 100).translate(...centre2.map((v) => -v));
+  } else content = centred(text_path(w.text, window_type(S, w), text_room(w) * w.size / 100));
   const put = (p, turned2 = true) => (turn && turned2 ? p.rotate(-turn) : p).translate(...centre2);
-  const shows_text = kind === "date" || kind === "day";
+  const shows_text = kind === "date" || kind === "day" || kind === "big date";
   const win = put(opening.copy());
+  more = more.map((m) => ({ ...m, path: put(m.path.intersection(opening)) }));
+  if (w.neighbours && (kind === "date" || kind === "day")) {
+    const D = disc_places(S, w), near2 = merge([-2, -1, 1, 2].map((d) => D.at(D.now + d))).intersection(win);
+    if (!empty(near2)) more.push({ path: near2, key: "c2", or: PICTURE_TONES.near });
+  }
   return {
     w,
     index,
     window: win,
     number: put(content, !shows_text || w.text_turn),
     // a hole's picture turns with it; its text only if asked
-    more: more.map((m) => ({ ...m, path: put(m.path.intersection(opening)) })),
+    more,
     frame: band_mark(w, put, w.frame > 0 ? put(grown(w.frame)).difference(win) : null),
     cutline: put(grown(0.05)).difference(win),
     // aperture outline for production
@@ -8054,14 +8093,7 @@ function window_disc(S, x) {
     const e = radial_extent(x.window);
     if (!e) return null;
     const inner = Math.max(e[0] - DISC_PAD, 0), outer = e[1] + DISC_PAD;
-    const lang = LANGS[w.names] || "en";
-    const list = kind === "date" ? Array.from({ length: 31 }, (_, i) => String(i + 1)) : NAMES[w.follows ? lang : LANGS.find((l) => NAMES[l].days.includes(w.text)) || "en"].days;
-    const now = Math.max(list.indexOf(String(w.text)), 0), n = list.length, type = window_type(S, w), size = high * w.size / 100;
-    const print = memo("disc" + JSON.stringify([kind, list, now, w.r, w.at, w.at_deg, w.turn, w.text_turn, shape2, size, type]), () => merge(list.map((t, p) => {
-      const a = window_angle(w), step = (p - now) * 360 / n;
-      const one = shape2 === "arc" ? on_path(t, w.r, a, type, size) : put(centred(text_path(t, type, size)), w.text_turn);
-      return one.rotate(-step);
-    })));
+    const D = disc_places(S, w), print = memo("disc" + D.key, () => merge(D.list.map((_, p) => D.at(p))));
     return { band: circle(2 * outer).difference(circle(2 * inner)), print, inner, outer, centre: [0, 0], reach: outer, fits: w.physics === false || outer <= room };
   }
   if (kind === "am \xB7 pm" && w.look === 1) {
@@ -8661,7 +8693,7 @@ function compute_window_layout(S, x) {
   const boxH = Math.max(2, Math.min(450, Math.ceil(225 - y0 * scale) + 1) - boxY);
   const kind = WINDOW_KINDS[x.w.kind] || "date";
   let frames, cols, rows, colExpr, rowExpr;
-  if (kind === "date") {
+  if (kind === "date" || kind === "big date") {
     frames = 31;
     cols = 6;
     rows = 6;
@@ -8729,7 +8761,7 @@ function svg_window_sheet(S, x) {
     const tx = col2 * boxW + (225 - boxX);
     const ty = row * boxH + (225 - boxY);
     const frameWin = build_single_window(S, x.index, (w, S_copy) => {
-      if (kind === "date") {
+      if (kind === "date" || kind === "big date") {
         const d = k + 1;
         w.text = zeroPadDate && d < 10 ? `0${d}` : String(d);
       } else if (kind === "day") {
@@ -8744,6 +8776,10 @@ function svg_window_sheet(S, x) {
     out.push(`    <path d="${discD}" fill="${discFill}"${discAlpha}/>`);
     if (frameWin && frameWin.number && !empty(frameWin.number)) {
       out.push(`    <path d="${frameWin.number.svg(5, true)}" fill="${textFill}"${textAlpha}/>`);
+    }
+    for (const m of frameWin && frameWin.more || []) {
+      const c = x.w[m.key] || m.or;
+      if (m.path && !empty(m.path)) out.push(`    <path d="${m.path.svg(5, true)}" fill="${rgb2(c)}"${c[3] < 1 ? ` fill-opacity="${num2(c[3])}"` : ""}/>`);
     }
     if (frameD) out.push(`    <path d="${frameD}" fill="${frameFill}"${frameAlpha}/>`);
     out.push(`  </g>`);
@@ -10659,8 +10695,10 @@ var PICS = {
     box(5.25, 2.25, 19.5, 16.5, 1.5) + `<path d="M12.75 8L15.25 6V15" ${sw(CURVE)}/>`,
     box(2.25, 4.25, 25.5, 12.5, 1.5) + `<path d="M10.75 14V7L15 12L19.25 7V14" ${sw(SLANT)}/>`,
     box(3.75, 3.75, 22.5, 13.5, 1.5) + `<path d="M15 3.75H5.25A1.5 1.5 0 0 0 3.75 5.25V15.75A1.5 1.5 0 0 0 5.25 17.25H15Z" ${solid}/>`,
-    `<path d="M15 1.25A9.25 9.25 0 0 0 15 19.75A11.75 11.75 0 0 1 15 1.25Z" ${solid}/><circle cx="15" cy="10.5" r="9.25"/>`
+    `<path d="M15 1.25A9.25 9.25 0 0 0 15 19.75A11.75 11.75 0 0 1 15 1.25Z" ${solid}/><circle cx="15" cy="10.5" r="9.25"/>`,
     // the crescent beside it makes the circle look heavier: it stays LINE
+    // a big date (4.74): two boxes side by side, a 1 and a 7 in them
+    box(2.25, 3.75, 12, 13.5, 1.5) + box(15.75, 3.75, 12, 13.5, 1.5) + `<path d="M7.25 8.5L9.25 7V14" ${sw(CURVE)}/><path d="M18.75 7H23.25L20.25 14" ${sw(SLANT)}/>`
   ]
 };
 var hand_pic = (i) => {
@@ -11114,13 +11152,14 @@ var ROWS = {
     num3("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
     // width over height, two rows, a LINK pill on the line between them (Okay's notes 2, #358: "Two sliders on one line
     // is not a good idea … two stories tall … like in illustrator"); one line from 4.46 to 4.55 (#265)
-    num3("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("rectangle", "arc"), link: "wh_link" }),
-    num3("h", "Height", 0.5, 5, 0.05, { ...W, show: shape_is("rectangle", "arc") }),
+    num3("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("rectangle", "arc", "pair"), link: "wh_link" }),
+    // a big date's: both holes together (4.74)
+    num3("h", "Height", 0.5, 5, 0.05, { ...W, show: shape_is("rectangle", "arc", "pair") }),
     num3("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("arch", "half"), id: "window-w-Width-arch" }),
     // its own id: the line above has window-w-Width
     num3("w", "\xD8", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
     num3("sides", "Sides", 3, 12, 1, { ...W, whole: true, show: shape_is("polygon") }),
-    num3("round", "Corner", 0, 2, 0.05, { ...W, show: shape_is("rectangle", "polygon") }),
+    num3("round", "Corner", 0, 2, 0.05, { ...W, show: shape_is("rectangle", "polygon", "pair") }),
     chk("turn", "Turn it with its radius", { ...W, show: (T) => T.on && window_shape(T) !== "arc" }),
     info("Only off the quarters: at 4 it turns 30\xB0, at half past four 45\xB0.", { ...W, show: (T) => T.on && T.turn && window_turn(T) === 0 && window_shape(T) !== "arc" }),
     chk("text_turn", "Turn the text with it", { ...W, nest: true, show: (T) => T.on && T.turn && window_shape(T) !== "arc" && ["date", "day"].includes(WINDOW_KINDS[T.kind]) }),
@@ -11128,14 +11167,16 @@ var ROWS = {
     // the disc under the hole · the frame · what an am · pm or moon window pictures, on one line (#266)
     // following the bar's date (4.62): a date or day window says it, a moon window shows its age; its typed text or age
     // waits underneath, for when it doesn't follow
-    chk("follows", "Follows the date in the bar", { ...W, show: win_is("date", "day", "moon phase") }),
+    chk("follows", "Follows the date in the bar", { ...W, show: win_is("date", "day", "moon phase", "big date") }),
+    // its neighbours (4.74; the disc sketch D1): the disc's places either side of the shown one, where the hole lets them — a tall hole at 3 or 9, a wide one at 12 or 6
+    chk("neighbours", "Its neighbours show where the hole allows", { ...W, show: win_is("date", "day") }),
     seg("names", "Names", ["EN", "TR", "DE", "FR", "IT"], { ...W, show: (T) => T.on && T.follows && WINDOW_KINDS[T.kind] === "day" }),
     // physics (4.72, #346: "their discs obey physics or not, chosen by the user"): on, a disc must end inside the case —
     // passing it, its outer guide shows red and this says by how much; off, it may (a face on a screen)
     chk("physics", "Its disc stays inside the case", { ...W, show: win_is("date", "day", "am \xB7 pm") }),
     info((T) => `Its disc passes the case by ${tool ? tool.disc_past().toFixed(2) : "?"} mm: move the window in, or untick to let it.`, { ...W, nest: true, show: (T) => win_is("date", "day", "am \xB7 pm")(T) && T.physics !== false && tool && tool.disc_past() > 0 }),
-    txt("text", "Text", { ...W, show: (T) => win_is("date", "day")(T) && !T.follows }),
-    custom("font", { ...W, show: win_is("date", "day") }),
+    txt("text", "Text", { ...W, show: (T) => win_is("date", "day", "big date")(T) && !T.follows }),
+    custom("font", { ...W, show: win_is("date", "day", "big date") }),
     // its own font, or the top numerals ring's (the start)
     // the frame round the hole and the room kept clear round it are drawn on the dial: they are design, so they
     // stand here, not under a pane called Print (Okay, 13 Oct 2026: print things under Print, design among design)
@@ -11414,7 +11455,7 @@ var DialTool = class _DialTool {
       if (!["ink", "text_c", "disc_c"].includes(key)) this.static_dirty = true;
       if (key === "kind" && !restored) {
         if (WINDOW_KINDS[value] === "day" && T.text === "17") T.text = "MON";
-        if (WINDOW_KINDS[value] === "date" && T.text === "MON") T.text = "17";
+        if (["date", "big date"].includes(WINDOW_KINDS[value]) && T.text === "MON") T.text = "17";
       }
     } else if (scope === "global") {
       const quiet = NOT_GEOMETRY.includes(key) || NOT_GEOMETRY_PREFIX.some((p) => key.startsWith(p));
@@ -14779,13 +14820,15 @@ var DialTool = class _DialTool {
   row_window_colours(wrap, out) {
     wrap.className = "row colours";
     const parts = [
-      col("disc_c", "Disc under it", { ...W, word: (T) => day_look(T) > 0 ? "Day" : "Disc", or: () => [1, 1, 1, 1] }),
+      col("disc_c", "Disc under it", { ...W, word: (T) => day_look(T) > 0 ? "Day" : moon_look(T) === 1 ? "Moon" : "Disc", or: () => [1, 1, 1, 1] }),
       col("ink", "Frame", { ...W, word: "Frame" }),
       col("text_c", "Picture", { ...W, word: (T) => moon_look(T) === 1 ? "Sky" : day_look(T) > 0 ? "Night" : "Picture", only: win_is("am \xB7 pm", "moon phase"), or: (T) => T.ink }),
       // or: what an unset colour is
       // a picture's further colours (4.73): a moon's dark side in Phase · an am · pm Half's sun and moon · a Band's dawn and dusk
       col("c2", "Shade", { ...W, word: (T) => moon_look(T) === 1 ? "Shade" : day_look(T) === 1 ? "Sun \xB7 moon" : "Dawn", only: (T) => moon_look(T) === 1 || day_look(T) > 0, or: (T) => PICTURE_TONES[moon_look(T) === 1 ? "shade" : day_look(T) === 1 ? "light" : "dawn"] }),
-      col("c3", "Dusk", { ...W, word: "Dusk", only: (T) => day_look(T) === 2, or: () => PICTURE_TONES.dusk })
+      col("c3", "Dusk", { ...W, word: "Dusk", only: (T) => day_look(T) === 2, or: () => PICTURE_TONES.dusk }),
+      col("c2", "Neighbours", { ...W, word: "Neighbours", id: "window-c2-Neighbours", only: (T) => win_is("date", "day")(T) && T.neighbours, or: () => PICTURE_TONES.near })
+      // a date or day window's neighbours (4.74)
     ].map((row) => {
       const word = el("i", { textContent: typeof row.word === "function" ? "" : row.word });
       const built = this.build_row(row), pill = built.el.querySelector(".colour"), part = el("span", { className: "part" }, word, pill);
