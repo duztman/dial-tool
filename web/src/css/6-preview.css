@@ -64,6 +64,20 @@
   .shadows { position: absolute; z-index: 4; left: var(--stop-short); bottom: var(--canvas-inset); display: flex; }
   .shadows .guidesmore svg { rotate: 180deg; }
   .shadows .guidesmore[aria-expanded="true"] svg { rotate: 0deg; }
+  .bezels { position: relative; display: flex; }
+  .bezels .bezelmore { width: var(--control-large); border-radius: var(--round-switch) 0 0 var(--round-switch); border-right: 0; background: var(--canvas-fill); }
+  .bezels .bezelmore svg { rotate: 180deg; }
+  .bezels .bezelmore[aria-expanded="true"] svg { rotate: 0deg; }
+  .bezels .bezelbox { border-radius: 0 var(--round-switch) var(--round-switch) 0; background: var(--canvas-fill); }
+  .bezels .bezelbox[aria-pressed="true"]::before { border-radius: 0 calc(var(--round-switch) - 2 * var(--hair)) calc(var(--round-switch) - 2 * var(--hair)) 0; }
+  .bezels .bezelbox[aria-pressed="true"] svg { clip-path: inset(var(--hair)); }
+  .bezelmenu { position: absolute; bottom: calc(100% + var(--unit)); right: 0; min-width: 164px; padding: var(--u1); display: flex; flex-direction: column; gap: 2px; z-index: 5; }
+  .bezelmenu[hidden] { display: none; }
+  .bezelmenu button { display: flex; align-items: center; justify-content: space-between; gap: var(--u4); height: var(--control); padding: 0 var(--u3); border-radius: var(--round-small); color: var(--ink); white-space: nowrap; text-align: left; }
+  .bezelmenu button:hover { background: var(--hover); }
+  .bezelmenu button[aria-checked="true"] { background: var(--field); font-weight: 600; }
+  .bezelmenu button .check-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink); opacity: 0; }
+  .bezelmenu button[aria-checked="true"] .check-dot { opacity: 1; }
 
   /* the list: near black and round, like the colour pop-out (.night). A kind of guide is one line: its name, then
      round choices with room between them — none, then the eight colours. The chosen one stands in a thick ring of its own colour, a
@@ -161,7 +175,7 @@
   #app.show :is(.sky, .pool) { opacity: 1; }
   #app.show main { --on-canvas: var(--white); --off-canvas: var(--ink); }
   #app.show :is(.undos, .guides, .backdrops, .shadows, .tip) { visibility: hidden; }
-  #app.show :is(#eye-box, .irisgo) { display: none; }
+  #app.show :is(#eye-box, .bezels, .irisgo) { display: none; }
   /* in the showcase the X and Now are larger and less faint, and stand as far in from the window's edges as the mark
      does at the top left: the margin (05:43: "too close to edges, too faint… fit them inside the imaginary padding logo
      top left got") */

@@ -307,6 +307,7 @@ const TOOL_ICONS = {
   // by 36, three times its first size, white with a glow (05:43: "can't see it… 3x size")
   both_ways: `<path d="M5.25 18.25H102.75M17.25 6.25L5.25 18.25L17.25 30.25M90.75 6.25L102.75 18.25L90.75 30.25"/>`,
   screen: `<rect x="2.75" y="3.25" width="10.5" height="7.5"/><path d="M8.25 10.75V13.25M5.75 13.25H10.75" ${sw(DENSE)}/>`,
+  bezel: `<path d="M11.5 8.2V4.5A1.5 1.5 0 0 1 13 3H17A1.5 1.5 0 0 1 18.5 4.5V8.2M11.5 21.8V25.5A1.5 1.5 0 0 0 13 27H17A1.5 1.5 0 0 0 18.5 25.5V21.8" stroke-width="1.15"/><circle cx="15" cy="15" r="7.5" stroke-width="1.25"/><circle cx="15" cy="15" r="5.25" stroke-width="0.75"/><path d="M22.5 13.25H24.25V16.75H22.5" stroke-width="1.15" stroke-linejoin="round"/>`,
   // the Guides switch, on 18: a target and its cross; its lines crowd, so DENSE. Okay's drawings (14 Oct 2026, 04:11):
   // guides: a target, its centre ring dashed in six, square-ended (a dash pattern is a texture, not line ends), ink
   // traps where the arms cross the ring. One drawing, on and off: only how much of it shows changes (Okay, 15 Oct
@@ -897,6 +898,7 @@ class DialTool {
   pressed(e) {
     const on = (q) => e.target.closest && e.target.closest(q);
     if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox")) this.pop_close();
+    if (this.bezel_open && $("#bezel-menu") && !$("#bezel-menu").hidden && !on(".bezels")) this.bezel_open(false);
     if (this.guides_open && !$("#guide-list").hidden && !on(".guides")) this.guides_open(false);
     if (this.shadows_open && !$("#shadow-list").hidden && !on(".shadows")) this.shadows_open(false);
     if (this.bio_open && !$("#bio").hidden && !on(".about")) this.bio_open(false);
@@ -961,7 +963,10 @@ class DialTool {
     sky_defs.append(sky);
     this.sky = svg_el("rect");
     for (const [k, v] of [["class", "sky"], ["width", "100%"], ["height", "100%"], ["fill", "url(#show-sky)"], ["pointer-events", "none"]]) this.sky.setAttribute(k, v);
-    this.svg.append(sky_defs, this.backdrop, this.sky, this.pool, this.dial, this.over);
+    this.bezel_on = false;
+    this.bezel_id = "pixel4";
+    this.build_bezel_svg(sky_defs);
+    this.svg.append(sky_defs, this.backdrop, this.sky, this.pool, this.bezel_back, this.dial, this.bezel_front, this.over);
     this.tip = el("div", { className: "tip", hidden: true }, el("span"));       // the name of what the pointer is on
     this.tip.insertAdjacentHTML("beforeend", '<svg viewBox="0 0 20 10" width="20" height="10" aria-hidden="true"><path class="a" d="M0 0 L10 10 L20 0"/><path class="b" d="M0 0 L10 10 L20 0"/><path class="c" d="M-1 -3 L21 -3 L21 0 L10 9 L-1 0 Z"/></svg>');
     this.preview_events();
@@ -1430,7 +1435,41 @@ class DialTool {
     this.iris_box = el("div", { className: "onview irisbox" }, this.iris_go, iris);
     this.iris_button = iris;
     this.iris_open(false);
-    this.eye_box = el("div", { className: "eyes" }, this.iris_box, eye);
+    const bezel = el("button", { type: "button", className: "onview eyebox bezelbox", id: "bezel-box", title: "Watch bezel preview", ariaLabel: "Watch bezel preview" });
+    bezel.innerHTML = icon(TOOL_ICONS.bezel, 30);
+    bezel.setAttribute("aria-pressed", "false");
+    bezel.onclick = () => this.toggle_bezel();
+    this.bezel_button = bezel;
+    const bezel_menu = el("div", { className: "bezelmenu night", id: "bezel-menu", hidden: true });
+    bezel_menu.setAttribute("role", "menu");
+    const bezel_more = el("button", { type: "button", className: "onview bezelmore", id: "bezel-more", title: "Choose watch bezel", ariaLabel: "Choose watch bezel" });
+    bezel_more.innerHTML = icon(SIGNS.down);
+    bezel_more.setAttribute("aria-expanded", "false");
+    const bezel_open = (on) => { bezel_menu.hidden = !on; bezel_more.setAttribute("aria-expanded", String(on)); };
+    bezel_more.onclick = () => bezel_open(bezel_menu.hidden);
+    this.bezel_open = bezel_open;
+    const BEZEL_LIST = [
+      ["pixel4", "Pixel Watch 4"],
+      ["srpd63", "Seiko 5 SRPD63"],
+    ];
+    this.bezel_items = BEZEL_LIST.map(([id, name]) => {
+      const b = el("button", {
+        type: "button",
+        id: "bezel-opt-" + id,
+        onclick: () => {
+          bezel_open(false);
+          this.select_bezel(id, true);
+        },
+      }, el("span", { textContent: name }), el("i", { className: "check-dot" }));
+      b.dataset.bezel = id;
+      b.setAttribute("role", "menuitemradio");
+      b.setAttribute("aria-checked", String(id === (this.bezel_id || "pixel4")));
+      bezel_menu.append(b);
+      return b;
+    });
+    const bezels_wrap = el("div", { className: "bezels" }, bezel_more, bezel, bezel_menu);
+    bezels_wrap.onkeydown = (e) => { if (e.key === "Escape" && !bezel_menu.hidden) { bezel_open(false); bezel_more.focus(); } };
+    this.eye_box = el("div", { className: "eyes" }, bezels_wrap, this.iris_box, eye);
     // the showcase's Now: a pill at the bottom centre, on the iris's line (04:26: "a button appeared bottom center:
     // NOW!"); pressed, the hands spin to now and it shrinks into an undo sign, the way back (show_now)
     // Beside it, 10:10, the pose watches are shown in (Okay, 15 Oct 2026, 07:40): the same whirl to 10:10. Whichever was
@@ -3993,7 +4032,12 @@ class DialTool {
   // ── the preview: zoom, pan, click ────────────────────────
 
   size() { const r = this.svg.getBoundingClientRect(); return [r.width, r.height]; }
-  fit_zoom() { const [w, h] = this.size(); return Math.min(w, h) / G.page_mm(this.S); }
+  fit_zoom() {
+    const [w, h] = this.size();
+    const mult = this.bezel_id === "srpd63" ? 2.28 : 2.12;
+    const extent = this.bezel_on ? Math.max(G.page_mm(this.S), this.S.dial_d * mult) : G.page_mm(this.S);
+    return Math.min(w, h) / extent;
+  }
 
   /** put the dial at c, scaled to z; mirrored for toner transfer. y grows upward inside. */
   place() {
@@ -4002,6 +4046,386 @@ class DialTool {
     this.dial.setAttribute("transform", where);
     this.over.setAttribute("transform", where);
     if (this.pool) this.pool.setAttribute("transform", where);
+  }
+
+  select_bezel(id, turn_on = true) {
+    this.bezel_id = id;
+    if (this.bezel_items) {
+      for (const b of this.bezel_items) b.setAttribute("aria-checked", String(b.dataset.bezel === id));
+    }
+    if (this.bezel_models) {
+      for (const [k, m] of Object.entries(this.bezel_models)) {
+        const show = k === id ? "" : "none";
+        m.back.style.display = show;
+        m.front.style.display = show;
+      }
+    }
+    this.toggle_bezel(turn_on ? true : this.bezel_on);
+  }
+
+  toggle_bezel(on = !this.bezel_on) {
+    this.bezel_on = !!on;
+    if (this.bezel_button) this.bezel_button.setAttribute("aria-pressed", String(this.bezel_on));
+    if (this.bezel_back) this.bezel_back.style.display = this.bezel_on ? "" : "none";
+    if (this.bezel_front) this.bezel_front.style.display = this.bezel_on ? "" : "none";
+    if (this.fitted) this.fit();
+    else this.place();
+    this.render();
+  }
+
+  build_bezel_svg(defs) {
+    this.bezel_back = svg_el("g");
+    this.bezel_back.setAttribute("class", "bezel-back");
+    this.bezel_back.setAttribute("pointer-events", "none");
+    this.bezel_back.style.display = "none";
+
+    this.bezel_front = svg_el("g");
+    this.bezel_front.setAttribute("class", "bezel-front");
+    this.bezel_front.setAttribute("pointer-events", "none");
+    this.bezel_front.style.display = "none";
+
+    const pixel4 = this.build_pixel4_svg(defs);
+    const srpd63 = this.build_srpd63_svg(defs);
+    srpd63.back.style.display = "none";
+    srpd63.front.style.display = "none";
+
+    this.bezel_back.append(pixel4.back, srpd63.back);
+    this.bezel_front.append(pixel4.front, srpd63.front);
+    this.bezel_models = { pixel4, srpd63 };
+  }
+
+  build_pixel4_svg(defs) {
+    defs.insertAdjacentHTML("beforeend", `
+      <filter id="pw-soft-glow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="0.015"/>
+      </filter>
+      <filter id="pw-rim-blur" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="0.007"/>
+      </filter>
+      <linearGradient id="pw-case-edge" gradientUnits="userSpaceOnUse" x1="-0.25" y1="-1.16" x2="0.25" y2="1.16">
+        <stop offset="0%" stop-color="#dcdddf"/>
+        <stop offset="18%" stop-color="#8a8c90"/>
+        <stop offset="48%" stop-color="#343638"/>
+        <stop offset="78%" stop-color="#828488"/>
+        <stop offset="100%" stop-color="#d4d6d9"/>
+      </linearGradient>
+      <linearGradient id="pw-band-h" gradientUnits="userSpaceOnUse" x1="-0.72" y1="0" x2="0.72" y2="0">
+        <stop offset="0%" stop-color="#222325"/>
+        <stop offset="28%" stop-color="#3c3d40"/>
+        <stop offset="54%" stop-color="#28292b"/>
+        <stop offset="82%" stop-color="#141516"/>
+        <stop offset="100%" stop-color="#0a0a0b"/>
+      </linearGradient>
+      <linearGradient id="pw-band-v-top" gradientUnits="userSpaceOnUse" x1="0" y1="-1.92" x2="0" y2="-0.90">
+        <stop offset="0%" stop-color="#000000" stop-opacity="0.46"/>
+        <stop offset="9%" stop-color="#ffffff" stop-opacity="0.05"/>
+        <stop offset="70%" stop-color="#000000" stop-opacity="0"/>
+        <stop offset="100%" stop-color="#000000" stop-opacity="0.45"/>
+      </linearGradient>
+      <linearGradient id="pw-band-v-bot" gradientUnits="userSpaceOnUse" x1="0" y1="0.90" x2="0" y2="1.92">
+        <stop offset="0%" stop-color="#000000" stop-opacity="0.45"/>
+        <stop offset="30%" stop-color="#000000" stop-opacity="0"/>
+        <stop offset="91%" stop-color="#ffffff" stop-opacity="0.04"/>
+        <stop offset="100%" stop-color="#000000" stop-opacity="0.50"/>
+      </linearGradient>
+      <linearGradient id="pw-crown-grad" gradientUnits="userSpaceOnUse" x1="1.16" y1="-0.16" x2="1.27" y2="0.16">
+        <stop offset="0%" stop-color="#1d1e20"/>
+        <stop offset="20%" stop-color="#76787c"/>
+        <stop offset="42%" stop-color="#2f3134"/>
+        <stop offset="70%" stop-color="#111214"/>
+        <stop offset="88%" stop-color="#4e5054"/>
+        <stop offset="100%" stop-color="#141517"/>
+      </linearGradient>
+      <linearGradient id="pw-dome-sheen" gradientUnits="userSpaceOnUse" x1="-0.82" y1="-0.82" x2="-0.22" y2="-0.22">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.56"/>
+        <stop offset="36%" stop-color="#ffffff" stop-opacity="0.32"/>
+        <stop offset="75%" stop-color="#ffffff" stop-opacity="0.14"/>
+        <stop offset="100%" stop-color="#ffffff" stop-opacity="0.04"/>
+      </linearGradient>
+      <linearGradient id="pw-bot-dome" gradientUnits="userSpaceOnUse" x1="0.72" y1="0.82" x2="0.20" y2="0.32">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.42"/>
+        <stop offset="42%" stop-color="#ffffff" stop-opacity="0.22"/>
+        <stop offset="80%" stop-color="#ffffff" stop-opacity="0.08"/>
+        <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="pw-bot-rim" gradientUnits="userSpaceOnUse" x1="0.80" y1="0.78" x2="-0.35" y2="0.98">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.75"/>
+        <stop offset="55%" stop-color="#ffffff" stop-opacity="0.52"/>
+        <stop offset="100%" stop-color="#ffffff" stop-opacity="0.12"/>
+      </linearGradient>
+    `);
+
+    const back = svg_el("g");
+    const topBandD = "M -0.80 -0.84 C -0.63 -1.10 -0.56 -1.36 -0.54 -1.73 Q -0.53 -1.87 -0.39 -1.89 Q 0 -1.93 0.39 -1.89 Q 0.53 -1.87 0.54 -1.73 C 0.56 -1.36 0.63 -1.10 0.80 -0.84 Z";
+    const botBandD = "M -0.80 0.84 C -0.63 1.10 -0.56 1.36 -0.54 1.73 Q -0.53 1.87 -0.39 1.89 Q 0 1.93 0.39 1.89 Q 0.53 1.87 0.54 1.73 C 0.56 1.36 0.63 1.10 0.80 0.84 Z";
+    const crownRibs = Array.from({ length: 13 }, (_, i) => {
+      const y = (-0.126 + i * 0.021).toFixed(4);
+      const yHi = (-0.126 + i * 0.021 + 0.006).toFixed(4);
+      return `<line x1="1.180" y1="${y}" x2="1.268" y2="${y}" stroke="#0c0d0f" stroke-width="0.009" stroke-linecap="round"/>` +
+        `<line x1="1.182" y1="${yHi}" x2="1.266" y2="${yHi}" stroke="rgba(255,255,255,0.34)" stroke-width="0.004" stroke-linecap="round"/>`;
+    }).join("");
+
+    back.innerHTML = `
+      <path d="${topBandD}" fill="url(#pw-band-h)"/>
+      <path d="${topBandD}" fill="url(#pw-band-v-top)"/>
+      <path d="${botBandD}" fill="url(#pw-band-h)"/>
+      <path d="${botBandD}" fill="url(#pw-band-v-bot)"/>
+      <path d="M 0.91 -0.70 A 1.166 1.166 0 0 1 1.11 -0.34" fill="none" stroke="#4a4c50" stroke-width="0.034" stroke-linecap="round"/>
+      <path d="M 0.92 -0.69 A 1.172 1.172 0 0 1 1.11 -0.35" fill="none" stroke="rgba(255,255,255,0.52)" stroke-width="0.008" stroke-linecap="round"/>
+      <rect x="1.14" y="-0.055" width="0.04" height="0.11" fill="#141517"/>
+      <rect x="1.170" y="-0.158" width="0.106" height="0.316" rx="0.044" fill="url(#pw-crown-grad)" stroke="#222428" stroke-width="0.005"/>
+      ${crownRibs}
+      <circle cx="0" cy="0" r="1.160" fill="url(#pw-case-edge)"/>
+      <circle cx="0" cy="0" r="1.146" fill="#000000"/>
+    `;
+
+    const front = svg_el("g");
+    front.setAttribute("clip-path", "url(#pw-dome-clip)");
+    const bezelRingD = "M 0 -1.152 A 1.152 1.152 0 1 1 0 1.152 A 1.152 1.152 0 1 1 0 -1.152 Z M 0 -0.997 A 0.997 0.997 0 1 0 0 0.997 A 0.997 0.997 0 1 0 0 -0.997 Z";
+    const topLeftDomeD = "M -1.02 0.37 A 1.086 1.086 0 0 1 0.37 -1.02 Q 0.41 -0.95 0.33 -0.89 A 1.40 1.40 0 0 0 -0.89 0.33 Q -0.95 0.41 -1.02 0.37 Z";
+    const topLeftRimD = "M -1.04 0.30 A 1.088 1.088 0 0 1 0.30 -1.04 A 1.18 1.18 0 0 0 -1.04 0.30 Z";
+    const botRightDomeD = "M -0.55 0.95 A 1.098 1.098 0 0 0 1.07 0.23 A 1.52 1.52 0 0 1 -0.55 0.95 Z";
+    const botRightRimD = "M -0.55 0.95 A 1.098 1.098 0 0 0 1.07 0.23";
+
+    front.innerHTML = `
+      <clipPath id="pw-dome-clip"><circle cx="0" cy="0" r="1.156"/></clipPath>
+      <path d="${bezelRingD}" fill="#000000" fill-rule="evenodd"/>
+      <path d="${topLeftDomeD}" fill="url(#pw-dome-sheen)" filter="url(#pw-soft-glow)"/>
+      <path d="${topLeftRimD}" fill="rgba(255,255,255,0.28)" filter="url(#pw-soft-glow)"/>
+      <path d="${botRightDomeD}" fill="url(#pw-bot-dome)" filter="url(#pw-soft-glow)"/>
+      <path d="${botRightRimD}" fill="none" stroke="url(#pw-bot-rim)" stroke-width="0.022" stroke-linecap="round" filter="url(#pw-rim-blur)"/>
+      <circle cx="0" cy="0" r="1.150" fill="none" stroke="url(#pw-case-edge)" stroke-width="0.015" opacity="0.95"/>
+    `;
+    return { back, front };
+  }
+
+  build_srpd63_svg(defs) {
+    defs.insertAdjacentHTML("beforeend", `
+      <linearGradient id="sk-steel-case" gradientUnits="userSpaceOnUse" x1="-1.52" y1="-0.40" x2="1.52" y2="0.40">
+        <stop offset="0%" stop-color="#aeb5bd"/>
+        <stop offset="16%" stop-color="#eef2f6"/>
+        <stop offset="36%" stop-color="#c9d0d8"/>
+        <stop offset="56%" stop-color="#dde2e7"/>
+        <stop offset="82%" stop-color="#f2f5f8"/>
+        <stop offset="100%" stop-color="#98a0a8"/>
+      </linearGradient>
+      <linearGradient id="sk-chamfer-l" gradientUnits="userSpaceOnUse" x1="-1.52" y1="-1.68" x2="-0.75" y2="1.68">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="22%" stop-color="#8c949e"/>
+        <stop offset="50%" stop-color="#eff3f7"/>
+        <stop offset="78%" stop-color="#6c737c"/>
+        <stop offset="100%" stop-color="#e4e9ee"/>
+      </linearGradient>
+      <linearGradient id="sk-chamfer-r" gradientUnits="userSpaceOnUse" x1="0.75" y1="-1.68" x2="1.65" y2="1.68">
+        <stop offset="0%" stop-color="#e8edf2"/>
+        <stop offset="24%" stop-color="#767e87"/>
+        <stop offset="52%" stop-color="#f5f8fa"/>
+        <stop offset="76%" stop-color="#5a616a"/>
+        <stop offset="100%" stop-color="#dce2e8"/>
+      </linearGradient>
+      <linearGradient id="sk-link-h" gradientUnits="userSpaceOnUse" x1="-0.75" y1="0" x2="0.75" y2="0">
+        <stop offset="0%" stop-color="#b4bbc3"/>
+        <stop offset="18%" stop-color="#e7ebef"/>
+        <stop offset="35%" stop-color="#c6cdd5"/>
+        <stop offset="50%" stop-color="#eaedf1"/>
+        <stop offset="68%" stop-color="#c2c9d1"/>
+        <stop offset="85%" stop-color="#edf1f5"/>
+        <stop offset="100%" stop-color="#a6aeb6"/>
+      </linearGradient>
+      <linearGradient id="sk-link-v" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.52"/>
+        <stop offset="16%" stop-color="#ffffff" stop-opacity="0.14"/>
+        <stop offset="58%" stop-color="#000000" stop-opacity="0"/>
+        <stop offset="88%" stop-color="#000000" stop-opacity="0.10"/>
+        <stop offset="100%" stop-color="#000000" stop-opacity="0.22"/>
+      </linearGradient>
+      <linearGradient id="sk-crown-cyl" gradientUnits="userSpaceOnUse" x1="1.38" y1="-0.24" x2="1.70" y2="0.24">
+        <stop offset="0%" stop-color="#8c949c"/>
+        <stop offset="22%" stop-color="#f5f8fa"/>
+        <stop offset="48%" stop-color="#c2cad2"/>
+        <stop offset="74%" stop-color="#687078"/>
+        <stop offset="90%" stop-color="#e4e9ee"/>
+        <stop offset="100%" stop-color="#646b73"/>
+      </linearGradient>
+      <linearGradient id="sk-bezel-steel" gradientUnits="userSpaceOnUse" x1="-1.42" y1="-1.42" x2="1.42" y2="1.42">
+        <stop offset="0%" stop-color="#f4f7f9"/>
+        <stop offset="25%" stop-color="#b8c0c8"/>
+        <stop offset="50%" stop-color="#687078"/>
+        <stop offset="75%" stop-color="#d4dbe2"/>
+        <stop offset="100%" stop-color="#8c949c"/>
+      </linearGradient>
+      <linearGradient id="sk-green-insert" gradientUnits="userSpaceOnUse" x1="-1.15" y1="-1.15" x2="1.15" y2="1.15">
+        <stop offset="0%" stop-color="#145233"/>
+        <stop offset="28%" stop-color="#0b3e24"/>
+        <stop offset="62%" stop-color="#062b18"/>
+        <stop offset="86%" stop-color="#0a3820"/>
+        <stop offset="100%" stop-color="#11482c"/>
+      </linearGradient>
+      <linearGradient id="sk-insert-sheen" gradientUnits="userSpaceOnUse" x1="-1.35" y1="-0.85" x2="1.35" y2="0.85">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.14"/>
+        <stop offset="28%" stop-color="#ffffff" stop-opacity="0.02"/>
+        <stop offset="52%" stop-color="#000000" stop-opacity="0.12"/>
+        <stop offset="78%" stop-color="#ffffff" stop-opacity="0.03"/>
+        <stop offset="100%" stop-color="#ffffff" stop-opacity="0.12"/>
+      </linearGradient>
+      <linearGradient id="sk-rehaut" gradientUnits="userSpaceOnUse" x1="-1.05" y1="-1.05" x2="1.05" y2="1.05">
+        <stop offset="0%" stop-color="#03160c"/>
+        <stop offset="40%" stop-color="#072816"/>
+        <stop offset="75%" stop-color="#0d3d23"/>
+        <stop offset="100%" stop-color="#155233"/>
+      </linearGradient>
+      <linearGradient id="sk-mark-silver" gradientUnits="userSpaceOnUse" x1="-1.2" y1="-1.2" x2="1.2" y2="1.2">
+        <stop offset="0%" stop-color="#f7f9fa"/>
+        <stop offset="50%" stop-color="#e2e7eb"/>
+        <stop offset="100%" stop-color="#cbd2d8"/>
+      </linearGradient>
+      <linearGradient id="sk-glass-sheen" gradientUnits="userSpaceOnUse" x1="-0.85" y1="-0.85" x2="0.45" y2="0.45">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.16"/>
+        <stop offset="42%" stop-color="#ffffff" stop-opacity="0.05"/>
+        <stop offset="70%" stop-color="#ffffff" stop-opacity="0"/>
+      </linearGradient>
+    `);
+
+    const linkRect = (x, y, w, h, rx = 0.024) =>
+      `<rect x="${x.toFixed(4)}" y="${y.toFixed(4)}" width="${w.toFixed(4)}" height="${h.toFixed(4)}" rx="${rx}" fill="url(#sk-link-h)"/>` +
+      `<rect x="${x.toFixed(4)}" y="${y.toFixed(4)}" width="${w.toFixed(4)}" height="${h.toFixed(4)}" rx="${rx}" fill="url(#sk-link-v)" stroke="#687078" stroke-width="0.005"/>`;
+
+    const buildBracelet = () => {
+      const rows = [
+        // Top bracelet (from outer row down to end-link)
+        { y1: -2.16, y2: -1.96, cy1: -2.17, cy2: -1.95, xo: 0.690, xi: 0.340, cx: 0.330 },
+        { y1: -1.94, y2: -1.66, cy1: -1.95, cy2: -1.65, xo: 0.722, xi: 0.348, cx: 0.338 },
+        { y1: -1.64, y2: -1.32, cy1: -1.65, cy2: -1.28, xo: 0.748, xi: 0.354, cx: 0.344, end: -1.48 },
+        // Bottom bracelet (from end-link down to outer row)
+        { y1: 1.32, y2: 1.64, cy1: 1.28, cy2: 1.65, xo: 0.748, xi: 0.354, cx: 0.344, end: 1.48 },
+        { y1: 1.66, y2: 1.94, cy1: 1.65, cy2: 1.95, xo: 0.722, xi: 0.348, cx: 0.338 },
+        { y1: 1.96, y2: 2.16, cy1: 1.95, cy2: 2.17, xo: 0.690, xi: 0.340, cx: 0.330 },
+      ];
+      let out = `<path d="M -0.74 -1.30 L -0.68 -2.15 Q 0 -2.19 0.68 -2.15 L 0.74 -1.30 Z M -0.74 1.30 L -0.68 2.15 Q 0 2.19 0.68 2.15 L 0.74 1.30 Z" fill="#434950"/>`;
+      for (const r of rows) {
+        const sw = r.xo - r.xi, sh = r.y2 - r.y1;
+        out += linkRect(-r.xo, r.y1, sw, sh);
+        out += linkRect(r.xi, r.y1, sw, sh);
+        out += linkRect(-r.cx, r.cy1, r.cx * 2, r.cy2 - r.cy1);
+        if (r.end) {
+          out += `<line x1="${-r.xo + 0.01}" y1="${r.end}" x2="${-r.xi - 0.01}" y2="${r.end}" stroke="rgba(0,0,0,0.22)" stroke-width="0.007"/>`;
+          out += `<line x1="${r.xi + 0.01}" y1="${r.end}" x2="${r.xo - 0.01}" y2="${r.end}" stroke="rgba(0,0,0,0.22)" stroke-width="0.007"/>`;
+        }
+      }
+      return out;
+    };
+
+    const caseBodyD = [
+      "M -0.75 -1.62 Q -0.86 -1.60 -0.94 -1.48",
+      "C -1.16 -1.16 -1.41 -0.64 -1.41 0",
+      "C -1.41 0.64 -1.16 1.16 -0.94 1.48",
+      "Q -0.86 1.60 -0.75 1.62 L -0.75 1.32 L 0.75 1.32 L 0.75 1.62",
+      "Q 0.86 1.60 0.94 1.48",
+      "C 1.08 1.30 1.22 1.10 1.34 0.93",
+      "Q 1.37 0.89 1.32 0.86 L 1.13 0.77 L 1.32 0.39 L 1.53 0.49",
+      "Q 1.59 0.48 1.56 0.40",
+      "C 1.49 0.18 1.44 -0.04 1.42 -0.26",
+      "C 1.38 -0.76 1.15 -1.18 0.94 -1.48",
+      "Q 0.86 -1.60 0.75 -1.62 L 0.75 -1.32 L -0.75 -1.32 Z"
+    ].join(" ");
+
+    const lugChamfers = `
+      <path d="M -0.75 -1.62 Q -0.86 -1.60 -0.94 -1.48 C -1.16 -1.16 -1.40 -0.68 -1.41 -0.15 C -1.33 -0.66 -1.08 -1.14 -0.75 -1.55 Z" fill="url(#sk-chamfer-l)"/>
+      <path d="M -0.75 1.62 Q -0.86 1.60 -0.94 1.48 C -1.16 1.16 -1.40 0.68 -1.41 0.15 C -1.33 0.66 -1.08 1.14 -0.75 1.55 Z" fill="url(#sk-chamfer-l)"/>
+      <path d="M 0.75 -1.62 Q 0.86 -1.60 0.94 -1.48 C 1.15 -1.18 1.38 -0.76 1.42 -0.26 C 1.33 -0.74 1.08 -1.16 0.75 -1.55 Z" fill="url(#sk-chamfer-r)"/>
+      <path d="M 0.75 1.62 Q 0.86 1.60 0.94 1.48 C 1.08 1.30 1.22 1.10 1.34 0.93 Q 1.37 0.89 1.32 0.86 L 1.22 0.81 C 1.12 1.04 0.96 1.30 0.75 1.55 Z" fill="url(#sk-chamfer-r)"/>
+      <path d="M 1.40 0.06 C 1.46 0.22 1.51 0.33 1.56 0.40 Q 1.59 0.48 1.53 0.49 L 1.35 0.40 C 1.38 0.28 1.40 0.16 1.40 0.06 Z" fill="url(#sk-chamfer-r)"/>
+    `;
+
+    const crownRibs = Array.from({ length: 15 }, (_, i) => {
+      const y = (-0.196 + i * 0.028).toFixed(4);
+      const yHi = (-0.196 + i * 0.028 + 0.008).toFixed(4);
+      return `<line x1="1.365" y1="${y}" x2="1.565" y2="${y}" stroke="#2b3036" stroke-width="0.011" stroke-linecap="round"/>` +
+        `<line x1="1.368" y1="${yHi}" x2="1.562" y2="${yHi}" stroke="#ffffff" stroke-opacity="0.78" stroke-width="0.005" stroke-linecap="round"/>`;
+    }).join("");
+
+    const back = svg_el("g");
+    back.innerHTML = `
+      ${buildBracelet()}
+      <g transform="rotate(26)">
+        <rect x="1.24" y="-0.20" width="0.16" height="0.40" fill="#484e56"/>
+        <rect x="1.545" y="-0.186" width="0.078" height="0.372" rx="0.036" fill="url(#sk-crown-cyl)" stroke="#484e56" stroke-width="0.006"/>
+        <rect x="1.352" y="-0.222" width="0.226" height="0.444" rx="0.022" fill="url(#sk-crown-cyl)" stroke="#383e46" stroke-width="0.007"/>
+        ${crownRibs}
+      </g>
+      <path d="${caseBodyD}" fill="url(#sk-steel-case)" stroke="#596068" stroke-width="0.008"/>
+      ${lugChamfers}
+    `;
+
+    // 60-tooth scalloped coin-edge bezel path + dimples
+    const teethCount = 60;
+    const rOut = 1.446, rIn = 1.418;
+    let coinD = "";
+    let dimples = "";
+    for (let i = 0; i < teethCount; i++) {
+      const a0 = (i * 6 - 1.2) * Math.PI / 180;
+      const a1 = (i * 6 + 1.2) * Math.PI / 180;
+      const a2 = ((i + 1) * 6 - 1.2) * Math.PI / 180;
+      const x0 = (rOut * Math.sin(a0)).toFixed(4), y0 = (-rOut * Math.cos(a0)).toFixed(4);
+      const x1 = (rOut * Math.sin(a1)).toFixed(4), y1 = (-rOut * Math.cos(a1)).toFixed(4);
+      const xm = (rIn * Math.sin((a1 + a2) / 2)).toFixed(4), ym = (-rIn * Math.cos((a1 + a2) / 2)).toFixed(4);
+      const x2 = (rOut * Math.sin(a2)).toFixed(4), y2 = (-rOut * Math.cos(a2)).toFixed(4);
+      coinD += (i === 0 ? `M ${x0} ${y0} ` : "") + `L ${x1} ${y1} Q ${xm} ${ym} ${x2} ${y2} `;
+      const deg = i * 6 + 3;
+      dimples += `<ellipse cx="0" cy="-1.412" rx="0.028" ry="0.011" transform="rotate(${deg})" fill="#3d434a" stroke="#ffffff" stroke-opacity="0.55" stroke-width="0.004"/>`;
+    }
+    coinD += "Z M 0 -0.996 A 0.996 0.996 0 1 0 0 0.996 A 0.996 0.996 0 1 0 0 -0.996 Z";
+
+    const insertRingD = "M 0 -1.374 A 1.374 1.374 0 1 1 0 1.374 A 1.374 1.374 0 1 1 0 -1.374 Z M 0 -1.070 A 1.070 1.070 0 1 0 0 1.070 A 1.070 1.070 0 1 0 0 -1.070 Z";
+    const rehautRingD = "M 0 -1.054 A 1.054 1.054 0 1 1 0 1.054 A 1.054 1.054 0 1 1 0 -1.054 Z M 0 -0.996 A 0.996 0.996 0 1 0 0 0.996 A 0.996 0.996 0 1 0 0 -0.996 Z";
+
+    // Bezel markings: 12 o'clock triangle, batons, minute dots, and bold dive numerals 10..50
+    const tri12 = `<path d="M -0.205 -1.334 Q 0 -1.342 0.205 -1.334 Q 0.218 -1.332 0.210 -1.320 L 0.014 -1.096 Q 0 -1.084 -0.014 -1.096 L -0.210 -1.320 Q -0.218 -1.332 -0.205 -1.334 Z"/>`;
+    const batons = [30, 90, 150, 210, 270, 330].map((deg) =>
+      `<rect x="-0.021" y="-1.316" width="0.042" height="0.188" rx="0.005" transform="rotate(${deg})"/>`
+    ).join("");
+    const dotMinutes = [1, 2, 3, 4, 6, 7, 8, 12, 13, 14, 16, 17, 18];
+    const dots = dotMinutes.map((m) =>
+      `<circle cx="0" cy="-1.138" r="0.019" transform="rotate(${m * 6})"/>`
+    ).join("");
+
+    const DIGITS = {
+      0: "M -0.026 -0.084 H 0.026 A 0.038 0.038 0 0 1 0.064 -0.046 V 0.046 A 0.038 0.038 0 0 1 0.026 0.084 H -0.026 A 0.038 0.038 0 0 1 -0.064 0.046 V -0.046 A 0.038 0.038 0 0 1 -0.026 -0.084 Z M -0.016 -0.050 A 0.014 0.014 0 0 0 -0.030 -0.036 V 0.036 A 0.014 0.014 0 0 0 -0.016 0.050 H 0.016 A 0.014 0.014 0 0 0 0.030 0.036 V -0.036 A 0.014 0.014 0 0 0 0.016 -0.050 Z",
+      1: "M -0.019 -0.084 H 0.019 V 0.084 H -0.019 Z",
+      2: "M -0.062 -0.034 A 0.048 0.048 0 0 1 -0.014 -0.084 H 0.020 A 0.044 0.044 0 0 1 0.064 -0.040 C 0.064 -0.008 0.042 0.012 -0.020 0.050 H 0.064 V 0.084 H -0.064 V 0.050 C 0.008 0.002 0.028 -0.016 0.028 -0.038 A 0.014 0.014 0 0 0 0.014 -0.052 H -0.012 A 0.018 0.018 0 0 0 -0.028 -0.034 Z",
+      3: "M -0.062 -0.042 A 0.042 0.042 0 0 1 -0.020 -0.084 H 0.022 A 0.042 0.042 0 0 1 0.064 -0.042 C 0.064 -0.020 0.052 -0.006 0.036 -0.002 C 0.054 0.004 0.066 0.020 0.066 0.042 A 0.042 0.042 0 0 1 0.024 0.084 H -0.022 A 0.042 0.042 0 0 1 -0.064 0.042 H -0.030 A 0.014 0.014 0 0 0 -0.016 0.052 H 0.018 A 0.014 0.014 0 0 0 0.032 0.038 C 0.032 0.024 0.022 0.014 0.006 0.014 H -0.016 V -0.016 H 0.006 C 0.020 -0.016 0.030 -0.024 0.030 -0.038 A 0.014 0.014 0 0 0 0.016 -0.052 H -0.014 A 0.014 0.014 0 0 0 -0.028 -0.038 Z",
+      4: "M 0.006 -0.084 H 0.042 V 0.018 H 0.066 V 0.050 H 0.042 V 0.084 H 0.008 V 0.050 H -0.066 V 0.018 Z M 0.008 -0.038 L -0.032 0.018 H 0.008 Z",
+      5: "M -0.060 -0.084 H 0.060 V -0.052 H -0.026 V -0.016 H 0.022 A 0.042 0.042 0 0 1 0.064 0.026 V 0.042 A 0.042 0.042 0 0 1 0.022 0.084 H -0.022 A 0.042 0.042 0 0 1 -0.064 0.042 H -0.030 A 0.014 0.014 0 0 0 -0.016 0.052 H 0.016 A 0.014 0.014 0 0 0 0.030 0.038 V 0.028 A 0.014 0.014 0 0 0 0.016 0.014 H -0.060 Z",
+    };
+
+    const numerals = [[1, 60, -3.8, 4.4], [2, 120, -4.8, 4.8], [3, 180, -4.8, 4.8], [4, 240, -4.8, 4.8], [5, 300, -4.8, 4.8]].map(([d, deg, d1, d2]) =>
+      `<g transform="rotate(${deg + d1}) translate(0 -1.222)"><path d="${DIGITS[d]}" fill-rule="evenodd"/></g>` +
+      `<g transform="rotate(${deg + d2}) translate(0 -1.222)"><path d="${DIGITS[0]}" fill-rule="evenodd"/></g>`
+    ).join("");
+
+    const front = svg_el("g");
+    front.innerHTML = `
+      <path d="${coinD}" fill="url(#sk-bezel-steel)" fill-rule="evenodd" stroke="#454b52" stroke-width="0.006"/>
+      ${dimples}
+      <circle cx="0" cy="0" r="1.388" fill="none" stroke="url(#sk-bezel-steel)" stroke-width="0.028"/>
+      <circle cx="0" cy="0" r="1.402" fill="none" stroke="#454b52" stroke-width="0.005"/>
+      <path d="${insertRingD}" fill="url(#sk-green-insert)" fill-rule="evenodd"/>
+      <path d="${insertRingD}" fill="url(#sk-insert-sheen)" fill-rule="evenodd"/>
+      <circle cx="0" cy="0" r="1.374" fill="none" stroke="#dce2e7" stroke-width="0.008" opacity="0.8"/>
+      <g fill="url(#sk-mark-silver)">
+        ${tri12}
+        ${batons}
+        ${dots}
+        ${numerals}
+      </g>
+      <circle cx="0" cy="0" r="1.062" fill="none" stroke="url(#sk-bezel-steel)" stroke-width="0.018"/>
+      <circle cx="0" cy="0" r="1.071" fill="none" stroke="#18221c" stroke-width="0.006"/>
+      <path d="${rehautRingD}" fill="url(#sk-rehaut)" fill-rule="evenodd"/>
+      <circle cx="0" cy="0" r="0.998" fill="none" stroke="#c88d58" stroke-width="0.006" opacity="0.65"/>
+      <path d="M -0.92 0.42 A 1.01 1.01 0 0 1 0.42 -0.92 A 1.38 1.38 0 0 0 -0.92 0.42 Z" fill="url(#sk-glass-sheen)" filter="url(#pw-soft-glow)"/>
+    `;
+
+    return { back, front };
   }
 
   fit() {
