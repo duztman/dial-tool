@@ -90,7 +90,7 @@
      and centeredness and 1px borders"; until 4.51.1 a unit and a half less room and a --thick line). The arrow's square
      stands with its middle on the top line. */
   .tag { position: fixed; z-index: 30; translate: -50% 0; padding: var(--u2) var(--u4); border: var(--hair) solid var(--ink); border-radius: var(--round-small); background: var(--field); color: var(--ink);
-    font: 600 var(--t-s)/1.3 var(--sans); text-align: center; white-space: nowrap; pointer-events: none; }
+    font: 600 var(--t-s)/1.3 var(--sans); text-align: center; text-wrap: balance; width: max-content; max-width: min(var(--tag-max), 100vw - 2 * var(--u4)); pointer-events: none; }      /* long words wrap, balanced, within the window (4.63) */
   .tag::before { content: ""; position: absolute; top: calc(-1 * (var(--u3) + var(--hair)) / 2); left: calc(50% + var(--point, 0px)); translate: -50% 0; width: var(--u3); height: var(--u3); rotate: 45deg; border: var(--hair) solid var(--ink); border-width: var(--hair) 0 0 var(--hair); background: var(--field); }
   .tag.above::before { top: auto; bottom: calc(-1 * (var(--u3) + var(--hair)) / 2); border-width: 0 var(--hair) var(--hair) 0; }      /* over what it names (no room under it, the bottom bar): the arrow points down */
 

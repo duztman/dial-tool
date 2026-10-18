@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.63 (web version) · 18 Oct 2026
+
+Okay's notes of 21:20.
+
+- **Tags wrap**: no line longer than 240, balanced, kept inside the window ("constrict the width to avoid these unreadable lines").
+- **The phone's bar**: the time and AM · PM at 17 (were 12: "Time and am too small"); how fast gives up the room.
+- **The date in Inter SemiBold**, still stacked ("three tier with barlow abort, try inter with appropriate weight for that size"): a cut of its figures, "Dial Date" (`fonts/ui/date_font.py`).
+
 ## beta 4.62 (web version) · 18 Oct 2026
 
 The date (Okay, 18 Oct: "Date best set at the bar, short date, 07/10/28 style, stacked barlow medium or bold, next to am, touching. Default from system date").

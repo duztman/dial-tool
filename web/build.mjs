@@ -49,8 +49,8 @@ const time_face = `@font-face { font-family: "Dial Time"; font-weight: 300; src:
 // Dial Mono (fonts/ui/mono_font.py: JetBrains Mono, SIL OFL, at the weight whose stem is a line at 10 px, cut down):
 // the unit box's word (#302, beta 4.44.1)
 const unit_face = `@font-face { font-family: "Dial Mono"; font-weight: 400; src: url(data:font/ttf;base64,${b64(path.join(here, "fonts/ui/DialMono.ttf"))}) format("truetype"); font-display: block; }`;
-// Dial Date (fonts/ui/date_font.py: Barlow Bold, SIL OFL, its figures only): the bar's stacked date (4.62)
-const date_face = `@font-face { font-family: "Dial Date"; font-weight: 700; src: url(data:font/ttf;base64,${b64(path.join(here, "fonts/ui/DialDate-Bold.ttf"))}) format("truetype"); font-display: block; }`;
+// Dial Date (fonts/ui/date_font.py: Inter SemiBold, SIL OFL, its figures only): the bar's stacked date (4.62; Inter since 4.63)
+const date_face = `@font-face { font-family: "Dial Date"; font-weight: 600; src: url(data:font/otf;base64,${b64(path.join(here, "fonts/ui/DialDate-SemiBold.otf"))}) format("opentype"); font-display: block; }`;
 const css = sheets.map((f) => fs.readFileSync(path.join(here, "src/css", f), "utf8")).join("\n") + pixel + time_face + unit_face + date_face;
 const version = /VERSION = "([^"]+)"/.exec(fs.readFileSync(path.join(here, "src/geometry.js"), "utf8"))[1];
 

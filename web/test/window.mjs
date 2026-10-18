@@ -550,11 +550,11 @@ check(Math.abs(at12[0][0]) < 0.06 && at12[0][1] > 1 && Math.abs(at12[1][1]) < 0.
   const span = await S("S.rings[S.ui_ring].span");
   // the (i) beside Skip those says what it does in a tag, a tap away
   await page.click(".pane.positions .row.chk .infosign"); await page.waitForTimeout(50);
-  const tip = await page.$eval("#tag", (t) => [t.hidden, t.textContent]);
+  const tip = await page.$eval("#tag", (t) => [t.hidden, t.textContent, t.getBoundingClientRect().width <= 241, t.getBoundingClientRect().height > 30, t.getBoundingClientRect().left >= 0 && t.getBoundingClientRect().right <= innerWidth]);
   await page.evaluate(([i, every, start, span, count]) => { const t = window.dial_tool; for (const [k, v] of Object.entries({ every, start, span, count })) t.set_value("ring", k, v); }, was);
   check(pos[0] && pos[1] === "0px" && pos[2] === "none" && pos[3] + pos[4] === pos[5] && pos[3] === Math.ceil(pos[5] / 3) && pos[6] !== "none" && pos[7] === 15 && pos[8] === "Count · Every · Offset · Skip those · Start · Span" && pos[9] === "nummenu nummenu num block chk num block num block" && pos[10] === "img" && pos[11].startsWith(`${pos[3]} of ${pos[5]} positions used`) && pos[12] && pos[13] && popped
-    && picked === 12 && typing === "ring-count-Count" && typed.join() === "7,true,7" && kept === 7 && start === 90 && span === 180 && !tip[0] && tip[1].startsWith("Turns it over"),
-    `Positions (#357): a round preview three rows high, no frame: ${pos[3]} marks in ink and ${pos[4]} faint of ${pos[5]} with Every 3, the first at ${pos[7]}°, the span dotted (${pos[6]}); beside it two columns (${pos[8]}); a name opens the controller (${popped}); the menu picks 12, Custom types 7 (${typed.join(" ")}), Escape keeps ${kept}; dragged, the start goes to ${start}°, the span's end to ${span}°; the (i) says "${tip[1].slice(0, 20)}…"`);
+    && picked === 12 && typing === "ring-count-Count" && typed.join() === "7,true,7" && kept === 7 && start === 90 && span === 180 && !tip[0] && tip[1].startsWith("Turns it over") && tip[2] && tip[3] && tip[4],
+    `Positions (#357): a round preview three rows high, no frame: ${pos[3]} marks in ink and ${pos[4]} faint of ${pos[5]} with Every 3, the first at ${pos[7]}°, the span dotted (${pos[6]}); beside it two columns (${pos[8]}); a name opens the controller (${popped}); the menu picks 12, Custom types 7 (${typed.join(" ")}), Escape keeps ${kept}; dragged, the start goes to ${start}°, the span's end to ${span}°; the (i) says "${tip[1].slice(0, 20)}…" in a tag no wider than 240, wrapped, on screen (4.63: "constrict the width")`);
 }
 // Give way (#258, 4.50.2): two side tabs, the open one white and joined to a white-bordered square; in it a drawing of the choice, the choices as radio buttons, Clearance a quiet row only when something is knocked out
 {
@@ -2211,8 +2211,8 @@ await touch.close();
     t.to_now(); const now = t.S.date;
     t.set_value("window", "kind", was[2]); t.set_value("window", "follows", was[3]); t.set_value("window", "names", was[4]); t.set_value("window", "on", was[1]); t.S.date = was[5]; t.S.ui_window = was[0]; t.sync_rows(); t.sync_time(); t.render();
     return [date, bar, day, now]; });
-  check(look[0] && look[1] && look[2] && look[3] === "700" && look[4] === "" && follow.join() === "7,07/10/28,CMT,",
-    `the date stands touching AM · PM, today's to start, stacked day · month · year in Barlow Bold (${look.join(" ")}); 7 Oct 2028 set, a following date window says ${follow[0]} and the bar ${follow[1]}; a day window in Turkish ${follow[2]}; Now brings today back`);
+  check(look[0] && look[1] && look[2] && look[3] === "600" && look[4] === "" && follow.join() === "7,07/10/28,CMT,",
+    `the date stands touching AM · PM, today's to start, stacked day · month · year in Inter SemiBold (Barlow Bold in 4.62) (${look.join(" ")}); 7 Oct 2028 set, a following date window says ${follow[0]} and the bar ${follow[1]}; a day window in Turkish ${follow[2]}; Now brings today back`);
 }
 { // Tiny Preview (#337, 4.59): its button top right where Guides stood; the dial at its own size (the browser's mm) with its margins, over everything; dragged anywhere; its eye puts it away. Guides at the bottom left, between Backdrop and Shadows, their list opening upward
   const corner = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), m = r("main"), o = r("#tiny-open"), g = r("#guides"), b = r("#backdrop"), sh = r("#shadows"); return [Math.round(m.right - o.right) === Math.round(m.bottom - m.bottom) || o.top - m.top < 40, b.bottom <= g.top + 1 && g.bottom <= sh.top + 1 && Math.abs(g.left - sh.left) < 1]; });
