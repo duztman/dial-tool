@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.59 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.60 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -6065,7 +6065,7 @@ function otTagToLanguage(tag) {
 init(await harfbuzz_default({ wasmBinary: globalThis.__DIAL.bytes("harfbuzz") }));
 
 // src/geometry.js
-var VERSION = "beta 4.59";
+var VERSION = "beta 4.60";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -8751,8 +8751,8 @@ var ROWS = {
     custom("num_menu", { key: "every", text: "Every", lo: 1, hi: 60, items: [1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30] }),
     num2("offset", "Offset", 0, 59, 1, { whole: true, block: true, tip: "Which of every few is used: with Every 3, Offset 1 takes the 2nd, 5th, 8th\u2026" }),
     chk("invert", "Skip those", { tip: "Turns it over: the positions Every and Offset take are left out, the others drawn" }),
-    num2("start", "Start", -180, 180, 0.5, { block: true, suffix: "\xB0" }),
-    num2("span", "Span", 1, 360, 1, { block: true, suffix: "\xB0" }),
+    num2("start", "Start", -180, 180, 0.5, { block: true, suffix: "\xB0", trim: true }),
+    num2("span", "Span", 1, 360, 1, { block: true, suffix: "\xB0", trim: true }),
     // Give way (Okay's notes, p. 4, #258, 4.50.2: "what's happening should be visible here"): Skip where and Knock out
     // as side tabs, the open one lit white and attached to a white-bordered square that shows what the choice does, a
     // drawing in the icons' style; the choices at its foot as radio buttons; Clearance a quiet row under them (R15 B),
@@ -10639,13 +10639,23 @@ var DialTool = class _DialTool {
     if (row.kind === "num") {
       const slider = el("input", { type: "range", min: row.lo, max: row.hi, step: row.step, id: id + "-slider" });
       const field = el("input", { type: "text", id, inputMode: "decimal", title: "1.2 sets \xB7 +0.5 adds \xB7 x0.5 multiplies \xB7 /2 divides" });
+      const by_finger = !row.inpop && !row.side;
+      let finger = null;
+      const pressed = (e) => {
+        finger = e.pointerType === "touch" || e.pointerType === "pen" ? { x: e.clientX, y: e.clientY } : null;
+      };
+      const to_controller = () => {
+        const at = finger;
+        finger = null;
+        this.value_pop_open(field, row, at);
+      };
       const commit = (v) => {
         v = row.whole ? Math.round(v) : +(+v).toFixed(6);
         set(row.whole ? clamp(v, row.lo, row.hi) : v);
       };
       const length = is_length(row);
       const per = () => length ? this.unit()[2] : 1, places = () => Math.max(0, decimals(row.step) + (length ? this.unit()[3] : 0));
-      const shown = (v) => (v * per()).toFixed(places()) + (row.suffix || "");
+      const shown = (v) => (row.trim ? String(parseFloat((v * per()).toFixed(places()))) : (v * per()).toFixed(places())) + (row.suffix || "");
       const now = () => {
         const T = this.target(row.scope);
         return T[row.key] ?? (row.or ? row.or(T) : 0);
@@ -10658,6 +10668,25 @@ var DialTool = class _DialTool {
       field.oninput = () => {
         typing = true;
       };
+      if (by_finger) {
+        field.addEventListener("pointerdown", (e) => {
+          pressed(e);
+          if (finger) {
+            field.readOnly = true;
+            e.preventDefault();
+          }
+        });
+        field.addEventListener("click", (e) => {
+          if (finger) {
+            e.preventDefault();
+            field.blur();
+            to_controller();
+            setTimeout(() => {
+              field.readOnly = false;
+            }, 0);
+          }
+        });
+      }
       field.onblur = () => {
         typing = false;
         out.refresh(this.target(row.scope));
@@ -10674,7 +10703,11 @@ var DialTool = class _DialTool {
         }
       };
       const step = (dir) => {
-        const b = el("button", { type: "button", className: "step", tabIndex: -1, onclick: () => commit(now() + dir * row.step) });
+        const b = el("button", { type: "button", className: "step", tabIndex: -1, onclick: () => {
+          if (by_finger && finger) return to_controller();
+          commit(now() + dir * row.step);
+        } });
+        if (by_finger) b.addEventListener("pointerdown", pressed);
         const sign = (row.inpop ? BIG : row.side ? TINY : null)?.[dir > 0 ? "plus" : "minus"];
         if (sign) {
           b.innerHTML = sign;
@@ -11609,7 +11642,6 @@ var DialTool = class _DialTool {
       b.append(el("span", { textContent: kind[0].toUpperCase() + kind.slice(1) }));
       menu.append(b);
     });
-    menu.append(el("p", { className: "quiet note", textContent: "Settings stay with the ring. Switch back any time." }));
     menu.onkeydown = (e) => {
       if (e.key === "Escape" && !menu.hidden) {
         open(false);
