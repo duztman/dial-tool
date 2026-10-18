@@ -1640,8 +1640,8 @@ await page.uncheck("#global-out-live-text-Keep-numerals-as-text-in-the-SVG");
     return { pinned: [...p.querySelectorAll("h2")].map((h) => h.textContent).join(), order: rows.map((r) => (r.querySelector("button.main") || {}).id || (r.querySelector("input") || {}).id || r.className).join(" | "),
       pdf: left("#export-pdf"), svg: left("#export-svg"), png: left("#export-png"), label: left(".pinned .row > label"), tick: left(".pinned .check"), lines: rows.map(shadow).join(""), halves: rows.map(half).join(""), below: [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent).join(" · ") };
   });
-  check(e.pinned === "Export a file" && e.order === "export-pdf | export-svg | global-out-live-text-Keep-numerals-as-text-in-the-SVG | export-png | global-out-dpi-dpi-slider | row note under" && e.pdf === e.svg && e.png === e.pdf && e.pdf > e.label && e.tick === e.svg && e.lines === "211101" && e.halves === "010110" && e.below === "Print · Link to this dial · Settings file · Log · Gallery",
-    `Export a file is pinned: Vector · PDF, SVG under it with its tick tied to it, then PNG on the same column with its dpi under it; a half line, from the buttons' column, before each nested row (the tick, the dpi, its note: ${e.lines} ${e.halves}); below scroll ${e.below}`);
+  check(e.pinned === "Export a file" && e.order === "export-pdf | export-svg | global-out-live-text-Keep-numerals-as-text-in-the-SVG | export-png | global-out-dpi-dpi-slider | row note under | export-wearos | wearos-name | row note under" && e.pdf === e.svg && e.png === e.pdf && e.pdf > e.label && e.tick === e.svg && e.lines === "211101101" && e.halves === "010110110" && e.below === "Print · Link to this dial · Settings file · Log · Gallery",
+    `Export a file is pinned: Vector · PDF, SVG under it with its tick tied to it, then PNG on the same column with its dpi under it, then Wear OS's APK with its name under it (4.67); a half line, from the buttons' column, before each nested row (the tick, the dpi, its note: ${e.lines} ${e.halves}); below scroll ${e.below}`);
   await shot("4c21-export");
 }
 {

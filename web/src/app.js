@@ -9,6 +9,10 @@
 import * as G from "./geometry.js";
 import { svg_document, pdf_document, png_with_dpi, file_name } from "./output.js";
 import { BEZELS, bezel_parts, bezel_svg } from "./bezels.js";
+// a Wear OS watch face (4.67; farukahmet's PR #1, 18 Oct 2026): the dial as Watch Face Format, packed and signed in the browser
+import { generate_watchface_xml } from "./wearos/wff_xml.js";
+import { svg_dial_face, svg_hand, svg_cap, svg_preview, svg_window_sheet, svg_to_png_bytes } from "./wearos/wff_assets.js";
+import { build_signed_wearos_apk, format_package_name, sanitize_package_suffix } from "./wearos/apk_packager.js";
 import { FONT_LIST, FONT_SITE } from "./font_list.js";
 import { EXAMPLES } from "./examples.js";
 import { GALLERY } from "./gallery.js";
@@ -704,6 +708,11 @@ const ROWS = {
     custom("export_png"),
     num("out_dpi", "dpi", 72, 2400, 1, { tie: true, bare: true }),      // bare: no word before it (the line under it says "at 600 dpi"); the slider stands under the buttons
     custom("png_size"),
+    // a watch face for a Wear OS watch (4.67; farukahmet's PR #1, Okay, 18 Oct 2026: "All three great on pull request"):
+    // the APK button, the face's name (and so its package, so several dials can live on one watch), sideloaded
+    custom("export_wearos"),
+    custom("wearos_name"),
+    custom("wearos_pkg"),
     hdr("Print", { folded: true }),                                  // what only the printed or etched dial needs (was "For production" until beta 4.19)
     chk("out_production", "Mono print mask"),
     chk("out_mirror", "Mirrored, for toner transfer"),
@@ -4350,6 +4359,30 @@ class DialTool {
   }
 
   /** under the PNG row: what that dpi comes to. */
+  /** the Wear OS export (4.67, farukahmet's PR #1): a watch face (Watch Face Format) as an APK to sideload — over adb, or
+   *  a sideloading app. Signed with a shared debug key: right for one's own watch, never for the Play Store. */
+  row_export_wearos(wrap) {
+    wrap.className = "row";
+    const btn = el("button", { type: "button", className: "btn main", id: "export-wearos", textContent: "APK", title: "A Wear OS watch face (.apk) to sideload onto your watch", onclick: () => this.export("wearos") });
+    wrap.append(el("label", { textContent: "Wear OS" }), btn);
+  }
+
+  /** the watch face's name on the watch; it makes the package's name too, so several dials can live on one watch. */
+  row_wearos_name(wrap, out) {
+    wrap.className = "row txt tied";
+    const field = el("input", { type: "text", id: "wearos-name", placeholder: "Its name on the watch: Dial Tool", ariaLabel: "Watch face name" });
+    field.onchange = () => this.set_value("global", "wearos_name", field.value.trim());
+    wrap.append(el("span"), field);
+    out.refresh = (T) => { if (document.activeElement !== field) field.value = T.wearos_name || ""; };
+  }
+
+  row_wearos_pkg(wrap, out) {
+    wrap.className = "row note under";
+    const text = el("span", { className: "quiet", id: "wearos-pkg" });
+    wrap.append(el("span"), text);
+    out.refresh = (T) => { const label = (T.wearos_name || "").trim() || "Dial Tool"; text.textContent = `${label} · ${format_package_name("", label)} · signed for sideloading, not for the Play Store`; };
+  }
+
   row_png_size(wrap, out) {
     wrap.className = "row note under";                // under: it starts on the buttons' column, not at the left (Okay, 13 Oct 2026)
     const text = el("span", { className: "quiet", id: "png-size" });
@@ -5116,6 +5149,30 @@ class DialTool {
         this.log(`exported ${name} · ${px} × ${px} px · ${Math.round(S.out_dpi)} dpi is written in the file, so it opens at ${G.page_mm(S).toFixed(2)} mm`
           + (px * px > PNG_SAFE ? ` · large: if it is empty in Safari, lower the dpi` : ""));
         return;
+      }
+      if (kind === "wearos") {                     // farukahmet's PR #1: each layer a picture at 450 × 450, the face's XML, packed and signed
+        this.log("building a Wear OS watch face…");
+        const xml = generate_watchface_xml(S, statik), png = (svg) => svg_to_png_bytes(svg), on = (h) => S.ha_on && S["ha_" + h].on;
+        const drawables = {
+          dial_face: await png(svg_dial_face(S, statik)),
+          dial_face_ambient: await png(svg_dial_face(S, statik, "black")),
+          dial_face_ambient_black: await png(svg_dial_face(S, statik, "black")),
+          dial_face_ambient_dimmed: await png(svg_dial_face(S, statik, "dimmed")),
+          hour_hand: on("hour") ? await png(svg_hand(S, "hour")) : null,
+          hour_hand_ambient: on("hour") ? await png(svg_hand(S, "hour", "black")) : null,
+          minute_hand: on("minute") ? await png(svg_hand(S, "minute")) : null,
+          minute_hand_ambient: on("minute") ? await png(svg_hand(S, "minute", "black")) : null,
+          second_hand: on("second") ? await png(svg_hand(S, "second")) : null,
+          cap: S.ha_on && S.ha_cap > 0 ? await png(svg_cap(S)) : null,
+          preview: await png(svg_preview(S, statik)),
+          icon: await png(svg_preview(S, statik)),
+        };
+        for (const x of statik.windows || []) drawables["window_" + x.index] = await png(svg_window_sheet(S, x));
+        const label = (S.wearos_name || "").trim() || "Dial Tool", pkg = format_package_name("", label);
+        const apk = await build_signed_wearos_apk(xml, drawables, { label, packageId: pkg });
+        const apk_name = `dial-wearos-${S.wearos_name && S.wearos_name.trim() ? sanitize_package_suffix(S.wearos_name) : Math.round(S.dial_d) + "mm"}.apk`;
+        save_file(apk_name, apk, "application/vnd.android.package-archive");
+        return this.log(`exported ${apk_name} · "${label}" (${pkg}) · 450 × 450 px · signed (v2/v3) with a shared debug key: sideload it, adb install`);
       }
       this.log(`exported ${name} · ${G.page_mm(S).toFixed(2)} mm square, to your downloads`);
     } catch (e) {

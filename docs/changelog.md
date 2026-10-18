@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.67 (web version) · 18 Oct 2026
+
+A Wear OS watch face (farukahmet's PR #1, ported; Okay, 21:20: "All three great on pull request").
+
+- **Export → Wear OS → APK**: the dial as a Watch Face Format face — the plate and every ring as one picture, each hand its own, the windows as sprite sheets, ambient (always-on) versions — packed and signed in the browser into an `.apk` to sideload onto a Wear OS watch (`adb install`, or a sideloading app).
+- **Its name on the watch** (a field under the button) makes its package's name too, so several dials can live on one watch. A new key `wearos_name`, empty to start.
+- Signed (v2/v3) with a **shared debug key**: right for one's own watch, never for the Play Store (said under the button). Checked here with apksigtool: v2 and v3 verify. Not tried on a watch.
+- `web/src/wearos/` (farukahmet's modules, as he wrote them; fflate's MIT notice put back) and `web/test/wearos_test.mjs` in npm test. His Windows tools for making the template APK stay on his branch (`pr-1`).
+
 ## beta 4.66 (web version) · 18 Oct 2026
 
 A case round the dial, preview only (farukahmet's PR #3, "abstractified"; Okay, 21:20: "low number of colors, thick lines, minimal, maybe just sillhouettes of classics. One highlight one shadow").
