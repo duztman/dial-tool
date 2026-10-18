@@ -39,7 +39,9 @@
     .tabs { position: sticky; top: 0; z-index: 3; background: var(--paper); }      /* over what scrolls under it: the tabs' notches, an open number box */
     .ringlist ol { max-height: none; }
     .row.pick > label, .row.pick > .picks { grid-column: 1 / -1; }
-    .detail { min-height: 0; height: calc(1.5 * var(--tile)); }      /* over its rows here: a wide box, the hand lying in it, its tip to the right */
+    .detail { min-height: 0; height: calc(1.5 * var(--tile)); }
+    .pane.positions .detail.round { height: auto; grid-row: 1 / span 6; }      /* Positions keeps its square beside the controls (#357), now one column of them: */
+    .pane.positions > .body > .row { grid-column: 4 / -1; }      /* two would cut their names on a phone */      /* over its rows here: a wide box, the hand lying in it, its tip to the right */
     .detail .upright { display: none; }
     .detail .lying { display: block; }      /* picture tiles under their label, on all six columns: room for their words */
     .row.pick > label { line-height: 1.4; padding-top: var(--unit); }

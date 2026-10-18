@@ -528,19 +528,36 @@ check(Math.abs(at12[0][0]) < 0.06 && at12[0][1] > 1 && Math.abs(at12[1][1]) < 0.
   check(t1[1] === 4 && t1[2] === "AUTOMATIC" && t1[3] === 1 && t1[4] === 180 && t1[5] === "Text: AUTOMATIC / Positions: 1 · Start: 180°" && t1[6] === "Text · Type · Resize" && t1[7] === 1 && t1[8] < 0 && t1[9] && t2[0] === 30 && t2[1] === 3 && t2[2] === "Positions: 3 · Start: 30°" && t3 === 44,
     `a text ring (#297): added as the fifth kind, "${t1[2]}" once under the centre (its middle ${t1[8]} mm, start ${t1[4]}°), its row says "${t1[5]}", its panes ${t1[6]}; with Count 3 the words stand at every position (${t2[1]}, "${t2[2]}"); Start 31° snaps to the markers' 30° (${t2[0]}), 44° stays (${t3}) — within ${2}°`);
 }
-// Positions (#251, 4.50.1): a round preview at the left — a mark at every position, the used ones in ink, the skipped faint, the first a dot; the numbers quiet rows (form B), their sliders in the controller a name opens
+// Positions (#251, 4.50.1; drawn by Okay, notes 2, #357, 4.56): a round preview at the left, three rows high — a mark at every position, the used ones in ink, the skipped faint, the first a dot, the span a dotted arc; beside it Count · Every as menus, Offset · Start · Span as number blocks, Skip those with an (i); the start and the span's end dragged round the preview
 {
-  const was = await S("[S.ui_ring, S.rings[S.ui_ring].every, S.rings[S.ui_ring].start]");
-  await page.evaluate(() => { const t = window.dial_tool; t.set_value("ring", "every", 3); t.set_value("ring", "start", 15); });
-  const pos = await page.evaluate(() => { const e = document.querySelector("#ring-positions"), t = window.dial_tool, R = t.ring(), r = e.getBoundingClientRect(), c = e.querySelector("circle.axis"), cs = getComputedStyle(c), rows = [...e.parentElement.querySelectorAll(".row.side.quiet")];
-    const first = e.querySelector(".first"), fx = +first.getAttribute("cx"), fy = +first.getAttribute("cy");
-    return [e.classList.contains("detail") && e.classList.contains("round"), getComputedStyle(e).borderTopWidth, cs.fill, e.querySelectorAll(".used").length, e.querySelectorAll(".skipped").length, R.count, 0, Math.round(Math.atan2(fx, -fy) * 180 / Math.PI), rows.map((x) => x.querySelector("label").textContent).join(" "), rows.every((x) => getComputedStyle(x.querySelector("input[type=range]")).display === "none" && x.querySelector("label").classList.contains("popname")), e.getAttribute("role"), e.ariaLabel, Math.round(r.left)]; });
-  await page.click("#ring-positions ~ .row.side.quiet label");
+  const was = await S("[S.ui_ring, S.rings[S.ui_ring].every, S.rings[S.ui_ring].start, S.rings[S.ui_ring].span, S.rings[S.ui_ring].count]");
+  await page.evaluate(() => { const t = window.dial_tool; t.set_value("ring", "every", 3); t.set_value("ring", "start", 15); t.set_value("ring", "span", 270); });
+  const pos = await page.evaluate(() => { const e = document.querySelector("#ring-positions"), t = window.dial_tool, R = t.ring(), r = e.getBoundingClientRect(), c = e.querySelector("circle.axis"), cs = getComputedStyle(c), rows = [...e.parentElement.querySelectorAll(":scope > .row")].filter((x) => !x.hidden);
+    const first = e.querySelector(".first"), fx = +first.getAttribute("cx"), fy = +first.getAttribute("cy"), cells = rows.map((x) => x.getBoundingClientRect());
+    return [e.classList.contains("detail") && e.classList.contains("round"), getComputedStyle(e).borderTopWidth, cs.fill, e.querySelectorAll(".used").length, e.querySelectorAll(".skipped").length, R.count, getComputedStyle(e.querySelector(".span")).strokeDasharray, Math.round(Math.atan2(fx, -fy) * 180 / Math.PI), rows.map((x) => (x.querySelector("label").textContent || "").trim()).join(" · "), rows.map((x) => x.className.replace("row ", "")).join(" "), e.getAttribute("role"), e.ariaLabel, Math.round(r.width) === Math.round(r.height) && Math.round(r.top) === Math.round(cells[0].top), cells[0].top === cells[1].top && cells[2].top === cells[3].top && cells[4].top === cells[5].top && cells[0].left === cells[2].left && cells[1].left > cells[0].right]; });
+  await page.click(".pane.positions .row.nummenu label");
   const popped = await page.evaluate(() => { const p = document.querySelector("#value-pop"); return !!p && p.querySelector("label").textContent === "Count" && getComputedStyle(p.querySelector("input[type=range]")).display !== "none"; });
-  await page.keyboard.press("Escape");
-  await page.evaluate(([i, every, start]) => { const t = window.dial_tool; t.set_value("ring", "every", every); t.set_value("ring", "start", start); }, was);
-  check(pos[0] && pos[1] === "0px" && pos[2] === "none" && pos[3] + pos[4] === pos[5] && pos[3] === Math.ceil(pos[5] / 3) && pos[7] === 15 && pos[8] === "Count Start ° Span ° Every Offset" && pos[9] && pos[10] === "img" && pos[11].startsWith(`${pos[3]} of ${pos[5]} positions used`) && popped,
-    `Positions (#251): a round preview, no frame (${pos[1]}, ${pos[2]}): ${pos[3]} marks in ink and ${pos[4]} faint of ${pos[5]} with Every 3, the first marked at ${pos[7]}°; the numbers quiet rows without sliders (${pos[8]}), a name opening the controller with the slider (${popped}); it says "${pos[11]}"`);
+  await page.keyboard.press("Escape"); await page.evaluate(() => window.dial_tool.value_pop_close());
+  // the menu: a count picked; Custom turns it into a field, Enter takes it, Escape puts the menu back
+  await page.selectOption("#ring-count-Count-menu", "12"); const picked = await S("S.rings[S.ui_ring].count");
+  await page.selectOption("#ring-count-Count-menu", "custom"); const typing = await page.evaluate(() => document.activeElement.id);
+  await page.keyboard.type("7"); await page.keyboard.press("Enter");
+  const typed = [await S("S.rings[S.ui_ring].count"), await page.isHidden("#ring-count-Count"), await page.$eval("#ring-count-Count-menu", (e) => e.value)];
+  await page.selectOption("#ring-count-Count-menu", "custom"); await page.keyboard.type("11"); await page.keyboard.press("Escape"); const kept = await S("S.rings[S.ui_ring].count");
+  // the drags: the outer band moves the start, the inner the span's end
+  const b = await page.$eval("#ring-positions", (e) => { const r = e.getBoundingClientRect(); return [r.left, r.top, r.width]; });
+  const P = (deg, part) => { const k = b[2] / 2.2, a = deg * Math.PI / 180; return [b[0] + b[2] / 2 + Math.sin(a) * part * k, b[1] + b[2] / 2 - Math.cos(a) * part * k]; };
+  await page.mouse.move(...P(15, 0.75)); await page.mouse.down(); await page.mouse.move(...P(60, 0.75), { steps: 4 }); await page.mouse.move(...P(90, 0.75), { steps: 4 }); await page.mouse.up();
+  const start = await S("S.rings[S.ui_ring].start");
+  await page.mouse.move(...P(90 + 260, 0.5)); await page.mouse.down(); await page.mouse.move(...P(90 + 200, 0.5), { steps: 4 }); await page.mouse.move(...P(90 + 180, 0.5), { steps: 4 }); await page.mouse.up();
+  const span = await S("S.rings[S.ui_ring].span");
+  // the (i) beside Skip those says what it does in a tag, a tap away
+  await page.click(".pane.positions .row.chk .infosign"); await page.waitForTimeout(50);
+  const tip = await page.$eval("#tag", (t) => [t.hidden, t.textContent]);
+  await page.evaluate(([i, every, start, span, count]) => { const t = window.dial_tool; for (const [k, v] of Object.entries({ every, start, span, count })) t.set_value("ring", k, v); }, was);
+  check(pos[0] && pos[1] === "0px" && pos[2] === "none" && pos[3] + pos[4] === pos[5] && pos[3] === Math.ceil(pos[5] / 3) && pos[6] !== "none" && pos[7] === 15 && pos[8] === "Count · Every · Offset · Skip those · Start · Span" && pos[9] === "nummenu nummenu num block chk num block num block" && pos[10] === "img" && pos[11].startsWith(`${pos[3]} of ${pos[5]} positions used`) && pos[12] && pos[13] && popped
+    && picked === 12 && typing === "ring-count-Count" && typed.join() === "7,true,7" && kept === 7 && start === 90 && span === 180 && !tip[0] && tip[1].startsWith("Turns it over"),
+    `Positions (#357): a round preview three rows high, no frame: ${pos[3]} marks in ink and ${pos[4]} faint of ${pos[5]} with Every 3, the first at ${pos[7]}°, the span dotted (${pos[6]}); beside it two columns (${pos[8]}); a name opens the controller (${popped}); the menu picks 12, Custom types 7 (${typed.join(" ")}), Escape keeps ${kept}; dragged, the start goes to ${start}°, the span's end to ${span}°; the (i) says "${tip[1].slice(0, 20)}…"`);
 }
 // Give way (#258, 4.50.2): two side tabs, the open one white and joined to a white-bordered square; in it a drawing of the choice, the choices as radio buttons, Clearance a quiet row only when something is knocked out
 {
@@ -845,7 +862,7 @@ await tab("Rings");
 await page.click("#ring-add");
 await page.click("#add-band");
 check(await page.isHidden("#sectors-same"), "a band of one piece has no sector colours");
-await page.fill("#ring-count-Count", "6"); await page.press("#ring-count-Count", "Enter");
+await page.selectOption("#ring-count-Count-menu", "6");
 await page.fill("#ring-width-Band-width", "4"); await page.press("#ring-width-Band-width", "Enter").catch(() => {});
 await frame();
 const band = await S("S.ui_ring");
@@ -875,7 +892,7 @@ await page.click(`#colour-ring-${band}-alternate-2`);
 await page.fill("#pop-hex", "#0E2A47"); await page.press("#pop-hex", "Enter"); await page.click("#pop-close");
 await frame();
 check(JSON.stringify(await S(`Object.keys(S.rings[${band}].cs)`)) === '["1","3","5"]' && (await S(`t.items.filter((i) => i.role === 'ring' && i.index === ${band}).length`)) === 2, "Alternate: the second colour takes sectors 2, 4, 6 — two shapes");
-await page.fill("#ring-count-Count", "5"); await page.press("#ring-count-Count", "Enter"); await frame();
+await page.selectOption("#ring-count-Count-menu", "5"); await frame();
 check(await page.isHidden(`#colour-ring-${band}-alternate-1`), "an odd number of sectors: no Alternate");
 await page.click("#ring-delete");
 await tab("Dial");

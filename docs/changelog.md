@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## beta 4.56 (web version) · 18 Oct 2026
+
+Positions after Okay's drawing (notes 2, #357).
+
+- **The preview, large**, at the left, three rows high. It is a control now: a press in its outer band (the marks, the dot) drags the **start** round the dial; a press inside drags the **span's end**. The span is a **dotted arc** ("make it dotted instead of ruler"), ending in a small ring.
+- **Count and Every are menus**: the usual numbers, then *Custom…*, which turns the box into a field with → (Enter takes it, Escape puts the menu back).
+- **Offset, Start and Span are number blocks**: the value and its − + in one box, as in the font box (#317). Each name still opens the controller and drags the value.
+- **Skip those** (was *Skip those instead*) has an (i): a tap or the pointer shows what it does. Offset's name says what it does in a tag.
+- On a phone the controls stand in one column beside the preview.
+
 ## beta 4.55 (web version) · 18 Oct 2026
 
 The selected ring after Okay's Photoshop drawing (`selected-ring_181026`; notes 2, #335, #327).

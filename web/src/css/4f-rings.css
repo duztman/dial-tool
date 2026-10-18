@@ -152,6 +152,39 @@
   .detail.round .used { stroke: currentColor; stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
   .detail.round .skipped { stroke: var(--rule); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
   .detail.round .first { fill: currentColor; }
+  /* Positions, drawn (Okay's notes 2, 18 Oct 2026, #357: "Preview big, controls smaller"): the preview square in the
+     first two columns, three rows high; beside it two columns of small controls — Count · Every, Offset · Skip those,
+     Start · Span — each a name and its box, the boxes as wide as each other. The preview is a control: the start and
+     the span's end are dragged round it (app.js row_ring_positions); the span a dotted arc inside the marks */
+  .pane.positions > .body > .detail.round { grid-column: 2 / span 2; grid-row: 1 / span 3; align-self: start; aspect-ratio: 1; min-height: 0; margin: 0; touch-action: none; cursor: grab; }
+  .pane.positions > .body > .detail.round.dragging { cursor: grabbing; }
+  .detail.round .span { stroke: var(--grey); stroke-width: var(--pos-dot); stroke-linecap: round; stroke-dasharray: 0 var(--pos-dot-gap); vector-effect: non-scaling-stroke; }      /* "Span ruler: make it dotted instead of ruler" */
+  .detail.round .spanend { fill: var(--field); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
+  .pane.positions > .body > .row { grid-column: span 2; column-gap: var(--u1); min-width: 0; }
+  .pane.positions > .body > .row > :first-child { grid-column: auto; }
+  .pane.positions > .body > .row > label:first-child { font-size: var(--t-s); }
+  .pane.positions > .body > .row:is(.nummenu, .block) { grid-template-columns: minmax(0, 1fr) var(--pos-box); }
+  .pane.positions > .body > .row.chk { grid-template-columns: auto auto minmax(0, 1fr); }
+  .pane.positions > .body > .row.chk > span:first-child { display: none; }
+  .pane.positions > .body > .row.chk > .check { grid-column: auto; font-size: var(--t-s); white-space: nowrap; }
+  /* the number block (#317; the font box's, 4.54): the value and its − + one block, a thick line of the rule's grey
+     round all three, hairlines between; the menu box the same, its arrow where the − + stand */
+  .body .row.num.block:not(.side) { grid-template-columns: minmax(0, 1fr) var(--pos-box); column-gap: var(--u1); }
+  .body .row.num.block:not(.side) > :first-child { grid-column: 1; }
+  .body .row.num.block:not(.side) > input[type="text"] { grid-column: 2; grid-row: 1; width: calc(var(--pos-box) - 2 * var(--pos-step)); justify-self: start; height: var(--control); padding: 0 var(--u1); border: var(--thick) solid var(--rule); border-right-width: var(--hair); border-radius: 0; font-size: var(--t-s); }
+  .body .row.num.block:not(.side) > .steps { grid-column: 2; grid-row: 1; justify-self: end; display: flex; width: auto; }
+  .body .row.num.block:not(.side) > .steps > .step { width: var(--pos-step); min-width: 0; height: var(--control); padding: 0; border: var(--thick) solid var(--rule); border-left-width: var(--hair); border-radius: 0; color: var(--ink); }
+  .body .row.num.block:not(.side) > .steps > .step + .step { border-left-width: 0; }
+  .menubox { position: relative; display: flex; height: var(--control); border: var(--thick) solid var(--rule); background: var(--field); font-size: var(--t-s); }
+  .menubox > .v { flex: 1 1 0; display: grid; align-items: center; justify-content: end; padding: 0 var(--u1); }
+  .menubox > .arrow { flex: none; display: grid; place-items: center; width: var(--pos-step); border-left: var(--hair) solid var(--rule); }
+  .menubox > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }      /* the browser's own list, unseen over the box */
+  .menubox > input { flex: 1 1 0; min-width: 0; height: 100%; padding: 0 var(--u1); border: 0; text-align: right; font-size: var(--t-s); }
+  .menubox > .go { flex: none; display: grid; place-items: center; width: var(--pos-step); padding: 0; border: 0; border-left: var(--hair) solid var(--rule); background: var(--ink); color: var(--paper); }
+  .menubox:hover, .body .row.num.block:not(.side) > .steps > .step:hover { border-color: var(--grey); }
+  /* an (i): what a setting does, in a tag (#357: "Offset and skip need tooltip details") */
+  .infosign { display: grid; place-items: center; height: var(--control); padding: 0 var(--u1); color: var(--wait); }
+  .infosign:hover, .infosign:focus-visible { color: var(--ink); }
   /* a quiet row (R15 form B, #251): the number with its compact ±, no slider on the row — the slider stands in the controller its name or its number opens */
   .row.side.quiet > input[type="range"] { display: none; }
   /* a number's name opens its popup; pressed and moved sideways it changes the value (#249, #170) */

@@ -295,6 +295,10 @@ const TOOL_ICONS = {
   redo: `<path d="M13.25 6.75H6.75A3.25 3.25 0 0 0 6.75 13.25H10.25M10.25 3.75L13.25 6.75L10.25 9.75" ${sw(SLANT)}/>`,
   wide: `<rect x="2.75" y="2.75" width="10.5" height="10.5"/><path d="M6.25 10.25L10.25 6.25M7.25 6.25H10.25V9.25" ${sw(DENSE)}/>`,
   find: `<circle cx="7" cy="7" r="4.25" ${sw(CURVE)}/><path d="M10.25 10.25L13.25 13.25" ${sw(SLANT)}/>`,
+  // an (i) beside a setting's name: what it does, in a tag (#357). A ring holding a stem and a dot; quiet by its grey
+  info: `<circle cx="8.25" cy="8.25" r="6" ${sw(CURVE)}/><path d="M8.25 7.25V11.25"/><circle cx="8.25" cy="4.75" r="1" fill="currentColor" stroke="none"/>`,
+  // →: take what was typed (a Custom count, #357): the up arrow turned
+  go: `<path d="M3.25 8.25H13.25M9.25 4.25L13.25 8.25L9.25 12.25"/>`,
   // a link, beside Copy link (Okay, 16 Oct 2026, #277): two open halves facing each other, a bar between (fit.mjs; look.py 0.5 %)
   link: `<path d="M6.75 4.75H4.25A3.25 3.25 0 0 0 4.25 11.25H6.75" ${sw(CURVE)}/><path d="M9.25 4.75H11.75A3.25 3.25 0 0 1 11.75 11.25H9.25" ${sw(CURVE)}/><path d="M5.25 8.25H10.75"/>`,
   // the Shadows switch, on 18 like Guides: a sphere lit from the upper right — its outline, its shade a crescent on the
@@ -552,14 +556,18 @@ const ROWS = {
     // Positions (Okay's notes, p. 5, #251, 4.50.1): at the left a round preview of the ring's positions, like the hand's
     // box — the used ones as marks, the skipped ones faint, the first one marked; beside it the numbers as quiet rows
     // (R15 form B: "none of these need slider"), their sliders in the controller a name or a number opens
-    hdr("Positions", { folded: true }),
+    // Positions, drawn (Okay's notes 2, 18 Oct 2026, #357: "The new positions pane just dropped. Preview big, controls
+    // smaller. Offset and skip need tooltip details"): the round preview at the left, large, its first position and
+    // its span's end dragged round it; beside it two columns of small controls, Count · Every as menus (1, 2, 3 …
+    // then Custom, a typed field with →), Offset · Start · Span as number blocks, Skip those a tick with an (i)
+    hdr("Positions", { folded: true, cls: "positions" }),
     custom("ring_positions"),
-    num("count", "Count", 1, 360, 1, { whole: true, side: true, quiet: true }),
-    num("start", "Start °", -180, 180, 0.5, { side: true, quiet: true }),
-    num("span", "Span °", 1, 360, 1, { side: true, quiet: true }),
-    num("every", "Every", 1, 60, 1, { whole: true, side: true, quiet: true }),
-    num("offset", "Offset", 0, 59, 1, { whole: true, side: true, quiet: true }),
-    chk("invert", "Skip those instead", { side: true }),
+    custom("num_menu", { key: "count", text: "Count", lo: 1, hi: 360, items: [1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 24, 30, 36, 48, 60, 72, 90, 120, 180, 240, 300, 360] }),
+    custom("num_menu", { key: "every", text: "Every", lo: 1, hi: 60, items: [1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30] }),
+    num("offset", "Offset", 0, 59, 1, { whole: true, block: true, tip: "Which of every few is used: with Every 3, Offset 1 takes the 2nd, 5th, 8th…" }),
+    chk("invert", "Skip those", { tip: "Turns it over: the positions Every and Offset take are left out, the others drawn" }),
+    num("start", "Start", -180, 180, 0.5, { block: true, suffix: "°" }),
+    num("span", "Span", 1, 360, 1, { block: true, suffix: "°" }),
     // Give way (Okay's notes, p. 4, #258, 4.50.2: "what's happening should be visible here"): Skip where and Knock out
     // as side tabs, the open one lit white and attached to a white-bordered square that shows what the choice does, a
     // drawing in the icons' style; the choices at its foot as radio buttons; Clearance a quiet row under them (R15 B),
@@ -2087,7 +2095,7 @@ class DialTool {
       out.summary = el("span", { className: "summary quiet" });
       out.button = el("button", { type: "button", className: "fold", title: "Show or hide this pane", onclick: () => this.fold(out, !this.is_folded(out)) }, out.eye, title, out.summary);
       out.body = el("div", { className: "body" });
-      out.el = el("section", { className: row.headless ? "pane headless" : row.bare ? "pane bare" : "pane" }, out.button, out.body);      // ("plain" is a button's class) · bare: open, the heading gives way to what is in it (the Type pane, #319)
+      out.el = el("section", { className: (row.headless ? "pane headless" : row.bare ? "pane bare" : "pane") + (row.cls ? " " + row.cls : "") }, out.button, out.body);      // cls: a pane laid out its own way (Positions, #357)      // ("plain" is a button's class) · bare: open, the heading gives way to what is in it (the Type pane, #319)
       if (row.headless) out.button.hidden = true;
       if (row.tools) {                             // tools on the heading line, at its right; folded, the summary stands there instead
         out.el.classList.add("tooled");
@@ -2108,7 +2116,7 @@ class DialTool {
       // a length is kept in mm and shown in the chosen unit: per = how many of that unit make a mm, places = decimals shown
       const length = is_length(row);
       const per = () => (length ? this.unit()[2] : 1), places = () => Math.max(0, decimals(row.step) + (length ? this.unit()[3] : 0));
-      const shown = (v) => (v * per()).toFixed(places());
+      const shown = (v) => (v * per()).toFixed(places()) + (row.suffix || "");      // suffix: a degree sign in the field (Positions, #357); parse_number reads past it
       const now = () => { const T = this.target(row.scope); return T[row.key] ?? (row.or ? row.or(T) : 0); };      // or: what an unset number is (a window's tracking: the numerals')
       let typing = false;                          // the field follows every change, except while you type in it
       slider.oninput = () => { if (row.inpop || row.scope === "nudge") this.guides_live(row.scope !== "nudge"); commit(+slider.value); };
@@ -2142,7 +2150,7 @@ class DialTool {
       if (row.button) { slider.ariaLabel = field.ariaLabel = row.text; field.title = row.text + " · " + field.title; }
       if (row.bare) { label.textContent = ""; label.className = "blank"; slider.ariaLabel = field.ariaLabel = row.text; field.title = row.text + " · " + field.title; }
       if (row.inpop) slider.ariaLabel = field.ariaLabel = row.text;      // the popup's head says its name too (4.49.2)
-      if (!row.inpop && !row.side && !row.bare && !row.button) this.name_opens(label, row);      // form A: its name opens the popup (#249)
+      if (!row.inpop && !row.side && !row.bare && !row.button && !row.block) this.name_opens(label, row);      // form A: its name opens the popup (#249)
       if (row.side) {
         // beside a hand's box there is little room (Okay, 13 Oct 2026): the number with a tiny plus over a tiny minus
         // joined to it. A press on the number and the box grows towards the slider, over it, into a large field
@@ -2160,6 +2168,13 @@ class DialTool {
         out.quiet = box;
         wrap.append(lead, slider, box);
         if (row.quiet) { wrap.classList.add("quiet"); this.name_opens(label, row); }      // form B: no slider on the row; the name opens the controller too (#251)
+      } else if (row.block) {
+        // a number block (#357, #317; the font box's of 4.54): the name, then the value and its − + joined, no slider
+        // on the row; the name opens the controller and drags the value, as a quiet row's does (#249)
+        wrap.classList.add("block");
+        wrap.append(lead, field, el("span", { className: "steps" }, step(-1), step(1)));
+        this.name_opens(label, row);
+        if (row.tip) label.dataset.tip = row.tip;      // what it does, in a tag over the name (#357: "Offset and skip need tooltip details")
       } else wrap.append(lead, slider, field, el("span", { className: "steps" }, step(-1), step(1)));
       out.refresh = (T) => {
         const v = T[row.key] ?? (row.or ? row.or(T) : 0);
@@ -2228,6 +2243,7 @@ class DialTool {
       const box = el("input", { type: "checkbox", id });
       box.onchange = () => set(box.checked);
       wrap.append(el("span"), el("label", { className: "check", htmlFor: id }, box, " " + row.text));
+      if (row.tip) wrap.append(this.info_sign(row.tip));
       out.refresh = (T) => { box.checked = Boolean(T[row.key]); };
     }
 
@@ -2915,6 +2931,59 @@ class DialTool {
     return [what, where];
   }
 
+  /** an (i): what a setting does, in a tag — under the pointer, or a moment after a tap (a finger has no hover), as
+   *  the magnifier's (Okay's notes 2, #357: "Offset and skip need tooltip details"). */
+  info_sign(text) {
+    const b = el("button", { type: "button", className: "infosign", ariaLabel: text });
+    b.dataset.tip = text;
+    b.innerHTML = icon(TOOL_ICONS.info);
+    b.onpointerdown = (e) => e.stopPropagation();      // inside a name that opens the controller: the (i) is its own press
+    b.onclick = (e) => { e.preventDefault(); e.stopPropagation(); this.tag_show(b); clearTimeout(this.info_tip); this.info_tip = setTimeout(() => this.tag_hide(), 2400); };
+    return b;
+  }
+
+  /** a whole number picked from a menu (#357, Okay's drawing: "4 ⌄" opening 1, 2, 3, 4 … Custom; "Custom … line turns
+   *  into" a typed field with →): the browser's own menu lies over the box, unseen, so a finger gets the system's
+   *  list. Custom turns the box into a field: Enter or → takes what is typed, Escape or a press elsewhere puts the
+   *  menu back. A value not in the list is put in it, so the box always says the value. The name opens the
+   *  controller and drags the value (#249), as every number's name does. */
+  row_num_menu(wrap, out, row) {
+    const spec = { kind: "num", scope: "ring", key: row.key, text: row.text, lo: row.lo, hi: row.hi, step: 1, whole: true };
+    wrap.className = "row nummenu";
+    const id = `ring-${row.key}-${row.text}`;
+    const label = el("label", { htmlFor: id + "-menu", textContent: row.text });
+    this.name_opens(label, spec);
+    if (row.tip) label.append(this.info_sign(row.tip));
+    const menu = el("select", { id: id + "-menu", ariaLabel: row.text });
+    const shown = el("span", { className: "v" });
+    const arrow = el("span", { className: "arrow" });
+    arrow.innerHTML = icon(SIGNS.down);
+    const field = el("input", { type: "text", id, inputMode: "numeric", ariaLabel: row.text, hidden: true });
+    const go = el("button", { type: "button", className: "go", ariaLabel: "Take it", hidden: true });
+    go.innerHTML = icon(TOOL_ICONS.go);
+    const box = el("span", { className: "menubox" }, shown, arrow, menu, field, go);
+    const typing = (on) => {
+      box.classList.toggle("typing", on);
+      for (const e of [shown, arrow, menu]) e.hidden = on;
+      field.hidden = go.hidden = !on;
+      if (on) { field.value = String(this.ring()[row.key]); field.focus(); field.select(); }
+    };
+    const take = () => { const v = Math.round(parse_number(field.value, this.ring()[row.key])); typing(false); this.set_value("ring", row.key, clamp(v, row.lo, row.hi)); out.refresh(this.ring()); };
+    menu.onchange = () => { if (menu.value === "custom") typing(true); else this.set_value("ring", row.key, +menu.value); };
+    field.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); take(); } else if (e.key === "Escape") { e.preventDefault(); typing(false); out.refresh(this.ring()); } };
+    field.onblur = (e) => { if (e.relatedTarget !== go) { typing(false); out.refresh(this.ring()); } };
+    go.onmousedown = (e) => e.preventDefault();
+    go.onclick = take;
+    wrap.append(label, box);
+    let listed = "";
+    out.refresh = (R) => {
+      const v = parseInt(R[row.key]) || row.lo, items = [...new Set([...row.items, v])].sort((x, y) => x - y), now = items.join();
+      if (now !== listed) { listed = now; menu.replaceChildren(...items.map((n) => el("option", { value: String(n), textContent: String(n) })), el("option", { value: "custom", textContent: "Custom…" })); }
+      menu.value = String(v);
+      shown.textContent = String(v);
+    };
+  }
+
   // ── a value as a button ──────────────────────────────────
   //   A number as a small round drawing (Okay, 13 Oct 2026; first: a ring's radius and size). A click pops up a
   //   small square at its corner, the field ready to type in; pressing and moving the pointer changes the value
@@ -3017,7 +3086,7 @@ class DialTool {
     this.value_pop_close();
     for (const old of document.querySelectorAll(".numpop.fading")) old.remove();      // one on its way out: gone now
     this.tag_hide();
-    const r = this.build_row({ ...row, inpop: true, side: false });
+    const r = this.build_row({ ...row, inpop: true, side: false, block: false, tip: null });
     // the controller (Okay's second drawing, 18 Oct 2026, controller 2.svg): one dark square; at its top the value in a
     // grey pill, then the slider in a white pill, then − and + as two discs. No name: "No name necessary, preview shows
     // what's changing anyway" (the row's label stays out of sight, for the screen reader: the box is named by it).
@@ -3566,22 +3635,50 @@ class DialTool {
   /** the chosen hand in detail: a box of its own, at the left of the hand's rows (on a phone: over them, the hand lying). */
   /** the ring's positions, drawn (Okay's notes, p. 5, #251, 4.50.1: "a ring-specific preview at the left, like the
    *  hands' detail box: round, not in a square box, with even padding"): a faint circle; a mark at every position, the
-   *  used ones in ink, the ones skipped (Every, Offset, Skip those instead) faint; the first position marked with a dot,
-   *  so Start is seen. The count, start, span, every and offset are all read from it. */
+   *  used ones in ink, the ones skipped (Every, Offset, Skip those) faint; the first position marked with a dot, so
+   *  Start is seen. Since 4.56 (notes 2, #357: "start point" · "Span ruler: make it dotted instead of ruler" · "these
+   *  are controls, click/tap dragable") also the span, a dotted arc inside, from the start round to its end, which a
+   *  small ring marks. A press in the outer band (the marks and the dot) drags the start round the dial; a press
+   *  inside it drags the span's end. Whole degrees; the rows beside it say the numbers. */
   row_ring_positions(wrap, out) {
     wrap.className = "detail round";
     wrap.id = "ring-positions";
     wrap.setAttribute("role", "img");
+    const DOT = 0.68, ARC = 0.52;                 // the start's dot and the span's arc, as parts of the radius
     let drawn = "";
     out.refresh = (R) => {
       const angles = G.ring_angles(R), used = new Set(G.positions_of(R)), f = (v) => v.toFixed(4);
       const at = (a, r) => [f(r * Math.sin(a * Math.PI / 180)), f(-r * Math.cos(a * Math.PI / 180))];
       const marks = angles.map((a, i) => { const [x0, y0] = at(a, 0.84), [x1, y1] = at(a, 1); return `<path class="${used.has(i) ? "used" : "skipped"}" d="M${x0} ${y0}L${x1} ${y1}"/>`; }).join("");
-      const [fx, fy] = at(angles[0] || 0, 0.68);
-      const now = `<svg viewBox="-1.1 -1.1 2.2 2.2" aria-hidden="true"><circle class="axis" r="1"/>${marks}<circle class="first" cx="${fx}" cy="${fy}" r="0.07"/></svg>`;
+      const a0 = +R.start || 0, span = Math.min(Math.max(+R.span || 360, 1), 360), [fx, fy] = at(angles[0] ?? a0, DOT);
+      const [sx, sy] = at(a0, ARC), [ex, ey] = at(a0 + span, ARC);
+      const arc = span >= 360 ? `<circle class="span" r="${ARC}"/>` : `<path class="span" d="M${sx} ${sy}A${ARC} ${ARC} 0 ${span > 180 ? 1 : 0} 1 ${ex} ${ey}"/>`;
+      const now = `<svg viewBox="-1.1 -1.1 2.2 2.2" aria-hidden="true"><circle class="axis" r="1"/>${marks}${arc}<circle class="spanend" cx="${ex}" cy="${ey}" r="0.06"/><circle class="first" cx="${fx}" cy="${fy}" r="0.07"/></svg>`;
       if (now !== drawn) { drawn = now; wrap.innerHTML = now; }
       wrap.ariaLabel = `${used.size} of ${angles.length} positions used, the first at ${(angles[0] || 0).toFixed(1)}°`;
     };
+    // the drag: the pointer's place as a clock angle and a part of the radius
+    const polar = (e) => { const b = wrap.getBoundingClientRect(), x = (e.clientX - b.left) / b.width * 2.2 - 1.1, y = (e.clientY - b.top) / b.height * 2.2 - 1.1; return [Math.atan2(x, -y) * 180 / Math.PI, Math.hypot(x, y)]; };
+    let grab = null;
+    wrap.onpointerdown = (e) => {
+      const [, rho] = polar(e);
+      grab = { what: rho > (DOT + ARC) / 2 ? "start" : "span", span: null };      // span: where the drag has it (null: the press itself, taken as it is)
+      wrap.setPointerCapture(e.pointerId);
+      wrap.classList.add("dragging");
+      wrap.onpointermove(e);
+    };
+    wrap.onpointermove = (e) => {
+      if (!grab) return;
+      const [a] = polar(e), R = this.ring();
+      this.guides_live();
+      if (grab.what === "start") { this.set_value("ring", "start", Math.round(((a + 540) % 360) - 180)); return; }
+      let d = (((a - (+R.start || 0)) % 360) + 360) % 360;
+      if (grab.span === null) { /* the press: where it is */ } else if (grab.span - d > 180) d = 360;           // past the start going on: it stays whole
+      else if (d - grab.span > 180) d = 1;        // back past the start: the least there is
+      grab.span = Math.min(Math.max(Math.round(d), 1), 360);
+      this.set_value("ring", "span", grab.span);
+    };
+    wrap.onpointerup = wrap.onpointercancel = () => { grab = null; wrap.classList.remove("dragging"); };
   }
 
   row_hand_detail(wrap, out) {
