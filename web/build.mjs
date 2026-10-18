@@ -11,9 +11,14 @@ import fs from "fs";
 import path from "path";
 import { createRequire } from "module";
 
-const here = path.dirname(new URL(import.meta.url).pathname);
+import { fileURLToPath } from "url";
+
+const here = path.dirname(fileURLToPath(import.meta.url));      // a path with spaces, or on Windows (farukahmet's PRs #1 and #3, 18 Oct 2026)
 const require = createRequire(import.meta.url);
-const FONT = process.argv[2] || "/usr/share/fonts/opentype/inter/Inter-Regular.otf";    // Inter, SIL Open Font Licence
+const defaultFont = fs.existsSync("/usr/share/fonts/opentype/inter/Inter-Regular.otf")      // Inter, SIL Open Font Licence; where it isn't installed, Barlow (farukahmet's PRs #1 and #3)
+  ? "/usr/share/fonts/opentype/inter/Inter-Regular.otf"
+  : path.join(here, "fonts/Barlow-Regular.ttf");
+const FONT = process.argv[2] || defaultFont;
 const b64 = (file) => fs.readFileSync(file).toString("base64");
 
 const patch_engines = {                            // both engines look for their .wasm file next to the page:
