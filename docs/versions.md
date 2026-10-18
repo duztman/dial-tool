@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.81 | 19 Oct 2026 | web | [`cc0815e`](https://github.com/duztman/dial-tool/tree/cc0815e8942bedfdcda4e25774112f757a1e19d9) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/cc0815e8942bedfdcda4e25774112f757a1e19d9/web/dial-tool.html) | the ring of shine redrawn; the selected ring one box; None dotted |
 | 4.80 | 19 Oct 2026 | web | [`163929d`](https://github.com/duztman/dial-tool/tree/163929db6f222261b7424624455ca22479e7f3dc) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/163929db6f222261b7424624455ca22479e7f3dc/web/dial-tool.html) | a hub on the hands; the side handles move where a hand is widest |
 | 4.79 | 19 Oct 2026 | web | [`adaea67`](https://github.com/duztman/dial-tool/tree/adaea67dbbb427497779da74a496581334dbcfaf) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/adaea67dbbb427497779da74a496581334dbcfaf/web/dial-tool.html) | Okay's notes on 4.78: the guides' list, bevels off by default, hand names on touch, Case and Strap in the bottom-left list |
 | 4.78 | 19 Oct 2026 | web | [`a6e2cdb`](https://github.com/duztman/dial-tool/tree/a6e2cdbb6c8ba4563bd439b283cd1b8d799e6c66) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/a6e2cdbb6c8ba4563bd439b283cd1b8d799e6c66/web/dial-tool.html) | Pick any mark on the dial (press its ring, then press it) and nudge it, even its shape |
