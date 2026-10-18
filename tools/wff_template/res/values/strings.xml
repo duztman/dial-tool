@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Dial Tool</string>
+    <string name="aod_plate_setting">Dimming Options</string>
+    <string name="aod_plate_black">Pure Black</string>
+    <string name="aod_plate_dimmed">Dimmed</string>
+    <string name="aod_plate_plate">Same as Dial</string>
+    <string name="win_0_setting">Window 1</string>
+    <string name="win_1_setting">Window 2</string>
+    <string name="win_2_setting">Window 3</string>
+    <string name="win_3_setting">Window 4</string>
+    <string name="win_opt_on">Dial Tool</string>
+    <string name="win_opt_off">Off</string>
+    <string name="comp_slot_0">Window 1</string>
+    <string name="comp_slot_1">Window 2</string>
+    <string name="comp_slot_2">Window 3</string>
+    <string name="comp_slot_3">Window 4</string>
+</resources>

@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WatchFace width="450" height="450">
+    <Metadata key="CLOCK_TYPE" value="ANALOG" />
+    <Scene>
+        <PartImage x="0" y="0" width="450" height="450">
+            <Image resource="dial_face" />
+        </PartImage>
+        <AnalogClock x="0" y="0" width="450" height="450">
+            <HourHand resource="hour_hand" x="0" y="0" width="450" height="450" pivotX="0.5" pivotY="0.5" />
+            <MinuteHand resource="minute_hand" x="0" y="0" width="450" height="450" pivotX="0.5" pivotY="0.5" />
+            <SecondHand resource="second_hand" x="0" y="0" width="450" height="450" pivotX="0.5" pivotY="0.5" />
+        </AnalogClock>
+        <PartImage x="215" y="215" width="20" height="20">
+            <Image resource="cap" />
+        </PartImage>
+    </Scene>
+</WatchFace>
