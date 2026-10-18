@@ -2274,6 +2274,23 @@ await touch.close();
   check(strap_on.join() === "true,Strap,true" && blue.includes("#1A4073") && !leather.includes("#1A4073") && bracelet.length > leather.length && !bracelet.includes("#1A4073") && chip,
     `its strap: a switch beside Case while a case is on (${strap_on.join(" ")}); a new strap colour repaints it; a bracelet is links in the case's metal (${bracelet.length} parts), no chip`);
 }
+{ // the windows' discs (4.72, #346; Okay, on the disc sketches: "a3 not enough, a2 and others"): X-ray, a switch beside Case while a date, day or am · pm window is on, draws each disc whole under a veil of the plate; the disc's edges are dashed guides; physics on, a disc past the case turns its outer edge red and the panel says by how much
+  await tab("Date");
+  const was = await page.evaluate(() => { const t = window.dial_tool; return JSON.stringify([t.S.ui_window, t.S.da_on, t.S.da_kind, t.S.da_r, t.S.da_physics, t.S.xray]); });
+  await page.evaluate(() => { const t = window.dial_tool; t.S.ui_window = 0; t.set_value("window", "on", true); t.set_value("window", "kind", 0); t.set_value("window", "r", 10.5); });
+  await frame();
+  const shown = await page.evaluate(() => !document.querySelector("#xray").hidden);
+  await page.click("#xray"); await frame();
+  const look = await page.evaluate(() => { const t = window.dial_tool, it = t.items, plate = it.find((i) => i.role === "plate"); return [t.S.xray, it.filter((i) => i.role === "disc").length, it.filter((i) => i.role === "disc print").length, plate.fill[3] < 1, it.filter((i) => i.role === "guide" && i.dashes).length]; });
+  await page.evaluate(() => window.dial_tool.set_value("window", "r", 13.5)); await frame();
+  const broken = await page.evaluate(() => { const it = window.dial_tool.items; return [it.some((i) => i.role === "guide" && i.dashes && i.stroke[0] > 0.85 && i.stroke[1] < 0.3), [...document.querySelectorAll(".row.note .quiet")].map((e) => e.textContent).find((x) => x.includes("passes the case")) || ""]; });
+  await page.evaluate(() => window.dial_tool.set_value("window", "physics", false)); await frame();
+  const free = await page.evaluate(() => { const it = window.dial_tool.items; return [it.some((i) => i.role === "guide" && i.dashes && i.stroke[0] > 0.85 && i.stroke[1] < 0.3), [...document.querySelectorAll(".row.note .quiet")].some((e) => e.textContent.includes("passes the case") && e.closest(".row").checkVisibility())]; });
+  await shot("13-xray");
+  await page.evaluate((w) => { const t = window.dial_tool, v = JSON.parse(w); t.S.ui_window = 0; t.set_value("window", "physics", v[4]); t.set_value("window", "r", v[3]); t.set_value("window", "kind", v[2]); t.set_value("window", "on", v[1]); t.set_value("global", "xray", v[5]); t.S.ui_window = v[0]; t.sync_rows(); t.render(); }, was);
+  check(shown && look[0] === true && look[1] === 1 && look[2] === 1 && look[3] && look[4] === 2 && broken[0] && /passes the case by 0\.\d\d mm/.test(broken[1]) && !free[0] && !free[1],
+    `X-ray: a date window's disc drawn whole with its print, the plate a veil (${look.join(" ")}); its edges two dashed guides; at r 13.5 its outer edge red and "${broken[1]}"; physics off, neither (${free.join(" ")})`);
+}
 { // Tiny Preview (#337, 4.59): its button top right where Guides stood; the dial at its own size (the browser's mm) with its margins, over everything; dragged anywhere; its eye puts it away. Guides at the bottom left, between Backdrop and Shadows, their list opening upward
   const corner = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), m = r("main"), o = r("#tiny-open"), g = r("#guides"), b = r("#backdrop"), sh = r("#shadows"); return [Math.round(m.right - o.right) === Math.round(m.bottom - m.bottom) || o.top - m.top < 40, b.bottom <= g.top + 1 && g.bottom <= sh.top + 1 && Math.abs(g.left - sh.left) < 1]; });
   await page.click("#tiny-open"); await page.waitForTimeout(250);

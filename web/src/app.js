@@ -707,6 +707,10 @@ const ROWS = {
     // waits underneath, for when it doesn't follow
     chk("follows", "Follows the date in the bar", { ...W, show: win_is("date", "day", "moon phase") }),
     seg("names", "Names", ["EN", "TR", "DE", "FR", "IT"], { ...W, show: (T) => T.on && T.follows && G.WINDOW_KINDS[T.kind] === "day" }),
+    // physics (4.72, #346: "their discs obey physics or not, chosen by the user"): on, a disc must end inside the case —
+    // passing it, its outer guide shows red and this says by how much; off, it may (a face on a screen)
+    chk("physics", "Its disc stays inside the case", { ...W, show: win_is("date", "day", "am · pm") }),
+    info((T) => `Its disc passes the case by ${tool ? tool.disc_past().toFixed(2) : "?"} mm: move the window in, or untick to let it.`, { ...W, nest: true, show: (T) => win_is("date", "day", "am · pm")(T) && T.physics !== false && tool && tool.disc_past() > 0 }),
     txt("text", "Text", { ...W, show: (T) => win_is("date", "day")(T) && !T.follows }),
     custom("font", { ...W, show: win_is("date", "day") }),      // its own font, or the top numerals ring's (the start)
     // the frame round the hole and the room kept clear round it are drawn on the dial: they are design, so they
@@ -1639,7 +1643,7 @@ class DialTool {
     this.sun_hint = el("div", { className: "sunhint", id: "sun-hint" });
     this.sun_hint.innerHTML = icon(TOOL_ICONS.both_ways, 108, 36);
     this.sun_hint.onanimationend = () => this.sun_hint.classList.remove("go");
-    return el("div", { className: "backdrops" }, box, ...this.case_box());
+    return el("div", { className: "backdrops" }, box, ...this.case_box(), this.xray_box());
   }
 
   /** Okay's mark in the panel's first column, left of the title; a press opens a short bio: who made the tool, where
@@ -1873,6 +1877,26 @@ class DialTool {
     };
     this.case_sync();
     return [box, strap];
+  }
+
+  /** X-ray (4.72, #346; Okay, 18 Oct 2026, on the disc sketches: "a3 not enough, a2 and others"): a switch beside the
+   *  case's, shown while a window with a disc is on — a date, day or am · pm window. On, every such window's disc is
+   *  drawn whole under the plate, the plate a veil over it (G.XRAY_VEIL). Preview only: never in an export (R5, R26). */
+  xray_box() {
+    const b = el("button", { type: "button", className: "onview casebox xraybox", id: "xray", title: "X-ray: the windows' discs under the plate (preview only)", onclick: () => this.set_value("global", "xray", !this.S.xray) }, el("span", { className: "word", textContent: "X-ray" }));
+    this.xray_sync = () => {
+      const S = this.S, has = G.windows_of(S).some((w) => w.on && ["date", "day", "am · pm"].includes(G.WINDOW_KINDS[w.kind]));
+      b.hidden = !has; b.classList.toggle("on", Boolean(S.xray)); b.setAttribute("aria-pressed", String(Boolean(S.xray)));
+    };
+    this.xray_sync();
+    return b;
+  }
+
+  /** the selected window's disc past the case, with physics on (4.72): how far, in mm, or 0. (The panel shows the
+   *  selected window's rows; its settings come as a fresh object each time, so they are found by the selection.) */
+  disc_past() {
+    const d = G.disc_of(this.S, this.S.ui_window);
+    return d && !d.fits ? d.reach - (this.S.dial_d / 2 - G.DISC_RIM) : 0;
   }
 
   /** guides, at the preview's bottom left since 4.59 (its top right from 12 Oct 2026, Okay, to 4.58): a switch (a bullseye and the word; solid outline = on,
@@ -2279,6 +2303,7 @@ class DialTool {
    *  when it is folded, and everything in it when its heading doesn't apply. */
   sync_rows() {
     if (this.case_sync) this.case_sync();      // the case's switch follows an undo, a link, a file (4.66)
+    if (this.xray_sync) this.xray_sync();      // X-ray's, too (4.72)
     this.sync_guides();
     this.sync_shadows();
     this.sync_ring_summaries();
@@ -2375,7 +2400,11 @@ class DialTool {
       if (row.title) out.refresh = (T) => { title.textContent = row.title(T, this.is_folded(out)); };
       return out;
     }
-    if (row.kind === "note") wrap.append(el("span"), el("span", { className: "quiet", textContent: row.text }));
+    if (row.kind === "note") {                     // a line of words; its words may follow the dial (a function of the row's settings, 4.72)
+      const words = el("span", { className: "quiet", textContent: typeof row.text === "function" ? "" : row.text });
+      wrap.append(el("span"), words);
+      if (typeof row.text === "function") out.refresh = (T) => { words.textContent = row.text(T); };
+    }
 
     if (row.kind === "num") {                      // label · slider · typed field · stepper (R15)
       const slider = el("input", { type: "range", min: row.lo, max: row.hi, step: row.step, id: id + "-slider" });
@@ -4875,7 +4904,7 @@ class DialTool {
         node.setAttribute("fill", item.fill ? to_hex(item.fill) : "none");
         node.setAttribute("fill-opacity", item.fill ? item.fill[3] : 1);
       }
-      const stroke = item.stroke ? to_hex(item.stroke) + "/" + item.stroke[3] + "/" + item.px + (item.dots ? "/dots" : "") : "none";
+      const stroke = item.stroke ? to_hex(item.stroke) + "/" + item.stroke[3] + "/" + item.px + (item.dots ? "/dots" : item.dashes ? "/dashes" : "") : "none";
       if (stroke !== slot.stroke) {
         slot.stroke = stroke;
         if (item.stroke) {
@@ -4885,6 +4914,7 @@ class DialTool {
           node.setAttribute("vector-effect", "non-scaling-stroke");      // guides keep their width on screen
           node.setAttribute("pointer-events", "none");
           if (item.dots) { node.setAttribute("stroke-dasharray", `0 ${3 * item.px}`); node.setAttribute("stroke-linecap", "round"); }      // a dotted guide: round dots three widths apart (#272)
+          else if (item.dashes) { node.setAttribute("stroke-dasharray", `${3 * item.px} ${3 * item.px}`); node.removeAttribute("stroke-linecap"); }      // a dashed guide: a window's disc (4.72), told from the window's own solid edges and dotted middle
           else { node.removeAttribute("stroke-dasharray"); node.removeAttribute("stroke-linecap"); }
         } else for (const a of ["stroke", "stroke-opacity", "stroke-width", "vector-effect", "pointer-events", "stroke-dasharray", "stroke-linecap"]) node.removeAttribute(a);
       }

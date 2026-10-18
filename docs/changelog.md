@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.72 (web version) · 18 Oct 2026
+
+The windows' discs (#346; Okay, 23:52, on the disc sketches: "All are good but a3 not enough, a2 and others"). Sketches A2, A3 and A4.
+
+- **Each window's disc** is now a shape the tool knows: a date or day window's is a band round the dial's centre, as wide as the hole reaches and 0.3 mm more each side, every place printed on it as the window prints its own (1–31; the seven days in the window's language), each turned to read upright when it comes under the window, the next a step clockwise. An am · pm window's is a small disc turning on the hole's bottom edge, half night, half day. A moon window has none yet: its moon is drawn moving along a path, not carried on a disc.
+- **X-ray** (A2), a switch beside Case while such a window is on: every disc drawn whole under the plate, the plate a veil (82 %). Preview only — never in an export or the Tiny Preview (R26). New key `xray`, off.
+- **The disc's edges as guides** (A3): two dashed circles in the window's guide colour, beside its solid edges and dotted middle, whenever its guides show.
+- **Physics** (A4): a window's new tick, *Its disc stays inside the case* (on). On, a disc that ends past the dial's edge less a 0.5 mm rim turns its outer guide red, and a line under the tick says by how much; off, it may (a face on a screen). New keys `physics`, `da_physics`, on.
+
 ## beta 4.71 (web version) · 18 Oct 2026
 
 Handles on the hand's picture (#345; Okay's notes 2: "draggable dots at the extremes of what can be edited, a dotted bounding box like Photoshop's transform; one side's width drag edits the other symmetrically").

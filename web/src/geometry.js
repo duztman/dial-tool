@@ -12,11 +12,11 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.71";
+export const VERSION = "beta 4.72";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 export const MM_PER_PT = 25.4 / 72;
 
-import { moment, window_text, LANGS as MOMENT_LANGS } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
+import { moment, window_text, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES, DISC_PLACES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
 const { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 const radians = (a) => a * PI / 180;
 const degrees = (a) => a * 180 / PI;
@@ -117,11 +117,12 @@ export const WINDOW_BASE = {
   guide: -1,                                       // its guide's colour, as a ring's (#271): a place in GUIDE_COLOURS · -1 = by its place (window_guide) · -2 = none
   follows: false,                                  // a date, day or moon window shows the bar's date (beta 4.62); off, so every older link shows its typed text and its moon age as before
   names: 0,                                        // a day window following the date: its names' language, a place in moment.js LANGS (EN · TR · DE · FR · IT; 4.62)
+  physics: true,                                   // its disc stays inside the case (4.72, #346): passing it, its guide shows red and the panel says so; off for a face on a screen, where a disc may be bigger than the dial
   wh_link: false,                                  // width and height linked: one changed, the other keeps their ratio (#358, beta 4.57); off, so every link draws and behaves as before
 };
 const FIRST_WINDOW = { on: "da_on", kind: "da_kind", at: "da_at", r: "da_r", w: "da_w", h: "da_h", round: "da_round", frame: "da_frame",
   clear: "da_clear", text: "da_day", size: "da_size", ink: "da_ink", hour: "da_hour", age: "da_age",
-  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c", guide: "da_guide", tracking: "da_tracking", lang: "da_lang", features: "da_features", at_deg: "da_at_deg", wh_link: "da_wh_link", follows: "da_follows", names: "da_names" };
+  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c", guide: "da_guide", tracking: "da_tracking", lang: "da_lang", features: "da_features", at_deg: "da_at_deg", wh_link: "da_wh_link", follows: "da_follows", names: "da_names", physics: "da_physics" };
 
 export const DEFAULTS = {
   version: 2,
@@ -157,6 +158,7 @@ export const DEFAULTS = {
   strap: 1, c_strap: [0.29, 0.2, 0.14, 1],      // its strap (4.69, bezels.js STRAPS): 0 none, 1 a leather strap in c_strap, 2 a metal bracelet in the case's metal. Shown only with a case
   bezel: 0,                                        // a case round the dial on the preview (4.66, bezels.js BEZELS): 0 none, 1 diver, 2 pilot, 3 dress, 4 sport. Preview only, like the backdrop (R26)
   date: "",                                        // the day the dial shows, "2026-10-18", set in the bar (4.62; Okay, 18 Oct 2026: "Date best set at the bar … Default from system date"); "" = today, wherever the dial is opened
+  da_physics: true, xray: false,                   // the first window's `physics` · X-ray, every window's disc seen under a veil of the plate, preview only (4.72, #346)
   da_wh_link: false,                               // the first window's width and height linked, as every window's `wh_link` (#358, beta 4.57)
   gd_k_edge: 1, gd_k_axes: 0, gd_k_win: 1, gd_k_rings: 1, gd_k_sel: 4, gd_w: 1.0,
   // shadows: preview only, never in a file (R5). A trial on branch try/shadows (Okay, 14 Oct 2026: "dummy preview
@@ -184,6 +186,8 @@ export const UNITS = [["mm", "Millimetres", 1, 0], ["pt", "Points", 72 / 25.4, 0
   ["thou", "Thou", 1 / 0.0254, -1]];      // thou: a thousandth of an inch (Okay, 16 Oct 2026, #299); one decimal fewer than mm. Only grows at its end (R9)
 
 /** the eight colours a guide can have: six neons, a dark and a light (Okay, 12 Oct 2026). The list only grows at its end (R9). */
+export const XRAY_VEIL = 0.82;                     // X-ray: how much of the plate is left (A2 of the disc sketches, 18 Oct 2026)
+export const DISC_WARN = [0.9, 0.22, 0.17];        // a disc past the case, with physics on: its edge in red (A4)
 export const GUIDE_COLOURS = ["#FF2D95", "#00E5FF", "#39FF14", "#FFE600", "#FF6A00", "#7A5CFF", "#111111", "#FFFFFF"];
 /** the five kinds of guide: [key of its eye, key of its colour, name]. */
 export const GUIDE_KINDS = [["gd_edge", "gd_k_edge", "Dial edge"], ["gd_axes", "gd_k_axes", "Centre lines"], ["gd_win", "gd_k_win", "Window radii"],
@@ -221,7 +225,7 @@ export function radial_extent(path) {
  *  · k: a place in GUIDE_COLOURS, -2 = none. line: a diameter at angle a · crosshair: a small cross at angle a and
  *  radius r, to mark a point · circle: radius r. The list only grows at its end (R9). */
 export const GUIDE_MORE = ["line", "crosshair", "circle"];
-export const NOT_GEOMETRY = ["t", "guides", "bezel", "strap", "c_strap", "wearos_name", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
+export const NOT_GEOMETRY = ["t", "guides", "xray", "bezel", "strap", "c_strap", "wearos_name", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
 export const NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_", "sh_"];
 
 /** base values + d's values (deep copies), names turned into popup indexes. */
@@ -411,6 +415,7 @@ export const LINK_KEYS = [
   "follows", "names", "da_follows", "da_names", "date",      // 4.62: appended; a window follows the bar's date only when asked, so every older link shows its typed text
   "bezel",                  // 4.66: appended; no case to start, so every older link looks as before
   "wearos_name",            // 4.67: appended; empty to start
+  "xray", "physics", "da_physics",      // 4.72: appended; X-ray off and physics on to start, so every older link looks as before
   "strap", "c_strap",       // 4.69: appended; a case's strap — drawn only with a case, which older links don't have
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -1385,8 +1390,8 @@ function window_hole(w) {
 
 /** the am · pm window: a disc turns once a day under it, pivot on the window's bottom edge — half night
  *  (dark, with a crescent and two stars), half day (a sun). hour 12 = all day, 0 = all night. → what is dark */
-function day_night(w, h, hour) {
-  const opening = new Path().rect(-w / 2, -h / 2, w, h), pivot = [0, -h / 2];
+function day_night(w, h, hour, area = null) {
+  const opening = area || new Path().rect(-w / 2, -h / 2, w, h), pivot = [0, -h / 2];      // area: what is drawn — the hole, or the whole disc (X-ray, 4.72)
   const turn = (((hour % 24) + 24) % 24) / 24 * 360, reach = 0.55 * h;       // clock angle of the night half's middle
   const night = sector(0, 2 * (w + h), -90, 90).rotate(-turn).translate(...pivot).intersection(opening);
   const at = (a, r) => [pivot[0] + r * sin(radians(a)), pivot[1] + r * cos(radians(a))];
@@ -1443,6 +1448,52 @@ function build_window(S, w, index) {
     cutline: put(grown(0.05)).difference(win),                 // aperture outline for production
     clear: put(grown(w.frame + w.clear)),                      // keep print clear of the hole
   };
+}
+
+// ── a window's disc (#346, 4.72) ─────────────────────────────
+// what turns under the plate and shows through a window. A date or day window's disc is a band round the dial's
+// centre, as a movement's date ring: as wide as the hole reaches, DISC_PAD more each side, every place printed on it
+// as the window prints its own, each turned to stand where it will read upright under the window; the next place a
+// step clockwise (moment.js disc_turn). An am · pm window's disc is a small one turning on the hole's bottom edge, half
+// night, half day. A moon window has none yet: its moon is drawn moving along its path, not carried on a disc.
+export const DISC_PAD = 0.3, DISC_RIM = 0.5;       // mm: the disc past the hole each side · the case's rim it must stay inside (physics)
+/** x: a built window (statik.windows). → {band, print, inner, outer, centre, reach, fits} in mm on the dial, or null.
+ *  band: the disc · print: what is printed on it · inner, outer: its edges round its own centre · reach: how far from
+ *  the dial's centre it goes · fits: inside the case less the rim, or physics off. */
+export function window_disc(S, x) {
+  const w = x.w, kind = WINDOW_KINDS[w.kind], R = S.dial_d / 2, room = R - DISC_RIM;
+  const centre = clock_point(w.r, window_angle(w)), turn = window_turn(w);
+  const put = (p, turned = true) => (turn && turned ? p.rotate(-turn) : p).translate(...centre);
+  const shape = window_shape(w), high = shape === "rectangle" || shape === "arc" ? w.h : shape === "arch" ? w.w / 2 : w.w;      // as build_window
+  if (kind === "date" || kind === "day") {
+    const e = radial_extent(x.window);
+    if (!e) return null;
+    const inner = Math.max(e[0] - DISC_PAD, 0), outer = e[1] + DISC_PAD;
+    const lang = MOMENT_LANGS[w.names] || "en";
+    const list = kind === "date" ? Array.from({ length: 31 }, (_, i) => String(i + 1))
+      : (MOMENT_NAMES[w.follows ? lang : (MOMENT_LANGS.find((l) => MOMENT_NAMES[l].days.includes(w.text)) || "en")]).days;
+    const now = Math.max(list.indexOf(String(w.text)), 0), n = list.length, type = window_type(S, w), size = high * w.size / 100;
+    const print = memo("disc" + JSON.stringify([kind, list, now, w.r, w.at, w.at_deg, w.turn, w.text_turn, shape, size, type]), () => merge(list.map((t, p) => {
+      const a = window_angle(w), step = (p - now) * 360 / n;
+      const one = shape === "arc" ? on_path(t, w.r, a, type, size) : put(centred(text_path(t, type, size)), w.text_turn);
+      return one.rotate(-step);
+    })));
+    return { band: circle(2 * outer).difference(circle(2 * inner)), print, inner, outer, centre: [0, 0], reach: outer, fits: w.physics === false || outer <= room };
+  }
+  if (kind === "am · pm") {
+    const rho = Math.hypot(w.w / 2, high) + DISC_PAD, area = circle(2 * rho).translate(0, -high / 2);
+    const band = put(area.copy()), print = put(day_night(w.w, high, day_hour(S), area));
+    const pivot = put(new Path().rect(-0.001, -high / 2 - 0.001, 0.002, 0.002)).bounds(), c = [(pivot[0] + pivot[2]) / 2, (pivot[1] + pivot[3]) / 2];
+    const reach = Math.hypot(...c) + rho;
+    return { band, print, inner: 0, outer: rho, centre: c, reach, fits: w.physics === false || reach <= room };
+  }
+  return null;
+}
+
+/** the disc of window i, built fresh from the settings (the panel asks before the dial is drawn again). */
+export function disc_of(S, i) {
+  const w = windows_of(S)[i];
+  return w && w.on ? window_disc(S, build_window(S, shown_window(S, w), i)) : null;
 }
 
 // ── everything that doesn't move ─────────────────────────────
@@ -1575,11 +1626,18 @@ export function scene(S, statik, t, preview = true, selected = null) {
     }
     if (statik.hole_line) add("hole", statik.hole_line, black);
   } else {
+    if (preview && S.xray) for (const x of windows) {      // X-ray (4.72, #346): each window's disc whole under the plate, preview only (R5, R26)
+      const d = window_disc(S, x);
+      if (!d) continue;
+      add("disc", d.band, x.w.disc_c || [1, 1, 1, 1], { window: x.index });
+      add("disc print", d.print, x.w.text_c || x.w.ink, { window: x.index });
+    }
     for (const x of windows) {                     // what shows through each hole, on white
       add("date disc", x.window, x.w.disc_c || [1, 1, 1, 1], { window: x.index });
       add("date number", x.number, x.w.text_c || x.w.ink, { window: x.index });
     }
-    add("plate", S.ha_on ? statik.plate : statik.plate_holed, S.c_plate);      // the hole shows when the hands are hidden
+    const veil = preview && S.xray && windows.some((x) => window_disc(S, x)) ? XRAY_VEIL : 1;      // X-ray: the plate a veil, the discs seen through it
+    add("plate", S.ha_on ? statik.plate : statik.plate_holed, veil < 1 ? [...S.c_plate.slice(0, 3), S.c_plate[3] * veil] : S.c_plate);      // the hole shows when the hands are hidden
     for (const d of rings) {
       if (d.tints) d.tints.forEach((tint, n) => add("ring", tint.path, sector_colour(d.ring, tint.at), { ring: d, index: index(d), part: n + 1 }));
       else add("ring", d.path, d.ring.c, { ring: d, index: index(d) });
@@ -1643,6 +1701,12 @@ export function scene(S, statik, t, preview = true, selected = null) {
       const focused = focus === "windows" && x.index === (S.ui_window ?? 0), chosen = focused && S.gd_wsel, k = window_guide(S, x.index), e = radial_extent(x.window);
       if (k === null || !e || !(S.gd_wins || chosen)) continue;
       edges(k, e[1], e[0], focused ? S.gd_w * 1.5 : S.gd_w, faded(focused));
+      // its disc's edges, dashed, in the window's colour — the outer one red when the disc passes the case with physics on (4.72, #346)
+      const d = window_disc(S, x);
+      if (d) {
+        const px = focused ? S.gd_w * 1.5 : S.gd_w, a = faded(focused);
+        for (const r of [d.inner, d.outer]) if (r > 0) add("guide", circle(2 * r).translate(...d.centre), null, { stroke: r === d.outer && !d.fits ? [...DISC_WARN, a] : tone(k, a), px, dashes: true });
+      }
     }
     for (const g of S.gd_more || []) {              // the guides added by hand
       if (!(g.k >= 0)) continue;
