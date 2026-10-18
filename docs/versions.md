@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.68 | 18 Oct 2026 | web | [`cf9cc88`](https://github.com/duztman/dial-tool/tree/cf9cc8894c2b5c93a05cce379486da644c0d1551) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/cf9cc8894c2b5c93a05cce379486da644c0d1551/web/dial-tool.html) | Touch: slider and name open the controller, the box types, ± step; phone controller 75%; hand sliders full width; font sheet closes on a choice |
 | 4.67 | 18 Oct 2026 | web | [`e5bb1b6`](https://github.com/duztman/dial-tool/tree/e5bb1b601b6f571213849e59e9994884dadeaceb) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/e5bb1b601b6f571213849e59e9994884dadeaceb/web/dial-tool.html) | Wear OS export |
 | 4.66 | 18 Oct 2026 | web | [`4dfd018`](https://github.com/duztman/dial-tool/tree/4dfd018e5b1f7d70e1b6e0643ce86a171b4f3fcd) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/4dfd018e5b1f7d70e1b6e0643ce86a171b4f3fcd/web/dial-tool.html) | A case round the dial, preview only |
 | 4.65 | 18 Oct 2026 | web | [`88129b8`](https://github.com/duztman/dial-tool/tree/88129b8ff2009ae7b7422c7a86b09cad6ee9a4da) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/88129b8ff2009ae7b7422c7a86b09cad6ee9a4da/web/dial-tool.html) | Handles on the guides |
