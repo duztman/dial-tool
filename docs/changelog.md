@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.60 (web version) · 18 Oct 2026
+
+Okay's notes on 4.59 from the iPad (18 Oct, 20:39).
+
+- **Under a finger, a row's − + and its field open the controller** ("All these + - buttons on mobile, they get the new controller, not the desktop"): no stepping in place and no keyboard. A mouse still types and steps in place.
+- **The kinds menu has no note under it** ("Remove the explainer from dropdown").
+- **Start and Span lose trailing zeros** (−142° rather than −142.0°), so the value fits its box in Positions.
+
 ## beta 4.59 (web version) · 18 Oct 2026
 
 Tiny Preview (notes 2, #337).

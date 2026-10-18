@@ -272,14 +272,14 @@ check(one.panes === 1 && one.under && one.gap === 2 && one.order === "ring-detai
 // the square opens the kinds, over everything, under the square, the ring's kind marked, the note at the foot; a kind taken; Escape and a press outside put it away
 {
   await page.click("#ring-kind-square");
-  const menu = await page.evaluate(() => { const m = document.querySelector("#kind-menu"), s = document.querySelector("#ring-kind-square").getBoundingClientRect(), r = m.getBoundingClientRect(); return [!m.hidden, m.parentElement === document.body, Math.round(r.left - s.left), Math.round(r.top - s.bottom), [...m.querySelectorAll("button")].map((b) => b.querySelector("span").textContent + (b.classList.contains("on") ? "*" : "")).join(" "), m.querySelector(".note").textContent, getComputedStyle(m).position, getComputedStyle(m).zIndex]; });
+  const menu = await page.evaluate(() => { const m = document.querySelector("#kind-menu"), s = document.querySelector("#ring-kind-square").getBoundingClientRect(), r = m.getBoundingClientRect(); return [!m.hidden, m.parentElement === document.body, Math.round(r.left - s.left), Math.round(r.top - s.bottom), [...m.querySelectorAll("button")].map((b) => b.querySelector("span").textContent + (b.classList.contains("on") ? "*" : "")).join(" "), m.querySelector(".note"), getComputedStyle(m).position, getComputedStyle(m).zIndex]; });
   await page.click("#ring-kind-Kind-0");
   const took = await S("S.rings[S.ui_ring].kind") === 0 && await page.isHidden("#kind-menu") && await page.$eval("#ring-kind-square", (e) => e.dataset.kind) === "0" && await page.$eval(".ringlist li.ring.on .kindicon", (e) => e.dataset.kind) === "0";
   await page.evaluate(() => window.dial_tool.set_value("ring", "kind", 3));
   await page.click("#ring-kind-square"); await page.keyboard.press("Escape"); const esc = await page.isHidden("#kind-menu");
   await page.click("#ring-kind-square"); await page.mouse.click(60, 44); const out = await page.isHidden("#kind-menu");
-  check(menu[0] && menu[1] && menu[2] === 0 && menu[3] === 6 && menu[4] === "Ticks Markers Numerals Band* Text" && menu[5] === "Settings stay with the ring. Switch back any time." && menu[6] === "fixed" && menu[7] === "30" && took && esc && out,
-    `the row's kind icon opens the five kinds under it, over everything (${menu[4]}), ending with "${menu[5]}"; a kind taken changes the ring, the square and the row's icon; Escape and a press outside put it away`);
+  check(menu[0] && menu[1] && menu[2] === 0 && menu[3] === 6 && menu[4] === "Ticks Markers Numerals Band* Text" && menu[5] === null && menu[6] === "fixed" && menu[7] === "30" && took && esc && out,
+    `the row's kind icon opens the five kinds under it, over everything (${menu[4]}), no note under them (4.60: "Remove the explainer from dropdown"); a kind taken changes the ring, the square and the row's icon; Escape and a press outside put it away`);
 }
 // its frame: an outer line in the guide's colour and, inside it, a line three times as thick in the selected row's ground; the kind pictures in the tool's sans, bold (#255: "abort silkscreen there")
 {
@@ -2174,6 +2174,17 @@ check(await pad.evaluate(() => window.dial_tool.S.gd_k_axes === 3), "a tap just 
 await pad.tap("#global-c-plate-Plate-hex");
 const chip_reach = await pad.evaluate(() => { const c = [...document.querySelectorAll("#pop-palette button")], r = c[4].getBoundingClientRect(); return [document.elementFromPoint(r.left - 4, r.top + 4) === c[4], document.querySelector("#global-c-plate-Plate-hex").tagName === "SPAN", !document.querySelector("#colour-pop").hidden]; });
 check(chip_reach.every(Boolean), "the hex in a pill opens the pop-out and isn't typed in; a chip is pressed from 4 beside it");
+{ // under a finger a row's − + and its field open the controller: no stepping in place, no keyboard (4.60; Okay, on the iPad: "All these + - buttons on mobile, they get the new controller, not the desktop")
+  await pad.evaluate(() => { const t = window.dial_tool; t.pop_close && t.pop_close(); t.value_pop_close(); if (t.guides_open) t.guides_open(false); });
+  const d0 = await pad.evaluate(() => window.dial_tool.S.dial_d);
+  await pad.tap("#global-dial-d-Diameter ~ .steps .step:last-child"); await pad.waitForTimeout(200);
+  const plus = await pad.evaluate((d0) => [window.dial_tool.S.dial_d === d0, !!document.querySelector("#value-pop")], d0);
+  await pad.evaluate(() => window.dial_tool.value_pop_close());
+  await pad.tap("#global-dial-d-Diameter"); await pad.waitForTimeout(200);
+  const field = await pad.evaluate(() => [!!document.querySelector("#value-pop"), document.activeElement !== document.querySelector("#global-dial-d-Diameter"), document.querySelector("#global-dial-d-Diameter").readOnly]);
+  await pad.evaluate(() => window.dial_tool.value_pop_close());
+  check(plus.every(Boolean) && field[0] && field[1] && !field[2], `under a finger a row's + opens the controller and steps nothing (${plus.join(" ")}); its field too, not focused, typable again after (${field.join(" ")})`);
+}
 await pad.screenshot({ path: path.join(OUT, "12-touch.png") });
 await touch.close();
 

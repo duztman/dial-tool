@@ -566,8 +566,8 @@ const ROWS = {
     custom("num_menu", { key: "every", text: "Every", lo: 1, hi: 60, items: [1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30] }),
     num("offset", "Offset", 0, 59, 1, { whole: true, block: true, tip: "Which of every few is used: with Every 3, Offset 1 takes the 2nd, 5th, 8th…" }),
     chk("invert", "Skip those", { tip: "Turns it over: the positions Every and Offset take are left out, the others drawn" }),
-    num("start", "Start", -180, 180, 0.5, { block: true, suffix: "°" }),
-    num("span", "Span", 1, 360, 1, { block: true, suffix: "°" }),
+    num("start", "Start", -180, 180, 0.5, { block: true, suffix: "°", trim: true }),
+    num("span", "Span", 1, 360, 1, { block: true, suffix: "°", trim: true }),
     // Give way (Okay's notes, p. 4, #258, 4.50.2: "what's happening should be visible here"): Skip where and Knock out
     // as side tabs, the open one lit white and attached to a white-bordered square that shows what the choice does, a
     // drawing in the icons' style; the choices at its foot as radio buttons; Clearance a quiet row under them (R15 B),
@@ -2181,6 +2181,13 @@ class DialTool {
     if (row.kind === "num") {                      // label · slider · typed field · stepper (R15)
       const slider = el("input", { type: "range", min: row.lo, max: row.hi, step: row.step, id: id + "-slider" });
       const field = el("input", { type: "text", id, inputMode: "decimal", title: "1.2 sets · +0.5 adds · x0.5 multiplies · /2 divides" });
+      // under a finger (or a pen) a row's field and its − + open the controller instead: no keyboard comes up, and the
+      // big − + and the slider are there (Okay, 18 Oct 2026, on the iPad: "All these + - buttons on mobile, they get the
+      // new controller, not the desktop"). A mouse keeps typing and stepping in place.
+      const by_finger = !row.inpop && !row.side;
+      let finger = null;                           // the last press, when it came from a finger: where
+      const pressed = (e) => { finger = e.pointerType === "touch" || e.pointerType === "pen" ? { x: e.clientX, y: e.clientY } : null; };
+      const to_controller = () => { const at = finger; finger = null; this.value_pop_open(field, row, at); };
       const commit = (v) => {
         v = row.whole ? Math.round(v) : +(+v).toFixed(6);
         set(row.whole ? clamp(v, row.lo, row.hi) : v);       // typing past the slider's range is allowed
@@ -2188,11 +2195,16 @@ class DialTool {
       // a length is kept in mm and shown in the chosen unit: per = how many of that unit make a mm, places = decimals shown
       const length = is_length(row);
       const per = () => (length ? this.unit()[2] : 1), places = () => Math.max(0, decimals(row.step) + (length ? this.unit()[3] : 0));
-      const shown = (v) => (v * per()).toFixed(places()) + (row.suffix || "");      // suffix: a degree sign in the field (Positions, #357); parse_number reads past it
+      const shown = (v) => (row.trim ? String(parseFloat((v * per()).toFixed(places()))) : (v * per()).toFixed(places())) + (row.suffix || "");      // trim: no trailing zeros, so −142.5° fits a small box (Positions)      // suffix: a degree sign in the field (Positions, #357); parse_number reads past it
       const now = () => { const T = this.target(row.scope); return T[row.key] ?? (row.or ? row.or(T) : 0); };      // or: what an unset number is (a window's tracking: the numerals')
       let typing = false;                          // the field follows every change, except while you type in it
       slider.oninput = () => { if (row.inpop || row.scope === "nudge") this.guides_live(row.scope !== "nudge"); commit(+slider.value); };
       field.oninput = () => { typing = true; };
+      if (by_finger) {
+        // read-only while a finger is on it, so it takes no typing and no keyboard comes up (WebKit focuses on the tap)
+        field.addEventListener("pointerdown", (e) => { pressed(e); if (finger) { field.readOnly = true; e.preventDefault(); } });
+        field.addEventListener("click", (e) => { if (finger) { e.preventDefault(); field.blur(); to_controller(); setTimeout(() => { field.readOnly = false; }, 0); } });
+      }
       field.onblur = () => { typing = false; out.refresh(this.target(row.scope)); };
       field.onchange = () => { typing = false; commit(parse_number(field.value, now() * per()) / per()); out.refresh(this.target(row.scope)); };
       field.onkeydown = (e) => {
@@ -2200,7 +2212,8 @@ class DialTool {
       };
       // − and +: as typed signs in a full row; in the popup the thick ones (BIG); beside a quiet number the tiny ones
       const step = (dir) => {
-        const b = el("button", { type: "button", className: "step", tabIndex: -1, onclick: () => commit(now() + dir * row.step) });
+        const b = el("button", { type: "button", className: "step", tabIndex: -1, onclick: () => { if (by_finger && finger) return to_controller(); commit(now() + dir * row.step); } });
+        if (by_finger) b.addEventListener("pointerdown", pressed);
         const sign = (row.inpop ? BIG : row.side ? TINY : null)?.[dir > 0 ? "plus" : "minus"];
         if (sign) { b.innerHTML = sign; b.ariaLabel = dir > 0 ? "Plus" : "Minus"; } else b.textContent = dir > 0 ? "+" : "−";
         if (row.inpop) b.id = "value-pop-" + (dir > 0 ? "plus" : "minus");
@@ -2945,7 +2958,7 @@ class DialTool {
   row_ring_line(wrap, out) {
     wrap.className = "ringline";
     // the kinds, opened from the selected row's kind icon (#ring-kind-square), with the note that nothing is lost by a
-    // change (#253, 4.50: "Settings stay with the ring. Switch back any time."). The menu lies over everything, under
+    // change (#253, 4.50; the note went in 4.60). The menu lies over everything, under
     // the icon (the list scrolls and would cut it): in the body, placed on opening.
     if ($("#kind-menu")) $("#kind-menu").remove();      // the last drawer's menu, left in the body
     const menu = el("div", { className: "addmenu kindmenu", id: "kind-menu", hidden: true });
@@ -2964,7 +2977,7 @@ class DialTool {
       b.append(el("span", { textContent: kind[0].toUpperCase() + kind.slice(1) }));
       menu.append(b);
     });
-    menu.append(el("p", { className: "quiet note", textContent: "Settings stay with the ring. Switch back any time." }));
+    // (its note — "Settings stay with the ring. Switch back any time." — went in 4.60: Okay, "Remove the explainer from dropdown")
     menu.onkeydown = (e) => { if (e.key === "Escape" && !menu.hidden) { open(false); const k = $("#ring-kind-square"); if (k) k.focus(); } };
     // the details: two lines, each cut at its end when long (ring_details)
     const details = el("div", { className: "details", id: "ring-details" });
