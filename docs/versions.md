@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.66 | 18 Oct 2026 | web | [`4dfd018`](https://github.com/duztman/dial-tool/tree/4dfd018e5b1f7d70e1b6e0643ce86a171b4f3fcd) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/4dfd018e5b1f7d70e1b6e0643ce86a171b4f3fcd/web/dial-tool.html) | A case round the dial, preview only |
 | 4.65 | 18 Oct 2026 | web | [`88129b8`](https://github.com/duztman/dial-tool/tree/88129b8ff2009ae7b7422c7a86b09cad6ee9a4da) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/88129b8ff2009ae7b7422c7a86b09cad6ee9a4da/web/dial-tool.html) | Handles on the guides |
 | 4.64 | 18 Oct 2026 | web | [`ecbe1aa`](https://github.com/duztman/dial-tool/tree/ecbe1aad078e33e7bfafc53108e2be57200ac4ef) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/ecbe1aad078e33e7bfafc53108e2be57200ac4ef/web/dial-tool.html) | One number box everywhere |
 | 4.63 | 18 Oct 2026 | web | [`8e73c43`](https://github.com/duztman/dial-tool/tree/8e73c4349438445217905a3f6ecadc81f4d5b37e) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/8e73c4349438445217905a3f6ecadc81f4d5b37e/web/dial-tool.html) | Tags wrap; the phone's time larger; the date in Inter |
