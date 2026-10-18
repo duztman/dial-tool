@@ -106,13 +106,12 @@
        disc of 66: its top corners 28, its name line 28 with the hairline at its foot, inset 22; the knob 44 with a white
        eye of 12; the track a unit and a half thick, dark to the knob and light after; the signs 8 thick, 40 long. */
     --num-pop-step: 66px; --num-pop-pill: var(--num-pop-step);      /* the discs and the slider's pill: one height */
-    --num-pop-pad: var(--u3); --num-pop-gap: var(--u3);
-    --num-pop: calc(2 * var(--num-pop-step) + var(--num-pop-gap) + 2 * var(--num-pop-pad));
-    --num-pop-round: calc(var(--num-pop-step) / 2 + var(--num-pop-pad));      /* the dark square's corners follow the discs */
-    --num-pop-head: var(--num-pop-step); --num-pop-head-round: 28px; --num-pop-name-line: 28px; --num-pop-name-inset: var(--u8);
-    --num-pop-ground: #3F3F3E; --num-pop-head-ground: var(--rule-light); --num-pop-name: var(--rule); --num-pop-disc: var(--rule); --num-pop-well: var(--rule-light);
-    --num-pop-hover: color-mix(in srgb, var(--num-pop-disc) 85%, var(--black));
-    --num-pop-thumb: calc(var(--num-pop-step) - 2 * var(--u4)); --num-pop-eye: 6px; --num-pop-track: var(--u3);
+    --num-pop-pad: var(--u6); --num-pop-gap: var(--u3);      /* controller 2.svg (Okay, 18 Oct 2026), at a disc of 66: its 5.67 edge is 16.5, its 2.83 gaps 8.2 */
+    --num-pop: calc(var(--num-pop-inner) + 2 * var(--num-pop-pad));
+    --num-pop-round: calc(var(--num-pop-step) / 2 + var(--num-pop-pad));      /* the square's corners follow the discs: his 17.01 is 49.5 */
+    --num-pop-ground: var(--grey); --num-pop-value: var(--rule); --num-pop-disc: #3F3F3E; --num-pop-well: var(--rule);      /* his #585857 square, #B1B1B1 value pill and track, #3F3F3E discs and knob — on the rule's tones where they are near */
+    --num-pop-hover: color-mix(in srgb, var(--num-pop-disc) 85%, var(--white));
+    --num-pop-thumb: calc(var(--num-pop-step) - 2 * var(--u4)); --num-pop-eye: 6px;      /* the knob's white eye, a radius: his 2.13 */
     --num-pop-fade: 120ms; --num-pop-linger: 1200ms;      /* it comes at once; after its last use it fades away, quickish (Okay, 17 Oct 2026: "comes lightning fast, fade away quickish after use") */
     --dot-tiny: 10px;                              /* a colour inside a line of words: a folded pane's summary */
     --thumb: 18px; --track: 4px; --thumb-eye: 2px; --thumb-eye-edge: 2.75px;      /* sliders: a black disc on a thin track (Okay's sketch); the light centre of the disc, and where its edge softens */
@@ -143,8 +142,8 @@
     --canvas-top: calc((var(--header) - var(--control-large)) / 2);      /* undo and Guides stand on the header's middle line, with the title and the unit box */
     --guide-name: 106px; --guide-row: 30px;        /* the guides' list: the column of names, wide enough for an added guide's name and values on one line (92 until 4.45.3) · a line's height (42 until 4.42.5, Okay, #271: "-2px" above and below; 38 until 4.45.3, Okay, 16 Oct 2026, #305: "tighter spacing overall … small like beta version allowed"; under a finger still 38) */
     --shade-name: 92px;                            /* the Shadows list's names: the guides' list's column until 4.45.3, when that one grew for an added guide's values; its sliders keep the room */
-    --guide-dot: 10px;                             /* a round colour in the guides' list (the room between two: a special) */
-    --guide-dim: 0.6;                              /* a colour not chosen in the guides' list: this much of it (Okay, 16 Oct 2026, #271: "dim all the unselected colors 40%") */
+    --guide-dot: 8px;                              /* a round colour in the guides' list (the room between two: a special); 10 until 4.51.1 (Okay, 18 Oct 2026, notes 2: "Smaller color dots, closer, much compacter width") */
+    --guide-dim: 0.4;                              /* a colour not chosen in the guides' list: this much of it (Okay, 18 Oct 2026, notes 2: "Fainter unselected swatches"; 0.6 from #271, 16 Oct: "dim all the unselected colors 40%") */
     --ring-thick: 3px;                             /* the chosen one: a ring of its own colour this thick, a ring of the ground inside it (a special) */
 
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
@@ -186,8 +185,10 @@
     --speed-pad: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2);      /* the speed box's room inside, left and right: the thumb at either end stands as far from the wall as from the box's top and bottom (3; Okay, 15 Oct 2026, 03:18: "when the ball is in a terminal, the bounding box clears it as much as it clears from the top… both ends symmetry"). Was u3 + 4 − half a thumb (1.25; 01:03, "before plus four") */
     --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
     --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
-    --t-num-pop: 25px;                             /* the number popup's value, in its pill: larger than --t-l (Okay, 16 Oct 2026, on 4.45: "everything bigger … larger everything within square"; 20 in 4.45.2, then "text larger") */
-    --show-tick: calc(var(--tick) - 3px);          /* the Show box's tick, 3 smaller than a tick box (Okay, 16 Oct 2026, on 4.46.3: "tick 3px smaller") */
+    --t-num-pop: 41px;                             /* the controller's value, in its grey pill: his 14 where a disc is 22.68 (controller 2.svg, Okay, 18 Oct 2026); 25 from 4.45.3 to 4.51.1, 20 in 4.45.2 */
+    --num-pop-inner: 218px;                        /* the controller's pills, 75.05 where a disc is 22.68 (controller 2.svg, Okay, 18 Oct 2026: "The new controller is in")  */
+    --num-pop-track: 10px;                         /* the controller's slider line, 3.4 where a disc is 22.68 (the same drawing) */
+    --show-tick: 9px;                              /* the Show box's tick, as tall as the word's ascender at 12 (Okay, 18 Oct 2026, notes 2: "Show checkmarks much smaller, just as big as shows ascender … The outer gray box does not change size. Padding of gray box to tick is equal top, left, bottom"); 3 smaller than a tick box from 4.46.4 to 4.51.1 */
     --font-label: calc(6.5em + var(--btn-pad));    /* the font box's rows (#274, 4.51; Okay's notes, p. 12: "break the rules: stretch the sliders as wide as the longest label allows; labels over 12 characters are cut"): a name column of twelve characters, the slider taking all the rest */
     --unit-pad: 4px;                               /* the unit box: this much round its word, on every side — round mm's letters; the other units keep mm's height (Okay, 16 Oct 2026, on 4.44: "2px padding around letters"; on 4.44.3: "Mm looks perfect now add 2px more padding … Others use the same height, width can change") */
 
@@ -203,7 +204,7 @@
     --chip-gap: 4px;                               /* between two colours to pick */
     --pop-pad: 16px; --pop-gap: 12px;              /* a night part (colour pop-out, guides' list) and the number popup: the space inside its edge, the space between its blocks */
     --pop-foot: calc(var(--control) + 2 * var(--u2));      /* a popup's bottom section (#305): a control, a unit over and under it */
-    --guide-gap: 9px;                              /* the room between two round colours in the guides' list: the chosen one's ring needs it (2 px clear of the next; 10 until 4.45.3, #305: tighter) */
+    --guide-gap: 7px;                              /* the room between two round colours in the guides' list: the chosen one's ring needs it (2 px clear of the next: 2 + 3 of ring; 9 from 4.45.3 to 4.51.1, 10 before — notes 2, 18 Oct 2026: "closer") */
     --ring-gap-in: 2px;                            /* the chosen guide colour: a ring of the ground this wide, inside its own ring */
     --logo-disc: 2px;                              /* the bio open: how far the mark's night disc reaches past its 16 box (ring to disc edge ≈ 2.3) */
     --canvas-inset: 12px;                          /* from the preview's edge to what stands on it (a phone sets it to --u5) */

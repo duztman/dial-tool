@@ -1,5 +1,28 @@
 # Dial Tool — changelog
 
+## beta 4.52 (web version) · 18 Oct 2026
+
+From Okay's notes 2 (18 Oct 2026; build list #316–#359, all of them ranked there), the small ones (Okay: "in the meantime start working on small things").
+
+- **The controller, second drawing** (#330; `controller 2.svg`: "The new controller is in. No name necessary, preview shows what's changing anyway"): one dark square (the grey, 251 × 248, corners 49.5) holding three things 66 high — the value in bold 41 on a grey pill, the slider in a white pill (its line 10, the knob 44 with a white eye), and − and + as two dark discs with square-ended white signs, one at each side, 86 apart; 16.5 round them, 8.25 between. No name: a row's menu (the numerals' anchor) stays on the row. R15 rewritten.
+- **The default watch is Okay's link** (#331: "This becomes the default watch"): Barlow SemiBold numerals at 4.8, four ticks, grey hour and minute hands, a red seconds hand, a Barlow Bold date at 3, a red backdrop. It is what the tool opens with, what Reset and Defaults bring back, and the Gallery's first card. The guide's First dial steps no longer end on it (said at the guide's next rebuild, R25).
+- **Copy link on an iPad and in Safari** (#332): WebKit lets a page write to the clipboard only while the click is fresh; the link was packed first, so the copy was refused, silently. Now the clipboard is asked at once and handed the link when it is ready (a ClipboardItem holding a promise); writeText after the wait stays as the fallback. The button says **Copied** or **Not copied** for 1.6 s (R17); not copied, the link box is selected. Tested in Chromium only: WebKit can't be installed here.
+- **A blank face** (#333: "White dial color, no rings, etc."): a **Blank face** button in Dial › Reset gives a white plate and the hands, one ring hidden (the list is never empty), no windows. Undo brings the dial back.
+- **Complication** (#328): the Windows page's *Shows* row is named *Complication* (glossary).
+- **The Show box's tick** (#323: "just as big as shows ascender … the outer gray box does not change size; padding … equal top, left, bottom"): 9 high at 12 px words, with 8.5 left, over and under it.
+- **The Custom labels note under its field** (#324): a note about a field starts on the field's column (`info(…, { under: true })`; the rule was there, nothing could ask for it).
+- **No second line under the pinned part** (#325): the first pane *shown* under it has no line of its own (until now the first in the list, which in a numerals ring is the hidden Text pane).
+- **The zoom area** (#342): the magnifier first, then − + FIT side by side, sharing their lines; how to zoom and move is the magnifier's tag ("⌘ + scroll zooms · drag moves · pinch on a trackpad"; on a touch screen "Pinch to zoom · two fingers move", shown a moment on a tap); the words at the left are gone. On a touch screen **one finger no longer moves the dial**: two do, with the pinch. A tag with no room under it (the bar) stands over its button, its arrow down.
+- **G turns the guides on and off** (#353), as the Guides switch does; not while typing, nor with ⌘ · Ctrl · ⌥ or ⇧.
+- **The Gallery's chosen card** (#355: "these options should not push all the rows, just that cell grows. No outlines, just full colours, bigger cell padding and walls"): filled with the chosen tint, no line round it; its two choices grow down over the row under it; walls 8.25 (were 5.5), room inside 11 · 11 · 8.25 (were 8.25 · 8.25 · 5.5).
+- **Tags** (#356: "more inner padding and centeredness and 1px borders"): 5.5 over and under, 11 at the sides (were 2.75 and 8.25), the words centred, a hairline round them (was 2 px).
+- **vibecoded** (#340), in the bio.
+- **The showcase's arrow and ✕** (#350, #352): the side-to-side arrow's stem in three, straight · dashed · straight; the ✕ on the iris is cut by the eye switch's absent eye, so its lines stop where the eye's rays stop and leave the iris alone.
+- **The Guides list's bottom section** (#322: "the functions are below, grouped under a lighter bg color area. The grey area grows to include add line … Smaller color dots, closer, much compacter width. Fainter unselected swatches … a 1px dark gray border when selected"): Add and the guides added under it stand on the section's ground with Thickness · Reset All, 5.5 more room over Add; the colours 8 across (were 10), 7 apart (were 9), so the list is 275 wide (was 311); a colour not chosen at 40 % (was 60 %); in a dark popup the chosen one of All · Selected · None keeps a 1 px dark-grey line.
+- **The disc hand's tile** (#344): its marker a cut-out inside the disc, as a disc hand's window is (it ran outside the disc).
+- **The icons as SVG files** (#336): `web/icons/archive.mjs` writes every icon the icon check finds into `web/icons/svg/`, one file per drawing.
+- **A controller left open no longer outlives its dial** (found on the way): picking a Gallery dial, Reset or a link while a controller was open left it standing over the new panel, catching presses. The tool closes it when it opens a new dial.
+
 ## beta 4.51.1 (web version) · 17 Oct 2026
 
 - **The magnifier out of FIT** (#315; Okay, 17 Oct: "icon moves out of the fit box, sits in between plusminus and fit; the horizontal padding like now and am"): at the bar's right the zoom area is now − + · the magnifier alone, in the bar's light tone · **FIT**, a word button as wide as its word and NOW's padding either side (a column wide, with the magnifier inside, since 15 Oct). The phone's own rule for FIT's width went with it: the one rule serves both.

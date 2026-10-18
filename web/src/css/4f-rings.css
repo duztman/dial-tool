@@ -77,9 +77,13 @@
   .colour.bare .dot { width: var(--bare-dot); height: var(--bare-dot); border-color: var(--rule); }
   .colour.bare[aria-expanded="true"] { border-color: var(--ink); }
   /* the tag: what a wordless button is, under it while the pointer is on it. One for the whole tool, over everything. */
-  .tag { position: fixed; z-index: 30; translate: -50% 0; padding: var(--u1) var(--u3) var(--u1); border: var(--thick) solid var(--ink); border-radius: var(--round-small); background: var(--field); color: var(--ink);
-    font: 600 var(--t-s)/1.3 var(--sans); white-space: nowrap; pointer-events: none; }
-  .tag::before { content: ""; position: absolute; top: -6px; left: calc(50% + var(--point, 0px)); translate: -50% 0; width: var(--u3); height: var(--u3); rotate: 45deg; border: var(--thick) solid var(--ink); border-width: var(--thick) 0 0 var(--thick); background: var(--field); }
+  /* more room inside, the words centred, a hairline round it (Okay, 18 Oct 2026, notes 2: "they need more inner padding
+     and centeredness and 1px borders"; until 4.51.1 a unit and a half less room and a --thick line). The arrow's square
+     stands with its middle on the top line. */
+  .tag { position: fixed; z-index: 30; translate: -50% 0; padding: var(--u2) var(--u4); border: var(--hair) solid var(--ink); border-radius: var(--round-small); background: var(--field); color: var(--ink);
+    font: 600 var(--t-s)/1.3 var(--sans); text-align: center; white-space: nowrap; pointer-events: none; }
+  .tag::before { content: ""; position: absolute; top: calc(-1 * (var(--u3) + var(--hair)) / 2); left: calc(50% + var(--point, 0px)); translate: -50% 0; width: var(--u3); height: var(--u3); rotate: 45deg; border: var(--hair) solid var(--ink); border-width: var(--hair) 0 0 var(--hair); background: var(--field); }
+  .tag.above::before { top: auto; bottom: calc(-1 * (var(--u3) + var(--hair)) / 2); border-width: 0 var(--hair) var(--hair) 0; }      /* over what it names (no room under it, the bottom bar): the arrow points down */
 
   /* a value as a button: a circle with a radius drawn in it and the value written on the line. A click pops up the
      number's row under it; pressing and moving changes the value. */
@@ -105,25 +109,21 @@
      under the other. No slider: the button is dragged instead. */
   .tag.value { display: flex; justify-content: space-between; align-items: baseline; gap: var(--u3); width: var(--value-pop); }
   .tag.value .figure { color: var(--grey); font: 400 var(--t-xs)/1 var(--mono); }
-  /* the number popup — the controller (#249; Okay's drawing, 17 Oct 2026, 4.49.2; tokens --num-pop-…): a light head —
-     the name (with its chevron, bare, where the row has a menu) on a line with a hairline at its foot, then the value in
-     bold standing over the slider's knob and moving with it — and under it a dark square: the slider in a white pill,
-     − and + as two grey discs with white signs, all three one height. It stands where the finger is, the knob under it
-     (value_pop_open), over everything; it comes at once and, after its last use, fades away (.fading). */
-  .numpop { position: fixed; z-index: 30; display: grid; grid-template-rows: var(--num-pop-head) auto; width: var(--num-pop); border-radius: var(--num-pop-head-round) var(--num-pop-head-round) var(--num-pop-round) var(--num-pop-round); background: var(--num-pop-head-ground); color: var(--ink); }
+  /* the number popup — the controller (#249; Okay's second drawing, 18 Oct 2026, controller 2.svg; tokens --num-pop-…):
+     one dark square holding three things one height: the value in a grey pill, the slider in a white pill, and − and +
+     as two dark discs with white signs at its foot, far apart. No name: "No name necessary, preview shows what's
+     changing anyway". It stands where the finger is, the knob under it (value_pop_open), over everything; it comes at
+     once and, after its last use, fades away (.fading). (4.49.2 to 4.51.1: a light head with the name over a hairline,
+     the value riding over the knob, his first drawing of 17 Oct.) */
+  .numpop { position: fixed; z-index: 30; display: grid; row-gap: var(--num-pop-gap); width: var(--num-pop); padding: var(--num-pop-pad); border-radius: var(--num-pop-round); background: var(--num-pop-ground); color: var(--ink); }
   .numpop.fading { opacity: 0; transition: opacity var(--num-pop-fade) ease-out; }
-  .numpop .pophead { display: grid; grid-template-rows: var(--num-pop-name-line) minmax(0, 1fr); }
-  .numpop .popname-line { display: flex; justify-content: center; align-items: center; gap: var(--u1); margin: 0 var(--num-pop-name-inset); border-bottom: var(--hair) solid var(--num-pop-name); font: 400 var(--t-m)/1 var(--sans); color: var(--num-pop-name); }
-  .numpop .popname-line label, .numpop .popname-line .menulabel { display: flex; align-items: center; gap: var(--u1); min-width: 0; font: inherit; color: inherit; cursor: default; }
-  .numpop .popname-line .labelmenu { width: auto; height: auto; border: 0; background: none; color: inherit; }
-  .numpop .popname-line .labelmenu:hover { color: var(--ink); }
-  /* the value, over the knob: the field as wide as the pill and its figures centred, then moved as the knob is (--p, from filled()) */
-  .numpop .popvalue { display: grid; align-items: center; padding: 0 var(--num-pop-pad); }
-  .numpop .popvalue input[type="text"] { width: 100%; height: auto; padding: 0; border: 0; background: none; font: 700 var(--t-num-pop)/1 var(--sans); text-align: center; color: var(--ink); translate: calc((var(--p, 0.5) - 0.5) * (100% - var(--num-pop-step))) 0; }
+  /* the value: its figures centred in the grey pill, bold, in the square's grey */
+  .numpop .popvalue { display: grid; align-items: center; height: var(--num-pop-pill); border-radius: calc(var(--num-pop-pill) / 2); background: var(--num-pop-value); }
+  .numpop .popvalue input[type="text"] { width: 100%; height: auto; padding: 0; border: 0; background: none; font: 700 var(--t-num-pop)/1 var(--sans); letter-spacing: 0.02em; text-align: center; color: var(--num-pop-ground); }
   .numpop .popvalue input[type="text"]:focus { outline: 0; }      /* the value, chosen to be typed over, says it */
-  .numpop .popvalue input[type="text"]::selection { background: var(--num-pop-name); color: var(--ink); }      /* chosen to be typed over: a quiet grey behind the figures, as his drawing has no block */
-  .numpop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--num-pop-gap); min-height: 0; padding: var(--num-pop-pad); border-radius: var(--num-pop-round); background: var(--num-pop-ground);
-    --ink: var(--num-pop-ground); --well: var(--num-pop-well); --field: var(--white); --thumb: var(--num-pop-thumb); --thumb-eye: var(--num-pop-eye); --thumb-eye-edge: calc(var(--num-pop-eye) + 0.75px); --track: var(--num-pop-track); --row-rule: transparent; --surface: var(--num-pop-ground); }
+  .numpop .popvalue input[type="text"]::selection { background: var(--white); color: var(--num-pop-ground); }      /* chosen to be typed over: white behind the figures */
+  .numpop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--num-pop-gap); min-height: 0;
+    --ink: var(--num-pop-disc); --well: var(--num-pop-well); --field: var(--white); --thumb: var(--num-pop-thumb); --thumb-eye: var(--num-pop-eye); --thumb-eye-edge: calc(var(--num-pop-eye) + 0.75px); --track: var(--num-pop-track); --row-rule: transparent; --surface: var(--num-pop-ground); }
   .numpop .row > * { grid-column: 1; }
   .numpop .row input[type="range"] { width: 100%; height: var(--num-pop-pill); padding: 0 calc((var(--num-pop-pill) - var(--num-pop-thumb)) / 2); border-radius: calc(var(--num-pop-pill) / 2); background: var(--white); }      /* the knob as far from the pill's ends as from its top and bottom */
   .numpop .row input[type="range"]::-webkit-slider-thumb { width: var(--num-pop-thumb); height: var(--num-pop-thumb); margin-top: calc((var(--track) - var(--num-pop-thumb)) / 2); }

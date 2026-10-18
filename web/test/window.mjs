@@ -359,16 +359,16 @@ await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before)
   await page.evaluate((w) => window.dial_tool.set_value("ring", "width", w), w_before);
   await page.click("#ring-size");
   await page.waitForTimeout(200);
-  const pop = await page.evaluate(() => { const e = document.querySelector("#value-pop"), p = e.getBoundingClientRect(), c = getComputedStyle(e), row = e.querySelector(".row"), s = e.querySelector("input[type=range]"), k = s.getBoundingClientRect(), pp = +s.style.getPropertyValue("--p"), steps = [...e.querySelectorAll(".step")].map((x) => x.getBoundingClientRect()), name = e.querySelector(".popname-line"), nl = getComputedStyle(name);
+  const pop = await page.evaluate(() => { const e = document.querySelector("#value-pop"), p = e.getBoundingClientRect(), c = getComputedStyle(e), row = e.querySelector(".row"), s = e.querySelector("input[type=range]"), k = s.getBoundingClientRect(), pp = +s.style.getPropertyValue("--p"), steps = [...e.querySelectorAll(".step")].map((x) => x.getBoundingClientRect());
     return [e.querySelector("label").textContent, e.parentElement === document.body && e.classList.contains("numpop"), Math.round(p.width), Math.round(p.height), c.borderRadius, getComputedStyle(row).borderRadius, [c.backgroundColor, getComputedStyle(row).backgroundColor, getComputedStyle(s).backgroundColor, getComputedStyle(steps.length ? e.querySelector(".step") : e).backgroundColor].join(" "),
-      [Math.round(k.height), ...steps.map((r) => Math.round(r.width) + "×" + Math.round(r.height))].join(" "), steps.length === 2 && Math.round(steps[1].left - steps[0].right) === 8 && e.querySelectorAll(".step svg").length === 2, [Math.round(name.getBoundingClientRect().height), nl.borderBottomWidth, nl.color, getComputedStyle(e.querySelector(".popvalue input")).fontWeight, getComputedStyle(e.querySelector(".popvalue input")).fontSize].join(" "),
+      [Math.round(k.height), ...steps.map((r) => Math.round(r.width) + "×" + Math.round(r.height))].join(" "), steps.length === 2 && Math.round(steps[1].left - steps[0].right) === 86 && e.querySelectorAll(".step svg").length === 2, [e.querySelector(".popname-line") === null && e.querySelector(".row > label").hidden, Math.round(e.querySelector(".popvalue").getBoundingClientRect().height), getComputedStyle(e.querySelector(".popvalue")).backgroundColor, getComputedStyle(e.querySelector(".popvalue input")).fontWeight, getComputedStyle(e.querySelector(".popvalue input")).fontSize].join(" "),
       [k.left + k.height / 2 + pp * (k.width - k.height), k.top + k.height / 2]]; });
   await shot("4c19-size-pop");
   await page.keyboard.type("x2"); await page.keyboard.press("Enter");
   const w_after = await S("S.rings[S.ui_ring].width");
   await page.evaluate((w) => window.dial_tool.set_value("ring", "width", w), w_before);
-  check(Math.abs(dragged - (w_before + 0.4)) < 1e-9 && pop[0] === "Band width" && pop[1] && pop[2] === 157 && pop[3] === 223 && pop[4] === "28px 28px 41.25px 41.25px" && pop[5] === "41.25px" && pop[6] === "rgb(212, 212, 207) rgb(63, 63, 62) rgb(255, 255, 255) rgb(185, 185, 180)" && pop[7] === "66 66×66 66×66" && pop[8] && pop[9] === "28 1px rgb(185, 185, 180) 700 25px" && Math.abs(pop[10][0] - sb[0]) <= 1 && Math.abs(pop[10][1] - sb[1]) <= 1 && Math.abs(w_after - 2 * w_before) < 1e-9 && await page.$("#value-pop") === null,
-    `the size button, before the radius: dragged 16 to the right a band is 0.4 wider; a click opens the controller (#249; Okay's drawing of 17 Oct 2026, 4.49.2) with its knob under the press (${pop[10].map(Math.round)} for ${sb.map(Math.round)}): a light head with the name on a line of 28 over a hairline and the value in bold 25 (${pop[9]}), a dark square (${pop[6]}) holding the slider in a white pill and − and + as two grey discs, all 66 high (${pop[7]}), 8 apart; ${pop[2]} × ${pop[3]}, corners ${pop[4]}; it takes x2`);
+  check(Math.abs(dragged - (w_before + 0.4)) < 1e-9 && pop[0] === "Band width" && pop[1] && pop[2] === 251 && pop[3] === 248 && pop[4] === "49.5px" && pop[5] === "0px" && pop[6] === "rgb(92, 92, 88) rgba(0, 0, 0, 0) rgb(255, 255, 255) rgb(63, 63, 62)" && pop[7] === "66 66×66 66×66" && pop[8] && pop[9] === "true 66 rgb(185, 185, 180) 700 41px" && Math.abs(pop[10][0] - sb[0]) <= 1 && Math.abs(pop[10][1] - sb[1]) <= 1 && Math.abs(w_after - 2 * w_before) < 1e-9 && await page.$("#value-pop") === null,
+    `the size button, before the radius: dragged 16 to the right a band is 0.4 wider; a click opens the controller (#249; Okay's second drawing, controller 2.svg, 18 Oct 2026) with its knob under the press (${pop[10].map(Math.round)} for ${sb.map(Math.round)}): one dark square (${pop[6]}) holding, all 66 high (${pop[7]}), the value in bold 41 on a grey pill and no name ("No name necessary": ${pop[9]}), the slider in a white pill, − and + as two dark discs 86 apart; ${pop[2]} × ${pop[3]}, corners ${pop[4]}; it takes x2`);
   // sliding in it shows the guides, as set, even with Guides off, and they go a moment after (Okay, on 4.45: "activate guides on slide. Even if off")
   await page.evaluate(() => window.dial_tool.set_value("global", "guides", false));
   await page.click("#ring-size"); await page.waitForTimeout(200);
@@ -436,16 +436,17 @@ const anchors = await page.evaluate(() => {
   const t = window.dial_tool, ring = t.ring(), menu = document.querySelector("#value-pop .menulabel select"), label = () => document.querySelector("#value-pop .menulabel label").textContent;
   const out = { options: [...menu.options].map((o) => o.textContent).join(" "), labels: [label()], r: ring.r };
   for (const v of ["1", "2", "0"]) { menu.value = v; menu.dispatchEvent(new Event("change")); out.labels.push(label()); out["a" + v] = ring.anchor; }
-  // the name on top, lighter, its chevron boxless; the popup's ink as far from the frame at the top as the discs at the foot (#310, 4.46.6)
-  const pop = document.querySelector("#value-pop"), p = pop.getBoundingClientRect(), name = pop.querySelector(".popname-line"), n = name.getBoundingClientRect(), chev = pop.querySelector(".labelmenu"), cs = getComputedStyle(chev), steps = pop.querySelector(".steps").getBoundingClientRect();
-  out.look = [getComputedStyle(pop.querySelector(".menulabel label")).color, cs.borderTopWidth, cs.backgroundColor, Math.round(n.height), Math.round(n.top - p.top), Math.round(p.bottom - steps.bottom), Math.round(p.height), Math.round(pop.querySelector(".pophead").getBoundingClientRect().height)];
+  // no name in the controller (Okay, 18 Oct 2026, controller 2.svg: "No name necessary"): the menu stays on the row; the
+  // value's pill as far from the square's top as the discs from its foot
+  const pop = document.querySelector("#value-pop"), p = pop.getBoundingClientRect(), head = pop.querySelector(".pophead").getBoundingClientRect(), steps = pop.querySelector(".steps").getBoundingClientRect();
+  out.look = [pop.querySelector(".menulabel").hidden, Math.round(head.top - p.top), Math.round(p.bottom - steps.bottom), Math.round(p.height), Math.round(head.height)];
   return out;
 });
 await shot("4c10-radius-pop");
 await page.keyboard.press("Escape");
 await page.click(`.ringlist li:nth-child(${ring_before + 1} of .ring) .name`);
-check(anchors.options === "Baseline Ascender Centre" && anchors.labels.join(" | ") === "Centre radius | Baseline radius | Ascender radius | Centre radius" && anchors.a1 === 1 && anchors.a2 === 2 && anchors.a0 === 0 && anchors.look.join(" ") === "rgb(185, 185, 180) 0px rgba(0, 0, 0, 0) 28 0 8 223 66",
-  `the radius of numerals has a menu beside its label: ${anchors.options}; the label follows: ${anchors.labels.join(" → ")}; in the controller the name stands on the head's first line, grey, its chevron bare, the head 66 high (${anchors.look.join(" · ")}) (#310, 4.49.2)`);
+check(anchors.options === "Baseline Ascender Centre" && anchors.labels.join(" | ") === "Centre radius | Baseline radius | Ascender radius | Centre radius" && anchors.a1 === 1 && anchors.a2 === 2 && anchors.a0 === 0 && anchors.look.join(" ") === "true 17 17 248 66",
+  `the radius of numerals has a menu beside its label: ${anchors.options}; the label follows: ${anchors.labels.join(" → ")}; in the controller no name, the value's pill as far from the top as the discs from the foot (${anchors.look.join(" · ")}) (controller 2.svg, 18 Oct 2026)`);
 // …and the drawing follows: the numeral at 12 stands on the radius (baseline), hangs from it (ascender), or is centred on it
 const at12 = [];
 for (const v of [1, 2, 0]) {
@@ -582,10 +583,10 @@ check(guides_at[0] === 12 && guides_at[1] === 16, `it is 12 from the preview's r
 await page.click("#guides-more");
 check(await page.isVisible("#guide-list") && (await page.$$eval("#guide-list > .guidekind .name", (n) => n.map((e) => e.textContent))).join() === "Centre hole,Centre lines" && await page.$$eval("#guide-list .guidekind >> nth=0 >> .dots .tone", (b) => b.length) === 8 && await page.$eval("#guide-list .guiderings", (e) => e.querySelectorAll(".guidekind.ring").length) === await S("S.rings.length") && await page.$("#guide-list .swatch") === null,
   "the arrow drops the list: the centre hole's guide first, then the centre lines (no dial edge since 15 Oct 2026, no window radii since 4.42.5), then a line for every ring and every window that is on, each with None and eight round colours, no free colour");
-// the list's look (Okay, 16 Oct 2026, #271): a colour not chosen at 60 %, the "none" sign one path; lines 30 high (#305, 4.45.3: "tighter"; 38 before)
+// the list's look (Okay, 16 Oct 2026, #271; 18 Oct, notes 2: "fainter"): a colour not chosen at 40 % (60 % until 4.52), the "none" sign one path; lines 30 high (#305, 4.45.3: "tighter"; 38 before)
 {
   const look = await page.evaluate(() => { const q = (s) => document.querySelector("#guide-list " + s); return [Math.round(q(".guidekind").getBoundingClientRect().height), getComputedStyle(q(".tone:not(.on)")).opacity, getComputedStyle(q(".tone.on")).opacity, q(".none svg").querySelectorAll("path, circle, line").length]; });
-  check(look[0] === 30 && look[1] === "0.6" && look[2] === "1" && look[3] === 1, `a guide's line is ${look[0]} high; a colour not chosen shows at ${look[1]}, the chosen one whole; the "none" sign is ${look[3]} path, so nothing in it overlaps`);
+  check(look[0] === 30 && look[1] === "0.4" && look[2] === "1" && look[3] === 1, `a guide's line is ${look[0]} high; a colour not chosen shows at ${look[1]}, the chosen one whole; the "none" sign is ${look[3]} path, so nothing in it overlaps`);
 }
 // windows have their own section, as rings (#271): All · Selected · None, Selected to start; a line per window that is on, in its own colour; its edges drawn solid, its middle dotted, as a ring's (#272).
 // One thing in focus (#301): the tab says which — Rings its selected ring, Windows its selected window, the others neither; with All the rest show faded
@@ -1086,10 +1087,10 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
   await frame();
   const scene = await page.evaluate(() => { const t = window.dial_tool; return t.slots ? [...document.querySelectorAll("main svg path")].map((p) => p.getAttribute("fill")).filter(Boolean) : []; });
   await shot("4c18-window-colours");
-  check(/Window at [^·]+ · Shape$/.test((await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))).join(" · ")) && await page.evaluate(() => { const rows = [...document.querySelectorAll(".form .pane .body")][0].children, ids = [...rows].filter((r) => r.offsetParent).map((r) => (r.querySelector("select, input, button") || {}).id); return ids[0] === "window-kind-Shows-0" && !!document.querySelector(".form .pane:first-of-type > .circles #window-at-Position-0"); })
+  check(/Window at [^·]+ · Shape$/.test((await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))).join(" · ")) && await page.evaluate(() => { const rows = [...document.querySelectorAll(".form .pane .body")][0].children, ids = [...rows].filter((r) => r.offsetParent).map((r) => (r.querySelector("select, input, button") || {}).id); return ids[0] === "window-kind-Complication-0" && !!document.querySelector(".form .pane:first-of-type > .circles #window-at-Position-0"); })
     && await page.$eval("#window-r-Radius", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape" && await page.$eval("#window-clear-Clearance", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape" && await page.$eval("#window-frame-Frame", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape"
     && await page.isVisible("#window-font-c") && await page.isHidden("#window-text-c-Picture") && await page.isVisible("#window-disc-c-Disc-under-it") && await page.isVisible("#window-ink-Frame") && await page.$eval("#window-ink-Frame", (e) => e.closest(".row").classList.contains("colours") && e.closest(".row") === document.querySelector("#window-disc-c-Disc-under-it").closest(".row")),
-    "Windows (#263, 4.46.1): Window at x holds Position (on its heading line) and Shows; Shape holds Radius, the sizes, the colours on one line (the disc under it, the frame, and the picture's for a window that shows one), the text and its font, Frame and Clearance");
+    "Windows (#263, 4.46.1): Window at x holds Position (on its heading line) and Complication (Shows until 4.51.1); Shape holds Radius, the sizes, the colours on one line (the disc under it, the frame, and the picture's for a window that shows one), the text and its font, Frame and Clearance");
   await page.evaluate((was) => { const t = window.dial_tool, [ui, on, at, shape, turn, ps, family, text_c, disc_c, w] = JSON.parse(was); Object.assign(t.S, { da_at: at, da_shape: shape, da_turn: turn, da_ps: ps, da_family: family, da_text_c: text_c, da_disc_c: disc_c, da_w: w, da_text_turn: true, da_on: on, ui_window: ui }); t.static_dirty = true; t.sync_rows(); t.render(); }, was);
 }
 // an am · pm window follows the time shown: light at 10 in the morning, dark at 10 at night; AM · PM stands in the time's box
@@ -1152,6 +1153,7 @@ const lines = await page.$$eval(".pinned .row.num", (rows) => [...new Set(rows.f
 check(lines.length === 1, `number rows share their columns (${lines.join(" | ")})`);
 
 // ── colour: a swatch opens the pop-out at its right; the value can be typed ──
+await page.evaluate(() => window.dial_tool.value_pop_close());      // a controller still open from above (the second drawing's square is larger, 4.52, and stood over the swatch)
 await page.click("#global-c-plate-Plate");
 const pop_at = await page.evaluate(() => { const p = document.querySelector("#colour-pop").getBoundingClientRect(), s = document.querySelector("#global-c-plate-Plate").closest(".colour").getBoundingClientRect(); return [Math.round(p.left - s.right), p.top < s.bottom && p.bottom > s.top]; });
 check(await page.isVisible("#colour-pop") && pop_at[0] === 12 && pop_at[1], "the plate's swatch opens the colour pop-out, 12 to the right of its pill");
@@ -1160,6 +1162,7 @@ check(pop_look[0] === "rgb(20, 20, 19)" && pop_look[1] >= 12 && pop_look[2] >= 4
 check(await page.isHidden(".alpharow"), "the plate has no opacity strip");
 await page.mouse.click(60, 200);      // on the Diameter label: a plain spot outside the pop-out (the colour list moved down with the centre hole row, #165)
 check(await page.isHidden("#colour-pop"), "a press outside the pop-out puts it away");
+await page.evaluate(() => window.dial_tool.value_pop_close());      // that press was on Diameter's name, which opens its controller: put it away (since 4.52 the controller is larger and stood over the swatch)
 await page.click("#global-c-plate-Plate");
 await page.mouse.click(200, 800);
 await page.click("#global-c-plate-Plate-hex");
@@ -1228,7 +1231,7 @@ const kinds = [["1", "1", "9"], ["2", "2", "6"], ["3", "3", "12"]];          // 
 for (const [n, kind, at] of kinds) {
   await page.click("#window-card-" + n);
   await page.check("#window-on-Show");
-  await page.click("#window-kind-Shows-" + kind);
+  await page.click("#window-kind-Complication-" + kind);
   await page.click("#window-at-Position-" + ["3", "4:30", "6", "9", "12", "1:30", "7:30", "10:30", "4"].indexOf(at));
 }
 await page.fill("#window-age-Moon-age-days", "6");
@@ -1542,9 +1545,9 @@ check(pane_lines.length > 0 && pane_lines.every((x) => x === "24/26"), `a pane's
 // the bar keeps the columns: widths of one or two columns, and the Guides switch ends on the panel's last column
 const fits = await page.evaluate(() => { const w = (q) => Math.round(document.querySelector(q).getBoundingClientRect().width), r = (q) => Math.round(document.querySelector(q).getBoundingClientRect().right); const box = (q) => document.querySelector(q).getBoundingClientRect(), lead = document.querySelector(".bar .lead"), pad = parseFloat(getComputedStyle(lead).paddingRight);
     const gaps = [["#play", ".speeds"], [".speeds", ".timewell"], ["#ampm", "#now"]].map(([a, b]) => +(box(b).left - box(a).right).toFixed(1));
-    return { play: w("#play"), zooms: w(".zooms"), fit: w("#fit"), fitpad: getComputedStyle(document.querySelector("#fit")).paddingLeft === getComputedStyle(document.querySelector("#now")).paddingLeft && Math.abs(box("#fit").width - (box("#fit span").width + 2 * parseFloat(getComputedStyle(document.querySelector("#fit")).paddingLeft) + 2 * parseFloat(getComputedStyle(document.querySelector("#fit")).borderLeftWidth))) < 0.5, sign: box(".zooms").right <= box(".zoomsign").left && box(".zoomsign").right <= box("#fit").left && document.querySelector("#fit svg") === null, gaps, touch: +(box("#ampm").left - box(".timewell").right).toFixed(1), half: [+box("#ampm").width.toFixed(1), +box("#ampm").height.toFixed(1), +((box("#ampm").top + box("#ampm").bottom) / 2 - (box(".timewell").top + box(".timewell").bottom) / 2).toFixed(1)], end: Math.round(box(".bar .lead").right - pad - box("#now").right) }; });
+    return { play: w("#play"), zooms: w("#zoom-out") + w("#zoom-in"), fit: w("#fit"), fitpad: getComputedStyle(document.querySelector("#fit")).paddingLeft === getComputedStyle(document.querySelector("#now")).paddingLeft && Math.abs(box("#fit").width - (box("#fit span").width + 2 * parseFloat(getComputedStyle(document.querySelector("#fit")).paddingLeft) + parseFloat(getComputedStyle(document.querySelector("#fit")).borderLeftWidth) + parseFloat(getComputedStyle(document.querySelector("#fit")).borderRightWidth))) < 0.5, sign: box(".zoomsign").right <= box(".zooms").left && Math.abs(box("#zoom-in").right - box("#fit").left) < 0.5 && document.querySelector("#fit svg") === null, gaps, touch: +(box("#ampm").left - box(".timewell").right).toFixed(1), half: [+box("#ampm").width.toFixed(1), +box("#ampm").height.toFixed(1), +((box("#ampm").top + box("#ampm").bottom) / 2 - (box(".timewell").top + box(".timewell").bottom) / 2).toFixed(1)], end: Math.round(box(".bar .lead").right - pad - box("#now").right) }; });
 check(fits.play === 34 && fits.zooms === 54 && fits.fitpad && fits.sign && fits.gaps[0] === 24 - 3.5 && fits.gaps[1] === fits.gaps[2] && fits.touch === 0 && fits.half[1] === 30 && Math.abs(fits.half[2]) < 0.5 && fits.end === 0,
-  `under the panel: play, a margin less what the speed box grew toward it (24 − 3.5, Okay 15 Oct 03:18), how fast · the time with AM · PM attached, as high, its word the time's size (#284, 4.44.6) · NOW one equal gap apart, NOW ending on the panel's last column; at the right − +, the magnifier alone, FIT a word with NOW's padding (#315) (${JSON.stringify(fits)})`);
+  `under the panel: play, a margin less what the speed box grew toward it (24 − 3.5, Okay 15 Oct 03:18), how fast · the time with AM · PM attached, as high, its word the time's size (#284, 4.44.6) · NOW one equal gap apart, NOW ending on the panel's last column; at the right the magnifier first, then − + FIT side by side (notes 2, 18 Oct 2026), FIT a word with NOW's padding (#315) (${JSON.stringify(fits)})`);
 { // the bar's time, second look (#306, 4.45.5): the figures tracked +0.04em, AM · PM 5.5 each side, NOW filled light with a dark word
   const look = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c("#time").letterSpacing, c("#ampm").paddingLeft, c("#ampm").paddingRight, c("#now").backgroundColor, c("#now").color]; });
   check(look.join(" ") === "0.8px 5.5px 5.5px color(srgb 0.360784 0.360784 0.360784) rgb(212, 212, 207)", `the bar's time: its figures tracked +0.04em, AM · PM closer to its word, NOW filled 20 % darker than AM's outline (#5C5C5C) with its word the light rule tone, not white (${look.join(" · ")}) (#306, #307)`);
@@ -1648,7 +1651,8 @@ const example = await page.getAttribute('.gallery a:has-text("Diver") >> nth=-1'
 await page.click('.gallery a:has-text("Diver") >> nth=-1');
 { // a card walks into focus first (#289, 4.49): lifted, with its two choices; the first opens it here
   const f = await page.evaluate(() => { const a = [...document.querySelectorAll(".gallery a")].filter((x) => x.textContent.includes("Diver")).at(-1), b = [...a.querySelectorAll(".choices button")]; return [a.classList.contains("focus"), getComputedStyle(a).outlineWidth, b.map((x) => x.textContent).join(" · "), getComputedStyle(a.querySelector(".choices")).display, window.dial_tool.S.rings.length]; });
-  check(f[0] && f[1] === "2px" && f[2] === "Edit this dial · In a new tab" && f[3] === "grid", `a press on a card lifts it with two choices (${f[2]}); the dial is not taken yet (${f.join(" · ")})`);
+    const rows = await page.evaluate(() => { const a = [...document.querySelectorAll(".gallery a")].filter((x) => x.textContent.includes("Diver")).at(-1), next = [...a.parentElement.children].indexOf(a) + 3, below = a.parentElement.children[next]; return below ? Math.round(below.getBoundingClientRect().top - a.getBoundingClientRect().bottom) : null; });
+  check(f[0] && f[1] === "0px" && f[2] === "Edit this dial · In a new tab" && f[3] === "grid" && (rows === null || rows >= 0), `a press on a card fills it with the chosen tint, no line round it, its two choices (${f[2]}) growing down over the row under it, the rows staying put (notes 2, 18 Oct 2026); the dial is not taken yet (${f.join(" · ")})`);
   await page.click('.gallery a:has-text("Diver") >> nth=-1 >> text=Edit this dial'); }
 await page.waitForFunction((h) => location.hash === h && window.dial_tool.statik && window.dial_tool.S.ui_section === 4, example, { timeout: 8000 }).catch(() => {});
 await page.waitForTimeout(700);
@@ -1898,9 +1902,9 @@ await tab("Export");
 }
 const look = await page.evaluate(() => { const q = (s) => document.querySelector(s), r = (s) => q(s).getBoundingClientRect(), c = (s) => getComputedStyle(q(s));
   return { square: !q("#panel-toggle"), bar: Math.round(r(".bar").height), play: [Math.round(r("#play").width), Math.round(r("#play").height), c("#play").borderRadius], time: c("#time").fontFamily.startsWith('"Dial Time"') && document.fonts.check('300 17px "Dial Time"'),
-    status: c(".bar .status").display, hint: q(".zoomhint").textContent, ruler: Math.round(r("#time-slider").width) }; });
-check(look.square && look.bar === 62 && look.play[0] === look.play[1] && look.play[2] === "50%" && look.time && look.status === "none" && look.hint.includes("⌘ + scroll") && look.ruler <= 518,
-  `the bar: a fifth higher (${look.bar}), no panel square, a round play, the time in Dial Time (Barlow Condensed Light, #284), no status line, how to zoom beside the zoom, the day slider no wider than an iPad's (${look.ruler})`);
+    status: c(".bar .status").display, hint: q(".zoomsign").dataset.tip, first: q(".viewing").children[1] === q(".zoomsign") && q(".zooms").lastElementChild === q("#fit"), ruler: Math.round(r("#time-slider").width) }; });
+check(look.square && look.bar === 62 && look.play[0] === look.play[1] && look.play[2] === "50%" && look.time && look.status === "none" && look.hint.includes("⌘ + scroll") && look.first && look.ruler <= 518,
+  `the bar: a fifth higher (${look.bar}), no panel square, a round play, the time in Dial Time (Barlow Condensed Light, #284), no status line, the magnifier first with how to zoom in its tag, then − + FIT together (notes 2, 18 Oct 2026), the day slider no wider than an iPad's (${look.ruler})`);
 await shot("10-bar");
 { // the showcase (Okay, 15 Oct 2026, 04:26, reshaped 04:59 and 05:09)
   const q = () => page.evaluate(() => { const t = window.dial_tool, r = (s) => document.querySelector(s).getBoundingClientRect(), c = (s) => getComputedStyle(document.querySelector(s));

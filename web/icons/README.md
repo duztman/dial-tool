@@ -49,3 +49,7 @@ one of four line widths: `LINE` 1.5 (straight) · `SLANT` 1.5625 (slanted) · `C
   dial's edge) read heavy in `look.py`; the value buttons' light discs read as ink. These are listed in `SKIP` in
   `look.py` or explained in its report; look at them instead.
 - **Hover states** are not visited by `check.mjs`.
+
+## The archive (beta 4.52)
+
+`node icons/archive.mjs` (after `node icons/check.mjs`, which `npm test` runs) writes every icon into `svg/`: one file per drawing, named after where it was found (`-on` when seen switched on), its lines black. The folder is committed, so every version's icons stay in the history (build list #336; Okay, 18 Oct 2026: "would be nice to have all the icons archived somewhere as svg").

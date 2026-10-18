@@ -30,7 +30,7 @@
     .bar .speeds { --speed-thumb: var(--speed-thumb-narrow); }      /* room for "720X" (25 px of the pixel face) */
     .bar .speedtrack input[type="range"]::-webkit-slider-thumb { background: var(--bar-light); box-shadow: none; }      /* no ring of the bar's ground: it would cut the box's line */
     .bar .speedtrack input[type="range"]::-moz-range-thumb { background: var(--bar-light); box-shadow: none; }
-    .bar .zooms { display: none; }                  /* a phone pinches */
+    .bar .zooms > .icon { display: none; }          /* a phone pinches: FIT stays */
     .steps12 button:nth-child(odd):not(.special) { display: none; }      /* every other hour: 1 3 5 … wait for room */
     .steps12 button.special { bottom: auto; top: calc(-1 * var(--hair)); }      /* the bar is on top here and the preview's top corners are taken (undo, Guides): 10:10 stays among the hours */
     main { grid-row: 2; }

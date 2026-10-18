@@ -88,7 +88,7 @@
      heading is the button. A folded pane says what it holds, in grey, at the right. Its body is where the columns
      are: the toggle column, then the six. Rows stand on the six; a few things (ring list, examples) take all seven. */
   .pane { border-top: var(--thick) solid var(--ink); }
-  .pinned:not([hidden]) + .form > .pane:first-child { border-top: 0; }      /* the hairline under the pinned panes already opens it */
+  .pinned:not([hidden]) + .form > .pane:not([hidden]):not(.pane:not([hidden]) ~ .pane) { border-top: 0; }      /* the first pane shown under the pinned part: the pinned part's line already opens it (until 4.51.1 the first in the list, so a hidden one, R16, left the next with a second line — Okay, 18 Oct 2026, notes 2: "The first pane under rings' persistent loses the top bar") */
   .form > .pane.folded:last-child { border-bottom: var(--hair) solid var(--rule); }
   .fold { display: grid; grid-template-columns: var(--eye) auto minmax(0, 1fr); column-gap: var(--gap); align-items: center; width: 100%; height: var(--head); text-align: left; }
   .fold .eye { display: grid; place-items: center; position: relative; left: var(--nudge); }

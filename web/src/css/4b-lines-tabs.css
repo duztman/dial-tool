@@ -58,7 +58,7 @@
      "Thick line stands here"): two units, as over the title on every heading — under the thin line counted from its
      foot to the first row's own white line, which stand a hairline each */
   .form > .showbox { display: grid; grid-template-columns: repeat(var(--tabs, 1), minmax(0, 1fr)); margin: 0 0 var(--u4) var(--lead); --tick: var(--show-tick); }
-  .form > .showbox > .check { grid-column: var(--tab, 1); display: flex; align-items: center; height: var(--show-high); padding: 0 var(--u3); background: var(--show-ground); font-size: var(--t-s);
+  .form > .showbox > .check { grid-column: var(--tab, 1); display: flex; align-items: center; height: var(--show-high); padding: 0 var(--u3) 0 calc((var(--show-high) - var(--show-tick)) / 2); background: var(--show-ground); font-size: var(--t-s);
     margin-left: calc(-1 * var(--hair) * min(var(--tab, 1) - 1, 1)); }      /* past the first tab: the hairline it shares with the tab before it */
   .form > .showbox + .pane.headless { border-top: 0; padding-top: calc(var(--u4) + 2 * var(--hair)); background: linear-gradient(var(--ink) 0 0) right top / calc(100% - var(--lead)) var(--hair) no-repeat; }
   .handsbar > h2 { grid-column: 2 / span 2; }

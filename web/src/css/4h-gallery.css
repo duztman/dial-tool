@@ -6,12 +6,16 @@
   .examples a { display: grid; gap: var(--u1); padding: var(--unit) var(--unit) var(--unit); background: var(--inset); color: var(--ink); text-decoration: none; text-align: center; }
   .examples a:hover, .examples a:focus-visible { background: var(--select); outline: 0; }
   .examples svg { display: block; width: 100%; height: auto; }
-  .gallery .cards { grid-template-columns: repeat(3, 1fr); }      /* the gallery: three to a line, so a dial can be read */
-  .gallery a { padding: var(--u3) var(--u3) var(--unit); gap: var(--unit); }
-  /* a card in focus (#289, 4.49): lifted by the chosen tint and the thick ink line every focused control has, its two
-     choices under its name — Edit this dial · In a new tab — a unit apart; out of focus the choices are not there */
+  /* the gallery: three to a line, so a dial can be read; wider walls between the cards and more room inside them
+     (Okay, 18 Oct 2026, notes 2: "bigger cell padding and walls"; a unit and a unit and a half until 4.51.1) */
+  .gallery .cards { grid-template-columns: repeat(3, 1fr); gap: var(--u3); }
+  .gallery a { position: relative; padding: var(--u4) var(--u4) var(--u3); gap: var(--unit); }
+  /* a card in focus (#289, 4.49): filled with the chosen tint, no line round it, its two choices under its name — Edit
+     this dial · In a new tab. The card grows down over the row under it; the rows stay where they are (Okay, 18 Oct
+     2026, notes 2: "these options should not push all the rows, just that cell grows. No outlines, just full colours").
+     Until 4.51.1 a thick ink line round it, and the choices made the whole row taller. */
   .gallery a .choices { display: none; gap: var(--u1); }
   .gallery a .choices > .btn { width: 100%; }      /* one under the other, each the card's width: a card is too narrow for the two side by side */
-  .gallery a.focus { position: relative; z-index: 1; background: var(--select); outline: var(--thick) solid var(--ink); outline-offset: 0; }
-  .gallery a.focus .choices { display: grid; }
+  .gallery a.focus { z-index: 1; background: var(--select); outline: 0; }
+  .gallery a.focus .choices { display: grid; position: absolute; top: 100%; left: 0; right: 0; padding: 0 var(--u4) var(--u4); background: var(--select); }
 }

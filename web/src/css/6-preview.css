@@ -82,8 +82,13 @@
   .guidehead .segs { justify-self: stretch; height: var(--control-s); margin: 0 calc(var(--ring-gap-in) + var(--ring-thick)) 0 var(--guide-gap); }
   .guidehead .segs > button { flex: 1 1 auto; height: 100%; padding: 0 var(--u1); font-size: var(--t-s); }
   .guidekind.ring.selected .name { font-weight: 600; }
-  /* before Add, a band of the fields' colour, as wide as the lines (Okay, 16 Oct 2026, #271: "a colour separation") */
-  .guidehead.add { border-top: var(--u2) solid var(--field); }
+  /* Add and the guides added under it belong to the bottom section: the section's lighter ground starts over Add, a
+     little more room over it (Okay, 18 Oct 2026, notes 2: "the functions are below, grouped under a lighter bg color
+     area. The grey area grows to include add line, the bottom block needs just a little more padding from top"; until
+     4.51.1 a band of the fields' colour over Add, the ground under Thickness · Reset All only, #271, #305) */
+  .guidelist > :is(.guidehead.add, .guidemore) { margin-inline: 0; padding-inline: var(--pop-pad); background: var(--row-rule); box-shadow: none; }
+  .guidelist > .guidehead.add { padding-top: var(--u2); }
+  .guidelist > .guidemore > .guidekind { box-shadow: none; }
   /* a guide you added is one line, as every other (#305: "fit all in one line"): its name and its measures, quiet
      numbers to type in (grey, no box, as wide as they are); its colours; in the none sign's place a cross that removes
      it (an added guide is taken away, not hidden). A long name gives way to its numbers. (Two lines until 4.45.3) */
@@ -100,7 +105,7 @@
   .dots .tone:not(.on) { opacity: var(--guide-dim); }
   .dots .tone.on { box-shadow: 0 0 0 var(--ring-gap-in) var(--paper), 0 0 0 calc(var(--ring-gap-in) + var(--ring-thick)) var(--c), 0 0 0 calc(var(--ring-gap-in) + var(--ring-thick) + var(--hair)) var(--chip-rule); }
   .dots .none { color: var(--grey); }
-  .dots .none svg { width: var(--guide-dot); height: var(--guide-dot); }
+  .dots .none svg { flex: none; }      /* the none sign at the size it is drawn, 10, whatever a colour's size (R33 rule 1: since 4.52 the colours are 8) */
   .dots .none:hover { color: var(--ink); }
   .dots .none.on { background: var(--ink); color: var(--paper); box-shadow: 0 0 0 var(--ring-thick) var(--ink); }
   /* Thickness, on the list's own columns: name · slider · value · stepper */
@@ -110,7 +115,7 @@
      All. Over it a thick line: its own hairline on the one above. No slider: with Reset All beside it, it had no room
      left (0 px, measured); it comes back in the number popup (phase E; R15 form B). The number's cell reaches back over
      the name; a press on the number opens its popup (#249). */
-  .guidelist .guidelast { grid-template-columns: var(--guide-name) minmax(0, 1fr) auto; }
+  .guidelist .guidelast { grid-template-columns: max-content minmax(0, 1fr) auto; }      /* the name as wide as its word: the list is narrower since 4.52 (#322) and the names' column left the number no room */
   .guidelast > * { grid-row: 1; }
   .guidelist .guidelast > label:first-child { grid-column: 1; }
   .guidelast > input[type="range"] { display: none; }

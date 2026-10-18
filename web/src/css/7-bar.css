@@ -89,16 +89,14 @@
   .bar .lead #now:active { border-color: var(--bar-light); background: var(--bar-light); }
   .bar .time { width: 100%; text-align: center; }
   .bar .viewing { margin-left: auto; padding: 0 0 0 var(--margin); }      /* at the right; the room the day slider doesn't take lies before it. From its divider to what follows as far as from Fit to the window's right edge: the margin (Okay, 15 Oct 2026, 01:03: "equalize those gaps") */
-  /* how to zoom: words and a faint magnifier, nothing to press. A pointer zooms with ⌘ + scroll, a finger pinches */
-  .bar .zoomhint { display: flex; align-items: center; gap: var(--u2); white-space: nowrap; font-size: var(--t-s); color: var(--bar-light); }
-  @media (hover: none), (pointer: coarse) { .bar .zoomhint { display: none; } }      /* a desktop's only: no sign or words on an iPad or a phone (Okay, 15 Oct 2026, 00:32) */
-  .bar .viewing > button, .bar .zooms { flex: none; width: var(--col); }
-  /* the zoom area (#315, 4.51.1): − + · the magnifier on its own, the bar's light tone · FIT, a word button with NOW's room either side (Okay, 17 Oct 2026: "the horizontal padding like now and am") */
-  .bar .zoomsign { display: flex; align-items: center; color: var(--bar-light); }
-  .bar .viewing > .fit { width: auto; padding: 0 var(--u3); font-size: var(--t-s); text-transform: uppercase; }      /* FIT, as NOW and AM are set (Okay, 06:21: "is fit alright? It's looking pale": 13 px lower case beside 12 px capitals) */
-  .bar .zooms { display: flex; }
-  .bar .zooms button { flex: 1; min-width: 0; }
-  .bar .zooms button + button { border-left: 0; }
+  /* the zoom area (Okay, 18 Oct 2026, notes 2): the magnifier first, faint, nothing to press but its tag (how to zoom and
+     move, under the pointer; a tap shows it on a touch screen); then − + FIT side by side, sharing their lines — FIT a
+     word button with NOW's room either side. (#315, 4.51.1: − + · the magnifier · FIT; until then words at the left.) */
+  .bar .zoomsign { display: flex; align-items: center; color: var(--bar-light); cursor: help; }
+  .bar .zooms { flex: none; display: flex; }
+  .bar .zooms > .icon { flex: none; width: calc(var(--col) / 2); }
+  .bar .zooms > .fit { flex: none; padding: 0 var(--u3); font-size: var(--t-s); text-transform: uppercase; }      /* FIT, as NOW and AM are set (Okay, 15 Oct 2026, 06:21: "is fit alright? It's looking pale") */
+  .bar .zooms > button + button { border-left: 0; }
   .bar .status { display: none; }      /* hidden (Okay, 14 Oct 2026, 23:19); app.js still writes it */
 
   /* the day slider is a ruler: a line, cuts crossing it (drawn in draw_ruler, finer on a wider window), and a line

@@ -1,21 +1,17 @@
 # Handoff — taking over the Dial Tool
 
-*Written 16 Oct 2026, night, at beta 4.46.5, by the session that built 4.42–4.46.5 (Okay: "devise way to handoff to another agent"); §1 rewritten 17 Oct 2026 at beta 4.51.1 (and before at 4.49.1) by the session that built 4.46.6–4.49.1. For the next Claude session on this repo. §1 is rewritten at every handover; the rest changes when something new is learnt.*
+*Written 16 Oct 2026, night, at beta 4.46.5, by the session that built 4.42–4.46.5 (Okay: "devise way to handoff to another agent"); §1 rewritten 18 Oct 2026 at beta 4.52 by the session that read notes 2 (before: 17 Oct at 4.51.1 and 4.49.1). For the next Claude session on this repo. §1 is rewritten at every handover; the rest changes when something new is learnt.*
 
 A new session starts with no memory of the last one: the transcript stays in the old container. Everything a successor needs is in the repo. Use this page to find it.
 
-## 1 · Where things stand (17 Oct 2026, night)
+## 1 · Where things stand (18 Oct 2026, evening)
 
-- **Beta 4.51.1** is on `dev` and the live page (https://duztman.github.io/dial-tool/); **`main` is 4.46.5** (Okay releases to `main` on his word: `tools/release.sh main`).
-- **17 Oct's pushes** (all live): 4.46.6 · 4.46.7 (42 fonts) · 4.47 · 4.47.1 · 4.47.2 · 4.48 (the text ring) · 4.49 · 4.49.1 (six new dials) · 4.49.2 (the controller from Okay's SVG, the play flash) · 4.50 (the ring drawer, the rows, the kind icons) · 4.50.1 (Positions preview, quiet rows) · 4.50.2 (Give way pictured, the placement icons) · 4.51 (phase H: EN, wide sliders, style tabs, Light · Dark) · 4.51.1 (#315: the magnifier out of FIT).
-- **The plan** (phases A–J, `docs/build-list.md`) is **built through**. Okay, 17 Oct: "now draw me all the sketches. gallery needs none of my approval right now. proceed with plan" — so G's rest and H were built from his notes alone (brief §4, 17 Oct rows say which readings were Claude's). **What waits for Okay:**
-  1. **His eye** on what was drawn from the words: the kind icons (#255), the placement micro dials (#259), Give way's square and drawing (#258), the Positions preview (#251), the drawer (#253/#254), the controller (#314), the font box's hanging tabs and EN (#273, #275), Light · Dark (#276). Each is one push to change; the sketches are in `web/test/out/` (4-rings, 4c22-font, 4c1-picker).
-  2. **His picks**: the six new Gallery dials (#287) — he deletes what he doesn't want (`web/gallery.mjs`, then `node gallery.mjs && node build.mjs`).
-  3. **Loose ends** for him: #294 (specials with no figure), #231 (a window's two names), #273's unread line ("end gray lines with the text as shown here"); the guide is still built on 4.36.1, rebuilt only on his word (R25).
-  4. **Release to `main`** when he says so.
-- **Readings to confirm with him** (brief §4, 17 Oct rows): fonts *joined* (42), not competed; a numeral's Size stays in the font box (#257); the text ring's snap is 2°; the B-Uhr neutral on *his* layout; on path's placement arrows run along the ring; a weight axis without named styles gets Regular · Bold tabs; EN says what the font does, nothing stored.
-- **His Mac copy**: not reachable from a session; brief §5 question 14 — **not to be raised again**.
-- **Okay's last words** (17 Oct): "Go on without me, my jobs at the end"; "proceed with plan … ok go now, well done until now"; then the note that became #315.
+- **Beta 4.52** is committed on `dev` in the 18 Oct session's clone; **if `origin/dev` still says 4.51.1, it was never pushed** — the session's permission check refused push access. The live page is 4.51.1; **`main` is 4.46.5**.
+- **4.52** = Okay's *Dial tool notes 2* (a Google Doc with 23 pictures; his Photoshop drawings `font-selector_171026`, `selected-ring_181026` and `svg/controller 2.svg` in his Mac's `dial-maker/`), written down as **build list #316–#359**, each ranked *now · next · mechanism · later*. The *now* ones are built (the controller's second drawing, his link as the opener, Copy link for WebKit, Blank face, Complication, the Show tick, the Guides list's bottom section, the zoom area and two-finger moving, G for guides, the Gallery card, tags, the showcase's arrow and ✕, the icon archive). Changelog 4.52 lists them.
+- **Next, in order** (the build list's ranks): the font box after his PSD (#334 with #318–#321, #317's number blocks) · the selected ring after his PSD (#335, #327) · Positions after his drawing (#357) · W × H linked (#358) · Complication as tabs (#328) · then the mechanisms (#326 after a picture, #338, #349, #346) · the later ones need his eye.
+- **Waiting for Okay** (brief §5, 15–23): what "Jev" is; five languages; the blank face's hands; Tiny Preview's calibration; which button Showcase goes left of; what "stopped counting" means on the ruler; renaming *Copy style of*; a disc hand's window inside its disc (R31: new scheme or new key); what "ascender" means for upright numerals (a picture).
+- **The eye pass** on 4.51.1's drawn-from-words items (18 Oct): #251, #253, #254, #273, #275, #276 are overtaken by notes 2; #255, #258, #259 and the Gallery picks (#287) were sent to him with pictures — no answer yet.
+- **Okay's last words** (18 Oct): "Give me the eye pass first, in the meantime start working on small things." Earlier the same day he planned a two-hour run alone ("say go … you'll do all that you can without asking me") — not started; the plan is the build list's ranks.
 
 ## 2 · First steps in a new session
 
