@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.70 | 18 Oct 2026 | web | [`e97db57`](https://github.com/duztman/dial-tool/tree/e97db571e37aee67a8d968ceffeac6c58e41a64c) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/e97db571e37aee67a8d968ceffeac6c58e41a64c/web/dial-tool.html) | Hover a hand's number: its part lights up on the hand's picture |
 | 4.69 | 18 Oct 2026 | web | [`c3e5d36`](https://github.com/duztman/dial-tool/tree/c3e5d3673a139371667d59cbcc7a977fa8e4f671) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/c3e5d3673a139371667d59cbcc7a977fa8e4f671/web/dial-tool.html) | Straps and bracelets for the cases, strap colour; the view fits the dial again |
 | 4.68 | 18 Oct 2026 | web | [`cf9cc88`](https://github.com/duztman/dial-tool/tree/cf9cc8894c2b5c93a05cce379486da644c0d1551) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/cf9cc8894c2b5c93a05cce379486da644c0d1551/web/dial-tool.html) | Touch: slider and name open the controller, the box types, ± step; phone controller 75%; hand sliders full width; font sheet closes on a choice |
 | 4.67 | 18 Oct 2026 | web | [`e5bb1b6`](https://github.com/duztman/dial-tool/tree/e5bb1b601b6f571213849e59e9994884dadeaceb) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/e5bb1b601b6f571213849e59e9994884dadeaceb/web/dial-tool.html) | Wear OS export |
