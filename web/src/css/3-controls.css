@@ -56,7 +56,10 @@
   input[type="radio"] { appearance: none; flex: none; display: inline-grid; place-content: center; width: var(--tick); height: var(--tick); margin: 0 var(--u3) 0 0; border: var(--hair) solid var(--ink); border-radius: 50%; background: var(--field); cursor: pointer; }
   input[type="radio"]::before { content: ""; width: calc(var(--tick) - var(--unit) - var(--u1)); height: calc(var(--tick) - var(--unit) - var(--u1)); border-radius: 50%; background: var(--ink); opacity: 0; }
   input[type="radio"]:checked::before { opacity: 1; }
-  .check { display: inline-flex; align-items: center; cursor: pointer; }
+  /* a tick and its words (design canon §6; Okay, 19 Oct 2026): the box on the first line, its middle on the line's
+     middle, so two lines of words hang from it; the lines balanced, no orphan word */
+  .check { display: inline-flex; align-items: start; cursor: pointer; text-wrap: balance; }
+  .check > input[type="checkbox"] { margin-top: calc((1lh - var(--tick)) / 2); }
 
   /* a slider: a thin track, ink up to the handle, and the handle a black disc with a light centre.
      --p (0 to 1, set in app.js: filled) says how far along it is; --fill is that, measured along the track. */

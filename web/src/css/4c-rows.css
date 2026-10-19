@@ -85,9 +85,4 @@
   .row.haslink > .linkpill:hover { border-color: var(--grey); }
   .row.haslink > .linkpill.on { border-color: var(--ink); background: var(--ink); color: var(--white); }
   /* a window's colours on one line (#266, 4.46.1): a quiet word, then its pill; a third (Picture) only for am · pm and moon */
-  .row.colours { align-items: baseline; }      /* when Picture takes a second line, the name stays on the first */
-  .row.colours > .parts { grid-column: 3 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: var(--unit) var(--u3); padding: var(--u1) 0; }
-  .row.colours .part { display: inline-flex; align-items: center; gap: var(--u2); }
-  .row.colours .part[hidden] { display: none; }
-  .row.colours .part > i { font-style: normal; font-size: var(--t-s); color: var(--grey); }
 }

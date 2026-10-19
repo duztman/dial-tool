@@ -765,7 +765,12 @@ const ROWS = {
     chk("turn", "Turn it with its radius", { ...W, show: (T) => T.on && G.window_shape(T) !== "arc" }),
     info("Only off the quarters: at 4 it turns 30°, at half past four 45°.", { ...W, show: (T) => T.on && T.turn && G.window_turn(T) === 0 && G.window_shape(T) !== "arc" }),
     chk("text_turn", "Turn the text with it", { ...W, nest: true, show: (T) => T.on && T.turn && G.window_shape(T) !== "arc" && ["date", "day"].includes(G.WINDOW_KINDS[T.kind]) }),
-    custom("window_colours", { ...W, show: win_on }),      // the disc under the hole · the frame · what an am · pm or moon window pictures, on one line (#266)
+    // its colours, one to a line as elsewhere (Okay, 19 Oct 2026, 18:04: "List these colors in lines like elsewhere"): the disc under the hole · the frame · what a moon or am · pm window pictures · a moon's shade · the neighbours
+    col("disc_c", "Disc under it", { ...W, show: win_on, say: (T) => [is_day(T) ? "AM half" : moon_look(T) === 1 ? "Moon" : "Disc under it"], or: () => [1, 1, 1, 1] }),
+    col("ink", "Frame", { ...W, show: win_on }),
+    col("text_c", "Picture", { ...W, show: win_is("am · pm", "moon phase"), say: (T) => [moon_look(T) === 1 ? "Sky" : is_day(T) ? "PM half" : "Picture"], or: (T) => T.ink }),      // or: what an unset colour is
+    col("c2", "Shade", { ...W, show: (T) => moon_look(T) === 1, or: () => G.PICTURE_TONES.shade }),      // a picture's further colour (4.73): a moon's dark side in Phase
+    col("c2", "Neighbours", { ...W, id: "window-c2-Neighbours", show: (T) => win_is("date", "day")(T) && T.neighbours, or: () => G.PICTURE_TONES.near }),      // a date or day window's neighbours (4.74)
     // following the bar's date (4.62): a date or day window says it, a moon window shows its age; its typed text or age
     // waits underneath, for when it doesn't follow
     chk("follows", "Follows the date in the bar", { ...W, show: win_is("date", "day", "moon phase", "big date") }),
@@ -2818,8 +2823,9 @@ class DialTool {
     if (row.kind === "col") {                      // a colour pill: a button that opens the colour pop-out. Nothing is typed in it; the pop-out has the HEX field.
       const pill = this.colour_pill(id, "Choose a colour");
       pill.onclick = () => this.pop_open(this.colour_of_row(row), pill);
-      wrap.append(el("label", { htmlFor: id, textContent: row.text }), pill);
-      out.refresh = (T) => pill.show(T[row.key] || (row.or ? row.or(T) : [0, 0, 0, 1]));
+      const name = el("label", { htmlFor: id, textContent: row.text });
+      wrap.append(name, pill);
+      out.refresh = (T) => { pill.show(T[row.key] || (row.or ? row.or(T) : [0, 0, 0, 1])); if (row.say) name.textContent = row.say(T)[0]; };
     }
 
     if (row.kind === "txt") {
@@ -4039,28 +4045,7 @@ class DialTool {
   /** a window's colours on one line (#266, 4.46.1; Okay's notes, p. 19: "one line; two colours to choose"): the disc
    *  under the hole, the frame, and for an am · pm or moon window what it pictures. Each a word and its pill; the
    *  pills are the colour rows' own, so they open the colour pop-out as before. */
-  row_window_colours(wrap, out) {
-    wrap.className = "row colours";
-    const parts = [
-      col("disc_c", "Disc under it", { ...W, word: (T) => (is_day(T) ? "AM" : moon_look(T) === 1 ? "Moon" : "Disc"), or: () => [1, 1, 1, 1] }),
-      col("ink", "Frame", { ...W, word: "Frame" }),
-      col("text_c", "Picture", { ...W, word: (T) => (moon_look(T) === 1 ? "Sky" : is_day(T) ? "PM" : "Picture"), only: win_is("am · pm", "moon phase"), or: (T) => T.ink }),      // or: what an unset colour is
-      // a picture's further colour (4.73): a moon's dark side in Phase
-      col("c2", "Shade", { ...W, word: "Shade", only: (T) => moon_look(T) === 1, or: () => G.PICTURE_TONES.shade }),
-      col("c2", "Neighbours", { ...W, word: "Neighbours", id: "window-c2-Neighbours", only: (T) => win_is("date", "day")(T) && T.neighbours, or: () => G.PICTURE_TONES.near }),      // a date or day window's neighbours (4.74)
-    ].map((row) => {
-      const word = el("i", { textContent: typeof row.word === "function" ? "" : row.word });
-      const built = this.build_row(row), pill = built.el.querySelector(".colour"), part = el("span", { className: "part" }, word, pill);
-      return { row, built, part, word };
-    });
-    wrap.append(el("label", { textContent: "Colours" }), el("span", { className: "parts" }, ...parts.map((p) => p.part)));
-    out.refresh = (T) => parts.forEach((p) => {
-      const shown = !p.row.only || p.row.only(T); p.part.hidden = !shown;
-      if (!shown) return;
-      p.built.refresh(T);
-      if (typeof p.row.word === "function") p.word.textContent = p.row.word(T);      // a disc's colour is the lit moon in Phase: its words say what each paints
-    });
-  }
+
 
 
   row_nudge(wrap, out) {                           // which numeral the rows under it nudge (scope "nudge", #252), and a way to undo its nudges

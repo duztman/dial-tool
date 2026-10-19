@@ -1,6 +1,6 @@
 # Dial Tool — design canon
 
-*Written 4 Oct 2026 for the guidebook; §9 (the tool's icons) 14 Oct 2026; last updated 19 Oct 2026 (beta 4.87: the current guide's paths). Okay: "this design research might influence
+*Written 4 Oct 2026 for the guidebook; §9 (the tool's icons) 14 Oct 2026; last updated 19 Oct 2026 (beta 4.88.2: tick rows, §6). Okay: "this design research might influence
 the whole build, take notes… let's make it canon."*
 
 This file is the rule for everything Dial Tool shows on paper or screen that isn't a dial: the guidebook
@@ -157,12 +157,18 @@ alignment to these rules as well."*
   `archive/drawbot/dial.py`'s row descriptions and a classic dial's settings; the preview is the tool's own, with guides.
 - Small groups of controls beside figures use the same drawing at text size.
 - One thing in the window drawing is invented: the build and frame times in the status line.
+- **Tick rows in the window** (Okay, 19 Oct 2026, 18:00: "These are rules now"): the tick box stands on the words'
+  first line, its middle on that line's middle — never between two lines. The words run to two lines at most, with
+  no orphan: a second line gets filled (say more) or the first is cut short so the lines balance (`text-wrap:
+  balance`). The Show tick under the window cards and the hand tabs: the white tick fills its black box
+  (the box as it is, the tick grown to the box less half a unit).
 
 ## 7 · Writing
 
 - A block is a label, a one-sentence headline, and two to four lines. If it needs more, it is two blocks.
 - Say what a setting does and give a real value. No adjectives about the tool.
 - Glossary words only (`docs/glossary.md`).
+- A tick row's words: at most two lines, the second filled or none (§6).
 - **Written for use.** A block says what you would do with the setting, not only what it is. One dry line a
   page is welcome ("the ranges are habits, not limits"); two is a tone.
 - **Three ways in**: the contents (cover), the thumb index (page edges), and Find it (last page: what you

@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.88.1";
+export const VERSION = "beta 4.88.2";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -129,7 +129,7 @@ export const WINDOW_BASE = {
   guide: -1,                                       // its guide's colour, as a ring's (#271): a place in GUIDE_COLOURS · -1 = by its place (window_guide) · -2 = none
   follows: false,                                  // a date, day or moon window shows the bar's date (beta 4.62); off, so every older link shows its typed text and its moon age as before
   names: 0,                                        // a day window following the date: its names' language, a place in moment.js LANGS (EN · TR · DE · FR · IT; 4.62)
-  neighbours: false,                               // a date or day window shows its disc's places either side of the shown one, where the hole lets them (4.74; the disc sketch D1), in c2
+  neighbours: true,                               // a date or day window shows its disc's places either side of the shown one, where the hole lets them (4.74; the disc sketch D1), in c2
   look: 0,                                         // its picture, a place in PICTURES[its kind] (4.73); 0 = as before
   c2: null, c3: null,                              // its picture's further colours (4.73): a moon's shade · an am · pm half's sun and moon · a band's dawn and dusk; null = the picture's own (PICTURE_TONES)
   physics: true,                                   // its disc stays inside the case (4.72, #346): passing it, its guide shows red and the panel says so; off for a face on a screen, where a disc may be bigger than the dial
@@ -174,7 +174,7 @@ export const DEFAULTS = {
   strap: 1, c_strap: [0.29, 0.2, 0.14, 1],      // its strap (4.69, bezels.js STRAPS): 0 none, 1 a leather strap in c_strap, 2 a metal bracelet in the case's metal. Shown only with a case
   bezel: 0,                                        // a case round the dial on the preview (4.66, bezels.js BEZELS): 0 none, 1 diver, 2 pilot, 3 dress, 4 sport. Preview only, like the backdrop (R26)
   date: "",                                        // the day the dial shows, "2026-10-18", set in the bar (4.62; Okay, 18 Oct 2026: "Date best set at the bar … Default from system date"); "" = today, wherever the dial is opened
-  da_look: 0, da_c2: null, da_c3: null, da_neighbours: false,      // … and `neighbours` (4.74)            // the first window's `look`, `c2`, `c3` (4.73)
+  da_look: 0, da_c2: null, da_c3: null, da_neighbours: true,      // … and `neighbours` (4.74)            // the first window's `look`, `c2`, `c3` (4.73)
   da_physics: true, xray: false,                   // the first window's `physics` · X-ray, every window's disc seen under a veil of the plate, preview only (4.72, #346)
   da_wh_link: false,                               // the first window's width and height linked, as every window's `wh_link` (#358, beta 4.57)
   gd_k_edge: 1, gd_k_axes: 0, gd_k_win: 1, gd_k_rings: 1, gd_k_sel: 4, gd_w: 1.0,

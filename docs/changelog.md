@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## beta 4.88.2 (web version) · 19 Oct 2026
+
+Okay's notes of 18:00–18:04, the look lane ("These are rules now"; design canon §6, §7).
+
+- **Tick rows**: the box stands on the words' first line, its middle on that line's middle — never between two lines; the words run to two lines at most and the lines balance, so no orphan word (`text-wrap: balance`).
+- **The Show tick** under the window cards and the hand tabs: the white tick fills its black box — the box as it was (9), the tick the box less half a unit (6.25; 3.5 before).
+- **A window's colours one to a line**, as the rings' and hands' are ("List these colors in lines like elsewhere"): Disc under it · Frame · Picture · Shade · Neighbours, each a row with its pill; an am · pm window's say *AM half* and *PM half*. The one-line Colours row and its stylesheet are gone.
+- **Neighbours on to start**, and for every link ("default on, on retroactively for all links"): `neighbours: true` in `WINDOW_BASE`, so a link that doesn't say otherwise draws them; the Gallery's First dial card redrawn. The link scheme stays 3 — Okay's word makes this a retroactive change, not a dial quietly drawn wrong (R31).
+- Build list #408 noted: the font box's colour as a full swatch with its hex, the font name 2 px larger from its baseline and left.
+
 ## beta 4.88.1 (web version) · 19 Oct 2026
 
 - **Two sizes of check (R19)**, after Okay's note on the time a push takes ("Each .x step up gets the full check … Only filter makes more sense now … Check smartly"): a small push (the third number) runs what it touches, a step (the second number) and a release run everything. `npm run small`: the labels, the links, the complications, the build, the window test, and the icon check only when an icon could have changed — `icons/changed.mjs` looks at whether the icon block in `app.js` or anything under `icons/` differs from the last commit; nothing changed, nothing runs. The window test's own filter (`--only`) needs its sections made independent first: build list #407, next.
