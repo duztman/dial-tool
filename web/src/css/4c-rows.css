@@ -62,12 +62,10 @@
   .row > .warn { grid-column: 3 / -1; margin: var(--u1) 0 var(--unit); font-size: var(--t-s); color: var(--ink); }      /* the warning under a button that replaces the whole dial (Reset): in ink, not quiet, on the controls' column (Okay, 16 Oct 2026, 10:46) */      /* a tick and its words start at the left edge */
   .row > span:first-child:empty { display: none; }
   .row.nest > .check { grid-column: 3 / -1; }       /* a question about the row above: it starts where the controls start */
-  /* a tick or a note after a row of controls starts on the controls' column, under them (4.83; Okay, 19 Oct 2026: "The
-     drawing of secondary lines after an adjustment, they start on the column aligned with the upper row. App-wide");
-     one heading a pane's rows keeps the left edge. Not beside a hand's box (.side: its own columns) */
-  .body .row:not(.side) ~ .row:not(.side) > .check, .body .row:not(.side) ~ .row.note:not(.side) > .quiet { grid-column: 3 / -1; }
-  /* a note is a row of words: as much room over them as under, and a hairline closes it like any row (the row
-     above draws the one over it) */
+  /* a tick or a note starts on the controls' column, wherever it stands in its pane, the first row too (Okay, 19 Oct
+     2026: "The drawing of secondary lines after an adjustment, they start on the column aligned with the upper row.
+     App-wide"; 20:22, Print's Mono print mask moved to that column). Not beside a hand's box (.side: its own columns) */
+  .body .row:not(.side) > .check, .body .row.note:not(.side) > .quiet { grid-column: 3 / -1; }
   /* a note and the row it explains are one box (design canon §6, #420; Okay, 19 Oct 2026: "hiding the white line …
      always within the same box that ends with a bottom white border"): no line between them, the box's line under the
      note. Its words are small and grey, one or two lines; the first follows the row's own line at the panel's line

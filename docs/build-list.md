@@ -180,6 +180,9 @@ Nine annotated screenshots under *Notes 3* in Okay's Google Doc *Dial tool notes
 | 420 | **A tick says its name; its meaning a note under it, in one box** — design canon §6 (Okay, 19:47 and 20:00: "I like b … hiding the white line … applies to small grays too … within the same box that ends with a bottom white border"). Big date, Follows the date, Neighbours, Inside the case split; every note small and grey, no line above it | sketch — on the preview |
 | 421 | **Keep a hand's details in the lit picture** — the dauphine's connecting dot (Okay, 20:02: "Let's do not lose details such as dauphine's connector dot, we might make it larger too if we want"); with #404's hubs | open — note |
 | 422 | **Two *Frame* rows in a window's Shape pane** (its colour, its width) now stand near each other: *Frame width*? | open — ask |
+| 423 | **Positions' circle allowed into the controls' column**, from the first row's top line to a unit above the pane's closing line (Okay, 20:22: "Allow to penetrate", "Limit"); the controls over it | sketch — on the preview |
+| 424 | **Every tick and note on the controls' column, the first in a pane too** (Okay, 20:22: Print's *Mono print mask* moved under *Mirrored*) | sketch — on the preview |
+| 425 | **The print sheet's picture: Edit** — the sheet laid out by hand (Okay, 20:22: "EDIT: (future)") | later |
 
 ## Dial Packer (side product, 19 Oct 2026)
 

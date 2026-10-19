@@ -555,8 +555,8 @@ check(Math.abs(at12[0][2]) < 0.001 && Math.abs(at12[1][2]) < 0.001 && Math.abs(a
   const typed = [await S("S.rings[S.ui_ring].count"), await page.isHidden("#ring-count-Count"), await page.$eval("#ring-count-Count-menu", (e) => e.value)];
   await page.selectOption("#ring-count-Count-menu", "custom"); await page.keyboard.type("11"); await page.keyboard.press("Escape"); const kept = await S("S.rings[S.ui_ring].count");
   // the drags: the outer band moves the start, the inner the span's end
-  const b = await page.$eval("#ring-positions", (e) => { const r = e.getBoundingClientRect(); return [r.left, r.top, r.width]; });
-  const P = (deg, part) => { const k = b[2] / 2.2, a = deg * Math.PI / 180; return [b[0] + b[2] / 2 + Math.sin(a) * part * k, b[1] + b[2] / 2 - Math.cos(a) * part * k]; };
+  const b = await page.$eval("#ring-positions svg", (e) => { const r = e.getBoundingClientRect(); return [r.left, r.top, r.width]; });      // the circle's own square: it reaches past its box (#423)
+  const P = (deg, part) => { const k = b[2] / 2, a = deg * Math.PI / 180; return [b[0] + b[2] / 2 + Math.sin(a) * part * k, b[1] + b[2] / 2 - Math.cos(a) * part * k]; };
   await page.mouse.move(...P(15, 0.75)); await page.mouse.down(); await page.mouse.move(...P(60, 0.75), { steps: 4 }); await page.mouse.move(...P(90, 0.75), { steps: 4 }); await page.mouse.up();
   const start = await S("S.rings[S.ui_ring].start");
   await page.mouse.move(...P(90 + 260, 0.5)); await page.mouse.down(); await page.mouse.move(...P(90 + 200, 0.5), { steps: 4 }); await page.mouse.move(...P(90 + 180, 0.5), { steps: 4 }); await page.mouse.up();

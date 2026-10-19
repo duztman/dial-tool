@@ -4299,7 +4299,7 @@ class DialTool {
       wrap.ariaLabel = `${used.size} of ${angles.length} positions used, the first at ${(angles[0] || 0).toFixed(1)}°`;
     };
     // the drag: the pointer's place as a clock angle and a part of the radius
-    const polar = (e) => { const b = wrap.getBoundingClientRect(), x = (e.clientX - b.left) / b.width * 2 - 1, y = (e.clientY - b.top) / b.height * 2 - 1; return [Math.atan2(x, -y) * 180 / Math.PI, Math.hypot(x, y)]; };      // the box is the circle's square (#417)
+    const polar = (e) => { const b = (wrap.querySelector("svg") || wrap).getBoundingClientRect(), x = (e.clientX - b.left) / b.width * 2 - 1, y = (e.clientY - b.top) / b.height * 2 - 1; return [Math.atan2(x, -y) * 180 / Math.PI, Math.hypot(x, y)]; };      // the circle's own square (#417)
     let grab = null;
     wrap.onpointerdown = (e) => {
       const [, rho] = polar(e);

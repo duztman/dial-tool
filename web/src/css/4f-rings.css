@@ -167,9 +167,10 @@
      first two columns, three rows high; beside it two columns of small controls — Count · Every, Offset · Skip those,
      Start · Span — each a name and its box, the boxes as wide as each other. The preview is a control: the start and
      the span's end are dragged round it (app.js row_ring_positions); the span a dotted arc inside the marks */
-  .pane.positions > .body > .detail.round { grid-column: 2 / span 2; grid-row: 1 / span 3; align-self: start; aspect-ratio: 1; min-height: 0; margin: 0; touch-action: none; cursor: grab; }
+  .pane.positions > .body > .detail.round { grid-column: 2 / span 2; grid-row: 1 / span 3; align-self: start; aspect-ratio: 1; min-height: 0; margin: 0; overflow: visible; touch-action: none; cursor: grab; }
+  .pane.positions > .body > .row { position: relative; z-index: 1; }      /* the controls over the circle where it reaches them */
   .pane.positions > .body > .detail.round.dragging { cursor: grabbing; }
-  .pane.positions > .body > .detail.round svg { inset: var(--hair); width: calc(100% - 2 * var(--hair)); height: calc(100% - 2 * var(--hair)); }      /* the circle as tall as the controls, from the top rule to the bottom one (Okay, 19 Oct 2026, #417) */
+  .pane.positions > .body > .detail.round svg { inset: var(--hair) auto auto var(--hair); width: auto; height: calc(100% + var(--air) - var(--unit)); aspect-ratio: 1; }      /* the circle from the first row's top line down into the pane's air, to a unit above its closing line, as wide as that: it may reach into the controls' column, under them (Okay, 19 Oct 2026, #417: "Allow to penetrate"; "Limit"). The box under it keeps the rows' height */
   .detail.round .span { stroke: var(--grey); stroke-width: var(--pos-dot); stroke-linecap: round; stroke-dasharray: 0 var(--pos-dot-gap); vector-effect: non-scaling-stroke; }      /* "Span ruler: make it dotted instead of ruler" */
   .detail.round .spanend { fill: var(--field); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
   .pane.positions > .body > .row { grid-column: span 2; column-gap: var(--u1); min-width: 0; }

@@ -14,7 +14,7 @@ import fs from "fs";
 const [out, tab = "Dial", selector = ".form", setup, settings] = process.argv.slice(2);
 if (!out) { console.log("usage: node test/crop.mjs out.png <tab> <selector> [setup.js] [settings.json]"); process.exit(1); }
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || "/opt/pw-browsers/chromium" });
-const page = await browser.newPage({ viewport: { width: +(process.env.CROP_W || 1440), height: +(process.env.CROP_H || 900) }, deviceScaleFactor: 2 });
+const page = await browser.newPage({ viewport: { width: +(process.env.CROP_W || 1440), height: +(process.env.CROP_H || 900) }, deviceScaleFactor: 2, hasTouch: !!process.env.CROP_TOUCH });      // CROP_TOUCH=1: a finger (pointer: coarse), as on the iPad
 page.on("pageerror", (e) => console.log("page error:", e.message));
 page.on("console", (m) => { if (m.type() === "error") console.log("console error:", m.text()); });
 await page.route("https://duztman.github.io/dial-tool/fonts/**", (route) => route.fulfill({ path: "fonts/" + decodeURIComponent(route.request().url().split("/fonts/")[1]), headers: { "access-control-allow-origin": "*" } }));
