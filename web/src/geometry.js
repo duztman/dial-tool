@@ -127,7 +127,7 @@ export const WINDOW_BASE = {
   features: null,                                  // its own OpenType features (beta 4.30); null = none of its own. axes: {} likewise
   at_deg: null,                                    // a place of its own, in clock degrees (beta 4.34); null = the named place, at
   guide: -1,                                       // its guide's colour, as a ring's (#271): a place in GUIDE_COLOURS · -1 = by its place (window_guide) · -2 = none
-  follows: false,                                  // a date, day or moon window shows the bar's date (beta 4.62); off, so every older link shows its typed text and its moon age as before
+  follows: true,                                   // a date, day or moon window shows the bar's date; on to start, and for every link (Okay, 19 Oct 2026, 21:09, #413: "All on by default", for old links too)
   names: 0,                                        // a day window following the date: its names' language, a place in moment.js LANGS (EN · TR · DE · FR · IT; 4.62)
   neighbours: true,                               // a date or day window shows its disc's places either side of the shown one, where the hole lets them (4.74; the disc sketch D1), in c2
   look: 0,                                         // its picture, a place in PICTURES[its kind] (4.73); 0 = as before
@@ -169,7 +169,7 @@ export const DEFAULTS = {
   gd_hole: true, gd_k_hole: 1,                    // the centre hole's own guide, first in the list (Okay, 16 Oct 2026, #267)
   gd_wins: false, gd_wsel: true,                  // which windows show their guides: all · the chosen one (to start) · none, as rings (#271). gd_win, gd_k_win (the windows' radii) unread since
   da_guide: -1,                                   // the first window's guide colour, as every window's `guide` (#271)
-  da_follows: false, da_names: 0,                  // the first window's `follows` and `names` (4.62)
+  da_follows: true, da_names: 0,                   // the first window's `follows` and `names`: following the bar's date to start (#413)
   wearos_name: "",                                 // a Wear OS watch face's name (4.67, farukahmet's PR #1); "" = Dial Tool. Its package's name follows from it
   strap: 1, c_strap: [0.29, 0.2, 0.14, 1],      // its strap (4.69, bezels.js STRAPS): 0 none, 1 a leather strap in c_strap, 2 a metal bracelet in the case's metal. Shown only with a case
   bezel: 0,                                        // a case round the dial on the preview (4.66, bezels.js BEZELS): 0 none, 1 diver, 2 pilot, 3 dress, 4 sport. Preview only, like the backdrop (R26)

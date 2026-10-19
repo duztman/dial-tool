@@ -781,7 +781,7 @@ const ROWS = {
     col("c2", "Neighbours", { ...W, id: "window-c2-Neighbours", show: (T) => win_is("date", "day")(T) && T.neighbours, or: () => G.PICTURE_TONES.near }),      // a date or day window's neighbours (4.74)
     // the frame round the hole and the room kept clear round it are drawn on the dial: they are design, so they
     // stand here, not under a pane called Print (Okay, 13 Oct 2026: print things under Print, design among design)
-    num("frame", "Frame", 0, 0.6, 0.01, { ...W, show: win_on }),
+    num("frame", "Frame width", 0, 0.6, 0.01, { ...W, show: win_on }),      // "width": the Frame colour stands just above (Okay, 19 Oct 2026, #422)
     num("clear", "Clearance", 0, 1, 0.01, { ...W, show: win_on }),
     // the ticks at the end of the column, Frame and Clearance in their place (Okay, 19 Oct 2026, #413: "These three at the end of this column. Last two sliders come in their place")
     // following the bar's date (4.62): a date or day window says it, a moon window shows its age; its typed text or age
