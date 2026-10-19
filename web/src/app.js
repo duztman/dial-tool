@@ -239,8 +239,9 @@ const hand_pic = (i) => {
 /** the chosen hand as it is now, with all its settings (length, width, tail, round ends, hollow wall, counterweight),
  *  as large as its box allows: upright for a tall box, lying (tip to the right) for a wide one — both are drawn, the
  *  stylesheet shows one. The centre it turns on is marked: a line across the box and a small ring (Okay, 13 Oct 2026).
- *  cap: {d, c} when the cap is drawn with this hand (the seconds hand, or the topmost with Cap on this hand), as on the
- *  dial — over the hand, in its own colour (Okay, 19 Oct 2026: "seconds preview needs cap preview"). */
+ *  cap: {d} when the cap is drawn with this hand (the seconds hand, or the topmost with Cap on this hand), as on the
+ *  dial — over the hand, in the picture's ink: colour stays on the face (Okay, 19 Oct 2026: "seconds preview needs cap
+ *  preview"; "do not color cap on preview. Color stays on the face"). */
 const hand_detail = (h, cap = null) => {
   const p = G.hand_shape(h), b = p.bounds();
   if (!b) return "";
@@ -250,7 +251,7 @@ const hand_detail = (h, cap = null) => {
   const centre = (line) => `<path class="axis" d="${line}"/><circle class="pivot" r="${ring}"/>`;
   const mark = G.paints_mark(h) && G.disc_mark(h), md = mark ? mark.svg(3, true) : "";      // a disc's painted mark, in its own colour (#300)
   const marked = (turn) => (mark ? `<path class="mark" d="${md}"${turn} fill="${to_hex(h.mark_c)}"/>` : "")
-    + (cap ? `<circle class="cap" r="${f(cap.d / 2)}" fill="${to_hex(cap.c)}"/>` : "");      // the cap over the hand, at its pivot
+    + (cap ? `<circle class="cap" r="${f(cap.d / 2)}" fill="currentColor"/>` : "");      // the cap over the hand, at its pivot
   return `<svg class="upright" viewBox="${f(b[0] - m)} ${f(-b[3] - m)} ${f(w + 2 * m)} ${f(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${marked("")}<clipPath id="lit-upright"><path class="litarea"/></clipPath><path class="lit" d="${d}" clip-path="url(#lit-upright)"/>${centre("M-999 0L999 0")}</svg>`
     + `<svg class="lying" viewBox="${f(b[1] - m)} ${f(b[0] - m)} ${f(high + 2 * m)} ${f(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${marked(' transform="rotate(90)"')}<clipPath id="lit-lying"><path class="litarea"/></clipPath><path class="lit" d="${d}" transform="rotate(90)" clip-path="url(#lit-lying)"/>${centre("M0 -999L0 999")}</svg>`;
 };
@@ -4342,7 +4343,7 @@ class DialTool {
     this.hand_grips = grips;
     this.hand_grip_events(wrap, grips);
     out.refresh = (T) => {
-      const S = this.S, cap = G.cap_shows(S) && S.ui_hand === G.top_hand(S) ? { d: +S.ha_cap, c: S.c_cap } : null;      // the cap goes with the hand it is drawn on (cap_rows)
+      const S = this.S, cap = G.cap_shows(S) && S.ui_hand === G.top_hand(S) ? { d: +S.ha_cap } : null;      // the cap goes with the hand it is drawn on (cap_rows)
       const now = hand_detail(T, cap);
       if (now !== drawn) {
         drawn = now;

@@ -10935,7 +10935,7 @@ var hand_detail = (h, cap = null) => {
   const d = p.svg(3, true), ring2 = f2(Math.max(high * 0.012, 0.12));
   const centre2 = (line2) => `<path class="axis" d="${line2}"/><circle class="pivot" r="${ring2}"/>`;
   const mark = paints_mark(h) && disc_mark(h), md = mark ? mark.svg(3, true) : "";
-  const marked = (turn) => (mark ? `<path class="mark" d="${md}"${turn} fill="${to_hex(h.mark_c)}"/>` : "") + (cap ? `<circle class="cap" r="${f2(cap.d / 2)}" fill="${to_hex(cap.c)}"/>` : "");
+  const marked = (turn) => (mark ? `<path class="mark" d="${md}"${turn} fill="${to_hex(h.mark_c)}"/>` : "") + (cap ? `<circle class="cap" r="${f2(cap.d / 2)}" fill="currentColor"/>` : "");
   return `<svg class="upright" viewBox="${f2(b[0] - m)} ${f2(-b[3] - m)} ${f2(w + 2 * m)} ${f2(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${marked("")}<clipPath id="lit-upright"><path class="litarea"/></clipPath><path class="lit" d="${d}" clip-path="url(#lit-upright)"/>${centre2("M-999 0L999 0")}</svg><svg class="lying" viewBox="${f2(b[1] - m)} ${f2(b[0] - m)} ${f2(high + 2 * m)} ${f2(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${marked(' transform="rotate(90)"')}<clipPath id="lit-lying"><path class="litarea"/></clipPath><path class="lit" d="${d}" transform="rotate(90)" clip-path="url(#lit-lying)"/>${centre2("M0 -999L0 999")}</svg>`;
 };
 var hand_part = (h, row) => {
@@ -15690,7 +15690,7 @@ var DialTool = class _DialTool {
     this.hand_grips = grips;
     this.hand_grip_events(wrap, grips);
     out.refresh = (T) => {
-      const S = this.S, cap = cap_shows(S) && S.ui_hand === top_hand(S) ? { d: +S.ha_cap, c: S.c_cap } : null;
+      const S = this.S, cap = cap_shows(S) && S.ui_hand === top_hand(S) ? { d: +S.ha_cap } : null;
       const now = hand_detail(T, cap);
       if (now !== drawn2) {
         drawn2 = now;

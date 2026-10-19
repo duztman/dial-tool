@@ -5,7 +5,7 @@
 Okay, 22:25: "we had the beginnings of a hand bevel. on off from hand window. seconds preview needs cap preview."
 
 - **A hand's Bevel tick** (#430): in each hand's pane after Wall, on to start; off, that hand stays flat. Shown while Shadows is on and Bevels % is above 0 (R16); not on a disc hand. New per-hand key `bevel` (link key appended; on draws as before, so link scheme 3 stays). A row's `show` sees the dial's settings too (`show(T, S)`).
-- **The cap in the hand's picture** (#431): the detail box of the hand the cap is drawn with (the seconds hand, or the topmost with *Cap on this hand*) draws the cap over the pivot in the cap's colour; the box widens to hold it.
+- **The cap in the hand's picture** (#431): the detail box of the hand the cap is drawn with (the seconds hand, or the topmost with *Cap on this hand*) draws the cap over the pivot in the picture's ink, as the hand ("Color stays on the face"); the box widens to hold it.
 
 ## beta 4.89 (web version) · 19 Oct 2026
 

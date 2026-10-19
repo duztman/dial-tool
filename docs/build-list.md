@@ -199,7 +199,7 @@ Nine annotated screenshots under *Notes 3* in Okay's Google Doc *Dial tool notes
 | # | Item | Status |
 |---|---|---|
 | 430 | **A hand's bevel on or off in its pane** (Okay: "we had the beginnings of a hand bevel. on off from hand window"): a *Bevel* tick per hand, key `bevel` (on); shown while Shadows is on and Bevels % above 0 (R16); a disc hand has none. Reading: "hand window" = the hand's pane | **done — 4.89.1** |
-| 431 | **The cap in the seconds hand's picture** (Okay: "seconds preview needs cap preview"): the detail box draws the cap over the pivot, in the cap's colour, on the hand the cap is drawn with | **done — 4.89.1** |
+| 431 | **The cap in the seconds hand's picture** (Okay: "seconds preview needs cap preview"): the detail box draws the cap over the pivot, in the picture's ink (Okay: "Color stays on the face"), on the hand the cap is drawn with — the seconds hand, or the topmost with *Cap on this hand* | **done — 4.89.1** |
 
 ## Dial Packer (side product, 19 Oct 2026)
 
