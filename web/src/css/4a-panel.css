@@ -99,8 +99,12 @@
      type block moves up"): its heading is the eye alone, in the eyes' column, beside what the pane holds, which starts
      at the pane's top. Folded, it is a heading like any other, with its summary. */
   .pane.bare:not(.folded) { position: relative; }
-  .pane.bare:not(.folded) > .fold { position: absolute; z-index: 1; top: 0; left: 0; width: auto; min-height: 0; align-items: start; grid-template-columns: var(--eye); }      /* its eye's top flush with the box's top (4.79; Okay, 19 Oct 2026: "align flush top with eye"; centred on a line's height until 4.78, 6 lower) */
+  .pane.bare:not(.folded) > .fold { position: absolute; z-index: 1; top: calc((var(--head) - var(--eye)) / 2); left: 0; width: auto; min-height: 0; align-items: start; grid-template-columns: var(--eye); }      /* its eye's top flush with the box's top (4.79; Okay, 19 Oct 2026: "align flush top with eye"; centred on a line's height until 4.78, 6 lower); both as low as a heading's eye since 4.83 */
   .pane.bare:not(.folded) > .fold > :not(.eye) { display: none; }
+  /* its eye as far under the line over it as every heading's eye (centred on --head), and the box down with it, its top on
+     the eye's top (4.83; Okay, 19 Oct 2026: "general eye top padding is the same as all the rows, the font box moves
+     down with eye"; both stood on the line in 4.79–4.82): the body's room over the box tops up the box's own unit */
+  .pane.bare:not(.folded) > .body { padding-top: calc((var(--head) - var(--eye)) / 2 - var(--unit)); }
   /* a heading that carries controls on its line (a window's places, its shapes; 4.46.2, Okay: "these rows are allowed
      height growth now… appropriate vertical padding like all the rows"): they get a unit over and under them, as the
      tiles in a row do, and the heading grows to hold them; its title keeps the place it has on every heading — the

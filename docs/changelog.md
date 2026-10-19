@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.84 (web version) · 19 Oct 2026
+
+Okay's notes, 19 Oct, 12:06.
+
+- **Ticks and notes after a row of controls start on the controls' column**, under them — app-wide ("The drawing of secondary lines after an adjustment, they start on the column aligned with the upper row"): *Turn it with its radius*, *Follows the date in the bar*, a window's neighbours and physics, the moon's age note, and every other tick or note that follows a row in a pane. One that heads a pane's rows keeps the left edge; rows beside a hand's box keep their own columns.
+- **The font box's eye as low as every heading's eye**, the box down with it, their tops level ("general eye top padding is the same as all the rows, the font box moves down with eye"): 12 under the line over the pane, as a heading's eye centred on its 40; in 4.79–4.83 both stood on the line.
+
 ## beta 4.83 (web version) · 19 Oct 2026
 
 The ring of shine, after Okay's look at 4.81 (19 Oct, 01:59: "almost perfect, bring in more bands, wider (5x) on dusk and dawn, sharpest (3x) on noon. Smaller shine diameter").
