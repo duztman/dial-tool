@@ -99,7 +99,6 @@
     --ringline-inner: var(--triple);               /* its second, inner line: three times the outer */
     --row-end: calc(var(--frame-pad) - var(--hair) + var(--ringline-inner));      /* the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons */
     --line-button: 36px; --bare-dot: 16px;      /* in the ring drawer every control is this high (a value button this wide too) · the colour's swatch */
-    --bar-now: color-mix(in srgb, var(--bar-light) 80%, var(--black)); --bar-now-hover: color-mix(in srgb, var(--bar-light) 90%, var(--black)); --bar-now-ink: var(--rule-light);      /* NOW: filled, the bar's one filled button (Okay, 16 Oct 2026, #306: "fill bg, invert type"); its fill 20 % darker than AM's outline, the bar's light tone (#307: "darker than ams outlines by 20%"), so its word is the panel's light rule tone, #D4D4CF (4.5 : 1; the bar's dark would read 1.7 : 1, and nothing on the bar is white — Okay, 15 Oct 2026); a hover 10 % darker than the outline; a press: the light tone */
     --value-pop: 132px;                            /* a value button's tag: about as wide as it is high */
     /* the number popup — the controller (#249; Okay's second drawing, controller 2.svg, 18 Oct 2026, #330): one dark
        square holding three things one height (66 at full size): the value in bold on a grey pill, the slider in a
@@ -178,6 +177,7 @@
        measures (--margin, --eye, --gap, --col) and sizes of things (heights, widths), which no scale governs. */
 
     /* asked for by Okay */
+    --datepop-type: calc(1.15 * var(--t-l)); --datepop-step: calc(1.15 * var(--bar-control));      /* the bar's date popup a size up (Okay, 19 Oct 2026, #412: "Popup larger overall"; read as "a bit", 15 %) */
     --control-s: calc(0.75 * var(--control));      /* a quiet button at three quarters: Lang. and Change… in the font box (Okay, 14 Oct 2026: "scale down to 75%") */
     --t-xxs: 10px;                                 /* a fifth type size, the smallest: the words in the font sheet's legend, and the font box's quiet buttons (Okay, 14 Oct 2026) */
     --t-time: 20px;                                /* a sixth, for the bar's time alone: larger than --t-l (Okay, 14 Oct 2026, 23:55: "larger digital time"; "Barlow larger, don't worry optically will be better") */

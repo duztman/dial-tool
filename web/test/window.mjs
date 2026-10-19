@@ -1653,9 +1653,9 @@ const fits = await page.evaluate(() => { const w = (q) => Math.round(document.qu
     return { play: w("#play"), zooms: w("#zoom-out") + w("#zoom-in"), fit: w("#fit"), fitpad: getComputedStyle(document.querySelector("#fit")).paddingLeft === getComputedStyle(document.querySelector("#now")).paddingLeft && Math.abs(box("#fit").width - (box("#fit span").width + 2 * parseFloat(getComputedStyle(document.querySelector("#fit")).paddingLeft) + parseFloat(getComputedStyle(document.querySelector("#fit")).borderLeftWidth) + parseFloat(getComputedStyle(document.querySelector("#fit")).borderRightWidth))) < 0.5, sign: box(".zoomsign").right <= box(".zooms").left && Math.abs(box("#zoom-in").right - box("#fit").left) < 0.5 && document.querySelector("#fit svg") === null, gaps, touch: +(box("#ampm").left - box(".timewell").right).toFixed(1), half: [+box("#ampm").width.toFixed(1), +box("#ampm").height.toFixed(1), +((box("#ampm").top + box("#ampm").bottom) / 2 - (box(".timewell").top + box(".timewell").bottom) / 2).toFixed(1)], end: Math.round(box(".bar .lead").right - pad - box("#now").right) }; });
 check(fits.play === 34 && fits.zooms === 54 && fits.fitpad && fits.sign && fits.gaps[0] === 24 - 3.5 && fits.gaps[1] === fits.gaps[2] && fits.touch === 0 && fits.half[1] === 30 && Math.abs(fits.half[2]) < 0.5 && fits.end === 0,
   `under the panel: play, a margin less what the speed box grew toward it (24 − 3.5, Okay 15 Oct 03:18), how fast · the time with AM · PM attached, as high, its word the time's size (#284, 4.44.6), then the date touching it (4.62) · NOW one equal gap apart, NOW ending on the panel's last column; at the right the magnifier first, then − + FIT side by side (notes 2, 18 Oct 2026), FIT a word with NOW's padding (#315) (${JSON.stringify(fits)})`);
-{ // the bar's time, second look (#306, 4.45.5): the figures tracked +0.04em, AM · PM 5.5 each side, NOW filled light with a dark word
-  const look = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c("#time").letterSpacing, c("#ampm").paddingLeft, c("#ampm").paddingRight, c("#now").backgroundColor, c("#now").color]; });
-  check(look.join(" ") === "0.8px 5.5px 5.5px color(srgb 0.360784 0.360784 0.360784) rgb(212, 212, 207)", `the bar's time: its figures tracked +0.04em, AM · PM closer to its word, NOW filled 20 % darker than AM's outline (#5C5C5C) with its word the light rule tone, not white (${look.join(" · ")}) (#306, #307)`);
+{ // the bar's time, second look (#306, 4.45.5): the figures tracked +0.04em, AM · PM 5.5 each side; NOW drawn as the bar's other boxes (#414)
+  const look = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)); return [c("#time").letterSpacing, c("#ampm").paddingLeft, c("#ampm").paddingRight, c("#now").backgroundColor, c("#now").color === c("#ampm").color && c("#now").borderTopColor === c("#ampm").borderTopColor]; });
+  check(look.join(" ") === "0.8px 5.5px 5.5px rgba(0, 0, 0, 0) true", `the bar's time: its figures tracked +0.04em, AM · PM closer to its word; NOW unfilled, its outline and word AM · PM's (${look.join(" · ")}) (Okay, 19 Oct 2026, #414: "Why? fill with grey, worst colour")`);
 }
 await shot("7b-bar");
 await enter_value("#time", "3:20:10");
@@ -2052,23 +2052,34 @@ check(look.square && look.bar === 62 && look.play[0] === look.play[1] && look.pl
   await page.evaluate(() => window.dial_tool.set_time(10 * 3600 + 600));
 }
 await shot("10-bar");
-{ // the bar's date popup (4.89, #402; Okay, 19 Oct 2026: "Date on the black bar is click to edit on popup. Plusminus for both. No controller"; "Try barlow not condensed for font")
+{ // the bar's date popup (#402; #412, Okay, 19 Oct 2026: "Popup larger overall", "Remove time", "Minus moves next to plus, dropdowns just for groupings", "size fixed, no movements by change in content")
   const was = await page.evaluate(() => JSON.stringify([window.dial_tool.S.date, window.dial_tool.S.t]));
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "date", "2026-10-19"); t.set_time(36576); });
   await page.click("#date"); await frame();
-  const open = await page.evaluate(() => { const p = document.querySelector("#date-pop"), r = p.getBoundingClientRect(), d = document.querySelector("#date").getBoundingClientRect(), c = getComputedStyle(p);
-    const w = document.querySelector("#date-pop-day").getBoundingClientRect();
-    return [!p.hidden, document.querySelector("#date-pop-day").textContent, document.querySelector("#date-pop-time").textContent, r.bottom <= d.top, c.fontFamily.includes("Dial Pop"), p.querySelectorAll(".popstep").length, !document.querySelector("#num-pop") || document.querySelector("#num-pop").hidden, p.scrollWidth <= p.clientWidth + 1 && w.left >= r.left && w.right <= r.right && Math.abs((r.left + r.right) / 2 - (d.left + d.right) / 2) < 2]; });
-  await page.click("#date-pop .popline:first-child .popstep:last-child"); await frame();      // a day later
-  await page.click("#date-pop .popline:last-child .popstep:first-child"); await frame();      // an hour earlier
-  const stepped = await page.evaluate(() => [window.dial_tool.S.date, window.dial_tool.S.t, document.querySelector("#date-pop-day").textContent, document.querySelector("#date-pop-time").textContent]);
+  const look = () => page.evaluate(() => { const p = document.querySelector("#date-pop"), r = p.getBoundingClientRect(), d = document.querySelector("#date").getBoundingClientRect(), c = getComputedStyle(p);
+    const words = [...p.querySelectorAll(".popline > *")].map((e) => (e.querySelector(".popword") || e).textContent).join(" ");
+    return { shown: !p.hidden, words, over: r.bottom <= d.top, face: c.fontFamily.includes("Dial Pop"), lines: p.querySelectorAll(".popline").length, steps: [...p.querySelectorAll(".popsteps .popstep")].length, menus: [...p.querySelectorAll("select")].map((s) => s.id).join(" "), w: Math.round(r.width), h: Math.round(r.height), centred: Math.abs((r.left + r.right) / 2 - (d.left + d.right) / 2) < 2 }; });
+  const open = await look();
+  await page.click("#date-pop .popsteps .popstep:last-child"); await frame();      // a day later
+  const later = await look();
+  await page.selectOption("#date-pop-month", "1"); await frame();      // February: the 20th stays the 20th
+  await page.selectOption("#date-pop-day", "3"); await frame();
+  await page.selectOption("#date-pop-year", "2031"); await frame();
+  const picked = [await S("S.date"), (await look()).words];
+  await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "date", "2026-05-31"); t.date_pop_sync(); });
+  await page.selectOption("#date-pop-month", "1"); await frame();      // 31 May to February: the month's last day
+  const clamped = await S("S.date");
+  await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "date", "2026-09-30"); t.date_pop_sync(); });
+  const wide = await look();      // Wed 30 Sep: the widest words
   await shot("10b-date-pop");
   await page.mouse.click(700, 300); await frame();      // a press elsewhere puts it away
   const away = await page.evaluate(() => document.querySelector("#date-pop").hidden);
   await page.evaluate((w) => { const t = window.dial_tool, v = JSON.parse(w); t.set_value("global", "date", v[0]); t.set_time(v[1]); }, was);
-  check(open[0] && open[1] === "Mon 19 Oct 2026" && open[2] === "10:09:36 AM" && open[3] && open[4] && open[5] === 4 && open[6] && open[7] && stepped[0] === "2026-10-20" && stepped[1] === 32976 && stepped[2] === "Tue 20 Oct 2026" && stepped[3] === "9:09:36 AM" && away,
-    `the bar's date opens its popup over the box, in Dial Pop (Barlow Regular): the day written out and the time, − and + round each, no controller, as wide as its words and centred on the box (${open.join(" ")}); + a day, − an hour (${stepped.join(" ")}); a press elsewhere closes it (${away})`);
+  check(open.shown && open.words === "Mon 19 Oct 2026 " && open.over && open.face && open.lines === 1 && open.steps === 2 && open.menus === "date-pop-day date-pop-month date-pop-year" && open.centred
+    && later.words === "Tue 20 Oct 2026 " && picked[0] === "2031-02-03" && picked[1] === "Mon 3 Feb 2031 " && clamped === "2026-02-28" && wide.w === open.w && wide.h === open.h && away,
+    `the bar's date opens its popup over the box, in Dial Pop: one line, no time — the weekday, then day · month · year as menus, then − and + together (${open.words}| ${open.menus}); + a day (${later.words}); the menus pick a day (${picked.join(" · ")}), a short month keeps the date in it (${clamped}); its size the same whatever the date reads (${open.w}×${open.h}, ${wide.w}×${wide.h}); a press elsewhere closes it (${away})`);
 }
+
 { // the showcase (Okay, 15 Oct 2026, 04:26, reshaped 04:59 and 05:09)
   const q = () => page.evaluate(() => { const t = window.dial_tool, r = (s) => document.querySelector(s).getBoundingClientRect(), c = (s) => getComputedStyle(document.querySelector(s));
     return { show: !!t.show, w: innerWidth, h: innerHeight, z: t.z, dial: t.z * t.S.dial_d, c: t.c.slice(), moving: t.moving(), playing: t.playing, speed: t.speed, t: t.S.t, phase: t.show ? t.show.phase : null, from: t.show ? t.sun().from : null,

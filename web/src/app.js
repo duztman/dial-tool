@@ -2088,19 +2088,38 @@ class DialTool {
     return [box, strap];
   }
 
-  /** the bar's date popup (4.89, #402): two lines, the day and the time, each between − and +; built once, hidden. */
+  /** the bar's date popup (#402, #412): one line — the weekday, then the day, the month and the year, each a menu, then
+   *  − and + side by side (Okay, 19 Oct 2026: "Minus moves next to plus, dropdowns just for groupings"; "Remove time"):
+   *  a day earlier or later. Its parts keep their widths whatever the date reads ("size fixed, no movements by change in
+   *  content"). The menus are the rows' menus (menu_arrow, R34) on the bar's dark; built once, hidden. */
   date_pop_box() {
-    const step = (sign, kind) => el("button", { type: "button", className: "popstep", ariaLabel: `${sign < 0 ? "A" : "Next"} ${kind} ${sign < 0 ? "earlier" : "later"}`, onclick: () => (kind === "day" ? this.step_day(sign) : this.set_time(((this.S.t + sign * 3600) % 86400 + 86400) % 86400)) });
-    const day_word = el("button", { type: "button", className: "popword", id: "date-pop-day", title: "Pick a day", onclick: () => { this.date_pick.value = G.shown_day(this.S); try { this.date_pick.showPicker(); } catch (e) { this.date_pick.focus(); this.date_pick.click(); } } });
-    const time_word = el("span", { className: "popword", id: "date-pop-time" });
-    const line = (minus, word, plus) => { minus.innerHTML = STEP.minus; plus.innerHTML = STEP.plus; return el("div", { className: "popline" }, minus, word, plus); };
-    this.date_pop = el("div", { className: "datepop", id: "date-pop", hidden: true }, line(step(-1, "day"), day_word, step(1, "day")), line(step(-1, "hour"), time_word, step(1, "hour")));
+    const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const weekday = el("span", { className: "popword weekday", id: "date-pop-weekday" });
+    const shown = () => new Date(G.shown_day(this.S) + "T12:00:00");
+    const put = (d) => this.set_value("global", "date", `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
+    // one group: its value as a word over the browser's own menu, unseen, with the boxed arrow; `set` moves the date
+    const group = (name, set) => {
+      const select = el("select", { id: "date-pop-" + name, ariaLabel: "The " + name });
+      const word = el("span", { className: "popword" });
+      select.onchange = () => { const d = shown(); set(d, +select.value); put(d); this.date_pop_sync(); };
+      return { select, word, el: el("span", { className: "popgroup pop-" + name }, word, menu_arrow(select)) };
+    };
+    const day = group("day", (d, v) => d.setDate(v));
+    const month = group("month", (d, v) => { const keep = d.getDate(); d.setDate(1); d.setMonth(v); d.setDate(Math.min(keep, new Date(d.getFullYear(), v + 1, 0).getDate())); });
+    const year = group("year", (d, v) => { const keep = d.getDate(), m = d.getMonth(); d.setDate(1); d.setFullYear(v); d.setDate(Math.min(keep, new Date(v, m + 1, 0).getDate())); });
+    MONTHS.forEach((m, i) => month.select.append(el("option", { value: i, textContent: m })));
+    const step = (sign) => el("button", { type: "button", className: "popstep", innerHTML: sign < 0 ? STEP.minus : STEP.plus, ariaLabel: sign < 0 ? "A day earlier" : "A day later", onclick: () => this.step_day(sign) });
+    this.date_pop = el("div", { className: "datepop", id: "date-pop", hidden: true },
+      el("div", { className: "popline" }, weekday, day.el, month.el, year.el, el("span", { className: "popsteps" }, step(-1), step(1))));
     this.date_pop.onkeydown = (e) => { if (e.key === "Escape") this.date_pop_open(false); };
     this.date_pop_sync = () => {
       if (!this.date_pop || this.date_pop.hidden) return;
-      const d = new Date(G.shown_day(this.S) + "T12:00:00");
-      day_word.textContent = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d.getDay()] + ` ${d.getDate()} ` + ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][d.getMonth()] + ` ${d.getFullYear()}`;
-      time_word.textContent = fmt_time(this.S.t) + (this.S.t >= 43200 ? " PM" : " AM");
+      const d = shown(), y = d.getFullYear(), m = d.getMonth(), last = new Date(y, m + 1, 0).getDate();
+      weekday.textContent = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d.getDay()];
+      if (day.select.options.length !== last) day.select.replaceChildren(...Array.from({ length: last }, (_, i) => el("option", { value: i + 1, textContent: i + 1 })));
+      if (+(year.select.options[0] || {}).value !== y - 50) year.select.replaceChildren(...Array.from({ length: 101 }, (_, i) => el("option", { value: y - 50 + i, textContent: y - 50 + i })));
+      day.select.value = d.getDate(); month.select.value = m; year.select.value = y;
+      day.word.textContent = d.getDate(); month.word.textContent = MONTHS[m]; year.word.textContent = y;
     };
     return this.date_pop;
   }
@@ -5541,7 +5560,7 @@ class DialTool {
   half() { return this.S.t % 86400 >= 43200 ? 43200 : 0; }
 
   sync_time() {
-    if (this.date_pop_sync) this.date_pop_sync();      // the date popup's time line (4.88)
+    if (this.date_pop_sync) this.date_pop_sync();      // the date popup follows a day passing at midnight
     const t12 = ((this.S.t % 43200) + 43200) % 43200;
     if (this.date_lines) {                         // the date, stacked: day over month, two figures each (07/10; no year — Okay, 19 Oct 2026: "better fit inside the bounding box")
       const [y, m, d] = G.shown_day(this.S).split("-");

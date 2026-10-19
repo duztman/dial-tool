@@ -7,13 +7,13 @@
 //   setup.js   optional: a file of JavaScript run in the page before the shot (click a ring, open a popup…);
 //              if it ends in a value (measures from getBoundingClientRect), that is printed
 //
-// CROP_H=1800 for a taller window (a whole tab). Same page set-up as shot.mjs and look.mjs: the plain starting dial, every pane open, fonts served from web/fonts/.
+// CROP_H=1800 for a taller window (a whole tab); CROP_W=1180 CROP_H=820 an iPad on its side. Same page set-up as shot.mjs and look.mjs: the plain starting dial, every pane open, fonts served from web/fonts/.
 import { chromium } from "playwright";
 import fs from "fs";
 const [out, tab = "Dial", selector = ".form", setup, settings] = process.argv.slice(2);
 if (!out) { console.log("usage: node test/crop.mjs out.png <tab> <selector> [setup.js] [settings.json]"); process.exit(1); }
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || "/opt/pw-browsers/chromium" });
-const page = await browser.newPage({ viewport: { width: 1440, height: +(process.env.CROP_H || 900) }, deviceScaleFactor: 2 });
+const page = await browser.newPage({ viewport: { width: +(process.env.CROP_W || 1440), height: +(process.env.CROP_H || 900) }, deviceScaleFactor: 2 });
 page.on("pageerror", (e) => console.log("page error:", e.message));
 page.on("console", (m) => { if (m.type() === "error") console.log("console error:", m.text()); });
 await page.route("https://duztman.github.io/dial-tool/fonts/**", (route) => route.fulfill({ path: "fonts/" + decodeURIComponent(route.request().url().split("/fonts/")[1]), headers: { "access-control-allow-origin": "*" } }));

@@ -90,17 +90,29 @@
   /* the date's popup (#402; Okay, 19 Oct 2026: "Date on the black bar is click to edit on popup. Plusminus for both.
      No controller"): rising from the date's box, in the bar's tones; two lines, the day written out and the time, each
      between a − and a +, in Barlow Regular ("Try barlow not condensed"). A press on the day opens the system's picker */
-  .bar .datepop { position: absolute; z-index: 7; left: 50%; bottom: calc(100% + var(--u2)); translate: -50% 0; width: max-content; display: grid; gap: var(--u1); padding: var(--u2); border: var(--hair) solid var(--bar-light); border-radius: var(--round-small); background: var(--bar); color: var(--bar-ink); font-family: var(--pop-face); font-size: var(--t-l); white-space: nowrap; box-shadow: var(--shadow); }
-  .bar .datepop .popline { display: grid; grid-template-columns: var(--bar-control) minmax(0, 1fr) var(--bar-control); align-items: center; }
-  .bar .datepop .popstep { display: grid; place-items: center; height: var(--bar-control); color: var(--bar-ink); }
+  .bar .datepop { position: absolute; z-index: 7; left: 50%; bottom: calc(100% + var(--u2)); translate: -50% 0; width: max-content; display: grid; gap: var(--u1); padding: var(--u2); border: var(--hair) solid var(--bar-light); border-radius: var(--round-small); background: var(--bar); color: var(--bar-ink); font-family: var(--pop-face); font-size: var(--datepop-type); font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: var(--shadow); }
+  /* one line: the weekday, then day · month · year, each its word and a boxed arrow over the browser's menu, then − and +
+     side by side (#412). Each part as wide as its widest value, so nothing moves when the date changes ("size fixed, no
+     movements by change in content"): the figures tabular, a word in ch. "Popup larger overall": its type and its
+     steps a size up (--datepop-type, --datepop-step) */
+  .bar .datepop .popline { display: flex; align-items: center; gap: var(--u2); height: var(--datepop-step); }
+  .bar .datepop .popword { color: var(--bar-ink); text-align: center; }
+  .bar .datepop .weekday { width: 3.2ch; text-align: left; }
+  .bar .datepop .popgroup { display: inline-flex; align-items: center; gap: var(--u1); height: 100%; padding-left: var(--u2); border: var(--hair) solid var(--bar-light); }
+  .bar .datepop .popgroup:hover { background: var(--bar-field); }
+  .bar .datepop .pop-day .popword { width: 2ch; }
+  .bar .datepop .pop-month .popword { width: 3.2ch; }
+  .bar .datepop .pop-year .popword { width: 4ch; }
+  .bar .datepop .labelmenu { height: 100%; border-width: 0 0 0 var(--hair); border-color: var(--bar-light); background: none; color: var(--bar-ink); }
+  .bar .datepop .popsteps { display: flex; height: 100%; }
+  .bar .datepop .popstep { display: grid; place-items: center; width: var(--datepop-step); height: 100%; color: var(--bar-ink); border: var(--hair) solid var(--bar-light); }
+  .bar .datepop .popstep + .popstep { border-left: 0; }
   .bar .datepop .popstep:hover { background: var(--bar-field); }
-  .bar .datepop .popword { padding: 0 var(--u3); text-align: center; color: var(--bar-ink); font: inherit; }
-  .bar .datepop button.popword:hover { background: var(--bar-field); }
-  /* NOW: capitals, at AM · PM's size (Okay: "Now uppercase and in pm's font size which grows 1px"); filled, light, its
-     word dark (#306, 4.45.5) */
-  .bar .lead #now { padding: 0 var(--u3); border-color: var(--bar-now); background: var(--bar-now); color: var(--bar-now-ink); font-size: var(--t-s); text-transform: uppercase; }      /* filled, 20 % darker than AM's outline, its word light (#307) */
-  .bar .lead #now:hover { border-color: var(--bar-now-hover); background: var(--bar-now-hover); }
-  .bar .lead #now:active { border-color: var(--bar-light); background: var(--bar-light); }
+  /* NOW: capitals, at AM · PM's size (Okay: "Now uppercase and in pm's font size which grows 1px"); drawn as the bar's
+     other boxes are — the light outline, the word in the same light, the bar's field under a pointer (Okay, 19 Oct 2026,
+     #414: "Why? fill with grey, worst colour") */
+  .bar .lead #now { padding: 0 var(--u3); border-color: var(--bar-light); background: none; color: var(--bar-light); font-size: var(--t-s); text-transform: uppercase; }
+  .bar .lead #now:hover { background: var(--bar-field); }
   .bar .time { width: 100%; text-align: center; }
   .bar .viewing { margin-left: auto; padding: 0 0 0 var(--margin); }      /* at the right; the room the day slider doesn't take lies before it. From its divider to what follows as far as from Fit to the window's right edge: the margin (Okay, 15 Oct 2026, 01:03: "equalize those gaps") */
   /* the zoom area (Okay, 18 Oct 2026, notes 2): the magnifier first, faint, nothing to press but its tag (how to zoom and

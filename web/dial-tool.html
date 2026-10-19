@@ -136,7 +136,6 @@
     --ringline-inner: var(--triple);               /* its second, inner line: three times the outer */
     --row-end: calc(var(--frame-pad) - var(--hair) + var(--ringline-inner));      /* the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons */
     --line-button: 36px; --bare-dot: 16px;      /* in the ring drawer every control is this high (a value button this wide too) · the colour's swatch */
-    --bar-now: color-mix(in srgb, var(--bar-light) 80%, var(--black)); --bar-now-hover: color-mix(in srgb, var(--bar-light) 90%, var(--black)); --bar-now-ink: var(--rule-light);      /* NOW: filled, the bar's one filled button (Okay, 16 Oct 2026, #306: "fill bg, invert type"); its fill 20 % darker than AM's outline, the bar's light tone (#307: "darker than ams outlines by 20%"), so its word is the panel's light rule tone, #D4D4CF (4.5 : 1; the bar's dark would read 1.7 : 1, and nothing on the bar is white — Okay, 15 Oct 2026); a hover 10 % darker than the outline; a press: the light tone */
     --value-pop: 132px;                            /* a value button's tag: about as wide as it is high */
     /* the number popup — the controller (#249; Okay's second drawing, controller 2.svg, 18 Oct 2026, #330): one dark
        square holding three things one height (66 at full size): the value in bold on a grey pill, the slider in a
@@ -215,6 +214,7 @@
        measures (--margin, --eye, --gap, --col) and sizes of things (heights, widths), which no scale governs. */
 
     /* asked for by Okay */
+    --datepop-type: calc(1.15 * var(--t-l)); --datepop-step: calc(1.15 * var(--bar-control));      /* the bar's date popup a size up (Okay, 19 Oct 2026, #412: "Popup larger overall"; read as "a bit", 15 %) */
     --control-s: calc(0.75 * var(--control));      /* a quiet button at three quarters: Lang. and Change… in the font box (Okay, 14 Oct 2026: "scale down to 75%") */
     --t-xxs: 10px;                                 /* a fifth type size, the smallest: the words in the font sheet's legend, and the font box's quiet buttons (Okay, 14 Oct 2026) */
     --t-time: 20px;                                /* a sixth, for the bar's time alone: larger than --t-l (Okay, 14 Oct 2026, 23:55: "larger digital time"; "Barlow larger, don't worry optically will be better") */
@@ -1640,17 +1640,29 @@
   /* the date's popup (#402; Okay, 19 Oct 2026: "Date on the black bar is click to edit on popup. Plusminus for both.
      No controller"): rising from the date's box, in the bar's tones; two lines, the day written out and the time, each
      between a − and a +, in Barlow Regular ("Try barlow not condensed"). A press on the day opens the system's picker */
-  .bar .datepop { position: absolute; z-index: 7; left: 50%; bottom: calc(100% + var(--u2)); translate: -50% 0; width: max-content; display: grid; gap: var(--u1); padding: var(--u2); border: var(--hair) solid var(--bar-light); border-radius: var(--round-small); background: var(--bar); color: var(--bar-ink); font-family: var(--pop-face); font-size: var(--t-l); white-space: nowrap; box-shadow: var(--shadow); }
-  .bar .datepop .popline { display: grid; grid-template-columns: var(--bar-control) minmax(0, 1fr) var(--bar-control); align-items: center; }
-  .bar .datepop .popstep { display: grid; place-items: center; height: var(--bar-control); color: var(--bar-ink); }
+  .bar .datepop { position: absolute; z-index: 7; left: 50%; bottom: calc(100% + var(--u2)); translate: -50% 0; width: max-content; display: grid; gap: var(--u1); padding: var(--u2); border: var(--hair) solid var(--bar-light); border-radius: var(--round-small); background: var(--bar); color: var(--bar-ink); font-family: var(--pop-face); font-size: var(--datepop-type); font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: var(--shadow); }
+  /* one line: the weekday, then day · month · year, each its word and a boxed arrow over the browser's menu, then − and +
+     side by side (#412). Each part as wide as its widest value, so nothing moves when the date changes ("size fixed, no
+     movements by change in content"): the figures tabular, a word in ch. "Popup larger overall": its type and its
+     steps a size up (--datepop-type, --datepop-step) */
+  .bar .datepop .popline { display: flex; align-items: center; gap: var(--u2); height: var(--datepop-step); }
+  .bar .datepop .popword { color: var(--bar-ink); text-align: center; }
+  .bar .datepop .weekday { width: 3.2ch; text-align: left; }
+  .bar .datepop .popgroup { display: inline-flex; align-items: center; gap: var(--u1); height: 100%; padding-left: var(--u2); border: var(--hair) solid var(--bar-light); }
+  .bar .datepop .popgroup:hover { background: var(--bar-field); }
+  .bar .datepop .pop-day .popword { width: 2ch; }
+  .bar .datepop .pop-month .popword { width: 3.2ch; }
+  .bar .datepop .pop-year .popword { width: 4ch; }
+  .bar .datepop .labelmenu { height: 100%; border-width: 0 0 0 var(--hair); border-color: var(--bar-light); background: none; color: var(--bar-ink); }
+  .bar .datepop .popsteps { display: flex; height: 100%; }
+  .bar .datepop .popstep { display: grid; place-items: center; width: var(--datepop-step); height: 100%; color: var(--bar-ink); border: var(--hair) solid var(--bar-light); }
+  .bar .datepop .popstep + .popstep { border-left: 0; }
   .bar .datepop .popstep:hover { background: var(--bar-field); }
-  .bar .datepop .popword { padding: 0 var(--u3); text-align: center; color: var(--bar-ink); font: inherit; }
-  .bar .datepop button.popword:hover { background: var(--bar-field); }
-  /* NOW: capitals, at AM · PM's size (Okay: "Now uppercase and in pm's font size which grows 1px"); filled, light, its
-     word dark (#306, 4.45.5) */
-  .bar .lead #now { padding: 0 var(--u3); border-color: var(--bar-now); background: var(--bar-now); color: var(--bar-now-ink); font-size: var(--t-s); text-transform: uppercase; }      /* filled, 20 % darker than AM's outline, its word light (#307) */
-  .bar .lead #now:hover { border-color: var(--bar-now-hover); background: var(--bar-now-hover); }
-  .bar .lead #now:active { border-color: var(--bar-light); background: var(--bar-light); }
+  /* NOW: capitals, at AM · PM's size (Okay: "Now uppercase and in pm's font size which grows 1px"); drawn as the bar's
+     other boxes are — the light outline, the word in the same light, the bar's field under a pointer (Okay, 19 Oct 2026,
+     #414: "Why? fill with grey, worst colour") */
+  .bar .lead #now { padding: 0 var(--u3); border-color: var(--bar-light); background: none; color: var(--bar-light); font-size: var(--t-s); text-transform: uppercase; }
+  .bar .lead #now:hover { background: var(--bar-field); }
   .bar .time { width: 100%; text-align: center; }
   .bar .viewing { margin-left: auto; padding: 0 0 0 var(--margin); }      /* at the right; the room the day slider doesn't take lies before it. From its divider to what follows as far as from Fit to the window's right edge: the margin (Okay, 15 Oct 2026, 01:03: "equalize those gaps") */
   /* the zoom area (Okay, 18 Oct 2026, notes 2): the magnifier first, faint, nothing to press but its tag (how to zoom and
@@ -11059,6 +11071,11 @@ var chk = (key, text, o = {}) => ({ kind: "chk", key, text, ...o });
 var col = (key, text, o = {}) => ({ kind: "col", key, text, ...o });
 var txt = (key, text, o = {}) => ({ kind: "txt", key, text, ...o });
 var hdr = (text, o = {}) => ({ kind: "hdr", text, ...o });
+var menu_arrow = (select) => {
+  const arrow = el("span", { className: "labelmenu" }, select);
+  arrow.insertAdjacentHTML("afterbegin", icon(`<path d="M3.25 4.75L6.25 7.75L9.25 4.75" ${sw(SLANT)}/>`, 12));
+  return arrow;
+};
 var info = (text, o = {}) => ({ kind: "note", text, ...o });
 var custom = (name, o = {}) => ({ kind: "custom", name, ...o });
 var RADIUS_ROWS = {
@@ -12892,33 +12909,61 @@ var DialTool = class _DialTool {
     this.case_sync();
     return [box2, strap];
   }
-  /** the bar's date popup (4.89, #402): two lines, the day and the time, each between − and +; built once, hidden. */
+  /** the bar's date popup (#402, #412): one line — the weekday, then the day, the month and the year, each a menu, then
+   *  − and + side by side (Okay, 19 Oct 2026: "Minus moves next to plus, dropdowns just for groupings"; "Remove time"):
+   *  a day earlier or later. Its parts keep their widths whatever the date reads ("size fixed, no movements by change in
+   *  content"). The menus are the rows' menus (menu_arrow, R34) on the bar's dark; built once, hidden. */
   date_pop_box() {
-    const step = (sign, kind) => el("button", { type: "button", className: "popstep", ariaLabel: `${sign < 0 ? "A" : "Next"} ${kind} ${sign < 0 ? "earlier" : "later"}`, onclick: () => kind === "day" ? this.step_day(sign) : this.set_time(((this.S.t + sign * 3600) % 86400 + 86400) % 86400) });
-    const day_word = el("button", { type: "button", className: "popword", id: "date-pop-day", title: "Pick a day", onclick: () => {
-      this.date_pick.value = shown_day(this.S);
-      try {
-        this.date_pick.showPicker();
-      } catch (e) {
-        this.date_pick.focus();
-        this.date_pick.click();
-      }
-    } });
-    const time_word = el("span", { className: "popword", id: "date-pop-time" });
-    const line2 = (minus, word, plus) => {
-      minus.innerHTML = STEP.minus;
-      plus.innerHTML = STEP.plus;
-      return el("div", { className: "popline" }, minus, word, plus);
+    const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const weekday = el("span", { className: "popword weekday", id: "date-pop-weekday" });
+    const shown = () => /* @__PURE__ */ new Date(shown_day(this.S) + "T12:00:00");
+    const put = (d) => this.set_value("global", "date", `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
+    const group = (name, set) => {
+      const select = el("select", { id: "date-pop-" + name, ariaLabel: "The " + name });
+      const word = el("span", { className: "popword" });
+      select.onchange = () => {
+        const d = shown();
+        set(d, +select.value);
+        put(d);
+        this.date_pop_sync();
+      };
+      return { select, word, el: el("span", { className: "popgroup pop-" + name }, word, menu_arrow(select)) };
     };
-    this.date_pop = el("div", { className: "datepop", id: "date-pop", hidden: true }, line2(step(-1, "day"), day_word, step(1, "day")), line2(step(-1, "hour"), time_word, step(1, "hour")));
+    const day = group("day", (d, v) => d.setDate(v));
+    const month = group("month", (d, v) => {
+      const keep = d.getDate();
+      d.setDate(1);
+      d.setMonth(v);
+      d.setDate(Math.min(keep, new Date(d.getFullYear(), v + 1, 0).getDate()));
+    });
+    const year = group("year", (d, v) => {
+      const keep = d.getDate(), m = d.getMonth();
+      d.setDate(1);
+      d.setFullYear(v);
+      d.setDate(Math.min(keep, new Date(v, m + 1, 0).getDate()));
+    });
+    MONTHS.forEach((m, i2) => month.select.append(el("option", { value: i2, textContent: m })));
+    const step = (sign) => el("button", { type: "button", className: "popstep", innerHTML: sign < 0 ? STEP.minus : STEP.plus, ariaLabel: sign < 0 ? "A day earlier" : "A day later", onclick: () => this.step_day(sign) });
+    this.date_pop = el(
+      "div",
+      { className: "datepop", id: "date-pop", hidden: true },
+      el("div", { className: "popline" }, weekday, day.el, month.el, year.el, el("span", { className: "popsteps" }, step(-1), step(1)))
+    );
     this.date_pop.onkeydown = (e) => {
       if (e.key === "Escape") this.date_pop_open(false);
     };
     this.date_pop_sync = () => {
       if (!this.date_pop || this.date_pop.hidden) return;
-      const d = /* @__PURE__ */ new Date(shown_day(this.S) + "T12:00:00");
-      day_word.textContent = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d.getDay()] + ` ${d.getDate()} ` + ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][d.getMonth()] + ` ${d.getFullYear()}`;
-      time_word.textContent = fmt_time(this.S.t) + (this.S.t >= 43200 ? " PM" : " AM");
+      const d = shown(), y = d.getFullYear(), m = d.getMonth(), last = new Date(y, m + 1, 0).getDate();
+      weekday.textContent = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d.getDay()];
+      if (day.select.options.length !== last) day.select.replaceChildren(...Array.from({ length: last }, (_, i2) => el("option", { value: i2 + 1, textContent: i2 + 1 })));
+      if (+(year.select.options[0] || {}).value !== y - 50) year.select.replaceChildren(...Array.from({ length: 101 }, (_, i2) => el("option", { value: y - 50 + i2, textContent: y - 50 + i2 })));
+      day.select.value = d.getDate();
+      month.select.value = m;
+      year.select.value = y;
+      day.word.textContent = d.getDate();
+      month.word.textContent = MONTHS[m];
+      year.word.textContent = y;
     };
     return this.date_pop;
   }
@@ -13697,9 +13742,7 @@ var DialTool = class _DialTool {
         menu = el("select", { id: id + "-" + row.menu.key, title: row.menu.title, ariaLabel: row.menu.title });
         for (const [v, name] of row.menu.items) menu.append(el("option", { value: v, textContent: name }));
         menu.onchange = () => this.set_value(row.scope, row.menu.key, +menu.value);
-        const arrow = el("span", { className: "labelmenu" }, menu);
-        arrow.insertAdjacentHTML("afterbegin", icon(`<path d="M3.25 4.75L6.25 7.75L9.25 4.75" ${sw(SLANT)}/>`, 12));
-        lead = el("span", { className: "menulabel" }, label, arrow);
+        lead = el("span", { className: "menulabel" }, label, menu_arrow(menu));
       }
       if (row.button) {
         slider.ariaLabel = field.ariaLabel = row.text;
@@ -14420,8 +14463,7 @@ var DialTool = class _DialTool {
     wrap.className = "row";
     const words = el("span", { className: "fromwords" });
     const select = el("select", { id: "resize-from", title: "What the radius measures to", ariaLabel: "Resize ring from" });
-    const arrow = el("span", { className: "labelmenu" }, select);
-    arrow.insertAdjacentHTML("afterbegin", icon(`<path d="M3.25 4.75L6.25 7.75L9.25 4.75" ${sw(SLANT)}/>`, 12));
+    const arrow = menu_arrow(select);
     let menu = null;
     select.onchange = () => this.set_value("ring", menu.key, +select.value);
     const box2 = el("span", { className: "frombox" }, words, arrow);
