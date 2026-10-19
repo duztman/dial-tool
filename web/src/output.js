@@ -28,6 +28,7 @@ function item_name(item) {
 export function file_name(S, ext, now = new Date()) {
   const day = [now.getFullYear(), now.getMonth() + 1, now.getDate()].map((v) => String(v).padStart(2, "0")).join("-");
   const what = ext === "json" ? "" : (S.out_production ? "-mask" : "") + (S.out_mirror ? "-mirrored" : "");
+  if (ext === "mp4" || ext === "gif") return `dial-${num(S.dial_d, 2)}mm-${day}.${ext}`;      // a moving picture (#51): never a mask
   if (ext === "sheet") return `dial-${num(S.dial_d, 2)}mm-sheet${what}-${day}.pdf`;      // a print sheet (4.75)
   return `dial-${num(S.dial_d, 2)}mm${what}-${day}.${ext}`;
 }

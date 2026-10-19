@@ -14,6 +14,8 @@ import { generate_watchface_xml } from "./wearos/wff_xml.js";
 import { svg_dial_face, svg_hand, svg_cap, svg_preview, svg_window_sheet, svg_to_png_bytes } from "./wearos/wff_assets.js";
 import { build_signed_wearos_apk, format_package_name, sanitize_package_suffix } from "./wearos/apk_packager.js";
 import { FONT_LIST, FONT_SITE } from "./font_list.js";
+import { Muxer, ArrayBufferTarget } from "mp4-muxer";      // MP4's container (MIT): the frames are encoded by the browser (WebCodecs), this packs them (#51)
+import { GIFEncoder, quantize, applyPalette } from "gifenc";      // GIF's encoder (MIT, #51)
 import { EXAMPLES } from "./examples.js";
 import { GALLERY } from "./gallery.js";
 import { OPENER } from "./opener.js";
@@ -342,6 +344,7 @@ const WORDS_MS = 3000;
 // drawer about half, then about three quarters); the least the preview and the drawer keep (px); and how much room for
 // scrolling the drawer must have left under its title, tabs and pinned panes before those stay put
 const SHEET = { shares: [0.42, 0.22], preview: 120, drawer: 160, room: 140 };
+const GIF_MOST = 600, GIF_FPS_MOST = 25;      // a GIF's largest side (px) and frame rate: past these the file grows past what a GIF is good for (#51)
 const FINE_FREE = 12, FINE_HALF = 48, FINE_LEAST = 0.05;      // a slider held away from its track (#406): px of free room, then px per halving step, and the finest share of the track's speed
 const FINE = (off) => Math.max(1 / (1 + off / FINE_HALF), FINE_LEAST);
 const POP_LINGER_MS = 1200, POP_FADE_MS = 120;      // the number popup: after its last use it fades, quickish (Okay, 17 Oct 2026); the stylesheet's --num-pop-linger and --num-pop-fade say the same
@@ -903,6 +906,13 @@ const ROWS = {
     hdr("A set of files", { folded: true }),
     ...G.FILE_SET.map(([key, words]) => chk(key, words)),
     custom("export_set"),
+    // a moving picture of the dial (#51): the hands turning from the time shown, at the bar's speed, as an MP4 or a GIF
+    hdr("Moving picture", { folded: true }),
+    custom("export_motion"),
+    num("out_seconds", "Seconds", 1, 30, 0.5),
+    num("out_fps", "Frames a second", 6, 60, 1, { whole: true }),
+    num("out_px", "Size px", 240, 2160, 10, { whole: true }),
+    info((S) => { const k = tool ? tool.speed : 1, n = Math.round(S.out_seconds * S.out_fps); return `${n} frames, ${S.out_px} × ${S.out_px} px, ${S.out_seconds} s at the bar's speed (${+k.toFixed(2)}×) from the time shown. A GIF is at most ${GIF_MOST} px and ${GIF_FPS_MOST} frames a second.`; }, { scope: "global" }),
     hdr("Link to this dial", { folded: true }),
     custom("link_copy", { head: true }),           // Copy link, flush right on the heading line, open or folded (#277)
     custom("link"),
@@ -1049,6 +1059,17 @@ function save_file(name, data, type) {
 //   after "2" — capitals and digits only (Okay, p. 14: "no dashes, no underscores"; a line breaks evenly anywhere in
 //   it). A link of an older scheme is not read (R31): the First dial opens, with a note on the preview and in the log.
 
+// font files added by hand, kept by this browser (#56: "font files added by hand are forgotten when the page closes"):
+// their bytes in IndexedDB (localStorage holds too little), read back when the page opens. A private window or a full
+// store keeps nothing, and the log says so once (R17)
+const FONT_STORE = { db: "dial-tool", store: "font-files" };
+const font_store = () => new Promise((done, fail) => {
+  const ask = indexedDB.open(FONT_STORE.db, 1);
+  ask.onupgradeneeded = () => ask.result.createObjectStore(FONT_STORE.store);
+  ask.onsuccess = () => done(ask.result); ask.onerror = () => fail(ask.error);
+});
+const font_files_put = async (name, bytes) => { const db = await font_store(); await new Promise((done, fail) => { const tx = db.transaction(FONT_STORE.store, "readwrite"); tx.objectStore(FONT_STORE.store).put(bytes, name); tx.oncomplete = done; tx.onerror = () => fail(tx.error); }); db.close(); };
+const font_files_all = async () => { const db = await font_store(); const out = await new Promise((done, fail) => { const tx = db.transaction(FONT_STORE.store), st = tx.objectStore(FONT_STORE.store), keys = st.getAllKeys(), vals = st.getAll(); tx.oncomplete = () => done(keys.result.map((k, i) => ({ name: k, bytes: vals.result[i] }))); tx.onerror = () => fail(tx.error); }); db.close(); return out; };
 const through = async (bytes, stream) => new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer());
 
 // your saved dials (4.76, #347): in this browser only, newest first, at most INSTANCES_MOST
@@ -5288,6 +5309,76 @@ class DialTool {
     wrap.className = "row";
     wrap.append(el("label", { textContent: "Image" }), this.export_button("PNG"));
   }
+  /** a moving picture (#51): MP4 and GIF, and the speed they run at. */
+  row_export_motion(wrap) {
+    wrap.className = "row";
+    const b = (kind) => el("button", { type: "button", className: "btn main", id: "export-" + kind, textContent: kind.toUpperCase(), title: `A moving ${kind.toUpperCase()} of the dial`, onclick: () => this.export_motion(kind) });
+    wrap.append(el("label", { textContent: "Motion" }), el("span", { className: "btnline" }, b("mp4"), b("gif")));
+  }
+
+  /** the dial's frames from the time shown, each drawn as the PNG export draws (the scene as an SVG, onto a canvas) with
+   *  its backdrop, no guides (R5); an MP4 through the browser's own video encoder (WebCodecs; Chrome, Edge, Safari 17)
+   *  packed by mp4-muxer, or a GIF through gifenc (its 256 colours chosen per frame). Says what it does in the log, and
+   *  why when it can't (R17). */
+  async export_motion(kind) {
+    const S = { ...this.S, guides: false, xray: false, out_production: false, out_mirror: false }, statik = G.build_static(S), k = this.speed || 1;
+    const gif = kind === "gif", px = Math.round(gif ? Math.min(S.out_px, GIF_MOST) : S.out_px) & ~1, fps = gif ? Math.min(S.out_fps, GIF_FPS_MOST) : S.out_fps;
+    const n = Math.max(1, Math.round(S.out_seconds * fps)), name = file_name(S, kind);
+    if (!gif && !window.VideoEncoder) return this.log("MP4 not made: this browser has no video encoder (WebCodecs). Chrome, Edge and Safari 17 have one; or make a GIF.");
+    this.log(`making ${name}: ${n} frames at ${px} px…`);
+    const canvas = el("canvas", { width: px, height: px }), pen = canvas.getContext("2d", { willReadFrequently: gif });
+    const draw = async (t) => {
+      const image = new Image();
+      image.src = URL.createObjectURL(new Blob([svg_document(S, statik, t, { preview: true })], { type: "image/svg+xml" }));
+      await image.decode();
+      pen.clearRect(0, 0, px, px); pen.drawImage(image, 0, 0, px, px);
+      URL.revokeObjectURL(image.src);
+    };
+    const time = (i) => (((S.t + i / fps * k) % 86400) + 86400) % 86400;
+    try {
+      let bytes;
+      if (gif) {
+        const enc = GIFEncoder();
+        for (let i = 0; i < n; i++) {
+          await draw(time(i));
+          const rgba = pen.getImageData(0, 0, px, px).data, palette = quantize(rgba, 256);
+          enc.writeFrame(applyPalette(rgba, palette), px, px, { palette, delay: Math.round(1000 / fps) });
+        }
+        enc.finish();
+        bytes = enc.bytes();
+      } else {
+        // H.264, which every player and After Effects read; where the browser has none (an open-source Chromium), VP9 in
+        // the same MP4, and the log says so
+        const base = { width: px, height: px, bitrate: Math.round(px * px * fps * 0.15), framerate: fps };
+        let config = null, codec = "avc";
+        for (const [c, name] of [["avc1.640033", "avc"], ["vp09.00.40.08", "vp9"]]) {
+          const ok = await VideoEncoder.isConfigSupported({ ...base, codec: c }).catch(() => ({ supported: false }));
+          if (ok.supported) { config = { ...base, codec: c }; codec = name; break; }
+        }
+        if (!config) return this.log(`MP4 not made: this browser can't encode video at ${px} × ${px}. Try a smaller Size px, or a GIF.`);
+        if (codec === "vp9") this.log("this browser has no H.264 encoder: the MP4 holds VP9 video, which some players and After Effects don't read");
+        const muxer = new Muxer({ target: new ArrayBufferTarget(), video: { codec, width: px, height: px }, fastStart: "in-memory" });
+        let failed = null;
+        const encoder = new VideoEncoder({ output: (chunk, meta) => muxer.addVideoChunk(chunk, meta), error: (e) => { failed = e; } });
+        encoder.configure(config);
+        for (let i = 0; i < n && !failed; i++) {
+          await draw(time(i));
+          const frame = new VideoFrame(canvas, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
+          encoder.encode(frame, { keyFrame: i % (fps * 2) === 0 });
+          frame.close();
+        }
+        await encoder.flush();
+        if (failed) throw failed;
+        muxer.finalize();
+        bytes = new Uint8Array(muxer.target.buffer);
+      }
+      save_file(name, bytes, gif ? "image/gif" : "video/mp4");
+      this.log(`exported ${name} · ${n} frames · ${px} × ${px} px · ${fps} a second · ${(bytes.length / 1048576).toFixed(1)} MB`);
+    } catch (e) {
+      this.log(`${kind.toUpperCase()} not made (${e.name}: ${e.message})`);
+    }
+  }
+
   /** a set of files (#171): every ticked one written, one after the other. Chrome asks once whether the page may save
    *  several files; the log says so. */
   row_export_set(wrap) {
@@ -5406,6 +5497,13 @@ class DialTool {
     for (const f of G.font_list()) { const listed = FONT_LIST.find((x) => x.ps === f.ps); this.catalog.set(f.ps, { family: listed ? listed.family : f.family, style: listed ? listed.style : f.style, ps: f.ps, group: "list" }); }
     for (const f of FONT_LIST) if (!this.catalog.has(f.ps)) this.catalog.set(f.ps, { ...f, group: "list" });               // the tool's own list
     for (const f of this.remembered()) if (!this.catalog.has(f.ps)) this.catalog.set(f.ps, { ...f, group: "added" });      // added from a link, earlier
+    try {                                          // added from a file, earlier (#56): into the text engine and the list, as when they were added
+      for (const src of await font_files_all()) for (let i = 0; i < 64; i++) {
+        const got = G.add_font(src.bytes, i);
+        if (!got) break;
+        if (!this.catalog.has(got.ps)) this.catalog.set(got.ps, { family: got.family, style: got.style, ps: got.ps, group: "added", start: this.start_of(got.ps) });
+      }
+    } catch (e) { /* nothing kept here (a private window): files are added again by hand */ }
     await this.load_fonts_in_use();
     try {
       const status = await navigator.permissions.query({ name: "local-fonts" });
@@ -5470,7 +5568,8 @@ class DialTool {
     try {
       const got = [];
       for (const file of files) got.push({ name: file.name, bytes: new Uint8Array(await file.arrayBuffer()) });
-      await this.take_fonts(got);
+      const n = await this.take_fonts(got);
+      if (n) for (const f of got) await font_files_put(f.name, f.bytes).catch(() => this.log(`${f.name} is used now but not kept: this browser's storage is closed or full`));
     } catch (e) {
       this.say_font(`Couldn’t read ${files.map((f) => f.name).join(", ")} (${e.name}: ${e.message}).`);
     }

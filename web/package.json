@@ -11,7 +11,9 @@
     "icons:look": "python3 icons/look.py"
   },
   "dependencies": {
+    "gifenc": "1.0.3",
     "harfbuzzjs": "1.6.3",
+    "mp4-muxer": "5.2.2",
     "pathkit-wasm": "1.0.0"
   },
   "devDependencies": {
