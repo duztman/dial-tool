@@ -38,15 +38,6 @@ function neighbours(discs, gap) {
 //   middle (an ellipse the page's shape); the list's first colour goes to the
 //   middle, its last to the edge. mix (0…1) blurs the bands by shifting each
 //   disc's rank at random.
-function assignColours(discs, s, pal, how, mix, seed) {
-  const out = spreadColours(discs, s, pal, how, mix, seed);
-  // Corner discs (Smallest to corners) take the palette's lightest colour.
-  if (pal.length && discs.some(d => d.corner)) {
-    const light = pal.reduce((a, b) => oklab(b).L > oklab(a).L ? b : a);
-    discs.forEach((d, i) => { if (d.corner) out[i] = light; });
-  }
-  return out;
-}
 function spreadColours(discs, s, pal, how, mix, seed) {
   const n = discs.length, m = pal.length, rand = rng(seed);
   if (!m) return discs.map(() => '#cccccc');
@@ -117,6 +108,63 @@ function tints(hex, steps, span) {
   }
   return out;
 }
-function expandPalette(pal, on, steps, span) {
-  return on ? pal.flatMap(h => tints(h, steps, span)) : pal.slice();
+
+// STEPS BY LIGHTNESS (colour mosaic with Centre → edge). Every step has one
+// lightness shared by all colours, so a step reads as one value: step 1 at the
+// palette's mean lightness, each next step lighter, the last To white % of the
+// way to white. Each colour keeps its hue and chroma (lowered only where the
+// screen can't show it). Returns [colour][step].
+function lightSteps(pal, steps, span) {
+  const lch = pal.map(toLch), top = 0.97;
+  const base = lch.reduce((t, c) => t + c.L, 0) / lch.length;
+  return lch.map(c => Array.from({ length: steps }, (_, t) =>
+    fromLch(base + (top - base) * span * (steps > 1 ? t / (steps - 1) : 0), c.C, c.h)));
+}
+
+// The one entry the page calls. P: { pal, how: 'random' | 'centre', mix 0…1,
+// mosaic: { on, steps, span }, invert }.
+// Centre → edge with the colour mosaic: the discs, ranked by distance from the
+// middle, fall into as many bands as there are steps (the middle the darkest,
+// or the lightest when inverted); inside a band every colour is used about as
+// often, at that band's lightness, shuffled.
+function colourDiscs(discs, s, P, seed) {
+  const { pal, how, mix, mosaic, invert } = P;
+  let out;
+  if (!pal.length) out = discs.map(() => '#cccccc');
+  else if (how === 'centre' && mosaic.on) {
+    const steps = Math.max(2, Math.min(3, Math.round(mosaic.steps)));
+    const grid = lightSteps(pal, steps, mosaic.span), n = discs.length, rand = rng(seed);
+    const cx = s.W / 2, cy = s.H / 2;
+    const rho = discs.map(d => Math.hypot((d.x - cx) / cx, (d.y - cy) / cy) + (rand() - 0.5) * 2 * mix);
+    const order = rho.map((v, i) => i).sort((a, b) => rho[a] - rho[b]);
+    const bands = Array.from({ length: steps }, () => []);
+    order.forEach((i, rank) => {
+      let t = Math.min(steps - 1, Math.floor(rank / n * steps));
+      if (invert) t = steps - 1 - t;
+      bands[t].push(i);
+    });
+    out = new Array(n);
+    bands.forEach((idx, t) => {
+      const hues = idx.map((_, j) => j % pal.length);
+      for (let j = hues.length - 1; j > 0; j--) { const k = Math.floor(rand() * (j + 1)); [hues[j], hues[k]] = [hues[k], hues[j]]; }
+      idx.forEach((i, j) => { out[i] = grid[hues[j]][t]; });
+    });
+  } else {
+    let list = mosaic.on ? pal.flatMap(h => tints(h, mosaic.steps, mosaic.span)) : pal.slice();
+    if (how === 'centre' && invert) list = list.slice().reverse();
+    out = spreadColours(discs, s, list, how, mix, seed);
+  }
+  // Corner discs (Smallest to corners) take the lightest colour in use.
+  if (pal.length && discs.some(d => d.corner)) {
+    const used = [...new Set(out)];
+    const light = used.reduce((a, b) => oklab(b).L > oklab(a).L ? b : a);
+    discs.forEach((d, i) => { if (d.corner) out[i] = light; });
+  }
+  return out;
+}
+// What a palette row's chips show: the steps that will be used.
+function chipsFor(i, P) {
+  if (!P.mosaic.on) return [];
+  if (P.how === 'centre') return lightSteps(P.pal, Math.max(2, Math.min(3, Math.round(P.mosaic.steps))), P.mosaic.span)[i];
+  return tints(P.pal[i], P.mosaic.steps, P.mosaic.span);
 }

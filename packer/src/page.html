@@ -125,6 +125,7 @@ body { margin: 0; }
           <div class="row"><label for="cmSteps">Steps</label><input type="range" id="cmSteps_r" min="2" max="3"><input type="number" id="cmSteps" min="2" max="3"></div>
           <div class="row"><label for="cmSpan">To white %</label><input type="range" id="cmSpan_r" min="10" max="100" step="5"><input type="number" id="cmSpan" min="5" max="100"></div>
         </div>
+        <label class="toggle" for="invert" id="invertRow"><input type="checkbox" id="invert">Invert: light in the middle, dark at the edge</label>
         <div class="row" id="mixRow"><label for="mix">Mix %</label><input type="range" id="mix_r" min="0" max="100" step="5"><input type="number" id="mix" min="0" max="100" step="5"></div>
         <div class="btns">
           <button id="sortCol">Sort by vividness</button>
@@ -169,10 +170,11 @@ body { margin: 0; }
 /*VORONOI*/
 /*COLOUR*/
 
-const DEFAULTS = { nL: 4, nM: 10, nS: 16, rM: 60, rS: 36, gap: 2, bleed: 0, sort: 0, colour: 'size', corners: false, edgeMin: 0, smOn: false, smSteps: 3, smSpread: 20, cmOn: false, cmSteps: 3, cmSpan: 50, spread: 'random', mix: 20, cseed: 1, palette: ['#F5C518', '#E4502E', '#1F4FD1', '#2B2B2A', '#CFC9BC'], tries: 3, seed: 7, method: 'voronoi', nums: true, ghost: false, W: 297, H: 210 };
+// Palette: purple, wine, red, vermilion, orange.
+const DEFAULTS = { nL: 1, nM: 10, nS: 20, rM: 60, rS: 36, gap: 2, bleed: 0, sort: 0, colour: 'palette', corners: false, edgeMin: 0, smOn: true, smSteps: 3, smSpread: 20, cmOn: true, cmSteps: 3, cmSpan: 50, invert: false, spread: 'centre', mix: 20, cseed: 1, palette: ['#5B2A86', '#8E1F5C', '#C0182F', '#E2402A', '#F07A28'], tries: 3, seed: 7, method: 'voronoi', nums: true, ghost: false, W: 297, H: 210 };
 const KEYS = ['nL','nM','nS','rM','rS','gap','bleed','sort','tries','seed','W','H','mix','smSteps','smSpread','cmSteps','cmSpan','edgeMin'];
 let S = { ...DEFAULTS, palette: DEFAULTS.palette.slice() };
-try { Object.assign(S, JSON.parse(localStorage.getItem('dial-packer') || '{}')); } catch (e) {}
+try { Object.assign(S, JSON.parse(localStorage.getItem('dial-packer-2') || '{}')); } catch (e) {}
 let result = null, job = 0;
 
 const $ = id => document.getElementById(id);
@@ -183,15 +185,20 @@ const METHOD_NOTE = {
 };
 const SPREAD_NOTE = {
   random: 'Each colour used about as often, shuffled; touching discs rarely share one.',
-  centre: 'Like a gradient map: the list runs from the middle of the page (1) to its edge (last). Sort by vividness puts the bright, strong colours first. Mix blurs the bands.'
+  centre: 'Like a gradient map: the list runs from the middle of the page (1) to its edge (last). Sort by vividness puts the bright, strong colours first. With the colour mosaic on it goes by lightness alone: each step one shared lightness, the darkest in the middle, colours mixed within a step. Mix blurs the bands.'
 };
+function palP() {
+  return { pal: S.palette, how: S.spread, mix: S.mix / 100, invert: S.invert,
+    mosaic: { on: S.cmOn, steps: S.cmSteps, span: S.cmSpan / 100 } };
+}
+const chipHtml = i => chipsFor(i, palP()).map(t => `<i style="background:${t}" title="${t}"></i>`).join('');
 function showPalette() {
   const ol = $('palList'); ol.innerHTML = '';
   S.palette.forEach((hex, i) => {
     const li = document.createElement('li');
-    li.innerHTML = `<span class="idx">${i + 1}</span><input type="color" id="pc${i}" value="${hex.toLowerCase()}" aria-label="Colour ${i + 1}"><input type="text" id="pt${i}" value="${hex}" maxlength="7" aria-label="Colour ${i + 1} hex"><span class="tints">${S.cmOn ? tints(hex, S.cmSteps, S.cmSpan / 100).map(t => `<i style="background:${t}" title="${t}"></i>`).join('') : ''}</span><button id="pu${i}" title="Move up" aria-label="Move colour ${i + 1} up"${i ? '' : ' disabled'}>↑</button><button id="px${i}" title="Remove" aria-label="Remove colour ${i + 1}"${S.palette.length > 1 ? '' : ' disabled'}>×</button>`;
+    li.innerHTML = `<span class="idx">${i + 1}</span><input type="color" id="pc${i}" value="${hex.toLowerCase()}" aria-label="Colour ${i + 1}"><input type="text" id="pt${i}" value="${hex}" maxlength="7" aria-label="Colour ${i + 1} hex"><span class="tints">${chipHtml(i)}</span><button id="pu${i}" title="Move up" aria-label="Move colour ${i + 1} up"${i ? '' : ' disabled'}>↑</button><button id="px${i}" title="Remove" aria-label="Remove colour ${i + 1}"${S.palette.length > 1 ? '' : ' disabled'}>×</button>`;
     ol.appendChild(li);
-    const set = v => { S.palette[i] = v.toUpperCase(); save(); draw(); if (S.cmOn) li.querySelector('.tints').innerHTML = tints(S.palette[i], S.cmSteps, S.cmSpan / 100).map(t => `<i style="background:${t}" title="${t}"></i>`).join(''); };
+    const set = v => { S.palette[i] = v.toUpperCase(); save(); draw(); document.querySelectorAll('.pal .tints').forEach((el, j) => { el.innerHTML = chipHtml(j); }); };
     li.querySelector('input[type=color]').addEventListener('input', e => { set(e.target.value); li.querySelector('input[type=text]').value = S.palette[i]; });
     li.querySelector('input[type=text]').addEventListener('change', e => {
       let v = e.target.value.trim(); if (v[0] !== '#') v = '#' + v;
@@ -207,6 +214,7 @@ function show() {
   $('sp_random').setAttribute('aria-checked', S.spread === 'random'); $('sp_centre').setAttribute('aria-checked', S.spread === 'centre');
   $('palBox').hidden = S.colour !== 'palette';
   $('mixRow').hidden = S.spread !== 'centre';
+  $('invertRow').hidden = S.spread !== 'centre'; $('invert').checked = S.invert;
   $('sortCol').hidden = S.spread !== 'centre';
   $('spnote').textContent = SPREAD_NOTE[S.spread];
   ['grow','even','voronoi'].forEach(m => $('m_' + m).setAttribute('aria-checked', S.method === m));
@@ -216,7 +224,7 @@ function show() {
   $('corners').checked = S.corners; $('smOn').checked = S.smOn; $('cmOn').checked = S.cmOn;
   $('smBox').hidden = !S.smOn; $('cmBox').hidden = !S.cmOn;
 }
-function save() { try { localStorage.setItem('dial-packer', JSON.stringify(S)); } catch (e) {} }
+function save() { try { localStorage.setItem('dial-packer-2', JSON.stringify(S)); } catch (e) {} }
 
 function settings() {
   return { W: S.W, H: S.H, gap: S.gap, bleed: S.bleed / 100, sort: S.sort / 100, corners: S.corners, edgeMin: S.edgeMin,
@@ -282,7 +290,7 @@ function svgText(forExport) {
   let body = '';
   if (result) {
     const discs = numbered(result.discs);
-    const pal = S.colour === 'palette' ? assignColours(discs, settings(), expandPalette(S.palette, S.cmOn, S.cmSteps, S.cmSpan / 100), S.spread, S.mix / 100, S.cseed) : null;
+    const pal = S.colour === 'palette' ? colourDiscs(discs, settings(), palP(), S.cseed) : null;
     const fill = (d, i) => pal ? pal[i] : forExport ? HEX[d.k] : COL[d.k];
     const circles = discs.map((d, i) => `<circle cx="${d.x.toFixed(2)}" cy="${d.y.toFixed(2)}" r="${d.r.toFixed(2)}" fill="${fill(d, i)}"${forExport ? ` id="${d.id}"` : ''}/>`).join('');
     if (S.ghost && !forExport) body += `<g opacity="0.18">${circles}</g>`;
@@ -343,13 +351,14 @@ KEYS.forEach(k => {
 ['grow','even','voronoi'].forEach(m => $('m_' + m).addEventListener('click', () => { S.method = m; show(); save(); run(); }));
 $('corners').addEventListener('change', e => { S.corners = e.target.checked; show(); save(); run(); });
 $('smOn').addEventListener('change', e => { S.smOn = e.target.checked; show(); save(); run(); });
+$('invert').addEventListener('change', e => { S.invert = e.target.checked; save(); showPalette(); draw(); });
 $('cmOn').addEventListener('change', e => { S.cmOn = e.target.checked; show(); showPalette(); save(); draw(); });
 $('nums').addEventListener('change', e => { S.nums = e.target.checked; save(); draw(); });
 $('ghost').addEventListener('change', e => { S.ghost = e.target.checked; save(); draw(); });
 $('c_size').addEventListener('click', () => { S.colour = 'size'; show(); save(); draw(); });
 $('c_pal').addEventListener('click', () => { S.colour = 'palette'; show(); save(); draw(); });
-$('sp_random').addEventListener('click', () => { S.spread = 'random'; show(); save(); draw(); });
-$('sp_centre').addEventListener('click', () => { S.spread = 'centre'; show(); save(); draw(); });
+$('sp_random').addEventListener('click', () => { S.spread = 'random'; show(); showPalette(); save(); draw(); });
+$('sp_centre').addEventListener('click', () => { S.spread = 'centre'; show(); showPalette(); save(); draw(); });
 $('addCol').addEventListener('click', () => {
   const h = Math.floor(Math.random() * 360), c = `hsl(${h} 70% 55%)`, t = document.createElement('canvas').getContext('2d');
   t.fillStyle = c; S.palette.push(t.fillStyle.toUpperCase()); save(); showPalette(); draw();
@@ -365,9 +374,9 @@ $('reset').addEventListener('click', () => { S = { ...DEFAULTS, palette: DEFAULT
 $('copySvg').addEventListener('click', () => copy(svgText(true), 'SVG'));
 $('copyJson').addEventListener('click', () => {
   if (!result) return;
-  const nd = numbered(result.discs), cols = S.colour === 'palette' ? assignColours(nd, settings(), expandPalette(S.palette, S.cmOn, S.cmSteps, S.cmSpan / 100), S.spread, S.mix / 100, S.cseed) : nd.map(d => HEX[d.k]);
+  const nd = numbered(result.discs), cols = S.colour === 'palette' ? colourDiscs(nd, settings(), palP(), S.cseed) : nd.map(d => HEX[d.k]);
   const discs = nd.map((d, i) => ({ id: d.id, size: NAME[d.k], x: +d.x.toFixed(2), y: +d.y.toFixed(2), d: +(2 * d.r).toFixed(2), colour: cols[i] }));
-  copy(JSON.stringify({ page_mm: [S.W, S.H], settings: { method: S.method, corners: S.corners, edgeMin: S.edgeMin, colour: S.colour, smOn: S.smOn, cmOn: S.cmOn, spread: S.spread, palette: S.palette, ...Object.fromEntries(KEYS.map(k => [k, S[k]])) }, discs }, null, 1), 'Layout');
+  copy(JSON.stringify({ page_mm: [S.W, S.H], settings: { method: S.method, invert: S.invert, corners: S.corners, edgeMin: S.edgeMin, colour: S.colour, smOn: S.smOn, cmOn: S.cmOn, spread: S.spread, palette: S.palette, ...Object.fromEntries(KEYS.map(k => [k, S[k]])) }, discs }, null, 1), 'Layout');
 });
 
 if (!Array.isArray(S.palette) || !S.palette.length) S.palette = DEFAULTS.palette.slice();

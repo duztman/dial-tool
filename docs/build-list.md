@@ -515,6 +515,7 @@ Okay's Google Doc *Dial tool notes 2* (text and 23 pictures; on his Google Drive
 |---|---|---|
 | 394 | **Dial Packer shipped**: discs only, A4 landscape, Grow · Even gaps · Voronoi, Big to centre, corners, sides, palettes, mosaics (Okay, 14:34: "Ship as a side product. Dial packer for visuals.") | **done — 19 Oct** (online at `/packer/`) |
 | 395 | **Place dials in the discs** (Okay, 01:36: "I will announce when to cross to placing dials"): each disc gets a dial from the Gallery or made in the app; colours from the packer's palette | **waiting for Okay's word** |
+| 397 | **Colour mosaic with Centre → edge goes by lightness alone** (14:42: "a step always has similar value lightnesses so center dark, outside light. Invert possible"): each step one lightness shared by every colour (step 1 at the palette's mean, the last To white % of the way to white), hues mixed within a step; Invert switch. **Opening settings** (14:42): both mosaics on, Palette, Centre → edge, 1 large · 10 medium · 20 small, five colours purple → reds → orange | **done — 19 Oct** |
 | 396 | **With the large discs off the sides, the band between them and an edge can stay thin and white** when few small discs land there (seen on 1 of 6 seeds) | noted |
 
 ## Later
