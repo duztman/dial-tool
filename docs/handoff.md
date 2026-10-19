@@ -6,11 +6,11 @@ A new session starts with no memory of the last one: the transcript stays in the
 
 ## 1 · Where things stand (20 Oct 2026, 01:45, after beta 4.89.12)
 
-- **Beta 4.89.12** is on `dev` and the private preview page (the Artifact *Dial Tool*); **`main` and the live page are still 4.89** — Okay tests on his phone may be on the live page (FIT's line, #453, looked "missing" there). The full `npm test` passed on 4.89.12 (20 Oct, 01:45). Release only on his word (`tools/release.sh 4.89.12 "…"`, then `tools/release.sh main`).
+- **Beta 4.89.12** is on `dev`, `main` and the live page (released 20 Oct 2026, 01:55, on Okay's word at 01:49: "Push all these work from tonight … On github this goes"). The full `npm test` passed on it. FIT's line (#453) and Bevel (#465) to verify on his devices now that the live page has them.
 - **This session (19 Oct 22:25 → 20 Oct 01:45)**, twelve small pushes, all in `docs/changelog.md`: per-hand Bevel beside Show (off to start, Bevels % its strength; older dials read in); the cap in a hand's picture; #220 (mask losses said) and #226 (files name the build) of the production debts; the date popup to Okay's measured drawing; every menu a chevron box with the tool's own list (`chevron_box`, `menu_list`); every word choice a pill switch; a note belongs to its row through hidden rows (`noted`); a kind's own window shape (moon's arch, am · pm's half); window colours live in the scene; the moon alone (no stars); side rows without a name gap; a phone's zoom popup.
 - **Waiting for Okay**: #221–#224 (production debts: hidden rings' knock-out, cut lines in the mask, leaving out window content, invert, registration marks — questions asked 19 Oct, 22:55); #434 (Settings file pane: Claude proposed dropping Defaults and Plain dial there, Save · Load as a tile row, the file's name as its value, a grey note); #435 (Versions under Undo, with Compare — plan and three questions sent); #448 (the ring list's pill: show it whenever the list scrolls?); #439 and #453 to verify on his devices.
 - **Next, in order** once answered: the rest of the production debts, #435 Versions, #406, #404 + #421, #329, #339, #349 (*sketch first*), #407.
-- **Okay's last words** (20 Oct 2026, 01:33): "Doing very well, take your time. use better checkers if need be, we are almost at the end of the session."
+- **Okay's last words** (20 Oct 2026, 01:49): "Frame is always above window specific colors this is a note … Bevel is off on default. Please note. Arc phase line gets a custom… which will insert an svg. Also a note. Push all these work from tonight." (#464–#466 logged.)
 
 ## 2 · First steps in a new session
 
