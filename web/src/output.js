@@ -1,7 +1,7 @@
 // Dial Tool, web version — files out: SVG and PDF, both vector and at true size.
 // Both draw the scene (R26) and nothing else; guides and backdrop never reach a file (R5).
 
-import { MM, scene, turned, page_mm, live_texts, font_of, has_font, Path, circle, VERSION } from "./geometry.js";
+import { MM, scene, turned, page_mm, live_texts, font_of, has_font, Path, circle, VERSION, text_path, page_type, clock_point, kind_of, windows_of, window_place, WINDOW_KINDS, HAND_BASE } from "./geometry.js";
 
 // who made a file, written into every PDF, SVG and PNG (#226): which build drew it, so a file can be traced to its version
 export const MADE_BY = `Dial Tool, web version, ${VERSION}`;
@@ -28,6 +28,7 @@ function item_name(item) {
 export function file_name(S, ext, now = new Date()) {
   const day = [now.getFullYear(), now.getMonth() + 1, now.getDate()].map((v) => String(v).padStart(2, "0")).join("-");
   const what = ext === "json" ? "" : (S.out_production ? "-mask" : "") + (S.out_mirror ? "-mirrored" : "");
+  if (ext === "spec") return `dial-${num(S.dial_d, 2)}mm-spec-${day}.svg`;      // a spec sheet (#18)
   if (ext === "mp4" || ext === "gif") return `dial-${num(S.dial_d, 2)}mm-${day}.${ext}`;      // a moving picture (#51): never a mask
   if (ext === "sheet") return `dial-${num(S.dial_d, 2)}mm-sheet${what}-${day}.pdf`;      // a print sheet (4.75)
   return `dial-${num(S.dial_d, 2)}mm${what}-${day}.${ext}`;
@@ -253,3 +254,68 @@ export function pdf_sheet(S, statik, t) {
 }
 /** a path as PDF drawing operators. */
 const path_ops = (p) => p.d.map((c) => { const v = c.slice(1).map((x) => num(x, 5)).join(" "); return c[0] === "M" ? `${v} m` : c[0] === "L" ? `${v} l` : c[0] === "C" ? `${v} c` : "h"; });
+
+// ── a spec sheet (#18) ──────────────────────────────────────
+// The dial for a supplier: drawn large on an A4 laid on its side, a thin circle at each ring's radius with its number,
+// and beside it the numbers that make it — each ring's radius, size or length, width, count; each hand's length, width
+// and tail; the windows; the diameter, the centre hole and the page. Everything filled, the words in the tool's own face
+// as outlines (R4, R10), so it opens the same in Illustrator and in a print shop. An SVG, true to its millimetres.
+const SPEC = { w: 297, h: 210, edge: 12, type: 2.6, head: 4, row: 4.6, line: 0.12, ink: "#111111", mark: "#C8102E", soft: "#8A8A86" };
+
+export function spec_sheet(S, statik, t) {
+  const out = [], T = page_type(), mm = (v) => num(v, 2);
+  const words = (txt, x, y, size = SPEC.type, fill = SPEC.ink) => { const p = text_path(String(txt), T, size); if (p.d.length) out.push(`<path d="${p.translate(x, -y).svg(3, true)}" fill="${fill}"/>`); return p; };
+  const rule = (x, y, w) => out.push(`<rect x="${num(x)}" y="${num(y)}" width="${num(w)}" height="${SPEC.line}" fill="${SPEC.ink}"/>`);
+  // the drawing: a square at the left, the dial as large as it holds
+  const box = SPEC.h - 2 * SPEC.edge - 10, cx = SPEC.edge + box / 2, cy = SPEC.edge + 10 + box / 2, k = box / (S.dial_d + 8);
+  const scale = k >= 1 ? `${+k.toFixed(2)} : 1` : `1 : ${+(1 / k).toFixed(2)}`;
+  out.push(`<g transform="translate(${num(cx)} ${num(cy)}) scale(${num(k, 6)})">`);
+  for (const item of drawn(S, statik, t, false, null)) out.push(`<path d="${item.path.svg(4, true)}" fill="${rgb(item.fill)}"${item.fill[3] < 1 ? ` fill-opacity="${num(item.fill[3])}"` : ""}/>`);
+  const rings = S.rings.filter((r) => r.on), hair = 0.15 / k;
+  rings.forEach((ring, i) => {
+    const r = ring.r, lap = circle(2 * r + hair).difference(circle(Math.max(2 * r - hair, 0)));
+    out.push(`<path d="${lap.svg(4, true)}" fill="${SPEC.mark}" fill-opacity="0.8"/>`);
+  });
+  out.push(`</g>`);
+  // each ring's number where its circle crosses a ray, the rays fanned over the lower left
+  rings.forEach((ring, i) => {
+    const a = 200 + (i * 140) / Math.max(rings.length, 1), [x, y] = clock_point(ring.r, a), px = cx + x * k, py = cy - y * k;
+    out.push(`<circle cx="${num(px)}" cy="${num(py)}" r="1.9" fill="${SPEC.mark}"/>`);
+    const n = text_path(String(i + 1), T, 2.2), b = n.bounds();
+    if (b) out.push(`<path d="${n.translate(px - (b[0] + b[2]) / 2, -(py) - (b[1] + b[3]) / 2).svg(3, true)}" fill="#FFFFFF"/>`);
+  });
+  words(`Dial Tool · spec sheet · ${mm(S.dial_d)} mm dial · drawn at ${scale}`, SPEC.edge, SPEC.edge + 4, SPEC.head);
+  words(`${MADE_BY} · ${new Date().toISOString().slice(0, 10)} · every measure in mm`, SPEC.edge, SPEC.edge + 9, SPEC.type, SPEC.soft);
+  // the numbers, at the right
+  const x0 = SPEC.edge + box + 14, cols = [0, 7, 36, 58, 76, 94, 112, 130], width = SPEC.w - SPEC.edge - x0;
+  let y = SPEC.edge + 4;
+  const line = (cells, size = SPEC.type, fill = SPEC.ink) => { cells.forEach((c, j) => c !== "" && c != null && words(c, x0 + cols[j], y, size, fill)); y += SPEC.row; };
+  const head = (txt) => { y += 2; words(txt, x0, y, SPEC.type + 0.4); y += 1.6; rule(x0, y, width); y += SPEC.row; };
+  head("Rings, top first");
+  line(["#", "Name", "Kind", "Radius", "Size", "Width", "Count", "Span°"], SPEC.type, SPEC.soft);
+  rings.forEach((ring, i) => {
+    const kind = kind_of(ring), text = kind === "numerals" || kind === "text";
+    line([i + 1, (ring.name || kind).slice(0, 16), kind, mm(ring.r), text ? mm(ring.size) : kind === "band" ? "" : mm(ring.len), text ? "" : kind === "band" ? mm(ring.width) : mm(ring.w), ring.count, num(ring.span, 1)]);
+  });
+  head("Hands");
+  line(["", "Hand", "", "Length", "Width", "Tail", "Hub"], SPEC.type, SPEC.soft);
+  for (const [key, name] of [["ha_hour", "Hour"], ["ha_minute", "Minute"], ["ha_second", "Seconds"]]) {
+    const h = { ...HAND_BASE, ...(S[key] || {}) };
+    if (S.ha_on && h.on) line(["", name, "", mm(h.len), mm(h.w), mm(h.tail), h.hub ? mm(h.hub) : ""]);
+  }
+  if (S.ha_on && S.ha_cap > 0) line(["", "Cap", "", "", mm(S.ha_cap), "", ""]);
+  const wins = windows_of(S).map((w, i) => [w, i]).filter(([w]) => w.on);
+  if (wins.length) {
+    head("Windows");
+    line(["#", "Shows", "", "At", "Radius", "Width", "Height", "Frame"], SPEC.type, SPEC.soft);
+    for (const [w, i] of wins) line([i + 1, WINDOW_KINDS[w.kind], "", window_place(w), mm(w.r), mm(w.w), mm(w.h), mm(w.frame)]);
+  }
+  head("Dial");
+  line(["", "Diameter", "", mm(S.dial_d)]);
+  if (S.dial_hole > 0) line(["", "Centre hole", "", mm(S.dial_hole)]);
+  line(["", "Page", "", `${mm(page_mm(S))} square (margin ${mm(S.margin)})`]);
+  return [`<?xml version="1.0" encoding="UTF-8"?>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${SPEC.w}mm" height="${SPEC.h}mm" viewBox="0 0 ${SPEC.w} ${SPEC.h}">`,
+    `<title>Dial Tool · spec sheet · ${num(S.dial_d, 2)} mm dial</title>`, `<metadata>${MADE_BY}</metadata>`,
+    `<rect width="${SPEC.w}" height="${SPEC.h}" fill="#FFFFFF"/>`, ...out, `</svg>`].join("\n");
+}

@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 5 v01 (work in progress)";
+export const VERSION = "beta 4.90";      // the branch wip-4.90, work in progress (docs/review-4.90.md)
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -34,7 +34,7 @@ export const SKIP_FROM = ["nothing", "markers above", "markers & numerals above"
 export const KNOCK_FROM = ["nothing", "markers above", "markers & numerals above", "everything above"];
 export const FROM_KINDS = [[], ["markers"], ["markers", "numerals", "text"], ["ticks", "markers", "numerals", "band", "text"]];      // a text ring counts with the numerals (#297)
 export const MODES = ["upright", "radial", "radial, auto-flip", "on path"];
-export const ANCHORS = ["centre", "baseline", "ascender", "outer edge", "inner edge", "cap middle"];      // cap middle (#13, beta 5): every label on the middle of the font's capitals, not of its own ink      // the point of a numeral that sits on its ring's radius (web version, 13 Oct 2026). Only grows at its end (R9). The edges (4.53, #338; Okay, 18 Oct 2026: "Tangent to inner or outer"): every numeral's ink touches the radius from inside, or from outside
+export const ANCHORS = ["centre", "baseline", "ascender", "outer edge", "inner edge", "cap middle"];      // cap middle (#13, 4.90): every label on the middle of the font's capitals, not of its own ink      // the point of a numeral that sits on its ring's radius (web version, 13 Oct 2026). Only grows at its end (R9). The edges (4.53, #338; Okay, 18 Oct 2026: "Tangent to inner or outer"): every numeral's ink touches the radius from inside, or from outside
 export const FROM = ["outer", "middle", "inner"];               // the point of a mark or a band that sits on its ring's radius: its outer end, its middle, its inner end (#257, 4.47). Only grows at its end (R9)
 /** how far a mark's or band's outer edge lies outside the ring's radius: nothing when the radius measures to the outer
  *  end, half its extent from the middle, all of it from the inner end (#257). extent: the mark's length or the band's width. */
@@ -134,7 +134,7 @@ export const WINDOW_BASE = {
   guide: -1,                                       // its guide's colour, as a ring's (#271): a place in GUIDE_COLOURS · -1 = by its place (window_guide) · -2 = none
   follows: true,                                   // a date, day or moon window shows the bar's date; on to start, and for every link (Okay, 19 Oct 2026, 21:09, #413: "All on by default", for old links too)
   names: 0,                                        // a day window following the date: its names' language, a place in moment.js LANGS (EN · TR · DE · FR · IT; 4.62)
-  jump: false,                                     // an am · pm disc jumps at noon and midnight instead of sweeping (#401, beta 5; Okay, 19 Oct 2026, 14:13: "am pm gets a jump function on/off"); off, it sweeps, as before
+  jump: false,                                     // an am · pm disc jumps at noon and midnight instead of sweeping (#401, 4.90; Okay, 19 Oct 2026, 14:13: "am pm gets a jump function on/off"); off, it sweeps, as before
   neighbours: true,                               // a date or day window shows its disc's places either side of the shown one, where the hole lets them (4.74; the disc sketch D1), in c2
   look: 0,                                         // its picture, a place in PICTURES[its kind] (4.73); 0 = as before
   c2: null, c3: null,                              // its picture's further colours (4.73): a moon's shade · an am · pm half's sun and moon · a band's dawn and dusk; null = the picture's own (PICTURE_TONES)
@@ -159,7 +159,7 @@ export const DEFAULTS = {
   da_shape: 0, da_sides: 6, da_turn: false, da_text_turn: true, da_family: "", da_ps: "", da_axes: {}, da_text_c: null, da_disc_c: null, da_tracking: null, da_lang: null, da_features: null, da_at_deg: null,      // window 1's share of WINDOW_BASE's keys of 13 Oct 2026
   t: 10 * 3600 + 9 * 60 + 36,
   out_production: false, out_mirror: false, out_live_text: false,
-  // what a file for production holds (the production debts, #219–#224; beta 5): every one starts as files were made
+  // what a file for production holds (the production debts, #219–#224; 4.90): every one starts as files were made
   // before, so older links and files draw as they did (R31, no new scheme). Preview and files alike (R26: one scene)
   out_window_content: true,                        // #219: what the windows show (discs, numbers, pictures); off, their holes stay empty, for a printer who prints the face alone
   out_hidden_cut: false,                           // #221: a hidden ring still knocks out and skips as if it were there, so a film made by hiding rings keeps its holes
@@ -167,7 +167,7 @@ export const DEFAULTS = {
   out_invert: false,                               // #223: a mask inverted inside the dial — toner everywhere but the marks, for sunk marks
   out_marks: false,                                // #224: a mask's blank outline and four registration marks in the page's corners
   // a set of files in one press (#171; atlas 6.3): which of FILE_SET it writes
-  out_f_pdf: true, out_f_svg: false, out_f_png: false, out_f_mask: false, out_f_mirrored: false, out_f_mask_png: false, out_f_sheet: false,
+  out_f_pdf: true, out_f_svg: false, out_f_png: false, out_f_mask: false, out_f_mirrored: false, out_f_mask_png: false, out_f_sheet: false, out_f_spec: false,
   out_paper: 0, out_copies: 0, out_gap: 3.0, out_cutline: false,      // a print sheet (4.75, #348): its paper (output.js PAPERS: A4 · Letter · A5), how many (0 = as many as fit), the room between, a cut line round each
   out_dpi: 600.0, out_seconds: 4.0, out_fps: 30.0, out_px: 1080,
   ui_section: 0, ui_ring: 0, ui_hand: 0, ui_preview: 0, ui_window: 0,
@@ -190,7 +190,7 @@ export const DEFAULTS = {
   strap: 1, c_strap: [0.29, 0.2, 0.14, 1],      // its strap (4.69, bezels.js STRAPS): 0 none, 1 a leather strap in c_strap, 2 a metal bracelet in the case's metal. Shown only with a case
   bezel: 0,                                        // a case round the dial on the preview (4.66, bezels.js BEZELS): 0 none, 1 diver, 2 pilot, 3 dress, 4 sport. Preview only, like the backdrop (R26)
   date: "",                                        // the day the dial shows, "2026-10-18", set in the bar (4.62; Okay, 18 Oct 2026: "Date best set at the bar … Default from system date"); "" = today, wherever the dial is opened
-  da_jump: false,                                  // … and `jump` (#401, beta 5)
+  da_jump: false,                                  // … and `jump` (#401, 4.90)
   da_look: 0, da_c2: null, da_c3: null, da_neighbours: true,      // … and `neighbours` (4.74)            // the first window's `look`, `c2`, `c3` (4.73)
   da_physics: true, xray: false,                   // the first window's `physics` · X-ray, every window's disc seen under a veil of the plate, preview only (4.72, #346)
   da_wh_link: false,                               // the first window's width and height linked, as every window's `wh_link` (#358, beta 4.57)
@@ -268,6 +268,7 @@ export const FILE_SET = [
   ["out_f_mirrored", "Mirrored mask · PDF", "pdf", { out_production: true, out_mirror: true }],
   ["out_f_mask_png", "Mirrored mask · PNG", "png", { out_production: true, out_mirror: true }],
   ["out_f_sheet", "Print sheet · PDF", "sheet", {}],
+  ["out_f_spec", "Spec sheet · SVG", "spec", { out_production: false, out_mirror: false }],
 ];
 export const NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_", "sh_"];
 export const GEOMETRY_AFTER_ALL = ["out_hidden_cut"];      // under a quiet prefix, but it changes the rings' shapes (#221)
@@ -475,9 +476,9 @@ export const LINK_KEYS = [
   "sh_bevel",               // 4.79: appended; off to start
   "hub", "bulge",           // 4.80: appended; no hub and the leaf as always to start, so every older link looks as before
   "bevel",                  // 4.89.1: appended; on to start, so every older link looks as before
-  "out_window_content", "out_hidden_cut", "out_cutlines", "out_invert", "out_marks",
-  "out_f_pdf", "out_f_svg", "out_f_png", "out_f_mask", "out_f_mirrored", "out_f_mask_png", "out_f_sheet",      // beta 5 (#171): appended; what a set of files holds
-  "jump", "da_jump",        // beta 5 (#401): appended; off to start, the disc sweeps as before      // beta 5 (#219–#224): appended; each starts as files were, so every older link looks as before
+  "out_window_content", "out_hidden_cut", "out_cutlines", "out_invert", "out_marks",      // 4.90 (#219–#224): appended; each starts as files were, so every older link looks as before
+  "out_f_pdf", "out_f_svg", "out_f_png", "out_f_mask", "out_f_mirrored", "out_f_mask_png", "out_f_sheet", "out_f_spec",      // 4.90 (#171, #18): appended; what a set of files holds
+  "jump", "da_jump",        // 4.90 (#401): appended; off to start, the disc sweeps as before
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -1014,6 +1015,8 @@ function shaped(txt, t, size) {
 
 /** text → outlines. */
 export const text_path = (txt, t, size) => shaped(txt, t, size).path.copy();
+/** the type the tool sets its own words in, on a sheet (#18): the face that ships with the page (Inter). */
+export const page_type = () => ({ family: "Inter", ps: fallback_ps, tracking: 0, lang: 0, axes: {}, features: {} });
 
 /** typeset width, kerning and tracking included. */
 export const advance = (txt, t, size) => (txt ? shaped(txt, t, size).width : 0);

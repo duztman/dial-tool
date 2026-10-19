@@ -1,8 +1,8 @@
 # Dial Tool — changelog
 
-## beta 5 v01, work in progress (branch `beta5`) · 20 Oct 2026, night
+## beta 4.90, work in progress (branch `wip-4.90`) · 20 Oct 2026, night
 
-Built alone for Okay's approval (Okay, 02:02: "Build functionality … noted and screenshotted for my approval later, not messing with current build"); not on `dev`, `main` or the live page. Every item, its readings and questions: `docs/beta5-review.md`.
+Built alone for Okay's approval (Okay, 02:02: "Build functionality … noted and screenshotted for my approval later, not messing with current build"); not on `dev`, `main` or the live page. Every item, its readings and questions: `docs/review-4.90.md`.
 
 - **Versions under undo, with Compare** (#435); nine kept, arranged by dragging. The Gallery no longer holds *Yours*.
 - **Print**: What the windows show (#219), Hidden rings still cut (#221), Cut lines (#222), Inverted (#223), Outline and registration marks (#224). **A set of files** (#171).

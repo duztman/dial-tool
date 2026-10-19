@@ -1,10 +1,10 @@
-# Beta 5 v01 — what was built alone, for Okay's approval
+# Beta 4.90 — what was built alone, for Okay's approval
 
-*Written 20 Oct 2026, 02:02–05:20, on the branch `beta5` (from `dev` at beta 4.89.12). `dev`, `main` and the live page are untouched. Okay, 02:02: "Build functionality … noted and screenshotted for my approval later, not messing with current build … We might do a design round later."*
+*Written 20 Oct 2026, 02:02–05:20, on the branch `wip-4.90` (from `dev` at beta 4.89.12). `dev`, `main` and the live page are untouched. Okay, 02:02 (he first called it "beta 5 v01"; 02:53: "This should not be called beta 5 … Normal progression"): "Build functionality … noted and screenshotted for my approval later, not messing with current build … We might do a design round later."*
 
-How it was built: every new control takes the nearest look Okay has already passed (a tick with its note under it, a full number row, a switch of the preview's make, the Guides list's dark popup, the Gallery's cards). The look of each is for the design round. Every new setting starts as the tool drew before, so older links and files draw as they did (R31: no new link scheme; the new keys are appended to `LINK_KEYS`). Pictures: `archive/screens/2026-10-20-beta5/`.
+How it was built: every new control takes the nearest look Okay has already passed (a tick with its note under it, a full number row, a switch of the preview's make, the Guides list's dark popup, the Gallery's cards). The look of each is for the design round. Every new setting starts as the tool drew before, so older links and files draw as they did (R31: no new link scheme; the new keys are appended to `LINK_KEYS`). Pictures: `archive/screens/2026-10-20-4.90/`.
 
-To try it: the private preview page (the *Dial Tool* artifact), or `git checkout beta5` and open `web/dial-tool.html`.
+To try it: the private preview page (the *Dial Tool* artifact), or `git checkout wip-4.90` and open `web/dial-tool.html`.
 
 ## Built
 
@@ -40,6 +40,7 @@ To try it: the private preview page (the *Dial Tool* artifact), or `git checkout
 3. Undo: 20 shown in the list, or 20 kept?
 4. Hidden rings still cut (#221): preview too, as built?
 5. Diameter's limits: 5–300 mm?
+6. Numbering (02:53): write into R19 that the second and third numbers each run to 99 and that v1 (no "beta") comes on your word?
 
 ## Rules touched
 

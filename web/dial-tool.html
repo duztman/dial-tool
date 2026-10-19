@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 5 v01 (work in progress) · built 2026-10-19 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.90 · built 2026-10-19 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7144,7 +7144,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 5 v01 (work in progress)";
+var VERSION = "beta 4.90";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -7322,7 +7322,7 @@ var WINDOW_BASE = {
   names: 0,
   // a day window following the date: its names' language, a place in moment.js LANGS (EN · TR · DE · FR · IT; 4.62)
   jump: false,
-  // an am · pm disc jumps at noon and midnight instead of sweeping (#401, beta 5; Okay, 19 Oct 2026, 14:13: "am pm gets a jump function on/off"); off, it sweeps, as before
+  // an am · pm disc jumps at noon and midnight instead of sweeping (#401, 4.90; Okay, 19 Oct 2026, 14:13: "am pm gets a jump function on/off"); off, it sweeps, as before
   neighbours: true,
   // a date or day window shows its disc's places either side of the shown one, where the hole lets them (4.74; the disc sketch D1), in c2
   look: 0,
@@ -7426,7 +7426,7 @@ var DEFAULTS = {
   out_production: false,
   out_mirror: false,
   out_live_text: false,
-  // what a file for production holds (the production debts, #219–#224; beta 5): every one starts as files were made
+  // what a file for production holds (the production debts, #219–#224; 4.90): every one starts as files were made
   // before, so older links and files draw as they did (R31, no new scheme). Preview and files alike (R26: one scene)
   out_window_content: true,
   // #219: what the windows show (discs, numbers, pictures); off, their holes stay empty, for a printer who prints the face alone
@@ -7446,6 +7446,7 @@ var DEFAULTS = {
   out_f_mirrored: false,
   out_f_mask_png: false,
   out_f_sheet: false,
+  out_f_spec: false,
   out_paper: 0,
   out_copies: 0,
   out_gap: 3,
@@ -7499,7 +7500,7 @@ var DEFAULTS = {
   date: "",
   // the day the dial shows, "2026-10-18", set in the bar (4.62; Okay, 18 Oct 2026: "Date best set at the bar … Default from system date"); "" = today, wherever the dial is opened
   da_jump: false,
-  // … and `jump` (#401, beta 5)
+  // … and `jump` (#401, 4.90)
   da_look: 0,
   da_c2: null,
   da_c3: null,
@@ -7611,7 +7612,8 @@ var FILE_SET = [
   ["out_f_mask", "Mask \xB7 PDF", "pdf", { out_production: true, out_mirror: false }],
   ["out_f_mirrored", "Mirrored mask \xB7 PDF", "pdf", { out_production: true, out_mirror: true }],
   ["out_f_mask_png", "Mirrored mask \xB7 PNG", "png", { out_production: true, out_mirror: true }],
-  ["out_f_sheet", "Print sheet \xB7 PDF", "sheet", {}]
+  ["out_f_sheet", "Print sheet \xB7 PDF", "sheet", {}],
+  ["out_f_spec", "Spec sheet \xB7 SVG", "spec", { out_production: false, out_mirror: false }]
 ];
 var NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_", "sh_"];
 var GEOMETRY_AFTER_ALL = ["out_hidden_cut"];
@@ -8075,6 +8077,7 @@ var LINK_KEYS = [
   "out_cutlines",
   "out_invert",
   "out_marks",
+  // 4.90 (#219–#224): appended; each starts as files were, so every older link looks as before
   "out_f_pdf",
   "out_f_svg",
   "out_f_png",
@@ -8082,10 +8085,11 @@ var LINK_KEYS = [
   "out_f_mirrored",
   "out_f_mask_png",
   "out_f_sheet",
-  // beta 5 (#171): appended; what a set of files holds
+  "out_f_spec",
+  // 4.90 (#171, #18): appended; what a set of files holds
   "jump",
   "da_jump"
-  // beta 5 (#401): appended; off to start, the disc sweeps as before      // beta 5 (#219–#224): appended; each starts as files were, so every older link looks as before
+  // 4.90 (#401): appended; off to start, the disc sweeps as before
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -8635,6 +8639,7 @@ function shaped(txt2, t, size) {
   });
 }
 var text_path = (txt2, t, size) => shaped(txt2, t, size).path.copy();
+var page_type = () => ({ family: "Inter", ps: fallback_ps, tracking: 0, lang: 0, axes: {}, features: {} });
 var advance = (txt2, t, size) => txt2 ? shaped(txt2, t, size).width : 0;
 function centred(p) {
   const b = p.bounds();
@@ -9443,6 +9448,7 @@ function item_name(item) {
 function file_name(S, ext, now = /* @__PURE__ */ new Date()) {
   const day = [now.getFullYear(), now.getMonth() + 1, now.getDate()].map((v) => String(v).padStart(2, "0")).join("-");
   const what = ext === "json" ? "" : (S.out_production ? "-mask" : "") + (S.out_mirror ? "-mirrored" : "");
+  if (ext === "spec") return `dial-${num(S.dial_d, 2)}mm-spec-${day}.svg`;
   if (ext === "mp4" || ext === "gif") return `dial-${num(S.dial_d, 2)}mm-${day}.${ext}`;
   if (ext === "sheet") return `dial-${num(S.dial_d, 2)}mm-sheet${what}-${day}.pdf`;
   return `dial-${num(S.dial_d, 2)}mm${what}-${day}.${ext}`;
@@ -9698,6 +9704,79 @@ var path_ops = (p) => p.d.map((c) => {
   const v = c.slice(1).map((x2) => num(x2, 5)).join(" ");
   return c[0] === "M" ? `${v} m` : c[0] === "L" ? `${v} l` : c[0] === "C" ? `${v} c` : "h";
 });
+var SPEC = { w: 297, h: 210, edge: 12, type: 2.6, head: 4, row: 4.6, line: 0.12, ink: "#111111", mark: "#C8102E", soft: "#8A8A86" };
+function spec_sheet(S, statik, t) {
+  const out = [], T = page_type(), mm = (v) => num(v, 2);
+  const words = (txt2, x2, y2, size = SPEC.type, fill = SPEC.ink) => {
+    const p = text_path(String(txt2), T, size);
+    if (p.d.length) out.push(`<path d="${p.translate(x2, -y2).svg(3, true)}" fill="${fill}"/>`);
+    return p;
+  };
+  const rule = (x2, y2, w) => out.push(`<rect x="${num(x2)}" y="${num(y2)}" width="${num(w)}" height="${SPEC.line}" fill="${SPEC.ink}"/>`);
+  const box3 = SPEC.h - 2 * SPEC.edge - 10, cx = SPEC.edge + box3 / 2, cy = SPEC.edge + 10 + box3 / 2, k = box3 / (S.dial_d + 8);
+  const scale = k >= 1 ? `${+k.toFixed(2)} : 1` : `1 : ${+(1 / k).toFixed(2)}`;
+  out.push(`<g transform="translate(${num(cx)} ${num(cy)}) scale(${num(k, 6)})">`);
+  for (const item of drawn(S, statik, t, false, null)) out.push(`<path d="${item.path.svg(4, true)}" fill="${rgb(item.fill)}"${item.fill[3] < 1 ? ` fill-opacity="${num(item.fill[3])}"` : ""}/>`);
+  const rings = S.rings.filter((r) => r.on), hair = 0.15 / k;
+  rings.forEach((ring2, i2) => {
+    const r = ring2.r, lap = circle(2 * r + hair).difference(circle(Math.max(2 * r - hair, 0)));
+    out.push(`<path d="${lap.svg(4, true)}" fill="${SPEC.mark}" fill-opacity="0.8"/>`);
+  });
+  out.push(`</g>`);
+  rings.forEach((ring2, i2) => {
+    const a = 200 + i2 * 140 / Math.max(rings.length, 1), [x2, y2] = clock_point(ring2.r, a), px = cx + x2 * k, py = cy - y2 * k;
+    out.push(`<circle cx="${num(px)}" cy="${num(py)}" r="1.9" fill="${SPEC.mark}"/>`);
+    const n = text_path(String(i2 + 1), T, 2.2), b = n.bounds();
+    if (b) out.push(`<path d="${n.translate(px - (b[0] + b[2]) / 2, -py - (b[1] + b[3]) / 2).svg(3, true)}" fill="#FFFFFF"/>`);
+  });
+  words(`Dial Tool \xB7 spec sheet \xB7 ${mm(S.dial_d)} mm dial \xB7 drawn at ${scale}`, SPEC.edge, SPEC.edge + 4, SPEC.head);
+  words(`${MADE_BY} \xB7 ${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)} \xB7 every measure in mm`, SPEC.edge, SPEC.edge + 9, SPEC.type, SPEC.soft);
+  const x0 = SPEC.edge + box3 + 14, cols = [0, 7, 36, 58, 76, 94, 112, 130], width = SPEC.w - SPEC.edge - x0;
+  let y = SPEC.edge + 4;
+  const line2 = (cells, size = SPEC.type, fill = SPEC.ink) => {
+    cells.forEach((c, j) => c !== "" && c != null && words(c, x0 + cols[j], y, size, fill));
+    y += SPEC.row;
+  };
+  const head = (txt2) => {
+    y += 2;
+    words(txt2, x0, y, SPEC.type + 0.4);
+    y += 1.6;
+    rule(x0, y, width);
+    y += SPEC.row;
+  };
+  head("Rings, top first");
+  line2(["#", "Name", "Kind", "Radius", "Size", "Width", "Count", "Span\xB0"], SPEC.type, SPEC.soft);
+  rings.forEach((ring2, i2) => {
+    const kind = kind_of(ring2), text = kind === "numerals" || kind === "text";
+    line2([i2 + 1, (ring2.name || kind).slice(0, 16), kind, mm(ring2.r), text ? mm(ring2.size) : kind === "band" ? "" : mm(ring2.len), text ? "" : kind === "band" ? mm(ring2.width) : mm(ring2.w), ring2.count, num(ring2.span, 1)]);
+  });
+  head("Hands");
+  line2(["", "Hand", "", "Length", "Width", "Tail", "Hub"], SPEC.type, SPEC.soft);
+  for (const [key, name] of [["ha_hour", "Hour"], ["ha_minute", "Minute"], ["ha_second", "Seconds"]]) {
+    const h = { ...HAND_BASE, ...S[key] || {} };
+    if (S.ha_on && h.on) line2(["", name, "", mm(h.len), mm(h.w), mm(h.tail), h.hub ? mm(h.hub) : ""]);
+  }
+  if (S.ha_on && S.ha_cap > 0) line2(["", "Cap", "", "", mm(S.ha_cap), "", ""]);
+  const wins = windows_of(S).map((w, i2) => [w, i2]).filter(([w]) => w.on);
+  if (wins.length) {
+    head("Windows");
+    line2(["#", "Shows", "", "At", "Radius", "Width", "Height", "Frame"], SPEC.type, SPEC.soft);
+    for (const [w, i2] of wins) line2([i2 + 1, WINDOW_KINDS[w.kind], "", window_place(w), mm(w.r), mm(w.w), mm(w.h), mm(w.frame)]);
+  }
+  head("Dial");
+  line2(["", "Diameter", "", mm(S.dial_d)]);
+  if (S.dial_hole > 0) line2(["", "Centre hole", "", mm(S.dial_hole)]);
+  line2(["", "Page", "", `${mm(page_mm(S))} square (margin ${mm(S.margin)})`]);
+  return [
+    `<?xml version="1.0" encoding="UTF-8"?>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${SPEC.w}mm" height="${SPEC.h}mm" viewBox="0 0 ${SPEC.w} ${SPEC.h}">`,
+    `<title>Dial Tool \xB7 spec sheet \xB7 ${num(S.dial_d, 2)} mm dial</title>`,
+    `<metadata>${MADE_BY}</metadata>`,
+    `<rect width="${SPEC.w}" height="${SPEC.h}" fill="#FFFFFF"/>`,
+    ...out,
+    `</svg>`
+  ].join("\n");
+}
 
 // src/bezels.js
 var BEZELS = ["None", "Diver", "Pilot", "Dress", "Sport"];
@@ -14098,7 +14177,7 @@ var custom = (name, o = {}) => ({ kind: "custom", name, ...o });
 var RADIUS_ROWS = {
   outer: num2("r", "Outer radius", 0, 25, 0.05, { scope: "ring", menu: { key: "from", title: "What the radius measures to", items: [[0, "Outer"], [1, "Middle"], [2, "Inner"]] } }),
   numerals: num2("r", "Centre radius", 0, 25, 0.05, { scope: "ring", menu: { key: "anchor", title: "What the radius measures to", items: [[0, "Centre"], [3, "Outer edge"], [4, "Inner edge"], [5, "Cap middle"]] } })
-  // Cap middle (#13, beta 5)      // Baseline and Ascender out (Okay, 19 Oct 2026, #418)      // the edges: tangent (#338, 4.53)
+  // Cap middle (#13, 4.90)      // Baseline and Ascender out (Okay, 19 Oct 2026, #418)      // the edges: tangent (#338, 4.53)
 };
 var radius_row = (R) => RADIUS_ROWS[has_text(R) ? "numerals" : "outer"];
 var SIZE_ROWS = {
@@ -14454,7 +14533,7 @@ var ROWS = {
     // physics (4.72, #346: "their discs obey physics or not, chosen by the user"): on, a disc must end inside the case —
     // passing it, its outer guide shows red and this says by how much; off, it may (a face on a screen)
     chk("jump", "Jumps", { ...W, show: win_is("am \xB7 pm") }),
-    // #401, beta 5
+    // #401, 4.90
     info("Snaps to am at midnight and to pm at noon, as a date disc jumps. Off, the disc sweeps round once a day.", { ...W, show: win_is("am \xB7 pm") }),
     chk("physics", "Inside the case", { ...W, show: win_is("date", "day", "am \xB7 pm") }),
     info("Its disc may not pass the case. Off for a face on a screen.", { ...W, show: win_is("date", "day", "am \xB7 pm") }),
@@ -14489,7 +14568,7 @@ var ROWS = {
     // what the mask loses (#220): a ring lying on a ring below in another colour merges into it, one ink, and is gone;
     // said under the tick while the mask is on (design canon §6: a tick's note under it), and in the log on export
     info(() => mask_says(merges_of(tool)), { scope: "global", show: (S) => S.out_production && merges_of(tool).length > 0 }),
-    // the production debts (#219–#224, beta 5): each a tick that starts as files were made before. Claude's readings of
+    // the production debts (#219–#224, 4.90): each a tick that starts as files were made before. Claude's readings of
     // 19 Oct 2026, 22:55 ("questions asked"), built for Okay's approval; preview and files alike (R26)
     chk("out_invert", "Inverted", { show: (S) => S.out_production }),
     info("Toner everywhere inside the dial but the marks, for sunk marks.", { show: (S) => S.out_production }),
@@ -14514,6 +14593,8 @@ var ROWS = {
     info((S) => sheet_says(S), { scope: "global" }),
     num2("out_gap", "Room between", 0, 20, 0.5),
     chk("out_cutline", "A cut line round each"),
+    // a spec sheet (#18): the dial large, each ring's radius marked and numbered, its numbers beside it — for a supplier
+    custom("spec_sheet"),
     // a set of files in one press (#171; atlas 6.3: "tick what to write (dial, mask, mirrored mask, PNG), one press")
     hdr("A set of files", { folded: true }),
     ...FILE_SET.map(([key, words]) => chk(key, words)),
@@ -19849,6 +19930,11 @@ var DialTool = class _DialTool {
     wrap.className = "row";
     wrap.append(el("label", { textContent: "Image" }), this.export_button("PNG"));
   }
+  /** a spec sheet (#18): its button, on the print sheet's column. */
+  row_spec_sheet(wrap) {
+    wrap.className = "row";
+    wrap.append(el("label", { textContent: "Spec" }), el("button", { type: "button", className: "btn main", id: "export-spec", textContent: "Spec sheet", title: "The dial with its measures, for a supplier (SVG, A4)", onclick: () => this.export("spec", { out_production: false, out_mirror: false }) }));
+  }
   /** a moving picture (#51): MP4 and GIF, and the speed they run at. */
   row_export_motion(wrap) {
     wrap.className = "row";
@@ -20833,6 +20919,10 @@ var DialTool = class _DialTool {
         if (live) return this.log(`exported ${name} \xB7 ${page_mm(S).toFixed(2)} mm square \xB7 numerals are text: ${[...new Set(S.rings.filter((r) => r.on && has_text(r)).map((r) => r.family))].join(", ") || "no numerals"} must be installed to open it`);
       }
       if (kind === "pdf") save_file(name, pdf_document(S, statik, S.t), "application/pdf");
+      if (kind === "spec") {
+        save_file(name, spec_sheet(S, statik, S.t), "image/svg+xml");
+        return this.log(`exported ${name} \xB7 A4 on its side \xB7 the dial with each ring's radius marked, and its numbers`);
+      }
       if (kind === "sheet") {
         const L = sheet_layout(S);
         if (!L.places.length) return this.log(`sheet not made: a ${S.dial_d} mm dial doesn't fit on ${L.paper[0]}`);

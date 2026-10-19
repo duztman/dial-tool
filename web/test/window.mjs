@@ -1740,7 +1740,7 @@ await page.uncheck("#global-out-production-Mono-print-mask");
   check(n > 10 && drawn === n && placed === n && near(+box[1] / 72 * 25.4, 210, 0.01) && near(+box[2] / 72 * 25.4, 297, 0.01) && !/ S\n|BT\n/.test(text) && six.startsWith("6 copies") && six_drawn === 6 && path.basename(sheet).includes("-sheet-"),
     `a print sheet: "${all}" — ${placed} copies placed on an A4 (${(+box[1] / 72 * 25.4).toFixed(1)} × ${(+box[2] / 72 * 25.4).toFixed(1)} mm), filled paths only, drawn beside its button; Copies 6: "${six}"; ${path.basename(sheet)}`);
 }
-{ // the production debts (#219–#224, beta 5), each a tick in Print that starts as files were made: what the windows show,
+{ // the production debts (#219–#224, 4.90), each a tick in Print that starts as files were made: what the windows show,
   // hidden rings that still cut, a mask's cut lines, its invert, its outline and registration marks. Preview and files alike (R26)
   const roles = () => page.evaluate(() => [...new Set(window.dial_tool.items.map((i) => i.role))].join(" "));
   const was = await page.evaluate(() => JSON.stringify(window.dial_tool.S));
@@ -1777,7 +1777,7 @@ await page.uncheck("#global-out-production-Mono-print-mask");
   check(/cutline|hole/.test(mask) && !/cutline|hole/.test(uncut) && marked.includes("outline") && reg === 4 && inverted.split(" ").filter((r) => !["outline", "registration", "guide"].includes(r)).join() === "inverted" && (text.match(/\nf\n/g) || []).length >= 6,
     `a mask's ticks (#222–#224): cut lines off takes them out (${uncut}); Outline and registration marks: the blank's edge and ${reg} marks; Inverted: one shape, the dial less the marks (${inverted})`);
 }
-{ // three dead ends (R17), beta 5: Diameter's limits (#233), the ring list's pill whenever it has a use (#448), changes kept while time plays (#234)
+{ // three dead ends (R17), 4.90: Diameter's limits (#233), the ring list's pill whenever it has a use (#448), changes kept while time plays (#234)
   const d0 = await S("S.dial_d");
   await tab("Dial");
   await enter_value("#global-dial-d-Diameter", "1000"); await frame();
@@ -1798,7 +1798,7 @@ await page.uncheck("#global-out-production-Mono-print-mask");
   check(typed && big === 300 && said && pill.slice(1).every(Boolean) && kept === "0.2,0.4,0.6,1",
     `Diameter typed 1000 stops at ${big} and the preview says so (#233); the ring list's pill shows when fewer rows are kept than its ${pill[0]} rings (#448); a change made while time plays is kept within 2 s (${kept}, #234)`);
 }
-{ // beta 5's functions, block A (Okay's go of 20 Oct 2026, 02:02, his program of 02:19): a unit typed in a length's field (#187),
+{ // 4.90's functions, block A (Okay's go of 20 Oct 2026, 02:02, his program of 02:19): a unit typed in a length's field (#187),
   // a slider finer away from its track (#406), undo steps named and listed (#172), am · pm Jump (#401), the thinnest line
   // in the log (#225), Weight % (#88), a set of files (#171)
   await tab("Dial");

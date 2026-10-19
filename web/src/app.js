@@ -7,7 +7,7 @@
 // controls. Controls change the settings S and ask for a frame; the frame draws (R28).
 
 import * as G from "./geometry.js";
-import { svg_document, pdf_document, png_with_dpi, file_name, pdf_sheet, sheet_layout, pack_discs, centre_block, PAPERS } from "./output.js";
+import { svg_document, pdf_document, png_with_dpi, file_name, pdf_sheet, sheet_layout, pack_discs, centre_block, spec_sheet, PAPERS } from "./output.js";
 import { BEZELS, STRAPS, bezel_svg } from "./bezels.js";
 // a Wear OS watch face (4.67; farukahmet's PR #1, 18 Oct 2026): the dial as Watch Face Format, packed and signed in the browser
 import { generate_watchface_xml } from "./wearos/wff_xml.js";
@@ -544,7 +544,7 @@ const custom = (name, o = {}) => ({ kind: "custom", name, ...o });
 // outer end (as always), its middle or its inner end: the same menu, a place in G.FROM.
 const RADIUS_ROWS = {
   outer: num("r", "Outer radius", 0, 25, 0.05, { scope: "ring", menu: { key: "from", title: "What the radius measures to", items: [[0, "Outer"], [1, "Middle"], [2, "Inner"]] } }),
-  numerals: num("r", "Centre radius", 0, 25, 0.05, { scope: "ring", menu: { key: "anchor", title: "What the radius measures to", items: [[0, "Centre"], [3, "Outer edge"], [4, "Inner edge"], [5, "Cap middle"]] } }),      // Cap middle (#13, beta 5)      // Baseline and Ascender out (Okay, 19 Oct 2026, #418)      // the edges: tangent (#338, 4.53)
+  numerals: num("r", "Centre radius", 0, 25, 0.05, { scope: "ring", menu: { key: "anchor", title: "What the radius measures to", items: [[0, "Centre"], [3, "Outer edge"], [4, "Inner edge"], [5, "Cap middle"]] } }),      // Cap middle (#13, 4.90)      // Baseline and Ascender out (Okay, 19 Oct 2026, #418)      // the edges: tangent (#338, 4.53)
 };
 const radius_row = (R) => RADIUS_ROWS[G.has_text(R) ? "numerals" : "outer"];
 // how big one thing of a ring is — its "inner" size, the number in the ring summary: a mark's length (a dot's Ø), a
@@ -849,7 +849,7 @@ const ROWS = {
     seg("names", "Names", ["EN", "TR", "DE", "FR", "IT"], { ...W, show: (T) => T.on && T.follows && G.WINDOW_KINDS[T.kind] === "day" }),
     // physics (4.72, #346: "their discs obey physics or not, chosen by the user"): on, a disc must end inside the case —
     // passing it, its outer guide shows red and this says by how much; off, it may (a face on a screen)
-    chk("jump", "Jumps", { ...W, show: win_is("am · pm") }),      // #401, beta 5
+    chk("jump", "Jumps", { ...W, show: win_is("am · pm") }),      // #401, 4.90
     info("Snaps to am at midnight and to pm at noon, as a date disc jumps. Off, the disc sweeps round once a day.", { ...W, show: win_is("am · pm") }),
     chk("physics", "Inside the case", { ...W, show: win_is("date", "day", "am · pm") }),
     info("Its disc may not pass the case. Off for a face on a screen.", { ...W, show: win_is("date", "day", "am · pm") }),
@@ -880,7 +880,7 @@ const ROWS = {
     // what the mask loses (#220): a ring lying on a ring below in another colour merges into it, one ink, and is gone;
     // said under the tick while the mask is on (design canon §6: a tick's note under it), and in the log on export
     info(() => mask_says(merges_of(tool)), { scope: "global", show: (S) => S.out_production && merges_of(tool).length > 0 }),
-    // the production debts (#219–#224, beta 5): each a tick that starts as files were made before. Claude's readings of
+    // the production debts (#219–#224, 4.90): each a tick that starts as files were made before. Claude's readings of
     // 19 Oct 2026, 22:55 ("questions asked"), built for Okay's approval; preview and files alike (R26)
     chk("out_invert", "Inverted", { show: (S) => S.out_production }),
     info("Toner everywhere inside the dial but the marks, for sunk marks.", { show: (S) => S.out_production }),
@@ -902,6 +902,8 @@ const ROWS = {
     info((S) => sheet_says(S), { scope: "global" }),
     num("out_gap", "Room between", 0, 20, 0.5),
     chk("out_cutline", "A cut line round each"),
+    // a spec sheet (#18): the dial large, each ring's radius marked and numbered, its numbers beside it — for a supplier
+    custom("spec_sheet"),
     // a set of files in one press (#171; atlas 6.3: "tick what to write (dial, mask, mirrored mask, PNG), one press")
     hdr("A set of files", { folded: true }),
     ...G.FILE_SET.map(([key, words]) => chk(key, words)),
@@ -5309,6 +5311,12 @@ class DialTool {
     wrap.className = "row";
     wrap.append(el("label", { textContent: "Image" }), this.export_button("PNG"));
   }
+  /** a spec sheet (#18): its button, on the print sheet's column. */
+  row_spec_sheet(wrap) {
+    wrap.className = "row";
+    wrap.append(el("label", { textContent: "Spec" }), el("button", { type: "button", className: "btn main", id: "export-spec", textContent: "Spec sheet", title: "The dial with its measures, for a supplier (SVG, A4)", onclick: () => this.export("spec", { out_production: false, out_mirror: false }) }));
+  }
+
   /** a moving picture (#51): MP4 and GIF, and the speed they run at. */
   row_export_motion(wrap) {
     wrap.className = "row";
@@ -6206,6 +6214,7 @@ class DialTool {
         if (live) return this.log(`exported ${name} · ${G.page_mm(S).toFixed(2)} mm square · numerals are text: ${[...new Set(S.rings.filter((r) => r.on && G.has_text(r)).map((r) => r.family))].join(", ") || "no numerals"} must be installed to open it`);
       }
       if (kind === "pdf") save_file(name, pdf_document(S, statik, S.t), "application/pdf");
+      if (kind === "spec") { save_file(name, spec_sheet(S, statik, S.t), "image/svg+xml"); return this.log(`exported ${name} · A4 on its side · the dial with each ring's radius marked, and its numbers`); }
       if (kind === "sheet") {                      // a print sheet (4.75)
         const L = sheet_layout(S);
         if (!L.places.length) return this.log(`sheet not made: a ${S.dial_d} mm dial doesn't fit on ${L.paper[0]}`);
