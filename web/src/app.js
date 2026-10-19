@@ -1161,6 +1161,8 @@ class DialTool {
       // it lands, as the browser's own slider does; from then on, sideways travel moves it as the track would, times
       // FINE(distance) — whole within FINE_FREE px of the track, a half FINE_HALF px further, a third twice that, and so
       // on down to FINE_LEAST. A finger opens the controller instead (R15). The panel's sliders and the controller's.
+      const held_range = (e) => (e.target instanceof HTMLInputElement && e.target.type === "range" && e.target.closest(".panel, #value-pop") ? e.target : null);
+      document.addEventListener("mousedown", (e) => { if (held_range(e)) e.preventDefault(); }, true);      // the browser's own drag stays out of it
       document.addEventListener("pointerdown", (e) => {
         const s = e.target instanceof HTMLInputElement && e.target.type === "range" ? e.target : null;
         if (!s || e.pointerType === "touch" || e.button !== 0 || s.disabled || !s.closest(".panel, #value-pop")) return;

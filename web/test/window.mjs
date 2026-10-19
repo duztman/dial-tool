@@ -1806,9 +1806,9 @@ await page.uncheck("#global-out-production-Mono-print-mask");
   await enter_value("#global-dial-d-Diameter", "1.5in"); await frame();
   const inch = await S("S.dial_d");
   await enter_value("#global-dial-d-Diameter", String(d0)); await frame();
-  // the slider: pressed at its middle, then moved 100 px along — once on its track, once 150 px below it
+  // the slider: pressed at its middle, then moved 30 px along — once on its track, once 150 px below it
   const sl = await page.$eval("#global-dial-d-Diameter-slider", (e) => { const r = e.getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; });
-  const slide = async (dy) => { await page.mouse.move(sl[0], sl[1]); await page.mouse.down(); const a = await S("S.dial_d"); await page.mouse.move(sl[0], sl[1] + dy, { steps: 4 }); await page.mouse.move(sl[0] + 100, sl[1] + dy, { steps: 8 }); const b = await S("S.dial_d"); await page.mouse.up(); return b - a; };
+  const slide = async (dy) => { await page.mouse.move(sl[0], sl[1]); await page.mouse.down(); const a = await S("S.dial_d"); await page.mouse.move(sl[0], sl[1] + dy, { steps: 4 }); await page.mouse.move(sl[0] + 30, sl[1] + dy, { steps: 8 }); const b = await S("S.dial_d"); await page.mouse.up(); return b - a; };
   const near_move = await slide(0), far_move = await slide(150);
   await page.evaluate((d) => window.dial_tool.set_value("global", "dial_d", d), d0); await frame();
   // steps named
@@ -1825,15 +1825,16 @@ await page.uncheck("#global-out-production-Mono-print-mask");
   await page.evaluate(() => window.dial_tool.set_value("global", "ui_weight", 100)); await frame();
   const w2 = await S("S.rings.map((r) => r.w)");
   // am · pm Jump: at 03:00 the disc stands at noon's place (all am) with Jump, between with it off
-  const jump = await page.evaluate(() => { const t = window.dial_tool; t.S.ui_window = 0; t.set_value("window", "on", true); t.set_value("window", "kind", 2); t.set_time(3 * 3600); t.frame();
+  const jump = await page.evaluate(() => { const t = window.dial_tool; t.S.ui_window = 0; const was = [t.S.da_on, t.S.da_kind]; t.set_value("window", "on", true); t.set_value("window", "kind", 2); t.set_time(3 * 3600); t.frame();
     const area = () => { const n = t.items.find((i) => i.role === "date picture" || i.role === "date number"); return n ? n.path.svg(2).length : 0; };
     const sweep = area(); t.set_value("window", "jump", true); t.frame(); const jumped = area(); t.set_time(13 * 3600); t.frame(); const pm = area();
-    t.set_value("window", "jump", false); t.set_value("window", "on", false); t.set_time(10 * 3600 + 9 * 60 + 36); return [sweep, jumped, pm]; });
+    t.set_value("window", "jump", false); t.set_value("window", "kind", was[1]); t.set_value("window", "on", was[0]); t.set_time(10 * 3600 + 9 * 60 + 36); return [sweep, jumped, pm]; });
   await tab("Export");
-  const pdf = await download("#export-pdf"), said = await page.evaluate(() => window.dial_tool.log_lines.slice(-3).join(" "));
-  check(Math.abs(inch - 38.1) < 0.01 && near_move > 0 && far_move > 0 && far_move < near_move * 0.6 && steps.includes("Now") && steps.includes("Plate") && steps.some((x) => x.includes("Radius")) && after
-    && w1.every((v, i) => Math.abs(v - w0[i] * 1.5) < 1e-4) && w2.every((v, i) => Math.abs(v - w0[i]) < 1e-4) && jump[0] !== jump[1] && /thinnest line/.test(said),
-    `typed 1.5in → ${inch} mm (#187); the slider moved ${near_move.toFixed(2)} on its track, ${far_move.toFixed(2)} 150 px below it (#406); the steps named (${steps.join(" · ")}) and a press goes back two (#172); Weight 150 % and back (#88); Jump moves the am · pm disc (${jump.join(" ")}, #401); the log names the thinnest line (#225)`);
+  const pdf = await download("#export-pdf"), said = await page.evaluate(() => window.dial_tool.log_lines.slice(0, 4).join(" "));
+  const parts = [Math.abs(inch - 38.1) < 0.01, near_move > 0 && far_move > 0 && far_move < near_move * 0.6, steps.includes("Now") && steps.includes("Plate") && steps.some((x) => x.includes("Radius")), after,
+    w1.every((v, i) => Math.abs(v - w0[i] * 1.5) < 1e-4) && w2.every((v, i) => Math.abs(v - w0[i]) < 1e-4), jump[0] !== jump[1], /thinnest line/.test(said)];
+  check(parts.every(Boolean),
+    `(${parts.map(Number).join("")}) typed 1.5in → ${inch} mm (#187); the slider moved ${near_move.toFixed(2)} on its track, ${far_move.toFixed(2)} 150 px below it (#406); the steps named (${steps.join(" · ")}) and a press goes back two (#172); Weight 150 % and back (#88); Jump moves the am · pm disc (${jump.join(" ")}, #401); the log names the thinnest line (#225)`);
   // a set of files: PDF and a mirrored mask ticked, one press, two files
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "out_f_mirrored", true); });
   await page.$eval("#export-set", (b) => b.scrollIntoView({ block: "center" }));

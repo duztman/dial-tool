@@ -1,5 +1,16 @@
 # Dial Tool — changelog
 
+## beta 5 v01, work in progress (branch `beta5`) · 20 Oct 2026, night
+
+Built alone for Okay's approval (Okay, 02:02: "Build functionality … noted and screenshotted for my approval later, not messing with current build"); not on `dev`, `main` or the live page. Every item, its readings and questions: `docs/beta5-review.md`.
+
+- **Versions under undo, with Compare** (#435); nine kept, arranged by dragging. The Gallery no longer holds *Yours*.
+- **Print**: What the windows show (#219), Hidden rings still cut (#221), Cut lines (#222), Inverted (#223), Outline and registration marks (#224). **A set of files** (#171).
+- **Dial**: Weight % (#88); Diameter's limits, 5–300 mm (#233).
+- **Undo steps named**, a list of 20 under undo (#172). **Units typed** in a length's field (#187). **Sliders finer away from their track** (#406).
+- **am · pm Jumps** (#401). **The thinnest line** in the Export log (#225). The ring list's pill whenever it has a use (#448). Changes kept while time plays (#234).
+- Code: `pack_discs` and `centre_block` (`output.js`) are the print sheet's packing, shared with Compare; `thinnest`, `production_marks`, `FILE_SET`, `WEIGHT_KEYS`, `GEOMETRY_AFTER_ALL`, `disc_hour` (`geometry.js`); `step_name`, `limits` on number rows (`app.js`). New keys appended to `LINK_KEYS`; no new link scheme.
+
 ## beta 4.89.12 (web version) · 20 Oct 2026
 
 Okay, 01:33.
