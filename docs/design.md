@@ -171,6 +171,11 @@ alignment to these rules as well."*
   a tick, as a tick's second line would, starting where the tick's words start; under controls, just below their
   boxes, on the controls' column. The box ends as far under the note as a row's words start above
   (`--note-air`). The CSS for it: `4c-rows.css`, *a note and the row it explains are one box*.
+- **A side row** — a name, a slider and a number box squeezed beside a box (a hand's rows beside its picture; Give
+  way's Clearance): the slider follows its name with no gap, the name's column as wide as the longest name; the gap
+  that would stand there goes to the slider and the number box, so four figures show whole (Okay, 19 Oct 2026, 23:46
+  and 23:53: "love the slider growth. this special case happens when sliders need to fit with boxes like this").
+  `--side-columns` in `1-tokens.css`. A full row (R15 form A) keeps its gaps.
 - **A row of tile buttons** (a window's complications, a mark's shapes; Okay, 19 Oct 2026, 21:26: "Complications tabs
   are 10/10. Do not touch, rule for 4 item buttons like this from the future. 5th squeezes in, or we find another
   way"; "2 or 3 buttons on a selector like complications work the same. Same size buttons, gaps on the right"): the

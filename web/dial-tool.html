@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.89.4 · built 2026-10-19 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.89.5 · built 2026-10-19 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -220,6 +220,7 @@
 
     /* asked for by Okay */
     --sheet-edge: 7px;                             /* a phone's sheets stand this far in from the screen's sides and foot (Okay, 19 Oct 2026, 21:18: "padding from all sides except top"; 21:26: "increase … to 7") */
+    --datepop-pad: calc(var(--u2) + 2px);      /* round the bar's date popup's boxes: a unit and 2 more, its gaps kept (Okay, 19 Oct 2026, 23:53: "2 more pixels padding to the whole popup box … in between boxes stay") */
     --datepop-gap: calc(var(--u2) + 2px);      /* between the bar's date popup's boxes: a unit and 2 more (Okay, 19 Oct 2026, 23:46: "more padding between boxes, 2px") */
     --control-s: calc(0.75 * var(--control));      /* a quiet button at three quarters: Lang. and Change… in the font box (Okay, 14 Oct 2026: "scale down to 75%") */
     --t-xxs: 10px;                                 /* a fifth type size, the smallest: the words in the font sheet's legend, and the font box's quiet buttons (Okay, 14 Oct 2026) */
@@ -615,7 +616,7 @@
   .form > .showbox + .pane:not(.headless) { margin-top: calc(var(--u2) - var(--u4)); }      /* a pane with a heading (a window's) stands a unit under it, no line between: the heading is what Show shows ("closer"); the hand's pane keeps its thin line where it is */
   .form > .showbox input[type="checkbox"] { margin-top: 0; }      /* one line, centred by its row */
   .form > .showbox input[type="checkbox"]::before { width: calc(var(--tick) - var(--u1)); height: calc(var(--tick) - var(--u1)); }      /* the Show tick fills its box: the box as it is, the tick bigger (Okay, 19 Oct 2026: "'Show tick' in white gets bigger, black box stays the same") */
-  .form > .showbox > .check { grid-column: var(--tab, 1); display: flex; align-items: center; height: var(--show-high); padding: 0 var(--u3) 0 calc((var(--show-high) - var(--show-tick)) / 2); background: var(--show-ground); font-size: var(--t-s);
+  .form > .showbox > .showline { grid-column: var(--tab, 1); display: flex; align-items: center; gap: var(--u4); height: var(--show-high); padding: 0 var(--u3) 0 calc((var(--show-high) - var(--show-tick)) / 2); background: var(--show-ground); font-size: var(--t-s);
     margin-left: calc(-1 * var(--hair) * min(var(--tab, 1) - 1, 1)); }      /* past the first tab: the hairline it shares with the tab before it */
   .form > .showbox + .pane.headless { border-top: 0; padding-top: calc(var(--u4) + 2 * var(--hair)); background: linear-gradient(var(--ink) 0 0) right top / calc(100% - var(--lead)) var(--hair) no-repeat; }
   .handsbar > h2 { grid-column: 2 / span 2; }
@@ -1378,6 +1379,11 @@
   .backdropbox { gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch); }
   .backdropbox[aria-expanded="true"] { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); }
   .backdropbox .dot { border-color: var(--on-canvas); }
+  /* a swatch on the canvas (Backdrop's, the strap's): its colour inside its outline only. Painted under the outline as
+     well (the default), WebKit lets the colour bleed over the round corners' edge, and on a part of a pixel (the dot
+     stands at x .25, y .5 here) the hairline can vanish into it (Okay, 19 Oct 2026, 23:53: "backdrop sometimes loses the
+     swatches outline … old Safari on an Intel Mac … iPad too") */
+  :is(.backdropbox, .strapbox) .dot { background-clip: padding-box; }
   /* Shadows (a trial, 14 Oct 2026): the Guides switch's make, at the bottom left, the Backdrop switch standing on it a
      unit above (Okay, 23:05: "button goes down"); one higher, so its open list lies over Backdrop.
      Its sign is a sphere and its cast shadow (15 Oct 2026), so its room is Guides'.
@@ -1662,7 +1668,7 @@
      the panel's type at its size ("remove barlow … our regular text normal size"), heights a control's. Each part as
      wide as its widest value, so nothing moves when the date changes ("size fixed, no movements by change in content").
      A press on the day opens the system's picker */
-  .bar .datepop { position: absolute; z-index: 7; left: 50%; bottom: calc(100% + var(--u2)); translate: -50% 0; width: max-content; padding: var(--u2); border: var(--hair) solid var(--bar-light); border-radius: var(--round-small); background: var(--bar-field); color: var(--bar-ink); font: var(--t-m)/1 var(--sans); font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: var(--shadow); }
+  .bar .datepop { position: absolute; z-index: 7; left: 50%; bottom: calc(100% + var(--u2)); translate: -50% 0; width: max-content; padding: var(--datepop-pad); border: var(--hair) solid var(--bar-light); border-radius: var(--round-small); background: var(--bar-field); color: var(--bar-ink); font: var(--t-m)/1 var(--sans); font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: var(--shadow); }
   .bar .datepop .popline { display: flex; align-items: center; gap: var(--datepop-gap); height: var(--control); }
   .bar .datepop .popword { color: var(--bar-ink); text-align: center; }
   .bar .datepop .weekday { width: 3.4ch; text-align: left; }
@@ -6278,7 +6284,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.89.4";
+var VERSION = "beta 4.89.5";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -11407,9 +11413,6 @@ var ROWS = {
     // the round boss the hand sits on (#370, 4.80; Okay: "a ball that the leaf attaches to")
     num2("counter", "Counterweight \xD8", 0, 4, 0.05, { ...H, side: true, short: "Counter \xD8" }),
     num2("wall", "Hollow wall", 0, 1, 0.01, { ...H, side: true, short: "Wall" }),
-    // its bevel on or off (Okay, 19 Oct 2026: "on off from hand window"); shown only where bevels are drawn, Shadows on
-    // and Bevels % above 0 (R16); a disc hand is flat
-    chk("bevel", "Bevel", { ...H, side: true, show: (T, S) => HAND_SHAPES[T.shape] !== "disc" && S.sh_on && +S.sh_bevel > 0 }),
     // the cap is part of the seconds hand (Okay's notes, p. 1, #262, beta 4.43; until then a pane of its own for all
     // three): its rows under the seconds hand's own. With no seconds hand they stand under the topmost hand's, where
     // the cap is off until "Cap on this hand" is ticked (G.cap_shows)
@@ -15459,9 +15462,20 @@ var DialTool = class _DialTool {
     const id = `${row.scope}-on-Show`, box2 = el("input", { type: "checkbox", id });
     box2.onchange = () => this.set_value(row.scope, "on", box2.checked);
     wrap.className = "showbox";
-    wrap.append(el("label", { className: "check", htmlFor: id, title: row.scope === "hand" ? "Show this hand" : "Show this window" }, box2, " Show"));
+    const line2 = el("span", { className: "showline" }, el("label", { className: "check", htmlFor: id, title: row.scope === "hand" ? "Show this hand" : "Show this window" }, box2, " Show"));
+    const bevel = row.scope === "hand" ? el("input", { type: "checkbox", id: "hand-bevel" }) : null;
+    const bevel_word = bevel ? el("label", { className: "check", htmlFor: "hand-bevel", title: "This hand's bevel, the light and dark halves the shadows' light gives it" }, bevel, " Bevel") : null;
+    if (bevel) {
+      bevel.onchange = () => this.set_value("hand", "bevel", bevel.checked);
+      line2.append(bevel_word);
+    }
+    wrap.append(line2);
     out.refresh = (T) => {
       box2.checked = Boolean(T.on);
+      if (bevel) {
+        bevel.checked = T.bevel !== false;
+        bevel_word.hidden = !(T.on && HAND_SHAPES[T.shape] !== "disc" && this.S.sh_on && +this.S.sh_bevel > 0);
+      }
       const tabs = [...document.querySelectorAll(row.scope === "hand" ? ".tabsbar .segs > .tab" : ".windowcards .card > .tab")];
       wrap.style.setProperty("--tabs", Math.max(tabs.length, 1));
       wrap.style.setProperty("--tab", Math.max(tabs.findIndex((t) => t.classList.contains("on")), 0) + 1);

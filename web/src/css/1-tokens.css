@@ -183,6 +183,7 @@
 
     /* asked for by Okay */
     --sheet-edge: 7px;                             /* a phone's sheets stand this far in from the screen's sides and foot (Okay, 19 Oct 2026, 21:18: "padding from all sides except top"; 21:26: "increase … to 7") */
+    --datepop-pad: calc(var(--u2) + 2px);      /* round the bar's date popup's boxes: a unit and 2 more, its gaps kept (Okay, 19 Oct 2026, 23:53: "2 more pixels padding to the whole popup box … in between boxes stay") */
     --datepop-gap: calc(var(--u2) + 2px);      /* between the bar's date popup's boxes: a unit and 2 more (Okay, 19 Oct 2026, 23:46: "more padding between boxes, 2px") */
     --control-s: calc(0.75 * var(--control));      /* a quiet button at three quarters: Lang. and Change… in the font box (Okay, 14 Oct 2026: "scale down to 75%") */
     --t-xxs: 10px;                                 /* a fifth type size, the smallest: the words in the font sheet's legend, and the font box's quiet buttons (Okay, 14 Oct 2026) */

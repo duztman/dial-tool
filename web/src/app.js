@@ -746,9 +746,6 @@ const ROWS = {
     num("hub", "Hub Ø", 0, 4, 0.05, { ...H, side: true, show: (H) => G.HAND_SHAPES[H.shape] !== "disc" }),      // the round boss the hand sits on (#370, 4.80; Okay: "a ball that the leaf attaches to")
     num("counter", "Counterweight Ø", 0, 4, 0.05, { ...H, side: true, short: "Counter Ø" }),
     num("wall", "Hollow wall", 0, 1, 0.01, { ...H, side: true, short: "Wall" }),
-    // its bevel on or off (Okay, 19 Oct 2026: "on off from hand window"); shown only where bevels are drawn, Shadows on
-    // and Bevels % above 0 (R16); a disc hand is flat
-    chk("bevel", "Bevel", { ...H, side: true, show: (T, S) => G.HAND_SHAPES[T.shape] !== "disc" && S.sh_on && +S.sh_bevel > 0 }),
     // the cap is part of the seconds hand (Okay's notes, p. 1, #262, beta 4.43; until then a pane of its own for all
     // three): its rows under the seconds hand's own. With no seconds hand they stand under the topmost hand's, where
     // the cap is off until "Cap on this hand" is ticked (G.cap_shows)
@@ -4121,9 +4118,17 @@ class DialTool {
     const id = `${row.scope}-on-Show`, box = el("input", { type: "checkbox", id });
     box.onchange = () => this.set_value(row.scope, "on", box.checked);
     wrap.className = "showbox";
-    wrap.append(el("label", { className: "check", htmlFor: id, title: row.scope === "hand" ? "Show this hand" : "Show this window" }, box, " Show"));
+    const line = el("span", { className: "showline" }, el("label", { className: "check", htmlFor: id, title: row.scope === "hand" ? "Show this hand" : "Show this window" }, box, " Show"));
+    // a hand's Bevel beside Show, once it is shown (Okay, 19 Oct 2026, 23:53: "Bevel on off moves next to show under the
+    // tab just above. appears after show is switched on"); and only while bevels are drawn at all — Shadows on, Bevels %
+    // above 0 (R16); a disc hand is flat
+    const bevel = row.scope === "hand" ? el("input", { type: "checkbox", id: "hand-bevel" }) : null;
+    const bevel_word = bevel ? el("label", { className: "check", htmlFor: "hand-bevel", title: "This hand's bevel, the light and dark halves the shadows' light gives it" }, bevel, " Bevel") : null;
+    if (bevel) { bevel.onchange = () => this.set_value("hand", "bevel", bevel.checked); line.append(bevel_word); }
+    wrap.append(line);
     out.refresh = (T) => {
       box.checked = Boolean(T.on);
+      if (bevel) { bevel.checked = T.bevel !== false; bevel_word.hidden = !(T.on && G.HAND_SHAPES[T.shape] !== "disc" && this.S.sh_on && +this.S.sh_bevel > 0); }
       const tabs = [...document.querySelectorAll(row.scope === "hand" ? ".tabsbar .segs > .tab" : ".windowcards .card > .tab")];
       wrap.style.setProperty("--tabs", Math.max(tabs.length, 1));
       wrap.style.setProperty("--tab", Math.max(tabs.findIndex((t) => t.classList.contains("on")), 0) + 1);

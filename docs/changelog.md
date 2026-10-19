@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.89.5 (web version) · 20 Oct 2026
+
+Okay's notes of 19 Oct, 23:53.
+
+- **A hand's Bevel tick beside Show** (#440), in the Show box under the hand's tab, once Show is on — and while Shadows is on and Bevels % above 0 (R16). Out of the side rows. The Show box's grey is now a line (`.showline`) holding its ticks.
+- **The date popup a little roomier** (#438): its padding a unit and 2 px (`--datepop-pad`), the gaps between its boxes kept.
+- **Backdrop's swatch** (#439): its colour painted inside its outline only (`background-clip: padding-box`, Backdrop and strap), so the hairline can't vanish into it where WebKit draws it on part of a pixel. To verify on Safari.
+- Design canon §6: **a side row** — the slider follows its name with no gap; the gap goes to the slider and the number box.
+
 ## beta 4.89.4 (web version) · 19 Oct 2026
 
 Okay's notes of 23:46.

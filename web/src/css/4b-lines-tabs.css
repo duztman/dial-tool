@@ -61,7 +61,7 @@
   .form > .showbox + .pane:not(.headless) { margin-top: calc(var(--u2) - var(--u4)); }      /* a pane with a heading (a window's) stands a unit under it, no line between: the heading is what Show shows ("closer"); the hand's pane keeps its thin line where it is */
   .form > .showbox input[type="checkbox"] { margin-top: 0; }      /* one line, centred by its row */
   .form > .showbox input[type="checkbox"]::before { width: calc(var(--tick) - var(--u1)); height: calc(var(--tick) - var(--u1)); }      /* the Show tick fills its box: the box as it is, the tick bigger (Okay, 19 Oct 2026: "'Show tick' in white gets bigger, black box stays the same") */
-  .form > .showbox > .check { grid-column: var(--tab, 1); display: flex; align-items: center; height: var(--show-high); padding: 0 var(--u3) 0 calc((var(--show-high) - var(--show-tick)) / 2); background: var(--show-ground); font-size: var(--t-s);
+  .form > .showbox > .showline { grid-column: var(--tab, 1); display: flex; align-items: center; gap: var(--u4); height: var(--show-high); padding: 0 var(--u3) 0 calc((var(--show-high) - var(--show-tick)) / 2); background: var(--show-ground); font-size: var(--t-s);
     margin-left: calc(-1 * var(--hair) * min(var(--tab, 1) - 1, 1)); }      /* past the first tab: the hairline it shares with the tab before it */
   .form > .showbox + .pane.headless { border-top: 0; padding-top: calc(var(--u4) + 2 * var(--hair)); background: linear-gradient(var(--ink) 0 0) right top / calc(100% - var(--lead)) var(--hair) no-repeat; }
   .handsbar > h2 { grid-column: 2 / span 2; }
