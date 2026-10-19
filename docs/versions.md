@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.89 | 19 Oct 2026 | web | [`43fb906`](https://github.com/duztman/dial-tool/tree/43fb9063cc605a37627ac35bb0081c469ca92a49) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/43fb9063cc605a37627ac35bb0081c469ca92a49/web/dial-tool.html) | Notes 3 and the sketch rounds: R16, R34, ticks and notes, tile rows, the window tab, Resize Ring from, Positions, the date popup, the hand's sides |
 | 4.88.2 | 19 Oct 2026 | web | [`f66e518`](https://github.com/duztman/dial-tool/tree/f66e518b1cc4d6ac8e1da4e65335e5ac0cf17bc6) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/f66e518b1cc4d6ac8e1da4e65335e5ac0cf17bc6/web/dial-tool.html) | tick rows, the Show tick, a window's colours one to a line, Neighbours on |
 | 4.88.1 | 19 Oct 2026 | web | [`3a84812`](https://github.com/duztman/dial-tool/tree/3a8481291f111405cde1bc5ebe411d73ab3c3fbb) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/3a8481291f111405cde1bc5ebe411d73ab3c3fbb/web/dial-tool.html) | two sizes of check (R19), npm run small; the date popup fixed |
 | 4.88 | 19 Oct 2026 | web | [`8566738`](https://github.com/duztman/dial-tool/tree/856673814de1ea3e0f0d45dc3181d9e2a8afbc80) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/856673814de1ea3e0f0d45dc3181d9e2a8afbc80/web/dial-tool.html) | am · pm one disc; X-ray as a stack; big date a tick under Date; the bar's date popup |
