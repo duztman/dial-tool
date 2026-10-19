@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.87.1 (web version) · 19 Oct 2026
+
+- **The cases and straps as SVG files** (Okay, 17:15: "Can i get the svgs of the straps and cases on my harddisk like the icons?"): `web/cases.mjs` writes `web/cases/svg/` — twelve files, every case kind (Diver, Pilot, Dress, Sport) alone, with a strap and with a bracelet, drawn by `bezels.js` exactly as the preview draws them round a 36 mm dial (the dial's disc filled in paper), in millimetres, each as wide as its case and as tall as its strap. Committed, as `icons/svg/` is. Copied to his Mac, `dial-maker/cases-svg/`.
+
 ## beta 4.87 (web version) · 19 Oct 2026
 
 Housekeeping, on Okay's ask ("Housekeeping, audit, system check, all at once … No retired rules up there to see, no forgotten comments within the code"; then: "eliminate history from current docs. All common sense options, go with all"; "in the end i need this all on main and current"). Nothing on the dial or in the look changes: the look-check (`test/same.mjs`, 447 states) shows only the showcase's Now pill mid-transition; `npm test` passes (443 checks). Released to `main` the same day.
