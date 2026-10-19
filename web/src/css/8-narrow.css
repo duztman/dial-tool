@@ -44,7 +44,7 @@
     .detail .upright { display: none; }
     .detail .lying { display: block; }      /* picture tiles under their label, on all six columns: room for their words */
     .row.pick > label { line-height: 1.4; padding-top: var(--unit); }
-    .picker { inset: var(--bar-h) 0 0 0; width: 100%; max-width: 100vw; height: auto; border-width: var(--hair) 0 0; box-shadow: none; }      /* the font sheet up to the bar: over the whole preview (Okay, 15 Oct 2026, 07:12) */
+    .picker { inset: var(--bar-h) var(--sheet-edge) var(--sheet-edge); width: auto; max-width: none; height: auto; box-shadow: none; }      /* the font sheet up to the bar: over the whole preview (Okay, 15 Oct 2026, 07:12) */
     /* the ways to add a font on a phone: link and file only. Installed exists where the browser can read the computer's
        fonts (Chrome, Edge on a desktop), never on a phone; in a narrow desktop window it would squeeze the others into
        three lines each (Okay, 15 Oct 2026, 07:14: "Installed is back. Solve this") — so here it isn't shown, and the two
@@ -53,14 +53,16 @@
     .picker .squares .adds > #local-fonts { display: none; }
     .picker .squares .adds.three > .pickt :is(small, br) { display: revert; }
     .picker .squares .adds.three > .pickt span { white-space: nowrap; }
-    /* the colour pop-out is a sheet from the bottom; wide, it is the whole screen */
-    .colourpop { inset: auto 0 0 0; width: auto; border-width: var(--hair) 0 0; border-radius: var(--round-large) var(--round-large) 0 0; }
-    .colourpop.wide { inset: 0; grid-template-rows: auto auto auto 1fr; border-radius: 0; }      /* wide, a sheet is the whole screen; the field takes the height that is left */
+    /* the colour pop-out is a sheet from the bottom; wide, it is the whole screen. Every sheet (fonts, colour, the Guides
+       and Shadows lists) stands --sheet-edge in from the screen's sides and foot, not its top, its corners all round
+       (Okay, 19 Oct 2026, 21:18: "This popup and others needs 3px padding from all sides except top on mobile") */
+    .colourpop { inset: auto var(--sheet-edge) var(--sheet-edge); z-index: 7; width: auto; border-radius: var(--round-large); }      /* over the drawer and its gripper (Okay, 19 Oct 2026, 21:18: "the resize nubbin is visible. Shouldn't be") */
+    .colourpop.wide { inset: 0 var(--sheet-edge) var(--sheet-edge); grid-template-rows: auto auto auto 1fr; border-radius: var(--round-large); }      /* wide, a sheet is the whole screen; the field takes the height that is left */
     .colourpop.wide .sv { height: auto; min-height: var(--pop-field); }
     .colourpop header { cursor: default; }
     /* the Guides and Shadows lists: sheets from the bottom, as the colour pop-out is here — over the drawer, never cut by
        it, and nothing on the preview showing through (Okay, 15 Oct 2026, 06:27, a picture of the Guides list cut off) */
-    .guidelist { position: fixed; inset: auto 0 0 0; width: auto; max-width: none; max-height: var(--sheet-max); border-width: var(--hair) 0 0; border-radius: var(--round-large) var(--round-large) 0 0; }
+    .guidelist { position: fixed; inset: auto var(--sheet-edge) var(--sheet-edge); width: auto; max-width: none; max-height: var(--sheet-max); border-radius: var(--round-large); }
     :is(.corner, .shadows):has(.guidelist:not([hidden])) { z-index: 7; }      /* above the drawer while open */
     /* Okay, 15 Oct 2026, 06:20–06:24 ── the top: the page's own colour is the bar's, so Safari tints the strip under the
        phone's status bar to match and the bar no longer starts against white (iOS 26 takes that tint from the body's

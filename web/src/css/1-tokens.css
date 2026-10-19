@@ -179,6 +179,7 @@
        measures (--margin, --eye, --gap, --col) and sizes of things (heights, widths), which no scale governs. */
 
     /* asked for by Okay */
+    --sheet-edge: 3px;                             /* a phone's sheets stand this far in from the screen's sides and foot (Okay, 19 Oct 2026, 21:18: "3px padding from all sides except top") */
     --datepop-type: calc(1.15 * var(--t-l)); --datepop-step: calc(1.15 * var(--bar-control));      /* the bar's date popup a size up (Okay, 19 Oct 2026, #412: "Popup larger overall"; read as "a bit", 15 %) */
     --control-s: calc(0.75 * var(--control));      /* a quiet button at three quarters: Lang. and Change… in the font box (Okay, 14 Oct 2026: "scale down to 75%") */
     --t-xxs: 10px;                                 /* a fifth type size, the smallest: the words in the font sheet's legend, and the font box's quiet buttons (Okay, 14 Oct 2026) */
@@ -218,7 +219,7 @@
     --ringline-pad: 8px; --ringline-gap: 8px; --ringline-join: calc(-1 * var(--hair));      /* the selected ring's line: inside its frame · between its parts · between it and its ring's row: none, the two one box sharing a line (Okay, 19 Oct 2026: "two boxes, yours is not connected, mine is") (Okay asked for more room inside, 13 Oct; 8 was Claude's figure) */
     --name-in: 6px;                                /* a ring's name starts this far into its column; the ring line's buttons too */
     --chip-gap: 4px;                               /* between two colours to pick */
-    --pop-pad: 16px; --pop-gap: 12px;              /* a night part (colour pop-out, guides' list) and the number popup: the space inside its edge, the space between its blocks */
+    --pop-pad: 19px; --pop-top: 16px; --pop-gap: 12px;      /* a night part (colour pop-out, guides' list, the bio): the space inside its edges at the sides and the foot, a little more than at its top (Okay, 19 Oct 2026, 21:17: "3px padding from all sides except top"), and the space between its blocks */
     --pop-foot: calc(var(--control) + 2 * var(--u2));      /* a popup's bottom section (#305): a control, a unit over and under it */
     --guide-gap: 7px;                              /* the room between two round colours in the guides' list: the chosen one's ring needs it (2 px clear of the next: 2 + 3 of ring; notes 2, 18 Oct 2026: "closer") */
     --ring-gap-in: 2px;                            /* the chosen guide colour: a ring of the ground this wide, inside its own ring */

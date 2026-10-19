@@ -30,7 +30,7 @@
   .logo { border-radius: 50%; }
   .logo[aria-expanded="true"] { color: var(--white); background: var(--night); box-shadow: 0 0 0 var(--logo-disc) var(--night); }
   /* its text stands on the title’s line, the column after the mark (less its own edge); the list's bullets hang left of it (Okay, 03:06) */
-  .bio { position: absolute; z-index: 6; top: calc(100% + var(--unit)); left: 0; width: var(--bio-width); max-width: calc(100vw - 2 * var(--margin)); padding: var(--pop-pad) var(--pop-pad) calc(var(--pop-pad) - var(--u1)) calc(var(--eye) + var(--gap) - var(--hair)); font-size: var(--t-m); line-height: 1.45; }
+  .bio { position: absolute; z-index: 6; top: calc(100% + var(--unit)); left: 0; width: var(--bio-width); max-width: calc(100vw - 2 * var(--margin)); padding: var(--pop-top) var(--pop-pad) calc(var(--pop-pad) - var(--u1)) calc(var(--eye) + var(--gap) - var(--hair)); font-size: var(--t-m); line-height: 1.45; }
   .bio h3 { margin: var(--pop-gap) 0 var(--u1); font-size: var(--t-m); }
   .bio p { margin: 0 0 var(--unit); }
   .bio ul { margin: 0; padding-left: 0; }

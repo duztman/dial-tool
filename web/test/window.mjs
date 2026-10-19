@@ -2232,8 +2232,8 @@ check(narrow.wide <= 390 && narrow.eye >= 0 && narrow.bar === 0, "a phone: nothi
   const sheet = await page.evaluate(() => { const r = document.querySelector("#guide-list").getBoundingClientRect(); return [Math.round(r.left), Math.round(r.right), Math.round(r.bottom), innerWidth, innerHeight]; });
   await page.click("#guides-more");
   check(folded.guides === 32 && open.guides > 60 && shut.guides === 32 && folded.dot === folded.line && folded.grip[1] === folded.grip[2] && tall.panel > folded.panel && tall.held && !back.held && back.panel === folded.panel
-      && sheet[0] === 0 && sheet[1] === sheet[3] && sheet[2] === sheet[4] && folded.body === "rgb(51, 51, 51)",
-    `a phone: the switches show their signs (${folded.guides} px) and unfold their words on a tap of the backdrop (${open.guides}), folding back after 3 s; the gripper sits on the drawer's top line in its grey; a tap makes the drawer taller (${folded.panel} → ${tall.panel}) and it holds its top still, another brings it back; Guides opens as a sheet from the bottom; the page's own colour is the bar's`);
+      && sheet[0] === 3 && sheet[1] === sheet[3] - 3 && sheet[2] === sheet[4] - 3 &&      /* 3 in from the sides and the foot (Okay, 19 Oct 2026, 21:18) */ folded.body === "rgb(51, 51, 51)",
+    `a phone: the switches show their signs (${folded.guides} px) and unfold their words on a tap of the backdrop (${open.guides}), folding back after 3 s; the gripper sits on the drawer's top line in its grey; a tap makes the drawer taller (${folded.panel} → ${tall.panel}) and it holds its top still, another brings it back; Guides opens as a sheet from the bottom, 3 in from the sides and the foot; the page's own colour is the bar's`);
 }
 await shot("11-phone");
 await page.click('.form .fold:visible >> nth=0', { position: { x: 12, y: 12 } });      // at its left end: a menu may stand on the rest of its line (#419)
