@@ -75,6 +75,20 @@ A new session starts with no memory of the last one: the transcript stays in the
 - **"p. N" in the build list** is a page of his PDF *Notes on dial app* (21 pages, on his Google Drive; readable through a Google Drive connector if the session has one). The row's text is the full reading. Ask him for the page if it isn't enough.
 - **Docs state the present** (19 Oct): never write "until 4.x it was…" into a doc, a rule or a code comment; keep his words as the reason, put the change in the changelog.
 
+## 4b · The sketch loop (19 Oct 2026, first session on it)
+
+Okay, 19 Oct 2026: "an agile way of seeing sketches alive and approving … I preview but can't see for real for a while, when my thoughts are collected we do one cycle to review and finesse few rounds then push". The loop:
+
+1. **Start of session.** Say the model. Then trigger every permission at once, before anything else, and tell him to choose "always allow": push to `duztman/dial-tool` (`add_repo` with push), his Mac's `~/Desktop/dial-maker` (folder access), Google Drive (his notes doc), publishing the preview page. Starting should be simple.
+2. **His notes doc** (Google Doc *Dial tool notes*, on his Drive; notes 1 → 3 so far): read it whole at the start. He adds a dated heading per round; read what is under the newest one. Its pictures: export the doc as PDF and `pdfimages` the pages (`read_file_content` shows only "[image]"). Log every new note in the build list under a section of its own before building.
+3. **Sketch rounds.** One round = a few notes built → `npm run small` (about 2 minutes) → a WIP commit on `dev` (no docs, no version bump) → the build published to the **private preview page** (the Artifact *Dial Tool*, the same link every round: copy `web/dial-tool.html` to a fixed scratch path and publish that path) → **crops of only what changed**, before/after when there is a before, with the values used, sent to him in the chat. Crops: `node test/crop.mjs web/test/crops/x.png <tab> <selector> [setup.js]`; a setup that returns a value prints it (measure with it, R21); `CROP_H=2000` for a whole tab, `CROP_W=1180 CROP_H=820` an iPad on its side.
+4. **His replies mid-round** are notes: log them, answer open readings with a picture and one question, carry on. "NOW" at the start of a message means it changes the step in hand.
+5. **The push**, only on his word ("push"): the full `npm test`, the docs written once for the whole batch (changelog, brief §4, build list, rules, canon), one version bump, `tools/release.sh`. Start `npm test` in the background while he reviews: it is ready when he says push.
+6. **End of session: archive the screens** (Okay, 19 Oct 2026: "all test screenshots you took and if i send some through the chat, add them too"), as `archive/screens/<date>/` already does: `okay/` — what he sent through the chat (`/root/.claude/uploads/<session>/`) and the session's pictures from his notes doc, named `time-seen-version-what`; `claude/` — the crops of `web/test/crops/`, named `time-version-what`; `claude/tests-<version>/` — `web/test/out/*.png` of the last full run; a `README.md` with a table for each, what each shows and his words. One commit.
+7. **Report at the end** what made the session faster or slower, with numbers, under §1.
+
+What was measured on 19 Oct 2026 (4.88.2 → 4.89): `npm run small` 120–140 s, the full `npm test` about 6 minutes, a preview publish a few seconds; a round (build, check, publish, crops) about 10 minutes of which the check is 2.
+
 ## 5 · Handing over again
 
 When the context runs long, or Okay asks:
