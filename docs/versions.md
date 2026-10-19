@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.87.1 | 19 Oct 2026 | web | [`6334598`](https://github.com/duztman/dial-tool/tree/633459853bafdecd55802613f9026322a38af79a) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/633459853bafdecd55802613f9026322a38af79a/web/dial-tool.html) | the cases and straps as SVG files |
 | 4.87 | 19 Oct 2026 | web | [`e19bc15`](https://github.com/duztman/dial-tool/tree/e19bc15a9986c468b6c0e17be1172527755100c3) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/e19bc15a9986c468b6c0e17be1172527755100c3/web/dial-tool.html) | housekeeping: dead code and stale comments out, docs state the present, the DrawBot rules, words and items archived |
 | 4.86 | 19 Oct 2026 | web | [`b02005d`](https://github.com/duztman/dial-tool/tree/b02005d9a16fc6c424b7d7d222384cd22292b77b) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/b02005d9a16fc6c424b7d7d222384cd22292b77b/web/dial-tool.html) | LINK disc in both of a pair; Guides, case, X-ray top right; dotted off switches; signs swapped |
 | 4.85 | 19 Oct 2026 | web | [`b7ae090`](https://github.com/duztman/dial-tool/tree/b7ae0903b4b83370e5b7d0423356cc606f282d9d) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/b7ae0903b4b83370e5b7d0423356cc606f282d9d/web/dial-tool.html) | the shine's three circles; the controller smaller and see-through, LINK between − and +, touch scrubs at once |
