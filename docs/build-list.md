@@ -183,6 +183,9 @@ Nine annotated screenshots under *Notes 3* in Okay's Google Doc *Dial tool notes
 | 423 | **Positions' circle allowed into the controls' column**, from the first row's top line to a unit above the pane's closing line (Okay, 20:22: "Allow to penetrate", "Limit"); the controls over it | sketch — on the preview |
 | 424 | **Every tick and note on the controls' column, the first in a pane too** (Okay, 20:22: Print's *Mono print mask* moved under *Mirrored*) | sketch — on the preview |
 | 425 | **The print sheet's picture: Edit** — the sheet laid out by hand (Okay, 20:22: "EDIT: (future)") | later |
+| 426 | **A window's complications: four equal tiles on the controls' column, beside their name** (Okay, 20:37: "EQUAL") | sketch — on the preview |
+| 427 | **Show: its tick closer to its word; a window's heading closer under it** (Okay, 20:37: "closer", "closer"): gap 11 → 8.25, 16.5 → 11 | sketch — on the preview |
+| 428 | **Positions' circle: grows left into the eye's column, never past the controls' names; its lines 0.75 thicker** (Okay, 20:37: "No passing red line ever. Yes: passing green"; "Line thicknesses .75 thicker") | sketch — on the preview |
 
 ## Dial Packer (side product, 19 Oct 2026)
 

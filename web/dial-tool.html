@@ -366,7 +366,7 @@
   .pickt, .tile { display: grid; border: var(--hair) solid var(--rule); background: var(--field); }
   :is(.pickt, .tile):hover { background: var(--hover); }
   .picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--unit); padding: var(--unit) 0; }      /* one small space, the unit: between the tiles, both ways, and from them to the row's lines. The tiles are wider than a column for it */
-  .picks.across { grid-template-columns: repeat(var(--across), minmax(0, 1fr)); }      /* a line of all its tiles, however many (4.79) */
+  .picks.across { grid-template-columns: repeat(var(--across), minmax(0, 1fr)); }      /* a line of all its tiles, however many, equal, on the controls' column beside its name as every row's controls stand (Okay, 19 Oct 2026, 20:37: a window's four complications "EQUAL", from the controls' line) */
   .pickt { justify-items: center; align-content: start; gap: var(--u1); min-height: var(--tile); padding: var(--unit) var(--hair); font-size: var(--t-xs); line-height: 1.15; }
   .picks.small .pickt { min-height: 0; }      /* smaller pictures, a tile no higher than they need (a window's Shows, 4.46.1) */
   .pickt span { white-space: nowrap; text-align: center; }      /* a tile's word is one line; a name too long for it has a short one in TILE_WORDS */
@@ -607,7 +607,8 @@
      thick one — with the same room over the line as under it (Okay: "Vertical gaps before after same";
      "Thick line stands here"): two units, as over the title on every heading — under the thin line counted from its
      foot to the first row's own white line, which stand a hairline each */
-  .form > .showbox { display: grid; grid-template-columns: repeat(var(--tabs, 1), minmax(0, 1fr)); margin: 0 0 var(--u4) var(--lead); --tick: var(--show-tick); }
+  .form > .showbox { display: grid; grid-template-columns: repeat(var(--tabs, 1), minmax(0, 1fr)); margin: 0 0 var(--u4) var(--lead); --tick: var(--show-tick); --tick-gap: var(--u3); }      /* its small tick close to its word (Okay, 19 Oct 2026, 20:37: "closer") */
+  .form > .showbox + .pane:not(.headless) { margin-top: calc(var(--u2) - var(--u4)); }      /* a pane with a heading (a window's) stands a unit under it, no line between: the heading is what Show shows ("closer"); the hand's pane keeps its thin line where it is */
   .form > .showbox input[type="checkbox"] { margin-top: 0; }      /* one line, centred by its row */
   .form > .showbox input[type="checkbox"]::before { width: calc(var(--tick) - var(--u1)); height: calc(var(--tick) - var(--u1)); }      /* the Show tick fills its box: the box as it is, the tick bigger (Okay, 19 Oct 2026: "'Show tick' in white gets bigger, black box stays the same") */
   .form > .showbox > .check { grid-column: var(--tab, 1); display: flex; align-items: center; height: var(--show-high); padding: 0 var(--u3) 0 calc((var(--show-high) - var(--show-tick)) / 2); background: var(--show-ground); font-size: var(--t-s);
@@ -677,7 +678,6 @@
   .labelmenu > select { position: absolute; inset: calc(-1 * var(--reach-y, 0px)); width: calc(100% + 2 * var(--reach-y, 0px)); height: calc(100% + 2 * var(--reach-y, 0px)); opacity: 0; cursor: pointer; }      /* under a finger the unseen menu is larger than its box (reach) */
   .row > :is(select, .segs, .colour, .single, .tools, .picks, .swatches), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
   .row > :is(.check, .wide), .row.note > .quiet { grid-column: 1 / -1; }
-  .row:has(> .picks.across) > label, .row > .picks.across { grid-column: 1 / -1; }      /* a line of all its tiles (4.79): its name over it and the tiles the whole line, so five words fit (as a phone lays every picker) */
   .row > .setnote { grid-column: 1 / -1; margin: var(--unit) 0 0; }      /* what a settings file is, over its buttons (#279) */
   .row > .warn { grid-column: 3 / -1; margin: var(--u1) 0 var(--unit); font-size: var(--t-s); color: var(--ink); }      /* the warning under a button that replaces the whole dial (Reset): in ink, not quiet, on the controls' column (Okay, 16 Oct 2026, 10:46) */      /* a tick and its words start at the left edge */
   .row > span:first-child:empty { display: none; }
@@ -987,8 +987,10 @@
      with a unit round it; a mark at every position, used in ink, skipped faint, the first a dot */
   .detail.round { border: 0; }
   .detail.round svg { fill: none; }      /* lines only; the first position's dot fills itself */
-  .detail.round .used { stroke: currentColor; stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
-  .detail.round .skipped { stroke: var(--rule); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
+  .detail.round { --pos-line: calc(var(--hair) + 0.75px); }      /* its lines 0.75 thicker than a hairline (Okay, 19 Oct 2026, 20:37: "Line thicknesses .75 thicker") */
+  .detail.round .used { stroke: currentColor; stroke-width: var(--pos-line); vector-effect: non-scaling-stroke; }
+  .detail.round .skipped { stroke: var(--rule); stroke-width: var(--pos-line); vector-effect: non-scaling-stroke; }
+  .detail.round .axis { stroke-width: var(--pos-line); }
   .detail.round .first { fill: currentColor; }
   /* Positions, drawn (Okay's notes 2, 18 Oct 2026, #357: "Preview big, controls smaller"): the preview square in the
      first two columns, three rows high; beside it two columns of small controls — Count · Every, Offset · Skip those,
@@ -997,9 +999,9 @@
   .pane.positions > .body > .detail.round { grid-column: 2 / span 2; grid-row: 1 / span 3; align-self: start; aspect-ratio: 1; min-height: 0; margin: 0; overflow: visible; touch-action: none; cursor: grab; }
   .pane.positions > .body > .row { position: relative; z-index: 1; }      /* the controls over the circle where it reaches them */
   .pane.positions > .body > .detail.round.dragging { cursor: grabbing; }
-  .pane.positions > .body > .detail.round svg { inset: var(--hair) auto auto var(--hair); width: auto; height: calc(100% + var(--air) - var(--unit)); aspect-ratio: 1; }      /* the circle from the first row's top line down into the pane's air, to a unit above its closing line, as wide as that: it may reach into the controls' column, under them (Okay, 19 Oct 2026, #417: "Allow to penetrate"; "Limit"). The box under it keeps the rows' height */
+  .pane.positions > .body > .detail.round svg { inset: var(--hair) var(--hair) auto auto; width: auto; height: calc(100% + var(--air) - var(--unit)); aspect-ratio: 1; }      /* the circle from the first row's top line down into the pane's air, to a unit above its closing line, as wide as that; its right edge on its box's, never past the controls' names, so it grows to the left, into the eye's column (Okay, 19 Oct 2026, #417, 20:37: "No passing red line ever. Yes: passing green"; "Limit"). The box under it keeps the rows' height */
   .detail.round .span { stroke: var(--grey); stroke-width: var(--pos-dot); stroke-linecap: round; stroke-dasharray: 0 var(--pos-dot-gap); vector-effect: non-scaling-stroke; }      /* "Span ruler: make it dotted instead of ruler" */
-  .detail.round .spanend { fill: var(--field); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
+  .detail.round .spanend { fill: var(--field); stroke: var(--grey); stroke-width: var(--pos-line); vector-effect: non-scaling-stroke; }
   .pane.positions > .body > .row { grid-column: span 2; column-gap: var(--u1); min-width: 0; }
   .pane.positions > .body > .row > :first-child { grid-column: auto; }
   .pane.positions > .body > .row > label:first-child { font-size: var(--t-s); }

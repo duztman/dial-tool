@@ -1211,7 +1211,7 @@ await page.evaluate(() => window.dial_tool.set_value("window", "on", true));    
 check(await page.textContent(".form .pane >> nth=0 >> h2") === "Window at 6", "shown, the pane says Window at 6");
 const on_box = await page.evaluate(() => { const box = document.querySelector(".form").firstElementChild, c = box.querySelector(".check").getBoundingClientRect(), t = document.querySelector(".windowcards .card > .tab.on").getBoundingClientRect(); return [box.classList.contains("showbox"), box.querySelector("input").id, box.nextElementSibling.querySelector("h2").textContent, !document.querySelector(".form .pane .headcontrol input"), (c.left - t.left).toFixed(1) + " " + (c.right - t.right).toFixed(1)]; });
 const win_gap = await page.evaluate(() => { const box = document.querySelector(".form > .showbox > .check").getBoundingClientRect(), pane = document.querySelector(".form > .showbox + .pane").getBoundingClientRect(); return +(pane.top - box.bottom).toFixed(1); });
-check(win_gap === 11, `under the window's Show box its pane's thick line stands as far below as the hand's thin line does (${win_gap}; 4.46.4: "Thick line stands here")`);
+check(win_gap === 5.5, `under the window's Show box its pane's heading stands a unit below (${win_gap}; Okay, 19 Oct 2026, 20:37: "closer")`);
 check(on_box[0] && on_box[1] === "window-on-Show" && on_box[2] === "Window at 6" && on_box[3] && on_box[4] === "0.0 0.0", `Show stands in the Show box under the chosen card, as wide as it (${on_box[4]}), over the window's pane (#261; 4.46.2): the cards are tabs only`);
 await page.click(".form .pane >> nth=0 >> .fold h2");
 check(await page.isVisible("#window-on-Show"), "the window's pane folded, Show stays in view");

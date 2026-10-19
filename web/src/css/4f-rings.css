@@ -160,8 +160,10 @@
      with a unit round it; a mark at every position, used in ink, skipped faint, the first a dot */
   .detail.round { border: 0; }
   .detail.round svg { fill: none; }      /* lines only; the first position's dot fills itself */
-  .detail.round .used { stroke: currentColor; stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
-  .detail.round .skipped { stroke: var(--rule); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
+  .detail.round { --pos-line: calc(var(--hair) + 0.75px); }      /* its lines 0.75 thicker than a hairline (Okay, 19 Oct 2026, 20:37: "Line thicknesses .75 thicker") */
+  .detail.round .used { stroke: currentColor; stroke-width: var(--pos-line); vector-effect: non-scaling-stroke; }
+  .detail.round .skipped { stroke: var(--rule); stroke-width: var(--pos-line); vector-effect: non-scaling-stroke; }
+  .detail.round .axis { stroke-width: var(--pos-line); }
   .detail.round .first { fill: currentColor; }
   /* Positions, drawn (Okay's notes 2, 18 Oct 2026, #357: "Preview big, controls smaller"): the preview square in the
      first two columns, three rows high; beside it two columns of small controls — Count · Every, Offset · Skip those,
@@ -170,9 +172,9 @@
   .pane.positions > .body > .detail.round { grid-column: 2 / span 2; grid-row: 1 / span 3; align-self: start; aspect-ratio: 1; min-height: 0; margin: 0; overflow: visible; touch-action: none; cursor: grab; }
   .pane.positions > .body > .row { position: relative; z-index: 1; }      /* the controls over the circle where it reaches them */
   .pane.positions > .body > .detail.round.dragging { cursor: grabbing; }
-  .pane.positions > .body > .detail.round svg { inset: var(--hair) auto auto var(--hair); width: auto; height: calc(100% + var(--air) - var(--unit)); aspect-ratio: 1; }      /* the circle from the first row's top line down into the pane's air, to a unit above its closing line, as wide as that: it may reach into the controls' column, under them (Okay, 19 Oct 2026, #417: "Allow to penetrate"; "Limit"). The box under it keeps the rows' height */
+  .pane.positions > .body > .detail.round svg { inset: var(--hair) var(--hair) auto auto; width: auto; height: calc(100% + var(--air) - var(--unit)); aspect-ratio: 1; }      /* the circle from the first row's top line down into the pane's air, to a unit above its closing line, as wide as that; its right edge on its box's, never past the controls' names, so it grows to the left, into the eye's column (Okay, 19 Oct 2026, #417, 20:37: "No passing red line ever. Yes: passing green"; "Limit"). The box under it keeps the rows' height */
   .detail.round .span { stroke: var(--grey); stroke-width: var(--pos-dot); stroke-linecap: round; stroke-dasharray: 0 var(--pos-dot-gap); vector-effect: non-scaling-stroke; }      /* "Span ruler: make it dotted instead of ruler" */
-  .detail.round .spanend { fill: var(--field); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
+  .detail.round .spanend { fill: var(--field); stroke: var(--grey); stroke-width: var(--pos-line); vector-effect: non-scaling-stroke; }
   .pane.positions > .body > .row { grid-column: span 2; column-gap: var(--u1); min-width: 0; }
   .pane.positions > .body > .row > :first-child { grid-column: auto; }
   .pane.positions > .body > .row > label:first-child { font-size: var(--t-s); }
