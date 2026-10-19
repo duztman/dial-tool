@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.89.11 · built 2026-10-19 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.89.12 · built 2026-10-19 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -319,6 +319,13 @@
   :is(.plain, .sign):hover { background: var(--field); border-color: var(--rule); }
 
   .steps, .segs { display: flex; }
+  /* a choice of a few words: a pill switch — a rounded outline, the words in it as pills, the chosen one ink (5-chosen).
+     Every word choice in the panel (Picture, Names, Paper, a disc hand's Marker…) and the font sheet's Light · Dark
+     (Okay, 20 Oct 2026, 01:33: "Arch phase line selector exactly like this light dark selector here … universal") */
+  .pillswitch { display: flex; justify-self: start; width: max-content; max-width: 100%; border: var(--hair) solid var(--rule); border-radius: var(--round-pill); padding: var(--u1); background: var(--field); }
+  .pillswitch > button { height: calc(var(--control) - 2 * var(--u1) - 2 * var(--hair)); padding: 0 var(--u4); border-radius: var(--round-pill); color: var(--grey); font-size: var(--t-s); }
+  .pillswitch > button:hover:not(.on) { color: var(--ink); }
+  .pillswitch.many { flex-wrap: wrap; }
   .steps { width: 100%; }
   .step, .segs > button { flex: 1; border-color: var(--rule); }
   .segs > button { padding: 0 var(--unit); }
@@ -687,7 +694,7 @@
   .labelmenu { position: relative; flex: none; display: grid; place-items: center; width: var(--menu-box); height: var(--menu-box); border: var(--hair) solid var(--grey); background: var(--field); color: var(--ink); }
   .labelmenu:hover { border-color: var(--ink); }
   .labelmenu > select { position: absolute; inset: calc(-1 * var(--reach-y, 0px)); width: calc(100% + 2 * var(--reach-y, 0px)); height: calc(100% + 2 * var(--reach-y, 0px)); opacity: 0; cursor: pointer; }      /* under a finger the unseen menu is larger than its box (reach) */
-  .row > :is(select, .menubox, .segs, .colour, .single, .tools, .picks, .swatches), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
+  .row > :is(select, .menubox, .segs, .pillswitch, .colour, .single, .tools, .picks, .swatches), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
   .row > :is(.check, .wide), .row.note > .quiet { grid-column: 1 / -1; }
   .row > .setnote { grid-column: 1 / -1; margin: var(--unit) 0 0; }      /* what a settings file is, over its buttons (#279) */
   .row > .warn { grid-column: 3 / -1; margin: var(--u1) 0 var(--unit); font-size: var(--t-s); color: var(--ink); }      /* the warning under a button that replaces the whole dial (Reset): in ink, not quiet, on the controls' column (Okay, 16 Oct 2026, 10:46) */      /* a tick and its words start at the left edge */
@@ -721,7 +728,7 @@
      the pill stands on the line under the first row, starting where the names start, over the next row's line. Width and
      height were one line, two numbers to it, from 4.46.1 to 4.56 (#265) */
   .row.haslink { position: relative; }
-  .row.haslink > .linkpill { position: absolute; z-index: 1; grid-column: 1 / -1; grid-row: 1; justify-self: start; left: 0; bottom: 0; translate: 0 50%; display: grid; place-items: center; height: var(--link-pill); padding: 0 var(--u2); border: var(--hair) solid var(--row-rule); border-radius: var(--round-pill); background: var(--surface); color: var(--ink); font: 400 var(--t-pixel)/1 var(--pixel); letter-spacing: 0; }
+  .row.haslink > .linkpill { position: absolute; z-index: 1; grid-column: 1 / -1; grid-row: 1; justify-self: start; left: 0; bottom: 0; translate: 0 50%; display: grid; place-items: center; height: var(--link-pill); padding: 0 var(--u2); border: var(--hair) solid var(--row-rule); border-radius: var(--round-pill); background: var(--surface); color: var(--grey); font: 400 var(--t-pixel)/1 var(--pixel); letter-spacing: 0; }
   .row.haslink > .linkpill:hover { border-color: var(--grey); }
   .row.haslink > .linkpill.on { border-color: var(--ink); background: var(--ink); color: var(--white); }
   /* a window's colours on one line (#266, 4.46.1): a quiet word, then its pill; a third (Picture) only for am · pm and moon */
@@ -779,7 +786,7 @@
   .row.side > label > .whole { display: none; }
   .row.side > label > .short { display: inline; }
   .row.side > .colour { grid-column: 2 / -1; }
-  .row.side > .segs { grid-column: 2 / -1; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }      /* a choice of words beside the box (a disc hand's marker, #164): over the slider and number, its words sharing the width */
+  .row.side > .pillswitch { grid-column: 2 / -1; }      /* a choice of words beside the box (a disc hand's marker, #164): over the slider and number, its words sharing the width */
 }
 
 /* colour: the pill, swatches, the pop-out */
@@ -1122,9 +1129,6 @@
   .fontbox .row.num:not(.side) { grid-template-columns: var(--font-label) minmax(0, 1fr) var(--gap) var(--tile-w) 0 var(--tile-w); }
   /* light or dark (#276, 4.51): with the pill on Dark, the sheet's list and every font box take the dark ground and the
      usual names inside them turn over (ink light, paper dark), so what is chosen is light with dark words */
-  .pillswitch { display: flex; border: var(--hair) solid var(--rule); border-radius: var(--round-pill); padding: var(--u1); background: var(--field); }
-  .pillswitch > button { height: calc(var(--control) - 2 * var(--u1) - 2 * var(--hair)); padding: 0 var(--u4); border-radius: var(--round-pill); color: var(--grey); font-size: var(--t-s); }
-  .pillswitch > button.on { background: var(--ink); color: var(--paper); }
   .font-dark :is(.fontlist, .fontbox .fontrow.current) { --field: var(--font-night); --paper: var(--font-night); --ground: var(--font-night-well); --well: var(--font-night-well); --hover: var(--font-night-hover); --select: var(--font-night-select); --rule: var(--font-night-rule); --rule-light: var(--font-night-rule); --ink: var(--font-night-ink); --grey: var(--font-night-grey); --wait: var(--font-night-grey); background: var(--field); color: var(--ink); }      /* a font box: only its preview turns dark; the rest of the box keeps its look (Okay, 18 Oct 2026, notes 2: "On dark mode for fonts … on the left, this should not change the whole block color: only the 1234…, the preview rectangle"; the whole box 4.51–4.53) */
   .font-dark .fontbox .fontrow.current { background: var(--font-night); color: var(--font-night-ink); }
   /* a part of the box that can be put away: the variable axes, the OpenType features. A line with an eye and its name. */
@@ -1277,7 +1281,7 @@
    A layer of its own after the controls and the panel, so no control has to say it again and nothing there
    (a hover, a quiet colour) can undo it. The bar and the night parts have their own colours for it; a tab (.tab) draws its own. */
 @layer chosen {
-  .segs > button.on, .btnline > button.on, .circles > button.on, .pickt.on, .tile[aria-pressed="true"], .sticker.ui[aria-pressed="true"],
+  .segs > button.on, .pillswitch > button.on, .btnline > button.on, .circles > button.on, .pickt.on, .tile[aria-pressed="true"], .sticker.ui[aria-pressed="true"],
   .unitbox[aria-expanded="true"], .headtools .sign[aria-expanded="true"],
   .fontbox .btn[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
   .headtools .sign[aria-expanded="true"] .rim { stroke: var(--ink); }
@@ -6298,7 +6302,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.89.11";
+var VERSION = "beta 4.89.12";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -6429,9 +6433,11 @@ var HAND_BASE = {
   // old links for window"): its outer end at the hand's Length, or at the disc's edge if Length reaches past it. Off to
   // start, as every older dial was drawn (R31: no new scheme); a hand made a disc in the tool turns it on (app.js)
   mark_in: false,
-  // its bevel on or off (Okay, 19 Oct 2026: "on off from hand window"): the shading Shadows → Bevels % draws on a
-  // hand, per hand. On to start, so every older link looks as before (R31: no new scheme)
-  bevel: true
+  // its bevel on or off (Okay, 19 Oct 2026: "on off from hand window"; 20 Oct 2026, 01:33: the tick "appears as soon as
+  // show tick turned on"): the shading Shadows → Bevels % draws on a hand, per hand. Off to start ("Hand bevel off on
+  // default", 19 Oct). An older link or file that drew bevels (Bevels % above 0, no per-hand key) gets them on every
+  // hand when read (fresh_settings), so it draws as before (R31: no new scheme)
+  bevel: false
 };
 var WINDOW_BASE = {
   on: false,
@@ -6654,8 +6660,8 @@ var DEFAULTS = {
   sh_rise: 35,
   sh_dark: 25,
   sh_blur: false,
-  sh_bevel: 0,
-  // the hands' bevels, 0–100 % (4.79; Okay, 19 Oct 2026: "Hand bevel off on default, add an adjuster"); 100 = as 4.77 drew them
+  sh_bevel: 100,
+  // the hands' bevels' strength, 0–100 % (Okay, 19 Oct 2026: "Hand bevel off on default, add an adjuster"): a hand's own Bevel tick turns its bevel on (HAND_BASE.bevel, off to start); 100 = as 4.77 drew them
   sh_hour: 0.15,
   sh_minute: 0.35,
   sh_second: 0.6,
@@ -6961,6 +6967,10 @@ function fresh_settings(over = null) {
   for (const k in over) if (k in S) S[k] = clone(over[k]);
   S.rings = S.rings.map((r) => complete(RING_BASE, r));
   if (!S.rings.length) S.rings = [complete(RING_BASE, {})];
+  if ("sh_bevel" in over && +over.sh_bevel > 0) for (const h of HANDS) {
+    const raw = over["ha_" + h];
+    if (!raw || !("bevel" in raw)) S["ha_" + h] = { ...S["ha_" + h] || {}, bevel: true };
+  }
   for (const h of HANDS) S["ha_" + h] = complete(HAND_BASE, S["ha_" + h]);
   S.windows = [0, 1, 2].map((i2) => ({ ...clone(WINDOW_BASE), ...Array.isArray(S.windows) && S.windows[i2] || {} }));
   S.ui_window = min(max(parseInt(S.ui_window) || 0, 0), 3);
@@ -7285,6 +7295,7 @@ function lean(S) {
     else if (HANDS.some((h) => k === "ha_" + h)) out[k] = differing(S[k], HAND_BASE);
     else out[k] = S[k];
   }
+  if ("sh_bevel" in out) for (const h of HANDS) out["ha_" + h] = { ...out["ha_" + h] || {}, bevel: Boolean(S["ha_" + h] && S["ha_" + h].bevel) };
   return out;
 }
 var PK = null;
@@ -8049,8 +8060,7 @@ function moon_parts(w, age) {
   const opening = arch.difference(circle(2 * m).translate(-m, base)).difference(circle(2 * m).translate(m, base));
   const f2 = (age % 29.53 + 29.53) % 29.53 / 29.53;
   const moon = circle(2 * m).translate(-m * cos(PI * f2), base - 0.3 * m + (Math.sqrt(3) + 0.3) * m * sin(PI * f2));
-  const stars = merge([[-0.3, 0.5], [0.33, 0.42], [0.08, 0.63]].map(([x2, y]) => circle(0.07 * w).translate(x2 * w, base + y * w)));
-  return { opening, moon, stars };
+  return { opening, moon };
 }
 function moon_lit(rm, age) {
   const f2 = (age % SYNODIC_DAYS + SYNODIC_DAYS) % SYNODIC_DAYS / SYNODIC_DAYS, c = cos(2 * PI * f2), wx = Math.max(Math.abs(c) * rm, 1e-3);
@@ -8144,17 +8154,15 @@ function build_window(S, w, index) {
   let more = [];
   if (kind === "moon phase" && w.look === 1) {
     const rm = 0.36 * high, { disc, dark } = moon_lit(rm, w.age);
-    const stars = merge([[-0.3, 0.3], [0.31, -0.3]].map(([x2, y]) => circle(0.06 * high).translate(x2 * high, y * high)));
-    content = opening.copy().difference(disc).difference(stars);
+    content = opening.copy().difference(disc);
     more = [{ path: dark, key: "c2", or: PICTURE_TONES.shade }];
   } else if (kind === "moon phase" && w.look === 2) {
     const rm = 0.36 * high, t = Math.max(0.05 * high, 0.06), { dark } = moon_lit(rm, w.age);
     const ring2 = circle(2 * rm).difference(circle(2 * (rm - t)));
-    const star = (x2, y, s) => new Path().rect(x2 - s, y - t / 2, 2 * s, t).union(new Path().rect(x2 - t / 2, y - s, t, 2 * s));
-    content = merge([ring2, dark, star(-0.3 * high, 0.31 * high, 0.07 * high), star(0.31 * high, -0.31 * high, 0.055 * high)]).intersection(opening);
+    content = merge([ring2, dark]).intersection(opening);
   } else if (kind === "moon phase") {
-    const { moon, stars } = moon_parts(w.w, w.age);
-    content = opening.copy().difference(moon).difference(stars);
+    const { moon } = moon_parts(w.w, w.age);
+    content = opening.copy().difference(moon);
   } else if (kind === "am \xB7 pm") {
     content = half_disc(w.w, day_hour(S)).night.intersection(opening);
   } else if (kind === "big date") {
@@ -8171,7 +8179,7 @@ function build_window(S, w, index) {
   more = more.map((m) => ({ ...m, path: put(m.path.intersection(opening)) }));
   if (w.neighbours && (kind === "date" || kind === "day")) {
     const D = disc_places(S, w), near2 = merge([-2, -1, 1, 2].map((d) => D.at(D.now + d))).intersection(win);
-    if (!empty(near2)) more.push({ path: near2, key: "c2", or: w.text_c || w.ink });
+    if (!empty(near2)) more.push({ path: near2, key: "c2", like_number: true });
   }
   return {
     w,
@@ -8323,6 +8331,11 @@ function scene(S, statik, t, preview = true, selected = null) {
     if (path) items.push({ role, path, fill, angle: 0, ...more });
   };
   const windows = statik.windows;
+  const set_now = windows_of(S), now_w = /* @__PURE__ */ new Map();
+  const wc = (x2) => {
+    if (!now_w.has(x2.index)) now_w.set(x2.index, set_now[x2.index] ? shown_window(S, set_now[x2.index]) : x2.w);
+    return now_w.get(x2.index);
+  };
   const rings = statik.rings.slice().reverse();
   const index = (d) => S.rings.indexOf(d.ring);
   if (S.out_production) {
@@ -8342,20 +8355,20 @@ function scene(S, statik, t, preview = true, selected = null) {
     const face = chosen ? 2 : 1, hands_layer = chosen ? 1 : 0;
     under.forEach(({ x: x2, d }, i2) => {
       const layer = face + 1 + (under.length - 1 - i2);
-      add("disc", d.band, dim(x2.w.disc_c || [1, 1, 1, 1], layer), { window: x2.index });
-      add("disc print", d.print, dim(x2.w.text_c || x2.w.ink, layer), { window: x2.index });
+      add("disc", d.band, dim(wc(x2).disc_c || [1, 1, 1, 1], layer), { window: x2.index });
+      add("disc print", d.print, dim(wc(x2).text_c || wc(x2).ink, layer), { window: x2.index });
     });
     for (const x2 of windows) {
-      add("date disc", x2.window, dim(x2.w.disc_c || [1, 1, 1, 1], face), { window: x2.index });
-      add("date number", x2.number, dim(x2.w.text_c || x2.w.ink, face), { window: x2.index });
-      for (const m of x2.more || []) add("date picture", m.path, dim(x2.w[m.key] || m.or, face), { window: x2.index });
+      add("date disc", x2.window, dim(wc(x2).disc_c || [1, 1, 1, 1], face), { window: x2.index });
+      add("date number", x2.number, dim(wc(x2).text_c || wc(x2).ink, face), { window: x2.index });
+      for (const m of x2.more || []) add("date picture", m.path, dim(wc(x2)[m.key] || (m.like_number ? wc(x2).text_c || wc(x2).ink : m.or), face), { window: x2.index });
     }
     add("plate", S.ha_on ? statik.plate : statik.plate_holed, dim(S.c_plate, face));
     for (const d of rings) {
       if (d.tints) d.tints.forEach((tint, n) => add("ring", tint.path, dim(sector_colour(d.ring, tint.at), face), { ring: d, index: index(d), part: n + 1 }));
       else add("ring", d.path, dim(d.ring.c, face), { ring: d, index: index(d) });
     }
-    for (const x2 of windows) add("date frame", x2.frame, dim(x2.w.ink, face), { window: x2.index });
+    for (const x2 of windows) add("date frame", x2.frame, dim(wc(x2).ink, face), { window: x2.index });
     if (S.ha_on) {
       for (const [name, colour, path, a, h] of hand_items(S, t)) {
         add("hand", path, dim(colour, hands_layer), { name, angle: a });
@@ -8365,8 +8378,8 @@ function scene(S, statik, t, preview = true, selected = null) {
     }
     if (chosen) {
       const { x: x2, d } = chosen;
-      add("disc", d.band, x2.w.disc_c || [1, 1, 1, 1], { window: x2.index });
-      add("disc print", d.print, x2.w.text_c || x2.w.ink, { window: x2.index });
+      add("disc", d.band, wc(x2).disc_c || [1, 1, 1, 1], { window: x2.index });
+      add("disc print", d.print, wc(x2).text_c || wc(x2).ink, { window: x2.index });
       add("disc edge", circle(2 * d.outer).translate(...d.centre), null, { stroke: [1, 1, 1, 1], px: 1.5, dots: true, window: x2.index });
       if (d.inner > 0) add("disc edge", circle(2 * d.inner).translate(...d.centre), null, { stroke: [1, 1, 1, 1], px: 1.5, dots: true, window: x2.index });
     }
@@ -9039,7 +9052,7 @@ function svg_window_sheet(S, x2) {
       out.push(`    <path d="${frameWin.number.svg(5, true)}" fill="${textFill}"${textAlpha}/>`);
     }
     for (const m of frameWin && frameWin.more || []) {
-      const c = x2.w[m.key] || m.or;
+      const c = x2.w[m.key] || (m.like_number ? x2.w.text_c || x2.w.ink : m.or);
       if (m.path && !empty(m.path)) out.push(`    <path d="${m.path.svg(5, true)}" fill="${rgb(c)}"${c[3] < 1 ? ` fill-opacity="${num(c[3])}"` : ""}/>`);
     }
     if (frameD) out.push(`    <path d="${frameD}" fill="${frameFill}"${frameAlpha}/>`);
@@ -9070,7 +9083,7 @@ function svg_preview(S, statik) {
   for (const x2 of statik.windows || []) {
     items.push({ role: "date disc", path: x2.window, fill: x2.w.disc_c || [1, 1, 1, 1] });
     items.push({ role: "date number", path: x2.number, fill: x2.w.text_c || x2.w.ink });
-    for (const m of x2.more || []) items.push({ role: "date picture", path: m.path, fill: x2.w[m.key] || m.or });
+    for (const m of x2.more || []) items.push({ role: "date picture", path: m.path, fill: x2.w[m.key] || (m.like_number ? x2.w.text_c || x2.w.ink : m.or) });
   }
   if (statik.plate) items.push({ role: "plate", path: statik.plate, fill: S.c_plate });
   for (const d of rings) {
@@ -12486,7 +12499,8 @@ var DialTool = class _DialTool {
       bands(g, under, "shine");
     }
     items.forEach((item, i2) => {
-      if (item.role !== "hand" || HAND_SHAPES[S["ha_" + item.name]?.shape] === "disc" || !(+S.sh_bevel > 0 || sun)) return;
+      const own = S["ha_" + item.name];
+      if (item.role !== "hand" || HAND_SHAPES[own?.shape] === "disc" || !(own?.bevel && +S.sh_bevel > 0 || sun)) return;
       const side = Math.sin((from - item.angle) * Math.PI / 180);
       const key = "bevel-" + item.name, clip = part(key + "/clip", "clipPath", this.light_defs), shape2 = part(key + "/clip/hand", "path", clip);
       clip.id = "bevel-clip-" + item.name;
@@ -12507,7 +12521,7 @@ var DialTool = class _DialTool {
         r.setAttribute("fill", colour);
         r.setAttribute("fill-opacity", f2(k));
       };
-      const amount = S["ha_" + item.name]?.bevel === false ? 0 : clamp(+S.sh_bevel || 0, 0, 100) / 100;
+      const amount = S["ha_" + item.name]?.bevel ? clamp(+S.sh_bevel || 0, 0, 100) / 100 : 0;
       const lit = BEVEL.light * Math.abs(side) * Math.min(on, 1) * amount, dark = BEVEL.dark * Math.abs(side) * Math.min(on, 1) * amount;
       half("right", 0, side > 0 ? "#fff" : "#000", side > 0 ? lit : dark);
       half("left", -50, side > 0 ? "#000" : "#fff", side > 0 ? dark : lit);
@@ -14070,7 +14084,7 @@ var DialTool = class _DialTool {
       };
     }
     if (row.kind === "seg") {
-      const group = el("span", { className: row.many ? "segs many" : "segs" });
+      const group = el("span", { className: row.many ? "pillswitch many" : "pillswitch", role: "radiogroup", ariaLabel: row.text });
       const buttons = row.items.map((name2, i2) => el("button", { type: "button", id: `${id}-${i2}`, textContent: name2, onclick: () => {
         set(i2);
         if (row.key.startsWith("ui_")) this.sync_rows();
@@ -15622,8 +15636,8 @@ var DialTool = class _DialTool {
     out.refresh = (T) => {
       box2.checked = Boolean(T.on);
       if (bevel) {
-        bevel.checked = T.bevel !== false;
-        bevel_word.hidden = !(T.on && HAND_SHAPES[T.shape] !== "disc" && this.S.sh_on && +this.S.sh_bevel > 0);
+        bevel.checked = Boolean(T.bevel);
+        bevel_word.hidden = !(T.on && HAND_SHAPES[T.shape] !== "disc" && this.S.sh_on);
       }
       const tabs = [...document.querySelectorAll(row.scope === "hand" ? ".tabsbar .segs > .tab" : ".windowcards .card > .tab")];
       wrap.style.setProperty("--tabs", Math.max(tabs.length, 1));

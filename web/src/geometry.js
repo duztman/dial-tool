@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.89.11";
+export const VERSION = "beta 4.89.12";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -110,9 +110,11 @@ export const HAND_BASE = {
   // old links for window"): its outer end at the hand's Length, or at the disc's edge if Length reaches past it. Off to
   // start, as every older dial was drawn (R31: no new scheme); a hand made a disc in the tool turns it on (app.js)
   mark_in: false,
-  // its bevel on or off (Okay, 19 Oct 2026: "on off from hand window"): the shading Shadows → Bevels % draws on a
-  // hand, per hand. On to start, so every older link looks as before (R31: no new scheme)
-  bevel: true,
+  // its bevel on or off (Okay, 19 Oct 2026: "on off from hand window"; 20 Oct 2026, 01:33: the tick "appears as soon as
+  // show tick turned on"): the shading Shadows → Bevels % draws on a hand, per hand. Off to start ("Hand bevel off on
+  // default", 19 Oct). An older link or file that drew bevels (Bevels % above 0, no per-hand key) gets them on every
+  // hand when read (fresh_settings), so it draws as before (R31: no new scheme)
+  bevel: false,
 };
 
 // windows 2 to 4 (web version, beta 3.0). Window 1 is the date window both tools know: its keys are da_….
@@ -190,7 +192,7 @@ export const DEFAULTS = {
   // 2026, 23:05, a picture of the list: "these in the image are the default values"); the movement, not chosen yet,
   // will fix the real heights.
   sh_on: true, sh_from: 270, sh_rise: 35, sh_dark: 25, sh_blur: false,
-  sh_bevel: 0,                                     // the hands' bevels, 0–100 % (4.79; Okay, 19 Oct 2026: "Hand bevel off on default, add an adjuster"); 100 = as 4.77 drew them
+  sh_bevel: 100,                                   // the hands' bevels' strength, 0–100 % (Okay, 19 Oct 2026: "Hand bevel off on default, add an adjuster"): a hand's own Bevel tick turns its bevel on (HAND_BASE.bevel, off to start); 100 = as 4.77 drew them
   sh_hour: 0.15, sh_minute: 0.35, sh_second: 0.6, sh_cap: 0.75, sh_disc: 0.15,
   gd_more: [],                                     // guides added by hand: lines, crosshairs, circles (GUIDE_MORE). gd_k_rings and gd_k_sel: unread, a ring's guide has the ring's own colour
   // the next five keys are unread: old settings files carry them (R8). Nothing writes them any more.
@@ -379,6 +381,9 @@ export function fresh_settings(over = null) {
   for (const k in over) if (k in S) S[k] = clone(over[k]);
   S.rings = S.rings.map((r) => complete(RING_BASE, r));
   if (!S.rings.length) S.rings = [complete(RING_BASE, {})];
+  // bevels from before a hand had its own tick: Bevels % above 0 drew them on every hand, so a hand that doesn't say gets one (a link
+  // made since always says, lean())
+  if ("sh_bevel" in over && +over.sh_bevel > 0) for (const h of HANDS) { const raw = over["ha_" + h]; if (!raw || !("bevel" in raw)) S["ha_" + h] = { ...(S["ha_" + h] || {}), bevel: true }; }
   for (const h of HANDS) S["ha_" + h] = complete(HAND_BASE, S["ha_" + h]);
   S.windows = [0, 1, 2].map((i) => ({ ...clone(WINDOW_BASE), ...((Array.isArray(S.windows) && S.windows[i]) || {}) }));
   S.ui_window = min(max(parseInt(S.ui_window) || 0, 0), 3);
@@ -546,6 +551,7 @@ export function lean(S) {
     else if (HANDS.some((h) => k === "ha_" + h)) out[k] = differing(S[k], HAND_BASE);
     else out[k] = S[k];
   }
+  if ("sh_bevel" in out) for (const h of HANDS) out["ha_" + h] = { ...(out["ha_" + h] || {}), bevel: Boolean(S["ha_" + h] && S["ha_" + h].bevel) };      // with Bevels % in it, every hand says its Bevel, so fresh_settings never takes it for an older link
   return out;
 }
 
@@ -1370,15 +1376,15 @@ export const window_turn = (w) => (w.turn && window_shape(w) !== "arc" ? ((windo
 
 /** the moon window, from its width alone: an arch over two humps. The moon, a disc as big as a hump,
  *  rises from behind the left hump (new), stands clear in the middle (full) and sets behind the right one.
- *  → {opening (the arch), moon, stars}: the night sky is a hole minus moon and stars. */
+ *  → {opening (the arch), moon}: the night sky is the hole minus the moon — the moon alone, no stars (Okay, 20 Oct
+ *  2026, 01:33: "for all moon face illustrations. please remove the stars. all now include the moon only, exclusively") */
 function moon_parts(w, age) {
   const m = w / 4, base = -0.36 * w;               // hump and moon radius · the bottom edge
   const arch = circle(2 * 0.5336 * w).translate(0, base + 0.1864 * w).intersection(new Path().rect(-w, base, 2 * w, 2 * w));
   const opening = arch.difference(circle(2 * m).translate(-m, base)).difference(circle(2 * m).translate(m, base));
   const f = (((age % 29.53) + 29.53) % 29.53) / 29.53;           // 0 new · 0.5 full · 1 new again
   const moon = circle(2 * m).translate(-m * cos(PI * f), base - 0.3 * m + (Math.sqrt(3) + 0.3) * m * sin(PI * f));
-  const stars = merge([[-0.3, 0.5], [0.33, 0.42], [0.08, 0.63]].map(([x, y]) => circle(0.07 * w).translate(x * w, base + y * w)));
-  return { opening, moon, stars };
+  return { opening, moon };
 }
 
 /** the moon as it is lit at an age (days), a disc of radius rm round the origin: {disc, lit, dark}. Waxing the right
@@ -1504,17 +1510,15 @@ function build_window(S, w, index) {
   let more = [];                                   // a picture's further colours: [{path, key, or}] (4.73)
   if (kind === "moon phase" && w.look === 1) {      // Phase: the sky in the picture's colour, the lit moon the disc's, its dark side the shade
     const rm = 0.36 * high, { disc, dark } = moon_lit(rm, w.age);
-    const stars = merge([[-0.3, 0.3], [0.31, -0.3]].map(([x, y]) => circle(0.06 * high).translate(x * high, y * high)));
-    content = opening.copy().difference(disc).difference(stars);
+    content = opening.copy().difference(disc);
     more = [{ path: dark, key: "c2", or: PICTURE_TONES.shade }];
-  } else if (kind === "moon phase" && w.look === 2) {      // Line: one ink — the moon's outline, its dark side filled, two small stars
+  } else if (kind === "moon phase" && w.look === 2) {      // Line: one ink — the moon's outline, its dark side filled
     const rm = 0.36 * high, t = Math.max(0.05 * high, 0.06), { dark } = moon_lit(rm, w.age);
     const ring = circle(2 * rm).difference(circle(2 * (rm - t)));
-    const star = (x, y, s) => new Path().rect(x - s, y - t / 2, 2 * s, t).union(new Path().rect(x - t / 2, y - s, t, 2 * s));
-    content = merge([ring, dark, star(-0.3 * high, 0.31 * high, 0.07 * high), star(0.31 * high, -0.31 * high, 0.055 * high)]).intersection(opening);
+    content = merge([ring, dark]).intersection(opening);
   } else if (kind === "moon phase") {
-    const { moon, stars } = moon_parts(w.w, w.age);
-    content = opening.copy().difference(moon).difference(stars);
+    const { moon } = moon_parts(w.w, w.age);
+    content = opening.copy().difference(moon);
   } else if (kind === "am · pm") {                 // the disc under the half-round hole, turning on its flat side once a day: pm in the picture's colour, am the disc's
     content = half_disc(w.w, day_hour(S)).night.intersection(opening);
   }
@@ -1532,7 +1536,7 @@ function build_window(S, w, index) {
   more = more.map((m) => ({ ...m, path: put(m.path.intersection(opening)) }));
   if (w.neighbours && (kind === "date" || kind === "day")) {      // its disc's places either side, where the hole lets them show (4.74)
     const D = disc_places(S, w), near = merge([-2, -1, 1, 2].map((d) => D.at(D.now + d))).intersection(win);
-    if (!empty(near)) more.push({ path: near, key: "c2", or: w.text_c || w.ink });      // in the number's own colour unless given one (Okay, 19 Oct 2026, 23:11: "why are the rest of the numbers gray? actual color please")
+    if (!empty(near)) more.push({ path: near, key: "c2", like_number: true });      // in the number's own colour unless given one (Okay, 19 Oct 2026, 23:11: "why are the rest of the numbers gray? actual color please")
   }
   return {
     w, index, window: win, number: put(content, !shows_text || w.text_turn),      // a hole's picture turns with it; its text only if asked
@@ -1725,6 +1729,11 @@ export function scene(S, statik, t, preview = true, selected = null) {
     if (path) items.push({ role, path, fill, angle: 0, ...more });
   };
   const windows = statik.windows;
+  // a window's colours come from the settings as they are now, not the still parts' copy: a colour changed doesn't
+  // rebuild them (app.js set_value), so the copy can be a step behind (Okay, 20 Oct 2026, 01:33: "moon face colors
+  // selector does not work … changing radius refreshes and fixes color issue")
+  const set_now = windows_of(S), now_w = new Map();
+  const wc = (x) => { if (!now_w.has(x.index)) now_w.set(x.index, set_now[x.index] ? shown_window(S, set_now[x.index]) : x.w); return now_w.get(x.index); };
   const rings = statik.rings.slice().reverse();    // bottom ring first, top ring last
   const index = (d) => S.rings.indexOf(d.ring);
 
@@ -1750,20 +1759,20 @@ export function scene(S, statik, t, preview = true, selected = null) {
     const face = chosen ? 2 : 1, hands_layer = chosen ? 1 : 0;
     under.forEach(({ x, d }, i) => {
       const layer = face + 1 + (under.length - 1 - i);
-      add("disc", d.band, dim(x.w.disc_c || [1, 1, 1, 1], layer), { window: x.index });
-      add("disc print", d.print, dim(x.w.text_c || x.w.ink, layer), { window: x.index });
+      add("disc", d.band, dim(wc(x).disc_c || [1, 1, 1, 1], layer), { window: x.index });
+      add("disc print", d.print, dim(wc(x).text_c || wc(x).ink, layer), { window: x.index });
     });
     for (const x of windows) {                     // what shows through each hole, on white
-      add("date disc", x.window, dim(x.w.disc_c || [1, 1, 1, 1], face), { window: x.index });
-      add("date number", x.number, dim(x.w.text_c || x.w.ink, face), { window: x.index });
-      for (const m of x.more || []) add("date picture", m.path, dim(x.w[m.key] || m.or, face), { window: x.index });      // a picture's further colours (4.73)
+      add("date disc", x.window, dim(wc(x).disc_c || [1, 1, 1, 1], face), { window: x.index });
+      add("date number", x.number, dim(wc(x).text_c || wc(x).ink, face), { window: x.index });
+      for (const m of x.more || []) add("date picture", m.path, dim(wc(x)[m.key] || (m.like_number ? wc(x).text_c || wc(x).ink : m.or), face), { window: x.index });      // a picture's further colours (4.73)
     }
     add("plate", S.ha_on ? statik.plate : statik.plate_holed, dim(S.c_plate, face));      // the hole shows when the hands are hidden
     for (const d of rings) {
       if (d.tints) d.tints.forEach((tint, n) => add("ring", tint.path, dim(sector_colour(d.ring, tint.at), face), { ring: d, index: index(d), part: n + 1 }));
       else add("ring", d.path, dim(d.ring.c, face), { ring: d, index: index(d) });
     }
-    for (const x of windows) add("date frame", x.frame, dim(x.w.ink, face), { window: x.index });
+    for (const x of windows) add("date frame", x.frame, dim(wc(x).ink, face), { window: x.index });
     if (S.ha_on) {
       for (const [name, colour, path, a, h] of hand_items(S, t)) {
         add("hand", path, dim(colour, hands_layer), { name, angle: a });
@@ -1773,8 +1782,8 @@ export function scene(S, statik, t, preview = true, selected = null) {
     }
     if (chosen) {                                  // the selected window's disc on top, whole, with a white dotted outline
       const { x, d } = chosen;
-      add("disc", d.band, x.w.disc_c || [1, 1, 1, 1], { window: x.index });
-      add("disc print", d.print, x.w.text_c || x.w.ink, { window: x.index });
+      add("disc", d.band, wc(x).disc_c || [1, 1, 1, 1], { window: x.index });
+      add("disc print", d.print, wc(x).text_c || wc(x).ink, { window: x.index });
       add("disc edge", circle(2 * d.outer).translate(...d.centre), null, { stroke: [1, 1, 1, 1], px: 1.5, dots: true, window: x.index });
       if (d.inner > 0) add("disc edge", circle(2 * d.inner).translate(...d.centre), null, { stroke: [1, 1, 1, 1], px: 1.5, dots: true, window: x.index });
     }

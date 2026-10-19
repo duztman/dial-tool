@@ -40,9 +40,6 @@
   .fontbox .row.num:not(.side) { grid-template-columns: var(--font-label) minmax(0, 1fr) var(--gap) var(--tile-w) 0 var(--tile-w); }
   /* light or dark (#276, 4.51): with the pill on Dark, the sheet's list and every font box take the dark ground and the
      usual names inside them turn over (ink light, paper dark), so what is chosen is light with dark words */
-  .pillswitch { display: flex; border: var(--hair) solid var(--rule); border-radius: var(--round-pill); padding: var(--u1); background: var(--field); }
-  .pillswitch > button { height: calc(var(--control) - 2 * var(--u1) - 2 * var(--hair)); padding: 0 var(--u4); border-radius: var(--round-pill); color: var(--grey); font-size: var(--t-s); }
-  .pillswitch > button.on { background: var(--ink); color: var(--paper); }
   .font-dark :is(.fontlist, .fontbox .fontrow.current) { --field: var(--font-night); --paper: var(--font-night); --ground: var(--font-night-well); --well: var(--font-night-well); --hover: var(--font-night-hover); --select: var(--font-night-select); --rule: var(--font-night-rule); --rule-light: var(--font-night-rule); --ink: var(--font-night-ink); --grey: var(--font-night-grey); --wait: var(--font-night-grey); background: var(--field); color: var(--ink); }      /* a font box: only its preview turns dark; the rest of the box keeps its look (Okay, 18 Oct 2026, notes 2: "On dark mode for fonts … on the left, this should not change the whole block color: only the 1234…, the preview rectangle"; the whole box 4.51–4.53) */
   .font-dark .fontbox .fontrow.current { background: var(--font-night); color: var(--font-night-ink); }
   /* a part of the box that can be put away: the variable axes, the OpenType features. A line with an eye and its name. */

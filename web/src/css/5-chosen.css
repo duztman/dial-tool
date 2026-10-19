@@ -2,7 +2,7 @@
    A layer of its own after the controls and the panel, so no control has to say it again and nothing there
    (a hover, a quiet colour) can undo it. The bar and the night parts have their own colours for it; a tab (.tab) draws its own. */
 @layer chosen {
-  .segs > button.on, .btnline > button.on, .circles > button.on, .pickt.on, .tile[aria-pressed="true"], .sticker.ui[aria-pressed="true"],
+  .segs > button.on, .pillswitch > button.on, .btnline > button.on, .circles > button.on, .pickt.on, .tile[aria-pressed="true"], .sticker.ui[aria-pressed="true"],
   .unitbox[aria-expanded="true"], .headtools .sign[aria-expanded="true"],
   .fontbox .btn[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
   .headtools .sign[aria-expanded="true"] .rim { stroke: var(--ink); }

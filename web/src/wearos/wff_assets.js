@@ -242,7 +242,7 @@ export function svg_window_sheet(S, x) {
       out.push(`    <path d="${frameWin.number.svg(5, true)}" fill="${textFill}"${textAlpha}/>`);
     }
     for (const m of (frameWin && frameWin.more) || []) {      // a picture's further colours, a date's neighbours (4.73, 4.74)
-      const c = x.w[m.key] || m.or;
+      const c = x.w[m.key] || (m.like_number ? x.w.text_c || x.w.ink : m.or);
       if (m.path && !empty(m.path)) out.push(`    <path d="${m.path.svg(5, true)}" fill="${rgb(c)}"${c[3] < 1 ? ` fill-opacity="${num(c[3])}"` : ""}/>`);
     }
     if (frameD) out.push(`    <path d="${frameD}" fill="${frameFill}"${frameAlpha}/>`);
@@ -292,7 +292,7 @@ export function svg_preview(S, statik) {
   for (const x of statik.windows || []) {
     items.push({ role: "date disc", path: x.window, fill: x.w.disc_c || [1, 1, 1, 1] });
     items.push({ role: "date number", path: x.number, fill: x.w.text_c || x.w.ink });
-    for (const m of x.more || []) items.push({ role: "date picture", path: m.path, fill: x.w[m.key] || m.or });      // a picture's further colours (4.73)
+    for (const m of x.more || []) items.push({ role: "date picture", path: m.path, fill: x.w[m.key] || (m.like_number ? x.w.text_c || x.w.ink : m.or) });      // a picture's further colours (4.73)
   }
 
   if (statik.plate) items.push({ role: "plate", path: statik.plate, fill: S.c_plate });

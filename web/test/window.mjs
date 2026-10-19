@@ -2171,8 +2171,8 @@ await shot("10-bar");
 }
 { // the showcase's light (4.77, #351, #354): a very dim backdrop still makes a spotlight (its colour lifted); a ring of shine, three bands, moves with the sun; each hand's bevel, a lighter and a darker half; the showcase's shadows a touch darker; out of the showcase the bevels stay, the shine goes
   const was = await page.evaluate(() => JSON.stringify([window.dial_tool.S.c_backdrop, window.dial_tool.S.c_plate]));
-  const no_bevels = await page.evaluate(() => { const t = window.dial_tool; t.frame(); return [t.S.sh_bevel, document.querySelectorAll("g[clip-path^='url(#bevel-clip-'] rect").length]; });      // off to start (4.79)
-  await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "sh_bevel", 100); t.set_value("global", "c_backdrop", [0.05, 0.05, 0.06, 1]); t.set_value("global", "c_plate", [0.08, 0.09, 0.12, 1]); });
+  const no_bevels = await page.evaluate(() => { const t = window.dial_tool; t.frame(); return [G_hands_bevel(), document.querySelectorAll("g[clip-path^='url(#bevel-clip-'] rect").length]; function G_hands_bevel() { return ["hour", "minute", "second"].filter((h) => t.S["ha_" + h].bevel).length; } });      // off to start, every hand (20 Oct 2026)
+  await page.evaluate(() => { const t = window.dial_tool; for (const h of ["hour", "minute", "second"]) t.S["ha_" + h].bevel = true; t.set_value("global", "sh_bevel", 100); t.set_value("global", "c_backdrop", [0.05, 0.05, 0.06, 1]); t.set_value("global", "c_plate", [0.08, 0.09, 0.12, 1]); });
   await page.click("#iris-box"); await page.waitForTimeout(300); await page.click("#iris-go"); await page.waitForTimeout(1600);
   const look = async (phase) => page.evaluate((ph) => { const t = window.dial_tool; t.show.phase = ph; t.show.dragging = true; t.render(); t.frame();
     const band = document.querySelector('#shine-clip') && [...document.querySelectorAll("g[clip-path='url(#shine-clip)'] rect")], gr = document.querySelector("#shine-light");
@@ -2180,28 +2180,29 @@ await shot("10-bar");
   const morning = await look(0.2), evening = await look(0.8);
   await page.click("#iris-box"); await page.waitForTimeout(1300);
   const after = await page.evaluate(() => [document.querySelectorAll("g[clip-path='url(#shine-clip)'] rect").length, document.querySelectorAll("g[clip-path^='url(#bevel-clip-'] rect").length]);
-  await page.evaluate((w) => { const t = window.dial_tool, v = JSON.parse(w); t.set_value("global", "c_backdrop", v[0]); t.set_value("global", "c_plate", v[1]); t.set_value("global", "sh_bevel", 0); }, was);
+  await page.evaluate((w) => { const t = window.dial_tool, v = JSON.parse(w); t.set_value("global", "c_backdrop", v[0]); t.set_value("global", "c_plate", v[1]); t.set_value("global", "sh_bevel", 100); for (const h of ["hour", "minute", "second"]) t.S["ha_" + h].bevel = false; t.render(); }, was);
   check(no_bevels.join() === "0,0" && morning.bands === 2 && morning.stops >= 9 && morning.at !== evening.at && morning.pool !== "#0D0D0F" && morning.bevels >= 4 && after[0] === 0 && after[1] >= 4,
-    `the showcase's light: a dim backdrop's spotlight lifted (${morning.pool}); a ring of shine, its light and dark bands two gradients of ${morning.stops} stops, moving with the sun (${morning.at} → ${evening.at}) (4.83); ${morning.bevels / 2} hands bevelled; out of it the shine goes, the bevels stay (${after.join(" ")}); Bevels % at 0 to start: none drawn (${no_bevels.join(" ")})`);
+    `the showcase's light: a dim backdrop's spotlight lifted (${morning.pool}); a ring of shine, its light and dark bands two gradients of ${morning.stops} stops, moving with the sun (${morning.at} → ${evening.at}) (4.83); ${morning.bevels / 2} hands bevelled; out of it the shine goes, the bevels stay (${after.join(" ")}); no hand's Bevel on to start: none drawn (${no_bevels.join(" ")})`);
 }
-{ // a hand's own Bevel tick and the cap in the seconds hand's picture (4.89.1; Okay, 19 Oct 2026: "on off from hand window"; "seconds preview needs cap preview")
+{ // a hand's own Bevel tick beside Show, from the moment Show is on, off to start; on, its hand bevelled at Bevels %; and the cap in the seconds hand's picture (4.89.1; Okay, 20 Oct 2026, 01:33: "bevel appears as soon as show tick turned on")
   const r = await page.evaluate(() => {
-    const t = window.dial_tool, S = t.S, was = [S.sh_bevel, S.ui_hand, S.ui_section, S.ha_second.on, S.ha_hour.bevel];
-    const tick = () => [...document.querySelectorAll(".form label.check")].some((l) => l.textContent.trim() === "Bevel" && l.offsetParent && l.closest(".showline"));      // beside Show (23:53)
+    const t = window.dial_tool, S = t.S, was = [S.ui_hand, S.ui_section, S.ha_second.on, S.ha_hour.bevel, S.ha_hour.on];
+    const tick = () => [...document.querySelectorAll(".form label.check")].some((l) => l.textContent.trim() === "Bevel" && l.offsetParent && l.closest(".showline"));
     const op = () => [...document.querySelectorAll("g[clip-path='url(#bevel-clip-hour)'] rect")].map((x) => +x.getAttribute("fill-opacity"));
-    S.ui_section = 2; t.show_section(); S.ha_second.on = true; S.ui_hand = 0; t.set_value("global", "sh_bevel", 0); t.sync_rows();
-    const hidden = !tick();
-    t.set_value("global", "sh_bevel", 60); t.sync_rows(); t.frame();
-    const shown = tick(), lit = op().some((v) => v > 0);
+    S.ui_section = 2; t.show_section(); S.ha_second.on = true; S.ui_hand = 0; t.sync_rows(); t.frame();
+    const shown = tick(), off = !S.ha_hour.bevel && op().every((v) => v === 0);
+    t.set_value("hand", "on", false); t.sync_rows(); const gone = !tick(); t.set_value("hand", "on", true); t.sync_rows();
+    t.set_value("hand", "bevel", true); t.frame();
+    const lit = op().some((v) => v > 0);
     t.set_value("hand", "bevel", false); t.frame();
-    const flat = op().every((v) => v === 0), cap_hour = !!document.querySelector("#hand-detail .cap");
+    const cap_hour = !!document.querySelector("#hand-detail .cap");
     S.ui_hand = 2; t.sync_rows();
     const cap_second = !!document.querySelector("#hand-detail .cap");
-    S.ha_hour.bevel = was[4]; S.ha_second.on = was[3]; S.ui_hand = was[1]; t.set_value("global", "sh_bevel", was[0]); S.ui_section = was[2]; t.show_section(); t.sync_rows();
-    return { hidden, shown, lit, flat, cap_hour, cap_second };
+    S.ha_hour.bevel = was[3]; S.ha_second.on = was[2]; S.ui_hand = was[0]; S.ui_section = was[1]; t.show_section(); t.sync_rows();
+    return { shown, off, gone, lit, cap_hour, cap_second };
   });
-  check(r.hidden && r.shown && r.lit && r.flat && !r.cap_hour && r.cap_second,
-    `a hand's Bevel: hidden at Bevels % 0 (${r.hidden}), shown above (${r.shown}); off, its hand flat (${r.lit} → ${r.flat}); the cap in the seconds hand's picture (${r.cap_second}), not the hour's (${!r.cap_hour})`);
+  check(r.shown && r.off && r.gone && r.lit && !r.cap_hour && r.cap_second,
+    `a hand's Bevel beside Show while it is shown (${r.shown}; hidden with Show off: ${r.gone}), off to start (${r.off}), on: its hand bevelled (${r.lit}); the cap in the seconds hand's picture (${r.cap_second}), not the hour's (${!r.cap_hour})`);
 }
 { // every menu opens the tool's own list, a press anywhere on its box, never folding its pane (Okay, 20 Oct 2026, 01:05: "clicking 'centre' activates dropdown not collapse"; "the popping up thing on these, styled like mm dropdown. all around the site")
   const was = await page.evaluate(() => { const t = window.dial_tool; return [t.S.ui_section, t.S.ui_ring]; });
@@ -2217,7 +2218,7 @@ await shot("10-bar");
 { // the Show box's ticks on their words' middles; the date popup's gaps the bar's own, date to NOW (Okay, 20 Oct 2026, 00:06, two pictures marked: "Why are you breaking things and not understanding me?")
   const r = await page.evaluate(async () => {
     const t = window.dial_tool, S = t.S, was = [S.sh_bevel, S.ui_section];
-    S.ui_section = 2; t.show_section(); t.set_value("global", "sh_bevel", 60); t.sync_rows();
+    S.ui_section = 2; t.show_section(); t.sync_rows();
     const mids = [...document.querySelectorAll(".form > .showbox .check")].filter((c) => c.offsetParent).map((c) => { const i = c.querySelector("input").getBoundingClientRect(), g = document.createRange(); g.selectNodeContents(c.lastChild); const w = g.getBoundingClientRect(); return Math.abs((i.top + i.bottom) / 2 - (w.top + w.bottom) / 2); });
     document.querySelector(".bar .date").click(); await new Promise((f) => setTimeout(f, 100));
     const boxes = [...document.querySelectorAll("#date-pop .popline > :is(.popgroup, .popsteps)")].map((e) => e.getBoundingClientRect()), gaps = boxes.slice(1).map((b, k) => +(b.left - boxes[k].right).toFixed(2));

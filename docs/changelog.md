@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## beta 4.89.12 (web version) · 20 Oct 2026
+
+Okay, 01:33.
+
+- **Bevel beside Show as soon as Show is on** (#459): each hand's Bevel off to start (`HAND_BASE.bevel` false), Bevels % 100 to start as its strength. An older link or file that had Bevels % above 0 and no per-hand key gets every hand's on (`fresh_settings`); `lean()` writes every hand's Bevel whenever Bevels % is in a link, so a link made since comes back as made. Link scheme stays 3.
+- **A window's colours reach the dial at once** (#461): the scene reads them from the settings, not from the still parts' copy (which a colour change doesn't rebuild).
+- **No stars in a moon window** (#462): Arch, Phase and Line draw the moon alone.
+- **Every word choice a pill switch** (#463), the font sheet's Light · Dark look.
+- **LINK in the labels' grey** (#460).
+
 ## beta 4.89.11 (web version) · 20 Oct 2026
 
 Okay, 01:16.

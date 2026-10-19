@@ -29,4 +29,11 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
   const S = G.fresh_settings({}), svg = svg_document(S, G.build_static(S), 0);
   check(said === MADE_BY && MADE_BY.endsWith(G.VERSION) && png.includes("pHYs") && svg.includes(`<metadata>${MADE_BY}</metadata>`), `files carry the build: the PNG's Software "${said}", the SVG's metadata`);
 }
+// a hand's own Bevel (20 Oct 2026): off to start; an older dial that drew bevels (Bevels % above 0, no per-hand key) keeps them on every hand; a dial made since says each hand's own, so it comes back as it was
+{
+  const old = G.fresh_settings({ sh_bevel: 60 }), plain = G.fresh_settings({}), mine = G.fresh_settings({}); mine.sh_bevel = 60; mine.ha_hour.bevel = true;      // made in the tool: Bevels % 60, the hour hand's Bevel on
+  const again = G.fresh_settings(JSON.parse(JSON.stringify(G.lean(mine))));
+  const say = (S) => ["hour", "minute", "second"].map((h) => (S["ha_" + h].bevel ? 1 : 0)).join("");
+  check(say(plain) === "000" && plain.sh_bevel === 100 && say(old) === "111" && say(again) === "100" && again.sh_bevel === 60, `Bevel per hand: none to start (${say(plain)}); an older dial with Bevels % keeps them on every hand (${say(old)}); a dial made since comes back as made (${say(again)})`);
+}
 process.exit(bad ? 1 : 0);

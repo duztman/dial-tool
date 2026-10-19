@@ -24,6 +24,13 @@
   :is(.plain, .sign):hover { background: var(--field); border-color: var(--rule); }
 
   .steps, .segs { display: flex; }
+  /* a choice of a few words: a pill switch — a rounded outline, the words in it as pills, the chosen one ink (5-chosen).
+     Every word choice in the panel (Picture, Names, Paper, a disc hand's Marker…) and the font sheet's Light · Dark
+     (Okay, 20 Oct 2026, 01:33: "Arch phase line selector exactly like this light dark selector here … universal") */
+  .pillswitch { display: flex; justify-self: start; width: max-content; max-width: 100%; border: var(--hair) solid var(--rule); border-radius: var(--round-pill); padding: var(--u1); background: var(--field); }
+  .pillswitch > button { height: calc(var(--control) - 2 * var(--u1) - 2 * var(--hair)); padding: 0 var(--u4); border-radius: var(--round-pill); color: var(--grey); font-size: var(--t-s); }
+  .pillswitch > button:hover:not(.on) { color: var(--ink); }
+  .pillswitch.many { flex-wrap: wrap; }
   .steps { width: 100%; }
   .step, .segs > button { flex: 1; border-color: var(--rule); }
   .segs > button { padding: 0 var(--unit); }

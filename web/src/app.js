@@ -1666,7 +1666,8 @@ class DialTool {
     }
     // each hand's bevel: its right and left halves (as it points) lighter and darker by where the light comes from, and the shine's bands on it
     items.forEach((item, i) => {
-      if (item.role !== "hand" || G.HAND_SHAPES[S["ha_" + item.name]?.shape] === "disc" || !(+S.sh_bevel > 0 || sun)) return;      // a disc hand is flat; with Bevels at 0 only the showcase's shine reaches the hands
+      const own = S["ha_" + item.name];
+      if (item.role !== "hand" || G.HAND_SHAPES[own?.shape] === "disc" || !((own?.bevel && +S.sh_bevel > 0) || sun)) return;      // a disc hand is flat; a hand without its Bevel (or at Bevels 0) gets only the showcase's shine
       const side = Math.sin((from - item.angle) * Math.PI / 180);      // + : the light comes from the hand's right
       const key = "bevel-" + item.name, clip = part(key + "/clip", "clipPath", this.light_defs), shape = part(key + "/clip/hand", "path", clip);
       clip.id = "bevel-clip-" + item.name; shape.setAttribute("d", this.slots[i].d);
@@ -1676,7 +1677,7 @@ class DialTool {
       const inner = part(key + "/in", "g", g);
       inner.setAttribute("clip-path", `url(#${clip.id})`);
       const half = (name, x, colour, k) => { const r = part(`${key}/${name}`, "rect", inner); r.setAttribute("x", f(x)); r.setAttribute("y", "-50"); r.setAttribute("width", "50"); r.setAttribute("height", "100"); r.setAttribute("fill", colour); r.setAttribute("fill-opacity", f(k)); };
-      const amount = S["ha_" + item.name]?.bevel === false ? 0 : clamp(+S.sh_bevel || 0, 0, 100) / 100;      // Shadows → Bevels % (4.79): none to start; a hand's own Bevel tick off: none on it
+      const amount = S["ha_" + item.name]?.bevel ? clamp(+S.sh_bevel || 0, 0, 100) / 100 : 0;      // Shadows → Bevels % (4.79): none to start; a hand's own Bevel tick off: none on it
       const lit = BEVEL.light * Math.abs(side) * Math.min(on, 1) * amount, dark = BEVEL.dark * Math.abs(side) * Math.min(on, 1) * amount;
       half("right", 0, side > 0 ? "#fff" : "#000", side > 0 ? lit : dark);
       half("left", -50, side > 0 ? "#000" : "#fff", side > 0 ? dark : lit);
@@ -2426,7 +2427,7 @@ class DialTool {
     const head = (text) => el("div", { className: "guidehead" }, el("span", { className: "name", textContent: text }));
     const light = [row(num("sh_from", "From", 0, 359, 1, { whole: true })), row(num("sh_rise", "Height", 5, 85, 1, { whole: true })),
       row(num("sh_dark", "Darkness", 0, 100, 1, { whole: true })), row(chk("sh_blur", "Soft edge")),
-      row(num("sh_bevel", "Bevels %", 0, 100, 1, { whole: true }))];      // the hands' bevels, off to start (4.79)
+      row(num("sh_bevel", "Bevels %", 0, 100, 1, { whole: true }))];      // the hands' bevels' strength; each hand's own Bevel tick, beside its Show, turns its bevel on
     const heights = [row(num("sh_hour", "Hour hand", 0, 3, 0.05)), row(num("sh_minute", "Minute hand", 0, 3, 0.05)), row(num("sh_second", "Seconds hand", 0, 3, 0.05)), row(num("sh_cap", "Cap’s top", 0, 4, 0.05))];
     const under = [row(num("sh_disc", "Date discs", 0, 2, 0.05))];
     this.shadow_rows = [...light, ...heights, ...under];
@@ -2963,7 +2964,7 @@ class DialTool {
 
     if (row.kind === "seg") {
       // order: the buttons' order when it isn't the list's (the list only grows at its end, R9) · many: on two lines
-      const group = el("span", { className: row.many ? "segs many" : "segs" });
+      const group = el("span", { className: row.many ? "pillswitch many" : "pillswitch", role: "radiogroup", ariaLabel: row.text });      // a choice of words is a pill switch, as the font sheet's Light · Dark (Okay, 20 Oct 2026, 01:33: "exactly same style. can we make this universal?")
       const buttons = row.items.map((name, i) => el("button", { type: "button", id: `${id}-${i}`, textContent: name, onclick: () => { set(i); if (row.key.startsWith("ui_")) this.sync_rows(); } }));
       group.append(...(row.order || buttons.map((b, i) => i)).map((i) => buttons[i]));
       const name = el("label", { textContent: row.text });
@@ -4221,15 +4222,14 @@ class DialTool {
     wrap.className = "showbox";
     const line = el("span", { className: "showline" }, el("label", { className: "check", htmlFor: id, title: row.scope === "hand" ? "Show this hand" : "Show this window" }, box, " Show"));
     // a hand's Bevel beside Show, once it is shown (Okay, 19 Oct 2026, 23:53: "Bevel on off moves next to show under the
-    // tab just above. appears after show is switched on"); and only while bevels are drawn at all — Shadows on, Bevels %
-    // above 0 (R16); a disc hand is flat
+    // tab just above. appears after show is switched on"), off to start; Shadows → Bevels % is its strength
     const bevel = row.scope === "hand" ? el("input", { type: "checkbox", id: "hand-bevel" }) : null;
     const bevel_word = bevel ? el("label", { className: "check", htmlFor: "hand-bevel", title: "This hand's bevel, the light and dark halves the shadows' light gives it" }, bevel, " Bevel") : null;
     if (bevel) { bevel.onchange = () => this.set_value("hand", "bevel", bevel.checked); line.append(bevel_word); }
     wrap.append(line);
     out.refresh = (T) => {
       box.checked = Boolean(T.on);
-      if (bevel) { bevel.checked = T.bevel !== false; bevel_word.hidden = !(T.on && G.HAND_SHAPES[T.shape] !== "disc" && this.S.sh_on && +this.S.sh_bevel > 0); }
+      if (bevel) { bevel.checked = Boolean(T.bevel); bevel_word.hidden = !(T.on && G.HAND_SHAPES[T.shape] !== "disc" && this.S.sh_on); }      // with Show, at once (20 Oct 2026, 01:33: "bevel appears as soon as show tick turned on"); a disc hand is flat; no shadows, no bevels
       const tabs = [...document.querySelectorAll(row.scope === "hand" ? ".tabsbar .segs > .tab" : ".windowcards .card > .tab")];
       wrap.style.setProperty("--tabs", Math.max(tabs.length, 1));
       wrap.style.setProperty("--tab", Math.max(tabs.findIndex((t) => t.classList.contains("on")), 0) + 1);

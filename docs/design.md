@@ -185,6 +185,10 @@ alignment to these rules as well."*
   that would stand there goes to the slider and the number box, so four figures show whole (Okay, 19 Oct 2026, 23:46
   and 23:53: "love the slider growth. this special case happens when sliders need to fit with boxes like this").
   `--side-columns` in `1-tokens.css`. A full row (R15 form A) keeps its gaps.
+- **A choice of a few words is a pill switch** (Picture, Names, Paper, a disc hand's Marker, the font sheet's Light ·
+  Dark): a rounded outline as wide as its words, the words in it as pills, the chosen one ink (Okay, 20 Oct 2026, 01:33:
+  "Arch phase line selector exactly like this light dark selector here. exactly same style. can we make this
+  universal?"). `.pillswitch`. The dark popups keep their segments.
 - **A row of tile buttons** (a window's complications, a mark's shapes; Okay, 19 Oct 2026, 21:26: "Complications tabs
   are 10/10. Do not touch, rule for 4 item buttons like this from the future. 5th squeezes in, or we find another
   way"; "2 or 3 buttons on a selector like complications work the same. Same size buttons, gaps on the right"): the
