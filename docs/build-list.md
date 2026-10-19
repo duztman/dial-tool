@@ -507,6 +507,16 @@ Okay's Google Doc *Dial tool notes 2* (text and 23 pictures; on his Google Drive
 | 392 | **Off switches dotted: shorter dashes and gaps, a denser outline** (12:46) | **done — 4.86** (`border-style: dotted`) |
 | 393 | **Swap the signs of the showcase and Tiny Preview, not their places** (12:46: "Tiny gets the dot, showcase gets the eye") | **done — 4.86** |
 
+## Dial Packer (side product, 19 Oct 2026)
+
+`packer/`; how it works: `packer/README.md`.
+
+| # | Item | Status |
+|---|---|---|
+| 394 | **Dial Packer shipped**: discs only, A4 landscape, Grow · Even gaps · Voronoi, Big to centre, corners, sides, palettes, mosaics (Okay, 14:34: "Ship as a side product. Dial packer for visuals.") | **done — 19 Oct** (online at `/packer/`) |
+| 395 | **Place dials in the discs** (Okay, 01:36: "I will announce when to cross to placing dials"): each disc gets a dial from the Gallery or made in the app; colours from the packer's palette | **waiting for Okay's word** |
+| 396 | **With the large discs off the sides, the band between them and an edge can stay thin and white** when few small discs land there (seen on 1 of 6 seeds) | noted |
+
 ## Later
 
 | # | Item | Status |

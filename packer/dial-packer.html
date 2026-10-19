@@ -1,0 +1,893 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dial Packer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: the page large at the left, one column of rows at the right (stacks under it on a phone).
+   One light look on purpose: it is a print cover, judged on paper. Inter, as the design canon. */
+:root {
+  --ground: #e4e4e2;      /* the desk the page lies on */
+  --paper: #ffffff;
+  --ink: #1d1d1c;
+  --quiet: #77777a;
+  --rule: #c9c9c6;
+  --accent: #f5c518;      /* the canon's signal yellow: the one thing switched on */
+  --size-l: #2a2a29; --size-m: #77777a; --size-s: #b7b7b4;
+  --sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --u: 5.5px;
+  color-scheme: light;
+}
+body { background: var(--ground); color: var(--ink); font: 13px/1.45 var(--sans);
+  padding-block: calc(var(--u) * 4);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: calc(var(--u) * 5); align-items: start; max-width: 1500px; margin: 0 auto; }
+@media (max-width: 860px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
+.stage { min-width: 0; position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--u) * 4); }
+@media (max-width: 860px) { .stage { position: static; } }
+.page { width: 100%; max-width: 100%; display: block; background: var(--paper); box-shadow: 0 1px 2px rgba(0,0,0,.12), 0 8px 28px rgba(0,0,0,.10); }
+.underbar { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--u) * 3); margin-top: calc(var(--u) * 2); }
+.underbar .under { margin-top: 0; }
+.under { display: flex; flex-wrap: wrap; gap: calc(var(--u) * 3); margin-top: calc(var(--u) * 2); color: var(--quiet); font-variant-numeric: tabular-nums; }
+.under b { color: var(--ink); font-weight: 600; }
+.panel { display: flex; flex-direction: column; gap: calc(var(--u) * 3); min-width: 0; }
+h1 { font-size: 13px; font-weight: 600; margin: 0; letter-spacing: .02em; }
+h1 span { font-weight: 400; color: var(--quiet); }
+.group { border-top: 1px solid var(--ink); padding-top: var(--u); display: flex; flex-direction: column; }
+.group h2 { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; margin: 0 0 var(--u); color: var(--quiet); }
+.row { display: grid; grid-template-columns: 104px minmax(0, 1fr) 58px; gap: calc(var(--u) * 1.5); align-items: center; min-height: calc(var(--u) * 6); border-bottom: 1px solid var(--rule); }
+.row label { white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+.chip { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+input[type=number] { width: 100%; box-sizing: border-box; font: 500 13px var(--sans); font-variant-numeric: tabular-nums; text-align: right; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); padding: 4px 6px; border-radius: 3px; }
+input[type=range] { width: 100%; accent-color: var(--ink); }
+.btns { display: flex; flex-wrap: wrap; gap: var(--u); }
+button { font: 500 12px var(--sans); border: 1px solid var(--ink); background: var(--paper); color: var(--ink); padding: 7px 12px; border-radius: 999px; cursor: pointer; }
+button.main { background: var(--ink); color: var(--paper); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.toggle { display: flex; align-items: center; gap: 8px; min-height: calc(var(--u) * 6); border-bottom: 1px solid var(--rule); cursor: pointer; }
+.toggle input { accent-color: var(--ink); }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--ink); border-radius: 999px; overflow: hidden; margin-bottom: var(--u); }
+.seg button { border: 0; border-radius: 0; border-left: 1px solid var(--ink); padding: 7px 4px; }
+.seg.two { grid-template-columns: repeat(2, 1fr); }
+.pal { list-style: none; margin: var(--u) 0; padding: 0; display: flex; flex-direction: column; }
+.pal li { display: grid; grid-template-columns: 18px 36px minmax(0, 1fr) auto 30px 30px; gap: var(--u); align-items: center; min-height: calc(var(--u) * 6); border-bottom: 1px solid var(--rule); }
+.pal .tints { display: flex; gap: 2px; }
+.pal .tints i { width: 12px; height: 24px; border-radius: 2px; display: block; }
+.addrow { width: 100%; border-style: dashed; border-radius: 4px; padding: 9px 12px; text-align: left; margin-bottom: var(--u); }
+.pal .idx { color: var(--quiet); font-size: 11px; font-variant-numeric: tabular-nums; }
+.pal input[type=color] { width: 36px; height: 24px; padding: 0; border: 1px solid var(--rule); border-radius: 3px; background: none; cursor: pointer; }
+.pal input[type=text] { width: 100%; box-sizing: border-box; font: 500 12px ui-monospace, Menlo, monospace; text-transform: uppercase; border: 1px solid var(--rule); border-radius: 3px; padding: 4px 6px; background: var(--paper); color: var(--ink); }
+.pal button { padding: 0; width: 30px; height: 26px; font-size: 13px; line-height: 1; }
+.pal button:disabled { opacity: .3; cursor: default; }
+.seg button:first-child { border-left: 0; }
+.seg button[aria-checked="true"] { background: var(--ink); color: var(--paper); }
+.note { color: var(--quiet); font-size: 12px; margin: 0; max-width: 60ch; }
+.busy { color: var(--ink); }
+textarea { width: 100%; box-sizing: border-box; height: 90px; font: 11px/1.3 ui-monospace, Menlo, monospace; border: 1px solid var(--rule); }
+/* What the artifact wrapper gave: no page margin, and hidden really hides
+   (last in the sheet, so it beats .row and .toggle, which set display). */
+body { margin: 0; }
+[hidden] { display: none; }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <div class="stage">
+    <svg id="page" class="page" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="underbar"><button class="main" id="again2">Generate</button><div class="under" id="under"></div></div>
+  </div>
+
+  <div class="panel">
+    <h1>Dial Packer <span>· a Dial Tool side product · packed discs for visuals</span></h1>
+
+    <div class="group">
+      <h2>Method</h2>
+      <div class="seg" role="radiogroup" aria-label="Method">
+        <button id="m_grow" role="radio">Grow</button>
+        <button id="m_even" role="radio">Even gaps</button>
+        <button id="m_voronoi" role="radio">Voronoi</button>
+      </div>
+      <p class="note" id="mnote"></p>
+    </div>
+
+    <div class="group">
+      <h2>Discs</h2>
+      <div class="row"><label for="nL"><i class="chip" style="background:var(--size-l)"></i>Large</label><input type="range" id="nL_r" min="0" max="20"><input type="number" id="nL" min="0" max="200"></div>
+      <div class="row"><label for="nM"><i class="chip" style="background:var(--size-m)"></i>Medium</label><input type="range" id="nM_r" min="0" max="40"><input type="number" id="nM" min="0" max="200"></div>
+      <div class="row"><label for="nS"><i class="chip" style="background:var(--size-s)"></i>Small</label><input type="range" id="nS_r" min="0" max="60"><input type="number" id="nS" min="0" max="200"></div>
+    </div>
+
+    <div class="group">
+      <h2>Sizes, as % of Large</h2>
+      <div class="row"><label for="rM">Medium</label><input type="range" id="rM_r" min="10" max="100"><input type="number" id="rM" min="5" max="100"></div>
+      <div class="row"><label for="rS">Small</label><input type="range" id="rS_r" min="5" max="100"><input type="number" id="rS" min="5" max="100"></div>
+      <label class="toggle" for="smOn"><input type="checkbox" id="smOn">Size mosaic: sizes within each bracket</label>
+      <div id="smBox">
+        <div class="row"><label for="smSteps">Steps</label><input type="range" id="smSteps_r" min="2" max="3"><input type="number" id="smSteps" min="2" max="3"></div>
+        <div class="row"><label for="smSpread">Spread %</label><input type="range" id="smSpread_r" min="5" max="50" step="5"><input type="number" id="smSpread" min="1" max="80"></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>Colour</h2>
+      <div class="seg two" role="radiogroup" aria-label="Colour">
+        <button id="c_size" role="radio">By size</button>
+        <button id="c_pal" role="radio">Palette</button>
+      </div>
+      <div id="palBox">
+        <div class="seg two" role="radiogroup" aria-label="Spread">
+          <button id="sp_random" role="radio">Random</button>
+          <button id="sp_centre" role="radio">Centre → edge</button>
+        </div>
+        <p class="note" id="spnote"></p>
+        <ol class="pal" id="palList"></ol>
+        <button class="addrow" id="addCol">+ Add colour to palette</button>
+        <label class="toggle" for="cmOn"><input type="checkbox" id="cmOn">Colour mosaic: lighter steps of each colour</label>
+        <div id="cmBox">
+          <div class="row"><label for="cmSteps">Steps</label><input type="range" id="cmSteps_r" min="2" max="3"><input type="number" id="cmSteps" min="2" max="3"></div>
+          <div class="row"><label for="cmSpan">To white %</label><input type="range" id="cmSpan_r" min="10" max="100" step="5"><input type="number" id="cmSpan" min="5" max="100"></div>
+        </div>
+        <div class="row" id="mixRow"><label for="mix">Mix %</label><input type="range" id="mix_r" min="0" max="100" step="5"><input type="number" id="mix" min="0" max="100" step="5"></div>
+        <div class="btns">
+          <button id="sortCol">Sort by vividness</button>
+          <button class="main" id="shuffleCol">Shuffle colours</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>Packing</h2>
+      <div class="row"><label for="gap">Gap mm</label><input type="range" id="gap_r" min="0" max="10" step="0.5"><input type="number" id="gap" min="0" max="40" step="0.5"></div>
+      <div class="row"><label for="bleed">Bleed %</label><input type="range" id="bleed_r" min="0" max="50"><input type="number" id="bleed" min="0" max="50"></div>
+      <div class="row"><label for="sort">Big to centre %</label><input type="range" id="sort_r" min="0" max="100" step="5"><input type="number" id="sort" min="0" max="100" step="5"></div>
+      <label class="toggle" for="corners"><input type="checkbox" id="corners">Smallest to corners (and lightest colour)</label>
+      <div class="row"><label for="edgeMin">Touch each side</label><input type="range" id="edgeMin_r" min="0" max="8"><input type="number" id="edgeMin" min="0" max="20"></div>
+      <div class="row"><label for="tries">Tries</label><input type="range" id="tries_r" min="1" max="20"><input type="number" id="tries" min="1" max="60"></div>
+      <div class="row"><label for="seed">Seed</label><input type="range" id="seed_r" min="1" max="999"><input type="number" id="seed" min="1" max="999999"></div>
+      <label class="toggle" for="nums"><input type="checkbox" id="nums">Numbers on the discs</label>
+      <label class="toggle" for="ghost"><input type="checkbox" id="ghost">Show what bleeds off the page</label>
+    </div>
+
+    <div class="group">
+      <h2>Page, mm</h2>
+      <div class="row"><label for="W">Width</label><input type="range" id="W_r" min="100" max="600"><input type="number" id="W" min="20" max="2000"></div>
+      <div class="row"><label for="H">Height</label><input type="range" id="H_r" min="100" max="600"><input type="number" id="H" min="20" max="2000"></div>
+    </div>
+
+    <div class="btns">
+      <button class="main" id="again">Generate</button>
+      <button id="copySvg">Copy SVG</button>
+      <button id="copyJson">Copy layout</button>
+      <button id="reset">Reset</button>
+    </div>
+    <p class="note" id="msg">Bleed: how much of a disc may leave the page (50 % lets its centre sit on the edge). Big to centre: 0 mixes the sizes; 100 gathers the large discs in the middle, with medium and small mixed round them. Touch each side: at least that many discs touch every side (corners count); 0 leaves it to the packing. Tries: that many packings from the seed; the one with the smallest biggest hole is kept. Same settings and seed always give the same page.</p>
+    <textarea id="fallback" hidden aria-label="Copy this text"></textarea>
+  </div>
+</div>
+
+<script>
+// Cover packing: three sizes of disc, packed densely on a page.
+// Everything in millimetres. Same settings + same seed = same picture.
+
+function rng(seed) {                       // mulberry32: a small seeded random
+  let a = seed >>> 0;
+  return () => {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// The edge rule. bleed = how much of a disc's diameter may leave the page:
+// 0 keeps it inside, 0.5 lets its centre sit on the edge.
+// BIG TO CENTRE. s.sort 0…1. Each disc gets a ring to live on, measured as an
+// ellipse the shape of the page: 0 its middle, 1 its edge. sortPull nudges a disc towards its size's ring by
+// a share of the way, so the packing itself still decides the rest.
+function sortRing(d, s) {
+  // Only the largest bracket aims for the middle, on a loose ring (0.45) so
+  // others can slip between them; the other brackets share one zone (0.7)
+  // with a wide random spread (d.jit, ±0.35): medium and small mix, and some
+  // land inside, among the large ones.
+  const top = Math.min(...s.classes.filter(c => c.n > 0).map(c => c.k ?? 0));
+  return d.k === top ? 0.45 + (d.jit || 0) * 0.25 : 0.7 + (d.jit || 0);
+}
+function sortPull(d, s, share) {
+  if (!s.sort) return;
+  const cx = s.W / 2, cy = s.H / 2, ax = (d.x - cx) / cx, ay = (d.y - cy) / cy;
+  const rho = Math.hypot(ax, ay) || 1e-6, want = sortRing(d, s);
+  const k = 1 + share * s.sort * (want - rho) / rho;
+  d.x = cx + (d.x - cx) * k; d.y = cy + (d.y - cy) * k;
+}
+
+// SMALLEST TO CORNERS. s.corners: the four smallest discs (the shuffle breaks
+// ties) are pinned into the four corners, touching both sides, from the start;
+// the packing grows inward around them. s.edgeMin: on every side at least that
+// many discs touch it (corners count): the ones nearest each side are put on it.
+const CORNERS = [[0, 0], [1, 0], [0, 1], [1, 1]];
+function markCorners(discs, s) {
+  discs.forEach(d => { delete d.corner; });
+  if (!s.corners) return;
+  const by = discs.map((d, i) => i).sort((a, b) => discs[a].rel - discs[b].rel).slice(0, 4);
+  by.forEach((i, c) => { discs[i].corner = CORNERS[c]; });
+}
+function pinEdges(discs, s) {
+  discs.forEach(d => {
+    if (!d.corner) return;
+    const b = bounds(d.r, s, d);
+    d.x = d.corner[0] ? b.x1 : b.x0; d.y = d.corner[1] ? b.y1 : b.y0;
+  });
+  if (!s.edgeMin) return;
+  const sides = [
+    [d => d.x - bounds(d.r, s).x0, d => { d.x = bounds(d.r, s).x0; }, c => c[0] === 0],
+    [d => bounds(d.r, s).x1 - d.x, d => { d.x = bounds(d.r, s).x1; }, c => c[0] === 1],
+    [d => d.y - bounds(d.r, s).y0, d => { d.y = bounds(d.r, s).y0; }, c => c[1] === 0],
+    [d => bounds(d.r, s).y1 - d.y, d => { d.y = bounds(d.r, s).y1; }, c => c[1] === 1]];
+  for (const [dist, put, isCorner] of sides) {
+    const have = discs.filter(d => d.corner && isCorner(d.corner)).length;
+    const need = s.edgeMin - have;
+    if (need <= 0) continue;
+    discs.filter(d => !d.corner && !keepOff(d, s)).sort((a, b) => dist(a) - dist(b)).slice(0, need).forEach(put);
+  }
+}
+
+// KEEP OFF THE SIDES. With Big to centre on, the largest bracket never touches
+// a side: it keeps room for a small disc and its two gaps between it and the
+// edge, so that band fills instead of leaving a white sliver. No bleed for them.
+function topBracket(s) { return Math.min(...s.classes.filter(c => c.n > 0).map(c => c.k ?? 0)); }
+function keepOff(d, s) {
+  if (!s.sort || !d || d.k !== topBracket(s)) return 0;
+  const live = s.classes.filter(c => c.n > 0);
+  const big = Math.max(...live.map(c => c.rel)), small = Math.min(...live.map(c => c.rel));
+  return 2 * d.r * small / big + 2 * s.gap;            // a small disc's diameter + two gaps
+}
+// Where a disc's centre may go. With d given, the keep-off room applies.
+function bounds(r, s, d) {
+  const off = keepOff(d, s);
+  const lo = off ? r + off : r - 2 * s.bleed * r;
+  return { x0: lo, x1: s.W - lo, y0: lo, y1: s.H - lo };
+}
+
+// Pack. Start the discs small and scattered, then repeat:
+// push every overlapping pair apart, keep each disc within the edge rule,
+// and grow all discs together while they fit, shrink a hair when they jam.
+// The growth stops by itself where the discs press on each other: dense.
+function pack(s) {
+  const rand = rng(s.seed);
+  const discs = [];
+  s.classes.forEach((c, k) => {
+    for (let i = 0; i < c.n; i++) discs.push({ k: c.k ?? k, rel: c.rel });
+  });
+  // Shuffle so the class order doesn't bias the start.
+  for (let i = discs.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [discs[i], discs[j]] = [discs[j], discs[i]];
+  }
+  markCorners(discs, s);
+  discs.forEach(d => {
+    d.jit = (rand() - 0.5) * 0.7;
+    d.x = rand() * s.W; d.y = rand() * s.H;
+    if (s.sort) {                       // start each disc on its size's ring, at a random angle
+      const a = rand() * 2 * Math.PI, want = Math.max(0.05, sortRing(d, s)) * 0.9;
+      d.x += s.sort * (s.W / 2 + Math.cos(a) * want * s.W / 2 - d.x);
+      d.y += s.sort * (s.H / 2 + Math.sin(a) * want * s.H / 2 - d.y);
+    }
+  });
+
+  // Starting size: the discs together take a third of the page.
+  const relArea = discs.reduce((a, d) => a + Math.PI * (d.rel / 2) ** 2, 0);
+  let scale = Math.sqrt((s.W * s.H / 3) / relArea);   // mm of diameter per 1.0 rel
+
+  const STEPS = s.steps || 6000;
+  const g = s.gap;
+  for (let step = 0; step < STEPS; step++) {
+    discs.forEach(d => { d.r = d.rel * scale / 2; });
+    let worst = 0;
+    for (let pass = 0; pass < 3; pass++) {
+      for (let i = 0; i < discs.length; i++) {
+        for (let j = i + 1; j < discs.length; j++) {
+          const a = discs[i], b = discs[j];
+          let dx = b.x - a.x, dy = b.y - a.y;
+          let dist = Math.hypot(dx, dy);
+          const want = a.r + b.r + g;
+          if (dist >= want) continue;
+          if (dist < 1e-6) { dx = rand() - 0.5; dy = rand() - 0.5; dist = Math.hypot(dx, dy); }
+          const over = want - dist;
+          worst = Math.max(worst, over / want);
+          // The smaller disc gives way more.
+          const wa = b.r * b.r / (a.r * a.r + b.r * b.r), wb = 1 - wa;
+          const ux = dx / dist, uy = dy / dist;
+          a.x -= ux * over * wa; a.y -= uy * over * wa;
+          b.x += ux * over * wb; b.y += uy * over * wb;
+        }
+      }
+      discs.forEach(d => {
+        const b = bounds(d.r, s, d);
+        d.x = Math.min(b.x1, Math.max(b.x0, d.x));
+        d.y = Math.min(b.y1, Math.max(b.y0, d.y));
+      });
+      pinEdges(discs, s);
+    }
+    // Grow fast at first, gently at the end.
+    const t = step / STEPS;
+    // The pull shapes the start, then fades out by 40 % of the steps.
+    if (t < 0.4) discs.forEach(d => sortPull(d, s, 0.004 * (1 - t / 0.4)));
+    const rate = 0.02 * (1 - t) + 0.0005;
+    if (worst < 0.002) scale *= 1 + rate;
+    else if (worst > 0.01) scale *= 1 - rate * 0.5;
+    // A small shake now and then lets jammed discs find a better seat.
+    if (t < 0.6 && step % 200 === 199) {
+      discs.forEach(d => { d.x += (rand() - 0.5) * d.r * 0.3; d.y += (rand() - 0.5) * d.r * 0.3; });
+    }
+  }
+  // Finish clean: shrink until no pair overlaps.
+  for (let k = 0; k < 200; k++) {
+    discs.forEach(d => { d.r = d.rel * scale / 2; }); pinEdges(discs, s);
+    let ok = true;
+    for (let i = 0; i < discs.length && ok; i++)
+      for (let j = i + 1; j < discs.length; j++) {
+        const a = discs[i], b = discs[j];
+        if (Math.hypot(b.x - a.x, b.y - a.y) < a.r + b.r + g - 1e-6) { ok = false; break; }
+      }
+    if (ok) break;
+    scale *= 0.999;
+  }
+  discs.forEach(d => { d.r = d.rel * scale / 2; }); pinEdges(discs, s);
+  return { discs, scale };
+}
+
+// How much of the page the discs cover, sampled on a fine grid.
+function coverage(discs, s, n = 240) {
+  let hit = 0, tot = 0;
+  const ny = Math.round(n * s.H / s.W);
+  for (let iy = 0; iy < ny; iy++) for (let ix = 0; ix < n; ix++) {
+    const x = (ix + 0.5) * s.W / n, y = (iy + 0.5) * s.H / ny;
+    tot++;
+    for (const d of discs) if ((x - d.x) ** 2 + (y - d.y) ** 2 <= d.r * d.r) { hit++; break; }
+  }
+  return hit / tot;
+}
+
+
+// Evenness tools and two more packings. Millimetres throughout.
+
+// The white between discs, split fairly: every point of the page belongs to the disc
+// whose EDGE is nearest (not its centre). The borders of these cells run down the
+// middle of the white, so two discs whose cells touch are neighbours.
+// Returns, per neighbour pair, the white between them; and the biggest hole.
+function measure(discs, s, res = 1) {
+  const nx = Math.ceil(s.W / res), ny = Math.ceil(s.H / res);
+  const own = new Int16Array(nx * ny);
+  let hole = 0;
+  for (let iy = 0; iy < ny; iy++) for (let ix = 0; ix < nx; ix++) {
+    const x = (ix + 0.5) * res, y = (iy + 0.5) * res;
+    let best = 1e9, bi = -1;
+    for (let i = 0; i < discs.length; i++) {
+      const d = discs[i], e = Math.hypot(x - d.x, y - d.y) - d.r;
+      if (e < best) { best = e; bi = i; }
+    }
+    own[iy * nx + ix] = bi;
+    // A hole: white whose nearest disc edge is far. Points near the page edge count less,
+    // since a hole cut by the page edge is not a hole on the cover.
+    if (best > 0) {
+      const toEdge = Math.min(x, y, s.W - x, s.H - y);
+      hole = Math.max(hole, Math.min(best, toEdge + best * 0.5));
+    }
+  }
+  const pairs = new Set();
+  for (let iy = 0; iy < ny; iy++) for (let ix = 0; ix < nx; ix++) {
+    const a = own[iy * nx + ix];
+    if (ix + 1 < nx) { const b = own[iy * nx + ix + 1]; if (a !== b) pairs.add(a < b ? a * 1000 + b : b * 1000 + a); }
+    if (iy + 1 < ny) { const b = own[(iy + 1) * nx + ix]; if (a !== b) pairs.add(a < b ? a * 1000 + b : b * 1000 + a); }
+  }
+  const gaps = [], links = [];
+  pairs.forEach(p => {
+    const i = Math.floor(p / 1000), j = p % 1000, a = discs[i], b = discs[j];
+    const g = Math.hypot(a.x - b.x, a.y - b.y) - a.r - b.r;
+    links.push([i, j]);
+    // A pair whose gap lies off the page doesn't show; skip it in the score.
+    const mx = (a.x * b.r + b.x * a.r) / (a.r + b.r), my = (a.y * b.r + b.y * a.r) / (a.r + b.r);
+    if (mx > 0 && mx < s.W && my > 0 && my < s.H) gaps.push(g);
+  });
+  const mean = gaps.reduce((t, g) => t + g, 0) / gaps.length;
+  const sd = Math.sqrt(gaps.reduce((t, g) => t + (g - mean) ** 2, 0) / gaps.length);
+  return { links, gaps, mean, sd, cv: sd / mean, hole: 2 * hole };
+}
+
+function clampAll(discs, s) {
+  discs.forEach(d => {
+    const b = bounds(d.r, s, d);
+    d.x = Math.min(b.x1, Math.max(b.x0, d.x));
+    d.y = Math.min(b.y1, Math.max(b.y0, d.y));
+  });
+}
+
+function separate(discs, g) {          // hard rule: never closer than the gap
+  for (let i = 0; i < discs.length; i++) for (let j = i + 1; j < discs.length; j++) {
+    const a = discs[i], b = discs[j];
+    let dx = b.x - a.x, dy = b.y - a.y, dist = Math.hypot(dx, dy) || 1e-6;
+    const over = a.r + b.r + g - dist;
+    if (over <= 0) continue;
+    const wa = b.r * b.r / (a.r * a.r + b.r * b.r), wb = 1 - wa;
+    a.x -= dx / dist * over * wa; a.y -= dy / dist * over * wa;
+    b.x += dx / dist * over * wb; b.y += dy / dist * over * wb;
+  }
+}
+
+// EVEN GAPS. Start from a packing; tie every pair of neighbours with a spring whose
+// rest length leaves the same white between them. Springs push AND pull, so wide
+// gaps close and tight ones open. The discs then grow together until the smallest
+// white reaches the gap; the springs keep the white equal while they grow.
+function evenGaps(start, s, rounds = 40) {
+  const discs = start.discs.map(d => ({ ...d }));
+  let scale = start.scale;
+  const setR = () => discs.forEach(d => { d.r = d.rel * scale / 2; });
+  for (let round = 0; round < rounds; round++) {
+    setR();
+    const m = measure(discs, s, 2);
+    const target = Math.max(s.gap, m.mean);
+    for (let it = 0; it < 30; it++) {
+      for (const [i, j] of m.links) {
+        const a = discs[i], b = discs[j];
+        const dx = b.x - a.x, dy = b.y - a.y, dist = Math.hypot(dx, dy) || 1e-6;
+        const err = dist - (a.r + b.r + target);           // + too far, − too close
+        const k = 0.15 * err;
+        const wa = b.r * b.r / (a.r * a.r + b.r * b.r), wb = 1 - wa;
+        a.x += dx / dist * k * wa; a.y += dy / dist * k * wa;
+        b.x -= dx / dist * k * wb; b.y -= dy / dist * k * wb;
+      }
+      separate(discs, s.gap); clampAll(discs, s); pinEdges(discs, s);
+    }
+    // Grow while the closest pair still has more white than the gap.
+    let minGap = 1e9;
+    for (let i = 0; i < discs.length; i++) for (let j = i + 1; j < discs.length; j++) {
+      const a = discs[i], b = discs[j];
+      minGap = Math.min(minGap, Math.hypot(a.x - b.x, a.y - b.y) - a.r - b.r);
+    }
+    if (minGap > s.gap * 1.02) scale *= 1 + Math.min(0.02, (minGap - s.gap) / (4 * scale));
+  }
+  setR(); separate(discs, s.gap);
+  return { discs, scale };
+}
+
+// Where the biggest hole is: the white point farthest from every disc edge
+// (points cut by the page edge count less, as in measure()).
+function biggestHole(discs, s, res = 2) {
+  let best = -1, bx = 0, by = 0;
+  for (let y = res / 2; y < s.H; y += res) for (let x = res / 2; x < s.W; x += res) {
+    let e = 1e9;
+    for (const d of discs) e = Math.min(e, Math.hypot(x - d.x, y - d.y) - d.r);
+    if (e <= 0) continue;
+    const toEdge = Math.min(x, y, s.W - x, s.H - y), v = Math.min(e, toEdge + e * 0.5);
+    if (v > best) { best = v; bx = x; by = y; }
+  }
+  return { x: bx, y: by, d: 2 * best };
+}
+
+// VORONOI. Millimetres throughout.
+// Every point of the page belongs to the disc whose EDGE is nearest: that gives each
+// disc a cell, like a Voronoi diagram but measured from the edges, so a big disc gets
+// a big cell. The border between two discs runs down the middle of the white.
+// Each disc moves to the middle of its cell (the point farthest from the cell's
+// border), then all discs grow together until the closest pair is at the gap.
+// Repeated, the white between neighbours evens out.
+
+// Where a disc's centre must stay so that it touches a side (or sticks out
+// by the bleed). bleed 0: the disc's edge lies on the page edge.
+function wallPos(r, s, d) { return bounds(r, s, d); }
+
+// CENTRE IN CELLS, with the page edge as a neighbour that wants no white.
+// The border between two discs runs down the middle of the white, half the gap
+// from each. The page edge's border is put half a gap BEYOND the edge, so a disc
+// whose cell reaches the edge settles with its edge on the page edge: tangent.
+// No disc is pinned; which discs touch the edge is decided by the cells.
+function relax(start, s, rounds = 30, res = Math.max(s.W, s.H) / 120) {
+  const discs = start.discs.map(d => ({ ...d }));
+  let scale = start.scale;
+  const nx = Math.ceil(s.W / res), ny = Math.ceil(s.H / res);
+  const N = nx * ny, owner = new Int16Array(N), depthAt = new Float32Array(N);
+  const clamp = d => {
+    const w = wallPos(d.r, s, d);
+    d.x = Math.min(w.x1, Math.max(w.x0, d.x)); d.y = Math.min(w.y1, Math.max(w.y0, d.y));
+  };
+  const closest = () => {
+    let m = 1e9;
+    for (let i = 0; i < discs.length; i++) for (let j = i + 1; j < discs.length; j++) {
+      const a = discs[i], b = discs[j];
+      m = Math.min(m, Math.hypot(a.x - b.x, a.y - b.y) - a.r - b.r);
+    }
+    return m;
+  };
+  let half = s.gap / 2;
+  for (let round = 0; round < rounds; round++) {
+    discs.forEach(d => { d.r = d.rel * scale / 2; clamp(d); }); pinEdges(discs, s);
+    const deepest = new Float32Array(discs.length).fill(-1);
+    let wsum = 0, wn = 0;
+    for (let iy = 0; iy < ny; iy++) for (let ix = 0; ix < nx; ix++) {
+      const x = (ix + 0.5) * res, y = (iy + 0.5) * res;
+      let b1 = 1e9, b2 = 1e9, i1 = 0;
+      for (let i = 0; i < discs.length; i++) {
+        const d = discs[i], e = Math.hypot(x - d.x, y - d.y) - d.r;
+        if (e < b1) { b2 = b1; b1 = e; i1 = i; } else if (e < b2) b2 = e;
+      }
+      // Bleed: the edge a disc may reach lies further out for it.
+      // Bleed: the edge a disc may reach lies further out for it; a disc kept
+      // off the sides sees the edge that much further in.
+      const off = keepOff(discs[i1], s), out = off ? -off : 2 * s.bleed * discs[i1].r;
+      const wall = Math.min(x, y, s.W - x, s.H - y) + out;
+      const v = Math.min((b2 - b1) / 2, wall + half);
+      const p = iy * nx + ix;
+      owner[p] = i1; depthAt[p] = v;
+      if (v > deepest[i1]) deepest[i1] = v;
+      // On a border between two discs (b1 ≈ b2, both outside), that much white.
+      if (b1 > 0 && b2 - b1 < res) { wsum += b1 + b2; wn++; }
+    }
+    if (wn) half = Math.max(s.gap / 2, 0.5 * wsum / wn / 2);
+    const ax = new Float64Array(discs.length), ay = new Float64Array(discs.length), an = new Float64Array(discs.length);
+    for (let p = 0; p < N; p++) {
+      const i = owner[p];
+      if (depthAt[p] >= deepest[i] * 0.9) { ax[i] += (p % nx + 0.5) * res; ay[i] += (Math.floor(p / nx) + 0.5) * res; an[i]++; }
+    }
+    discs.forEach((d, i) => {
+      if (!an[i]) return;
+      d.x += 0.6 * (ax[i] / an[i] - d.x); d.y += 0.6 * (ay[i] / an[i] - d.y);
+      // Fades out over the first half, so the cells settle the rest freely.
+      sortPull(d, s, 0.08 * Math.max(0, 1 - round / (rounds / 2))); clamp(d);
+    });
+    separate(discs, s.gap); discs.forEach(clamp); pinEdges(discs, s);
+    const m = closest();
+    if (m > s.gap * 1.01) scale *= 1 + Math.min(0.015, (m - s.gap) / (4 * scale));
+    else if (m < s.gap * 0.99) scale *= 0.998;
+  }
+  // Finish: a disc within a gap of the edge is put on it; no pair closer than the gap.
+  const snap = d => {
+    const w = wallPos(d.r, s, d), t = s.gap;
+    if (d.x - w.x0 < t) d.x = w.x0; if (w.x1 - d.x < t) d.x = w.x1;
+    if (d.y - w.y0 < t) d.y = w.y0; if (w.y1 - d.y < t) d.y = w.y1;
+  };
+  for (let k = 0; k < 400; k++) {
+    discs.forEach(d => { d.r = d.rel * scale / 2; clamp(d); snap(d); }); pinEdges(discs, s);
+    if (closest() >= s.gap - 1e-4) break;
+    separate(discs, s.gap); scale *= 0.9995;
+  }
+  discs.forEach(d => { d.r = d.rel * scale / 2; });
+  return { discs, scale };
+}
+
+// COLOUR. Applied after the packing: changing colours never repacks.
+
+// sRGB hex → OKLab, a colour space where distances look even to the eye.
+function oklab(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  const lin = c => { c /= 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+  const r = lin(n >> 16 & 255), g = lin(n >> 8 & 255), b = lin(n & 255);
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+  const L = 0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s;
+  const A = 1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s;
+  const B = 0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s;
+  return { L, C: Math.hypot(A, B) };
+}
+
+// Vividness: mostly colourfulness, plus some contrast with the white page.
+// High = bright and strong (goes to the centre); low = dim, close to the paper.
+function vivid(hex) { const c = oklab(hex); return c.C * 4 + (1 - c.L) * 0.5; }
+
+// Text on a disc: dark on light colours, white on dark ones.
+function inkOn(hex) { return oklab(hex).L > 0.7 ? '#1d1d1c' : '#fff'; }
+
+// Discs that are close enough to read as neighbours.
+function neighbours(discs, gap) {
+  const out = discs.map(() => []);
+  for (let i = 0; i < discs.length; i++) for (let j = i + 1; j < discs.length; j++) {
+    const a = discs[i], b = discs[j];
+    if (Math.hypot(a.x - b.x, a.y - b.y) - a.r - b.r < gap * 2 + 6) { out[i].push(j); out[j].push(i); }
+  }
+  return out;
+}
+
+// Returns one hex per disc.
+// random: every colour used about as often, shuffled; then swaps so that
+//   touching discs rarely share a colour.
+// centre: like a gradient map. Discs are ranked by distance from the page's
+//   middle (an ellipse the page's shape); the list's first colour goes to the
+//   middle, its last to the edge. mix (0…1) blurs the bands by shifting each
+//   disc's rank at random.
+function assignColours(discs, s, pal, how, mix, seed) {
+  const out = spreadColours(discs, s, pal, how, mix, seed);
+  // Corner discs (Smallest to corners) take the palette's lightest colour.
+  if (pal.length && discs.some(d => d.corner)) {
+    const light = pal.reduce((a, b) => oklab(b).L > oklab(a).L ? b : a);
+    discs.forEach((d, i) => { if (d.corner) out[i] = light; });
+  }
+  return out;
+}
+function spreadColours(discs, s, pal, how, mix, seed) {
+  const n = discs.length, m = pal.length, rand = rng(seed);
+  if (!m) return discs.map(() => '#cccccc');
+  if (how === 'centre') {
+    const cx = s.W / 2, cy = s.H / 2;
+    const rho = discs.map(d => Math.hypot((d.x - cx) / cx, (d.y - cy) / cy) + (rand() - 0.5) * 2 * mix);
+    const order = rho.map((v, i) => i).sort((a, b) => rho[a] - rho[b]);
+    const out = new Array(n);
+    order.forEach((i, rank) => { out[i] = pal[Math.min(m - 1, Math.floor(rank / n * m))]; });
+    return out;
+  }
+  const out = discs.map((d, i) => pal[i % m]);
+  for (let i = n - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [out[i], out[j]] = [out[j], out[i]]; }
+  const nb = neighbours(discs, s.gap);
+  const clashes = i => nb[i].reduce((t, j) => t + (out[j] === out[i]), 0);
+  for (let pass = 0; pass < 6; pass++) for (let i = 0; i < n; i++) {
+    if (!clashes(i)) continue;
+    for (let j = 0; j < n; j++) {
+      if (out[j] === out[i]) continue;
+      const before = clashes(i) + clashes(j);
+      [out[i], out[j]] = [out[j], out[i]];
+      if (clashes(i) + clashes(j) < before) break;
+      [out[i], out[j]] = [out[j], out[i]];
+    }
+  }
+  return out;
+}
+
+// COLOUR MOSAIC. hex → OKLCH (lightness, chroma, hue) and back.
+function toLch(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  const lin = c => { c /= 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+  const r = lin(n >> 16 & 255), g = lin(n >> 8 & 255), b = lin(n & 255);
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+  const L = 0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s;
+  const A = 1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s;
+  const B = 0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s;
+  return { L, C: Math.hypot(A, B), h: Math.atan2(B, A) };
+}
+function lchToRgb(L, C, h) {
+  const A = C * Math.cos(h), B = C * Math.sin(h);
+  const l = (L + 0.3963377774 * A + 0.2158037573 * B) ** 3;
+  const m = (L - 0.1055613458 * A - 0.0638541728 * B) ** 3;
+  const s = (L - 0.0894841775 * A - 1.2914855480 * B) ** 3;
+  return [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+         -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+         -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s];
+}
+// Same hue, chroma kept as asked; if that colour can't be shown on screen
+// (outside sRGB), the chroma is lowered just enough, lightness kept.
+function fromLch(L, C, h) {
+  const ok = rgb => rgb.every(v => v >= -1e-4 && v <= 1 + 1e-4);
+  let lo = 0, hi = C;
+  if (!ok(lchToRgb(L, C, h))) for (let i = 0; i < 24; i++) { const mid = (lo + hi) / 2; if (ok(lchToRgb(L, mid, h))) lo = mid; else hi = mid; }
+  else lo = C;
+  const enc = v => { v = Math.min(1, Math.max(0, v)); v = v <= 0.0031308 ? 12.92 * v : 1.055 * v ** (1 / 2.4) - 0.055; return Math.round(v * 255); };
+  return '#' + lchToRgb(L, lo, h).map(enc).map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+// The picked colour is the darkest step; each next step is lighter, same chroma.
+// span: how far the lightest step goes towards white (0…1 of the way).
+function tints(hex, steps, span) {
+  const c = toLch(hex), top = 0.97, out = [];
+  for (let t = 0; t < steps; t++) {
+    const L = c.L + (Math.max(0, top - c.L)) * span * t / (steps - 1);
+    out.push(t === 0 ? hex.toUpperCase() : fromLch(L, c.C, c.h));
+  }
+  return out;
+}
+function expandPalette(pal, on, steps, span) {
+  return on ? pal.flatMap(h => tints(h, steps, span)) : pal.slice();
+}
+
+
+const DEFAULTS = { nL: 4, nM: 10, nS: 16, rM: 60, rS: 36, gap: 2, bleed: 0, sort: 0, colour: 'size', corners: false, edgeMin: 0, smOn: false, smSteps: 3, smSpread: 20, cmOn: false, cmSteps: 3, cmSpan: 50, spread: 'random', mix: 20, cseed: 1, palette: ['#F5C518', '#E4502E', '#1F4FD1', '#2B2B2A', '#CFC9BC'], tries: 3, seed: 7, method: 'voronoi', nums: true, ghost: false, W: 297, H: 210 };
+const KEYS = ['nL','nM','nS','rM','rS','gap','bleed','sort','tries','seed','W','H','mix','smSteps','smSpread','cmSteps','cmSpan','edgeMin'];
+let S = { ...DEFAULTS, palette: DEFAULTS.palette.slice() };
+try { Object.assign(S, JSON.parse(localStorage.getItem('dial-packer') || '{}')); } catch (e) {}
+let result = null, job = 0;
+
+const $ = id => document.getElementById(id);
+const METHOD_NOTE = {
+  grow: 'Discs start small and scattered, push apart and grow together until they jam. Densest start, uneven white.',
+  even: 'Grow, then every pair of neighbours is tied by a spring that wants the same white between them: wide gaps close, tight ones open, and the discs grow again.',
+  voronoi: 'Grow, then each disc gets a cell: the part of the page nearer its edge than any other disc\'s. Each disc moves to the middle of its cell and all grow again, over and over. The page edge counts as a neighbour that wants no white, so the discs along it end up touching it.'
+};
+const SPREAD_NOTE = {
+  random: 'Each colour used about as often, shuffled; touching discs rarely share one.',
+  centre: 'Like a gradient map: the list runs from the middle of the page (1) to its edge (last). Sort by vividness puts the bright, strong colours first. Mix blurs the bands.'
+};
+function showPalette() {
+  const ol = $('palList'); ol.innerHTML = '';
+  S.palette.forEach((hex, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="idx">${i + 1}</span><input type="color" id="pc${i}" value="${hex.toLowerCase()}" aria-label="Colour ${i + 1}"><input type="text" id="pt${i}" value="${hex}" maxlength="7" aria-label="Colour ${i + 1} hex"><span class="tints">${S.cmOn ? tints(hex, S.cmSteps, S.cmSpan / 100).map(t => `<i style="background:${t}" title="${t}"></i>`).join('') : ''}</span><button id="pu${i}" title="Move up" aria-label="Move colour ${i + 1} up"${i ? '' : ' disabled'}>↑</button><button id="px${i}" title="Remove" aria-label="Remove colour ${i + 1}"${S.palette.length > 1 ? '' : ' disabled'}>×</button>`;
+    ol.appendChild(li);
+    const set = v => { S.palette[i] = v.toUpperCase(); save(); draw(); if (S.cmOn) li.querySelector('.tints').innerHTML = tints(S.palette[i], S.cmSteps, S.cmSpan / 100).map(t => `<i style="background:${t}" title="${t}"></i>`).join(''); };
+    li.querySelector('input[type=color]').addEventListener('input', e => { set(e.target.value); li.querySelector('input[type=text]').value = S.palette[i]; });
+    li.querySelector('input[type=text]').addEventListener('change', e => {
+      let v = e.target.value.trim(); if (v[0] !== '#') v = '#' + v;
+      if (/^#[0-9a-f]{3}$/i.test(v)) v = '#' + [...v.slice(1)].map(c => c + c).join('');
+      if (/^#[0-9a-f]{6}$/i.test(v)) { set(v); showPalette(); } else e.target.value = S.palette[i];
+    });
+    li.querySelector(`#pu${i}`).addEventListener('click', () => { [S.palette[i - 1], S.palette[i]] = [S.palette[i], S.palette[i - 1]]; save(); showPalette(); draw(); });
+    li.querySelector(`#px${i}`).addEventListener('click', () => { S.palette.splice(i, 1); save(); showPalette(); draw(); });
+  });
+}
+function show() {
+  $('c_size').setAttribute('aria-checked', S.colour === 'size'); $('c_pal').setAttribute('aria-checked', S.colour === 'palette');
+  $('sp_random').setAttribute('aria-checked', S.spread === 'random'); $('sp_centre').setAttribute('aria-checked', S.spread === 'centre');
+  $('palBox').hidden = S.colour !== 'palette';
+  $('mixRow').hidden = S.spread !== 'centre';
+  $('sortCol').hidden = S.spread !== 'centre';
+  $('spnote').textContent = SPREAD_NOTE[S.spread];
+  ['grow','even','voronoi'].forEach(m => $('m_' + m).setAttribute('aria-checked', S.method === m));
+  $('mnote').textContent = METHOD_NOTE[S.method];
+  KEYS.forEach(k => { $(k).value = S[k]; if ($(k + '_r')) $(k + '_r').value = S[k]; });
+  $('nums').checked = S.nums; $('ghost').checked = S.ghost;
+  $('corners').checked = S.corners; $('smOn').checked = S.smOn; $('cmOn').checked = S.cmOn;
+  $('smBox').hidden = !S.smOn; $('cmBox').hidden = !S.cmOn;
+}
+function save() { try { localStorage.setItem('dial-packer', JSON.stringify(S)); } catch (e) {} }
+
+function settings() {
+  return { W: S.W, H: S.H, gap: S.gap, bleed: S.bleed / 100, sort: S.sort / 100, corners: S.corners, edgeMin: S.edgeMin,
+    classes: brackets() };
+}
+// Size mosaic: each bracket's discs split into Steps sizes, the largest the
+// bracket's own size, the smallest Spread % smaller; the counts split evenly
+// (any extra goes to the larger steps). k keeps the bracket (L, M, S).
+function brackets() {
+  const base = [{ n: S.nL, rel: 1 }, { n: S.nM, rel: S.rM / 100 }, { n: S.nS, rel: S.rS / 100 }];
+  if (!S.smOn) return base.map((c, k) => ({ ...c, k }));
+  const out = [], st = Math.max(2, Math.min(3, Math.round(S.smSteps)));
+  base.forEach((c, k) => {
+    for (let t = 0; t < st; t++) {
+      const n = Math.floor(c.n / st) + (t < c.n % st ? 1 : 0);
+      if (n) out.push({ n, k, rel: c.rel * (1 - S.smSpread / 100 * t / (st - 1)) });
+    }
+  });
+  return out;
+}
+
+// Run the tries one at a time so the page stays responsive; keep the densest.
+function run() {
+  const my = ++job, base = settings();
+  if (S.nL + S.nM + S.nS === 0) { result = null; draw(); return; }
+  let best = null, t = 0;
+  $('under').innerHTML = '<span class="busy">Packing…</span>';
+  const next = () => {
+    if (my !== job) return;
+    const s = { ...base, seed: S.seed * 1000 + t };
+    let r = pack(s);
+    if (S.method === 'even') r = evenGaps(r, s);
+    if (S.method === 'voronoi') r = relax(r, s);
+    r.hole = biggestHole(r.discs, s).d;
+    if (!best || r.hole < best.hole) best = r;
+    t++;
+    if (t < S.tries) { $('under').innerHTML = `<span class="busy">Packing… try ${t + 1} of ${S.tries}</span>`; setTimeout(next, 0); }
+    else {
+      best.cov = coverage(best.discs, base, 400);
+      best.m = measure(best.discs, base, 1);
+      best.hole = biggestHole(best.discs, base, 1).d;
+      result = best; draw();
+    }
+  };
+  setTimeout(next, 0);
+}
+
+const COL = ['var(--size-l)', 'var(--size-m)', 'var(--size-s)'];
+const HEX = ['#2a2a29', '#77777a', '#b7b7b4'];
+const NAME = ['L', 'M', 'S'];
+
+// Number the discs by size, then left to right, top to bottom, so a number stays put while you tune.
+function numbered(discs) {
+  const order = discs.slice().sort((a, b) => a.k - b.k || (Math.round(a.y / 30) - Math.round(b.y / 30)) || a.x - b.x);
+  const count = [0, 0, 0];
+  order.forEach(d => { d.id = NAME[d.k] + (++count[d.k]); });
+  return discs;
+}
+
+function svgText(forExport) {
+  const { W, H } = S;
+  const pad = forExport ? 0 : 0;
+  let body = '';
+  if (result) {
+    const discs = numbered(result.discs);
+    const pal = S.colour === 'palette' ? assignColours(discs, settings(), expandPalette(S.palette, S.cmOn, S.cmSteps, S.cmSpan / 100), S.spread, S.mix / 100, S.cseed) : null;
+    const fill = (d, i) => pal ? pal[i] : forExport ? HEX[d.k] : COL[d.k];
+    const circles = discs.map((d, i) => `<circle cx="${d.x.toFixed(2)}" cy="${d.y.toFixed(2)}" r="${d.r.toFixed(2)}" fill="${fill(d, i)}"${forExport ? ` id="${d.id}"` : ''}/>`).join('');
+    if (S.ghost && !forExport) body += `<g opacity="0.18">${circles}</g>`;
+    body += `<rect width="${W}" height="${H}" fill="#fff"/><g clip-path="url(#pg)">${circles}`;
+    if (S.nums && !forExport) {
+      // Every label at the Medium disc's size (what it was on Medium discs).
+      const labelSize = Math.max(2.4, Math.min(5, result.scale * S.rM / 100 / 2 * 0.22));
+      body += discs.map((d, i) => {
+        const fs = labelSize;
+        const ink = pal ? inkOn(pal[i]) : d.k === 2 ? '#1d1d1c' : '#fff';
+        return `<text x="${d.x.toFixed(2)}" y="${d.y.toFixed(2)}" font-size="${fs}" fill="${ink}" text-anchor="middle" dominant-baseline="central" font-family="Inter, Helvetica, Arial, sans-serif" font-weight="500">${d.id}</text>`;
+      }).join('');
+    }
+    body += '</g>';
+  } else body = `<rect width="${W}" height="${H}" fill="#fff"/>`;
+  const vb = S.ghost && !forExport ? `${-W * 0.12} ${-H * 0.12} ${W * 1.24} ${H * 1.24}` : `0 0 ${W} ${H}`;
+  const size = forExport ? ` width="${W}mm" height="${H}mm"` : '';
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}"${size}><defs><clipPath id="pg"><rect width="${W}" height="${H}"/></clipPath></defs>${body}</svg>`;
+}
+
+function draw() {
+  const el = $('page');
+  const tmp = new DOMParser().parseFromString(svgText(false), 'image/svg+xml').documentElement;
+  el.setAttribute('viewBox', tmp.getAttribute('viewBox'));
+  el.style.background = S.ghost ? 'transparent' : '';
+  el.style.boxShadow = S.ghost ? 'none' : '';
+  el.innerHTML = tmp.innerHTML;
+  if (!result) { $('under').innerHTML = 'No discs.'; return; }
+  const d = result.scale, n = S.nL + S.nM + S.nS;
+  $('under').innerHTML =
+    `<span><b>${n}</b> discs</span>` +
+    `<span>Ø ${['L', 'M', 'S'].map((nm, k) => {
+      const rel = [1, S.rM / 100, S.rS / 100][k], lo = S.smOn ? rel * (1 - S.smSpread / 100) : rel;
+      return `${nm} <b>${(d * rel).toFixed(1)}</b>` + (S.smOn ? `–<b>${(d * lo).toFixed(1)}</b>` : '');
+    }).join(' · ')} mm</span>` +
+    `<span>Covers <b>${(result.cov * 100).toFixed(1)}</b> %</span>` +
+    `<span>White between neighbours <b>${result.m.mean.toFixed(1)}</b> ± <b>${result.m.sd.toFixed(1)}</b> mm</span>` +
+    `<span>Biggest hole Ø <b>${result.hole.toFixed(1)}</b> mm</span>`;
+}
+
+function copy(text, what) {
+  const done = () => { $('msg').textContent = what + ' copied.'; $('fallback').hidden = true; };
+  const fail = () => { const f = $('fallback'); f.hidden = false; f.value = text; f.select(); $('msg').textContent = 'Copying was refused here: the text is selected below, copy it by hand.'; };
+  try { navigator.clipboard.writeText(text).then(done, fail); } catch (e) { fail(); }
+}
+
+let timer;
+function changed(k, v) {
+  S[k] = v; show(); save();
+  if (k === 'cmSteps' || k === 'cmSpan') { showPalette(); draw(); return; }
+  if (k === 'mix') { draw(); return; }
+  clearTimeout(timer); timer = setTimeout(run, 200);
+}
+KEYS.forEach(k => {
+  $(k).addEventListener('change', e => { const v = parseFloat(e.target.value); if (!isNaN(v)) changed(k, v); });
+  if ($(k + '_r')) $(k + '_r').addEventListener('input', e => changed(k, parseFloat(e.target.value)));
+});
+['grow','even','voronoi'].forEach(m => $('m_' + m).addEventListener('click', () => { S.method = m; show(); save(); run(); }));
+$('corners').addEventListener('change', e => { S.corners = e.target.checked; show(); save(); run(); });
+$('smOn').addEventListener('change', e => { S.smOn = e.target.checked; show(); save(); run(); });
+$('cmOn').addEventListener('change', e => { S.cmOn = e.target.checked; show(); showPalette(); save(); draw(); });
+$('nums').addEventListener('change', e => { S.nums = e.target.checked; save(); draw(); });
+$('ghost').addEventListener('change', e => { S.ghost = e.target.checked; save(); draw(); });
+$('c_size').addEventListener('click', () => { S.colour = 'size'; show(); save(); draw(); });
+$('c_pal').addEventListener('click', () => { S.colour = 'palette'; show(); save(); draw(); });
+$('sp_random').addEventListener('click', () => { S.spread = 'random'; show(); save(); draw(); });
+$('sp_centre').addEventListener('click', () => { S.spread = 'centre'; show(); save(); draw(); });
+$('addCol').addEventListener('click', () => {
+  const h = Math.floor(Math.random() * 360), c = `hsl(${h} 70% 55%)`, t = document.createElement('canvas').getContext('2d');
+  t.fillStyle = c; S.palette.push(t.fillStyle.toUpperCase()); save(); showPalette(); draw();
+  // Open the new colour's picker straight away (where the browser allows it).
+  const last = $('pc' + (S.palette.length - 1)); if (last) { last.focus(); try { last.showPicker ? last.showPicker() : last.click(); } catch (e) {} }
+});
+$('sortCol').addEventListener('click', () => { S.palette.sort((a, b) => vivid(b) - vivid(a)); save(); showPalette(); draw(); });
+$('shuffleCol').addEventListener('click', () => { S.cseed = 1 + Math.floor(Math.random() * 99999); save(); draw(); });
+const generate = () => changed('seed', 1 + Math.floor(Math.random() * 999));
+$('again').addEventListener('click', generate);
+$('again2').addEventListener('click', generate);
+$('reset').addEventListener('click', () => { S = { ...DEFAULTS, palette: DEFAULTS.palette.slice() }; show(); showPalette(); save(); run(); });
+$('copySvg').addEventListener('click', () => copy(svgText(true), 'SVG'));
+$('copyJson').addEventListener('click', () => {
+  if (!result) return;
+  const nd = numbered(result.discs), cols = S.colour === 'palette' ? assignColours(nd, settings(), expandPalette(S.palette, S.cmOn, S.cmSteps, S.cmSpan / 100), S.spread, S.mix / 100, S.cseed) : nd.map(d => HEX[d.k]);
+  const discs = nd.map((d, i) => ({ id: d.id, size: NAME[d.k], x: +d.x.toFixed(2), y: +d.y.toFixed(2), d: +(2 * d.r).toFixed(2), colour: cols[i] }));
+  copy(JSON.stringify({ page_mm: [S.W, S.H], settings: { method: S.method, corners: S.corners, edgeMin: S.edgeMin, colour: S.colour, smOn: S.smOn, cmOn: S.cmOn, spread: S.spread, palette: S.palette, ...Object.fromEntries(KEYS.map(k => [k, S[k]])) }, discs }, null, 1), 'Layout');
+});
+
+if (!Array.isArray(S.palette) || !S.palette.length) S.palette = DEFAULTS.palette.slice();
+show(); showPalette(); run();
+</script>
+
+</body>
+</html>

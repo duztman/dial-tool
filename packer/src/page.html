@@ -1,0 +1,375 @@
+<title>Dial Packer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: the page large at the left, one column of rows at the right (stacks under it on a phone).
+   One light look on purpose: it is a print cover, judged on paper. Inter, as the design canon. */
+:root {
+  --ground: #e4e4e2;      /* the desk the page lies on */
+  --paper: #ffffff;
+  --ink: #1d1d1c;
+  --quiet: #77777a;
+  --rule: #c9c9c6;
+  --accent: #f5c518;      /* the canon's signal yellow: the one thing switched on */
+  --size-l: #2a2a29; --size-m: #77777a; --size-s: #b7b7b4;
+  --sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --u: 5.5px;
+  color-scheme: light;
+}
+body { background: var(--ground); color: var(--ink); font: 13px/1.45 var(--sans);
+  padding-block: calc(var(--u) * 4);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: calc(var(--u) * 5); align-items: start; max-width: 1500px; margin: 0 auto; }
+@media (max-width: 860px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
+.stage { min-width: 0; position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--u) * 4); }
+@media (max-width: 860px) { .stage { position: static; } }
+.page { width: 100%; max-width: 100%; display: block; background: var(--paper); box-shadow: 0 1px 2px rgba(0,0,0,.12), 0 8px 28px rgba(0,0,0,.10); }
+.underbar { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--u) * 3); margin-top: calc(var(--u) * 2); }
+.underbar .under { margin-top: 0; }
+.under { display: flex; flex-wrap: wrap; gap: calc(var(--u) * 3); margin-top: calc(var(--u) * 2); color: var(--quiet); font-variant-numeric: tabular-nums; }
+.under b { color: var(--ink); font-weight: 600; }
+.panel { display: flex; flex-direction: column; gap: calc(var(--u) * 3); min-width: 0; }
+h1 { font-size: 13px; font-weight: 600; margin: 0; letter-spacing: .02em; }
+h1 span { font-weight: 400; color: var(--quiet); }
+.group { border-top: 1px solid var(--ink); padding-top: var(--u); display: flex; flex-direction: column; }
+.group h2 { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; margin: 0 0 var(--u); color: var(--quiet); }
+.row { display: grid; grid-template-columns: 104px minmax(0, 1fr) 58px; gap: calc(var(--u) * 1.5); align-items: center; min-height: calc(var(--u) * 6); border-bottom: 1px solid var(--rule); }
+.row label { white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+.chip { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+input[type=number] { width: 100%; box-sizing: border-box; font: 500 13px var(--sans); font-variant-numeric: tabular-nums; text-align: right; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); padding: 4px 6px; border-radius: 3px; }
+input[type=range] { width: 100%; accent-color: var(--ink); }
+.btns { display: flex; flex-wrap: wrap; gap: var(--u); }
+button { font: 500 12px var(--sans); border: 1px solid var(--ink); background: var(--paper); color: var(--ink); padding: 7px 12px; border-radius: 999px; cursor: pointer; }
+button.main { background: var(--ink); color: var(--paper); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.toggle { display: flex; align-items: center; gap: 8px; min-height: calc(var(--u) * 6); border-bottom: 1px solid var(--rule); cursor: pointer; }
+.toggle input { accent-color: var(--ink); }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--ink); border-radius: 999px; overflow: hidden; margin-bottom: var(--u); }
+.seg button { border: 0; border-radius: 0; border-left: 1px solid var(--ink); padding: 7px 4px; }
+.seg.two { grid-template-columns: repeat(2, 1fr); }
+.pal { list-style: none; margin: var(--u) 0; padding: 0; display: flex; flex-direction: column; }
+.pal li { display: grid; grid-template-columns: 18px 36px minmax(0, 1fr) auto 30px 30px; gap: var(--u); align-items: center; min-height: calc(var(--u) * 6); border-bottom: 1px solid var(--rule); }
+.pal .tints { display: flex; gap: 2px; }
+.pal .tints i { width: 12px; height: 24px; border-radius: 2px; display: block; }
+.addrow { width: 100%; border-style: dashed; border-radius: 4px; padding: 9px 12px; text-align: left; margin-bottom: var(--u); }
+.pal .idx { color: var(--quiet); font-size: 11px; font-variant-numeric: tabular-nums; }
+.pal input[type=color] { width: 36px; height: 24px; padding: 0; border: 1px solid var(--rule); border-radius: 3px; background: none; cursor: pointer; }
+.pal input[type=text] { width: 100%; box-sizing: border-box; font: 500 12px ui-monospace, Menlo, monospace; text-transform: uppercase; border: 1px solid var(--rule); border-radius: 3px; padding: 4px 6px; background: var(--paper); color: var(--ink); }
+.pal button { padding: 0; width: 30px; height: 26px; font-size: 13px; line-height: 1; }
+.pal button:disabled { opacity: .3; cursor: default; }
+.seg button:first-child { border-left: 0; }
+.seg button[aria-checked="true"] { background: var(--ink); color: var(--paper); }
+.note { color: var(--quiet); font-size: 12px; margin: 0; max-width: 60ch; }
+.busy { color: var(--ink); }
+textarea { width: 100%; box-sizing: border-box; height: 90px; font: 11px/1.3 ui-monospace, Menlo, monospace; border: 1px solid var(--rule); }
+/* What the artifact wrapper gave: no page margin, and hidden really hides
+   (last in the sheet, so it beats .row and .toggle, which set display). */
+body { margin: 0; }
+[hidden] { display: none; }
+</style>
+
+<div class="wrap">
+  <div class="stage">
+    <svg id="page" class="page" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="underbar"><button class="main" id="again2">Generate</button><div class="under" id="under"></div></div>
+  </div>
+
+  <div class="panel">
+    <h1>Dial Packer <span>· a Dial Tool side product · packed discs for visuals</span></h1>
+
+    <div class="group">
+      <h2>Method</h2>
+      <div class="seg" role="radiogroup" aria-label="Method">
+        <button id="m_grow" role="radio">Grow</button>
+        <button id="m_even" role="radio">Even gaps</button>
+        <button id="m_voronoi" role="radio">Voronoi</button>
+      </div>
+      <p class="note" id="mnote"></p>
+    </div>
+
+    <div class="group">
+      <h2>Discs</h2>
+      <div class="row"><label for="nL"><i class="chip" style="background:var(--size-l)"></i>Large</label><input type="range" id="nL_r" min="0" max="20"><input type="number" id="nL" min="0" max="200"></div>
+      <div class="row"><label for="nM"><i class="chip" style="background:var(--size-m)"></i>Medium</label><input type="range" id="nM_r" min="0" max="40"><input type="number" id="nM" min="0" max="200"></div>
+      <div class="row"><label for="nS"><i class="chip" style="background:var(--size-s)"></i>Small</label><input type="range" id="nS_r" min="0" max="60"><input type="number" id="nS" min="0" max="200"></div>
+    </div>
+
+    <div class="group">
+      <h2>Sizes, as % of Large</h2>
+      <div class="row"><label for="rM">Medium</label><input type="range" id="rM_r" min="10" max="100"><input type="number" id="rM" min="5" max="100"></div>
+      <div class="row"><label for="rS">Small</label><input type="range" id="rS_r" min="5" max="100"><input type="number" id="rS" min="5" max="100"></div>
+      <label class="toggle" for="smOn"><input type="checkbox" id="smOn">Size mosaic: sizes within each bracket</label>
+      <div id="smBox">
+        <div class="row"><label for="smSteps">Steps</label><input type="range" id="smSteps_r" min="2" max="3"><input type="number" id="smSteps" min="2" max="3"></div>
+        <div class="row"><label for="smSpread">Spread %</label><input type="range" id="smSpread_r" min="5" max="50" step="5"><input type="number" id="smSpread" min="1" max="80"></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>Colour</h2>
+      <div class="seg two" role="radiogroup" aria-label="Colour">
+        <button id="c_size" role="radio">By size</button>
+        <button id="c_pal" role="radio">Palette</button>
+      </div>
+      <div id="palBox">
+        <div class="seg two" role="radiogroup" aria-label="Spread">
+          <button id="sp_random" role="radio">Random</button>
+          <button id="sp_centre" role="radio">Centre → edge</button>
+        </div>
+        <p class="note" id="spnote"></p>
+        <ol class="pal" id="palList"></ol>
+        <button class="addrow" id="addCol">+ Add colour to palette</button>
+        <label class="toggle" for="cmOn"><input type="checkbox" id="cmOn">Colour mosaic: lighter steps of each colour</label>
+        <div id="cmBox">
+          <div class="row"><label for="cmSteps">Steps</label><input type="range" id="cmSteps_r" min="2" max="3"><input type="number" id="cmSteps" min="2" max="3"></div>
+          <div class="row"><label for="cmSpan">To white %</label><input type="range" id="cmSpan_r" min="10" max="100" step="5"><input type="number" id="cmSpan" min="5" max="100"></div>
+        </div>
+        <div class="row" id="mixRow"><label for="mix">Mix %</label><input type="range" id="mix_r" min="0" max="100" step="5"><input type="number" id="mix" min="0" max="100" step="5"></div>
+        <div class="btns">
+          <button id="sortCol">Sort by vividness</button>
+          <button class="main" id="shuffleCol">Shuffle colours</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>Packing</h2>
+      <div class="row"><label for="gap">Gap mm</label><input type="range" id="gap_r" min="0" max="10" step="0.5"><input type="number" id="gap" min="0" max="40" step="0.5"></div>
+      <div class="row"><label for="bleed">Bleed %</label><input type="range" id="bleed_r" min="0" max="50"><input type="number" id="bleed" min="0" max="50"></div>
+      <div class="row"><label for="sort">Big to centre %</label><input type="range" id="sort_r" min="0" max="100" step="5"><input type="number" id="sort" min="0" max="100" step="5"></div>
+      <label class="toggle" for="corners"><input type="checkbox" id="corners">Smallest to corners (and lightest colour)</label>
+      <div class="row"><label for="edgeMin">Touch each side</label><input type="range" id="edgeMin_r" min="0" max="8"><input type="number" id="edgeMin" min="0" max="20"></div>
+      <div class="row"><label for="tries">Tries</label><input type="range" id="tries_r" min="1" max="20"><input type="number" id="tries" min="1" max="60"></div>
+      <div class="row"><label for="seed">Seed</label><input type="range" id="seed_r" min="1" max="999"><input type="number" id="seed" min="1" max="999999"></div>
+      <label class="toggle" for="nums"><input type="checkbox" id="nums">Numbers on the discs</label>
+      <label class="toggle" for="ghost"><input type="checkbox" id="ghost">Show what bleeds off the page</label>
+    </div>
+
+    <div class="group">
+      <h2>Page, mm</h2>
+      <div class="row"><label for="W">Width</label><input type="range" id="W_r" min="100" max="600"><input type="number" id="W" min="20" max="2000"></div>
+      <div class="row"><label for="H">Height</label><input type="range" id="H_r" min="100" max="600"><input type="number" id="H" min="20" max="2000"></div>
+    </div>
+
+    <div class="btns">
+      <button class="main" id="again">Generate</button>
+      <button id="copySvg">Copy SVG</button>
+      <button id="copyJson">Copy layout</button>
+      <button id="reset">Reset</button>
+    </div>
+    <p class="note" id="msg">Bleed: how much of a disc may leave the page (50 % lets its centre sit on the edge). Big to centre: 0 mixes the sizes; 100 gathers the large discs in the middle, with medium and small mixed round them. Touch each side: at least that many discs touch every side (corners count); 0 leaves it to the packing. Tries: that many packings from the seed; the one with the smallest biggest hole is kept. Same settings and seed always give the same page.</p>
+    <textarea id="fallback" hidden aria-label="Copy this text"></textarea>
+  </div>
+</div>
+
+<script>
+/*PACK*/
+/*EVEN*/
+/*VORONOI*/
+/*COLOUR*/
+
+const DEFAULTS = { nL: 4, nM: 10, nS: 16, rM: 60, rS: 36, gap: 2, bleed: 0, sort: 0, colour: 'size', corners: false, edgeMin: 0, smOn: false, smSteps: 3, smSpread: 20, cmOn: false, cmSteps: 3, cmSpan: 50, spread: 'random', mix: 20, cseed: 1, palette: ['#F5C518', '#E4502E', '#1F4FD1', '#2B2B2A', '#CFC9BC'], tries: 3, seed: 7, method: 'voronoi', nums: true, ghost: false, W: 297, H: 210 };
+const KEYS = ['nL','nM','nS','rM','rS','gap','bleed','sort','tries','seed','W','H','mix','smSteps','smSpread','cmSteps','cmSpan','edgeMin'];
+let S = { ...DEFAULTS, palette: DEFAULTS.palette.slice() };
+try { Object.assign(S, JSON.parse(localStorage.getItem('dial-packer') || '{}')); } catch (e) {}
+let result = null, job = 0;
+
+const $ = id => document.getElementById(id);
+const METHOD_NOTE = {
+  grow: 'Discs start small and scattered, push apart and grow together until they jam. Densest start, uneven white.',
+  even: 'Grow, then every pair of neighbours is tied by a spring that wants the same white between them: wide gaps close, tight ones open, and the discs grow again.',
+  voronoi: 'Grow, then each disc gets a cell: the part of the page nearer its edge than any other disc\'s. Each disc moves to the middle of its cell and all grow again, over and over. The page edge counts as a neighbour that wants no white, so the discs along it end up touching it.'
+};
+const SPREAD_NOTE = {
+  random: 'Each colour used about as often, shuffled; touching discs rarely share one.',
+  centre: 'Like a gradient map: the list runs from the middle of the page (1) to its edge (last). Sort by vividness puts the bright, strong colours first. Mix blurs the bands.'
+};
+function showPalette() {
+  const ol = $('palList'); ol.innerHTML = '';
+  S.palette.forEach((hex, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="idx">${i + 1}</span><input type="color" id="pc${i}" value="${hex.toLowerCase()}" aria-label="Colour ${i + 1}"><input type="text" id="pt${i}" value="${hex}" maxlength="7" aria-label="Colour ${i + 1} hex"><span class="tints">${S.cmOn ? tints(hex, S.cmSteps, S.cmSpan / 100).map(t => `<i style="background:${t}" title="${t}"></i>`).join('') : ''}</span><button id="pu${i}" title="Move up" aria-label="Move colour ${i + 1} up"${i ? '' : ' disabled'}>↑</button><button id="px${i}" title="Remove" aria-label="Remove colour ${i + 1}"${S.palette.length > 1 ? '' : ' disabled'}>×</button>`;
+    ol.appendChild(li);
+    const set = v => { S.palette[i] = v.toUpperCase(); save(); draw(); if (S.cmOn) li.querySelector('.tints').innerHTML = tints(S.palette[i], S.cmSteps, S.cmSpan / 100).map(t => `<i style="background:${t}" title="${t}"></i>`).join(''); };
+    li.querySelector('input[type=color]').addEventListener('input', e => { set(e.target.value); li.querySelector('input[type=text]').value = S.palette[i]; });
+    li.querySelector('input[type=text]').addEventListener('change', e => {
+      let v = e.target.value.trim(); if (v[0] !== '#') v = '#' + v;
+      if (/^#[0-9a-f]{3}$/i.test(v)) v = '#' + [...v.slice(1)].map(c => c + c).join('');
+      if (/^#[0-9a-f]{6}$/i.test(v)) { set(v); showPalette(); } else e.target.value = S.palette[i];
+    });
+    li.querySelector(`#pu${i}`).addEventListener('click', () => { [S.palette[i - 1], S.palette[i]] = [S.palette[i], S.palette[i - 1]]; save(); showPalette(); draw(); });
+    li.querySelector(`#px${i}`).addEventListener('click', () => { S.palette.splice(i, 1); save(); showPalette(); draw(); });
+  });
+}
+function show() {
+  $('c_size').setAttribute('aria-checked', S.colour === 'size'); $('c_pal').setAttribute('aria-checked', S.colour === 'palette');
+  $('sp_random').setAttribute('aria-checked', S.spread === 'random'); $('sp_centre').setAttribute('aria-checked', S.spread === 'centre');
+  $('palBox').hidden = S.colour !== 'palette';
+  $('mixRow').hidden = S.spread !== 'centre';
+  $('sortCol').hidden = S.spread !== 'centre';
+  $('spnote').textContent = SPREAD_NOTE[S.spread];
+  ['grow','even','voronoi'].forEach(m => $('m_' + m).setAttribute('aria-checked', S.method === m));
+  $('mnote').textContent = METHOD_NOTE[S.method];
+  KEYS.forEach(k => { $(k).value = S[k]; if ($(k + '_r')) $(k + '_r').value = S[k]; });
+  $('nums').checked = S.nums; $('ghost').checked = S.ghost;
+  $('corners').checked = S.corners; $('smOn').checked = S.smOn; $('cmOn').checked = S.cmOn;
+  $('smBox').hidden = !S.smOn; $('cmBox').hidden = !S.cmOn;
+}
+function save() { try { localStorage.setItem('dial-packer', JSON.stringify(S)); } catch (e) {} }
+
+function settings() {
+  return { W: S.W, H: S.H, gap: S.gap, bleed: S.bleed / 100, sort: S.sort / 100, corners: S.corners, edgeMin: S.edgeMin,
+    classes: brackets() };
+}
+// Size mosaic: each bracket's discs split into Steps sizes, the largest the
+// bracket's own size, the smallest Spread % smaller; the counts split evenly
+// (any extra goes to the larger steps). k keeps the bracket (L, M, S).
+function brackets() {
+  const base = [{ n: S.nL, rel: 1 }, { n: S.nM, rel: S.rM / 100 }, { n: S.nS, rel: S.rS / 100 }];
+  if (!S.smOn) return base.map((c, k) => ({ ...c, k }));
+  const out = [], st = Math.max(2, Math.min(3, Math.round(S.smSteps)));
+  base.forEach((c, k) => {
+    for (let t = 0; t < st; t++) {
+      const n = Math.floor(c.n / st) + (t < c.n % st ? 1 : 0);
+      if (n) out.push({ n, k, rel: c.rel * (1 - S.smSpread / 100 * t / (st - 1)) });
+    }
+  });
+  return out;
+}
+
+// Run the tries one at a time so the page stays responsive; keep the densest.
+function run() {
+  const my = ++job, base = settings();
+  if (S.nL + S.nM + S.nS === 0) { result = null; draw(); return; }
+  let best = null, t = 0;
+  $('under').innerHTML = '<span class="busy">Packing…</span>';
+  const next = () => {
+    if (my !== job) return;
+    const s = { ...base, seed: S.seed * 1000 + t };
+    let r = pack(s);
+    if (S.method === 'even') r = evenGaps(r, s);
+    if (S.method === 'voronoi') r = relax(r, s);
+    r.hole = biggestHole(r.discs, s).d;
+    if (!best || r.hole < best.hole) best = r;
+    t++;
+    if (t < S.tries) { $('under').innerHTML = `<span class="busy">Packing… try ${t + 1} of ${S.tries}</span>`; setTimeout(next, 0); }
+    else {
+      best.cov = coverage(best.discs, base, 400);
+      best.m = measure(best.discs, base, 1);
+      best.hole = biggestHole(best.discs, base, 1).d;
+      result = best; draw();
+    }
+  };
+  setTimeout(next, 0);
+}
+
+const COL = ['var(--size-l)', 'var(--size-m)', 'var(--size-s)'];
+const HEX = ['#2a2a29', '#77777a', '#b7b7b4'];
+const NAME = ['L', 'M', 'S'];
+
+// Number the discs by size, then left to right, top to bottom, so a number stays put while you tune.
+function numbered(discs) {
+  const order = discs.slice().sort((a, b) => a.k - b.k || (Math.round(a.y / 30) - Math.round(b.y / 30)) || a.x - b.x);
+  const count = [0, 0, 0];
+  order.forEach(d => { d.id = NAME[d.k] + (++count[d.k]); });
+  return discs;
+}
+
+function svgText(forExport) {
+  const { W, H } = S;
+  const pad = forExport ? 0 : 0;
+  let body = '';
+  if (result) {
+    const discs = numbered(result.discs);
+    const pal = S.colour === 'palette' ? assignColours(discs, settings(), expandPalette(S.palette, S.cmOn, S.cmSteps, S.cmSpan / 100), S.spread, S.mix / 100, S.cseed) : null;
+    const fill = (d, i) => pal ? pal[i] : forExport ? HEX[d.k] : COL[d.k];
+    const circles = discs.map((d, i) => `<circle cx="${d.x.toFixed(2)}" cy="${d.y.toFixed(2)}" r="${d.r.toFixed(2)}" fill="${fill(d, i)}"${forExport ? ` id="${d.id}"` : ''}/>`).join('');
+    if (S.ghost && !forExport) body += `<g opacity="0.18">${circles}</g>`;
+    body += `<rect width="${W}" height="${H}" fill="#fff"/><g clip-path="url(#pg)">${circles}`;
+    if (S.nums && !forExport) {
+      // Every label at the Medium disc's size (what it was on Medium discs).
+      const labelSize = Math.max(2.4, Math.min(5, result.scale * S.rM / 100 / 2 * 0.22));
+      body += discs.map((d, i) => {
+        const fs = labelSize;
+        const ink = pal ? inkOn(pal[i]) : d.k === 2 ? '#1d1d1c' : '#fff';
+        return `<text x="${d.x.toFixed(2)}" y="${d.y.toFixed(2)}" font-size="${fs}" fill="${ink}" text-anchor="middle" dominant-baseline="central" font-family="Inter, Helvetica, Arial, sans-serif" font-weight="500">${d.id}</text>`;
+      }).join('');
+    }
+    body += '</g>';
+  } else body = `<rect width="${W}" height="${H}" fill="#fff"/>`;
+  const vb = S.ghost && !forExport ? `${-W * 0.12} ${-H * 0.12} ${W * 1.24} ${H * 1.24}` : `0 0 ${W} ${H}`;
+  const size = forExport ? ` width="${W}mm" height="${H}mm"` : '';
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}"${size}><defs><clipPath id="pg"><rect width="${W}" height="${H}"/></clipPath></defs>${body}</svg>`;
+}
+
+function draw() {
+  const el = $('page');
+  const tmp = new DOMParser().parseFromString(svgText(false), 'image/svg+xml').documentElement;
+  el.setAttribute('viewBox', tmp.getAttribute('viewBox'));
+  el.style.background = S.ghost ? 'transparent' : '';
+  el.style.boxShadow = S.ghost ? 'none' : '';
+  el.innerHTML = tmp.innerHTML;
+  if (!result) { $('under').innerHTML = 'No discs.'; return; }
+  const d = result.scale, n = S.nL + S.nM + S.nS;
+  $('under').innerHTML =
+    `<span><b>${n}</b> discs</span>` +
+    `<span>Ø ${['L', 'M', 'S'].map((nm, k) => {
+      const rel = [1, S.rM / 100, S.rS / 100][k], lo = S.smOn ? rel * (1 - S.smSpread / 100) : rel;
+      return `${nm} <b>${(d * rel).toFixed(1)}</b>` + (S.smOn ? `–<b>${(d * lo).toFixed(1)}</b>` : '');
+    }).join(' · ')} mm</span>` +
+    `<span>Covers <b>${(result.cov * 100).toFixed(1)}</b> %</span>` +
+    `<span>White between neighbours <b>${result.m.mean.toFixed(1)}</b> ± <b>${result.m.sd.toFixed(1)}</b> mm</span>` +
+    `<span>Biggest hole Ø <b>${result.hole.toFixed(1)}</b> mm</span>`;
+}
+
+function copy(text, what) {
+  const done = () => { $('msg').textContent = what + ' copied.'; $('fallback').hidden = true; };
+  const fail = () => { const f = $('fallback'); f.hidden = false; f.value = text; f.select(); $('msg').textContent = 'Copying was refused here: the text is selected below, copy it by hand.'; };
+  try { navigator.clipboard.writeText(text).then(done, fail); } catch (e) { fail(); }
+}
+
+let timer;
+function changed(k, v) {
+  S[k] = v; show(); save();
+  if (k === 'cmSteps' || k === 'cmSpan') { showPalette(); draw(); return; }
+  if (k === 'mix') { draw(); return; }
+  clearTimeout(timer); timer = setTimeout(run, 200);
+}
+KEYS.forEach(k => {
+  $(k).addEventListener('change', e => { const v = parseFloat(e.target.value); if (!isNaN(v)) changed(k, v); });
+  if ($(k + '_r')) $(k + '_r').addEventListener('input', e => changed(k, parseFloat(e.target.value)));
+});
+['grow','even','voronoi'].forEach(m => $('m_' + m).addEventListener('click', () => { S.method = m; show(); save(); run(); }));
+$('corners').addEventListener('change', e => { S.corners = e.target.checked; show(); save(); run(); });
+$('smOn').addEventListener('change', e => { S.smOn = e.target.checked; show(); save(); run(); });
+$('cmOn').addEventListener('change', e => { S.cmOn = e.target.checked; show(); showPalette(); save(); draw(); });
+$('nums').addEventListener('change', e => { S.nums = e.target.checked; save(); draw(); });
+$('ghost').addEventListener('change', e => { S.ghost = e.target.checked; save(); draw(); });
+$('c_size').addEventListener('click', () => { S.colour = 'size'; show(); save(); draw(); });
+$('c_pal').addEventListener('click', () => { S.colour = 'palette'; show(); save(); draw(); });
+$('sp_random').addEventListener('click', () => { S.spread = 'random'; show(); save(); draw(); });
+$('sp_centre').addEventListener('click', () => { S.spread = 'centre'; show(); save(); draw(); });
+$('addCol').addEventListener('click', () => {
+  const h = Math.floor(Math.random() * 360), c = `hsl(${h} 70% 55%)`, t = document.createElement('canvas').getContext('2d');
+  t.fillStyle = c; S.palette.push(t.fillStyle.toUpperCase()); save(); showPalette(); draw();
+  // Open the new colour's picker straight away (where the browser allows it).
+  const last = $('pc' + (S.palette.length - 1)); if (last) { last.focus(); try { last.showPicker ? last.showPicker() : last.click(); } catch (e) {} }
+});
+$('sortCol').addEventListener('click', () => { S.palette.sort((a, b) => vivid(b) - vivid(a)); save(); showPalette(); draw(); });
+$('shuffleCol').addEventListener('click', () => { S.cseed = 1 + Math.floor(Math.random() * 99999); save(); draw(); });
+const generate = () => changed('seed', 1 + Math.floor(Math.random() * 999));
+$('again').addEventListener('click', generate);
+$('again2').addEventListener('click', generate);
+$('reset').addEventListener('click', () => { S = { ...DEFAULTS, palette: DEFAULTS.palette.slice() }; show(); showPalette(); save(); run(); });
+$('copySvg').addEventListener('click', () => copy(svgText(true), 'SVG'));
+$('copyJson').addEventListener('click', () => {
+  if (!result) return;
+  const nd = numbered(result.discs), cols = S.colour === 'palette' ? assignColours(nd, settings(), expandPalette(S.palette, S.cmOn, S.cmSteps, S.cmSpan / 100), S.spread, S.mix / 100, S.cseed) : nd.map(d => HEX[d.k]);
+  const discs = nd.map((d, i) => ({ id: d.id, size: NAME[d.k], x: +d.x.toFixed(2), y: +d.y.toFixed(2), d: +(2 * d.r).toFixed(2), colour: cols[i] }));
+  copy(JSON.stringify({ page_mm: [S.W, S.H], settings: { method: S.method, corners: S.corners, edgeMin: S.edgeMin, colour: S.colour, smOn: S.smOn, cmOn: S.cmOn, spread: S.spread, palette: S.palette, ...Object.fromEntries(KEYS.map(k => [k, S[k]])) }, discs }, null, 1), 'Layout');
+});
+
+if (!Array.isArray(S.palette) || !S.palette.length) S.palette = DEFAULTS.palette.slice();
+show(); showPalette(); run();
+</script>
