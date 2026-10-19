@@ -4,13 +4,13 @@
 
 A new session starts with no memory of the last one: the transcript stays in the old container. Everything a successor needs is in the repo. Use this page to find it.
 
-## 1 · Where things stand (19 Oct 2026, evening, after beta 4.89)
+## 1 · Where things stand (20 Oct 2026, 01:45, after beta 4.89.12)
 
-- **Beta 4.89** is on `dev`, `main` and the live page (released 19 Oct 2026, 21:26: "publish what we have done this session on main"). It is Okay's *Notes 3* and the session's sketch rounds: R16 (an empty pane hides), R34 (no band-aids), the tick-and-note rule and the tile-row rule (design canon §6), the window tab reordered, Resize Ring from, Positions' circle, the date popup, NOW, the hand's sides, a phone's sheets. Details: `docs/changelog.md`.
-- **The session ran on the sketch loop** (§4b): seven rounds on the private preview page, crops in the chat, one release. Measured: `npm run small` 120–140 s, the full `npm test` about 140 s here, a preview publish seconds. What slowed it most: readings of a drawn note taken without asking (Positions took three rounds: "allow to penetrate" read the wrong way). Ask with a picture when a drawing's direction is open.
-- **Next, in order**: the production debts (build list, *Production debts*, ranked; Claude's proposal, 19 Oct: one session on them before more panel work), then #406, #404 + #421, #329, #339, #349 (*sketch first*), #407.
-- **Waiting for Okay**: the movement (brief §5.1); #395. The cases, the handles under a finger, the APK on a watch, Copy link on WebKit (#332) still to be seen on his devices.
-- **Okay's last words** (19 Oct 2026, 21:26): "publish what we have done this session on main, archive the screenshots and come back. Give me a pdf facsimile with editable text as pdf of the guides popup, ı'll take a crack at it on illustrator."
+- **Beta 4.89.12** is on `dev` and the private preview page (the Artifact *Dial Tool*); **`main` and the live page are still 4.89** — Okay tests on his phone may be on the live page (FIT's line, #453, looked "missing" there). The full `npm test` passed on 4.89.12 (20 Oct, 01:45). Release only on his word (`tools/release.sh 4.89.12 "…"`, then `tools/release.sh main`).
+- **This session (19 Oct 22:25 → 20 Oct 01:45)**, twelve small pushes, all in `docs/changelog.md`: per-hand Bevel beside Show (off to start, Bevels % its strength; older dials read in); the cap in a hand's picture; #220 (mask losses said) and #226 (files name the build) of the production debts; the date popup to Okay's measured drawing; every menu a chevron box with the tool's own list (`chevron_box`, `menu_list`); every word choice a pill switch; a note belongs to its row through hidden rows (`noted`); a kind's own window shape (moon's arch, am · pm's half); window colours live in the scene; the moon alone (no stars); side rows without a name gap; a phone's zoom popup.
+- **Waiting for Okay**: #221–#224 (production debts: hidden rings' knock-out, cut lines in the mask, leaving out window content, invert, registration marks — questions asked 19 Oct, 22:55); #434 (Settings file pane: Claude proposed dropping Defaults and Plain dial there, Save · Load as a tile row, the file's name as its value, a grey note); #435 (Versions under Undo, with Compare — plan and three questions sent); #448 (the ring list's pill: show it whenever the list scrolls?); #439 and #453 to verify on his devices.
+- **Next, in order** once answered: the rest of the production debts, #435 Versions, #406, #404 + #421, #329, #339, #349 (*sketch first*), #407.
+- **Okay's last words** (20 Oct 2026, 01:33): "Doing very well, take your time. use better checkers if need be, we are almost at the end of the session."
 
 ## 2 · First steps in a new session
 
