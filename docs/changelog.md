@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.89.9 (web version) · 20 Oct 2026
+
+Okay, 00:34.
+
+- **A phone's zoom** (#445): − and + in a popup the magnifier opens, with the note how to zoom; the date's popup and this one are one kind, `.barpop`. Elsewhere the magnifier's tag as before.
+- **FIT on a phone** (#446): its own left line (it shared − +'s, hidden there).
+- **Shapes** (#447): the rings' Shape pane is called Shapes; a bar or wedge mark's Width also stands in Resize Ring, as *Shapes width*.
+
 ## beta 4.89.8 (web version) · 20 Oct 2026
 
 Okay, 00:20, a picture of the selected ring's row.

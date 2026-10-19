@@ -643,13 +643,14 @@ const ROWS = {
     custom("resize_from", { head: true, text: "Resize ring from" }),
     num("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
     num("w", "Ø", 0.02, 5, 0.01, { show: marks_with("dot"), id: "ring-w-dot" }),
+    num("w", "Shapes width", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "file"), id: "ring-w-resize" }),      // the Shapes pane's Width, here too (Okay, 20 Oct 2026, 00:34: "Replicate the same shapes-size button on resize rings but call it shapes width")
     num("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),      // a numeral's size stays in the font box, among the type's settings (and in the size button's popup)
     { ...RADIUS_ROWS.outer, menu: null, text: "Radius", show: kind_in("ticks", "markers", "band") },      // its menu is on the heading's line (#419)
     { ...RADIUS_ROWS.numerals, menu: null, text: "Radius", id: "ring-r-text", show: with_text },
     hdr("Sector colours", { folded: true, show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
     custom("sectors", { show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
     // what one mark is comes first (Okay, 13 Oct 2026: "moves up to the top"), then where the marks are
-    hdr("Shape", { folded: true, show: kind_in("ticks", "markers") }),
+    hdr("Shapes", { folded: true, show: kind_in("ticks", "markers") }),      // "Shape box is called shapes now" (Okay, 20 Oct 2026, 00:34)
     pick("shape", "Shape", G.SHAPES.slice(0, 3), PICS.shape, { show: kind_in("ticks", "markers") }),
     num("w", "Width", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "file") }),      // a dot's Ø, and a mark's length, stand in Resize (4.47)
     num("taper", "Inner width ×", 0, 2, 0.01, { show: marks_with("wedge") }),
@@ -1359,16 +1360,26 @@ class DialTool {
     const zoom_sign = el("span", { className: "zoomsign", tabIndex: 0, role: "note", ariaLabel: "How to zoom and move" });
     zoom_sign.dataset.tip = touch ? "Pinch to zoom · two fingers move" : "⌘ + scroll zooms · drag moves · pinch on a trackpad";
     zoom_sign.innerHTML = icon(TOOL_ICONS.find);
-    zoom_sign.onclick = () => { this.tag_show(zoom_sign); clearTimeout(this.zoom_tip); this.zoom_tip = setTimeout(() => this.tag_hide(), 2400); };      // a finger has no hover: a tap shows the tag a moment
+    // on a phone − and + are not on the bar: a tap on the magnifier opens a popup with the note and − + (#445; Okay, 20 Oct
+    // 2026, 00:34: "Zoom popup has plus minus in the tooltip with note. On mobile"), as the date's (barpop); elsewhere a
+    // tap shows the tag a moment (a finger has no hover)
+    const zstep = (sign) => el("button", { type: "button", className: "popstep", innerHTML: sign < 0 ? STEP.minus : STEP.plus, ariaLabel: sign < 0 ? "Zoom out" : "Zoom in", onclick: () => { this.zoom(sign < 0 ? 1 / 1.4 : 1.4, middle()); this.render(); } });
+    const zoom_pop = el("div", { className: "barpop zoompop", id: "zoom-pop", hidden: true },
+      el("div", { className: "popline" }, el("span", { className: "popword", textContent: zoom_sign.dataset.tip }), el("span", { className: "popsteps" }, zstep(-1), zstep(1))));
+    const zoom_away = (e) => { if (!zoom_pop.contains(e.target) && !zoom_sign.contains(e.target)) { zoom_pop.hidden = true; document.removeEventListener("pointerdown", zoom_away, true); } };
+    zoom_sign.onclick = () => {
+      if (this.pop_is_sheet()) { zoom_pop.hidden = !zoom_pop.hidden; if (!zoom_pop.hidden) document.addEventListener("pointerdown", zoom_away, true); return; }
+      this.tag_show(zoom_sign); clearTimeout(this.zoom_tip); this.zoom_tip = setTimeout(() => this.tag_hide(), 2400);
+    };
     const bar = el("footer", { className: "bar" },
       el("div", { className: "lead" }, this.play_button, this.speeds, time_box,
         el("button", { type: "button", id: "now", textContent: "Now", title: "The time it is now", onclick: () => this.to_now() })),
       this.day_box = el("div", { className: "group day" }, this.ruler, this.time_slider, steps, this.needle),
-      el("div", { className: "group viewing" }, this.status, zoom_sign,
-        el("span", { className: "zooms" },
+      el("div", { className: "group viewing" }, this.status, el("span", { className: "zoomwell" }, zoom_sign,
+        zoom_pop, el("span", { className: "zooms" },
           view("zoom-out", "Zoom out", SIGNS.minus, () => { this.zoom(1 / 1.4, middle()); this.render(); }),
           view("zoom-in", "Zoom in", SIGNS.plus, () => { this.zoom(1.4, middle()); this.render(); }),
-          fit_button)));
+          fit_button))));
     this.set_speed(1);
     const guides = this.guides_box();
     // on the preview: undo · redo top left, beside the panel (Okay, 13 Oct 2026) · Tiny Preview bottom right (#337) · bottom left: Backdrop, Shadows
@@ -2139,7 +2150,7 @@ class DialTool {
     const year = group("year", (d, v) => { const keep = d.getDate(), m = d.getMonth(); d.setDate(1); d.setFullYear(v); d.setDate(Math.min(keep, new Date(v, m + 1, 0).getDate())); });
     MONTHS.forEach((m, i) => month.select.append(el("option", { value: i, textContent: m })));
     const step = (sign) => el("button", { type: "button", className: "popstep", innerHTML: sign < 0 ? STEP.minus : STEP.plus, ariaLabel: sign < 0 ? "A day earlier" : "A day later", onclick: () => this.step_day(sign) });
-    this.date_pop = el("div", { className: "datepop", id: "date-pop", hidden: true },
+    this.date_pop = el("div", { className: "barpop datepop", id: "date-pop", hidden: true },
       el("div", { className: "popline" }, weekday, day.el, month.el, year.el, el("span", { className: "popsteps" }, step(-1), step(1))));
     this.date_pop.onkeydown = (e) => { if (e.key === "Escape") this.date_pop_open(false); };
     this.date_pop_sync = () => {

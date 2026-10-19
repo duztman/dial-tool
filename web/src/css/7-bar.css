@@ -87,28 +87,33 @@
   .bar .lead .timebox .date { box-sizing: content-box; display: grid; grid-template-rows: repeat(2, var(--date-line)); align-content: center; justify-items: center; height: calc(var(--bar-control) - 2 * var(--hair)); padding: 0 var(--u2); border: var(--hair) solid var(--bar-light); border-left: 0; background: none; color: var(--bar-light); font: 600 var(--t-date)/var(--date-line) var(--date-face); font-variant-numeric: tabular-nums; letter-spacing: var(--date-track); }
   .bar .lead .timebox .date:is(:hover, [aria-expanded="true"]) { background: var(--bar-field); }      /* lit while its popup is open (Okay, 19 Oct 2026, 23:11: "date stays on when popup's on") */
   .bar .datepick { position: absolute; left: 0; bottom: 0; width: 1px; height: 1px; padding: 0; border: 0; background: none; color: transparent; opacity: 0; pointer-events: none; }
-  /* the date's popup (#402, #412, #432): rising from the date's box, the bar's controls in miniature — the panel's own
+  /* a popup on the bar (barpop): the date's (#402, #412, #432) and, on a phone, the zoom's (#445). The date's rises from its box, the bar's controls in miniature — the panel's own
      menus and number box, in the dark (Okay, 19 Oct 2026, 23:46: "imagine this is exactly how main menu thing works in
      dark and a little stylized"). Its ground the date's lit tone; on it the weekday, then day · month · year as chevron
      boxes (the value's box and a ⌄ box, touching) and − + touching, each box the bar's dark with the bar's hairline;
      the panel's type at its size ("remove barlow … our regular text normal size"), heights a control's. Each part as
      wide as its widest value, so nothing moves when the date changes ("size fixed, no movements by change in content").
      A press on the day opens the system's picker */
-  .bar .datepop { position: absolute; z-index: 7; left: 50%; bottom: calc(100% + var(--u2)); translate: -50% 0; width: max-content; padding: var(--datepop-pad); padding-left: var(--datepop-lead); border: var(--hair) solid var(--bar-light); border-radius: var(--round-small); background: var(--bar-field); color: var(--bar-ink); font: var(--t-m)/1 var(--sans); font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: var(--shadow); }
-  .bar .datepop .popline { display: flex; align-items: center; gap: var(--u2); height: var(--control); }      /* the gaps the bar's own: the date's box to NOW's */
-  .bar .datepop .popword { color: var(--bar-ink); text-align: center; }
-  .bar .datepop .weekday { width: 3.4ch; text-align: left; }
-  .bar .datepop .popgroup { display: inline-flex; align-items: stretch; height: 100%; border: var(--hair) solid var(--bar-light); background: var(--bar); }
-  .bar .datepop .popgroup .popword { display: grid; place-items: center; padding: 0 var(--datepop-in); }
-  .bar .datepop .popgroup:hover { background: var(--bar-field); }
-  .bar .datepop .pop-day .popword { width: calc(2ch + 2 * var(--datepop-in)); }
-  .bar .datepop .pop-month .popword { width: calc(3.4ch + 2 * var(--datepop-in)); }
-  .bar .datepop .pop-year .popword { width: calc(4ch + 2 * var(--datepop-in)); }
-  .bar .datepop .labelmenu { height: 100%; border-width: 0 0 0 var(--hair); border-color: var(--bar-light); background: none; color: var(--bar-ink); }
-  .bar .datepop .popsteps { display: flex; height: 100%; }
-  .bar .datepop .popstep { display: grid; place-items: center; width: var(--control); height: 100%; color: var(--bar-ink); border: var(--hair) solid var(--bar-light); background: var(--bar); }
-  .bar .datepop .popstep + .popstep { border-left: 0; }
-  .bar .datepop .popstep:hover { background: var(--bar-field); }
+  .bar .barpop { position: absolute; z-index: 7; left: 50%; bottom: calc(100% + var(--u2)); translate: -50% 0; width: max-content; padding: var(--datepop-pad); padding-left: var(--datepop-lead); border: var(--hair) solid var(--bar-light); border-radius: var(--round-small); background: var(--bar-field); color: var(--bar-ink); font: var(--t-m)/1 var(--sans); font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: var(--shadow); }
+  .bar .barpop .popline { display: flex; align-items: center; gap: var(--u2); height: var(--control); }      /* the gaps the bar's own: the date's box to NOW's */
+  .bar .barpop .popword { color: var(--bar-ink); text-align: center; }
+  .bar .barpop .weekday { width: 3.4ch; text-align: left; }
+  .bar .barpop .popgroup { display: inline-flex; align-items: stretch; height: 100%; border: var(--hair) solid var(--bar-light); background: var(--bar); }
+  .bar .barpop .popgroup .popword { display: grid; place-items: center; padding: 0 var(--datepop-in); }
+  .bar .barpop .popgroup:hover { background: var(--bar-field); }
+  .bar .barpop .pop-day .popword { width: calc(2ch + 2 * var(--datepop-in)); }
+  .bar .barpop .pop-month .popword { width: calc(3.4ch + 2 * var(--datepop-in)); }
+  .bar .barpop .pop-year .popword { width: calc(4ch + 2 * var(--datepop-in)); }
+  .bar .barpop .labelmenu { height: 100%; border-width: 0 0 0 var(--hair); border-color: var(--bar-light); background: none; color: var(--bar-ink); }
+  .bar .barpop .popsteps { display: flex; height: 100%; }
+  .bar .barpop .popstep { display: grid; place-items: center; width: var(--control); height: 100%; color: var(--bar-ink); border: var(--hair) solid var(--bar-light); background: var(--bar); }
+  .bar .barpop .popstep + .popstep { border-left: 0; }
+  .bar .barpop .popstep:hover { background: var(--bar-field); }
+  /* the zoom's, on a phone (Okay, 20 Oct 2026, 00:34: "Zoom popup has plus minus in the tooltip with note. On mobile"):
+     the note how to zoom, then − and +; its right edge on FIT's, the screen's edge being near */
+  .bar .zoomwell { position: relative; display: flex; align-items: center; gap: var(--gap); }      /* the group's own gap, as before it was wrapped */
+  .bar .barpop.zoompop { left: auto; right: 0; translate: none; }
+  .bar .zoompop .popword { color: var(--bar-ink); padding-right: var(--u2); }
   /* NOW: capitals, at AM · PM's size (Okay: "Now uppercase and in pm's font size which grows 1px"); drawn as the bar's
      other boxes are — the light outline, the word in the same light, the bar's field under a pointer (Okay, 19 Oct 2026,
      #414: "Why? fill with grey, worst colour") */
