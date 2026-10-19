@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.89.6 · built 2026-10-19 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.89.7 · built 2026-10-19 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -220,6 +220,8 @@
 
     /* asked for by Okay */
     --sheet-edge: 7px;                             /* a phone's sheets stand this far in from the screen's sides and foot (Okay, 19 Oct 2026, 21:18: "padding from all sides except top"; 21:26: "increase … to 7") */
+    --datepop-in: calc(var(--unit) - 2px);        /* inside the date popup's boxes, from the box's edge to its value: a unit less 2 (Okay, 20 Oct 2026, 00:17: "The gaps within boxes inside popup -2px") */
+    --datepop-lead: calc(var(--u2) + 5px);       /* …and at its left, before the weekday: 3 more (Okay, 20 Oct 2026, 00:17: "Hr padding before day +3px") */
     --datepop-pad: calc(var(--u2) + 2px);      /* round the bar's date popup's boxes: a unit and 2 more; between its boxes the bar's own gap, a unit (Okay, 19 Oct 2026, 23:53: "2 more pixels padding to the whole popup box. meaning: in between boxes stay as bottom bar date now width") */
     --control-s: calc(0.75 * var(--control));      /* a quiet button at three quarters: Lang. and Change… in the font box (Okay, 14 Oct 2026: "scale down to 75%") */
     --t-xxs: 10px;                                 /* a fifth type size, the smallest: the words in the font sheet's legend, and the font box's quiet buttons (Okay, 14 Oct 2026) */
@@ -1669,16 +1671,16 @@
      the panel's type at its size ("remove barlow … our regular text normal size"), heights a control's. Each part as
      wide as its widest value, so nothing moves when the date changes ("size fixed, no movements by change in content").
      A press on the day opens the system's picker */
-  .bar .datepop { position: absolute; z-index: 7; left: 50%; bottom: calc(100% + var(--u2)); translate: -50% 0; width: max-content; padding: var(--datepop-pad); border: var(--hair) solid var(--bar-light); border-radius: var(--round-small); background: var(--bar-field); color: var(--bar-ink); font: var(--t-m)/1 var(--sans); font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: var(--shadow); }
+  .bar .datepop { position: absolute; z-index: 7; left: 50%; bottom: calc(100% + var(--u2)); translate: -50% 0; width: max-content; padding: var(--datepop-pad); padding-left: var(--datepop-lead); border: var(--hair) solid var(--bar-light); border-radius: var(--round-small); background: var(--bar-field); color: var(--bar-ink); font: var(--t-m)/1 var(--sans); font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: var(--shadow); }
   .bar .datepop .popline { display: flex; align-items: center; gap: var(--u2); height: var(--control); }      /* the gaps the bar's own: the date's box to NOW's */
   .bar .datepop .popword { color: var(--bar-ink); text-align: center; }
   .bar .datepop .weekday { width: 3.4ch; text-align: left; }
   .bar .datepop .popgroup { display: inline-flex; align-items: stretch; height: 100%; border: var(--hair) solid var(--bar-light); background: var(--bar); }
-  .bar .datepop .popgroup .popword { display: grid; place-items: center; padding: 0 var(--unit); }
+  .bar .datepop .popgroup .popword { display: grid; place-items: center; padding: 0 var(--datepop-in); }
   .bar .datepop .popgroup:hover { background: var(--bar-field); }
-  .bar .datepop .pop-day .popword { width: calc(2ch + 2 * var(--unit)); }
-  .bar .datepop .pop-month .popword { width: calc(3.4ch + 2 * var(--unit)); }
-  .bar .datepop .pop-year .popword { width: calc(4ch + 2 * var(--unit)); }
+  .bar .datepop .pop-day .popword { width: calc(2ch + 2 * var(--datepop-in)); }
+  .bar .datepop .pop-month .popword { width: calc(3.4ch + 2 * var(--datepop-in)); }
+  .bar .datepop .pop-year .popword { width: calc(4ch + 2 * var(--datepop-in)); }
   .bar .datepop .labelmenu { height: 100%; border-width: 0 0 0 var(--hair); border-color: var(--bar-light); background: none; color: var(--bar-ink); }
   .bar .datepop .popsteps { display: flex; height: 100%; }
   .bar .datepop .popstep { display: grid; place-items: center; width: var(--control); height: 100%; color: var(--bar-ink); border: var(--hair) solid var(--bar-light); background: var(--bar); }
@@ -6285,7 +6287,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.89.6";
+var VERSION = "beta 4.89.7";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -8444,6 +8446,7 @@ function set_measures(S, values) {
 var page_mm = (S) => S.dial_d + 2 * S.margin;
 
 // src/output.js
+var MADE_BY = `Dial Tool, web version, ${VERSION}`;
 var num = (v, digits = 4) => {
   const s = (v + 0).toFixed(digits).replace(/^-(0(\.0+)?)$/, "$1");
   return s.includes(".") ? s.replace(/\.?0+$/, "") || "0" : s;
@@ -8498,7 +8501,7 @@ function svg_document(S, statik, t, { preview = false, selected = null, live = f
     `<?xml version="1.0" encoding="UTF-8"?>`,
     `<svg xmlns="http://www.w3.org/2000/svg" width="${num(size)}mm" height="${num(size)}mm" viewBox="0 0 ${num(size)} ${num(size)}">`
   ];
-  if (!preview) out.push(`<title>Dial Tool \xB7 ${num(S.dial_d, 2)} mm dial${S.out_production ? " \xB7 print mask" : ""}${S.out_mirror ? " \xB7 mirrored" : ""}</title>`);
+  if (!preview) out.push(`<title>Dial Tool \xB7 ${num(S.dial_d, 2)} mm dial${S.out_production ? " \xB7 print mask" : ""}${S.out_mirror ? " \xB7 mirrored" : ""}</title>`, `<metadata>${MADE_BY}</metadata>`);
   const ids = /* @__PURE__ */ new Map();
   const named = (item) => {
     const slug = item_name(item).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || item.role.replace(/ /g, "-");
@@ -8562,7 +8565,7 @@ function pdf_document(S, statik, t) {
 stream
 ${stream}
 endstream`,
-    `<< /Title ${pdf_text(`Dial Tool \xB7 ${num(S.dial_d, 2)} mm dial${S.out_production ? " \xB7 print mask" : ""}`)} /Creator (Dial Tool, web version) >>`,
+    `<< /Title ${pdf_text(`Dial Tool \xB7 ${num(S.dial_d, 2)} mm dial${S.out_production ? " \xB7 print mask" : ""}`)} /Creator ${pdf_text(MADE_BY)} >>`,
     ...layers.map((name) => `<< /Type /OCG /Name ${pdf_text(name)} >>`)
   ];
   let text = "%PDF-1.5\n";
@@ -8598,19 +8601,30 @@ var crc32 = (bytes) => {
 };
 function png_with_dpi(bytes, dpi) {
   const per_metre = Math.round(dpi / 0.0254);
-  const chunk = new Uint8Array(21), view = new DataView(chunk.buffer);
-  view.setUint32(0, 9);
-  chunk.set([112, 72, 89, 115], 4);
-  view.setUint32(8, per_metre);
-  view.setUint32(12, per_metre);
-  chunk[16] = 1;
-  view.setUint32(17, crc32(chunk.subarray(4, 17)));
+  const phys = new Uint8Array(9), view = new DataView(phys.buffer);
+  view.setUint32(0, per_metre);
+  view.setUint32(4, per_metre);
+  phys[8] = 1;
+  const made = new TextEncoder().encode("Software\0" + MADE_BY);
+  const chunks = [png_chunk("pHYs", phys), png_chunk("tEXt", made)], extra = chunks.reduce((n, c) => n + c.length, 0);
   const at = 33;
-  const out = new Uint8Array(bytes.length + chunk.length);
+  const out = new Uint8Array(bytes.length + extra);
   out.set(bytes.subarray(0, at));
-  out.set(chunk, at);
-  out.set(bytes.subarray(at), at + chunk.length);
+  let k = at;
+  for (const c of chunks) {
+    out.set(c, k);
+    k += c.length;
+  }
+  out.set(bytes.subarray(at), k);
   return out;
+}
+function png_chunk(name, data) {
+  const c = new Uint8Array(12 + data.length), view = new DataView(c.buffer);
+  view.setUint32(0, data.length);
+  c.set([...name].map((ch) => ch.charCodeAt(0)), 4);
+  c.set(data, 8);
+  view.setUint32(8 + data.length, crc32(c.subarray(4, 8 + data.length)));
+  return c;
 }
 var PAPERS = [["A4", 210, 297], ["Letter", 215.9, 279.4], ["A5", 148, 210]];
 var SHEET_EDGE = 8;
@@ -8661,7 +8675,7 @@ function pdf_sheet(S, statik, t) {
 stream
 ${page}
 endstream`,
-    `<< /Title ${pdf_text(`Dial Tool \xB7 ${num(S.dial_d, 2)} mm dial \xB7 ${L.places.length} on ${L.paper[0]}${S.out_production ? " \xB7 print mask" : ""}${S.out_mirror ? " \xB7 mirrored" : ""}`)} /Creator (Dial Tool, web version) >>`,
+    `<< /Title ${pdf_text(`Dial Tool \xB7 ${num(S.dial_d, 2)} mm dial \xB7 ${L.places.length} on ${L.paper[0]}${S.out_production ? " \xB7 print mask" : ""}${S.out_mirror ? " \xB7 mirrored" : ""}`)} /Creator ${pdf_text(MADE_BY)} >>`,
     `<< /Type /XObject /Subtype /Form /BBox [${num(-reach)} ${num(-reach)} ${num(reach)} ${num(reach)}] /Resources << /ExtGState << ${states} >> >> /Length ${form.length} >>
 stream
 ${form}

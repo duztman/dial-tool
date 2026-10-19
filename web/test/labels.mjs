@@ -21,4 +21,12 @@ check(G.ring_labels(ring({ count: 14, num_from: 0, num_step: 5 })).join(" ") ===
   const lost = said(dial({}, {})), knocked = said(dial({}, { knock: G.KNOCK_FROM.indexOf("everything above"), clear: 0.2 })), one = said(dial({}, { c: [0, 0, 0, 1] }));
   check(lost === "Ticks on Chapter" && knocked === "none" && one === "none", `a mono mask's losses: ticks on a red band (${lost}); knocked out of it (${knocked}); both black (${one})`);
 }
+// every file says which build made it (#226): a PNG's text record and dpi, an SVG's metadata
+{
+  const { png_with_dpi, svg_document, MADE_BY } = await import("../src/output.js");
+  const tiny = Uint8Array.from(Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4//8/AAX+Av4N70a4AAAAAElFTkSuQmCC", "base64"));
+  const png = Buffer.from(png_with_dpi(tiny, 600)), text = png.indexOf("tEXtSoftware"), said = text > 0 ? png.subarray(text + 13, text + 13 + png.readUInt32BE(text - 4) - 9).toString() : "";
+  const S = G.fresh_settings({}), svg = svg_document(S, G.build_static(S), 0);
+  check(said === MADE_BY && MADE_BY.endsWith(G.VERSION) && png.includes("pHYs") && svg.includes(`<metadata>${MADE_BY}</metadata>`), `files carry the build: the PNG's Software "${said}", the SVG's metadata`);
+}
 process.exit(bad ? 1 : 0);

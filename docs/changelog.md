@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.89.7 (web version) · 20 Oct 2026
+
+- **Every file says which build made it** (#226, the production debts): "Dial Tool, web version, beta 4.89.7" as the PDF's Creator (dial and sheet), the SVG's `<metadata>`, the PNG's Software text record beside its dpi. `MADE_BY` in `output.js`; a check in `labels.mjs`.
+- **The date popup, finer** (#442; Okay, 00:17): inside each value box a unit less 2 px (`--datepop-in`); before the weekday 3 px more (`--datepop-lead`).
+
 ## beta 4.89.6 (web version) · 20 Oct 2026
 
 Two of 4.89.5's faults, marked by Okay (00:06: "Why are you breaking things and not understanding me?").

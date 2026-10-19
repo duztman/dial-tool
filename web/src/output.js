@@ -1,7 +1,10 @@
 // Dial Tool, web version — files out: SVG and PDF, both vector and at true size.
 // Both draw the scene (R26) and nothing else; guides and backdrop never reach a file (R5).
 
-import { MM, scene, turned, page_mm, live_texts, font_of, has_font, Path, circle } from "./geometry.js";
+import { MM, scene, turned, page_mm, live_texts, font_of, has_font, Path, circle, VERSION } from "./geometry.js";
+
+// who made a file, written into every PDF, SVG and PNG (#226): which build drew it, so a file can be traced to its version
+export const MADE_BY = `Dial Tool, web version, ${VERSION}`;
 
 /** a number for a file: at most `digits` decimals, no trailing zeros, no "-0" (the Wear OS export uses it too). */
 export const num = (v, digits = 4) => {
@@ -63,7 +66,7 @@ export function svg_document(S, statik, t, { preview = false, selected = null, l
     `<?xml version="1.0" encoding="UTF-8"?>`,
     `<svg xmlns="http://www.w3.org/2000/svg" width="${num(size)}mm" height="${num(size)}mm" viewBox="0 0 ${num(size)} ${num(size)}">`,
   ];
-  if (!preview) out.push(`<title>Dial Tool · ${num(S.dial_d, 2)} mm dial${S.out_production ? " · print mask" : ""}${S.out_mirror ? " · mirrored" : ""}</title>`);
+  if (!preview) out.push(`<title>Dial Tool · ${num(S.dial_d, 2)} mm dial${S.out_production ? " · print mask" : ""}${S.out_mirror ? " · mirrored" : ""}</title>`, `<metadata>${MADE_BY}</metadata>`);
   const ids = new Map();                           // every shape is named after what it is; a second "Markers" is markers-2
   const named = (item) => {
     const slug = item_name(item).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || item.role.replace(/ /g, "-");
@@ -127,7 +130,7 @@ export function pdf_document(S, statik, t) {
     `<< /Type /Pages /Kids [3 0 R] /Count 1 >>`,
     `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${num(size)} ${num(size)}] /Contents 4 0 R /Resources << /ExtGState << ${states} >> /Properties << ${refs.map((r, i) => `/L${i} ${r}`).join(" ")} >> >> >>`,
     `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`,
-    `<< /Title ${pdf_text(`Dial Tool · ${num(S.dial_d, 2)} mm dial${S.out_production ? " · print mask" : ""}`)} /Creator (Dial Tool, web version) >>`,
+    `<< /Title ${pdf_text(`Dial Tool · ${num(S.dial_d, 2)} mm dial${S.out_production ? " · print mask" : ""}`)} /Creator ${pdf_text(MADE_BY)} >>`,
     ...layers.map((name) => `<< /Type /OCG /Name ${pdf_text(name)} >>`),
   ];
   let text = "%PDF-1.5\n";
@@ -151,15 +154,24 @@ const crc32 = (bytes) => { let c = 0xFFFFFFFF; for (const b of bytes) c = CRC[(c
  *  picture opens at true size in Photoshop, InDesign or a print dialogue instead of at 72 dpi. */
 export function png_with_dpi(bytes, dpi) {
   const per_metre = Math.round(dpi / 0.0254);
-  const chunk = new Uint8Array(21), view = new DataView(chunk.buffer);
-  view.setUint32(0, 9);                            // length of what follows the name
-  chunk.set([0x70, 0x48, 0x59, 0x73], 4);          // "pHYs"
-  view.setUint32(8, per_metre); view.setUint32(12, per_metre); chunk[16] = 1;      // dots per metre, across and down
-  view.setUint32(17, crc32(chunk.subarray(4, 17)));
+  const phys = new Uint8Array(9), view = new DataView(phys.buffer);
+  view.setUint32(0, per_metre); view.setUint32(4, per_metre); phys[8] = 1;      // dots per metre, across and down
+  const made = new TextEncoder().encode("Software\0" + MADE_BY);      // a text record: who made it (#226)
+  const chunks = [png_chunk("pHYs", phys), png_chunk("tEXt", made)], extra = chunks.reduce((n, c) => n + c.length, 0);
   const at = 33;                                   // after the 8-byte signature and the 25-byte header record
-  const out = new Uint8Array(bytes.length + chunk.length);
-  out.set(bytes.subarray(0, at)); out.set(chunk, at); out.set(bytes.subarray(at), at + chunk.length);
+  const out = new Uint8Array(bytes.length + extra);
+  out.set(bytes.subarray(0, at)); let k = at;
+  for (const c of chunks) { out.set(c, k); k += c.length; }
+  out.set(bytes.subarray(at), k);
   return out;
+}
+/** one PNG record: its length, its four-letter name, its data, and a check sum over name and data */
+function png_chunk(name, data) {
+  const c = new Uint8Array(12 + data.length), view = new DataView(c.buffer);
+  view.setUint32(0, data.length);
+  c.set([...name].map((ch) => ch.charCodeAt(0)), 4); c.set(data, 8);
+  view.setUint32(8 + data.length, crc32(c.subarray(4, 8 + data.length)));
+  return c;
 }
 
 // ── a print sheet (#348, 4.75) ──────────────────────────────
@@ -211,7 +223,7 @@ export function pdf_sheet(S, statik, t) {
     `<< /Type /Pages /Kids [3 0 R] /Count 1 >>`,
     `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${num(W * MM)} ${num(H * MM)}] /Contents 4 0 R /Resources << /XObject << /Dial 6 0 R >> >> >>`,
     `<< /Length ${page.length} >>\nstream\n${page}\nendstream`,
-    `<< /Title ${pdf_text(`Dial Tool · ${num(S.dial_d, 2)} mm dial · ${L.places.length} on ${L.paper[0]}${S.out_production ? " · print mask" : ""}${S.out_mirror ? " · mirrored" : ""}`)} /Creator (Dial Tool, web version) >>`,
+    `<< /Title ${pdf_text(`Dial Tool · ${num(S.dial_d, 2)} mm dial · ${L.places.length} on ${L.paper[0]}${S.out_production ? " · print mask" : ""}${S.out_mirror ? " · mirrored" : ""}`)} /Creator ${pdf_text(MADE_BY)} >>`,
     `<< /Type /XObject /Subtype /Form /BBox [${num(-reach)} ${num(-reach)} ${num(reach)} ${num(reach)}] /Resources << /ExtGState << ${states} >> >> /Length ${form.length} >>\nstream\n${form}\nendstream`,
   ];
   let text = "%PDF-1.5\n";

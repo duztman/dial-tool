@@ -1,7 +1,7 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **done** · **parked**.
-*Last updated 20 Oct 2026 (beta 4.89.6: #438 corrected, #441. Beta 4.89.5: #438–#440. Beta 4.89.4: #436, #437. Beta 4.89.3: #432–#435 logged, #432 and #433 done. Beta 4.89.2: #220 done. Beta 4.89.1: #430, #431. Beta 4.87: done items moved to build-list-done.md; the DrawBot items archived; stale "verify" rows closed).*
+*Last updated 20 Oct 2026 (beta 4.89.7: #226, #442. Beta 4.89.6: #438 corrected, #441. Beta 4.89.5: #438–#440. Beta 4.89.4: #436, #437. Beta 4.89.3: #432–#435 logged, #432 and #433 done. Beta 4.89.2: #220 done. Beta 4.89.1: #430, #431. Beta 4.87: done items moved to build-list-done.md; the DrawBot items archived; stale "verify" rows closed).*
 Every item keeps its number for good. Done items: `docs/build-list-done.md`. The DrawBot version's items: `archive/drawbot/build-list-drawbot.md`.
 
 ## Next
@@ -57,7 +57,6 @@ Okay, 19 Oct 2026, 21:26: "Add production debts to the build list and look at it
 
 | # | Item | Status |
 |---|---|---|
-| 226 | **Exported files carry no app version** (PDF, SVG, PNG metadata). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
 | 227 | **The file name gives the dial's size; the page is larger** by twice the margin ("dial-30mm" is a 36 mm page). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
 | 16 | Live text in the SVG (*Keep numerals as text in the SVG*, Export; R10): open one in Illustrator with the font installed — do the numerals land where the outlines do, do the cuts arrive as clipping masks? The PDF's live text is #63 | verify |
 | 63 | **Live text in the PDF**: the SVG keeps numerals as text; the PDF is written by hand (`web/src/output.js`), so live text there means building the font into the file. Okay, 11 Oct 2026: "SVG now, PDF later" | open |
@@ -213,6 +212,7 @@ Seven screenshots in the chat.
 | 438 | **The date popup's padding and gaps** (Okay, 23:53: "2 more pixels padding to the whole popup box. meaning: in between boxes stay as bottom bar date now width"; 20 Oct, 00:06, marked: the gaps "this wrong", the bar's date-to-NOW gap "this right"): padding a unit and 2 px (`--datepop-pad`); the gaps between its boxes the bar's own, a unit — `--datepop-gap` gone | **done — 4.89.6** |
 | 439 | **Backdrop's swatch loses its outline at times** (Okay, 23:53: old Safari on an Intel Mac, the iPad too; his picture: the switch at rest on a dark red backdrop). Not reproduced in Chromium. Measured: the dot stands at x .25, y .5 of a pixel; its colour is painted under the outline too. Taken: `background-clip: padding-box` on the canvas's swatches (Backdrop, strap). Ask Okay if he still sees it; if so, the dot onto whole pixels | verify |
 | 441 | **The Show box's ticks on their words' middles again** — 4.89.5 put Show and Bevel in a line and the ticks rose 3 px (Okay, 00:06, marked); and the words 2 px closer to their ticks (00:08: "Show and bevel 2px closer to tick boxes"), `--show-tick-gap` | **done — 4.89.6** |
+| 442 | **The date popup, finer** (Okay, 20 Oct, 00:17: "The gaps within boxes inside popup -2px. Hr padding before day +3px"): inside each value box a unit less 2 (`--datepop-in`); before the weekday the padding 3 more (`--datepop-lead`). Reading: "day" = the weekday at the popup's start | **done — 4.89.7** |
 | 440 | **A hand's Bevel tick beside Show** in the Show box under the hand's tab, once Show is on (Okay, 23:53: "Bevel on off moves next to show under the tab just above. appears after show is switched on"); still only while Shadows is on and Bevels % above 0 (R16); out of the side rows | **done — 4.89.5** |
 | 434 | **Settings file pane: "needs tlc. what do you think it needs?"** — Claude's proposal sent 19 Oct, 23:25; waiting for his word | open — ask |
 | 435 | **Versions** — the saved dials (Gallery › Yours) move under Undo: a button with a sign of a dial with two hands opens a list of every saved dial as small pictures, three across; a click on one shows its actions (Edit this dial, In a new tab, Remove). On top, **Compare**: every saved dial laid out as the Sheet PDF lays copies (packed by how many), centred with sensible padding, the panel hidden as in the dial-alone view; nothing else changes. Words to settle: *versions* is already the app's builds (`docs/versions.md`) and the glossary's *Yours* | open — plan sent, waiting |

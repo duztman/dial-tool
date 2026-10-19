@@ -94,16 +94,16 @@
      the panel's type at its size ("remove barlow … our regular text normal size"), heights a control's. Each part as
      wide as its widest value, so nothing moves when the date changes ("size fixed, no movements by change in content").
      A press on the day opens the system's picker */
-  .bar .datepop { position: absolute; z-index: 7; left: 50%; bottom: calc(100% + var(--u2)); translate: -50% 0; width: max-content; padding: var(--datepop-pad); border: var(--hair) solid var(--bar-light); border-radius: var(--round-small); background: var(--bar-field); color: var(--bar-ink); font: var(--t-m)/1 var(--sans); font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: var(--shadow); }
+  .bar .datepop { position: absolute; z-index: 7; left: 50%; bottom: calc(100% + var(--u2)); translate: -50% 0; width: max-content; padding: var(--datepop-pad); padding-left: var(--datepop-lead); border: var(--hair) solid var(--bar-light); border-radius: var(--round-small); background: var(--bar-field); color: var(--bar-ink); font: var(--t-m)/1 var(--sans); font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: var(--shadow); }
   .bar .datepop .popline { display: flex; align-items: center; gap: var(--u2); height: var(--control); }      /* the gaps the bar's own: the date's box to NOW's */
   .bar .datepop .popword { color: var(--bar-ink); text-align: center; }
   .bar .datepop .weekday { width: 3.4ch; text-align: left; }
   .bar .datepop .popgroup { display: inline-flex; align-items: stretch; height: 100%; border: var(--hair) solid var(--bar-light); background: var(--bar); }
-  .bar .datepop .popgroup .popword { display: grid; place-items: center; padding: 0 var(--unit); }
+  .bar .datepop .popgroup .popword { display: grid; place-items: center; padding: 0 var(--datepop-in); }
   .bar .datepop .popgroup:hover { background: var(--bar-field); }
-  .bar .datepop .pop-day .popword { width: calc(2ch + 2 * var(--unit)); }
-  .bar .datepop .pop-month .popword { width: calc(3.4ch + 2 * var(--unit)); }
-  .bar .datepop .pop-year .popword { width: calc(4ch + 2 * var(--unit)); }
+  .bar .datepop .pop-day .popword { width: calc(2ch + 2 * var(--datepop-in)); }
+  .bar .datepop .pop-month .popword { width: calc(3.4ch + 2 * var(--datepop-in)); }
+  .bar .datepop .pop-year .popword { width: calc(4ch + 2 * var(--datepop-in)); }
   .bar .datepop .labelmenu { height: 100%; border-width: 0 0 0 var(--hair); border-color: var(--bar-light); background: none; color: var(--bar-ink); }
   .bar .datepop .popsteps { display: flex; height: 100%; }
   .bar .datepop .popstep { display: grid; place-items: center; width: var(--control); height: 100%; color: var(--bar-ink); border: var(--hair) solid var(--bar-light); background: var(--bar); }
