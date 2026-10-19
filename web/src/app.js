@@ -215,7 +215,10 @@ const PICS = {
     `<circle cx="13" cy="9" r="6" ${sw(CURVE)}/>`,
     `<path d="M13 2.5L18.75 5.75V12.25L13 15.5L7.25 12.25V5.75Z" ${sw(SLANT)}/>`,
     `<path d="M2.75 14.25A10.25 10.25 0 0 1 23.25 14.25A5.25 5.25 0 0 0 13 14.25A5.25 5.25 0 0 0 2.75 14.25Z" ${sw(CURVE)}/>`,
-    `<path d="M4 11.75A13 13 0 0 1 22 11.75L19.5 15.25A9 9 0 0 0 6.5 15.25Z" ${sw(CURVE)}/>`,
+    // the arc a sixth larger and 2 up, on its box's middle (Okay, 20 Oct 2026, 01:16: "Arc shape icon larger 2px up")
+    `<path d="M2.75 9.75A15 15 0 0 1 23.25 9.75L20.5 13.75A10.25 10.25 0 0 0 5.5 13.75Z" ${sw(CURVE)}/>`,
+    // half: an am · pm window's hole, half a circle on its flat side (20 Oct 2026: "Am/pm window should come selected as a shape")
+    `<path d="M4.5 13.25A8.5 8.5 0 0 1 21.5 13.25Z" ${sw(CURVE)}/>`,
   ],
   // what a window shows, in as few lines as say it: one figure · one letter · a half filled · a crescent — on 30 × 21
   // (Okay, 16 Oct 2026, on the Windows page's mock-ups: "smaller icons")
@@ -2720,6 +2723,18 @@ class DialTool {
     for (const r of this.rows) if (r.fold) r.empty = true;
     for (const r of this.rows) if (r.group && r.applies) r.group.empty = false;
     for (const r of this.rows) if (r.fold && r.empty && this.rows.some((x) => x.group === r)) r.el.hidden = true;
+    // a note belongs to the row it stands under, however many hidden rows lie between (design canon §6): that row draws
+    // no line under itself (noted), and the note knows what it stands under (after: a tick, tiles, or a field), so its
+    // words start where they should (Okay, 20 Oct 2026, 01:16: "why the follows.. line stuck up there?")
+    for (const r of this.rows) {
+      const row = r.el;
+      if (!row.classList.contains("row") || row.classList.contains("note") || row.hidden) continue;
+      let next = row.nextElementSibling;
+      while (next && next.hidden) next = next.nextElementSibling;
+      const noted = !!next && next.classList.contains("row") && next.classList.contains("note");
+      row.classList.toggle("noted", noted);
+      if (noted) next.dataset.after = row.classList.contains("chk") ? "tick" : row.classList.contains("pick") ? "tiles" : row.classList.contains("note") ? "note" : "field";
+    }
     for (const r of this.rows) {
       const pane = r.group;
       if (r.applies && (r.in_head || !(pane && (pane.el.hidden || this.is_folded(pane))))) r.refresh(this.target(r.row.scope));      // a heading's selector shows even when its pane is folded
@@ -3340,22 +3355,29 @@ class DialTool {
     };
   }
 
-  /** a window's shape as picture tiles: rectangle · circle · polygon · arch · arc. What is stored is the place in
-   *  G.WINDOW_SHAPES; 0, "as its kind", shows as the shape that kind has had all along. */
+  /** a window's shape as picture tiles: rectangle · circle · polygon · its kind's own · arc. What is stored is the place
+   *  in G.WINDOW_SHAPES; 0, "as its kind", shows as the shape that kind has had all along. The kind's own shape stands
+   *  fourth and only for its kind: a moon's arch, an am · pm's half (Okay, 20 Oct 2026, 01:16: "Am/pm window should come
+   *  selected as a shape instead of moon window. moon window button only active with moon selected, absent from others") */
   row_window_shape(wrap, out) {
     // the shapes as buttons without words, stretched along the Shape heading's line as Position's are along theirs
     // (#265, 4.46.1; Okay on the mock-ups: "stretch shapes like position, top-right"). The row goes on the heading line (head)
     wrap.className = "row pick";
     const group = el("span", { className: "btnline shapes", role: "radiogroup", ariaLabel: "Shape" });
-    const names = G.WINDOW_SHAPES.slice(1);
-    names.forEach((name, i) => {
-      const tile = el("button", { type: "button", id: `window-shape-${name}`, title: name, ariaLabel: name, onclick: () => this.set_value("window", "shape", i + 1) });
+    const names = ["rectangle", "circle", "polygon", "arch", "half", "arc"], own = { arch: "moon phase", half: "am · pm" };      // shown in this order; arch and half only for their kinds
+    names.forEach((name) => {
+      const at = G.WINDOW_SHAPES.indexOf(name);
+      const tile = el("button", { type: "button", id: `window-shape-${name}`, title: name, ariaLabel: name, onclick: () => this.set_value("window", "shape", at) });
       tile.setAttribute("role", "radio");
-      tile.innerHTML = icon(PICS.hole[i], 26, 18);
+      tile.innerHTML = icon(PICS.hole[at - 1], 26, 18);
       group.append(tile);
     });
     wrap.append(el("span"), group);
-    out.refresh = (T) => [...group.children].forEach((b, i) => { const on = names[i] === G.window_shape(T); b.classList.toggle("on", on); b.setAttribute("aria-checked", String(on)); });
+    out.refresh = (T) => [...group.children].forEach((b, i) => {
+      const name = names[i], on = name === G.window_shape(T);
+      b.hidden = Boolean(own[name]) && G.WINDOW_KINDS[T.kind] !== own[name];
+      b.classList.toggle("on", on); b.setAttribute("aria-checked", String(on));
+    });
   }
 
 
@@ -3458,7 +3480,7 @@ class DialTool {
     select.onchange = () => this.set_value("ring", menu.key, +select.value);
     const chev = chevron_box(select), words = chev.box.querySelector(".v");      // a press anywhere on the box opens the list, never folds the pane (Okay, 20 Oct 2026, 01:05: "clicking 'centre' activates dropdown not collapse")
     words.classList.add("fromwords");
-    wrap.append(el("span"), el("span", { className: "fromwide" }, el("span", { className: "fromword", textContent: "from" }), chev.box));
+    wrap.append(el("span"), el("span", { className: "fromwide" }, el("span", { className: "fromword quiet", textContent: "from" }), chev.box));
     out.refresh = (R) => {
       const now = radius_row(R).menu;
       if (now !== menu) { menu = now; select.replaceChildren(...menu.items.map(([v, name]) => el("option", { value: v, textContent: name }))); }

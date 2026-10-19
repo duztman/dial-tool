@@ -1080,7 +1080,7 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
 {
   const was = await S("JSON.stringify([S.ui_window, S.da_on, S.da_at, S.da_shape, S.da_turn, S.da_ps, S.da_family, S.da_text_c, S.da_disc_c, S.da_w])");
   await page.evaluate(() => { const t = window.dial_tool; t.S.ui_window = 0; t.set_value("window", "on", true); t.sync_rows(); });
-  const tiles = await page.$$eval('[id^="window-shape-"]', (b) => b.map((x) => [x.title, x.classList.contains("on")]));
+  const tiles = await page.$$eval('[id^="window-shape-"]', (b) => b.filter((x) => !x.hidden).map((x) => [x.title, x.classList.contains("on")]));
   const box = async () => { await frame(); return page.evaluate(() => { const b = window.dial_tool.statik.windows[0].window.bounds(); return [+(b[2] - b[0]).toFixed(3), +(b[3] - b[1]).toFixed(3)]; }); };
   const rect = await box();
   await page.click("#window-shape-circle");
@@ -1089,11 +1089,13 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
   const polygon = [await box(), await page.isVisible("#window-sides-Sides"), await page.isVisible("#window-round-Corner")];
   await page.click("#window-shape-arc");
   const arc = [await box(), await page.isHidden("#window-turn-Turn-it-with-its-radius")];
-  await page.click("#window-shape-arch");
-  const arch = await box();
   await page.click("#window-shape-rectangle");
-  check(tiles.map((t) => t[0]).join(" ") === "rectangle circle polygon arch arc" && tiles[0][1] && Math.abs(circle[0][0] - circle[0][1]) < 0.01 && circle[1] && circle[2] && polygon[1] && polygon[2] && arc[1] && arc[0][0] !== rect[0] && arch[1] < arch[0] && await S("S.da_shape") === 1,
-    `Shape: five buttons, a date window starts as a rectangle (${rect.join(" × ")}); circle ${circle[0].join(" × ")}, polygon with Sides and Corner, arc ${arc[0].join(" × ")} (no turning), arch ${arch.join(" × ")}`);
+  // a kind's own shape stands fourth, for its kind alone (Okay, 20 Oct 2026, 01:16: "Am/pm window should come selected as a shape instead of moon window. moon window button only active with moon selected, absent from others")
+  const own_shape = async (kind) => { await page.evaluate((k) => { const t = window.dial_tool; t.set_value("window", "kind", k); t.set_value("window", "shape", 0); t.sync_rows(); }, kind); return page.$$eval('[id^="window-shape-"]', (b) => b.filter((x) => !x.hidden).map((x) => x.title + (x.classList.contains("on") ? "*" : "")).join(" ")); };
+  const kinds = [await own_shape(3), await own_shape(2)];
+  await page.evaluate(() => { const t = window.dial_tool; t.set_value("window", "kind", 0); t.set_value("window", "shape", 1); t.sync_rows(); });
+  check(tiles.map((t) => t[0]).join(" ") === "rectangle circle polygon arc" && tiles[0][1] && Math.abs(circle[0][0] - circle[0][1]) < 0.01 && circle[1] && circle[2] && polygon[1] && polygon[2] && arc[1] && arc[0][0] !== rect[0] && kinds[0] === "rectangle circle polygon arch* arc" && kinds[1] === "rectangle circle polygon half* arc" && await S("S.da_shape") === 1,
+    `Shape: a date window's four buttons, starting as a rectangle (${rect.join(" × ")}); circle ${circle[0].join(" × ")}, polygon with Sides and Corner, arc ${arc[0].join(" × ")} (no turning); a kind's own shape fourth and chosen, for it alone: ${kinds.join(" · ")}`);
   { // a window's place (#264, 4.46.1): on its pane's heading line, round buttons 3 · 6 · 9 · 12 · ··· spread from the
     // controls' column to the end, as the shapes on the Shape line are; the heading says Position under its title;
     // the dots open every place as a button and a field for any time

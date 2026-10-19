@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.89.10 · built 2026-10-19 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.89.11 · built 2026-10-19 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -705,9 +705,10 @@
      the note starts where its words do; under anything else, on the controls' column (.under, or after the first row). */
   .row.note { min-height: 0; --note-air: calc((var(--line) - var(--leading) * var(--t-m)) / 2); }
   .row.note > .quiet { margin-top: calc(-1 * var(--note-air)); padding: 0 0 var(--note-air); font-size: var(--t-s); line-height: var(--leading); text-wrap: balance; }
-  .row:not(.chk, .note) + .row.note > .quiet { margin-top: calc((var(--control) - var(--line)) / 2); }      /* under a field or a slider: just below its box */
-  .row.chk + .row.note > .quiet { padding-left: calc(var(--tick) + var(--tick-gap)); }
-  .row:not(.note):has(+ .row.note:not([hidden])), .row:not(.note):has(+ .row[hidden] + .row.note:not([hidden])) { box-shadow: 0 calc(-1 * var(--hair)) 0 var(--row-rule); background: none; }
+  .row.note[data-after="field"] > .quiet { margin-top: calc((var(--control) - var(--line)) / 2); }      /* under a field or a slider: just below its box */
+  .row.note[data-after="tiles"] > .quiet { margin-top: 0; }      /* under a row of tiles: the tiles' own room under them, then the words */
+  .row.note[data-after="tick"] > .quiet { padding-left: calc(var(--tick) + var(--tick-gap)); }
+  :is(.row.noted, .row:not(.note):has(+ .row.note:not([hidden]))) { box-shadow: 0 calc(-1 * var(--hair)) 0 var(--row-rule); background: none; }      /* the row a note belongs to (sync_rows marks it noted): no line under it, however many hidden rows lie between; the :has() half only lends the weight the nested rows' lines need to be outdone (no !important, R32) */
   .row.note:has(+ .row.note:not([hidden])) { box-shadow: none; }
   .row > button:not(:first-child) { justify-self: start; }
   .row > .btn.main:first-child { justify-self: stretch; }      /* a button standing where the label would (PNG) */
@@ -1075,6 +1076,7 @@
      radius measures to, stretched to the margin, the rows' boxed arrow at its right end (Okay, 19 Oct 2026, #419) */
   .pane > .headcontrol.fromwide { display: flex; align-items: center; gap: var(--gap); }
   .fromwide .menubox { flex: 1; min-width: 0; }      /* stretched to the margin (#419) */
+  .fromwide .fromword { font-size: var(--t-s); }      /* a word on a heading's line that is not its title: small and grey, as the folded summaries (Okay, 20 Oct 2026, 01:16: "Small and gray like other indicators") */
   .fromwide .fromwords { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
 
@@ -6296,7 +6298,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.89.10";
+var VERSION = "beta 4.89.11";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -6316,7 +6318,7 @@ var HANDS = ["hour", "minute", "second"];
 var HAND_SHAPES = ["baton", "pencil", "sword", "dauphine", "leaf", "arrow", "syringe", "breguet", "lollipop", "file", "disc"];
 var DATE_AT = [["3", 90], ["4:30", 135], ["6", 180], ["9", 270], ["12", 0], ["1:30", 45], ["7:30", 225], ["10:30", 315], ["4", 120]];
 var WINDOW_KINDS = ["date", "day", "am \xB7 pm", "moon phase", "big date"];
-var WINDOW_SHAPES = ["as its kind", "rectangle", "circle", "polygon", "arch", "arc"];
+var WINDOW_SHAPES = ["as its kind", "rectangle", "circle", "polygon", "arch", "arc", "half"];
 var window_shape = (w) => WINDOW_SHAPES[w.shape] && w.shape ? WINDOW_SHAPES[w.shape] : WINDOW_KINDS[w.kind] === "moon phase" ? w.look ? "circle" : "arch" : WINDOW_KINDS[w.kind] === "am \xB7 pm" ? "half" : WINDOW_KINDS[w.kind] === "big date" ? "pair" : "rectangle";
 var PICTURES = { "moon phase": ["Arch", "Phase", "Line"], "am \xB7 pm": ["Sky", "Half", "Band"] };
 var LANGS2 = ["default", "tr", "nl", "de", "pl", "ro", "ca", "ar", "fa", "zh-Hans", "ja"];
@@ -10949,7 +10951,10 @@ var PICS = {
     `<circle cx="13" cy="9" r="6" ${sw(CURVE)}/>`,
     `<path d="M13 2.5L18.75 5.75V12.25L13 15.5L7.25 12.25V5.75Z" ${sw(SLANT)}/>`,
     `<path d="M2.75 14.25A10.25 10.25 0 0 1 23.25 14.25A5.25 5.25 0 0 0 13 14.25A5.25 5.25 0 0 0 2.75 14.25Z" ${sw(CURVE)}/>`,
-    `<path d="M4 11.75A13 13 0 0 1 22 11.75L19.5 15.25A9 9 0 0 0 6.5 15.25Z" ${sw(CURVE)}/>`
+    // the arc a sixth larger and 2 up, on its box's middle (Okay, 20 Oct 2026, 01:16: "Arc shape icon larger 2px up")
+    `<path d="M2.75 9.75A15 15 0 0 1 23.25 9.75L20.5 13.75A10.25 10.25 0 0 0 5.5 13.75Z" ${sw(CURVE)}/>`,
+    // half: an am · pm window's hole, half a circle on its flat side (20 Oct 2026: "Am/pm window should come selected as a shape")
+    `<path d="M4.5 13.25A8.5 8.5 0 0 1 21.5 13.25Z" ${sw(CURVE)}/>`
   ],
   // what a window shows, in as few lines as say it: one figure · one letter · a half filled · a crescent — on 30 × 21
   // (Okay, 16 Oct 2026, on the Windows page's mock-ups: "smaller icons")
@@ -13791,6 +13796,15 @@ var DialTool = class _DialTool {
     for (const r of this.rows) if (r.group && r.applies) r.group.empty = false;
     for (const r of this.rows) if (r.fold && r.empty && this.rows.some((x2) => x2.group === r)) r.el.hidden = true;
     for (const r of this.rows) {
+      const row = r.el;
+      if (!row.classList.contains("row") || row.classList.contains("note") || row.hidden) continue;
+      let next = row.nextElementSibling;
+      while (next && next.hidden) next = next.nextElementSibling;
+      const noted = !!next && next.classList.contains("row") && next.classList.contains("note");
+      row.classList.toggle("noted", noted);
+      if (noted) next.dataset.after = row.classList.contains("chk") ? "tick" : row.classList.contains("pick") ? "tiles" : row.classList.contains("note") ? "note" : "field";
+    }
+    for (const r of this.rows) {
       const pane = r.group;
       if (r.applies && (r.in_head || !(pane && (pane.el.hidden || this.is_folded(pane))))) r.refresh(this.target(r.row.scope));
     }
@@ -14557,21 +14571,25 @@ var DialTool = class _DialTool {
       }
     };
   }
-  /** a window's shape as picture tiles: rectangle · circle · polygon · arch · arc. What is stored is the place in
-   *  G.WINDOW_SHAPES; 0, "as its kind", shows as the shape that kind has had all along. */
+  /** a window's shape as picture tiles: rectangle · circle · polygon · its kind's own · arc. What is stored is the place
+   *  in G.WINDOW_SHAPES; 0, "as its kind", shows as the shape that kind has had all along. The kind's own shape stands
+   *  fourth and only for its kind: a moon's arch, an am · pm's half (Okay, 20 Oct 2026, 01:16: "Am/pm window should come
+   *  selected as a shape instead of moon window. moon window button only active with moon selected, absent from others") */
   row_window_shape(wrap, out) {
     wrap.className = "row pick";
     const group = el("span", { className: "btnline shapes", role: "radiogroup", ariaLabel: "Shape" });
-    const names = WINDOW_SHAPES.slice(1);
-    names.forEach((name, i2) => {
-      const tile = el("button", { type: "button", id: `window-shape-${name}`, title: name, ariaLabel: name, onclick: () => this.set_value("window", "shape", i2 + 1) });
+    const names = ["rectangle", "circle", "polygon", "arch", "half", "arc"], own = { arch: "moon phase", half: "am \xB7 pm" };
+    names.forEach((name) => {
+      const at = WINDOW_SHAPES.indexOf(name);
+      const tile = el("button", { type: "button", id: `window-shape-${name}`, title: name, ariaLabel: name, onclick: () => this.set_value("window", "shape", at) });
       tile.setAttribute("role", "radio");
-      tile.innerHTML = icon(PICS.hole[i2], 26, 18);
+      tile.innerHTML = icon(PICS.hole[at - 1], 26, 18);
       group.append(tile);
     });
     wrap.append(el("span"), group);
     out.refresh = (T) => [...group.children].forEach((b, i2) => {
-      const on = names[i2] === window_shape(T);
+      const name = names[i2], on = name === window_shape(T);
+      b.hidden = Boolean(own[name]) && WINDOW_KINDS[T.kind] !== own[name];
       b.classList.toggle("on", on);
       b.setAttribute("aria-checked", String(on));
     });
@@ -14678,7 +14696,7 @@ var DialTool = class _DialTool {
     select.onchange = () => this.set_value("ring", menu.key, +select.value);
     const chev = chevron_box(select), words = chev.box.querySelector(".v");
     words.classList.add("fromwords");
-    wrap.append(el("span"), el("span", { className: "fromwide" }, el("span", { className: "fromword", textContent: "from" }), chev.box));
+    wrap.append(el("span"), el("span", { className: "fromwide" }, el("span", { className: "fromword quiet", textContent: "from" }), chev.box));
     out.refresh = (R) => {
       const now = radius_row(R).menu;
       if (now !== menu) {

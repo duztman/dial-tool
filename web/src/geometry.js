@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.89.10";
+export const VERSION = "beta 4.89.11";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -45,7 +45,7 @@ export const DATE_AT = [["3", 90], ["4:30", 135], ["6", 180], ["9", 270], ["12",
 export const WINDOW_KINDS = ["date", "day", "am · pm", "moon phase", "big date"];      // big date appended (4.74, R9): two square holes, the tens and the units each on a disc of its own      // what a window shows (web version)
 // the hole's shape, apart from what shows through it (Okay, 13 Oct 2026). 0, the start, is "as its kind": an arch for a
 // moon phase, a rectangle for the others — what was drawn before there was a choice (R31). Only grows at its end (R9).
-export const WINDOW_SHAPES = ["as its kind", "rectangle", "circle", "polygon", "arch", "arc"];
+export const WINDOW_SHAPES = ["as its kind", "rectangle", "circle", "polygon", "arch", "arc", "half"];      // half: an am · pm window's own, chosen as a shape (20 Oct 2026; appended, R9)
 export const window_shape = (w) => WINDOW_SHAPES[w.shape] && w.shape ? WINDOW_SHAPES[w.shape]
   : WINDOW_KINDS[w.kind] === "moon phase" ? (w.look ? "circle" : "arch") : WINDOW_KINDS[w.kind] === "am · pm" ? "half"
   : WINDOW_KINDS[w.kind] === "big date" ? "pair" : "rectangle";      // a big date: two square holes side by side (4.74)      // a moon's Phase and Line sit in a round hole, an am · pm Half in a half-round one (4.73)      // a moon's Phase and Line pictures sit in a round hole (4.73)

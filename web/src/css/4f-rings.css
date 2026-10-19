@@ -236,5 +236,6 @@
      radius measures to, stretched to the margin, the rows' boxed arrow at its right end (Okay, 19 Oct 2026, #419) */
   .pane > .headcontrol.fromwide { display: flex; align-items: center; gap: var(--gap); }
   .fromwide .menubox { flex: 1; min-width: 0; }      /* stretched to the margin (#419) */
+  .fromwide .fromword { font-size: var(--t-s); }      /* a word on a heading's line that is not its title: small and grey, as the folded summaries (Okay, 20 Oct 2026, 01:16: "Small and gray like other indicators") */
   .fromwide .fromwords { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }

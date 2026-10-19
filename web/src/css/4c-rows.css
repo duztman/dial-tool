@@ -73,9 +73,10 @@
      the note starts where its words do; under anything else, on the controls' column (.under, or after the first row). */
   .row.note { min-height: 0; --note-air: calc((var(--line) - var(--leading) * var(--t-m)) / 2); }
   .row.note > .quiet { margin-top: calc(-1 * var(--note-air)); padding: 0 0 var(--note-air); font-size: var(--t-s); line-height: var(--leading); text-wrap: balance; }
-  .row:not(.chk, .note) + .row.note > .quiet { margin-top: calc((var(--control) - var(--line)) / 2); }      /* under a field or a slider: just below its box */
-  .row.chk + .row.note > .quiet { padding-left: calc(var(--tick) + var(--tick-gap)); }
-  .row:not(.note):has(+ .row.note:not([hidden])), .row:not(.note):has(+ .row[hidden] + .row.note:not([hidden])) { box-shadow: 0 calc(-1 * var(--hair)) 0 var(--row-rule); background: none; }
+  .row.note[data-after="field"] > .quiet { margin-top: calc((var(--control) - var(--line)) / 2); }      /* under a field or a slider: just below its box */
+  .row.note[data-after="tiles"] > .quiet { margin-top: 0; }      /* under a row of tiles: the tiles' own room under them, then the words */
+  .row.note[data-after="tick"] > .quiet { padding-left: calc(var(--tick) + var(--tick-gap)); }
+  :is(.row.noted, .row:not(.note):has(+ .row.note:not([hidden]))) { box-shadow: 0 calc(-1 * var(--hair)) 0 var(--row-rule); background: none; }      /* the row a note belongs to (sync_rows marks it noted): no line under it, however many hidden rows lie between; the :has() half only lends the weight the nested rows' lines need to be outdone (no !important, R32) */
   .row.note:has(+ .row.note:not([hidden])) { box-shadow: none; }
   .row > button:not(:first-child) { justify-self: start; }
   .row > .btn.main:first-child { justify-self: stretch; }      /* a button standing where the label would (PNG) */

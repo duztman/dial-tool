@@ -174,6 +174,12 @@ alignment to these rules as well."*
   a tick, as a tick's second line would, starting where the tick's words start; under controls, just below their
   boxes, on the controls' column. The box ends as far under the note as a row's words start above
   (`--note-air`). The CSS for it: `4c-rows.css`, *a note and the row it explains are one box*.
+- **A word on a heading's line that is not its title** (Resize Ring's *from*; a folded pane's summary) is an indicator:
+  small and grey, the summary's look (Okay, 20 Oct 2026, 01:16: "Small and gray like other indicators on the below left
+  column").
+- **A note belongs to its row**: no line between them, however many hidden rows lie between (`sync_rows` marks the row
+  *noted*); under a field it starts just below the box, under a tick at the words' start, under a row of tiles a
+  tile-gap below them (20 Oct 2026, 01:16: "why the follows.. line stuck up there? what is the actual shape it must be in?").
 - **A side row** — a name, a slider and a number box squeezed beside a box (a hand's rows beside its picture; Give
   way's Clearance): the slider follows its name with no gap, the name's column as wide as the longest name; the gap
   that would stand there goes to the slider and the number box, so four figures show whole (Okay, 19 Oct 2026, 23:46

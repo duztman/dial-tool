@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.89.11 (web version) · 20 Oct 2026
+
+Okay, 01:16.
+
+- **A kind's own window shape** (#456): the fourth Shape button is the moon's arch or the am · pm's half, for its kind alone and chosen to start; a date or day window has four. `half` appended to `WINDOW_SHAPES`.
+- **Icons** (#457): the arc's a sixth larger and 2 up, on its box's middle; the half's new.
+- **A note belongs to its row** (#458) through any number of hidden rows (`sync_rows` marks the row `noted` and tells the note what it stands under); under tiles it starts a tile-gap below them. The am · pm note no longer sits on a line.
+- **Resize Ring's *from* small and grey** (#454), as a summary; canon §6.
+
 ## beta 4.89.10 (web version) · 20 Oct 2026
 
 Okay, 01:05: his final drawing of the date popup, and the menus.
