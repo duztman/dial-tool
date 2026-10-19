@@ -10,7 +10,7 @@
 import fs from "fs";
 import path from "path";
 import { engines } from "./test/engines.mjs";
-import { link } from "./links.mjs";
+import { card } from "./links.mjs";
 import { FONT_LIST } from "./src/font_list.js";
 import { OKAYS_WATCH, OPENER } from "./src/opener.js";
 
@@ -28,7 +28,7 @@ export const DIALS = [
   // a second link: a navy plate on a dark red backdrop, the triangle and dots cyan, the minute numerals cream): orange
   // hours and seconds hand, the minute numerals moved in, two thin bands framing them. Lean settings, as his link
   // carries them (only what differs from the starting values), without the time.
-  // …in neutral colours since 4.49 (#288, Okay's notes: "B-Uhr in neutral colours"; the answer chosen: on his own version — his
+  // …in neutral colours (#288, Okay's notes: "B-Uhr in neutral colours"; the answer chosen: on his own version — his
   // layout, a black plate, white marks, cream figures): the navy plate, the red backdrop, the cyan triangle and dots and
   // the orange hours of his link are gone; its layout and nudges are his.
   { name: "B-Uhr, type B", note: "Navigator's watch, 1941: minutes outside and large, hours inside and small [1.9]", settings: {
@@ -190,23 +190,18 @@ export const DIALS = [
     ],
     da_on: true, da_kind: 0, da_at: 2, da_shape: 2, da_r: 8.6, da_w: 3.4, da_h: 3.4, da_frame: 0, da_clear: 0.4, da_text_c: [0.98, 0.97, 0.93, 1], da_disc_c: [0.98, 0.45, 0.38, 1] } },
   // Okay's own watch (15 Oct 2026, 07:45: "add this 'default' face to gallery as well"; 07:48: "the purple you've been
-  // working with"): first until 4.49, last since (#286: "Okay's watch last")
+  // working with"): last in the Gallery (#286: "Okay's watch last")
   { name: "Okay's watch", note: "Okay's own watch, purple, a 24-hour ring inside the twelve (15 Oct 2026; the dial the tool opened with until 16 Oct)", settings: OKAYS_WATCH },
 ];
 
-// run as `node gallery.mjs`: write src/gallery.js (imported, as by test/links.mjs, it only gives DIALS)
+// run as `node gallery.mjs`: write src/gallery.js (imported, as by test/linktrip.mjs, it only gives DIALS)
 if (process.argv[1]?.endsWith("gallery.mjs")) {
   const G = await engines();
   for (const f of FONT_LIST) G.add_font(fs.readFileSync(path.join(here, "fonts", f.file)));
-  const hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(v * 255).toString(16).padStart(2, "0")).join("");
   const out = [];
   for (const { name, note, settings } of DIALS) {
     for (const ring of settings.rings) if (ring.ps && !G.has_font(ring.ps)) throw new Error(`${name}: no font ${ring.ps}`);
-    const S = G.fresh_settings({ ...settings, guides: true });
-    const statik = G.build_static(S), R = S.dial_d / 2 + 0.6;
-    const shapes = G.scene(S, statik, S.t, false).map((i) => `<path d="${(i.role === "hand" ? G.turned(i.path, i.angle) : i.path).svg(2, true)}" fill="${hex(i.fill)}"${i.fill[3] < 1 ? ` fill-opacity="${i.fill[3]}"` : ""}/>`).join("");
-    const plate = S.c_plate, light = 0.2126 * plate[0] + 0.7152 * plate[1] + 0.0722 * plate[2] > 0.5;      // a white dial: its plate reads light (#286: the whites zigzag)
-    out.push({ name, note, light, link: link(S), picture: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-R} ${-R} ${2 * R} ${2 * R}">${shapes}</svg>` });
+    out.push({ name, note, ...card(G, settings) });
     while (G.NOTES.length) console.log("note:", G.NOTES.shift());
   }
   fs.writeFileSync(path.join(here, "src/gallery.js"), `// Written by web/gallery.mjs — do not edit. The Gallery's dials, as links, each with a small picture.

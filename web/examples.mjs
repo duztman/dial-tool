@@ -10,7 +10,7 @@
 import fs from "fs";
 import path from "path";
 import { engines } from "./test/engines.mjs";
-import { link } from "./links.mjs";
+import { card } from "./links.mjs";
 import { FONT_LIST } from "./src/font_list.js";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
@@ -44,7 +44,7 @@ const OKAY = {
     "ha_second": { "shape": 8, "len": 13.4, "w": 0.12, "tail": 3, "feature": 0.9, "feature_at": 80, "c": [0.82, 0.12, 0.1, 1] } },
 };
 
-/** the five dials' settings, their Mac fonts swapped for open ones (also for test/links.mjs) */
+/** the five dials' settings, their Mac fonts swapped for open ones (test/linktrip.mjs reads them too) */
 export function example_dials() {
   return PICK.map(([file, name]) => {
     const settings = OKAY[file] ? structuredClone(OKAY[file]) : JSON.parse(fs.readFileSync(path.join(here, "../web/presets", file + ".json"), "utf8"));
@@ -59,15 +59,10 @@ export function example_dials() {
 if (process.argv[1]?.endsWith("examples.mjs")) {
   const G = await engines();
   for (const f of FONT_LIST) G.add_font(fs.readFileSync(path.join(here, "fonts", f.file)));
-  const hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(v * 255).toString(16).padStart(2, "0")).join("");
   const out = [];
   for (const { file, name, settings } of example_dials()) {
     for (const ring of settings.rings || []) if (ring.ps && !G.has_font(ring.ps)) throw new Error(`${file}: no open font for ${ring.ps}`);
-    const S = G.fresh_settings({ ...settings, guides: true });
-    const statik = G.build_static(S), size = G.page_mm(S), R = S.dial_d / 2 + 0.6;
-    const shapes = G.scene(S, statik, S.t, false).map((i) => `<path d="${(i.role === "hand" ? G.turned(i.path, i.angle) : i.path).svg(2, true)}" fill="${hex(i.fill)}"/>`).join("");
-    const plate = S.c_plate, light = 0.2126 * plate[0] + 0.7152 * plate[1] + 0.0722 * plate[2] > 0.5;      // a white dial (#286)
-    out.push({ name, light, link: link(S), picture: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-R} ${-R} ${2 * R} ${2 * R}">${shapes}</svg>` });
+    out.push({ name, ...card(G, settings) });
     while (G.NOTES.length) console.log("note:", G.NOTES.shift());
   }
   const text = `// Written by web/examples.mjs — do not edit. Five of the guidebook's classic dials, as links, each with a small picture.

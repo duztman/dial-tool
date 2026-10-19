@@ -44,11 +44,8 @@
   .play .arc-cap { fill: color-mix(in srgb, var(--play-light) calc(var(--pulse, 0) * var(--play-pulse)), var(--play)); }      /* --pulse: 0 to 1, set by app.js (pulse) with each beat while time runs */
   .play .arc-hi { fill: none; stroke: var(--play-light); stroke-linecap: round; }
   .bar .lead .play:hover .arc-cap { fill: color-mix(in srgb, var(--play-light) calc(12% + var(--pulse, 0) * var(--play-pulse)), var(--play)); }
-  /* how fast: a box with its track — a black line with a knob at each end, 1X and 720X over them (no ball since 15 Oct, 01:59); earlier notes:
-     the ball, outside the box, in the middle of the room between the box and the bar's top, at the hours' size
-     (Okay: "Remove the humps but the one at 1x. Hump=ball in the middle of the line. Put 1x above the dot centered
-     in the remaining gap outside the box in ruler number's font size"). --at: how far along the track, 0 to 1; the
-     thumb's half-width at each end, so the ball is under the thumb's centre at 1×. */
+  /* how fast: a box with its track — a black line with a knob at each end, 1X and 720X over them. --at: how far along
+     the track, 0 to 1; the thumb's half-width at each end, so the knob is under the thumb's centre at 1×. */
   .bar .lead .speeds { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--u2); height: var(--bar-control); padding: 0 var(--speed-pad); border: var(--hair) solid var(--bar-light); }
   .bar .speedtrack { position: relative; flex: 1; min-width: 0; height: 100%; }
   .bar .humps { position: absolute; inset: 0 calc(var(--speed-thumb) / 2); pointer-events: none; }
@@ -79,12 +76,12 @@
   .bar .timewell:hover { background: var(--bar-field); }
   .bar .lead .timewell .time { width: var(--time-chars); height: 100%; padding: 0; border: 0; background: none; font-family: var(--time-face); font-size: var(--t-time); font-weight: 300; font-variant-numeric: tabular-nums; letter-spacing: var(--time-track); color: var(--bar-light); translate: var(--ink-dx, 0) var(--ink-dy, 0); }      /* Dial Time, its figures as thin as the box's line (#284) */
   /* AM · PM in the same face and size as the time, its box attached to the time's (Okay, 16 Oct 2026, on 4.44: "am
-     attached to time and same size barlow"; a smaller box beside it in 4.44), one width for both words. A frame,
-     never filled (Okay, 15 Oct 2026, 00:18); less room beside its word since 4.45.5 (#306: "Reds reduce hor padding") */
+     attached to time and same size barlow"), one width for both words. A frame,
+     never filled (Okay, 15 Oct 2026, 00:18); little room beside its word (#306: "Reds reduce hor padding") */
   .bar .lead .timebox .half { box-sizing: content-box; width: var(--time-pm); height: calc(var(--bar-control) - 2 * var(--hair)); padding: 0 var(--u2); border: var(--hair) solid var(--bar-light); border-left: 0; font-family: var(--time-face); font-size: var(--t-time); font-weight: 300; letter-spacing: var(--time-pm-track); background: none; color: var(--bar-light); }
-  /* the date (4.62; Okay, 18 Oct 2026: "short date, 07/10/28 style, stacked … next to am, touching"): day, month, year
-     stacked in Inter SemiBold (Barlow Bold in 4.62: "three tier with barlow abort, try inter with appropriate weight for
-     that size"), its box touching AM · PM's as AM's touches the time's. A press
+  /* the date (Okay, 18 Oct 2026: "short date … stacked … next to am, touching"; 19 Oct: no year, "better fit inside
+     the bounding box"): day over month in Inter SemiBold ("try inter with appropriate weight for that size"), its box
+     touching AM · PM's as AM's touches the time's. A press
      opens the system's date picker, an input lying unseen under the box */
   .bar .lead .timebox .datewell { position: relative; display: flex; }
   .bar .lead .timebox .date { box-sizing: content-box; display: grid; grid-template-rows: repeat(2, var(--date-line)); align-content: center; justify-items: center; height: calc(var(--bar-control) - 2 * var(--hair)); padding: 0 var(--u2); border: var(--hair) solid var(--bar-light); border-left: 0; background: none; color: var(--bar-light); font: 600 var(--t-date)/var(--date-line) var(--date-face); font-variant-numeric: tabular-nums; letter-spacing: var(--date-track); }
@@ -99,7 +96,7 @@
   .bar .viewing { margin-left: auto; padding: 0 0 0 var(--margin); }      /* at the right; the room the day slider doesn't take lies before it. From its divider to what follows as far as from Fit to the window's right edge: the margin (Okay, 15 Oct 2026, 01:03: "equalize those gaps") */
   /* the zoom area (Okay, 18 Oct 2026, notes 2): the magnifier first, faint, nothing to press but its tag (how to zoom and
      move, under the pointer; a tap shows it on a touch screen); then − + FIT side by side, sharing their lines — FIT a
-     word button with NOW's room either side. (#315, 4.51.1: − + · the magnifier · FIT; until then words at the left.) */
+     word button with NOW's room either side (#315). */
   .bar .zoomsign { display: flex; align-items: center; color: var(--bar-light); cursor: help; }
   .bar .zooms { flex: none; display: flex; }
   .bar .zooms > .icon { flex: none; width: calc(var(--col) / 2); }

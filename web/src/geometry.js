@@ -12,11 +12,10 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.86";
+export const VERSION = "beta 4.87";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
-export const MM_PER_PT = 25.4 / 72;
 
-import { moment, window_text, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES, DISC_PLACES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
+import { moment, window_text, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
 const { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 const radians = (a) => a * PI / 180;
 const degrees = (a) => a * 180 / PI;
@@ -84,7 +83,7 @@ export const RING_BASE = {
   num_again: 0,                                    // Numbers: the count starts again after this many positions (0 = never), as on Ferguson's dial or a two-hour track (13 Oct 2026)
   guide: -1,                                       // its guide's colour (preview only, R5): a place in GUIDE_COLOURS · -1 = one by its place in the list (ring_guide) · -2 = none (13 Oct 2026)
   anchor: 0,                                       // numerals: what the radius measures to, a place in ANCHORS. 0 = the text's centre, as before (R31)
-  from: 0,                                         // ticks, markers, bands: what the radius measures to, a place in FROM — the mark's or band's outer end (as always until 4.47), its middle, or its inner end (Okay's notes, p. 9, #257: "resize from"). Starting at outer, every link draws as before (R31)
+  from: 0,                                         // ticks, markers, bands: what the radius measures to, a place in FROM — the mark's or band's outer end, its middle, or its inner end (Okay's notes, p. 9, #257: "resize from"). Starting at outer, every link draws as before (R31)
   cs: {},                                          // a band's sectors with a colour of their own: position → RGBA. Empty = all in the ring's colour (beta 4.6)
 };
 export const TYPE_KEYS = ["family", "ps", "size", "tracking", "lang", "axes", "features"];
@@ -178,8 +177,7 @@ export const DEFAULTS = {
   da_physics: true, xray: false,                   // the first window's `physics` · X-ray, every window's disc seen under a veil of the plate, preview only (4.72, #346)
   da_wh_link: false,                               // the first window's width and height linked, as every window's `wh_link` (#358, beta 4.57)
   gd_k_edge: 1, gd_k_axes: 0, gd_k_win: 1, gd_k_rings: 1, gd_k_sel: 4, gd_w: 1.0,
-  // shadows: preview only, never in a file (R5). A trial on branch try/shadows (Okay, 14 Oct 2026: "dummy preview
-  // only, do not do this on the live page yet"). One light, far away: it comes from a clock angle (sh_from, degrees)
+  // shadows: preview only, never in a file (R5, R26). One light, far away: it comes from a clock angle (sh_from, degrees)
   // at a height over the dial (sh_rise, degrees above the plate's face). Each hand floats at its own height over the
   // plate (mm); the cap's top is the top of the stack; the date discs lie sh_disc mm under the plate's face. A thing
   // of height z casts its shape shifted by z / tan(rise), away from the light, onto everything lower; each surface
@@ -190,9 +188,8 @@ export const DEFAULTS = {
   sh_on: true, sh_from: 270, sh_rise: 35, sh_dark: 25, sh_blur: false,
   sh_bevel: 0,                                     // the hands' bevels, 0–100 % (4.79; Okay, 19 Oct 2026: "Hand bevel off on default, add an adjuster"); 100 = as 4.77 drew them
   sh_hour: 0.15, sh_minute: 0.35, sh_second: 0.6, sh_cap: 0.75, sh_disc: 0.15,
-  gd_more: [],                                     // guides added by hand: lines, crosshairs, circles (GUIDE_MORE). gd_k_rings and gd_k_sel: unread since 13 Oct 2026, a ring's guide has the ring's own colour
-  // until beta 4.4 guides had two free colours with a strength each. Kept because old links and files carry
-  // them (R8, R31); nothing reads them now.
+  gd_more: [],                                     // guides added by hand: lines, crosshairs, circles (GUIDE_MORE). gd_k_rings and gd_k_sel: unread, a ring's guide has the ring's own colour
+  // the next five keys are unread: old settings files carry them (R8). Nothing writes them any more.
   gd_c: [0.0, 0.55, 0.9, 1], gd_strength: 50.0,
   gd_sel_c: [1.0, 0.45, 0.0, 1], gd_sel_strength: 95.0, gd_sel_w: 1.5,
 };
@@ -394,15 +391,14 @@ export function fresh_settings(over = null) {
 //   scheme is not read: the tool opens the First dial and says so.
 //   Scheme 2 (beta 4.43, #278 and #246's lossless parts): the lean settings, every key written as its code from
 //   LINK_KEYS, colours as hex, numbers to 3 decimals, the time to the second → JSON → deflate → Crockford's base 32
-//   (capitals and digits, no I L O U), after "2". Scheme 1 (until 4.42.5) was base 64 after "1."; it is not read.
+//   (capitals and digits, no I L O U), after "2". A scheme-1 link (base 64 after "1.") is not read (R31).
 
 export const LINK_SCHEME = 2;
 
 /** the topmost hand that shows: its place in HANDS, or -1 */
 export const top_hand = (S) => [2, 1, 0].find((i) => S["ha_" + HANDS[i]].on) ?? -1;
 /** the cap is part of the seconds hand (#262, beta 4.43): drawn with it; with no seconds hand, on the topmost hand
- *  only when asked (ha_cap_top). Until 4.43 it was drawn whatever the hands — a scheme-1 dial with no seconds hand
- *  loses its cap, one reason for scheme 2 (R31). */
+ *  only when asked (ha_cap_top). */
 export const cap_shows = (S) => S.ha_on && S.ha_cap > 0 && (S.ha_second.on || (S.ha_cap_top && top_hand(S) >= 0));
 
 // A key's code is its place in this list, written with CODE_DIGITS (one letter for the first 62, then two). The
@@ -1738,9 +1734,6 @@ function hand_items(S, t) {
 //  3 · DRAWING — the scene
 // ═════════════════════════════════════════════════════════════
 
-export const GUIDE = [0.0, 0.55, 0.9, 0.5];              // dial edge, date radius, axes
-export const GUIDE_RING = [0.0, 0.55, 0.9, 0.35];        // a ring's edges
-export const GUIDE_SELECTED = [1.0, 0.45, 0.0, 0.95];    // the ring being edited
 
 /** what to draw, bottom to top. Every export and the preview read this list (R26).
  *

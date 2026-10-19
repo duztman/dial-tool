@@ -5,18 +5,18 @@
   .handsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: center; min-height: calc(var(--head) + var(--unit)); border-top: var(--thick) solid var(--ink); }
   /* Windows: four cards the size of the example cards (five to a row), 12 · 3 · 6 · 9. They are tabs: the chosen one
      is ink. A window that isn't shown is quiet. The line under the section tabs is theirs. */
-  .windowcards { padding: calc(2 * var(--unit)) 0 0; border-top: var(--thick) solid var(--ink); }      /* no room under the cards: they are tabs, standing on the line of the pane they choose */
+  .windowcards { padding: var(--u4) 0 0; border-top: var(--thick) solid var(--ink); }      /* no room under the cards: they are tabs, standing on the line of the pane they choose */
   .windowcards .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-left: var(--lead); }      /* the four tabs start where the labels start (the eyes' column is left free) and end on the pane's line (Okay, 14 Oct 2026: "squeeze the paddings to fit tabs") */
   .windowcards .card { position: relative; display: grid; }
   .windowcards .card > button:first-child { display: grid; justify-items: center; gap: var(--u1); padding: var(--tab-pad) var(--unit); font-weight: 600; }
   .windowcards .card > button:first-child svg { display: block; }
   .windowcards .card > button:first-child.off:not(.on) { color: var(--grey); font-weight: 400; }
   /* the line between All hands and the hand tabs starts and ends where the tabs do (Okay, 16 Oct 2026: "Line under All
-     Hands: should end with the tabs"; it ran from margin to margin until then). The border keeps its hair of room, clear,
-     and the line is a stripe on it from the tabs' column on — as the pinned part's thick line is drawn (4.41.6) */
+     Hands: should end with the tabs"). The border keeps its hair of room, clear,
+     and the line is a stripe on it from the tabs' column on — as the pinned part's thick line is drawn */
   .handsbar + .tabsbar { border-top: var(--hair) solid transparent; background: linear-gradient(var(--rule) 0 0) 100% 0 / calc(100% - var(--lead)) var(--hair) no-repeat border-box; }
   /* tabs inside a section, always in view (Hands: Hour · Minute · Seconds): one line across the six columns */
-  .tabsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: end; min-height: calc(var(--head) + var(--unit)); padding-top: calc(1.5 * var(--unit)); border-top: var(--thick) solid var(--ink); }
+  .tabsbar { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); align-items: end; min-height: calc(var(--head) + var(--unit)); padding-top: var(--u3); border-top: var(--thick) solid var(--ink); }
   .tabsbar > .segs { grid-column: 2 / -1; }
   .tabsbar .segs { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }      /* equal columns, as the window cards': the Show box under a tab finds its edges (4.46.2) */
   .tabsbar .segs > button { height: var(--tab-high); font-weight: 600; }
@@ -54,7 +54,7 @@
      traveling show ticker"; "Shows bg darker, tick 3px smaller"). It stands in the tabs' own columns (--tabs, --tab:
      set by app.js), and where the tabs share a line (one line between two, above) it shares it too. Under it the
      line that opens what follows — a hand's thin black line (its pane has no heading: .headless), a window's pane's
-     thick one — with the same room over the line as under it (4.46.4; Okay: "Vertical gaps before after same";
+     thick one — with the same room over the line as under it (Okay: "Vertical gaps before after same";
      "Thick line stands here"): two units, as over the title on every heading — under the thin line counted from its
      foot to the first row's own white line, which stand a hairline each */
   .form > .showbox { display: grid; grid-template-columns: repeat(var(--tabs, 1), minmax(0, 1fr)); margin: 0 0 var(--u4) var(--lead); --tick: var(--show-tick); }

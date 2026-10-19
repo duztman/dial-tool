@@ -7,9 +7,9 @@
 //
 //   cd web && node fonts.mjs          (downloads only what is missing)
 //
-// To add a family: add a line to FAMILIES, run this, run build.mjs. The list was kept at 20 (Okay, 11 Oct 2026) — 21 since
-// Rubik (Okay, 15 Oct 2026, 11:29: "Ad rubik to the roster") — and is 42 since 17 Oct 2026: the top tier of the font research
-// (docs/font-tiers-2026-10-16.md, build list #313) joined it (Okay: "incorporate it … Add just font list to defaults").
+// To add a family: add a line to FAMILIES, run this, run build.mjs. The list is 42 families: Okay's
+// own 21 and the top tier of the font research (docs/font-tiers-2026-10-16.md, build list #313; Okay: "incorporate it …
+// Add just font list to defaults").
 // Sources: google — github.com/google/fonts, ofl/; routed — github.com/dse/routed-gothic; wiegel — a zip on peter-wiegel.de
 // (the fonts and their licence are taken out of it); datto — D-DIN from a GitHub mirror of Datto's own archive (Datto's page
 // and Font Squirrel are not reachable from a session). GL-Nummernschild comes from a Wiegel zip but is Gutenberg Labo's

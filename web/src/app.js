@@ -112,13 +112,12 @@ const SIGNS = {
 // the number popup's − and + (Okay's drawing, 16 Oct 2026, on 4.45.2: "thicker plus minus, rounded ends"): 22 points,
 // the sign 20 across, its line 3 — twice LINE, a pictured width (icons/check.mjs) — centred on whole points, so a 3
 // line covers whole screen dots
-const BIG = {                                      // the controller's − and + (Okay's second drawing, 18 Oct 2026, controller 2.svg): square ends, white on the discs (17 Oct to 4.51.1: round ends); at the controller's three quarters since 4.85, 6 thick and 30 long on 33 (8, 40 on 44 until then), drawn at the size shown (R33)
+const BIG = {                                      // the controller's − and + (Okay's second drawing, 18 Oct 2026, controller 2.svg): square ends, white on the discs; at the controller's three quarters, 6 thick and 30 long on 33, drawn at the size shown (R33)
   plus: icon(`<path d="M16.5 1.5V31.5M1.5 16.5H31.5" ${sw(6)} stroke-linecap="butt"/>`, 33),
   minus: icon(`<path d="M1.5 16.5H31.5" ${sw(6)} stroke-linecap="butt"/>`, 33),
 };
 // the − and + of every number box (4.64; Okay, 18 Oct 2026, 21:20: "Signs grow inside the box as much as these new thick
-// bordered ones"): 12 across on 16, LINE, round ends — half the box's cell, as the Positions blocks' signs were. (The
-// tiny ± beside a quiet number, 6 across in DENSE, went with it: "small plusminus … retired".)
+// bordered ones"): 12 across on 16, LINE, round ends — half the box's cell.
 const STEP = {
   plus: icon(`<path d="M8.25 2.25V14.25M2.25 8.25H14.25"/>`),
   minus: icon(`<path d="M2.25 8.25H14.25"/>`),
@@ -147,8 +146,7 @@ const EYE = {                                      // the left column's sign: op
 };
 const eye = (open) => icon(EYE[open ? "open" : "closed"]);
 const NONE_SIGN = SIGNS.sheet + `<path d="M6.75 8.25L9.75 11.25M9.75 8.25L6.75 11.25" ${sw(SLANT)}/>`;      // the sheet with a cross: this font has none of it
-// a "none" in a row of colour dots: a slashed circle at the dot's own size (10), its outer edge where it was (4); so small, LINE is enough
-// on 14 since 4.79 (Okay, 19 Oct 2026, 00:59: "the oslashes for no went too small"; on 10 from #271 to 4.78)
+// a "none" in a row of colour dots: a slashed circle on 14, larger than the dots (Okay, 19 Oct 2026, 00:59: "the oslashes for no went too small"); so small, LINE is enough
 const none_dot = `<svg viewBox="0 0 14 14" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${LINE}" stroke-linecap="round"><path d="M7 ${1 + LINE / 2}A${6 - LINE / 2} ${6 - LINE / 2} 0 1 1 7 ${13 - LINE / 2}A${6 - LINE / 2} ${6 - LINE / 2} 0 1 1 7 ${1 + LINE / 2}M4.25 4.25L9.75 9.75"/></svg>`;      // ring and stroke one path: where they meet nothing doubles, at any opacity (Okay, 16 Oct 2026, #271)
 // a cross at the same size, in its place on an added guide's line: remove it (#305, 4.45.3)
 const cross_dot = icon(`<path d="M2.25 2.25L7.75 7.75M7.75 2.25L2.25 7.75" ${sw(SLANT)}/>`, 10);
@@ -175,7 +173,7 @@ const PICS = {
   // same (Okay, 13 Oct 2026: "equalize contrast"): many thin ticks (1), eight thicker marks (2), four numbers in the
   // pixel font at its own size (8), a band (3). These are the dial's own widths, pictured, not lines: kept.
   // reworked 4.50 (#255, Okay's notes, p. 3: "a smaller optical size; abort silkscreen there … a fat Inter"): the
-  // drawings a size smaller in their box (radius 9.75, was 11), the figures and words in the tool's sans, bold (.figure)
+  // drawings a size smaller in their box (radius 9.75), the figures and words in the tool's sans, bold (.figure)
   kind: (i) => icon([
     `<path d="${ticks(24, 6.75, 9.75, 12)}" stroke-width="1" stroke-linecap="butt"/>`,
     `<path d="${ticks(8, 6.25, 9.75, 12)}" stroke-width="2" stroke-linecap="butt"/>`,
@@ -194,7 +192,7 @@ const PICS = {
     `<path d="M11 4H27L19 23Z" ${solid}/>`,
     // none: the baton's outline in dots (a place left empty). 19 Oct 2026 (Okay: "This none icon needs to be dotted.
     // each dot on corners, fill sides with dots with equal spaces"): a dot at each corner of a 4 × 18 outline inside
-    // the baton's 5 × 19 and every 2 along its sides — the short sides two steps, the long nine; dashes until 4.80
+    // the baton's 5 × 19 and every 2 along its sides — the short sides two steps, the long nine
     // (3.5 apart with no middle dot on the short sides, it read as two columns, the grip's sign)
     [[17, 19, 21].flatMap((x) => [[x, 4.5], [x, 22.5]]), [1, 2, 3, 4, 5, 6, 7, 8].flatMap((i) => [[17, 4.5 + 2 * i], [21, 4.5 + 2 * i]])].flat()
       .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="0.625" ${solid}/>`).join(""),
@@ -220,7 +218,7 @@ const PICS = {
     `<path d="M4 11.75A13 13 0 0 1 22 11.75L19.5 15.25A9 9 0 0 0 6.5 15.25Z" ${sw(CURVE)}/>`,
   ],
   // what a window shows, in as few lines as say it: one figure · one letter · a half filled · a crescent — on 30 × 21
-  // (Okay, 16 Oct 2026, on the Windows page's mock-ups: "smaller icons"; 38 × 27 until 4.46.1)
+  // (Okay, 16 Oct 2026, on the Windows page's mock-ups: "smaller icons")
   window: [
     box(5.25, 2.25, 19.5, 16.5, 1.5) + `<path d="M12.75 8L15.25 6V15" ${sw(CURVE)}/>`,
     box(2.25, 4.25, 25.5, 12.5, 1.5) + `<path d="M10.75 14V7L15 12L19.25 7V14" ${sw(SLANT)}/>`,
@@ -233,7 +231,7 @@ const PICS = {
 /** a hand's picture is the hand itself, drawn by the geometry with a standard size (twice its units, so already on whole dots). */
 const hand_pic = (i) => {
   // the disc: its marker inside it, cut out, as a disc hand's window is (Okay, 18 Oct 2026, notes 2: "Preview icon shows
-  // wedge outside the disc, correct it"); until 4.51.1 the marker ran from the disc's edge to 13, outside it
+  // wedge outside the disc, correct it")
   const disc = G.HAND_SHAPES[i] === "disc" ? { len: 2.75, disc_d: 6, mark_len: 2, mark_w: 1.25 } : {};
   const p = G.hand_shape({ ...G.HAND_BASE, shape: i, len: 13, w: 2.2, tail: 3, tip: 4.5, feature: 4.4, feature_at: [0, 0, 0, 30, 0, 0, 45, 62, 62][i] || 0, round: 0, wall: 0, counter: 0, disc_d: 6, mark_len: 7, mark_w: 2.2, ...disc });
   return `<svg viewBox="-3 -14 6 18.5" width="12" height="38" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;
@@ -371,7 +369,7 @@ const TOOL_ICONS = {
   // icon them"): on 18, DENSE, as the Guides and Shadows signs — a case with its four lugs and crown; a strap's two edges
   // through a buckle; a disc's edge whole round a dashed one under it
   // a case from above (4.82; Okay, 19 Oct 2026: "Case icon … need work"): its bezel and dial opening, the lugs running
-  // out of it (they floated a dot clear of it until 4.81), the crown at 3
+  // out of it, the crown at 3
   case: `<g ${sw(DENSE)}><circle cx="9.25" cy="9.25" r="5"/><circle cx="9.25" cy="9.25" r="2.5"/><path d="M6.25 1.25V5.25M12.25 1.25V5.25M6.25 13.25V17.25M12.25 13.25V17.25M14.25 9.25H16.75"/></g>`,
   strap: `<g ${sw(DENSE)}><path d="M6.25 1.25V6.25M12.25 1.25V6.25M6.25 12.25V17.25M12.25 12.25V17.25"/><rect x="4.75" y="6.25" width="9" height="6"/><path d="M9.25 6.25V12.25"/></g>`,
   xray: `<g ${sw(DENSE)}><circle cx="9.25" cy="9.25" r="6.5"/><circle cx="9.25" cy="9.25" r="3.25" stroke-dasharray="1.25 1.3" stroke-linecap="butt"/></g>`,
@@ -411,7 +409,7 @@ const TOOL_ICONS = {
     return `<mask id="iris-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask>`
       + `<circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/><path class="x" d="M-0.75 -1L31.25 31M31.25 -1L-0.75 31" stroke-width="1" stroke-linecap="butt" mask="url(#iris-cut)"/>`;
   })(),
-  // the showcase switch since 4.86 (Okay, 19 Oct 2026, 12:46: "Swap icons but not places for showcase and tiny preview.
+  // the showcase switch (Okay, 19 Oct 2026, 12:46: "Swap icons but not places for showcase and tiny preview.
   // Tiny gets the dot, showcase gets the eye"): the iris above with its lids drawn round it — the eye switch's own eye,
   // drawn where that one is left out — and in the showcase the same X, cut by the lids
   show_eye: (() => {
@@ -429,7 +427,7 @@ const TOOL_ICONS = {
   // the Guides switch, on 18: a target and its cross; its lines crowd, so DENSE. Okay's drawings (14 Oct 2026, 04:11):
   // guides: a target, its centre ring dashed in six, square-ended (a dash pattern is a texture, not line ends), ink
   // traps where the arms cross the ring. One drawing, on and off: only how much of it shows changes (Okay, 15 Oct
-  // 2026, 03:41: "Guides off: icon should not change"; until 4.38.11 off was a hollow slash and a plain centre ring)
+  // 2026, 03:41: "Guides off: icon should not change")
   guides: `<mask id="guides-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18"><rect width="18" height="18" fill="white" stroke="none"/>${INK_TRAPS}</mask>`
     + `<g ${sw(DENSE)}><g mask="url(#guides-cut)"><circle cx="9.25" cy="9.25" r="5.5"/><path d="M9.25 1.25V5.75M9.25 12.75V17.25M1.25 9.25H5.75M12.75 9.25H17.25"/></g>`
     + `<circle cx="9.25" cy="9.25" r="2" stroke-dasharray="1.25 0.844" stroke-linecap="butt" transform="rotate(-107.9 9.25 9.25)"/></g>`,
@@ -490,7 +488,7 @@ const custom = (name, o = {}) => ({ kind: "custom", name, ...o });
 
 // a ring's radius as a number row: what the radius button's pop-up shows, and the Resize pane's row. A numeral's
 // radius can measure to its centre, its baseline or its top: the small menu beside the label, in the order Okay wrote
-// them; what is stored is the place in G.ANCHORS (R9). A mark's or a band's, since 4.47 (#257, "resize from"), to its
+// them; what is stored is the place in G.ANCHORS (R9). A mark's or a band's (#257, "resize from"), to its
 // outer end (as always), its middle or its inner end: the same menu, a place in G.FROM.
 const RADIUS_ROWS = {
   outer: num("r", "Outer radius", 0, 25, 0.05, { scope: "ring", menu: { key: "from", title: "What the radius measures to", items: [[0, "Outer"], [1, "Middle"], [2, "Inner"]] } }),
@@ -518,7 +516,7 @@ const VALUE_PICS = {                               // a value button's drawing, 
 // a language in the list, by its name; on its button, by two letters ("zh-Hans" → ZH; the font's own choice → "Lang.")
 const FONT_DARK_KEY = "dial-tool-font-dark";      // the font sheet's ground, light or dark, kept for the session (#276)
 const LANG_NAMES = { default: "As the font sets it", tr: "Turkish", nl: "Dutch", de: "German", pl: "Polish", ro: "Romanian", ca: "Catalan", ar: "Arabic", fa: "Persian", "zh-Hans": "Chinese, simplified", ja: "Japanese" };
-const lang_short = (code) => (code === "default" ? "EN" : code.slice(0, 2).toUpperCase());      // none chosen: EN, what the font sets by itself (#273, 4.51; Okay's notes, p. 12); "Lang." until 4.50.2: the button said what it was for (Okay, 13 Oct 2026: "Lang.", case and point as written; "LAN" before, a dash before that)
+const lang_short = (code) => (code === "default" ? "EN" : code.slice(0, 2).toUpperCase());      // none chosen: EN, what the font sets by itself (#273; Okay's notes, p. 12)
 
 // a tile's word is one line: a name too long for a tile is said shorter there (its tag still says it whole)
 const TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip" };
@@ -559,7 +557,6 @@ const shape_is = (...shapes) => (T) => T.on && shapes.includes(G.window_shape(T)
 // the Windows cards, left to right: 12 · 3 · 6 · 9. slot = which of the four windows a card is (window 1, the date
 // window of old, starts at 3, so the second card is its); at = that place in G.DATE_AT.
 const WINDOW_CARDS = [{ slot: 1, at: 4 }, { slot: 0, at: 0 }, { slot: 2, at: 2 }, { slot: 3, at: 3 }];
-const HAND_NAMES = ["Hour hand", "Minute hand", "Seconds hand"];
 const TAB_NAMES = { Date: "Windows" };            // the section's number and key stay "Date" (R8, R9); its tab says what it now holds
 const H = { scope: "hand" };
 const cap_rows = (S) => S.ui_hand === G.top_hand(S) && (S.ha_second.on || S.ha_cap_top);      // the cap's size and colour: under the hand it belongs to (#262)
@@ -601,7 +598,7 @@ const ROWS = {
     custom("ring_line", { pin: true }),
     // first visit: every pane under the pinned part folded, its line saying what is in it (Okay, 16 Oct 2026, #270)
     // a numerals ring opens with its font (Okay, 16 Oct 2026, #296: "Move fonts top of adjustments in rings that
-    // involves fonts"); at the end of the page until 4.47
+    // involves fonts")
     // a text ring's words come first (#297, 4.48): what it says, then its font
     hdr("Text", { folded: true, show: kind_in("text") }),
     txt("custom", "Text", { show: kind_in("text") }),
@@ -668,7 +665,7 @@ const ROWS = {
     pick("mode", "Placement", G.MODES, PICS.mode, { show: with_text }),
     hdr("Band", { folded: true, show: kind_in("band") }),
     num("fill", "Fill % of step", 1, 100, 1, { show: kind_in("band") }),      // its width stands in Resize (4.47)
-    // one numeral or one mark of its own (#252; every kind but a band since 4.78, #349: "Each marker selectable and
+    // one numeral or one mark of its own (#252; every kind but a band, #349: "Each marker selectable and
     // editable … a tick can grow or become anything else, a wedge"): which one — picked in the list, or on the dial, a
     // first press choosing the ring and a second the one pressed — and its own radius, angle, turn and size; a mark
     // also its own shape. The one chosen is outlined on the dial while this pane is open
@@ -733,7 +730,7 @@ const ROWS = {
     custom("window_cards", { pin: true, bar: true }),      // pin: always in view, like the hand tabs (Okay, 13 Oct 2026) ·         // four cards, 12 · 3 · 6 · 9: where each window is, and tabs for the panes below (Okay, 12 Oct 2026)
     // the cards are tabs only; a window is shown by the tick on its heading line (Okay, 13 Oct 2026, after trying a
     // small switch on each card: "unnecessarily complex… enable window tickmark is the way to go. leave them as tabs")
-    custom("show_box", { ...W, bar: true }),      // the Show box, as a hand's (#261): its tick, "Show this window" on the heading line until 4.46
+    custom("show_box", { ...W, bar: true }),      // the Show box, as a hand's (#261): its tick on the heading line
     // the Windows page (#263, 4.46.1; Okay's marks on three mock-ups, 16 Oct 2026): first where it is and what it
     // shows, under Window at x; then the hole itself under Shape — its shape buttons on that heading's line, then
     // Radius ("ok but below shapes"), its sizes, its colours on one line, its text and font, its frame
@@ -757,7 +754,7 @@ const ROWS = {
     custom("window_shape", { ...W, head: true, text: "Shape", show: win_on }),
     num("r", "Radius", 2, 18, 0.05, { ...W, show: win_on }),
     // width over height, two rows, a LINK pill on the line between them (Okay's notes 2, #358: "Two sliders on one line
-    // is not a good idea … two stories tall … like in illustrator"); one line from 4.46 to 4.55 (#265)
+    // is not a good idea … two stories tall … like in illustrator"; #265)
     num("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("rectangle", "arc", "pair"), link: "wh_link" }),      // a big date's: both holes together (4.74)
     num("h", "Height", 0.5, 5, 0.05, { ...W, show: shape_is("rectangle", "arc", "pair"), poplink: "wh_link" }),      // poplink: the pair's LINK in its controller too, as in Width's (4.86; Okay, 19 Oct 2026: "tapping second item in the linkees should also trigger button")
     num("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("arch", "half"), id: "window-w-Width-arch" }),      // its own id: the line above has window-w-Width
@@ -801,7 +798,7 @@ const ROWS = {
     custom("export_wearos"),
     custom("wearos_name"),
     custom("wearos_pkg"),
-    hdr("Print", { folded: true }),                                  // what only the printed or etched dial needs (was "For production" until beta 4.19)
+    hdr("Print", { folded: true }),                                  // what only the printed or etched dial needs
     chk("out_production", "Mono print mask"),
     chk("out_mirror", "Mirrored, for toner transfer"),
     // a print sheet (4.75, #348; Okay's notes 2: "print page preparation, preview, copies, stacks — something simple,
@@ -851,7 +848,7 @@ const speed_word = (k) => (k >= 10 ? String(Math.round(k)) : String(+k.toFixed(k
 const frac = (x) => ((x % 1) + 1) % 1;
 const PULSE_MOST = 6;      // the play button's pulse: at most this many a second, unless the movement's own beat is more (#282; 3 in 4.44 — Okay: "Play button can go faster in animation"; the three-flash limit is for flashes over a large part of the view, not a 31-point button)
 const PULSE_RISE = 0.03;   // the triangle's flash: how much of it is the rise — next to nothing, a few milliseconds — before the eased fall (#308; Okay, 17 Oct 2026: "like a flash: zero to bright in milliseconds, then slow descent. but all very quickly"; a fifth until 4.49.2)
-const PULSE_FLASH = 0.4;   // …and how much of a beat the whole flash takes (half until 4.49.2: "all very quickly")
+const PULSE_FLASH = 0.4;   // …and how much of a beat the whole flash takes (Okay: "all very quickly")
 // each unit's ink in Dial Mono, in em, from its outlines (fonts/ui/mono_font.py prints it): [left of the advance's
 // start, width, top over the baseline, height]. The unit box is drawn round it (size_unit, #302)
 const UNIT_INK = { mm: [0.062, 1.076, 0.56, 0.56], pt: [0.088, 1.035, 0.705, 0.885], in: [0.082, 1.032, 0.78, 0.78], lig: [0.029, 1.683, 0.78, 0.96], thou: [0.052, 2.262, 0.73, 0.74] };      // the play button's pulse: at most this many a second, unless the movement's own beat is more (#282)
@@ -1311,7 +1308,7 @@ class DialTool {
     fit_button.onclick = () => { this.fit(); this.render(); };
     // the magnifier: first, before − + FIT, which stand together; how to zoom and move is in its tag, under the pointer
     // (Okay, 18 Oct 2026, notes 2: "The magnifying glass moves to the left before minus, plus and fit snap together …
-    // Hovering on the mag. glass tells these details. Remove details from the left"). Until 4.51.1: words at the left.
+    // Hovering on the mag. glass tells these details. Remove details from the left").
     const touch = matchMedia("(hover: none), (pointer: coarse)").matches;
     const zoom_sign = el("span", { className: "zoomsign", tabIndex: 0, role: "note", ariaLabel: "How to zoom and move" });
     zoom_sign.dataset.tip = touch ? "Pinch to zoom · two fingers move" : "⌘ + scroll zooms · drag moves · pinch on a trackpad";
@@ -1328,14 +1325,13 @@ class DialTool {
           fit_button)));
     this.set_speed(1);
     const guides = this.guides_box();
-    // on the preview: undo · redo top left, beside the panel (Okay, 13 Oct 2026) · Tiny Preview top right (4.59, #337; the
-    // Guides switch stood there until 4.58) · bottom left, top to bottom: Backdrop, Guides, Shadows
+    // on the preview: undo · redo top left, beside the panel (Okay, 13 Oct 2026) · Tiny Preview bottom right (#337) · bottom left: Backdrop, Shadows
     // a note on the preview (R17, R31: an old link): a dark pill under the header's line; a press puts it away, and so
     // does the first change to the dial
     this.note = el("button", { type: "button", className: "previewnote", id: "preview-note", hidden: true, title: "Put this note away", onclick: () => { this.note.hidden = true; } });
     // the top right corner, one column, top to bottom: Guides (its list dropping), the case and (with a case) its strap,
     // X-ray (4.86; Okay, 19 Oct 2026, 12:46: "Guides case and xray move top right corner of the canvas, stacked in that
-    // order"; Guides at the bottom left 4.59–4.85, the case at the top left in 4.82–4.85, X-ray at the bottom left)
+    // order")
     const corner = el("div", { className: "corner" }, guides, ...this.case_box(), this.xray_box());
     this.main = el("main", {}, this.svg, this.tip, this.note, this.undo_box(), this.tiny_box(), corner, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.ten_pill, this.hands_key, this.sun_hint);
     this.day_strip(this.day_box);
@@ -1343,7 +1339,6 @@ class DialTool {
     root.append(this.sheet());      // a phone's gripper, on the drawer's top line
     requestAnimationFrame(() => this.level_title());
     this.play_icon();
-    try { localStorage.removeItem("dial-tool-panel"); } catch (e) { /* not kept */ }      // the panel can't be put away any more: forget that it was
     this.watchers.push(new ResizeObserver(() => this.resized()));
     this.watchers.at(-1).observe(this.svg);
     // the bar's height, for the rows that make room for it (a phone; the showcase closes its row): kept while it is in place
@@ -1718,13 +1713,6 @@ class DialTool {
     app.classList.toggle("away", on);
   }
 
-  /** the whole panel, away or back: the dial gets the window. Remembered by this browser. (Since #190 nothing in
-   *  the window calls it; kept for the notes.) */
-  show_panel(on) {
-    $("#app").classList.toggle("nopanel", !on);
-    try { localStorage.setItem("dial-tool-panel", on ? "on" : "off"); } catch (e) { /* not kept */ }
-  }
-
   // ── units ────────────────────────────────────────────────
   //   Lengths are kept in mm (R1). The box at the panel's top right chooses the unit they are shown and typed in;
   //   it says the unit's short name and keeps its size. Its menu: the units by their full names.
@@ -1809,7 +1797,7 @@ class DialTool {
     // only those words take you there (Okay, 04:59: "we need affordance"); pressed again, it shuts. In the showcase
     // it is an X, the way out
     const iris = el("button", { type: "button", className: "iriskey", id: "iris-box", title: "The showcase", ariaLabel: "The showcase" });
-    iris.innerHTML = icon(TOOL_ICONS.show_eye, 30);      // the eye since 4.86 (the iris alone until then, now Tiny Preview's)
+    iris.innerHTML = icon(TOOL_ICONS.show_eye, 30);      // the eye (Okay, 19 Oct 2026: "showcase gets the eye")
     iris.setAttribute("aria-pressed", "false");
     iris.onclick = () => { if (this.show) this.showcase(false); else this.iris_open(this.iris_box.getAttribute("aria-expanded") !== "true"); };
     this.iris_go = el("button", { type: "button", className: "irisgo", id: "iris-go", textContent: "Activate showcase", onclick: () => this.showcase(true) });
@@ -1882,16 +1870,16 @@ class DialTool {
     return box;
   }
 
-  /** Tiny Preview (#337; Okay's notes 2, 18 Oct 2026: "Its button is top-right where 'Guides' are, regular eye as icon
-   *  for now … pops up in place when clicked, not editable, just a 100% preview. If the dial is 40mm, this guy is
-   *  40mm + appropriate padding. Has a shadow, and like a window it can be dragged and dropped anywhere. Top of
-   *  everything. On its top left an eye appears on hover or tap, that hides it, it goes back to its place"). The dial
+  /** Tiny Preview (#337; Okay's notes 2, 18 Oct 2026: "pops up in place when clicked, not editable, just a 100%
+   *  preview. If the dial is 40mm, this guy is 40mm + appropriate padding. Has a shadow, and like a window it can be
+   *  dragged and dropped anywhere. Top of everything. On its top left an eye appears on hover or tap, that hides it, it
+   *  goes back to its place"). Its button at the preview's bottom right, the iris as its sign (19 Oct 2026). The dial
    *  as its SVG file draws it — at the browser's millimetres (96 to the inch: "approximation fine for now", 18 Oct),
    *  its margins round it on the backdrop — redrawn at most five times a second while the dial changes. */
   tiny_box() {
     const button = el("button", { type: "button", className: "onview tinyopen", id: "tiny-open", ariaLabel: "Tiny preview" });
     button.dataset.tip = "Tiny preview: the dial at its own size";
-    button.innerHTML = icon(TOOL_ICONS.iris, 30);      // the iris alone, the showcase's sign until 4.85 (4.86, Okay: "Tiny gets the dot, showcase gets the eye"); a plain eye until then
+    button.innerHTML = icon(TOOL_ICONS.iris, 30);      // the iris alone (Okay, 19 Oct 2026: "Tiny gets the dot, showcase gets the eye")
     const shut = el("button", { type: "button", className: "tinyshut", id: "tiny-shut", ariaLabel: "Put the tiny preview away" });
     shut.innerHTML = eye(true);
     const face = el("div", { className: "tinyface" });
@@ -2105,7 +2093,7 @@ class DialTool {
     return d && !d.fits ? d.reach - (this.S.dial_d / 2 - G.DISC_RIM) : 0;
   }
 
-  /** guides, at the preview's bottom left since 4.59 (its top right from 12 Oct 2026, Okay, to 4.58): a switch (a bullseye and the word; solid outline = on,
+  /** guides, at the preview's top right (Okay, 19 Oct 2026): a switch (a bullseye and the word; solid outline = on,
    *  dashed = off) and, joined to it, an arrow that drops their list: the five kinds of guide, each with an eye and
    *  one of eight colours; one thickness; Reset. No free colours here. */
   guides_box() {
@@ -2122,8 +2110,8 @@ class DialTool {
       list.hidden = !on; more.setAttribute("aria-expanded", String(on));
       if (!on) return;
       this.sync_guides();
-      // its room: from its switch down to the preview's bottom edge, measured now (4.79: a long list ran past the top of an
-      // iPad's screen; from the top edge down to the switch until 4.85, when the list opened upward)
+      // its room: from its switch down to the preview's bottom edge, measured now (a long list ran past the top of an
+      // iPad's screen)
       const m = this.main.getBoundingClientRect(), g = this.guides_tick.getBoundingClientRect();
       list.style.setProperty("--list-room", `${Math.max(m.bottom - g.bottom - 2 * parseFloat(getComputedStyle(list).getPropertyValue("--list-gap") || 0), 120)}px`);
       requestAnimationFrame(() => this.guides_more_below && this.guides_more_below());
@@ -2640,8 +2628,7 @@ class DialTool {
       const field = el("input", { type: "text", id, inputMode: "decimal", title: "1.2 sets · +0.5 adds · x0.5 multiplies · /2 divides" });
       // under a finger (or a pen) a row's slider opens the controller, tapped or slid — its knob is small for a fingertip;
       // the field takes typing and − + step, as with a mouse (Okay, 18 Oct 2026, 22:35: "On phones and ipad tapping or
-      // sliding slider or title opens controller, you can type in box or tap plusminus"; from 4.60 to 4.67 the field and
-      // the − + opened it instead)
+      // sliding slider or title opens controller, you can type in box or tap plusminus")
       // …and the same finger goes on sliding it, without lifting (4.85; Okay, 19 Oct 2026, 12:30: "On ipad, activate does
       // not immediately allow me to scrub, it should. Like click and drag adjusters we have. The popup is just for
       // accuracy, does not dictate start of the movement"): the controller's slider follows the finger (value_pop_scrub)
@@ -2697,11 +2684,10 @@ class DialTool {
       if (row.bare) { label.textContent = ""; label.className = "blank"; slider.ariaLabel = field.ariaLabel = row.text; field.title = row.text + " · " + field.title; }
       if (row.inpop) slider.ariaLabel = field.ariaLabel = row.text;      // the popup's head says its name too (4.49.2)
       if (!row.inpop && !row.side && !row.bare && !row.button && !row.block) this.name_opens(label, row);      // form A: its name opens the popup (#249)
-      // one number box for the whole tool (4.64; Okay, 18 Oct 2026, 21:20: "This version of boxes win: small plusminus and
+      // one number box for the whole tool (Okay, 18 Oct 2026, 21:20: "This version of boxes win: small plusminus and
       // these new thick border ones are retired, these replace all … Number box touches minus box"): the value in its
       // box, then − and + in theirs, all touching. A full row: name · slider · box. Beside a hand's box (side), the same,
       // narrower. A quiet row (form B) and a Positions block: name · box, the slider in the controller its name opens.
-      // (Until 4.63: a quiet number with a tiny ± beside a hand's box, #250; thick-lined blocks in Positions and the font box.)
       const numbox = () => el("span", { className: "numbox" }, field, el("span", { className: "steps" }, step(-1), step(1)));
       if (row.side) {
         wrap.append(lead, slider, numbox());
@@ -2753,7 +2739,7 @@ class DialTool {
 
     if (row.kind === "pick") {                     // a choice as pictures: one tile per item, on the columns
       const group = el("span", { className: (row.small ? "picks small" : row.thumbs ? "picks thumbs" : "picks") + (row.across ? " across" : ""), role: "radiogroup", ariaLabel: row.text });
-      if (row.across) group.style.setProperty("--across", row.across);      // as many tiles to a line as it has (a window's complications, five since 4.74)
+      if (row.across) group.style.setProperty("--across", row.across);      // as many tiles to a line as it has (a window's complications, five)
       row.items.forEach((name, i) => {
         if (row.skip && row.skip.includes(i)) return;      // an item kept in the list for its place (R9) but not offered here
         const tile = el("button", { type: "button", className: "pickt", id: `${id}-${i}`, title: name, onclick: () => set(i) });
@@ -3644,7 +3630,7 @@ class DialTool {
    *  2-point dark-grey frame on a ground darker than the pane's, its corners as round as its pills. Under what opened
    *  it, centred; on a phone a sheet at the bottom, over the drawer, so the dial stays in view. Being the row itself,
    *  it does all the row does (R15: typing past the slider's range widens it). Enter, Escape or a press outside closes
-   *  it. (Until 4.45: the value button's tag, grown into a small square — 4.12.) */
+   *  it. */
   value_pop_open(button, row, at = null) {
     if (this.value_pop && this.value_pop.button === button) return this.value_pop_close();
     this.value_pop_close();
@@ -3724,7 +3710,7 @@ class DialTool {
   ring_summary(ring) {
     const kind = G.kind_of(ring), len = (mm) => String(parseFloat(this.in_unit(mm, 2))), n = G.positions_of(ring).length;
     const one = G.has_text(ring) ? ring.size : kind === "band" ? ring.width : G.SHAPES[ring.shape] === "dot" ? ring.w : ring.len;
-    // the count's word: "1 marker", "60 ticks"; a band is one, more are sectors (#185: "1 markers", "12 band" until 4.47)
+    // the count's word: "1 marker", "60 ticks"; a band is one, more are sectors (#185)
     const word = kind === "band" ? (n === 1 ? "band" : "sectors") : kind === "text" ? (n === 1 ? "text" : "texts") : n === 1 ? kind.slice(0, -1) : kind;
     return { kind: `${n} ${word}`, size: len(one), r: len(ring.r) };
   }
@@ -4156,7 +4142,7 @@ class DialTool {
     // the language stands at the right inside the preview's cell, on the cell's grey, knocking the preview out where it reaches (#273, 4.51; Okay's notes, p. 12)
     // Okay's drawing of the box (font-selector_171026, 18 Oct 2026): a grey head holding the preview on white and, under
     // it, the name — grey, bold, running to the colour — and EN at the line's right end; no Change…: the preview and the
-    // name open the font sheet. (4.51: EN inside the preview's cell; Change… on the name's line until 4.53.)
+    // name open the font sheet.
     const shown_cell = el("div", { className: "currentwrap" }, current);
     const named = el("div", { className: "fontname", title: "Choose a font", onclick: (e) => { if (!e.target.closest(".colour, .langs, button")) open(); } }, name, swatch, ...(lang ? [lang.el] : []));
     const styles = el("div", { className: "styles", role: "tablist", ariaLabel: "Style" });      // tabs hanging from the name's line (#275, 4.51)
@@ -4174,7 +4160,7 @@ class DialTool {
     out.refresh = (T) => {
       const R = own ? G.window_type(this.S, T) : T;
       back.hidden = !(own && (T.ps || T.tracking != null || T.lang != null || T.features != null || Object.keys(T.axes || {}).length));
-      if (own) back.querySelector("i").textContent = numerals().name || "Numerals";      // the top numerals ring, by its name as it is written (Okay, 14 Oct 2026; "Same font as" since 4.52.2)
+      if (own) back.querySelector("i").textContent = numerals().name || "Numerals";      // the top numerals ring, by its name as it is written (Okay, 14 Oct 2026; "Same font as", 4.52.2)
       if (lang) lang.refresh(T);
       size.refresh(T);
       tracking.refresh(T);
@@ -4215,7 +4201,7 @@ class DialTool {
   /** the ring's positions, drawn (Okay's notes, p. 5, #251, 4.50.1: "a ring-specific preview at the left, like the
    *  hands' detail box: round, not in a square box, with even padding"): a faint circle; a mark at every position, the
    *  used ones in ink, the ones skipped (Every, Offset, Skip those) faint; the first position marked with a dot, so
-   *  Start is seen. Since 4.56 (notes 2, #357: "start point" · "Span ruler: make it dotted instead of ruler" · "these
+   *  Start is seen. Also (notes 2, #357: "start point" · "Span ruler: make it dotted instead of ruler" · "these
    *  are controls, click/tap dragable") also the span, a dotted arc inside, from the start round to its end, which a
    *  small ring marks. A press in the outer band (the marks and the dot) drags the start round the dial; a press
    *  inside it drags the span's end. Whole degrees; the rows beside it say the numbers. */
@@ -4846,8 +4832,7 @@ class DialTool {
 
   /** the Gallery's order (#286, 4.49; Okay's notes, p. 17–18): the First dial first, Okay's watch last, and the white
    *  dials on the diagonals of the three-column grid — "just whites zigzag diagonally": the third slot, then the middle
-   *  of the next line, then the first of the line after, and back. The rest keep their order in the slots between.
-   *  (Until 4.49: Okay's watch first, Bauhaus third — 15 Oct 2026, 10:47; his notes reversed it.) */
+   *  of the next line, then the first of the line after, and back. The rest keep their order in the slots between. */
   gallery_order(cards) {
     const first = cards.find((c) => c.name === "First dial") || cards[0], last = cards.find((c) => c.name === "Okay's watch");
     const rest = cards.filter((c) => c !== first && c !== last), whites = rest.filter((c) => c.light), others = rest.filter((c) => !c.light);
@@ -5445,7 +5430,7 @@ class DialTool {
     }
     if (!d) return r <= S.dial_d / 2 && !S.out_production ? { kind: "plate", name: "Plate", path: this.statik.plate, angle: 0 } : null;
     const piece = { kind: "ring", ring: S.rings.indexOf(d.ring), name: d.ring.name || G.kind_of(d.ring), path: d.path, angle: 0 };
-    if (d.kind !== "band" && d.parts) {            // which numeral or mark? the nearest one's centre (marks since 4.78, #349)
+    if (d.kind !== "band" && d.parts) {            // which numeral or mark? the nearest one's centre (marks too, #349)
       let best = Infinity;
       d.parts.forEach((part, k) => {
         const b = part && part.bounds();
@@ -5504,7 +5489,7 @@ class DialTool {
 
   sync_time() {
     const t12 = ((this.S.t % 43200) + 43200) % 43200;
-    if (this.date_lines) {                         // the date, stacked: day over month, two figures each (07/10; the year until 4.81)
+    if (this.date_lines) {                         // the date, stacked: day over month, two figures each (07/10; no year — Okay, 19 Oct 2026: "better fit inside the bounding box")
       const [y, m, d] = G.shown_day(this.S).split("-");
       [d, m].forEach((v, i) => { if (this.date_lines[i].textContent !== v) this.date_lines[i].textContent = v; });
       this.date_button.classList.toggle("today", !this.S.date);

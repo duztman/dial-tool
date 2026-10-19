@@ -8,14 +8,13 @@
     --field: var(--white);                              /* inside a control: fields, tiles, buttons */
     --hover: #F1F1EE;                              /* a control under the pointer: seen on paper, on the scrolling grey and on a white tile alike */
     --ink-hover: #333331;                          /* a filled control under the pointer */
-    --wait: #8E8E89;                               /* a sign that waits to be used: the rename box (was --faint, which the opacity below then took: the box stood in ink since beta 4.20) */
+    --wait: #8E8E89;                               /* a sign that waits to be used: the rename box */
     --select: #CFE4F5; --select-rule: #86B4DA;     /* what is selected: a light blue */
     --glow: #FF7300;                               /* the outline of what the pointer is on, in the preview */
     --veil: rgba(0, 0, 0, 0.06); --veil-strong: rgba(0, 0, 0, 0.1);      /* a touch of dark on a coloured row */
     --chip-rule: rgba(0, 0, 0, 0.25);
-    --bar: #333; --bar-ink: #F2F2EE; --bar-rule: #5C5C58; --bar-field: #454543; --bar-hover: #5A5A57;      /* the bar: 80 % black, light on dark */
-    --bar-dim: rgba(255, 255, 255, 0.3); --bar-faint: rgba(255, 255, 255, 0.12);      /* quiet lines and fills on the bar */
-    --bar-on: rgba(255, 255, 255, 0.24); --bar-edge: rgba(255, 255, 255, 0.6); --bar-quiet: rgba(255, 255, 255, 0.66);
+    --bar: #333; --bar-ink: #F2F2EE; --bar-rule: #5C5C58; --bar-field: #454543;      /* the bar: 80 % black, light on dark */
+    --bar-quiet: rgba(255, 255, 255, 0.66);      /* quiet words on the bar */
     /* what a part stands on. A part that scrolls sets these again (see .form): an inset block is darker
        than paper but lighter than the scrolling grey, so it never melts into its ground. */
     --surface: var(--paper); --inset: var(--ground); --well: var(--ground);
@@ -40,7 +39,7 @@
     --hair: 1px; --thick: 2px; --triple: calc(3 * var(--hair));      /* a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle */
     --nest-from: calc((100% + var(--gap)) / 3);     /* where a row's controls start, from its left edge: two of its six columns and their gaps. A half line starts here */
     --box-side-value: 44px; --box-side-step: 22px;      /* the number box beside a hand's box and in a quiet row (4.64): its value · each of − + */
-    --side-num: calc(var(--box-side-value) + 2 * var(--box-side-step));      /* …so that column is this wide (60 with the tiny ± until 4.63) */
+    --side-num: calc(var(--box-side-value) + 2 * var(--box-side-step));      /* …so that column is this wide */
     --box-value: calc(var(--tile-w) + var(--unit)); --box-steps: var(--tile-w);      /* a full row's number box (4.64): the value takes the unit that stood between it and its − + */
     --side-label: 4.75em;                          /* …and the names there: as wide as the longest allowed, "Counter Ø" at 12 (Okay's notes, p. 18, #250) */
     --tile-w: calc((4 * var(--col) + 3 * var(--gap) - 3 * var(--unit)) / 4);      /* a tile: four stand on the four control columns one unit apart, so each is a little wider than a column. A number's field and its stepper are the third and the fourth tile */
@@ -52,10 +51,10 @@
     --line: 34px;                                  /* a row's height */
     --head: 40px;                                  /* a pane's heading */
     --header: 64px;                                /* the panel's top: title and Guides */
-    --bar-height: 62px; --bar-control: 30px;      /* a fifth higher than it was, 52 (Okay, 14 Oct 2026, 23:19: "1/5 higher"); a phone keeps its own (--bar-lead-narrow) */
-    --bar-light: #737373;                          /* the one light tone on the bottom bar: 55 % grey (Okay, 15 Oct 2026, 00:42: "55%gray all"; 35 % at 00:32, 25 % at 00:18); nothing on the bar is white (Okay, 15 Oct 2026, 00:18: "NOTHING ON THIS WHOLE BAR IS WHITE… EQUALIZE LIGHT TONES IN 25% GRAY") */
+    --bar-height: 62px; --bar-control: 30px;      /* the bar's height (Okay, 14 Oct 2026, 23:19: "1/5 higher" than the 52 it was); a phone keeps its own (--bar-lead-narrow) */
+    --bar-light: #737373;                          /* the one light tone on the bottom bar: 55 % grey (Okay, 15 Oct 2026, 00:42: "55%gray all"); nothing on the bar is white (Okay, 15 Oct 2026, 00:18: "NOTHING ON THIS WHOLE BAR IS WHITE") */
     --play: #CC381A; --play-dark: #7A1E0C; --play-light: #F28A6C;      /* the play button, an arcade button from above: its cap (the seconds hand's red, geometry.js ACCENT), the shade round it and under it, the light on it (Okay, 14 Oct 2026: "3 colors and a black outline") */
-    --speed-thumb: 22px; --speed-ball: 9px;        /* how fast: its thumb (14 until Okay, 15 Oct 2026, 02:42: "this nubbin should grow 160%, eye stays still"); the knobs at its ends (6 until 00:42) */
+    --speed-thumb: 22px; --speed-ball: 9px;        /* how fast: its thumb (Okay, 15 Oct 2026, 02:42: "this nubbin should grow 160%, eye stays still"); the knobs at its ends */
     --bio-width: calc(var(--panel) - 2 * var(--margin));      /* the bio under Okay's mark: as wide as the panel's lines */
     /* the dial alone (the eye switch, Okay, 15 Oct 2026, 04:02): the panel slides away and the dial grows to fit, eased */
     --panel-w: calc(var(--panel) + var(--hair));   /* the panel's column: its lines and its right hairline */
@@ -85,31 +84,29 @@
        measures, as the face draws them: a tabular figure, the colon (made 80 % in that face), the caps; the widest of
        AM and PM in ink. The tracking tight (Okay's notes, p. 15) */
     --time-face: "Dial Time", var(--mono);
-    --time-figure: 0.418em; --time-colon: 0.24em; --time-cap: 0.7em; --time-pm: 0.8em; --time-track: 0.04em; --time-pm-track: -0.02em;      /* the time's tracking: −0.02em until 4.45.5 (Okay, 16 Oct 2026, #306: "Greens add tracking", marked under its figures); AM · PM keeps −0.02em, which its width (--time-pm) was set for */
-    --time-chars: calc(6 * var(--time-figure) + 2 * var(--time-colon) + 8 * var(--time-track));      /* the time's field: "10:09:36" — monospace until 4.44: 8ch and the bar's +50 tracking */
+    --time-figure: 0.418em; --time-colon: 0.24em; --time-pm: 0.8em; --time-track: 0.04em; --time-pm-track: -0.02em;      /* the time's tracking (Okay, 16 Oct 2026, #306: "Greens add tracking", marked under its figures); AM · PM keeps −0.02em, which its width (--time-pm) was set for */
+    --time-chars: calc(6 * var(--time-figure) + 2 * var(--time-colon) + 8 * var(--time-track));      /* the time's field: "10:09:36" */
     --day-wide: 518px;                             /* the day slider at its widest: as wide as on an iPad (1180 wide), so a big screen doesn't stretch it (Okay, 23:19) */
     --tile: 50px;                                  /* a picture tile's least height */
     --guide-tint: 22%; --guide-edge: 65%;          /* the selected ring's row: this much of its guide's colour in its ground, and in its frame */
     --tab-notch: var(--unit);                      /* how deep the notch between two tabs is cut (a V, twice as wide): one unit */
     --places: 6;                                   /* a window's place circles on their heading's line: 3 · 6 · 9 · 12 · 4 · ··· (4.46.2); the Shape line's buttons are as high as one */
-    --show-high: var(--control); --show-ground: color-mix(in srgb, var(--ink) 12%, var(--ground));      /* the Show box (#261): a thin box, darker than the grey page under it (7 % ink until 4.46.4, Okay: "Shows bg darker"; a control high since 4.46.2, Okay: "less") */
+    --show-high: var(--control); --show-ground: color-mix(in srgb, var(--ink) 12%, var(--ground));      /* the Show box (#261): a thin box, darker than the grey page under it (Okay: "Shows bg darker"), a control high (Okay: "less") */
     --tab-high: 40px; --tab-pad: 11px;             /* a word tab's height (Hour · Minute · Seconds) · above and under a picture tab's picture (the window cards): room to breathe */
     --round-pill: 999px;                           /* fully round: the signs on the Rings heading line, a value button */
     --menu-box: 18px;                              /* the boxed arrow beside a label that opens a small menu */
     --ringline-inner: var(--triple);               /* its second, inner line: three times the outer */
     --row-end: calc(var(--frame-pad) - var(--hair) + var(--ringline-inner));      /* the list's last column, empty: a ring's row and the drawer both end this far in, so a row's values stand over the drawer's buttons */
     --line-button: 36px; --bare-dot: 16px;      /* in the ring drawer every control is this high (a value button this wide too) · the colour's swatch */
-    --half: 30px;                                  /* AM · PM: its own window beside the time (Okay, 14 Oct 2026, 23:19) */
-    --bar-now: color-mix(in srgb, var(--bar-light) 80%, var(--black)); --bar-now-hover: color-mix(in srgb, var(--bar-light) 90%, var(--black)); --bar-now-ink: var(--rule-light);      /* NOW: filled, the bar's one filled button (Okay, 16 Oct 2026, #306: "fill bg, invert type"); its fill 20 % darker than AM's outline, the bar's light tone (#307, on 4.46: "darker than ams outlines by 20%" → #5C5C5C; #B9B9B4 in 4.45.5), so its word is the panel's light rule tone, #D4D4CF (4.5 : 1; the bar's dark would read 1.7 : 1, and nothing on the bar is white — Okay, 15 Oct 2026); a hover 10 % darker than the outline; a press: the light tone */
+    --bar-now: color-mix(in srgb, var(--bar-light) 80%, var(--black)); --bar-now-hover: color-mix(in srgb, var(--bar-light) 90%, var(--black)); --bar-now-ink: var(--rule-light);      /* NOW: filled, the bar's one filled button (Okay, 16 Oct 2026, #306: "fill bg, invert type"); its fill 20 % darker than AM's outline, the bar's light tone (#307: "darker than ams outlines by 20%"), so its word is the panel's light rule tone, #D4D4CF (4.5 : 1; the bar's dark would read 1.7 : 1, and nothing on the bar is white — Okay, 15 Oct 2026); a hover 10 % darker than the outline; a press: the light tone */
     --value-pop: 132px;                            /* a value button's tag: about as wide as it is high */
-    /* the number popup — the controller (#249; Okay's drawing of 17 Oct 2026, 4.49.2, replacing his drawing of 16 Oct):
-       a light head with the name, a hairline and the value in bold over the knob; under it a dark square holding the
-       slider in a white pill and − and + as two grey discs, all three the same height (a finger and a half, 66 — his
-       drawing's three equal rounds); a unit and a half round and between them; no frame. The drawing's measures, at a
-       disc of 66: its top corners 28, its name line 28 with the hairline at its foot, inset 22; the knob 44 with a white
-       eye of 12; the track a unit and a half thick, dark to the knob and light after; the signs 8 thick, 40 long. */
-    --num-pop-k: 0.75;      /* the controller's scale, every measure below times it: three quarters everywhere (4.85; Okay, 19 Oct 2026, 12:30, on the iPad: "Size 75%"); on a phone only from 4.68 to 4.84 (Okay, 18 Oct, 22:35) */
-    --num-pop-see: 85%;      /* how much of the controller's square shows: the preview through it (4.86; Okay, 19 Oct 2026, 12:46: "controller bg 85%"; 70 in 4.85) */
+    /* the number popup — the controller (#249; Okay's second drawing, controller 2.svg, 18 Oct 2026, #330): one dark
+       square holding three things one height (66 at full size): the value in bold on a grey pill, the slider in a
+       white pill, and − and + as two dark discs at its foot, one at each side; no name (R15: "preview shows what's
+       changing anyway"); no frame. The drawing's measures, at a disc of 66: 16.5 round them, 8.25 between them, the
+       corners 49.5; the knob with a white eye; the track a unit and a half thick; the signs square-ended. */
+    --num-pop-k: 0.75;      /* the controller's scale, every measure below times it: three quarters everywhere (Okay, 19 Oct 2026, 12:30, on the iPad: "Size 75%") */
+    --num-pop-see: 85%;      /* how much of the controller's square shows: the preview through it (Okay, 19 Oct 2026, 12:46: "controller bg 85%") */
     --num-pop-step: calc(66px * var(--num-pop-k)); --num-pop-pill: var(--num-pop-step);      /* the discs and the slider's pill: one height */
     --num-pop-pad: calc(var(--u6) * var(--num-pop-k)); --num-pop-gap: calc(var(--u3) * var(--num-pop-k));      /* controller 2.svg (Okay, 18 Oct 2026), at a disc of 66: its 5.67 edge is 16.5, its 2.83 gaps 8.2 */
     --num-pop: calc(var(--num-pop-inner) + 2 * var(--num-pop-pad));
@@ -145,11 +142,11 @@
     --checker: repeating-conic-gradient(#BDBDB9 0 25%, var(--white) 0 50%) 0 0 / 8px 8px;      /* what shows through a see-through colour */
     --faint: 0.35;                                 /* how much of a switch on the preview shows at rest */
     --canvas-top: calc((var(--header) - var(--control-large)) / 2);      /* undo and Guides stand on the header's middle line, with the title and the unit box */
-    --guide-name: 106px; --guide-row: 30px;        /* the guides' list: the column of names, wide enough for an added guide's name and values on one line (92 until 4.45.3) · a line's height (42 until 4.42.5, Okay, #271: "-2px" above and below; 38 until 4.45.3, Okay, 16 Oct 2026, #305: "tighter spacing overall … small like beta version allowed"; under a finger still 38) */
-    --shade-name: 92px;                            /* the Shadows list's names: the guides' list's column until 4.45.3, when that one grew for an added guide's values; its sliders keep the room */
-    --guide-dot: 7px; --guide-none: 14px; --scroll-w: 6px;      /* a round colour in the guides' list (the room between two: a special): 7 since 4.79 (Okay, 19 Oct 2026: "Still smaller balls"), 8 until then, 10 until 4.51.1 (notes 2: "Smaller color dots, closer, much compacter width") · the none sign ⊘, 14 (at 10 it went too small) · a list's scrollbar */
-    --guide-dim: 0.4;                              /* a colour not chosen in the guides' list: this much of it (Okay, 18 Oct 2026, notes 2: "Fainter unselected swatches"; 0.6 from #271, 16 Oct: "dim all the unselected colors 40%") */
-    --ring-thick: 3px;                             /* the chosen one: a ring of its own colour this thick, a ring of the ground inside it (a special) */
+    --guide-name: 106px; --guide-row: 30px;        /* the guides' list: the column of names, wide enough for an added guide's name and values on one line · a line's height (Okay, 16 Oct 2026, #305: "tighter spacing overall … small like beta version allowed"; under a finger 38) */
+    --shade-name: 92px;                            /* the Shadows list's names: narrower than the guides' list's column, which holds an added guide's values; its sliders keep the room */
+    --guide-dot: 7px; --guide-none: 14px; --scroll-w: 6px;      /* a round colour in the guides' list (the room between two: a special; Okay, 19 Oct 2026: "Still smaller balls") · the none sign ⊘, 14 (at 10 it went too small) · a list's scrollbar */
+    --ring-thick: var(--triple);                   /* the chosen guide colour: a ring of its own colour this thick, a ring of the ground inside it */
+    --guide-dim: 0.4;                              /* a colour not chosen in the guides' list: this much of it (Okay, 18 Oct 2026, notes 2: "Fainter unselected swatches") */
 
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
     --t-xs: 11px; --t-s: 12px; --t-m: 13px; --t-l: 15px;      /* two more, asked for by Okay, stand with the specials: --t-xxs, --t-time */
@@ -182,17 +179,17 @@
     /* asked for by Okay */
     --control-s: calc(0.75 * var(--control));      /* a quiet button at three quarters: Lang. and Change… in the font box (Okay, 14 Oct 2026: "scale down to 75%") */
     --t-xxs: 10px;                                 /* a fifth type size, the smallest: the words in the font sheet's legend, and the font box's quiet buttons (Okay, 14 Oct 2026) */
-    --t-time: 20px;                                /* a sixth, for the bar's time alone: larger than --t-l (Okay, 14 Oct 2026, 23:55: "larger digital time"; 17 until 4.44.6 — "Barlow larger, don't worry optically will be better") */
+    --t-time: 20px;                                /* a sixth, for the bar's time alone: larger than --t-l (Okay, 14 Oct 2026, 23:55: "larger digital time"; "Barlow larger, don't worry optically will be better") */
     --t-pixel-legend: calc(1.5 * var(--t-pixel));  /* the pixel font at 12, neither 8 nor 16: the font sheet's legend, its title and stickers (Okay, 14 Oct 2026, 01:14: ".5 more size on all silkscreen"; on a 2× screen its dots still fall on the screen's) */
     --legend-sticker-pad: calc(0.375 * var(--unit)) calc(0.75 * var(--unit));      /* a legend sticker's padding, grown with its size */
     --pixel-ink-bar: 1;                            /* the bar's 1X, 720X and the speed riding over the thumb: the pixel font at full strength in their own colours, not --pixel-ink (Okay, 15 Oct 2026, 00:18: "same color as the ball") */
     --pop-chip-gap: 12px;                          /* between two colours in the colour pop-out's rows (Okay, 12 Oct 2026: "×3 gaps") */
-    --speed-pad: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2);      /* the speed box's room inside, left and right: the thumb at either end stands as far from the wall as from the box's top and bottom (3; Okay, 15 Oct 2026, 03:18: "when the ball is in a terminal, the bounding box clears it as much as it clears from the top… both ends symmetry"). Was u3 + 4 − half a thumb (1.25; 01:03, "before plus four") */
-    --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what that added, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
+    --speed-pad: calc((var(--bar-control) - 2 * var(--hair) - var(--speed-thumb)) / 2);      /* the speed box's room inside, left and right: the thumb at either end stands as far from the wall as from the box's top and bottom (3; Okay, 15 Oct 2026, 03:18: "when the ball is in a terminal, the bounding box clears it as much as it clears from the top… both ends symmetry") */
+    --speed-grow: calc(2 * (var(--speed-pad) - (var(--u3) + 4px - var(--speed-thumb) / 2)));      /* what the room above adds over the old u3 + 4 − half a thumb, both ends together (3.5): the box takes it from the gap to the play button, so the track keeps its length (03:18: "it can grow towards the button") */
     --gallery-lift: var(--hair);                   /* the Gallery pill a hair taller, upward: room over its word (Okay, 16 Oct 2026: "Gallery pill grows from bottom to up tiny bit") */
-    --t-num-pop: calc(41px * var(--num-pop-k));                             /* the controller's value, in its grey pill: his 14 where a disc is 22.68 (controller 2.svg, Okay, 18 Oct 2026); 25 from 4.45.3 to 4.51.1, 20 in 4.45.2 */
-    --t-date: 10px; --date-line: 11px; --date-track: 0.02em; --date-face: "Dial Date", var(--sans);      /* the bar's stacked date: day over month, 10 on 11, so 3 clear above and below in the bar's 28 inside (4.82; Okay, 19 Oct 2026: the year "i don't want it there, better fit inside the bounding box"; until then three lines of 9 on 9, touching its lines), Inter SemiBold since 4.63 (Barlow Bold in 4.62; Okay: "try inter with appropriate weight for that size") */
-    --t-time-narrow: 17px;                         /* the time and AM · PM on a phone: 12 until 4.62 ("too small"), the desktop's 20 leaves how fast too little room */
+    --t-num-pop: calc(41px * var(--num-pop-k));                             /* the controller's value, in its grey pill: his 14 where a disc is 22.68 (controller 2.svg, Okay, 18 Oct 2026) */
+    --t-date: 10px; --date-line: 11px; --date-track: 0.02em; --date-face: "Dial Date", var(--sans);      /* the bar's stacked date: day over month, 10 on 11, so 3 clear above and below in the bar's 28 inside (Okay, 19 Oct 2026: the year "i don't want it there, better fit inside the bounding box"), Inter SemiBold (Okay: "try inter with appropriate weight for that size") */
+    --t-time-narrow: 17px;                         /* the time and AM · PM on a phone: the desktop's 20 leaves how fast too little room, 12 was "too small" */
     --tag-max: 240px;                              /* a tag's longest line: longer words wrap (Okay, 18 Oct 2026, 21:20: "constrict the width to avoid these unreadable lines") */
     --tiny-round: 18px; --tiny-cast: 8px; --tiny-shade: rgb(0 0 0 / 0.22);      /* the Tiny Preview's corners and its hard shadow, down and right (#337, Okay's picture in notes 2) */
     --link-pill: 14px;                             /* the LINK pill on the line between width and height (#358): the pixel font at 8 with three over and under */
@@ -204,7 +201,7 @@
     --font-head-in: 4px;                           /* the font box's preview, this far in from the box's edge on the grey head (Okay's drawing, font-selector_171026, 18 Oct 2026) */
     --num-pop-inner: calc(218px * var(--num-pop-k));                        /* the controller's pills, 75.05 where a disc is 22.68 (controller 2.svg, Okay, 18 Oct 2026: "The new controller is in")  */
     --num-pop-track: calc(10px * var(--num-pop-k));                         /* the controller's slider line, 3.4 where a disc is 22.68 (the same drawing) */
-    --show-tick: 9px;                              /* the Show box's tick, as tall as the word's ascender at 12 (Okay, 18 Oct 2026, notes 2: "Show checkmarks much smaller, just as big as shows ascender … The outer gray box does not change size. Padding of gray box to tick is equal top, left, bottom"); 3 smaller than a tick box from 4.46.4 to 4.51.1 */
+    --show-tick: 9px;                              /* the Show box's tick, as tall as the word's ascender at 12 (Okay, 18 Oct 2026, notes 2: "Show checkmarks much smaller, just as big as shows ascender … The outer gray box does not change size. Padding of gray box to tick is equal top, left, bottom") */
     --font-label: calc(6.5em + var(--btn-pad));    /* the font box's rows (#274, 4.51; Okay's notes, p. 12: "break the rules: stretch the sliders as wide as the longest label allows; labels over 12 characters are cut"): a name column of twelve characters, the slider taking all the rest */
     --unit-pad: 4px;                               /* the unit box: this much round its word, on every side — round mm's letters; the other units keep mm's height (Okay, 16 Oct 2026, on 4.44: "2px padding around letters"; on 4.44.3: "Mm looks perfect now add 2px more padding … Others use the same height, width can change") */
 
@@ -215,12 +212,12 @@
     --frame-pad: 8px;                              /* inside a frame (a ring row, the font box): from its edge to what is in it, where a pane's row would have none */
     --ring-gap: 4px;                               /* between framed rows */
     --foot-gap: 4px;                               /* between the round signs on the Rings heading line */
-    --ringline-pad: 8px; --ringline-gap: 8px; --ringline-join: calc(-1 * var(--hair));      /* the selected ring's line: inside its frame · between its parts · between it and its ring's row: none, the two one box sharing a line (4.81; Okay, 19 Oct 2026: "two boxes, yours is not connected, mine is"; 2 until then) (Okay asked for more room inside, 13 Oct, beta 4.10; 8 was Claude's figure) */
+    --ringline-pad: 8px; --ringline-gap: 8px; --ringline-join: calc(-1 * var(--hair));      /* the selected ring's line: inside its frame · between its parts · between it and its ring's row: none, the two one box sharing a line (Okay, 19 Oct 2026: "two boxes, yours is not connected, mine is") (Okay asked for more room inside, 13 Oct; 8 was Claude's figure) */
     --name-in: 6px;                                /* a ring's name starts this far into its column; the ring line's buttons too */
     --chip-gap: 4px;                               /* between two colours to pick */
     --pop-pad: 16px; --pop-gap: 12px;              /* a night part (colour pop-out, guides' list) and the number popup: the space inside its edge, the space between its blocks */
     --pop-foot: calc(var(--control) + 2 * var(--u2));      /* a popup's bottom section (#305): a control, a unit over and under it */
-    --guide-gap: 7px;                              /* the room between two round colours in the guides' list: the chosen one's ring needs it (2 px clear of the next: 2 + 3 of ring; 9 from 4.45.3 to 4.51.1, 10 before — notes 2, 18 Oct 2026: "closer") */
+    --guide-gap: 7px;                              /* the room between two round colours in the guides' list: the chosen one's ring needs it (2 px clear of the next: 2 + 3 of ring; notes 2, 18 Oct 2026: "closer") */
     --ring-gap-in: 2px;                            /* the chosen guide colour: a ring of the ground this wide, inside its own ring */
     --logo-disc: 2px;                              /* the bio open: how far the mark's night disc reaches past its 16 box (ring to disc edge ≈ 2.3) */
     --canvas-inset: 12px;                          /* from the preview's edge to what stands on it (a phone sets it to --u5) */

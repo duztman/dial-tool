@@ -16,7 +16,7 @@
   .detail .handname { position: absolute; left: var(--unit); bottom: var(--u1); font-size: var(--t-s); color: var(--grey); pointer-events: none; }      /* the shape's name, small, at its bottom left (4.79) */
   .detail .lit { fill: var(--lit); }      /* a number's part, lit while its row is pointed at (#329), in the selected guide's colour */
   .detail .pivot { fill: var(--surface); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
-  /* the hand's shapes as thumbs (4.46.3, "rectangular thumbs"; a row of their own after the rows since 4.46.4): every
+  /* the hand's shapes as thumbs (Okay: "rectangular thumbs"; a row of their own after the rows): every
      one shown, upright pictures in upright tiles, no words (a tile's title names it), a unit apart, all on one line
      from the box's left to the end; the dashed SVG tile last (a shape of one's own) */
   .row.thumbs > .picks.thumbs { grid-column: 1 / -1; grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: minmax(0, 1fr); padding: var(--u4) 0; }
@@ -29,28 +29,20 @@
   .picks.thumbs > .pickt > span { display: none; }
   .pickt.own { border-style: dashed; color: var(--grey); cursor: default; }
   .pickt.own:hover { background: var(--field); }
-  /* a side row's number, quiet (#250, beta 4.45.1): the number and, joined to it, a tiny plus over a tiny minus; no
-     box; grey until it differs from how the dial opened (.changed, build_row). A press on it opens its popup.
-     The two signs stand on the figures (4.45.2, Okay: "Compact minusplus too far apart, closer, parallels on baseline
-     ascender"): .pm is a band a capital high (1cap), its foot on the number's baseline (the box lines its parts up
-     on their baselines, and a band with nothing in flow has its baseline at its foot); the plus's top on the band's
-     top, the minus on its foot. Each sign's button reaches half a control from the band's middle, up for the plus,
-     down for the minus, so it is as easy to hit as before. */
   .row.side { position: relative; }
   .row.side .numbox { --box-value: var(--box-side-value); --box-steps: calc(2 * var(--box-side-step)); }      /* beside a hand's box, and a quiet row: the one number box, narrower (4.64; the quiet number with a tiny ± from 4.45.1 to 4.63, #250, #317) */
   @media (min-width: 861px) {
     /* wide: the box in the first two columns, as high as the rows beside it; the rows in the other four, each one
        line: label · slider · the number box */
     /* the box beside the rows, as high as they are, its top line the first row's, its foot the last row's (Okay, on
-       4.46.3: "Enlarge the preview to fit the area"; "Blue lines, align"): it spans the rows' lines (40: more than a
+       Okay: "Enlarge the preview to fit the area"; "Blue lines, align"): it spans the rows' lines (40: more than a
        hand has; the ones it doesn't use have no height) and shares the first row's line, as two tabs share theirs.
-       Seven rows high and held in view while the rows scrolled until 4.46.4. The thumbs' row goes under it all */
+       The thumbs' row goes under it all */
     .body > .detail { grid-column: 2 / span 2; grid-row: 1 / span 40; align-self: stretch; margin: calc(-1 * var(--hair)) 0 0; }      /* it scrolls up with its pane until it is one unit (the gap between the shape tiles) under the line under the hand tabs, stays there while the rows beside it scroll, and the pane's end (the Cap pane) pushes it on (Okay, 14 Oct 2026: "stay still… until cap"; "align here after scroll") */      /* 40: more rows than a hand has; the rows it doesn't use are nothing high. Seven rows high, and it stays so when the shapes open (Okay, 13 Oct 2026) */
     .body > .row.side { grid-column: 4 / -1; }      /* beside the box */
   }
   /* a side row, at every width: the name as narrow as the longest (Counter Ø), the slider the rest: bigger (#250); the
-     number box. Narrow, the rows go under the box (8-narrow) and keep this line — until 4.67 they fell to the panel's
-     six tiles there, the slider one tile (Okay, 18 Oct 2026, 22:35, on the iPad: "Hands sliders squeezed, use all row width") */
+     number box. Narrow, the rows go under the box (8-narrow) and keep this line (Okay, 18 Oct 2026, 22:35, on the iPad: "Hands sliders squeezed, use all row width") */
   .body > .row.side { grid-template-columns: var(--side-label) minmax(0, 1fr) var(--side-num); }
   .row.side > :first-child, .row.side > input[type="range"] { grid-column: auto; }
   .row.side > label { font-size: var(--t-s); }

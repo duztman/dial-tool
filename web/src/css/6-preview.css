@@ -12,16 +12,14 @@
   main.dark { --on-canvas: var(--white); }
   /* the dial alone: Backdrop and Shadows ride left with the preview's edge and stop short, on the mark's line (the margin) */
   main { --stop-short: max(var(--canvas-inset), calc(var(--margin) - var(--panel-w) * (1 - var(--away)))); }
-  /* Guides at the bottom left, between Backdrop and Shadows, their list opening upward as Shadows' does (4.59, #337: "Guides
-     move left bottom under backdrop, above shadows"; at the top right, its list dropping, until 4.58) */
-  /* the top right corner (4.86; Okay, 19 Oct 2026, 12:46: "Guides case and xray move top right corner of the canvas, stacked
+  /* the top right corner (Okay, 19 Oct 2026, 12:46: "Guides case and xray move top right corner of the canvas, stacked
      in that order"): one column, its switches at its right edge — Guides, its list dropping from it; the case; with a
      case, its strap; X-ray. (Guides at the bottom left over Shadows, its list rising, 4.59–4.85.) */
   .corner { position: absolute; z-index: 3; top: var(--canvas-top); right: var(--canvas-inset); display: flex; flex-direction: column; align-items: flex-end; gap: var(--unit); }
   .corner:has(.guidelist:not([hidden])) { z-index: 7; }      /* open, its list over everything round it */
   .guides { position: relative; display: flex; }
   .guides:has(.guidelist:not([hidden])) { z-index: 1; }      /* its list over the case and X-ray under it */
-  /* the case's switch beside Backdrop (4.66): its kind's name and a chevron, as Backdrop is a word and its chip; the
+  /* the case's switch (in the top right corner, under Guides): its kind's name and a chevron, as Backdrop is a word and its chip; the
      system's list over it, unseen; with a case on, its outline solid like a switch that is on */
   .casebox { position: relative; gap: var(--unit); padding: 0 0 0 var(--u3); border-radius: var(--round-switch); }
   /* its chevron in a square of its own behind a line, as Guides' and Shadows' are (4.82; Okay, 19 Oct 2026: "Case icon
@@ -29,7 +27,7 @@
   .casebox .arrow { align-self: stretch; display: grid; place-items: center; width: var(--control-large); margin-left: calc(var(--u4) - var(--unit)); border-left: var(--hair) solid var(--line-faint); }
   .casebox:not(.on) .arrow { border-left-style: dotted; }
   .casebox > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-  .casebox:not(.on) { border-style: dotted; }      /* not on: its outline dotted — shorter dashes, shorter gaps, a denser line (4.86; Okay: "Dashes for invisible: shorter dash shorter gaps, denser outline"; dashed until 4.85) */
+  .casebox:not(.on) { border-style: dotted; }      /* not on: its outline dotted — shorter dashes, shorter gaps, a denser line (Okay, 19 Oct 2026: "Dashes for invisible: shorter dash shorter gaps, denser outline") */
   .casebox.on > :not(select) { opacity: 1; }
   /* its strap's switch (4.69): the strap's chip, a button of its own, then its kind's name and chevron with the list over
      those only — so a press on the chip opens the colour, a press on the words the list */
@@ -82,7 +80,7 @@
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 var(--round-switch) var(--round-switch) 0; }
   .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }      /* open, only its arrow turns */
   /* Backdrop, standing on the Shadows switch (its row held the eye switch too until 15 Oct 2026, 03:41) */
-  .backdrops { position: absolute; z-index: 3; left: var(--stop-short); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: flex; flex-direction: column-reverse; align-items: flex-start; gap: var(--unit); }      /* stacked over Guides and Shadows (4.79; Okay, 19 Oct 2026, 01:03: "Strap and case: stack on that left bottom list"): Backdrop, then Case, its Strap and X-ray up the column; side by side from 4.66 to 4.78 */
+  .backdrops { position: absolute; z-index: 3; left: var(--stop-short); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: flex; flex-direction: column-reverse; align-items: flex-start; gap: var(--unit); }      /* Backdrop over Shadows at the bottom left (Okay, 19 Oct 2026: "Guides case and xray move top right corner") */
   .casebox .sign, .xraybox > svg { display: grid; flex: none; }
   .xraybox { padding-right: var(--u4); }      /* no chevron after its word: as much room after it as Backdrop's (4.86; Okay: "Xray's box needs padding after label") */
   .tinyopen .x { display: none; }      /* its sign is the showcase's of 4.85, whose X is the showcase's way out */
@@ -142,12 +140,12 @@
   .guidescroll::-webkit-scrollbar { width: var(--scroll-w); }
   .guidescroll::-webkit-scrollbar-thumb { background: var(--grey); border-radius: calc(var(--scroll-w) / 2); }
   .guidescroll > * { margin-inline: var(--pop-pad); }
-  .guidescroll.more { mask-image: linear-gradient(to bottom, #000 calc(100% - var(--u6)), transparent); }      /* more under the fold: the last line fades out */
+  .guidescroll.more { mask-image: linear-gradient(to bottom, var(--black) calc(100% - var(--u6)), transparent); }      /* more under the fold: the last line fades out */
   .guidesettings { flex: none; padding-top: var(--u2); background: var(--row-rule); }
   .guidesettings > .guidehead { margin-inline: var(--pop-pad); box-shadow: none; }
   /* a guide you added is one line, as every other (#305: "fit all in one line"): its name and its measures, quiet
      numbers to type in (grey, no box, as wide as they are); its colours; in the none sign's place a cross that removes
-     it (an added guide is taken away, not hidden). A long name gives way to its numbers. (Two lines until 4.45.3) */
+     it (an added guide is taken away, not hidden). A long name gives way to its numbers. */
   .guidekind.added .name { display: flex; align-items: center; gap: var(--u1); }
   .guidekind.added .name > .word { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .guidefield { flex: none; display: inline-flex; align-items: center; color: var(--grey); }
@@ -170,9 +168,9 @@
   .guidelist .row > :is(label, input[type="range"]) { grid-column: auto; }
   /* the last line (#271): Thickness · its number with a compact plus and minus (a side row's box) · a rule, then Reset
      All. Over it a thick line: its own hairline on the one above. No slider: with Reset All beside it, it had no room
-     left (0 px, measured); it comes back in the number popup (phase E; R15 form B). The number's cell reaches back over
+     left (0 px, measured); it stands in the controller (R15 form B). The number's cell reaches back over
      the name; a press on the number opens its popup (#249). */
-  .guidelist .guidelast { grid-template-columns: max-content minmax(0, 1fr) auto; }      /* the name as wide as its word: the list is narrower since 4.52 (#322) and the names' column left the number no room */
+  .guidelist .guidelast { grid-template-columns: max-content minmax(0, 1fr) auto; }      /* the name as wide as its word: the list is narrow (#322) and a names' column would leave the number no room */
   .guidelast > * { grid-row: 1; }
   .guidelist .guidelast > label:first-child { grid-column: 1; }
   .guidelast > input[type="range"] { display: none; }
@@ -264,8 +262,8 @@
   /* Now and 10:10 side by side, the gap between them on the dial's centre line; each is held by its inner edge, so the
      one that shrinks into the undo sign shrinks toward the middle and the other doesn't move (Okay, 15 Oct 2026, 07:40:
      "next to now, 10:10. Selected turns undo, other stays still"). 10:10 is two letters (and their tracking) wider */
-  .nowpill.now { translate: calc(-100% - var(--unit) / 2) 0; }
-  .nowpill.ten { translate: calc(var(--unit) / 2) 0; }
+  .nowpill.now { translate: calc(-100% - var(--u1)) 0; }
+  .nowpill.ten { translate: var(--u1) 0; }
   #app.show .nowpill.ten { width: calc(var(--show-pill) + 2ch + 2 * var(--track-100)); }
   #app.show .nowpill.ten.back { width: var(--show-key); }
   /* the hands key: the showcase's bottom left corner, across from the X; round, the Hands sign inside, as faint as the

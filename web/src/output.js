@@ -3,11 +3,13 @@
 
 import { MM, scene, turned, page_mm, live_texts, font_of, has_font, Path, circle } from "./geometry.js";
 
-const num = (v, digits = 4) => {
+/** a number for a file: at most `digits` decimals, no trailing zeros, no "-0" (the Wear OS export uses it too). */
+export const num = (v, digits = 4) => {
   const s = (v + 0).toFixed(digits).replace(/^-(0(\.0+)?)$/, "$1");       // no "-0"
   return s.includes(".") ? s.replace(/\.?0+$/, "") || "0" : s;
 };
-const rgb = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Math.max(v, 0), 1) * 255).toString(16).padStart(2, "0")).join("").toUpperCase();
+/** a colour as #RRGGBB, as SVG and Wear OS write it. */
+export const rgb = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Math.max(v, 0), 1) * 255).toString(16).padStart(2, "0")).join("").toUpperCase();
 
 /** what a scene item is called in a file: a layer in the PDF, an id in the SVG. */
 function item_name(item) {

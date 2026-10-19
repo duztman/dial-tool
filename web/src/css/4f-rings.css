@@ -90,7 +90,7 @@
   .ringline > .colour.bare:hover { border-color: var(--rule); }
   /* the tag: what a wordless button is, under it while the pointer is on it. One for the whole tool, over everything. */
   /* more room inside, the words centred, a hairline round it (Okay, 18 Oct 2026, notes 2: "they need more inner padding
-     and centeredness and 1px borders"; until 4.51.1 a unit and a half less room and a --thick line). The arrow's square
+     and centeredness and 1px borders"). The arrow's square
      stands with its middle on the top line. */
   .tag { position: fixed; z-index: 30; translate: -50% 0; padding: var(--u2) var(--u4); border: var(--hair) solid var(--ink); border-radius: var(--round-small); background: var(--field); color: var(--ink);
     font: 600 var(--t-s)/1.3 var(--sans); text-align: center; text-wrap: balance; width: max-content; max-width: min(var(--tag-max), 100vw - 2 * var(--u4)); pointer-events: none; }      /* long words wrap, balanced, within the window (4.63) */
@@ -117,9 +117,8 @@
   svg text.pixel { font-family: var(--pixel); opacity: var(--pixel-ink); }
   svg text.figure { font-family: var(--sans); font-weight: 700; font-variant-numeric: proportional-nums; }      /* a kind's figures and words: the tool's sans, bold, not the pixel font (#255, 4.50); proportional figures, so 12 is no wider than it must be (notes 2, 18 Oct 2026) */
   svg text.figure.words { font-weight: 800; }      /* the text ring's words, a weight heavier (notes 2, 18 Oct 2026: "bolder text") */
-  /* a value button's tag is as wide as the pop-up it grows into: its name at the left, its value at the right, quiet,
-     in the mono face. The pop-up is the same box, higher: the number's name (and its menu) · the field · − +, one
-     under the other. No slider: the button is dragged instead. */
+  /* a value button's tag is as wide as the controller it opens: its name at the left, its value at the right, quiet,
+     in the mono face. */
   .tag.value { display: flex; justify-content: space-between; align-items: baseline; gap: var(--u3); width: var(--value-pop); }
   .tag.value .figure { color: var(--grey); font: 400 var(--t-xs)/1 var(--mono); }
   /* the number popup — the controller (#249; Okay's second drawing, 18 Oct 2026, controller 2.svg; tokens --num-pop-…):
@@ -147,9 +146,8 @@
   .numpop .places > button.on { background: var(--black); color: var(--white); }
   .numpop .numbox { display: contents; }      /* the row's number box: its value went to the head, its − + are the discs */
   .numpop .row .steps { display: flex; justify-content: space-between; width: 100%; }
-  /* a pair's link (width and height, #358) between − and +, at the middle of their line (4.85; Okay, 19 Oct 2026: "Linking
-     stuff get a lower middle button between minus and plus on controller"; until then the row's pill, which fell on
-     the square's corner): a dark pill as the discs are, LINK in the pixel font at 12; linked, white with LINKED in dark */
+  /* a pair's link (width and height, #358) between − and +, at the middle of their line (Okay, 19 Oct 2026: "Linking
+     stuff get a lower middle button between minus and plus on controller"): a dark pill as the discs are, LINK in the pixel font at 12; linked, white with LINKED in dark */
   .numpop .row > input[type="range"] { grid-row: 1; }
   .numpop .row .steps { grid-row: 2; grid-column: 1; }      /* placed outright, so the pill can lie over its middle (one left to find its own place would open a column beside it) */
   .numpop .row.haslink > .linkpill { position: static; translate: none; grid-row: 2; justify-self: center; align-self: center; z-index: 1; width: var(--num-pop-step); height: var(--num-pop-step); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); font-size: var(--t-pixel-legend); line-height: 1.2; white-space: pre-line; text-align: center; }      /* a disc as − and + are (4.86, Okay: "Link buttons round like plus"); linked, LINK over +ED */
@@ -180,7 +178,7 @@
   .pane.positions > .body > .row.chk { grid-template-columns: auto auto minmax(0, 1fr); }
   .pane.positions > .body > .row.chk > span:first-child { display: none; }
   .pane.positions > .body > .row.chk > .check { grid-column: auto; font-size: var(--t-s); white-space: nowrap; }
-  /* Positions' boxes (4.56; one number box since 4.64): the name, then the box, as wide as the menu boxes */
+  /* Positions' boxes (#357): the name, then the number box, as wide as the menu boxes */
   .body .row.num.block:not(.side) { grid-template-columns: minmax(0, 1fr) var(--pos-box); column-gap: var(--u1); }
   .body .row.num.block:not(.side) > :first-child { grid-column: 1; }
   .body .row.num.block:not(.side) > .numbox { grid-column: 2; }

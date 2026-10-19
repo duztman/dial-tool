@@ -2,8 +2,6 @@
 @layer panel {
   /* the panel: header, tabs, the pinned panes, the panes that scroll. */
   .panel { display: flex; flex-direction: column; min-height: 0; border-right: var(--hair) solid var(--rule); }
-  #app.nopanel { grid-template-columns: 0 1fr; }   /* the panel put away: the dial gets the whole window */
-  #app.nopanel .panel { display: none; }
   .panel > header { display: flex; align-items: center; height: var(--header); padding: 0 var(--margin); }
   /* the dial alone (Okay, 15 Oct 2026, 04:02): the panel keeps its width and slides left as far as its column closes,
      so it leaves without its lines reflowing; above the preview (z-index) so the mast, which slides back by as much
@@ -68,8 +66,8 @@
   .tabs { display: grid; grid-template-columns: repeat(5, 1fr); margin: 0 var(--margin); padding: var(--u4) 0 0; border-top: var(--hair) solid var(--rule); }
   .tabs button { display: grid; justify-items: center; gap: var(--unit); padding: var(--unit) 0 var(--u4); color: var(--grey); }
   .tabs button:hover { color: var(--ink); }
-  .tabs button:focus-visible { outline-offset: -2px; }
-  .tabs button.on { color: var(--ink); font-weight: 600; box-shadow: inset 0 -3px 0 var(--ink); }
+  .tabs button:focus-visible { outline-offset: calc(-1 * var(--thick)); }
+  .tabs button.on { color: var(--ink); font-weight: 600; box-shadow: inset 0 calc(-1 * var(--triple)) 0 var(--ink); }
   .tabs button.on .ring { fill: var(--ink); stroke: var(--ink); }
   .tabs button.on .sign { color: var(--paper); }
   .tabs button.on .hub { fill: currentColor; }      /* Dial chosen: its centre hole a dot of paper (Okay's drawing, 14 Oct 2026) */
@@ -80,7 +78,7 @@
      white to gray on margins. Desktop included"): the border's band stays (nothing under it moves) but is clear, so the
      panel's paper shows in the margins and meets the grey below with no line; the ink is drawn across the content only */
   .pinned { border-bottom-color: transparent; background: linear-gradient(var(--ink) 0 0) 50% 100% / calc(100% - 2 * var(--margin)) var(--thick) no-repeat border-box; }
-  .pinned > .pane:last-child { --air: calc(3 * var(--unit)); }
+  .pinned > .pane:last-child { --air: var(--u6); }
   .form { --surface: var(--scroll); --inset: var(--paper); --well: var(--field); --row-rule: var(--line-on-grey);
     flex: 1; min-height: 0; overflow-y: auto; padding-bottom: calc(6 * var(--unit)); background: var(--surface); }
 
@@ -112,7 +110,7 @@
   .pane.has > :is(.circles, .btnline.shapes) { margin-block: var(--unit); }
   .pane > .btnline.shapes { container-type: inline-size; }
   .pane > .btnline.shapes > button { height: calc((100cqw - (var(--places) - 1) * var(--unit)) / var(--places)); }      /* as high as a place's circle: the shapes' line is as long as the places' line, which holds --places */
-  .fold:focus-visible { outline-offset: -2px; }
+  .fold:focus-visible { outline-offset: calc(-1 * var(--thick)); }
   /* a pane's main selector stands on its heading line, on the four control columns, with no name of its own: the
      heading names it. The pane is laid on the columns so the selector can lie over the heading's right part; the
      heading stays one button under it. It shows when the pane is folded too, where the summary would be. */

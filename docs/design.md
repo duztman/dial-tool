@@ -1,11 +1,11 @@
 # Dial Tool — design canon
 
-*§9 (the tool's icons) added 14 Oct 2026, beta 4.36; 4.36.1: quiet signs, rim colour, dashed rings, the Guides drawings. Written 4 Oct 2026 with the guidebook's third edition (beta 2.3); revised the same day with the fourth to seventh. Okay: "this design research might influence
+*Written 4 Oct 2026 for the guidebook; §9 (the tool's icons) 14 Oct 2026; last updated 19 Oct 2026 (beta 4.87: the current guide's paths). Okay: "this design research might influence
 the whole build, take notes… let's make it canon."*
 
 This file is the rule for everything Dial Tool shows on paper or screen that isn't a dial: the guidebook
 first, then presentation sheets, spec sheets and, where it applies, the tool's own window.
-`guide/look/` (`style.css`, `build.mjs`) is its reference implementation; if they disagree, fix one of them the same day. (Until 15 Oct 2026 it was `docs/guide/`, now `archive/guide/`; paths below that name `docs/guide/` or `tools/make_guide.py` describe that archived build.)
+`guide/look/` (`style.css`, `build.mjs`) is its reference implementation; if they disagree, fix one of them the same day. The old guides are in `archive/guide/`.
 
 ## 1 · What it is modelled on
 
@@ -42,7 +42,7 @@ check §2–§6 against it.
 ## 2 · Type
 
 - **One family, sans.** Inter (open licence; fetched at build time). Okay asked for "a sans like Univers";
-  Univers itself can't be redistributed. Changing the family is one `@font-face` line in `docs/guide/style.css`.
+  Univers itself can't be redistributed. Changing the family is one `@font-face` line in `guide/look/style.css`.
   No monospace anywhere: file names are italic, things you type or click are semibold.
 - **Two weights and one light.** 400 text, 600 emphasis, headlines and leads, 300 for the big titles only
   ("big, light type with small, dark type").
@@ -110,8 +110,8 @@ alignment to these rules as well."*
   fourteenths. Yellow keeps the most colour (C 0.095); hues far from it get less (down to 0.045), because a
   green or blue of equal strength looks louder on the grey ground. Section 1 is `#F0DC8E`.
 - A section's colour is used for exactly two things: the **plate of its plain figures** (whole and close-up)
-  and its **tab** on the page edge. The cover's right field is section 1's. Defined once: `TINT` and `tint()`
-  in `tools/make_guide.py`; pages receive it as `--sig`.
+  and its **tab** on the page edge. The cover's right field is section 1's. Defined once, in `guide/look/`;
+  pages receive it as `--sig`.
 - Dials keep their own colours. Everything around them is neutral.
 - No tinted panels, rounded cards, shadows or decorative rules. A hairline above a block is the only frame.
   *Exception, the tool's window only (Okay, 12 Oct 2026): colour things are round and the colour pop-out is near black — the pop-out, a colour pill, a swatch.*
@@ -127,12 +127,12 @@ alignment to these rules as well."*
 - **A plain plate takes its section's colour** (§4), in whole figures and in close-ups. Classic dials keep their plates.
 - **Side by side, one thing changes.** Figures in a row share view, scale and crop; only the setting in the
   caption differs. A caption is two lines: what it is (semibold), then its values (grey).
-- **Annotations are drawn in the dial's own millimetres** (`overlay()` in `tools/make_guide.py`): dimension
+- **Annotations are drawn in the dial's own millimetres** (`guide/look/`): dimension
   lines with end ticks, leaders ending in a small ring, dashed construction lines. Text on them is 8 pt and
   lines 0.2 mm on paper at any enlargement — the page measures each picture and sets them. The build reports
   a label that leaves its picture or overlaps another.
 - **Line icons** (the guidebook's; the tool's own icons follow §9). One set, drawn on a 24-unit square with a single stroke, square ends, no fill
-  (`docs/guide/icons.svg`). One per text block, above its label or beside it; a few per page, never as
+  (drawn inline by `guide/look/build.mjs`). One per text block, above its label or beside it; a few per page, never as
   decoration without a block. Four are drawn large on the Start page.
 - **Watch notes.** A triangle icon and a short paragraph: what a careful reader would otherwise find out the
   hard way (order works twice, radii are absolute, fillets stop silently …). One or two per page, under the

@@ -119,7 +119,7 @@ await page.keyboard.press("Escape");
 await visit("size pop-up", () => page.click("#ring-size"));
 await page.keyboard.press("Escape");
 await visit("font box", async () => { await page.click('.ringlist li.ring:has-text("numerals")'); await unfold(); await page.evaluate(() => document.querySelectorAll(".fontbox .partfold:not(.none)").forEach((b) => b.click())); });
-await visit("font sheet", async () => { await page.click("#font-change"); await page.waitForTimeout(400); });
+await visit("font sheet", async () => { await page.click("#font-current"); await page.waitForTimeout(400); });
 await page.keyboard.press("Escape");
 await visit("Hands", () => tab("Hands"));
 await visit("hand shapes", () => page.click("#hand-shape-Shape-7"));      // every shape is shown under the box since 4.46.3: one chosen, so a chosen thumb is looked at too

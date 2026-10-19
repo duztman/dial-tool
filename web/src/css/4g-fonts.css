@@ -23,10 +23,8 @@
   .fontbox > * + * { border-top: var(--hair) solid var(--rule); }
   .fontbox .row { padding-right: var(--frame-pad); box-shadow: none; }      /* size, tracking, an axis: rows like any other, between the box's own lines, their steppers ending --frame-pad inside the box */
   .fontbox .row > :first-child { padding-left: var(--btn-pad); }
-  /* the chosen font's numerals and letters, the box's first line: in a thick light frame one unit inside the box (Okay's sketch, 13 Oct 2026: "thick border, no bg") */
   /* the box's head (Okay's drawing, font-selector_171026, 18 Oct 2026): on the panel's grey, the preview on white a little
-     way in, then the name's line on the same grey; no line between them. (13 Oct to 4.52.2: the preview's cell grey on
-     the white box.) */
+     way in, then the name's line on the same grey; no line between them. */
   .fontbox > .currentwrap { position: relative; padding: var(--font-head-in) var(--font-head-in) 0; background: var(--scroll); }
   .fontbox .fontrow.current { width: 100%; border: 0; background: var(--field); }
   .fontbox .fontrow.current:hover { background: var(--field); outline: var(--hair) solid var(--rule); outline-offset: calc(-1 * var(--hair)); }
@@ -34,14 +32,12 @@
   /* the language: at the name line's right end, a small white box (Okay's drawing, 18 Oct 2026: "the red marked box has a new place"; inside the preview's cell in 4.51–4.52.2, #273) */
   .fontname .langbox { height: var(--control-s); padding: 0 calc(0.75 * var(--btn-pad)); border-color: var(--rule-light); background: var(--field); color: var(--wait); font-size: var(--t-xxs); }
   /* the box's rows (#274, 4.51; "break the rules"): a name column of twelve characters, cut past them; the slider the whole rest */
-  .fontbox .row.num:not(.side) { grid-template-columns: var(--font-label) minmax(0, 1fr) var(--gap) var(--tile-w) var(--unit) var(--tile-w); }
   .fontbox .row.num:not(.side) > :first-child { grid-column: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .fontbox .row.num:not(.side) > input[type="range"] { grid-column: 2; }
   .fontbox .row.num:not(.side) > .numbox { grid-column: 4 / -1; --box-value: var(--tile-w); --box-steps: var(--tile-w); }
   /* the number block (Okay's drawing, 18 Oct 2026: "new number entering blocks (to be implemented throughout the site)"):
      the value and its − + as one block — no gap, one thick line of the rule's grey round all three, hairlines between */
   .fontbox .row.num:not(.side) { grid-template-columns: var(--font-label) minmax(0, 1fr) var(--gap) var(--tile-w) 0 var(--tile-w); }
-  /* (its thick-lined number blocks of 4.54 gave way to the one number box in 4.64) */
   /* light or dark (#276, 4.51): with the pill on Dark, the sheet's list and every font box take the dark ground and the
      usual names inside them turn over (ink light, paper dark), so what is chosen is light with dark words */
   .pillswitch { display: flex; border: var(--hair) solid var(--rule); border-radius: var(--round-pill); padding: var(--u1); background: var(--field); }
@@ -89,11 +85,11 @@
   .fontrow .sample svg { display: block; flex: none; }
   .fontrow .face svg { display: block; flex: 0 1 auto; height: auto; max-width: 100%; }      /* a name too wide for its column is drawn smaller; numerals are cut at their column's edge */
   .fontrow .has .sticker { padding-inline: calc(var(--unit) / 3); }      /* a little tighter in the sheet, so even eight stickers take two lines */
-  .fontrow .has { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: calc(var(--unit) / 2); padding: var(--unit) 0; }      /* from the column's left edge, on one line as long as it lets them */
+  .fontrow .has { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: var(--u1); padding: var(--unit) 0; }      /* from the column's left edge, on one line as long as it lets them */
   /* a sticker: one thing a family has, in the pixel font at its own size (R32), on a colour of its kind, round
      corners. */
   .sticker { opacity: var(--pixel-ink);      /* the pixel font a little under full strength, on pale and on black alike (Okay, 13 Oct 2026: "Silkscreen too dark on full black, 70%") */
-    padding: var(--hair) calc(var(--unit) / 2); border-radius: var(--round-tiny); background: var(--st-styles); color: var(--st-ink); font: 400 var(--t-pixel)/1.25 var(--pixel); text-transform: uppercase; white-space: nowrap; }
+    padding: var(--hair) var(--u1); border-radius: var(--round-tiny); background: var(--st-styles); color: var(--st-ink); font: 400 var(--t-pixel)/1.25 var(--pixel); text-transform: uppercase; white-space: nowrap; }
   .sticker.weight { background: var(--st-weight); }
   .sticker.italic { background: var(--st-italic); }
   .sticker.width { background: var(--st-width); }
@@ -104,7 +100,7 @@
   /* a sticker as a button, in the tool's own colours: a variable axis's name, an OpenType switch. Twice the size
      (the pixel font at twice its own, R32), grey like the labels beside it; switched on, it is black. */
   .sticker.ui { height: auto; border: var(--hair) solid var(--rule); background: var(--field); color: var(--grey); cursor: pointer; }
-  .sticker.ui.big { padding: calc(var(--unit) / 2) var(--unit); font-size: calc(2 * var(--t-pixel)); }
+  .sticker.ui.big { padding: var(--u1) var(--unit); font-size: calc(2 * var(--t-pixel)); }
   .sticker.ui:hover { border-color: var(--ink); color: var(--ink); }
   .features .tiles:has(> .sticker) { display: flex; flex-wrap: wrap; gap: var(--unit); }
   .partfold.none { color: var(--grey); font-weight: 400; cursor: default; }
@@ -130,7 +126,7 @@
   .legend dd small { color: var(--wait); font-size: inherit; }
   .legend .together { white-space: nowrap; }      /* the last word and its bracket: never an orphan */
   .fontrow.current { grid-template-columns: minmax(0, 1fr); height: var(--head); border: 0; }      /* the chosen font's numerals and letters, alone on their line */
-  .fontlist .group { padding: calc(var(--unit) * 2) var(--btn-pad) calc(var(--unit) / 2); border-bottom: var(--hair) solid var(--rule); }
+  .fontlist .group { padding: var(--u4) var(--btn-pad) var(--u1); border-bottom: var(--hair) solid var(--rule); }
 
   /* the font sheet: over the panel, on its columns, so the dial stays in view; from the bottom on a phone */
   /* it floats over the panel: as wide and as high as the panel (from the window's top to the bar, never over the
@@ -138,7 +134,7 @@
      preview; a shadow to its left */
   .picker { position: fixed; inset: var(--header) auto calc(var(--bar-height) + var(--line)) calc(var(--margin) + var(--lead) + 2 * (var(--col) + var(--gap))); width: var(--panel); max-width: calc(100vw - 2 * var(--margin)); height: auto; max-height: none; margin: 0; padding: 0; border: var(--hair) solid var(--rule); box-shadow: var(--shadow);      /* a light edge (Okay, 13 Oct 2026: "lighter borders") */
     background: var(--paper); color: var(--ink); }
-  .picker[open] { display: grid; grid-template-rows: auto 1fr auto; gap: calc(var(--unit) * 2); padding: calc(var(--unit) * 3) var(--margin) var(--margin); }
+  .picker[open] { display: grid; grid-template-rows: auto 1fr auto; gap: var(--u4); padding: var(--u6) var(--margin) var(--margin); }
   .picker:focus { outline: none; }
   .picker::backdrop { background: none; }          /* the dial keeps its true colours while you choose */
   .picker header { display: flex; align-items: center; justify-content: space-between; gap: var(--gap); }

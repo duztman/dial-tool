@@ -12,12 +12,7 @@ import {
   empty,
 } from "../geometry.js";
 
-const num = (v, digits = 4) => {
-  const s = (v + 0).toFixed(digits).replace(/^-(0(\.0+)?)$/, "$1");
-  return s.includes(".") ? s.replace(/\.?0+$/, "") || "0" : s;
-};
-
-const rgb = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Math.max(v, 0), 1) * 255).toString(16).padStart(2, "0")).join("").toUpperCase();
+import { num, rgb } from "../output.js";      // the same number and colour writers as the SVG and PDF files
 
 /**
  * Returns an SVG document for a given list of scene items scaled to 450x450 px.
@@ -43,43 +38,6 @@ function layer_svg(S, items, { background = null, size = 450 } = {}) {
   }
   out.push(`  </g>`, `</svg>`);
   return out.join("\n");
-}
-
-/**
- * Builds SVG for just the dial plate (background disc).
- */
-export function svg_dial_plate(S, statik, ambient = false) {
-  if (!statik.plate) return null;
-  let fill = S.c_plate;
-  if (ambient === "dimmed") {
-    fill = [S.c_plate[0] * 0.15, S.c_plate[1] * 0.15, S.c_plate[2] * 0.15, 1];
-  } else if (ambient && ambient !== "plate") {
-    // "black" or true: pure black plate (or omit if alpha=0)
-    fill = [0, 0, 0, 1];
-  }
-  return layer_svg(S, [{ role: "plate", path: statik.plate, fill }]);
-}
-
-/**
- * Builds SVG for just the dial rings (ticks, numerals, markers, bands).
- */
-export function svg_dial_rings(S, statik, ambient = false) {
-  const items = [];
-  const rings = statik.rings.slice().reverse();
-
-  for (const d of rings) {
-    if (d.tints) {
-      d.tints.forEach((tint) => {
-        const fill = ambient ? [0.9, 0.9, 0.9, 1] : sector_colour(d.ring, tint.at);
-        items.push({ role: "ring", path: tint.path, fill });
-      });
-    } else {
-      const fill = ambient ? [0.9, 0.9, 0.9, 1] : d.ring.c;
-      items.push({ role: "ring", path: d.path, fill });
-    }
-  }
-
-  return layer_svg(S, items);
 }
 
 /**
