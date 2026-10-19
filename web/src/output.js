@@ -184,25 +184,40 @@ export const PAPERS = [["A4", 210, 297], ["Letter", 215.9, 279.4], ["A5", 148, 2
 export const SHEET_EDGE = 8;                       // mm kept clear at the paper's edges, where a printer can't reach
 const CUT_AT = 0.4, CUT_W = 0.1;                   // the cut line: this far outside the dial, this thick (mm)
 
+/** discs of one diameter D, as many as fit in a w × h room with gap between them: in straight rows or staggered
+ *  ones (every other row half a pitch along, rows a hexagon's height apart), whichever holds more. {places: [[x, y]
+ *  from the room's top left, each a disc's centre less D/2], staggered}. One packing for every page of copies: the
+ *  print sheet (4.75) and Compare (#435), which asks it how large n dials can be. */
+export function pack_discs(w, h, D, gap) {
+  const pitch = D + gap;
+  const across = (len) => (len + 1e-9 >= D ? Math.floor((len - D) / pitch + 1e-9) + 1 : 0);
+  const straight = () => { const c = across(w), r = across(h), out = []; for (let j = 0; j < r; j++) for (let i = 0; i < c; i++) out.push([i * pitch, j * pitch]); return out; };
+  const staggered = () => {
+    const rise = pitch * Math.sqrt(3) / 2, rows = h + 1e-9 >= D ? Math.floor((h - D) / rise + 1e-9) + 1 : 0, out = [];
+    for (let j = 0; j < rows; j++) { const off = j % 2 ? pitch / 2 : 0, c = across(w - off); for (let i = 0; i < c; i++) out.push([off + i * pitch, j * rise]); }
+    return out;
+  };
+  const a = straight(), b = staggered();
+  return b.length > a.length ? { places: b, staggered: true } : { places: a, staggered: false };
+}
+
+/** places, centred as a block in a w × h room: each [x, y] from the room's top left, a disc's centre less D/2. */
+export function centre_block(places, w, h) {
+  if (!places.length) return places;
+  const xs = places.map((p) => p[0]), ys = places.map((p) => p[1]);
+  const dx = (w - (Math.max(...xs) - Math.min(...xs))) / 2 - Math.min(...xs), dy = (h - (Math.max(...ys) - Math.min(...ys))) / 2 - Math.min(...ys);
+  return places.map(([x, y]) => [x + dx, y + dy]);
+}
+
 /** where the copies stand on a sheet: {places: [[x, y] mm from the page's bottom left, each a dial's centre], fits,
  *  staggered, paper: [name, w, h]}. copies 0 = as many as fit. */
 export function sheet_layout(S) {
-  const paper = PAPERS[S.out_paper] || PAPERS[0], [, W, H] = paper, D = S.dial_d, gap = Math.max(+S.out_gap || 0, 0), pitch = D + gap;
-  const aw = W - 2 * SHEET_EDGE, ah = H - 2 * SHEET_EDGE;
-  const across = (w) => (w + 1e-9 >= D ? Math.floor((w - D) / pitch + 1e-9) + 1 : 0);
-  const straight = () => { const c = across(aw), r = across(ah), out = []; for (let j = 0; j < r; j++) for (let i = 0; i < c; i++) out.push([i * pitch, j * pitch]); return out; };
-  const staggered = () => {                        // rows a hexagon's height apart, every other one half a pitch along
-    const rise = pitch * Math.sqrt(3) / 2, rows = ah + 1e-9 >= D ? Math.floor((ah - D) / rise + 1e-9) + 1 : 0, out = [];
-    for (let j = 0; j < rows; j++) { const off = j % 2 ? pitch / 2 : 0, c = across(aw - off); for (let i = 0; i < c; i++) out.push([off + i * pitch, j * rise]); }
-    return out;
-  };
-  const a = straight(), b = staggered(), use = b.length > a.length ? b : a;
+  const paper = PAPERS[S.out_paper] || PAPERS[0], [, W, H] = paper, D = S.dial_d, gap = Math.max(+S.out_gap || 0, 0);
+  const packed = pack_discs(W - 2 * SHEET_EDGE, H - 2 * SHEET_EDGE, D, gap), use = packed.places;
   const want = +S.out_copies > 0 ? Math.min(Math.round(+S.out_copies), use.length) : use.length;
   const places = use.slice(0, want);
   if (!places.length) return { places, fits: 0, staggered: false, paper };
-  const xs = places.map((p) => p[0]), ys = places.map((p) => p[1]);
-  const dx = (W - (Math.max(...xs) - Math.min(...xs))) / 2 - Math.min(...xs), dy = (H - (Math.max(...ys) - Math.min(...ys))) / 2 - Math.min(...ys);
-  return { places: places.map(([x, y]) => [x + dx, H - (y + dy)]), fits: use.length, staggered: use === b && b.length > a.length, paper };      // first copies at the top
+  return { places: centre_block(places, W, H).map(([x, y]) => [x, H - y]), fits: use.length, staggered: packed.staggered, paper };      // first copies at the top
 }
 
 /** the print sheet as PDF bytes: the dial drawn once as a form, placed at every copy. */
@@ -210,6 +225,7 @@ export function pdf_sheet(S, statik, t) {
   const L = sheet_layout(S), [, W, H] = L.paper, flip = S.out_mirror ? -1 : 1, R = S.dial_d / 2;
   const alphas = [], dial = [];
   for (const item of drawn(S, statik, t, false, null)) {
+    if (item.role === "registration") continue;      // a page's corners are the sheet's, not each copy's (#224)
     const [r, g, b, a] = item.fill;
     if (a < 1 && !alphas.includes(a)) alphas.push(a);
     dial.push(a < 1 ? `q /A${alphas.indexOf(a)} gs` : "q", S.out_production ? `${num(r)} g` : `${num(r)} ${num(g)} ${num(b)} rg`, ...path_ops(item.path), "f", "Q");

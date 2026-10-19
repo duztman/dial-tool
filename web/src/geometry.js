@@ -158,6 +158,13 @@ export const DEFAULTS = {
   da_shape: 0, da_sides: 6, da_turn: false, da_text_turn: true, da_family: "", da_ps: "", da_axes: {}, da_text_c: null, da_disc_c: null, da_tracking: null, da_lang: null, da_features: null, da_at_deg: null,      // window 1's share of WINDOW_BASE's keys of 13 Oct 2026
   t: 10 * 3600 + 9 * 60 + 36,
   out_production: false, out_mirror: false, out_live_text: false,
+  // what a file for production holds (the production debts, #219–#224; beta 5): every one starts as files were made
+  // before, so older links and files draw as they did (R31, no new scheme). Preview and files alike (R26: one scene)
+  out_window_content: true,                        // #219: what the windows show (discs, numbers, pictures); off, their holes stay empty, for a printer who prints the face alone
+  out_hidden_cut: false,                           // #221: a hidden ring still knocks out and skips as if it were there, so a film made by hiding rings keeps its holes
+  out_cutlines: true,                              // #222: a mask's cut lines (each window's, the centre hole's); off, the mask holds only what is etched
+  out_invert: false,                               // #223: a mask inverted inside the dial — toner everywhere but the marks, for sunk marks
+  out_marks: false,                                // #224: a mask's blank outline and four registration marks in the page's corners
   out_paper: 0, out_copies: 0, out_gap: 3.0, out_cutline: false,      // a print sheet (4.75, #348): its paper (output.js PAPERS: A4 · Letter · A5), how many (0 = as many as fit), the room between, a cut line round each
   out_dpi: 600.0, out_seconds: 4.0, out_fps: 30.0, out_px: 1080,
   ui_section: 0, ui_ring: 0, ui_hand: 0, ui_preview: 0, ui_window: 0,
@@ -247,6 +254,7 @@ export function radial_extent(path) {
 export const GUIDE_MORE = ["line", "crosshair", "circle"];
 export const NOT_GEOMETRY = ["t", "guides", "xray", "bezel", "strap", "c_strap", "wearos_name", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
 export const NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_", "sh_"];
+export const GEOMETRY_AFTER_ALL = ["out_hidden_cut"];      // under a quiet prefix, but it changes the rings' shapes (#221)
 
 /** base values + d's values (deep copies), names turned into popup indexes. */
 export function complete(base, d) {
@@ -451,6 +459,7 @@ export const LINK_KEYS = [
   "sh_bevel",               // 4.79: appended; off to start
   "hub", "bulge",           // 4.80: appended; no hub and the leaf as always to start, so every older link looks as before
   "bevel",                  // 4.89.1: appended; on to start, so every older link looks as before
+  "out_window_content", "out_hidden_cut", "out_cutlines", "out_invert", "out_marks",      // beta 5 (#219–#224): appended; each starts as files were, so every older link looks as before
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -1308,7 +1317,9 @@ export const window_place = (w) => {
 function build_rings(S, cut = null) {
   const holes = windows_of(S).filter((w) => w.on).map(window_angle), done = [];
   for (const ring of S.rings) {
-    if (!ring.on) continue;
+    // a hidden ring is left out, unless hidden rings still cut (#221, Export › Print): then it skips and knocks out
+    // the rings under it as if it were there, and is not drawn (a ghost) — so a film made by hiding rings keeps its holes
+    if (!ring.on && !S.out_hidden_cut) continue;
     const kind = kind_of(ring), angles = ring_angles(ring);
     let keep = angles.map((_, i) => i).filter((i) => picked(ring, i));
     if (kind === "markers" || kind === "numerals" || kind === "text") keep = keep.filter((i) => !holes.some((a) => near(angles[i], a)));
@@ -1328,7 +1339,7 @@ function build_rings(S, cut = null) {
       return out;
     };
     const key = "final" + key_of(ring) + JSON.stringify([keep, sources.map((d) => [key_of(d.ring), d.keep]), cut ? date_key(S) : null]);
-    const d = { ring, kind, keep, taken, shape, at, parts, path: memo(key, final) };
+    const d = { ring, kind, keep, taken, shape, at, parts, path: memo(key, final), ghost: !ring.on };
     // a band whose sectors have colours of their own is drawn as one shape per colour: the sectors of that
     // colour, cut like the whole ring. Which sectors go together is remembered, not which colour they have.
     if (kind === "band" && at.some((i) => ring.cs && ring.cs[String(i)])) {
@@ -1341,7 +1352,7 @@ function build_rings(S, cut = null) {
     }
     done.push(d);
   }
-  return done;
+  return done.filter((d) => !d.ghost);
 }
 
 // ── windows: date · day · am–pm · moon phase ─────────────────
@@ -1723,6 +1734,35 @@ function hand_items(S, t) {
  *  · angle (clock angle for hands, else 0). Rings add ring (their entry in static.rings) and
  *  index (their place in S.rings); hands add name; guides add stroke and px (screen points).
  *  selected = index of the ring being edited; its guides are drawn stronger. */
+/** a mask's production marks (#224; the guide's reviewers, 15 Oct 2026: "no blank outline or registration marks"): the
+ *  blank's outline, a 0.1 mm ring just outside the dial's edge, so the film is laid on the blank by it; and a
+ *  registration mark in each corner of the page — a ring with a cross through it, 4 mm across — so two films (one per
+ *  ink, #35) are laid on each other by them. The corners lie outside the dial's circle, so they hold a mark even on a
+ *  page with no margin; a mark that would come closer than 1 mm to the dial is made smaller, and none is drawn under
+ *  1.5 mm (production_marks_fit says so). Filled shapes (R4). → [[role, path]] */
+export const REG_MARK = 4, REG_LINE = 0.1;
+export function production_marks(S) {
+  const H = page_mm(S) / 2, out = [["outline", circle(S.dial_d + 2 * REG_LINE).difference(circle(S.dial_d))]];
+  const m = production_mark_size(S);
+  if (!m) return out;
+  const at = H - m / 2 - 0.5;                      // the mark's centre: half a millimetre in from the page's corner
+  for (const [sx, sy] of [[-1, 1], [1, 1], [1, -1], [-1, -1]]) {
+    const ring = circle(m * 0.6).difference(circle(m * 0.6 - 2 * REG_LINE));
+    const cross = new Path().rect(-m / 2, -REG_LINE / 2, m, REG_LINE).union(new Path().rect(-REG_LINE / 2, -m / 2, REG_LINE, m));
+    out.push(["registration", ring.union(cross).translate(sx * at, sy * at)]);
+  }
+  return out;
+}
+/** how big the registration marks can be on this page (mm), or 0 if a corner can't hold one 1.5 mm across. */
+export function production_mark_size(S) {
+  const R = S.dial_d / 2, H = page_mm(S) / 2;
+  // a mark m across, centred at (c, c) with c = H - m/2 - 0.5, stands c·√2 from the dial's centre; the disc round it
+  // (radius m/√2, its cross's ends) must keep 1 mm off the dial's edge
+  const fits = (m) => (H - m / 2 - 0.5) * Math.SQRT2 - m / Math.SQRT2 >= R + 1;
+  for (let m = REG_MARK; m >= 1.5; m -= 0.25) if (fits(m)) return m;
+  return 0;
+}
+
 export function scene(S, statik, t, preview = true, selected = null) {
   const items = [];
   const add = (role, path, fill, more = {}) => {
@@ -1738,13 +1778,19 @@ export function scene(S, statik, t, preview = true, selected = null) {
   const index = (d) => S.rings.indexOf(d.ring);
 
   if (S.out_production) {                          // mono mask, no plate, no hands
-    const black = [0, 0, 0, 1];
+    const black = [0, 0, 0, 1], cuts = S.out_cutlines !== false;      // #222: the cut lines only while asked for (they are on to start)
     for (const d of rings) add("ring", d.path, black, { ring: d, index: index(d) });
     for (const x of windows) {
       add("date frame", x.frame, black, { window: x.index });
-      add("cutline", x.cutline, black, { window: x.index });
+      if (cuts) add("cutline", x.cutline, black, { window: x.index });
     }
-    if (statik.hole_line) add("hole", statik.hole_line, black);
+    if (statik.hole_line && cuts) add("hole", statik.hole_line, black);
+    if (S.out_invert) {                            // #223: toner on the blank everywhere but the marks — the dial's disc less all of the above, one shape
+      const marks = merge(items.map((i) => i.path));
+      items.length = 0;
+      add("inverted", empty(marks) ? circle(S.dial_d) : circle(S.dial_d).difference(marks.removeOverlap()), black);
+    }
+    if (S.out_marks) for (const [role, path] of production_marks(S)) add(role, path, black);      // #224: the blank's outline, registration marks in the corners
   } else {
     // X-ray (4.72, #346; rewritten 4.88 — Okay, 19 Oct 2026: "Xray makes the unseen full visible, sensible z height
     // differences (not editable) and a stacking order. Selected shows above all others. Top is 100% opacity, with a
@@ -1763,6 +1809,7 @@ export function scene(S, statik, t, preview = true, selected = null) {
       add("disc print", d.print, dim(wc(x).text_c || wc(x).ink, layer), { window: x.index });
     });
     for (const x of windows) {                     // what shows through each hole, on white
+      if (S.out_window_content === false) continue;      // #219: the holes alone, for a printer who prints the face
       add("date disc", x.window, dim(wc(x).disc_c || [1, 1, 1, 1], face), { window: x.index });
       add("date number", x.number, dim(wc(x).text_c || wc(x).ink, face), { window: x.index });
       for (const m of x.more || []) add("date picture", m.path, dim(wc(x)[m.key] || (m.like_number ? wc(x).text_c || wc(x).ink : m.or), face), { window: x.index });      // a picture's further colours (4.73)

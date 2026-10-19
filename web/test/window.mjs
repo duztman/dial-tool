@@ -1740,19 +1740,81 @@ await page.uncheck("#global-out-production-Mono-print-mask");
   check(n > 10 && drawn === n && placed === n && near(+box[1] / 72 * 25.4, 210, 0.01) && near(+box[2] / 72 * 25.4, 297, 0.01) && !/ S\n|BT\n/.test(text) && six.startsWith("6 copies") && six_drawn === 6 && path.basename(sheet).includes("-sheet-"),
     `a print sheet: "${all}" — ${placed} copies placed on an A4 (${(+box[1] / 72 * 25.4).toFixed(1)} × ${(+box[2] / 72 * 25.4).toFixed(1)} mm), filled paths only, drawn beside its button; Copies 6: "${six}"; ${path.basename(sheet)}`);
 }
-{ // your own dials (4.76, #347; Okay's notes 2: "Instances of a watch: a save instance button; a gallery of them"): Save this dial keeps it with a picture in this browser, over the Gallery; its card opens it again, or goes
+{ // the production debts (#219–#224, beta 5), each a tick in Print that starts as files were made: what the windows show,
+  // hidden rings that still cut, a mask's cut lines, its invert, its outline and registration marks. Preview and files alike (R26)
+  const roles = () => page.evaluate(() => [...new Set(window.dial_tool.items.map((i) => i.role))].join(" "));
+  const was = await page.evaluate(() => JSON.stringify(window.dial_tool.S));
+  const g = (k, v) => page.evaluate(([k, v]) => window.dial_tool.set_value("global", k, v), [k, v]).then(frame);
+  await page.evaluate(() => { const t = window.dial_tool; t.S.ui_window = 0; t.set_value("window", "on", true); t.set_value("window", "kind", 0); });
+  await g("out_production", false);
+  const shown = await roles();
+  await g("out_window_content", false);
+  const bare = await roles(), plate_holes = await page.evaluate(() => { const p = window.dial_tool.items.find((i) => i.role === "plate"); return p.path.d.filter((c) => c[0] === "M").length; });
+  await g("out_window_content", true);
+  // #221: the minute ticks knocked out by every ring above; Markers hidden → the ticks under them come back; with
+  // "Hidden rings still cut" the ticks are cut as with Markers shown, and Markers are still not drawn
+  const ticks_path = () => page.evaluate(() => { const it = window.dial_tool.items.find((i) => i.role === "ring" && i.ring.ring.name === "Minute ticks"); return it ? it.path.svg(3) : ""; });
+  const ring_on = (name, on) => page.evaluate(([name, on]) => { const t = window.dial_tool, i = t.S.rings.findIndex((r) => r.name === name); t.S.ui_ring = i; t.set_value("ring", "on", on); }, [name, on]).then(frame);
+  await page.evaluate(() => { const t = window.dial_tool, i = t.S.rings.findIndex((r) => r.name === "Minute ticks"); t.S.ui_ring = i; t.set_value("ring", "knock", 3); t.set_value("ring", "clear", 0.4); }); await frame();
+  const all_on = await ticks_path();
+  await ring_on("Markers", false);
+  const hidden = await ticks_path();
+  await g("out_hidden_cut", true);
+  const ghost = await ticks_path(), markers_drawn = await page.evaluate(() => window.dial_tool.items.some((i) => i.role === "ring" && i.ring.ring.name === "Markers"));
+  await g("out_hidden_cut", false);
+  await ring_on("Markers", true);
+  // a mask: its cut lines, invert, marks
+  await g("out_production", true);
+  const mask = await roles();
+  await g("out_cutlines", false); const uncut = await roles();
+  await g("out_marks", true); const marked = await roles(), reg = await page.evaluate(() => window.dial_tool.items.filter((i) => i.role === "registration").length);
+  await g("out_invert", true); const inverted = await roles();
+  const pdf = await download("#export-pdf"), text = fs.readFileSync(pdf, "latin1");
+  await page.evaluate((w) => { const t = window.dial_tool; t.reopen(JSON.parse(w)); }, was); await frame();
+  check(shown.includes("date number") && !bare.includes("date disc") && !bare.includes("date number") && plate_holes >= 2,
+    `What the windows show (#219), off: no disc or number, the window's hole in the plate stays (${bare})`);
+  check(all_on !== hidden && ghost === all_on && !markers_drawn, `Hidden rings still cut (#221): a hidden Markers ring knocks the minute ticks out as if shown, and is not drawn (${all_on.length} · ${hidden.length} · ${ghost.length} characters of path)`);
+  check(/cutline|hole/.test(mask) && !/cutline|hole/.test(uncut) && marked.includes("outline") && reg === 4 && inverted.split(" ").filter((r) => !["outline", "registration", "guide"].includes(r)).join() === "inverted" && (text.match(/ f\n/g) || []).length >= 6,
+    `a mask's ticks (#222–#224): cut lines off takes them out (${uncut}); Outline and registration marks: the blank's edge and ${reg} marks; Inverted: one shape, the dial less the marks (${inverted})`);
+}
+{ // your own dials (4.76, #347), in Versions under undo (#435; Okay, 19 Oct 2026, 23:11: "place this under undo. Icon: dial with two hands. This is versions … 3x grid. 'edit this dial' and others activate on clicks there too. top, there is a compare button"): Save this dial keeps it with a picture in this browser; its card opens it again, or goes
+  const open_versions = async () => { if (await page.$eval("#version-list", (l) => l.hidden)) await page.click("#versions"); };
   await page.evaluate(() => localStorage.removeItem("dial-tool-instances"));
-  await page.$eval("#instance-save", (e) => e.scrollIntoView({ block: "center" }));
+  await open_versions();
+  const under = await page.evaluate(() => { const u = document.querySelector(".undopair").getBoundingClientRect(), v = document.querySelector("#versions").getBoundingClientRect(); return v.top >= u.bottom && Math.abs(v.left - u.left) < 1 && !document.querySelector(".panel #instance-save"); });
   const plate = await S("JSON.stringify(S.c_plate)");
   await page.click("#instance-save"); await page.waitForFunction(() => document.querySelectorAll("#instance-cards a").length === 1);
+  const lone = await page.$eval("#instance-compare", (b) => b.hidden);      // R16: Compare needs two
   await page.evaluate(() => window.dial_tool.set_value("global", "c_plate", [0.15, 0.2, 0.35, 1]));
+  await open_versions();
   await page.click("#instance-cards a"); await page.click("#instance-cards a.focus .btn.main");
   await page.waitForFunction((p) => JSON.stringify(window.dial_tool.S.c_plate) === p, plate, { timeout: 5000 }).catch(() => {});
-  const back = await S("JSON.stringify(S.c_plate)"), card = await page.$eval("#instance-cards a", (a) => [a.querySelectorAll("svg path").length > 10, a.textContent.includes("mm ·")]);
-  await page.$eval("#instance-cards a", (a) => a.scrollIntoView({ block: "center" }));
-  await page.click("#instance-cards a"); await page.click('#instance-cards a.focus .btn:text-is("Remove")');
+  const back = await S("JSON.stringify(S.c_plate)"), shut = await page.$eval("#version-list", (l) => l.hidden);
+  await open_versions();
+  const card = await page.$eval("#instance-cards a", (a) => [a.querySelectorAll("svg path").length > 10, a.textContent.includes("mm ·")]);
+  const size = await S("S.dial_d");      // put back after Compare's dials of other sizes: the checks after this one expect it
+  // Compare: a second and third saved dial (another size), then every one on the backdrop, packed, the panel away
+  for (const d of [30, 42]) { await page.evaluate((d) => window.dial_tool.set_value("global", "dial_d", d), d); await open_versions(); await page.click("#instance-save"); }
+  await page.waitForFunction(() => document.querySelectorAll("#instance-cards a").length === 3);
+  await page.click("#instance-compare");
+  await page.waitForTimeout(900);
+  const cmp = await page.evaluate(() => {
+    const v = document.querySelector("#compare-view").getBoundingClientRect(), cells = [...document.querySelectorAll(".comparedial")].map((c) => c.getBoundingClientRect());
+    const inside = cells.every((c) => c.left >= v.left - 0.5 && c.right <= v.right + 0.5 && c.top >= v.top - 0.5 && c.bottom <= v.bottom + 0.5);
+    const apart = cells.every((c, i) => cells.every((o, j) => i === j || Math.hypot(c.x - o.x, c.y - o.y) >= c.width - 0.5));
+    const w = cells.map((c) => c.width), mid = (cells.reduce((s, c) => s + c.left + c.right, 0) / 2 / cells.length);
+    return { n: cells.length, inside, apart, same: w.every((x) => x === w[0]), big: w[0] > 150, away: document.querySelector("#app").classList.contains("away"), shown: getComputedStyle(document.querySelector("#compare-view")).display !== "none", hidden: getComputedStyle(document.querySelector("main > svg")).visibility === "hidden" };
+  });
+  await page.keyboard.press("Escape"); await page.waitForTimeout(700);
+  const after = await page.evaluate(() => [document.querySelector("#app").classList.contains("away"), getComputedStyle(document.querySelector("#compare-view")).display]);
+  await open_versions();
+  for (let k = 0; k < 3; k++) { await page.$eval("#instance-cards a", (a) => a.scrollIntoView({ block: "center" })); await page.click("#instance-cards a"); await page.click('#instance-cards a.focus .btn:text-is("Remove")'); }
   const gone = await page.evaluate(() => [document.querySelectorAll("#instance-cards a").length, JSON.parse(localStorage.getItem("dial-tool-instances")).length]);
-  check(back === plate && card.every(Boolean) && gone.join() === "0,0", `Save this dial keeps it with its picture (${card.join(" ")}); its card's Edit this dial brings it back (plate ${back}); Remove takes it away (${gone.join(" ")})`);
+  await page.evaluate(() => window.dial_tool.versions_open(false));
+  await page.evaluate((d) => window.dial_tool.set_value("global", "dial_d", d), size);
+  check(under && lone && back === plate && shut && card.every(Boolean) && gone.join() === "0,0", `Versions stands under undo and holds your dials (none left in the panel); Save this dial keeps one with its picture (${card.join(" ")}); Compare hidden with one; Edit this dial brings it back (plate ${back}) and shuts the list; Remove takes them away (${gone.join(" ")})`);
+  check(cmp.n === 3 && cmp.inside && cmp.apart && cmp.same && cmp.big && cmp.away && cmp.shown && cmp.hidden && after.join() === "false,none",
+    `Compare (#435): the three saved dials on the backdrop, one size (${cmp.big ? "over 150 px" : "small"}), apart, inside the room the switches leave, the panel away and the dial hidden; Escape brings the panel back (${JSON.stringify(cmp)} · ${after.join(" ")})`);
 }
 const saved = await download("#save");
 const before_save = await S("JSON.stringify(S)");
@@ -2265,7 +2327,7 @@ check(narrow.wide <= 390 && narrow.eye >= 0 && narrow.bar === 0, "a phone: nothi
   await page.click("#fit");      // the dial was zoomed in above: fitted, the backdrop's corners are free
   await page.waitForTimeout(3500);      // anything unfolded by the taps before folds back first
   const folded = await g();
-  const spot = await page.evaluate(() => { const r = document.querySelector("main").getBoundingClientRect(); return [r.left + 40, r.top + 60]; });      // a corner of the backdrop, off the dial
+  const spot = await page.evaluate(() => { const r = document.querySelector("main").getBoundingClientRect(), v = document.querySelector("#versions").getBoundingClientRect(); return [r.left + 40, v.bottom + 16]; });      // a corner of the backdrop, off the dial, under undo and Versions (#435)
   await page.mouse.click(spot[0], spot[1]); await page.waitForTimeout(600);
   const open = await g();
   await page.waitForTimeout(3300);

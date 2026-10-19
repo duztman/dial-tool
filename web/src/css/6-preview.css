@@ -54,7 +54,7 @@
   .onview { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: var(--hair) solid var(--line-faint); color: var(--on-canvas); user-select: none; }
   @media (hover: hover) { .onview:hover { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); } }      /* under the pointer its line is twice as thick: still no fill */
   /* undo · redo, before the Guides switch: two joined outlined buttons; pale when there is no step that way */
-  .undos { position: absolute; z-index: 3; top: var(--canvas-top); left: max(var(--canvas-inset), calc(var(--title-end) + var(--gap) - var(--panel-w) * (1 - var(--away)))); display: flex; align-items: flex-start; gap: var(--unit); }      /* undo · redo, then Case and its Strap (4.82); top left of the preview, beside the panel; the dial alone, they ride left with the preview's edge and stop short of the title (a gap after it) */
+  .undos { position: absolute; z-index: 3; top: var(--canvas-top); left: max(var(--canvas-inset), calc(var(--title-end) + var(--gap) - var(--panel-w) * (1 - var(--away)))); display: flex; flex-direction: column; align-items: flex-start; gap: var(--unit); }      /* undo · redo, Versions under them (#435); top left of the preview, beside the panel; the dial alone, they ride left with the preview's edge and stop short of the title (a gap after it) */
   .undopair { display: flex; }
   .undobox { width: var(--control-large); }
   .undobox:first-child { border-radius: var(--round-switch) 0 0 var(--round-switch); }
@@ -74,6 +74,19 @@
     .onview:hover > * { opacity: 1; }
   }
   .guidesbox[aria-pressed="true"] > * { opacity: 1; }      /* on: its sign and its word whole (Okay, 15 Oct 2026, 02:06: "when on the icon is black too. Same goes for shadows") */
+  /* Versions, under undo (#435): a switch with its sign and word, as Backdrop's; its list drops under it — the panel's
+     ground, its cards as wide as the Gallery's (the panel's width). Function first: its look is to be designed with Okay */
+  .versions { position: relative; display: flex; }
+  .versionsbox { gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch); }
+  .versionlist { position: absolute; top: calc(100% + var(--unit)); left: 0; width: var(--panel-w); max-width: calc(100vw - 2 * var(--canvas-inset)); max-height: var(--list-room); overflow-y: auto; padding: 0 var(--pop-pad); border: var(--hair) solid var(--ink); border-radius: var(--round-switch); background: var(--paper); color: var(--ink); }
+  .versionline { display: flex; gap: var(--unit); }
+  /* Compare (#435): the saved dials on the backdrop, in the room the switches leave, placed by compare_place() */
+  .compareview { position: absolute; z-index: 2; inset: var(--compare-pad) calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: none; }      /* clear of the two rows of switches at the top and at the foot, the same room over and under, so the block sits on the preview's middle */
+  main.comparing { --compare-pad: calc(var(--canvas-inset) + 2 * (var(--control-large) + var(--unit))); background: var(--canvas-fill); }      /* the backdrop is the preview's own picture, hidden with the dial: its colour painted behind */
+  main.comparing .compareview { display: block; }
+  main.comparing > :is(svg, .tip) { visibility: hidden; }
+  .comparedial { position: absolute; width: var(--compare-d); height: var(--compare-d); }
+  .comparedial > svg { display: block; width: 100%; height: 100%; }
   .undobox.none, .undobox.none:hover { border-color: var(--line-fainter); box-shadow: none; }
   :is(.undobox.none, .undobox.none:hover) > * { opacity: calc(var(--faint) / 2); }
   .guidesbox { gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch) 0 0 var(--round-switch); }      /* on, its word is whole (black or white), never bolder (Okay, 14 Oct 2026: "when active label does not get bolder, just gets black") */

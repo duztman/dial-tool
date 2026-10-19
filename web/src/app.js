@@ -7,7 +7,7 @@
 // controls. Controls change the settings S and ask for a frame; the frame draws (R28).
 
 import * as G from "./geometry.js";
-import { svg_document, pdf_document, png_with_dpi, file_name, pdf_sheet, sheet_layout, PAPERS } from "./output.js";
+import { svg_document, pdf_document, png_with_dpi, file_name, pdf_sheet, sheet_layout, pack_discs, centre_block, PAPERS } from "./output.js";
 import { BEZELS, STRAPS, bezel_svg } from "./bezels.js";
 // a Wear OS watch face (4.67; farukahmet's PR #1, 18 Oct 2026): the dial as Watch Face Format, packed and signed in the browser
 import { generate_watchface_xml } from "./wearos/wff_xml.js";
@@ -359,6 +359,9 @@ const TOOL_ICONS = {
   grip: `<g fill="currentColor" stroke="none"><circle cx="5.5" cy="4" r="1"/><circle cx="10.5" cy="4" r="1"/><circle cx="5.5" cy="8" r="1"/><circle cx="10.5" cy="8" r="1"/><circle cx="5.5" cy="12" r="1"/><circle cx="10.5" cy="12" r="1"/></g>`,
   undo: `<path d="M3.25 6.75H9.75A3.25 3.25 0 0 1 9.75 13.25H6.25M6.25 3.75L3.25 6.75L6.25 9.75" ${sw(SLANT)}/>`,
   redo: `<path d="M13.25 6.75H6.75A3.25 3.25 0 0 0 6.75 13.25H10.25M10.25 3.75L13.25 6.75L10.25 9.75" ${sw(SLANT)}/>`,
+  // Versions, under undo (#435; Okay, 19 Oct 2026, 23:11: "Icon: dial with two hands"): a dial's edge, the minute hand
+  // up, the hour hand at four (fit.mjs; look.py 2.1 %)
+  versions: `<circle cx="8.25" cy="8.25" r="5.5" ${sw(CURVE)}/><path d="M8.25 8.25V5.25"/><path d="M8.25 8.25L10.5 9.75" ${sw(SLANT)}/>`,
   wide: `<rect x="2.75" y="2.75" width="10.5" height="10.5"/><path d="M6.25 10.25L10.25 6.25M7.25 6.25H10.25V9.25" ${sw(DENSE)}/>`,
   find: `<circle cx="7" cy="7" r="4.25" ${sw(CURVE)}/><path d="M10.25 10.25L13.25 13.25" ${sw(SLANT)}/>`,
   // an (i) beside a setting's name: what it does, in a tag (#357). A ring holding a stem and a dot; quiet by its grey
@@ -605,7 +608,7 @@ const ROWS = {
   Dial: [
     // Okay, 13 Oct 2026: Dial and Page stay in view (pinned); the list of colours scrolls under them.
     hdr("Dial", { pin: true }),                    // the plate: how big, what colour, what is on it
-    num("dial_d", "Diameter", 15, 50, 0.1),
+    num("dial_d", "Diameter", 15, 50, 0.1, { limits: [5, 300] }),      // typed past these it stops there and says so (#233: 0 and 1000 were taken)
     chk("ui_scale", "Scale everything with it", { nest: true }),
     num("dial_hole", "Centre hole", 0, 6, 0.1),      // Ø; 0 = none. Shows when the hands are hidden (#165)      // nest: a question about the row above starts on the controls' column (Okay, 12 Oct 2026)
     col("c_plate", "Plate"),
@@ -861,6 +864,18 @@ const ROWS = {
     // what the mask loses (#220): a ring lying on a ring below in another colour merges into it, one ink, and is gone;
     // said under the tick while the mask is on (design canon §6: a tick's note under it), and in the log on export
     info(() => mask_says(merges_of(tool)), { scope: "global", show: (S) => S.out_production && merges_of(tool).length > 0 }),
+    // the production debts (#219–#224, beta 5): each a tick that starts as files were made before. Claude's readings of
+    // 19 Oct 2026, 22:55 ("questions asked"), built for Okay's approval; preview and files alike (R26)
+    chk("out_invert", "Inverted", { show: (S) => S.out_production }),
+    info("Toner everywhere inside the dial but the marks, for sunk marks.", { show: (S) => S.out_production }),
+    chk("out_cutlines", "Cut lines", { show: (S) => S.out_production }),
+    info("Each window's and the centre hole's outline, for cutting. Off, the mask holds only what is etched.", { show: (S) => S.out_production }),
+    chk("out_marks", "Outline and registration marks", { show: (S) => S.out_production }),
+    info((S) => { const m = G.production_mark_size(S); return m ? `The blank's edge, and a ${+m.toFixed(2)} mm mark in each corner of the page, to lay films on the blank and on each other.` : "The blank's edge. The page's corners are too small for registration marks: give the page more Margin (Dial)."; }, { scope: "global", show: (S) => S.out_production }),
+    chk("out_hidden_cut", "Hidden rings still cut"),
+    info("A hidden ring still knocks out and skips the rings under it, so a film made by hiding rings keeps its holes.", {}),
+    chk("out_window_content", "What the windows show", { show: (S) => !S.out_production && G.windows_of(S).some((w) => w.on) }),
+    info("Off, the windows' holes stay empty: discs, numbers and pictures are left out, for a printer who prints the face alone. Hide the hands under Hands.", { show: (S) => !S.out_production && G.windows_of(S).some((w) => w.on) }),
     chk("out_mirror", "Mirrored, for toner transfer"),
     // a print sheet (4.75, #348; Okay's notes 2: "print page preparation, preview, copies, stacks — something simple,
     // elegant, efficient and paper savingly"): one page of copies at true size, packed straight or staggered —
@@ -879,9 +894,7 @@ const ROWS = {
     hdr("Log", { folded: true }),
     custom("log"),
     hdr("Gallery", { folded: true }),                                // under everything else: dials to open and take apart (Okay, 13 Oct 2026), the five first examples among them
-    // your own dials first (4.76, #347; Okay's notes 2: "Instances of a watch: a save instance button; a gallery of them"):
-    // Save this dial keeps it, with a small picture, in this browser; each opens as a Gallery card does, or goes
-    custom("instances"),
+    // your own dials are under undo on the preview, as Versions (#435), not here
     custom("gallery"),
   ],
 };
@@ -1169,7 +1182,7 @@ class DialTool {
         if (["date", "big date"].includes(G.WINDOW_KINDS[value]) && T.text === "MON") T.text = "17";
       }
     } else if (scope === "global") {
-      const quiet = G.NOT_GEOMETRY.includes(key) || G.NOT_GEOMETRY_PREFIX.some((p) => key.startsWith(p));
+      const quiet = !G.GEOMETRY_AFTER_ALL.includes(key) && (G.NOT_GEOMETRY.includes(key) || G.NOT_GEOMETRY_PREFIX.some((p) => key.startsWith(p)));
       if (!quiet) this.static_dirty = true;
       if (key === "dial_d" || key === "margin") { if (this.fitted) this.fit(); }
       if (key === "date") this.sync_time();      // the bar's stacked date (4.62)
@@ -1202,6 +1215,7 @@ class DialTool {
     if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox, .strapdot")) this.pop_close();
     if (this.guides_open && !$("#guide-list").hidden && !on(".guides")) this.guides_open(false);
     if (this.shadows_open && !$("#shadow-list").hidden && !on(".shadows")) this.shadows_open(false);
+    if (this.versions_open && !$("#version-list").hidden && !on(".versions")) this.versions_open(false);
     if (this.bio_open && !$("#bio").hidden && !on(".about")) this.bio_open(false);
     if (this.unit_open && !$("#unit-menu").hidden && !on(".unit")) this.unit_open(false);
     if (this.iris_box && !on(".irisbox")) this.iris_open(false);
@@ -1913,7 +1927,7 @@ class DialTool {
     const eye = el("button", { type: "button", className: "onview eyebox", id: "eye-box", title: "The dial alone: the panel slides away", ariaLabel: "The dial alone" });
     eye.innerHTML = icon(TOOL_ICONS.eyebox, 30);
     eye.setAttribute("aria-pressed", "false");
-    eye.onclick = () => this.dial_alone(eye.getAttribute("aria-pressed") !== "true");
+    eye.onclick = () => { if (this.comparing) return this.compare(false); this.dial_alone(eye.getAttribute("aria-pressed") !== "true"); };      // in Compare (#435) the eye is the way back
     this.eye_button = eye;
     // the showcase switch, left of the eye: an iris in a box. Pressed, it opens to the left with ACTIVATE SHOWCASE, and
     // only those words take you there (Okay, 04:59: "we need affordance"); pressed again, it shuts. In the showcase
@@ -2841,6 +2855,13 @@ class DialTool {
       }
       const commit = (v) => {
         v = row.whole ? Math.round(v) : +(+v).toFixed(6);
+        // limits: a number's hard ends, where typing past the slider's range stops (#233, R17): reached, it says so
+        if (row.limits && (v < row.limits[0] || v > row.limits[1])) {
+          const to = clamp(v, ...row.limits);
+          this.say(`${row.text} stops at ${to}${is_length(row) ? " mm" : ""}: ${+v.toFixed(3)} is past what the tool draws (${row.limits[0]}–${row.limits[1]}).`);
+          this.log(`${row.text}: ${+v.toFixed(3)} typed, ${to} taken (its limits are ${row.limits[0]}–${row.limits[1]})`);
+          v = to;
+        }
         set(row.whole ? clamp(v, row.lo, row.hi) : v);       // typing past the slider's range is allowed
       };
       // a length is kept in mm and shown in the chosen unit: per = how many of that unit make a mm, places = decimals shown
@@ -3535,7 +3556,7 @@ class DialTool {
    *  more or fewer rows; a tap jumps between five and all. Remembered by this browser, not by the dial (Okay's notes,
    *  p. 2, #256: "there's a limit to it … a resize pill"). */
   list_grip() {
-    const ol = this.ring_list, set = (n) => { this.ring_rows_shown = n; ol.style.setProperty("--ring-rows", String(n)); };
+    const ol = this.ring_list, set = (n) => { this.ring_rows_shown = n; ol.style.setProperty("--ring-rows", String(n)); this.sync_list_grip(); };
     try { const kept = parseInt(localStorage.getItem("dial-tool-ring-rows")); if (kept >= 1) set(kept); } catch (e) { /* not kept */ }
     const grip = el("div", { className: "listgrip", id: "list-grip", title: "Drag to show more or fewer rings", ariaLabel: "Rings shown" });
     grip.setAttribute("role", "separator");
@@ -3558,6 +3579,14 @@ class DialTool {
       try { localStorage.setItem("dial-tool-ring-rows", String(this.ring_rows_shown)); } catch (er) { /* not kept */ }
     };
     this.pinned.append(grip);
+  }
+
+  /** the list's pill shows whenever it has a use (#448, R17: no dead end): the list scrolls (more rings than the rows
+   *  shown, however few were kept), or it was made taller than five and can be made shorter again. */
+  sync_list_grip() {
+    if (!this.pinned) return;
+    const n = this.S.rings.length, rows = this.ring_rows_shown ?? RING_ROWS;
+    this.pinned.classList.toggle("ring-scrolls", n > Math.min(rows, RING_ROWS));
   }
 
   /** the selected ring's row and the drawer under it, whole in the list's view (Okay's notes, p. 2, #256: "even if
@@ -3810,7 +3839,7 @@ class DialTool {
       if (!press.moved) { press.moved = true; this.value_pop_close(); label.classList.add("dragging"); }
       const v = press.v + Math.round(d / 2) * row.step * (e.shiftKey ? 0.1 : 1);
       this.guides_live(row.scope !== "nudge");
-      this.set_value(row.scope, row.key, row.whole ? clamp(Math.round(v), row.lo, row.hi) : +Math.max(v, row.lo).toFixed(6));
+      this.set_value(row.scope, row.key, row.whole ? clamp(Math.round(v), row.lo, row.hi) : +clamp(Math.max(v, row.lo), ...(row.limits || [-Infinity, Infinity])).toFixed(6));      // a name dragged stops at the row's limits too (#233)
     };
     label.onpointerup = label.onpointercancel = (e) => { const was = press; press = null; label.classList.remove("dragging"); if (was && !was.touch && !was.moved) this.value_pop_open(label, row, { x: e.clientX, y: e.clientY }); };
   }
@@ -3965,7 +3994,7 @@ class DialTool {
    *  radius (ring_summary). A click on the selected ring's name renames it; a click anywhere else on a row selects it. */
   fill_ring_list() {
     if (!this.ring_list) return;
-    this.pinned.classList.toggle("ring-scrolls", this.S.rings.length > RING_ROWS);      // more rings than the list shows: its pill (#256)
+    this.sync_list_grip();
     this.ring_list.replaceChildren();
     this.S.rings.forEach((ring, i) => {
       const selected = i === this.S.ui_ring;
@@ -5004,11 +5033,14 @@ class DialTool {
     document.addEventListener("pointerdown", (ev) => { if (!grid.contains(ev.target)) unfocus(); }, true);
   }
 
-  /** your own dials, over the Gallery (4.76, #347): Save this dial, then a card for each saved one — its picture, its
-   *  size and when; pressed, it comes forward as a Gallery card does, with Edit this dial · In a new tab · Remove. */
-  row_instances(wrap) {
-    wrap.className = "examples gallery instances";
+  /** your own dials (4.76, #347), shown in Versions under undo (#435): Save this dial and Compare on the top line,
+   *  then a card for each saved one — its picture, its size and when; pressed, it comes forward as a Gallery card does,
+   *  with Edit this dial · In a new tab · Remove. Returns {wrap, draw, unfocus}; draw() reads the browser's list again. */
+  instances_view() {
+    const wrap = el("div", { className: "examples gallery instances" });
     const save = el("button", { type: "button", className: "btn main", id: "instance-save", textContent: "Save this dial", title: "Keep this dial here, in this browser, as it is now" });
+    const compare = el("button", { type: "button", className: "btn", id: "instance-compare", textContent: "Compare", title: "Every saved dial side by side, the panel away" });
+    compare.setAttribute("aria-pressed", "false");
     const note = el("p", { className: "quiet", id: "instance-note" });
     const grid = el("div", { className: "cards", id: "instance-cards" });
     const when = (at) => new Date(at).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
@@ -5016,6 +5048,8 @@ class DialTool {
     const draw = () => {
       const list = instances_read();
       note.textContent = list.length ? `${list.length} saved in this browser.` : "Dials you save stay in this browser; a link or a settings file takes one elsewhere.";
+      compare.hidden = list.length < 2;      // R16: nothing to compare with fewer than two
+      compare.setAttribute("aria-pressed", String(Boolean(this.comparing)));
       grid.replaceChildren(...list.map((e) => {
         const card = el("a", { href: e.link, title: e.name });
         card.dataset.light = String(Boolean(e.light));
@@ -5026,9 +5060,9 @@ class DialTool {
           unfocus();
           if (blank) return window.open(e.link, "_blank");
           const next = await unpack(e.link);
-          if (next && next.settings) { this.reopen({ ...next.settings, ui_section: this.S.ui_section }); this.log(`opened ${e.name}`); }
+          if (next && next.settings) { this.compare(false); if (this.versions_open) this.versions_open(false); this.reopen({ ...next.settings, ui_section: this.S.ui_section }); this.log(`opened ${e.name}`); }
         };
-        const remove = () => { instances_write(instances_read().filter((x) => x.id !== e.id)); draw(); this.log(`removed ${e.name}`); };
+        const remove = () => { instances_write(instances_read().filter((x) => x.id !== e.id)); draw(); if (this.comparing) this.compare_place(); this.log(`removed ${e.name}`); };
         card.append(el("span", { textContent: e.name }), el("span", { className: "choices" },
           el("button", { type: "button", className: "btn main", textContent: "Edit this dial", onclick: (ev) => { ev.preventDefault(); ev.stopPropagation(); go(false); } }),
           el("button", { type: "button", className: "btn", textContent: "In a new tab", onclick: (ev) => { ev.preventDefault(); ev.stopPropagation(); go(true); } }),
@@ -5045,11 +5079,61 @@ class DialTool {
       const list = [e, ...instances_read()].slice(0, INSTANCES_MOST);
       if (!instances_write(list)) return this.log("not saved: this browser's storage is full or closed (a private window?) — Copy link keeps it instead");
       draw();
-      this.log(`saved ${e.name} — under Gallery, in this browser`);
+      if (this.comparing) this.compare_place();
+      this.log(`saved ${e.name} — under Versions, in this browser`);
     };
-    wrap.append(el("div", { className: "row" }, el("label", { textContent: "Yours" }), save), note, grid);
+    compare.onclick = () => { this.compare(!this.comparing); if (this.versions_open) this.versions_open(false); };
+    wrap.append(el("div", { className: "row versionline" }, save, compare), note, grid);
     document.addEventListener("pointerdown", (ev) => { if (!grid.contains(ev.target)) unfocus(); }, true);
     draw();
+    return { wrap, draw, unfocus };
+  }
+
+  /** Compare (#435; Okay, 19 Oct 2026, 23:11: "a compare button. this lists and stacks into something like a sheet pdf
+   *  controls on pdf export does depending on numbers, always centered with sensible padding: left column hidden
+   *  preview mode. no selections or anything is different"): the panel slides away as for the dial alone, and every
+   *  saved dial stands on the backdrop, all at one size, packed as the print sheet packs its copies (pack_discs,
+   *  straight or staggered rows) at the largest size that holds them all, the block centred. Their pictures are the
+   *  ones kept when each was saved. Nothing in it can be picked; Compare again, the eye or Escape ends it. Not part of
+   *  a dial (R26: preview only, nothing reaches a file). */
+  compare(on) {
+    on = Boolean(on) && instances_read().length > 1;
+    if (on === Boolean(this.comparing)) return;
+    this.comparing = on;
+    if (on) {
+      this.compare_was_alone = this.eye_button.getAttribute("aria-pressed") === "true";
+      if (!this.compare_view) {
+        this.compare_view = el("div", { className: "compareview", id: "compare-view" });
+        this.main.append(this.compare_view);
+        this.watchers.push(new ResizeObserver(() => { if (this.comparing) this.compare_place(); }));
+        this.watchers.at(-1).observe(this.compare_view);
+        document.addEventListener("keydown", (e) => { if (e.key === "Escape" && this.comparing) this.compare(false); });
+      }
+      if (!this.compare_was_alone) this.dial_alone(true);
+    } else if (!this.compare_was_alone && this.eye_button.getAttribute("aria-pressed") === "true") this.dial_alone(false);
+    this.main.classList.toggle("comparing", on);
+    $("#instance-compare")?.setAttribute("aria-pressed", String(on));
+    if (on) this.compare_place();
+    this.log(on ? `comparing ${instances_read().length} saved dials — Escape or Compare again to go back` : "comparing ended");
+  }
+
+  /** Compare's pictures in their places: the largest size at which pack_discs holds them all in the view, a twelfth of
+   *  that size between them, the block centred. Measured from the view each time it changes size. */
+  compare_place() {
+    const view = this.compare_view, list = instances_read(), n = list.length;
+    if (!view || !n) return;
+    const w = view.clientWidth, h = view.clientHeight, holds = (D) => pack_discs(w, h, D, D / 12).places.length >= n;
+    let lo = 1, hi = Math.min(w, h);
+    if (!holds(lo)) return;
+    for (let k = 0; k < 30; k++) { const mid = (lo + hi) / 2; if (holds(mid)) lo = mid; else hi = mid; }
+    const D = Math.floor(lo), places = centre_block(pack_discs(w, h, D, D / 12).places.slice(0, n), w - D, h - D);
+    view.style.setProperty("--compare-d", D + "px");
+    view.replaceChildren(...list.map((e, i) => {
+      const cell = el("div", { className: "comparedial", title: e.name });
+      cell.innerHTML = e.picture;
+      cell.style.left = places[i][0] + "px"; cell.style.top = places[i][1] + "px";
+      return cell;
+    }));
   }
 
   /** the Gallery's order (#286, 4.49; Okay's notes, p. 17–18): the First dial first, Okay's watch last, and the white
@@ -5988,7 +6072,36 @@ class DialTool {
     const make = (id, title, way, d) => { const b = el("button", { type: "button", className: "onview undobox", id, title, ariaLabel: title, onclick: () => this.undo(way) }); b.innerHTML = icon(d); return b; };
     this.undo_buttons = [make("undo", "Undo (⌘Z)", -1, TOOL_ICONS.undo), make("redo", "Redo (⇧⌘Z)", 1, TOOL_ICONS.redo)];
     this.sync_undo();
-    return el("span", { className: "undos" }, el("span", { className: "undopair" }, ...this.undo_buttons));
+    return el("span", { className: "undos" }, el("span", { className: "undopair" }, ...this.undo_buttons), this.versions_box());
+  }
+
+  /** Versions, under undo (#435; Okay, 19 Oct 2026, 23:11: "place this under undo. Icon: dial with two hands. This is
+   *  versions. clicking opens mini preview looking list of all the snapshots. 3x grid. 'edit this dial' and others
+   *  activate on clicks there too. top, there is a compare button"). A switch of the preview's make, with its sign and
+   *  its word, as Guides; pressed, a list drops under it: Save this dial and Compare on its top line, then the saved
+   *  dials three across as the Gallery's cards (instances_view). Its look is the panel's, to be designed with Okay. */
+  versions_box() {
+    const box = el("span", { className: "versions" });
+    const button = el("button", { type: "button", className: "onview versionsbox", id: "versions", title: "Your saved dials", ariaLabel: "Versions" });
+    button.innerHTML = icon(TOOL_ICONS.versions);
+    const word = el("span", { className: "word", textContent: "Versions" });
+    word.dataset.text = "Versions";
+    button.append(word);
+    button.setAttribute("aria-expanded", "false");
+    const list = el("div", { className: "versionlist", id: "version-list", hidden: true });
+    const view = this.instances_view();
+    list.append(view.wrap);
+    const open = (on) => {
+      list.hidden = !on; button.setAttribute("aria-expanded", String(on));
+      if (!on) return view.unfocus();
+      view.draw();
+      const m = this.main.getBoundingClientRect(), b = button.getBoundingClientRect();      // its room: from under its switch to the preview's foot, measured now (as the guides' list)
+      list.style.setProperty("--list-room", `${Math.max(m.bottom - b.bottom - 2 * parseFloat(getComputedStyle(this.main).getPropertyValue("--canvas-inset") || 0), 160)}px`);
+    };
+    button.onclick = () => open(list.hidden);
+    this.versions_open = open;
+    box.append(button, list);
+    return box;
   }
   sync_undo() {
     if (!this.undo_buttons) return;
@@ -6038,15 +6151,22 @@ class DialTool {
     this.log(way < 0 ? `undone · ${HISTORY.past.length} more` : `redone · ${HISTORY.future.length} more`);
   }
 
-  /** shortly after the last change: keep the session, take a step for undo, and make the address bar say this dial. */
+  /** shortly after the last change: keep the session, take a step for undo, and make the address bar say this dial.
+   *  Every frame asks; a change to the dial starts the wait again (one drag of a slider is one step), but frames that
+   *  only move the time leave a waiting save alone and keep the session every 2 s — so while time plays, changes are
+   *  kept and the address follows (#234: they waited for time to stop). */
   autosave() {
+    const dial = dial_text(this.S), changed = dial !== this.saved_dial;
+    if (this.saving && !changed) return;            // only the time moved: the save already waiting goes ahead
     clearTimeout(this.saving);
+    this.saved_dial = dial;
     this.saving = setTimeout(async () => {
+      this.saving = null;
       if (this.closed) return;
       this.take_step();
       try { localStorage.setItem(LAST, JSON.stringify(this.S)); } catch (e) { /* private window: nothing kept */ }
       try { history.replaceState(null, "", await this.show_link()); } catch (e) { /* the address stays as it was */ }
-    }, 400);
+    }, changed ? 400 : 2000);
   }
 
   /** the whole dial as one address: open it anywhere and the dial is back. Fonts travel by name only. */

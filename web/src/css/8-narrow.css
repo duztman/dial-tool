@@ -83,13 +83,14 @@
     .panel.held { display: flex; flex-direction: column; overflow: hidden; }
     .panel.held .form { overflow-y: auto; }
     /* the switches on the preview show their signs only; a tap on the backdrop unfolds their words (main.words, app.js) */
-    :is(.guidesbox, .backdropbox) { gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); transition: padding var(--iris-time) var(--view-ease); }
+    :is(.guidesbox, .backdropbox, .versionsbox) { gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); transition: padding var(--iris-time) var(--view-ease); }
     .guidesbox { --sign-w: 18px; }
     .backdropbox { --sign-w: var(--dot); }
-    :is(.guidesbox, .backdropbox) > .word { display: inline-block; max-width: 0; overflow: hidden; white-space: nowrap; transition: max-width var(--iris-time) var(--view-ease), margin var(--iris-time) var(--view-ease); }
-    main.words :is(.guidesbox, .backdropbox) { padding-right: var(--u4); }
-    main:not(.words) :is(.guidesbox, .guidesmore, .backdropbox) { background: none; }      /* folded to their signs, the switches are outlines again */
-    main.words :is(.guidesbox, .backdropbox) > .word { max-width: var(--word-max); margin-left: var(--unit); }
+    .versionsbox { --sign-w: 16px; }
+    :is(.guidesbox, .backdropbox, .versionsbox) > .word { display: inline-block; max-width: 0; overflow: hidden; white-space: nowrap; transition: max-width var(--iris-time) var(--view-ease), margin var(--iris-time) var(--view-ease); }
+    main.words :is(.guidesbox, .backdropbox, .versionsbox) { padding-right: var(--u4); }
+    main:not(.words) :is(.guidesbox, .guidesmore, .backdropbox, .versionsbox) { background: none; }      /* folded to their signs, the switches are outlines again */
+    main.words :is(.guidesbox, .backdropbox, .versionsbox) > .word { max-width: var(--word-max); margin-left: var(--unit); }
     /* the case, its strap and X-ray too, their signs alone (4.79: "on mobile icon them"); a tap on the backdrop unfolds their words as the others' */
     .casebox { --sign-w: 18px; gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); }
     .strapbox { padding-left: var(--u2); }

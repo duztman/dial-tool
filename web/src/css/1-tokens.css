@@ -81,6 +81,7 @@
     --mast-show: 0.5;                              /* the mark and "Dial Tool" in the showcase: fainter (Okay, 04:59) */
     --track-50: 0.05em;                            /* tracking 50: every monospace word of the bottom bar (Okay, 15 Oct 2026, 06:51: "all mono text around here gets +50 tracking") */
     --track-100: 0.1em;                            /* tracking 100 (Okay, 04:59: "now gets 100 tracking") */
+    --compare-d: 0px;                              /* set by compare_place(): the size every saved dial is shown at in Compare (#435) */
     --title-end: 0px; --bar-h: 0px;                /* set by dial_alone(): where the title ends (undo · redo stop short of it); the bar's height on a phone */
     --play-size: 34px; --play-pulse: 30%;          /* the play button: a section tab's box (Okay, 00:42); how far its cap goes toward its light colour at a beat, then fades the whole way to 0 (22 % until Okay's notes, p. 14, #282: "from 30 % to 0") */
     --play-tri-rest: 0.4; --play-tri-low: 0.1; --play-tri-high: 0.7; --play-tri-slow: 1;      /* the play triangle on the cap (#282): still, and its pulse's two bounds ("never below 10 % or above 70 %"); below 1× its peak, full (#308, Okay, 16 Oct 2026: "flash brighter") */

@@ -118,6 +118,7 @@
     --mast-show: 0.5;                              /* the mark and "Dial Tool" in the showcase: fainter (Okay, 04:59) */
     --track-50: 0.05em;                            /* tracking 50: every monospace word of the bottom bar (Okay, 15 Oct 2026, 06:51: "all mono text around here gets +50 tracking") */
     --track-100: 0.1em;                            /* tracking 100 (Okay, 04:59: "now gets 100 tracking") */
+    --compare-d: 0px;                              /* set by compare_place(): the size every saved dial is shown at in Compare (#435) */
     --title-end: 0px; --bar-h: 0px;                /* set by dial_alone(): where the title ends (undo · redo stop short of it); the bar's height on a phone */
     --play-size: 34px; --play-pulse: 30%;          /* the play button: a section tab's box (Okay, 00:42); how far its cap goes toward its light colour at a beat, then fades the whole way to 0 (22 % until Okay's notes, p. 14, #282: "from 30 % to 0") */
     --play-tri-rest: 0.4; --play-tri-low: 0.1; --play-tri-high: 0.7; --play-tri-slow: 1;      /* the play triangle on the cap (#282): still, and its pulse's two bounds ("never below 10 % or above 70 %"); below 1× its peak, full (#308, Okay, 16 Oct 2026: "flash brighter") */
@@ -1345,7 +1346,7 @@
   .onview { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: var(--hair) solid var(--line-faint); color: var(--on-canvas); user-select: none; }
   @media (hover: hover) { .onview:hover { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); } }      /* under the pointer its line is twice as thick: still no fill */
   /* undo · redo, before the Guides switch: two joined outlined buttons; pale when there is no step that way */
-  .undos { position: absolute; z-index: 3; top: var(--canvas-top); left: max(var(--canvas-inset), calc(var(--title-end) + var(--gap) - var(--panel-w) * (1 - var(--away)))); display: flex; align-items: flex-start; gap: var(--unit); }      /* undo · redo, then Case and its Strap (4.82); top left of the preview, beside the panel; the dial alone, they ride left with the preview's edge and stop short of the title (a gap after it) */
+  .undos { position: absolute; z-index: 3; top: var(--canvas-top); left: max(var(--canvas-inset), calc(var(--title-end) + var(--gap) - var(--panel-w) * (1 - var(--away)))); display: flex; flex-direction: column; align-items: flex-start; gap: var(--unit); }      /* undo · redo, Versions under them (#435); top left of the preview, beside the panel; the dial alone, they ride left with the preview's edge and stop short of the title (a gap after it) */
   .undopair { display: flex; }
   .undobox { width: var(--control-large); }
   .undobox:first-child { border-radius: var(--round-switch) 0 0 var(--round-switch); }
@@ -1365,6 +1366,19 @@
     .onview:hover > * { opacity: 1; }
   }
   .guidesbox[aria-pressed="true"] > * { opacity: 1; }      /* on: its sign and its word whole (Okay, 15 Oct 2026, 02:06: "when on the icon is black too. Same goes for shadows") */
+  /* Versions, under undo (#435): a switch with its sign and word, as Backdrop's; its list drops under it — the panel's
+     ground, its cards as wide as the Gallery's (the panel's width). Function first: its look is to be designed with Okay */
+  .versions { position: relative; display: flex; }
+  .versionsbox { gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch); }
+  .versionlist { position: absolute; top: calc(100% + var(--unit)); left: 0; width: var(--panel-w); max-width: calc(100vw - 2 * var(--canvas-inset)); max-height: var(--list-room); overflow-y: auto; padding: 0 var(--pop-pad); border: var(--hair) solid var(--ink); border-radius: var(--round-switch); background: var(--paper); color: var(--ink); }
+  .versionline { display: flex; gap: var(--unit); }
+  /* Compare (#435): the saved dials on the backdrop, in the room the switches leave, placed by compare_place() */
+  .compareview { position: absolute; z-index: 2; inset: var(--compare-pad) calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: none; }      /* clear of the two rows of switches at the top and at the foot, the same room over and under, so the block sits on the preview's middle */
+  main.comparing { --compare-pad: calc(var(--canvas-inset) + 2 * (var(--control-large) + var(--unit))); background: var(--canvas-fill); }      /* the backdrop is the preview's own picture, hidden with the dial: its colour painted behind */
+  main.comparing .compareview { display: block; }
+  main.comparing > :is(svg, .tip) { visibility: hidden; }
+  .comparedial { position: absolute; width: var(--compare-d); height: var(--compare-d); }
+  .comparedial > svg { display: block; width: 100%; height: 100%; }
   .undobox.none, .undobox.none:hover { border-color: var(--line-fainter); box-shadow: none; }
   :is(.undobox.none, .undobox.none:hover) > * { opacity: calc(var(--faint) / 2); }
   .guidesbox { gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch) 0 0 var(--round-switch); }      /* on, its word is whole (black or white), never bolder (Okay, 14 Oct 2026: "when active label does not get bolder, just gets black") */
@@ -1833,13 +1847,14 @@
     .panel.held { display: flex; flex-direction: column; overflow: hidden; }
     .panel.held .form { overflow-y: auto; }
     /* the switches on the preview show their signs only; a tap on the backdrop unfolds their words (main.words, app.js) */
-    :is(.guidesbox, .backdropbox) { gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); transition: padding var(--iris-time) var(--view-ease); }
+    :is(.guidesbox, .backdropbox, .versionsbox) { gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); transition: padding var(--iris-time) var(--view-ease); }
     .guidesbox { --sign-w: 18px; }
     .backdropbox { --sign-w: var(--dot); }
-    :is(.guidesbox, .backdropbox) > .word { display: inline-block; max-width: 0; overflow: hidden; white-space: nowrap; transition: max-width var(--iris-time) var(--view-ease), margin var(--iris-time) var(--view-ease); }
-    main.words :is(.guidesbox, .backdropbox) { padding-right: var(--u4); }
-    main:not(.words) :is(.guidesbox, .guidesmore, .backdropbox) { background: none; }      /* folded to their signs, the switches are outlines again */
-    main.words :is(.guidesbox, .backdropbox) > .word { max-width: var(--word-max); margin-left: var(--unit); }
+    .versionsbox { --sign-w: 16px; }
+    :is(.guidesbox, .backdropbox, .versionsbox) > .word { display: inline-block; max-width: 0; overflow: hidden; white-space: nowrap; transition: max-width var(--iris-time) var(--view-ease), margin var(--iris-time) var(--view-ease); }
+    main.words :is(.guidesbox, .backdropbox, .versionsbox) { padding-right: var(--u4); }
+    main:not(.words) :is(.guidesbox, .guidesmore, .backdropbox, .versionsbox) { background: none; }      /* folded to their signs, the switches are outlines again */
+    main.words :is(.guidesbox, .backdropbox, .versionsbox) > .word { max-width: var(--word-max); margin-left: var(--unit); }
     /* the case, its strap and X-ray too, their signs alone (4.79: "on mobile icon them"); a tap on the backdrop unfolds their words as the others' */
     .casebox { --sign-w: 18px; gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); }
     .strapbox { padding-left: var(--u2); }
@@ -6581,6 +6596,18 @@ var DEFAULTS = {
   out_production: false,
   out_mirror: false,
   out_live_text: false,
+  // what a file for production holds (the production debts, #219–#224; beta 5): every one starts as files were made
+  // before, so older links and files draw as they did (R31, no new scheme). Preview and files alike (R26: one scene)
+  out_window_content: true,
+  // #219: what the windows show (discs, numbers, pictures); off, their holes stay empty, for a printer who prints the face alone
+  out_hidden_cut: false,
+  // #221: a hidden ring still knocks out and skips as if it were there, so a film made by hiding rings keeps its holes
+  out_cutlines: true,
+  // #222: a mask's cut lines (each window's, the centre hole's); off, the mask holds only what is etched
+  out_invert: false,
+  // #223: a mask inverted inside the dial — toner everywhere but the marks, for sunk marks
+  out_marks: false,
+  // #224: a mask's blank outline and four registration marks in the page's corners
   out_paper: 0,
   out_copies: 0,
   out_gap: 3,
@@ -6736,6 +6763,7 @@ function radial_extent(path) {
 var GUIDE_MORE = ["line", "crosshair", "circle"];
 var NOT_GEOMETRY = ["t", "guides", "xray", "bezel", "strap", "c_strap", "wearos_name", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
 var NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_", "sh_"];
+var GEOMETRY_AFTER_ALL = ["out_hidden_cut"];
 function complete(base, d) {
   const out = Object.assign(clone(base), clone(d || {}));
   for (const [key, names] of [["kind", KINDS], ["shape", "fit" in base ? HAND_SHAPES : SHAPES]]) {
@@ -7189,8 +7217,14 @@ var LINK_KEYS = [
   "hub",
   "bulge",
   // 4.80: appended; no hub and the leaf as always to start, so every older link looks as before
-  "bevel"
+  "bevel",
   // 4.89.1: appended; on to start, so every older link looks as before
+  "out_window_content",
+  "out_hidden_cut",
+  "out_cutlines",
+  "out_invert",
+  "out_marks"
+  // beta 5 (#219–#224): appended; each starts as files were, so every older link looks as before
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -7996,7 +8030,7 @@ var window_place = (w) => {
 function build_rings(S, cut = null) {
   const holes = windows_of(S).filter((w) => w.on).map(window_angle), done = [];
   for (const ring2 of S.rings) {
-    if (!ring2.on) continue;
+    if (!ring2.on && !S.out_hidden_cut) continue;
     const kind = kind_of(ring2), angles = ring_angles(ring2);
     let keep = angles.map((_, i2) => i2).filter((i2) => picked(ring2, i2));
     if (kind === "markers" || kind === "numerals" || kind === "text") keep = keep.filter((i2) => !holes.some((a) => near(angles[i2], a)));
@@ -8016,7 +8050,7 @@ function build_rings(S, cut = null) {
       return out;
     };
     const key = "final" + key_of(ring2) + JSON.stringify([keep, sources.map((d2) => [key_of(d2.ring), d2.keep]), cut ? date_key(S) : null]);
-    const d = { ring: ring2, kind, keep, taken, shape: shape2, at, parts, path: memo(key, final) };
+    const d = { ring: ring2, kind, keep, taken, shape: shape2, at, parts, path: memo(key, final), ghost: !ring2.on };
     if (kind === "band" && at.some((i2) => ring2.cs && ring2.cs[String(i2)])) {
       const groups = /* @__PURE__ */ new Map();
       at.forEach((i2, j) => {
@@ -8031,7 +8065,7 @@ function build_rings(S, cut = null) {
     }
     done.push(d);
   }
-  return done;
+  return done.filter((d) => !d.ghost);
 }
 function date_key(S) {
   const all = windows_of(S).map((w) => {
@@ -8325,6 +8359,26 @@ function hand_items(S, t) {
   const angles = hand_angles(t, BEATS[S.ha_beat][1]);
   return HANDS.map((name, i2) => [name, S["ha_" + name].c, S["ha_" + name], angles[i2]]).filter(([, , h]) => h.on).map(([name, c, h, a]) => [name, c, hand_shape(h), a, h]);
 }
+var REG_MARK = 4;
+var REG_LINE = 0.1;
+function production_marks(S) {
+  const H2 = page_mm(S) / 2, out = [["outline", circle(S.dial_d + 2 * REG_LINE).difference(circle(S.dial_d))]];
+  const m = production_mark_size(S);
+  if (!m) return out;
+  const at = H2 - m / 2 - 0.5;
+  for (const [sx, sy] of [[-1, 1], [1, 1], [1, -1], [-1, -1]]) {
+    const ring2 = circle(m * 0.6).difference(circle(m * 0.6 - 2 * REG_LINE));
+    const cross = new Path().rect(-m / 2, -REG_LINE / 2, m, REG_LINE).union(new Path().rect(-REG_LINE / 2, -m / 2, REG_LINE, m));
+    out.push(["registration", ring2.union(cross).translate(sx * at, sy * at)]);
+  }
+  return out;
+}
+function production_mark_size(S) {
+  const R = S.dial_d / 2, H2 = page_mm(S) / 2;
+  const fits = (m) => (H2 - m / 2 - 0.5) * Math.SQRT2 - m / Math.SQRT2 >= R + 1;
+  for (let m = REG_MARK; m >= 1.5; m -= 0.25) if (fits(m)) return m;
+  return 0;
+}
 function scene(S, statik, t, preview = true, selected = null) {
   const items = [];
   const add = (role, path, fill, more = {}) => {
@@ -8339,13 +8393,19 @@ function scene(S, statik, t, preview = true, selected = null) {
   const rings = statik.rings.slice().reverse();
   const index = (d) => S.rings.indexOf(d.ring);
   if (S.out_production) {
-    const black = [0, 0, 0, 1];
+    const black = [0, 0, 0, 1], cuts = S.out_cutlines !== false;
     for (const d of rings) add("ring", d.path, black, { ring: d, index: index(d) });
     for (const x2 of windows) {
       add("date frame", x2.frame, black, { window: x2.index });
-      add("cutline", x2.cutline, black, { window: x2.index });
+      if (cuts) add("cutline", x2.cutline, black, { window: x2.index });
     }
-    if (statik.hole_line) add("hole", statik.hole_line, black);
+    if (statik.hole_line && cuts) add("hole", statik.hole_line, black);
+    if (S.out_invert) {
+      const marks = merge(items.map((i2) => i2.path));
+      items.length = 0;
+      add("inverted", empty(marks) ? circle(S.dial_d) : circle(S.dial_d).difference(marks.removeOverlap()), black);
+    }
+    if (S.out_marks) for (const [role, path] of production_marks(S)) add(role, path, black);
   } else {
     const discs = preview && S.xray ? windows.map((x2) => ({ x: x2, d: window_disc(S, x2) })).filter((v) => v.d) : [];
     const xray = discs.length > 0, chosen = xray ? discs.find((v) => v.x.index === (S.ui_window ?? 0)) || null : null;
@@ -8359,6 +8419,7 @@ function scene(S, statik, t, preview = true, selected = null) {
       add("disc print", d.print, dim(wc(x2).text_c || wc(x2).ink, layer), { window: x2.index });
     });
     for (const x2 of windows) {
+      if (S.out_window_content === false) continue;
       add("date disc", x2.window, dim(wc(x2).disc_c || [1, 1, 1, 1], face), { window: x2.index });
       add("date number", x2.number, dim(wc(x2).text_c || wc(x2).ink, face), { window: x2.index });
       for (const m of x2.more || []) add("date picture", m.path, dim(wc(x2)[m.key] || (m.like_number ? wc(x2).text_c || wc(x2).ink : m.or), face), { window: x2.index });
@@ -8654,35 +8715,44 @@ var PAPERS = [["A4", 210, 297], ["Letter", 215.9, 279.4], ["A5", 148, 210]];
 var SHEET_EDGE = 8;
 var CUT_AT = 0.4;
 var CUT_W = 0.1;
-function sheet_layout(S) {
-  const paper = PAPERS[S.out_paper] || PAPERS[0], [, W2, H2] = paper, D = S.dial_d, gap = Math.max(+S.out_gap || 0, 0), pitch = D + gap;
-  const aw = W2 - 2 * SHEET_EDGE, ah = H2 - 2 * SHEET_EDGE;
-  const across = (w) => w + 1e-9 >= D ? Math.floor((w - D) / pitch + 1e-9) + 1 : 0;
+function pack_discs(w, h, D, gap) {
+  const pitch = D + gap;
+  const across = (len) => len + 1e-9 >= D ? Math.floor((len - D) / pitch + 1e-9) + 1 : 0;
   const straight = () => {
-    const c = across(aw), r = across(ah), out = [];
+    const c = across(w), r = across(h), out = [];
     for (let j = 0; j < r; j++) for (let i2 = 0; i2 < c; i2++) out.push([i2 * pitch, j * pitch]);
     return out;
   };
   const staggered = () => {
-    const rise = pitch * Math.sqrt(3) / 2, rows = ah + 1e-9 >= D ? Math.floor((ah - D) / rise + 1e-9) + 1 : 0, out = [];
+    const rise = pitch * Math.sqrt(3) / 2, rows = h + 1e-9 >= D ? Math.floor((h - D) / rise + 1e-9) + 1 : 0, out = [];
     for (let j = 0; j < rows; j++) {
-      const off = j % 2 ? pitch / 2 : 0, c = across(aw - off);
+      const off = j % 2 ? pitch / 2 : 0, c = across(w - off);
       for (let i2 = 0; i2 < c; i2++) out.push([off + i2 * pitch, j * rise]);
     }
     return out;
   };
-  const a = straight(), b = staggered(), use = b.length > a.length ? b : a;
+  const a = straight(), b = staggered();
+  return b.length > a.length ? { places: b, staggered: true } : { places: a, staggered: false };
+}
+function centre_block(places, w, h) {
+  if (!places.length) return places;
+  const xs = places.map((p) => p[0]), ys = places.map((p) => p[1]);
+  const dx = (w - (Math.max(...xs) - Math.min(...xs))) / 2 - Math.min(...xs), dy = (h - (Math.max(...ys) - Math.min(...ys))) / 2 - Math.min(...ys);
+  return places.map(([x2, y]) => [x2 + dx, y + dy]);
+}
+function sheet_layout(S) {
+  const paper = PAPERS[S.out_paper] || PAPERS[0], [, W2, H2] = paper, D = S.dial_d, gap = Math.max(+S.out_gap || 0, 0);
+  const packed = pack_discs(W2 - 2 * SHEET_EDGE, H2 - 2 * SHEET_EDGE, D, gap), use = packed.places;
   const want = +S.out_copies > 0 ? Math.min(Math.round(+S.out_copies), use.length) : use.length;
   const places = use.slice(0, want);
   if (!places.length) return { places, fits: 0, staggered: false, paper };
-  const xs = places.map((p) => p[0]), ys = places.map((p) => p[1]);
-  const dx = (W2 - (Math.max(...xs) - Math.min(...xs))) / 2 - Math.min(...xs), dy = (H2 - (Math.max(...ys) - Math.min(...ys))) / 2 - Math.min(...ys);
-  return { places: places.map(([x2, y]) => [x2 + dx, H2 - (y + dy)]), fits: use.length, staggered: use === b && b.length > a.length, paper };
+  return { places: centre_block(places, W2, H2).map(([x2, y]) => [x2, H2 - y]), fits: use.length, staggered: packed.staggered, paper };
 }
 function pdf_sheet(S, statik, t) {
   const L = sheet_layout(S), [, W2, H2] = L.paper, flip = S.out_mirror ? -1 : 1, R = S.dial_d / 2;
   const alphas = [], dial = [];
   for (const item of drawn(S, statik, t, false, null)) {
+    if (item.role === "registration") continue;
     const [r, g, b, a] = item.fill;
     if (a < 1 && !alphas.includes(a)) alphas.push(a);
     dial.push(a < 1 ? `q /A${alphas.indexOf(a)} gs` : "q", S.out_production ? `${num(r)} g` : `${num(r)} ${num(g)} ${num(b)} rg`, ...path_ops(item.path), "f", "Q");
@@ -11057,6 +11127,9 @@ var TOOL_ICONS = {
   grip: `<g fill="currentColor" stroke="none"><circle cx="5.5" cy="4" r="1"/><circle cx="10.5" cy="4" r="1"/><circle cx="5.5" cy="8" r="1"/><circle cx="10.5" cy="8" r="1"/><circle cx="5.5" cy="12" r="1"/><circle cx="10.5" cy="12" r="1"/></g>`,
   undo: `<path d="M3.25 6.75H9.75A3.25 3.25 0 0 1 9.75 13.25H6.25M6.25 3.75L3.25 6.75L6.25 9.75" ${sw(SLANT)}/>`,
   redo: `<path d="M13.25 6.75H6.75A3.25 3.25 0 0 0 6.75 13.25H10.25M10.25 3.75L13.25 6.75L10.25 9.75" ${sw(SLANT)}/>`,
+  // Versions, under undo (#435; Okay, 19 Oct 2026, 23:11: "Icon: dial with two hands"): a dial's edge, the minute hand
+  // up, the hour hand at four (fit.mjs; look.py 2.1 %)
+  versions: `<circle cx="8.25" cy="8.25" r="5.5" ${sw(CURVE)}/><path d="M8.25 8.25V5.25"/><path d="M8.25 8.25L10.5 9.75" ${sw(SLANT)}/>`,
   wide: `<rect x="2.75" y="2.75" width="10.5" height="10.5"/><path d="M6.25 10.25L10.25 6.25M7.25 6.25H10.25V9.25" ${sw(DENSE)}/>`,
   find: `<circle cx="7" cy="7" r="4.25" ${sw(CURVE)}/><path d="M10.25 10.25L13.25 13.25" ${sw(SLANT)}/>`,
   // an (i) beside a setting's name: what it does, in a tag (#357). A ring holding a stem and a dot; quiet by its grey
@@ -11587,6 +11660,21 @@ var ROWS = {
     // what the mask loses (#220): a ring lying on a ring below in another colour merges into it, one ink, and is gone;
     // said under the tick while the mask is on (design canon §6: a tick's note under it), and in the log on export
     info(() => mask_says(merges_of(tool)), { scope: "global", show: (S) => S.out_production && merges_of(tool).length > 0 }),
+    // the production debts (#219–#224, beta 5): each a tick that starts as files were made before. Claude's readings of
+    // 19 Oct 2026, 22:55 ("questions asked"), built for Okay's approval; preview and files alike (R26)
+    chk("out_invert", "Inverted", { show: (S) => S.out_production }),
+    info("Toner everywhere inside the dial but the marks, for sunk marks.", { show: (S) => S.out_production }),
+    chk("out_cutlines", "Cut lines", { show: (S) => S.out_production }),
+    info("Each window's and the centre hole's outline, for cutting. Off, the mask holds only what is etched.", { show: (S) => S.out_production }),
+    chk("out_marks", "Outline and registration marks", { show: (S) => S.out_production }),
+    info((S) => {
+      const m = production_mark_size(S);
+      return m ? `The blank's edge, and a ${+m.toFixed(2)} mm mark in each corner of the page, to lay films on the blank and on each other.` : "The blank's edge. The page's corners are too small for registration marks: give the page more Margin (Dial).";
+    }, { scope: "global", show: (S) => S.out_production }),
+    chk("out_hidden_cut", "Hidden rings still cut"),
+    info("A hidden ring still knocks out and skips the rings under it, so a film made by hiding rings keeps its holes.", {}),
+    chk("out_window_content", "What the windows show", { show: (S) => !S.out_production && windows_of(S).some((w) => w.on) }),
+    info("Off, the windows' holes stay empty: discs, numbers and pictures are left out, for a printer who prints the face alone. Hide the hands under Hands.", { show: (S) => !S.out_production && windows_of(S).some((w) => w.on) }),
     chk("out_mirror", "Mirrored, for toner transfer"),
     // a print sheet (4.75, #348; Okay's notes 2: "print page preparation, preview, copies, stacks — something simple,
     // elegant, efficient and paper savingly"): one page of copies at true size, packed straight or staggered —
@@ -11608,9 +11696,7 @@ var ROWS = {
     custom("log"),
     hdr("Gallery", { folded: true }),
     // under everything else: dials to open and take apart (Okay, 13 Oct 2026), the five first examples among them
-    // your own dials first (4.76, #347; Okay's notes 2: "Instances of a watch: a save instance button; a gallery of them"):
-    // Save this dial keeps it, with a small picture, in this browser; each opens as a Gallery card does, or goes
-    custom("instances"),
+    // your own dials are under undo on the preview, as Versions (#435), not here
     custom("gallery")
   ]
 };
@@ -11889,7 +11975,7 @@ var DialTool = class _DialTool {
         if (["date", "big date"].includes(WINDOW_KINDS[value]) && T.text === "MON") T.text = "17";
       }
     } else if (scope === "global") {
-      const quiet = NOT_GEOMETRY.includes(key) || NOT_GEOMETRY_PREFIX.some((p) => key.startsWith(p));
+      const quiet = !GEOMETRY_AFTER_ALL.includes(key) && (NOT_GEOMETRY.includes(key) || NOT_GEOMETRY_PREFIX.some((p) => key.startsWith(p)));
       if (!quiet) this.static_dirty = true;
       if (key === "dial_d" || key === "margin") {
         if (this.fitted) this.fit();
@@ -11922,6 +12008,7 @@ var DialTool = class _DialTool {
     if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox, .strapdot")) this.pop_close();
     if (this.guides_open && !$("#guide-list").hidden && !on(".guides")) this.guides_open(false);
     if (this.shadows_open && !$("#shadow-list").hidden && !on(".shadows")) this.shadows_open(false);
+    if (this.versions_open && !$("#version-list").hidden && !on(".versions")) this.versions_open(false);
     if (this.bio_open && !$("#bio").hidden && !on(".about")) this.bio_open(false);
     if (this.unit_open && !$("#unit-menu").hidden && !on(".unit")) this.unit_open(false);
     if (this.iris_box && !on(".irisbox")) this.iris_open(false);
@@ -12802,7 +12889,10 @@ var DialTool = class _DialTool {
     const eye2 = el("button", { type: "button", className: "onview eyebox", id: "eye-box", title: "The dial alone: the panel slides away", ariaLabel: "The dial alone" });
     eye2.innerHTML = icon(TOOL_ICONS.eyebox, 30);
     eye2.setAttribute("aria-pressed", "false");
-    eye2.onclick = () => this.dial_alone(eye2.getAttribute("aria-pressed") !== "true");
+    eye2.onclick = () => {
+      if (this.comparing) return this.compare(false);
+      this.dial_alone(eye2.getAttribute("aria-pressed") !== "true");
+    };
     this.eye_button = eye2;
     const iris = el("button", { type: "button", className: "iriskey", id: "iris-box", title: "The showcase", ariaLabel: "The showcase" });
     iris.innerHTML = icon(TOOL_ICONS.show_eye, 30);
@@ -16565,11 +16655,14 @@ var DialTool = class _DialTool {
       if (!grid.contains(ev.target)) unfocus();
     }, true);
   }
-  /** your own dials, over the Gallery (4.76, #347): Save this dial, then a card for each saved one — its picture, its
-   *  size and when; pressed, it comes forward as a Gallery card does, with Edit this dial · In a new tab · Remove. */
-  row_instances(wrap) {
-    wrap.className = "examples gallery instances";
+  /** your own dials (4.76, #347), shown in Versions under undo (#435): Save this dial and Compare on the top line,
+   *  then a card for each saved one — its picture, its size and when; pressed, it comes forward as a Gallery card does,
+   *  with Edit this dial · In a new tab · Remove. Returns {wrap, draw, unfocus}; draw() reads the browser's list again. */
+  instances_view() {
+    const wrap = el("div", { className: "examples gallery instances" });
     const save = el("button", { type: "button", className: "btn main", id: "instance-save", textContent: "Save this dial", title: "Keep this dial here, in this browser, as it is now" });
+    const compare = el("button", { type: "button", className: "btn", id: "instance-compare", textContent: "Compare", title: "Every saved dial side by side, the panel away" });
+    compare.setAttribute("aria-pressed", "false");
     const note2 = el("p", { className: "quiet", id: "instance-note" });
     const grid = el("div", { className: "cards", id: "instance-cards" });
     const when = (at) => new Date(at).toLocaleString(void 0, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
@@ -16579,6 +16672,8 @@ var DialTool = class _DialTool {
     const draw = () => {
       const list = instances_read();
       note2.textContent = list.length ? `${list.length} saved in this browser.` : "Dials you save stay in this browser; a link or a settings file takes one elsewhere.";
+      compare.hidden = list.length < 2;
+      compare.setAttribute("aria-pressed", String(Boolean(this.comparing)));
       grid.replaceChildren(...list.map((e) => {
         const card = el("a", { href: e.link, title: e.name });
         card.dataset.light = String(Boolean(e.light));
@@ -16588,6 +16683,8 @@ var DialTool = class _DialTool {
           if (blank) return window.open(e.link, "_blank");
           const next = await unpack(e.link);
           if (next && next.settings) {
+            this.compare(false);
+            if (this.versions_open) this.versions_open(false);
             this.reopen({ ...next.settings, ui_section: this.S.ui_section });
             this.log(`opened ${e.name}`);
           }
@@ -16595,6 +16692,7 @@ var DialTool = class _DialTool {
         const remove = () => {
           instances_write(instances_read().filter((x2) => x2.id !== e.id));
           draw();
+          if (this.comparing) this.compare_place();
           this.log(`removed ${e.name}`);
         };
         card.append(el("span", { textContent: e.name }), el(
@@ -16639,13 +16737,73 @@ var DialTool = class _DialTool {
       const list = [e, ...instances_read()].slice(0, INSTANCES_MOST);
       if (!instances_write(list)) return this.log("not saved: this browser's storage is full or closed (a private window?) \u2014 Copy link keeps it instead");
       draw();
-      this.log(`saved ${e.name} \u2014 under Gallery, in this browser`);
+      if (this.comparing) this.compare_place();
+      this.log(`saved ${e.name} \u2014 under Versions, in this browser`);
     };
-    wrap.append(el("div", { className: "row" }, el("label", { textContent: "Yours" }), save), note2, grid);
+    compare.onclick = () => {
+      this.compare(!this.comparing);
+      if (this.versions_open) this.versions_open(false);
+    };
+    wrap.append(el("div", { className: "row versionline" }, save, compare), note2, grid);
     document.addEventListener("pointerdown", (ev) => {
       if (!grid.contains(ev.target)) unfocus();
     }, true);
     draw();
+    return { wrap, draw, unfocus };
+  }
+  /** Compare (#435; Okay, 19 Oct 2026, 23:11: "a compare button. this lists and stacks into something like a sheet pdf
+   *  controls on pdf export does depending on numbers, always centered with sensible padding: left column hidden
+   *  preview mode. no selections or anything is different"): the panel slides away as for the dial alone, and every
+   *  saved dial stands on the backdrop, all at one size, packed as the print sheet packs its copies (pack_discs,
+   *  straight or staggered rows) at the largest size that holds them all, the block centred. Their pictures are the
+   *  ones kept when each was saved. Nothing in it can be picked; Compare again, the eye or Escape ends it. Not part of
+   *  a dial (R26: preview only, nothing reaches a file). */
+  compare(on) {
+    on = Boolean(on) && instances_read().length > 1;
+    if (on === Boolean(this.comparing)) return;
+    this.comparing = on;
+    if (on) {
+      this.compare_was_alone = this.eye_button.getAttribute("aria-pressed") === "true";
+      if (!this.compare_view) {
+        this.compare_view = el("div", { className: "compareview", id: "compare-view" });
+        this.main.append(this.compare_view);
+        this.watchers.push(new ResizeObserver(() => {
+          if (this.comparing) this.compare_place();
+        }));
+        this.watchers.at(-1).observe(this.compare_view);
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && this.comparing) this.compare(false);
+        });
+      }
+      if (!this.compare_was_alone) this.dial_alone(true);
+    } else if (!this.compare_was_alone && this.eye_button.getAttribute("aria-pressed") === "true") this.dial_alone(false);
+    this.main.classList.toggle("comparing", on);
+    $("#instance-compare")?.setAttribute("aria-pressed", String(on));
+    if (on) this.compare_place();
+    this.log(on ? `comparing ${instances_read().length} saved dials \u2014 Escape or Compare again to go back` : "comparing ended");
+  }
+  /** Compare's pictures in their places: the largest size at which pack_discs holds them all in the view, a twelfth of
+   *  that size between them, the block centred. Measured from the view each time it changes size. */
+  compare_place() {
+    const view = this.compare_view, list = instances_read(), n = list.length;
+    if (!view || !n) return;
+    const w = view.clientWidth, h = view.clientHeight, holds = (D2) => pack_discs(w, h, D2, D2 / 12).places.length >= n;
+    let lo = 1, hi = Math.min(w, h);
+    if (!holds(lo)) return;
+    for (let k = 0; k < 30; k++) {
+      const mid = (lo + hi) / 2;
+      if (holds(mid)) lo = mid;
+      else hi = mid;
+    }
+    const D = Math.floor(lo), places = centre_block(pack_discs(w, h, D, D / 12).places.slice(0, n), w - D, h - D);
+    view.style.setProperty("--compare-d", D + "px");
+    view.replaceChildren(...list.map((e, i2) => {
+      const cell = el("div", { className: "comparedial", title: e.name });
+      cell.innerHTML = e.picture;
+      cell.style.left = places[i2][0] + "px";
+      cell.style.top = places[i2][1] + "px";
+      return cell;
+    }));
   }
   /** the Gallery's order (#286, 4.49; Okay's notes, p. 17–18): the First dial first, Okay's watch last, and the white
    *  dials on the diagonals of the three-column grid — "just whites zigzag diagonally": the third slot, then the middle
@@ -17658,7 +17816,36 @@ var DialTool = class _DialTool {
     };
     this.undo_buttons = [make("undo", "Undo (\u2318Z)", -1, TOOL_ICONS.undo), make("redo", "Redo (\u21E7\u2318Z)", 1, TOOL_ICONS.redo)];
     this.sync_undo();
-    return el("span", { className: "undos" }, el("span", { className: "undopair" }, ...this.undo_buttons));
+    return el("span", { className: "undos" }, el("span", { className: "undopair" }, ...this.undo_buttons), this.versions_box());
+  }
+  /** Versions, under undo (#435; Okay, 19 Oct 2026, 23:11: "place this under undo. Icon: dial with two hands. This is
+   *  versions. clicking opens mini preview looking list of all the snapshots. 3x grid. 'edit this dial' and others
+   *  activate on clicks there too. top, there is a compare button"). A switch of the preview's make, with its sign and
+   *  its word, as Guides; pressed, a list drops under it: Save this dial and Compare on its top line, then the saved
+   *  dials three across as the Gallery's cards (instances_view). Its look is the panel's, to be designed with Okay. */
+  versions_box() {
+    const box2 = el("span", { className: "versions" });
+    const button = el("button", { type: "button", className: "onview versionsbox", id: "versions", title: "Your saved dials", ariaLabel: "Versions" });
+    button.innerHTML = icon(TOOL_ICONS.versions);
+    const word = el("span", { className: "word", textContent: "Versions" });
+    word.dataset.text = "Versions";
+    button.append(word);
+    button.setAttribute("aria-expanded", "false");
+    const list = el("div", { className: "versionlist", id: "version-list", hidden: true });
+    const view = this.instances_view();
+    list.append(view.wrap);
+    const open = (on) => {
+      list.hidden = !on;
+      button.setAttribute("aria-expanded", String(on));
+      if (!on) return view.unfocus();
+      view.draw();
+      const m = this.main.getBoundingClientRect(), b = button.getBoundingClientRect();
+      list.style.setProperty("--list-room", `${Math.max(m.bottom - b.bottom - 2 * parseFloat(getComputedStyle(this.main).getPropertyValue("--canvas-inset") || 0), 160)}px`);
+    };
+    button.onclick = () => open(list.hidden);
+    this.versions_open = open;
+    box2.append(button, list);
+    return box2;
   }
   sync_undo() {
     if (!this.undo_buttons) return;
