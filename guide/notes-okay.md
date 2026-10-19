@@ -1,5 +1,7 @@
 # Okay's notes on the guidebook, all rounds (canon for whoever builds or reviews a page)
 
+**Motto: precise, spare, swift.** (Okay, 19 Oct 2026, 21:36: "'efficient, technical, fast' is our motto. Or the same meaning but better elegant more catchy words.") Precise = technical: true sizes, real names, nothing vague. Spare = efficient: no word or line that doesn't carry information. Swift = fast: a reader finds and does the thing at once.
+
 *14 Oct 2026. Collected from the chat and from his annotated PDFs (rounds 1–4). Each line is a rule; the page it came from is in brackets. When a new note contradicts an old one, the new one wins.*
 
 ## Writing
