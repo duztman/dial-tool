@@ -227,7 +227,7 @@
   .givepic .above { opacity: 0.45; }      /* the rings above: context, as the dial's edge behind the A's — outlines, so what lies under them shows */
   .givechoices { display: grid; padding: 0 var(--u3); }
   .givechoices .check { height: var(--control); font-size: var(--t-s); }
-  .givebox > .row.side.quiet { grid-template-columns: var(--side-label) minmax(0, 1fr) var(--side-num); padding: 0 var(--u3); }
+  .givebox > .row.side.quiet { grid-template-columns: var(--side-columns); column-gap: 0; padding: 0 var(--u3); }
   .givebox > .row.side.quiet > .numbox { grid-column: 3; }
   .givebox > .row.side.quiet > label { font-size: var(--t-s); }
 

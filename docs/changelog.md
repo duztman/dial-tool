@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.89.4 (web version) · 19 Oct 2026
+
+Okay's notes of 23:46.
+
+- **The date popup as the panel's own controls, in the dark** (#436): day · month · year as chevron boxes (the value's box and a ⌄ box, touching), − and + touching, each on the bar's dark with the bar's hairline; the popup's ground the date's lit tone; the panel's type at its size (13), a control high (26); a unit and 2 px between boxes (`--datepop-gap`, a special). Dial Pop (Barlow Regular) removed from the page (−30 kB): `fonts/ui/DialPop-Regular.ttf`, `pop_font.py`, `--pop-face`, `--datepop-step` gone.
+- **A hand's side rows** (#437): the gap between a name and its slider gone; its 12 px to the number's box (`--box-side-value` 44 → 52: four figures show whole) and the slider (+4). `--side-columns` lays the tracks out for every side row, Give way's Clearance too.
+
 ## beta 4.89.3 (web version) · 19 Oct 2026
 
 Okay's notes of 23:11 (seven screenshots).

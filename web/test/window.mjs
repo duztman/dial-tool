@@ -2060,7 +2060,7 @@ await shot("10-bar");
   await page.click("#date"); await frame();
   const look = () => page.evaluate(() => { const p = document.querySelector("#date-pop"), r = p.getBoundingClientRect(), d = document.querySelector("#date").getBoundingClientRect(), c = getComputedStyle(p);
     const words = [...p.querySelectorAll(".popline > *")].map((e) => (e.querySelector(".popword") || e).textContent).join(" ");
-    return { shown: !p.hidden, words, over: r.bottom <= d.top, face: c.fontFamily.includes("Dial Pop"), lines: p.querySelectorAll(".popline").length, steps: [...p.querySelectorAll(".popsteps .popstep")].length, menus: [...p.querySelectorAll("select")].map((s) => s.id).join(" "), w: Math.round(r.width), h: Math.round(r.height), centred: Math.abs((r.left + r.right) / 2 - (d.left + d.right) / 2) < 2 }; });
+    return { shown: !p.hidden, words, over: r.bottom <= d.top, face: !c.fontFamily.includes("Dial Pop") && c.fontSize === getComputedStyle(document.documentElement).fontSize, lines: p.querySelectorAll(".popline").length, steps: [...p.querySelectorAll(".popsteps .popstep")].length, menus: [...p.querySelectorAll("select")].map((s) => s.id).join(" "), w: Math.round(r.width), h: Math.round(r.height), centred: Math.abs((r.left + r.right) / 2 - (d.left + d.right) / 2) < 2 }; });
   const open = await look();
   await page.click("#date-pop .popsteps .popstep:last-child"); await frame();      // a day later
   const later = await look();
@@ -2079,7 +2079,7 @@ await shot("10-bar");
   await page.evaluate((w) => { const t = window.dial_tool, v = JSON.parse(w); t.set_value("global", "date", v[0]); t.set_time(v[1]); }, was);
   check(open.shown && open.words === "Mon 19 Oct 2026 " && open.over && open.face && open.lines === 1 && open.steps === 2 && open.menus === "date-pop-day date-pop-month date-pop-year" && open.centred
     && later.words === "Tue 20 Oct 2026 " && picked[0] === "2031-02-03" && picked[1] === "Mon 3 Feb 2031 " && clamped === "2026-02-28" && wide.w === open.w && wide.h === open.h && away,
-    `the bar's date opens its popup over the box, in Dial Pop: one line, no time — the weekday, then day · month · year as menus, then − and + together (${open.words}| ${open.menus}); + a day (${later.words}); the menus pick a day (${picked.join(" · ")}), a short month keeps the date in it (${clamped}); its size the same whatever the date reads (${open.w}×${open.h}, ${wide.w}×${wide.h}); a press elsewhere closes it (${away})`);
+    `the bar's date opens its popup over the box, in the panel's type at its size (Okay, 23:46: "remove barlow"): one line, no time — the weekday, then day · month · year as menus, then − and + together (${open.words}| ${open.menus}); + a day (${later.words}); the menus pick a day (${picked.join(" · ")}), a short month keeps the date in it (${clamped}); its size the same whatever the date reads (${open.w}×${open.h}, ${wide.w}×${wide.h}); a press elsewhere closes it (${away})`);
 }
 
 { // the showcase (Okay, 15 Oct 2026, 04:26, reshaped 04:59 and 05:09)

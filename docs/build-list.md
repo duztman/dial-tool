@@ -1,7 +1,7 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **done** · **parked**.
-*Last updated 19 Oct 2026 (beta 4.89.3: #432–#435 logged, #432 and #433 done. Beta 4.89.2: #220 done. Beta 4.89.1: #430, #431. Beta 4.87: done items moved to build-list-done.md; the DrawBot items archived; stale "verify" rows closed).*
+*Last updated 19 Oct 2026 (beta 4.89.4: #436, #437. Beta 4.89.3: #432–#435 logged, #432 and #433 done. Beta 4.89.2: #220 done. Beta 4.89.1: #430, #431. Beta 4.87: done items moved to build-list-done.md; the DrawBot items archived; stale "verify" rows closed).*
 Every item keeps its number for good. Done items: `docs/build-list-done.md`. The DrawBot version's items: `archive/drawbot/build-list-drawbot.md`.
 
 ## Next
@@ -208,6 +208,8 @@ Seven screenshots in the chat.
 |---|---|---|
 | 432 | **The bar's date popup**: its ground the date's lit tone (`--bar-field`, as the date under the pointer); the date stays lit while the popup is open; its words as big as the bar's date (`--t-date`, 10). "Date and pm get bumped up in weight just a bit if variable, if not don't touch it": Dial Date (Inter SemiBold) and Dial Time (Barlow Condensed Light) are packed static faces, so untouched | **done — 4.89.3** |
 | 433 | **A window's neighbours in the number's colour** ("why are the rest of the numbers gray? actual color please"): `c2` unset → the number's colour (`text_c`, else `ink`), not a grey; retroactive on his word, as Neighbours on in 4.88.2 (R31) | **done — 4.89.3** |
+| 436 | **The date popup as the panel's controls, in the dark** (Okay, 23:46: "no, this is a very wrong direction. remove barlow from menu, make it out of our regular inter text normal size. more padding between boxes, 2px. the popup background is light yes, but the numbers boxes or buttons stay dark. height adjusted to new font sizes, imagine this is exactly how main menu thing works in dark and a little stylized (keep border thicknesses same as the bottom bar.)"): chevron boxes and − + on the bar's dark, the popup's ground lit, the panel's type at 13, a control high, a unit and 2 px between boxes; Dial Pop removed. "Our regular inter text" read as the panel's type — which is the system face (SF on a Mac), not Inter | **done — 4.89.4** |
+| 437 | **A hand's side rows: no gap between name and slider** (Okay, 23:46, a picture of a hand's rows, the gap marked green: "this narrow column … hides partly a 4 digit number box, I propose removing the gap and moving things to the left for that place, bit to the slider bit to the numbers boxes"): the gap's 12 px — 8 to the number's box (44 → 52, so 14.60 shows whole), 4 to the slider. Every side row (Give way's Clearance too) by one token, `--side-columns`. At 0 a slider's knob stands about 4 px from the longest name, Counter Ø | **done — 4.89.4** |
 | 434 | **Settings file pane: "needs tlc. what do you think it needs?"** — Claude's proposal sent 19 Oct, 23:25; waiting for his word | open — ask |
 | 435 | **Versions** — the saved dials (Gallery › Yours) move under Undo: a button with a sign of a dial with two hands opens a list of every saved dial as small pictures, three across; a click on one shows its actions (Edit this dial, In a new tab, Remove). On top, **Compare**: every saved dial laid out as the Sheet PDF lays copies (packed by how many), centred with sensible padding, the panel hidden as in the dial-alone view; nothing else changes. Words to settle: *versions* is already the app's builds (`docs/versions.md`) and the glossary's *Yours* | open — plan sent, waiting |
 

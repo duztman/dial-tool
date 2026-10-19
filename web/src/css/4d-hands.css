@@ -43,7 +43,8 @@
   }
   /* a side row, at every width: the name as narrow as the longest (Counter Ø), the slider the rest: bigger (#250); the
      number box. Narrow, the rows go under the box (8-narrow) and keep this line (Okay, 18 Oct 2026, 22:35, on the iPad: "Hands sliders squeezed, use all row width") */
-  .body > .row.side { grid-template-columns: var(--side-label) minmax(0, 1fr) var(--side-num); }
+  .body > .row.side { grid-template-columns: var(--side-columns); column-gap: 0; }
+  .row.side > .numbox, .row.side > .numcell { grid-column: -2; }      /* past the gap's track */
   .row.side > :first-child, .row.side > input[type="range"] { grid-column: auto; }
   .row.side > label { font-size: var(--t-s); }
   .row.side > label > .whole { display: none; }

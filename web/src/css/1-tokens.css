@@ -38,8 +38,12 @@
     --air: calc(4 * var(--unit));                  /* under an open pane */
     --hair: 1px; --thick: 2px; --triple: calc(3 * var(--hair));      /* a thick line opens a pane; everything inside a pane is a hairline; a triple line: the ring drawer's inner line, the drop line, the day's handle */
     --nest-from: calc((100% + var(--gap)) / 3);     /* where a row's controls start, from its left edge: two of its six columns and their gaps. A half line starts here */
-    --box-side-value: 44px; --box-side-step: 22px;      /* the number box beside a hand's box and in a quiet row (4.64): its value · each of − + */
+    --box-side-value: 52px; --box-side-step: 22px;      /* the number box beside a hand's box and in a quiet row (4.64): its value · each of − + */
     --side-num: calc(var(--box-side-value) + 2 * var(--box-side-step));      /* …so that column is this wide */
+    /* a side row's tracks, the gaps written in: the name, the slider straight after it (the name's column holds the
+       longest, Counter Ø, with a little to spare), a gap, the number box (Okay, 19 Oct 2026, 23:46: "removing the gap
+       and moving things to the left for that place, bit to the slider bit to the numbers boxes") */
+    --side-columns: var(--side-label) minmax(0, 1fr) var(--gap) var(--side-num);
     --box-value: calc(var(--tile-w) + var(--unit)); --box-steps: var(--tile-w);      /* a full row's number box (4.64): the value takes the unit that stood between it and its − + */
     --side-label: 4.75em;                          /* …and the names there: as wide as the longest allowed, "Counter Ø" at 12 (Okay's notes, p. 18, #250) */
     --tile-w: calc((4 * var(--col) + 3 * var(--gap) - 3 * var(--unit)) / 4);      /* a tile: four stand on the four control columns one unit apart, so each is a little wider than a column. A number's field and its stepper are the third and the fourth tile */
@@ -84,7 +88,6 @@
        measures, as the face draws them: a tabular figure, the colon (made 80 % in that face), the caps; the widest of
        AM and PM in ink. The tracking tight (Okay's notes, p. 15) */
     --time-face: "Dial Time", var(--mono);
-    --pop-face: "Dial Pop", var(--sans);          /* the bar's date popup: Barlow Regular, packed (#402; Okay, 19 Oct 2026: "Try barlow not condensed for font") */
     --time-figure: 0.418em; --time-colon: 0.24em; --time-pm: 0.8em; --time-track: 0.04em; --time-pm-track: -0.02em;      /* the time's tracking (Okay, 16 Oct 2026, #306: "Greens add tracking", marked under its figures); AM · PM keeps −0.02em, which its width (--time-pm) was set for */
     --time-chars: calc(6 * var(--time-figure) + 2 * var(--time-colon) + 8 * var(--time-track));      /* the time's field: "10:09:36" */
     --day-wide: 518px;                             /* the day slider at its widest: as wide as on an iPad (1180 wide), so a big screen doesn't stretch it (Okay, 23:19) */
@@ -180,7 +183,7 @@
 
     /* asked for by Okay */
     --sheet-edge: 7px;                             /* a phone's sheets stand this far in from the screen's sides and foot (Okay, 19 Oct 2026, 21:18: "padding from all sides except top"; 21:26: "increase … to 7") */
-    --datepop-step: calc(1.15 * var(--bar-control));      /* the bar's date popup's controls a size up (Okay, 19 Oct 2026, #412: "Popup larger overall"; read as "a bit", 15 %); its words as big as the bar's date (--t-date; 23:11: "smaller text, as big as the date") */
+    --datepop-gap: calc(var(--u2) + 2px);      /* between the bar's date popup's boxes: a unit and 2 more (Okay, 19 Oct 2026, 23:46: "more padding between boxes, 2px") */
     --control-s: calc(0.75 * var(--control));      /* a quiet button at three quarters: Lang. and Change… in the font box (Okay, 14 Oct 2026: "scale down to 75%") */
     --t-xxs: 10px;                                 /* a fifth type size, the smallest: the words in the font sheet's legend, and the font box's quiet buttons (Okay, 14 Oct 2026) */
     --t-time: 20px;                                /* a sixth, for the bar's time alone: larger than --t-l (Okay, 14 Oct 2026, 23:55: "larger digital time"; "Barlow larger, don't worry optically will be better") */
