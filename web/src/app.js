@@ -804,7 +804,7 @@ const ROWS = {
     col("ink", "Frame", { ...W, show: win_on }),
     col("text_c", "Picture", { ...W, show: win_is("am · pm", "moon phase"), say: (T) => [moon_look(T) === 1 ? "Sky" : is_day(T) ? "PM half" : "Picture"], or: (T) => T.ink }),      // or: what an unset colour is
     col("c2", "Shade", { ...W, show: (T) => moon_look(T) === 1, or: () => G.PICTURE_TONES.shade }),      // a picture's further colour (4.73): a moon's dark side in Phase
-    col("c2", "Neighbours", { ...W, id: "window-c2-Neighbours", show: (T) => win_is("date", "day")(T) && T.neighbours, or: () => G.PICTURE_TONES.near }),      // a date or day window's neighbours (4.74)
+    col("c2", "Neighbours", { ...W, id: "window-c2-Neighbours", show: (T) => win_is("date", "day")(T) && T.neighbours, or: (T) => T.text_c || T.ink }),      // a date or day window's neighbours (4.74), in the number's colour unless given one
     // the frame round the hole and the room kept clear round it are drawn on the dial: they are design, so they
     // stand here, not under a pane called Print (Okay, 13 Oct 2026: print things under Print, design among design)
     num("frame", "Frame width", 0, 0.6, 0.01, { ...W, show: win_on }),      // "width": the Frame colour stands just above (Okay, 19 Oct 2026, #422)

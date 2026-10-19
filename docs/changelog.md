@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.89.3 (web version) · 19 Oct 2026
+
+Okay's notes of 23:11 (seven screenshots).
+
+- **The bar's date popup** (#432): on the date's lit tone (`--bar-field`), the date lit while it is open, its words as big as the bar's date (`--t-date`); `--datepop-type` gone. The date's and AM · PM's weights stay: their faces are static ("if not don't touch it").
+- **A window's neighbours in the number's colour** (#433) unless Neighbours has a colour of its own; the grey tone `PICTURE_TONES.near` gone.
+
 ## beta 4.89.2 (web version) · 19 Oct 2026
 
 The production debts, first row (#220; Okay, 22:45: "Go with list").

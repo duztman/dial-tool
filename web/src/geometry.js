@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.89.2";
+export const VERSION = "beta 4.89.3";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -1429,7 +1429,7 @@ function disc_places(S, w) {
   return { list, now, n, at, key: JSON.stringify([kind, list, now, w.r, w.at, w.at_deg, w.turn, w.text_turn, shape, size, type]) };
 }
 /** a picture's colours not set by the person (4.73): the moon's shade (light, dawn and dusk belonged to the am · pm pictures retired in 4.88; kept, R9). */
-export const PICTURE_TONES = { near: [0.62, 0.62, 0.6, 1], shade: [0.5, 0.5, 0.52, 1], light: [0.95, 0.86, 0.6, 1], dawn: [0.91, 0.65, 0.71, 1], dusk: [0.91, 0.59, 0.35, 1] };
+export const PICTURE_TONES = { shade: [0.5, 0.5, 0.52, 1], light: [0.95, 0.86, 0.6, 1], dawn: [0.91, 0.65, 0.71, 1], dusk: [0.91, 0.59, 0.35, 1] };
 
 /** a window's hole, in its own space (centre at the origin, upright), and the same hole grown by d all round.
  *  rectangle: width × height, corners rounded · circle: Ø = width · polygon: sides, inscribed in Ø = width, a flat
@@ -1532,7 +1532,7 @@ function build_window(S, w, index) {
   more = more.map((m) => ({ ...m, path: put(m.path.intersection(opening)) }));
   if (w.neighbours && (kind === "date" || kind === "day")) {      // its disc's places either side, where the hole lets them show (4.74)
     const D = disc_places(S, w), near = merge([-2, -1, 1, 2].map((d) => D.at(D.now + d))).intersection(win);
-    if (!empty(near)) more.push({ path: near, key: "c2", or: PICTURE_TONES.near });
+    if (!empty(near)) more.push({ path: near, key: "c2", or: w.text_c || w.ink });      // in the number's own colour unless given one (Okay, 19 Oct 2026, 23:11: "why are the rest of the numbers gray? actual color please")
   }
   return {
     w, index, window: win, number: put(content, !shows_text || w.text_turn),      // a hole's picture turns with it; its text only if asked

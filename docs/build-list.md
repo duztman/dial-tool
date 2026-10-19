@@ -1,7 +1,7 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **done** · **parked**.
-*Last updated 19 Oct 2026 (beta 4.89.2: #220 done. Beta 4.89.1: #430, #431. Beta 4.87: done items moved to build-list-done.md; the DrawBot items archived; stale "verify" rows closed).*
+*Last updated 19 Oct 2026 (beta 4.89.3: #432–#435 logged, #432 and #433 done. Beta 4.89.2: #220 done. Beta 4.89.1: #430, #431. Beta 4.87: done items moved to build-list-done.md; the DrawBot items archived; stale "verify" rows closed).*
 Every item keeps its number for good. Done items: `docs/build-list-done.md`. The DrawBot version's items: `archive/drawbot/build-list-drawbot.md`.
 
 ## Next
@@ -199,6 +199,17 @@ Nine annotated screenshots under *Notes 3* in Okay's Google Doc *Dial tool notes
 |---|---|---|
 | 430 | **A hand's bevel on or off in its pane** (Okay: "we had the beginnings of a hand bevel. on off from hand window"): a *Bevel* tick per hand, key `bevel` (on); shown while Shadows is on and Bevels % above 0 (R16); a disc hand has none. Reading: "hand window" = the hand's pane | **done — 4.89.1** |
 | 431 | **The cap in the seconds hand's picture** (Okay: "seconds preview needs cap preview"): the detail box draws the cap over the pivot, in the picture's ink (Okay: "Color stays on the face"), on the hand the cap is drawn with — the seconds hand, or the topmost with *Cap on this hand* | **done — 4.89.1** |
+
+## Okay's notes on 4.89.2 (19 Oct 2026, 23:11)
+
+Seven screenshots in the chat.
+
+| # | Item | Status |
+|---|---|---|
+| 432 | **The bar's date popup**: its ground the date's lit tone (`--bar-field`, as the date under the pointer); the date stays lit while the popup is open; its words as big as the bar's date (`--t-date`, 10). "Date and pm get bumped up in weight just a bit if variable, if not don't touch it": Dial Date (Inter SemiBold) and Dial Time (Barlow Condensed Light) are packed static faces, so untouched | **done — 4.89.3** |
+| 433 | **A window's neighbours in the number's colour** ("why are the rest of the numbers gray? actual color please"): `c2` unset → the number's colour (`text_c`, else `ink`), not a grey; retroactive on his word, as Neighbours on in 4.88.2 (R31) | **done — 4.89.3** |
+| 434 | **Settings file pane: "needs tlc. what do you think it needs?"** — Claude's proposal sent 19 Oct, 23:25; waiting for his word | open — ask |
+| 435 | **Versions** — the saved dials (Gallery › Yours) move under Undo: a button with a sign of a dial with two hands opens a list of every saved dial as small pictures, three across; a click on one shows its actions (Edit this dial, In a new tab, Remove). On top, **Compare**: every saved dial laid out as the Sheet PDF lays copies (packed by how many), centred with sensible padding, the panel hidden as in the dial-alone view; nothing else changes. Words to settle: *versions* is already the app's builds (`docs/versions.md`) and the glossary's *Yours* | open — plan sent, waiting |
 
 ## Dial Packer (side product, 19 Oct 2026)
 

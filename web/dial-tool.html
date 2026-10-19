@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.89.2 · built 2026-10-19 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.89.3 · built 2026-10-19 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -217,7 +217,7 @@
 
     /* asked for by Okay */
     --sheet-edge: 7px;                             /* a phone's sheets stand this far in from the screen's sides and foot (Okay, 19 Oct 2026, 21:18: "padding from all sides except top"; 21:26: "increase … to 7") */
-    --datepop-type: calc(1.15 * var(--t-l)); --datepop-step: calc(1.15 * var(--bar-control));      /* the bar's date popup a size up (Okay, 19 Oct 2026, #412: "Popup larger overall"; read as "a bit", 15 %) */
+    --datepop-step: calc(1.15 * var(--bar-control));      /* the bar's date popup's controls a size up (Okay, 19 Oct 2026, #412: "Popup larger overall"; read as "a bit", 15 %); its words as big as the bar's date (--t-date; 23:11: "smaller text, as big as the date") */
     --control-s: calc(0.75 * var(--control));      /* a quiet button at three quarters: Lang. and Change… in the font box (Okay, 14 Oct 2026: "scale down to 75%") */
     --t-xxs: 10px;                                 /* a fifth type size, the smallest: the words in the font sheet's legend, and the font box's quiet buttons (Okay, 14 Oct 2026) */
     --t-time: 20px;                                /* a sixth, for the bar's time alone: larger than --t-l (Okay, 14 Oct 2026, 23:55: "larger digital time"; "Barlow larger, don't worry optically will be better") */
@@ -1649,21 +1649,21 @@
      opens the system's date picker, an input lying unseen under the box */
   .bar .lead .timebox .datewell { position: relative; display: flex; }
   .bar .lead .timebox .date { box-sizing: content-box; display: grid; grid-template-rows: repeat(2, var(--date-line)); align-content: center; justify-items: center; height: calc(var(--bar-control) - 2 * var(--hair)); padding: 0 var(--u2); border: var(--hair) solid var(--bar-light); border-left: 0; background: none; color: var(--bar-light); font: 600 var(--t-date)/var(--date-line) var(--date-face); font-variant-numeric: tabular-nums; letter-spacing: var(--date-track); }
-  .bar .lead .timebox .date:hover { background: var(--bar-field); }
+  .bar .lead .timebox .date:is(:hover, [aria-expanded="true"]) { background: var(--bar-field); }      /* lit while its popup is open (Okay, 19 Oct 2026, 23:11: "date stays on when popup's on") */
   .bar .datepick { position: absolute; left: 0; bottom: 0; width: 1px; height: 1px; padding: 0; border: 0; background: none; color: transparent; opacity: 0; pointer-events: none; }
   /* the date's popup (#402; Okay, 19 Oct 2026: "Date on the black bar is click to edit on popup. Plusminus for both.
      No controller"): rising from the date's box, in the bar's tones; two lines, the day written out and the time, each
      between a − and a +, in Barlow Regular ("Try barlow not condensed"). A press on the day opens the system's picker */
-  .bar .datepop { position: absolute; z-index: 7; left: 50%; bottom: calc(100% + var(--u2)); translate: -50% 0; width: max-content; display: grid; gap: var(--u1); padding: var(--u2); border: var(--hair) solid var(--bar-light); border-radius: var(--round-small); background: var(--bar); color: var(--bar-ink); font-family: var(--pop-face); font-size: var(--datepop-type); font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: var(--shadow); }
+  .bar .datepop { position: absolute; z-index: 7; left: 50%; bottom: calc(100% + var(--u2)); translate: -50% 0; width: max-content; display: grid; gap: var(--u1); padding: var(--u2); border: var(--hair) solid var(--bar-light); border-radius: var(--round-small); background: var(--bar-field); color: var(--bar-ink); font-family: var(--pop-face); font-size: var(--t-date); font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: var(--shadow); }
   /* one line: the weekday, then day · month · year, each its word and a boxed arrow over the browser's menu, then − and +
      side by side (#412). Each part as wide as its widest value, so nothing moves when the date changes ("size fixed, no
      movements by change in content"): the figures tabular, a word in ch. "Popup larger overall": its type and its
-     steps a size up (--datepop-type, --datepop-step) */
+     steps a size up (--datepop-step), its words as big as the bar's date (--t-date), on the date's lit ground (--bar-field) */
   .bar .datepop .popline { display: flex; align-items: center; gap: var(--u2); height: var(--datepop-step); }
   .bar .datepop .popword { color: var(--bar-ink); text-align: center; }
   .bar .datepop .weekday { width: 3.2ch; text-align: left; }
   .bar .datepop .popgroup { display: inline-flex; align-items: center; gap: var(--u1); height: 100%; padding-left: var(--u2); border: var(--hair) solid var(--bar-light); }
-  .bar .datepop .popgroup:hover { background: var(--bar-field); }
+  .bar .datepop .popgroup:hover { background: var(--bar); }      /* on the popup's lit ground, a hover goes back to the bar's tone */
   .bar .datepop .pop-day .popword { width: 2ch; }
   .bar .datepop .pop-month .popword { width: 3.2ch; }
   .bar .datepop .pop-year .popword { width: 4ch; }
@@ -1671,7 +1671,7 @@
   .bar .datepop .popsteps { display: flex; height: 100%; }
   .bar .datepop .popstep { display: grid; place-items: center; width: var(--datepop-step); height: 100%; color: var(--bar-ink); border: var(--hair) solid var(--bar-light); }
   .bar .datepop .popstep + .popstep { border-left: 0; }
-  .bar .datepop .popstep:hover { background: var(--bar-field); }
+  .bar .datepop .popstep:hover { background: var(--bar); }
   /* NOW: capitals, at AM · PM's size (Okay: "Now uppercase and in pm's font size which grows 1px"); drawn as the bar's
      other boxes are — the light outline, the word in the same light, the bar's field under a pointer (Okay, 19 Oct 2026,
      #414: "Why? fill with grey, worst colour") */
@@ -6273,7 +6273,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.89.2";
+var VERSION = "beta 4.89.3";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -8060,7 +8060,7 @@ function disc_places(S, w) {
   };
   return { list, now, n, at, key: JSON.stringify([kind, list, now, w.r, w.at, w.at_deg, w.turn, w.text_turn, shape2, size, type]) };
 }
-var PICTURE_TONES = { near: [0.62, 0.62, 0.6, 1], shade: [0.5, 0.5, 0.52, 1], light: [0.95, 0.86, 0.6, 1], dawn: [0.91, 0.65, 0.71, 1], dusk: [0.91, 0.59, 0.35, 1] };
+var PICTURE_TONES = { shade: [0.5, 0.5, 0.52, 1], light: [0.95, 0.86, 0.6, 1], dawn: [0.91, 0.65, 0.71, 1], dusk: [0.91, 0.59, 0.35, 1] };
 function window_hole(w) {
   const shape2 = window_shape(w);
   if (shape2 === "rectangle") return [rounded_rect(w.w, w.h, w.round), (d) => rounded_rect(w.w + 2 * d, w.h + 2 * d, w.round + d)];
@@ -8146,7 +8146,7 @@ function build_window(S, w, index) {
   more = more.map((m) => ({ ...m, path: put(m.path.intersection(opening)) }));
   if (w.neighbours && (kind === "date" || kind === "day")) {
     const D = disc_places(S, w), near2 = merge([-2, -1, 1, 2].map((d) => D.at(D.now + d))).intersection(win);
-    if (!empty(near2)) more.push({ path: near2, key: "c2", or: PICTURE_TONES.near });
+    if (!empty(near2)) more.push({ path: near2, key: "c2", or: w.text_c || w.ink });
   }
   return {
     w,
@@ -11472,8 +11472,8 @@ var ROWS = {
     // or: what an unset colour is
     col("c2", "Shade", { ...W, show: (T) => moon_look(T) === 1, or: () => PICTURE_TONES.shade }),
     // a picture's further colour (4.73): a moon's dark side in Phase
-    col("c2", "Neighbours", { ...W, id: "window-c2-Neighbours", show: (T) => win_is("date", "day")(T) && T.neighbours, or: () => PICTURE_TONES.near }),
-    // a date or day window's neighbours (4.74)
+    col("c2", "Neighbours", { ...W, id: "window-c2-Neighbours", show: (T) => win_is("date", "day")(T) && T.neighbours, or: (T) => T.text_c || T.ink }),
+    // a date or day window's neighbours (4.74), in the number's colour unless given one
     // the frame round the hole and the room kept clear round it are drawn on the dial: they are design, so they
     // stand here, not under a pane called Print (Okay, 13 Oct 2026: print things under Print, design among design)
     num2("frame", "Frame width", 0, 0.6, 0.01, { ...W, show: win_on }),
