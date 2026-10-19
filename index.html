@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.83 · built 2026-10-18 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.84 · built 2026-10-19 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -514,8 +514,12 @@
      type block moves up"): its heading is the eye alone, in the eyes' column, beside what the pane holds, which starts
      at the pane's top. Folded, it is a heading like any other, with its summary. */
   .pane.bare:not(.folded) { position: relative; }
-  .pane.bare:not(.folded) > .fold { position: absolute; z-index: 1; top: 0; left: 0; width: auto; min-height: 0; align-items: start; grid-template-columns: var(--eye); }      /* its eye's top flush with the box's top (4.79; Okay, 19 Oct 2026: "align flush top with eye"; centred on a line's height until 4.78, 6 lower) */
+  .pane.bare:not(.folded) > .fold { position: absolute; z-index: 1; top: calc((var(--head) - var(--eye)) / 2); left: 0; width: auto; min-height: 0; align-items: start; grid-template-columns: var(--eye); }      /* its eye's top flush with the box's top (4.79; Okay, 19 Oct 2026: "align flush top with eye"; centred on a line's height until 4.78, 6 lower); both as low as a heading's eye since 4.83 */
   .pane.bare:not(.folded) > .fold > :not(.eye) { display: none; }
+  /* its eye as far under the line over it as every heading's eye (centred on --head), and the box down with it, its top on
+     the eye's top (4.83; Okay, 19 Oct 2026: "general eye top padding is the same as all the rows, the font box moves
+     down with eye"; both stood on the line in 4.79–4.82): the body's room over the box tops up the box's own unit */
+  .pane.bare:not(.folded) > .body { padding-top: calc((var(--head) - var(--eye)) / 2 - var(--unit)); }
   /* a heading that carries controls on its line (a window's places, its shapes; 4.46.2, Okay: "these rows are allowed
      height growth now… appropriate vertical padding like all the rows"): they get a unit over and under them, as the
      tiles in a row do, and the heading grows to hold them; its title keeps the place it has on every heading — the
@@ -675,6 +679,10 @@
   .row > .warn { grid-column: 3 / -1; margin: var(--u1) 0 var(--unit); font-size: var(--t-s); color: var(--ink); }      /* the warning under a button that replaces the whole dial (Reset): in ink, not quiet, on the controls' column (Okay, 16 Oct 2026, 10:46) */      /* a tick and its words start at the left edge */
   .row > span:first-child:empty { display: none; }
   .row.nest > .check { grid-column: 3 / -1; }       /* a question about the row above: it starts where the controls start */
+  /* a tick or a note after a row of controls starts on the controls' column, under them (4.83; Okay, 19 Oct 2026: "The
+     drawing of secondary lines after an adjustment, they start on the column aligned with the upper row. App-wide");
+     one heading a pane's rows keeps the left edge. Not beside a hand's box (.side: its own columns) */
+  .body .row:not(.side) ~ .row:not(.side) > .check, .body .row:not(.side) ~ .row.note:not(.side) > .quiet { grid-column: 3 / -1; }
   /* a note is a row of words: as much room over them as under, and a hairline closes it like any row (the row
      above draws the one over it) */
   .row.note { min-height: 0; }
@@ -6234,7 +6242,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.83";
+var VERSION = "beta 4.84";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
