@@ -95,7 +95,7 @@
      wide as its widest value, so nothing moves when the date changes ("size fixed, no movements by change in content").
      A press on the day opens the system's picker */
   .bar .datepop { position: absolute; z-index: 7; left: 50%; bottom: calc(100% + var(--u2)); translate: -50% 0; width: max-content; padding: var(--datepop-pad); border: var(--hair) solid var(--bar-light); border-radius: var(--round-small); background: var(--bar-field); color: var(--bar-ink); font: var(--t-m)/1 var(--sans); font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: var(--shadow); }
-  .bar .datepop .popline { display: flex; align-items: center; gap: var(--datepop-gap); height: var(--control); }
+  .bar .datepop .popline { display: flex; align-items: center; gap: var(--u2); height: var(--control); }      /* the gaps the bar's own: the date's box to NOW's */
   .bar .datepop .popword { color: var(--bar-ink); text-align: center; }
   .bar .datepop .weekday { width: 3.4ch; text-align: left; }
   .bar .datepop .popgroup { display: inline-flex; align-items: stretch; height: 100%; border: var(--hair) solid var(--bar-light); background: var(--bar); }

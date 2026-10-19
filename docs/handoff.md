@@ -73,6 +73,7 @@ A new session starts with no memory of the last one: the transcript stays in the
   - Don't rebuild the guide unasked.
   - Don't edit `archive/drawbot/`.
 - **"p. N" in the build list** is a page of his PDF *Notes on dial app* (21 pages, on his Google Drive; readable through a Google Drive connector if the session has one). The row's text is the full reading. Ask him for the page if it isn't enough.
+- **A moved part is compared with its last look** (20 Oct, after "Why are you breaking things and not understanding me?"): when a change re-wraps or moves something that was right (the Show tick in a new line), crop it before and after and measure what it lines up with; a check in `window.mjs` holds it. When his words could mean a measure of something else on screen ("stay as bottom bar date now width"), measure that thing and say the number back.
 - **Docs state the present** (19 Oct): never write "until 4.x it was…" into a doc, a rule or a code comment; keep his words as the reason, put the change in the changelog.
 
 ## 4b · The sketch loop (19 Oct 2026, first session on it)

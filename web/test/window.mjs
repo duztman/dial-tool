@@ -2201,6 +2201,19 @@ await shot("10-bar");
   check(r.hidden && r.shown && r.lit && r.flat && !r.cap_hour && r.cap_second,
     `a hand's Bevel: hidden at Bevels % 0 (${r.hidden}), shown above (${r.shown}); off, its hand flat (${r.lit} → ${r.flat}); the cap in the seconds hand's picture (${r.cap_second}), not the hour's (${!r.cap_hour})`);
 }
+{ // the Show box's ticks on their words' middles; the date popup's gaps the bar's own, date to NOW (Okay, 20 Oct 2026, 00:06, two pictures marked: "Why are you breaking things and not understanding me?")
+  const r = await page.evaluate(async () => {
+    const t = window.dial_tool, S = t.S, was = [S.sh_bevel, S.ui_section];
+    S.ui_section = 2; t.show_section(); t.set_value("global", "sh_bevel", 60); t.sync_rows();
+    const mids = [...document.querySelectorAll(".form > .showbox .check")].filter((c) => c.offsetParent).map((c) => { const i = c.querySelector("input").getBoundingClientRect(), g = document.createRange(); g.selectNodeContents(c.lastChild); const w = g.getBoundingClientRect(); return Math.abs((i.top + i.bottom) / 2 - (w.top + w.bottom) / 2); });
+    document.querySelector(".bar .date").click(); await new Promise((f) => setTimeout(f, 100));
+    const boxes = [...document.querySelectorAll("#date-pop .popline > :is(.popgroup, .popsteps)")].map((e) => e.getBoundingClientRect()), gaps = boxes.slice(1).map((b, k) => +(b.left - boxes[k].right).toFixed(2));
+    const d = document.querySelector(".bar .date").getBoundingClientRect(), n = [...document.querySelectorAll(".bar button")].find((b) => /now/i.test(b.textContent)).getBoundingClientRect();
+    t.date_pop_open(false); t.set_value("global", "sh_bevel", was[0]); S.ui_section = was[1]; t.show_section(); t.sync_rows();
+    return { mids, gaps, bar: +(n.left - d.right).toFixed(2) };
+  });
+  check(r.mids.length === 2 && r.mids.every((m) => m < 1.5) && r.gaps.every((g) => g === r.bar), `the Show box's two ticks on their words' middles (${r.mids.map((m) => m.toFixed(1)).join(" ")}); the date popup's gaps the bar's, date to NOW (${r.gaps.join(" ")} = ${r.bar})`);
+}
 { // the showcase's Now (Okay, 15 Oct 2026, 07:36): the hour hand one turn clockwise, the minute hand one anticlockwise, the seconds the short way; halfway through the spin (eased, so half the way)
   const half = await page.evaluate(() => { const t = window.dial_tool, kept = t.show, items = ["hour", "minute", "second"].map((name) => ({ role: "hand", name, angle: 100 }));
     t.show = { spin: { from: [90, 110, 350], way: 1, t0: performance.now() - 800 } }; t.spin_hands(items); t.show = kept; return items.map((i) => i.angle); });

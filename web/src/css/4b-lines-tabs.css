@@ -57,9 +57,10 @@
      thick one — with the same room over the line as under it (Okay: "Vertical gaps before after same";
      "Thick line stands here"): two units, as over the title on every heading — under the thin line counted from its
      foot to the first row's own white line, which stand a hairline each */
-  .form > .showbox { display: grid; grid-template-columns: repeat(var(--tabs, 1), minmax(0, 1fr)); margin: 0 0 var(--u4) var(--lead); --tick: var(--show-tick); --tick-gap: var(--u3); }      /* its small tick close to its word (Okay, 19 Oct 2026, 20:37: "closer") */
+  .form > .showbox { display: grid; grid-template-columns: repeat(var(--tabs, 1), minmax(0, 1fr)); margin: 0 0 var(--u4) var(--lead); --tick: var(--show-tick); --tick-gap: var(--show-tick-gap); }      /* its small tick close to its word (Okay, 19 Oct 2026, 20:37: "closer") */
   .form > .showbox + .pane:not(.headless) { margin-top: calc(var(--u2) - var(--u4)); }      /* a pane with a heading (a window's) stands a unit under it, no line between: the heading is what Show shows ("closer"); the hand's pane keeps its thin line where it is */
   .form > .showbox input[type="checkbox"] { margin-top: 0; }      /* one line, centred by its row */
+  .form > .showbox .check { align-items: center; }      /* each tick on its word's middle, Show's and Bevel's alike */
   .form > .showbox input[type="checkbox"]::before { width: calc(var(--tick) - var(--u1)); height: calc(var(--tick) - var(--u1)); }      /* the Show tick fills its box: the box as it is, the tick bigger (Okay, 19 Oct 2026: "'Show tick' in white gets bigger, black box stays the same") */
   .form > .showbox > .showline { grid-column: var(--tab, 1); display: flex; align-items: center; gap: var(--u4); height: var(--show-high); padding: 0 var(--u3) 0 calc((var(--show-high) - var(--show-tick)) / 2); background: var(--show-ground); font-size: var(--t-s);
     margin-left: calc(-1 * var(--hair) * min(var(--tab, 1) - 1, 1)); }      /* past the first tab: the hairline it shares with the tab before it */

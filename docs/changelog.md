@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.89.6 (web version) · 20 Oct 2026
+
+Two of 4.89.5's faults, marked by Okay (00:06: "Why are you breaking things and not understanding me?").
+
+- **The date popup's gaps the bar's own** (#438): a unit, as from the date's box to NOW's. "In between boxes stay as bottom bar date now width" was read as "the gaps stay as they are"; it meant the bar's gap. `--datepop-gap` gone; the padding stays a unit and 2 px.
+- **The Show box's ticks back on their words' middles** (#441): putting Show and Bevel in one line (4.89.5) let each tick rise to its line's top, 3 px high. Now centred, and the words 2 px closer to the ticks (`--show-tick-gap`; 00:08). A window-test check holds both.
+
 ## beta 4.89.5 (web version) · 20 Oct 2026
 
 Okay's notes of 19 Oct, 23:53.

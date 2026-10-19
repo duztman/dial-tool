@@ -183,8 +183,7 @@
 
     /* asked for by Okay */
     --sheet-edge: 7px;                             /* a phone's sheets stand this far in from the screen's sides and foot (Okay, 19 Oct 2026, 21:18: "padding from all sides except top"; 21:26: "increase … to 7") */
-    --datepop-pad: calc(var(--u2) + 2px);      /* round the bar's date popup's boxes: a unit and 2 more, its gaps kept (Okay, 19 Oct 2026, 23:53: "2 more pixels padding to the whole popup box … in between boxes stay") */
-    --datepop-gap: calc(var(--u2) + 2px);      /* between the bar's date popup's boxes: a unit and 2 more (Okay, 19 Oct 2026, 23:46: "more padding between boxes, 2px") */
+    --datepop-pad: calc(var(--u2) + 2px);      /* round the bar's date popup's boxes: a unit and 2 more; between its boxes the bar's own gap, a unit (Okay, 19 Oct 2026, 23:53: "2 more pixels padding to the whole popup box. meaning: in between boxes stay as bottom bar date now width") */
     --control-s: calc(0.75 * var(--control));      /* a quiet button at three quarters: Lang. and Change… in the font box (Okay, 14 Oct 2026: "scale down to 75%") */
     --t-xxs: 10px;                                 /* a fifth type size, the smallest: the words in the font sheet's legend, and the font box's quiet buttons (Okay, 14 Oct 2026) */
     --t-time: 20px;                                /* a sixth, for the bar's time alone: larger than --t-l (Okay, 14 Oct 2026, 23:55: "larger digital time"; "Barlow larger, don't worry optically will be better") */
@@ -209,6 +208,7 @@
     --font-head-in: 4px;                           /* the font box's preview, this far in from the box's edge on the grey head (Okay's drawing, font-selector_171026, 18 Oct 2026) */
     --num-pop-inner: calc(218px * var(--num-pop-k));                        /* the controller's pills, 75.05 where a disc is 22.68 (controller 2.svg, Okay, 18 Oct 2026: "The new controller is in")  */
     --num-pop-track: calc(10px * var(--num-pop-k));                         /* the controller's slider line, 3.4 where a disc is 22.68 (the same drawing) */
+    --show-tick-gap: calc(var(--u3) - 2px);       /* the Show box's ticks to their words (Show, Bevel): 2 px closer than a unit and a half (Okay, 19 Oct 2026, 20:37: "closer"; 20 Oct 2026, 00:08: "Show and bevel 2px closer to tick boxes") */
     --show-tick: 9px;                              /* the Show box's tick, as tall as the word's ascender at 12 (Okay, 18 Oct 2026, notes 2: "Show checkmarks much smaller, just as big as shows ascender … The outer gray box does not change size. Padding of gray box to tick is equal top, left, bottom") */
     --font-label: calc(6.5em + var(--btn-pad));    /* the font box's rows (#274, 4.51; Okay's notes, p. 12: "break the rules: stretch the sliders as wide as the longest label allows; labels over 12 characters are cut"): a name column of twelve characters, the slider taking all the rest */
     --unit-pad: 4px;                               /* the unit box: this much round its word, on every side — round mm's letters; the other units keep mm's height (Okay, 16 Oct 2026, on 4.44: "2px padding around letters"; on 4.44.3: "Mm looks perfect now add 2px more padding … Others use the same height, width can change") */
