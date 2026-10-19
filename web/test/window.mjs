@@ -2182,6 +2182,25 @@ await shot("10-bar");
   check(no_bevels.join() === "0,0" && morning.bands === 2 && morning.stops >= 9 && morning.at !== evening.at && morning.pool !== "#0D0D0F" && morning.bevels >= 4 && after[0] === 0 && after[1] >= 4,
     `the showcase's light: a dim backdrop's spotlight lifted (${morning.pool}); a ring of shine, its light and dark bands two gradients of ${morning.stops} stops, moving with the sun (${morning.at} → ${evening.at}) (4.83); ${morning.bevels / 2} hands bevelled; out of it the shine goes, the bevels stay (${after.join(" ")}); Bevels % at 0 to start: none drawn (${no_bevels.join(" ")})`);
 }
+{ // a hand's own Bevel tick and the cap in the seconds hand's picture (4.89.1; Okay, 19 Oct 2026: "on off from hand window"; "seconds preview needs cap preview")
+  const r = await page.evaluate(() => {
+    const t = window.dial_tool, S = t.S, was = [S.sh_bevel, S.ui_hand, S.ui_section, S.ha_second.on, S.ha_hour.bevel];
+    const tick = () => [...document.querySelectorAll(".form label.check")].some((l) => l.textContent.trim() === "Bevel" && l.offsetParent);
+    const op = () => [...document.querySelectorAll("g[clip-path='url(#bevel-clip-hour)'] rect")].map((x) => +x.getAttribute("fill-opacity"));
+    S.ui_section = 2; t.show_section(); S.ha_second.on = true; S.ui_hand = 0; t.set_value("global", "sh_bevel", 0); t.sync_rows();
+    const hidden = !tick();
+    t.set_value("global", "sh_bevel", 60); t.sync_rows(); t.frame();
+    const shown = tick(), lit = op().some((v) => v > 0);
+    t.set_value("hand", "bevel", false); t.frame();
+    const flat = op().every((v) => v === 0), cap_hour = !!document.querySelector("#hand-detail .cap");
+    S.ui_hand = 2; t.sync_rows();
+    const cap_second = !!document.querySelector("#hand-detail .cap");
+    S.ha_hour.bevel = was[4]; S.ha_second.on = was[3]; S.ui_hand = was[1]; t.set_value("global", "sh_bevel", was[0]); S.ui_section = was[2]; t.show_section(); t.sync_rows();
+    return { hidden, shown, lit, flat, cap_hour, cap_second };
+  });
+  check(r.hidden && r.shown && r.lit && r.flat && !r.cap_hour && r.cap_second,
+    `a hand's Bevel: hidden at Bevels % 0 (${r.hidden}), shown above (${r.shown}); off, its hand flat (${r.lit} → ${r.flat}); the cap in the seconds hand's picture (${r.cap_second}), not the hour's (${!r.cap_hour})`);
+}
 { // the showcase's Now (Okay, 15 Oct 2026, 07:36): the hour hand one turn clockwise, the minute hand one anticlockwise, the seconds the short way; halfway through the spin (eased, so half the way)
   const half = await page.evaluate(() => { const t = window.dial_tool, kept = t.show, items = ["hour", "minute", "second"].map((name) => ({ role: "hand", name, angle: 100 }));
     t.show = { spin: { from: [90, 110, 350], way: 1, t0: performance.now() - 800 } }; t.spin_hands(items); t.show = kept; return items.map((i) => i.angle); });

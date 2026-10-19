@@ -1,7 +1,7 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **done** · **parked**.
-*Last updated 19 Oct 2026 (beta 4.87: done items moved to build-list-done.md; the DrawBot items archived; stale "verify" rows closed).*
+*Last updated 19 Oct 2026 (beta 4.89.1: #430, #431. Beta 4.87: done items moved to build-list-done.md; the DrawBot items archived; stale "verify" rows closed).*
 Every item keeps its number for good. Done items: `docs/build-list-done.md`. The DrawBot version's items: `archive/drawbot/build-list-drawbot.md`.
 
 ## Next
@@ -193,6 +193,13 @@ Nine annotated screenshots under *Notes 3* in Okay's Google Doc *Dial tool notes
 |---|---|---|
 | 421 | **Keep a hand's details in the lit picture** — the dauphine's connecting dot (Okay, 20:02: "Let's do not lose details such as dauphine's connector dot, we might make it larger too if we want"); with #404's hubs | open — note |
 | 425 | **The print sheet's picture: Edit** — the sheet laid out by hand (Okay, 20:22: "EDIT: (future)") | later |
+
+## Okay's session start (19 Oct 2026, 22:25)
+
+| # | Item | Status |
+|---|---|---|
+| 430 | **A hand's bevel on or off in its pane** (Okay: "we had the beginnings of a hand bevel. on off from hand window"): a *Bevel* tick per hand, key `bevel` (on); shown while Shadows is on and Bevels % above 0 (R16); a disc hand has none. Reading: "hand window" = the hand's pane | **done — 4.89.1** |
+| 431 | **The cap in the seconds hand's picture** (Okay: "seconds preview needs cap preview"): the detail box draws the cap over the pivot, in the cap's colour, on the hand the cap is drawn with | **done — 4.89.1** |
 
 ## Dial Packer (side product, 19 Oct 2026)
 

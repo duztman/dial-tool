@@ -238,15 +238,19 @@ const hand_pic = (i) => {
 };
 /** the chosen hand as it is now, with all its settings (length, width, tail, round ends, hollow wall, counterweight),
  *  as large as its box allows: upright for a tall box, lying (tip to the right) for a wide one — both are drawn, the
- *  stylesheet shows one. The centre it turns on is marked: a line across the box and a small ring (Okay, 13 Oct 2026). */
-const hand_detail = (h) => {
+ *  stylesheet shows one. The centre it turns on is marked: a line across the box and a small ring (Okay, 13 Oct 2026).
+ *  cap: {d, c} when the cap is drawn with this hand (the seconds hand, or the topmost with Cap on this hand), as on the
+ *  dial — over the hand, in its own colour (Okay, 19 Oct 2026: "seconds preview needs cap preview"). */
+const hand_detail = (h, cap = null) => {
   const p = G.hand_shape(h), b = p.bounds();
   if (!b) return "";
+  if (cap) { const r = cap.d / 2; b[0] = Math.min(b[0], -r); b[1] = Math.min(b[1], -r); b[2] = Math.max(b[2], r); b[3] = Math.max(b[3], r); }      // the box holds the cap too
   const w = b[2] - b[0], high = b[3] - b[1], m = high * 0.03, f = (v) => v.toFixed(3);      // m: a little room round it
   const d = p.svg(3, true), ring = f(Math.max(high * 0.012, 0.12));
   const centre = (line) => `<path class="axis" d="${line}"/><circle class="pivot" r="${ring}"/>`;
   const mark = G.paints_mark(h) && G.disc_mark(h), md = mark ? mark.svg(3, true) : "";      // a disc's painted mark, in its own colour (#300)
-  const marked = (turn) => (mark ? `<path class="mark" d="${md}"${turn} fill="${to_hex(h.mark_c)}"/>` : "");
+  const marked = (turn) => (mark ? `<path class="mark" d="${md}"${turn} fill="${to_hex(h.mark_c)}"/>` : "")
+    + (cap ? `<circle class="cap" r="${f(cap.d / 2)}" fill="${to_hex(cap.c)}"/>` : "");      // the cap over the hand, at its pivot
   return `<svg class="upright" viewBox="${f(b[0] - m)} ${f(-b[3] - m)} ${f(w + 2 * m)} ${f(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${marked("")}<clipPath id="lit-upright"><path class="litarea"/></clipPath><path class="lit" d="${d}" clip-path="url(#lit-upright)"/>${centre("M-999 0L999 0")}</svg>`
     + `<svg class="lying" viewBox="${f(b[1] - m)} ${f(b[0] - m)} ${f(high + 2 * m)} ${f(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${marked(' transform="rotate(90)"')}<clipPath id="lit-lying"><path class="litarea"/></clipPath><path class="lit" d="${d}" transform="rotate(90)" clip-path="url(#lit-lying)"/>${centre("M0 -999L0 999")}</svg>`;
 };
@@ -723,6 +727,9 @@ const ROWS = {
     num("hub", "Hub Ø", 0, 4, 0.05, { ...H, side: true, show: (H) => G.HAND_SHAPES[H.shape] !== "disc" }),      // the round boss the hand sits on (#370, 4.80; Okay: "a ball that the leaf attaches to")
     num("counter", "Counterweight Ø", 0, 4, 0.05, { ...H, side: true, short: "Counter Ø" }),
     num("wall", "Hollow wall", 0, 1, 0.01, { ...H, side: true, short: "Wall" }),
+    // its bevel on or off (Okay, 19 Oct 2026: "on off from hand window"); shown only where bevels are drawn, Shadows on
+    // and Bevels % above 0 (R16); a disc hand is flat
+    chk("bevel", "Bevel", { ...H, side: true, show: (T, S) => G.HAND_SHAPES[T.shape] !== "disc" && S.sh_on && +S.sh_bevel > 0 }),
     // the cap is part of the seconds hand (Okay's notes, p. 1, #262, beta 4.43; until then a pane of its own for all
     // three): its rows under the seconds hand's own. With no seconds hand they stand under the topmost hand's, where
     // the cap is off until "Cap on this hand" is ticked (G.cap_shows)
@@ -1615,7 +1622,7 @@ class DialTool {
       const inner = part(key + "/in", "g", g);
       inner.setAttribute("clip-path", `url(#${clip.id})`);
       const half = (name, x, colour, k) => { const r = part(`${key}/${name}`, "rect", inner); r.setAttribute("x", f(x)); r.setAttribute("y", "-50"); r.setAttribute("width", "50"); r.setAttribute("height", "100"); r.setAttribute("fill", colour); r.setAttribute("fill-opacity", f(k)); };
-      const amount = clamp(+S.sh_bevel || 0, 0, 100) / 100;      // Shadows → Bevels % (4.79): none to start
+      const amount = S["ha_" + item.name]?.bevel === false ? 0 : clamp(+S.sh_bevel || 0, 0, 100) / 100;      // Shadows → Bevels % (4.79): none to start; a hand's own Bevel tick off: none on it
       const lit = BEVEL.light * Math.abs(side) * Math.min(on, 1) * amount, dark = BEVEL.dark * Math.abs(side) * Math.min(on, 1) * amount;
       half("right", 0, side > 0 ? "#fff" : "#000", side > 0 ? lit : dark);
       half("left", -50, side > 0 ? "#000" : "#fff", side > 0 ? dark : lit);
@@ -2599,7 +2606,7 @@ class DialTool {
     this.unit_items.forEach((b, i) => { b.classList.toggle("on", i === this.S.ui_unit); b.setAttribute("aria-checked", String(i === this.S.ui_unit)); });
     for (const r of this.rows) {
       const T = this.target(r.row.scope);
-      const applies = r.row.show ? Boolean(r.row.show(T)) : true;
+      const applies = r.row.show ? Boolean(r.row.show(T, this.S)) : true;      // a row's show sees its own settings and the dial's (a hand's Bevel needs Bevels %)
       r.el.hidden = !applies;
       if (r.fold) {
         const folded = this.is_folded(r);
@@ -2634,7 +2641,7 @@ class DialTool {
     for (const r of this.rows) {
       if (r.group !== heading || !r.row.key || r.in_head || parts.length === 3) continue;
       const row = r.row, T = this.target(row.scope);
-      if (row.show && !row.show(T)) continue;
+      if (row.show && !row.show(T, this.S)) continue;
       const v = T[row.key];
       if (row.kind === "num") parts.push(`${label_of(row, T).replace(/^…/, "").toLowerCase()} ${is_length(row) ? this.in_unit(v, decimals(row.step)) : fmt(v, row.step)}`);
       else if (row.kind === "pop" || row.kind === "pick" || row.kind === "seg") parts.push(String(row.items[v] ?? ""));
@@ -4335,7 +4342,8 @@ class DialTool {
     this.hand_grips = grips;
     this.hand_grip_events(wrap, grips);
     out.refresh = (T) => {
-      const now = hand_detail(T);
+      const S = this.S, cap = G.cap_shows(S) && S.ui_hand === G.top_hand(S) ? { d: +S.ha_cap, c: S.c_cap } : null;      // the cap goes with the hand it is drawn on (cap_rows)
+      const now = hand_detail(T, cap);
       if (now !== drawn) {
         drawn = now;
         // the drawings under the handles replaced, the handles' own layer kept in place (moving it would drop a drag's hold on the pointer)

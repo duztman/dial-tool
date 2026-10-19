@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.89";
+export const VERSION = "beta 4.89.1";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -110,6 +110,9 @@ export const HAND_BASE = {
   // old links for window"): its outer end at the hand's Length, or at the disc's edge if Length reaches past it. Off to
   // start, as every older dial was drawn (R31: no new scheme); a hand made a disc in the tool turns it on (app.js)
   mark_in: false,
+  // its bevel on or off (Okay, 19 Oct 2026: "on off from hand window"): the shading Shadows → Bevels % draws on a
+  // hand, per hand. On to start, so every older link looks as before (R31: no new scheme)
+  bevel: true,
 };
 
 // windows 2 to 4 (web version, beta 3.0). Window 1 is the date window both tools know: its keys are da_….
@@ -442,6 +445,7 @@ export const LINK_KEYS = [
   // (#347) carry it. From here on: only ever under the last line, and test/link-keys.json says so (linktrip.mjs).
   "sh_bevel",               // 4.79: appended; off to start
   "hub", "bulge",           // 4.80: appended; no hub and the leaf as always to start, so every older link looks as before
+  "bevel",                  // 4.89.1: appended; on to start, so every older link looks as before
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);

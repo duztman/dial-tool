@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.89 · built 2026-10-19 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.89.1 · built 2026-10-19 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -6273,7 +6273,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.89";
+var VERSION = "beta 4.89.1";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -6403,7 +6403,10 @@ var HAND_BASE = {
   // the window kept inside the disc (#344; Okay, 18 Oct 2026: "Window is always inside disc hands, constrain" — "Off in
   // old links for window"): its outer end at the hand's Length, or at the disc's edge if Length reaches past it. Off to
   // start, as every older dial was drawn (R31: no new scheme); a hand made a disc in the tool turns it on (app.js)
-  mark_in: false
+  mark_in: false,
+  // its bevel on or off (Okay, 19 Oct 2026: "on off from hand window"): the shading Shadows → Bevels % draws on a
+  // hand, per hand. On to start, so every older link looks as before (R31: no new scheme)
+  bevel: true
 };
 var WINDOW_BASE = {
   on: false,
@@ -7149,8 +7152,10 @@ var LINK_KEYS = [
   "sh_bevel",
   // 4.79: appended; off to start
   "hub",
-  "bulge"
+  "bulge",
   // 4.80: appended; no hub and the leaf as always to start, so every older link looks as before
+  "bevel"
+  // 4.89.1: appended; on to start, so every older link looks as before
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -10916,14 +10921,21 @@ var hand_pic = (i2) => {
   const p = hand_shape({ ...HAND_BASE, shape: i2, len: 13, w: 2.2, tail: 3, tip: 4.5, feature: 4.4, feature_at: [0, 0, 0, 30, 0, 0, 45, 62, 62][i2] || 0, round: 0, wall: 0, counter: 0, disc_d: 6, mark_len: 7, mark_w: 2.2, ...disc });
   return `<svg viewBox="-3 -14 6 18.5" width="12" height="38" aria-hidden="true"><path d="${p.svg(3, true)}" fill="currentColor"/></svg>`;
 };
-var hand_detail = (h) => {
+var hand_detail = (h, cap = null) => {
   const p = hand_shape(h), b = p.bounds();
   if (!b) return "";
+  if (cap) {
+    const r = cap.d / 2;
+    b[0] = Math.min(b[0], -r);
+    b[1] = Math.min(b[1], -r);
+    b[2] = Math.max(b[2], r);
+    b[3] = Math.max(b[3], r);
+  }
   const w = b[2] - b[0], high = b[3] - b[1], m = high * 0.03, f2 = (v) => v.toFixed(3);
   const d = p.svg(3, true), ring2 = f2(Math.max(high * 0.012, 0.12));
   const centre2 = (line2) => `<path class="axis" d="${line2}"/><circle class="pivot" r="${ring2}"/>`;
   const mark = paints_mark(h) && disc_mark(h), md = mark ? mark.svg(3, true) : "";
-  const marked = (turn) => mark ? `<path class="mark" d="${md}"${turn} fill="${to_hex(h.mark_c)}"/>` : "";
+  const marked = (turn) => (mark ? `<path class="mark" d="${md}"${turn} fill="${to_hex(h.mark_c)}"/>` : "") + (cap ? `<circle class="cap" r="${f2(cap.d / 2)}" fill="${to_hex(cap.c)}"/>` : "");
   return `<svg class="upright" viewBox="${f2(b[0] - m)} ${f2(-b[3] - m)} ${f2(w + 2 * m)} ${f2(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${marked("")}<clipPath id="lit-upright"><path class="litarea"/></clipPath><path class="lit" d="${d}" clip-path="url(#lit-upright)"/>${centre2("M-999 0L999 0")}</svg><svg class="lying" viewBox="${f2(b[1] - m)} ${f2(b[0] - m)} ${f2(high + 2 * m)} ${f2(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${marked(' transform="rotate(90)"')}<clipPath id="lit-lying"><path class="litarea"/></clipPath><path class="lit" d="${d}" transform="rotate(90)" clip-path="url(#lit-lying)"/>${centre2("M0 -999L0 999")}</svg>`;
 };
 var hand_part = (h, row) => {
@@ -11358,6 +11370,9 @@ var ROWS = {
     // the round boss the hand sits on (#370, 4.80; Okay: "a ball that the leaf attaches to")
     num2("counter", "Counterweight \xD8", 0, 4, 0.05, { ...H, side: true, short: "Counter \xD8" }),
     num2("wall", "Hollow wall", 0, 1, 0.01, { ...H, side: true, short: "Wall" }),
+    // its bevel on or off (Okay, 19 Oct 2026: "on off from hand window"); shown only where bevels are drawn, Shadows on
+    // and Bevels % above 0 (R16); a disc hand is flat
+    chk("bevel", "Bevel", { ...H, side: true, show: (T, S) => HAND_SHAPES[T.shape] !== "disc" && S.sh_on && +S.sh_bevel > 0 }),
     // the cap is part of the seconds hand (Okay's notes, p. 1, #262, beta 4.43; until then a pane of its own for all
     // three): its rows under the seconds hand's own. With no seconds hand they stand under the topmost hand's, where
     // the cap is off until "Cap on this hand" is ticked (G.cap_shows)
@@ -12379,7 +12394,7 @@ var DialTool = class _DialTool {
         r.setAttribute("fill", colour);
         r.setAttribute("fill-opacity", f2(k));
       };
-      const amount = clamp(+S.sh_bevel || 0, 0, 100) / 100;
+      const amount = S["ha_" + item.name]?.bevel === false ? 0 : clamp(+S.sh_bevel || 0, 0, 100) / 100;
       const lit = BEVEL.light * Math.abs(side) * Math.min(on, 1) * amount, dark = BEVEL.dark * Math.abs(side) * Math.min(on, 1) * amount;
       half("right", 0, side > 0 ? "#fff" : "#000", side > 0 ? lit : dark);
       half("left", -50, side > 0 ? "#000" : "#fff", side > 0 ? dark : lit);
@@ -13582,7 +13597,7 @@ var DialTool = class _DialTool {
     });
     for (const r of this.rows) {
       const T = this.target(r.row.scope);
-      const applies = r.row.show ? Boolean(r.row.show(T)) : true;
+      const applies = r.row.show ? Boolean(r.row.show(T, this.S)) : true;
       r.el.hidden = !applies;
       if (r.fold) {
         const folded = this.is_folded(r);
@@ -13621,7 +13636,7 @@ var DialTool = class _DialTool {
     for (const r of this.rows) {
       if (r.group !== heading || !r.row.key || r.in_head || parts.length === 3) continue;
       const row = r.row, T = this.target(row.scope);
-      if (row.show && !row.show(T)) continue;
+      if (row.show && !row.show(T, this.S)) continue;
       const v = T[row.key];
       if (row.kind === "num") parts.push(`${label_of(row, T).replace(/^…/, "").toLowerCase()} ${is_length(row) ? this.in_unit(v, decimals(row.step)) : fmt(v, row.step)}`);
       else if (row.kind === "pop" || row.kind === "pick" || row.kind === "seg") parts.push(String(row.items[v] ?? ""));
@@ -15675,7 +15690,8 @@ var DialTool = class _DialTool {
     this.hand_grips = grips;
     this.hand_grip_events(wrap, grips);
     out.refresh = (T) => {
-      const now = hand_detail(T);
+      const S = this.S, cap = cap_shows(S) && S.ui_hand === top_hand(S) ? { d: +S.ha_cap, c: S.c_cap } : null;
+      const now = hand_detail(T, cap);
       if (now !== drawn2) {
         drawn2 = now;
         for (const old of [...wrap.children]) if (old !== grips && old !== named) old.remove();
