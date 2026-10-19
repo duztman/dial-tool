@@ -986,6 +986,7 @@
      the span's end are dragged round it (app.js row_ring_positions); the span a dotted arc inside the marks */
   .pane.positions > .body > .detail.round { grid-column: 2 / span 2; grid-row: 1 / span 3; align-self: start; aspect-ratio: 1; min-height: 0; margin: 0; touch-action: none; cursor: grab; }
   .pane.positions > .body > .detail.round.dragging { cursor: grabbing; }
+  .pane.positions > .body > .detail.round svg { inset: var(--hair); width: calc(100% - 2 * var(--hair)); height: calc(100% - 2 * var(--hair)); }      /* the circle as tall as the controls, from the top rule to the bottom one (Okay, 19 Oct 2026, #417) */
   .detail.round .span { stroke: var(--grey); stroke-width: var(--pos-dot); stroke-linecap: round; stroke-dasharray: 0 var(--pos-dot-gap); vector-effect: non-scaling-stroke; }      /* "Span ruler: make it dotted instead of ruler" */
   .detail.round .spanend { fill: var(--field); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
   .pane.positions > .body > .row { grid-column: span 2; column-gap: var(--u1); min-width: 0; }
@@ -1043,6 +1044,13 @@
   .givebox > .row.side.quiet { grid-template-columns: var(--side-label) minmax(0, 1fr) var(--side-num); padding: 0 var(--u3); }
   .givebox > .row.side.quiet > .numbox { grid-column: 3; }
   .givebox > .row.side.quiet > label { font-size: var(--t-s); }
+
+  /* Resize Ring from …: on the heading's line, "from" in plain type on the controls' column, then a box saying what the
+     radius measures to, stretched to the margin, the rows' boxed arrow at its right end (Okay, 19 Oct 2026, #419) */
+  .pane > .headcontrol.fromwide { display: flex; align-items: center; gap: var(--gap); }
+  .fromwide .frombox { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; border: var(--hair) solid var(--grey); background: var(--field); padding-left: var(--u2); }
+  .fromwide .fromwords { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fromwide .labelmenu { border-width: 0 0 0 var(--hair); }
 }
 
 /* fonts: the font box, the font sheet, stickers and their legend */
@@ -7768,16 +7776,7 @@ function on_path(txt2, r, a, t, size) {
   }
   return merge(out);
 }
-function ring_top(ring2) {
-  return memo("top" + JSON.stringify([ring_labels(ring2), TYPE_KEYS.map((k) => ring2[k])]), () => max(0, ...ring_labels(ring2).filter(Boolean).map((txt2) => {
-    const b = text_path(txt2, ring2, ring2.size).bounds();
-    return b ? b[3] : 0;
-  })));
-}
 function numeral_dy(ring2, txt2, size) {
-  const anchor = ANCHORS[ring2.anchor] || "centre";
-  if (anchor === "baseline") return 0;
-  if (anchor === "ascender") return -ring_top(ring2) * size / (ring2.size || 1);
   const b = text_path(txt2, ring2, size).bounds();
   return b ? -(b[1] + b[3]) / 2 : 0;
 }
@@ -11064,8 +11063,8 @@ var info = (text, o = {}) => ({ kind: "note", text, ...o });
 var custom = (name, o = {}) => ({ kind: "custom", name, ...o });
 var RADIUS_ROWS = {
   outer: num2("r", "Outer radius", 0, 25, 0.05, { scope: "ring", menu: { key: "from", title: "What the radius measures to", items: [[0, "Outer"], [1, "Middle"], [2, "Inner"]] } }),
-  numerals: num2("r", "Centre radius", 0, 25, 0.05, { scope: "ring", menu: { key: "anchor", title: "What the radius measures to", items: [[1, "Baseline"], [2, "Ascender"], [0, "Centre"], [3, "Outer edge"], [4, "Inner edge"]] } })
-  // the edges: tangent (#338, 4.53)
+  numerals: num2("r", "Centre radius", 0, 25, 0.05, { scope: "ring", menu: { key: "anchor", title: "What the radius measures to", items: [[0, "Centre"], [3, "Outer edge"], [4, "Inner edge"]] } })
+  // Baseline and Ascender out (Okay, 19 Oct 2026, #418)      // the edges: tangent (#338, 4.53)
 };
 var radius_row = (R) => RADIUS_ROWS[has_text(R) ? "numerals" : "outer"];
 var SIZE_ROWS = {
@@ -11194,13 +11193,18 @@ var ROWS = {
     // then Resize (Okay's notes, p. 9, #257: "a proper pane below the quick size and radius buttons … shown first"):
     // how big one thing is — the size button's number — and the radius, with what it measures to: for marks and bands
     // the outer end (as always), the middle or the inner end ("resize from"); for numerals the anchor (13 Oct 2026)
-    hdr("Resize", { folded: true }),
+    // its head reads "Resize Ring from" and what the radius measures to: "from" in plain type on the controls' column,
+    // then the menu stretched to the margin; the rows keep the slider and the number (Okay, 19 Oct 2026, #419: "from
+    // is normal text on second column before dropdown. Dropdown here stretches all in-between")
+    hdr("Resize Ring", { folded: true }),
+    custom("resize_from", { head: true, text: "Resize ring from" }),
     num2("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
     num2("w", "\xD8", 0.02, 5, 0.01, { show: marks_with("dot"), id: "ring-w-dot" }),
     num2("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),
     // a numeral's size stays in the font box, among the type's settings (and in the size button's popup)
-    { ...RADIUS_ROWS.outer, show: kind_in("ticks", "markers", "band") },
-    { ...RADIUS_ROWS.numerals, show: with_text },
+    { ...RADIUS_ROWS.outer, menu: null, text: "Radius", show: kind_in("ticks", "markers", "band") },
+    // its menu is on the heading's line (#419)
+    { ...RADIUS_ROWS.numerals, menu: null, text: "Radius", id: "ring-r-text", show: with_text },
     hdr("Sector colours", { folded: true, show: (R) => kind_of(R) === "band" && positions_of(R).length > 1 }),
     custom("sectors", { show: (R) => kind_of(R) === "band" && positions_of(R).length > 1 }),
     // what one mark is comes first (Okay, 13 Oct 2026: "moves up to the top"), then where the marks are
@@ -11345,8 +11349,8 @@ var ROWS = {
     // Radius ("ok but below shapes"), its sizes, its colours on one line, its text and font, its frame
     // the place buttons on its heading's line (Okay, 16 Oct 2026, on the mock-ups: "If it's taller so be it, enlarge
     // buttons. And 3 6 9 12 are circular buttons now")
-    hdr("Window", { title: (S) => `Window at ${window_place(windows_of(S)[S.ui_window])}` }),
-    // "Position" under it in 4.46.1–2 (Okay: "Delete position name, that works without")
+    hdr("Window", { ...W, title: (T) => `Window at ${window_place(T)}` }),
+    // off, its rows don't apply, so the pane goes (R16): the tab is empty below its Show (#416)      // "Position" under it in 4.46.1–2 (Okay: "Delete position name, that works without")
     custom("window_at", { ...W, head: true, show: win_on, text: "Position" }),
     // four complications: a big date is the Date tile with its tick below (4.89; Okay, 19 Oct 2026: "Big date function is an under selection of date function"); its kind, 4, stays what is stored (R9)
     pick("kind", "Complication", WINDOW_KINDS, (i2) => icon(PICS.window[i2], 30, 21), { ...W, small: true, across: 4, skip: [4], shown: (T) => WINDOW_KINDS[T.kind] === "big date" ? 0 : T.kind, show: win_on }),
@@ -11388,6 +11392,11 @@ var ROWS = {
     // a picture's further colour (4.73): a moon's dark side in Phase
     col("c2", "Neighbours", { ...W, id: "window-c2-Neighbours", show: (T) => win_is("date", "day")(T) && T.neighbours, or: () => PICTURE_TONES.near }),
     // a date or day window's neighbours (4.74)
+    // the frame round the hole and the room kept clear round it are drawn on the dial: they are design, so they
+    // stand here, not under a pane called Print (Okay, 13 Oct 2026: print things under Print, design among design)
+    num2("frame", "Frame", 0, 0.6, 0.01, { ...W, show: win_on }),
+    num2("clear", "Clearance", 0, 1, 0.01, { ...W, show: win_on }),
+    // the ticks at the end of the column, Frame and Clearance in their place (Okay, 19 Oct 2026, #413: "These three at the end of this column. Last two sliders come in their place")
     // following the bar's date (4.62): a date or day window says it, a moon window shows its age; its typed text or age
     // waits underneath, for when it doesn't follow
     chk("follows", "Follows the date in the bar", { ...W, show: win_is("date", "day", "moon phase", "big date") }),
@@ -11398,13 +11407,11 @@ var ROWS = {
     // passing it, its outer guide shows red and this says by how much; off, it may (a face on a screen)
     chk("physics", "Its disc stays inside the case", { ...W, show: win_is("date", "day", "am \xB7 pm") }),
     info((T) => `Its disc passes the case by ${tool ? tool.disc_past().toFixed(2) : "?"} mm: move the window in, or untick to let it.`, { ...W, nest: true, show: (T) => win_is("date", "day", "am \xB7 pm")(T) && T.physics !== false && tool && tool.disc_past() > 0 }),
+    // its text and font: a pane of its own with its eye (Okay, 19 Oct 2026, #415: "Font needs own section & eye")
+    hdr("Font", { ...W, folded: true, show: win_is("date", "day", "big date") }),
     txt("text", "Text", { ...W, show: (T) => win_is("date", "day", "big date")(T) && !T.follows }),
-    custom("font", { ...W, show: win_is("date", "day", "big date") }),
+    custom("font", { ...W, show: win_is("date", "day", "big date") })
     // its own font, or the top numerals ring's (the start)
-    // the frame round the hole and the room kept clear round it are drawn on the dial: they are design, so they
-    // stand here, not under a pane called Print (Okay, 13 Oct 2026: print things under Print, design among design)
-    num2("frame", "Frame", 0, 0.6, 0.01, { ...W, show: win_on }),
-    num2("clear", "Clearance", 0, 1, 0.01, { ...W, show: win_on })
   ],
   Export: [
     // Okay's order, 13 Oct 2026. Export a file stays in view (pinned): Vector · PDF | SVG, with its tick right
@@ -13525,8 +13532,14 @@ var DialTool = class _DialTool {
           this.show_summary(r.summary, parts);
         }
       }
+      r.applies = applies;
+    }
+    for (const r of this.rows) if (r.fold) r.empty = true;
+    for (const r of this.rows) if (r.group && r.applies) r.group.empty = false;
+    for (const r of this.rows) if (r.fold && r.empty && this.rows.some((x2) => x2.group === r)) r.el.hidden = true;
+    for (const r of this.rows) {
       const pane = r.group;
-      if (applies && (r.in_head || !(pane && (pane.el.hidden || this.is_folded(pane))))) r.refresh(T);
+      if (r.applies && (r.in_head || !(pane && (pane.el.hidden || this.is_folded(pane))))) r.refresh(this.target(r.row.scope));
     }
     if (this.value_pop) {
       if (!this.value_pop.box.isConnected) this.value_pop = null;
@@ -13735,7 +13748,8 @@ var DialTool = class _DialTool {
         filled(slider);
         if (!typing) field.value = shown(v);
         if (menu) {
-          menu.value = T[row.menu.key] ?? 0;
+          const v2 = T[row.menu.key] ?? 0;
+          menu.value = row.menu.items.some(([x2]) => x2 === v2) ? v2 : row.menu.items[0][0];
           label.textContent = label_of(row, T);
         }
         if (row.say) {
@@ -14399,6 +14413,30 @@ var DialTool = class _DialTool {
   }
   /** Reset: the opener back, every setting — the guide's First dial (opener.js). It replaces the whole dial, so it
    *  stands last in the Dial tab, apart from what is changed often, with its warning under it; undo brings the dial back. */
+  /** Resize Ring from …, on the pane's heading line (#419): "from" in plain type, then the radius's own menu (what it
+   *  measures to) as a box saying the choice, stretched to the margin, with the boxed arrow the rows' menus have.
+   *  Numerals: Centre · Outer edge · Inner edge; marks and bands: Outer · Middle · Inner. */
+  row_resize_from(wrap, out) {
+    wrap.className = "row";
+    const words = el("span", { className: "fromwords" });
+    const select = el("select", { id: "resize-from", title: "What the radius measures to", ariaLabel: "Resize ring from" });
+    const arrow = el("span", { className: "labelmenu" }, select);
+    arrow.insertAdjacentHTML("afterbegin", icon(`<path d="M3.25 4.75L6.25 7.75L9.25 4.75" ${sw(SLANT)}/>`, 12));
+    let menu = null;
+    select.onchange = () => this.set_value("ring", menu.key, +select.value);
+    const box2 = el("span", { className: "frombox" }, words, arrow);
+    wrap.append(el("span"), el("span", { className: "fromwide" }, el("span", { className: "fromword", textContent: "from" }), box2));
+    out.refresh = (R) => {
+      const now = radius_row(R).menu;
+      if (now !== menu) {
+        menu = now;
+        select.replaceChildren(...menu.items.map(([v2, name]) => el("option", { value: v2, textContent: name })));
+      }
+      const v = R[menu.key] ?? 0, item = menu.items.find(([x2]) => x2 === v) || menu.items[0];
+      select.value = item[0];
+      words.textContent = item[1];
+    };
+  }
   row_reset_go(wrap) {
     const go = el("button", { type: "button", className: "btn reset", id: "reset", textContent: "Reset to the First dial", title: "Replaces the whole dial with the guide\u2019s First dial", onclick: () => {
       this.reopen({ ...structuredClone(OPENER), ui_section: this.S.ui_section });
@@ -15524,7 +15562,7 @@ var DialTool = class _DialTool {
       const a0 = +R.start || 0, span = Math.min(Math.max(+R.span || 360, 1), 360), [fx, fy] = at(angles[0] ?? a0, DOT);
       const [sx, sy] = at(a0, ARC), [ex, ey] = at(a0 + span, ARC);
       const arc2 = span >= 360 ? `<circle class="span" r="${ARC}"/>` : `<path class="span" d="M${sx} ${sy}A${ARC} ${ARC} 0 ${span > 180 ? 1 : 0} 1 ${ex} ${ey}"/>`;
-      const now = `<svg viewBox="-1.1 -1.1 2.2 2.2" aria-hidden="true"><circle class="axis" r="1"/>${marks}${arc2}<circle class="spanend" cx="${ex}" cy="${ey}" r="0.06"/><circle class="first" cx="${fx}" cy="${fy}" r="0.07"/></svg>`;
+      const now = `<svg viewBox="-1 -1 2 2" aria-hidden="true"><circle class="axis" r="1"/>${marks}${arc2}<circle class="spanend" cx="${ex}" cy="${ey}" r="0.06"/><circle class="first" cx="${fx}" cy="${fy}" r="0.07"/></svg>`;
       if (now !== drawn2) {
         drawn2 = now;
         wrap.innerHTML = now;
@@ -15532,7 +15570,7 @@ var DialTool = class _DialTool {
       wrap.ariaLabel = `${used.size} of ${angles.length} positions used, the first at ${(angles[0] || 0).toFixed(1)}\xB0`;
     };
     const polar = (e) => {
-      const b = wrap.getBoundingClientRect(), x2 = (e.clientX - b.left) / b.width * 2.2 - 1.1, y = (e.clientY - b.top) / b.height * 2.2 - 1.1;
+      const b = wrap.getBoundingClientRect(), x2 = (e.clientX - b.left) / b.width * 2 - 1, y = (e.clientY - b.top) / b.height * 2 - 1;
       return [Math.atan2(x2, -y) * 180 / Math.PI, Math.hypot(x2, y)];
     };
     let grab = null;

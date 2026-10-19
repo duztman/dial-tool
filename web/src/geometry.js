@@ -1117,20 +1117,12 @@ function on_path(txt, r, a, t, size) {
   return merge(out);
 }
 
-/** the top of a numerals ring's labels above their baseline, at the ring's size: the tallest label decides, so
- *  every numeral of the ring hangs from one line (figures: their height; words: their ascenders). */
-function ring_top(ring) {
-  return memo("top" + JSON.stringify([ring_labels(ring), TYPE_KEYS.map((k) => ring[k])]), () =>
-    max(0, ...ring_labels(ring).filter(Boolean).map((txt) => { const b = text_path(txt, ring, ring.size).bounds(); return b ? b[3] : 0; })));
-}
-
-/** how far a numeral's outlines move up or down in their own space (baseline at 0, y up) so that the ring's
- *  anchor lands on the origin, which is then put on the radius: its centre (as always until now), its baseline,
- *  or its top. Sideways a numeral is always centred. */
+/** how far a numeral's outlines move up or down in their own space (baseline at 0, y up) so that its centre lands
+ *  on the origin, which is then put on the radius (the edges add their shift in tangent_shift). Sideways a numeral is
+ *  always centred. */
 function numeral_dy(ring, txt, size) {
-  const anchor = ANCHORS[ring.anchor] || "centre";
-  if (anchor === "baseline") return 0;
-  if (anchor === "ascender") return -ring_top(ring) * size / (ring.size || 1);
+  // baseline and ascender are retired (Okay, 19 Oct 2026, #418: "Remove these two from the functions as well"):
+  // their places in ANCHORS stay (R9) and a ring stored with one measures to the centre
   const b = text_path(txt, ring, size).bounds();
   return b ? -(b[1] + b[3]) / 2 : 0;
 }

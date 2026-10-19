@@ -448,7 +448,7 @@ await page.click("#ring-r");
 const anchors = await page.evaluate(() => {
   const t = window.dial_tool, ring = t.ring(), menu = document.querySelector("#value-pop .menulabel select"), label = () => document.querySelector("#value-pop .menulabel label").textContent;
   const out = { options: [...menu.options].map((o) => o.textContent).join(" "), labels: [label()], r: ring.r };
-  for (const v of ["1", "2", "0"]) { menu.value = v; menu.dispatchEvent(new Event("change")); out.labels.push(label()); out["a" + v] = ring.anchor; }
+  for (const v of ["3", "4", "0"]) { menu.value = v; menu.dispatchEvent(new Event("change")); out.labels.push(label()); out["a" + v] = ring.anchor; }
   // no name in the controller (Okay, 18 Oct 2026, controller 2.svg: "No name necessary"): the menu stays on the row; the
   // value's pill as far from the square's top as the discs from its foot
   const pop = document.querySelector("#value-pop"), p = pop.getBoundingClientRect(), head = pop.querySelector(".pophead").getBoundingClientRect(), steps = pop.querySelector(".steps").getBoundingClientRect();
@@ -458,17 +458,17 @@ const anchors = await page.evaluate(() => {
 await shot("4c10-radius-pop");
 await page.keyboard.press("Escape");
 await page.click(`.ringlist li:nth-child(${ring_before + 1} of .ring) .name`);
-check(anchors.options === "Baseline Ascender Centre Outer edge Inner edge" && anchors.labels.join(" | ") === "Centre radius | Baseline radius | Ascender radius | Centre radius" && anchors.a1 === 1 && anchors.a2 === 2 && anchors.a0 === 0 && anchors.look.join(" ") === "true 12 12 186 50",
-  `the radius of numerals has a menu beside its label: ${anchors.options}; the label follows: ${anchors.labels.join(" → ")}; in the controller no name, the value's pill as far from the top as the discs from the foot (${anchors.look.join(" · ")}) (controller 2.svg, 18 Oct 2026)`);
-// …and the drawing follows: the numeral at 12 stands on the radius (baseline), hangs from it (ascender), or is centred on it
+check(anchors.options === "Centre Outer edge Inner edge" && anchors.labels.join(" | ") === "Centre radius | Outer edge radius | Inner edge radius | Centre radius" && anchors.a3 === 3 && anchors.a4 === 4 && anchors.a0 === 0 && anchors.look.join(" ") === "true 12 12 186 50",
+  `the radius of numerals has a menu beside its label: ${anchors.options} (Baseline and Ascender out, #418: "Remove these two from the functions as well"); the label follows: ${anchors.labels.join(" → ")}; in the controller no name, the value's pill as far from the top as the discs from the foot (${anchors.look.join(" · ")}) (controller 2.svg, 18 Oct 2026)`);
+// …and Baseline and Ascender are retired from the drawing too (#418): a ring stored with one is centred on its radius, as with Centre
 const at12 = [];
 for (const v of [1, 2, 0]) {
   await page.evaluate((v) => { const t = window.dial_tool; t.S.rings.find((r) => r.kind === 2).anchor = v; t.static_dirty = true; t.render(); }, v);
   await frame();
   at12.push(await page.evaluate(() => { const t = window.dial_tool, d = t.statik.rings.find((x) => x.ring.kind === 2), b = d.parts[0].bounds(); return [b[1] - d.ring.r, b[3] - d.ring.r, (b[1] + b[3]) / 2 - d.ring.r]; }));
 }
-check(Math.abs(at12[0][0]) < 0.06 && at12[0][1] > 1 && Math.abs(at12[1][1]) < 0.01 && at12[1][0] < -1 && Math.abs(at12[2][2]) < 0.001,
-  `at 12 the numeral's foot is on the radius with Baseline (${at12[0][0].toFixed(3)}), its top with Ascender (${at12[1][1].toFixed(3)}), its middle with Centre (${at12[2][2].toFixed(4)})`);
+check(Math.abs(at12[0][2]) < 0.001 && Math.abs(at12[1][2]) < 0.001 && Math.abs(at12[2][2]) < 0.001,
+  `at 12 the numeral's middle is on the radius with a stored Baseline (${at12[0][2].toFixed(4)}), Ascender (${at12[1][2].toFixed(4)}) and Centre (${at12[2][2].toFixed(4)}): the two are retired (Okay, 19 Oct 2026, #418)`);
 { // the edges, tangent (#338; Okay, 18 Oct 2026: "Tangent to inner or outer"), and a change of anchor that moves nothing on
   // the dial, only the dotted line (#326: "Nothing changed … just the dotted line moves"; "applies to reverse auto reverse")
   const r = await page.evaluate(() => {
@@ -478,14 +478,14 @@ check(Math.abs(at12[0][0]) < 0.06 && at12[0][1] > 1 && Math.abs(at12[1][1]) < 0.
     ring.anchor = 3; ring.mode = 0; const out12 = part(0);
     ring.anchor = 4; const in12 = part(0);
     ring.anchor = 0; ring.mode = 1; const before = part(0), before3 = part(1);
-    t.set_value("ring", "anchor", 2); const after = part(0), after3 = part(1), r2 = ring.r;
+    t.set_value("ring", "anchor", 3); const after = part(0), after3 = part(1), r2 = ring.r;
     t.set_value("ring", "anchor", 4); const after_in = part(0);
     Object.assign(ring, { anchor: keep.anchor, r: keep.r, mode: keep.mode }); S.ui_ring = keep.i; t.static_dirty = true; t.render();
     const moved = (a, b) => Math.max(...a.map((v, i) => Math.abs(v - b[i])));
     return { top: out12[3] - keep.r, inner: in12[1] - keep.r, still: Math.max(moved(before, after), moved(before3, after3), moved(before, after_in)), r2: r2 - keep.r };
   });
-  check(Math.abs(r.top) < 0.01 && Math.abs(r.inner) < 0.01 && r.still < 0.02 && Math.abs(r.r2) > 0.1,      // 0.02: labels of different heights hang from one line with Ascender, each from its own middle with Centre — a hundredth, seen at 400 %
-    `Outer edge: the numeral at 12 touches the radius with its top (${r.top.toFixed(3)}); Inner edge: the 12's foot (${r.inner.toFixed(3)}); a radial ring changed from Centre to Ascender and Inner edge doesn't move (${r.still.toFixed(4)}), its radius does (${r.r2.toFixed(3)})`);
+  check(Math.abs(r.top) < 0.01 && Math.abs(r.inner) < 0.01 && r.still < 0.02 && Math.abs(r.r2) > 0.1,      // 0.02: labels of different heights touch one line with an edge, each sits on its own middle with Centre — a hundredth, seen at 400 %
+    `Outer edge: the numeral at 12 touches the radius with its top (${r.top.toFixed(3)}); Inner edge: the 12's foot (${r.inner.toFixed(3)}); a radial ring changed from Centre to Outer edge and Inner edge doesn't move (${r.still.toFixed(4)}), its radius does (${r.r2.toFixed(3)})`);
 }
 { // one mark nudged (#349, groundwork: "Each individual marker could be selected and edited"): a mark keeps its own radius ±,
   // angle ±, size × and turn in the ring's nudge, as a numeral does
@@ -513,14 +513,14 @@ check(Math.abs(at12[0][0]) < 0.06 && at12[0][1] > 1 && Math.abs(at12[1][1]) < 0.
       const d = t.statik.rings.find((x) => x.ring === ring), b = d.parts[0].bounds(), e = t.statik.rings.find((x) => x.ring === band).parts[0].bounds();
       const dots = t.items.filter((i) => i.role === "guide" && i.dots).map((i) => +(i.path.bounds()[3]).toFixed(2));
       const panes = [...document.querySelectorAll(".form .pane h2")].filter((h) => h.closest(".pane").offsetParent).map((h) => h.textContent);
-      return [+(b[1] - ring.r).toFixed(3), +(b[3] - ring.r).toFixed(3), +(e[3] - band.r).toFixed(3), +(e[3] - e[1] - band.width).toFixed(3), dots.includes(+ring.r.toFixed(2)) && dots.includes(+band.r.toFixed(2)), document.querySelector("#ring-r-Outer-radius").closest(".row").querySelector("label").textContent, panes.slice(0, 2).join(" · "), dots.join(" ")];
+      return [+(b[1] - ring.r).toFixed(3), +(b[3] - ring.r).toFixed(3), +(e[3] - band.r).toFixed(3), +(e[3] - e[1] - band.width).toFixed(3), dots.includes(+ring.r.toFixed(2)) && dots.includes(+band.r.toFixed(2)), document.querySelector("#resize-from").closest(".fromwide").querySelector(".fromwords").textContent, panes.slice(0, 2).join(" · "), dots.join(" ")];
     }, v));
   }
   await page.evaluate(() => { const t = window.dial_tool; for (const r of t.S.rings) r.from = 0; t.static_dirty = true; t.render(); });
   const numerals_panes = await page.evaluate(() => { const t = window.dial_tool; t.S.ui_ring = t.S.rings.findIndex((r) => r.kind === 2); t.show_section(); t.sync_rows(); return [...document.querySelectorAll(".form .pane h2")].filter((h) => h.closest(".pane").offsetParent).map((h) => h.textContent).slice(0, 2).join(" · "); });
   await page.evaluate(([ring, all]) => { const t = window.dial_tool; t.S.ui_ring = ring; t.S.gd_rings = all; t.show_section(); t.sync_rows(); t.draw(); }, was);
-  check(from[0][1] === 0 && from[0][0] < 0 && Math.abs(from[1][0] + from[1][1]) < 0.001 && from[2][0] === 0 && from[2][1] > 0 && from[0][2] === 0 && Math.abs(from[1][2] - 0.5) < 0.001 && from[2][2] === 1 && from.every((f) => f[4]) && from.map((f) => f[5]).join(" | ") === "Outer radius | Middle radius | Inner radius" && from[0][6] === "Resize · Shape" && numerals_panes === "Type · Resize",
-    `resize from (#257): a marker's outer end on the radius (${from[0].slice(0, 2)}), then its middle (${from[1].slice(0, 2)}), then its inner end (${from[2].slice(0, 2)}); a band likewise (its outer edge ${from.map((f) => f[2]).join(" · ")} past its radius); the ring's dotted guide at its radius each time (dotted at ${from[0][7]}); the label follows (${from.map((f) => f[5]).join(" → ")}); Resize first under the pinned part (${from[0][6]}), Type first for numerals (${numerals_panes}, #296)`);
+  check(from[0][1] === 0 && from[0][0] < 0 && Math.abs(from[1][0] + from[1][1]) < 0.001 && from[2][0] === 0 && from[2][1] > 0 && from[0][2] === 0 && Math.abs(from[1][2] - 0.5) < 0.001 && from[2][2] === 1 && from.every((f) => f[4]) && from.map((f) => f[5]).join(" | ") === "Outer | Middle | Inner" && from[0][6] === "Resize Ring · Shape" && numerals_panes === "Type · Resize Ring",
+    `resize from (#257): a marker's outer end on the radius (${from[0].slice(0, 2)}), then its middle (${from[1].slice(0, 2)}), then its inner end (${from[2].slice(0, 2)}); a band likewise (its outer edge ${from.map((f) => f[2]).join(" · ")} past its radius); the ring's dotted guide at its radius each time (dotted at ${from[0][7]}); the heading's menu says it (${from.map((f) => f[5]).join(" → ")}, #419: "Resize Ring" and "from"); Resize first under the pinned part (${from[0][6]}), Type first for numerals (${numerals_panes}, #296)`);
 }
 // a text ring (#297, 4.48): a fifth kind, its words at every position; its panes Text · Type · Resize; its angle snaps to the other rings' indices
 {
@@ -535,7 +535,7 @@ check(Math.abs(at12[0][0]) < 0.06 && at12[0][1] > 1 && Math.abs(at12[1][1]) < 0.
   await page.evaluate(() => window.dial_tool.set_value("ring", "start", 44));
   const t3 = await S("S.rings[S.ui_ring].start");
   await page.evaluate(([ring, n]) => { const t = window.dial_tool; t.ring_tool("delete"); if (t.S.rings.length !== n) throw new Error("the text ring was not the one deleted"); t.select_ring(ring); }, was);
-  check(t1[1] === 4 && t1[2] === "AUTOMATIC" && t1[3] === 1 && t1[4] === 180 && t1[5] === "Text: AUTOMATIC / Positions: 1 · Start: 180°" && t1[6] === "Text · Type · Resize" && t1[7] === 1 && t1[8] < 0 && t1[9] && t2[0] === 30 && t2[1] === 3 && t2[2] === "Positions: 3 · Start: 30°" && t3 === 44,
+  check(t1[1] === 4 && t1[2] === "AUTOMATIC" && t1[3] === 1 && t1[4] === 180 && t1[5] === "Text: AUTOMATIC / Positions: 1 · Start: 180°" && t1[6] === "Text · Type · Resize Ring" && t1[7] === 1 && t1[8] < 0 && t1[9] && t2[0] === 30 && t2[1] === 3 && t2[2] === "Positions: 3 · Start: 30°" && t3 === 44,
     `a text ring (#297): added as the fifth kind, "${t1[2]}" once under the centre (its middle ${t1[8]} mm, start ${t1[4]}°), its row says "${t1[5]}", its panes ${t1[6]}; with Count 3 the words stand at every position (${t2[1]}, "${t2[2]}"); Start 31° snaps to the markers' 30° (${t2[0]}), 44° stays (${t3}) — within ${2}°`);
 }
 // Positions (#251, 4.50.1; drawn by Okay, notes 2, #357, 4.56): a round preview at the left, three rows high — a mark at every position, the used ones in ink, the skipped faint, the first a dot, the span a dotted arc; beside it Count · Every as menus, Offset · Start · Span as number blocks, Skip those with an (i); the start and the span's end dragged round the preview
@@ -918,10 +918,10 @@ check(await page.isVisible("#global-dial-d-Diameter") && (await page.textContent
 // folding must not leave uneven gaps: folded panes stack line on line, whatever they hold
 await tab("Rings");
 const gaps = async () => page.$$eval(".form .pane", (h) => h.filter((e) => e.offsetParent).map((e, i, all) => (i ? Math.round(e.getBoundingClientRect().top - all[i - 1].getBoundingClientRect().top) : 0)).slice(1));
-for (const i of [0, 1, 2]) await page.click(`.form .pane:visible >> nth=${i} >> .fold`);
+for (const i of [0, 1, 2]) await page.click(`.form .pane:visible >> nth=${i} >> .fold`, { position: { x: 12, y: 12 } });      // at its left end: a menu may stand on the rest of its line (#419)
 const folded_gaps = await gaps();
 check(folded_gaps[1] === 42 && folded_gaps[2] === 42, `folded panes in a row are 42 apart, and so is the open one after them (${folded_gaps.join(", ")})`);
-for (const i of [0, 1, 2]) await page.click(`.form .pane:visible >> nth=${i} >> .fold`);
+for (const i of [0, 1, 2]) await page.click(`.form .pane:visible >> nth=${i} >> .fold`, { position: { x: 12, y: 12 } });
 await tab("Hands");
 // Hands: Hour · Minute · Seconds are tabs on top of the pinned part; the panes below are about the chosen hand
 const hand_tabs = await page.evaluate(() => { const p = document.querySelector(".pinned"), t = p.querySelector(".tabsbar"); return [p.firstElementChild.classList.contains("handsbar"), p.firstElementChild.nextElementSibling === t, [...t.querySelectorAll("button")].map((b) => b.textContent).join(" "), [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent).join(" · ")]; });
@@ -1172,10 +1172,10 @@ check(cards.map((c) => c[1]).join("") === "" && cards.map((c) => c[0]).join(" ")
   await frame();
   const scene = await page.evaluate(() => { const t = window.dial_tool; return t.slots ? [...document.querySelectorAll("main svg path")].map((p) => p.getAttribute("fill")).filter(Boolean) : []; });
   await shot("4c18-window-colours");
-  check(/Window at [^·]+ · Shape$/.test((await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))).join(" · ")) && await page.evaluate(() => { const rows = [...document.querySelectorAll(".form .pane .body")][0].children, ids = [...rows].filter((r) => r.offsetParent).map((r) => (r.querySelector("select, input, button") || {}).id); return ids[0] === "window-kind-Complication-0" && !!document.querySelector(".form .pane:first-of-type > .circles #window-at-Position-0"); })
+  check(/Window at [^·]+ · Shape · Font$/.test((await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))).join(" · ")) && await page.evaluate(() => { const rows = [...document.querySelectorAll(".form .pane .body")][0].children, ids = [...rows].filter((r) => r.offsetParent).map((r) => (r.querySelector("select, input, button") || {}).id); return ids[0] === "window-kind-Complication-0" && !!document.querySelector(".form .pane:first-of-type > .circles #window-at-Position-0"); })
     && await page.$eval("#window-r-Radius", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape" && await page.$eval("#window-clear-Clearance", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape" && await page.$eval("#window-frame-Frame", (e) => e.closest(".pane").querySelector("h2").textContent) === "Shape"
     && await page.isVisible("#window-font-c") && await page.isHidden("#window-text-c-Picture") && await page.isVisible("#window-disc-c-Disc-under-it") && await page.isVisible("#window-ink-Frame") && await page.$eval("#window-ink-Frame", (e) => e.closest(".row") !== document.querySelector("#window-disc-c-Disc-under-it").closest(".row") && e.closest(".row").previousElementSibling === document.querySelector("#window-disc-c-Disc-under-it").closest(".row")),
-    "Windows (#263, 4.46.1): Window at x holds Position (on its heading line) and Complication (Shows until 4.51.1); Shape holds Radius, the sizes, the colours one to a line as elsewhere (the disc under it, the frame, and the picture's for a window that shows one; Okay, 19 Oct 2026), the text and its font, Frame and Clearance");
+    "Windows (#263, 4.46.1): Window at x holds Position (on its heading line) and Complication; Shape holds Radius, the sizes, the colours one to a line as elsewhere (the disc under it, the frame, and the picture's for a window that shows one; Okay, 19 Oct 2026), Frame and Clearance, then the ticks (#413); the text and its font in a Font pane of their own (#415: \"Font needs own section & eye\")");
   await page.evaluate((was) => { const t = window.dial_tool, [ui, on, at, shape, turn, ps, family, text_c, disc_c, w] = JSON.parse(was); Object.assign(t.S, { da_at: at, da_shape: shape, da_turn: turn, da_ps: ps, da_family: family, da_text_c: text_c, da_disc_c: disc_c, da_w: w, da_text_turn: true, da_on: on, ui_window: ui }); t.static_dirty = true; t.sync_rows(); t.render(); }, was);
 }
 // an am · pm window follows the time shown: light at 10 in the morning, dark at 10 at night; AM · PM stands in the time's box
@@ -1204,7 +1204,9 @@ await tab("Date");
   check(strip.touch && strip.on_line === "2 2px true" && strip.round === "0px 0px" && strip.notch === "true true true true" && strip.left === 28 && strip.right === 0 && strip.high >= 54, `the window cards are tabs, always in view: touching, on a thick line, square at both ends with a sharp notch over each joint, from the labels' line to the margin (${strip.high} high; ${JSON.stringify(strip)})`);
 }
 await page.click("#window-card-2");
-check(await S("S.ui_window === 2 && S.windows[1].at === 2 && S.windows[1].on === false") && await page.textContent(".form .pane >> nth=0 >> h2") === "Window at 6" && await page.$eval("#window-card-2", (e) => e.classList.contains("on") && e.classList.contains("off")), "the card at 6 chooses its window: the pane says Window at 6; not in use yet, it takes the card's place");
+check(await S("S.ui_window === 2 && S.windows[1].at === 2 && S.windows[1].on === false") && await page.$$eval(".form .pane", (p) => p.filter((e) => e.offsetParent).length) === 0 && await page.isVisible("#window-on-Show") && await page.$eval("#window-card-2", (e) => e.classList.contains("on") && e.classList.contains("off")), "the card at 6 chooses its window; not in use yet, it takes the card's place and the tab is empty under its Show (#416: \"Do not show window at … unless show is turned on\")");
+await page.evaluate(() => window.dial_tool.set_value("window", "on", true));      // shown: its pane under the Show box
+check(await page.textContent(".form .pane >> nth=0 >> h2") === "Window at 6", "shown, the pane says Window at 6");
 const on_box = await page.evaluate(() => { const box = document.querySelector(".form").firstElementChild, c = box.querySelector(".check").getBoundingClientRect(), t = document.querySelector(".windowcards .card > .tab.on").getBoundingClientRect(); return [box.classList.contains("showbox"), box.querySelector("input").id, box.nextElementSibling.querySelector("h2").textContent, !document.querySelector(".form .pane .headcontrol input"), (c.left - t.left).toFixed(1) + " " + (c.right - t.right).toFixed(1)]; });
 const win_gap = await page.evaluate(() => { const box = document.querySelector(".form > .showbox > .check").getBoundingClientRect(), pane = document.querySelector(".form > .showbox + .pane").getBoundingClientRect(); return +(pane.top - box.bottom).toFixed(1); });
 check(win_gap === 11, `under the window's Show box its pane's thick line stands as far below as the hand's thin line does (${win_gap}; 4.46.4: "Thick line stands here")`);
@@ -1212,6 +1214,7 @@ check(on_box[0] && on_box[1] === "window-on-Show" && on_box[2] === "Window at 6"
 await page.click(".form .pane >> nth=0 >> .fold h2");
 check(await page.isVisible("#window-on-Show"), "the window's pane folded, Show stays in view");
 await page.click(".form .pane >> nth=0 >> .fold h2");
+await page.evaluate(() => window.dial_tool.set_value("window", "on", false));
 await page.click("#window-card-0");
 await shot("4h-window-cards");
 { // one tab look (#260, 4.46): a chosen tab squares up, a window card as a hand tab; the others keep the notch between them
@@ -2220,9 +2223,9 @@ check(narrow.wide <= 390 && narrow.eye >= 0 && narrow.bar === 0, "a phone: nothi
     `a phone: the switches show their signs (${folded.guides} px) and unfold their words on a tap of the backdrop (${open.guides}), folding back after 3 s; the gripper sits on the drawer's top line in its grey; a tap makes the drawer taller (${folded.panel} → ${tall.panel}) and it holds its top still, another brings it back; Guides opens as a sheet from the bottom; the page's own colour is the bar's`);
 }
 await shot("11-phone");
-await page.click('.form .fold:visible >> nth=0');
+await page.click('.form .fold:visible >> nth=0', { position: { x: 12, y: 12 } });      // at its left end: a menu may stand on the rest of its line (#419)
 await shot("11b-phone-folded");
-await page.click('.form .fold:visible >> nth=0');
+await page.click('.form .fold:visible >> nth=0', { position: { x: 12, y: 12 } });      // at its left end: a menu may stand on the rest of its line (#419)
 { // a phone (4.68; Okay, 18 Oct 2026, 22:35): the controller at three quarters ("Controller too big on the phones, 75% scale"); a hand's rows give the slider all the room between the name and the box ("Hands sliders squeezed, use all row width")
   await tab("Dial"); await page.$eval('label[for="global-dial-d-Diameter"]', (e) => e.scrollIntoView({ block: "center" }));
   await page.click('label[for="global-dial-d-Diameter"]'); await page.waitForTimeout(200);

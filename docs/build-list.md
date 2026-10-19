@@ -162,6 +162,22 @@ Found by the audit of beta 4.86 (changelog 4.87), and Okay's notes of 14:13 ("Th
 | 409 | **Tick rows and the Show tick** (Okay, 19 Oct 2026, 18:00: "align first line with tick sign. Try not having orphans, limit text to two lines or explain more to fill the second line … 'Show tick' in white gets bigger, black box stays the same. These are rules now") — design canon §6, §7 | **done — 4.88.2** |
 | 410 | **A window's colours one to a line; Neighbours on by default, for every link** (Okay, 18:04) | **done — 4.88.2** |
 
+## From Okay's notes 3 (19 Oct 2026)
+
+Nine annotated screenshots under *Notes 3* in Okay's Google Doc *Dial tool notes* (the session's notes doc, read at the start of each round). Red = change, green = keep, blue = his reading of the words.
+
+| # | Item | Status |
+|---|---|---|
+| 411 | **The hand's selection: drop the orange handles and the dotted box** — "Thick selection indicators faulty at times. Abort this type. Find 'highlighting active sides' kind of simple solution please." Reading: the side a row changes is lit (#329's lighting), no grips drawn | open — sketch round |
+| 412 | **The bar's date popup** — "Popup larger overall"; "Remove time" goes; "drop down for each item"; "size fixed, no movements by change in content" (the box keeps its width whatever the date reads). Okay, 19:31: "Minus moves next to plus, dropdowns just for groupings" — − and + together at the right, a dropdown per group | open |
+| 413 | **A window's three ticks at the end of its column** (Follows the date in the bar · Its neighbours show… · Its disc stays inside the case); "Last two sliders come in their place. All on by default" | open |
+| 414 | **The bar: "1 px gap?"** left of the time box, and "Why? fill with grey, worst colour" at NOW | open — measure |
+| 415 | **A window's font gets its own section and eye** — "Font needs own section & eye" | open |
+| 416 | **A window's sub-tab: "Show" hidden until …**; "Window at 6" loses "Window". Okay, 19:31: hidden until "the tab is picked" — only the picked tab shows its Show | open |
+| 417 | **Positions: the picture as tall as its controls** — the green box from the top rule to the bottom rule, the circle grown to it | open |
+| 418 | **Resize from: Baseline and Ascender out, "from the functions as well"**; Centre · Outer edge · Inner edge stay. Inconsistent with #13 (five anchors): #13 to be read as three | open |
+| 419 | **"Resize Ring From"**: the head reads *Resize Ring From* with the anchor's menu at its right; the row keeps the slider and the number | open |
+
 ## Dial Packer (side product, 19 Oct 2026)
 
 `packer/`; how it works: `packer/README.md`.
