@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.89.12 | 20 Oct 2026 | web | [`da7af03`](https://github.com/duztman/dial-tool/tree/da7af03f37e6e266c758c7632cba6444617e7e03) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/da7af03f37e6e266c758c7632cba6444617e7e03/web/dial-tool.html) | Tonight's twelve small pushes: per-hand Bevel, the date popup as drawn, every menu one look and list, pill switches, the moon alone |
 | 4.89.11 | 20 Oct 2026 | web | [`add4754`](https://github.com/duztman/dial-tool/tree/add4754fa21d3fbd84fe3feb622be69e5cbba242) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/add4754fa21d3fbd84fe3feb622be69e5cbba242/web/dial-tool.html) | a kind's own window shape; the arc and half icons; a note belongs to its row |
 | 4.89.10 | 20 Oct 2026 | web | [`4391854`](https://github.com/duztman/dial-tool/tree/43918549f4aa84887e12b8858f3a286fad0827ba) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/43918549f4aa84887e12b8858f3a286fad0827ba/web/dial-tool.html) | the date popup as Okay drew it; every menu a chevron box with the tool's own list |
 | 4.89.9 | 20 Oct 2026 | web | [`682a742`](https://github.com/duztman/dial-tool/tree/682a74200d0d9bd9aa67b67d3379814bcee2fffe) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/682a74200d0d9bd9aa67b67d3379814bcee2fffe/web/dial-tool.html) | a phone's zoom popup with − +; FIT's own line; Shapes and Shapes width |
