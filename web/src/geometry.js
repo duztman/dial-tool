@@ -34,7 +34,7 @@ export const SKIP_FROM = ["nothing", "markers above", "markers & numerals above"
 export const KNOCK_FROM = ["nothing", "markers above", "markers & numerals above", "everything above"];
 export const FROM_KINDS = [[], ["markers"], ["markers", "numerals", "text"], ["ticks", "markers", "numerals", "band", "text"]];      // a text ring counts with the numerals (#297)
 export const MODES = ["upright", "radial", "radial, auto-flip", "on path"];
-export const ANCHORS = ["centre", "baseline", "ascender", "outer edge", "inner edge"];      // the point of a numeral that sits on its ring's radius (web version, 13 Oct 2026). Only grows at its end (R9). The edges (4.53, #338; Okay, 18 Oct 2026: "Tangent to inner or outer"): every numeral's ink touches the radius from inside, or from outside
+export const ANCHORS = ["centre", "baseline", "ascender", "outer edge", "inner edge", "cap middle"];      // cap middle (#13, beta 5): every label on the middle of the font's capitals, not of its own ink      // the point of a numeral that sits on its ring's radius (web version, 13 Oct 2026). Only grows at its end (R9). The edges (4.53, #338; Okay, 18 Oct 2026: "Tangent to inner or outer"): every numeral's ink touches the radius from inside, or from outside
 export const FROM = ["outer", "middle", "inner"];               // the point of a mark or a band that sits on its ring's radius: its outer end, its middle, its inner end (#257, 4.47). Only grows at its end (R9)
 /** how far a mark's or band's outer edge lies outside the ring's radius: nothing when the radius measures to the outer
  *  end, half its extent from the middle, all of it from the inner end (#257). extent: the mark's length or the band's width. */
@@ -1159,7 +1159,13 @@ function on_path(txt, r, a, t, size) {
  *  always centred. */
 function numeral_dy(ring, txt, size) {
   // baseline and ascender are retired (Okay, 19 Oct 2026, #418: "Remove these two from the functions as well"):
-  // their places in ANCHORS stay (R9) and a ring stored with one measures to the centre
+  // their places in ANCHORS stay (R9) and a ring stored with one measures to the centre.
+  // Cap middle (#13): one height for every label — the middle of the font's capital H (its zero where it has no H) —
+  // so a 1, a 10 and old-style figures share one line instead of each centring its own ink
+  if (ANCHORS[ring.anchor] === "cap middle") {
+    const h = text_path("H", { ...ring, features: {} }, size).bounds() || text_path("0", ring, size).bounds();
+    if (h) return -(h[1] + h[3]) / 2;
+  }
   const b = text_path(txt, ring, size).bounds();
   return b ? -(b[1] + b[3]) / 2 : 0;
 }

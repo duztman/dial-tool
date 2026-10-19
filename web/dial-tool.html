@@ -7158,7 +7158,7 @@ var SKIP_FROM = ["nothing", "markers above", "markers & numerals above", "all ma
 var KNOCK_FROM = ["nothing", "markers above", "markers & numerals above", "everything above"];
 var FROM_KINDS = [[], ["markers"], ["markers", "numerals", "text"], ["ticks", "markers", "numerals", "band", "text"]];
 var MODES = ["upright", "radial", "radial, auto-flip", "on path"];
-var ANCHORS = ["centre", "baseline", "ascender", "outer edge", "inner edge"];
+var ANCHORS = ["centre", "baseline", "ascender", "outer edge", "inner edge", "cap middle"];
 var from_shift = (ring2, extent) => extent * (ring2.from || 0) / 2;
 var HANDS = ["hour", "minute", "second"];
 var HAND_SHAPES = ["baton", "pencil", "sword", "dauphine", "leaf", "arrow", "syringe", "breguet", "lollipop", "file", "disc"];
@@ -8741,6 +8741,10 @@ function on_path(txt2, r, a, t, size) {
   return merge(out);
 }
 function numeral_dy(ring2, txt2, size) {
+  if (ANCHORS[ring2.anchor] === "cap middle") {
+    const h = text_path("H", { ...ring2, features: {} }, size).bounds() || text_path("0", ring2, size).bounds();
+    if (h) return -(h[1] + h[3]) / 2;
+  }
   const b = text_path(txt2, ring2, size).bounds();
   return b ? -(b[1] + b[3]) / 2 : 0;
 }
@@ -14093,8 +14097,8 @@ var mask_says = (merges) => {
 var custom = (name, o = {}) => ({ kind: "custom", name, ...o });
 var RADIUS_ROWS = {
   outer: num2("r", "Outer radius", 0, 25, 0.05, { scope: "ring", menu: { key: "from", title: "What the radius measures to", items: [[0, "Outer"], [1, "Middle"], [2, "Inner"]] } }),
-  numerals: num2("r", "Centre radius", 0, 25, 0.05, { scope: "ring", menu: { key: "anchor", title: "What the radius measures to", items: [[0, "Centre"], [3, "Outer edge"], [4, "Inner edge"]] } })
-  // Baseline and Ascender out (Okay, 19 Oct 2026, #418)      // the edges: tangent (#338, 4.53)
+  numerals: num2("r", "Centre radius", 0, 25, 0.05, { scope: "ring", menu: { key: "anchor", title: "What the radius measures to", items: [[0, "Centre"], [3, "Outer edge"], [4, "Inner edge"], [5, "Cap middle"]] } })
+  // Cap middle (#13, beta 5)      // Baseline and Ascender out (Okay, 19 Oct 2026, #418)      // the edges: tangent (#338, 4.53)
 };
 var radius_row = (R) => RADIUS_ROWS[has_text(R) ? "numerals" : "outer"];
 var SIZE_ROWS = {

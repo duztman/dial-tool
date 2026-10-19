@@ -544,7 +544,7 @@ const custom = (name, o = {}) => ({ kind: "custom", name, ...o });
 // outer end (as always), its middle or its inner end: the same menu, a place in G.FROM.
 const RADIUS_ROWS = {
   outer: num("r", "Outer radius", 0, 25, 0.05, { scope: "ring", menu: { key: "from", title: "What the radius measures to", items: [[0, "Outer"], [1, "Middle"], [2, "Inner"]] } }),
-  numerals: num("r", "Centre radius", 0, 25, 0.05, { scope: "ring", menu: { key: "anchor", title: "What the radius measures to", items: [[0, "Centre"], [3, "Outer edge"], [4, "Inner edge"]] } }),      // Baseline and Ascender out (Okay, 19 Oct 2026, #418)      // the edges: tangent (#338, 4.53)
+  numerals: num("r", "Centre radius", 0, 25, 0.05, { scope: "ring", menu: { key: "anchor", title: "What the radius measures to", items: [[0, "Centre"], [3, "Outer edge"], [4, "Inner edge"], [5, "Cap middle"]] } }),      // Cap middle (#13, beta 5)      // Baseline and Ascender out (Okay, 19 Oct 2026, #418)      // the edges: tangent (#338, 4.53)
 };
 const radius_row = (R) => RADIUS_ROWS[G.has_text(R) ? "numerals" : "outer"];
 // how big one thing of a ring is — its "inner" size, the number in the ring summary: a mark's length (a dot's Ø), a
