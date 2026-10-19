@@ -17,6 +17,7 @@ Pictures: `archive/screens/` — for the night of 14–15 Oct 2026, one screensh
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.85 | 19 Oct 2026 | web | [`b7ae090`](https://github.com/duztman/dial-tool/tree/b7ae0903b4b83370e5b7d0423356cc606f282d9d) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/b7ae0903b4b83370e5b7d0423356cc606f282d9d/web/dial-tool.html) | the shine's three circles; the controller smaller and see-through, LINK between − and +, touch scrubs at once |
 | 4.84 | 19 Oct 2026 | web | [`f57f86d`](https://github.com/duztman/dial-tool/tree/f57f86de0369f8b1e507d06decd2c132bd892474) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/f57f86de0369f8b1e507d06decd2c132bd892474/web/dial-tool.html) | ticks and notes on the controls' column; the font box's eye lowered |
 | 4.83 | 19 Oct 2026 | web | [`1a3aec1`](https://github.com/duztman/dial-tool/tree/1a3aec1f84d9e0c1fbb2edacf071c717069cc9ff) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/1a3aec1f84d9e0c1fbb2edacf071c717069cc9ff/web/dial-tool.html) | the ring of shine: seven soft bands, wide at dawn, crisp at noon; smaller |
 | 4.82 | 19 Oct 2026 | web | [`4642250`](https://github.com/duztman/dial-tool/tree/464225081c952ef2ecad7f7795b854e866991dc6) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/464225081c952ef2ecad7f7795b854e866991dc6/web/dial-tool.html) | the cases as technical drawings; Case and Strap top left; Tiny Preview bottom right; the date without its year |
