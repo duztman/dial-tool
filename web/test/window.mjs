@@ -1703,7 +1703,7 @@ await page.uncheck("#global-out-live-text-Keep-numerals-as-text-in-the-SVG");
     return { pinned: [...p.querySelectorAll("h2")].map((h) => h.textContent).join(), order: rows.map((r) => (r.querySelector("button.main") || {}).id || (r.querySelector("input") || {}).id || r.className).join(" | "),
       pdf: left("#export-pdf"), svg: left("#export-svg"), png: left("#export-png"), label: left(".pinned .row > label"), tick: left(".pinned .check"), lines: rows.map(shadow).join(""), halves: rows.map(half).join(""), below: [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent).join(" · ") };
   });
-  check(e.pinned === "Export a file" && e.order === "export-pdf | export-svg | global-out-live-text-Keep-numerals-as-text-in-the-SVG | export-png | global-out-dpi-dpi-slider | row note under | export-wearos | wearos-name | row note under" && e.pdf === e.svg && e.png === e.pdf && e.pdf > e.label && e.tick === e.svg && e.lines === "211111111" && e.halves === "010100100"      /* a row and its note are one box: no line, half or whole, between them (#420) */ && e.below === "Print · Link to this dial · Settings file · Log · Gallery",
+  check(e.pinned === "Export a file" && e.order === "export-pdf | export-svg | global-out-live-text-Keep-numerals-as-text-in-the-SVG | export-png | global-out-dpi-dpi-slider | row note under | export-wearos | wearos-name | row note under" && e.pdf === e.svg && e.png === e.pdf && e.pdf > e.label && e.tick === e.svg && e.lines === "211111111" && e.halves === "010100100"      /* a row and its note are one box: no line, half or whole, between them (#420) */ && e.below === "Print · A set of files · Link to this dial · Settings file · Log · Gallery",
     `Export a file is pinned: Vector · PDF, SVG under it with its tick tied to it, then PNG on the same column with its dpi under it, then Wear OS's APK with its name under it (4.67); a half line, from the buttons' column, before each nested row, none between a row and its note (the tick, the dpi: ${e.lines} ${e.halves}); below scroll ${e.below}`);
   await shot("4c21-export");
 }
@@ -1774,8 +1774,75 @@ await page.uncheck("#global-out-production-Mono-print-mask");
   check(shown.includes("date number") && !bare.includes("date disc") && !bare.includes("date number") && plate_holes >= 2,
     `What the windows show (#219), off: no disc or number, the window's hole in the plate stays (${bare})`);
   check(all_on !== hidden && ghost === all_on && !markers_drawn, `Hidden rings still cut (#221): a hidden Markers ring knocks the minute ticks out as if shown, and is not drawn (${all_on.length} · ${hidden.length} · ${ghost.length} characters of path)`);
-  check(/cutline|hole/.test(mask) && !/cutline|hole/.test(uncut) && marked.includes("outline") && reg === 4 && inverted.split(" ").filter((r) => !["outline", "registration", "guide"].includes(r)).join() === "inverted" && (text.match(/ f\n/g) || []).length >= 6,
+  check(/cutline|hole/.test(mask) && !/cutline|hole/.test(uncut) && marked.includes("outline") && reg === 4 && inverted.split(" ").filter((r) => !["outline", "registration", "guide"].includes(r)).join() === "inverted" && (text.match(/\nf\n/g) || []).length >= 6,
     `a mask's ticks (#222–#224): cut lines off takes them out (${uncut}); Outline and registration marks: the blank's edge and ${reg} marks; Inverted: one shape, the dial less the marks (${inverted})`);
+}
+{ // three dead ends (R17), beta 5: Diameter's limits (#233), the ring list's pill whenever it has a use (#448), changes kept while time plays (#234)
+  const d0 = await S("S.dial_d");
+  await tab("Dial");
+  await enter_value("#global-dial-d-Diameter", "1000"); await frame();
+  const typed = true;
+  const big = await S("S.dial_d"), said = await page.evaluate(() => { const n = document.querySelector("#preview-note"); return !n.hidden && n.textContent.includes("stops at 300"); });
+  await page.evaluate((d) => window.dial_tool.set_value("global", "dial_d", d), d0); await frame();
+  const pill = await page.evaluate(() => { const t = window.dial_tool, n = t.S.rings.length, keep = t.ring_rows_shown, out = [];
+    t.ring_rows_shown = Math.max(n - 1, 1); t.sync_list_grip(); out.push(t.pinned.classList.contains("ring-scrolls"));      // fewer rows kept than rings: it scrolls, so the pill
+    t.ring_rows_shown = 5; t.sync_list_grip(); out.push(t.pinned.classList.contains("ring-scrolls") === (n > 5));
+    t.ring_rows_shown = keep; t.sync_list_grip(); return [n, ...out]; });
+  await page.evaluate(() => window.dial_tool.play(true));
+  await page.evaluate(() => window.dial_tool.set_value("global", "c_plate", [0.2, 0.4, 0.6, 1]));
+  await page.waitForTimeout(2600);
+  const kept = await page.evaluate(() => JSON.parse(localStorage.getItem("dial-tool-last")).c_plate.join());
+  await page.evaluate(() => window.dial_tool.play(false));
+  await page.evaluate(() => window.dial_tool.undo(-1)); await frame();
+  await tab("Export");      // back where the checks after this one work
+  check(typed && big === 300 && said && pill.slice(1).every(Boolean) && kept === "0.2,0.4,0.6,1",
+    `Diameter typed 1000 stops at ${big} and the preview says so (#233); the ring list's pill shows when fewer rows are kept than its ${pill[0]} rings (#448); a change made while time plays is kept within 2 s (${kept}, #234)`);
+}
+{ // beta 5's functions, block A (Okay's go of 20 Oct 2026, 02:02, his program of 02:19): a unit typed in a length's field (#187),
+  // a slider finer away from its track (#406), undo steps named and listed (#172), am · pm Jump (#401), the thinnest line
+  // in the log (#225), Weight % (#88), a set of files (#171)
+  await tab("Dial");
+  const d0 = await S("S.dial_d");
+  await enter_value("#global-dial-d-Diameter", "1.5in"); await frame();
+  const inch = await S("S.dial_d");
+  await enter_value("#global-dial-d-Diameter", String(d0)); await frame();
+  // the slider: pressed at its middle, then moved 100 px along — once on its track, once 150 px below it
+  const sl = await page.$eval("#global-dial-d-Diameter-slider", (e) => { const r = e.getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; });
+  const slide = async (dy) => { await page.mouse.move(sl[0], sl[1]); await page.mouse.down(); const a = await S("S.dial_d"); await page.mouse.move(sl[0], sl[1] + dy, { steps: 4 }); await page.mouse.move(sl[0] + 100, sl[1] + dy, { steps: 8 }); const b = await S("S.dial_d"); await page.mouse.up(); return b - a; };
+  const near_move = await slide(0), far_move = await slide(150);
+  await page.evaluate((d) => window.dial_tool.set_value("global", "dial_d", d), d0); await frame();
+  // steps named
+  await page.evaluate(() => { const t = window.dial_tool; t.take_step(); t.S.ui_ring = 0; t.set_value("ring", "r", 11.3); t.take_step(); t.set_value("global", "c_plate", [0.3, 0.3, 0.3, 1]); t.take_step(); });
+  await page.click("#history-more");
+  const steps = await page.$$eval("#history-list > *", (l) => l.map((e) => e.textContent));
+  await page.click("#history-list .step:nth-of-type(2)"); await frame();      // the second step back: both undone
+  const after = await S("S.rings[0].r !== 11.3 && S.c_plate[0] !== 0.3");
+  await page.evaluate(() => window.dial_tool.history_open(false));
+  // Weight %
+  const w0 = await S("S.rings.map((r) => r.w)");
+  await page.evaluate(() => window.dial_tool.set_value("global", "ui_weight", 150)); await frame();
+  const w1 = await S("S.rings.map((r) => r.w)");
+  await page.evaluate(() => window.dial_tool.set_value("global", "ui_weight", 100)); await frame();
+  const w2 = await S("S.rings.map((r) => r.w)");
+  // am · pm Jump: at 03:00 the disc stands at noon's place (all am) with Jump, between with it off
+  const jump = await page.evaluate(() => { const t = window.dial_tool; t.S.ui_window = 0; t.set_value("window", "on", true); t.set_value("window", "kind", 2); t.set_time(3 * 3600); t.frame();
+    const area = () => { const n = t.items.find((i) => i.role === "date picture" || i.role === "date number"); return n ? n.path.svg(2).length : 0; };
+    const sweep = area(); t.set_value("window", "jump", true); t.frame(); const jumped = area(); t.set_time(13 * 3600); t.frame(); const pm = area();
+    t.set_value("window", "jump", false); t.set_value("window", "on", false); t.set_time(10 * 3600 + 9 * 60 + 36); return [sweep, jumped, pm]; });
+  await tab("Export");
+  const pdf = await download("#export-pdf"), said = await page.evaluate(() => window.dial_tool.log_lines.slice(-3).join(" "));
+  check(Math.abs(inch - 38.1) < 0.01 && near_move > 0 && far_move > 0 && far_move < near_move * 0.6 && steps.includes("Now") && steps.includes("Plate") && steps.some((x) => x.includes("Radius")) && after
+    && w1.every((v, i) => Math.abs(v - w0[i] * 1.5) < 1e-4) && w2.every((v, i) => Math.abs(v - w0[i]) < 1e-4) && jump[0] !== jump[1] && /thinnest line/.test(said),
+    `typed 1.5in → ${inch} mm (#187); the slider moved ${near_move.toFixed(2)} on its track, ${far_move.toFixed(2)} 150 px below it (#406); the steps named (${steps.join(" · ")}) and a press goes back two (#172); Weight 150 % and back (#88); Jump moves the am · pm disc (${jump.join(" ")}, #401); the log names the thinnest line (#225)`);
+  // a set of files: PDF and a mirrored mask ticked, one press, two files
+  await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "out_f_mirrored", true); });
+  await page.$eval("#export-set", (b) => b.scrollIntoView({ block: "center" }));
+  const got = [];
+  page.on("download", (d) => got.push(d.suggestedFilename()));
+  await page.click("#export-set"); await page.waitForTimeout(2500);
+  page.removeAllListeners("download");
+  await page.evaluate(() => window.dial_tool.set_value("global", "out_f_mirrored", false));
+  check(got.length === 2 && got.some((n) => /-mask-mirrored-/.test(n)) && got.some((n) => !/mask/.test(n)), `a set of files (#171): one press writes the ticked ones (${got.join(", ")})`);
 }
 { // your own dials (4.76, #347), in Versions under undo (#435; Okay, 19 Oct 2026, 23:11: "place this under undo. Icon: dial with two hands. This is versions … 3x grid. 'edit this dial' and others activate on clicks there too. top, there is a compare button"): Save this dial keeps it with a picture in this browser; its card opens it again, or goes
   const open_versions = async () => { if (await page.$eval("#version-list", (l) => l.hidden)) await page.click("#versions"); };

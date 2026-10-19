@@ -58,7 +58,20 @@
   .undopair { display: flex; }
   .undobox { width: var(--control-large); }
   .undobox:first-child { border-radius: var(--round-switch) 0 0 var(--round-switch); }
-  .undobox:last-child { border-left: 0; border-radius: 0 var(--round-switch) var(--round-switch) 0; }
+  .undobox + .undobox { border-left: 0; }
+  .undobox:not(:first-child) { border-radius: 0; }
+  .undobox.historymore { border-radius: 0 var(--round-switch) var(--round-switch) 0; }      /* the steps' chevron closes the row (#172) */
+  .undopair { position: relative; }
+  .historymore[aria-expanded="true"] svg { rotate: 180deg; }
+  /* the steps, named (#172): the guides' list's make (.night), under undo; a step a line, the newest first; the ones redo
+     would bring back faint, over a "Now" line. Function first: its look is to be designed with Okay */
+  .historylist { position: absolute; z-index: 5; top: calc(100% + var(--unit)); left: 0; display: grid; min-width: calc(6 * var(--control-large)); max-height: 60vh; overflow-y: auto; padding: var(--unit) 0;
+    border-radius: var(--round-switch); background: var(--ink); color: var(--white); }
+  .historylist > .step { padding: var(--u1) var(--pop-pad); background: none; color: inherit; text-align: left; white-space: nowrap; }
+  .historylist > .step:hover { background: var(--grey); }
+  .historylist > .step.ahead { opacity: var(--faint); }
+  .historylist > .nowline { padding: var(--u1) var(--pop-pad); border-block: var(--hair) solid var(--grey); color: var(--grey); }
+  .historylist > .quiet { margin: var(--u1) var(--pop-pad); color: var(--grey); }
   /* what stands on the preview is faint, so the dial is what one sees. Three states, all by how
      much shows (opacity; the line by the same share of its colour), so they hold on any backdrop:
        can be pressed    line and what is in it at --faint; whole under a pointer, with the keyboard on it, or open
@@ -80,6 +93,8 @@
   .versionsbox { gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch); }
   .versionlist { position: absolute; top: calc(100% + var(--unit)); left: 0; width: var(--panel-w); max-width: calc(100vw - 2 * var(--canvas-inset)); max-height: var(--list-room); overflow-y: auto; padding: 0 var(--pop-pad); border: var(--hair) solid var(--ink); border-radius: var(--round-switch); background: var(--paper); color: var(--ink); }
   .versionline { display: flex; gap: var(--unit); }
+  #instance-cards a { touch-action: none; }      /* a finger on a card arranges, not scrolls (the list scrolls by its edge) */
+  #instance-cards a.arranging { z-index: 2; opacity: 0.85; cursor: grabbing; }
   /* Compare (#435): the saved dials on the backdrop, in the room the switches leave, placed by compare_place() */
   .compareview { position: absolute; z-index: 2; inset: var(--compare-pad) calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: none; }      /* clear of the two rows of switches at the top and at the foot, the same room over and under, so the block sits on the preview's middle */
   main.comparing { --compare-pad: calc(var(--canvas-inset) + 2 * (var(--control-large) + var(--unit))); background: var(--canvas-fill); }      /* the backdrop is the preview's own picture, hidden with the dial: its colour painted behind */

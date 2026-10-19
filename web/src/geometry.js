@@ -134,6 +134,7 @@ export const WINDOW_BASE = {
   guide: -1,                                       // its guide's colour, as a ring's (#271): a place in GUIDE_COLOURS · -1 = by its place (window_guide) · -2 = none
   follows: true,                                   // a date, day or moon window shows the bar's date; on to start, and for every link (Okay, 19 Oct 2026, 21:09, #413: "All on by default", for old links too)
   names: 0,                                        // a day window following the date: its names' language, a place in moment.js LANGS (EN · TR · DE · FR · IT; 4.62)
+  jump: false,                                     // an am · pm disc jumps at noon and midnight instead of sweeping (#401, beta 5; Okay, 19 Oct 2026, 14:13: "am pm gets a jump function on/off"); off, it sweeps, as before
   neighbours: true,                               // a date or day window shows its disc's places either side of the shown one, where the hole lets them (4.74; the disc sketch D1), in c2
   look: 0,                                         // its picture, a place in PICTURES[its kind] (4.73); 0 = as before
   c2: null, c3: null,                              // its picture's further colours (4.73): a moon's shade · an am · pm half's sun and moon · a band's dawn and dusk; null = the picture's own (PICTURE_TONES)
@@ -142,7 +143,7 @@ export const WINDOW_BASE = {
 };
 const FIRST_WINDOW = { on: "da_on", kind: "da_kind", at: "da_at", r: "da_r", w: "da_w", h: "da_h", round: "da_round", frame: "da_frame",
   clear: "da_clear", text: "da_day", size: "da_size", ink: "da_ink", hour: "da_hour", age: "da_age",
-  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c", guide: "da_guide", tracking: "da_tracking", lang: "da_lang", features: "da_features", at_deg: "da_at_deg", wh_link: "da_wh_link", follows: "da_follows", names: "da_names", physics: "da_physics", look: "da_look", c2: "da_c2", c3: "da_c3", neighbours: "da_neighbours" };
+  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c", guide: "da_guide", tracking: "da_tracking", lang: "da_lang", features: "da_features", at_deg: "da_at_deg", wh_link: "da_wh_link", follows: "da_follows", names: "da_names", physics: "da_physics", look: "da_look", c2: "da_c2", c3: "da_c3", neighbours: "da_neighbours", jump: "da_jump" };
 
 export const DEFAULTS = {
   version: 2,
@@ -165,11 +166,14 @@ export const DEFAULTS = {
   out_cutlines: true,                              // #222: a mask's cut lines (each window's, the centre hole's); off, the mask holds only what is etched
   out_invert: false,                               // #223: a mask inverted inside the dial — toner everywhere but the marks, for sunk marks
   out_marks: false,                                // #224: a mask's blank outline and four registration marks in the page's corners
+  // a set of files in one press (#171; atlas 6.3): which of FILE_SET it writes
+  out_f_pdf: true, out_f_svg: false, out_f_png: false, out_f_mask: false, out_f_mirrored: false, out_f_mask_png: false, out_f_sheet: false,
   out_paper: 0, out_copies: 0, out_gap: 3.0, out_cutline: false,      // a print sheet (4.75, #348): its paper (output.js PAPERS: A4 · Letter · A5), how many (0 = as many as fit), the room between, a cut line round each
   out_dpi: 600.0, out_seconds: 4.0, out_fps: 30.0, out_px: 1080,
   ui_section: 0, ui_ring: 0, ui_hand: 0, ui_preview: 0, ui_window: 0,
   ui_unit: 0,                                      // the unit lengths are shown and typed in: a place in UNITS. Settings stay in mm (R1)
   ui_scale: false,                                 // changing the diameter scales everything on the dial with it (the window's state: not in a link)
+  ui_weight: 100,                                  // Weight % (#88): every width on the dial times this, from the widths as they were when it was last moved; the widths carry it, so it is the window's state, not in a link
   // guides: preview only, never in a file (R5). Five kinds, each with an eye (shown or not) and a colour:
   // a place in GUIDE_COLOURS (R9: a number, never the colour itself). One thickness (screen points) for all;
   // the selected ring's lines are half as thick again. (beta 4.5, 12 Oct 2026)
@@ -186,6 +190,7 @@ export const DEFAULTS = {
   strap: 1, c_strap: [0.29, 0.2, 0.14, 1],      // its strap (4.69, bezels.js STRAPS): 0 none, 1 a leather strap in c_strap, 2 a metal bracelet in the case's metal. Shown only with a case
   bezel: 0,                                        // a case round the dial on the preview (4.66, bezels.js BEZELS): 0 none, 1 diver, 2 pilot, 3 dress, 4 sport. Preview only, like the backdrop (R26)
   date: "",                                        // the day the dial shows, "2026-10-18", set in the bar (4.62; Okay, 18 Oct 2026: "Date best set at the bar … Default from system date"); "" = today, wherever the dial is opened
+  da_jump: false,                                  // … and `jump` (#401, beta 5)
   da_look: 0, da_c2: null, da_c3: null, da_neighbours: true,      // … and `neighbours` (4.74)            // the first window's `look`, `c2`, `c3` (4.73)
   da_physics: true, xray: false,                   // the first window's `physics` · X-ray, every window's disc seen under a veil of the plate, preview only (4.72, #346)
   da_wh_link: false,                               // the first window's width and height linked, as every window's `wh_link` (#358, beta 4.57)
@@ -253,6 +258,17 @@ export function radial_extent(path) {
  *  radius r, to mark a point · circle: radius r. The list only grows at its end (R9). */
 export const GUIDE_MORE = ["line", "crosshair", "circle"];
 export const NOT_GEOMETRY = ["t", "guides", "xray", "bezel", "strap", "c_strap", "wearos_name", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
+/** a set of files (#171): its tick's key, its words, the kind export() writes, and what it writes it as — the colour
+ *  files plain (not a mask, not mirrored), the masks as said; the print sheet as Print says. */
+export const FILE_SET = [
+  ["out_f_pdf", "Dial · PDF", "pdf", { out_production: false, out_mirror: false }],
+  ["out_f_svg", "Dial · SVG", "svg", { out_production: false, out_mirror: false }],
+  ["out_f_png", "Dial · PNG", "png", { out_production: false, out_mirror: false }],
+  ["out_f_mask", "Mask · PDF", "pdf", { out_production: true, out_mirror: false }],
+  ["out_f_mirrored", "Mirrored mask · PDF", "pdf", { out_production: true, out_mirror: true }],
+  ["out_f_mask_png", "Mirrored mask · PNG", "png", { out_production: true, out_mirror: true }],
+  ["out_f_sheet", "Print sheet · PDF", "sheet", {}],
+];
 export const NOT_GEOMETRY_PREFIX = ["c_", "ha_", "out_", "gd_", "sh_"];
 export const GEOMETRY_AFTER_ALL = ["out_hidden_cut"];      // under a quiet prefix, but it changes the rings' shapes (#221)
 
@@ -459,7 +475,9 @@ export const LINK_KEYS = [
   "sh_bevel",               // 4.79: appended; off to start
   "hub", "bulge",           // 4.80: appended; no hub and the leaf as always to start, so every older link looks as before
   "bevel",                  // 4.89.1: appended; on to start, so every older link looks as before
-  "out_window_content", "out_hidden_cut", "out_cutlines", "out_invert", "out_marks",      // beta 5 (#219–#224): appended; each starts as files were, so every older link looks as before
+  "out_window_content", "out_hidden_cut", "out_cutlines", "out_invert", "out_marks",
+  "out_f_pdf", "out_f_svg", "out_f_png", "out_f_mask", "out_f_mirrored", "out_f_mask_png", "out_f_sheet",      // beta 5 (#171): appended; what a set of files holds
+  "jump", "da_jump",        // beta 5 (#401): appended; off to start, the disc sweeps as before      // beta 5 (#219–#224): appended; each starts as files were, so every older link looks as before
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -1491,6 +1509,9 @@ function window_hole(w) {
 /** the hour of the day the time shown is in, 0 to 24, in steps of six minutes: what an am · pm window shows, and
  *  when it has to be drawn again (the disc turns 1.5° in six minutes). */
 export const day_hour = (S) => Math.floor((((S.t % 86400) + 86400) % 86400) / 360) / 10;
+/** …and the hour a window's disc stands at: the day's hour, or with Jump (#401) the middle of its half — at noon the
+ *  am half fills the hole all morning, at midnight the pm half all afternoon and evening (half_disc's turning). */
+export const disc_hour = (S, w) => (w.jump ? (day_hour(S) < 12 ? 12 : 0) : day_hour(S));
 export const shows_day = (S) => windows_of(S).some((w) => w.on && WINDOW_KINDS[w.kind] === "am · pm");
 
 /** the day the dial shows: the bar's date, or today where it is opened (S.date "", 4.62). */
@@ -1531,7 +1552,7 @@ function build_window(S, w, index) {
     const { moon } = moon_parts(w.w, w.age);
     content = opening.copy().difference(moon);
   } else if (kind === "am · pm") {                 // the disc under the half-round hole, turning on its flat side once a day: pm in the picture's colour, am the disc's
-    content = half_disc(w.w, day_hour(S)).night.intersection(opening);
+    content = half_disc(w.w, disc_hour(S, w)).night.intersection(opening);
   }
   else if (kind === "big date") {                 // the tens in the left hole (none before 10), the units in the right (4.74)
     const n = parseInt(w.text, 10), [tens, units] = Number.isFinite(n) ? [n >= 10 ? String(Math.floor(n / 10) % 10) : "", String(n % 10)] : [String(w.text)[0] || "", String(w.text)[1] || ""];
@@ -1581,7 +1602,7 @@ export function window_disc(S, x) {
     return { band: circle(2 * outer).difference(circle(2 * inner)), print, inner, outer, centre: [0, 0], reach: outer, fits: w.physics === false || outer <= room };
   }
   if (kind === "am · pm") {                      // its disc turns on the hole's flat side
-    const { night, r } = half_disc(w.w, day_hour(S)), rho = r + DISC_PAD;
+    const { night, r } = half_disc(w.w, disc_hour(S, w)), rho = r + DISC_PAD;
     const band = put(circle(2 * rho).translate(0, -w.w / 4)), print = put(night.copy());
     const off = put(new Path().rect(-0.001, -w.w / 4 - 0.001, 0.002, 0.002)).bounds(), pv = [(off[0] + off[2]) / 2, (off[1] + off[3]) / 2];
     const reach = Math.hypot(...pv) + rho;
@@ -1610,6 +1631,33 @@ export function build_static(S) {
   const hole = d > 0 ? circle(d) : null;
   return { plate, plate_holed: hole ? plate.difference(hole) : plate, hole, hole_line: hole ? circle(d + 0.1).difference(hole) : null,
     rings: build_rings(S, cut), windows, date: windows[0] || null };
+}
+
+/** the thinnest lines a dial asks for, read from its settings (#225; the guide's reviewers, 15 Oct 2026: "the Export log
+ *  could name the thinnest line of a dial"): every shown ring's mark width (a wedge's at its base; the smallest nudged
+ *  size counted), a band's width, each shown hand's width, each shown window's frame; and every knock-out's clearance,
+ *  the narrowest gap. Numerals and text have no stroke width to read, so they are named, not measured.
+ *  → { lines: [[what, mm]] thinnest first, gaps: [[what, mm]], unmeasured: [ring names] } */
+export function thinnest(S) {
+  const lines = [], gaps = [], unmeasured = [];
+  for (const ring of S.rings) {
+    if (!ring.on) continue;
+    const kind = kind_of(ring), name = ring.name || kind;
+    if (kind === "ticks" || kind === "markers") {
+      const sizes = Object.values(ring.nudge || {}).map((n) => n.s ?? 1);
+      const k = Math.min(1, ...sizes, kind === "markers" && ring.twelve_scale < 1 ? ring.twelve_scale : 1);
+      lines.push([`${name}${SHAPES[ring.shape] === "wedge" ? " (wedge, at its base)" : ""}`, ring.w * k]);
+    } else if (kind === "band") lines.push([name, ring.width]);
+    else unmeasured.push(name);
+    if (ring.knock > 0) gaps.push([`${name}'s clearance`, ring.clear]);
+  }
+  if (S.ha_on) for (const [key, word] of [["ha_hour", "Hour hand"], ["ha_minute", "Minute hand"], ["ha_second", "Seconds hand"]]) {
+    const h = { ...HAND_BASE, ...(S[key] || {}) };
+    if (h.on) lines.push([word, h.w * (h.w_scale || 1)]);
+  }
+  windows_of(S).forEach((w, i) => { if (w.on && w.frame > 0) lines.push([`Window ${i + 1}'s frame`, w.frame]); });
+  const by = (a, b) => a[1] - b[1];
+  return { lines: lines.filter((l) => l[1] > 0).sort(by), gaps: gaps.sort(by), unmeasured };
 }
 
 /** what a mono print mask loses (#220): a ring that lies on a ring below it in another colour. On the dial the two
@@ -1912,7 +1960,13 @@ export const turned = (path, angle) => path.copy().rotate(-angle);
 export const RING_MM = ["r", "len", "w", "width", "clear", "round_out", "round_in", "wall", "size", "twelve_gap"];
 export const HAND_MM = ["len", "w", "tail", "tip", "feature", "counter", "wall", "round", "disc_d", "mark_len", "mark_w", "hub"];
 export const WINDOW_MM = ["r", "w", "h", "round", "frame", "clear"];
-function each_measure(S, visit) {
+function each_measure(S, visit, keys = null) {
+  if (keys) {                                      // a chosen set: Weight's widths (#88)
+    for (const ring of S.rings) for (const key of keys.ring) visit(ring, key);
+    for (const h of HANDS) for (const key of keys.hand) visit(S["ha_" + h], key);
+    for (const w of windows_of(S)) for (const key of keys.window) visit(w, key);
+    return;
+  }
   for (const ring of S.rings) {
     for (const key of RING_MM) visit(ring, key);
     for (const at of Object.keys(ring.nudge).sort()) if (ring.nudge[at].dr) visit(ring.nudge[at], "dr");      // a numeral's own radius ±
@@ -1921,14 +1975,18 @@ function each_measure(S, visit) {
   for (const w of windows_of(S)) for (const key of WINDOW_MM) visit(w, key);
   visit(S, "ha_cap");
 }
-export function measures(S) {
+/** every width on the dial — how thick a thing is, never how long or where (#88, Weight; atlas 6.19): a mark's width
+ *  and a hollow one's wall, a band's width; a hand's width, its wall and its disc's mark; a window's frame. Numerals
+ *  have no stroke width of their own (their font's weight is theirs). */
+export const WEIGHT_KEYS = { ring: ["w", "width", "wall"], hand: ["w", "wall", "mark_w"], window: ["frame"] };
+export function measures(S, keys = null) {
   const out = [];
-  each_measure(S, (d, key) => out.push(d[key]));
+  each_measure(S, (d, key) => out.push(d[key]), keys);
   return out;
 }
-export function set_measures(S, values) {
+export function set_measures(S, values, keys = null) {
   let i = 0;
-  each_measure(S, (d, key) => { d[key] = values[i++]; });
+  each_measure(S, (d, key) => { d[key] = values[i++]; }, keys);
 }
 
 /** the page's side in mm: the dial and its margins. */
