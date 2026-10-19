@@ -61,6 +61,8 @@
   .unitmenu button { justify-content: space-between; }
   .unitmenu button.on { font-weight: 600; }
   .unitmenu button.on .quiet { color: var(--ink); }
+  /* every menu's list (menu_list in app.js): the unit list's look, fixed to the window under or over its menu, scrolling when long */
+  .unitmenu.floating { position: fixed; z-index: 40; top: auto; right: auto; overflow-y: auto; }
 
   /* sections: a sign inside a ring, its name under it */
   .tabs { display: grid; grid-template-columns: repeat(5, 1fr); margin: 0 var(--margin); padding: var(--u4) 0 0; border-top: var(--hair) solid var(--rule); }

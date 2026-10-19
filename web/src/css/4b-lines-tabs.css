@@ -67,5 +67,5 @@
   .form > .showbox + .pane.headless { border-top: 0; padding-top: calc(var(--u4) + 2 * var(--hair)); background: linear-gradient(var(--ink) 0 0) right top / calc(100% - var(--lead)) var(--hair) no-repeat; }
   .handsbar > h2 { grid-column: 2 / span 2; }
   .handsbar > .check { grid-column: 4 / span 2; white-space: nowrap; }
-  .handsbar > select { grid-column: 6 / span 2; }
+  .handsbar > .menubox { grid-column: 6 / span 2; }
 }

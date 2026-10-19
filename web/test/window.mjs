@@ -2201,6 +2201,17 @@ await shot("10-bar");
   check(r.hidden && r.shown && r.lit && r.flat && !r.cap_hour && r.cap_second,
     `a hand's Bevel: hidden at Bevels % 0 (${r.hidden}), shown above (${r.shown}); off, its hand flat (${r.lit} → ${r.flat}); the cap in the seconds hand's picture (${r.cap_second}), not the hour's (${!r.cap_hour})`);
 }
+{ // every menu opens the tool's own list, a press anywhere on its box, never folding its pane (Okay, 20 Oct 2026, 01:05: "clicking 'centre' activates dropdown not collapse"; "the popping up thing on these, styled like mm dropdown. all around the site")
+  const was = await page.evaluate(() => { const t = window.dial_tool; return [t.S.ui_section, t.S.ui_ring]; });
+  await page.evaluate(() => { const t = window.dial_tool; t.S.ui_section = 1; t.show_section(); t.sync_rows(); const p = document.querySelector("#resize-from").closest(".pane"); if (p.classList.contains("folded")) t.fold(t.rows.find((r) => r.el === p), false); });
+  await page.click("#resize-from"); await page.waitForTimeout(100);
+  const open = await page.evaluate(() => { const L = document.querySelector("#menu-list"), box = document.querySelector("#resize-from").closest(".menubox").getBoundingClientRect(), l = L.getBoundingClientRect(); return [L.hidden, L.classList.contains("unitmenu"), Math.round(l.top - box.bottom), l.width >= box.width - 0.5, document.querySelector("#resize-from").closest(".pane").classList.contains("folded"), L.querySelectorAll("button").length]; });
+  await page.click("#menu-list button:nth-child(2)"); await page.waitForTimeout(100);
+  const after = await page.evaluate(() => [document.querySelector("#menu-list").hidden, document.querySelector(".fromwords").textContent, document.querySelector("#resize-from").selectedIndex]);
+  await page.evaluate((w) => { const t = window.dial_tool; t.set_value("ring", t.ring().kind === 2 ? "anchor" : "from", 0); t.S.ui_section = w[0]; t.S.ui_ring = w[1]; t.show_section(); t.sync_rows(); }, was);
+  check(!open[0] && open[1] && open[2] > 0 && open[3] && !open[4] && open[5] === 3 && after[0] && after[2] === 1 && after[1] === (await page.evaluate(() => document.querySelector("#resize-from").options[1].textContent)),
+    `a menu opens the tool's list (the unit box's look) ${open[2]} under its box, as wide, its pane not folded; a choice sets it, says it (${after[1]}) and closes the list`);
+}
 { // the Show box's ticks on their words' middles; the date popup's gaps the bar's own, date to NOW (Okay, 20 Oct 2026, 00:06, two pictures marked: "Why are you breaking things and not understanding me?")
   const r = await page.evaluate(async () => {
     const t = window.dial_tool, S = t.S, was = [S.sh_bevel, S.ui_section];
@@ -2212,7 +2223,7 @@ await shot("10-bar");
     t.date_pop_open(false); t.set_value("global", "sh_bevel", was[0]); S.ui_section = was[1]; t.show_section(); t.sync_rows();
     return { mids, gaps, bar: +(n.left - d.right).toFixed(2) };
   });
-  check(r.mids.length === 2 && r.mids.every((m) => m < 1.5) && r.gaps.every((g) => g === r.bar), `the Show box's two ticks on their words' middles (${r.mids.map((m) => m.toFixed(1)).join(" ")}); the date popup's gaps the bar's, date to NOW (${r.gaps.join(" ")} = ${r.bar})`);
+  check(r.mids.length === 2 && r.mids.every((m) => m < 1.5) && r.gaps.join(" ") === "2 2 4", `the Show box's two ticks on their words' middles (${r.mids.map((m) => m.toFixed(1)).join(" ")}); the date popup's gaps as Okay drew them, 2 between boxes, 4 before − + (${r.gaps.join(" ")}; 20 Oct 2026, 01:05)`);
 }
 { // the showcase's Now (Okay, 15 Oct 2026, 07:36): the hour hand one turn clockwise, the minute hand one anticlockwise, the seconds the short way; halfway through the spin (eased, so half the way)
   const half = await page.evaluate(() => { const t = window.dial_tool, kept = t.show, items = ["hour", "minute", "second"].map((name) => ({ role: "hand", name, angle: 100 }));

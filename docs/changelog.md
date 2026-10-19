@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.89.10 (web version) · 20 Oct 2026
+
+Okay, 01:05: his final drawing of the date popup, and the menus.
+
+- **The date popup as drawn** (#449), measured from his picture: a light ground in the bar's dark frame, the boxes' cells at his widths, 2 between boxes and 4 before − +, values white and semibold; the weekday in the panel's dark type, as wide as the widest weekday so the popup never changes size. Its tokens are specials (`--datepop-*`).
+- **Every menu one look, one list** (#450): a chevron box (`chevron_box()`), and the tool's own list on a press (`menu_list()`, the unit box's look), for every menu in the tool — the browser's own list no longer opens.
+- **A menu's whole box opens it** (#451): Resize from's box no longer folds its pane.
+- **Shapes width last** in Resize Ring (#452).
+
 ## beta 4.89.9 (web version) · 20 Oct 2026
 
 Okay, 00:34.

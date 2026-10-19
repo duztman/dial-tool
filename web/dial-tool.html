@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.89.9 · built 2026-10-19 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.89.10 · built 2026-10-19 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -219,10 +219,12 @@
        measures (--margin, --eye, --gap, --col) and sizes of things (heights, widths), which no scale governs. */
 
     /* asked for by Okay */
+    /* the bar's date popup, as measured from Okay's final drawing (20 Oct 2026, 01:05: "all else is pixel perfect. gaps, placements within blocks, block sizes") */
+    --datepop-ground: #BFBFBF;                     /* its light ground */
+    --datepop-pad: 8px; --datepop-lead: 10px;      /* inside its frame round the boxes · before the weekday */
+    --datepop-gap: 2px; --datepop-steps-gap: 4px;  /* between two boxes · before − + */
+    --datepop-day: 30px; --datepop-month: 39px; --datepop-year: 44px; --datepop-chev: 16px;      /* each cell's inside: the day's, the month's, the year's value; a ⌄ */
     --sheet-edge: 7px;                             /* a phone's sheets stand this far in from the screen's sides and foot (Okay, 19 Oct 2026, 21:18: "padding from all sides except top"; 21:26: "increase … to 7") */
-    --datepop-in: calc(var(--unit) - 2px);        /* inside the date popup's boxes, from the box's edge to its value: a unit less 2 (Okay, 20 Oct 2026, 00:17: "The gaps within boxes inside popup -2px") */
-    --datepop-lead: calc(var(--u2) + 5px);       /* …and at its left, before the weekday: 3 more (Okay, 20 Oct 2026, 00:17: "Hr padding before day +3px") */
-    --datepop-pad: calc(var(--u2) + 2px);      /* round the bar's date popup's boxes: a unit and 2 more; between its boxes the bar's own gap, a unit (Okay, 19 Oct 2026, 23:53: "2 more pixels padding to the whole popup box. meaning: in between boxes stay as bottom bar date now width") */
     --control-s: calc(0.75 * var(--control));      /* a quiet button at three quarters: Lang. and Change… in the font box (Okay, 14 Oct 2026: "scale down to 75%") */
     --t-xxs: 10px;                                 /* a fifth type size, the smallest: the words in the font sheet's legend, and the font box's quiet buttons (Okay, 14 Oct 2026) */
     --t-time: 20px;                                /* a sixth, for the bar's time alone: larger than --t-l (Okay, 14 Oct 2026, 23:55: "larger digital time"; "Barlow larger, don't worry optically will be better") */
@@ -485,6 +487,8 @@
   .unitmenu button { justify-content: space-between; }
   .unitmenu button.on { font-weight: 600; }
   .unitmenu button.on .quiet { color: var(--ink); }
+  /* every menu's list (menu_list in app.js): the unit list's look, fixed to the window under or over its menu, scrolling when long */
+  .unitmenu.floating { position: fixed; z-index: 40; top: auto; right: auto; overflow-y: auto; }
 
   /* sections: a sign inside a ring, its name under it */
   .tabs { display: grid; grid-template-columns: repeat(5, 1fr); margin: 0 var(--margin); padding: var(--u4) 0 0; border-top: var(--hair) solid var(--rule); }
@@ -623,7 +627,7 @@
   .form > .showbox + .pane.headless { border-top: 0; padding-top: calc(var(--u4) + 2 * var(--hair)); background: linear-gradient(var(--ink) 0 0) right top / calc(100% - var(--lead)) var(--hair) no-repeat; }
   .handsbar > h2 { grid-column: 2 / span 2; }
   .handsbar > .check { grid-column: 4 / span 2; white-space: nowrap; }
-  .handsbar > select { grid-column: 6 / span 2; }
+  .handsbar > .menubox { grid-column: 6 / span 2; }
 }
 
 /* rows: a setting on the six columns, nested rows, notes */
@@ -683,7 +687,7 @@
   .labelmenu { position: relative; flex: none; display: grid; place-items: center; width: var(--menu-box); height: var(--menu-box); border: var(--hair) solid var(--grey); background: var(--field); color: var(--ink); }
   .labelmenu:hover { border-color: var(--ink); }
   .labelmenu > select { position: absolute; inset: calc(-1 * var(--reach-y, 0px)); width: calc(100% + 2 * var(--reach-y, 0px)); height: calc(100% + 2 * var(--reach-y, 0px)); opacity: 0; cursor: pointer; }      /* under a finger the unseen menu is larger than its box (reach) */
-  .row > :is(select, .segs, .colour, .single, .tools, .picks, .swatches), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
+  .row > :is(select, .menubox, .segs, .colour, .single, .tools, .picks, .swatches), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
   .row > :is(.check, .wide), .row.note > .quiet { grid-column: 1 / -1; }
   .row > .setnote { grid-column: 1 / -1; margin: var(--unit) 0 0; }      /* what a settings file is, over its buttons (#279) */
   .row > .warn { grid-column: 3 / -1; margin: var(--u1) 0 var(--unit); font-size: var(--t-s); color: var(--ink); }      /* the warning under a button that replaces the whole dial (Reset): in ink, not quiet, on the controls' column (Okay, 16 Oct 2026, 10:46) */      /* a tick and its words start at the left edge */
@@ -1027,6 +1031,7 @@
      touching, the number box's hairline */
   .menubox { position: relative; display: flex; height: var(--control); border: var(--hair) solid var(--rule); background: var(--field); font-size: var(--t-s); }
   .menubox > .v { flex: 1 1 0; display: grid; align-items: center; justify-content: end; padding: 0 var(--u1); }
+  .menubox.words > .v { justify-content: start; min-width: 0; padding: 0 var(--u2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }      /* a choice in words reads from the left (Outer, Arabic, Smooth) */
   .menubox > .arrow { flex: none; display: grid; place-items: center; width: var(--pos-step); border-left: var(--hair) solid var(--rule); }
   .menubox > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }      /* the browser's own list, unseen over the box */
   .menubox > input { flex: 1 1 0; min-width: 0; height: 100%; padding: 0 var(--u1); border: 0; text-align: right; font-size: var(--t-s); }
@@ -1069,9 +1074,8 @@
   /* Resize Ring from …: on the heading's line, "from" in plain type on the controls' column, then a box saying what the
      radius measures to, stretched to the margin, the rows' boxed arrow at its right end (Okay, 19 Oct 2026, #419) */
   .pane > .headcontrol.fromwide { display: flex; align-items: center; gap: var(--gap); }
-  .fromwide .frombox { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; border: var(--hair) solid var(--grey); background: var(--field); padding-left: var(--u2); }
+  .fromwide .menubox { flex: 1; min-width: 0; }      /* stretched to the margin (#419) */
   .fromwide .fromwords { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .fromwide .labelmenu { border-width: 0 0 0 var(--hair); }
 }
 
 /* fonts: the font box, the font sheet, stickers and their legend */
@@ -1663,33 +1667,33 @@
   .bar .lead .timebox .date { box-sizing: content-box; display: grid; grid-template-rows: repeat(2, var(--date-line)); align-content: center; justify-items: center; height: calc(var(--bar-control) - 2 * var(--hair)); padding: 0 var(--u2); border: var(--hair) solid var(--bar-light); border-left: 0; background: none; color: var(--bar-light); font: 600 var(--t-date)/var(--date-line) var(--date-face); font-variant-numeric: tabular-nums; letter-spacing: var(--date-track); }
   .bar .lead .timebox .date:is(:hover, [aria-expanded="true"]) { background: var(--bar-field); }      /* lit while its popup is open (Okay, 19 Oct 2026, 23:11: "date stays on when popup's on") */
   .bar .datepick { position: absolute; left: 0; bottom: 0; width: 1px; height: 1px; padding: 0; border: 0; background: none; color: transparent; opacity: 0; pointer-events: none; }
-  /* a popup on the bar (barpop): the date's (#402, #412, #432) and, on a phone, the zoom's (#445). The date's rises from its box, the bar's controls in miniature — the panel's own
-     menus and number box, in the dark (Okay, 19 Oct 2026, 23:46: "imagine this is exactly how main menu thing works in
-     dark and a little stylized"). Its ground the date's lit tone; on it the weekday, then day · month · year as chevron
-     boxes (the value's box and a ⌄ box, touching) and − + touching, each box the bar's dark with the bar's hairline;
-     the panel's type at its size ("remove barlow … our regular text normal size"), heights a control's. Each part as
-     wide as its widest value, so nothing moves when the date changes ("size fixed, no movements by change in content").
-     A press on the day opens the system's picker */
-  .bar .barpop { position: absolute; z-index: 7; left: 50%; bottom: calc(100% + var(--u2)); translate: -50% 0; width: max-content; padding: var(--datepop-pad); padding-left: var(--datepop-lead); border: var(--hair) solid var(--bar-light); border-radius: var(--round-small); background: var(--bar-field); color: var(--bar-ink); font: var(--t-m)/1 var(--sans); font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: var(--shadow); }
-  .bar .barpop .popline { display: flex; align-items: center; gap: var(--u2); height: var(--control); }      /* the gaps the bar's own: the date's box to NOW's */
-  .bar .barpop .popword { color: var(--bar-ink); text-align: center; }
-  .bar .barpop .weekday { width: 3.4ch; text-align: left; }
-  .bar .barpop .popgroup { display: inline-flex; align-items: stretch; height: 100%; border: var(--hair) solid var(--bar-light); background: var(--bar); }
-  .bar .barpop .popgroup .popword { display: grid; place-items: center; padding: 0 var(--datepop-in); }
+  /* a popup on the bar (barpop): the date's (#402, #412, #432) and, on a phone, the zoom's (#445). Okay's drawing,
+     final (20 Oct 2026, 01:05: "popup drawing and final decisions made in photoshop. other than tue (font rendering)
+     which should be default dark interface text, all else is pixel perfect. gaps, placements within blocks, block sizes"),
+     measured from it: a light ground framed by the bar's dark; inside, 8 round and 10 before the weekday; the weekday in
+     the panel's dark type; the boxes the bar's dark, a control high, the bar's light hairline; their values white and
+     semibold, each cell its drawn width (day 30, month 39, year 44, ⌄ 16); 2 between boxes, 4 before − +; − and + a
+     control wide each. A press on a value opens its menu; the day's word opens the system's picker */
+  .bar .barpop { position: absolute; z-index: 7; left: 50%; bottom: calc(100% + var(--u2)); translate: -50% 0; width: max-content; padding: var(--datepop-pad); padding-left: var(--datepop-lead); border: var(--hair) solid var(--bar); border-radius: var(--round-small); background: var(--datepop-ground); color: var(--ink); font: var(--t-m)/1 var(--sans); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; box-shadow: var(--shadow); }
+  .bar .barpop .popline { display: flex; align-items: center; gap: var(--datepop-gap); height: var(--control); }
+  .bar .barpop .weekday { margin-right: calc(var(--datepop-pad) - var(--datepop-gap)); color: var(--ink); }      /* the weekday, then 8 to the day's box */
+  .bar .barpop .popgroup { position: relative; display: inline-flex; align-items: stretch; height: 100%; border: var(--hair) solid var(--bar-light); background: var(--bar); }
+  .bar .barpop .popgroup .popword { display: grid; place-items: center; padding: 0; color: var(--bar-ink); font-weight: 600; }
   .bar .barpop .popgroup:hover { background: var(--bar-field); }
-  .bar .barpop .pop-day .popword { width: calc(2ch + 2 * var(--datepop-in)); }
-  .bar .barpop .pop-month .popword { width: calc(3.4ch + 2 * var(--datepop-in)); }
-  .bar .barpop .pop-year .popword { width: calc(4ch + 2 * var(--datepop-in)); }
-  .bar .barpop .labelmenu { height: 100%; border-width: 0 0 0 var(--hair); border-color: var(--bar-light); background: none; color: var(--bar-ink); }
-  .bar .barpop .popsteps { display: flex; height: 100%; }
-  .bar .barpop .popstep { display: grid; place-items: center; width: var(--control); height: 100%; color: var(--bar-ink); border: var(--hair) solid var(--bar-light); background: var(--bar); }
-  .bar .barpop .popstep + .popstep { border-left: 0; }
+  .bar .barpop .pop-day .popword { width: var(--datepop-day); }
+  .bar .barpop .pop-month .popword { width: var(--datepop-month); }
+  .bar .barpop .pop-year .popword { width: var(--datepop-year); }
+  .bar .barpop .popgroup .labelmenu { position: static; }      /* the menu unseen over the whole box: a press on the value opens its list too */
+  .bar .barpop .labelmenu { width: calc(var(--datepop-chev) + var(--hair)); height: 100%; border-width: 0 0 0 var(--hair); border-color: var(--bar-light); background: none; color: var(--bar-ink); }
+  .bar .barpop .popsteps { display: flex; height: 100%; margin-left: calc(var(--datepop-steps-gap) - var(--datepop-gap)); }
+  .bar .barpop .popstep { display: grid; place-items: center; width: calc(var(--control) + 3 * var(--hair)); height: 100%; color: var(--bar-ink); border: var(--hair) solid var(--bar-light); background: var(--bar); }      /* − 27 inside, + 26: as drawn */
+  .bar .barpop .popstep + .popstep { width: calc(var(--control) + var(--hair)); border-left: 0; }
   .bar .barpop .popstep:hover { background: var(--bar-field); }
   /* the zoom's, on a phone (Okay, 20 Oct 2026, 00:34: "Zoom popup has plus minus in the tooltip with note. On mobile"):
      the note how to zoom, then − and +; its right edge on FIT's, the screen's edge being near */
   .bar .zoomwell { position: relative; display: flex; align-items: center; gap: var(--gap); }      /* the group's own gap, as before it was wrapped */
   .bar .barpop.zoompop { left: auto; right: 0; translate: none; }
-  .bar .zoompop .popword { color: var(--bar-ink); padding-right: var(--u2); }
+  .bar .zoompop .popword { color: var(--ink); padding-right: var(--u2); }
   /* NOW: capitals, at AM · PM's size (Okay: "Now uppercase and in pm's font size which grows 1px"); drawn as the bar's
      other boxes are — the light outline, the word in the same light, the bar's field under a pointer (Okay, 19 Oct 2026,
      #414: "Why? fill with grey, worst colour") */
@@ -6292,7 +6296,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.89.9";
+var VERSION = "beta 4.89.10";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -11148,6 +11152,17 @@ var menu_arrow = (select) => {
   return arrow;
 };
 var info = (text, o = {}) => ({ kind: "note", text, ...o });
+var chevron_box = (select, words = true) => {
+  const shown = el("span", { className: "v" }), arrow = el("span", { className: "arrow" });
+  arrow.innerHTML = icon(SIGNS.down);
+  const box2 = el("span", { className: "menubox" + (words ? " words" : "") }, shown, arrow, select);
+  const sync = () => {
+    const o = select.options[select.selectedIndex];
+    shown.textContent = o ? o.textContent : "";
+  };
+  select.addEventListener("change", sync);
+  return { box: box2, sync };
+};
 var MERGES = /* @__PURE__ */ new WeakMap();
 var MERGE_WAIT = 400;
 var merges_of = (app) => {
@@ -11308,13 +11323,13 @@ var ROWS = {
     custom("resize_from", { head: true, text: "Resize ring from" }),
     num2("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
     num2("w", "\xD8", 0.02, 5, 0.01, { show: marks_with("dot"), id: "ring-w-dot" }),
-    num2("w", "Shapes width", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "file"), id: "ring-w-resize" }),
-    // the Shapes pane's Width, here too (Okay, 20 Oct 2026, 00:34: "Replicate the same shapes-size button on resize rings but call it shapes width")
     num2("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),
     // a numeral's size stays in the font box, among the type's settings (and in the size button's popup)
     { ...RADIUS_ROWS.outer, menu: null, text: "Radius", show: kind_in("ticks", "markers", "band") },
     // its menu is on the heading's line (#419)
     { ...RADIUS_ROWS.numerals, menu: null, text: "Radius", id: "ring-r-text", show: with_text },
+    num2("w", "Shapes width", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "file"), id: "ring-w-resize" }),
+    // the Shapes pane's Width, here too (Okay, 20 Oct 2026, 00:34: "Replicate the same shapes-size button on resize rings but call it shapes width"; 01:05: "shapes width to the end")
     hdr("Sector colours", { folded: true, show: (R) => kind_of(R) === "band" && positions_of(R).length > 1 }),
     custom("sectors", { show: (R) => kind_of(R) === "band" && positions_of(R).length > 1 }),
     // what one mark is comes first (Okay, 13 Oct 2026: "moves up to the top"), then where the marks are
@@ -11759,6 +11774,13 @@ var DialTool = class _DialTool {
       document.addEventListener("keydown", () => {
         document.documentElement.dataset.press = "key";
       }, true);
+      const menu_press = (e) => {
+        const select = e.target instanceof HTMLSelectElement ? e.target : null;
+        if (!select || select.disabled || !window.dial_tool || e.type === "mousedown" && e.button !== 0) return;
+        e.preventDefault();
+        if (e.type === "pointerdown") window.dial_tool.menu_list(select);
+      };
+      for (const kind of ["pointerdown", "mousedown", "touchstart"]) document.addEventListener(kind, menu_press, { capture: true, passive: false });
       document.addEventListener("pointerover", (e) => {
         const t = tipped(e);
         if (window.dial_tool) {
@@ -12659,6 +12681,63 @@ var DialTool = class _DialTool {
     return (mm * u[2]).toFixed(Math.max(0, places + u[3]));
   }
   // thou takes a decimal away: never fewer than none
+  /** a menu's list (menu_press): its choices as the unit box's list is drawn (.unitmenu), under the menu's box — over it
+   *  when the room is above — at least as wide, scrolled to the chosen one. A choice sets the menu and tells it, as the
+   *  browser's list would (a change event); a press elsewhere or Escape puts it away. One list for every menu (R34). */
+  menu_list(select) {
+    let list = this.menus_list;
+    if (!list) {
+      list = this.menus_list = el("div", { className: "unitmenu floating", id: "menu-list", hidden: true });
+      list.setAttribute("role", "listbox");
+      document.body.append(list);
+      this.menus_away = (e) => {
+        if (!list.contains(e.target) && e.target !== this.menus_for) this.menu_list_close();
+      };
+      list.onkeydown = (e) => {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          const s = this.menus_for;
+          this.menu_list_close();
+          if (s) s.focus();
+        }
+      };
+    }
+    if (!list.hidden && this.menus_for === select) return this.menu_list_close();
+    this.menus_for = select;
+    const items = [...select.options].filter((o) => !o.hidden && !o.disabled).map((o) => {
+      const b = el("button", { type: "button", role: "option", className: o.selected ? "on" : "", textContent: o.textContent });
+      b.setAttribute("aria-selected", String(o.selected));
+      b.onclick = () => {
+        this.menu_list_close();
+        if (select.value !== o.value) {
+          select.value = o.value;
+          select.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      };
+      return b;
+    });
+    list.replaceChildren(...items);
+    list.hidden = false;
+    const u = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit"));
+    const box2 = (select.closest(".menubox, .popgroup, .casebox, .strapkind, .menulabel") || select.parentElement || select).getBoundingClientRect();
+    const room_below = innerHeight - box2.bottom, room_above = box2.top, up = room_below < Math.min(list.scrollHeight, 240) && room_above > room_below;
+    list.style.minWidth = `${Math.round(box2.width)}px`;
+    list.style.maxHeight = `${Math.floor((up ? room_above : room_below) - 2 * u)}px`;
+    list.style.left = `${Math.round(Math.max(u, Math.min(box2.left, innerWidth - list.offsetWidth - u)))}px`;
+    list.style.top = up ? "" : `${Math.round(box2.bottom + u)}px`;
+    list.style.bottom = up ? `${Math.round(innerHeight - box2.top + u)}px` : "";
+    const on = list.querySelector(".on");
+    if (on) {
+      list.scrollTop = on.offsetTop - (list.clientHeight - on.offsetHeight) / 2;
+      on.focus({ preventScroll: true });
+    }
+    document.addEventListener("pointerdown", this.menus_away, true);
+  }
+  menu_list_close() {
+    if (this.menus_list) this.menus_list.hidden = true;
+    this.menus_for = null;
+    if (this.menus_away) document.removeEventListener("pointerdown", this.menus_away, true);
+  }
   unit_box() {
     const menu = el("div", { className: "unitmenu", id: "unit-menu", hidden: true });
     menu.setAttribute("role", "menu");
@@ -13078,7 +13157,13 @@ var DialTool = class _DialTool {
     this.date_pop_sync = () => {
       if (!this.date_pop || this.date_pop.hidden) return;
       const d = shown(), y = d.getFullYear(), m = d.getMonth(), last = new Date(y, m + 1, 0).getDate();
-      weekday.textContent = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d.getDay()];
+      const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      weekday.textContent = DAYS[d.getDay()];
+      if (!weekday.style.width) {
+        const pen2 = document.createElement("canvas").getContext("2d"), c = getComputedStyle(weekday);
+        pen2.font = `${c.fontWeight} ${c.fontSize} ${c.fontFamily}`;
+        weekday.style.width = Math.ceil(Math.max(...DAYS.map((x2) => pen2.measureText(x2).width))) + "px";
+      }
       if (day.select.options.length !== last) day.select.replaceChildren(...Array.from({ length: last }, (_, i2) => el("option", { value: i2 + 1, textContent: i2 + 1 })));
       if (+(year.select.options[0] || {}).value !== y - 50) year.select.replaceChildren(...Array.from({ length: 101 }, (_, i2) => el("option", { value: y - 50 + i2, textContent: y - 50 + i2 })));
       day.select.value = d.getDate();
@@ -13932,9 +14017,11 @@ var DialTool = class _DialTool {
       const select = el("select", { id });
       row.items.forEach((name, i2) => select.append(el("option", { value: i2, textContent: name })));
       select.onchange = () => set(+select.value);
-      wrap.append(el("label", { htmlFor: id, textContent: row.text }), select);
+      const menu = chevron_box(select);
+      wrap.append(el("label", { htmlFor: id, textContent: row.text }), menu.box);
       out.refresh = (T) => {
         select.value = T[row.key];
+        menu.sync();
       };
     }
     if (row.kind === "pick") {
@@ -14571,10 +14658,12 @@ var DialTool = class _DialTool {
     const motion = el("select", { id: "global-ha-beat-Motion", title: "How the seconds hand moves", ariaLabel: "Motion" });
     BEATS.forEach((b, i2) => motion.append(el("option", { value: i2, textContent: b[0] })));
     motion.onchange = () => this.set_value("global", "ha_beat", +motion.value);
-    wrap.append(el("h2", { textContent: "All hands" }), el("label", { className: "check", htmlFor: tick2.id }, tick2, " Show hands"), motion);
+    const motion_box = chevron_box(motion);
+    wrap.append(el("h2", { textContent: "All hands" }), el("label", { className: "check", htmlFor: tick2.id }, tick2, " Show hands"), motion_box.box);
     out.refresh = (S) => {
       tick2.checked = Boolean(S.ha_on);
       motion.value = S.ha_beat;
+      motion_box.sync();
     };
   }
   /** Reset: the opener back, every setting — the guide's First dial (opener.js). It replaces the whole dial, so it
@@ -14584,13 +14673,12 @@ var DialTool = class _DialTool {
    *  Numerals: Centre · Outer edge · Inner edge; marks and bands: Outer · Middle · Inner. */
   row_resize_from(wrap, out) {
     wrap.className = "row";
-    const words = el("span", { className: "fromwords" });
     const select = el("select", { id: "resize-from", title: "What the radius measures to", ariaLabel: "Resize ring from" });
-    const arrow = menu_arrow(select);
     let menu = null;
     select.onchange = () => this.set_value("ring", menu.key, +select.value);
-    const box2 = el("span", { className: "frombox" }, words, arrow);
-    wrap.append(el("span"), el("span", { className: "fromwide" }, el("span", { className: "fromword", textContent: "from" }), box2));
+    const chev = chevron_box(select), words = chev.box.querySelector(".v");
+    words.classList.add("fromwords");
+    wrap.append(el("span"), el("span", { className: "fromwide" }, el("span", { className: "fromword", textContent: "from" }), chev.box));
     out.refresh = (R) => {
       const now = radius_row(R).menu;
       if (now !== menu) {
@@ -15535,8 +15623,9 @@ var DialTool = class _DialTool {
       this.sync_rows();
     };
     const word = el("label", { htmlFor: "nudge-pick", textContent: "Numeral" }), reset = el("button", { type: "button", className: "btn", id: "nudge-reset", textContent: "Reset this numeral" });
+    const pick_box = chevron_box(pick2);
     wrap.append(
-      el("div", { className: "row pop" }, word, pick2),
+      el("div", { className: "row pop" }, word, pick_box.box),
       el("div", { className: "row" }, el("span"), Object.assign(reset, { onclick: () => {
         const all = { ...this.ring().nudge };
         delete all[this.nudge_at];
@@ -15559,6 +15648,7 @@ var DialTool = class _DialTool {
         pick2.dataset.items = want;
       }
       pick2.value = this.nudge_at;
+      pick_box.sync();
     };
   }
   // ── fonts: the Type group shows the ring's font; the list of all fonts is a sheet of its own ──

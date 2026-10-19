@@ -492,6 +492,17 @@ const hdr = (text, o = {}) => ({ kind: "hdr", text, ...o });
  *  Resize Ring from's box (#419): one drawing for both (R34) */
 const menu_arrow = (select) => { const arrow = el("span", { className: "labelmenu" }, select); arrow.insertAdjacentHTML("afterbegin", icon(`<path d="M3.25 4.75L6.25 7.75L9.25 4.75" ${sw(SLANT)}/>`, 12)); return arrow; };
 const info = (text, o = {}) => ({ kind: "note", text, ...o });
+/** a menu as a chevron box (R15; Okay, 20 Oct 2026, 01:05: "apply universal style to 'arabic like' drop downs"): the
+ *  value's box saying the choice, a ⌄ box beside it, the menu unseen over both, so a press anywhere on it opens the list.
+ *  words: a choice in words, set from the left (a number sits at the right). → { box, sync } — sync after the value moves */
+const chevron_box = (select, words = true) => {
+  const shown = el("span", { className: "v" }), arrow = el("span", { className: "arrow" });
+  arrow.innerHTML = icon(SIGNS.down);
+  const box = el("span", { className: "menubox" + (words ? " words" : "") }, shown, arrow, select);
+  const sync = () => { const o = select.options[select.selectedIndex]; shown.textContent = o ? o.textContent : ""; };
+  select.addEventListener("change", sync);
+  return { box, sync };
+};
 /** the rings a mono print mask loses (G.mask_merges), worked out once per build of the dial's still parts. It takes
  *  up to 200 ms on a busy dial (measured 19 Oct 2026: World time 195), so it waits until the dial has been still for
  *  MERGE_WAIT, then the panel is synced again; meanwhile the last answer stands */
@@ -643,10 +654,10 @@ const ROWS = {
     custom("resize_from", { head: true, text: "Resize ring from" }),
     num("len", "Length", 0.05, 10, 0.05, { show: marks_with("bar", "wedge", "file") }),
     num("w", "Ø", 0.02, 5, 0.01, { show: marks_with("dot"), id: "ring-w-dot" }),
-    num("w", "Shapes width", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "file"), id: "ring-w-resize" }),      // the Shapes pane's Width, here too (Okay, 20 Oct 2026, 00:34: "Replicate the same shapes-size button on resize rings but call it shapes width")
     num("width", "Band width", 0.02, 25, 0.05, { show: kind_in("band") }),      // a numeral's size stays in the font box, among the type's settings (and in the size button's popup)
     { ...RADIUS_ROWS.outer, menu: null, text: "Radius", show: kind_in("ticks", "markers", "band") },      // its menu is on the heading's line (#419)
     { ...RADIUS_ROWS.numerals, menu: null, text: "Radius", id: "ring-r-text", show: with_text },
+    num("w", "Shapes width", 0.02, 5, 0.01, { show: marks_with("bar", "wedge", "file"), id: "ring-w-resize" }),      // the Shapes pane's Width, here too (Okay, 20 Oct 2026, 00:34: "Replicate the same shapes-size button on resize rings but call it shapes width"; 01:05: "shapes width to the end")
     hdr("Sector colours", { folded: true, show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
     custom("sectors", { show: (R) => G.kind_of(R) === "band" && G.positions_of(R).length > 1 }),
     // what one mark is comes first (Okay, 13 Oct 2026: "moves up to the top"), then where the marks are
@@ -1070,6 +1081,16 @@ class DialTool {
       // how the last press came: a finger (or pen) or a mouse, and a key — a tap leaves no focus ring (#153)
       document.addEventListener("pointerdown", (e) => { document.documentElement.dataset.press = e.pointerType === "mouse" ? "mouse" : "touch"; }, true);
       document.addEventListener("keydown", () => { document.documentElement.dataset.press = "key"; }, true);
+      // every menu opens the tool's own list, not the browser's (Okay, 20 Oct 2026, 01:05: "the popping up thing on
+      // these, styled like mm dropdown. all around the site"): a press on a menu is caught before the browser opens its
+      // own, and the list (menu_list) stands under the menu's box. The keyboard keeps the browser's (Space, arrows)
+      const menu_press = (e) => {
+        const select = e.target instanceof HTMLSelectElement ? e.target : null;
+        if (!select || select.disabled || !window.dial_tool || (e.type === "mousedown" && e.button !== 0)) return;
+        e.preventDefault();
+        if (e.type === "pointerdown") window.dial_tool.menu_list(select);      // mousedown and touchstart only kept from opening the browser's
+      };
+      for (const kind of ["pointerdown", "mousedown", "touchstart"]) document.addEventListener(kind, menu_press, { capture: true, passive: false });
       document.addEventListener("pointerover", (e) => { const t = tipped(e); if (window.dial_tool) { if (t && e.pointerType !== "touch") window.dial_tool.tag_show(t); else window.dial_tool.tag_hide(); } });
       document.addEventListener("focusin", (e) => { const t = tipped(e); if (t && window.dial_tool && t.matches(":focus-visible") && document.documentElement.dataset.press !== "touch") window.dial_tool.tag_show(t); });
       document.addEventListener("focusout", () => { if (window.dial_tool) window.dial_tool.tag_hide(); });
@@ -1814,6 +1835,46 @@ class DialTool {
   /** a length in mm → the text of it in the chosen unit. */
   in_unit(mm, places) { const u = this.unit(); return (mm * u[2]).toFixed(Math.max(0, places + u[3])); }      // thou takes a decimal away: never fewer than none
 
+  /** a menu's list (menu_press): its choices as the unit box's list is drawn (.unitmenu), under the menu's box — over it
+   *  when the room is above — at least as wide, scrolled to the chosen one. A choice sets the menu and tells it, as the
+   *  browser's list would (a change event); a press elsewhere or Escape puts it away. One list for every menu (R34). */
+  menu_list(select) {
+    let list = this.menus_list;
+    if (!list) {
+      list = this.menus_list = el("div", { className: "unitmenu floating", id: "menu-list", hidden: true });
+      list.setAttribute("role", "listbox");
+      document.body.append(list);
+      this.menus_away = (e) => { if (!list.contains(e.target) && e.target !== this.menus_for) this.menu_list_close(); };
+      list.onkeydown = (e) => { if (e.key === "Escape") { e.preventDefault(); const s = this.menus_for; this.menu_list_close(); if (s) s.focus(); } };
+    }
+    if (!list.hidden && this.menus_for === select) return this.menu_list_close();
+    this.menus_for = select;
+    const items = [...select.options].filter((o) => !o.hidden && !o.disabled).map((o) => {
+      const b = el("button", { type: "button", role: "option", className: o.selected ? "on" : "", textContent: o.textContent });
+      b.setAttribute("aria-selected", String(o.selected));
+      b.onclick = () => { this.menu_list_close(); if (select.value !== o.value) { select.value = o.value; select.dispatchEvent(new Event("change", { bubbles: true })); } };
+      return b;
+    });
+    list.replaceChildren(...items);
+    list.hidden = false;
+    const u = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit"));      // the stylesheet's unit: a unit off the box and the window's edges
+    const box = (select.closest(".menubox, .popgroup, .casebox, .strapkind, .menulabel") || select.parentElement || select).getBoundingClientRect();
+    const room_below = innerHeight - box.bottom, room_above = box.top, up = room_below < Math.min(list.scrollHeight, 240) && room_above > room_below;
+    list.style.minWidth = `${Math.round(box.width)}px`;
+    list.style.maxHeight = `${Math.floor((up ? room_above : room_below) - 2 * u)}px`;
+    list.style.left = `${Math.round(Math.max(u, Math.min(box.left, innerWidth - list.offsetWidth - u)))}px`;
+    list.style.top = up ? "" : `${Math.round(box.bottom + u)}px`;
+    list.style.bottom = up ? `${Math.round(innerHeight - box.top + u)}px` : "";
+    const on = list.querySelector(".on");
+    if (on) { list.scrollTop = on.offsetTop - (list.clientHeight - on.offsetHeight) / 2; on.focus({ preventScroll: true }); }
+    document.addEventListener("pointerdown", this.menus_away, true);
+  }
+  menu_list_close() {
+    if (this.menus_list) this.menus_list.hidden = true;
+    this.menus_for = null;
+    if (this.menus_away) document.removeEventListener("pointerdown", this.menus_away, true);
+  }
+
   unit_box() {
     const menu = el("div", { className: "unitmenu", id: "unit-menu", hidden: true });
     menu.setAttribute("role", "menu");
@@ -2156,7 +2217,13 @@ class DialTool {
     this.date_pop_sync = () => {
       if (!this.date_pop || this.date_pop.hidden) return;
       const d = shown(), y = d.getFullYear(), m = d.getMonth(), last = new Date(y, m + 1, 0).getDate();
-      weekday.textContent = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d.getDay()];
+      const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      weekday.textContent = DAYS[d.getDay()];
+      if (!weekday.style.width) {      // as wide as the widest weekday, measured in its own type, so the popup never changes size (#412: "size fixed, no movements by change in content")
+        const pen = document.createElement("canvas").getContext("2d"), c = getComputedStyle(weekday);
+        pen.font = `${c.fontWeight} ${c.fontSize} ${c.fontFamily}`;
+        weekday.style.width = Math.ceil(Math.max(...DAYS.map((x) => pen.measureText(x).width))) + "px";
+      }
       if (day.select.options.length !== last) day.select.replaceChildren(...Array.from({ length: last }, (_, i) => el("option", { value: i + 1, textContent: i + 1 })));
       if (+(year.select.options[0] || {}).value !== y - 50) year.select.replaceChildren(...Array.from({ length: 101 }, (_, i) => el("option", { value: y - 50 + i, textContent: y - 50 + i })));
       day.select.value = d.getDate(); month.select.value = m; year.select.value = y;
@@ -2846,8 +2913,9 @@ class DialTool {
       const select = el("select", { id });
       row.items.forEach((name, i) => select.append(el("option", { value: i, textContent: name })));
       select.onchange = () => set(+select.value);
-      wrap.append(el("label", { htmlFor: id, textContent: row.text }), select);
-      out.refresh = (T) => { select.value = T[row.key]; };
+      const menu = chevron_box(select);
+      wrap.append(el("label", { htmlFor: id, textContent: row.text }), menu.box);
+      out.refresh = (T) => { select.value = T[row.key]; menu.sync(); };
     }
 
     if (row.kind === "pick") {                     // a choice as pictures: one tile per item, on the columns
@@ -3373,8 +3441,9 @@ class DialTool {
     const motion = el("select", { id: "global-ha-beat-Motion", title: "How the seconds hand moves", ariaLabel: "Motion" });
     G.BEATS.forEach((b, i) => motion.append(el("option", { value: i, textContent: b[0] })));
     motion.onchange = () => this.set_value("global", "ha_beat", +motion.value);
-    wrap.append(el("h2", { textContent: "All hands" }), el("label", { className: "check", htmlFor: tick.id }, tick, " Show hands"), motion);
-    out.refresh = (S) => { tick.checked = Boolean(S.ha_on); motion.value = S.ha_beat; };
+    const motion_box = chevron_box(motion);
+    wrap.append(el("h2", { textContent: "All hands" }), el("label", { className: "check", htmlFor: tick.id }, tick, " Show hands"), motion_box.box);
+    out.refresh = (S) => { tick.checked = Boolean(S.ha_on); motion.value = S.ha_beat; motion_box.sync(); };
   }
 
   /** Reset: the opener back, every setting — the guide's First dial (opener.js). It replaces the whole dial, so it
@@ -3384,13 +3453,12 @@ class DialTool {
    *  Numerals: Centre · Outer edge · Inner edge; marks and bands: Outer · Middle · Inner. */
   row_resize_from(wrap, out) {
     wrap.className = "row";
-    const words = el("span", { className: "fromwords" });
     const select = el("select", { id: "resize-from", title: "What the radius measures to", ariaLabel: "Resize ring from" });
-    const arrow = menu_arrow(select);
     let menu = null;
     select.onchange = () => this.set_value("ring", menu.key, +select.value);
-    const box = el("span", { className: "frombox" }, words, arrow);
-    wrap.append(el("span"), el("span", { className: "fromwide" }, el("span", { className: "fromword", textContent: "from" }), box));
+    const chev = chevron_box(select), words = chev.box.querySelector(".v");      // a press anywhere on the box opens the list, never folds the pane (Okay, 20 Oct 2026, 01:05: "clicking 'centre' activates dropdown not collapse")
+    words.classList.add("fromwords");
+    wrap.append(el("span"), el("span", { className: "fromwide" }, el("span", { className: "fromword", textContent: "from" }), chev.box));
     out.refresh = (R) => {
       const now = radius_row(R).menu;
       if (now !== menu) { menu = now; select.replaceChildren(...menu.items.map(([v, name]) => el("option", { value: v, textContent: name }))); }
@@ -4157,7 +4225,8 @@ class DialTool {
     const pick = el("select", { id: "nudge-pick" });
     pick.onchange = () => { this.nudge_at = pick.value; this.sync_rows(); };
     const word = el("label", { htmlFor: "nudge-pick", textContent: "Numeral" }), reset = el("button", { type: "button", className: "btn", id: "nudge-reset", textContent: "Reset this numeral" });
-    wrap.append(el("div", { className: "row pop" }, word, pick),
+    const pick_box = chevron_box(pick);
+    wrap.append(el("div", { className: "row pop" }, word, pick_box.box),
       el("div", { className: "row" }, el("span"), Object.assign(reset, { onclick: () => {
         const all = { ...this.ring().nudge };
         delete all[this.nudge_at];
@@ -4176,6 +4245,7 @@ class DialTool {
         pick.dataset.items = want;
       }
       pick.value = this.nudge_at;
+      pick_box.sync();
     };
   }
 

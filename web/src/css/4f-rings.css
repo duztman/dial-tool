@@ -192,6 +192,7 @@
      touching, the number box's hairline */
   .menubox { position: relative; display: flex; height: var(--control); border: var(--hair) solid var(--rule); background: var(--field); font-size: var(--t-s); }
   .menubox > .v { flex: 1 1 0; display: grid; align-items: center; justify-content: end; padding: 0 var(--u1); }
+  .menubox.words > .v { justify-content: start; min-width: 0; padding: 0 var(--u2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }      /* a choice in words reads from the left (Outer, Arabic, Smooth) */
   .menubox > .arrow { flex: none; display: grid; place-items: center; width: var(--pos-step); border-left: var(--hair) solid var(--rule); }
   .menubox > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }      /* the browser's own list, unseen over the box */
   .menubox > input { flex: 1 1 0; min-width: 0; height: 100%; padding: 0 var(--u1); border: 0; text-align: right; font-size: var(--t-s); }
@@ -234,7 +235,6 @@
   /* Resize Ring from …: on the heading's line, "from" in plain type on the controls' column, then a box saying what the
      radius measures to, stretched to the margin, the rows' boxed arrow at its right end (Okay, 19 Oct 2026, #419) */
   .pane > .headcontrol.fromwide { display: flex; align-items: center; gap: var(--gap); }
-  .fromwide .frombox { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; border: var(--hair) solid var(--grey); background: var(--field); padding-left: var(--u2); }
+  .fromwide .menubox { flex: 1; min-width: 0; }      /* stretched to the margin (#419) */
   .fromwide .fromwords { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .fromwide .labelmenu { border-width: 0 0 0 var(--hair); }
 }
