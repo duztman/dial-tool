@@ -152,7 +152,7 @@
      the square's corner): a dark pill as the discs are, LINK in the pixel font at 12; linked, white with LINKED in dark */
   .numpop .row > input[type="range"] { grid-row: 1; }
   .numpop .row .steps { grid-row: 2; grid-column: 1; }      /* placed outright, so the pill can lie over its middle (one left to find its own place would open a column beside it) */
-  .numpop .row.haslink > .linkpill { position: static; translate: none; grid-row: 2; justify-self: center; align-self: center; z-index: 1; height: calc(var(--num-pop-step) / 2); padding: 0 var(--u3); border: 0; background: var(--num-pop-disc); color: var(--white); font-size: var(--t-pixel-legend); }
+  .numpop .row.haslink > .linkpill { position: static; translate: none; grid-row: 2; justify-self: center; align-self: center; z-index: 1; width: var(--num-pop-step); height: var(--num-pop-step); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); font-size: var(--t-pixel-legend); line-height: 1.2; white-space: pre-line; text-align: center; }      /* a disc as − and + are (4.86, Okay: "Link buttons round like plus"); linked, LINK over +ED */
   .numpop .row.haslink > .linkpill:hover { background: var(--num-pop-hover); }
   .numpop .row.haslink > .linkpill.on { background: var(--white); color: var(--num-pop-disc); }
   .numpop .row .steps > .step { flex: none; display: grid; place-items: center; width: var(--num-pop-step); height: var(--num-pop-step); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); }

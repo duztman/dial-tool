@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.85 · built 2026-10-19 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.86 · built 2026-10-19 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -146,7 +146,7 @@
        disc of 66: its top corners 28, its name line 28 with the hairline at its foot, inset 22; the knob 44 with a white
        eye of 12; the track a unit and a half thick, dark to the knob and light after; the signs 8 thick, 40 long. */
     --num-pop-k: 0.75;      /* the controller's scale, every measure below times it: three quarters everywhere (4.85; Okay, 19 Oct 2026, 12:30, on the iPad: "Size 75%"); on a phone only from 4.68 to 4.84 (Okay, 18 Oct, 22:35) */
-    --num-pop-see: 70%;      /* how much of the controller's square shows: the preview through it (4.85; Okay: "Controller bg 70% opacity") */
+    --num-pop-see: 85%;      /* how much of the controller's square shows: the preview through it (4.86; Okay, 19 Oct 2026, 12:46: "controller bg 85%"; 70 in 4.85) */
     --num-pop-step: calc(66px * var(--num-pop-k)); --num-pop-pill: var(--num-pop-step);      /* the discs and the slider's pill: one height */
     --num-pop-pad: calc(var(--u6) * var(--num-pop-k)); --num-pop-gap: calc(var(--u3) * var(--num-pop-k));      /* controller 2.svg (Okay, 18 Oct 2026), at a disc of 66: its 5.67 edge is 16.5, its 2.83 gaps 8.2 */
     --num-pop: calc(var(--num-pop-inner) + 2 * var(--num-pop-pad));
@@ -982,7 +982,7 @@
      the square's corner): a dark pill as the discs are, LINK in the pixel font at 12; linked, white with LINKED in dark */
   .numpop .row > input[type="range"] { grid-row: 1; }
   .numpop .row .steps { grid-row: 2; grid-column: 1; }      /* placed outright, so the pill can lie over its middle (one left to find its own place would open a column beside it) */
-  .numpop .row.haslink > .linkpill { position: static; translate: none; grid-row: 2; justify-self: center; align-self: center; z-index: 1; height: calc(var(--num-pop-step) / 2); padding: 0 var(--u3); border: 0; background: var(--num-pop-disc); color: var(--white); font-size: var(--t-pixel-legend); }
+  .numpop .row.haslink > .linkpill { position: static; translate: none; grid-row: 2; justify-self: center; align-self: center; z-index: 1; width: var(--num-pop-step); height: var(--num-pop-step); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); font-size: var(--t-pixel-legend); line-height: 1.2; white-space: pre-line; text-align: center; }      /* a disc as − and + are (4.86, Okay: "Link buttons round like plus"); linked, LINK over +ED */
   .numpop .row.haslink > .linkpill:hover { background: var(--num-pop-hover); }
   .numpop .row.haslink > .linkpill.on { background: var(--white); color: var(--num-pop-disc); }
   .numpop .row .steps > .step { flex: none; display: grid; place-items: center; width: var(--num-pop-step); height: var(--num-pop-step); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); }
@@ -1286,20 +1286,22 @@
   main { --stop-short: max(var(--canvas-inset), calc(var(--margin) - var(--panel-w) * (1 - var(--away)))); }
   /* Guides at the bottom left, between Backdrop and Shadows, their list opening upward as Shadows' does (4.59, #337: "Guides
      move left bottom under backdrop, above shadows"; at the top right, its list dropping, until 4.58) */
-  .guides { position: absolute; z-index: 3; left: var(--stop-short); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: flex; }
-  .guides > .guidelist:not(.shadelist) { top: auto; right: auto; bottom: calc(100% + var(--unit)); left: 0; }
-  .guides:has(.guidelist:not([hidden])) { z-index: 7; }      /* open, its list over Backdrop above it */
-  .guides .guidesmore svg { rotate: 180deg; }
-  .guides .guidesmore[aria-expanded="true"] svg { rotate: 0deg; }
+  /* the top right corner (4.86; Okay, 19 Oct 2026, 12:46: "Guides case and xray move top right corner of the canvas, stacked
+     in that order"): one column, its switches at its right edge — Guides, its list dropping from it; the case; with a
+     case, its strap; X-ray. (Guides at the bottom left over Shadows, its list rising, 4.59–4.85.) */
+  .corner { position: absolute; z-index: 3; top: var(--canvas-top); right: var(--canvas-inset); display: flex; flex-direction: column; align-items: flex-end; gap: var(--unit); }
+  .corner:has(.guidelist:not([hidden])) { z-index: 7; }      /* open, its list over everything round it */
+  .guides { position: relative; display: flex; }
+  .guides:has(.guidelist:not([hidden])) { z-index: 1; }      /* its list over the case and X-ray under it */
   /* the case's switch beside Backdrop (4.66): its kind's name and a chevron, as Backdrop is a word and its chip; the
      system's list over it, unseen; with a case on, its outline solid like a switch that is on */
   .casebox { position: relative; gap: var(--unit); padding: 0 0 0 var(--u3); border-radius: var(--round-switch); }
   /* its chevron in a square of its own behind a line, as Guides' and Shadows' are (4.82; Okay, 19 Oct 2026: "Case icon
      and its spacing need work"): the sign u3 from the left as theirs, the word u4 clear of the line */
   .casebox .arrow { align-self: stretch; display: grid; place-items: center; width: var(--control-large); margin-left: calc(var(--u4) - var(--unit)); border-left: var(--hair) solid var(--line-faint); }
-  .casebox:not(.on) .arrow { border-left-style: dashed; }
+  .casebox:not(.on) .arrow { border-left-style: dotted; }
   .casebox > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-  .casebox:not(.on) { border-style: dashed; }
+  .casebox:not(.on) { border-style: dotted; }      /* not on: its outline dotted — shorter dashes, shorter gaps, a denser line (4.86; Okay: "Dashes for invisible: shorter dash shorter gaps, denser outline"; dashed until 4.85) */
   .casebox.on > :not(select) { opacity: 1; }
   /* its strap's switch (4.69): the strap's chip, a button of its own, then its kind's name and chevron with the list over
      those only — so a press on the chip opens the colour, a press on the words the list */
@@ -1352,8 +1354,10 @@
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 var(--round-switch) var(--round-switch) 0; }
   .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }      /* open, only its arrow turns */
   /* Backdrop, standing on the Shadows switch (its row held the eye switch too until 15 Oct 2026, 03:41) */
-  .backdrops { position: absolute; z-index: 3; left: var(--stop-short); bottom: calc(var(--canvas-inset) + 2 * (var(--control-large) + var(--unit))); display: flex; flex-direction: column-reverse; align-items: flex-start; gap: var(--unit); }      /* stacked over Guides and Shadows (4.79; Okay, 19 Oct 2026, 01:03: "Strap and case: stack on that left bottom list"): Backdrop, then Case, its Strap and X-ray up the column; side by side from 4.66 to 4.78 */
+  .backdrops { position: absolute; z-index: 3; left: var(--stop-short); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: flex; flex-direction: column-reverse; align-items: flex-start; gap: var(--unit); }      /* stacked over Guides and Shadows (4.79; Okay, 19 Oct 2026, 01:03: "Strap and case: stack on that left bottom list"): Backdrop, then Case, its Strap and X-ray up the column; side by side from 4.66 to 4.78 */
   .casebox .sign, .xraybox > svg { display: grid; flex: none; }
+  .xraybox { padding-right: var(--u4); }      /* no chevron after its word: as much room after it as Backdrop's (4.86; Okay: "Xray's box needs padding after label") */
+  .tinyopen .x { display: none; }      /* its sign is the showcase's of 4.85, whose X is the showcase's way out */
   .casebox .sign { width: auto; }      /* its drawing's own 18, not a sign's 26 (4.82: four points stood empty either side of it) */
   /* the eye switch, alone at the preview's bottom right, over the zoom in the bar (Okay, 15 Oct 2026, 03:41) */
   .eyes { position: absolute; z-index: 3; right: var(--canvas-inset); bottom: var(--canvas-inset); display: flex; align-items: flex-end; gap: var(--unit); }      /* the switches' gap between them (05:43: "why these two touch?"); the showcase's iris left of the eye, one unit apart (Okay, 18 Oct 2026, notes 2: "Showcase button back to the left of the preview button"; over it from 4.42.4 to 4.52.1, #280) */
@@ -1492,7 +1496,7 @@
   :is(.sky, .pool) { opacity: 0; transition: opacity var(--show-time) linear; }
   #app.show :is(.sky, .pool) { opacity: 1; }
   #app.show main { --on-canvas: var(--white); --off-canvas: var(--ink); }
-  #app.show :is(.undos, .guides, .backdrops, .shadows, .tip, .tinyopen) { visibility: hidden; }
+  #app.show :is(.undos, .corner, .backdrops, .shadows, .tip, .tinyopen) { visibility: hidden; }
   #app.show :is(#eye-box, .irisgo) { display: none; }
   /* in the showcase the X and Now are larger and less faint, and stand as far in from the window's edges as the mark
      does at the top left: the margin (05:43: "too close to edges, too faint… fit them inside the imaginary padding logo
@@ -1762,7 +1766,7 @@
     /* the Guides and Shadows lists: sheets from the bottom, as the colour pop-out is here — over the drawer, never cut by
        it, and nothing on the preview showing through (Okay, 15 Oct 2026, 06:27, a picture of the Guides list cut off) */
     .guidelist { position: fixed; inset: auto 0 0 0; width: auto; max-width: none; max-height: var(--sheet-max); border-width: var(--hair) 0 0; border-radius: var(--round-large) var(--round-large) 0 0; }
-    :is(.guides, .shadows):has(.guidelist:not([hidden])) { z-index: 7; }      /* above the drawer while open */
+    :is(.corner, .shadows):has(.guidelist:not([hidden])) { z-index: 7; }      /* above the drawer while open */
     /* Okay, 15 Oct 2026, 06:20–06:24 ── the top: the page's own colour is the bar's, so Safari tints the strip under the
        phone's status bar to match and the bar no longer starts against white (iOS 26 takes that tint from the body's
        background; theme-color is no longer read). The drawer keeps its paper. */
@@ -6246,7 +6250,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.85";
+var VERSION = "beta 4.86";
 var MM = 72 / 25.4;
 var MM_PER_PT = 25.4 / 72;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
@@ -11054,6 +11058,14 @@ var TOOL_ICONS = {
     const lid = `M6.25 ${cy}C12.25 ${cy - lift} 18.25 ${cy - lift} 24.25 ${cy}C18.25 ${cy + lift} 12.25 ${cy + lift} 6.25 ${cy}Z`;
     return `<mask id="iris-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/><path class="x" d="M-0.75 -1L31.25 31M31.25 -1L-0.75 31" stroke-width="1" stroke-linecap="butt" mask="url(#iris-cut)"/>`;
   })(),
+  // the showcase switch since 4.86 (Okay, 19 Oct 2026, 12:46: "Swap icons but not places for showcase and tiny preview.
+  // Tiny gets the dot, showcase gets the eye"): the iris above with its lids drawn round it — the eye switch's own eye,
+  // drawn where that one is left out — and in the showcase the same X, cut by the lids
+  show_eye: (() => {
+    const cy = 15, lift = 5.25 * 1.2;
+    const lid = `M6.25 ${cy}C12.25 ${cy - lift} 18.25 ${cy - lift} 24.25 ${cy}C18.25 ${cy + lift} 12.25 ${cy + lift} 6.25 ${cy}Z`;
+    return `<mask id="show-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask><path d="${lid}" ${sw(CURVE)}/><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/><path class="x" d="M-0.75 -1L31.25 31M31.25 -1L-0.75 31" stroke-width="1" stroke-linecap="butt" mask="url(#show-cut)"/>`;
+  })(),
   // the showcase's hint over Now: a line with a head at each end — the sun can be moved left and right (04:59); on 108
   // by 36, three times its first size, white with a glow (05:43: "can't see it… 3x size")
   // 18 Oct 2026 (notes 2: "connecting stem; straight-dashed-straight … divide current line into three"): the stem in
@@ -11402,7 +11414,8 @@ var ROWS = {
     // is not a good idea … two stories tall … like in illustrator"); one line from 4.46 to 4.55 (#265)
     num3("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("rectangle", "arc", "pair"), link: "wh_link" }),
     // a big date's: both holes together (4.74)
-    num3("h", "Height", 0.5, 5, 0.05, { ...W, show: shape_is("rectangle", "arc", "pair") }),
+    num3("h", "Height", 0.5, 5, 0.05, { ...W, show: shape_is("rectangle", "arc", "pair"), poplink: "wh_link" }),
+    // poplink: the pair's LINK in its controller too, as in Width's (4.86; Okay, 19 Oct 2026: "tapping second item in the linkees should also trigger button")
     num3("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("arch", "half"), id: "window-w-Width-arch" }),
     // its own id: the line above has window-w-Width
     num3("w", "\xD8", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
@@ -12042,7 +12055,8 @@ var DialTool = class _DialTool {
     this.note = el("button", { type: "button", className: "previewnote", id: "preview-note", hidden: true, title: "Put this note away", onclick: () => {
       this.note.hidden = true;
     } });
-    this.main = el("main", {}, this.svg, this.tip, this.note, this.undo_box(), this.tiny_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.ten_pill, this.hands_key, this.sun_hint);
+    const corner = el("div", { className: "corner" }, guides, ...this.case_box(), this.xray_box());
+    this.main = el("main", {}, this.svg, this.tip, this.note, this.undo_box(), this.tiny_box(), corner, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.ten_pill, this.hands_key, this.sun_hint);
     this.day_strip(this.day_box);
     root.append(panel, this.main, bar2, this.build_picker(), this.build_pop());
     root.append(this.sheet());
@@ -12602,7 +12616,7 @@ var DialTool = class _DialTool {
     eye2.onclick = () => this.dial_alone(eye2.getAttribute("aria-pressed") !== "true");
     this.eye_button = eye2;
     const iris = el("button", { type: "button", className: "iriskey", id: "iris-box", title: "The showcase", ariaLabel: "The showcase" });
-    iris.innerHTML = icon(TOOL_ICONS.iris, 30);
+    iris.innerHTML = icon(TOOL_ICONS.show_eye, 30);
     iris.setAttribute("aria-pressed", "false");
     iris.onclick = () => {
       if (this.show) this.showcase(false);
@@ -12634,7 +12648,7 @@ var DialTool = class _DialTool {
     this.sun_hint = el("div", { className: "sunhint", id: "sun-hint" });
     this.sun_hint.innerHTML = icon(TOOL_ICONS.both_ways, 108, 36);
     this.sun_hint.onanimationend = () => this.sun_hint.classList.remove("go");
-    return el("div", { className: "backdrops" }, box2, this.xray_box());
+    return el("div", { className: "backdrops" }, box2);
   }
   /** Okay's mark in the panel's first column, left of the title; a press opens a short bio: who made the tool, where
    *  its source is, and the open-source work it stands on (Okay, 15 Oct 2026, 02:42: "This triggers bio. Make it short,
@@ -12693,7 +12707,7 @@ var DialTool = class _DialTool {
   tiny_box() {
     const button = el("button", { type: "button", className: "onview tinyopen", id: "tiny-open", ariaLabel: "Tiny preview" });
     button.dataset.tip = "Tiny preview: the dial at its own size";
-    button.innerHTML = eye(true);
+    button.innerHTML = icon(TOOL_ICONS.iris, 30);
     const shut = el("button", { type: "button", className: "tinyshut", id: "tiny-shut", ariaLabel: "Put the tiny preview away" });
     shut.innerHTML = eye(true);
     const face = el("div", { className: "tinyface" });
@@ -12967,7 +12981,7 @@ var DialTool = class _DialTool {
       if (!on) return;
       this.sync_guides();
       const m = this.main.getBoundingClientRect(), g = this.guides_tick.getBoundingClientRect();
-      list.style.setProperty("--list-room", `${Math.max(g.top - m.top - 2 * parseFloat(getComputedStyle(list).getPropertyValue("--list-gap") || 0), 120)}px`);
+      list.style.setProperty("--list-room", `${Math.max(m.bottom - g.bottom - 2 * parseFloat(getComputedStyle(list).getPropertyValue("--list-gap") || 0), 120)}px`);
       requestAnimationFrame(() => this.guides_more_below && this.guides_more_below());
     };
     more.onclick = () => open(list.hidden);
@@ -13694,10 +13708,12 @@ var DialTool = class _DialTool {
         wrap.append(lead, slider, numbox());
         if (!row.inpop) this.name_opens(label, row);
         if (row.quiet) wrap.classList.add("quiet");
-      } else if (row.link) {
+      } else if (row.link || row.inpop && row.poplink) {
+        const link = row.link || row.poplink;
         wrap.append(lead, slider, numbox());
         const pill = el("button", { type: "button", className: "linkpill", id: id + "-link" });
-        pill.onclick = () => this.set_value(row.scope, row.link, !this.target(row.scope)[row.link]);
+        pill.dataset.link = link;
+        pill.onclick = () => this.set_value(row.scope, link, !this.target(row.scope)[link]);
         wrap.classList.add("haslink");
         wrap.append(pill);
         out.link = pill;
@@ -13710,9 +13726,9 @@ var DialTool = class _DialTool {
       out.refresh = (T) => {
         const v = T[row.key] ?? (row.or ? row.or(T) : 0);
         if (out.link) {
-          const on = Boolean(T[row.link]);
+          const on = Boolean(T[out.link.dataset.link]);
           out.link.classList.toggle("on", on);
-          out.link.textContent = on ? "LINKED" : "LINK";
+          out.link.textContent = on ? row.inpop ? "LINK\n+ED" : "LINKED" : "LINK";
           out.link.setAttribute("aria-pressed", String(on));
           out.link.ariaLabel = on ? "Width and height linked: press to unlink" : "Link width and height";
         }
@@ -17308,7 +17324,7 @@ var DialTool = class _DialTool {
     };
     this.undo_buttons = [make("undo", "Undo (\u2318Z)", -1, TOOL_ICONS.undo), make("redo", "Redo (\u21E7\u2318Z)", 1, TOOL_ICONS.redo)];
     this.sync_undo();
-    return el("span", { className: "undos" }, el("span", { className: "undopair" }, ...this.undo_buttons), ...this.case_box());
+    return el("span", { className: "undos" }, el("span", { className: "undopair" }, ...this.undo_buttons));
   }
   sync_undo() {
     if (!this.undo_buttons) return;

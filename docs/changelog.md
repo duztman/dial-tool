@@ -1,5 +1,15 @@
 # Dial Tool — changelog
 
+## beta 4.86 (web version) · 19 Oct 2026
+
+Okay's notes, 19 Oct, 12:46.
+
+- **The controller's square at 85 %** (70 in 4.85). **Its LINK a disc** as − and + are; linked it reads LINK over +ED (his words). **Height's controller has it too**, not only Width's ("tapping second item in the linkees should also trigger button").
+- **Guides, the case (and its strap) and X-ray down the top right corner**, one column in that order; the Guides list drops from it (it rose from the bottom left, 4.59–4.85). Backdrop over Shadows stay at the bottom left; undo and redo alone at the top left.
+- **X-ray's box**: room after its word, as much as Backdrop's.
+- **A switch that is off** (the case, the strap, X-ray): its outline dotted — shorter dashes, shorter gaps, a denser line (dashed until 4.85).
+- **Signs swapped, places kept**: Tiny Preview's button has the dot (the iris, the showcase's sign until now); the showcase's has the eye — the iris with its lids, and in the showcase the X cut by them, as before.
+
 ## beta 4.85 (web version) · 19 Oct 2026
 
 Okay's notes, 19 Oct, 12:30 (on the iPad).

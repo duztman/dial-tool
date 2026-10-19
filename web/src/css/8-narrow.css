@@ -62,7 +62,7 @@
     /* the Guides and Shadows lists: sheets from the bottom, as the colour pop-out is here — over the drawer, never cut by
        it, and nothing on the preview showing through (Okay, 15 Oct 2026, 06:27, a picture of the Guides list cut off) */
     .guidelist { position: fixed; inset: auto 0 0 0; width: auto; max-width: none; max-height: var(--sheet-max); border-width: var(--hair) 0 0; border-radius: var(--round-large) var(--round-large) 0 0; }
-    :is(.guides, .shadows):has(.guidelist:not([hidden])) { z-index: 7; }      /* above the drawer while open */
+    :is(.corner, .shadows):has(.guidelist:not([hidden])) { z-index: 7; }      /* above the drawer while open */
     /* Okay, 15 Oct 2026, 06:20–06:24 ── the top: the page's own colour is the bar's, so Safari tints the strip under the
        phone's status bar to match and the bar no longer starts against white (iOS 26 takes that tint from the body's
        background; theme-color is no longer read). The drawer keeps its paper. */

@@ -411,6 +411,15 @@ const TOOL_ICONS = {
     return `<mask id="iris-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask>`
       + `<circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/><path class="x" d="M-0.75 -1L31.25 31M31.25 -1L-0.75 31" stroke-width="1" stroke-linecap="butt" mask="url(#iris-cut)"/>`;
   })(),
+  // the showcase switch since 4.86 (Okay, 19 Oct 2026, 12:46: "Swap icons but not places for showcase and tiny preview.
+  // Tiny gets the dot, showcase gets the eye"): the iris above with its lids drawn round it — the eye switch's own eye,
+  // drawn where that one is left out — and in the showcase the same X, cut by the lids
+  show_eye: (() => {
+    const cy = 15, lift = 5.25 * 1.2;
+    const lid = `M6.25 ${cy}C12.25 ${cy - lift} 18.25 ${cy - lift} 24.25 ${cy}C18.25 ${cy + lift} 12.25 ${cy + lift} 6.25 ${cy}Z`;
+    return `<mask id="show-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask>`
+      + `<path d="${lid}" ${sw(CURVE)}/><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/><path class="x" d="M-0.75 -1L31.25 31M31.25 -1L-0.75 31" stroke-width="1" stroke-linecap="butt" mask="url(#show-cut)"/>`;
+  })(),
   // the showcase's hint over Now: a line with a head at each end — the sun can be moved left and right (04:59); on 108
   // by 36, three times its first size, white with a glow (05:43: "can't see it… 3x size")
   // 18 Oct 2026 (notes 2: "connecting stem; straight-dashed-straight … divide current line into three"): the stem in
@@ -750,7 +759,7 @@ const ROWS = {
     // width over height, two rows, a LINK pill on the line between them (Okay's notes 2, #358: "Two sliders on one line
     // is not a good idea … two stories tall … like in illustrator"); one line from 4.46 to 4.55 (#265)
     num("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("rectangle", "arc", "pair"), link: "wh_link" }),      // a big date's: both holes together (4.74)
-    num("h", "Height", 0.5, 5, 0.05, { ...W, show: shape_is("rectangle", "arc", "pair") }),
+    num("h", "Height", 0.5, 5, 0.05, { ...W, show: shape_is("rectangle", "arc", "pair"), poplink: "wh_link" }),      // poplink: the pair's LINK in its controller too, as in Width's (4.86; Okay, 19 Oct 2026: "tapping second item in the linkees should also trigger button")
     num("w", "Width", 0.5, 8, 0.05, { ...W, show: shape_is("arch", "half"), id: "window-w-Width-arch" }),      // its own id: the line above has window-w-Width
     num("w", "Ø", 0.5, 8, 0.05, { ...W, show: shape_is("circle", "polygon") }),
     num("sides", "Sides", 3, 12, 1, { ...W, whole: true, show: shape_is("polygon") }),
@@ -1324,7 +1333,11 @@ class DialTool {
     // a note on the preview (R17, R31: an old link): a dark pill under the header's line; a press puts it away, and so
     // does the first change to the dial
     this.note = el("button", { type: "button", className: "previewnote", id: "preview-note", hidden: true, title: "Put this note away", onclick: () => { this.note.hidden = true; } });
-    this.main = el("main", {}, this.svg, this.tip, this.note, this.undo_box(), this.tiny_box(), guides, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.ten_pill, this.hands_key, this.sun_hint);
+    // the top right corner, one column, top to bottom: Guides (its list dropping), the case and (with a case) its strap,
+    // X-ray (4.86; Okay, 19 Oct 2026, 12:46: "Guides case and xray move top right corner of the canvas, stacked in that
+    // order"; Guides at the bottom left 4.59–4.85, the case at the top left in 4.82–4.85, X-ray at the bottom left)
+    const corner = el("div", { className: "corner" }, guides, ...this.case_box(), this.xray_box());
+    this.main = el("main", {}, this.svg, this.tip, this.note, this.undo_box(), this.tiny_box(), corner, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.ten_pill, this.hands_key, this.sun_hint);
     this.day_strip(this.day_box);
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     root.append(this.sheet());      // a phone's gripper, on the drawer's top line
@@ -1796,7 +1809,7 @@ class DialTool {
     // only those words take you there (Okay, 04:59: "we need affordance"); pressed again, it shuts. In the showcase
     // it is an X, the way out
     const iris = el("button", { type: "button", className: "iriskey", id: "iris-box", title: "The showcase", ariaLabel: "The showcase" });
-    iris.innerHTML = icon(TOOL_ICONS.iris, 30);
+    iris.innerHTML = icon(TOOL_ICONS.show_eye, 30);      // the eye since 4.86 (the iris alone until then, now Tiny Preview's)
     iris.setAttribute("aria-pressed", "false");
     iris.onclick = () => { if (this.show) this.showcase(false); else this.iris_open(this.iris_box.getAttribute("aria-expanded") !== "true"); };
     this.iris_go = el("button", { type: "button", className: "irisgo", id: "iris-go", textContent: "Activate showcase", onclick: () => this.showcase(true) });
@@ -1833,7 +1846,7 @@ class DialTool {
     this.sun_hint = el("div", { className: "sunhint", id: "sun-hint" });
     this.sun_hint.innerHTML = icon(TOOL_ICONS.both_ways, 108, 36);
     this.sun_hint.onanimationend = () => this.sun_hint.classList.remove("go");
-    return el("div", { className: "backdrops" }, box, this.xray_box());
+    return el("div", { className: "backdrops" }, box);
   }
 
   /** Okay's mark in the panel's first column, left of the title; a press opens a short bio: who made the tool, where
@@ -1878,7 +1891,7 @@ class DialTool {
   tiny_box() {
     const button = el("button", { type: "button", className: "onview tinyopen", id: "tiny-open", ariaLabel: "Tiny preview" });
     button.dataset.tip = "Tiny preview: the dial at its own size";
-    button.innerHTML = eye(true);
+    button.innerHTML = icon(TOOL_ICONS.iris, 30);      // the iris alone, the showcase's sign until 4.85 (4.86, Okay: "Tiny gets the dot, showcase gets the eye"); a plain eye until then
     const shut = el("button", { type: "button", className: "tinyshut", id: "tiny-shut", ariaLabel: "Put the tiny preview away" });
     shut.innerHTML = eye(true);
     const face = el("div", { className: "tinyface" });
@@ -2109,9 +2122,10 @@ class DialTool {
       list.hidden = !on; more.setAttribute("aria-expanded", String(on));
       if (!on) return;
       this.sync_guides();
-      // its room: from the preview's top edge down to its switch, measured now (4.79: a long list ran past the top of an iPad's screen)
+      // its room: from its switch down to the preview's bottom edge, measured now (4.79: a long list ran past the top of an
+      // iPad's screen; from the top edge down to the switch until 4.85, when the list opened upward)
       const m = this.main.getBoundingClientRect(), g = this.guides_tick.getBoundingClientRect();
-      list.style.setProperty("--list-room", `${Math.max(g.top - m.top - 2 * parseFloat(getComputedStyle(list).getPropertyValue("--list-gap") || 0), 120)}px`);
+      list.style.setProperty("--list-room", `${Math.max(m.bottom - g.bottom - 2 * parseFloat(getComputedStyle(list).getPropertyValue("--list-gap") || 0), 120)}px`);
       requestAnimationFrame(() => this.guides_more_below && this.guides_more_below());
     };
     more.onclick = () => open(list.hidden);
@@ -2693,12 +2707,15 @@ class DialTool {
         wrap.append(lead, slider, numbox());
         if (!row.inpop) this.name_opens(label, row);      // its name opens the controller, as a full row's does (#249)
         if (row.quiet) wrap.classList.add("quiet");      // form B: no slider on the row (#251)
-      } else if (row.link) {
+      } else if (row.link || (row.inpop && row.poplink)) {
         // the LINK pill on the line under this row, between its name and the next row's (#358): a white outline on the
-        // pane's ground, LINK in the pixel font; pressed, dark with LINKED in white
+        // pane's ground, LINK in the pixel font; pressed, dark with LINKED in white. In the controller a disc between −
+        // and + (4.85, 4.86), for both of the pair (poplink: the second's)
+        const link = row.link || row.poplink;
         wrap.append(lead, slider, numbox());
         const pill = el("button", { type: "button", className: "linkpill", id: id + "-link" });
-        pill.onclick = () => this.set_value(row.scope, row.link, !this.target(row.scope)[row.link]);
+        pill.dataset.link = link;
+        pill.onclick = () => this.set_value(row.scope, link, !this.target(row.scope)[link]);
         wrap.classList.add("haslink");
         wrap.append(pill);
         out.link = pill;
@@ -2712,7 +2729,7 @@ class DialTool {
       } else wrap.append(lead, slider, numbox());
       out.refresh = (T) => {
         const v = T[row.key] ?? (row.or ? row.or(T) : 0);
-        if (out.link) { const on = Boolean(T[row.link]); out.link.classList.toggle("on", on); out.link.textContent = on ? "LINKED" : "LINK"; out.link.setAttribute("aria-pressed", String(on)); out.link.ariaLabel = on ? "Width and height linked: press to unlink" : "Link width and height"; }
+        if (out.link) { const on = Boolean(T[out.link.dataset.link]); out.link.classList.toggle("on", on); out.link.textContent = on ? (row.inpop ? "LINK\n+ED" : "LINKED") : "LINK"; out.link.setAttribute("aria-pressed", String(on)); out.link.ariaLabel = on ? "Width and height linked: press to unlink" : "Link width and height"; }      // in the controller's disc, linked: two lines (4.86, Okay: "LINK / +ED")
         if (v > +slider.max) slider.max = v;       // the slider grows to hold a typed value
         if (v < +slider.min) slider.min = v;
         if (+slider.value !== v) slider.value = v;
@@ -5761,9 +5778,7 @@ class DialTool {
     const make = (id, title, way, d) => { const b = el("button", { type: "button", className: "onview undobox", id, title, ariaLabel: title, onclick: () => this.undo(way) }); b.innerHTML = icon(d); return b; };
     this.undo_buttons = [make("undo", "Undo (⌘Z)", -1, TOOL_ICONS.undo), make("redo", "Redo (⇧⌘Z)", 1, TOOL_ICONS.redo)];
     this.sync_undo();
-    // after them, the case and (with a case) its strap (4.82; Okay, 19 Oct 2026: "Top left gets case and strap if case";
-    // in the bottom-left column in 4.79–4.81, beside Backdrop from 4.66)
-    return el("span", { className: "undos" }, el("span", { className: "undopair" }, ...this.undo_buttons), ...this.case_box());
+    return el("span", { className: "undos" }, el("span", { className: "undopair" }, ...this.undo_buttons));
   }
   sync_undo() {
     if (!this.undo_buttons) return;

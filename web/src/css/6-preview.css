@@ -14,20 +14,22 @@
   main { --stop-short: max(var(--canvas-inset), calc(var(--margin) - var(--panel-w) * (1 - var(--away)))); }
   /* Guides at the bottom left, between Backdrop and Shadows, their list opening upward as Shadows' does (4.59, #337: "Guides
      move left bottom under backdrop, above shadows"; at the top right, its list dropping, until 4.58) */
-  .guides { position: absolute; z-index: 3; left: var(--stop-short); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: flex; }
-  .guides > .guidelist:not(.shadelist) { top: auto; right: auto; bottom: calc(100% + var(--unit)); left: 0; }
-  .guides:has(.guidelist:not([hidden])) { z-index: 7; }      /* open, its list over Backdrop above it */
-  .guides .guidesmore svg { rotate: 180deg; }
-  .guides .guidesmore[aria-expanded="true"] svg { rotate: 0deg; }
+  /* the top right corner (4.86; Okay, 19 Oct 2026, 12:46: "Guides case and xray move top right corner of the canvas, stacked
+     in that order"): one column, its switches at its right edge — Guides, its list dropping from it; the case; with a
+     case, its strap; X-ray. (Guides at the bottom left over Shadows, its list rising, 4.59–4.85.) */
+  .corner { position: absolute; z-index: 3; top: var(--canvas-top); right: var(--canvas-inset); display: flex; flex-direction: column; align-items: flex-end; gap: var(--unit); }
+  .corner:has(.guidelist:not([hidden])) { z-index: 7; }      /* open, its list over everything round it */
+  .guides { position: relative; display: flex; }
+  .guides:has(.guidelist:not([hidden])) { z-index: 1; }      /* its list over the case and X-ray under it */
   /* the case's switch beside Backdrop (4.66): its kind's name and a chevron, as Backdrop is a word and its chip; the
      system's list over it, unseen; with a case on, its outline solid like a switch that is on */
   .casebox { position: relative; gap: var(--unit); padding: 0 0 0 var(--u3); border-radius: var(--round-switch); }
   /* its chevron in a square of its own behind a line, as Guides' and Shadows' are (4.82; Okay, 19 Oct 2026: "Case icon
      and its spacing need work"): the sign u3 from the left as theirs, the word u4 clear of the line */
   .casebox .arrow { align-self: stretch; display: grid; place-items: center; width: var(--control-large); margin-left: calc(var(--u4) - var(--unit)); border-left: var(--hair) solid var(--line-faint); }
-  .casebox:not(.on) .arrow { border-left-style: dashed; }
+  .casebox:not(.on) .arrow { border-left-style: dotted; }
   .casebox > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-  .casebox:not(.on) { border-style: dashed; }
+  .casebox:not(.on) { border-style: dotted; }      /* not on: its outline dotted — shorter dashes, shorter gaps, a denser line (4.86; Okay: "Dashes for invisible: shorter dash shorter gaps, denser outline"; dashed until 4.85) */
   .casebox.on > :not(select) { opacity: 1; }
   /* its strap's switch (4.69): the strap's chip, a button of its own, then its kind's name and chevron with the list over
      those only — so a press on the chip opens the colour, a press on the words the list */
@@ -80,8 +82,10 @@
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 var(--round-switch) var(--round-switch) 0; }
   .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }      /* open, only its arrow turns */
   /* Backdrop, standing on the Shadows switch (its row held the eye switch too until 15 Oct 2026, 03:41) */
-  .backdrops { position: absolute; z-index: 3; left: var(--stop-short); bottom: calc(var(--canvas-inset) + 2 * (var(--control-large) + var(--unit))); display: flex; flex-direction: column-reverse; align-items: flex-start; gap: var(--unit); }      /* stacked over Guides and Shadows (4.79; Okay, 19 Oct 2026, 01:03: "Strap and case: stack on that left bottom list"): Backdrop, then Case, its Strap and X-ray up the column; side by side from 4.66 to 4.78 */
+  .backdrops { position: absolute; z-index: 3; left: var(--stop-short); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: flex; flex-direction: column-reverse; align-items: flex-start; gap: var(--unit); }      /* stacked over Guides and Shadows (4.79; Okay, 19 Oct 2026, 01:03: "Strap and case: stack on that left bottom list"): Backdrop, then Case, its Strap and X-ray up the column; side by side from 4.66 to 4.78 */
   .casebox .sign, .xraybox > svg { display: grid; flex: none; }
+  .xraybox { padding-right: var(--u4); }      /* no chevron after its word: as much room after it as Backdrop's (4.86; Okay: "Xray's box needs padding after label") */
+  .tinyopen .x { display: none; }      /* its sign is the showcase's of 4.85, whose X is the showcase's way out */
   .casebox .sign { width: auto; }      /* its drawing's own 18, not a sign's 26 (4.82: four points stood empty either side of it) */
   /* the eye switch, alone at the preview's bottom right, over the zoom in the bar (Okay, 15 Oct 2026, 03:41) */
   .eyes { position: absolute; z-index: 3; right: var(--canvas-inset); bottom: var(--canvas-inset); display: flex; align-items: flex-end; gap: var(--unit); }      /* the switches' gap between them (05:43: "why these two touch?"); the showcase's iris left of the eye, one unit apart (Okay, 18 Oct 2026, notes 2: "Showcase button back to the left of the preview button"; over it from 4.42.4 to 4.52.1, #280) */
@@ -220,7 +224,7 @@
   :is(.sky, .pool) { opacity: 0; transition: opacity var(--show-time) linear; }
   #app.show :is(.sky, .pool) { opacity: 1; }
   #app.show main { --on-canvas: var(--white); --off-canvas: var(--ink); }
-  #app.show :is(.undos, .guides, .backdrops, .shadows, .tip, .tinyopen) { visibility: hidden; }
+  #app.show :is(.undos, .corner, .backdrops, .shadows, .tip, .tinyopen) { visibility: hidden; }
   #app.show :is(#eye-box, .irisgo) { display: none; }
   /* in the showcase the X and Now are larger and less faint, and stand as far in from the window's edges as the mark
      does at the top left: the margin (05:43: "too close to edges, too faint… fit them inside the imaginary padding logo
