@@ -1,14 +1,14 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **done** · **parked**.
-*Last updated 20 Oct 2026, night (branch `wip-4.90`: #88, #171, #172, #187, #219, #221–#225, #233, #234, #401, #406, #435, #448 built for approval; #468–#470 logged. Beta 4.89.12: #459–#463. Beta 4.89.11: #454–#458. Beta 4.89.10: #449–#453. Beta 4.89.9: #445–#448. Beta 4.89.8: #443, #444. Beta 4.89.7: #226, #442. Beta 4.89.6: #438 corrected, #441. Beta 4.89.5: #438–#440. Beta 4.89.4: #436, #437. Beta 4.89.3: #432–#435 logged, #432 and #433 done. Beta 4.89.2: #220 done. Beta 4.89.1: #430, #431. Beta 4.87: done items moved to build-list-done.md; the DrawBot items archived; stale "verify" rows closed).*
+*Last updated 20 Oct 2026, night (branch `wip-4.90`: #13, #18, #51, #56, #188, #88, #171, #172, #187, #219, #221–#225, #233, #234, #401, #406, #435, #448 built for approval; #468–#470 logged. Beta 4.89.12: #459–#463. Beta 4.89.11: #454–#458. Beta 4.89.10: #449–#453. Beta 4.89.9: #445–#448. Beta 4.89.8: #443, #444. Beta 4.89.7: #226, #442. Beta 4.89.6: #438 corrected, #441. Beta 4.89.5: #438–#440. Beta 4.89.4: #436, #437. Beta 4.89.3: #432–#435 logged, #432 and #433 done. Beta 4.89.2: #220 done. Beta 4.89.1: #430, #431. Beta 4.87: done items moved to build-list-done.md; the DrawBot items archived; stale "verify" rows closed).*
 Every item keeps its number for good. Done items: `docs/build-list-done.md`. The DrawBot version's items: `archive/drawbot/build-list-drawbot.md`.
 
 ## Next
 
 | # | Item | Status |
 |---|---|---|
-| 13 | Numerals centred on the cap height instead of each numeral's own outlines. The radius' anchors are centre · outer edge · inner edge (ring key `anchor`, #95, #338; baseline and ascender retired, #418) | open |
+| 13 | Numerals centred on the cap height instead of each numeral's own outlines. The radius' anchors are centre · outer edge · inner edge (ring key `anchor`, #95, #338; baseline and ascender retired, #418) | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
 | 14 | Heavy dials (knock-outs over hundreds of ticks take about 90 ms a slider step in Chromium, more on the Intel Mac): redraw on mouse-up if dragging feels slow | open |
 | 15 | Fallback font for scripts the main font lacks (Eastern Arabic, Chinese: HarfBuzz has no automatic fallback). Okay, 17 Oct 2026: "Fallback set is a good idea but not necessary, we run on fonts" | parked (Okay) |
 | 47 | Design canon §8, ideas for the tool's window: tabular figures in number fields; grey + orange guides; presentation sheets on the canon's grid. Ask Okay | open |
@@ -18,10 +18,10 @@ Every item keeps its number for good. Done items: `docs/build-list-done.md`. The
 | # | Item | Status |
 |---|---|---|
 | 50 | Imported shapes (SVG, PDF, AI) for markers and hands: a "file" shape is drawn as a bar or baton and the log says so; the hands' dashed SVG tile says "not built yet". In a browser the file's content has to travel inside the settings (no file paths). With #72, #173 | open |
-| 51 | MP4 and GIF export (WebCodecs) | open |
+| 51 | MP4 and GIF export (WebCodecs) | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
 | 52 | Named instances of variable fonts in the font box (a weight axis without named styles gets Regular · Bold, #275; the font's own instances are not listed). The PDF's live text is #63, the fallback font #15 | open |
 | 53 | **Better interface overall** — Okay, 11 Oct 2026: "better ui overall, learn and implement. Move delete layers, export better." Research first (how good parametric tools lay out lists, inspectors and export), then propose. Left of it: an export panel that shows what will be written (#171); the atlas's other interface patterns (sections 4 and 6) are not picked | open (Okay: later) |
-| 56 | Remembered fonts: fonts added from a link are remembered; font files added by hand are forgotten when the page closes | open |
+| 56 | Remembered fonts: fonts added from a link are remembered; font files added by hand are forgotten when the page closes | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
 | 60 | A dial opened from a link could fetch a missing Google family by its name by itself — not done: every unknown font would cost three failed requests | open |
 | 68 | File names: `dial-30mm-2026-10-12.pdf` (diameter and day; a mask says `-mask`, `-mirrored`). Okay was asked (12 Oct 2026): this, or a name field for the dial? With #227 | open |
 | 69 | Split `web/src/app.js` (one class, about 5,900 lines). Scrollbars that take room (macOS "Show scroll bars: always") would make the scrolling rows about 15 narrower than the pinned ones — not reproduced here; ask Okay what his Mac is set to | open |
@@ -118,7 +118,7 @@ Okay's notes on the atlas and his answers, 14 Oct 2026. Atlas numbers are the se
 | 180 | **Gerstner's programme** (Okay: "park for now, remind when applicable") — remind Okay when #169 exists | parked |
 | 184 | **Snapping** (Okay, 14 Oct 2026, on #85): lengths and radii that snap to rings' edges while dragged. "A bigger question for later" | parked |
 | 187 | **Units typed anywhere** (atlas 5.7; Okay, 18:39: "do this"): a field takes `0.5in`, `12pt`, `1lig`, `3mm`, `0.3cm`, `0.5″` and converts to the unit shown; storage stays mm (R1) | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
-| 188 | **A layout check** (atlas 5.10; Okay, 18:39: "THIS ROCKS. YEZXS PLEAĞSE."): a test that reads the window's boxes and reports what misses the box rule (R32): fields and steppers off their column, spaces off the unit, framed things past the pane's lines. Reports first; fails `npm test` once Okay has sorted real misses from intended ones | open |
+| 188 | **A layout check** (atlas 5.10; Okay, 18:39: "THIS ROCKS. YEZXS PLEAĞSE."): a test that reads the window's boxes and reports what misses the box rule (R32): fields and steppers off their column, spaces off the unit, framed things past the pane's lines. Reports first; fails `npm test` once Okay has sorted real misses from intended ones | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
 
 ## From the guide's inventory (15 Oct 2026)
 
@@ -268,7 +268,7 @@ Okay, 02:02: "My secret goal is making 4.90 v01 … Build functionality … note
 | # | Item | Status |
 |---|---|---|
 | 17 | Variation grid sheet | open |
-| 18 | Spec sheet with dimension callouts | open |
+| 18 | Spec sheet with dimension callouts | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
 | 19 | More hand styles: cathedral (through file import, #50); lume plots | open |
 | 20 | Subdials (small seconds, chronograph registers) | open |
 | 21 | Plotter output for the pen plotter via LightBurn | open |

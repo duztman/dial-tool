@@ -9713,7 +9713,7 @@ function spec_sheet(S, statik, t) {
     return p;
   };
   const rule = (x2, y2, w) => out.push(`<rect x="${num(x2)}" y="${num(y2)}" width="${num(w)}" height="${SPEC.line}" fill="${SPEC.ink}"/>`);
-  const box3 = SPEC.h - 2 * SPEC.edge - 10, cx = SPEC.edge + box3 / 2, cy = SPEC.edge + 10 + box3 / 2, k = box3 / (S.dial_d + 8);
+  const box3 = 150, cx = SPEC.edge + box3 / 2, cy = SPEC.edge + 10 + box3 / 2, k = box3 / (S.dial_d + 8);
   const scale = k >= 1 ? `${+k.toFixed(2)} : 1` : `1 : ${+(1 / k).toFixed(2)}`;
   out.push(`<g transform="translate(${num(cx)} ${num(cy)}) scale(${num(k, 6)})">`);
   for (const item of drawn(S, statik, t, false, null)) out.push(`<path d="${item.path.svg(4, true)}" fill="${rgb(item.fill)}"${item.fill[3] < 1 ? ` fill-opacity="${num(item.fill[3])}"` : ""}/>`);
@@ -9730,8 +9730,8 @@ function spec_sheet(S, statik, t) {
     if (b) out.push(`<path d="${n.translate(px - (b[0] + b[2]) / 2, -py - (b[1] + b[3]) / 2).svg(3, true)}" fill="#FFFFFF"/>`);
   });
   words(`Dial Tool \xB7 spec sheet \xB7 ${mm(S.dial_d)} mm dial \xB7 drawn at ${scale}`, SPEC.edge, SPEC.edge + 4, SPEC.head);
-  words(`${MADE_BY} \xB7 ${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)} \xB7 every measure in mm`, SPEC.edge, SPEC.edge + 9, SPEC.type, SPEC.soft);
-  const x0 = SPEC.edge + box3 + 14, cols = [0, 7, 36, 58, 76, 94, 112, 130], width = SPEC.w - SPEC.edge - x0;
+  words(`${MADE_BY} \xB7 ${file_name(S, "json").replace(/^.*mm-|\.json$/g, "")} \xB7 every measure in mm`, SPEC.edge, SPEC.edge + 9, SPEC.type, SPEC.soft);
+  const x0 = SPEC.edge + box3 + 10, cols = [0, 5, 29, 48, 62, 76, 90, 103], width = SPEC.w - SPEC.edge - x0;
   let y = SPEC.edge + 4;
   const line2 = (cells, size = SPEC.type, fill = SPEC.ink) => {
     cells.forEach((c, j) => c !== "" && c != null && words(c, x0 + cols[j], y, size, fill));

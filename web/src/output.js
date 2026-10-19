@@ -267,7 +267,7 @@ export function spec_sheet(S, statik, t) {
   const words = (txt, x, y, size = SPEC.type, fill = SPEC.ink) => { const p = text_path(String(txt), T, size); if (p.d.length) out.push(`<path d="${p.translate(x, -y).svg(3, true)}" fill="${fill}"/>`); return p; };
   const rule = (x, y, w) => out.push(`<rect x="${num(x)}" y="${num(y)}" width="${num(w)}" height="${SPEC.line}" fill="${SPEC.ink}"/>`);
   // the drawing: a square at the left, the dial as large as it holds
-  const box = SPEC.h - 2 * SPEC.edge - 10, cx = SPEC.edge + box / 2, cy = SPEC.edge + 10 + box / 2, k = box / (S.dial_d + 8);
+  const box = 150, cx = SPEC.edge + box / 2, cy = SPEC.edge + 10 + box / 2, k = box / (S.dial_d + 8);
   const scale = k >= 1 ? `${+k.toFixed(2)} : 1` : `1 : ${+(1 / k).toFixed(2)}`;
   out.push(`<g transform="translate(${num(cx)} ${num(cy)}) scale(${num(k, 6)})">`);
   for (const item of drawn(S, statik, t, false, null)) out.push(`<path d="${item.path.svg(4, true)}" fill="${rgb(item.fill)}"${item.fill[3] < 1 ? ` fill-opacity="${num(item.fill[3])}"` : ""}/>`);
@@ -285,9 +285,9 @@ export function spec_sheet(S, statik, t) {
     if (b) out.push(`<path d="${n.translate(px - (b[0] + b[2]) / 2, -(py) - (b[1] + b[3]) / 2).svg(3, true)}" fill="#FFFFFF"/>`);
   });
   words(`Dial Tool · spec sheet · ${mm(S.dial_d)} mm dial · drawn at ${scale}`, SPEC.edge, SPEC.edge + 4, SPEC.head);
-  words(`${MADE_BY} · ${new Date().toISOString().slice(0, 10)} · every measure in mm`, SPEC.edge, SPEC.edge + 9, SPEC.type, SPEC.soft);
+  words(`${MADE_BY} · ${file_name(S, "json").replace(/^.*mm-|\.json$/g, "")} · every measure in mm`, SPEC.edge, SPEC.edge + 9, SPEC.type, SPEC.soft);
   // the numbers, at the right
-  const x0 = SPEC.edge + box + 14, cols = [0, 7, 36, 58, 76, 94, 112, 130], width = SPEC.w - SPEC.edge - x0;
+  const x0 = SPEC.edge + box + 10, cols = [0, 5, 29, 48, 62, 76, 90, 103], width = SPEC.w - SPEC.edge - x0;
   let y = SPEC.edge + 4;
   const line = (cells, size = SPEC.type, fill = SPEC.ink) => { cells.forEach((c, j) => c !== "" && c != null && words(c, x0 + cols[j], y, size, fill)); y += SPEC.row; };
   const head = (txt) => { y += 2; words(txt, x0, y, SPEC.type + 0.4); y += 1.6; rule(x0, y, width); y += SPEC.row; };

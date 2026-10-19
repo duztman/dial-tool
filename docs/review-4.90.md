@@ -4,7 +4,7 @@
 
 How it was built: every new control takes the nearest look Okay has already passed (a tick with its note under it, a full number row, a switch of the preview's make, the Guides list's dark popup, the Gallery's cards). The look of each is for the design round. Every new setting starts as the tool drew before, so older links and files draw as they did (R31: no new link scheme; the new keys are appended to `LINK_KEYS`). Pictures: `archive/screens/2026-10-20-4.90/`.
 
-To try it: the private preview page (the *Dial Tool* artifact), or `git checkout wip-4.90` and open `web/dial-tool.html`.
+To try it: the private preview page (the *Dial Tool* artifact published from this branch — its own link, not the usual preview), or `git checkout wip-4.90` and open `web/dial-tool.html`.
 
 ## Built
 
@@ -26,6 +26,11 @@ To try it: the private preview page (the *Dial Tool* artifact), or `git checkout
 | 225 | **The thinnest line and the narrowest gap** in the Export log on every file: the narrowest mark, band, hand or frame, and the smallest knock-out clearance; numerals and text are named as not measured (no stroke width to read). | Export log | Read from the settings, not measured on the shapes. |
 | 88 | **Weight %** under Dial: every width on the dial at once (marks and walls, bands, hands and their disc's mark, frames), as Scale changes every measure, so the panel's numbers stay true; the note under it says lengths and places stay and one undo takes it back. | Dial | Weight is the window's state (not in a link): the widths carry it. After an undo it still shows its last value. |
 | 171 | **A set of files**: ticks for Dial PDF · SVG · PNG, Mask PDF, Mirrored mask PDF and PNG, Print sheet; *Export ticked* writes them one after another. | Export › A set of files | Chrome asks once whether the page may save several files; the log says so. |
+| 13 | **Cap middle**, a fourth thing a numerals ring's radius can measure to: every label on the middle of the font's capital H, not each on its own ink — a 1, a 10 and old-style figures share one line. | Rings › Radius's menu | An option beside Centre, not a change to Centre (that would move every dial). Pictures: Cormorant with old-style figures, Centre and Cap middle. |
+| 56 | **Font files added by hand are kept** by this browser (IndexedDB) and back in the list next time. | Type › font sheet | A private window keeps nothing; the log says so. |
+| 51 | **MP4 and GIF**: the hands turning from the time shown, at the bar's speed, for Seconds at Frames a second and Size px. MP4 is H.264 (the browser's own encoder; where a browser has none, VP9 in the MP4, and the log says so). A GIF is at most 600 px and 25 frames a second. | Export › Moving picture | Uses the keys the DrawBot version had (out_seconds, out_fps, out_px). Two libraries, both MIT, packed into the one file: mp4-muxer, gifenc. |
+| 18 | **Spec sheet**: an A4 on its side as an SVG — the dial large, a thin red circle at each ring's radius with its number, and the tables: rings (radius, size or length, width, count, span), hands (length, width, tail, hub, cap), windows, the dial; all outlines in Inter. | Export › Print › Spec sheet, and in A set of files | Everything filled (R4), words as outlines (R10), so a print shop sees what you see. |
+| 188 | **The layout check**, a report: `node test/layout.mjs` → `test/out/layout.txt` — where each row's first control starts (strays: places only one or two controls use), spaces between rows off the half-unit, anything past a pane's right line. Not in `npm test`; it fails nothing until you sort its strays into real and meant. First run: 7 strays in Rings (the quiet rows: Count, Span, Every… — meant?), 1 in Hands, 2 in Export, no spaces off the scale, nothing past the line. | `web/test/layout.mjs` | |
 
 ## Noted, not built
 
