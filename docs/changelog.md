@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.88.1 (web version) · 19 Oct 2026
+
+- **Two sizes of check (R19)**, after Okay's note on the time a push takes ("Each .x step up gets the full check … Only filter makes more sense now … Check smartly"): a small push (the third number) runs what it touches, a step (the second number) and a release run everything. `npm run small`: the labels, the links, the complications, the build, the window test, and the icon check only when an icon could have changed — `icons/changed.mjs` looks at whether the icon block in `app.js` or anything under `icons/` differs from the last commit; nothing changed, nothing runs. The window test's own filter (`--only`) needs its sections made independent first: build list #407, next.
+- The bar's date popup is as wide as its words and centred on the date's box (it was bound to the box's width and spilled).
+- Okay's notes of 17:43 in the build list: #404 dauphine and leaf hubs as on a real movement; #405 a blank SVG template with guides and dots for every place an SVG can go, for when imports are built; #406 moving away from a held slider makes its steps finer, soon.
+
 ## beta 4.88 (web version) · 19 Oct 2026
 
 Okay's notes of 17:30 on the am · pm window and X-ray ("All confirmed, go").

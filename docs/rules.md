@@ -1,7 +1,7 @@
 # Dial Tool — rules
 
 Standing rules for the web version (`web/`), the tool since 12 Oct 2026. Check code against these in reviews; cite them by number. Numbers are never reused: the DrawBot version's own rules (R13, R14, R22, R24, R27) are in `archive/drawbot/rules-drawbot.md`. How a rule came to be is in `docs/changelog.md` and the repo's history, not here.
-*Last updated 19 Oct 2026 (beta 4.88: R26's X-ray; R31: link scheme 3. Beta 4.87: web wording throughout, the DrawBot rules archived, R15's form A2 retired).*
+*Last updated 19 Oct 2026 (beta 4.88.1: R19, two sizes of check. Beta 4.88: R26's X-ray; R31: link scheme 3. Beta 4.87: web wording throughout, the DrawBot rules archived, R15's form A2 retired).*
 
 ## Geometry
 
@@ -44,7 +44,10 @@ Standing rules for the web version (`web/`), the tool since 12 Oct 2026. Check c
 ## Process
 
 - **R18 · Simplest approach that works** (Occam). No new feature without Okay asking.
-- **R19 · Test before handing over.** `cd web && npm test` must pass (parity with `dial.py`, the labels, the links there and back, the complications, the Wear OS export, the window in Chromium, the icon check — R33), and look at `web/test/out/sheet.png`, the screenshots there and, after an icon change, `web/icons/out/sheet.png`. A change that must not change the look is proved with the look-check (R32).
+- **R19 · Test before handing over — as much as the push needs** (Okay, 19 Oct 2026: "Each .x step up gets the full check … Only filter makes more sense now … Check smartly"). Two sizes of push, two sizes of check:
+  - **A small push** (the third number, 4.88 → 4.88.1): the checks the change touches — the window test's sections for the parts changed (`node test/window.mjs --only <sections>`, once #407 lands), the icon check for icons whose drawing changed (`node icons/check.mjs --changed`), the look-check (`same.mjs`) only when the stylesheet changed, and a look at the screenshots of those parts. Code can reach code, so a change in `geometry.js` runs the geometry sections too; icons don't reach each other, so only the changed ones.
+  - **A step** (the second number, 4.88 → 4.89): `cd web && npm test` whole — parity with `dial.py`, labels, links, complications, Wear OS, the window, every icon — and `same.mjs` when the look should not have moved; then a look at `web/test/out/sheet.png`, the screenshots and `web/icons/out/sheet.png`. The full check also looks at what a filtered run can't: the panel's distances (#188), pressed and pushed states, popups and lists that overlap other parts. That list is not complete; the point is to check smartly — what the step's changes could have reached — not everything every time.
+  - Before a release to `main`: the step's full check, always.
 - **R20 · Third attempt at the same fix → stop and ask.** The first assumption was probably wrong.
 - **R21 · Measure, don't estimate** — sizes and timings come from real renders.
 - **R25 · The guide follows the app** (`guide/`, by `guide/PLAN.md`). Its pictures are made by script from the current app, never drawn; every "do X and Y happens" sentence has a scripted check that must pass. **It is rebuilt only when Okay asks** (`bash guide/make.sh`; Okay, 16 Oct 2026: "decouple the guide creation from each build, it's hand generated every once in a while by triggered me"): an app release does not touch it, and the live guide names the version it was made on; the picture diff then shows what changed since the last guide. Never type a value into the guide that a picture or a check doesn't use. Page design follows `guide/notes-okay.md` and the design canon (R29).
