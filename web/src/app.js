@@ -2815,7 +2815,7 @@ class DialTool {
 
     if (row.kind === "pick") {                     // a choice as pictures: one tile per item, on the columns
       const group = el("span", { className: (row.small ? "picks small" : row.thumbs ? "picks thumbs" : "picks") + (row.across ? " across" : ""), role: "radiogroup", ariaLabel: row.text });
-      if (row.across) group.style.setProperty("--across", row.across);      // as many tiles to a line as it has (a window's complications, five)
+      if (row.across) group.style.setProperty("--across", Math.max(4, row.across));      // four to a line at least: fewer keep a four's size, the room left at the right; a fifth squeezes in (design canon §6)      // as many tiles to a line as it has (a window's complications, five)
       row.items.forEach((name, i) => {
         if (row.skip && row.skip.includes(i)) return;      // an item kept in the list for its place (R9) but not offered here
         const tile = el("button", { type: "button", className: "pickt", id: `${id}-${i}`, title: name, onclick: () => set(i) });

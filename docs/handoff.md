@@ -1,16 +1,16 @@
 # Handoff — taking over the Dial Tool
 
-*Written 16 Oct 2026 at beta 4.46.5 (Okay: "devise way to handoff to another agent"); §1 rewritten at every handover, last on 19 Oct 2026 at beta 4.87. The rest changes when something new is learnt.*
+*Written 16 Oct 2026 at beta 4.46.5 (Okay: "devise way to handoff to another agent"); §1 rewritten at every handover, last on 19 Oct 2026 at beta 4.89. The rest changes when something new is learnt.*
 
 A new session starts with no memory of the last one: the transcript stays in the old container. Everything a successor needs is in the repo. Use this page to find it.
 
-## 1 · Where things stand (19 Oct 2026, afternoon, after the housekeeping)
+## 1 · Where things stand (19 Oct 2026, evening, after beta 4.89)
 
-- **Beta 4.87** is on `dev`, the live page and **`main`** (released 19 Oct 2026: Okay, "in the end i need this all on main and current"). It is housekeeping, no change to the dial or the look: dead code and stale comments out; the version chronology out of code comments and docs (Okay: "eliminate history from current docs"); the DrawBot version's rules, words and build-list items moved to `archive/drawbot/`; done build-list items to `docs/build-list-done.md`; `icons/check.mjs` reaches the font sheet again (it had pressed a button gone since 4.54); the Gallery and example cards drawn by one `card()` in `web/links.mjs` (the examples lacked see-through fills); sixteen stray screenshots gone from `web/`; esbuild 0.28. Everything before it: `docs/changelog.md` (4.86 and down) and `docs/versions.md`.
-- **The app** (4.86 → 4.87, unchanged): the controller (R15), one number box everywhere, Positions, the LINK pill, the complications (`moment.js`), the windows' discs and X-ray, the case and strap, Tiny Preview, the showcase with shine and bevels, Wear OS export, your own dials, the print sheet, the Gallery. The complications' engine runs in the window.
-- **Next, in order** (the build list, top down): what is open under *From Okay's notes on 4.78* and *From Okay's notes 2*; #349's design (picking one mark); the hands' preview gestures (#329, #345); #339 Nudge one numeral, friendlier. The items marked *sketch first* need his drawing or eye.
-- **Waiting for Okay** (brief §5): nothing open. To see on his devices: the cases (do the four silhouettes work?), the handles under a finger, the APK on a real watch, Copy link on WebKit (#332).
-- **Okay's last words** (19 Oct 2026, 13:12): "Tokens history: you are right, eliminate history from current docs. All common sense options, go with all."
+- **Beta 4.89** is on `dev`, `main` and the live page (released 19 Oct 2026, 21:26: "publish what we have done this session on main"). It is Okay's *Notes 3* and the session's sketch rounds: R16 (an empty pane hides), R34 (no band-aids), the tick-and-note rule and the tile-row rule (design canon §6), the window tab reordered, Resize Ring from, Positions' circle, the date popup, NOW, the hand's sides, a phone's sheets. Details: `docs/changelog.md`.
+- **The session ran on the sketch loop** (§4b): seven rounds on the private preview page, crops in the chat, one release. Measured: `npm run small` 120–140 s, the full `npm test` about 140 s here, a preview publish seconds. What slowed it most: readings of a drawn note taken without asking (Positions took three rounds: "allow to penetrate" read the wrong way). Ask with a picture when a drawing's direction is open.
+- **Next, in order**: the production debts (build list, *Production debts*, ranked; Claude's proposal, 19 Oct: one session on them before more panel work), then #406, #404 + #421, #329, #339, #349 (*sketch first*), #407.
+- **Waiting for Okay**: the movement (brief §5.1); #395. The cases, the handles under a finger, the APK on a watch, Copy link on WebKit (#332) still to be seen on his devices.
+- **Okay's last words** (19 Oct 2026, 21:26): "publish what we have done this session on main, archive the screenshots and come back. Give me a pdf facsimile with editable text as pdf of the guides popup, ı'll take a crack at it on illustrator."
 
 ## 2 · First steps in a new session
 

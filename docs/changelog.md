@@ -1,5 +1,22 @@
 # Dial Tool — changelog
 
+## beta 4.89 (web version) · 19 Oct 2026
+
+Okay's *Notes 3* (nine screenshots in his notes doc) and his notes through the session's sketch rounds, the first session on the sketch loop (handoff §4b): built round by round on a private preview page, released once.
+
+- **R16 widened: a pane whose rows all don't apply goes**, heading and all ("We don't need to see a header we do not have the interaction with"); Undo and Redo the one kind that shows inactive. A window that is off leaves its tab empty under Show.
+- **R34, no band-aids**: one need, one mechanism; a rule for what has none; a contradicted rule edited in the same push.
+- **A tick says its name; its meaning a note under it, in one box** (design canon §6): *Big date*, *Follows the date*, *Neighbours*, *Inside the case* with their notes; every note 12 px and grey, no line between it and its row, its first line a line's spacing under the row's words (`--leading`), the box ending `--note-air` under it. Every tick and note on the controls' column, the first in a pane too (Print's *Mono print mask*). The gap from a box to its words one token (`--tick-gap`, 11).
+- **A row of tile buttons** (design canon §6): on the controls' column beside its name, four to a line and equal; two or three keep a four's size; a fifth squeezes in. A window's four complications so.
+- **A window's tab**: the three ticks at the end of Shape, Frame and Clearance in their place; the text and its font a *Font* pane of their own; *Frame width* for the frame's number; *Follows the date* on to start and for every link (Okay: "yes"); Show's tick closer to its word (8.25), the heading a unit under Show.
+- **Resize Ring from …**: the pane's heading, *from* in plain type and the menu stretched to the margin; Baseline and Ascender retired from the menu and the drawing (a ring stored with one measures to the centre).
+- **Positions' circle** from the first row's line to a unit above the pane's foot, growing left into the eye's column, never past the controls' names; its lines 1.75 (a hairline + 0.75).
+- **The bar's date popup**: one line — the weekday, day · month · year as menus, − and + together — no time line, 15 % larger, the same size whatever the date. **NOW** outlined as the bar's other boxes, no grey fill.
+- **The hand's picture**: no squares and no dotted box; pointing at a side, or its row, lights that side as a line on the outline in the guide's colour; the sides' reach unseen, the cursor saying the way.
+- **A phone's sheets** (colour, fonts, Guides, Shadows) 7 px in from the sides and the foot, over the drawer's gripper.
+- `test/crop.mjs`: a picture of one part of the window, with measures (`CROP_W`, `CROP_H`, `CROP_TOUCH`); crops kept in `web/test/crops/`.
+- Build list: Notes 3 as #411–#429; the production debts gathered and ranked (#12, #16, #63, #218–#228); #229 closed (Blank face).
+
 ## beta 4.88.2 (web version) · 19 Oct 2026
 
 Okay's notes of 18:00–18:04, the look lane ("These are rules now"; design canon §6, §7).

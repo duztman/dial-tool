@@ -55,7 +55,7 @@
     .picker .squares .adds.three > .pickt span { white-space: nowrap; }
     /* the colour pop-out is a sheet from the bottom; wide, it is the whole screen. Every sheet (fonts, colour, the Guides
        and Shadows lists) stands --sheet-edge in from the screen's sides and foot, not its top, its corners all round
-       (Okay, 19 Oct 2026, 21:18: "This popup and others needs 3px padding from all sides except top on mobile") */
+       (Okay, 19 Oct 2026, 21:18: "This popup and others needs … padding from all sides except top on mobile"; 21:26: 7) */
     .colourpop { inset: auto var(--sheet-edge) var(--sheet-edge); z-index: 7; width: auto; border-radius: var(--round-large); }      /* over the drawer and its gripper (Okay, 19 Oct 2026, 21:18: "the resize nubbin is visible. Shouldn't be") */
     .colourpop.wide { inset: 0 var(--sheet-edge) var(--sheet-edge); grid-template-rows: auto auto auto 1fr; border-radius: var(--round-large); }      /* wide, a sheet is the whole screen; the field takes the height that is left */
     .colourpop.wide .sv { height: auto; min-height: var(--pop-field); }

@@ -8,11 +8,9 @@ Every item keeps its number for good. Done items: `docs/build-list-done.md`. The
 
 | # | Item | Status |
 |---|---|---|
-| 12 | Production limits per method: minimum line width and clearance; warn in the preview | open |
 | 13 | Numerals centred on the cap height instead of each numeral's own outlines. The radius' anchors are centre · outer edge · inner edge (ring key `anchor`, #95, #338; baseline and ascender retired, #418) | open |
 | 14 | Heavy dials (knock-outs over hundreds of ticks take about 90 ms a slider step in Chromium, more on the Intel Mac): redraw on mouse-up if dragging feels slow | open |
 | 15 | Fallback font for scripts the main font lacks (Eastern Arabic, Chinese: HarfBuzz has no automatic fallback). Okay, 17 Oct 2026: "Fallback set is a good idea but not necessary, we run on fonts" | parked (Okay) |
-| 16 | Live text in the SVG (*Keep numerals as text in the SVG*, Export; R10): open one in Illustrator with the font installed — do the numerals land where the outlines do, do the cuts arrive as clipping masks? The PDF's live text is #63 | verify |
 | 47 | Design canon §8, ideas for the tool's window: tabular figures in number fields; grey + orange guides; presentation sheets on the canon's grid. Ask Okay | open |
 
 ## Web version (Okay's first asks, 11–12 Oct 2026)
@@ -25,7 +23,6 @@ Every item keeps its number for good. Done items: `docs/build-list-done.md`. The
 | 53 | **Better interface overall** — Okay, 11 Oct 2026: "better ui overall, learn and implement. Move delete layers, export better." Research first (how good parametric tools lay out lists, inspectors and export), then propose. Left of it: an export panel that shows what will be written (#171); the atlas's other interface patterns (sections 4 and 6) are not picked | open (Okay: later) |
 | 56 | Remembered fonts: fonts added from a link are remembered; font files added by hand are forgotten when the page closes | open |
 | 60 | A dial opened from a link could fetch a missing Google family by its name by itself — not done: every unknown font would cost three failed requests | open |
-| 63 | **Live text in the PDF**: the SVG keeps numerals as text; the PDF is written by hand (`web/src/output.js`), so live text there means building the font into the file. Okay, 11 Oct 2026: "SVG now, PDF later" | open |
 | 68 | File names: `dial-30mm-2026-10-12.pdf` (diameter and day; a mask says `-mask`, `-mirrored`). Okay was asked (12 Oct 2026): this, or a name field for the dial? With #227 | open |
 | 69 | Split `web/src/app.js` (one class, about 5,900 lines). Scrollbars that take room (macOS "Show scroll bars: always") would make the scrolling rows about 15 narrower than the pinned ones — not reproduced here; ask Okay what his Mac is set to | open |
 | 72 | **Logo**: an SVG placed on the dial with the mouse; it is also a ring, edited in Rings "differently"; a link from the Dial pane goes to it. Its file's content travels in the settings (#50). Ask Okay before building: its colours (he first wanted an SVG's colours adjustable), scale and rotation, whether a link can carry it. Words are the text ring's (#297) | open |
@@ -34,6 +31,44 @@ Every item keeps its number for good. Done items: `docs/build-list-done.md`. The
 | 77 | **Persistent groupings for every section** — Okay, 12 Oct 2026: "Persistent lines are scary for me too. Sucks to have no left view height, especially on rings on iPad… Park for now." Only All hands is pinned; main selectors stand on heading lines instead | parked (Okay) |
 | 75 | Usability review, the other tabs: Rings · Hands · Windows · Export, one at a time (Okay, 12 Oct 2026) | open |
 | 66 | Tabs and the columns: five tabs share six columns, so they sit between columns (Okay, 11 Oct 2026: "Columns? They fit 'em"). Ways: tabs one column each with the sixth free, or a sixth sign. Ask Okay | open |
+
+## Production debts (gathered 19 Oct 2026)
+
+Okay, 19 Oct 2026, 21:26: "Add production debts to the build list and look at it again". The dial is for etched brass (toner transfer), pad print and laser (brief §1); these are what stands between a dial drawn here and one made. Ranked by what goes wrong on the metal first. Looked at again against beta 4.89's code on 19 Oct 2026: all still open; #229 (no blank start) is met by *Blank face* under Dial › Reset and is done. Per-ink films and registration marks are #35 and #87 (Later), print things under Export › Print (#140).
+
+**Wrong on the brass — a mask that loses or adds ink**
+
+| # | Item | Status |
+|---|---|---|
+| 220 | **Marks lying on a band vanish in the mask** unless the band knocks them out; nothing warns (the Sector dial: its chapter band's ticks and numerals are lost). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 221 | **Knock-out ignores hidden rings**: hiding the rings above a band and exporting gives the band solid, so per-ink films made that way lose their holes. Films come from one full export's PDF layers until this changes. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 222 | **Cut lines in the resist's black**: the window's and the centre hole's 0.05 mm cut lines are drawn in the mask's black (layers "Window 1 cut line", "Hole"); the PNG mask bakes them in. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 219 | **No export without the hands and the window content**: a colour export always holds the hands at the time shown and the date (a printer sent it prints hands onto the dial). An Export option to leave them out. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 223 | **No mask invert** (toner where there are no marks, for sunk marks). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 224 | **No blank outline or registration marks** on the mask; the centre hole's cut line is the only reference. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+
+**Limits — what the method can hold**
+
+| # | Item | Status |
+|---|---|---|
+| 12 | Production limits per method: minimum line width and clearance; warn in the preview | open |
+| 225 | **No thinnest-line report**: the Export log could name the thinnest line of a dial; numerals' strokes have no width setting to read it from. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+
+**Files — what reaches Illustrator and the printer**
+
+| # | Item | Status |
+|---|---|---|
+| 226 | **Exported files carry no app version** (PDF, SVG, PNG metadata). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 227 | **The file name gives the dial's size; the page is larger** by twice the margin ("dial-30mm" is a 36 mm page). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 16 | Live text in the SVG (*Keep numerals as text in the SVG*, Export; R10): open one in Illustrator with the font installed — do the numerals land where the outlines do, do the cuts arrive as clipping masks? The PDF's live text is #63 | verify |
+| 63 | **Live text in the PDF**: the SVG keeps numerals as text; the PDF is written by hand (`web/src/output.js`), so live text there means building the font into the file. Okay, 11 Oct 2026: "SVG now, PDF later" | open |
+
+**Dead ends**
+
+| # | Item | Status |
+|---|---|---|
+| 218 | **"Add image…" is a dead end**: it says "Not built yet" (R17). Build it (#73, #173) or hide it. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 228 | **Defaults asks for Helvetica Neue**, which isn't bundled: the Type pane says "not loaded" and Inter stands in. A bundled font in the starting values needs a new link scheme number (R31). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
 
 ## From the atlas review (13 Oct 2026)
 
@@ -93,18 +128,6 @@ App faults the guide's reviewers and its coverage walk found (`guide/PLAN.md` st
 
 | # | Item | Status |
 |---|---|---|
-| 218 | **"Add image…" is a dead end**: it says "Not built yet" (R17). Build it (#73, #173) or hide it. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
-| 219 | **No export without the hands and the window content**: a colour export always holds the hands at the time shown and the date (a printer sent it prints hands onto the dial). An Export option to leave them out. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
-| 220 | **Marks lying on a band vanish in the mask** unless the band knocks them out; nothing warns (the Sector dial: its chapter band's ticks and numerals are lost). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
-| 221 | **Knock-out ignores hidden rings**: hiding the rings above a band and exporting gives the band solid, so per-ink films made that way lose their holes. Films come from one full export's PDF layers until this changes. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
-| 222 | **Cut lines in the resist's black**: the window's and the centre hole's 0.05 mm cut lines are drawn in the mask's black (layers "Window 1 cut line", "Hole"); the PNG mask bakes them in. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
-| 223 | **No mask invert** (toner where there are no marks, for sunk marks). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
-| 224 | **No blank outline or registration marks** on the mask; the centre hole's cut line is the only reference. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
-| 225 | **No thinnest-line report**: the Export log could name the thinnest line of a dial; numerals' strokes have no width setting to read it from. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
-| 226 | **Exported files carry no app version** (PDF, SVG, PNG metadata). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
-| 227 | **The file name gives the dial's size; the page is larger** by twice the margin ("dial-30mm" is a 36 mm page). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
-| 228 | **Defaults asks for Helvetica Neue**, which isn't bundled: the Type pane says "not loaded" and Inter stands in. A bundled font in the starting values needs a new link scheme number (R31). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
-| 229 | **No blank start ("New")**: the only reset is Defaults, under Export › Settings file. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
 | 230 | **Per-pane anchors from the app into the guide** (edition 2). The Help link beside the version opens the guide (Okay, 15 Oct 2026: "Help next to beta number same font but underlined"). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
 | 231 | **Word collisions**: Backdrop (a colour and a switch) · Frame (a colour and a width, Windows) · Size, Size %, Size × · Ring Ø and Ring at % on hands · the opener's ring named Band whose kind is numerals. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
 | 232 | **Phone: with the drawer dragged up, Undo · Redo overlap the Backdrop switch**. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
@@ -168,25 +191,8 @@ Nine annotated screenshots under *Notes 3* in Okay's Google Doc *Dial tool notes
 
 | # | Item | Status |
 |---|---|---|
-| 411 | **The hand's selection: drop the orange handles and the dotted box** — "Thick selection indicators faulty at times. Abort this type. Find 'highlighting active sides' kind of simple solution please." Reading: the side a row changes is lit (#329's lighting), no grips drawn | sketch — on the preview (the sides lit as a line on the outline; the squares and the box gone; a side's reach unseen, its cursor says the way) |
-| 412 | **The bar's date popup** — "Popup larger overall"; "Remove time" goes; "drop down for each item"; "size fixed, no movements by change in content" (the box keeps its width whatever the date reads). Okay, 19:31: "Minus moves next to plus, dropdowns just for groupings" — − and + together at the right, a dropdown per group | sketch — on the preview (one line, menus, − + together, the time line gone, 15 % larger, fixed size) |
-| 413 | **A window's three ticks at the end of its column** (Follows the date in the bar · Its neighbours show… · Its disc stays inside the case); "Last two sliders come in their place. All on by default" | approved; *Follows the date* on to start and for every link (Okay, 21:09: "yes") |
-| 414 | **The bar: "1 px gap?"** left of the time box, and "Why? fill with grey, worst colour" at NOW | sketch — NOW outlined as the bar's boxes; the 1 px gap gone on the iPad (Okay, 21:07) |
-| 415 | **A window's font gets its own section and eye** — "Font needs own section & eye" | approved (Okay, 19:47) |
-| 416 | **A window's sub-tab: "Show" hidden until …**; "Window at 6" loses "Window". Okay, 19:31: hidden until "the tab is picked" — only the picked tab shows its Show | approved — as R16: a pane whose rows all don't apply goes |
-| 417 | **Positions: the picture as tall as its controls** — the green box from the top rule to the bottom rule, the circle grown to it | approved (Okay, 19:47) |
-| 418 | **Resize from: Baseline and Ascender out, "from the functions as well"**; Centre · Outer edge · Inner edge stay. Inconsistent with #13 (five anchors): #13 to be read as three | approved (Okay, 19:47) |
-| 419 | **"Resize Ring From"**: the head reads *Resize Ring From* with the anchor's menu at its right; the row keeps the slider and the number | sketch — "Resize Ring" · *from* · the menu stretched (Okay, 19:47) |
-| 420 | **A tick says its name; its meaning a note under it, in one box** — design canon §6 (Okay, 19:47 and 20:00: "I like b … hiding the white line … applies to small grays too … within the same box that ends with a bottom white border"). Big date, Follows the date, Neighbours, Inside the case split; every note small and grey, no line above it | approved (Okay, 21:09: "now looks correct, dont touch") |
 | 421 | **Keep a hand's details in the lit picture** — the dauphine's connecting dot (Okay, 20:02: "Let's do not lose details such as dauphine's connector dot, we might make it larger too if we want"); with #404's hubs | open — note |
-| 422 | **Two *Frame* rows in a window's Shape pane** (its colour, its width) now stand near each other: *Frame width*? | done — *Frame width* (Okay, 21:09) |
-| 423 | **Positions' circle allowed into the controls' column**, from the first row's top line to a unit above the pane's closing line (Okay, 20:22: "Allow to penetrate", "Limit"); the controls over it | sketch — on the preview |
-| 424 | **Every tick and note on the controls' column, the first in a pane too** (Okay, 20:22: Print's *Mono print mask* moved under *Mirrored*) | sketch — on the preview |
 | 425 | **The print sheet's picture: Edit** — the sheet laid out by hand (Okay, 20:22: "EDIT: (future)") | later |
-| 426 | **A window's complications: four equal tiles on the controls' column, beside their name** (Okay, 20:37: "EQUAL") | sketch — Okay, 21:18: "tabs start from second column and fit in the remaining area … not text, buttons": read as built (the tiles from the controls' column to the margin, the name beside them) |
-| 427 | **Show: its tick closer to its word; a window's heading closer under it** (Okay, 20:37: "closer", "closer"): gap 11 → 8.25, 16.5 → 11 | sketch — on the preview |
-| 428 | **Positions' circle: grows left into the eye's column, never past the controls' names; its lines 0.75 thicker** (Okay, 20:37: "No passing red line ever. Yes: passing green"; "Line thicknesses .75 thicker") | sketch — on the preview |
-| 429 | **A phone's sheets 3 px in from the sides and the foot, over the drawer's gripper** — the colour pop-out, the font sheet, the Guides and Shadows lists (Okay, 21:18: "3px padding from all sides except top on mobile. Also the resize nubbin is visible. Shouldn't be") | sketch — on the preview |
 
 ## Dial Packer (side product, 19 Oct 2026)
 
