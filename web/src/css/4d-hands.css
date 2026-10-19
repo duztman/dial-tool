@@ -9,12 +9,12 @@
   /* the hand's handles (#345): a dotted box round the hand, a square at each side's middle, in the selected guide's colour
      with a white hairline, as the ring handles (6-preview); a fingertip's reach round each, unseen */
   .detail svg.grips { inset: 0; width: 100%; height: 100%; pointer-events: none; }
-  .detail .grips .frame { fill: none; stroke: var(--handle); stroke-width: 1; stroke-dasharray: 2 2; }
-  .detail .grips .handle { fill: var(--handle); stroke: var(--white); stroke-width: 1.5; cursor: grab; pointer-events: all; touch-action: none; }
+  .detail .grips .handle { cursor: grab; pointer-events: all; touch-action: none; }      /* a side's reach, unseen (#411) */
+  .detail .grips .handle.ew { cursor: ew-resize; }
+  .detail .grips .handle.ns { cursor: ns-resize; }
   .detail .grips .handle .reach { fill: transparent; stroke: none; }
-  .detail.dragging .grips .handle { cursor: grabbing; }
   .detail .handname { position: absolute; left: var(--unit); bottom: var(--u1); font-size: var(--t-s); color: var(--grey); pointer-events: none; }      /* the shape's name, small, at its bottom left (4.79) */
-  .detail .lit { fill: var(--lit); }      /* a number's part, lit while its row is pointed at (#329), in the selected guide's colour */
+  .detail .lit { fill: none; stroke: var(--lit); stroke-width: var(--triple); vector-effect: non-scaling-stroke; }      /* a number's sides: the hand's outline where that number moves it, lit while its row or its side is pointed at (#329, #411), in the selected guide's colour */
   .detail .pivot { fill: var(--surface); stroke: var(--grey); stroke-width: var(--hair); vector-effect: non-scaling-stroke; }
   /* the hand's shapes as thumbs (Okay: "rectangular thumbs"; a row of their own after the rows): every
      one shown, upright pictures in upright tiles, no words (a tile's title names it), a unit apart, all on one line

@@ -9,7 +9,7 @@ Every item keeps its number for good. Done items: `docs/build-list-done.md`. The
 | # | Item | Status |
 |---|---|---|
 | 12 | Production limits per method: minimum line width and clearance; warn in the preview | open |
-| 13 | Numerals centred on the cap height instead of each numeral's own outlines. The radius' anchors are centre · baseline · ascender · outer edge · inner edge (ring key `anchor`, #95, #338) | open |
+| 13 | Numerals centred on the cap height instead of each numeral's own outlines. The radius' anchors are centre · outer edge · inner edge (ring key `anchor`, #95, #338; baseline and ascender retired, #418) | open |
 | 14 | Heavy dials (knock-outs over hundreds of ticks take about 90 ms a slider step in Chromium, more on the Intel Mac): redraw on mouse-up if dragging feels slow | open |
 | 15 | Fallback font for scripts the main font lacks (Eastern Arabic, Chinese: HarfBuzz has no automatic fallback). Okay, 17 Oct 2026: "Fallback set is a good idea but not necessary, we run on fonts" | parked (Okay) |
 | 16 | Live text in the SVG (*Keep numerals as text in the SVG*, Export; R10): open one in Illustrator with the font installed — do the numerals land where the outlines do, do the cuts arrive as clipping masks? The PDF's live text is #63 | verify |
@@ -168,15 +168,18 @@ Nine annotated screenshots under *Notes 3* in Okay's Google Doc *Dial tool notes
 
 | # | Item | Status |
 |---|---|---|
-| 411 | **The hand's selection: drop the orange handles and the dotted box** — "Thick selection indicators faulty at times. Abort this type. Find 'highlighting active sides' kind of simple solution please." Reading: the side a row changes is lit (#329's lighting), no grips drawn | open — sketch round |
-| 412 | **The bar's date popup** — "Popup larger overall"; "Remove time" goes; "drop down for each item"; "size fixed, no movements by change in content" (the box keeps its width whatever the date reads). Okay, 19:31: "Minus moves next to plus, dropdowns just for groupings" — − and + together at the right, a dropdown per group | open |
-| 413 | **A window's three ticks at the end of its column** (Follows the date in the bar · Its neighbours show… · Its disc stays inside the case); "Last two sliders come in their place. All on by default" | open |
-| 414 | **The bar: "1 px gap?"** left of the time box, and "Why? fill with grey, worst colour" at NOW | open — measure |
-| 415 | **A window's font gets its own section and eye** — "Font needs own section & eye" | open |
-| 416 | **A window's sub-tab: "Show" hidden until …**; "Window at 6" loses "Window". Okay, 19:31: hidden until "the tab is picked" — only the picked tab shows its Show | open |
-| 417 | **Positions: the picture as tall as its controls** — the green box from the top rule to the bottom rule, the circle grown to it | open |
-| 418 | **Resize from: Baseline and Ascender out, "from the functions as well"**; Centre · Outer edge · Inner edge stay. Inconsistent with #13 (five anchors): #13 to be read as three | open |
-| 419 | **"Resize Ring From"**: the head reads *Resize Ring From* with the anchor's menu at its right; the row keeps the slider and the number | open |
+| 411 | **The hand's selection: drop the orange handles and the dotted box** — "Thick selection indicators faulty at times. Abort this type. Find 'highlighting active sides' kind of simple solution please." Reading: the side a row changes is lit (#329's lighting), no grips drawn | sketch — on the preview (the sides lit as a line on the outline; the squares and the box gone; a side's reach unseen, its cursor says the way) |
+| 412 | **The bar's date popup** — "Popup larger overall"; "Remove time" goes; "drop down for each item"; "size fixed, no movements by change in content" (the box keeps its width whatever the date reads). Okay, 19:31: "Minus moves next to plus, dropdowns just for groupings" — − and + together at the right, a dropdown per group | sketch — on the preview (one line, menus, − + together, the time line gone, 15 % larger, fixed size) |
+| 413 | **A window's three ticks at the end of its column** (Follows the date in the bar · Its neighbours show… · Its disc stays inside the case); "Last two sliders come in their place. All on by default" | approved (Okay, 19:47) — open: *Follows the date* on for old links too? |
+| 414 | **The bar: "1 px gap?"** left of the time box, and "Why? fill with grey, worst colour" at NOW | sketch — NOW outlined as the bar's boxes; the 1 px gap not found (5.5 px measured): ask for a picture |
+| 415 | **A window's font gets its own section and eye** — "Font needs own section & eye" | approved (Okay, 19:47) |
+| 416 | **A window's sub-tab: "Show" hidden until …**; "Window at 6" loses "Window". Okay, 19:31: hidden until "the tab is picked" — only the picked tab shows its Show | approved — as R16: a pane whose rows all don't apply goes |
+| 417 | **Positions: the picture as tall as its controls** — the green box from the top rule to the bottom rule, the circle grown to it | approved (Okay, 19:47) |
+| 418 | **Resize from: Baseline and Ascender out, "from the functions as well"**; Centre · Outer edge · Inner edge stay. Inconsistent with #13 (five anchors): #13 to be read as three | approved (Okay, 19:47) |
+| 419 | **"Resize Ring From"**: the head reads *Resize Ring From* with the anchor's menu at its right; the row keeps the slider and the number | sketch — "Resize Ring" · *from* · the menu stretched (Okay, 19:47) |
+| 420 | **A tick says its name; its meaning a note under it, in one box** — design canon §6 (Okay, 19:47 and 20:00: "I like b … hiding the white line … applies to small grays too … within the same box that ends with a bottom white border"). Big date, Follows the date, Neighbours, Inside the case split; every note small and grey, no line above it | sketch — on the preview |
+| 421 | **Keep a hand's details in the lit picture** — the dauphine's connecting dot (Okay, 20:02: "Let's do not lose details such as dauphine's connector dot, we might make it larger too if we want"); with #404's hubs | open — note |
+| 422 | **Two *Frame* rows in a window's Shape pane** (its colour, its width) now stand near each other: *Frame width*? | open — ask |
 
 ## Dial Packer (side product, 19 Oct 2026)
 

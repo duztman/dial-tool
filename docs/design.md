@@ -162,6 +162,15 @@ alignment to these rules as well."*
   no orphan: a second line gets filled (say more) or the first is cut short so the lines balance (`text-wrap:
   balance`). The Show tick under the window cards and the hand tabs: the white tick fills its black box
   (the box as it is, the tick grown to the box less half a unit).
+- **A tick says its name; a note says what it means** (Okay, 19 Oct 2026, #420: "I like b … hiding the white line, one
+  line or two line if necessary explanations … applies to small grays too. They are always within the same box that
+  ends with a bottom white border"). A tick's words are its name, a few words in ink, on one line ("Big date",
+  "Neighbours", "Inside the case"). What it does goes in a note under it. Every note, under a tick or under any other
+  row, is part of that row's box: no line between them, the box's line under the note. A note is small (`--t-s`)
+  and grey, one line or two. Its first line follows the row's line at the panel's line spacing (`--leading`): under
+  a tick, as a tick's second line would, starting where the tick's words start; under controls, just below their
+  boxes, on the controls' column. The box ends as far under the note as a row's words start above
+  (`--note-air`). The CSS for it: `4c-rows.css`, *a note and the row it explains are one box*.
 
 ## 7 · Writing
 

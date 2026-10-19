@@ -247,8 +247,8 @@ const hand_detail = (h) => {
   const centre = (line) => `<path class="axis" d="${line}"/><circle class="pivot" r="${ring}"/>`;
   const mark = G.paints_mark(h) && G.disc_mark(h), md = mark ? mark.svg(3, true) : "";      // a disc's painted mark, in its own colour (#300)
   const marked = (turn) => (mark ? `<path class="mark" d="${md}"${turn} fill="${to_hex(h.mark_c)}"/>` : "");
-  return `<svg class="upright" viewBox="${f(b[0] - m)} ${f(-b[3] - m)} ${f(w + 2 * m)} ${f(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${marked("")}<path class="lit"/>${centre("M-999 0L999 0")}</svg>`
-    + `<svg class="lying" viewBox="${f(b[1] - m)} ${f(b[0] - m)} ${f(high + 2 * m)} ${f(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${marked(' transform="rotate(90)"')}<path class="lit" transform="rotate(90)"/>${centre("M0 -999L0 999")}</svg>`;
+  return `<svg class="upright" viewBox="${f(b[0] - m)} ${f(-b[3] - m)} ${f(w + 2 * m)} ${f(high + 2 * m)}" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/>${marked("")}<clipPath id="lit-upright"><path class="litarea"/></clipPath><path class="lit" d="${d}" clip-path="url(#lit-upright)"/>${centre("M-999 0L999 0")}</svg>`
+    + `<svg class="lying" viewBox="${f(b[1] - m)} ${f(b[0] - m)} ${f(high + 2 * m)} ${f(w + 2 * m)}" aria-hidden="true"><path d="${d}" transform="rotate(90)" fill="currentColor" fill-rule="evenodd"/>${marked(' transform="rotate(90)"')}<clipPath id="lit-lying"><path class="litarea"/></clipPath><path class="lit" d="${d}" transform="rotate(90)" clip-path="url(#lit-lying)"/>${centre("M0 -999L0 999")}</svg>`;
 };
 /** the part of a hand that one of its numbers makes (#329; Okay's notes 2, 18 Oct 2026: "hovering a row lights its part
  *  on the hand's picture at the left"): what changes when that number changes. The hand is drawn again with the number a
@@ -747,7 +747,8 @@ const ROWS = {
     custom("window_at", { ...W, head: true, show: win_on, text: "Position" }),
     // four complications: a big date is the Date tile with its tick below (4.89; Okay, 19 Oct 2026: "Big date function is an under selection of date function"); its kind, 4, stays what is stored (R9)
     pick("kind", "Complication", G.WINDOW_KINDS, (i) => icon(PICS.window[i], 30, 21), { ...W, small: true, across: 4, skip: [4], shown: (T) => (G.WINDOW_KINDS[T.kind] === "big date" ? 0 : T.kind), show: win_on }),
-    chk("big", "Big date: two holes, the tens and the units each on a disc", { ...W, nest: true, show: win_is("date", "big date"), get: (T) => G.WINDOW_KINDS[T.kind] === "big date", put: (tool, on) => tool.set_value("window", "kind", G.WINDOW_KINDS.indexOf(on ? "big date" : "date")) }),      // all on one line (4.79: the fifth, big date, fell to a line of its own)
+    chk("big", "Big date", { ...W, nest: true, show: win_is("date", "big date"), get: (T) => G.WINDOW_KINDS[T.kind] === "big date", put: (tool, on) => tool.set_value("window", "kind", G.WINDOW_KINDS.indexOf(on ? "big date" : "date")) }),      // all on one line (4.79: the fifth, big date, fell to a line of its own)
+    info("Two holes: the tens and the units, each on a disc.", { ...W, show: win_is("date", "big date") }),      // a tick says its name; what it means, a note under it (design canon §6, #420)
     info("Follows the time shown: AM · PM beside the time, under the panel.", { ...W, show: win_is("am · pm") }),
     // an am · pm window has one picture, a disc half am and half pm, so no Picture row (4.88; Okay, 19 Oct 2026: "Am pm should be one half of a circle each")
     // its picture (4.73, #346; the disc sketches B: "All are good"): Arch as before · Phase, the moon lit as it is, in
@@ -785,13 +786,16 @@ const ROWS = {
     // the ticks at the end of the column, Frame and Clearance in their place (Okay, 19 Oct 2026, #413: "These three at the end of this column. Last two sliders come in their place")
     // following the bar's date (4.62): a date or day window says it, a moon window shows its age; its typed text or age
     // waits underneath, for when it doesn't follow
-    chk("follows", "Follows the date in the bar", { ...W, show: win_is("date", "day", "moon phase", "big date") }),
+    chk("follows", "Follows the date", { ...W, show: win_is("date", "day", "moon phase", "big date") }),
+    info("The date set in the bar, not typed text.", { ...W, show: win_is("date", "day", "moon phase", "big date") }),
     // its neighbours (4.74; the disc sketch D1): the disc's places either side of the shown one, where the hole lets them — a tall hole at 3 or 9, a wide one at 12 or 6
-    chk("neighbours", "Its neighbours show where the hole allows", { ...W, show: win_is("date", "day") }),
+    chk("neighbours", "Neighbours", { ...W, show: win_is("date", "day") }),
+    info("The disc’s next places show where the hole allows.", { ...W, show: win_is("date", "day") }),
     seg("names", "Names", ["EN", "TR", "DE", "FR", "IT"], { ...W, show: (T) => T.on && T.follows && G.WINDOW_KINDS[T.kind] === "day" }),
     // physics (4.72, #346: "their discs obey physics or not, chosen by the user"): on, a disc must end inside the case —
     // passing it, its outer guide shows red and this says by how much; off, it may (a face on a screen)
-    chk("physics", "Its disc stays inside the case", { ...W, show: win_is("date", "day", "am · pm") }),
+    chk("physics", "Inside the case", { ...W, show: win_is("date", "day", "am · pm") }),
+    info("Its disc may not pass the case. Off for a face on a screen.", { ...W, show: win_is("date", "day", "am · pm") }),
     info((T) => `Its disc passes the case by ${tool ? tool.disc_past().toFixed(2) : "?"} mm: move the window in, or untick to let it.`, { ...W, nest: true, show: (T) => win_is("date", "day", "am · pm")(T) && T.physics !== false && tool && tool.disc_past() > 0 }),
     // its text and font: a pane of its own with its eye (Okay, 19 Oct 2026, #415: "Font needs own section & eye")
     hdr("Font", { ...W, folded: true, show: win_is("date", "day", "big date") }),
@@ -2850,7 +2854,7 @@ class DialTool {
     if (row.kind === "chk") {
       const box = el("input", { type: "checkbox", id });
       box.onchange = () => set(box.checked);
-      wrap.append(el("span"), el("label", { className: "check", htmlFor: id }, box, " " + row.text));
+      wrap.append(el("span"), el("label", { className: "check", htmlFor: id }, box, el("span", { className: "words", textContent: row.text })));      // the words after the box by a set gap (--tick-gap), so a note under them can start where they do
       if (row.tip) wrap.append(this.info_sign(row.tip));
       out.refresh = (T) => { box.checked = Boolean(row.get ? row.get(T) : T[row.key]); };
     }
@@ -4376,10 +4380,12 @@ class DialTool {
     const at = lying ? { len: [x1, my], tail: [x0, my], w1: [wx, y0], w2: [wx, y1] } : { len: [mx, y0], tail: [mx, y1], w1: [x0, wy], w2: [x1, wy] };
     const along = widest ? { feature_at: "where it is widest", bulge: "where it bulges", tip: "where its point starts" }[widest.key] : "";
     const tips = { len: "Length: drag", tail: "Tail: drag", w: disc ? "Disc Ø: drag, both sides together" : "Width: drag across, both sides together" + (along ? ` · along: ${along}` : "") };
-    const sq = (name, [x, y], key) => `<g class="handle" data-grip="${name}" data-tip="${tips[key]}" transform="translate(${x.toFixed(2)} ${y.toFixed(2)})"><circle class="reach" r="${HANDLE_REACH}"/><rect x="${-HANDLE_R}" y="${-HANDLE_R}" width="${2 * HANDLE_R}" height="${2 * HANDLE_R}"/></g>`;
+    // a side's reach, unseen: pointed at, it lights that side (the drawn squares and the dotted box are gone, #411:
+    // "Thick selection indicators faulty at times. Abort this type"); its cursor says which way it drags
+    const across = (key) => (key === "w") !== lying;      // a width drags across the hand, a length or tail along it
+    const sq = (name, [x, y], key) => `<g class="handle ${across(key) ? "ew" : "ns"}" data-grip="${name}" data-tip="${tips[key]}" transform="translate(${x.toFixed(2)} ${y.toFixed(2)})"><circle class="reach" r="${HANDLE_REACH}"/></g>`;
     g.style.setProperty("--handle", G.GUIDE_COLOURS[this.S.gd_k_sel] || G.GUIDE_COLOURS[0]);
-    g.innerHTML = `<rect class="frame" x="${x0.toFixed(2)}" y="${y0.toFixed(2)}" width="${(x1 - x0).toFixed(2)}" height="${(y1 - y0).toFixed(2)}"/>`
-      + sq("len", at.len, "len") + (disc ? "" : sq("tail", at.tail, "tail")) + sq("w1", at.w1, "w") + sq("w2", at.w2, "w");
+    g.innerHTML = sq("len", at.len, "len") + (disc ? "" : sq("tail", at.tail, "tail")) + sq("w1", at.w1, "w") + sq("w2", at.w2, "w");
   }
 
   /** a handle on the hand's picture dragged: the pointer's travel, in mm at the picture's scale when the drag began,
@@ -4437,10 +4443,16 @@ class DialTool {
     };
     g.addEventListener("pointerup", end);
     g.addEventListener("pointercancel", end);
+    // pointed at, a side lights what it changes (#411); a drag keeps its own light
+    const row_of = (grip) => { const h = this.hand(), n = grip.dataset.grip; return ROW(n === "len" ? "len" : n === "tail" ? "tail" : G.HAND_SHAPES[h.shape] === "disc" ? "disc_d" : "w"); };
+    g.addEventListener("pointerover", (e) => { const grip = e.target.closest("[data-grip]"); if (grip && !this.hand_drag) this.hand_light(row_of(grip)); });
+    g.addEventListener("pointerout", (e) => { const grip = e.target.closest("[data-grip]"); if (grip && !this.hand_drag && !grip.contains(e.relatedTarget)) this.hand_light(null); });
   }
 
   /** light a hand number's part on the hand's picture, or none (#329): while its row is pointed at, holds the focus,
-   *  or has its controller open. In the selected guide's colour, as the ring handles are (4.65). */
+   *  has its controller open, or its side on the picture is pointed at or dragged. What lights is the hand's outline
+   *  where that number moves it — its active sides, a line in the selected guide's colour, not a filled area (Okay,
+   *  19 Oct 2026, #411: "Find 'highlighting active sides' kind of simple solution"). */
   hand_light(row) {
     if (row === this.lit_row) return;
     this.lit_row = row;
@@ -4456,7 +4468,7 @@ class DialTool {
     }
     const d = this.lit_d;
     box.style.setProperty("--lit", G.GUIDE_COLOURS[this.S.gd_k_sel] || G.GUIDE_COLOURS[0]);
-    for (const p of box.querySelectorAll(".lit")) { if (d) p.setAttribute("d", d); else p.removeAttribute("d"); }
+    for (const p of box.querySelectorAll(".litarea")) { if (d) p.setAttribute("d", d); else p.removeAttribute("d"); }      // the outline shows only inside the part that moves: its sides (#411)
   }
 
   /** a window's place (Okay, 13 Oct 2026): every named place is a button, so the others are seen and pressed — first

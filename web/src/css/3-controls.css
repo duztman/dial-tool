@@ -48,7 +48,7 @@
   input[type="text"], select { height: var(--control); width: 100%; min-width: 0; padding: 0 var(--unit); border: var(--hair) solid var(--rule); border-radius: 0; background: var(--field); }
 
   /* a tick box: square like every other control; ink when ticked */
-  input[type="checkbox"] { appearance: none; flex: none; display: inline-grid; place-content: center; width: var(--tick); height: var(--tick); margin: 0 var(--u3) 0 0; border: var(--hair) solid var(--ink); border-radius: 0; background: var(--field); cursor: pointer; }
+  input[type="checkbox"] { appearance: none; flex: none; display: inline-grid; place-content: center; width: var(--tick); height: var(--tick); margin: 0 var(--tick-gap) 0 0; border: var(--hair) solid var(--ink); border-radius: 0; background: var(--field); cursor: pointer; }
   input[type="checkbox"]::before { content: ""; width: calc(var(--tick) - var(--unit)); height: calc(var(--tick) - var(--unit)); background: var(--paper); clip-path: polygon(12% 48%, 0 62%, 40% 100%, 100% 20%, 86% 8%, 38% 72%); opacity: 0; }
   input[type="checkbox"]:checked { background: var(--ink); }
   input[type="checkbox"]:checked::before { opacity: 1; }

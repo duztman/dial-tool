@@ -123,6 +123,8 @@
     --ruler: 22px; --names: 18px; --handle: var(--triple);      /* the day's ruler: its height, the hours' names under it, the handle's width */
     --bar-lead-narrow: 46px; --bar-day-narrow: 48px;      /* on a phone the bar is two lines: the panel's controls, then the day */
     --tick: 16px;                                  /* a tick box */
+    --tick-gap: var(--u4);                         /* from a tick box to its words (the box's margin and a space's width before, 8.25 + 3.4); a note under the words starts there too (#420) */
+    --leading: 1.4;                                /* the panel's line spacing: its text, a tick's two lines, a tick and its note (#420) */
     --reach: calc((var(--line) - var(--control)) / 2);      /* what a row leaves above and under a control: under a finger, a press there counts too */
     --chip: 22px;                                  /* a colour to pick: in the pop-out's two rows, in the guides' list (the gap between two: a special) */
     --pop-label: 72px;                             /* a night part (colour pop-out, guides' list): the column of the pop-out's row names (its spaces: specials) */

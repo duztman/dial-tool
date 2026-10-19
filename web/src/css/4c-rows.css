@@ -68,8 +68,18 @@
   .body .row:not(.side) ~ .row:not(.side) > .check, .body .row:not(.side) ~ .row.note:not(.side) > .quiet { grid-column: 3 / -1; }
   /* a note is a row of words: as much room over them as under, and a hairline closes it like any row (the row
      above draws the one over it) */
-  .row.note { min-height: 0; }
-  .row.note > .quiet { padding: var(--unit) 0; }
+  /* a note and the row it explains are one box (design canon §6, #420; Okay, 19 Oct 2026: "hiding the white line …
+     always within the same box that ends with a bottom white border"): no line between them, the box's line under the
+     note. Its words are small and grey, one or two lines; the first follows the row's own line at the panel's line
+     spacing — under a tick's words as a tick's second line would, under controls just below their boxes — and the
+     box ends as far under it as the row's words start above (half of a row's line less a line of text). Under a tick
+     the note starts where its words do; under anything else, on the controls' column (.under, or after the first row). */
+  .row.note { min-height: 0; --note-air: calc((var(--line) - var(--leading) * var(--t-m)) / 2); }
+  .row.note > .quiet { margin-top: calc(-1 * var(--note-air)); padding: 0 0 var(--note-air); font-size: var(--t-s); line-height: var(--leading); text-wrap: balance; }
+  .row:not(.chk, .note) + .row.note > .quiet { margin-top: calc((var(--control) - var(--line)) / 2); }      /* under a field or a slider: just below its box */
+  .row.chk + .row.note > .quiet { padding-left: calc(var(--tick) + var(--tick-gap)); }
+  .row:not(.note):has(+ .row.note:not([hidden])), .row:not(.note):has(+ .row[hidden] + .row.note:not([hidden])) { box-shadow: 0 calc(-1 * var(--hair)) 0 var(--row-rule); background: none; }
+  .row.note:has(+ .row.note:not([hidden])) { box-shadow: none; }
   .row > button:not(:first-child) { justify-self: start; }
   .row > .btn.main:first-child { justify-self: stretch; }      /* a button standing where the label would (PNG) */
   .row.pick { align-items: start; }
