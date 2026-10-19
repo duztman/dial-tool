@@ -204,7 +204,6 @@
     --link-pill: 14px;                             /* the LINK pill on the line between width and height (#358): the pixel font at 8 with three over and under */
     --pos-box: 78px; --pos-step: 18px;            /* Positions' small controls (#357: "controls smaller"): a box, value and − + or ⌄ together, and one of its cells */
     --pos-dot: 2px; --pos-dot-gap: 5px;            /* the span's dotted arc: a dot this wide, this far apart, centre to centre */
-    --t-fig: 14px;                                 /* a selected ring's size and radius over their buttons, in Dial Mono: his digits are 10 high where the name's capitals are 9 (selected-ring_181026, Okay, 18 Oct 2026: "Large mono numbers for size and radius") */
     --details-line: 17px;                          /* the ring drawer's two lines of details, baseline to baseline (the same drawing: 16–17) */
     --rename-dim: 0.5;                             /* the rename box at half its grey until the pointer is on it (the same drawing) */
     --font-head-in: 4px;                           /* the font box's preview, this far in from the box's edge on the grey head (Okay's drawing, font-selector_171026, 18 Oct 2026) */

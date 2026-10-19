@@ -62,6 +62,9 @@ check §2–§6 against it.
 - **In the tool's window, two kinds of figures** (Okay, 14 Oct 2026): numbers that change in place — fields, the time,
   counters — are tabular, so they don't jitter; a label that stands still in a box of its own ("10:30", "720×", "AM")
   is proportional, so a "1" doesn't carry a "0"'s width.
+  Numbers alone in the interface are in the panel's own type, lining and tabular, with a plain zero — never slashed
+  (Okay, 20 Oct 2026, 00:20: "tabular linings on … in all interface where we use nothing but numbers, no slashed zero").
+  The mono faces are for what the tool says (log, hex, link) and the bar.
 - **A label in a box is centred on its ink** (Okay, 14 Oct 2026: "FIND THE RECTANGLE… AND CENTER THAT"): the rectangle
   its ink covers, left to right and top to bottom, stands on the box's centre — not its advance widths, not the font's
   line box. Overhangs are fine. Measured in the face actually drawn, on that screen, never typed in as a nudge

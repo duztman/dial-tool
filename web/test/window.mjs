@@ -266,7 +266,7 @@ const one = await page.evaluate(() => {
   const p = document.querySelector(".pinned"), holder = p.querySelector(".lineholder"), line = holder.querySelector(".ringline"), parts = [...line.children], on = p.querySelector(".ringlist li.ring.on");
   const c = getComputedStyle(holder), row = getComputedStyle(on), h = (e) => Math.round(e.getBoundingClientRect().height), sq = on.querySelector("#ring-kind-square"), det = line.querySelector("#ring-details"), lines = [...det.querySelectorAll(".line")];
   const m = (e) => { const r = e.getBoundingClientRect(); return (r.left + r.right) / 2; };
-  const fig = (id, b) => { const f = document.querySelector(id); return [f.textContent, Math.abs(m(f) - m(document.querySelector(b))) <= 1, getComputedStyle(f).fontFamily.includes("Dial Mono")]; };
+  const fig = (id, b) => { const f = document.querySelector(id); return [f.textContent, Math.abs(m(f) - m(document.querySelector(b))) <= 1, getComputedStyle(f).fontFamily === getComputedStyle(document.documentElement).fontFamily && getComputedStyle(f).fontSize === getComputedStyle(document.documentElement).fontSize]; };
   return { panes: p.querySelectorAll(".pane").length, under: holder.previousElementSibling === on, gap: Math.round(holder.getBoundingClientRect().top - on.getBoundingClientRect().bottom), order: parts.map((e) => e.id || e.className).join(" "),
     square: [sq && sq.tagName, sq && sq.dataset.kind, sq && sq.querySelector("svg") !== null, document.querySelector("#ring-change") === null],
     details: [lines.length, lines.map((l) => l.textContent), lines.every((l) => getComputedStyle(l).textOverflow === "ellipsis" && getComputedStyle(l).whiteSpace === "nowrap"), getComputedStyle(det.querySelector(".k")).color !== getComputedStyle(det).color],
@@ -274,14 +274,14 @@ const one = await page.evaluate(() => {
     hex: getComputedStyle(line.querySelector(".colour .hex")).display, swatch: getComputedStyle(line.querySelector(".colour")).borderTopColor,
     heights: [...new Set([...line.querySelectorAll(".colour, .valueb")].map(h))], round: [...line.querySelectorAll(".valueb")].every((e) => Math.round(e.getBoundingClientRect().width) === h(e)),
     title: p.querySelector("h2").textContent, figures: line.querySelectorAll(".figure").length, small: line.querySelectorAll("#ring-size svg .small").length,
-    ground: c.backgroundColor, frame: c.borderTopColor, row_frame: row.borderTopColor, tip: sq && sq.dataset.tip, rows: p.querySelectorAll(".ringlist li.ring").length, all: p.querySelectorAll(".ringlist li").length };
+    ground: c.backgroundColor, frame: c.borderTopColor, top: c.borderTopWidth, row_bottom: row.borderBottomColor, row_frame: row.borderTopColor, tip: sq && sq.dataset.tip, rows: p.querySelectorAll(".ringlist li.ring").length, all: p.querySelectorAll(".ringlist li").length };
 });
 const R0 = await S("S.rings[S.ui_ring]");
-check(one.panes === 1 && one.under && one.gap === -1 && /* one box since 4.81: the two lines lie on each other */  one.order === "ring-details ring-c-Colour ring-size ring-r" && one.square[0] === "BUTTON" && one.square[1] === String(R0.kind) && one.square[2] && one.square[3]
+check(one.panes === 1 && one.under && one.gap === -1 && /* one box: no line between them (Okay, 20 Oct 2026, 00:20) */ one.top === "0px" && one.row_bottom === "rgba(0, 0, 0, 0)" &&  one.order === "ring-details ring-c-Colour ring-size ring-r" && one.square[0] === "BUTTON" && one.square[1] === String(R0.kind) && one.square[2] && one.square[3]
   && one.details[0] === 2 && one.details[1][0] === `Width: ${R0.width} · Fill: ${R0.fill}%` && one.details[1][1].startsWith(`Positions: ${R0.count}`) && one.details[2] && one.details[3]
   && one.figs[0].join() === `${R0.width},true,true` && one.figs[1].join() === `${R0.r},true,true` && one.untagged
   && one.hex === "none" && one.swatch === "rgba(0, 0, 0, 0)" && one.heights.length === 1 && one.round && one.title === "Rings, top first" && one.all === one.rows + 1 && one.small === 1 && one.ground === "rgb(255, 255, 255)" && one.frame === one.row_frame && one.tip === "Kind",
-  `the ring drawer stands in the list, ${one.gap} under the selected ring's row: the details on two lines, grey names, each line cut when long (${one.details[1].join(" / ")}) · a bare swatch · size · radius, all ${one.heights[0]} high, no tags; the row's kind icon is a button and its size and radius (${one.figs.map((f) => f[0]).join(", ")}) stand in Dial Mono over their buttons; no Change; white, its frame the guide's colour like its row's (${one.frame}) (#335, #327)`);
+  `the ring drawer stands in the list, ${one.gap} under the selected ring's row: the details on two lines, grey names, each line cut when long (${one.details[1].join(" / ")}) · a bare swatch · size · radius, all ${one.heights[0]} high, no tags; the row's kind icon is a button and its size and radius (${one.figs.map((f) => f[0]).join(", ")}) stand over their buttons in the panel's type at its size (Okay, 20 Oct 2026, 00:20: "back to inter, regular size and still black"); no Change; white, its frame the guide's colour like its row's (${one.frame}) (#335, #327)`);
 // the square opens the kinds, over everything, under the square, the ring's kind marked, the note at the foot; a kind taken; Escape and a press outside put it away
 {
   await page.click("#ring-kind-square");

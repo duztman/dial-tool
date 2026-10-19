@@ -42,7 +42,7 @@
   .ringlist .rename:hover svg { opacity: 1; }
   /* the selected ring's size and radius, large, in Dial Mono, each centred over its button in the drawer (4.55) */
   .ringlist li.ring.on .namecell { grid-column: 4 / 7; }
-  .ringlist .fig { justify-self: end; display: flex; justify-content: center; width: var(--line-button); font: 400 var(--t-fig)/1 var(--unit-face); letter-spacing: 0; white-space: nowrap; }
+  .ringlist .fig { justify-self: end; display: flex; justify-content: center; width: var(--line-button); font: 400 var(--t-m)/1 var(--sans); font-variant-numeric: tabular-nums lining-nums; color: var(--ink); white-space: nowrap; }      /* the panel's type, its size, black (Okay, 20 Oct 2026, 00:20: "back to inter, regular size and still black") */
   .ringlist .fig#ring-size-fig { grid-column: 7; }
   .ringlist .fig#ring-r-fig { grid-column: 8; }
   .ringlist .rename:hover { color: var(--ink); background: var(--veil-strong); }
@@ -61,10 +61,10 @@
      frame has the colour of the selected ring's guide, as the row above has, on white. */
   /* the selected row and its line are one box (4.81): the row's lower corners and the line's upper ones square, their
      two lines lying on each other */
-  .ringlist li.ring.on:has(+ li.lineholder) { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+  .ringlist li.ring.on:has(+ li.lineholder) { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom-color: transparent; }      /* no line between them: the row's tint runs into the line's (Okay, 20 Oct 2026, 00:20: "The inner border … line is removed from this view, all box shrinks 1px like this line was removed as a pixel line") */
   .ringlist li.lineholder { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; margin-top: calc(var(--ringline-join) - var(--ring-gap));
     padding: calc(var(--ringline-pad) + var(--ringline-inner)) 0;
-    border: var(--hair) solid var(--select-rule); border-radius: 0 0 var(--round-small) var(--round-small); background: var(--field); box-shadow: inset 0 0 0 var(--ringline-inner) var(--select); }
+    border: var(--hair) solid var(--select-rule); border-top-width: 0; border-radius: 0 0 var(--round-small) var(--round-small); background: var(--field); box-shadow: inset 0 0 0 var(--ringline-inner) var(--select); }
   /* inside its outer line a second one, three times as thick, in the selected row's ground: the box reads as that row's */
   .guided .ringlist li.lineholder { border-color: color-mix(in srgb, var(--guide) var(--guide-edge), var(--grey)); box-shadow: inset 0 0 0 var(--ringline-inner) color-mix(in srgb, var(--guide) var(--guide-tint), var(--field)); }
   .ringline { display: contents; }                 /* its parts stand on the list's columns: the kind square under the rows' icons, the details and Change in the names' room, then colour · size · radius */

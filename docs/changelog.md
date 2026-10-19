@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.89.8 (web version) · 20 Oct 2026
+
+Okay, 00:20, a picture of the selected ring's row.
+
+- **Its size and radius in the panel's type** (#443), at its size, black, tabular lining figures; Dial Mono and `--t-fig` gone from there. Design canon §2: numbers alone in the interface are the panel's type, lining, tabular, the zero plain.
+- **No line between the selected ring's row and its line** (#444): the box 1 px lower.
+
 ## beta 4.89.7 (web version) · 20 Oct 2026
 
 - **Every file says which build made it** (#226, the production debts): "Dial Tool, web version, beta 4.89.7" as the PDF's Creator (dial and sheet), the SVG's `<metadata>`, the PNG's Software text record beside its dpi. `MADE_BY` in `output.js`; a check in `labels.mjs`.
