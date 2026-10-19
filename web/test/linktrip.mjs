@@ -52,7 +52,7 @@ for (const [name, settings] of dials) {
   const S = G.fresh_settings(structuredClone(settings)), l = link(S), back = read(l);
   const diff = back ? differences(S, G.fresh_settings(back)) : ["not read back"];
   longest = Math.max(longest, l.length);
-  check(/^#2[0-9A-Z]+$/.test(l) && diff.length === 0, `${name}: there and back the same dial (${l.length} characters, capitals and digits)${diff.length ? " — " + diff.slice(0, 4).join(" · ") : ""}`);
+  check(new RegExp(`^#${G.LINK_SCHEME}[0-9A-Z]+$`).test(l) && diff.length === 0, `${name}: there and back the same dial (${l.length} characters, capitals and digits)${diff.length ? " — " + diff.slice(0, 4).join(" · ") : ""}`);
   check(link(G.fresh_settings(back || {})) === l, `${name}: read and written again, the same link`);
 }
 
@@ -67,8 +67,8 @@ for (const [name, settings] of dials) {
 }
 
 // an older scheme is recognised, not read: the page opens the First dial with a note (window.mjs checks that)
-check(G.link_kind("#1.fZLRjtsgEEV_~x")?.scheme === 1 && G.link_kind("0.abc")?.scheme === 0 && G.link_kind("#2ABC")?.scheme === 2 && G.link_kind("#hello") === null && G.link_kind("") === null,
-  "a link of scheme 0 or 1 is known as one; anything else after # is not a dial");
+check(G.link_kind("#1.fZLRjtsgEEV_~x")?.scheme === 1 && G.link_kind("0.abc")?.scheme === 0 && G.link_kind("#2ABC")?.scheme === 2 && G.link_kind("#3ABC")?.scheme === 3 && G.link_kind("#hello") === null && G.link_kind("") === null,
+  "a link of scheme 0, 1 or 2 is known as one; anything else after # is not a dial");
 
 // Crockford's base 32: any bytes there and back; read forgiving (small letters, O for 0, I and L for 1, dashes)
 {

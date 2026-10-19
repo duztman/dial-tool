@@ -87,6 +87,15 @@
   .bar .lead .timebox .date { box-sizing: content-box; display: grid; grid-template-rows: repeat(2, var(--date-line)); align-content: center; justify-items: center; height: calc(var(--bar-control) - 2 * var(--hair)); padding: 0 var(--u2); border: var(--hair) solid var(--bar-light); border-left: 0; background: none; color: var(--bar-light); font: 600 var(--t-date)/var(--date-line) var(--date-face); font-variant-numeric: tabular-nums; letter-spacing: var(--date-track); }
   .bar .lead .timebox .date:hover { background: var(--bar-field); }
   .bar .datepick { position: absolute; left: 0; bottom: 0; width: 1px; height: 1px; padding: 0; border: 0; background: none; color: transparent; opacity: 0; pointer-events: none; }
+  /* the date's popup (#402; Okay, 19 Oct 2026: "Date on the black bar is click to edit on popup. Plusminus for both.
+     No controller"): rising from the date's box, in the bar's tones; two lines, the day written out and the time, each
+     between a − and a +, in Barlow Regular ("Try barlow not condensed"). A press on the day opens the system's picker */
+  .bar .datepop { position: absolute; z-index: 7; left: 50%; bottom: calc(100% + var(--u2)); translate: -50% 0; width: max-content; display: grid; gap: var(--u1); padding: var(--u2); border: var(--hair) solid var(--bar-light); border-radius: var(--round-small); background: var(--bar); color: var(--bar-ink); font-family: var(--pop-face); font-size: var(--t-l); white-space: nowrap; box-shadow: var(--shadow); }
+  .bar .datepop .popline { display: grid; grid-template-columns: var(--bar-control) minmax(0, 1fr) var(--bar-control); align-items: center; }
+  .bar .datepop .popstep { display: grid; place-items: center; height: var(--bar-control); color: var(--bar-ink); }
+  .bar .datepop .popstep:hover { background: var(--bar-field); }
+  .bar .datepop .popword { padding: 0 var(--u3); text-align: center; color: var(--bar-ink); font: inherit; }
+  .bar .datepop button.popword:hover { background: var(--bar-field); }
   /* NOW: capitals, at AM · PM's size (Okay: "Now uppercase and in pm's font size which grows 1px"); filled, light, its
      word dark (#306, 4.45.5) */
   .bar .lead #now { padding: 0 var(--u3); border-color: var(--bar-now); background: var(--bar-now); color: var(--bar-now-ink); font-size: var(--t-s); text-transform: uppercase; }      /* filled, 20 % darker than AM's outline, its word light (#307) */

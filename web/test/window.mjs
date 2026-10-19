@@ -1797,7 +1797,7 @@ const link = await page.evaluate(() => location.href);
     return { input: box.tagName === "INPUT", cut: c.textOverflow === "ellipsis" && c.whiteSpace === "nowrap", head: r.top >= fold.top && r.bottom <= fold.bottom, right: Math.round(fold.right - r.right), sign: Boolean(b.querySelector("svg")), mono: getComputedStyle(document.getElementById("log")).fontFamily.toLowerCase().includes("mono") }; });
   check(await page.inputValue("#link") === link && l.input && l.cut && l.head && l.right <= 1 && l.sign && l.mono, `the link stands on one line, cut at the box's edge; Copy link, with its sign, flush right on the heading line (${JSON.stringify(l)}); the log is monospaced`);
 }
-check(/#2[0-9A-Z]+$/.test(link), `Copy link: the address carries the dial in capitals and digits only, link scheme 2 (#278; ${link.split("#")[1].length} characters after #)`);
+check(/#3[0-9A-Z]+$/.test(link), `Copy link: the address carries the dial in capitals and digits only, link scheme 3 (#278; 3 since 4.88; ${link.split("#")[1].length} characters after #)`);
 const wanted = await S("JSON.stringify({ ...S, ui_section: 0, ui_ring: 0, ui_hand: 0 })");
 const other = await (await visitor()).newPage();      // someone else's browser: no last session of this dial. A browser of its own, not a second tab: a tab shares the first one's storage, where the first keeps saving its dial while its clock runs (found 16 Oct 2026, 4.42.5: a save landed while this page started)
 await other.addInitScript(() => localStorage.removeItem("dial-tool-last"));      // and what it keeps itself between the addresses below
@@ -1828,9 +1828,12 @@ await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
   check(o.d === 34 && o.rings === "Numerals · Markers · Minute ticks" && o.shown && /older Dial Tool/.test(o.note) && o.inside && o.centred && o.log && gone,
     `a scheme-1 link opens the First dial (${o.d} mm), and says so on the preview ("${o.note}", centred) and in the log; a press puts the note away`);
 }
-await other.goto(link.split("#")[0] + "#2NOTADIAL");
+await other.goto(link.split("#")[0] + "#3NOTADIAL");
 await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 check(await other.evaluate(() => window.dial_tool.S.rings.length > 0), "a broken link opens the tool anyway");
+await other.goto(link.split("#")[0] + "#2" + link.split("#3")[1]);      // the same dial written as scheme 2 (before 4.88): known as an older scheme, not read (R31)
+await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
+check(await other.evaluate(() => { const t = window.dial_tool; return t.S.dial_d === 34 && !document.getElementById("preview-note").hidden; }), "a scheme-2 link (4.43–4.87) opens the First dial with the note (4.88, R31)");
 await other.goto(link.split("#")[0]);
 await other.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
 const opener = await other.evaluate(() => [window.dial_tool.S.dial_d, window.dial_tool.S.rings.map((r) => r.name).join(" · ")]);
@@ -2043,6 +2046,23 @@ check(look.square && look.bar === 62 && look.play[0] === look.play[1] && look.pl
   await page.evaluate(() => window.dial_tool.set_time(10 * 3600 + 600));
 }
 await shot("10-bar");
+{ // the bar's date popup (4.89, #402; Okay, 19 Oct 2026: "Date on the black bar is click to edit on popup. Plusminus for both. No controller"; "Try barlow not condensed for font")
+  const was = await page.evaluate(() => JSON.stringify([window.dial_tool.S.date, window.dial_tool.S.t]));
+  await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "date", "2026-10-19"); t.set_time(36576); });
+  await page.click("#date"); await frame();
+  const open = await page.evaluate(() => { const p = document.querySelector("#date-pop"), r = p.getBoundingClientRect(), d = document.querySelector("#date").getBoundingClientRect(), c = getComputedStyle(p);
+    const w = document.querySelector("#date-pop-day").getBoundingClientRect();
+    return [!p.hidden, document.querySelector("#date-pop-day").textContent, document.querySelector("#date-pop-time").textContent, r.bottom <= d.top, c.fontFamily.includes("Dial Pop"), p.querySelectorAll(".popstep").length, !document.querySelector("#num-pop") || document.querySelector("#num-pop").hidden, p.scrollWidth <= p.clientWidth + 1 && w.left >= r.left && w.right <= r.right && Math.abs((r.left + r.right) / 2 - (d.left + d.right) / 2) < 2]; });
+  await page.click("#date-pop .popline:first-child .popstep:last-child"); await frame();      // a day later
+  await page.click("#date-pop .popline:last-child .popstep:first-child"); await frame();      // an hour earlier
+  const stepped = await page.evaluate(() => [window.dial_tool.S.date, window.dial_tool.S.t, document.querySelector("#date-pop-day").textContent, document.querySelector("#date-pop-time").textContent]);
+  await shot("10b-date-pop");
+  await page.mouse.click(700, 300); await frame();      // a press elsewhere puts it away
+  const away = await page.evaluate(() => document.querySelector("#date-pop").hidden);
+  await page.evaluate((w) => { const t = window.dial_tool, v = JSON.parse(w); t.set_value("global", "date", v[0]); t.set_time(v[1]); }, was);
+  check(open[0] && open[1] === "Mon 19 Oct 2026" && open[2] === "10:09:36 AM" && open[3] && open[4] && open[5] === 4 && open[6] && open[7] && stepped[0] === "2026-10-20" && stepped[1] === 32976 && stepped[2] === "Tue 20 Oct 2026" && stepped[3] === "9:09:36 AM" && away,
+    `the bar's date opens its popup over the box, in Dial Pop (Barlow Regular): the day written out and the time, − and + round each, no controller, as wide as its words and centred on the box (${open.join(" ")}); + a day, − an hour (${stepped.join(" ")}); a press elsewhere closes it (${away})`);
+}
 { // the showcase (Okay, 15 Oct 2026, 04:26, reshaped 04:59 and 05:09)
   const q = () => page.evaluate(() => { const t = window.dial_tool, r = (s) => document.querySelector(s).getBoundingClientRect(), c = (s) => getComputedStyle(document.querySelector(s));
     return { show: !!t.show, w: innerWidth, h: innerHeight, z: t.z, dial: t.z * t.S.dial_d, c: t.c.slice(), moving: t.moving(), playing: t.playing, speed: t.speed, t: t.S.t, phase: t.show ? t.show.phase : null, from: t.show ? t.sun().from : null,
@@ -2354,24 +2374,31 @@ await touch.close();
   check(strap_on.join() === "true,Strap,true" && blue.includes("#1A4073") && !leather.includes("#1A4073") && bracelet.length > leather.length && !bracelet.includes("#1A4073") && chip,
     `its strap: a switch beside Case while a case is on (${strap_on.join(" ")}); a new strap colour repaints it; a bracelet is links in the case's metal (${bracelet.length} parts), no chip`);
 }
-{ // the windows' discs (4.72, #346; Okay, on the disc sketches: "a3 not enough, a2 and others"): X-ray, a switch beside Case while a date, day or am · pm window is on, draws each disc whole under a veil of the plate; the disc's edges are dashed guides; physics on, a disc past the case turns its outer edge red and the panel says by how much
+{ // the windows' discs (4.72, #346; 4.88 — Okay, 19 Oct 2026: "Xray makes the unseen full visible, sensible z height differences (not editable) and a stacking order. Selected shows above all others. Top is 100% opacity, with a white dotted outline, below gets -15 opacity gradually"): X-ray, a switch under Guides while a date, day or am · pm window is on, draws every disc whole in a stack — the selected window's on top, full, dotted white; the hands, the face and the other discs each 15 % fainter than the one above; the disc's edges are dashed guides; physics on, a disc past the case turns its outer edge red and the panel says by how much
   await tab("Date");
   const was = await page.evaluate(() => { const t = window.dial_tool; return JSON.stringify([t.S.ui_window, t.S.da_on, t.S.da_kind, t.S.da_r, t.S.da_physics, t.S.xray]); });
   await page.evaluate(() => { const t = window.dial_tool; t.S.ui_window = 0; t.set_value("window", "on", true); t.set_value("window", "kind", 0); t.set_value("window", "r", 10.5); });
   await frame();
   const shown = await page.evaluate(() => !document.querySelector("#xray").hidden);
   await page.click("#xray"); await frame();
-  const look = await page.evaluate(() => { const t = window.dial_tool, it = t.items, plate = it.find((i) => i.role === "plate"); return [t.S.xray, it.filter((i) => i.role === "disc").length, it.filter((i) => i.role === "disc print").length, plate.fill[3] < 1, it.filter((i) => i.role === "guide" && i.dashes).length]; });
+  const look = await page.evaluate(() => { const t = window.dial_tool, it = t.items, plate = it.find((i) => i.role === "plate"), hand = it.find((i) => i.role === "hand"), disc = it.find((i) => i.role === "disc");
+    return [t.S.xray, it.filter((i) => i.role === "disc").length, it.filter((i) => i.role === "disc print").length, +plate.fill[3].toFixed(2), it.filter((i) => i.role === "guide" && i.dashes).length, +hand.fill[3].toFixed(2), disc.fill[3], it.filter((i) => i.role === "disc edge" && i.dots && i.stroke[0] === 1).length, it.indexOf(disc) > it.indexOf(plate)]; });
+  // a second window with a disc, not selected: its disc under the face, a step fainter, drawn before the plate
+  await page.evaluate(() => { const t = window.dial_tool; t.S.ui_window = 1; t.set_value("window", "on", true); t.set_value("window", "kind", 2); t.S.ui_window = 0; t.sync_rows(); t.render(); }); await frame();
+  const stack = await page.evaluate(() => { const t = window.dial_tool, it = t.items, plate = it.find((i) => i.role === "plate"), other = it.find((i) => i.role === "disc" && i.window === 1), top = it.find((i) => i.role === "disc" && i.window === 0);
+    return [+other.fill[3].toFixed(2), it.indexOf(other) < it.indexOf(plate), top.fill[3], it.indexOf(top) > it.indexOf(plate), +plate.fill[3].toFixed(2)]; });
+  await page.evaluate(() => { const t = window.dial_tool; t.S.ui_window = 1; t.set_value("window", "on", false); t.S.ui_window = 0; t.sync_rows(); t.render(); }); await frame();
   await page.evaluate(() => window.dial_tool.set_value("window", "r", 13.5)); await frame();
   const broken = await page.evaluate(() => { const it = window.dial_tool.items; return [it.some((i) => i.role === "guide" && i.dashes && i.stroke[0] > 0.85 && i.stroke[1] < 0.3), [...document.querySelectorAll(".row.note .quiet")].map((e) => e.textContent).find((x) => x.includes("passes the case")) || ""]; });
   await page.evaluate(() => window.dial_tool.set_value("window", "physics", false)); await frame();
   const free = await page.evaluate(() => { const it = window.dial_tool.items; return [it.some((i) => i.role === "guide" && i.dashes && i.stroke[0] > 0.85 && i.stroke[1] < 0.3), [...document.querySelectorAll(".row.note .quiet")].some((e) => e.textContent.includes("passes the case") && e.closest(".row").checkVisibility())]; });
   await shot("13-xray");
   await page.evaluate((w) => { const t = window.dial_tool, v = JSON.parse(w); t.S.ui_window = 0; t.set_value("window", "physics", v[4]); t.set_value("window", "r", v[3]); t.set_value("window", "kind", v[2]); t.set_value("window", "on", v[1]); t.set_value("global", "xray", v[5]); t.S.ui_window = v[0]; t.sync_rows(); t.render(); }, was);
-  check(shown && look[0] === true && look[1] === 1 && look[2] === 1 && look[3] && look[4] === 2 && broken[0] && /passes the case by 0\.\d\d mm/.test(broken[1]) && !free[0] && !free[1],
-    `X-ray: a date window's disc drawn whole with its print, the plate a veil (${look.join(" ")}); its edges two dashed guides; at r 13.5 its outer edge red and "${broken[1]}"; physics off, neither (${free.join(" ")})`);
+  check(shown && look[0] === true && look[1] === 1 && look[2] === 1 && look[3] === 0.7 && look[4] === 2 && look[5] === 0.85 && look[6] === 1 && look[7] === 2 && look[8]
+    && stack[0] === 0.55 && stack[1] && stack[2] === 1 && stack[3] && stack[4] === 0.7 && broken[0] && /passes the case by 0\.\d\d mm/.test(broken[1]) && !free[0] && !free[1],
+    `X-ray (4.88): the selected date window's disc on top, whole, at 100 % with two dotted white edges; the hands at 85 %, the face at 70 % (${look.join(" ")}); a second window's disc under the face at 55 % (${stack.join(" ")}); the disc's edges two dashed guides; at r 13.5 its outer edge red and "${broken[1]}"; physics off, neither (${free.join(" ")})`);
 }
-{ // the moon's and am · pm's pictures (4.73, #346; the disc sketches B and C: "All are good"): a moon window's Arch · Phase (three colours, a round hole) · Line (one ink); an am · pm window's Sky · Half (a half-round hole, its sun and moon in a light of their own) · Band (the day's colours, dawn and dusk their own, a mark for now)
+{ // the moon's pictures (4.73, #346; the disc sketches B: "All are good"): Arch · Phase (three colours, a round hole) · Line (one ink); an am · pm window has one picture (4.88; Okay, 19 Oct 2026: "Am pm should be one half of a circle each"): a half-round hole over a disc half am, half pm, plain, whatever its old look for now)
   await tab("Date");
   const was = await page.evaluate(() => { const t = window.dial_tool; return JSON.stringify([t.S.ui_window, t.S.da_on, t.S.da_kind, t.S.da_look, t.S.da_follows, t.S.da_age, t.S.da_w, t.S.da_h]); });
   const pic = (look) => page.evaluate((l) => { const t = window.dial_tool; t.set_value("window", "look", l); t.frame && t.frame(); t.render(); const x = t.statik.windows.find((v) => v.index === 0), it = t.items.filter((i) => i.window === 0), b = x.window.bounds();
@@ -2379,12 +2406,12 @@ await touch.close();
   await page.evaluate(() => { const t = window.dial_tool; t.S.ui_window = 0; t.set_value("window", "on", true); t.set_value("window", "kind", 3); t.set_value("window", "follows", false); t.set_value("window", "age", 7.6); });
   const arch = await pic(0), phase = await pic(1), line = await pic(2);
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("window", "kind", 2); t.set_value("window", "w", 4); t.set_value("window", "h", 1.6); });
-  const sky = await pic(0), half = await pic(1), band = await pic(2);
+  const half = await pic(1), old_sky = await pic(0), old_band = await pic(2);      // the retired looks draw the same disc (link scheme 3)
   await shot("14-pictures");
   await page.evaluate((w) => { const t = window.dial_tool, v = JSON.parse(w); t.S.ui_window = 0; for (const [k, i] of [["look", 3], ["follows", 4], ["age", 5], ["w", 6], ["h", 7], ["kind", 2], ["on", 1]]) t.set_value("window", k, v[i]); t.S.ui_window = v[0]; t.sync_rows(); t.render(); }, was);
   check(arch.pictures === 0 && phase.pictures === 1 && phase.hole === 1 && phase.words.includes("Sky") && phase.words.includes("Shade") && line.pictures === 0 && line.hole === 1
-    && sky.pictures === 0 && half.pictures === 1 && half.hole === 0.5 && half.words.includes("Sun · moon") && band.pictures === 2 && band.words.includes("Dawn") && band.words.includes("Dusk") && band.frame > 0.3,
-    `pictures: moon Arch · Phase (a round hole, ${phase.words}) · Line, one ink; am · pm Sky · Half (a half-round hole, ${half.words}) · Band (${band.words}; its now-mark over the hole)`);
+    && half.pictures === 0 && half.hole === 0.5 && half.words.includes("AM") && half.words.includes("PM") && !half.words.includes("Sun") && old_sky.hole === 0.5 && old_band.hole === 0.5 && old_band.pictures === 0 && !(old_band.frame > 0.3),
+    `pictures: moon Arch · Phase (a round hole, ${phase.words}) · Line, one ink; am · pm one disc, half am and half pm, in a half-round hole (${half.words}), the same whatever an old link's look (4.88)`);
 }
 { // a date's neighbours and the big date (4.74, #346; the disc sketches D1, D2): a tall date window shows the places either side, cut by its edges, in their own colour, the shown date its size; a big date is two square holes, the tens and the units
   await tab("Date");
@@ -2395,11 +2422,11 @@ await touch.close();
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("window", "h", 4.4); t.set_value("window", "neighbours", true); });
   const near = await one(), colour = await page.evaluate(() => [...document.querySelectorAll(".row.colours .part")].filter((e) => !e.hidden).map((e) => e.querySelector("i").textContent).join(" "));
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("window", "neighbours", false); t.set_value("window", "h", 2.6); t.set_value("window", "w", 4.4); t.set_value("window", "kind", 4); t.set_value("window", "follows", false); t.set_value("window", "text", "18"); });
-  const big = await one(), kinds = await page.evaluate(() => [...document.querySelectorAll('[id^="window-kind-Complication"]')].map((b) => b.textContent.trim()).join(","));
+  const big = await one(), kinds = await page.evaluate(() => [...document.querySelectorAll('[id^="window-kind-Complication"]')].map((b) => b.textContent.trim() + (b.classList.contains("on") ? "*" : "")).join(",") + " · " + (document.querySelector("#window-big-Big-date-two-holes-the-tens-and-the-units-each-on-a-disc")?.checked ? "ticked" : "unticked"));
   await shot("15-big-date");
   await page.evaluate((w) => { const t = window.dial_tool, v = JSON.parse(w); t.S.ui_window = 0; for (const [k, i] of [["neighbours", 4], ["h", 3], ["w", 7], ["kind", 2], ["text", 6], ["follows", 5], ["on", 1]]) t.set_value("window", k, v[i]); t.S.ui_window = v[0]; t.sync_rows(); t.render(); }, was);
-  check(plain.more === 0 && near.more === 1 && Math.abs(near.high - plain.high) < 0.35 && colour.includes("Neighbours") && kinds.endsWith("big date") && big.holes === 2,
-    `a tall date window with its neighbours: one more colour (${colour}), the 18 still ${near.high} high (${plain.high} in its own hole); a big date: two holes (${big.holes}); the kinds ${kinds}`);
+  check(plain.more === 0 && near.more === 1 && Math.abs(near.high - plain.high) < 0.35 && colour.includes("Neighbours") && kinds === "date*,day,am · pm,moon · ticked" && big.holes === 2,
+    `a tall date window with its neighbours: one more colour (${colour}), the 18 still ${near.high} high (${plain.high} in its own hole); a big date: two holes (${big.holes}), the Date tile lit and its tick ticked — four tiles, no fifth (4.89; Okay: "an under selection of date function"): ${kinds}`);
 }
 { // Tiny Preview (#337, 4.59): its button top right where Guides stood; the dial at its own size (the browser's mm) with its margins, over everything; dragged anywhere; its eye puts it away. Guides at the bottom left, between Backdrop and Shadows, their list opening upward
   const corner = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), m = r("main"), o = r("#tiny-open"), g = r(".guides"), c = r("#case"), x = document.querySelector("#xray"), b = r("#backdrop"), sh = r("#shadows"); return [m.bottom - o.bottom > 0 && m.right - o.right < 20, b.bottom <= sh.top + 1 && Math.abs(b.left - sh.left) < 1, g.bottom <= c.top + 1 && Math.abs(g.right - c.right) < 1 && m.right - g.right < 20 && g.top - m.top < 40 && (x.hidden || c.bottom <= x.getBoundingClientRect().top + 1)]; });

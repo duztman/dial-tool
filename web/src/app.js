@@ -738,10 +738,11 @@ const ROWS = {
     // buttons. And 3 6 9 12 are circular buttons now")
     hdr("Window", { title: (S) => `Window at ${G.window_place(G.windows_of(S)[S.ui_window])}` }),      // "Position" under it in 4.46.1–2 (Okay: "Delete position name, that works without")
     custom("window_at", { ...W, head: true, show: win_on, text: "Position" }),
-    pick("kind", "Complication", G.WINDOW_KINDS, (i) => icon(PICS.window[i], 30, 21), { ...W, small: true, across: G.WINDOW_KINDS.length, show: win_on }),      // all on one line (4.79: the fifth, big date, fell to a line of its own)
+    // four complications: a big date is the Date tile with its tick below (4.89; Okay, 19 Oct 2026: "Big date function is an under selection of date function"); its kind, 4, stays what is stored (R9)
+    pick("kind", "Complication", G.WINDOW_KINDS, (i) => icon(PICS.window[i], 30, 21), { ...W, small: true, across: 4, skip: [4], shown: (T) => (G.WINDOW_KINDS[T.kind] === "big date" ? 0 : T.kind), show: win_on }),
+    chk("big", "Big date: two holes, the tens and the units each on a disc", { ...W, nest: true, show: win_is("date", "big date"), get: (T) => G.WINDOW_KINDS[T.kind] === "big date", put: (tool, on) => tool.set_value("window", "kind", G.WINDOW_KINDS.indexOf(on ? "big date" : "date")) }),      // all on one line (4.79: the fifth, big date, fell to a line of its own)
     info("Follows the time shown: AM · PM beside the time, under the panel.", { ...W, show: win_is("am · pm") }),
-    // its picture (4.73; the disc sketches C): Sky as before · Half, a half-round hole over a two-colour disc · Band, the day's colours along a strip
-    seg("look", "Picture", G.PICTURES["am · pm"], { ...W, id: "window-look-day", show: win_is("am · pm") }),
+    // an am · pm window has one picture, a disc half am and half pm, so no Picture row (4.88; Okay, 19 Oct 2026: "Am pm should be one half of a circle each")
     // its picture (4.73, #346; the disc sketches B: "All are good"): Arch as before · Phase, the moon lit as it is, in
     // the disc's colour, its dark side in the shade's, the sky in the picture's · Line, its outline and dark side in one ink
     seg("look", "Picture", G.PICTURES["moon phase"], { ...W, id: "window-look-moon", show: win_is("moon phase") }),
@@ -873,7 +874,7 @@ const label_of = (row, T) => (row.say ? row.say(T)[0] : row.menu ? `${(row.menu.
 // two measures that may be linked, so changing one keeps their ratio (#358; Okay's notes 2: "a link/unlink like in
 // illustrator … other width-height or linkable stuff get this too"): its switch key, the pair, and when it applies
 const LINKED_PAIRS = { window: [{ link: "wh_link", keys: ["w", "h"], when: (T) => ["rectangle", "arc", "pair"].includes(G.window_shape(T)) }] };      // a big date's pair too (4.79: its pill showed LINKED and held nothing)
-const day_look = (T) => (T && T.on && G.WINDOW_KINDS[T.kind] === "am · pm" ? T.look || 0 : -1);      // an am · pm window's picture (4.73), -1 for any other window
+const is_day = (T) => Boolean(T && T.on && G.WINDOW_KINDS[T.kind] === "am · pm");      // an am · pm window: a disc half am, half pm (4.88)
 const moon_look = (T) => (T && T.on && G.WINDOW_KINDS[T.kind] === "moon phase" ? T.look || 0 : -1);      // a moon window's picture (4.73), -1 for any other window
 const KIND_TAB_KEYS = Object.keys(G.WINDOW_BASE).filter((k) => !["on", "kind", "at", "at_deg", "r", "guide", "wh_link"].includes(k));      // what each complication keeps of its own (#328)
 const HANDLE_AXIS = 4;      // a hand's width handle (#368, 4.80): how far it is dragged, in screen points, before it is known whether across or along
@@ -1219,12 +1220,12 @@ class DialTool {
     this.date_lines = [el("span"), el("span")];      // day over month: the year left out (4.82; Okay, 19 Oct 2026: "i don't want it there"); the picker still sets it
     this.date_button.append(...this.date_lines);
     this.date_pick = el("input", { type: "date", id: "date-pick", className: "datepick", tabIndex: -1, ariaLabel: "The day the dial shows" });
-    this.date_pick.onchange = () => this.set_value("global", "date", this.date_pick.value || "");
-    this.date_button.onclick = () => {
-      this.date_pick.value = G.shown_day(this.S);
-      try { this.date_pick.showPicker(); } catch (e) { this.date_pick.focus(); this.date_pick.click(); }      // older browsers: the input itself
-    };
-    const time_box = el("span", { className: "timebox" }, el("span", { className: "timewell" }, this.time_field), this.half_button, el("span", { className: "datewell" }, this.date_button, this.date_pick));
+    this.date_pick.onchange = () => { this.set_value("global", "date", this.date_pick.value || ""); this.date_pop_sync(); };
+    // a press on the date opens its popup (4.89; Okay, 19 Oct 2026: "Date on the black bar is click to edit on popup.
+    // Plusminus for both. No controller"): the day written out between − and + (a day each), the time between its − and +
+    // (an hour each); a press on the day opens the system's date picker. In Barlow Regular ("Try barlow not condensed").
+    this.date_button.onclick = () => this.date_pop_open(!this.date_pop || this.date_pop.hidden);
+    const time_box = el("span", { className: "timebox" }, el("span", { className: "timewell" }, this.time_field), this.half_button, el("span", { className: "datewell" }, this.date_button, this.date_pick, this.date_pop_box()));
     this.time_slider = el("input", { id: "time-slider", type: "range", min: 0, max: 43199, step: 1 });
     this.time_slider.oninput = () => this.set_time(+this.time_slider.value + this.half());
     this.play_button = el("button", { type: "button", className: "icon play", id: "play", onclick: () => this.play(!this.playing) });
@@ -2072,9 +2073,40 @@ class DialTool {
     return [box, strap];
   }
 
-  /** X-ray (4.72, #346; Okay, 18 Oct 2026, on the disc sketches: "a3 not enough, a2 and others"): a switch beside the
-   *  case's, shown while a window with a disc is on — a date, day or am · pm window. On, every such window's disc is
-   *  drawn whole under the plate, the plate a veil over it (G.XRAY_VEIL). Preview only: never in an export (R5, R26). */
+  /** the bar's date popup (4.89, #402): two lines, the day and the time, each between − and +; built once, hidden. */
+  date_pop_box() {
+    const step = (sign, kind) => el("button", { type: "button", className: "popstep", ariaLabel: `${sign < 0 ? "A" : "Next"} ${kind} ${sign < 0 ? "earlier" : "later"}`, onclick: () => (kind === "day" ? this.step_day(sign) : this.set_time(((this.S.t + sign * 3600) % 86400 + 86400) % 86400)) });
+    const day_word = el("button", { type: "button", className: "popword", id: "date-pop-day", title: "Pick a day", onclick: () => { this.date_pick.value = G.shown_day(this.S); try { this.date_pick.showPicker(); } catch (e) { this.date_pick.focus(); this.date_pick.click(); } } });
+    const time_word = el("span", { className: "popword", id: "date-pop-time" });
+    const line = (minus, word, plus) => { minus.innerHTML = STEP.minus; plus.innerHTML = STEP.plus; return el("div", { className: "popline" }, minus, word, plus); };
+    this.date_pop = el("div", { className: "datepop", id: "date-pop", hidden: true }, line(step(-1, "day"), day_word, step(1, "day")), line(step(-1, "hour"), time_word, step(1, "hour")));
+    this.date_pop.onkeydown = (e) => { if (e.key === "Escape") this.date_pop_open(false); };
+    this.date_pop_sync = () => {
+      if (!this.date_pop || this.date_pop.hidden) return;
+      const d = new Date(G.shown_day(this.S) + "T12:00:00");
+      day_word.textContent = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d.getDay()] + ` ${d.getDate()} ` + ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][d.getMonth()] + ` ${d.getFullYear()}`;
+      time_word.textContent = fmt_time(this.S.t) + (this.S.t >= 43200 ? " PM" : " AM");
+    };
+    return this.date_pop;
+  }
+  date_pop_open(on) {
+    this.date_pop.hidden = !on;
+    this.date_button.setAttribute("aria-expanded", String(on));
+    if (on) { this.date_pop_sync(); if (this.date_pop_away) document.removeEventListener("pointerdown", this.date_pop_away, true); this.date_pop_away = (e) => { if (!this.date_pop.contains(e.target) && e.target !== this.date_button && !this.date_button.contains(e.target)) this.date_pop_open(false); }; document.addEventListener("pointerdown", this.date_pop_away, true); }
+    else if (this.date_pop_away) { document.removeEventListener("pointerdown", this.date_pop_away, true); this.date_pop_away = null; }
+  }
+  /** the day shown, a day earlier or later (the bar's date popup) */
+  step_day(sign) {
+    const d = new Date(G.shown_day(this.S) + "T12:00:00");
+    d.setDate(d.getDate() + sign);
+    this.set_value("global", "date", `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
+    this.date_pop_sync();
+  }
+
+  /** X-ray (#346): a switch under Guides, shown while a window with a disc is on — a date, day or am · pm window. On,
+   *  every such disc is drawn whole in a stack (geometry.js scene: the selected window's disc on top at full strength
+   *  with a white dotted outline, then the hands, the face, the other discs, each layer 15 % fainter than the one
+   *  above — Okay, 19 Oct 2026). Preview only: never in an export (R5, R26). */
   xray_box() {
     const b = el("button", { type: "button", className: "onview casebox xraybox", id: "xray", title: "X-ray: the windows' discs under the plate (preview only)", onclick: () => this.set_value("global", "xray", !this.S.xray) }, el("span", { className: "word", textContent: "X-ray" }));
     b.insertAdjacentHTML("afterbegin", icon(TOOL_ICONS.xray, 18));
@@ -2596,7 +2628,7 @@ class DialTool {
     const wrap = el("div", { className: "row " + row.kind + (row.nest ? " nest" : "") + (row.side ? " side" : "") + (row.under ? " under" : "") });      // under: a note about the controls above, on their column
     const tied = () => { if (row.tie) out.el.classList.add("tied"); };      // tie: this row belongs to the one above it, no line between them
     const out = { row, el: wrap, refresh: () => {} };
-    const set = (v) => this.set_value(row.scope, row.key, v);
+    const set = (v) => (row.put ? row.put(this, v) : this.set_value(row.scope, row.key, v));      // put: a row that stands for another setting (the big date tick)
     const id = row.id || `${row.scope}-${row.key}-${row.text || row.name}`.replace(/[^A-Za-z0-9]+/g, "-");      // id: when two rows would share one
     const active = (e) => document.activeElement === e;
 
@@ -2760,7 +2792,8 @@ class DialTool {
       out.refresh = (T) => {
         if (row.label) label.textContent = row.label(T);
         const tiles = [...group.querySelectorAll('[role="radio"]')];
-        tiles.forEach((b, i) => { b.classList.toggle("on", i === T[row.key]); b.setAttribute("aria-checked", String(i === T[row.key])); });
+        const on = row.shown ? row.shown(T) : T[row.key];      // shown: which tile stands for the value (a big date lights the Date tile)
+        tiles.forEach((b) => { const i = +b.id.slice(id.length + 1); b.classList.toggle("on", i === on); b.setAttribute("aria-checked", String(i === on)); });
       };
     }
 
@@ -2779,7 +2812,7 @@ class DialTool {
       box.onchange = () => set(box.checked);
       wrap.append(el("span"), el("label", { className: "check", htmlFor: id }, box, " " + row.text));
       if (row.tip) wrap.append(this.info_sign(row.tip));
-      out.refresh = (T) => { box.checked = Boolean(T[row.key]); };
+      out.refresh = (T) => { box.checked = Boolean(row.get ? row.get(T) : T[row.key]); };
     }
 
     if (row.kind === "col") {                      // a colour pill: a button that opens the colour pop-out. Nothing is typed in it; the pop-out has the HEX field.
@@ -4009,12 +4042,11 @@ class DialTool {
   row_window_colours(wrap, out) {
     wrap.className = "row colours";
     const parts = [
-      col("disc_c", "Disc under it", { ...W, word: (T) => (day_look(T) > 0 ? "Day" : moon_look(T) === 1 ? "Moon" : "Disc"), or: () => [1, 1, 1, 1] }),
+      col("disc_c", "Disc under it", { ...W, word: (T) => (is_day(T) ? "AM" : moon_look(T) === 1 ? "Moon" : "Disc"), or: () => [1, 1, 1, 1] }),
       col("ink", "Frame", { ...W, word: "Frame" }),
-      col("text_c", "Picture", { ...W, word: (T) => (moon_look(T) === 1 ? "Sky" : day_look(T) > 0 ? "Night" : "Picture"), only: win_is("am · pm", "moon phase"), or: (T) => T.ink }),      // or: what an unset colour is
-      // a picture's further colours (4.73): a moon's dark side in Phase · an am · pm Half's sun and moon · a Band's dawn and dusk
-      col("c2", "Shade", { ...W, word: (T) => (moon_look(T) === 1 ? "Shade" : day_look(T) === 1 ? "Sun · moon" : "Dawn"), only: (T) => moon_look(T) === 1 || day_look(T) > 0, or: (T) => G.PICTURE_TONES[moon_look(T) === 1 ? "shade" : day_look(T) === 1 ? "light" : "dawn"] }),
-      col("c3", "Dusk", { ...W, word: "Dusk", only: (T) => day_look(T) === 2, or: () => G.PICTURE_TONES.dusk }),
+      col("text_c", "Picture", { ...W, word: (T) => (moon_look(T) === 1 ? "Sky" : is_day(T) ? "PM" : "Picture"), only: win_is("am · pm", "moon phase"), or: (T) => T.ink }),      // or: what an unset colour is
+      // a picture's further colour (4.73): a moon's dark side in Phase
+      col("c2", "Shade", { ...W, word: "Shade", only: (T) => moon_look(T) === 1, or: () => G.PICTURE_TONES.shade }),
       col("c2", "Neighbours", { ...W, word: "Neighbours", id: "window-c2-Neighbours", only: (T) => win_is("date", "day")(T) && T.neighbours, or: () => G.PICTURE_TONES.near }),      // a date or day window's neighbours (4.74)
     ].map((row) => {
       const word = el("i", { textContent: typeof row.word === "function" ? "" : row.word });
@@ -5488,6 +5520,7 @@ class DialTool {
   half() { return this.S.t % 86400 >= 43200 ? 43200 : 0; }
 
   sync_time() {
+    if (this.date_pop_sync) this.date_pop_sync();      // the date popup's time line (4.88)
     const t12 = ((this.S.t % 43200) + 43200) % 43200;
     if (this.date_lines) {                         // the date, stacked: day over month, two figures each (07/10; no year — Okay, 19 Oct 2026: "better fit inside the bounding box")
       const [y, m, d] = G.shown_day(this.S).split("-");

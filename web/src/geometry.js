@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.87.1";
+export const VERSION = "beta 4.88";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -47,12 +47,13 @@ export const WINDOW_KINDS = ["date", "day", "am · pm", "moon phase", "big date"
 // moon phase, a rectangle for the others — what was drawn before there was a choice (R31). Only grows at its end (R9).
 export const WINDOW_SHAPES = ["as its kind", "rectangle", "circle", "polygon", "arch", "arc"];
 export const window_shape = (w) => WINDOW_SHAPES[w.shape] && w.shape ? WINDOW_SHAPES[w.shape]
-  : WINDOW_KINDS[w.kind] === "moon phase" ? (w.look ? "circle" : "arch") : WINDOW_KINDS[w.kind] === "am · pm" && w.look === 1 ? "half"
+  : WINDOW_KINDS[w.kind] === "moon phase" ? (w.look ? "circle" : "arch") : WINDOW_KINDS[w.kind] === "am · pm" ? "half"
   : WINDOW_KINDS[w.kind] === "big date" ? "pair" : "rectangle";      // a big date: two square holes side by side (4.74)      // a moon's Phase and Line sit in a round hole, an am · pm Half in a half-round one (4.73)      // a moon's Phase and Line pictures sit in a round hole (4.73)
-// what a moon or am · pm window pictures (4.73, #346; the disc sketches B and C, Okay, 18 Oct 2026: "All are good"):
-// a moon window's Arch (the humps, as before) · Phase (the moon as it is lit, in three colours) · Line (its outline and
-// dark side, one ink); an am · pm window's Sky (as before) · Half (a half-round hole over a two-colour disc) · Band (the
-// day's colours along a strip). Only grows at its end (R9)
+// what a moon window pictures (4.73, #346; the disc sketches B and C, Okay, 18 Oct 2026: "All are good"): Arch (the
+// humps) · Phase (the moon as it is lit, in three colours) · Line (its outline and dark side, one ink). An am · pm
+// window has one picture: a disc, half am and half pm, under a half-round hole (Okay, 19 Oct 2026: "Am pm should be
+// one half of a circle each"); its three former pictures keep their places here (R9) but `look` is not read for it
+// (link scheme 3, R31). Only grows at its end (R9)
 export const PICTURES = { "moon phase": ["Arch", "Phase", "Line"], "am · pm": ["Sky", "Half", "Band"] };
 export const LANGS = ["default", "tr", "nl", "de", "pl", "ro", "ca", "ar", "fa", "zh-Hans", "ja"];
 export const BEATS = [["sweep", 0], ["quartz · 1/s", 1], ["6 beats/s", 6], ["8 beats/s", 8]];
@@ -201,7 +202,6 @@ export const UNITS = [["mm", "Millimetres", 1, 0], ["pt", "Points", 72 / 25.4, 0
   ["thou", "Thou", 1 / 0.0254, -1]];      // thou: a thousandth of an inch (Okay, 16 Oct 2026, #299); one decimal fewer than mm. Only grows at its end (R9)
 
 /** the eight colours a guide can have: six neons, a dark and a light (Okay, 12 Oct 2026). The list only grows at its end (R9). */
-export const XRAY_VEIL = 0.82;                     // X-ray: how much of the plate is left (A2 of the disc sketches, 18 Oct 2026)
 export const DISC_WARN = [0.9, 0.22, 0.17];        // a disc past the case, with physics on: its edge in red (A4)
 export const GUIDE_COLOURS = ["#FF2D95", "#00E5FF", "#39FF14", "#FFE600", "#FF6A00", "#7A5CFF", "#111111", "#FFFFFF"];
 /** the five kinds of guide: [key of its eye, key of its colour, name]. */
@@ -391,9 +391,11 @@ export function fresh_settings(over = null) {
 //   scheme is not read: the tool opens the First dial and says so.
 //   Scheme 2 (beta 4.43, #278 and #246's lossless parts): the lean settings, every key written as its code from
 //   LINK_KEYS, colours as hex, numbers to 3 decimals, the time to the second → JSON → deflate → Crockford's base 32
-//   (capitals and digits, no I L O U), after "2". A scheme-1 link (base 64 after "1.") is not read (R31).
+//   (capitals and digits, no I L O U), after the scheme's number. Scheme 3 (beta 4.88): the same writing, after "3";
+//   it went up because an am · pm window now draws its one disc whatever its old `look`, so a scheme-2 link with the
+//   Sky or Band picture would draw something else. Links of schemes 1 and 2 are not read (R31).
 
-export const LINK_SCHEME = 2;
+export const LINK_SCHEME = 3;      // 3 since 4.88: an am · pm window draws its one disc whatever its old `look` (R31)
 
 /** the topmost hand that shows: its place in HANDS, or -1 */
 export const top_hand = (S) => [2, 1, 0].find((i) => S["ha_" + HANDS[i]].on) ?? -1;
@@ -519,7 +521,7 @@ export function un_base32(text) {
 /** what the part after # is: a scheme-2 dial's letters, a link of an older scheme, or not a dial at all. */
 export function link_kind(hash) {
   const h = (hash || "").replace(/^#/, "");
-  if (/^2[0-9A-Za-z]+$/.test(h)) return { scheme: 2, letters: h.slice(1) };
+  if (/^[23][0-9A-Za-z]+$/.test(h)) return { scheme: +h[0], letters: h.slice(1) };      // schemes 2 and 3: the same writing after their number
   if (/^[01]\.[A-Za-z0-9_~-]+$/.test(h)) return { scheme: +h[0] };
   return null;
 }
@@ -1395,16 +1397,13 @@ function moon_lit(rm, age) {
   return { disc, lit, dark: disc.difference(lit) };
 }
 const SYNODIC_DAYS = 29.530588853;
-/** an am · pm Half's disc (4.73), for a hole w wide: it turns on the hole's flat side, (0, -w/4), once a day — hour 0
- *  all night, 12 all day. → {night (what is dark), light (the moon, three stars and the sun), r (its radius)} */
+/** an am · pm window's disc, for a hole w wide: two plain halves, pm in the picture's colour and am the disc's
+ *  (Okay, 19 Oct 2026: "one half of a circle each … minimalize inside graphics"). It turns on the hole's flat side,
+ *  (0, -w/4), once a day: at hour 0 the pm half fills the hole, at 12 the am half. → {night (the pm half), r} */
 function half_disc(w, hour) {
   const R = w / 2, pivot = [0, -w / 4], turn = (((hour % 24) + 24) % 24) / 24 * 360;
-  const at = (a, r) => [pivot[0] + r * sin(radians(a)), pivot[1] + r * cos(radians(a))];
-  const moon = circle(0.34 * R).difference(circle(0.3 * R).translate(0.1 * R, 0.05 * R)).translate(...at(turn, 0.6 * R));
-  const stars = merge([[-34, 0.78], [30, 0.82], [12, 0.38]].map(([da, k]) => circle(0.06 * R).translate(...at(turn + da, k * R))));
-  const sun = circle(0.36 * R).translate(...at(turn + 180, 0.6 * R));
   const night = sector(0, R + DISC_PAD, -90, 90).rotate(-turn).translate(...pivot);
-  return { night: night.difference(moon).difference(stars), light: merge([moon, stars, sun]), r: R };
+  return { night, r: R };
 }
 /** the room a date or day window's text is sized from (its Size % of it): the hole's height (rectangle, arc), half an
  *  arch's width, a round hole's Ø. With its neighbours showing (4.74), no more than the disc's step from one place to
@@ -1433,14 +1432,7 @@ function disc_places(S, w) {
   };
   return { list, now, n, at, key: JSON.stringify([kind, list, now, w.r, w.at, w.at_deg, w.turn, w.text_turn, shape, size, type]) };
 }
-/** an am · pm Band's "now": a small triangle in the frame's ink over the hole's middle, its point on the hole's top
- *  edge (4.73; the disc sketch C3). Any other window: its frame as it is. */
-function band_mark(w, put, frame) {
-  if (!(WINDOW_KINDS[w.kind] === "am · pm" && w.look === 2)) return frame;
-  const h = w.h, top = h / 2 + Math.max(w.frame, 0), mark = put(new Path().polygon([0, h / 2], [0.22 * h, top + 0.38 * h], [-0.22 * h, top + 0.38 * h]));
-  return frame ? frame.union(mark) : mark;
-}
-/** a picture's colours not set by the person (4.73): the moon's shade · an am · pm half's sun and moon · a band's dawn and dusk. */
+/** a picture's colours not set by the person (4.73): the moon's shade (light, dawn and dusk belonged to the am · pm pictures retired in 4.88; kept, R9). */
 export const PICTURE_TONES = { near: [0.62, 0.62, 0.6, 1], shade: [0.5, 0.5, 0.52, 1], light: [0.95, 0.86, 0.6, 1], dawn: [0.91, 0.65, 0.71, 1], dusk: [0.91, 0.59, 0.35, 1] };
 
 /** a window's hole, in its own space (centre at the origin, upright), and the same hole grown by d all round.
@@ -1481,19 +1473,6 @@ function window_hole(w) {
   }
   const hole = moon_parts(w.w, 0).opening;         // the arch: its humps are hollow, so it grows by stroking
   return [hole, (d) => offset(hole.copy(), d)];
-}
-
-/** the am · pm window: a disc turns once a day under it, pivot on the window's bottom edge — half night
- *  (dark, with a crescent and two stars), half day (a sun). hour 12 = all day, 0 = all night. → what is dark */
-function day_night(w, h, hour, area = null) {
-  const opening = area || new Path().rect(-w / 2, -h / 2, w, h), pivot = [0, -h / 2];      // area: what is drawn — the hole, or the whole disc (X-ray, 4.72)
-  const turn = (((hour % 24) + 24) % 24) / 24 * 360, reach = 0.55 * h;       // clock angle of the night half's middle
-  const night = sector(0, 2 * (w + h), -90, 90).rotate(-turn).translate(...pivot).intersection(opening);
-  const at = (a, r) => [pivot[0] + r * sin(radians(a)), pivot[1] + r * cos(radians(a))];
-  const crescent = circle(0.4 * h).difference(circle(0.4 * h).translate(0.13 * h, 0.05 * h)).translate(...at(turn, reach));
-  const stars = merge([[-28, 0.72], [30, 0.8]].map(([da, k]) => circle(0.07 * h).translate(...at(turn + da, k * h))));
-  const sun = circle(0.34 * h).translate(...at(turn + 180, reach)).intersection(opening);
-  return merge([night.difference(crescent).difference(stars), sun]);
 }
 
 /** the hour of the day the time shown is in, 0 to 24, in steps of six minutes: what an am · pm window shows, and
@@ -1540,16 +1519,9 @@ function build_window(S, w, index) {
   } else if (kind === "moon phase") {
     const { moon, stars } = moon_parts(w.w, w.age);
     content = opening.copy().difference(moon).difference(stars);
-  } else if (kind === "am · pm" && w.look === 1) {      // Half: a disc under a half-round hole, turning on the hole's flat side once a day — night in the picture's colour, day the disc's, the sun and moon in a light of their own
-    const { night, light } = half_disc(w.w, day_hour(S));
-    content = night.intersection(opening);
-    more = [{ path: light, key: "c2", or: PICTURE_TONES.light }];
-  } else if (kind === "am · pm" && w.look === 2) {      // Band: the day's colours along a strip, twelve hours across the hole, now at its middle — night in the picture's colour, dawn and dusk their own, day the disc's
-    const hour = day_hour(S), per = w.w / 12, x = (hr) => (hr - hour) * per;      // an hour's width; where an hour stands
-    const spans = (from, to) => merge([-24, 0, 24].map((d) => new Path().rect(x(from + d), -w.h, (to - from) * per, 2 * w.h)));
-    content = merge([spans(-3, 5), spans(21, 29)]).intersection(opening);      // night: 21:00 to 05:00
-    more = [{ path: spans(5, 7), key: "c2", or: PICTURE_TONES.dawn }, { path: spans(18, 21), key: "c3", or: PICTURE_TONES.dusk }];
-  } else if (kind === "am · pm") content = day_night(w.w, high, day_hour(S)).intersection(opening);
+  } else if (kind === "am · pm") {                 // the disc under the half-round hole, turning on its flat side once a day: pm in the picture's colour, am the disc's
+    content = half_disc(w.w, day_hour(S)).night.intersection(opening);
+  }
   else if (kind === "big date") {                 // the tens in the left hole (none before 10), the units in the right (4.74)
     const n = parseInt(w.text, 10), [tens, units] = Number.isFinite(n) ? [n >= 10 ? String(Math.floor(n / 10) % 10) : "", String(n % 10)] : [String(w.text)[0] || "", String(w.text)[1] || ""];
     const dx = ((w.w - pair_gap(w)) / 2 + pair_gap(w)) / 2, t = window_type(S, w), size = w.h * w.size / 100;
@@ -1569,7 +1541,7 @@ function build_window(S, w, index) {
   return {
     w, index, window: win, number: put(content, !shows_text || w.text_turn),      // a hole's picture turns with it; its text only if asked
     more,
-    frame: band_mark(w, put, w.frame > 0 ? put(grown(w.frame)).difference(win) : null),
+    frame: w.frame > 0 ? put(grown(w.frame)).difference(win) : null,
     cutline: put(grown(0.05)).difference(win),                 // aperture outline for production
     clear: put(grown(w.frame + w.clear)),                      // keep print clear of the hole
   };
@@ -1597,19 +1569,12 @@ export function window_disc(S, x) {
     const D = disc_places(S, w), print = memo("disc" + D.key, () => merge(D.list.map((_, p) => D.at(p))));
     return { band: circle(2 * outer).difference(circle(2 * inner)), print, inner, outer, centre: [0, 0], reach: outer, fits: w.physics === false || outer <= room };
   }
-  if (kind === "am · pm" && w.look === 1) {      // Half: its disc turns on the hole's flat side
-    const { night, light, r } = half_disc(w.w, day_hour(S)), rho = r + DISC_PAD;
+  if (kind === "am · pm") {                      // its disc turns on the hole's flat side
+    const { night, r } = half_disc(w.w, day_hour(S)), rho = r + DISC_PAD;
     const band = put(circle(2 * rho).translate(0, -w.w / 4)), print = put(night.copy());
     const off = put(new Path().rect(-0.001, -w.w / 4 - 0.001, 0.002, 0.002)).bounds(), pv = [(off[0] + off[2]) / 2, (off[1] + off[3]) / 2];
     const reach = Math.hypot(...pv) + rho;
-    return { band, print, light: put(light.copy()), inner: 0, outer: rho, centre: pv, reach, fits: w.physics === false || reach <= room };
-  }
-  if (kind === "am · pm") {
-    const rho = Math.hypot(w.w / 2, high) + DISC_PAD, area = circle(2 * rho).translate(0, -high / 2);
-    const band = put(area.copy()), print = put(day_night(w.w, high, day_hour(S), area));
-    const pivot = put(new Path().rect(-0.001, -high / 2 - 0.001, 0.002, 0.002)).bounds(), c = [(pivot[0] + pivot[2]) / 2, (pivot[1] + pivot[3]) / 2];
-    const reach = Math.hypot(...c) + rho;
-    return { band, print, inner: 0, outer: rho, centre: c, reach, fits: w.physics === false || reach <= room };
+    return { band, print, inner: 0, outer: rho, centre: pv, reach, fits: w.physics === false || reach <= room };
   }
   return null;
 }
@@ -1759,31 +1724,46 @@ export function scene(S, statik, t, preview = true, selected = null) {
     }
     if (statik.hole_line) add("hole", statik.hole_line, black);
   } else {
-    if (preview && S.xray) for (const x of windows) {      // X-ray (4.72, #346): each window's disc whole under the plate, preview only (R5, R26)
-      const d = window_disc(S, x);
-      if (!d) continue;
-      add("disc", d.band, x.w.disc_c || [1, 1, 1, 1], { window: x.index });
-      add("disc print", d.print, x.w.text_c || x.w.ink, { window: x.index });
-      if (d.light) add("disc print", d.light, x.w.c2 || PICTURE_TONES.light, { window: x.index });      // an am · pm Half's sun and moon
-    }
+    // X-ray (4.72, #346; rewritten 4.88 — Okay, 19 Oct 2026: "Xray makes the unseen full visible, sensible z height
+    // differences (not editable) and a stacking order. Selected shows above all others. Top is 100% opacity, with a
+    // white dotted outline, below gets -15 opacity gradually"). Preview only (R5, R26). The stack, top down: the
+    // selected window's disc · the hands · the face (plate, rings, what the holes show) · the other discs, the
+    // biggest deepest, as a movement stacks them. Each layer under the top one is 15 % fainter than the one above.
+    const discs = preview && S.xray ? windows.map((x) => ({ x, d: window_disc(S, x) })).filter((v) => v.d) : [];
+    const xray = discs.length > 0, chosen = xray ? discs.find((v) => v.x.index === (S.ui_window ?? 0)) || null : null;
+    const under = discs.filter((v) => v !== chosen).sort((p, q) => q.d.outer - p.d.outer);      // the biggest first: the deepest
+    const layers = (chosen ? 1 : 0) + 1 + 1 + under.length;      // the selected disc · the hands · the face · each other disc
+    const dim = (fill, layer) => (xray && fill ? [...fill.slice(0, 3), fill[3] * Math.max(1 - 0.15 * layer, 0.25)] : fill);      // layer 0 at the top
+    const face = chosen ? 2 : 1, hands_layer = chosen ? 1 : 0;
+    under.forEach(({ x, d }, i) => {
+      const layer = face + 1 + (under.length - 1 - i);
+      add("disc", d.band, dim(x.w.disc_c || [1, 1, 1, 1], layer), { window: x.index });
+      add("disc print", d.print, dim(x.w.text_c || x.w.ink, layer), { window: x.index });
+    });
     for (const x of windows) {                     // what shows through each hole, on white
-      add("date disc", x.window, x.w.disc_c || [1, 1, 1, 1], { window: x.index });
-      add("date number", x.number, x.w.text_c || x.w.ink, { window: x.index });
-      for (const m of x.more || []) add("date picture", m.path, x.w[m.key] || m.or, { window: x.index });      // a picture's further colours (4.73)
+      add("date disc", x.window, dim(x.w.disc_c || [1, 1, 1, 1], face), { window: x.index });
+      add("date number", x.number, dim(x.w.text_c || x.w.ink, face), { window: x.index });
+      for (const m of x.more || []) add("date picture", m.path, dim(x.w[m.key] || m.or, face), { window: x.index });      // a picture's further colours (4.73)
     }
-    const veil = preview && S.xray && windows.some((x) => window_disc(S, x)) ? XRAY_VEIL : 1;      // X-ray: the plate a veil, the discs seen through it
-    add("plate", S.ha_on ? statik.plate : statik.plate_holed, veil < 1 ? [...S.c_plate.slice(0, 3), S.c_plate[3] * veil] : S.c_plate);      // the hole shows when the hands are hidden
+    add("plate", S.ha_on ? statik.plate : statik.plate_holed, dim(S.c_plate, face));      // the hole shows when the hands are hidden
     for (const d of rings) {
-      if (d.tints) d.tints.forEach((tint, n) => add("ring", tint.path, sector_colour(d.ring, tint.at), { ring: d, index: index(d), part: n + 1 }));
-      else add("ring", d.path, d.ring.c, { ring: d, index: index(d) });
+      if (d.tints) d.tints.forEach((tint, n) => add("ring", tint.path, dim(sector_colour(d.ring, tint.at), face), { ring: d, index: index(d), part: n + 1 }));
+      else add("ring", d.path, dim(d.ring.c, face), { ring: d, index: index(d) });
     }
-    for (const x of windows) add("date frame", x.frame, x.w.ink, { window: x.index });
+    for (const x of windows) add("date frame", x.frame, dim(x.w.ink, face), { window: x.index });
     if (S.ha_on) {
       for (const [name, colour, path, a, h] of hand_items(S, t)) {
-        add("hand", path, colour, { name, angle: a });
-        if (paints_mark(h) && disc_mark(h)) add("mark", disc_mark(h), h.mark_c, { name, angle: a });      // a disc's painted mark turns with it (#300)
+        add("hand", path, dim(colour, hands_layer), { name, angle: a });
+        if (paints_mark(h) && disc_mark(h)) add("mark", disc_mark(h), dim(h.mark_c, hands_layer), { name, angle: a });      // a disc's painted mark turns with it (#300)
       }
-      if (cap_shows(S)) add("cap", circle(S.ha_cap), S.c_cap);
+      if (cap_shows(S)) add("cap", circle(S.ha_cap), dim(S.c_cap, hands_layer));
+    }
+    if (chosen) {                                  // the selected window's disc on top, whole, with a white dotted outline
+      const { x, d } = chosen;
+      add("disc", d.band, x.w.disc_c || [1, 1, 1, 1], { window: x.index });
+      add("disc print", d.print, x.w.text_c || x.w.ink, { window: x.index });
+      add("disc edge", circle(2 * d.outer).translate(...d.centre), null, { stroke: [1, 1, 1, 1], px: 1.5, dots: true, window: x.index });
+      if (d.inner > 0) add("disc edge", circle(2 * d.inner).translate(...d.centre), null, { stroke: [1, 1, 1, 1], px: 1.5, dots: true, window: x.index });
     }
   }
 
