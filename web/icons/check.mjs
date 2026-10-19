@@ -32,7 +32,7 @@ const PICTURED = [
   { host: /^iris-box/, widths: [1], why: "the showcase's X, the eye's rays made readable while faint (Okay, 15 Oct 2026, 04:59: \"iris becomes an x\")" },
   { host: /^hands-key/, widths: [1], why: "the showcase's hands key, lines 1 as the X across from it (Okay, 15 Oct 2026, 07:40)" },
   { host: /^eye-box/, widths: [0.625], why: "the eye switch's rays, thin on purpose (Okay, 15 Oct 2026, 03:41: \"I want to see thin lines\"; 0.5 until 16 Oct: \"thicker lines, just barely visibly\")" },
-  { host: /^value-pop-(plus|minus)$/, widths: [8], why: "the controller's − and +, 8 thick, square ends, white on their discs (controller 2.svg, 18 Oct 2026; round ends from his drawing of 17 Oct, 3 from 16 Oct)" },
+  { host: /^value-pop-(plus|minus)$/, widths: [6], why: "the controller's − and +, 6 thick (8 until 4.85, when the controller went to three quarters), square ends, white on their discs (controller 2.svg, 18 Oct 2026; round ends from his drawing of 17 Oct, 3 from 16 Oct)" },
   { host: /^(Skip where|Knock out): /, widths: [3], why: "Give way's drawing: this ring's ticks, a dial's ticks pictured, thick (Okay, 18 Oct 2026: \"thicker indices\")" },
   { host: /^logo$/, widths: [1, 1.375], why: "Okay's own mark, at his weights: lines 1, ring 1.375 (15 Oct 2026, 03:06: \"a bit thinner\")" },
 ];

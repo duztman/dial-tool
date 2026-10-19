@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.85 (web version) · 19 Oct 2026
+
+Okay's notes, 19 Oct, 12:30 (on the iPad).
+
+- **The ring of shine: three circles that meet at noon** (#385; his choice of the two readings): three circles round the one centre, 0.3 of the dial's radius apart at dawn and dusk, closing as the sun climbs, one at noon — where their light adds up, so noon is the brightest. Each a soft light band with a dark one either side; their width from 4.83's dawn and noon (0.8 → 0.017 of the radius), now stepping down in ratio so the three stay apart while they close.
+- **The controller**: three quarters of its size everywhere (on a phone only, 4.68–4.84); its square at 70 % (the preview shows through); a pair's **LINK** a button of its own between − and +, in the middle of their line (it used to fall on the square's corner, the row's pill). Its − and + redrawn at the size they now show (33, 6 thick; R33).
+- **On a touch screen, a press on a slider or a name scrubs at once**: the controller comes under the finger and its slider follows the same finger without lifting it — by as much as the finger moves, along the knob's travel. A name still scrolls the panel up and down.
+
 ## beta 4.84 (web version) · 19 Oct 2026
 
 Okay's notes, 19 Oct, 12:06.

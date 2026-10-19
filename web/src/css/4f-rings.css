@@ -128,7 +128,7 @@
      changing anyway". It stands where the finger is, the knob under it (value_pop_open), over everything; it comes at
      once and, after its last use, fades away (.fading). (4.49.2 to 4.51.1: a light head with the name over a hairline,
      the value riding over the knob, his first drawing of 17 Oct.) */
-  .numpop { position: fixed; z-index: 30; display: grid; row-gap: var(--num-pop-gap); width: var(--num-pop); padding: var(--num-pop-pad); border-radius: var(--num-pop-round); background: var(--num-pop-ground); color: var(--ink); }
+  .numpop { position: fixed; z-index: 30; display: grid; row-gap: var(--num-pop-gap); width: var(--num-pop); padding: var(--num-pop-pad); border-radius: var(--num-pop-round); background: color-mix(in srgb, var(--num-pop-ground) var(--num-pop-see), transparent); color: var(--ink); }
   .numpop.fading { opacity: 0; transition: opacity var(--num-pop-fade) ease-out; }
   /* the value: its figures centred in the grey pill, bold, in the square's grey */
   .numpop .popvalue { display: grid; align-items: center; height: var(--num-pop-pill); border-radius: calc(var(--num-pop-pill) / 2); background: var(--num-pop-value); }
@@ -147,6 +147,14 @@
   .numpop .places > button.on { background: var(--black); color: var(--white); }
   .numpop .numbox { display: contents; }      /* the row's number box: its value went to the head, its − + are the discs */
   .numpop .row .steps { display: flex; justify-content: space-between; width: 100%; }
+  /* a pair's link (width and height, #358) between − and +, at the middle of their line (4.85; Okay, 19 Oct 2026: "Linking
+     stuff get a lower middle button between minus and plus on controller"; until then the row's pill, which fell on
+     the square's corner): a dark pill as the discs are, LINK in the pixel font at 12; linked, white with LINKED in dark */
+  .numpop .row > input[type="range"] { grid-row: 1; }
+  .numpop .row .steps { grid-row: 2; grid-column: 1; }      /* placed outright, so the pill can lie over its middle (one left to find its own place would open a column beside it) */
+  .numpop .row.haslink > .linkpill { position: static; translate: none; grid-row: 2; justify-self: center; align-self: center; z-index: 1; height: calc(var(--num-pop-step) / 2); padding: 0 var(--u3); border: 0; background: var(--num-pop-disc); color: var(--white); font-size: var(--t-pixel-legend); }
+  .numpop .row.haslink > .linkpill:hover { background: var(--num-pop-hover); }
+  .numpop .row.haslink > .linkpill.on { background: var(--white); color: var(--num-pop-disc); }
   .numpop .row .steps > .step { flex: none; display: grid; place-items: center; width: var(--num-pop-step); height: var(--num-pop-step); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); }
   .numpop .row .steps > .step:hover { background: var(--num-pop-hover); }
   .numpop .row .steps > .step > svg { width: var(--num-pop-sign); height: var(--num-pop-sign); }      /* the − and +, as the controller is scaled */
@@ -193,7 +201,7 @@
   /* a quiet row (R15 form B, #251): the number with its compact ±, no slider on the row — the slider stands in the controller its name or its number opens */
   .row.side.quiet > input[type="range"] { display: none; }
   /* a number's name opens its popup; pressed and moved sideways it changes the value (#249, #170) */
-  .popname { cursor: ew-resize; }
+  .popname { cursor: ew-resize; touch-action: pan-y; }      /* a finger sliding along it scrubs (4.85); up and down still scrolls the panel */
   .popname:hover { text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: var(--u1); }
   .popname.dragging { color: var(--ink); }
 

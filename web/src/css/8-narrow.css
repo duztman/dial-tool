@@ -121,9 +121,4 @@
     .givetab.on { width: auto; height: calc(var(--line) + var(--hair)); }      /* a hairline taller, so it lies over the square's top line */
     .givebox { grid-column: 1 / -1; }
   }
-  /* a phone: the controller at three quarters of its size (Okay, 18 Oct 2026, 22:35: "Controller too big on the phones,
-     75% scale"); every measure of it scaled, so it still stands with its knob under the finger. An iPad keeps it whole */
-  @media (max-width: 600px) {
-    :root { --num-pop-k: 0.75; }
-  }
 }

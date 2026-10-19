@@ -112,9 +112,9 @@ const SIGNS = {
 // the number popup's − and + (Okay's drawing, 16 Oct 2026, on 4.45.2: "thicker plus minus, rounded ends"): 22 points,
 // the sign 20 across, its line 3 — twice LINE, a pictured width (icons/check.mjs) — centred on whole points, so a 3
 // line covers whole screen dots
-const BIG = {                                      // the controller's − and + (Okay's second drawing, 18 Oct 2026, controller 2.svg): 8 thick, 40 long, square ends, white on the discs (17 Oct to 4.51.1: round ends)
-  plus: icon(`<path d="M22 2V42M2 22H42" ${sw(8)} stroke-linecap="butt"/>`, 44),
-  minus: icon(`<path d="M2 22H42" ${sw(8)} stroke-linecap="butt"/>`, 44),
+const BIG = {                                      // the controller's − and + (Okay's second drawing, 18 Oct 2026, controller 2.svg): square ends, white on the discs (17 Oct to 4.51.1: round ends); at the controller's three quarters since 4.85, 6 thick and 30 long on 33 (8, 40 on 44 until then), drawn at the size shown (R33)
+  plus: icon(`<path d="M16.5 1.5V31.5M1.5 16.5H31.5" ${sw(6)} stroke-linecap="butt"/>`, 33),
+  minus: icon(`<path d="M1.5 16.5H31.5" ${sw(6)} stroke-linecap="butt"/>`, 33),
 };
 // the − and + of every number box (4.64; Okay, 18 Oct 2026, 21:20: "Signs grow inside the box as much as these new thick
 // bordered ones"): 12 across on 16, LINE, round ends — half the box's cell, as the Positions blocks' signs were. (The
@@ -316,7 +316,12 @@ const POOL = { size: 1.45, stretch: 1.4, soft: [0.06, 0.8], light: [0.08, 0.42],
 // laid on), so a wide band is soft and a narrow one crisp; widths ×5 at dawn and dusk (0.16 → 0.8), ÷3 at noon (0.05 →
 // 0.05 / 3); the circle 15 % smaller (1.5 → 1.275 × the dial's radius), still crossing the dial at noon a third of the
 // radius above its centre (`top`), so its centre comes nearer
-const SHINE = { r: 1.275, top: 1 / 3, bright: 0.11, dark: 0.07, width: [0.8, 0.05 / 3], bands: 3, fall: 0.55 };
+// 4.85 (Okay, 19 Oct 2026, 12:06 and 12:30: "The shine ring needs to be 3 circle diameters which meet at noon" — his
+// choice of the two readings: three circles that come together into one): three circles round the one centre, `spread`
+// apart at dawn and dusk (a share of the radius), closer as the sun climbs, one at noon — where their light adds up,
+// so noon is the brightest too. Each circle a soft light band with a dark one either side; their width still from
+// `width` (4.83's dawn and noon), stepping down evenly in ratio (geometric), so the three stay apart as they close
+const SHINE = { r: 1.275, top: 1 / 3, bright: 0.11, dark: 0.07, width: [0.8, 0.05 / 3], spread: 0.3, circles: 3 };
 // the hands' bevels (#354, 4.77; notes 2: "a height simply shaded in a few tones of the hand's colour by the shadows'
 // light … not 3d like all facets shifted"): each hand split along its length, the side the light falls on lighter, the
 // other darker, by as much as the light comes from the side; preview only (R5, R26)
@@ -1535,19 +1540,23 @@ class DialTool {
     // dark one in `under` (a screen of black does nothing)
     if (sun) {
       const a = from * Math.PI / 180, behind = (SHINE.r - SHINE.top) * R, c = [-Math.sin(a) * behind, -Math.cos(a) * behind];
-      const w = (SHINE.width[0] + (SHINE.width[1] - SHINE.width[0]) * sun.k) * R, strong = sun.k * on, r0 = R * SHINE.r, n = 2 * SHINE.bands, reach = r0 + (n + 1) * w / 2;
-      const grad = (name, colour, alpha) => {      // alpha(k): how strong at the k-th half band from the middle (−n … n)
+      const w = SHINE.width[0] * (SHINE.width[1] / SHINE.width[0]) ** sun.k * R, s = SHINE.spread * (1 - sun.k) * R, strong = sun.k * on, r0 = R * SHINE.r;
+      const rings = Array.from({ length: SHINE.circles }, (_, i) => r0 + (i - (SHINE.circles - 1) / 2) * s), reach = r0 + s * SHINE.circles + 2 * w;
+      // a circle's profile across it: a light peak on it, w wide at its foot; a dark peak w out on either side, as wide
+      const tent = (d, at) => Math.max(0, 1 - Math.abs(d - at) / (w / 2));
+      const light = (r) => Math.min(1, rings.reduce((a, ri) => a + SHINE.bright * tent(r - ri, 0), 0) * strong);
+      const dark = (r) => Math.min(1, rings.reduce((a, ri) => a + SHINE.dark * (tent(r - ri, -w) + tent(r - ri, w)), 0) * strong);
+      // the profiles are straight between these radii (each peak's foot and top), so stops there draw them exactly
+      const at = [...new Set(rings.flatMap((ri) => [-1.5, -1, -0.5, 0, 0.5, 1, 1.5].map((m) => ri + m * w)).filter((r) => r > 0 && r < reach).map((r) => +r.toFixed(5)))].sort((a, b) => a - b);
+      const grad = (name, colour, alpha) => {
         const gr = part(`shine/grad/${name}`, "radialGradient", this.light_defs);
         gr.id = `shine-${name}`; gr.setAttribute("gradientUnits", "userSpaceOnUse");
         gr.setAttribute("cx", f(c[0])); gr.setAttribute("cy", f(c[1])); gr.setAttribute("r", f(reach));
-        const stops = [[0, 0]];
-        for (let k = -n; k <= n; k++) { const at = (r0 + k * w / 2) / reach; if (at > 0) stops.push([at, alpha(k) * strong]); }
-        stops.push([1, 0]);
-        stops.forEach(([at, op], i) => { const s = part(`shine/grad/${name}/${i}`, "stop", gr); s.setAttribute("offset", f(at)); s.setAttribute("stop-color", colour); s.setAttribute("stop-opacity", f(op)); });
+        const stops = [[0, 0], ...at.map((r) => [r / reach, alpha(r)]), [1, 0]];
+        stops.forEach(([o, op], i) => { const st = part(`shine/grad/${name}/${i}`, "stop", gr); st.setAttribute("offset", f(o)); st.setAttribute("stop-color", colour); st.setAttribute("stop-opacity", f(op)); });
       };
-      const even = (k) => k % 2 === 0;
-      grad("light", "#fff", (k) => (even(k) ? SHINE.bright * SHINE.fall ** (Math.abs(k) / 2) : 0));
-      grad("dark", "#000", (k) => (even(k) ? 0 : SHINE.dark * SHINE.fall ** ((Math.abs(k) - 1) / 2)));
+      grad("light", "#fff", light);
+      grad("dark", "#000", dark);
     }
     const bands = (g, under, key) => {
       if (!sun) return;
@@ -2619,11 +2628,18 @@ class DialTool {
       // the field takes typing and − + step, as with a mouse (Okay, 18 Oct 2026, 22:35: "On phones and ipad tapping or
       // sliding slider or title opens controller, you can type in box or tap plusminus"; from 4.60 to 4.67 the field and
       // the − + opened it instead)
-      if (!row.inpop) slider.addEventListener("touchstart", (e) => {
-        e.preventDefault();      // the slider itself doesn't move
-        const t = e.touches[0];
-        this.value_pop_open(field, row, { x: t.clientX, y: t.clientY });
-      }, { passive: false });
+      // …and the same finger goes on sliding it, without lifting (4.85; Okay, 19 Oct 2026, 12:30: "On ipad, activate does
+      // not immediately allow me to scrub, it should. Like click and drag adjusters we have. The popup is just for
+      // accuracy, does not dictate start of the movement"): the controller's slider follows the finger (value_pop_scrub)
+      if (!row.inpop) {
+        slider.addEventListener("touchstart", (e) => {
+          e.preventDefault();      // the slider itself doesn't move
+          const t = e.touches[0];
+          if (!(this.value_pop && this.value_pop.button === field)) this.value_pop_open(field, row, { x: t.clientX, y: t.clientY });
+          this.value_pop_scrub(t.clientX, true);
+        }, { passive: false });
+        slider.addEventListener("touchmove", (e) => { if (!this.value_pop) return; e.preventDefault(); this.value_pop_scrub(e.touches[0].clientX); }, { passive: false });
+      }
       const commit = (v) => {
         v = row.whole ? Math.round(v) : +(+v).toFixed(6);
         set(row.whole ? clamp(v, row.lo, row.hi) : v);       // typing past the slider's range is allowed
@@ -3550,11 +3566,16 @@ class DialTool {
     const now = () => { const T = this.target(row.scope); return T[row.key] ?? (row.or ? row.or(T) : 0); };
     label.onclick = (e) => e.preventDefault();
     label.onpointerdown = (e) => {
-      if (e.pointerType === "touch" || e.pointerType === "pen") { e.preventDefault(); press = null; return this.value_pop_open(label, row, { x: e.clientX, y: e.clientY }); }      // a finger: the controller at once, tapped or slid (22:35)
+      if (e.pointerType === "touch" || e.pointerType === "pen") {      // a finger: the controller at once, tapped or slid (22:35), and the slide goes on in it (4.85)
+        e.preventDefault(); press = { touch: true }; label.setPointerCapture(e.pointerId);
+        if (!(this.value_pop && this.value_pop.button === label)) this.value_pop_open(label, row, { x: e.clientX, y: e.clientY });
+        return this.value_pop_scrub(e.clientX, true);
+      }
       press = { x: e.clientX, v: now(), moved: false }; label.setPointerCapture(e.pointerId);
     };
     label.onpointermove = (e) => {
       if (!press) return;
+      if (press.touch) return this.value_pop_scrub(e.clientX);
       const d = e.clientX - press.x;
       if (!press.moved && Math.abs(d) < 4) return;
       if (!press.moved) { press.moved = true; this.value_pop_close(); label.classList.add("dragging"); }
@@ -3562,7 +3583,7 @@ class DialTool {
       this.guides_live(row.scope !== "nudge");
       this.set_value(row.scope, row.key, row.whole ? clamp(Math.round(v), row.lo, row.hi) : +Math.max(v, row.lo).toFixed(6));
     };
-    label.onpointerup = label.onpointercancel = (e) => { const was = press; press = null; label.classList.remove("dragging"); if (was && !was.moved) this.value_pop_open(label, row, { x: e.clientX, y: e.clientY }); };
+    label.onpointerup = label.onpointercancel = (e) => { const was = press; press = null; label.classList.remove("dragging"); if (was && !was.touch && !was.moved) this.value_pop_open(label, row, { x: e.clientX, y: e.clientY }); };
   }
 
   /** the guides while a number is slid — the popup's slider, a name or a value button dragged — even with Guides off
@@ -3652,6 +3673,17 @@ class DialTool {
     // the value ready to type over, for a mouse or the keys only: under a finger (a phone, an iPad) the keyboard comes
     // only when the value is pressed (Okay, 16 Oct 2026, 4.46.1: "Value gets selected was the wrong choice, triggers the keypad on ipad")
     if (field && document.documentElement.dataset.press !== "touch") { field.focus(); field.select(); }
+  }
+  /** the finger that opened the controller slides on (4.85): its slider moves by as much as the finger has moved since
+   *  the press, along the knob's travel — wherever the controller had to stand to stay in the window. start: the press. */
+  value_pop_scrub(x, start = false) {
+    const P = this.value_pop, s = P && P.box.querySelector('input[type="range"]');
+    if (!s) return;
+    if (start || !P.scrub) { P.scrub = { x, v: +s.value }; return; }
+    const k = s.getBoundingClientRect(), travel = Math.max(k.width - k.height, 1), lo = +s.min, hi = +s.max, step = +s.step || 0.01;
+    const v = clamp(P.scrub.v + (x - P.scrub.x) / travel * (hi - lo), lo, hi);
+    s.value = String(+(Math.round(v / step) * step).toFixed(6));
+    s.dispatchEvent(new Event("input", { bubbles: true }));
   }
   /** fade: it goes in a short fade (its last use is over); otherwise at once (a press elsewhere, Escape, another opening) */
   value_pop_close(fade = false) {

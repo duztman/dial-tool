@@ -108,7 +108,8 @@
        drawing's three equal rounds); a unit and a half round and between them; no frame. The drawing's measures, at a
        disc of 66: its top corners 28, its name line 28 with the hairline at its foot, inset 22; the knob 44 with a white
        eye of 12; the track a unit and a half thick, dark to the knob and light after; the signs 8 thick, 40 long. */
-    --num-pop-k: 1;      /* the controller's scale: three quarters on a phone (8-narrow; Okay, 18 Oct 2026, 22:35) — every measure below is times it */
+    --num-pop-k: 0.75;      /* the controller's scale, every measure below times it: three quarters everywhere (4.85; Okay, 19 Oct 2026, 12:30, on the iPad: "Size 75%"); on a phone only from 4.68 to 4.84 (Okay, 18 Oct, 22:35) */
+    --num-pop-see: 70%;      /* how much of the controller's square shows: the preview through it (4.85; Okay: "Controller bg 70% opacity") */
     --num-pop-step: calc(66px * var(--num-pop-k)); --num-pop-pill: var(--num-pop-step);      /* the discs and the slider's pill: one height */
     --num-pop-pad: calc(var(--u6) * var(--num-pop-k)); --num-pop-gap: calc(var(--u3) * var(--num-pop-k));      /* controller 2.svg (Okay, 18 Oct 2026), at a disc of 66: its 5.67 edge is 16.5, its 2.83 gaps 8.2 */
     --num-pop: calc(var(--num-pop-inner) + 2 * var(--num-pop-pad));

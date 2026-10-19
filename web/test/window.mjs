@@ -374,14 +374,14 @@ await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before)
   await page.waitForTimeout(200);
   const pop = await page.evaluate(() => { const e = document.querySelector("#value-pop"), p = e.getBoundingClientRect(), c = getComputedStyle(e), row = e.querySelector(".row"), s = e.querySelector("input[type=range]"), k = s.getBoundingClientRect(), pp = +s.style.getPropertyValue("--p"), steps = [...e.querySelectorAll(".step")].map((x) => x.getBoundingClientRect());
     return [e.querySelector("label").textContent, e.parentElement === document.body && e.classList.contains("numpop"), Math.round(p.width), Math.round(p.height), c.borderRadius, getComputedStyle(row).borderRadius, [c.backgroundColor, getComputedStyle(row).backgroundColor, getComputedStyle(s).backgroundColor, getComputedStyle(steps.length ? e.querySelector(".step") : e).backgroundColor].join(" "),
-      [Math.round(k.height), ...steps.map((r) => Math.round(r.width) + "×" + Math.round(r.height))].join(" "), steps.length === 2 && Math.round(steps[1].left - steps[0].right) === 86 && e.querySelectorAll(".step svg").length === 2, [e.querySelector(".popname-line") === null && e.querySelector(".row > label").hidden, Math.round(e.querySelector(".popvalue").getBoundingClientRect().height), getComputedStyle(e.querySelector(".popvalue")).backgroundColor, getComputedStyle(e.querySelector(".popvalue input")).fontWeight, getComputedStyle(e.querySelector(".popvalue input")).fontSize].join(" "),
+      [Math.round(k.height), ...steps.map((r) => Math.round(r.width) + "×" + Math.round(r.height))].join(" "), steps.length === 2 && Math.abs(steps[1].left - steps[0].right - 64.5) <= 1 && e.querySelectorAll(".step svg").length === 2, [e.querySelector(".popname-line") === null && e.querySelector(".row > label").hidden, Math.round(e.querySelector(".popvalue").getBoundingClientRect().height), getComputedStyle(e.querySelector(".popvalue")).backgroundColor, getComputedStyle(e.querySelector(".popvalue input")).fontWeight, getComputedStyle(e.querySelector(".popvalue input")).fontSize].join(" "),
       [k.left + k.height / 2 + pp * (k.width - k.height), k.top + k.height / 2]]; });
   await shot("4c19-size-pop");
   await page.keyboard.type("x2"); await page.keyboard.press("Enter");
   const w_after = await S("S.rings[S.ui_ring].width");
   await page.evaluate((w) => window.dial_tool.set_value("ring", "width", w), w_before);
-  check(Math.abs(dragged - (w_before + 0.4)) < 1e-9 && pop[0] === "Band width" && pop[1] && pop[2] === 251 && pop[3] === 248 && pop[4] === "49.5px" && pop[5] === "0px" && pop[6] === "rgb(92, 92, 88) rgba(0, 0, 0, 0) rgb(255, 255, 255) rgb(63, 63, 62)" && pop[7] === "66 66×66 66×66" && pop[8] && pop[9] === "true 66 rgb(185, 185, 180) 700 41px" && Math.abs(pop[10][0] - sb[0]) <= 1 && Math.abs(pop[10][1] - sb[1]) <= 1 && Math.abs(w_after - 2 * w_before) < 1e-9 && await page.$("#value-pop") === null,
-    `the size button, before the radius: dragged 16 to the right a band is 0.4 wider; a click opens the controller (#249; Okay's second drawing, controller 2.svg, 18 Oct 2026) with its knob under the press (${pop[10].map(Math.round)} for ${sb.map(Math.round)}): one dark square (${pop[6]}) holding, all 66 high (${pop[7]}), the value in bold 41 on a grey pill and no name ("No name necessary": ${pop[9]}), the slider in a white pill, − and + as two dark discs 86 apart; ${pop[2]} × ${pop[3]}, corners ${pop[4]}; it takes x2`);
+  check(Math.abs(dragged - (w_before + 0.4)) < 1e-9 && pop[0] === "Band width" && pop[1] && pop[2] === 188 && pop[3] === 186 && pop[4] === "37.125px" && pop[5] === "0px" && pop[6] === "color(srgb 0.360784 0.360784 0.345098 / 0.7) rgba(0, 0, 0, 0) rgb(255, 255, 255) rgb(63, 63, 62)" && pop[7] === "50 50×50 50×50" && pop[8] && pop[9] === "true 50 rgb(185, 185, 180) 700 30.75px" && Math.abs(pop[10][0] - sb[0]) <= 1 && Math.abs(pop[10][1] - sb[1]) <= 1 && Math.abs(w_after - 2 * w_before) < 1e-9 && await page.$("#value-pop") === null,
+    `the size button, before the radius: dragged 16 to the right a band is 0.4 wider; a click opens the controller (#249; Okay's second drawing, controller 2.svg, 18 Oct 2026) with its knob under the press (${pop[10].map(Math.round)} for ${sb.map(Math.round)}): one dark square at 70 % (${pop[6]}) holding, all 50 high at three quarters since 4.85 (${pop[7]}), the value in bold 31 on a grey pill and no name ("No name necessary": ${pop[9]}), the slider in a white pill, − and + as two dark discs 65 apart; ${pop[2]} × ${pop[3]}, corners ${pop[4]}; it takes x2`);
   // sliding in it shows the guides, as set, even with Guides off, and they go a moment after (Okay, on 4.45: "activate guides on slide. Even if off")
   await page.evaluate(() => window.dial_tool.set_value("global", "guides", false));
   await page.click("#ring-size"); await page.waitForTimeout(200);
@@ -458,7 +458,7 @@ const anchors = await page.evaluate(() => {
 await shot("4c10-radius-pop");
 await page.keyboard.press("Escape");
 await page.click(`.ringlist li:nth-child(${ring_before + 1} of .ring) .name`);
-check(anchors.options === "Baseline Ascender Centre Outer edge Inner edge" && anchors.labels.join(" | ") === "Centre radius | Baseline radius | Ascender radius | Centre radius" && anchors.a1 === 1 && anchors.a2 === 2 && anchors.a0 === 0 && anchors.look.join(" ") === "true 17 17 248 66",
+check(anchors.options === "Baseline Ascender Centre Outer edge Inner edge" && anchors.labels.join(" | ") === "Centre radius | Baseline radius | Ascender radius | Centre radius" && anchors.a1 === 1 && anchors.a2 === 2 && anchors.a0 === 0 && anchors.look.join(" ") === "true 12 12 186 50",
   `the radius of numerals has a menu beside its label: ${anchors.options}; the label follows: ${anchors.labels.join(" → ")}; in the controller no name, the value's pill as far from the top as the discs from the foot (${anchors.look.join(" · ")}) (controller 2.svg, 18 Oct 2026)`);
 // …and the drawing follows: the numeral at 12 stands on the radius (baseline), hangs from it (ascender), or is centred on it
 const at12 = [];
@@ -2280,6 +2280,19 @@ check(chip_reach.every(Boolean), "the hex in a pill opens the pop-out and isn't 
   const slider = await pad.evaluate((v0) => [!!document.querySelector("#value-pop"), window.dial_tool.S.dial_d === v0], v0);
   await pad.evaluate(() => window.dial_tool.value_pop_close());
   check(plus.every(Boolean) && field.every(Boolean) && slider.every(Boolean), `under a finger a row's + steps in place, no controller (${plus.join(" ")}); its field is focused to type (${field.join(" ")}); its slider opens the controller and moves nothing (${slider.join(" ")})`);
+}
+{ // the finger that opens the controller scrubs it at once, without lifting (4.85; Okay, 19 Oct 2026: "On ipad, activate does not immediately allow me to scrub, it should")
+  const scrub = await pad.evaluate(() => {
+    const t = window.dial_tool; t.value_pop_close();
+    const s = document.querySelector('.row:has(#global-dial-d-Diameter) input[type="range"]'), b = s.getBoundingClientRect(), y = b.top + b.height / 2, x = b.left + b.width / 2;
+    const touch = (type, x) => { const tt = new Touch({ identifier: 7, target: s, clientX: x, clientY: y }); s.dispatchEvent(new TouchEvent(type, { touches: type === "touchend" ? [] : [tt], targetTouches: type === "touchend" ? [] : [tt], changedTouches: [tt], bubbles: true, cancelable: true })); };
+    const d0 = t.S.dial_d; touch("touchstart", x);
+    const open = !!document.querySelector("#value-pop");
+    for (let k = 1; k <= 5; k++) touch("touchmove", x + 4 * k);
+    const d1 = t.S.dial_d; touch("touchend", x + 20); t.value_pop_close(); t.set_value("global", "dial_d", d0);
+    return [open, d1 > d0, d0, d1];
+  });
+  check(scrub[0] && scrub[1], `under a finger a slider opens the controller and the same finger, sliding on, changes the value at once (${scrub[2]} → ${scrub[3]})`);
 }
 await pad.screenshot({ path: path.join(OUT, "12-touch.png") });
 await touch.close();
