@@ -492,6 +492,24 @@ const hdr = (text, o = {}) => ({ kind: "hdr", text, ...o });
  *  Resize Ring from's box (#419): one drawing for both (R34) */
 const menu_arrow = (select) => { const arrow = el("span", { className: "labelmenu" }, select); arrow.insertAdjacentHTML("afterbegin", icon(`<path d="M3.25 4.75L6.25 7.75L9.25 4.75" ${sw(SLANT)}/>`, 12)); return arrow; };
 const info = (text, o = {}) => ({ kind: "note", text, ...o });
+/** the rings a mono print mask loses (G.mask_merges), worked out once per build of the dial's still parts. It takes
+ *  up to 200 ms on a busy dial (measured 19 Oct 2026: World time 195), so it waits until the dial has been still for
+ *  MERGE_WAIT, then the panel is synced again; meanwhile the last answer stands */
+const MERGES = new WeakMap(), MERGE_WAIT = 400;
+const merges_of = (app) => {
+  const st = app && app.statik;
+  if (!st) return [];
+  if (MERGES.has(st)) return (app.merges_last = MERGES.get(st));
+  clearTimeout(app.merge_wait);
+  app.merge_wait = setTimeout(() => { if (app.statik === st) { MERGES.set(st, G.mask_merges(st)); app.sync_rows(); } }, MERGE_WAIT);
+  return app.merges_last || [];
+};
+/** …said in words: which ring vanishes into which, and the two ways out */
+const mask_says = (merges) => {
+  if (!merges.length) return "";
+  const pairs = merges.slice(0, 3).map((m) => `${m.top} on ${m.under}`).join(" · ") + (merges.length > 3 ? ` · ${merges.length - 3} more` : "");
+  return `Lost in one ink: ${pairs}. Knock them out of the ring below (Give way to rings above), or export each ink alone.`;
+};
 const custom = (name, o = {}) => ({ kind: "custom", name, ...o });
 
 // a ring's radius as a number row: what the radius button's pop-up shows, and the Resize pane's row. A numeral's
@@ -828,6 +846,9 @@ const ROWS = {
     custom("wearos_pkg"),
     hdr("Print", { folded: true }),                                  // what only the printed or etched dial needs
     chk("out_production", "Mono print mask"),
+    // what the mask loses (#220): a ring lying on a ring below in another colour merges into it, one ink, and is gone;
+    // said under the tick while the mask is on (design canon §6: a tick's note under it), and in the log on export
+    info(() => mask_says(merges_of(tool)), { scope: "global", show: (S) => S.out_production && merges_of(tool).length > 0 }),
     chk("out_mirror", "Mirrored, for toner transfer"),
     // a print sheet (4.75, #348; Okay's notes 2: "print page preparation, preview, copies, stacks — something simple,
     // elegant, efficient and paper savingly"): one page of copies at true size, packed straight or staggered —
@@ -5309,6 +5330,7 @@ class DialTool {
       this.statik = G.build_static(S);
       this.static_dirty = false;
       this.build_ms = performance.now() - t0;
+      if (S.out_production) merges_of(this);      // the mask's note (#220): what the new build loses, once the dial is still
     }
     const items = G.scene(S, this.statik, S.t, true, S.ui_ring);
     this.spin_hands(items);      // the showcase's Now: the big hands whirl opposite ways, the seconds go straight
@@ -5746,6 +5768,7 @@ class DialTool {
     try {
       const S = this.S, statik = G.build_static(S);
       const name = file_name(S, kind);
+      if (S.out_production && !["json", "wearos"].includes(kind)) { const lost = G.mask_merges(statik); if (lost.length) this.log(mask_says(lost)); }      // never silent (R17, #220)
       if (kind === "svg") {
         const live = S.out_live_text && !S.out_production;
         save_file(name, svg_document(S, statik, S.t, { live }), "image/svg+xml");

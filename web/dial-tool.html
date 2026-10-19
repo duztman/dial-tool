@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.89.1 · built 2026-10-19 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.89.2 · built 2026-10-19 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -6273,7 +6273,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.89.1";
+var VERSION = "beta 4.89.2";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -8205,6 +8205,18 @@ function build_static(S) {
     windows,
     date: windows[0] || null
   };
+}
+function mask_merges(statik) {
+  const out = [], rings = statik.rings, colour = (d) => JSON.stringify([d.ring.c, d.ring.cs || null]);
+  rings.forEach((top, i2) => {
+    if (empty(top.path)) return;
+    for (const under of rings.slice(i2 + 1)) {
+      if (empty(under.path) || colour(top) === colour(under)) continue;
+      const both = top.path.intersection(under.path), b = both && both.bounds();
+      if (b && (b[2] - b[0]) * (b[3] - b[1]) > 1e-4) out.push({ top: top.ring.name, under: under.ring.name });
+    }
+  });
+  return out;
 }
 var COUNTER_AT = 0.16 / 0.22;
 function hand_angles(t, beats_per_second = 0) {
@@ -11105,6 +11117,26 @@ var menu_arrow = (select) => {
   return arrow;
 };
 var info = (text, o = {}) => ({ kind: "note", text, ...o });
+var MERGES = /* @__PURE__ */ new WeakMap();
+var MERGE_WAIT = 400;
+var merges_of = (app) => {
+  const st = app && app.statik;
+  if (!st) return [];
+  if (MERGES.has(st)) return app.merges_last = MERGES.get(st);
+  clearTimeout(app.merge_wait);
+  app.merge_wait = setTimeout(() => {
+    if (app.statik === st) {
+      MERGES.set(st, mask_merges(st));
+      app.sync_rows();
+    }
+  }, MERGE_WAIT);
+  return app.merges_last || [];
+};
+var mask_says = (merges) => {
+  if (!merges.length) return "";
+  const pairs = merges.slice(0, 3).map((m) => `${m.top} on ${m.under}`).join(" \xB7 ") + (merges.length > 3 ? ` \xB7 ${merges.length - 3} more` : "");
+  return `Lost in one ink: ${pairs}. Knock them out of the ring below (Give way to rings above), or export each ink alone.`;
+};
 var custom = (name, o = {}) => ({ kind: "custom", name, ...o });
 var RADIUS_ROWS = {
   outer: num2("r", "Outer radius", 0, 25, 0.05, { scope: "ring", menu: { key: "from", title: "What the radius measures to", items: [[0, "Outer"], [1, "Middle"], [2, "Inner"]] } }),
@@ -11488,6 +11520,9 @@ var ROWS = {
     hdr("Print", { folded: true }),
     // what only the printed or etched dial needs
     chk("out_production", "Mono print mask"),
+    // what the mask loses (#220): a ring lying on a ring below in another colour merges into it, one ink, and is gone;
+    // said under the tick while the mask is on (design canon §6: a tick's note under it), and in the log on export
+    info(() => mask_says(merges_of(tool)), { scope: "global", show: (S) => S.out_production && merges_of(tool).length > 0 }),
     chk("out_mirror", "Mirrored, for toner transfer"),
     // a print sheet (4.75, #348; Okay's notes 2: "print page preparation, preview, copies, stacks — something simple,
     // elegant, efficient and paper savingly"): one page of copies at true size, packed straight or staggered —
@@ -16850,6 +16885,7 @@ var DialTool = class _DialTool {
       this.statik = build_static(S);
       this.static_dirty = false;
       this.build_ms = performance.now() - t0;
+      if (S.out_production) merges_of(this);
     }
     const items = scene(S, this.statik, S.t, true, S.ui_ring);
     this.spin_hands(items);
@@ -17324,6 +17360,10 @@ var DialTool = class _DialTool {
     try {
       const S = this.S, statik = build_static(S);
       const name = file_name(S, kind);
+      if (S.out_production && !["json", "wearos"].includes(kind)) {
+        const lost = mask_merges(statik);
+        if (lost.length) this.log(mask_says(lost));
+      }
       if (kind === "svg") {
         const live = S.out_live_text && !S.out_production;
         save_file(name, svg_document(S, statik, S.t, { live }), "image/svg+xml");

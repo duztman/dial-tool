@@ -1,7 +1,7 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **done** · **parked**.
-*Last updated 19 Oct 2026 (beta 4.89.1: #430, #431. Beta 4.87: done items moved to build-list-done.md; the DrawBot items archived; stale "verify" rows closed).*
+*Last updated 19 Oct 2026 (beta 4.89.2: #220 done. Beta 4.89.1: #430, #431. Beta 4.87: done items moved to build-list-done.md; the DrawBot items archived; stale "verify" rows closed).*
 Every item keeps its number for good. Done items: `docs/build-list-done.md`. The DrawBot version's items: `archive/drawbot/build-list-drawbot.md`.
 
 ## Next
@@ -40,7 +40,6 @@ Okay, 19 Oct 2026, 21:26: "Add production debts to the build list and look at it
 
 | # | Item | Status |
 |---|---|---|
-| 220 | **Marks lying on a band vanish in the mask** unless the band knocks them out; nothing warns (the Sector dial: its chapter band's ticks and numerals are lost). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
 | 221 | **Knock-out ignores hidden rings**: hiding the rings above a band and exporting gives the band solid, so per-ink films made that way lose their holes. Films come from one full export's PDF layers until this changes. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
 | 222 | **Cut lines in the resist's black**: the window's and the centre hole's 0.05 mm cut lines are drawn in the mask's black (layers "Window 1 cut line", "Hole"); the PNG mask bakes them in. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
 | 219 | **No export without the hands and the window content**: a colour export always holds the hands at the time shown and the date (a printer sent it prints hands onto the dial). An Export option to leave them out. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |

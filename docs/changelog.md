@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.89.2 (web version) · 19 Oct 2026
+
+The production debts, first row (#220; Okay, 22:45: "Go with list").
+
+- **What a mono print mask loses is said** (#220): a ring lying on a ring below it in another colour merges into it in one ink and vanishes. While *Mono print mask* is on, a note under its tick names each one ("Lost in one ink: Minutes on Chapter · …") and the two ways out — knock them out of the ring below (*Give way to rings above*), or export each ink alone; every mask export says it in the Export log too (R17). Not named: a ring knocked out of the one below, or two rings of one colour. `G.mask_merges(statik)` in `geometry.js`; worked out once the dial has been still 0.4 s (up to 200 ms on a busy dial). Found on: B-Uhr, Diver, World time, Rally, Teal and coral, Sector. Nothing about the drawing or the files changed.
+- CLAUDE.md: a small push counts in the third number (R19).
+
 ## beta 4.89.1 (web version) · 19 Oct 2026
 
 Okay, 22:25: "we had the beginnings of a hand bevel. on off from hand window. seconds preview needs cap preview."

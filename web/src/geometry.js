@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.89.1";
+export const VERSION = "beta 4.89.2";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -1595,6 +1595,23 @@ export function build_static(S) {
   const hole = d > 0 ? circle(d) : null;
   return { plate, plate_holed: hole ? plate.difference(hole) : plate, hole, hole_line: hole ? circle(d + 0.1).difference(hole) : null,
     rings: build_rings(S, cut), windows, date: windows[0] || null };
+}
+
+/** what a mono print mask loses (#220): a ring that lies on a ring below it in another colour. On the dial the two
+ *  inks tell them apart; a mask has one ink, so the upper ring's shapes merge into the lower one and vanish. Not
+ *  lost: a ring knocked out of the one below (the lower ring is cut round it, so the mask keeps it), or two rings of
+ *  one colour (the colour export merges them too). → [{ top, under }] ring names, top first. statik: build_static's. */
+export function mask_merges(statik) {
+  const out = [], rings = statik.rings, colour = (d) => JSON.stringify([d.ring.c, d.ring.cs || null]);
+  rings.forEach((top, i) => {
+    if (empty(top.path)) return;
+    for (const under of rings.slice(i + 1)) {
+      if (empty(under.path) || colour(top) === colour(under)) continue;
+      const both = top.path.intersection(under.path), b = both && both.bounds();
+      if (b && (b[2] - b[0]) * (b[3] - b[1]) > 1e-4) out.push({ top: top.ring.name, under: under.ring.name });      // more than a sliver where two edges touch
+    }
+  });
+  return out;
 }
 
 // ── hands ────────────────────────────────────────────────────
