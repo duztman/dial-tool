@@ -252,6 +252,18 @@ Okay, 02:02: "My secret goal is making 4.90 v01 … Build functionality … note
 | 469 | **Units in fields** (Okay, 02:19 and 02:26: "Units cannot be typed on a controller"; "typing with keyboard allowed. No units visible in boxes, units universal, in the dropdown above"): a unit is typed in a field only; boxes show numbers in the unit box's unit, never a unit name. As built (#187) | noted — as built |
 | 470 | **Undo steps 20; Versions nine, the tenth replaces the oldest with a warning; arranged by dragging in the list, never in Compare** (Okay, 02:26). Reading: "Undo steps limit to 20" = the steps list shows 20 (undo itself keeps 200); ask | built — `wip-4.90`; the 20 asked |
 
+## Okay's notes of 20 Oct 2026, 02:37 (notes doc, on the 4.90 preview)
+
+| # | Item | Status |
+|---|---|---|
+| 471 | **The bio: "(pronounced oak·eye)" after his name**, with a middle dot ("I couldn't find the smaller dot, use 'dot in the middle'") | built — `wip-4.90` |
+| 472 | **Keyboard shortcuts like G** ("Did I say g triggers guides on off? Can we get shortcuts like these for keyboards") — Claude's set: H hands, X X-ray, S shadows, E the dial alone; not while typing | built — `wip-4.90`, the set to approve |
+| 473 | **The number boxes' figures** ("These numbers, and all their sisters are tabular inter. Can we not do that?", a picture of Diameter 34.0, Weight 101, Centre hole 2.7). Canon §2 has them lining, tabular, in the panel's type (his words of 20 Oct, 00:20). Reading open: proportional figures, or another face? Ask with a picture | open — ask |
+| 474 | **Print's ticks span all the columns**: nothing on the left to explain but the pane's title ("These are within rules. Excellent work. Now an exception … These tick boxes span all the columns to save space") | built — `wip-4.90` |
+| 475 | **"Also persistent resize pill is on default on export tab"** — reading open: the Export tab's pinned pane (Export a file) gets the ring list's resize pill, shown to start? Ask | open — ask |
+| 476 | **The case icon**: lugs half as long or less; the case centred in its square without the crown; the crown shorter, barely seen, drawn after centring; ink traps where lines cross, as in Guides; inside, the hour and minute hands in an L instead of a ring. And the Case switch's left padding as X-ray's | built — `wip-4.90` |
+| 477 | **On switches, only the sign lights when on; the word stays dim except under the pointer** (Guides and the others) | built — `wip-4.90` |
+
 ## Dial Packer (side product, 19 Oct 2026)
 
 `packer/`; how it works: `packer/README.md`.

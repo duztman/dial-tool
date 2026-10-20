@@ -65,6 +65,11 @@
      2026: "The drawing of secondary lines after an adjustment, they start on the column aligned with the upper row.
      App-wide"; 20:22, Print's Mono print mask moved to that column). Not beside a hand's box (.side: its own columns) */
   .body .row:not(.side) > .check, .body .row.note:not(.side) > .quiet { grid-column: 3 / -1; }
+  /* an exception, by pane (cls "ticks-wide"): Print's ticks and their notes start at the left, over every column, since
+     nothing on the left explains them but the pane's title (Okay, 20 Oct 2026, 02:37: "These are within rules … Now an
+     exception. These have nothing on the left column to explain but the print title. These tick boxes span all the
+     columns to save space") */
+  .pane.ticks-wide .body .row:not(.side) > .check, .pane.ticks-wide .body .row.note[data-after="tick"]:not(.side) > .quiet { grid-column: 1 / -1; }      /* a note under controls keeps their column */
   /* a note and the row it explains are one box (design canon §6, #420; Okay, 19 Oct 2026: "hiding the white line …
      always within the same box that ends with a bottom white border"): no line between them, the box's line under the
      note. Its words are small and grey, one or two lines; the first follows the row's own line at the panel's line

@@ -705,6 +705,11 @@
      2026: "The drawing of secondary lines after an adjustment, they start on the column aligned with the upper row.
      App-wide"; 20:22, Print's Mono print mask moved to that column). Not beside a hand's box (.side: its own columns) */
   .body .row:not(.side) > .check, .body .row.note:not(.side) > .quiet { grid-column: 3 / -1; }
+  /* an exception, by pane (cls "ticks-wide"): Print's ticks and their notes start at the left, over every column, since
+     nothing on the left explains them but the pane's title (Okay, 20 Oct 2026, 02:37: "These are within rules … Now an
+     exception. These have nothing on the left column to explain but the print title. These tick boxes span all the
+     columns to save space") */
+  .pane.ticks-wide .body .row:not(.side) > .check, .pane.ticks-wide .body .row.note[data-after="tick"]:not(.side) > .quiet { grid-column: 1 / -1; }      /* a note under controls keeps their column */
   /* a note and the row it explains are one box (design canon §6, #420; Okay, 19 Oct 2026: "hiding the white line …
      always within the same box that ends with a bottom white border"): no line between them, the box's line under the
      note. Its words are small and grey, one or two lines; the first follows the row's own line at the panel's line
@@ -1320,7 +1325,7 @@
   .casebox:not(.on) .arrow { border-left-style: dotted; }
   .casebox > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
   .casebox:not(.on) { border-style: dotted; }      /* not on: its outline dotted — shorter dashes, shorter gaps, a denser line (Okay, 19 Oct 2026: "Dashes for invisible: shorter dash shorter gaps, denser outline") */
-  .casebox.on > :not(select) { opacity: 1; }
+  .casebox.on > :is(.sign, svg) { opacity: 1; }      /* on: its sign alone lights; the word stays dim but under the pointer (Okay, 20 Oct 2026, 02:37: "when on, only the icon lights up. Labels stay dim at all times, except hover") */
   /* its strap's switch (4.69): the strap's chip, a button of its own, then its kind's name and chevron with the list over
      those only — so a press on the chip opens the colour, a press on the words the list */
   .strapbox { padding-left: var(--u3); }
@@ -1328,6 +1333,8 @@
   .strapbox .strapkind > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
   .strapbox .dot { padding: 0; border-color: var(--on-canvas); cursor: pointer; }
   .strapbox.on > * { opacity: 1; }
+  .strapbox.on .strapkind > :not(.sign, select) { opacity: var(--faint); }      /* on: its chip and sign whole, its word and chevron dim but under the pointer (Okay, 20 Oct 2026, 02:37: "when on, only the icon lights up") */
+  @media (hover: hover) { .strapbox.on:hover .strapkind > * { opacity: 1; } }
   /* the selected ring's handles on its guides (4.65; farukahmet's PR #2, Okay: "all these handles should be in guide
      color"): filled with the ring's guide colour (--handle, app.js), a hairline of white round them so they read on any
      dial; a reach of a fingertip round each, unseen */
@@ -1379,7 +1386,7 @@
     .onview:hover { border-color: var(--on-canvas); }
     .onview:hover > * { opacity: 1; }
   }
-  .guidesbox[aria-pressed="true"] > * { opacity: 1; }      /* on: its sign and its word whole (Okay, 15 Oct 2026, 02:06: "when on the icon is black too. Same goes for shadows") */
+  .guidesbox[aria-pressed="true"] > svg { opacity: 1; }      /* on: its sign whole, in black or white (Okay, 15 Oct 2026, 02:06: "when on the icon is black too. Same goes for shadows"); its word stays dim but under the pointer (20 Oct 2026, 02:37: "when on, only the icon lights up. Labels stay dim at all times, except hover") */
   /* Versions, under undo (#435): a switch with its sign and word, as Backdrop's; its list drops under it — the panel's
      ground, its cards as wide as the Gallery's (the panel's width). Function first: its look is to be designed with Okay */
   .versions { position: relative; display: flex; }
@@ -13993,6 +14000,14 @@ var hand_part = (h, row) => {
   }
   return lit && lit.bounds() ? lit : null;
 };
+var CASE_TRAPS = (() => {
+  const c = 9.25, r = 5.5, half = DENSE / 2, cut = 0.45, out = [];
+  for (const edge of [r + half, r - half]) for (const off of [3 - half, 3 + half]) for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
+    const y = Math.sqrt(edge * edge - off * off);
+    out.push(`<circle cx="${(c + sx * off).toFixed(3)}" cy="${(c + sy * y).toFixed(3)}" r="${cut}" fill="black" stroke="none"/>`);
+  }
+  return out.join("");
+})();
 var INK_TRAPS = (() => {
   const c = 9.25, r = 5.5, half = DENSE / 2, cut = 0.45, out = [];
   for (const edge of [r + half, r - half]) for (const side of [-half, half]) {
@@ -14019,6 +14034,17 @@ var WORDS_MS = 3e3;
 var SHEET = { shares: [0.42, 0.22], preview: 120, drawer: 160, room: 140 };
 var GIF_MOST = 600;
 var GIF_FPS_MOST = 25;
+var KEYS = {
+  h: (t) => t.set_value("global", "ha_on", !t.S.ha_on),
+  x: (t) => {
+    if (!$("#xray")?.hidden) t.set_value("global", "xray", !t.S.xray);
+  },
+  s: (t) => t.set_value("global", "sh_on", !t.S.sh_on),
+  e: (t) => {
+    if (t.comparing) t.compare(false);
+    else t.dial_alone(t.eye_button.getAttribute("aria-pressed") !== "true");
+  }
+};
 var FINE_FREE = 12;
 var FINE_HALF = 48;
 var FINE_LEAST = 0.05;
@@ -14064,7 +14090,11 @@ var TOOL_ICONS = {
   // through a buckle; a disc's edge whole round a dashed one under it
   // a case from above (4.82; Okay, 19 Oct 2026: "Case icon … need work"): its bezel and dial opening, the lugs running
   // out of it, the crown at 3
-  case: `<g ${sw(DENSE)}><circle cx="9.25" cy="9.25" r="5"/><circle cx="9.25" cy="9.25" r="2.5"/><path d="M6.25 1.25V5.25M12.25 1.25V5.25M6.25 13.25V17.25M12.25 13.25V17.25M14.25 9.25H16.75"/></g>`,
+  // the case from above (Okay, 20 Oct 2026, 02:37, notes doc: "lugs tooo long. Half, maybe even more … fits inside a
+  // square dead center excluding the enormous crown … Crown shorter, barely visible … inktraps like Guides … Inside dial,
+  // not a ring but hour and minute hands in L formation"): Guides' ring (r 5.5 on 9.25), its lugs a third of the old
+  // length outside it with ink traps where they meet it, the hands at three o'clock, the crown a stub after the centring
+  case: `<mask id="case-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18"><rect width="18" height="18" fill="white" stroke="none"/>${CASE_TRAPS}</mask><g ${sw(DENSE)}><g mask="url(#case-cut)"><circle cx="9.25" cy="9.25" r="5.5"/><path d="M6.25 2.75V5M12.25 2.75V5M6.25 13.5V15.75M12.25 13.5V15.75"/></g><path d="M9.25 9.25V6M9.25 9.25H11.75M14.75 9.25H15.75"/></g>`,
   strap: `<g ${sw(DENSE)}><path d="M6.25 1.25V6.25M12.25 1.25V6.25M6.25 12.25V17.25M12.25 12.25V17.25"/><rect x="4.75" y="6.25" width="9" height="6"/><path d="M9.25 6.25V12.25"/></g>`,
   xray: `<g ${sw(DENSE)}><circle cx="9.25" cy="9.25" r="6.5"/><circle cx="9.25" cy="9.25" r="3.25" stroke-dasharray="1.25 1.3" stroke-linecap="butt"/></g>`,
   shadows: `<circle cx="7.25" cy="9.75" r="5.5" ${sw(DENSE)}/><path d="M4.5 14.5A5.5 5.5 0 0 0 12 7A8 8 0 0 1 4.5 14.5Z" fill="currentColor" stroke="none"/><path d="M11.03 13.75A5.625 1.25 0 0 1 16.75 15A5.625 1.25 0 0 1 5.5 15A5.5 5.5 0 0 0 11.03 13.75Z" fill="currentColor" stroke="none"/>`,
@@ -14586,8 +14616,8 @@ var ROWS = {
     custom("export_wearos"),
     custom("wearos_name"),
     custom("wearos_pkg"),
-    hdr("Print", { folded: true }),
-    // what only the printed or etched dial needs
+    hdr("Print", { folded: true, cls: "ticks-wide" }),
+    // its ticks span every column: nothing on the left to explain them but the title (#474)                                  // what only the printed or etched dial needs
     chk("out_production", "Mono print mask"),
     // what the mask loses (#220): a ring lying on a ring below in another colour merges into it, one ink, and is gone;
     // said under the tick while the mask is on (design canon §6: a tick's note under it), and in the log on export
@@ -14960,6 +14990,9 @@ var DialTool = class _DialTool {
           e.preventDefault();
         } else if (e.key.toLowerCase() === "g" && !e.repeat && !e.shiftKey) {
           tool2.set_value("global", "guides", !tool2.S.guides);
+          e.preventDefault();
+        } else if (!e.repeat && !e.shiftKey && KEYS[e.key.toLowerCase()]) {
+          KEYS[e.key.toLowerCase()](tool2);
           e.preventDefault();
         }
       });
@@ -16001,7 +16034,7 @@ var DialTool = class _DialTool {
       "div",
       { className: "bio night", id: "bio", hidden: true },
       // no title of its own: the header's is right above it (Okay, 03:06)
-      this.bio_first = line2("A tool for designing watch dials, ring by ring, in the browser. Designed and vibecoded by Okay, a graphic designer in Istanbul working across contemporary art, architecture and cinema, for a watch he is building. "),
+      this.bio_first = line2("A tool for designing watch dials, ring by ring, in the browser. Designed and vibecoded by Okay (pronounced oak\xB7eye), a graphic designer in Istanbul working across contemporary art, architecture and cinema, for a watch he is building. "),
       // 06:51: "designed and vibe coded by okay"; the contact line ends this paragraph
       line2("Source, every version and the MIT licence: ", a("https://github.com/duztman/dial-tool", "github.com/duztman/dial-tool"), "."),
       el("h3", { textContent: "Built on open source" }),
@@ -17785,7 +17818,7 @@ var DialTool = class _DialTool {
   row_give_way(wrap, out) {
     wrap.className = "giveway";
     wrap.id = "give-way";
-    const NAMES2 = ["Skip where", "Knock out"], KEYS = ["skip", "knock"], LISTS = [SKIP_FROM, KNOCK_FROM];
+    const NAMES2 = ["Skip where", "Knock out"], KEYS2 = ["skip", "knock"], LISTS = [SKIP_FROM, KNOCK_FROM];
     const tabs = el("div", { className: "givetabs", role: "tablist", ariaLabel: "How this ring gives way" });
     const box3 = el("div", { className: "givebox", id: "give-box" });
     const picture = el("div", { className: "givepic", role: "img" });
@@ -17813,7 +17846,7 @@ var DialTool = class _DialTool {
     };
     let drawn2 = "";
     out.refresh = (R) => {
-      const tab = this.give_tab ?? (R.knock && !R.skip ? 1 : 0), key = KEYS[tab], list = LISTS[tab], at = R[key] || 0;
+      const tab = this.give_tab ?? (R.knock && !R.skip ? 1 : 0), key = KEYS2[tab], list = LISTS[tab], at = R[key] || 0;
       [...tabs.children].forEach((b, i2) => {
         b.classList.toggle("on", i2 === tab);
         b.setAttribute("aria-selected", String(i2 === tab));
@@ -19985,7 +20018,6 @@ var DialTool = class _DialTool {
   /** a film per ink (#35): its button, and the inks it will write. */
   row_ink_films(wrap, out) {
     wrap.className = "row";
-    const says = el("span", { className: "quiet" });
     const go = el("button", { type: "button", className: "btn main", id: "export-inks", textContent: "A mask per ink", title: "One mask PDF for each colour the dial is printed in", onclick: async () => {
       const inks = inks_of(this.S);
       this.log(`a mask per ink: ${inks.length} films (${inks.join(", ")})${inks.length > 1 ? " \u2014 if the browser asks whether this page may download several files, allow it" : ""}`);
@@ -19994,10 +20026,11 @@ var DialTool = class _DialTool {
         await new Promise((r) => setTimeout(r, 350));
       }
     } });
-    wrap.append(el("label", { textContent: "Inks" }), go, says);
+    wrap.append(el("label", { textContent: "Inks" }), go);
     out.refresh = (S) => {
       const n = inks_of(S);
-      says.textContent = ` ${n.length} ink${n.length === 1 ? "" : "s"}: ${n.join(" ")}`;
+      go.textContent = `A mask per ink \xB7 ${n.length}`;
+      go.title = `One mask PDF for each colour the dial is printed in: ${n.join(" ")}`;
     };
   }
   /** a spec sheet (#18): its button, on the print sheet's column. */

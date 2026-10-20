@@ -281,6 +281,15 @@ const hand_part = (h, row) => {
 // where each of the four arms crosses the ring the two lines make four inside corners, and at a small size ink (light,
 // here) pools in them and the crossing reads as a blot. A small round cut at each corner — sixteen in all — keeps the
 // crossing open. They are holes in the sign's mask: at each corner, where an arm's edge meets the ring's edge.
+// the case sign's ink traps (#476): where each lug (x 9.25 ± 3) meets the ring (r 5.5 on 9.25), on both edges of both
+const CASE_TRAPS = (() => {
+  const c = 9.25, r = 5.5, half = DENSE / 2, cut = 0.45, out = [];
+  for (const edge of [r + half, r - half]) for (const off of [3 - half, 3 + half]) for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
+    const y = Math.sqrt(edge * edge - off * off);
+    out.push(`<circle cx="${(c + sx * off).toFixed(3)}" cy="${(c + sy * y).toFixed(3)}" r="${cut}" fill="black" stroke="none"/>`);
+  }
+  return out.join("");
+})();
 const INK_TRAPS = (() => {
   const c = 9.25, r = 5.5, half = DENSE / 2, cut = 0.45, out = [];      // cut: 0.45, Okay's pick of four (0 · 0.2 · 0.3 · 0.45), 15 Oct 2026, 02:52: "this guides icon is the best"
   for (const edge of [r + half, r - half]) for (const side of [-half, half]) {
@@ -345,6 +354,14 @@ const WORDS_MS = 3000;
 // scrolling the drawer must have left under its title, tabs and pinned panes before those stay put
 const SHEET = { shares: [0.42, 0.22], preview: 120, drawer: 160, room: 140 };
 const GIF_MOST = 600, GIF_FPS_MOST = 25;      // a GIF's largest side (px) and frame rate: past these the file grows past what a GIF is good for (#51)
+// one key, one switch on the preview, as G is Guides (#472): H the hands · X X-ray (while a window has a disc) · S
+// Shadows · E the dial alone. Not while typing, on a slider or a menu, with ⌘/Ctrl/⌥ held, or with a dialog open
+const KEYS = {
+  h: (t) => t.set_value("global", "ha_on", !t.S.ha_on),
+  x: (t) => { if (!$("#xray")?.hidden) t.set_value("global", "xray", !t.S.xray); },
+  s: (t) => t.set_value("global", "sh_on", !t.S.sh_on),
+  e: (t) => { if (t.comparing) t.compare(false); else t.dial_alone(t.eye_button.getAttribute("aria-pressed") !== "true"); },
+};
 const FINE_FREE = 12, FINE_HALF = 48, FINE_LEAST = 0.05;      // a slider held away from its track (#406): px of free room, then px per halving step, and the finest share of the track's speed
 const FINE = (off) => Math.max(1 / (1 + off / FINE_HALF), FINE_LEAST);
 const POP_LINGER_MS = 1200, POP_FADE_MS = 120;      // the number popup: after its last use it fades, quickish (Okay, 17 Oct 2026); the stylesheet's --num-pop-linger and --num-pop-fade say the same
@@ -386,7 +403,12 @@ const TOOL_ICONS = {
   // through a buckle; a disc's edge whole round a dashed one under it
   // a case from above (4.82; Okay, 19 Oct 2026: "Case icon … need work"): its bezel and dial opening, the lugs running
   // out of it, the crown at 3
-  case: `<g ${sw(DENSE)}><circle cx="9.25" cy="9.25" r="5"/><circle cx="9.25" cy="9.25" r="2.5"/><path d="M6.25 1.25V5.25M12.25 1.25V5.25M6.25 13.25V17.25M12.25 13.25V17.25M14.25 9.25H16.75"/></g>`,
+  // the case from above (Okay, 20 Oct 2026, 02:37, notes doc: "lugs tooo long. Half, maybe even more … fits inside a
+  // square dead center excluding the enormous crown … Crown shorter, barely visible … inktraps like Guides … Inside dial,
+  // not a ring but hour and minute hands in L formation"): Guides' ring (r 5.5 on 9.25), its lugs a third of the old
+  // length outside it with ink traps where they meet it, the hands at three o'clock, the crown a stub after the centring
+  case: `<mask id="case-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18"><rect width="18" height="18" fill="white" stroke="none"/>${CASE_TRAPS}</mask>`
+    + `<g ${sw(DENSE)}><g mask="url(#case-cut)"><circle cx="9.25" cy="9.25" r="5.5"/><path d="M6.25 2.75V5M12.25 2.75V5M6.25 13.5V15.75M12.25 13.5V15.75"/></g><path d="M9.25 9.25V6M9.25 9.25H11.75M14.75 9.25H15.75"/></g>`,
   strap: `<g ${sw(DENSE)}><path d="M6.25 1.25V6.25M12.25 1.25V6.25M6.25 12.25V17.25M12.25 12.25V17.25"/><rect x="4.75" y="6.25" width="9" height="6"/><path d="M9.25 6.25V12.25"/></g>`,
   xray: `<g ${sw(DENSE)}><circle cx="9.25" cy="9.25" r="6.5"/><circle cx="9.25" cy="9.25" r="3.25" stroke-dasharray="1.25 1.3" stroke-linecap="butt"/></g>`,
   shadows: `<circle cx="7.25" cy="9.75" r="5.5" ${sw(DENSE)}/><path d="M4.5 14.5A5.5 5.5 0 0 0 12 7A8 8 0 0 1 4.5 14.5Z" fill="currentColor" stroke="none"/>`
@@ -875,7 +897,7 @@ const ROWS = {
     custom("export_wearos"),
     custom("wearos_name"),
     custom("wearos_pkg"),
-    hdr("Print", { folded: true }),                                  // what only the printed or etched dial needs
+    hdr("Print", { folded: true, cls: "ticks-wide" }),      // its ticks span every column: nothing on the left to explain them but the title (#474)                                  // what only the printed or etched dial needs
     chk("out_production", "Mono print mask"),
     // what the mask loses (#220): a ring lying on a ring below in another colour merges into it, one ink, and is gone;
     // said under the tick while the mask is on (design canon §6: a tick's note under it), and in the log on export
@@ -1226,6 +1248,9 @@ class DialTool {
           e.preventDefault();
         } else if (e.key.toLowerCase() === "g" && !e.repeat && !e.shiftKey) {      // G: guides on or off (Okay, 18 Oct 2026, notes 2)
           tool.set_value("global", "guides", !tool.S.guides);
+          e.preventDefault();
+        } else if (!e.repeat && !e.shiftKey && KEYS[e.key.toLowerCase()]) {      // more like G (#472; Okay, 20 Oct 2026, 02:37: "Can we get shortcuts like these for keyboards")
+          KEYS[e.key.toLowerCase()](tool);
           e.preventDefault();
         }
       });
@@ -2095,7 +2120,7 @@ class DialTool {
     const a = (href, text) => el("a", { href, textContent: text, target: "_blank", rel: "noopener" });
     const line = (...parts) => el("p", {}, ...parts);
     const bio = el("div", { className: "bio night", id: "bio", hidden: true },      // no title of its own: the header's is right above it (Okay, 03:06)
-      this.bio_first = line("A tool for designing watch dials, ring by ring, in the browser. Designed and vibecoded by Okay, a graphic designer in Istanbul working across contemporary art, architecture and cinema, for a watch he is building. "),      // 06:51: "designed and vibe coded by okay"; the contact line ends this paragraph
+      this.bio_first = line("A tool for designing watch dials, ring by ring, in the browser. Designed and vibecoded by Okay (pronounced oak·eye), a graphic designer in Istanbul working across contemporary art, architecture and cinema, for a watch he is building. "),      // 06:51: "designed and vibe coded by okay"; the contact line ends this paragraph
       line("Source, every version and the MIT licence: ", a("https://github.com/duztman/dial-tool", "github.com/duztman/dial-tool"), "."),
       el("h3", { textContent: "Built on open source" }),
       el("ul", {},
@@ -5332,14 +5357,13 @@ class DialTool {
   /** a film per ink (#35): its button, and the inks it will write. */
   row_ink_films(wrap, out) {
     wrap.className = "row";
-    const says = el("span", { className: "quiet" });
     const go = el("button", { type: "button", className: "btn main", id: "export-inks", textContent: "A mask per ink", title: "One mask PDF for each colour the dial is printed in", onclick: async () => {
       const inks = G.inks_of(this.S);
       this.log(`a mask per ink: ${inks.length} films (${inks.join(", ")})${inks.length > 1 ? " — if the browser asks whether this page may download several files, allow it" : ""}`);
       for (const ink of inks) { await this.export("pdf", { out_production: true, out_ink: ink }); await new Promise((r) => setTimeout(r, 350)); }
     } });
-    wrap.append(el("label", { textContent: "Inks" }), go, says);
-    out.refresh = (S) => { const n = G.inks_of(S); says.textContent = ` ${n.length} ink${n.length === 1 ? "" : "s"}: ${n.join(" ")}`; };
+    wrap.append(el("label", { textContent: "Inks" }), go);
+    out.refresh = (S) => { const n = G.inks_of(S); go.textContent = `A mask per ink · ${n.length}`; go.title = `One mask PDF for each colour the dial is printed in: ${n.join(" ")}`; };
   }
 
   /** a spec sheet (#18): its button, on the print sheet's column. */

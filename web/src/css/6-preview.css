@@ -28,7 +28,7 @@
   .casebox:not(.on) .arrow { border-left-style: dotted; }
   .casebox > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
   .casebox:not(.on) { border-style: dotted; }      /* not on: its outline dotted — shorter dashes, shorter gaps, a denser line (Okay, 19 Oct 2026: "Dashes for invisible: shorter dash shorter gaps, denser outline") */
-  .casebox.on > :not(select) { opacity: 1; }
+  .casebox.on > :is(.sign, svg) { opacity: 1; }      /* on: its sign alone lights; the word stays dim but under the pointer (Okay, 20 Oct 2026, 02:37: "when on, only the icon lights up. Labels stay dim at all times, except hover") */
   /* its strap's switch (4.69): the strap's chip, a button of its own, then its kind's name and chevron with the list over
      those only — so a press on the chip opens the colour, a press on the words the list */
   .strapbox { padding-left: var(--u3); }
@@ -36,6 +36,8 @@
   .strapbox .strapkind > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
   .strapbox .dot { padding: 0; border-color: var(--on-canvas); cursor: pointer; }
   .strapbox.on > * { opacity: 1; }
+  .strapbox.on .strapkind > :not(.sign, select) { opacity: var(--faint); }      /* on: its chip and sign whole, its word and chevron dim but under the pointer (Okay, 20 Oct 2026, 02:37: "when on, only the icon lights up") */
+  @media (hover: hover) { .strapbox.on:hover .strapkind > * { opacity: 1; } }
   /* the selected ring's handles on its guides (4.65; farukahmet's PR #2, Okay: "all these handles should be in guide
      color"): filled with the ring's guide colour (--handle, app.js), a hairline of white round them so they read on any
      dial; a reach of a fingertip round each, unseen */
@@ -87,7 +89,7 @@
     .onview:hover { border-color: var(--on-canvas); }
     .onview:hover > * { opacity: 1; }
   }
-  .guidesbox[aria-pressed="true"] > * { opacity: 1; }      /* on: its sign and its word whole (Okay, 15 Oct 2026, 02:06: "when on the icon is black too. Same goes for shadows") */
+  .guidesbox[aria-pressed="true"] > svg { opacity: 1; }      /* on: its sign whole, in black or white (Okay, 15 Oct 2026, 02:06: "when on the icon is black too. Same goes for shadows"); its word stays dim but under the pointer (20 Oct 2026, 02:37: "when on, only the icon lights up. Labels stay dim at all times, except hover") */
   /* Versions, under undo (#435): a switch with its sign and word, as Backdrop's; its list drops under it — the panel's
      ground, its cards as wide as the Gallery's (the panel's width). Function first: its look is to be designed with Okay */
   .versions { position: relative; display: flex; }
