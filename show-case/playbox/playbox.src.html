@@ -1,0 +1,1085 @@
+<title>Showcase Playbox</title>
+<style>
+  /* ── the look ── values as in the Dial Tool's stylesheet (1-tokens.css, 6-preview.css) */
+  :root {
+    --margin: 24px;
+    --show-key: 40px;          /* the round keys and the pills' height */
+    --show-pill: 80px;         /* Now's width */
+    --show-faint: 0.6;         /* how faint the keys are at rest */
+    --canvas-dim: 0.4;         /* every key and pill on the canvas, at rest (14:41: "dim all buttons on canvas"); full on hover */
+    --mast-show: 0.5;          /* the mark's faintness */
+    --show-time: 600ms;        /* sky and pool fading in */
+    --iris-time: 250ms;        /* a pill shrinking into its undo sign */
+    --track-100: 0.1em;
+    --white: #fff; --night: #141413;
+    --line: 1px;
+    /* the panels, quieter than the dial (13:38: "lower contrast on ui") */
+    --ui-ink: rgb(255 255 255 / 0.72); --ui-quiet: rgb(255 255 255 / 0.45); --ui-rule: rgb(255 255 255 / 0.18);
+    --double-bar: linear-gradient(var(--ui-rule) 0 0) 0 0 / 100% 1px no-repeat, linear-gradient(var(--ui-rule) 0 0) 0 3px / 100% 1px no-repeat;      /* two hairlines, 2 px apart (14:33: 1 px more gap) */
+    --ui-pick: #5fd07a;      /* the chosen thumbnail's ring: green (14:44) */
+    --row: 24px;      /* one row's height: a tick box (14:31: "all row cells 1 tickbox high"); every row the same */
+    --ui-fill: rgb(255 255 255 / 0.14); --ui-knob: #b9b9b6; --ui-track: rgb(255 255 255 / 0.14);
+    --sky: #000; color-scheme: dark;     /* one look: the showcase is always night */
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--sky); overflow: hidden; color: var(--white);
+    font: 500 15px/1 -apple-system, BlinkMacSystemFont, "Inter", "Helvetica Neue", sans-serif; -webkit-font-smoothing: antialiased; }
+  svg.stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; cursor: ew-resize; touch-action: none; }
+  canvas.ground { position: fixed; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity var(--show-time) linear; }
+  body.in canvas.ground { opacity: 1; }
+
+  .mast { position: fixed; top: calc(var(--margin) + env(safe-area-inset-top, 0px)); left: calc(var(--margin) + env(safe-area-inset-left, 0px)); opacity: var(--mast-show); font-weight: 600; letter-spacing: 0.01em; pointer-events: none; }
+
+  /* the dials to choose from: words, top centre */
+  .dials { position: fixed; top: calc(var(--margin) - 6px + env(safe-area-inset-top, 0px)); left: 50%; translate: -50% 0; display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; max-width: calc(100% - 220px); }
+  .dials button { all: unset; cursor: pointer; padding: 6px 10px; border-radius: 999px; font-size: 12px; opacity: var(--show-faint); border: var(--line) solid transparent; }
+  .dials button[aria-pressed="true"] { opacity: 1; border-color: currentColor; }
+  @media (min-width: 641px) { .dials { left: calc(var(--margin) - 10px + env(safe-area-inset-left, 0px)); top: calc(var(--margin) + 28px + env(safe-area-inset-top, 0px)); translate: none; flex-direction: column; align-items: flex-start; max-width: none; } }      /* the dials down the left, under the mark: the panel takes the right */
+  @media (max-width: 640px) { .dials { top: calc(var(--margin) + 22px + env(safe-area-inset-top, 0px)); left: var(--margin); right: var(--margin); translate: none; max-width: none; } }
+  @media (hover: hover) { .dials button:hover { opacity: 1; } }
+
+  /* Now and 10:10, bottom centre, side by side */
+  button { font: inherit; color: inherit; }
+  .nowpill { position: fixed; z-index: 3; left: 50%; bottom: calc(var(--margin) + env(safe-area-inset-bottom, 0px)); display: grid; place-items: center; width: var(--show-pill); height: var(--show-key);
+    border-radius: calc(var(--show-key) / 2); border: var(--line) solid currentColor; background: transparent; cursor: pointer; padding: 0; letter-spacing: var(--track-100);
+    transition: width var(--iris-time) ease; }
+  .nowpill > * { grid-area: 1 / 1; transition: opacity var(--iris-time) linear; }
+  .nowpill .word { opacity: var(--show-faint); }
+  .nowpill svg { opacity: 0; }
+  .nowpill.back { width: var(--show-key); }
+  .nowpill.back .word { opacity: 0; }
+  .nowpill.back svg { opacity: var(--show-faint); }
+  .nowpill.now { translate: calc(-100% - 2.75px) 0; }
+  .nowpill.ten { translate: 2.75px 0; width: calc(var(--show-pill) + 2ch + 2 * var(--track-100)); }
+  .nowpill.ten.back { width: var(--show-key); }
+  @media (hover: hover) { .nowpill:not(.back):hover .word, .nowpill.back:hover svg { opacity: 1; } }
+
+  /* the hands key, bottom left */
+  .handskey { position: fixed; z-index: 3; left: calc(var(--margin) + env(safe-area-inset-left, 0px)); bottom: calc(var(--margin) + env(safe-area-inset-bottom, 0px)); width: var(--show-key); height: var(--show-key); padding: 0; border-radius: 50%;
+    border: var(--line) solid currentColor; background: transparent; cursor: pointer; display: grid; place-items: center; }
+  .handskey svg { display: block; opacity: var(--show-faint); }
+  .handskey[aria-pressed="true"] { border-color: transparent; background: color-mix(in srgb, var(--white) calc(var(--show-faint) * 100%), transparent); color: var(--night); }
+  .handskey[aria-pressed="true"] svg { opacity: 1; }
+  @media (hover: hover) { .handskey:hover svg { opacity: 1; } .handskey[aria-pressed="true"]:hover { background: var(--white); } }
+
+  .uikey { left: auto; right: calc(var(--margin) + env(safe-area-inset-right, 0px)); }
+  .playkey { left: auto; right: calc(var(--margin) + var(--show-key) + 8px + env(safe-area-inset-right, 0px)); }
+  .playkey .go, .playkey[aria-pressed="true"] .pause { display: none; }
+  .playkey[aria-pressed="true"] .go { display: inline; }
+  body.bare :is(.mast, .dials, .knobs, .nowpill, .handskey:not(.uikey), .sunhint) { visibility: hidden; }
+  body.bare .uikey svg { opacity: 0.25; }
+  body.bare .uikey { border-color: transparent; }
+  /* the hint: the sun moves left and right */
+  .sunhint { position: fixed; left: 50%; translate: -50% 0; opacity: 0; pointer-events: none; color: var(--white); }
+  .sunhint.go { animation: sway 2.4s ease-in-out; }
+  @keyframes sway {
+    0% { opacity: 0; transform: translateX(0); } 15% { opacity: var(--show-faint); }
+    35% { transform: translateX(-14px); } 65% { transform: translateX(14px); }
+    85% { opacity: var(--show-faint); } 100% { opacity: 0; transform: translateX(0); }
+  }
+  /* the shine's handles, top right */
+  .knobs { position: fixed; z-index: 4; top: calc(var(--margin) - 6px + env(safe-area-inset-top, 0px)); right: calc(var(--margin) + env(safe-area-inset-right, 0px));
+    width: 340px; font-size: 14px; background: color-mix(in srgb, var(--night) 70%, transparent); border-radius: 14px; color: var(--ui-ink);
+    max-height: calc(100% - 2 * var(--margin) - 60px); overflow: auto; }
+  .knobs summary { cursor: pointer; padding: 10px 16px 6px; font-size: 16px; font-weight: 600; opacity: var(--show-faint); list-style: none; }
+  .knobs[open] summary { opacity: 1; }
+  .knobs .rows { display: grid; grid-template-columns: auto 1fr 3.4em; gap: 4px 12px; align-items: center; padding: 0 16px 12px; }      /* 4 px between every line, text and control (14:14) */
+  .knobs label { white-space: nowrap; }
+  .knobs .rows > :is(label, output, .head) { min-height: var(--row); box-sizing: content-box; display: flex; align-items: center; }      /* every cell at least one row high */
+  .knobs .rows > output { justify-content: flex-end; }
+  .knobs.colours .rows::before { content: ""; grid-column: 1 / -1; height: 4px; background: var(--double-bar); }      /* Colours: a double bar under its title */
+  .knobs .colourrow { grid-column: 2 / -1; justify-self: end; width: 100%; max-width: 180px; }      /* flush right */
+  .knobs .ghost { grid-column: 1 / -1; height: var(--row); }      /* an empty row: the spacing between the dither's sections */
+  .knobs .rule { grid-column: 1 / -1; height: 0; margin: 0; border: 0; border-top: var(--line) solid var(--ui-rule); }      /* a 1 px line between every two rows */
+  .knobs .head { grid-column: 1 / -1; color: var(--ui-ink); font-size: 12.5px; font-weight: 800; letter-spacing: 0.065em; text-transform: uppercase; background: var(--double-bar); height: var(--row); padding-top: 6px; }      /* more room over each all-caps heading (14:44) */      /* all-caps headings: bold, big, a double bar over each (14:20) */
+  .knobs output { text-align: right; font-variant-numeric: tabular-nums; color: var(--ui-quiet); }
+  /* sliders big enough for a finger: a 32 px tall row, a 6 px track, a 26 px knob */
+  .knobs input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: var(--row); margin: 0; background: transparent; touch-action: none; }
+  .knobs input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: var(--ui-track); }
+  .knobs input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: var(--row); height: var(--row); margin-top: calc((6px - var(--row)) / 2); border-radius: 50%; background: var(--ui-knob); border: 0; }
+  .knobs input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: var(--ui-track); }
+  .knobs input[type=range]::-moz-range-thumb { width: var(--row); height: var(--row); border-radius: 50%; background: var(--ui-knob); border: 0; }
+  .knobs input[type=checkbox] { width: var(--row); height: var(--row); margin: 0; justify-self: start; accent-color: var(--ui-knob); }
+  .knobs input[type=color] { width: 100%; height: 32px; padding: 0; border: 0; background: none; cursor: pointer; }
+  /* a choice of a few words: one pill, a hairline between the words, the chosen one filled */
+  .knobs .segs { grid-column: 2 / -1; display: flex; border: var(--line) solid var(--ui-rule); border-radius: 999px; overflow: hidden; }
+  .knobs .segs button { all: unset; flex: 1; cursor: pointer; height: calc(var(--row) - 2 * var(--line)); line-height: calc(var(--row) - 2 * var(--line)); padding: 0; font-size: 12px; text-align: center; color: var(--ui-quiet); }
+  .knobs .segs button + button { border-left: var(--line) solid var(--ui-rule); }
+  .knobs .segs button[aria-pressed="true"] { background: var(--ui-fill); color: var(--ui-ink); }
+  .knobs .auto { all: unset; cursor: pointer; padding: 0 10px; border-radius: 999px; font-size: 12px; color: var(--ui-quiet); border: var(--line) solid var(--ui-rule); }
+  .knobs .auto[aria-pressed="true"] { background: var(--ui-fill); color: var(--ui-ink); }
+  .knobs .reset { grid-column: 1 / -1; justify-self: end; all: unset; cursor: pointer; opacity: var(--show-faint); height: var(--row); line-height: var(--row); }
+  .column { position: fixed; z-index: 4; top: calc(var(--margin) - 6px + env(safe-area-inset-top, 0px)); right: calc(var(--margin) + env(safe-area-inset-right, 0px));
+    width: 340px; max-height: calc(100% - 2 * var(--margin) - 60px); overflow: auto; display: flex; flex-direction: column; gap: 12px; }      /* Sliders and Dither, one under the other */
+  .column .knobs { position: static; width: auto; max-height: none; overflow: visible; }
+  body.bare .column { visibility: hidden; }
+  .knobs .head.titled { display: flex; align-items: center; justify-content: space-between; }      /* Dial, Spotlight, Sky: an all-caps heading with its switch */
+  .knobs .head.titled input { margin: 0; }
+  .knobs.dither input[type=checkbox] { justify-self: end; }
+  .knobs .name { grid-column: 2 / -1; text-align: right; }
+  .knobs .thumbs { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+  .knobs .thumbs button { all: unset; box-sizing: border-box; cursor: pointer; border-radius: 6px; border: var(--line) solid transparent; padding: 2.5px; line-height: 0; opacity: 0.7; }      /* the ring at the cell's edge, the picture 5 px smaller inside it (14:44) */
+  .knobs .thumbs button[aria-pressed="true"] { border-color: var(--ui-pick); opacity: 1; }
+  .knobs .thumbs canvas { width: 100%; aspect-ratio: 2 / 1; image-rendering: pixelated; border-radius: 4px; display: block; }
+  .knobs .segs { grid-column: 2 / -1; }
+  .knobs.switches { right: auto; left: calc(var(--margin) + env(safe-area-inset-left, 0px)); top: calc(var(--margin) + 205px + env(safe-area-inset-top, 0px)); width: 300px; max-height: calc(100% - 2 * var(--margin) - 265px); }
+  .knobs .colourrow { display: flex; align-items: stretch; height: var(--row); border: var(--line) solid var(--ui-rule); border-radius: 999px; overflow: hidden; }      /* the swatch and auto: one pill */
+  .knobs .colourrow input[type=color] { flex: 1; height: auto; padding: 0; border: 0; border-radius: 0; }
+  .knobs .colourrow input[type=color]::-webkit-color-swatch-wrapper { padding: 0; } .knobs .colourrow input[type=color]::-webkit-color-swatch { border: 0; }
+  .knobs .colourrow .auto { border: 0; border-left: var(--line) solid var(--ui-rule); border-radius: 0; display: flex; align-items: center; padding: 0 14px; }
+  .knobs.switches .rows { grid-template-columns: auto 1fr; row-gap: 2px; }      /* a switch: its name and its box, close together */
+  .knobs.switches input[type=checkbox] { justify-self: end; }
+  .knobs.switches output:empty { display: none; }
+  .knobs.switches .segs { grid-column: 2 / -1; }      /* Soft edge and its pill on one line, 4 px over and under */
+  @media (max-width: 640px) { .knobs.switches { top: auto; left: var(--margin); } .column { top: auto; bottom: calc(var(--margin) + var(--show-key) + 12px + env(safe-area-inset-bottom, 0px)); } }
+  button:focus-visible { outline: 2px solid var(--white); outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) { .sunhint.go { animation: none; } }
+  /* ── the drawer: every control in one column at the right; the canvas is what is left of it (14:00) ── */
+  body { --open: 0px; }
+  .drawer { position: fixed; z-index: 5; top: 0; right: 0; bottom: 0; width: min(360px, 100vw); overflow-y: auto; overscroll-behavior: contain;
+    padding: calc(12px + env(safe-area-inset-top, 0px)) calc(12px + env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) 12px;
+    display: flex; flex-direction: column; gap: 12px; background: color-mix(in srgb, var(--night) 88%, transparent); border-left: var(--line) solid var(--ui-rule);
+    transition: translate 350ms cubic-bezier(.4, 0, .2, 1); touch-action: pan-y; }
+  body.shut .drawer { translate: 100% 0; }
+  .drawer :is(.dials, .knobs, .column) { position: static; translate: none; inset: auto; width: auto; max-height: none; overflow: visible; max-width: none; }
+  .drawer .column { display: flex; flex-direction: column; gap: 12px; }
+  .drawer .knobs { background: rgb(255 255 255 / 0.04); }
+  .drawer .dials { display: flex; flex-direction: row; flex-wrap: wrap; gap: 4px; padding: 4px; }
+  .nowpill.now, .nowpill.ten { left: calc((100% - var(--open)) / 2); }
+  .sunhint { left: calc((100% - var(--open)) / 2); }
+  .playkey { right: calc(var(--open) + var(--margin) + var(--show-key) + 8px + env(safe-area-inset-right, 0px)); }
+  .fullkey { left: auto; right: calc(var(--open) + var(--margin) + 2 * (var(--show-key) + 8px) + env(safe-area-inset-right, 0px)); }
+  .uikey { right: calc(var(--open) + var(--margin) + env(safe-area-inset-right, 0px)); z-index: 6; }
+  @media (max-width: 640px) { body:not(.shut) :is(.nowpill, .handskey:not(.uikey), .sunhint) { visibility: hidden; } .uikey { right: var(--margin); } }      /* a phone: the drawer covers it all */
+  /* undo and redo, at the top of the drawer: round keys, faint when there is nothing to undo or redo */
+  .undos { position: fixed; z-index: 3; top: calc(var(--margin) - 8px + env(safe-area-inset-top, 0px)); right: calc(var(--open) + var(--margin) + env(safe-area-inset-right, 0px)); display: flex; gap: 8px; }
+  .undokey { all: unset; cursor: pointer; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; border: var(--line) solid currentColor; color: var(--white); opacity: var(--canvas-dim); }
+  .undokey:disabled { opacity: calc(var(--canvas-dim) * 0.4); cursor: default; }
+  :is(.nowpill, .handskey, .mast) { opacity: var(--canvas-dim); transition: opacity 150ms; }
+  @media (hover: hover) { :is(.nowpill, .handskey, .undokey:not(:disabled)):hover { opacity: 1; } }
+  .handskey.uikey { opacity: var(--canvas-dim); }
+  /* the dial list: one drop-down at the top of the drawer */
+  .drawer .dials { display: block; padding: 0; }
+  .dialpick { appearance: none; -webkit-appearance: none; width: 100%; height: 36px; padding: 0 36px 0 14px; border-radius: 999px; border: var(--line) solid var(--ui-rule);
+    background: rgb(255 255 255 / 0.04) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23bbb' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 14px center;
+    color: var(--ui-ink); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .dialpick option { color: #111; }
+  /* Saved: a note and Save on one line, then the saves, newest first; ♥ marks the liked ones */
+  .knobs .rows.saverows { display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
+  .saveline { display: flex; gap: 6px; height: var(--row); }
+  .saveline input { flex: 1; min-width: 0; height: var(--row); box-sizing: border-box; padding: 0 10px; border-radius: 999px; border: var(--line) solid var(--ui-rule); background: rgb(255 255 255 / 0.04); color: var(--ui-ink); font: inherit; font-size: 13px; }
+  .savebtn { all: unset; cursor: pointer; padding: 0 14px; border-radius: 999px; background: var(--ui-pick); color: #10200f; font-size: 13px; font-weight: 600; line-height: var(--row); }
+  .savebtn:disabled { opacity: 0.4; cursor: default; }
+  .saveempty { margin: 0; font-size: 12px; color: var(--ui-quiet); }
+  .savelist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  .savelist li { display: grid; grid-template-columns: var(--row) minmax(0, 1fr) auto; gap: 6px; align-items: center; min-height: var(--row); padding-block: 4px; border-top: var(--line) solid var(--ui-rule); }
+  .savelist li.on .what b { color: var(--ui-pick); }
+  .savelist button { all: unset; cursor: pointer; text-align: center; color: var(--ui-quiet); font-size: 13px; }
+  .savelist .heart { font-size: 15px; } .savelist .heart[aria-pressed="true"] { color: #ff6f7d; }
+  .savelist .what { display: block; text-align: left; min-width: 0; } .savelist .what b { display: block; font-weight: 500; color: var(--ui-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .savelist .what span { font-size: 11px; color: var(--ui-quiet); }
+  .savelist .del.sure { color: #ff6f7d; }
+</style>
+<canvas class="ground" id="ground"></canvas>
+<svg class="stage" id="stage" xmlns="http://www.w3.org/2000/svg">
+  <defs id="defs">
+    <filter id="shadow-soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="0.07"/></filter>
+  </defs>
+  <g id="dial"></g>
+</svg>
+
+<div class="mast">Dial Tool</div>
+<div class="undos">
+  <button type="button" class="undokey" id="undo" title="Undo (⌘Z)" aria-label="Undo" disabled><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5625" stroke-linecap="round" stroke-linejoin="round"><path d="M3.25 6.75H9.75A3.25 3.25 0 0 1 9.75 13.25H6.25M6.25 3.75L3.25 6.75L6.25 9.75"/></svg></button>
+  <button type="button" class="undokey" id="redo" title="Redo (⇧⌘Z)" aria-label="Redo" disabled><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5625" stroke-linecap="round" stroke-linejoin="round" style="transform: scaleX(-1)"><path d="M3.25 6.75H9.75A3.25 3.25 0 0 1 9.75 13.25H6.25M6.25 3.75L3.25 6.75L6.25 9.75"/></svg></button>
+</div>
+
+<aside class="drawer" id="drawer" aria-label="Controls">
+<nav class="dials" id="dials"><select class="dialpick" id="dialpick" aria-label="Dial"></select></nav>
+<details class="knobs saved" id="saved" open>
+  <summary>Saved</summary>
+  <div class="rows saverows">
+    <div class="saveline"><input id="save-note" type="text" placeholder="A note (optional)" maxlength="140"><button type="button" id="save" class="savebtn">Save</button></div>
+    <p class="saveempty" id="save-empty">Nothing saved yet. Save keeps this look — every setting, the dial and where the sun is — to come back to and compare.</p>
+    <ol class="savelist" id="save-list"></ol>
+  </div>
+</details>
+<details class="knobs colours" id="colours" open>
+  <summary>Colours</summary>
+  <div class="rows" id="colour-rows"></div>
+</details>
+<details class="knobs switches" id="switches" open>
+  <summary>Switches</summary>
+  <div class="rows" id="switch-rows"></div>
+</details>
+<div class="column" id="right">
+  <details class="knobs dither" id="dither" open>
+    <summary>Dither</summary>
+    <div class="rows" id="dither-rows"></div>
+  </details>
+  <details class="knobs sliders" id="sliders" open>
+    <summary>Sliders</summary>
+    <div class="rows" id="slider-rows"></div>
+  </details>
+</div>
+</aside>
+<div class="sunhint" id="hint"><svg viewBox="0 0 108 36" width="108" height="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.25 18.25H37.75M70.25 18.25H102.75M17.25 6.25L5.25 18.25L17.25 30.25M90.75 6.25L102.75 18.25L90.75 30.25"/><path d="M37.75 18.25H70.25" stroke-dasharray="3.25" stroke-linecap="butt"/></svg></div>
+<button class="handskey fullkey" id="full" type="button" title="Full screen"><svg viewBox="0 0 38 38" width="38" height="38" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V12H16M22 12H26V16M26 22V26H22M16 26H12V22"/></svg></button>
+<button class="handskey playkey" id="play" type="button" aria-pressed="false" title="Stop the animation (space)"><svg viewBox="0 0 38 38" width="38" height="38" fill="currentColor"><rect class="pause" x="14" y="13" width="3" height="12" rx="0.5"/><rect class="pause" x="21" y="13" width="3" height="12" rx="0.5"/><path class="go" d="M15 12.5L26 19L15 25.5Z"/></svg></button>
+<button class="handskey uikey" id="ui" type="button" aria-pressed="false" title="Close the controls"><svg viewBox="0 0 38 38" width="38" height="38" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"><path d="M12 15H26M12 19H26M12 23H26"/></svg></button>
+<button class="handskey" id="hands" type="button" aria-pressed="false" title="Hide the hands"><svg viewBox="0 0 38 38" width="38" height="38" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M19 19V8.75M19 19L25.5 23.25" stroke-width="1"/><circle cx="19" cy="19" r="1.75" fill="currentColor" stroke="none"/></svg></button>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════
+// THE KNOBS — every number the showcase is made of, as in the Dial Tool (app.js). Change these to play.
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════
+const SKY_TOP = 0.3;                                   // sky: the backdrop at 30 % of its light, top left → black, bottom right
+const PAGE = { w: 210, h: 297, dial: 2 / 3 };          // the dial: 2/3 of a portrait A4 that fits the window
+const SUN = { day: 20, rise: 40, fade: 0.45 };         // a day in 20 s; always 40° high; light fades in/out over 45 % of half a day
+const POOL = { size: 1.45, stretch: 1.4, soft: [0.06, 0.8], light: [0.08, 0.5], shade: [0.3, 0.85], lift: 1.5, least: 0.2, noon_px: 5, more_px: 5, floor: 0.35 };   // more_px: the soft edge this much wider at every hour (13:10: "+5px overall"); floor: the dial's shadow leaves at least this share of the light (13:10: "can't show pitch black")   // noon_px: the soft edge this much wider at noon (Okay, 12:40: "+5px")
+                                                       // spotlight (blur, dither or halftone: SHINE.spot): ×1.45 the dial; an oval at dawn/dusk (×1.4 long), a circle at noon;
+                                                       // [dawn, noon] pairs for softness, brightness, the dial's shadow in it; the dial floats 1.5 mm above
+const SHINE = {                                        // the ring of shine — the panel's handles change the first five
+  width: 0.4,        // the light band's width at noon, a share of the dial's radius
+  opacity: 0.35,     // all of the shine, × this
+  bright: 0.2,       // the light bands' strength (screened white)
+  gap: 0.35,         // Distance: how far apart the circles stand (0.35 = as in the sketches)
+  steps: 3,          // hard steps from a band's middle to its edge (1 = one flat band)
+  dusk_width: 3,     // the bands this many times wider at dawn and dusk
+  dark: 0.07,        // the dark bands' strength (black)
+  between: 0,        // rings added between A and B, and between B and C
+  whole: 0,          // 1: the rings shown whole, past the dial's edge
+  spot: 0,           // the spotlight's soft edge when Dither is off: 0 blur · 1 halftone
+  // the switches (1 on, 0 off)
+  dial_dither: 6,    // the shine's bands in pixels: a number in PATTERNS (0 off; the specimen sheet's numbers) (13:50: "stripes for dial")
+  spot_dither: 2,    // the spotlight's soft edge in pixels, the same choices ("checks for back")
+  sky_dither_on: 1, // the background (the sky) dithered, with its own pattern, pixel and levels (14:50)
+  sky_dither: 2, dpixel_sky: 3, dlevels_sky: 2,
+  sky_top: null, sky_bottom: null,   // the sky's two colours; null: from the backdrop, as in the tool
+  dial_on: 1, spot_on: 1, // the dither, on or off, for the dial and for the spotlight (the pattern is kept while off)
+  dpixel_dial: 3,    // the dial's dither pixel, in screen points (its resolution)
+  dpixel_bg: 3,      // the background's
+  dlevels: 2,        // the spotlight's dither: flat steps of light, none included (2: each pixel all or nothing — the most contrast)
+  pool_colour: null, // the spotlight's colour; null: from the backdrop, as in the tool
+  sky: 1, pool: 1, dial_shadow: 1, hand_shadows: 1, shine: 1, bevels: 1, sun_moves: 1, clock_runs: 1,
+  stretch: 1.25,     // at dawn and dusk the rings are this much wider across the light than along it (an ellipse)
+  bevel: 1,          // the hands' bevels, × this (1 = the tool's Bevels at 100 %)
+  // where the rings stand — small, middle, big — × the dial's radius, measured off Okay's sketches (20 Oct 2026,
+  // 12:56): `d` how far each centre is out along the light from the dial's centre, away from the sun; `r` its radius
+  noon: { d: [0.5, 1.15, 1.43], r: [0.25, 1.53, 2.1] },   // small: halfway from the centre to 6, its diameter half that (13:10); lines close, near the top
+  dusk: { d: [1.66, 1.66, 1.66], r: [0.66, 1.59, 1.98] }, // one centre for all ("centers align"); the small one's line touches the dial's edge (13:10)
+};
+const BEVEL = { light: 0.22, dark: 0.26 };  // the hands' bevels, as in the tool: the half the light falls on lighter, the other darker
+const HALFTONE = { pitch: 7, angle: 45, full: 0.75 };  // the spotlight's dots: px apart, screen angle, a full dot's radius × pitch
+const SHOW_DARKER = 1.25;                              // shadows 25 % darker than the dial's own setting
+const TRAVEL_MS = 900;                                 // the dial's travel in
+const SPIN_MS = 1600;                                  // Now / 10:10: the whirl's length
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════
+// the dials: drawn once by the Dial Tool's engine (bake.mjs) — still parts and hands, in millimetres
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════
+const DIALS = /*DIALS*/[];
+
+// ── small helpers ──
+const $ = (s) => document.querySelector(s);
+const NS = "http://www.w3.org/2000/svg";
+const el = (tag, attrs = {}, parent) => { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); if (parent) parent.append(n); return n; };
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const ease = (p) => (p < 0.5 ? 4 * p ** 3 : 1 - (-2 * p + 2) ** 3 / 2);      // slow out, slow in
+const mix = ([lo, hi], t) => lo + (hi - lo) * t;
+const f = (v) => v.toFixed(4);
+const rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
+const hex = (c) => "#" + c.map((v) => Math.round(clamp(v, 0, 1) * 255).toString(16).padStart(2, "0")).join("");
+const now_s = () => { const d = new Date(); return d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000; };
+
+// ── state: one dial, the clock, the sun, the view ──
+const svg = $("#stage"), defs = $("#defs"), dialG = $("#dial");
+const st = {
+  dial: null, nodes: [],                       // the dial shown and its paths, one per item
+  t0: now_s(), wall0: performance.now(),       // the clock at 1×: t = t0 + seconds since wall0
+  phase: 0.5, at: performance.now(), dragging: false,      // the sun: 0 sunrise … 1 sunset
+  spin: null, back: null, nohands: false,
+  c: [0, 0], z: 1, travel: null,
+};
+const time = () => (st.t0 + (performance.now() - st.wall0) / 1000) % 86400;
+const set_time = (t) => { st.t0 = t; st.wall0 = performance.now(); };
+
+/** hand angles (clock degrees, 0 = 12, clockwise) at t seconds, with the movement's beat */
+function hand_angles(t, beat) {
+  t = ((t % 43200) + 43200) % 43200;
+  let s = t % 60;
+  if (beat) s = Math.floor(s * beat) / beat;
+  return { hour: t / 43200 * 360, minute: (t % 3600) / 3600 * 360, second: s / 60 * 360 };
+}
+
+/** the sun now: where in its day, where its light comes from, how much light */
+function sun() {
+  const p = st.phase, k = Math.sin(Math.PI * p);              // k: 0 at sunrise and sunset, 1 at noon
+  const t = clamp(k / SUN.fade, 0, 1), light = t * t * (3 - 2 * t);
+  return { p, k, light, from: (270 + 180 * p) % 360, rise: SUN.rise };
+}
+
+// ── choosing a dial ──
+function load(i) {
+  const D = DIALS[i];
+  st.dial_index = i;
+  st.dial = D;
+  for (const n of st.parts?.values() ?? []) n.remove();      // the last dial's shine, clips and shadows go with it
+  dialG.replaceChildren();
+  st.parts = new Map();
+  st.nodes = D.items.map((x) => el("path", { d: x.p, fill: x.f, "fill-opacity": x.a }, dialG));
+  document.body.style.background = D.backdrop;                // the backdrop, until the sky has faded in over it
+  $("#dialpick").value = String(i);
+}
+
+// ── where the dial stands ──
+/** how much of the window the drawer covers now (it slides, so this moves with it) */
+function drawer_now() { return Math.max(0, innerWidth - $("#drawer").getBoundingClientRect().left); }
+function target() {
+  const w = innerWidth - drawer_now(), h = innerHeight, page = Math.min(w / PAGE.w, h / PAGE.h);
+  return { c: [w / 2, h / 2], z: PAGE.dial * PAGE.w * page / st.dial.d };
+}
+function place() {
+  const where = `translate(${st.c[0]} ${st.c[1]}) scale(${st.z} ${-st.z})`;      // y grows upward inside, as in the tool
+  dialG.setAttribute("transform", where);
+}
+
+// ── named nodes, made once and kept (so a frame only changes attributes) ──
+let used;
+function part(name, tag, parent, before = null) {
+  let n = st.parts.get(name);
+  if (!n) { n = el(tag); st.parts.set(name, n); }
+  if (n.parentNode !== parent || (before && n.nextSibling !== before)) parent.insertBefore(n, before);
+  used.add(name);
+  return n;
+}
+const set = (n, k, v) => { if (n.getAttribute(k) !== v) n.setAttribute(k, v); };
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════
+// a frame
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════
+function frame() {
+  const D = st.dial, now = performance.now();
+  if (!st.dragging && SHINE.sun_moves && !st.paused) st.phase = (st.phase + (now - st.at) / 1000 / SUN.day) % 1;
+  if (!SHINE.clock_runs || st.paused) set_time(time());                                  // the clock held: it starts again from here
+  st.at = now;
+  if (st.travel) {
+    const T = st.travel, p = clamp((now - T.t0) / TRAVEL_MS, 0, 1), e = ease(p), to = target();
+    st.z = T.z * (to.z / T.z) ** e;
+    st.c = [T.c[0] + (to.c[0] - T.c[0]) * e, T.c[1] + (to.c[1] - T.c[1]) * e];
+    if (p >= 1) { st.travel = null; hint(); }
+  } else Object.assign(st, target());
+  place();
+  const open = Math.round(drawer_now()) + "px";                                    // the keys and pills keep to the canvas
+  if (document.body.style.getPropertyValue("--open") !== open) document.body.style.setProperty("--open", open);
+
+  // the hands' angles, and the whirl while it runs
+  const A = hand_angles(time(), D.beat);
+  if (st.spin) {
+    const sp = st.spin, p = clamp((now - sp.t0) / SPIN_MS, 0, 1), e = ease(p), way = { hour: sp.way, minute: -sp.way };
+    for (const h of ["hour", "minute", "second"]) {
+      const a0 = sp.from[h], d = A[h] - a0;
+      if (h === "second") { A[h] = a0 + e * ((d % 360 + 540) % 360 - 180); continue; }      // the short way
+      const gap = ((d * way[h]) % 360 + 360) % 360;
+      A[h] = a0 + way[h] * e * (gap + 360);                                               // one whole turn, then on to its place
+    }
+    if (p >= 1) st.spin = null;
+  }
+  st.angles = A;
+  D.items.forEach((x, i) => {
+    const n = st.nodes[i];
+    const hide = st.nohands && (x.hand || x.role === "cap");
+    set(n, "visibility", hide ? "hidden" : "visible");
+    if (x.hand) set(n, "transform", `rotate(${f(-A[x.hand])})`);
+  });
+
+  used = new Set();
+  const S = sun();
+  draw_ground(S);
+  draw_light(S);
+  if (SHINE.hand_shadows) draw_shadows(S);
+  for (const [name, n] of st.parts) if (!used.has(name)) { n.remove(); st.parts.delete(name); }
+  requestAnimationFrame(frame);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════
+// the ground: sky and spotlight, drawn on a canvas under the dial. The spotlight is a halftone: a screen of
+// dots at 45°, each dot as big as the light is strong where it stands, so the edge breaks into shrinking dots
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════
+const ground = $("#ground"), gx = ground.getContext("2d");
+function draw_ground(S) {
+  const D = st.dial, dpr = devicePixelRatio || 1, W = innerWidth, H = innerHeight;
+  if (ground.width !== Math.round(W * dpr) || ground.height !== Math.round(H * dpr)) { ground.width = Math.round(W * dpr); ground.height = Math.round(H * dpr); }
+  gx.setTransform(dpr, 0, 0, dpr, 0, 0); gx.imageSmoothingEnabled = false;
+  // the sky: the backdrop at SKY_TOP of its light at the top left, to black at 45°, out to the far corner
+  const b = rgb(D.backdrop), reach = (W + H) / 2;
+  (st.auto ||= {}).sky_top = hex(b.map((v) => v * SKY_TOP)); st.auto.sky_bottom = "#000000";
+  const top = SHINE.sky_top || st.auto.sky_top, bottom = SHINE.sky_bottom || st.auto.sky_bottom;
+  if (!SHINE.sky) { gx.fillStyle = SHINE.sky_top || D.backdrop; gx.fillRect(0, 0, W, H); }      // Sky off: one flat colour
+  else if (SHINE.sky_dither_on && SHINE.sky_dither) gx.drawImage(sky_dithered(top, bottom, W, H), 0, 0, W, H);
+  else { const sky = gx.createLinearGradient(0, 0, reach, reach); sky.addColorStop(0, top); sky.addColorStop(1, bottom); gx.fillStyle = sky; gx.fillRect(0, 0, W, H); }
+  if (!SHINE.pool) return;
+
+  // the spotlight, as before (in the dial's millimetres): an oval of light, and the dial's shadow in it
+  const a = S.from * Math.PI / 180, toward = [Math.sin(a), Math.cos(a)];
+  const R = D.d / 2, off = POOL.lift / Math.tan(S.rise * Math.PI / 180), dim = 1 - S.k;
+  const rL = R * POOL.size, z = st.z;
+  // the soft edge: a share of the oval's radius, wide at dawn and dusk; at noon POOL.noon_px wider on screen
+  const soft = Math.min(0.95, mix(POOL.soft, dim) + (POOL.more_px + POOL.noon_px * S.k) / (rL * z));
+  const light = mix(POOL.light, S.k) * S.light, shade = SHINE.dial_shadow ? Math.min(1 - POOL.floor, mix(POOL.shade, S.k) * S.light) : 0;      // never darker than `floor` of the light
+  if (!(light > 0.002)) return;
+  const lum = 0.2126 * b[0] + 0.7152 * b[1] + 0.0722 * b[2], lift = lum < POOL.least ? (POOL.least - lum) / (1 - lum) : 0;
+  (st.auto ||= {}).pool_colour = hex(b.map((v) => v + (1 - v) * lift));
+  const colour = SHINE.pool_colour ? rgb(SHINE.pool_colour) : rgb(st.auto.pool_colour), rgba = (al) => `rgba(${colour.map((v) => Math.round(v * 255)).join(",")},${al})`;
+  const tL = [-toward[0] * off / 2, -toward[1] * off / 2], th = (90 - S.from) * Math.PI / 180;
+  const sx = 1 + POOL.stretch * dim;
+  const tS = [-toward[0] * off, -toward[1] * off], rS = R * (1 + soft * 0.4), kS = R / rS * (1 - soft * 0.3);
+  const ct = Math.cos(th), sn = Math.sin(th);
+  // how strong the light is at a point (0–1): the oval's profile (flat, then falling over `soft`), less the shadow
+  const strength = (x, y) => {
+    const qx = x - tL[0], qy = y - tL[1], u = (ct * qx + sn * qy) / sx, v = -sn * qx + ct * qy;
+    const d = Math.hypot(u, v) / rL, pL = d < 1 - soft ? 1 : d < 1 ? (1 - d) / soft : 0;
+    if (!pL) return 0;
+    const dS = Math.hypot(x - tS[0], y - tS[1]) / rS, pS = dS < kS ? 1 : dS < 1 ? (1 - dS) / (1 - kS) : 0;
+    return pL * (1 - shade * pS);      // the dial's shadow takes away from the light
+  };
+  const P = { R, rL, sx, off, light, colour: hex(colour), strength, tL };
+  if (SHINE.spot_on && SHINE.spot_dither) return dither(S, P);
+  if (SHINE.spot === 1) return halftone(S, P);
+
+  // the blur, as in the tool: two soft-edged gradients, the oval of light and the dial's shadow in it
+  const mm = () => gx.setTransform(dpr * z, 0, 0, -dpr * z, dpr * st.c[0], dpr * st.c[1]);      // the dial's mm, y up
+  mm(); gx.translate(tL[0], tL[1]); gx.rotate(th); gx.scale(sx, 1);
+  let g = gx.createRadialGradient(0, 0, 0, 0, 0, rL);
+  g.addColorStop(0, rgba(light)); g.addColorStop(1 - soft, rgba(light)); g.addColorStop(1, rgba(0));
+  gx.fillStyle = g; gx.beginPath(); gx.arc(0, 0, rL, 0, 2 * Math.PI); gx.fill();
+  mm(); gx.translate(tS[0], tS[1]);
+  g = gx.createRadialGradient(0, 0, 0, 0, 0, rS);
+  g.addColorStop(0, `rgba(0,0,0,${shade})`); g.addColorStop(kS, `rgba(0,0,0,${shade})`); g.addColorStop(1, "rgba(0,0,0,0)");
+  gx.fillStyle = g; gx.beginPath(); gx.arc(0, 0, rS, 0, 2 * Math.PI); gx.fill();
+  gx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+/** the spotlight dithered (Okay, 12:56: "few solid color and only pixels for spotlight soft edges"): the screen in
+ *  square pixels of SHINE.dpixel_bg points; each pixel one of SHINE.dlevels flat steps of the pool's light, chosen by
+ *  a 4 × 4 ordered (Bayer) pattern fixed to the screen, so the soft edge breaks into a regular weave of pixels */
+// the patterns (the specimen sheet's eighteen, same numbers): each t(x, y, frame) gives a pixel's turn to light, 0…1,
+// as the light grows; `n` is the tile the dial repeats; `moving`: changes every frame; `diffuse`: error diffusion
+const mod = (a, n) => ((a % n) + n) % n, frac = (v) => v - Math.floor(v);
+const bayer = (n) => {                                       // the recursive Bayer matrix, n = 2, 4, 8
+  let m = [[0]];
+  while (m.length < n) {
+    const k = m.length, next = Array.from({ length: 2 * k }, () => new Array(2 * k));
+    for (let y = 0; y < k; y++) for (let x = 0; x < k; x++) { const v = 4 * m[y][x]; next[y][x] = v; next[y][x + k] = v + 2; next[y + k][x] = v + 3; next[y + k][x + k] = v + 1; }
+    m = next;
+  }
+  return (x, y) => (m[mod(y, n)][mod(x, n)] + 0.5) / (n * n);
+};
+const B4 = bayer(4), B8 = bayer(8);
+const ranked = (n, key) => {                                 // any n × n order: cells ranked by `key`, Bayer breaking ties
+  const cells = [];
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) cells.push({ x, y, k: key(x, y) + B8(x, y) * 1e-3 });
+  cells.sort((p, q) => p.k - q.k);
+  const t = new Float32Array(n * n); cells.forEach((c, r) => (t[c.y * n + c.x] = (r + 0.5) / (n * n)));
+  return (x, y) => t[mod(y, n) * n + mod(x, n)];
+};
+const blue = (() => {                                        // blue noise, 32 × 32, made once by void-and-cluster
+  const N = 32, sigma = 1.5, rank = new Int32Array(N * N).fill(-1), energy = new Float32Array(N * N);
+  let seed = 3; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let r = 0; r < N * N; r++) {
+    let best = -1, low = Infinity;
+    for (let i = 0; i < N * N; i++) if (rank[i] < 0) { const e = energy[i] + rnd() * 1e-6; if (e < low) { low = e; best = i; } }
+    rank[best] = r;
+    const cx = best % N, cy = (best / N) | 0;
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { let dx = Math.abs(x - cx), dy = Math.abs(y - cy); dx = Math.min(dx, N - dx); dy = Math.min(dy, N - dy); energy[y * N + x] += Math.exp(-(dx * dx + dy * dy) / (2 * sigma * sigma)); }
+  }
+  return (x, y) => (rank[mod(y, N) * N + mod(x, N)] + 0.5) / (N * N);
+})();
+const texture = (n, on) => ranked(n, (x, y) => (on(x, y) ? 0 : 10));      // a fixed texture as an order: its pixels first
+const ign = (x, y) => frac(52.9829189 * frac(0.06711056 * x + 0.00583715 * y));
+const white = (x, y) => frac(Math.sin(x * 12.9898 + y * 78.233) * 43758.5453);
+const PATTERNS = [
+  null,                                                                                          // off
+  { label: "Bayer 2", n: 2, t: bayer(2) },
+  { label: "checks", n: 4, t: B4 },
+  { label: "Bayer 8", n: 8, t: B8 },
+  { label: "x checks", n: 4, t: ranked(4, (x, y) => (x === y || x + y === 3 ? 0 : 10)) },
+  { label: "dots", n: 8, t: ranked(8, (x, y) => -(Math.cos((x + y) * Math.PI / 4) + Math.cos((x - y) * Math.PI / 4))) },
+  { label: "stripes", n: 4, t: ranked(4, (x) => [1, 0, 2, 3][x] * 10) },
+  { label: "stripes 8", n: 8, t: ranked(8, (x) => [3, 4, 2, 5, 1, 6, 0, 7][x] * 10) },
+  { label: "diagonal", n: 4, t: ranked(4, (x, y) => [1, 0, 2, 3][mod(x + y, 4)] * 10) },
+  { label: "crosshatch", n: 8, t: ranked(8, (x, y) => (mod(x + y, 4) === 0 ? 0 : mod(x - y, 4) === 0 ? 10 : 20 + (mod(x + y, 4) === 2 ? 0 : 5))) },
+  { label: "blue noise", n: 32, t: blue },
+  { label: "gradient", n: 64, t: ign },
+  { label: "R2", n: 64, t: (x, y) => frac(0.7548776662 * x + 0.56984029 * y + 0.5) },
+  { label: "white", n: 64, t: white },
+  { label: "sparkle", n: 32, t: (x, y, f) => frac(blue(x, y) + f * 0.618034), moving: true },
+  { label: "fizz", n: 64, t: (x, y, f) => ign(x + 5.588238 * f, y + 5.588238 * f), moving: true },
+  { label: "glints", n: 32, t: (x, y, f) => (white(x + f * 7.1, y - f * 3.3) < 0.015 ? 0 : B4(x, y)), moving: true },
+  { label: "Floyd", n: 32, diffuse: [[1, 0, 7 / 16], [-1, 1, 3 / 16], [0, 1, 5 / 16], [1, 1, 1 / 16]] },
+  { label: "Atkinson", n: 32, diffuse: [[1, 0, 1 / 8], [2, 0, 1 / 8], [-1, 1, 1 / 8], [0, 1, 1 / 8], [1, 1, 1 / 8], [0, 2, 1 / 8]] },
+  // the seven 1-bit fill textures Okay picked (14:14), each its pixels lit first, so the texture shows at mid light,
+  // thins toward dark and fills in toward light
+  { label: "dot grid", n: 4, t: texture(4, (x, y) => x % 2 === 0 && y % 2 === 0) },
+  { label: "mesh", n: 4, t: texture(4, (x, y) => !(x % 2 === 1 && y % 2 === 1)) },
+  { label: "weave", n: 4, t: texture(4, (x, y) => mod(x + y, 4) < 2) },
+  { label: "bricks", n: 4, t: texture(4, (x, y) => x % 2 === 0 && mod(y + (x % 4 === 0 ? 0 : 2), 4) < 2) },
+  { label: "basket", n: 4, t: texture(4, (x, y) => ((x >> 1) + (y >> 1)) % 2 === 0) },
+  { label: "window", n: 6, t: texture(6, (x, y) => !(x % 3 === 1 && y % 3 === 1) && !(x % 6 === 4 && y % 6 === 4)) },
+  { label: "twill", n: 8, t: texture(8, (x, y) => mod((x >> 1) - (y >> 1), 4) < 2 && (x + y) % 2 === 0 || mod((x >> 1) - (y >> 1), 4) === 0) },
+];
+const DITHER_NAMES = PATTERNS.map((p) => (p ? p.label : "off"));
+const dither_frame = () => Math.floor(performance.now() / (1000 / 12));       // the moving patterns step twelve times a second
+/** error diffusion over a grid of values (0…steps), in place: each pixel rounded, its error pushed to the neighbours */
+function diffuse(v, w, h, steps, kernel, wrap = false) {
+  const out = new Float32Array(w * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x, q = Math.max(0, Math.min(steps, Math.round(v[i]))), err = v[i] - q;
+    out[i] = q;
+    for (const [dx, dy, k] of kernel) {
+      let X = x + dx, Y = y + dy;
+      if (wrap) { X = mod(X, w); Y = mod(Y, h); } else if (X < 0 || X >= w || Y >= h) continue;
+      if (Y > y || (Y === y && X > x)) v[Y * w + X] += err * k;
+    }
+  }
+  return out;
+}
+const dither_canvas = document.createElement("canvas"), dx = dither_canvas.getContext("2d");
+function dither(S, P) {
+  const { R, rL, sx, off, light, colour, strength } = P, [cx, cy] = st.c, z = st.z, px = SHINE.dpixel_bg, L = SHINE.dlevels - 1;
+  const ext = (rL * sx + off) * z, M = PATTERNS[SHINE.spot_dither], fr = dither_frame();
+  const i0 = Math.floor((cx - ext) / px), j0 = Math.floor((cy - ext) / px), n = Math.ceil(2 * ext / px) + 1;
+  if (dither_canvas.width !== n || dither_canvas.height !== n) { dither_canvas.width = dither_canvas.height = n; }
+  const img = dx.createImageData(n, n), data = img.data, rgb3 = rgb(colour).map((v) => Math.round(v * 255)), inside = (R - 0.3) * z;
+  const v = new Float32Array(n * n);
+  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+    const X = (i0 + i + 0.5) * px, Y = (j0 + j + 0.5) * px;
+    if (Math.hypot(X - cx, Y - cy) < inside) continue;                       // under the dial: never seen
+    v[j * n + i] = strength((X - cx) / z, (cy - Y) / z) * L;
+  }
+  const q = M.diffuse ? diffuse(v, n, n, L, M.diffuse) : null;
+  for (let k = 0; k < n * n; k++) {
+    let level;
+    if (q) level = q[k];
+    else { const low = Math.floor(v[k]); level = v[k] > 0 ? Math.min(L, low + (v[k] - low > M.t(i0 + (k % n), j0 + ((k / n) | 0), fr) ? 1 : 0)) : 0; }
+    if (!level) continue;
+    const o = k * 4;
+    data[o] = rgb3[0]; data[o + 1] = rgb3[1]; data[o + 2] = rgb3[2]; data[o + 3] = Math.round(level / L * light * 255);
+  }
+  dx.putImageData(img, 0, 0);
+  gx.imageSmoothingEnabled = false;
+  gx.drawImage(dither_canvas, i0 * px, j0 * px, n * px, n * px);
+  gx.imageSmoothingEnabled = true;
+}
+
+/** the sky dithered: its two colours at 45°, each pixel stepped between them by the spotlight's pattern; made again
+ *  only when something it shows changes (the moving patterns, twelve times a second) */
+const sky_canvas = document.createElement("canvas"), sky_x = sky_canvas.getContext("2d");
+function sky_dithered(top, bottom, W, H) {
+  const M = PATTERNS[SHINE.sky_dither], px = SHINE.dpixel_sky, L = SHINE.dlevels_sky - 1, fr = M.moving ? dither_frame() : 0;
+  const key = [top, bottom, W, H, SHINE.sky_dither, px, L, fr].join("/");
+  if (sky_canvas.dataset.key === key) return sky_canvas;
+  sky_canvas.dataset.key = key;
+  const w = Math.ceil(W / px), h = Math.ceil(H / px), reach = (W + H) / 2;
+  sky_canvas.width = w; sky_canvas.height = h;
+  const img = sky_x.createImageData(w, h), d = img.data, A = rgb(top), B = rgb(bottom), v = new Float32Array(w * h);
+  for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) v[j * w + i] = Math.min(1, ((i + 0.5) * px + (j + 0.5) * px) / 2 / reach) * L;      // 0 at the top left, 1 at the far corner, along 45°
+  const q = M.diffuse ? diffuse(v, w, h, L, M.diffuse) : null;
+  for (let k = 0; k < w * h; k++) {
+    let level;
+    if (q) level = q[k];
+    else { const low = Math.floor(v[k]); level = Math.min(L, low + (v[k] - low > M.t(k % w, (k / w) | 0, fr) ? 1 : 0)); }
+    const t = level / L, o = k * 4;
+    for (let c = 0; c < 3; c++) d[o + c] = Math.round((A[c] + (B[c] - A[c]) * t) * 255);
+    d[o + 3] = 255;
+  }
+  sky_x.putImageData(img, 0, 0);
+  return sky_canvas;
+}
+
+/** the spotlight as a halftone (an option): a screen of dots at 45°, each dot as big as the light is strong */
+function halftone(S, P) {
+  const { R, rL, sx, off, light, colour, strength, tL } = P;
+  // the screen of dots, in screen pixels, round the oval's centre
+  const [cx, cy] = st.c, z = st.z, pitch = HALFTONE.pitch, ang = HALFTONE.angle * Math.PI / 180;
+  const ax = [Math.cos(ang) * pitch, Math.sin(ang) * pitch], bx = [-Math.sin(ang) * pitch, Math.cos(ang) * pitch];
+  const ext = (rL * sx + off) * z, n = Math.ceil(ext / pitch) + 1, inside = (R - 0.2) * z;
+  const ox = cx + tL[0] * z, oy = cy - tL[1] * z;
+  gx.beginPath();
+  for (let i = -n; i <= n; i++) for (let j = -n; j <= n; j++) {
+    const X = ox + i * ax[0] + j * bx[0], Y = oy + i * ax[1] + j * bx[1];
+    if (Math.hypot(X - cx, Y - cy) < inside) continue;                       // under the dial: never seen
+    const s = strength((X - cx) / z, (cy - Y) / z);
+    if (s < 0.01) continue;
+    const r = pitch * HALFTONE.full * Math.sqrt(s);                            // a dot's area follows the light
+    gx.moveTo(X + r, Y); gx.arc(X, Y, r, 0, 2 * Math.PI);
+  }
+  gx.globalAlpha = light; gx.fillStyle = colour; gx.fill(); gx.globalAlpha = 1;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════
+// the ring of shine: three rings on the sun's axis, away from the sun (Okay's sketches, 20 Oct 2026, 12:56).
+// Each ring stays itself — small, middle, big — so their lines on the dial never pass each other.
+// Dusk and dawn: one centre for all three ("centers align") about 1.7 radii out; the rings stretched into ellipses
+// across the light; their lines far apart on the dial. Noon: each its own centre, the small one wholly inside the
+// dial; their lines close together near the top. In between, every centre, radius and stretch slides along.
+// Each ring a hard light band with a dark band either side, stepped (SHINE.steps), not blurred.
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════
+/** the rings now: each one's centre, radius (along the light) and stretch (across it), and the band width, in mm */
+function shine_rings(S, R) {
+  const a = S.from * Math.PI / 180, axis = [-Math.sin(a), -Math.cos(a)];      // from the dial's centre, away from the sun
+  const spread = SHINE.gap / 0.35;                                             // Distance: small and big pushed from the middle ring
+  const at = (key, i) => SHINE.dusk[key][i] + (SHINE.noon[key][i] - SHINE.dusk[key][i]) * S.k;
+  const three = [0, 1, 2].map((i) => [(at("d", 1) + (at("d", i) - at("d", 1)) * spread) * R, (at("r", 1) + (at("r", i) - at("r", 1)) * spread) * R]);
+  // rings in between: SHINE.between more in each gap, their centres and radii evenly between (dusk and dawn as drawn)
+  const m = Math.round(SHINE.between), drawn = [];
+  three.forEach((p, i) => {
+    drawn.push(p);
+    if (i < 2) for (let j = 1; j <= m; j++) { const t = j / (m + 1), q = three[i + 1]; drawn.push([p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]); }
+  });
+  // at noon the lines on the dial evenly spaced (Okay, 13:35: "close to equal distance between lines"; 13:36: "on noon,
+  // dusk dawn stays the same"). A ring's line on the dial is where it crosses the axis on the sun's side, `centre −
+  // radius` out; each ring keeps its radius and its centre moves so its line falls evenly between the small ring's and
+  // the big one's — fully at noon, not at all at dusk and dawn
+  const n = drawn.length - 1, line0 = drawn[0][0] - drawn[0][1], line1 = drawn[n][0] - drawn[n][1];
+  const list = drawn.map(([d, r], k) => [d + (line0 + (line1 - line0) * k / n + r - d) * S.k, r]);
+  const stretch = 1 + (SHINE.stretch - 1) * (1 - S.k);                        // ellipses at dawn and dusk, circles at noon
+  const rings = list.map(([dist, r]) => ({ c: [axis[0] * dist, axis[1] * dist], r, extra: (stretch - 1) * r }));
+  const w = SHINE.width * R * SHINE.dusk_width ** (1 - S.k);                   // the light band: wider at dawn and dusk
+  return { rings, w, axis };
+}
+/** the bands as SVG paths, one per (light | dark, step); each band its own outline, so overlaps join */
+function shine_paths(S, R) {
+  const { rings, w, axis } = shine_rings(S, R), steps = Math.max(1, Math.round(SHINE.steps));
+  const across = [-axis[1], axis[0]];
+  const paths = { light: Array(steps).fill(""), dark: Array(steps).fill("") };
+  // a band between two outlines of one ring: along the light r0…r1, across it r0 + extra … r1 + extra
+  const band = ({ c, extra }, r0, r1, key, level) => {
+    if (r1 <= 0) return;
+    r0 = Math.max(r0, 0);
+    const pt = (r, t) => { const al = r * Math.cos(t), ac = (r + extra) * Math.sin(t); return `${f(c[0] + axis[0] * al + across[0] * ac)} ${f(c[1] + axis[1] * al + across[1] * ac)}`; };
+    const N = 180;                                                             // 2° pieces
+    let out = "", back = "";
+    for (let k = 0; k <= N; k++) { const t = k / N * 2 * Math.PI; out += (k ? "L" : "M") + pt(r1, t); back = "L" + pt(r0, t) + back; }
+    paths[key][level] += out + back + "Z";
+  };
+  for (const C of rings) for (let s = 0; s < steps; s++) {
+    const r = C.r, inner = s * (w / 2) / steps, outer = (s + 1) * (w / 2) / steps;      // step s: from the band's middle outward
+    if (s === 0) band(C, r - outer, r + outer, "light", 0);
+    else { band(C, r - outer, r - inner, "light", s); band(C, r + inner, r + outer, "light", s); }
+    for (const side of [-1, 1]) {                                              // a dark band either side, as wide
+      const m = r + side * w;
+      if (s === 0) band(C, m - outer, m + outer, "dark", 0);
+      else { band(C, m - outer, m - inner, "dark", s); band(C, m + inner, m + outer, "dark", s); }
+    }
+  }
+  return { paths, steps };
+}
+/** a dithered band's fill (the shine with a dial pattern): the pattern's tile, `share` of its pixels lit in `colour`,
+ *  as one small picture repeated; laid in the dial's millimetres, lined up with the screen's pixels */
+const dither_fills = new Map(), diffused_tiles = new Map();
+function dither_fill(name, colour, share) {
+  const idx = SHINE.dial_dither, M = PATTERNS[idx], n = M.n, id = `dith-${name}-${Math.round(share * 1000)}`;
+  let pat = dither_fills.get(id);
+  if (!pat) {
+    pat = el("pattern", { id, patternUnits: "userSpaceOnUse" }, defs);
+    el("image", { preserveAspectRatio: "none", style: "image-rendering: pixelated" }, pat);
+    dither_fills.set(id, pat);
+  }
+  const k = Math.max(1, Math.round(SHINE.dpixel_dial * (devicePixelRatio || 1))), fr = M.moving ? dither_frame() : 0;
+  const key = `${idx}/${k}/${fr}`;
+  if (pat.dataset.key !== key) {                                                // the tile's picture, made again only when it changes
+    pat.dataset.key = key;
+    const c = document.createElement("canvas"); c.width = c.height = n * k;
+    const g = c.getContext("2d"); g.fillStyle = colour;
+    let lit;
+    if (M.diffuse) {                                                             // error diffusion over a flat field, wrapped round
+      const dk = `${idx}/${share}`;
+      if (!diffused_tiles.has(dk)) diffused_tiles.set(dk, diffuse(new Float32Array(n * n).fill(share), n, n, 1, M.diffuse, true));
+      lit = (i, j) => diffused_tiles.get(dk)[j * n + i] > 0;
+    } else lit = (i, j) => M.t(i, j, fr) < share;
+    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) if (lit(i, j)) g.fillRect(i * k, (n - 1 - j) * k, k, k);      // the dial's y runs up
+    pat.firstChild.setAttribute("href", c.toDataURL());
+  }
+  const p = SHINE.dpixel_dial / st.z;                                           // a dither pixel, in mm
+  set(pat, "x", f(-st.c[0] / st.z)); set(pat, "y", f(st.c[1] / st.z - n * p)); // the tile's corner on the screen's grid
+  set(pat, "width", f(n * p)); set(pat, "height", f(n * p));
+  set(pat.firstChild, "width", f(n * p)); set(pat.firstChild, "height", f(n * p));
+  return id;
+}
+/** the shine on the plate, and on each hand */
+function draw_light(S) {
+  const D = st.dial, R = D.d / 2, strong = S.k * S.light * SHINE.opacity, shine = SHINE.shine && strong > 0.002;
+  const { paths, steps } = shine ? shine_paths(S, R) : { paths: null, steps: 0 };
+  const bands = (g, under, key) => {
+    if (!shine) return;
+    for (const [name, parent, alpha, colour] of [["light", g, SHINE.bright, "#fff"], ["dark", under, SHINE.dark, "#000"]])
+      for (let s = 0; s < steps; s++) {
+        const p = part(`${key}/${name}/${s}`, "path", parent);
+        set(p, "d", paths[name][s]);
+        if (SHINE.dial_on && SHINE.dial_dither) {                                                     // dithered: the band's full strength in some of the pixels
+          set(p, "fill", `url(#${dither_fill(name, colour, 1 - s / steps)})`); set(p, "fill-opacity", f(alpha * strong));
+        } else { set(p, "fill", colour); set(p, "fill-opacity", f(alpha * strong * (1 - s / steps))); }      // each step out a step fainter
+      }
+  };
+  const items = D.items, first = items.findIndex((x) => x.hand || x.role === "cap");
+  const before = first >= 0 ? st.nodes[first] : null;
+  const clip = part("shine/clip", "clipPath", defs); clip.id = "shine-clip";
+  set(part("shine/clip/dial", "circle", clip), "r", f(R));
+  const under = part("shine-dark", "g", dialG, before), g = part("shine", "g", dialG, before);
+  for (const x of [under, g]) { if (SHINE.whole) x.removeAttribute("clip-path"); else set(x, "clip-path", "url(#shine-clip)"); }      // whole: the rings past the dial's edge too
+  set(g, "style", "mix-blend-mode: screen");
+  if (shine) bands(g, under, "shine");
+  if (st.nohands || !(S.light > 0)) return;
+  items.forEach((x, i) => {
+    if (x.role !== "hand" || x.disc) return;
+    const ang = st.angles[x.hand], key = "bevel-" + x.hand;
+    const cl = part(key + "/clip", "clipPath", defs); cl.id = "bevel-clip-" + x.hand;
+    set(part(key + "/clip/hand", "path", cl), "d", x.p);
+    let n = i + 1; while (items[n]?.role === "mark" && items[n].hand === x.hand) n++;
+    const hg = part(key, "g", dialG, st.nodes[n] || null);
+    set(hg, "transform", `rotate(${f(-ang)})`);
+    const inner = part(key + "/in", "g", hg); set(inner, "clip-path", `url(#${cl.id})`);
+    // the bevel: the hand split down its length, the half the light falls on lighter, the other darker,
+    // by as much as the light comes from the side (as in the tool, Bevels at 100 %)
+    const amount = SHINE.bevels ? SHINE.bevel : 0, side = Math.sin((S.from - ang) * Math.PI / 180), lit = BEVEL.light * Math.abs(side) * S.light * amount, shade = BEVEL.dark * Math.abs(side) * S.light * amount;
+    const half = (name, x, colour, k) => { const r = part(`${key}/${name}`, "rect", inner); set(r, "x", f(x)); set(r, "y", "-50"); set(r, "width", "50"); set(r, "height", "100"); set(r, "fill", colour); set(r, "fill-opacity", f(k)); };
+    half("right", 0, side > 0 ? "#fff" : "#000", side > 0 ? lit : shade);
+    half("left", -50, side > 0 ? "#000" : "#fff", side > 0 ? shade : lit);
+    const dk = part(key + "/shine-dark", "g", inner), sh = part(key + "/shine", "g", inner);
+    for (const y of [dk, sh]) set(y, "transform", `rotate(${f(ang)})`);
+    set(sh, "style", "mix-blend-mode: screen");
+    bands(sh, dk, key + "/shine");
+  });
+}
+
+/** shadows: each part at its height casts its outline away from the sun onto every surface under it */
+function draw_shadows(S) {
+  const D = st.dial, items = D.items, nodes = st.nodes;
+  const darkPct = Math.min(D.sh.dark * SHOW_DARKER, 100) * S.light;
+  if (!(darkPct > 0)) return;
+  const moving = !!(st.travel || st.spin || st.dragging);            // the soft edge waits while anything moves
+  const a = S.from * Math.PI / 180, per = 1 / Math.tan(clamp(S.rise, 1, 89) * Math.PI / 180);
+  const away = (dz) => [-Math.sin(a) * per * dz, -Math.cos(a) * per * dz];
+  const hands = st.nohands ? [] : items.map((x, i) => ({ x, i })).filter(({ x }) => x.role === "hand").map((h) => ({ ...h, z: D.sh[h.x.hand] ?? 0, angle: st.angles[h.x.hand] }));
+  const cap_r = st.nohands ? 0 : D.cap_r, top = Math.max(D.sh.cap, ...hands.map((h) => h.z));
+  const dark = clamp(darkPct, 0, 100) / 100;
+  const tint = (h, al = 1) => { const c = rgb(h); return `rgb(${[0, 1, 2].map((k) => Math.round(255 * (1 - dark * (1 - (1 - al) * (1 + al * c[k]))))).join(", ")})`; };
+  hands.sort((p, q) => p.x.a - q.x.a);
+  const surface = (name, before, outline, from_z) => {
+    const g = part(name, "g", dialG, before), clip = part(name + "/clip", "clipPath", defs);
+    clip.id = "shadow-clip-" + name;
+    outline.forEach(([d, turn], k) => { const p = part(`${name}/clip/${k}`, "path", clip); set(p, "d", d); set(p, "transform", turn ? `rotate(${f(-turn)})` : ""); });
+    set(g, "clip-path", `url(#${clip.id})`);
+    set(g, "style", "mix-blend-mode: multiply");
+    if (!moving) set(g, "filter", "url(#shadow-soft)"); else g.removeAttribute("filter");
+    let k = 0;
+    const cast = (d, turn, dz, colour, al) => {
+      const p = part(`${name}/cast/${k++}`, "path", g), [x, y] = away(dz);
+      set(p, "d", d); set(p, "fill", tint(colour, al));
+      set(p, "transform", `translate(${f(x)} ${f(y)})` + (turn ? ` rotate(${f(-turn)})` : ""));
+    };
+    for (const h of hands) if (h.z > from_z) cast(h.x.p, h.angle, h.z - from_z, h.x.f, h.x.a);
+    if (cap_r && top > from_z) {                                  // the pipes: a band from the centre up to the cap
+      const [x0, y0] = away(Math.max(0, -from_z)), [x, y] = away(top - from_z);
+      const len = Math.hypot(x - x0, y - y0) || 1, nx = -(y - y0) / len * cap_r, ny = (x - x0) / len * cap_r;
+      const ring = (cx, cy) => `M${f(cx - cap_r)} ${f(cy)}A${f(cap_r)} ${f(cap_r)} 0 1 0 ${f(cx + cap_r)} ${f(cy)}A${f(cap_r)} ${f(cap_r)} 0 1 0 ${f(cx - cap_r)} ${f(cy)}Z`;
+      for (const d of [ring(x0, y0), ring(x, y), `M${f(x0 + nx)} ${f(y0 + ny)}L${f(x + nx)} ${f(y + ny)}L${f(x - nx)} ${f(y - ny)}L${f(x0 - nx)} ${f(y0 - ny)}Z`]) {
+        const p = part(`${name}/cast/${k++}`, "path", g); set(p, "d", d); set(p, "fill", tint(D.cap_c)); set(p, "transform", "");
+      }
+    }
+    return { cast };
+  };
+  const plate_at = items.findIndex((x) => x.role === "plate");
+  const discs = items.map((x, i) => ({ x, i })).filter(({ x }) => x.role === "date disc");
+  if (discs.length && plate_at >= 0) {                           // date discs under the plate: 0.15 mm down (the tool’s start)
+    const s = surface("discs", nodes[plate_at], discs.map(({ x }) => [x.p, 0]), -0.15);
+    s.cast(items[plate_at].p, 0, 0.15, D.plate, 1);
+  }
+  if (plate_at >= 0 && hands.length) {
+    const first = items.findIndex((x) => x.hand || x.role === "cap");
+    surface("plate", first >= 0 ? nodes[first] : null, [[items[plate_at].p, 0]], 0);
+  }
+  const after = (i) => { let n = i + 1; while (items[n]?.role === "mark" && items[n].hand === items[i].hand) n++; return n; };
+  for (const h of hands) if (hands.some((o) => o.z > h.z) || (cap_r && top > h.z)) surface("hand-" + h.x.hand, nodes[after(h.i)] || null, [[h.x.p, h.angle]], h.z);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════
+// the controls
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════
+const UNDO = `<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5625" stroke-linecap="round" stroke-linejoin="round"><path d="M3.25 6.75H9.75A3.25 3.25 0 0 1 9.75 13.25H6.25M6.25 3.75L3.25 6.75L6.25 9.75"/></svg>`;
+const pills = {};
+for (const [kind, word, says] of [["now", "Now", "The time it is now"], ["ten", "10:10", "10:10, the classic pose"]]) {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "nowpill " + kind; b.title = says; b.dataset.says = says;
+  b.innerHTML = `<span class="word">${word}</span>${UNDO}`;
+  b.onclick = () => show_now(kind);
+  document.body.append(b);
+  pills[kind] = b;
+}
+/** Now or 10:10: the hands whirl to that time; the pill turns into the way back */
+function show_now(kind) {
+  const from = hand_angles(time(), st.dial.beat);
+  if (st.back && st.back.by === kind) {
+    set_time(st.back.t + (performance.now() - st.back.at) / 1000);
+    st.back = null;
+    st.spin = { from, way: -1, t0: performance.now() };
+  } else {
+    st.back = st.back ? { ...st.back, by: kind } : { t: time(), at: performance.now(), by: kind };
+    set_time(kind === "now" ? now_s() : 10 * 3600 + 600 + (time() >= 43200 ? 43200 : 0));
+    st.spin = { from, way: 1, t0: performance.now() };
+  }
+  for (const [k, b] of Object.entries(pills)) {
+    const back = !!st.back && st.back.by === k;
+    b.classList.toggle("back", back);
+    b.title = back ? "Back to the time it showed" : b.dataset.says;
+  }
+}
+$("#hands").onclick = () => {
+  st.nohands = !st.nohands;
+  $("#hands").setAttribute("aria-pressed", String(st.nohands));
+  $("#hands").title = st.nohands ? "Show the hands" : "Hide the hands";
+};
+// a drag across the window moves the sun: left edge sunrise, right edge sunset
+svg.addEventListener("pointerdown", (e) => { st.dragging = true; svg.setPointerCapture(e.pointerId); st.phase = clamp(e.clientX / innerWidth, 0, 0.999); });
+svg.addEventListener("pointermove", (e) => { if (st.dragging) st.phase = clamp(e.clientX / innerWidth, 0, 0.999); });
+for (const ev of ["pointerup", "pointercancel"]) svg.addEventListener(ev, () => { st.dragging = false; });
+
+/** the hint over Now: a two-headed arrow sways once */
+function hint() {
+  const h = $("#hint"), below = st.c[1] + st.dial.d / 2 * st.z, above = pills.now.getBoundingClientRect().top;
+  h.style.top = ((below + above) / 2 - h.offsetHeight / 2).toFixed(1) + "px";
+  h.classList.remove("go"); void h.offsetWidth; h.classList.add("go");
+}
+
+// the shine's handles: each a slider on one of SHINE's numbers
+const KNOBS = [
+  ["panel", "colour-rows"],
+  ["pool_colour", "Spotlight", 0, 0, "colour"],
+  ["sky_top", "Sky, top left", 0, 0, "colour"],
+  ["sky_bottom", "Sky, bottom right", 0, 0, "colour"],
+  ["panel", "switch-rows"],
+  ["head", "On or off"],
+  ["sky", "Sky", 0, 1, "switch"],
+  ["pool", "Spotlight", 0, 1, "switch"],
+  ["dial_shadow", "Dial's shadow", 0, 1, "switch"],
+  ["hand_shadows", "Hand shadows", 0, 1, "switch"],
+  ["shine", "Shine", 0, 1, "switch"],
+  ["whole", "Whole rings", 0, 1, "switch"],
+  ["bevels", "Bevels", 0, 1, "switch"],
+  ["sun_moves", "Sun moves", 0, 1, "switch"],
+  ["clock_runs", "Clock runs", 0, 1, "switch"],
+  ["head", "Spotlight"],
+  ["spot", "Soft edge", 0, 1, ["blur", "halftone"]],
+  ["panel", "dither-rows"],
+  ["title", "Dial", "dial_on"],
+  ["dpixel_dial", "Pixel size", 1, 5, "pills"],
+  ["dial_dither", "Pattern", 0, 0, "thumbs"],
+  ["ghost"],
+  ["title", "Spotlight", "spot_on"],
+  ["dpixel_bg", "Pixel size", 1, 5, "pills"],
+  ["dlevels", "Levels", 2, 4, 1],
+  ["spot_dither", "Pattern", 0, 0, "thumbs"],
+  ["ghost"],
+  ["title", "Background", "sky_dither_on"],
+  ["dpixel_sky", "Pixel size", 1, 5, "pills"],
+  ["dlevels_sky", "Levels", 2, 4, 1],
+  ["sky_dither", "Pattern", 0, 0, "thumbs"],
+  ["panel", "slider-rows"],
+  ["head", "Shine"],
+  ["width", "Ring width", 0.02, 0.8, 0.005],
+  ["opacity", "Opacity", 0, 2, 0.05],
+  ["bright", "Brightness", 0, 0.6, 0.01],
+  ["gap", "Distance", 0.1, 0.8, 0.01],
+  ["steps", "Steps", 1, 4, 1],
+  ["between", "In between", 0, 4, 1],
+  ["stretch", "Ellipse", 1, 2, 0.05],
+  ["head", "Hands"],
+  ["bevel", "Bevel strength", 0, 2, 0.05],
+];
+const START = structuredClone(SHINE);
+let knob_rows = null; const knob_sync = [];
+// ── undo and redo: every change remembers what was before it; a slider's drag (the same control within 0.8 s) is one step ──
+const past = [], future = [];
+let last_change = { key: null, at: 0 };
+const snapshot = () => ({ shine: structuredClone(SHINE), dial: st.dial_index });
+function before(key) {
+  const now = performance.now();
+  if (last_change.key === key && now - last_change.at < 800) { last_change.at = now; return; }
+  past.push(snapshot()); if (past.length > 200) past.shift();
+  future.length = 0; last_change = { key, at: now }; undo_keys();
+}
+function restore(snap) {
+  Object.keys(SHINE).forEach((k) => delete SHINE[k]); Object.assign(SHINE, structuredClone(snap.shine));
+  if (snap.dial !== st.dial_index) load(snap.dial);
+  knob_sync.forEach((f) => f()); last_change = { key: null, at: 0 }; undo_keys();
+}
+function undo() { if (past.length) { future.push(snapshot()); restore(past.pop()); } }
+function redo() { if (future.length) { past.push(snapshot()); restore(future.pop()); } }
+function undo_keys() { $("#undo").disabled = !past.length; $("#redo").disabled = !future.length; }
+addEventListener("keydown", (e) => {
+  if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== "z") return;
+  e.preventDefault(); e.shiftKey ? redo() : undo();
+});
+/** a pattern's thumbnail: 24 × 12 dither pixels, the light rising from the left edge to the right */
+function thumb(P) {
+  const w = 24, h = 12, c = document.createElement("canvas"); c.width = w; c.height = h;
+  const g = c.getContext("2d"), img = g.createImageData(w, h), v = new Float32Array(w * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) v[y * w + x] = (x + 0.5) / w;
+  const q = P.diffuse ? diffuse(v.slice(), w, h, 1, P.diffuse) : null;
+  for (let k = 0; k < w * h; k++) {
+    const on = q ? q[k] > 0 : v[k] > P.t(k % w, (k / w) | 0, 0), o = k * 4;
+    img.data[o] = img.data[o + 1] = img.data[o + 2] = on ? 222 : 34; img.data[o + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+  return c;
+}
+for (let [key, word, lo, hi, step] of KNOBS) {
+  if (key === "panel") { knob_rows = $("#" + word); continue; }
+  if (key === "ghost") { knob_rows.append(Object.assign(document.createElement("div"), { className: "ghost" })); continue; }
+  if (knob_rows.children.length && key !== "head" && key !== "title" && knob_rows.lastChild.className !== "ghost") knob_rows.append(Object.assign(document.createElement("hr"), { className: "rule" }));      // a hairline between rows (13:39)
+  if (key === "head") { const h = document.createElement("div"); h.className = "head"; h.textContent = word; knob_rows.append(h); continue; }
+  if (key === "title") {                                                        // a big title with its own switch beside it
+    const flag = lo, row = document.createElement("div"), h = document.createElement("label"), box = Object.assign(document.createElement("input"), { type: "checkbox", id: "knob-" + flag });
+    row.className = "head titled"; h.htmlFor = box.id; h.textContent = word; row.append(h, box);
+    const show = () => { box.checked = !!SHINE[flag]; };
+    box.oninput = () => { before(flag); SHINE[flag] = box.checked ? 1 : 0; show(); };
+    show(); knob_sync.push(show); knob_rows.append(row); continue;
+  }
+  const id = "knob-" + key, label = document.createElement("label"), out = document.createElement("output");
+  label.htmlFor = id; label.textContent = word;
+  let input, show;
+  if (step === "thumbs") {                                                      // the patterns as tiny pictures: dark at the left to light at the right
+    input = document.createElement("div"); input.className = "thumbs"; input.id = id;
+    const buttons = PATTERNS.map((P, v) => {
+      if (!P) return null;
+      const b = document.createElement("button"); b.type = "button"; b.title = P.label; b.setAttribute("aria-label", P.label);
+      b.append(thumb(P)); b.onclick = () => { before(key); SHINE[key] = v; show(); };
+      input.append(b); return b;
+    });
+    show = () => { buttons.forEach((b, v) => b && b.setAttribute("aria-pressed", String(SHINE[key] === v))); out.textContent = PATTERNS[SHINE[key]].label; };
+    out.className = "name";
+    knob_rows.append(label, out, input);
+  } else if (Array.isArray(step) || step === "pills") {                         // a few named choices (or the numbers lo…hi): a row of words
+    const values = step === "pills" ? Array.from({ length: hi - lo + 1 }, (_, k) => lo + k) : step.map((_, k) => k);
+    const names = step === "pills" ? values.map(String) : step;
+    input = document.createElement("div"); input.className = "segs"; input.id = id;
+    const buttons = names.map((name, k) => {
+      const b = document.createElement("button"), v = values[k]; b.type = "button"; b.textContent = name;
+      b.onclick = () => { before(key); SHINE[key] = v; show(); };
+      input.append(b); return b;
+    });
+    show = () => buttons.forEach((b, k) => b.setAttribute("aria-pressed", String(SHINE[key] === values[k])));
+    knob_rows.append(label, input);
+  } else if (step === "colour") {                                               // a colour, or "auto" (from the backdrop)
+    input = Object.assign(document.createElement("input"), { id, type: "color" });
+    const auto = document.createElement("button"); auto.type = "button"; auto.className = "auto"; auto.textContent = "auto";
+    auto.onclick = () => { before(key); SHINE[key] = null; show(); };
+    input.oninput = () => { before(key); SHINE[key] = input.value; show(); };
+    show = () => { input.value = SHINE[key] || (st.auto && st.auto[key]) || "#888888"; auto.setAttribute("aria-pressed", String(!SHINE[key])); };
+    const both = document.createElement("div"); both.className = "colourrow"; both.append(input, auto);
+    knob_rows.append(label, both);
+  } else {
+    const flip = step === "switch";                                             // a switch: on or off
+    input = Object.assign(document.createElement("input"), flip ? { id, type: "checkbox" } : { id, type: "range", min: lo, max: hi, step });
+    show = flip ? () => { input.checked = !!SHINE[key]; }
+                : () => { input.value = SHINE[key]; out.textContent = (+SHINE[key]).toFixed(step >= 1 ? 0 : step >= 0.1 ? 1 : 2); };
+    input.oninput = () => { before(key); SHINE[key] = flip ? (input.checked ? 1 : 0) : +input.value; show(); };
+    knob_rows.append(label, input, out);
+  }
+  input.addEventListener("pointerdown", (e) => e.stopPropagation());
+  show(); knob_sync.push(show);
+}
+const reset = document.createElement("button");
+reset.type = "button"; reset.className = "reset"; reset.textContent = "Reset";
+reset.onclick = () => { before("reset"); Object.assign(SHINE, structuredClone(START)); knob_sync.forEach((f) => f()); };
+knob_rows.append(Object.assign(document.createElement("hr"), { className: "rule" }), reset);
+for (const id of ["#switch-rows", "#dither-rows"]) $(id).append(Object.assign(document.createElement("hr"), { className: "rule" }), Object.assign(reset.cloneNode(true), { onclick: reset.onclick }));
+
+/** stop or start the sun and the clock together (the key, or the space bar) */
+function pause(on = !st.paused) {
+  st.paused = on;
+  $("#play").setAttribute("aria-pressed", String(on));
+  $("#play").title = on ? "Start the animation (space)" : "Stop the animation (space)";
+}
+$("#play").onclick = () => pause();
+$("#undo").onclick = undo; $("#redo").onclick = redo;
+// full screen, where the browser and the viewer allow it (iPad Safari since 16.4; a refusal does nothing)
+$("#full").onclick = () => {
+  const d = document, on = d.fullscreenElement || d.webkitFullscreenElement;
+  try {
+    const r = on ? (d.exitFullscreen || d.webkitExitFullscreen).call(d) : (d.documentElement.requestFullscreen || d.documentElement.webkitRequestFullscreen).call(d.documentElement);
+    if (r && r.catch) r.catch(() => {});
+  } catch (e) {}
+};
+addEventListener("keydown", (e) => { if (e.code === "Space" && !/INPUT|BUTTON/.test(e.target.tagName)) { e.preventDefault(); pause(); } });
+$("#ui").onclick = () => {                                                      // the drawer, open or shut
+  const shut = document.body.classList.toggle("shut");
+  $("#ui").setAttribute("aria-pressed", String(shut));
+  $("#ui").title = shut ? "Open the controls" : "Close the controls";
+};
+
+// ── Saved: each save is a db row (collection "saves") — every setting, the dial, the sun — so Claude can read them back ──
+const SAVE_KEYS = Object.keys(SHINE);
+(async () => {
+  const db = window.claude?.use ? await window.claude.use("db") : null;      // outside the viewer: no saving
+  const box = $("#saved");
+  if (!db) { box.hidden = true; return; }                                      // signed out, or not served: no saving here
+  const list = $("#save-list"), empty = $("#save-empty"), note = $("#save-note"), save = $("#save");
+  const saves = db.collection("saves");
+  let rows = [], shown = null;
+  const when = (t) => { const d = new Date(t); return d.toLocaleDateString(undefined, { day: "numeric", month: "short" }) + " " + d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }); };
+  function render() {
+    empty.hidden = rows.length > 0;
+    list.replaceChildren(...rows.map((r) => {
+      const d = r.data(), li = document.createElement("li");
+      li.className = shown === r.id ? "on" : "";
+      const heart = Object.assign(document.createElement("button"), { type: "button", className: "heart", textContent: d.liked ? "♥" : "♡", title: d.liked ? "Liked" : "Like" });
+      heart.setAttribute("aria-pressed", String(!!d.liked));
+      heart.onclick = () => saves.doc(r.id).update({ liked: !d.liked }).catch(() => {});
+      const what = Object.assign(document.createElement("button"), { type: "button", className: "what", title: "Show this look" });
+      const b = document.createElement("b"); b.textContent = d.note || d.dial;
+      const sp = document.createElement("span"); sp.textContent = (d.note ? d.dial + " · " : "") + when(d.at);
+      what.append(b, sp);
+      what.onclick = () => {                                                    // show this look: settings, dial, sun
+        before("load");
+        const i = DIALS.findIndex((x) => x.name === d.dial);
+        Object.assign(SHINE, structuredClone(d.settings || {}));
+        if (i >= 0 && i !== st.dial_index) load(i);
+        if (typeof d.sun === "number") st.phase = d.sun;
+        shown = r.id; render(); requestAnimationFrame(() => knob_sync.forEach((f) => f()));
+      };
+      const del = Object.assign(document.createElement("button"), { type: "button", className: "del", textContent: "✕", title: "Delete" });
+      del.onclick = () => {                                                     // two taps: the first asks, the second deletes
+        if (!del.classList.contains("sure")) { del.classList.add("sure"); del.textContent = "Delete?"; setTimeout(() => { del.classList.remove("sure"); del.textContent = "✕"; }, 2500); return; }
+        saves.doc(r.id).delete().catch(() => {});
+      };
+      li.append(heart, what, del);
+      return li;
+    }));
+  }
+  saves.orderBy("at", "desc").onSnapshot((snap) => { rows = snap.docs; render(); }, () => { box.hidden = true; });
+  save.onclick = async () => {
+    save.disabled = true;
+    const settings = {}; for (const k of SAVE_KEYS) settings[k] = SHINE[k];
+    try {
+      const ref = await saves.add({ at: Date.now(), dial: st.dial.name, note: note.value.trim(), liked: false, sun: +st.phase.toFixed(4), settings });
+      shown = ref.id; note.value = ""; save.textContent = "Saved"; setTimeout(() => (save.textContent = "Save"), 1200);
+    } catch (e) { save.textContent = "Couldn't save"; setTimeout(() => (save.textContent = "Save"), 2000); }
+    save.disabled = false;
+  };
+  note.addEventListener("keydown", (e) => { if (e.key === "Enter") save.click(); });
+})();
+
+// the dial picker
+DIALS.forEach((D, i) => $("#dialpick").append(Object.assign(document.createElement("option"), { value: i, textContent: D.name })));
+$("#dialpick").onchange = (e) => { before("dial"); load(+e.target.value); requestAnimationFrame(() => requestAnimationFrame(() => knob_sync.forEach((f) => f()))); };
+
+// start: the first dial; it travels in from fitting the window, the sky and pool fade in
+load(0);
+const t = target(), fit = Math.min(innerWidth, innerHeight) / (st.dial.d + 3);
+st.c = t.c.slice(); st.z = fit;
+st.travel = { c: t.c.slice(), z: fit, t0: performance.now() + 150 };
+requestAnimationFrame(() => { document.body.classList.add("in"); requestAnimationFrame(frame); });
+setTimeout(() => knob_sync.forEach((f) => f()), 200);      // the colour swatches show the auto colours once a frame has made them
+</script>

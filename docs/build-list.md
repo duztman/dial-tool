@@ -258,6 +258,16 @@ Okay, 02:02: "My secret goal is making 4.90 v01 … Build functionality … note
 | 397 | **Colour mosaic with Centre → edge goes by lightness alone** (14:42: "a step always has similar value lightnesses so center dark, outside light. Invert possible"): each step one lightness shared by every colour (step 1 at the palette's mean, the last To white % of the way to white), hues mixed within a step; Invert switch. **Opening settings** (14:42): both mosaics on, Palette, Centre → edge, 1 large · 10 medium · 20 small, five colours purple → reds → orange | **done — 19 Oct** |
 | 396 | **With the large discs off the sides, the band between them and an edge can stay thin and white** when few small discs land there (seen on 1 of 6 seeds) | noted |
 
+## Dial Show Case (side product, 20 Oct 2026)
+
+`show-case/`; what it is and how to run it: `show-case/README.md`.
+
+| # | Item | Status |
+|---|---|---|
+| 489 | **Dial Show Case, a standalone app**: the Showcase's animation (the Playbox) and the cases and straps rendering engine together (Okay, 19:42: "This was a great detour and will be its standalone app combined with showcase. It will be called Dial Show Case") | planned |
+| 490 | **The cases and straps rendering engine**: a dial put in a whole watch under a light from any side and height, in two styles, Engineer and Miyazaki; 15 watches, two PDFs (Okay, 19:16: "We are golden") | **done — 20 Oct** (side session; sources in `show-case/src/`) |
+| 491 | **Ink thicknesses** for the Engineer style (Okay, 19:04: "You can tackle ink thicknesses next") | next |
+
 ## Later
 
 | # | Item | Status |

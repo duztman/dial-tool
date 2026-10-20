@@ -33,6 +33,7 @@ What it has and lacks: [`docs/changelog.md`](docs/changelog.md). What's next: [`
 | `docs/font-research-2026-10-16.md`, `docs/font-tiers-2026-10-16.md` | The font research of 16 Oct 2026: which fonts Okay accepted (Peter Wiegel's 46, Font Picks' 49), how, their licences, and the tiers of the font list. |
 | `docs/project-prompt.md` | Start-off prompt for the Claude Project. |
 | `packer/` | **Dial Packer**, a side product (19 Oct 2026): packs discs of three sizes densely on a page, for visuals like the guide's cover. One built file, `packer/dial-packer.html`; online at <https://duztman.github.io/dial-tool/packer/>. How it works and how to change it: `packer/README.md`. |
+| `show-case/` | **Dial Show Case**, a side product to come (20 Oct 2026): the Showcase's Playbox and the cases and straps rendering engine (two drawing styles, Engineer and Miyazaki), their sources, notes and screens. Not live; how to run it: `show-case/README.md`. |
 | `archive/drawbot/` | **The DrawBot version, frozen since 12 Oct 2026 (R30)** — kept, not edited: `dial.py` (beta 2.3), its tests, its preview plan, its rules, words and build-list items (`rules-drawbot.md`, `glossary-drawbot.md`, `build-list-drawbot.md`), reference renders, and the 4 Oct guidebook. `web/test/parity.py` still uses `dial.py` and `tools/test_harness.py` from here. |
 
 ## For agents
