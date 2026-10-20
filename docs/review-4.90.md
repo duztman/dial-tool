@@ -46,7 +46,7 @@ To try it: the private preview of this branch, https://claude.ai/artifact/JRtt9P
 | 476 | The case sign: Guides' ring, lugs about a third as long with ink traps where they meet it, the hands in an L at three o'clock, a one-point crown stub left out of the centring. | |
 | 477 | A switch that is on lights its sign only (Guides, Shadows, Case, X-ray, Strap's chip and sign); the word lights under the pointer. | |
 
-Asked, not built: #473 (the number boxes' figures — tabular now, by your words of 00:20: proportional, or another face?) and #475 ("persistent resize pill is on default on export tab" — the Export tab's pinned pane gets the ring list's pill?).
+#473 (03:35, "make all these tabular"): they are tabular in Chromium already; a field now says so again for Safari — check on the iPad. Asked, not built: #475 ("persistent resize pill is on default on export tab" — the Export tab's pinned pane gets the ring list's pill?).
 
 ## Seen, not changed
 

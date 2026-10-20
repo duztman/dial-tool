@@ -3,7 +3,7 @@
      btn (outline): an action · btn main (filled): writes a file · plain (words only): adds something ·
      sign (a drawing only): acts on the selected thing. Steps, segments and tiles are below. */
   button { appearance: none; margin: 0; padding: 0; border: 0; border-radius: 0; background: none; font: inherit; color: inherit; cursor: pointer; }
-  select, input { font: inherit; color: inherit; }
+  select, input { font: inherit; font-variant-numeric: inherit; color: inherit; }      /* the figures said again: some WebKit builds leave a field's figures out of "font: inherit", so a number box can show proportional figures (Okay, 20 Oct 2026, 03:35: "MAKE ALL THESE TABULAR") */
   /* a short label in a box of its own, centred on its ink, with proportional figures (ink.js writes the two
      offsets; Okay, 14 Oct 2026: "proportional ink box it is"; design canon §2) */
   .ink { display: inline-block; font-variant-numeric: proportional-nums lining-nums; transform: translate(var(--ink-dx, 0), var(--ink-dy, 0)); }
