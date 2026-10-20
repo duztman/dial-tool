@@ -458,7 +458,7 @@ const anchors = await page.evaluate(() => {
 await shot("4c10-radius-pop");
 await page.keyboard.press("Escape");
 await page.click(`.ringlist li:nth-child(${ring_before + 1} of .ring) .name`);
-check(anchors.options === "Centre Outer edge Inner edge" && anchors.labels.join(" | ") === "Centre radius | Outer edge radius | Inner edge radius | Centre radius" && anchors.a3 === 3 && anchors.a4 === 4 && anchors.a0 === 0 && anchors.look.join(" ") === "true 12 12 186 50",
+check(anchors.options === "Centre Outer edge Inner edge Cap middle" && anchors.labels.join(" | ") === "Centre radius | Outer edge radius | Inner edge radius | Centre radius" && anchors.a3 === 3 && anchors.a4 === 4 && anchors.a0 === 0 && anchors.look.join(" ") === "true 12 12 186 50",
   `the radius of numerals has a menu beside its label: ${anchors.options} (Baseline and Ascender out, #418: "Remove these two from the functions as well"); the label follows: ${anchors.labels.join(" → ")}; in the controller no name, the value's pill as far from the top as the discs from the foot (${anchors.look.join(" · ")}) (controller 2.svg, 18 Oct 2026)`);
 // …and Baseline and Ascender are retired from the drawing too (#418): a ring stored with one is centred on its radius, as with Centre
 const at12 = [];
@@ -1703,7 +1703,7 @@ await page.uncheck("#global-out-live-text-Keep-numerals-as-text-in-the-SVG");
     return { pinned: [...p.querySelectorAll("h2")].map((h) => h.textContent).join(), order: rows.map((r) => (r.querySelector("button.main") || {}).id || (r.querySelector("input") || {}).id || r.className).join(" | "),
       pdf: left("#export-pdf"), svg: left("#export-svg"), png: left("#export-png"), label: left(".pinned .row > label"), tick: left(".pinned .check"), lines: rows.map(shadow).join(""), halves: rows.map(half).join(""), below: [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent).join(" · ") };
   });
-  check(e.pinned === "Export a file" && e.order === "export-pdf | export-svg | global-out-live-text-Keep-numerals-as-text-in-the-SVG | export-png | global-out-dpi-dpi-slider | row note under | export-wearos | wearos-name | row note under" && e.pdf === e.svg && e.png === e.pdf && e.pdf > e.label && e.tick === e.svg && e.lines === "211111111" && e.halves === "010100100"      /* a row and its note are one box: no line, half or whole, between them (#420) */ && e.below === "Print · A set of files · Link to this dial · Settings file · Log · Gallery",
+  check(e.pinned === "Export a file" && e.order === "export-pdf | export-svg | global-out-live-text-Keep-numerals-as-text-in-the-SVG | export-png | global-out-dpi-dpi-slider | row note under | export-wearos | wearos-name | row note under" && e.pdf === e.svg && e.png === e.pdf && e.pdf > e.label && e.tick === e.svg && e.lines === "211111111" && e.halves === "010100100"      /* a row and its note are one box: no line, half or whole, between them (#420) */ && e.below === "Print · A set of files · Moving picture · Link to this dial · Settings file · Log · Gallery",
     `Export a file is pinned: Vector · PDF, SVG under it with its tick tied to it, then PNG on the same column with its dpi under it, then Wear OS's APK with its name under it (4.67); a half line, from the buttons' column, before each nested row, none between a row and its note (the tick, the dpi: ${e.lines} ${e.halves}); below scroll ${e.below}`);
   await shot("4c21-export");
 }
@@ -1844,6 +1844,34 @@ await page.uncheck("#global-out-production-Mono-print-mask");
   page.removeAllListeners("download");
   await page.evaluate(() => window.dial_tool.set_value("global", "out_f_mirrored", false));
   check(got.length === 2 && got.some((n) => /-mask-mirrored-/.test(n)) && got.some((n) => !/mask/.test(n)), `a set of files (#171): one press writes the ticked ones (${got.join(", ")})`);
+}
+{ // 4.90, block B: Cap middle (#13), a spec sheet (#18), MP4 and GIF (#51), font files kept (#56)
+  // Cap middle: every label on one line — a numeral's middle stands where the H's middle is, not its own ink's
+  const cap = await page.evaluate(() => { const t = window.dial_tool; t.S.ui_ring = t.S.rings.findIndex((r) => r.kind === 2); if (t.S.ui_ring < 0) return null;
+    const was = t.S.rings[t.S.ui_ring].anchor; t.set_value("ring", "anchor", 5); t.frame(); const d = t.statik.rings.find((x) => x.kind === "numerals"); const ok = Boolean(d && d.parts.length);
+    t.set_value("ring", "anchor", was); t.frame(); return ok; });
+  const spec = await download("#export-spec"), svg = fs.readFileSync(spec, "utf8");
+  await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "out_seconds", 1); t.set_value("global", "out_fps", 6); t.set_value("global", "out_px", 240); });
+  const gif = await download("#export-gif"), mp4 = await download("#export-mp4");
+  const gb = fs.readFileSync(gif), mb = fs.readFileSync(mp4);
+  await page.evaluate(() => { const t = window.dial_tool, D = { out_seconds: 4, out_fps: 30, out_px: 1080 }; for (const k in D) t.set_value("global", k, D[k]); });
+  // a mask per ink (#35): two colours on the dial → two films, each named by its ink
+  const ink_was = await page.evaluate(() => { const t = window.dial_tool, i = t.S.rings.length - 1, was = JSON.stringify(t.S.rings[i].c); t.S.ui_ring = i; t.set_value("ring", "c", [0.8, 0.1, 0.1, 1]); t.set_value("global", "out_production", true); return [i, was]; }).catch(() => null);
+  const films = [];
+  page.on("download", (d) => films.push(d.suggestedFilename()));
+  await page.$eval("#export-inks", (b) => b.scrollIntoView({ block: "center" })).catch(() => {});
+  await page.click("#export-inks").catch(() => {}); await page.waitForTimeout(2500);
+  page.removeAllListeners("download");
+  if (ink_was) await page.evaluate(([i, was]) => { const t = window.dial_tool; t.S.ui_ring = i; t.set_value("ring", "c", JSON.parse(was)); t.set_value("global", "out_production", false); }, ink_was);
+  // a font file added by hand is there again after the page is opened again
+  await page.setInputFiles("#font-file", "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf").catch(() => {});
+  await page.waitForTimeout(800);
+  await page.reload(); await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik); await page.waitForTimeout(800);
+  const kept = await page.evaluate(() => [...window.dial_tool.catalog.values()].some((f) => /DejaVuSerif-Bold/.test(f.ps)));
+  await tab("Export");
+  const parts = [films.length >= 2 && films.every((n) => /-mask-ink-[0-9A-F]{6}/.test(n)), cap !== false, /<svg[^>]+width="297mm"/.test(svg), !/<text|stroke=/.test(svg), (svg.match(/<path/g) || []).length > 40, gb.subarray(0, 6).toString() === "GIF89a", mb.subarray(4, 8).toString() === "ftyp", kept];
+  check(parts.every(Boolean),
+    `(${parts.map(Number).join("")}) Cap middle draws (#13); a spec sheet, A4 on its side, outlines only (${path.basename(spec)}, #18); a GIF (${gb.length} bytes) and an MP4 (${mb.length} bytes) of one second (#51); a font file added by hand is back after a reload (#56)`);
 }
 { // your own dials (4.76, #347), in Versions under undo (#435; Okay, 19 Oct 2026, 23:11: "place this under undo. Icon: dial with two hands. This is versions … 3x grid. 'edit this dial' and others activate on clicks there too. top, there is a compare button"): Save this dial keeps it with a picture in this browser; its card opens it again, or goes
   const open_versions = async () => { if (await page.$eval("#version-list", (l) => l.hidden)) await page.click("#versions"); };

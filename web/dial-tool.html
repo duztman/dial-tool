@@ -7436,6 +7436,8 @@ var DEFAULTS = {
   // #222: a mask's cut lines (each window's, the centre hole's); off, the mask holds only what is etched
   out_invert: false,
   // #223: a mask inverted inside the dial — toner everywhere but the marks, for sunk marks
+  out_ink: "",
+  // #35: a mask of one ink only (#RRGGBB), or "" for every ink — set by the export for each film, not kept between files
   out_marks: false,
   // #224: a mask's blank outline and four registration marks in the page's corners
   // a set of files in one press (#171; atlas 6.3): which of FILE_SET it writes
@@ -8087,6 +8089,8 @@ var LINK_KEYS = [
   "out_f_sheet",
   "out_f_spec",
   // 4.90 (#171, #18): appended; what a set of files holds
+  "out_ink",
+  // 4.90 (#35): appended; "" to start, every ink in one mask as before
   "jump",
   "da_jump"
   // 4.90 (#401): appended; off to start, the disc sweeps as before
@@ -9253,6 +9257,17 @@ function hand_items(S, t) {
   const angles = hand_angles(t, BEATS[S.ha_beat][1]);
   return HANDS.map((name, i2) => [name, S["ha_" + name].c, S["ha_" + name], angles[i2]]).filter(([, , h]) => h.on).map(([name, c, h, a]) => [name, c, hand_shape(h), a, h]);
 }
+var ink_hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Math.max(v, 0), 1) * 255).toString(16).padStart(2, "0")).join("").toUpperCase();
+function inks_of(S) {
+  const out = [];
+  for (const ring2 of S.rings) {
+    if (!ring2.on) continue;
+    out.push(ink_hex(ring2.c));
+    if (KINDS[ring2.kind] === "band") for (const c of Object.values(ring2.cs || {})) out.push(ink_hex(c));
+  }
+  for (const w of windows_of(S)) if (w.on) out.push(ink_hex(w.ink || INK));
+  return [...new Set(out)];
+}
 var REG_MARK = 4;
 var REG_LINE = 0.1;
 function production_marks(S) {
@@ -9288,9 +9303,16 @@ function scene(S, statik, t, preview = true, selected = null) {
   const index = (d) => S.rings.indexOf(d.ring);
   if (S.out_production) {
     const black = [0, 0, 0, 1], cuts = S.out_cutlines !== false;
-    for (const d of rings) add("ring", d.path, black, { ring: d, index: index(d) });
+    const ink = S.out_ink || "", of = (c) => !ink || ink_hex(c) === ink;
+    for (const d of rings) {
+      if (!ink || !d.tints) {
+        if (of(d.ring.c) || d.tints && !ink) add("ring", d.path, black, { ring: d, index: index(d) });
+      } else d.tints.forEach((tint, n) => {
+        if (of(sector_colour(d.ring, tint.at))) add("ring", tint.path, black, { ring: d, index: index(d), part: n + 1 });
+      });
+    }
     for (const x2 of windows) {
-      add("date frame", x2.frame, black, { window: x2.index });
+      if (of(wc(x2).ink)) add("date frame", x2.frame, black, { window: x2.index });
       if (cuts) add("cutline", x2.cutline, black, { window: x2.index });
     }
     if (statik.hole_line && cuts) add("hole", statik.hole_line, black);
@@ -9447,7 +9469,7 @@ function item_name(item) {
 }
 function file_name(S, ext, now = /* @__PURE__ */ new Date()) {
   const day = [now.getFullYear(), now.getMonth() + 1, now.getDate()].map((v) => String(v).padStart(2, "0")).join("-");
-  const what = ext === "json" ? "" : (S.out_production ? "-mask" : "") + (S.out_mirror ? "-mirrored" : "");
+  const what = ext === "json" ? "" : (S.out_production ? "-mask" : "") + (S.out_production && S.out_ink ? "-ink-" + S.out_ink.slice(1) : "") + (S.out_mirror ? "-mirrored" : "");
   if (ext === "spec") return `dial-${num(S.dial_d, 2)}mm-spec-${day}.svg`;
   if (ext === "mp4" || ext === "gif") return `dial-${num(S.dial_d, 2)}mm-${day}.${ext}`;
   if (ext === "sheet") return `dial-${num(S.dial_d, 2)}mm-sheet${what}-${day}.pdf`;
@@ -14584,6 +14606,9 @@ var ROWS = {
     chk("out_window_content", "What the windows show", { show: (S) => !S.out_production && windows_of(S).some((w) => w.on) }),
     info("Off, the windows' holes stay empty: discs, numbers and pictures are left out, for a printer who prints the face alone. Hide the hands under Hands.", { show: (S) => !S.out_production && windows_of(S).some((w) => w.on) }),
     chk("out_mirror", "Mirrored, for toner transfer"),
+    // a film per ink (#35; brief §6: "pad printing etches one plate per colour"): one mask PDF for each colour the dial
+    // is printed in, each with the cut lines and marks as ticked, so the films lie on each other by them (#224)
+    custom("ink_films", { show: (S) => S.out_production }),
     // a print sheet (4.75, #348; Okay's notes 2: "print page preparation, preview, copies, stacks — something simple,
     // elegant, efficient and paper savingly"): one page of copies at true size, packed straight or staggered —
     // whichever holds more — mirrored and as a mask as the two ticks above say; a drawing of the page beside the button
@@ -19929,6 +19954,24 @@ var DialTool = class _DialTool {
   row_export_png(wrap) {
     wrap.className = "row";
     wrap.append(el("label", { textContent: "Image" }), this.export_button("PNG"));
+  }
+  /** a film per ink (#35): its button, and the inks it will write. */
+  row_ink_films(wrap, out) {
+    wrap.className = "row";
+    const says = el("span", { className: "quiet" });
+    const go = el("button", { type: "button", className: "btn main", id: "export-inks", textContent: "A mask per ink", title: "One mask PDF for each colour the dial is printed in", onclick: async () => {
+      const inks = inks_of(this.S);
+      this.log(`a mask per ink: ${inks.length} films (${inks.join(", ")})${inks.length > 1 ? " \u2014 if the browser asks whether this page may download several files, allow it" : ""}`);
+      for (const ink of inks) {
+        await this.export("pdf", { out_production: true, out_ink: ink });
+        await new Promise((r) => setTimeout(r, 350));
+      }
+    } });
+    wrap.append(el("label", { textContent: "Inks" }), go, says);
+    out.refresh = (S) => {
+      const n = inks_of(S);
+      says.textContent = ` ${n.length} ink${n.length === 1 ? "" : "s"}: ${n.join(" ")}`;
+    };
   }
   /** a spec sheet (#18): its button, on the print sheet's column. */
   row_spec_sheet(wrap) {

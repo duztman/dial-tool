@@ -27,7 +27,7 @@ function item_name(item) {
  *  dial-30mm-2026-10-12.pdf · a production mask says so: dial-30mm-mask-mirrored-2026-10-12.pdf */
 export function file_name(S, ext, now = new Date()) {
   const day = [now.getFullYear(), now.getMonth() + 1, now.getDate()].map((v) => String(v).padStart(2, "0")).join("-");
-  const what = ext === "json" ? "" : (S.out_production ? "-mask" : "") + (S.out_mirror ? "-mirrored" : "");
+  const what = ext === "json" ? "" : (S.out_production ? "-mask" : "") + (S.out_production && S.out_ink ? "-ink-" + S.out_ink.slice(1) : "") + (S.out_mirror ? "-mirrored" : "");      // a film per ink names its ink (#35)
   if (ext === "spec") return `dial-${num(S.dial_d, 2)}mm-spec-${day}.svg`;      // a spec sheet (#18)
   if (ext === "mp4" || ext === "gif") return `dial-${num(S.dial_d, 2)}mm-${day}.${ext}`;      // a moving picture (#51): never a mask
   if (ext === "sheet") return `dial-${num(S.dial_d, 2)}mm-sheet${what}-${day}.pdf`;      // a print sheet (4.75)

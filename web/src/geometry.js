@@ -165,6 +165,7 @@ export const DEFAULTS = {
   out_hidden_cut: false,                           // #221: a hidden ring still knocks out and skips as if it were there, so a film made by hiding rings keeps its holes
   out_cutlines: true,                              // #222: a mask's cut lines (each window's, the centre hole's); off, the mask holds only what is etched
   out_invert: false,                               // #223: a mask inverted inside the dial — toner everywhere but the marks, for sunk marks
+  out_ink: "",                                     // #35: a mask of one ink only (#RRGGBB), or "" for every ink — set by the export for each film, not kept between files
   out_marks: false,                                // #224: a mask's blank outline and four registration marks in the page's corners
   // a set of files in one press (#171; atlas 6.3): which of FILE_SET it writes
   out_f_pdf: true, out_f_svg: false, out_f_png: false, out_f_mask: false, out_f_mirrored: false, out_f_mask_png: false, out_f_sheet: false, out_f_spec: false,
@@ -478,6 +479,7 @@ export const LINK_KEYS = [
   "bevel",                  // 4.89.1: appended; on to start, so every older link looks as before
   "out_window_content", "out_hidden_cut", "out_cutlines", "out_invert", "out_marks",      // 4.90 (#219–#224): appended; each starts as files were, so every older link looks as before
   "out_f_pdf", "out_f_svg", "out_f_png", "out_f_mask", "out_f_mirrored", "out_f_mask_png", "out_f_sheet", "out_f_spec",      // 4.90 (#171, #18): appended; what a set of files holds
+  "out_ink",                // 4.90 (#35): appended; "" to start, every ink in one mask as before
   "jump", "da_jump",        // 4.90 (#401): appended; off to start, the disc sweeps as before
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -1791,6 +1793,21 @@ function hand_items(S, t) {
  *  · angle (clock angle for hands, else 0). Rings add ring (their entry in static.rings) and
  *  index (their place in S.rings); hands add name; guides add stroke and px (screen points).
  *  selected = index of the ring being edited; its guides are drawn stronger. */
+/** a colour as the inks are named (#35): #RRGGBB, its alpha left out. */
+export const ink_hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Math.max(v, 0), 1) * 255).toString(16).padStart(2, "0")).join("").toUpperCase();
+/** the inks a dial is printed in (#35): every shown ring's colour (each sector's of a band), every shown window's frame;
+ *  in the order they lie, top first. → [#RRGGBB] */
+export function inks_of(S) {
+  const out = [];
+  for (const ring of S.rings) {
+    if (!ring.on) continue;
+    out.push(ink_hex(ring.c));
+    if (KINDS[ring.kind] === "band") for (const c of Object.values(ring.cs || {})) out.push(ink_hex(c));
+  }
+  for (const w of windows_of(S)) if (w.on) out.push(ink_hex(w.ink || INK));
+  return [...new Set(out)];
+}
+
 /** a mask's production marks (#224; the guide's reviewers, 15 Oct 2026: "no blank outline or registration marks"): the
  *  blank's outline, a 0.1 mm ring just outside the dial's edge, so the film is laid on the blank by it; and a
  *  registration mark in each corner of the page — a ring with a cross through it, 4 mm across — so two films (one per
@@ -1836,9 +1853,15 @@ export function scene(S, statik, t, preview = true, selected = null) {
 
   if (S.out_production) {                          // mono mask, no plate, no hands
     const black = [0, 0, 0, 1], cuts = S.out_cutlines !== false;      // #222: the cut lines only while asked for (they are on to start)
-    for (const d of rings) add("ring", d.path, black, { ring: d, index: index(d) });
+    // one ink only (#35, a film per ink for pad printing): the rings, sectors and frames of that colour; the cut lines and
+    // marks on every film, since they are what the films are laid by
+    const ink = S.out_ink || "", of = (c) => !ink || ink_hex(c) === ink;
+    for (const d of rings) {
+      if (!ink || !d.tints) { if (of(d.ring.c) || (d.tints && !ink)) add("ring", d.path, black, { ring: d, index: index(d) }); }
+      else d.tints.forEach((tint, n) => { if (of(sector_colour(d.ring, tint.at))) add("ring", tint.path, black, { ring: d, index: index(d), part: n + 1 }); });
+    }
     for (const x of windows) {
-      add("date frame", x.frame, black, { window: x.index });
+      if (of(wc(x).ink)) add("date frame", x.frame, black, { window: x.index });
       if (cuts) add("cutline", x.cutline, black, { window: x.index });
     }
     if (statik.hole_line && cuts) add("hole", statik.hole_line, black);

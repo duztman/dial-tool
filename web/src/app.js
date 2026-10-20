@@ -893,6 +893,9 @@ const ROWS = {
     chk("out_window_content", "What the windows show", { show: (S) => !S.out_production && G.windows_of(S).some((w) => w.on) }),
     info("Off, the windows' holes stay empty: discs, numbers and pictures are left out, for a printer who prints the face alone. Hide the hands under Hands.", { show: (S) => !S.out_production && G.windows_of(S).some((w) => w.on) }),
     chk("out_mirror", "Mirrored, for toner transfer"),
+    // a film per ink (#35; brief §6: "pad printing etches one plate per colour"): one mask PDF for each colour the dial
+    // is printed in, each with the cut lines and marks as ticked, so the films lie on each other by them (#224)
+    custom("ink_films", { show: (S) => S.out_production }),
     // a print sheet (4.75, #348; Okay's notes 2: "print page preparation, preview, copies, stacks — something simple,
     // elegant, efficient and paper savingly"): one page of copies at true size, packed straight or staggered —
     // whichever holds more — mirrored and as a mask as the two ticks above say; a drawing of the page beside the button
@@ -5311,6 +5314,19 @@ class DialTool {
     wrap.className = "row";
     wrap.append(el("label", { textContent: "Image" }), this.export_button("PNG"));
   }
+  /** a film per ink (#35): its button, and the inks it will write. */
+  row_ink_films(wrap, out) {
+    wrap.className = "row";
+    const says = el("span", { className: "quiet" });
+    const go = el("button", { type: "button", className: "btn main", id: "export-inks", textContent: "A mask per ink", title: "One mask PDF for each colour the dial is printed in", onclick: async () => {
+      const inks = G.inks_of(this.S);
+      this.log(`a mask per ink: ${inks.length} films (${inks.join(", ")})${inks.length > 1 ? " — if the browser asks whether this page may download several files, allow it" : ""}`);
+      for (const ink of inks) { await this.export("pdf", { out_production: true, out_ink: ink }); await new Promise((r) => setTimeout(r, 350)); }
+    } });
+    wrap.append(el("label", { textContent: "Inks" }), go, says);
+    out.refresh = (S) => { const n = G.inks_of(S); says.textContent = ` ${n.length} ink${n.length === 1 ? "" : "s"}: ${n.join(" ")}`; };
+  }
+
   /** a spec sheet (#18): its button, on the print sheet's column. */
   row_spec_sheet(wrap) {
     wrap.className = "row";

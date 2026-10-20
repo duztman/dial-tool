@@ -1,7 +1,7 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **done** · **parked**.
-*Last updated 20 Oct 2026, night (branch `wip-4.90`: #13, #18, #51, #56, #188, #88, #171, #172, #187, #219, #221–#225, #233, #234, #401, #406, #435, #448 built for approval; #468–#470 logged. Beta 4.89.12: #459–#463. Beta 4.89.11: #454–#458. Beta 4.89.10: #449–#453. Beta 4.89.9: #445–#448. Beta 4.89.8: #443, #444. Beta 4.89.7: #226, #442. Beta 4.89.6: #438 corrected, #441. Beta 4.89.5: #438–#440. Beta 4.89.4: #436, #437. Beta 4.89.3: #432–#435 logged, #432 and #433 done. Beta 4.89.2: #220 done. Beta 4.89.1: #430, #431. Beta 4.87: done items moved to build-list-done.md; the DrawBot items archived; stale "verify" rows closed).*
+*Last updated 20 Oct 2026, night (branch `wip-4.90`: #35, #13, #18, #51, #56, #188, #88, #171, #172, #187, #219, #221–#225, #233, #234, #401, #406, #435, #448 built for approval; #468–#470 logged. Beta 4.89.12: #459–#463. Beta 4.89.11: #454–#458. Beta 4.89.10: #449–#453. Beta 4.89.9: #445–#448. Beta 4.89.8: #443, #444. Beta 4.89.7: #226, #442. Beta 4.89.6: #438 corrected, #441. Beta 4.89.5: #438–#440. Beta 4.89.4: #436, #437. Beta 4.89.3: #432–#435 logged, #432 and #433 done. Beta 4.89.2: #220 done. Beta 4.89.1: #430, #431. Beta 4.87: done items moved to build-list-done.md; the DrawBot items archived; stale "verify" rows closed).*
 Every item keeps its number for good. Done items: `docs/build-list-done.md`. The DrawBot version's items: `archive/drawbot/build-list-drawbot.md`.
 
 ## Next
@@ -273,7 +273,7 @@ Okay, 02:02: "My secret goal is making 4.90 v01 … Build functionality … note
 | 20 | Subdials (small seconds, chronograph registers) | open |
 | 21 | Plotter output for the pen plotter via LightBurn | open |
 | 33 | Surface finishes on bands: sunray, grain, guilloché (Okay: flat for now) | open |
-| 35 | Per-ink separations: one production mask per ring colour | open |
+| 35 | Per-ink separations: one production mask per ring colour | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
 | 362 | **An Apple Watch preview** (Okay, 18 Oct 2026: "Future feature, some kind of preview for apple watch?"): a sibling of the Wear OS export (Export → Wear OS) — at least the dial in an Apple Watch's frame; a real watch face is not open to third parties on watchOS, so a preview or a photo face is the likely reach (to research) | open |
 | 363 | **Non-round dials: square, rectangle, rounded rectangle, diamond** (Okay, 18 Oct 2026: "And all that would bring to previews and functions. At the end of the future list"): every ring, window, case, export and preview measured from a circle today | open — last |
 
