@@ -9,6 +9,7 @@ Built alone for Okay's approval (Okay, 02:02: "Build functionality … noted and
 - **Dial**: Weight % (#88); Diameter's limits, 5–300 mm (#233).
 - **Undo steps named**, a list of 20 under undo (#172). **Units typed** in a length's field (#187). **Sliders finer away from their track** (#406).
 - **am · pm Jumps** (#401). **The thinnest line** in the Export log (#225). The ring list's pill whenever it has a use (#448). Changes kept while time plays (#234).
+- **04:52**: handles on solid guide-coloured discs, white signs; handles and the selected ring's guide always together on the Rings tab; the numeral picked for Nudge a hairline box touching it.
 - **04:20 notes**: guides off to start, live while editing, 0.75 thick, dotted not dashed (#485); the selected ring's handles always on the Rings tab, seated on a guide-coloured disc, finer as the pointer strays (#486); selection light red (#483); the steps' chevron pale with no steps (#481); Settings' buttons one width (#482); Print's sheet rows under Sheet (#480); Frame first among a window's colours (#487); the pill hides when every pinned pane is folded (#479); a plan for square dials (#484).
 - Code: `pack_discs` and `centre_block` (`output.js`) are the print sheet's packing, shared with Compare; `thinnest`, `production_marks`, `FILE_SET`, `WEIGHT_KEYS`, `GEOMETRY_AFTER_ALL`, `disc_hour` (`geometry.js`); `step_name`, `limits` on number rows (`app.js`). New keys appended to `LINK_KEYS`; no new link scheme.
 

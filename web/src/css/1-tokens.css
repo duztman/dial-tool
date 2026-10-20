@@ -9,7 +9,6 @@
     --hover: #F1F1EE;                              /* a control under the pointer: seen on paper, on the scrolling grey and on a white tile alike */
     --ink-hover: #333331;                          /* a filled control under the pointer */
     --wait: #8E8E89;                               /* a sign that waits to be used: the rename box */
-    --seat-tint: 0.35;      /* how strong the disc under a ring's handle is (#486) */
     --select: #F6D5CB; --select-rule: #D98A74;     /* what is selected: a light red, the seconds hand's (--play) toward paper (Okay, 20 Oct 2026: "This blue accent gets red everywhere we see it") */
     --glow: #FF7300;                               /* the outline of what the pointer is on, in the preview */
     --veil: rgba(0, 0, 0, 0.06); --veil-strong: rgba(0, 0, 0, 0.1);      /* a touch of dark on a coloured row */

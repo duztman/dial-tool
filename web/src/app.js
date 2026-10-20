@@ -1751,7 +1751,9 @@ class DialTool {
     const S = this.S, R = this.ring(), nudge = this.rows && this.rows.find((r) => r.fold && r.row.text === "Nudge one numeral");
     const d = !this.show && S.ui_section === 1 && R && nudge && !nudge.el.hidden && !this.is_folded(nudge) ? this.statik.rings.find((x) => x.ring === R) : null;
     const k = d ? d.at.indexOf(+this.nudge_at) : -1, part = k >= 0 && d.parts ? d.parts[k] : null;
-    const path = part ? part.svg(4) : "", tone = G.GUIDE_COLOURS[G.ring_guide(S, S.ui_ring) ?? S.gd_k_sel] || G.GUIDE_COLOURS[0];
+    // a box touching it, not its outline (Okay, 04:52: "selected number on dial too aggressive. This may be a rectangular tangent box around number")
+    const b = part ? part.bounds() : null, f = (v) => v.toFixed(3);
+    const path = b ? `M${f(b[0])} ${f(b[1])}H${f(b[2])}V${f(b[3])}H${f(b[0])}Z` : "", tone = G.GUIDE_COLOURS[G.ring_guide(S, S.ui_ring) ?? S.gd_k_sel] || G.GUIDE_COLOURS[0];
     for (const line of this.picked) { if (line.getAttribute("d") !== path) line.setAttribute("d", path); }
     this.picked[1].style.setProperty("--picked", tone);
   }
@@ -2236,7 +2238,7 @@ class DialTool {
     const H = this.handles;
     if (!H) return;
     const R = this.ring(), k = R ? G.ring_guide(this.S, this.S.ui_ring) : null;
-    if (this.show || this.S.ui_section !== 1 || !R || !R.on || k === null) { H.replaceChildren(); this.handles_key = ""; return; }      // the selected ring's, with or without its guides (#486: "Selected items show resize handles by default")
+    if (this.show || this.S.ui_section !== 1 || !this.guides_drawn || !R || !R.on || k === null) { H.replaceChildren(); this.handles_key = ""; return; }      // the selected ring's, shown to start (#486) and always with its guide (draw): a numeral being nudged hides both
     const kind = G.kind_of(R), ext = { ticks: R.len, markers: R.len, band: R.width }[kind] || 0;
     let outer = R.r + G.from_shift(R, ext), inner = outer - ext;
     if (G.has_text(R)) { const e = G.radial_extent(this.statik?.rings?.find((d) => d.ring === R)?.path); if (e) [inner, outer] = e; }
@@ -5857,6 +5859,8 @@ class DialTool {
     if (!this.show && this.hole_at && performance.now() - this.hole_at < HOLE_LIVE_MS) {      // the centre hole being sized: its guide, alone if the guides are off (#267)
       S = S.guides ? { ...S, gd_hole_live: true } : { ...S, guides: true, gd_hole_live: true, gd_axes: false, gd_rings: false, gd_sel: false, gd_wins: false, gd_wsel: false, gd_more: [] };
     } else if (!this.show && this.guides_at && performance.now() - this.guides_at < HOLE_LIVE_MS) S = { ...S, guides: this.guides_on };      // a number being slid: the guides as set; a numeral being nudged: none (guides_live)
+    else if (!this.show && !S.guides && S.ui_section === 1 && this.ring()?.on) S = { ...S, guides: true, gd_axes: false, gd_hole: false, gd_rings: false, gd_sel: true, gd_wins: false, gd_wsel: false, gd_more: [] };      // on the Rings tab the selected ring's guide shows with its handles, the guides off or on (Okay, 04:52: "Handles and guides show together at all times")
+    this.guides_drawn = S.guides;      // the handles show when the guides do (draw_handles)
     const day = G.shows_day(S) ? G.day_hour(S) : null;       // an am · pm window follows the time shown, in steps of six minutes
     if (day !== this.day_drawn) { this.day_drawn = day; this.static_dirty = true; }
     if (!this.statik || this.static_dirty) {
