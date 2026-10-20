@@ -5164,6 +5164,7 @@ class DialTool {
         : list.length >= INSTANCES_MOST ? `${list.length} of ${INSTANCES_MOST} kept: the next save replaces the oldest, ${oldest.name}. Drag a card to arrange them.`
         : `${list.length} saved in this browser. Drag a card to arrange them.`;
       compare.hidden = list.length < 2;      // R16: nothing to compare with fewer than two
+      sheet.hidden = !list.length;
       compare.setAttribute("aria-pressed", String(Boolean(this.comparing)));
       grid.replaceChildren(...list.map((e) => {
         const card = el("a", { href: e.link, title: e.name });
@@ -5230,7 +5231,21 @@ class DialTool {
       this.log(`saved ${e.name} — under Versions, in this browser`);
     };
     compare.onclick = () => { this.compare(!this.comparing); if (this.versions_open) this.versions_open(false); };
-    wrap.append(el("div", { className: "row versionline" }, save, compare), note, grid);
+    // the saved dials on one page (#17, a variation sheet): Compare's packing on an A4, each dial at one size, as an SVG
+    const sheet = el("button", { type: "button", className: "btn", id: "instance-sheet", textContent: "Sheet", title: "Every saved dial on one A4, as an SVG" });
+    sheet.onclick = () => {
+      const list = instances_read();
+      if (!list.length) return this.log("no saved dials to put on a sheet");
+      const [W, H, edge] = [297, 210, 12], holds = (D) => pack_discs(W - 2 * edge, H - 2 * edge, D, D / 12).places.length >= list.length;
+      let lo = 1, hi = H - 2 * edge;
+      for (let k = 0; k < 30; k++) { const mid = (lo + hi) / 2; if (holds(mid)) lo = mid; else hi = mid; }
+      const D = +lo.toFixed(2), at = centre_block(pack_discs(W - 2 * edge, H - 2 * edge, D, D / 12).places.slice(0, list.length), W - D, H - D);
+      const inner = (svg) => { const v = /viewBox="([^"]+)"/.exec(svg), body = svg.replace(/^<svg[^>]*>|<\/svg>$/g, ""); return [v ? v[1] : "-20 -20 40 40", body]; };
+      const parts = list.map((e, i) => { const [vb, body] = inner(e.picture); return `<svg x="${at[i][0].toFixed(2)}" y="${at[i][1].toFixed(2)}" width="${D}" height="${D}" viewBox="${vb}">${body}</svg>`; });
+      save_file(`dials-${list.length}-sheet.svg`, `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${W}mm" height="${H}mm" viewBox="0 0 ${W} ${H}"><title>Dial Tool · ${list.length} saved dials</title><metadata>Dial Tool, web version, ${G.VERSION}</metadata><rect width="${W}" height="${H}" fill="#FFFFFF"/>${parts.join("")}</svg>`, "image/svg+xml");
+      this.log(`exported dials-${list.length}-sheet.svg · ${list.length} dials on an A4, each ${D} mm across (not to scale)`);
+    };
+    wrap.append(el("div", { className: "row versionline" }, save, compare, sheet), note, grid);
     document.addEventListener("pointerdown", (ev) => { if (!grid.contains(ev.target)) unfocus(); }, true);
     draw();
     return { wrap, draw, unfocus };

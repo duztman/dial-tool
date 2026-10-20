@@ -1904,10 +1904,12 @@ await page.uncheck("#global-out-production-Mono-print-mask");
   await page.keyboard.press("Escape"); await page.waitForTimeout(700);
   const after = await page.evaluate(() => [document.querySelector("#app").classList.contains("away"), getComputedStyle(document.querySelector("#compare-view")).display]);
   await open_versions();
+  const vsheet = fs.readFileSync(await download("#instance-sheet"), "utf8"), vsheet_ok = (vsheet.match(/<svg x=/g) || []).length === 3 && vsheet.includes('width="297mm"');      // #17: the saved dials on one A4
   for (let k = 0; k < 3; k++) { await page.$eval("#instance-cards a", (a) => a.scrollIntoView({ block: "center" })); await page.click("#instance-cards a"); await page.click('#instance-cards a.focus .btn:text-is("Remove")'); }
   const gone = await page.evaluate(() => [document.querySelectorAll("#instance-cards a").length, JSON.parse(localStorage.getItem("dial-tool-instances")).length]);
   await page.evaluate(() => window.dial_tool.versions_open(false));
   await page.evaluate((d) => window.dial_tool.set_value("global", "dial_d", d), size);
+  check(vsheet_ok, "Sheet (#17): the three saved dials on one A4, as an SVG");
   check(under && lone && back === plate && shut && card.every(Boolean) && gone.join() === "0,0", `Versions stands under undo and holds your dials (none left in the panel); Save this dial keeps one with its picture (${card.join(" ")}); Compare hidden with one; Edit this dial brings it back (plate ${back}) and shuts the list; Remove takes them away (${gone.join(" ")})`);
   check(cmp.n === 3 && cmp.inside && cmp.apart && cmp.same && cmp.big && cmp.away && cmp.shown && cmp.hidden && after.join() === "false,none",
     `Compare (#435): the three saved dials on the backdrop, one size (${cmp.big ? "over 150 px" : "small"}), apart, inside the room the switches leave, the panel away and the dial hidden; Escape brings the panel back (${JSON.stringify(cmp)} · ${after.join(" ")})`);

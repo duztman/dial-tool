@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.90 · built 2026-10-19 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.90 · built 2026-10-20 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -19745,6 +19745,7 @@ var DialTool = class _DialTool {
       const oldest = list.length ? list.reduce((a, b) => b.at < a.at ? b : a) : null;
       note2.textContent = !list.length ? "Dials you save stay in this browser; a link or a settings file takes one elsewhere." : list.length >= INSTANCES_MOST ? `${list.length} of ${INSTANCES_MOST} kept: the next save replaces the oldest, ${oldest.name}. Drag a card to arrange them.` : `${list.length} saved in this browser. Drag a card to arrange them.`;
       compare.hidden = list.length < 2;
+      sheet.hidden = !list.length;
       compare.setAttribute("aria-pressed", String(Boolean(this.comparing)));
       grid.replaceChildren(...list.map((e) => {
         const card = el("a", { href: e.link, title: e.name });
@@ -19864,7 +19865,31 @@ var DialTool = class _DialTool {
       this.compare(!this.comparing);
       if (this.versions_open) this.versions_open(false);
     };
-    wrap.append(el("div", { className: "row versionline" }, save, compare), note2, grid);
+    const sheet = el("button", { type: "button", className: "btn", id: "instance-sheet", textContent: "Sheet", title: "Every saved dial on one A4, as an SVG" });
+    sheet.onclick = () => {
+      const list = instances_read();
+      if (!list.length) return this.log("no saved dials to put on a sheet");
+      const [W2, H2, edge] = [297, 210, 12], holds = (D2) => pack_discs(W2 - 2 * edge, H2 - 2 * edge, D2, D2 / 12).places.length >= list.length;
+      let lo = 1, hi = H2 - 2 * edge;
+      for (let k = 0; k < 30; k++) {
+        const mid = (lo + hi) / 2;
+        if (holds(mid)) lo = mid;
+        else hi = mid;
+      }
+      const D = +lo.toFixed(2), at = centre_block(pack_discs(W2 - 2 * edge, H2 - 2 * edge, D, D / 12).places.slice(0, list.length), W2 - D, H2 - D);
+      const inner = (svg) => {
+        const v = /viewBox="([^"]+)"/.exec(svg), body = svg.replace(/^<svg[^>]*>|<\/svg>$/g, "");
+        return [v ? v[1] : "-20 -20 40 40", body];
+      };
+      const parts = list.map((e, i2) => {
+        const [vb, body] = inner(e.picture);
+        return `<svg x="${at[i2][0].toFixed(2)}" y="${at[i2][1].toFixed(2)}" width="${D}" height="${D}" viewBox="${vb}">${body}</svg>`;
+      });
+      save_file(`dials-${list.length}-sheet.svg`, `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${W2}mm" height="${H2}mm" viewBox="0 0 ${W2} ${H2}"><title>Dial Tool \xB7 ${list.length} saved dials</title><metadata>Dial Tool, web version, ${VERSION}</metadata><rect width="${W2}" height="${H2}" fill="#FFFFFF"/>${parts.join("")}</svg>`, "image/svg+xml");
+      this.log(`exported dials-${list.length}-sheet.svg \xB7 ${list.length} dials on an A4, each ${D} mm across (not to scale)`);
+    };
+    wrap.append(el("div", { className: "row versionline" }, save, compare, sheet), note2, grid);
     document.addEventListener("pointerdown", (ev) => {
       if (!grid.contains(ev.target)) unfocus();
     }, true);

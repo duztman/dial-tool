@@ -1,7 +1,7 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **done** · **parked**.
-*Last updated 20 Oct 2026, night (branch `wip-4.90`: #35, #13, #18, #51, #56, #188, #88, #171, #172, #187, #219, #221–#225, #233, #234, #401, #406, #435, #448 built for approval; #468–#470 logged. Beta 4.89.12: #459–#463. Beta 4.89.11: #454–#458. Beta 4.89.10: #449–#453. Beta 4.89.9: #445–#448. Beta 4.89.8: #443, #444. Beta 4.89.7: #226, #442. Beta 4.89.6: #438 corrected, #441. Beta 4.89.5: #438–#440. Beta 4.89.4: #436, #437. Beta 4.89.3: #432–#435 logged, #432 and #433 done. Beta 4.89.2: #220 done. Beta 4.89.1: #430, #431. Beta 4.87: done items moved to build-list-done.md; the DrawBot items archived; stale "verify" rows closed).*
+*Last updated 20 Oct 2026, night (branch `wip-4.90`: #17, #35, #13, #18, #51, #56, #188, #88, #171, #172, #187, #219, #221–#225, #233, #234, #401, #406, #435, #448 built for approval; #468–#470 logged. Beta 4.89.12: #459–#463. Beta 4.89.11: #454–#458. Beta 4.89.10: #449–#453. Beta 4.89.9: #445–#448. Beta 4.89.8: #443, #444. Beta 4.89.7: #226, #442. Beta 4.89.6: #438 corrected, #441. Beta 4.89.5: #438–#440. Beta 4.89.4: #436, #437. Beta 4.89.3: #432–#435 logged, #432 and #433 done. Beta 4.89.2: #220 done. Beta 4.89.1: #430, #431. Beta 4.87: done items moved to build-list-done.md; the DrawBot items archived; stale "verify" rows closed).*
 Every item keeps its number for good. Done items: `docs/build-list-done.md`. The DrawBot version's items: `archive/drawbot/build-list-drawbot.md`.
 
 ## Next
@@ -267,7 +267,7 @@ Okay, 02:02: "My secret goal is making 4.90 v01 … Build functionality … note
 
 | # | Item | Status |
 |---|---|---|
-| 17 | Variation grid sheet | open |
+| 17 | Variation grid sheet | **built — `wip-4.90`, for Okay's approval**: Versions › Sheet, the saved dials on an A4 (SVG). A variation grid from one rule set is still open |
 | 18 | Spec sheet with dimension callouts | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
 | 19 | More hand styles: cathedral (through file import, #50); lume plots | open |
 | 20 | Subdials (small seconds, chronograph registers) | open |
