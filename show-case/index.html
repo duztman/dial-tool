@@ -8933,14 +8933,18 @@ function sloped(r0, r1, T, L, out = 1, tilt = 1, N = 96) {
   let start2 = 0;
   while (start2 < N && tones3[start2] === tones3[(start2 + N - 1) % N]) start2++;
   if (start2 === N) return flat(circle2(r1) + circle2(r0), tones3[0]).replace("<path", '<path fill-rule="evenodd"');
+  const put = (r) => {
+    const n = Math.ceil((r.a1 - r.a0) / (Math.PI * 0.9));
+    for (let j = 0; j < n; j++) html += flat(wedge(r.a0 + (r.a1 - r.a0) * j / n, r.a0 + (r.a1 - r.a0) * (j + 1) / n), r.t);
+  };
   for (let k = 0; k < N; k++) {
-    const i = (start2 + k) % N, t = tones3[i];
+    const t = tones3[(start2 + k) % N], a0 = (start2 + k) / N * 2 * Math.PI, a1 = (start2 + k + 1) / N * 2 * Math.PI;
     if (!run || run.t !== t) {
-      if (run) html += flat(wedge(run.a0, run.a1), run.t);
-      run = { t, a0: i / N * 2 * Math.PI, a1: (i + 1) / N * 2 * Math.PI };
-    } else run.a1 = run.a0 + (k - (run.k0 ?? 0) + 1) / N * 2 * Math.PI, run.a1 = (i + 1) / N * 2 * Math.PI + (i + 1 < start2 ? 2 * Math.PI : 0);
+      if (run) put(run);
+      run = { t, a0, a1 };
+    } else run.a1 = a1;
   }
-  html += flat(wedge(run.a0, run.a1 < run.a0 ? run.a1 + 2 * Math.PI : run.a1), run.t);
+  put(run);
   return html + stroke(circle2(r0), 0.12) + stroke(circle2(r1), 0.12);
 }
 var CASES = {
@@ -10480,7 +10484,9 @@ var Bar = class {
 // src/main.js
 var STYLES = { engineer: engineer_exports, miyazaki: miyazaki_exports };
 var FIRST_LINK = "https://duztman.github.io/dial-tool/#3FP94TVYV6068DZTAR5EHAGDJ5KDX3C83PTV5PYTSG5YH8EY8HBEBGJ8KSJTS25J1ZVXNWAJETSHDKB438N57SYCGTJB18E93MY138E955D0HKZXDS82HKV04FQ27J8DNM2F1SFEBJGMPT921TZ4TM2KF1PP83Q6XJRD756D03576X1P7V3WYA4WE7HFRRKCWSR1AS6MW6RSD6NPGCW40P2KG91EHD0GYS0GZT0PQNZB4ZCB9AXKNZZ4A2PB7YQ7CK7ECXPRNVGVY89GPG0FWGVB9ECZGEQXETH7D08TB2V8ANR9J7E8W1X0YXKD7F2YRKQK2MS3PM3X4NBQFGRM2H8H4K4KMR99KFCA6FND4TYQ8CFMYYNPNH70PPM943XT02FT2PMECAE9J5JTCXNC7ZX8TZ89BQQAF87FX5X8DAXBT7FRDVAWGFAGJ914682JT5PSMTCE2EMDDGYY4AMHRMBXH7H844F8PW9XMX90MDT2DKFJAPKPFKVSC319KBRHHAV5HPPZ5565S3SKDKRH7V1SWZZ5F5WMZ5KEDTZ9D94YAK1K05B6Z8HSSH1Y3Z3760XY4N5HRYPMVTZK00WDE0TRE5TYPWX63R4GKVKPV643MZVQ43RPZE5W87KVXTWNXW70CQ8SN75FJYSZCD9CNNSXWV1Y7H2ZSH6ECAT1WGSBAK70ZENMCDTKZ0C";
-var VERSION = "beta 1.0.9";
+var refresh_ground = () => {
+};
+var VERSION = "beta 1.0.11";
 var FONT_BASE = "../fonts/";
 var S = { t: 10 * 3600 + 10 * 60, date: "" };
 var W = {
@@ -10496,9 +10502,11 @@ var W = {
   leather_preset: "brown",
   leather: null,
   nato_colours: null,
-  floor: null,
-  floor2: null,
-  // the ground: one colour, or two for a gradient at 45°
+  floor: "#2a1a17",
+  floor2: "#b4533a",
+  // the ground: one colour, or two for a gradient at 45°. The opener stands on Ember (Okay, 21 Oct 2026, 02:40)
+  ground_set: false,
+  // the background chosen by hand: then an opened link keeps it; otherwise it goes back to its own (null)
   insert_preset: "black",
   insert: null,
   // the diver's insert: [top, bottom]
@@ -11080,12 +11088,13 @@ document.addEventListener("pointerdown", (e) => {
     ground_button.setAttribute("aria-expanded", "false");
   }
 }, true);
-var grad = GRADIENTS[0].slice(1);
+var grad = GRADIENTS[8].slice(1);
 function ground_popup() {
   const refresh = () => {
     render();
     for (const f3 of ground_syncs) f3();
   };
+  refresh_ground = refresh;
   const tile = (name, look, on, act) => {
     const b = el("button", { type: "button", className: "groundtile", title: name, ariaLabel: name }, el("i"));
     b.firstChild.style.background = look;
@@ -11099,6 +11108,7 @@ function ground_popup() {
   const one = over_picker(one_look, "The background's colour", floor, (c) => {
     W.floor = c;
     W.floor2 = null;
+    W.ground_set = true;
   }, () => {
     for (const f3 of ground_syncs) f3();
   });
@@ -11115,6 +11125,7 @@ function ground_popup() {
       grad[k] = c;
       W.floor = grad[0];
       W.floor2 = grad[1];
+      W.ground_set = true;
     }, () => {
       for (const f3 of ground_syncs) f3();
     })];
@@ -11134,12 +11145,14 @@ function ground_popup() {
       side2("One colour", SOLIDS.map(([n, c]) => tile(n, c, () => !W.floor2 && W.floor === c, () => {
         W.floor = c;
         W.floor2 = null;
+        W.ground_set = true;
         refresh();
       })), one_button),
       side2("Gradient", GRADIENTS.map(([n, a, b]) => tile(n, `linear-gradient(135deg, ${a}, ${b})`, () => W.floor2 === b && W.floor === a, () => {
         grad = [a, b];
         W.floor = a;
         W.floor2 = b;
+        W.ground_set = true;
         refresh();
       })), g_button)
     )
@@ -11180,6 +11193,10 @@ function panel() {
     try {
       say("Opening\u2026");
       await open_link(link.value);
+      if (!W.ground_set) {
+        W.floor = W.floor2 = null;
+        refresh_ground();
+      }
       say("");
       bar.sync_time();
       render();
