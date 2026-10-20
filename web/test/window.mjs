@@ -394,7 +394,7 @@ await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r_before)
   await page.waitForTimeout(1400);
   const gone = await S("t.items.filter((i) => i.role === 'guide').length");
   await page.evaluate((w) => { window.dial_tool.set_value("ring", "width", w); window.dial_tool.set_value("global", "guides", true); }, w_before);
-  check(live > 0 && gone === 0, `sliding in the popup with Guides off shows the guides (${live} drawn), gone a moment after (${gone}) (4.45.2)`);
+  check(live > 0 && gone < live, `sliding in the popup with Guides off shows the guides (${live} drawn), a moment after only the selected ring's, with its handles (${gone}) (4.45.2; Okay, 04:52: "Handles and guides show together at all times")`);
 }
 { // a full row's name opens the popup; pressed and moved, it changes the value (#249, #170)
   await page.click('button[data-tab="Dial"]'); await frame();
