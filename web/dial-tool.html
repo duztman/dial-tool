@@ -19878,7 +19878,7 @@ var DialTool = class _DialTool {
         if (holds(mid)) lo = mid;
         else hi = mid;
       }
-      const D = +lo.toFixed(2), at = centre_block(pack_discs(W2 - 2 * edge, H2 - 2 * edge, D, D / 12).places.slice(0, list.length), W2 - D, H2 - D);
+      const D = Math.floor(lo * 100) / 100, at = centre_block(pack_discs(W2 - 2 * edge, H2 - 2 * edge, D, D / 12).places.slice(0, list.length), W2 - D, H2 - D);
       const inner = (svg) => {
         const v = /viewBox="([^"]+)"/.exec(svg), body = svg.replace(/^<svg[^>]*>|<\/svg>$/g, "");
         return [v ? v[1] : "-20 -20 40 40", body];

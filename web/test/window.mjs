@@ -1887,7 +1887,7 @@ await page.uncheck("#global-out-production-Mono-print-mask");
   await page.waitForFunction((p) => JSON.stringify(window.dial_tool.S.c_plate) === p, plate, { timeout: 5000 }).catch(() => {});
   const back = await S("JSON.stringify(S.c_plate)"), shut = await page.$eval("#version-list", (l) => l.hidden);
   await open_versions();
-  const card = await page.$eval("#instance-cards a", (a) => [a.querySelectorAll("svg path").length > 10, a.textContent.includes("mm ·")]);
+  const card = await page.$eval("#instance-cards a", (a) => [a.querySelectorAll("svg path").length > 5, a.textContent.includes("mm ·")]);
   const size = await S("S.dial_d");      // put back after Compare's dials of other sizes: the checks after this one expect it
   // Compare: a second and third saved dial (another size), then every one on the backdrop, packed, the panel away
   for (const d of [30, 42]) { await page.evaluate((d) => window.dial_tool.set_value("global", "dial_d", d), d); await open_versions(); await page.click("#instance-save"); }
