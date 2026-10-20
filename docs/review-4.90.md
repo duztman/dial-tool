@@ -36,6 +36,18 @@ To try it: the private preview of this branch, https://claude.ai/artifact/JRtt9P
 | 232 | **On a phone, Versions stands beside undo**, not under it, and an open list lies over the other switches. | phone | Keeps the left column as it was, so a drawer pulled up doesn't crowd it more. |
 | 188 | **The layout check**, a report: `node test/layout.mjs` → `test/out/layout.txt` — where each row's first control starts (strays: places only one or two controls use), spaces between rows off the half-unit, anything past a pane's right line. Not in `npm test`; it fails nothing until you sort its strays into real and meant. First run: 7 strays in Rings (the quiet rows: Count, Span, Every… — meant?), 1 in Hands, 2 in Export, no spaces off the scale, nothing past the line. | `web/test/layout.mjs` | |
 
+## Your notes of 02:37, built
+
+| # | What | Reading |
+|---|---|---|
+| 471 | The bio says "Okay (pronounced oak·eye)". | |
+| 472 | Keys like G: **H** the hands, **X** X-ray (while a window has a disc), **S** Shadows, **E** the dial alone. Not while typing. | Claude's set: say which to keep or add. |
+| 474 | Print's ticks and their notes start at the left, over every column; a note under controls (Copies) keeps their column. | A pane option (`cls: "ticks-wide"`), so another pane can take it. |
+| 476 | The case sign: Guides' ring, lugs about a third as long with ink traps where they meet it, the hands in an L at three o'clock, a one-point crown stub left out of the centring. | |
+| 477 | A switch that is on lights its sign only (Guides, Shadows, Case, X-ray, Strap's chip and sign); the word lights under the pointer. | |
+
+Asked, not built: #473 (the number boxes' figures — tabular now, by your words of 00:20: proportional, or another face?) and #475 ("persistent resize pill is on default on export tab" — the Export tab's pinned pane gets the ring list's pill?).
+
 ## Seen, not changed
 
 - The stale branch `beta5` on GitHub could not be deleted from here (the proxy refused it): `git push origin --delete beta5` from the Mac.

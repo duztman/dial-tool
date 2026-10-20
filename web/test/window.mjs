@@ -764,7 +764,7 @@ check(one_colour[0] === one_colour[1] && /0\.35\)$/.test(one_colour[2]) && one_c
   await page.hover("#guides");
   const over = await page.$eval("#guides", (e) => getComputedStyle(e).borderTopColor);
   await page.click("#guides"); await page.mouse.move(640, 30);
-  check(off.join() === "0.35,0.35,0.35,0.35" && on[0] === "1" && on[1] === "1" && /0\.35\)$/.test(on[2]) && over === one_colour[0], `on the preview a switch is faint (${off[0]}); Guides on: its sign and word whole (15 Oct 2026), its line still faint; under the pointer the line is whole`);
+  check(off.join() === "0.35,0.35,0.35,0.35" && on[0] === "0.35" && on[1] === "1" && /0\.35\)$/.test(on[2]) && over === one_colour[0], `on the preview a switch is faint (${off[0]}); Guides on: its sign whole, its word still faint (Okay, 20 Oct 2026, 02:37: "when on, only the icon lights up"), its line still faint; under the pointer the line is whole`);
 }
 await page.mouse.click(640, 30);                      // the backdrop, off the dial
 check(await page.isHidden("#guide-list"), "a press outside the list puts it away");
@@ -779,7 +779,7 @@ await shot("4c3-guides-off");
 await page.click("#guides");
 await page.click("#guides-more");
 await page.mouse.move(900, 400);
-check(await S("S.guides === true && S.ui_section === 0") && await page.isHidden("#guide-list") && await page.evaluate(`(() => { const e = document.querySelector("#guides"), c = getComputedStyle(e); return (c.backgroundColor === ${FILL}) + c.color + c.fontWeight + getComputedStyle(e.querySelector(".word")).opacity + e.querySelectorAll(".slash").length; })()`) === "truergb(17, 17, 17)40010", "pressed again it is on: still only the backdrop's fill; the word whole, not bolder (Okay, 14 Oct 2026, 23:05), the sign whole");
+check(await S("S.guides === true && S.ui_section === 0") && await page.isHidden("#guide-list") && await page.evaluate(`(() => { const e = document.querySelector("#guides"), c = getComputedStyle(e); return (c.backgroundColor === ${FILL}) + c.color + c.fontWeight + getComputedStyle(e.querySelector(".word")).opacity + e.querySelectorAll(".slash").length; })()`) === "truergb(17, 17, 17)4000.350", "pressed again it is on: still only the backdrop's fill; the word not bolder (Okay, 14 Oct 2026, 23:05) and dim (20 Oct 2026, 02:37: only the icon lights up), the sign whole");
 // the backdrop's colour: a switch at the preview's bottom left, showing the colour as a chip
 const bd = await page.evaluate(() => { const b = document.querySelector("#backdrop").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(), c = getComputedStyle(document.querySelector("#backdrop")); const sh = document.querySelector("#shadows").getBoundingClientRect(), unit = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit")); const g = document.querySelector(".guides").getBoundingClientRect(); return [Math.round(sh.left - m.left), Math.round(m.bottom - sh.bottom), c.borderTopStyle, getComputedStyle(document.querySelector("#backdrop .dot")).getPropertyValue("--c"), Math.round(b.left - m.left), Math.round(sh.top - b.bottom - unit), Math.round(m.right - g.right)]; });
 check(bd[0] === 12 && bd[1] === 12 && bd[4] === 12 && bd[5] === 0 && bd[6] === 12 && bd[2] === "solid" && bd[3].includes("204, 204, 199"), "the Shadows switch is 12 from the preview's bottom left, the Backdrop switch a unit over it, solid-lined, its chip the backdrop's colour (4.59); Guides 12 from the top right (4.86)");
