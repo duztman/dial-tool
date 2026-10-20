@@ -1,17 +1,19 @@
 # Handoff — taking over the Dial Tool
 
-*Written 16 Oct 2026 at beta 4.46.5 (Okay: "devise way to handoff to another agent"); §1 rewritten at every handover, last on 19 Oct 2026 at beta 4.89. The rest changes when something new is learnt.*
+*Written 16 Oct 2026 at beta 4.46.5 (Okay: "devise way to handoff to another agent"); §1 rewritten at every handover, last on 20 Oct 2026, 03:20, on the branch `wip-4.90`. The rest changes when something new is learnt.*
 
 A new session starts with no memory of the last one: the transcript stays in the old container. Everything a successor needs is in the repo. Use this page to find it.
 
-## 1 · Where things stand (20 Oct 2026, 01:45, after beta 4.89.12)
+## 1 · Where things stand (20 Oct 2026, 03:20, after the night's work on beta 4.90)
 
-- **Beta 4.89.12** is on `dev`, `main` and the live page (released 20 Oct 2026, 01:55, on Okay's word at 01:49: "Push all these work from tonight … On github this goes"). The full `npm test` passed on it. FIT's line (#453) and Bevel (#465) to verify on his devices now that the live page has them.
-- **This session (19 Oct 22:25 → 20 Oct 01:45)**, twelve small pushes, all in `docs/changelog.md`: per-hand Bevel beside Show (off to start, Bevels % its strength; older dials read in); the cap in a hand's picture; #220 (mask losses said) and #226 (files name the build) of the production debts; the date popup to Okay's measured drawing; every menu a chevron box with the tool's own list (`chevron_box`, `menu_list`); every word choice a pill switch; a note belongs to its row through hidden rows (`noted`); a kind's own window shape (moon's arch, am · pm's half); window colours live in the scene; the moon alone (no stars); side rows without a name gap; a phone's zoom popup.
-- **Waiting for Okay**: #221–#224 (production debts: hidden rings' knock-out, cut lines in the mask, leaving out window content, invert, registration marks — questions asked 19 Oct, 22:55); #434 (Settings file pane: Claude proposed dropping Defaults and Plain dial there, Save · Load as a tile row, the file's name as its value, a grey note); #435 (Versions under Undo, with Compare — plan and three questions sent); #448 (the ring list's pill: show it whenever the list scrolls?); #439 and #453 to verify on his devices.
-- **Next, in order** once answered: the rest of the production debts, #435 Versions, #406, #404 + #421, #329, #339, #349 (*sketch first*), #407.
-- **What made the session faster or slower** (19 Oct 22:25 → 20 Oct 02:00, 12 small pushes): `npm run small` 120–140 s, the full `npm test` about 7 minutes, a preview publish seconds. Slower: readings of his words taken without measuring what they pointed at ("stay as bottom bar date now width" read as "keep"), and a moved part (the Show tick) not compared with its last look — two of 4.89.5's changes undone at 00:06. Faster: his final drawing measured pixel by pixel from the PNG (`PIL`, runs of colour) and compared side by side; one mechanism per ask (chevron boxes, one menu list, pill switches) instead of patches. WebKit can't be installed here (the download is refused): Safari-only faults (#439, #453) can be reasoned about, not seen.
-- **Okay's last words** (20 Oct 2026, 01:49): "Frame is always above window specific colors this is a note … Bevel is off on default. Please note. Arc phase line gets a custom… which will insert an svg. Also a note. Push all these work from tonight." (#464–#466 logged.) Then 01:53: a moon disc like the date's (#467, a note), "Then close up." Screens archived in `archive/screens/2026-10-20/`.
+- **`dev`, `main` and the live page are beta 4.89.12**, untouched tonight.
+- **Beta 4.90 is on the branch `wip-4.90`** (GitHub), built alone while Okay slept (02:02 → 05:20), for his approval: every item, its readings and six questions are in `docs/review-4.90.md`; a review page with pictures for his iPad, https://claude.ai/artifact/VzjogyWBNaFsKbTygRLXbc; the branch's build as a private page, https://claude.ai/artifact/JRtt9Py7EzVRBEQhLsskhq. The full `npm test` passes on it. Not released, not merged into `dev`: on his word, `git checkout dev && git merge --ff-only wip-4.90` (it is `dev` plus commits), then the release loop (§3) as 4.90.
+- **Built on it**: Versions under undo with Compare and Sheet (#435, #17); the production ticks in Print (#219, #221–#224), a mask per ink (#35), a set of files (#171), a spec sheet (#18); MP4 and GIF (#51); Weight % (#88); Cap middle (#13); undo steps named (#172); units typed (#187); finer sliders (#406); am · pm Jumps (#401); thinnest line (#225); kept font files (#56); dead ends #233, #234, #448; on a phone Versions beside undo (#232); the layout check, a report (#188); `test/window-only.mjs` (#407, first step).
+- **Version numbers** (Okay, 02:53): no jump to 5. Tonight's step is 4.90; the second and third numbers may run to 99; v1, without "beta", on his word. R19 to say so once he confirms.
+- **The stale branch `beta5`** on GitHub (the night's first name) could not be deleted from the session: `git push origin --delete beta5` from his Mac.
+- **Waiting for Okay**: the six questions in `docs/review-4.90.md`; the older ones (#434 Settings file pane, #448's answer is built, #439 and #453 to verify).
+- **His notes tonight**: logged as #468–#470 in the build list (Compare's dense packing; units in fields only; undo 20, Versions nine).
+- **What made the night faster or slower**: checks batched (Okay, 02:19: "Batch these crazy checks"): `npm run small` ~2 min, the window test alone ~3 min, the full `npm test` ~3 min; one window-only section ~50 s. Slower: a test that changed the tab (Dial) and didn't go back broke every later section — a check should leave the window as it found it. Faster: building a feature, then all its checks in one run.
 
 ## 2 · First steps in a new session
 
@@ -76,6 +78,9 @@ A new session starts with no memory of the last one: the transcript stays in the
 - **"p. N" in the build list** is a page of his PDF *Notes on dial app* (21 pages, on his Google Drive; readable through a Google Drive connector if the session has one). The row's text is the full reading. Ask him for the page if it isn't enough.
 - **A moved part is compared with its last look** (20 Oct, after "Why are you breaking things and not understanding me?"): when a change re-wraps or moves something that was right (the Show tick in a new line), crop it before and after and measure what it lines up with; a check in `window.mjs` holds it. When his words could mean a measure of something else on screen ("stay as bottom bar date now width"), measure that thing and say the number back.
 - **Docs state the present** (19 Oct): never write "until 4.x it was…" into a doc, a rule or a code comment; keep his words as the reason, put the change in the changelog.
+
+- **A check leaves the window as it found it** (20 Oct 2026, night): a check that moves to another tab, turns a window on or changes the dial puts it back at its end, or every later check sees another window. `test/window-only.mjs` shows which sections don't yet stand alone.
+- **Alone at night** (20 Oct 2026, 02:02–02:26): "Build functionality … noted and screenshotted for my approval later, not messing with current build"; "Batch these crazy checks and fittings separately"; "Display your in progress screenshots in the chat". So: a branch of its own, defaults that draw as before, crops in the chat as they are made, a review doc and a review page at the end.
 
 ## 4b · The sketch loop (19 Oct 2026, first session on it)
 

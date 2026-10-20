@@ -4,7 +4,7 @@
 
 How it was built: every new control takes the nearest look Okay has already passed (a tick with its note under it, a full number row, a switch of the preview's make, the Guides list's dark popup, the Gallery's cards). The look of each is for the design round. Every new setting starts as the tool drew before, so older links and files draw as they did (R31: no new link scheme; the new keys are appended to `LINK_KEYS`). Pictures: `archive/screens/2026-10-20-4.90/`.
 
-To try it: the private preview page (the *Dial Tool* artifact published from this branch — its own link, not the usual preview), or `git checkout wip-4.90` and open `web/dial-tool.html`.
+To try it: the private preview of this branch, https://claude.ai/artifact/JRtt9Py7EzVRBEQhLsskhq (its own link, not the usual preview). This review with pictures, for the iPad: https://claude.ai/artifact/VzjogyWBNaFsKbTygRLXbc, or `git checkout wip-4.90` and open `web/dial-tool.html`.
 
 ## Built
 
@@ -32,11 +32,12 @@ To try it: the private preview page (the *Dial Tool* artifact published from thi
 | 56 | **Font files added by hand are kept** by this browser (IndexedDB) and back in the list next time. | Type › font sheet | A private window keeps nothing; the log says so. |
 | 51 | **MP4 and GIF**: the hands turning from the time shown, at the bar's speed, for Seconds at Frames a second and Size px. MP4 is H.264 (the browser's own encoder; where a browser has none, VP9 in the MP4, and the log says so). A GIF is at most 600 px and 25 frames a second. | Export › Moving picture | Uses the keys the DrawBot version had (out_seconds, out_fps, out_px). Two libraries, both MIT, packed into the one file: mp4-muxer, gifenc. |
 | 18 | **Spec sheet**: an A4 on its side as an SVG — the dial large, a thin red circle at each ring's radius with its number, and the tables: rings (radius, size or length, width, count, span), hands (length, width, tail, hub, cap), windows, the dial; all outlines in Inter. | Export › Print › Spec sheet, and in A set of files | Everything filled (R4), words as outlines (R10), so a print shop sees what you see. |
+| 407 | **Chosen sections of the window test**, a first step: `node test/window-only.mjs files,gallery` runs the set-up, the starting dial and the sections whose headings hold those words, each from a fresh page (`--list` names them); about 50 s for one section against about 3 minutes for all. `window.mjs` is not changed. A section that leans on an earlier one's state still fails alone (Files does, after its saved dials) — the full run stays the one to trust. | `web/test/window-only.mjs` | Sections made to stand alone one by one, as they are touched. |
+| 232 | **On a phone, Versions stands beside undo**, not under it, and an open list lies over the other switches. | phone | Keeps the left column as it was, so a drawer pulled up doesn't crowd it more. |
 | 188 | **The layout check**, a report: `node test/layout.mjs` → `test/out/layout.txt` — where each row's first control starts (strays: places only one or two controls use), spaces between rows off the half-unit, anything past a pane's right line. Not in `npm test`; it fails nothing until you sort its strays into real and meant. First run: 7 strays in Rings (the quiet rows: Count, Span, Every… — meant?), 1 in Hands, 2 in Export, no spaces off the scale, nothing past the line. | `web/test/layout.mjs` | |
 
 ## Seen, not changed
 
-- A phone with its drawer pulled up: the left column on the preview now holds undo, Versions, Backdrop and Shadows; at the tallest drawer they would meet (#232). Not changed tonight.
 - The stale branch `beta5` on GitHub could not be deleted from here (the proxy refused it): `git push origin --delete beta5` from the Mac.
 
 ## Noted, not built
