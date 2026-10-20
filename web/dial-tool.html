@@ -1348,6 +1348,7 @@
   /* undo · redo, before the Guides switch: two joined outlined buttons; pale when there is no step that way */
   .undos { position: absolute; z-index: 3; top: var(--canvas-top); left: max(var(--canvas-inset), calc(var(--title-end) + var(--gap) - var(--panel-w) * (1 - var(--away)))); display: flex; flex-direction: column; align-items: flex-start; gap: var(--unit); }      /* undo · redo, Versions under them (#435); top left of the preview, beside the panel; the dial alone, they ride left with the preview's edge and stop short of the title (a gap after it) */
   .undopair { display: flex; }
+  .undos:has([aria-expanded="true"]) { z-index: 6; }      /* with its steps or Versions open, over the switches lower down (Backdrop, the Tiny Preview) */
   .undobox { width: var(--control-large); }
   .undobox:first-child { border-radius: var(--round-switch) 0 0 var(--round-switch); }
   .undobox + .undobox { border-left: 0; }
@@ -1788,7 +1789,8 @@
     .bar { translate: 0 calc(-1 * var(--bar-h) * var(--show)); }      /* the showcase: on a phone the bar leaves upward */
     .panel, .mast { width: auto; translate: none; }
     main { --stop-short: var(--canvas-inset); }
-    .undos { left: var(--canvas-inset); }      /* nothing slides sideways, so nothing stops short */
+    .undos { left: var(--canvas-inset); flex-direction: row; }      /* nothing slides sideways, so nothing stops short; Versions beside undo, not under it, so the left column stays clear of Backdrop when the drawer is up (#232) */
+    .versions { position: static; }      /* its list drops from the undo row's left edge, inside the screen */
     .bar { grid-row: 1; flex-wrap: wrap; height: auto; padding: 0; border-top: 0; border-bottom: var(--hair) solid var(--bar-rule); }
     .bar .lead { width: 100%; height: var(--bar-lead-narrow); }
     .bar .group { border-left: 0; }

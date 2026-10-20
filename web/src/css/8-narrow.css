@@ -9,7 +9,8 @@
     .bar { translate: 0 calc(-1 * var(--bar-h) * var(--show)); }      /* the showcase: on a phone the bar leaves upward */
     .panel, .mast { width: auto; translate: none; }
     main { --stop-short: var(--canvas-inset); }
-    .undos { left: var(--canvas-inset); }      /* nothing slides sideways, so nothing stops short */
+    .undos { left: var(--canvas-inset); flex-direction: row; }      /* nothing slides sideways, so nothing stops short; Versions beside undo, not under it, so the left column stays clear of Backdrop when the drawer is up (#232) */
+    .versions { position: static; }      /* its list drops from the undo row's left edge, inside the screen */
     .bar { grid-row: 1; flex-wrap: wrap; height: auto; padding: 0; border-top: 0; border-bottom: var(--hair) solid var(--bar-rule); }
     .bar .lead { width: 100%; height: var(--bar-lead-narrow); }
     .bar .group { border-left: 0; }
