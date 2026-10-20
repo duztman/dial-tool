@@ -851,8 +851,8 @@ const ROWS = {
     info("Only off the quarters: at 4 it turns 30°, at half past four 45°.", { ...W, show: (T) => T.on && T.turn && G.window_turn(T) === 0 && G.window_shape(T) !== "arc" }),
     chk("text_turn", "Turn the text with it", { ...W, nest: true, show: (T) => T.on && T.turn && G.window_shape(T) !== "arc" && ["date", "day"].includes(G.WINDOW_KINDS[T.kind]) }),
     // its colours, one to a line as elsewhere (Okay, 19 Oct 2026, 18:04: "List these colors in lines like elsewhere"): the disc under the hole · the frame · what a moon or am · pm window pictures · a moon's shade · the neighbours
+    col("ink", "Frame", { ...W, show: win_on }),      // first, over the window's own colours (Okay, 20 Oct 2026, 01:49 and after 03:41: "Frame is always above window specific colors", #464, #487)
     col("disc_c", "Disc under it", { ...W, show: win_on, say: (T) => [is_day(T) ? "AM half" : moon_look(T) === 1 ? "Moon" : "Disc under it"], or: () => [1, 1, 1, 1] }),
-    col("ink", "Frame", { ...W, show: win_on }),
     col("text_c", "Picture", { ...W, show: win_is("am · pm", "moon phase"), say: (T) => [moon_look(T) === 1 ? "Sky" : is_day(T) ? "PM half" : "Picture"], or: (T) => T.ink }),      // or: what an unset colour is
     col("c2", "Shade", { ...W, show: (T) => moon_look(T) === 1, or: () => G.PICTURE_TONES.shade }),      // a picture's further colour (4.73): a moon's dark side in Phase
     col("c2", "Neighbours", { ...W, id: "window-c2-Neighbours", show: (T) => win_is("date", "day")(T) && T.neighbours, or: (T) => T.text_c || T.ink }),      // a date or day window's neighbours (4.74), in the number's colour unless given one
@@ -922,11 +922,13 @@ const ROWS = {
     // elegant, efficient and paper savingly"): one page of copies at true size, packed straight or staggered —
     // whichever holds more — mirrored and as a mask as the two ticks above say; a drawing of the page beside the button
     custom("print_sheet"),
-    seg("out_paper", "Paper", PAPERS.map((p) => p[0])),
-    num("out_copies", "Copies", 0, 60, 1, { whole: true }),
-    info((S) => sheet_says(S), { scope: "global" }),
-    num("out_gap", "Room between", 0, 20, 0.5),
-    chk("out_cutline", "A cut line round each"),
+    // the sheet's own rows, inside it: from the controls' column, as a hand's rows beside its box ("the hands squeeze";
+    // Okay, 20 Oct 2026: "These are 'under' sheet. They should be inset", #480)
+    seg("out_paper", "Paper", PAPERS.map((p) => p[0]), { side: true }),
+    num("out_copies", "Copies", 0, 60, 1, { whole: true, side: true }),
+    info((S) => sheet_says(S), { scope: "global", side: true }),
+    num("out_gap", "Room between", 0, 20, 0.5, { side: true, short: "Room" }),
+    chk("out_cutline", "A cut line round each", { side: true }),
     // a spec sheet (#18): the dial large, each ring's radius marked and numbered, its numbers beside it — for a supplier
     custom("spec_sheet"),
     // a set of files in one press (#171; atlas 6.3: "tick what to write (dial, mask, mirrored mask, PNG), one press")
@@ -1013,7 +1015,7 @@ const is_day = (T) => Boolean(T && T.on && G.WINDOW_KINDS[T.kind] === "am · pm"
 const moon_look = (T) => (T && T.on && G.WINDOW_KINDS[T.kind] === "moon phase" ? T.look || 0 : -1);      // a moon window's picture (4.73), -1 for any other window
 const KIND_TAB_KEYS = Object.keys(G.WINDOW_BASE).filter((k) => !["on", "kind", "at", "at_deg", "r", "guide", "wh_link"].includes(k));      // what each complication keeps of its own (#328)
 const HANDLE_AXIS = 4;      // a hand's width handle (#368, 4.80): how far it is dragged, in screen points, before it is known whether across or along
-const HANDLE_R = 5.5, HANDLE_OUT = 14, HANDLE_REACH = 14;      // a guide handle (4.65): its half-size, how far beyond the ring's outer edge the angle handles stand, the radius a press reaches it within — screen points at any zoom
+const HANDLE_R = 5.5, HANDLE_OUT = 14, HANDLE_REACH = 14, HANDLE_SEAT = 10;      // HANDLE_SEAT: the radius of the disc a handle sits in (#486)      // a guide handle (4.65): its half-size, how far beyond the ring's outer edge the angle handles stand, the radius a press reaches it within — screen points at any zoom
 const TINY_EVERY = 200;                            // the Tiny Preview redrawn at most this often, in ms (#337)
 const NUDGE_NEUTRAL = { dr: 0, da: 0, rot: 0, s: 1, shape: 0 };      // a numeral's or a mark's nudge, untouched (#252; shape, a mark's own, 4.78)
 const is_length = (row) => row.kind === "num" && (LENGTH_KEYS[row.scope] || []).includes(row.key);
@@ -2234,7 +2236,7 @@ class DialTool {
     const H = this.handles;
     if (!H) return;
     const R = this.ring(), k = R ? G.ring_guide(this.S, this.S.ui_ring) : null;
-    if (this.show || this.S.ui_section !== 1 || !this.S.guides || !(this.S.gd_rings || this.S.gd_sel) || !R || !R.on || k === null) { H.replaceChildren(); this.handles_key = ""; return; }      // only where its guide shows
+    if (this.show || this.S.ui_section !== 1 || !R || !R.on || k === null) { H.replaceChildren(); this.handles_key = ""; return; }      // the selected ring's, with or without its guides (#486: "Selected items show resize handles by default")
     const kind = G.kind_of(R), ext = { ticks: R.len, markers: R.len, band: R.width }[kind] || 0;
     let outer = R.r + G.from_shift(R, ext), inner = outer - ext;
     if (G.has_text(R)) { const e = G.radial_extent(this.statik?.rings?.find((d) => d.ring === R)?.path); if (e) [inner, outer] = e; }
@@ -2255,7 +2257,7 @@ class DialTool {
       const [r, a] = place[w];
       // a handle stands upright on the screen; the triangles turn with their angle, pointing round the ring
       const turn = w === "start" || w === "span" ? a : 0;
-      return `<g class="handle ${w}" data-handle="${w}" data-tip="${tip[w]}" transform="translate(${at(r, a)}) scale(${(flip * s).toFixed(6)} ${(-s).toFixed(6)}) rotate(${(flip * turn).toFixed(3)})"><circle class="reach" r="${HANDLE_REACH}"/>${shape[w]}</g>`;
+      return `<g class="handle ${w}" data-handle="${w}" data-tip="${tip[w]}" transform="translate(${at(r, a)}) scale(${(flip * s).toFixed(6)} ${(-s).toFixed(6)}) rotate(${(flip * turn).toFixed(3)})"><circle class="reach" r="${HANDLE_REACH}"/><circle class="seat" r="${HANDLE_SEAT}"/>${shape[w]}</g>`;      // each in a disc of the guide's colour (#486: "All resize etc handles get a guide colored disc to sit in")
     });
     H.style.setProperty("--handle", tone);
     H.innerHTML = parts.join("");
@@ -2274,7 +2276,9 @@ class DialTool {
       let outer = R.r + G.from_shift(R, ext), inner = outer - ext;
       if (G.has_text(R)) { const x = G.radial_extent(this.statik?.rings?.find((d) => d.ring === R)?.path); if (x) [inner, outer] = x; }
       const edge = Math.abs(outer - R.r) >= Math.abs(R.r - inner) ? outer : inner;
-      this.handle_drag = { what, key, v0: R[key], reach: Math.abs(edge - R.r) || 0.01, side: Math.sign(edge - R.r) || -1, r0: R.r, prev: null, x: e.clientX, y: e.clientY, moved: false };
+      const b = this.svg.getBoundingClientRect(), [px, py] = this.to_mm([e.clientX - b.left, e.clientY - b.top]), d0 = Math.hypot(px, py), a0 = ((Math.atan2(px, py) * 180 / Math.PI) + 360) % 360;
+      this.handle_drag = { what, key, v0: R[key], reach: Math.abs(edge - R.r) || 0.01, side: Math.sign(edge - R.r) || -1, r0: R.r, prev: null, x: e.clientX, y: e.clientY, moved: false,
+        d0, a0, dist: d0, angle: a0, last_d: d0, last_a: a0 };      // where it was pressed, and the pointer's travel so far, slowed as it strays (#486)
       H.setPointerCapture(e.pointerId);
       H.classList.add("dragging");
       this.tag_hide();
@@ -2285,7 +2289,16 @@ class DialTool {
       if (!d.moved && Math.hypot(e.clientX - d.x, e.clientY - d.y) < 3) return;      // a press that hasn't moved changes nothing
       d.moved = true;
       const b = this.svg.getBoundingClientRect(), [x, y] = this.to_mm([e.clientX - b.left, e.clientY - b.top]);
-      const dist = Math.hypot(x, y), angle = ((Math.atan2(x, y) * 180 / Math.PI) + 360) % 360;
+      // finer the farther the pointer strays from its path, as a slider held away from its track (#486, #406: "Detail
+      // rises with the mouse away like the sliders"): a radius or size handle travels along the line out from the
+      // centre, so straying is sideways from it; a Start or Span handle travels round, so straying is in or out
+      const d_now = Math.hypot(x, y), a_now = ((Math.atan2(x, y) * 180 / Math.PI) + 360) % 360, turned = ((a_now - d.last_a + 540) % 360) - 180;
+      const round = d.what === "start" || d.what === "span";
+      const stray = round ? Math.abs(d_now - d.d0) * this.z : Math.abs(d_now * Math.sin((a_now - d.a0) * Math.PI / 180)) * this.z;
+      const fine = FINE(Math.max(stray - FINE_FREE, 0));
+      d.dist = Math.max(d.dist + (d_now - d.last_d) * (round ? 1 : fine), 0); d.angle = ((d.angle + turned * (round ? fine : 1)) % 360 + 360) % 360;
+      d.last_d = d_now; d.last_a = a_now;
+      const dist = d.dist, angle = d.angle;
       this.guides_live();
       if (d.what === "radius") return this.set_value("ring", "r", +Math.max(dist, 0.05).toFixed(2));
       if (d.what === "size") {                       // the edge follows the pointer: the value grows as its reach from the dotted line does
@@ -5544,7 +5557,7 @@ class DialTool {
     wrap.className = "row";
     const file = el("input", { type: "file", accept: ".json,application/json", hidden: true, id: "load-file" });
     file.onchange = async () => { if (file.files[0]) this.load_text(await file.files[0].text(), file.files[0].name); file.value = ""; };
-    wrap.append(el("p", { className: "quiet setnote", id: "settings-note", textContent: "A settings file keeps this dial with every value, to open again here or on another computer." }), el("span", { className: "tools wide" },
+    wrap.append(el("p", { className: "quiet setnote", id: "settings-note", textContent: "A settings file keeps this dial with every value, to open again here or on another computer." }), el("span", { className: "tools wide even" },
       el("button", { type: "button", className: "btn", id: "save", textContent: "Save…", onclick: () => { const name = this.loaded_name || file_name(this.S, "json"); save_file(name, JSON.stringify({ ...this.S, ui_section: Math.min(this.S.ui_section, 4) }, null, 1), "application/json"); this.log(`saved ${name} to your downloads`); } }),   // dial.py knows sections 0–4
       el("button", { type: "button", className: "btn", textContent: "Load…", onclick: () => file.click() }),
       el("button", { type: "button", className: "btn", id: "defaults", textContent: "Defaults", title: "The guide’s First dial, as the tool opens with", onclick: () => { this.reopen({ ...structuredClone(OPENER), ui_section: this.S.ui_section }); tool.log("defaults: the guide’s First dial"); } }),
@@ -5889,7 +5902,7 @@ class DialTool {
         node.setAttribute("fill", item.fill ? to_hex(item.fill) : "none");
         node.setAttribute("fill-opacity", item.fill ? item.fill[3] : 1);
       }
-      const stroke = item.stroke ? to_hex(item.stroke) + "/" + item.stroke[3] + "/" + item.px + (item.dots ? "/dots" : item.dashes ? "/dashes" : "") : "none";
+      const stroke = item.stroke ? to_hex(item.stroke) + "/" + item.stroke[3] + "/" + item.px + (item.dots ? "/dots" : item.spaced ? "/spaced" : "") : "none";
       if (stroke !== slot.stroke) {
         slot.stroke = stroke;
         if (item.stroke) {
@@ -5899,7 +5912,7 @@ class DialTool {
           node.setAttribute("vector-effect", "non-scaling-stroke");      // guides keep their width on screen
           node.setAttribute("pointer-events", "none");
           if (item.dots) { node.setAttribute("stroke-dasharray", `0 ${3 * item.px}`); node.setAttribute("stroke-linecap", "round"); }      // a dotted guide: round dots three widths apart (#272)
-          else if (item.dashes) { node.setAttribute("stroke-dasharray", `${3 * item.px} ${3 * item.px}`); node.removeAttribute("stroke-linecap"); }      // a dashed guide: a window's disc (4.72), told from the window's own solid edges and dotted middle
+          else if (item.spaced) { node.setAttribute("stroke-dasharray", `0 ${6 * item.px}`); node.setAttribute("stroke-linecap", "round"); }      // a window's disc: dots twice as far apart as its middle's, told from the window's own solid edges (#485: "Dasheds get dotted")
           else { node.removeAttribute("stroke-dasharray"); node.removeAttribute("stroke-linecap"); }
         } else for (const a of ["stroke", "stroke-opacity", "stroke-width", "vector-effect", "pointer-events", "stroke-dasharray", "stroke-linecap"]) node.removeAttribute(a);
       }
@@ -6413,6 +6426,7 @@ class DialTool {
     const more = el("button", { type: "button", className: "onview undobox historymore", id: "history-more", title: "The steps, named", ariaLabel: "The steps, named" });
     more.innerHTML = icon(SIGNS.down);
     more.setAttribute("aria-expanded", "false");
+    this.history_more = more;
     const list = el("div", { className: "historylist", id: "history-list", hidden: true });
     const open = (on) => {
       list.hidden = !on; more.setAttribute("aria-expanded", String(on));
@@ -6430,7 +6444,7 @@ class DialTool {
       for (let i = here; i > 0 && back.length < SHOWN; i--) back.push(line(i));
       list.replaceChildren(...ahead, el("div", { className: "nowline", textContent: "Now" }), ...(back.length ? back : [el("p", { className: "quiet", textContent: "Nothing to undo yet." })]));
     };
-    more.onclick = () => open(list.hidden);
+    more.onclick = () => { if (more.classList.contains("none") && list.hidden) return; open(list.hidden); };
     this.history_open = open;
     this.sync_undo();
     return el("span", { className: "undos" }, el("span", { className: "undopair" }, ...this.undo_buttons, more, list), this.versions_box());
@@ -6467,6 +6481,10 @@ class DialTool {
   sync_undo() {
     if (!this.undo_buttons) return;
     [HISTORY.past, HISTORY.future].forEach((steps, i) => { this.undo_buttons[i].classList.toggle("none", !steps.length); this.undo_buttons[i].setAttribute("aria-disabled", String(!steps.length)); });
+    // the steps' chevron: pale as they are when there is no step either way (#481: "If undo redo is unclickable, versions
+    // and chevron are not clickable too, right?"); Versions stays live, its saved dials are not steps
+    const none = !HISTORY.past.length && !HISTORY.future.length;
+    if (this.history_more) { this.history_more.classList.toggle("none", none); this.history_more.setAttribute("aria-disabled", String(none)); if (none && this.history_open && this.history_more.getAttribute("aria-expanded") === "true") this.history_open(false); }
     // each says what it would undo or redo (#172), named when pointed at
     this.undo_buttons[0].title = HISTORY.past.length && HISTORY.now ? `Undo ${step_name(HISTORY.past.at(-1), HISTORY.now)} (⌘Z)` : "Undo (⌘Z)";
     this.undo_buttons[1].title = HISTORY.future.length && HISTORY.now ? `Redo ${step_name(HISTORY.now, HISTORY.future.at(-1))} (⇧⌘Z)` : "Redo (⇧⌘Z)";

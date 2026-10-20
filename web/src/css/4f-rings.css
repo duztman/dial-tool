@@ -12,6 +12,7 @@
      measures (--grip-…), black with a groove of paper; held, a hairline of paper round it */
   .listgrip { display: none; position: absolute; left: 50%; bottom: 0; z-index: 6; translate: -50% calc(50% + var(--thick) / 2); place-items: center; width: var(--grip-hit); height: var(--grip-hit); touch-action: none; cursor: ns-resize; }
   .pinned:is(.ring-scrolls, .pin-resize) .listgrip { display: grid; }      /* every pinned part's pill (Okay, 20 Oct 2026, 03:41), the Rings tab's on its list */
+  .pinned:not(:has(.pane:not(.folded))) .listgrip { display: none; }      /* every pinned pane folded: nothing to make taller or shorter (Okay, 20 Oct 2026: "When eye closed unusable resizer disappears", #479) */
   .pinbody { overflow-y: auto; overscroll-behavior: contain; }      /* the pinned panes, made shorter by their pill: they scroll inside */
   .listgrip::before { content: ""; grid-area: 1 / 1; width: var(--grip-w); height: var(--grip-h); border-radius: calc(var(--grip-h) / 2); background: var(--ink); }
   .listgrip::after { content: ""; grid-area: 1 / 1; width: var(--grip-groove); height: var(--hair); background: var(--paper); }

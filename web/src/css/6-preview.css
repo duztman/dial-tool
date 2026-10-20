@@ -43,6 +43,7 @@
      dial; a reach of a fingertip round each, unseen */
   .handles .handle { fill: var(--handle); stroke: var(--white); stroke-width: 1.5; cursor: grab; pointer-events: all; }
   .handles .handle .reach { fill: transparent; stroke: none; }
+  .handles .handle .seat { fill: var(--handle); fill-opacity: var(--seat-tint); stroke: none; }      /* the disc a handle sits in: its guide's colour, faint (#486) */
   .handles.dragging .handle { cursor: grabbing; }
   #app.show .handles { display: none; }
   /* Tiny Preview (#337): its button where Guides stood, a plain eye; the dial at its own size in a little window over
@@ -236,7 +237,7 @@
   /* the outline of what the pointer is on: an orange line on a white one, so it shows on any colour */
   .glow { fill: none; stroke: var(--glow); stroke-width: var(--glow-line); vector-effect: non-scaling-stroke; stroke-linejoin: round; }
   .glow.under { stroke: var(--white); stroke-width: var(--glow-under); }
-  .picked { fill: none; stroke: var(--picked); stroke-width: var(--glow-line); stroke-dasharray: 3 2; vector-effect: non-scaling-stroke; stroke-linejoin: round; }      /* the numeral or mark Nudge works on (4.78): dashed in its ring's guide colour, on a white line */
+  .picked { fill: none; stroke: var(--picked); stroke-width: var(--glow-line); stroke-dasharray: 0 3; stroke-linecap: round; vector-effect: non-scaling-stroke; stroke-linejoin: round; }      /* the numeral or mark Nudge works on (4.78): dotted in its ring's guide colour, on a white line (#485: "Dasheds get dotted") */
   .picked.under { stroke: var(--white); stroke-width: var(--glow-under); stroke-dasharray: none; }
   /* its name: black inside, then a white line, then a black line — readable on any dial. --arrow: where the arrow sits. */
   /* a note on the preview (an old link, R31): the tip's look, centred under the header's line, as wide as it needs

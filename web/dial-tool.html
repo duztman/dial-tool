@@ -46,7 +46,8 @@
     --hover: #F1F1EE;                              /* a control under the pointer: seen on paper, on the scrolling grey and on a white tile alike */
     --ink-hover: #333331;                          /* a filled control under the pointer */
     --wait: #8E8E89;                               /* a sign that waits to be used: the rename box */
-    --select: #CFE4F5; --select-rule: #86B4DA;     /* what is selected: a light blue */
+    --seat-tint: 0.35;      /* how strong the disc under a ring's handle is (#486) */
+    --select: #F6D5CB; --select-rule: #D98A74;     /* what is selected: a light red, the seconds hand's (--play) toward paper (Okay, 20 Oct 2026: "This blue accent gets red everywhere we see it") */
     --glow: #FF7300;                               /* the outline of what the pointer is on, in the preview */
     --veil: rgba(0, 0, 0, 0.06); --veil-strong: rgba(0, 0, 0, 0.1);      /* a touch of dark on a coloured row */
     --chip-rule: rgba(0, 0, 0, 0.25);
@@ -697,7 +698,8 @@
   .labelmenu > select { position: absolute; inset: calc(-1 * var(--reach-y, 0px)); width: calc(100% + 2 * var(--reach-y, 0px)); height: calc(100% + 2 * var(--reach-y, 0px)); opacity: 0; cursor: pointer; }      /* under a finger the unseen menu is larger than its box (reach) */
   .row > :is(select, .menubox, .segs, .pillswitch, .colour, .single, .tools, .picks, .swatches), .row.txt > input, .row > button:not(:first-child) { grid-column: 3 / -1; }
   .row > :is(.check, .wide), .row.note > .quiet { grid-column: 1 / -1; }
-  .row > .setnote { grid-column: 1 / -1; margin: var(--unit) 0 0; }      /* what a settings file is, over its buttons (#279) */
+  .row > .setnote { grid-column: 1 / -1; margin: var(--unit) 0 var(--u1); }      /* what a settings file is, over its buttons (#279) */
+  .tools.even { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }      /* buttons in equal widths across the pane (#482: "4 buttons fit all the way, explainer fits all the way") */
   .row > .warn { grid-column: 3 / -1; margin: var(--u1) 0 var(--unit); font-size: var(--t-s); color: var(--ink); }      /* the warning under a button that replaces the whole dial (Reset): in ink, not quiet, on the controls' column (Okay, 16 Oct 2026, 10:46) */      /* a tick and its words start at the left edge */
   .row > span:first-child:empty { display: none; }
   .row.nest > .check { grid-column: 3 / -1; }       /* a question about the row above: it starts where the controls start */
@@ -865,6 +867,7 @@
      measures (--grip-…), black with a groove of paper; held, a hairline of paper round it */
   .listgrip { display: none; position: absolute; left: 50%; bottom: 0; z-index: 6; translate: -50% calc(50% + var(--thick) / 2); place-items: center; width: var(--grip-hit); height: var(--grip-hit); touch-action: none; cursor: ns-resize; }
   .pinned:is(.ring-scrolls, .pin-resize) .listgrip { display: grid; }      /* every pinned part's pill (Okay, 20 Oct 2026, 03:41), the Rings tab's on its list */
+  .pinned:not(:has(.pane:not(.folded))) .listgrip { display: none; }      /* every pinned pane folded: nothing to make taller or shorter (Okay, 20 Oct 2026: "When eye closed unusable resizer disappears", #479) */
   .pinbody { overflow-y: auto; overscroll-behavior: contain; }      /* the pinned panes, made shorter by their pill: they scroll inside */
   .listgrip::before { content: ""; grid-area: 1 / 1; width: var(--grip-w); height: var(--grip-h); border-radius: calc(var(--grip-h) / 2); background: var(--ink); }
   .listgrip::after { content: ""; grid-area: 1 / 1; width: var(--grip-groove); height: var(--hair); background: var(--paper); }
@@ -1341,6 +1344,7 @@
      dial; a reach of a fingertip round each, unseen */
   .handles .handle { fill: var(--handle); stroke: var(--white); stroke-width: 1.5; cursor: grab; pointer-events: all; }
   .handles .handle .reach { fill: transparent; stroke: none; }
+  .handles .handle .seat { fill: var(--handle); fill-opacity: var(--seat-tint); stroke: none; }      /* the disc a handle sits in: its guide's colour, faint (#486) */
   .handles.dragging .handle { cursor: grabbing; }
   #app.show .handles { display: none; }
   /* Tiny Preview (#337): its button where Guides stood, a plain eye; the dial at its own size in a little window over
@@ -1534,7 +1538,7 @@
   /* the outline of what the pointer is on: an orange line on a white one, so it shows on any colour */
   .glow { fill: none; stroke: var(--glow); stroke-width: var(--glow-line); vector-effect: non-scaling-stroke; stroke-linejoin: round; }
   .glow.under { stroke: var(--white); stroke-width: var(--glow-under); }
-  .picked { fill: none; stroke: var(--picked); stroke-width: var(--glow-line); stroke-dasharray: 3 2; vector-effect: non-scaling-stroke; stroke-linejoin: round; }      /* the numeral or mark Nudge works on (4.78): dashed in its ring's guide colour, on a white line */
+  .picked { fill: none; stroke: var(--picked); stroke-width: var(--glow-line); stroke-dasharray: 0 3; stroke-linecap: round; vector-effect: non-scaling-stroke; stroke-linejoin: round; }      /* the numeral or mark Nudge works on (4.78): dotted in its ring's guide colour, on a white line (#485: "Dasheds get dotted") */
   .picked.under { stroke: var(--white); stroke-width: var(--glow-under); stroke-dasharray: none; }
   /* its name: black inside, then a white line, then a black line — readable on any dial. --arrow: where the arrow sits. */
   /* a note on the preview (an old link, R31): the tip's look, centred under the header's line, as wide as it needs
@@ -7388,7 +7392,8 @@ var DEFAULTS = {
   version: 2,
   dial_d: 30,
   margin: 3,
-  guides: true,
+  guides: false,
+  // guides off to start; they show while a number is slid or a ring sized, and go when it stops (#485: "Defaults are all off, but while things resize")
   dial_hole: 2.7,
   // the centre hole's Ø (#165, 14 Oct 2026; web only, R30); 0 = none. Okay waived R31 for it: old links get the hole too
   c_plate: [0.93, 0.91, 0.86, 1],
@@ -7528,7 +7533,7 @@ var DEFAULTS = {
   gd_k_win: 1,
   gd_k_rings: 1,
   gd_k_sel: 4,
-  gd_w: 1,
+  gd_w: 0.75,
   // shadows: preview only, never in a file (R5, R26). One light, far away: it comes from a clock angle (sh_from, degrees)
   // at a height over the dial (sh_rise, degrees above the plate's face). Each hand floats at its own height over the
   // plate (mm); the cap's top is the top of the stack; the date discs lie sh_disc mm under the plate's face. A thing
@@ -9415,7 +9420,7 @@ function scene(S, statik, t, preview = true, selected = null) {
       const d = window_disc(S, x2);
       if (d) {
         const px = focused ? S.gd_w * 1.5 : S.gd_w, a = faded(focused);
-        for (const r of [d.inner, d.outer]) if (r > 0) add("guide", circle(2 * r).translate(...d.centre), null, { stroke: r === d.outer && !d.fits ? [...DISC_WARN, a] : tone(k, a), px, dashes: true });
+        for (const r of [d.inner, d.outer]) if (r > 0) add("guide", circle(2 * r).translate(...d.centre), null, { stroke: r === d.outer && !d.fits ? [...DISC_WARN, a] : tone(k, a), px, spaced: true });
       }
     }
     for (const g of S.gd_more || []) {
@@ -14563,8 +14568,9 @@ var ROWS = {
     info("Only off the quarters: at 4 it turns 30\xB0, at half past four 45\xB0.", { ...W, show: (T) => T.on && T.turn && window_turn(T) === 0 && window_shape(T) !== "arc" }),
     chk("text_turn", "Turn the text with it", { ...W, nest: true, show: (T) => T.on && T.turn && window_shape(T) !== "arc" && ["date", "day"].includes(WINDOW_KINDS[T.kind]) }),
     // its colours, one to a line as elsewhere (Okay, 19 Oct 2026, 18:04: "List these colors in lines like elsewhere"): the disc under the hole · the frame · what a moon or am · pm window pictures · a moon's shade · the neighbours
-    col("disc_c", "Disc under it", { ...W, show: win_on, say: (T) => [is_day(T) ? "AM half" : moon_look(T) === 1 ? "Moon" : "Disc under it"], or: () => [1, 1, 1, 1] }),
     col("ink", "Frame", { ...W, show: win_on }),
+    // first, over the window's own colours (Okay, 20 Oct 2026, 01:49 and after 03:41: "Frame is always above window specific colors", #464, #487)
+    col("disc_c", "Disc under it", { ...W, show: win_on, say: (T) => [is_day(T) ? "AM half" : moon_look(T) === 1 ? "Moon" : "Disc under it"], or: () => [1, 1, 1, 1] }),
     col("text_c", "Picture", { ...W, show: win_is("am \xB7 pm", "moon phase"), say: (T) => [moon_look(T) === 1 ? "Sky" : is_day(T) ? "PM half" : "Picture"], or: (T) => T.ink }),
     // or: what an unset colour is
     col("c2", "Shade", { ...W, show: (T) => moon_look(T) === 1, or: () => PICTURE_TONES.shade }),
@@ -14646,11 +14652,13 @@ var ROWS = {
     // elegant, efficient and paper savingly"): one page of copies at true size, packed straight or staggered —
     // whichever holds more — mirrored and as a mask as the two ticks above say; a drawing of the page beside the button
     custom("print_sheet"),
-    seg("out_paper", "Paper", PAPERS.map((p) => p[0])),
-    num2("out_copies", "Copies", 0, 60, 1, { whole: true }),
-    info((S) => sheet_says(S), { scope: "global" }),
-    num2("out_gap", "Room between", 0, 20, 0.5),
-    chk("out_cutline", "A cut line round each"),
+    // the sheet's own rows, inside it: from the controls' column, as a hand's rows beside its box ("the hands squeeze";
+    // Okay, 20 Oct 2026: "These are 'under' sheet. They should be inset", #480)
+    seg("out_paper", "Paper", PAPERS.map((p) => p[0]), { side: true }),
+    num2("out_copies", "Copies", 0, 60, 1, { whole: true, side: true }),
+    info((S) => sheet_says(S), { scope: "global", side: true }),
+    num2("out_gap", "Room between", 0, 20, 0.5, { side: true, short: "Room" }),
+    chk("out_cutline", "A cut line round each", { side: true }),
     // a spec sheet (#18): the dial large, each ring's radius marked and numbered, its numbers beside it — for a supplier
     custom("spec_sheet"),
     // a set of files in one press (#171; atlas 6.3: "tick what to write (dial, mask, mirrored mask, PNG), one press")
@@ -14726,6 +14734,7 @@ var HANDLE_AXIS = 4;
 var HANDLE_R = 5.5;
 var HANDLE_OUT = 14;
 var HANDLE_REACH = 14;
+var HANDLE_SEAT = 10;
 var TINY_EVERY = 200;
 var NUDGE_NEUTRAL = { dr: 0, da: 0, rot: 0, s: 1, shape: 0 };
 var is_length = (row) => row.kind === "num" && (LENGTH_KEYS[row.scope] || []).includes(row.key);
@@ -16177,7 +16186,7 @@ var DialTool = class _DialTool {
     const H2 = this.handles;
     if (!H2) return;
     const R = this.ring(), k = R ? ring_guide(this.S, this.S.ui_ring) : null;
-    if (this.show || this.S.ui_section !== 1 || !this.S.guides || !(this.S.gd_rings || this.S.gd_sel) || !R || !R.on || k === null) {
+    if (this.show || this.S.ui_section !== 1 || !R || !R.on || k === null) {
       H2.replaceChildren();
       this.handles_key = "";
       return;
@@ -16208,7 +16217,7 @@ var DialTool = class _DialTool {
     const parts = Object.keys(place2).filter((w) => w !== "span" || span < 360).map((w) => {
       const [r, a] = place2[w];
       const turn = w === "start" || w === "span" ? a : 0;
-      return `<g class="handle ${w}" data-handle="${w}" data-tip="${tip[w]}" transform="translate(${at(r, a)}) scale(${(flip * s).toFixed(6)} ${(-s).toFixed(6)}) rotate(${(flip * turn).toFixed(3)})"><circle class="reach" r="${HANDLE_REACH}"/>${shape2[w]}</g>`;
+      return `<g class="handle ${w}" data-handle="${w}" data-tip="${tip[w]}" transform="translate(${at(r, a)}) scale(${(flip * s).toFixed(6)} ${(-s).toFixed(6)}) rotate(${(flip * turn).toFixed(3)})"><circle class="reach" r="${HANDLE_REACH}"/><circle class="seat" r="${HANDLE_SEAT}"/>${shape2[w]}</g>`;
     });
     H2.style.setProperty("--handle", tone);
     H2.innerHTML = parts.join("");
@@ -16230,7 +16239,25 @@ var DialTool = class _DialTool {
         if (x2) [inner, outer] = x2;
       }
       const edge = Math.abs(outer - R.r) >= Math.abs(R.r - inner) ? outer : inner;
-      this.handle_drag = { what, key, v0: R[key], reach: Math.abs(edge - R.r) || 0.01, side: Math.sign(edge - R.r) || -1, r0: R.r, prev: null, x: e.clientX, y: e.clientY, moved: false };
+      const b = this.svg.getBoundingClientRect(), [px, py] = this.to_mm([e.clientX - b.left, e.clientY - b.top]), d0 = Math.hypot(px, py), a0 = (Math.atan2(px, py) * 180 / Math.PI + 360) % 360;
+      this.handle_drag = {
+        what,
+        key,
+        v0: R[key],
+        reach: Math.abs(edge - R.r) || 0.01,
+        side: Math.sign(edge - R.r) || -1,
+        r0: R.r,
+        prev: null,
+        x: e.clientX,
+        y: e.clientY,
+        moved: false,
+        d0,
+        a0,
+        dist: d0,
+        angle: a0,
+        last_d: d0,
+        last_a: a0
+      };
       H2.setPointerCapture(e.pointerId);
       H2.classList.add("dragging");
       this.tag_hide();
@@ -16241,7 +16268,15 @@ var DialTool = class _DialTool {
       if (!d.moved && Math.hypot(e.clientX - d.x, e.clientY - d.y) < 3) return;
       d.moved = true;
       const b = this.svg.getBoundingClientRect(), [x2, y] = this.to_mm([e.clientX - b.left, e.clientY - b.top]);
-      const dist = Math.hypot(x2, y), angle = (Math.atan2(x2, y) * 180 / Math.PI + 360) % 360;
+      const d_now = Math.hypot(x2, y), a_now = (Math.atan2(x2, y) * 180 / Math.PI + 360) % 360, turned2 = (a_now - d.last_a + 540) % 360 - 180;
+      const round2 = d.what === "start" || d.what === "span";
+      const stray = round2 ? Math.abs(d_now - d.d0) * this.z : Math.abs(d_now * Math.sin((a_now - d.a0) * Math.PI / 180)) * this.z;
+      const fine = FINE2(Math.max(stray - FINE_FREE, 0));
+      d.dist = Math.max(d.dist + (d_now - d.last_d) * (round2 ? 1 : fine), 0);
+      d.angle = ((d.angle + turned2 * (round2 ? fine : 1)) % 360 + 360) % 360;
+      d.last_d = d_now;
+      d.last_a = a_now;
+      const dist = d.dist, angle = d.angle;
       this.guides_live();
       if (d.what === "radius") return this.set_value("ring", "r", +Math.max(dist, 0.05).toFixed(2));
       if (d.what === "size") {
@@ -20242,7 +20277,7 @@ var DialTool = class _DialTool {
     };
     wrap.append(el("p", { className: "quiet setnote", id: "settings-note", textContent: "A settings file keeps this dial with every value, to open again here or on another computer." }), el(
       "span",
-      { className: "tools wide" },
+      { className: "tools wide even" },
       el("button", { type: "button", className: "btn", id: "save", textContent: "Save\u2026", onclick: () => {
         const name = this.loaded_name || file_name(this.S, "json");
         save_file(name, JSON.stringify({ ...this.S, ui_section: Math.min(this.S.ui_section, 4) }, null, 1), "application/json");
@@ -20617,7 +20652,7 @@ var DialTool = class _DialTool {
         node.setAttribute("fill", item.fill ? to_hex(item.fill) : "none");
         node.setAttribute("fill-opacity", item.fill ? item.fill[3] : 1);
       }
-      const stroke = item.stroke ? to_hex(item.stroke) + "/" + item.stroke[3] + "/" + item.px + (item.dots ? "/dots" : item.dashes ? "/dashes" : "") : "none";
+      const stroke = item.stroke ? to_hex(item.stroke) + "/" + item.stroke[3] + "/" + item.px + (item.dots ? "/dots" : item.spaced ? "/spaced" : "") : "none";
       if (stroke !== slot.stroke) {
         slot.stroke = stroke;
         if (item.stroke) {
@@ -20629,9 +20664,9 @@ var DialTool = class _DialTool {
           if (item.dots) {
             node.setAttribute("stroke-dasharray", `0 ${3 * item.px}`);
             node.setAttribute("stroke-linecap", "round");
-          } else if (item.dashes) {
-            node.setAttribute("stroke-dasharray", `${3 * item.px} ${3 * item.px}`);
-            node.removeAttribute("stroke-linecap");
+          } else if (item.spaced) {
+            node.setAttribute("stroke-dasharray", `0 ${6 * item.px}`);
+            node.setAttribute("stroke-linecap", "round");
           } else {
             node.removeAttribute("stroke-dasharray");
             node.removeAttribute("stroke-linecap");
@@ -21184,6 +21219,7 @@ var DialTool = class _DialTool {
     const more = el("button", { type: "button", className: "onview undobox historymore", id: "history-more", title: "The steps, named", ariaLabel: "The steps, named" });
     more.innerHTML = icon(SIGNS.down);
     more.setAttribute("aria-expanded", "false");
+    this.history_more = more;
     const list = el("div", { className: "historylist", id: "history-list", hidden: true });
     const open = (on) => {
       list.hidden = !on;
@@ -21210,7 +21246,10 @@ var DialTool = class _DialTool {
       for (let i2 = here; i2 > 0 && back.length < SHOWN; i2--) back.push(line2(i2));
       list.replaceChildren(...ahead, el("div", { className: "nowline", textContent: "Now" }), ...back.length ? back : [el("p", { className: "quiet", textContent: "Nothing to undo yet." })]);
     };
-    more.onclick = () => open(list.hidden);
+    more.onclick = () => {
+      if (more.classList.contains("none") && list.hidden) return;
+      open(list.hidden);
+    };
     this.history_open = open;
     this.sync_undo();
     return el("span", { className: "undos" }, el("span", { className: "undopair" }, ...this.undo_buttons, more, list), this.versions_box());
@@ -21250,6 +21289,12 @@ var DialTool = class _DialTool {
       this.undo_buttons[i2].classList.toggle("none", !steps.length);
       this.undo_buttons[i2].setAttribute("aria-disabled", String(!steps.length));
     });
+    const none = !HISTORY.past.length && !HISTORY.future.length;
+    if (this.history_more) {
+      this.history_more.classList.toggle("none", none);
+      this.history_more.setAttribute("aria-disabled", String(none));
+      if (none && this.history_open && this.history_more.getAttribute("aria-expanded") === "true") this.history_open(false);
+    }
     this.undo_buttons[0].title = HISTORY.past.length && HISTORY.now ? `Undo ${step_name(HISTORY.past.at(-1), HISTORY.now)} (\u2318Z)` : "Undo (\u2318Z)";
     this.undo_buttons[1].title = HISTORY.future.length && HISTORY.now ? `Redo ${step_name(HISTORY.now, HISTORY.future.at(-1))} (\u21E7\u2318Z)` : "Redo (\u21E7\u2318Z)";
   }

@@ -48,6 +48,20 @@ To try it: the private preview of this branch, https://claude.ai/artifact/JRtt9P
 
 #473 (03:35, "make all these tabular"): they are tabular in Chromium already; a field now says so again for Safari — check on the iPad. #475, #478 (03:41): every pinned part has its pill, shown always (Rings: the list's; Dial and Export: a box the pill makes shorter or taller, a tap between all and its first line), not on Hands and Windows; Page has left the pinned part.
 
+## Your notes of 04:20, built
+
+| # | What | Reading |
+|---|---|---|
+| 479 | The pill hides when every pinned pane is folded. | |
+| 480 | Print's Paper, Copies, Room and A cut line round each start on the controls' column, under Sheet (side rows). | No squeeze needed: the slider and number fit. |
+| 481 | The steps' chevron is pale and does nothing when there is no step either way, as undo and redo are; Versions stays live. | Versions holds saved dials, not steps. |
+| 482 | Settings: the explainer over the whole width, the four buttons one width each across it. | |
+| 483 | The blue accent is a light red everywhere (`--select` #F6D5CB, its line #D98A74): the ring list's selected row, the Gallery's chosen card (your 04:23 picture), the font list. | The seconds hand's red toward paper. Say if another blue remains. |
+| 484 | Square and rounded-square dials: a plan, `docs/plan-non-round.md`. Four questions at its §5. | Nothing built. |
+| 485 | Guides off to start; shown while a number is slid or a handle dragged, gone a moment after. Thickness 0.75 (was 1). A window disc's dashed edges are dotted, dots twice as far apart as the window's middle line; the nudged numeral's outline dotted too. | "Settings will house extensive guide on offs": the Guides list stays where it is for now — say if it moves into Settings. |
+| 486 | The selected ring's handles show on the Rings tab whether the guides are on or not, each on a faint disc of its guide's colour; dragged, they grow finer the farther the pointer strays from its path (sideways for radius and size, in or out for Start and Span), as the sliders. | `--seat-tint` 0.35 sets the disc's strength. |
+| 487 | A window's Frame colour first, above its own (#464). | |
+
 ## Seen, not changed
 
 - The stale branch `beta5` on GitHub could not be deleted from here (the proxy refused it): `git push origin --delete beta5` from the Mac.

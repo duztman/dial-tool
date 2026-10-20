@@ -147,7 +147,7 @@ const FIRST_WINDOW = { on: "da_on", kind: "da_kind", at: "da_at", r: "da_r", w: 
 
 export const DEFAULTS = {
   version: 2,
-  dial_d: 30.0, margin: 3.0, guides: true,
+  dial_d: 30.0, margin: 3.0, guides: false,      // guides off to start; they show while a number is slid or a ring sized, and go when it stops (#485: "Defaults are all off, but while things resize")
   dial_hole: 2.7,                                  // the centre hole's Ø (#165, 14 Oct 2026; web only, R30); 0 = none. Okay waived R31 for it: old links get the hole too
   c_plate: [0.93, 0.91, 0.86, 1], c_backdrop: [0.80, 0.80, 0.78, 1],
   rings: [],
@@ -195,7 +195,7 @@ export const DEFAULTS = {
   da_look: 0, da_c2: null, da_c3: null, da_neighbours: true,      // … and `neighbours` (4.74)            // the first window's `look`, `c2`, `c3` (4.73)
   da_physics: true, xray: false,                   // the first window's `physics` · X-ray, every window's disc seen under a veil of the plate, preview only (4.72, #346)
   da_wh_link: false,                               // the first window's width and height linked, as every window's `wh_link` (#358, beta 4.57)
-  gd_k_edge: 1, gd_k_axes: 0, gd_k_win: 1, gd_k_rings: 1, gd_k_sel: 4, gd_w: 1.0,
+  gd_k_edge: 1, gd_k_axes: 0, gd_k_win: 1, gd_k_rings: 1, gd_k_sel: 4, gd_w: 0.75,
   // shadows: preview only, never in a file (R5, R26). One light, far away: it comes from a clock angle (sh_from, degrees)
   // at a height over the dial (sh_rise, degrees above the plate's face). Each hand floats at its own height over the
   // plate (mm); the cap's top is the top of the stack; the date discs lie sh_disc mm under the plate's face. A thing
@@ -1969,7 +1969,7 @@ export function scene(S, statik, t, preview = true, selected = null) {
       const d = window_disc(S, x);
       if (d) {
         const px = focused ? S.gd_w * 1.5 : S.gd_w, a = faded(focused);
-        for (const r of [d.inner, d.outer]) if (r > 0) add("guide", circle(2 * r).translate(...d.centre), null, { stroke: r === d.outer && !d.fits ? [...DISC_WARN, a] : tone(k, a), px, dashes: true });
+        for (const r of [d.inner, d.outer]) if (r > 0) add("guide", circle(2 * r).translate(...d.centre), null, { stroke: r === d.outer && !d.fits ? [...DISC_WARN, a] : tone(k, a), px, spaced: true });
       }
     }
     for (const g of S.gd_more || []) {              // the guides added by hand

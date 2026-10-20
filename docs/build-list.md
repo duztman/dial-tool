@@ -234,7 +234,7 @@ Seven screenshots in the chat.
 | 461 | **A moon window's colours didn't reach the dial until a size changed** ("colors are selected visually, not applied to the canvas. changing radius refreshes"): a window's colours don't rebuild its still parts, and the scene read them from those parts' copy. The scene reads a window's colours from the settings as they are (`wc()` in `scene()`), the neighbours' "the number's colour" too | **done — 4.89.12** |
 | 462 | **No stars in a moon window** ("for all moon face illustrations. please remove the stars. all now include the moon only, exclusively"): Arch, Phase and Line draw the moon alone; retroactive on his word | **done — 4.89.12** |
 | 463 | **Every word choice a pill switch** ("Arch phase line selector exactly like this light dark selector … can we make this universal?"): seg rows are `.pillswitch`, the font sheet's Light · Dark's look; canon §6 | **done — 4.89.12** |
-| 464 | **A window's Frame colour first, above its own colours** (Okay, 20 Oct 2026, 01:49, a picture of AM half · Frame · PM half: "Frame is always above window specific colors this is a note, don't implement now") | open — note |
+| 464 | **A window's Frame colour first, above its own colours** (Okay, 20 Oct 2026, 01:49, a picture of AM half · Frame · PM half: "Frame is always above window specific colors this is a note, don't implement now") | **built — `wip-4.90`** (#487) |
 | 465 | **Bevel not seen in 4.89.12** (01:49: "Bevel is not in this update. I don't see a bevel on the hands coming up. Bevel is off on default. Please note"): off to start is as meant; ask where he looked for the tick (beside Show, under the hand's tab) once he has the released build | verify |
 | 466 | **A moon window's Picture gets Custom…, which takes an SVG** (01:49: "Arc phase line gets a custom… which will insert an svg. Also a note") — with the SVG inserts (#405, #50, #346) | open — note |
 | 467 | **A moon window's disc, as a date window's** (Okay, 20 Oct 2026, 01:53: "moon window for phase needs a ring like date window, no? How many moons fit? Can we get away with less, steps between states. This is a jump complication of course like date"): a moon disc under the plate, seen in X-ray, jumping once a day as the date's does. In watches as Claude knows them (to check at build time): two moons on a 59-tooth disc, one tooth a day (two lunations of 29.5 days), a day off in about 2.7 years; fewer steps means a coarser jump. With #346 (the moon's own disc) | open — note |
@@ -264,6 +264,20 @@ Okay, 02:02: "My secret goal is making 4.90 v01 … Build functionality … note
 | 478 | **Page leaves the pinned part**, into the grey part with Colours (Okay, 03:41: "Page moves to gray area on the screenshot"); folded on a first visit, as every pane outside the pinned part | built — `wip-4.90` |
 | 476 | **The case icon**: lugs half as long or less; the case centred in its square without the crown; the crown shorter, barely seen, drawn after centring; ink traps where lines cross, as in Guides; inside, the hour and minute hands in an L instead of a ring. And the Case switch's left padding as X-ray's | built — `wip-4.90` |
 | 477 | **On switches, only the sign lights when on; the word stays dim except under the pointer** (Guides and the others) | built — `wip-4.90` |
+
+## Okay's notes of 20 Oct 2026, "Oct 20 continued" (notes doc, after 03:41; 04:20: "Check new notes and do without asking now, go")
+
+| # | Item | Status |
+|---|---|---|
+| 479 | **A folded pinned pane hides its pill** ("When eye closed unusable resizer disappears") | built — `wip-4.90` |
+| 480 | **Print's sheet rows are inside Sheet**: Paper, Copies, Room between and A cut line round each start on the controls' column, as side rows ("These are 'under' sheet. They should be inset. Two line slider/number if necessary or 'the hands squeeze'?") | built — `wip-4.90` |
+| 481 | **The steps' chevron is inactive when there is nothing to undo or redo**, as undo and redo are ("If undo redo is unclickable, versions and chevron are not clickable too, right?"). Versions stays active: it holds the saved dials, which don't depend on undo | built — `wip-4.90` |
+| 482 | **The Settings file pane prettier**: its explainer and its four buttons across the whole width ("look at size px above? 4 buttons fit all the way, explainer fits all the way") | built — `wip-4.90` |
+| 483 | **The blue accent red everywhere** ("This blue accent gets red everywhere we see it") — read as the keyboard focus ring and every other blue in the window | built — `wip-4.90` |
+| 484 | **Square and rounded-square dials, as an Apple Watch's** ("How hard is to make a square and rounded square like an apple watch … i know its big work but plan. This is an obstacle between us and beta v5") — with #363. A plan: `docs/plan-non-round.md` | plan written — `wip-4.90` |
+| 485 | **The guides, quieter** ("Minimize them on screen. No unnecessary lines. Dasheds get dotted, thinner defaults maybe? Settings will house extensive guide on offs … Defaults are all off, but while things resize. They turn off when editing stops") | built — `wip-4.90` |
+| 486 | **A selected ring's handles shown to start, each in a disc of its guide's colour; finer as the pointer moves away**, as the sliders (#406) ("Selected items show resize handles by default. All resize etc handles get a guide colored disc to sit in. Detail rises with the mouse away like the sliders, if possible") | built — `wip-4.90` |
+| 487 | **A window's Frame colour first** ("I noted this earlier, can you find where and what is the change here?", his picture of Disc under it · Frame · Neighbours): #464, "Frame is always above window specific colors" | built — `wip-4.90` (#464 too) |
 
 ## Dial Packer (side product, 19 Oct 2026)
 
