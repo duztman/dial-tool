@@ -20,3 +20,5 @@
 | `0440` | versions-sheet | Versions › Sheet: seven saved dials on an A4 (#17) |
 | `0450` | corner-x2 | The corner switches on a dark backdrop, Guides, Case and X-ray on: only their signs lit; the case sign redrawn (#476, #477) |
 | `0452` | print-wide | Print, its ticks across every column (#474) |
+
+- `0490-handles-solid.png`, `0490-handles-solid-x2.png` (04:52): handles on solid guide discs, with the selected ring's guide; the Nudge numeral in a box.
