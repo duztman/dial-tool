@@ -1,14 +1,13 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **done** · **parked**.
-*Last updated 20 Oct 2026, night (branch `wip-4.90`: #17, #35, #13, #18, #51, #56, #188, #88, #171, #172, #187, #219, #221–#225, #233, #234, #401, #406, #435, #448 built for approval; #468–#470 logged. Beta 4.89.12: #459–#463. Beta 4.89.11: #454–#458. Beta 4.89.10: #449–#453. Beta 4.89.9: #445–#448. Beta 4.89.8: #443, #444. Beta 4.89.7: #226, #442. Beta 4.89.6: #438 corrected, #441. Beta 4.89.5: #438–#440. Beta 4.89.4: #436, #437. Beta 4.89.3: #432–#435 logged, #432 and #433 done. Beta 4.89.2: #220 done. Beta 4.89.1: #430, #431. Beta 4.87: done items moved to build-list-done.md; the DrawBot items archived; stale "verify" rows closed).*
+*Last updated 20 Oct 2026, 05:10 (beta 4.90 released: its built items moved to build-list-done.md; Beta 4.89.12: #459–#463).*
 Every item keeps its number for good. Done items: `docs/build-list-done.md`. The DrawBot version's items: `archive/drawbot/build-list-drawbot.md`.
 
 ## Next
 
 | # | Item | Status |
 |---|---|---|
-| 13 | Numerals centred on the cap height instead of each numeral's own outlines. The radius' anchors are centre · outer edge · inner edge (ring key `anchor`, #95, #338; baseline and ascender retired, #418) | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
 | 14 | Heavy dials (knock-outs over hundreds of ticks take about 90 ms a slider step in Chromium, more on the Intel Mac): redraw on mouse-up if dragging feels slow | open |
 | 15 | Fallback font for scripts the main font lacks (Eastern Arabic, Chinese: HarfBuzz has no automatic fallback). Okay, 17 Oct 2026: "Fallback set is a good idea but not necessary, we run on fonts" | parked (Okay) |
 | 47 | Design canon §8, ideas for the tool's window: tabular figures in number fields; grey + orange guides; presentation sheets on the canon's grid. Ask Okay | open |
@@ -18,10 +17,8 @@ Every item keeps its number for good. Done items: `docs/build-list-done.md`. The
 | # | Item | Status |
 |---|---|---|
 | 50 | Imported shapes (SVG, PDF, AI) for markers and hands: a "file" shape is drawn as a bar or baton and the log says so; the hands' dashed SVG tile says "not built yet". In a browser the file's content has to travel inside the settings (no file paths). With #72, #173 | open |
-| 51 | MP4 and GIF export (WebCodecs) | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
 | 52 | Named instances of variable fonts in the font box (a weight axis without named styles gets Regular · Bold, #275; the font's own instances are not listed). The PDF's live text is #63, the fallback font #15 | open |
 | 53 | **Better interface overall** — Okay, 11 Oct 2026: "better ui overall, learn and implement. Move delete layers, export better." Research first (how good parametric tools lay out lists, inspectors and export), then propose. Left of it: an export panel that shows what will be written (#171); the atlas's other interface patterns (sections 4 and 6) are not picked | open (Okay: later) |
-| 56 | Remembered fonts: fonts added from a link are remembered; font files added by hand are forgotten when the page closes | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
 | 60 | A dial opened from a link could fetch a missing Google family by its name by itself — not done: every unknown font would cost three failed requests | open |
 | 68 | File names: `dial-30mm-2026-10-12.pdf` (diameter and day; a mask says `-mask`, `-mirrored`). Okay was asked (12 Oct 2026): this, or a name field for the dial? With #227 | open |
 | 69 | Split `web/src/app.js` (one class, about 5,900 lines). Scrollbars that take room (macOS "Show scroll bars: always") would make the scrolling rows about 15 narrower than the pinned ones — not reproduced here; ask Okay what his Mac is set to | open |
@@ -40,18 +37,12 @@ Okay, 19 Oct 2026, 21:26: "Add production debts to the build list and look at it
 
 | # | Item | Status |
 |---|---|---|
-| 221 | **Knock-out ignores hidden rings**: hiding the rings above a band and exporting gives the band solid, so per-ink films made that way lose their holes. Films come from one full export's PDF layers until this changes. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
-| 222 | **Cut lines in the resist's black**: the window's and the centre hole's 0.05 mm cut lines are drawn in the mask's black (layers "Window 1 cut line", "Hole"); the PNG mask bakes them in. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
-| 219 | **No export without the hands and the window content**: a colour export always holds the hands at the time shown and the date (a printer sent it prints hands onto the dial). An Export option to leave them out. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
-| 223 | **No mask invert** (toner where there are no marks, for sunk marks). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
-| 224 | **No blank outline or registration marks** on the mask; the centre hole's cut line is the only reference. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
 
 **Limits — what the method can hold**
 
 | # | Item | Status |
 |---|---|---|
 | 12 | Production limits per method: minimum line width and clearance; warn in the preview | open |
-| 225 | **No thinnest-line report**: the Export log could name the thinnest line of a dial; numerals' strokes have no width setting to read it from. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
 
 **Files — what reaches Illustrator and the printer**
 
@@ -78,7 +69,6 @@ Atlas: https://claude.ai/artifact/QdvVC37Y6csV7FcUjJHqAH. Numbers in brackets ar
 | 84 | **Jog** [7.19]: the on-screen jog ring (atlas 2nd ed. 4.4). The keys exist: ← → a minute, ⇧ an hour, space plays or pauses (not while typing, on a slider or a menu) | open |
 | 85 | **Hand tip to a ring's edge** [7.13, Max Bill]: a button in Hands → Size that sets Length once. A lasting link would need rings to have identities; they are a list that is reordered. Okay, 14 Oct 2026: "easy to do?"; "while resizing that, it would be nice if it could 'snap' places. But this is a bigger question for later. park for now." | parked (14 Oct) |
 | 87 | **Registration marks** [3.7]: the same two marks in the page margin of every production file. With per-ink masks (#35); needs a line in R5 / R26 | open — Later, with #35 |
-| 88 | **Weight** [6.19]: one value in Dial that multiplies every width on the dial, applied like Scale everything (#70) so the panel's numbers stay true. Okay, 14 Oct 2026: "very very good… under Dial, and note the danger of changing all the settings all at once" | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
 | 89 | **Movement numbers**: a *Size from movement* menu for windows [2.2] and the dial feet as a sixth kind of guide [3.8]. Blocked: only Sellita's two window sizes were read from a source (SW200-1 2.00 × 2.70 mm, SW400-1 2.40 × 3.24 mm); Ronda's are inferred, NH35 and Miyota drawings were unreadable; feet positions depend on the movement (brief §5.1). Okay opens the drawings on a Mac first | open — Later, blocked |
 | 90 | **A ring edited flat** [7.16, Fischinger]: cut at 12, edited as a strip, rolled back. A second way to show the preview; close to #61 | parked (Claude's proposal) |
 | 91 | **A sliding strip for Count** [7.5, Citroën GS]: a new kind of number control; R15 would need an exception, and Count has a typed field and a stepper | parked (Claude's proposal) |
@@ -106,8 +96,6 @@ Okay's notes on the atlas and his answers, 14 Oct 2026. Atlas numbers are the se
 | # | Item | Status |
 |---|---|---|
 | 169 | **One strip for every position** (atlas 2.1; Okay: "very very good… prioritize this", "core to our mission"): one per-position value per setting, shown as a strip of cells under a ring; draw a line across to set the ends and get the middle; type a rhythm (`L S S S`) to repeat. Nudge holds per-position values (#349). Draw and show Okay before building | open — Next |
-| 171 | **Export as a list of files** (atlas 6.3): tick what to write (dial, mask, mirrored mask, PNG), one press | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
-| 172 | **A history you can read** (atlas 5.15): undo steps named by what changed, listed under the undo buttons | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
 | 173 | **Image or SVG import onto the dial** (Okay: "guilloche is a good point but not our job, instead we should implement image or svg import for the dial"). With #72 (logo), #50 (imported shapes), #73 (background) | open — Next |
 | 174 | **Loupe** (atlas 6.4; Okay: "not necessary but cute. if very easy, implement") | Later |
 | 175 | **A hand as a stack**: caps, windows, lume openings within the current interface | Later |
@@ -117,8 +105,6 @@ Okay's notes on the atlas and his answers, 14 Oct 2026. Atlas numbers are the se
 | 179 | **What the counterweight is for** (Okay: "maybe later") | Later |
 | 180 | **Gerstner's programme** (Okay: "park for now, remind when applicable") — remind Okay when #169 exists | parked |
 | 184 | **Snapping** (Okay, 14 Oct 2026, on #85): lengths and radii that snap to rings' edges while dragged. "A bigger question for later" | parked |
-| 187 | **Units typed anywhere** (atlas 5.7; Okay, 18:39: "do this"): a field takes `0.5in`, `12pt`, `1lig`, `3mm`, `0.3cm`, `0.5″` and converts to the unit shown; storage stays mm (R1) | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
-| 188 | **A layout check** (atlas 5.10; Okay, 18:39: "THIS ROCKS. YEZXS PLEAĞSE."): a test that reads the window's boxes and reports what misses the box rule (R32): fields and steppers off their column, spaces off the unit, framed things past the pane's lines. Reports first; fails `npm test` once Okay has sorted real misses from intended ones | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
 
 ## From the guide's inventory (15 Oct 2026)
 
@@ -129,8 +115,6 @@ App faults the guide's reviewers and its coverage walk found (`guide/PLAN.md` st
 | 230 | **Per-pane anchors from the app into the guide** (edition 2). The Help link beside the version opens the guide (Okay, 15 Oct 2026: "Help next to beta number same font but underlined"). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
 | 231 | **Word collisions**: Backdrop (a colour and a switch) · Frame (a colour and a width, Windows) · Size, Size %, Size × · Ring Ø and Ring at % on hands · the opener's ring named Band whose kind is numerals. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
 | 232 | **Phone: with the drawer dragged up, Undo · Redo overlap the Backdrop switch**. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
-| 233 | **Diameter takes 0 and 1000 when typed** (the slider runs 15–50); no limit, no note. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
-| 234 | **While time plays, changes aren't kept**: the address and the browser's copy update only once time stops (autosave restarts its wait on every frame). A link copied from the address while playing is a step behind; a tab closed while playing keeps the old dial only if the page-hide save runs. Reproduced 15 Oct 2026 (`guide/tests/baseline.md`, stall 14) | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
 
 ## From Okay's notes on the dial app (16 Oct 2026)
 
@@ -172,13 +156,11 @@ Found by the audit of beta 4.86 (changelog 4.87), and Okay's notes of 14:13 ("Th
 | 398 | **The stylesheet's values off the scale** (R32; the #294 review, with Okay): 34 literals in rules that are not specials — letter-spacings and underline offsets in em (`h1`, `.atmore`, `.bio a`, `.asnumbers`, `.popvalue input`, `.irisgo`), the ruler's opacities (0.4 · 0.85 · 0.6 · 0.38) and `.dragged`/`.above` at 0.45, `.tinyshut`'s 0.15 s, SVG stroke widths (`.grips .frame` 1 and `.handle` 1.5, `.picked` 3 2, `.paper` 1, `.ruler` 1), the play cap's 12 % hover lift, the mast's 250 % / 70 % sweep, `.pinned` 33 px foot, `--sign-w` 18 on a phone, `--thumb-eye-edge` + 0.75, `.tip svg` − 10; one literal negative margin (`.ringlist .grip`, −4 px: find what the grid is doing instead); the breakpoints 860 / 861 hard-coded in `8-narrow.css` and `4d-hands.css`; five rules styling another part's selector from the wrong file (`4c-rows.css` on the font sheet's fields, `3-controls.css` on `.row > .btnline`, `4f-rings.css` undoing `.detail`'s border, `4b-lines-tabs.css` undoing `.pane`'s top line, `4g-fonts.css` re-skinning `.tab.on`); `--handle` meaning a width token and a JS-set colour; the round-corner canon ("colour things only", `0-order.css`) that the signs, tabs, pills and the Tiny Preview don't follow — settle the canon or the corners. The layout check (#188) is what would hold the line afterwards. | open |
 | 399 | **Big date as an option of the Date complication**, not a kind of its own (Okay, 19 Oct 2026, 14:13: "Big date function is an under selection of date function") | **done — 4.88** (a tick under the Date tile; four tiles) |
 | 400 | **The windows' discs: X-ray shows what is under, in a stack; minimal graphics on every disc** (Okay, 14:13 and 17:32: "remove stars from nights etc."; the X-ray spec at 17:32) | **done — 4.88** (am · pm: one plain disc, half am and half pm; X-ray: a stack with the selected disc on top at 100 % and a white dotted outline, each layer below 15 % fainter) |
-| 401 | **am · pm with a jump on/off** (Okay, 14:13: "am pm gets a jump function on/off"): snaps at noon and midnight, or sweeps | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
 | 402 | **The bar's date: click to edit in a popup**, with − and + for the date and the time both (Okay, 14:13: "Date on the black bar is click to edit on popup. Plusminus for both. No controller") | **done — 4.88** (the popup in Dial Pop, Barlow Regular; − + for the day and the hour; the day opens the system picker) |
 | 403 | **Playwright 1.56 → 1.64**: the window test's measured values (e.g. the font sheet's "184 64 -1 183") come from this Chromium build; bump it in a session of its own, re-measure, save the look again (`same.mjs save`) | open |
 | 404 | **Dauphine and leaf hands: hubs as on a real movement** — the connecting circles where the hand meets the cannon pinion, life-accurate (Okay, 19 Oct 2026, 17:43: "dauphin and leaf get life accurate movement connecting circles"); refines #370's plain hub for these two shapes | open — next |
 | 405 | **SVG inserts: a blank template file** — a downloadable SVG with guides and registration dots (the artboard's centre, the 12 o'clock line, a hand's pivot, a marker's box) so a drawing made on it imports editable and in place; one template per place an SVG can go (a hand, a marker, a window picture, a logo). The plan for every SVG upload (#50, #72, #173, #346), noted for when they are built (Okay, 17:43: "give the user a blank file with guides and dots to stick to make things editable and such. For the future, note under all svg upload available areas") | open — later, with #50 |
-| 406 | **Moving away from a slider makes it finer**: while a slider is held, the farther the pointer or finger moves from the track (up or down), the smaller each step along it — fine-tuning without a controller (Okay, 17:43: "Moving away from slider increases accuracy: build soon") | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
-| 407 | **The window test in sections that stand alone** — `test/window.mjs` is one script whose later checks use what earlier ones set up; restructure it so each section sets up and restores its own state, then `node test/window.mjs --only hands,bar` runs the sections a change touches (~1 min for a small push, R19); the full run stays for a step. Meanwhile `npm run small` skips parity and Wear OS and runs the icon check only when an icon changed (`icons/changed.mjs`, 4.88.1). Also: the full run on two Chromiums at once (~3 min), and the screenshots on the full run only (Okay, 19 Oct 2026, 17:46–17:54: "Compiling and updating takes too much time … Only filter makes more sense now. Memory stuff makes sense too") | **first step built — `wip-4.90`**: `test/window-only.mjs` runs chosen sections; making each stand alone is open |
+| 407 | **The window test in sections that stand alone** — `test/window.mjs` is one script whose later checks use what earlier ones set up; restructure it so each section sets up and restores its own state, then `node test/window.mjs --only hands,bar` runs the sections a change touches (~1 min for a small push, R19); the full run stays for a step. Meanwhile `npm run small` skips parity and Wear OS and runs the icon check only when an icon changed (`icons/changed.mjs`, 4.88.1). Also: the full run on two Chromiums at once (~3 min), and the screenshots on the full run only (Okay, 19 Oct 2026, 17:46–17:54: "Compiling and updating takes too much time … Only filter makes more sense now. Memory stuff makes sense too") | **first step done — 4.90**: `test/window-only.mjs` runs chosen sections; making each stand alone is open |
 | 408 | **The font box's head**: its colour as a full swatch pill with the hex, as the colour rows have; the font name 2 px larger, growing from its baseline and its left edge — nothing else in the box moves (Okay, 19 Oct 2026, 18:08, a picture of the box: "color here gets full swatch with hex. Font name 2px bigger but nothing else moves, just text gets bigger, grows snapped to baseline and left") | open — look lane |
 | 409 | **Tick rows and the Show tick** (Okay, 19 Oct 2026, 18:00: "align first line with tick sign. Try not having orphans, limit text to two lines or explain more to fill the second line … 'Show tick' in white gets bigger, black box stays the same. These are rules now") — design canon §6, §7 | **done — 4.88.2** |
 | 410 | **A window's colours one to a line; Neighbours on by default, for every link** (Okay, 18:04) | **done — 4.88.2** |
@@ -218,7 +200,6 @@ Seven screenshots in the chat.
 | 445 | **A phone's zoom: − + in the magnifier's popup** (Okay, 20 Oct, 00:34, his phone's bar: "I don't see this on mobile … Zoom popup has plus minus in the tooltip with note. On mobile"): a tap on the magnifier opens a bar popup (the date's, `.barpop`) with the note and − +; elsewhere it shows its tag. Reading: "this" = − +, hidden on a phone | **done — 4.89.9** |
 | 446 | **FIT clipped on a phone** ("fit button looks clipped?"): its left line was − +'s, hidden there; FIT alone draws its own | **done — 4.89.9** |
 | 447 | **Shapes; Shapes width in Resize Ring** ("Shape box is called shapes now. Replicate the same shapes-size button on resize rings but call it shapes width"): the rings' Shape pane is Shapes; a bar or wedge mark's Width also stands in Resize Ring as *Shapes width*. Reading: "shapes-size button" = the Width row | **done — 4.89.9** |
-| 448 | **The ring list's resizer pill "appears after 3 rings being added"** (00:34) — read as a report; asked whether it should show sooner or always. It shows when there are more rings than five. Note: with fewer rows kept (dragged to 3), the list scrolls past 3 but the pill stays hidden until 6 — a dead end (R17) | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
 | 449 | **The date popup as Okay drew it** (20 Oct, 01:05: "popup drawing and final decisions made in photoshop. other than tue … which should be default dark interface text, all else is pixel perfect"): measured from his picture — a light ground (#BFBFBF) in the bar's dark frame; 8 round, 10 before the weekday; boxes a control high, cells 30 · 39 · 44 and ⌄ 16; 2 between boxes, 4 before − +; − 27 inside, + 26; values white, semibold. The weekday as wide as the widest one (measured), so the size never changes (#412) | **done — 4.89.10** |
 | 450 | **One look and one list for every menu** ("why are these drop downs differently styled? apply universal style to 'arabic like' drop downs. also the popping up thing on these, styled like mm dropdown. all around the site"): every menu a chevron box (R15) — Labels, Motion, Resize from, Nudge's pick, the rows' menus — and every menu's list the tool's own (`menu_list`, the unit box's look), under or over its box | **done — 4.89.10** |
 | 451 | **A press on Resize from's box opens its list, never folds the pane** ("clicking 'centre' activates dropdown not collapse or stand still"); the date popup's values open their lists too | **done — 4.89.10** |
@@ -234,50 +215,31 @@ Seven screenshots in the chat.
 | 461 | **A moon window's colours didn't reach the dial until a size changed** ("colors are selected visually, not applied to the canvas. changing radius refreshes"): a window's colours don't rebuild its still parts, and the scene read them from those parts' copy. The scene reads a window's colours from the settings as they are (`wc()` in `scene()`), the neighbours' "the number's colour" too | **done — 4.89.12** |
 | 462 | **No stars in a moon window** ("for all moon face illustrations. please remove the stars. all now include the moon only, exclusively"): Arch, Phase and Line draw the moon alone; retroactive on his word | **done — 4.89.12** |
 | 463 | **Every word choice a pill switch** ("Arch phase line selector exactly like this light dark selector … can we make this universal?"): seg rows are `.pillswitch`, the font sheet's Light · Dark's look; canon §6 | **done — 4.89.12** |
-| 464 | **A window's Frame colour first, above its own colours** (Okay, 20 Oct 2026, 01:49, a picture of AM half · Frame · PM half: "Frame is always above window specific colors this is a note, don't implement now") | **built — `wip-4.90`** (#487) |
 | 465 | **Bevel not seen in 4.89.12** (01:49: "Bevel is not in this update. I don't see a bevel on the hands coming up. Bevel is off on default. Please note"): off to start is as meant; ask where he looked for the tick (beside Show, under the hand's tab) once he has the released build | verify |
 | 466 | **A moon window's Picture gets Custom…, which takes an SVG** (01:49: "Arc phase line gets a custom… which will insert an svg. Also a note") — with the SVG inserts (#405, #50, #346) | open — note |
 | 467 | **A moon window's disc, as a date window's** (Okay, 20 Oct 2026, 01:53: "moon window for phase needs a ring like date window, no? How many moons fit? Can we get away with less, steps between states. This is a jump complication of course like date"): a moon disc under the plate, seen in X-ray, jumping once a day as the date's does. In watches as Claude knows them (to check at build time): two moons on a 59-tooth disc, one tooth a day (two lunations of 29.5 days), a day off in about 2.7 years; fewer steps means a coarser jump. With #346 (the moon's own disc) | open — note |
 | 440 | **A hand's Bevel tick beside Show** in the Show box under the hand's tab, once Show is on (Okay, 23:53: "Bevel on off moves next to show under the tab just above. appears after show is switched on"); still only while Shadows is on and Bevels % above 0 (R16); out of the side rows | **done — 4.89.5** |
 | 434 | **Settings file pane: "needs tlc. what do you think it needs?"** — Claude's proposal sent 19 Oct, 23:25; waiting for his word | open — ask |
-| 435 | **Versions** — the saved dials (Gallery › Yours) move under Undo: a button with a sign of a dial with two hands opens a list of every saved dial as small pictures, three across; a click on one shows its actions (Edit this dial, In a new tab, Remove). On top, **Compare**: every saved dial laid out as the Sheet PDF lays copies (packed by how many), centred with sensible padding, the panel hidden as in the dial-alone view; nothing else changes. Words to settle: *versions* is already the app's builds (`docs/versions.md`) and the glossary's *Yours* | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
 
 ## Okay's notes while beta 4.90 was built alone (20 Oct 2026, 02:02–02:26)
 
-Okay, 02:02: "My secret goal is making 4.90 v01 … Build functionality … noted and screenshotted for my approval later, not messing with current build." Built on the branch `wip-4.90`; `dev`, `main` and the live page untouched. The review: `docs/review-4.90.md`.
+Okay, 02:02: "My secret goal is making 4.90 v01 … Build functionality … noted and screenshotted for my approval later, not messing with current build." Released as beta 4.90 (Okay, 05:02: "this version is accepted"); its built items are in `build-list-done.md`. The review: `docs/review-4.90.md`.
 
 | # | Item | Status |
 |---|---|---|
 | 468 | **Compare packs densely when the count is uneven**, as Dial Packer does (Okay, 02:21: "Use dense packing of circles for preview if uneven like on preview. -note for later"). Compare packs as the print sheet does (`pack_discs`: straight or staggered rows) | open — note |
 | 469 | **Units in fields** (Okay, 02:19 and 02:26: "Units cannot be typed on a controller"; "typing with keyboard allowed. No units visible in boxes, units universal, in the dropdown above"): a unit is typed in a field only; boxes show numbers in the unit box's unit, never a unit name. As built (#187) | noted — as built |
-| 470 | **Undo steps 20; Versions nine, the tenth replaces the oldest with a warning; arranged by dragging in the list, never in Compare** (Okay, 02:26). Reading: "Undo steps limit to 20" = the steps list shows 20 (undo itself keeps 200); ask | built — `wip-4.90`; the 20 asked |
 
 ## Okay's notes of 20 Oct 2026, 02:37 (notes doc, on the 4.90 preview)
 
 | # | Item | Status |
 |---|---|---|
-| 471 | **The bio: "(pronounced oak·eye)" after his name**, with a middle dot ("I couldn't find the smaller dot, use 'dot in the middle'") | built — `wip-4.90` |
-| 472 | **Keyboard shortcuts like G** ("Did I say g triggers guides on off? Can we get shortcuts like these for keyboards") — Claude's set: H hands, X X-ray, S shadows, E the dial alone; not while typing | built — `wip-4.90`, the set to approve |
-| 473 | **The number boxes' figures tabular, all of them** (Okay, 03:35, correcting 02:37: "CORRECTION: MAKE ALL THESE TABULAR, SORRY FOR MISCOMMUNICATION"). They are tabular from the page's root (canon §2) and measure so in Chromium; a field now says it again (`font-variant-numeric: inherit`), for WebKit, where his picture came from | built — `wip-4.90`, to verify on his iPad and Safari |
-| 474 | **Print's ticks span all the columns**: nothing on the left to explain but the pane's title ("These are within rules. Excellent work. Now an exception … These tick boxes span all the columns to save space") | built — `wip-4.90` |
-| 475 | **Every pinned part gets a pill on its black line, shown to start; not on Hands and Windows** (Okay, 03:41, answering 02:37's "persistent resize pill is on default on export tab": "All persistents get a resizer as default. apart from hands and windows"). Rings: the list's pill, now always there. Dial, Export: the pinned panes in a box the pill makes shorter (it scrolls) or taller; a tap jumps between all and the first line; kept per tab by this browser (`pin_grip`) | built — `wip-4.90` |
-| 478 | **Page leaves the pinned part**, into the grey part with Colours (Okay, 03:41: "Page moves to gray area on the screenshot"); folded on a first visit, as every pane outside the pinned part | built — `wip-4.90` |
-| 476 | **The case icon**: lugs half as long or less; the case centred in its square without the crown; the crown shorter, barely seen, drawn after centring; ink traps where lines cross, as in Guides; inside, the hour and minute hands in an L instead of a ring. And the Case switch's left padding as X-ray's | built — `wip-4.90` |
-| 477 | **On switches, only the sign lights when on; the word stays dim except under the pointer** (Guides and the others) | built — `wip-4.90` |
 
 ## Okay's notes of 20 Oct 2026, "Oct 20 continued" (notes doc, after 03:41; 04:20: "Check new notes and do without asking now, go")
 
 | # | Item | Status |
 |---|---|---|
-| 479 | **A folded pinned pane hides its pill** ("When eye closed unusable resizer disappears") | built — `wip-4.90` |
-| 480 | **Print's sheet rows are inside Sheet**: Paper, Copies, Room between and A cut line round each start on the controls' column, as side rows ("These are 'under' sheet. They should be inset. Two line slider/number if necessary or 'the hands squeeze'?") | built — `wip-4.90` |
-| 481 | **The steps' chevron is inactive when there is nothing to undo or redo**, as undo and redo are ("If undo redo is unclickable, versions and chevron are not clickable too, right?"). Versions stays active: it holds the saved dials, which don't depend on undo | built — `wip-4.90` |
-| 482 | **The Settings file pane prettier**: its explainer and its four buttons across the whole width ("look at size px above? 4 buttons fit all the way, explainer fits all the way") | built — `wip-4.90` |
-| 483 | **The blue accent red everywhere** ("This blue accent gets red everywhere we see it") — read as the keyboard focus ring and every other blue in the window | built — `wip-4.90` |
-| 484 | **Square and rounded-square dials, as an Apple Watch's** ("How hard is to make a square and rounded square like an apple watch … i know its big work but plan. This is an obstacle between us and beta v5") — with #363. A plan: `docs/plan-non-round.md` | plan written — `wip-4.90` |
-| 485 | **The guides, quieter** ("Minimize them on screen. No unnecessary lines. Dasheds get dotted, thinner defaults maybe? Settings will house extensive guide on offs … Defaults are all off, but while things resize. They turn off when editing stops") | built — `wip-4.90` |
-| 486 | **A selected ring's handles shown to start, each in a disc of its guide's colour; finer as the pointer moves away**, as the sliders (#406) ("Selected items show resize handles by default. All resize etc handles get a guide colored disc to sit in. Detail rises with the mouse away like the sliders, if possible") | built — `wip-4.90`; 04:52: discs solid, handles and the selected ring's guide always together ("Handles and guides show together at all times"), the Nudge numeral a box touching it ("a rectangular tangent box around number") |
-| 487 | **A window's Frame colour first** ("I noted this earlier, can you find where and what is the change here?", his picture of Disc under it · Frame · Neighbours): #464, "Frame is always above window specific colors" | built — `wip-4.90` (#464 too) |
+| 484 | **Square and rounded-square dials, as an Apple Watch's** ("How hard is to make a square and rounded square like an apple watch … i know its big work but plan. This is an obstacle between us and beta v5") — with #363. A plan: `docs/plan-non-round.md` | plan written — 4.90 (`docs/plan-non-round.md`) |
 
 ## Dial Packer (side product, 19 Oct 2026)
 
@@ -294,13 +256,10 @@ Okay, 02:02: "My secret goal is making 4.90 v01 … Build functionality … note
 
 | # | Item | Status |
 |---|---|---|
-| 17 | Variation grid sheet | **built — `wip-4.90`, for Okay's approval**: Versions › Sheet, the saved dials on an A4 (SVG). A variation grid from one rule set is still open |
-| 18 | Spec sheet with dimension callouts | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
 | 19 | More hand styles: cathedral (through file import, #50); lume plots | open |
 | 20 | Subdials (small seconds, chronograph registers) | open |
 | 21 | Plotter output for the pen plotter via LightBurn | open |
 | 33 | Surface finishes on bands: sunray, grain, guilloché (Okay: flat for now) | open |
-| 35 | Per-ink separations: one production mask per ring colour | **built — `wip-4.90`, for Okay's approval** (review: `docs/review-4.90.md`) |
 | 362 | **An Apple Watch preview** (Okay, 18 Oct 2026: "Future feature, some kind of preview for apple watch?"): a sibling of the Wear OS export (Export → Wear OS) — at least the dial in an Apple Watch's frame; a real watch face is not open to third parties on watchOS, so a preview or a photo face is the likely reach (to research) | open |
 | 363 | **Non-round dials: square, rectangle, rounded rectangle, diamond** (Okay, 18 Oct 2026: "And all that would bring to previews and functions. At the end of the future list"): every ring, window, case, export and preview measured from a circle today | open — last |
 

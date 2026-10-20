@@ -1,4 +1,6 @@
-# Beta 4.90 — what was built alone, for Okay's approval
+# Beta 4.90 — what was built alone overnight
+
+*Accepted and released 20 Oct 2026, 05:02 (Okay: "this version is accepted, dev main, publish"). The questions below stay open.*
 
 *Written 20 Oct 2026, 02:02–05:20, on the branch `wip-4.90` (from `dev` at beta 4.89.12). `dev`, `main` and the live page are untouched. Okay, 02:02 (he first called it "beta 5 v01"; 02:53: "This should not be called beta 5 … Normal progression"): "Build functionality … noted and screenshotted for my approval later, not messing with current build … We might do a design round later."*
 

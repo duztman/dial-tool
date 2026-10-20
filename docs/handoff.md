@@ -1,15 +1,15 @@
 # Handoff — taking over the Dial Tool
 
-*Written 16 Oct 2026 at beta 4.46.5 (Okay: "devise way to handoff to another agent"); §1 rewritten at every handover, last on 20 Oct 2026, 05:00, on the branch `wip-4.90`. The rest changes when something new is learnt.*
+*Written 16 Oct 2026 at beta 4.46.5 (Okay: "devise way to handoff to another agent"); §1 rewritten at every handover, last on 20 Oct 2026, 05:10, at beta 4.90. The rest changes when something new is learnt.*
 
 A new session starts with no memory of the last one: the transcript stays in the old container. Everything a successor needs is in the repo. Use this page to find it.
 
-## 1 · Where things stand (20 Oct 2026, 05:00, after the night's work on beta 4.90)
+## 1 · Where things stand (20 Oct 2026, 05:10, beta 4.90 released)
 
-- **`dev`, `main` and the live page are beta 4.89.12**, untouched tonight.
-- **Beta 4.90 is on the branch `wip-4.90`** (GitHub), built alone while Okay slept (02:02 → 05:20), for his approval: every item, its readings and six questions are in `docs/review-4.90.md` (the 04:20 notes, #479–#487, in their own table); the plan for square dials is `docs/plan-non-round.md`; next with Okay: the guides and Settings (his 04:52: "Guides and settings to follow tomorrow"); a review page with pictures for his iPad, https://claude.ai/artifact/VzjogyWBNaFsKbTygRLXbc; the branch's build as a private page, https://claude.ai/artifact/JRtt9Py7EzVRBEQhLsskhq. The full `npm test` passes on it. Not released, not merged into `dev`: on his word, `git checkout dev && git merge --ff-only wip-4.90` (it is `dev` plus commits), then the release loop (§3) as 4.90.
+- **`dev`, `main` and the live page are beta 4.90** (Okay, 05:02: "this version is accepted, dev main, publish"). The night's items, their readings and six open questions: `docs/review-4.90.md`; the plan for square dials: `docs/plan-non-round.md`; next with Okay: the guides and Settings (his 04:52: "Guides and settings to follow tomorrow").
+- **Release as you go** (Okay, 05:02: "I feel we've been stuck at 90 for a while there?"): a batch of work is released when it passes, not held on a branch; the branch `wip-4.90` is merged and spent.
 - **Built on it**: Versions under undo with Compare and Sheet (#435, #17); the production ticks in Print (#219, #221–#224), a mask per ink (#35), a set of files (#171), a spec sheet (#18); MP4 and GIF (#51); Weight % (#88); Cap middle (#13); undo steps named (#172); units typed (#187); finer sliders (#406); am · pm Jumps (#401); thinnest line (#225); kept font files (#56); dead ends #233, #234, #448; on a phone Versions beside undo (#232); the layout check, a report (#188); `test/window-only.mjs` (#407, first step).
-- **Version numbers** (Okay, 02:53): no jump to 5. Tonight's step is 4.90; the second and third numbers may run to 99; v1, without "beta", on his word. R19 to say so once he confirms.
+- **Version numbers** (Okay, 02:53): no jump to 5. 4.90 is the step after 4.89.12; the second and third numbers may run to 99; v1, without "beta", on his word. R19 to say so once he confirms.
 - **The stale branch `beta5`** on GitHub (the night's first name) could not be deleted from the session: `git push origin --delete beta5` from his Mac.
 - **Waiting for Okay**: the six questions in `docs/review-4.90.md`; the older ones (#434 Settings file pane, #448's answer is built, #439 and #453 to verify).
 - **His notes tonight**: logged as #468–#470 in the build list (Compare's dense packing; units in fields only; undo 20, Versions nine).
