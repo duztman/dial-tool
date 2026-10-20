@@ -58,5 +58,15 @@ The two PDFs (27 MB and 8 MB) were delivered in the chat on 20 Oct 2026 and are 
 
 ## Next
 
+Okay's notes of 20 Oct 2026, 20:11 (for the future):
+
+- **Flares** take a slight tint of the case metal's hue, still bright; grey metals get white flares. *(tried on the diver check, `INK`/`HB`/`POINT` env switches)*
+- **The divers' top end links are wrong; the bottom ones are right** — copy the bottom to the top.
+- **A light from the side at a middle height (e.g. 0°, 30°) flattens the bracelet**: prefer higher or lower suns for bracelets.
+- **Bracelet ends**: nothing there now. Draw them as wrapped round a wrist: the closed bracelet's loop seen from three-quarters is a sausage, half of it below the ground; half the closed bracelet shows. Bracelets get no open (flat) views. **Parked** (20:11).
+- **Ink heights**: printed ink a hair proud of the dial — a tiny inset inner shadow on the side away from the light and a highlight on the side facing it (a highlight may be a one-pixel dot); the shadow the stronger. One value to lock (levels 1–4 shown on the diver check, `INK=1..4`: shadow 0.035 mm a step, highlight 0.025).
+- **Hand bevels** on in the previews (the app's Bevels: the hand's half on the light's side lighter, the other darker, 0.22 / 0.26); on the PDF set, on for about half, where it makes sense (`HB=1`).
+- **Miyazaki gets a point light** for the dramatic view (`POINT=1`: a 21 mm spot pushed 15 mm toward the light).
+
 - **Ink thicknesses** (Okay, 19:04: "You can tackle ink thicknesses next") — the Engineer drawing's line weights.
 - **Dial Show Case** as one app: the Showcase's animation (the Playbox) and this engine together (build list #489).

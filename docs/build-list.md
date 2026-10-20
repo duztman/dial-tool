@@ -267,6 +267,8 @@ Okay, 02:02: "My secret goal is making 4.90 v01 … Build functionality … note
 | 489 | **Dial Show Case, a standalone app**: the Showcase's animation (the Playbox) and the cases and straps rendering engine together (Okay, 19:42: "This was a great detour and will be its standalone app combined with showcase. It will be called Dial Show Case") | planned |
 | 490 | **The cases and straps rendering engine**: a dial put in a whole watch under a light from any side and height, in two styles, Engineer and Miyazaki; 15 watches, two PDFs (Okay, 19:16: "We are golden") | **done — 20 Oct** (side session; sources in `show-case/src/`) |
 | 491 | **Ink thicknesses** for the Engineer style (Okay, 19:04: "You can tackle ink thicknesses next") | next |
+| 492 | **Dial Show Case notes, 20:11**: tinted flares (grey metals white); divers' top end links copied from the bottom; bracelets lit high or low, not side-middle; ink heights as a tiny inner shadow and highlight, one value to lock; hand bevels on; Miyazaki's point light (all in `show-case/README.md`) | ink levels, bevels, flares and point light shown on a diver check, 20:11; the rest open |
+| 493 | **Bracelet ends wrapped as round a wrist**, the closed loop half below the ground; no open views for bracelets | parked (Okay, 20:11) |
 
 ## Later
 

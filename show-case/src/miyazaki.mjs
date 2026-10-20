@@ -1,4 +1,4 @@
-let GLINT = "plain", FLARE_SCALE = 1, GLASS_K = 1, SH_OVR = null, FLARE_KIND = "arc", SEC = null;
+let GLINT = "plain", INK_K = +(process.env.INK || 0), INK_N = 0, HAND_BEVEL = Boolean(process.env.HB), FLARE_TINT = "#ffffff", FLARE_SCALE = 1, GLASS_K = 1, SH_OVR = null, FLARE_KIND = "arc", SEC = null;
 // Field and dress, true to published measures (20 Oct 2026, 15:11). Technical line drawing; every item in three tones
 // (light, body, shade) chosen per facet by where the light comes from, so the highlights and shadows move with it.
 //   Field — Hamilton Khaki Field Mechanical 38 (H69439931): 38 mm, 47 lug to lug, 20 between the lugs, 9.5 thick,
@@ -205,6 +205,22 @@ function clampL(h) {
   const [r1, g1, b1] = hue < 1 ? [c, x, 0] : hue < 2 ? [x, c, 0] : hue < 3 ? [0, c, x] : hue < 4 ? [0, x, c] : hue < 5 ? [x, 0, c] : [c, 0, x];
   return "#" + [r1, g1, b1].map((v) => Math.round((v + m) * 255).toString(16).padStart(2, "0")).join("");
 }
+
+/** printed ink stands a hair proud of the dial (20:11): inside each mark an inner shadow along the edge away from the
+ *  light and a highlight along the edge facing it — tiny, the shadow the stronger. `INK_K` scales both (0 = flat ink) */
+const inkRelief = (x, s, L) => { if (!INK_K) return "";
+  const id = "ik" + (INK_N++), ux = Math.cos(rad(L)) / s, uy = -Math.sin(rad(L)) / s, es = 0.035 * INK_K, eh = 0.025 * INK_K;
+  CLIPS.push(`<clipPath id="${id}"><path d="${x.p}"/></clipPath>`);
+  const cut = (dx, dy, fill, op) => `<g transform="translate(${f(dx)} ${f(dy)})"><path d="M-9999 -9999H9999V9999H-9999Z${x.p}" fill-rule="evenodd" fill="${fill}" fill-opacity="${op}"/></g>`;
+  return `<g clip-path="url(#${id})">${cut(ux * es, uy * es, "#000", 0.45)}${cut(-ux * eh, -uy * eh, "#fff", 0.5)}</g>`; };
+/** a hand's bevel, as in the app (Shadows → Bevels): the half on the light's side lighter, the other darker (20:11) */
+const handBevel = (x, A, L) => { if (!HAND_BEVEL || !x.hand) return "";
+  const id = "hb" + (INK_N++), a = rad(A[x.hand]), side = Math.cos(a) * Math.cos(rad(L)) + Math.sin(a) * Math.sin(rad(L));
+  CLIPS.push(`<clipPath id="${id}"><path d="${x.p}"/></clipPath>`);
+  const lit = 0.22 * Math.abs(side), dark = 0.26 * Math.abs(side);
+  return `<g transform="rotate(${-A[x.hand]})"><g clip-path="url(#${id})"><rect x="0" y="-50" width="50" height="100" fill="${side > 0 ? "#fff" : "#000"}" fill-opacity="${f(side > 0 ? lit : dark)}"/><rect x="-50" y="-50" width="50" height="100" fill="${side > 0 ? "#000" : "#fff"}" fill-opacity="${f(side > 0 ? dark : lit)}"/></g></g>`; };
+/** a flare's colour (20:11): white on a grey metal, tinted toward the metal's own hue on a coloured one, still bright */
+const flareColour = (T) => (hex2hsl(T[1])[1] < 0.12 ? "#ffffff" : mixc(T[0], "#ffffff", 0.55));
 function dialSVG(C, v, L) {
   const RC = parseDial(C.dialOverride || C.dialName);
   const D = DIALS.find((d) => d.name === RC.name), s = C.dial / D.d, A = { hour: 305, minute: 60, second: SEC === null ? 180 : SEC * 6 }, V = D.own ? { plate: null, map: {} } : VARIANTS[C.key][v];
@@ -212,7 +228,7 @@ function dialSVG(C, v, L) {
   const items = D.items;
   const kh = Math.tan(rad(40)) / Math.tan(rad(SUN_H)), sh = [-Math.cos(rad(L)) * 0.35 * kh, Math.sin(rad(L)) * 0.35 * kh];       // the hands' shadow, away from the light (dial space is y up)
   const handsShadow = items.filter((x) => x.hand || x.role === "cap").map((x) => `<path d="${x.p}" fill="#000" fill-opacity="0.35"${x.hand ? ` transform="translate(${f(sh[0])} ${f(sh[1])}) rotate(${-A[x.hand]})"` : ` transform="translate(${f(sh[0])} ${f(sh[1])})"`}/>`).join("");
-  const body = items.map((x) => `<path d="${x.p}" fill="${col(x)}" fill-opacity="${x.a}"${x.hand ? ` transform="rotate(${-A[x.hand]})"` : ""}/>`);
+  const body = items.map((x) => `<path d="${x.p}" fill="${col(x)}" fill-opacity="${x.a}"${x.hand ? ` transform="rotate(${-A[x.hand]})"` : ""}/>` + (x.hand ? handBevel(x, A, L) : x.role !== "plate" && x.role !== "cap" ? inkRelief(x, s, L) : ""));
   const firstHand = items.findIndex((x) => x.hand || x.role === "cap");
   body.splice(firstHand, 0, handsShadow);
   return `<g transform="scale(${f(s)} ${f(-s)})">${body.join("")}</g>`;
@@ -436,6 +452,7 @@ function blobOver(d, L, a = 0.9, b = 2.0) {
 }
 const rrect = (x0, y0, x1, y1, r) => { const [a, b] = [Math.min(x0, x1), Math.min(y0, y1)], [c, e] = [Math.max(x0, x1), Math.max(y0, y1)]; r = Math.min(r, (c - a) / 2, (e - b) / 2); return `M${f(a + r)} ${f(b)}H${f(c - r)}Q${f(c)} ${f(b)} ${f(c)} ${f(b + r)}V${f(e - r)}Q${f(c)} ${f(e)} ${f(c - r)} ${f(e)}H${f(a + r)}Q${f(a)} ${f(e)} ${f(a)} ${f(e - r)}V${f(b + r)}Q${f(a)} ${f(b)} ${f(a + r)} ${f(b)}Z`; };
 function caseSVG(C, v, L) {
+  FLARE_TINT = flareColour(C.metal);
   const R = C.cushion ? C.cushion.a : C.od / 2, T = C.metal, out = [];
   for (const sx of [-1, 1]) for (const sy of [-1, 1]) out.push(blob(C.cushion ? cushionLug(C, sx, sy) : lugPath(C, sx, sy), T, L, 0.5, 1.0));
   const cw = C.crown.w, ch = C.crown.h;
@@ -518,8 +535,8 @@ const brighter = (h, k) => "#" + [1, 3, 5].map((i) => Math.round(parseInt(h.slic
 /** metal's glint: a short white arc on a round edge, on the side facing the light (metal shines more than leather or nylon) */
 const glint = (r, L, w = 0.55, o = 0.6, span = 26) => GLINT === "off" ? "" : GLINT === "flare" ? (() => { const x = Math.cos(rad(L)) * r, y = Math.sin(rad(L)) * r;
   // two flares (18:49), each watch gets one: the arc (a long soft bow along the edge by the glass) or the dot (a big soft bloom, a small bright core)
-  if (FLARE_KIND === "arc") return `<path filter="url(#flare)" d="M${f(Math.cos(rad(L - span * 1.6)) * r)} ${f(Math.sin(rad(L - span * 1.6)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(L + span * 1.6)) * r)} ${f(Math.sin(rad(L + span * 1.6)) * r)}" fill="none" stroke="#fff" stroke-opacity="${Math.min(1, o * 0.9)}" stroke-width="${w * 3.5}" stroke-linecap="round"/>`;
-  return `<circle cx="${f(x)}" cy="${f(y)}" r="${f(2.2 + w * 2.4)}" fill="#fff" fill-opacity="${f(Math.min(1, o * 1.1) * FLARE_SCALE)}" filter="url(#flare)"/><circle cx="${f(x)}" cy="${f(y)}" r="${f(0.18 + w * 0.12)}" fill="#fff" fill-opacity="${f(0.95 * Math.sqrt(FLARE_SCALE))}"/>`; })() : `<path d="M${f(Math.cos(rad(L - span)) * r)} ${f(Math.sin(rad(L - span)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(L + span)) * r)} ${f(Math.sin(rad(L + span)) * r)}" fill="none" stroke="#fff" stroke-opacity="${o}" stroke-width="${w}" stroke-linecap="round"/>`;
+  if (FLARE_KIND === "arc") return `<path filter="url(#flare)" d="M${f(Math.cos(rad(L - span * 1.6)) * r)} ${f(Math.sin(rad(L - span * 1.6)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(L + span * 1.6)) * r)} ${f(Math.sin(rad(L + span * 1.6)) * r)}" fill="none" stroke="${FLARE_TINT}" stroke-opacity="${Math.min(1, o * 0.9)}" stroke-width="${w * 3.5}" stroke-linecap="round"/>`;
+  return `<circle cx="${f(x)}" cy="${f(y)}" r="${f(2.2 + w * 2.4)}" fill="${FLARE_TINT}" fill-opacity="${f(Math.min(1, o * 1.1) * FLARE_SCALE)}" filter="url(#flare)"/><circle cx="${f(x)}" cy="${f(y)}" r="${f(0.18 + w * 0.12)}" fill="#fff" fill-opacity="${f(0.95 * Math.sqrt(FLARE_SCALE))}"/>`; })() : `<path d="M${f(Math.cos(rad(L - span)) * r)} ${f(Math.sin(rad(L - span)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(L + span)) * r)} ${f(Math.sin(rad(L + span)) * r)}" fill="none" stroke="#fff" stroke-opacity="${o}" stroke-width="${w}" stroke-linecap="round"/>`;
 /** an Oyster-like bracelet, seen from above: under it a dark strip (the pins and the links' undersides show in the
  *  gaps); per row two brushed outer links rounded on their outer side and a polished, domed middle link with a long
  *  glint on the light's side; solid end links fitted to the case; a slight taper. `look(d, T, kind)` draws a link in
@@ -717,11 +734,13 @@ const deepen = (c) => { const [h, sat, l] = hex2hsl(c); return hsl2hex([h, sat <
 METALS.steel.forEach((c, i) => { const [h, sat, l] = hex2hsl(c); METALS.steel[i] = hsl2hex([h, sat, l * 0.85]); });      // steel a step darker (18:26)
 for (const tab of [METALS, LEATHER, NATO_SETS, NATO_MORE]) for (const k in tab) { const v = tab[k]; if (typeof v[0] === "string") v.forEach((c, i) => (v[i] = deepen(c))); else v.forEach((T) => T.forEach((c, i) => (T[i] = deepen(c)))); }
 const DETAIL = 31, FULL = { w: 126 / 1.2, h: 308 / 1.2 }, DIAL = 19.5;      // 17:15: the whole watch at 120 %, centred
-for (const [n, key, strap, v, L0, h, dial, metal, size] of RUNS) {
+for (const [n0, key, strap, v, L0, h, dial, metal0, size] of RUNS) {
+  if (process.env.ONLY && !process.env.ONLY.split(",").includes(n0)) continue;
+  const n = n0 + (process.env.SUF || ""), metal = process.env.METAL || metal0;
   const L = process.env.COMP ? 225 : L0;      // the comparisons (19:16): every watch lit from the top left, like the cover
-  FLARE_KIND = [..."seed" + n].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 9973, 7) % 2 ? "arc" : "dot";      // random, but the same each run
+  FLARE_KIND = [..."seed" + n0].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 9973, 7) % 2 ? "arc" : "dot";      // random, but the same each run
   const make = (mode) => { GLINT = mode; return sheet(key, strap, v, L, true, h, dial, metal, size).replace("__CLIPS__", CLIPS.join("") + `<filter id="flare" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="1.1"/></filter>`); };
-  const drama = make("flare").replace(/<radialGradient id="pool"[^>]*>.*?<\/radialGradient>/s, `<radialGradient id="pool" cx="${f(Math.cos(rad(L)) * 6)}" cy="${f(Math.sin(rad(L)) * 6)}" r="24" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#a09a85"/><stop offset="0.55" stop-color="#968e7c"/><stop offset="1" stop-color="#79725f"/></radialGradient>`);
+  const drama = make("flare").replace(/<radialGradient id="pool"[^>]*>.*?<\/radialGradient>/s, `<radialGradient id="pool" cx="${f(Math.cos(rad(L)) * (process.env.POINT ? 15 : 6))}" cy="${f(Math.sin(rad(L)) * (process.env.POINT ? 15 : 6))}" ${process.env.POINT ? `r="21" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#e2d9c0"/><stop offset="0.3" stop-color="#b4a98e"/><stop offset="1" stop-color="#7a7262"/>` : `r="24" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#a09a85"/><stop offset="0.55" stop-color="#968e7c"/><stop offset="1" stop-color="#79725f"/>`}</radialGradient>`);
   const flat = make("off").replace('fill="url(#pool)"', 'fill="#877f6d"');
   if (!process.env.COMP) fs.writeFileSync(n + "-full.svg", flat.replace("__VB__", `${-FULL.w / 2} ${-FULL.h / 2} ${FULL.w} ${FULL.h}`));
   if (!process.env.COMP) fs.writeFileSync(n + "-detail.svg", drama.replace("__VB__", `${-DETAIL} ${-DETAIL} ${2 * DETAIL} ${2 * DETAIL}`));
