@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>html,body{height:100%;margin:0}[hidden]{display:none!important}</style></head><body><title>Dial Show Case</title>
+<title>Dial Show Case</title>
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
 
@@ -1960,7 +1960,7 @@ main.sunning .sunknob { transform: scale(1.25); }
 
 /* on the canvas, bottom left: Fit and the background (Okay, 20 Oct 2026, 23:28); its popup above them, a night part */
 .canvasfoot { position: absolute; left: calc(var(--canvas-inset, 16px) + env(safe-area-inset-left, 0px)); bottom: calc(var(--canvas-inset, 16px) + env(safe-area-inset-bottom, 0px)); z-index: 4; }
-.canvasbtns { display: flex; gap: var(--u2, 8px); }
+.canvasbtns { display: flex; flex-direction: column; align-items: flex-start; gap: var(--u2, 8px); }      /* stacked, Background at the bottom (02:05) */
 .groundpop { position: absolute; left: 0; bottom: calc(100% + var(--u3, 10px)); width: min(var(--panel), calc(100vw - 32px)); padding: var(--pop-top, 16px) var(--margin) var(--u4, 12px); }
 .groundpop .pophead { display: flex; align-items: center; height: var(--head); }
 .groundsw { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--u2, 8px); margin-bottom: var(--u3, 10px); }
@@ -2193,6 +2193,42 @@ main.sunning .sunknob { transform: scale(1.25); }
 .side .bar .lead .timebox .datewell { flex: none; }
 .side .bar .lead #now { flex: 1 1 auto; padding: 0; }
 .side .bar .lead { gap: var(--u2); }
+
+/* the top — title, tabs and the Light tab's Style line — a tenth lighter than the column, as Dial Tool's paper stands
+   over its scrolling grey (01:43) */
+.side .panel > :is(header, .tabs, .pinline) { background: var(--column-top, transparent); }
+.side .panel > .tabs { margin: 0; padding-left: var(--margin); padding-right: var(--margin); }
+.side .about { position: relative; }
+.side .about .logo { padding: 0; border: 0; background: none; color: var(--ink); cursor: pointer; }
+.side .bio { width: calc(var(--panel) - 2 * var(--margin)); max-width: calc(100vw - 2 * var(--margin)); }
+
+/* the persistent line, after Dial Tool's "All hands" (01:50): under the tabs a thick line across the column, the
+   lines' names bold from the left margin, a hairline under each */
+/* the tabs' two lines, each inset by the column's margin like every other line (01:53): over them a hairline in the
+   column's adaptive dark, under them the thick line in its ink */
+.side .panel > .tabs { border-top: 0; border-bottom: 0; background:
+  linear-gradient(var(--uiblack, #000), var(--uiblack, #000)) 50% 0 / calc(100% - 2 * var(--margin)) var(--hair) no-repeat,
+  linear-gradient(var(--ink), var(--ink)) 50% 100% / calc(100% - 2 * var(--margin)) var(--thick) no-repeat, var(--column-top, transparent); }
+.side .pinline { flex: none; padding: 0 var(--margin); }
+.side .pinline > .row { grid-template-columns: repeat(6, minmax(0, 1fr)); column-gap: var(--gap); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--uiblack, #000); }
+.side .pinline > .row > label { grid-column: 1 / 3; font-weight: 600; color: var(--ink); }
+.side .pinline > .row > .pillswitch { grid-column: 3 / -1; }
+.side .form > .pane.first { border-top: 0; }      /* the first pane of a tab: the line above it (the tabs', or the fixed lines') already opens it — never two lines (01:57) */
+
+/* the fixed lines' names start where the panes' names do: after the eye's column (01:57); their hairlines keep the
+   margin */
+.side .pinline > .row { position: relative; margin-left: var(--lead); box-shadow: none; }
+.side .pinline > .row::after { content: ""; position: absolute; left: calc(-1 * var(--lead)); right: 0; bottom: 0; height: var(--hair); background: var(--uiblack, #000); }
+
+/* the tabs measured against Dial Tool's (02:05): its hairline is a border over the 11px, so the tabs start a hair lower;
+   the chosen tab's 3px bar stands ON the thick line, not over it — the line drawn under the buttons, in 2px of its own */
+.side .panel > .tabs { padding-top: calc(var(--u4) + var(--hair)); padding-bottom: var(--thick); }
+/* two ticks on one line (02:21): Blurs from the names' column, Flare where the controls start */
+.body .row.chk.pair > .check:first-child { grid-column: 1 / 3; }
+.body .row.chk.pair > .check:last-child { grid-column: 3 / -1; }
+.body .row.chk.pair > .check { color: var(--ink); }      /* both words as every tick's, not the grey of a row's name */
+.side .pane > .body:empty { display: none; }      /* a pane all on its line (Reset): nothing under it */
+#sc-reset-watch { grid-column: 4 / -1; justify-self: start; white-space: nowrap; }      /* where the controls start, as Dial's link */
 </style>
 <div id="app"><p class="starting">Starting…</p></div>
 <script>
@@ -8740,6 +8776,7 @@ __export(engineer_exports, {
   PRESETS: () => PRESETS,
   STRIPE_COUNT: () => STRIPE_COUNT,
   attach: () => attach,
+  caseBox: () => caseBox,
   draw: () => draw,
   edge: () => edge
 });
@@ -9360,6 +9397,10 @@ function attach(pk) {
   PK2 = pk;
 }
 var edge = (floor2, view) => view === "detail" ? hsl(floor2, STYLE.ramp[2]) : floor2;
+var caseBox = (key, size) => {
+  const C2 = scaleCase(CASES[key], size);
+  return { h: C2.l2l, w: (C2.cushion ? 2 * C2.cushion.a : C2.od) + 2 * C2.crown.h, dial: C2.dial };
+};
 var STRIPE_COUNT = (name) => new Set((STRIPES[name] || [[0, 1, 0]]).map((x) => x[2])).size;
 function draw(o) {
   DIALS = [{ name: "live", d: o.d, own: true, items: o.items }];
@@ -9388,7 +9429,7 @@ function draw(o) {
   const e = (box[2] + box[3]) / 4, cx = box[0] + box[2] / 2, cy = box[1] + box[3] / 2;
   const lin = two ? `<linearGradient id="floorg" gradientUnits="userSpaceOnUse" x1="${f(cx - e)}" y1="${f(cy - e)}" x2="${f(cx + e)}" y2="${f(cy + e)}"><stop offset="0" stop-color="${o.floor}"/><stop offset="1" stop-color="${o.floor2}"/></linearGradient>` : "";
   const ground = (svg, fill) => svg.replace('<rect x="-300" y="-300" width="600" height="600" fill="url(#pool)"/>', `${lin ? `<defs>${lin}</defs><rect x="-300" y="-300" width="600" height="600" fill="url(#floorg)"/>` : ""}<rect x="-300" y="-300" width="600" height="600" fill="${fill}"/>`);
-  if (o.view === "detail") {
+  if (o.lighting !== "flat") {
     const stops = two ? `<stop offset="0" stop-color="#fff" stop-opacity="0.24"/><stop offset="0.55" stop-color="#fff" stop-opacity="0.12"/><stop offset="1" stop-color="#000" stop-opacity="0.1"/>` : `<stop offset="0" stop-color="${hsl(o.floor, R[0])}"/><stop offset="0.55" stop-color="${hsl(o.floor, R[1])}"/><stop offset="1" stop-color="${hsl(o.floor, R[2])}"/>`;
     const pool = `<radialGradient id="pool" cx="${f(Math.cos(rad(o.L)) * 6)}" cy="${f(Math.sin(rad(o.L)) * 6)}" r="24" gradientUnits="userSpaceOnUse">${stops}</radialGradient>`;
     return ground(make(o.flareOn ? "flare" : "off").replace(/<radialGradient id="pool"[^>]*>.*?<\/radialGradient>/s, pool), "url(#pool)").replace("__VB__", vb(...box));
@@ -9402,6 +9443,7 @@ __export(miyazaki_exports, {
   PRESETS: () => PRESETS2,
   STRIPE_COUNT: () => STRIPE_COUNT2,
   attach: () => attach2,
+  caseBox: () => caseBox2,
   draw: () => draw2,
   edge: () => edge2
 });
@@ -10002,6 +10044,10 @@ function attach2(pk) {
   PK3 = pk;
 }
 var edge2 = (floor2, view) => view === "detail" ? hsl2(floor2, STYLE2.ramp[2]) : floor2;
+var caseBox2 = (key, size) => {
+  const C2 = scaleCase2(CASES2[key], size);
+  return { h: C2.l2l, w: (C2.cushion ? 2 * C2.cushion.a : C2.od) + 2 * C2.crown.h, dial: C2.dial };
+};
 var STRIPE_COUNT2 = (name) => new Set((STRIPES2[name] || [[0, 1, 0]]).map((x) => x[2])).size;
 function draw2(o) {
   DIALS2 = [{ name: "live", d: o.d, own: true, items: o.items }];
@@ -10030,7 +10076,7 @@ function draw2(o) {
   const e = (box[2] + box[3]) / 4, cx = box[0] + box[2] / 2, cy = box[1] + box[3] / 2;
   const lin = two ? `<linearGradient id="floorg" gradientUnits="userSpaceOnUse" x1="${f2(cx - e)}" y1="${f2(cy - e)}" x2="${f2(cx + e)}" y2="${f2(cy + e)}"><stop offset="0" stop-color="${o.floor}"/><stop offset="1" stop-color="${o.floor2}"/></linearGradient>` : "";
   const ground = (svg, fill) => svg.replace('<rect x="-300" y="-300" width="600" height="600" fill="url(#pool)"/>', `${lin ? `<defs>${lin}</defs><rect x="-300" y="-300" width="600" height="600" fill="url(#floorg)"/>` : ""}<rect x="-300" y="-300" width="600" height="600" fill="${fill}"/>`);
-  if (o.view === "detail") {
+  if (o.lighting !== "flat") {
     const stops = two ? `<stop offset="0" stop-color="#fff" stop-opacity="0.24"/><stop offset="0.55" stop-color="#fff" stop-opacity="0.12"/><stop offset="1" stop-color="#000" stop-opacity="0.1"/>` : `<stop offset="0" stop-color="${hsl2(o.floor, R[0])}"/><stop offset="0.55" stop-color="${hsl2(o.floor, R[1])}"/><stop offset="1" stop-color="${hsl2(o.floor, R[2])}"/>`;
     const pool = `<radialGradient id="pool" cx="${f2(Math.cos(rad2(o.L)) * 6)}" cy="${f2(Math.sin(rad2(o.L)) * 6)}" r="24" gradientUnits="userSpaceOnUse">${stops}</radialGradient>`;
     return ground(make(o.flareOn ? "flare" : "off").replace(/<radialGradient id="pool"[^>]*>.*?<\/radialGradient>/s, pool), "url(#pool)").replace("__VB__", vb(...box));
@@ -10434,7 +10480,7 @@ var Bar = class {
 // src/main.js
 var STYLES = { engineer: engineer_exports, miyazaki: miyazaki_exports };
 var FIRST_LINK = "https://duztman.github.io/dial-tool/#3FP94TVYV6068DZTAR5EHAGDJ5KDX3C83PTV5PYTSG5YH8EY8HBEBGJ8KSJTS25J1ZVXNWAJETSHDKB438N57SYCGTJB18E93MY138E955D0HKZXDS82HKV04FQ27J8DNM2F1SFEBJGMPT921TZ4TM2KF1PP83Q6XJRD756D03576X1P7V3WYA4WE7HFRRKCWSR1AS6MW6RSD6NPGCW40P2KG91EHD0GYS0GZT0PQNZB4ZCB9AXKNZZ4A2PB7YQ7CK7ECXPRNVGVY89GPG0FWGVB9ECZGEQXETH7D08TB2V8ANR9J7E8W1X0YXKD7F2YRKQK2MS3PM3X4NBQFGRM2H8H4K4KMR99KFCA6FND4TYQ8CFMYYNPNH70PPM943XT02FT2PMECAE9J5JTCXNC7ZX8TZ89BQQAF87FX5X8DAXBT7FRDVAWGFAGJ914682JT5PSMTCE2EMDDGYY4AMHRMBXH7H844F8PW9XMX90MDT2DKFJAPKPFKVSC319KBRHHAV5HPPZ5565S3SKDKRH7V1SWZZ5F5WMZ5KEDTZ9D94YAK1K05B6Z8HSSH1Y3Z3760XY4N5HRYPMVTZK00WDE0TRE5TYPWX63R4GKVKPV643MZVQ43RPZE5W87KVXTWNXW70CQ8SN75FJYSZCD9CNNSXWV1Y7H2ZSH6ECAT1WGSBAK70ZENMCDTKZ0C";
-var VERSION = "beta 1.0";
+var VERSION = "beta 1.0.9";
 var FONT_BASE = "../fonts/";
 var S = { t: 10 * 3600 + 10 * 60, date: "" };
 var W = {
@@ -10457,6 +10503,8 @@ var W = {
   insert: null,
   // the diver's insert: [top, bottom]
   side_shown: true,
+  lighting: "dramatic",
+  // dramatic (spotlight, flare) or flat — on its own, whatever the view (01:48)
   L: 225,
   h: 40,
   // the light: from the upper left, 40° high
@@ -10602,6 +10650,7 @@ var options = (view = W.view) => ({
   size: W.size,
   view,
   flare: W.flare,
+  lighting: W.lighting,
   flareOn: W.blurs && W.flare_on,
   fl: W.fl,
   glass: W.glass,
@@ -10660,7 +10709,13 @@ function frame_view() {
   if (!drawn_view) return;
   const [x, y, w, h] = drawn_view.dataset.box.split(" ").map(Number), mw = main.clientWidth, mh = main.clientHeight, [vw, vh] = visible();
   if (!mw || !mh || vw <= 0 || vh <= 0) return;
-  const k = Math.max(w / vw, h / vh) * 1.08 / W.zoom;
+  const cb = E().caseBox(W.key, W.size);
+  let k;
+  if (W.view === "dial") k = cb.dial * (1 + 2 * (+S.margin || 0) / S.dial_d) / Math.min(vw, vh) / W.zoom;
+  else {
+    const M = 2 * (16 + 32 + 16), [bw, bh] = W.view === "full" ? [w, h] : [cb.w, cb.h];
+    k = Math.max(bw / Math.max(vw - M, 40), bh / Math.max(vh - M, 40)) / W.zoom;
+  }
   drawn_view.setAttribute("viewBox", `${x + w / 2 - (vw / 2 + W.pan[0]) * k} ${y + h / 2 - (vh / 2 + W.pan[1]) * k} ${mw * k} ${mh * k}`);
   place_sun();
 }
@@ -10934,6 +10989,15 @@ function chk(text, get, set, shown = () => true, flush = false) {
   });
   return row;
 }
+function chk_pair(a, b) {
+  const one = chk(...a), two = chk(...b);
+  const row = el("div", { className: "row chk pair" }, one.querySelector(".check"), two.querySelector(".check"));
+  const [, , , shown_b = () => true] = b, second = row.lastChild;
+  syncs.push(() => {
+    second.style.visibility = shown_b() ? "" : "hidden";
+  });
+  return row;
+}
 var pct = (text, lo, hi, obj, key, shown) => {
   const row = num(text, lo, hi, 1, () => Math.round(obj()[key] * 100), (v) => {
     obj()[key] = v / 100;
@@ -10972,9 +11036,10 @@ function ground_look() {
   if (d) h = hi === r ? ((g - b) / d + 6) % 6 : hi === g ? (b - r) / d + 2 : (r - g) / d + 4;
   const ch = Math.round(h * 60), cs = Math.round(Math.min(1, sat * 2.2 + 0.15) * 100), cl = Math.round(l * 30);
   side.style.setProperty("--column", `hsl(${ch} ${cs}% ${cl}% / 0.85)`);
+  side.style.setProperty("--column-top", `hsl(${ch} ${cs}% ${Math.min(100, cl + 10)}% / 0.85)`);
   side.style.setProperty("--uiblack", cl >= 22 ? `hsl(${ch} ${cs}% ${cl - 22}%)` : `hsl(${ch} ${Math.min(cs, 60)}% ${cl + 22}%)`);
   side.style.setProperty("--uiblack-text", cl >= 22 ? `hsl(${ch} ${cs}% ${Math.max(0, cl - 40)}%)` : `hsl(${ch} ${Math.min(cs, 50)}% ${cl + 40}%)`);
-  main.style.setProperty("--floor", W.floor2 && W.floor ? `linear-gradient(135deg, ${W.floor}, ${W.floor2})` : E().edge(c, W.view));
+  main.style.setProperty("--floor", W.floor2 && W.floor ? `linear-gradient(135deg, ${W.floor}, ${W.floor2})` : E().edge(c, W.lighting === "flat" ? "flat" : "detail"));
   const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
   main.classList.toggle("dark", lum < 0.55);
   ground_dot.style.setProperty("--c", c);
@@ -11128,12 +11193,9 @@ function panel() {
   link.onpaste = () => setTimeout(open, 0);
   const dial = pane("Dial", true, () => "", [link, el("button", { type: "button", className: "btn main", id: "sc-open", textContent: "Open", onclick: open })]);
   dial.body.append(note2(() => message));
-  const watch = pane("Watch", true, () => `${W.key} \xB7 ${W.strap === "nato" ? "NATO" : W.strap} \xB7 ${W.style}`);
+  const watch = pane("Watch", true, () => `${W.key} \xB7 ${W.style}`);
   const nato_at = (i) => nato_colours()[i] || nato_colours()[0];
   watch.body.append(
-    seg("Style", [["engineer", "Engineer"], ["miyazaki", "Miyazaki"]], () => W.style, (v) => {
-      W.style = v;
-    }),
     seg("View", [["detail", "Detail"], ["full", "Whole watch"], ["dial", "Dial"]], () => W.view, (v) => {
       W.view = v;
       W.zoom = 1;
@@ -11164,7 +11226,10 @@ function panel() {
     }, () => W.key === "diver"),
     colour("Insert bottom", () => insert()[1], (c) => {
       W.insert = [insert()[0], c];
-    }, () => W.key === "diver"),
+    }, () => W.key === "diver")
+  );
+  const strap = pane("Strap", true, () => W.strap === "nato" ? "NATO" : W.strap);
+  strap.body.append(
     seg("Strap", [["leather", "Leather"], ["nato", "NATO"], ["bracelet", "Bracelet"]], () => W.strap, (v) => {
       W.strap = v;
       if (v === "bracelet") W.metal = null;
@@ -11182,13 +11247,13 @@ function panel() {
     }, () => W.strap === "nato", true),
     ...[0, 1, 2].map((i) => colour(`Stripe ${i + 1}`, () => nato_at(i), (c) => {
       W.nato_colours = [0, 1, 2].map((k) => k === i ? c : nato_at(k));
-    }, () => W.strap === "nato" && i < E().STRIPE_COUNT(W.nato))),
-    el("div", { className: "row" }, el("span", { className: "blank" }), el("button", { type: "button", className: "btn", id: "sc-reset-watch", textContent: "Reset watch colours", onclick: () => {
-      W.metal = W.leather = W.nato_colours = W.insert = null;
-      render();
-      sync_panel();
-    } }))
+    }, () => W.strap === "nato" && i < E().STRIPE_COUNT(W.nato)))
   );
+  const reset = pane("Reset", true, () => "", [el("button", { type: "button", className: "btn", id: "sc-reset-watch", textContent: "Reset watch colours", onclick: () => {
+    W.metal = W.leather = W.nato_colours = W.insert = null;
+    render();
+    sync_panel();
+  } })]);
   const dial_rows = el("div", { className: "dialcolours" }), dial_syncs = [];
   let listed = null;
   syncs.unshift(() => {
@@ -11235,21 +11300,20 @@ function panel() {
   const flare_shown = () => W.blurs && W.flare_on;
   const flare = pane("Flare", true, () => !W.blurs ? "blurs off" : !W.flare_on ? "off" : `${W.style === "miyazaki" ? W.flare + " \xB7 " : ""}${Math.round(W.fl.size * 100)} %`);
   flare.body.append(
-    chk("Blurs", () => W.blurs, (v) => {
+    chk_pair(["Blurs", () => W.blurs, (v) => {
       W.blurs = v;
-    }),
-    chk("Flare", () => W.flare_on, (v) => {
+    }], ["Flare", () => W.flare_on, (v) => {
       W.flare_on = v;
-    }, () => W.blurs),
+    }, () => W.blurs]),
     seg("Kind", [["arc", "Arc"], ["dot", "Dot"]], () => W.flare, (v) => {
       W.flare = v;
     }, () => flare_shown() && W.style === "miyazaki"),
     pct("Size %", 20, 300, () => W.fl, "size", flare_shown),
     pct("Case colour %", 0, 100, () => W.fl, "tint", flare_shown),
     pct("Brightness %", 0, 300, () => W.fl, "bright", flare_shown),
-    note2(() => flare_shown() && W.view !== "detail" ? "The flare shows on the Detail view." : "", "field")
+    note2(() => flare_shown() && W.lighting === "flat" ? "The flare shows with dramatic lighting." : "", "field")
   );
-  const glass = pane("Glass", true, () => `shine ${Math.round(W.glass.op * 100)} %`);
+  const glass = pane("Glass reflection", true, () => `shine ${Math.round(W.glass.op * 100)} %`);
   glass.body.append(
     pct("Width %", 0, 400, () => W.glass, "fat"),
     pct("Length %", 10, 300, () => W.glass, "len"),
@@ -11264,17 +11328,29 @@ function panel() {
     }),
     note2(() => `The view as shown, ${EXPORT.px} px along its longer side. The PDF holds the same picture on a page at the drawing\u2019s real size in millimetres.`, "field", true)
   );
-  const mark = el("span", { className: "logo", ariaHidden: "true" });
+  const mark = el("button", { type: "button", className: "logo", id: "logo", title: "About Dial Tool", ariaLabel: "About Dial Tool", ariaExpanded: "false" });
   mark.innerHTML = icon(`<circle cx="8" cy="8" r="7" stroke-width="1.375"/><path d="M1.62 10.88L10.88 1.62M6.5 6H14.71M6.5 6V14.84M10 6V10H6.5M10 10L12.95 12.95" stroke-width="1"/>`);
   const name = el("h1", { textContent: "Dial Tool " });
   name.append(el("span", { className: "light", textContent: "Show Case" }));
   const title = el("div", { className: "title" }, name, el("span", { className: "quiet", textContent: VERSION }), el("a", { className: "quiet help", href: "https://duztman.github.io/dial-tool/guide/", target: "_blank", rel: "noopener", textContent: "Help" }));
-  const TABS = [["Dial", [dial]], ["Watch", [watch]], ["Light", [light, shade, flare, glass]], ["Export", [out]]];
+  const style_line = el(
+    "div",
+    { className: "pinline" },
+    seg("Style", [["engineer", "Engineer"], ["miyazaki", "Miyazaki"]], () => W.style, (v) => {
+      W.style = v;
+    }),
+    seg("Lighting", [["dramatic", "Dramatic"], ["flat", "Flat"]], () => W.lighting, (v) => {
+      W.lighting = v;
+    })
+  );
+  const TABS = [["Dial", [dial]], ["Watch", [watch, strap, reset]], ["Light", [light, shade, flare, glass]], ["Export", [out]]];
   const tabs = el("nav", { className: "tabs" });
   const show = (k) => {
     TABS.forEach(([, panes], i) => panes.forEach((p) => {
       p.section.hidden = i !== k;
     }));
+    style_line.hidden = TABS[k][0] !== "Light";
+    TABS.forEach(([, panes], i) => panes.forEach((p, j) => p.section.classList.toggle("first", i === k && j === 0)));
     [...tabs.children].forEach((b, i) => {
       b.classList.toggle("on", i === k);
       b.setAttribute("aria-selected", String(i === k));
@@ -11290,11 +11366,43 @@ function panel() {
   });
   tabs.setAttribute("role", "tablist");
   show(0);
+  const a = (href, text) => el("a", { href, textContent: text, target: "_blank", rel: "noopener" }), line = (...kids) => el("p", {}, ...kids);
+  const first = line("A tool for designing watch dials, ring by ring, in the browser. Designed and vibecoded by Okay (pronounced oak\xB7eye), a graphic designer in Istanbul working across contemporary art, architecture and cinema, for a watch he is building. ");
+  const MAIL = [122, 120, 116, 57, 123, 126, 118, 122, 112, 87, 101, 118, 123, 126, 110, 118, 115, 118, 101, 118, 124, 110, 118, 124, 120];
+  first.append("Contact him ", el("a", { href: "#contact", textContent: "here", onclick: (e) => {
+    e.preventDefault();
+    location.href = "mailto:" + String.fromCharCode(...MAIL.map((c) => c ^ 23).reverse());
+  } }), ".");
+  const bio = el(
+    "div",
+    { className: "bio night", id: "bio", hidden: true },
+    first,
+    line("Source, every version and the MIT licence: ", a("https://github.com/duztman/dial-tool", "github.com/duztman/dial-tool"), "."),
+    el("h3", { textContent: "Built on open source" }),
+    el(
+      "ul",
+      {},
+      el("li", {}, a("https://harfbuzz.github.io", "HarfBuzz"), " sets the type (harfbuzzjs, MIT)."),
+      el("li", {}, a("https://skia.org", "Skia"), "\u2019s PathKit joins and cuts the shapes (BSD 3-clause)."),
+      el("li", {}, a("https://rsms.me/inter/", "Inter"), " by Rasmus Andersson is the stand-in typeface; ", a("https://fonts.google.com/specimen/Silkscreen", "Silkscreen"), " by Jason Kottke sets the tiny figures (SIL OFL)."),
+      el("li", {}, "The twenty-one dial typefaces, each under its designers\u2019 SIL Open Font License, most of them from ", a("https://fonts.google.com", "Google Fonts"), "."),
+      el("li", {}, a("https://www.drawbot.com", "DrawBot"), " is where the tool began; ", a("https://esbuild.github.io", "esbuild"), " builds it and ", a("https://playwright.dev", "Playwright"), " tests it.")
+    )
+  );
+  const open_bio = (on) => {
+    bio.hidden = !on;
+    mark.setAttribute("aria-expanded", String(on));
+  };
+  mark.onclick = () => open_bio(bio.hidden);
+  document.addEventListener("pointerdown", (e) => {
+    if (!bio.hidden && !bio.contains(e.target) && !mark.contains(e.target)) open_bio(false);
+  }, true);
   return el(
     "aside",
     { className: "panel" },
-    el("header", {}, el("div", { className: "mast" }, el("div", { className: "about" }, mark), title)),
+    el("header", {}, el("div", { className: "mast" }, el("div", { className: "about" }, mark, bio), title)),
     tabs,
+    style_line,
     el("div", { className: "form" }, ...TABS.flatMap(([, panes]) => panes.map((p) => p.section)))
   );
 }
@@ -11381,4 +11489,3 @@ try {
 render();
 
 </script>
-</body></html>
