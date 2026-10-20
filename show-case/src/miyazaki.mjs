@@ -212,7 +212,7 @@ const inkRelief = (x, s, L) => { if (!INK_K) return "";
   const id = "ik" + (INK_N++), ux = Math.cos(rad(L)) / s, uy = -Math.sin(rad(L)) / s, es = 0.035 * INK_K, eh = 0.025 * INK_K;
   CLIPS.push(`<clipPath id="${id}"><path d="${x.p}"/></clipPath>`);
   const cut = (dx, dy, fill, op) => `<g transform="translate(${f(dx)} ${f(dy)})"><path d="M-9999 -9999H9999V9999H-9999Z${x.p}" fill-rule="evenodd" fill="${fill}" fill-opacity="${op}"/></g>`;
-  return `<g clip-path="url(#${id})">${cut(ux * es, uy * es, "#000", 0.45)}${cut(-ux * eh, -uy * eh, "#fff", 0.5)}</g>`; };
+  return `<g clip-path="url(#${id})">${cut(ux * es, uy * es, "#000", 0.62)}${cut(-ux * eh, -uy * eh, "#fff", 0.8)}</g>`; };
 /** a hand's bevel, as in the app (Shadows → Bevels): the half on the light's side lighter, the other darker (20:11) */
 const handBevel = (x, A, L) => { if (!HAND_BEVEL || !x.hand) return "";
   const id = "hb" + (INK_N++), a = rad(A[x.hand]), side = Math.cos(a) * Math.cos(rad(L)) + Math.sin(a) * Math.sin(rad(L));
@@ -536,7 +536,7 @@ const brighter = (h, k) => "#" + [1, 3, 5].map((i) => Math.round(parseInt(h.slic
 const glint = (r, L, w = 0.55, o = 0.6, span = 26) => GLINT === "off" ? "" : GLINT === "flare" ? (() => { const x = Math.cos(rad(L)) * r, y = Math.sin(rad(L)) * r;
   // two flares (18:49), each watch gets one: the arc (a long soft bow along the edge by the glass) or the dot (a big soft bloom, a small bright core)
   if (FLARE_KIND === "arc") return `<path filter="url(#flare)" d="M${f(Math.cos(rad(L - span * 1.6)) * r)} ${f(Math.sin(rad(L - span * 1.6)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(L + span * 1.6)) * r)} ${f(Math.sin(rad(L + span * 1.6)) * r)}" fill="none" stroke="${FLARE_TINT}" stroke-opacity="${Math.min(1, o * 0.9)}" stroke-width="${w * 3.5}" stroke-linecap="round"/>`;
-  return `<circle cx="${f(x)}" cy="${f(y)}" r="${f(2.2 + w * 2.4)}" fill="${FLARE_TINT}" fill-opacity="${f(Math.min(1, o * 1.1) * FLARE_SCALE)}" filter="url(#flare)"/><circle cx="${f(x)}" cy="${f(y)}" r="${f(0.18 + w * 0.12)}" fill="#fff" fill-opacity="${f(0.95 * Math.sqrt(FLARE_SCALE))}"/>`; })() : `<path d="M${f(Math.cos(rad(L - span)) * r)} ${f(Math.sin(rad(L - span)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(L + span)) * r)} ${f(Math.sin(rad(L + span)) * r)}" fill="none" stroke="#fff" stroke-opacity="${o}" stroke-width="${w}" stroke-linecap="round"/>`;
+  return `<circle cx="${f(x)}" cy="${f(y)}" r="${f(2.2 + w * 2.4)}" fill="${FLARE_TINT}" fill-opacity="${f(Math.min(1, o * 0.85) * FLARE_SCALE)}" filter="url(#flare)"/><circle cx="${f(x)}" cy="${f(y)}" r="${f(0.32 + w * 0.22)}" fill="#fff" fill-opacity="${f(0.95 * Math.sqrt(FLARE_SCALE))}"/>`; })() : `<path d="M${f(Math.cos(rad(L - span)) * r)} ${f(Math.sin(rad(L - span)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(L + span)) * r)} ${f(Math.sin(rad(L + span)) * r)}" fill="none" stroke="#fff" stroke-opacity="${o}" stroke-width="${w}" stroke-linecap="round"/>`;
 /** an Oyster-like bracelet, seen from above: under it a dark strip (the pins and the links' undersides show in the
  *  gaps); per row two brushed outer links rounded on their outer side and a polished, domed middle link with a long
  *  glint on the light's side; solid end links fitted to the case; a slight taper. `look(d, T, kind)` draws a link in
@@ -737,9 +737,9 @@ const DETAIL = 31, FULL = { w: 126 / 1.2, h: 308 / 1.2 }, DIAL = 19.5;      // 1
 for (const [n0, key, strap, v, L0, h, dial, metal0, size] of RUNS) {
   if (process.env.ONLY && !process.env.ONLY.split(",").includes(n0)) continue;
   const n = n0 + (process.env.SUF || ""), metal = process.env.METAL || metal0;
-  const L = process.env.COMP ? 225 : L0;      // the comparisons (19:16): every watch lit from the top left, like the cover
+  const L = process.env.COMP ? 225 : process.env.LIGHT ? +process.env.LIGHT : L0;      // the comparisons (19:16): every watch lit from the top left, like the cover
   FLARE_KIND = [..."seed" + n0].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 9973, 7) % 2 ? "arc" : "dot";      // random, but the same each run
-  const make = (mode) => { GLINT = mode; return sheet(key, strap, v, L, true, h, dial, metal, size).replace("__CLIPS__", CLIPS.join("") + `<filter id="flare" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="1.1"/></filter>`); };
+  const make = (mode) => { GLINT = mode; return sheet(key, strap, v, L, true, h, dial, metal, size).replace("__CLIPS__", CLIPS.join("") + `<filter id="flare" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="1.6"/></filter>`); };
   const drama = make("flare").replace(/<radialGradient id="pool"[^>]*>.*?<\/radialGradient>/s, `<radialGradient id="pool" cx="${f(Math.cos(rad(L)) * (process.env.POINT ? 15 : 6))}" cy="${f(Math.sin(rad(L)) * (process.env.POINT ? 15 : 6))}" ${process.env.POINT ? `r="21" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#e2d9c0"/><stop offset="0.3" stop-color="#b4a98e"/><stop offset="1" stop-color="#7a7262"/>` : `r="24" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#a09a85"/><stop offset="0.55" stop-color="#968e7c"/><stop offset="1" stop-color="#79725f"/>`}</radialGradient>`);
   const flat = make("off").replace('fill="url(#pool)"', 'fill="#877f6d"');
   if (!process.env.COMP) fs.writeFileSync(n + "-full.svg", flat.replace("__VB__", `${-FULL.w / 2} ${-FULL.h / 2} ${FULL.w} ${FULL.h}`));
