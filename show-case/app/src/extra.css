@@ -1,0 +1,318 @@
+/* Dial Show Case's own few rules, over Dial Tool's stylesheet (which comes whole, so rows, the bar and the pills look
+   as they do there). Unlayered, so they win over the tool's layers. */
+
+/* the canvas fills the window; over it, on the right, one column: the controls, and under them the bar, always there.
+   The column is Dial Tool's night (light on dark), its ground 70 % black over the canvas (Okay, 20 Oct 2026, 23:14) */
+#app.sc { display: block; position: fixed; inset: 0; }      /* the window's own size, whatever the page around it does (no gap under it) */
+body { background: var(--bar); }
+#app.sc main { position: absolute; inset: 0; background: var(--floor, var(--ground)); touch-action: none; cursor: crosshair; }
+#app.sc .side { position: absolute; top: 0; right: 0; bottom: 0; width: var(--panel-w); display: flex; flex-direction: column;
+  border: 0; border-radius: 0; background: var(--column, rgba(0, 0, 0, 0.7)); z-index: 5; }
+.side .panel { flex: 1 1 auto; width: auto; min-height: 0; translate: none; border: 0; background: transparent; }
+.side .panel > header { background: transparent; }
+.side .form { --surface: transparent; --inset: var(--night-field); --well: var(--night-field); --row-rule: var(--uiblack, #000); --line-on-grey: var(--uiblack, #000); background: transparent; }
+.side .pillswitch { background: transparent; }
+/* the bar, the column's width: two lines, as Dial Tool has it on a phone — play · speed · time · now, then the day and
+   the view. Its ground the same see-through black as the column's; a hairline over it */
+.side .bar { flex: none; flex-wrap: wrap; height: auto; padding: 0 0 env(safe-area-inset-bottom, 0px); background: var(--bar); border-top: 0; }      /* the bar stays Dial Tool's grey */
+.side .bar .lead { width: 100%; height: var(--bar-lead-narrow); padding-left: var(--u6); }
+.side .bar .lead .play { margin-right: calc(var(--u6) - var(--u2)); }
+.side .bar .group { border-left: 0; }
+.side .bar .day { flex: 1 1 0; height: var(--bar-day-narrow); padding: 0 var(--margin); }
+.side .bar .viewing { padding: 0 var(--margin) 0 0; }
+.side .bar .lead :is(.timewell .time, .timebox .half) { font-size: var(--t-time-narrow); }
+.side .bar .humpname { display: none; }
+.side .bar .humpname.rider { display: block; bottom: auto; top: 50%; height: auto; padding: 0; translate: -50% -50%; line-height: 1; background: none; color: var(--black); pointer-events: none; }
+.side .bar .humpname.rider .zero { display: none; }
+.side .bar .humpname.rider.sliding { height: auto; padding: 0; border-radius: 0; background: none; color: var(--black); opacity: var(--pixel-ink-bar); font-family: var(--pixel); font-size: var(--t-pixel); font-weight: 400; line-height: 1; letter-spacing: 0; }
+.side .bar .speeds { --speed-thumb: var(--speed-thumb-narrow); }
+.side .bar .speedtrack input[type="range"]::-webkit-slider-thumb { background: var(--bar-light); box-shadow: none; }
+.side .bar .speedtrack input[type="range"]::-moz-range-thumb { background: var(--bar-light); box-shadow: none; }
+.side .steps12 button:nth-child(odd):not(.special) { display: none; }
+.side .bar .humps::before, .side .bar .knob { --black: var(--bar-light); }
+/* a phone: the column along the foot, the canvas above it */
+@media (max-width: 860px) {
+  #app.sc .side { top: auto; left: 0; width: auto; height: 55%; }
+  .side .panel { overflow-y: auto; }
+  .side .panel .form { overflow: visible; }
+}
+.stage, .stage > svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* the sun: a small white disc ringed in black, where the light comes from; nearer the middle, higher */
+.sunknob { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; padding: 0; border-radius: 50%;
+  border: 2px solid var(--black); background: var(--white); box-shadow: 0 0 0 2px var(--white); pointer-events: none; }
+main.sunning .sunknob { transform: scale(1.25); }
+.syspick { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.row.col { position: relative; }
+.row.txt > input { min-width: 0; }
+
+/* on the canvas, bottom left: Fit and the background (Okay, 20 Oct 2026, 23:28); its popup above them, a night part */
+.canvasfoot { position: absolute; left: calc(var(--canvas-inset, 16px) + env(safe-area-inset-left, 0px)); bottom: calc(var(--canvas-inset, 16px) + env(safe-area-inset-bottom, 0px)); z-index: 4; }
+.canvasbtns { display: flex; flex-direction: column; align-items: flex-start; gap: var(--u2, 8px); }      /* stacked, Background at the bottom (02:05) */
+.groundpop { position: absolute; left: 0; bottom: calc(100% + var(--u3, 10px)); width: min(var(--panel), calc(100vw - 32px)); padding: var(--pop-top, 16px) var(--margin) var(--u4, 12px); }
+.groundpop .pophead { display: flex; align-items: center; height: var(--head); }
+.groundsw { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--u2, 8px); margin-bottom: var(--u3, 10px); }
+.groundpick { display: flex; align-items: center; gap: var(--u2, 8px); height: var(--control); padding: 0 var(--u2, 8px) 0 2px; border: var(--hair) solid var(--rule); border-radius: var(--round-small, 4px); background: none; color: var(--ink); font-size: var(--t-s); text-align: left; }
+.groundpick i { flex: none; width: calc(var(--control) - 6px); height: calc(var(--control) - 6px); border-radius: 2px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18); }
+.groundpick span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.groundpick.on { border-color: var(--ink); background: var(--night-field); }
+#ground .dot { background-size: cover; }
+/* the column's switch: the top right of the canvas beside the column (or of the whole canvas when it is hidden) */
+
+.groundpop[hidden] { display: none !important; }
+.sideswitch, .canvasbtns .onview { white-space: nowrap; }
+@media (max-width: 860px) {      /* a phone: the column takes the foot, so Fit and Background go to the top left, their popup dropping */
+  .canvasfoot { bottom: auto; top: calc(var(--canvas-inset, 16px) + env(safe-area-inset-top, 0px)); }
+  .groundpop { bottom: auto; top: calc(100% + var(--u3, 10px)); }
+}
+.canvasbtns .onview .word, .sideswitch .word { display: inline !important; }
+.canvasbtns .backdropbox > .word, .sideswitch > .word { max-width: none !important; }
+#fit { padding: 0 var(--u4); }
+#ground { gap: var(--unit) !important; }
+/* a pane with its main control on its heading line: Dial · the link · Open */
+.pane.headed > .headline { display: flex; align-items: center; gap: var(--u2, 8px); height: var(--head); }
+.pane.headed > .headline > .fold { flex: none; width: auto; }
+.pane.headed > .headline > .fold .summary { display: none; }
+.pane.headed > .headline > input { flex: 1 1 auto; min-width: 0; height: var(--control); }
+/* the column narrower, for more canvas (23:38): Dial Tool's six columns at 42 px, its side margins at 16 */
+#app.sc .side { --col: 42px; --margin: 16px; --panel: calc(2 * var(--margin) + var(--lead) + 6 * var(--col) + 5 * var(--gap)); --panel-w: calc(var(--panel) + var(--hair)); }
+.pane.headed > .headline { min-width: 0; }
+.pane.headed > .headline > input { flex: 1 1 0; }
+.pane.headed > .headline > .btn { flex: none; min-width: 0; }
+/* a number's slider on a line of its own, under its name and box (23:46): the pair reads as one row, no line between */
+.numpair { display: block; }
+.body .row.slideline { min-height: var(--line); padding: 0; align-items: center; }
+.body .row.slideline > input[type="range"] { grid-column: 1 / -1; width: 100%; }
+/* the bar's lower floor: as tall as its ruler and its hours, no room under them (23:46); 10:10 keeps its line on the
+   ruler, its label goes */
+.side .bar .day { height: auto; align-content: start; padding-top: var(--u2, 8px); padding-bottom: var(--u1, 3px); }
+.side .steps12 button.special { display: none; }
+/* zoom: one pill, − + Fit, on the canvas bottom left */
+.zoompill { display: flex; align-items: stretch; padding: 0; border-radius: var(--round-switch); overflow: hidden; background: var(--canvas-fill); }
+.zoompill .zstep { display: grid; place-items: center; min-width: var(--control-large); padding: 0 var(--u2, 8px); border: 0; background: none; color: inherit; }
+.zoompill .zstep + .zstep { border-left: var(--hair) solid var(--line-faint); }
+.zoompill .fitword { padding: 0 var(--u4, 12px); }
+@media (hover: hover) { .zoompill .zstep:hover { background: var(--line-faint); } }
+/* a colour of the dial and its ink height, one group */
+.inkgroup .row.inkrow > label { padding-left: var(--u4, 12px); color: var(--grey); }
+/* the background popup: one colour on the left, a gradient on the right */
+.groundpop { width: min(420px, calc(100vw - 32px)); }
+.groundsides { display: grid; grid-template-columns: 1fr 1fr; gap: var(--margin); padding-bottom: var(--u2, 8px); }
+.groundside { display: grid; gap: var(--u3, 10px); align-content: start; }
+.groundside h3 { color: var(--grey); }
+.groundtiles { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--u2, 6px); }
+.groundtile { aspect-ratio: 1; padding: 2px; border: var(--hair) solid transparent; border-radius: var(--round-small, 4px); background: none; }
+.groundtile i { display: block; width: 100%; height: 100%; border-radius: 2px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18); }
+.groundtile.on { border-color: var(--ink); }
+.groundpick { justify-self: start; }
+.groundpick.on { box-shadow: 0 0 0 var(--hair) var(--ink); }
+.gradpick { gap: var(--u1, 3px); }
+.gradpick .gdot { display: grid; place-items: center; padding: 2px; border: 0; background: none; }
+.gradpick .gdot .dot { width: 1.2em; height: 1.2em; border-radius: var(--round-tiny); background: var(--c); }
+/* how fast: a pill of three, in the bar's own look; the chosen one filled */
+.side .bar .speedpill { display: flex; flex: 1; min-width: 0; height: var(--bar-control); border: var(--hair) solid var(--bar-light); border-radius: calc(var(--bar-control) / 2); overflow: hidden; }
+.side .bar .speedpill > button { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; background: none; color: var(--bar-light); font: inherit; font-size: var(--t-xs); }
+.side .bar .speedpill > button + button { border-left: var(--hair) solid var(--bar-light); }
+.side .bar .speedpill > button.on { background: var(--bar-light); color: var(--bar); }
+@media (hover: hover) { .side .bar .speedpill > button:not(.on):hover { background: var(--bar-field); } }
+/* the canvas buttons as far from the foot as from the side (23:59): the same inset both ways */
+.canvasfoot { bottom: var(--canvas-inset, 16px); left: var(--canvas-inset, 16px); }
+.side .bar { padding-bottom: 0; }
+/* a colour's ink height (00:09): on the colours' column under its colour — the words, the number bold (a press types
+   one), its − + boxed */
+.body .row.inkrow { min-height: var(--line); }
+.body .row.inkrow > .inkbox { grid-column: 3 / -1; display: flex; align-items: center; gap: var(--u2, 8px); }
+/* the sun's and the export's notes: the whole width of the pane (00:03) */
+.body .row.note.wide > .quiet { grid-column: 1 / -1 !important; padding-left: 0 !important; }
+
+/* the bar's type all monospace, no Barlow (00:09): the time and AM · PM in the bar's mono, its boxes measured for it —
+   the time's field eight mono figures wide, AM · PM two; everything else in the bar is already mono */
+.side .bar { --time-face: var(--mono); --time-figure: 0.6em; --time-colon: 0.6em; --time-track: 0em; --time-pm: 1.2em; --time-pm-track: 0em; --t-time-narrow: 15px; }
+.side .bar .lead :is(.timewell .time, .timebox .half) { font-weight: 400; }
+/* how fast: a rectangle like the bar's other boxes */
+.side .bar .speedpill { border-radius: 0; }
+.side .bar .lead .timewell .time { width: 8ch; letter-spacing: 0; }      /* eight mono figures: "10:09:36" */
+.side .bar .lead .timebox .half { width: 2ch; letter-spacing: 0; }
+/* the lead line's boxes each as wide as their words with the same room either side (Dial Tool's rule: "equalize all
+   paddings"), the half-unit gaps between them; how fast keeps what it needs, the rest of the line is left over */
+.side .bar .speedpill { flex: none; }
+.side .bar .speedpill > button { flex: none; padding: 0 var(--u2); }
+.side .bar .lead .timewell { padding: 0 var(--u2); }
+.side .bar .lead { justify-content: flex-start; }
+.side .bar .lead #now { margin-left: auto; }
+
+/* every row one height, its line under it, what is in it centred between the lines (00:16); a pill of choices larger,
+   its words the size of the rest, its outline black — on one line, scrolling sideways if its choices don't fit, so no
+   row grows */
+.side .body .row:not(.note) { min-height: var(--line); height: var(--line); }
+.side .pillswitch { height: calc(var(--control) - 2px); padding: 2px; border-color: var(--uiblack, #000); flex-wrap: nowrap; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.side .pillswitch::-webkit-scrollbar { display: none; }
+.side .pillswitch > button { flex: none; height: 100%; padding: 0 var(--u3, 10px); font-size: var(--t-m); }
+.side .pillswitch.many { flex-wrap: nowrap; }
+/* the Dial heading on the pane's columns: the link starts where the colours do; Open as tall as the link */
+.pane.headed > .headline { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); }
+.pane.headed > .headline > .fold { grid-column: 1 / 4; }
+.pane.headed > .headline > input { grid-column: 4 / 7; width: 100%; }
+.pane.headed > .headline > .btn { grid-column: 7 / -1; justify-self: end; height: var(--control); padding: 0 var(--u3, 10px); font-size: var(--t-s); }
+/* the colour picker unseen over its swatch: the press lands on it */
+.pickwrap { position: relative; display: inline-flex; }
+.row > .pickwrap { grid-column: 3 / -1; justify-self: start; }
+.pickwrap > .overpick { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; opacity: 0; cursor: pointer; }
+.pickwrap:hover > .colour { background: var(--hover); }
+/* the sun's and the export's notes: 5 px under the line above (00:22); Show the sun's tick from the left edge */
+.body .row.note.wide > .quiet { margin-top: 0 !important; padding-top: 5px !important; }
+.body .row.chk.flush > .check { grid-column: 1 / -1; }
+
+/* one height for every control in the column, the colour swatch's (00:27): buttons, number boxes and their − +, tick
+   boxes, choices, the link; and one size of words in all of them, the labels' */
+.side { --ctl: calc(var(--t-m) + 2 * var(--pill-gap)); }
+.side .colour { height: var(--ctl); font-size: var(--t-m); }
+.side .btn { height: var(--ctl); min-width: 0; padding: 0 var(--u3, 10px); font-size: var(--t-m); line-height: 1; }
+.pane.headed > .headline > .btn { height: var(--ctl); font-size: var(--t-m); }
+.pane.headed > .headline > input { height: var(--ctl); font-size: var(--t-m); }
+.side .numbox { height: var(--ctl); }
+.side .numbox > input[type="text"] { height: var(--ctl); font-size: var(--t-m); }
+.side .numbox > .steps { height: var(--ctl); width: calc(2 * var(--ctl)); display: flex; }
+.side .numbox > .steps > .step { width: var(--ctl); height: var(--ctl); }
+.side input[type="checkbox"] { width: var(--ctl); height: var(--ctl); }
+.side .check > input[type="checkbox"] { margin-top: 0; }
+.side .check { align-items: center; }
+.side .pillswitch { height: var(--ctl); padding: 2px; }
+.side .pillswitch > button { font-size: var(--t-m); }
+/* number boxes start where the choices and swatches do: the third column */
+.side .body .row.num:not(.side) { grid-template-columns: repeat(6, minmax(0, 1fr)); column-gap: var(--gap); }
+.side .body .row.num:not(.side) > :first-child { grid-column: 1 / 3; }
+.side .body .row.num:not(.side) > .numbox { grid-column: 3 / -1; justify-self: start; }
+/* a colour's ink height: its box like the others, in black */
+/* the ink row (00:32): its words black, its box styled as every other number box, at the row's right end */
+.body .row.inkrow > .inkbox { grid-column: 3 / -1; }
+.inkbox > label { color: var(--uiblack-text, #000); }
+.inkbox > .numbox { margin-left: auto; }
+
+/* the column slides away to the right, eased, and back (00:29); its arrow rides on its left edge, outside it */
+#app.sc .side { transition: translate var(--view-time) var(--view-ease); }
+#app.sc .side.away { translate: 100% 0; }
+.sideswitch { position: absolute; top: var(--canvas-inset, 16px); right: calc(100% + var(--canvas-inset, 16px)); width: var(--control-large); padding: 0; z-index: 4; color: var(--white); }
+@media (max-width: 860px) {
+  #app.sc .side.away { translate: 0 100%; }
+  .sideswitch { top: auto; bottom: calc(100% + var(--canvas-inset, 16px)); right: var(--canvas-inset, 16px); }
+}
+@media (prefers-reduced-motion: reduce) { #app.sc .side { transition: none; } }
+/* the column's title scrolls away with the panes (00:29: not kept at the top) */
+
+/* a pane's summary only while it is folded (00:32) */
+.side .pane:not(.folded) > .fold .summary, .side .pane:not(.folded) > .headline > .fold .summary { visibility: hidden; }
+.inkbox .numbox > input[type="text"] { text-align: right; }
+
+/* every button and tick box in the column dressed as the number boxes are (00:39): the field's dark fill, its hairline,
+   its small corners, light words at the regular weight — Open, Reset, PNG, PDF, and the ticks (Show the sun, Blurs,
+   Flare, Hand bevels) */
+.side { --tick: var(--ctl); }
+.side .btn, .side .btn.main { height: var(--ctl); min-width: 0; padding: 0 var(--u3, 10px); border: var(--hair) solid var(--rule); border-radius: var(--round-small); background: var(--field); color: var(--ink); font-size: var(--t-m); font-weight: 400; }
+.side :is(.btn, .btn.main):hover { background: var(--hover); }
+.side :is(.btn, .btn.main):active { background: var(--ink); color: var(--night); }
+.side input[type="checkbox"] { border: var(--hair) solid var(--rule); border-radius: var(--round-small); background: var(--field); }
+.side input[type="checkbox"]::before { background: var(--ink); }
+.side input[type="checkbox"]:checked { background: var(--field); }
+/* the link as tall as Open and the swatches */
+.side .pane.headed > .headline > input[type="text"] { height: var(--ctl); padding: 0 var(--u2, 8px); border: var(--hair) solid var(--rule); border-radius: var(--round-small); background: var(--field); }
+
+/* the bar a third darker, every tone in it with it so the contrasts stay as they were (00:44); the play button and the
+   needle keep their own colours */
+.side .bar { --bar: #212121; --bar-ink: #9d9d9b; --bar-rule: #3c3c39; --bar-field: #2d2d2c; --bar-light: #4b4b4b; --bar-quiet: rgba(255, 255, 255, 0.43); background: var(--bar); }
+/* the bar's right edge on the rows' right edge (00:55): the column's own scrollbar takes no width (it narrowed the rows
+   on a Mac that shows scrollbars), and the lead line fills to the margin — how fast grows toward the play button,
+   its choices sharing the room */
+.side .panel { scrollbar-width: none; }
+.side .panel::-webkit-scrollbar { display: none; }
+.side .bar .lead { padding-right: var(--margin); }
+.side .bar .lead .play { margin-right: 0; }
+.side .bar .speedpill { flex: 1 1 auto; }
+.side .bar .speedpill > button { flex: 1 1 0; }
+.side .bar .lead #now { margin-left: 0; }
+
+/* how fast's words as AM · PM's: the time's face and size (00:58) */
+.side .bar .speedpill > button { font-family: var(--time-face); font-size: var(--t-time-narrow); font-weight: 400; letter-spacing: 0; }
+.side .pillswitch.many > button { padding: 0 var(--u2); }      /* a long choice: tighter, so it fits on its line */
+/* the tabs: Dial Tool's, held at the top of the column while the panes scroll under them */
+
+/* the title and the tabs stay put, as in Dial Tool; the panes scroll under them (01:16). The tabs span the column's
+   width, four equal cells, no fill of their own; their lines white, as the column's ink */
+.side .panel { display: flex; flex-direction: column; overflow: hidden; }
+.side .panel > header, .side .panel > .tabs { flex: none; }
+.side .panel > .form { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; }
+.side .panel > .form::-webkit-scrollbar { display: none; }
+.side .tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); background: none; }
+.side .mast .logo { display: grid; place-items: center; color: var(--ink); }
+.side .mast { display: flex; align-items: center; gap: var(--u3, 10px); }
+
+/* the title: Dial Tool bold, Show Case not (01:23) */
+.side .title h1 .light { font-weight: 400; }
+/* the bar's type: one monospace whose zero is plain — no slashed or dotted zeros on the bar (01:23). Liberation Mono
+   (SIL OFL), packed into the page */
+.side .bar { --mono: "Bar Inter", Inter, system-ui, sans-serif; --time-face: "Bar Inter", Inter, system-ui, sans-serif; font-family: var(--mono); font-feature-settings: "zero" 0; font-variant-numeric: tabular-nums; }
+.side .bar :is(button, input, span) { font-family: inherit; }
+.side .bar .lead :is(.timewell .time, .timebox .half), .side .bar .speedpill > button { font-family: "Bar Inter", Inter, system-ui, sans-serif; }
+/* how fast: each choice as wide as its words, the room left over shared out evenly, so every word has the same space
+   either side and the lines between fall where that puts them; the words centred on their ink */
+.side .bar .speedpill > button { flex: 1 1 auto; padding: 0; }
+/* the bar's words in one face and one size (01:25): how fast, the time, AM · PM, NOW and the day's hours — the date
+   alone keeps its own; every box as wide as its words plus the same room either side, the boxes moving to make room */
+.side .bar { --bar-type: 14px; }
+.side .bar .lead :is(.timewell .time, .timebox .half), .side .bar .speedpill > button, .side .bar #now, .side .bar .steps12 button {
+  font-family: "Bar Inter", Inter, system-ui, sans-serif; font-size: var(--bar-type); font-weight: 400; letter-spacing: 0; }
+.side .bar .lead .timewell { padding: 0 var(--u3); }
+.side .bar .lead .timewell .time { width: 8ch; }
+.side .bar .lead .timebox .half { width: 2ch; padding: 0 var(--u3); }
+.side .bar #now { width: auto; padding: 0 var(--u3); }
+
+/* Inter with tabular figures, its zero plain (01:25: "Make them all inter tabular, no mono"); the time's box as wide
+   as "10:09:36" in it */
+.side .bar :is(.time, .half, #now, .speedpill > button, .steps12 button, .ink) { font-variant-numeric: tabular-nums lining-nums; }
+.side .bar .lead .timewell .time { width: var(--time-w, 7.4ch); }      /* the time's own width, measured (bar.js) */
+.side .bar .lead .timebox .half { width: 2.4ch; }
+/* every box on the lead line grows by the same amount from its words' width, so all words have the same room either
+   side (01:23: "share the horizontal padding space equally"); the date keeps its own box */
+.side .bar .lead > *, .side .bar .lead .timebox > * { flex-grow: 0; }
+.side .bar .speedpill { flex: 3 1 auto; }
+.side .bar .lead .timebox { flex: 2 1 auto; display: flex; }      /* two growing boxes in it: the time and AM · PM */
+.side .bar .lead .timewell { flex: 1 1 auto; padding: 0; justify-items: center; }
+.side .bar .lead .timebox .half { flex: 1 1 auto; width: auto; padding: 0; }
+.side .bar .lead .timebox .datewell { flex: none; }
+.side .bar .lead #now { flex: 1 1 auto; padding: 0; }
+.side .bar .lead { gap: var(--u2); }
+
+/* the top — title, tabs and the Light tab's Style line — a tenth lighter than the column, as Dial Tool's paper stands
+   over its scrolling grey (01:43) */
+.side .panel > :is(header, .tabs, .pinline) { background: var(--column-top, transparent); }
+.side .panel > .tabs { margin: 0; padding-left: var(--margin); padding-right: var(--margin); }
+.side .about { position: relative; }
+.side .about .logo { padding: 0; border: 0; background: none; color: var(--ink); cursor: pointer; }
+.side .bio { width: calc(var(--panel) - 2 * var(--margin)); max-width: calc(100vw - 2 * var(--margin)); }
+
+/* the persistent line, after Dial Tool's "All hands" (01:50): under the tabs a thick line across the column, the
+   lines' names bold from the left margin, a hairline under each */
+/* the tabs' two lines, each inset by the column's margin like every other line (01:53): over them a hairline in the
+   column's adaptive dark, under them the thick line in its ink */
+.side .panel > .tabs { border-top: 0; border-bottom: 0; background:
+  linear-gradient(var(--uiblack, #000), var(--uiblack, #000)) 50% 0 / calc(100% - 2 * var(--margin)) var(--hair) no-repeat,
+  linear-gradient(var(--ink), var(--ink)) 50% 100% / calc(100% - 2 * var(--margin)) var(--thick) no-repeat, var(--column-top, transparent); }
+.side .pinline { flex: none; padding: 0 var(--margin); }
+.side .pinline > .row { grid-template-columns: repeat(6, minmax(0, 1fr)); column-gap: var(--gap); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--uiblack, #000); }
+.side .pinline > .row > label { grid-column: 1 / 3; font-weight: 600; color: var(--ink); }
+.side .pinline > .row > .pillswitch { grid-column: 3 / -1; }
+.side .form > .pane.first { border-top: 0; }      /* the first pane of a tab: the line above it (the tabs', or the fixed lines') already opens it — never two lines (01:57) */
+
+/* the fixed lines' names start where the panes' names do: after the eye's column (01:57); their hairlines keep the
+   margin */
+.side .pinline > .row { position: relative; margin-left: var(--lead); box-shadow: none; }
+.side .pinline > .row::after { content: ""; position: absolute; left: calc(-1 * var(--lead)); right: 0; bottom: 0; height: var(--hair); background: var(--uiblack, #000); }
+
+/* the tabs measured against Dial Tool's (02:05): its hairline is a border over the 11px, so the tabs start a hair lower;
+   the chosen tab's 3px bar stands ON the thick line, not over it — the line drawn under the buttons, in 2px of its own */
+.side .panel > .tabs { padding-top: calc(var(--u4) + var(--hair)); padding-bottom: var(--thick); }
+/* two ticks on one line (02:21): Blurs from the names' column, Flare where the controls start */
+.body .row.chk.pair > .check:first-child { grid-column: 1 / 3; }
+.body .row.chk.pair > .check:last-child { grid-column: 3 / -1; }
+.body .row.chk.pair > .check { color: var(--ink); }      /* both words as every tick's, not the grey of a row's name */
+.side .pane > .body:empty { display: none; }      /* a pane all on its line (Reset): nothing under it */
+#sc-reset-watch { grid-column: 4 / -1; justify-self: start; white-space: nowrap; }      /* where the controls start, as Dial's link */
