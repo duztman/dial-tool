@@ -12,11 +12,12 @@ const glyph = (L, h) => { const r = 8.5, d = r * Math.cos(h * Math.PI / 180), x 
 const info = (r) => { const [id, strap, dial, metal, L, h, k, extra] = r, [kind, model] = KIND[id[0]];
   return `<b>${kind}</b><span>${model}</span><span>${+(SIZE[id[0]] * k).toFixed(1)} mm ${metal}</span><span>${strap}${extra ? `, ${extra}` : ""}</span><span>${dial[0]}${dial[1] ? `: ${dial[1]}` : ""}</span>`; };
 const lightBox = (L, h) => `<div class="lb">${glyph(L, h)}<span>${h}°</span></div>`;
+const LB = { v1: 315, v2: 225 };      // Miyazaki bracelets never lit from the side (20:21)
 const M = 7, G = 7, S = 210 - 2 * M, RW = 297 - 2 * M - S - G, Q = (S - G) / 2;
 let n = 1;
 const main = [];
 for (const [pre, style] of [["L", "Engineer"], ["B", "Miyazaki"]])
-  for (const r of runs) main.push(`<section class="page" id="p${n + 1}"><img class="sq" src="file:///home/claude/cases/png/${pre}-${r[0]}-detail.png"><div class="col"><img class="full" src="file:///home/claude/cases/png/${pre}-${r[0]}-full.png"><div class="top"><div class="txt">${info(r)}<em>${style}</em></div>${lightBox(r[4], r[5])}</div><div class="no">${++n}</div></div></section>`);
+  for (const r of runs) main.push(`<section class="page" id="p${n + 1}"><img class="sq" src="file:///home/claude/cases/png/${pre}-${r[0]}-detail.png"><div class="col"><img class="full" src="file:///home/claude/cases/png/${pre}-${r[0]}-full.png"><div class="top"><div class="txt">${info(r)}<em>${style}</em></div>${lightBox(pre === "B" && LB[r[0]] !== undefined ? LB[r[0]] : r[4], r[5])}</div><div class="no">${++n}</div></div></section>`);
 let n2 = 0; const cmp = [], byId = Object.fromEntries(runs.map((r) => [r[0], r]));
 const cap = (r, style) => { const [id, strap, dial, metal, L, h, k, extra] = r, [kind, model] = KIND[id[0]];
   return `<figcaption><b>${kind}, ${model}</b><span>${+(SIZE[id[0]] * k).toFixed(1)} mm ${metal}, ${strap}</span><span>${dial[0]}${dial[1] ? `: ${dial[1]}` : ""}</span><span>${style}, light ${h}°</span></figcaption>`; };

@@ -633,6 +633,7 @@ const DETAIL = 31, FULL = { w: 126 / 1.2, h: 308 / 1.2 }, DIAL = 19.5;      // 1
 for (const [n0, key, strap, v, L0, h, dial, metal0, size] of RUNS) {
   if (process.env.ONLY && !process.env.ONLY.split(",").includes(n0)) continue;
   const n = n0 + (process.env.SUF || ""), metal = process.env.METAL || metal0;
+  if (process.env.HBSET) HAND_BEVEL = process.env.HBSET.split(",").includes(n0.slice(2));      // hand bevels on half the set (20:11)
   const L = process.env.COMP ? 225 : process.env.LIGHT ? +process.env.LIGHT : L0;      // the comparisons (19:16): every watch lit from the top left, like the cover
   DIVOT = ["L-v1", "L-v3", "L-v5"].includes(n0) ? "round" : "cut";      // the two divots shared out evenly (19:04)
   const make = (mode) => { GLINT = mode; return sheet(key, strap, v, L, true, h, dial, metal, size).replace("__CLIPS__", CLIPS.join("") + `<filter id="flare" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="0.9"/></filter>`); };

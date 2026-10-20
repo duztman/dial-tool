@@ -723,8 +723,8 @@ const RUNS = [
   ["B-f3", "field", "nato-bond", "dark", 270, 70, "Field Public Sans", "steel", 1],
   ["B-f4", "field", "leather-black", "dark", 0, 30, "Field Public Sans|#e4dccb|#232325|#b5352a", "alu", 1.1],
   ["B-f5", "field", "nato-khaki-big", "own", 345, 15, "Okay military|#1f3a52|#f0ead6|#f0b23c", "bronze", 1],
-  ["B-v1", "diver", "bracelet", "dark", 0, 30, null, "steel", 1],
-  ["B-v2", "diver", "bracelet", "dark", 180, 45, "Quiet diver|#16233d|#e6c98a|#e6c98a", "gold", 1],
+  ["B-v1", "diver", "bracelet", "dark", 315, 30, null, "steel", 1],
+  ["B-v2", "diver", "bracelet", "dark", 225, 45, "Quiet diver|#16233d|#e6c98a|#e6c98a", "gold", 1],
   ["B-v3", "diver", "bracelet", "dark", 270, 70, "Quiet diver|#2c4a3a|#f0e9d6|#e08a3c|#e08a3c", "steel", 1],
   ["B-v4", "diver", "leather-tan", "dark", 195, 20, "Quiet diver|#3a2a1c|#e8d7a8|#e8d7a8", "bronze", 1],
   ["B-v5", "diver", "nato-blackgrey", "dark", 345, 15, "Quiet diver|#e9e4d6|#1f2023|#d0702a|#d0702a", "steel", 1],
@@ -737,6 +737,7 @@ const DETAIL = 31, FULL = { w: 126 / 1.2, h: 308 / 1.2 }, DIAL = 19.5;      // 1
 for (const [n0, key, strap, v, L0, h, dial, metal0, size] of RUNS) {
   if (process.env.ONLY && !process.env.ONLY.split(",").includes(n0)) continue;
   const n = n0 + (process.env.SUF || ""), metal = process.env.METAL || metal0;
+  if (process.env.HBSET) HAND_BEVEL = process.env.HBSET.split(",").includes(n0.slice(2));      // hand bevels on half the set (20:11)
   const L = process.env.COMP ? 225 : process.env.LIGHT ? +process.env.LIGHT : L0;      // the comparisons (19:16): every watch lit from the top left, like the cover
   FLARE_KIND = [..."seed" + n0].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 9973, 7) % 2 ? "arc" : "dot";      // random, but the same each run
   const make = (mode) => { GLINT = mode; return sheet(key, strap, v, L, true, h, dial, metal, size).replace("__CLIPS__", CLIPS.join("") + `<filter id="flare" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="1.6"/></filter>`); };
