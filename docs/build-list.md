@@ -241,6 +241,12 @@ Okay, 02:02: "My secret goal is making 4.90 v01 … Build functionality … note
 |---|---|---|
 | 484 | **Square and rounded-square dials, as an Apple Watch's** ("How hard is to make a square and rounded square like an apple watch … i know its big work but plan. This is an obstacle between us and beta v5") — with #363. A plan: `docs/plan-non-round.md` | plan written — 4.90 (`docs/plan-non-round.md`) |
 
+## Okay's note of 20 Oct 2026, 16:31 (from the showcase side session)
+
+| # | Item | Status |
+|---|---|---|
+| 488 | **A numerals ring's thickness is its type's cap height, set by the Cap middle anchor** (Okay, 16:31: "ring size is determined by cap middle layout. This is our fixed ring thickness for type. Align means tangent to this ring inner or outer circles, ring size changes with font size/vice versa. 12 does not adhere to rules of align or anything"). Reading: the ring is a band one cap height thick, centred on the radius as Cap middle centres the numerals; Align (outer edge, inner edge) lays each numeral tangent to that band's outer or inner circle; changing the size changes the band's thickness and dragging the band's thickness changes the size. The 12 (with its own twelve scale) is outside these rules. To be read with Okay before building | open |
+
 ## Dial Packer (side product, 19 Oct 2026)
 
 `packer/`; how it works: `packer/README.md`.
