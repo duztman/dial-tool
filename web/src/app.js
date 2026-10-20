@@ -649,7 +649,7 @@ const ROWS = {
     num("dial_hole", "Centre hole", 0, 6, 0.1),      // Ø; 0 = none. Shows when the hands are hidden (#165)      // nest: a question about the row above starts on the controls' column (Okay, 12 Oct 2026)
     col("c_plate", "Plate"),
     custom("background"),
-    hdr("Page", { pin: true }),                    // around the dial: preview and page only
+    hdr("Page", { folded: true }),                 // around the dial: preview and page only. Under the pinned part, with what scrolls (Okay, 20 Oct 2026, 03:41: "Page moves to gray area")
     num("margin", "Page margin", 0, 10, 0.5),
     col("c_backdrop", "Backdrop"),
     // every coloured part on the plate, in one list; a band's sectors one by one. Folded (as it starts, #270), its line
@@ -2801,6 +2801,7 @@ class DialTool {
       else { r.group = pane; pane.body.append(r.el); }
     }
     this.pinned.hidden = !this.pinned.children.length;
+    this.pin_grip(name);
     this.sync_rows();
     this.section_shown = name;
     this.form.scrollTop = this.scrolls[name] || 0;
@@ -3718,12 +3719,44 @@ class DialTool {
     this.pinned.append(grip);
   }
 
+  /** every pinned part has a pill on its black line (Okay, 20 Oct 2026, 03:41: "All persistents get a resizer as default.
+   *  apart from hands and windows"): the Rings tab's is the ring list's (list_grip), shown always; on the others the
+   *  pinned panes go into a box of their own that the pill makes shorter (it then scrolls) or taller, up to all of it; a
+   *  tap jumps between all and its first line. Remembered by this browser per tab, as the list's rows are. */
+  pin_grip(name) {
+    if (["Hands", "Date"].includes(name) || this.pinned.hidden || this.ring_list) return;
+    const body = el("div", { className: "pinbody" }, ...this.pinned.children), key = "dial-tool-pinned-" + name;
+    const grip = el("div", { className: "listgrip pingrip", id: "pin-grip", title: "Drag to make this part taller or shorter", ariaLabel: "Height of what stays in view" });
+    grip.setAttribute("role", "separator");
+    this.pinned.replaceChildren(body, grip);
+    this.pinned.classList.add("pin-resize");
+    const set = (h) => { if (h == null) body.style.removeProperty("max-height"); else body.style.maxHeight = h + "px"; this.pinned_h = h; };
+    try { const kept = parseFloat(localStorage.getItem(key)); if (kept > 0) set(kept); } catch (e) { /* not kept */ }
+    const least = () => { const first = body.querySelector(".fold"); return first ? first.getBoundingClientRect().height : 40; };
+    let down = null;
+    grip.onpointerdown = (e) => { grip.setPointerCapture(e.pointerId); down = { y: e.clientY, h: body.getBoundingClientRect().height, moved: false }; grip.classList.add("gripping"); };
+    grip.onpointermove = (e) => {
+      if (!down) return;
+      if (Math.abs(e.clientY - down.y) > 4) down.moved = true;
+      if (!down.moved) return;
+      const h = down.h + e.clientY - down.y;
+      set(h >= body.scrollHeight - 1 ? null : Math.max(h, least()));      // dragged to all of it: no limit, so a pane opened later shows whole
+    };
+    grip.onpointerup = grip.onpointercancel = (e) => {
+      if (!down) return;
+      if (!down.moved && e.type === "pointerup") set(this.pinned_h == null ? least() : null);
+      down = null;
+      grip.classList.remove("gripping");
+      try { if (this.pinned_h == null) localStorage.removeItem(key); else localStorage.setItem(key, String(this.pinned_h)); } catch (er) { /* not kept */ }
+    };
+  }
+
   /** the list's pill shows whenever it has a use (#448, R17: no dead end): the list scrolls (more rings than the rows
    *  shown, however few were kept), or it was made taller than five and can be made shorter again. */
   sync_list_grip() {
     if (!this.pinned) return;
     const n = this.S.rings.length, rows = this.ring_rows_shown ?? RING_ROWS;
-    this.pinned.classList.toggle("ring-scrolls", n > Math.min(rows, RING_ROWS));
+    this.pinned.classList.toggle("ring-scrolls", n > 0 || rows !== RING_ROWS);      // shown always, as every pinned part's pill (Okay, 20 Oct 2026, 03:41: "All persistents get a resizer as default")
   }
 
   /** the selected ring's row and the drawer under it, whole in the list's view (Okay's notes, p. 2, #256: "even if

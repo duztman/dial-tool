@@ -188,8 +188,8 @@ check(rows.every((x) => x[0] && /^[0-4]$/.test(x[1]) && x[2] && x[3] === 0) && n
   await page.mouse.click(g2[0], g2[1]);
   const tapped = [...await m(), await page.evaluate(() => localStorage.getItem("dial-tool-ring-rows"))];
   await page.evaluate(([ring, n]) => { const t = window.dial_tool; t.S.rings.length = n; t.static_dirty = true; t.select_ring(ring); localStorage.removeItem("dial-tool-ring-rows"); }, was);
-  check(few[0] <= 5 && few[1] === "none" && fitted[0] === few[0] + 5 && fitted[1] === "grid" && fitted[2] === 0 && fitted[3] === 0 && fitted[5] > fitted[4] && fitted[6] === fitted[8] - fitted[4] && dragged[7] === String(fitted[0]) && dragged[4] === dragged[5] && tapped[7] === "5" && tapped[4] === fitted[4] && tapped[9] === "5",
-    `the list's pill (#256): none with ${few[0]} rings; with ${fitted[0]} it stands in the middle of the pinned part's line (${fitted[2]} / ${fitted[3]} off); selecting the last ring scrolls the list (${fitted[6]}) so its row and drawer end in view (${fitted[8]} in ${fitted[4]}); dragged three rows down the list shows all ${dragged[7]} (${dragged[4]} = ${dragged[5]}); a tap brings five back, kept by the browser`);
+  check(few[0] <= 5 && few[1] === "grid" && fitted[0] === few[0] + 5 && fitted[1] === "grid" && fitted[2] === 0 && fitted[3] === 0 && fitted[5] > fitted[4] && fitted[6] === fitted[8] - fitted[4] && dragged[7] === String(fitted[0]) && dragged[4] === dragged[5] && tapped[7] === "5" && tapped[4] === fitted[4] && tapped[9] === "5",
+    `the list's pill (#256): there with ${few[0]} rings too (Okay, 20 Oct 2026, 03:41: "All persistents get a resizer as default"); with ${fitted[0]} it stands in the middle of the pinned part's line (${fitted[2]} / ${fitted[3]} off); selecting the last ring scrolls the list (${fitted[6]}) so its row and drawer end in view (${fitted[8]} in ${fitted[4]}); dragged three rows down the list shows all ${dragged[7]} (${dragged[4]} = ${dragged[5]}); a tap brings five back, kept by the browser`);
 }
 // names a screen reader hears (#244, 4.47.2): a ring's row is an option in a listbox, reached with Tab and taken with
 // Enter; every slider says its name; a colour pill says whose colour it is before its hex; in the showcase the panel
@@ -799,7 +799,7 @@ for (const grey of ["#808080", "#F2F2EE", "#141413", "#4B317F", "#C8E6A0", "#CC3
 await shot("4c4-guides-dark");
 await type_hex("global-c-backdrop-Backdrop", "#CCCCC7");
 // the Dial section: two panes, Dial (diameter, plate, background) and Page (margin, backdrop); no Guides pane
-check(JSON.stringify(await page.$$eval(".pinned .pane h2", (h) => h.map((x) => x.textContent))) === '["Dial","Page"]' && JSON.stringify(await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))) === '["Colours","Reset"]' && await page.isVisible("#background-add"), "Dial has four panes (Reset last since 4.41.25): Dial and Page stay in view, Colours scrolls under them; Background is a button");
+check(JSON.stringify(await page.$$eval(".pinned .pane h2", (h) => h.map((x) => x.textContent))) === '["Dial"]' && JSON.stringify(await page.$$eval(".form .pane h2", (h) => h.map((x) => x.textContent))) === '["Page","Colours","Reset"]' && await page.isVisible("#background-add"), "Dial has four panes (Reset last since 4.41.25): Dial stays in view, Page and Colours scroll under it (Okay, 20 Oct 2026, 03:41: 'Page moves to gray area'); Background is a button");
 // units: a box at the panel's top right; lengths are shown and typed in the unit, kept in mm
 // the unit box round its word's ink, 2 px all round and a line (#302): [word, width, height, from the column's end, the room
 // between its line and its letters — top, bottom, left, right — counted on its own picture, in px (a canvas's measure of
@@ -1786,7 +1786,7 @@ await page.uncheck("#global-out-production-Mono-print-mask");
   await page.evaluate((d) => window.dial_tool.set_value("global", "dial_d", d), d0); await frame();
   const pill = await page.evaluate(() => { const t = window.dial_tool, n = t.S.rings.length, keep = t.ring_rows_shown, out = [];
     t.ring_rows_shown = Math.max(n - 1, 1); t.sync_list_grip(); out.push(t.pinned.classList.contains("ring-scrolls"));      // fewer rows kept than rings: it scrolls, so the pill
-    t.ring_rows_shown = 5; t.sync_list_grip(); out.push(t.pinned.classList.contains("ring-scrolls") === (n > 5));
+    t.ring_rows_shown = 5; t.sync_list_grip(); out.push(t.pinned.classList.contains("ring-scrolls"));      // shown always (03:41)
     t.ring_rows_shown = keep; t.sync_list_grip(); return [n, ...out]; });
   await page.evaluate(() => window.dial_tool.play(true));
   await page.evaluate(() => window.dial_tool.set_value("global", "c_plate", [0.2, 0.4, 0.6, 1]));
@@ -2087,7 +2087,7 @@ check(guides_w[0] === guides_w[1], `the Guides switch is the same width on and o
 check(await page.$eval("#global-dial-d-Diameter-slider", (e) => { const p = +e.style.getPropertyValue("--p"); return Math.abs(p - (e.value - e.min) / (e.max - e.min)) < 0.001 && getComputedStyle(e).appearance === "none"; }), "a slider knows how far along it is: its track is filled up to the handle");
 await page.emulateMedia({ reducedMotion: "no-preference" });
 const heights = await page.evaluate(async () => {
-  const pane = [...document.querySelectorAll(".pinned .pane")].find((p) => !p.hidden && !p.classList.contains("folded")), body = pane.querySelector(".body"), next = pane.nextElementSibling;
+  const pane = [...document.querySelectorAll(".pinned .pane")].find((p) => !p.hidden && !p.classList.contains("folded")), body = pane.querySelector(".body"), next = pane.nextElementSibling || document.querySelector(".form .pane");      // Dial's one pinned pane: what follows it is the scrolling part
   const open = body.offsetHeight, top0 = next.getBoundingClientRect().top, seen = [];
   pane.querySelector(".fold").click();
   for (let i = 0; i < 60 && (body.getAnimations().length || !i); i++) { await new Promise((r) => requestAnimationFrame(r)); seen.push(Math.round(body.getBoundingClientRect().height)); }

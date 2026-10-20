@@ -11,7 +11,8 @@
      the pinned part's black line, only when there are more rings than the list shows (.ring-scrolls); the gripper's
      measures (--grip-…), black with a groove of paper; held, a hairline of paper round it */
   .listgrip { display: none; position: absolute; left: 50%; bottom: 0; z-index: 6; translate: -50% calc(50% + var(--thick) / 2); place-items: center; width: var(--grip-hit); height: var(--grip-hit); touch-action: none; cursor: ns-resize; }
-  .pinned.ring-scrolls .listgrip { display: grid; }
+  .pinned:is(.ring-scrolls, .pin-resize) .listgrip { display: grid; }      /* every pinned part's pill (Okay, 20 Oct 2026, 03:41), the Rings tab's on its list */
+  .pinbody { overflow-y: auto; overscroll-behavior: contain; }      /* the pinned panes, made shorter by their pill: they scroll inside */
   .listgrip::before { content: ""; grid-area: 1 / 1; width: var(--grip-w); height: var(--grip-h); border-radius: calc(var(--grip-h) / 2); background: var(--ink); }
   .listgrip::after { content: ""; grid-area: 1 / 1; width: var(--grip-groove); height: var(--hair); background: var(--paper); }
   .listgrip.gripping::before { box-shadow: 0 0 0 var(--hair) var(--paper); }
