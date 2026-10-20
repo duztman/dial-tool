@@ -208,8 +208,25 @@ function clampL(h) {
 
 /** printed ink stands a hair proud of the dial (20:11): inside each mark an inner shadow along the edge away from the
  *  light and a highlight along the edge facing it — tiny, the shadow the stronger. `INK_K` scales both (0 = flat ink) */
+
+/** how thick a mark is, in the dial's units (20:49): twice its area over its outline's length — a strip of width w gives w */
+const THICK = new Map();
+const thickness = (p) => { if (THICK.has(p)) return THICK.get(p);
+  const P = PK.FromSVGString(p), cmds = P.toCmds(); P.delete();
+  let signed = 0, absum = 0, per = 0, sub = 0, start = null, prev = null;
+  const close = () => { signed += sub; absum += Math.abs(sub); sub = 0; };
+  const to = (q) => { if (prev) { sub += prev[0] * q[1] - q[0] * prev[1]; per += Math.hypot(q[0] - prev[0], q[1] - prev[1]); } prev = q; };
+  for (const c of cmds) {
+    const v = c[0], pts = []; for (let k = 1; k + 1 < c.length; k += 2) pts.push([c[k], c[k + 1]]);
+    if (v === 0) { if (start && prev) { to(start); close(); } start = pts[0]; prev = pts[0]; }
+    else if (v === 5) { if (start && prev) to(start); close(); prev = start; }
+    else for (const q of (v === 3 ? pts.slice(0, 2) : pts)) to(q);
+  }
+  if (sub) close();
+  const A = Math.abs(signed) > absum * 0.3 ? Math.abs(signed) / 2 : absum / 2, w = per ? 2 * A / per : 1;
+  THICK.set(p, w); return w; };
 const inkRelief = (x, s, L) => { if (!INK_K) return "";
-  const id = "ik" + (INK_N++), ux = Math.cos(rad(L)) / s, uy = -Math.sin(rad(L)) / s, es = 0.035 * INK_K, eh = 0.025 * INK_K;
+  const id = "ik" + (INK_N++), ux = Math.cos(rad(L)) / s, uy = -Math.sin(rad(L)) / s, th = thickness(x.p) * s, es = Math.min(0.035 * INK_K, th * 0.16), eh = Math.min(0.025 * INK_K, th * 0.1);      // a thin line or small text gets a thinner relief (20:49)
   CLIPS.push(`<clipPath id="${id}"><path d="${x.p}"/></clipPath>`);
   const cut = (dx, dy, fill, op) => `<g transform="translate(${f(dx)} ${f(dy)})"><path d="M-9999 -9999H9999V9999H-9999Z${x.p}" fill-rule="evenodd" fill="${fill}" fill-opacity="${op}"/></g>`;
   return `<g clip-path="url(#${id})">${cut(ux * es, uy * es, "#000", 0.62)}${cut(-ux * eh, -uy * eh, "#fff", 0.8)}</g>`; };
