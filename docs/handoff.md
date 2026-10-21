@@ -6,7 +6,7 @@ A new session starts with no memory of the last one: the transcript stays in the
 
 ## 1 · Where things stand (21 Oct 2026, 23:45, beta 4.91.6 on `dev` and /dev/)
 
-- **Pages**: the released page and `main` are beta 4.91 (live root; `docs/versions.md`); `dev` and <https://duztman.github.io/dial-tool/dev/> are **beta 4.91.6**. The next step (4.92) runs the full `npm test` and `tools/release.sh 4.92 "…"` — its step mode (moving `main` to `dev`) has not run yet: watch its first run.
+- **Pages**: the released page is beta 4.91; `main` is still beta 4.90 (bd47a60: 4.91 went up before the step mode existed); `dev` and <https://duztman.github.io/dial-tool/dev/> are **beta 4.91.6**. The next step (4.92) runs the full `npm test` and `tools/release.sh 4.92 "…"` — its step mode moves `main` to `dev` and has not run yet: watch its first run.
 - **v1** is defined at the top of `docs/build-list.md`, groups A–J; square dials after v1 (#484). Done today: #488 (4.91), #500 (/dev/, 4.91.2), small-jobs batch 1 (4.91.3: #231 #495 #434 #498 #499 #453 #408 #76 #468 #158), #504 (4.91.4), the title row and the top rule (4.91.5–4.91.6). Next in v1, as Okay ordered: the medium items (group I, #502's notices inventory first), SVG import (G), the fonts (#501, R35 — specified, don't add to it), the v1.0 update page (#503 (3)).
 - **Okay builds by sketch rounds again** (21 Oct, 22:48: "Do the small batch first"): each round goes to /dev/ with crops; he refreshes and answers with marked-up screenshots.
 - **Waiting for Okay**: his icon drawings (#162); verifying group B on his devices (FIT's line on his phone, #453, is fixed in 4.91.3 — ask); which two numbers each ring kind's row shows is settled as size · radius (#504).
