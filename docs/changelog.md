@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.91 (web version) · 21 Oct 2026
+
+Okay, 21 Oct 2026: "This is an urgent thing to finish … Let's tackle this"; on the drawing: "100%".
+
+- **A numerals ring is a band one cap height thick** (#488). *Resize Ring from* Outer · Middle · Inner picks the band's circle that holds still, as a ticks ring's ends do; a bigger size grows the band away from it (Outer inward, Middle both ways, Inner outward). Every label stands on the capital H's middle, so figures of every height share one line; with Outer or Inner they touch that circle (an upright one by its reach toward the edge). A label nudged bigger keeps its place. Guides and handles show the band; the size handle on its free edge sets the size.
+- The per-ink Centre is gone: centre, baseline, ascender and cap middle read as Middle. **Link scheme 4**: a link made before opens the First dial with a note (R31); the Gallery and examples are written again.
+- Live text in the SVG takes the same radius as the outlines (it ignored Outer and Inner).
+- The parity test leaves numerals rings out on both sides (R30): they are the web version's alone now.
+
 ## beta 4.90 (web version) · 20 Oct 2026
 
 Built alone overnight (Okay, 02:02: "Build functionality … noted and screenshotted for my approval later") and accepted (Okay, 05:02: "this version is accepted, dev main, publish"). Every item, its readings and the open questions: `docs/review-4.90.md`.

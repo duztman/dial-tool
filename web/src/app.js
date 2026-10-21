@@ -566,7 +566,7 @@ const custom = (name, o = {}) => ({ kind: "custom", name, ...o });
 // outer end (as always), its middle or its inner end: the same menu, a place in G.FROM.
 const RADIUS_ROWS = {
   outer: num("r", "Outer radius", 0, 25, 0.05, { scope: "ring", menu: { key: "from", title: "What the radius measures to", items: [[0, "Outer"], [1, "Middle"], [2, "Inner"]] } }),
-  numerals: num("r", "Centre radius", 0, 25, 0.05, { scope: "ring", menu: { key: "anchor", title: "What the radius measures to", items: [[0, "Centre"], [3, "Outer edge"], [4, "Inner edge"], [5, "Cap middle"]] } }),      // Cap middle (#13, 4.90)      // Baseline and Ascender out (Okay, 19 Oct 2026, #418)      // the edges: tangent (#338, 4.53)
+  numerals: num("r", "Middle radius", 0, 25, 0.05, { scope: "ring", menu: { key: "anchor", title: "What the radius measures to", items: [[3, "Outer"], [0, "Middle"], [4, "Inner"]] } }),      // the band's circle that holds still as the size changes (#488), as a ticks ring's ends
 };
 const radius_row = (R) => RADIUS_ROWS[G.has_text(R) ? "numerals" : "outer"];
 // how big one thing of a ring is — its "inner" size, the number in the ring summary: a mark's length (a dot's Ø), a
@@ -2241,7 +2241,7 @@ class DialTool {
     if (this.show || this.S.ui_section !== 1 || !this.guides_drawn || !R || !R.on || k === null) { H.replaceChildren(); this.handles_key = ""; return; }      // the selected ring's, shown to start (#486) and always with its guide (draw): a numeral being nudged hides both
     const kind = G.kind_of(R), ext = { ticks: R.len, markers: R.len, band: R.width }[kind] || 0;
     let outer = R.r + G.from_shift(R, ext), inner = outer - ext;
-    if (G.has_text(R)) { const e = G.radial_extent(this.statik?.rings?.find((d) => d.ring === R)?.path); if (e) [inner, outer] = e; }
+    if (G.has_text(R)) [inner, outer] = G.text_band(R);      // the band (#488)
     const angles = G.ring_angles(R), a0 = angles[0] ?? (+R.start || 0);
     const free = angles.length > 1 ? a0 + ((((angles[1] - a0) % 360) + 360) % 360) / 2 : a0 + 15;
     const edge = Math.abs(outer - R.r) >= Math.abs(R.r - inner) ? outer : inner;      // the edge away from the dotted line
@@ -2276,7 +2276,7 @@ class DialTool {
       const key = what === "size" ? (G.has_text(R) ? "size" : kind === "band" ? "width" : G.SHAPES[R.shape] === "dot" ? "w" : "len") : what === "radius" ? "r" : what;
       const ext = { ticks: R.len, markers: R.len, band: R.width }[kind] || 0;
       let outer = R.r + G.from_shift(R, ext), inner = outer - ext;
-      if (G.has_text(R)) { const x = G.radial_extent(this.statik?.rings?.find((d) => d.ring === R)?.path); if (x) [inner, outer] = x; }
+      if (G.has_text(R)) [inner, outer] = G.text_band(R);      // the band (#488)
       const edge = Math.abs(outer - R.r) >= Math.abs(R.r - inner) ? outer : inner;
       const b = this.svg.getBoundingClientRect(), [px, py] = this.to_mm([e.clientX - b.left, e.clientY - b.top]), d0 = Math.hypot(px, py), a0 = ((Math.atan2(px, py) * 180 / Math.PI) + 360) % 360;
       this.handle_drag = { what, key, v0: R[key], reach: Math.abs(edge - R.r) || 0.01, side: Math.sign(edge - R.r) || -1, r0: R.r, prev: null, x: e.clientX, y: e.clientY, moved: false,

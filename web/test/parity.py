@@ -48,6 +48,10 @@ def main():
         dials[os.path.splitext(os.path.basename(extra))[0]] = json.load(open(extra))
     for name, over in dials.items():
         S = ns["fresh_settings"](over)
+        # numerals rings are the web version's alone since 4.91 (#488: they sit in a cap-height band, dial.py centres
+        # each label's ink): left out on both sides, so the rest of the dial is still compared (R30)
+        S["rings"] = [r for r in S["rings"] if ns["KINDS"][r["kind"]] != "numerals"]
+        S["ui_ring"] = 0
         if name == "round-hands":                  # dial.py has no round hands: its picture is the square-ended one
             for h in ("ha_hour", "ha_minute", "ha_second"):
                 S[h]["round"] = over[h]["round"]

@@ -460,8 +460,8 @@ const anchors = await page.evaluate(() => {
 await shot("4c10-radius-pop");
 await page.keyboard.press("Escape");
 await page.click(`.ringlist li:nth-child(${ring_before + 1} of .ring) .name`);
-check(anchors.options === "Centre Outer edge Inner edge Cap middle" && anchors.labels.join(" | ") === "Centre radius | Outer edge radius | Inner edge radius | Centre radius" && anchors.a3 === 3 && anchors.a4 === 4 && anchors.a0 === 0 && anchors.look.join(" ") === "true 12 12 186 50",
-  `the radius of numerals has a menu beside its label: ${anchors.options} (Baseline and Ascender out, #418: "Remove these two from the functions as well"); the label follows: ${anchors.labels.join(" → ")}; in the controller no name, the value's pill as far from the top as the discs from the foot (${anchors.look.join(" · ")}) (controller 2.svg, 18 Oct 2026)`);
+check(anchors.options === "Outer Middle Inner" && anchors.labels.join(" | ") === "Middle radius | Outer radius | Inner radius | Middle radius" && anchors.a3 === 3 && anchors.a4 === 4 && anchors.a0 === 0 && anchors.look.join(" ") === "true 12 12 186 50",
+  `the radius of numerals has a menu beside its label: ${anchors.options}, the band's circle that holds still (#488); the label follows: ${anchors.labels.join(" → ")}; in the controller no name, the value's pill as far from the top as the discs from the foot (${anchors.look.join(" · ")}) (controller 2.svg, 18 Oct 2026)`);
 // …and Baseline and Ascender are retired from the drawing too (#418): a ring stored with one is centred on its radius, as with Centre
 const at12 = [];
 for (const v of [1, 2, 0]) {
@@ -469,8 +469,8 @@ for (const v of [1, 2, 0]) {
   await frame();
   at12.push(await page.evaluate(() => { const t = window.dial_tool, d = t.statik.rings.find((x) => x.ring.kind === 2), b = d.parts[0].bounds(); return [b[1] - d.ring.r, b[3] - d.ring.r, (b[1] + b[3]) / 2 - d.ring.r]; }));
 }
-check(Math.abs(at12[0][2]) < 0.001 && Math.abs(at12[1][2]) < 0.001 && Math.abs(at12[2][2]) < 0.001,
-  `at 12 the numeral's middle is on the radius with a stored Baseline (${at12[0][2].toFixed(4)}), Ascender (${at12[1][2].toFixed(4)}) and Centre (${at12[2][2].toFixed(4)}): the two are retired (Okay, 19 Oct 2026, #418)`);
+check(Math.abs(at12[0][2] - at12[2][2]) < 1e-6 && Math.abs(at12[1][2] - at12[2][2]) < 1e-6 && Math.abs(at12[2][2]) < 0.03,
+  `at 12 a stored Baseline, Ascender and Centre all draw as Middle (${at12.map((x) => x[2].toFixed(4)).join(" · ")}): the label's middle a hair off the radius, which is the capital H's middle, not the label's own (#418, #488)`);
 { // the edges, tangent (#338; Okay, 18 Oct 2026: "Tangent to inner or outer"), and a change of anchor that moves nothing on
   // the dial, only the dotted line (#326: "Nothing changed … just the dotted line moves"; "applies to reverse auto reverse")
   const r = await page.evaluate(() => {
@@ -486,8 +486,8 @@ check(Math.abs(at12[0][2]) < 0.001 && Math.abs(at12[1][2]) < 0.001 && Math.abs(a
     const moved = (a, b) => Math.max(...a.map((v, i) => Math.abs(v - b[i])));
     return { top: out12[3] - keep.r, inner: in12[1] - keep.r, still: Math.max(moved(before, after), moved(before3, after3), moved(before, after_in)), r2: r2 - keep.r };
   });
-  check(Math.abs(r.top) < 0.01 && Math.abs(r.inner) < 0.01 && r.still < 0.02 && Math.abs(r.r2) > 0.1,      // 0.02: labels of different heights touch one line with an edge, each sits on its own middle with Centre — a hundredth, seen at 400 %
-    `Outer edge: the numeral at 12 touches the radius with its top (${r.top.toFixed(3)}); Inner edge: the 12's foot (${r.inner.toFixed(3)}); a radial ring changed from Centre to Outer edge and Inner edge doesn't move (${r.still.toFixed(4)}), its radius does (${r.r2.toFixed(3)})`);
+  check(Math.abs(r.top) < 0.03 && Math.abs(r.inner) < 0.03 && r.still < 0.02 && Math.abs(r.r2) > 0.1,      // 0.03: the band is the capital H's height; this font's figures stand 0.023 above it (measured 21 Oct 2026)
+    `Outer (#488): the numeral at 12 touches the outer circle, the radius, with its top (${r.top.toFixed(3)}); Inner edge: the 12's foot (${r.inner.toFixed(3)}); a radial ring changed from Centre to Outer edge and Inner edge doesn't move (${r.still.toFixed(4)}), its radius does (${r.r2.toFixed(3)})`);
 }
 { // one mark nudged (#349, groundwork: "Each individual marker could be selected and edited"): a mark keeps its own radius ±,
   // angle ±, size × and turn in the ring's nudge, as a numeral does
@@ -1694,7 +1694,7 @@ if (numerals) {
   const texts = live_text.match(/<text [^>]*>[^<]*<\/text>/g) || [];
   const first = /translate\(([-\d.]+) ([-\d.]+)\) rotate/.exec(texts.find((x) => x.includes("rotate(")) || "");
   check(texts.length >= numerals.n && texts[0].includes(`font-family="${numerals.family}"`), `SVG with live text: ${texts.length} texts in ${numerals.family}`);
-  if (numerals.mode === 0) check(first && near(+first[1], numerals.c[0], 0.01) && near(+first[2], -numerals.c[1], 0.01), "the first numeral's text stands where its outline's centre is");
+  if (numerals.mode === 0) check(first && near(+first[1], numerals.c[0], 0.01) && near(+first[2], -numerals.c[1], 0.03), "the first numeral's text stands where its outline is: its middle across, its capital H's middle up and down (#488; the figures a hair off the H)");
 }
 check((live_text.match(/<path/g) || []).length >= 6 && !svg_text.includes("<text"), "everything else stays outlines; without the tick there is no text");
 await page.uncheck("#global-out-live-text-Keep-numerals-as-text-in-the-SVG");
@@ -1969,7 +1969,7 @@ const link = await page.evaluate(() => location.href);
     return { input: box.tagName === "INPUT", cut: c.textOverflow === "ellipsis" && c.whiteSpace === "nowrap", head: r.top >= fold.top && r.bottom <= fold.bottom, right: Math.round(fold.right - r.right), sign: Boolean(b.querySelector("svg")), mono: getComputedStyle(document.getElementById("log")).fontFamily.toLowerCase().includes("mono") }; });
   check(await page.inputValue("#link") === link && l.input && l.cut && l.head && l.right <= 1 && l.sign && l.mono, `the link stands on one line, cut at the box's edge; Copy link, with its sign, flush right on the heading line (${JSON.stringify(l)}); the log is monospaced`);
 }
-check(/#3[0-9A-Z]+$/.test(link), `Copy link: the address carries the dial in capitals and digits only, link scheme 3 (#278; 3 since 4.88; ${link.split("#")[1].length} characters after #)`);
+check(/#4[0-9A-Z]+$/.test(link), `Copy link: the address carries the dial in capitals and digits only, link scheme 4 (#278; 4 since 4.91, #488; ${link.split("#")[1].length} characters after #)`);
 const wanted = await S("JSON.stringify({ ...S, ui_section: 0, ui_ring: 0, ui_hand: 0 })");
 const other = await (await visitor()).newPage();      // someone else's browser: no last session of this dial. A browser of its own, not a second tab: a tab shares the first one's storage, where the first keeps saving its dial while its clock runs (found 16 Oct 2026, 4.42.5: a save landed while this page started)
 await other.addInitScript(() => localStorage.removeItem("dial-tool-last"));      // and what it keeps itself between the addresses below

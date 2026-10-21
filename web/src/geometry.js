@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.90";
+export const VERSION = "beta 4.91";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -406,6 +406,9 @@ export function fresh_settings(over = null) {
   const S = clone(DEFAULTS);
   for (const k in over) if (k in S) S[k] = clone(over[k]);
   S.rings = S.rings.map((r) => complete(RING_BASE, r));
+  // a numerals ring's radius is its band's middle, outer or inner circle (#488): centre, baseline, ascender and cap
+  // middle all read as the middle, place 0 (R9: the list keeps them)
+  for (const r of S.rings) if (![0, 3, 4].includes(+r.anchor)) r.anchor = 0;
   if (!S.rings.length) S.rings = [complete(RING_BASE, {})];
   // bevels from before a hand had its own tick: Bevels % above 0 drew them on every hand, so a hand that doesn't say gets one (a link
   // made since always says, lean())
@@ -429,7 +432,7 @@ export function fresh_settings(over = null) {
 //   it went up because an am · pm window now draws its one disc whatever its old `look`, so a scheme-2 link with the
 //   Sky or Band picture would draw something else. Links of schemes 1 and 2 are not read (R31).
 
-export const LINK_SCHEME = 3;      // 3 since 4.88: an am · pm window draws its one disc whatever its old `look` (R31)
+export const LINK_SCHEME = 4;      // 4 since 4.91: a numerals ring sits in its cap-height band (#488); 3 since 4.88: an am · pm window draws its one disc (R31)
 
 /** the topmost hand that shows: its place in HANDS, or -1 */
 export const top_hand = (S) => [2, 1, 0].find((i) => S["ha_" + HANDS[i]].on) ?? -1;
@@ -560,7 +563,7 @@ export function un_base32(text) {
 /** what the part after # is: a scheme-2 dial's letters, a link of an older scheme, or not a dial at all. */
 export function link_kind(hash) {
   const h = (hash || "").replace(/^#/, "");
-  if (/^[23][0-9A-Za-z]+$/.test(h)) return { scheme: +h[0], letters: h.slice(1) };      // schemes 2 and 3: the same writing after their number
+  if (/^[2-9][0-9A-Za-z]+$/.test(h)) return { scheme: +h[0], letters: h.slice(1) };      // schemes 2 on: the same writing after their number
   if (/^[01]\.[A-Za-z0-9_~-]+$/.test(h)) return { scheme: +h[0] };
   return null;
 }
@@ -1163,17 +1166,30 @@ function on_path(txt, r, a, t, size) {
  *  on the origin, which is then put on the radius (the edges add their shift in tangent_shift). Sideways a numeral is
  *  always centred. */
 function numeral_dy(ring, txt, size) {
-  // baseline and ascender are retired (Okay, 19 Oct 2026, #418: "Remove these two from the functions as well"):
-  // their places in ANCHORS stay (R9) and a ring stored with one measures to the centre.
-  // Cap middle (#13): one height for every label — the middle of the font's capital H (its zero where it has no H) —
-  // so a 1, a 10 and old-style figures share one line instead of each centring its own ink
-  if (ANCHORS[ring.anchor] === "cap middle") {
-    const h = text_path("H", { ...ring, features: {} }, size).bounds() || text_path("0", ring, size).bounds();
-    if (h) return -(h[1] + h[3]) / 2;
-  }
+  // every label stands on the middle of the font's capital H (its zero where it has no H), so a 1, a 10 and
+  // old-style figures share one line: the middle of the ring's band (#488)
+  const h = cap_box(ring, size);
+  if (h) return -(h[1] + h[3]) / 2;
   const b = text_path(txt, ring, size).bounds();
   return b ? -(b[1] + b[3]) / 2 : 0;
 }
+
+/** the font's capital H at this size (its zero where it has no H): [x0, y0, x1, y1], baseline at 0 */
+function cap_box(ring, size) {
+  return text_path("H", { ...ring, features: {} }, size).bounds() || text_path("0", ring, size).bounds();
+}
+
+/** a numerals or text ring's band (#488; Okay, 20 Oct 2026: "ring size is determined by cap middle layout. This is
+ *  our fixed ring thickness for type"): one cap height thick, at the ring's size. Its radius is the circle that holds
+ *  still — the outer, the middle or the inner one ("Resize Ring from", as a ticks ring's ends) — and the band grows
+ *  away from it as the size grows. → [inner, outer] in mm from the centre. */
+export function text_band(ring) {
+  const h = cap_box(ring, ring.size), cap = h ? h[3] - h[1] : ring.size * 0.7;
+  const mid = ring.r + band_side(ring) * cap / 2;
+  return [max(mid - cap / 2, 0), mid + cap / 2];
+}
+/** −1 the outer circle holds still (the band lies inside it), +1 the inner, 0 the middle */
+const band_side = (ring) => ({ "outer edge": -1, "inner edge": 1 })[ANCHORS[ring.anchor]] || 0;
 
 /** the radius that keeps the drawing still when what it measures to changes (#326; Okay, 18 Oct 2026: "Nothing changed …
  *  just the dotted line moves", and "My comment applies to reverse auto reverse"): marks and bands keep their outer edge
@@ -1192,7 +1208,7 @@ export function radius_kept(ring, key, to) {
     const R = { ...ring, anchor }, b = text_path(label, R, size).bounds();
     const up = b ? numeral_dy(R, label, size) + (b[1] + b[3]) / 2 : 0;      // how far the middle stands above the radius, in the numeral's own up
     const out = mode === "upright" ? up * cos(a * PI / 180) : mode === "on path" ? 0 : up * (mode === "radial, auto-flip" && a % 360 > 90 && a % 360 < 270 ? -1 : 1);
-    return ring.r + out + (mode === "on path" ? 0 : tangent_shift(R, mode, a, label, size));
+    return ring.r + out + (mode === "on path" ? band_side(R) * (text_band(R)[1] - text_band(R)[0]) / 2 : tangent_shift(R, mode, a, label));
   };
   return max(ring.r + middle(ring.anchor || 0) - middle(to), 0);
 }
@@ -1203,22 +1219,23 @@ function numeral_setup(ring, i, a) {
   return [MODES[ring.mode], ring.r + (n.dr || 0), a + (n.da || 0), ring.size * (n.s ?? 1), n.rot || 0];
 }
 
-/** how far a numeral's middle stands from the radius when the ring is tangent (#338): its ink's reach toward the dial's
- *  edge — the box's corner in that direction for an upright numeral, half its height for one turned with the ring.
- *  → 0 for the other anchors. Outer edge: inward (−), inner edge: outward (+). */
-function tangent_shift(ring, mode, a, label, size) {
-  const anchor = ANCHORS[ring.anchor];
-  if (anchor !== "outer edge" && anchor !== "inner edge") return 0;
-  const b = text_path(label, ring, size).bounds();
-  if (!b) return 0;
-  const w = b[2] - b[0], h = b[3] - b[1], t = a * PI / 180;
-  const reach = mode === "upright" ? abs(sin(t)) * w / 2 + abs(cos(t)) * h / 2 : h / 2;
-  return anchor === "outer edge" ? -reach : reach;
+/** how far a numeral's middle stands from the radius when the outer or inner circle of the band holds still (#488):
+ *  half the cap height for a numeral turned with the ring; for an upright one, its reach toward the dial's edge — half
+ *  its width at 3 and 9, half the cap height at 12 and 6. Measured at the ring's size, so a numeral nudged bigger keeps
+ *  its place (Okay, 21 Oct 2026: the 12 "sits at the default position"). → 0 for the middle. Outer: inward (−). */
+function tangent_shift(ring, mode, a, label) {
+  const side = band_side(ring);
+  if (!side) return 0;
+  const h = cap_box(ring, ring.size), b = text_path(label, ring, ring.size).bounds();
+  if (!h || !b) return 0;
+  const half = (h[3] - h[1]) / 2, t = a * PI / 180;
+  const reach = mode === "upright" ? abs(sin(t)) * (b[2] - b[0]) / 2 + abs(cos(t)) * half : half;
+  return side * reach;
 }
 
 function numeral_at(ring, i, a0, label) {
   const [mode, r0, a, size, rot] = numeral_setup(ring, i, a0);
-  const r = mode === "on path" ? r0 : r0 + tangent_shift(ring, mode, a, label, size);
+  const r = mode === "on path" ? r0 + band_side(ring) * (text_band(ring)[1] - text_band(ring)[0]) / 2 : r0 + tangent_shift(ring, mode, a, label);
   if (mode === "on path") {
     const p = on_path(label, r, a, ring, size);
     if (rot) p.rotate(-rot, clock_point(r, a));
@@ -1250,7 +1267,9 @@ function text_centre(txt, t, size) {
 }
 
 function numeral_live(ring, i, a0, label) {
-  const [mode, r, a, size, rot] = numeral_setup(ring, i, a0);
+  const [mode, r0, a, size, rot] = numeral_setup(ring, i, a0);
+  // the same radius as the outlines (numeral_at): the band's circle that holds still, and the label's reach from it (#488)
+  const r = mode === "on path" ? r0 + band_side(ring) * (text_band(ring)[1] - text_band(ring)[0]) / 2 : r0 + tangent_shift(ring, mode, a, label);
   const base = { t: ring, size, fill: ring.c };
   if (mode === "on path") {
     return path_letters(label, r, a, ring, size).map(([ch, angle, flip, pos]) => ({
@@ -1958,7 +1977,7 @@ export function scene(S, statik, t, preview = true, selected = null) {
       const kind = kind_of(ring);
       const extent = { ticks: ring.len, markers: ring.len, band: ring.width }[kind] || 0;
       let outer = ring.r + from_shift(ring, extent), inner = outer - extent;
-      if (has_text(ring)) { const e = radial_extent(built.get(ring)?.path); if (e) [inner, outer] = e; }
+      if (has_text(ring)) [inner, outer] = text_band(ring);      // the band, one cap height (#488)
       edges(k, outer, inner, focused ? S.gd_w * 1.5 : S.gd_w, faded(focused), ring.r);
     });
     for (const x of windows) {
