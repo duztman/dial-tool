@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.91.5 · built 2026-10-21 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.91.6 · built 2026-10-21 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -91,7 +91,7 @@
     --unit-face: "Dial Mono", var(--mono);       /* the unit box's word: JetBrains Mono at the weight whose stem is the box's line at 10 px, packed (#302, beta 4.44.1; fonts/ui/mono_font.py) */
     --line: 34px;                                  /* a row's height */
     --head: 40px;                                  /* a pane's heading */
-    --header: 42px;                                /* the panel's top: title and Guides — as the Show Case's title row, half of 64 then 10 more (Okay, 21 Oct 2026, 23:11: "take only the top level … row height styling and adapt to app now too") */
+    --header: calc(var(--canvas-inset-wide) + var(--control-large) - var(--hair));      /* the panel's top: title and Guides. Its line (the tabs' top hairline) is the canvas's top buttons' bottom line, the buttons as far from the canvas's top as from its left (Okay, 21 Oct 2026, 23:29: "Align bottom line of top button row on the same line as title's hr line first. Then push from top to adjust for left gap"); the title centred in it. A rule for the Show Case too, when it comes */
     --bar-height: 62px; --bar-control: 30px;      /* the bar's height (Okay, 14 Oct 2026, 23:19: "1/5 higher" than the 52 it was); a phone keeps its own (--bar-lead-narrow) */
     --bar-light: #737373;                          /* the one light tone on the bottom bar: 55 % grey (Okay, 15 Oct 2026, 00:42: "55%gray all"); nothing on the bar is white (Okay, 15 Oct 2026, 00:18: "NOTHING ON THIS WHOLE BAR IS WHITE") */
     --play: #CC381A; --play-dark: #7A1E0C; --play-light: #F28A6C;      /* the play button, an arcade button from above: its cap (the seconds hand's red, geometry.js ACCENT), the shade round it and under it, the light on it (Okay, 14 Oct 2026: "3 colors and a black outline") */
@@ -184,7 +184,7 @@
     --pop-width: 388px; --pop-chips: 11;           /* the colour pop-out: its width; colours to a row (the palette's ten and its +), which share the row's width (the room between two: a special) */
     --checker: repeating-conic-gradient(#BDBDB9 0 25%, var(--white) 0 50%) 0 0 / 8px 8px;      /* what shows through a see-through colour */
     --faint: 0.35;                                 /* how much of a switch on the preview shows at rest */
-    --canvas-top: calc((var(--header) - var(--control-large)) / 2);      /* undo and Guides stand on the header's middle line, with the title and the unit box */
+    --canvas-top: var(--canvas-inset);      /* undo and Guides as far from the canvas's top as from its side, their bottom on the title's line (--header) */
     --guide-name: 106px; --guide-row: 30px;        /* the guides' list: the column of names, wide enough for an added guide's name and values on one line · a line's height (Okay, 16 Oct 2026, #305: "tighter spacing overall … small like beta version allowed"; under a finger 38) */
     --shade-name: 92px;                            /* the Shadows list's names: narrower than the guides' list's column, which holds an added guide's values; its sliders keep the room */
     --guide-dot: 7px; --guide-none: 14px; --scroll-w: 6px;      /* a round colour in the guides' list (the room between two: a special; Okay, 19 Oct 2026: "Still smaller balls") · the none sign ⊘, 14 (at 10 it went too small) · a list's scrollbar */
@@ -269,7 +269,7 @@
     --guide-gap: 7px;                              /* the room between two round colours in the guides' list: the chosen one's ring needs it (2 px clear of the next: 2 + 3 of ring; notes 2, 18 Oct 2026: "closer") */
     --ring-gap-in: 2px;                            /* the chosen guide colour: a ring of the ground this wide, inside its own ring */
     --logo-disc: 2px;                              /* the bio open: how far the mark's night disc reaches past its 16 box (ring to disc edge ≈ 2.3) */
-    --canvas-inset: 12px;                          /* from the preview's edge to what stands on it (a phone sets it to --u5) */
+    --canvas-inset-wide: 12px; --canvas-inset: var(--canvas-inset-wide);      /* from the preview's edge to what stands on it (a phone sets --canvas-inset to --u5; the title row keeps the wide one) */
     --glow-line: 1.5px; --glow-under: 4px;         /* lines, but not one of the three: the outline of what the pointer is on, and the white line under it */
     --tip-arrow: 5px; --tip-arrow-in: 2.6px;       /* lines, but not one of the three: the pointer label's arrow, its dark line and the white line inside it */
   }
@@ -436,7 +436,7 @@
 @layer panel {
   /* the panel: header, tabs, the pinned panes, the panes that scroll. */
   .panel { display: flex; flex-direction: column; min-height: 0; border-right: var(--hair) solid var(--rule); }
-  .panel > header { display: flex; align-items: center; height: var(--header); padding: 0 var(--margin); }
+  .panel > header { display: flex; align-items: center; height: var(--header); padding: 0 var(--margin) var(--hair); }      /* the row is odd (43): a hair kept at its foot, so what is centred in it lands on whole screen dots (the unit box drawn 4 px round its letters, #302) */
   /* the dial alone (Okay, 15 Oct 2026, 04:02): the panel keeps its width and slides left as far as its column closes,
      so it leaves without its lines reflowing; above the preview (z-index) so the mast, which slides back by as much
      and so stays where it was, is over the backdrop once the panel is gone */
@@ -1386,9 +1386,9 @@
   /* what stands on the preview is faint, so the dial is what one sees. Three states, all by how
      much shows (opacity; the line by the same share of its colour), so they hold on any backdrop:
        can be pressed    line and what is in it at --faint; whole under a pointer, with the keyboard on it, or open
-       can't be pressed  (no step to undo) half of --faint, and nothing under the pointer
+       can't be pressed  (no step to undo) its line as faint as the others', what is in it at half of --faint, nothing under the pointer
        on                (Guides) its word alone is whole; its line stays faint until the pointer is on it */
-  main { --line-faint: color-mix(in srgb, var(--on-canvas) calc(var(--faint) * 100%), transparent); --line-fainter: color-mix(in srgb, var(--on-canvas) calc(var(--faint) * 50%), transparent); }
+  main { --line-faint: color-mix(in srgb, var(--on-canvas) calc(var(--faint) * 100%), transparent); }
   .onview > * { opacity: var(--faint); }
   .onview:is(:focus-visible, [aria-expanded="true"]) { border-color: var(--on-canvas); }
   .onview:is(:focus-visible, [aria-expanded="true"]) > * { opacity: 1; }
@@ -1413,7 +1413,7 @@
   main.comparing > :is(svg, .tip) { visibility: hidden; }
   .comparedial { position: absolute; width: var(--compare-d); height: var(--compare-d); }
   .comparedial > svg { display: block; width: 100%; height: 100%; }
-  .undobox.none, .undobox.none:hover { border-color: var(--line-fainter); box-shadow: none; }
+  .undobox.none, .undobox.none:hover { border-color: var(--line-faint); box-shadow: none; cursor: default; pointer-events: none; }      /* no step that way: its outline as the others' (Okay, 21 Oct 2026, 23:34: "keep outlines as others while inactive"), its sign paler, nothing under a pointer or a finger */
   :is(.undobox.none, .undobox.none:hover) > * { opacity: calc(var(--faint) / 2); }
   .guidesbox { gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch) 0 0 var(--round-switch); }      /* on, its word is whole (black or white), never bolder (Okay, 14 Oct 2026: "when active label does not get bolder, just gets black") */
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 var(--round-switch) var(--round-switch) 0; }
@@ -7164,7 +7164,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.91.5";
+var VERSION = "beta 4.91.6";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
