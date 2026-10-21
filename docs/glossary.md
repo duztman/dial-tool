@@ -33,7 +33,7 @@ If a term is used differently in conversation, ask, then update this file.
 |---|---|
 | **Ring** | One entry in the ring list; repeats one thing round the centre at its **positions**. Every dial element in the list is a ring (not a *layer*). Unlimited. |
 | **Kind** | What a ring repeats: **ticks**, **markers**, **numerals**, **band** or **text**. Changed from the row's kind icon; settings kept. ("Type" means typography.) |
-| **Text ring** | Kind `text` (#297): a line of words (*AUTOMATIC*) at each position, own font; drawn like numerals. Faruk Koç's idea. Its **Start** snaps to other rings' indices within 2°. |
+| **Text ring** | Kind `text` (#297): a line of words (*AUTOMATIC*) at each position, own font; drawn like numerals. An idea of Faruk Koç (farukahmet on GitHub). Its **Start** snaps to other rings' indices within 2°. |
 | **Ring list** | The list in Rings; its order is the **stacking order** (top ring drawn last, in front). A row (#254): **eye**, grip, **kind** icon, name; the selected row adds the **rename box** and its size and radius numbers. The **ring drawer** hangs under it. |
 | **Radius** | Ticks, markers, bands: radius of the **outer** end, **middle** or **inner** end — *resize from* (ring key `from`, #257), set beside the radius label; the dotted guide is that radius. Numerals: radius of the **anchor**. |
 | **Anchor** | The numeral's point on the ring's radius (ring key `anchor`): **centre** · **outer edge** / **inner edge** (#338). Set in *Resize Ring from …* (#419) and the radius popup. No baseline or ascender (#418): such a stored ring measures to the centre. |
@@ -55,7 +55,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Picture** | What a moon window shows: Arch, Phase (three colours) or Line (one ink). Key `look`; shade `c2`. An am · pm window has one picture and no Picture row: a disc half am, half pm, under a half-round hole, turning once a day. |
 | **Physics** | Window tick: its disc must end inside the case (dial edge less a 0.5 mm rim); past it the outer guide shows red and the panel says by how much. Off, a disc may outgrow the dial (screen faces). |
 | **Strap** | From a case's lugs on the preview: leather **strap** (`c_strap`) or metal **bracelet**, on the Strap switch under Case (`strap`: 0 none · 1 strap · 2 bracelet). Only with a case; never exported (R26). Not a diver's bezel drawn as rings. |
-| **Wear OS export** | The dial as a Wear OS watch face (farukahmet's PR #1): Export → Wear OS → APK; sideloaded, debug-signed, never for the Play Store. |
+| **Wear OS export** | The dial as a Wear OS watch face (Faruk Koç's PR #1, as farukahmet): Export → Wear OS → APK; sideloaded, debug-signed, never for the Play Store. |
 | **Tiny Preview** | A small draggable window showing the dial at its own size (approximate, 96 px to the inch) (#337); button with the iris at the preview's bottom right; closed by the eye at its top left. Not editable. Not the **showcase**. |
 | **LINK pill** | Between two rows whose numbers may move together (#358); LINKED keeps their ratio. On a window's width and height (`wh_link`); a LINK disc in the controller. |
 | **Number block** | A Positions row (`block: true`): name and **number box**, no slider; the name opens the controller. Count and Every are **chevron boxes**. |
