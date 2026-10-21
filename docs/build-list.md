@@ -40,7 +40,7 @@ Settled by Okay on 21 Oct 2026, 20:25 (`docs/decisions.md`): SVG import is in; t
 
 | # | Item | Status |
 |---|---|---|
-| 231 | **Word collisions**: Backdrop (a colour and a switch) · Frame (a colour and a width, Windows) · Size, Size %, Size × · Ring Ø and Ring at % on hands · the opener's ring named Band whose kind is numerals. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 231 | **Word collisions**: Backdrop (a colour and a switch) · Frame (a colour and a width, Windows) · Size, Size %, Size × · Ring Ø and Ring at % on hands · the opener's ring named Band whose kind is numerals. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | v1 (Okay, 21 Oct 2026): Claude proposes a word for each, Okay picks |
 
 ### E · With the release
 
@@ -54,6 +54,7 @@ Settled by Okay on 21 Oct 2026, 20:25 (`docs/decisions.md`): SVG import is in; t
 |---|---|---|
 | 149 | "Lock the ring on preview" (Okay, 13 Oct 2026, on the window cards' pictures) — unclear: the ring fixed and only the window moving in the pictures? Ask | build — reading confirmed (Okay, 21 Oct 2026): the cards' circle drawn as the tab icon's ring, only the window moving |
 | 434 | **Settings file pane: "needs tlc. what do you think it needs?"** — Claude's proposal sent 19 Oct, 23:25; waiting for his word | build — (Okay, 21 Oct 2026: "Remove both") Save… · Load… only; Defaults and Plain dial removed, Dial › Reset holds the resets (R34); the guide's script presses Blank face |
+| 76 | Units box (mm · pt · in · lig · thou): should sliders and steppers step in the shown unit? They step in mm | build — v1 (Okay, 21 Oct 2026: "This shouldn't be that hard. This also can have a setting in the settings panel"): − + and sliders step in round amounts of the shown unit; a setting for it in #496 |
 | 494 | **Compare at one size, as large as the canvas holds, and a real-size switch** (Okay, 21 Oct 2026: "One big, as big as what fits on the canvas, one real size option in preview"): as built, every saved dial at one size; a switch shows them at their own mm (preview only, R26) | build |
 | 495 | **Undo keeps 20 steps** (Okay, 21 Oct 2026: "Only 20 kept"): it keeps 200; the list under undo shows 20 | build |
 
@@ -70,6 +71,10 @@ Every place an SVG can go, built as one mechanism (R34; R23 says how a file is r
 | 405 | **SVG inserts: a blank template file** — a downloadable SVG with guides and registration dots (the artboard's centre, the 12 o'clock line, a hand's pivot, a marker's box) so a drawing made on it imports editable and in place; one template per place an SVG can go (a hand, a marker, a window picture, a logo). The plan for every SVG upload (#50, #72, #173, #346), noted for when they are built (Okay, 17:43: "give the user a blank file with guides and dots to stick to make things editable and such. For the future, note under all svg upload available areas") | open — later, with #50 |
 
 ## After v1
+
+| # | Item | Status |
+|---|---|---|
+| 496 | **A universal settings panel** (Okay, 21 Oct 2026: "I am looking for things to put into a universal settings panel. Keep an ear up."): collect candidates as they come up, propose the panel when there are enough. So far: steps in the shown unit (#76); the guides' on and off choices (his note of 20 Oct, 04:20: "Settings will house extensive guide on offs") | collecting |
 
 Open, in rough order of weight within each group. #169 is the one Okay called core ("very very good… prioritize this", "core to our mission"); #83 was marked Next on 13 Oct.
 
@@ -95,14 +100,11 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 | # | Item | Status |
 |---|---|---|
 | 75 | Usability review, the other tabs: Rings · Hands · Windows · Export, one at a time (Okay, 12 Oct 2026) | open |
-| 66 | Tabs and the columns: five tabs share six columns, so they sit between columns (Okay, 11 Oct 2026: "Columns? They fit 'em"). Ways: tabs one column each with the sixth free, or a sixth sign. Ask Okay | open |
-| 76 | Units box (mm · pt · in · lig · thou): should sliders and steppers step in the shown unit? They step in mm | open |
 | 329 | **Hovering a row lights its part on the picture at the left — "these preview gestures are sitewide"**: the hands have it (the part a number changes, lit in the selected guide's colour while its row is pointed at, focused or its controller open); the rings' rows don't | later · open — rings |
 | 344 | **Every hand tile exaggerates its shape's features** (the disc hand's tile is right; a window stays inside a disc hand, key `mark_in`) | later · open |
 | 408 | **The font box's head**: its colour as a full swatch pill with the hex, as the colour rows have; the font name 2 px larger, growing from its baseline and its left edge — nothing else in the box moves (Okay, 19 Oct 2026, 18:08, a picture of the box: "color here gets full swatch with hex. Font name 2px bigger but nothing else moves, just text gets bigger, grows snapped to baseline and left") | open — look lane |
 | 468 | **Compare packs densely when the count is uneven**, as Dial Packer does (Okay, 02:21: "Use dense packing of circles for preview if uneven like on preview. -note for later"). Compare packs as the print sheet does (`pack_discs`: straight or staggered rows) | open — note |
 | 52 | Named instances of variable fonts in the font box (a weight axis without named styles gets Regular · Bold, #275; the font's own instances are not listed). The PDF's live text is #63, the fallback font #15 | open |
-| 60 | A dial opened from a link could fetch a missing Google family by its name by itself — not done: every unknown font would cost three failed requests | open |
 | 158 | **Icon states not checked by the pipeline:** hover; the font box's *Same font as* sign (shown only with a window's own font); the labelmenu chevron (12). Drawn on the grid, not visited by `check.mjs` | open |
 | 230 | **Per-pane anchors from the app into the guide** (edition 2). The Help link beside the version opens the guide (Okay, 15 Oct 2026: "Help next to beta number same font but underlined"). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
 
@@ -139,7 +141,6 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 | 175 | **A hand as a stack**: caps, windows, lume openings within the current interface | Later |
 | 176 | **A fit section under Dial's sizes** so rings and windows fit | Later |
 | 177 | **The am · pm disc as a ring of its own**, its geometry accurate and isolatable (the windows' discs show in X-ray, #346) | Later |
-| 179 | **What the counterweight is for** (Okay: "maybe later") | Later |
 | 425 | **The print sheet's picture: Edit** — the sheet laid out by hand (Okay, 20:22: "EDIT: (future)") | later |
 | 362 | **An Apple Watch preview** (Okay, 18 Oct 2026: "Future feature, some kind of preview for apple watch?"): a sibling of the Wear OS export (Export → Wear OS) — at least the dial in an Apple Watch's frame; a real watch face is not open to third parties on watchOS, so a preview or a photo face is the likely reach (to research) | open |
 | 363 | **Non-round dials: square, rectangle, rounded rectangle, diamond** (Okay, 18 Oct 2026: "And all that would bring to previews and functions. At the end of the future list"): every ring, window, case, export and preview measured from a circle today | after v1, with #484 |
