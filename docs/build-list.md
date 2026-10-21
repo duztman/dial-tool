@@ -98,6 +98,8 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 
 | # | Item | Status |
 |---|---|---|
+| 498 | **Positions pane: Count and Every lose their labels** (Okay's screenshot, 21 Oct 2026, 21:51): the two chevron boxes (12, 3) stand with no visible name — "Every" shows as a clipped "E" behind the Count box. Names back, nothing overlapping | note |
+| 499 | **Positions pane: the round picture needs twice the space under it** (same screenshot: "Needs 2x padding until" the pane's bottom line): the picture's foot sits on the line | note |
 | 75 | Usability review, the other tabs: Rings · Hands · Windows · Export, one at a time (Okay, 12 Oct 2026) | open |
 | 329 | **Hovering a row lights its part on the picture at the left — "these preview gestures are sitewide"**: the hands have it (the part a number changes, lit in the selected guide's colour while its row is pointed at, focused or its controller open); the rings' rows don't | later · open — rings |
 | 408 | **The font box's head**: its colour as a full swatch pill with the hex, as the colour rows have; the font name 2 px larger, growing from its baseline and its left edge — nothing else in the box moves (Okay, 19 Oct 2026, 18:08, a picture of the box: "color here gets full swatch with hex. Font name 2px bigger but nothing else moves, just text gets bigger, grows snapped to baseline and left") | open — look lane |

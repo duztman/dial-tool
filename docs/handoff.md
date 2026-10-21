@@ -6,6 +6,7 @@ A new session starts with no memory of the last one: the transcript stays in the
 
 ## 1 · Where things stand (20 Oct 2026, 05:10, beta 4.90 released)
 
+- **21 Oct 2026, 21:51 — planning mode**: Okay: "no more building. All building prompts are notes. For the future." Log each ask in the build list; build nothing until he says. Live: 4.91; `dev`: 4.91.1 (band guides, unreleased).
 - **21 Oct 2026, 20:10 — the road to v1**: v1 is drafted at the top of `docs/build-list.md` (no new features: answer, verify, close dead ends, clean words, full check, then the name on Okay's word); square dials come after v1 (#484). The build list is grouped by v1. Okay settled it on 21 Oct, 20:25 (SVG import in, guide with v1, no brass first); the next work is the v1 section, groups C, D, F, G.
 - **`dev`, `main` and the live page are beta 4.90** (Okay, 05:02: "this version is accepted, dev main, publish"). The night's items, their readings and six open questions: `docs/review-4.90.md`; the plan for square dials: `docs/plan-non-round.md`; next with Okay: the guides and Settings (his 04:52: "Guides and settings to follow tomorrow").
 - **Release as you go** (Okay, 05:02: "I feel we've been stuck at 90 for a while there?"): a batch of work is released when it passes, not held on a branch; the branch `wip-4.90` is merged and spent.

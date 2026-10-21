@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.91";
+export const VERSION = "beta 4.91.1";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -1977,8 +1977,11 @@ export function scene(S, statik, t, preview = true, selected = null) {
       const kind = kind_of(ring);
       const extent = { ticks: ring.len, markers: ring.len, band: ring.width }[kind] || 0;
       let outer = ring.r + from_shift(ring, extent), inner = outer - extent;
-      if (has_text(ring)) [inner, outer] = text_band(ring);      // the band, one cap height (#488)
-      edges(k, outer, inner, focused ? S.gd_w * 1.5 : S.gd_w, faded(focused), ring.r);
+      const px = focused ? S.gd_w * 1.5 : S.gd_w, al = faded(focused);
+      if (has_text(ring)) {      // the band's three circles: the one that holds still (the radius) solid, the other two dotted (Okay, 21 Oct 2026: "selected line gets full, others dotted")
+        [inner, outer] = text_band(ring);
+        for (const r of [outer, (outer + inner) / 2, inner]) if (r > 0) add("guide", circle(2 * r), null, { stroke: tone(k, al), px, dots: abs(r - ring.r) > 1e-6 });
+      } else edges(k, outer, inner, px, al, ring.r);
     });
     for (const x of windows) {
       const focused = focus === "windows" && x.index === (S.ui_window ?? 0), chosen = focused && S.gd_wsel, k = window_guide(S, x.index), e = radial_extent(x.window);

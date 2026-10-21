@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.91.1 (web version) · 21 Oct 2026
+
+- **A numerals ring's guides show the band's three circles**: the one that holds still (the radius) solid, the other two dotted (Okay, 21:47: "the center line (dashed) disappears. Instead selected line gets full, others dashed (Dashed=dotted)"). On `dev`, not released.
+
 ## beta 4.91 (web version) · 21 Oct 2026
 
 Okay, 21 Oct 2026: "This is an urgent thing to finish … Let's tackle this"; on the drawing: "100%".

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.91 · built 2026-10-21 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.91.1 · built 2026-10-21 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7157,7 +7157,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.91";
+var VERSION = "beta 4.91.1";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -9415,8 +9415,11 @@ function scene(S, statik, t, preview = true, selected = null) {
       const kind = kind_of(ring2);
       const extent = { ticks: ring2.len, markers: ring2.len, band: ring2.width }[kind] || 0;
       let outer = ring2.r + from_shift(ring2, extent), inner = outer - extent;
-      if (has_text(ring2)) [inner, outer] = text_band(ring2);
-      edges(k, outer, inner, focused ? S.gd_w * 1.5 : S.gd_w, faded(focused), ring2.r);
+      const px = focused ? S.gd_w * 1.5 : S.gd_w, al = faded(focused);
+      if (has_text(ring2)) {
+        [inner, outer] = text_band(ring2);
+        for (const r of [outer, (outer + inner) / 2, inner]) if (r > 0) add("guide", circle(2 * r), null, { stroke: tone(k, al), px, dots: abs(r - ring2.r) > 1e-6 });
+      } else edges(k, outer, inner, px, al, ring2.r);
     });
     for (const x2 of windows) {
       const focused = focus === "windows" && x2.index === (S.ui_window ?? 0), chosen = focused && S.gd_wsel, k = window_guide(S, x2.index), e = radial_extent(x2.window);
