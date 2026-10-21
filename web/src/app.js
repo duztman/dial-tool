@@ -35,7 +35,16 @@ const filled = (slider) => { const p = clamp((slider.value - slider.min) / ((sli
 const PNG_MOST = 16384;                            // a browser's canvas is at most this many pixels a side
 const PNG_SAFE = 4096 * 4096;                      // Safari on a phone or tablet draws nothing past this many pixels in all
 const GUIDE = "https://duztman.github.io/dial-tool/guide/";      // the guide (#230): "Help" beside the version, in its type, underlined (Okay, 15 Oct 2026, 12:50)
-const LAST = "dial-tool-last";                     // the last session, kept by the browser
+// Where this page keeps things in the browser. The released page (duztman.github.io/dial-tool/) and the /dev/ page
+// (#500) share one origin, so they would share one browser storage: the dev page's tries would land in the released
+// page's last session, saved dials, palette and kept fonts. One prefix keeps them apart, read from the page's own
+// address at run time, because the same committed build is copied to both places (tools/release.sh): /dial-tool/dev/
+// keeps everything under "dial-tool-dev-", every other address (the released page, a file opened by hand, the tests)
+// under "dial-tool-". Every key below goes through KEY(); the font files' database takes the same name (R34).
+const DEV = /\/dial-tool\/dev\//.test(location.pathname);
+const PLACE = DEV ? "dial-tool-dev" : "dial-tool";
+const KEY = (name) => `${PLACE}-${name}`;
+const LAST = KEY("last");                          // the last session, kept by the browser
 const FEATURE_NAMES = {
   kern: "kerning", liga: "ligatures", calt: "contextual alternates", dlig: "discretionary ligatures",
   tnum: "tabular figures", pnum: "proportional figures", onum: "oldstyle figures", lnum: "lining figures",
@@ -48,7 +57,7 @@ const FEATURE_NAMES = {
 };
 const PALETTE = ["#111111", "#FFFFFF", "#EDE8DB", "#A7A7AA", "#3A3A3C", "#0E2A47", "#12372A", "#7A1F1F", "#C8E6A0", "#E8742A"];      // the palette's first ten: black, white, cream, silver, anthracite, navy, green, burgundy, lume, orange
 const POP_GAP = 12;                              // between a swatch and the pop-out it opens, in screen points
-const PALETTE_KEY = "dial-tool-palette";           // the palette as this browser keeps it: the ten, and what was added
+const PALETTE_KEY = KEY("palette");           // the palette as this browser keeps it: the ten, and what was added
 const DEFAULT_ON = new Set(["kern", "liga", "calt", "ccmp", "locl", "mark", "mkmk", "rlig", "rclt", "curs", "clig", "rvrn"]);
 
 // ── icons: drawn here, so they take the colour of their button ──
@@ -588,7 +597,7 @@ const VALUE_PICS = {                               // a value button's drawing, 
 };
 
 // a language in the list, by its name; on its button, by two letters ("zh-Hans" → ZH; the font's own choice → "Lang.")
-const FONT_DARK_KEY = "dial-tool-font-dark";      // the font sheet's ground, light or dark, kept for the session (#276)
+const FONT_DARK_KEY = KEY("font-dark");      // the font sheet's ground, light or dark, kept for the session (#276)
 const LANG_NAMES = { default: "As the font sets it", tr: "Turkish", nl: "Dutch", de: "German", pl: "Polish", ro: "Romanian", ca: "Catalan", ar: "Arabic", fa: "Persian", "zh-Hans": "Chinese, simplified", ja: "Japanese" };
 const lang_short = (code) => (code === "default" ? "EN" : code.slice(0, 2).toUpperCase());      // none chosen: EN, what the font sets by itself (#273; Okay's notes, p. 12)
 
@@ -1091,7 +1100,7 @@ function save_file(name, data, type) {
 // font files added by hand, kept by this browser (#56: "font files added by hand are forgotten when the page closes"):
 // their bytes in IndexedDB (localStorage holds too little), read back when the page opens. A private window or a full
 // store keeps nothing, and the log says so once (R17)
-const FONT_STORE = { db: "dial-tool", store: "font-files" };
+const FONT_STORE = { db: PLACE, store: "font-files" };
 const font_store = () => new Promise((done, fail) => {
   const ask = indexedDB.open(FONT_STORE.db, 1);
   ask.onupgradeneeded = () => ask.result.createObjectStore(FONT_STORE.store);
@@ -1102,7 +1111,7 @@ const font_files_all = async () => { const db = await font_store(); const out = 
 const through = async (bytes, stream) => new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer());
 
 // your saved dials (4.76, #347): in this browser only, newest first, at most INSTANCES_MOST
-const INSTANCES_KEY = "dial-tool-instances", INSTANCES_MOST = 9;      // nine, a 3 × 3 grid (Okay, 20 Oct 2026, 02:26: "Versions limit 9, new ones after 9 replace the first: warn")
+const INSTANCES_KEY = KEY("instances"), INSTANCES_MOST = 9;      // nine, a 3 × 3 grid (Okay, 20 Oct 2026, 02:26: "Versions limit 9, new ones after 9 replace the first: warn")
 const instances_read = () => { try { const v = JSON.parse(localStorage.getItem(INSTANCES_KEY) || "[]"); return Array.isArray(v) ? v : []; } catch (e) { return []; } };
 const instances_write = (list) => { try { localStorage.setItem(INSTANCES_KEY, JSON.stringify(list)); return true; } catch (e) { return false; } };
 /** a dial's small picture, as the Gallery's (gallery.mjs): every shape of its scene, no guides. */
@@ -1383,7 +1392,7 @@ class DialTool {
     this.form = el("div", { className: "form" });                  // rows that scroll
     const panel = el("aside", { className: "panel" },
       // .mast: the mark, the title and the version — what stays when the panel slides away (dial_alone(), 15 Oct 2026)
-      el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: G.VERSION }), el("a", { className: "quiet help", href: GUIDE, target: "_blank", rel: "noopener", textContent: "Help" }))), this.gallery_way(), this.unit_box()),
+      el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: DEV ? `${G.VERSION} · dev` : G.VERSION }), el("a", { className: "quiet help", href: GUIDE, target: "_blank", rel: "noopener", textContent: "Help" }))), this.gallery_way(), this.unit_box()),
       this.tabs, this.pinned, this.form);
     this.finger_anchor(panel);
 
@@ -1601,7 +1610,7 @@ class DialTool {
     const app = $("#app"), grip = el("div", { className: "sheetgrip", id: "sheet-grip", title: "Drag to make the drawer taller or shorter", ariaLabel: "Drawer height" });
     grip.setAttribute("role", "separator");
     const set = (share) => { this.sheet_share = share; app.style.setProperty("--preview-share", (share * 100).toFixed(2) + "%"); };
-    try { const kept = parseFloat(localStorage.getItem("dial-tool-sheet")); if (kept > 0 && kept < 1) set(kept); } catch (e) { /* not kept */ }
+    try { const kept = parseFloat(localStorage.getItem(KEY("sheet"))); if (kept > 0 && kept < 1) set(kept); } catch (e) { /* not kept */ }
     const limits = () => { const h = app.clientHeight, bar = $(".bar").offsetHeight; return [SHEET.preview / h, (h - bar - SHEET.drawer) / h]; };
     let down = null;
     grip.onpointerdown = (e) => { grip.setPointerCapture(e.pointerId); down = { y: e.clientY, moved: false }; this.fitted = true; app.classList.add("gripping"); };
@@ -1617,7 +1626,7 @@ class DialTool {
       if (!down.moved && e.type === "pointerup") { const [lo, hi] = limits(), now = this.sheet_share ?? SHEET.shares[0]; set(clamp(Math.abs(now - SHEET.shares[0]) < 0.02 ? SHEET.shares[1] : SHEET.shares[0], lo, hi)); }
       down = null;
       app.classList.remove("gripping");
-      try { localStorage.setItem("dial-tool-sheet", String(this.sheet_share)); } catch (er) { /* not kept */ }
+      try { localStorage.setItem(KEY("sheet"), String(this.sheet_share)); } catch (er) { /* not kept */ }
     };
     // tall enough to hold its top still? measured whenever the drawer or its pinned part changes size
     const panel = $(".panel"), hold = () => {
@@ -2827,13 +2836,13 @@ class DialTool {
    *  such pane (the tests keep "*": false, a visitor who has opened them all). */
   is_folded(r) {
     if (r.row.headless) return false;              // a pane with no heading has nothing to fold it (the hand's, #261)
-    if (!this.folds) { try { this.folds = JSON.parse(localStorage.getItem("dial-tool-folds")) || {}; } catch (e) { this.folds = {}; } }
+    if (!this.folds) { try { this.folds = JSON.parse(localStorage.getItem(KEY("folds"))) || {}; } catch (e) { this.folds = {}; } }
     return this.folds[r.fold] ?? this.folds["*"] ?? Boolean(r.row.folded);
   }
   fold(r, folded) {
     this.is_folded(r);
     this.folds[r.fold] = folded;
-    try { localStorage.setItem("dial-tool-folds", JSON.stringify(this.folds)); } catch (e) { /* not kept */ }
+    try { localStorage.setItem(KEY("folds"), JSON.stringify(this.folds)); } catch (e) { /* not kept */ }
     const open = r.body.offsetHeight;                // the pane's height before anything changes (0 if it was folded)
     this.sync_rows();
     this.slide(r, open, folded);
@@ -3710,7 +3719,7 @@ class DialTool {
    *  p. 2, #256: "there's a limit to it … a resize pill"). */
   list_grip() {
     const ol = this.ring_list, set = (n) => { this.ring_rows_shown = n; ol.style.setProperty("--ring-rows", String(n)); this.sync_list_grip(); };
-    try { const kept = parseInt(localStorage.getItem("dial-tool-ring-rows")); if (kept >= 1) set(kept); } catch (e) { /* not kept */ }
+    try { const kept = parseInt(localStorage.getItem(KEY("ring-rows"))); if (kept >= 1) set(kept); } catch (e) { /* not kept */ }
     const grip = el("div", { className: "listgrip", id: "list-grip", title: "Drag to show more or fewer rings", ariaLabel: "Rings shown" });
     grip.setAttribute("role", "separator");
     const most = () => Math.max(this.S.rings.length, 1), rows = () => this.ring_rows_shown ?? RING_ROWS;
@@ -3729,7 +3738,7 @@ class DialTool {
       if (!down.moved && e.type === "pointerup") set(rows() === RING_ROWS ? most() : RING_ROWS);
       down = null;
       grip.classList.remove("gripping");
-      try { localStorage.setItem("dial-tool-ring-rows", String(this.ring_rows_shown)); } catch (er) { /* not kept */ }
+      try { localStorage.setItem(KEY("ring-rows"), String(this.ring_rows_shown)); } catch (er) { /* not kept */ }
     };
     this.pinned.append(grip);
   }
@@ -3740,7 +3749,7 @@ class DialTool {
    *  tap jumps between all and its first line. Remembered by this browser per tab, as the list's rows are. */
   pin_grip(name) {
     if (["Hands", "Date"].includes(name) || this.pinned.hidden || this.ring_list) return;
-    const body = el("div", { className: "pinbody" }, ...this.pinned.children), key = "dial-tool-pinned-" + name;
+    const body = el("div", { className: "pinbody" }, ...this.pinned.children), key = KEY("pinned-" + name);
     const grip = el("div", { className: "listgrip pingrip", id: "pin-grip", title: "Drag to make this part taller or shorter", ariaLabel: "Height of what stays in view" });
     grip.setAttribute("role", "separator");
     this.pinned.replaceChildren(body, grip);
@@ -5166,7 +5175,7 @@ class DialTool {
       const many = part.el.querySelectorAll(".tile").length;      // how many switches the font has, beside the name (Okay, 13 Oct 2026: "How many?")
       head.innerHTML = (none ? icon(NONE_SIGN) : eye(!folded)) + `<span>${title}</span>` + (many ? `<span class="many">${many}</span>` : "");
     };
-    head.onclick = () => { if (none) return; this.is_folded({ fold: name, row: {} }); this.folds[name] = !(this.folds[name] ?? shut); try { localStorage.setItem("dial-tool-folds", JSON.stringify(this.folds)); } catch (e) { /* not kept */ } set(); };
+    head.onclick = () => { if (none) return; this.is_folded({ fold: name, row: {} }); this.folds[name] = !(this.folds[name] ?? shut); try { localStorage.setItem(KEY("folds"), JSON.stringify(this.folds)); } catch (e) { /* not kept */ } set(); };
     const wrap = el("div", { className: "boxpart" }, head, part.el);
     return { el: wrap, refresh: (R, T) => { const has = part.refresh(R, T); wrap.hidden = !has; none = has === "none"; set(); } };
   }
@@ -5779,13 +5788,13 @@ class DialTool {
   /** fonts added from a link are remembered by this browser as their addresses, and fetched again when wanted. */
   remember(added) {
     try {
-      const kept = JSON.parse(localStorage.getItem("dial-tool-fonts") || "[]").filter((k) => !added.some((f) => f.ps === k.ps));
+      const kept = JSON.parse(localStorage.getItem(KEY("fonts")) || "[]").filter((k) => !added.some((f) => f.ps === k.ps));
       for (const f of added) if (f.url) kept.push({ family: f.family, style: f.style, ps: f.ps, url: f.url });
-      localStorage.setItem("dial-tool-fonts", JSON.stringify(kept));
+      localStorage.setItem(KEY("fonts"), JSON.stringify(kept));
     } catch (e) { /* not kept */ }
   }
   remembered() {
-    try { return JSON.parse(localStorage.getItem("dial-tool-fonts") || "[]"); } catch (e) { return []; }
+    try { return JSON.parse(localStorage.getItem(KEY("fonts")) || "[]"); } catch (e) { return []; }
   }
   /** when the sheet opens: fetch the remembered fonts that aren't here yet, so each can show its numerals. */
   async load_remembered() {

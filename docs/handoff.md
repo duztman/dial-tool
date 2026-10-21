@@ -25,6 +25,7 @@ A new session starts with no memory of the last one: the transcript stays in the
    - the build list's open rows under its last two sections, with the phases above them.
 3. `git log --oneline -15 dev` and `docs/versions.md`'s top rows confirm where things stand.
 4. `cd web && npm test > some.log 2>&1` (about 6 minutes). See it pass before changing anything, and look at `web/test/out/`.
+5. Two pages are online: <https://duztman.github.io/dial-tool/> is `main` (a step), <https://duztman.github.io/dial-tool/dev/> is `dev` (every small push, §3.7). The /dev/ page is a loader (`web/dev/index.html`) that fetches the build fresh at each refresh; the build keeps its storage under `dial-tool-dev-`, read from its address (`app.js`, `KEY()`).
 
 ## 3 · The loop, one version at a time
 
@@ -49,10 +50,11 @@ A new session starts with no memory of the last one: the transcript stays in the
 
    Run `node build.mjs`, then make one commit on `dev`: "beta X: first line", with the attribution trailers your session gives you.
 
-   Numbering: a small push counts in the third number (4.46.5 → 4.46.6); a phase counts in the second (4.47).
+   Numbering: a small push counts in the third number (4.46.5 → 4.46.6); a step counts in the second (4.47).
 7. **Release:**
-   - `tools/release.sh X "first line"` adds the row in `docs/versions.md`, pushes `dev` and copies the build to the live page.
-   - When Okay asks for a release, `tools/release.sh main` (fast-forward only).
+   - A small push (third number), after `npm run small`: `tools/release.sh dev "first line"` pushes `dev` and copies the build to the /dev/ page (`duztman.github.io/dial-tool/dev/`; Okay refreshes there). No row in `docs/versions.md`.
+   - A step (second number), after the full `npm test`: `tools/release.sh 4.92 "first line"` adds the row in `docs/versions.md`, moves `main` to `dev` and copies the build to the released page (Okay, 21 Oct 2026: "second level updates 4.91-92 automatically to main. Small updates only on dev"; #500).
+   - `tools/release.sh main` moves `main` to `dev` alone (fast-forward only).
    - Tags can't be pushed from a session (CLAUDE.md, *Versions*).
 8. **Reply** to Okay: short bullets with what changed, the values used, and what's open. He reads on an iPad.
 

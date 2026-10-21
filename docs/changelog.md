@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.91.2 (web version) · 21 Oct 2026
+
+Okay, 21 Oct 2026: "Let's have a /dev under dial tool online, work there … Small updates only on dev … Main gets all the tests"; "Yes: loader + own storage".
+
+- **A /dev/ page** (#500): <https://duztman.github.io/dial-tool/dev/> shows `dev`, every small push after the quick checks; the root stays `main`, moved at a step after the full check. The page is a small loader (`web/dev/index.html`) that fetches the build with a fresh address and no cache, so a plain refresh shows the newest one; if the fetch fails it says so and points to the released page.
+- **The dev build keeps its own browser storage**: on `/dial-tool/dev/` every key is `dial-tool-dev-…` and the kept font files' database `dial-tool-dev`, so the released page's last session, saved dials, palette and fonts are never read or written. Its title line reads "beta 4.91.2 · dev".
+- `tools/release.sh dev "first line"` puts a small push on /dev/; `tools/release.sh 4.92 "first line"` now moves `main` to `dev` as well as the released page; a third-number version is refused there.
+
 ## beta 4.91.1 (web version) · 21 Oct 2026
 
 - **A numerals ring's guides show the band's three circles**: the one that holds still (the radius) solid, the other two dotted (Okay, 21:47: "the center line (dashed) disappears. Instead selected line gets full, others dashed (Dashed=dotted)"). On `dev`, not released.

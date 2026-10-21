@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.91.1 · built 2026-10-21 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.91.2 · built 2026-10-21 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7157,7 +7157,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.91.1";
+var VERSION = "beta 4.91.2";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -13807,7 +13807,10 @@ var filled = (slider) => {
 var PNG_MOST = 16384;
 var PNG_SAFE = 4096 * 4096;
 var GUIDE = "https://duztman.github.io/dial-tool/guide/";
-var LAST = "dial-tool-last";
+var DEV = /\/dial-tool\/dev\//.test(location.pathname);
+var PLACE = DEV ? "dial-tool-dev" : "dial-tool";
+var KEY = (name) => `${PLACE}-${name}`;
+var LAST = KEY("last");
 var FEATURE_NAMES = {
   kern: "kerning",
   liga: "ligatures",
@@ -13844,7 +13847,7 @@ var FEATURE_NAMES = {
 };
 var PALETTE = ["#111111", "#FFFFFF", "#EDE8DB", "#A7A7AA", "#3A3A3C", "#0E2A47", "#12372A", "#7A1F1F", "#C8E6A0", "#E8742A"];
 var POP_GAP = 12;
-var PALETTE_KEY = "dial-tool-palette";
+var PALETTE_KEY = KEY("palette");
 var DEFAULT_ON = /* @__PURE__ */ new Set(["kern", "liga", "calt", "ccmp", "locl", "mark", "mkmk", "rlig", "rclt", "curs", "clig", "rvrn"]);
 var LINE = 1.5;
 var SLANT = LINE + 1 / 16;
@@ -14267,7 +14270,7 @@ var VALUE_PICS = {
   // fills when the button is pressed (Okay's drawing, 14 Oct 2026). Tangents and hull computed from the circles.
   size: `<path class="hull" d="M4.45 11.24L12.27 5.88A15 15 0 1 1 12.27 30.62L4.45 25.26A8.5 8.5 0 0 1 4.45 11.24Z"/><circle class="disc" cx="20.75" cy="18.25" r="15" ${sw(CURVE)}/><circle class="small" cx="9.25" cy="18.25" r="8.5" ${sw(CURVE)}/><path class="tangent" d="M4.45 11.24L12.27 5.88M4.45 25.26L12.27 30.62" ${sw(SLANT)}/><path class="dark" d="M9.25 18.25H20.75" ${sw(LINE)}/><circle class="pivot" cx="20.75" cy="18.25" r="2"/>`
 };
-var FONT_DARK_KEY = "dial-tool-font-dark";
+var FONT_DARK_KEY = KEY("font-dark");
 var LANG_NAMES = { default: "As the font sets it", tr: "Turkish", nl: "Dutch", de: "German", pl: "Polish", ro: "Romanian", ca: "Catalan", ar: "Arabic", fa: "Persian", "zh-Hans": "Chinese, simplified", ja: "Japanese" };
 var lang_short = (code) => code === "default" ? "EN" : code.slice(0, 2).toUpperCase();
 var TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip" };
@@ -14809,7 +14812,7 @@ function save_file(name, data, type) {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url2), 5e3);
 }
-var FONT_STORE = { db: "dial-tool", store: "font-files" };
+var FONT_STORE = { db: PLACE, store: "font-files" };
 var font_store = () => new Promise((done, fail) => {
   const ask = indexedDB.open(FONT_STORE.db, 1);
   ask.onupgradeneeded = () => ask.result.createObjectStore(FONT_STORE.store);
@@ -14837,7 +14840,7 @@ var font_files_all = async () => {
   return out;
 };
 var through = async (bytes2, stream) => new Uint8Array(await new Response(new Blob([bytes2]).stream().pipeThrough(stream)).arrayBuffer());
-var INSTANCES_KEY = "dial-tool-instances";
+var INSTANCES_KEY = KEY("instances");
 var INSTANCES_MOST = 9;
 var instances_read = () => {
   try {
@@ -15152,7 +15155,7 @@ var DialTool = class _DialTool {
       "aside",
       { className: "panel" },
       // .mast: the mark, the title and the version — what stays when the panel slides away (dial_alone(), 15 Oct 2026)
-      el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: VERSION }), el("a", { className: "quiet help", href: GUIDE, target: "_blank", rel: "noopener", textContent: "Help" }))), this.gallery_way(), this.unit_box()),
+      el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: DEV ? `${VERSION} \xB7 dev` : VERSION }), el("a", { className: "quiet help", href: GUIDE, target: "_blank", rel: "noopener", textContent: "Help" }))), this.gallery_way(), this.unit_box()),
       this.tabs,
       this.pinned,
       this.form
@@ -15434,7 +15437,7 @@ var DialTool = class _DialTool {
       app.style.setProperty("--preview-share", (share * 100).toFixed(2) + "%");
     };
     try {
-      const kept = parseFloat(localStorage.getItem("dial-tool-sheet"));
+      const kept = parseFloat(localStorage.getItem(KEY("sheet")));
       if (kept > 0 && kept < 1) set(kept);
     } catch (e) {
     }
@@ -15465,7 +15468,7 @@ var DialTool = class _DialTool {
       down = null;
       app.classList.remove("gripping");
       try {
-        localStorage.setItem("dial-tool-sheet", String(this.sheet_share));
+        localStorage.setItem(KEY("sheet"), String(this.sheet_share));
       } catch (er) {
       }
     };
@@ -16947,7 +16950,7 @@ var DialTool = class _DialTool {
     if (r.row.headless) return false;
     if (!this.folds) {
       try {
-        this.folds = JSON.parse(localStorage.getItem("dial-tool-folds")) || {};
+        this.folds = JSON.parse(localStorage.getItem(KEY("folds"))) || {};
       } catch (e) {
         this.folds = {};
       }
@@ -16958,7 +16961,7 @@ var DialTool = class _DialTool {
     this.is_folded(r);
     this.folds[r.fold] = folded;
     try {
-      localStorage.setItem("dial-tool-folds", JSON.stringify(this.folds));
+      localStorage.setItem(KEY("folds"), JSON.stringify(this.folds));
     } catch (e) {
     }
     const open = r.body.offsetHeight;
@@ -18012,7 +18015,7 @@ var DialTool = class _DialTool {
       this.sync_list_grip();
     };
     try {
-      const kept = parseInt(localStorage.getItem("dial-tool-ring-rows"));
+      const kept = parseInt(localStorage.getItem(KEY("ring-rows")));
       if (kept >= 1) set(kept);
     } catch (e) {
     }
@@ -18039,7 +18042,7 @@ var DialTool = class _DialTool {
       down = null;
       grip.classList.remove("gripping");
       try {
-        localStorage.setItem("dial-tool-ring-rows", String(this.ring_rows_shown));
+        localStorage.setItem(KEY("ring-rows"), String(this.ring_rows_shown));
       } catch (er) {
       }
     };
@@ -18051,7 +18054,7 @@ var DialTool = class _DialTool {
    *  tap jumps between all and its first line. Remembered by this browser per tab, as the list's rows are. */
   pin_grip(name) {
     if (["Hands", "Date"].includes(name) || this.pinned.hidden || this.ring_list) return;
-    const body = el("div", { className: "pinbody" }, ...this.pinned.children), key = "dial-tool-pinned-" + name;
+    const body = el("div", { className: "pinbody" }, ...this.pinned.children), key = KEY("pinned-" + name);
     const grip = el("div", { className: "listgrip pingrip", id: "pin-grip", title: "Drag to make this part taller or shorter", ariaLabel: "Height of what stays in view" });
     grip.setAttribute("role", "separator");
     this.pinned.replaceChildren(body, grip);
@@ -19763,7 +19766,7 @@ var DialTool = class _DialTool {
       this.is_folded({ fold: name, row: {} });
       this.folds[name] = !(this.folds[name] ?? shut);
       try {
-        localStorage.setItem("dial-tool-folds", JSON.stringify(this.folds));
+        localStorage.setItem(KEY("folds"), JSON.stringify(this.folds));
       } catch (e) {
       }
       set();
@@ -20519,15 +20522,15 @@ var DialTool = class _DialTool {
   /** fonts added from a link are remembered by this browser as their addresses, and fetched again when wanted. */
   remember(added) {
     try {
-      const kept = JSON.parse(localStorage.getItem("dial-tool-fonts") || "[]").filter((k) => !added.some((f2) => f2.ps === k.ps));
+      const kept = JSON.parse(localStorage.getItem(KEY("fonts")) || "[]").filter((k) => !added.some((f2) => f2.ps === k.ps));
       for (const f2 of added) if (f2.url) kept.push({ family: f2.family, style: f2.style, ps: f2.ps, url: f2.url });
-      localStorage.setItem("dial-tool-fonts", JSON.stringify(kept));
+      localStorage.setItem(KEY("fonts"), JSON.stringify(kept));
     } catch (e) {
     }
   }
   remembered() {
     try {
-      return JSON.parse(localStorage.getItem("dial-tool-fonts") || "[]");
+      return JSON.parse(localStorage.getItem(KEY("fonts")) || "[]");
     } catch (e) {
       return [];
     }

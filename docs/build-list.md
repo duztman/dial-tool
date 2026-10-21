@@ -95,7 +95,6 @@ Built together, one check. With these from groups D and F: #149, #434, #495, #76
 
 | # | Item | Status |
 |---|---|---|
-| 500 | **A /dev page** (Okay, 21 Oct 2026: "Let's have a /dev under dial tool online, work there … Small updates only on dev … Main gets all the tests"): `duztman.github.io/dial-tool/` is `main`, moved at every step (second number) after the full check; `/dev/` takes every small push after the quick checks. `/dev/` is a small loader that fetches the newest build past the site's ~10-minute cache, so a refresh shows it; the dev build keeps its own browser storage, so it never touches main's saved dials, session or palette. `release.sh` gets a dev mode; R19 and the handoff say so | approved plan — build on Okay's word |
 | 501 | **The rest of the font library in the list** (Okay, 21 Oct 2026: "Adding them into the site before v1 is a must"): the middle tier (50) and the non-Latin numeral fonts (10) of `docs/font-tiers-2026-10-16.md`, licences and credits as `web/fonts/README.md` keeps them. The bottom tier (14) stays held. The font sheet follows R35 | v1 — build on Okay's word |
 
 ## After v1
