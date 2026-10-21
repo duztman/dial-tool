@@ -4,7 +4,7 @@
 
 *Written 20 Oct 2026, 02:02–05:20, on the branch `wip-4.90` (from `dev` at beta 4.89.12). `dev`, `main` and the live page are untouched. Okay, 02:02 (he first called it "beta 5 v01"; 02:53: "This should not be called beta 5 … Normal progression"): "Build functionality … noted and screenshotted for my approval later, not messing with current build … We might do a design round later."*
 
-How it was built: every new control takes the nearest look Okay has already passed (a tick with its note under it, a full number row, a switch of the preview's make, the Guides list's dark popup, the Gallery's cards). The look of each is for the design round. Every new setting starts as the tool drew before, so older links and files draw as they did (R31: no new link scheme; the new keys are appended to `LINK_KEYS`). Pictures: `archive/screens/2026-10-20-4.90/`.
+How it was built: every new control takes the nearest look Okay has already passed (a tick with its note under it, a full number row, a switch of the preview's make, the Guides list's dark popup, the Gallery's cards). The look of each is for the design round. Every new setting starts as the tool drew before, so older links and files draw as they did (R31: no new link scheme; the new keys are appended to `LINK_KEYS`). Pictures: `the Mac folder `~/Desktop/dial-maker/screenshots/2026-10-20-4.90/` (R36)`.
 
 To try it: the private preview of this branch, https://claude.ai/artifact/JRtt9Py7EzVRBEQhLsskhq (its own link, not the usual preview). This review with pictures, for the iPad: https://claude.ai/artifact/VzjogyWBNaFsKbTygRLXbc, or `git checkout wip-4.90` and open `web/dial-tool.html`.
 

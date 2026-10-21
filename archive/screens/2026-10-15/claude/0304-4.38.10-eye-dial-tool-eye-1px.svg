@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <!-- Dial Tool, the eye switch at 1px (a sketch to look at, 15 Oct 2026): the switch's box, 32 x 32, its corners round 10;
-       the lashes run out to the box and it cuts them -->
-  <defs><clipPath id="inside"><rect x="1" y="1" width="30" height="30" rx="9"/></clipPath></defs>
-  <rect x="0.5" y="0.5" width="31" height="31" rx="9.5" fill="none" stroke="#111111" stroke-width="1"/>
-  <g clip-path="url(#inside)"><g transform="translate(1 1)" fill="none" stroke="#111111" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M6.25 15C12.25 8 18.25 8 24.25 15C18.25 22 12.25 22 6.25 15Z"/><circle cx="15.25" cy="15" r="2.75" fill="#111111" stroke="none"/><path d="M6.25 15L-16.53 -4.52M10.21 11.39L-6.18 -13.73M15.25 9.75L15.25 -20.25M20.29 11.39L36.68 -13.73M24.25 15L47.03 -4.52M6.25 15L-16.53 34.52M10.21 18.61L-6.18 43.73M15.25 20.25L15.25 50.25M20.29 18.61L36.68 43.73M24.25 15L47.03 34.52"/></g></g>
-</svg>

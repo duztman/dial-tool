@@ -1,6 +1,0 @@
-<svg viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="black">
-<path d="M6 15Q15 7 24 15Q15 23 6 15Z"/>
-<circle cx="15" cy="15" r="2.75" fill="black" stroke="none"/>
-<path d="M10.5 12L6 -1"/><path d="M15 11V-2"/><path d="M19.5 12L24 -1"/>
-<path d="M10.5 18L6 31"/><path d="M15 19V32"/><path d="M19.5 18L24 31"/>
-</svg>
