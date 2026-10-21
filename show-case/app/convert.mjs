@@ -75,7 +75,7 @@ for (const name of ["engineer", "miyazaki"]) {
   // between them; the bezel a flat wide ring stepping down to a 16 mm dial; a pin crown out through the right rail; grey
   // like its print (aluminium). The rails stand in for the lugs, so the shadows, the outline and the straps follow
   swap("  dress: {", `  emre01: {
-    name: "Emre01 · Emre's prototype · aluminium", rails: true, od: 22, l2l: 27, lugw: 19.4, lugT: 3.3, flare: 0, metal: ALU,
+    name: "Emre01 · Emre's prototype · aluminium", rails: true, depth: 0.5, od: 22, l2l: 27, lugw: 19.4, lugT: 3.3, flare: 0, metal: ALU,
     bands: [[11, 10.5, 1, 0.6], [10.5, 9.1, 1, 0.12], [9.1, 8.6, -1, 0.7], [8.6, 8.0, 1, 0.12]],
     opening: 8.0, dial: 16, crown: { at: 0, w: 1.8, h: 1.1, knurl: 2 }, drilled: false, dialName: "Dress roman",
   },
@@ -124,6 +124,8 @@ function linksBracelet({ W = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H = 40, r
 }
 function braceletSVG(C, L, span) {`);
   swap("out += vaultBracelet({ W, y0: yE, span, sy, L, H: SUN_H, ramp, ink: INKB });", "out += (BRACELET_KIND === \"links\" ? linksBracelet : vaultBracelet)({ W, y0: yE, span, sy, L, H: SUN_H, ramp, ink: INKB });");
+  // how deep the dial sits: the bezel wall's shadow on it scales with \`depth\` (Emre01's dial halfway up, 04:08)
+  swap("Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad(40)) / Math.tan(rad(SUN_H))))", "(C.depth ?? 1) * Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad(40)) / Math.tan(rad(SUN_H))))");
   // shadows darker or lighter, on their own (Okay, 20 Oct 2026, 23:38): SHD scales the hands' shadow, the bezel's
   // crescent on the dial and the block shadow's depth (the last in draw())
   s = s.replace("let INSERT = {", "let SHD = 1, HB_ON = false, INSERT = {");

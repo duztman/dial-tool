@@ -17,7 +17,7 @@ import { Bar, el, clamp, icon, STEP } from "./bar.js";
 const STYLES = { engineer: ENGINEER, miyazaki: MIYAZAKI };
 const FIRST_LINK = "__FIRST_LINK__";
 let refresh_ground = () => {};      // the background popup shown again (set where it is made)
-const VERSION = "beta 1.0.18";      // the live site keeps the stable ones (beta 1.0 at /dial-tool/show-case/); this page counts on from there (01:43)
+const VERSION = "beta 1.0.19";      // the live site keeps the stable ones (beta 1.0 at /dial-tool/show-case/); this page counts on from there (01:43)
 const FONT_BASE = "__FONT_BASE__";
 
 // ── what is shown: the dial (S, Dial Tool's settings) and the watch round it (W) ──
