@@ -119,7 +119,6 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 
 | # | Item | Status |
 |---|---|---|
-| 504 | **Every ring's line shows its colour and two numbers** (Okay, 21 Oct 2026, 22:57, his drawing on the ring list: Markers and Minute ticks get a colour square in the colour column and "X.X X.X" at the right, as the selected Numerals line shows its size and count). Which two numbers per kind: to ask | open — note |
 | 75 | Usability review, the other tabs: Rings · Hands · Windows · Export, one at a time (Okay, 12 Oct 2026) | open |
 
 ### Files

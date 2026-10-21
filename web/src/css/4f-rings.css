@@ -43,10 +43,14 @@
   .ringlist .rename svg { opacity: var(--rename-dim); }      /* half its grey (Okay's PSD, 18 Oct 2026) */
   .ringlist .rename:hover svg { opacity: 1; }
   /* the selected ring's size and radius, large, in Dial Mono, each centred over its button in the drawer (4.55) */
+  .ringlist li.ring .namecell { grid-column: 4 / 6; }      /* every row: the name, then colour · size · radius (#504) */
   .ringlist li.ring.on .namecell { grid-column: 4 / 7; }
   .ringlist .fig { justify-self: end; display: flex; justify-content: center; width: var(--line-button); font: 400 var(--t-m)/1 var(--sans); font-variant-numeric: tabular-nums lining-nums; color: var(--ink); white-space: nowrap; }      /* the panel's type, its size, black (Okay, 20 Oct 2026, 00:20: "back to inter, regular size and still black") */
-  .ringlist .fig#ring-size-fig { grid-column: 7; }
-  .ringlist .fig#ring-r-fig { grid-column: 8; }
+  .ringlist .fig.size { grid-column: 7; }
+  .ringlist .fig.r { grid-column: 8; }
+  .ringlist li.ring > .colour.bare.rowswatch { grid-column: 6; justify-self: end; border-color: transparent; background: none; pointer-events: none; }      /* the ring's colour, where the selected ring's line has its swatch (#504) */
+  .ringlist li.ring.off .fig { color: var(--rule); }      /* a hidden ring's numbers, faint as its name */
+  .ringlist li.ring.off .rowswatch { opacity: var(--rename-dim); }
   .ringlist .rename:hover { color: var(--ink); background: var(--veil-strong); }
   /* the list's tools stand on the pane's heading line, at its right: a plus that opens the four kinds, then move up ·
      move down · duplicate · delete, all five the same outlined circle. The pane is laid on the

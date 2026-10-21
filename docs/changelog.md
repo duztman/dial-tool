@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.91.4 (web version) · 21 Oct 2026
+
+- **Every ring's row shows its colour, size and radius** (#504; Okay, 21 Oct 2026, 22:57 and 23:07: "The collapsed ring list shows numbers and appropriate swatch too"): a row not selected has its colour as a bare swatch in the colour column, where the selected ring's line has its own, and its two numbers in Dial Mono over the drawer's size and radius columns; a hidden ring's are faint.
+- **The font box's colour is the colour rows' own pill**, a white block with swatch and hex (Okay, 23:07: "no need to invent new stuff"); 10 px from EN, so EN keeps its size.
+
 ## beta 4.91.3 (web version) · 21 Oct 2026
 
 Small-jobs batch 1 (Okay, 21 Oct 2026: "Easy to do things: doing 10 of them and checking once is a solid job"; 22:48: "Do the small batch first").

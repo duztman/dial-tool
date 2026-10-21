@@ -2071,11 +2071,11 @@ await tab("Rings");
 await page.click(".ringlist li.ring >> nth=2");
 await page.$eval(".form", (e) => { e.scrollTop = 180; });
 await page.evaluate(() => { window.__row = document.querySelector(".form .row"); });
-await page.click(".pinned .colour");
+await page.click(".pinned .ringline .colour");
 await click_mm(...clock(13, 150));                     // the marker at 5: a ring with the same panes as the ticks (a ring of another kind has other panes: there the scroll starts again)
 const kept = await page.evaluate(() => ({ same_rows: window.__row === document.querySelector(".form .row"), scroll: document.querySelector(".form").scrollTop, picker: document.querySelector("#colour-pop").hidden, ring: window.dial_tool.ring().name, list: document.querySelector(".ringlist li.ring.on .name").textContent }));
 check(kept.same_rows && kept.scroll === 180 && kept.picker && kept.ring === kept.list, `a click on the preview keeps the rows, their scroll (${kept.scroll}) and selects ${kept.ring}; the colour pop-out, pressed outside of, is put away`);
-await page.click(".pinned .colour");
+await page.click(".pinned .ringline .colour");
 await tab("Rings"); await page.$eval(".form", (e) => { e.scrollTop = 120; }); await tab("Dial"); await tab("Rings");
 check(await page.$eval(".form", (e) => e.scrollTop) === 120, "a section is back where it was scrolled to");
 await page.$eval(".form", (e) => { e.scrollTop = 0; });

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.91.3 · built 2026-10-21 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.91.4 · built 2026-10-21 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -897,10 +897,14 @@
   .ringlist .rename svg { opacity: var(--rename-dim); }      /* half its grey (Okay's PSD, 18 Oct 2026) */
   .ringlist .rename:hover svg { opacity: 1; }
   /* the selected ring's size and radius, large, in Dial Mono, each centred over its button in the drawer (4.55) */
+  .ringlist li.ring .namecell { grid-column: 4 / 6; }      /* every row: the name, then colour · size · radius (#504) */
   .ringlist li.ring.on .namecell { grid-column: 4 / 7; }
   .ringlist .fig { justify-self: end; display: flex; justify-content: center; width: var(--line-button); font: 400 var(--t-m)/1 var(--sans); font-variant-numeric: tabular-nums lining-nums; color: var(--ink); white-space: nowrap; }      /* the panel's type, its size, black (Okay, 20 Oct 2026, 00:20: "back to inter, regular size and still black") */
-  .ringlist .fig#ring-size-fig { grid-column: 7; }
-  .ringlist .fig#ring-r-fig { grid-column: 8; }
+  .ringlist .fig.size { grid-column: 7; }
+  .ringlist .fig.r { grid-column: 8; }
+  .ringlist li.ring > .colour.bare.rowswatch { grid-column: 6; justify-self: end; border-color: transparent; background: none; pointer-events: none; }      /* the ring's colour, where the selected ring's line has its swatch (#504) */
+  .ringlist li.ring.off .fig { color: var(--rule); }      /* a hidden ring's numbers, faint as its name */
+  .ringlist li.ring.off .rowswatch { opacity: var(--rename-dim); }
   .ringlist .rename:hover { color: var(--ink); background: var(--veil-strong); }
   /* the list's tools stand on the pane's heading line, at its right: a plus that opens the four kinds, then move up ·
      move down · duplicate · delete, all five the same outlined circle. The pane is laid on the
@@ -1156,7 +1160,7 @@
   .fontname .name { flex: 1 1 auto; color: var(--wait); font-size: var(--t-l); line-height: calc(var(--t-m) * var(--leading)); translate: 0 calc((var(--t-m) - var(--t-l)) / 2); }      /* the font's name, grey and bold, running up to the colour (Okay, 18 Oct 2026: "We can write the name of the typeface all the way to the swatch now"); --t-l, 2 px larger than the rows' --t-m, its line as tall as before and lifted by half the difference, so the baseline (measured: 19.3 px down the line, before and after) and the left edge stay where they were (Okay, 19 Oct 2026, #408: "Font name 2px bigger but nothing else moves") */
   .fontname .langs { grid-column: 7 / 10; grid-row: 1; justify-self: end; }      /* EN, ending where the rows' steppers end */
   .fontname { --font-colour-at: calc(var(--swatch-col) + (var(--line-button) + var(--t-m) + 2 * var(--hair)) / 2 + var(--pill-gap) - var(--hair)); }      /* from the line's right edge to the pill's left: its swatch where the ring list's colour stands, the hex after it, so the two line up (Okay, 21 Oct 2026, 22:57, his drawing: the pill from that line, "FIT HERE", before EN) */
-  .fontname .colour { position: absolute; top: 50%; translate: 0 -50%; left: calc(100% - var(--font-colour-at)); }      /* the text's colour, a full pill with its hex (#408) */
+  .fontname .colour { --well: var(--field); position: absolute; top: 50%; translate: 0 -50%; left: calc(100% - var(--font-colour-at)); }      /* the text's colour, the colour rows' own pill — a white block, swatch and hex (#408; Okay, 23:07: "no need to invent new stuff"): the font box's own grey well is not its */
   .langs { position: relative; }
   .langbox { min-width: var(--control); }
   .fontname .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
@@ -7160,7 +7164,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.91.3";
+var VERSION = "beta 4.91.4";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -18635,6 +18639,12 @@ var DialTool = class _DialTool {
     }
     this.ring_rows().forEach((li, i2) => {
       const ring2 = this.S.rings[i2], k2 = li.querySelector(".kindicon");
+      if (ring2) {
+        const said = this.ring_summary(ring2), f2 = li.querySelectorAll(".fig"), dot = li.querySelector(".rowswatch .dot");
+        if (f2[0] && f2[0].textContent !== said.size) f2[0].textContent = said.size;
+        if (f2[1] && f2[1].textContent !== said.r) f2[1].textContent = said.r;
+        if (dot) paint(dot, ring2.c);
+      }
       if (!ring2 || !k2 || k2.dataset.kind === String(ring2.kind)) return;
       k2.dataset.kind = String(ring2.kind);
       k2.innerHTML = PICS.kind(ring2.kind, KIND_PIC);
@@ -18681,9 +18691,11 @@ var DialTool = class _DialTool {
       }
       const name = el("span", { className: "name", textContent: ring2.name || kind_of(ring2) });
       const cell = el("span", { className: "namecell" }, name);
-      const says = selected && this.ring_summary(ring2);
-      const figs = selected ? [el("span", { className: "fig", id: "ring-size-fig", textContent: says.size }), el("span", { className: "fig", id: "ring-r-fig", textContent: says.r })] : [];
-      const item = el("li", { className: "ring" + (selected ? " on" : "") + (ring2.on ? "" : " off"), tabIndex: 0 }, show, grip, kind, cell, ...figs);
+      const says = this.ring_summary(ring2);
+      const figs = [el("span", { className: "fig size", ...selected ? { id: "ring-size-fig" } : {}, textContent: says.size }), el("span", { className: "fig r", ...selected ? { id: "ring-r-fig" } : {}, textContent: says.r })];
+      const swatch = selected ? [] : [el("span", { className: "colour bare rowswatch", ariaHidden: "true" }, el("i", { className: "dot" }))];
+      if (swatch.length) paint(swatch[0].firstChild, ring2.c);
+      const item = el("li", { className: "ring" + (selected ? " on" : "") + (ring2.on ? "" : " off"), tabIndex: 0 }, show, grip, kind, cell, ...swatch, ...figs);
       item.setAttribute("role", "option");
       item.setAttribute("aria-selected", String(selected));
       item.onkeydown = (e) => {

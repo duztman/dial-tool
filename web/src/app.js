@@ -4183,8 +4183,14 @@ class DialTool {
     this.place_ring_line();
     const R = this.ring(), says = R ? this.ring_summary(R) : null;
     for (const [id, text] of [["#ring-size-fig", says && says.size], ["#ring-r-fig", says && says.r]]) { const f = $(id); if (f && f.textContent !== text) f.textContent = text; }
-    this.ring_rows().forEach((li, i) => {         // a row's kind icon follows a change of kind (#254); the selected row's size and radius (4.55) just above
+    this.ring_rows().forEach((li, i) => {         // a row's kind icon follows a change of kind (#254); its size, radius and colour too (#504)
       const ring = this.S.rings[i], k = li.querySelector(".kindicon");
+      if (ring) {
+        const said = this.ring_summary(ring), f = li.querySelectorAll(".fig"), dot = li.querySelector(".rowswatch .dot");
+        if (f[0] && f[0].textContent !== said.size) f[0].textContent = said.size;
+        if (f[1] && f[1].textContent !== said.r) f[1].textContent = said.r;
+        if (dot) paint(dot, ring.c);
+      }
       if (!ring || !k || k.dataset.kind === String(ring.kind)) return;
       k.dataset.kind = String(ring.kind); k.innerHTML = PICS.kind(ring.kind, KIND_PIC); k.title = G.kind_of(ring);
     });
@@ -4205,8 +4211,7 @@ class DialTool {
       const grip = el("span", { className: "grip", title: "Drag to change the order" });
       grip.innerHTML = icon(TOOL_ICONS.grip);
       grip.onpointerdown = (e) => this.drag_ring(e, i);
-      // the kind as an icon where the drawer's square stands, then the name; no numbers in a row (#254, 4.50; Okay's
-      // notes, p. 3: "no text details, only the kind icon … no adjustments, just an indicator"; the summary of 4.7–4.49.2)
+      // the kind as an icon where the drawer's square stands, then the name (#254); then its colour, size and radius (#504)
       // the selected row's kind icon is a button that opens the kinds (4.55, Okay's PSD of 18 Oct: the drawer's square went)
       const kind = el(selected ? "button" : "span", { className: "kindicon", id: selected ? "ring-kind-square" : `ring-kind-row-${i}`, title: G.kind_of(ring) });
       kind.dataset.kind = String(ring.kind);
@@ -4222,9 +4227,15 @@ class DialTool {
       const cell = el("span", { className: "namecell" }, name);       // the name and, right beside it, the rename box
       // the selected ring's size and radius, large, in Dial Mono, each over its button in the drawer below (4.55, Okay's
       // PSD: "Large mono numbers for size and radius, slashless 0 if possible"); sync_ring_summaries keeps them current
-      const says = selected && this.ring_summary(ring);
-      const figs = selected ? [el("span", { className: "fig", id: "ring-size-fig", textContent: says.size }), el("span", { className: "fig", id: "ring-r-fig", textContent: says.r })] : [];
-      const item = el("li", { className: "ring" + (selected ? " on" : "") + (ring.on ? "" : " off"), tabIndex: 0 }, show, grip, kind, cell, ...figs);
+      // every ring's size and radius, in Dial Mono, each over its button in the drawer's columns (4.55, Okay's PSD: "Large
+      // mono numbers for size and radius"); every row not selected has its colour too, a swatch in the colour column,
+      // where the selected ring's line has its own (Okay, 21 Oct 2026, 22:57 and 23:07, his drawing: "The collapsed ring
+      // list shows numbers and appropriate swatch too", #504). sync_ring_summaries keeps them current
+      const says = this.ring_summary(ring);
+      const figs = [el("span", { className: "fig size", ...(selected ? { id: "ring-size-fig" } : {}), textContent: says.size }), el("span", { className: "fig r", ...(selected ? { id: "ring-r-fig" } : {}), textContent: says.r })];
+      const swatch = selected ? [] : [el("span", { className: "colour bare rowswatch", ariaHidden: "true" }, el("i", { className: "dot" }))];
+      if (swatch.length) paint(swatch[0].firstChild, ring.c);
+      const item = el("li", { className: "ring" + (selected ? " on" : "") + (ring.on ? "" : " off"), tabIndex: 0 }, show, grip, kind, cell, ...swatch, ...figs);
       // a row is a choice in a list, reached with Tab and taken with Enter or Space (#244, 4.47.2: rows had no role and no way in from the keyboard)
       item.setAttribute("role", "option");
       item.setAttribute("aria-selected", String(selected));
