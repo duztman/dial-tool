@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.91.5 (web version) · 21 Oct 2026
+
+- **The title row is 42 px**, as the Show Case's (half of 64, then 10 more; Okay, 21 Oct 2026, 23:11: "take only the top level … row height styling and adapt to app now too"). Undo and Guides stand on its middle line still; the font sheet starts under it.
+
 ## beta 4.91.4 (web version) · 21 Oct 2026
 
 - **Every ring's row shows its colour, size and radius** (#504; Okay, 21 Oct 2026, 22:57 and 23:07: "The collapsed ring list shows numbers and appropriate swatch too"): a row not selected has its colour as a bare swatch in the colour column, where the selected ring's line has its own, and its two numbers in Dial Mono over the drawer's size and radius columns; a hidden ring's are faint.

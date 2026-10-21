@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.91.4 · built 2026-10-21 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.91.5 · built 2026-10-21 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -91,7 +91,7 @@
     --unit-face: "Dial Mono", var(--mono);       /* the unit box's word: JetBrains Mono at the weight whose stem is the box's line at 10 px, packed (#302, beta 4.44.1; fonts/ui/mono_font.py) */
     --line: 34px;                                  /* a row's height */
     --head: 40px;                                  /* a pane's heading */
-    --header: 64px;                                /* the panel's top: title and Guides */
+    --header: 42px;                                /* the panel's top: title and Guides — as the Show Case's title row, half of 64 then 10 more (Okay, 21 Oct 2026, 23:11: "take only the top level … row height styling and adapt to app now too") */
     --bar-height: 62px; --bar-control: 30px;      /* the bar's height (Okay, 14 Oct 2026, 23:19: "1/5 higher" than the 52 it was); a phone keeps its own (--bar-lead-narrow) */
     --bar-light: #737373;                          /* the one light tone on the bottom bar: 55 % grey (Okay, 15 Oct 2026, 00:42: "55%gray all"); nothing on the bar is white (Okay, 15 Oct 2026, 00:18: "NOTHING ON THIS WHOLE BAR IS WHITE") */
     --play: #CC381A; --play-dark: #7A1E0C; --play-light: #F28A6C;      /* the play button, an arcade button from above: its cap (the seconds hand's red, geometry.js ACCENT), the shade round it and under it, the light on it (Okay, 14 Oct 2026: "3 colors and a black outline") */
@@ -7164,7 +7164,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.91.4";
+var VERSION = "beta 4.91.5";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;

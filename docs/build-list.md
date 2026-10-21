@@ -119,6 +119,7 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 
 | # | Item | Status |
 |---|---|---|
+| 505 | **The panel's colours from the Show Case** (Okay, 21 Oct 2026, 23:11: "The adaptation of this button and the whole control panel colors system has been worked out in show case and it'll be folded in soon … This left side's colors will be hidden under settings, don't touch showcase"): the column tinted from the backdrop, its lines and fields adapting to its lightness, the colour pill among them (`show-case/app/` on the branch `show-case-app`, README *Column colour*). In Dial Tool behind a setting (#496). Folded in when Okay says; the Show Case is not touched | open — note |
 | 75 | Usability review, the other tabs: Rings · Hands · Windows · Export, one at a time (Okay, 12 Oct 2026) | open |
 
 ### Files
