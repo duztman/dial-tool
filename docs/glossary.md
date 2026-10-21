@@ -2,206 +2,206 @@
 
 What each word means **in this project**. Turkish where it's the common trade word.
 If a term is used differently in conversation, ask, then update this file.
-*Last updated 21 Oct 2026 (Yours folded into Versions; link scheme 3; Dial Show Case live). The DrawBot terms are in archive/drawbot/glossary-drawbot.md.*
+*Last updated 21 Oct 2026 (made leaner: meanings, places and keys only; reasons are in docs/decisions.md; the look to the pixel is in docs/design.md and the code, and the full glossary before this cut, with its drawing details, is archive/glossary-full-2026-10-21.md). The DrawBot terms are in archive/drawbot/glossary-drawbot.md.*
 
 ## Watch terms
 
 | Term | TR | Meaning here |
 |---|---|---|
 | **Dial** | kadran | The printed or etched plate under the hands. In the tool: the *plate*, its rings and the windows. |
-| **Plate** | | The dial disc itself (setting `dial_d`, colour `c_plate`). |
+| **Plate** | | The dial disc (`dial_d`, colour `c_plate`). |
 | **Movement** | mekanizma | The mechanism behind the dial. Not chosen yet; it will fix dial size, hand lengths and date position. |
 | **Hour / minute / seconds hand** | akrep / yelkovan / saniye ibresi | Each has its own shape and settings (`ha_hour`, `ha_minute`, `ha_second`). |
 | **Tail** | | The part of a hand behind the pivot, in mm. |
-| **Counterweight** | | A disc on a hand's tail, centred at 73 % of the tail. Any hand can have one. |
-| **Cap** | | The disc over the pivot (`ha_cap`, colour `c_cap`). Part of the seconds hand (#262): drawn with it, and edited in its pane. With no seconds hand it is drawn on the topmost hand only when **Cap on this hand** (`ha_cap_top`) is ticked. The hand it is drawn on shows it in its detail box too, in the picture's ink (colour stays on the face). |
-| **Centre hole** | | The hole in the plate the hand pipes pass through (`dial_hole`, Ø in mm, 2.7 to start; 0 = none). Shown when the hands are hidden, under the hands otherwise; a production mask always has its cut line. Not the holes in the hands themselves. |
-| **Disc hand** | | A hand shape (`disc`): a disc on the pivot (`disc_d`) carrying one marker drawn with a markers ring's shapes (`mark`: bar · wedge · dot, `mark_len`, `mark_w`), its outer end at the hand's Length. The marker is a **Hole** or a **Mark** (`mark_as`, #300): a hole is cut out of the disc where it lies on it, and the rows say *Hole*, *Hole length*, *Hole width* (Okay, 16 Oct 2026: "work as holes now, perfect, just call it that"; the keys stay `mark…`, R8); a mark is painted on the disc, whole, in its own colour (`mark_c`, the row *Mark ink*), and the rows say *Mark*, *Mark length*, *Mark width*. No blade. After the mystery dials, where a clear disc carries a dot or an arrow. The marker may be kept *Inside the disc* (key `mark_in`). |
+| **Counterweight** | | A disc on any hand's tail, centred at 73 % of the tail. |
+| **Cap** | | The disc over the pivot (`ha_cap`, colour `c_cap`). Part of the seconds hand, edited in its pane (#262). With no seconds hand it sits on the topmost hand only if **Cap on this hand** (`ha_cap_top`) is ticked. |
+| **Centre hole** | | The hole in the plate for the hand pipes (`dial_hole`, Ø mm, 2.7 to start; 0 = none). Shown when the hands are hidden, under them otherwise; a production mask always has its cut line. Not the holes in the hands. |
+| **Disc hand** | | Hand shape `disc`: a disc on the pivot (`disc_d`) carrying one marker in a markers ring's shapes (`mark`: bar · wedge · dot, `mark_len`, `mark_w`), outer end at the hand's Length. No blade. The marker (`mark_as`, #300) is a **Hole** (cut out; rows *Hole*, *Hole length*, *Hole width*; keys stay `mark…`, R8) or a **Mark** (painted, colour `mark_c`, row *Mark ink*). *Inside the disc* = `mark_in`. |
 | **Track** · minute track · chapter ring | | The minute marks round the edge. In the tool: a **ticks ring**; railroad rails are thin **band rings**. |
-| **Tick** | | One mark of a ticks ring. A 300-division track is two ticks rings: 60 minute ticks above 300 fine ticks that skip their positions. |
-| **Railroad** | | Two thin rails along a track's edges, ticks between them. In the tool: two thin bands. |
+| **Tick** | | One mark of a ticks ring. A 300-division track = two ticks rings: 60 minute ticks over 300 fine ticks that skip their positions. |
+| **Railroad** | | Two thin rails along a track's edges, ticks between. In the tool: two thin bands. |
 | **Marker** · index · hour marker | endeks | A mark at an hour (or any position). In the tool always **marker**, made by a **markers ring**. |
 | **Numeral** | | A label at a position: Arabic, Roman, Eastern Arabic, Chinese, words, custom, or numbers counted from a start. |
-| **Sector dial** | | A dial split into zones of different colour or finish. In the tool: band rings. |
-| **Date window** · aperture | takvim penceresi | The hole that shows the date disc. **Aperture** = the hole itself; **frame** = the printed border around it. |
-| **Beat** | | Steps per second of the seconds hand: sweep (smooth), quartz 1/s, 6/s (21,600 vph), 8/s (28,800 vph). |
-| **Applied** vs **printed** | | Applied = separate metal parts fixed on the dial; printed = ink or etch. The tool draws printed elements; applied ones can be drawn as their outline. |
+| **Sector dial** | | A dial split into zones of colour or finish. In the tool: band rings. |
+| **Date window** · aperture | takvim penceresi | The hole showing the date disc. **Aperture** = the hole; **frame** = the printed border round it. |
+| **Beat** | | Seconds-hand steps per second: sweep, quartz 1/s, 6/s (21,600 vph), 8/s (28,800 vph). |
+| **Applied** vs **printed** | | Applied = metal parts fixed on the dial; printed = ink or etch. The tool draws printed; applied as outline. |
 
 ## Rings
 
 | Term | Meaning |
 |---|---|
-| **Ring** | One entry in the ring list. A ring repeats one thing around the centre at its **positions**. Okay's word for every dial element in the list ("rings, not layers, all round"). Unlimited. |
-| **Kind** | What a ring repeats: **ticks**, **markers**, **numerals**, **band** or **text**. Changeable at any time from the selected row's kind icon; the ring keeps all its settings. ("Type" is kept for typography.) |
-| **Text ring** | A ring that says a line of words — a brand, *AUTOMATIC*, *SWISS MADE* — at every one of its positions, with a font of its own (kind `text`, #297; Faruk Koç's idea). Drawn as numerals are: anchor, placement, nudge, live text. Its **Start** snaps to the other rings' indices (the markers', the ticks') within 2°. |
-| **Ring list** | The list in the Rings section. Its order is the **stacking order**: the top ring is drawn last (in front). Each row (#254): an **eye** (show or hide the ring), a grip to drag it, its **kind** as an icon (a press opens the kinds), its name, the **rename box** on the selected ring; the selected ring's row also carries its size and radius as numbers, in Dial Mono, over the drawer's value buttons. The **ring drawer** hangs under the selected row. |
-| **Radius** | Ticks, markers, bands: the radius of the mark's or band's **outer** end (the start), its **middle** or its **inner** end — the ring's *resize from* (ring key `from`, #257), chosen in the small menu beside the radius' label, which then reads Outer / Middle / Inner radius; the ring's dotted guide is that radius. Numerals: the radius of the numeral's **anchor**. |
-| **Anchor** | The point of a numeral that sits on its ring's radius (ring key `anchor`): **centre** (the middle of its outlines) · **outer edge** / **inner edge** (the label's far or near edge touches the radius, #338). Chosen in the Resize pane's heading, *Resize Ring from …* (#419), and beside the radius in its popup. Baseline and ascender are retired (Okay, 19 Oct 2026, #418): a ring stored with one measures to the centre. |
-| **Positions** | Where a ring puts things: **count**, **start °** (where the first one sits), **span °**. A full turn spaces them evenly; a partial span marks both ends (scales). For bands, positions start segments that tile the span. The pane draws them at its left (#251): a round preview with a mark at every position, the used ones in ink, the skipped faint, the first a dot; Count and Every are **chevron boxes**, the other numbers **number blocks**. |
-| **Every · Offset · Skip those** | Which positions are used: every n-th, starting at the offset; "skip those" inverts it. Cardinals = every 3; non-cardinals = every 3, inverted. Named *Skip those* after Okay's drawing for #357. |
-| **The date** | The day the dial shows (`date`): set in the bar, touching AM · PM, day · month · year stacked; today's until one is picked; Now brings today back. A window that **follows the date** (`follows`) shows it — a date window the day of the month, a day window the weekday in its **Names** language (EN · TR · DE · FR · IT), a moon window the moon's age. One **moment** (the date and the time, `web/src/moment.js`) drives every complication. |
-| **Handles** | The selected ring's draggable marks on its guides: a disc on its dotted line (radius), a square on its far edge (size), triangles outside it at its start and, under 360°, its span's end. In the ring's guide colour; on the Rings tab, only where its guide shows. |
-| **Case** | A watch case drawn round the dial on the preview only: Diver, Pilot, Dress or Sport, as a technical drawing seen from above — flat fills, an ink outline, finer lines for edges inside a part, spring bars as hidden (dashed) lines — at its kind's real proportions from the dial's size (the strap between the lugs half the case's diameter, lug tip to lug tip 1.16–1.22 of it). Its switch stands at the preview's top right under Guides, with the **Strap** switch under it once a case is on (No strap · Strap · Bracelet; a strap's colour from its chip). Keys `bezel`, `strap`, `c_strap`. Never exported (R26). The view fits the dial, not the case. |
-| **Disc** | What turns under the plate and shows through a window (#346): a date or day window's a band round the dial's centre with every place printed on it; an am · pm window's a small disc on the hole's bottom edge. A moon window has none yet. Its edges are dashed guides. |
-| **X-ray** | A preview switch at the preview's top right, under Case: every window's disc drawn whole, in a stack — the selected window's disc on top at full strength with a white dotted outline, then the hands, the face (plate, rings, what the holes show), then the other discs, the biggest deepest; each layer under the top one 15 % fainter than the one above (Okay, 19 Oct 2026: "makes the unseen full visible, sensible z height differences (not editable) and a stacking order"). Never exported (R26). |
-| **Neighbours** | A date or day window's tick: its disc's places either side of the shown one, drawn where the hole lets them, in the number's colour unless given one of their own (Windows → Neighbours). |
-| **Big date** | The fifth complication: two square holes side by side, the tens and the units of the date. |
-| **Shine** | In the showcase, a ring of three bands of light round a centre moved toward the sun, on the dial and the hands. |
-| **Bevel** | A hand's two long halves, lighter and darker by where the light comes from; preview only. Each hand's **Bevel** tick (key `bevel`, off to start) turns it on, beside Show in the Show box under the hand's tab, there as soon as Show is on (while Shadows is on); its strength is Shadows → Bevels % (key `sh_bevel`, 100 to start). A dial from before the tick that had Bevels % above 0 gets every hand's on when read. |
-| **Hub** | The round boss a hand sits on at the pivot, its Ø per hand (Hands → Hub Ø, key `hub`); joined to the hand's shape, in its colour; the cap stands over the topmost. 0 = none. Not a disc hand (whose disc is the hand). |
-| **Print sheet** | A page of copies of the dial at true size, for printing (#348): Export → Print → Sheet PDF; A4, Letter or A5, straight or staggered rows, cut lines if asked. |
-| **Versions** | The switch under undo on the preview that holds your saved dials (at most nine; kept in this browser, *Save this dial*) and **Compare**, every saved dial side by side with the panel away (#435; Okay, 19 Oct 2026: "This is versions"). The word is the saved dials' (Okay, 21 Oct 2026); the app's own numbered releases are **builds**. |
-| **Weight %** | Under Dial: every width on the dial at once (marks, bands, hands, frames), as Scale changes every measure (#88). Not the weight of a font. |
-| **Picture** | What a moon window shows — the moon alone, no stars (Okay, 20 Oct 2026): Arch (the humps), Phase (the moon lit as it is, three colours) or Line (one ink). Key `look`; the shade `c2`. An am · pm window has one picture and no Picture row: a disc, half am (the disc's colour) and half pm (the picture's), under a half-round hole, turning once a day on the hole's flat side (Okay, 19 Oct 2026: "Am pm should be one half of a circle each"). |
-| **Physics** | A window's tick: its disc must end inside the case, the dial's edge less a 0.5 mm rim. Passing it, the disc's outer guide shows red and the panel says by how much; off, a disc may be bigger than the dial (a face on a screen). |
-| **Strap** | What hangs from a case's lugs on the preview: a leather **strap** in its own colour (key `c_strap`) or a metal **bracelet** in the case's metal, chosen on the Strap switch under Case (key `strap`: 0 none · 1 strap · 2 bracelet). Shown only with a case; never exported (R26). Not to be confused with a diver's bezel drawn as rings on the dial itself. |
-| **Wear OS export** | The dial as a watch face for a Wear OS watch (farukahmet's PR #1): Export → Wear OS → APK, named on the watch by its field; sideloaded, signed with a shared debug key (never for the Play Store). |
-| **Tiny Preview** | A small window with the dial at its own size (the browser's millimetres, 96 to the inch: approximate), its margins on the backdrop (#337); opened by its button at the preview's bottom right, over the eye switch, with the iris as its sign; dragged anywhere; put away by the eye at its own top left. Not editable. Not the **showcase**. |
-| **LINK pill** | A pill on the line between two rows whose numbers may move together (#358): LINK in the pixel font on a white outline; pressed, LINKED, white on ink, and changing one keeps their ratio (Illustrator's link). On a window's width and height (`wh_link`); in the controller a LINK disc stands between − and +. |
-| **Number block** | A Positions row (`block: true` on a row): the name and the one **number box**, no slider; the name opens the controller. Count and Every beside them are **chevron boxes**. |
-| **12 o'clock · first position** | A markers ring's first position can have its own style: same, double (gap), triangle, none; and scale. |
-| **Give way to rings above** | A ring's two ways of reacting to the rings above it. **Skip where** drops its positions where the chosen rings above have a mark. **Knock out** cuts gaps round the chosen rings' shapes, by the **clearance**. Choices: nothing · markers above · markers & numerals above · all marks / everything above. Neither = **stack**. The pane is two **side tabs** (Skip where · Knock out) and a white-bordered square that pictures the choice, with the choices as radio buttons and Clearance under them (#258). |
-| **Clearance** | The gap a knockout leaves, and the print-free zone round a window (`da_clear`, a window's `clear`). |
-| **Band** | A ring of colour between its radius and radius − band width. Count 1 = a full ring; more = **sectors**; **fill %** = how much of each step a sector covers; band width ≥ radius = **pies** to the centre. Flat colour for now. |
-| **Taper** (inner width ×) | A wedge's inner width as a fraction of its outer width. 0 = triangle, 1 = bar, >1 = wider inside. |
+| **Ring** | One entry in the ring list; repeats one thing round the centre at its **positions**. Every dial element in the list is a ring (not a *layer*). Unlimited. |
+| **Kind** | What a ring repeats: **ticks**, **markers**, **numerals**, **band** or **text**. Changed from the row's kind icon; settings kept. ("Type" means typography.) |
+| **Text ring** | Kind `text` (#297): a line of words (*AUTOMATIC*) at each position, own font; drawn like numerals. Faruk Koç's idea. Its **Start** snaps to other rings' indices within 2°. |
+| **Ring list** | The list in Rings; its order is the **stacking order** (top ring drawn last, in front). A row (#254): **eye**, grip, **kind** icon, name; the selected row adds the **rename box** and its size and radius numbers. The **ring drawer** hangs under it. |
+| **Radius** | Ticks, markers, bands: radius of the **outer** end, **middle** or **inner** end — *resize from* (ring key `from`, #257), set beside the radius label; the dotted guide is that radius. Numerals: radius of the **anchor**. |
+| **Anchor** | The numeral's point on the ring's radius (ring key `anchor`): **centre** · **outer edge** / **inner edge** (#338). Set in *Resize Ring from …* (#419) and the radius popup. No baseline or ascender (#418): such a stored ring measures to the centre. |
+| **Positions** | **count**, **start °**, **span °**. A full turn spaces evenly; a partial span marks both ends. Bands: positions start segments tiling the span. Shown as a round preview in the pane (#251). Count and Every are **chevron boxes**, the rest **number blocks**. |
+| **Every · Offset · Skip those** | Which positions are used: every n-th from the offset; *Skip those* inverts (#357). Cardinals = every 3; non-cardinals = every 3, inverted. |
+| **The date** | The day shown (`date`), set in the bar beside AM · PM; today until one is picked; Now resets. A window that **follows the date** (`follows`) shows it: date = day of month, day = weekday in its **Names** language (EN · TR · DE · FR · IT), moon = moon's age. One **moment** (`web/src/moment.js`) drives every complication. |
+| **Handles** | The selected ring's draggable marks on its guides: disc = radius, square = size, triangles = start and (under 360°) span end. On the Rings tab, only where its guide shows. |
+| **Case** | Preview-only watch case round the dial: Diver, Pilot, Dress or Sport, a top-view technical drawing at real proportions. Switch at the preview's top right under Guides. Keys `bezel`, `strap`, `c_strap`. Never exported (R26). The view fits the dial, not the case. |
+| **Disc** | What turns under the plate and shows through a window (#346): date or day = a band round the centre; am · pm = a small disc on the hole's bottom edge; moon: none yet. Edges as dashed guides. |
+| **X-ray** | Preview switch at the top right, under Case: every window's disc whole, stacked — selected disc on top, then hands, face, other discs (biggest deepest), each layer 15 % fainter. Never exported (R26). |
+| **Neighbours** | Date or day window tick: the disc's places either side of the shown one, where the hole lets them, in the number's colour unless given their own (Windows → Neighbours). |
+| **Big date** | The fifth complication: two square holes, tens and units of the date. |
+| **Shine** | In the showcase: three bands of light round a centre moved toward the sun, on dial and hands. |
+| **Bevel** | A hand's two long halves lit and shaded; preview only. Per-hand **Bevel** tick (`bevel`, off to start) in the Show box, while Shadows is on; strength Shadows → Bevels % (`sh_bevel`, 100 to start). |
+| **Hub** | The round boss at a hand's pivot, Ø per hand (Hands → Hub Ø, `hub`), joined to the hand. 0 = none. Not a disc hand. |
+| **Print sheet** | Copies of the dial at true size (#348): Export → Print → Sheet PDF; A4, Letter or A5, straight or staggered, optional cut lines. |
+| **Versions** | Switch under undo on the preview: saved dials (at most nine, in this browser, *Save this dial*) and **Compare**, all side by side (#435). Numbered releases are **builds**. |
+| **Weight %** | Under Dial: every width at once (marks, bands, hands, frames), as Scale does every measure (#88). Not a font's weight. |
+| **Picture** | What a moon window shows: Arch, Phase (three colours) or Line (one ink). Key `look`; shade `c2`. An am · pm window has one picture and no Picture row: a disc half am, half pm, under a half-round hole, turning once a day. |
+| **Physics** | Window tick: its disc must end inside the case (dial edge less a 0.5 mm rim); past it the outer guide shows red and the panel says by how much. Off, a disc may outgrow the dial (screen faces). |
+| **Strap** | From a case's lugs on the preview: leather **strap** (`c_strap`) or metal **bracelet**, on the Strap switch under Case (`strap`: 0 none · 1 strap · 2 bracelet). Only with a case; never exported (R26). Not a diver's bezel drawn as rings. |
+| **Wear OS export** | The dial as a Wear OS watch face (farukahmet's PR #1): Export → Wear OS → APK; sideloaded, debug-signed, never for the Play Store. |
+| **Tiny Preview** | A small draggable window showing the dial at its own size (approximate, 96 px to the inch) (#337); button with the iris at the preview's bottom right; closed by the eye at its top left. Not editable. Not the **showcase**. |
+| **LINK pill** | Between two rows whose numbers may move together (#358); LINKED keeps their ratio. On a window's width and height (`wh_link`); a LINK disc in the controller. |
+| **Number block** | A Positions row (`block: true`): name and **number box**, no slider; the name opens the controller. Count and Every are **chevron boxes**. |
+| **12 o'clock · first position** | A markers ring's first position style: same, double (gap), triangle, none; and scale. |
+| **Give way to rings above** | **Skip where** drops positions where chosen rings above have a mark; **Knock out** cuts gaps round their shapes by the **clearance**. Choices: nothing · markers above · markers & numerals above · all marks / everything above. Neither = **stack**. Two **side tabs** in the pane (#258). |
+| **Clearance** | The gap a knockout leaves; the print-free zone round a window (`da_clear`, a window's `clear`). |
+| **Band** | Colour between radius and radius − band width. Count 1 = full ring; more = **sectors**; **fill %** = each sector's share of its step; width ≥ radius = **pies**. Flat colour for now. |
+| **Taper** (inner width ×) | A wedge's inner width as a fraction of its outer. 0 = triangle, 1 = bar, >1 = wider inside. |
 | **Round outer / inner** | Corner radius at a mark's outer or inner end; true fillets, any angle. |
-| **Hollow wall** | Turns a mark or a hand into an outline of that thickness (a dot becomes a ring; a hand gets a lume opening). |
-| **Placement** | How numerals sit: **upright** (always level) · **radial** (turn with the circle) · **radial, auto-flip** (never upside down) · **on path** (letters follow the circle, kerning kept). |
-| **Nudge** | A per-position correction: radius ±, angle ±, rotate, size ×, and for a mark its own shape. Stored per position, for numerals and marks (every ring but a band, #349). On the dial a first press chooses a ring, a second the numeral or mark pressed. |
-| **Rings pane** | The pinned pane on top of Rings: its heading line with the list's tools (a plus that opens the five kinds; move up · move down · duplicate · delete), the ring list, the **ring drawer**. Folded it is one line: *Rings: <name>* and a summary. |
-| **Ring drawer** | The framed box inside the ring list, right under the selected ring's row (#253; Okay's PSD `selected-ring_181026`): the **details** written out on two lines, grey names and dark values (what it draws · where: positions, start, span, give-way, nudged numerals), each line cut when long · a bare swatch · its **size** (how big one of its things is: a mark's length, a dot's Ø, a numeral's size, a band's width; Okay's "scale") and its **radius** as value buttons without tags, their numbers standing in the selected row above them. The kind is changed from the selected row's kind icon (Okay: "This 'change' is meaningless, remove it, write the details in full"). Its outer line has the selected ring's guide colour, its inner line the row's ground. `ringline` / `lineholder` in the code. |
-| **Dial Mono** | The unit box's face (#302): JetBrains Mono (SIL OFL), packed into the page at the weight whose stems are the box's 1 px line at 10 px, cut down to the units' letters (`web/fonts/ui/mono_font.py`); the selected ring row's size and radius numbers too. Not one of the dial's fonts; the bar's monospace is still the system's. |
-| **Dial Time** | The bottom bar's time face (#284): Barlow Condensed Light (SIL OFL), packed into the page, cut down to the time and AM · PM, its colon 80 % as large, centred on the figures and with room either side (0.24 em wide), under a name of its own (`web/fonts/ui/time_font.py`). Not one of the dial's fonts. |
-| **Play triangle** | The soft white triangle on the play button's red cap (#282): 40 % at rest; while time runs it flares with each beat (10–70 %) — an eased rise over the flash's first fifth, then an eased fall, like a lamp — and is gone by half the beat, while the cap's lightening (up to 30 %) fades the whole beat. The pulse follows the time shown, up to six a second or the movement's own beat, then holds. Below 1× (slow motion) the flash keeps its real length, half a beat of real time, and peaks full (#308). |
-| **Pixel font** | Silkscreen (SIL OFL), packed into the page: the stickers of the font sheet, the LINK pill and the tiny numbers over the speed slider. The numerals picture's 12 · 3 · 6 · 9 are in the tool's sans, bold, not in it (#255: "abort silkscreen there"). Not one of the dial's fonts. |
-| **Value button** | A number as a small round drawing, without the number (a ring's radius: a circle with its radius drawn; its size: a small circle growing into a large one, whole inside the button); the value is read in the ring's row above it and in its tag. Click: the **controller** opens. Press and move: the value changes. R15's form C. |
-| **Ring settings** | The scrolling list under the ring list, one pane per subject, each shown only for the kinds it applies to (R16): **Text** (a text ring's words) and **Type** first where the ring draws words (#296), then **Resize Ring** (the size, a bar or wedge's **Shapes width** — the Shapes pane's Width, here too — and the radius with what it measures to, #257), Sector colours · **Shapes** (the marks' shape and its numbers) · Positions · Give way · 12 o'clock · Numerals · Band · Nudge. |
+| **Hollow wall** | Turns a mark or hand into an outline of that thickness (dot → ring; hand → lume opening). |
+| **Placement** | How numerals sit: **upright** · **radial** · **radial, auto-flip** (never upside down) · **on path** (letters follow the circle). |
+| **Nudge** | Per-position correction: radius ±, angle ±, rotate, size ×, and a mark's own shape; for every ring but a band (#349). On the dial: first press picks the ring, second the item. |
+| **Rings pane** | The pinned pane on top of Rings: tools (plus for the five kinds; move up · move down · duplicate · delete), the ring list, the **ring drawer**. Folded: *Rings: <name>* and a summary. |
+| **Ring drawer** | Framed box under the selected row (#253, after Okay's PSD `selected-ring_181026`): the **details** on two lines, a swatch, and **size** (a mark's length, a dot's Ø, a numeral's size, a band's width; Okay's "scale") and **radius** as value buttons. `ringline` / `lineholder` in code. |
+| **Dial Mono** | JetBrains Mono, packed and subset (`web/fonts/ui/mono_font.py`): the unit box's face and the selected row's numbers (#302). Not a dial font. |
+| **Dial Time** | Barlow Condensed Light, packed and subset (`web/fonts/ui/time_font.py`): the bottom bar's time (#284). Not a dial font. |
+| **Play triangle** | The white triangle on the play button; flares with each beat while time runs (#282, #308). |
+| **Pixel font** | Silkscreen, packed: stickers, the LINK pill, the speed slider's numbers. Not used for the numerals picture (#255). Not a dial font. |
+| **Value button** | A number drawn as a small picture without digits (radius, size); value shown in the row and its tag. Click opens the **controller**; press-and-move changes it. R15's form C. |
+| **Ring settings** | Scrolling panes under the ring list, each shown only for kinds it applies to (R16): **Text** and **Type** first for word rings (#296), **Resize Ring** (size, **Shapes width**, radius, #257), Sector colours · **Shapes** · Positions · Give way · 12 o'clock · Numerals · Band · Nudge. |
 
 ## Hands
 
 | Term | Meaning |
 |---|---|
-| **Shape** | baton · pencil (pointed baton) · sword · dauphine · leaf · arrow (broad-arrow head) · syringe (shaft, wider barrel, needle) · Breguet (open ring near the tip) · lollipop (disc near the tip) · disc (see **Disc hand**) · file (imported; not built, #50). |
-| **Tip length** | How long the pointed end is (pencil, sword, arrow, syringe, Breguet). |
-| **Head width · ring/disc Ø · …at %** | The shape's feature: arrow head or syringe barrel width; Breguet ring or lollipop disc diameter; and where it sits, as % of the length (dauphine: where it is widest). |
-| **Fit to length** | An imported hand is scaled so its tip reaches the hand's length; otherwise **Size ×**. **Width ×** stretches it sideways. |
+| **Shape** | baton · pencil (pointed baton) · sword · dauphine · leaf · arrow (broad-arrow head) · syringe (shaft, barrel, needle) · Breguet (open ring near tip) · lollipop (disc near tip) · disc (see **Disc hand**) · file (imported; not built, #50). |
+| **Tip length** | Length of the pointed end (pencil, sword, arrow, syringe, Breguet). |
+| **Head width · ring/disc Ø · …at %** | Arrow head or syringe barrel width; Breguet ring or lollipop disc Ø; where it sits, % of length (dauphine: widest point). |
+| **Fit to length** | An imported hand is scaled so its tip reaches the hand's length; else **Size ×**. **Width ×** stretches sideways. |
 
 ## Tool terms
 
 | Term | Meaning |
 |---|---|
-| **Section** | One page of the left panel, chosen by its tab: Dial · Rings · Hands · Windows · Export. The fourth's key and number are still Date / 3, its first name (R8, R9). |
-| **Pane** | A named part of a section, opened by a thick line. Its eye folds it. The Dial section's panes: **Dial** (diameter, plate, background), **Page** (margin, backdrop), **Colours** and **Reset**. |
-| **Sector colour** | A band's sector with a colour of its own (ring key `cs`). Without one, a sector has the ring's colour. **Alternate**: with an even number of sectors, two colours round the band, the ring's own on sectors 1, 3, 5… and the other on 2, 4, 6… (stored as sector colours). |
-| **Scale everything** | The tick under Diameter: a change of diameter multiplies every measure on the dial (not the page margin). |
-| **Unit box** | The small box at the right of the title's line: the unit lengths are shown and typed in (mm, points, inches, lignes, thou), its short name in small letters in Dial Mono at 10, the box 4 px round mm's ink, every unit mm's height and its own width, its line the word's colour (#302). Settings stay in mm. **Ligne**: the watchmakers' unit for movement sizes, 2.2558 mm. **Thou**: a thousandth of an inch, 0.0254 mm. |
-| **Hand handles** | On a hand's picture (the detail box), a dotted box round the hand and a square at each side's middle: Length at the tip, Tail at the other end, Width (a disc hand's Ø) at both edges together; dragged, they set those numbers (#345). The ring handles on the dial are under **Handles**. |
-| **Lit part** | On a hand's picture (the detail box), the part one of its numbers makes, filled in the selected guide's colour while that number's row is pointed at, focused or its controller is open (#329). |
-| **Reach** | The unseen frame round a small control that also takes a finger's press (touch only). |
-| **Heading selector** | A pane's main selector, standing on its heading line with no name of its own (Labels, Complication). |
-| **Backdrop switch** | The button at the preview's bottom left: the backdrop's colour as a chip; it opens the colour pop-out. |
-| **Hand tabs** | Hour · Minute · Seconds, the second pinned line of Hands, under All hands: they choose the hand the panes below are about. |
-| **Window cards** | The four cards on top of Windows, at 12 · 3 · 6 · 9, starting on the second column: each a small dial with the window in its place, filled when that window is shown. They are tabs: they choose the window the panes below are about. A window is shown by the **Show box**'s tick. |
-| **Show box** | The thin box under the hand tabs and the window cards, at the top of the grey page, a little darker than it, holding the one tick **Show** for the chosen hand or window (#261; Okay: "one word for both"). |
-| **Gallery** | The last pane of Export: dials to open and take apart (`web/gallery.mjs`; #286, #289): the First dial first, then Okay's own versions of dials drawn after documents in the research atlas (the B-Uhr, the diver, the 12 + 24, the world time) and six drawn for him to pick from, the five first **examples** (five of the **classics**, `web/examples.mjs`), and Okay's watch last; the white dials on the grid's diagonals. The **Gallery pill** on the panel's top line leads there. A press lifts a card into **focus** with two choices, *Edit this dial* and *In a new tab*. |
-| **Tab** | A choice of what the panes below are about, drawn as a tab: touching its neighbours, standing on the thick line under it, each cutting its own two top corners one unit deep so a sharp V stands over each joint, the first and last corner square, the chosen one black, its line winning where tabs meet. The hand tabs, the window cards and the window's Complication buttons. Not the five section **tabs** on top of the panel, which keep their own look. |
-| **Tag** | The small label under a wordless button while the pointer is on it ("Ticks"), a hairline round it; over it when there is no room under it (the bottom bar); one for the whole tool, laid over everything (`.tag`). A value button's tag says name and value. |
-| **Build** | One numbered release of the app ("beta 4.90"), listed with its commit in `docs/versions.md`; not a **Version** (a saved dial). Numbering: R19. |
-| **Undo step** | The dial as it was before a change; taken when the dial has stood still for a moment. ⌘Z goes back one, ⇧⌘Z forward. |
-| **Mark · bio** | Okay's logo, drawn as a sign, in the panel's first column left of the title; a press opens the **bio**: the tool, its maker, its source and the open-source work it stands on, ending with a contact link. While the bio is open the mark is light on a night disc. |
-| **Eye switch** | The square switch at the preview's bottom right: an iris with thin rays running out to the box, the eye's outline knocked out of them. Pressed, it shows the **dial alone**. Okay also calls it the *preview icon*. |
-| **Showcase** | The view the **showcase switch** (left of the eye switch, one unit apart; the eye as its sign, `iriskey` in the code) leads to: pressed, the switch opens to ACTIVATE SHOWCASE, and those words go in. The dial alone at 2/3 of a portrait A4 fitted in the window, on a dark 45° sky, in a spotlight that cycles with a twenty-second sun day (drag across to move the sun); the clock at 1×; **Now** and **10:10** whirl the hands to their time (the hour hand clockwise, the minute hand anticlockwise, the seconds straight), the one pressed turning into the way back; the **hands key** (bottom left) hides the hands. Only the mark, "Dial Tool", the hands key, Now, 10:10 and the X (the way out, on the switch) stay. Okay calls it the *bigger preview mode*. Not part of a dial. |
-| **Dial Show Case** | A side product (20 Oct 2026): a dial from a Dial Tool link shown in a whole watch, with the Showcase's animation. Two words, *Show Case*, title capitals. Live at `/show-case/` (beta 1.0.x); its work is on the branch `show-case-app`, `show-case/` on `dev`. |
-| **Engineer** · **Miyazaki** | The rendering engine's two drawing styles (`show-case/`). **Engineer**: a technical drawing, every part outlined in dark ink, three tones by the light, hard block shadows. **Miyazaki**: no lines, each part a flat shape cut by a light and a dark crescent, deeper colours, harsher shadows, a round flare, one outline round the metal fading away from the light. Okay's names, 18:06. |
-| **Dial alone** | The view the eye switch turns on: the panel slides away, the dial fills the preview; the mark, title and version stay on top, the bottom bar stays. Not part of a dial. |
-| **Drawer** · **gripper** | On a phone (or an iPad held upright) the panel is the **drawer** under the preview. Its **gripper**, a grey dot on its top line, sets how tall it is (drag; a tap jumps between two heights). Tall enough, the drawer holds its title, tabs and pinned panes still. |
-| **List pill** | The black pill in the middle of the pinned part's line on the Rings tab, shown when the dial has more than five rings (#256): drag it to show more or fewer rings in the list; a tap jumps between five and all. The phone's gripper's measures, in black. Kept by the browser. |
-| **Opener** | The dial the tool opens with when the address has no dial and nothing was kept from the last session, and the one **Reset** (Dial tab, Reset pane, "Reset to the First dial") brings back: Okay's link of 18 Oct 2026 (notes 2: "This becomes the default watch"; `web/src/opener.js`), called the **First dial**. Not the starting values: *Plain dial* (Settings file pane) gives those. |
-| **Blank face** | The button under Reset on the Dial tab (#333; Okay, 18 Oct 2026, notes 2: "For if someone wants a 'blank' face … White dial color, no rings, etc."): one press replaces the dial with the starting values, a white plate, no windows and one hidden ring (the list is never empty: turn its eye on to start); the hands stay, so the time still reads. Undo brings the dial back. |
-| **Bottom bar** | The dark strip along the bottom of the window, in two parts: time (play, the speed slider, the time with its AM · PM window, Now, the day slider) · view (how to zoom, − +, Fit). |
-| **Speed slider** | The bottom bar's speed: one slider from 0.1× to 720× (#283). Its first part, two thumbs wide, holds **slow motion**'s four steps (0.1 · 0.25 · 0.5 · 1×), which the thumb snaps onto; from 1× a log scale to 720×. The thumb starts at 1×. Its ends are black rings named 0.1X and 720X, and a black dot marks 1×; the speed rides over the thumb in white ("12X"), and while it is moved it is a pill like 10:10's. |
-| **Pinned line** | One line of its own, outside the panes and always in view (Hands: All hands · Show hands · Motion; the hand tabs). The row option in `app.js` is `bar`. |
-| **Half line** | The hairline between a row and a **nested row**: it starts at the controls' column (the third of six) and ends at the right edge. |
-| **Sticker** | In the font sheet: a small box in the pixel font saying one thing a family has (*weight*, *italic*, *4 styles*). A colour for each kind (weight and bold · italic · width · optical · other axes · styles), round corners; the legend under the list says which is which. In *Variable axes* an axis's sticker is a button in the tool's own colours. |
-| **Detail box** | In a hand's pane, at the left of its rows: the chosen hand itself, large, with all its settings, its centre marked. On a phone it lies over the rows. A picture **tile** shows a shape in general; the detail box shows this hand. |
-| **Number box** | The one box every number has (R15; Okay, 18 Oct 2026: "This version of boxes win … these replace all"): the value's box, then − and + in theirs, all touching, one hairline of the rule's grey, the signs drawn (`.numbox`). Narrower beside a hand's detail box, in a quiet row and in Positions. Typed shorthand in the value: `1.2` set, `+0.5` add, `x0.5` multiply, `/2` divide. |
-| **Chevron box** | A value chosen from a menu (Count and Every in Positions, `num_menu`, #357): the value's box and one ⌄ box, in the number box's style (`menubox`); the browser's own list lies over it, unseen, ending in *Custom…*, which turns the box into a typed field with →. A value not in the list is put in it, so the box always says the value. |
-| **Number form** | How a row shows a number (R15): **A** full row (label · slider · number box) · **B** quiet row (label · number box, no slider) · **C** value button. All three have the same three ways in — type, step, sweep — and one popup, the **controller** (#249). Two numbers that belong together (a window's width and height) are two full rows linked by a **LINK pill** (#358). |
-| **Quiet row** | R15's form B: label · number box and no slider (`quiet: true` on a side row, e.g. a ring's Clearance); the slider stands in the controller, which its name or its number opens (on a phone, anywhere on the line). For numbers that are set more than swept. |
-| **Controller** | The number popup, one for every form (R15, #249; Okay's drawing `controller 2.svg`, 18 Oct 2026, #330): one dark square, see-through, holding the value in bold on a grey pill, the slider in a white pill and − and + as two dark discs, at three quarters of the drawing's size (Okay, 19 Oct 2026: "Size 75%"). **No name** (Okay: "No name necessary, preview shows what's changing anyway"). It stands where the finger pressed, the knob under it, over everything, and fades 1.2 s after its last use; a press elsewhere, Escape or Enter put it away. Opened by a value button, a row's name (a press moved sideways drags the value instead, #170), a quiet row's number, and under a finger a row's slider, tapped or slid. A linked pair's LINK disc stands between − and +. `value_pop` in the code. |
-| **Ink centre** | Where a short label in a box is centred: the middle of the rectangle its ink covers, measured as drawn (`web/src/ink.js`). The boxes that get it are listed in `INKED`. Not the label's advance width, not the font's line box. |
-| **Look-check** | `web/test/same.mjs`: the computed style of every element of the window in 447 states (three screens, each section, the pop-outs, the pointer on each kind of control), saved before a change to the stylesheet and compared after it. It prints every difference; none means the look is the same, to the pixel. Four minutes a run. |
-| **Box rule** | A framed thing in the panel (a ring row, the font box) stands between the pane's lines, from where the labels start to the pane's right line; inside, `--frame-pad` keeps what is in it off the frame, and the labels take what is left, `--btn-pad` in (#125). |
-| **Scale** (of spaces) | Every space in the stylesheet is a step of the unit (5.5): `--u1` half a unit, `--u2` one, `--u3` one and a half, `--u4` two, `--u6` three, `--u8` four. Not the *scale* button of the ring drawer (size). |
-| **Bottom section** | A popup's last line, its own kind of place (Okay, 16 Oct 2026, #305: "This is a bottom section rule. For these popups"): filled with the line colour from edge to edge and down to the box's bottom, no line over or under it, a rule in it a hairline of the ground. The Guides popup's (Thickness · Reset All) and the Shadows popup's (Reset). |
-| **Special** | A value that leaves R32's scale or tokens on purpose: a named token in one labelled block of `1-tokens.css`, Okay's words and the date beside it, never a bare number in a rule (R32, 16 Oct 2026). The block: the end of `:root` in `1-tokens.css`, in two groups — asked for by Okay, and found off the scale with no figure from him (#294). |
-| **Side row** | A row beside the detail box, in the last four columns: label · slider · number box, on one line (`side` in `app.js`). |
-| **Print** (pane) | In Export: what only the printed or etched dial needs (mono print mask, mirrored, the print sheet). Nothing that is drawn on the dial belongs here (Okay, 13 Oct 2026). |
-| **Nested row** | A row that belongs to the row above it: a question about it (`nest`), its settings (`tie`), or a note about it (`under`). It starts on the controls' column and has a **half line** over it. |
-| **Nested question** | A tick or menu that asks about the row above it; it starts on the controls' column, not at the left. |
-| **Row line** | The hairline before and after every row: white on the scrolling grey, that grey on paper. |
-| **Logo** | Planned (build list #72): an SVG placed on the dial with the mouse; it is a ring in the ring list. Not the *background* (a picture on the plate, not built). |
-| **Toggle column** | The narrow column at the far left of the panel. It holds only the panes' eyes (open or folded). A ring's eye (shown or hidden on the dial) is inside its row. |
-| **Margin** | The panel's side space, 24, the same left and right. Lines start and end on it; so do the eyes. |
-| **Day slider · step** | The bottom bar's slider over twelve hours. Its steps are the twelve hours and 10:10: a click goes exactly to one. It stays in the half of the day that is showing; **AM · PM**, the time's own small window (light in the morning, dark in the afternoon), turns the half over. |
-| **Eye** | The sign in the toggle column. Open = showing; closed, with lashes = put away. On a ring row it only shows or hides that ring; it doesn't select it (#183). |
-| **Rename box** | A text cursor in a rounded box, right beside the selected ring's name; left out when the row is too full. A click on it, or on the selected ring's name, renames the ring. |
-| **Picture tile** | One choice shown as a small drawing with its name under it (ring kind, mark shape, hand shape, what a window shows…). |
-| **Colour pop-out** | What a swatch opens, at its right: one for the whole tool. *On this dial* · *Palette* · the field and the hues · one line of RGB / CMYK / HEX with COPY. Its head drags it; its square makes it twice the size. |
-| **Colour pill** | How a colour shows in the panel: one small button holding a swatch and the hex in monospace. It opens the pop-out; nothing is typed in it. |
-| **Opacity** | How see-through a ring's colour is (the colour's fourth number). Rings and band sectors only. |
-| **Palette** | The pop-out's second row: ten colours to start, plus the ones added with **+**. Kept by the browser, not by the dial or its link. |
-| **Production mask** | Export mode: every ring in solid black, no plate, no hands, aperture as an outline. |
-| **Live text** | Export option: numerals and the date stay text in PDF/SVG (the fonts are needed to open them). Off by default — then text is **outlines**. |
-| **Design canon** | `docs/design.md`: the rules for type, grid, colour, pictures and redrawn controls (R29). |
-| **Guidebook** · the guide | The user guide, `guide/` (plan `guide/PLAN.md`, page design `guide/notes-okay.md` and the design canon): its pictures made by script from the current app, every "do X and Y happens" sentence checked by script. Built by `bash guide/make.sh` on Okay's word only (R25); edition 1 is live at `/guide/` on gh-pages and names the version it was made on. The old guides are in `archive/guide/`. |
-| **Classics** | Nine example dials drawn by eye after dial types (field, diver, dress, pilot, California, railway, Bauhaus, sector, gauge), kept as settings files in `web/presets/`; five of them are the Gallery's **examples** (`web/examples.mjs`). Not measured from real dials. |
+| **Section** | A page of the left panel, by tab: Dial · Rings · Hands · Windows · Export. The fourth's key and number are Date / 3 (R8, R9). |
+| **Pane** | A named part of a section; its eye folds it. Dial section: **Dial**, **Page** (margin, backdrop), **Colours**, **Reset**. |
+| **Sector colour** | A band sector's own colour (ring key `cs`); else the ring's. **Alternate**: even count, two colours on odd and even sectors. |
+| **Scale everything** | Tick under Diameter: a diameter change multiplies every measure (not the page margin). |
+| **Unit box** | Box at the title line's right: lengths shown and typed in mm, points, inches, lignes, thou (#302). Settings stay mm. **Ligne** = 2.2558 mm. **Thou** = 0.0254 mm. |
+| **Hand handles** | On a hand's detail box: squares for Length, Tail and Width (a disc hand's Ø), dragged to set them (#345). Ring ones are **Handles**. |
+| **Lit part** | On a hand's detail box, the part a number makes, filled in the guide colour while its row is pointed at, focused or its controller open (#329). |
+| **Reach** | The unseen touch area round a small control. |
+| **Heading selector** | A pane's main selector on its heading line, no name of its own (Labels, Complication). |
+| **Backdrop switch** | Chip at the preview's bottom left; opens the colour pop-out for the backdrop. |
+| **Hand tabs** | Hour · Minute · Seconds, Hands' second pinned line: choose the hand the panes edit. |
+| **Window cards** | Four cards on top of Windows (12 · 3 · 6 · 9), each a small dial with its window; they are tabs choosing the window to edit. Shown via the **Show box** tick. |
+| **Show box** | Thin box under the hand tabs and window cards holding the one tick **Show** (#261). |
+| **Gallery** | Last pane of Export: dials to open and take apart (`web/gallery.mjs`; #286, #289): the First dial, Okay's versions from the research atlas, six to pick from, five **examples** (of the **classics**, `web/examples.mjs`), Okay's watch. The **Gallery pill** leads there. A card opens in **focus**: *Edit this dial* or *In a new tab*. |
+| **Tab** | A choice of what the panes below edit, drawn as touching tabs with V-cut corners, the chosen one black: hand tabs, window cards, Complication buttons. Not the five section **tabs**. |
+| **Tag** | The small label shown with a wordless button on hover; one for the tool (`.tag`). A value button's tag gives name and value. |
+| **Build** | A numbered release ("beta 4.90"), listed with its commit in `docs/versions.md`; not a **Version** (saved dial). Numbering: R19. |
+| **Undo step** | The dial before a change, taken once it stands still. ⌘Z back, ⇧⌘Z forward. |
+| **Mark · bio** | Okay's logo in the panel's first column, left of the title; opens the **bio** (tool, maker, source, open-source credits, contact). |
+| **Eye switch** | Square switch at the preview's bottom right; shows the **dial alone**. Okay also says *preview icon*. |
+| **Showcase** | The view behind the **showcase switch** (left of the eye switch; `iriskey` in code; ACTIVATE SHOWCASE): the dial alone at 2/3 of portrait A4, dark sky, spotlight on a twenty-second sun day (drag to move the sun); clock at 1×; **Now** and **10:10** whirl the hands there; the **hands key** hides them. X exits. Okay's *bigger preview mode*. Not part of a dial. |
+| **Dial Show Case** | A side product: a dial from a Dial Tool link shown in a whole watch, with the Showcase's animation. Two words, title capitals. Live at `/show-case/` (beta 1.0.x); branch `show-case-app`, `show-case/` on `dev`. |
+| **Engineer** · **Miyazaki** | The rendering engine's two styles (`show-case/`), Okay's names. **Engineer**: technical drawing, ink outlines, three tones, hard shadows. **Miyazaki**: no lines, flat shapes cut by light and dark crescents, deeper colours, a flare. |
+| **Dial alone** | Eye switch view: panel away, dial fills the preview; mark, title, version and bottom bar stay. Not part of a dial. |
+| **Drawer** · **gripper** | On a phone (or upright iPad) the panel is the **drawer** under the preview; its **gripper** (grey dot) sets its height (drag; tap toggles two heights). |
+| **List pill** | Black pill on the Rings pinned line when there are more than five rings (#256): drag to show more or fewer rows; tap toggles five / all. Kept by the browser. |
+| **Opener** | The dial opened when the address has no dial and nothing was kept, and what **Reset** (Dial → Reset, "Reset to the First dial") restores: the **First dial** (`web/src/opener.js`). Not the starting values (*Plain dial*, Settings file pane). |
+| **Blank face** | Button under Reset (#333): starting values, white plate, no windows, one hidden ring (list never empty); hands stay. Undoable. |
+| **Bottom bar** | Dark strip at the window's bottom: time (play, speed slider, time with AM · PM, Now, day slider) · view (zoom, − +, Fit). |
+| **Speed slider** | 0.1× to 720× (#283): **slow motion** steps 0.1 · 0.25 · 0.5 · 1×, then log scale. Starts at 1×. |
+| **Pinned line** | A line outside the panes, always in view (Hands: All hands · Show hands · Motion; the hand tabs). Row option `bar` in `app.js`. |
+| **Half line** | Hairline between a row and a **nested row**, from the controls' column (third of six) to the right edge. |
+| **Sticker** | Font sheet: a small coloured pixel-font box naming one thing a family has (*weight*, *italic*, *4 styles*), colour per kind; legend under the list. |
+| **Detail box** | Left of a hand pane's rows: the chosen hand, large, centre marked; over the rows on a phone. A picture **tile** shows a shape in general; the detail box shows this hand. |
+| **Number box** | Every number's box (R15): value, then − and +, touching (`.numbox`). Typed shorthand: `1.2` set, `+0.5` add, `x0.5` multiply, `/2` divide. |
+| **Chevron box** | A value from a menu (Count and Every, `num_menu`, #357): value box plus ⌄ (`menubox`); *Custom…* allows typing. Always shows the value. |
+| **Number form** | How a row shows a number (R15): **A** full row (label · slider · number box) · **B** quiet row (no slider) · **C** value button. Same ways in (type, step, sweep) and one popup, the **controller** (#249). Linked pairs use a **LINK pill** (#358). |
+| **Quiet row** | R15's form B (`quiet: true` on a side row, e.g. Clearance): label · number box; slider in the controller. For numbers set more than swept. |
+| **Controller** | The number popup for every form (R15, #249, #330; Okay's drawing `controller 2.svg`): value, slider, − and +; **No name**. Appears where pressed, fades 1.2 s after use; Escape, Enter or a press elsewhere close it. Opened by a value button, a row's name (sideways drag changes the value, #170), a quiet row's number, or a touched slider. `value_pop` in code. |
+| **Ink centre** | Centring a short label on the box its ink covers, as drawn (`web/src/ink.js`); boxes listed in `INKED`. Not advance width or line box. |
+| **Look-check** | `web/test/same.mjs`: every element's computed style in 447 states, saved before a stylesheet change and compared after; no difference = same look. Four minutes a run. |
+| **Box rule** | A framed thing in the panel (ring row, font box) spans from the labels' start to the pane's right line; `--frame-pad` inside, labels `--btn-pad` in (#125). |
+| **Scale** (of spaces) | Every stylesheet space is a step of the unit (5.5): `--u1` ½, `--u2` 1, `--u3` 1½, `--u4` 2, `--u6` 3, `--u8` 4 units. Not the ring drawer's *scale* (size). |
+| **Bottom section** | A popup's last line, filled with the line colour to the bottom (#305): Guides (Thickness · Reset All), Shadows (Reset). |
+| **Special** | A value off R32's scale or tokens on purpose: a named token in the labelled block at the end of `:root` in `1-tokens.css`, with Okay's words and date; never a bare number (R32). Two groups: asked for by Okay; found off scale (#294). |
+| **Side row** | Row beside the detail box, last four columns: label · slider · number box (`side` in `app.js`). |
+| **Print** (pane) | In Export: what only the printed or etched dial needs (mono print mask, mirrored, print sheet). Nothing drawn on the dial. |
+| **Nested row** | A row belonging to the one above: a question (`nest`), its settings (`tie`) or a note (`under`). Starts on the controls' column, under a **half line**. |
+| **Nested question** | A tick or menu about the row above; starts on the controls' column. |
+| **Row line** | Hairline before and after every row. |
+| **Logo** | Planned (build list #72): an SVG placed on the dial with the mouse; a ring in the list. Not the *background* (a picture on the plate, not built). |
+| **Toggle column** | Narrow far-left panel column holding only the panes' eyes. A ring's eye is in its row. |
+| **Margin** | The panel's side space, 24, left and right; lines and eyes align to it. |
+| **Day slider · step** | Bottom-bar slider over twelve hours; steps at each hour and 10:10. **AM · PM** (the time's small window) flips the half. |
+| **Eye** | Toggle-column sign: open = showing, closed with lashes = put away. On a ring row it only shows or hides the ring, never selects it (#183). |
+| **Rename box** | Text-cursor box beside the selected ring's name (hidden when the row is full); it or the name renames the ring. |
+| **Picture tile** | One choice as a small drawing with its name (ring kind, mark shape, hand shape, window content…). |
+| **Colour pop-out** | What a swatch opens; one for the tool: *On this dial* · *Palette* · field and hues · RGB / CMYK / HEX with COPY. Draggable; doubles in size. |
+| **Colour pill** | A button with swatch and hex; opens the pop-out; not typed in. |
+| **Opacity** | The colour's fourth number. Rings and band sectors only. |
+| **Palette** | The pop-out's second row: ten colours plus those added with **+**. Kept by the browser, not the dial or link. |
+| **Production mask** | Export mode: every ring solid black, no plate, no hands, aperture as an outline. |
+| **Live text** | Export option: numerals and date stay text in PDF/SVG (fonts needed). Off by default — then text is **outlines**. |
+| **Design canon** | `docs/design.md`: rules for type, grid, colour, pictures and redrawn controls (R29). |
+| **Guidebook** · the guide | The user guide, `guide/` (plan `guide/PLAN.md`, page design `guide/notes-okay.md` and the design canon), pictures and claims made and checked by script. Built by `bash guide/make.sh` on Okay's word only (R25); edition 1 is at `/guide/` on gh-pages. Old guides: `archive/guide/`. |
+| **Classics** | Nine example dials drawn by eye after dial types (field, diver, dress, pilot, California, railway, Bauhaus, sector, gauge) in `web/presets/`; five are the Gallery's **examples** (`web/examples.mjs`). Not measured from real dials. |
 | **Mirror** | Flips the output for toner transfer. |
-| **Guides** | Thin construction lines in the preview, never exported. The dial's two **kinds** — **centre hole** · centre lines — each have one of the eight **guide colours** (six neons, a dark, a light) or **None**. The centre hole's guide also shows **live** while the hole is being sized, even with guides off. **A ring's guide** has that ring's own colour: one by its place in the list to start with, so neighbours differ; *Rings: All · Selected · None* says which rings show theirs. **A window's guide** is the same, under *Windows: All · Selected · None*. Each ring and window guide is two solid circles at its **edges** (where its drawing reaches) and a dotted one at its **middle**. **In focus** (#301): *Selected* means the selected one in the tab you're in — the Rings tab its ring's, the Windows tab its window's, other tabs neither; with *All* the ones out of focus are faded. **Added guides**: a line (a diameter at an angle), a crosshair (a point at an angle and a radius), a circle (a radius). Switched with the **Guides switch** at the preview's top right, over Case and X-ray (Okay, 19 Oct 2026: "Guides case and xray move top right corner of the canvas, stacked in that order"); its arrow drops the **guide list**: the guides scroll in its top part and its **settings** (Rings · Windows · Add, Thickness, Reset All) stay in a lighter part below. |
+| **Guides** | Construction lines in the preview, never exported. The dial's **kinds** — **centre hole** · centre lines — each take one of eight **guide colours** or **None**; the centre hole guide also shows **live** while sizing. **A ring's guide** / **A window's guide**: its own colour, shown per *All · Selected · None*; two solid circles at the **edges**, dotted at the **middle**. **In focus** (#301): *Selected* = the current tab's selection; *All* fades the rest. **Added guides**: line, crosshair, circle. **Guides switch** at the preview's top right; its arrow opens the **guide list** with **settings** (Rings · Windows · Add, Thickness, Reset All). |
 | **Backdrop** | The preview's background colour; never exported. |
-| **Number control** | Label · slider · number box, all showing one value: R15's form A. |
-| **Settings** (`S`) | One dictionary holding every value; saved as JSON (settings files, last session). Rings are a list inside it (`S["rings"]`, top first); so are the hands and the windows. |
-| **Static geometry** | Everything that doesn't move (plate, rings, windows). Rebuilt when a geometry setting changes; each ring's shapes are remembered by their settings, so editing one ring rebuilds only what depends on it. Hands are turned every frame. |
+| **Number control** | Label · slider · number box: R15's form A. |
+| **Settings** (`S`) | One dictionary of every value, saved as JSON. Rings are a list in it (`S["rings"]`, top first); so are hands and windows. |
+| **Static geometry** | What doesn't move (plate, rings, windows); rebuilt on a geometry change, per ring by its settings. Hands turn every frame. |
 | **Imported file** | An SVG, PDF or AI file used as a marker or hand shape (R23; not built, #50). |
-| **Icon** | A small SVG drawing in the window (a section's sign, a tool, a picture tile). Drawn in the icon block at the top of `web/src/app.js`, by R33 and the design canon §9. Not the stylesheet's boxes around them. |
-| **Icon grid** | The rules every icon is drawn by: one unit = one point, four line widths, straight lines on quarter points. |
-| **LINE · SLANT · CURVE · DENSE** | The four icon line widths, one look (design canon §9): straight 1.5 · slanted 1.5625 · round 1.625 · crowded 1.25. |
-| **Quarter point** | A coordinate ending in .25 or .75. A 1.5 line centred there covers three whole screen dots on a 2× screen. |
-| **Pictured width** | A width in an icon that pictures a thing's own width (a ring kind's ticks, marks, band), not a line; kept as drawn. |
-| **Rim** | The ring that holds a sign: a section tab's, a window card's, a round tool's. An icon line like any other. |
+| **Icon** | A small SVG in the window (section sign, tool, picture tile), drawn in the icon block at the top of `web/src/app.js` by R33 and design canon §9. Not the boxes round it. |
+| **Icon grid** | One unit = one point, four line widths, straight lines on quarter points. |
+| **LINE · SLANT · CURVE · DENSE** | The four icon line widths (design canon §9): straight 1.5 · slanted 1.5625 · round 1.625 · crowded 1.25. |
+| **Quarter point** | A coordinate ending in .25 or .75; a 1.5 line there covers three whole dots on a 2× screen. |
+| **Pictured width** | An icon width depicting a thing's own width (ticks, marks, band), not a line; kept as drawn. |
+| **Rim** | The ring holding a sign (section tab, window card, round tool); an ordinary icon line. |
 | **Look** (of a line) | How heavy a line appears, read by `web/icons/look.py` against a straight `LINE`. |
 
 ## Type terms
 
 | Term | Meaning |
 |---|---|
-| **Type** | Typography. Belongs to each numerals or text ring (family, style, instance, language, size, tracking, axes, features). A new numerals ring copies the top one; a date or day window uses the top numerals ring's type, unless it has a font of its own. |
-| **Family / style** | A family (Helvetica Neue) and its styles (Bold, Light…), from the tool's own **font list** (`web/fonts.mjs`), a font added to the sheet, or — in Chrome and Edge — the computer's fonts (**Installed**). |
-| **PostScript name** | The exact name of one style (`HelveticaNeue-Bold`); stored in the ring's `ps`. |
-| **Variable axis** | A continuous design dimension inside a variable font (weight `wght`, width `wdth`…). Each becomes a slider. |
-| **Named instance** | A preset point on a variable font's axes (e.g. "Bold Condensed"). |
-| **OpenType feature** | A switchable behaviour in the font: `tnum` tabular figures, `onum` oldstyle figures, `ss01` stylistic set 1, `zero` slashed zero… Shown with the type designer's own name when the font has one. |
-| **Language** | Turns on language-specific forms (`locl`), e.g. Turkish İ/ı. |
-| **Tracking** | Even spacing added between letters, in 1/1000 em. |
-| **Outlines** | Text converted to shapes; the font isn't needed afterwards, but the text isn't editable. |
+| **Type** | Typography of a numerals or text ring (family, style, instance, language, size, tracking, axes, features). A new numerals ring copies the top one; date and day windows use it unless given a font. |
+| **Family / style** | A family (Helvetica Neue) and its styles, from the **font list** (`web/fonts.mjs`), an added font, or — in Chrome and Edge — the computer's fonts (**Installed**). |
+| **PostScript name** | One style's exact name (`HelveticaNeue-Bold`); stored in the ring's `ps`. |
+| **Variable axis** | A continuous dimension of a variable font (`wght`, `wdth`…); each becomes a slider. |
+| **Named instance** | A preset point on a variable font's axes ("Bold Condensed"). |
+| **OpenType feature** | A font switch: `tnum` tabular, `onum` oldstyle, `ss01` stylistic set 1, `zero` slashed zero…; named as the font names it. |
+| **Language** | Language-specific forms (`locl`), e.g. Turkish İ/ı. |
+| **Tracking** | Even letter spacing, in 1/1000 em. |
+| **Outlines** | Text converted to shapes: no font needed, not editable. |
 
 ## Code terms
 
 | Term | Meaning |
 |---|---|
-| **Web version** | The tool (`web/`): its source in `web/src/` (`app.js` the window, `geometry.js` settings, geometry and drawing, R6), built by `node build.mjs` to **one file**, `web/dial-tool.html`, with nothing fetched at run time (R30). Its settings keys are shared with the frozen `archive/drawbot/dial.py` (R8, R30). |
-| **Scene** | The list `scene()` returns (`geometry.js`): everything to draw, bottom to top, with colours; each entry is an **item** with a **role** (plate, ring, hand, guide…). Export and every preview read it (R26). |
-| **Shape combining** | Union, difference, xor and overlap removal of paths (knockouts, cuts, hollow shapes), done by PathKit. |
-| **PathKit** | Skia's shape combining, compiled for the browser: the tool's **shape combining** engine, pinned in `web/package.json` (R30). The same engine as `skia-pathops`, which the parity test uses. |
-| **HarfBuzz** | The tool's text engine, pinned in `web/package.json` (R30): turns text + font + features + axes + language into positioned glyph outlines (R10). |
-| **Stand-in font** | Inter, packed inside the tool's file: draws numerals whose font isn't loaded yet. The log names the font it replaces. |
-| **Installed fonts** | The font sheet's **Installed** button: lists the computer's fonts under Family (Chrome, Edge, `queryLocalFonts`). Other browsers: add font files. |
-| **Link** (a dial's) | The tool's address with the dial after `#`. It carries the dial, not the window's state (section, selected ring) and not font files. R31. **Link scheme 3** (`LINK_SCHEME`): "3", then the packed settings in capitals and digits only (Crockford's base 32). Packed means: only what differs from the starting values (**lean** settings, `lean()`); every key as a short code from the **key table** (`LINK_KEYS`, which only grows); colours as hex; numbers to 3 decimals; the time to the second; then deflated. A link of another scheme is not read: the opener opens, with a **note on the preview** and in the log. |
-| **Window shape** | The hole's outline, apart from what the window shows: rectangle · circle · polygon · arch (the moon's) · half (the am · pm's: half a circle on its flat side) · arc (a piece of a ring, for a day window at 12). Arch and half are a kind's own: each shows fourth among the buttons, for its kind alone, chosen to start. **Turned**: the hole stands along its radius instead of level (only off the quarters). |
-| **Complication** | What a window shows (date · day · am · pm · moon phase; a **big date** is the Date complication with its tick, two holes for the tens and the units — stored as kind 4, R9), and the name of its row on the Windows page (Okay, 18 Oct 2026, notes 2: "Shows becomes 'Complication'"; #328). Its picture buttons act as **tabs**: each keeps its own settings for the window (shape, size, text, colours, font), its place shared; kept for the visit. In watchmaking a complication is any function beyond the hours, minutes and seconds; the tool uses the word for a window's kind only. The setting key stays `kind` (R8). |
-| **Window** | A hole in the plate with something showing through, up to four, at 12 · 3 · 6 · 9. What shows is its **Complication**; an am · pm window follows the time shown, its disc half am and half pm. The section's tab says Windows; its key and number stay Date / 3 (R8). |
-| **Font list** | The tool's own forty-two open-licence families (`web/fonts/`, fetched and listed by `web/fonts.mjs`, #313): fonts from Google Fonts, D-DIN, and ten of Peter Wiegel's. |
-| **Font sheet** | The sheet that opens from the font in Type: every font by its numerals, a search, and **Add fonts** (Google link or name, link to a font file, font file, installed fonts). A **Light · Dark** pill at its top shows the previews on white or on a dark grey (`--font-night`), kept for the session; the font boxes follow it (#276). |
-| **Font box** | The white box in Type (and in a date or day window's pane), after Okay's drawing: a grey head holding the chosen font's numerals and letters on white, with the language button (**EN** while the font sets it, #273) at the right of that cell, and the font's name with its colour · the styles as **hanging tabs** of the name's line (#275) · Size, Tracking and the axes as rows whose sliders take all the room past a twelve-character name (#274), each with the number box. |
-| **Pointer label** | The name shown beside the pointer for the piece under it; the piece is outlined. |
-| **Round ends** | A hand's setting `round`: the corner radius of its flat ends. Marks get round ends from *Round outer* / *Round inner*. Okay's "round caps". |
+| **Web version** | The tool (`web/`): source in `web/src/` (`app.js` the window, `geometry.js` settings, geometry and drawing, R6), built by `node build.mjs` into **one file**, `web/dial-tool.html`, fetching nothing at run time (R30). Settings keys shared with the frozen `archive/drawbot/dial.py` (R8, R30). |
+| **Scene** | What `scene()` returns (`geometry.js`): everything to draw, bottom to top, each **item** with a **role** (plate, ring, hand, guide…). Export and every preview read it (R26). |
+| **Shape combining** | Union, difference, xor and overlap removal of paths, done by PathKit. |
+| **PathKit** | Skia's **shape combining** for the browser, pinned in `web/package.json` (R30); same engine as `skia-pathops` in the parity test. |
+| **HarfBuzz** | The text engine, pinned in `web/package.json` (R30): text + font + features + axes + language → glyph outlines (R10). |
+| **Stand-in font** | Inter, packed in: draws numerals whose font isn't loaded; the log names it. |
+| **Installed fonts** | The font sheet's **Installed** button: the computer's fonts (Chrome, Edge, `queryLocalFonts`). Elsewhere: add files. |
+| **Link** (a dial's) | The tool's address with the dial after `#`: the dial only, not window state or font files (R31). **Link scheme 3** (`LINK_SCHEME`): "3" then **lean** settings (`lean()`, only what differs from the starting values), keys as codes from the **key table** (`LINK_KEYS`, only grows), colours hex, numbers to 3 decimals, time to the second, deflated, in Crockford's base 32. Other schemes are not read: the opener opens with a **note on the preview** and in the log. |
+| **Window shape** | The hole's outline: rectangle · circle · polygon · arch (moon's) · half (am · pm's) · arc (a ring piece, for a day window at 12). Arch and half belong to their kind. **Turned**: along its radius, not level (off the quarters only). |
+| **Complication** | What a window shows (date · day · am · pm · moon phase; **big date** = Date with its tick, stored as kind 4, R9), and its row's name on Windows (#328). Its buttons act as **tabs**, each keeping its own settings for the window; position shared. Here only a window's kind. Key stays `kind` (R8). |
+| **Window** | A hole in the plate showing something, up to four, at 12 · 3 · 6 · 9; what shows is its **Complication**. Tab says Windows; key and number stay Date / 3 (R8). |
+| **Font list** | Forty-two open-licence families (`web/fonts/`, via `web/fonts.mjs`, #313): Google Fonts, D-DIN, ten by Peter Wiegel. |
+| **Font sheet** | Opens from the font in Type: fonts shown by numerals, search, **Add fonts** (Google, font URL, file, installed). **Light · Dark** pill (`--font-night`), kept per session; font boxes follow it (#276). |
+| **Font box** | The box in Type (and date or day window panes): the font's numerals, the language button (**EN** while the font sets it, #273), name and colour, styles as **hanging tabs** (#275), Size, Tracking and axes rows (#274). |
+| **Pointer label** | The name beside the pointer for the piece under it, which is outlined. |
+| **Round ends** | A hand's `round`: corner radius of its flat ends. Marks use *Round outer* / *Round inner*. Okay's "round caps". |
