@@ -72,6 +72,6 @@ Wait for Okay's answer to question 13 first. Then:
 
 ## 8 · What is and is not kept
 
-- **In this repo:** these two files, plus the rows in `docs/brief.md` §4 and §5 and `docs/build-list.md` #313.
+- **In this repo:** these two files, plus the rows in `docs/decisions.md` and brief §5 and `docs/build-list.md` #313.
 - **Not in the repo:** the working files. They were in the research session's temporary folder and are gone with it: the scraped pages and zips, the extracted fonts, the measurement scripts, the per-font numbers. Okay has a data bundle (`wiegel-project-data.zip`: the families, licences, numeral shapes, style groups, votes and scripts; no font files) for a separate project, a standalone Wiegel font finder. It is not part of this repo. The lists in §6 are the durable record of what was chosen.
 - **The claude.ai pages** keep the marks Okay made on each step; they are private to him.

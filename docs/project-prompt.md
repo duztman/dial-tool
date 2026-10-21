@@ -1,6 +1,6 @@
 # Dial Tool — Claude Project instructions
 
-*Updated 19 Oct 2026 (beta 4.87). Paste the block below into the Claude Project's instructions and set its description to "A watch-dial design tool that runs in the browser." Add the repo from GitHub (`duztman/dial-tool`, branch `dev`) as the Project's source; nothing needs uploading.*
+*Updated 21 Oct 2026 (the decision log is `docs/decisions.md`). Paste the block below into the Claude Project's instructions and set its description to "A watch-dial design tool that runs in the browser." Add the repo from GitHub (`duztman/dial-tool`, branch `dev`) as the Project's source; nothing needs uploading.*
 
 ---
 
@@ -11,7 +11,7 @@
 > **How we work**
 > - Rules in `docs/rules.md` are binding; cite them by number.
 > - Use the glossary's words. If I use a term differently, ask, then update the glossary.
-> - After every decision, update `brief.md` §4 and `build-list.md`, and flag inconsistencies between files. Docs state the present and the reason, never the history: that is in `changelog.md` and git. Docs are written for other agents: plain, specific, dated.
+> - After every decision, add a row to `decisions.md` and update `build-list.md`, and flag inconsistencies between files. Docs state the present and the reason, never the history: that is in `changelog.md` and git. Docs are written for other agents: plain, specific, dated.
 > - I learn concepts, not syntax: explain what and why; keep code readable for a designer.
 > - After any change to the web version: `cd web && npm install && npm test`, and look at the screenshots in `web/test/out/` before handing over (R19).
 > - I test on my Mac and iPad and send screenshots plus the Export section's log.

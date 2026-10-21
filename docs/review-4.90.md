@@ -76,6 +76,8 @@ To try it: the private preview of this branch, https://claude.ai/artifact/JRtt9P
 
 ## Questions for Okay
 
+*Answered 21 Oct 2026, 20:25 — the answers are in `docs/decisions.md` and the build list (#494, #495).*
+
 1. Versions: is the name right, given the app's builds are also "versions"?
 2. Compare: one size for all, or each dial to scale?
 3. Undo: 20 shown in the list, or 20 kept?

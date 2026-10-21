@@ -1,29 +1,22 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **ask** · **parked**. Done items move to `docs/build-list-done.md`; the DrawBot version's to `archive/drawbot/build-list-drawbot.md`.
-*Last updated 21 Oct 2026, 20:10 (v1 drafted; the list grouped by v1 instead of by where each note came from; done items moved out). Where an item came from is in its own words and dates.*
+*Last updated 21 Oct 2026, 20:25 (Okay's answers: v1 scope settled, #494 #495 added, #68 #134 #227 #366 closed. 20:10: v1 drafted; the list grouped by v1 instead of by where each note came from; done items moved out). Where an item came from is in its own words and dates.*
 
-## v1 — draft, for Okay to cut
+## v1 — settled with Okay, 21 Oct 2026
 
 Okay, 21 Oct 2026, 20:10: "Yes let's draft a definition and put square past v1. Now I believe we can release without square dials."
 
-**v1 is the tool as it is, finished — no new features.** Every question below answered or dropped, every dead end closed, the built things seen working on Okay's own machines, the words clean, then the full check (R19) and the name v1, without "beta", on Okay's word (brief §4, 20 Oct, 02:53). What is not in this section comes after v1.
+**v1 is the tool as it is, finished, plus SVG import** (Okay, 21 Oct 2026: SVG import in v1). Every question below answered or dropped, every dead end closed, the built things seen working on Okay's own machines, the words clean, then the full check (R19) and the name v1, without "beta", on Okay's word (brief §4, 20 Oct, 02:53). What is not in this section comes after v1.
 
-Also to answer: the six questions in `docs/review-4.90.md` (Versions' name, Compare's sizes, undo's 20, hidden rings cutting in the preview, Diameter's 5–300 mm, the numbering rule for R19).
-
-Okay's call, not yet in v1: the guide's next edition with v1 (#93, R25: on his word); one etched brass dial from a v1 mask before naming it (brief §1, *Produce*); any one feature from *After v1* he wants in (Claude's advice: none — each is days of work and moves the line).
+Settled by Okay on 21 Oct 2026, 20:25 (`docs/decisions.md`): SVG import is in; the guide's next edition comes with v1; no brass dial before naming it; square dials after v1. The number: v1.0 (R19).
 
 ### A · Answer (Okay)
 
 | # | Item | Status |
 |---|---|---|
-| 434 | **Settings file pane: "needs tlc. what do you think it needs?"** — Claude's proposal sent 19 Oct, 23:25; waiting for his word | open — ask |
-| 134 | One line of Okay's note on the Windows section (13 Oct 2026, 21:02) is unread: "Input should work with defaults? (which the title has to move up" — a window's Text field showing its default? the label above it? Ask | open — ask |
-| 149 | "Lock the ring on preview" (Okay, 13 Oct 2026, on the window cards' pictures) — unclear: the ring fixed and only the window moving in the pictures? Ask | open — ask |
-| 366 | **"Width height linked in name only, no actual locked aspect ratio growing?"** — the big date's pair was missing from the link and is in; rectangle windows checked by mouse and controller. Ask Okay if he still sees it, and where | open — ask |
-| 369 | **"The preview gets these wonky orange parts"** (his screenshot: a dauphine with orange slivers) — read as the lit part of #329 stuck on after a tap; it goes off under a finger. Ask if he still sees them | open — ask |
-| 162 | **A few more icons to redraw** (Okay, 14 Oct 2026: "Few more ugly icons to fix… not for today. Ask for them next time I go into the project"). Okay has them; ask, then draw them through `web/icons/` (R33) | open — ask Okay |
-| 294 | **Off the scale as found** (R32: the specials block is looked through at each release) (the specials block's second group): spaces and lines with no figure from Okay — `--nudge` 2, `--btn-pad` 10, `--frame-pad` 8, `--ring-gap` 4, `--foot-gap` 4, the ring line's 8 · 8 · 2, `--name-in` 6, `--chip-gap` 4, `--pop-pad` 16, `--pop-gap` 12, `--guide-gap` 10, `--ring-gap-in` 2, `--logo-disc` 2, `--canvas-inset` 12, the pointer's outline 1.5 and 4, the pointer label's arrow 5 and 2.6. Also bare values left in rules (R32: a value is written once, as a token): the tag's arrow (`top: -6px`, `4f-rings.css`), the pointer label's arrow (`- 10px`, `6-preview.css`), opacities written as numbers (the ruler's 0.4 · 0.85 · 0.6 · 0.38, a dragged ring's 0.45), `calc(var(--unit) / 2)` where `--u1` is meant. For each: put it on the scale (a look change, shown first) or keep it as a special. With the layout check (#188) | open — for Okay to look through |
+| 162 | **A few more icons to redraw** (Okay, 14 Oct 2026: "Few more ugly icons to fix… not for today. Ask for them next time I go into the project"). Okay has them; ask, then draw them through `web/icons/` (R33) | ask — in v1 (Okay, 21 Oct 2026): he sends the drawings |
+| 294 | **Off the scale as found** (the specials block's second group, looked through at each release, R32): spaces and lines with no figure from Okay — `--nudge` 2, `--btn-pad` 10, `--frame-pad` 8, `--ring-gap` 4, `--foot-gap` 4, the ring line's 8 · 8 · 2, `--name-in` 6, `--chip-gap` 4, `--pop-pad` 16, `--pop-gap` 12, `--guide-gap` 10, `--ring-gap-in` 2, `--logo-disc` 2, `--canvas-inset` 12, the pointer's outline 1.5 and 4, the pointer label's arrow 5 and 2.6. Also bare values left in rules (R32: a value is written once, as a token): the tag's arrow (`top: -6px`, `4f-rings.css`), the pointer label's arrow (`- 10px`, `6-preview.css`), opacities written as numbers (the ruler's 0.4 · 0.85 · 0.6 · 0.38, a dragged ring's 0.45), `calc(var(--unit) / 2)` where `--u1` is meant. For each: put it on the scale (a look change, shown first) or keep it as a special. With the layout check (#188) | open — before v1 (Okay, 21 Oct 2026) |
 
 ### B · Verify on Okay's Mac, iPad and phone
 
@@ -34,6 +27,7 @@ Okay's call, not yet in v1: the guide's next edition with v1 (#93, R25: on his w
 | 453 | **FIT's left line on a phone** ("left wall missing … dont come back empty handed") — fixed in 4.89.9 (#446): its left line was − +'s, hidden on a phone. On the live page since 4.90. To verify on his phone | verify |
 | 465 | **Bevel not seen in 4.89.12** (01:49: "Bevel is not in this update. I don't see a bevel on the hands coming up. Bevel is off on default. Please note"): off to start is as meant; ask where he looked for the tick (beside Show, under the hand's tab) once he has the released build | verify |
 | 232 | **Phone: with the drawer dragged up, Undo · Redo overlap the Backdrop switch**. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
+| 369 | **"The preview gets these wonky orange parts"** (his screenshot: a dauphine with orange slivers) — read as the lit part of #329 stuck on after a tap; it goes off under a finger. Ask if he still sees them | verify (Okay, 21 Oct 2026: not checked yet) |
 
 ### C · Close the dead ends (R17)
 
@@ -46,15 +40,34 @@ Okay's call, not yet in v1: the guide's next edition with v1 (#93, R25: on his w
 
 | # | Item | Status |
 |---|---|---|
-| 227 | **The file name gives the dial's size; the page is larger** by twice the margin ("dial-30mm" is a 36 mm page). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
-| 68 | File names: `dial-30mm-2026-10-12.pdf` (diameter and day; a mask says `-mask`, `-mirrored`). Okay was asked (12 Oct 2026): this, or a name field for the dial? With #227 | open |
 | 231 | **Word collisions**: Backdrop (a colour and a switch) · Frame (a colour and a width, Windows) · Size, Size %, Size × · Ring Ø and Ring at % on hands · the opener's ring named Band whose kind is numerals. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
 
-### E · With the release — Okay's call
+### E · With the release
 
 | # | Item | Status |
 |---|---|---|
-| 93 | **Guidebook for the web version** (R25): edition 1 at https://duztman.github.io/dial-tool/guide/ — eight A4 pages and a phone stack from one source, composer `guide/look/` (README there), also an InDesign package (IDML); the app's Help link opens it. Rebuilt only when Okay asks (`bash guide/make.sh`), never with an app release. Open: the human reader round (two people new to the app, `guide/tests/humans.md`); Okay's look at the pages and the package's first open in InDesign; step 9 (his production round); edition 2 (per-pane anchors, #230). For the next rebuild: the guide's First dial steps no longer end on the opener (#331) and its script should press *Plain dial*, not Defaults (#279) | Okay's call: a new edition with v1? |
+| 93 | **Guidebook for the web version** (R25): edition 1 at https://duztman.github.io/dial-tool/guide/ — eight A4 pages and a phone stack from one source, composer `guide/look/` (README there), also an InDesign package (IDML); the app's Help link opens it. Rebuilt only when Okay asks (`bash guide/make.sh`), never with an app release. Open: the human reader round (two people new to the app, `guide/tests/humans.md`); Okay's look at the pages and the package's first open in InDesign; step 9 (his production round); edition 2 (per-pane anchors, #230). For the next rebuild: the guide's First dial steps no longer end on the opener (#331) and its script should press *Blank face* (Plain dial leaves Settings file, #434) | in v1 (Okay, 21 Oct 2026): a new edition with v1, on his word (R25) |
+
+### F · Changes from Okay's answers (21 Oct 2026)
+
+| # | Item | Status |
+|---|---|---|
+| 149 | "Lock the ring on preview" (Okay, 13 Oct 2026, on the window cards' pictures) — unclear: the ring fixed and only the window moving in the pictures? Ask | build — reading confirmed (Okay, 21 Oct 2026): the cards' circle drawn as the tab icon's ring, only the window moving |
+| 434 | **Settings file pane: "needs tlc. what do you think it needs?"** — Claude's proposal sent 19 Oct, 23:25; waiting for his word | build — (Okay, 21 Oct 2026: "Remove both") Save… · Load… only; Defaults and Plain dial removed, Dial › Reset holds the resets (R34); the guide's script presses Blank face |
+| 494 | **Compare at one size, as large as the canvas holds, and a real-size switch** (Okay, 21 Oct 2026: "One big, as big as what fits on the canvas, one real size option in preview"): as built, every saved dial at one size; a switch shows them at their own mm (preview only, R26) | build |
+| 495 | **Undo keeps 20 steps** (Okay, 21 Oct 2026: "Only 20 kept"): it keeps 200; the list under undo shows 20 | build |
+
+### G · SVG import (Okay, 21 Oct 2026: in v1)
+
+Every place an SVG can go, built as one mechanism (R34; R23 says how a file is read). The template file comes with it.
+
+| # | Item | Status |
+|---|---|---|
+| 173 | **Image or SVG import onto the dial** (Okay: "guilloche is a good point but not our job, instead we should implement image or svg import for the dial"). With #72 (logo), #50 (imported shapes), #73 (background) | open — Next |
+| 72 | **Logo**: an SVG placed on the dial with the mouse; it is also a ring, edited in Rings "differently"; a link from the Dial pane goes to it. Its file's content travels in the settings (#50). Ask Okay before building: its colours (he first wanted an SVG's colours adjustable), scale and rotation, whether a link can carry it. Words are the text ring's (#297) | open |
+| 50 | Imported shapes (SVG, PDF, AI) for markers and hands: a "file" shape is drawn as a bar or baton and the log says so; the hands' dashed SVG tile says "not built yet". In a browser the file's content has to travel inside the settings (no file paths). With #72, #173 | open |
+| 466 | **A moon window's Picture gets Custom…, which takes an SVG** (01:49: "Arc phase line gets a custom… which will insert an svg. Also a note") — with the SVG inserts (#405, #50, #346) | open — note |
+| 405 | **SVG inserts: a blank template file** — a downloadable SVG with guides and registration dots (the artboard's centre, the 12 o'clock line, a hand's pivot, a marker's box) so a drawing made on it imports editable and in place; one template per place an SVG can go (a hand, a marker, a window picture, a logo). The plan for every SVG upload (#50, #72, #173, #346), noted for when they are built (Okay, 17:43: "give the user a blank file with guides and dots to stick to make things editable and such. For the future, note under all svg upload available areas") | open — later, with #50 |
 
 ## After v1
 
@@ -66,17 +79,12 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 |---|---|---|
 | 169 | **One strip for every position** (atlas 2.1; Okay: "very very good… prioritize this", "core to our mission"): one per-position value per setting, shown as a strip of cells under a ring; draw a line across to set the ends and get the middle; type a rhythm (`L S S S`) to repeat. Nudge holds per-position values (#349). Draw and show Okay before building | open — Next |
 | 83 | **Positions law** [1.1]: a selector on the Positions heading line: even · reciprocal · logarithmic · table · squeeze toward an angle [7.15]. Only `ring_angles()` changes. Tachymeter [1.2] = reciprocal with base, from, to, step; one ticks ring per stretch of steps. Depth cartouches [1.14] = table, typed as angle and label pairs. To decide when it is built: Count hides where the law sets it (R16); what "a partial span marks both ends" means per law; a table brings its own labels | open — Next |
-| 173 | **Image or SVG import onto the dial** (Okay: "guilloche is a good point but not our job, instead we should implement image or svg import for the dial"). With #72 (logo), #50 (imported shapes), #73 (background) | open — Next |
-| 50 | Imported shapes (SVG, PDF, AI) for markers and hands: a "file" shape is drawn as a bar or baton and the log says so; the hands' dashed SVG tile says "not built yet". In a browser the file's content has to travel inside the settings (no file paths). With #72, #173 | open |
-| 72 | **Logo**: an SVG placed on the dial with the mouse; it is also a ring, edited in Rings "differently"; a link from the Dial pane goes to it. Its file's content travels in the settings (#50). Ask Okay before building: its colours (he first wanted an SVG's colours adjustable), scale and rotation, whether a link can carry it. Words are the text ring's (#297) | open |
-| 405 | **SVG inserts: a blank template file** — a downloadable SVG with guides and registration dots (the artboard's centre, the 12 o'clock line, a hand's pivot, a marker's box) so a drawing made on it imports editable and in place; one template per place an SVG can go (a hand, a marker, a window picture, a logo). The plan for every SVG upload (#50, #72, #173, #346), noted for when they are built (Okay, 17:43: "give the user a blank file with guides and dots to stick to make things editable and such. For the future, note under all svg upload available areas") | open — later, with #50 |
 | 484 | **Square and rounded-square dials, as an Apple Watch's** ("How hard is to make a square and rounded square like an apple watch … i know its big work but plan. This is an obstacle between us and beta v5") — with #363. A plan: `docs/plan-non-round.md` | after v1 (Okay, 21 Oct 2026, 20:10: "put square past v1"); plan: `docs/plan-non-round.md` |
 | 404 | **Dauphine and leaf hands: hubs as on a real movement** — the connecting circles where the hand meets the cannon pinion, life-accurate (Okay, 19 Oct 2026, 17:43: "dauphin and leaf get life accurate movement connecting circles"); refines #370's plain hub for these two shapes | open — next |
 | 421 | **Keep a hand's details in the lit picture** — the dauphine's connecting dot (Okay, 20:02: "Let's do not lose details such as dauphine's connector dot, we might make it larger too if we want"); with #404's hubs | open — note |
 | 488 | **A numerals ring's thickness is its type's cap height, set by the Cap middle anchor** (Okay, 16:31: "ring size is determined by cap middle layout. This is our fixed ring thickness for type. Align means tangent to this ring inner or outer circles, ring size changes with font size/vice versa. 12 does not adhere to rules of align or anything"). Reading: the ring is a band one cap height thick, centred on the radius as Cap middle centres the numerals; Align (outer edge, inner edge) lays each numeral tangent to that band's outer or inner circle; changing the size changes the band's thickness and dragging the band's thickness changes the size. The 12 (with its own twelve scale) is outside these rules. To be read with Okay before building | open |
 | 346 | **Complications, systematized** — what is left: the moon's own disc (its moon following a drawn path); a big date's two discs in X-ray (the X-ray switch hides on a big date, #373); your own SVG for a complication's picture. In place: one moment (`web/src/moment.js`, `web/test/moment.mjs`) gives the date, weekday, month, AM/PM and the moon's age; five languages EN · TR · DE · FR · IT; the date set in the bar; the discs under the plate seen in X-ray, their edges as guides, physics (a disc's band must end inside the case) as a tick per window; the twelve sketched looks (moon: humps · phase · line; am · pm: sky · half · band; date: neighbours · big date) | later (mechanism first) · open — the rest |
 | 349 | **Each marker selectable and editable**: a first press picks the ring, a second the mark or numeral; Nudge works on ticks and markers too, with a shape of its own; the chosen one is outlined on the dial. Left: the numeral's preview at the left with its controls; an SVG for a mark (#50) | later (mechanism first) · open — the rest |
-| 466 | **A moon window's Picture gets Custom…, which takes an SVG** (01:49: "Arc phase line gets a custom… which will insert an svg. Also a note") — with the SVG inserts (#405, #50, #346) | open — note |
 | 467 | **A moon window's disc, as a date window's** (Okay, 20 Oct 2026, 01:53: "moon window for phase needs a ring like date window, no? How many moons fit? Can we get away with less, steps between states. This is a jump complication of course like date"): a moon disc under the plate, seen in X-ray, jumping once a day as the date's does. In watches as Claude knows them (to check at build time): two moons on a 59-tooth disc, one tooth a day (two lunations of 29.5 days), a day off in about 2.7 years; fewer steps means a coarser jump. With #346 (the moon's own disc) | open — note |
 | 252 | **Nudge's picker**: a small copy of the ring's numerals to click or tap (Okay's notes, p. 6–7). In place: the four number rows on the chosen numeral, sliding one hides the guides; a second press on the dial picks a mark or numeral (#349). With #339 | open |
 | 339 | **Nudge one numeral more intuitive**: "keep the data and functionality as is, maybe better naming, guiding, visualizing, let's think" | later · open |

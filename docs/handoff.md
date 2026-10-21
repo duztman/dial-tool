@@ -6,13 +6,13 @@ A new session starts with no memory of the last one: the transcript stays in the
 
 ## 1 · Where things stand (20 Oct 2026, 05:10, beta 4.90 released)
 
-- **21 Oct 2026, 20:10 — the road to v1**: v1 is drafted at the top of `docs/build-list.md` (no new features: answer, verify, close dead ends, clean words, full check, then the name on Okay's word); square dials come after v1 (#484). The build list is grouped by v1. Okay cuts the draft next.
+- **21 Oct 2026, 20:10 — the road to v1**: v1 is drafted at the top of `docs/build-list.md` (no new features: answer, verify, close dead ends, clean words, full check, then the name on Okay's word); square dials come after v1 (#484). The build list is grouped by v1. Okay settled it on 21 Oct, 20:25 (SVG import in, guide with v1, no brass first); the next work is the v1 section, groups C, D, F, G.
 - **`dev`, `main` and the live page are beta 4.90** (Okay, 05:02: "this version is accepted, dev main, publish"). The night's items, their readings and six open questions: `docs/review-4.90.md`; the plan for square dials: `docs/plan-non-round.md`; next with Okay: the guides and Settings (his 04:52: "Guides and settings to follow tomorrow").
 - **Release as you go** (Okay, 05:02: "I feel we've been stuck at 90 for a while there?"): a batch of work is released when it passes, not held on a branch; the branch `wip-4.90` is merged and spent.
 - **Built on it**: Versions under undo with Compare and Sheet (#435, #17); the production ticks in Print (#219, #221–#224), a mask per ink (#35), a set of files (#171), a spec sheet (#18); MP4 and GIF (#51); Weight % (#88); Cap middle (#13); undo steps named (#172); units typed (#187); finer sliders (#406); am · pm Jumps (#401); thinnest line (#225); kept font files (#56); dead ends #233, #234, #448; on a phone Versions beside undo (#232); the layout check, a report (#188); `test/window-only.mjs` (#407, first step).
 - **Version numbers** (Okay, 02:53): no jump to 5. 4.90 is the step after 4.89.12; the second and third numbers may run to 99; v1, without "beta", on his word. R19 to say so once he confirms.
 - **The stale branch `beta5`** on GitHub (the night's first name) could not be deleted from the session: `git push origin --delete beta5` from his Mac.
-- **Waiting for Okay**: the six questions in `docs/review-4.90.md`; the older ones (#434 Settings file pane, #448's answer is built, #439 and #453 to verify).
+- **Waiting for Okay**: the build list's v1 section, groups A and B (his drawings for #162, the look-through #294, things to verify on his devices).
 - **His notes tonight**: logged as #468–#470 in the build list (Compare's dense packing; units in fields only; undo 20, Versions nine).
 - **What made the night faster or slower**: checks batched (Okay, 02:19: "Batch these crazy checks"): `npm run small` ~2 min, the window test alone ~3 min, the full `npm test` ~3 min; one window-only section ~50 s. Slower: a test that changed the tab (Dial) and didn't go back broke every later section — a check should leave the window as it found it. Faster: building a feature, then all its checks in one run.
 
@@ -20,7 +20,7 @@ A new session starts with no memory of the last one: the transcript stays in the
 
 1. `bash tools/setup.sh`: the system library, the Python packages, the two test fonts, `npm install`, and the clone's fetch widened to every branch (a session's clone is shallow, so single-branch; without that `release.sh` builds the live page on a stale `gh-pages` — found 17 Oct). Safe to run twice.
 2. Read what CLAUDE.md lists, in its order. Two places hold the recent work:
-   - the last ~25 rows of `docs/brief.md` §4;
+   - the last ~25 rows of `docs/decisions.md`;
    - the build list's open rows under its last two sections, with the phases above them.
 3. `git log --oneline -15 dev` and `docs/versions.md`'s top rows confirm where things stand.
 4. `cd web && npm test > some.log 2>&1` (about 6 minutes). See it pass before changing anything, and look at `web/test/out/`.
@@ -38,7 +38,7 @@ A new session starts with no memory of the last one: the transcript stays in the
 4. **Test:** `npm test`, then look at the screenshots (R19).
 5. **Docs:**
    - `docs/changelog.md`: a new section on top.
-   - `docs/brief.md` §4: a row after the last one.
+   - `docs/decisions.md`: a row after the last one.
    - `docs/build-list.md`: a done item's row moves to `docs/build-list-done.md` with its status "done — 4.x.y (…)"; numbers are never reused.
    - The glossary and rules if a word or a rule changed.
 6. **Bump** in three places:
@@ -91,7 +91,7 @@ Okay, 19 Oct 2026: "an agile way of seeing sketches alive and approving … I pr
 2. **His notes doc** (Google Doc *Dial tool notes*, on his Drive; notes 1 → 3 so far): read it whole at the start. He adds a dated heading per round; read what is under the newest one. Its pictures: export the doc as PDF and `pdfimages` the pages (`read_file_content` shows only "[image]"). Log every new note in the build list under a section of its own before building.
 3. **Sketch rounds.** One round = a few notes built → `npm run small` (about 2 minutes) → a WIP commit on `dev` (no docs, no version bump) → the build published to the **private preview page** (the Artifact *Dial Tool*, the same link every round: copy `web/dial-tool.html` to a fixed scratch path and publish that path) → **crops of only what changed**, before/after when there is a before, with the values used, sent to him in the chat. Crops: `node test/crop.mjs web/test/crops/x.png <tab> <selector> [setup.js]`; a setup that returns a value prints it (measure with it, R21); `CROP_H=2000` for a whole tab, `CROP_W=1180 CROP_H=820` an iPad on its side.
 4. **His replies mid-round** are notes: log them, answer open readings with a picture and one question, carry on. "NOW" at the start of a message means it changes the step in hand.
-5. **The push**, only on his word ("push"): the full `npm test`, the docs written once for the whole batch (changelog, brief §4, build list, rules, canon), one version bump, `tools/release.sh`. Start `npm test` in the background while he reviews: it is ready when he says push.
+5. **The push**, only on his word ("push"): the full `npm test`, the docs written once for the whole batch (changelog, decisions, build list, rules, canon), one version bump, `tools/release.sh`. Start `npm test` in the background while he reviews: it is ready when he says push.
 6. **End of session: archive the screens** (Okay, 19 Oct 2026: "all test screenshots you took and if i send some through the chat, add them too"), as `archive/screens/<date>/` already does: `okay/` — what he sent through the chat (`/root/.claude/uploads/<session>/`) and the session's pictures from his notes doc, named `time-seen-version-what`; `claude/` — the crops of `web/test/crops/`, named `time-version-what`; `claude/tests-<version>/` — `web/test/out/*.png` of the last full run; a `README.md` with a table for each, what each shows and his words. One commit.
 7. **Report at the end** what made the session faster or slower, with numbers, under §1.
 
