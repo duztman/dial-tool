@@ -48,7 +48,6 @@ The dated record of decisions and their reasons is `docs/decisions.md` (moved 21
 4. **Eastern Arabic and Chinese labels** — HarfBuzz has no automatic fallback, so a script the font lacks draws nothing: a fallback-font control (build list #15; Okay, 17 Oct 2026: "not necessary, we run on fonts").
 5. Do the tool's SVG and PDF open in Illustrator at **exact size**, with usable layers and groups, and does the SVG's live text land where the outlines do? Not yet looked at on a Mac (build list #16).
 8. **Imported shapes with real Illustrator files** — forms, compound paths, white made in spot or CMYK colours — when imports are built (build list #50).
-12. **Installed fonts on Okay's Macs** — does Chrome list Helvetica Neue (a collection file) for the page, and do the numerals match `archive/drawbot/dial.py`'s?
 14. **Okay's Mac clone** (`~/Desktop/dial-maker/dial-tool-github-repo/`): no session since 16 Oct has been linked to his Mac, so it has not been pulled since 4.40–4.45. Okay, 17 Oct: "if you can reach mc do clone if not never bother anymore" — **not to be raised again**; he pulls it himself when he wants it (and `tools/versions.sh tag` there).
 
 Numbers are never reused; a settled question is deleted here and its decision stands in `docs/decisions.md`.

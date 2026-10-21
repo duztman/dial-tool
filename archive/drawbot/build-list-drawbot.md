@@ -1,6 +1,6 @@
 # Dial Tool — the DrawBot version's build-list items (archived)
 
-Moved here 19 Oct 2026 (beta 4.87). dial.py is frozen (R30); none of these will be done.
+Moved here 19 Oct 2026 (beta 4.87). **Every item below is closed** (21 Oct 2026): the DrawBot version was tested on Okay's Mac, failed, and was abandoned for the web version (`docs/decisions.md`, 21 Oct). None will be done.
 
 ## Verify on a Mac
 
