@@ -1,21 +1,18 @@
 # Handoff — taking over the Dial Tool
 
-*Written 16 Oct 2026 at beta 4.46.5 (Okay: "devise way to handoff to another agent"); §1 rewritten at every handover, last on 20 Oct 2026, 05:10, at beta 4.90. The rest changes when something new is learnt.*
+*Written 16 Oct 2026 at beta 4.46.5 (Okay: "devise way to handoff to another agent"); §1 rewritten at every handover, last on 21 Oct 2026, 23:45, at beta 4.91.6. The rest changes when something new is learnt.*
 
 A new session starts with no memory of the last one: the transcript stays in the old container. Everything a successor needs is in the repo. Use this page to find it.
 
-## 1 · Where things stand (20 Oct 2026, 05:10, beta 4.90 released)
+## 1 · Where things stand (21 Oct 2026, 23:45, beta 4.91.6 on `dev` and /dev/)
 
-- **21 Oct 2026, 21:51 — planning mode**: Okay: "no more building. All building prompts are notes. For the future." Log each ask in the build list; build nothing until he says. Live: 4.91; `dev`: 4.91.1 (band guides, unreleased).
-- **21 Oct 2026, 20:10 — the road to v1**: v1 is drafted at the top of `docs/build-list.md` (no new features: answer, verify, close dead ends, clean words, full check, then the name on Okay's word); square dials come after v1 (#484). The build list is grouped by v1. Okay settled it on 21 Oct, 20:25 (SVG import in, guide with v1, no brass first); the next work is the v1 section, groups C, D, F, G.
-- **`dev`, `main` and the live page are beta 4.90** (Okay, 05:02: "this version is accepted, dev main, publish"). The night's items, their readings and six open questions: `docs/review-4.90.md`; the plan for square dials: `docs/plan-non-round.md`; next with Okay: the guides and Settings (his 04:52: "Guides and settings to follow tomorrow").
-- **Release as you go** (Okay, 05:02: "I feel we've been stuck at 90 for a while there?"): a batch of work is released when it passes, not held on a branch; the branch `wip-4.90` is merged and spent.
-- **Built on it**: Versions under undo with Compare and Sheet (#435, #17); the production ticks in Print (#219, #221–#224), a mask per ink (#35), a set of files (#171), a spec sheet (#18); MP4 and GIF (#51); Weight % (#88); Cap middle (#13); undo steps named (#172); units typed (#187); finer sliders (#406); am · pm Jumps (#401); thinnest line (#225); kept font files (#56); dead ends #233, #234, #448; on a phone Versions beside undo (#232); the layout check, a report (#188); `test/window-only.mjs` (#407, first step).
-- **Version numbers** (Okay, 02:53): no jump to 5. 4.90 is the step after 4.89.12; the second and third numbers may run to 99; v1, without "beta", on his word. R19 to say so once he confirms.
-- **The stale branch `beta5`** on GitHub (the night's first name) could not be deleted from the session: `git push origin --delete beta5` from his Mac.
-- **Waiting for Okay**: the build list's v1 section, groups A and B (his drawings for #162, the look-through #294, things to verify on his devices).
-- **His notes tonight**: logged as #468–#470 in the build list (Compare's dense packing; units in fields only; undo 20, Versions nine).
-- **What made the night faster or slower**: checks batched (Okay, 02:19: "Batch these crazy checks"): `npm run small` ~2 min, the window test alone ~3 min, the full `npm test` ~3 min; one window-only section ~50 s. Slower: a test that changed the tab (Dial) and didn't go back broke every later section — a check should leave the window as it found it. Faster: building a feature, then all its checks in one run.
+- **Pages**: the released page and `main` are beta 4.91 (live root; `docs/versions.md`); `dev` and <https://duztman.github.io/dial-tool/dev/> are **beta 4.91.6**. The next step (4.92) runs the full `npm test` and `tools/release.sh 4.92 "…"` — its step mode (moving `main` to `dev`) has not run yet: watch its first run.
+- **v1** is defined at the top of `docs/build-list.md`, groups A–J; square dials after v1 (#484). Done today: #488 (4.91), #500 (/dev/, 4.91.2), small-jobs batch 1 (4.91.3: #231 #495 #434 #498 #499 #453 #408 #76 #468 #158), #504 (4.91.4), the title row and the top rule (4.91.5–4.91.6). Next in v1, as Okay ordered: the medium items (group I, #502's notices inventory first), SVG import (G), the fonts (#501, R35 — specified, don't add to it), the v1.0 update page (#503 (3)).
+- **Okay builds by sketch rounds again** (21 Oct, 22:48: "Do the small batch first"): each round goes to /dev/ with crops; he refreshes and answers with marked-up screenshots.
+- **Waiting for Okay**: his icon drawings (#162); verifying group B on his devices (FIT's line on his phone, #453, is fixed in 4.91.3 — ask); which two numbers each ring kind's row shows is settled as size · radius (#504).
+- **Noted, not built**: the Show Case's panel colours into Dial Tool behind a setting, the Show Case taking Dial Tool's top rule with them (#505); the universal settings panel collects candidates (#496: #76's unit steps, the guides' choices).
+- **Pictures**: never in the repo (R36). This session's are in the Mac folder `screenshots/2026-10-21/`; the progression strip 4.5 → 4.91 in `screenshots/progression/` (3.0–4.4 later, `web/test/progression.mjs`).
+- **What made today faster or slower**: faster — measuring the DOM before each CSS change (FIT's missing line was a shorthand resetting the border's style, found in one measurement); `npm run small` ~2–3 min a round. Slower — a pill reused without comparing it with its look elsewhere (the font box repaints `--well`): compare a reused control with its home before sending; tests whose ids follow row words break on a rename (`#nudge-s-Scale-`).
 
 ## 2 · First steps in a new session
 
