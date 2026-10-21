@@ -2,7 +2,7 @@
 @layer panel {
   /* the panel: header, tabs, the pinned panes, the panes that scroll. */
   .panel { display: flex; flex-direction: column; min-height: 0; border-right: var(--hair) solid var(--rule); }
-  .panel > header { display: flex; align-items: center; height: var(--header); padding: 0 var(--margin); }
+  .panel > header { display: flex; align-items: center; height: var(--header); padding: 0 var(--margin) var(--hair); }      /* the row is odd (43): a hair kept at its foot, so what is centred in it lands on whole screen dots (the unit box drawn 4 px round its letters, #302) */
   /* the dial alone (Okay, 15 Oct 2026, 04:02): the panel keeps its width and slides left as far as its column closes,
      so it leaves without its lines reflowing; above the preview (z-index) so the mast, which slides back by as much
      and so stays where it was, is over the backdrop once the panel is gone */

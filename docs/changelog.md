@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.91.6 (web version) · 21 Oct 2026
+
+- **The canvas's top buttons sit on the title's line** (Okay, 21 Oct 2026, 23:29: "Align bottom line of top button row on the same line as title's hr line first. Then push from top to adjust for left gap"): undo · redo and Guides stand as far from the canvas's top as from its side (12 px), their bottom on the hairline under the title; the title row grows to 43 px for it, its content centred, a hair kept at its foot so the unit box lands on whole screen dots.
+- **Redo or undo with no step keeps its outline** as the others' (23:34: "keep outlines as others while inactive"); only its sign is paler, and it takes no press.
+
 ## beta 4.91.5 (web version) · 21 Oct 2026
 
 - **The title row is 42 px**, as the Show Case's (half of 64, then 10 more; Okay, 21 Oct 2026, 23:11: "take only the top level … row height styling and adapt to app now too"). Undo and Guides stand on its middle line still; the font sheet starts under it.

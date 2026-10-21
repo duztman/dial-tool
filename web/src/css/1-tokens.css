@@ -54,7 +54,7 @@
     --unit-face: "Dial Mono", var(--mono);       /* the unit box's word: JetBrains Mono at the weight whose stem is the box's line at 10 px, packed (#302, beta 4.44.1; fonts/ui/mono_font.py) */
     --line: 34px;                                  /* a row's height */
     --head: 40px;                                  /* a pane's heading */
-    --header: 42px;                                /* the panel's top: title and Guides — as the Show Case's title row, half of 64 then 10 more (Okay, 21 Oct 2026, 23:11: "take only the top level … row height styling and adapt to app now too") */
+    --header: calc(var(--canvas-inset-wide) + var(--control-large) - var(--hair));      /* the panel's top: title and Guides. Its line (the tabs' top hairline) is the canvas's top buttons' bottom line, the buttons as far from the canvas's top as from its left (Okay, 21 Oct 2026, 23:29: "Align bottom line of top button row on the same line as title's hr line first. Then push from top to adjust for left gap"); the title centred in it. A rule for the Show Case too, when it comes */
     --bar-height: 62px; --bar-control: 30px;      /* the bar's height (Okay, 14 Oct 2026, 23:19: "1/5 higher" than the 52 it was); a phone keeps its own (--bar-lead-narrow) */
     --bar-light: #737373;                          /* the one light tone on the bottom bar: 55 % grey (Okay, 15 Oct 2026, 00:42: "55%gray all"); nothing on the bar is white (Okay, 15 Oct 2026, 00:18: "NOTHING ON THIS WHOLE BAR IS WHITE") */
     --play: #CC381A; --play-dark: #7A1E0C; --play-light: #F28A6C;      /* the play button, an arcade button from above: its cap (the seconds hand's red, geometry.js ACCENT), the shade round it and under it, the light on it (Okay, 14 Oct 2026: "3 colors and a black outline") */
@@ -147,7 +147,7 @@
     --pop-width: 388px; --pop-chips: 11;           /* the colour pop-out: its width; colours to a row (the palette's ten and its +), which share the row's width (the room between two: a special) */
     --checker: repeating-conic-gradient(#BDBDB9 0 25%, var(--white) 0 50%) 0 0 / 8px 8px;      /* what shows through a see-through colour */
     --faint: 0.35;                                 /* how much of a switch on the preview shows at rest */
-    --canvas-top: calc((var(--header) - var(--control-large)) / 2);      /* undo and Guides stand on the header's middle line, with the title and the unit box */
+    --canvas-top: var(--canvas-inset);      /* undo and Guides as far from the canvas's top as from its side, their bottom on the title's line (--header) */
     --guide-name: 106px; --guide-row: 30px;        /* the guides' list: the column of names, wide enough for an added guide's name and values on one line · a line's height (Okay, 16 Oct 2026, #305: "tighter spacing overall … small like beta version allowed"; under a finger 38) */
     --shade-name: 92px;                            /* the Shadows list's names: narrower than the guides' list's column, which holds an added guide's values; its sliders keep the room */
     --guide-dot: 7px; --guide-none: 14px; --scroll-w: 6px;      /* a round colour in the guides' list (the room between two: a special; Okay, 19 Oct 2026: "Still smaller balls") · the none sign ⊘, 14 (at 10 it went too small) · a list's scrollbar */
@@ -232,7 +232,7 @@
     --guide-gap: 7px;                              /* the room between two round colours in the guides' list: the chosen one's ring needs it (2 px clear of the next: 2 + 3 of ring; notes 2, 18 Oct 2026: "closer") */
     --ring-gap-in: 2px;                            /* the chosen guide colour: a ring of the ground this wide, inside its own ring */
     --logo-disc: 2px;                              /* the bio open: how far the mark's night disc reaches past its 16 box (ring to disc edge ≈ 2.3) */
-    --canvas-inset: 12px;                          /* from the preview's edge to what stands on it (a phone sets it to --u5) */
+    --canvas-inset-wide: 12px; --canvas-inset: var(--canvas-inset-wide);      /* from the preview's edge to what stands on it (a phone sets --canvas-inset to --u5; the title row keeps the wide one) */
     --glow-line: 1.5px; --glow-under: 4px;         /* lines, but not one of the three: the outline of what the pointer is on, and the white line under it */
     --tip-arrow: 5px; --tip-arrow-in: 2.6px;       /* lines, but not one of the three: the pointer label's arrow, its dark line and the white line inside it */
   }

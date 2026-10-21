@@ -79,9 +79,9 @@
   /* what stands on the preview is faint, so the dial is what one sees. Three states, all by how
      much shows (opacity; the line by the same share of its colour), so they hold on any backdrop:
        can be pressed    line and what is in it at --faint; whole under a pointer, with the keyboard on it, or open
-       can't be pressed  (no step to undo) half of --faint, and nothing under the pointer
+       can't be pressed  (no step to undo) its line as faint as the others', what is in it at half of --faint, nothing under the pointer
        on                (Guides) its word alone is whole; its line stays faint until the pointer is on it */
-  main { --line-faint: color-mix(in srgb, var(--on-canvas) calc(var(--faint) * 100%), transparent); --line-fainter: color-mix(in srgb, var(--on-canvas) calc(var(--faint) * 50%), transparent); }
+  main { --line-faint: color-mix(in srgb, var(--on-canvas) calc(var(--faint) * 100%), transparent); }
   .onview > * { opacity: var(--faint); }
   .onview:is(:focus-visible, [aria-expanded="true"]) { border-color: var(--on-canvas); }
   .onview:is(:focus-visible, [aria-expanded="true"]) > * { opacity: 1; }
@@ -106,7 +106,7 @@
   main.comparing > :is(svg, .tip) { visibility: hidden; }
   .comparedial { position: absolute; width: var(--compare-d); height: var(--compare-d); }
   .comparedial > svg { display: block; width: 100%; height: 100%; }
-  .undobox.none, .undobox.none:hover { border-color: var(--line-fainter); box-shadow: none; }
+  .undobox.none, .undobox.none:hover { border-color: var(--line-faint); box-shadow: none; cursor: default; pointer-events: none; }      /* no step that way: its outline as the others' (Okay, 21 Oct 2026, 23:34: "keep outlines as others while inactive"), its sign paler, nothing under a pointer or a finger */
   :is(.undobox.none, .undobox.none:hover) > * { opacity: calc(var(--faint) / 2); }
   .guidesbox { gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch) 0 0 var(--round-switch); }      /* on, its word is whole (black or white), never bolder (Okay, 14 Oct 2026: "when active label does not get bolder, just gets black") */
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 var(--round-switch) var(--round-switch) 0; }
