@@ -29,7 +29,8 @@ export function draw(o) {
   STRIPES.custom = STRIPES[o.nato] || [[0, 1, 0]];
   const two = o.floor2 && o.floor2 !== o.floor;
   SH_OVR = hsl(two ? mixc(o.floor, o.floor2, 0.5) : o.floor, Math.max(0, 1 - (1 - STYLE.shadow) * SHD));
-  const strap = o.strap === "bracelet" ? "bracelet" : o.strap + "-custom";
+  BRACELET_KIND = o.strap === "links" ? "links" : "vault";      // the diver's two bracelets
+  const strap = o.strap === "bracelet" || o.strap === "links" ? "bracelet" : o.strap + "-custom";
   const make = (mode) => { GLINT = mode; return sheet(o.key, strap, "own", o.L, true, o.h, "live", "custom", o.size).replace("__CLIPS__", CLIPS.join("") + STYLE.blur); };
   const R = STYLE.ramp, vb = (x, y, w, h) => `${f(x)} ${f(y)} ${f(w)} ${f(h)}`;
   const box = o.view === "full" ? [-FULL.w / 2, -FULL.h / 2, FULL.w, FULL.h] : [-DETAIL, -DETAIL, 2 * DETAIL, 2 * DETAIL];      // the exported picture's frame

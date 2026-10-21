@@ -17,11 +17,12 @@ import { Bar, el, clamp, icon, STEP } from "./bar.js";
 const STYLES = { engineer: ENGINEER, miyazaki: MIYAZAKI };
 const FIRST_LINK = "__FIRST_LINK__";
 let refresh_ground = () => {};      // the background popup shown again (set where it is made)
-const VERSION = "beta 1.0.17";      // the live site keeps the stable ones (beta 1.0 at /dial-tool/show-case/); this page counts on from there (01:43)
+const VERSION = "beta 1.0.18";      // the live site keeps the stable ones (beta 1.0 at /dial-tool/show-case/); this page counts on from there (01:43)
 const FONT_BASE = "__FONT_BASE__";
 
 // ── what is shown: the dial (S, Dial Tool's settings) and the watch round it (W) ──
 const S = { t: 10 * 3600 + 10 * 60, date: "" };
+const metal_strap = () => W.strap === "bracelet" || W.strap === "links";      // a bracelet of the case's metal
 const W = {
   style: "miyazaki", key: "dress", size: 1, strap: "leather", nato: "regimental", view: "detail", flare: "arc",
   metal_preset: "gold", metal: null, leather_preset: "brown", leather: null, nato_colours: null,
@@ -480,18 +481,18 @@ function panel() {
   const nato_at = (i) => nato_colours()[i] || nato_colours()[0];
   watch.body.append(
     seg("View", [["detail", "Detail"], ["full", "Whole watch"], ["dial", "Dial"]], () => W.view, (v) => { W.view = v; W.zoom = 1; W.pan = [0, 0]; }),
-    seg("Case", [["dress", "Dress"], ["field", "Field"], ["diver", "Diver"], ["emre01", "Emre01"]], () => W.key, (v) => { W.key = v; W.strap = v === "diver" ? "bracelet" : W.strap === "bracelet" ? "leather" : W.strap; if (W.strap === "bracelet") W.metal = null; }),
+    seg("Case", [["dress", "Dress"], ["field", "Field"], ["diver", "Diver"], ["emre01", "Emre01"]], () => W.key, (v) => { W.key = v; W.strap = v === "diver" ? (metal_strap() ? W.strap : "bracelet") : metal_strap() ? "leather" : W.strap; if (metal_strap()) W.metal = null; }),
     num("Size", 0.8, 1.2, 0.01, () => W.size, (v) => { W.size = v; }, "none"),
     seg("Metal", [["steel", "Fe"], ["gold", "Au"], ["alu", "Al"], ["bronze", "CuSn"], ["titanium", "Ti"], ["black", "Black"]], () => (W.metal ? null : W.metal_preset), (v) => { W.metal_preset = v; W.metal = null; }, () => true, true),
-    colour("Case colour", metal, (c) => { W.metal = c; }, () => W.strap !== "bracelet"),
-    note(() => (W.strap === "bracelet" ? "With the bracelet, the case and bracelet are one of the metals." : ""), "field"),
+    colour("Case colour", metal, (c) => { W.metal = c; }, () => !metal_strap()),
+    note(() => (metal_strap() ? "With the bracelet, the case and bracelet are one of the metals." : ""), "field"),
     seg("Insert", [["black", "Black"], ["blue", "Blue"], ["green", "Green"], ["pepsi", "Pepsi"], ["batman", "Batman"], ["coke", "Coke"], ["rootbeer", "Root beer"], ["sprite", "Sprite"]], () => (W.insert ? null : W.insert_preset), (v) => { W.insert_preset = v; W.insert = null; }, () => W.key === "diver", true),
     colour("Insert top", () => insert()[0], (c) => { W.insert = [c, insert()[1]]; }, () => W.key === "diver"),
     colour("Insert bottom", () => insert()[1], (c) => { W.insert = [insert()[0], c]; }, () => W.key === "diver"));
   // the strap, its own pane (02:21)
   const strap = pane("Strap", true, () => (W.strap === "nato" ? "NATO" : W.strap));
   strap.body.append(
-    seg("Strap", [["leather", "Leather"], ["nato", "NATO"], ["bracelet", "Bracelet"]], () => W.strap, (v) => { W.strap = v; if (v === "bracelet") W.metal = null; }, () => true, false, (v) => v !== "bracelet" || W.key === "diver"),
+    seg("Strap", [["leather", "Leather"], ["nato", "NATO"], ["bracelet", "Bracelet"], ["links", "Links"]], () => W.strap, (v) => { W.strap = v; if (metal_strap()) W.metal = null; }, () => true, false, (v) => (v !== "bracelet" && v !== "links") || W.key === "diver"),
     seg("Leather", [["tan", "Tan"], ["brown", "Brown"], ["black", "Black"]], () => (W.leather ? null : W.leather_preset), (v) => { W.leather_preset = v; W.leather = null; }, () => W.strap === "leather"),
     colour("Strap colour", leather, (c) => { W.leather = c; }, () => W.strap === "leather"),
     seg("Pattern", [["bond", "Bond"], ["regimental", "Regimental"], ["khaki", "Khaki"], ["blackgrey", "Black · grey"], ["olive", "Olive"], ["grey", "Grey"]], () => W.nato, (v) => { W.nato = v; W.nato_colours = null; }, () => W.strap === "nato", true),
