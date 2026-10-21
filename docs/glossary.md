@@ -85,7 +85,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Shape** | baton · pencil (pointed baton) · sword · dauphine · leaf · arrow (broad-arrow head) · syringe (shaft, barrel, needle) · Breguet (open ring near tip) · lollipop (disc near tip) · disc (see **Disc hand**) · file (imported; not built, #50). |
 | **Tip length** | Length of the pointed end (pencil, sword, arrow, syringe, Breguet). |
 | **Head width · ring/disc Ø · …at %** | Arrow head or syringe barrel width; Breguet ring or lollipop disc Ø; where it sits, % of length (dauphine: widest point). |
-| **Fit to length** | An imported hand is scaled so its tip reaches the hand's length; else **Size ×**. **Width ×** stretches sideways. |
+| **Fit to length** | An imported hand is scaled so its tip reaches the hand's length; else **Scale ×** (the word for a multiplier, as on a label's nudge, #231). **Width ×** stretches sideways. |
 
 ## Tool terms
 

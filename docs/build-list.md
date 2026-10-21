@@ -40,7 +40,7 @@ Settled by Okay on 21 Oct 2026, 20:25 (`docs/decisions.md`): SVG import is in; t
 
 | # | Item | Status |
 |---|---|---|
-| 231 | **Word collisions**: Backdrop (a colour and a switch) · Frame (a colour and a width, Windows) · Size, Size %, Size × · Ring Ø and Ring at % on hands · the opener's ring named Band whose kind is numerals. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | v1 (Okay, 21 Oct 2026): Claude proposes a word for each, Okay picks |
+| 231 | **Word collisions**: Backdrop (a colour and a switch) · Frame (a colour and a width, Windows) · Size, Size %, Size × · Ring Ø and Ring at % on hands · the opener's ring named Band whose kind is numerals. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | build — in batch 1 (H). Okay picked, 21 Oct 2026, 22:35: a label's nudge **Size ×** → **Scale ×**; the hand's **Ring Ø · Ring at %** → **Circle Ø · Circle at %**; the opener's numerals ring named Band → **Numerals** (Band stays the band ring kind; the numerals' band is a docs word, never on screen); Export's **Frames a second** → **fps**. Backdrop (the colour row and the chip edit one colour) and Frame · Frame width (a pair, the colour above) stay |
 
 ### E · With the release
 
