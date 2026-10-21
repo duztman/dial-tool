@@ -519,3 +519,5 @@ Done items left in the build list's note sections (Okay's notes of 19–20 Oct, 
 | 60 | A dial opened from a link could fetch a missing Google family by its name by itself — not done: every unknown font would cost three failed requests | **done** — dropped (Okay, 21 Oct 2026): the stand-in font and the log's note stay |
 | 66 | Tabs and the columns: five tabs share six columns, so they sit between columns (Okay, 11 Oct 2026: "Columns? They fit 'em"). Ways: tabs one column each with the sixth free, or a sixth sign. Ask Okay | **done** — dropped (Okay, 21 Oct 2026): the tabs are their own layer, left as they are |
 | 179 | **What the counterweight is for** (Okay: "maybe later") | **done** — dropped (Okay, 21 Oct 2026): the disc is enough |
+| 12 | Production limits per method: minimum line width and clearance; warn in the preview | **done** — dropped (Okay, 21 Oct 2026): the Export log's thinnest line (#225) is enough |
+| 344 | **Every hand tile exaggerates its shape's features** (the disc hand's tile is right; a window stays inside a disc hand, key `mark_in`) | **done** — dropped (Okay, 21 Oct 2026: not kept in the pass) |
