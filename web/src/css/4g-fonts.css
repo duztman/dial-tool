@@ -51,11 +51,13 @@
   .fontname .btn { height: var(--control-s); padding: 0 calc(0.75 * var(--btn-pad)); border-color: var(--rule-light); color: var(--wait); font-size: var(--t-xxs); }      /* Lang. and Change…: three quarters of a button, and lighter (Okay, 14 Oct 2026) */
   .fontbox :is(.btn, .styles > button):hover { border-color: var(--ink); color: var(--ink); }
   /* the font's name · the language · the text's colour · Change…. The whole line opens the font sheet, but for the
-     language and the colour. The colour stands in the ring list's colour column, wherever the line is; the place kept for it is that column's width. */
+     language and the colour. The colour is a pill with its hex, before EN. */
   .fontname { position: relative; display: grid; grid-template-columns: var(--num-columns); align-items: center; padding: var(--unit) var(--frame-pad) var(--unit) 0; cursor: pointer; }
-  .fontname .name { grid-column: 1 / 7; padding: 0 calc(var(--swatch-col) - var(--frame-pad)) 0 var(--btn-pad); color: var(--wait); }      /* the font's name, grey and bold, running up to the colour (Okay, 18 Oct 2026: "We can write the name of the typeface all the way to the swatch now") */
-  .fontname .langs { grid-column: 7 / 10; justify-self: end; }      /* EN, ending where the rows' steppers end */
-  .fontname .colour.mini { position: absolute; top: 50%; translate: 0 -50%; right: calc(var(--swatch-col) + (var(--line-button) - var(--t-m) - 2 * var(--hair)) / 2); }      /* the colour stands in the ring list's colour column ; Change… leaves it room */
+  .fontname .namecol { grid-column: 1 / -1; grid-row: 1; display: flex; align-items: center; min-width: 0; padding: 0 calc(var(--font-colour-at) - var(--frame-pad) + var(--gap)) 0 var(--btn-pad); }      /* the name runs to a gap before the colour */
+  .fontname .name { flex: 1 1 auto; color: var(--wait); font-size: var(--t-l); line-height: calc(var(--t-m) * var(--leading)); translate: 0 calc((var(--t-m) - var(--t-l)) / 2); }      /* the font's name, grey and bold, running up to the colour (Okay, 18 Oct 2026: "We can write the name of the typeface all the way to the swatch now"); --t-l, 2 px larger than the rows' --t-m, its line as tall as before and lifted by half the difference, so the baseline (measured: 19.3 px down the line, before and after) and the left edge stay where they were (Okay, 19 Oct 2026, #408: "Font name 2px bigger but nothing else moves") */
+  .fontname .langs { grid-column: 7 / 10; grid-row: 1; justify-self: end; }      /* EN, ending where the rows' steppers end */
+  .fontname { --font-colour-at: calc(var(--swatch-col) + (var(--line-button) + var(--t-m) + 2 * var(--hair)) / 2 + var(--pill-gap) - var(--hair)); }      /* from the line's right edge to the pill's left: its swatch where the ring list's colour stands, the hex after it, so the two line up (Okay, 21 Oct 2026, 22:57, his drawing: the pill from that line, "FIT HERE", before EN) */
+  .fontname .colour { position: absolute; top: 50%; translate: 0 -50%; left: calc(100% - var(--font-colour-at)); }      /* the text's colour, a full pill with its hex (#408) */
   .langs { position: relative; }
   .langbox { min-width: var(--control); }
   .fontname .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }

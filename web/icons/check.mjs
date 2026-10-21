@@ -126,6 +126,12 @@ await visit("hand shapes", () => page.click("#hand-shape-Shape-7"));      // eve
 await visit("Windows", async () => { await tab("Date"); await page.check("#window-on-Show"); await unfold(); });      // the Show box (#261, 4.46)
 for (const kind of ["day", "am · pm", "moon"]) await visit("window " + kind, () => page.locator(".form .pickt:visible", { hasText: kind }).first().click());
 await visit("window off", () => page.click("#window-card-2"));
+// three states drawn on the grid but not reached before (#158): a window's own font, which shows Same font as with its
+// sign; the labelmenu chevron (12), in the bar's date pop-up (its menus are the rows' menus); and hover,
+// with the pointer over the ring list's tools and a tab
+await visit("window's own font", async () => { await page.click("#window-card-1"); await page.check("#window-on-Show"); await page.evaluate(() => { const t = window.dial_tool, w = t.window(); w.family = "Barlow"; w.ps = "Barlow-SemiBold"; t.changed(true); }); await unfold(); await page.waitForSelector("#window-font-back:not([hidden])", { timeout: 3000 }); });
+await visit("labelmenu", async () => { await page.click("#date"); await page.waitForSelector("#date-pop .labelmenu svg", { timeout: 3000 }); });
+await visit("hover", async () => { await page.keyboard.press("Escape"); await tab("Rings"); await page.hover(".ringlist li.ring.on"); await page.hover('button[data-tab="Hands"]'); });
 await visit("Export", () => tab("Export"));
 // "panel away" is gone: the panel's square left the bar (#190, 14 Oct 2026)
 await browser.close();

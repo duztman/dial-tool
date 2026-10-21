@@ -203,6 +203,37 @@ export function pack_discs(w, h, D, gap) {
   return b.length > a.length ? { places: b, staggered: true } : { places: a, staggered: false };
 }
 
+/** n discs of one size, as large as they can be in a w × h room, a twelfth of their size between them: rows of as
+ *  even a count as can be, each centred, so an uneven count packs densely — a short row sits in the dips of its
+ *  neighbours, a hexagon's height under them (Okay, 20 Oct 2026, 02:21, #468: "Use dense packing of circles for preview
+ *  if uneven"). Every count of rows is tried; the one giving the largest discs wins. {D, places: [[x, y] from the
+ *  room's top left, each a disc's centre less D/2]}, the block centred in the room. Compare's packing (#435). */
+export function pack_even(w, h, n) {
+  let best = { D: 0, places: [] };
+  for (let r = 1; r <= n; r++) {
+    const base = Math.floor(n / r), extra = n % r;
+    // the longer rows first, then the shorter between them where they can nest: 3 · 2 · 3, 4 · 3
+    const long = Array(extra).fill(base + 1), short = Array(r - extra).fill(base), counts = [];
+    while (long.length || short.length) { if (long.length) counts.push(long.pop()); if (short.length) counts.push(short.pop()); }
+    if (counts.some((c) => c < 1)) continue;
+    const most = Math.max(...counts);
+    // the rows' steps in pitches: a hexagon's height where a row is one shorter than the one above it (it nests), else a whole pitch
+    const steps = counts.slice(1).map((c, i) => (Math.abs(c - counts[i]) === 1 ? Math.sqrt(3) / 2 : 1)).reduce((a, b) => a + b, 0);
+    // D + gap = pitch, gap = D / 12: across, most·D + (most − 1)·D/12 ≤ w; down, D + steps·pitch ≤ h
+    const D = Math.min(w / (most + (most - 1) / 12), h / (1 + steps * 13 / 12));
+    if (D <= best.D) continue;
+    const pitch = D * 13 / 12, places = [];
+    let y = 0;
+    counts.forEach((c, j) => {
+      if (j) y += (Math.abs(c - counts[j - 1]) === 1 ? Math.sqrt(3) / 2 : 1) * pitch;
+      const x0 = (most - c) * pitch / 2;
+      for (let i = 0; i < c; i++) places.push([x0 + i * pitch, y]);
+    });
+    best = { D, places };
+  }
+  return { D: best.D, places: centre_block(best.places, w - best.D, h - best.D) };
+}
+
 /** places, centred as a block in a w × h room: each [x, y] from the room's top left, a disc's centre less D/2. */
 export function centre_block(places, w, h) {
   if (!places.length) return places;

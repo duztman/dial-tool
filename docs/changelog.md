@@ -1,5 +1,19 @@
 # Dial Tool — changelog
 
+## beta 4.91.3 (web version) · 21 Oct 2026
+
+Small-jobs batch 1 (Okay, 21 Oct 2026: "Easy to do things: doing 10 of them and checking once is a solid job"; 22:48: "Do the small batch first").
+
+- **Words** (#231, Okay's picks): a label's nudge *Scale ×*; the breguet and lollipop hand's *Circle Ø* · *Circle at %*; Export's *fps*; Okay's watch's numerals ring named *Numerals*.
+- **Undo keeps 20 steps** (#495), as many as its list shows.
+- **The settings file's pane: Save… · Load… only** (#434: "Remove both"); the resets are Dial › Reset's.
+- **Positions**: Count and Every have their names again — the rows' rule put a menu in a third column that squeezed the name to nothing (#498); the round picture ends two units above the pane's line, twice the room it had (#499).
+- **FIT's left line on a phone** (#453): `border-left: 0` on the zoom group's buttons took the line's style away too, so the phone's rule giving FIT its width back drew nothing; now only the width is taken. Measured on a 390 px window: 0 px · none before, 1 px solid after.
+- **The font box's head** (#408): the text's colour is a full pill with its hex, its swatch where the small one stood (in the ring list's colour column), the hex running towards EN (Okay's drawing, 22:57: "FIT HERE"); the font's name 2 px larger (--t-l), its baseline and left edge where they were (measured 19.3 px down the line before and after), the line as tall as before.
+- **Lengths step in the shown unit** (#76): − +, the arrow keys and the slider move in round amounts of pt, in, lig or thou (0.1 mm is 0.2 pt, 0.005 in, 0.05 lig, 5 thou) and land on round values; mm as before. Its setting waits for the universal settings panel (#496).
+- **Compare packs densely** (#468): rows as even as can be, each centred, a shorter row nested in the dips of its neighbours (5 dials: 3 over 2); every count of rows tried, the largest dials win (`pack_even` in output.js).
+- **The icon check visits three more states** (#158): a window's own font (Same font as and its sign), the bar's date pop-up (the labelmenu chevron), hover. 116 icons, all on the grid.
+
 ## beta 4.91.2 (web version) · 21 Oct 2026
 
 Okay, 21 Oct 2026: "Let's have a /dev under dial tool online, work there … Small updates only on dev … Main gets all the tests"; "Yes: loader + own storage".

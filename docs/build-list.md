@@ -1,7 +1,7 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **ask** · **parked**. Done items move to `docs/build-list-done.md`; the DrawBot version's to `archive/drawbot/build-list-drawbot.md`.
-*Last updated 21 Oct 2026, 22:45 (#503 the archive). 22:30: #453 open again, #502 notices added. 20:25 (Okay's answers: v1 scope settled, #494 #495 added, #68 #134 #227 #366 closed. 20:10: v1 drafted; the list grouped by v1 instead of by where each note came from; done items moved out). Where an item came from is in its own words and dates.*
+*Last updated 21 Oct 2026, 23:10 (batch 1 built in 4.91.3; #504 noted). 22:45: #503 the archive. 22:30: #453 open again, #502 notices added. 20:25 (Okay's answers: v1 scope settled, #494 #495 added, #68 #134 #227 #366 closed. 20:10: v1 drafted; the list grouped by v1 instead of by where each note came from; done items moved out). Where an item came from is in its own words and dates.*
 
 ## v1 — settled with Okay, 21 Oct 2026
 
@@ -24,7 +24,7 @@ Settled by Okay on 21 Oct 2026, 20:25 (`docs/decisions.md`): SVG import is in; t
 |---|---|---|
 | 16 | Live text in the SVG (*Keep numerals as text in the SVG*, Export; R10): open one in Illustrator with the font installed — do the numerals land where the outlines do, do the cuts arrive as clipping masks? The PDF's live text is #63 | verify |
 | 439 | **Backdrop's swatch loses its outline at times** (Okay, 23:53: old Safari on an Intel Mac, the iPad too; his picture: the switch at rest on a dark red backdrop). Not reproduced in Chromium. Measured: the dot stands at x .25, y .5 of a pixel; its colour is painted under the outline too. Taken: `background-clip: padding-box` on the canvas's swatches (Backdrop, strap). Ask Okay if he still sees it; if so, the dot onto whole pixels | verify |
-| 453 | **FIT's left line on a phone** ("left wall missing … dont come back empty handed"). The fix in 4.89.9 (#446: the line was − +'s, hidden on a phone) did not hold: Okay, 21 Oct 2026, 22:25, "This fit losing border on mobile still an issue", his picture from the live page shows top, right and bottom lines, no left. The next attempt is the second (R20): measure on a phone-sized window first (where the box's left edge falls in device pixels, what draws it), then one fix; a third goes back to Okay | open — v1, with batch 1 (H) |
+| 453 | **FIT's left line on a phone** ("left wall missing … dont come back empty handed"). Fixed in 4.91.3 (measured: the zoom group's `border-left: 0` took the line's style away, so the phone's width rule drew nothing; 0 px · none before, 1 px solid after on a 390 px window). Before it, the fix in 4.89.9 (#446: the line was − +'s, hidden on a phone) did not hold: Okay, 21 Oct 2026, 22:25, "This fit losing border on mobile still an issue", his picture from the live page shows top, right and bottom lines, no left. The next attempt is the second (R20): measure on a phone-sized window first (where the box's left edge falls in device pixels, what draws it), then one fix; a third goes back to Okay | verify on his phone (4.91.3 on /dev/) |
 | 465 | **Bevel not seen in 4.89.12** (01:49: "Bevel is not in this update. I don't see a bevel on the hands coming up. Bevel is off on default. Please note"): off to start is as meant; ask where he looked for the tick (beside Show, under the hand's tab) once he has the released build | verify |
 | 232 | **Phone: with the drawer dragged up, Undo · Redo overlap the Backdrop switch**. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
 | 369 | **"The preview gets these wonky orange parts"** (his screenshot: a dauphine with orange slivers) — read as the lit part of #329 stuck on after a tap; it goes off under a finger. Ask if he still sees them | verify (Okay, 21 Oct 2026: not checked yet) |
@@ -40,7 +40,6 @@ Settled by Okay on 21 Oct 2026, 20:25 (`docs/decisions.md`): SVG import is in; t
 
 | # | Item | Status |
 |---|---|---|
-| 231 | **Word collisions**: Backdrop (a colour and a switch) · Frame (a colour and a width, Windows) · Size, Size %, Size × · Ring Ø and Ring at % on hands · the opener's ring named Band whose kind is numerals. Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | build — in batch 1 (H). Okay picked, 21 Oct 2026, 22:35: a label's nudge **Size ×** → **Scale ×**; the hand's **Ring Ø · Ring at %** → **Circle Ø · Circle at %**; the opener's numerals ring named Band → **Numerals** (Band stays the band ring kind; the numerals' band is a docs word, never on screen); Export's **Frames a second** → **fps**. Backdrop (the colour row and the chip edit one colour) and Frame · Frame width (a pair, the colour above) stay |
 
 ### E · With the release
 
@@ -53,11 +52,7 @@ Settled by Okay on 21 Oct 2026, 20:25 (`docs/decisions.md`): SVG import is in; t
 
 | # | Item | Status |
 |---|---|---|
-| 149 | "Lock the ring on preview" (Okay, 13 Oct 2026, on the window cards' pictures) — unclear: the ring fixed and only the window moving in the pictures? Ask | build — reading confirmed (Okay, 21 Oct 2026): the cards' circle drawn as the tab icon's ring, only the window moving |
-| 434 | **Settings file pane: "needs tlc. what do you think it needs?"** — Claude's proposal sent 19 Oct, 23:25; waiting for his word | build — (Okay, 21 Oct 2026: "Remove both") Save… · Load… only; Defaults and Plain dial removed, Dial › Reset holds the resets (R34); the guide's script presses Blank face |
-| 76 | Units box (mm · pt · in · lig · thou): should sliders and steppers step in the shown unit? They step in mm | build — v1 (Okay, 21 Oct 2026: "This shouldn't be that hard. This also can have a setting in the settings panel"): − + and sliders step in round amounts of the shown unit; a setting for it in #496 |
 | 494 | **Compare at one size, as large as the canvas holds, and a real-size switch** (Okay, 21 Oct 2026: "One big, as big as what fits on the canvas, one real size option in preview"): as built, every saved dial at one size; a switch shows them at their own mm (preview only, R26) | build |
-| 495 | **Undo keeps 20 steps** (Okay, 21 Oct 2026: "Only 20 kept"): it keeps 200; the list under undo shows 20 | build |
 
 ### G · SVG import (Okay, 21 Oct 2026: in v1)
 
@@ -73,15 +68,10 @@ Every place an SVG can go, built as one mechanism (R34; R23 says how a file is r
 
 ### H · Small jobs, batch 1 (Okay, 21 Oct 2026: "Easy to do things: doing 10 of them and checking once is a solid job")
 
-Built together, one check. With these from groups D and F: #149, #434, #495, #76, #231 (once Okay picks the words).
+Built in 4.91.3, with #149, #434, #495, #76, #231 from groups D and F and #453 (`docs/build-list-done.md`).
 
 | # | Item | Status |
 |---|---|---|
-| 408 | **The font box's head**: its colour as a full swatch pill with the hex, as the colour rows have; the font name 2 px larger, growing from its baseline and its left edge — nothing else in the box moves (Okay, 19 Oct 2026, 18:08, a picture of the box: "color here gets full swatch with hex. Font name 2px bigger but nothing else moves, just text gets bigger, grows snapped to baseline and left") | v1 — small-jobs batch 1 (Okay, 21 Oct 2026) |
-| 498 | **Positions pane: Count and Every lose their labels** (Okay's screenshot, 21 Oct 2026, 21:51): the two chevron boxes (12, 3) stand with no visible name — "Every" shows as a clipped "E" behind the Count box. Names back, nothing overlapping | v1 — small-jobs batch 1 (Okay, 21 Oct 2026) |
-| 499 | **Positions pane: the round picture needs twice the space under it** (same screenshot: "Needs 2x padding until" the pane's bottom line): the picture's foot sits on the line | v1 — small-jobs batch 1 (Okay, 21 Oct 2026) |
-| 468 | **Compare packs densely when the count is uneven**, as Dial Packer does (Okay, 02:21: "Use dense packing of circles for preview if uneven like on preview. -note for later"). Compare packs as the print sheet does (`pack_discs`: straight or staggered rows) | v1 — small-jobs batch 1 (Okay, 21 Oct 2026) |
-| 158 | **Icon states not checked by the pipeline:** hover; the font box's *Same font as* sign (shown only with a window's own font); the labelmenu chevron (12). Drawn on the grid, not visited by `check.mjs` | v1 — small-jobs batch 1 (Okay, 21 Oct 2026) |
 
 ### I · Medium, in v1 (Okay, 21 Oct 2026)
 
@@ -129,6 +119,7 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 
 | # | Item | Status |
 |---|---|---|
+| 504 | **Every ring's line shows its colour and two numbers** (Okay, 21 Oct 2026, 22:57, his drawing on the ring list: Markers and Minute ticks get a colour square in the colour column and "X.X X.X" at the right, as the selected Numerals line shows its size and count). Which two numbers per kind: to ask | open — note |
 | 75 | Usability review, the other tabs: Rings · Hands · Windows · Export, one at a time (Okay, 12 Oct 2026) | open |
 
 ### Files

@@ -63,7 +63,7 @@ const download = async (selector) => {
 
 // ── start with the default dial ──
 await tab("Export");
-await page.click("#plain");
+await page.evaluate(() => window.dial_tool.reopen({ ui_section: window.dial_tool.S.ui_section }));      // the plain starting values (the Settings file pane has Save… · Load… only, #434)
 await page.waitForFunction(() => window.dial_tool.statik);
 await frame();
 check(await S("S.rings.length === 3 && S.dial_d === 30"), "Defaults: the starting dial, three rings");
@@ -118,7 +118,7 @@ check(await S("['ticks','markers','numerals','band'][S.rings[S.ui_ring].kind] ==
   await click_mm(...clock(13, 150));
   const picked = await page.evaluate(() => { const t = window.dial_tool; return [t.nudge_at, document.querySelector("#nudge-pick").selectedOptions[0].textContent, [...document.querySelectorAll(".form .pane h2")].some((h) => h.textContent === "Nudge one mark" && h.checkVisibility()), document.querySelector(".picked").getAttribute("d").length > 10]; });
   const before = await S("t.statik.rings.find((d) => d.ring === t.ring()).parts[5].bounds()");
-  await page.click("#nudge-shape-2"); await enter_value("#nudge-s-Size-", "1.8"); await frame();
+  await page.click("#nudge-shape-2"); await enter_value("#nudge-s-Scale-", "1.8"); await frame();
   const after = await S("[t.statik.rings.find((d) => d.ring === t.ring()).parts[5].bounds(), JSON.stringify(t.ring().nudge['5'])]");
   await page.click("#nudge-reset"); await frame();
   const wide = (b) => Math.hypot(b[2] - b[0], b[3] - b[1]);
@@ -1390,8 +1390,8 @@ check(await page.$eval("#font-picker", (d) => d.open) && sheet_at === "184 64 -1
   check(row.fits, "every family's name fits its column: the long ones are drawn smaller");
   check(row.squares === "Installed true · Add font link(gfonts, url) true · Add font file(woff, ttf, otf) true · Legend(OpenType abbr.) true" && row.three, `the buttons for adding a font: where the browser reads installed fonts, Installed first and the three sharing the first two columns on one line, without their second lines; short (no higher than 46); the legend's button in the third column (${row.squares})`);
   await page.keyboard.press("Escape");
-  { // the text's colour stands in the ring list's colour column; the name's whole line opens the sheet
-    const col = await page.evaluate(() => { const mid = (e) => { const r = e.getBoundingClientRect(); return r.left + r.width / 2; }; return [mid(document.querySelector(".ringline .colour")), mid(document.querySelector("#font-c")), document.querySelector("#font-c").getBoundingClientRect().right <= document.querySelector("#lang").getBoundingClientRect().left, document.querySelector("#font-name").getBoundingClientRect().right <= document.querySelector("#font-c").getBoundingClientRect().left + 0.5 && document.querySelector("#font-change") === null]; });
+  { // the text's colour, a pill with its hex (#408): its swatch stands in the ring list's colour column; the name's whole line opens the sheet
+    const col = await page.evaluate(() => { const mid = (e) => { const r = e.getBoundingClientRect(); return r.left + r.width / 2; }; return [mid(document.querySelector(".ringline .colour")), mid(document.querySelector("#font-c .dot")), document.querySelector("#font-c").getBoundingClientRect().right <= document.querySelector("#lang").getBoundingClientRect().left, document.querySelector("#font-name").getBoundingClientRect().right <= document.querySelector("#font-c").getBoundingClientRect().left + 0.5 && document.querySelector("#font-change") === null]; });
     const name = await page.$eval("#font-name", (e) => { const r = e.getBoundingClientRect(); return [r.right - 6, r.top + r.height / 2]; });
     await page.mouse.click(name[0], name[1]);
     const opened = await page.$eval("#font-picker", (d) => d.open);
@@ -1399,7 +1399,7 @@ check(await page.$eval("#font-picker", (d) => d.open) && sheet_at === "184 64 -1
     await page.click("#font-c");
     const colour_only = await page.$eval("#font-picker", (d) => !d.open) && await page.isVisible("#colour-pop");
     await page.keyboard.press("Escape"); await page.mouse.click(640, 30);
-    check(Math.abs(col[0] - col[1]) < 0.6 && col[2] && col[3], `the text's colour beside the font's name stands in the ring list's colour column (${col[0]} = ${col[1]}), before EN; the name runs up to it; no Change… (Okay's drawing, 18 Oct 2026)`);
+    check(Math.abs(col[0] - col[1]) < 0.6 && col[2] && col[3], `the text's colour beside the font's name, a pill with its hex, its swatch in the ring list's colour column (${col[0]} = ${col[1]}), before EN (#408); the name runs up to it; no Change… (Okay's drawing, 18 Oct 2026)`);
     check(opened && colour_only, "a press anywhere on the name's line opens the font sheet; a press on the colour opens the colour instead");
     await page.click("#font-name");
   }
@@ -1920,7 +1920,7 @@ await page.uncheck("#global-out-production-Mono-print-mask");
 const saved = await download("#save");
 const before_save = await S("JSON.stringify(S)");
 check(JSON.stringify(JSON.parse(fs.readFileSync(saved, "utf8"))) === before_save, "Save… writes the settings as they are");
-await page.click("#plain");
+await page.evaluate(() => window.dial_tool.reopen({ ui_section: window.dial_tool.S.ui_section }));      // the plain starting values (the Settings file pane has Save… · Load… only, #434)
 await page.waitForFunction(() => window.dial_tool.statik);
 check(await S("S.ha_hour.round === 0"), "Plain dial clears them");
 await page.setInputFiles("#load-file", saved);
@@ -2047,21 +2047,17 @@ await other.context().close();
   await p.evaluate(() => [...document.querySelectorAll(".form .pane")].find((x) => x.querySelector("h2").textContent.trim() === "Numerals").querySelector(".fold").click()); await p.waitForTimeout(300);
   await p.selectOption("#ring-labels-Labels", { label: "Custom" }); await p.waitForTimeout(300);
   const hint = await p.evaluate(() => [...document.querySelectorAll(".form .row.note")].filter((n) => n.offsetParent).map((n) => n.textContent).join(" | "));
-  // Export: Copy link stays on its folded pane's heading line; Defaults gives the guide's First dial, Plain dial the plain starting values (#277, #279)
+  // Export: Copy link stays on its folded pane's heading line (#277); the settings file's pane has Save… · Load… only (#434)
   await p.click('button[data-tab="Export"]'); await p.waitForTimeout(200);
   const copy_folded = await p.isVisible("#copy-link") && await p.evaluate(() => document.getElementById("copy-link").closest(".pane").classList.contains("folded"));
   await p.evaluate(() => window.dial_tool.set_value("global", "dial_d", 25)); await p.waitForTimeout(300);
-  await p.click(".form .pane:has(#defaults) .fold"); await p.waitForTimeout(300);
-  await p.click("#defaults"); await p.waitForTimeout(500);
-  const defaults = await p.evaluate(() => [window.dial_tool.S.dial_d, window.dial_tool.S.rings.map((r) => r.name).join(" · ")]);
-  await p.click("#plain"); await p.waitForTimeout(500);
-  const plain = await p.evaluate(() => location.hash);
-  if (!(copy_folded && defaults[0] === 34 && defaults[1] === "Numerals · Markers · Minute ticks" && plain.length < 12)) wrong.push(`Export: copy on the folded line ${copy_folded}, Defaults ${defaults.join(" ")}, Plain dial ${plain}`);
+  const file_btns = await p.$$eval(".form .pane:has(#save) .tools button", (b) => b.map((x) => x.textContent).join(" · "));
+  if (!(copy_folded && file_btns === "Save… · Load…")) wrong.push(`Export: copy on the folded line ${copy_folded}, the settings file's buttons ${file_btns}`);      // Save… · Load… only (#434: "Remove both")
   await fresh.close();
   check(!wrong.length && colours[0] > 0 && colours[0] === colours[1] && reset_shut && reset_open[0] && reset_open[1] === 0 && /Commas between labels/.test(hint),
     `a first visit: pinned panes open, the rest folded but a hand's and a window's pane (${wrong.length ? "wrong: " + wrong.join(", ") : Object.entries(seen).map(([k, v]) => k + ": " + v.map((x) => x.name + (x.shut ? " ▸" : " ▾")).join(", ")).join(" · ")}); folded Colours shows its ${colours[0]} colours as swatches; Reset folded says Reset alone, open its button stands on its heading line flush left with its warning (${reset_open[1]} apart; 4.44.2); Custom labels say how they work; Copy link stays on its folded line, Defaults gives the First dial, Plain dial the plain start`);
 }
-await page.click("#plain");
+await page.evaluate(() => window.dial_tool.reopen({ ui_section: window.dial_tool.S.ui_section }));      // the plain starting values (the Settings file pane has Save… · Load… only, #434)
 await page.waitForFunction(() => window.dial_tool.statik && window.dial_tool.S.ha_hour.round === 0);
 await page.waitForTimeout(600);
 const short = await page.evaluate(() => location.hash);
@@ -2619,7 +2615,7 @@ await touch.close();
   await page.evaluate((r) => window.dial_tool.set_value("ring", "r", r), r0);
   await tab("Export");
   const chev = await page.evaluate(() => { const t = window.dial_tool, H = t.history_more, was = [t.constructor && 0]; return [H.classList.contains("none"), H.getAttribute("aria-disabled")]; });
-  const even = await page.$$eval("#save, #defaults, #plain", (b) => b.map((x) => Math.round(x.getBoundingClientRect().width)));
+  const even = await page.$$eval("#save, #save + .btn", (b) => b.map((x) => Math.round(x.getBoundingClientRect().width)));
   check(look[0] >= 3 && look[0] === look[1] && r1 - r0 > 0.05 && r1 - r0 < 0.8 && even.every((w) => w === even[0]) && chev[1] === String(chev[0]),
     `with the guides off the selected ring's ${look[0]} handles show, each on a disc (#486); a mm out at 80 px to the side moves its radius ${(r1 - r0).toFixed(2)} mm, not 1 (#486, as #406); the steps' chevron pale when there are no steps (${chev.join(" ")}; #481); Settings' buttons one width (${even.join(" ")}; #482)`);
 }

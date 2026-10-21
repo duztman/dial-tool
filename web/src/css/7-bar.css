@@ -128,7 +128,7 @@
   .bar .zooms { flex: none; display: flex; }
   .bar .zooms > .icon { flex: none; width: calc(var(--col) / 2); }
   .bar .zooms > .fit { flex: none; padding: 0 var(--u3); font-size: var(--t-s); text-transform: uppercase; }      /* FIT, as NOW and AM are set (Okay, 15 Oct 2026, 06:21: "is fit alright? It's looking pale") */
-  .bar .zooms > button + button { border-left: 0; }
+  .bar .zooms > button + button { border-left-width: 0; }      /* the width alone: its style and colour stay, so a phone can give FIT its own line back (#453) */
   .bar .status { display: none; }      /* hidden (Okay, 14 Oct 2026, 23:19); app.js still writes it */
 
   /* the day slider is a ruler: a line, cuts crossing it (drawn in draw_ruler, finer on a wider window), and a line

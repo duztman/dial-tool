@@ -7,7 +7,7 @@
 // controls. Controls change the settings S and ask for a frame; the frame draws (R28).
 
 import * as G from "./geometry.js";
-import { svg_document, pdf_document, png_with_dpi, file_name, pdf_sheet, sheet_layout, pack_discs, centre_block, spec_sheet, PAPERS } from "./output.js";
+import { svg_document, pdf_document, png_with_dpi, file_name, pdf_sheet, sheet_layout, pack_discs, pack_even, centre_block, spec_sheet, PAPERS } from "./output.js";
 import { BEZELS, STRAPS, bezel_svg } from "./bezels.js";
 // a Wear OS watch face (4.67; farukahmet's PR #1, 18 Oct 2026): the dial as Watch Face Format, packed and signed in the browser
 import { generate_watchface_xml } from "./wearos/wff_xml.js";
@@ -769,7 +769,7 @@ const ROWS = {
     num("dr", "Radius ±", -3, 3, 0.05, { scope: "nudge" }),
     num("da", "Angle ± °", -30, 30, 0.1, { scope: "nudge" }),
     num("rot", "Rotate °", -180, 180, 1, { scope: "nudge" }),
-    num("s", "Size ×", 0.2, 3, 0.01, { scope: "nudge" }),
+    num("s", "Scale ×", 0.2, 3, 0.01, { scope: "nudge" }),
     seg("shape", "Shape", ["As the ring", "Bar", "Wedge", "Dot"], { scope: "nudge", id: "nudge-shape", show: () => tool && tool.ring() && !G.has_text(tool.ring()) }),      // a mark's own shape (4.78)
   ],
   Hands: [
@@ -801,11 +801,11 @@ const ROWS = {
     num("round", "Round ends", 0, 2, 0.01, { ...H, side: true, short: "Round", show: hand_is("baton", "pencil", "sword", "arrow", "syringe", "breguet", "lollipop", "file", "disc") }),      // a disc: its marker's ends
     num("tip", "Tip length", 0, 10, 0.05, { ...H, side: true, short: "Tip", show: hand_is("pencil", "sword", "arrow", "syringe", "breguet") }),
     num("feature", "Head width", 0, 6, 0.05, { ...H, side: true, short: "Head W", show: hand_is("arrow", "syringe") }),
-    num("feature", "Ring · disc Ø", 0, 6, 0.05, { ...H, side: true, short: "Ring Ø", show: hand_is("breguet", "lollipop") }),
+    num("feature", "Circle Ø", 0, 6, 0.05, { ...H, side: true, short: "Circle Ø", show: hand_is("breguet", "lollipop") }),
     num("feature_at", "Widest at %", 0, 100, 1, { ...H, side: true, short: "Widest %", show: hand_is("dauphine") }),
     num("bulge", "Widest at %", 20, 70, 0.5, { ...H, side: true, short: "Widest %", show: hand_is("leaf") }),      // where the leaf bulges (#368, 4.80): its curves' middle as a share of the length
     num("feature_at", "Barrel from %", 0, 100, 1, { ...H, side: true, short: "Barrel %", show: hand_is("syringe") }),
-    num("feature_at", "Ring · disc at %", 0, 100, 1, { ...H, side: true, short: "Ring at %", show: hand_is("breguet", "lollipop") }),
+    num("feature_at", "Circle at %", 0, 100, 1, { ...H, side: true, short: "Circle at %", show: hand_is("breguet", "lollipop") }),
     num("hub", "Hub Ø", 0, 4, 0.05, { ...H, side: true, show: (H) => G.HAND_SHAPES[H.shape] !== "disc" }),      // the round boss the hand sits on (#370, 4.80; Okay: "a ball that the leaf attaches to")
     num("counter", "Counterweight Ø", 0, 4, 0.05, { ...H, side: true, short: "Counter Ø" }),
     num("wall", "Hollow wall", 0, 1, 0.01, { ...H, side: true, short: "Wall" }),
@@ -948,7 +948,7 @@ const ROWS = {
     hdr("Moving picture", { folded: true }),
     custom("export_motion"),
     num("out_seconds", "Seconds", 1, 30, 0.5),
-    num("out_fps", "Frames a second", 6, 60, 1, { whole: true }),
+    num("out_fps", "fps", 6, 60, 1, { whole: true }),
     num("out_px", "Size px", 240, 2160, 10, { whole: true }),
     info((S) => { const k = tool ? tool.speed : 1, n = Math.round(S.out_seconds * S.out_fps); return `${n} frames, ${S.out_px} × ${S.out_px} px, ${S.out_seconds} s at the bar's speed (${+k.toFixed(2)}×) from the time shown. A GIF is at most ${GIF_MOST} px and ${GIF_FPS_MOST} frames a second.`; }, { scope: "global" }),
     hdr("Link to this dial", { folded: true }),
@@ -1029,6 +1029,9 @@ const TINY_EVERY = 200;                            // the Tiny Preview redrawn a
 const NUDGE_NEUTRAL = { dr: 0, da: 0, rot: 0, s: 1, shape: 0 };      // a numeral's or a mark's nudge, untouched (#252; shape, a mark's own, 4.78)
 const is_length = (row) => row.kind === "num" && (LENGTH_KEYS[row.scope] || []).includes(row.key);
 const decimals = (step) => (String(step).split(".")[1] || "").length;
+// a round step in another unit (#76; Okay, 21 Oct 2026: "This shouldn't be that hard"): a row's mm step, carried into the
+// shown unit and taken to the nearest 1, 2 or 5 of a power of ten — 0.05 mm is 0.1 pt, 0.002 in, 0.02 lig, 2 thou
+const round_step = (v) => { const p = 10 ** Math.floor(Math.log10(v)), m = v / p; return +((m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p).toPrecision(1); };
 const fmt = (v, step) => (+v).toFixed(Math.max(decimals(step), 0));
 const fmt_time = (t) => {
   t = ((Math.floor(t) % 43200) + 43200) % 43200;
@@ -1141,10 +1144,10 @@ const OLD_LINK_NOTE = "This link is from an older Dial Tool and can’t be opene
 
 // ── undo ─────────────────────────────────────────────────────
 //   The dial as it was after each change, as text: PAST (oldest first) · NOW · FUTURE (what was undone, until the
-//   next change). It belongs to the page, not to one DialTool, so loading a file or Defaults is one step back too.
+//   next change). It belongs to the page, not to one DialTool, so loading a file or a reset is one step back too.
 //   A step is taken when the dial has been still for a moment (with the autosave), so one drag of a slider is one
 //   step. Not part of a dial: the time shown and the window's own state (section, selected ring, unit…).
-const HISTORY = { past: [], now: null, future: [], most: 200 };
+const HISTORY = { past: [], now: null, future: [], most: 20 };      // 20 kept, as many as the list under undo shows (Okay, 21 Oct 2026: "Only 20 kept", #495)
 const dial_text = (S) => JSON.stringify(S, (key, value) => (key === "t" || key.startsWith("ui_") ? undefined : value));
 /** what one undo step changed, in the panel's words (#172; atlas 5.15, "a history you can read"): "Numerals · Radius",
  *  "Hour hand · Length", "Window 2 · Width", "Diameter"; more than one thing → the first and how many more. Read from
@@ -3028,7 +3031,10 @@ class DialTool {
       };
       // a length is kept in mm and shown in the chosen unit: per = how many of that unit make a mm, places = decimals shown
       const length = is_length(row);
-      const per = () => (length ? this.unit()[2] : 1), places = () => Math.max(0, decimals(row.step) + (length ? this.unit()[3] : 0));
+      const per = () => (length ? this.unit()[2] : 1), places = () => Math.max(0, decimals(row.step) + (length ? this.unit()[3] : 0), decimals(unit_step()));
+      // − + and the arrow keys step in round amounts of the shown unit and land on its round values; in mm, as the row says (#76)
+      const unit_step = () => (length && per() !== 1 ? round_step(row.step * per()) : row.step);
+      const stepped = (v, n) => { if (!length || per() === 1) return v + n * row.step; const u = unit_step(); return Math.round((v * per() + n * u) / u) * u / per(); };
       const shown = (v) => (row.trim ? String(parseFloat((v * per()).toFixed(places()))) : (v * per()).toFixed(places())) + (row.suffix || "");      // trim: no trailing zeros, so −142.5° fits a small box (Positions)      // suffix: a degree sign in the field (Positions, #357); parse_number reads past it
       const now = () => { const T = this.target(row.scope); return T[row.key] ?? (row.or ? row.or(T) : 0); };      // or: what an unset number is (a window's tracking: the numerals')
       let typing = false;                          // the field follows every change, except while you type in it
@@ -3037,11 +3043,11 @@ class DialTool {
       field.onblur = () => { typing = false; out.refresh(this.target(row.scope)); };
       field.onchange = () => { typing = false; commit(parse_number(field.value, now() * per(), length ? per() : 0) / per()); out.refresh(this.target(row.scope)); };
       field.onkeydown = (e) => {
-        if (e.key === "ArrowUp" || e.key === "ArrowDown") { e.preventDefault(); commit(now() + (e.key === "ArrowUp" ? 1 : -1) * row.step * (e.shiftKey ? 10 : 1)); }
+        if (e.key === "ArrowUp" || e.key === "ArrowDown") { e.preventDefault(); commit(stepped(now(), (e.key === "ArrowUp" ? 1 : -1) * (e.shiftKey ? 10 : 1))); }
       };
       // − and +: as typed signs in a full row; in the popup the thick ones (BIG); beside a quiet number the tiny ones
       const step = (dir) => {
-        const b = el("button", { type: "button", className: "step", tabIndex: -1, onclick: () => commit(now() + dir * row.step) });
+        const b = el("button", { type: "button", className: "step", tabIndex: -1, onclick: () => commit(stepped(now(), dir)) });
         const sign = (row.inpop ? BIG : row.side || row.block ? SIGNS : STEP)[dir > 0 ? "plus" : "minus"];      // a narrow box (beside a hand's box, a quiet row, Positions) the shared 9-across signs, so they keep their room
         const svg_sign = !row.inpop && (row.side || row.block);
         b.innerHTML = svg_sign ? icon(sign) : sign; b.ariaLabel = dir > 0 ? "Plus" : "Minus";
@@ -3097,6 +3103,7 @@ class DialTool {
         if (out.link) { const on = Boolean(T[out.link.dataset.link]); out.link.classList.toggle("on", on); out.link.textContent = on ? (row.inpop ? "LINK\n+ED" : "LINKED") : "LINK"; out.link.setAttribute("aria-pressed", String(on)); out.link.ariaLabel = on ? "Width and height linked: press to unlink" : "Link width and height"; }      // in the controller's disc, linked: two lines (4.86, Okay: "LINK / +ED")
         if (v > +slider.max) slider.max = v;       // the slider grows to hold a typed value
         if (v < +slider.min) slider.min = v;
+        slider.step = String(unit_step() / per());      // the slider moves in the shown unit's round steps too (#76)
         if (+slider.value !== v) slider.value = v;
         filled(slider);
         if (!typing) field.value = shown(v);
@@ -4568,11 +4575,10 @@ class DialTool {
     // a window has tracking and a language of its own too (Okay, 13 Oct 2026); unset, they are the numerals'
     const numerals = () => G.window_type(this.S, {});
     const lang = own ? this.lang_box("window", "window-", () => numerals().lang) : this.lang_box();
-    // the text's colour, small, beside the font's name (Okay, 13 Oct 2026: "text get their color swatch, small. Next to name"):
+    // the text's colour beside the font's name, a full pill with its hex (Okay, 19 Oct 2026, #408: "color here gets full swatch with hex"):
     // a window's text colour (unset: its frame's) · a numerals ring's colour
     const crow = own ? { key: "text_c", scope: "window", text: "Text", or: (T) => T.ink } : { key: "c", scope: "ring", text: "Colour" };
-    const swatch = this.colour_pill(pre + "font-c", "The text’s colour");
-    swatch.classList.add("mini");
+    const swatch = this.colour_pill(pre + "font-c", "The text’s colour");      // a full pill, swatch and hex, as the colour rows have (#408)
     swatch.onclick = () => this.pop_open(this.colour_of_row(crow), swatch);
     const tracking = this.build_row(own ? { ...num("tracking", "Tracking", -200, 800, 5), scope: "window", or: () => numerals().tracking } : { ...num("tracking", "Tracking", -200, 800, 5), scope: "ring" });      // the box's last line
     // the language stands at the right inside the preview's cell, on the cell's grey, knocking the preview out where it reaches (#273, 4.51; Okay's notes, p. 12)
@@ -4580,7 +4586,7 @@ class DialTool {
     // it, the name — grey, bold, running to the colour — and EN at the line's right end; no Change…: the preview and the
     // name open the font sheet.
     const shown_cell = el("div", { className: "currentwrap" }, current);
-    const named = el("div", { className: "fontname", title: "Choose a font", onclick: (e) => { if (!e.target.closest(".colour, .langs, button")) open(); } }, name, swatch, ...(lang ? [lang.el] : []));
+    const named = el("div", { className: "fontname", title: "Choose a font", onclick: (e) => { if (!e.target.closest(".colour, .langs, button")) open(); } }, el("span", { className: "namecol" }, name, swatch), ...(lang ? [lang.el] : []));      // the name runs to the colour; the colour ends a gap before EN (#408)
     const styles = el("div", { className: "styles", role: "tablist", ariaLabel: "Style" });      // tabs hanging from the name's line (#275, 4.51)
     const state = el("div", { className: "quiet note", id: pre + "font-note" });
     const back = el("button", { type: "button", className: "btn", id: "window-font-back", innerHTML: icon(SIGNS.copy) + "<span>Same font as <i>Numerals</i></span>", title: "Use the top numerals ring’s font again", hidden: true,      // "Copy style of" until 4.52.1: it never copied, it gives the window the ring's font again (Okay, 18 Oct 2026: "Same font as hours, yes")
@@ -5336,8 +5342,7 @@ class DialTool {
   /** Compare (#435; Okay, 19 Oct 2026, 23:11: "a compare button. this lists and stacks into something like a sheet pdf
    *  controls on pdf export does depending on numbers, always centered with sensible padding: left column hidden
    *  preview mode. no selections or anything is different"): the panel slides away as for the dial alone, and every
-   *  saved dial stands on the backdrop, all at one size, packed as the print sheet packs its copies (pack_discs,
-   *  straight or staggered rows) at the largest size that holds them all, the block centred. Their pictures are the
+   *  saved dial stands on the backdrop, all at one size, packed densely in even, centred rows (pack_even, #468) at the largest size that holds them all. Their pictures are the
    *  ones kept when each was saved. Nothing in it can be picked; Compare again, the eye or Escape ends it. Not part of
    *  a dial (R26: preview only, nothing reaches a file). */
   compare(on) {
@@ -5361,16 +5366,13 @@ class DialTool {
     this.log(on ? `comparing ${instances_read().length} saved dials — Escape or Compare again to go back` : "comparing ended");
   }
 
-  /** Compare's pictures in their places: the largest size at which pack_discs holds them all in the view, a twelfth of
-   *  that size between them, the block centred. Measured from the view each time it changes size. */
+  /** Compare's pictures in their places: as large as pack_even can make them in the view, a twelfth of that size
+   *  between them, rows as even as can be, each centred (#468). Measured from the view each time it changes size. */
   compare_place() {
     const view = this.compare_view, list = instances_read(), n = list.length;
     if (!view || !n) return;
-    const w = view.clientWidth, h = view.clientHeight, holds = (D) => pack_discs(w, h, D, D / 12).places.length >= n;
-    let lo = 1, hi = Math.min(w, h);
-    if (!holds(lo)) return;
-    for (let k = 0; k < 30; k++) { const mid = (lo + hi) / 2; if (holds(mid)) lo = mid; else hi = mid; }
-    const D = Math.floor(lo), places = centre_block(pack_discs(w, h, D, D / 12).places.slice(0, n), w - D, h - D);
+    const packed = pack_even(view.clientWidth, view.clientHeight, n), D = Math.floor(packed.D), places = packed.places;
+    if (D < 1) return;
     view.style.setProperty("--compare-d", D + "px");
     view.replaceChildren(...list.map((e, i) => {
       const cell = el("div", { className: "comparedial", title: e.name });
@@ -5562,8 +5564,7 @@ class DialTool {
 
   /** a settings file: the whole dial, every value, kept to open again (R31: a link is for sharing, a file for keeping).
    *  A sentence says so; after Load the pane's heading names the file, and Save… offers that name again (a browser can't
-   *  write over it). Defaults is the guide's First dial ("Guide default wins"); Plain dial the tool's plain starting
-   *  values, where the guide's First dial begins (Okay's notes, 16 Oct 2026, #279). */
+   *  write over it). Save… · Load… only (Okay, 21 Oct 2026: "Remove both", #434): the resets are Dial › Reset's (R34). */
   row_settings(wrap) {
     wrap.className = "row";
     const file = el("input", { type: "file", accept: ".json,application/json", hidden: true, id: "load-file" });
@@ -5571,8 +5572,7 @@ class DialTool {
     wrap.append(el("p", { className: "quiet setnote", id: "settings-note", textContent: "A settings file keeps this dial with every value, to open again here or on another computer." }), el("span", { className: "tools wide even" },
       el("button", { type: "button", className: "btn", id: "save", textContent: "Save…", onclick: () => { const name = this.loaded_name || file_name(this.S, "json"); save_file(name, JSON.stringify({ ...this.S, ui_section: Math.min(this.S.ui_section, 4) }, null, 1), "application/json"); this.log(`saved ${name} to your downloads`); } }),   // dial.py knows sections 0–4
       el("button", { type: "button", className: "btn", textContent: "Load…", onclick: () => file.click() }),
-      el("button", { type: "button", className: "btn", id: "defaults", textContent: "Defaults", title: "The guide’s First dial, as the tool opens with", onclick: () => { this.reopen({ ...structuredClone(OPENER), ui_section: this.S.ui_section }); tool.log("defaults: the guide’s First dial"); } }),
-      el("button", { type: "button", className: "btn", id: "plain", textContent: "Plain dial", title: "The tool’s plain starting dial, where the guide’s First dial begins", onclick: () => this.reopen({ ui_section: this.S.ui_section }) }), file));
+      file));
   }
 
   /** the dial's link, spelled out on one line (cut at the box's edge: Copy link copies it whole), and how long it is.

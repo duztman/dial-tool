@@ -174,13 +174,14 @@
   .pane.positions > .body > .detail.round { grid-column: 2 / span 2; grid-row: 1 / span 3; align-self: start; aspect-ratio: 1; min-height: 0; margin: 0; overflow: visible; touch-action: none; cursor: grab; }
   .pane.positions > .body > .row { position: relative; z-index: 1; }      /* the controls over the circle where it reaches them */
   .pane.positions > .body > .detail.round.dragging { cursor: grabbing; }
-  .pane.positions > .body > .detail.round svg { inset: var(--hair) var(--hair) auto auto; width: auto; height: calc(100% + var(--air) - var(--unit)); aspect-ratio: 1; }      /* the circle from the first row's top line down into the pane's air, to a unit above its closing line, as wide as that; its right edge on its box's, never past the controls' names, so it grows to the left, into the eye's column (Okay, 19 Oct 2026, #417, 20:37: "No passing red line ever. Yes: passing green"; "Limit"). The box under it keeps the rows' height */
+  .pane.positions > .body > .detail.round svg { inset: var(--hair) var(--hair) auto auto; width: auto; height: calc(100% + var(--air) - 2 * var(--unit)); aspect-ratio: 1; }      /* the circle from the first row's top line down into the pane's air, to two units above its closing line (Okay, 21 Oct 2026: "Needs 2x padding until" the line, #499), as wide as that; its right edge on its box's, never past the controls' names, so it grows to the left, into the eye's column (Okay, 19 Oct 2026, #417, 20:37: "No passing red line ever. Yes: passing green"; "Limit"). The box under it keeps the rows' height */
   .detail.round .span { stroke: var(--grey); stroke-width: var(--pos-dot); stroke-linecap: round; stroke-dasharray: 0 var(--pos-dot-gap); vector-effect: non-scaling-stroke; }      /* "Span ruler: make it dotted instead of ruler" */
   .detail.round .spanend { fill: var(--field); stroke: var(--grey); stroke-width: var(--pos-line); vector-effect: non-scaling-stroke; }
   .pane.positions > .body > .row { grid-column: span 2; column-gap: var(--u1); min-width: 0; }
   .pane.positions > .body > .row > :first-child { grid-column: auto; }
   .pane.positions > .body > .row > label:first-child { font-size: var(--t-s); }
   .pane.positions > .body > .row:is(.nummenu, .block) { grid-template-columns: minmax(0, 1fr) var(--pos-box); }
+  .pane.positions > .body > .row.nummenu > .menubox { grid-column: 2; }      /* in the box's column: the rows' rule puts a menu at 3 / -1, a third column that pushed the name to nothing (#498) */
   .pane.positions > .body > .row.chk { grid-template-columns: auto auto minmax(0, 1fr); }
   .pane.positions > .body > .row.chk > span:first-child { display: none; }
   .pane.positions > .body > .row.chk > .check { grid-column: auto; font-size: var(--t-s); white-space: nowrap; }
