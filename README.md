@@ -6,7 +6,7 @@ Built to explore, present and produce watch dials.
 **Use it: <https://duztman.github.io/dial-tool/>**, or open [`web/dial-tool.html`](web/dial-tool.html) from disk (one file, no install; Chrome or Edge for the fonts installed on the computer).
 
 **Version: beta 4.90 (20 Oct 2026, on `dev`, `main` and the live page).** `main` = released, `dev` = work in progress. Every earlier build, back to beta 1.0: [`docs/versions.md`](docs/versions.md).
-What it has and lacks: [`docs/changelog.md`](docs/changelog.md). What's next: [`docs/build-list.md`](docs/build-list.md).
+What it has and lacks: [`docs/changelog.md`](docs/changelog.md). What's next, and what v1 needs: [`docs/build-list.md`](docs/build-list.md).
 
 **Guidebook:** edition 1 is at <https://duztman.github.io/dial-tool/guide/>, built from the app in `guide/` by its plan, `guide/PLAN.md` (build list #93); rebuilt only when Okay asks (R25).
 
@@ -33,7 +33,7 @@ What it has and lacks: [`docs/changelog.md`](docs/changelog.md). What's next: [`
 | `docs/font-research-2026-10-16.md`, `docs/font-tiers-2026-10-16.md` | The font research of 16 Oct 2026: which fonts Okay accepted (Peter Wiegel's 46, Font Picks' 49), how, their licences, and the tiers of the font list. |
 | `docs/project-prompt.md` | Start-off prompt for the Claude Project. |
 | `packer/` | **Dial Packer**, a side product (19 Oct 2026): packs discs of three sizes densely on a page, for visuals like the guide's cover. One built file, `packer/dial-packer.html`; online at <https://duztman.github.io/dial-tool/packer/>. How it works and how to change it: `packer/README.md`. |
-| `show-case/` | **Dial Show Case**, a side product to come (20 Oct 2026): the Showcase's Playbox and the cases and straps rendering engine (two drawing styles, Engineer and Miyazaki), their sources, notes and screens. Not live; how to run it: `show-case/README.md`. |
+| `show-case/` | **Dial Show Case**, a side product (20 Oct 2026): a dial in a whole watch, in two drawing styles, Engineer and Miyazaki, with the Showcase's Playbox. Online at <https://duztman.github.io/dial-tool/show-case/>; its work goes on the branch `show-case-app`; how it works: `show-case/README.md`. |
 | `archive/drawbot/` | **The DrawBot version, frozen since 12 Oct 2026 (R30)** — kept, not edited: `dial.py` (beta 2.3), its tests, its preview plan, its rules, words and build-list items (`rules-drawbot.md`, `glossary-drawbot.md`, `build-list-drawbot.md`), reference renders, and the 4 Oct guidebook. `web/test/parity.py` still uses `dial.py` and `tools/test_harness.py` from here. |
 
 ## For agents

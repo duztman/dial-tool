@@ -1,6 +1,6 @@
 # Dial Tool — brief
 
-*Started 3 Oct 2026. Last updated 19 Oct 2026 (beta 4.87: housekeeping — present state only; §4 is the decision record, dated).*
+*Started 3 Oct 2026. Last updated 21 Oct 2026 (v1 drafted in the build list; square dials after v1; §3 and §6 brought up to beta 4.90).*
 
 ## 1 · Goal
 
@@ -28,12 +28,14 @@ Not photorealistic. Real proportions and perfect vector rendering are.
 |---|---|---|
 | Design / present | PDF, SVG → Illustrator | True size in mm; numerals as outlines; every part a named layer in the PDF; *Keep numerals as text in the SVG* as an option (R10) |
 | Image | PNG (dpi set) | The dial at the page's size |
-| Production mask | PDF, SVG, PNG | Mono; mirrored for toner transfer; the window's and the centre hole's cut lines |
+| Production mask | PDF, SVG, PNG | Mono; mirrored for toner transfer; cut lines, inverted, outline and registration marks as asked (Export → Print); one mask PDF per ink |
 | Print sheet | PDF | Copies at true size on A4 · Letter · A5, cut lines (Export → Print) |
+| Spec sheet | SVG | The dial with each ring's radius marked and tables of rings, hands and windows, for a print shop (Export → Print) |
+| Moving picture | MP4, GIF | The hands turning from the time shown (Export → Moving picture) |
 | Watch | APK | A Wear OS watch face to sideload (Export → Wear OS) |
 | Sharing | a link · a settings file (JSON) | A link carries what differs from the starting values (R31); a file keeps everything |
 
-Not built: MP4 and GIF (build list #51); imported SVG, PDF and AI shapes for markers and hands (#50, R23).
+Not built: imported SVG, PDF and AI shapes for markers and hands (#50, R23).
 
 ## 4 · Decisions
 
@@ -411,6 +413,7 @@ Not built: MP4 and GIF (build list #51); imported SVG, PDF and AI shapes for mar
 | 20 Oct, 05:02 | **Beta 4.90 accepted and released** on `dev`, `main` and the live page. From here a batch of work is released as it is done, not held on a branch: a small push counts in the third number, a step in the second. | Okay, 05:02: "Why not release on live site, this version is accepted, dev main, publish … I feel we've been stuck at 90 for a while there?" |
 | 20 Oct, 19:16 | **The cases and straps rendering engine, in two styles** (`show-case/`): a dial in a whole watch — case, crown, strap or bracelet — under one light; **Engineer** a technical drawing in ink and three tones, **Miyazaki** lineless shapes cut by light and dark crescents. Miyazaki locked at 18:16. | Okay's side quest from 15:00 ("Cases and straps"); 19:16: "We are golden." |
 | 20 Oct, 19:42 | **Dial Show Case** will be a standalone app: the Showcase's animation and the rendering engine together. Its name in two words, capitals as titles. | Okay, 19:42: "will be its standalone app combined with showcase. It will be called dial show case. Get it, showcase in two words. Capitals as titles." |
+| 21 Oct, 20:10 | **v1 drafted; square and rounded-square dials come after it.** v1 is the tool as it is, finished: questions answered, dead ends closed, built things seen working on Okay's machines, words clean, the full check, then the name v1 on his word. No new features. The draft and its items head the build list, for Okay to cut. **The build list is grouped by v1** (v1 · after v1 · later · parked · side products), not by where each note came from; its done rows moved to `build-list-done.md`. | Okay, 21 Oct 2026, 20:10: "Yes let's draft a definition and put square past v1. Now I believe we can release without square dials. Clear old notes, skim and see what can we remove to get them shorter and more focused." The definition's wording and its five groups are Claude's draft. |
 
 ## 5 · Open questions
 
@@ -428,13 +431,11 @@ Numbers are never reused; a settled question is deleted here and its decision st
 
 - Subdials (small seconds, chronograph registers) — perhaps as further ring kinds (build list #20).
 - Surface finishes on bands: sunray, grain, guilloché (Okay: flat for now; #33).
-- Per-ink separations: one production mask per ring colour (pad printing etches one plate per colour; #35), with registration marks (#87).
-- Variation grid: one rule set, many dials on one sheet (#17).
-- Spec sheet export: dial with dimension callouts for suppliers (#18).
+- Variation grid: one rule set, many dials on one sheet (#17; a sheet of saved dials exists, Versions › Sheet).
 - More hand styles: cathedral (through file import); lume plots (#19).
 - Plotter output via LightBurn for the pen plotter (AxiDraw clone; #21).
-- Production warnings: flag lines thinner than the method allows (#12, #225).
-- An Apple Watch preview (#362); non-round dials (#363).
+- Production warnings: flag lines thinner than the method allows (#12; the Export log already names the thinnest line, #225).
+- An Apple Watch preview (#362); non-round dials — square and rounded square after v1 (#484), the rest later (#363).
 
 ## 7 · Workflow
 
