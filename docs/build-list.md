@@ -1,7 +1,7 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **ask** · **parked**. Done items move to `docs/build-list-done.md`; the DrawBot version's to `archive/drawbot/build-list-drawbot.md`.
-*Last updated 21 Oct 2026, 22:30 (#453 open again, #502 notices added). 20:25 (Okay's answers: v1 scope settled, #494 #495 added, #68 #134 #227 #366 closed. 20:10: v1 drafted; the list grouped by v1 instead of by where each note came from; done items moved out). Where an item came from is in its own words and dates.*
+*Last updated 21 Oct 2026, 22:45 (#503 the archive). 22:30: #453 open again, #502 notices added. 20:25 (Okay's answers: v1 scope settled, #494 #495 added, #68 #134 #227 #366 closed. 20:10: v1 drafted; the list grouped by v1 instead of by where each note came from; done items moved out). Where an item came from is in its own words and dates.*
 
 ## v1 — settled with Okay, 21 Oct 2026
 
@@ -46,6 +46,7 @@ Settled by Okay on 21 Oct 2026, 20:25 (`docs/decisions.md`): SVG import is in; t
 
 | # | Item | Status |
 |---|---|---|
+| 503 | **The archive: screenshots, update pages, the progression strip** (Okay, 21 Oct 2026, 22:30: "I want to be able to trace the progression later. A system for those as well?"; R36). (1) Move `archive/screens/` (154 MB) to the Mac folder `~/Desktop/dial-maker/screenshots/` and take it off the repo's tip (the history keeps it); `docs/versions.md` points there. (2) **The progression strip**, once: every build in `docs/versions.md` opened (`tools/versions.sh open X`), the same dials loaded, the same views shot — one strip from 3.0 to now, into the Mac folder; old builds that can't read today's links get the closest dial they can draw; each step then adds its frame. Runs in the background. (3) **The update page at v1.0**, covering 4.90 → 1.0, as the 4.90 Review was | open — v1: (1) and (2) before the release, (3) with it |
 | 93 | **Guidebook for the web version** (R25): edition 1 at https://duztman.github.io/dial-tool/guide/ — eight A4 pages and a phone stack from one source, composer `guide/look/` (README there), also an InDesign package (IDML); the app's Help link opens it. Rebuilt only when Okay asks (`bash guide/make.sh`), never with an app release. Open: the human reader round (two people new to the app, `guide/tests/humans.md`); Okay's look at the pages and the package's first open in InDesign; step 9 (his production round); edition 2 (per-pane anchors, #230). For the next rebuild: the guide's First dial steps no longer end on the opener (#331) and its script should press *Blank face* (Plain dial leaves Settings file, #434) | in v1 (Okay, 21 Oct 2026): a new edition with v1, on his word (R25) |
 
 ### F · Changes from Okay's answers (21 Oct 2026)
