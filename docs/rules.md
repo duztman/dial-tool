@@ -1,7 +1,7 @@
 # Dial Tool — rules
 
 Standing rules for the web version (`web/`), the tool since 12 Oct 2026. Check code against these in reviews; cite them by number. Numbers are never reused: the DrawBot version's own rules (R13, R14, R22, R24, R27) are in `archive/drawbot/rules-drawbot.md`. How a rule came to be is in `docs/changelog.md` and the repo's history, not here.
-*Last updated 21 Oct 2026 (R19: numbers and v1.0). 19 Oct 2026 (beta 4.89: R16 takes in empty panes; R34, no band-aids. Beta 4.88.1: R19, two sizes of check. Beta 4.88: R26's X-ray; R31: link scheme 3. Beta 4.87: web wording throughout, the DrawBot rules archived, R15's form A2 retired).*
+*Last updated 21 Oct 2026 (R35: the font list loads light; R19: numbers and v1.0). 19 Oct 2026 (beta 4.89: R16 takes in empty panes; R34, no band-aids. Beta 4.88.1: R19, two sizes of check. Beta 4.88: R26's X-ray; R31: link scheme 3. Beta 4.87: web wording throughout, the DrawBot rules archived, R15's form A2 retired).*
 
 ## Geometry
 
@@ -54,4 +54,5 @@ Standing rules for the web version (`web/`), the tool since 12 Oct 2026. Check c
 - **R20 · Third attempt at the same fix → stop and ask.** The first assumption was probably wrong.
 - **R21 · Measure, don't estimate** — sizes and timings come from real renders.
 - **R25 · The guide follows the app** (`guide/`, by `guide/PLAN.md`). Its pictures are made by script from the current app, never drawn; every "do X and Y happens" sentence has a scripted check that must pass. **It is rebuilt only when Okay asks** (`bash guide/make.sh`; Okay, 16 Oct 2026: "decouple the guide creation from each build, it's hand generated every once in a while by triggered me"): an app release does not touch it, and the live guide names the version it was made on; the picture diff then shows what changed since the last guide. Never type a value into the guide that a picture or a check doesn't use. Page design follows `guide/notes-okay.md` and the design canon (R29).
+- **R35 · The font list loads light** (Okay, 21 Oct 2026: "Filters, load with minimal fonts, prompt user about the ability to load fonts at the expense of slowness, keep them ready and load with click"). The font sheet opens with a small set; filters narrow the list (by what a family has: weight, italic, width, mono, non-Latin numerals…); the sheet says, in one line, that more fonts can be shown at the cost of speed; one click brings them in, and they are kept ready for the rest of the session. A font file is fetched only when a ring uses it. No list grows past what an iPad shows smoothly without this.
 - **R29 · `docs/design.md` is the design canon** for anything shown that isn't a dial: type, grid, colour, pictures, redrawn controls, writing. Follow it; when a new need doesn't fit, change the canon first, then the page.
