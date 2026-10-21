@@ -2229,6 +2229,16 @@ main.sunning .sunknob { transform: scale(1.25); }
 .body .row.chk.pair > .check { color: var(--ink); }      /* both words as every tick's, not the grey of a row's name */
 .side .pane > .body:empty { display: none; }      /* a pane all on its line (Reset): nothing under it */
 #sc-reset-watch { grid-column: 4 / -1; justify-self: start; white-space: nowrap; }      /* where the controls start, as Dial's link */
+/* the title row half as high (03:35) */
+.side .panel > header { height: calc(var(--header) / 2 + 10px); }      /* half, then 10px more (03:40) */
+/* the round swatch at the title line's end: the panel's other look (03:35) */
+.side .greyswatch { flex: none; margin-left: auto; width: 16px; height: 16px; padding: 0; border: var(--hair) solid var(--rule); border-radius: 50%; cursor: pointer; }
+/* the column's switch: a round button of the panel's own colour, solid, its arrow the panel's white (03:35) */
+.sideswitch { display: grid; place-items: center; height: var(--control-large); border: 0; border-radius: 50%; background: var(--column-solid, #212121); color: var(--switch-ink, #f2f2ee); box-shadow: none; }
+.sideswitch svg { width: 16px; height: 16px; opacity: 1; }
+/* the switch 20px round, its arrow larger in it, its centre on the title line's centre (03:43) */
+.sideswitch { width: 20px; height: 20px; min-width: 0; top: calc((var(--header) / 2 + 10px) / 2 - 10px); }
+.sideswitch svg { width: 14px; height: 14px; }
 </style>
 <div id="app"><p class="starting">Starting…</p></div>
 <script>
@@ -8780,6 +8790,7 @@ __export(engineer_exports, {
   draw: () => draw,
   edge: () => edge
 });
+var BRACELET_KIND = "vault";
 var process2 = { env: {} };
 var GLINT = "plain";
 var INK_K = +(process2.env.INK || 0);
@@ -8982,6 +8993,23 @@ var CASES = {
     drilled: false,
     dialName: "Quiet diver"
   },
+  emre01: {
+    name: "Emre01 \xB7 Emre's prototype \xB7 aluminium",
+    rails: true,
+    depth: 0.5,
+    od: 22,
+    l2l: 27,
+    lugw: 19.4,
+    lugT: 3.3,
+    flare: 0,
+    metal: ALU,
+    bands: [[11, 10.5, 1, 0.6], [10.5, 9.1, 1, 0.12], [9.1, 8.6, -1, 0.7], [8.6, 8, 1, 0.12]],
+    opening: 8,
+    dial: 16,
+    crown: { at: 0, w: 1.8, h: 1.1, knurl: 2 },
+    drilled: false,
+    dialName: "Dress roman"
+  },
   dress: {
     name: "Dress \xB7 Calatrava 5196 \xB7 gold",
     od: 37,
@@ -9006,6 +9034,23 @@ var VARIANTS = {
     dark: { plate: "#17171a", map: {} },
     light: { plate: "#e6e0ce", map: { "#ede8db": "#1d1d1f" } },
     red: { plate: "#7a1d1f", map: {} }
+  },
+  emre01: {
+    name: "Emre01 \xB7 Emre's prototype \xB7 aluminium",
+    rails: true,
+    depth: 0.5,
+    od: 22,
+    l2l: 27,
+    lugw: 19.4,
+    lugT: 3.3,
+    flare: 0,
+    metal: ALU,
+    bands: [[11, 10.5, 1, 0.6], [10.5, 9.1, 1, 0.12], [9.1, 8.6, -1, 0.7], [8.6, 8, 1, 0.12]],
+    opening: 8,
+    dial: 16,
+    crown: { at: 0, w: 1.8, h: 1.1, knurl: 2 },
+    drilled: false,
+    dialName: "Dress roman"
   },
   dress: {
     light: { plate: "#f2eee1", map: {} },
@@ -9103,6 +9148,10 @@ function cushionLug(C2, sx, sy) {
   return P([p(xi, y0), p(xi, half), p(xo - c, half), p(xo, half - c), p(xo, y0)]);
 }
 function lugPath(C2, sx, sy) {
+  if (C2.rails) {
+    const xi2 = C2.lugw / 2, xo2 = xi2 + C2.lugT, hy = C2.l2l / 2, c = 0.2;
+    return P([[sx * xi2, -hy], [sx * (xo2 - c), -hy], [sx * xo2, -hy + c], [sx * xo2, hy - c], [sx * (xo2 - c), hy], [sx * xi2, hy]]);
+  }
   const R = C2.od / 2, half = C2.l2l / 2, xi = C2.lugw / 2, xo = xi + C2.lugT, xb = xo + C2.flare;
   const yb = Math.sqrt(R * R - xb * xb), yi = Math.sqrt(R * R - xi * xi) - 1.5, r = 0.8;
   const p = (x, y) => `${f(sx * x)} ${f(sy * y)}`;
@@ -9121,14 +9170,21 @@ function caseSVG(C2, v, L) {
       const d = cushionLug(C2, sx, sy);
       out.push(shape2(d, T[1], 0.2, T[2]));
     }
-  } else for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
+  } else if (C2.rails) for (const sx of [-1, 1]) {
+    const xi = sx * C2.lugw / 2, xo = sx * (C2.lugw / 2 + C2.lugT), hy = C2.l2l / 2, b = 0.5, xa = Math.min(xi, xo), xz = Math.max(xi, xo);
+    const o = [[xa, -hy], [xz, -hy], [xz, hy], [xa, hy]], i = [[xa + b, -hy + b], [xz - b, -hy + b], [xz - b, hy - b], [xa + b, hy - b]];
+    out.push(shape2(P(o), T[1], 0.2, T[2]));
+    [[0, 1, 270], [1, 2, 0], [2, 3, 90], [3, 0, 180]].forEach(([a, z, phi]) => out.push(flat(P([o[a], o[z], i[z], i[a]]), tone(T, phi, 0.85, L))));
+    out.push(stroke(P(i), 0.1), stroke(P(o), 0.2));
+  }
+  else for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
     out.push(shape2(lugPath(C2, sx, sy), T[1], 0.2, T[2]));
     out.push(flat(lugChamfer(C2, sx, sy), tone(T, sx > 0 ? 0 : 180, 0.9, L)), stroke(lugChamfer(C2, sx, sy), 0.1));
     if (C2.drilled) out.push(`<ellipse cx="${f(sx * (C2.lugw / 2 + C2.lugT + 0.05))}" cy="${f(sy * (C2.l2l / 2 - 2.4))}" rx="0.25" ry="0.55" fill="${INK2}"/>`);
   }
-  const cw = C2.crown.w, ch = C2.crown.h, x0 = R - 0.4;
+  const RC = C2.rails ? C2.lugw / 2 + C2.lugT : R, cw = C2.crown.w, ch = C2.crown.h, x0 = RC - 0.4;
   const top = P([[x0, -cw / 2], [x0 + ch, -cw / 2 + 0.25], [x0 + ch, 0], [x0, 0]]), bot = P([[x0, 0], [x0 + ch, 0], [x0 + ch, cw / 2 - 0.25], [x0, cw / 2]]);
-  out.push(shape2(P([[R - 1.2, -cw * 0.32], [x0, -cw * 0.32], [x0, cw * 0.32], [R - 1.2, cw * 0.32]]), T[2], 0.15));
+  out.push(shape2(P([[RC - 1.2, -cw * 0.32], [x0, -cw * 0.32], [x0, cw * 0.32], [RC - 1.2, cw * 0.32]]), T[2], 0.15));
   out.push(flat(top, tone(T, 270, 0.9, L)), flat(bot, tone(T, 90, 0.9, L)), stroke(P([[x0, -cw / 2], [x0 + ch, -cw / 2 + 0.25], [x0 + ch, cw / 2 - 0.25], [x0, cw / 2]]), 0.2));
   for (let k = 1; k < C2.crown.knurl; k++) {
     const y = -cw / 2 + 0.3 + k * (cw - 0.6) / C2.crown.knurl;
@@ -9181,7 +9237,7 @@ function caseSVG(C2, v, L) {
   out.push(`<g clip-path="url(#dial-${C2.key})">${dialSVG(C2, v, L)}</g>`);
   if (C2.insert) out.push(sloped(C2.opening - REHAUT, C2.opening, T, L, -1, 0.9), stroke(circle2(C2.opening - REHAUT), 0.15));
   {
-    const uS = [Math.cos(rad(L)), Math.sin(rad(L))], sl = Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad(40)) / Math.tan(rad(SUN_H))));
+    const uS = [Math.cos(rad(L)), Math.sin(rad(L))], sl = (C2.depth ?? 1) * Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad(40)) / Math.tan(rad(SUN_H))));
     out.push(`<g clip-path="url(#dial-${C2.key})"><g transform="translate(${f(-uS[0] * sl)} ${f(-uS[1] * sl)})"><path d="M-500 -500H500V500H-500Z${circle2(C2.opening)}" fill-rule="evenodd" fill="#000" fill-opacity="${f(Math.min(1, 0.4 * SHD))}"/></g></g>`);
   }
   const g = (a, r, w, o) => `<path d="M${f(Math.cos(rad(a - 28 * GLASS.len)) * r)} ${f(Math.sin(rad(a - 28 * GLASS.len)) * r)}A${f(r)} ${f(r)} 0 0 1 ${f(Math.cos(rad(a + 28 * GLASS.len)) * r)} ${f(Math.sin(rad(a + 28 * GLASS.len)) * r)}" fill="none" stroke="#fff" stroke-opacity="${f(Math.min(1, o * GLASS.op))}" stroke-width="${f(w * GLASS.fat)}" stroke-linecap="round"/>`;
@@ -9214,7 +9270,7 @@ function keeper(y, w, T, L, h = 3.2) {
   return shape2(P([[-W2 / 2, y], [W2 / 2, y], [W2 / 2, y + h], [-W2 / 2, y + h]]), T[1], 0.2) + flat(P([[-W2 / 2, y], [W2 / 2, y], [W2 / 2, y + h * 0.35], [-W2 / 2, y + h * 0.35]]), tone(T, 270, 0.9, L)) + flat(P([[-W2 / 2, y + h * 0.65], [W2 / 2, y + h * 0.65], [W2 / 2, y + h], [-W2 / 2, y + h]]), tone(T, 90, 0.9, L)) + stroke(P([[-W2 / 2, y], [W2 / 2, y], [W2 / 2, y + h], [-W2 / 2, y + h]]), 0.2);
 }
 function leatherSVG(C2, L, colour2, open, span) {
-  const T = LEATHER[colour2], w = C2.lugw - 0.2, end = 16, yc = C2.cushion ? C2.l2l / 2 - 3.4 : Math.min(C2.l2l / 2 - 3.4, C2.od / 2 + 0.2);
+  const T = LEATHER[colour2], w = C2.lugw - 0.2, end = 16, yc = C2.cushion ? C2.l2l / 2 - 3.4 : C2.rails ? C2.od / 2 - 1.5 : Math.min(C2.l2l / 2 - 3.4, C2.od / 2 + 0.2);
   const gap = "";
   if (!open) return gap + leatherPiece(-yc, -span, w, w - 1.2, T, L) + leatherPiece(yc, span, w, w - 1.2, T, L, 0, [60, 67].filter((y) => y < span));
   const up = leatherPiece(-yc, -(C2.l2l / 2 + 75), w, end, T, L), dn = leatherPiece(yc, C2.l2l / 2 + 115, w, end, T, L, 7, [72, 79, 86, 93, 100, 107].map((y) => C2.l2l / 2 + y - 25));
@@ -9312,6 +9368,24 @@ function vaultBracelet({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H = 4
   }
   return out.join("");
 }
+function linksBracelet({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H = 40, ramp, ink = null, inkW = 0.22 }) {
+  const lv = [Math.cos(rad(H)) * Math.cos(rad(L)), Math.cos(rad(H)) * Math.sin(rad(L)) * sy, Math.sin(rad(H))];
+  const h = 4.4, g = 0.15, mid = W2 * 0.46, out = [`<rect x="${f(-W2 / 2 + 0.3)}" y="${f(Math.min(sy * y0, sy * span))}" width="${f(W2 - 0.6)}" height="${f(Math.abs(span - y0))}" fill="${ramp[0]}"/>`];
+  const piece = (x0, x1, a, b) => {
+    const top = Math.min(sy * a, sy * b), bot = Math.max(sy * a, sy * b), r = Math.min(0.9, (bot - top) * 0.3), d = rrect4(x0, top, x1, bot, [r, r, r, r]);
+    out.push(barrel(d, x0, top, x1, bot, 0.99, ramp, lv, 1));
+    if (ink) out.push(`<path d="${d}" fill="none" stroke="${ink}" stroke-width="${inkW}" stroke-linejoin="round"/>`);
+  };
+  piece(-mid / 2 + g / 2, mid / 2 - g / 2, y0, y0 + h / 2 - g);
+  for (let y = y0; y + h / 2 <= span + 0.01; y += h) {
+    const b = Math.min(span, y + h - g);
+    piece(-W2 / 2, -mid / 2 - g / 2, y, b);
+    piece(mid / 2 + g / 2, W2 / 2, y, b);
+    const c0 = y + h / 2, c1 = Math.min(span, c0 + h - g);
+    if (c1 > c0 + 0.5) piece(-mid / 2 + g / 2, mid / 2 - g / 2, c0, c1);
+  }
+  return out.join("");
+}
 function braceletSVG(C2, L, span) {
   const R = C2.od / 2, lw = C2.lugw, W2 = C2.lugw - 0.2, yE = C2.l2l / 2 + 0.8, ramp = ramp6(C2.metal);
   const lv0 = (sy) => [Math.cos(rad(SUN_H)) * Math.cos(rad(L)), Math.cos(rad(SUN_H)) * Math.sin(rad(L)) * sy, Math.sin(rad(SUN_H))];
@@ -9323,14 +9397,14 @@ function braceletSVG(C2, L, span) {
       arc2.push([x, sy * (Math.sqrt(Rr * Rr - x * x) - 0.15)]);
     }
     const end = "M" + [...arc2, [lw / 2, sy * yE], [-lw / 2, sy * yE]].map((p) => `${f(p[0])} ${f(p[1])}`).join("L") + "Z";
-    const top = Math.min(sy * (Math.sqrt(Rr * Rr - lw * lw / 4) - 0.15), sy * yE), bot = Math.max(sy * (Math.sqrt(Rr * Rr) - 0.15), sy * yE);
+    const ys = [sy * (Math.sqrt(Rr * Rr - lw * lw / 4) - 0.15), sy * (Rr - 0.15), sy * yE], top = Math.min(...ys), bot = Math.max(...ys);
     out += barrel(end, -lw / 2, Math.min(top, bot), lw / 2, Math.max(top, bot), 0.99, ramp, lv0(sy), 1);
     const mid = W2 * 0.36;
     for (const x of [-mid / 2, mid / 2]) out += `<path d="M${f(x)} ${f(sy * (Math.sqrt(Rr * Rr - x * x) - 0.15))}V${f(sy * yE)}" stroke="${ramp[0]}" stroke-width="0.22"/>`;
     out += `<path d="M${arc2.map((p) => `${f(p[0])} ${f(p[1])}`).join("L")}" fill="none" stroke="#000" stroke-opacity="0.5" stroke-width="0.5"/>`;
     out += INKB ? `<path d="${end}" fill="none" stroke="${INKB}" stroke-width="0.22" stroke-linejoin="round"/>` : "";
     OUTT.push(end);
-    out += vaultBracelet({ W: W2, y0: yE, span, sy, L, H: SUN_H, ramp, ink: INKB });
+    out += (BRACELET_KIND === "links" ? linksBracelet : vaultBracelet)({ W: W2, y0: yE, span, sy, L, H: SUN_H, ramp, ink: INKB });
     for (let k = 0, y = yE; y + 6.4 <= span + 0.01; k++, y += 6.4) {
       const w = Math.max(16, W2 - k * 0.45);
       OUTT.push(`M${f(-w / 2)} ${f(sy * y)}H${f(w / 2)}V${f(sy * (y + 6.4))}H${f(-w / 2)}Z`);
@@ -9352,7 +9426,7 @@ function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal2 = nul
   const k = Math.tan(rad(40)) / Math.tan(rad(h)), [cxs, cys] = off(2.4 * k), [sxs, sys] = off(0.8 * k);
   const sil = C2.cushion ? [P(cushionPts(C2.cushion.a, C2.cushion.n)), ...[-1, 1].flatMap((sx) => [-1, 1].map((sy) => cushionLug(C2, sx, sy)))].join(" ") : [circle2(C2.od / 2), ...[-1, 1].flatMap((sx) => [-1, 1].map((sy) => lugPath(C2, sx, sy)))].join(" ");
   const SH = SH_OVR || "#7f796e";
-  const strapRects = strap === "bracelet" ? `<rect x="${f(-C2.lugw / 2)}" y="${open ? -(C2.l2l / 2 + 84) : -span}" width="${C2.lugw}" height="${open ? C2.l2l + 168 : 2 * span}"/>` : strap.startsWith("nato") ? `<rect x="${f(-C2.lugw / 2)}" y="${open ? -(C2.l2l / 2 + 76) : -span}" width="${C2.lugw}" height="${open ? C2.l2l + 241 : 2 * span}"/>` : `<rect x="${f(-C2.lugw / 2)}" y="${open ? -(C2.l2l / 2 + 81) : -span}" width="${C2.lugw}" height="${f((open ? C2.l2l / 2 + 81 : span) - (C2.cushion ? C2.l2l / 2 - 3.4 : Math.min(C2.l2l / 2 - 3.4, C2.od / 2 + 0.2)))}"/><rect x="${f(-C2.lugw / 2)}" y="${f(C2.cushion ? C2.l2l / 2 - 3.4 : Math.min(C2.l2l / 2 - 3.4, C2.od / 2 + 0.2))}" width="${C2.lugw}" height="${f((open ? C2.l2l / 2 + 115 : span) - (C2.cushion ? C2.l2l / 2 - 3.4 : Math.min(C2.l2l / 2 - 3.4, C2.od / 2 + 0.2)))}"/>`;
+  const strapRects = strap === "bracelet" ? `<rect x="${f(-C2.lugw / 2)}" y="${open ? -(C2.l2l / 2 + 84) : -span}" width="${C2.lugw}" height="${open ? C2.l2l + 168 : 2 * span}"/>` : strap.startsWith("nato") ? `<rect x="${f(-C2.lugw / 2)}" y="${open ? -(C2.l2l / 2 + 76) : -span}" width="${C2.lugw}" height="${open ? C2.l2l + 241 : 2 * span}"/>` : `<rect x="${f(-C2.lugw / 2)}" y="${open ? -(C2.l2l / 2 + 81) : -span}" width="${C2.lugw}" height="${f((open ? C2.l2l / 2 + 81 : span) - (C2.cushion ? C2.l2l / 2 - 3.4 : C2.rails ? C2.od / 2 - 1.5 : Math.min(C2.l2l / 2 - 3.4, C2.od / 2 + 0.2)))}"/><rect x="${f(-C2.lugw / 2)}" y="${f(C2.cushion ? C2.l2l / 2 - 3.4 : C2.rails ? C2.od / 2 - 1.5 : Math.min(C2.l2l / 2 - 3.4, C2.od / 2 + 0.2))}" width="${C2.lugw}" height="${f((open ? C2.l2l / 2 + 115 : span) - (C2.cushion ? C2.l2l / 2 - 3.4 : C2.rails ? C2.od / 2 - 1.5 : Math.min(C2.l2l / 2 - 3.4, C2.od / 2 + 0.2)))}"/>`;
   const steps = 28, blockShadow = `<g fill="${SH}">` + Array.from({ length: steps }, (_, i) => `<g transform="translate(${f(sxs * (i + 1) / steps)} ${f(sys * (i + 1) / steps)})">${strapRects}</g>`).join("") + Array.from({ length: steps }, (_, i) => `<g transform="translate(${f(cxs * (i + 1) / steps)} ${f(cys * (i + 1) / steps)})">${sil.split(/ (?=M)/).map((d) => `<path d="${d}"/>`).join("")}</g>`).join("") + `</g>`;
   const caseStr = caseSVG(C2, v, L);
   const ribs = Object.entries({ ...NATO_SETS, ...NATO_MORE }).flatMap(([n, S2]) => S2.map((T, k2) => `<pattern id="ribs-${n}-${k2}" width="4" height="0.8" patternUnits="userSpaceOnUse"><rect width="4" height="0.3" fill="${T[0]}" fill-opacity="0.55"/></pattern>`)).join("");
@@ -9403,7 +9477,7 @@ function attach(pk) {
 var edge = (floor2, view) => view === "detail" ? hsl(floor2, STYLE.ramp[2]) : floor2;
 var caseBox = (key, size) => {
   const C2 = scaleCase(CASES[key], size);
-  return { h: C2.l2l, w: (C2.cushion ? 2 * C2.cushion.a : C2.od) + 2 * C2.crown.h, dial: C2.dial };
+  return { h: C2.l2l, w: (C2.cushion ? 2 * C2.cushion.a : C2.rails ? Math.max(C2.od, C2.lugw + 2 * C2.lugT) : C2.od) + 2 * C2.crown.h, dial: C2.dial };
 };
 var STRIPE_COUNT = (name) => new Set((STRIPES[name] || [[0, 1, 0]]).map((x) => x[2])).size;
 function draw(o) {
@@ -9423,7 +9497,8 @@ function draw(o) {
   STRIPES.custom = STRIPES[o.nato] || [[0, 1, 0]];
   const two = o.floor2 && o.floor2 !== o.floor;
   SH_OVR = hsl(two ? mixc(o.floor, o.floor2, 0.5) : o.floor, Math.max(0, 1 - (1 - STYLE.shadow) * SHD));
-  const strap = o.strap === "bracelet" ? "bracelet" : o.strap + "-custom";
+  BRACELET_KIND = o.strap === "links" ? "links" : "vault";
+  const strap = o.strap === "bracelet" || o.strap === "links" ? "bracelet" : o.strap + "-custom";
   const make = (mode) => {
     GLINT = mode;
     return sheet(o.key, strap, "own", o.L, true, o.h, "live", "custom", o.size).replace("__CLIPS__", CLIPS.join("") + STYLE.blur);
@@ -9451,6 +9526,7 @@ __export(miyazaki_exports, {
   draw: () => draw2,
   edge: () => edge2
 });
+var BRACELET_KIND2 = "vault";
 var process3 = { env: {} };
 var GLINT2 = "plain";
 var INK_K2 = +(process3.env.INK || 0);
@@ -9635,6 +9711,23 @@ var CASES2 = {
     drilled: false,
     dialName: "Quiet diver"
   },
+  emre01: {
+    name: "Emre01 \xB7 Emre's prototype \xB7 aluminium",
+    rails: true,
+    depth: 0.5,
+    od: 22,
+    l2l: 27,
+    lugw: 19.4,
+    lugT: 3.3,
+    flare: 0,
+    metal: ALU2,
+    bands: [[11, 10.5, 1, 0.6], [10.5, 9.1, 1, 0.12], [9.1, 8.6, -1, 0.7], [8.6, 8, 1, 0.12]],
+    opening: 8,
+    dial: 16,
+    crown: { at: 0, w: 1.8, h: 1.1, knurl: 2 },
+    drilled: false,
+    dialName: "Dress roman"
+  },
   dress: {
     name: "Dress \xB7 Calatrava 5196 \xB7 gold",
     od: 37,
@@ -9659,6 +9752,23 @@ var VARIANTS2 = {
     dark: { plate: "#17171a", map: {} },
     light: { plate: "#e6e0ce", map: { "#ede8db": "#1d1d1f" } },
     red: { plate: "#7a1d1f", map: {} }
+  },
+  emre01: {
+    name: "Emre01 \xB7 Emre's prototype \xB7 aluminium",
+    rails: true,
+    depth: 0.5,
+    od: 22,
+    l2l: 27,
+    lugw: 19.4,
+    lugT: 3.3,
+    flare: 0,
+    metal: ALU2,
+    bands: [[11, 10.5, 1, 0.6], [10.5, 9.1, 1, 0.12], [9.1, 8.6, -1, 0.7], [8.6, 8, 1, 0.12]],
+    opening: 8,
+    dial: 16,
+    crown: { at: 0, w: 1.8, h: 1.1, knurl: 2 },
+    drilled: false,
+    dialName: "Dress roman"
   },
   dress: {
     light: { plate: "#f2eee1", map: {} },
@@ -9756,13 +9866,17 @@ function cushionLug2(C2, sx, sy) {
   return P2([p(xi, y0), p(xi, half), p(xo - c, half), p(xo, half - c), p(xo, y0)]);
 }
 function lugPath2(C2, sx, sy) {
+  if (C2.rails) {
+    const xi2 = C2.lugw / 2, xo2 = xi2 + C2.lugT, hy = C2.l2l / 2, c = 0.2;
+    return P2([[sx * xi2, -hy], [sx * (xo2 - c), -hy], [sx * xo2, -hy + c], [sx * xo2, hy - c], [sx * (xo2 - c), hy], [sx * xi2, hy]]);
+  }
   const R = C2.od / 2, half = C2.l2l / 2, xi = C2.lugw / 2, xo = xi + C2.lugT, xb = xo + C2.flare;
   const yb = Math.sqrt(R * R - xb * xb), yi = Math.sqrt(R * R - xi * xi) - 1.5, r = 0.8;
   const p = (x, y) => `${f2(sx * x)} ${f2(sy * y)}`;
   return `M${p(xi, yi)}L${p(xi, half - r)}Q${p(xi, half)} ${p(xi + r, half)}L${p(xo - r, half)}Q${p(xo, half)} ${p(xo, half - r)}C${p(xo, half - (half - yb) * 0.5)} ${p(xb - 0.6, yb + 1.2)} ${p(xb, yb)}Z`;
 }
 function leatherSVG2(C2, L, colour2, open, span) {
-  const T = LEATHER2[colour2], w = C2.lugw - 0.2, end = 16, yc = C2.cushion ? C2.l2l / 2 - 3.4 : Math.min(C2.l2l / 2 - 3.4, C2.od / 2 + 0.2);
+  const T = LEATHER2[colour2], w = C2.lugw - 0.2, end = 16, yc = C2.cushion ? C2.l2l / 2 - 3.4 : C2.rails ? C2.od / 2 - 1.5 : Math.min(C2.l2l / 2 - 3.4, C2.od / 2 + 0.2);
   const gap = "";
   if (!open) return gap + leatherPiece2(-yc, -span, w, w - 1.2, T, L) + leatherPiece2(yc, span, w, w - 1.2, T, L, 0, [60, 67].filter((y) => y < span));
   const up = leatherPiece2(-yc, -(C2.l2l / 2 + 75), w, end, T, L), dn = leatherPiece2(yc, C2.l2l / 2 + 115, w, end, T, L, 7, [72, 79, 86, 93, 100, 107].map((y) => C2.l2l / 2 + y - 25));
@@ -9782,7 +9896,7 @@ function sheet2(key, strap, v, L, open = false, h = 40, dial = null, metal2 = nu
   const k = Math.tan(rad2(40)) / Math.tan(rad2(h)), [cxs, cys] = off(2.4 * k), [sxs, sys] = off(0.8 * k);
   const sil = C2.cushion ? [P2(cushionPts2(C2.cushion.a, C2.cushion.n)), ...[-1, 1].flatMap((sx) => [-1, 1].map((sy) => cushionLug2(C2, sx, sy)))].join(" ") : [circle3(C2.od / 2), ...[-1, 1].flatMap((sx) => [-1, 1].map((sy) => lugPath2(C2, sx, sy)))].join(" ");
   const SH = SH_OVR2 || "#605b51";
-  const strapRects = strap === "bracelet" ? `<rect x="${f2(-C2.lugw / 2)}" y="${open ? -(C2.l2l / 2 + 84) : -span}" width="${C2.lugw}" height="${open ? C2.l2l + 168 : 2 * span}"/>` : strap.startsWith("nato") ? `<rect x="${f2(-C2.lugw / 2)}" y="${open ? -(C2.l2l / 2 + 76) : -span}" width="${C2.lugw}" height="${open ? C2.l2l + 241 : 2 * span}"/>` : `<rect x="${f2(-C2.lugw / 2)}" y="${open ? -(C2.l2l / 2 + 81) : -span}" width="${C2.lugw}" height="${f2((open ? C2.l2l / 2 + 81 : span) - (C2.cushion ? C2.l2l / 2 - 3.4 : Math.min(C2.l2l / 2 - 3.4, C2.od / 2 + 0.2)))}"/><rect x="${f2(-C2.lugw / 2)}" y="${f2(C2.cushion ? C2.l2l / 2 - 3.4 : Math.min(C2.l2l / 2 - 3.4, C2.od / 2 + 0.2))}" width="${C2.lugw}" height="${f2((open ? C2.l2l / 2 + 115 : span) - (C2.cushion ? C2.l2l / 2 - 3.4 : Math.min(C2.l2l / 2 - 3.4, C2.od / 2 + 0.2)))}"/>`;
+  const strapRects = strap === "bracelet" ? `<rect x="${f2(-C2.lugw / 2)}" y="${open ? -(C2.l2l / 2 + 84) : -span}" width="${C2.lugw}" height="${open ? C2.l2l + 168 : 2 * span}"/>` : strap.startsWith("nato") ? `<rect x="${f2(-C2.lugw / 2)}" y="${open ? -(C2.l2l / 2 + 76) : -span}" width="${C2.lugw}" height="${open ? C2.l2l + 241 : 2 * span}"/>` : `<rect x="${f2(-C2.lugw / 2)}" y="${open ? -(C2.l2l / 2 + 81) : -span}" width="${C2.lugw}" height="${f2((open ? C2.l2l / 2 + 81 : span) - (C2.cushion ? C2.l2l / 2 - 3.4 : C2.rails ? C2.od / 2 - 1.5 : Math.min(C2.l2l / 2 - 3.4, C2.od / 2 + 0.2)))}"/><rect x="${f2(-C2.lugw / 2)}" y="${f2(C2.cushion ? C2.l2l / 2 - 3.4 : C2.rails ? C2.od / 2 - 1.5 : Math.min(C2.l2l / 2 - 3.4, C2.od / 2 + 0.2))}" width="${C2.lugw}" height="${f2((open ? C2.l2l / 2 + 115 : span) - (C2.cushion ? C2.l2l / 2 - 3.4 : C2.rails ? C2.od / 2 - 1.5 : Math.min(C2.l2l / 2 - 3.4, C2.od / 2 + 0.2)))}"/>`;
   const steps = 28, blockShadow = `<g fill="${SH}">` + Array.from({ length: steps }, (_, i) => `<g transform="translate(${f2(sxs * (i + 1) / steps)} ${f2(sys * (i + 1) / steps)})">${strapRects}</g>`).join("") + Array.from({ length: steps }, (_, i) => `<g transform="translate(${f2(cxs * (i + 1) / steps)} ${f2(cys * (i + 1) / steps)})">${sil.split(/ (?=M)/).map((d) => `<path d="${d}"/>`).join("")}</g>`).join("") + `</g>`;
   OUTL_C = [];
   OUTT2 = OUTL_C;
@@ -9822,15 +9936,16 @@ function caseSVG2(C2, v, L) {
   const R = C2.cushion ? C2.cushion.a : C2.od / 2, T = C2.metal, out = [];
   for (const sx of [-1, 1]) for (const sy of [-1, 1]) out.push(blob(C2.cushion ? cushionLug2(C2, sx, sy) : lugPath2(C2, sx, sy), T, L, 0.5, 1));
   const cw = C2.crown.w, ch = C2.crown.h;
+  const RC = C2.rails ? C2.lugw / 2 + C2.lugT - 0.1 : R;
   {
-    const cd = rrect(R - 1.2, -cw / 2, R + ch, cw / 2, 1), id = "cr" + BLOB++, ly = Math.sin(rad2(L)), lx = Math.cos(rad2(L));
+    const R2 = RC, cd = rrect(R2 - 1.2, -cw / 2, R2 + ch, cw / 2, Math.min(1, cw / 2)), id = "cr" + BLOB++, ly = Math.sin(rad2(L)), lx = Math.cos(rad2(L));
     out.push(blob(cd, T, L, 0.5, 0.9));
     CLIPS2.push(`<clipPath id="${id}"><path d="${cd}"/></clipPath>`);
-    const top = ly <= 0.05, bw = cw * 0.24, xg = R + 0.15;
-    out.push(`<g clip-path="url(#${id})"><rect x="${f2(R - 1.2)}" y="${f2(top ? -cw / 2 : cw / 2 - bw)}" width="${f2(ch + 1.2)}" height="${f2(bw)}" fill="#fff" fill-opacity="${Math.abs(ly) < 0.3 ? 0.14 : 0.22}"/><rect x="${f2(R - 1.2)}" y="${f2(top ? cw / 2 - bw : -cw / 2)}" width="${f2(ch + 1.2)}" height="${f2(bw)}" fill="#000" fill-opacity="0.3"/>` + Array.from({ length: C2.crown.knurl * 2 - 1 }, (_, k) => {
+    const top = ly <= 0.05, bw = cw * 0.24, xg = R2 + 0.15;
+    out.push(`<g clip-path="url(#${id})"><rect x="${f2(R2 - 1.2)}" y="${f2(top ? -cw / 2 : cw / 2 - bw)}" width="${f2(ch + 1.2)}" height="${f2(bw)}" fill="#fff" fill-opacity="${Math.abs(ly) < 0.3 ? 0.14 : 0.22}"/><rect x="${f2(R2 - 1.2)}" y="${f2(top ? cw / 2 - bw : -cw / 2)}" width="${f2(ch + 1.2)}" height="${f2(bw)}" fill="#000" fill-opacity="0.3"/>` + Array.from({ length: C2.crown.knurl * 2 - 1 }, (_, k) => {
       const y = -cw / 2 + (k + 1) * cw / (C2.crown.knurl * 2);
-      return `<rect x="${f2(xg)}" y="${f2(y - 0.09)}" width="${f2(R + ch - xg)}" height="0.18" fill="#000" fill-opacity="0.38"/>`;
-    }).join("") + `<rect x="${f2(lx > 0 ? R + ch - 0.45 : xg)}" y="${f2(-cw / 2)}" width="0.45" height="${f2(cw)}" fill="${lx > 0 ? "#fff" : "#000"}" fill-opacity="${lx > 0 ? 0.25 : 0.2}"/></g>`);
+      return `<rect x="${f2(xg)}" y="${f2(y - 0.09)}" width="${f2(R2 + ch - xg)}" height="0.18" fill="#000" fill-opacity="0.38"/>`;
+    }).join("") + `<rect x="${f2(lx > 0 ? R2 + ch - 0.45 : xg)}" y="${f2(-cw / 2)}" width="0.45" height="${f2(cw)}" fill="${lx > 0 ? "#fff" : "#000"}" fill-opacity="${lx > 0 ? 0.25 : 0.2}"/></g>`);
   }
   if (C2.cushion) out.push(blob(P2(cushionPts2(C2.cushion.a, C2.cushion.n)), T, L, 1.1, 2.4));
   else if (C2.insert) {
@@ -9876,7 +9991,7 @@ function caseSVG2(C2, v, L) {
     const r0 = C2.opening - REHAUT2, r1 = C2.opening, rm = (r0 + r1) / 2, wd = r1 - r0, arc2 = (a2, sp) => `M${f2(Math.cos(rad2(a2 - sp)) * rm)} ${f2(Math.sin(rad2(a2 - sp)) * rm)}A${f2(rm)} ${f2(rm)} 0 0 1 ${f2(Math.cos(rad2(a2 + sp)) * rm)} ${f2(Math.sin(rad2(a2 + sp)) * rm)}`;
     out.push(`<path d="${circle3(r1)}${circle3(r0)}" fill-rule="evenodd" fill="${T[1]}"/><path d="${arc2(L + 180, 70)}" fill="none" stroke="${T[0]}" stroke-width="${f2(wd * 0.75)}" stroke-linecap="round"/><path d="${arc2(L, 60)}" fill="none" stroke="${T[2]}" stroke-width="${f2(wd * 0.75)}" stroke-linecap="round"/><path d="${circle3(r0)}" fill="none" stroke="#000" stroke-opacity="0.35" stroke-width="0.12"/>`);
   }
-  out.push(`<g clip-path="url(#dial-${C2.key})"><g transform="translate(${f2(-uL[0] * Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad2(40)) / Math.tan(rad2(SUN_H2)))))} ${f2(-uL[1] * Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad2(40)) / Math.tan(rad2(SUN_H2)))))})"><path d="M-500 -500H500V500H-500Z${circle3(C2.opening)}" fill-rule="evenodd" fill="#000" fill-opacity="${f2(Math.min(1, 0.44 * SHD2))}"/></g></g>`);
+  out.push(`<g clip-path="url(#dial-${C2.key})"><g transform="translate(${f2(-uL[0] * (C2.depth ?? 1) * Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad2(40)) / Math.tan(rad2(SUN_H2)))))} ${f2(-uL[1] * (C2.depth ?? 1) * Math.max(0.5, Math.min(2.6, 1.1 * Math.tan(rad2(40)) / Math.tan(rad2(SUN_H2)))))})"><path d="M-500 -500H500V500H-500Z${circle3(C2.opening)}" fill-rule="evenodd" fill="#000" fill-opacity="${f2(Math.min(1, 0.44 * SHD2))}"/></g></g>`);
   const r = C2.opening - 1.2, a = L;
   out.push(`<path d="M${f2(Math.cos(rad2(a - 35 * GLASS2.len)) * r)} ${f2(Math.sin(rad2(a - 35 * GLASS2.len)) * r)}A${f2(r)} ${f2(r)} 0 0 1 ${f2(Math.cos(rad2(a + 35 * GLASS2.len)) * r)} ${f2(Math.sin(rad2(a + 35 * GLASS2.len)) * r)}" fill="none" stroke="#fff" stroke-opacity="${f2(Math.min(1, 0.5 * GLASS2.op))}" stroke-width="${f2(1.6 * GLASS_K * GLASS2.fat)}" stroke-linecap="round"/>`);
   return out.join("");
@@ -9973,6 +10088,24 @@ function vaultBracelet2({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H = 
   }
   return out.join("");
 }
+function linksBracelet2({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H = 40, ramp, ink = null, inkW = 0.22 }) {
+  const lv = [Math.cos(rad2(H)) * Math.cos(rad2(L)), Math.cos(rad2(H)) * Math.sin(rad2(L)) * sy, Math.sin(rad2(H))];
+  const h = 4.4, g = 0.15, mid = W2 * 0.46, out = [`<rect x="${f2(-W2 / 2 + 0.3)}" y="${f2(Math.min(sy * y0, sy * span))}" width="${f2(W2 - 0.6)}" height="${f2(Math.abs(span - y0))}" fill="${ramp[0]}"/>`];
+  const piece = (x0, x1, a, b) => {
+    const top = Math.min(sy * a, sy * b), bot = Math.max(sy * a, sy * b), r = Math.min(0.9, (bot - top) * 0.3), d = rrect42(x0, top, x1, bot, [r, r, r, r]);
+    out.push(barrel2(d, x0, top, x1, bot, 0.99, ramp, lv, 1));
+    if (ink) out.push(`<path d="${d}" fill="none" stroke="${ink}" stroke-width="${inkW}" stroke-linejoin="round"/>`);
+  };
+  piece(-mid / 2 + g / 2, mid / 2 - g / 2, y0, y0 + h / 2 - g);
+  for (let y = y0; y + h / 2 <= span + 0.01; y += h) {
+    const b = Math.min(span, y + h - g);
+    piece(-W2 / 2, -mid / 2 - g / 2, y, b);
+    piece(mid / 2 + g / 2, W2 / 2, y, b);
+    const c0 = y + h / 2, c1 = Math.min(span, c0 + h - g);
+    if (c1 > c0 + 0.5) piece(-mid / 2 + g / 2, mid / 2 - g / 2, c0, c1);
+  }
+  return out.join("");
+}
 function braceletSVG2(C2, L, span) {
   const R = C2.od / 2, lw = C2.lugw, W2 = C2.lugw - 0.2, yE = C2.l2l / 2 + 0.8, ramp = ramp62(C2.metal);
   const lv0 = (sy) => [Math.cos(rad2(SUN_H2)) * Math.cos(rad2(L)), Math.cos(rad2(SUN_H2)) * Math.sin(rad2(L)) * sy, Math.sin(rad2(SUN_H2))];
@@ -9984,14 +10117,14 @@ function braceletSVG2(C2, L, span) {
       arc2.push([x, sy * (Math.sqrt(Rr * Rr - x * x) - 0.15)]);
     }
     const end = "M" + [...arc2, [lw / 2, sy * yE], [-lw / 2, sy * yE]].map((p) => `${f2(p[0])} ${f2(p[1])}`).join("L") + "Z";
-    const top = Math.min(sy * (Math.sqrt(Rr * Rr - lw * lw / 4) - 0.15), sy * yE), bot = Math.max(sy * (Math.sqrt(Rr * Rr) - 0.15), sy * yE);
+    const ys = [sy * (Math.sqrt(Rr * Rr - lw * lw / 4) - 0.15), sy * (Rr - 0.15), sy * yE], top = Math.min(...ys), bot = Math.max(...ys);
     out += barrel2(end, -lw / 2, Math.min(top, bot), lw / 2, Math.max(top, bot), 0.99, ramp, lv0(sy), 1);
     const mid = W2 * 0.36;
     for (const x of [-mid / 2, mid / 2]) out += `<path d="M${f2(x)} ${f2(sy * (Math.sqrt(Rr * Rr - x * x) - 0.15))}V${f2(sy * yE)}" stroke="${ramp[0]}" stroke-width="0.22"/>`;
     out += `<path d="M${arc2.map((p) => `${f2(p[0])} ${f2(p[1])}`).join("L")}" fill="none" stroke="#000" stroke-opacity="0.5" stroke-width="0.5"/>`;
     out += INKB2 ? `<path d="${end}" fill="none" stroke="${INKB2}" stroke-width="0.22" stroke-linejoin="round"/>` : "";
     OUTT2.push(end);
-    out += vaultBracelet2({ W: W2, y0: yE, span, sy, L, H: SUN_H2, ramp, ink: INKB2 });
+    out += (BRACELET_KIND2 === "links" ? linksBracelet2 : vaultBracelet2)({ W: W2, y0: yE, span, sy, L, H: SUN_H2, ramp, ink: INKB2 });
     for (let k = 0, y = yE; y + 6.4 <= span + 0.01; k++, y += 6.4) {
       const w = Math.max(16, W2 - k * 0.45);
       OUTT2.push(`M${f2(-w / 2)} ${f2(sy * y)}H${f2(w / 2)}V${f2(sy * (y + 6.4))}H${f2(-w / 2)}Z`);
@@ -10050,7 +10183,7 @@ function attach2(pk) {
 var edge2 = (floor2, view) => view === "detail" ? hsl2(floor2, STYLE2.ramp[2]) : floor2;
 var caseBox2 = (key, size) => {
   const C2 = scaleCase2(CASES2[key], size);
-  return { h: C2.l2l, w: (C2.cushion ? 2 * C2.cushion.a : C2.od) + 2 * C2.crown.h, dial: C2.dial };
+  return { h: C2.l2l, w: (C2.cushion ? 2 * C2.cushion.a : C2.rails ? Math.max(C2.od, C2.lugw + 2 * C2.lugT) : C2.od) + 2 * C2.crown.h, dial: C2.dial };
 };
 var STRIPE_COUNT2 = (name) => new Set((STRIPES2[name] || [[0, 1, 0]]).map((x) => x[2])).size;
 function draw2(o) {
@@ -10070,7 +10203,8 @@ function draw2(o) {
   STRIPES2.custom = STRIPES2[o.nato] || [[0, 1, 0]];
   const two = o.floor2 && o.floor2 !== o.floor;
   SH_OVR2 = hsl2(two ? mixc2(o.floor, o.floor2, 0.5) : o.floor, Math.max(0, 1 - (1 - STYLE2.shadow) * SHD2));
-  const strap = o.strap === "bracelet" ? "bracelet" : o.strap + "-custom";
+  BRACELET_KIND2 = o.strap === "links" ? "links" : "vault";
+  const strap = o.strap === "bracelet" || o.strap === "links" ? "bracelet" : o.strap + "-custom";
   const make = (mode) => {
     GLINT2 = mode;
     return sheet2(o.key, strap, "own", o.L, true, o.h, "live", "custom", o.size).replace("__CLIPS__", CLIPS2.join("") + STYLE2.blur);
@@ -10486,9 +10620,10 @@ var STYLES = { engineer: engineer_exports, miyazaki: miyazaki_exports };
 var FIRST_LINK = "https://duztman.github.io/dial-tool/#3FP94TVYV6068DZTAR5EHAGDJ5KDX3C83PTV5PYTSG5YH8EY8HBEBGJ8KSJTS25J1ZVXNWAJETSHDKB438N57SYCGTJB18E93MY138E955D0HKZXDS82HKV04FQ27J8DNM2F1SFEBJGMPT921TZ4TM2KF1PP83Q6XJRD756D03576X1P7V3WYA4WE7HFRRKCWSR1AS6MW6RSD6NPGCW40P2KG91EHD0GYS0GZT0PQNZB4ZCB9AXKNZZ4A2PB7YQ7CK7ECXPRNVGVY89GPG0FWGVB9ECZGEQXETH7D08TB2V8ANR9J7E8W1X0YXKD7F2YRKQK2MS3PM3X4NBQFGRM2H8H4K4KMR99KFCA6FND4TYQ8CFMYYNPNH70PPM943XT02FT2PMECAE9J5JTCXNC7ZX8TZ89BQQAF87FX5X8DAXBT7FRDVAWGFAGJ914682JT5PSMTCE2EMDDGYY4AMHRMBXH7H844F8PW9XMX90MDT2DKFJAPKPFKVSC319KBRHHAV5HPPZ5565S3SKDKRH7V1SWZZ5F5WMZ5KEDTZ9D94YAK1K05B6Z8HSSH1Y3Z3760XY4N5HRYPMVTZK00WDE0TRE5TYPWX63R4GKVKPV643MZVQ43RPZE5W87KVXTWNXW70CQ8SN75FJYSZCD9CNNSXWV1Y7H2ZSH6ECAT1WGSBAK70ZENMCDTKZ0C";
 var refresh_ground = () => {
 };
-var VERSION = "beta 1.0.11";
+var VERSION = "beta 1.0.19";
 var FONT_BASE = "../fonts/";
 var S = { t: 10 * 3600 + 10 * 60, date: "" };
+var metal_strap = () => W.strap === "bracelet" || W.strap === "links";
 var W = {
   style: "miyazaki",
   key: "dress",
@@ -10511,6 +10646,7 @@ var W = {
   insert: null,
   // the diver's insert: [top, bottom]
   side_shown: true,
+  grey_panel: false,
   lighting: "dramatic",
   // dramatic (spotlight, flare) or flat — on its own, whatever the view (01:48)
   L: 225,
@@ -11036,17 +11172,41 @@ var ground_dot = el("i", { className: "dot" });
 var ground_button = el("button", { type: "button", className: "onview backdropbox", id: "ground", title: "The background: one colour, or two for a gradient", ariaExpanded: "false" }, ground_dot, el("span", { className: "word", textContent: "Background" }));
 var ground_pop = el("div", { className: "groundpop night", id: "ground-pop", hidden: true });
 var canvas_foot = el("div", { className: "canvasfoot" }, ground_pop, el("div", { className: "canvasbtns" }, zoom_pill, ground_button));
-var side_switch = el("button", { type: "button", className: "onview backdropbox sideswitch", id: "side-switch" });
+var side_switch = el("button", { type: "button", className: "onview sideswitch", id: "side-switch" });
+var grey_swatch = el("button", { type: "button", className: "greyswatch", id: "sc-grey" });
 function ground_look() {
   const c = floor(), n = parseInt(c.slice(1), 16), [r, g, b] = [n >> 16 & 255, n >> 8 & 255, n & 255].map((v) => v / 255);
   const hi = Math.max(r, g, b), lo = Math.min(r, g, b), l = (hi + lo) / 2, d = hi - lo, sat = d ? d / (1 - Math.abs(2 * l - 1)) : 0;
   let h = 0;
   if (d) h = hi === r ? ((g - b) / d + 6) % 6 : hi === g ? (b - r) / d + 2 : (r - g) / d + 4;
-  const ch = Math.round(h * 60), cs = Math.round(Math.min(1, sat * 2.2 + 0.15) * 100), cl = Math.round(l * 30);
-  side.style.setProperty("--column", `hsl(${ch} ${cs}% ${cl}% / 0.85)`);
-  side.style.setProperty("--column-top", `hsl(${ch} ${cs}% ${Math.min(100, cl + 10)}% / 0.85)`);
+  let ch = Math.round(h * 60), cs = Math.round(Math.min(1, sat * 2.2 + 0.15) * 100), cl = Math.round(l * 30);
+  const tinted = `hsl(${ch} ${cs}% ${cl}%)`, GREY = [0, 0, 13];
+  if (W.grey_panel) [ch, cs, cl] = GREY;
+  grey_swatch.style.background = W.grey_panel ? tinted : `hsl(0 0% ${GREY[2]}%)`;
+  grey_swatch.title = grey_swatch.ariaLabel = W.grey_panel ? "The panel in the background's colour" : "The panel in greys";
+  grey_swatch.setAttribute("aria-pressed", String(Boolean(W.grey_panel)));
+  side.style.setProperty("--column-solid", `hsl(${ch} ${cs}% ${Math.min(100, cl + 10)}%)`);
+  const op = W.grey_panel ? 1 : 0.85;
+  side.style.setProperty("--column", `hsl(${ch} ${cs}% ${cl}% / ${op})`);
+  side.style.setProperty("--column-top", `hsl(${ch} ${cs}% ${Math.min(100, cl + 10)}% / ${op})`);
   side.style.setProperty("--uiblack", cl >= 22 ? `hsl(${ch} ${cs}% ${cl - 22}%)` : `hsl(${ch} ${Math.min(cs, 60)}% ${cl + 22}%)`);
   side.style.setProperty("--uiblack-text", cl >= 22 ? `hsl(${ch} ${cs}% ${Math.max(0, cl - 40)}%)` : `hsl(${ch} ${Math.min(cs, 50)}% ${cl + 40}%)`);
+  const panel2 = side.querySelector(".panel");
+  if (panel2) {
+    const tint = Math.min(cs, 40), grey = Math.min(cs, 25), wl = Math.min(97, cl + 22 + 44);
+    const set = (k, v) => panel2.style.setProperty(k, v);
+    side.style.setProperty("--switch-ink", `hsl(${ch} ${tint}% ${wl}%)`);
+    set("--ink", `hsl(${ch} ${tint}% ${wl}%)`);
+    set("--grey", `hsl(${ch} ${tint}% ${wl}% / 0.66)`);
+    set("--white", `hsl(${ch} ${tint}% ${Math.min(100, wl + 6)}%)`);
+    const by = (k) => Math.max(0, Math.min(100, cl >= 22 ? cl - k : cl + k));
+    set("--night", `hsl(${ch} ${grey}% ${Math.max(0, cl - 4)}%)`);
+    set("--night-field", `hsl(${ch} ${grey}% ${by(11)}%)`);
+    set("--field", `hsl(${ch} ${grey}% ${by(11)}%)`);
+    set("--hover", `hsl(${ch} ${grey}% ${by(16)}%)`);
+    set("--rule", `hsl(${ch} ${grey}% ${by(22)}%)`);
+    set("--chip-rule", `hsl(${ch} ${tint}% ${wl}% / 0.28)`);
+  }
   main.style.setProperty("--floor", W.floor2 && W.floor ? `linear-gradient(135deg, ${W.floor}, ${W.floor2})` : E().edge(c, W.lighting === "flat" ? "flat" : "detail"));
   const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
   main.classList.toggle("dark", lum < 0.55);
@@ -11054,13 +11214,17 @@ function ground_look() {
   ground_dot.style.background = W.floor2 && W.floor ? `linear-gradient(135deg, ${W.floor}, ${W.floor2})` : c;
   const shown = W.side_shown;
   side.classList.toggle("away", !shown);
-  const wide = side.offsetTop === 0, arrow = wide ? shown ? "M6.25 4.25L10.25 8.25L6.25 12.25" : "M10.25 4.25L6.25 8.25L10.25 12.25" : shown ? "M4.25 6.25L8.25 10.25L12.25 6.25" : "M4.25 10.25L8.25 6.25L12.25 10.25";
+  const wide = side.offsetTop === 0, arrow = wide ? shown ? "M3.25 8.25H12.75M8.75 4.25L12.75 8.25L8.75 12.25" : "M13.25 8.25H3.75M7.75 4.25L3.75 8.25L7.75 12.25" : shown ? "M8.25 3.25V12.75M4.25 8.75L8.25 12.75L12.25 8.75" : "M8.25 13.25V3.75M4.25 7.75L8.25 3.75L12.25 7.75";
   side_switch.innerHTML = icon(`<path d="${arrow}"/>`);
   side_switch.title = side_switch.ariaLabel = shown ? "Hide the controls" : "Show the controls";
   side_switch.setAttribute("aria-pressed", String(shown));
   if (!drawn_view) return;
   frame_view();
 }
+grey_swatch.onclick = () => {
+  W.grey_panel = !W.grey_panel;
+  ground_look();
+};
 side_switch.onclick = () => {
   W.side_shown = !W.side_shown;
   ground_look();
@@ -11218,10 +11382,10 @@ function panel() {
       W.zoom = 1;
       W.pan = [0, 0];
     }),
-    seg("Case", [["dress", "Dress"], ["field", "Field"], ["diver", "Diver"]], () => W.key, (v) => {
+    seg("Case", [["dress", "Dress"], ["field", "Field"], ["diver", "Diver"], ["emre01", "Emre01"]], () => W.key, (v) => {
       W.key = v;
-      W.strap = v === "diver" ? "bracelet" : W.strap === "bracelet" ? "leather" : W.strap;
-      if (W.strap === "bracelet") W.metal = null;
+      W.strap = v === "diver" ? metal_strap() ? W.strap : "bracelet" : metal_strap() ? "leather" : W.strap;
+      if (metal_strap()) W.metal = null;
     }),
     num("Size", 0.8, 1.2, 0.01, () => W.size, (v) => {
       W.size = v;
@@ -11232,8 +11396,8 @@ function panel() {
     }, () => true, true),
     colour("Case colour", metal, (c) => {
       W.metal = c;
-    }, () => W.strap !== "bracelet"),
-    note2(() => W.strap === "bracelet" ? "With the bracelet, the case and bracelet are one of the metals." : "", "field"),
+    }, () => !metal_strap()),
+    note2(() => metal_strap() ? "With the bracelet, the case and bracelet are one of the metals." : "", "field"),
     seg("Insert", [["black", "Black"], ["blue", "Blue"], ["green", "Green"], ["pepsi", "Pepsi"], ["batman", "Batman"], ["coke", "Coke"], ["rootbeer", "Root beer"], ["sprite", "Sprite"]], () => W.insert ? null : W.insert_preset, (v) => {
       W.insert_preset = v;
       W.insert = null;
@@ -11247,10 +11411,10 @@ function panel() {
   );
   const strap = pane("Strap", true, () => W.strap === "nato" ? "NATO" : W.strap);
   strap.body.append(
-    seg("Strap", [["leather", "Leather"], ["nato", "NATO"], ["bracelet", "Bracelet"]], () => W.strap, (v) => {
+    seg("Strap", [["leather", "Leather"], ["nato", "NATO"], ["bracelet", "Bracelet"], ["links", "Links"]], () => W.strap, (v) => {
       W.strap = v;
-      if (v === "bracelet") W.metal = null;
-    }, () => true, false, (v) => v !== "bracelet" || W.key === "diver"),
+      if (metal_strap()) W.metal = null;
+    }, () => true, false, (v) => v !== "bracelet" && v !== "links" || W.key === "diver"),
     seg("Leather", [["tan", "Tan"], ["brown", "Brown"], ["black", "Black"]], () => W.leather ? null : W.leather_preset, (v) => {
       W.leather_preset = v;
       W.leather = null;
@@ -11417,7 +11581,7 @@ function panel() {
   return el(
     "aside",
     { className: "panel" },
-    el("header", {}, el("div", { className: "mast" }, el("div", { className: "about" }, mark, bio), title)),
+    el("header", {}, el("div", { className: "mast" }, el("div", { className: "about" }, mark, bio), title), grey_swatch),
     tabs,
     style_line,
     el("div", { className: "form" }, ...TABS.flatMap(([, panes]) => panes.map((p) => p.section)))
