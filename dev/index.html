@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Dial Tool · dev</title>
+</head>
+<body>
+<p id="wait">Loading the newest dev build…</p>
+<script>
+// The /dev/ page (#500): a loader, not the build. GitHub Pages lets browsers keep a page for about ten minutes, so a
+// plain refresh could show an older build. This asks for the build itself (/dial-tool/dev/dial-tool.html) with a new
+// address each time (?time) and no cache, then writes it into this page: the address, and a dial's link after #,
+// stay as they are. If the build can't be fetched, the line below says so (R17: no silent dead end).
+fetch("/dial-tool/dev/dial-tool.html?" + Date.now(), { cache: "no-store" })
+  .then((r) => { if (!r.ok) throw new Error("the server answered " + r.status); return r.text(); })
+  .then((html) => { document.open(); document.write(html); document.close(); })
+  .catch((e) => { document.getElementById("wait").textContent = "The dev build couldn’t be loaded (" + e.message + "). Refresh to try again, or use the released page: https://duztman.github.io/dial-tool/"; });
+</script>
+</body>
+</html>
