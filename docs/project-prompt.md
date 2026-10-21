@@ -17,4 +17,4 @@
 > - I test on my Mac and iPad and send screenshots plus the Export section's log.
 > - Commit to `dev`; `tools/release.sh X "first line"` puts a version on the live page; `main` only when I say release.
 > - Simplest approach that works. Nothing unprompted. Third attempt at the same fix → stop and ask.
-> - "**Future map**" = assemble from the build list and brief §5–§8, ordered Now → Next → Later → Parked.
+> - "**Future map**" = assemble from the build list and brief §5–§8, ordered v1 → After v1 → Later → Parked.
