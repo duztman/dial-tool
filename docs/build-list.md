@@ -70,6 +70,27 @@ Every place an SVG can go, built as one mechanism (R34; R23 says how a file is r
 | 466 | **A moon window's Picture gets Custom…, which takes an SVG** (01:49: "Arc phase line gets a custom… which will insert an svg. Also a note") — with the SVG inserts (#405, #50, #346) | open — note |
 | 405 | **SVG inserts: a blank template file** — a downloadable SVG with guides and registration dots (the artboard's centre, the 12 o'clock line, a hand's pivot, a marker's box) so a drawing made on it imports editable and in place; one template per place an SVG can go (a hand, a marker, a window picture, a logo). The plan for every SVG upload (#50, #72, #173, #346), noted for when they are built (Okay, 17:43: "give the user a blank file with guides and dots to stick to make things editable and such. For the future, note under all svg upload available areas") | open — later, with #50 |
 
+### H · Small jobs, batch 1 (Okay, 21 Oct 2026: "Easy to do things: doing 10 of them and checking once is a solid job")
+
+Built together, one check. With these from groups D and F: #149, #434, #495, #76, #231 (once Okay picks the words).
+
+| # | Item | Status |
+|---|---|---|
+| 408 | **The font box's head**: its colour as a full swatch pill with the hex, as the colour rows have; the font name 2 px larger, growing from its baseline and its left edge — nothing else in the box moves (Okay, 19 Oct 2026, 18:08, a picture of the box: "color here gets full swatch with hex. Font name 2px bigger but nothing else moves, just text gets bigger, grows snapped to baseline and left") | v1 — small-jobs batch 1 (Okay, 21 Oct 2026) |
+| 498 | **Positions pane: Count and Every lose their labels** (Okay's screenshot, 21 Oct 2026, 21:51): the two chevron boxes (12, 3) stand with no visible name — "Every" shows as a clipped "E" behind the Count box. Names back, nothing overlapping | v1 — small-jobs batch 1 (Okay, 21 Oct 2026) |
+| 499 | **Positions pane: the round picture needs twice the space under it** (same screenshot: "Needs 2x padding until" the pane's bottom line): the picture's foot sits on the line | v1 — small-jobs batch 1 (Okay, 21 Oct 2026) |
+| 468 | **Compare packs densely when the count is uneven**, as Dial Packer does (Okay, 02:21: "Use dense packing of circles for preview if uneven like on preview. -note for later"). Compare packs as the print sheet does (`pack_discs`: straight or staggered rows) | v1 — small-jobs batch 1 (Okay, 21 Oct 2026) |
+| 158 | **Icon states not checked by the pipeline:** hover; the font box's *Same font as* sign (shown only with a window's own font); the labelmenu chevron (12). Drawn on the grid, not visited by `check.mjs` | v1 — small-jobs batch 1 (Okay, 21 Oct 2026) |
+
+### I · Medium, in v1 (Okay, 21 Oct 2026)
+
+| # | Item | Status |
+|---|---|---|
+| 329 | **Hovering a row lights its part on the picture at the left — "these preview gestures are sitewide"**: the hands have it (the part a number changes, lit in the selected guide's colour while its row is pointed at, focused or its controller open); the rings' rows don't | v1 (Okay, 21 Oct 2026) |
+| 52 | Named instances of variable fonts in the font box (a weight axis without named styles gets Regular · Bold, #275; the font's own instances are not listed). The PDF's live text is #63, the fallback font #15 | v1 (Okay, 21 Oct 2026) |
+| 398 | **The stylesheet's values off the scale** (R32; the #294 review, with Okay): 34 literals in rules that are not specials — letter-spacings and underline offsets in em (`h1`, `.atmore`, `.bio a`, `.asnumbers`, `.popvalue input`, `.irisgo`), the ruler's opacities (0.4 · 0.85 · 0.6 · 0.38) and `.dragged`/`.above` at 0.45, `.tinyshut`'s 0.15 s, SVG stroke widths (`.grips .frame` 1 and `.handle` 1.5, `.picked` 3 2, `.paper` 1, `.ruler` 1), the play cap's 12 % hover lift, the mast's 250 % / 70 % sweep, `.pinned` 33 px foot, `--sign-w` 18 on a phone, `--thumb-eye-edge` + 0.75, `.tip svg` − 10; one literal negative margin (`.ringlist .grip`, −4 px: find what the grid is doing instead); the breakpoints 860 / 861 hard-coded in `8-narrow.css` and `4d-hands.css`; five rules styling another part's selector from the wrong file (`4c-rows.css` on the font sheet's fields, `3-controls.css` on `.row > .btnline`, `4f-rings.css` undoing `.detail`'s border, `4b-lines-tabs.css` undoing `.pane`'s top line, `4g-fonts.css` re-skinning `.tab.on`); `--handle` meaning a width token and a JS-set colour; the round-corner canon ("colour things only", `0-order.css`) that the signs, tabs, pills and the Tiny Preview don't follow — settle the canon or the corners. The layout check (#188) is what would hold the line afterwards. | v1 (Okay, 21 Oct 2026) |
+| 230 | **Per-pane anchors from the app into the guide** (edition 2). The Help link beside the version opens the guide (Okay, 15 Oct 2026: "Help next to beta number same font but underlined"). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | v1, with the guide's next edition #93 (Okay, 21 Oct 2026) |
+
 ## After v1
 
 | # | Item | Status |
@@ -98,15 +119,7 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 
 | # | Item | Status |
 |---|---|---|
-| 498 | **Positions pane: Count and Every lose their labels** (Okay's screenshot, 21 Oct 2026, 21:51): the two chevron boxes (12, 3) stand with no visible name — "Every" shows as a clipped "E" behind the Count box. Names back, nothing overlapping | note |
-| 499 | **Positions pane: the round picture needs twice the space under it** (same screenshot: "Needs 2x padding until" the pane's bottom line): the picture's foot sits on the line | note |
 | 75 | Usability review, the other tabs: Rings · Hands · Windows · Export, one at a time (Okay, 12 Oct 2026) | open |
-| 329 | **Hovering a row lights its part on the picture at the left — "these preview gestures are sitewide"**: the hands have it (the part a number changes, lit in the selected guide's colour while its row is pointed at, focused or its controller open); the rings' rows don't | later · open — rings |
-| 408 | **The font box's head**: its colour as a full swatch pill with the hex, as the colour rows have; the font name 2 px larger, growing from its baseline and its left edge — nothing else in the box moves (Okay, 19 Oct 2026, 18:08, a picture of the box: "color here gets full swatch with hex. Font name 2px bigger but nothing else moves, just text gets bigger, grows snapped to baseline and left") | open — look lane |
-| 468 | **Compare packs densely when the count is uneven**, as Dial Packer does (Okay, 02:21: "Use dense packing of circles for preview if uneven like on preview. -note for later"). Compare packs as the print sheet does (`pack_discs`: straight or staggered rows) | open — note |
-| 52 | Named instances of variable fonts in the font box (a weight axis without named styles gets Regular · Bold, #275; the font's own instances are not listed). The PDF's live text is #63, the fallback font #15 | open |
-| 158 | **Icon states not checked by the pipeline:** hover; the font box's *Same font as* sign (shown only with a window's own font); the labelmenu chevron (12). Drawn on the grid, not visited by `check.mjs` | open |
-| 230 | **Per-pane anchors from the app into the guide** (edition 2). The Help link beside the version opens the guide (Okay, 15 Oct 2026: "Help next to beta number same font but underlined"). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
 
 ### Files
 
@@ -118,9 +131,8 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 
 | # | Item | Status |
 |---|---|---|
-| 14 | Heavy dials (knock-outs over hundreds of ticks take about 90 ms a slider step in Chromium, more on the Intel Mac): redraw on mouse-up if dragging feels slow | open |
+| 14 | Heavy dials (knock-outs over hundreds of ticks take about 90 ms a slider step in Chromium, more on the Intel Mac): redraw on mouse-up if dragging feels slow | after v1 (Okay, 21 Oct 2026) |
 | 69 | Split `web/src/app.js` (one class, about 5,900 lines). Scrollbars that take room (macOS "Show scroll bars: always") would make the scrolling rows about 15 narrower than the pinned ones — not reproduced here; ask Okay what his Mac is set to | open |
-| 398 | **The stylesheet's values off the scale** (R32; the #294 review, with Okay): 34 literals in rules that are not specials — letter-spacings and underline offsets in em (`h1`, `.atmore`, `.bio a`, `.asnumbers`, `.popvalue input`, `.irisgo`), the ruler's opacities (0.4 · 0.85 · 0.6 · 0.38) and `.dragged`/`.above` at 0.45, `.tinyshut`'s 0.15 s, SVG stroke widths (`.grips .frame` 1 and `.handle` 1.5, `.picked` 3 2, `.paper` 1, `.ruler` 1), the play cap's 12 % hover lift, the mast's 250 % / 70 % sweep, `.pinned` 33 px foot, `--sign-w` 18 on a phone, `--thumb-eye-edge` + 0.75, `.tip svg` − 10; one literal negative margin (`.ringlist .grip`, −4 px: find what the grid is doing instead); the breakpoints 860 / 861 hard-coded in `8-narrow.css` and `4d-hands.css`; five rules styling another part's selector from the wrong file (`4c-rows.css` on the font sheet's fields, `3-controls.css` on `.row > .btnline`, `4f-rings.css` undoing `.detail`'s border, `4b-lines-tabs.css` undoing `.pane`'s top line, `4g-fonts.css` re-skinning `.tab.on`); `--handle` meaning a width token and a JS-set colour; the round-corner canon ("colour things only", `0-order.css`) that the signs, tabs, pills and the Tiny Preview don't follow — settle the canon or the corners. The layout check (#188) is what would hold the line afterwards. | open |
 | 403 | **Playwright 1.56 → 1.64**: the window test's measured values (e.g. the font sheet's "184 64 -1 183") come from this Chromium build; bump it in a session of its own, re-measure, save the look again (`same.mjs save`) | open |
 | 407 | **The window test in sections that stand alone** — `test/window.mjs` is one script whose later checks use what earlier ones set up; restructure it so each section sets up and restores its own state, then `node test/window.mjs --only hands,bar` runs the sections a change touches (~1 min for a small push, R19); the full run stays for a step. Meanwhile `npm run small` skips parity and Wear OS and runs the icon check only when an icon changed (`icons/changed.mjs`, 4.88.1). Also: the full run on two Chromiums at once (~3 min), and the screenshots on the full run only (Okay, 19 Oct 2026, 17:46–17:54: "Compiling and updating takes too much time … Only filter makes more sense now. Memory stuff makes sense too") | **first step done — 4.90**: `test/window-only.mjs` runs chosen sections; making each stand alone is open |
 
