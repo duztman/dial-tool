@@ -316,3 +316,13 @@ main.sunning .sunknob { transform: scale(1.25); }
 .body .row.chk.pair > .check { color: var(--ink); }      /* both words as every tick's, not the grey of a row's name */
 .side .pane > .body:empty { display: none; }      /* a pane all on its line (Reset): nothing under it */
 #sc-reset-watch { grid-column: 4 / -1; justify-self: start; white-space: nowrap; }      /* where the controls start, as Dial's link */
+/* the title row half as high (03:35) */
+.side .panel > header { height: calc(var(--header) / 2 + 10px); }      /* half, then 10px more (03:40) */
+/* the round swatch at the title line's end: the panel's other look (03:35) */
+.side .greyswatch { flex: none; margin-left: auto; width: 16px; height: 16px; padding: 0; border: var(--hair) solid var(--rule); border-radius: 50%; cursor: pointer; }
+/* the column's switch: a round button of the panel's own colour, solid, its arrow the panel's white (03:35) */
+.sideswitch { display: grid; place-items: center; height: var(--control-large); border: 0; border-radius: 50%; background: var(--column-solid, #212121); color: var(--switch-ink, #f2f2ee); box-shadow: none; }
+.sideswitch svg { width: 16px; height: 16px; opacity: 1; }
+/* the switch 20px round, its arrow larger in it, its centre on the title line's centre (03:43) */
+.sideswitch { width: 20px; height: 20px; min-width: 0; top: calc((var(--header) / 2 + 10px) / 2 - 10px); }
+.sideswitch svg { width: 14px; height: 14px; }

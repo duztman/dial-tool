@@ -12,7 +12,7 @@ export function attach(pk) { PK = pk; }
 /** the ground's colour at the drawing's edge: what lies beyond it on the screen */
 export const edge = (floor, view) => (view === "detail" ? hsl(floor, STYLE.ramp[2]) : floor);
 /** the case's outline at a size: lug tip to lug tip (h) and across with the crown (w), in mm — for framing */
-export const caseBox = (key, size) => { const C = scaleCase(CASES[key], size); return { h: C.l2l, w: (C.cushion ? 2 * C.cushion.a : C.od) + 2 * C.crown.h, dial: C.dial }; };
+export const caseBox = (key, size) => { const C = scaleCase(CASES[key], size); return { h: C.l2l, w: (C.cushion ? 2 * C.cushion.a : C.rails ? Math.max(C.od, C.lugw + 2 * C.lugT) : C.od) + 2 * C.crown.h, dial: C.dial }; };
 export const STRIPE_COUNT = (name) => new Set((STRIPES[name] || [[0, 1, 0]]).map((x) => x[2])).size;
 /** o: { items, d (the dial's diameter), A (hand angles), key (dress · field · diver), strap ("leather" · "nato" ·
  *  "bracelet"), nato (a pattern's name), metal, leather, natoColours (body colours, one per colour of the pattern),

@@ -71,6 +71,36 @@ for (const name of ["engineer", "miyazaki"]) {
     if (!run || run.t !== t) { if (run) put(run); run = { t, a0, a1 }; } else run.a1 = a1;
   }
   put(run);`);
+  // Emre01 (03:54): Emre's case prototype, read off his photos — a round head on a frame of two upright rails, the strap
+  // between them; the bezel a flat wide ring stepping down to a 16 mm dial; a pin crown out through the right rail; grey
+  // like its print (aluminium). The rails stand in for the lugs, so the shadows, the outline and the straps follow
+  swap("  dress: {", `  emre01: {
+    name: "Emre01 · Emre's prototype · aluminium", rails: true, od: 22, l2l: 29, lugw: 19.4, lugT: 2.8, flare: 0, metal: ALU,
+    bands: [[11, 10.5, 1, 0.6], [10.5, 9.1, 1, 0.12], [9.1, 8.6, -1, 0.7], [8.6, 8.0, 1, 0.12]],
+    opening: 8.0, dial: 16, crown: { at: 0, w: 1.8, h: 1.1, knurl: 2 }, drilled: false, dialName: "Dress roman",
+  },
+  dress: {`);
+  swap("function lugPath(C, sx, sy) {\n", `function lugPath(C, sx, sy) {
+  if (C.rails) { const xi = C.lugw / 2, xo = xi + C.lugT, hy = C.l2l / 2, c = 0.35; return P([[sx * xi, -hy], [sx * (xo - c), -hy], [sx * xo, -hy + c], [sx * xo, hy - c], [sx * (xo - c), hy], [sx * xi, hy]]); }      // a rail, whole (the same for sy ±1)
+`);
+  if (name === "engineer") {
+    swap("const cw = C.crown.w, ch = C.crown.h, x0 = R - 0.4;", "const RC = C.rails ? C.lugw / 2 + C.lugT : R, cw = C.crown.w, ch = C.crown.h, x0 = RC - 0.4;      // on Emre01, out through the rail");
+    swap("[[R - 1.2, -cw * 0.32], [x0, -cw * 0.32], [x0, cw * 0.32], [R - 1.2, cw * 0.32]]", "[[RC - 1.2, -cw * 0.32], [x0, -cw * 0.32], [x0, cw * 0.32], [RC - 1.2, cw * 0.32]]");
+    // a rail: its flat top and a bevel on all four sides, each lit by the way it faces (as the cushion's bevel)
+    swap("  } else for (const sx of [-1, 1]) for (const sy of [-1, 1]) {\n    out.push(shape(lugPath(C, sx, sy), T[1], 0.2, T[2]));",
+      `  } else if (C.rails) for (const sx of [-1, 1]) {
+    const xi = sx * C.lugw / 2, xo = sx * (C.lugw / 2 + C.lugT), hy = C.l2l / 2, b = 0.8, xa = Math.min(xi, xo), xz = Math.max(xi, xo);
+    const o = [[xa, -hy], [xz, -hy], [xz, hy], [xa, hy]], i = [[xa + b, -hy + b], [xz - b, -hy + b], [xz - b, hy - b], [xa + b, hy - b]];
+    out.push(shape(P(o), T[1], 0.2, T[2]));
+    [[0, 1, 270], [1, 2, 0], [2, 3, 90], [3, 0, 180]].forEach(([a, z, phi]) => out.push(flat(P([o[a], o[z], i[z], i[a]]), tone(T, phi, 0.85, L))));
+    out.push(stroke(P(i), 0.1), stroke(P(o), 0.2));
+  } else for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
+    out.push(shape(lugPath(C, sx, sy), T[1], 0.2, T[2]));`);
+  } else {
+    swap("  { const cd = rrect(R - 1.2, -cw / 2, R + ch, cw / 2, 1.0),", "  const RC = C.rails ? C.lugw / 2 + C.lugT - 0.1 : R;      // on Emre01, out through the rail\n  { const R = RC, cd = rrect(R - 1.2, -cw / 2, R + ch, cw / 2, Math.min(1.0, cw / 2)),");
+  }
+  // on Emre01 the strap's end tucks under the round head, between the rails (as the bracelet does in the photos)
+  swap("Math.min(C.l2l / 2 - 3.4, C.od / 2 + 0.2)", "(C.rails ? C.od / 2 - 1.5 : Math.min(C.l2l / 2 - 3.4, C.od / 2 + 0.2))");
   // shadows darker or lighter, on their own (Okay, 20 Oct 2026, 23:38): SHD scales the hands' shadow, the bezel's
   // crescent on the dial and the block shadow's depth (the last in draw())
   s = s.replace("let INSERT = {", "let SHD = 1, HB_ON = false, INSERT = {");

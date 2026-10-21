@@ -17,7 +17,7 @@ import { Bar, el, clamp, icon, STEP } from "./bar.js";
 const STYLES = { engineer: ENGINEER, miyazaki: MIYAZAKI };
 const FIRST_LINK = "__FIRST_LINK__";
 let refresh_ground = () => {};      // the background popup shown again (set where it is made)
-const VERSION = "beta 1.0.11";      // the live site keeps the stable ones (beta 1.0 at /dial-tool/show-case/); this page counts on from there (01:43)
+const VERSION = "beta 1.0.17";      // the live site keeps the stable ones (beta 1.0 at /dial-tool/show-case/); this page counts on from there (01:43)
 const FONT_BASE = "__FONT_BASE__";
 
 // ── what is shown: the dial (S, Dial Tool's settings) and the watch round it (W) ──
@@ -28,7 +28,7 @@ const W = {
   floor: "#2a1a17", floor2: "#b4533a",      // the ground: one colour, or two for a gradient at 45°. The opener stands on Ember (Okay, 21 Oct 2026, 02:40)
   ground_set: false,      // the background chosen by hand: then an opened link keeps it; otherwise it goes back to its own (null)
   insert_preset: "black", insert: null,      // the diver's insert: [top, bottom]
-  side_shown: true,
+  side_shown: true, grey_panel: false,
   lighting: "dramatic",      // dramatic (spotlight, flare) or flat — on its own, whatever the view (01:48)
   L: 225, h: 40,      // the light: from the upper left, 40° high
   zoom: 1, pan: [0, 0],      // the view: how far in, and how far moved (screen pixels)
@@ -358,7 +358,10 @@ const ground_pop = el("div", { className: "groundpop night", id: "ground-pop", h
 const canvas_foot = el("div", { className: "canvasfoot" }, ground_pop, el("div", { className: "canvasbtns" }, zoom_pill, ground_button));
 // the column's switch: an arrow on the column's left edge that travels with it — pointing right to put the column away,
 // left to bring it back (00:29); on a phone, along its top edge, down and up
-const side_switch = el("button", { type: "button", className: "onview backdropbox sideswitch", id: "side-switch" });
+const side_switch = el("button", { type: "button", className: "onview sideswitch", id: "side-switch" });      /* a round button of the panel's colour, an arrow on it (03:35, after a send button) */
+/** the panel in Dial Tool's greys, as the bar, instead of the ground's colour: the round swatch at the title line's end
+ *  (03:35). It shows the other look: grey while tinted, the tinted colour while grey; a click swaps them */
+const grey_swatch = el("button", { type: "button", className: "greyswatch", id: "sc-grey" });
 /** the ground's look on the screen: the column a much darker, stronger version of the first colour, at 70 %; the canvas
  *  buttons light or dark by the ground under them */
 function ground_look() {
@@ -366,14 +369,36 @@ function ground_look() {
   const hi = Math.max(r, g, b), lo = Math.min(r, g, b), l = (hi + lo) / 2, d = hi - lo, sat = d ? d / (1 - Math.abs(2 * l - 1)) : 0;
   let h = 0; if (d) h = hi === r ? ((g - b) / d + 6) % 6 : hi === g ? (b - r) / d + 2 : (r - g) / d + 4;
   // the column: a much darker, strongly saturated version of the ground at 85 % (00:51)
-  const ch = Math.round(h * 60), cs = Math.round(Math.min(1, sat * 2.2 + 0.15) * 100), cl = Math.round(l * 30);
-  side.style.setProperty("--column", `hsl(${ch} ${cs}% ${cl}% / 0.85)`);
-  side.style.setProperty("--column-top", `hsl(${ch} ${cs}% ${Math.min(100, cl + 10)}% / 0.85)`);      // the top, a tenth lighter
+  let ch = Math.round(h * 60), cs = Math.round(Math.min(1, sat * 2.2 + 0.15) * 100), cl = Math.round(l * 30);
+  const tinted = `hsl(${ch} ${cs}% ${cl}%)`, GREY = [0, 0, 13];      // the bar's grey, #212121
+  if (W.grey_panel) [ch, cs, cl] = GREY;
+  grey_swatch.style.background = W.grey_panel ? tinted : `hsl(0 0% ${GREY[2]}%)`;
+  grey_swatch.title = grey_swatch.ariaLabel = W.grey_panel ? "The panel in the background's colour" : "The panel in greys";
+  grey_swatch.setAttribute("aria-pressed", String(Boolean(W.grey_panel)));
+  side.style.setProperty("--column-solid", `hsl(${ch} ${cs}% ${Math.min(100, cl + 10)}%)`);      // the top's colour, the brighter one (03:40)
+  const op = W.grey_panel ? 1 : 0.85;      // grey: solid, as the bar
+  side.style.setProperty("--column", `hsl(${ch} ${cs}% ${cl}% / ${op})`);
+  side.style.setProperty("--column-top", `hsl(${ch} ${cs}% ${Math.min(100, cl + 10)}% / ${op})`);      // the top, a tenth lighter
   // the interface's "blacks" (row lines, pill outlines, the ink rows' words): always a clear step from the column — 22
   // points darker where the column is light enough, else 22 lighter — so they hold at midtones and darks alike
   side.style.setProperty("--uiblack", cl >= 22 ? `hsl(${ch} ${cs}% ${cl - 22}%)` : `hsl(${ch} ${Math.min(cs, 60)}% ${cl + 22}%)`);
   // …and for words, which need more: 40 points
   side.style.setProperty("--uiblack-text", cl >= 22 ? `hsl(${ch} ${cs}% ${Math.max(0, cl - 40)}%)` : `hsl(${ch} ${Math.min(cs, 50)}% ${cl + 40}%)`);
+  // the panel's whites and greys tinted by the ground too (03:14: "the white 2 shades lighter than mid color; other
+  // darker and lighter grays get tinted by the bg as well"). A shade is the 22-point step the lines take; the lines (the
+  // mid colour) sit a shade above the column, the white two shades above them. The bar keeps Dial Tool's greys.
+  const panel = side.querySelector(".panel");
+  if (panel) {
+    const tint = Math.min(cs, 40), grey = Math.min(cs, 25), wl = Math.min(97, cl + 22 + 44);
+    const set = (k, v) => panel.style.setProperty(k, v);
+    side.style.setProperty("--switch-ink", `hsl(${ch} ${tint}% ${wl}%)`);
+    set("--ink", `hsl(${ch} ${tint}% ${wl}%)`); set("--grey", `hsl(${ch} ${tint}% ${wl}% / 0.66)`); set("--white", `hsl(${ch} ${tint}% ${Math.min(100, wl + 6)}%)`);
+    // the boxes and their outlines a step from the column, the same way as the lines (darker on a light column, lighter
+    // on a dark one): a fixed grey vanished once tinted, being the column's own hue (03:18: "we lost the rounded boxes")
+    const by = (k) => Math.max(0, Math.min(100, cl >= 22 ? cl - k : cl + k));
+    set("--night", `hsl(${ch} ${grey}% ${Math.max(0, cl - 4)}%)`); set("--night-field", `hsl(${ch} ${grey}% ${by(11)}%)`); set("--field", `hsl(${ch} ${grey}% ${by(11)}%)`);
+    set("--hover", `hsl(${ch} ${grey}% ${by(16)}%)`); set("--rule", `hsl(${ch} ${grey}% ${by(22)}%)`); set("--chip-rule", `hsl(${ch} ${tint}% ${wl}% / 0.28)`);
+  }
   main.style.setProperty("--floor", W.floor2 && W.floor ? `linear-gradient(135deg, ${W.floor}, ${W.floor2})` : E().edge(c, W.lighting === "flat" ? "flat" : "detail"));
   const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
   main.classList.toggle("dark", lum < 0.55);
@@ -381,7 +406,7 @@ function ground_look() {
   ground_dot.style.background = W.floor2 && W.floor ? `linear-gradient(135deg, ${W.floor}, ${W.floor2})` : c;
   const shown = W.side_shown;
   side.classList.toggle("away", !shown);
-  const wide = side.offsetTop === 0, arrow = wide ? (shown ? "M6.25 4.25L10.25 8.25L6.25 12.25" : "M10.25 4.25L6.25 8.25L10.25 12.25") : (shown ? "M4.25 6.25L8.25 10.25L12.25 6.25" : "M4.25 10.25L8.25 6.25L12.25 10.25");
+  const wide = side.offsetTop === 0, arrow = wide ? (shown ? "M3.25 8.25H12.75M8.75 4.25L12.75 8.25L8.75 12.25" : "M13.25 8.25H3.75M7.75 4.25L3.75 8.25L7.75 12.25") : (shown ? "M8.25 3.25V12.75M4.25 8.75L8.25 12.75L12.25 8.75" : "M8.25 13.25V3.75M4.25 7.75L8.25 3.75L12.25 7.75");
   side_switch.innerHTML = icon(`<path d="${arrow}"/>`);
   side_switch.title = side_switch.ariaLabel = shown ? "Hide the controls" : "Show the controls";
   side_switch.setAttribute("aria-pressed", String(shown));
@@ -389,6 +414,7 @@ function ground_look() {
   frame_view();
 }
 // while the column slides (eased, Dial Tool's view time), the drawing re-centres each frame
+grey_swatch.onclick = () => { W.grey_panel = !W.grey_panel; ground_look(); };
 side_switch.onclick = () => {
   W.side_shown = !W.side_shown; ground_look();
   const until = performance.now() + 800, follow = () => { frame_view(); bar.place_needle(); if (performance.now() < until) requestAnimationFrame(follow); };
@@ -454,7 +480,7 @@ function panel() {
   const nato_at = (i) => nato_colours()[i] || nato_colours()[0];
   watch.body.append(
     seg("View", [["detail", "Detail"], ["full", "Whole watch"], ["dial", "Dial"]], () => W.view, (v) => { W.view = v; W.zoom = 1; W.pan = [0, 0]; }),
-    seg("Case", [["dress", "Dress"], ["field", "Field"], ["diver", "Diver"]], () => W.key, (v) => { W.key = v; W.strap = v === "diver" ? "bracelet" : W.strap === "bracelet" ? "leather" : W.strap; if (W.strap === "bracelet") W.metal = null; }),
+    seg("Case", [["dress", "Dress"], ["field", "Field"], ["diver", "Diver"], ["emre01", "Emre01"]], () => W.key, (v) => { W.key = v; W.strap = v === "diver" ? "bracelet" : W.strap === "bracelet" ? "leather" : W.strap; if (W.strap === "bracelet") W.metal = null; }),
     num("Size", 0.8, 1.2, 0.01, () => W.size, (v) => { W.size = v; }, "none"),
     seg("Metal", [["steel", "Fe"], ["gold", "Au"], ["alu", "Al"], ["bronze", "CuSn"], ["titanium", "Ti"], ["black", "Black"]], () => (W.metal ? null : W.metal_preset), (v) => { W.metal_preset = v; W.metal = null; }, () => true, true),
     colour("Case colour", metal, (c) => { W.metal = c; }, () => W.strap !== "bracelet"),
@@ -560,7 +586,7 @@ function panel() {
   const open_bio = (on) => { bio.hidden = !on; mark.setAttribute("aria-expanded", String(on)); };
   mark.onclick = () => open_bio(bio.hidden);
   document.addEventListener("pointerdown", (e) => { if (!bio.hidden && !bio.contains(e.target) && !mark.contains(e.target)) open_bio(false); }, true);
-  return el("aside", { className: "panel" }, el("header", {}, el("div", { className: "mast" }, el("div", { className: "about" }, mark, bio), title)), tabs, style_line,
+  return el("aside", { className: "panel" }, el("header", {}, el("div", { className: "mast" }, el("div", { className: "about" }, mark, bio), title), grey_swatch), tabs, style_line,
     el("div", { className: "form" }, ...TABS.flatMap(([, panes]) => panes.map((p) => p.section))));
 }
 
