@@ -77,7 +77,7 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 
 | # | Item | Status |
 |---|---|---|
-| 169 | **One strip for every position** (atlas 2.1; Okay: "very very good… prioritize this", "core to our mission"): one per-position value per setting, shown as a strip of cells under a ring; draw a line across to set the ends and get the middle; type a rhythm (`L S S S`) to repeat. Nudge holds per-position values (#349). Draw and show Okay before building | open — Next |
+| 169 | **One strip for every position** (atlas 2.1; Okay: "very very good… prioritize this", "core to our mission"): one per-position value per setting, shown as a strip of cells under a ring; draw a line across to set the ends and get the middle; type a rhythm (`L S S S`) to repeat. Nudge holds per-position values (#349). Draw and show Okay before building | first after v1 (Okay, 21 Oct 2026) |
 | 83 | **Positions law** [1.1]: a selector on the Positions heading line: even · reciprocal · logarithmic · table · squeeze toward an angle [7.15]. Only `ring_angles()` changes. Tachymeter [1.2] = reciprocal with base, from, to, step; one ticks ring per stretch of steps. Depth cartouches [1.14] = table, typed as angle and label pairs. To decide when it is built: Count hides where the law sets it (R16); what "a partial span marks both ends" means per law; a table brings its own labels | open — Next |
 | 484 | **Square and rounded-square dials, as an Apple Watch's** ("How hard is to make a square and rounded square like an apple watch … i know its big work but plan. This is an obstacle between us and beta v5") — with #363. A plan: `docs/plan-non-round.md` | after v1 (Okay, 21 Oct 2026, 20:10: "put square past v1"); plan: `docs/plan-non-round.md` |
 | 404 | **Dauphine and leaf hands: hubs as on a real movement** — the connecting circles where the hand meets the cannon pinion, life-accurate (Okay, 19 Oct 2026, 17:43: "dauphin and leaf get life accurate movement connecting circles"); refines #370's plain hub for these two shapes | open — next |
@@ -97,7 +97,6 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 | 75 | Usability review, the other tabs: Rings · Hands · Windows · Export, one at a time (Okay, 12 Oct 2026) | open |
 | 66 | Tabs and the columns: five tabs share six columns, so they sit between columns (Okay, 11 Oct 2026: "Columns? They fit 'em"). Ways: tabs one column each with the sixth free, or a sixth sign. Ask Okay | open |
 | 76 | Units box (mm · pt · in · lig · thou): should sliders and steppers step in the shown unit? They step in mm | open |
-| 47 | Design canon §8, ideas for the tool's window: tabular figures in number fields; grey + orange guides; presentation sheets on the canon's grid. Ask Okay | open |
 | 329 | **Hovering a row lights its part on the picture at the left — "these preview gestures are sitewide"**: the hands have it (the part a number changes, lit in the selected guide's colour while its row is pointed at, focused or its controller open); the rings' rows don't | later · open — rings |
 | 344 | **Every hand tile exaggerates its shape's features** (the disc hand's tile is right; a window stays inside a disc hand, key `mark_in`) | later · open |
 | 408 | **The font box's head**: its colour as a full swatch pill with the hex, as the colour rows have; the font name 2 px larger, growing from its baseline and its left edge — nothing else in the box moves (Okay, 19 Oct 2026, 18:08, a picture of the box: "color here gets full swatch with hex. Font name 2px bigger but nothing else moves, just text gets bigger, grows snapped to baseline and left") | open — look lane |
@@ -106,7 +105,6 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 | 60 | A dial opened from a link could fetch a missing Google family by its name by itself — not done: every unknown font would cost three failed requests | open |
 | 158 | **Icon states not checked by the pipeline:** hover; the font box's *Same font as* sign (shown only with a window's own font); the labelmenu chevron (12). Drawn on the grid, not visited by `check.mjs` | open |
 | 230 | **Per-pane anchors from the app into the guide** (edition 2). The Help link beside the version opens the guide (Okay, 15 Oct 2026: "Help next to beta number same font but underlined"). Found 15 Oct 2026 by the guide's blind reviewers (`guide/inventory/inventory.md`) | open |
-| 84 | **Jog** [7.19]: the on-screen jog ring (atlas 2nd ed. 4.4). The keys exist: ← → a minute, ⇧ an hour, space plays or pauses (not while typing, on a slider or a menu) | open |
 
 ### Files
 
@@ -141,7 +139,6 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 | 175 | **A hand as a stack**: caps, windows, lume openings within the current interface | Later |
 | 176 | **A fit section under Dial's sizes** so rings and windows fit | Later |
 | 177 | **The am · pm disc as a ring of its own**, its geometry accurate and isolatable (the windows' discs show in X-ray, #346) | Later |
-| 178 | **Combinations side by side as a preview mode** | Later |
 | 179 | **What the counterweight is for** (Okay: "maybe later") | Later |
 | 425 | **The print sheet's picture: Edit** — the sheet laid out by hand (Okay, 20:22: "EDIT: (future)") | later |
 | 362 | **An Apple Watch preview** (Okay, 18 Oct 2026: "Future feature, some kind of preview for apple watch?"): a sibling of the Wear OS export (Export → Wear OS) — at least the dial in an Apple Watch's frame; a real watch face is not open to third parties on watchOS, so a preview or a photo face is the likely reach (to research) | open |
@@ -155,8 +152,6 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 | 73 | **Background image** on the plate: only the button exists (Dial pane, says "Not built yet"; #218). When built: PNG, scale · rotate · move · opacity, *Include in export*; not in a link; R4 needs an exception. Okay, 12 Oct 2026: "No background image functionality now. Just the button" | parked (Okay) |
 | 77 | **Persistent groupings for every section** — Okay, 12 Oct 2026: "Persistent lines are scary for me too. Sucks to have no left view height, especially on rings on iPad… Park for now." Only All hands is pinned; main selectors stand on heading lines instead | parked (Okay) |
 | 85 | **Hand tip to a ring's edge** [7.13, Max Bill]: a button in Hands → Size that sets Length once. A lasting link would need rings to have identities; they are a list that is reordered. Okay, 14 Oct 2026: "easy to do?"; "while resizing that, it would be nice if it could 'snap' places. But this is a bigger question for later. park for now." | parked (14 Oct) |
-| 90 | **A ring edited flat** [7.16, Fischinger]: cut at 12, edited as a strip, rolled back. A second way to show the preview; close to #61 | parked (Claude's proposal) |
-| 91 | **A sliding strip for Count** [7.5, Citroën GS]: a new kind of number control; R15 would need an exception, and Count has a typed field and a stepper | parked (Claude's proposal) |
 | 180 | **Gerstner's programme** (Okay: "park for now, remind when applicable") — remind Okay when #169 exists | parked |
 | 184 | **Snapping** (Okay, 14 Oct 2026, on #85): lengths and radii that snap to rings' edges while dragged. "A bigger question for later" | parked |
 | 358 | **The LINK pill on other linkable pairs** (a window's width and height have it; the mechanism, `LINKED_PAIRS` in `app.js`, takes any two numbers of one ring, hand or window). Candidates: a mark's length × width, a hand's length × width, a disc hand's Ø × hole. Okay, 18 Oct 2026: "Common sense or park for now" | next · parked (brief §8) |
