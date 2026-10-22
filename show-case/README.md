@@ -29,6 +29,21 @@ PathKit, its edge white, fading from 65 % on the side facing the light to 0 on t
 watch, chosen at random with a fixed seed: an arc along the case edge by the glass, or a dot (a big soft bloom, a small
 bright core) (18:49).
 
+**Shadows, both styles (Okay, 22 Oct 2026):** one rule. Every shadow is the shape that casts it, swept along the light's
+vector (`sweep()`: the shape, the shape moved, and one parallelogram per edge of its outline — the Minkowski sum of a
+polygon and a segment; curves flattened once and cached), black at one opacity (`SH_OP`, 0.3 scaled by the Shadows
+slider), painted once as a group so overlaps never double. `silhouette(C)` lists what casts and each part's height as a
+share of the case's: case 1, lugs 0.55 (they leave the case at mid-height and slope down), crown 0.5. The strap casts by
+its own outline (`OUTL_S`). The case's shadow on the strap (`contact()`) is the same sweep, short, clipped to the strap.
+No fixed shadow colour anywhere: black at opacity darkens whatever it falls on, so it can never be lighter than the ground.
+
+**Leather strap (22 Oct 2026):** the tang buckle from Okay's photo (`tangBuckle()`: 20 × 16 mm on a 16 mm strap, the thin
+bar the strap wraps, side bars widening toward the front, the front bar a fifth of the length, the tongue hinged on the
+bar coming up through a slot in the strap 3 mm below and lying over the front bar; the frame lies under the strap's end);
+one thick keeper (5.5 mm); a tiny stitch along both edges; the end rolled over the spring bar as a flat dark band at its
+edge (0.6 mm, 45 % black — "the topmost point is darkest, the rest fills in flat like the sides"); holes 1.7 mm, 7 mm
+apart, the ground in shadow through each and a thread of light on the far wall. The strap fills the lugs' width.
+
 Shared by both: the diver's bezel has 60 round divots (Engineer: three divers with round scoops, two with the cut edge,
 19:04); the diver's bracelet is vaulted links in hard bands, every link showing its full range of tones, an L of light on
 the two edges facing the light and a reverse L of dark on the other two, its tones taken from the case's own (17:40,

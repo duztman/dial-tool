@@ -1,4 +1,4 @@
-let GLINT = "plain", INK_K = +(process.env.INK || 0), INK_N = 0, HAND_BEVEL = Boolean(process.env.HB), FLARE_TINT = "#ffffff", FLARE_SCALE = 1, SH_OVR = null, FLARE_KIND = "arc", DIVOT = "cut", SEC = null;
+let GLINT = "plain", INK_K = +(process.env.INK || 0), INK_N = 0, HAND_BEVEL = Boolean(process.env.HB), FLARE_TINT = "#ffffff", FLARE_SCALE = 1, SH_OP = 0.3, FLARE_KIND = "arc", DIVOT = "cut", SEC = null;
 // Field and dress, true to published measures (20 Oct 2026, 15:11). Technical line drawing; every item in three tones
 // (light, body, shade) chosen per facet by where the light comes from, so the highlights and shadows move with it.
 //   Field — Hamilton Khaki Field Mechanical 38 (H69439931): 38 mm, 47 lug to lug, 20 between the lugs, 9.5 thick,
@@ -342,29 +342,53 @@ function leatherPiece(y0, y1, w0, w1, T, L, tip = 0, holes = []) {
   const inset = (k) => `M${f(-xs(y0) + k)} ${f(y0)}L${f(-xs(yEnd) + k)} ${f(yEnd)}M${f(xs(y0) - k)} ${f(y0)}L${f(xs(yEnd) - k)} ${f(yEnd)}`;
   const pad = (side) => P([[side * (xs(y0) - 1.6), y0], [side * (xs(y0) - 3.4), y0], [side * (xs(yEnd) - 3.4), yEnd], [side * (xs(yEnd) - 1.6), yEnd]]);
   let html = shape(d, T[1], 0.2, T[2]) + `<path d="${d}" fill="url(#grain)"/>`;      // the grain, faint
+  // the end rolled over the spring bar (Okay, 22 Oct 2026: "the topmost point is darkest, the rest fills in flat like the
+  // sides"): a dark band at the very edge, flat, as the sides' crescents are; no line, no gradient
+  html += `<path d="${rrectD(-w0 / 2, y0, w0 / 2, y0 + s * 0.6, rw)}" fill="#000" fill-opacity="0.45"/>`;
   html += flat(pad(1), tone(T, 0, 0.8, L)) + flat(pad(-1), tone(T, 180, 0.8, L));                  // the padding's two slopes
   html += `<path d="${inset(0.9)}" fill="none" stroke="#e9dccb" stroke-opacity="0.7" stroke-width="0.22" stroke-dasharray="0.9 0.7"/>`;   // stitching
-  for (const y of holes) html += `<ellipse cx="0" cy="${f(y)}" rx="0.75" ry="0.75" fill="${INK}"/><path d="M${f(-0.75)} ${f(y)}A0.75 0.75 0 0 1 ${f(0.75)} ${f(y)}" fill="none" stroke="${tone(T, 270, 1, L)}" stroke-width="0.2"/>`;
+  // the holes (Okay, 22 Oct 2026): through each the ground lies in shadow — a dark disc — and the hole's far wall,
+  // the one facing the sun, catches a thin crescent of light
+  for (const y of holes) { const u = [Math.cos(rad(L)), Math.sin(rad(L))], r = 0.85, p = [-u[1] * r, u[0] * r]; html += `<circle cx="0" cy="${f(y)}" r="${r}" fill="#000" fill-opacity="0.6"/><path d="M${f(p[0])} ${f(y + p[1])}A${r} ${r} 0 0 0 ${f(-p[0])} ${f(y - p[1])}" fill="none" stroke="${T[0]}" stroke-opacity="0.7" stroke-width="0.22"/>`; }
   return html + shape(d, "none");
 }
+/** a rounded rectangle traced either way round: clockwise, or anticlockwise so it cuts a hole in a path drawn clockwise */
+const rrectD = (x0, y0, x1, y1, r, hole = false) => {
+  const [a, b] = [Math.min(x0, x1), Math.min(y0, y1)], [c, e] = [Math.max(x0, x1), Math.max(y0, y1)]; r = Math.min(r, (c - a) / 2, (e - b) / 2);
+  return hole ? `M${f(a + r)} ${f(b)}Q${f(a)} ${f(b)} ${f(a)} ${f(b + r)}V${f(e - r)}Q${f(a)} ${f(e)} ${f(a + r)} ${f(e)}H${f(c - r)}Q${f(c)} ${f(e)} ${f(c)} ${f(e - r)}V${f(b + r)}Q${f(c)} ${f(b)} ${f(c - r)} ${f(b)}Z`
+    : `M${f(a + r)} ${f(b)}H${f(c - r)}Q${f(c)} ${f(b)} ${f(c)} ${f(b + r)}V${f(e - r)}Q${f(c)} ${f(e)} ${f(c - r)} ${f(e)}H${f(a + r)}Q${f(a)} ${f(e)} ${f(a)} ${f(e - r)}V${f(b + r)}Q${f(a)} ${f(b)} ${f(a + r)} ${f(b)}Z`;
+};
+/** the tang buckle (Okay, 22 Oct 2026, from his photo): one frame for every strap — the bar the strap wraps (thin, at the
+ *  strap's side, y + H), two side bars, a wide front bar with round outer corners — and the tongue, hinged on the bar,
+ *  lying across the opening and over the front bar. Frame and tongue as two paths; each style paints them its own way */
+function tangBuckle(yEnd, w) {
+  // proportions from Okay's photo (22 Oct 2026): nearly square, the front bar a fifth of the length, the side bars
+  // widening toward the front, the bar thin; `yEnd` is where the strap ends — the bar sits there, the frame beyond it
+  const W = w + 4, H = W * 0.8, x = -W / 2, y = yEnd - H + 1.7, bar = 1.2, sideB = 1.6, sideF = 2.4, front = H * 0.2, r = 2.6, slotY = yEnd + 3.0;
+  const hole = `M${f(x + W - sideB)} ${f(y + H - bar)}L${f(x + W - sideF)} ${f(y + front)}Q${f(x + W - sideF)} ${f(y + front - 0.6)} ${f(x + W - sideF - 0.6)} ${f(y + front - 0.6)}`
+    + `H${f(x + sideF + 0.6)}Q${f(x + sideF)} ${f(y + front - 0.6)} ${f(x + sideF)} ${f(y + front)}L${f(x + sideB)} ${f(y + H - bar)}Z`;      // anticlockwise: a hole in the clockwise frame
+  const frame = rrectD(x, y, x + W, y + H, r) + hole;
+  const tongue = `M-1.1 ${f(slotY)}L1.1 ${f(slotY)}L0.7 ${f(y + 0.4)}Q0 ${f(y - 0.9)} -0.7 ${f(y + 0.4)}Z`;
+  const slot = `<rect x="-1.4" y="${f(slotY - 0.35)}" width="2.8" height="0.7" rx="0.3" fill="#000" fill-opacity="0.55"/>`;      // the slot the tongue comes through
+  return { frame, tongue, slot, W, H, y };
+}
 function buckle(y, w, T, L) {
-  const W = w + 3, H = 7, x = -W / 2;
-  const frame = `M${f(x)} ${f(y)}h${f(W)}v${f(H)}h${f(-W)}Z M${f(x + 1.3)} ${f(y + 1.3)}v${f(H - 2.6)}h${f(W - 2.6)}v${f(-(H - 2.6))}Z`;
-  return `<path d="${frame}" fill-rule="evenodd" fill="${T[1]}" stroke="${INK}" stroke-width="0.2"/>` +
-    flat(P([[x, y], [x + W, y], [x + W - 1.3, y + 1.3], [x + 1.3, y + 1.3]]), tone(T, 270, 0.9, L)) + flat(P([[x, y + H], [x + W, y + H], [x + W - 1.3, y + H - 1.3], [x + 1.3, y + H - 1.3]]), tone(T, 90, 0.9, L)) +
-    shape(P([[-0.5, y + 1.3], [0.5, y + 1.3], [0.5, y + H + 3.5], [-0.5, y + H + 3.5]]), tone(T, 0, 0.3, L), 0.15);        // the tongue
+  const B = tangBuckle(y, w), x = -B.W / 2; y = B.y;
+  return { frame: shape(B.frame, T[1], 0.2) + flat(P([[x + 2.2, y], [x + B.W - 2.2, y], [x + B.W - 2.2, y + 0.9], [x + 2.2, y + 0.9]]), tone(T, 270, 0.9, L)),      // the front bar's upper face
+    slot: B.slot, tongue: shape(B.tongue, tone(T, 0, 0.3, L), 0.15) };
 }
 function keeper(y, w, T, L, h = 3.2) {
   const W = w + 1.4;
   return shape(P([[-W / 2, y], [W / 2, y], [W / 2, y + h], [-W / 2, y + h]]), T[1], 0.2) + flat(P([[-W / 2, y], [W / 2, y], [W / 2, y + h * 0.35], [-W / 2, y + h * 0.35]]), tone(T, 270, 0.9, L)) + flat(P([[-W / 2, y + h * 0.65], [W / 2, y + h * 0.65], [W / 2, y + h], [-W / 2, y + h]]), tone(T, 90, 0.9, L)) + stroke(P([[-W / 2, y], [W / 2, y], [W / 2, y + h], [-W / 2, y + h]]), 0.2);
 }
 function leatherSVG(C, L, colour, open, span) {
-  const T = LEATHER[colour], w = C.lugw - 0.2, end = 16, yc = C.cushion ? C.l2l / 2 - 3.4 : Math.min(C.l2l / 2 - 3.4, C.od / 2 + 0.2);      // the strap's end meets the round case at its middle (17:40)          // the strap's end, wrapped over the spring bar 2.6 mm in from the lug tips
+  const T = LEATHER[colour], w = C.lugw, end = 16, yc = C.cushion ? C.l2l / 2 - 3.4 : Math.min(C.l2l / 2 - 3.4, C.od / 2 + 0.2);      // the strap's end meets the round case at its middle (17:40)          // the strap's end, wrapped over the spring bar 2.6 mm in from the lug tips
   const gap = "";      // between the case and the strap's end the floor shows; the strap's end wraps over the spring bar and hides it (15:29)
   if (!open) return gap + leatherPiece(-yc, -span, w, w - 1.2, T, L) + leatherPiece(yc, span, w, w - 1.2, T, L, 0, [60, 67].filter((y) => y < span));
   // open, laid flat: the buckle piece at 12 (75 mm), the hole piece at 6 (115 mm), tapering to 16 mm
   const up = leatherPiece(-yc, -(C.l2l / 2 + 75), w, end, T, L), dn = leatherPiece(yc, C.l2l / 2 + 115, w, end, T, L, 7, [72, 79, 86, 93, 100, 107].map((y) => C.l2l / 2 + y - 25));
-  return gap + up + dn + keeper(-(C.l2l / 2 + 64), end + 0.4, T, L, 4) + keeper(-(C.l2l / 2 + 58), end + 0.4, T, L, 3.2) + buckle(-(C.l2l / 2 + 75) - 6, end, C.metal, L);
+  const B = buckle(-(C.l2l / 2 + 75), end, C.metal, L);      // the strap's end wraps the buckle's bar (Okay's photo, 22 Oct 2026): the frame lies under the strap, the tongue comes up through a slot and over the front bar
+  return gap + B.frame + up + dn + keeper(-(C.l2l / 2 + 62), end + 0.4, T, L, 5.5) + B.slot + B.tongue;
 }
 /** the NATO: woven ribbon, stripes along it, its ribs as fine lines that catch the light; under the case and out */
 function natoSVG(C, L, set, open, span) {
@@ -539,6 +563,42 @@ function braceletSVG(C, L, span) {
   }
   return out;
 }
+/** the shadow a wall throws under a sun: its footprint swept along the light's vector `v` — the Minkowski sum of a
+ *  polygon and a segment (Okay, 22 Oct 2026: "humankind solved this much better"). Exact and cheap: the shape, the
+ *  shape moved by v, and one parallelogram per edge of its outline between the two; painted as one group at one
+ *  opacity they read as a single solid. Curves are flattened once per outline (cached) */
+const FLAT = new Map();
+function polylines(d) {
+  if (FLAT.has(d)) return FLAT.get(d);
+  const P = PK.FromSVGString(d), cmds = P.toCmds(); P.delete();
+  const out = []; let cur = null, prev = null;
+  const lerp = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+  for (const c of cmds) {
+    const v = c[0], p = []; for (let k = 1; k + 1 < c.length; k += 2) p.push([c[k], c[k + 1]]);
+    if (v === 0) { cur = [p[0]]; out.push(cur); prev = p[0]; }
+    else if (v === 1) { cur.push(p[0]); prev = p[0]; }
+    else if (v === 2 || v === 3) { const w = v === 3 ? c[5] : 1; for (let i = 1; i <= 8; i++) { const t = i / 8, a = (1 - t) * (1 - t), b = 2 * w * t * (1 - t), e = t * t, s = a + b + e; cur.push([(a * prev[0] + b * p[0][0] + e * p[1][0]) / s, (a * prev[1] + b * p[0][1] + e * p[1][1]) / s]); } prev = p[1]; }
+    else if (v === 4) { for (let i = 1; i <= 8; i++) { const t = i / 8, q = lerp(lerp(lerp(prev, p[0], t), lerp(p[0], p[1], t), t), lerp(lerp(p[0], p[1], t), lerp(p[1], p[2], t), t), t); cur.push(q); } prev = p[2]; }
+    else if (v === 5 && cur) { cur.push(cur[0]); }
+  }
+  FLAT.set(d, out); return out;
+}
+function sweep(d, v) {
+  let quads = "";
+  for (const line of polylines(d)) for (let i = 1; i < line.length; i++) {
+    const p = line[i - 1], q = line[i], cross = (q[0] - p[0]) * v[1] - (q[1] - p[1]) * v[0];
+    if (Math.abs(cross) < 1e-6) continue;      // an edge along the light sweeps nothing
+    const [a, b] = cross > 0 ? [p, q] : [q, p];      // every parallelogram wound the same way, so none cancels another under nonzero fill
+    quads += `M${f(a[0])} ${f(a[1])}L${f(b[0])} ${f(b[1])}L${f(b[0] + v[0])} ${f(b[1] + v[1])}L${f(a[0] + v[0])} ${f(a[1] + v[1])}Z`;
+  }
+  return `<path d="${d}"/><path d="${d}" transform="translate(${f(v[0])} ${f(v[1])})"/><path d="${quads}"/>`;
+}
+/** what casts the watch's shadow (Okay, 22 Oct 2026): the case, its four lugs and the crown, each with its height as a
+ *  share of the case's — the lugs leave the case at mid-height and slope down to the strap, the crown sits at mid-height */
+function silhouette(C) {
+  const R = C.cushion ? C.cushion.a : C.od / 2, crown = rrectD(R - 1.2, -C.crown.w / 2, R + C.crown.h, C.crown.w / 2, 1.0);
+  return [[C.cushion ? P(cushionPts(C.cushion.a, C.cushion.n)) : circle(R), 1], ...[-1, 1].flatMap((sx) => [-1, 1].map((sy) => [(C.cushion ? cushionLug : lugPath)(C, sx, sy), 0.55])), [crown, 0.5]];      // the crown, as the lugs, smaller than the case (Okay, 22 Oct 2026)
+}
 function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal = null, size = 1) {
   WEAVE = strap.endsWith("-big") ? "weavebig" : "weave"; strap = strap.replace(/-big$/, "");
   SUN_H = h; CLIPS = []; OUTL = [];
@@ -547,16 +607,10 @@ function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal = null
   const strapSVG = strap === "bracelet" ? braceletSVG(C, L, open ? C.l2l / 2 + 84 : span) : strap.startsWith("leather") ? leatherSVG(C, L, strap.split("-")[1], open, span) : natoSVG(C, L, strap.split("-")[1], open, span);
   // shadow: everything's silhouette shifted away from the light, flat; the case casts further than the strap
   const off = (d) => [-Math.cos(rad(L)) * d, -Math.sin(rad(L)) * d];
-  const k = Math.tan(rad(40)) / Math.tan(rad(h)), [cxs, cys] = off(2.4 * k), [sxs, sys] = off(0.8 * k);      // a low sun casts longer
-  const sil = C.cushion ? [P(cushionPts(C.cushion.a, C.cushion.n)), ...[-1, 1].flatMap((sx) => [-1, 1].map((sy) => cushionLug(C, sx, sy)))].join(" ") : [circle(C.od / 2), ...[-1, 1].flatMap((sx) => [-1, 1].map((sy) => lugPath(C, sx, sy)))].join(" ");
-  const SH = SH_OVR || "#7f796e";      // as dark as the lineless set (17:40)
-  // the block shadow (15:37): the strap's and the case's silhouettes pushed away from the light in small steps, so
-  // the shadow is one solid extruded block joined to the watch — no gaps, no lugs floating apart
-  const strapRects = strap === "bracelet" ? `<rect x="${f(-C.lugw / 2)}" y="${open ? -(C.l2l / 2 + 84) : -span}" width="${C.lugw}" height="${open ? C.l2l + 168 : 2 * span}"/>` : strap.startsWith("nato") ? `<rect x="${f(-C.lugw / 2)}" y="${open ? -(C.l2l / 2 + 76) : -span}" width="${C.lugw}" height="${open ? C.l2l + 241 : 2 * span}"/>`
-    : `<rect x="${f(-C.lugw / 2)}" y="${open ? -(C.l2l / 2 + 81) : -span}" width="${C.lugw}" height="${f((open ? C.l2l / 2 + 81 : span) - (C.cushion ? C.l2l / 2 - 3.4 : Math.min(C.l2l / 2 - 3.4, C.od / 2 + 0.2)))}"/><rect x="${f(-C.lugw / 2)}" y="${f(C.cushion ? C.l2l / 2 - 3.4 : Math.min(C.l2l / 2 - 3.4, C.od / 2 + 0.2))}" width="${C.lugw}" height="${f((open ? C.l2l / 2 + 115 : span) - (C.cushion ? C.l2l / 2 - 3.4 : Math.min(C.l2l / 2 - 3.4, C.od / 2 + 0.2)))}"/>`;
-  const steps = 28, blockShadow = `<g fill="${SH}">` +
-    Array.from({ length: steps }, (_, i) => `<g transform="translate(${f(sxs * (i + 1) / steps)} ${f(sys * (i + 1) / steps)})">${strapRects}</g>`).join("") +
-    Array.from({ length: steps }, (_, i) => `<g transform="translate(${f(cxs * (i + 1) / steps)} ${f(cys * (i + 1) / steps)})">${sil.split(/ (?=M)/).map((d) => `<path d="${d}"/>`).join("")}</g>`).join("") + `</g>`;
+  const k = Math.tan(rad(40)) / Math.tan(rad(h)), vCase = off(2.4 * k), vStrap = off(0.8 * k);      // a low sun casts longer
+  // the shadow (Okay, 22 Oct 2026): every part's footprint swept along the light (sweep()), the strap as drawn (OUTL_S),
+  // black at one opacity, painted once as a group — it darkens whatever it falls on and never doubles where parts overlap
+  const blockShadow = `<g fill="#000" opacity="${f(SH_OP)}">` + OUTL_S.map((d) => sweep(d, vStrap)).join("") + silhouette(C).map(([d, kk]) => sweep(d, [vCase[0] * kk, vCase[1] * kk])).join("") + `</g>`;
   const caseStr = caseSVG(C, v, L);
   const ribs = Object.entries({ ...NATO_SETS, ...NATO_MORE }).flatMap(([n, S]) => S.map((T, k) => `<pattern id="ribs-${n}-${k}" width="4" height="0.8" patternUnits="userSpaceOnUse"><rect width="4" height="0.3" fill="${T[0]}" fill-opacity="0.55"/></pattern>`)).join("");
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="__VB__">
@@ -615,18 +669,15 @@ const raisedShadow = (mid, y0, y1, away, soft) => `<rect x="${f(away > 0 ? mid /
  *  bar and where its edges run against the lugs */
 function contact(C, L, strap, span, soft) {
   const u = [Math.cos(rad(L)), Math.sin(rad(L))], k = Math.tan(rad(40)) / Math.tan(rad(SUN_H)), off = [-u[0] * 0.9 * k, -u[1] * 0.9 * k];
-  const sil = C.cushion ? [P(cushionPts(C.cushion.a, C.cushion.n)), ...[-1, 1].flatMap((sx) => [-1, 1].map((sy) => cushionLug(C, sx, sy)))] : [circle(C.od / 2), ...[-1, 1].flatMap((sx) => [-1, 1].map((sy) => lugPath(C, sx, sy)))];
   const w = C.lugw - 0.2, yc = C.l2l / 2 - 3.4, leather = strap.startsWith("leather");
-  const area = leather ? `<rect x="${f(-w / 2)}" y="${-span}" width="${f(w)}" height="${f(span - yc)}"/><rect x="${f(-w / 2)}" y="${f(yc)}" width="${f(w)}" height="${f(span - yc)}"/>` : `<rect x="${f(-w / 2)}" y="${-span}" width="${f(w)}" height="${2 * span}"/>`;
+  const area = OUTL_S.map((d) => `<path d="${d}"/>`).join("");      // the strap as drawn: the shadow stays on it, never beside it (22 Oct 2026)
   const id = "ct" + (BLOB_N++);
   CLIPS.push(`<clipPath id="${id}">${area}</clipPath>`);
-  let h = `<g clip-path="url(#${id})">${softShadow(sil.map((d) => `<path d="${d}"/>`).join(""), [off[0] * 1.6, off[1] * 1.6], soft ? 0.34 : 0.3)}</g>`;      // soft and round (17:04)
+  let h = `<g clip-path="url(#${id})"><g fill="#000" opacity="${f(SH_OP)}">${silhouette(C).map(([d, kk]) => sweep(d, [off[0] * 1.6 * kk, off[1] * 1.6 * kk])).join("")}</g></g>`;      // the parts swept, as the ground shadow (22 Oct 2026)
   const ink = soft ? `stroke="#000" stroke-opacity="0.4" stroke-width="0.35"` : `stroke="${INK}" stroke-width="${LW}"`;
   for (const sy of [-1, 1]) {
     const tip = C.l2l / 2;
-    if (leather) h += `<path d="M${f(-w / 2 + 0.9)} ${f(sy * (yc + 0.7))}H${f(w / 2 - 0.9)}" ${ink} stroke-linecap="round"/>`;      // the fold over the bar
-    else h += `<path d="M${f(-w / 2)} ${f(sy * (tip - 2.6))}H${f(w / 2)}" stroke="#000" stroke-opacity="0.2" stroke-width="0.8"/><path d="M${f(-w / 2)} ${f(sy * (tip - 2.2))}H${f(w / 2)}" stroke="#fff" stroke-opacity="0.12" stroke-width="0.4"/>`;      // the nylon over the bar: a soft ridge
-    for (const sx of [-1, 1]) h += `<path d="M${f(sx * w / 2)} ${f(sy * (leather ? yc : tip - 6))}V${f(sy * tip)}" ${ink}/>`;      // the edges against the lugs
+    if (!leather) h += `<path d="M${f(-w / 2)} ${f(sy * (tip - 2.6))}H${f(w / 2)}" stroke="#000" stroke-opacity="0.2" stroke-width="0.8"/><path d="M${f(-w / 2)} ${f(sy * (tip - 2.2))}H${f(w / 2)}" stroke="#fff" stroke-opacity="0.12" stroke-width="0.4"/>`;      // the nylon over the bar: a soft ridge
   }
   return h;
 }
@@ -670,7 +721,7 @@ fs.writeFileSync("jobs.json", JSON.stringify(jobs));
 // dark floor under a spotlight, its shadows near-black and long
 if (process.env.COVER) {
   const [key, strap, v, dial, metal] = process.env.COVER.split(",");
-  SH_OVR = process.env.MASK || "#0a0a09"; GLINT = "flare"; FLARE_SCALE = 0.5;      // the title page (19:34): a subdued flare; plain straps, a very dark red leather and a dark green NATO
+  SH_OP = 0.9; GLINT = "flare"; FLARE_SCALE = 0.5;      // the title page (19:34): a subdued flare; plain straps, a very dark red leather and a dark green NATO
   LEATHER.oxblood = ["#2e1012", "#240c0e", "#1a080a"]; NATO_MORE.darkgreen = [["#1a2218", "#151c13", "#10160e"], ["#1a2218", "#151c13", "#10160e"], ["#1a2218", "#151c13", "#10160e"]]; if (process.env.SEC) SEC = +process.env.SEC; if (process.env.FLARE) FLARE_KIND = process.env.FLARE;
   const L = 225, h = 16, body = sheet(key, strap, v, L, true, h, dial === "-" ? null : dial, metal, 1).replace("__CLIPS__", CLIPS.join("") + `<filter id="flare" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="0.9"/></filter>`)
     .replace(/<radialGradient id="pool"[^>]*>.*?<\/radialGradient>/s, `<radialGradient id="pool" cx="${f(Math.cos(rad(L)) * 9)}" cy="${f(Math.sin(rad(L)) * 9)}" r="34" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#35332e"/><stop offset="0.5" stop-color="#1f1e1c"/><stop offset="1" stop-color="#100f0e"/></radialGradient>`);

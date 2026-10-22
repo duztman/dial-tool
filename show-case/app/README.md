@@ -4,7 +4,7 @@ Written 21 Oct 2026 (session closed 02:35 Istanbul). A side product of Dial Tool
 (Okay, 20 Oct 2026: "read readme but nothing on the git or the actual tool"). Nothing in the web app depends on it.
 
 - **Live, stable** (Okay, 21 Oct 2026: "this is where we park stable versions"): <https://duztman.github.io/dial-tool/show-case/>,
-  branch `gh-pages`, file `show-case/index.html`. Currently **beta 1.0.19** (commit 5bde710), the same as the artifact.
+  branch `gh-pages`, file `show-case/index.html`. Live is **beta 1.0.19** (commit 5bde710); the branch holds **beta 1.0.20** (22 Oct 2026: the shadow rule, the buckle, the strap's ends, stitches and holes — `show-case/README.md`), not yet published.
 - **Working copy**: the Claude artifact <https://claude.ai/artifact/PrAdn9LAkcKqQPqNHq9pQ5>. It counts versions on from
   the live one in small steps: 1.0.1, 1.0.2, …
 - **Screens of this session**: `archive/screens/2026-10-21-show-case/`. `okay-*` are Okay's screenshots, in the order
@@ -85,4 +85,4 @@ FONT_BASE="../fonts/" OUT=<gh-pages clone>/show-case/index.html node build.mjs  
 - Add every dial used in testing to the Gallery on main, once each: one design, one Gallery dial ("don't do yet, note").
 - The Dial tab will get **Materials and finishing**: enamel, sunburst, paint… (21 Oct 2026, note only).
 - Folding the Playbox in: "thinkable but not today".
-- This branch (`show-case-app`) holds the source. It is not merged into dev.
+- This branch (`show-case-app`) holds the source until the merge into Dial Tool (Okay, 22 Oct 2026: the Show Case is part of v1, build list #489).

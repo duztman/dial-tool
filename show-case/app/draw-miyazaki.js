@@ -1,6 +1,6 @@
 
 // ═══ the page (Dial Show Case): one drawing at a time, of the dial pasted, in the colours and light chosen ═══
-const STYLE = { floor: "#877f6d", ramp: [1.19, 1.12, 0.88], shadow: 0.73, blur: `<filter id="flare" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="1.6"/></filter>` };
+const STYLE = { floor: "#877f6d", ramp: [1.19, 1.12, 0.88], shadow: 0.3, blur: `<filter id="flare" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="1.6"/></filter>` };
 const hsl = (h, k) => { const [hh, s, l] = hex2hsl(h); return hsl2hex([hh, s, Math.min(0.97, l * k)]); };
 /** three tones (light · body · shade) from one body colour, in the proportions of the engine's own tables */
 const tones = (h, [up, down]) => [hsl(h, up), h, hsl(h, down)];
@@ -28,7 +28,7 @@ export function draw(o) {
   NATO_MORE.custom = o.natoColours.map((c) => own([NATO_SETS, NATO_MORE], c, [1.18, 0.82]));
   STRIPES.custom = STRIPES[o.nato] || [[0, 1, 0]];
   const two = o.floor2 && o.floor2 !== o.floor;
-  SH_OVR = hsl(two ? mixc(o.floor, o.floor2, 0.5) : o.floor, Math.max(0, 1 - (1 - STYLE.shadow) * SHD));
+  SH_OP = Math.min(1, STYLE.shadow * SHD);      // the Shadows slider scales one opacity (Okay, 22 Oct 2026)
   BRACELET_KIND = o.strap === "links" ? "links" : "vault";      // the diver's two bracelets
   const strap = o.strap === "bracelet" || o.strap === "links" ? "bracelet" : o.strap + "-custom";
   const make = (mode) => { GLINT = mode; return sheet(o.key, strap, "own", o.L, true, o.h, "live", "custom", o.size).replace("__CLIPS__", CLIPS.join("") + STYLE.blur); };
