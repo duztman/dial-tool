@@ -2,6 +2,7 @@
 
 ## beta 4.91.10 (web version) · 22 Oct 2026
 
+- **The Show Case page republished** at /show-case/ as beta 1.0.20 (Okay: "update the show case site with the new stuff"): built from `dev`'s `watch.js` — the shadow rule, the buckle, the strap's ends, stitches and holes.
 - **A long pill scrolls sideways in show mode** (Okay, 22 Oct 2026, 21:05: "Scroll sideways it is"): Metal's six choices stay on one line in the narrower column, the pill scrolling under the finger or the trackpad, no scrollbar — the Show Case's rule; on the dial side pills wrap as before.
 
 ## beta 4.91.9 (web version) · 22 Oct 2026

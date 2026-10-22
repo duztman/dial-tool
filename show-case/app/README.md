@@ -4,7 +4,7 @@ Written 21 Oct 2026 (session closed 02:35 Istanbul). A side product of Dial Tool
 (Okay, 20 Oct 2026: "read readme but nothing on the git or the actual tool"). Nothing in the web app depends on it.
 
 - **Live, stable** (Okay, 21 Oct 2026: "this is where we park stable versions"): <https://duztman.github.io/dial-tool/show-case/>,
-  branch `gh-pages`, file `show-case/index.html`. Live is **beta 1.0.19** (commit 5bde710); `dev` holds **beta 1.0.20** (22 Oct 2026: the shadow rule, the buckle, the strap's ends, stitches and holes; the engine as `web/src/watch.js`), not yet published.
+  branch `gh-pages`, file `show-case/index.html`. Live is **beta 1.0.20** (gh-pages 6c1f6d3, 22 Oct 2026: the shadow rule, the buckle, the strap's ends, stitches and holes; the engine as `web/src/watch.js`), built from `dev`.
 - **Working copy**: the Claude artifact <https://claude.ai/artifact/PrAdn9LAkcKqQPqNHq9pQ5>. It counts versions on from
   the live one in small steps: 1.0.1, 1.0.2, …
 
