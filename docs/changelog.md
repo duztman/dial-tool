@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.91.7 (web version) · 22 Oct 2026
+
+- **The watch round the dial is drawn by `web/src/watch.js`** (build list #508, phase 2 of the Show Case merge; Okay, 22 Oct 2026: "Cases snap to dials. Size of dial determines … Dial side only shows cases as solid 3 color as engineer. No glow, nothing"): the Show Case's two engines are one module — one geometry (cases, lugs, crown, straps, buckle, keeper, bracelets, insert, holes; every measure a share of a published case, scaled to the dial), two paints (Engineer: outlines and three flat tones; Miyazaki: crescents, deeper colours, a flare), the shadow rule written once. `bezels.js` and the case archive (`web/cases.mjs`, `web/cases/svg/`) are gone.
+- **Edit mode's case**: Dress · Field · Diver · Emre01 in the case menu, drawn flat in steel with one hard shadow from the dial's own sun (`sh_from`, `sh_rise`, Shadows %); no caseless watch. The strap: leather in its colour, or a bracelet on the diver alone (R16). Old files and links keep their meaning (R9: `bezel` 0 Dress, 1 Diver, 2 Field, 3 Dress, 4 Field, 5 Emre01; the pilot and sport sketches draw Field).
+- **The Show Case page builds from the same module** (`show-case/` is on `dev`; `convert.mjs`, the draw tails, the batch PDF scripts, the PDF screens and the Playbox sources are gone); its three opener links rewritten in link scheme 4.
+- Checked: the Show Case's drawings pixel-identical before and after in 15 views of both styles, every case and strap (the Engineer's leather strap excepted: it takes the roll and the tiny stitches approved today); `npm run small` (454 checks).
+
 ## beta 4.91.6 (web version) · 21 Oct 2026
 
 - **The canvas's top buttons sit on the title's line** (Okay, 21 Oct 2026, 23:29: "Align bottom line of top button row on the same line as title's hr line first. Then push from top to adjust for left gap"): undo · redo and Guides stand as far from the canvas's top as from its side (12 px), their bottom on the hairline under the title; the title row grows to 43 px for it, its content centred, a hair kept at its foot so the unit box lands on whole screen dots.

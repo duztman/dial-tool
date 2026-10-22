@@ -2,6 +2,12 @@
 
 Moved out of build-list.md on 19 Oct 2026 (beta 4.87). Numbers are never reused; the changelog says what each version built.
 
+## The Show Case merge (22 Oct 2026, group K)
+
+| # | Item | Status |
+|---|---|---|
+| 508 | **Phase 2 — one case module** `web/src/watch.js`: the two engines' shared geometry once (cases, lugs, crown, straps, buckle, keeper, bracelet, insert, holes), scaled from the dial's diameter; paints: flat (Engineer) and lit (Miyazaki) plus the show layers; replaces `bezels.js` in edit mode (flat, one hard shadow, strap as set); old keys migrate (Diver→Diver, Pilot→Field, Dress→Dress, Sport→Field, None→Dress; R8); a Node test draws each kind at three dial sizes; the /show-case/ page builds from it; `convert.mjs` and the `_line` leftovers go. Nothing Okay sees changes | done — 4.91.7 (22 Oct 2026): pixel-identical in 15 views of the Show Case; edit mode's flat case; `npm run small` |
+
 ## Now (14 Oct 2026)
 
 The easiest items, in the order they were built (Claude's choice of "easiest", asked for by Okay: "Decide what is easiest to do, mark them immediate"). Okay said go on 14 Oct, 18:00 ("take this one hour and do all yourself"): beta 4.37, on `dev` and the live page. Atlas: https://claude.ai/artifact/QdvVC37Y6csV7FcUjJHqAH, second edition, section 1.

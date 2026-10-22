@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.91.6";
+export const VERSION = "beta 4.91.7";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -188,8 +188,8 @@ export const DEFAULTS = {
   da_guide: -1,                                   // the first window's guide colour, as every window's `guide` (#271)
   da_follows: true, da_names: 0,                   // the first window's `follows` and `names`: following the bar's date to start (#413)
   wearos_name: "",                                 // a Wear OS watch face's name (4.67, farukahmet's PR #1); "" = Dial Tool. Its package's name follows from it
-  strap: 1, c_strap: [0.29, 0.2, 0.14, 1],      // its strap (4.69, bezels.js STRAPS): 0 none, 1 a leather strap in c_strap, 2 a metal bracelet in the case's metal. Shown only with a case
-  bezel: 0,                                        // a case round the dial on the preview (4.66, bezels.js BEZELS): 0 none, 1 diver, 2 pilot, 3 dress, 4 sport. Preview only, like the backdrop (R26)
+  strap: 1, c_strap: [0.29, 0.2, 0.14, 1],      // the strap round the dial (watch.js): 0 and 1 a leather strap in c_strap, 2 a bracelet in the case's metal (on the diver alone; elsewhere leather). Never none (Okay, 22 Oct 2026)
+  bezel: 0,                                        // the case round the dial (watch.js, CASE_OF_BEZEL): the list only grows (R9). 0 dress, 1 diver, 2 field, 3 dress, 4 field, 5 emre01 — 2 and 4 were the pilot and sport sketches, 0 "no case": no watch is caseless now (Okay, 22 Oct 2026). Preview only (R26)
   date: "",                                        // the day the dial shows, "2026-10-18", set in the bar (4.62; Okay, 18 Oct 2026: "Date best set at the bar … Default from system date"); "" = today, wherever the dial is opened
   da_jump: false,                                  // … and `jump` (#401, 4.90)
   da_look: 0, da_c2: null, da_c3: null, da_neighbours: true,      // … and `neighbours` (4.74)            // the first window's `look`, `c2`, `c3` (4.73)
@@ -258,6 +258,9 @@ export function radial_extent(path) {
  *  · k: a place in GUIDE_COLOURS, -2 = none. line: a diameter at angle a · crosshair: a small cross at angle a and
  *  radius r, to mark a point · circle: radius r. The list only grows at its end (R9). */
 export const GUIDE_MORE = ["line", "crosshair", "circle"];
+/** the case each `bezel` number draws (R9: numbers keep their meaning; a new kind is appended) and the number the menu writes for a kind */
+export const CASE_OF_BEZEL = ["dress", "diver", "field", "dress", "field", "emre01"];
+export const BEZEL_OF_CASE = { dress: 3, diver: 1, field: 2, emre01: 5 };
 export const NOT_GEOMETRY = ["t", "guides", "xray", "bezel", "strap", "c_strap", "wearos_name", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
 /** a set of files (#171): its tick's key, its words, the kind export() writes, and what it writes it as — the colour
  *  files plain (not a mask, not mirrored), the masks as said; the print sheet as Print says. */

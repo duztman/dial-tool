@@ -8,7 +8,7 @@
 
 import * as G from "./geometry.js";
 import { svg_document, pdf_document, png_with_dpi, file_name, pdf_sheet, sheet_layout, pack_discs, pack_even, centre_block, spec_sheet, PAPERS } from "./output.js";
-import { BEZELS, STRAPS, bezel_svg } from "./bezels.js";
+import { frame, KINDS, attach as attach_watch } from "./watch.js";
 // a Wear OS watch face (4.67; farukahmet's PR #1, 18 Oct 2026): the dial as Watch Face Format, packed and signed in the browser
 import { generate_watchface_xml } from "./wearos/wff_xml.js";
 import { svg_dial_face, svg_hand, svg_cap, svg_preview, svg_window_sheet, svg_to_png_bytes } from "./wearos/wff_assets.js";
@@ -2334,10 +2334,11 @@ class DialTool {
   /** a case round the dial (4.66; farukahmet's PR #3, "abstractified" — bezels.js), drawn again only when its kind or
    *  the dial's size changes. Preview only: never in an export or the Tiny Preview (R26). */
   draw_bezel() {
-    const S = this.S, key = `${S.bezel || 0}/${S.dial_d}/${S.strap}/${S.c_strap}`;
+    const S = this.S, light = S.sh_on ? Math.min(S.sh_dark / 25, 2) : 0;      // the one sun: Dial Tool's shadow keys drive the watch's shadow too (Okay, 22 Oct 2026)
+    const key = `${S.bezel || 0}/${S.dial_d}/${S.strap}/${S.c_strap}/${S.sh_from}/${S.sh_rise}/${light}`;
     if (key === this.bezel_key) return;
     this.bezel_key = key;
-    this.bezel_g.innerHTML = S.bezel ? bezel_svg(S.bezel, S.dial_d, S.strap, S.c_strap) : "";
+    this.bezel_g.innerHTML = frame({ kind: G.CASE_OF_BEZEL[S.bezel] || "dress", d: S.dial_d, strap: S.strap === 2 ? "bracelet" : "leather", leather: to_hex(S.c_strap), metal: "steel", L: S.sh_from - 90, h: S.sh_rise, shadow: light });
   }
 
   /** the case's switch, beside Backdrop (4.66): its kind's name and a chevron; the system's list over it, unseen. */
@@ -2346,7 +2347,8 @@ class DialTool {
     const arrow = el("span", { className: "arrow" });
     arrow.innerHTML = icon(SIGNS.up);
     const menu = el("select", { id: "case-pick", ariaLabel: "A case round the dial (preview only)", title: "A case round the dial (preview only)" });
-    BEZELS.forEach((name, i) => menu.append(el("option", { value: String(i), textContent: i ? name : "No case" })));
+    const NAMES = { dress: "Dress", field: "Field", diver: "Diver", emre01: "Emre01" };
+    KINDS.forEach((kind) => menu.append(el("option", { value: String(G.BEZEL_OF_CASE[kind]), textContent: NAMES[kind] })));
     menu.onchange = () => { this.set_value("global", "bezel", +menu.value); this.render(); };      // the view stays on the dial (4.69; it fitted the case in 4.66–4.68)
     const sign = el("span", { className: "sign" }); sign.innerHTML = icon(TOOL_ICONS.case, 18);
     const box = el("span", { className: "onview casebox", id: "case" }, sign, word, arrow, menu);
@@ -2358,14 +2360,16 @@ class DialTool {
     const sword = el("span", { className: "word" }), sarrow = el("span", { className: "arrow" });
     sarrow.innerHTML = icon(SIGNS.up);
     const smenu = el("select", { id: "strap-pick", ariaLabel: "The case’s strap (preview only)", title: "The case’s strap (preview only)" });
-    STRAPS.forEach((name, i) => smenu.append(el("option", { value: String(i), textContent: i ? name : "No strap" })));
+    const STRAPS = ["Strap", "Strap", "Bracelet"];      // 0 and 1 leather, 2 a bracelet (watch.js); no "No strap"
+    [1, 2].forEach((i) => smenu.append(el("option", { value: String(i), textContent: STRAPS[i] })));
     smenu.onchange = () => { this.set_value("global", "strap", +smenu.value); this.render(); };
     const ssign = el("span", { className: "sign" }); ssign.innerHTML = icon(TOOL_ICONS.strap, 18);
     const strap = el("span", { className: "onview casebox strapbox", id: "strap" }, dot, el("span", { className: "strapkind" }, ssign, sword, sarrow, smenu));
     this.case_sync = () => {
-      const S = this.S, i = S.bezel || 0, k = S.strap || 0;
-      word.textContent = i ? BEZELS[i] : "Case"; menu.value = String(i); box.classList.toggle("on", i > 0);
-      strap.hidden = !i; sword.textContent = k ? STRAPS[k] : "Strap"; smenu.value = String(k); strap.classList.toggle("on", k > 0);
+      const S = this.S, kind = G.CASE_OF_BEZEL[S.bezel] || "dress", k = S.strap === 2 && kind === "diver" ? 2 : 1;      // a bracelet on the diver alone
+      word.textContent = NAMES[kind]; menu.value = String(G.BEZEL_OF_CASE[kind]); box.classList.add("on");
+      sword.textContent = STRAPS[k]; smenu.value = String(k); strap.classList.add("on");
+      smenu.querySelector('[value="2"]').hidden = kind !== "diver";      // R16: hidden where it can't be used
       dot.hidden = k !== 1; paint(dot, S.c_strap);
     };
     this.case_sync();
@@ -6621,7 +6625,7 @@ class DialTool {
 let tool = null;
 
 export async function open_window(pathkit, harfbuzz, font_bytes) {
-  G.start(pathkit, harfbuzz);
+  G.start(pathkit, harfbuzz); attach_watch(pathkit);
   G.add_font(font_bytes, 0, true);                 // the page's own font: stands in until yours are loaded
   const linked = await unpack(location.hash);      // a dial in the address comes first…
   let settings = linked?.settings ?? (linked?.old !== undefined ? structuredClone(OPENER) : null);      // (a link of an older scheme: the First dial, R31)
