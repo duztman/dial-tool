@@ -1,7 +1,7 @@
 # Dial Tool — build list
 
 Numbered, never renumbered. Status: **open** · **verify** · **ask** · **parked**. Done items move to `docs/build-list-done.md`; the DrawBot version's to `archive/drawbot/build-list-drawbot.md`.
-*Last updated 21 Oct 2026, 23:10 (batch 1 built in 4.91.3; #504 noted). 22:45: #503 the archive. 22:30: #453 open again, #502 notices added. 20:25 (Okay's answers: v1 scope settled, #494 #495 added, #68 #134 #227 #366 closed. 20:10: v1 drafted; the list grouped by v1 instead of by where each note came from; done items moved out). Where an item came from is in its own words and dates.*
+*Last updated 22 Oct 2026, 17:15 (group K: the Show Case into Dial Tool, in v1; #506 done, #507 open). 21 Oct 2026, 23:10 (batch 1 built in 4.91.3; #504 noted). 22:45: #503 the archive. 22:30: #453 open again, #502 notices added. 20:25 (Okay's answers: v1 scope settled, #494 #495 added, #68 #134 #227 #366 closed. 20:10: v1 drafted; the list grouped by v1 instead of by where each note came from; done items moved out). Where an item came from is in its own words and dates.*
 
 ## v1 — settled with Okay, 21 Oct 2026
 
@@ -89,6 +89,16 @@ Built in 4.91.3, with #149, #434, #495, #76, #231 from groups D and F and #453 (
 |---|---|---|
 | 501 | **The rest of the font library in the list** (Okay, 21 Oct 2026: "Adding them into the site before v1 is a must"): the middle tier (50) and the non-Latin numeral fonts (10) of `docs/font-tiers-2026-10-16.md`, licences and credits as `web/fonts/README.md` keeps them. The bottom tier (14) stays held. The font sheet follows R35 | v1 — build on Okay's word |
 
+### K · Show mode — the Show Case merged into Dial Tool (Okay, 22 Oct 2026: "this is perfectly and mustly a part of v1 rollout. Most big and important part")
+
+The Show Case was built to be put into Dial Tool; its export stays. "Showcase UI is just to test the functionality … Logic will come from main. Only the color switching of the whole controls is well worked out. Delete the whole unnecessary stuff." In phases; before each, 10–20 questions, a report, then Okay's go. Elegance is the brief: "light as a feather … simplest, most elegant and lightweight way … without changing the looks and presentation".
+
+| # | Item | Status |
+|---|---|---|
+| 489 | **Dial Show Case into Dial Tool** (was: a standalone app). Okay's shape of it: Activate Showcase slides the panel out and the show column in; only the dial's colours are editable there, and Versions; the cases will grow in number; the edit mode's case (**show mode** is the other) is flat, Engineer-like, simply shadowed; shadows, flares and Miyazaki come on in show mode; fonts, colour changes and the bottom bar already exist in the app and are reused; a **"turn off shenanigans" switch** for old computers, persistent, in the bar's place in show mode. Phases: 1 shadows (done, 1.0.20) · 2 one case module (the two engines are one geometry with two paints; replaces `bezels.js`) · 3 show mode in the app · 4 clean-up | **in v1**; phase 1 done 22 Oct 2026 |
+| 506 | **Phase 1, shadows** (Show Case beta 1.0.20, `show-case/README.md` *Shadows*): one rule — the casting shape swept along the light (`sweep()`, the Minkowski sum of a polygon and a segment), black at one opacity, painted once; `silhouette(C)` with heights (case 1, lugs 0.55, crown 0.5); the strap by its own outline. Also the tang buckle, one thick keeper, stitches, the rolled ends, the holes. Approved on pictures 1–14; not yet seen on Okay's own machines | done — 1.0.20; **verify** on his Mac and iPad (the blur when Soft is on) |
+| 507 | **Phase 1 leftovers**: Blurs = one soft edge on the shadow layer (today Blurs only governs the flare); the strap's rise band under the lugs; case heights by kind (Dress 0.22 × dial, Field 0.28, Diver 0.32 — agreed in question mode, not drawn: the shadow's length today is the engine's 2.4 mm × the sun's factor, not the real height) | open |
+
 ## After v1
 
 | # | Item | Status |
@@ -174,11 +184,10 @@ Open, in rough order of weight within each group. #169 is the one Okay called co
 | 395 | **Place dials in the discs** (Okay, 01:36: "I will announce when to cross to placing dials"): each disc gets a dial from the Gallery or made in the app; colours from the packer's palette | **waiting for Okay's word** |
 | 396 | **With the large discs off the sides, the band between them and an edge can stay thin and white** when few small discs land there (seen on 1 of 6 seeds) | noted |
 
-### Dial Show Case (`show-case/` on the branch `show-case-app`; live at `/show-case/`)
+### Dial Show Case (`show-case/` on the branch `show-case-app`; live at `/show-case/`) — see group K above
 
 | # | Item | Status |
 |---|---|---|
-| 489 | **Dial Show Case, a standalone app**: the Showcase's animation (the Playbox) and the cases and straps rendering engine together (Okay, 19:42: "This was a great detour and will be its standalone app combined with showcase. It will be called Dial Show Case") | planned |
 | 491 | **Ink thicknesses** for the Engineer style (Okay, 19:04: "You can tackle ink thicknesses next") | next |
 | 492 | **Dial Show Case notes, 20:11**: tinted flares (grey metals white); divers' top end links copied from the bottom; bracelets lit high or low, not side-middle; ink heights as a tiny inner shadow and highlight, one value to lock; hand bevels on; Miyazaki's point light (all in `show-case/README.md`) | ink levels, bevels, flares and point light shown on a diver check, 20:11; the rest open |
 | 493 | **Bracelet ends wrapped as round a wrist**, the closed loop half below the ground; no open views for bracelets | parked (Okay, 20:11) |
