@@ -31,6 +31,8 @@
   .pillswitch > button { height: calc(var(--control) - 2 * var(--u1) - 2 * var(--hair)); padding: 0 var(--u4); border-radius: var(--round-pill); color: var(--grey); font-size: var(--t-s); }
   .pillswitch > button:hover:not(.on) { color: var(--ink); }
   .pillswitch.many { flex-wrap: wrap; }
+  #app.showing .pillswitch { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }      /* show mode's column is narrower: a long pill scrolls sideways on its line, so no row grows (Okay, 22 Oct 2026, 21:05: "Scroll sideways it is"; the Show Case's rule) */
+  #app.showing .pillswitch::-webkit-scrollbar { display: none; }
   .steps { width: 100%; }
   .step, .segs > button { flex: 1; border-color: var(--rule); }
   .segs > button { padding: 0 var(--unit); }

@@ -1,5 +1,9 @@
 # Dial Tool — changelog
 
+## beta 4.91.10 (web version) · 22 Oct 2026
+
+- **A long pill scrolls sideways in show mode** (Okay, 22 Oct 2026, 21:05: "Scroll sideways it is"): Metal's six choices stay on one line in the narrower column, the pill scrolling under the finger or the trackpad, no scrollbar — the Show Case's rule; on the dial side pills wrap as before.
+
 ## beta 4.91.9 (web version) · 22 Oct 2026
 
 - **Show mode's column checked against the Show Case's** (Okay, 22 Oct 2026, 20:21–20:29: "Colors adapting to bg was good, if you got it back, that's all I want"): the same width (six columns at 42 px, margins at 16 — "less wide"), the tint one colour with the top band (title, tabs, pinned lines) a tenth lighter; the Light tab's Style and Lighting are the pinned lines, with no heading, and everything else scrolls (the pinned Watch and Export blocks made the rows under them look grey — "under the persistent, goes too gray"); the tabs' hairline inset by the margin. The round **grey swatch** at the title line's end (`ui_grey_panel`): the panel in greys like the bar, pressed again the backdrop's colour; it shows the look it would switch to; on the dial side none (R16).
