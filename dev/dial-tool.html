@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.91.7 · built 2026-10-22 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.91.8 · built 2026-10-22 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -32,8 +32,6 @@
 /* the dial alone (the eye switch, 15 Oct 2026): how far the panel has gone, 0 (there) to 1 (away). Registered as a
    number so it can be eased; outside the layers, as a declaration of a name, not a rule */
 @property --away { syntax: "<number>"; inherits: true; initial-value: 0; }
-/* the showcase (the iris switch, 15 Oct 2026): 0 (off) to 1 (on), eased like --away */
-@property --show { syntax: "<number>"; inherits: true; initial-value: 0; }
 
 @layer tokens {
   :root {
@@ -100,10 +98,8 @@
     /* the dial alone (the eye switch, Okay, 15 Oct 2026, 04:02): the panel slides away and the dial grows to fit, eased */
     --panel-w: calc(var(--panel) + var(--hair));   /* the panel's column: its lines and its right hairline */
     --view-time: 700ms; --view-ease: cubic-bezier(0.65, 0, 0.35, 1);      /* slow out, slow in */
-    --show-time: 600ms;                            /* the showcase's sky and spotlight fading in and out */
     --iris-time: 250ms;                            /* the iris switch's words sliding out; Now shrinking into its undo sign */
     --iris-words: 160px;                           /* room enough for ACTIVATE SHOWCASE */
-    --now-pill: 64px;                              /* the showcase's Now pill */
     /* a phone (Okay, 15 Oct 2026, 06:20–06:24) */
     --preview-share: 42%;                          /* the preview's share of the screen; the drawer under it has the rest, less the bar (its gripper sets it) */
     --grip-w: 26px; --grip-h: 10px; --grip-hit: 44px;      /* the drawer's gripper: a pill on its top line (06:51: "nubbin pill and larger"), and the room a finger gets around it */
@@ -112,10 +108,6 @@
     --speed-thumb-narrow: 26px;                    /* a phone's speed thumb, the speed written in it: wide enough for 720X */
     --word-max: 88px;                              /* the most a switch's word unfolds to */
     --logo-narrow: 22px;                           /* Okay's mark, larger on a phone (06:24: "larger okay icon on mobile") */
-    --show-key: 40px; --show-pill: 80px;           /* in the showcase the X and Now are a quarter larger (05:43: "now and x can grow too") */
-    --show-faint: 0.6;                             /* and less faint than the switches (05:43: "too faint") */
-    --hint-time: 2400ms;                           /* the showcase's left-right hint, start to end */
-    --mast-show: 0.5;                              /* the mark and "Dial Tool" in the showcase: fainter (Okay, 04:59) */
     --track-50: 0.05em;                            /* tracking 50: every monospace word of the bottom bar (Okay, 15 Oct 2026, 06:51: "all mono text around here gets +50 tracking") */
     --track-100: 0.1em;                            /* tracking 100 (Okay, 04:59: "now gets 100 tracking") */
     --compare-d: 0px;                              /* set by compare_place(): the size every saved dial is shown at in Compare (#435) */
@@ -281,11 +273,11 @@
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }      /* no grey box flashing under a finger (#153) */
   html, body { height: 100%; margin: 0; touch-action: pan-x pan-y; overscroll-behavior: none; }      /* fingers scroll, never zoom the window: only the dial zooms, inside the preview (Okay, 15 Oct 2026, 02:19); and the window is never pulled past its edge (#309, 4.46.1) */
   body { background: var(--paper); color: var(--ink); overflow: hidden; }
-  #app { display: grid; grid-template-columns: calc(var(--panel-w) * (1 - var(--away))) 1fr; grid-template-rows: 1fr calc(var(--bar-height) * (1 - var(--show))); height: 100%;
-    transition: --away var(--view-time) var(--view-ease), --show var(--view-time) var(--view-ease); }
-  #app.snap { transition: none; }      /* into the showcase the layout changes at once and only the dial travels; out, the long way: the bar rises and the panel slides back, eased (app.js) */
+  #app { display: grid; grid-template-columns: calc(var(--panel-w) * (1 - var(--away))) 1fr; grid-template-rows: 1fr var(--bar-height); height: 100%;
+    transition: --away var(--view-time) var(--view-ease); }
+  #app.snap { transition: none; }      /* no slide: a session that opens in show mode (show_mode() in app.js) */
   #app.away { --away: 1; }
-  #app.show { --show: 1; }      /* the showcase: the bar's row closes at once (showcase() in app.js) */      /* the dial alone: the panel's column closes, eased (the eye switch, dial_alone() in app.js) */
+  #app.showing { grid-template-columns: 1fr calc(var(--panel-w) * (1 - var(--away))); }      /* show mode: the panel's column on the right (show_mode() in app.js, #509) */
   @media (prefers-reduced-motion: reduce) { #app { transition: none; } }
   .starting { padding: var(--margin); }
   h1 { font-size: var(--t-l); font-weight: 600; letter-spacing: -0.005em; margin: 0; }
@@ -442,17 +434,23 @@
      and so stays where it was, is over the backdrop once the panel is gone */
   .sheetgrip { display: none; }      /* a phone's drawer gripper (8-narrow.css); a wider screen has no drawer */
   .panel { position: relative; z-index: 5; width: var(--panel-w); translate: calc(-1 * var(--panel-w) * var(--away)) 0; }
-  .mast { display: flex; align-items: center; translate: calc(var(--panel-w) * var(--away)) 0; z-index: 6; }      /* its translate makes it a stacking context, so the bio's z-index counts only inside it: the mast itself stands over the panel's rows, or a later stepper draws over the open bio (Okay, 15 Oct 2026, 10:45) */
+  .mast { display: flex; align-items: center; translate: calc(var(--panel-w) * var(--away)) 0; z-index: 6; }
+  /* show mode (#509; Okay, 22 Oct 2026: "left side slides out, right side slides in"): the same panel on the right, sliding
+     away to the right; its colours from the backdrop (the tokens set on it by show.js tint_panel, #505) */
+  #app.showing .panel { grid-area: 1 / 2; translate: calc(var(--panel-w) * var(--away)) 0; background: var(--column, var(--paper)); color: var(--ink);
+    --paper: var(--night); --scroll: transparent; --rule-light: var(--rule); --ground: var(--night-field); --row-rule: var(--uiblack, var(--rule)); --line-on-grey: var(--uiblack, var(--rule)); --line-on-paper: var(--uiblack, var(--rule));
+    --well: var(--night-field, var(--ground)); --inset: var(--night-field, var(--ground)); --surface: transparent; }      /* the tokens that are read at :root are set again here, so the tint reaches them */
+  #app.showing .form { --surface: transparent; --well: var(--night-field, var(--ground)); --inset: var(--night-field, var(--ground)); }
+  #app.showing .mast { translate: 0; }
+  #app.showing main { grid-area: 1 / 1; }
+  #app.showing .panel > :is(header, .tabs, .pinned) { background: var(--column-top, var(--paper)); }      /* its translate makes it a stacking context, so the bio's z-index counts only inside it: the mast itself stands over the panel's rows, or a later stepper draws over the open bio (Okay, 15 Oct 2026, 10:45) */
   /* the mast on the backdrop (the dial alone): black or white like the switches, the version a little quieter. Its
      colour follows the slide: from paper's to the backdrop's while the panel's edge sweeps over it (--away 0.55 to
      0.95), both ways, so it shows on whichever is under it; a backdrop changed while away turns it at once */
   #app { --mast-ink: var(--ink); }
   #app.dark { --mast-ink: var(--white); }
-  #app.show { --mast-ink: var(--white); }      /* the showcase's sky is dark whatever the backdrop */
   .mast :is(h1, .logo:not([aria-expanded="true"])) { color: color-mix(in srgb, var(--mast-ink) clamp(0%, (var(--away) - 0.55) * 250%, 100%), var(--ink)); }
   .mast .quiet { color: color-mix(in srgb, color-mix(in srgb, var(--mast-ink) 70%, transparent) clamp(0%, (var(--away) - 0.55) * 250%, 100%), var(--grey)); }
-  .mast .quiet { opacity: calc(1 - var(--show)); }      /* the showcase keeps the mark and "Dial Tool" only */
-  #app.show .mast { opacity: var(--mast-show); pointer-events: none; }      /* the showcase: fainter, and not pressable (Okay, 04:59) */
   .panel :is(.unit, .galleryway) { opacity: calc(1 - 3 * var(--away)); }      /* the unit box and the Gallery pill go first, before they slide under the version */
   /* Okay's mark in the first column, the title after it on the six columns (Okay, 15 Oct 2026, 02:42); a press opens the bio
      under it, a night part as wide as the panel's lines */
@@ -1352,7 +1350,6 @@
   .handles .handle .reach { fill: transparent; stroke: none; }
   .handles .handle .seat { fill: var(--handle); stroke: var(--white); stroke-width: 1.5; }      /* the disc a handle sits in: its guide's colour, solid, a white hairline round it (#486; Okay, 04:52: "No transparency on handles, backgrounds solid") */
   .handles.dragging .handle { cursor: grabbing; }
-  #app.show .handles { display: none; }
   /* Tiny Preview (#337): its button where Guides stood, a plain eye; the dial at its own size in a little window over
      everything, the backdrop round it, a hard shadow, dragged anywhere; the eye at its top left puts it away */
   .tinyopen { position: absolute; z-index: 3; right: var(--canvas-inset); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); width: var(--control-large); border-radius: var(--round-switch); }      /* over the dial-alone eye, a unit between (4.82; Okay, 19 Oct 2026: "Move tiny preview button below, stacked on top of preview. Showcase not moved"; top right, where Guides stood, until 4.81) */
@@ -1559,73 +1556,19 @@
   .tip svg .a { stroke: var(--ink); stroke-width: var(--tip-arrow); }
   .tip svg .b { stroke: var(--white); stroke-width: var(--tip-arrow-in); }
   .tip svg .c { fill: var(--ink); }
-  /* ── the showcase (the iris switch; Okay, 15 Oct 2026, 04:26, reshaped 04:59 and 05:09) ── What stood on the preview
-     goes at once (fading, it twitched while the sky darkened) and comes back at once; only the dial travels (app.js).
-     The sky (a 45° gradient, set in app.js) and the spotlight fade in; the iris switch is an X at the window's bottom
-     right, Now a pill at the bottom centre on its line, both faint, in white. A drag moves the sun along its day */
-  :is(.sky, .pool) { opacity: 0; transition: opacity var(--show-time) linear; }
-  #app.show :is(.sky, .pool) { opacity: 1; }
-  #app.show main { --on-canvas: var(--white); --off-canvas: var(--ink); }
-  #app.show :is(.undos, .corner, .backdrops, .shadows, .tip, .tinyopen) { visibility: hidden; }
-  #app.show :is(#eye-box, .irisgo) { display: none; }
-  /* in the showcase the X and Now are larger and less faint, and stand as far in from the window's edges as the mark
-     does at the top left: the margin (05:43: "too close to edges, too faint… fit them inside the imaginary padding logo
-     top left got") */
-  #app.show main { --line-faint: color-mix(in srgb, var(--on-canvas) calc(var(--show-faint) * 100%), transparent); }
-  #app.show .eyes { position: fixed; right: var(--margin); bottom: var(--margin); }      /* the window's corner, from the first moment */
-  #app.show .irisbox { height: var(--show-key); }
-  #app.show .iriskey { width: calc(var(--show-key) - 2 * var(--hair)); }
-  #app.show .iriskey svg { width: calc(var(--show-key) - 2 * var(--hair)); height: calc(var(--show-key) - 2 * var(--hair)); }
-  #app.show :is(.irisbox > *, .nowpill:not(.back) > .word) { opacity: var(--show-faint); }
-  #app.show .nowpill { bottom: var(--margin); width: var(--show-pill); height: var(--show-key); border-radius: calc(var(--show-key) / 2); font-size: var(--t-l); }
-  #app.show .nowpill.back { width: var(--show-key); }
-  #app.show .nowpill.back svg { opacity: var(--show-faint); }
-  @media (hover: hover) { #app.show :is(.irisbox:hover > *, .nowpill:not(.back):hover > .word, .nowpill.back:hover svg) { opacity: 1; } }
-  #app.show :is(.preview, .preview path) { cursor: ew-resize; }      /* the sun goes left and right */
+  /* ── show mode (the iris switch; build list #509, 22 Oct 2026) ── the panel moves to the right (4a-panel.css); on the
+     canvas, what the show tabs hold is off (R16) */
+  #app.showing :is(.guidesbox, .xraybox, .shadowsbox, .casebox, .tinyopen) { display: none; }      /* show mode: what the show tabs hold, and the guides, are off the canvas (R16); the case is a row on the Watch tab */
   /* the iris switch: the iris in a box; pressed, its words slide out to its left (ACTIVATE SHOWCASE), which alone go
-     to the showcase (04:59: "we need affordance"); in the showcase an X, the way out */
+     to show mode (04:59: "we need affordance"); in show mode an X, the way out */
   .irisbox { padding: 0; overflow: hidden; border-radius: var(--round-switch); }
   .iriskey { display: block; width: calc(var(--control-large) - 2 * var(--hair)); height: 100%; padding: 0; }
   .iriskey svg { display: block; margin: 0 auto; }
   .irisbox .x { display: none; }
-  #app.show .irisbox .x { display: inline; }
   .irisgo { max-width: 0; height: 100%; padding: 0; overflow: hidden; white-space: nowrap; font-family: var(--mono); font-size: var(--t-s); text-transform: uppercase; letter-spacing: var(--track-100);
     transition: max-width var(--iris-time) var(--view-ease), padding var(--iris-time) var(--view-ease); }
   .irisbox[aria-expanded="true"] .irisgo { max-width: var(--iris-words); padding: 0 var(--u2) 0 var(--u4); }
   @media (hover: hover) { .irisgo:hover { text-decoration: underline; text-underline-offset: 0.2em; } }
-  /* Now: a pill, tracked 100; pressed, the hands spin to now and it shrinks into a round undo sign (.back), the way back */
-  .nowpill { position: absolute; z-index: 3; left: 50%; bottom: var(--canvas-inset); translate: -50% 0; display: grid; place-items: center; width: var(--now-pill); height: var(--control-large); padding: 0; border-radius: calc(var(--control-large) / 2);
-    font-family: var(--mono); text-transform: uppercase; letter-spacing: var(--track-100); visibility: hidden; transition: width var(--iris-time) var(--view-ease); }
-  .nowpill > * { grid-area: 1 / 1; transition: opacity var(--iris-time) linear; }
-  .nowpill svg { opacity: 0; }
-  .nowpill.back { width: var(--control-large); }
-  .nowpill.back .word { opacity: 0; }
-  .nowpill.back svg { opacity: var(--faint); }
-  @media (hover: hover) { .nowpill.back:hover svg { opacity: 1; } }
-  #app.show .nowpill { visibility: visible; }
-  /* Now and 10:10 side by side, the gap between them on the dial's centre line; each is held by its inner edge, so the
-     one that shrinks into the undo sign shrinks toward the middle and the other doesn't move (Okay, 15 Oct 2026, 07:40:
-     "next to now, 10:10. Selected turns undo, other stays still"). 10:10 is two letters (and their tracking) wider */
-  .nowpill.now { translate: calc(-100% - var(--u1)) 0; }
-  .nowpill.ten { translate: var(--u1) 0; }
-  #app.show .nowpill.ten { width: calc(var(--show-pill) + 2ch + 2 * var(--track-100)); }
-  #app.show .nowpill.ten.back { width: var(--show-key); }
-  /* the hands key: the showcase's bottom left corner, across from the X; round, the Hands sign inside, as faint as the
-     X. Pressed, the hands are hidden and the key is filled, the sign dark on it (07:40) */
-  .handskey { position: fixed; z-index: 3; left: var(--margin); bottom: var(--margin); width: var(--show-key); height: var(--show-key); padding: 0; border-radius: 50%; visibility: hidden; }
-  .handskey svg { display: block; opacity: var(--show-faint); }
-  #app.show .handskey { visibility: visible; }
-  .handskey[aria-pressed="true"] { border-color: transparent; background: color-mix(in srgb, var(--white) calc(var(--show-faint) * 100%), transparent); color: var(--night); }
-  .handskey[aria-pressed="true"] svg { opacity: 1; }
-  @media (hover: hover) { .handskey:hover svg { opacity: 1; } .handskey[aria-pressed="true"]:hover { background: var(--white); } }
-  /* over Now, once the dial has arrived: a two-headed arrow, white and glowing, comes, sways left and right, and goes;
-     centred between the dial and Now (app.js sets its top) (04:59; 05:43: "can't see it. Make it white and glow and
-     fade, 3x size") */
-  .sunhint { position: absolute; z-index: 3; left: 50%; translate: -50% 0; color: var(--white); opacity: 0; pointer-events: none; filter: drop-shadow(0 0 var(--u1) var(--white)) drop-shadow(0 0 var(--u3) color-mix(in srgb, var(--white) 60%, transparent)); }
-  .sunhint svg { display: block; }
-  .sunhint.go { animation: sway var(--hint-time) ease-in-out; }
-  @keyframes sway { 0% { opacity: 0; transform: translateX(0); } 18% { opacity: 1; } 38% { transform: translateX(calc(-1 * var(--u4))); } 62% { transform: translateX(var(--u4)); } 82% { opacity: 1; transform: translateX(0); } 100% { opacity: 0; } }
-  @media (prefers-reduced-motion: reduce) { .sunhint.go { animation: none; } }
   /* a switch whose words show is filled with the backdrop's colour, so what is under it (the dial) doesn't show through
      its words (Okay, 15 Oct 2026, 07:07: "these buttons get solid bg color when labels visible"): the iris switch open
      (ACTIVATE SHOWCASE), the labelled switches — always on a wide screen, on a phone while unfolded (8-narrow.css) */
@@ -1652,10 +1595,7 @@
   .bar { font-family: var(--mono); letter-spacing: var(--track-50); }
   .bar :is(button, input) { letter-spacing: var(--track-50); }      /* the browser gives buttons and fields their own spacing: given the bar's */
   .bar .humpname { letter-spacing: 0; }      /* the pixel face keeps its own spacing */
-  /* the showcase: the bar's row closes at once and the bar is out of the window (Okay, 15 Oct 2026, 05:09: only the
-     dial travels); not faded: under it is the page's paper, which would show through */
   .bar { align-self: start; }
-  #app.show .bar { visibility: hidden; }      /* the 10:10 tag stands above the bar's top: it would peek in */
   /* under the panel: play · how fast · the time and its half of the day · NOW, a half-gap between each (Okay: "equalize
      all paddings red dot to now, then halve them"), from the first of the six columns to the last. Each box is as wide
      as its words and the same room on either side of them; how fast takes what is left ("slider can grow"). */
@@ -1802,9 +1742,9 @@
   @media (max-width: 860px) {
     :root { --canvas-inset: var(--u5); --canvas-top: var(--canvas-inset); --margin: var(--u5); --gap: var(--u4); --col: calc((100vw - 2 * var(--margin) - var(--lead) - 5 * var(--gap)) / 6); }
     #app { grid-template-columns: 1fr; }
+    .irisbox { display: none; }      /* show mode is for a Mac or an iPad (Okay, 22 Oct 2026; R16) */
     /* the dial alone on a phone: the preview's row grows over the panel's (the bar stays on top); nothing slides sideways */
-    #app { grid-template-rows: calc(var(--bar-h) * (1 - var(--show))) calc(var(--preview-share) + (100% - var(--preview-share) - var(--bar-h)) * var(--away) + var(--bar-h) * var(--show)) minmax(0, 1fr); }
-    .bar { translate: 0 calc(-1 * var(--bar-h) * var(--show)); }      /* the showcase: on a phone the bar leaves upward */
+    #app { grid-template-rows: var(--bar-h) calc(var(--preview-share) + (100% - var(--preview-share) - var(--bar-h)) * var(--away)) minmax(0, 1fr); }
     .panel, .mast { width: auto; translate: none; }
     main { --stop-short: var(--canvas-inset); }
     .undos { left: var(--canvas-inset); flex-direction: row; }      /* nothing slides sideways, so nothing stops short; Versions beside undo, not under it, so the left column stays clear of Backdrop when the drawer is up (#232) */
@@ -1898,10 +1838,10 @@
     .casebox :is(.word, .arrow) { display: inline-block; max-width: 0; overflow: hidden; white-space: nowrap; transition: max-width var(--iris-time) var(--view-ease), margin var(--iris-time) var(--view-ease); }
     main.words .casebox :is(.word, .arrow) { max-width: var(--word-max); margin-left: var(--unit); }
     main:not(.words) .casebox { background: none; }
-    /* in the showcase the mark (larger here) and "Dial Tool" stand at the top left: the drawer is gone */
-    #app.show :is(.about, .logo), .panel:not(.squeezed) :is(.about, .logo) { width: var(--logo-narrow); }
-    #app.show .logo, .panel:not(.squeezed) .logo { height: var(--logo-narrow); }
-    #app.show .logo svg, .panel:not(.squeezed) .logo svg { width: 100%; height: 100%; }      /* …and on the drawer's full title line (Okay, 15 Oct 2026, 08:08: "you forgot the icon resize on the big version"); squeezed, it is the eyes' size again */
+    /* on a phone the mark (larger here) and "Dial Tool" stand at the top left: the drawer is gone */
+    .panel:not(.squeezed) :is(.about, .logo) { width: var(--logo-narrow); }
+    .panel:not(.squeezed) .logo { height: var(--logo-narrow); }
+    .panel:not(.squeezed) .logo svg { width: 100%; height: 100%; }      /* …and on the drawer's full title line (Okay, 15 Oct 2026, 08:08: "you forgot the icon resize on the big version"); squeezed, it is the eyes' size again */
     /* the drawer's title line, squeezed once the drawer scrolls (.squeezed, app.js) and staying on top while it does,
        the tabs held under it (Okay, 15 Oct 2026, 07:02: "a compacted title bar for scrollers' delight. We may lose mm…
        smaller, actually proportional to eyes okay icon and same text"; 07:59: full on load and back at the very top,
@@ -1916,7 +1856,6 @@
        on the thick line that ends what stays put (.stuck, app.js) (07:02: "we still get the scroll past… and no bottom bar") */
     .panel:not(.held) .tabs::before { content: ""; position: absolute; z-index: -1; inset: 0 calc(-1 * var(--margin)); background: var(--paper); }
     .panel.stuck:not(.held) .tabs::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: var(--thick); background: var(--ink); }      /* under the tabs, the chosen one standing on it, as when the drawer is at its top */
-    #app.show .mast { position: fixed; z-index: 6; top: var(--margin); left: var(--margin); }
     /* Give way on a phone (#258): the two tabs side by side over the square, the open one joined to it from above */
     .giveway { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; }
     .givetabs { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; }
@@ -3799,7 +3738,7 @@ var require_gifenc = __commonJS({
       }
       return bins;
     }
-    function quantize2(rgba, maxColors, opts = {}) {
+    function quantize2(rgba2, maxColors, opts = {}) {
       const {
         format = "rgb565",
         clearAlpha = true,
@@ -3807,13 +3746,13 @@ var require_gifenc = __commonJS({
         clearAlphaThreshold = 0,
         oneBitAlpha = false
       } = opts;
-      if (!rgba || !rgba.buffer) {
+      if (!rgba2 || !rgba2.buffer) {
         throw new Error("quantize() expected RGBA Uint8Array data");
       }
-      if (!(rgba instanceof Uint8Array) && !(rgba instanceof Uint8ClampedArray)) {
+      if (!(rgba2 instanceof Uint8Array) && !(rgba2 instanceof Uint8ClampedArray)) {
         throw new Error("quantize() expected RGBA Uint8Array data");
       }
-      const data = new Uint32Array(rgba.buffer);
+      const data = new Uint32Array(rgba2.buffer);
       let useSqrt = opts.useSqrt !== false;
       const hasAlpha = format === "rgba4444";
       const bins = create_bin_list(data, format);
@@ -3945,8 +3884,8 @@ var require_gifenc = __commonJS({
     function roundStep(byte, step) {
       return step > 1 ? Math.round(byte / step) * step : byte;
     }
-    function prequantize(rgba, { roundRGB = 5, roundAlpha = 10, oneBitAlpha = null } = {}) {
-      const data = new Uint32Array(rgba.buffer);
+    function prequantize(rgba2, { roundRGB = 5, roundAlpha = 10, oneBitAlpha = null } = {}) {
+      const data = new Uint32Array(rgba2.buffer);
       for (let i2 = 0; i2 < data.length; i2++) {
         const color = data[i2];
         let a = color >> 24 & 255;
@@ -3964,17 +3903,17 @@ var require_gifenc = __commonJS({
         data[i2] = a << 24 | b << 16 | g << 8 | r << 0;
       }
     }
-    function applyPalette2(rgba, palette, format = "rgb565") {
-      if (!rgba || !rgba.buffer) {
+    function applyPalette2(rgba2, palette, format = "rgb565") {
+      if (!rgba2 || !rgba2.buffer) {
         throw new Error("quantize() expected RGBA Uint8Array data");
       }
-      if (!(rgba instanceof Uint8Array) && !(rgba instanceof Uint8ClampedArray)) {
+      if (!(rgba2 instanceof Uint8Array) && !(rgba2 instanceof Uint8ClampedArray)) {
         throw new Error("quantize() expected RGBA Uint8Array data");
       }
       if (palette.length > 256) {
         throw new Error("applyPalette() only works with 256 colors or less");
       }
-      const data = new Uint32Array(rgba.buffer);
+      const data = new Uint32Array(rgba2.buffer);
       const length = data.length;
       const bincount = format === "rgb444" ? 4096 : 65536;
       const index = new Uint8Array(length);
@@ -6862,8 +6801,8 @@ var Buffer2 = class Buffer3 {
   *  - `flags`: a combination of {@link BufferSerializeFlag} values (default `0`).
   * @returns The serialized buffer contents.
   */
-  serialize(options = {}) {
-    let { font, start: start2 = 0, end, format = BufferSerializeFormat.TEXT, flags = 0 } = options;
+  serialize(options2 = {}) {
+    let { font, start: start2 = 0, end, format = BufferSerializeFormat.TEXT, flags = 0 } = options2;
     const sp = Module.stackSave();
     const endPos = end ?? this.getLength();
     const bufLen = 32 * 1024;
@@ -7164,7 +7103,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.91.7";
+var VERSION = "beta 4.91.8";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -7517,9 +7456,53 @@ var DEFAULTS = {
   // a Wear OS watch face's name (4.67, farukahmet's PR #1); "" = Dial Tool. Its package's name follows from it
   strap: 1,
   c_strap: [0.29, 0.2, 0.14, 1],
-  // the strap round the dial (watch.js): 0 and 1 a leather strap in c_strap, 2 a bracelet in the case's metal (on the diver alone; elsewhere leather). Never none (Okay, 22 Oct 2026)
+  // the strap round the dial (watch.js): 0 and 1 a leather strap in c_strap, 2 a bracelet in the case's metal (on the diver alone; elsewhere leather), 3 a NATO (w_nato). Never none (Okay, 22 Oct 2026)
   bezel: 0,
   // the case round the dial (watch.js, CASE_OF_BEZEL): the list only grows (R9). 0 dress, 1 diver, 2 field, 3 dress, 4 field, 5 emre01 — 2 and 4 were the pilot and sport sketches, 0 "no case": no watch is caseless now (Okay, 22 Oct 2026). Preview only (R26)
+  // ── w_: the watch round the dial in show mode (22 Oct 2026, build list #509; R7). Kept in the settings file and the
+  // session, never in a link (R31: these keys are not in LINK_KEYS). Lists only grow at their end (R9).
+  w_style: 1,
+  // the paint: 0 Engineer, 1 Miyazaki (watch.js). The dial side draws Engineer, flat, whatever this says
+  w_lighting: 0,
+  // 0 dramatic (the spotlight pool and the flare), 1 flat
+  w_view: 0,
+  // what Fit shows in show mode: 0 the detail (lug tip to lug tip), 1 the whole watch, 2 the dial as the dial side
+  w_metal: 1,
+  // 0 steel, 1 gold, 2 aluminium, 3 bronze, 4 titanium, 5 black
+  c_metal: null,
+  // a case colour of your own; null = the metal's preset
+  w_nato: 1,
+  // the NATO's pattern: 0 bond, 1 regimental, 2 khaki, 3 black · grey, 4 olive, 5 grey (strap 3 = a NATO)
+  c_nato: null,
+  // its three stripe colours, your own; null = the pattern's
+  w_insert: 0,
+  // the diver's insert: 0 black, 1 blue, 2 green, 3 pepsi, 4 batman, 5 coke, 6 root beer, 7 sprite
+  c_insert: null,
+  // its two colours (top, bottom), your own; null = the preset
+  w_ink: 6,
+  // how far the printed ink stands proud of the plate, 0 (flat) to 10
+  w_flare_on: true,
+  w_flare: 0,
+  // the flare on the case's edge; its kind: 0 an arc along the edge, 1 a dot
+  w_fl_size: 100,
+  w_fl_tint: 45,
+  w_fl_bright: 100,
+  // the flare: size %, how close to the case's colour %, brightness %
+  w_glass_fat: 100,
+  w_glass_len: 100,
+  w_glass_op: 100,
+  // the shine on the glass: width %, length %, opacity %
+  c_backdrop2: null,
+  // a second backdrop colour: a gradient at 45°, the backdrop's colour at the top left, this at the bottom right; null = one colour
+  out_watch_px: 3e3,
+  // the watch's PNG or PDF, pixels along its longer side
+  ui_show: false,
+  // show mode on (the panel on the right with the show tabs, the watch round the dial)
+  ui_show_section: 5,
+  ui_edit_section: 0,
+  // the tab last used in show mode and on the dial side (SECTIONS numbers, R9)
+  ui_effects: true,
+  // the costly layers in show mode — blurs, the flare, the glass shine, the silhouette outline (Okay: "turn off shenanigans")
   date: "",
   // the day the dial shows, "2026-10-18", set in the bar (4.62; Okay, 18 Oct 2026: "Date best set at the bar … Default from system date"); "" = today, wherever the dial is opened
   da_jump: false,
@@ -7629,7 +7612,46 @@ function radial_extent(path) {
 var GUIDE_MORE = ["line", "crosshair", "circle"];
 var CASE_OF_BEZEL = ["dress", "diver", "field", "dress", "field", "emre01"];
 var BEZEL_OF_CASE = { dress: 3, diver: 1, field: 2, emre01: 5 };
-var NOT_GEOMETRY = ["t", "guides", "xray", "bezel", "strap", "c_strap", "wearos_name", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
+var NOT_GEOMETRY = [
+  "t",
+  "guides",
+  "xray",
+  "bezel",
+  "strap",
+  "c_strap",
+  "wearos_name",
+  "ui_section",
+  "ui_ring",
+  "ui_hand",
+  "ui_window",
+  "ui_preview",
+  "ui_scale",
+  "ui_unit",
+  "w_style",
+  "w_lighting",
+  "w_view",
+  "w_metal",
+  "c_metal",
+  "w_nato",
+  "c_nato",
+  "w_insert",
+  "c_insert",
+  "w_ink",
+  "w_flare_on",
+  "w_flare",
+  "w_fl_size",
+  "w_fl_tint",
+  "w_fl_bright",
+  "w_glass_fat",
+  "w_glass_len",
+  "w_glass_op",
+  "c_backdrop2",
+  "out_watch_px",
+  "ui_show",
+  "ui_show_section",
+  "ui_edit_section",
+  "ui_effects"
+];
 var FILE_SET = [
   ["out_f_pdf", "Dial \xB7 PDF", "pdf", { out_production: false, out_mirror: false }],
   ["out_f_svg", "Dial \xB7 SVG", "svg", { out_production: false, out_mirror: false }],
@@ -8213,10 +8235,11 @@ function differing(d, base) {
   for (const k in d) if (JSON.stringify(d[k]) !== JSON.stringify(base[k])) out[k] = d[k];
   return out;
 }
+var NOT_IN_LINK = (k) => k.startsWith("w_") || ["c_metal", "c_nato", "c_insert", "c_backdrop2", "out_watch_px"].includes(k);
 function lean(S) {
   const out = {};
   for (const k in S) {
-    if (k.startsWith("ui_") || k === "version" || JSON.stringify(S[k]) === JSON.stringify(DEFAULTS[k])) continue;
+    if (k.startsWith("ui_") || k === "version" || NOT_IN_LINK(k) || JSON.stringify(S[k]) === JSON.stringify(DEFAULTS[k])) continue;
     if (k === "rings") out.rings = S.rings.map((r) => differing(r, RING_BASE));
     else if (k === "windows") out.windows = S.windows.map((w) => differing(w, WINDOW_BASE));
     else if (HANDS.some((h) => k === "ha_" + h)) out[k] = differing(S[k], HAND_BASE);
@@ -9396,8 +9419,8 @@ function scene(S, statik, t, preview = true, selected = null) {
   if (preview && S.guides) {
     const R = S.dial_d / 2;
     const colour = (key) => {
-      const hex = GUIDE_COLOURS[S[key]] || GUIDE_COLOURS[0];
-      return [1, 3, 5].map((i2) => parseInt(hex.slice(i2, i2 + 2), 16) / 255).concat([1]);
+      const hex3 = GUIDE_COLOURS[S[key]] || GUIDE_COLOURS[0];
+      return [1, 3, 5].map((i2) => parseInt(hex3.slice(i2, i2 + 2), 16) / 255).concat([1]);
     };
     const round_guide = (r, key, px) => add("guide", circle(2 * r), null, { stroke: colour(key), px });
     const line_guide = (p0, p1) => add("guide", new Path().line(p0, p1), null, { stroke: colour("gd_k_axes"), px: S.gd_w });
@@ -9407,8 +9430,8 @@ function scene(S, statik, t, preview = true, selected = null) {
       line_guide([0, -R], [0, R]);
     }
     const tone2 = (k, a = 1) => {
-      const hex = GUIDE_COLOURS[k] || GUIDE_COLOURS[0];
-      return [1, 3, 5].map((i2) => parseInt(hex.slice(i2, i2 + 2), 16) / 255).concat([a]);
+      const hex3 = GUIDE_COLOURS[k] || GUIDE_COLOURS[0];
+      return [1, 3, 5].map((i2) => parseInt(hex3.slice(i2, i2 + 2), 16) / 255).concat([a]);
     };
     const stroke_guide = (path, k, px = S.gd_w, a = 1) => add("guide", path, null, { stroke: tone2(k, a), px });
     const built = new Map(statik.rings.map((d) => [d.ring, d]));
@@ -9875,6 +9898,7 @@ var FLARE_KIND = "arc";
 var DIVOT = "cut";
 var BRACELET_KIND = "vault";
 var DIAL_IN = true;
+var OUTLINE_ON = true;
 var REHAUT = 0.8;
 var SHD = 1;
 var INSERT = { top: "#2b2c30", bottom: "#2b2c30" };
@@ -10764,7 +10788,7 @@ function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal = null
 <rect x="-300" y="-300" width="600" height="600" fill="url(#pool)"/>
 ${blockShadow}
 
-${strapSVG}${strap === "bracelet" ? "" : contact(C2, L, strap, span, STYLE === "miyazaki")}${caseStr}${STYLE === "miyazaki" ? silhouetteOutline(strap === "bracelet" ? [...OUTL_S, ...OUTL_C] : OUTL_C, L) : ""}
+${strapSVG}${strap === "bracelet" ? "" : contact(C2, L, strap, span, STYLE === "miyazaki")}${caseStr}${STYLE === "miyazaki" && OUTLINE_ON ? silhouetteOutline(strap === "bracelet" ? [...OUTL_S, ...OUTL_C] : OUTL_C, L) : ""}
 </svg>`;
 }
 function frame(o) {
@@ -10772,7 +10796,7 @@ function frame(o) {
   DIAL_IN = false;
   GLINT = "off";
   SH_OP = Math.min(1, 0.3 * (o.shadow ?? 1));
-  const C0 = CASES[o.kind] || CASES.dress, size = o.d / (C0.dial - (C0.insert ? 2 * REHAUT : 0));
+  const C0 = CASES[o.kind] || CASES.dress, size = sizeFor(o.kind, o.d);
   METALS.custom = METALS[o.metal] || tones(o.metal || METALS.steel[1], [1.35, 0.81]);
   LEATHER.custom = tones(o.leather || LEATHER.brown[1], [1.18, 0.82]);
   BRACELET_KIND = "vault";
@@ -10782,12 +10806,244 @@ function frame(o) {
   const body = svg.slice(svg.indexOf("\n") + 1, svg.lastIndexOf("</svg>")).replace("__CLIPS__", CLIPS.join("")).replace(/<rect x="-300" y="-300"[^>]*\/>/, "").replace(/<defs><radialGradient id="pool".*?<\/defs>/s, "");
   return `<g transform="scale(1 -1)">${body}</g>`;
 }
+var DETAIL = 31;
 var FULL = { w: 126 / 1.2, h: 308 / 1.2 };
+var STYLES = {
+  engineer: { floor: "#b9b3a6", ramp: [1.19, 1.11, 0.875], shadow: 0.3, blur: `<filter id="flare" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="0.9"/></filter>` },
+  miyazaki: { floor: "#877f6d", ramp: [1.19, 1.12, 0.88], shadow: 0.3, blur: `<filter id="flare" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="1.6"/></filter>` }
+};
 var hsl = (h, k) => {
   const [hh, s, l] = hex2hsl(h);
   return hsl2hex([hh, s, Math.min(0.97, l * k)]);
 };
 var tones = (h, [up, down]) => [hsl(h, up), h, hsl(h, down)];
+function presets(style) {
+  use(style);
+  return {
+    floor: STYLES[style].floor,
+    metals: Object.fromEntries(Object.entries(METALS).map(([k, T]) => [k, T[1]])),
+    leather: Object.fromEntries(Object.entries(LEATHER).map(([k, T]) => [k, T[1]])),
+    nato: Object.fromEntries(Object.entries({ ...NATO_SETS, ...NATO_MORE }).map(([k, S]) => [k, S.map((T) => T[1])]))
+  };
+}
+var sizeFor = (key, d) => {
+  const C2 = CASES[key] || CASES.dress;
+  return d / (C2.dial - (C2.insert ? 2 * REHAUT : 0));
+};
+var caseBox = (key, size) => {
+  const C2 = scaleCase(CASES[key], size);
+  return { h: C2.l2l, w: (C2.cushion ? 2 * C2.cushion.a : C2.rails ? Math.max(C2.od, C2.lugw + 2 * C2.lugT) : C2.od) + 2 * C2.crown.h, dial: C2.dial };
+};
+function draw(o) {
+  use(o.style || "miyazaki");
+  const STYLE_ = STYLES[STYLE];
+  OUTLINE_ON = o.outline !== false;
+  DIALS = [{ name: "live", d: o.d, own: true, items: o.items }];
+  HANDS_A = o.A;
+  FLARE_KIND = o.flare;
+  INK_K = o.ink ?? 6;
+  FL = o.fl;
+  GLASS = o.glass;
+  INSERT = o.insert;
+  SHD = o.shadow ?? 1;
+  HAND_BEVEL = Boolean(o.bevels);
+  const own = (tabs, c, k) => tabs.flatMap((t) => Object.entries(t).filter(([n]) => n !== "custom").flatMap(([, v]) => typeof v[0] === "string" ? [v] : v)).find((T) => T[1] === c) || tones(c, k);
+  METALS.custom = own([METALS], o.metal, [1.35, 0.81]);
+  LEATHER.custom = own([LEATHER], o.leather, [1.18, 0.82]);
+  NATO_MORE.custom = o.natoColours.map((c) => own([NATO_SETS, NATO_MORE], c, [1.18, 0.82]));
+  STRIPES.custom = STRIPES[o.nato] || [[0, 1, 0]];
+  const two = o.floor2 && o.floor2 !== o.floor;
+  SH_OP = Math.min(1, STYLE_.shadow * SHD);
+  BRACELET_KIND = o.strap === "links" ? "links" : "vault";
+  const strap = o.strap === "bracelet" || o.strap === "links" ? "bracelet" : o.strap + "-custom";
+  const make = (mode) => {
+    GLINT = mode;
+    return sheet(o.key, strap, "own", o.L, true, o.h, "live", "custom", o.size).replace("__CLIPS__", CLIPS.join("") + STYLE_.blur);
+  };
+  const R = STYLE_.ramp, vb = (x2, y, w, h) => `${f(x2)} ${f(y)} ${f(w)} ${f(h)}`;
+  const box3 = o.view === "full" ? [-FULL.w / 2, -FULL.h / 2, FULL.w, FULL.h] : [-DETAIL, -DETAIL, 2 * DETAIL, 2 * DETAIL];
+  const e = (box3[2] + box3[3]) / 4, cx = box3[0] + box3[2] / 2, cy = box3[1] + box3[3] / 2;
+  const lin = two ? `<linearGradient id="floorg" gradientUnits="userSpaceOnUse" x1="${f(cx - e)}" y1="${f(cy - e)}" x2="${f(cx + e)}" y2="${f(cy + e)}"><stop offset="0" stop-color="${o.floor}"/><stop offset="1" stop-color="${o.floor2}"/></linearGradient>` : "";
+  const ground = (svg, fill) => svg.replace('<rect x="-300" y="-300" width="600" height="600" fill="url(#pool)"/>', `${lin ? `<defs>${lin}</defs><rect x="-300" y="-300" width="600" height="600" fill="url(#floorg)"/>` : ""}<rect x="-300" y="-300" width="600" height="600" fill="${fill}"/>`);
+  if (o.lighting !== "flat") {
+    const stops = two ? `<stop offset="0" stop-color="#fff" stop-opacity="0.24"/><stop offset="0.55" stop-color="#fff" stop-opacity="0.12"/><stop offset="1" stop-color="#000" stop-opacity="0.1"/>` : `<stop offset="0" stop-color="${hsl(o.floor, R[0])}"/><stop offset="0.55" stop-color="${hsl(o.floor, R[1])}"/><stop offset="1" stop-color="${hsl(o.floor, R[2])}"/>`;
+    const pool = `<radialGradient id="pool" cx="${f(Math.cos(rad(o.L)) * 6)}" cy="${f(Math.sin(rad(o.L)) * 6)}" r="24" gradientUnits="userSpaceOnUse">${stops}</radialGradient>`;
+    return ground(make(o.flareOn ? "flare" : "off").replace(/<radialGradient id="pool"[^>]*>.*?<\/radialGradient>/s, pool), "url(#pool)").replace("__VB__", vb(...box3));
+  }
+  return ground(make("off"), two ? "none" : o.floor).replace("__VB__", vb(...box3));
+}
+
+// src/show.js
+var METAL_NAMES = ["steel", "gold", "alu", "bronze", "titanium", "black"];
+var NATO_NAMES = ["bond", "regimental", "khaki", "blackgrey", "olive", "grey"];
+var INSERTS = [["#2b2c30", "#2b2c30"], ["#1f3a6e", "#1f3a6e"], ["#1f5a3a", "#1f5a3a"], ["#23407a", "#a8262e"], ["#222326", "#22457e"], ["#222326", "#a3232b"], ["#2a2420", "#6b3f24"], ["#222326", "#2f7a3c"]];
+var STYLE_NAMES = ["engineer", "miyazaki"];
+var VIEW_NAMES = ["detail", "full", "dial"];
+var hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, "0")).join("");
+var PRINTED = (role) => !["plate", "cap", "hand", "mark", "date disc"].includes(role);
+var HANDS2 = ["hour", "minute", "second"];
+function options(S, items, effects) {
+  const style = STYLE_NAMES[S.w_style] || "miyazaki", kind = CASE_OF_BEZEL[S.bezel] || "dress", diver = kind === "diver";
+  const P2 = presets(style), lit = effects;
+  return {
+    style,
+    key: kind,
+    d: S.dial_d,
+    size: sizeFor(kind, S.dial_d),
+    view: VIEW_NAMES[S.w_view] || "detail",
+    items: items.map((x2) => ({ role: x2.role, hand: (x2.role === "hand" || x2.role === "mark") && HANDS2.includes(x2.name) ? x2.name : null, p: x2.path.svg(3), f: hex(x2.fill), a: +x2.fill[3], ink: PRINTED(x2.role) ? S.w_ink : 0 })),
+    A: Object.fromEntries(HANDS2.map((h) => [h, 0])),
+    strap: S.strap === 2 && diver ? "bracelet" : S.strap === 3 ? "nato" : "leather",
+    nato: NATO_NAMES[S.w_nato] || "regimental",
+    metal: S.c_metal ? hex(S.c_metal) : P2.metals[METAL_NAMES[S.w_metal]] || P2.metals.steel,
+    leather: hex(S.c_strap),
+    natoColours: S.c_nato ? S.c_nato.map(hex) : P2.nato[NATO_NAMES[S.w_nato]] || P2.nato.regimental,
+    insert: S.c_insert ? { top: hex(S.c_insert[0]), bottom: hex(S.c_insert[1]) } : { top: INSERTS[S.w_insert][0], bottom: INSERTS[S.w_insert][1] },
+    floor: hex(S.c_backdrop),
+    floor2: S.c_backdrop2 ? hex(S.c_backdrop2) : null,
+    L: S.sh_from - 90,
+    h: S.sh_rise,
+    shadow: S.sh_on ? S.sh_dark / 25 : 0,
+    lighting: S.w_lighting ? "flat" : "dramatic",
+    flare: S.w_flare ? "dot" : "arc",
+    flareOn: lit && S.sh_blur && S.w_flare_on,
+    blurs: lit && S.sh_blur,
+    fl: { size: S.w_fl_size / 100, tint: S.w_fl_tint / 100, bright: S.w_fl_bright / 100 },
+    glass: { fat: S.w_glass_fat / 100, len: S.w_glass_len / 100, op: lit ? S.w_glass_op / 100 : 0 },
+    ink: S.w_ink,
+    bevels: false,
+    outline: lit
+  };
+}
+var rgba = (h) => [1, 3, 5].map((i2) => parseInt(h.slice(i2, i2 + 2), 16) / 255).concat(1);
+var metal_colour = (S) => rgba(presets(STYLE_NAMES[S.w_style] || "miyazaki").metals[METAL_NAMES[S.w_metal]] || "#9c8250");
+var angles_of = (items) => {
+  const A = {};
+  for (const x2 of items) if (x2.role === "hand" && HANDS2.includes(x2.name)) A[x2.name] = x2.angle;
+  return A;
+};
+function draw2(tool2, items) {
+  const S = tool2.S, g = tool2.watch_g;
+  const shapes = items.filter((x2) => x2.fill && !x2.stroke);
+  const key = [tool2.statik === tool2.watch_statik ? 1 : 0, shapes.length, ...shapes.map((x2) => x2.fill.join(",")), ...Object.keys(S).filter((k) => k.startsWith("w_") || k.startsWith("sh_") || k.startsWith("c_") || k === "strap" || k === "bezel" || k === "dial_d" || k === "margin").map((k) => JSON.stringify(S[k])), S.ui_effects, shows_day(S) ? day_hour(S) : "", tool2.day_key].join("|");
+  if (key !== tool2.watch_key || !tool2.watch_statik || tool2.statik !== tool2.watch_statik) {
+    tool2.watch_key = key;
+    tool2.watch_statik = tool2.statik;
+    const o = options(S, shapes, S.ui_effects), svg = draw(o);
+    g.innerHTML = `<g transform="scale(1 -1)">${svg.slice(svg.indexOf("\n") + 1, svg.lastIndexOf("</svg>"))}</g>`;
+    tool2.watch_box = /viewBox="([^"]+)"/.exec(svg)[1].split(" ").map(Number);
+  }
+  const A = angles_of(items), L = (S.sh_from - 90) * Math.PI / 180;
+  for (const n of g.querySelectorAll("[data-h]")) n.setAttribute("transform", `rotate(${-A[n.dataset.h]})`);
+  for (const n of g.querySelectorAll("[data-hs]")) n.setAttribute("transform", `translate(${n.dataset.sh}) rotate(${-A[n.dataset.hs]})`);
+  for (const n of g.querySelectorAll("[data-hb]")) {
+    const a = A[n.dataset.hb] * Math.PI / 180, side = Math.cos(a) * Math.cos(L) + Math.sin(a) * Math.sin(L), lit = 0.22 * Math.abs(side), dark = 0.26 * Math.abs(side);
+    const [right, left] = n.querySelectorAll("rect");
+    n.setAttribute("transform", `rotate(${-A[n.dataset.hb]})`);
+    right.setAttribute("fill", side > 0 ? "#fff" : "#000");
+    right.setAttribute("fill-opacity", (side > 0 ? lit : dark).toFixed(3));
+    left.setAttribute("fill", side > 0 ? "#000" : "#fff");
+    left.setAttribute("fill-opacity", (side > 0 ? dark : lit).toFixed(3));
+  }
+}
+function fit_zoom(tool2, w, h) {
+  const S = tool2.S, kind = CASE_OF_BEZEL[S.bezel] || "dress", M = 2 * 64, cb = caseBox(kind, sizeFor(kind, S.dial_d));
+  if (S.w_view === 2) return Math.min(w, h) / page_mm(S);
+  const [bw, bh] = S.w_view === 1 && tool2.watch_box ? [tool2.watch_box[2], tool2.watch_box[3]] : [cb.w, cb.h];
+  return Math.min(Math.max(w - M, 40) / bw, Math.max(h - M, 40) / bh);
+}
+function tint_panel(panel, on, backdrop) {
+  const keys = ["--column", "--column-top", "--column-solid", "--uiblack", "--uiblack-text", "--ink", "--grey", "--white", "--night", "--night-field", "--field", "--hover", "--rule", "--chip-rule"];
+  if (!on) {
+    for (const k of keys) panel.style.removeProperty(k);
+    return;
+  }
+  const [r, g, b] = backdrop, hi = Math.max(r, g, b), lo = Math.min(r, g, b), l = (hi + lo) / 2, d = hi - lo, sat = d ? d / (1 - Math.abs(2 * l - 1)) : 0;
+  let hh = 0;
+  if (d) hh = hi === r ? ((g - b) / d + 6) % 6 : hi === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  const ch = Math.round(hh * 60), cs = Math.round(Math.min(1, sat * 2.2 + 0.15) * 100), cl = Math.round(l * 30), op = 0.85;
+  const set = (k, v) => panel.style.setProperty(k, v);
+  set("--column", `hsl(${ch} ${cs}% ${cl}% / ${op})`);
+  set("--column-top", `hsl(${ch} ${cs}% ${Math.min(100, cl + 10)}% / ${op})`);
+  set("--column-solid", `hsl(${ch} ${cs}% ${Math.min(100, cl + 10)}%)`);
+  set("--uiblack", cl >= 22 ? `hsl(${ch} ${cs}% ${cl - 22}%)` : `hsl(${ch} ${Math.min(cs, 60)}% ${cl + 22}%)`);
+  set("--uiblack-text", cl >= 22 ? `hsl(${ch} ${cs}% ${Math.max(0, cl - 40)}%)` : `hsl(${ch} ${Math.min(cs, 50)}% ${cl + 40}%)`);
+  const tint = Math.min(cs, 40), grey = Math.min(cs, 25), wl = Math.min(97, cl + 22 + 44), by = (k) => Math.max(0, Math.min(100, cl >= 22 ? cl - k : cl + k));
+  set("--ink", `hsl(${ch} ${tint}% ${wl}%)`);
+  set("--grey", `hsl(${ch} ${tint}% ${wl}% / 0.66)`);
+  set("--white", `hsl(${ch} ${tint}% ${Math.min(100, wl + 6)}%)`);
+  set("--night", `hsl(${ch} ${grey}% ${Math.max(0, cl - 4)}%)`);
+  set("--night-field", `hsl(${ch} ${grey}% ${by(11)}%)`);
+  set("--field", `hsl(${ch} ${grey}% ${by(11)}%)`);
+  set("--hover", `hsl(${ch} ${grey}% ${by(16)}%)`);
+  set("--rule", `hsl(${ch} ${grey}% ${by(22)}%)`);
+  set("--chip-rule", `hsl(${ch} ${tint}% ${wl}% / 0.28)`);
+}
+async function picture(tool2, px) {
+  const S = tool2.S, items = scene(S, tool2.statik, S.t, true, null).filter((x2) => x2.fill && !x2.stroke);
+  const o = options(S, items, S.ui_effects);
+  o.A = angles_of(scene(S, tool2.statik, S.t, true, null));
+  if (o.view === "dial") o.view = "detail";
+  const svg = draw(o), [, , w, h] = /viewBox="([^"]+)"/.exec(svg)[1].split(" ").map(Number);
+  const k = px / Math.max(w, h), cw = Math.round(w * k), ch = Math.round(h * k);
+  const url2 = URL.createObjectURL(new Blob([svg.replace("<svg ", `<svg width="${cw}" height="${ch}" `)], { type: "image/svg+xml" }));
+  const img = new Image();
+  await new Promise((ok, fail) => {
+    img.onload = ok;
+    img.onerror = () => fail(new Error("the drawing couldn\u2019t be turned into a picture"));
+    img.src = url2;
+  });
+  const canvas2 = document.createElement("canvas");
+  canvas2.width = cw;
+  canvas2.height = ch;
+  canvas2.getContext("2d").drawImage(img, 0, 0, cw, ch);
+  URL.revokeObjectURL(url2);
+  return { canvas: canvas2, mm: [w, h] };
+}
+async function export_watch(tool2, kind, save) {
+  const S = tool2.S, name = `${(S.name || "dial").replace(/[^\w-]+/g, "-").replace(/^-|-$/g, "") || "dial"}-${CASE_OF_BEZEL[S.bezel] || "dress"}-${STYLE_NAMES[S.w_style]}`;
+  tool2.log(`drawing the watch as ${kind.toUpperCase()}\u2026`);
+  const { canvas: canvas2, mm } = await picture(tool2, S.out_watch_px);
+  if (kind === "png") return save(name + ".png", await new Promise((ok) => canvas2.toBlob(ok, "image/png")), "image/png");
+  const jpeg = new Uint8Array(await (await new Promise((ok) => canvas2.toBlob(ok, "image/jpeg", 0.95))).arrayBuffer());
+  const pt = mm.map((v) => (v * 72 / 25.4).toFixed(2)), enc = new TextEncoder(), parts = [], offsets = [];
+  let size = 0;
+  const put = (x2) => {
+    const b = typeof x2 === "string" ? enc.encode(x2) : x2;
+    parts.push(b);
+    size += b.length;
+  };
+  const obj = (n, body) => {
+    offsets[n] = size;
+    put(`${n} 0 obj
+`);
+    for (const b of [].concat(body)) put(b);
+    put("\nendobj\n");
+  };
+  const draw3 = `q ${pt[0]} 0 0 ${pt[1]} 0 0 cm /Im0 Do Q`;
+  put("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n");
+  obj(1, "<< /Type /Catalog /Pages 2 0 R >>");
+  obj(2, "<< /Type /Pages /Kids [3 0 R] /Count 1 >>");
+  obj(3, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pt[0]} ${pt[1]}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`);
+  obj(4, [`<< /Type /XObject /Subtype /Image /Width ${canvas2.width} /Height ${canvas2.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>
+stream
+`, jpeg, "\nendstream"]);
+  obj(5, `<< /Length ${draw3.length} >>
+stream
+${draw3}
+endstream`);
+  const xref = size;
+  put(`xref
+0 6
+0000000000 65535 f 
+${offsets.slice(1).map((o) => String(o).padStart(10, "0") + " 00000 n \n").join("")}trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+${xref}
+%%EOF
+`);
+  save(name + ".pdf", new Blob(parts, { type: "application/pdf" }), "application/pdf");
+}
 
 // src/wearos/wff_assets.js
 function layer_svg(S, items, { background = null, size = 450 } = {}) {
@@ -13444,43 +13700,43 @@ var ArrayBufferTarget = class extends Target {
   }
 };
 var StreamTarget = class extends Target {
-  constructor(options) {
+  constructor(options2) {
     super();
-    this.options = options;
-    if (typeof options !== "object") {
+    this.options = options2;
+    if (typeof options2 !== "object") {
       throw new TypeError("StreamTarget requires an options object to be passed to its constructor.");
     }
-    if (options.onData) {
-      if (typeof options.onData !== "function") {
+    if (options2.onData) {
+      if (typeof options2.onData !== "function") {
         throw new TypeError("options.onData, when provided, must be a function.");
       }
-      if (options.onData.length < 2) {
+      if (options2.onData.length < 2) {
         throw new TypeError(
           "options.onData, when provided, must be a function that takes in at least two arguments (data and position). Ignoring the position argument, which specifies the byte offset at which the data is to be written, can lead to broken outputs."
         );
       }
     }
-    if (options.chunked !== void 0 && typeof options.chunked !== "boolean") {
+    if (options2.chunked !== void 0 && typeof options2.chunked !== "boolean") {
       throw new TypeError("options.chunked, when provided, must be a boolean.");
     }
-    if (options.chunkSize !== void 0 && (!Number.isInteger(options.chunkSize) || options.chunkSize < 1024)) {
+    if (options2.chunkSize !== void 0 && (!Number.isInteger(options2.chunkSize) || options2.chunkSize < 1024)) {
       throw new TypeError("options.chunkSize, when provided, must be an integer and not smaller than 1024.");
     }
   }
 };
 var FileSystemWritableFileStreamTarget = class extends Target {
-  constructor(stream, options) {
+  constructor(stream, options2) {
     super();
     this.stream = stream;
-    this.options = options;
+    this.options = options2;
     if (!(stream instanceof FileSystemWritableFileStream)) {
       throw new TypeError("FileSystemWritableFileStreamTarget requires a FileSystemWritableFileStream instance.");
     }
-    if (options !== void 0 && typeof options !== "object") {
+    if (options2 !== void 0 && typeof options2 !== "object") {
       throw new TypeError("FileSystemWritableFileStreamTarget's options, when provided, must be an object.");
     }
-    if (options) {
-      if (options.chunkSize !== void 0 && (!Number.isInteger(options.chunkSize) || options.chunkSize <= 0)) {
+    if (options2) {
+      if (options2.chunkSize !== void 0 && (!Number.isInteger(options2.chunkSize) || options2.chunkSize <= 0)) {
         throw new TypeError("options.chunkSize, when provided, must be a positive integer");
       }
     }
@@ -13836,7 +14092,7 @@ var maybeFlushStreamingTargetWriter_fn;
 var _ensureNotFinalized;
 var ensureNotFinalized_fn;
 var Muxer = class {
-  constructor(options) {
+  constructor(options2) {
     __privateAdd(this, _validateOptions);
     __privateAdd(this, _writeHeader);
     __privateAdd(this, _computeMoovSizeUpperBound);
@@ -13861,23 +14117,23 @@ var Muxer = class {
     __privateAdd(this, _videoSampleQueue, []);
     __privateAdd(this, _audioSampleQueue, []);
     __privateAdd(this, _finalized, false);
-    __privateMethod(this, _validateOptions, validateOptions_fn).call(this, options);
-    options.video = deepClone(options.video);
-    options.audio = deepClone(options.audio);
-    options.fastStart = deepClone(options.fastStart);
-    this.target = options.target;
+    __privateMethod(this, _validateOptions, validateOptions_fn).call(this, options2);
+    options2.video = deepClone(options2.video);
+    options2.audio = deepClone(options2.audio);
+    options2.fastStart = deepClone(options2.fastStart);
+    this.target = options2.target;
     __privateSet(this, _options, {
       firstTimestampBehavior: "strict",
-      ...options
+      ...options2
     });
-    if (options.target instanceof ArrayBufferTarget) {
-      __privateSet(this, _writer, new ArrayBufferTargetWriter(options.target));
-    } else if (options.target instanceof StreamTarget) {
-      __privateSet(this, _writer, new StreamTargetWriter(options.target));
-    } else if (options.target instanceof FileSystemWritableFileStreamTarget) {
-      __privateSet(this, _writer, new FileSystemWritableFileStreamTargetWriter(options.target));
+    if (options2.target instanceof ArrayBufferTarget) {
+      __privateSet(this, _writer, new ArrayBufferTargetWriter(options2.target));
+    } else if (options2.target instanceof StreamTarget) {
+      __privateSet(this, _writer, new StreamTargetWriter(options2.target));
+    } else if (options2.target instanceof FileSystemWritableFileStreamTarget) {
+      __privateSet(this, _writer, new FileSystemWritableFileStreamTargetWriter(options2.target));
     } else {
-      throw new Error(`Invalid target: ${options.target}`);
+      throw new Error(`Invalid target: ${options2.target}`);
     }
     __privateMethod(this, _prepareTracks, prepareTracks_fn).call(this);
     __privateMethod(this, _writeHeader, writeHeader_fn).call(this);
@@ -14093,72 +14349,72 @@ _videoSampleQueue = /* @__PURE__ */ new WeakMap();
 _audioSampleQueue = /* @__PURE__ */ new WeakMap();
 _finalized = /* @__PURE__ */ new WeakMap();
 _validateOptions = /* @__PURE__ */ new WeakSet();
-validateOptions_fn = function(options) {
-  if (typeof options !== "object") {
+validateOptions_fn = function(options2) {
+  if (typeof options2 !== "object") {
     throw new TypeError("The muxer requires an options object to be passed to its constructor.");
   }
-  if (!(options.target instanceof Target)) {
+  if (!(options2.target instanceof Target)) {
     throw new TypeError("The target must be provided and an instance of Target.");
   }
-  if (options.video) {
-    if (!SUPPORTED_VIDEO_CODECS.includes(options.video.codec)) {
-      throw new TypeError(`Unsupported video codec: ${options.video.codec}`);
+  if (options2.video) {
+    if (!SUPPORTED_VIDEO_CODECS.includes(options2.video.codec)) {
+      throw new TypeError(`Unsupported video codec: ${options2.video.codec}`);
     }
-    if (!Number.isInteger(options.video.width) || options.video.width <= 0) {
-      throw new TypeError(`Invalid video width: ${options.video.width}. Must be a positive integer.`);
+    if (!Number.isInteger(options2.video.width) || options2.video.width <= 0) {
+      throw new TypeError(`Invalid video width: ${options2.video.width}. Must be a positive integer.`);
     }
-    if (!Number.isInteger(options.video.height) || options.video.height <= 0) {
-      throw new TypeError(`Invalid video height: ${options.video.height}. Must be a positive integer.`);
+    if (!Number.isInteger(options2.video.height) || options2.video.height <= 0) {
+      throw new TypeError(`Invalid video height: ${options2.video.height}. Must be a positive integer.`);
     }
-    const videoRotation = options.video.rotation;
+    const videoRotation = options2.video.rotation;
     if (typeof videoRotation === "number" && ![0, 90, 180, 270].includes(videoRotation)) {
       throw new TypeError(`Invalid video rotation: ${videoRotation}. Has to be 0, 90, 180 or 270.`);
     } else if (Array.isArray(videoRotation) && (videoRotation.length !== 9 || videoRotation.some((value) => typeof value !== "number"))) {
       throw new TypeError(`Invalid video transformation matrix: ${videoRotation.join()}`);
     }
-    if (options.video.frameRate !== void 0 && (!Number.isInteger(options.video.frameRate) || options.video.frameRate <= 0)) {
+    if (options2.video.frameRate !== void 0 && (!Number.isInteger(options2.video.frameRate) || options2.video.frameRate <= 0)) {
       throw new TypeError(
-        `Invalid video frame rate: ${options.video.frameRate}. Must be a positive integer.`
+        `Invalid video frame rate: ${options2.video.frameRate}. Must be a positive integer.`
       );
     }
   }
-  if (options.audio) {
-    if (!SUPPORTED_AUDIO_CODECS.includes(options.audio.codec)) {
-      throw new TypeError(`Unsupported audio codec: ${options.audio.codec}`);
+  if (options2.audio) {
+    if (!SUPPORTED_AUDIO_CODECS.includes(options2.audio.codec)) {
+      throw new TypeError(`Unsupported audio codec: ${options2.audio.codec}`);
     }
-    if (!Number.isInteger(options.audio.numberOfChannels) || options.audio.numberOfChannels <= 0) {
+    if (!Number.isInteger(options2.audio.numberOfChannels) || options2.audio.numberOfChannels <= 0) {
       throw new TypeError(
-        `Invalid number of audio channels: ${options.audio.numberOfChannels}. Must be a positive integer.`
+        `Invalid number of audio channels: ${options2.audio.numberOfChannels}. Must be a positive integer.`
       );
     }
-    if (!Number.isInteger(options.audio.sampleRate) || options.audio.sampleRate <= 0) {
+    if (!Number.isInteger(options2.audio.sampleRate) || options2.audio.sampleRate <= 0) {
       throw new TypeError(
-        `Invalid audio sample rate: ${options.audio.sampleRate}. Must be a positive integer.`
+        `Invalid audio sample rate: ${options2.audio.sampleRate}. Must be a positive integer.`
       );
     }
   }
-  if (options.firstTimestampBehavior && !FIRST_TIMESTAMP_BEHAVIORS.includes(options.firstTimestampBehavior)) {
-    throw new TypeError(`Invalid first timestamp behavior: ${options.firstTimestampBehavior}`);
+  if (options2.firstTimestampBehavior && !FIRST_TIMESTAMP_BEHAVIORS.includes(options2.firstTimestampBehavior)) {
+    throw new TypeError(`Invalid first timestamp behavior: ${options2.firstTimestampBehavior}`);
   }
-  if (typeof options.fastStart === "object") {
-    if (options.video) {
-      if (options.fastStart.expectedVideoChunks === void 0) {
+  if (typeof options2.fastStart === "object") {
+    if (options2.video) {
+      if (options2.fastStart.expectedVideoChunks === void 0) {
         throw new TypeError(`'fastStart' is an object but is missing property 'expectedVideoChunks'.`);
-      } else if (!Number.isInteger(options.fastStart.expectedVideoChunks) || options.fastStart.expectedVideoChunks < 0) {
+      } else if (!Number.isInteger(options2.fastStart.expectedVideoChunks) || options2.fastStart.expectedVideoChunks < 0) {
         throw new TypeError(`'expectedVideoChunks' must be a non-negative integer.`);
       }
     }
-    if (options.audio) {
-      if (options.fastStart.expectedAudioChunks === void 0) {
+    if (options2.audio) {
+      if (options2.fastStart.expectedAudioChunks === void 0) {
         throw new TypeError(`'fastStart' is an object but is missing property 'expectedAudioChunks'.`);
-      } else if (!Number.isInteger(options.fastStart.expectedAudioChunks) || options.fastStart.expectedAudioChunks < 0) {
+      } else if (!Number.isInteger(options2.fastStart.expectedAudioChunks) || options2.fastStart.expectedAudioChunks < 0) {
         throw new TypeError(`'expectedAudioChunks' must be a non-negative integer.`);
       }
     }
-  } else if (![false, "in-memory", "fragmented"].includes(options.fastStart)) {
+  } else if (![false, "in-memory", "fragmented"].includes(options2.fastStart)) {
     throw new TypeError(`'fastStart' option must be false, 'in-memory', 'fragmented' or an object.`);
   }
-  if (options.minFragmentDuration !== void 0 && (!Number.isFinite(options.minFragmentDuration) || options.minFragmentDuration < 0)) {
+  if (options2.minFragmentDuration !== void 0 && (!Number.isFinite(options2.minFragmentDuration) || options2.minFragmentDuration < 0)) {
     throw new TypeError(`'minFragmentDuration' must be a non-negative number.`);
   }
 };
@@ -14716,10 +14972,16 @@ var SECTION_ICONS = {
   Hands: `<path d="M${C} ${C}V8.75M${C} ${C}L22.75 20.75"/><circle cx="${C}" cy="${C}" r="1.5" fill="currentColor" stroke="none"/>`,
   Date: `<rect x="19" y="14" width="8" height="6.5" rx="1.5" fill="currentColor" stroke="none"/>`,
   // a dial with a window at 3, four points from the rim (Okay's drawing, 11 Oct 2026)
-  Export: `<path d="M${C} 9.25V20.25M13.25 16.25L${C} 20.25L21.25 16.25M10.75 24.25H23.75"/>`
+  Export: `<path d="M${C} 9.25V20.25M13.25 16.25L${C} 20.25L21.25 16.25M10.75 24.25H23.75"/>`,
+  // show mode's tabs (the Show Case's, 21 Oct 2026): a watch — its case, lugs and hands; a sun
+  Watch: `<g transform="translate(5.9 5.9) scale(1.2)" stroke-width="1.25"><circle cx="9.25" cy="9.25" r="5.5"/><path d="M6.25 2.75V5M12.25 2.75V5M6.25 13.5V15.75M12.25 13.5V15.75"/><path d="M9.25 9.25V6M9.25 9.25H11.75M14.75 9.25H15.75"/></g>`,
+  Light: `<circle cx="17" cy="17" r="3" fill="currentColor" stroke="none"/><path d="${Array.from({ length: 8 }, (_, k) => {
+    const a = k * Math.PI / 4, c = Math.cos(a), s = Math.sin(a);
+    return `M${(17 + c * 5.75).toFixed(2)} ${(17 + s * 5.75).toFixed(2)}L${(17 + c * 7.75).toFixed(2)} ${(17 + s * 7.75).toFixed(2)}`;
+  }).join("")}"/>`
 };
 var round_sign = (inside) => icon(`<circle class="rim" cx="13" cy="13" r="${13 - CURVE / 2}" ${sw(CURVE)}/><g transform="translate(5 5)">${inside}</g>`, 26);
-var section_icon = (name) => icon(`${rim("ring")}<g class="sign">${SECTION_ICONS[name]}</g>`, 34);
+var section_icon = (name) => icon(`${rim("ring")}<g class="sign">${SECTION_ICONS[{ "Show dial": "Dial", "Show export": "Export" }[name] || name]}</g>`, 34);
 var EYE = {
   // the left column's sign: open = showing, closed (with lashes) = put away
   open: `<path d="M1.75 8.25C3.75 4.85 6.05 3.55 8.25 3.55S12.75 4.85 14.75 8.25C12.75 11.65 10.45 12.95 8.25 12.95S3.75 11.65 1.75 8.25Z" ${sw(CURVE)}/><circle cx="8.25" cy="8.25" r="2.25" fill="currentColor" stroke="none"/>`,
@@ -14859,14 +15121,7 @@ var INK_TRAPS = (() => {
 })();
 var EYE_RAYS = 24;
 var EYE_RAY = 0.625;
-var SKY_TOP = 0.3;
-var SHOWCASE_PAGE = { w: 210, h: 297, dial: 2 / 3 };
-var SUN = { day: 20, rise: 40, fade: 0.45 };
-var POOL = { size: 1.45, stretch: 1.4, soft: [0.06, 0.8], light: [0.08, 0.42], shade: [0.15, 0.55], lift: 1.5, least: 0.2 };
-var SHINE = { r: 1.275, top: 1 / 3, bright: 0.11, dark: 0.07, width: [0.8, 0.05 / 3], spread: 0.3, circles: 3 };
 var BEVEL = { light: 0.22, dark: 0.26 };
-var SHOW_DARKER = 1.25;
-var TRAVEL_MS = 900;
 var HOLE_LIVE_MS = 1200;
 var WORDS_MS = 3e3;
 var SHEET = { shares: [0.42, 0.22], preview: 120, drawer: 160, room: 140 };
@@ -14891,7 +15146,6 @@ var POP_LINGER_MS = 1200;
 var POP_FADE_MS = 120;
 var SNAP_DEG = 2;
 var RING_ROWS = 5;
-var SPIN_MS = 1600;
 var TOOL_ICONS = {
   // on 18; a quiet sign, thin and light (Okay, 11 Oct 2026; again 14 Oct, 04:11: "thinner lines"): DENSE, corners
   // a sixteenth heavier as on any box; light by its grey. Outer edge where it was (1 … 17)
@@ -14959,12 +15213,9 @@ var TOOL_ICONS = {
     }).join("");
     return `<mask id="eye-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask><path d="${rays}" stroke-width="${EYE_RAY}" stroke-linecap="butt" mask="url(#eye-cut)"/><circle cx="${cx}" cy="${cy}" r="2.75" fill="currentColor" stroke="none"/>`;
   })(),
-  // the showcase switch, left of the eye (Okay, 15 Oct 2026, 04:26: "just the iris inside same box"): the eye's iris
-  // alone, where it stands in the eye. In the showcase it is the way out: two of the eye's rays cross on it, an X run
+  // the show-mode switch, left of the eye (Okay, 15 Oct 2026, 04:26: "just the iris inside same box"): the eye's iris
+  // alone, where it stands in the eye. In show mode it is the way out: two of the eye's rays cross on it, an X run
   // out to the box (04:59: "iris becomes an x (2rayiris)"); 1, not the eye's 0.5, so it reads while faint
-  // the showcase's hands key (07:40): the Hands section's sign drawn again for a 38 inside a round key, lines 1 as the
-  // X beside it; the minute hand up, the hour hand at four, the hub a dot
-  hands_key: `<path d="M19 19V8.75M19 19L25.5 23.25" stroke-width="1"/><circle cx="19" cy="19" r="1.75" fill="currentColor" stroke="none"/>`,
   // 18 Oct 2026 (notes 2: "the x on the showcase should not penetrate the iris. Lines stop at ghost eye distance"): the X
   // is cut by the eye switch's own absent eye — the same lids, knocked out — so its lines stop where the eye's rays do
   iris: (() => {
@@ -14972,19 +15223,14 @@ var TOOL_ICONS = {
     const lid = `M6.25 ${cy}C12.25 ${cy - lift} 18.25 ${cy - lift} 24.25 ${cy}C18.25 ${cy + lift} 12.25 ${cy + lift} 6.25 ${cy}Z`;
     return `<mask id="iris-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/><path class="x" d="M-0.75 -1L31.25 31M31.25 -1L-0.75 31" stroke-width="1" stroke-linecap="butt" mask="url(#iris-cut)"/>`;
   })(),
-  // the showcase switch (Okay, 19 Oct 2026, 12:46: "Swap icons but not places for showcase and tiny preview.
+  // the show-mode switch (Okay, 19 Oct 2026, 12:46: "Swap icons but not places for showcase and tiny preview.
   // Tiny gets the dot, showcase gets the eye"): the iris above with its lids drawn round it — the eye switch's own eye,
-  // drawn where that one is left out — and in the showcase the same X, cut by the lids
+  // drawn where that one is left out — and in show mode the same X, cut by the lids
   show_eye: (() => {
     const cy = 15, lift = 5.25 * 1.2;
     const lid = `M6.25 ${cy}C12.25 ${cy - lift} 18.25 ${cy - lift} 24.25 ${cy}C18.25 ${cy + lift} 12.25 ${cy + lift} 6.25 ${cy}Z`;
     return `<mask id="show-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask><path d="${lid}" ${sw(CURVE)}/><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/><path class="x" d="M-0.75 -1L31.25 31M31.25 -1L-0.75 31" stroke-width="1" stroke-linecap="butt" mask="url(#show-cut)"/>`;
   })(),
-  // the showcase's hint over Now: a line with a head at each end — the sun can be moved left and right (04:59); on 108
-  // by 36, three times its first size, white with a glow (05:43: "can't see it… 3x size")
-  // 18 Oct 2026 (notes 2: "connecting stem; straight-dashed-straight … divide current line into three"): the stem in
-  // thirds of 32.5, the middle one dashed in five, its dashes square-ended (R33)
-  both_ways: `<path d="M5.25 18.25H37.75M70.25 18.25H102.75M17.25 6.25L5.25 18.25L17.25 30.25M90.75 6.25L102.75 18.25L90.75 30.25"/><path d="M37.75 18.25H70.25" stroke-dasharray="3.25" stroke-linecap="butt"/>`,
   screen: `<rect x="2.75" y="3.25" width="10.5" height="7.5"/><path d="M8.25 10.75V13.25M5.75 13.25H10.75" ${sw(DENSE)}/>`,
   // the Guides switch, on 18: a target and its cross; its lines crowd, so DENSE. Okay's drawings (14 Oct 2026, 04:11):
   // guides: a target, its centre ring dashed in six, square-ended (a dash pattern is a texture, not line ends), ink
@@ -15129,7 +15375,7 @@ var win_on = (T) => T.on;
 var win_is = (...kinds) => (T) => T.on && kinds.includes(WINDOW_KINDS[T.kind]);
 var shape_is = (...shapes) => (T) => T.on && shapes.includes(window_shape(T));
 var WINDOW_CARDS = [{ slot: 1, at: 4 }, { slot: 0, at: 0 }, { slot: 2, at: 2 }, { slot: 3, at: 3 }];
-var TAB_NAMES = { Date: "Windows" };
+var TAB_NAMES = { Date: "Windows", "Show dial": "Dial", "Show export": "Export" };
 var H = { scope: "hand" };
 var cap_rows = (S) => S.ui_hand === top_hand(S) && (S.ha_second.on || S.ha_cap_top);
 var ROWS = {
@@ -15538,6 +15784,63 @@ var PULSE_MOST = 6;
 var PULSE_RISE = 0.03;
 var PULSE_FLASH = 0.4;
 var UNIT_INK = { mm: [0.062, 1.076, 0.56, 0.56], pt: [0.088, 1.035, 0.705, 0.885], in: [0.082, 1.032, 0.78, 0.78], lig: [0.029, 1.683, 0.78, 0.96], thou: [0.052, 2.262, 0.73, 0.74] };
+ROWS["Show dial"] = [
+  hdr("Colours", { pin: true, summary: (S, tool2) => tool2.dial_colours(false).map((c) => ({ c })) }),
+  // the dial's colours, as the dial side's Colours pane: the one thing of the dial show mode changes (Okay, 22 Oct 2026)
+  custom("colours"),
+  hdr("Ink", { folded: false }),
+  num2("w_ink", "Ink height", 0, 10, 1, { whole: true }),
+  info("How far the printed ink stands proud of the plate; 0 is flat ink.", {})
+];
+ROWS.Watch = [
+  hdr("Watch", { pin: true }),
+  seg("w_view", "View", ["Detail", "Whole watch", "Dial"]),
+  seg("bezel", "Case", ["Dress", "Diver", "Field", "Dress", "Field", "Emre01"], { order: [3, 2, 1, 5] }),
+  // the same key the dial side's case menu writes (R9: the numbers keep their meaning)
+  seg("w_metal", "Metal", ["Fe", "Au", "Al", "CuSn", "Ti", "Black"], { many: true }),
+  col("c_metal", "Case colour", { or: (S) => metal_colour(S) }),
+  seg("w_insert", "Insert", ["Black", "Blue", "Green", "Pepsi", "Batman", "Coke", "Root beer", "Sprite"], { many: true, show: (S) => CASE_OF_BEZEL[S.bezel] === "diver" }),
+  hdr("Strap", { folded: false }),
+  seg("strap", "Strap", ["Strap", "Leather", "Bracelet", "NATO"], { order: [1, 3, 2], offered: (S) => CASE_OF_BEZEL[S.bezel] === "diver" ? [1, 2, 3] : [1, 3] }),
+  // 0 and 1 leather; a bracelet is the diver's alone (R16: not offered elsewhere)
+  col("c_strap", "Leather", { show: (S) => S.strap !== 2 && S.strap !== 3 }),
+  seg("w_nato", "Pattern", ["Bond", "Regimental", "Khaki", "Black \xB7 grey", "Olive", "Grey"], { many: true, show: (S) => S.strap === 3 })
+];
+ROWS.Light = [
+  hdr("Light", { pin: true }),
+  seg("w_style", "Style", ["Engineer", "Miyazaki"]),
+  seg("w_lighting", "Lighting", ["Dramatic", "Flat"]),
+  hdr("Sun", { folded: false }),
+  num2("sh_from", "From", 0, 359, 1, { whole: true }),
+  // the one sun: the dial's shadow keys light the watch too (Okay, 22 Oct 2026)
+  num2("sh_rise", "Height", 5, 85, 1, { whole: true }),
+  hdr("Shadows", { folded: false }),
+  num2("sh_dark", "Darkness %", 0, 100, 1, { whole: true }),
+  chk("sh_blur", "Soft shadows"),
+  hdr("Flare", { folded: false, show: (S) => S.ui_effects }),
+  chk("w_flare_on", "Flare", { show: (S) => S.ui_effects }),
+  seg("w_flare", "Kind", ["Arc", "Dot"], { show: (S) => S.ui_effects && S.w_flare_on && S.w_style === 1 }),
+  num2("w_fl_size", "Size %", 20, 300, 1, { whole: true, show: (S) => S.ui_effects && S.w_flare_on }),
+  num2("w_fl_tint", "Case colour %", 0, 100, 1, { whole: true, show: (S) => S.ui_effects && S.w_flare_on }),
+  num2("w_fl_bright", "Brightness %", 0, 300, 1, { whole: true, show: (S) => S.ui_effects && S.w_flare_on }),
+  info("The flare shows with dramatic lighting.", { show: (S) => S.ui_effects && S.w_flare_on && S.w_lighting === 1 }),
+  hdr("Glass reflection", { folded: false, show: (S) => S.ui_effects }),
+  num2("w_glass_fat", "Width %", 0, 400, 1, { whole: true, show: (S) => S.ui_effects }),
+  num2("w_glass_len", "Length %", 10, 300, 1, { whole: true, show: (S) => S.ui_effects }),
+  num2("w_glass_op", "Shine %", 0, 100, 1, { whole: true, show: (S) => S.ui_effects }),
+  hdr("Effects", { folded: false }),
+  chk("ui_effects", "Blurs, flare, shine and outline"),
+  // off for an old computer (Okay, 22 Oct 2026: "a 'turn off shenanigans' button … persistent")
+  info("Off, the watch is drawn without the layers that cost most: blurs, the flare, the glass shine, the outline round the metal.", {})
+];
+ROWS["Show export"] = [
+  hdr("Export the watch", { pin: true }),
+  custom("export_watch_png"),
+  custom("export_watch_pdf"),
+  num2("out_watch_px", "Pixels", 1e3, 8e3, 100, { whole: true, tie: true }),
+  info("The picture's longer side. The PDF is one page at the drawing's real size, the picture inside it.", {})
+];
+var SHOW_SECTIONS = ["Show dial", "Watch", "Light", "Show export"];
 var SECTIONS = Object.keys(ROWS);
 var TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];
 for (const name of SECTIONS) for (const row of ROWS[name]) {
@@ -15684,8 +15987,8 @@ var instances_write = (list) => {
   }
 };
 function dial_picture(S, statik) {
-  const R = S.dial_d / 2 + 0.6, hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Math.max(v, 0), 1) * 255).toString(16).padStart(2, "0")).join("");
-  const shapes = scene(S, statik, S.t, false).map((i2) => `<path d="${(i2.role === "hand" || i2.role === "mark" ? turned(i2.path, i2.angle) : i2.path).svg(2, true)}" fill="${hex(i2.fill)}"${i2.fill[3] < 1 ? ` fill-opacity="${i2.fill[3]}"` : ""}/>`).join("");
+  const R = S.dial_d / 2 + 0.6, hex3 = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.min(Math.max(v, 0), 1) * 255).toString(16).padStart(2, "0")).join("");
+  const shapes = scene(S, statik, S.t, false).map((i2) => `<path d="${(i2.role === "hand" || i2.role === "mark" ? turned(i2.path, i2.angle) : i2.path).svg(2, true)}" fill="${hex3(i2.fill)}"${i2.fill[3] < 1 ? ` fill-opacity="${i2.fill[3]}"` : ""}/>`).join("");
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-R} ${-R} ${2 * R} ${2 * R}" aria-hidden="true">${shapes}</svg>`;
 }
 async function pack(S) {
@@ -15849,6 +16152,13 @@ var DialTool = class _DialTool {
         window.dial_tool.undo(y || e.shiftKey ? 1 : -1);
       });
     }
+    if (this.S.ui_show) {
+      this.S.ui_show = false;
+      const app = $("#app");
+      app.classList.add("snap");
+      this.show_mode(true, true);
+      setTimeout(() => app.classList.remove("snap"), 100);
+    }
     this.show_section();
     this.fit();
     this.sync_time();
@@ -15961,7 +16271,7 @@ var DialTool = class _DialTool {
     const root = $("#app");
     root.replaceChildren();
     this.tabs = el("nav", { className: "tabs" });
-    TAB_ORDER.forEach((name) => {
+    [...TAB_ORDER, ...SHOW_SECTIONS].forEach((name) => {
       const i2 = SECTIONS.indexOf(name);
       const tab = el("button", { type: "button", onclick: () => {
         if (this.S.ui_section === i2) return;
@@ -15970,6 +16280,7 @@ var DialTool = class _DialTool {
         this.render();
       } });
       tab.dataset.tab = name;
+      tab.hidden = SHOW_SECTIONS.includes(name);
       tab.innerHTML = section_icon(name);
       tab.append(el("span", { textContent: TAB_NAMES[name] || name }));
       this.tabs.append(tab);
@@ -16006,43 +16317,16 @@ var DialTool = class _DialTool {
       this.over.append(line);
       return line;
     });
-    const sky_defs = svg_el("defs"), sky = svg_el("linearGradient");
-    sky.id = "show-sky";
-    for (const [k, v] of [["gradientUnits", "userSpaceOnUse"], ["x1", "0"], ["y1", "0"], ["x2", "1"], ["y2", "1"]]) sky.setAttribute(k, v);
-    this.sky_grad = sky;
-    this.pool = svg_el("g");
-    this.pool.setAttribute("class", "pool");
-    this.pool.setAttribute("pointer-events", "none");
-    this.pool_parts = ["show-light", "show-shade"].map((id) => {
-      const g = svg_el("radialGradient");
-      g.id = id;
-      const stops = [0, 1, 2].map(() => {
-        const s = svg_el("stop");
-        g.append(s);
-        return s;
-      });
-      sky_defs.append(g);
-      const circle3 = svg_el("circle");
-      circle3.setAttribute("fill", `url(#${id})`);
-      this.pool.append(circle3);
-      return { circle: circle3, stops };
-    });
-    this.sky_stops = [0, 1].map((o) => {
-      const s = svg_el("stop");
-      s.setAttribute("offset", String(o));
-      sky.append(s);
-      return s;
-    });
-    sky_defs.append(sky);
-    this.sky = svg_el("rect");
-    for (const [k, v] of [["class", "sky"], ["width", "100%"], ["height", "100%"], ["fill", "url(#show-sky)"], ["pointer-events", "none"]]) this.sky.setAttribute(k, v);
     this.handles = svg_el("g");
     this.handles.setAttribute("class", "handles");
     this.handle_events();
     this.bezel_g = svg_el("g");
     this.bezel_g.setAttribute("class", "bezel");
     this.bezel_g.setAttribute("pointer-events", "none");
-    this.svg.append(sky_defs, this.backdrop, this.sky, this.pool, this.bezel_g, this.dial, this.over, this.handles);
+    this.watch_g = svg_el("g");
+    this.watch_g.setAttribute("class", "watch");
+    this.watch_g.setAttribute("pointer-events", "none");
+    this.svg.append(this.backdrop, this.bezel_g, this.dial, this.watch_g, this.over, this.handles);
     this.tip = el("div", { className: "tip", hidden: true }, el("span"));
     this.tip.insertAdjacentHTML("beforeend", '<svg viewBox="0 0 20 10" width="20" height="10" aria-hidden="true"><path class="a" d="M0 0 L10 10 L20 0"/><path class="b" d="M0 0 L10 10 L20 0"/><path class="c" d="M-1 -3 L21 -3 L21 0 L10 9 L-1 0 Z"/></svg>');
     this.preview_events();
@@ -16225,7 +16509,7 @@ var DialTool = class _DialTool {
       this.note.hidden = true;
     } });
     const corner = el("div", { className: "corner" }, guides, ...this.case_box(), this.xray_box());
-    this.main = el("main", {}, this.svg, this.tip, this.note, this.undo_box(), this.tiny_box(), corner, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.ten_pill, this.hands_key, this.sun_hint);
+    this.main = el("main", {}, this.svg, this.tip, this.note, this.undo_box(), this.tiny_box(), corner, this.shadows_box(), this.backdrop_box(), this.eye_box);
     this.day_strip(this.day_box);
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     root.append(this.sheet());
@@ -16234,7 +16518,7 @@ var DialTool = class _DialTool {
     this.watchers.push(new ResizeObserver(() => this.resized()));
     this.watchers.at(-1).observe(this.svg);
     this.watchers.push(new ResizeObserver(() => {
-      if (!this.show && bar.offsetHeight) root.style.setProperty("--bar-h", bar.offsetHeight + "px");
+      if (bar.offsetHeight) root.style.setProperty("--bar-h", bar.offsetHeight + "px");
     }));
     this.watchers.at(-1).observe(bar);
   }
@@ -16318,123 +16602,22 @@ var DialTool = class _DialTool {
     this.watchers.at(-1).observe(this.pinned);
     return grip;
   }
-  /** the clock to the time it is now (the bar's Now, the showcase's Now pill) */
+  /** the clock to the time it is now (the bar's Now) */
   to_now() {
     const d = /* @__PURE__ */ new Date();
     if (this.S.date) this.set_value("global", "date", "");
     this.set_time(d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1e3);
   }
-  /** the showcase, or back (Okay, 15 Oct 2026, 04:26, reshaped 04:59 and 05:09). In: the panel and the bar are gone at
-   *  once, what stood on the preview goes at once (fading, it twitched as the sky darkened), and the dial alone travels,
-   *  eased, to its showcase place (show_target: 2/3 of a portrait A4 fitted in the window). The sky darkens to a 45°
-   *  gradient; a spotlight pool lies behind the dial and takes its shadow; the sun crosses a day in SUN.day seconds;
-   *  the clock runs at 1× from where it was. What stays: the mark and "Dial Tool" (fainter, not pressable), the iris
-   *  switch as an X (bottom right; the way out) and Now (bottom centre). Out: the same, backwards, to where we were. The
-   *  shadows' soft edge is off while anything moves (moving()). Nothing of it is stored or changes the dial. */
-  showcase(on) {
-    const app = $("#app");
-    if (on === !!this.show) return;
-    this.hover(null);
-    if (this.pop && this.pop.at) this.pop_close();
-    if (this.bio_open) this.bio_open(false);
-    this.iris_open(false);
-    const before = this.svg.getBoundingClientRect(), c0 = this.c.slice(), z0 = this.z;
-    if (on) app.classList.add("snap");
-    if (on) {
-      this.show = {
-        away: app.classList.contains("away"),
-        playing: this.playing,
-        speed: this.speed,
-        phase: 0,
-        at: performance.now(),
-        spin: null,
-        back: null,
-        view: { c: c0, z: z0, fitted: this.fitted }
-      };
-      app.classList.add("away", "show");
-      this.eye_button.setAttribute("aria-pressed", "true");
-      this.set_speed(1);
-      if (!this.playing) this.play(true);
-    } else {
-      const was = this.show;
-      this.left_view = was.view;
-      this.show = null;
-      app.classList.remove("show");
-      if (!was.away) {
-        app.classList.remove("away");
-        this.eye_button.setAttribute("aria-pressed", "false");
-      }
-      this.set_speed(was.speed);
-      if (!was.playing) this.play(false);
-      for (const b of [this.now_pill, this.ten_pill]) {
-        b.classList.remove("back");
-        b.title = b.ariaLabel = b.dataset.says;
-      }
-      this.hands_key.setAttribute("aria-pressed", "false");
-      this.hands_key.title = "Hide the hands";
-    }
-    this.iris_button.setAttribute("aria-pressed", String(on));
-    for (const part2 of [$(".panel"), $(".bar")]) if (part2) part2.inert = on;
-    app.style.setProperty("--title-end", this.title.getBoundingClientRect().right.toFixed(1) + "px");
-    const after = this.svg.getBoundingClientRect();
-    this.c = [c0[0] + before.left - after.left, c0[1] + before.top - after.top];
-    this.z = z0;
-    this.view = [after.width, after.height];
-    this.place();
-    const home = on ? null : this.left_view;
-    this.travel_to(on ? this.show_target() : { c: home.c, z: home.z }, () => {
-      if (this.show) this.hint();
-      else this.fitted = home.fitted;
-    });
-    requestAnimationFrame(() => requestAnimationFrame(() => app.classList.remove("snap")));
-  }
-  /** where the dial stands in the showcase: centred, as wide as 2/3 of a portrait A4 that is fitted in the window */
-  show_target() {
-    const [w, h] = this.size(), page = Math.min(w / SHOWCASE_PAGE.w, h / SHOWCASE_PAGE.h);
-    return { c: [w / 2, h / 2], z: SHOWCASE_PAGE.dial * SHOWCASE_PAGE.w * page / this.S.dial_d };
-  }
-  /** the dial travels to `to` ({c, z}), eased; the only thing that moves in and out of the showcase. Then it is fitted */
-  travel_to(to, done) {
-    this.travel = { from: { c: this.c.slice(), z: this.z }, to, t0: performance.now(), done };
-    this.fitted = false;
-    this.render();
-  }
-  /** a step of the travel, from frame(): true while it goes on */
-  travel_step() {
-    const T = this.travel, p = clamp((performance.now() - T.t0) / TRAVEL_MS, 0, 1), e = p < 0.5 ? 4 * p ** 3 : 1 - (-2 * p + 2) ** 3 / 2;
-    const to = this.show ? this.show_target() : T.to;
-    this.z = T.from.z * (to.z / T.from.z) ** e;
-    this.c = [T.from.c[0] + (to.c[0] - T.from.c[0]) * e, T.from.c[1] + (to.c[1] - T.from.c[1]) * e];
-    this.place();
-    if (p < 1) return true;
-    this.travel = null;
-    this.fitted = true;
-    if (T.done) T.done();
-    return false;
-  }
-  /** something is moving: the dial travelling, the panel sliding, the hands spinning, the sun being dragged. The
-   *  shadows' soft edge waits for it to stop (Okay, 04:59 and 05:09: "blur off on all animations") */
+  /** something is moving: the panel sliding. The shadows' soft edge waits for it to stop (Okay, 04:59 and 05:09: "blur off on all animations") */
   moving() {
-    return !!(this.travel || this.sliding || this.show && (this.show.spin || this.show.dragging));
-  }
-  /** the showcase's sun now: where it is in its day (0 sunrise … 1 sunset), the direction its light comes from, its
-   *  height (always the same) and how much light it gives (0 at sunrise and sunset, 1 for most of the day) */
-  sun() {
-    const p = this.show.phase, k = Math.sin(Math.PI * p);
-    const t = clamp(k / SUN.fade, 0, 1), light = t * t * (3 - 2 * t);
-    return { p, k, light, from: (270 + 180 * p) % 360, rise: SUN.rise };
+    return Boolean(this.sliding);
   }
   /** the sun along its day, from a point of the preview: the left edge is sunrise, the right sunset */
-  sun_to(p) {
-    const [w] = this.size();
-    this.show.phase = clamp(p[0] / w, 0, 0.999);
-    this.render();
-  }
   /** the numeral or mark Nudge works on, outlined on the dial in its ring's guide colour while the Nudge pane is open
    *  on the Rings tab (4.78, #349) — so the one a press chose, or the list chose, is seen. */
   draw_picked() {
     const S = this.S, R = this.ring(), nudge = this.rows && this.rows.find((r) => r.fold && r.row.text === "Nudge one numeral");
-    const d = !this.show && S.ui_section === 1 && R && nudge && !nudge.el.hidden && !this.is_folded(nudge) ? this.statik.rings.find((x2) => x2.ring === R) : null;
+    const d = !S.ui_show && S.ui_section === 1 && R && nudge && !nudge.el.hidden && !this.is_folded(nudge) ? this.statik.rings.find((x2) => x2.ring === R) : null;
     const k = d ? d.at.indexOf(+this.nudge_at) : -1, part2 = k >= 0 && d.parts ? d.parts[k] : null;
     const b = part2 ? part2.bounds() : null, f2 = (v) => v.toFixed(3);
     const path = b ? `M${f2(b[0])} ${f2(b[1])}H${f2(b[2])}V${f2(b[3])}H${f2(b[0])}Z` : "", tone2 = GUIDE_COLOURS[ring_guide(S, S.ui_ring) ?? S.gd_k_sel] || GUIDE_COLOURS[0];
@@ -16443,11 +16626,11 @@ var DialTool = class _DialTool {
     }
     this.picked[1].style.setProperty("--picked", tone2);
   }
-  /** the light on the dial (4.77): in the showcase a ring of shine (SHINE) over the dial and the hands; wherever shadows
+  /** the light on the dial (4.77): wherever shadows
    *  are drawn, each hand's bevel (BEVEL) — its two long halves lighter and darker by where the light comes from.
    *  Drawn into groups kept by name, just under the shadows that fall on the same surfaces. Preview only (R5, R26). */
   draw_light(items) {
-    const S = this.S, sun = this.show && this.sun();
+    const S = this.S;
     if (!this.light_parts) this.light_parts = /* @__PURE__ */ new Map();
     const parts = this.light_parts, used = /* @__PURE__ */ new Set(), f2 = (v) => v.toFixed(4);
     const part2 = (name, tag, parent, before = null) => {
@@ -16466,67 +16649,16 @@ var DialTool = class _DialTool {
         parts.delete(name);
       }
     };
-    const on = sun ? sun.light : S.sh_on ? Math.min(S.sh_dark / 25, 2) : 0;
+    const on = S.sh_on ? Math.min(S.sh_dark / 25, 2) : 0;
     if (S.out_production || !(on > 0)) return finish();
     if (!this.light_defs) {
       this.light_defs = svg_el("defs");
       this.svg.prepend(this.light_defs);
     }
-    const from = sun ? sun.from : S.sh_from, R = S.dial_d / 2, nodes = items.map((_, i2) => this.slots[i2].node);
-    if (sun) {
-      const a = from * Math.PI / 180, behind = (SHINE.r - SHINE.top) * R, c = [-Math.sin(a) * behind, -Math.cos(a) * behind];
-      const w = SHINE.width[0] * (SHINE.width[1] / SHINE.width[0]) ** sun.k * R, s = SHINE.spread * (1 - sun.k) * R, strong = sun.k * on, r0 = R * SHINE.r;
-      const rings = Array.from({ length: SHINE.circles }, (_, i2) => r0 + (i2 - (SHINE.circles - 1) / 2) * s), reach = r0 + s * SHINE.circles + 2 * w;
-      const tent = (d, at2) => Math.max(0, 1 - Math.abs(d - at2) / (w / 2));
-      const light = (r) => Math.min(1, rings.reduce((a2, ri) => a2 + SHINE.bright * tent(r - ri, 0), 0) * strong);
-      const dark = (r) => Math.min(1, rings.reduce((a2, ri) => a2 + SHINE.dark * (tent(r - ri, -w) + tent(r - ri, w)), 0) * strong);
-      const at = [...new Set(rings.flatMap((ri) => [-1.5, -1, -0.5, 0, 0.5, 1, 1.5].map((m) => ri + m * w)).filter((r) => r > 0 && r < reach).map((r) => +r.toFixed(5)))].sort((a2, b) => a2 - b);
-      const grad = (name, colour, alpha) => {
-        const gr = part2(`shine/grad/${name}`, "radialGradient", this.light_defs);
-        gr.id = `shine-${name}`;
-        gr.setAttribute("gradientUnits", "userSpaceOnUse");
-        gr.setAttribute("cx", f2(c[0]));
-        gr.setAttribute("cy", f2(c[1]));
-        gr.setAttribute("r", f2(reach));
-        const stops = [[0, 0], ...at.map((r) => [r / reach, alpha(r)]), [1, 0]];
-        stops.forEach(([o, op], i2) => {
-          const st = part2(`shine/grad/${name}/${i2}`, "stop", gr);
-          st.setAttribute("offset", f2(o));
-          st.setAttribute("stop-color", colour);
-          st.setAttribute("stop-opacity", f2(op));
-        });
-      };
-      grad("light", "#fff", light);
-      grad("dark", "#000", dark);
-    }
-    const bands = (g, under, key) => {
-      if (!sun) return;
-      for (const [name, parent] of [["light", g], ["dark", under]]) {
-        const p = part2(`${key}/${name}`, "rect", parent);
-        p.setAttribute("x", f2(-R));
-        p.setAttribute("y", f2(-R));
-        p.setAttribute("width", f2(2 * R));
-        p.setAttribute("height", f2(2 * R));
-        p.setAttribute("fill", `url(#shine-${name})`);
-      }
-    };
-    const first_hand = items.findIndex((x2) => x2.role === "hand" || x2.role === "cap" || x2.role === "guide");
-    if (sun && items.some((x2) => x2.role === "plate")) {
-      const clip = part2("shine/clip", "clipPath", this.light_defs), dial = part2("shine/clip/dial", "circle", clip);
-      clip.id = "shine-clip";
-      dial.setAttribute("r", f2(R));
-      const before = first_hand >= 0 ? nodes[first_hand] : null;
-      const under = part2("shine-dark", "g", this.dial, before), g = part2("shine", "g", this.dial, before);
-      for (const x2 of [under, g]) {
-        x2.setAttribute("clip-path", "url(#shine-clip)");
-        x2.setAttribute("pointer-events", "none");
-      }
-      g.setAttribute("style", "mix-blend-mode: screen");
-      bands(g, under, "shine");
-    }
+    const from = S.sh_from, nodes = items.map((_, i2) => this.slots[i2].node);
     items.forEach((item, i2) => {
       const own = S["ha_" + item.name];
-      if (item.role !== "hand" || HAND_SHAPES[own?.shape] === "disc" || !(own?.bevel && +S.sh_bevel > 0 || sun)) return;
+      if (item.role !== "hand" || HAND_SHAPES[own?.shape] === "disc" || !(own?.bevel && +S.sh_bevel > 0)) return;
       const side = Math.sin((from - item.angle) * Math.PI / 180);
       const key = "bevel-" + item.name, clip = part2(key + "/clip", "clipPath", this.light_defs), shape3 = part2(key + "/clip/hand", "path", clip);
       clip.id = "bevel-clip-" + item.name;
@@ -16551,96 +16683,8 @@ var DialTool = class _DialTool {
       const lit = BEVEL.light * Math.abs(side) * Math.min(on, 1) * amount, dark = BEVEL.dark * Math.abs(side) * Math.min(on, 1) * amount;
       half("right", 0, side > 0 ? "#fff" : "#000", side > 0 ? lit : dark);
       half("left", -50, side > 0 ? "#000" : "#fff", side > 0 ? dark : lit);
-      if (sun) {
-        const dk = part2(key + "/shine-dark", "g", inner), sh = part2(key + "/shine", "g", inner);
-        for (const x2 of [dk, sh]) x2.setAttribute("transform", `rotate(${f2(item.angle)})`);
-        sh.setAttribute("style", "mix-blend-mode: screen");
-        bands(sh, dk, key + "/shine");
-      }
     });
     finish();
-  }
-  /** the showcase's spotlight and the dial's shadow in it, for the sun now (POOL); in the dial's millimetres */
-  draw_pool() {
-    if (!this.show) return;
-    const S = this.S, sun = this.sun(), a = sun.from * Math.PI / 180, toward = [Math.sin(a), Math.cos(a)];
-    const R = S.dial_d / 2, off = POOL.lift / Math.tan(sun.rise * Math.PI / 180), dim = 1 - sun.k;
-    const mix = ([lo, hi], t) => lo + (hi - lo) * t;
-    const soft = mix(POOL.soft, dim), light = mix(POOL.light, sun.k) * sun.light, shade = mix(POOL.shade, sun.k) * sun.light;
-    const f2 = (v) => v.toFixed(3), [L, D] = this.pool_parts;
-    L.circle.setAttribute("r", f2(R * POOL.size));
-    L.circle.setAttribute("transform", `translate(${f2(-toward[0] * off / 2)} ${f2(-toward[1] * off / 2)}) rotate(${f2(90 - sun.from)}) scale(${f2(1 + POOL.stretch * dim)} 1)`);
-    const lum = (c) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2], b = S.c_backdrop, lift = lum(b) < POOL.least ? (POOL.least - lum(b)) / (1 - lum(b)) : 0;
-    const colour = to_hex(b.map((v, i2) => i2 < 3 ? v + (1 - v) * lift : v));
-    L.stops.forEach((s, i2) => {
-      s.setAttribute("offset", f2([0, 1 - soft, 1][i2]));
-      s.setAttribute("stop-color", colour);
-      s.setAttribute("stop-opacity", f2(i2 < 2 ? light : 0));
-    });
-    const r = R * (1 + soft * 0.4);
-    D.circle.setAttribute("r", f2(r));
-    D.circle.setAttribute("transform", `translate(${f2(-toward[0] * off)} ${f2(-toward[1] * off)})`);
-    D.stops.forEach((s, i2) => {
-      s.setAttribute("offset", f2([0, R / r * (1 - soft * 0.3), 1][i2]));
-      s.setAttribute("stop-color", "#000");
-      s.setAttribute("stop-opacity", f2(i2 < 2 ? shade : 0));
-    });
-  }
-  /** Now in the showcase: the hands land on the time it is now; the pill shrinks into an undo sign. Pressed then, they
-   *  go back to the time they showed (as it has run on since), each the other way, and the sign grows back into Now
-   *  (Okay, 04:59; Okay's choice of the way back) */
-  //  10:10 does the same, to 10:10 (07:40). The one pressed turns into the undo sign; the other stays as it is. The other
-  //  pressed then takes the hands to its time and the sign moves to it; the way back is still to the time first shown.
-  show_now(kind = "now") {
-    const sh = this.show, beat = BEATS[this.S.ha_beat][1];
-    const from = hand_angles(this.S.t, beat);
-    if (sh.back && sh.back.by === kind) {
-      this.set_time(sh.back.t + (performance.now() - sh.back.at) / 1e3);
-      sh.back = null;
-      sh.spin = { from, way: -1, t0: performance.now() };
-    } else {
-      const d = /* @__PURE__ */ new Date(), now = d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1e3;
-      sh.back = sh.back ? { ...sh.back, by: kind } : { t: this.S.t, at: performance.now(), by: kind };
-      this.set_time(kind === "now" ? now : 10 * 3600 + 600 + this.half());
-      sh.spin = { from, way: 1, t0: performance.now() };
-    }
-    for (const b of [this.now_pill, this.ten_pill]) {
-      const back = !!sh.back && b.classList.contains(sh.back.by);
-      b.classList.toggle("back", back);
-      b.title = b.ariaLabel = back ? "Back to the time it showed" : b.dataset.says;
-    }
-    this.render();
-  }
-  /** the hands while they spin (frame()). The hour hand turns one whole turn clockwise and on to where it lands, the
-   *  minute hand the same anticlockwise (going back, each the other way); the seconds hand makes no turn, it goes the
-   *  short way to its place while the big hands whirl. One easing for all, slow to start and slow to land (Okay, 15 Oct
-   *  2026, 07:36: "big arms move different wises, one clock one anticlock. One turn, ease to stop on position. Seconds?
-   *  Only moves to position slowly as the chaos ensues. Eases both start and end"; was: every hand two turns, one way) */
-  spin_hands(items) {
-    const sp = this.show && this.show.spin;
-    if (!sp) return;
-    const p = clamp((performance.now() - sp.t0) / SPIN_MS, 0, 1), e = p < 0.5 ? 4 * p ** 3 : 1 - (-2 * p + 2) ** 3 / 2;
-    const k = { hour: 0, minute: 1, second: 2 }, way = { hour: sp.way, minute: -sp.way };
-    for (const item of items) {
-      if (item.role !== "hand" && item.role !== "mark" || !(item.name in k) || p >= 1) continue;
-      const a0 = sp.from[k[item.name]], d = item.angle - a0;
-      if (item.name === "second") {
-        item.angle = a0 + e * ((d % 360 + 540) % 360 - 180);
-        continue;
-      }
-      const w = way[item.name], gap = (d * w % 360 + 360) % 360;
-      item.angle = a0 + w * e * (gap + 360);
-    }
-    if (p >= 1) this.show.spin = null;
-  }
-  /** the showcase's hint, once it has arrived: over Now a two-headed arrow comes, sways left and right, and goes */
-  hint() {
-    const h = this.sun_hint, now = this.now_pill.getBoundingClientRect(), box3 = this.svg.getBoundingClientRect();
-    const below = this.c[1] + this.S.dial_d / 2 * this.z, above = now.top - box3.top;
-    h.style.top = ((below + above) / 2 - h.offsetHeight / 2).toFixed(1) + "px";
-    h.classList.remove("go");
-    void h.offsetWidth;
-    h.classList.add("go");
   }
   /** the iris switch opened (its words, ACTIVATE SHOWCASE, slid out to its left) or shut */
   iris_open(on) {
@@ -16654,6 +16698,77 @@ var DialTool = class _DialTool {
    *  The stylesheet does the moving: #app.away turns --away from 0 to 1 (eased), and the panel's column, the panel and
    *  what stands on the preview follow it. The preview grows with its column; each step of that is a resize, and a
    *  fitted dial re-fits on every one, so the dial grows and centres in step with the slide. Not part of a dial. */
+  /** show mode, or back (#509; Okay, 22 Oct 2026: "left side slides out, right side slides in"): the panel slides away
+   *  to the left, comes back on the right with the show tabs and the backdrop's tint; the dial's own drawing gives way
+   *  to the watch (show.js); Fit fits the case. The bar stays. Nothing of the dial changes; ui_show remembers the mode. */
+  show_mode(on, instant = false) {
+    const app = $("#app");
+    if (on === Boolean(this.S.ui_show)) return;
+    this.hover(null);
+    if (this.pop && this.pop.at) this.pop_close();
+    if (this.bio_open) this.bio_open(false);
+    this.iris_open(false);
+    this.S.ui_show = on;
+    this.iris_button.setAttribute("aria-pressed", String(on));
+    const first = SECTIONS.indexOf(SHOW_SECTIONS[0]);
+    if (on) {
+      this.S.ui_edit_section = this.S.ui_section;
+      this.S.ui_section = SHOW_SECTIONS.includes(SECTIONS[this.S.ui_show_section]) ? this.S.ui_show_section : first;
+    } else {
+      this.S.ui_show_section = this.S.ui_section;
+      this.S.ui_section = SHOW_SECTIONS.includes(SECTIONS[this.S.ui_edit_section]) ? 0 : this.S.ui_edit_section;
+    }
+    [...this.tabs.children].forEach((b) => {
+      b.hidden = SHOW_SECTIONS.includes(b.dataset.tab) !== on;
+    });
+    this.dial.style.display = on ? "none" : "";
+    this.over.style.display = on ? "none" : "";
+    this.bezel_g.style.display = on ? "none" : "";
+    if (!on) {
+      this.watch_g.replaceChildren();
+      this.watch_key = null;
+      this.tint_panel();
+    }
+    const was_away = app.classList.contains("away");
+    const swap = () => {
+      app.classList.toggle("showing", on);
+      this.show_section();
+      this.watch_key = null;
+      this.fit();
+      requestAnimationFrame(() => requestAnimationFrame(() => this.dial_alone(false)));
+      this.render();
+    };
+    if (was_away || instant) swap();
+    else {
+      const done = (e) => {
+        if (e.target !== app) return;
+        app.removeEventListener("transitionend", done);
+        clearTimeout(wait);
+        swap();
+      };
+      const wait = setTimeout(() => {
+        app.removeEventListener("transitionend", done);
+        swap();
+      }, 1200);
+      app.addEventListener("transitionend", done);
+      this.dial_alone(true);
+    }
+  }
+  /** the panel's colours from the backdrop in show mode (show.js tint_panel; #505) */
+  tint_panel() {
+    const key = this.S.ui_show ? this.S.c_backdrop.join(",") : "";
+    if (key === this.tint_key) return;
+    this.tint_key = key;
+    tint_panel($(".panel"), this.S.ui_show, this.S.c_backdrop);
+  }
+  row_export_watch_png(wrap) {
+    wrap.className = "row";
+    wrap.append(el("label", { textContent: "Image" }), el("button", { type: "button", className: "btn main", id: "export-watch-png", textContent: "PNG", onclick: () => export_watch(this, "png", save_file).catch((e) => this.log("the watch's PNG failed: " + e.message)) }));
+  }
+  row_export_watch_pdf(wrap) {
+    wrap.className = "row";
+    wrap.append(el("label", { textContent: "Page" }), el("button", { type: "button", className: "btn main", id: "export-watch-pdf", textContent: "PDF", onclick: () => export_watch(this, "pdf", save_file).catch((e) => this.log("the watch's PDF failed: " + e.message)) }));
+  }
   dial_alone(on) {
     const app = $("#app");
     this.eye_button.setAttribute("aria-pressed", String(on));
@@ -16837,35 +16952,14 @@ var DialTool = class _DialTool {
     iris.innerHTML = icon(TOOL_ICONS.show_eye, 30);
     iris.setAttribute("aria-pressed", "false");
     iris.onclick = () => {
-      if (this.show) this.showcase(false);
+      if (this.S.ui_show) this.show_mode(false);
       else this.iris_open(this.iris_box.getAttribute("aria-expanded") !== "true");
     };
-    this.iris_go = el("button", { type: "button", className: "irisgo", id: "iris-go", textContent: "Activate showcase", onclick: () => this.showcase(true) });
+    this.iris_go = el("button", { type: "button", className: "irisgo", id: "iris-go", textContent: "Activate showcase", onclick: () => this.show_mode(true) });
     this.iris_box = el("div", { className: "onview irisbox" }, this.iris_go, iris);
     this.iris_button = iris;
     this.iris_open(false);
     this.eye_box = el("div", { className: "eyes" }, this.iris_box, eye2);
-    const pill = (kind, id, word, says) => {
-      const b = el("button", { type: "button", className: "onview nowpill " + kind, id, title: says, ariaLabel: says, onclick: () => this.show_now(kind) }, el("span", { className: "word", textContent: word }));
-      b.insertAdjacentHTML("beforeend", icon(TOOL_ICONS.undo));
-      b.dataset.says = says;
-      return b;
-    };
-    this.now_pill = pill("now", "show-now", "Now", "The time it is now");
-    this.ten_pill = pill("ten", "show-ten", "10:10", "10:10, the classic pose");
-    this.hands_key = el("button", { type: "button", className: "onview handskey", id: "hands-key", title: "Hide the hands", ariaLabel: "Hands" });
-    this.hands_key.innerHTML = icon(TOOL_ICONS.hands_key, 38);
-    this.hands_key.setAttribute("aria-pressed", "false");
-    this.hands_key.onclick = () => {
-      const hide = !this.show.nohands;
-      this.show.nohands = hide;
-      this.hands_key.setAttribute("aria-pressed", String(hide));
-      this.hands_key.title = hide ? "Show the hands" : "Hide the hands";
-      this.render();
-    };
-    this.sun_hint = el("div", { className: "sunhint", id: "sun-hint" });
-    this.sun_hint.innerHTML = icon(TOOL_ICONS.both_ways, 108, 36);
-    this.sun_hint.onanimationend = () => this.sun_hint.classList.remove("go");
     return el("div", { className: "backdrops" }, box3);
   }
   /** Okay's mark in the panel's first column, left of the title; a press opens a short bio: who made the tool, where
@@ -17023,7 +17117,7 @@ var DialTool = class _DialTool {
     const H2 = this.handles;
     if (!H2) return;
     const R = this.ring(), k = R ? ring_guide(this.S, this.S.ui_ring) : null;
-    if (this.show || this.S.ui_section !== 1 || !this.guides_drawn || !R || !R.on || k === null) {
+    if (this.S.ui_show || this.S.ui_section !== 1 || !this.guides_drawn || !R || !R.on || k === null) {
       H2.replaceChildren();
       this.handles_key = "";
       return;
@@ -17324,13 +17418,13 @@ var DialTool = class _DialTool {
       none.innerHTML = none_dot;
       none.dataset.k = "none";
       dots.append(none);
-      GUIDE_COLOURS.forEach((hex, i2) => {
-        const b = el("button", { type: "button", className: "tone", title: hex, ariaLabel: hex, onclick: () => {
+      GUIDE_COLOURS.forEach((hex3, i2) => {
+        const b = el("button", { type: "button", className: "tone", title: hex3, ariaLabel: hex3, onclick: () => {
           set(i2);
           this.sync_rows();
           this.render();
         } });
-        b.style.setProperty("--c", hex);
+        b.style.setProperty("--c", hex3);
         b.dataset.k = i2;
         dots.append(b);
       });
@@ -17533,8 +17627,7 @@ var DialTool = class _DialTool {
    *  cap's shadow, as wide as the cap. Nothing is drawn outside the dial: the plate's own shadow falls only into its
    *  windows. Each surface's shadows are one group with one opacity, so where two overlap it is not darker. */
   draw_shadows(items) {
-    const sun = this.show && this.sun();
-    const S = sun ? { ...this.S, sh_on: true, sh_blur: !this.moving(), sh_from: sun.from, sh_rise: sun.rise, sh_dark: Math.min(this.S.sh_dark * SHOW_DARKER, 100) * sun.light } : { ...this.S, sh_blur: this.S.sh_blur && !this.moving() };
+    const S = { ...this.S, sh_blur: this.S.sh_blur && !this.moving() };
     if (!this.shade) {
       const defs = svg_el("defs"), filter = svg_el("filter"), blur = svg_el("feGaussianBlur");
       filter.id = "shadow-soft";
@@ -17906,8 +17999,8 @@ var DialTool = class _DialTool {
     const all = page ? [S.c_plate, S.c_backdrop, S.c_cap, ...rings, ...hands, ...windows] : [...rings, ...hands, S.c_cap, ...windows];
     const once = /* @__PURE__ */ new Map();
     for (const c of all) if (Array.isArray(c)) {
-      const hex = to_hex(c).toUpperCase();
-      if (!once.has(hex)) once.set(hex, c);
+      const hex3 = to_hex(c).toUpperCase();
+      if (!once.has(hex3)) once.set(hex3, c);
     }
     return [...once.values()];
   }
@@ -18159,7 +18252,10 @@ var DialTool = class _DialTool {
       const name = el("label", { textContent: row.text });
       wrap.append(name, group);
       out.refresh = (T) => {
-        buttons.forEach((b, i2) => b.classList.toggle("on", i2 === T[row.key]));
+        buttons.forEach((b, i2) => {
+          b.classList.toggle("on", i2 === T[row.key]);
+          if (row.offered) b.hidden = !row.offered(T).includes(i2);
+        });
         if (row.say) name.textContent = label_of(row, T);
       };
     }
@@ -18222,7 +18318,7 @@ var DialTool = class _DialTool {
     this.colour_mode = "HEX";
     const put = (rgb2) => P2.at.write(rgb2.map((v) => +clamp(v, 0, 1).toFixed(4)).concat([P2.at.read()[3] ?? 1]));
     P2.put = put;
-    P2.pick = (hex) => put(from_hex(hex).slice(0, 3));
+    P2.pick = (hex3) => put(from_hex(hex3).slice(0, 3));
     P2.title = el("h2");
     const wide = el("button", { type: "button", className: "sign", id: "pop-wide", title: "Twice the size, and back", ariaLabel: "Twice the size, and back", onclick: () => this.pop_wide(!P2.wide) });
     wide.innerHTML = icon(TOOL_ICONS.wide);
@@ -18316,13 +18412,13 @@ var DialTool = class _DialTool {
   /** a colour pill: one small button — a swatch and the hex in monospace (Okay, 12 Oct 2026: "all sleek"). It only
    *  opens the pop-out, on every device. While the pop-out is open for it, it is black. show(rgba) fills it. */
   colour_pill(id, title) {
-    const dot = el("i", { className: "dot" }), hex = el("span", { className: "hex", id: id + "-hex" });
-    const pill = el("button", { type: "button", className: "colour", id, title }, dot, hex);
+    const dot = el("i", { className: "dot" }), hex3 = el("span", { className: "hex", id: id + "-hex" });
+    const pill = el("button", { type: "button", className: "colour", id, title }, dot, hex3);
     pill.setAttribute("aria-expanded", "false");
     pill.show = (c) => {
       paint(dot, c);
-      hex.textContent = to_hex(c).toUpperCase();
-      if (title) pill.ariaLabel = `${title} ${hex.textContent}`;
+      hex3.textContent = to_hex(c).toUpperCase();
+      if (title) pill.ariaLabel = `${title} ${hex3.textContent}`;
     };
     return pill;
   }
@@ -18456,8 +18552,8 @@ var DialTool = class _DialTool {
       const commit = () => {
         const fields = [...P2.numbers.querySelectorAll("input")];
         if (mode === "HEX") {
-          const hex = parse_hex(fields[0].value);
-          if (hex) P2.pick(hex);
+          const hex3 = parse_hex(fields[0].value);
+          if (hex3) P2.pick(hex3);
           else this.pop_refresh();
           return;
         }
@@ -18699,10 +18795,10 @@ var DialTool = class _DialTool {
     const NAMES2 = ["Skip where", "Knock out"], KEYS2 = ["skip", "knock"], LISTS = [SKIP_FROM, KNOCK_FROM];
     const tabs = el("div", { className: "givetabs", role: "tablist", ariaLabel: "How this ring gives way" });
     const box3 = el("div", { className: "givebox", id: "give-box" });
-    const picture = el("div", { className: "givepic", role: "img" });
+    const picture2 = el("div", { className: "givepic", role: "img" });
     const choices = el("div", { className: "givechoices", role: "radiogroup" });
     const clear = this.build_row(num2("clear", "Clearance", 0, 2, 0.01, { scope: "ring", side: true, quiet: true }));
-    box3.append(picture, choices, clear.el);
+    box3.append(picture2, choices, clear.el);
     wrap.append(tabs, box3);
     NAMES2.forEach((name, i2) => {
       const b = el("button", { type: "button", className: "givetab", id: "give-tab-" + i2, textContent: name, role: "tab", onclick: () => {
@@ -18712,7 +18808,7 @@ var DialTool = class _DialTool {
       tabs.append(b);
     });
     const TICKS = [16, 30, 44, 58, 72, 86, 100, 114, 128], ABOVE = { 30: "markers", 72: "numerals", 114: "ticks" }, BOTTOM = { 30: 48.25, 72: 44, 114: 48.25 };
-    const draw = (tab, i2) => {
+    const draw3 = (tab, i2) => {
       const kinds = FROM_KINDS[i2], gap = tab === 1 ? Math.max(2, 20 * (this.ring().clear || 0)) : 0;
       const ticks2 = TICKS.map((x2) => {
         const kind = ABOVE[x2];
@@ -18732,7 +18828,7 @@ var DialTool = class _DialTool {
       const now = `${tab}:${at}:${R.clear}`;
       if (now !== drawn2) {
         drawn2 = now;
-        picture.innerHTML = draw(tab, at);
+        picture2.innerHTML = draw3(tab, at);
         choices.ariaLabel = NAMES2[tab];
         choices.replaceChildren(...list.map((text, i2) => {
           const id = `ring-give-${key}-${i2}`;
@@ -18743,7 +18839,7 @@ var DialTool = class _DialTool {
           return el("label", { className: "check", htmlFor: id }, r, " " + text);
         }));
       }
-      picture.ariaLabel = `${NAMES2[tab]}: ${list[at]}`;
+      picture2.ariaLabel = `${NAMES2[tab]}: ${list[at]}`;
       clear.el.hidden = !(tab === 1 && R.knock !== 0);
       clear.refresh(R);
     };
@@ -20710,7 +20806,7 @@ var DialTool = class _DialTool {
     const unfocus = () => {
       for (const c of grid.querySelectorAll("a.focus")) c.classList.remove("focus");
     };
-    const draw = () => {
+    const draw3 = () => {
       const list = instances_read();
       const oldest = list.length ? list.reduce((a, b) => b.at < a.at ? b : a) : null;
       note2.textContent = !list.length ? "Dials you save stay in this browser; a link or a settings file takes one elsewhere." : list.length >= INSTANCES_MOST ? `${list.length} of ${INSTANCES_MOST} kept: the next save replaces the oldest, ${oldest.name}. Drag a card to arrange them.` : `${list.length} saved in this browser. Drag a card to arrange them.`;
@@ -20735,7 +20831,7 @@ var DialTool = class _DialTool {
         };
         const remove = () => {
           instances_write(instances_read().filter((x2) => x2.id !== e.id));
-          draw();
+          draw3();
           if (this.comparing) this.compare_place();
           this.log(`removed ${e.name}`);
         };
@@ -20806,7 +20902,7 @@ var DialTool = class _DialTool {
             if (a < 0 || b < 0) return;
             list2.splice(b, 0, ...list2.splice(a, 1));
             instances_write(list2);
-            draw();
+            draw3();
           };
           card.addEventListener("pointermove", move);
           card.addEventListener("pointerup", up);
@@ -20827,7 +20923,7 @@ var DialTool = class _DialTool {
       }
       list = [e, ...list];
       if (!instances_write(list)) return this.log("not saved: this browser's storage is full or closed (a private window?) \u2014 Copy link keeps it instead");
-      draw();
+      draw3();
       if (this.comparing) this.compare_place();
       this.log(`saved ${e.name} \u2014 under Versions, in this browser`);
     };
@@ -20863,8 +20959,8 @@ var DialTool = class _DialTool {
     document.addEventListener("pointerdown", (ev) => {
       if (!grid.contains(ev.target)) unfocus();
     }, true);
-    draw();
-    return { wrap, draw, unfocus };
+    draw3();
+    return { wrap, draw: draw3, unfocus };
   }
   /** Compare (#435; Okay, 19 Oct 2026, 23:11: "a compare button. this lists and stacks into something like a sheet pdf
    *  controls on pdf export does depending on numbers, always centered with sensible padding: left column hidden
@@ -20982,7 +21078,7 @@ var DialTool = class _DialTool {
     if (!gif && !window.VideoEncoder) return this.log("MP4 not made: this browser has no video encoder (WebCodecs). Chrome, Edge and Safari 17 have one; or make a GIF.");
     this.log(`making ${name}: ${n} frames at ${px} px\u2026`);
     const canvas2 = el("canvas", { width: px, height: px }), pen2 = canvas2.getContext("2d", { willReadFrequently: gif });
-    const draw = async (t) => {
+    const draw3 = async (t) => {
       const image = new Image();
       image.src = URL.createObjectURL(new Blob([svg_document(S, statik, t, { preview: true })], { type: "image/svg+xml" }));
       await image.decode();
@@ -20996,9 +21092,9 @@ var DialTool = class _DialTool {
       if (gif) {
         const enc = (0, import_gifenc.GIFEncoder)();
         for (let i2 = 0; i2 < n; i2++) {
-          await draw(time(i2));
-          const rgba = pen2.getImageData(0, 0, px, px).data, palette = (0, import_gifenc.quantize)(rgba, 256);
-          enc.writeFrame((0, import_gifenc.applyPalette)(rgba, palette), px, px, { palette, delay: Math.round(1e3 / fps) });
+          await draw3(time(i2));
+          const rgba2 = pen2.getImageData(0, 0, px, px).data, palette = (0, import_gifenc.quantize)(rgba2, 256);
+          enc.writeFrame((0, import_gifenc.applyPalette)(rgba2, palette), px, px, { palette, delay: Math.round(1e3 / fps) });
         }
         enc.finish();
         bytes2 = enc.bytes();
@@ -21022,7 +21118,7 @@ var DialTool = class _DialTool {
         } });
         encoder.configure(config);
         for (let i2 = 0; i2 < n && !failed; i2++) {
-          await draw(time(i2));
+          await draw3(time(i2));
           const frame2 = new VideoFrame(canvas2, { timestamp: Math.round(i2 * 1e6 / fps), duration: Math.round(1e6 / fps) });
           encoder.encode(frame2, { keyFrame: i2 % (fps * 2) === 0 });
           frame2.close();
@@ -21414,19 +21510,11 @@ var DialTool = class _DialTool {
         this.pulse(this.S.t, performance.now() / 1e3);
         this.render();
       }
-      if (this.show) {
-        const now = performance.now();
-        if (!this.show.dragging) this.show.phase = (this.show.phase + (now - this.show.at) / 1e3 / SUN.day) % 1;
-        this.show.at = now;
-        this.render();
-      }
-      if (this.travel) {
-        this.travel_step();
-        this.render();
-      }
-      if (this.show && this.show.spin) this.render();
       this.draw();
-      this.draw_bezel();
+      if (this.S.ui_show) {
+        draw2(this, this.items);
+        this.tint_panel();
+      } else this.draw_bezel();
       this.draw_handles();
       this.tiny_draw();
     } catch (e) {
@@ -21435,11 +21523,11 @@ var DialTool = class _DialTool {
     }
   }
   draw() {
-    let S = this.show ? { ...this.S, guides: false, ha_on: this.S.ha_on && !this.show.nohands } : this.S;
-    if (!this.show && this.hole_at && performance.now() - this.hole_at < HOLE_LIVE_MS) {
+    let S = this.S.ui_show ? { ...this.S, guides: false } : this.S;
+    if (!S.ui_show && this.hole_at && performance.now() - this.hole_at < HOLE_LIVE_MS) {
       S = S.guides ? { ...S, gd_hole_live: true } : { ...S, guides: true, gd_hole_live: true, gd_axes: false, gd_rings: false, gd_sel: false, gd_wins: false, gd_wsel: false, gd_more: [] };
-    } else if (!this.show && this.guides_at && performance.now() - this.guides_at < HOLE_LIVE_MS) S = { ...S, guides: this.guides_on };
-    else if (!this.show && !S.guides && S.ui_section === 1 && this.ring()?.on) S = { ...S, guides: true, gd_axes: false, gd_hole: false, gd_rings: false, gd_sel: true, gd_wins: false, gd_wsel: false, gd_more: [] };
+    } else if (!S.ui_show && this.guides_at && performance.now() - this.guides_at < HOLE_LIVE_MS) S = { ...S, guides: this.guides_on };
+    else if (!S.ui_show && !S.guides && S.ui_section === 1 && this.ring()?.on) S = { ...S, guides: true, gd_axes: false, gd_hole: false, gd_rings: false, gd_sel: true, gd_wins: false, gd_wsel: false, gd_more: [] };
     this.guides_drawn = S.guides;
     const day = shows_day(S) ? day_hour(S) : null;
     if (day !== this.day_drawn) {
@@ -21454,17 +21542,10 @@ var DialTool = class _DialTool {
       if (S.out_production) merges_of(this);
     }
     const items = scene(S, this.statik, S.t, true, S.ui_ring);
-    this.spin_hands(items);
     this.items = items;
     const backdrop = S.out_production ? [1, 1, 1, 1] : S.c_backdrop;
     this.backdrop.setAttribute("fill", to_hex(backdrop));
     this.main.style.setProperty("--canvas-fill", to_hex(backdrop));
-    this.sky_stops[0].setAttribute("stop-color", to_hex(backdrop.map((v, i2) => i2 < 3 ? v * SKY_TOP : 1)));
-    this.sky_stops[1].setAttribute("stop-color", "#000");
-    const [sw_, sh_] = this.size(), reach = ((sw_ + sh_) / 2).toFixed(1);
-    this.sky_grad.setAttribute("x2", reach);
-    this.sky_grad.setAttribute("y2", reach);
-    this.draw_pool();
     const lin = (v) => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4, L = 0.2126 * lin(backdrop[0]) + 0.7152 * lin(backdrop[1]) + 0.0722 * lin(backdrop[2]);
     this.main.classList.toggle("dark", 1.05 / (L + 0.05) > (L + 0.05) / 0.05);
     $("#app").classList.toggle("dark", this.main.classList.contains("dark"));
@@ -21518,7 +21599,7 @@ var DialTool = class _DialTool {
     });
     this.draw_picked();
     this.draw_light(items);
-    this.draw_shadows(items);
+    if (!this.S.ui_show) this.draw_shadows(items);
     this.place();
     const ring = this.ring();
     const font = has_text(ring) ? `   \xB7   ${ring.ps}` : "";
@@ -21537,9 +21618,9 @@ var DialTool = class _DialTool {
   }
   fit_zoom() {
     const [w, h] = this.size();
-    return Math.min(w, h) / page_mm(this.S);
+    return this.S.ui_show ? fit_zoom(this, w, h) : Math.min(w, h) / page_mm(this.S);
   }
-  // the dial, never its case (4.69; Okay, 22:35: "Fit and previews care about the dial still, the bezel and strap secondary"; 4.66–4.68 made room for the case)
+  // show mode fits the case (Okay, 22 Oct 2026)      // the dial, never its case (4.69; Okay, 22:35: "Fit and previews care about the dial still, the bezel and strap secondary"; 4.66–4.68 made room for the case)
   /** put the dial at c, scaled to z; mirrored for toner transfer. y grows upward inside. */
   place() {
     const flip = this.S.out_mirror ? -1 : 1;
@@ -21551,14 +21632,13 @@ var DialTool = class _DialTool {
       this.handles_key = "";
     }
     if (this.bezel_g) this.bezel_g.setAttribute("transform", where);
-    if (this.pool) this.pool.setAttribute("transform", where);
+    if (this.watch_g) this.watch_g.setAttribute("transform", where);
   }
   fit() {
     const [w, h] = this.size();
     if (w < 1 || h < 1) return;
-    if (this.travel) return;
     this.fitted = true;
-    const to = this.show ? this.show_target() : { c: [w / 2, h / 2], z: this.fit_zoom() };
+    const to = { c: [w / 2, h / 2], z: this.fit_zoom() };
     this.z = to.z;
     this.c = to.c;
     this.place();
@@ -21576,10 +21656,6 @@ var DialTool = class _DialTool {
     this.pop_cover();
     const [w, h] = this.size();
     if (w < 1 || h < 1) return;
-    if (this.travel) {
-      this.view = [w, h];
-      return;
-    }
     if (this.fitted) this.fit();
     else if (this.view) {
       this.c = [this.c[0] + (w - this.view[0]) / 2, this.c[1] + (h - this.view[1]) / 2];
@@ -21599,7 +21675,6 @@ var DialTool = class _DialTool {
     };
     this.svg.addEventListener("wheel", (e) => {
       e.preventDefault();
-      if (this.show) return;
       this.hover(null);
       if (e.ctrlKey || e.metaKey) this.zoom(Math.exp(-e.deltaY * 0.01), at(e));
       else {
@@ -21625,16 +21700,11 @@ var DialTool = class _DialTool {
       this.svg.setPointerCapture(e.pointerId);
       if (pts.size === 1) down = null;
       restart();
-      if (this.show && pts.size === 1) {
-        this.show.dragging = true;
-        this.sun_to(at(e));
-      }
     });
     this.svg.addEventListener("pointermove", (e) => {
       if (!pts.has(e.pointerId)) return e.pointerType === "mouse" ? this.hover(at(e), document.elementFromPoint(e.clientX, e.clientY)) : null;
       pts.set(e.pointerId, at(e));
       if (pts.size >= 2) {
-        if (this.show) return;
         const now = pair();
         this.hover(null);
         this.c = [this.c[0] + now.mid[0] - down.mid[0], this.c[1] + now.mid[1] - down.mid[1]];
@@ -21644,10 +21714,6 @@ var DialTool = class _DialTool {
         return;
       }
       const p = at(e);
-      if (this.show) {
-        this.sun_to(p);
-        return;
-      }
       if (Math.hypot(p[0] - down.p[0], p[1] - down.p[1]) > 4) down.moved = true;
       if (e.pointerType === "touch") return;
       if (down.moved) {
@@ -21659,11 +21725,7 @@ var DialTool = class _DialTool {
     });
     const up = (e) => {
       if (!pts.has(e.pointerId)) return;
-      const click = pts.size === 1 && down && !down.moved && e.type === "pointerup" && !this.show;
-      if (this.show) {
-        this.show.dragging = false;
-        this.show.at = performance.now();
-      }
+      const click = pts.size === 1 && down && !down.moved && e.type === "pointerup";
       pts.delete(e.pointerId);
       if (click) this.clicked(at(e), document.elementFromPoint(e.clientX, e.clientY));
       restart();
@@ -21678,7 +21740,7 @@ var DialTool = class _DialTool {
     });
     this.svg.addEventListener("gesturechange", (e) => {
       e.preventDefault();
-      if (pts.size < 2 && !this.show) this.zoom(e.scale / pinch, at(e));
+      if (pts.size < 2) this.zoom(e.scale / pinch, at(e));
       pinch = e.scale;
     });
   }
@@ -21751,7 +21813,7 @@ var DialTool = class _DialTool {
   }
   /** the pointer rests on something that can be edited: outline it, and say its name beside the pointer. */
   hover(p, node) {
-    const piece = p && !this.show ? this.piece_at(p, node) : null;
+    const piece = p && !this.S.ui_show ? this.piece_at(p, node) : null;
     this.tip.hidden = !piece;
     for (const line of this.glow) line.setAttribute("d", piece ? piece.path.svg(4) : "");
     if (!piece) return;
