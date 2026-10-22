@@ -19,9 +19,13 @@
   #app.showing .panel::-webkit-scrollbar { display: none; }
   #app.showing .form::-webkit-scrollbar { display: none; }
   #app.showing .mast { translate: 0; }
+  #app.showing .panel > header { height: var(--show-header); }      /* the Show Case's title line: Dial Tool Show Case, its version, Help and the round swatch — nothing else (Okay, 23 Oct 2026) */
+  #app.showing .title h1 { white-space: nowrap; }
+  #app.showing .title h1::after { content: " Show Case"; font-weight: 400; }      /* Dial Tool bold, Show Case not (Okay, 21 Oct 2026, 01:23) */
+  #app.showing .panel > header :is(.gallerypill, .unit) { display: none; }
   .greyswatch { display: none; }      /* show mode's round swatch (grey_swatch() in app.js): the panel's other look, in greys or in the backdrop's colour; dial side: none (R16) */
   #app.showing .greyswatch { display: block; flex: none; margin-left: auto; width: var(--bare-dot); height: var(--bare-dot); padding: 0; border: var(--hair) solid var(--rule); border-radius: 50%; background: var(--swatch); cursor: pointer; }
-  #app.showing main { grid-area: 1 / 1; }
+  #app.showing main { grid-area: 1 / 1 / 2 / 3; }      /* the canvas runs on under the column, so the backdrop and the watch show through it (Okay, 23 Oct 2026: "Transparency is gone, bring that back"); the drawing is centred in the part left of it (size() in app.js) */
   #app.showing .panel > :is(header, .tabs, .pinned) { background: var(--column-top, var(--paper)); }      /* the top — title, tabs and the pinned lines — a tenth lighter than the column, as the paper stands over the scrolling grey (Okay, 21 Oct 2026, 01:43) */      /* its translate makes it a stacking context, so the bio's z-index counts only inside it: the mast itself stands over the panel's rows, or a later stepper draws over the open bio (Okay, 15 Oct 2026, 10:45) */
   /* the mast on the backdrop (the dial alone): black or white like the switches, the version a little quieter. Its
      colour follows the slide: from paper's to the backdrop's while the panel's edge sweeps over it (--away 0.55 to
@@ -84,6 +88,7 @@
   .tabs button.on { color: var(--ink); font-weight: 600; box-shadow: inset 0 calc(-1 * var(--triple)) 0 var(--ink); }
   .tabs button.on .ring { fill: var(--ink); stroke: var(--ink); }
   .tabs button.on .sign { color: var(--paper); }
+  #app.showing .tabs button.on .sign { color: var(--column-solid); }      /* the chosen tab's sign in the column's colour, as the dial side's is in its paper (Okay, 23 Oct 2026: "They were bg color") */
   .tabs button.on .hub { fill: currentColor; }      /* Dial chosen: its centre hole a dot of paper (Okay's drawing, 14 Oct 2026) */
 
   .pinned, .form { padding: 0 var(--margin); }

@@ -253,7 +253,10 @@
   .tip svg .c { fill: var(--ink); }
   /* ── show mode (the iris switch; build list #509, 22 Oct 2026) ── the panel moves to the right (4a-panel.css); on the
      canvas, what the show tabs hold is off (R16) */
-  #app.showing :is(.guidesbox, .xraybox, .shadowsbox, .casebox, .tinyopen) { display: none; }      /* show mode: what the show tabs hold, and the guides, are off the canvas (R16); the case is a row on the Watch tab */
+  #app.showing :is(.guides, .shadows, .xraybox, .casebox, .tinyopen) { display: none; }      /* show mode: Guides and Shadows are the dial side's (Okay, 23 Oct 2026: "Guides? Completely nonexistent here. Remove them", "The shadows … another realm"); the watch's light is on the Light tab */
+  #app.showing main { --covered: calc(var(--panel-w) * (1 - var(--away))); }      /* how much of the canvas the column lies over */
+  #app.showing :is(.corner, .eyes) { right: calc(var(--canvas-inset) + var(--covered)); }
+  #app.showing .undos { left: var(--canvas-inset); }      /* undo · redo · Versions at the canvas's top left (Okay, 23 Oct 2026: "bring them back"); the dial side's stop short of the title, which here is on the right */      /* show mode: what the show tabs hold, and the guides, are off the canvas (R16); the case is a row on the Watch tab */
   /* the iris switch: the iris in a box; pressed, its words slide out to its left (ACTIVATE SHOWCASE), which alone go
      to show mode (04:59: "we need affordance"); in show mode an X, the way out */
   .irisbox { padding: 0; overflow: hidden; border-radius: var(--round-switch); }

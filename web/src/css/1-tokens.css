@@ -57,6 +57,7 @@
        columns at 42 px and its side margins at 16 (21 Oct 2026, 23:38: "the column narrower, for more canvas") */
     --show-col: 42px; --show-margin: 16px;
     --show-panel-w: calc(2 * var(--show-margin) + var(--lead) + 6 * var(--show-col) + 5 * var(--gap) + var(--hair));
+    --show-header: calc(var(--header) / 2 + 10px);      /* show mode's title line: half the panel's top, then 10px more (Okay, 21 Oct 2026, 03:35, 03:40) */
     --head: 40px;                                  /* a pane's heading */
     --header: calc(var(--canvas-inset-wide) + var(--control-large) - var(--hair));      /* the panel's top: title and Guides. Its line (the tabs' top hairline) is the canvas's top buttons' bottom line, the buttons as far from the canvas's top as from its left (Okay, 21 Oct 2026, 23:29: "Align bottom line of top button row on the same line as title's hr line first. Then push from top to adjust for left gap"); the title centred in it. A rule for the Show Case too, when it comes */
     --bar-height: 62px; --bar-control: 30px;      /* the bar's height (Okay, 14 Oct 2026, 23:19: "1/5 higher" than the 52 it was); a phone keeps its own (--bar-lead-narrow) */

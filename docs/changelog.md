@@ -1,5 +1,18 @@
 # Dial Tool — changelog
 
+## beta 4.91.11 (web version) · 23 Oct 2026
+
+Show mode set back to the Show Case where it had drifted (Okay, 23 Oct 2026, 01:23, iPad screenshots):
+- **See-through column**: the canvas runs on under the column, so the backdrop and the watch show through its 85 %; the watch is centred in the part left of it (`size()` measures to the column's edge, and follows it frame by frame while it slides).
+- **One finger or the pointer moves the sun** anywhere on the canvas: its direction from the middle is where the light comes from, nearer the middle higher (85° to 10°); two fingers zoom and move. The Light tab says so under Sun.
+- **The title line** is the Show Case's: Dial Tool **Show Case**, the version, Help and the round swatch — no Gallery, no unit — at its half height.
+- **Undo · redo · Versions** back at the canvas's top left; **Guides and Shadows** gone from show mode (the dial side's: "another realm"); the eye and the iris switch stand clear of the column.
+- **The chosen tab's sign** in the column's colour, as the dial side's is in its paper.
+- **A number's slider** on its own line under its name and box, the row's whole width (they were too short in the narrow column).
+- A new view, case, strap or size fits the watch again when it was fitted (Whole watch drew at the Detail fit).
+- **10:10 left the timeline** in both modes ("10:10 was a good joke while it lasted"): the step, its thick line on the ruler and its rules.
+- Checked: `npm run small` (458 checks; new: the timeline's twelve hours; show mode's canvas, title, buttons and the sun by drag).
+
 ## beta 4.91.10 (web version) · 22 Oct 2026
 
 - **The Show Case page republished** at /show-case/ as beta 1.0.20 (Okay: "update the show case site with the new stuff"): built from `dev`'s `watch.js` — the shadow rule, the buckle, the strap's ends, stitches and holes.

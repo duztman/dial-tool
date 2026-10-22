@@ -1070,10 +1070,9 @@ await page.click("#hand-tab-0");
   check(Math.abs(l.line[0] - l.tabs[0]) < 0.6 && Math.abs(l.line[1] - l.tabs[1]) < 0.6 && l.border === "rgba(0, 0, 0, 0)", `the line under All hands runs where the tabs run (${l.line.join("–")} · ${l.tabs.join("–")})`);
 }
 await shot("4g-hand-tabs");
-{ // 10:10 stands on its own thick line, its middle bottom on the line's top (Okay, 15 Oct 2026, 00:51; over the bar, clear of the ruler, before)
-  const p = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), pill = r(".steps12 .special"), line = r(".ruler .pose");
-    return [Math.round((line.top - pill.bottom) * 10) / 10, Math.round((pill.left + pill.width / 2 - (line.left + line.width / 2)) * 10) / 10, getComputedStyle(document.querySelector(".ruler .pose")).strokeWidth, document.elementFromPoint(pill.left + pill.width / 2, pill.top + pill.height / 2).textContent]; });
-  check(Math.abs(p[0]) <= 0.5 && Math.abs(p[1]) <= 1 && p[2] === "3px" && p[3] === "10:10", `10:10 sits on its thick line (gap ${p[0]}, off its middle ${p[1]}, line ${p[2]} wide), and can be pressed there`);
+{ // the timeline has the twelve hours and nothing else (Okay, 23 Oct 2026: "10:10 was a good joke while it lasted. Let's remove it from the timeline")
+  const p = await page.evaluate(() => [document.querySelectorAll(".steps12 button").length, document.querySelectorAll(".steps12 .special, .ruler .pose").length]);
+  check(p[0] === 12 && p[1] === 0, `the day's steps are the twelve hours (${p[0]}); no 10:10, no line of its own`);
 }
 // Windows: four cards, 12 · 3 · 6 · 9, are the tabs; Show this window is on the heading line, also when the pane is folded
 await tab("Date");
@@ -1599,10 +1598,10 @@ await at_speed(60);
 const near60 = await S("t.speed");
 check(near60 > 55 && near60 < 70 && near60 !== 60 && /^\d+×$/.test(await page.getAttribute("#speed", "aria-valuetext")), `the speed slider is free between its ends (${near60.toFixed(1)}× near 60), and tells a screen reader (no words in the box since 15 Oct 2026)`);
 const ends = await page.$$eval(".humpname.end", (n) => n.map((e) => e.textContent + " " + getComputedStyle(e).color).join(" · "));
-const pill = await page.evaluate(() => { const c = (q) => getComputedStyle(document.querySelector(q)), r = c(".humpname.rider"), ten = c(".steps12 button.special"); return [r.backgroundColor === ten.backgroundColor, r.color === ten.color, r.fontWeight === ten.fontWeight, r.fontSize === ten.fontSize, r.height === ten.height, r.borderRadius === ten.borderRadius].every(Boolean); });
+const pill = await page.evaluate(() => { const r = getComputedStyle(document.querySelector(".humpname.rider")); return r.backgroundColor !== "rgba(0, 0, 0, 0)" && parseFloat(r.borderRadius) > 0; });
 await page.waitForTimeout(1000);
 check(ends === "0.1X rgb(115, 115, 115) · 720X rgb(115, 115, 115)" && pill && await page.$eval(".humpname.rider", (e) => e.textContent + " " + getComputedStyle(e).color) === Math.round(near60) + "X rgb(255, 255, 255)",
-  `its ends are named in the bar's grey (${ends}); while it is moved the speed over the thumb is a pill exactly like 10:10's (#283), then white again`);
+  `its ends are named in the bar's grey (${ends}); while it is moved the speed over the thumb is a pill (#283), then white again`);
 await at_speed(60);
 await page.click("#play");
 await page.waitForTimeout(600);
@@ -1628,11 +1627,9 @@ await page.click("#zoom-in");
 check(near(await S("t.z") / z1, 1.4, 0.01), "the + in the bar zooms in by 1.4");
 await page.click("#zoom-out");
 await page.click("#fit");
-// the day slider's steps: a click on a step, or on the slider near one, goes exactly there; 10:10 is one of them
+// the day slider's steps: a click on a step, or on the slider near one, goes exactly there
 await page.click('.steps12 button:has(.ink:text-is("3"))');
 check(await S("S.t === 3 * 3600") && await page.inputValue("#time") === "3:00:00", "the step 3 under the day slider: three o'clock sharp");
-await page.click(".steps12 button.special");
-check(await S("S.t === 10 * 3600 + 600") && await page.$eval(".steps12 button.special", (e) => e.classList.contains("on")), "the 10:10 step: ten past ten");
 const track = await page.$eval("#time-slider", (e) => { const r = e.getBoundingClientRect(); return [r.left, r.top + r.height / 2, r.width]; });
 const cut = 60 * +(await page.getAttribute(".ruler", "data-minutes"));
 check(cut < 3600 && await page.$$eval(".ruler path", (p) => p.length) >= 4, `the ruler cuts each hour (every ${cut / 60} minutes at this width)`);
@@ -2258,6 +2255,16 @@ await shot("10-bar");
   const column = await page.evaluate(() => { const t = window.dial_tool, panel = document.querySelector(".panel"), sw = document.querySelector("#grey-panel"), before = getComputedStyle(panel).backgroundColor;
     sw.click(); const grey = getComputedStyle(panel).backgroundColor, pressed = sw.getAttribute("aria-pressed"); sw.click();
     return { w: Math.round(panel.getBoundingClientRect().width), swatch: sw.checkVisibility(), before, grey, pressed, back: getComputedStyle(panel).backgroundColor === before, key: t.S.ui_grey_panel }; });
+  const was_sun = await page.evaluate(() => [window.dial_tool.S.sh_from, window.dial_tool.S.sh_rise]);
+  const look = await page.evaluate(() => { const t = window.dial_tool, r = (q) => document.querySelector(q), [w, h] = t.size(), svg = t.svg.getBoundingClientRect(), panel = r(".panel").getBoundingClientRect();
+    return { shown: ["#undo", "#versions"].every((q) => r(q).checkVisibility() && r(q).getBoundingClientRect().left < 100), gone: ["#guides", "#guides-more", "#shadows", "#shadows-more"].every((q) => !r(q).checkVisibility()),
+      title: getComputedStyle(r(".title h1"), "::after").content, header: ["#to-gallery", "#unit"].every((q) => !r(q).checkVisibility()), under: svg.right > panel.left + 100, w: Math.round(w), left: Math.round(panel.left - svg.left),
+      sign: getComputedStyle(r(".tabs button.on .sign")).color }; });
+  await page.mouse.move(200, 200); await page.mouse.down(); await page.mouse.move(180, 180, { steps: 3 }); await page.mouse.up(); await frame();
+  const sun = await page.evaluate(() => [window.dial_tool.S.sh_from, window.dial_tool.S.sh_rise]);
+  await page.evaluate((v) => { const t = window.dial_tool; t.set_value("global", "sh_from", v[0]); t.set_value("global", "sh_rise", v[1]); }, was_sun);
+  check(look.shown && look.gone && look.title === '" Show Case"' && look.header && look.under && look.w === look.left && look.sign !== "rgb(0, 0, 0)" && (sun[0] !== was_sun[0] || sun[1] !== was_sun[1]) && sun[0] > 270 && sun[0] < 360,
+    `show mode, as the Show Case had it (Okay, 23 Oct 2026): undo · redo · Versions at the canvas's top left; no Guides, no Shadows; the title Dial Tool Show Case with Help and the swatch alone; the canvas runs on under the see-through column, the watch centred in the ${look.w} px left of it; the chosen tab's sign in the column's colour (${look.sign}); a drag on the canvas moves the sun (${was_sun} → ${sun})`);
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "bezel", 0); t.set_value("global", "strap", 1); });
   await page.click("#iris-box"); await page.waitForTimeout(1800);
   const off = await q();

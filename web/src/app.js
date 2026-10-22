@@ -925,8 +925,8 @@ const sheet_says = (S) => {
   if (!n) return `A ${S.dial_d} mm dial doesn't fit on ${L.paper[0]}.`;
   return `${n} ${n === 1 ? "copy" : "copies"} on ${L.paper[0]}${L.staggered ? ", rows staggered" : ""}${+S.out_copies > 0 && +S.out_copies > L.fits ? ` — ${L.fits} fit` : +S.out_copies > 0 ? "" : " — as many as fit (Copies 0)"}.`;
 };
-// the day slider's steps: every hour, and 10:10 — hands spread like a smile, the pose watches are photographed in
-const DAY_STEPS = [...Array.from({ length: 12 }, (_, h) => [h * 3600, String(h || 12), false]), [10 * 3600 + 10 * 60, "10:10", true]].sort((a, b) => a[0] - b[0]);
+// the day slider's steps: every hour (10:10 left the timeline: Okay, 23 Oct 2026, "10:10 was a good joke while it lasted")
+const DAY_STEPS = Array.from({ length: 12 }, (_, h) => [h * 3600, String(h || 12)]);
 // how fast time runs: one slider from half speed to 720×, on a log scale, with humps on its track at 1× (larger),
 // 6×, 60× and 720× (Okay, 14 Oct 2026, 23:26: "a regular sliding track with humps on it on 1 (larger), 6 then
 // logarithmicly up to 720"; "slightly slower is acceptable": it starts at 0.5×). Near a hump the slider snaps onto
@@ -974,6 +974,7 @@ ROWS.Light = [
   hdr("Sun", { folded: false }),
   num("sh_from", "From", 0, 359, 1, { whole: true }),      // the one sun: the dial's shadow keys light the watch too (Okay, 22 Oct 2026)
   num("sh_rise", "Height", 5, 85, 1, { whole: true }),
+  info("One finger or the pointer moves the sun: its direction is where the light comes from; nearer the middle, higher. Two fingers zoom and move the drawing; on a trackpad, pinch and scroll.", {}),      // the Show Case's words
   hdr("Shadows", { folded: false }),
   num("sh_dark", "Darkness %", 0, 100, 1, { whole: true }),
   chk("sh_blur", "Soft shadows"),
@@ -1462,7 +1463,7 @@ class DialTool {
     // anyway"; build list #190)
     this.speed = 1;
     this.speed_slider = el("input", { id: "speed", type: "range", min: 0, max: 1000, step: 1, ariaLabel: "How fast time runs", title: "How fast time runs: 0.1× to 720×" });
-    // while the speed is being changed its name over the thumb looks like the 10:10 pill (#283): a press on the track
+    // while the speed is being changed its name over the thumb is a pill (#283): a press on the track
     // until it is let go; a key, for a moment
     let sliding = 0, pressing = false;
     const slide = (on) => { clearTimeout(sliding); this.speed_name.classList.toggle("sliding", on); if (on && !pressing) sliding = setTimeout(() => slide(false), 900); };
@@ -1485,10 +1486,10 @@ class DialTool {
     this.speeds = el("span", { className: "speeds" }, el("span", { className: "speedtrack" }, humps, this.speed_slider));
     const view = (id, title, inside, act) => { const b = el("button", { type: "button", className: "icon", id, title, ariaLabel: title, onclick: act }); b.innerHTML = icon(inside); return b; };
     const middle = () => [this.svg.clientWidth / 2, this.svg.clientHeight / 2];
-    // the day: the slider, and under it the steps a click snaps to — the twelve hours and 10:10, the pose watches are shown in
+    // the day: the slider, and under it the steps a click snaps to — the twelve hours
     const steps = el("div", { className: "steps12" });
-    for (const [t, text, special] of DAY_STEPS) {
-      const b = el("button", { type: "button", className: special ? "special" : "", textContent: text, title: special ? "10:10, the classic pose" : `${text} o’clock`, onclick: () => this.set_time(t + this.half()) });
+    for (const [t, text] of DAY_STEPS) {
+      const b = el("button", { type: "button", textContent: text, title: `${text} o’clock`, onclick: () => this.set_time(t + this.half()) });
       b.style.setProperty("--at", t / 43200);
       b.dataset.t = t;
       steps.append(b);
@@ -1796,6 +1797,7 @@ class DialTool {
     setTimeout(() => { if (this.sliding) { this.sliding = false; this.render(); } }, 1200);      // no slide (less motion asked, nothing to move): don't wait for it
     app.addEventListener("transitionend", this.view_end);
     app.classList.toggle("away", on);
+    if (app.classList.contains("showing")) { const follow = () => { if (!this.sliding) return; this.fit(); requestAnimationFrame(follow); }; requestAnimationFrame(follow); }      // show mode: the canvas keeps its size while the column slides over it, so the watch is fitted frame by frame
   }
 
   // ── units ────────────────────────────────────────────────
@@ -5763,7 +5765,12 @@ class DialTool {
 
   // ── the preview: zoom, pan, click ────────────────────────
 
-  size() { const r = this.svg.getBoundingClientRect(); return [r.width, r.height]; }
+  size() {
+    const r = this.svg.getBoundingClientRect();
+    if (!$("#app").classList.contains("showing")) return [r.width, r.height];
+    const p = $(".panel").getBoundingClientRect();      // show mode: the canvas runs on under the column; what counts is the part left of it, measured where the column stands now, so the watch follows it while it slides
+    return [clamp(p.left - r.left, 0, r.width), r.height];
+  }
   fit_zoom() { const [w, h] = this.size(); return this.S.ui_show ? SHOW.fit_zoom(this, w, h) : Math.min(w, h) / G.page_mm(this.S); }      // show mode fits the case (Okay, 22 Oct 2026)      // the dial, never its case (4.69; Okay, 22:35: "Fit and previews care about the dial still, the bezel and strap secondary"; 4.66–4.68 made room for the case)
 
   /** put the dial at c, scaled to z; mirrored for toner transfer. y grows upward inside. */
@@ -5812,6 +5819,17 @@ class DialTool {
     return [(p[0] - this.c[0]) / this.z * flip, -(p[1] - this.c[1]) / this.z];
   }
 
+  /** show mode's sun (the Show Case's, 21 Oct 2026): one finger or the pointer anywhere on the canvas — its direction from
+   *  the middle is where the light comes from, and the nearer the middle, the higher the sun (85° there, 10° at 0.42 of
+   *  the canvas's shorter side). The angle on screen is the watch's L; the dial's From is L + 90 (R2, clock angles) */
+  sun_at(p) {
+    const [w, h] = this.size(), dx = p[0] - w / 2, dy = p[1] - h / 2, reach = 0.42 * Math.min(w, h), TOP = 85, LOW = 10;
+    if (reach <= 0) return;
+    const L = Math.atan2(dy, dx) * 180 / Math.PI, rise = clamp(TOP - (TOP - LOW) * Math.hypot(dx, dy) / reach, LOW, TOP);
+    this.set_value("global", "sh_from", Math.round(((L + 90) % 360 + 360) % 360));
+    this.set_value("global", "sh_rise", Math.round(rise));
+  }
+
   preview_events() {
     const at = (e) => { const r = this.svg.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
     this.svg.addEventListener("wheel", (e) => {
@@ -5832,7 +5850,7 @@ class DialTool {
       else if (pts.size >= 2) down = { ...pair(), moved: true };      // a pinch is never a click
       else down = null;
     };
-    this.svg.addEventListener("pointerdown", (e) => { pts.set(e.pointerId, at(e)); this.svg.setPointerCapture(e.pointerId); if (pts.size === 1) down = null; restart(); });
+    this.svg.addEventListener("pointerdown", (e) => { pts.set(e.pointerId, at(e)); this.svg.setPointerCapture(e.pointerId); if (pts.size === 1) down = null; restart(); if (pts.size === 1 && this.S.ui_show) { down.moved = true; this.sun_at(at(e)); } });      // show mode: one finger or the pointer is the sun, never a click
     this.svg.addEventListener("pointermove", (e) => {
       if (!pts.has(e.pointerId)) return e.pointerType === "mouse" ? this.hover(at(e), document.elementFromPoint(e.clientX, e.clientY)) : null;
       pts.set(e.pointerId, at(e));
@@ -5845,6 +5863,7 @@ class DialTool {
         return;
       }
       const p = at(e);
+      if (this.S.ui_show) return this.sun_at(p);
       if (Math.hypot(p[0] - down.p[0], p[1] - down.p[1]) > 4) down.moved = true;
       // a finger alone doesn't move the dial: two do, with the pinch (Okay, 18 Oct 2026, notes 2: "on ipad and all touch
       // screens, you need two fingers to move as well. One finger drag sometimes confusing as reported"). The mouse drags.
@@ -6015,8 +6034,7 @@ class DialTool {
     this.place_needle();
     this.ruler.setAttribute("viewBox", `0 0 ${W} ${H}`);
     this.ruler.dataset.minutes = minutes;
-    this.ruler.innerHTML = `<path class="line" d="M0 ${H / 2}H${W}"/>` + Object.entries(lines).map(([kind, d]) => `<path class="${kind}" d="${d}"/>`).join("")
-      + `<path class="pose" d="M${x(36600)} 1V${H - 1}"/>`;
+    this.ruler.innerHTML = `<path class="line" d="M0 ${H / 2}H${W}"/>` + Object.entries(lines).map(([kind, d]) => `<path class="${kind}" d="${d}"/>`).join("");
   }
 
   /** how fast time runs while playing: 1 = a real second each second. Part of the window, not of the dial. */

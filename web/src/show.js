@@ -58,6 +58,9 @@ export function draw(tool, items) {
     const o = options(S, shapes, S.ui_effects), svg = WATCH.draw(o);
     g.innerHTML = `<g transform="scale(1 -1)">${svg.slice(svg.indexOf("\n") + 1, svg.lastIndexOf("</svg>"))}</g>`;      // the page's own box is not used: the view is the tool's zoom
     tool.watch_box = /viewBox="([^"]+)"/.exec(svg)[1].split(" ").map(Number);
+    const frame_key = [S.w_view, S.bezel, S.strap, S.dial_d].join();      // a new view, case, strap or size: fitted again, if the view was fitted (the light never moves it)
+    if (frame_key !== tool.watch_frame && tool.fitted) tool.fit();
+    tool.watch_frame = frame_key;
   }
   const A = angles_of(items), L = (S.sh_from - 90) * Math.PI / 180;
   for (const n of g.querySelectorAll("[data-h]")) n.setAttribute("transform", `rotate(${-A[n.dataset.h]})`);

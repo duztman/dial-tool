@@ -144,7 +144,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Logo** | Planned (build list #72): an SVG placed on the dial with the mouse; a ring in the list. Not the *background* (a picture on the plate, not built). |
 | **Toggle column** | Narrow far-left panel column holding only the panes' eyes. A ring's eye is in its row. |
 | **Margin** | The panel's side space, 24, left and right; lines and eyes align to it. |
-| **Day slider · step** | Bottom-bar slider over twelve hours; steps at each hour and 10:10. **AM · PM** (the time's small window) flips the half. |
+| **Day slider · step** | Bottom-bar slider over twelve hours; steps at each hour. **AM · PM** (the time's small window) flips the half. |
 | **Eye** | Toggle-column sign: open = showing, closed with lashes = put away. On a ring row it only shows or hides the ring, never selects it (#183). |
 | **Rename box** | Text-cursor box beside the selected ring's name (hidden when the row is full); it or the name renames the ring. |
 | **Picture tile** | One choice as a small drawing with its name (ring kind, mark shape, hand shape, window content…). |

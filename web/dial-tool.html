@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.91.10 · built 2026-10-22 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.91.11 · built 2026-10-22 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -92,6 +92,7 @@
        columns at 42 px and its side margins at 16 (21 Oct 2026, 23:38: "the column narrower, for more canvas") */
     --show-col: 42px; --show-margin: 16px;
     --show-panel-w: calc(2 * var(--show-margin) + var(--lead) + 6 * var(--show-col) + 5 * var(--gap) + var(--hair));
+    --show-header: calc(var(--header) / 2 + 10px);      /* show mode's title line: half the panel's top, then 10px more (Okay, 21 Oct 2026, 03:35, 03:40) */
     --head: 40px;                                  /* a pane's heading */
     --header: calc(var(--canvas-inset-wide) + var(--control-large) - var(--hair));      /* the panel's top: title and Guides. Its line (the tabs' top hairline) is the canvas's top buttons' bottom line, the buttons as far from the canvas's top as from its left (Okay, 21 Oct 2026, 23:29: "Align bottom line of top button row on the same line as title's hr line first. Then push from top to adjust for left gap"); the title centred in it. A rule for the Show Case too, when it comes */
     --bar-height: 62px; --bar-control: 30px;      /* the bar's height (Okay, 14 Oct 2026, 23:19: "1/5 higher" than the 52 it was); a phone keeps its own (--bar-lead-narrow) */
@@ -451,9 +452,13 @@
   #app.showing .panel::-webkit-scrollbar { display: none; }
   #app.showing .form::-webkit-scrollbar { display: none; }
   #app.showing .mast { translate: 0; }
+  #app.showing .panel > header { height: var(--show-header); }      /* the Show Case's title line: Dial Tool Show Case, its version, Help and the round swatch — nothing else (Okay, 23 Oct 2026) */
+  #app.showing .title h1 { white-space: nowrap; }
+  #app.showing .title h1::after { content: " Show Case"; font-weight: 400; }      /* Dial Tool bold, Show Case not (Okay, 21 Oct 2026, 01:23) */
+  #app.showing .panel > header :is(.gallerypill, .unit) { display: none; }
   .greyswatch { display: none; }      /* show mode's round swatch (grey_swatch() in app.js): the panel's other look, in greys or in the backdrop's colour; dial side: none (R16) */
   #app.showing .greyswatch { display: block; flex: none; margin-left: auto; width: var(--bare-dot); height: var(--bare-dot); padding: 0; border: var(--hair) solid var(--rule); border-radius: 50%; background: var(--swatch); cursor: pointer; }
-  #app.showing main { grid-area: 1 / 1; }
+  #app.showing main { grid-area: 1 / 1 / 2 / 3; }      /* the canvas runs on under the column, so the backdrop and the watch show through it (Okay, 23 Oct 2026: "Transparency is gone, bring that back"); the drawing is centred in the part left of it (size() in app.js) */
   #app.showing .panel > :is(header, .tabs, .pinned) { background: var(--column-top, var(--paper)); }      /* the top — title, tabs and the pinned lines — a tenth lighter than the column, as the paper stands over the scrolling grey (Okay, 21 Oct 2026, 01:43) */      /* its translate makes it a stacking context, so the bio's z-index counts only inside it: the mast itself stands over the panel's rows, or a later stepper draws over the open bio (Okay, 15 Oct 2026, 10:45) */
   /* the mast on the backdrop (the dial alone): black or white like the switches, the version a little quieter. Its
      colour follows the slide: from paper's to the backdrop's while the panel's edge sweeps over it (--away 0.55 to
@@ -516,6 +521,7 @@
   .tabs button.on { color: var(--ink); font-weight: 600; box-shadow: inset 0 calc(-1 * var(--triple)) 0 var(--ink); }
   .tabs button.on .ring { fill: var(--ink); stroke: var(--ink); }
   .tabs button.on .sign { color: var(--paper); }
+  #app.showing .tabs button.on .sign { color: var(--column-solid); }      /* the chosen tab's sign in the column's colour, as the dial side's is in its paper (Okay, 23 Oct 2026: "They were bg color") */
   .tabs button.on .hub { fill: currentColor; }      /* Dial chosen: its centre hole a dot of paper (Okay's drawing, 14 Oct 2026) */
 
   .pinned, .form { padding: 0 var(--margin); }
@@ -750,6 +756,13 @@
   .row.haslink > .linkpill.on { border-color: var(--ink); background: var(--ink); color: var(--white); }
   /* a window's colours on one line (#266, 4.46.1): a quiet word, then its pill; a third (Picture) only for am · pm and moon */
 }
+
+  /* show mode: a number's slider on a line of its own under its name and box, as wide as the row — the column is narrow,
+     and in the row the slider was left too short (Okay, 23 Oct 2026: "Why are these short?"; the Show Case's rule,
+     21 Oct 2026, 23:46: the pair reads as one row, no line between) */
+  #app.showing .body .row.num:not(.side) { grid-template-rows: var(--line) var(--line); }
+  #app.showing .body .row.num:not(.side) > :not(input[type="range"]) { grid-row: 1; }
+  #app.showing .body .row.num:not(.side) > input[type="range"] { grid-column: 1 / -1; grid-row: 2; }
 
 /* a hand's pane: its detail box, the line of shapes, side rows with their number box */
 @layer panel {
@@ -1570,7 +1583,10 @@
   .tip svg .c { fill: var(--ink); }
   /* ── show mode (the iris switch; build list #509, 22 Oct 2026) ── the panel moves to the right (4a-panel.css); on the
      canvas, what the show tabs hold is off (R16) */
-  #app.showing :is(.guidesbox, .xraybox, .shadowsbox, .casebox, .tinyopen) { display: none; }      /* show mode: what the show tabs hold, and the guides, are off the canvas (R16); the case is a row on the Watch tab */
+  #app.showing :is(.guides, .shadows, .xraybox, .casebox, .tinyopen) { display: none; }      /* show mode: Guides and Shadows are the dial side's (Okay, 23 Oct 2026: "Guides? Completely nonexistent here. Remove them", "The shadows … another realm"); the watch's light is on the Light tab */
+  #app.showing main { --covered: calc(var(--panel-w) * (1 - var(--away))); }      /* how much of the canvas the column lies over */
+  #app.showing :is(.corner, .eyes) { right: calc(var(--canvas-inset) + var(--covered)); }
+  #app.showing .undos { left: var(--canvas-inset); }      /* undo · redo · Versions at the canvas's top left (Okay, 23 Oct 2026: "bring them back"); the dial side's stop short of the title, which here is on the right */      /* show mode: what the show tabs hold, and the guides, are off the canvas (R16); the case is a row on the Watch tab */
   /* the iris switch: the iris in a box; pressed, its words slide out to its left (ACTIVATE SHOWCASE), which alone go
      to show mode (04:59: "we need affordance"); in show mode an X, the way out */
   .irisbox { padding: 0; overflow: hidden; border-radius: var(--round-switch); }
@@ -1642,7 +1658,7 @@
   .bar .knob { position: absolute; top: 50%; width: var(--speed-ball); height: var(--speed-ball); translate: -50% -50%; border-radius: 50%; background: radial-gradient(circle, transparent 0 var(--thumb-eye), var(--black) var(--thumb-eye-edge)); }      /* the black line's two ends, a knob each (Okay: "time speed line in black, has a beginning and end knob") */      /* each end a black ring with an empty eye (Okay, 15 Oct 2026, 01:59: "empty the eye holes") */
   .bar .humpname.rider { color: var(--white); }      /* the one white thing on the bar: how fast now (Okay, 15 Oct 2026, 01:59); it covers an end's name when the thumb is there */
   .bar .humpname.rider { z-index: 1; padding: 0 var(--u1); background: var(--bar); }      /* on the bar's own ground, so an end's name under it doesn't show through */
-  /* while the speed is being changed, its name is a pill exactly like 10:10's (#283; .steps12 button.special) */
+  /* while the speed is being changed, its name over the thumb is a pill (#283) */
   .bar .humpname.rider.sliding { height: var(--names); padding: 0 var(--unit); border-radius: calc(var(--names) / 2); background: var(--bar-light); color: var(--bar); opacity: 1;
     font-family: var(--mono); font-size: var(--t-xs); font-weight: 600; line-height: var(--names); letter-spacing: var(--track-50); }
   .bar .knob.first { left: 0; }      /* where the thumb's middle stops at each end: at the end the thumb sits on its knob (Okay, 15 Oct 2026, 01:03) */
@@ -1725,7 +1741,6 @@
   .ruler .hour { opacity: 0.85; }
   .ruler .half { opacity: 0.6; }
   .ruler .small { opacity: 0.38; }
-  .ruler .pose { stroke-width: var(--triple); }      /* 10:10 has a thick line of its own, the 10:10 step stands on it (Okay, 15 Oct 2026, 00:51); hidden before */
   .bar .day { touch-action: none; cursor: ew-resize; }      /* the strip reads presses itself (app.js day_strip): no pan, no swipe */
   .bar .day input[type="range"] { grid-area: 1 / 1; height: var(--ruler); pointer-events: none; }      /* the keyboard's and a screen reader's way in; presses go to the strip */
   /* the needle (Okay, 18 Oct 2026, notes 2: "The moving needle is 1px wide and red, starts from the bottom of the screen
@@ -1742,10 +1757,6 @@
   .steps12 button { position: absolute; left: calc(var(--at) * 100%); top: 0; transform: translateX(-50%); min-width: var(--names); height: var(--names); padding: 0 var(--u1); font-size: var(--t-xs); line-height: var(--names); color: var(--bar-light); }
   .steps12 button:hover { text-decoration: underline; }
   .steps12 button.on { font-weight: 700; }
-  /* 10:10 stands on the preview, over the bar and clear of the ruler, above its place in the day */
-  .steps12 button.special { top: auto; bottom: calc(var(--names) + var(--ruler) - var(--hair));      /* its middle bottom on the top of 10:10's thick line (the line starts a hair inside the ruler) — Okay, 15 Oct 2026, 00:51: "1010 gets stuck to its thick line from middle bottom" */
-    z-index: 1; padding: 0 var(--unit); border-radius: calc(var(--names) / 2); background: var(--bar-light); color: var(--bar); font-weight: 600; }
-  .steps12 button.special:hover { text-decoration: underline; }
 }
 
 @layer narrow {
@@ -1782,8 +1793,7 @@
     .bar .speedtrack input[type="range"]::-moz-range-thumb { background: var(--bar-light); box-shadow: none; }
     .bar .zooms > .icon { display: none; }          /* a phone pinches: FIT stays; − + are in the magnifier's popup (#445) */
     .bar .zooms > .fit { border-left-width: var(--hair); }      /* FIT alone: its own left line (it shares − +'s elsewhere) */
-    .steps12 button:nth-child(odd):not(.special) { display: none; }      /* every other hour: 1 3 5 … wait for room */
-    .steps12 button.special { bottom: auto; top: calc(-1 * var(--hair)); }      /* the bar is on top here and the preview's top corners are taken (undo, Guides): 10:10 stays among the hours */
+    .steps12 button:nth-child(odd) { display: none; }      /* every other hour: 1 3 5 … wait for room */
     main { grid-row: 2; }
     .panel { grid-row: 3; grid-column: 1; display: block; overflow-y: auto; -webkit-overflow-scrolling: touch; border-right: 0; border-top: var(--hair) solid var(--rule); }
     .form { overflow: visible; }
@@ -7115,7 +7125,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.91.10";
+var VERSION = "beta 4.91.11";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -10947,6 +10957,9 @@ function draw2(tool2, items) {
     const o = options(S, shapes, S.ui_effects), svg = draw(o);
     g.innerHTML = `<g transform="scale(1 -1)">${svg.slice(svg.indexOf("\n") + 1, svg.lastIndexOf("</svg>"))}</g>`;
     tool2.watch_box = /viewBox="([^"]+)"/.exec(svg)[1].split(" ").map(Number);
+    const frame_key = [S.w_view, S.bezel, S.strap, S.dial_d].join();
+    if (frame_key !== tool2.watch_frame && tool2.fitted) tool2.fit();
+    tool2.watch_frame = frame_key;
   }
   const A = angles_of(items), L = (S.sh_from - 90) * Math.PI / 180;
   for (const n of g.querySelectorAll("[data-h]")) n.setAttribute("transform", `rotate(${-A[n.dataset.h]})`);
@@ -15793,7 +15806,7 @@ var sheet_says = (S) => {
   if (!n) return `A ${S.dial_d} mm dial doesn't fit on ${L.paper[0]}.`;
   return `${n} ${n === 1 ? "copy" : "copies"} on ${L.paper[0]}${L.staggered ? ", rows staggered" : ""}${+S.out_copies > 0 && +S.out_copies > L.fits ? ` \u2014 ${L.fits} fit` : +S.out_copies > 0 ? "" : " \u2014 as many as fit (Copies 0)"}.`;
 };
-var DAY_STEPS = [...Array.from({ length: 12 }, (_, h) => [h * 3600, String(h || 12), false]), [10 * 3600 + 10 * 60, "10:10", true]].sort((a, b) => a[0] - b[0]);
+var DAY_STEPS = Array.from({ length: 12 }, (_, h) => [h * 3600, String(h || 12)]);
 var SPEED_SLOW = [0.1, 0.25, 0.5, 1];
 var SPEED_HI = 720;
 var speed_place = (k, split) => k < 1 ? split * SPEED_SLOW.reduce((best, x2, i2) => Math.abs(x2 - k) < Math.abs(SPEED_SLOW[best] - k) ? i2 : best, 0) / (SPEED_SLOW.length - 1) : split + (1 - split) * Math.log(k) / Math.log(SPEED_HI);
@@ -15835,6 +15848,8 @@ ROWS.Light = [
   num2("sh_from", "From", 0, 359, 1, { whole: true }),
   // the one sun: the dial's shadow keys light the watch too (Okay, 22 Oct 2026)
   num2("sh_rise", "Height", 5, 85, 1, { whole: true }),
+  info("One finger or the pointer moves the sun: its direction is where the light comes from; nearer the middle, higher. Two fingers zoom and move the drawing; on a trackpad, pinch and scroll.", {}),
+  // the Show Case's words
   hdr("Shadows", { folded: false }),
   num2("sh_dark", "Darkness %", 0, 100, 1, { whole: true }),
   chk("sh_blur", "Soft shadows"),
@@ -16414,8 +16429,8 @@ var DialTool = class _DialTool {
     };
     const middle = () => [this.svg.clientWidth / 2, this.svg.clientHeight / 2];
     const steps = el("div", { className: "steps12" });
-    for (const [t, text, special] of DAY_STEPS) {
-      const b = el("button", { type: "button", className: special ? "special" : "", textContent: text, title: special ? "10:10, the classic pose" : `${text} o\u2019clock`, onclick: () => this.set_time(t + this.half()) });
+    for (const [t, text] of DAY_STEPS) {
+      const b = el("button", { type: "button", textContent: text, title: `${text} o\u2019clock`, onclick: () => this.set_time(t + this.half()) });
       b.style.setProperty("--at", t / 43200);
       b.dataset.t = t;
       steps.append(b);
@@ -16819,6 +16834,14 @@ var DialTool = class _DialTool {
     }, 1200);
     app.addEventListener("transitionend", this.view_end);
     app.classList.toggle("away", on);
+    if (app.classList.contains("showing")) {
+      const follow = () => {
+        if (!this.sliding) return;
+        this.fit();
+        requestAnimationFrame(follow);
+      };
+      requestAnimationFrame(follow);
+    }
   }
   // ── units ────────────────────────────────────────────────
   //   Lengths are kept in mm (R1). The box at the panel's top right chooses the unit they are shown and typed in;
@@ -21649,7 +21672,9 @@ var DialTool = class _DialTool {
   // ── the preview: zoom, pan, click ────────────────────────
   size() {
     const r = this.svg.getBoundingClientRect();
-    return [r.width, r.height];
+    if (!$("#app").classList.contains("showing")) return [r.width, r.height];
+    const p = $(".panel").getBoundingClientRect();
+    return [clamp(p.left - r.left, 0, r.width), r.height];
   }
   fit_zoom() {
     const [w, h] = this.size();
@@ -21703,6 +21728,16 @@ var DialTool = class _DialTool {
     const flip = this.S.out_mirror ? -1 : 1;
     return [(p[0] - this.c[0]) / this.z * flip, -(p[1] - this.c[1]) / this.z];
   }
+  /** show mode's sun (the Show Case's, 21 Oct 2026): one finger or the pointer anywhere on the canvas — its direction from
+   *  the middle is where the light comes from, and the nearer the middle, the higher the sun (85° there, 10° at 0.42 of
+   *  the canvas's shorter side). The angle on screen is the watch's L; the dial's From is L + 90 (R2, clock angles) */
+  sun_at(p) {
+    const [w, h] = this.size(), dx = p[0] - w / 2, dy = p[1] - h / 2, reach = 0.42 * Math.min(w, h), TOP = 85, LOW = 10;
+    if (reach <= 0) return;
+    const L = Math.atan2(dy, dx) * 180 / Math.PI, rise = clamp(TOP - (TOP - LOW) * Math.hypot(dx, dy) / reach, LOW, TOP);
+    this.set_value("global", "sh_from", Math.round(((L + 90) % 360 + 360) % 360));
+    this.set_value("global", "sh_rise", Math.round(rise));
+  }
   preview_events() {
     const at = (e) => {
       const r = this.svg.getBoundingClientRect();
@@ -21735,6 +21770,10 @@ var DialTool = class _DialTool {
       this.svg.setPointerCapture(e.pointerId);
       if (pts.size === 1) down = null;
       restart();
+      if (pts.size === 1 && this.S.ui_show) {
+        down.moved = true;
+        this.sun_at(at(e));
+      }
     });
     this.svg.addEventListener("pointermove", (e) => {
       if (!pts.has(e.pointerId)) return e.pointerType === "mouse" ? this.hover(at(e), document.elementFromPoint(e.clientX, e.clientY)) : null;
@@ -21749,6 +21788,7 @@ var DialTool = class _DialTool {
         return;
       }
       const p = at(e);
+      if (this.S.ui_show) return this.sun_at(p);
       if (Math.hypot(p[0] - down.p[0], p[1] - down.p[1]) > 4) down.moved = true;
       if (e.pointerType === "touch") return;
       if (down.moved) {
@@ -21930,7 +21970,7 @@ var DialTool = class _DialTool {
     this.place_needle();
     this.ruler.setAttribute("viewBox", `0 0 ${W2} ${H2}`);
     this.ruler.dataset.minutes = minutes;
-    this.ruler.innerHTML = `<path class="line" d="M0 ${H2 / 2}H${W2}"/>` + Object.entries(lines).map(([kind, d]) => `<path class="${kind}" d="${d}"/>`).join("") + `<path class="pose" d="M${x2(36600)} 1V${H2 - 1}"/>`;
+    this.ruler.innerHTML = `<path class="line" d="M0 ${H2 / 2}H${W2}"/>` + Object.entries(lines).map(([kind, d]) => `<path class="${kind}" d="${d}"/>`).join("");
   }
   /** how fast time runs while playing: 1 = a real second each second. Part of the window, not of the dial. */
   set_speed(k) {

@@ -32,8 +32,7 @@
     .bar .speedtrack input[type="range"]::-moz-range-thumb { background: var(--bar-light); box-shadow: none; }
     .bar .zooms > .icon { display: none; }          /* a phone pinches: FIT stays; − + are in the magnifier's popup (#445) */
     .bar .zooms > .fit { border-left-width: var(--hair); }      /* FIT alone: its own left line (it shares − +'s elsewhere) */
-    .steps12 button:nth-child(odd):not(.special) { display: none; }      /* every other hour: 1 3 5 … wait for room */
-    .steps12 button.special { bottom: auto; top: calc(-1 * var(--hair)); }      /* the bar is on top here and the preview's top corners are taken (undo, Guides): 10:10 stays among the hours */
+    .steps12 button:nth-child(odd) { display: none; }      /* every other hour: 1 3 5 … wait for room */
     main { grid-row: 2; }
     .panel { grid-row: 3; grid-column: 1; display: block; overflow-y: auto; -webkit-overflow-scrolling: touch; border-right: 0; border-top: var(--hair) solid var(--rule); }
     .form { overflow: visible; }
