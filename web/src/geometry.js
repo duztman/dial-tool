@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.91.7";
+export const VERSION = "beta 4.91.8";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -188,8 +188,28 @@ export const DEFAULTS = {
   da_guide: -1,                                   // the first window's guide colour, as every window's `guide` (#271)
   da_follows: true, da_names: 0,                   // the first window's `follows` and `names`: following the bar's date to start (#413)
   wearos_name: "",                                 // a Wear OS watch face's name (4.67, farukahmet's PR #1); "" = Dial Tool. Its package's name follows from it
-  strap: 1, c_strap: [0.29, 0.2, 0.14, 1],      // the strap round the dial (watch.js): 0 and 1 a leather strap in c_strap, 2 a bracelet in the case's metal (on the diver alone; elsewhere leather). Never none (Okay, 22 Oct 2026)
+  strap: 1, c_strap: [0.29, 0.2, 0.14, 1],      // the strap round the dial (watch.js): 0 and 1 a leather strap in c_strap, 2 a bracelet in the case's metal (on the diver alone; elsewhere leather), 3 a NATO (w_nato). Never none (Okay, 22 Oct 2026)
   bezel: 0,                                        // the case round the dial (watch.js, CASE_OF_BEZEL): the list only grows (R9). 0 dress, 1 diver, 2 field, 3 dress, 4 field, 5 emre01 — 2 and 4 were the pilot and sport sketches, 0 "no case": no watch is caseless now (Okay, 22 Oct 2026). Preview only (R26)
+  // ── w_: the watch round the dial in show mode (22 Oct 2026, build list #509; R7). Kept in the settings file and the
+  // session, never in a link (R31: these keys are not in LINK_KEYS). Lists only grow at their end (R9).
+  w_style: 1,            // the paint: 0 Engineer, 1 Miyazaki (watch.js). The dial side draws Engineer, flat, whatever this says
+  w_lighting: 0,         // 0 dramatic (the spotlight pool and the flare), 1 flat
+  w_view: 0,             // what Fit shows in show mode: 0 the detail (lug tip to lug tip), 1 the whole watch, 2 the dial as the dial side
+  w_metal: 1,            // 0 steel, 1 gold, 2 aluminium, 3 bronze, 4 titanium, 5 black
+  c_metal: null,         // a case colour of your own; null = the metal's preset
+  w_nato: 1,             // the NATO's pattern: 0 bond, 1 regimental, 2 khaki, 3 black · grey, 4 olive, 5 grey (strap 3 = a NATO)
+  c_nato: null,          // its three stripe colours, your own; null = the pattern's
+  w_insert: 0,           // the diver's insert: 0 black, 1 blue, 2 green, 3 pepsi, 4 batman, 5 coke, 6 root beer, 7 sprite
+  c_insert: null,        // its two colours (top, bottom), your own; null = the preset
+  w_ink: 6,              // how far the printed ink stands proud of the plate, 0 (flat) to 10
+  w_flare_on: true, w_flare: 0,      // the flare on the case's edge; its kind: 0 an arc along the edge, 1 a dot
+  w_fl_size: 100, w_fl_tint: 45, w_fl_bright: 100,      // the flare: size %, how close to the case's colour %, brightness %
+  w_glass_fat: 100, w_glass_len: 100, w_glass_op: 100,      // the shine on the glass: width %, length %, opacity %
+  c_backdrop2: null,     // a second backdrop colour: a gradient at 45°, the backdrop's colour at the top left, this at the bottom right; null = one colour
+  out_watch_px: 3000,    // the watch's PNG or PDF, pixels along its longer side
+  ui_show: false,        // show mode on (the panel on the right with the show tabs, the watch round the dial)
+  ui_show_section: 5, ui_edit_section: 0,      // the tab last used in show mode and on the dial side (SECTIONS numbers, R9)
+  ui_effects: true,      // the costly layers in show mode — blurs, the flare, the glass shine, the silhouette outline (Okay: "turn off shenanigans")
   date: "",                                        // the day the dial shows, "2026-10-18", set in the bar (4.62; Okay, 18 Oct 2026: "Date best set at the bar … Default from system date"); "" = today, wherever the dial is opened
   da_jump: false,                                  // … and `jump` (#401, 4.90)
   da_look: 0, da_c2: null, da_c3: null, da_neighbours: true,      // … and `neighbours` (4.74)            // the first window's `look`, `c2`, `c3` (4.73)
@@ -261,7 +281,8 @@ export const GUIDE_MORE = ["line", "crosshair", "circle"];
 /** the case each `bezel` number draws (R9: numbers keep their meaning; a new kind is appended) and the number the menu writes for a kind */
 export const CASE_OF_BEZEL = ["dress", "diver", "field", "dress", "field", "emre01"];
 export const BEZEL_OF_CASE = { dress: 3, diver: 1, field: 2, emre01: 5 };
-export const NOT_GEOMETRY = ["t", "guides", "xray", "bezel", "strap", "c_strap", "wearos_name", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit"];
+export const NOT_GEOMETRY = ["t", "guides", "xray", "bezel", "strap", "c_strap", "wearos_name", "ui_section", "ui_ring", "ui_hand", "ui_window", "ui_preview", "ui_scale", "ui_unit",
+  "w_style", "w_lighting", "w_view", "w_metal", "c_metal", "w_nato", "c_nato", "w_insert", "c_insert", "w_ink", "w_flare_on", "w_flare", "w_fl_size", "w_fl_tint", "w_fl_bright", "w_glass_fat", "w_glass_len", "w_glass_op", "c_backdrop2", "out_watch_px", "ui_show", "ui_show_section", "ui_edit_section", "ui_effects"];
 /** a set of files (#171): its tick's key, its words, the kind export() writes, and what it writes it as — the colour
  *  files plain (not a mask, not mirrored), the masks as said; the print sheet as Print says. */
 export const FILE_SET = [
@@ -578,10 +599,12 @@ function differing(d, base) {
 }
 
 /** the settings, without everything that still has its starting value and without the window's own state. */
+/** the watch's own keys (show mode): kept in the file and the session, never in a link (Okay, 22 Oct 2026) */
+export const NOT_IN_LINK = (k) => k.startsWith("w_") || ["c_metal", "c_nato", "c_insert", "c_backdrop2", "out_watch_px"].includes(k);
 export function lean(S) {
   const out = {};
   for (const k in S) {
-    if (k.startsWith("ui_") || k === "version" || JSON.stringify(S[k]) === JSON.stringify(DEFAULTS[k])) continue;
+    if (k.startsWith("ui_") || k === "version" || NOT_IN_LINK(k) || JSON.stringify(S[k]) === JSON.stringify(DEFAULTS[k])) continue;
     if (k === "rings") out.rings = S.rings.map((r) => differing(r, RING_BASE));
     else if (k === "windows") out.windows = S.windows.map((w) => differing(w, WINDOW_BASE));
     else if (HANDS.some((h) => k === "ha_" + h)) out[k] = differing(S[k], HAND_BASE);

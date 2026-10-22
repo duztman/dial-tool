@@ -18,10 +18,7 @@
   .bar { font-family: var(--mono); letter-spacing: var(--track-50); }
   .bar :is(button, input) { letter-spacing: var(--track-50); }      /* the browser gives buttons and fields their own spacing: given the bar's */
   .bar .humpname { letter-spacing: 0; }      /* the pixel face keeps its own spacing */
-  /* the showcase: the bar's row closes at once and the bar is out of the window (Okay, 15 Oct 2026, 05:09: only the
-     dial travels); not faded: under it is the page's paper, which would show through */
   .bar { align-self: start; }
-  #app.show .bar { visibility: hidden; }      /* the 10:10 tag stands above the bar's top: it would peek in */
   /* under the panel: play · how fast · the time and its half of the day · NOW, a half-gap between each (Okay: "equalize
      all paddings red dot to now, then halve them"), from the first of the six columns to the last. Each box is as wide
      as its words and the same room on either side of them; how fast takes what is left ("slider can grow"). */

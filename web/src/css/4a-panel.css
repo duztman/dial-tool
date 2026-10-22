@@ -8,17 +8,23 @@
      and so stays where it was, is over the backdrop once the panel is gone */
   .sheetgrip { display: none; }      /* a phone's drawer gripper (8-narrow.css); a wider screen has no drawer */
   .panel { position: relative; z-index: 5; width: var(--panel-w); translate: calc(-1 * var(--panel-w) * var(--away)) 0; }
-  .mast { display: flex; align-items: center; translate: calc(var(--panel-w) * var(--away)) 0; z-index: 6; }      /* its translate makes it a stacking context, so the bio's z-index counts only inside it: the mast itself stands over the panel's rows, or a later stepper draws over the open bio (Okay, 15 Oct 2026, 10:45) */
+  .mast { display: flex; align-items: center; translate: calc(var(--panel-w) * var(--away)) 0; z-index: 6; }
+  /* show mode (#509; Okay, 22 Oct 2026: "left side slides out, right side slides in"): the same panel on the right, sliding
+     away to the right; its colours from the backdrop (the tokens set on it by show.js tint_panel, #505) */
+  #app.showing .panel { grid-area: 1 / 2; translate: calc(var(--panel-w) * var(--away)) 0; background: var(--column, var(--paper)); color: var(--ink);
+    --paper: var(--night); --scroll: transparent; --rule-light: var(--rule); --ground: var(--night-field); --row-rule: var(--uiblack, var(--rule)); --line-on-grey: var(--uiblack, var(--rule)); --line-on-paper: var(--uiblack, var(--rule));
+    --well: var(--night-field, var(--ground)); --inset: var(--night-field, var(--ground)); --surface: transparent; }      /* the tokens that are read at :root are set again here, so the tint reaches them */
+  #app.showing .form { --surface: transparent; --well: var(--night-field, var(--ground)); --inset: var(--night-field, var(--ground)); }
+  #app.showing .mast { translate: 0; }
+  #app.showing main { grid-area: 1 / 1; }
+  #app.showing .panel > :is(header, .tabs, .pinned) { background: var(--column-top, var(--paper)); }      /* its translate makes it a stacking context, so the bio's z-index counts only inside it: the mast itself stands over the panel's rows, or a later stepper draws over the open bio (Okay, 15 Oct 2026, 10:45) */
   /* the mast on the backdrop (the dial alone): black or white like the switches, the version a little quieter. Its
      colour follows the slide: from paper's to the backdrop's while the panel's edge sweeps over it (--away 0.55 to
      0.95), both ways, so it shows on whichever is under it; a backdrop changed while away turns it at once */
   #app { --mast-ink: var(--ink); }
   #app.dark { --mast-ink: var(--white); }
-  #app.show { --mast-ink: var(--white); }      /* the showcase's sky is dark whatever the backdrop */
   .mast :is(h1, .logo:not([aria-expanded="true"])) { color: color-mix(in srgb, var(--mast-ink) clamp(0%, (var(--away) - 0.55) * 250%, 100%), var(--ink)); }
   .mast .quiet { color: color-mix(in srgb, color-mix(in srgb, var(--mast-ink) 70%, transparent) clamp(0%, (var(--away) - 0.55) * 250%, 100%), var(--grey)); }
-  .mast .quiet { opacity: calc(1 - var(--show)); }      /* the showcase keeps the mark and "Dial Tool" only */
-  #app.show .mast { opacity: var(--mast-show); pointer-events: none; }      /* the showcase: fainter, and not pressable (Okay, 04:59) */
   .panel :is(.unit, .galleryway) { opacity: calc(1 - 3 * var(--away)); }      /* the unit box and the Gallery pill go first, before they slide under the version */
   /* Okay's mark in the first column, the title after it on the six columns (Okay, 15 Oct 2026, 02:42); a press opens the bio
      under it, a night part as wide as the panel's lines */

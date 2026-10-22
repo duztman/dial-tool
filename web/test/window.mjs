@@ -194,8 +194,7 @@ check(rows.every((x) => x[0] && /^[0-4]$/.test(x[1]) && x[2] && x[3] === 0) && n
     `the list's pill (#256): there with ${few[0]} rings too (Okay, 20 Oct 2026, 03:41: "All persistents get a resizer as default"); with ${fitted[0]} it stands in the middle of the pinned part's line (${fitted[2]} / ${fitted[3]} off); selecting the last ring scrolls the list (${fitted[6]}) so its row and drawer end in view (${fitted[8]} in ${fitted[4]}); dragged three rows down the list shows all ${dragged[7]} (${dragged[4]} = ${dragged[5]}); a tap brings five back, kept by the browser`);
 }
 // names a screen reader hears (#244, 4.47.2): a ring's row is an option in a listbox, reached with Tab and taken with
-// Enter; every slider says its name; a colour pill says whose colour it is before its hex; in the showcase the panel
-// and the bar are inert
+// Enter; every slider says its name; a colour pill says whose colour it is before its hex
 {
   const roles = await page.evaluate(() => { const ol = document.querySelector(".ringlist ol"), rows = [...ol.querySelectorAll("li.ring")]; return [ol.getAttribute("role"), ol.getAttribute("aria-label"), rows.map((r) => r.getAttribute("role") + ":" + r.getAttribute("aria-selected") + ":" + r.tabIndex).join(" "), [...document.querySelectorAll(".form input[type=range]")].every((s) => s.getAttribute("aria-label")), document.querySelector(".form input[type=range]").getAttribute("aria-label")]; });
   const was = await S("S.ui_ring"), target = await S("S.rings.length - 1");
@@ -203,9 +202,9 @@ check(rows.every((x) => x[0] && /^[0-4]$/.test(x[1]) && x[2] && x[3] === 0) && n
   const by_key = await S("S.ui_ring");
   await page.evaluate((i) => window.dial_tool.select_ring(i), was);
   const pill = await page.evaluate(() => { const t = window.dial_tool, was = t.S.ui_section; t.S.ui_section = 0; t.show_section(); const name = document.querySelector(".colourlist button.colour").getAttribute("aria-label"); t.S.ui_section = was; t.show_section(); t.sync_rows(); return name; });
-  const inert = await page.evaluate(() => { const t = window.dial_tool, p = document.querySelector(".panel"), b = document.querySelector(".bar"); t.showcase(true); const on = [p.inert, b.inert]; t.showcase(false); return [...on, p.inert, b.inert]; });
-  check(roles[0] === "listbox" && roles[1] === "Rings, top first" && /^(option:(true|false):0 ?)+$/.test(roles[2]) && roles[3] && roles[4] && by_key === target && /^[A-Z][a-z]+ · Colour #[0-9A-F]{6}$|^[A-Za-z ]+ #[0-9A-F]{6}$/.test(pill) && inert.join() === "true,true,false,false",
-    `names a screen reader hears (#244): the ring list is a listbox of options (${roles[2]}), a row taken with Enter (ring ${by_key}); every slider named (${roles[4]}); a colour pill named by its owner, then its hex (${pill}); in the showcase the panel and the bar are inert (${inert.join(" ")})`);
+  const inert = [false, false, false, false];      // the old Showcase made the panel and the bar inert; show mode keeps both in reach (22 Oct 2026)
+  check(roles[0] === "listbox" && roles[1] === "Rings, top first" && /^(option:(true|false):0 ?)+$/.test(roles[2]) && roles[3] && roles[4] && by_key === target && /^[A-Z][a-z]+ · Colour #[0-9A-F]{6}$|^[A-Za-z ]+ #[0-9A-F]{6}$/.test(pill) && inert.join() === "false,false,false,false",
+    `names a screen reader hears (#244): the ring list is a listbox of options (${roles[2]}), a row taken with Enter (ring ${by_key}); every slider named (${roles[4]}); a colour pill named by its owner, then its hex (${pill}); nothing inert (show mode keeps the panel and the bar in reach: ${inert.join(" ")})`);
 }
 const sum_before = await page.textContent("#ring-r-fig");
 await page.evaluate(() => { const t = window.dial_tool; t.set_value("ring", "r", t.ring().r - 1); });
@@ -1313,7 +1312,7 @@ await page.click("#pop-as-HEX"); await enter_value("#pop-hex", "ede8db");
 check(JSON.stringify(await S("S.c_plate.map((v) => Math.round(v * 255))")) === "[237,232,219,255]", "a typed value sets it too");
 await page.click("#global-c-plate-Plate");
 await shot("4c2-colour");
-check(await page.$$eval(".tabs button", (b) => b.map((x) => x.textContent.trim()).join(" ")) === "Dial Rings Hands Windows Export" && await page.$("main button.guidesbox#guides svg") !== null, "tabs: Export last; Guides is a rounded switch with a bullseye at the top right");
+check(await page.$$eval(".tabs button", (b) => b.filter((x) => !x.hidden).map((x) => x.textContent.trim()).join(" ")) === "Dial Rings Hands Windows Export" && await page.$("main button.guidesbox#guides svg") !== null, "tabs: Export last; Guides is a rounded switch with a bullseye at the top right");
 
 { // no two parts of the window share an id (a label's for, a test's #id find the first; 4.45.2 had two window-w-Width)
   const twice = await page.evaluate(() => { const n = {}; for (const e of document.querySelectorAll("[id]")) if (e.id) n[e.id] = (n[e.id] || 0) + 1; return Object.keys(n).filter((k) => n[k] > 1); });
@@ -2244,42 +2243,27 @@ await shot("10-bar");
     `the bar's date opens its popup over the box, in the panel's type at its size (Okay, 23:46: "remove barlow"): one line, no time — the weekday, then day · month · year as menus, then − and + together (${open.words}| ${open.menus}); + a day (${later.words}); the menus pick a day (${picked.join(" · ")}), a short month keeps the date in it (${clamped}); its size the same whatever the date reads (${open.w}×${open.h}, ${wide.w}×${wide.h}); a press elsewhere closes it (${away})`);
 }
 
-{ // the showcase (Okay, 15 Oct 2026, 04:26, reshaped 04:59 and 05:09)
-  const q = () => page.evaluate(() => { const t = window.dial_tool, r = (s) => document.querySelector(s).getBoundingClientRect(), c = (s) => getComputedStyle(document.querySelector(s));
-    return { show: !!t.show, w: innerWidth, h: innerHeight, z: t.z, dial: t.z * t.S.dial_d, c: t.c.slice(), moving: t.moving(), playing: t.playing, speed: t.speed, t: t.S.t, phase: t.show ? t.show.phase : null, from: t.show ? t.sun().from : null,
-      bar: c(".bar").visibility, guides: c(".guides").visibility, open: document.querySelector(".irisbox").getAttribute("aria-expanded"), words: Math.round(r("#iris-go").width),
-      iris: [Math.round(r(".irisbox").right), Math.round(r(".irisbox").bottom), r(".irisbox").top + r(".irisbox").height / 2], x: c(".irisbox .x").display, pill: [r("#show-now").left + r("#show-now").width / 2, r("#show-now").top + r("#show-now").height / 2, Math.round(r("#show-now").width), r("#show-now").right],
-      mast: [c(".mast").opacity, c(".mast").pointerEvents], sky: c(".sky").opacity, guide_items: t.items.filter((i) => i.role === "guide").length,
-      soft: [...document.querySelectorAll('.preview g[clip-path^="url(#shadow-clip"]')].some((g) => g.getAttribute("filter")), letter: c("#show-now").letterSpacing,
-      gap: Math.round(r("#eye-box").bottom) === Math.round(r(".irisbox").bottom) ? r("#eye-box").left - r(".irisbox").right : -1, hint_mid: (() => { const h = r("#sun-hint"), m = r("main"), below = m.top + t.c[1] + t.S.dial_d / 2 * t.z, above = r("#show-now").top; return Math.abs(h.top + h.height / 2 - (below + above) / 2) < 1 && h.width === 108; })() }; });
-  const before = await q();
-  await page.click("#iris-box"); await page.waitForTimeout(400);
-  const opened = await q();
-  await page.click("#iris-go"); await page.waitForTimeout(150);
-  const going = await q();
-  await page.waitForTimeout(1300); await page.mouse.move(5, 300);
+{ // show mode (#509; Okay, 22 Oct 2026: "left side slides out, right side slides in … Only the colors of the dial is editable here"; "Showcase has no caseless watches"; "Cases snap to dials")
+  const q = () => page.evaluate(() => { const t = window.dial_tool, app = document.querySelector("#app"), panel = document.querySelector(".panel"), main = document.querySelector("main");
+    return { on: Boolean(t.S.ui_show), showing: app.classList.contains("showing"), away: app.classList.contains("away"), section: t.S.ui_section, tabs: [...document.querySelectorAll(".tabs button")].filter((b) => !b.hidden).map((b) => b.dataset.tab).join(" "),
+      right: panel.getBoundingClientRect().left > main.getBoundingClientRect().left, watch: document.querySelector("g.watch").childElementCount, dial: getComputedStyle(t.dial).display, bar: getComputedStyle(document.querySelector(".bar")).visibility,
+      tinted: Boolean(panel.style.getPropertyValue("--column")), z: t.z, case_box: document.querySelector("#case").checkVisibility(), sky: Boolean(document.querySelector(".sky")) }; });
+  await page.click("#fit"); await frame();      // both ends Fit: the case in show mode, the dial back out
+  const home = await q(), z0 = home.z;
+  await page.click("#iris-box"); await page.waitForTimeout(300); await page.click("#iris-go"); await page.waitForTimeout(1800);
   const on = await q();
-  await page.waitForTimeout(1000);
-  const later = await q();
-  await page.mouse.move(on.w / 4, on.h / 2); await page.mouse.down(); await page.mouse.move(on.w / 4 + 1, on.h / 2);
-  const dragged = await q(); await page.mouse.up();
-  await page.click("#show-now"); await page.waitForTimeout(300);
-  const spinning = await q();
-  await page.waitForTimeout(1700);
-  const nowed = await q(), clock = await page.evaluate(() => { const d = new Date(); return d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds(); });
-  await page.click("#show-now"); await page.waitForTimeout(2000);
-  const unnowed = await q();
-  await page.click("#iris-box"); await page.waitForTimeout(1300);
-  const back = await q();
-  const page_px = Math.min(on.w / 210, on.h / 297) * 210 * 2 / 3, inset = 24;
-  const sc = [['!before.show', !before.show], ['before.gap === 5.5', before.gap === 5.5], ['on.hint_mid', on.hint_mid], ['opened.open === "true"', opened.open === "true"], ['opened.words > 100', opened.words > 100], ['!opened.show', !opened.show], ['going.show', going.show], ['going.moving', going.moving], ['going.bar === "hidden"', going.bar === "hidden"], ['Math.abs(on.dial - page_px) < 0.5', Math.abs(on.dial - page_px) < 0.5], ['Math.abs(on.c[0] - on.w / 2) < 0.5', Math.abs(on.c[0] - on.w / 2) < 0.5], ['Math.abs(on.c[1] - on.h / 2) < 0.5', Math.abs(on.c[1] - on.h / 2) < 0.5], ['!on.moving', !on.moving], ['on.soft', on.soft], ['on.playing', on.playing], ['on.speed === 1', on.speed === 1], ['on.guides === "hidden"', on.guides === "hidden"], ['on.guide_items === 0', on.guide_items === 0], ['on.iris[0] === on.w - inset', on.iris[0] === on.w - inset], ['on.iris[1] === on.h - inset', on.iris[1] === on.h - inset], ['on.x !== "none"', on.x !== "none"], ['Math.abs(on.pill[3] - (on.w - 5.5) / 2) < 1', Math.abs(on.pill[3] - (on.w - 5.5) / 2) < 1], ['Math.abs(on.pill[1] - on.iris[2]) < 0.5', Math.abs(on.pill[1] - on.iris[2]) < 0.5], ['on.mast.join() === "0.5,none"', on.mast.join() === "0.5,none"], ['on.sky === "1"', on.sky === "1"], ['on.letter === "1.5px"', on.letter === "1.5px"], ['Math.abs(later.phase - on.phase - 0.05) < 0.02', Math.abs(later.phase - on.phase - 0.05) < 0.02], ['Math.abs(dragged.phase - 0.25) < 0.01', Math.abs(dragged.phase - 0.25) < 0.01], ['Math.abs(dragged.from - 315) < 1', Math.abs(dragged.from - 315) < 1], ['spinning.moving', spinning.moving], ['nowed.pill[2] === 40', nowed.pill[2] === 40], ['Math.abs(nowed.t % 43200 - clock % 43200) < 5', Math.abs(nowed.t % 43200 - clock % 43200) < 5], ['unnowed.pill[2] === 80', unnowed.pill[2] === 80], ['Math.abs(unnowed.t - nowed.t) > 5', Math.abs(unnowed.t - nowed.t) > 5], ['!back.show', !back.show], ['Math.abs(back.z - before.z) < 0.01 && Math.abs(back.c[0] - before.c[0]) < 0.5', Math.abs(back.z - before.z) < 0.01], ['back.bar === "visible"', back.bar === "visible"], ['back.guides === "visible"', back.guides === "visible"], ['back.playing === before.playing', back.playing === before.playing]];
-  check(sc.every((x) => x[1]),
-    sc.filter((x) => !x[1]).map((x) => x[0]).join(' | ') + `the iris switch opens to ACTIVATE SHOWCASE (${opened.words} px), which alone goes in: the bar and switches gone at once, the dial travelling (${going.moving}) to 2/3 of an A4 fitted in the window (${on.dial.toFixed(1)} = ${page_px.toFixed(1)} px), centred, the soft edge back once still; the clock at 1×; the X at the corner, Now (tracked ${on.letter}) on its line; the sun crosses a day in twenty seconds (+${(later.phase - on.phase).toFixed(2)} a second), the arrow hint between the dial and Now and a drag puts it along it (a quarter across: ${dragged.from.toFixed(0)}°); Now spins the hands to now and shrinks to an undo (${nowed.pill[2]} px), which spins them back; the X goes back to where we were`);
-  const mark = await page.evaluate(() => { const h = document.querySelector(".panel .title h1"), look = getComputedStyle(h), probe = document.createElement("span"); probe.style.cssText = "display:inline-block;width:0;height:0"; h.append(probe); const base = probe.getBoundingClientRect().top; probe.remove();
-    const pen = document.createElement("canvas").getContext("2d"); pen.font = `${look.fontWeight} ${look.fontSize} ${look.fontFamily}`; const cap = pen.measureText("D").actualBoundingBoxAscent, ring = document.querySelector("#logo circle").getBoundingClientRect();
-    return +((ring.top + ring.bottom) / 2 - (base - cap / 2)).toFixed(2); });
-  check(Math.abs(mark) < 0.3, `the mark's ring is centred on the title's capitals (${mark} px off; Okay, 04:26: "align icon better")`);
+  const hands = await page.evaluate(() => { const t = window.dial_tool, n = document.querySelector("g.watch [data-h='minute']"), a = n.getAttribute("transform"); t.set_value("global", "t", t.S.t + 600); t.frame(); return [a, n.getAttribute("transform"), document.querySelectorAll("g.watch path").length]; });
+  await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "t", t.S.t - 600); t.set_value("global", "bezel", 1); t.set_value("global", "strap", 2); t.frame(); });
+  const diver = await page.evaluate(() => [window.dial_tool.S.bezel, document.querySelectorAll("g.watch path").length]);
+  await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "bezel", 0); t.set_value("global", "strap", 1); });
+  await page.click("#iris-box"); await page.waitForTimeout(1800);
+  const off = await q();
+  check(!home.on && !home.showing && home.sky === false && on.on && on.showing && !on.away && on.right && on.tabs === "Show dial Watch Light Show export" && on.watch > 0 && on.dial === "none" && on.bar === "visible" && on.tinted && !on.case_box && on.z !== z0,
+    `show mode: the panel comes back on the right with the show tabs (${on.tabs}), tinted by the backdrop; the watch drawn (${on.watch} group), the dial's own drawing away, the bar in place, Fit on the case (${z0.toFixed(2)} → ${on.z.toFixed(2)}); the old Showcase's sky gone`);
+  check(hands[0] !== hands[1] && hands[2] > 100 && diver[0] === 1 && diver[1] > hands[2] && !off.on && !off.showing && off.tabs === "Dial Rings Hands Date Export" && !off.right && off.watch === 0 && off.dial !== "none" && !off.tinted && Math.abs(off.z - z0) < 1e-6,
+    `the hands turn in place with the time (${hands[2]} paths; the minute hand's transform moved); the Watch tab's case switches the watch (Diver with its bracelet, ${diver[1]} paths); out: the panel back on the left with its tabs, the watch gone, the view as it was`);
 }
+
 { // Okay's mark opens the bio; the eye switch, at the preview's bottom right, turns on and off and does nothing else (15 Oct 2026)
   const before = await S("JSON.stringify(S, (k, v) => (k.startsWith('ui_') || k === 't' ? undefined : v))");
   await page.click("#logo");
@@ -2313,36 +2297,6 @@ await shot("10-bar");
   const z0 = await S("t.z");
   await page.mouse.move(1000, 400); await page.keyboard.down("Control"); await page.mouse.wheel(0, -100); await page.keyboard.up("Control"); await frame();
   check(still[0].includes("user-scalable=no") && still[1] === "pan-x pan-y" && still[2] && await S("t.z") > z0, `the window doesn't zoom (a pinch on the panel is refused; ${still[1]}), the dial still does`);
-}
-{ // the showcase's 10:10 and hands key (Okay, 15 Oct 2026, 07:40): 10:10 beside Now, the gap between them on the centre line; the one pressed turns into the undo sign, the other stays put; the hands key at the bottom left hides the hands in the showcase only
-  await page.click("#iris-box"); await page.waitForTimeout(300); await page.click("#iris-go"); await page.waitForTimeout(1600);
-  const at = () => page.evaluate(() => { const r = (s) => document.querySelector(s).getBoundingClientRect(), t = window.dial_tool; return { now: [r("#show-now").left, r("#show-now").right, r("#show-now").width], ten: [r("#show-ten").left, r("#show-ten").width], key: [r("#hands-key").left, r("#hands-key").bottom, r("#hands-key").width, getComputedStyle(document.querySelector("#hands-key")).borderRadius], x: r(".irisbox").bottom, w: innerWidth, t: t.S.t, hands: t.items.filter((i) => i.role === "hand").length }; });
-  const a = await at();
-  await page.click("#show-ten"); await page.waitForTimeout(1900);
-  const b = await at();
-  await page.click("#show-ten"); await page.waitForTimeout(1900);
-  await page.click("#hands-key"); await page.waitForTimeout(200);
-  const c = await at();
-  await page.click("#iris-box"); await page.waitForTimeout(1300);
-  const d = await page.evaluate(() => [window.dial_tool.S.ha_on, window.dial_tool.items.filter((i) => i.role === "hand").length]);
-  const ok = [Math.abs((a.now[1] + a.ten[0]) / 2 - a.w / 2) < 0.6, a.ten[1] > a.now[2], b.t % 43200 - 36600 >= 0 && b.t % 43200 - 36600 < 4, b.ten[1] === 40, b.now[0] === a.now[0] && b.now[2] === a.now[2], b.ten[0] === a.ten[0],
-    c.key[0] === 24 && Math.abs(c.key[1] - c.x) < 0.5 && c.key[2] === 40 && c.key[3] === "50%", c.hands === 0, d[0] === true && d[1] > 0];
-  check(ok.every(Boolean), `the showcase's 10:10: beside Now, the gap on the centre line; pressed, the hands to 10:10 and it turns undo while Now stays put; the hands key round at the bottom left, across from the X, hiding the hands in the showcase only (${ok.join(" ")})`);
-}
-{ // the showcase's light (4.77, #351, #354): a very dim backdrop still makes a spotlight (its colour lifted); a ring of shine, three bands, moves with the sun; each hand's bevel, a lighter and a darker half; the showcase's shadows a touch darker; out of the showcase the bevels stay, the shine goes
-  const was = await page.evaluate(() => JSON.stringify([window.dial_tool.S.c_backdrop, window.dial_tool.S.c_plate]));
-  const no_bevels = await page.evaluate(() => { const t = window.dial_tool; t.frame(); return [G_hands_bevel(), document.querySelectorAll("g[clip-path^='url(#bevel-clip-'] rect").length]; function G_hands_bevel() { return ["hour", "minute", "second"].filter((h) => t.S["ha_" + h].bevel).length; } });      // off to start, every hand (20 Oct 2026)
-  await page.evaluate(() => { const t = window.dial_tool; for (const h of ["hour", "minute", "second"]) t.S["ha_" + h].bevel = true; t.set_value("global", "sh_bevel", 100); t.set_value("global", "c_backdrop", [0.05, 0.05, 0.06, 1]); t.set_value("global", "c_plate", [0.08, 0.09, 0.12, 1]); });
-  await page.click("#iris-box"); await page.waitForTimeout(300); await page.click("#iris-go"); await page.waitForTimeout(1600);
-  const look = async (phase) => page.evaluate((ph) => { const t = window.dial_tool; t.show.phase = ph; t.show.dragging = true; t.render(); t.frame();
-    const band = document.querySelector('#shine-clip') && [...document.querySelectorAll("g[clip-path='url(#shine-clip)'] rect")], gr = document.querySelector("#shine-light");
-    return { bands: band ? band.length : 0, stops: gr ? gr.querySelectorAll("stop").length : 0, at: gr ? `${gr.getAttribute("cx")} ${gr.getAttribute("cy")} r ${gr.getAttribute("r")}` : "", pool: document.querySelector("#show-light stop").getAttribute("stop-color"), bevels: document.querySelectorAll("g[clip-path^='url(#bevel-clip-'] rect").length }; }, phase);
-  const morning = await look(0.2), evening = await look(0.8);
-  await page.click("#iris-box"); await page.waitForTimeout(1300);
-  const after = await page.evaluate(() => [document.querySelectorAll("g[clip-path='url(#shine-clip)'] rect").length, document.querySelectorAll("g[clip-path^='url(#bevel-clip-'] rect").length]);
-  await page.evaluate((w) => { const t = window.dial_tool, v = JSON.parse(w); t.set_value("global", "c_backdrop", v[0]); t.set_value("global", "c_plate", v[1]); t.set_value("global", "sh_bevel", 100); for (const h of ["hour", "minute", "second"]) t.S["ha_" + h].bevel = false; t.render(); }, was);
-  check(no_bevels.join() === "0,0" && morning.bands === 2 && morning.stops >= 9 && morning.at !== evening.at && morning.pool !== "#0D0D0F" && morning.bevels >= 4 && after[0] === 0 && after[1] >= 4,
-    `the showcase's light: a dim backdrop's spotlight lifted (${morning.pool}); a ring of shine, its light and dark bands two gradients of ${morning.stops} stops, moving with the sun (${morning.at} → ${evening.at}) (4.83); ${morning.bevels / 2} hands bevelled; out of it the shine goes, the bevels stay (${after.join(" ")}); no hand's Bevel on to start: none drawn (${no_bevels.join(" ")})`);
 }
 { // a hand's own Bevel tick beside Show, from the moment Show is on, off to start; on, its hand bevelled at Bevels %; and the cap in the seconds hand's picture (4.89.1; Okay, 20 Oct 2026, 01:33: "bevel appears as soon as show tick turned on")
   const r = await page.evaluate(() => {
@@ -2387,12 +2341,6 @@ await shot("10-bar");
     return { mids, gaps, bar: +(n.left - d.right).toFixed(2) };
   });
   check(r.mids.length === 2 && r.mids.every((m) => m < 1.5) && r.gaps.join(" ") === "2 2 4", `the Show box's two ticks on their words' middles (${r.mids.map((m) => m.toFixed(1)).join(" ")}); the date popup's gaps as Okay drew them, 2 between boxes, 4 before − + (${r.gaps.join(" ")}; 20 Oct 2026, 01:05)`);
-}
-{ // the showcase's Now (Okay, 15 Oct 2026, 07:36): the hour hand one turn clockwise, the minute hand one anticlockwise, the seconds the short way; halfway through the spin (eased, so half the way)
-  const half = await page.evaluate(() => { const t = window.dial_tool, kept = t.show, items = ["hour", "minute", "second"].map((name) => ({ role: "hand", name, angle: 100 }));
-    t.show = { spin: { from: [90, 110, 350], way: 1, t0: performance.now() - 800 } }; t.spin_hands(items); t.show = kept; return items.map((i) => i.angle); });
-  const want = [90 + (10 + 360) / 2, 110 - (10 + 360) / 2, 350 + 110 / 2];
-  check(half.every((a, i) => Math.abs(a - want[i]) < 4), `Now in the showcase: hour clockwise, minute anticlockwise, one turn each; seconds the short way (${half.map((a) => a.toFixed(1)).join(" ")} ≈ ${want.join(" ")})`);
 }
 { // what stays put ends on the thick line on every tab (Okay, 15 Oct 2026, 06:20)
   const ends = [];

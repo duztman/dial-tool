@@ -9,6 +9,7 @@
 import * as G from "./geometry.js";
 import { svg_document, pdf_document, png_with_dpi, file_name, pdf_sheet, sheet_layout, pack_discs, pack_even, centre_block, spec_sheet, PAPERS } from "./output.js";
 import { frame, KINDS, attach as attach_watch } from "./watch.js";
+import * as SHOW from "./show.js";      // show mode: the watch round the dial, its tabs, its export (#509)
 // a Wear OS watch face (4.67; farukahmet's PR #1, 18 Oct 2026): the dial as Watch Face Format, packed and signed in the browser
 import { generate_watchface_xml } from "./wearos/wff_xml.js";
 import { svg_dial_face, svg_hand, svg_cap, svg_preview, svg_window_sheet, svg_to_png_bytes } from "./wearos/wff_assets.js";
@@ -145,12 +146,15 @@ const SECTION_ICONS = {
   Hands: `<path d="M${C} ${C}V8.75M${C} ${C}L22.75 20.75"/><circle cx="${C}" cy="${C}" r="1.5" fill="currentColor" stroke="none"/>`,
   Date: `<rect x="19" y="14" width="8" height="6.5" rx="1.5" fill="currentColor" stroke="none"/>`,      // a dial with a window at 3, four points from the rim (Okay's drawing, 11 Oct 2026)
   Export: `<path d="M${C} 9.25V20.25M13.25 16.25L${C} 20.25L21.25 16.25M10.75 24.25H23.75"/>`,
+  // show mode's tabs (the Show Case's, 21 Oct 2026): a watch — its case, lugs and hands; a sun
+  Watch: `<g transform="translate(5.9 5.9) scale(1.2)" stroke-width="1.25"><circle cx="9.25" cy="9.25" r="5.5"/><path d="M6.25 2.75V5M12.25 2.75V5M6.25 13.5V15.75M12.25 13.5V15.75"/><path d="M9.25 9.25V6M9.25 9.25H11.75M14.75 9.25H15.75"/></g>`,
+  Light: `<circle cx="17" cy="17" r="3" fill="currentColor" stroke="none"/><path d="${Array.from({ length: 8 }, (_, k) => { const a = k * Math.PI / 4, c = Math.cos(a), s = Math.sin(a); return `M${(17 + c * 5.75).toFixed(2)} ${(17 + s * 5.75).toFixed(2)}L${(17 + c * 7.75).toFixed(2)} ${(17 + s * 7.75).toFixed(2)}`; }).join("")}"/>`,
 };
 // a round sign button (the ring list's tools): its ring is part of the sign, drawn here as heavy as the sign
 // (Okay, 14 Oct 2026: "they all count as part of icon"); the button's own border stays clear. 26 points, the sign's
 // 16 in the middle; the ring's outer edge where the border's was (13 from the centre).
 const round_sign = (inside) => icon(`<circle class="rim" cx="13" cy="13" r="${13 - CURVE / 2}" ${sw(CURVE)}/><g transform="translate(5 5)">${inside}</g>`, 26);
-const section_icon = (name) => icon(`${rim("ring")}<g class="sign">${SECTION_ICONS[name]}</g>`, 34);
+const section_icon = (name) => icon(`${rim("ring")}<g class="sign">${SECTION_ICONS[{ "Show dial": "Dial", "Show export": "Export" }[name] || name]}</g>`, 34);
 const EYE = {                                      // the left column's sign: open = showing, closed (with lashes) = put away
   open: `<path d="M1.75 8.25C3.75 4.85 6.05 3.55 8.25 3.55S12.75 4.85 14.75 8.25C12.75 11.65 10.45 12.95 8.25 12.95S3.75 11.65 1.75 8.25Z" ${sw(CURVE)}/><circle cx="8.25" cy="8.25" r="2.25" fill="currentColor" stroke="none"/>`,
   closed: `<path d="M1.75 6.75C3.75 9.85 6.05 11.05 8.25 11.05S12.75 9.85 14.75 6.75M8.25 11.05V13.75M4.95 10.35L3.95 12.65M11.55 10.35L12.55 12.65M2.75 8.35L1.35 10.05M13.75 8.35L15.15 10.05" ${sw(CURVE)}/>`,
@@ -311,50 +315,10 @@ const INK_TRAPS = (() => {
   return out.join("");
 })();
 const EYE_RAYS = 24, EYE_RAY = 0.625;      // the eye switch's rays: how many, how thick (Okay, 15 Oct 2026, 03:41; 0.5 until 16 Oct: "thicker lines, just barely visibly on 100%, not like +1px")
-// ── the showcase (Okay, 15 Oct 2026, 04:26 and 04:59) ──
-// its sky: a 45° gradient, the backdrop's colour at this share of its light at the top left, black at the bottom right
-const SKY_TOP = 0.3;
-// its dial: 2/3 of the width of a portrait A4, centred on it; the A4 fitted in the window, centred ("a lovely proportion")
-const SHOWCASE_PAGE = { w: 210, h: 297, dial: 2 / 3 };
-// its sun: a day in twenty seconds, then sunrise again — rising at the left (from 270°), at midday from the top,
-// setting at the right (90°), always 40° high (an autumn sun) on its ray; at sunrise and sunset its light fades in and
-// out instead of the shadows growing long (05:43: "sunrise and sunset generate too extreme shadowage… keep sun constant
-// on a ray and fade in and out the light"); `fade`: the share of the day's half it takes. A drag across the window
-// moves it along that day, nothing else (04:59)
-const SUN = { day: 20, rise: 40, fade: 0.45 };
-// its spotlight: a pool of the backdrop's colour on the sky, behind the dial, a bit wider than it (size × its radius);
-// the dial casts its shadow into it from `lift` mm above. Through the day: an oval at sunrise and sunset (stretch,
-// the long way along the light), a circle at midday; the oval faintest and softest, midday brightest and almost crisp
-const POOL = { size: 1.45, stretch: 1.4, soft: [0.06, 0.8], light: [0.08, 0.42], shade: [0.15, 0.55], lift: 1.5, least: 0.2 };      // least: the pool's colour is the backdrop's, lifted toward white until its lightness is at least this (0–1), so a very dim backdrop still makes a spotlight (#351, 4.77)
-// the showcase's ring of shine (#351, 4.77; Okay's notes 2: "a ring of shine on the dial moving with the sun ('just a
-// ring', two or three bands of brightness) that also shows the hands' shadows on dark dials"). Redrawn in 4.81 (#365;
-// Okay, 19 Oct 2026: "much bigger than the watch … horizontally starts from 2/3 way from top of dial on the radius,
-// circle extends to be 150% dial size", "centre is about 6 on noon", "not visible at dusk and dawn, max vis at midday",
-// "thicker circles while dim, thinner at noon", "better shine on dark and light bgs"): a circle of radius `r` × the
-// dial's (150 % of the dial), its centre `behind` × the dial's radius from the dial's centre on the side away from the
-// sun — at noon just past 6, so its top crosses the dial a third of the radius above the centre (two thirds down from
-// the top). Its middle band lightens (screened: it shows on a dark dial), a band either side darkens (it shows on a
-// light one); each band `width` wide, a share of the radius, wide at dawn and dusk and narrow at noon; all of it
-// as strong as the sun is high (0 at sunrise and sunset)
-// 4.83 (Okay, 19 Oct 2026, 01:59: "more bands, wider (5x) on dusk and dawn, sharpest (3x) on noon. Smaller shine
-// diameter"): seven soft bands — light in the middle, dark either side, then fainter light and fainter dark, each pair
-// out `fall` as strong as the one inside it — drawn as two radial gradients round the centre (light screened, dark
-// laid on), so a wide band is soft and a narrow one crisp; widths ×5 at dawn and dusk (0.16 → 0.8), ÷3 at noon (0.05 →
-// 0.05 / 3); the circle 15 % smaller (1.5 → 1.275 × the dial's radius), still crossing the dial at noon a third of the
-// radius above its centre (`top`), so its centre comes nearer
-// 4.85 (Okay, 19 Oct 2026, 12:06 and 12:30: "The shine ring needs to be 3 circle diameters which meet at noon" — his
-// choice of the two readings: three circles that come together into one): three circles round the one centre, `spread`
-// apart at dawn and dusk (a share of the radius), closer as the sun climbs, one at noon — where their light adds up,
-// so noon is the brightest too. Each circle a soft light band with a dark one either side; their width still from
-// `width` (4.83's dawn and noon), stepping down evenly in ratio (geometric), so the three stay apart as they close
-const SHINE = { r: 1.275, top: 1 / 3, bright: 0.11, dark: 0.07, width: [0.8, 0.05 / 3], spread: 0.3, circles: 3 };
 // the hands' bevels (#354, 4.77; notes 2: "a height simply shaded in a few tones of the hand's colour by the shadows'
 // light … not 3d like all facets shifted"): each hand split along its length, the side the light falls on lighter, the
 // other darker, by as much as the light comes from the side; preview only (R5, R26)
 const BEVEL = { light: 0.22, dark: 0.26 };
-const SHOW_DARKER = 1.25;                          // the showcase's shadows, this much darker than the user's setting (#351)
-// the dial's travel into and out of the showcase: the only thing that moves (04:59 and 05:09: "only dial travels with ease")
-const TRAVEL_MS = 900;
 // a phone (Okay, 15 Oct 2026, 06:20): the preview's switches unfold their words this long after a tap on the backdrop
 const HOLE_LIVE_MS = 1200;      // how long the centre hole's guide stays after its size last changed (#267); and the guides after a number was last slid (#249)
 const WORDS_MS = 3000;
@@ -442,12 +406,9 @@ const TOOL_ICONS = {
     return `<mask id="eye-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask>`
       + `<path d="${rays}" stroke-width="${EYE_RAY}" stroke-linecap="butt" mask="url(#eye-cut)"/><circle cx="${cx}" cy="${cy}" r="2.75" fill="currentColor" stroke="none"/>`;
   })(),
-  // the showcase switch, left of the eye (Okay, 15 Oct 2026, 04:26: "just the iris inside same box"): the eye's iris
-  // alone, where it stands in the eye. In the showcase it is the way out: two of the eye's rays cross on it, an X run
+  // the show-mode switch, left of the eye (Okay, 15 Oct 2026, 04:26: "just the iris inside same box"): the eye's iris
+  // alone, where it stands in the eye. In show mode it is the way out: two of the eye's rays cross on it, an X run
   // out to the box (04:59: "iris becomes an x (2rayiris)"); 1, not the eye's 0.5, so it reads while faint
-  // the showcase's hands key (07:40): the Hands section's sign drawn again for a 38 inside a round key, lines 1 as the
-  // X beside it; the minute hand up, the hour hand at four, the hub a dot
-  hands_key: `<path d="M19 19V8.75M19 19L25.5 23.25" stroke-width="1"/><circle cx="19" cy="19" r="1.75" fill="currentColor" stroke="none"/>`,
   // 18 Oct 2026 (notes 2: "the x on the showcase should not penetrate the iris. Lines stop at ghost eye distance"): the X
   // is cut by the eye switch's own absent eye — the same lids, knocked out — so its lines stop where the eye's rays do
   iris: (() => {
@@ -456,20 +417,15 @@ const TOOL_ICONS = {
     return `<mask id="iris-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask>`
       + `<circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/><path class="x" d="M-0.75 -1L31.25 31M31.25 -1L-0.75 31" stroke-width="1" stroke-linecap="butt" mask="url(#iris-cut)"/>`;
   })(),
-  // the showcase switch (Okay, 19 Oct 2026, 12:46: "Swap icons but not places for showcase and tiny preview.
+  // the show-mode switch (Okay, 19 Oct 2026, 12:46: "Swap icons but not places for showcase and tiny preview.
   // Tiny gets the dot, showcase gets the eye"): the iris above with its lids drawn round it — the eye switch's own eye,
-  // drawn where that one is left out — and in the showcase the same X, cut by the lids
+  // drawn where that one is left out — and in show mode the same X, cut by the lids
   show_eye: (() => {
     const cy = 15, lift = 5.25 * 1.2;
     const lid = `M6.25 ${cy}C12.25 ${cy - lift} 18.25 ${cy - lift} 24.25 ${cy}C18.25 ${cy + lift} 12.25 ${cy + lift} 6.25 ${cy}Z`;
     return `<mask id="show-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask>`
       + `<path d="${lid}" ${sw(CURVE)}/><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/><path class="x" d="M-0.75 -1L31.25 31M31.25 -1L-0.75 31" stroke-width="1" stroke-linecap="butt" mask="url(#show-cut)"/>`;
   })(),
-  // the showcase's hint over Now: a line with a head at each end — the sun can be moved left and right (04:59); on 108
-  // by 36, three times its first size, white with a glow (05:43: "can't see it… 3x size")
-  // 18 Oct 2026 (notes 2: "connecting stem; straight-dashed-straight … divide current line into three"): the stem in
-  // thirds of 32.5, the middle one dashed in five, its dashes square-ended (R33)
-  both_ways: `<path d="M5.25 18.25H37.75M70.25 18.25H102.75M17.25 6.25L5.25 18.25L17.25 30.25M90.75 6.25L102.75 18.25L90.75 30.25"/><path d="M37.75 18.25H70.25" stroke-dasharray="3.25" stroke-linecap="butt"/>`,
   screen: `<rect x="2.75" y="3.25" width="10.5" height="7.5"/><path d="M8.25 10.75V13.25M5.75 13.25H10.75" ${sw(DENSE)}/>`,
   // the Guides switch, on 18: a target and its cross; its lines crowd, so DENSE. Okay's drawings (14 Oct 2026, 04:11):
   // guides: a target, its centre ring dashed in six, square-ended (a dash pattern is a texture, not line ends), ink
@@ -640,7 +596,7 @@ const shape_is = (...shapes) => (T) => T.on && shapes.includes(G.window_shape(T)
 // the Windows cards, left to right: 12 · 3 · 6 · 9. slot = which of the four windows a card is (window 1, the date
 // window of old, starts at 3, so the second card is its); at = that place in G.DATE_AT.
 const WINDOW_CARDS = [{ slot: 1, at: 4 }, { slot: 0, at: 0 }, { slot: 2, at: 2 }, { slot: 3, at: 3 }];
-const TAB_NAMES = { Date: "Windows" };            // the section's number and key stay "Date" (R8, R9); its tab says what it now holds
+const TAB_NAMES = { Date: "Windows", "Show dial": "Dial", "Show export": "Export" };            // the section's number and key stay "Date" (R8, R9); its tab says what it now holds
 const H = { scope: "hand" };
 const cap_rows = (S) => S.ui_hand === G.top_hand(S) && (S.ha_second.on || S.ha_cap_top);      // the cap's size and colour: under the hand it belongs to (#262)
 
@@ -991,6 +947,59 @@ const PULSE_FLASH = 0.4;   // …and how much of a beat the whole flash takes (O
 // each unit's ink in Dial Mono, in em, from its outlines (fonts/ui/mono_font.py prints it): [left of the advance's
 // start, width, top over the baseline, height]. The unit box is drawn round it (size_unit, #302)
 const UNIT_INK = { mm: [0.062, 1.076, 0.56, 0.56], pt: [0.088, 1.035, 0.705, 0.885], in: [0.082, 1.032, 0.78, 0.78], lig: [0.029, 1.683, 0.78, 0.96], thou: [0.052, 2.262, 0.73, 0.74] };      // the play button's pulse: at most this many a second, unless the movement's own beat is more (#282)
+// ── show mode's tabs (#509; the Show Case's column, re-hosted in the tool's rows). Their numbers in SECTIONS come after the dial side's (R9) ──
+ROWS["Show dial"] = [
+  hdr("Colours", { pin: true, summary: (S, tool) => tool.dial_colours(false).map((c) => ({ c })) }),      // the dial's colours, as the dial side's Colours pane: the one thing of the dial show mode changes (Okay, 22 Oct 2026)
+  custom("colours"),
+  hdr("Ink", { folded: false }),
+  num("w_ink", "Ink height", 0, 10, 1, { whole: true }),
+  info("How far the printed ink stands proud of the plate; 0 is flat ink.", {}),
+];
+ROWS.Watch = [
+  hdr("Watch", { pin: true }),
+  seg("w_view", "View", ["Detail", "Whole watch", "Dial"]),
+  seg("bezel", "Case", ["Dress", "Diver", "Field", "Dress", "Field", "Emre01"], { order: [3, 2, 1, 5] }),      // the same key the dial side's case menu writes (R9: the numbers keep their meaning)
+  seg("w_metal", "Metal", ["Fe", "Au", "Al", "CuSn", "Ti", "Black"], { many: true }),
+  col("c_metal", "Case colour", { or: (S) => SHOW.metal_colour(S) }),
+  seg("w_insert", "Insert", ["Black", "Blue", "Green", "Pepsi", "Batman", "Coke", "Root beer", "Sprite"], { many: true, show: (S) => G.CASE_OF_BEZEL[S.bezel] === "diver" }),
+  hdr("Strap", { folded: false }),
+  seg("strap", "Strap", ["Strap", "Leather", "Bracelet", "NATO"], { order: [1, 3, 2], offered: (S) => (G.CASE_OF_BEZEL[S.bezel] === "diver" ? [1, 2, 3] : [1, 3]) }),      // 0 and 1 leather; a bracelet is the diver's alone (R16: not offered elsewhere)
+  col("c_strap", "Leather", { show: (S) => S.strap !== 2 && S.strap !== 3 }),
+  seg("w_nato", "Pattern", ["Bond", "Regimental", "Khaki", "Black · grey", "Olive", "Grey"], { many: true, show: (S) => S.strap === 3 }),
+];
+ROWS.Light = [
+  hdr("Light", { pin: true }),
+  seg("w_style", "Style", ["Engineer", "Miyazaki"]),
+  seg("w_lighting", "Lighting", ["Dramatic", "Flat"]),
+  hdr("Sun", { folded: false }),
+  num("sh_from", "From", 0, 359, 1, { whole: true }),      // the one sun: the dial's shadow keys light the watch too (Okay, 22 Oct 2026)
+  num("sh_rise", "Height", 5, 85, 1, { whole: true }),
+  hdr("Shadows", { folded: false }),
+  num("sh_dark", "Darkness %", 0, 100, 1, { whole: true }),
+  chk("sh_blur", "Soft shadows"),
+  hdr("Flare", { folded: false, show: (S) => S.ui_effects }),
+  chk("w_flare_on", "Flare", { show: (S) => S.ui_effects }),
+  seg("w_flare", "Kind", ["Arc", "Dot"], { show: (S) => S.ui_effects && S.w_flare_on && S.w_style === 1 }),
+  num("w_fl_size", "Size %", 20, 300, 1, { whole: true, show: (S) => S.ui_effects && S.w_flare_on }),
+  num("w_fl_tint", "Case colour %", 0, 100, 1, { whole: true, show: (S) => S.ui_effects && S.w_flare_on }),
+  num("w_fl_bright", "Brightness %", 0, 300, 1, { whole: true, show: (S) => S.ui_effects && S.w_flare_on }),
+  info("The flare shows with dramatic lighting.", { show: (S) => S.ui_effects && S.w_flare_on && S.w_lighting === 1 }),
+  hdr("Glass reflection", { folded: false, show: (S) => S.ui_effects }),
+  num("w_glass_fat", "Width %", 0, 400, 1, { whole: true, show: (S) => S.ui_effects }),
+  num("w_glass_len", "Length %", 10, 300, 1, { whole: true, show: (S) => S.ui_effects }),
+  num("w_glass_op", "Shine %", 0, 100, 1, { whole: true, show: (S) => S.ui_effects }),
+  hdr("Effects", { folded: false }),
+  chk("ui_effects", "Blurs, flare, shine and outline"),      // off for an old computer (Okay, 22 Oct 2026: "a 'turn off shenanigans' button … persistent")
+  info("Off, the watch is drawn without the layers that cost most: blurs, the flare, the glass shine, the outline round the metal.", {}),
+];
+ROWS["Show export"] = [
+  hdr("Export the watch", { pin: true }),
+  custom("export_watch_png"),
+  custom("export_watch_pdf"),
+  num("out_watch_px", "Pixels", 1000, 8000, 100, { whole: true, tie: true }),
+  info("The picture's longer side. The PDF is one page at the drawing's real size, the picture inside it.", {}),
+];
+const SHOW_SECTIONS = ["Show dial", "Watch", "Light", "Show export"];
 const SECTIONS = Object.keys(ROWS);                // their numbers are what ui_section stores (R9)
 const TAB_ORDER = ["Dial", "Rings", "Hands", "Date", "Export"];      // left to right. Guides is a switch on the preview (Okay, 12 Oct 2026)
 for (const name of SECTIONS) for (const row of ROWS[name]) { row.scope ??= name === "Rings" ? "ring" : "global"; name_row(row); }
@@ -1275,6 +1284,7 @@ class DialTool {
         window.dial_tool.undo(y || e.shiftKey ? 1 : -1);
       });
     }
+    if (this.S.ui_show) { this.S.ui_show = false; const app = $("#app"); app.classList.add("snap"); this.show_mode(true, true); setTimeout(() => app.classList.remove("snap"), 100); }      // the session ended in show mode: open there, no slide
     this.show_section();
     this.fit();
     this.sync_time();
@@ -1383,10 +1393,11 @@ class DialTool {
     const root = $("#app");
     root.replaceChildren();
     this.tabs = el("nav", { className: "tabs" });
-    TAB_ORDER.forEach((name) => {
+    [...TAB_ORDER, ...SHOW_SECTIONS].forEach((name) => {      // both modes' tabs; show_mode() shows one set (R16)
       const i = SECTIONS.indexOf(name);
       const tab = el("button", { type: "button", onclick: () => { if (this.S.ui_section === i) return; this.S.ui_section = i; this.show_section(); this.render(); } });
       tab.dataset.tab = name;
+      tab.hidden = SHOW_SECTIONS.includes(name);
       tab.innerHTML = section_icon(name);
       tab.append(el("span", { textContent: TAB_NAMES[name] || name }));
       this.tabs.append(tab);
@@ -1409,35 +1420,16 @@ class DialTool {
     this.over.setAttribute("pointer-events", "none");
     this.glow = ["glow under", "glow"].map((name) => { const line = svg_el("path"); line.setAttribute("class", name); this.over.append(line); return line; });
     this.picked = ["picked under", "picked"].map((name) => { const line = svg_el("path"); line.setAttribute("class", name); this.over.append(line); return line; });      // the numeral or mark Nudge works on (4.78)
-    // the showcase's sky: over the backdrop, a gradient from black at the bottom up to the backdrop's colour, much
-    // darkened; there always, seen only in the showcase (the stylesheet fades it in). Its colours are set in draw()
-    const sky_defs = svg_el("defs"), sky = svg_el("linearGradient");
-    sky.id = "show-sky";
-    for (const [k, v] of [["gradientUnits", "userSpaceOnUse"], ["x1", "0"], ["y1", "0"], ["x2", "1"], ["y2", "1"]]) sky.setAttribute(k, v);
-    this.sky_grad = sky;
-    // the showcase's spotlight and the dial's shadow in it (draw_pool): two circles with soft-edged radial fills, in a
-    // group that stands where the dial does (place())
-    this.pool = svg_el("g");
-    this.pool.setAttribute("class", "pool");
-    this.pool.setAttribute("pointer-events", "none");
-    this.pool_parts = ["show-light", "show-shade"].map((id) => {
-      const g = svg_el("radialGradient"); g.id = id;
-      const stops = [0, 1, 2].map(() => { const s = svg_el("stop"); g.append(s); return s; });
-      sky_defs.append(g);
-      const circle = svg_el("circle"); circle.setAttribute("fill", `url(#${id})`); this.pool.append(circle);
-      return { circle, stops };
-    });
-    this.sky_stops = [0, 1].map((o) => { const s = svg_el("stop"); s.setAttribute("offset", String(o)); sky.append(s); return s; });
-    sky_defs.append(sky);
-    this.sky = svg_el("rect");
-    for (const [k, v] of [["class", "sky"], ["width", "100%"], ["height", "100%"], ["fill", "url(#show-sky)"], ["pointer-events", "none"]]) this.sky.setAttribute(k, v);
     this.handles = svg_el("g");                    // the selected ring's handles on its guides (4.65, draw_handles), over everything on the dial
     this.handles.setAttribute("class", "handles");
     this.handle_events();
     this.bezel_g = svg_el("g");                    // a case round the dial, preview only (4.66, bezels.js), under it
     this.bezel_g.setAttribute("class", "bezel");
     this.bezel_g.setAttribute("pointer-events", "none");
-    this.svg.append(sky_defs, this.backdrop, this.sky, this.pool, this.bezel_g, this.dial, this.over, this.handles);
+    this.watch_g = svg_el("g");                    // show mode: the watch, drawn by watch.js round the dial's own shapes (show.js); in the dial's space, as the case is
+    this.watch_g.setAttribute("class", "watch");
+    this.watch_g.setAttribute("pointer-events", "none");
+    this.svg.append(this.backdrop, this.bezel_g, this.dial, this.watch_g, this.over, this.handles);
     this.tip = el("div", { className: "tip", hidden: true }, el("span"));       // the name of what the pointer is on
     this.tip.insertAdjacentHTML("beforeend", '<svg viewBox="0 0 20 10" width="20" height="10" aria-hidden="true"><path class="a" d="M0 0 L10 10 L20 0"/><path class="b" d="M0 0 L10 10 L20 0"/><path class="c" d="M-1 -3 L21 -3 L21 0 L10 9 L-1 0 Z"/></svg>');
     this.preview_events();
@@ -1579,7 +1571,7 @@ class DialTool {
     // X-ray (4.86; Okay, 19 Oct 2026, 12:46: "Guides case and xray move top right corner of the canvas, stacked in that
     // order")
     const corner = el("div", { className: "corner" }, guides, ...this.case_box(), this.xray_box());
-    this.main = el("main", {}, this.svg, this.tip, this.note, this.undo_box(), this.tiny_box(), corner, this.shadows_box(), this.backdrop_box(), this.eye_box, this.now_pill, this.ten_pill, this.hands_key, this.sun_hint);
+    this.main = el("main", {}, this.svg, this.tip, this.note, this.undo_box(), this.tiny_box(), corner, this.shadows_box(), this.backdrop_box(), this.eye_box);
     this.day_strip(this.day_box);
     root.append(panel, this.main, bar, this.build_picker(), this.build_pop());
     root.append(this.sheet());      // a phone's gripper, on the drawer's top line
@@ -1588,7 +1580,7 @@ class DialTool {
     this.watchers.push(new ResizeObserver(() => this.resized()));
     this.watchers.at(-1).observe(this.svg);
     // the bar's height, for the rows that make room for it (a phone; the showcase closes its row): kept while it is in place
-    this.watchers.push(new ResizeObserver(() => { if (!this.show && bar.offsetHeight) root.style.setProperty("--bar-h", bar.offsetHeight + "px"); }));
+    this.watchers.push(new ResizeObserver(() => { if (bar.offsetHeight) root.style.setProperty("--bar-h", bar.offsetHeight + "px"); }));
     this.watchers.at(-1).observe(bar);
   }
 
@@ -1659,109 +1651,21 @@ class DialTool {
     return grip;
   }
 
-  /** the clock to the time it is now (the bar's Now, the showcase's Now pill) */
+  /** the clock to the time it is now (the bar's Now) */
   to_now() { const d = new Date(); if (this.S.date) this.set_value("global", "date", ""); this.set_time(d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000); }
 
-  /** the showcase, or back (Okay, 15 Oct 2026, 04:26, reshaped 04:59 and 05:09). In: the panel and the bar are gone at
-   *  once, what stood on the preview goes at once (fading, it twitched as the sky darkened), and the dial alone travels,
-   *  eased, to its showcase place (show_target: 2/3 of a portrait A4 fitted in the window). The sky darkens to a 45°
-   *  gradient; a spotlight pool lies behind the dial and takes its shadow; the sun crosses a day in SUN.day seconds;
-   *  the clock runs at 1× from where it was. What stays: the mark and "Dial Tool" (fainter, not pressable), the iris
-   *  switch as an X (bottom right; the way out) and Now (bottom centre). Out: the same, backwards, to where we were. The
-   *  shadows' soft edge is off while anything moves (moving()). Nothing of it is stored or changes the dial. */
-  showcase(on) {
-    const app = $("#app");
-    if (on === !!this.show) return;
-    this.hover(null);
-    if (this.pop && this.pop.at) this.pop_close();
-    if (this.bio_open) this.bio_open(false);
-    this.iris_open(false);
-    const before = this.svg.getBoundingClientRect(), c0 = this.c.slice(), z0 = this.z;
-    if (on) app.classList.add("snap");             // in: panel, bar and switches go at once, only the dial travels;
-                                                   // out, the long way: they come back eased while the dial travels home (05:43: "so sudden!")
-    if (on) {
-      this.show = { away: app.classList.contains("away"), playing: this.playing, speed: this.speed, phase: 0, at: performance.now(), spin: null, back: null,
-        view: { c: c0, z: z0, fitted: this.fitted } };      // where the dial stood, to travel back to
-      app.classList.add("away", "show");
-      this.eye_button.setAttribute("aria-pressed", "true");
-      this.set_speed(1);
-      if (!this.playing) this.play(true);
-    } else {
-      const was = this.show;
-      this.left_view = was.view;
-      this.show = null;
-      app.classList.remove("show");
-      if (!was.away) { app.classList.remove("away"); this.eye_button.setAttribute("aria-pressed", "false"); }
-      this.set_speed(was.speed);
-      if (!was.playing) this.play(false);
-      for (const b of [this.now_pill, this.ten_pill]) { b.classList.remove("back"); b.title = b.ariaLabel = b.dataset.says; }
-      this.hands_key.setAttribute("aria-pressed", "false"); this.hands_key.title = "Hide the hands";
-    }
-    this.iris_button.setAttribute("aria-pressed", String(on));
-    for (const part of [$(".panel"), $(".bar")]) if (part) part.inert = on;      // what slid away is out of reach for the keyboard and a screen reader too (#244, 4.47.2)
-    app.style.setProperty("--title-end", this.title.getBoundingClientRect().right.toFixed(1) + "px");
-    // the layout has changed at once; the dial is put back where it stood on the screen, then travels from there
-    const after = this.svg.getBoundingClientRect();
-    this.c = [c0[0] + before.left - after.left, c0[1] + before.top - after.top];
-    this.z = z0;
-    this.view = [after.width, after.height];
-    this.place();
-    const home = on ? null : this.left_view;      // out: back exactly where it stood, and as fitted as it was
-    this.travel_to(on ? this.show_target() : { c: home.c, z: home.z }, () => { if (this.show) this.hint(); else this.fitted = home.fitted; });
-    requestAnimationFrame(() => requestAnimationFrame(() => app.classList.remove("snap")));
-  }
 
-  /** where the dial stands in the showcase: centred, as wide as 2/3 of a portrait A4 that is fitted in the window */
-  show_target() {
-    const [w, h] = this.size(), page = Math.min(w / SHOWCASE_PAGE.w, h / SHOWCASE_PAGE.h);
-    return { c: [w / 2, h / 2], z: SHOWCASE_PAGE.dial * SHOWCASE_PAGE.w * page / this.S.dial_d };
-  }
+  /** something is moving: the panel sliding. The shadows' soft edge waits for it to stop (Okay, 04:59 and 05:09: "blur off on all animations") */
+  moving() { return Boolean(this.sliding); }
 
-  /** the dial travels to `to` ({c, z}), eased; the only thing that moves in and out of the showcase. Then it is fitted */
-  travel_to(to, done) {
-    this.travel = { from: { c: this.c.slice(), z: this.z }, to, t0: performance.now(), done };
-    this.fitted = false;
-    this.render();
-  }
-
-  /** a step of the travel, from frame(): true while it goes on */
-  travel_step() {
-    const T = this.travel, p = clamp((performance.now() - T.t0) / TRAVEL_MS, 0, 1), e = p < 0.5 ? 4 * p ** 3 : 1 - (-2 * p + 2) ** 3 / 2;      // slow out, slow in
-    const to = this.show ? this.show_target() : T.to;      // the window may change under it
-    this.z = T.from.z * (to.z / T.from.z) ** e;           // the scale by ratio, so growing looks even
-    this.c = [T.from.c[0] + (to.c[0] - T.from.c[0]) * e, T.from.c[1] + (to.c[1] - T.from.c[1]) * e];
-    this.place();
-    if (p < 1) return true;
-    this.travel = null;
-    this.fitted = true;
-    if (T.done) T.done();
-    return false;
-  }
-
-  /** something is moving: the dial travelling, the panel sliding, the hands spinning, the sun being dragged. The
-   *  shadows' soft edge waits for it to stop (Okay, 04:59 and 05:09: "blur off on all animations") */
-  moving() { return !!(this.travel || this.sliding || (this.show && (this.show.spin || this.show.dragging))); }
-
-  /** the showcase's sun now: where it is in its day (0 sunrise … 1 sunset), the direction its light comes from, its
-   *  height (always the same) and how much light it gives (0 at sunrise and sunset, 1 for most of the day) */
-  sun() {
-    const p = this.show.phase, k = Math.sin(Math.PI * p);      // k: 0 at sunrise and sunset, 1 at midday
-    const t = clamp(k / SUN.fade, 0, 1), light = t * t * (3 - 2 * t);
-    return { p, k, light, from: (270 + 180 * p) % 360, rise: SUN.rise };
-  }
 
   /** the sun along its day, from a point of the preview: the left edge is sunrise, the right sunset */
-  sun_to(p) {
-    const [w] = this.size();
-    this.show.phase = clamp(p[0] / w, 0, 0.999);
-    this.render();
-  }
 
   /** the numeral or mark Nudge works on, outlined on the dial in its ring's guide colour while the Nudge pane is open
    *  on the Rings tab (4.78, #349) — so the one a press chose, or the list chose, is seen. */
   draw_picked() {
     const S = this.S, R = this.ring(), nudge = this.rows && this.rows.find((r) => r.fold && r.row.text === "Nudge one numeral");
-    const d = !this.show && S.ui_section === 1 && R && nudge && !nudge.el.hidden && !this.is_folded(nudge) ? this.statik.rings.find((x) => x.ring === R) : null;
+    const d = !S.ui_show && S.ui_section === 1 && R && nudge && !nudge.el.hidden && !this.is_folded(nudge) ? this.statik.rings.find((x) => x.ring === R) : null;
     const k = d ? d.at.indexOf(+this.nudge_at) : -1, part = k >= 0 && d.parts ? d.parts[k] : null;
     // a box touching it, not its outline (Okay, 04:52: "selected number on dial too aggressive. This may be a rectangular tangent box around number")
     const b = part ? part.bounds() : null, f = (v) => v.toFixed(3);
@@ -1770,11 +1674,11 @@ class DialTool {
     this.picked[1].style.setProperty("--picked", tone);
   }
 
-  /** the light on the dial (4.77): in the showcase a ring of shine (SHINE) over the dial and the hands; wherever shadows
+  /** the light on the dial (4.77): wherever shadows
    *  are drawn, each hand's bevel (BEVEL) — its two long halves lighter and darker by where the light comes from.
    *  Drawn into groups kept by name, just under the shadows that fall on the same surfaces. Preview only (R5, R26). */
   draw_light(items) {
-    const S = this.S, sun = this.show && this.sun();
+    const S = this.S;
     if (!this.light_parts) this.light_parts = new Map();
     const parts = this.light_parts, used = new Set(), f = (v) => v.toFixed(4);
     const part = (name, tag, parent, before = null) => {
@@ -1785,56 +1689,14 @@ class DialTool {
       return n;
     };
     const finish = () => { for (const [name, n] of parts) if (!used.has(name)) { n.remove(); parts.delete(name); } };
-    const on = sun ? sun.light : S.sh_on ? Math.min(S.sh_dark / 25, 2) : 0;      // how much light there is to shade by
+    const on = S.sh_on ? Math.min(S.sh_dark / 25, 2) : 0;      // how much light there is to shade by
     if (S.out_production || !(on > 0)) return finish();
     if (!this.light_defs) { this.light_defs = svg_el("defs"); this.svg.prepend(this.light_defs); }
-    const from = sun ? sun.from : S.sh_from, R = S.dial_d / 2, nodes = items.map((_, i) => this.slots[i].node);
-    // the ring of shine (SHINE): round a centre on the side away from the sun; the light band screened in `g`, the two
-    // dark ones laid in `under` (a screen of black does nothing, so they need a group of their own)
-    // the ring of shine (SHINE): two radial gradients round a centre on the side away from the sun, made once a frame
-    // in the dial's space; `bands` lays a square of each over what it shines on — the light one screened in `g`, the
-    // dark one in `under` (a screen of black does nothing)
-    if (sun) {
-      const a = from * Math.PI / 180, behind = (SHINE.r - SHINE.top) * R, c = [-Math.sin(a) * behind, -Math.cos(a) * behind];
-      const w = SHINE.width[0] * (SHINE.width[1] / SHINE.width[0]) ** sun.k * R, s = SHINE.spread * (1 - sun.k) * R, strong = sun.k * on, r0 = R * SHINE.r;
-      const rings = Array.from({ length: SHINE.circles }, (_, i) => r0 + (i - (SHINE.circles - 1) / 2) * s), reach = r0 + s * SHINE.circles + 2 * w;
-      // a circle's profile across it: a light peak on it, w wide at its foot; a dark peak w out on either side, as wide
-      const tent = (d, at) => Math.max(0, 1 - Math.abs(d - at) / (w / 2));
-      const light = (r) => Math.min(1, rings.reduce((a, ri) => a + SHINE.bright * tent(r - ri, 0), 0) * strong);
-      const dark = (r) => Math.min(1, rings.reduce((a, ri) => a + SHINE.dark * (tent(r - ri, -w) + tent(r - ri, w)), 0) * strong);
-      // the profiles are straight between these radii (each peak's foot and top), so stops there draw them exactly
-      const at = [...new Set(rings.flatMap((ri) => [-1.5, -1, -0.5, 0, 0.5, 1, 1.5].map((m) => ri + m * w)).filter((r) => r > 0 && r < reach).map((r) => +r.toFixed(5)))].sort((a, b) => a - b);
-      const grad = (name, colour, alpha) => {
-        const gr = part(`shine/grad/${name}`, "radialGradient", this.light_defs);
-        gr.id = `shine-${name}`; gr.setAttribute("gradientUnits", "userSpaceOnUse");
-        gr.setAttribute("cx", f(c[0])); gr.setAttribute("cy", f(c[1])); gr.setAttribute("r", f(reach));
-        const stops = [[0, 0], ...at.map((r) => [r / reach, alpha(r)]), [1, 0]];
-        stops.forEach(([o, op], i) => { const st = part(`shine/grad/${name}/${i}`, "stop", gr); st.setAttribute("offset", f(o)); st.setAttribute("stop-color", colour); st.setAttribute("stop-opacity", f(op)); });
-      };
-      grad("light", "#fff", light);
-      grad("dark", "#000", dark);
-    }
-    const bands = (g, under, key) => {
-      if (!sun) return;
-      for (const [name, parent] of [["light", g], ["dark", under]]) {
-        const p = part(`${key}/${name}`, "rect", parent);
-        p.setAttribute("x", f(-R)); p.setAttribute("y", f(-R)); p.setAttribute("width", f(2 * R)); p.setAttribute("height", f(2 * R)); p.setAttribute("fill", `url(#shine-${name})`);
-      }
-    };
-    const first_hand = items.findIndex((x) => x.role === "hand" || x.role === "cap" || x.role === "guide");
-    if (sun && items.some((x) => x.role === "plate")) {
-      const clip = part("shine/clip", "clipPath", this.light_defs), dial = part("shine/clip/dial", "circle", clip);
-      clip.id = "shine-clip"; dial.setAttribute("r", f(R));
-      const before = first_hand >= 0 ? nodes[first_hand] : null;
-      const under = part("shine-dark", "g", this.dial, before), g = part("shine", "g", this.dial, before);
-      for (const x of [under, g]) { x.setAttribute("clip-path", "url(#shine-clip)"); x.setAttribute("pointer-events", "none"); }
-      g.setAttribute("style", "mix-blend-mode: screen");
-      bands(g, under, "shine");
-    }
-    // each hand's bevel: its right and left halves (as it points) lighter and darker by where the light comes from, and the shine's bands on it
+    const from = S.sh_from, nodes = items.map((_, i) => this.slots[i].node);
+    // each hand's bevel: its right and left halves (as it points) lighter and darker by where the light comes from
     items.forEach((item, i) => {
       const own = S["ha_" + item.name];
-      if (item.role !== "hand" || G.HAND_SHAPES[own?.shape] === "disc" || !((own?.bevel && +S.sh_bevel > 0) || sun)) return;      // a disc hand is flat; a hand without its Bevel (or at Bevels 0) gets only the showcase's shine
+      if (item.role !== "hand" || G.HAND_SHAPES[own?.shape] === "disc" || !(own?.bevel && +S.sh_bevel > 0)) return;      // a disc hand is flat; a hand without its Bevel (or at Bevels 0) gets only the showcase's shine
       const side = Math.sin((from - item.angle) * Math.PI / 180);      // + : the light comes from the hand's right
       const key = "bevel-" + item.name, clip = part(key + "/clip", "clipPath", this.light_defs), shape = part(key + "/clip/hand", "path", clip);
       clip.id = "bevel-clip-" + item.name; shape.setAttribute("d", this.slots[i].d);
@@ -1848,90 +1710,12 @@ class DialTool {
       const lit = BEVEL.light * Math.abs(side) * Math.min(on, 1) * amount, dark = BEVEL.dark * Math.abs(side) * Math.min(on, 1) * amount;
       half("right", 0, side > 0 ? "#fff" : "#000", side > 0 ? lit : dark);
       half("left", -50, side > 0 ? "#000" : "#fff", side > 0 ? dark : lit);
-      if (sun) {
-        const dk = part(key + "/shine-dark", "g", inner), sh = part(key + "/shine", "g", inner);
-        for (const x of [dk, sh]) x.setAttribute("transform", `rotate(${f(item.angle)})`);
-        sh.setAttribute("style", "mix-blend-mode: screen");
-        bands(sh, dk, key + "/shine");
-      }
     });
     finish();
   }
 
-  /** the showcase's spotlight and the dial's shadow in it, for the sun now (POOL); in the dial's millimetres */
-  draw_pool() {
-    if (!this.show) return;
-    const S = this.S, sun = this.sun(), a = sun.from * Math.PI / 180, toward = [Math.sin(a), Math.cos(a)];
-    const R = S.dial_d / 2, off = POOL.lift / Math.tan(sun.rise * Math.PI / 180), dim = 1 - sun.k;
-    const mix = ([lo, hi], t) => lo + (hi - lo) * t;
-    const soft = mix(POOL.soft, dim), light = mix(POOL.light, sun.k) * sun.light, shade = mix(POOL.shade, sun.k) * sun.light;
-    const f = (v) => v.toFixed(3), [L, D] = this.pool_parts;
-    L.circle.setAttribute("r", f(R * POOL.size));
-    L.circle.setAttribute("transform", `translate(${f(-toward[0] * off / 2)} ${f(-toward[1] * off / 2)}) rotate(${f(90 - sun.from)}) scale(${f(1 + POOL.stretch * dim)} 1)`);
-    const lum = (c) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2], b = S.c_backdrop, lift = lum(b) < POOL.least ? (POOL.least - lum(b)) / (1 - lum(b)) : 0;
-    const colour = to_hex(b.map((v, i) => (i < 3 ? v + (1 - v) * lift : v)));      // a very dim backdrop: its colour lifted toward white, so the pool still lights (#351)
-    L.stops.forEach((s, i) => { s.setAttribute("offset", f([0, 1 - soft, 1][i])); s.setAttribute("stop-color", colour); s.setAttribute("stop-opacity", f(i < 2 ? light : 0)); });
-    const r = R * (1 + soft * 0.4);
-    D.circle.setAttribute("r", f(r));
-    D.circle.setAttribute("transform", `translate(${f(-toward[0] * off)} ${f(-toward[1] * off)})`);
-    D.stops.forEach((s, i) => { s.setAttribute("offset", f([0, R / r * (1 - soft * 0.3), 1][i])); s.setAttribute("stop-color", "#000"); s.setAttribute("stop-opacity", f(i < 2 ? shade : 0)); });
-  }
 
-  /** Now in the showcase: the hands land on the time it is now; the pill shrinks into an undo sign. Pressed then, they
-   *  go back to the time they showed (as it has run on since), each the other way, and the sign grows back into Now
-   *  (Okay, 04:59; Okay's choice of the way back) */
-  //  10:10 does the same, to 10:10 (07:40). The one pressed turns into the undo sign; the other stays as it is. The other
-  //  pressed then takes the hands to its time and the sign moves to it; the way back is still to the time first shown.
-  show_now(kind = "now") {
-    const sh = this.show, beat = G.BEATS[this.S.ha_beat][1];
-    const from = G.hand_angles(this.S.t, beat);
-    if (sh.back && sh.back.by === kind) {
-      this.set_time(sh.back.t + (performance.now() - sh.back.at) / 1000);
-      sh.back = null;
-      sh.spin = { from, way: -1, t0: performance.now() };
-    } else {
-      const d = new Date(), now = d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000;
-      sh.back = sh.back ? { ...sh.back, by: kind } : { t: this.S.t, at: performance.now(), by: kind };
-      this.set_time(kind === "now" ? now : 10 * 3600 + 600 + this.half());
-      sh.spin = { from, way: 1, t0: performance.now() };
-    }
-    for (const b of [this.now_pill, this.ten_pill]) {
-      const back = !!sh.back && b.classList.contains(sh.back.by);
-      b.classList.toggle("back", back);
-      b.title = b.ariaLabel = back ? "Back to the time it showed" : b.dataset.says;
-    }
-    this.render();
-  }
 
-  /** the hands while they spin (frame()). The hour hand turns one whole turn clockwise and on to where it lands, the
-   *  minute hand the same anticlockwise (going back, each the other way); the seconds hand makes no turn, it goes the
-   *  short way to its place while the big hands whirl. One easing for all, slow to start and slow to land (Okay, 15 Oct
-   *  2026, 07:36: "big arms move different wises, one clock one anticlock. One turn, ease to stop on position. Seconds?
-   *  Only moves to position slowly as the chaos ensues. Eases both start and end"; was: every hand two turns, one way) */
-  spin_hands(items) {
-    const sp = this.show && this.show.spin;
-    if (!sp) return;
-    const p = clamp((performance.now() - sp.t0) / SPIN_MS, 0, 1), e = p < 0.5 ? 4 * p ** 3 : 1 - (-2 * p + 2) ** 3 / 2;
-    const k = { hour: 0, minute: 1, second: 2 }, way = { hour: sp.way, minute: -sp.way };
-    for (const item of items) {
-      if ((item.role !== "hand" && item.role !== "mark") || !(item.name in k) || p >= 1) continue;      // a disc's painted mark turns with its hand
-      const a0 = sp.from[k[item.name]], d = item.angle - a0;
-      if (item.name === "second") { item.angle = a0 + e * ((d % 360 + 540) % 360 - 180); continue; }      // the short way, under half a turn
-      const w = way[item.name], gap = ((d * w) % 360 + 360) % 360;      // how far round it is, going its own way
-      item.angle = a0 + w * e * (gap + 360);
-    }
-    if (p >= 1) this.show.spin = null;
-  }
-
-  /** the showcase's hint, once it has arrived: over Now a two-headed arrow comes, sways left and right, and goes */
-  hint() {
-    const h = this.sun_hint, now = this.now_pill.getBoundingClientRect(), box = this.svg.getBoundingClientRect();
-    const below = this.c[1] + this.S.dial_d / 2 * this.z, above = now.top - box.top;      // the dial's bottom, Now's top, in the preview
-    h.style.top = ((below + above) / 2 - h.offsetHeight / 2).toFixed(1) + "px";            // centred between them (05:43)
-    h.classList.remove("go");
-    void h.offsetWidth;
-    h.classList.add("go");
-  }
 
   /** the iris switch opened (its words, ACTIVATE SHOWCASE, slid out to its left) or shut */
   iris_open(on) {
@@ -1947,6 +1731,57 @@ class DialTool {
    *  The stylesheet does the moving: #app.away turns --away from 0 to 1 (eased), and the panel's column, the panel and
    *  what stands on the preview follow it. The preview grows with its column; each step of that is a resize, and a
    *  fitted dial re-fits on every one, so the dial grows and centres in step with the slide. Not part of a dial. */
+  /** show mode, or back (#509; Okay, 22 Oct 2026: "left side slides out, right side slides in"): the panel slides away
+   *  to the left, comes back on the right with the show tabs and the backdrop's tint; the dial's own drawing gives way
+   *  to the watch (show.js); Fit fits the case. The bar stays. Nothing of the dial changes; ui_show remembers the mode. */
+  show_mode(on, instant = false) {
+    const app = $("#app");
+    if (on === Boolean(this.S.ui_show)) return;
+    this.hover(null);
+    if (this.pop && this.pop.at) this.pop_close();
+    if (this.bio_open) this.bio_open(false);
+    this.iris_open(false);
+    this.S.ui_show = on;
+    this.iris_button.setAttribute("aria-pressed", String(on));
+    const first = SECTIONS.indexOf(SHOW_SECTIONS[0]);      // each mode remembers its tab
+    if (on) { this.S.ui_edit_section = this.S.ui_section; this.S.ui_section = SHOW_SECTIONS.includes(SECTIONS[this.S.ui_show_section]) ? this.S.ui_show_section : first; }
+    else { this.S.ui_show_section = this.S.ui_section; this.S.ui_section = SHOW_SECTIONS.includes(SECTIONS[this.S.ui_edit_section]) ? 0 : this.S.ui_edit_section; }
+    [...this.tabs.children].forEach((b) => { b.hidden = SHOW_SECTIONS.includes(b.dataset.tab) !== on; });
+    this.dial.style.display = on ? "none" : ""; this.over.style.display = on ? "none" : ""; this.bezel_g.style.display = on ? "none" : "";
+    if (!on) { this.watch_g.replaceChildren(); this.watch_key = null; this.tint_panel(); }
+    const was_away = app.classList.contains("away");
+    const swap = () => {
+      app.classList.toggle("showing", on);
+      this.show_section();
+      this.watch_key = null;      // drawn afresh in the mode's own layer
+      this.fit();
+      requestAnimationFrame(() => requestAnimationFrame(() => this.dial_alone(false)));      // …and the panel slides back in on its new side
+      this.render();
+    };
+    if (was_away || instant) swap();
+    else {      // out to the left first, the long way (dial_alone's slide), then the swap, then in from the right
+      const done = (e) => { if (e.target !== app) return; app.removeEventListener("transitionend", done); clearTimeout(wait); swap(); };
+      const wait = setTimeout(() => { app.removeEventListener("transitionend", done); swap(); }, 1200);
+      app.addEventListener("transitionend", done);
+      this.dial_alone(true);
+    }
+  }
+  /** the panel's colours from the backdrop in show mode (show.js tint_panel; #505) */
+  tint_panel() {
+    const key = this.S.ui_show ? this.S.c_backdrop.join(",") : "";
+    if (key === this.tint_key) return;
+    this.tint_key = key;
+    SHOW.tint_panel($(".panel"), this.S.ui_show, this.S.c_backdrop);
+  }
+  row_export_watch_png(wrap) {
+    wrap.className = "row";
+    wrap.append(el("label", { textContent: "Image" }), el("button", { type: "button", className: "btn main", id: "export-watch-png", textContent: "PNG", onclick: () => SHOW.export_watch(this, "png", save_file).catch((e) => this.log("the watch's PNG failed: " + e.message)) }));
+  }
+  row_export_watch_pdf(wrap) {
+    wrap.className = "row";
+    wrap.append(el("label", { textContent: "Page" }), el("button", { type: "button", className: "btn main", id: "export-watch-pdf", textContent: "PDF", onclick: () => SHOW.export_watch(this, "pdf", save_file).catch((e) => this.log("the watch's PDF failed: " + e.message)) }));
+  }
+
   dial_alone(on) {
     const app = $("#app");
     this.eye_button.setAttribute("aria-pressed", String(on));
@@ -2088,41 +1923,12 @@ class DialTool {
     const iris = el("button", { type: "button", className: "iriskey", id: "iris-box", title: "The showcase", ariaLabel: "The showcase" });
     iris.innerHTML = icon(TOOL_ICONS.show_eye, 30);      // the eye (Okay, 19 Oct 2026: "showcase gets the eye")
     iris.setAttribute("aria-pressed", "false");
-    iris.onclick = () => { if (this.show) this.showcase(false); else this.iris_open(this.iris_box.getAttribute("aria-expanded") !== "true"); };
-    this.iris_go = el("button", { type: "button", className: "irisgo", id: "iris-go", textContent: "Activate showcase", onclick: () => this.showcase(true) });
+    iris.onclick = () => { if (this.S.ui_show) this.show_mode(false); else this.iris_open(this.iris_box.getAttribute("aria-expanded") !== "true"); };
+    this.iris_go = el("button", { type: "button", className: "irisgo", id: "iris-go", textContent: "Activate showcase", onclick: () => this.show_mode(true) });
     this.iris_box = el("div", { className: "onview irisbox" }, this.iris_go, iris);
     this.iris_button = iris;
     this.iris_open(false);
     this.eye_box = el("div", { className: "eyes" }, this.iris_box, eye);
-    // the showcase's Now: a pill at the bottom centre, on the iris's line (04:26: "a button appeared bottom center:
-    // NOW!"); pressed, the hands spin to now and it shrinks into an undo sign, the way back (show_now)
-    // Beside it, 10:10, the pose watches are shown in (Okay, 15 Oct 2026, 07:40): the same whirl to 10:10. Whichever was
-    // pressed turns into the undo sign; the other stays as it is (show_now)
-    const pill = (kind, id, word, says) => {
-      const b = el("button", { type: "button", className: "onview nowpill " + kind, id, title: says, ariaLabel: says, onclick: () => this.show_now(kind) }, el("span", { className: "word", textContent: word }));
-      b.insertAdjacentHTML("beforeend", icon(TOOL_ICONS.undo));
-      b.dataset.says = says;
-      return b;
-    };
-    this.now_pill = pill("now", "show-now", "Now", "The time it is now");
-    this.ten_pill = pill("ten", "show-ten", "10:10", "10:10, the classic pose");
-    // the showcase's bottom left corner: the hands shown or hidden, a round key with the Hands sign inside (Okay, 07:40:
-    // "show/hide hands. We have a hands icon, adapt to size. Round with hands inside"). The showcase's alone; the
-    // dial's own Show hands is left as it is
-    this.hands_key = el("button", { type: "button", className: "onview handskey", id: "hands-key", title: "Hide the hands", ariaLabel: "Hands" });
-    this.hands_key.innerHTML = icon(TOOL_ICONS.hands_key, 38);
-    this.hands_key.setAttribute("aria-pressed", "false");
-    this.hands_key.onclick = () => {
-      const hide = !this.show.nohands;
-      this.show.nohands = hide;
-      this.hands_key.setAttribute("aria-pressed", String(hide));
-      this.hands_key.title = hide ? "Show the hands" : "Hide the hands";
-      this.render();
-    };
-    // over it, the hint that the sun moves left and right (hint())
-    this.sun_hint = el("div", { className: "sunhint", id: "sun-hint" });
-    this.sun_hint.innerHTML = icon(TOOL_ICONS.both_ways, 108, 36);
-    this.sun_hint.onanimationend = () => this.sun_hint.classList.remove("go");
     return el("div", { className: "backdrops" }, box);
   }
 
@@ -2250,7 +2056,7 @@ class DialTool {
     const H = this.handles;
     if (!H) return;
     const R = this.ring(), k = R ? G.ring_guide(this.S, this.S.ui_ring) : null;
-    if (this.show || this.S.ui_section !== 1 || !this.guides_drawn || !R || !R.on || k === null) { H.replaceChildren(); this.handles_key = ""; return; }      // the selected ring's, shown to start (#486) and always with its guide (draw): a numeral being nudged hides both
+    if (this.S.ui_show || this.S.ui_section !== 1 || !this.guides_drawn || !R || !R.on || k === null) { H.replaceChildren(); this.handles_key = ""; return; }      // the selected ring's, shown to start (#486) and always with its guide (draw): a numeral being nudged hides both
     const kind = G.kind_of(R), ext = { ticks: R.len, markers: R.len, band: R.width }[kind] || 0;
     let outer = R.r + G.from_shift(R, ext), inner = outer - ext;
     if (G.has_text(R)) [inner, outer] = G.text_band(R);      // the band (#488)
@@ -2636,10 +2442,7 @@ class DialTool {
    *  cap's shadow, as wide as the cap. Nothing is drawn outside the dial: the plate's own shadow falls only into its
    *  windows. Each surface's shadows are one group with one opacity, so where two overlap it is not darker. */
   draw_shadows(items) {
-    const sun = this.show && this.sun();
-    // the showcase: shadows on, soft, from its own sun, as dark as its light. Anywhere: the soft edge waits while
-    // something moves (moving())
-    const S = sun ? { ...this.S, sh_on: true, sh_blur: !this.moving(), sh_from: sun.from, sh_rise: sun.rise, sh_dark: Math.min(this.S.sh_dark * SHOW_DARKER, 100) * sun.light } : { ...this.S, sh_blur: this.S.sh_blur && !this.moving() };
+    const S = { ...this.S, sh_blur: this.S.sh_blur && !this.moving() };      // the soft edge waits while something moves (moving())
     if (!this.shade) {
       const defs = svg_el("defs"), filter = svg_el("filter"), blur = svg_el("feGaussianBlur");
       filter.id = "shadow-soft";
@@ -3163,7 +2966,7 @@ class DialTool {
       group.append(...(row.order || buttons.map((b, i) => i)).map((i) => buttons[i]));
       const name = el("label", { textContent: row.text });
       wrap.append(name, group);
-      out.refresh = (T) => { buttons.forEach((b, i) => b.classList.toggle("on", i === T[row.key])); if (row.say) name.textContent = label_of(row, T); };
+      out.refresh = (T) => { buttons.forEach((b, i) => { b.classList.toggle("on", i === T[row.key]); if (row.offered) b.hidden = !row.offered(T).includes(i); }); if (row.say) name.textContent = label_of(row, T); };      // offered: which choices can be used now (R16)
     }
 
     if (row.kind === "chk") {
@@ -5860,16 +5663,8 @@ class DialTool {
         this.pulse(this.S.t, performance.now() / 1000);
         this.render();
       }
-      if (this.show) {      // the showcase's sun crosses its day (SUN.day seconds), then rises again; held while dragged
-        const now = performance.now();
-        if (!this.show.dragging) this.show.phase = (this.show.phase + (now - this.show.at) / 1000 / SUN.day) % 1;
-        this.show.at = now;
-        this.render();
-      }
-      if (this.travel) { this.travel_step(); this.render(); }      // the dial on its way into or out of the showcase
-      if (this.show && this.show.spin) this.render();
       this.draw();
-      this.draw_bezel();
+      if (this.S.ui_show) { SHOW.draw(this, this.items); this.tint_panel(); } else this.draw_bezel();
       this.draw_handles();
       this.tiny_draw();
     } catch (e) {
@@ -5879,11 +5674,11 @@ class DialTool {
   }
 
   draw() {
-    let S = this.show ? { ...this.S, guides: false, ha_on: this.S.ha_on && !this.show.nohands } : this.S;      // the showcase: no guides; its hands key may hide the hands
-    if (!this.show && this.hole_at && performance.now() - this.hole_at < HOLE_LIVE_MS) {      // the centre hole being sized: its guide, alone if the guides are off (#267)
+    let S = this.S.ui_show ? { ...this.S, guides: false } : this.S;      // show mode: no guides
+    if (!S.ui_show && this.hole_at && performance.now() - this.hole_at < HOLE_LIVE_MS) {      // the centre hole being sized: its guide, alone if the guides are off (#267)
       S = S.guides ? { ...S, gd_hole_live: true } : { ...S, guides: true, gd_hole_live: true, gd_axes: false, gd_rings: false, gd_sel: false, gd_wins: false, gd_wsel: false, gd_more: [] };
-    } else if (!this.show && this.guides_at && performance.now() - this.guides_at < HOLE_LIVE_MS) S = { ...S, guides: this.guides_on };      // a number being slid: the guides as set; a numeral being nudged: none (guides_live)
-    else if (!this.show && !S.guides && S.ui_section === 1 && this.ring()?.on) S = { ...S, guides: true, gd_axes: false, gd_hole: false, gd_rings: false, gd_sel: true, gd_wins: false, gd_wsel: false, gd_more: [] };      // on the Rings tab the selected ring's guide shows with its handles, the guides off or on (Okay, 04:52: "Handles and guides show together at all times")
+    } else if (!S.ui_show && this.guides_at && performance.now() - this.guides_at < HOLE_LIVE_MS) S = { ...S, guides: this.guides_on };      // a number being slid: the guides as set; a numeral being nudged: none (guides_live)
+    else if (!S.ui_show && !S.guides && S.ui_section === 1 && this.ring()?.on) S = { ...S, guides: true, gd_axes: false, gd_hole: false, gd_rings: false, gd_sel: true, gd_wins: false, gd_wsel: false, gd_more: [] };      // on the Rings tab the selected ring's guide shows with its handles, the guides off or on (Okay, 04:52: "Handles and guides show together at all times")
     this.guides_drawn = S.guides;      // the handles show when the guides do (draw_handles)
     const day = G.shows_day(S) ? G.day_hour(S) : null;       // an am · pm window follows the time shown, in steps of six minutes
     if (day !== this.day_drawn) { this.day_drawn = day; this.static_dirty = true; }
@@ -5895,16 +5690,10 @@ class DialTool {
       if (S.out_production) merges_of(this);      // the mask's note (#220): what the new build loses, once the dial is still
     }
     const items = G.scene(S, this.statik, S.t, true, S.ui_ring);
-    this.spin_hands(items);      // the showcase's Now: the big hands whirl opposite ways, the seconds go straight
     this.items = items;
     const backdrop = S.out_production ? [1, 1, 1, 1] : S.c_backdrop;
     this.backdrop.setAttribute("fill", to_hex(backdrop));
     this.main.style.setProperty("--canvas-fill", to_hex(backdrop));      // the backdrop's colour, for a switch whose words show (6-preview.css)
-    this.sky_stops[0].setAttribute("stop-color", to_hex(backdrop.map((v, i) => (i < 3 ? v * SKY_TOP : 1))));      // the showcase's sky: the backdrop, much darker, at the top left…
-    this.sky_stops[1].setAttribute("stop-color", "#000");                                                          // …to black at the bottom right,
-    const [sw_, sh_] = this.size(), reach = ((sw_ + sh_) / 2).toFixed(1);                                         // at 45°: along (1, 1), as far as the far corner
-    this.sky_grad.setAttribute("x2", reach); this.sky_grad.setAttribute("y2", reach);
-    this.draw_pool();
     // what stands on the preview (Guides, Backdrop) is outline only, in black or white: whichever stands out more from
     // the backdrop. One of the two always has a contrast of 4.5 or more, so they can't be lost on any colour.
     const lin = (v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4), L = 0.2126 * lin(backdrop[0]) + 0.7152 * lin(backdrop[1]) + 0.0722 * lin(backdrop[2]);
@@ -5952,7 +5741,7 @@ class DialTool {
     });
     this.draw_picked();
     this.draw_light(items);      // a ring of shine and the hands' bevels, before the shadows that fall over them (4.77)
-    this.draw_shadows(items);
+    if (!this.S.ui_show) this.draw_shadows(items);      // show mode: the watch draws the hands' shadows
     this.place();
     const ring = this.ring();
     const font = G.has_text(ring) ? `   ·   ${ring.ps}` : "";
@@ -5968,7 +5757,7 @@ class DialTool {
   // ── the preview: zoom, pan, click ────────────────────────
 
   size() { const r = this.svg.getBoundingClientRect(); return [r.width, r.height]; }
-  fit_zoom() { const [w, h] = this.size(); return Math.min(w, h) / G.page_mm(this.S); }      // the dial, never its case (4.69; Okay, 22:35: "Fit and previews care about the dial still, the bezel and strap secondary"; 4.66–4.68 made room for the case)
+  fit_zoom() { const [w, h] = this.size(); return this.S.ui_show ? SHOW.fit_zoom(this, w, h) : Math.min(w, h) / G.page_mm(this.S); }      // show mode fits the case (Okay, 22 Oct 2026)      // the dial, never its case (4.69; Okay, 22:35: "Fit and previews care about the dial still, the bezel and strap secondary"; 4.66–4.68 made room for the case)
 
   /** put the dial at c, scaled to z; mirrored for toner transfer. y grows upward inside. */
   place() {
@@ -5978,15 +5767,14 @@ class DialTool {
     this.over.setAttribute("transform", where);
     if (this.handles) { this.handles.setAttribute("transform", where); this.handles_key = ""; }
     if (this.bezel_g) this.bezel_g.setAttribute("transform", where);
-    if (this.pool) this.pool.setAttribute("transform", where);
+    if (this.watch_g) this.watch_g.setAttribute("transform", where);
   }
 
   fit() {
     const [w, h] = this.size();
     if (w < 1 || h < 1) return;
-    if (this.travel) return;                       // on its way: travel_step aims at the new size
     this.fitted = true;
-    const to = this.show ? this.show_target() : { c: [w / 2, h / 2], z: this.fit_zoom() };      // the showcase has its own size
+    const to = { c: [w / 2, h / 2], z: this.fit_zoom() };
     this.z = to.z;
     this.c = to.c;
     this.place();
@@ -6006,7 +5794,6 @@ class DialTool {
     this.pop_cover();
     const [w, h] = this.size();
     if (w < 1 || h < 1) return;
-    if (this.travel) { this.view = [w, h]; return; }
     if (this.fitted) this.fit();
     else if (this.view) { this.c = [this.c[0] + (w - this.view[0]) / 2, this.c[1] + (h - this.view[1]) / 2]; this.place(); }
     this.view = [w, h];
@@ -6022,7 +5809,6 @@ class DialTool {
     const at = (e) => { const r = this.svg.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
     this.svg.addEventListener("wheel", (e) => {
       e.preventDefault();
-      if (this.show) return;                       // the showcase: the dial stays where it is
       this.hover(null);
       if (e.ctrlKey || e.metaKey) this.zoom(Math.exp(-e.deltaY * 0.01), at(e));      // pinch, or ⌘ / ctrl + scroll
       else { this.fitted = false; this.c = [this.c[0] - e.deltaX, this.c[1] - e.deltaY]; this.place(); }
@@ -6039,12 +5825,11 @@ class DialTool {
       else if (pts.size >= 2) down = { ...pair(), moved: true };      // a pinch is never a click
       else down = null;
     };
-    this.svg.addEventListener("pointerdown", (e) => { pts.set(e.pointerId, at(e)); this.svg.setPointerCapture(e.pointerId); if (pts.size === 1) down = null; restart(); if (this.show && pts.size === 1) { this.show.dragging = true; this.sun_to(at(e)); } });      // the showcase: the sun to the pointer, along its day
+    this.svg.addEventListener("pointerdown", (e) => { pts.set(e.pointerId, at(e)); this.svg.setPointerCapture(e.pointerId); if (pts.size === 1) down = null; restart(); });
     this.svg.addEventListener("pointermove", (e) => {
       if (!pts.has(e.pointerId)) return e.pointerType === "mouse" ? this.hover(at(e), document.elementFromPoint(e.clientX, e.clientY)) : null;
       pts.set(e.pointerId, at(e));
       if (pts.size >= 2) {
-        if (this.show) return;                     // the showcase: no pinch, only the sun
         const now = pair();
         this.hover(null);
         this.c = [this.c[0] + now.mid[0] - down.mid[0], this.c[1] + now.mid[1] - down.mid[1]];      // pan by the midpoint…
@@ -6053,7 +5838,6 @@ class DialTool {
         return;
       }
       const p = at(e);
-      if (this.show) { this.sun_to(p); return; }      // the showcase: a drag moves the sun, not the dial
       if (Math.hypot(p[0] - down.p[0], p[1] - down.p[1]) > 4) down.moved = true;
       // a finger alone doesn't move the dial: two do, with the pinch (Okay, 18 Oct 2026, notes 2: "on ipad and all touch
       // screens, you need two fingers to move as well. One finger drag sometimes confusing as reported"). The mouse drags.
@@ -6062,8 +5846,7 @@ class DialTool {
     });
     const up = (e) => {
       if (!pts.has(e.pointerId)) return;
-      const click = pts.size === 1 && down && !down.moved && e.type === "pointerup" && !this.show;
-      if (this.show) { this.show.dragging = false; this.show.at = performance.now(); }
+      const click = pts.size === 1 && down && !down.moved && e.type === "pointerup";
       pts.delete(e.pointerId);
       if (click) this.clicked(at(e), document.elementFromPoint(e.clientX, e.clientY));
       restart();
@@ -6075,7 +5858,7 @@ class DialTool {
     this.svg.addEventListener("gesturestart", (e) => { e.preventDefault(); pinch = 1; });
     this.svg.addEventListener("gesturechange", (e) => {      // a Mac trackpad in Safari; on a touch screen the two pointers above already pinch
       e.preventDefault();
-      if (pts.size < 2 && !this.show) this.zoom(e.scale / pinch, at(e));
+      if (pts.size < 2) this.zoom(e.scale / pinch, at(e));
       pinch = e.scale;
     });
   }
@@ -6141,7 +5924,7 @@ class DialTool {
 
   /** the pointer rests on something that can be edited: outline it, and say its name beside the pointer. */
   hover(p, node) {
-    const piece = p && !this.show ? this.piece_at(p, node) : null;      // the showcase: no outlines, no names
+    const piece = p && !this.S.ui_show ? this.piece_at(p, node) : null;      // show mode: no outlines, no names
     this.tip.hidden = !piece;
     for (const line of this.glow) line.setAttribute("d", piece ? piece.path.svg(4) : "");
     if (!piece) return;

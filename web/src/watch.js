@@ -19,7 +19,7 @@ export function attach(pk) { PK = pk; }
 let STYLE = "miyazaki";
 let GLINT = "plain", INK_K = 6, INK_N = 0, HAND_BEVEL = false, FLARE_TINT = "#ffffff", FLARE_SCALE = 1, GLASS_K = 1, SH_OP = 0.3, FLARE_KIND = "arc", DIVOT = "cut";
 let BRACELET_KIND = "vault";      // which bracelet the diver wears: vault (Oyster) or links (Emre's)
-let DIAL_IN = true;      // false: the watch round a dial drawn by someone else (Dial Tool's edit mode) — no dial, no glass, nothing over the opening
+let DIAL_IN = true, OUTLINE_ON = true;      // OUTLINE_ON false: the effects switch is off (Okay: "turn off shenanigans") — no silhouette outline, which is a PathKit union per drawing      // false: the watch round a dial drawn by someone else (Dial Tool's edit mode) — no dial, no glass, nothing over the opening
 const REHAUT = 0.8; let SHD = 1, INSERT = { top: "#2b2c30", bottom: "#2b2c30" }, FL = { size: 1, tint: 0.45, bright: 1 }, GLASS = { fat: 1, len: 1, op: 1 }, DIALS = [], HANDS_A = { hour: 305, minute: 60, second: 180 };
 let SUN_H = 40;                                            // the sun's height, degrees (set per drawing)
 let CLIPS = [], clipN = 0, BLOB = 0, BLOB_N = 0, VB_N = 0;
@@ -720,7 +720,7 @@ function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal = null
 <rect x="-300" y="-300" width="600" height="600" fill="url(#pool)"/>
 ${blockShadow}
 
-${strapSVG}${strap === "bracelet" ? "" : contact(C, L, strap, span, STYLE === "miyazaki")}${caseStr}${STYLE === "miyazaki" ? silhouetteOutline(strap === "bracelet" ? [...OUTL_S, ...OUTL_C] : OUTL_C, L) : ""}
+${strapSVG}${strap === "bracelet" ? "" : contact(C, L, strap, span, STYLE === "miyazaki")}${caseStr}${STYLE === "miyazaki" && OUTLINE_ON ? silhouetteOutline(strap === "bracelet" ? [...OUTL_S, ...OUTL_C] : OUTL_C, L) : ""}
 </svg>`;
 }
 
@@ -731,7 +731,7 @@ ${strapSVG}${strap === "bracelet" ? "" : contact(C, L, strap, span, STYLE === "m
  *  slider, 1 = as drawn) */
 export function frame(o) {
   use("engineer"); DIAL_IN = false; GLINT = "off"; SH_OP = Math.min(1, 0.3 * (o.shadow ?? 1));
-  const C0 = CASES[o.kind] || CASES.dress, size = o.d / (C0.dial - (C0.insert ? 2 * REHAUT : 0));
+  const C0 = CASES[o.kind] || CASES.dress, size = sizeFor(o.kind, o.d);
   METALS.custom = METALS[o.metal] || tones(o.metal || METALS.steel[1], [1.35, 0.81]);
   LEATHER.custom = tones(o.leather || LEATHER.brown[1], [1.18, 0.82]);
   BRACELET_KIND = "vault";
@@ -757,10 +757,13 @@ export function presets(style) { use(style); return { floor: STYLES[style].floor
   nato: Object.fromEntries(Object.entries({ ...NATO_SETS, ...NATO_MORE }).map(([k, S]) => [k, S.map((T) => T[1])])) }; }
 /** the ground's colour at the drawing's edge: what lies beyond it on the screen */
 export const edge = (floor, view, style) => (view === "detail" ? hsl(floor, STYLES[style].ramp[2]) : floor);
+/** the size that puts a case round a dial of diameter `d` (Okay, 22 Oct 2026: "Cases snap to dials. Size of dial determines"): the
+ *  published case's opening — less the rehaut on a diver — scaled to the dial */
+export const sizeFor = (key, d) => { const C = CASES[key] || CASES.dress; return d / (C.dial - (C.insert ? 2 * REHAUT : 0)); };
 export const caseBox = (key, size) => { const C = scaleCase(CASES[key], size); return { h: C.l2l, w: (C.cushion ? 2 * C.cushion.a : C.rails ? Math.max(C.od, C.lugw + 2 * C.lugT) : C.od) + 2 * C.crown.h, dial: C.dial }; };
 export const STRIPE_COUNT = (name) => new Set((STRIPES[name] || [[0, 1, 0]]).map((x) => x[2])).size;
 export function draw(o) {
-  use(o.style || "miyazaki"); const STYLE_ = STYLES[STYLE];
+  use(o.style || "miyazaki"); const STYLE_ = STYLES[STYLE]; OUTLINE_ON = o.outline !== false;
   DIALS = [{ name: "live", d: o.d, own: true, items: o.items }];
   HANDS_A = o.A; FLARE_KIND = o.flare; INK_K = o.ink ?? 6; FL = o.fl; GLASS = o.glass; INSERT = o.insert; SHD = o.shadow ?? 1; HAND_BEVEL = Boolean(o.bevels);
   // a colour that is one of the engine's own keeps that entry's three tones; any other gets three made from it

@@ -63,10 +63,8 @@
     /* the dial alone (the eye switch, Okay, 15 Oct 2026, 04:02): the panel slides away and the dial grows to fit, eased */
     --panel-w: calc(var(--panel) + var(--hair));   /* the panel's column: its lines and its right hairline */
     --view-time: 700ms; --view-ease: cubic-bezier(0.65, 0, 0.35, 1);      /* slow out, slow in */
-    --show-time: 600ms;                            /* the showcase's sky and spotlight fading in and out */
     --iris-time: 250ms;                            /* the iris switch's words sliding out; Now shrinking into its undo sign */
     --iris-words: 160px;                           /* room enough for ACTIVATE SHOWCASE */
-    --now-pill: 64px;                              /* the showcase's Now pill */
     /* a phone (Okay, 15 Oct 2026, 06:20–06:24) */
     --preview-share: 42%;                          /* the preview's share of the screen; the drawer under it has the rest, less the bar (its gripper sets it) */
     --grip-w: 26px; --grip-h: 10px; --grip-hit: 44px;      /* the drawer's gripper: a pill on its top line (06:51: "nubbin pill and larger"), and the room a finger gets around it */
@@ -75,10 +73,6 @@
     --speed-thumb-narrow: 26px;                    /* a phone's speed thumb, the speed written in it: wide enough for 720X */
     --word-max: 88px;                              /* the most a switch's word unfolds to */
     --logo-narrow: 22px;                           /* Okay's mark, larger on a phone (06:24: "larger okay icon on mobile") */
-    --show-key: 40px; --show-pill: 80px;           /* in the showcase the X and Now are a quarter larger (05:43: "now and x can grow too") */
-    --show-faint: 0.6;                             /* and less faint than the switches (05:43: "too faint") */
-    --hint-time: 2400ms;                           /* the showcase's left-right hint, start to end */
-    --mast-show: 0.5;                              /* the mark and "Dial Tool" in the showcase: fainter (Okay, 04:59) */
     --track-50: 0.05em;                            /* tracking 50: every monospace word of the bottom bar (Okay, 15 Oct 2026, 06:51: "all mono text around here gets +50 tracking") */
     --track-100: 0.1em;                            /* tracking 100 (Okay, 04:59: "now gets 100 tracking") */
     --compare-d: 0px;                              /* set by compare_place(): the size every saved dial is shown at in Compare (#435) */

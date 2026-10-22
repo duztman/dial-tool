@@ -80,7 +80,7 @@ check(G.link_kind("#1.fZLRjtsgEEV_~x")?.scheme === 1 && G.link_kind("0.abc")?.sc
 
 // the key table: every key of the settings has a code, and the table only grows (its first 156 keys stay as they are)
 {
-  const keys = [G.DEFAULTS, G.RING_BASE, G.HAND_BASE, G.WINDOW_BASE].flatMap((o) => Object.keys(o)).filter((k) => !k.startsWith("ui_") && k !== "version");
+  const keys = [G.DEFAULTS, G.RING_BASE, G.HAND_BASE, G.WINDOW_BASE].flatMap((o) => Object.keys(o)).filter((k) => !k.startsWith("ui_") && k !== "version" && !G.NOT_IN_LINK(k));      // the watch's keys never travel in a link (show mode, 22 Oct 2026)
   const missing = [...new Set(keys)].filter((k) => !G.LINK_KEYS.includes(k));
   check(missing.length === 0 && new Set(G.LINK_KEYS).size === G.LINK_KEYS.length, `every settings key has a code, none twice${missing.length ? " — missing: " + missing.join(" ") + " (add them at the table's end)" : ""}`);
   const FROZEN = { count: 156, sha: "9aca7e8183e4ccce" };      // scheme 2's table as built (beta 4.43): changing these is a new scheme (R31)

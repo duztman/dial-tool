@@ -45,7 +45,6 @@
   .handles .handle .reach { fill: transparent; stroke: none; }
   .handles .handle .seat { fill: var(--handle); stroke: var(--white); stroke-width: 1.5; }      /* the disc a handle sits in: its guide's colour, solid, a white hairline round it (#486; Okay, 04:52: "No transparency on handles, backgrounds solid") */
   .handles.dragging .handle { cursor: grabbing; }
-  #app.show .handles { display: none; }
   /* Tiny Preview (#337): its button where Guides stood, a plain eye; the dial at its own size in a little window over
      everything, the backdrop round it, a hard shadow, dragged anywhere; the eye at its top left puts it away */
   .tinyopen { position: absolute; z-index: 3; right: var(--canvas-inset); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); width: var(--control-large); border-radius: var(--round-switch); }      /* over the dial-alone eye, a unit between (4.82; Okay, 19 Oct 2026: "Move tiny preview button below, stacked on top of preview. Showcase not moved"; top right, where Guides stood, until 4.81) */
@@ -252,73 +251,19 @@
   .tip svg .a { stroke: var(--ink); stroke-width: var(--tip-arrow); }
   .tip svg .b { stroke: var(--white); stroke-width: var(--tip-arrow-in); }
   .tip svg .c { fill: var(--ink); }
-  /* ── the showcase (the iris switch; Okay, 15 Oct 2026, 04:26, reshaped 04:59 and 05:09) ── What stood on the preview
-     goes at once (fading, it twitched while the sky darkened) and comes back at once; only the dial travels (app.js).
-     The sky (a 45° gradient, set in app.js) and the spotlight fade in; the iris switch is an X at the window's bottom
-     right, Now a pill at the bottom centre on its line, both faint, in white. A drag moves the sun along its day */
-  :is(.sky, .pool) { opacity: 0; transition: opacity var(--show-time) linear; }
-  #app.show :is(.sky, .pool) { opacity: 1; }
-  #app.show main { --on-canvas: var(--white); --off-canvas: var(--ink); }
-  #app.show :is(.undos, .corner, .backdrops, .shadows, .tip, .tinyopen) { visibility: hidden; }
-  #app.show :is(#eye-box, .irisgo) { display: none; }
-  /* in the showcase the X and Now are larger and less faint, and stand as far in from the window's edges as the mark
-     does at the top left: the margin (05:43: "too close to edges, too faint… fit them inside the imaginary padding logo
-     top left got") */
-  #app.show main { --line-faint: color-mix(in srgb, var(--on-canvas) calc(var(--show-faint) * 100%), transparent); }
-  #app.show .eyes { position: fixed; right: var(--margin); bottom: var(--margin); }      /* the window's corner, from the first moment */
-  #app.show .irisbox { height: var(--show-key); }
-  #app.show .iriskey { width: calc(var(--show-key) - 2 * var(--hair)); }
-  #app.show .iriskey svg { width: calc(var(--show-key) - 2 * var(--hair)); height: calc(var(--show-key) - 2 * var(--hair)); }
-  #app.show :is(.irisbox > *, .nowpill:not(.back) > .word) { opacity: var(--show-faint); }
-  #app.show .nowpill { bottom: var(--margin); width: var(--show-pill); height: var(--show-key); border-radius: calc(var(--show-key) / 2); font-size: var(--t-l); }
-  #app.show .nowpill.back { width: var(--show-key); }
-  #app.show .nowpill.back svg { opacity: var(--show-faint); }
-  @media (hover: hover) { #app.show :is(.irisbox:hover > *, .nowpill:not(.back):hover > .word, .nowpill.back:hover svg) { opacity: 1; } }
-  #app.show :is(.preview, .preview path) { cursor: ew-resize; }      /* the sun goes left and right */
+  /* ── show mode (the iris switch; build list #509, 22 Oct 2026) ── the panel moves to the right (4a-panel.css); on the
+     canvas, what the show tabs hold is off (R16) */
+  #app.showing :is(.guidesbox, .xraybox, .shadowsbox, .casebox, .tinyopen) { display: none; }      /* show mode: what the show tabs hold, and the guides, are off the canvas (R16); the case is a row on the Watch tab */
   /* the iris switch: the iris in a box; pressed, its words slide out to its left (ACTIVATE SHOWCASE), which alone go
-     to the showcase (04:59: "we need affordance"); in the showcase an X, the way out */
+     to show mode (04:59: "we need affordance"); in show mode an X, the way out */
   .irisbox { padding: 0; overflow: hidden; border-radius: var(--round-switch); }
   .iriskey { display: block; width: calc(var(--control-large) - 2 * var(--hair)); height: 100%; padding: 0; }
   .iriskey svg { display: block; margin: 0 auto; }
   .irisbox .x { display: none; }
-  #app.show .irisbox .x { display: inline; }
   .irisgo { max-width: 0; height: 100%; padding: 0; overflow: hidden; white-space: nowrap; font-family: var(--mono); font-size: var(--t-s); text-transform: uppercase; letter-spacing: var(--track-100);
     transition: max-width var(--iris-time) var(--view-ease), padding var(--iris-time) var(--view-ease); }
   .irisbox[aria-expanded="true"] .irisgo { max-width: var(--iris-words); padding: 0 var(--u2) 0 var(--u4); }
   @media (hover: hover) { .irisgo:hover { text-decoration: underline; text-underline-offset: 0.2em; } }
-  /* Now: a pill, tracked 100; pressed, the hands spin to now and it shrinks into a round undo sign (.back), the way back */
-  .nowpill { position: absolute; z-index: 3; left: 50%; bottom: var(--canvas-inset); translate: -50% 0; display: grid; place-items: center; width: var(--now-pill); height: var(--control-large); padding: 0; border-radius: calc(var(--control-large) / 2);
-    font-family: var(--mono); text-transform: uppercase; letter-spacing: var(--track-100); visibility: hidden; transition: width var(--iris-time) var(--view-ease); }
-  .nowpill > * { grid-area: 1 / 1; transition: opacity var(--iris-time) linear; }
-  .nowpill svg { opacity: 0; }
-  .nowpill.back { width: var(--control-large); }
-  .nowpill.back .word { opacity: 0; }
-  .nowpill.back svg { opacity: var(--faint); }
-  @media (hover: hover) { .nowpill.back:hover svg { opacity: 1; } }
-  #app.show .nowpill { visibility: visible; }
-  /* Now and 10:10 side by side, the gap between them on the dial's centre line; each is held by its inner edge, so the
-     one that shrinks into the undo sign shrinks toward the middle and the other doesn't move (Okay, 15 Oct 2026, 07:40:
-     "next to now, 10:10. Selected turns undo, other stays still"). 10:10 is two letters (and their tracking) wider */
-  .nowpill.now { translate: calc(-100% - var(--u1)) 0; }
-  .nowpill.ten { translate: var(--u1) 0; }
-  #app.show .nowpill.ten { width: calc(var(--show-pill) + 2ch + 2 * var(--track-100)); }
-  #app.show .nowpill.ten.back { width: var(--show-key); }
-  /* the hands key: the showcase's bottom left corner, across from the X; round, the Hands sign inside, as faint as the
-     X. Pressed, the hands are hidden and the key is filled, the sign dark on it (07:40) */
-  .handskey { position: fixed; z-index: 3; left: var(--margin); bottom: var(--margin); width: var(--show-key); height: var(--show-key); padding: 0; border-radius: 50%; visibility: hidden; }
-  .handskey svg { display: block; opacity: var(--show-faint); }
-  #app.show .handskey { visibility: visible; }
-  .handskey[aria-pressed="true"] { border-color: transparent; background: color-mix(in srgb, var(--white) calc(var(--show-faint) * 100%), transparent); color: var(--night); }
-  .handskey[aria-pressed="true"] svg { opacity: 1; }
-  @media (hover: hover) { .handskey:hover svg { opacity: 1; } .handskey[aria-pressed="true"]:hover { background: var(--white); } }
-  /* over Now, once the dial has arrived: a two-headed arrow, white and glowing, comes, sways left and right, and goes;
-     centred between the dial and Now (app.js sets its top) (04:59; 05:43: "can't see it. Make it white and glow and
-     fade, 3x size") */
-  .sunhint { position: absolute; z-index: 3; left: 50%; translate: -50% 0; color: var(--white); opacity: 0; pointer-events: none; filter: drop-shadow(0 0 var(--u1) var(--white)) drop-shadow(0 0 var(--u3) color-mix(in srgb, var(--white) 60%, transparent)); }
-  .sunhint svg { display: block; }
-  .sunhint.go { animation: sway var(--hint-time) ease-in-out; }
-  @keyframes sway { 0% { opacity: 0; transform: translateX(0); } 18% { opacity: 1; } 38% { transform: translateX(calc(-1 * var(--u4))); } 62% { transform: translateX(var(--u4)); } 82% { opacity: 1; transform: translateX(0); } 100% { opacity: 0; } }
-  @media (prefers-reduced-motion: reduce) { .sunhint.go { animation: none; } }
   /* a switch whose words show is filled with the backdrop's colour, so what is under it (the dial) doesn't show through
      its words (Okay, 15 Oct 2026, 07:07: "these buttons get solid bg color when labels visible"): the iris switch open
      (ACTIVATE SHOWCASE), the labelled switches — always on a wide screen, on a phone while unfolded (8-narrow.css) */

@@ -4,9 +4,9 @@
   @media (max-width: 860px) {
     :root { --canvas-inset: var(--u5); --canvas-top: var(--canvas-inset); --margin: var(--u5); --gap: var(--u4); --col: calc((100vw - 2 * var(--margin) - var(--lead) - 5 * var(--gap)) / 6); }
     #app { grid-template-columns: 1fr; }
+    .irisbox { display: none; }      /* show mode is for a Mac or an iPad (Okay, 22 Oct 2026; R16) */
     /* the dial alone on a phone: the preview's row grows over the panel's (the bar stays on top); nothing slides sideways */
-    #app { grid-template-rows: calc(var(--bar-h) * (1 - var(--show))) calc(var(--preview-share) + (100% - var(--preview-share) - var(--bar-h)) * var(--away) + var(--bar-h) * var(--show)) minmax(0, 1fr); }
-    .bar { translate: 0 calc(-1 * var(--bar-h) * var(--show)); }      /* the showcase: on a phone the bar leaves upward */
+    #app { grid-template-rows: var(--bar-h) calc(var(--preview-share) + (100% - var(--preview-share) - var(--bar-h)) * var(--away)) minmax(0, 1fr); }
     .panel, .mast { width: auto; translate: none; }
     main { --stop-short: var(--canvas-inset); }
     .undos { left: var(--canvas-inset); flex-direction: row; }      /* nothing slides sideways, so nothing stops short; Versions beside undo, not under it, so the left column stays clear of Backdrop when the drawer is up (#232) */
@@ -100,10 +100,10 @@
     .casebox :is(.word, .arrow) { display: inline-block; max-width: 0; overflow: hidden; white-space: nowrap; transition: max-width var(--iris-time) var(--view-ease), margin var(--iris-time) var(--view-ease); }
     main.words .casebox :is(.word, .arrow) { max-width: var(--word-max); margin-left: var(--unit); }
     main:not(.words) .casebox { background: none; }
-    /* in the showcase the mark (larger here) and "Dial Tool" stand at the top left: the drawer is gone */
-    #app.show :is(.about, .logo), .panel:not(.squeezed) :is(.about, .logo) { width: var(--logo-narrow); }
-    #app.show .logo, .panel:not(.squeezed) .logo { height: var(--logo-narrow); }
-    #app.show .logo svg, .panel:not(.squeezed) .logo svg { width: 100%; height: 100%; }      /* …and on the drawer's full title line (Okay, 15 Oct 2026, 08:08: "you forgot the icon resize on the big version"); squeezed, it is the eyes' size again */
+    /* on a phone the mark (larger here) and "Dial Tool" stand at the top left: the drawer is gone */
+    .panel:not(.squeezed) :is(.about, .logo) { width: var(--logo-narrow); }
+    .panel:not(.squeezed) .logo { height: var(--logo-narrow); }
+    .panel:not(.squeezed) .logo svg { width: 100%; height: 100%; }      /* …and on the drawer's full title line (Okay, 15 Oct 2026, 08:08: "you forgot the icon resize on the big version"); squeezed, it is the eyes' size again */
     /* the drawer's title line, squeezed once the drawer scrolls (.squeezed, app.js) and staying on top while it does,
        the tabs held under it (Okay, 15 Oct 2026, 07:02: "a compacted title bar for scrollers' delight. We may lose mm…
        smaller, actually proportional to eyes okay icon and same text"; 07:59: full on load and back at the very top,
@@ -118,7 +118,6 @@
        on the thick line that ends what stays put (.stuck, app.js) (07:02: "we still get the scroll past… and no bottom bar") */
     .panel:not(.held) .tabs::before { content: ""; position: absolute; z-index: -1; inset: 0 calc(-1 * var(--margin)); background: var(--paper); }
     .panel.stuck:not(.held) .tabs::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: var(--thick); background: var(--ink); }      /* under the tabs, the chosen one standing on it, as when the drawer is at its top */
-    #app.show .mast { position: fixed; z-index: 6; top: var(--margin); left: var(--margin); }
     /* Give way on a phone (#258): the two tabs side by side over the square, the open one joined to it from above */
     .giveway { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; }
     .givetabs { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; }
