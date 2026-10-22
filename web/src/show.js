@@ -85,13 +85,15 @@ export function fit_zoom(tool, w, h) {
  *  switching of the whole controls … is well worked out"): the column a much darker, strongly saturated version of the
  *  ground at 85 %, its lines a clear step from it, its whites and greys tinted the same way. On: the tokens are set on the
  *  panel; off: they are removed and the stylesheet's own stand again */
-export function tint_panel(panel, on, backdrop) {
-  const keys = ["--column", "--column-top", "--column-solid", "--uiblack", "--uiblack-text", "--ink", "--grey", "--white", "--night", "--night-field", "--field", "--hover", "--rule", "--chip-rule"];
+export function tint_panel(panel, on, backdrop, in_greys = false) {
+  const keys = ["--swatch", "--column", "--column-top", "--column-solid", "--uiblack", "--uiblack-text", "--ink", "--grey", "--white", "--night", "--night-field", "--field", "--hover", "--rule", "--chip-rule"];
   if (!on) { for (const k of keys) panel.style.removeProperty(k); return; }
   const [r, g, b] = backdrop, hi = Math.max(r, g, b), lo = Math.min(r, g, b), l = (hi + lo) / 2, d = hi - lo, sat = d ? d / (1 - Math.abs(2 * l - 1)) : 0;
   let hh = 0; if (d) hh = hi === r ? ((g - b) / d + 6) % 6 : hi === g ? (b - r) / d + 2 : (r - g) / d + 4;
-  const ch = Math.round(hh * 60), cs = Math.round(Math.min(1, sat * 2.2 + 0.15) * 100), cl = Math.round(l * 30), op = 0.85;
+  let ch = Math.round(hh * 60), cs = Math.round(Math.min(1, sat * 2.2 + 0.15) * 100), cl = Math.round(l * 30), op = 0.85;
   const set = (k, v) => panel.style.setProperty(k, v);
+  set("--swatch", in_greys ? `hsl(${ch} ${cs}% ${cl}%)` : "hsl(0 0% 13%)");      // the round swatch shows the other look: the bar's grey, or the tinted column
+  if (in_greys) { [ch, cs, cl] = [0, 0, 13]; op = 1; }      // the panel in greys, solid, as the bar (Okay, 21 Oct 2026, 03:35)
   set("--column", `hsl(${ch} ${cs}% ${cl}% / ${op})`); set("--column-top", `hsl(${ch} ${cs}% ${Math.min(100, cl + 10)}% / ${op})`); set("--column-solid", `hsl(${ch} ${cs}% ${Math.min(100, cl + 10)}%)`);
   set("--uiblack", cl >= 22 ? `hsl(${ch} ${cs}% ${cl - 22}%)` : `hsl(${ch} ${Math.min(cs, 60)}% ${cl + 22}%)`);
   set("--uiblack-text", cl >= 22 ? `hsl(${ch} ${cs}% ${Math.max(0, cl - 40)}%)` : `hsl(${ch} ${Math.min(cs, 50)}% ${cl + 40}%)`);

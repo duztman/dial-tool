@@ -956,7 +956,7 @@ ROWS["Show dial"] = [
   info("How far the printed ink stands proud of the plate; 0 is flat ink.", {}),
 ];
 ROWS.Watch = [
-  hdr("Watch", { pin: true }),
+  hdr("Watch"),
   seg("w_view", "View", ["Detail", "Whole watch", "Dial"]),
   seg("bezel", "Case", ["Dress", "Diver", "Field", "Dress", "Field", "Emre01"], { order: [3, 2, 1, 5] }),      // the same key the dial side's case menu writes (R9: the numbers keep their meaning)
   seg("w_metal", "Metal", ["Fe", "Au", "Al", "CuSn", "Ti", "Black"], { many: true }),
@@ -968,7 +968,7 @@ ROWS.Watch = [
   seg("w_nato", "Pattern", ["Bond", "Regimental", "Khaki", "Black · grey", "Olive", "Grey"], { many: true, show: (S) => S.strap === 3 }),
 ];
 ROWS.Light = [
-  hdr("Light", { pin: true }),
+  hdr("Light", { pin: true, headless: true }),      // the Show Case's fixed lines: Style and Lighting stay put under the tabs, no heading (Okay, 21 Oct 2026, 01:50); everything else in show mode scrolls, so the top band is small
   seg("w_style", "Style", ["Engineer", "Miyazaki"]),
   seg("w_lighting", "Lighting", ["Dramatic", "Flat"]),
   hdr("Sun", { folded: false }),
@@ -993,7 +993,7 @@ ROWS.Light = [
   info("Off, the watch is drawn without the layers that cost most: blurs, the flare, the glass shine, the outline round the metal.", {}),
 ];
 ROWS["Show export"] = [
-  hdr("Export the watch", { pin: true }),
+  hdr("Export the watch"),
   custom("export_watch_png"),
   custom("export_watch_pdf"),
   num("out_watch_px", "Pixels", 1000, 8000, 100, { whole: true, tie: true }),
@@ -1406,7 +1406,7 @@ class DialTool {
     this.form = el("div", { className: "form" });                  // rows that scroll
     const panel = el("aside", { className: "panel" },
       // .mast: the mark, the title and the version — what stays when the panel slides away (dial_alone(), 15 Oct 2026)
-      el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: DEV ? `${G.VERSION} · dev` : G.VERSION }), el("a", { className: "quiet help", href: GUIDE, target: "_blank", rel: "noopener", textContent: "Help" }))), this.gallery_way(), this.unit_box()),
+      el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: DEV ? `${G.VERSION} · dev` : G.VERSION }), el("a", { className: "quiet help", href: GUIDE, target: "_blank", rel: "noopener", textContent: "Help" }))), this.gallery_way(), this.grey_swatch(), this.unit_box()),
       this.tabs, this.pinned, this.form);
     this.finger_anchor(panel);
 
@@ -1768,10 +1768,11 @@ class DialTool {
   }
   /** the panel's colours from the backdrop in show mode (show.js tint_panel; #505) */
   tint_panel() {
-    const key = this.S.ui_show ? this.S.c_backdrop.join(",") : "";
+    const key = this.S.ui_show ? this.S.c_backdrop.join(",") + (this.S.ui_grey_panel ? " grey" : "") : "";
     if (key === this.tint_key) return;
     this.tint_key = key;
-    SHOW.tint_panel($(".panel"), this.S.ui_show, this.S.c_backdrop);
+    SHOW.tint_panel($(".panel"), this.S.ui_show, this.S.c_backdrop, this.S.ui_grey_panel);
+    if (this.grey_button) { const grey = Boolean(this.S.ui_grey_panel); this.grey_button.setAttribute("aria-pressed", String(grey)); this.grey_button.title = this.grey_button.ariaLabel = grey ? "The panel in the backdrop's colour" : "The panel in greys"; }
   }
   row_export_watch_png(wrap) {
     wrap.className = "row";
@@ -1881,6 +1882,12 @@ class DialTool {
     if (this.menus_away) document.removeEventListener("pointerdown", this.menus_away, true);
   }
 
+  /** show mode's round swatch at the title line's end (the Show Case's, 21 Oct 2026, 03:35): the panel's other look — in greys
+   *  like the bar, or back in the backdrop's colour. It shows the look it would switch to. Hidden on the dial side (R16) */
+  grey_swatch() {
+    this.grey_button = el("button", { type: "button", className: "greyswatch", id: "grey-panel", onclick: () => { this.set_value("global", "ui_grey_panel", !this.S.ui_grey_panel); this.tint_panel(); } });
+    return this.grey_button;
+  }
   unit_box() {
     const menu = el("div", { className: "unitmenu", id: "unit-menu", hidden: true });
     menu.setAttribute("role", "menu");
@@ -3562,7 +3569,7 @@ class DialTool {
    *  pinned panes go into a box of their own that the pill makes shorter (it then scrolls) or taller, up to all of it; a
    *  tap jumps between all and its first line. Remembered by this browser per tab, as the list's rows are. */
   pin_grip(name) {
-    if (["Hands", "Date"].includes(name) || this.pinned.hidden || this.ring_list) return;
+    if (["Hands", "Date"].includes(name) || this.pinned.hidden || this.ring_list || this.S.ui_show) return;      // show mode's pinned lines are two: nothing to resize
     const body = el("div", { className: "pinbody" }, ...this.pinned.children), key = KEY("pinned-" + name);
     const grip = el("div", { className: "listgrip pingrip", id: "pin-grip", title: "Drag to make this part taller or shorter", ariaLabel: "Height of what stays in view" });
     grip.setAttribute("role", "separator");

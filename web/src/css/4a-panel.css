@@ -15,9 +15,14 @@
     --paper: var(--night); --scroll: transparent; --rule-light: var(--rule); --ground: var(--night-field); --row-rule: var(--uiblack, var(--rule)); --line-on-grey: var(--uiblack, var(--rule)); --line-on-paper: var(--uiblack, var(--rule));
     --well: var(--night-field, var(--ground)); --inset: var(--night-field, var(--ground)); --surface: transparent; }      /* the tokens that are read at :root are set again here, so the tint reaches them */
   #app.showing .form { --surface: transparent; --well: var(--night-field, var(--ground)); --inset: var(--night-field, var(--ground)); }
+  #app.showing .panel { --col: var(--show-col); --margin: var(--show-margin); scrollbar-width: none; }      /* narrower (1-tokens.css); its scrollbar takes no width (it narrowed the rows on a Mac that shows them) */
+  #app.showing .panel::-webkit-scrollbar { display: none; }
+  #app.showing .form::-webkit-scrollbar { display: none; }
   #app.showing .mast { translate: 0; }
+  .greyswatch { display: none; }      /* show mode's round swatch (grey_swatch() in app.js): the panel's other look, in greys or in the backdrop's colour; dial side: none (R16) */
+  #app.showing .greyswatch { display: block; flex: none; margin-left: auto; width: var(--bare-dot); height: var(--bare-dot); padding: 0; border: var(--hair) solid var(--rule); border-radius: 50%; background: var(--swatch); cursor: pointer; }
   #app.showing main { grid-area: 1 / 1; }
-  #app.showing .panel > :is(header, .tabs, .pinned) { background: var(--column-top, var(--paper)); }      /* its translate makes it a stacking context, so the bio's z-index counts only inside it: the mast itself stands over the panel's rows, or a later stepper draws over the open bio (Okay, 15 Oct 2026, 10:45) */
+  #app.showing .panel > :is(header, .tabs, .pinned) { background: var(--column-top, var(--paper)); }      /* the top — title, tabs and the pinned lines — a tenth lighter than the column, as the paper stands over the scrolling grey (Okay, 21 Oct 2026, 01:43) */      /* its translate makes it a stacking context, so the bio's z-index counts only inside it: the mast itself stands over the panel's rows, or a later stepper draws over the open bio (Okay, 15 Oct 2026, 10:45) */
   /* the mast on the backdrop (the dial alone): black or white like the switches, the version a little quieter. Its
      colour follows the slide: from paper's to the backdrop's while the panel's edge sweeps over it (--away 0.55 to
      0.95), both ways, so it shows on whichever is under it; a backdrop changed while away turns it at once */
@@ -72,6 +77,7 @@
 
   /* sections: a sign inside a ring, its name under it */
   .tabs { display: grid; grid-template-columns: repeat(5, 1fr); margin: 0 var(--margin); padding: var(--u4) 0 0; border-top: var(--hair) solid var(--rule); }
+  #app.showing .tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; padding-left: var(--margin); padding-right: var(--margin); border-top: 0; background: linear-gradient(var(--uiblack, var(--rule)) 0 0) 50% 0 / calc(100% - 2 * var(--margin)) var(--hair) no-repeat, var(--column-top, var(--paper)); }      /* show mode's four tabs, equal cells; the band's colour runs to the column's edges (the margins are padding here), its hairline inset by the margin as every line in the column (Okay, 21 Oct 2026, 01:53) */
   .tabs button { display: grid; justify-items: center; gap: var(--unit); padding: var(--unit) 0 var(--u4); color: var(--grey); }
   .tabs button:hover { color: var(--ink); }
   .tabs button:focus-visible { outline-offset: calc(-1 * var(--thick)); }

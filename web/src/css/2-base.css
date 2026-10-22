@@ -7,7 +7,7 @@
     transition: --away var(--view-time) var(--view-ease); }
   #app.snap { transition: none; }      /* no slide: a session that opens in show mode (show_mode() in app.js) */
   #app.away { --away: 1; }
-  #app.showing { grid-template-columns: 1fr calc(var(--panel-w) * (1 - var(--away))); }      /* show mode: the panel's column on the right (show_mode() in app.js, #509) */
+  #app.showing { --panel-w: var(--show-panel-w); grid-template-columns: 1fr calc(var(--panel-w) * (1 - var(--away))); }      /* show mode: the panel's column on the right (show_mode() in app.js, #509) */
   @media (prefers-reduced-motion: reduce) { #app { transition: none; } }
   .starting { padding: var(--margin); }
   h1 { font-size: var(--t-l); font-weight: 600; letter-spacing: -0.005em; margin: 0; }

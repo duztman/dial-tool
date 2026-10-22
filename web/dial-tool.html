@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.91.8 · built 2026-10-22 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.91.9 · built 2026-10-22 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -88,6 +88,10 @@
     --control-large: 32px;                         /* the Guides switch, the hex line */
     --unit-face: "Dial Mono", var(--mono);       /* the unit box's word: JetBrains Mono at the weight whose stem is the box's line at 10 px, packed (#302, beta 4.44.1; fonts/ui/mono_font.py) */
     --line: 34px;                                  /* a row's height */
+    /* show mode's column (the Show Case's measures, #509; Okay, 22 Oct 2026: "The width of the showcase less wide"): its six
+       columns at 42 px and its side margins at 16 (21 Oct 2026, 23:38: "the column narrower, for more canvas") */
+    --show-col: 42px; --show-margin: 16px;
+    --show-panel-w: calc(2 * var(--show-margin) + var(--lead) + 6 * var(--show-col) + 5 * var(--gap) + var(--hair));
     --head: 40px;                                  /* a pane's heading */
     --header: calc(var(--canvas-inset-wide) + var(--control-large) - var(--hair));      /* the panel's top: title and Guides. Its line (the tabs' top hairline) is the canvas's top buttons' bottom line, the buttons as far from the canvas's top as from its left (Okay, 21 Oct 2026, 23:29: "Align bottom line of top button row on the same line as title's hr line first. Then push from top to adjust for left gap"); the title centred in it. A rule for the Show Case too, when it comes */
     --bar-height: 62px; --bar-control: 30px;      /* the bar's height (Okay, 14 Oct 2026, 23:19: "1/5 higher" than the 52 it was); a phone keeps its own (--bar-lead-narrow) */
@@ -277,7 +281,7 @@
     transition: --away var(--view-time) var(--view-ease); }
   #app.snap { transition: none; }      /* no slide: a session that opens in show mode (show_mode() in app.js) */
   #app.away { --away: 1; }
-  #app.showing { grid-template-columns: 1fr calc(var(--panel-w) * (1 - var(--away))); }      /* show mode: the panel's column on the right (show_mode() in app.js, #509) */
+  #app.showing { --panel-w: var(--show-panel-w); grid-template-columns: 1fr calc(var(--panel-w) * (1 - var(--away))); }      /* show mode: the panel's column on the right (show_mode() in app.js, #509) */
   @media (prefers-reduced-motion: reduce) { #app { transition: none; } }
   .starting { padding: var(--margin); }
   h1 { font-size: var(--t-l); font-weight: 600; letter-spacing: -0.005em; margin: 0; }
@@ -441,9 +445,14 @@
     --paper: var(--night); --scroll: transparent; --rule-light: var(--rule); --ground: var(--night-field); --row-rule: var(--uiblack, var(--rule)); --line-on-grey: var(--uiblack, var(--rule)); --line-on-paper: var(--uiblack, var(--rule));
     --well: var(--night-field, var(--ground)); --inset: var(--night-field, var(--ground)); --surface: transparent; }      /* the tokens that are read at :root are set again here, so the tint reaches them */
   #app.showing .form { --surface: transparent; --well: var(--night-field, var(--ground)); --inset: var(--night-field, var(--ground)); }
+  #app.showing .panel { --col: var(--show-col); --margin: var(--show-margin); scrollbar-width: none; }      /* narrower (1-tokens.css); its scrollbar takes no width (it narrowed the rows on a Mac that shows them) */
+  #app.showing .panel::-webkit-scrollbar { display: none; }
+  #app.showing .form::-webkit-scrollbar { display: none; }
   #app.showing .mast { translate: 0; }
+  .greyswatch { display: none; }      /* show mode's round swatch (grey_swatch() in app.js): the panel's other look, in greys or in the backdrop's colour; dial side: none (R16) */
+  #app.showing .greyswatch { display: block; flex: none; margin-left: auto; width: var(--bare-dot); height: var(--bare-dot); padding: 0; border: var(--hair) solid var(--rule); border-radius: 50%; background: var(--swatch); cursor: pointer; }
   #app.showing main { grid-area: 1 / 1; }
-  #app.showing .panel > :is(header, .tabs, .pinned) { background: var(--column-top, var(--paper)); }      /* its translate makes it a stacking context, so the bio's z-index counts only inside it: the mast itself stands over the panel's rows, or a later stepper draws over the open bio (Okay, 15 Oct 2026, 10:45) */
+  #app.showing .panel > :is(header, .tabs, .pinned) { background: var(--column-top, var(--paper)); }      /* the top — title, tabs and the pinned lines — a tenth lighter than the column, as the paper stands over the scrolling grey (Okay, 21 Oct 2026, 01:43) */      /* its translate makes it a stacking context, so the bio's z-index counts only inside it: the mast itself stands over the panel's rows, or a later stepper draws over the open bio (Okay, 15 Oct 2026, 10:45) */
   /* the mast on the backdrop (the dial alone): black or white like the switches, the version a little quieter. Its
      colour follows the slide: from paper's to the backdrop's while the panel's edge sweeps over it (--away 0.55 to
      0.95), both ways, so it shows on whichever is under it; a backdrop changed while away turns it at once */
@@ -498,6 +507,7 @@
 
   /* sections: a sign inside a ring, its name under it */
   .tabs { display: grid; grid-template-columns: repeat(5, 1fr); margin: 0 var(--margin); padding: var(--u4) 0 0; border-top: var(--hair) solid var(--rule); }
+  #app.showing .tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; padding-left: var(--margin); padding-right: var(--margin); border-top: 0; background: linear-gradient(var(--uiblack, var(--rule)) 0 0) 50% 0 / calc(100% - 2 * var(--margin)) var(--hair) no-repeat, var(--column-top, var(--paper)); }      /* show mode's four tabs, equal cells; the band's colour runs to the column's edges (the margins are padding here), its hairline inset by the margin as every line in the column (Okay, 21 Oct 2026, 01:53) */
   .tabs button { display: grid; justify-items: center; gap: var(--unit); padding: var(--unit) 0 var(--u4); color: var(--grey); }
   .tabs button:hover { color: var(--ink); }
   .tabs button:focus-visible { outline-offset: calc(-1 * var(--thick)); }
@@ -7103,7 +7113,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.91.8";
+var VERSION = "beta 4.91.9";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -7501,6 +7511,8 @@ var DEFAULTS = {
   ui_show_section: 5,
   ui_edit_section: 0,
   // the tab last used in show mode and on the dial side (SECTIONS numbers, R9)
+  ui_grey_panel: false,
+  // show mode's panel in greys, like the bar, instead of the backdrop's colour (the round swatch at the title line's end; Okay, 22 Oct 2026)
   ui_effects: true,
   // the costly layers in show mode — blurs, the flare, the glass shine, the silhouette outline (Okay: "turn off shenanigans")
   date: "",
@@ -7650,7 +7662,8 @@ var NOT_GEOMETRY = [
   "ui_show",
   "ui_show_section",
   "ui_edit_section",
-  "ui_effects"
+  "ui_effects",
+  "ui_grey_panel"
 ];
 var FILE_SET = [
   ["out_f_pdf", "Dial \xB7 PDF", "pdf", { out_production: false, out_mirror: false }],
@@ -10952,8 +10965,8 @@ function fit_zoom(tool2, w, h) {
   const [bw, bh] = S.w_view === 1 && tool2.watch_box ? [tool2.watch_box[2], tool2.watch_box[3]] : [cb.w, cb.h];
   return Math.min(Math.max(w - M, 40) / bw, Math.max(h - M, 40) / bh);
 }
-function tint_panel(panel, on, backdrop) {
-  const keys = ["--column", "--column-top", "--column-solid", "--uiblack", "--uiblack-text", "--ink", "--grey", "--white", "--night", "--night-field", "--field", "--hover", "--rule", "--chip-rule"];
+function tint_panel(panel, on, backdrop, in_greys = false) {
+  const keys = ["--swatch", "--column", "--column-top", "--column-solid", "--uiblack", "--uiblack-text", "--ink", "--grey", "--white", "--night", "--night-field", "--field", "--hover", "--rule", "--chip-rule"];
   if (!on) {
     for (const k of keys) panel.style.removeProperty(k);
     return;
@@ -10961,8 +10974,13 @@ function tint_panel(panel, on, backdrop) {
   const [r, g, b] = backdrop, hi = Math.max(r, g, b), lo = Math.min(r, g, b), l = (hi + lo) / 2, d = hi - lo, sat = d ? d / (1 - Math.abs(2 * l - 1)) : 0;
   let hh = 0;
   if (d) hh = hi === r ? ((g - b) / d + 6) % 6 : hi === g ? (b - r) / d + 2 : (r - g) / d + 4;
-  const ch = Math.round(hh * 60), cs = Math.round(Math.min(1, sat * 2.2 + 0.15) * 100), cl = Math.round(l * 30), op = 0.85;
+  let ch = Math.round(hh * 60), cs = Math.round(Math.min(1, sat * 2.2 + 0.15) * 100), cl = Math.round(l * 30), op = 0.85;
   const set = (k, v) => panel.style.setProperty(k, v);
+  set("--swatch", in_greys ? `hsl(${ch} ${cs}% ${cl}%)` : "hsl(0 0% 13%)");
+  if (in_greys) {
+    [ch, cs, cl] = [0, 0, 13];
+    op = 1;
+  }
   set("--column", `hsl(${ch} ${cs}% ${cl}% / ${op})`);
   set("--column-top", `hsl(${ch} ${cs}% ${Math.min(100, cl + 10)}% / ${op})`);
   set("--column-solid", `hsl(${ch} ${cs}% ${Math.min(100, cl + 10)}%)`);
@@ -15793,7 +15811,7 @@ ROWS["Show dial"] = [
   info("How far the printed ink stands proud of the plate; 0 is flat ink.", {})
 ];
 ROWS.Watch = [
-  hdr("Watch", { pin: true }),
+  hdr("Watch"),
   seg("w_view", "View", ["Detail", "Whole watch", "Dial"]),
   seg("bezel", "Case", ["Dress", "Diver", "Field", "Dress", "Field", "Emre01"], { order: [3, 2, 1, 5] }),
   // the same key the dial side's case menu writes (R9: the numbers keep their meaning)
@@ -15807,7 +15825,8 @@ ROWS.Watch = [
   seg("w_nato", "Pattern", ["Bond", "Regimental", "Khaki", "Black \xB7 grey", "Olive", "Grey"], { many: true, show: (S) => S.strap === 3 })
 ];
 ROWS.Light = [
-  hdr("Light", { pin: true }),
+  hdr("Light", { pin: true, headless: true }),
+  // the Show Case's fixed lines: Style and Lighting stay put under the tabs, no heading (Okay, 21 Oct 2026, 01:50); everything else in show mode scrolls, so the top band is small
   seg("w_style", "Style", ["Engineer", "Miyazaki"]),
   seg("w_lighting", "Lighting", ["Dramatic", "Flat"]),
   hdr("Sun", { folded: false }),
@@ -15834,7 +15853,7 @@ ROWS.Light = [
   info("Off, the watch is drawn without the layers that cost most: blurs, the flare, the glass shine, the outline round the metal.", {})
 ];
 ROWS["Show export"] = [
-  hdr("Export the watch", { pin: true }),
+  hdr("Export the watch"),
   custom("export_watch_png"),
   custom("export_watch_pdf"),
   num2("out_watch_px", "Pixels", 1e3, 8e3, 100, { whole: true, tie: true }),
@@ -16291,7 +16310,7 @@ var DialTool = class _DialTool {
       "aside",
       { className: "panel" },
       // .mast: the mark, the title and the version — what stays when the panel slides away (dial_alone(), 15 Oct 2026)
-      el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: DEV ? `${VERSION} \xB7 dev` : VERSION }), el("a", { className: "quiet help", href: GUIDE, target: "_blank", rel: "noopener", textContent: "Help" }))), this.gallery_way(), this.unit_box()),
+      el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: DEV ? `${VERSION} \xB7 dev` : VERSION }), el("a", { className: "quiet help", href: GUIDE, target: "_blank", rel: "noopener", textContent: "Help" }))), this.gallery_way(), this.grey_swatch(), this.unit_box()),
       this.tabs,
       this.pinned,
       this.form
@@ -16756,10 +16775,15 @@ var DialTool = class _DialTool {
   }
   /** the panel's colours from the backdrop in show mode (show.js tint_panel; #505) */
   tint_panel() {
-    const key = this.S.ui_show ? this.S.c_backdrop.join(",") : "";
+    const key = this.S.ui_show ? this.S.c_backdrop.join(",") + (this.S.ui_grey_panel ? " grey" : "") : "";
     if (key === this.tint_key) return;
     this.tint_key = key;
-    tint_panel($(".panel"), this.S.ui_show, this.S.c_backdrop);
+    tint_panel($(".panel"), this.S.ui_show, this.S.c_backdrop, this.S.ui_grey_panel);
+    if (this.grey_button) {
+      const grey = Boolean(this.S.ui_grey_panel);
+      this.grey_button.setAttribute("aria-pressed", String(grey));
+      this.grey_button.title = this.grey_button.ariaLabel = grey ? "The panel in the backdrop's colour" : "The panel in greys";
+    }
   }
   row_export_watch_png(wrap) {
     wrap.className = "row";
@@ -16897,6 +16921,15 @@ var DialTool = class _DialTool {
     if (this.menus_list) this.menus_list.hidden = true;
     this.menus_for = null;
     if (this.menus_away) document.removeEventListener("pointerdown", this.menus_away, true);
+  }
+  /** show mode's round swatch at the title line's end (the Show Case's, 21 Oct 2026, 03:35): the panel's other look — in greys
+   *  like the bar, or back in the backdrop's colour. It shows the look it would switch to. Hidden on the dial side (R16) */
+  grey_swatch() {
+    this.grey_button = el("button", { type: "button", className: "greyswatch", id: "grey-panel", onclick: () => {
+      this.set_value("global", "ui_grey_panel", !this.S.ui_grey_panel);
+      this.tint_panel();
+    } });
+    return this.grey_button;
   }
   unit_box() {
     const menu = el("div", { className: "unitmenu", id: "unit-menu", hidden: true });
@@ -18984,7 +19017,7 @@ var DialTool = class _DialTool {
    *  pinned panes go into a box of their own that the pill makes shorter (it then scrolls) or taller, up to all of it; a
    *  tap jumps between all and its first line. Remembered by this browser per tab, as the list's rows are. */
   pin_grip(name) {
-    if (["Hands", "Date"].includes(name) || this.pinned.hidden || this.ring_list) return;
+    if (["Hands", "Date"].includes(name) || this.pinned.hidden || this.ring_list || this.S.ui_show) return;
     const body = el("div", { className: "pinbody" }, ...this.pinned.children), key = KEY("pinned-" + name);
     const grip = el("div", { className: "listgrip pingrip", id: "pin-grip", title: "Drag to make this part taller or shorter", ariaLabel: "Height of what stays in view" });
     grip.setAttribute("role", "separator");

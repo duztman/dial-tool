@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.91.9 (web version) · 22 Oct 2026
+
+- **Show mode's column checked against the Show Case's** (Okay, 22 Oct 2026, 20:21–20:29: "Colors adapting to bg was good, if you got it back, that's all I want"): the same width (six columns at 42 px, margins at 16 — "less wide"), the tint one colour with the top band (title, tabs, pinned lines) a tenth lighter; the Light tab's Style and Lighting are the pinned lines, with no heading, and everything else scrolls (the pinned Watch and Export blocks made the rows under them look grey — "under the persistent, goes too gray"); the tabs' hairline inset by the margin. The round **grey swatch** at the title line's end (`ui_grey_panel`): the panel in greys like the bar, pressed again the backdrop's colour; it shows the look it would switch to; on the dial side none (R16).
+- Not done on purpose: the Show Case's control looks (outlined pills, one control height, number boxes on the third column with the slider under) stay the tool's — "lots of shared buttons and links, if user wants the main to look like showcase, that'll be an option on settings" (#510).
+- Checked: `npm run small` (456 checks).
+
 ## beta 4.91.8 (web version) · 22 Oct 2026
 
 - **Show mode** (build list #509, phase 3 of the Show Case merge; Okay, 22 Oct 2026: "Lego brick like merger. Take one out put other (bigger) in"): the iris switch (ACTIVATE SHOWCASE) slides the panel out on the left and back in on the right with the show tabs — *Dial* (the dial's colours, Ink height), *Watch* (view, case, metal, insert, strap, NATO), *Light* (Engineer · Miyazaki, lighting, the Sun, Shadows, Flare, Glass, Effects) and *Export* (PNG, PDF of the watch) — tinted from the backdrop as the Show Case's column was (#505: the panel's tokens set from the backdrop's lightness; the dial side's colours untouched). The whole watch is drawn in `g.watch` by `watch.js` through the new `web/src/show.js` (the settings → the module's options; redrawn when a key changes, the hands turned each frame); Fit fits the case. The X slides back; the dial, its bezel and overlays return; Fit fits the dial. The mode is remembered (`ui_show`): a session closed in show mode opens there, no slide.

@@ -2255,9 +2255,15 @@ await shot("10-bar");
   const hands = await page.evaluate(() => { const t = window.dial_tool, n = document.querySelector("g.watch [data-h='minute']"), a = n.getAttribute("transform"); t.set_value("global", "t", t.S.t + 600); t.frame(); return [a, n.getAttribute("transform"), document.querySelectorAll("g.watch path").length]; });
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "t", t.S.t - 600); t.set_value("global", "bezel", 1); t.set_value("global", "strap", 2); t.frame(); });
   const diver = await page.evaluate(() => [window.dial_tool.S.bezel, document.querySelectorAll("g.watch path").length]);
+  const column = await page.evaluate(() => { const t = window.dial_tool, panel = document.querySelector(".panel"), sw = document.querySelector("#grey-panel"), before = getComputedStyle(panel).backgroundColor;
+    sw.click(); const grey = getComputedStyle(panel).backgroundColor, pressed = sw.getAttribute("aria-pressed"); sw.click();
+    return { w: Math.round(panel.getBoundingClientRect().width), swatch: sw.checkVisibility(), before, grey, pressed, back: getComputedStyle(panel).backgroundColor === before, key: t.S.ui_grey_panel }; });
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "bezel", 0); t.set_value("global", "strap", 1); });
   await page.click("#iris-box"); await page.waitForTimeout(1800);
   const off = await q();
+  const swatch_off = await page.$eval("#grey-panel", (e) => e.checkVisibility());
+  check(column.w < 400 && column.swatch && column.grey === "rgb(33, 33, 33)" && column.pressed === "true" && column.back && column.key === false && !swatch_off,
+    `show mode's column is the Show Case's width (${column.w} px, the tool's panel wider) with the round swatch at the title line's end: pressed, the panel in greys (${column.grey}, as the bar), pressed again, the backdrop's colour; on the dial side no swatch (R16)`);
   check(!home.on && !home.showing && home.sky === false && on.on && on.showing && !on.away && on.right && on.tabs === "Show dial Watch Light Show export" && on.watch > 0 && on.dial === "none" && on.bar === "visible" && on.tinted && !on.case_box && on.z !== z0,
     `show mode: the panel comes back on the right with the show tabs (${on.tabs}), tinted by the backdrop; the watch drawn (${on.watch} group), the dial's own drawing away, the bar in place, Fit on the case (${z0.toFixed(2)} → ${on.z.toFixed(2)}); the old Showcase's sky gone`);
   check(hands[0] !== hands[1] && hands[2] > 100 && diver[0] === 1 && diver[1] > hands[2] && !off.on && !off.showing && off.tabs === "Dial Rings Hands Date Export" && !off.right && off.watch === 0 && off.dial !== "none" && !off.tinted && Math.abs(off.z - z0) < 1e-6,
