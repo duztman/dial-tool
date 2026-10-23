@@ -154,6 +154,8 @@ function scaleCase(C, k) {
 }
 
 // ── the Engineer's marks: ink lines, filled shapes with one dark line of shading inside, flat facets in three tones ──
+/** how long the shadows get: never longer than a 20° sun throws them (Okay, 23 Oct 2026: "Dial shadows move unnecessarily far, they'd have a limit") — the case's crescent stops there too */
+const LOW_SUN = 20, longer = (h) => Math.tan(rad(40)) / Math.tan(rad(Math.max(LOW_SUN, h)));
 const LW = 0.22;                                         // every dark outline this wide; no line on a drawing thinner
 const strokeInk = (d, sw = LW, extra = "") => NO_LINES ? "" : `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${LW}" stroke-linejoin="round" stroke-linecap="round" ${extra}/>`;
 const stroke = (...a) => (STYLE === "engineer" ? strokeInk(...a) : "");      // Miyazaki draws no lines
@@ -258,7 +260,7 @@ function dialSVG(C, v, L) {
   const D = DIALS[0], s = (C.dial - (C.insert ? 2 * REHAUT : 0)) / D.d, A = HANDS_A;
   const col = (x) => clampL(x.f);      // every colour's lightness kept between 15 and 85 %
   const items = D.items;
-  const kh = Math.tan(rad(40)) / Math.tan(rad(SUN_H)), sh = [-Math.cos(rad(L)) * 0.35 * kh, Math.sin(rad(L)) * 0.35 * kh];       // the hands' shadow, away from the light (dial space is y up)
+  const kh = longer(SUN_H), sh = [-Math.cos(rad(L)) * 0.35 * kh, Math.sin(rad(L)) * 0.35 * kh];       // the hands' shadow, away from the light (dial space is y up)
   const handsShadow = items.filter((x) => x.hand || x.role === "cap").map((x) => `<path d="${x.p}" fill="#000" fill-opacity="${f(Math.min(1, 0.35 * SHD))}"${x.hand ? ` data-hs="${x.hand}" data-sh="${f(sh[0])} ${f(sh[1])}" transform="translate(${f(sh[0])} ${f(sh[1])}) rotate(${-A[x.hand]})"` : ` transform="translate(${f(sh[0])} ${f(sh[1])})"`}/>`).join("");
   const body = items.map((x) => `<path d="${x.p}" fill="${col(x)}" fill-opacity="${x.a}"${x.hand ? ` data-h="${x.hand}" transform="rotate(${-A[x.hand]})"` : ""}/>` + (x.hand ? handBevel(x, A, L) : x.role !== "plate" && x.role !== "cap" ? inkRelief(x, s, L) : ""));
   const firstHand = items.findIndex((x) => x.hand || x.role === "cap");
@@ -670,7 +672,7 @@ function silhouette(C) {
   return [[C.cushion ? P(cushionPts(C.cushion.a, C.cushion.n)) : circle(R), 1], ...[-1, 1].flatMap((sx) => [-1, 1].map((sy) => [(C.cushion ? cushionLug : lugPath)(C, sx, sy), 0.55])), [crown, 0.5]];      // the crown, as the lugs, smaller than the case (Okay, 22 Oct 2026)
 }
 function contact(C, L, strap, span, soft) {
-  const u = [Math.cos(rad(L)), Math.sin(rad(L))], k = Math.tan(rad(40)) / Math.tan(rad(SUN_H)), off = [-u[0] * 0.9 * k, -u[1] * 0.9 * k];
+  const u = [Math.cos(rad(L)), Math.sin(rad(L))], k = longer(SUN_H), off = [-u[0] * 0.9 * k, -u[1] * 0.9 * k];
   const w = C.lugw - 0.2, yc = C.l2l / 2 - 3.4, leather = strap.startsWith("leather");
   const area = OUTL_S.map((d) => `<path d="${d}"/>`).join("");      // the strap as drawn: the shadow stays on it, never beside it (22 Oct 2026)
   const id = "ct" + (BLOB_N++);
@@ -704,7 +706,7 @@ function sheet(key, strap, v, L, open = false, h = 40, dial = null, metal = null
   const strapSVG = strap === "bracelet" ? braceletSVG(C, L, open ? C.l2l / 2 + 84 : span) : strap.startsWith("leather") ? leatherSVG(C, L, strap.split("-")[1], open, span) : natoSVG(C, L, strap.split("-")[1], open, span);
   // shadow: everything's silhouette shifted away from the light, flat; the case casts further than the strap
   const off = (d) => [-Math.cos(rad(L)) * d, -Math.sin(rad(L)) * d];
-  const k = Math.tan(rad(40)) / Math.tan(rad(h)), vCase = off(2.4 * k), vStrap = off(0.8 * k);      // a low sun casts longer
+  const k = longer(h), vCase = off(2.4 * k), vStrap = off(0.8 * k);      // a low sun casts longer
   // the shadow (Okay, 22 Oct 2026): every part's footprint swept along the light (sweep()), the strap as drawn (OUTL_S),
   // black at one opacity, painted once as a group — it darkens whatever it falls on and never doubles where parts overlap
   const blockShadow = `<g fill="#000" opacity="${f(SH_OP)}">` + OUTL_S.map((d) => sweep(d, vStrap)).join("") + silhouette(C).map(([d, kk]) => sweep(d, [vCase[0] * kk, vCase[1] * kk])).join("") + `</g>`;

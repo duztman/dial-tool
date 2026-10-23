@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.92 (web version) · 23 Oct 2026 — the step: the Show Case merged
+
+The step that releases 4.90.1 – 4.91.15 (the Show Case into Dial Tool as show mode, #506–#509), with Okay's last notes of the day (17:07):
+- **Shadows have a limit**: no shadow falls longer than a 20° sun throws it — the watch's hands, the strap's contact, the ground, and the dial side's shadows (`LOW_SUN` in watch.js; `sh_rise` read from 20 in app.js) — as the case's crescent already did ("Dial shadows move unnecessarily far, they'd have a limit").
+- **The buttons' eyes**: show mode's switch has its eye again (the lids and the iris); the dial-alone switch takes the rays drawing, 16 rays at 0.75 ("Activate showcase back to old, replace regular preview with this version").
+- Checked: `npm test` whole.
+
 ## beta 4.91.15 (web version) · 23 Oct 2026
 
 Okay's notes of 23 Oct 2026, 16:38 — the merger's last round:

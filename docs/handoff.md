@@ -1,18 +1,16 @@
 # Handoff — taking over the Dial Tool
 
-*Written 16 Oct 2026 at beta 4.46.5 (Okay: "devise way to handoff to another agent"); §1 rewritten at every handover, last on 21 Oct 2026, 23:45, at beta 4.91.6. The rest changes when something new is learnt.*
+*Written 16 Oct 2026 at beta 4.46.5 (Okay: "devise way to handoff to another agent"); §1 rewritten at every handover, last on 23 Oct 2026, at beta 4.92. The rest changes when something new is learnt.*
 
 A new session starts with no memory of the last one: the transcript stays in the old container. Everything a successor needs is in the repo. Use this page to find it.
 
-## 1 · Where things stand (21 Oct 2026, 23:45, beta 4.91.6 on `dev` and /dev/)
+## 1 · Where things stand (23 Oct 2026, beta 4.92 on `main`, `dev`, the released page and /dev/)
 
-- **Pages**: the released page is beta 4.91; `main` is still beta 4.90 (bd47a60: 4.91 went up before the step mode existed); `dev` and <https://duztman.github.io/dial-tool/dev/> are **beta 4.91.6**. The next step (4.92) runs the full `npm test` and `tools/release.sh 4.92 "…"` — its step mode moves `main` to `dev` and has not run yet: watch its first run.
-- **v1** is defined at the top of `docs/build-list.md`, groups A–J; square dials after v1 (#484). Done today: #488 (4.91), #500 (/dev/, 4.91.2), small-jobs batch 1 (4.91.3: #231 #495 #434 #498 #499 #453 #408 #76 #468 #158), #504 (4.91.4), the title row and the top rule (4.91.5–4.91.6). Next in v1, as Okay ordered: the medium items (group I, #502's notices inventory first), SVG import (G), the fonts (#501, R35 — specified, don't add to it), the v1.0 update page (#503 (3)).
-- **Okay builds by sketch rounds again** (21 Oct, 22:48: "Do the small batch first"): each round goes to /dev/ with crops; he refreshes and answers with marked-up screenshots.
-- **Waiting for Okay**: his icon drawings (#162); verifying group B on his devices (FIT's line on his phone, #453, is fixed in 4.91.3 — ask); which two numbers each ring kind's row shows is settled as size · radius (#504).
-- **Noted, not built**: the Show Case's panel colours into Dial Tool behind a setting, the Show Case taking Dial Tool's top rule with them (#505); the universal settings panel collects candidates (#496: #76's unit steps, the guides' choices).
-- **Pictures**: never in the repo (R36). This session's are in the Mac folder `screenshots/2026-10-21/`; the progression strip 4.5 → 4.91 in `screenshots/progression/` (3.0–4.4 later, `web/test/progression.mjs`).
-- **What made today faster or slower**: faster — measuring the DOM before each CSS change (FIT's missing line was a shorthand resetting the border's style, found in one measurement); `npm run small` ~2–3 min a round. Slower — a pill reused without comparing it with its look elsewhere (the font box repaints `--well`): compare a reused control with its home before sending; tests whose ids follow row words break on a rename (`#nudge-s-Scale-`).
+- **Pages**: <https://duztman.github.io/dial-tool/> and <https://duztman.github.io/dial-tool/dev/> are **beta 4.92**; `main` = `dev`. The Show Case page (</show-case/>) is beta 1.0.21, built from the same `web/src/watch.js`, a sandbox only (Okay: "left as a dev to tinker without touching main code").
+- **The Show Case merge is done** (build list group K, #506–#509; Okay, 23 Oct 2026: "And we're done"): show mode is Dial Tool's second mode — the iris switch at the bottom right, one movement in and out (`swoop()`), the watch drawn by `watch.js` through `show.js`, the column tinted by the backdrop, Shenanigans at its foot. What is left of it is #510 (Backdrop's auto, the bracelet of links, ink per colour, the buttons' looks with Okay, R26's wording, the v1 list).
+- **Okay builds by rounds**: each round goes to /dev/ with pictures; he answers with marked-up screenshots and short notes. Ask in question mode when a note can be read two ways; he answers precisely.
+- **Pushing to the live pages** can be stopped by the session's safety check; then say so and wait for Okay's word (23 Oct 2026: he gave it with "push this on main, dev and show case individual pages").
+- **Pictures**: never in the repo (R36).
 
 ## 2 · First steps in a new session
 

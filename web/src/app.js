@@ -314,7 +314,7 @@ const INK_TRAPS = (() => {
   }
   return out.join("");
 })();
-const EYE_RAYS = 24, EYE_RAY = 0.625;      // the eye switch's rays: how many, how thick (Okay, 15 Oct 2026, 03:41; 0.5 until 16 Oct: "thicker lines, just barely visibly on 100%, not like +1px")
+const EYE_RAYS = 16, EYE_RAY = 0.75;      // 16 at 0.75: Okay's 4.39 drawing, 23 Oct 2026 ("replace regular preview with this version"); 24 at 0.625 before      // the eye switch's rays: how many, how thick (Okay, 15 Oct 2026, 03:41; 0.5 until 16 Oct: "thicker lines, just barely visibly on 100%, not like +1px")
 // the hands' bevels (#354, 4.77; notes 2: "a height simply shaded in a few tones of the hand's colour by the shadows'
 // light … not 3d like all facets shifted"): each hand split along its length, the side the light falls on lighter, the
 // other darker, by as much as the light comes from the side; preview only (R5, R26)
@@ -399,7 +399,7 @@ const TOOL_ICONS = {
   // overexcited asterisk" — the lashes — run past the box, which cuts them; the eye itself is not drawn: its outline
   // (the 4.38 eye, lids a fifth higher, width kept) at its stroke width (CURVE) is knocked out of the rays, so the eye
   // is completed by absence; inside it nothing but the iris (03:52: "eye inside white, only iris remains there"). The rays are thin, 0.5, against the icon rules on purpose ("I want to see thin lines").
-  // EYE_RAYS: 24 of the 12 · 16 · 24 · 32 tried (one ray straight up)
+  // EYE_RAYS: 16 (one ray straight up)
   eyebox: (() => {
     const cx = 15.25, cy = 15, lift = 5.25 * 1.2, n = EYE_RAYS;
     const lid = `M6.25 ${cy}C12.25 ${cy - lift} 18.25 ${cy - lift} 24.25 ${cy}C18.25 ${cy + lift} 12.25 ${cy + lift} 6.25 ${cy}Z`;
@@ -418,14 +418,14 @@ const TOOL_ICONS = {
     return `<mask id="iris-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask>`
       + `<circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/><path class="x" d="M-0.75 -1L31.25 31M31.25 -1L-0.75 31" stroke-width="1" stroke-linecap="butt" mask="url(#iris-cut)"/>`;
   })(),
-  // the show-mode switch (Okay, 23 Oct 2026: "showcase eye with rays", his 4.39 drawing): the dial-alone eye's way of
-  // drawing — rays from the iris, the eye knocked out of them — with 16 rays at 0.75; lit in the column's colours in show mode
+  // the show-mode switch (Okay, 19 Oct 2026, 12:46: "Swap icons but not places for showcase and tiny preview.
+  // Tiny gets the dot, showcase gets the eye"): the iris above with its lids drawn round it — the eye switch's own eye,
+  // drawn where that one is left out — and in show mode the same X, cut by the lids
   show_eye: (() => {
-    const cx = 15.25, cy = 15, lift = 5.25 * 1.2, n = 16;
+    const cy = 15, lift = 5.25 * 1.2;
     const lid = `M6.25 ${cy}C12.25 ${cy - lift} 18.25 ${cy - lift} 24.25 ${cy}C18.25 ${cy + lift} 12.25 ${cy + lift} 6.25 ${cy}Z`;
-    const rays = Array.from({ length: n }, (_, k) => { const a = 2 * Math.PI * k / n; return `M${cx} ${cy}L${(cx + 25 * Math.sin(a)).toFixed(2)} ${(cy - 25 * Math.cos(a)).toFixed(2)}`; }).join("");
     return `<mask id="show-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask>`
-      + `<path class="rays" d="${rays}" stroke-width="0.75" stroke-linecap="butt" mask="url(#show-cut)"/><circle cx="${cx}" cy="${cy}" r="2.75" fill="currentColor" stroke="none"/>`;
+      + `<path d="${lid}" ${sw(CURVE)}/><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/><path class="x" d="M-0.75 -1L31.25 31M31.25 -1L-0.75 31" stroke-width="1" stroke-linecap="butt" mask="url(#show-cut)"/>`;
   })(),
   screen: `<rect x="2.75" y="3.25" width="10.5" height="7.5"/><path d="M8.25 10.75V13.25M5.75 13.25H10.75" ${sw(DENSE)}/>`,
   // the Guides switch, on 18: a target and its cross; its lines crowd, so DENSE. Okay's drawings (14 Oct 2026, 04:11):
@@ -2575,7 +2575,7 @@ class DialTool {
     if (!S.sh_on || S.out_production) return finish();
 
     set(shade.blur, "stdDeviation", "0.07");      // mm: a small soft edge, the same for every shadow (0.08 until Okay, 23:05: "sharpen it just a little")
-    const a = S.sh_from * Math.PI / 180, per = 1 / Math.tan(clamp(S.sh_rise, 1, 89) * Math.PI / 180);
+    const a = S.sh_from * Math.PI / 180, per = 1 / Math.tan(clamp(S.sh_rise, 20, 89) * Math.PI / 180);      // never longer than a 20° sun throws them, as the watch's (Okay, 23 Oct 2026)
     const away = (dz) => [-Math.sin(a) * per * dz, -Math.cos(a) * per * dz];      // y grows upward inside the dial (place())
     const f = (v) => v.toFixed(4);
     const height = { hour: S.sh_hour, minute: S.sh_minute, second: S.sh_second };

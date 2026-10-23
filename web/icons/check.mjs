@@ -29,8 +29,8 @@ const WIDTHS = [...["LINE", "SLANT", "CURVE", "DENSE"].map((k) => W[k]), W.DENSE
 const PICTURED = [
   { host: /^ring-kind-|^add-/, widths: [1, 2, 3], why: "a ring kind: ticks 1, marks 2, band 3, as on the dial" },
   { host: /^ring-twelve-Style-3$/, widths: [2], why: "a dashed outline: dashes look lighter than a whole line" },
-  { host: /^iris-box/, widths: [0.75], why: "show mode's switch: the eye with rays, 16 rays at 0.75, thin on purpose as the eye switch's (Okay's 4.39 drawing, 23 Oct 2026)" },
-  { host: /^eye-box/, widths: [0.625], why: "the eye switch's rays, thin on purpose (Okay, 15 Oct 2026, 03:41: \"I want to see thin lines\"; 0.5 until 16 Oct: \"thicker lines, just barely visibly\")" },
+  { host: /^iris-box/, widths: [1], why: "the showcase's X, the eye's rays made readable while faint (Okay, 15 Oct 2026, 04:59: \"iris becomes an x\")" },
+  { host: /^eye-box/, widths: [0.75], why: "the eye switch's rays, thin on purpose (Okay, 15 Oct 2026, 03:41: \"I want to see thin lines\"; 0.5 until 16 Oct: \"thicker lines, just barely visibly\")" },
   { host: /^value-pop-(plus|minus)$/, widths: [6], why: "the controller's − and +, 6 thick (8 until 4.85, when the controller went to three quarters), square ends, white on their discs (controller 2.svg, 18 Oct 2026; round ends from his drawing of 17 Oct, 3 from 16 Oct)" },
   { host: /^(Skip where|Knock out): /, widths: [3], why: "Give way's drawing: this ring's ticks, a dial's ticks pictured, thick (Okay, 18 Oct 2026: \"thicker indices\")" },
   { host: /^logo$/, widths: [1, 1.375], why: "Okay's own mark, at his weights: lines 1, ring 1.375 (15 Oct 2026, 03:06: \"a bit thinner\")" },
