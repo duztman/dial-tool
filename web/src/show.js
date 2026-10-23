@@ -16,6 +16,9 @@ import * as WATCH from "./watch.js";
 export const METAL_NAMES = ["steel", "gold", "alu", "bronze", "titanium", "black"];
 export const NATO_NAMES = ["bond", "regimental", "khaki", "blackgrey", "olive", "grey"];
 export const INSERTS = [["#2b2c30", "#2b2c30"], ["#1f3a6e", "#1f3a6e"], ["#1f5a3a", "#1f5a3a"], ["#23407a", "#a8262e"], ["#222326", "#22457e"], ["#222326", "#a3232b"], ["#2a2420", "#6b3f24"], ["#222326", "#2f7a3c"]];
+/** a metal's picture for its tile: a disc in its colour, lit on one side as a case is */
+export const metal_picture = (i) => { const c = WATCH.presets("miyazaki").metals[METAL_NAMES[i]] || "#9a9a9a";
+  return `<svg viewBox="-19 -13.5 38 27" width="38" height="27" aria-hidden="true"><circle r="11" fill="${c}"/><path d="M-11 0A11 11 0 0 1 11 0A11 8 0 0 0 -11 0Z" fill="#fff" fill-opacity="0.3"/><circle r="11" fill="none" stroke="currentColor" stroke-width="1" stroke-opacity="0.35"/></svg>`; };
 /** an insert's picture for its tile: a ring, its top half in its first colour, its bottom half in its second */
 export const insert_picture = (i) => { const [a, b] = INSERTS[i] || INSERTS[0];
   return `<svg viewBox="-19 -13.5 38 27" width="38" height="27" aria-hidden="true"><path d="M-11 0A11 11 0 0 1 11 0H6.5A6.5 6.5 0 0 0 -6.5 0Z" fill="${a}"/><path d="M-11 0A11 11 0 0 0 11 0H6.5A6.5 6.5 0 0 1 -6.5 0Z" fill="${b}"/><circle r="11" fill="none" stroke="currentColor" stroke-width="1" stroke-opacity="0.35"/></svg>`; };
@@ -30,7 +33,8 @@ export function options(S, items, effects) {
   const P = WATCH.presets(style), lit = effects;
   return {
     style, key: kind, d: S.dial_d, size: WATCH.sizeFor(kind, S.dial_d), view: VIEW_NAMES[S.w_view] || "detail",
-    items: items.map((x) => ({ role: x.role, hand: (x.role === "hand" || x.role === "mark") && HANDS.includes(x.name) ? x.name : null, p: x.path.svg(3), f: hex(x.fill), a: +x.fill[3], ink: PRINTED(x.role) ? S.w_ink : 0 })),
+    items: items.map((x) => { const hand = (x.role === "hand" || x.role === "mark") && HANDS.includes(x.name) ? x.name : null;
+      return { role: x.role, hand, bevel: Boolean(hand && S["ha_" + hand]?.bevel), p: x.path.svg(3), f: hex(x.fill), a: +x.fill[3], ink: PRINTED(x.role) ? S.w_ink : 0 }; }),
     A: Object.fromEntries(HANDS.map((h) => [h, 0])),
     strap: S.strap === 2 && diver ? "bracelet" : S.strap === 3 ? "nato" : "leather", nato: NATO_NAMES[S.w_nato] || "regimental",
     metal: S.c_metal ? hex(S.c_metal) : P.metals[METAL_NAMES[S.w_metal]] || P.metals.steel,
@@ -40,7 +44,7 @@ export function options(S, items, effects) {
     L: S.sh_from - 90, h: S.sh_rise, shadow: S.sh_on ? S.sh_dark / 25 : 0,
     lighting: S.w_lighting ? "flat" : "dramatic", flare: S.w_flare ? "dot" : "arc", flareOn: lit && S.sh_blur && S.w_flare_on, blurs: lit && S.sh_blur,
     fl: { size: S.w_fl_size / 100, tint: S.w_fl_tint / 100, bright: S.w_fl_bright / 100 }, glass: { fat: S.w_glass_fat / 100, len: S.w_glass_len / 100, op: lit ? S.w_glass_op / 100 : 0 },
-    ink: S.w_ink, bevels: false, outline: lit,
+    ink: S.w_ink, bevels: S.w_bevels ? S.sh_bevel / 100 : 0, outline: lit,      // the hands' bevels as the dial side sets them (each hand's tick, Bevels %), and Shenanigans' Bevels
   };
 }
 

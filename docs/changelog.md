@@ -1,5 +1,19 @@
 # Dial Tool — changelog
 
+## beta 4.91.15 (web version) · 23 Oct 2026
+
+Okay's notes of 23 Oct 2026, 16:38 — the merger's last round:
+- **Shenanigans** at the foot of show mode's column, always in view on the top's darker ground: Shadows, Flare, Blurs, Bevels on and off — shortcuts to the same keys as their rows (`sh_on`, `w_flare_on`, `sh_blur`, the new `w_bevels`). A dial with Shadows off (as the opener) drew its watch without a shadow, and show mode had no switch for it.
+- **Bevels in show mode**: the watch's hands are bevelled as the dial side says — each hand's own Bevel tick, at Bevels % — and Shenanigans turns them all off.
+- **Metal is picture tiles**, as Case and Insert: each fits the column.
+- **Scroll zooms everywhere**, both modes, no key ("Scroll to zoom in out, universal"); a right-button drag moves the drawing in both modes; the zoom note says so ("Scroll zooms · right-drag moves · two fingers pinch and move"). One wheel rule instead of three.
+- **The opener is Okay's link** of today: its dial on a #97725B backdrop ("This view and #97725B for bg as default").
+- **Main's case is charcoal** (the three greys at a third of their brightness: "65% darker").
+- **Emre01 is Emre** wherever it is shown (its key stays `emre01`, R8).
+- **The Show strip under a hand's or window's tab** stands on the chosen tab's measured edges: the tabs overlap a hair each, which engines place differently, so grid columns alone put it off its tab in Safari.
+- **Icons**: the zoom note's sign is a lens with an i in it (Okay's drawing); the Shadows switch has its 4.38.6 drawing again (a ball, its dark side, its shadow); show mode's switch is the eye with rays (Okay's 4.39 drawing, 16 rays at 0.75).
+- Checked: `npm test` whole (updated: the wheel and right-drag check, the zoom note's words).
+
 ## beta 4.91.14 (web version) · 23 Oct 2026
 
 Okay's notes of 23 Oct 2026, 16:04:

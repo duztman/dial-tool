@@ -249,10 +249,10 @@ const inkRelief = (x, s, L) => { const K = x.ink ?? INK_K; if (!K) return "";
   CLIPS.push(`<clipPath id="${id}"><path d="${x.p}"/></clipPath>`);
   const cut = (dx, dy, fill, op) => `<g transform="translate(${f(dx)} ${f(dy)})"><path d="M-9999 -9999H9999V9999H-9999Z${x.p}" fill-rule="evenodd" fill="${fill}" fill-opacity="${op}"/></g>`;
   return `<g clip-path="url(#${id})">${cut(ux * es, uy * es, "#000", TONES[STYLE].ink[0])}${cut(-ux * eh, -uy * eh, "#fff", TONES[STYLE].ink[1])}</g>`; };
-const handBevel = (x, A, L) => { if (!HAND_BEVEL || !x.hand) return "";
+const handBevel = (x, A, L) => { if (!HAND_BEVEL || !x.hand || !x.bevel) return "";      // a hand bevelled as the dial side says: its own tick, at Bevels % (HAND_BEVEL, 0–1)
   const id = "hb" + (INK_N++), a = rad(A[x.hand]), side = Math.cos(a) * Math.cos(rad(L)) + Math.sin(a) * Math.sin(rad(L));
   CLIPS.push(`<clipPath id="${id}"><path d="${x.p}"/></clipPath>`);
-  const lit = 0.22 * Math.abs(side), dark = 0.26 * Math.abs(side);
+  const lit = 0.22 * HAND_BEVEL * Math.abs(side), dark = 0.26 * HAND_BEVEL * Math.abs(side);
   return `<g data-hb="${x.hand}" transform="rotate(${-A[x.hand]})"><g clip-path="url(#${id})"><rect x="0" y="-50" width="50" height="100" fill="${side > 0 ? "#fff" : "#000"}" fill-opacity="${f(side > 0 ? lit : dark)}"/><rect x="-50" y="-50" width="50" height="100" fill="${side > 0 ? "#000" : "#fff"}" fill-opacity="${f(side > 0 ? dark : lit)}"/></g></g>`; };
 function dialSVG(C, v, L) {
   const D = DIALS[0], s = (C.dial - (C.insert ? 2 * REHAUT : 0)) / D.d, A = HANDS_A;
@@ -280,7 +280,7 @@ const CASES = {
     bands: [], insert: { od: 40.0, id: 32.2, coin: 60 }, opening: 15.4, dial: 30.8, crown: { at: 0, w: 6.4, h: 3.0, knurl: 9 }, drilled: false, dialName: "Quiet diver",
   },
   emre01: {
-    name: "Emre01 · Emre's prototype · aluminium", rails: true, depth: 0.5, od: 22, l2l: 27, lugw: 19.4, lugT: 3.3, flare: 0, metal: null,
+    name: "Emre · Emre's prototype · aluminium", rails: true, depth: 0.5, od: 22, l2l: 27, lugw: 19.4, lugT: 3.3, flare: 0, metal: null,
     bands: [[11, 10.5, 1, 0.6], [10.5, 9.1, 1, 0.12], [9.1, 8.6, -1, 0.7], [8.6, 8.0, 1, 0.12]],
     opening: 8.0, dial: 16, crown: { at: 0, w: 1.8, h: 1.1, knurl: 2 }, drilled: false, dialName: "Dress roman",
   },
@@ -308,7 +308,7 @@ function caseEngineer(C, v, L) {
     if (C.drilled) out.push(`<ellipse cx="${f(sx * (C.lugw / 2 + C.lugT + 0.05))}" cy="${f(sy * (C.l2l / 2 - 2.4))}" rx="0.25" ry="0.55" fill="${INK}"/>`);      // the drilled hole, seen on the lug's outer face's edge
   }
   // the crown: a cylinder lying on its side at 3; its upper half and lower half lit by where the light comes from
-  const RC = C.rails ? C.lugw / 2 + C.lugT : R, cw = C.crown.w, ch = C.crown.h, x0 = RC - 0.4;      // on Emre01, out through the rail
+  const RC = C.rails ? C.lugw / 2 + C.lugT : R, cw = C.crown.w, ch = C.crown.h, x0 = RC - 0.4;      // on Emre, out through the rail
   const top = P([[x0, -cw / 2], [x0 + ch, -cw / 2 + 0.25], [x0 + ch, 0], [x0, 0]]), bot = P([[x0, 0], [x0 + ch, 0], [x0 + ch, cw / 2 - 0.25], [x0, cw / 2]]);
   out.push(shape(P([[RC - 1.2, -cw * 0.32], [x0, -cw * 0.32], [x0, cw * 0.32], [RC - 1.2, cw * 0.32]]), T[2], 0.15));        // its stem tube
   out.push(flat(top, tone(T, 270, 0.9, L)), flat(bot, tone(T, 90, 0.9, L)), stroke(P([[x0, -cw / 2], [x0 + ch, -cw / 2 + 0.25], [x0 + ch, cw / 2 - 0.25], [x0, cw / 2]]), 0.2));
@@ -361,7 +361,7 @@ function caseMiyazaki(C, v, L) {
   const R = C.cushion ? C.cushion.a : C.od / 2, T = C.metal, out = [];
   for (const sx of [-1, 1]) for (const sy of [-1, 1]) out.push(blob(C.cushion ? cushionLug(C, sx, sy) : lugPath(C, sx, sy), T, L, 0.5, 1.0, C.cushion || C.rails ? null : circle(R + 0.6)));      // a lug's light edge stops short of the case: at the join it peeked out as a sliver (Okay, 23 Oct 2026: "this tiny unnecessary shine")
   const cw = C.crown.w, ch = C.crown.h;
-  const RC = C.rails ? C.lugw / 2 + C.lugT - 0.1 : R;      // on Emre01, out through the rail
+  const RC = C.rails ? C.lugw / 2 + C.lugT - 0.1 : R;      // on Emre, out through the rail
   { const R = RC, cd = rrect(R - 1.2, -cw / 2, R + ch, cw / 2, Math.min(1.0, cw / 2)), id = "cr" + BLOB++, ly = Math.sin(rad(L)), lx = Math.cos(rad(L));
     out.push(blob(cd, T, L, 0.5, 0.9));
     CLIPS.push(`<clipPath id="${id}"><path d="${cd}"/></clipPath>`);
@@ -724,7 +724,7 @@ ${strapSVG}${strap === "bracelet" ? "" : contact(C, L, strap, span, STYLE === "m
  *  line, in three shades of grey; no shadow, no strap, no dial (Okay, 23 Oct 2026: "sillhouette means filled in. engineer
  *  without the lines, 3 shades of gray"). `o`: kind (dress · field · diver · emre01) and d (the dial's diameter: the case
  *  scales to it). In the dial's space (mm, y up) */
-const GREYS = ["#e4e4e1", "#c2c2be", "#9c9c97"];      // light, body, dark
+const GREYS = ["#504f4f", "#444442", "#373735"];      // light, body, dark: charcoal, a third of the greys' brightness (Okay, 23 Oct 2026: "all case previews on main get 65% darker")
 export function frame(o) {
   const kind = o.kind in CASES ? o.kind : "dress";
   use("engineer"); NO_LINES = true; INK = "none"; DIAL_IN = false; GLINT = "off"; CLIPS = []; SUN_H = 40;
@@ -781,7 +781,7 @@ export const STRIPE_COUNT = (name) => new Set((STRIPES[name] || [[0, 1, 0]]).map
 export function draw(o) {
   use(o.style || "miyazaki"); const STYLE_ = STYLES[STYLE]; OUTLINE_ON = o.outline !== false;
   DIALS = [{ name: "live", d: o.d, own: true, items: o.items }];
-  HANDS_A = o.A; FLARE_KIND = o.flare; INK_K = o.ink ?? 6; FL = o.fl; GLASS = o.glass; INSERT = o.insert; SHD = o.shadow ?? 1; HAND_BEVEL = Boolean(o.bevels);
+  HANDS_A = o.A; FLARE_KIND = o.flare; INK_K = o.ink ?? 6; FL = o.fl; GLASS = o.glass; INSERT = o.insert; SHD = o.shadow ?? 1; HAND_BEVEL = +o.bevels || 0;
   // a colour that is one of the engine's own keeps that entry's three tones; any other gets three made from it
   const own = (tabs, c, k) => tabs.flatMap((t) => Object.entries(t).filter(([n]) => n !== "custom").flatMap(([, v]) => (typeof v[0] === "string" ? [v] : v))).find((T) => T[1] === c) || tones(c, k);
   METALS.custom = own([METALS], o.metal, [1.35, 0.81]);

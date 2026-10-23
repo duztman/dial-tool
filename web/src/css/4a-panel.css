@@ -7,6 +7,12 @@
      so it leaves without its lines reflowing; above the preview (z-index) so the mast, which slides back by as much
      and so stays where it was, is over the backdrop once the panel is gone */
   .sheetgrip { display: none; }
+  .shenanigans { display: none; }      /* show mode's on/off shortcuts at the column's foot (shenanigans_box() in app.js); the dial side has none (R16) */
+  .showing .shenanigans { display: block; flex: none; padding: 0 var(--margin) var(--u2); background: linear-gradient(var(--ink) 0 0) 50% 0 / calc(100% - 2 * var(--margin)) var(--thick) no-repeat, var(--column-top, var(--paper)); }
+  .shenhead { display: flex; align-items: center; height: var(--head); padding-left: var(--lead); font-weight: 600; }
+  .shenticks { display: grid; grid-template-columns: repeat(4, max-content); column-gap: var(--u4); padding-left: var(--lead); }
+  .shenticks > .row { min-height: var(--line); box-shadow: none; }
+  .shenticks > .row > .check { grid-column: 1 / -1; }
   .panelcopy { position: fixed; z-index: 7; pointer-events: none; }      /* the panel's still copy sliding away while the modes change (panel_copy() in app.js) */      /* a phone's drawer gripper (8-narrow.css); a wider screen has no drawer */
   .panel { position: relative; z-index: 5; width: var(--panel-w); translate: calc(-1 * var(--panel-w) * var(--away)) 0; }
   .mast { display: flex; align-items: center; translate: calc(var(--panel-w) * var(--away)) 0; z-index: 6; }

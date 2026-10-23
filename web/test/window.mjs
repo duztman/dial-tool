@@ -1560,9 +1560,13 @@ await frame();
 const spot2 = await page.evaluate(([x, y]) => { const t = window.dial_tool, r = t.svg.getBoundingClientRect(); return t.to_mm([x - r.left, y - r.top]); }, box);
 check(await S("t.z") > z0 * 1.5 && near(spot[0], spot2[0], 0.01) && near(spot[1], spot2[1], 0.01), "ctrl-scroll zooms, and the spot under the cursor stays put");
 await shot("7-zoomed");
-await page.mouse.wheel(40, 30);
+const z_before = await S("t.z");
+await page.mouse.wheel(0, 120);
 await frame();
-check(await S("t.fitted === false"), "two-finger scroll pans");
+const z_scrolled = await S("t.z");
+await page.mouse.move(box[0], box[1]); await page.mouse.down({ button: "right" }); await page.mouse.move(box[0] + 60, box[1] + 30, { steps: 4 }); await page.mouse.up({ button: "right" }); await frame();
+const c_moved = await S("t.fitted === false");
+check(z_scrolled < z_before && c_moved, `scroll zooms with no key (${z_before.toFixed(1)} → ${z_scrolled.toFixed(1)}), a right-button drag moves the dial (Okay, 23 Oct 2026: "Scroll to zoom in out, universal")`);
 await page.click("#fit");
 check(near(await S("t.z"), z0, 1e-6) && await S("t.fitted"), "Fit puts the whole page back");
 const t0 = await S("S.t");
@@ -2197,7 +2201,7 @@ await tab("Export");
 const look = await page.evaluate(() => { const q = (s) => document.querySelector(s), r = (s) => q(s).getBoundingClientRect(), c = (s) => getComputedStyle(q(s));
   return { square: !q("#panel-toggle"), bar: Math.round(r(".bar").height), play: [Math.round(r("#play").width), Math.round(r("#play").height), c("#play").borderRadius], time: c("#time").fontFamily.startsWith('"Dial Time"') && document.fonts.check('300 17px "Dial Time"'),
     status: c(".bar .status").display, hint: q(".zoomsign").dataset.tip, first: q(".viewing").children[1].firstElementChild === q(".zoomsign") && q(".zooms").lastElementChild === q("#fit"), ruler: Math.round(r("#time-slider").width) }; });
-check(look.square && look.bar === 62 && look.play[0] === look.play[1] && look.play[2] === "50%" && look.time && look.status === "none" && look.hint.includes("⌘ + scroll") && look.first && look.ruler <= 518,
+check(look.square && look.bar === 62 && look.play[0] === look.play[1] && look.play[2] === "50%" && look.time && look.status === "none" && look.hint.includes("Scroll zooms") && look.first && look.ruler <= 518,
   `the bar: a fifth higher (${look.bar}), no panel square, a round play, the time in Dial Time (Barlow Condensed Light, #284), no status line, the magnifier first with how to zoom in its tag, then − + FIT together (notes 2, 18 Oct 2026), the day slider no wider than an iPad's (${look.ruler})`);
 { // the needle (notes 2, 18 Oct 2026: "Ruler pin does not move on bottom bar"; "1px wide and red, starts from the bottom of
   // the screen"): placed from the time, whatever has the focus; a press and a drag on the strip set the time (an iPad's own

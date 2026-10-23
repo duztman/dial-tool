@@ -359,6 +359,8 @@ const TOOL_ICONS = {
   versions: `<circle cx="8.25" cy="8.25" r="5.5" ${sw(CURVE)}/><path d="M8.25 8.25V5.25"/><path d="M8.25 8.25L10.5 9.75" ${sw(SLANT)}/>`,
   wide: `<rect x="2.75" y="2.75" width="10.5" height="10.5"/><path d="M6.25 10.25L10.25 6.25M7.25 6.25H10.25V9.25" ${sw(DENSE)}/>`,
   find: `<circle cx="7" cy="7" r="4.25" ${sw(CURVE)}/><path d="M10.25 10.25L13.25 13.25" ${sw(SLANT)}/>`,
+  // the bar's zoom note: the lens with an i in it, the note it opens (Okay's drawing, 23 Oct 2026, "zoom+i"), on 16
+  zoominfo: `<circle cx="6.75" cy="6.75" r="5.5" ${sw(CURVE)}/><path d="M10.75 10.75L14.25 14.25" ${sw(SLANT)}/><path d="M6.75 6.25V9.75"/><circle cx="6.75" cy="4.25" r="0.75" fill="currentColor" stroke="none"/>`,
   // an (i) beside a setting's name: what it does, in a tag (#357). A ring holding a stem and a dot; quiet by its grey
   info: `<circle cx="8.25" cy="8.25" r="6" ${sw(CURVE)}/><path d="M8.25 7.25V11.25"/><circle cx="8.25" cy="4.75" r="1" fill="currentColor" stroke="none"/>`,
   // →: take what was typed (a Custom count, #357): the up arrow turned
@@ -383,7 +385,7 @@ const TOOL_ICONS = {
   case: `<mask id="case-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18"><rect width="18" height="18" fill="white" stroke="none"/>${CASE_TRAPS}</mask>`
     + `<g ${sw(DENSE)}><g mask="url(#case-cut)"><circle cx="9.25" cy="9.25" r="5.5"/><path d="M6.25 2.75V5M12.25 2.75V5M6.25 13.5V15.75M12.25 13.5V15.75"/></g><path d="M9.25 9.25V6M9.25 9.25H11.75M14.75 9.25H15.75"/></g>`,
   xray: `<g ${sw(DENSE)}><circle cx="9.25" cy="9.25" r="6.5"/><circle cx="9.25" cy="9.25" r="3.25" stroke-dasharray="1.25 1.3" stroke-linecap="butt"/></g>`,
-  shadows: `<circle cx="7.25" cy="9.75" r="5.5" ${sw(DENSE)}/><path d="M4.5 14.5A5.5 5.5 0 0 0 12 7A8 8 0 0 1 4.5 14.5Z" fill="currentColor" stroke="none"/>`
+  shadows: `<circle cx="8.25" cy="7.75" r="5.5" ${sw(DENSE)}/><path d="M12 4C14 6 14 9.5 12 11.5C10 14 6.5 14 4.5 11.5C8 12 11.5 9.5 12 5.5C12 5 12 4.5 12 4Z" fill="currentColor" stroke="none"/><ellipse cx="11.5" cy="14.75" rx="5" ry="1.5" fill="currentColor" stroke="none"/>`      // Okay's 4.38.6 drawing again (23 Oct 2026): a ball, its dark side, its shadow on the ground
     + `<path d="M11.03 13.75A5.625 1.25 0 0 1 16.75 15A5.625 1.25 0 0 1 5.5 15A5.5 5.5 0 0 0 11.03 13.75Z" fill="currentColor" stroke="none"/>`,      // the ball sunk 2 into its shadow (Okay, 16 Oct 2026, on 4.44: "Shadow's ball sinks 2px down into its shadow"; it touched it from 4.42.4): the shadow the same ellipse (11.125 15, 5.625 × 1.25), the ball's disc cut out of it — it stands in front. Cut at the middle of the ball's line (5.5), so the cut's edge lies under the line: cut at its outer edge (6.125, 4.44.2) the two edges met and left a faint light seam round the ball (Okay: "a single faint line around the ball"). The rim crosses the shadow's top at 11.03 and at its left end
   // Okay's own mark, on 16 in the panel's first column (15 Oct 2026, 02:42: "my personal logo. Draw this like an
   // icon"): a ring; a 45° diagonal from ring to ring; through its crossing with them a level line to the right and an
@@ -416,14 +418,14 @@ const TOOL_ICONS = {
     return `<mask id="iris-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask>`
       + `<circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/><path class="x" d="M-0.75 -1L31.25 31M31.25 -1L-0.75 31" stroke-width="1" stroke-linecap="butt" mask="url(#iris-cut)"/>`;
   })(),
-  // the show-mode switch (Okay, 19 Oct 2026, 12:46: "Swap icons but not places for showcase and tiny preview.
-  // Tiny gets the dot, showcase gets the eye"): the iris above with its lids drawn round it — the eye switch's own eye,
-  // drawn where that one is left out — and in show mode the same X, cut by the lids
+  // the show-mode switch (Okay, 23 Oct 2026: "showcase eye with rays", his 4.39 drawing): the dial-alone eye's way of
+  // drawing — rays from the iris, the eye knocked out of them — with 16 rays at 0.75; lit in the column's colours in show mode
   show_eye: (() => {
-    const cy = 15, lift = 5.25 * 1.2;
+    const cx = 15.25, cy = 15, lift = 5.25 * 1.2, n = 16;
     const lid = `M6.25 ${cy}C12.25 ${cy - lift} 18.25 ${cy - lift} 24.25 ${cy}C18.25 ${cy + lift} 12.25 ${cy + lift} 6.25 ${cy}Z`;
+    const rays = Array.from({ length: n }, (_, k) => { const a = 2 * Math.PI * k / n; return `M${cx} ${cy}L${(cx + 25 * Math.sin(a)).toFixed(2)} ${(cy - 25 * Math.cos(a)).toFixed(2)}`; }).join("");
     return `<mask id="show-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask>`
-      + `<path d="${lid}" ${sw(CURVE)}/><circle cx="15.25" cy="15" r="2.75" fill="currentColor" stroke="none"/><path class="x" d="M-0.75 -1L31.25 31M31.25 -1L-0.75 31" stroke-width="1" stroke-linecap="butt" mask="url(#show-cut)"/>`;
+      + `<path class="rays" d="${rays}" stroke-width="0.75" stroke-linecap="butt" mask="url(#show-cut)"/><circle cx="${cx}" cy="${cy}" r="2.75" fill="currentColor" stroke="none"/>`;
   })(),
   screen: `<rect x="2.75" y="3.25" width="10.5" height="7.5"/><path d="M8.25 10.75V13.25M5.75 13.25H10.75" ${sw(DENSE)}/>`,
   // the Guides switch, on 18: a target and its cross; its lines crowd, so DENSE. Okay's drawings (14 Oct 2026, 04:11):
@@ -957,8 +959,8 @@ ROWS["Show dial"] = [
 ROWS.Watch = [
   hdr("Watch"),
   seg("w_view", "View", ["Detail", "Whole watch", "Dial"]),
-  pick("bezel", "Case", ["Dress", "Diver", "Field", "Dress", "Field", "Emre01"], (i) => tilePicture(G.CASE_OF_BEZEL[i]), { order: [3, 2, 1, 5], shown: (S) => G.BEZEL_OF_CASE[G.CASE_OF_BEZEL[S.bezel] || "dress"] }),      // the same key the dial side's case menu writes (R9: the numbers keep their meaning); tiles, each case's silhouette (Okay, 23 Oct 2026: "Tiles with pictures")
-  seg("w_metal", "Metal", ["Fe", "Au", "Al", "CuSn", "Ti", "Black"], { many: true }),
+  pick("bezel", "Case", ["Dress", "Diver", "Field", "Dress", "Field", "Emre"], (i) => tilePicture(G.CASE_OF_BEZEL[i]), { order: [3, 2, 1, 5], shown: (S) => G.BEZEL_OF_CASE[G.CASE_OF_BEZEL[S.bezel] || "dress"] }),      // the same key the dial side's case menu writes (R9: the numbers keep their meaning); tiles, each case's silhouette (Okay, 23 Oct 2026: "Tiles with pictures")
+  pick("w_metal", "Metal", ["Fe", "Au", "Al", "CuSn", "Ti", "Black"], (i) => SHOW.metal_picture(i)),      // tiles, as Case and Insert: each fits the column (Okay, 23 Oct 2026: "do the same as others")
   col("c_metal", "Case colour", { or: (S) => SHOW.metal_colour(S) }),
   pick("w_insert", "Insert", ["Black", "Blue", "Green", "Pepsi", "Batman", "Coke", "Root beer", "Sprite"], (i) => SHOW.insert_picture(i), { show: (S) => G.CASE_OF_BEZEL[S.bezel] === "diver" }),      // tiles, each insert a ring in its two colours
   hdr("Strap", { folded: false }),
@@ -1415,7 +1417,7 @@ class DialTool {
     const panel = el("aside", { className: "panel" },
       // .mast: the mark, the title and the version — what stays when the panel slides away (dial_alone(), 15 Oct 2026)
       el("header", {}, el("div", { className: "mast" }, this.logo_box(), this.title = el("div", { className: "title" }, el("h1", { textContent: "Dial Tool" }), el("span", { className: "quiet", textContent: DEV ? `${G.VERSION} · dev` : G.VERSION }), el("a", { className: "quiet help", href: GUIDE, target: "_blank", rel: "noopener", textContent: "Help" }))), this.gallery_way(), this.grey_swatch(), this.unit_box()),
-      this.tabs, this.pinned, this.form);
+      this.tabs, this.pinned, this.form, this.shenanigans_box());
     this.finger_anchor(panel);
 
     this.svg = svg_el("svg");
@@ -1547,8 +1549,8 @@ class DialTool {
     // Hovering on the mag. glass tells these details. Remove details from the left").
     const touch = matchMedia("(hover: none), (pointer: coarse)").matches;
     const zoom_sign = el("span", { className: "zoomsign", tabIndex: 0, role: "note", ariaLabel: "How to zoom and move" });
-    zoom_sign.dataset.tip = touch ? "Pinch to zoom · two fingers move" : "⌘ + scroll zooms · drag moves · pinch on a trackpad";
-    zoom_sign.innerHTML = icon(TOOL_ICONS.find);
+    zoom_sign.dataset.tip = touch ? "Pinch to zoom · two fingers move" : "Scroll zooms · right-drag moves · two fingers pinch and move";      // Okay, 23 Oct 2026
+    zoom_sign.innerHTML = icon(TOOL_ICONS.zoominfo);
     // on a phone − and + are not on the bar: a tap on the magnifier opens a popup with the note and − + (#445; Okay, 20 Oct
     // 2026, 00:34: "Zoom popup has plus minus in the tooltip with note. On mobile"), as the date's (barpop); elsewhere a
     // tap shows the tag a moment (a finger has no hover)
@@ -1827,6 +1829,14 @@ class DialTool {
       };
       requestAnimationFrame(step);
     });
+  }
+
+  /** show mode's Shenanigans (Okay, 23 Oct 2026): at the column's foot, always in view, on the top's darker ground — the
+   *  costly or showy layers on and off in one place: Shadows, Flare, Blurs, Bevels. Only shortcuts: the same keys as
+   *  their rows and switches elsewhere, which keep every other setting of theirs. Hidden on the dial side (R16) */
+  shenanigans_box() {
+    this.shen_rows = [["sh_on", "Shadows"], ["w_flare_on", "Flare"], ["sh_blur", "Blurs"], ["w_bevels", "Bevels"]].map(([key, text]) => this.build_row({ ...chk(key, text), scope: "global" }));
+    return el("div", { className: "shenanigans" }, el("div", { className: "shenhead", textContent: "Shenanigans" }), el("div", { className: "shenticks" }, ...this.shen_rows.map((r) => r.el)));
   }
 
   /** the panel's colours from the backdrop in show mode (show.js tint_panel; #505) */
@@ -2263,7 +2273,7 @@ class DialTool {
     const arrow = el("span", { className: "arrow" });
     arrow.innerHTML = icon(SIGNS.up);
     const menu = el("select", { id: "case-pick", ariaLabel: "A case round the dial (preview only)", title: "A case round the dial (preview only)" });
-    const NAMES = { dress: "Dress", field: "Field", diver: "Diver", emre01: "Emre01" };
+    const NAMES = { dress: "Dress", field: "Field", diver: "Diver", emre01: "Emre" };      // Emre (Okay, 23 Oct 2026); its key stays emre01 (R8)
     menu.append(el("option", { value: "none", textContent: "No case" }));
     KINDS.forEach((kind) => menu.append(el("option", { value: String(G.BEZEL_OF_CASE[kind]), textContent: NAMES[kind] })));
     menu.onchange = () => {      // the view stays on the dial (4.69)
@@ -2787,6 +2797,7 @@ class DialTool {
     if (this.xray_sync) this.xray_sync();      // X-ray's, too (4.72)
     this.sync_guides();
     this.sync_shadows();
+    if (this.shen_rows) for (const r of this.shen_rows) r.refresh(this.S);
     this.sync_ring_summaries();
     paint(this.backdrop_dot, this.S.c_backdrop); this.backdrop_dot.style.background = this.S.ui_show && this.S.c_backdrop2 ? `linear-gradient(135deg, ${css_colour(this.S.c_backdrop)}, ${css_colour(this.S.c_backdrop2)})` : "";      // a gradient shows as one
     if (this.unit_button.textContent !== this.unit()[0]) this.size_unit();
@@ -4383,6 +4394,14 @@ class DialTool {
       const tabs = [...document.querySelectorAll(row.scope === "hand" ? ".tabsbar .segs > .tab" : ".windowcards .card > .tab")];
       wrap.style.setProperty("--tabs", Math.max(tabs.length, 1));
       wrap.style.setProperty("--tab", Math.max(tabs.findIndex((t) => t.classList.contains("on")), 0) + 1);
+      // …and then onto the chosen tab's own edges, measured: the tabs overlap a hair each (one line between two), which
+      // engines place differently, so columns alone left it off its tab in Safari (Okay, 23 Oct 2026: "moves left on safari")
+      const place = () => {
+        const on = tabs.find((t) => t.classList.contains("on")), a = on && on.getBoundingClientRect(), w = wrap.getBoundingClientRect();
+        if (!a || !a.width || !wrap.isConnected) return;      // not laid out yet: the next frame does it
+        Object.assign(line.style, { gridColumn: "1 / -1", justifySelf: "start", marginLeft: `${a.left - w.left}px`, width: `${a.width}px` });
+      };
+      place(); requestAnimationFrame(place);
     };
   }
 
@@ -5928,9 +5947,7 @@ class DialTool {
     this.svg.addEventListener("wheel", (e) => {
       e.preventDefault();
       this.hover(null);
-      if (e.ctrlKey || e.metaKey) this.zoom(Math.exp(-e.deltaY * 0.01), at(e));      // pinch, or ⌘ / ctrl + scroll
-      else if (this.S.ui_show) this.zoom(Math.exp(-e.deltaY * 0.002), at(e));      // show mode: the wheel zooms, no key needed; a right-button drag moves (Okay, 23 Oct 2026)
-      else { this.fitted = false; this.c = [this.c[0] - e.deltaX, this.c[1] - e.deltaY]; this.place(); }
+      this.zoom(Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.002)), at(e));      // the wheel zooms, in both modes, no key needed (Okay, 23 Oct 2026: "Scroll to zoom in out, universal"); a trackpad's pinch comes as a wheel with ctrl, in small steps
     }, { passive: false });
     // fingers and the mouse, each tracked by its id (#152: one shared `down` let a second finger reset the pan and
     // both fingers drag it from different places — the jump at the start of a pinch). One pointer pans (or clicks,
@@ -5944,7 +5961,7 @@ class DialTool {
       else if (pts.size >= 2) down = { ...pair(), moved: true };      // a pinch is never a click
       else down = null;
     };
-    this.svg.addEventListener("pointerdown", (e) => { pts.set(e.pointerId, at(e)); this.svg.setPointerCapture(e.pointerId); if (pts.size === 1) down = null; restart(); if (pts.size === 1 && this.S.ui_show) { down.moved = true; down.pan = e.button === 2; if (!down.pan) this.sun_at(at(e)); } });      // show mode: one finger or the pointer is the sun, never a click; the right button moves the watch
+    this.svg.addEventListener("pointerdown", (e) => { pts.set(e.pointerId, at(e)); this.svg.setPointerCapture(e.pointerId); if (pts.size === 1) down = null; restart(); if (pts.size === 1) { down.pan = e.button === 2; if (down.pan) down.moved = true; else if (this.S.ui_show) { down.moved = true; this.sun_at(at(e)); } } });      // the right button moves the drawing, in both modes; in show mode one finger or the pointer is the sun, never a click
     this.svg.addEventListener("pointermove", (e) => {
       if (!pts.has(e.pointerId)) return e.pointerType === "mouse" ? this.hover(at(e), document.elementFromPoint(e.clientX, e.clientY)) : null;
       pts.set(e.pointerId, at(e));
@@ -5957,8 +5974,8 @@ class DialTool {
         return;
       }
       const p = at(e);
-      if (this.S.ui_show && down.pan && !(e.buttons & 2)) { down.pan = false; return; }      // the button let go (outside the window too): the move ends
-      if (this.S.ui_show && down.pan) { this.fitted = false; this.c = [down.c[0] + p[0] - down.p[0], down.c[1] + p[1] - down.p[1]]; return this.place(); }
+      if (down.pan && !(e.buttons & 2)) { down.pan = false; return; }      // the button let go (outside the window too): the move ends
+      if (down.pan) { this.fitted = false; this.c = [down.c[0] + p[0] - down.p[0], down.c[1] + p[1] - down.p[1]]; return this.place(); }
       if (this.S.ui_show) return this.sun_at(p);
       if (Math.hypot(p[0] - down.p[0], p[1] - down.p[1]) > 4) down.moved = true;
       // a finger alone doesn't move the dial: two do, with the pinch (Okay, 18 Oct 2026, notes 2: "on ipad and all touch

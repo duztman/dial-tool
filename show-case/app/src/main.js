@@ -479,7 +479,7 @@ function panel() {
   const nato_at = (i) => nato_colours()[i] || nato_colours()[0];
   watch.body.append(
     seg("View", [["detail", "Detail"], ["full", "Whole watch"], ["dial", "Dial"]], () => W.view, (v) => { W.view = v; W.zoom = 1; W.pan = [0, 0]; }),
-    seg("Case", [["dress", "Dress"], ["field", "Field"], ["diver", "Diver"], ["emre01", "Emre01"]], () => W.key, (v) => { W.key = v; W.strap = v === "diver" ? (metal_strap() ? W.strap : "bracelet") : metal_strap() ? "leather" : W.strap; if (metal_strap()) W.metal = null; }),
+    seg("Case", [["dress", "Dress"], ["field", "Field"], ["diver", "Diver"], ["emre01", "Emre"]], () => W.key, (v) => { W.key = v; W.strap = v === "diver" ? (metal_strap() ? W.strap : "bracelet") : metal_strap() ? "leather" : W.strap; if (metal_strap()) W.metal = null; }),
     num("Size", 0.8, 1.2, 0.01, () => W.size, (v) => { W.size = v; }, "none"),
     seg("Metal", [["steel", "Fe"], ["gold", "Au"], ["alu", "Al"], ["bronze", "CuSn"], ["titanium", "Ti"], ["black", "Black"]], () => (W.metal ? null : W.metal_preset), (v) => { W.metal_preset = v; W.metal = null; }, () => true, true),
     colour("Case colour", metal, (c) => { W.metal = c; }, () => !metal_strap()),
