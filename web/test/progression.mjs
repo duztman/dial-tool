@@ -72,17 +72,16 @@ await browser.close();
 server.close();
 fs.rmSync(TMP, { recursive: true, force: true });
 
-// index.html: every step in docs/versions.md; the page keeps those whose pictures are in its folder, so a frame added
-// later (a new step, or the past from 3.0) shows up without the page being written again
-const all = [...last.values()].map(([v]) => v).sort((a, b) => (before(a, b) ? -1 : 1));
+// index.html: every step in docs/versions.md, written into the page (Safari on file:// doesn't report a missing picture,
+// so the page can't find its frames by trying them; Okay, 23 Oct 2026: "index.html shows nothing on my intel mac on safari")
+// the web version starts at 3.0; the DrawBot builds before it have no frames
+const all = [...last.values()].map(([v]) => v).filter((v) => !before(v, "3.0")).sort((a, b) => (before(a, b) ? -1 : 1));
 fs.writeFileSync(path.join(OUT, "index.html"), `<!doctype html><meta charset="utf-8"><title>Dial Tool — progression</title>
 <style>body{margin:0;background:#141414;color:#ddd;font:14px -apple-system,sans-serif}header{position:sticky;top:0;background:#141414;padding:12px 16px;display:flex;gap:16px;align-items:center}
 input[type=range]{flex:1}#v{font-variant-numeric:tabular-nums;min-width:6em}main{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px 16px}img{width:100%;display:block}</style>
 <header><b>Dial Tool</b><span id="v">…</span><input type="range" id="s" min="0" value="0"><span>as it opens · Okay's watch · ← →</span></header>
 <main><img id="a"><img id="b"></main>
-<script>const ALL=${JSON.stringify(all)};const s=document.getElementById("s");let V=[];
-const has=(v)=>new Promise((ok)=>{const i=new Image();i.onload=()=>ok(true);i.onerror=()=>ok(false);i.src=v+"-opens.png";});
-Promise.all(ALL.map(has)).then((r)=>{V=ALL.filter((v,i)=>r[i]);s.max=V.length-1;s.value=V.length-1;show();});
+<script>const V=${JSON.stringify(all)};const s=document.getElementById("s");s.max=V.length-1;s.value=V.length-1;
 function show(){const v=V[s.value];if(!v)return;document.getElementById("v").textContent="beta "+v;document.getElementById("a").src=v+"-opens.png";document.getElementById("b").src=v+"-watch.png";}
-s.oninput=show;document.onkeydown=(e)=>{if(e.key==="ArrowLeft")s.value--;if(e.key==="ArrowRight")s.value++;show();};</script>`);
+s.oninput=show;document.onkeydown=(e)=>{if(e.key==="ArrowLeft")s.value--;if(e.key==="ArrowRight")s.value++;show();};show();</script>`);
 console.log(frames.length, "steps shot into", OUT);
