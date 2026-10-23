@@ -8,7 +8,7 @@
 
 import * as G from "./geometry.js";
 import { svg_document, pdf_document, png_with_dpi, file_name, pdf_sheet, sheet_layout, pack_discs, pack_even, centre_block, spec_sheet, PAPERS } from "./output.js";
-import { frame, KINDS, attach as attach_watch } from "./watch.js";
+import { frame, KINDS, tilePicture, attach as attach_watch } from "./watch.js";
 import * as SHOW from "./show.js";      // show mode: the watch round the dial, its tabs, its export (#509)
 // a Wear OS watch face (4.67; farukahmet's PR #1, 18 Oct 2026): the dial as Watch Face Format, packed and signed in the browser
 import { generate_watchface_xml } from "./wearos/wff_xml.js";
@@ -371,9 +371,9 @@ const TOOL_ICONS = {
   // (CURVE, centre on a quarter, radius on a half); the shade and the shadow are filled, their ends on half points
   // 15 Oct, 02:42: mirrored (lit from the upper left, the shadow cast to the right) and its outline DENSE, as Guides',
   // the sign beside it on 18 ("ball stroke thickness too much… look at similar size icons, guides and such")
-  // a case, its strap, X-ray (4.79; Okay, 19 Oct 2026, 01:03: "Strap and case: stack on that left bottom list, on mobile
-  // icon them"): on 18, DENSE, as the Guides and Shadows signs — a case with its four lugs and crown; a strap's two edges
-  // through a buckle; a disc's edge whole round a dashed one under it
+  // a case and X-ray (4.79; Okay, 19 Oct 2026, 01:03: "Strap and case: stack on that left bottom list, on mobile
+  // icon them"): on 18, DENSE, as the Guides and Shadows signs — a case with its four lugs and crown; a disc's edge whole
+  // round a dashed one under it
   // a case from above (4.82; Okay, 19 Oct 2026: "Case icon … need work"): its bezel and dial opening, the lugs running
   // out of it, the crown at 3
   // the case from above (Okay, 20 Oct 2026, 02:37, notes doc: "lugs tooo long. Half, maybe even more … fits inside a
@@ -382,7 +382,6 @@ const TOOL_ICONS = {
   // length outside it with ink traps where they meet it, the hands at three o'clock, the crown a stub after the centring
   case: `<mask id="case-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18"><rect width="18" height="18" fill="white" stroke="none"/>${CASE_TRAPS}</mask>`
     + `<g ${sw(DENSE)}><g mask="url(#case-cut)"><circle cx="9.25" cy="9.25" r="5.5"/><path d="M6.25 2.75V5M12.25 2.75V5M6.25 13.5V15.75M12.25 13.5V15.75"/></g><path d="M9.25 9.25V6M9.25 9.25H11.75M14.75 9.25H15.75"/></g>`,
-  strap: `<g ${sw(DENSE)}><path d="M6.25 1.25V6.25M12.25 1.25V6.25M6.25 12.25V17.25M12.25 12.25V17.25"/><rect x="4.75" y="6.25" width="9" height="6"/><path d="M9.25 6.25V12.25"/></g>`,
   xray: `<g ${sw(DENSE)}><circle cx="9.25" cy="9.25" r="6.5"/><circle cx="9.25" cy="9.25" r="3.25" stroke-dasharray="1.25 1.3" stroke-linecap="butt"/></g>`,
   shadows: `<circle cx="7.25" cy="9.75" r="5.5" ${sw(DENSE)}/><path d="M4.5 14.5A5.5 5.5 0 0 0 12 7A8 8 0 0 1 4.5 14.5Z" fill="currentColor" stroke="none"/>`
     + `<path d="M11.03 13.75A5.625 1.25 0 0 1 16.75 15A5.625 1.25 0 0 1 5.5 15A5.5 5.5 0 0 0 11.03 13.75Z" fill="currentColor" stroke="none"/>`,      // the ball sunk 2 into its shadow (Okay, 16 Oct 2026, on 4.44: "Shadow's ball sinks 2px down into its shadow"; it touched it from 4.42.4): the shadow the same ellipse (11.125 15, 5.625 × 1.25), the ball's disc cut out of it — it stands in front. Cut at the middle of the ball's line (5.5), so the cut's edge lies under the line: cut at its outer edge (6.125, 4.44.2) the two edges met and left a faint light seam round the ball (Okay: "a single faint line around the ball"). The rim crosses the shadow's top at 11.03 and at its left end
@@ -558,7 +557,7 @@ const LANG_NAMES = { default: "As the font sets it", tr: "Turkish", nl: "Dutch",
 const lang_short = (code) => (code === "default" ? "EN" : code.slice(0, 2).toUpperCase());      // none chosen: EN, what the font sets by itself (#273; Okay's notes, p. 12)
 
 // a tile's word is one line: a name too long for a tile is said shorter there (its tag still says it whole)
-const TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip" };
+const TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip", "Root beer": "R. beer" };      // a tile's word is one line: the long ones shortened (the tile's title keeps the whole name)
 
 // the font sheet's legend: a sticker of each kind, and what it says about a family. The stickers' words are short, so a
 // family's stickers stand on one line; bold and italic keep their words (Okay, 13 Oct 2026: "condense all sticker text but
@@ -958,10 +957,10 @@ ROWS["Show dial"] = [
 ROWS.Watch = [
   hdr("Watch"),
   seg("w_view", "View", ["Detail", "Whole watch", "Dial"]),
-  seg("bezel", "Case", ["Dress", "Diver", "Field", "Dress", "Field", "Emre01"], { order: [3, 2, 1, 5] }),      // the same key the dial side's case menu writes (R9: the numbers keep their meaning)
+  pick("bezel", "Case", ["Dress", "Diver", "Field", "Dress", "Field", "Emre01"], (i) => tilePicture(G.CASE_OF_BEZEL[i]), { order: [3, 2, 1, 5], shown: (S) => G.BEZEL_OF_CASE[G.CASE_OF_BEZEL[S.bezel] || "dress"] }),      // the same key the dial side's case menu writes (R9: the numbers keep their meaning); tiles, each case's silhouette (Okay, 23 Oct 2026: "Tiles with pictures")
   seg("w_metal", "Metal", ["Fe", "Au", "Al", "CuSn", "Ti", "Black"], { many: true }),
   col("c_metal", "Case colour", { or: (S) => SHOW.metal_colour(S) }),
-  seg("w_insert", "Insert", ["Black", "Blue", "Green", "Pepsi", "Batman", "Coke", "Root beer", "Sprite"], { many: true, show: (S) => G.CASE_OF_BEZEL[S.bezel] === "diver" }),
+  pick("w_insert", "Insert", ["Black", "Blue", "Green", "Pepsi", "Batman", "Coke", "Root beer", "Sprite"], (i) => SHOW.insert_picture(i), { show: (S) => G.CASE_OF_BEZEL[S.bezel] === "diver" }),      // tiles, each insert a ring in its two colours
   hdr("Strap", { folded: false }),
   seg("strap", "Strap", ["Strap", "Leather", "Bracelet", "NATO"], { order: [1, 3, 2], offered: (S) => (G.CASE_OF_BEZEL[S.bezel] === "diver" ? [1, 2, 3] : [1, 3]) }),      // 0 and 1 leather; a bracelet is the diver's alone (R16: not offered elsewhere)
   col("c_strap", "Leather", { show: (S) => S.strap !== 2 && S.strap !== 3 }),
@@ -979,7 +978,7 @@ ROWS.Light = [
   num("sh_dark", "Darkness %", 0, 100, 1, { whole: true }),
   chk("sh_blur", "Soft shadows"),
   hdr("Flare", { folded: false, show: (S) => S.ui_effects }),
-  chk("w_flare_on", "Flare", { show: (S) => S.ui_effects }),
+  chk("w_flare_on", "Flare", { show: (S) => S.ui_effects, head: true }),      // on its pane's heading line (Okay, 23 Oct 2026: "tick box and its label moves up … on the eye's row")
   seg("w_flare", "Kind", ["Arc", "Dot"], { show: (S) => S.ui_effects && S.w_flare_on && S.w_style === 1 }),
   num("w_fl_size", "Size %", 20, 300, 1, { whole: true, show: (S) => S.ui_effects && S.w_flare_on }),
   num("w_fl_tint", "Case colour %", 0, 100, 1, { whole: true, show: (S) => S.ui_effects && S.w_flare_on }),
@@ -990,7 +989,7 @@ ROWS.Light = [
   num("w_glass_len", "Length %", 10, 300, 1, { whole: true, show: (S) => S.ui_effects }),
   num("w_glass_op", "Shine %", 0, 100, 1, { whole: true, show: (S) => S.ui_effects }),
   hdr("Effects", { folded: false }),
-  chk("ui_effects", "Blurs, flare, shine and outline"),      // off for an old computer (Okay, 22 Oct 2026: "a 'turn off shenanigans' button … persistent")
+  chk("ui_effects", "On", { head: true }),      // on the heading line its word is short: the note under it names the layers      // off for an old computer (Okay, 22 Oct 2026: "a 'turn off shenanigans' button … persistent")
   info("Off, the watch is drawn without the layers that cost most: blurs, the flare, the glass shine, the outline round the metal.", {}),
 ];
 ROWS["Show export"] = [
@@ -1338,7 +1337,7 @@ class DialTool {
       if (!quiet) this.static_dirty = true;
       if (key === "dial_d" || key === "margin") { if (this.fitted) this.fit(); }
       if (key === "date") this.sync_time();      // the bar's stacked date (4.62)
-      if ((key === "bezel" || key === "strap" || key === "c_strap") && this.case_sync) this.case_sync();
+      if ((key === "bezel" || key === "ui_case") && this.case_sync) this.case_sync();
       if (key === "dial_hole") {                  // its guide shows while it is being sized, whatever the guides are set to (#267)
         this.hole_at = performance.now();
         clearTimeout(this.hole_timer);
@@ -1373,9 +1372,10 @@ class DialTool {
    *  swatch or a colour pill is left to that swatch: it opens, moves or closes the pop-out itself. */
   pressed(e) {
     const on = (q) => e.target.closest && e.target.closest(q);
-    if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox, .strapdot")) this.pop_close();
+    if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox")) this.pop_close();
     if (this.guides_open && !$("#guide-list").hidden && !on(".guides")) this.guides_open(false);
     if (this.shadows_open && !$("#shadow-list").hidden && !on(".shadows")) this.shadows_open(false);
+    if (this.ground_open && !$("#ground-pop").hidden && !on(".backdrops, #colour-pop")) this.ground_open(false);
     if (this.versions_open && !$("#version-list").hidden && !on(".versions")) this.versions_open(false);
     if (this.history_open && !$("#history-list").hidden && !on(".undopair")) this.history_open(false);
     if (this.bio_open && !$("#bio").hidden && !on(".about")) this.bio_open(false);
@@ -1742,6 +1742,7 @@ class DialTool {
     if (this.pop && this.pop.at) this.pop_close();
     if (this.bio_open) this.bio_open(false);
     this.iris_open(false);
+    if (this.ground_open) this.ground_open(false);
     this.S.ui_show = on;
     this.iris_button.setAttribute("aria-pressed", String(on));
     const first = SECTIONS.indexOf(SHOW_SECTIONS[0]);      // each mode remembers its tab
@@ -1867,7 +1868,7 @@ class DialTool {
     list.replaceChildren(...items);
     list.hidden = false;
     const u = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit"));      // the stylesheet's unit: a unit off the box and the window's edges
-    const box = (select.closest(".menubox, .popgroup, .casebox, .strapkind, .menulabel") || select.parentElement || select).getBoundingClientRect();
+    const box = (select.closest(".menubox, .popgroup, .casebox, .menulabel") || select.parentElement || select).getBoundingClientRect();
     const room_below = innerHeight - box.bottom, room_above = box.top, up = room_below < Math.min(list.scrollHeight, 240) && room_above > room_below;
     list.style.minWidth = `${Math.round(box.width)}px`;
     list.style.maxHeight = `${Math.floor((up ? room_above : room_below) - 2 * u)}px`;
@@ -1917,7 +1918,8 @@ class DialTool {
     const dot = el("i", { className: "dot" });
     const box = el("button", { type: "button", className: "onview backdropbox", id: "backdrop", title: "The backdrop’s colour (preview only)" }, dot, el("span", { className: "word", textContent: "Backdrop" }));
     box.setAttribute("aria-expanded", "false");
-    box.onclick = () => this.pop_open({ read: () => this.S.c_backdrop, write: (v) => this.set_value("global", "c_backdrop", v), label: () => "Backdrop" }, box);
+    const pop = this.ground_pop();
+    box.onclick = () => { if (this.S.ui_show) return this.ground_open(pop.hidden); this.pop_open({ read: () => this.S.c_backdrop, write: (v) => this.set_value("global", "c_backdrop", v), label: () => "Backdrop" }, box); };      // show mode: the Show Case's presets and gradients; the dial side: the colour itself
     this.backdrop_dot = dot;
     // the eye switch (Okay, 15 Oct 2026, 02:42; at the preview's bottom right since 03:41, .eyes): on, the dial alone —
     // the panel slides away and the dial grows to fit (dial_alone(), 04:02). Not part of a dial
@@ -1938,7 +1940,35 @@ class DialTool {
     this.iris_button = iris;
     this.iris_open(false);
     this.eye_box = el("div", { className: "eyes" }, this.iris_box, eye);
-    return el("div", { className: "backdrops" }, box);
+    return el("div", { className: "backdrops" }, box, pop);
+  }
+
+  /** show mode's Backdrop (the Show Case's background popup, 21 Oct 2026; Okay, 23 Oct 2026: "Backdrop did not get the
+   *  gradients/preset colors"): two sides, one colour and a gradient, ten presets each, and under each its own colour — one
+   *  pill, or two for the gradient's ends — which opens the colour pop-out. A gradient is c_backdrop to c_backdrop2 */
+  ground_pop() {
+    const pop = el("div", { className: "guidelist shadelist night groundpop", id: "ground-pop", hidden: true });
+    const S = () => this.S, hex = (c) => (c ? to_hex(c) : null), syncs = [];
+    const grad = () => (S().c_backdrop2 ? [S().c_backdrop, S().c_backdrop2] : this.ground_grad || SHOW.GRADIENTS[8].slice(1).map((h) => from_hex(h)));      // the gradient last used, kept while one colour is shown
+    const set = (a, b) => { this.set_value("global", "c_backdrop", a); this.set_value("global", "c_backdrop2", b); if (b) this.ground_grad = [a, b]; this.ground_sync(); };
+    const tile = (name, look, on, act) => { const b = el("button", { type: "button", className: "groundtile", title: name, ariaLabel: name }, el("i")); b.firstChild.style.background = look; b.onclick = act; syncs.push(() => b.classList.toggle("on", on())); return b; };
+    const side = (title, tiles, pick) => el("div", { className: "groundside" }, el("div", { className: "guidehead" }, el("span", { className: "name", textContent: title })), el("div", { className: "groundtiles" }, ...tiles), pick);
+    const one_dot = el("i", { className: "dot" }), one_hex = el("span", { className: "hex" });
+    const one = el("button", { type: "button", className: "colour groundpick", id: "ground-one", title: "The backdrop's colour" }, one_dot, one_hex);
+    one.onclick = () => this.pop_open({ read: () => S().c_backdrop, write: (v) => set(v, null), label: () => "Backdrop" }, one);
+    const ends = [0, 1].map((k) => { const d = el("button", { type: "button", className: "colour groundpick gdot", id: `ground-end-${k}`, title: k ? "The gradient's second colour" : "The gradient's first colour" }, el("i", { className: "dot" }));
+      d.onclick = () => this.pop_open({ read: () => grad()[k], write: (v) => { const g = grad().slice(); g[k] = v; set(g[0], g[1]); }, label: () => (k ? "Gradient · second" : "Gradient · first") }, d); return d; });
+    const both = el("span", { className: "gradpick" }, ...ends);
+    syncs.push(() => {
+      paint(one_dot, S().c_backdrop); one_hex.textContent = hex(S().c_backdrop).toUpperCase(); one.classList.toggle("on", !S().c_backdrop2);
+      grad().forEach((c, k) => paint(ends[k].firstChild, c)); both.classList.toggle("on", Boolean(S().c_backdrop2));
+    });
+    pop.append(el("div", { className: "groundsides" },
+      side("One colour", SHOW.GROUNDS.map(([n, c]) => tile(n, c, () => !S().c_backdrop2 && hex(S().c_backdrop) === c, () => set(from_hex(c), null))), one),
+      side("Gradient", SHOW.GRADIENTS.map(([n, a, b]) => tile(n, `linear-gradient(135deg, ${a}, ${b})`, () => hex(S().c_backdrop) === a && hex(S().c_backdrop2) === b, () => set(from_hex(a), from_hex(b)))), both)));
+    this.ground_sync = () => { for (const f of syncs) f(); };
+    this.ground_open = (on) => { pop.hidden = !on; $("#backdrop").setAttribute("aria-expanded", String(on)); if (on) this.ground_sync(); };
+    return pop;
   }
 
   /** Okay's mark in the panel's first column, left of the title; a press opens a short bio: who made the tool, where
@@ -1968,7 +1998,7 @@ class DialTool {
     this.bio_first.append("Contact him ", write, ".");
     const open = (on) => { bio.hidden = !on; button.setAttribute("aria-expanded", String(on)); };
     this.bio_open = open;
-    button.onclick = () => open(bio.hidden);
+    button.onclick = () => { if (!this.S.ui_show) open(bio.hidden); };      // show mode: the mark opens nothing (Okay, 23 Oct 2026: "Showcase does not get a bio popup, unclickable icon")
     const box = el("div", { className: "about" }, button, bio);
     box.onkeydown = (e) => { if (e.key === "Escape" && !bio.hidden) { open(false); button.focus(); } };
     return box;
@@ -2149,46 +2179,36 @@ class DialTool {
   /** a case round the dial (4.66; farukahmet's PR #3, "abstractified" — bezels.js), drawn again only when its kind or
    *  the dial's size changes. Preview only: never in an export or the Tiny Preview (R26). */
   draw_bezel() {
-    const S = this.S, light = S.sh_on ? Math.min(S.sh_dark / 25, 2) : 0;      // the one sun: Dial Tool's shadow keys drive the watch's shadow too (Okay, 22 Oct 2026)
-    const key = `${S.bezel || 0}/${S.dial_d}/${S.strap}/${S.c_strap}/${S.sh_from}/${S.sh_rise}/${light}`;
+    const S = this.S, key = S.ui_case ? `${S.bezel || 0}/${S.dial_d}` : "";
     if (key === this.bezel_key) return;
     this.bezel_key = key;
-    this.bezel_g.innerHTML = frame({ kind: G.CASE_OF_BEZEL[S.bezel] || "dress", d: S.dial_d, strap: S.strap === 2 ? "bracelet" : "leather", leather: to_hex(S.c_strap), metal: "steel", L: S.sh_from - 90, h: S.sh_rise, shadow: light });
+    this.bezel_g.innerHTML = S.ui_case ? frame({ kind: G.CASE_OF_BEZEL[S.bezel] || "dress", d: S.dial_d }) : "";
   }
 
-  /** the case's switch, beside Backdrop (4.66): its kind's name and a chevron; the system's list over it, unseen. */
+  /** the case's switch, beside Backdrop (4.66): its kind's name and a chevron; the system's list over it, unseen. No case
+   *  to start (ui_case; Okay, 23 Oct 2026: "On main default is caseless"); the kind is show mode's too. No strap here: the
+   *  strap is show mode's alone ("case toggle does not bring in strap") */
   case_box() {
     const word = el("span", { className: "word" });
     const arrow = el("span", { className: "arrow" });
     arrow.innerHTML = icon(SIGNS.up);
     const menu = el("select", { id: "case-pick", ariaLabel: "A case round the dial (preview only)", title: "A case round the dial (preview only)" });
     const NAMES = { dress: "Dress", field: "Field", diver: "Diver", emre01: "Emre01" };
+    menu.append(el("option", { value: "none", textContent: "No case" }));
     KINDS.forEach((kind) => menu.append(el("option", { value: String(G.BEZEL_OF_CASE[kind]), textContent: NAMES[kind] })));
-    menu.onchange = () => { this.set_value("global", "bezel", +menu.value); this.render(); };      // the view stays on the dial (4.69; it fitted the case in 4.66–4.68)
+    menu.onchange = () => {      // the view stays on the dial (4.69)
+      if (menu.value === "none") this.set_value("global", "ui_case", false);
+      else { this.set_value("global", "bezel", +menu.value); this.set_value("global", "ui_case", true); }
+      this.case_sync(); this.render();
+    };
     const sign = el("span", { className: "sign" }); sign.innerHTML = icon(TOOL_ICONS.case, 18);
     const box = el("span", { className: "onview casebox", id: "case" }, sign, word, arrow, menu);
-    // its strap (4.69; Okay, 18 Oct 2026, 22:35: "Add straps to bezels metal bands too … Add strap color change option"):
-    // a second switch beside it while a case is on — the strap's colour as a chip (a press opens the colour pop-out),
-    // then its kind's name and a chevron over the system's list: No strap · Strap · Bracelet. A bracelet is the case's metal: no chip
-    const dot = el("button", { type: "button", className: "dot strapdot", id: "strap-colour", title: "The strap’s colour", ariaLabel: "The strap’s colour" });
-    dot.onclick = () => this.pop_open({ read: () => this.S.c_strap, write: (v) => this.set_value("global", "c_strap", v), label: () => "Strap" }, dot);
-    const sword = el("span", { className: "word" }), sarrow = el("span", { className: "arrow" });
-    sarrow.innerHTML = icon(SIGNS.up);
-    const smenu = el("select", { id: "strap-pick", ariaLabel: "The case’s strap (preview only)", title: "The case’s strap (preview only)" });
-    const STRAPS = ["Strap", "Strap", "Bracelet"];      // 0 and 1 leather, 2 a bracelet (watch.js); no "No strap"
-    [1, 2].forEach((i) => smenu.append(el("option", { value: String(i), textContent: STRAPS[i] })));
-    smenu.onchange = () => { this.set_value("global", "strap", +smenu.value); this.render(); };
-    const ssign = el("span", { className: "sign" }); ssign.innerHTML = icon(TOOL_ICONS.strap, 18);
-    const strap = el("span", { className: "onview casebox strapbox", id: "strap" }, dot, el("span", { className: "strapkind" }, ssign, sword, sarrow, smenu));
     this.case_sync = () => {
-      const S = this.S, kind = G.CASE_OF_BEZEL[S.bezel] || "dress", k = S.strap === 2 && kind === "diver" ? 2 : 1;      // a bracelet on the diver alone
-      word.textContent = NAMES[kind]; menu.value = String(G.BEZEL_OF_CASE[kind]); box.classList.add("on");
-      sword.textContent = STRAPS[k]; smenu.value = String(k); strap.classList.add("on");
-      smenu.querySelector('[value="2"]').hidden = kind !== "diver";      // R16: hidden where it can't be used
-      dot.hidden = k !== 1; paint(dot, S.c_strap);
+      const S = this.S, kind = G.CASE_OF_BEZEL[S.bezel] || "dress";
+      word.textContent = S.ui_case ? NAMES[kind] : "Case"; menu.value = S.ui_case ? String(G.BEZEL_OF_CASE[kind]) : "none"; box.classList.toggle("on", Boolean(S.ui_case));
     };
     this.case_sync();
-    return [box, strap];
+    return [box];
   }
 
   /** the bar's date popup (#402, #412): one line — the weekday, then the day, the month and the year, each a menu, then
@@ -2697,7 +2717,7 @@ class DialTool {
     this.sync_guides();
     this.sync_shadows();
     this.sync_ring_summaries();
-    paint(this.backdrop_dot, this.S.c_backdrop);
+    paint(this.backdrop_dot, this.S.c_backdrop); this.backdrop_dot.style.background = this.S.ui_show && this.S.c_backdrop2 ? `linear-gradient(135deg, ${css_colour(this.S.c_backdrop)}, ${css_colour(this.S.c_backdrop2)})` : "";      // a gradient shows as one
     if (this.unit_button.textContent !== this.unit()[0]) this.size_unit();
     this.unit_items.forEach((b, i) => { b.classList.toggle("on", i === this.S.ui_unit); b.setAttribute("aria-checked", String(i === this.S.ui_unit)); });
     for (const r of this.rows) {
@@ -2943,7 +2963,8 @@ class DialTool {
     if (row.kind === "pick") {                     // a choice as pictures: one tile per item, on the columns
       const group = el("span", { className: (row.small ? "picks small" : row.thumbs ? "picks thumbs" : "picks") + (row.across ? " across" : ""), role: "radiogroup", ariaLabel: row.text });
       if (row.across) group.style.setProperty("--across", Math.max(4, row.across));      // four to a line at least: fewer keep a four's size, the room left at the right; a fifth squeezes in (design canon §6)      // as many tiles to a line as it has (a window's complications, five)
-      row.items.forEach((name, i) => {
+      (row.order || row.items.map((_, i) => i)).forEach((i) => {      // order: the tiles' order when it isn't the list's (R9)
+        const name = row.items[i];
         if (row.skip && row.skip.includes(i)) return;      // an item kept in the list for its place (R9) but not offered here
         const tile = el("button", { type: "button", className: "pickt", id: `${id}-${i}`, title: name, onclick: () => set(i) });
         tile.setAttribute("role", "radio");

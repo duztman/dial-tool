@@ -11,13 +11,13 @@
 // (Dial Tool's own shapes, with ink relief and hand bevels), the textures, the bracelets.
 // Millimetres, y down, the dial's centre at the origin. SVG strings only; nothing here touches the window.
 //
-// Exports: attach(pathkit) · KINDS · caseBox(kind, size) · presets(style) · edge(floor, view, style) · draw(options).
+// Exports: attach(pathkit) · KINDS · caseBox(kind, size) · presets(style) · edge(floor, view, style) · draw(options) · frame(options) · tilePicture(kind).
 let PK = null;
 export function attach(pk) { PK = pk; }
 
 // ── state of one drawing: set by draw(), read everywhere ──
 let STYLE = "miyazaki";
-let GLINT = "plain", INK_K = 6, INK_N = 0, HAND_BEVEL = false, FLARE_TINT = "#ffffff", FLARE_SCALE = 1, GLASS_K = 1, SH_OP = 0.3, FLARE_KIND = "arc", DIVOT = "cut";
+let GLINT = "plain", INK_K = 6, INK_N = 0, HAND_BEVEL = false, FLARE_TINT = "#ffffff", FLARE_SCALE = 1, GLASS_K = 1, SH_OP = 0.3, FLARE_KIND = "arc";
 let BRACELET_KIND = "vault";      // which bracelet the diver wears: vault (Oyster) or links (Emre's)
 let DIAL_IN = true, OUTLINE_ON = true;      // OUTLINE_ON false: the effects switch is off (Okay: "turn off shenanigans") — no silhouette outline, which is a PathKit union per drawing      // false: the watch round a dial drawn by someone else (Dial Tool's edit mode) — no dial, no glass, nothing over the opening
 const REHAUT = 0.8; let SHD = 1, INSERT = { top: "#2b2c30", bottom: "#2b2c30" }, FL = { size: 1, tint: 0.45, bright: 1 }, GLASS = { fat: 1, len: 1, op: 1 }, DIALS = [], HANDS_A = { hour: 305, minute: 60, second: 180 };
@@ -184,7 +184,7 @@ function sloped(r0, r1, T, L, out = 1, tilt = 1, N = 96) {
 }
 
 // ── Miyazaki's marks: a part is its outline in the body tone, cut by two crescents (no masks, even-odd cut-outs) ──
-function blob(d, T, L, a = 0.9, b = 2.0) {
+function blob(d, T, L, a = 0.9, b = 2.0, away = null) {      // away: a shape the light crescent stays out of
   OUTT.push(d);
   const id = "b" + BLOB++, u = [Math.cos(rad(L)), Math.sin(rad(L))];
   const lh = SUN_H > 55 ? 0.7 : 1, dk = (SUN_H < 25 ? 1.35 : 1) * 1.3;       // harsher darks (18:06)
@@ -192,7 +192,9 @@ function blob(d, T, L, a = 0.9, b = 2.0) {
   // the part in its body tone; the dark crescent = the part less itself moved toward the light; the light one = less
   // itself moved away. Drawn as an even-odd cut-out, no masks (18:06)
   const cut = (dx, dy, fill, op = 1) => `<g transform="translate(${f(dx)} ${f(dy)})"><path d="M-500 -500H500V500H-500Z${d}" fill-rule="evenodd" fill="${fill}" fill-opacity="${op}"/></g>`;
-  return `<path d="${d}" fill="${T[1]}"/><g clip-path="url(#${id}c)">${cut(u[0] * b * dk, u[1] * b * dk, T[2])}${cut(-u[0] * a * lh, -u[1] * a * lh, T[0])}</g>`;
+  if (away) CLIPS.push(`<clipPath id="${id}a"><path clip-rule="evenodd" d="M-500 -500H500V500H-500Z${away}"/></clipPath>`);
+  const light = cut(-u[0] * a * lh, -u[1] * a * lh, T[0]);
+  return `<path d="${d}" fill="${T[1]}"/><g clip-path="url(#${id}c)">${cut(u[0] * b * dk, u[1] * b * dk, T[2])}${away ? `<g clip-path="url(#${id}a)">${light}</g>` : light}</g>`;
 }
 function blobOver(d, L, a = 0.9, b = 2.0) {
   const id = "o" + BLOB++, u = [Math.cos(rad(L)), Math.sin(rad(L))];
@@ -322,30 +324,20 @@ function caseEngineer(C, v, L) {
     }
     for (const q of quads) out.push(`<path d="${P(q.pts)}" fill="${q.t}" stroke="${q.t}" stroke-width="0.05"/>`);
     out.push(stroke(P(i), 0.12), stroke(P(o), 0.2));
-  } else out.push(C.insert ? `<path d="${circle(R)}" fill="${mixc(T[2], "#000000", 0.45)}"/>` : "", shape(C.insert && DIVOT === "cut" ? notchedPath(R, C.insert.coin, 0.5) : circle(R), T[1], 0.2, T[2]));      // the divots show dark metal (18:26)
+  } else out.push(C.insert ? `<path d="${circle(R)}" fill="${mixc(T[2], "#000000", 0.45)}"/>` : "", shape(C.insert ? notchedPath(R, C.insert.coin, 0.5) : circle(R), T[1], 0.2, T[2]));      // the divots show dark metal (18:26)
   for (const [r1, r0, dir, tilt] of C.bands) out.push(sloped(r0, r1, T, L, dir, tilt));
-  if (C.insert) {      // the dive bezel: a coin edge round its rim, lit tooth by tooth; then the black insert and its minute scale
-    const I = C.insert, ro = I.od / 2, ri = R - 1.4;
-    // the notched edge (18:06): each tooth a block in one of three tones by the way it faces; the ring inside it sloped
-    out.push(sloped(ri, R - 0.55, T, L, 1, 0.8, I.coin));      // the ring inside the rim
+  if (C.insert) {      // the dive bezel, drawn as Miyazaki's (Okay, 23 Oct 2026: "Miyazaki's"): the toothed rim, each tooth lit by the way it faces, straight in to the insert; the insert out to its own edge; the five-minute ticks and the triangle
+    const I = C.insert, ro = I.od / 2 - 0.9;
     { const id = "nc" + clipN++; CLIPS.push(`<clipPath id="${id}"><path d="${notchedPath(R, I.coin, 0.5)}"/></clipPath>`);
-      out.push(`<g clip-path="url(#${id})">` + teeth(R, I.coin, 0.5).map((t) => `<path d="${t.d}" fill="${tone(T, t.phi, 0.9, L)}"/>`).join("") + `</g>`);
-      // the round scoops (19:04, as on the Miyazaki faces): each divot a dark disc sunk into the rim, outlined, its far wall lit
-      if (DIVOT === "round") { const cid = "sc" + clipN++, u = [Math.cos(rad(L)), Math.sin(rad(L))]; CLIPS.push(`<clipPath id="${cid}"><path d="${circle(R)}"/></clipPath>`);
-        out.push(`<g clip-path="url(#${cid})">` + Array.from({ length: I.coin }, (_, k) => { const a = (k / I.coin) * 2 * Math.PI - Math.PI / 2, x = Math.cos(a) * R, y = Math.sin(a) * R;
-          return `<circle cx="${f(x)}" cy="${f(y)}" r="0.5" fill="${mixc(T[2], "#000000", 0.45)}"/><path d="M${f(x - u[0] * 0.5 + u[1] * 0.42)} ${f(y - u[1] * 0.5 - u[0] * 0.42)}A0.5 0.5 0 0 0 ${f(x - u[0] * 0.5 - u[1] * 0.42)} ${f(y - u[1] * 0.5 + u[0] * 0.42)}" fill="none" stroke="${T[0]}" stroke-width="0.14" transform="translate(${f(u[0] * 0.22)} ${f(u[1] * 0.22)})"/><circle cx="${f(x)}" cy="${f(y)}" r="0.5" fill="none" stroke="${INK}" stroke-width="0.1"/>`; }).join("") + `</g>`); } }
-    out.push(`<path d="${DIVOT === "cut" ? notchedPath(R, I.coin, 0.5) : circle(R)}" fill="none" stroke="${INK}" stroke-width="${LW}" stroke-linejoin="round"/>`);
+      out.push(`<g clip-path="url(#${id})">` + teeth(R, I.coin, 0.5).map((t) => `<path d="${t.d}" fill="${tone(T, t.phi, 0.9, L)}"/>`).join("") + `</g>`); }
+    out.push(`<path d="${notchedPath(R, I.coin, 0.5)}" fill="none" stroke="${INK}" stroke-width="${LW}" stroke-linejoin="round"/>`);
     const ins = (c) => [hsl(c, 1.33), c, hsl(c, 0.78)], half = "hb" + clipN++;
     CLIPS.push(`<clipPath id="${half}"><rect x="-60" y="0" width="120" height="60"/></clipPath>`);
-    out.push(sloped(I.id / 2, ri, ins(INSERT.top), L, -1, 0.5));
-    if (INSERT.bottom !== INSERT.top) out.push(`<g clip-path="url(#${half})">${sloped(I.id / 2, ri, ins(INSERT.bottom), L, -1, 0.5)}</g>`);
+    out.push(sloped(I.id / 2, ro, ins(INSERT.top), L, -1, 0.5));
+    if (INSERT.bottom !== INSERT.top) out.push(`<g clip-path="url(#${half})">${sloped(I.id / 2, ro, ins(INSERT.bottom), L, -1, 0.5)}</g>`);
     out.push(sloped(C.opening, I.id / 2, T, L, -1, 0.7));      // the thin metal ring between the insert and the dial
-    for (let m = 0; m < 60; m++) {
-      const t = rad(m * 6 - 90), r0 = I.id / 2 + 0.5, r1 = I.id / 2 + (m % 5 === 0 ? 2.6 : 1.3);      // every minute, the fives longer
-      if (m === 0) out.push(`<path d="${P([[0, -ri + 0.4], [-1.3, -I.id / 2 - 0.4], [1.3, -I.id / 2 - 0.4]])}" fill="#d8d6cf"/>`);
-      else if (r1 > r0) out.push(`<path d="M${f(Math.cos(t) * r0)} ${f(Math.sin(t) * r0)}L${f(Math.cos(t) * r1)} ${f(Math.sin(t) * r1)}" stroke="#d8d6cf" stroke-width="${m % 5 === 0 ? 0.45 : LW}"/>`);
-    }
-    // no numbers on the bezel (15:43): ticks only
+    for (let m = 5; m < 60; m += 5) { const t = rad(m * 6 - 90), r0 = I.id / 2 + 0.6, r1 = I.id / 2 + 2.5; out.push(`<path d="M${f(Math.cos(t) * r0)} ${f(Math.sin(t) * r0)}L${f(Math.cos(t) * r1)} ${f(Math.sin(t) * r1)}" stroke="#d8d6cf" stroke-width="0.7" stroke-linecap="round"/>`); }
+    out.push(`<path d="${P([[0, -ro + 0.5], [-1.4, -I.id / 2 - 0.5], [1.4, -I.id / 2 - 0.5]])}" fill="#d8d6cf"/>`);
     out.push(stroke(circle(ro)), stroke(circle(I.id / 2)));
   }
   out.push(glint(C.cushion ? C.cushion.a - 0.7 : C.od / 2 - 0.5, L), glint(C.opening + 0.5, L, 0.4, 0.5, 20));
@@ -366,7 +358,7 @@ function caseEngineer(C, v, L) {
 function caseMiyazaki(C, v, L) {
   FLARE_TINT = flareColour(C.metal);
   const R = C.cushion ? C.cushion.a : C.od / 2, T = C.metal, out = [];
-  for (const sx of [-1, 1]) for (const sy of [-1, 1]) out.push(blob(C.cushion ? cushionLug(C, sx, sy) : lugPath(C, sx, sy), T, L, 0.5, 1.0));
+  for (const sx of [-1, 1]) for (const sy of [-1, 1]) out.push(blob(C.cushion ? cushionLug(C, sx, sy) : lugPath(C, sx, sy), T, L, 0.5, 1.0, C.cushion || C.rails ? null : circle(R + 0.6)));      // a lug's light edge stops short of the case: at the join it peeked out as a sliver (Okay, 23 Oct 2026: "this tiny unnecessary shine")
   const cw = C.crown.w, ch = C.crown.h;
   const RC = C.rails ? C.lugw / 2 + C.lugT - 0.1 : R;      // on Emre01, out through the rail
   { const R = RC, cd = rrect(R - 1.2, -cw / 2, R + ch, cw / 2, Math.min(1.0, cw / 2)), id = "cr" + BLOB++, ly = Math.sin(rad(L)), lx = Math.cos(rad(L));
@@ -724,23 +716,35 @@ ${strapSVG}${strap === "bracelet" ? "" : contact(C, L, strap, span, STYLE === "m
 </svg>`;
 }
 
-/** the watch round a dial drawn by Dial Tool (edit mode, build list #508): the flat Engineer paint, one hard shadow,
- *  no glass, no flare — SVG to put under the dial, in the dial's space (mm, y up). `o`: kind (dress · field · diver ·
- *  emre01), d (the dial's diameter: the case scales to it), strap ("leather" · "bracelet"), leather (a hex colour),
- *  metal (a hex colour, or one of the metals' names), L and h (the sun: screen degrees, height), shadow (the Shadows
- *  slider, 1 = as drawn) */
+/** the case round a dial drawn by Dial Tool (edit mode): its silhouette alone — the case, lugs and crown joined into one
+ *  shape and its edge drawn as one faint line, no fills, no shadow, no strap (Okay, 23 Oct 2026: "Just a silhouette, very
+ *  faint lines. no shadows, nothing"). `o`: kind (dress · field · diver · emre01) and d (the dial's diameter: the case
+ *  scales to it). In the dial's space (mm, y up); its line a screen pixel at any zoom, in the canvas's ink (currentColor) */
 export function frame(o) {
-  use("engineer"); DIAL_IN = false; GLINT = "off"; SH_OP = Math.min(1, 0.3 * (o.shadow ?? 1));
-  const C0 = CASES[o.kind] || CASES.dress, size = sizeFor(o.kind, o.d);
-  METALS.custom = METALS[o.metal] || tones(o.metal || METALS.steel[1], [1.35, 0.81]);
-  LEATHER.custom = tones(o.leather || LEATHER.brown[1], [1.18, 0.82]);
-  BRACELET_KIND = "vault";
-  const strap = o.strap === "bracelet" && C0.insert ? "bracelet" : "leather-custom";      // a bracelet on the diver alone (as the Show Case)
-  const svg = sheet(o.kind in CASES ? o.kind : "dress", strap, "own", o.L ?? 225, true, o.h ?? 40, "live", "custom", size);
-  DIAL_IN = true;
-  // the drawing without its page: the defs, then what is drawn, flipped to y up
-  const body = svg.slice(svg.indexOf("\n") + 1, svg.lastIndexOf("</svg>")).replace("__CLIPS__", CLIPS.join("")).replace(/<rect x="-300" y="-300"[^>]*\/>/, "").replace(/<defs><radialGradient id="pool".*?<\/defs>/s, "");
-  return `<g transform="scale(1 -1)">${body}</g>`;
+  const d = silhouetteOf(o.kind, sizeFor(o.kind in CASES ? o.kind : "dress", o.d));
+  return `<g transform="scale(1 -1)"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></g>`;
+}
+/** the case, lugs and crown as one shape: the edge of every part of the case joined (Miyazaki's painter keeps each part's
+ *  outline, blob), drawn without its dial, glass or flare; SVG path data in the drawing's space (mm, y down) */
+function silhouetteOf(key, size) {
+  use("miyazaki"); DIAL_IN = false; GLINT = "off"; OUTLINE_ON = false;
+  const kind = key in CASES ? key : "dress";
+  METALS.custom = METALS.steel; LEATHER.custom = LEATHER.brown;
+  sheet(kind, "leather-custom", "own", 225, true, 40, "live", "custom", size);
+  DIAL_IN = true; OUTLINE_ON = true;
+  const u = PK.FromSVGString(OUTL_C[0]);
+  for (const d of OUTL_C.slice(1)) { const p = PK.FromSVGString(d); u.op(p, PK.PathOp.UNION); p.delete(); }
+  const d = u.toSVGString(); u.delete();
+  return d;
+}
+/** a case's picture for a tile (show mode's Case, Okay, 23 Oct 2026: "Tiles with pictures"): its silhouette and its dial's
+ *  opening, at its published size, in a box `w` × `h` points; the line a point wide, in the tile's ink */
+const TILES = {};
+export function tilePicture(key, w = 38, h = 27) {
+  if (TILES[key]) return TILES[key];
+  const C = scaleCase(CASES[key] || CASES.dress, 1), d = silhouetteOf(key, 1), b = caseBox(key, 1), m = 1.15;
+  const s = Math.min(w / (b.w * m), h / (b.h * m));
+  return (TILES[key] = `<svg viewBox="${f(-w / 2 / s)} ${f(-h / 2 / s)} ${f(w / s)} ${f(h / s)}" width="${w}" height="${h}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><path d="${d}" vector-effect="non-scaling-stroke"/><path d="${circle(C.opening)}" vector-effect="non-scaling-stroke"/></svg>`);
 }
 
 // ── one drawing for the page (Dial Show Case, show mode) ──

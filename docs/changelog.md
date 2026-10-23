@@ -1,5 +1,18 @@
 # Dial Tool — changelog
 
+## beta 4.91.12 (web version) · 23 Oct 2026
+
+Okay's notes of 23 Oct 2026, 14:23:
+- **Main is caseless to start** ("On main default is caseless"): the case menu opens with No case (`ui_case`, a ui_ key: never in a link); a kind picked turns it on and is show mode's kind too. **No Strap switch on the dial side** ("strap is only available through showcase").
+- **Main's case is its silhouette** ("Just a silhouette, very faint lines. no shadows, nothing"): the case, lugs and crown joined into one shape, its edge one screen pixel in the canvas's ink at the switches' faintness (`frame()` in `watch.js`, via `silhouetteOf()`).
+- **Show mode's title line**: no version ("hidden for users"); the mark opens no bio ("unclickable icon").
+- **Show mode's Backdrop**: the Show Case's popup — ten colours and ten gradients, each side with its own colour under it opening the colour pop-out (`c_backdrop`, `c_backdrop2`); the Backdrop's chip shows a gradient as one. The dial side's Backdrop still opens the colour pop-out.
+- **One dive bezel** (Okay chose Miyazaki's): Engineer draws the toothed rim straight in to the insert, the insert out to its own edge, the five-minute ticks and the triangle, in its own flat tones; the "round divot" code that was never used is gone.
+- **The Dress case's tiny shine**: a lug's light crescent peeked out as a sliver where the lug meets the case; it now stops 0.6 mm short of the case's edge.
+- **Show mode's rows**: ticks and colour chips stand in the number boxes' column (the pills stay where they are); notes span the row; Flare's and Effects' ticks are on their pane's heading line (Effects' word is "On" there; the note under it names the layers).
+- **Case and Insert are picture tiles** ("check main for inspiration"): each case its silhouette and opening, each insert a ring in its two colours (main's `pick` rows, which now take an `order`).
+- Checked: `npm run small`, all passing (new: main's caseless start and silhouette; show mode's title, Backdrop popup and tiles).
+
 ## beta 4.91.11 (web version) · 23 Oct 2026
 
 Show mode set back to the Show Case where it had drifted (Okay, 23 Oct 2026, 01:23, iPad screenshots):

@@ -93,8 +93,6 @@
     main.words :is(.guidesbox, .backdropbox, .versionsbox) > .word { max-width: var(--word-max); margin-left: var(--unit); }
     /* the case, its strap and X-ray too, their signs alone (4.79: "on mobile icon them"); a tap on the backdrop unfolds their words as the others' */
     .casebox { --sign-w: 18px; gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); }
-    .strapbox { padding-left: var(--u2); }
-    .strapbox .strapkind { gap: 0; margin-left: var(--unit); }      /* its folded word and chevron leave no gaps behind (4.82) */
     .casebox .arrow { width: auto; margin-left: 0; border-left: 0; }      /* folded with the word, no square of its own */
     .casebox :is(.word, .arrow) { display: inline-block; max-width: 0; overflow: hidden; white-space: nowrap; transition: max-width var(--iris-time) var(--view-ease), margin var(--iris-time) var(--view-ease); }
     main.words .casebox :is(.word, .arrow) { max-width: var(--word-max); margin-left: var(--unit); }

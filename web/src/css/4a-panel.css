@@ -22,7 +22,8 @@
   #app.showing .panel > header { height: var(--show-header); }      /* the Show Case's title line: Dial Tool Show Case, its version, Help and the round swatch — nothing else (Okay, 23 Oct 2026) */
   #app.showing .title h1 { white-space: nowrap; }
   #app.showing .title h1::after { content: " Show Case"; font-weight: 400; }      /* Dial Tool bold, Show Case not (Okay, 21 Oct 2026, 01:23) */
-  #app.showing .panel > header :is(.gallerypill, .unit) { display: none; }
+  #app.showing .panel > header :is(.gallerypill, .unit, .title > .quiet:not(.help)) { display: none; }      /* …no version either: hidden from users (Okay, 23 Oct 2026) */
+  #app.showing .logo { pointer-events: none; cursor: default; }      /* the mark is only a mark here: no bio (Okay, 23 Oct 2026) */
   .greyswatch { display: none; }      /* show mode's round swatch (grey_swatch() in app.js): the panel's other look, in greys or in the backdrop's colour; dial side: none (R16) */
   #app.showing .greyswatch { display: block; flex: none; margin-left: auto; width: var(--bare-dot); height: var(--bare-dot); padding: 0; border: var(--hair) solid var(--rule); border-radius: 50%; background: var(--swatch); cursor: pointer; }
   #app.showing main { grid-area: 1 / 1 / 2 / 3; }      /* the canvas runs on under the column, so the backdrop and the watch show through it (Okay, 23 Oct 2026: "Transparency is gone, bring that back"); the drawing is centred in the part left of it (size() in app.js) */
@@ -140,6 +141,7 @@
   .pane.has > .fold .summary, .pane.tooled:not(.folded) > .fold .summary { visibility: hidden; }
   .pane.tooled > .headtools { justify-self: end; }      /* the ring list's tools: at the right; folded, the summary stands there instead */
   .pane.tooled.folded > .headtools { display: none; }
+  #app.showing .pane > .headcontrol.check { grid-column: 2 / -1; justify-self: end; width: calc(var(--box-value) + var(--box-steps)); }      /* show mode: a tick on its heading line (Flare, Effects) in the number boxes' column, as the ticks under it */
   .pane > .headcontrol.reset { justify-self: start; }      /* Reset's button: on its heading line where its warning starts, the controls' column, and only while the pane is open (Okay, 16 Oct 2026, #269; flush left with the warning since 4.44.2: "reset button flush left with explaner text") */
   .pane.folded > .headcontrol.reset { display: none; }
   .pane > .headcontrol.copylink { justify-self: end; display: inline-flex; align-items: center; gap: var(--u1); }      /* Copy link with its sign, flush right on its heading line, open or folded (Okay, 16 Oct 2026, #277) */

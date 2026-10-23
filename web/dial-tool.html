@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.91.11 · built 2026-10-22 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.91.12 · built 2026-10-23 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -455,7 +455,8 @@
   #app.showing .panel > header { height: var(--show-header); }      /* the Show Case's title line: Dial Tool Show Case, its version, Help and the round swatch — nothing else (Okay, 23 Oct 2026) */
   #app.showing .title h1 { white-space: nowrap; }
   #app.showing .title h1::after { content: " Show Case"; font-weight: 400; }      /* Dial Tool bold, Show Case not (Okay, 21 Oct 2026, 01:23) */
-  #app.showing .panel > header :is(.gallerypill, .unit) { display: none; }
+  #app.showing .panel > header :is(.gallerypill, .unit, .title > .quiet:not(.help)) { display: none; }      /* …no version either: hidden from users (Okay, 23 Oct 2026) */
+  #app.showing .logo { pointer-events: none; cursor: default; }      /* the mark is only a mark here: no bio (Okay, 23 Oct 2026) */
   .greyswatch { display: none; }      /* show mode's round swatch (grey_swatch() in app.js): the panel's other look, in greys or in the backdrop's colour; dial side: none (R16) */
   #app.showing .greyswatch { display: block; flex: none; margin-left: auto; width: var(--bare-dot); height: var(--bare-dot); padding: 0; border: var(--hair) solid var(--rule); border-radius: 50%; background: var(--swatch); cursor: pointer; }
   #app.showing main { grid-area: 1 / 1 / 2 / 3; }      /* the canvas runs on under the column, so the backdrop and the watch show through it (Okay, 23 Oct 2026: "Transparency is gone, bring that back"); the drawing is centred in the part left of it (size() in app.js) */
@@ -573,6 +574,7 @@
   .pane.has > .fold .summary, .pane.tooled:not(.folded) > .fold .summary { visibility: hidden; }
   .pane.tooled > .headtools { justify-self: end; }      /* the ring list's tools: at the right; folded, the summary stands there instead */
   .pane.tooled.folded > .headtools { display: none; }
+  #app.showing .pane > .headcontrol.check { grid-column: 2 / -1; justify-self: end; width: calc(var(--box-value) + var(--box-steps)); }      /* show mode: a tick on its heading line (Flare, Effects) in the number boxes' column, as the ticks under it */
   .pane > .headcontrol.reset { justify-self: start; }      /* Reset's button: on its heading line where its warning starts, the controls' column, and only while the pane is open (Okay, 16 Oct 2026, #269; flush left with the warning since 4.44.2: "reset button flush left with explaner text") */
   .pane.folded > .headcontrol.reset { display: none; }
   .pane > .headcontrol.copylink { justify-self: end; display: inline-flex; align-items: center; gap: var(--u1); }      /* Copy link with its sign, flush right on its heading line, open or folded (Okay, 16 Oct 2026, #277) */
@@ -763,6 +765,14 @@
   #app.showing .body .row.num:not(.side) { grid-template-rows: var(--line) var(--line); }
   #app.showing .body .row.num:not(.side) > :not(input[type="range"]) { grid-row: 1; }
   #app.showing .body .row.num:not(.side) > input[type="range"] { grid-column: 1 / -1; grid-row: 2; }
+
+  /* show mode: the adjustables in one column, the number boxes' (Okay, 23 Oct 2026: "align adjustables together in the
+     same column"; the pills stay where they are: "pills unaffected"); a tick and a colour chip take a number box's place,
+     on the same grid; the notes the whole width ("explainers span the whole width") */
+  #app.showing .body .row:is(.chk, .col):not(.side) { grid-template-columns: var(--num-columns); column-gap: 0; }
+  #app.showing .body .row:is(.chk, .col):not(.side) > :first-child:not(:last-child) { grid-column: 1 / 4; }
+  #app.showing .body .row:is(.chk, .col):not(.side) > :last-child { grid-column: 7 / -1; justify-self: start; }
+  #app.showing .body .row.note > .quiet { grid-column: 1 / -1; }
 
 /* a hand's pane: its detail box, the line of shapes, side rows with their number box */
 @layer panel {
@@ -1339,6 +1349,7 @@
      Guides (and Shadows) on: its word is whole, in that colour, never bolder (Okay, 14 Oct 2026, 23:05; bold
      before). Off: faint, and Guides' sign is struck through. One weight, so the box is the same size on and off. */
   main { --on-canvas: var(--ink); }
+  .bezel { color: var(--on-canvas); opacity: var(--faint); }      /* the case's silhouette on the dial side: one line in the canvas's ink, faint (Okay, 23 Oct 2026: "very faint lines") */
   main.dark { --on-canvas: var(--white); }
   /* the dial alone: Backdrop and Shadows ride left with the preview's edge and stop short, on the mark's line (the margin) */
   main { --stop-short: max(var(--canvas-inset), calc(var(--margin) - var(--panel-w) * (1 - var(--away)))); }
@@ -1359,15 +1370,6 @@
   .casebox > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
   .casebox:not(.on) { border-style: dotted; }      /* not on: its outline dotted — shorter dashes, shorter gaps, a denser line (Okay, 19 Oct 2026: "Dashes for invisible: shorter dash shorter gaps, denser outline") */
   .casebox.on > :is(.sign, svg) { opacity: 1; }      /* on: its sign alone lights; the word stays dim but under the pointer (Okay, 20 Oct 2026, 02:37: "when on, only the icon lights up. Labels stay dim at all times, except hover") */
-  /* its strap's switch (4.69): the strap's chip, a button of its own, then its kind's name and chevron with the list over
-     those only — so a press on the chip opens the colour, a press on the words the list */
-  .strapbox { padding-left: var(--u3); }
-  .strapbox .strapkind { position: relative; display: flex; align-items: center; gap: var(--unit); align-self: stretch; }
-  .strapbox .strapkind > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-  .strapbox .dot { padding: 0; border-color: var(--on-canvas); cursor: pointer; }
-  .strapbox.on > * { opacity: 1; }
-  .strapbox.on .strapkind > :not(.sign, select) { opacity: var(--faint); }      /* on: its chip and sign whole, its word and chevron dim but under the pointer (Okay, 20 Oct 2026, 02:37: "when on, only the icon lights up") */
-  @media (hover: hover) { .strapbox.on:hover .strapkind > * { opacity: 1; } }
   /* the selected ring's handles on its guides (4.65; farukahmet's PR #2, Okay: "all these handles should be in guide
      color"): filled with the ring's guide colour (--handle, app.js), a hairline of white round them so they read on any
      dial; a reach of a fingertip round each, unseen */
@@ -1465,7 +1467,7 @@
      well (the default), WebKit lets the colour bleed over the round corners' edge, and on a part of a pixel (the dot
      stands at x .25, y .5 here) the hairline can vanish into it (Okay, 19 Oct 2026, 23:53: "backdrop sometimes loses the
      swatches outline … old Safari on an Intel Mac … iPad too") */
-  :is(.backdropbox, .strapbox) .dot { background-clip: padding-box; }
+  .backdropbox .dot { background-clip: padding-box; }
   /* Shadows (a trial, 14 Oct 2026): the Guides switch's make, at the bottom left, the Backdrop switch standing on it a
      unit above (Okay, 23:05: "button goes down"); one higher, so its open list lies over Backdrop.
      Its sign is a sphere and its cast shadow (15 Oct 2026), so its room is Guides'.
@@ -1601,6 +1603,21 @@
      its words (Okay, 15 Oct 2026, 07:07: "these buttons get solid bg color when labels visible"): the iris switch open
      (ACTIVATE SHOWCASE), the labelled switches — always on a wide screen, on a phone while unfolded (8-narrow.css) */
   .irisbox[aria-expanded="true"], :is(.guidesbox, .guidesmore, .backdropbox, .casebox) { background: var(--canvas-fill); }
+
+  /* show mode's Backdrop (ground_pop() in app.js; the Show Case's background popup): the Shadows list's night part, opening
+     upward from its switch; one colour on the left, a gradient on the right, ten tiles each in rows of five, and under each
+     its own colour — the chosen one ringed in ink */
+  .groundpop { width: calc(2 * var(--pop-pad) + 10 * var(--chip) + 8 * var(--u1) + var(--pop-gap) + 2 * var(--hair)); padding-bottom: var(--pop-pad); }
+  .groundsides { display: grid; grid-template-columns: 1fr 1fr; gap: var(--pop-gap); }
+  .groundside { display: grid; gap: var(--u2); align-content: start; }
+  .groundside .guidehead { grid-template-columns: 1fr; }
+  .groundtiles { display: grid; grid-template-columns: repeat(5, var(--chip)); gap: var(--u1); }
+  .groundtile { width: var(--chip); height: var(--chip); padding: var(--thick); border: var(--hair) solid transparent; border-radius: var(--round-small); background: none; }
+  .groundtile i { display: block; width: 100%; height: 100%; border-radius: var(--round-tiny); box-shadow: inset 0 0 0 var(--hair) var(--chip-rule); }
+  .groundtile.on { border-color: var(--ink); }
+  .groundpick { justify-self: start; }
+  .gradpick { display: flex; gap: var(--u1); justify-self: start; }
+  :is(.groundpick.on, .gradpick.on .groundpick) { box-shadow: 0 0 0 var(--hair) var(--ink); }
 }
 
 @layer bar {
@@ -1854,8 +1871,6 @@
     main.words :is(.guidesbox, .backdropbox, .versionsbox) > .word { max-width: var(--word-max); margin-left: var(--unit); }
     /* the case, its strap and X-ray too, their signs alone (4.79: "on mobile icon them"); a tap on the backdrop unfolds their words as the others' */
     .casebox { --sign-w: 18px; gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); }
-    .strapbox { padding-left: var(--u2); }
-    .strapbox .strapkind { gap: 0; margin-left: var(--unit); }      /* its folded word and chevron leave no gaps behind (4.82) */
     .casebox .arrow { width: auto; margin-left: 0; border-left: 0; }      /* folded with the word, no square of its own */
     .casebox :is(.word, .arrow) { display: inline-block; max-width: 0; overflow: hidden; white-space: nowrap; transition: max-width var(--iris-time) var(--view-ease), margin var(--iris-time) var(--view-ease); }
     main.words .casebox :is(.word, .arrow) { max-width: var(--word-max); margin-left: var(--unit); }
@@ -7125,7 +7140,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.91.11";
+var VERSION = "beta 4.91.12";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -7525,6 +7540,8 @@ var DEFAULTS = {
   // the tab last used in show mode and on the dial side (SECTIONS numbers, R9)
   ui_grey_panel: false,
   // show mode's panel in greys, like the bar, instead of the backdrop's colour (the round swatch at the title line's end; Okay, 22 Oct 2026)
+  ui_case: false,
+  // the case round the dial on the dial side: off to start (Okay, 23 Oct 2026: "On main default is caseless"); its kind is `bezel`, shared with show mode, which always has one
   ui_effects: true,
   // the costly layers in show mode — blurs, the flare, the glass shine, the silhouette outline (Okay: "turn off shenanigans")
   date: "",
@@ -7675,7 +7692,8 @@ var NOT_GEOMETRY = [
   "ui_show_section",
   "ui_edit_section",
   "ui_effects",
-  "ui_grey_panel"
+  "ui_grey_panel",
+  "ui_case"
 ];
 var FILE_SET = [
   ["out_f_pdf", "Dial \xB7 PDF", "pdf", { out_production: false, out_mirror: false }],
@@ -9920,7 +9938,6 @@ var FLARE_SCALE = 1;
 var GLASS_K = 1;
 var SH_OP = 0.3;
 var FLARE_KIND = "arc";
-var DIVOT = "cut";
 var BRACELET_KIND = "vault";
 var DIAL_IN = true;
 var OUTLINE_ON = true;
@@ -10166,13 +10183,15 @@ function sloped(r0, r1, T, L, out = 1, tilt = 1, N = 96) {
   put(run);
   return html + stroke(circle2(r0), 0.12) + stroke(circle2(r1), 0.12);
 }
-function blob(d, T, L, a = 0.9, b = 2) {
+function blob(d, T, L, a = 0.9, b = 2, away = null) {
   OUTT.push(d);
   const id = "b" + BLOB++, u = [Math.cos(rad(L)), Math.sin(rad(L))];
   const lh = SUN_H > 55 ? 0.7 : 1, dk = (SUN_H < 25 ? 1.35 : 1) * 1.3;
   CLIPS.push(`<clipPath id="${id}c"><path d="${d}"/></clipPath>`);
   const cut = (dx, dy, fill, op = 1) => `<g transform="translate(${f(dx)} ${f(dy)})"><path d="M-500 -500H500V500H-500Z${d}" fill-rule="evenodd" fill="${fill}" fill-opacity="${op}"/></g>`;
-  return `<path d="${d}" fill="${T[1]}"/><g clip-path="url(#${id}c)">${cut(u[0] * b * dk, u[1] * b * dk, T[2])}${cut(-u[0] * a * lh, -u[1] * a * lh, T[0])}</g>`;
+  if (away) CLIPS.push(`<clipPath id="${id}a"><path clip-rule="evenodd" d="M-500 -500H500V500H-500Z${away}"/></clipPath>`);
+  const light = cut(-u[0] * a * lh, -u[1] * a * lh, T[0]);
+  return `<path d="${d}" fill="${T[1]}"/><g clip-path="url(#${id}c)">${cut(u[0] * b * dk, u[1] * b * dk, T[2])}${away ? `<g clip-path="url(#${id}a)">${light}</g>` : light}</g>`;
 }
 function blobOver(d, L, a = 0.9, b = 2) {
   const id = "o" + BLOB++, u = [Math.cos(rad(L)), Math.sin(rad(L))];
@@ -10374,35 +10393,26 @@ function caseEngineer(C2, v, L) {
     }
     for (const q of quads) out.push(`<path d="${P(q.pts)}" fill="${q.t}" stroke="${q.t}" stroke-width="0.05"/>`);
     out.push(stroke(P(i2), 0.12), stroke(P(o), 0.2));
-  } else out.push(C2.insert ? `<path d="${circle2(R)}" fill="${mixc(T[2], "#000000", 0.45)}"/>` : "", shape2(C2.insert && DIVOT === "cut" ? notchedPath(R, C2.insert.coin, 0.5) : circle2(R), T[1], 0.2, T[2]));
+  } else out.push(C2.insert ? `<path d="${circle2(R)}" fill="${mixc(T[2], "#000000", 0.45)}"/>` : "", shape2(C2.insert ? notchedPath(R, C2.insert.coin, 0.5) : circle2(R), T[1], 0.2, T[2]));
   for (const [r1, r0, dir, tilt] of C2.bands) out.push(sloped(r0, r1, T, L, dir, tilt));
   if (C2.insert) {
-    const I = C2.insert, ro = I.od / 2, ri = R - 1.4;
-    out.push(sloped(ri, R - 0.55, T, L, 1, 0.8, I.coin));
+    const I = C2.insert, ro = I.od / 2 - 0.9;
     {
       const id = "nc" + clipN++;
       CLIPS.push(`<clipPath id="${id}"><path d="${notchedPath(R, I.coin, 0.5)}"/></clipPath>`);
       out.push(`<g clip-path="url(#${id})">` + teeth(R, I.coin, 0.5).map((t) => `<path d="${t.d}" fill="${tone(T, t.phi, 0.9, L)}"/>`).join("") + `</g>`);
-      if (DIVOT === "round") {
-        const cid = "sc" + clipN++, u = [Math.cos(rad(L)), Math.sin(rad(L))];
-        CLIPS.push(`<clipPath id="${cid}"><path d="${circle2(R)}"/></clipPath>`);
-        out.push(`<g clip-path="url(#${cid})">` + Array.from({ length: I.coin }, (_, k) => {
-          const a = k / I.coin * 2 * Math.PI - Math.PI / 2, x2 = Math.cos(a) * R, y = Math.sin(a) * R;
-          return `<circle cx="${f(x2)}" cy="${f(y)}" r="0.5" fill="${mixc(T[2], "#000000", 0.45)}"/><path d="M${f(x2 - u[0] * 0.5 + u[1] * 0.42)} ${f(y - u[1] * 0.5 - u[0] * 0.42)}A0.5 0.5 0 0 0 ${f(x2 - u[0] * 0.5 - u[1] * 0.42)} ${f(y - u[1] * 0.5 + u[0] * 0.42)}" fill="none" stroke="${T[0]}" stroke-width="0.14" transform="translate(${f(u[0] * 0.22)} ${f(u[1] * 0.22)})"/><circle cx="${f(x2)}" cy="${f(y)}" r="0.5" fill="none" stroke="${INK2}" stroke-width="0.1"/>`;
-        }).join("") + `</g>`);
-      }
     }
-    out.push(`<path d="${DIVOT === "cut" ? notchedPath(R, I.coin, 0.5) : circle2(R)}" fill="none" stroke="${INK2}" stroke-width="${LW}" stroke-linejoin="round"/>`);
+    out.push(`<path d="${notchedPath(R, I.coin, 0.5)}" fill="none" stroke="${INK2}" stroke-width="${LW}" stroke-linejoin="round"/>`);
     const ins = (c) => [hsl(c, 1.33), c, hsl(c, 0.78)], half = "hb" + clipN++;
     CLIPS.push(`<clipPath id="${half}"><rect x="-60" y="0" width="120" height="60"/></clipPath>`);
-    out.push(sloped(I.id / 2, ri, ins(INSERT.top), L, -1, 0.5));
-    if (INSERT.bottom !== INSERT.top) out.push(`<g clip-path="url(#${half})">${sloped(I.id / 2, ri, ins(INSERT.bottom), L, -1, 0.5)}</g>`);
+    out.push(sloped(I.id / 2, ro, ins(INSERT.top), L, -1, 0.5));
+    if (INSERT.bottom !== INSERT.top) out.push(`<g clip-path="url(#${half})">${sloped(I.id / 2, ro, ins(INSERT.bottom), L, -1, 0.5)}</g>`);
     out.push(sloped(C2.opening, I.id / 2, T, L, -1, 0.7));
-    for (let m = 0; m < 60; m++) {
-      const t = rad(m * 6 - 90), r0 = I.id / 2 + 0.5, r1 = I.id / 2 + (m % 5 === 0 ? 2.6 : 1.3);
-      if (m === 0) out.push(`<path d="${P([[0, -ri + 0.4], [-1.3, -I.id / 2 - 0.4], [1.3, -I.id / 2 - 0.4]])}" fill="#d8d6cf"/>`);
-      else if (r1 > r0) out.push(`<path d="M${f(Math.cos(t) * r0)} ${f(Math.sin(t) * r0)}L${f(Math.cos(t) * r1)} ${f(Math.sin(t) * r1)}" stroke="#d8d6cf" stroke-width="${m % 5 === 0 ? 0.45 : LW}"/>`);
+    for (let m = 5; m < 60; m += 5) {
+      const t = rad(m * 6 - 90), r0 = I.id / 2 + 0.6, r1 = I.id / 2 + 2.5;
+      out.push(`<path d="M${f(Math.cos(t) * r0)} ${f(Math.sin(t) * r0)}L${f(Math.cos(t) * r1)} ${f(Math.sin(t) * r1)}" stroke="#d8d6cf" stroke-width="0.7" stroke-linecap="round"/>`);
     }
+    out.push(`<path d="${P([[0, -ro + 0.5], [-1.4, -I.id / 2 - 0.5], [1.4, -I.id / 2 - 0.5]])}" fill="#d8d6cf"/>`);
     out.push(stroke(circle2(ro)), stroke(circle2(I.id / 2)));
   }
   out.push(glint(C2.cushion ? C2.cushion.a - 0.7 : C2.od / 2 - 0.5, L), glint(C2.opening + 0.5, L, 0.4, 0.5, 20));
@@ -10422,7 +10432,7 @@ function caseEngineer(C2, v, L) {
 function caseMiyazaki(C2, v, L) {
   FLARE_TINT = flareColour(C2.metal);
   const R = C2.cushion ? C2.cushion.a : C2.od / 2, T = C2.metal, out = [];
-  for (const sx of [-1, 1]) for (const sy of [-1, 1]) out.push(blob(C2.cushion ? cushionLug(C2, sx, sy) : lugPath(C2, sx, sy), T, L, 0.5, 1));
+  for (const sx of [-1, 1]) for (const sy of [-1, 1]) out.push(blob(C2.cushion ? cushionLug(C2, sx, sy) : lugPath(C2, sx, sy), T, L, 0.5, 1, C2.cushion || C2.rails ? null : circle2(R + 0.6)));
   const cw = C2.crown.w, ch = C2.crown.h;
   const RC = C2.rails ? C2.lugw / 2 + C2.lugT - 0.1 : R;
   {
@@ -10817,19 +10827,36 @@ ${strapSVG}${strap === "bracelet" ? "" : contact(C2, L, strap, span, STYLE === "
 </svg>`;
 }
 function frame(o) {
-  use("engineer");
+  const d = silhouetteOf(o.kind, sizeFor(o.kind in CASES ? o.kind : "dress", o.d));
+  return `<g transform="scale(1 -1)"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></g>`;
+}
+function silhouetteOf(key, size) {
+  use("miyazaki");
   DIAL_IN = false;
   GLINT = "off";
-  SH_OP = Math.min(1, 0.3 * (o.shadow ?? 1));
-  const C0 = CASES[o.kind] || CASES.dress, size = sizeFor(o.kind, o.d);
-  METALS.custom = METALS[o.metal] || tones(o.metal || METALS.steel[1], [1.35, 0.81]);
-  LEATHER.custom = tones(o.leather || LEATHER.brown[1], [1.18, 0.82]);
-  BRACELET_KIND = "vault";
-  const strap = o.strap === "bracelet" && C0.insert ? "bracelet" : "leather-custom";
-  const svg = sheet(o.kind in CASES ? o.kind : "dress", strap, "own", o.L ?? 225, true, o.h ?? 40, "live", "custom", size);
+  OUTLINE_ON = false;
+  const kind = key in CASES ? key : "dress";
+  METALS.custom = METALS.steel;
+  LEATHER.custom = LEATHER.brown;
+  sheet(kind, "leather-custom", "own", 225, true, 40, "live", "custom", size);
   DIAL_IN = true;
-  const body = svg.slice(svg.indexOf("\n") + 1, svg.lastIndexOf("</svg>")).replace("__CLIPS__", CLIPS.join("")).replace(/<rect x="-300" y="-300"[^>]*\/>/, "").replace(/<defs><radialGradient id="pool".*?<\/defs>/s, "");
-  return `<g transform="scale(1 -1)">${body}</g>`;
+  OUTLINE_ON = true;
+  const u = PK2.FromSVGString(OUTL_C[0]);
+  for (const d2 of OUTL_C.slice(1)) {
+    const p = PK2.FromSVGString(d2);
+    u.op(p, PK2.PathOp.UNION);
+    p.delete();
+  }
+  const d = u.toSVGString();
+  u.delete();
+  return d;
+}
+var TILES = {};
+function tilePicture(key, w = 38, h = 27) {
+  if (TILES[key]) return TILES[key];
+  const C2 = scaleCase(CASES[key] || CASES.dress, 1), d = silhouetteOf(key, 1), b = caseBox(key, 1), m = 1.15;
+  const s = Math.min(w / (b.w * m), h / (b.h * m));
+  return TILES[key] = `<svg viewBox="${f(-w / 2 / s)} ${f(-h / 2 / s)} ${f(w / s)} ${f(h / s)}" width="${w}" height="${h}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><path d="${d}" vector-effect="non-scaling-stroke"/><path d="${circle2(C2.opening)}" vector-effect="non-scaling-stroke"/></svg>`;
 }
 var DETAIL = 31;
 var FULL = { w: 126 / 1.2, h: 308 / 1.2 };
@@ -10902,6 +10929,10 @@ function draw(o) {
 var METAL_NAMES = ["steel", "gold", "alu", "bronze", "titanium", "black"];
 var NATO_NAMES = ["bond", "regimental", "khaki", "blackgrey", "olive", "grey"];
 var INSERTS = [["#2b2c30", "#2b2c30"], ["#1f3a6e", "#1f3a6e"], ["#1f5a3a", "#1f5a3a"], ["#23407a", "#a8262e"], ["#222326", "#22457e"], ["#222326", "#a3232b"], ["#2a2420", "#6b3f24"], ["#222326", "#2f7a3c"]];
+var insert_picture = (i2) => {
+  const [a, b] = INSERTS[i2] || INSERTS[0];
+  return `<svg viewBox="-19 -13.5 38 27" width="38" height="27" aria-hidden="true"><path d="M-11 0A11 11 0 0 1 11 0H6.5A6.5 6.5 0 0 0 -6.5 0Z" fill="${a}"/><path d="M-11 0A11 11 0 0 0 11 0H6.5A6.5 6.5 0 0 1 -6.5 0Z" fill="${b}"/><circle r="11" fill="none" stroke="currentColor" stroke-width="1" stroke-opacity="0.35"/></svg>`;
+};
 var STYLE_NAMES = ["engineer", "miyazaki"];
 var VIEW_NAMES = ["detail", "full", "dial"];
 var hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, "0")).join("");
@@ -10974,6 +11005,30 @@ function draw2(tool2, items) {
     left.setAttribute("fill-opacity", (side > 0 ? dark : lit).toFixed(3));
   }
 }
+var GROUNDS = [
+  ["Stone", "#b9b3a6"],
+  ["Umber", "#877f6d"],
+  ["Paper", "#e8e4da"],
+  ["Bone", "#d8d0bf"],
+  ["Sky", "#a9bccb"],
+  ["Sage", "#9aa891"],
+  ["Olive", "#6b6a4e"],
+  ["Brick", "#8a4a3a"],
+  ["Slate", "#5b6066"],
+  ["Night", "#1c1c1f"]
+];
+var GRADIENTS = [
+  ["Dusk", "#3b3f58", "#b8876c"],
+  ["Sea", "#1f4e5a", "#a9c7c0"],
+  ["Clay", "#d9b8a0", "#7a4a3a"],
+  ["Fog", "#e6e6e3", "#8c9096"],
+  ["Dune", "#e8d8b8", "#a5835a"],
+  ["Moss", "#1e2a1f", "#8fa27b"],
+  ["Steel", "#2b3138", "#9aa6b2"],
+  ["Plum", "#2a1f33", "#9c6d8f"],
+  ["Ember", "#2a1a17", "#b4533a"],
+  ["Ink", "#0e0f14", "#3b4256"]
+];
 function fit_zoom(tool2, w, h) {
   const S = tool2.S, kind = CASE_OF_BEZEL[S.bezel] || "dress", M = 2 * 64, cb = caseBox(kind, sizeFor(kind, S.dial_d));
   if (S.w_view === 2) return Math.min(w, h) / page_mm(S);
@@ -15210,9 +15265,9 @@ var TOOL_ICONS = {
   // (CURVE, centre on a quarter, radius on a half); the shade and the shadow are filled, their ends on half points
   // 15 Oct, 02:42: mirrored (lit from the upper left, the shadow cast to the right) and its outline DENSE, as Guides',
   // the sign beside it on 18 ("ball stroke thickness too much… look at similar size icons, guides and such")
-  // a case, its strap, X-ray (4.79; Okay, 19 Oct 2026, 01:03: "Strap and case: stack on that left bottom list, on mobile
-  // icon them"): on 18, DENSE, as the Guides and Shadows signs — a case with its four lugs and crown; a strap's two edges
-  // through a buckle; a disc's edge whole round a dashed one under it
+  // a case and X-ray (4.79; Okay, 19 Oct 2026, 01:03: "Strap and case: stack on that left bottom list, on mobile
+  // icon them"): on 18, DENSE, as the Guides and Shadows signs — a case with its four lugs and crown; a disc's edge whole
+  // round a dashed one under it
   // a case from above (4.82; Okay, 19 Oct 2026: "Case icon … need work"): its bezel and dial opening, the lugs running
   // out of it, the crown at 3
   // the case from above (Okay, 20 Oct 2026, 02:37, notes doc: "lugs tooo long. Half, maybe even more … fits inside a
@@ -15220,7 +15275,6 @@ var TOOL_ICONS = {
   // not a ring but hour and minute hands in L formation"): Guides' ring (r 5.5 on 9.25), its lugs a third of the old
   // length outside it with ink traps where they meet it, the hands at three o'clock, the crown a stub after the centring
   case: `<mask id="case-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18"><rect width="18" height="18" fill="white" stroke="none"/>${CASE_TRAPS}</mask><g ${sw(DENSE)}><g mask="url(#case-cut)"><circle cx="9.25" cy="9.25" r="5.5"/><path d="M6.25 2.75V5M12.25 2.75V5M6.25 13.5V15.75M12.25 13.5V15.75"/></g><path d="M9.25 9.25V6M9.25 9.25H11.75M14.75 9.25H15.75"/></g>`,
-  strap: `<g ${sw(DENSE)}><path d="M6.25 1.25V6.25M12.25 1.25V6.25M6.25 12.25V17.25M12.25 12.25V17.25"/><rect x="4.75" y="6.25" width="9" height="6"/><path d="M9.25 6.25V12.25"/></g>`,
   xray: `<g ${sw(DENSE)}><circle cx="9.25" cy="9.25" r="6.5"/><circle cx="9.25" cy="9.25" r="3.25" stroke-dasharray="1.25 1.3" stroke-linecap="butt"/></g>`,
   shadows: `<circle cx="7.25" cy="9.75" r="5.5" ${sw(DENSE)}/><path d="M4.5 14.5A5.5 5.5 0 0 0 12 7A8 8 0 0 1 4.5 14.5Z" fill="currentColor" stroke="none"/><path d="M11.03 13.75A5.625 1.25 0 0 1 16.75 15A5.625 1.25 0 0 1 5.5 15A5.5 5.5 0 0 0 11.03 13.75Z" fill="currentColor" stroke="none"/>`,
   // the ball sunk 2 into its shadow (Okay, 16 Oct 2026, on 4.44: "Shadow's ball sinks 2px down into its shadow"; it touched it from 4.42.4): the shadow the same ellipse (11.125 15, 5.625 × 1.25), the ball's disc cut out of it — it stands in front. Cut at the middle of the ball's line (5.5), so the cut's edge lies under the line: cut at its outer edge (6.125, 4.44.2) the two edges met and left a faint light seam round the ball (Okay: "a single faint line around the ball"). The rim crosses the shadow's top at 11.03 and at its left end
@@ -15373,7 +15427,7 @@ var VALUE_PICS = {
 var FONT_DARK_KEY = KEY("font-dark");
 var LANG_NAMES = { default: "As the font sets it", tr: "Turkish", nl: "Dutch", de: "German", pl: "Polish", ro: "Romanian", ca: "Catalan", ar: "Arabic", fa: "Persian", "zh-Hans": "Chinese, simplified", ja: "Japanese" };
 var lang_short = (code) => code === "default" ? "EN" : code.slice(0, 2).toUpperCase();
-var TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip" };
+var TILE_WORDS = { "moon phase": "moon", "radial, auto-flip": "auto-flip", "Root beer": "R. beer" };
 function no_orphan(says, code) {
   const words = says.split(" "), keep = code ? 1 : 2, tail = words.splice(-keep);
   const end = el("span", { className: "together" }, tail.join(" "), ...code ? [" ", el("small", { textContent: `[${code}]` })] : []);
@@ -15828,11 +15882,12 @@ ROWS["Show dial"] = [
 ROWS.Watch = [
   hdr("Watch"),
   seg("w_view", "View", ["Detail", "Whole watch", "Dial"]),
-  seg("bezel", "Case", ["Dress", "Diver", "Field", "Dress", "Field", "Emre01"], { order: [3, 2, 1, 5] }),
-  // the same key the dial side's case menu writes (R9: the numbers keep their meaning)
+  pick("bezel", "Case", ["Dress", "Diver", "Field", "Dress", "Field", "Emre01"], (i2) => tilePicture(CASE_OF_BEZEL[i2]), { order: [3, 2, 1, 5], shown: (S) => BEZEL_OF_CASE[CASE_OF_BEZEL[S.bezel] || "dress"] }),
+  // the same key the dial side's case menu writes (R9: the numbers keep their meaning); tiles, each case's silhouette (Okay, 23 Oct 2026: "Tiles with pictures")
   seg("w_metal", "Metal", ["Fe", "Au", "Al", "CuSn", "Ti", "Black"], { many: true }),
   col("c_metal", "Case colour", { or: (S) => metal_colour(S) }),
-  seg("w_insert", "Insert", ["Black", "Blue", "Green", "Pepsi", "Batman", "Coke", "Root beer", "Sprite"], { many: true, show: (S) => CASE_OF_BEZEL[S.bezel] === "diver" }),
+  pick("w_insert", "Insert", ["Black", "Blue", "Green", "Pepsi", "Batman", "Coke", "Root beer", "Sprite"], (i2) => insert_picture(i2), { show: (S) => CASE_OF_BEZEL[S.bezel] === "diver" }),
+  // tiles, each insert a ring in its two colours
   hdr("Strap", { folded: false }),
   seg("strap", "Strap", ["Strap", "Leather", "Bracelet", "NATO"], { order: [1, 3, 2], offered: (S) => CASE_OF_BEZEL[S.bezel] === "diver" ? [1, 2, 3] : [1, 3] }),
   // 0 and 1 leather; a bracelet is the diver's alone (R16: not offered elsewhere)
@@ -15854,7 +15909,8 @@ ROWS.Light = [
   num2("sh_dark", "Darkness %", 0, 100, 1, { whole: true }),
   chk("sh_blur", "Soft shadows"),
   hdr("Flare", { folded: false, show: (S) => S.ui_effects }),
-  chk("w_flare_on", "Flare", { show: (S) => S.ui_effects }),
+  chk("w_flare_on", "Flare", { show: (S) => S.ui_effects, head: true }),
+  // on its pane's heading line (Okay, 23 Oct 2026: "tick box and its label moves up … on the eye's row")
   seg("w_flare", "Kind", ["Arc", "Dot"], { show: (S) => S.ui_effects && S.w_flare_on && S.w_style === 1 }),
   num2("w_fl_size", "Size %", 20, 300, 1, { whole: true, show: (S) => S.ui_effects && S.w_flare_on }),
   num2("w_fl_tint", "Case colour %", 0, 100, 1, { whole: true, show: (S) => S.ui_effects && S.w_flare_on }),
@@ -15865,8 +15921,8 @@ ROWS.Light = [
   num2("w_glass_len", "Length %", 10, 300, 1, { whole: true, show: (S) => S.ui_effects }),
   num2("w_glass_op", "Shine %", 0, 100, 1, { whole: true, show: (S) => S.ui_effects }),
   hdr("Effects", { folded: false }),
-  chk("ui_effects", "Blurs, flare, shine and outline"),
-  // off for an old computer (Okay, 22 Oct 2026: "a 'turn off shenanigans' button … persistent")
+  chk("ui_effects", "On", { head: true }),
+  // on the heading line its word is short: the note under it names the layers      // off for an old computer (Okay, 22 Oct 2026: "a 'turn off shenanigans' button … persistent")
   info("Off, the watch is drawn without the layers that cost most: blurs, the flare, the glass shine, the outline round the metal.", {})
 ];
 ROWS["Show export"] = [
@@ -16255,7 +16311,7 @@ var DialTool = class _DialTool {
         if (this.fitted) this.fit();
       }
       if (key === "date") this.sync_time();
-      if ((key === "bezel" || key === "strap" || key === "c_strap") && this.case_sync) this.case_sync();
+      if ((key === "bezel" || key === "ui_case") && this.case_sync) this.case_sync();
       if (key === "dial_hole") {
         this.hole_at = performance.now();
         clearTimeout(this.hole_timer);
@@ -16288,9 +16344,10 @@ var DialTool = class _DialTool {
    *  swatch or a colour pill is left to that swatch: it opens, moves or closes the pop-out itself. */
   pressed(e) {
     const on = (q) => e.target.closest && e.target.closest(q);
-    if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox, .strapdot")) this.pop_close();
+    if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox")) this.pop_close();
     if (this.guides_open && !$("#guide-list").hidden && !on(".guides")) this.guides_open(false);
     if (this.shadows_open && !$("#shadow-list").hidden && !on(".shadows")) this.shadows_open(false);
+    if (this.ground_open && !$("#ground-pop").hidden && !on(".backdrops, #colour-pop")) this.ground_open(false);
     if (this.versions_open && !$("#version-list").hidden && !on(".versions")) this.versions_open(false);
     if (this.history_open && !$("#history-list").hidden && !on(".undopair")) this.history_open(false);
     if (this.bio_open && !$("#bio").hidden && !on(".about")) this.bio_open(false);
@@ -16744,6 +16801,7 @@ var DialTool = class _DialTool {
     if (this.pop && this.pop.at) this.pop_close();
     if (this.bio_open) this.bio_open(false);
     this.iris_open(false);
+    if (this.ground_open) this.ground_open(false);
     this.S.ui_show = on;
     this.iris_button.setAttribute("aria-pressed", String(on));
     const first = SECTIONS.indexOf(SHOW_SECTIONS[0]);
@@ -16928,7 +16986,7 @@ var DialTool = class _DialTool {
     list.replaceChildren(...items);
     list.hidden = false;
     const u = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit"));
-    const box3 = (select.closest(".menubox, .popgroup, .casebox, .strapkind, .menulabel") || select.parentElement || select).getBoundingClientRect();
+    const box3 = (select.closest(".menubox, .popgroup, .casebox, .menulabel") || select.parentElement || select).getBoundingClientRect();
     const room_below = innerHeight - box3.bottom, room_above = box3.top, up = room_below < Math.min(list.scrollHeight, 240) && room_above > room_below;
     list.style.minWidth = `${Math.round(box3.width)}px`;
     list.style.maxHeight = `${Math.floor((up ? room_above : room_below) - 2 * u)}px`;
@@ -16996,7 +17054,11 @@ var DialTool = class _DialTool {
     const dot = el("i", { className: "dot" });
     const box3 = el("button", { type: "button", className: "onview backdropbox", id: "backdrop", title: "The backdrop\u2019s colour (preview only)" }, dot, el("span", { className: "word", textContent: "Backdrop" }));
     box3.setAttribute("aria-expanded", "false");
-    box3.onclick = () => this.pop_open({ read: () => this.S.c_backdrop, write: (v) => this.set_value("global", "c_backdrop", v), label: () => "Backdrop" }, box3);
+    const pop2 = this.ground_pop();
+    box3.onclick = () => {
+      if (this.S.ui_show) return this.ground_open(pop2.hidden);
+      this.pop_open({ read: () => this.S.c_backdrop, write: (v) => this.set_value("global", "c_backdrop", v), label: () => "Backdrop" }, box3);
+    };
     this.backdrop_dot = dot;
     const eye2 = el("button", { type: "button", className: "onview eyebox", id: "eye-box", title: "The dial alone: the panel slides away", ariaLabel: "The dial alone" });
     eye2.innerHTML = icon(TOOL_ICONS.eyebox, 30);
@@ -17018,7 +17080,64 @@ var DialTool = class _DialTool {
     this.iris_button = iris;
     this.iris_open(false);
     this.eye_box = el("div", { className: "eyes" }, this.iris_box, eye2);
-    return el("div", { className: "backdrops" }, box3);
+    return el("div", { className: "backdrops" }, box3, pop2);
+  }
+  /** show mode's Backdrop (the Show Case's background popup, 21 Oct 2026; Okay, 23 Oct 2026: "Backdrop did not get the
+   *  gradients/preset colors"): two sides, one colour and a gradient, ten presets each, and under each its own colour — one
+   *  pill, or two for the gradient's ends — which opens the colour pop-out. A gradient is c_backdrop to c_backdrop2 */
+  ground_pop() {
+    const pop2 = el("div", { className: "guidelist shadelist night groundpop", id: "ground-pop", hidden: true });
+    const S = () => this.S, hex3 = (c) => c ? to_hex(c) : null, syncs = [];
+    const grad = () => S().c_backdrop2 ? [S().c_backdrop, S().c_backdrop2] : this.ground_grad || GRADIENTS[8].slice(1).map((h) => from_hex(h));
+    const set = (a, b) => {
+      this.set_value("global", "c_backdrop", a);
+      this.set_value("global", "c_backdrop2", b);
+      if (b) this.ground_grad = [a, b];
+      this.ground_sync();
+    };
+    const tile = (name, look, on, act) => {
+      const b = el("button", { type: "button", className: "groundtile", title: name, ariaLabel: name }, el("i"));
+      b.firstChild.style.background = look;
+      b.onclick = act;
+      syncs.push(() => b.classList.toggle("on", on()));
+      return b;
+    };
+    const side = (title, tiles, pick2) => el("div", { className: "groundside" }, el("div", { className: "guidehead" }, el("span", { className: "name", textContent: title })), el("div", { className: "groundtiles" }, ...tiles), pick2);
+    const one_dot = el("i", { className: "dot" }), one_hex = el("span", { className: "hex" });
+    const one = el("button", { type: "button", className: "colour groundpick", id: "ground-one", title: "The backdrop's colour" }, one_dot, one_hex);
+    one.onclick = () => this.pop_open({ read: () => S().c_backdrop, write: (v) => set(v, null), label: () => "Backdrop" }, one);
+    const ends = [0, 1].map((k) => {
+      const d = el("button", { type: "button", className: "colour groundpick gdot", id: `ground-end-${k}`, title: k ? "The gradient's second colour" : "The gradient's first colour" }, el("i", { className: "dot" }));
+      d.onclick = () => this.pop_open({ read: () => grad()[k], write: (v) => {
+        const g = grad().slice();
+        g[k] = v;
+        set(g[0], g[1]);
+      }, label: () => k ? "Gradient \xB7 second" : "Gradient \xB7 first" }, d);
+      return d;
+    });
+    const both = el("span", { className: "gradpick" }, ...ends);
+    syncs.push(() => {
+      paint(one_dot, S().c_backdrop);
+      one_hex.textContent = hex3(S().c_backdrop).toUpperCase();
+      one.classList.toggle("on", !S().c_backdrop2);
+      grad().forEach((c, k) => paint(ends[k].firstChild, c));
+      both.classList.toggle("on", Boolean(S().c_backdrop2));
+    });
+    pop2.append(el(
+      "div",
+      { className: "groundsides" },
+      side("One colour", GROUNDS.map(([n, c]) => tile(n, c, () => !S().c_backdrop2 && hex3(S().c_backdrop) === c, () => set(from_hex(c), null))), one),
+      side("Gradient", GRADIENTS.map(([n, a, b]) => tile(n, `linear-gradient(135deg, ${a}, ${b})`, () => hex3(S().c_backdrop) === a && hex3(S().c_backdrop2) === b, () => set(from_hex(a), from_hex(b)))), both)
+    ));
+    this.ground_sync = () => {
+      for (const f2 of syncs) f2();
+    };
+    this.ground_open = (on) => {
+      pop2.hidden = !on;
+      $("#backdrop").setAttribute("aria-expanded", String(on));
+      if (on) this.ground_sync();
+    };
+    return pop2;
   }
   /** Okay's mark in the panel's first column, left of the title; a press opens a short bio: who made the tool, where
    *  its source is, and the open-source work it stands on (Okay, 15 Oct 2026, 02:42: "This triggers bio. Make it short,
@@ -17058,7 +17177,9 @@ var DialTool = class _DialTool {
       button.setAttribute("aria-expanded", String(on));
     };
     this.bio_open = open;
-    button.onclick = () => open(bio.hidden);
+    button.onclick = () => {
+      if (!this.S.ui_show) open(bio.hidden);
+    };
     const box3 = el("div", { className: "about" }, button, bio);
     box3.onkeydown = (e) => {
       if (e.key === "Escape" && !bio.hidden) {
@@ -17284,55 +17405,42 @@ var DialTool = class _DialTool {
   /** a case round the dial (4.66; farukahmet's PR #3, "abstractified" — bezels.js), drawn again only when its kind or
    *  the dial's size changes. Preview only: never in an export or the Tiny Preview (R26). */
   draw_bezel() {
-    const S = this.S, light = S.sh_on ? Math.min(S.sh_dark / 25, 2) : 0;
-    const key = `${S.bezel || 0}/${S.dial_d}/${S.strap}/${S.c_strap}/${S.sh_from}/${S.sh_rise}/${light}`;
+    const S = this.S, key = S.ui_case ? `${S.bezel || 0}/${S.dial_d}` : "";
     if (key === this.bezel_key) return;
     this.bezel_key = key;
-    this.bezel_g.innerHTML = frame({ kind: CASE_OF_BEZEL[S.bezel] || "dress", d: S.dial_d, strap: S.strap === 2 ? "bracelet" : "leather", leather: to_hex(S.c_strap), metal: "steel", L: S.sh_from - 90, h: S.sh_rise, shadow: light });
+    this.bezel_g.innerHTML = S.ui_case ? frame({ kind: CASE_OF_BEZEL[S.bezel] || "dress", d: S.dial_d }) : "";
   }
-  /** the case's switch, beside Backdrop (4.66): its kind's name and a chevron; the system's list over it, unseen. */
+  /** the case's switch, beside Backdrop (4.66): its kind's name and a chevron; the system's list over it, unseen. No case
+   *  to start (ui_case; Okay, 23 Oct 2026: "On main default is caseless"); the kind is show mode's too. No strap here: the
+   *  strap is show mode's alone ("case toggle does not bring in strap") */
   case_box() {
     const word = el("span", { className: "word" });
     const arrow = el("span", { className: "arrow" });
     arrow.innerHTML = icon(SIGNS.up);
     const menu = el("select", { id: "case-pick", ariaLabel: "A case round the dial (preview only)", title: "A case round the dial (preview only)" });
     const NAMES2 = { dress: "Dress", field: "Field", diver: "Diver", emre01: "Emre01" };
+    menu.append(el("option", { value: "none", textContent: "No case" }));
     KINDS2.forEach((kind) => menu.append(el("option", { value: String(BEZEL_OF_CASE[kind]), textContent: NAMES2[kind] })));
     menu.onchange = () => {
-      this.set_value("global", "bezel", +menu.value);
+      if (menu.value === "none") this.set_value("global", "ui_case", false);
+      else {
+        this.set_value("global", "bezel", +menu.value);
+        this.set_value("global", "ui_case", true);
+      }
+      this.case_sync();
       this.render();
     };
     const sign = el("span", { className: "sign" });
     sign.innerHTML = icon(TOOL_ICONS.case, 18);
     const box3 = el("span", { className: "onview casebox", id: "case" }, sign, word, arrow, menu);
-    const dot = el("button", { type: "button", className: "dot strapdot", id: "strap-colour", title: "The strap\u2019s colour", ariaLabel: "The strap\u2019s colour" });
-    dot.onclick = () => this.pop_open({ read: () => this.S.c_strap, write: (v) => this.set_value("global", "c_strap", v), label: () => "Strap" }, dot);
-    const sword = el("span", { className: "word" }), sarrow = el("span", { className: "arrow" });
-    sarrow.innerHTML = icon(SIGNS.up);
-    const smenu = el("select", { id: "strap-pick", ariaLabel: "The case\u2019s strap (preview only)", title: "The case\u2019s strap (preview only)" });
-    const STRAPS = ["Strap", "Strap", "Bracelet"];
-    [1, 2].forEach((i2) => smenu.append(el("option", { value: String(i2), textContent: STRAPS[i2] })));
-    smenu.onchange = () => {
-      this.set_value("global", "strap", +smenu.value);
-      this.render();
-    };
-    const ssign = el("span", { className: "sign" });
-    ssign.innerHTML = icon(TOOL_ICONS.strap, 18);
-    const strap = el("span", { className: "onview casebox strapbox", id: "strap" }, dot, el("span", { className: "strapkind" }, ssign, sword, sarrow, smenu));
     this.case_sync = () => {
-      const S = this.S, kind = CASE_OF_BEZEL[S.bezel] || "dress", k = S.strap === 2 && kind === "diver" ? 2 : 1;
-      word.textContent = NAMES2[kind];
-      menu.value = String(BEZEL_OF_CASE[kind]);
-      box3.classList.add("on");
-      sword.textContent = STRAPS[k];
-      smenu.value = String(k);
-      strap.classList.add("on");
-      smenu.querySelector('[value="2"]').hidden = kind !== "diver";
-      dot.hidden = k !== 1;
-      paint(dot, S.c_strap);
+      const S = this.S, kind = CASE_OF_BEZEL[S.bezel] || "dress";
+      word.textContent = S.ui_case ? NAMES2[kind] : "Case";
+      menu.value = S.ui_case ? String(BEZEL_OF_CASE[kind]) : "none";
+      box3.classList.toggle("on", Boolean(S.ui_case));
     };
     this.case_sync();
-    return [box3, strap];
+    return [box3];
   }
   /** the bar's date popup (#402, #412): one line — the weekday, then the day, the month and the year, each a menu, then
    *  − and + side by side (Okay, 19 Oct 2026: "Minus moves next to plus, dropdowns just for groupings"; "Remove time"):
@@ -17984,6 +18092,7 @@ var DialTool = class _DialTool {
     this.sync_shadows();
     this.sync_ring_summaries();
     paint(this.backdrop_dot, this.S.c_backdrop);
+    this.backdrop_dot.style.background = this.S.ui_show && this.S.c_backdrop2 ? `linear-gradient(135deg, ${css_colour(this.S.c_backdrop)}, ${css_colour(this.S.c_backdrop2)})` : "";
     if (this.unit_button.textContent !== this.unit()[0]) this.size_unit();
     this.unit_items.forEach((b, i2) => {
       b.classList.toggle("on", i2 === this.S.ui_unit);
@@ -18272,7 +18381,8 @@ var DialTool = class _DialTool {
     if (row.kind === "pick") {
       const group = el("span", { className: (row.small ? "picks small" : row.thumbs ? "picks thumbs" : "picks") + (row.across ? " across" : ""), role: "radiogroup", ariaLabel: row.text });
       if (row.across) group.style.setProperty("--across", Math.max(4, row.across));
-      row.items.forEach((name, i2) => {
+      (row.order || row.items.map((_, i2) => i2)).forEach((i2) => {
+        const name = row.items[i2];
         if (row.skip && row.skip.includes(i2)) return;
         const tile = el("button", { type: "button", className: "pickt", id: `${id}-${i2}`, title: name, onclick: () => set(i2) });
         tile.setAttribute("role", "radio");

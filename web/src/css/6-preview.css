@@ -9,6 +9,7 @@
      Guides (and Shadows) on: its word is whole, in that colour, never bolder (Okay, 14 Oct 2026, 23:05; bold
      before). Off: faint, and Guides' sign is struck through. One weight, so the box is the same size on and off. */
   main { --on-canvas: var(--ink); }
+  .bezel { color: var(--on-canvas); opacity: var(--faint); }      /* the case's silhouette on the dial side: one line in the canvas's ink, faint (Okay, 23 Oct 2026: "very faint lines") */
   main.dark { --on-canvas: var(--white); }
   /* the dial alone: Backdrop and Shadows ride left with the preview's edge and stop short, on the mark's line (the margin) */
   main { --stop-short: max(var(--canvas-inset), calc(var(--margin) - var(--panel-w) * (1 - var(--away)))); }
@@ -29,15 +30,6 @@
   .casebox > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
   .casebox:not(.on) { border-style: dotted; }      /* not on: its outline dotted — shorter dashes, shorter gaps, a denser line (Okay, 19 Oct 2026: "Dashes for invisible: shorter dash shorter gaps, denser outline") */
   .casebox.on > :is(.sign, svg) { opacity: 1; }      /* on: its sign alone lights; the word stays dim but under the pointer (Okay, 20 Oct 2026, 02:37: "when on, only the icon lights up. Labels stay dim at all times, except hover") */
-  /* its strap's switch (4.69): the strap's chip, a button of its own, then its kind's name and chevron with the list over
-     those only — so a press on the chip opens the colour, a press on the words the list */
-  .strapbox { padding-left: var(--u3); }
-  .strapbox .strapkind { position: relative; display: flex; align-items: center; gap: var(--unit); align-self: stretch; }
-  .strapbox .strapkind > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-  .strapbox .dot { padding: 0; border-color: var(--on-canvas); cursor: pointer; }
-  .strapbox.on > * { opacity: 1; }
-  .strapbox.on .strapkind > :not(.sign, select) { opacity: var(--faint); }      /* on: its chip and sign whole, its word and chevron dim but under the pointer (Okay, 20 Oct 2026, 02:37: "when on, only the icon lights up") */
-  @media (hover: hover) { .strapbox.on:hover .strapkind > * { opacity: 1; } }
   /* the selected ring's handles on its guides (4.65; farukahmet's PR #2, Okay: "all these handles should be in guide
      color"): filled with the ring's guide colour (--handle, app.js), a hairline of white round them so they read on any
      dial; a reach of a fingertip round each, unseen */
@@ -135,7 +127,7 @@
      well (the default), WebKit lets the colour bleed over the round corners' edge, and on a part of a pixel (the dot
      stands at x .25, y .5 here) the hairline can vanish into it (Okay, 19 Oct 2026, 23:53: "backdrop sometimes loses the
      swatches outline … old Safari on an Intel Mac … iPad too") */
-  :is(.backdropbox, .strapbox) .dot { background-clip: padding-box; }
+  .backdropbox .dot { background-clip: padding-box; }
   /* Shadows (a trial, 14 Oct 2026): the Guides switch's make, at the bottom left, the Backdrop switch standing on it a
      unit above (Okay, 23:05: "button goes down"); one higher, so its open list lies over Backdrop.
      Its sign is a sphere and its cast shadow (15 Oct 2026), so its room is Guides'.
@@ -271,4 +263,19 @@
      its words (Okay, 15 Oct 2026, 07:07: "these buttons get solid bg color when labels visible"): the iris switch open
      (ACTIVATE SHOWCASE), the labelled switches — always on a wide screen, on a phone while unfolded (8-narrow.css) */
   .irisbox[aria-expanded="true"], :is(.guidesbox, .guidesmore, .backdropbox, .casebox) { background: var(--canvas-fill); }
+
+  /* show mode's Backdrop (ground_pop() in app.js; the Show Case's background popup): the Shadows list's night part, opening
+     upward from its switch; one colour on the left, a gradient on the right, ten tiles each in rows of five, and under each
+     its own colour — the chosen one ringed in ink */
+  .groundpop { width: calc(2 * var(--pop-pad) + 10 * var(--chip) + 8 * var(--u1) + var(--pop-gap) + 2 * var(--hair)); padding-bottom: var(--pop-pad); }
+  .groundsides { display: grid; grid-template-columns: 1fr 1fr; gap: var(--pop-gap); }
+  .groundside { display: grid; gap: var(--u2); align-content: start; }
+  .groundside .guidehead { grid-template-columns: 1fr; }
+  .groundtiles { display: grid; grid-template-columns: repeat(5, var(--chip)); gap: var(--u1); }
+  .groundtile { width: var(--chip); height: var(--chip); padding: var(--thick); border: var(--hair) solid transparent; border-radius: var(--round-small); background: none; }
+  .groundtile i { display: block; width: 100%; height: 100%; border-radius: var(--round-tiny); box-shadow: inset 0 0 0 var(--hair) var(--chip-rule); }
+  .groundtile.on { border-color: var(--ink); }
+  .groundpick { justify-self: start; }
+  .gradpick { display: flex; gap: var(--u1); justify-self: start; }
+  :is(.groundpick.on, .gradpick.on .groundpick) { box-shadow: 0 0 0 var(--hair) var(--ink); }
 }

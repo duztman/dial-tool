@@ -2265,6 +2265,15 @@ await shot("10-bar");
   await page.evaluate((v) => { const t = window.dial_tool; t.set_value("global", "sh_from", v[0]); t.set_value("global", "sh_rise", v[1]); }, was_sun);
   check(look.shown && look.gone && look.title === '" Show Case"' && look.header && look.under && look.w === look.left && look.sign !== "rgb(0, 0, 0)" && (sun[0] !== was_sun[0] || sun[1] !== was_sun[1]) && sun[0] > 270 && sun[0] < 360,
     `show mode, as the Show Case had it (Okay, 23 Oct 2026): undo · redo · Versions at the canvas's top left; no Guides, no Shadows; the title Dial Tool Show Case with Help and the swatch alone; the canvas runs on under the see-through column, the watch centred in the ${look.w} px left of it; the chosen tab's sign in the column's colour (${look.sign}); a drag on the canvas moves the sun (${was_sun} → ${sun})`);
+  const was_ground = await page.evaluate(() => [window.dial_tool.S.c_backdrop, window.dial_tool.S.c_backdrop2]);
+  await page.click("#logo", { force: true }); const bio = await page.evaluate(() => document.querySelector("#bio").hidden);
+  await page.click("#backdrop"); await page.click('.groundtile[title="Ember"]'); await frame();
+  const ground = await page.evaluate(() => { const t = window.dial_tool, r = (q) => document.querySelector(q); return { open: !r("#ground-pop").hidden, tiles: document.querySelectorAll(".groundtile").length, two: Boolean(t.S.c_backdrop2), version: r(".title > .quiet:not(.help)").checkVisibility() }; });
+  await page.click('.tabs button[data-tab="Watch"]'); await page.click('.pickt[title="Field"]'); await frame();
+  const tiles = await page.evaluate(() => ({ bezel: window.dial_tool.S.bezel, cases: [...document.querySelectorAll('#app .pickt')].filter((b) => b.checkVisibility() && b.querySelector("svg path")).length }));
+  await page.evaluate((g) => { const t = window.dial_tool; t.set_value("global", "c_backdrop", g[0]); t.set_value("global", "c_backdrop2", g[1]); t.ground_open(false); }, was_ground);
+  check(bio && ground.open && ground.tiles === 20 && ground.two && !ground.version && tiles.bezel === 2 && tiles.cases >= 4,
+    `show mode's title has no version and its mark opens no bio; Backdrop opens the Show Case's ten colours and ten gradients (${ground.tiles} tiles; Ember a gradient); Case is picture tiles (${tiles.cases}), Field pressed`);
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "bezel", 0); t.set_value("global", "strap", 1); });
   await page.click("#iris-box"); await page.waitForTimeout(1800);
   const off = await q();
@@ -2540,25 +2549,20 @@ await touch.close();
   check(look[0] && look[1] && look[2] && look[3] === "600" && look[4] === "" && follow.join() === "7,07/10,CMT,",
     `the date stands touching AM · PM, today's to start, stacked day over month in Inter SemiBold (the year left out since 4.82) (Barlow Bold in 4.62) (${look.join(" ")}); 7 Oct 2028 set, a following date window says ${follow[0]} and the bar ${follow[1]}; a day window in Turkish ${follow[2]}; Now brings today back`);
 }
-{ // the watch round the dial (watch.js, #508; Okay, 22 Oct 2026: "Cases snap to dials. Size of dial determines", "Showcase has no caseless watches", "Dial side only shows cases as solid 3 color as engineer")
+{ // the case round the dial (Okay, 23 Oct 2026: "On main default is caseless", "Just a silhouette, very faint lines. no shadows, nothing", "case toggle does not bring in strap")
   const z0 = await page.evaluate(() => window.dial_tool.z);
-  const seen = () => page.evaluate(() => { const t = window.dial_tool, g = document.querySelector("g.bezel"), fills = [...g.querySelectorAll("path")].map((p) => p.getAttribute("fill"));
-    return { bezel: t.S.bezel, parts: fills.length, tones: new Set(fills.filter((c) => c && c.startsWith("#"))).size, word: document.querySelector("#case .word").textContent, z: t.z, under: Boolean(g.compareDocumentPosition(t.dial) & Node.DOCUMENT_POSITION_FOLLOWING),
-      strap: document.querySelector("#strap .word").textContent, chip: !document.querySelector("#strap-colour").hidden, bracelet_offered: !document.querySelector('#strap-pick [value="2"]').hidden, fills }; });
-  const dress = await seen();      // the opener: Dress, as every dial opens with (bezel 0 draws it)
+  const seen = () => page.evaluate(() => { const t = window.dial_tool, g = document.querySelector("g.bezel"), paths = [...g.querySelectorAll("path")];
+    return { on: t.S.ui_case, bezel: t.S.bezel, paths: paths.length, filled: paths.some((p) => p.getAttribute("fill") && p.getAttribute("fill") !== "none"), word: document.querySelector("#case .word").textContent, lit: document.querySelector("#case").classList.contains("on"),
+      faint: +getComputedStyle(g).opacity, z: t.z, under: Boolean(g.compareDocumentPosition(t.dial) & Node.DOCUMENT_POSITION_FOLLOWING), strap: Boolean(document.querySelector("#strap, #strap-pick, #strap-colour")) }; });
+  const none = await seen();
   await page.selectOption("#case-pick", "1"); await frame();
   const diver = await seen();
-  await page.evaluate(() => window.dial_tool.set_value("global", "c_strap", [0.1, 0.25, 0.45, 1])); await frame();
-  const blue = await seen();
-  await page.selectOption("#strap-pick", "2"); await frame();
-  const bracelet = await seen();
-  await page.selectOption("#case-pick", "2"); await frame();      // Field: the bracelet is the diver's alone, so it falls back to leather
+  await page.selectOption("#case-pick", "2"); await frame();
   const field = await seen();
-  await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "strap", 1); t.set_value("global", "c_strap", [0.29, 0.2, 0.14, 1]); t.set_value("global", "bezel", 0); }); await frame();
-  check(dress.word === "Dress" && dress.parts > 20 && dress.under && diver.bezel === 1 && diver.word === "Diver" && diver.parts > dress.parts && Math.abs(diver.z - z0) < 1e-6 && field.word === "Field" && field.bezel === 2,
-    `the watch round the dial: Dress as it opens (${dress.parts} parts, under the dial), Diver (${diver.parts}) and Field by the menu; the view stays on the dial (${z0.toFixed(2)} → ${diver.z.toFixed(2)}); no "No case"`);
-  check(dress.strap === "Strap" && dress.chip && !dress.bracelet_offered && diver.bracelet_offered && blue.fills.some((c) => c && c.toLowerCase() === "#1a4073") && !diver.fills.some((c) => c && c.toLowerCase() === "#1a4073") && bracelet.strap === "Bracelet" && !bracelet.chip && field.strap === "Strap" && field.chip,
-    `its strap: leather with its colour chip; a new colour repaints it; Bracelet offered on the diver alone, no chip; Field takes leather again`);
+  await page.selectOption("#case-pick", "none"); await frame();
+  const off = await seen();
+  check(!none.on && none.paths === 0 && none.word === "Case" && !none.lit && !none.strap && diver.on && diver.bezel === 1 && diver.word === "Diver" && diver.lit && diver.paths === 1 && !diver.filled && diver.faint < 1 && diver.under && Math.abs(diver.z - z0) < 1e-6 && field.bezel === 2 && field.paths === 1 && !off.on && off.paths === 0 && off.bezel === 2,
+    `the case round the dial: none to start, no strap switch; Diver and Field by the menu, each its silhouette alone — one unfilled line at ${diver.faint} opacity, under the dial; the view stays on the dial; No case takes it away and keeps the kind for show mode`);
 }
 { // 20 Oct 2026 notes (#481, #482, #485, #486): the steps' chevron pale with no steps; the Settings buttons equal; handles with guides off, finer away
   await tab("Rings");

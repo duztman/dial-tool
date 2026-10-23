@@ -16,6 +16,9 @@ import * as WATCH from "./watch.js";
 export const METAL_NAMES = ["steel", "gold", "alu", "bronze", "titanium", "black"];
 export const NATO_NAMES = ["bond", "regimental", "khaki", "blackgrey", "olive", "grey"];
 export const INSERTS = [["#2b2c30", "#2b2c30"], ["#1f3a6e", "#1f3a6e"], ["#1f5a3a", "#1f5a3a"], ["#23407a", "#a8262e"], ["#222326", "#22457e"], ["#222326", "#a3232b"], ["#2a2420", "#6b3f24"], ["#222326", "#2f7a3c"]];
+/** an insert's picture for its tile: a ring, its top half in its first colour, its bottom half in its second */
+export const insert_picture = (i) => { const [a, b] = INSERTS[i] || INSERTS[0];
+  return `<svg viewBox="-19 -13.5 38 27" width="38" height="27" aria-hidden="true"><path d="M-11 0A11 11 0 0 1 11 0H6.5A6.5 6.5 0 0 0 -6.5 0Z" fill="${a}"/><path d="M-11 0A11 11 0 0 0 11 0H6.5A6.5 6.5 0 0 1 -6.5 0Z" fill="${b}"/><circle r="11" fill="none" stroke="currentColor" stroke-width="1" stroke-opacity="0.35"/></svg>`; };
 const STYLE_NAMES = ["engineer", "miyazaki"], VIEW_NAMES = ["detail", "full", "dial"];
 const hex = (c) => "#" + c.slice(0, 3).map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, "0")).join("");
 const PRINTED = (role) => !["plate", "cap", "hand", "mark", "date disc"].includes(role);      // what carries ink relief: a window's disc is the ground under its hole, not ink
@@ -73,6 +76,13 @@ export function draw(tool, items) {
     left.setAttribute("fill", side > 0 ? "#000" : "#fff"); left.setAttribute("fill-opacity", (side > 0 ? dark : lit).toFixed(3));
   }
 }
+
+/** the Backdrop's presets in show mode (the Show Case's, 21 Oct 2026): ten single colours and ten gradients, each [name,
+ *  first colour, second colour] — the gradient at 135° from the first to the second. Ember is the Show Case's opener */
+export const GROUNDS = [["Stone", "#b9b3a6"], ["Umber", "#877f6d"], ["Paper", "#e8e4da"], ["Bone", "#d8d0bf"], ["Sky", "#a9bccb"],
+  ["Sage", "#9aa891"], ["Olive", "#6b6a4e"], ["Brick", "#8a4a3a"], ["Slate", "#5b6066"], ["Night", "#1c1c1f"]];
+export const GRADIENTS = [["Dusk", "#3b3f58", "#b8876c"], ["Sea", "#1f4e5a", "#a9c7c0"], ["Clay", "#d9b8a0", "#7a4a3a"], ["Fog", "#e6e6e3", "#8c9096"], ["Dune", "#e8d8b8", "#a5835a"],
+  ["Moss", "#1e2a1f", "#8fa27b"], ["Steel", "#2b3138", "#9aa6b2"], ["Plum", "#2a1f33", "#9c6d8f"], ["Ember", "#2a1a17", "#b4533a"], ["Ink", "#0e0f14", "#3b4256"]];
 
 /** Fit in show mode (Okay: "while fit shows the case on showcase, dial on dial tool side"): Detail — lug tip to lug tip
  *  as tall as the canvas less a margin, the case as wide as it allows; Whole watch — the whole drawing; Dial — as the
