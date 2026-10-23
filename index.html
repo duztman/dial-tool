@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.92 · built 2026-10-23 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.92.1 · built 2026-10-23 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7159,7 +7159,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.92";
+var VERSION = "beta 4.92.1";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -18963,6 +18963,10 @@ var DialTool = class _DialTool {
     const one = (id, title, read, write, alpha = false) => [{ id, title, read, write, alpha }];
     out.refresh = () => this.swatch_lines(wrap, () => {
       const S = this.S, lines = [];
+      if (S.ui_show) lines.push({ text: "Dial", colours: one("plate", "Dial", () => this.S.c_plate, (v) => {
+        this.S.c_plate = v;
+        this.changed();
+      }) });
       S.rings.forEach((ring, i2) => {
         const text = ring.name || kind_of(ring), sectors = kind_of(ring) === "band" && positions_of(ring).length > 1;
         lines.push({ text, colours: sectors ? this.sector_colours(i2) : one(`ring-${i2}`, text, () => (this.S.rings[i2] || {}).c, (v) => {
@@ -18982,8 +18986,13 @@ var DialTool = class _DialTool {
         this.changed();
       }) });
       windows_of(S).forEach((w, k) => {
-        if (w.on) lines.push({ text: `Window ${k + 1}`, colours: one("window-" + k, `Window ${k + 1}`, () => windows_of(this.S)[k].ink, (v) => {
+        if (!w.on) return;
+        lines.push({ text: `Window ${k + 1}`, colours: one("window-" + k, `Window ${k + 1}`, () => windows_of(this.S)[k].ink, (v) => {
           windows_of(this.S)[k].ink = v;
+          this.changed();
+        }) });
+        if (S.ui_show) lines.push({ text: `Window ${k + 1} disc`, colours: one("disc-" + k, `Window ${k + 1} disc`, () => windows_of(this.S)[k].disc_c || [1, 1, 1, 1], (v) => {
+          windows_of(this.S)[k].disc_c = v;
           this.changed();
         }) });
       });
