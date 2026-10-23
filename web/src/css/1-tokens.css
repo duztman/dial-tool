@@ -67,6 +67,7 @@
     --bio-width: calc(var(--panel) - 2 * var(--margin));      /* the bio under Okay's mark: as wide as the panel's lines */
     /* the dial alone (the eye switch, Okay, 15 Oct 2026, 04:02): the panel slides away and the dial grows to fit, eased */
     --panel-w: calc(var(--panel) + var(--hair));   /* the panel's column: its lines and its right hairline */
+    --show-time: 1000ms;                           /* into show mode and out (swoop() in app.js): each panel's slide; the second starts when the first is halfway, the drawing moves over one and a half of it (Okay, 23 Oct 2026: "smoother, slower") */
     --view-time: 700ms; --view-ease: cubic-bezier(0.65, 0, 0.35, 1);      /* slow out, slow in */
     --iris-time: 250ms;                            /* the iris switch's words sliding out; Now shrinking into its undo sign */
     --iris-words: 160px;                           /* room enough for ACTIVATE SHOWCASE */

@@ -5,7 +5,7 @@ Built to explore, present and produce watch dials.
 
 **Use it: <https://duztman.github.io/dial-tool/>** (the released build, `main`), or <https://duztman.github.io/dial-tool/dev/> (the newest small push, `dev`, with its own saved dials and session), or open [`web/dial-tool.html`](web/dial-tool.html) from disk (one file, no install; Chrome or Edge for the fonts installed on the computer).
 
-**Version: beta 4.91.12 (22 Oct 2026, on `dev` and the /dev/ page; the released page is beta 4.91, `main` beta 4.90 until the 4.92 step).** `main` = released, `dev` = work in progress. Every earlier build, back to beta 1.0: [`docs/versions.md`](docs/versions.md).
+**Version: beta 4.91.13 (22 Oct 2026, on `dev` and the /dev/ page; the released page is beta 4.91, `main` beta 4.90 until the 4.92 step).** `main` = released, `dev` = work in progress. Every earlier build, back to beta 1.0: [`docs/versions.md`](docs/versions.md).
 What it has and lacks: [`docs/changelog.md`](docs/changelog.md). What's next, and what v1 needs: [`docs/build-list.md`](docs/build-list.md).
 
 **Guidebook:** edition 1 is at <https://duztman.github.io/dial-tool/guide/>, built from the app in `guide/` by its plan, `guide/PLAN.md` (build list #93); rebuilt only when Okay asks (R25).

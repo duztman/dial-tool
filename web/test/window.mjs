@@ -641,8 +641,10 @@ check(JSON.stringify(await S("S.rings.map((r) => r.name)")) === JSON.stringify(o
 // ── guides: a switch on the preview's bottom left (top right until 4.58), with an arrow that opens their list (five kinds, eight colours) ──
 await tab("Dial");
 check(await page.$("main .guides #guides") !== null && await page.$(".panel #guides") === null && await page.isHidden("#guide-list"), "the Guides switch stands on the preview, not in the panel; its list is shut");
-const guides_at = await page.evaluate(() => { const g = document.querySelector("#tiny-open").getBoundingClientRect(), e = document.querySelector("#eye-box").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(), u = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit")); return [Math.round(m.right - g.right), Math.round(m.right - e.right), +(e.top - g.bottom).toFixed(1), u]; });
-check(guides_at[0] === 12 && guides_at[1] === 12 && Math.abs(guides_at[2] - guides_at[3]) < 0.6, `the Tiny Preview's eye stands over the dial-alone eye at the bottom right, both 12 from the preview's right, a unit apart (${guides_at.join(" / ")}) (4.82; top right until 4.81)`);
+const guides_at = await page.evaluate(() => { const r = (q) => document.querySelector(q).getBoundingClientRect(), g = r("#tiny-open"), i = r(".irisbox"), e = r("#eye-box"), m = r("main"), u = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--unit"));
+  return [Math.round(m.right - g.right), Math.round(m.right - i.right), Math.round(m.right - e.right), +(i.top - g.bottom).toFixed(1), +(e.top - i.bottom).toFixed(1), u]; });
+check(guides_at[0] === 12 && guides_at[1] === 12 && guides_at[2] === 12 && Math.abs(guides_at[3] - guides_at[5]) < 0.6 && Math.abs(guides_at[4] - guides_at[5]) < 0.6,
+  `at the bottom right, stacked a unit apart and all 12 from the preview's right: the Tiny Preview's eye, the iris (show mode's switch), the dial-alone eye (${guides_at.join(" / ")}) (Okay, 23 Oct 2026: "Iris above the eye")`);
 await page.click("#guides-more");
 check(await page.isVisible("#guide-list") && (await page.$$eval("#guide-list .guidescroll > .guidekind .name", (n) => n.map((e) => e.textContent))).join() === "Centre hole,Centre lines" && await page.$$eval("#guide-list .guidekind >> nth=0 >> .dots .tone", (b) => b.length) === 8 && await page.$eval("#guide-list .guiderings", (e) => e.querySelectorAll(".guidekind.ring").length) === await S("S.rings.length") && await page.$("#guide-list .swatch") === null,
   "the arrow drops the list: the centre hole's guide first, then the centre lines (no dial edge since 15 Oct 2026, no window radii since 4.42.5), then a line for every ring and every window that is on, each with None and eight round colours, no free colour");
@@ -1815,7 +1817,7 @@ await page.uncheck("#global-out-production-Mono-print-mask");
   await page.evaluate(() => { const t = window.dial_tool; t.take_step(); t.S.ui_ring = 0; t.set_value("ring", "r", 11.3); t.take_step(); t.set_value("global", "c_plate", [0.3, 0.3, 0.3, 1]); t.take_step(); });
   await page.click("#history-more");
   const steps = await page.$$eval("#history-list > *", (l) => l.map((e) => e.textContent));
-  await page.click("#history-list .step:nth-of-type(2)"); await frame();      // the second step back: both undone
+  await page.click("#history-list .histitem:nth-of-type(2)"); await frame();      // the second step back: both undone
   const after = await S("S.rings[0].r !== 11.3 && S.c_plate[0] !== 0.3");
   await page.evaluate(() => window.dial_tool.history_open(false));
   // Weight %
@@ -2549,10 +2551,10 @@ await touch.close();
   check(look[0] && look[1] && look[2] && look[3] === "600" && look[4] === "" && follow.join() === "7,07/10,CMT,",
     `the date stands touching AM · PM, today's to start, stacked day over month in Inter SemiBold (the year left out since 4.82) (Barlow Bold in 4.62) (${look.join(" ")}); 7 Oct 2028 set, a following date window says ${follow[0]} and the bar ${follow[1]}; a day window in Turkish ${follow[2]}; Now brings today back`);
 }
-{ // the case round the dial (Okay, 23 Oct 2026: "On main default is caseless", "Just a silhouette, very faint lines. no shadows, nothing", "case toggle does not bring in strap")
+{ // the case round the dial (Okay, 23 Oct 2026: "On main default is caseless", "sillhouette means filled in. engineer without the lines, 3 shades of gray", "case toggle does not bring in strap")
   const z0 = await page.evaluate(() => window.dial_tool.z);
   const seen = () => page.evaluate(() => { const t = window.dial_tool, g = document.querySelector("g.bezel"), paths = [...g.querySelectorAll("path")];
-    return { on: t.S.ui_case, bezel: t.S.bezel, paths: paths.length, filled: paths.some((p) => p.getAttribute("fill") && p.getAttribute("fill") !== "none"), word: document.querySelector("#case .word").textContent, lit: document.querySelector("#case").classList.contains("on"),
+    return { on: t.S.ui_case, bezel: t.S.bezel, paths: paths.length, filled: paths.some((p) => p.getAttribute("fill") && p.getAttribute("fill") !== "none"), lined: paths.some((p) => p.getAttribute("stroke") && !["none", p.getAttribute("fill")].includes(p.getAttribute("stroke")) && !(p.getAttribute("stroke") || "").startsWith("#d8")), greys: new Set(paths.map((p) => p.getAttribute("fill")).filter((c) => c && c.startsWith("#") && c !== "#d8d6cf").map((c) => { const n = parseInt(c.slice(1), 16), r = n >> 16, g = n >> 8 & 255, b = n & 255; return Math.max(r, g, b) - Math.min(r, g, b) < 12; })).has(false) ? "colour" : "grey", word: document.querySelector("#case .word").textContent, lit: document.querySelector("#case").classList.contains("on"),
       faint: +getComputedStyle(g).opacity, z: t.z, under: Boolean(g.compareDocumentPosition(t.dial) & Node.DOCUMENT_POSITION_FOLLOWING), strap: Boolean(document.querySelector("#strap, #strap-pick, #strap-colour")) }; });
   const none = await seen();
   await page.selectOption("#case-pick", "1"); await frame();
@@ -2561,8 +2563,8 @@ await touch.close();
   const field = await seen();
   await page.selectOption("#case-pick", "none"); await frame();
   const off = await seen();
-  check(!none.on && none.paths === 0 && none.word === "Case" && !none.lit && !none.strap && diver.on && diver.bezel === 1 && diver.word === "Diver" && diver.lit && diver.paths === 1 && !diver.filled && diver.faint < 1 && diver.under && Math.abs(diver.z - z0) < 1e-6 && field.bezel === 2 && field.paths === 1 && !off.on && off.paths === 0 && off.bezel === 2,
-    `the case round the dial: none to start, no strap switch; Diver and Field by the menu, each its silhouette alone — one unfilled line at ${diver.faint} opacity, under the dial; the view stays on the dial; No case takes it away and keeps the kind for show mode`);
+  check(!none.on && none.paths === 0 && none.word === "Case" && !none.lit && !none.strap && diver.on && diver.bezel === 1 && diver.word === "Diver" && diver.lit && diver.paths > 5 && diver.filled && !diver.lined && diver.greys === "grey" && diver.under && Math.abs(diver.z - z0) < 1e-6 && field.bezel === 2 && field.paths > 5 && !field.lined && !off.on && off.paths === 0 && off.bezel === 2,
+    `the case round the dial: none to start, no strap switch; Diver and Field by the menu, each filled in, the Engineer's parts without a line, in greys (${diver.paths} parts), under the dial; the view stays on the dial; No case takes it away and keeps the kind for show mode`);
 }
 { // 20 Oct 2026 notes (#481, #482, #485, #486): the steps' chevron pale with no steps; the Settings buttons equal; handles with guides off, finer away
   await tab("Rings");

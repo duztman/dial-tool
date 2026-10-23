@@ -19,7 +19,7 @@ export function attach(pk) { PK = pk; }
 let STYLE = "miyazaki";
 let GLINT = "plain", INK_K = 6, INK_N = 0, HAND_BEVEL = false, FLARE_TINT = "#ffffff", FLARE_SCALE = 1, GLASS_K = 1, SH_OP = 0.3, FLARE_KIND = "arc";
 let BRACELET_KIND = "vault";      // which bracelet the diver wears: vault (Oyster) or links (Emre's)
-let DIAL_IN = true, OUTLINE_ON = true;      // OUTLINE_ON false: the effects switch is off (Okay: "turn off shenanigans") — no silhouette outline, which is a PathKit union per drawing      // false: the watch round a dial drawn by someone else (Dial Tool's edit mode) — no dial, no glass, nothing over the opening
+let DIAL_IN = true, OUTLINE_ON = true, NO_LINES = false;      // NO_LINES: the Engineer's parts without their lines (main's case)      // OUTLINE_ON false: the effects switch is off (Okay: "turn off shenanigans") — no silhouette outline, which is a PathKit union per drawing      // false: the watch round a dial drawn by someone else (Dial Tool's edit mode) — no dial, no glass, nothing over the opening
 const REHAUT = 0.8; let SHD = 1, INSERT = { top: "#2b2c30", bottom: "#2b2c30" }, FL = { size: 1, tint: 0.45, bright: 1 }, GLASS = { fat: 1, len: 1, op: 1 }, DIALS = [], HANDS_A = { hour: 305, minute: 60, second: 180 };
 let SUN_H = 40;                                            // the sun's height, degrees (set per drawing)
 let CLIPS = [], clipN = 0, BLOB = 0, BLOB_N = 0, VB_N = 0;
@@ -155,10 +155,11 @@ function scaleCase(C, k) {
 
 // ── the Engineer's marks: ink lines, filled shapes with one dark line of shading inside, flat facets in three tones ──
 const LW = 0.22;                                         // every dark outline this wide; no line on a drawing thinner
-const strokeInk = (d, sw = LW, extra = "") => `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${LW}" stroke-linejoin="round" stroke-linecap="round" ${extra}/>`;
+const strokeInk = (d, sw = LW, extra = "") => NO_LINES ? "" : `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${LW}" stroke-linejoin="round" stroke-linecap="round" ${extra}/>`;
 const stroke = (...a) => (STYLE === "engineer" ? strokeInk(...a) : "");      // Miyazaki draws no lines
 const shape = (d, c, sw = LW, inner = null) => {
   sw = LW;
+  if (NO_LINES) return c === "none" ? "" : `<path d="${d}" fill="${c}"/>`;
   if (!inner || c === "none") return `<path d="${d}" fill="${c}" stroke="${INK}" stroke-width="${sw}" stroke-linejoin="round"/>`;
   const id = "in" + clipN++; CLIPS.push(`<clipPath id="${id}"><path d="${d}"/></clipPath>`);
   return `<path d="${d}" fill="${c}"/><path d="${d}" fill="none" stroke="${inner}" stroke-width="${f(sw * 3)}" stroke-linejoin="round" clip-path="url(#${id})"/><path d="${d}" fill="none" stroke="${INK}" stroke-width="${sw}" stroke-linejoin="round"/>`;
@@ -421,7 +422,7 @@ function leatherPiece(y0, y1, w0, w1, T, L, tip = 0, holes = []) {
   }
   // the end rolled over the spring bar (Okay, 22 Oct 2026: "the topmost point is darkest, the rest fills in flat like the
   // sides"): a dark band at the very edge, flat, as the sides' crescents are; no line, no gradient
-  html += `<path d="${rrectD(-w0 / 2, y0, w0 / 2, y0 + s * 0.6, rw)}" fill="#000" fill-opacity="0.45"/>`;
+  html += `<path d="${rrectD(-w0 * 0.4, y0, w0 * 0.4, y0 + s * 0.6, 0.3)}" fill="#000" fill-opacity="0.45"/>`;      // ending well inside the strap's edges, a tenth of its width in from each (Okay, 23 Oct 2026, drawn in green)
   // a tiny stitch along both edges (Okay, 22 Oct 2026)
   const xs = (y) => w0 / 2 + (w1 - w0) / 2 * ((y - y0) / (y1 - y0)), k = 0.9, ys = y0 + s * 1.8;
   html += `<path d="M${f(-xs(ys) + k)} ${f(ys)}L${f(-xs(yEnd) + k)} ${f(yEnd)}M${f(xs(ys) - k)} ${f(ys)}L${f(xs(yEnd) - k)} ${f(yEnd)}" fill="none" stroke="#e9dccb" stroke-opacity="0.6" stroke-width="0.18" stroke-dasharray="0.7 0.6"/>`;
@@ -488,7 +489,8 @@ function natoEngineer(C, L, set, open, span) {
   }
   // open, laid flat (Timefactors' G10: 280 mm, holes every 7 mm from 25 mm off the end, 75 mm between rings 2 and 3)
   let h = run(-(half + 70), half + 165);
-  h += buckle(-(half + 70) - 6, w, C.metal, L) + keeper(-(half + 58), w, C.metal, L, 3.6);
+  { const B = buckle(-(half + 70) + 1, w, C.metal, L); h += B.frame + B.tongue; }      // the buckle, its bar where the strap ends (Okay, 23 Oct 2026: "ghost buckle in nato straps": its shadow was cast, the buckle never drawn)
+  h += keeper(-(half + 58), w, C.metal, L, 3.6);
   h += keeper(half + 12, w, C.metal, L, 3.6) + keeper(half + 87, w, C.metal, L, 3.6);
   for (let y = half + 165 - 25; y > half + 100; y -= 7) h += `<ellipse cx="0" cy="${f(y)}" rx="0.85" ry="0.65" fill="${INK}" fill-opacity="0.75"/>`;
   return h;
@@ -502,7 +504,7 @@ function natoMiyazaki(C, L, set, open, span) {
   h += `<path d="${band}" fill="url(#${WEAVE})"/>` + blobOver(band, L, 1.0, 2.6);      // the weave, then the round
   h += `${[0, 1, 2, 3].map((i) => `<rect x="${f(x0)}" y="${f(half + 9.4 + i * 0.35)}" width="${f(w)}" height="${f(1.6 - i * 0.35)}" fill="#000" fill-opacity="0.07"/>`).join("")}`;      // the second layer's end, as a soft dark band
   if (!open) { h += keeper(half + 15, w, C.metal, L, 3.6); for (let y = half + 14; y < span; y += 7) h += `<circle cx="0" cy="${f(-y)}" r="0.85" fill="#000" fill-opacity="0.45"/>`; }
-  else { h += buckle(y0 - 6, w, C.metal, L) + keeper(-(half + 58), w, C.metal, L, 3.6) + keeper(half + 12, w, C.metal, L, 3.6) + keeper(half + 87, w, C.metal, L, 3.6); for (let y = y1 - 25, n = 0; n < 9; y -= 7, n++) h += `<circle cx="0" cy="${f(y)}" r="0.85" fill="#000" fill-opacity="0.45"/>`; }
+  else { const B = buckle(y0 + 1, w, C.metal, L); h += B.frame + B.tongue + keeper(-(half + 58), w, C.metal, L, 3.6) + keeper(half + 12, w, C.metal, L, 3.6) + keeper(half + 87, w, C.metal, L, 3.6); for (let y = y1 - 25, n = 0; n < 9; y -= 7, n++) h += `<circle cx="0" cy="${f(y)}" r="0.85" fill="#000" fill-opacity="0.45"/>`; }
   return h;
 }
 const natoSVG = (...a) => (STYLE === "engineer" ? natoEngineer(...a) : natoMiyazaki(...a));
@@ -514,7 +516,7 @@ function barrelEngineer(d, x0, y0, x1, y1, k, ramp, lv, flip) {
   // face the light and a reverse L of dark on the other two, like a bevel
   const id = "vb" + VB_N++, h = y1 - y0, N = 9;
   CLIPS.push(`<clipPath id="${id}c"><path d="${d}"/></clipPath>`);
-  let s = `<g clip-path="url(#${id}c)">`;
+  let s = `<path d="${d}" fill="${ramp[Math.floor(ramp.length / 2)]}"/><g clip-path="url(#${id}c)">`;      // the strips over one fill of their own: where two meet, metal shows, never the floor (Okay, 23 Oct 2026: "there are gaps in the bracelet")
   // each strip's tone by its rank in brightness (18:16: depth good, flat bad): the five fill tones shared out over the
   // strips in order, so no link is one flat band, and the brightest strip still faces the light
   const dots = Array.from({ length: N }, (_, i) => { const t = ((i + 0.5) / N * 2 - 1) * flip, b = Math.asin(Math.max(-1, Math.min(1, t * k))); return Math.max(0, Math.sin(b) * lv[1] + Math.cos(b) * lv[2]); });
@@ -535,7 +537,7 @@ function barrelMiyazaki(d, x0, y0, x1, y1, k, ramp, lv, flip) {
   // face the light and a reverse L of dark on the other two, like a bevel
   const id = "vb" + VB_N++, h = y1 - y0, N = 7;
   CLIPS.push(`<clipPath id="${id}c"><path d="${d}"/></clipPath>`);
-  let s = `<g clip-path="url(#${id}c)">`;
+  let s = `<path d="${d}" fill="${ramp[Math.floor(ramp.length / 2)]}"/><g clip-path="url(#${id}c)">`;      // as the Engineer's: no seam shows the floor
   for (let i = 0; i < N; i++) {
     const t = ((i + 0.5) / N * 2 - 1) * flip, b = Math.asin(Math.max(-1, Math.min(1, t * k))), n = [0, Math.sin(b), Math.cos(b)];
     const dot = Math.max(0, n[1] * lv[1] + n[2] * lv[2]), q = Math.min(ramp.length - 2, Math.round(dot * (ramp.length - 2)));      // fills use the five lower tones; the brightest is kept for the L
@@ -559,6 +561,7 @@ function vaultEngineer({ W = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H = 40, r
       [mid / 2 + g / 2, w / 2, [0.12, 0.6, 0.6, 0.12]],
       [-mid / 2 + g / 2, mid / 2 - g / 2, [0.25, 0.25, 0.25, 0.25]],
     ];
+    out.push(`<rect x="${f(-w / 2 + 0.6)}" y="${f(top)}" width="${f(w - 1.2)}" height="${f(bot - top)}" fill="${ramp[ramp.length - 1]}"/>`);      // the row's dark ground: between its links and the next row's, dark metal, never the floor
     for (const [pi, [x0, x1, rr]] of parts.entries()) {
       const d = rrect4(x0, top, x1, bot, rr);
       out.push(barrel(d, x0, top, x1, bot, kk, ramp, lv, 1));
@@ -586,6 +589,7 @@ function vaultMiyazaki({ W = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H = 40, r
       [mid / 2 + g / 2, w / 2, [0.12, 0.6, 0.6, 0.12]],
       [-mid / 2 + g / 2, mid / 2 - g / 2, [0.25, 0.25, 0.25, 0.25]],
     ];
+    out.push(`<rect x="${f(-w / 2 + 0.6)}" y="${f(top)}" width="${f(w - 1.2)}" height="${f(bot - top)}" fill="${ramp[ramp.length - 1]}"/>`);      // the row's dark ground: between its links and the next row's, dark metal, never the floor
     for (const [x0, x1, rr] of parts) {
       const d = rrect4(x0, top, x1, bot, rr);
       out.push(barrel(d, x0, top, x1, bot, kk, ramp, lv, 1));
@@ -716,13 +720,19 @@ ${strapSVG}${strap === "bracelet" ? "" : contact(C, L, strap, span, STYLE === "m
 </svg>`;
 }
 
-/** the case round a dial drawn by Dial Tool (edit mode): its silhouette alone — the case, lugs and crown joined into one
- *  shape and its edge drawn as one faint line, no fills, no shadow, no strap (Okay, 23 Oct 2026: "Just a silhouette, very
- *  faint lines. no shadows, nothing"). `o`: kind (dress · field · diver · emre01) and d (the dial's diameter: the case
- *  scales to it). In the dial's space (mm, y up); its line a screen pixel at any zoom, in the canvas's ink (currentColor) */
+/** the case round a dial drawn by Dial Tool (edit mode): its silhouette, filled — the Engineer's flat parts without a
+ *  line, in three shades of grey; no shadow, no strap, no dial (Okay, 23 Oct 2026: "sillhouette means filled in. engineer
+ *  without the lines, 3 shades of gray"). `o`: kind (dress · field · diver · emre01) and d (the dial's diameter: the case
+ *  scales to it). In the dial's space (mm, y up) */
+const GREYS = ["#e4e4e1", "#c2c2be", "#9c9c97"];      // light, body, dark
 export function frame(o) {
-  const d = silhouetteOf(o.kind, sizeFor(o.kind in CASES ? o.kind : "dress", o.d));
-  return `<g transform="scale(1 -1)"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></g>`;
+  const kind = o.kind in CASES ? o.kind : "dress";
+  use("engineer"); NO_LINES = true; INK = "none"; DIAL_IN = false; GLINT = "off"; CLIPS = []; SUN_H = 40;
+  const C = { ...scaleCase(CASES[kind], sizeFor(kind, o.d)), key: kind, metal: GREYS }, was = INSERT;
+  INSERT = { top: GREYS[2], bottom: GREYS[2] };      // a diver's insert in the dark grey too
+  const body = caseSVG(C, "own", 225);
+  NO_LINES = false; INSERT = was; DIAL_IN = true; use("engineer");
+  return `<g transform="scale(1 -1)"><defs>${CLIPS.join("")}</defs>${body}</g>`;
 }
 /** the case, lugs and crown as one shape: the edge of every part of the case joined (Miyazaki's painter keeps each part's
  *  outline, blob), drawn without its dial, glass or flare; SVG path data in the drawing's space (mm, y down) */

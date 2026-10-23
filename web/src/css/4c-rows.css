@@ -104,14 +104,10 @@
   /* show mode: a number's slider on a line of its own under its name and box, as wide as the row — the column is narrow,
      and in the row the slider was left too short (Okay, 23 Oct 2026: "Why are these short?"; the Show Case's rule,
      21 Oct 2026, 23:46: the pair reads as one row, no line between) */
-  #app.showing .body .row.num:not(.side) { grid-template-rows: var(--line) var(--line); }
-  #app.showing .body .row.num:not(.side) > :not(input[type="range"]) { grid-row: 1; }
-  #app.showing .body .row.num:not(.side) > input[type="range"] { grid-column: 1 / -1; grid-row: 2; }
+  .showing .body .row.num:not(.side) { grid-template-rows: var(--line) var(--line); }
+  .showing .body .row.num:not(.side) > :not(input[type="range"]) { grid-row: 1; }
+  .showing .body .row.num:not(.side) > input[type="range"] { grid-column: 1 / -1; grid-row: 2; }
 
-  /* show mode: the adjustables in one column, the number boxes' (Okay, 23 Oct 2026: "align adjustables together in the
-     same column"; the pills stay where they are: "pills unaffected"); a tick and a colour chip take a number box's place,
-     on the same grid; the notes the whole width ("explainers span the whole width") */
-  #app.showing .body .row:is(.chk, .col):not(.side) { grid-template-columns: var(--num-columns); column-gap: 0; }
-  #app.showing .body .row:is(.chk, .col):not(.side) > :first-child:not(:last-child) { grid-column: 1 / 4; }
-  #app.showing .body .row:is(.chk, .col):not(.side) > :last-child { grid-column: 7 / -1; justify-self: start; }
-  #app.showing .body .row.note > .quiet { grid-column: 1 / -1; }
+  /* show mode: the notes the whole width (Okay, 23 Oct 2026: "explainers span the whole width"); ticks, colour chips and
+     pills stand in the first column after the names, as on the dial side ("Color swatches and pills go back") */
+  .showing .body .row.note > .quiet { grid-column: 1 / -1; }

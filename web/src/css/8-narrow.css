@@ -5,6 +5,7 @@
     :root { --canvas-inset: var(--u5); --canvas-top: var(--canvas-inset); --margin: var(--u5); --gap: var(--u4); --col: calc((100vw - 2 * var(--margin) - var(--lead) - 5 * var(--gap)) / 6); }
     #app { grid-template-columns: 1fr; }
     .irisbox { display: none; }      /* show mode is for a Mac or an iPad (Okay, 22 Oct 2026; R16) */
+    .tinyopen { bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); }      /* no iris under it here: right over the eye */
     /* the dial alone on a phone: the preview's row grows over the panel's (the bar stays on top); nothing slides sideways */
     #app { grid-template-rows: var(--bar-h) calc(var(--preview-share) + (100% - var(--preview-share) - var(--bar-h)) * var(--away)) minmax(0, 1fr); }
     .panel, .mast { width: auto; translate: none; }

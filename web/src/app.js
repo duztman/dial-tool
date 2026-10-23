@@ -989,7 +989,7 @@ ROWS.Light = [
   num("w_glass_len", "Length %", 10, 300, 1, { whole: true, show: (S) => S.ui_effects }),
   num("w_glass_op", "Shine %", 0, 100, 1, { whole: true, show: (S) => S.ui_effects }),
   hdr("Effects", { folded: false }),
-  chk("ui_effects", "On", { head: true }),      // on the heading line its word is short: the note under it names the layers      // off for an old computer (Okay, 22 Oct 2026: "a 'turn off shenanigans' button … persistent")
+  chk("ui_effects", "Blurs, flare, shine, outline", { head: true }),      // on its heading line, in the first column after the title (Okay, 23 Oct 2026)      // off for an old computer (Okay, 22 Oct 2026: "a 'turn off shenanigans' button … persistent")
   info("Off, the watch is drawn without the layers that cost most: blurs, the flare, the glass shine, the outline round the metal.", {}),
 ];
 ROWS["Show export"] = [
@@ -1219,7 +1219,8 @@ class DialTool {
       document.addEventListener("keydown", () => { document.documentElement.dataset.press = "key"; }, true);
       // every menu opens the tool's own list, not the browser's (Okay, 20 Oct 2026, 01:05: "the popping up thing on
       // these, styled like mm dropdown. all around the site"): a press on a menu is caught before the browser opens its
-      // own, and the list (menu_list) stands under the menu's box. The keyboard keeps the browser's (Space, arrows)
+      // own, and the list (menu_list) stands under the menu's box; the keys that would open the browser's open it too
+      // (Okay, 23 Oct 2026: "system dropdown is no more, all around the app. we have our own dropdowns")
       const menu_press = (e) => {
         const select = e.target instanceof HTMLSelectElement ? e.target : null;
         if (!select || select.disabled || !window.dial_tool || (e.type === "mousedown" && e.button !== 0)) return;
@@ -1227,6 +1228,11 @@ class DialTool {
         if (e.type === "pointerdown") window.dial_tool.menu_list(select);      // mousedown and touchstart only kept from opening the browser's
       };
       for (const kind of ["pointerdown", "mousedown", "touchstart"]) document.addEventListener(kind, menu_press, { capture: true, passive: false });
+      document.addEventListener("keydown", (e) => {
+        const select = e.target instanceof HTMLSelectElement ? e.target : null;
+        if (!select || select.disabled || !window.dial_tool || ![" ", "Enter", "ArrowDown", "ArrowUp"].includes(e.key)) return;
+        e.preventDefault(); window.dial_tool.menu_list(select);
+      }, true);
       // a slider held with a mouse or a pen grows finer the farther the pointer moves from its track, up or down (#406;
       // Okay, 19 Oct 2026, 17:43: "Moving away from slider increases accuracy: build soon"): the press puts the value where
       // it lands, as the browser's own slider does; from then on, sideways travel moves it as the track would, times
@@ -1743,37 +1749,89 @@ class DialTool {
     if (this.bio_open) this.bio_open(false);
     this.iris_open(false);
     if (this.ground_open) this.ground_open(false);
+    const leaving = instant || $("#app").classList.contains("away") ? null : this.panel_copy();      // the panel as it is now, before its tabs change
     this.S.ui_show = on;
     this.iris_button.setAttribute("aria-pressed", String(on));
     const first = SECTIONS.indexOf(SHOW_SECTIONS[0]);      // each mode remembers its tab
     if (on) { this.S.ui_edit_section = this.S.ui_section; this.S.ui_section = SHOW_SECTIONS.includes(SECTIONS[this.S.ui_show_section]) ? this.S.ui_show_section : first; }
     else { this.S.ui_show_section = this.S.ui_section; this.S.ui_section = SHOW_SECTIONS.includes(SECTIONS[this.S.ui_edit_section]) ? 0 : this.S.ui_edit_section; }
     [...this.tabs.children].forEach((b) => { b.hidden = SHOW_SECTIONS.includes(b.dataset.tab) !== on; });
-    this.dial.style.display = on ? "none" : ""; this.over.style.display = on ? "none" : ""; this.bezel_g.style.display = on ? "none" : "";
-    if (!on) { this.watch_g.replaceChildren(); this.watch_key = null; this.tint_panel(); }
-    const was_away = app.classList.contains("away");
-    const swap = () => {
-      app.classList.toggle("showing", on);
-      this.show_section();
-      this.watch_key = null;      // drawn afresh in the mode's own layer
-      this.fit();
-      requestAnimationFrame(() => requestAnimationFrame(() => this.dial_alone(false)));      // …and the panel slides back in on its new side
-      this.render();
-    };
-    if (was_away || instant) swap();
-    else {      // out to the left first, the long way (dial_alone's slide), then the swap, then in from the right
-      const done = (e) => { if (e.target !== app) return; app.removeEventListener("transitionend", done); clearTimeout(wait); swap(); };
-      const wait = setTimeout(() => { app.removeEventListener("transitionend", done); swap(); }, 1200);
-      app.addEventListener("transitionend", done);
-      this.dial_alone(true);
+    if (instant) {      // a session that ended in show mode opens there: no movement
+      app.classList.toggle("showing", on); this.layers(on, 1); this.show_section(); this.watch_key = null; this.fit(); this.render();
+      return;
     }
+    this.swoop(on, leaving);
   }
+
+  /** a still copy of the panel as it stands, over it: what slides away while the real panel comes in on the other side.
+   *  Its frame carries the mode it was in (.showing or not), so it keeps that mode's look while the app changes. No ids */
+  panel_copy() {
+    const panel = $(".panel"), r = panel.getBoundingClientRect(), copy = panel.cloneNode(true), showing = $("#app").classList.contains("showing");
+    copy.querySelectorAll("[id]").forEach((e) => e.removeAttribute("id")); copy.removeAttribute("id");
+    Object.assign(copy.style, { width: "100%", height: "100%", translate: "none" });
+    const frame = el("div", { className: "panelcopy" + (showing ? " showing" : "") }, copy);
+    Object.assign(frame.style, { left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px", background: showing ? "" : getComputedStyle(document.body).backgroundColor });
+    document.body.append(frame);
+    return frame;
+  }
+
+  /** the drawing's layers between the modes: `k` how far into show mode (0 the dial side, 1 show mode) — the watch over
+   *  the dial, fading in; the dial's own drawing, its case and its overlays under it until the watch is whole */
+  layers(on, k) {
+    this.watch_g.style.opacity = k < 1 ? String(k) : "";
+    const dial_side = k < 1 ? "" : "none";
+    this.dial.style.display = dial_side; this.over.style.display = on || k > 0 ? "none" : ""; this.bezel_g.style.display = dial_side;
+    if (k === 0) { this.watch_g.replaceChildren(); this.watch_key = null; }
+  }
+
+  /** into show mode or out, in one movement (Okay, 23 Oct 2026: "The watch knows its final size and destination, so no
+   *  interim zoom size changes. one zoom and done. Right column moves in when the left has left halfway. smoother,
+   *  slower. one fail swoop"): the panel as it was — a still copy of it — slides away; when it is halfway gone the
+   *  panel of the other mode starts in from its own side; all the while the drawing moves and zooms once, from where it
+   *  stands to where it ends, eased, the watch fading in over the dial (or out). Both slides take --show-time */
+  swoop(on, leaving) {
+    const app = $("#app"), T = parseFloat(getComputedStyle(app).getPropertyValue("--show-time")) || 1000, ease = getComputedStyle(app).getPropertyValue("--view-ease").trim() || "ease-in-out";
+    const svg0 = this.svg.getBoundingClientRect();
+    const from = { x: svg0.left + this.c[0], y: svg0.top + this.c[1], z: this.z };      // where the drawing stands, on the screen
+    if (leaving) {      // the copy slides away to its own side, then goes
+      const r = leaving.getBoundingClientRect();
+      leaving.animate([{ transform: "translateX(0)" }, { transform: `translateX(${on ? -r.right : innerWidth - r.left}px)` }], { duration: T, easing: ease, fill: "forwards" }).finished.then(() => leaving.remove());
+    }
+    // the other mode's panel, waiting off its side: no slide to get there
+    app.classList.add("snap", "away"); app.classList.toggle("showing", on);
+    { const r = this.svg.getBoundingClientRect(); this.c = [from.x - r.left, from.y - r.top]; this.place(); }      // the canvas changed its edges: the drawing stays where it stood on the screen
+    this.show_section(); this.watch_key = null; this.fitted = false; this.sliding = true;
+    if (!on) this.tint_panel();      // the dial side's own colours again (the still copy keeps the tint as it slides away)
+    if (on) this.layers(true, 0.001); else this.layers(false, 1 - 0.001);
+    this.render();
+    requestAnimationFrame(() => {      // the new mode drawn once: now its end is known
+      app.classList.remove("snap");
+      const svg1 = this.svg.getBoundingClientRect(), pw = $(".panel").getBoundingClientRect().width, w = svg1.width - pw, left = on ? svg1.left : svg1.left + pw;
+      const to = { x: left + w / 2, y: svg1.top + svg1.height / 2, z: on ? SHOW.fit_zoom(this, w, svg1.height) : Math.min(w, svg1.height) / G.page_mm(this.S) };
+      setTimeout(() => { app.classList.add("swooping"); this.dial_alone(false); this.fitted = false; }, T / 2);      // in when the other is halfway out; the swoop, not a resize, moves the drawing
+      const t0 = performance.now(), D = T * 1.5, io = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+      const step = (now) => {
+        const t = Math.min(1, (now - t0) / D), e = io(t), r = this.svg.getBoundingClientRect();
+        this.z = from.z * (to.z / from.z) ** e;      // one zoom: the scale eased on its logarithm, so it grows evenly
+        this.c = [from.x + (to.x - from.x) * e - r.left, from.y + (to.y - from.y) * e - r.top];
+        this.place();
+        this.layers(on, on ? Math.min(1, Math.max(0.001, t / 0.4)) : Math.max(0, 1 - t / 0.4));      // the watch fades in over the first part (out, going back)
+        if (t < 1) return requestAnimationFrame(step);
+        app.classList.remove("swooping"); this.sliding = false; this.fit(); this.render();
+      };
+      requestAnimationFrame(step);
+    });
+  }
+
   /** the panel's colours from the backdrop in show mode (show.js tint_panel; #505) */
   tint_panel() {
     const key = this.S.ui_show ? this.S.c_backdrop.join(",") + (this.S.ui_grey_panel ? " grey" : "") : "";
     if (key === this.tint_key) return;
     this.tint_key = key;
     SHOW.tint_panel($(".panel"), this.S.ui_show, this.S.c_backdrop, this.S.ui_grey_panel);
+    for (const [to, from] of [["--iris-fill", "--column-solid"], ["--iris-ink", "--ink"]]) {      // the iris switch in the column's colours while in show mode (Okay, 23 Oct 2026)
+      if (this.S.ui_show) this.iris_box.style.setProperty(to, $(".panel").style.getPropertyValue(from)); else this.iris_box.style.removeProperty(to);
+    }
     if (this.grey_button) { const grey = Boolean(this.S.ui_grey_panel); this.grey_button.setAttribute("aria-pressed", String(grey)); this.grey_button.title = this.grey_button.ariaLabel = grey ? "The panel in the backdrop's colour" : "The panel in greys"; }
   }
   row_export_watch_png(wrap) {
@@ -1798,7 +1856,7 @@ class DialTool {
     setTimeout(() => { if (this.sliding) { this.sliding = false; this.render(); } }, 1200);      // no slide (less motion asked, nothing to move): don't wait for it
     app.addEventListener("transitionend", this.view_end);
     app.classList.toggle("away", on);
-    if (app.classList.contains("showing")) { const follow = () => { if (!this.sliding) return; this.fit(); requestAnimationFrame(follow); }; requestAnimationFrame(follow); }      // show mode: the canvas keeps its size while the column slides over it, so the watch is fitted frame by frame
+    if (app.classList.contains("showing") && !app.classList.contains("swooping")) { const follow = () => { if (!this.sliding) return; this.fit(); requestAnimationFrame(follow); }; requestAnimationFrame(follow); }      // show mode: the canvas keeps its size while the column slides over it, so the watch is fitted frame by frame (in a swoop, the swoop moves it)
   }
 
   // ── units ────────────────────────────────────────────────
@@ -1855,7 +1913,13 @@ class DialTool {
       list.setAttribute("role", "listbox");
       document.body.append(list);
       this.menus_away = (e) => { if (!list.contains(e.target) && e.target !== this.menus_for) this.menu_list_close(); };
-      list.onkeydown = (e) => { if (e.key === "Escape") { e.preventDefault(); const s = this.menus_for; this.menu_list_close(); if (s) s.focus(); } };
+      list.onkeydown = (e) => {
+        if (e.key === "Escape") { e.preventDefault(); const s = this.menus_for; this.menu_list_close(); if (s) s.focus(); }
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {      // the arrows walk the list, as the browser's did
+          e.preventDefault(); const items = [...list.children], at = items.indexOf(document.activeElement);
+          items[clamp(at + (e.key === "ArrowDown" ? 1 : -1), 0, items.length - 1)]?.focus();
+        }
+      };
     }
     if (!list.hidden && this.menus_for === select) return this.menu_list_close();
     this.menus_for = select;
@@ -5857,6 +5921,7 @@ class DialTool {
       e.preventDefault();
       this.hover(null);
       if (e.ctrlKey || e.metaKey) this.zoom(Math.exp(-e.deltaY * 0.01), at(e));      // pinch, or ⌘ / ctrl + scroll
+      else if (this.S.ui_show) this.zoom(Math.exp(-e.deltaY * 0.002), at(e));      // show mode: the wheel zooms, no key needed; a right-button drag moves (Okay, 23 Oct 2026)
       else { this.fitted = false; this.c = [this.c[0] - e.deltaX, this.c[1] - e.deltaY]; this.place(); }
     }, { passive: false });
     // fingers and the mouse, each tracked by its id (#152: one shared `down` let a second finger reset the pan and
@@ -5871,7 +5936,8 @@ class DialTool {
       else if (pts.size >= 2) down = { ...pair(), moved: true };      // a pinch is never a click
       else down = null;
     };
-    this.svg.addEventListener("pointerdown", (e) => { pts.set(e.pointerId, at(e)); this.svg.setPointerCapture(e.pointerId); if (pts.size === 1) down = null; restart(); if (pts.size === 1 && this.S.ui_show) { down.moved = true; this.sun_at(at(e)); } });      // show mode: one finger or the pointer is the sun, never a click
+    this.svg.addEventListener("pointerdown", (e) => { pts.set(e.pointerId, at(e)); this.svg.setPointerCapture(e.pointerId); if (pts.size === 1) down = null; restart(); if (pts.size === 1 && this.S.ui_show) { down.moved = true; down.pan = e.button === 2; if (!down.pan) this.sun_at(at(e)); } });      // show mode: one finger or the pointer is the sun, never a click; the right button moves the watch
+    this.svg.addEventListener("contextmenu", (e) => { if (this.S.ui_show) e.preventDefault(); });
     this.svg.addEventListener("pointermove", (e) => {
       if (!pts.has(e.pointerId)) return e.pointerType === "mouse" ? this.hover(at(e), document.elementFromPoint(e.clientX, e.clientY)) : null;
       pts.set(e.pointerId, at(e));
@@ -5884,6 +5950,7 @@ class DialTool {
         return;
       }
       const p = at(e);
+      if (this.S.ui_show && down.pan) { this.fitted = false; this.c = [down.c[0] + p[0] - down.p[0], down.c[1] + p[1] - down.p[1]]; return this.place(); }
       if (this.S.ui_show) return this.sun_at(p);
       if (Math.hypot(p[0] - down.p[0], p[1] - down.p[1]) > 4) down.moved = true;
       // a finger alone doesn't move the dial: two do, with the pinch (Okay, 18 Oct 2026, notes 2: "on ipad and all touch
@@ -6292,7 +6359,7 @@ class DialTool {
       const all = [...HISTORY.past, HISTORY.now, ...HISTORY.future.slice().reverse()], here = HISTORY.past.length, SHOWN = 20;
       const line = (i) => {      // the step from state i-1 to state i; going to it is |here - i| undos or redos
         const done = i <= here, way = done ? -1 : 1, times = done ? here - i + 1 : i - here;
-        const b = el("button", { type: "button", className: `step${done ? "" : " ahead"}`, textContent: step_name(all[i - 1], all[i]),
+        const b = el("button", { type: "button", className: `histitem${done ? "" : " ahead"}`, textContent: step_name(all[i - 1], all[i]),
           title: done ? `Undo this and the ${times - 1 || "no"} after it` : `Redo up to this`, onclick: () => { for (let k = 0; k < times; k++) this.undo(way); open(true); } });
         return b;
       };

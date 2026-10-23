@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.91.12 · built 2026-10-23 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.91.13 · built 2026-10-23 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -102,6 +102,7 @@
     --bio-width: calc(var(--panel) - 2 * var(--margin));      /* the bio under Okay's mark: as wide as the panel's lines */
     /* the dial alone (the eye switch, Okay, 15 Oct 2026, 04:02): the panel slides away and the dial grows to fit, eased */
     --panel-w: calc(var(--panel) + var(--hair));   /* the panel's column: its lines and its right hairline */
+    --show-time: 1000ms;                           /* into show mode and out (swoop() in app.js): each panel's slide; the second starts when the first is halfway, the drawing moves over one and a half of it (Okay, 23 Oct 2026: "smoother, slower") */
     --view-time: 700ms; --view-ease: cubic-bezier(0.65, 0, 0.35, 1);      /* slow out, slow in */
     --iris-time: 250ms;                            /* the iris switch's words sliding out; Now shrinking into its undo sign */
     --iris-words: 160px;                           /* room enough for ACTIVATE SHOWCASE */
@@ -280,9 +281,11 @@
   body { background: var(--paper); color: var(--ink); overflow: hidden; }
   #app { display: grid; grid-template-columns: calc(var(--panel-w) * (1 - var(--away))) 1fr; grid-template-rows: 1fr var(--bar-height); height: 100%;
     transition: --away var(--view-time) var(--view-ease); }
-  #app.snap { transition: none; }      /* no slide: a session that opens in show mode (show_mode() in app.js) */
+  #app.snap { transition: none; }
+  #app.swooping { transition-duration: var(--show-time); }      /* into show mode and out: the slide slower (swoop() in app.js) */      /* no slide: a session that opens in show mode (show_mode() in app.js) */
   #app.away { --away: 1; }
-  #app.showing { --panel-w: var(--show-panel-w); grid-template-columns: 1fr calc(var(--panel-w) * (1 - var(--away))); }      /* show mode: the panel's column on the right (show_mode() in app.js, #509) */
+  .showing { --panel-w: var(--show-panel-w); }
+  #app.showing { grid-template-columns: 1fr calc(var(--panel-w) * (1 - var(--away))); }      /* show mode: the panel's column on the right (show_mode() in app.js, #509) */
   @media (prefers-reduced-motion: reduce) { #app { transition: none; } }
   .starting { padding: var(--margin); }
   h1 { font-size: var(--t-l); font-weight: 600; letter-spacing: -0.005em; margin: 0; }
@@ -324,8 +327,8 @@
   .pillswitch > button { height: calc(var(--control) - 2 * var(--u1) - 2 * var(--hair)); padding: 0 var(--u4); border-radius: var(--round-pill); color: var(--grey); font-size: var(--t-s); }
   .pillswitch > button:hover:not(.on) { color: var(--ink); }
   .pillswitch.many { flex-wrap: wrap; }
-  #app.showing .pillswitch { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }      /* show mode's column is narrower: a long pill scrolls sideways on its line, so no row grows (Okay, 22 Oct 2026, 21:05: "Scroll sideways it is"; the Show Case's rule) */
-  #app.showing .pillswitch::-webkit-scrollbar { display: none; }
+  .showing .pillswitch { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }      /* show mode's column is narrower: a long pill scrolls sideways on its line, so no row grows (Okay, 22 Oct 2026, 21:05: "Scroll sideways it is"; the Show Case's rule) */
+  .showing .pillswitch::-webkit-scrollbar { display: none; }
   .steps { width: 100%; }
   .step, .segs > button { flex: 1; border-color: var(--rule); }
   .segs > button { padding: 0 var(--unit); }
@@ -439,28 +442,29 @@
   /* the dial alone (Okay, 15 Oct 2026, 04:02): the panel keeps its width and slides left as far as its column closes,
      so it leaves without its lines reflowing; above the preview (z-index) so the mast, which slides back by as much
      and so stays where it was, is over the backdrop once the panel is gone */
-  .sheetgrip { display: none; }      /* a phone's drawer gripper (8-narrow.css); a wider screen has no drawer */
+  .sheetgrip { display: none; }
+  .panelcopy { position: fixed; z-index: 7; pointer-events: none; }      /* the panel's still copy sliding away while the modes change (panel_copy() in app.js) */      /* a phone's drawer gripper (8-narrow.css); a wider screen has no drawer */
   .panel { position: relative; z-index: 5; width: var(--panel-w); translate: calc(-1 * var(--panel-w) * var(--away)) 0; }
   .mast { display: flex; align-items: center; translate: calc(var(--panel-w) * var(--away)) 0; z-index: 6; }
   /* show mode (#509; Okay, 22 Oct 2026: "left side slides out, right side slides in"): the same panel on the right, sliding
      away to the right; its colours from the backdrop (the tokens set on it by show.js tint_panel, #505) */
-  #app.showing .panel { grid-area: 1 / 2; translate: calc(var(--panel-w) * var(--away)) 0; background: var(--column, var(--paper)); color: var(--ink);
+  .showing .panel { grid-area: 1 / 2; translate: calc(var(--panel-w) * var(--away)) 0; background: var(--column, var(--paper)); color: var(--ink);
     --paper: var(--night); --scroll: transparent; --rule-light: var(--rule); --ground: var(--night-field); --row-rule: var(--uiblack, var(--rule)); --line-on-grey: var(--uiblack, var(--rule)); --line-on-paper: var(--uiblack, var(--rule));
     --well: var(--night-field, var(--ground)); --inset: var(--night-field, var(--ground)); --surface: transparent; }      /* the tokens that are read at :root are set again here, so the tint reaches them */
-  #app.showing .form { --surface: transparent; --well: var(--night-field, var(--ground)); --inset: var(--night-field, var(--ground)); }
-  #app.showing .panel { --col: var(--show-col); --margin: var(--show-margin); scrollbar-width: none; }      /* narrower (1-tokens.css); its scrollbar takes no width (it narrowed the rows on a Mac that shows them) */
-  #app.showing .panel::-webkit-scrollbar { display: none; }
-  #app.showing .form::-webkit-scrollbar { display: none; }
-  #app.showing .mast { translate: 0; }
-  #app.showing .panel > header { height: var(--show-header); }      /* the Show Case's title line: Dial Tool Show Case, its version, Help and the round swatch — nothing else (Okay, 23 Oct 2026) */
-  #app.showing .title h1 { white-space: nowrap; }
-  #app.showing .title h1::after { content: " Show Case"; font-weight: 400; }      /* Dial Tool bold, Show Case not (Okay, 21 Oct 2026, 01:23) */
-  #app.showing .panel > header :is(.gallerypill, .unit, .title > .quiet:not(.help)) { display: none; }      /* …no version either: hidden from users (Okay, 23 Oct 2026) */
-  #app.showing .logo { pointer-events: none; cursor: default; }      /* the mark is only a mark here: no bio (Okay, 23 Oct 2026) */
+  .showing .form { --surface: transparent; --well: var(--night-field, var(--ground)); --inset: var(--night-field, var(--ground)); }
+  .showing .panel { --col: var(--show-col); --margin: var(--show-margin); scrollbar-width: none; }      /* narrower (1-tokens.css); its scrollbar takes no width (it narrowed the rows on a Mac that shows them) */
+  .showing .panel::-webkit-scrollbar { display: none; }
+  .showing .form::-webkit-scrollbar { display: none; }
+  .showing .mast { translate: 0; }
+  .showing .panel > header { height: var(--show-header); }      /* the Show Case's title line: Dial Tool Show Case, its version, Help and the round swatch — nothing else (Okay, 23 Oct 2026) */
+  .showing .title h1 { white-space: nowrap; }
+  .showing .title h1::after { content: " Show Case"; font-weight: 400; }      /* Dial Tool bold, Show Case not (Okay, 21 Oct 2026, 01:23) */
+  .showing .panel > header :is(.gallerypill, .unit, .title > .quiet:not(.help)) { display: none; }      /* …no version either: hidden from users (Okay, 23 Oct 2026) */
+  .showing .logo { pointer-events: none; cursor: default; }      /* the mark is only a mark here: no bio (Okay, 23 Oct 2026) */
   .greyswatch { display: none; }      /* show mode's round swatch (grey_swatch() in app.js): the panel's other look, in greys or in the backdrop's colour; dial side: none (R16) */
-  #app.showing .greyswatch { display: block; flex: none; margin-left: auto; width: var(--bare-dot); height: var(--bare-dot); padding: 0; border: var(--hair) solid var(--rule); border-radius: 50%; background: var(--swatch); cursor: pointer; }
-  #app.showing main { grid-area: 1 / 1 / 2 / 3; }      /* the canvas runs on under the column, so the backdrop and the watch show through it (Okay, 23 Oct 2026: "Transparency is gone, bring that back"); the drawing is centred in the part left of it (size() in app.js) */
-  #app.showing .panel > :is(header, .tabs, .pinned) { background: var(--column-top, var(--paper)); }      /* the top — title, tabs and the pinned lines — a tenth lighter than the column, as the paper stands over the scrolling grey (Okay, 21 Oct 2026, 01:43) */      /* its translate makes it a stacking context, so the bio's z-index counts only inside it: the mast itself stands over the panel's rows, or a later stepper draws over the open bio (Okay, 15 Oct 2026, 10:45) */
+  .showing .greyswatch { display: block; flex: none; margin-left: auto; width: var(--bare-dot); height: var(--bare-dot); padding: 0; border: var(--hair) solid var(--rule); border-radius: 50%; background: var(--swatch); cursor: pointer; }
+  .showing main { grid-area: 1 / 1 / 2 / 3; }      /* the canvas runs on under the column, so the backdrop and the watch show through it (Okay, 23 Oct 2026: "Transparency is gone, bring that back"); the drawing is centred in the part left of it (size() in app.js) */
+  .showing .panel > :is(header, .tabs, .pinned) { background: var(--column-top, var(--paper)); }      /* the top — title, tabs and the pinned lines — a tenth lighter than the column, as the paper stands over the scrolling grey (Okay, 21 Oct 2026, 01:43) */      /* its translate makes it a stacking context, so the bio's z-index counts only inside it: the mast itself stands over the panel's rows, or a later stepper draws over the open bio (Okay, 15 Oct 2026, 10:45) */
   /* the mast on the backdrop (the dial alone): black or white like the switches, the version a little quieter. Its
      colour follows the slide: from paper's to the backdrop's while the panel's edge sweeps over it (--away 0.55 to
      0.95), both ways, so it shows on whichever is under it; a backdrop changed while away turns it at once */
@@ -515,14 +519,14 @@
 
   /* sections: a sign inside a ring, its name under it */
   .tabs { display: grid; grid-template-columns: repeat(5, 1fr); margin: 0 var(--margin); padding: var(--u4) 0 0; border-top: var(--hair) solid var(--rule); }
-  #app.showing .tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; padding-left: var(--margin); padding-right: var(--margin); border-top: 0; background: linear-gradient(var(--uiblack, var(--rule)) 0 0) 50% 0 / calc(100% - 2 * var(--margin)) var(--hair) no-repeat, var(--column-top, var(--paper)); }      /* show mode's four tabs, equal cells; the band's colour runs to the column's edges (the margins are padding here), its hairline inset by the margin as every line in the column (Okay, 21 Oct 2026, 01:53) */
+  .showing .tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; padding-left: var(--margin); padding-right: var(--margin); border-top: 0; background: linear-gradient(var(--uiblack, var(--rule)) 0 0) 50% 0 / calc(100% - 2 * var(--margin)) var(--hair) no-repeat, var(--column-top, var(--paper)); }      /* show mode's four tabs, equal cells; the band's colour runs to the column's edges (the margins are padding here), its hairline inset by the margin as every line in the column (Okay, 21 Oct 2026, 01:53) */
   .tabs button { display: grid; justify-items: center; gap: var(--unit); padding: var(--unit) 0 var(--u4); color: var(--grey); }
   .tabs button:hover { color: var(--ink); }
   .tabs button:focus-visible { outline-offset: calc(-1 * var(--thick)); }
   .tabs button.on { color: var(--ink); font-weight: 600; box-shadow: inset 0 calc(-1 * var(--triple)) 0 var(--ink); }
   .tabs button.on .ring { fill: var(--ink); stroke: var(--ink); }
   .tabs button.on .sign { color: var(--paper); }
-  #app.showing .tabs button.on .sign { color: var(--column-solid); }      /* the chosen tab's sign in the column's colour, as the dial side's is in its paper (Okay, 23 Oct 2026: "They were bg color") */
+  .showing .tabs button.on .sign { color: var(--column-solid); }      /* the chosen tab's sign in the column's colour, as the dial side's is in its paper (Okay, 23 Oct 2026: "They were bg color") */
   .tabs button.on .hub { fill: currentColor; }      /* Dial chosen: its centre hole a dot of paper (Okay's drawing, 14 Oct 2026) */
 
   .pinned, .form { padding: 0 var(--margin); }
@@ -574,7 +578,6 @@
   .pane.has > .fold .summary, .pane.tooled:not(.folded) > .fold .summary { visibility: hidden; }
   .pane.tooled > .headtools { justify-self: end; }      /* the ring list's tools: at the right; folded, the summary stands there instead */
   .pane.tooled.folded > .headtools { display: none; }
-  #app.showing .pane > .headcontrol.check { grid-column: 2 / -1; justify-self: end; width: calc(var(--box-value) + var(--box-steps)); }      /* show mode: a tick on its heading line (Flare, Effects) in the number boxes' column, as the ticks under it */
   .pane > .headcontrol.reset { justify-self: start; }      /* Reset's button: on its heading line where its warning starts, the controls' column, and only while the pane is open (Okay, 16 Oct 2026, #269; flush left with the warning since 4.44.2: "reset button flush left with explaner text") */
   .pane.folded > .headcontrol.reset { display: none; }
   .pane > .headcontrol.copylink { justify-self: end; display: inline-flex; align-items: center; gap: var(--u1); }      /* Copy link with its sign, flush right on its heading line, open or folded (Okay, 16 Oct 2026, #277) */
@@ -762,17 +765,13 @@
   /* show mode: a number's slider on a line of its own under its name and box, as wide as the row — the column is narrow,
      and in the row the slider was left too short (Okay, 23 Oct 2026: "Why are these short?"; the Show Case's rule,
      21 Oct 2026, 23:46: the pair reads as one row, no line between) */
-  #app.showing .body .row.num:not(.side) { grid-template-rows: var(--line) var(--line); }
-  #app.showing .body .row.num:not(.side) > :not(input[type="range"]) { grid-row: 1; }
-  #app.showing .body .row.num:not(.side) > input[type="range"] { grid-column: 1 / -1; grid-row: 2; }
+  .showing .body .row.num:not(.side) { grid-template-rows: var(--line) var(--line); }
+  .showing .body .row.num:not(.side) > :not(input[type="range"]) { grid-row: 1; }
+  .showing .body .row.num:not(.side) > input[type="range"] { grid-column: 1 / -1; grid-row: 2; }
 
-  /* show mode: the adjustables in one column, the number boxes' (Okay, 23 Oct 2026: "align adjustables together in the
-     same column"; the pills stay where they are: "pills unaffected"); a tick and a colour chip take a number box's place,
-     on the same grid; the notes the whole width ("explainers span the whole width") */
-  #app.showing .body .row:is(.chk, .col):not(.side) { grid-template-columns: var(--num-columns); column-gap: 0; }
-  #app.showing .body .row:is(.chk, .col):not(.side) > :first-child:not(:last-child) { grid-column: 1 / 4; }
-  #app.showing .body .row:is(.chk, .col):not(.side) > :last-child { grid-column: 7 / -1; justify-self: start; }
-  #app.showing .body .row.note > .quiet { grid-column: 1 / -1; }
+  /* show mode: the notes the whole width (Okay, 23 Oct 2026: "explainers span the whole width"); ticks, colour chips and
+     pills stand in the first column after the names, as on the dial side ("Color swatches and pills go back") */
+  .showing .body .row.note > .quiet { grid-column: 1 / -1; }
 
 /* a hand's pane: its detail box, the line of shapes, side rows with their number box */
 @layer panel {
@@ -1349,7 +1348,6 @@
      Guides (and Shadows) on: its word is whole, in that colour, never bolder (Okay, 14 Oct 2026, 23:05; bold
      before). Off: faint, and Guides' sign is struck through. One weight, so the box is the same size on and off. */
   main { --on-canvas: var(--ink); }
-  .bezel { color: var(--on-canvas); opacity: var(--faint); }      /* the case's silhouette on the dial side: one line in the canvas's ink, faint (Okay, 23 Oct 2026: "very faint lines") */
   main.dark { --on-canvas: var(--white); }
   /* the dial alone: Backdrop and Shadows ride left with the preview's edge and stop short, on the mark's line (the margin) */
   main { --stop-short: max(var(--canvas-inset), calc(var(--margin) - var(--panel-w) * (1 - var(--away)))); }
@@ -1379,7 +1377,7 @@
   .handles.dragging .handle { cursor: grabbing; }
   /* Tiny Preview (#337): its button where Guides stood, a plain eye; the dial at its own size in a little window over
      everything, the backdrop round it, a hard shadow, dragged anywhere; the eye at its top left puts it away */
-  .tinyopen { position: absolute; z-index: 3; right: var(--canvas-inset); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); width: var(--control-large); border-radius: var(--round-switch); }      /* over the dial-alone eye, a unit between (4.82; Okay, 19 Oct 2026: "Move tiny preview button below, stacked on top of preview. Showcase not moved"; top right, where Guides stood, until 4.81) */
+  .tinyopen { position: absolute; z-index: 3; right: var(--canvas-inset); bottom: calc(var(--canvas-inset) + 2 * (var(--control-large) + var(--unit))); width: var(--control-large); border-radius: var(--round-switch); }      /* over the dial-alone eye, a unit between (4.82; Okay, 19 Oct 2026: "Move tiny preview button below, stacked on top of preview. Showcase not moved"; top right, where Guides stood, until 4.81) */
   .tinywin { position: fixed; z-index: 60; overflow: hidden; border: var(--thick) solid var(--ink); border-radius: var(--tiny-round); box-shadow: var(--tiny-cast) var(--tiny-cast) 0 var(--tiny-shade); cursor: grab; touch-action: none; user-select: none; }
   .tinywin.held { cursor: grabbing; }
   .tinyface > svg { display: block; }
@@ -1400,26 +1398,30 @@
   .historymore[aria-expanded="true"] svg { rotate: 180deg; }
   /* the steps, named (#172): the guides' list's make (.night), under undo; a step a line, the newest first; the ones redo
      would bring back faint, over a "Now" line. Function first: its look is to be designed with Okay */
-  .historylist { position: absolute; z-index: 5; top: calc(100% + var(--unit)); left: 0; display: grid; min-width: calc(6 * var(--control-large)); max-height: 60vh; overflow-y: auto; padding: var(--unit) 0;
-    border-radius: var(--round-switch); background: var(--ink); color: var(--white); }
-  .historylist > .step { padding: var(--u1) var(--pop-pad); background: none; color: inherit; text-align: left; white-space: nowrap; }
-  .historylist > .step:hover { background: var(--grey); }
-  .historylist > .step.ahead { opacity: var(--faint); }
-  .historylist > .nowline { padding: var(--u1) var(--pop-pad); border-block: var(--hair) solid var(--grey); color: var(--grey); }
-  .historylist > .quiet { margin: var(--u1) var(--pop-pad); color: var(--grey); }
+  /* the undo history (Okay, 23 Oct 2026: "no thinlines no round/sharp clash, simple rounded corner black popup, 1px line
+     (spanning the margins as well) between items"): one rounded night part; its lines plain words, each under a hairline
+     across its whole width */
+  .historylist { position: absolute; z-index: 5; top: calc(100% + var(--unit)); left: 0; display: grid; min-width: calc(6 * var(--control-large)); max-height: 60vh; overflow-y: auto; padding: 0;
+    border-radius: var(--round-switch); background: var(--night); color: var(--white); }
+  .historylist > * { margin: 0; padding: var(--u2) var(--pop-pad); text-align: left; white-space: nowrap; }
+  .historylist > * + * { border-top: var(--hair) solid var(--night-rule); }
+  .historylist > .histitem { border-radius: 0; background: none; color: inherit; }
+  .historylist > .histitem:hover { background: var(--night-hover); }
+  .historylist > .histitem.ahead { opacity: var(--faint); }
+  .historylist > :is(.nowline, .quiet) { color: var(--grey); }
   /* what stands on the preview is faint, so the dial is what one sees. Three states, all by how
      much shows (opacity; the line by the same share of its colour), so they hold on any backdrop:
        can be pressed    line and what is in it at --faint; whole under a pointer, with the keyboard on it, or open
        can't be pressed  (no step to undo) its line as faint as the others', what is in it at half of --faint, nothing under the pointer
        on                (Guides) its word alone is whole; its line stays faint until the pointer is on it */
   main { --line-faint: color-mix(in srgb, var(--on-canvas) calc(var(--faint) * 100%), transparent); }
-  .onview > * { opacity: var(--faint); }
+  .onview > :not(select) { opacity: var(--faint); }      /* a switch's parts; the list over a menu switch (Case) stays unseen, always (Okay, 23 Oct 2026: "system dropdown is no more") */
   .onview:is(:focus-visible, [aria-expanded="true"]) { border-color: var(--on-canvas); }
-  .onview:is(:focus-visible, [aria-expanded="true"]) > * { opacity: 1; }
+  .onview:is(:focus-visible, [aria-expanded="true"]) > :not(select) { opacity: 1; }
   /* only where a pointer can hover: under a finger "hover" stays on after a tap, and the switch just pressed would stay whole */
   @media (hover: hover) {
     .onview:hover { border-color: var(--on-canvas); }
-    .onview:hover > * { opacity: 1; }
+    .onview:hover > :not(select) { opacity: 1; }
   }
   .guidesbox[aria-pressed="true"] > svg { opacity: 1; }      /* on: its sign whole, in black or white (Okay, 15 Oct 2026, 02:06: "when on the icon is black too. Same goes for shadows"); its word stays dim but under the pointer (20 Oct 2026, 02:37: "when on, only the icon lights up. Labels stay dim at all times, except hover") */
   /* Versions, under undo (#435): a switch with its sign and word, as Backdrop's; its list drops under it — the panel's
@@ -1449,7 +1451,7 @@
   .tinyopen .x { display: none; }      /* its sign is the showcase's of 4.85, whose X is the showcase's way out */
   .casebox .sign { width: auto; }      /* its drawing's own 18, not a sign's 26 (4.82: four points stood empty either side of it) */
   /* the eye switch, alone at the preview's bottom right, over the zoom in the bar (Okay, 15 Oct 2026, 03:41) */
-  .eyes { position: absolute; z-index: 3; right: var(--canvas-inset); bottom: var(--canvas-inset); display: flex; align-items: flex-end; gap: var(--unit); }      /* the switches' gap between them (05:43: "why these two touch?"); the showcase's iris left of the eye, one unit apart (Okay, 18 Oct 2026, notes 2: "Showcase button back to the left of the preview button"; over it from 4.42.4 to 4.52.1, #280) */
+  .eyes { position: absolute; z-index: 3; right: var(--canvas-inset); bottom: var(--canvas-inset); display: flex; flex-direction: column; align-items: flex-end; gap: var(--unit); }      /* the iris above the eye, in both modes (Okay, 23 Oct 2026: "Stack the preview buttons on canvas bottom right. at all times") */      /* the switches' gap between them (05:43: "why these two touch?"); the showcase's iris left of the eye, one unit apart (Okay, 18 Oct 2026, notes 2: "Showcase button back to the left of the preview button"; over it from 4.42.4 to 4.52.1, #280) */
   .eyebox { width: var(--control-large); padding: 0; overflow: hidden; border-radius: var(--round-switch); }      /* its sign fills the inside; the lashes run out and the box cuts them */
   .eyebox svg { display: block; flex: none; }
   .eyebox[aria-pressed="true"] > * { opacity: 1; }
@@ -1585,10 +1587,14 @@
   .tip svg .c { fill: var(--ink); }
   /* ── show mode (the iris switch; build list #509, 22 Oct 2026) ── the panel moves to the right (4a-panel.css); on the
      canvas, what the show tabs hold is off (R16) */
-  #app.showing :is(.guides, .shadows, .xraybox, .casebox, .tinyopen) { display: none; }      /* show mode: Guides and Shadows are the dial side's (Okay, 23 Oct 2026: "Guides? Completely nonexistent here. Remove them", "The shadows … another realm"); the watch's light is on the Light tab */
-  #app.showing main { --covered: calc(var(--panel-w) * (1 - var(--away))); }      /* how much of the canvas the column lies over */
-  #app.showing :is(.corner, .eyes) { right: calc(var(--canvas-inset) + var(--covered)); }
-  #app.showing .undos { left: var(--canvas-inset); }      /* undo · redo · Versions at the canvas's top left (Okay, 23 Oct 2026: "bring them back"); the dial side's stop short of the title, which here is on the right */      /* show mode: what the show tabs hold, and the guides, are off the canvas (R16); the case is a row on the Watch tab */
+  .showing :is(.guides, .shadows, .xraybox, .casebox, .tinyopen) { display: none; }      /* show mode: Guides and Shadows are the dial side's (Okay, 23 Oct 2026: "Guides? Completely nonexistent here. Remove them", "The shadows … another realm"); the watch's light is on the Light tab */
+  .showing main { --covered: calc(var(--panel-w) * (1 - var(--away))); }      /* how much of the canvas the column lies over */
+  .showing :is(.corner, .eyes) { right: calc(var(--canvas-inset) + var(--covered)); }
+  .showing .backdrops { bottom: var(--canvas-inset); }      /* Shadows' slot under it is empty here: Backdrop takes it (Okay, 23 Oct 2026: "move it one slot down") */
+  /* the iris switch in show mode, lit in the column's own colours: its fill, the panel's white for its sign (tint_panel() in app.js sets them) */
+  .showing .irisbox { border-color: var(--iris-fill); background: var(--iris-fill); color: var(--iris-ink); }
+  .showing .irisbox > * { opacity: 1; }
+  .showing .undos { left: var(--canvas-inset); }      /* undo · redo · Versions at the canvas's top left (Okay, 23 Oct 2026: "bring them back"); the dial side's stop short of the title, which here is on the right */      /* show mode: what the show tabs hold, and the guides, are off the canvas (R16); the case is a row on the Watch tab */
   /* the iris switch: the iris in a box; pressed, its words slide out to its left (ACTIVATE SHOWCASE), which alone go
      to show mode (04:59: "we need affordance"); in show mode an X, the way out */
   .irisbox { padding: 0; overflow: hidden; border-radius: var(--round-switch); }
@@ -1783,6 +1789,7 @@
     :root { --canvas-inset: var(--u5); --canvas-top: var(--canvas-inset); --margin: var(--u5); --gap: var(--u4); --col: calc((100vw - 2 * var(--margin) - var(--lead) - 5 * var(--gap)) / 6); }
     #app { grid-template-columns: 1fr; }
     .irisbox { display: none; }      /* show mode is for a Mac or an iPad (Okay, 22 Oct 2026; R16) */
+    .tinyopen { bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); }      /* no iris under it here: right over the eye */
     /* the dial alone on a phone: the preview's row grows over the panel's (the bar stays on top); nothing slides sideways */
     #app { grid-template-rows: var(--bar-h) calc(var(--preview-share) + (100% - var(--preview-share) - var(--bar-h)) * var(--away)) minmax(0, 1fr); }
     .panel, .mast { width: auto; translate: none; }
@@ -7140,7 +7147,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.91.12";
+var VERSION = "beta 4.91.13";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -9941,6 +9948,7 @@ var FLARE_KIND = "arc";
 var BRACELET_KIND = "vault";
 var DIAL_IN = true;
 var OUTLINE_ON = true;
+var NO_LINES = false;
 var REHAUT = 0.8;
 var SHD = 1;
 var INSERT = { top: "#2b2c30", bottom: "#2b2c30" };
@@ -10148,10 +10156,11 @@ function scaleCase(C2, k) {
   return out;
 }
 var LW = 0.22;
-var strokeInk = (d, sw2 = LW, extra = "") => `<path d="${d}" fill="none" stroke="${INK2}" stroke-width="${LW}" stroke-linejoin="round" stroke-linecap="round" ${extra}/>`;
+var strokeInk = (d, sw2 = LW, extra = "") => NO_LINES ? "" : `<path d="${d}" fill="none" stroke="${INK2}" stroke-width="${LW}" stroke-linejoin="round" stroke-linecap="round" ${extra}/>`;
 var stroke = (...a) => STYLE === "engineer" ? strokeInk(...a) : "";
 var shape2 = (d, c, sw2 = LW, inner = null) => {
   sw2 = LW;
+  if (NO_LINES) return c === "none" ? "" : `<path d="${d}" fill="${c}"/>`;
   if (!inner || c === "none") return `<path d="${d}" fill="${c}" stroke="${INK2}" stroke-width="${sw2}" stroke-linejoin="round"/>`;
   const id = "in" + clipN++;
   CLIPS.push(`<clipPath id="${id}"><path d="${d}"/></clipPath>`);
@@ -10506,7 +10515,7 @@ function leatherPiece(y0, y1, w0, w1, T, L, tip = 0, holes = []) {
     const xp = (y) => w0 / 2 + (w1 - w0) / 2 * ((y - y0) / (y1 - y0)), pad = (side) => P([[side * (xp(y0) - 1.6), y0], [side * (xp(y0) - 3.4), y0], [side * (xp(yEnd) - 3.4), yEnd], [side * (xp(yEnd) - 1.6), yEnd]]);
     html += flat(pad(1), tone(T, 0, 0.8, L)) + flat(pad(-1), tone(T, 180, 0.8, L));
   }
-  html += `<path d="${rrectD(-w0 / 2, y0, w0 / 2, y0 + s * 0.6, rw)}" fill="#000" fill-opacity="0.45"/>`;
+  html += `<path d="${rrectD(-w0 * 0.4, y0, w0 * 0.4, y0 + s * 0.6, 0.3)}" fill="#000" fill-opacity="0.45"/>`;
   const xs = (y) => w0 / 2 + (w1 - w0) / 2 * ((y - y0) / (y1 - y0)), k = 0.9, ys = y0 + s * 1.8;
   html += `<path d="M${f(-xs(ys) + k)} ${f(ys)}L${f(-xs(yEnd) + k)} ${f(yEnd)}M${f(xs(ys) - k)} ${f(ys)}L${f(xs(yEnd) - k)} ${f(yEnd)}" fill="none" stroke="#e9dccb" stroke-opacity="0.6" stroke-width="0.18" stroke-dasharray="0.7 0.6"/>`;
   for (const y of holes) {
@@ -10565,7 +10574,11 @@ function natoEngineer(C2, L, set, open, span) {
     return h2;
   }
   let h = run(-(half + 70), half + 165);
-  h += buckle(-(half + 70) - 6, w, C2.metal, L) + keeper(-(half + 58), w, C2.metal, L, 3.6);
+  {
+    const B = buckle(-(half + 70) + 1, w, C2.metal, L);
+    h += B.frame + B.tongue;
+  }
+  h += keeper(-(half + 58), w, C2.metal, L, 3.6);
   h += keeper(half + 12, w, C2.metal, L, 3.6) + keeper(half + 87, w, C2.metal, L, 3.6);
   for (let y = half + 165 - 25; y > half + 100; y -= 7) h += `<ellipse cx="0" cy="${f(y)}" rx="0.85" ry="0.65" fill="${INK2}" fill-opacity="0.75"/>`;
   return h;
@@ -10582,7 +10595,8 @@ function natoMiyazaki(C2, L, set, open, span) {
     h += keeper(half + 15, w, C2.metal, L, 3.6);
     for (let y = half + 14; y < span; y += 7) h += `<circle cx="0" cy="${f(-y)}" r="0.85" fill="#000" fill-opacity="0.45"/>`;
   } else {
-    h += buckle(y0 - 6, w, C2.metal, L) + keeper(-(half + 58), w, C2.metal, L, 3.6) + keeper(half + 12, w, C2.metal, L, 3.6) + keeper(half + 87, w, C2.metal, L, 3.6);
+    const B = buckle(y0 + 1, w, C2.metal, L);
+    h += B.frame + B.tongue + keeper(-(half + 58), w, C2.metal, L, 3.6) + keeper(half + 12, w, C2.metal, L, 3.6) + keeper(half + 87, w, C2.metal, L, 3.6);
     for (let y = y1 - 25, n = 0; n < 9; y -= 7, n++) h += `<circle cx="0" cy="${f(y)}" r="0.85" fill="#000" fill-opacity="0.45"/>`;
   }
   return h;
@@ -10591,7 +10605,7 @@ var natoSVG = (...a) => STYLE === "engineer" ? natoEngineer(...a) : natoMiyazaki
 function barrelEngineer(d, x0, y0, x1, y1, k, ramp, lv, flip) {
   const id = "vb" + VB_N++, h = y1 - y0, N = 9;
   CLIPS.push(`<clipPath id="${id}c"><path d="${d}"/></clipPath>`);
-  let s = `<g clip-path="url(#${id}c)">`;
+  let s = `<path d="${d}" fill="${ramp[Math.floor(ramp.length / 2)]}"/><g clip-path="url(#${id}c)">`;
   const dots = Array.from({ length: N }, (_, i2) => {
     const t = ((i2 + 0.5) / N * 2 - 1) * flip, b = Math.asin(Math.max(-1, Math.min(1, t * k)));
     return Math.max(0, Math.sin(b) * lv[1] + Math.cos(b) * lv[2]);
@@ -10611,7 +10625,7 @@ function barrelEngineer(d, x0, y0, x1, y1, k, ramp, lv, flip) {
 function barrelMiyazaki(d, x0, y0, x1, y1, k, ramp, lv, flip) {
   const id = "vb" + VB_N++, h = y1 - y0, N = 7;
   CLIPS.push(`<clipPath id="${id}c"><path d="${d}"/></clipPath>`);
-  let s = `<g clip-path="url(#${id}c)">`;
+  let s = `<path d="${d}" fill="${ramp[Math.floor(ramp.length / 2)]}"/><g clip-path="url(#${id}c)">`;
   for (let i2 = 0; i2 < N; i2++) {
     const t = ((i2 + 0.5) / N * 2 - 1) * flip, b = Math.asin(Math.max(-1, Math.min(1, t * k))), n = [0, Math.sin(b), Math.cos(b)];
     const dot = Math.max(0, n[1] * lv[1] + n[2] * lv[2]), q = Math.min(ramp.length - 2, Math.round(dot * (ramp.length - 2)));
@@ -10635,6 +10649,7 @@ function vaultEngineer({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2
       [mid / 2 + g / 2, w / 2, [0.12, 0.6, 0.6, 0.12]],
       [-mid / 2 + g / 2, mid / 2 - g / 2, [0.25, 0.25, 0.25, 0.25]]
     ];
+    out.push(`<rect x="${f(-w / 2 + 0.6)}" y="${f(top)}" width="${f(w - 1.2)}" height="${f(bot - top)}" fill="${ramp[ramp.length - 1]}"/>`);
     for (const [pi, [x0, x1, rr]] of parts.entries()) {
       const d = rrect4(x0, top, x1, bot, rr);
       out.push(barrel(d, x0, top, x1, bot, kk, ramp, lv, 1));
@@ -10663,6 +10678,7 @@ function vaultMiyazaki({ W: W2 = 19.8, y0 = 0, span = 46, sy = 1, L = 225, H: H2
       [mid / 2 + g / 2, w / 2, [0.12, 0.6, 0.6, 0.12]],
       [-mid / 2 + g / 2, mid / 2 - g / 2, [0.25, 0.25, 0.25, 0.25]]
     ];
+    out.push(`<rect x="${f(-w / 2 + 0.6)}" y="${f(top)}" width="${f(w - 1.2)}" height="${f(bot - top)}" fill="${ramp[ramp.length - 1]}"/>`);
     for (const [x0, x1, rr] of parts) {
       const d = rrect4(x0, top, x1, bot, rr);
       out.push(barrel(d, x0, top, x1, bot, kk, ramp, lv, 1));
@@ -10826,9 +10842,24 @@ ${blockShadow}
 ${strapSVG}${strap === "bracelet" ? "" : contact(C2, L, strap, span, STYLE === "miyazaki")}${caseStr}${STYLE === "miyazaki" && OUTLINE_ON ? silhouetteOutline(strap === "bracelet" ? [...OUTL_S, ...OUTL_C] : OUTL_C, L) : ""}
 </svg>`;
 }
+var GREYS = ["#e4e4e1", "#c2c2be", "#9c9c97"];
 function frame(o) {
-  const d = silhouetteOf(o.kind, sizeFor(o.kind in CASES ? o.kind : "dress", o.d));
-  return `<g transform="scale(1 -1)"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></g>`;
+  const kind = o.kind in CASES ? o.kind : "dress";
+  use("engineer");
+  NO_LINES = true;
+  INK2 = "none";
+  DIAL_IN = false;
+  GLINT = "off";
+  CLIPS = [];
+  SUN_H = 40;
+  const C2 = { ...scaleCase(CASES[kind], sizeFor(kind, o.d)), key: kind, metal: GREYS }, was = INSERT;
+  INSERT = { top: GREYS[2], bottom: GREYS[2] };
+  const body = caseSVG(C2, "own", 225);
+  NO_LINES = false;
+  INSERT = was;
+  DIAL_IN = true;
+  use("engineer");
+  return `<g transform="scale(1 -1)"><defs>${CLIPS.join("")}</defs>${body}</g>`;
 }
 function silhouetteOf(key, size) {
   use("miyazaki");
@@ -15921,8 +15952,8 @@ ROWS.Light = [
   num2("w_glass_len", "Length %", 10, 300, 1, { whole: true, show: (S) => S.ui_effects }),
   num2("w_glass_op", "Shine %", 0, 100, 1, { whole: true, show: (S) => S.ui_effects }),
   hdr("Effects", { folded: false }),
-  chk("ui_effects", "On", { head: true }),
-  // on the heading line its word is short: the note under it names the layers      // off for an old computer (Okay, 22 Oct 2026: "a 'turn off shenanigans' button … persistent")
+  chk("ui_effects", "Blurs, flare, shine, outline", { head: true }),
+  // on its heading line, in the first column after the title (Okay, 23 Oct 2026)      // off for an old computer (Okay, 22 Oct 2026: "a 'turn off shenanigans' button … persistent")
   info("Off, the watch is drawn without the layers that cost most: blurs, the flare, the glass shine, the outline round the metal.", {})
 ];
 ROWS["Show export"] = [
@@ -16166,6 +16197,12 @@ var DialTool = class _DialTool {
         if (e.type === "pointerdown") window.dial_tool.menu_list(select);
       };
       for (const kind of ["pointerdown", "mousedown", "touchstart"]) document.addEventListener(kind, menu_press, { capture: true, passive: false });
+      document.addEventListener("keydown", (e) => {
+        const select = e.target instanceof HTMLSelectElement ? e.target : null;
+        if (!select || select.disabled || !window.dial_tool || ![" ", "Enter", "ArrowDown", "ArrowUp"].includes(e.key)) return;
+        e.preventDefault();
+        window.dial_tool.menu_list(select);
+      }, true);
       const held_range = (e) => e.target instanceof HTMLInputElement && e.target.type === "range" && e.target.closest(".panel, #value-pop") ? e.target : null;
       document.addEventListener("mousedown", (e) => {
         if (held_range(e)) e.preventDefault();
@@ -16802,6 +16839,7 @@ var DialTool = class _DialTool {
     if (this.bio_open) this.bio_open(false);
     this.iris_open(false);
     if (this.ground_open) this.ground_open(false);
+    const leaving = instant || $("#app").classList.contains("away") ? null : this.panel_copy();
     this.S.ui_show = on;
     this.iris_button.setAttribute("aria-pressed", String(on));
     const first = SECTIONS.indexOf(SHOW_SECTIONS[0]);
@@ -16815,38 +16853,94 @@ var DialTool = class _DialTool {
     [...this.tabs.children].forEach((b) => {
       b.hidden = SHOW_SECTIONS.includes(b.dataset.tab) !== on;
     });
-    this.dial.style.display = on ? "none" : "";
-    this.over.style.display = on ? "none" : "";
-    this.bezel_g.style.display = on ? "none" : "";
-    if (!on) {
-      this.watch_g.replaceChildren();
-      this.watch_key = null;
-      this.tint_panel();
-    }
-    const was_away = app.classList.contains("away");
-    const swap = () => {
+    if (instant) {
       app.classList.toggle("showing", on);
+      this.layers(on, 1);
       this.show_section();
       this.watch_key = null;
       this.fit();
-      requestAnimationFrame(() => requestAnimationFrame(() => this.dial_alone(false)));
       this.render();
-    };
-    if (was_away || instant) swap();
-    else {
-      const done = (e) => {
-        if (e.target !== app) return;
-        app.removeEventListener("transitionend", done);
-        clearTimeout(wait);
-        swap();
-      };
-      const wait = setTimeout(() => {
-        app.removeEventListener("transitionend", done);
-        swap();
-      }, 1200);
-      app.addEventListener("transitionend", done);
-      this.dial_alone(true);
+      return;
     }
+    this.swoop(on, leaving);
+  }
+  /** a still copy of the panel as it stands, over it: what slides away while the real panel comes in on the other side.
+   *  Its frame carries the mode it was in (.showing or not), so it keeps that mode's look while the app changes. No ids */
+  panel_copy() {
+    const panel = $(".panel"), r = panel.getBoundingClientRect(), copy = panel.cloneNode(true), showing = $("#app").classList.contains("showing");
+    copy.querySelectorAll("[id]").forEach((e) => e.removeAttribute("id"));
+    copy.removeAttribute("id");
+    Object.assign(copy.style, { width: "100%", height: "100%", translate: "none" });
+    const frame2 = el("div", { className: "panelcopy" + (showing ? " showing" : "") }, copy);
+    Object.assign(frame2.style, { left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px", background: showing ? "" : getComputedStyle(document.body).backgroundColor });
+    document.body.append(frame2);
+    return frame2;
+  }
+  /** the drawing's layers between the modes: `k` how far into show mode (0 the dial side, 1 show mode) — the watch over
+   *  the dial, fading in; the dial's own drawing, its case and its overlays under it until the watch is whole */
+  layers(on, k) {
+    this.watch_g.style.opacity = k < 1 ? String(k) : "";
+    const dial_side = k < 1 ? "" : "none";
+    this.dial.style.display = dial_side;
+    this.over.style.display = on || k > 0 ? "none" : "";
+    this.bezel_g.style.display = dial_side;
+    if (k === 0) {
+      this.watch_g.replaceChildren();
+      this.watch_key = null;
+    }
+  }
+  /** into show mode or out, in one movement (Okay, 23 Oct 2026: "The watch knows its final size and destination, so no
+   *  interim zoom size changes. one zoom and done. Right column moves in when the left has left halfway. smoother,
+   *  slower. one fail swoop"): the panel as it was — a still copy of it — slides away; when it is halfway gone the
+   *  panel of the other mode starts in from its own side; all the while the drawing moves and zooms once, from where it
+   *  stands to where it ends, eased, the watch fading in over the dial (or out). Both slides take --show-time */
+  swoop(on, leaving) {
+    const app = $("#app"), T = parseFloat(getComputedStyle(app).getPropertyValue("--show-time")) || 1e3, ease = getComputedStyle(app).getPropertyValue("--view-ease").trim() || "ease-in-out";
+    const svg0 = this.svg.getBoundingClientRect();
+    const from = { x: svg0.left + this.c[0], y: svg0.top + this.c[1], z: this.z };
+    if (leaving) {
+      const r = leaving.getBoundingClientRect();
+      leaving.animate([{ transform: "translateX(0)" }, { transform: `translateX(${on ? -r.right : innerWidth - r.left}px)` }], { duration: T, easing: ease, fill: "forwards" }).finished.then(() => leaving.remove());
+    }
+    app.classList.add("snap", "away");
+    app.classList.toggle("showing", on);
+    {
+      const r = this.svg.getBoundingClientRect();
+      this.c = [from.x - r.left, from.y - r.top];
+      this.place();
+    }
+    this.show_section();
+    this.watch_key = null;
+    this.fitted = false;
+    this.sliding = true;
+    if (!on) this.tint_panel();
+    if (on) this.layers(true, 1e-3);
+    else this.layers(false, 1 - 1e-3);
+    this.render();
+    requestAnimationFrame(() => {
+      app.classList.remove("snap");
+      const svg1 = this.svg.getBoundingClientRect(), pw = $(".panel").getBoundingClientRect().width, w = svg1.width - pw, left = on ? svg1.left : svg1.left + pw;
+      const to = { x: left + w / 2, y: svg1.top + svg1.height / 2, z: on ? fit_zoom(this, w, svg1.height) : Math.min(w, svg1.height) / page_mm(this.S) };
+      setTimeout(() => {
+        app.classList.add("swooping");
+        this.dial_alone(false);
+        this.fitted = false;
+      }, T / 2);
+      const t0 = performance.now(), D = T * 1.5, io = (t) => t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
+      const step = (now) => {
+        const t = Math.min(1, (now - t0) / D), e = io(t), r = this.svg.getBoundingClientRect();
+        this.z = from.z * (to.z / from.z) ** e;
+        this.c = [from.x + (to.x - from.x) * e - r.left, from.y + (to.y - from.y) * e - r.top];
+        this.place();
+        this.layers(on, on ? Math.min(1, Math.max(1e-3, t / 0.4)) : Math.max(0, 1 - t / 0.4));
+        if (t < 1) return requestAnimationFrame(step);
+        app.classList.remove("swooping");
+        this.sliding = false;
+        this.fit();
+        this.render();
+      };
+      requestAnimationFrame(step);
+    });
   }
   /** the panel's colours from the backdrop in show mode (show.js tint_panel; #505) */
   tint_panel() {
@@ -16854,6 +16948,10 @@ var DialTool = class _DialTool {
     if (key === this.tint_key) return;
     this.tint_key = key;
     tint_panel($(".panel"), this.S.ui_show, this.S.c_backdrop, this.S.ui_grey_panel);
+    for (const [to, from] of [["--iris-fill", "--column-solid"], ["--iris-ink", "--ink"]]) {
+      if (this.S.ui_show) this.iris_box.style.setProperty(to, $(".panel").style.getPropertyValue(from));
+      else this.iris_box.style.removeProperty(to);
+    }
     if (this.grey_button) {
       const grey = Boolean(this.S.ui_grey_panel);
       this.grey_button.setAttribute("aria-pressed", String(grey));
@@ -16892,7 +16990,7 @@ var DialTool = class _DialTool {
     }, 1200);
     app.addEventListener("transitionend", this.view_end);
     app.classList.toggle("away", on);
-    if (app.classList.contains("showing")) {
+    if (app.classList.contains("showing") && !app.classList.contains("swooping")) {
       const follow = () => {
         if (!this.sliding) return;
         this.fit();
@@ -16966,6 +17064,11 @@ var DialTool = class _DialTool {
           const s = this.menus_for;
           this.menu_list_close();
           if (s) s.focus();
+        }
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+          e.preventDefault();
+          const items2 = [...list.children], at = items2.indexOf(document.activeElement);
+          items2[clamp(at + (e.key === "ArrowDown" ? 1 : -1), 0, items2.length - 1)]?.focus();
         }
       };
     }
@@ -21857,6 +21960,7 @@ var DialTool = class _DialTool {
       e.preventDefault();
       this.hover(null);
       if (e.ctrlKey || e.metaKey) this.zoom(Math.exp(-e.deltaY * 0.01), at(e));
+      else if (this.S.ui_show) this.zoom(Math.exp(-e.deltaY * 2e-3), at(e));
       else {
         this.fitted = false;
         this.c = [this.c[0] - e.deltaX, this.c[1] - e.deltaY];
@@ -21882,8 +21986,12 @@ var DialTool = class _DialTool {
       restart();
       if (pts.size === 1 && this.S.ui_show) {
         down.moved = true;
-        this.sun_at(at(e));
+        down.pan = e.button === 2;
+        if (!down.pan) this.sun_at(at(e));
       }
+    });
+    this.svg.addEventListener("contextmenu", (e) => {
+      if (this.S.ui_show) e.preventDefault();
     });
     this.svg.addEventListener("pointermove", (e) => {
       if (!pts.has(e.pointerId)) return e.pointerType === "mouse" ? this.hover(at(e), document.elementFromPoint(e.clientX, e.clientY)) : null;
@@ -21898,6 +22006,11 @@ var DialTool = class _DialTool {
         return;
       }
       const p = at(e);
+      if (this.S.ui_show && down.pan) {
+        this.fitted = false;
+        this.c = [down.c[0] + p[0] - down.p[0], down.c[1] + p[1] - down.p[1]];
+        return this.place();
+      }
       if (this.S.ui_show) return this.sun_at(p);
       if (Math.hypot(p[0] - down.p[0], p[1] - down.p[1]) > 4) down.moved = true;
       if (e.pointerType === "touch") return;
@@ -22314,7 +22427,7 @@ var DialTool = class _DialTool {
         const done = i2 <= here, way = done ? -1 : 1, times = done ? here - i2 + 1 : i2 - here;
         const b = el("button", {
           type: "button",
-          className: `step${done ? "" : " ahead"}`,
+          className: `histitem${done ? "" : " ahead"}`,
           textContent: step_name(all[i2 - 1], all[i2]),
           title: done ? `Undo this and the ${times - 1 || "no"} after it` : `Redo up to this`,
           onclick: () => {

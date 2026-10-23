@@ -1,5 +1,17 @@
 # Dial Tool — changelog
 
+## beta 4.91.13 (web version) · 23 Oct 2026
+
+Okay's notes of 23 Oct 2026, 14:59:
+- **Into show mode and out in one movement** ("one zoom and done … Right column moves in when the left has left halfway. smoother, slower"): a still copy of the panel slides away (`panel_copy()`), the other mode's panel starts in from its side when the copy is halfway out; meanwhile the drawing moves and zooms once, eased, from where it stood to where it ends, the watch fading in over the dial (out, going back) — `swoop()` in app.js, each slide `--show-time` (1000 ms), the drawing over 1.5 of it. The show-mode rules are written on `.showing` (no longer `#app.showing`) so the copy's frame keeps its old mode's look.
+- **Main's case is filled in** ("sillhouette means filled in. engineer without the lines, 3 shades of gray"): the Engineer's parts without a line, in three greys, the diver's insert grey too; no shadow, no strap.
+- **No system dropdowns** ("system dropdown is no more, all around the app"): the canvas switches lit every child on hover, the unseen select over the case switch among them, so the browser's own select box showed over the button; selects are never lit now, and Space, Enter and the arrows on a menu open the tool's own list (whose arrows walk it).
+- **Show mode, the mouse**: a right-button drag moves the watch; the wheel zooms, no key needed.
+- **Watch drawing**: the bracelet's strips stand on a fill of their own and each row on dark metal, so no seam shows the backdrop ("gaps in the bracelet"); a NATO draws its buckle — frame and tongue, its bar where the strap ends — whose shadow alone was cast before ("ghost buckle"); the leather end's dark band stops a tenth of the strap's width in from each edge.
+- **Show mode's layout**: colour chips and ticks back in the first column after the names; Flare's and Effects' ticks on their heading lines in that column, Effects' word "Blurs, flare, shine, outline"; Backdrop in the bottom slot; at the bottom right the iris stands above the eye (the Tiny Preview above them on the dial side), in both modes; in show mode the iris lit in the column's colours.
+- **Undo history**: one rounded black popup, plain lines, a hairline between them across the whole width.
+- Checked: `npm run small`, all passing (updated: the case check for the filled silhouette; the bottom-right stack).
+
 ## beta 4.91.12 (web version) · 23 Oct 2026
 
 Okay's notes of 23 Oct 2026, 14:23:
