@@ -2,7 +2,8 @@
   :root { font: var(--t-m)/var(--leading) var(--sans); font-variant-numeric: tabular-nums lining-nums; }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }      /* no grey box flashing under a finger (#153) */
   html, body { height: 100%; margin: 0; touch-action: pan-x pan-y; overscroll-behavior: none; }      /* fingers scroll, never zoom the window: only the dial zooms, inside the preview (Okay, 15 Oct 2026, 02:19); and the window is never pulled past its edge (#309, 4.46.1) */
-  body { background: var(--paper); color: var(--ink); overflow: hidden; }
+  body { background: var(--paper); color: var(--ink); overflow: hidden; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }      /* an app, not a page: nothing to select by dragging (Okay, 23 Oct 2026: "interface untouchable, like an actual app") */
+  :is(input, textarea) { -webkit-user-select: text; user-select: text; }      /* …but what one types stays selectable */
   #app { display: grid; grid-template-columns: calc(var(--panel-w) * (1 - var(--away))) 1fr; grid-template-rows: 1fr var(--bar-height); height: 100%;
     transition: --away var(--view-time) var(--view-ease); }
   #app.snap { transition: none; }

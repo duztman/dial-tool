@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.91.13 · built 2026-10-23 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.91.14 · built 2026-10-23 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -103,6 +103,7 @@
     /* the dial alone (the eye switch, Okay, 15 Oct 2026, 04:02): the panel slides away and the dial grows to fit, eased */
     --panel-w: calc(var(--panel) + var(--hair));   /* the panel's column: its lines and its right hairline */
     --show-time: 1000ms;                           /* into show mode and out (swoop() in app.js): each panel's slide; the second starts when the first is halfway, the drawing moves over one and a half of it (Okay, 23 Oct 2026: "smoother, slower") */
+    --watch-fade: 250ms;                           /* the watch fading in once the panels have moved into show mode, out before they move back */
     --view-time: 700ms; --view-ease: cubic-bezier(0.65, 0, 0.35, 1);      /* slow out, slow in */
     --iris-time: 250ms;                            /* the iris switch's words sliding out; Now shrinking into its undo sign */
     --iris-words: 160px;                           /* room enough for ACTIVATE SHOWCASE */
@@ -184,6 +185,7 @@
     --faint: 0.35;                                 /* how much of a switch on the preview shows at rest */
     --canvas-top: var(--canvas-inset);      /* undo and Guides as far from the canvas's top as from its side, their bottom on the title's line (--header) */
     --guide-name: 106px; --guide-row: 30px;        /* the guides' list: the column of names, wide enough for an added guide's name and values on one line · a line's height (Okay, 16 Oct 2026, #305: "tighter spacing overall … small like beta version allowed"; under a finger 38) */
+    --shade-slider: 96px;                          /* the Shadows list's sliders */
     --shade-name: 92px;                            /* the Shadows list's names: narrower than the guides' list's column, which holds an added guide's values; its sliders keep the room */
     --guide-dot: 7px; --guide-none: 14px; --scroll-w: 6px;      /* a round colour in the guides' list (the room between two: a special; Okay, 19 Oct 2026: "Still smaller balls") · the none sign ⊘, 14 (at 10 it went too small) · a list's scrollbar */
     --ring-thick: var(--triple);                   /* the chosen guide colour: a ring of its own colour this thick, a ring of the ground inside it */
@@ -278,7 +280,8 @@
   :root { font: var(--t-m)/var(--leading) var(--sans); font-variant-numeric: tabular-nums lining-nums; }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }      /* no grey box flashing under a finger (#153) */
   html, body { height: 100%; margin: 0; touch-action: pan-x pan-y; overscroll-behavior: none; }      /* fingers scroll, never zoom the window: only the dial zooms, inside the preview (Okay, 15 Oct 2026, 02:19); and the window is never pulled past its edge (#309, 4.46.1) */
-  body { background: var(--paper); color: var(--ink); overflow: hidden; }
+  body { background: var(--paper); color: var(--ink); overflow: hidden; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }      /* an app, not a page: nothing to select by dragging (Okay, 23 Oct 2026: "interface untouchable, like an actual app") */
+  :is(input, textarea) { -webkit-user-select: text; user-select: text; }      /* …but what one types stays selectable */
   #app { display: grid; grid-template-columns: calc(var(--panel-w) * (1 - var(--away))) 1fr; grid-template-rows: 1fr var(--bar-height); height: 100%;
     transition: --away var(--view-time) var(--view-ease); }
   #app.snap { transition: none; }
@@ -1566,7 +1569,9 @@
   .shadelist { top: auto; right: auto; bottom: calc(100% + var(--unit)); left: 0;
     max-height: calc(100vh - var(--bar-height) - var(--canvas-inset) - var(--canvas-top) - 2 * var(--control-large) - 2 * var(--unit)); }      /* from over its switch up to under undo · redo */
   .shadelist .row.chk > label.check { grid-column: 1 / -1; }      /* Soft edge and its warning on one line, the whole width */
-  .shadelist .row { grid-template-columns: var(--shade-name) minmax(0, 1fr) var(--col) var(--col); }      /* its own names' column (4.45.3) */
+  .shadelist { width: calc(2 * var(--pop-pad) + var(--shade-name) + var(--shade-slider) + var(--box-value) + var(--box-steps) + 2 * var(--gap)); }      /* wide enough for a slider between the names and the boxes (Okay, 23 Oct 2026: "Bring back old shadows pane, wide one") */
+  .shadelist .row { grid-template-columns: var(--shade-name) minmax(0, 1fr) calc(var(--box-value) + var(--box-steps)); column-gap: var(--gap); }      /* its own names' column (4.45.3), the slider, the number box */
+  .shadelist .row > .numbox { grid-column: 3; }
   /* the outline of what the pointer is on: an orange line on a white one, so it shows on any colour */
   .glow { fill: none; stroke: var(--glow); stroke-width: var(--glow-line); vector-effect: non-scaling-stroke; stroke-linejoin: round; }
   .glow.under { stroke: var(--white); stroke-width: var(--glow-under); }
@@ -1590,7 +1595,8 @@
   .showing :is(.guides, .shadows, .xraybox, .casebox, .tinyopen) { display: none; }      /* show mode: Guides and Shadows are the dial side's (Okay, 23 Oct 2026: "Guides? Completely nonexistent here. Remove them", "The shadows … another realm"); the watch's light is on the Light tab */
   .showing main { --covered: calc(var(--panel-w) * (1 - var(--away))); }      /* how much of the canvas the column lies over */
   .showing :is(.corner, .eyes) { right: calc(var(--canvas-inset) + var(--covered)); }
-  .showing .backdrops { bottom: var(--canvas-inset); }      /* Shadows' slot under it is empty here: Backdrop takes it (Okay, 23 Oct 2026: "move it one slot down") */
+  .showing .backdrops { bottom: var(--canvas-inset); }
+  .watch.fading { transition: opacity var(--watch-fade) ease-out; }      /* the watch fading in or out (swoop() in app.js) */      /* Shadows' slot under it is empty here: Backdrop takes it (Okay, 23 Oct 2026: "move it one slot down") */
   /* the iris switch in show mode, lit in the column's own colours: its fill, the panel's white for its sign (tint_panel() in app.js sets them) */
   .showing .irisbox { border-color: var(--iris-fill); background: var(--iris-fill); color: var(--iris-ink); }
   .showing .irisbox > * { opacity: 1; }
@@ -7147,7 +7153,7 @@ function window_text(kind, mo, lang = "en") {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.91.13";
+var VERSION = "beta 4.91.14";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -7542,9 +7548,9 @@ var DEFAULTS = {
   // the watch's PNG or PDF, pixels along its longer side
   ui_show: false,
   // show mode on (the panel on the right with the show tabs, the watch round the dial)
-  ui_show_section: 5,
+  ui_show_section: 6,
   ui_edit_section: 0,
-  // the tab last used in show mode and on the dial side (SECTIONS numbers, R9)
+  // the tab last used in show mode (Watch to start) and on the dial side (SECTIONS numbers, R9)
   ui_grey_panel: false,
   // show mode's panel in greys, like the bar, instead of the backdrop's colour (the round swatch at the title line's end; Okay, 22 Oct 2026)
   ui_case: false,
@@ -10891,6 +10897,7 @@ function tilePicture(key, w = 38, h = 27) {
 }
 var DETAIL = 31;
 var FULL = { w: 126 / 1.2, h: 308 / 1.2 };
+var fullBox = () => [FULL.w, FULL.h];
 var STYLES = {
   engineer: { floor: "#b9b3a6", ramp: [1.19, 1.11, 0.875], shadow: 0.3, blur: `<filter id="flare" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="0.9"/></filter>` },
   miyazaki: { floor: "#877f6d", ramp: [1.19, 1.12, 0.88], shadow: 0.3, blur: `<filter id="flare" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="1.6"/></filter>` }
@@ -11012,13 +11019,12 @@ var angles_of = (items) => {
 function draw2(tool2, items) {
   const S = tool2.S, g = tool2.watch_g;
   const shapes = items.filter((x2) => x2.fill && !x2.stroke);
-  const key = [tool2.statik === tool2.watch_statik ? 1 : 0, shapes.length, ...shapes.map((x2) => x2.fill.join(",")), ...Object.keys(S).filter((k) => k.startsWith("w_") || k.startsWith("sh_") || k.startsWith("c_") || k === "strap" || k === "bezel" || k === "dial_d" || k === "margin").map((k) => JSON.stringify(S[k])), S.ui_effects, shows_day(S) ? day_hour(S) : "", tool2.day_key].join("|");
+  const key = [shapes.length, ...shapes.map((x2) => x2.fill.join(",")), ...Object.keys(S).filter((k) => k.startsWith("w_") || k.startsWith("sh_") || k.startsWith("c_") || k === "strap" || k === "bezel" || k === "dial_d" || k === "margin").map((k) => JSON.stringify(S[k])), S.ui_effects, shows_day(S) ? day_hour(S) : "", tool2.day_key].join("|");
   if (key !== tool2.watch_key || !tool2.watch_statik || tool2.statik !== tool2.watch_statik) {
     tool2.watch_key = key;
     tool2.watch_statik = tool2.statik;
     const o = options(S, shapes, S.ui_effects), svg = draw(o);
     g.innerHTML = `<g transform="scale(1 -1)">${svg.slice(svg.indexOf("\n") + 1, svg.lastIndexOf("</svg>"))}</g>`;
-    tool2.watch_box = /viewBox="([^"]+)"/.exec(svg)[1].split(" ").map(Number);
     const frame_key = [S.w_view, S.bezel, S.strap, S.dial_d].join();
     if (frame_key !== tool2.watch_frame && tool2.fitted) tool2.fit();
     tool2.watch_frame = frame_key;
@@ -11063,7 +11069,7 @@ var GRADIENTS = [
 function fit_zoom(tool2, w, h) {
   const S = tool2.S, kind = CASE_OF_BEZEL[S.bezel] || "dress", M = 2 * 64, cb = caseBox(kind, sizeFor(kind, S.dial_d));
   if (S.w_view === 2) return Math.min(w, h) / page_mm(S);
-  const [bw, bh] = S.w_view === 1 && tool2.watch_box ? [tool2.watch_box[2], tool2.watch_box[3]] : [cb.w, cb.h];
+  const [bw, bh] = S.w_view === 1 ? fullBox() : [cb.w, cb.h];
   return Math.min(Math.max(w - M, 40) / bw, Math.max(h - M, 40) / bh);
 }
 function tint_panel(panel, on, backdrop, in_greys = false) {
@@ -13132,7 +13138,7 @@ var box = (type, contents, children) => ({
   contents: contents && new Uint8Array(contents.flat(10)),
   children
 });
-var fullBox = (type, version2, flags, contents, children) => box(
+var fullBox2 = (type, version2, flags, contents, children) => box(
   type,
   [u82(version2), u24(flags), contents ?? []],
   children
@@ -13179,7 +13185,7 @@ var mvhd = (creationTime, tracks) => {
   let nextTrackId = Math.max(...tracks.map((x2) => x2.id)) + 1;
   let needsU64 = !isU32(creationTime) || !isU32(duration);
   let u32OrU64 = needsU64 ? u64 : u32;
-  return fullBox("mvhd", +needsU64, 0, [
+  return fullBox2("mvhd", +needsU64, 0, [
     u32OrU64(creationTime),
     // Creation time
     u32OrU64(creationTime),
@@ -13220,7 +13226,7 @@ var tkhd = (track2, creationTime) => {
   } else {
     matrix = IDENTITY_MATRIX;
   }
-  return fullBox("tkhd", +needsU64, 3, [
+  return fullBox2("tkhd", +needsU64, 3, [
     u32OrU64(creationTime),
     // Creation time
     u32OrU64(creationTime),
@@ -13262,7 +13268,7 @@ var mdhd = (track2, creationTime) => {
   );
   let needsU64 = !isU32(creationTime) || !isU32(localDuration);
   let u32OrU64 = needsU64 ? u64 : u32;
-  return fullBox("mdhd", +needsU64, 0, [
+  return fullBox2("mdhd", +needsU64, 0, [
     u32OrU64(creationTime),
     // Creation time
     u32OrU64(creationTime),
@@ -13277,7 +13283,7 @@ var mdhd = (track2, creationTime) => {
     // Quality
   ]);
 };
-var hdlr = (componentSubtype) => fullBox("hdlr", 0, 0, [
+var hdlr = (componentSubtype) => fullBox2("hdlr", 0, 0, [
   ascii("mhlr"),
   // Component type
   ascii(componentSubtype),
@@ -13296,7 +13302,7 @@ var minf = (track2) => box("minf", null, [
   dinf(),
   stbl(track2)
 ]);
-var vmhd = () => fullBox("vmhd", 0, 1, [
+var vmhd = () => fullBox2("vmhd", 0, 1, [
   u162(0),
   // Graphics mode
   u162(0),
@@ -13306,7 +13312,7 @@ var vmhd = () => fullBox("vmhd", 0, 1, [
   u162(0)
   // Opcolor B
 ]);
-var smhd = () => fullBox("smhd", 0, 0, [
+var smhd = () => fullBox2("smhd", 0, 0, [
   u162(0),
   // Balance
   u162(0)
@@ -13315,13 +13321,13 @@ var smhd = () => fullBox("smhd", 0, 0, [
 var dinf = () => box("dinf", null, [
   dref()
 ]);
-var dref = () => fullBox("dref", 0, 0, [
+var dref = () => fullBox2("dref", 0, 0, [
   u32(1)
   // Entry count
 ], [
   url()
 ]);
-var url = () => fullBox("url ", 0, 1);
+var url = () => fullBox2("url ", 0, 1);
 var stbl = (track2) => {
   const needsCtts = track2.compositionTimeOffsetTable.length > 1 || track2.compositionTimeOffsetTable.some((x2) => x2.sampleCompositionTimeOffset !== 0);
   return box("stbl", null, [
@@ -13334,7 +13340,7 @@ var stbl = (track2) => {
     needsCtts ? ctts(track2) : null
   ]);
 };
-var stsd = (track2) => fullBox("stsd", 0, 0, [
+var stsd = (track2) => fullBox2("stsd", 0, 0, [
   u32(1)
   // Entry count
 ], [
@@ -13442,7 +13448,7 @@ var vpcC = (track2) => {
   let colourPrimaries = 2;
   let transferCharacteristics = 2;
   let matrixCoefficients = 2;
-  return fullBox("vpcC", 1, 0, [
+  return fullBox2("vpcC", 1, 0, [
     u82(profile),
     // Profile
     u82(level),
@@ -13496,7 +13502,7 @@ var soundSampleDescription = (compressionType, track2) => box(compressionType, [
 ]);
 var esds = (track2) => {
   let description = new Uint8Array(track2.info.decoderConfig.description);
-  return fullBox("esds", 0, 0, [
+  return fullBox2("esds", 0, 0, [
     // https://stackoverflow.com/a/54803118
     u32(58753152),
     // TAG(3) = Object Descriptor ([2])
@@ -13560,7 +13566,7 @@ var dOps = (track2) => {
   ]);
 };
 var stts = (track2) => {
-  return fullBox("stts", 0, 0, [
+  return fullBox2("stts", 0, 0, [
     u32(track2.timeToSampleTable.length),
     // Number of entries
     track2.timeToSampleTable.map((x2) => [
@@ -13576,7 +13582,7 @@ var stss = (track2) => {
   if (track2.samples.every((x2) => x2.type === "key"))
     return null;
   let keySamples = [...track2.samples.entries()].filter(([, sample]) => sample.type === "key");
-  return fullBox("stss", 0, 0, [
+  return fullBox2("stss", 0, 0, [
     u32(keySamples.length),
     // Number of entries
     keySamples.map(([index]) => u32(index + 1))
@@ -13584,7 +13590,7 @@ var stss = (track2) => {
   ]);
 };
 var stsc = (track2) => {
-  return fullBox("stsc", 0, 0, [
+  return fullBox2("stsc", 0, 0, [
     u32(track2.compactlyCodedChunkTable.length),
     // Number of entries
     track2.compactlyCodedChunkTable.map((x2) => [
@@ -13598,7 +13604,7 @@ var stsc = (track2) => {
     ])
   ]);
 };
-var stsz = (track2) => fullBox("stsz", 0, 0, [
+var stsz = (track2) => fullBox2("stsz", 0, 0, [
   u32(0),
   // Sample size (0 means non-constant size)
   u32(track2.samples.length),
@@ -13608,14 +13614,14 @@ var stsz = (track2) => fullBox("stsz", 0, 0, [
 ]);
 var stco = (track2) => {
   if (track2.finalizedChunks.length > 0 && last(track2.finalizedChunks).offset >= 2 ** 32) {
-    return fullBox("co64", 0, 0, [
+    return fullBox2("co64", 0, 0, [
       u32(track2.finalizedChunks.length),
       // Number of entries
       track2.finalizedChunks.map((x2) => u64(x2.offset))
       // Chunk offset table
     ]);
   }
-  return fullBox("stco", 0, 0, [
+  return fullBox2("stco", 0, 0, [
     u32(track2.finalizedChunks.length),
     // Number of entries
     track2.finalizedChunks.map((x2) => u32(x2.offset))
@@ -13623,7 +13629,7 @@ var stco = (track2) => {
   ]);
 };
 var ctts = (track2) => {
-  return fullBox("ctts", 0, 0, [
+  return fullBox2("ctts", 0, 0, [
     u32(track2.compositionTimeOffsetTable.length),
     // Number of entries
     track2.compositionTimeOffsetTable.map((x2) => [
@@ -13639,7 +13645,7 @@ var mvex = (tracks) => {
   return box("mvex", null, tracks.map(trex));
 };
 var trex = (track2) => {
-  return fullBox("trex", 0, 0, [
+  return fullBox2("trex", 0, 0, [
     u32(track2.id),
     // Track ID
     u32(1),
@@ -13659,7 +13665,7 @@ var moof = (sequenceNumber, tracks) => {
   ]);
 };
 var mfhd = (sequenceNumber) => {
-  return fullBox("mfhd", 0, 0, [
+  return fullBox2("mfhd", 0, 0, [
     u32(sequenceNumber)
     // Sequence number
   ]);
@@ -13697,7 +13703,7 @@ var tfhd = (track2) => {
     size: referenceSample.size,
     flags: fragmentSampleFlags(referenceSample)
   };
-  return fullBox("tfhd", 0, tfFlags, [
+  return fullBox2("tfhd", 0, tfFlags, [
     u32(track2.id),
     // Track ID
     u32(referenceSampleInfo.duration),
@@ -13709,7 +13715,7 @@ var tfhd = (track2) => {
   ]);
 };
 var tfdt = (track2) => {
-  return fullBox("tfdt", 1, 0, [
+  return fullBox2("tfdt", 1, 0, [
     u64(intoTimescale(track2.currentChunk.startTimestamp, track2.timescale))
     // Base Media Decode Time
   ]);
@@ -13735,7 +13741,7 @@ var trun = (track2) => {
   flags |= 512 * +sampleSizePresent;
   flags |= 1024 * +sampleFlagsPresent;
   flags |= 2048 * +sampleCompositionTimeOffsetsPresent;
-  return fullBox("trun", 1, flags, [
+  return fullBox2("trun", 1, flags, [
     u32(track2.currentChunk.samples.length),
     // Sample count
     u32(track2.currentChunk.offset - track2.currentChunk.moofOffset || 0),
@@ -13761,7 +13767,7 @@ var mfra = (tracks) => {
 };
 var tfra = (track2, trackIndex) => {
   let version2 = 1;
-  return fullBox("tfra", version2, 0, [
+  return fullBox2("tfra", version2, 0, [
     u32(track2.id),
     // Track ID
     u32(63),
@@ -13783,7 +13789,7 @@ var tfra = (track2, trackIndex) => {
   ]);
 };
 var mfro = () => {
-  return fullBox("mfro", 0, 0, [
+  return fullBox2("mfro", 0, 0, [
     // This value needs to be overwritten manually from the outside, where the actual size of the enclosing mfra box
     // is known
     u32(0)
@@ -16197,6 +16203,9 @@ var DialTool = class _DialTool {
         if (e.type === "pointerdown") window.dial_tool.menu_list(select);
       };
       for (const kind of ["pointerdown", "mousedown", "touchstart"]) document.addEventListener(kind, menu_press, { capture: true, passive: false });
+      document.addEventListener("contextmenu", (e) => {
+        if (!e.target.closest("input, textarea")) e.preventDefault();
+      }, true);
       document.addEventListener("keydown", (e) => {
         const select = e.target instanceof HTMLSelectElement ? e.target : null;
         if (!select || select.disabled || !window.dial_tool || ![" ", "Enter", "ArrowDown", "ArrowUp"].includes(e.key)) return;
@@ -16747,7 +16756,7 @@ var DialTool = class _DialTool {
    *  on the Rings tab (4.78, #349) — so the one a press chose, or the list chose, is seen. */
   draw_picked() {
     const S = this.S, R = this.ring(), nudge = this.rows && this.rows.find((r) => r.fold && r.row.text === "Nudge one numeral");
-    const d = !S.ui_show && S.ui_section === 1 && R && nudge && !nudge.el.hidden && !this.is_folded(nudge) ? this.statik.rings.find((x2) => x2.ring === R) : null;
+    const d = !S.ui_show && !this.unselected && S.ui_section === 1 && R && nudge && !nudge.el.hidden && !this.is_folded(nudge) ? this.statik.rings.find((x2) => x2.ring === R) : null;
     const k = d ? d.at.indexOf(+this.nudge_at) : -1, part2 = k >= 0 && d.parts ? d.parts[k] : null;
     const b = part2 ? part2.bounds() : null, f2 = (v) => v.toFixed(3);
     const path = b ? `M${f2(b[0])} ${f2(b[1])}H${f2(b[2])}V${f2(b[3])}H${f2(b[0])}Z` : "", tone2 = GUIDE_COLOURS[ring_guide(S, S.ui_ring) ?? S.gd_k_sel] || GUIDE_COLOURS[0];
@@ -16842,7 +16851,7 @@ var DialTool = class _DialTool {
     const leaving = instant || $("#app").classList.contains("away") ? null : this.panel_copy();
     this.S.ui_show = on;
     this.iris_button.setAttribute("aria-pressed", String(on));
-    const first = SECTIONS.indexOf(SHOW_SECTIONS[0]);
+    const first = SECTIONS.indexOf("Watch");
     if (on) {
       this.S.ui_edit_section = this.S.ui_section;
       this.S.ui_section = SHOW_SECTIONS.includes(SECTIONS[this.S.ui_show_section]) ? this.S.ui_show_section : first;
@@ -16855,7 +16864,7 @@ var DialTool = class _DialTool {
     });
     if (instant) {
       app.classList.toggle("showing", on);
-      this.layers(on, 1);
+      this.layers(on);
       this.show_section();
       this.watch_key = null;
       this.fit();
@@ -16876,26 +16885,25 @@ var DialTool = class _DialTool {
     document.body.append(frame2);
     return frame2;
   }
-  /** the drawing's layers between the modes: `k` how far into show mode (0 the dial side, 1 show mode) — the watch over
-   *  the dial, fading in; the dial's own drawing, its case and its overlays under it until the watch is whole */
-  layers(on, k) {
-    this.watch_g.style.opacity = k < 1 ? String(k) : "";
-    const dial_side = k < 1 ? "" : "none";
-    this.dial.style.display = dial_side;
-    this.over.style.display = on || k > 0 ? "none" : "";
-    this.bezel_g.style.display = dial_side;
-    if (k === 0) {
+  /** the drawing's layers in a mode: show mode the watch alone; the dial side its dial, case and overlays */
+  layers(on) {
+    this.watch_g.style.opacity = "";
+    this.watch_g.classList.remove("fading");
+    for (const g of [this.dial, this.bezel_g, this.over]) g.style.display = on ? "none" : "";
+    if (!on) {
       this.watch_g.replaceChildren();
       this.watch_key = null;
     }
   }
   /** into show mode or out, in one movement (Okay, 23 Oct 2026: "The watch knows its final size and destination, so no
    *  interim zoom size changes. one zoom and done. Right column moves in when the left has left halfway. smoother,
-   *  slower. one fail swoop"): the panel as it was — a still copy of it — slides away; when it is halfway gone the
-   *  panel of the other mode starts in from its own side; all the while the drawing moves and zooms once, from where it
-   *  stands to where it ends, eased, the watch fading in over the dial (or out). Both slides take --show-time */
+   *  slower. one fail swoop"; "Case fades in fast after panel transition complete. During panel transition no load on
+   *  the system"): the panel as it was — a still copy of it — slides away; when it is halfway gone the panel of the other
+   *  mode starts in from its own side. All the while the dial alone (the light drawing) moves and zooms once, eased, from
+   *  where it stands to where the watch will stand; then the watch is drawn and fades in fast. Going back, the watch fades
+   *  out fast first. Both slides take --show-time; the fade --watch-fade */
   swoop(on, leaving) {
-    const app = $("#app"), T = parseFloat(getComputedStyle(app).getPropertyValue("--show-time")) || 1e3, ease = getComputedStyle(app).getPropertyValue("--view-ease").trim() || "ease-in-out";
+    const app = $("#app"), css = getComputedStyle(app), T = parseFloat(css.getPropertyValue("--show-time")) || 1e3, F = parseFloat(css.getPropertyValue("--watch-fade")) || 250, ease = css.getPropertyValue("--view-ease").trim() || "ease-in-out";
     const svg0 = this.svg.getBoundingClientRect();
     const from = { x: svg0.left + this.c[0], y: svg0.top + this.c[1], z: this.z };
     if (leaving) {
@@ -16910,12 +16918,26 @@ var DialTool = class _DialTool {
       this.place();
     }
     this.show_section();
-    this.watch_key = null;
     this.fitted = false;
     this.sliding = true;
     if (!on) this.tint_panel();
-    if (on) this.layers(true, 1e-3);
-    else this.layers(false, 1 - 1e-3);
+    this.swoop_in = on;
+    this.dial.style.display = "";
+    this.bezel_g.style.display = "";
+    this.over.style.display = "none";
+    if (on) {
+      this.watch_g.replaceChildren();
+      this.watch_key = null;
+    } else {
+      this.watch_g.classList.add("fading");
+      this.watch_g.style.opacity = "0";
+      setTimeout(() => {
+        this.watch_g.replaceChildren();
+        this.watch_key = null;
+        this.watch_g.style.opacity = "";
+        this.watch_g.classList.remove("fading");
+      }, F);
+    }
     this.render();
     requestAnimationFrame(() => {
       app.classList.remove("snap");
@@ -16932,12 +16954,24 @@ var DialTool = class _DialTool {
         this.z = from.z * (to.z / from.z) ** e;
         this.c = [from.x + (to.x - from.x) * e - r.left, from.y + (to.y - from.y) * e - r.top];
         this.place();
-        this.layers(on, on ? Math.min(1, Math.max(1e-3, t / 0.4)) : Math.max(0, 1 - t / 0.4));
         if (t < 1) return requestAnimationFrame(step);
         app.classList.remove("swooping");
         this.sliding = false;
         this.fit();
-        this.render();
+        if (!on) {
+          this.over.style.display = "";
+          this.render();
+          return;
+        }
+        this.swoop_in = false;
+        this.watch_key = null;
+        this.watch_g.style.opacity = "0";
+        this.frame();
+        requestAnimationFrame(() => {
+          this.watch_g.classList.add("fading");
+          this.watch_g.style.opacity = "1";
+          setTimeout(() => this.layers(true), F);
+        });
       };
       requestAnimationFrame(step);
     });
@@ -17399,7 +17433,7 @@ var DialTool = class _DialTool {
     const H2 = this.handles;
     if (!H2) return;
     const R = this.ring(), k = R ? ring_guide(this.S, this.S.ui_ring) : null;
-    if (this.S.ui_show || this.S.ui_section !== 1 || !this.guides_drawn || !R || !R.on || k === null) {
+    if (this.S.ui_show || this.unselected || this.S.ui_section !== 1 || !this.guides_drawn || !R || !R.on || k === null) {
       H2.replaceChildren();
       this.handles_key = "";
       return;
@@ -18096,6 +18130,7 @@ var DialTool = class _DialTool {
   /** the rows of the section that is showing. A heading opens a pane; the rows after it go inside the pane,
    *  which can be folded. Each section remembers how far it was scrolled. */
   show_section() {
+    this.unselected = false;
     if (!(this.S.ui_section in SECTIONS)) this.S.ui_section = 0;
     const name = SECTIONS[this.S.ui_section];
     if (this.section_shown) this.scrolls[this.section_shown] = this.form.scrollTop;
@@ -18989,6 +19024,7 @@ var DialTool = class _DialTool {
       const b = el("button", { type: "button", className: "tab", id: "window-card-" + c.slot, onclick: () => {
         const w = windows_of(this.S)[c.slot];
         this.S.ui_window = c.slot;
+        this.unselected = false;
         if (!w.on && w.at === WINDOW_BASE.at && c.at !== w.at) {
           w.at = c.at;
           this.static_dirty = true;
@@ -19975,6 +20011,10 @@ var DialTool = class _DialTool {
     move(e);
   }
   select_ring(i2, refill = true) {
+    if (this.unselected) {
+      this.unselected = false;
+      this.render();
+    }
     if (i2 === this.S.ui_ring && !refill) return;
     this.value_pop_close();
     this.S.ui_ring = clamp(i2, 0, this.S.rings.length - 1);
@@ -20151,7 +20191,9 @@ var DialTool = class _DialTool {
     const pick2 = el("select", { id: "nudge-pick" });
     pick2.onchange = () => {
       this.nudge_at = pick2.value;
+      this.unselected = false;
       this.sync_rows();
+      this.render();
     };
     const word = el("label", { htmlFor: "nudge-pick", textContent: "Numeral" }), reset = el("button", { type: "button", className: "btn", id: "nudge-reset", textContent: "Reset this numeral" });
     const pick_box = chevron_box(pick2);
@@ -21783,7 +21825,7 @@ var DialTool = class _DialTool {
       }
       this.draw();
       if (this.S.ui_show) {
-        draw2(this, this.items);
+        if (!this.swoop_in) draw2(this, this.items);
         this.tint_panel();
       } else this.draw_bezel();
       this.draw_handles();
@@ -21794,7 +21836,7 @@ var DialTool = class _DialTool {
     }
   }
   draw() {
-    let S = this.S.ui_show ? { ...this.S, guides: false } : this.S;
+    let S = this.S.ui_show ? { ...this.S, guides: false } : this.unselected ? { ...this.S, ui_section: -1 } : this.S;
     if (!S.ui_show && this.hole_at && performance.now() - this.hole_at < HOLE_LIVE_MS) {
       S = S.guides ? { ...S, gd_hole_live: true } : { ...S, guides: true, gd_hole_live: true, gd_axes: false, gd_rings: false, gd_sel: false, gd_wins: false, gd_wsel: false, gd_more: [] };
     } else if (!S.ui_show && this.guides_at && performance.now() - this.guides_at < HOLE_LIVE_MS) S = { ...S, guides: this.guides_on };
@@ -21990,9 +22032,6 @@ var DialTool = class _DialTool {
         if (!down.pan) this.sun_at(at(e));
       }
     });
-    this.svg.addEventListener("contextmenu", (e) => {
-      if (this.S.ui_show) e.preventDefault();
-    });
     this.svg.addEventListener("pointermove", (e) => {
       if (!pts.has(e.pointerId)) return e.pointerType === "mouse" ? this.hover(at(e), document.elementFromPoint(e.clientX, e.clientY)) : null;
       pts.set(e.pointerId, at(e));
@@ -22006,6 +22045,10 @@ var DialTool = class _DialTool {
         return;
       }
       const p = at(e);
+      if (this.S.ui_show && down.pan && !(e.buttons & 2)) {
+        down.pan = false;
+        return;
+      }
       if (this.S.ui_show && down.pan) {
         this.fitted = false;
         this.c = [down.c[0] + p[0] - down.p[0], down.c[1] + p[1] - down.p[1]];
@@ -22089,7 +22132,12 @@ var DialTool = class _DialTool {
   /** a click on the preview opens the settings of what was clicked. */
   clicked(p, node) {
     const piece = this.piece_at(p, node), S = this.S;
-    if (!piece) return this.words_unfold();
+    if (!piece) {
+      this.unselected = true;
+      this.render();
+      return this.words_unfold();
+    }
+    this.unselected = false;
     const section = { ring: 1, hand: 2, cap: 2, date: 3, plate: 0 }[piece.kind], same = section === S.ui_section;
     const second = piece.kind === "ring" && same && S.ui_ring === piece.ring && piece.position !== void 0;
     S.ui_section = section;

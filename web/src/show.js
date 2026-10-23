@@ -55,12 +55,11 @@ const angles_of = (items) => { const A = {}; for (const x of items) if (x.role =
 export function draw(tool, items) {
   const S = tool.S, g = tool.watch_g;
   const shapes = items.filter((x) => x.fill && !x.stroke);
-  const key = [tool.statik === tool.watch_statik ? 1 : 0, shapes.length, ...shapes.map((x) => x.fill.join(",")), ...Object.keys(S).filter((k) => k.startsWith("w_") || k.startsWith("sh_") || k.startsWith("c_") || k === "strap" || k === "bezel" || k === "dial_d" || k === "margin").map((k) => JSON.stringify(S[k])), S.ui_effects, G.shows_day(S) ? G.day_hour(S) : "", tool.day_key].join("|");
+  const key = [shapes.length, ...shapes.map((x) => x.fill.join(",")), ...Object.keys(S).filter((k) => k.startsWith("w_") || k.startsWith("sh_") || k.startsWith("c_") || k === "strap" || k === "bezel" || k === "dial_d" || k === "margin").map((k) => JSON.stringify(S[k])), S.ui_effects, G.shows_day(S) ? G.day_hour(S) : "", tool.day_key].join("|");
   if (key !== tool.watch_key || !tool.watch_statik || tool.statik !== tool.watch_statik) {
     tool.watch_key = key; tool.watch_statik = tool.statik;
     const o = options(S, shapes, S.ui_effects), svg = WATCH.draw(o);
     g.innerHTML = `<g transform="scale(1 -1)">${svg.slice(svg.indexOf("\n") + 1, svg.lastIndexOf("</svg>"))}</g>`;      // the page's own box is not used: the view is the tool's zoom
-    tool.watch_box = /viewBox="([^"]+)"/.exec(svg)[1].split(" ").map(Number);
     const frame_key = [S.w_view, S.bezel, S.strap, S.dial_d].join();      // a new view, case, strap or size: fitted again, if the view was fitted (the light never moves it)
     if (frame_key !== tool.watch_frame && tool.fitted) tool.fit();
     tool.watch_frame = frame_key;
@@ -90,7 +89,7 @@ export const GRADIENTS = [["Dusk", "#3b3f58", "#b8876c"], ["Sea", "#1f4e5a", "#a
 export function fit_zoom(tool, w, h) {
   const S = tool.S, kind = G.CASE_OF_BEZEL[S.bezel] || "dress", M = 2 * 64, cb = WATCH.caseBox(kind, WATCH.sizeFor(kind, S.dial_d));
   if (S.w_view === 2) return Math.min(w, h) / G.page_mm(S);
-  const [bw, bh] = S.w_view === 1 && tool.watch_box ? [tool.watch_box[2], tool.watch_box[3]] : [cb.w, cb.h];
+  const [bw, bh] = S.w_view === 1 ? WATCH.fullBox() : [cb.w, cb.h];      // the whole watch's frame is known before it is drawn
   return Math.min(Math.max(w - M, 40) / bw, Math.max(h - M, 40) / bh);
 }
 

@@ -759,6 +759,8 @@ export function tilePicture(key, w = 38, h = 27) {
 
 // ── one drawing for the page (Dial Show Case, show mode) ──
 const DETAIL = 31, FULL = { w: 126 / 1.2, h: 308 / 1.2 }, DIAL = 19.5;      // 17:15: the whole watch at 120 %, centred
+/** the whole watch's frame, width and height in mm: known before anything is drawn (show mode's Fit, the swoop) */
+export const fullBox = () => [FULL.w, FULL.h];
 const STYLES = {
   engineer: { floor: "#b9b3a6", ramp: [1.19, 1.11, 0.875], shadow: 0.3, blur: `<filter id="flare" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="0.9"/></filter>` },
   miyazaki: { floor: "#877f6d", ramp: [1.19, 1.12, 0.88], shadow: 0.3, blur: `<filter id="flare" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="1.6"/></filter>` },

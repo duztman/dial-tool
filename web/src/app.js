@@ -1228,6 +1228,7 @@ class DialTool {
         if (e.type === "pointerdown") window.dial_tool.menu_list(select);      // mousedown and touchstart only kept from opening the browser's
       };
       for (const kind of ["pointerdown", "mousedown", "touchstart"]) document.addEventListener(kind, menu_press, { capture: true, passive: false });
+      document.addEventListener("contextmenu", (e) => { if (!e.target.closest("input, textarea")) e.preventDefault(); }, true);      // no browser menu on a right press, but in a field (Okay, 23 Oct 2026: "disable other right clicks")
       document.addEventListener("keydown", (e) => {
         const select = e.target instanceof HTMLSelectElement ? e.target : null;
         if (!select || select.disabled || !window.dial_tool || ![" ", "Enter", "ArrowDown", "ArrowUp"].includes(e.key)) return;
@@ -1672,7 +1673,7 @@ class DialTool {
    *  on the Rings tab (4.78, #349) — so the one a press chose, or the list chose, is seen. */
   draw_picked() {
     const S = this.S, R = this.ring(), nudge = this.rows && this.rows.find((r) => r.fold && r.row.text === "Nudge one numeral");
-    const d = !S.ui_show && S.ui_section === 1 && R && nudge && !nudge.el.hidden && !this.is_folded(nudge) ? this.statik.rings.find((x) => x.ring === R) : null;
+    const d = !S.ui_show && !this.unselected && S.ui_section === 1 && R && nudge && !nudge.el.hidden && !this.is_folded(nudge) ? this.statik.rings.find((x) => x.ring === R) : null;
     const k = d ? d.at.indexOf(+this.nudge_at) : -1, part = k >= 0 && d.parts ? d.parts[k] : null;
     // a box touching it, not its outline (Okay, 04:52: "selected number on dial too aggressive. This may be a rectangular tangent box around number")
     const b = part ? part.bounds() : null, f = (v) => v.toFixed(3);
@@ -1752,12 +1753,12 @@ class DialTool {
     const leaving = instant || $("#app").classList.contains("away") ? null : this.panel_copy();      // the panel as it is now, before its tabs change
     this.S.ui_show = on;
     this.iris_button.setAttribute("aria-pressed", String(on));
-    const first = SECTIONS.indexOf(SHOW_SECTIONS[0]);      // each mode remembers its tab
+    const first = SECTIONS.indexOf("Watch");      // each mode remembers its tab; show mode opens on Watch to start (Okay, 23 Oct 2026: "Watch tab comes active on show case")
     if (on) { this.S.ui_edit_section = this.S.ui_section; this.S.ui_section = SHOW_SECTIONS.includes(SECTIONS[this.S.ui_show_section]) ? this.S.ui_show_section : first; }
     else { this.S.ui_show_section = this.S.ui_section; this.S.ui_section = SHOW_SECTIONS.includes(SECTIONS[this.S.ui_edit_section]) ? 0 : this.S.ui_edit_section; }
     [...this.tabs.children].forEach((b) => { b.hidden = SHOW_SECTIONS.includes(b.dataset.tab) !== on; });
     if (instant) {      // a session that ended in show mode opens there: no movement
-      app.classList.toggle("showing", on); this.layers(on, 1); this.show_section(); this.watch_key = null; this.fit(); this.render();
+      app.classList.toggle("showing", on); this.layers(on); this.show_section(); this.watch_key = null; this.fit(); this.render();
       return;
     }
     this.swoop(on, leaving);
@@ -1775,22 +1776,22 @@ class DialTool {
     return frame;
   }
 
-  /** the drawing's layers between the modes: `k` how far into show mode (0 the dial side, 1 show mode) — the watch over
-   *  the dial, fading in; the dial's own drawing, its case and its overlays under it until the watch is whole */
-  layers(on, k) {
-    this.watch_g.style.opacity = k < 1 ? String(k) : "";
-    const dial_side = k < 1 ? "" : "none";
-    this.dial.style.display = dial_side; this.over.style.display = on || k > 0 ? "none" : ""; this.bezel_g.style.display = dial_side;
-    if (k === 0) { this.watch_g.replaceChildren(); this.watch_key = null; }
+  /** the drawing's layers in a mode: show mode the watch alone; the dial side its dial, case and overlays */
+  layers(on) {
+    this.watch_g.style.opacity = ""; this.watch_g.classList.remove("fading");
+    for (const g of [this.dial, this.bezel_g, this.over]) g.style.display = on ? "none" : "";
+    if (!on) { this.watch_g.replaceChildren(); this.watch_key = null; }
   }
 
   /** into show mode or out, in one movement (Okay, 23 Oct 2026: "The watch knows its final size and destination, so no
    *  interim zoom size changes. one zoom and done. Right column moves in when the left has left halfway. smoother,
-   *  slower. one fail swoop"): the panel as it was — a still copy of it — slides away; when it is halfway gone the
-   *  panel of the other mode starts in from its own side; all the while the drawing moves and zooms once, from where it
-   *  stands to where it ends, eased, the watch fading in over the dial (or out). Both slides take --show-time */
+   *  slower. one fail swoop"; "Case fades in fast after panel transition complete. During panel transition no load on
+   *  the system"): the panel as it was — a still copy of it — slides away; when it is halfway gone the panel of the other
+   *  mode starts in from its own side. All the while the dial alone (the light drawing) moves and zooms once, eased, from
+   *  where it stands to where the watch will stand; then the watch is drawn and fades in fast. Going back, the watch fades
+   *  out fast first. Both slides take --show-time; the fade --watch-fade */
   swoop(on, leaving) {
-    const app = $("#app"), T = parseFloat(getComputedStyle(app).getPropertyValue("--show-time")) || 1000, ease = getComputedStyle(app).getPropertyValue("--view-ease").trim() || "ease-in-out";
+    const app = $("#app"), css = getComputedStyle(app), T = parseFloat(css.getPropertyValue("--show-time")) || 1000, F = parseFloat(css.getPropertyValue("--watch-fade")) || 250, ease = css.getPropertyValue("--view-ease").trim() || "ease-in-out";
     const svg0 = this.svg.getBoundingClientRect();
     const from = { x: svg0.left + this.c[0], y: svg0.top + this.c[1], z: this.z };      // where the drawing stands, on the screen
     if (leaving) {      // the copy slides away to its own side, then goes
@@ -1800,14 +1801,17 @@ class DialTool {
     // the other mode's panel, waiting off its side: no slide to get there
     app.classList.add("snap", "away"); app.classList.toggle("showing", on);
     { const r = this.svg.getBoundingClientRect(); this.c = [from.x - r.left, from.y - r.top]; this.place(); }      // the canvas changed its edges: the drawing stays where it stood on the screen
-    this.show_section(); this.watch_key = null; this.fitted = false; this.sliding = true;
+    this.show_section(); this.fitted = false; this.sliding = true;
     if (!on) this.tint_panel();      // the dial side's own colours again (the still copy keeps the tint as it slides away)
-    if (on) this.layers(true, 0.001); else this.layers(false, 1 - 0.001);
+    this.swoop_in = on;
+    this.dial.style.display = ""; this.bezel_g.style.display = ""; this.over.style.display = "none";      // the dial moves, its overlays wait
+    if (on) { this.watch_g.replaceChildren(); this.watch_key = null; }
+    else { this.watch_g.classList.add("fading"); this.watch_g.style.opacity = "0"; setTimeout(() => { this.watch_g.replaceChildren(); this.watch_key = null; this.watch_g.style.opacity = ""; this.watch_g.classList.remove("fading"); }, F); }      // the watch goes first, fast
     this.render();
-    requestAnimationFrame(() => {      // the new mode drawn once: now its end is known
+    requestAnimationFrame(() => {
       app.classList.remove("snap");
       const svg1 = this.svg.getBoundingClientRect(), pw = $(".panel").getBoundingClientRect().width, w = svg1.width - pw, left = on ? svg1.left : svg1.left + pw;
-      const to = { x: left + w / 2, y: svg1.top + svg1.height / 2, z: on ? SHOW.fit_zoom(this, w, svg1.height) : Math.min(w, svg1.height) / G.page_mm(this.S) };
+      const to = { x: left + w / 2, y: svg1.top + svg1.height / 2, z: on ? SHOW.fit_zoom(this, w, svg1.height) : Math.min(w, svg1.height) / G.page_mm(this.S) };      // where it ends, known before it is drawn
       setTimeout(() => { app.classList.add("swooping"); this.dial_alone(false); this.fitted = false; }, T / 2);      // in when the other is halfway out; the swoop, not a resize, moves the drawing
       const t0 = performance.now(), D = T * 1.5, io = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
       const step = (now) => {
@@ -1815,9 +1819,11 @@ class DialTool {
         this.z = from.z * (to.z / from.z) ** e;      // one zoom: the scale eased on its logarithm, so it grows evenly
         this.c = [from.x + (to.x - from.x) * e - r.left, from.y + (to.y - from.y) * e - r.top];
         this.place();
-        this.layers(on, on ? Math.min(1, Math.max(0.001, t / 0.4)) : Math.max(0, 1 - t / 0.4));      // the watch fades in over the first part (out, going back)
         if (t < 1) return requestAnimationFrame(step);
-        app.classList.remove("swooping"); this.sliding = false; this.fit(); this.render();
+        app.classList.remove("swooping"); this.sliding = false; this.fit();
+        if (!on) { this.over.style.display = ""; this.render(); return; }
+        this.swoop_in = false; this.watch_key = null; this.watch_g.style.opacity = "0"; this.frame();      // now the watch, once, in its place…
+        requestAnimationFrame(() => { this.watch_g.classList.add("fading"); this.watch_g.style.opacity = "1"; setTimeout(() => this.layers(true), F); });      // …fading in fast over the dial
       };
       requestAnimationFrame(step);
     });
@@ -2159,7 +2165,7 @@ class DialTool {
     const H = this.handles;
     if (!H) return;
     const R = this.ring(), k = R ? G.ring_guide(this.S, this.S.ui_ring) : null;
-    if (this.S.ui_show || this.S.ui_section !== 1 || !this.guides_drawn || !R || !R.on || k === null) { H.replaceChildren(); this.handles_key = ""; return; }      // the selected ring's, shown to start (#486) and always with its guide (draw): a numeral being nudged hides both
+    if (this.S.ui_show || this.unselected || this.S.ui_section !== 1 || !this.guides_drawn || !R || !R.on || k === null) { H.replaceChildren(); this.handles_key = ""; return; }      // the selected ring's, shown to start (#486) and always with its guide (draw): a numeral being nudged hides both
     const kind = G.kind_of(R), ext = { ticks: R.len, markers: R.len, band: R.width }[kind] || 0;
     let outer = R.r + G.from_shift(R, ext), inner = outer - ext;
     if (G.has_text(R)) [inner, outer] = G.text_band(R);      // the band (#488)
@@ -2702,6 +2708,7 @@ class DialTool {
   /** the rows of the section that is showing. A heading opens a pane; the rows after it go inside the pane,
    *  which can be folded. Each section remembers how far it was scrolled. */
   show_section() {
+    this.unselected = false;      // a tab chosen: its selection shows again
     if (!(this.S.ui_section in SECTIONS)) this.S.ui_section = 0;
     const name = SECTIONS[this.S.ui_section];
     if (this.section_shown) this.scrolls[this.section_shown] = this.form.scrollTop;
@@ -3419,7 +3426,7 @@ class DialTool {
       const pic = el("span", { className: "pic" });       // the card is its picture alone: a small dial with the window in its place, filled when the window is shown (Okay, 13 Oct 2026: no number under it)
       const b = el("button", { type: "button", className: "tab", id: "window-card-" + c.slot, onclick: () => {
         const w = G.windows_of(this.S)[c.slot];
-        this.S.ui_window = c.slot;
+        this.S.ui_window = c.slot; this.unselected = false;
         if (!w.on && w.at === G.WINDOW_BASE.at && c.at !== w.at) { w.at = c.at; this.static_dirty = true; }      // never used: it starts at its card's place
         this.sync_rows();
         this.render();
@@ -4234,6 +4241,7 @@ class DialTool {
   }
 
   select_ring(i, refill = true) {
+    if (this.unselected) { this.unselected = false; this.render(); }      // a ring chosen in the list is selected again
     if (i === this.S.ui_ring && !refill) return;
     this.value_pop_close();                        // it was about the ring that was selected
     this.S.ui_ring = clamp(i, 0, this.S.rings.length - 1);
@@ -4387,7 +4395,7 @@ class DialTool {
   row_nudge(wrap, out) {                           // which numeral the rows under it nudge (scope "nudge", #252), and a way to undo its nudges
     wrap.className = "nudge";
     const pick = el("select", { id: "nudge-pick" });
-    pick.onchange = () => { this.nudge_at = pick.value; this.sync_rows(); };
+    pick.onchange = () => { this.nudge_at = pick.value; this.unselected = false; this.sync_rows(); this.render(); };
     const word = el("label", { htmlFor: "nudge-pick", textContent: "Numeral" }), reset = el("button", { type: "button", className: "btn", id: "nudge-reset", textContent: "Reset this numeral" });
     const pick_box = chevron_box(pick);
     wrap.append(el("div", { className: "row pop" }, word, pick_box.box),
@@ -5758,7 +5766,7 @@ class DialTool {
         this.render();
       }
       this.draw();
-      if (this.S.ui_show) { SHOW.draw(this, this.items); this.tint_panel(); } else this.draw_bezel();
+      if (this.S.ui_show) { if (!this.swoop_in) SHOW.draw(this, this.items); this.tint_panel(); } else this.draw_bezel();      // while the panels move into show mode the watch waits: the dial alone moves
       this.draw_handles();
       this.tiny_draw();
     } catch (e) {
@@ -5768,7 +5776,7 @@ class DialTool {
   }
 
   draw() {
-    let S = this.S.ui_show ? { ...this.S, guides: false } : this.S;      // show mode: no guides
+    let S = this.S.ui_show ? { ...this.S, guides: false } : this.unselected ? { ...this.S, ui_section: -1 } : this.S;      // show mode: no guides; nothing selected: no tab's focus, so no selected ring's or window's guides
     if (!S.ui_show && this.hole_at && performance.now() - this.hole_at < HOLE_LIVE_MS) {      // the centre hole being sized: its guide, alone if the guides are off (#267)
       S = S.guides ? { ...S, gd_hole_live: true } : { ...S, guides: true, gd_hole_live: true, gd_axes: false, gd_rings: false, gd_sel: false, gd_wins: false, gd_wsel: false, gd_more: [] };
     } else if (!S.ui_show && this.guides_at && performance.now() - this.guides_at < HOLE_LIVE_MS) S = { ...S, guides: this.guides_on };      // a number being slid: the guides as set; a numeral being nudged: none (guides_live)
@@ -5937,7 +5945,6 @@ class DialTool {
       else down = null;
     };
     this.svg.addEventListener("pointerdown", (e) => { pts.set(e.pointerId, at(e)); this.svg.setPointerCapture(e.pointerId); if (pts.size === 1) down = null; restart(); if (pts.size === 1 && this.S.ui_show) { down.moved = true; down.pan = e.button === 2; if (!down.pan) this.sun_at(at(e)); } });      // show mode: one finger or the pointer is the sun, never a click; the right button moves the watch
-    this.svg.addEventListener("contextmenu", (e) => { if (this.S.ui_show) e.preventDefault(); });
     this.svg.addEventListener("pointermove", (e) => {
       if (!pts.has(e.pointerId)) return e.pointerType === "mouse" ? this.hover(at(e), document.elementFromPoint(e.clientX, e.clientY)) : null;
       pts.set(e.pointerId, at(e));
@@ -5950,6 +5957,7 @@ class DialTool {
         return;
       }
       const p = at(e);
+      if (this.S.ui_show && down.pan && !(e.buttons & 2)) { down.pan = false; return; }      // the button let go (outside the window too): the move ends
       if (this.S.ui_show && down.pan) { this.fitted = false; this.c = [down.c[0] + p[0] - down.p[0], down.c[1] + p[1] - down.p[1]]; return this.place(); }
       if (this.S.ui_show) return this.sun_at(p);
       if (Math.hypot(p[0] - down.p[0], p[1] - down.p[1]) > 4) down.moved = true;
@@ -6019,7 +6027,8 @@ class DialTool {
   /** a click on the preview opens the settings of what was clicked. */
   clicked(p, node) {
     const piece = this.piece_at(p, node), S = this.S;
-    if (!piece) return this.words_unfold();
+    if (!piece) { this.unselected = true; this.render(); return this.words_unfold(); }      // a press on nothing: nothing selected — the selected ring's or window's guides, its handles and the picked numeral go (Okay, 23 Oct 2026: "DESELECT anything that is selected")
+    this.unselected = false;
     const section = { ring: 1, hand: 2, cap: 2, date: 3, plate: 0 }[piece.kind], same = section === S.ui_section;
     // a ring: a first press chooses it; a press on the ring already chosen chooses the numeral or mark pressed (4.78,
     // #349; Okay's notes 2: "a double click or tap selects the ring, a second what was clicked")

@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.91.13";
+export const VERSION = "beta 4.91.14";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -208,7 +208,7 @@ export const DEFAULTS = {
   c_backdrop2: null,     // a second backdrop colour: a gradient at 45°, the backdrop's colour at the top left, this at the bottom right; null = one colour
   out_watch_px: 3000,    // the watch's PNG or PDF, pixels along its longer side
   ui_show: false,        // show mode on (the panel on the right with the show tabs, the watch round the dial)
-  ui_show_section: 5, ui_edit_section: 0,      // the tab last used in show mode and on the dial side (SECTIONS numbers, R9)
+  ui_show_section: 6, ui_edit_section: 0,      // the tab last used in show mode (Watch to start) and on the dial side (SECTIONS numbers, R9)
   ui_grey_panel: false,      // show mode's panel in greys, like the bar, instead of the backdrop's colour (the round swatch at the title line's end; Okay, 22 Oct 2026)
   ui_case: false,      // the case round the dial on the dial side: off to start (Okay, 23 Oct 2026: "On main default is caseless"); its kind is `bezel`, shared with show mode, which always has one
   ui_effects: true,      // the costly layers in show mode — blurs, the flare, the glass shine, the silhouette outline (Okay: "turn off shenanigans")

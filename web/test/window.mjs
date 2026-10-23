@@ -2249,9 +2249,9 @@ await shot("10-bar");
       tinted: Boolean(panel.style.getPropertyValue("--column")), z: t.z, case_box: document.querySelector("#case").checkVisibility(), sky: Boolean(document.querySelector(".sky")) }; });
   await page.click("#fit"); await frame();      // both ends Fit: the case in show mode, the dial back out
   const home = await q(), z0 = home.z;
-  await page.click("#iris-box"); await page.waitForTimeout(300); await page.click("#iris-go"); await page.waitForTimeout(1800);
+  await page.click("#iris-box"); await page.waitForTimeout(300); await page.click("#iris-go"); await page.waitForTimeout(2400);
   const on = await q();
-  const hands = await page.evaluate(() => { const t = window.dial_tool, n = document.querySelector("g.watch [data-h='minute']"), a = n.getAttribute("transform"); t.set_value("global", "t", t.S.t + 600); t.frame(); return [a, n.getAttribute("transform"), document.querySelectorAll("g.watch path").length]; });
+  const hands = await page.evaluate(() => { const t = window.dial_tool, n = document.querySelector("g.watch [data-h='minute']"), a = n.getAttribute("transform"); t.set_value("global", "t", t.S.t + 600); t.frame(); return [a, n.getAttribute("transform"), document.querySelectorAll("g.watch path").length, n.isConnected]; });
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "t", t.S.t - 600); t.set_value("global", "bezel", 1); t.set_value("global", "strap", 2); t.frame(); });
   const diver = await page.evaluate(() => [window.dial_tool.S.bezel, document.querySelectorAll("g.watch path").length]);
   const column = await page.evaluate(() => { const t = window.dial_tool, panel = document.querySelector(".panel"), sw = document.querySelector("#grey-panel"), before = getComputedStyle(panel).backgroundColor;
@@ -2277,15 +2277,15 @@ await shot("10-bar");
   check(bio && ground.open && ground.tiles === 20 && ground.two && !ground.version && tiles.bezel === 2 && tiles.cases >= 4,
     `show mode's title has no version and its mark opens no bio; Backdrop opens the Show Case's ten colours and ten gradients (${ground.tiles} tiles; Ember a gradient); Case is picture tiles (${tiles.cases}), Field pressed`);
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "bezel", 0); t.set_value("global", "strap", 1); });
-  await page.click("#iris-box"); await page.waitForTimeout(1800);
+  await page.click("#iris-box"); await page.waitForTimeout(2400);
   const off = await q();
   const swatch_off = await page.$eval("#grey-panel", (e) => e.checkVisibility());
   check(column.w < 400 && column.swatch && column.grey === "rgb(33, 33, 33)" && column.pressed === "true" && column.back && column.key === false && !swatch_off,
     `show mode's column is the Show Case's width (${column.w} px, the tool's panel wider) with the round swatch at the title line's end: pressed, the panel in greys (${column.grey}, as the bar), pressed again, the backdrop's colour; on the dial side no swatch (R16)`);
   check(!home.on && !home.showing && home.sky === false && on.on && on.showing && !on.away && on.right && on.tabs === "Show dial Watch Light Show export" && on.watch > 0 && on.dial === "none" && on.bar === "visible" && on.tinted && !on.case_box && on.z !== z0,
     `show mode: the panel comes back on the right with the show tabs (${on.tabs}), tinted by the backdrop; the watch drawn (${on.watch} group), the dial's own drawing away, the bar in place, Fit on the case (${z0.toFixed(2)} → ${on.z.toFixed(2)}); the old Showcase's sky gone`);
-  check(hands[0] !== hands[1] && hands[2] > 100 && diver[0] === 1 && diver[1] > hands[2] && !off.on && !off.showing && off.tabs === "Dial Rings Hands Date Export" && !off.right && off.watch === 0 && off.dial !== "none" && !off.tinted && Math.abs(off.z - z0) < 1e-6,
-    `the hands turn in place with the time (${hands[2]} paths; the minute hand's transform moved); the Watch tab's case switches the watch (Diver with its bracelet, ${diver[1]} paths); out: the panel back on the left with its tabs, the watch gone, the view as it was`);
+  check(hands[0] !== hands[1] && hands[2] > 100 && hands[3] && diver[0] === 1 && diver[1] > hands[2] && !off.on && !off.showing && off.tabs === "Dial Rings Hands Date Export" && !off.right && off.watch === 0 && off.dial !== "none" && !off.tinted && Math.abs(off.z - z0) < 1e-6,
+    `the hands turn in place with the time (${hands[2]} paths; the minute hand's transform moved, the drawing not made again); the Watch tab's case switches the watch (Diver with its bracelet, ${diver[1]} paths); out: the panel back on the left with its tabs, the watch gone, the view as it was`);
 }
 
 { // Okay's mark opens the bio; the eye switch, at the preview's bottom right, turns on and off and does nothing else (15 Oct 2026)
@@ -2565,6 +2565,21 @@ await touch.close();
   const off = await seen();
   check(!none.on && none.paths === 0 && none.word === "Case" && !none.lit && !none.strap && diver.on && diver.bezel === 1 && diver.word === "Diver" && diver.lit && diver.paths > 5 && diver.filled && !diver.lined && diver.greys === "grey" && diver.under && Math.abs(diver.z - z0) < 1e-6 && field.bezel === 2 && field.paths > 5 && !field.lined && !off.on && off.paths === 0 && off.bezel === 2,
     `the case round the dial: none to start, no strap switch; Diver and Field by the menu, each filled in, the Engineer's parts without a line, in greys (${diver.paths} parts), under the dial; the view stays on the dial; No case takes it away and keeps the kind for show mode`);
+}
+{ // a press on empty canvas deselects (Okay, 23 Oct 2026: "DESELECT anything that is selected (guides disappear)"); the Shadows pane wide again ("Bring back old shadows pane, wide one")
+  await tab("Rings"); await frame();
+  const before = await page.evaluate(() => document.querySelectorAll(".handles .handle").length);
+  const m = await page.$eval("main", (e) => { const r = e.getBoundingClientRect(); return [r.left + 40, r.top + r.height / 2]; });
+  await page.mouse.click(m[0], m[1]); await frame();
+  const after = await page.evaluate(() => [document.querySelectorAll(".handles .handle").length, window.dial_tool.unselected]);
+  await page.evaluate(() => window.dial_tool.select_ring(window.dial_tool.S.ui_ring)); await frame();
+  const back = await page.evaluate(() => document.querySelectorAll(".handles .handle").length);
+  await tab("Dial");
+  await page.click("#shadows-more"); await frame();
+  const pane = await page.evaluate(() => { const l = document.querySelector("#shadow-list"), s = l.querySelector('input[type="range"]'); return [Math.round(l.getBoundingClientRect().width), Math.round(s.getBoundingClientRect().width)]; });
+  await page.click("#shadows-more");
+  check(before > 0 && after[0] === 0 && after[1] && back === before && pane[1] >= 80,
+    `a press on empty canvas deselects: the ring's handles (${before} → ${after[0]}) and its guides go, and come back when a ring is chosen (${back}); the Shadows pane ${pane[0]} px wide, its sliders ${pane[1]}`);
 }
 { // 20 Oct 2026 notes (#481, #482, #485, #486): the steps' chevron pale with no steps; the Settings buttons equal; handles with guides off, finer away
   await tab("Rings");

@@ -1,5 +1,16 @@
 # Dial Tool — changelog
 
+## beta 4.91.14 (web version) · 23 Oct 2026
+
+Okay's notes of 23 Oct 2026, 16:04:
+- **The swoop carries no load** ("Case fades in fast after panel transition complete. During panel transition no load on the system"): while the panels move, the dial alone moves and zooms; the watch is drawn once at the end, in its place, and fades in fast (`--watch-fade`, 250 ms); going back it fades out first. Show mode's Fit knows the whole watch's frame before drawing it (`fullBox()` in watch.js).
+- **The watch was drawn twice after every change**: its redraw key held a flag that flipped right after each redraw; gone.
+- **Show mode opens on the Watch tab** (and remembers the tab after).
+- **A press on empty canvas deselects** ("DESELECT anything that is selected (guides disappear)"): the selected ring's or window's guides, its handles and the picked numeral go until something is chosen again — on the dial, in the ring list, a window's card, the numeral menu, or a tab.
+- **The Shadows pane wide again**: room for a slider between the names and the number boxes, Soft edge on one line.
+- **An app, not a page** ("interface untouchable, like an actual app"): nothing in the interface selects by dragging and no browser menu opens on a right press, except in a text field; in show mode the right-button move ends as soon as the button is let go.
+- Checked: `npm test` whole (new: the deselect and the Shadows pane; the hands turn without the watch being drawn again).
+
 ## beta 4.91.13 (web version) · 23 Oct 2026
 
 Okay's notes of 23 Oct 2026, 14:59:
