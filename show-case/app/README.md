@@ -4,7 +4,7 @@ Written 21 Oct 2026 (session closed 02:35 Istanbul). A side product of Dial Tool
 (Okay, 20 Oct 2026: "read readme but nothing on the git or the actual tool"). Nothing in the web app depends on it.
 
 - **Live, stable** (Okay, 21 Oct 2026: "this is where we park stable versions"): <https://duztman.github.io/dial-tool/show-case/>,
-  branch `gh-pages`, file `show-case/index.html`. Built from `dev`'s `web/src/watch.js`: **beta 1.0.21** (23 Oct 2026, Dial Tool 4.91.15) is built and waits in the gh-pages folder; live is **beta 1.0.20** until it is pushed.
+  branch `gh-pages`, file `show-case/index.html`. Built from `dev`'s `web/src/watch.js`: live is **beta 1.0.21** (23 Oct 2026, Dial Tool 4.92).
 - **Working copy**: the Claude artifact <https://claude.ai/artifact/PrAdn9LAkcKqQPqNHq9pQ5>. It counts versions on from
   the live one in small steps: 1.0.1, 1.0.2, …
 
