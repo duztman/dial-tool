@@ -2255,6 +2255,11 @@ await shot("10-bar");
   const home = await q(), z0 = home.z;
   await page.click("#iris-box"); await page.waitForTimeout(300); await page.click("#iris-go"); await page.waitForTimeout(2400);
   const on = await q();
+  await page.click('.tabs button[data-tab="Show dial"]'); await frame();
+  const plates = await page.evaluate(() => { const r = (q) => document.querySelector(q), lines = [...document.querySelectorAll("#app .colourlist .row > label")].filter((l) => l.checkVisibility()).map((l) => l.textContent);
+    return { first: lines[0], disc: lines.some((l) => /^Window \d disc$/.test(l)), plate: Boolean(r("#colour-plate")?.checkVisibility()), disc_pill: Boolean(r("#colour-disc-0")) }; });
+  check(plates.first === "Dial" && plates.plate && plates.disc && plates.disc_pill,
+    `show mode's colours start with the Dial's (the plate) and give each window's disc a line (${plates.first}; disc ${plates.disc}) (Okay, 23 Oct 2026: "Disk behind each window and plate color")`);
   const hands = await page.evaluate(() => { const t = window.dial_tool, n = document.querySelector("g.watch [data-h='minute']"), a = n.getAttribute("transform"); t.set_value("global", "t", t.S.t + 600); t.frame(); return [a, n.getAttribute("transform"), document.querySelectorAll("g.watch path").length, n.isConnected]; });
   await page.evaluate(() => { const t = window.dial_tool; t.set_value("global", "t", t.S.t - 600); t.set_value("global", "bezel", 1); t.set_value("global", "strap", 2); t.frame(); });
   const diver = await page.evaluate(() => [window.dial_tool.S.bezel, document.querySelectorAll("g.watch path").length]);

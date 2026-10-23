@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.92.1 (web version) · 23 Oct 2026
+
+- **Show mode's Colours list takes the Dial's colour first** (the plate, `c_plate`) and **a line for each window's disc** under the window's own (`disc_c`; none of its own shows white). Okay, 17:36: "Disk behind each window and plate color, yes." The dial side's Colours pane is as it was: the plate has its own row on the Dial tab, the disc under each window's.
+- Checked: `npm run small`, a check for the two lines added to the window test; pushed to `main` and the released page as well, on Okay's word ("Push this update to main as well").
+
 ## beta 4.92 (web version) · 23 Oct 2026 — the step: the Show Case merged
 
 The step that releases 4.90.1 – 4.91.15 (the Show Case into Dial Tool as show mode, #506–#509), with Okay's last notes of the day (17:07):

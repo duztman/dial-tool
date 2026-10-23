@@ -3382,13 +3382,18 @@ class DialTool {
     const one = (id, title, read, write, alpha = false) => [{ id, title, read, write, alpha }];
     out.refresh = () => this.swatch_lines(wrap, () => {
       const S = this.S, lines = [];
+      if (S.ui_show) lines.push({ text: "Dial", colours: one("plate", "Dial", () => this.S.c_plate, (v) => { this.S.c_plate = v; this.changed(); }) });      // show mode only: the plate's colour heads the list, and each window's disc follows it (Okay, 23 Oct 2026: "Disk behind each window and plate color")
       S.rings.forEach((ring, i) => {
         const text = ring.name || G.kind_of(ring), sectors = G.kind_of(ring) === "band" && G.positions_of(ring).length > 1;
         lines.push({ text, colours: sectors ? this.sector_colours(i) : one(`ring-${i}`, text, () => (this.S.rings[i] || {}).c, (v) => { this.S.rings[i].c = v; this.changed(); }, true) });
       });
       G.HANDS.forEach((h, k) => { const text = ["Hour hand", "Minute hand", "Seconds hand"][k]; lines.push({ text, colours: one("hand-" + h, text, () => this.S["ha_" + h].c, (v) => { this.S["ha_" + h].c = v; this.changed(); }) }); });
       lines.push({ text: "Cap", colours: one("cap", "Cap", () => this.S.c_cap, (v) => { this.S.c_cap = v; this.changed(); }) });
-      G.windows_of(S).forEach((w, k) => { if (w.on) lines.push({ text: `Window ${k + 1}`, colours: one("window-" + k, `Window ${k + 1}`, () => G.windows_of(this.S)[k].ink, (v) => { G.windows_of(this.S)[k].ink = v; this.changed(); }) }); });
+      G.windows_of(S).forEach((w, k) => {
+        if (!w.on) return;
+        lines.push({ text: `Window ${k + 1}`, colours: one("window-" + k, `Window ${k + 1}`, () => G.windows_of(this.S)[k].ink, (v) => { G.windows_of(this.S)[k].ink = v; this.changed(); }) });
+        if (S.ui_show) lines.push({ text: `Window ${k + 1} disc`, colours: one("disc-" + k, `Window ${k + 1} disc`, () => G.windows_of(this.S)[k].disc_c || [1, 1, 1, 1], (v) => { G.windows_of(this.S)[k].disc_c = v; this.changed(); }) });      // the disc under the hole; none of its own = white, as the window's Disc row
+      });
       return lines;
     });
   }
