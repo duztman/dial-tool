@@ -14,9 +14,9 @@
 :root{--paper:#f3f1ec;--ink:#1b1a18;--mute:#77736b;--line:#d8d4cb;--gut:16px}
 *{box-sizing:border-box}html{scroll-padding-top:96px}
 .topbar{position:sticky;top:0;z-index:2;background:var(--paper)}
-.top{display:grid;grid-template-columns:190px 1fr;gap:48px;align-items:center;max-width:1200px;margin:0 auto;padding:18px var(--gut)}
-.brand{display:flex;align-items:center;gap:10px;line-height:1;font-size:26px;font-weight:600;letter-spacing:-.01em;text-decoration:none;white-space:nowrap}
-.brand .ic{margin:0}.brand .ic svg{width:1em;height:1em}
+.top{display:grid;grid-template-columns:190px 1fr;gap:48px;align-items:baseline;max-width:1200px;margin:0 auto;padding:18px var(--gut)}
+.brand{display:flex;align-items:baseline;gap:10px;line-height:1;font-size:26px;font-weight:600;letter-spacing:-.01em;text-decoration:none;white-space:nowrap}
+.brand .ic{margin:0;align-self:center}.brand .ic svg{width:1em;height:1em}
 .page{display:flex;align-items:baseline;line-height:1;justify-content:space-between;gap:16px}
 .page .title{font-size:26px;font-weight:600;letter-spacing:-.01em}
 .page .ver{font-size:15px;color:var(--mute)}
@@ -30,7 +30,7 @@ nav a.on{color:var(--ink);font-weight:600}
 nav .eye{position:absolute;left:4px;width:18px;height:18px;color:var(--mute);opacity:0;transition:opacity .2s}
 nav .grp.on .eye{opacity:1}
 nav b{display:flex;align-items:center;margin:0 0 2px;color:var(--ink);font-weight:600}
-.intro p{margin:0;color:var(--mute);max-width:60ch}
+.intro p{margin:.5em 0 0;color:var(--mute);max-width:60ch}
 h2{display:flex;align-items:flex-end;gap:10px;margin:56px 0 4px;font-size:26px;font-weight:600;padding-bottom:8px;border-bottom:1px solid var(--ink)}
 h3{margin:28px 0 6px;font-size:19px;font-weight:600}
 p.lead{margin:12px 0 4px;color:var(--mute);max-width:64ch}
@@ -69,6 +69,8 @@ dt .ic{margin-right:8px}h2 .ic svg{width:1.3em;height:1.3em}
 .map .on{fill:rgba(204,56,26,.22);stroke:#cc381a;stroke-width:1.8}.map .soft{fill:rgba(204,56,26,.12);stroke:none}
 .map .frame{fill:none;stroke:var(--line);stroke-width:1}
 #report-note{font-size:17px;color:var(--mute);min-height:1.5em;margin:0}
+main{max-width:35em;min-width:0}
+.page{max-width:35em}
 </style>
 </head>
 <body>
@@ -307,9 +309,10 @@ dt .ic{margin-right:8px}h2 .ic svg{width:1.3em;height:1.3em}
   const mark = () => { links.forEach((a) => a.classList.toggle("on", seen.has(a.hash.slice(1))));
     document.querySelectorAll("nav .grp").forEach((g) => g.classList.toggle("on", Boolean(g.querySelector("a.on")))); };
   const parts = links.map((a) => { const h = document.getElementById(a.hash.slice(1)); const end = links[links.indexOf(a) + 1]; return [a.hash.slice(1), h, end && document.getElementById(end.hash.slice(1))]; });
-  const look = () => { seen.clear(); const top = document.querySelector(".topbar").offsetHeight, bottom = innerHeight;
-    for (const [id, h, next] of parts) { const a = h.getBoundingClientRect().top, b = next ? next.getBoundingClientRect().top : document.querySelector("footer").getBoundingClientRect().top;
-      if (b > top + 40 && a < bottom - 80) seen.add(id); } mark(); };
+  const look = () => { seen.clear(); const line = document.querySelector(".topbar").offsetHeight + (innerHeight - document.querySelector(".topbar").offsetHeight) / 3;
+    let current = parts[0][0];
+    for (const [id, h] of parts) if (h.getBoundingClientRect().top <= line) current = id;
+    seen.add(current); mark(); };
   addEventListener("scroll", look, { passive: true }); addEventListener("resize", look); look();
 }
 
