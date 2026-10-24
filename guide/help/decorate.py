@@ -16,8 +16,9 @@ def icon(name):
     for old in set(re.findall(r'id="([^"]+)"', svg)):
         svg = svg.replace(f'id="{old}"', f'id="h-{name}-{old}"').replace(f"url(#{old})", f"url(#h-{name}-{old})")
     vb = re.search(r'viewBox="([-\d. ]+)"', svg)[1].split()
-    svg = re.sub(r' width="[\d.]+" height="[\d.]+"', "", svg, count=1)      # the page sets its height
-    svg = svg.replace("<svg ", f'<svg style="aspect-ratio:{vb[2]}/{vb[3]}" ', 1)      # and the width follows (Safari needs the ratio said)
+    # the drawing keeps its own width and height, so Safari knows its shape (without them it takes an svg as 300 px wide,
+    # and the page scrolled sideways on the iPad); the page sets the height, the width follows
+    svg = re.sub(r' width="[\d.]+" height="[\d.]+"', f' width="{vb[2]}" height="{vb[3]}"', svg, count=1)
     return svg
 
 # the window, in % of its width and height, as measured on the app at 1440 × 900 (shoot.cjs prints them)
