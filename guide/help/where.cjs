@@ -3,6 +3,7 @@
 // Okay, 24 Oct 2026, 20:30: "Clicking thumbs open … big lightboxes with captions. Real screen goodly red boxed. Offset the
 // selected objects and center box equally." The box: black inside, red, white outside, the same room on every side of what it holds.
 const { chromium } = require("playwright");
+const grey = require("./grey.cjs");      // the dial in greys (grey.cjs)
 const path = require("path");
 const OUT = path.join(__dirname, "img");
 const WEB = path.join(__dirname, "../../web");
@@ -26,6 +27,7 @@ const TAB = { dial: "Dial", rings: "Rings", hands: "Hands", date: "Date", export
   const page = await context.newPage();
   await page.goto("file://" + path.join(WEB, "dial-tool.html"));
   await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
+  await grey(page);
   await page.mouse.move(230, 880);
   for (const [name, boxes] of Object.entries(WHERE)) {
     await page.click(`button[data-tab="${TAB[name] || "Dial"}"]`);

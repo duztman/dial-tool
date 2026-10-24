@@ -2,6 +2,7 @@
 //   cd web && node build.mjs && node ../guide/help/shoot.cjs   → guide/help/img/*.png, then webp.py
 // Pictures of the tool for the page (PLAN.md's table), made on demand like the guide's: nothing here is an archive screenshot (R36).
 const { chromium } = require("playwright");
+const grey = require("./grey.cjs");      // the dial in greys (grey.cjs)
 const path = require("path");
 const OUT = path.join(__dirname, "img");
 const WEB = path.join(__dirname, "../../web");
@@ -13,6 +14,7 @@ const WEB = path.join(__dirname, "../../web");
   const page = await context.newPage();
   await page.goto("file://" + path.join(WEB, "dial-tool.html"));
   await page.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
+  await grey(page);
   const frame = () => page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   const tab = async (name) => { await page.click(`button[data-tab="${name}"]`); await frame(); };
   const box = (q) => page.$eval(q, (e) => { const r = e.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; });
