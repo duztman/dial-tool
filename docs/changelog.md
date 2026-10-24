@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.92.5 (web version) · 24 Oct 2026
+
+- **The controller is as wide as the row's controls** (#514; Okay, 24 Oct 2026: "as wide as two columns"; "On very wide coluns, controller takes over and spans exactly as wide as the slider below … slider overlapping slider"): everything right of the row's name, slider and number box — about 250 px in the panel (it was the drawing's 188), the whole slider in show mode's two-line rows, where it now lies exactly over the row's slider. Opened from a row it stands over that row, its slider on the row's; from a value button (outside a row) as before, where pressed. Never narrower than the drawing.
+- **Its name between − and +**, untouchable ("the gap between plus and minus becomes a good place to just untouchably write the name"); a linked pair's LINK disc keeps that place. R15 rewritten: it said "No name".
+- Checked: the window test (the phone's controller check measures the row's controls now), crops of Diameter's and show mode's From.
+
 ## beta 4.92.4 (web version) · 24 Oct 2026
 
 - **The canvas switches show their signs alone** (#518; Okay, 24 Oct 2026: "All canvas buttons, labels default hidden. Like on mobile, load with animation. On desktop hover on icon reveals the name"; "Labels appear when canvas empty area clicked"): Guides, Case, X-ray, Versions, Backdrop and Shadows are squares; their words unfold for 3 s when the page opens and after a press on the empty canvas, and under the pointer on a Mac. One mechanism for every width: the phone's (`main.words`, `words_unfold()`), moved out of `8-narrow.css` into `6-preview.css` (R34). A switch is filled with the backdrop's colour only while its word shows (Okay, 15 Oct 2026), never in show mode.

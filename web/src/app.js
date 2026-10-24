@@ -4026,10 +4026,22 @@ class DialTool {
     // (17 Oct to 4.51.1: a light head with the name over a hairline, the value riding over the knob.)
     const name = r.el.querySelector(":scope > .menulabel, :scope > label"), field = r.el.querySelector('input[type="text"]');
     if (name) name.hidden = true;
+    // its name, untouchable, in the gap between − and + (Okay, 24 Oct 2026, #514: "The gap between plus and minus becomes
+    // a good place to just untouchably write the name of the thing being edited"); a linked pair's LINK disc stands there instead
+    const steps = r.el.querySelector(".steps");
+    if (steps && row.text && !r.el.querySelector(".linkpill")) steps.lastElementChild.before(el("span", { className: "popword", ariaHidden: "true", textContent: row.text }));
     const head = el("div", { className: "pophead" }, ...(field ? [el("div", { className: "popvalue" }, field)] : []));
     head.hidden = !field;                          // a window's places: no value, so no pill
     const box = el("div", { className: "numpop", id: "value-pop", role: "dialog", ariaLabel: row.text || "" }, head, r.el);
+    // as wide as the row's controls — everything right of its name, the slider and the number box — so on a wide
+    // column it lies over the slider exactly (Okay, 24 Oct 2026, #514: "as wide as two columns"; "On very wide coluns,
+    // controller takes over and spans exactly as wide as the slider below … slider overlapping slider"); never narrower
+    // than its drawing (controller 2.svg). A control outside a row (a value button) keeps the drawing's width.
+    const home = button.closest(".row"), parts = home ? [...home.children].filter((c) => !c.matches("label, .menulabel, .popname, .linkpill") && c.offsetParent) : [];
+    const span = parts.length ? parts.map((c) => c.getBoundingClientRect()).reduce((a, b) => ({ left: Math.min(a.left, b.left), right: Math.max(a.right, b.right) })) : null;
     document.body.append(box);
+    const pad = parseFloat(getComputedStyle(box).paddingLeft) || 0;
+    if (span) box.style.setProperty("--num-pop-w", `${span.right - span.left + 2 * pad}px`);
     button.setAttribute("aria-expanded", "true");
     this.value_pop = { button, box, r, row, timer: 0 };
     if (row.scope === "hand") this.hand_light(row);      // its part lit while the controller is open (#329)
@@ -4038,7 +4050,13 @@ class DialTool {
     // from the keyboard, or with no slider (a window's places), under its button, centred
     const slider = box.querySelector('input[type="range"]'), w = box.offsetWidth, h = box.offsetHeight, bb = button.getBoundingClientRect();
     let left = (at ? at.x : bb.left + bb.width / 2) - w / 2, top = bb.bottom + 7;
-    if (at && slider) {
+    const own = home && home.querySelector(':scope > input[type="range"]');
+    if (span && slider) {
+      // over the row: its slider's line on the row's slider (or, with none in sight, on the row's middle), centred on the
+      // controls — exactly over them when they are wider than the drawing
+      const k = slider.getBoundingClientRect(), b0 = box.getBoundingClientRect(), o = (own && own.offsetParent ? own : home).getBoundingClientRect();
+      left = (span.left + span.right) / 2 - w / 2; top = b0.top + (o.top + o.height / 2 - (k.top + k.height / 2));
+    } else if (at && slider) {
       const k = slider.getBoundingClientRect(), p = +slider.style.getPropertyValue("--p") || 0, b0 = box.getBoundingClientRect();
       const knob = [k.left + k.height / 2 + p * (k.width - k.height), k.top + k.height / 2];      // the knob's centre: its travel is the pill's width less its height
       left = b0.left + (at.x - knob[0]); top = b0.top + (at.y - knob[1]);

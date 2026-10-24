@@ -2435,12 +2435,12 @@ await page.click('.form .fold:visible >> nth=0', { position: { x: 12, y: 12 } })
 { // a phone (4.68; Okay, 18 Oct 2026, 22:35): the controller at three quarters ("Controller too big on the phones, 75% scale"); a hand's rows give the slider all the room between the name and the box ("Hands sliders squeezed, use all row width")
   await tab("Dial"); await page.$eval('label[for="global-dial-d-Diameter"]', (e) => e.scrollIntoView({ block: "center" }));
   await page.click('label[for="global-dial-d-Diameter"]'); await page.waitForTimeout(200);
-  const pop = await page.evaluate(() => { const v = document.querySelector("#value-pop"), w = v ? v.getBoundingClientRect().width : 0; window.dial_tool.value_pop_close(); return w; });
+  const [pop, span] = await page.evaluate(() => { const v = document.querySelector("#value-pop"), w = v ? v.getBoundingClientRect().width : 0, pad = v ? parseFloat(getComputedStyle(v).paddingLeft) : 0, row = document.querySelector('label[for="global-dial-d-Diameter"]').closest(".row"), parts = [...row.children].filter((c) => !c.matches("label") && c.offsetParent).map((c) => c.getBoundingClientRect()); window.dial_tool.value_pop_close(); return [w, Math.max(...parts.map((p) => p.right)) - Math.min(...parts.map((p) => p.left)) + 2 * pad]; });      // as wide as the row's controls (#514)
   const k = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--num-pop-k").trim());
   await tab("Hands");
   const side = await page.evaluate(() => { const r = [...document.querySelectorAll(".body > .row.side")].find((x) => x.offsetParent && x.querySelector('input[type="range"]')), q = (s) => r.querySelector(s).getBoundingClientRect(); return [Math.round(r.getBoundingClientRect().width), Math.round(q("label").width), Math.round(q('input[type="range"]').width), Math.round(q(".numbox").width), Math.round(parseFloat(getComputedStyle(r).gridTemplateColumns.split(" ")[1]))]; });
   await tab("Dial");
-  check(k === "0.75" && pop > 150 && pop < 200 && side[2] === side[4] && side[2] > side[0] / 3, `a phone: the controller at ${k} (${Math.round(pop)} px wide); a hand's row ${side[0]} wide: name ${side[1]}, slider ${side[2]} (its whole column, ${side[4]}), box ${side[3]}`);
+  check(k === "0.75" && Math.abs(pop - Math.max(span, 150)) < 2 && side[2] === side[4] && side[2] > side[0] / 3, `a phone: the controller at ${k}, as wide as the row's controls (${Math.round(pop)} px for ${Math.round(span)}, #514); a hand's row ${side[0]} wide: name ${side[1]}, slider ${side[2]} (its whole column, ${side[4]}), box ${side[3]}`);
 }
 await page.setViewportSize({ width: 1440, height: 900 });
 

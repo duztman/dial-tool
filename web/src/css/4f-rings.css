@@ -133,7 +133,7 @@
      changing anyway". It stands where the finger is, the knob under it (value_pop_open), over everything; it comes at
      once and, after its last use, fades away (.fading). (4.49.2 to 4.51.1: a light head with the name over a hairline,
      the value riding over the knob, his first drawing of 17 Oct.) */
-  .numpop { position: fixed; z-index: 30; display: grid; row-gap: var(--num-pop-gap); width: var(--num-pop); padding: var(--num-pop-pad); border-radius: var(--num-pop-round); background: color-mix(in srgb, var(--num-pop-ground) var(--num-pop-see), transparent); color: var(--ink); }
+  .numpop { position: fixed; z-index: 30; display: grid; row-gap: var(--num-pop-gap); width: max(var(--num-pop), var(--num-pop-w, 0px)); padding: var(--num-pop-pad); border-radius: var(--num-pop-round); background: color-mix(in srgb, var(--num-pop-ground) var(--num-pop-see), transparent); color: var(--ink); }
   .numpop.fading { opacity: 0; transition: opacity var(--num-pop-fade) ease-out; }
   /* the value: its figures centred in the grey pill, bold, in the square's grey */
   .numpop .popvalue { display: grid; align-items: center; height: var(--num-pop-pill); border-radius: calc(var(--num-pop-pill) / 2); background: var(--num-pop-value); }
@@ -151,7 +151,8 @@
   .numpop .places > button:hover { background: var(--num-pop-well); }
   .numpop .places > button.on { background: var(--black); color: var(--white); }
   .numpop .numbox { display: contents; }      /* the row's number box: its value went to the head, its − + are the discs */
-  .numpop .row .steps { display: flex; justify-content: space-between; width: 100%; }
+  .numpop .row .steps { display: flex; justify-content: space-between; align-items: center; gap: var(--num-pop-gap); width: 100%; }
+  .numpop .popword { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; color: var(--white); font: 600 var(--t-l)/1 var(--sans); pointer-events: none; user-select: none; }      /* the name between − and +, not pressable (#514) */
   /* a pair's link (width and height, #358) between − and +, at the middle of their line (Okay, 19 Oct 2026: "Linking
      stuff get a lower middle button between minus and plus on controller"): a dark pill as the discs are, LINK in the pixel font at 12; linked, white with LINKED in dark */
   .numpop .row > input[type="range"] { grid-row: 1; }
