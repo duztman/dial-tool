@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.92.6 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.92.7 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -150,7 +150,8 @@
     --num-pop-pad: calc(var(--u6) * var(--num-pop-k)); --num-pop-gap: calc(var(--u3) * var(--num-pop-k));      /* controller 2.svg (Okay, 18 Oct 2026), at a disc of 66: its 5.67 edge is 16.5, its 2.83 gaps 8.2 */
     --num-pop: calc(var(--num-pop-inner) + 2 * var(--num-pop-pad));
     --num-pop-s: 0.7; --num-pop-small: calc(var(--num-pop-step) * var(--num-pop-s));      /* the discs and the value's pill at 70 %, the slider's pill kept (Okay, 24 Oct 2026: "plus minus and number line 70% of now … Keep slider big") */
-    --num-pop-round: calc(var(--num-pop-small) / 2 + var(--num-pop-pad));      /* concentric: the corners are the discs' round plus the padding round them (his 17.01 in controller 2.svg is that sum) */
+    --num-pop-disc-k: 0.85; --num-pop-disc-d: calc(var(--num-pop-small) * var(--num-pop-disc-k));      /* − and + a further 15 % smaller (Okay, 24 Oct 2026, 18:31: "Buttons a bit more smaller %15") */
+    --num-pop-round: calc(var(--num-pop-disc-d) / 2 + var(--num-pop-pad));      /* concentric: the corners are the discs' round plus the padding round them (his 17.01 in controller 2.svg is that sum) */
     --num-pop-ground: var(--grey); --num-pop-value: var(--rule); --num-pop-disc: #3F3F3E; --num-pop-well: var(--rule);      /* his #585857 square, #B1B1B1 value pill and track, #3F3F3E discs and knob — on the rule's tones where they are near */
     --num-pop-hover: color-mix(in srgb, var(--num-pop-disc) 85%, var(--white));
     --num-pop-thumb: calc(var(--num-pop-step) - 2 * var(--u4) * var(--num-pop-k)); --num-pop-eye: calc(6px * var(--num-pop-k)); --num-pop-sign: calc(44px * var(--num-pop-k));      /* the knob's white eye, a radius: his 2.13 */
@@ -1035,9 +1036,12 @@
   .numground.fading { opacity: 0; transition: opacity var(--num-pop-fade) ease-out; }
   .numpop.fading { opacity: 0; transition: opacity var(--num-pop-fade) ease-out; }
   /* the value: its figures centred in the grey pill, bold, in the square's grey */
-  .numpop .popvalue { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--num-pop-gap); height: var(--num-pop-small); padding: 0 calc(var(--num-pop-small) / 2); border-radius: calc(var(--num-pop-small) / 2); background: var(--num-pop-value); }
-  .numpop .popword { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--num-pop-ground); font: 400 calc(var(--t-num-pop) * var(--num-pop-s))/1 var(--sans); user-select: none; }      /* the name, left in the top pill, the value's size, regular */
-  .numpop .popvalue input[type="text"] { width: 7ch; height: auto; padding: 0; border: 0; background: none; font: 700 calc(var(--t-num-pop) * var(--num-pop-s))/1 var(--sans); letter-spacing: 0.02em; text-align: right; color: var(--num-pop-ground); }
+  /* the value's pill: as wide as its figures, riding over the knob inside its lane — its left at p of the lane less p of
+     its own width, so it meets each end of the lane as the knob does (--p, the slider's place, 0–1, set by filled()) */
+  .numpop .popvalue { display: grid; align-items: center; width: max-content; height: var(--num-pop-small); margin-left: calc(var(--p, 0) * 100%); translate: calc(var(--p, 0) * -100%) 0; padding: 0 calc(var(--num-pop-small) / 2); border-radius: calc(var(--num-pop-small) / 2); background: var(--num-pop-value); }
+  .numpop .popword { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; color: var(--white); font: 600 var(--t-l)/1 var(--sans); pointer-events: none; user-select: none; }      /* the name between − and +, not pressable */
+  .numpop .popvalue input[type="text"] { field-sizing: content; width: auto; min-width: 2ch; height: auto; padding: 0; border: 0; background: none; font: 700 calc(var(--t-num-pop) * var(--num-pop-s))/1 var(--sans); letter-spacing: 0.02em; text-align: center; color: var(--num-pop-ground); }
+  @supports not (field-sizing: content) { .numpop .popvalue input[type="text"] { width: 5ch; } }      /* where a field can't size to its text (older Safari): five figures' room */
   .numpop .popvalue input[type="text"]:focus { outline: 0; }      /* the value, chosen to be typed over, says it */
   .numpop .popvalue input[type="text"]::selection { background: var(--white); color: var(--num-pop-ground); }      /* chosen to be typed over: white behind the figures */
   .numpop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--num-pop-gap); min-height: 0;
@@ -1056,12 +1060,12 @@
      stuff get a lower middle button between minus and plus on controller"): a dark pill as the discs are, LINK in the pixel font at 12; linked, white with LINKED in dark */
   .numpop .row > input[type="range"] { grid-row: 1; }
   .numpop .row .steps { grid-row: 2; grid-column: 1; }      /* placed outright, so the pill can lie over its middle (one left to find its own place would open a column beside it) */
-  .numpop .row.haslink > .linkpill { position: static; translate: none; grid-row: 2; justify-self: center; align-self: center; z-index: 1; width: var(--num-pop-small); height: var(--num-pop-small); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); font-size: var(--t-pixel-legend); line-height: 1.2; white-space: pre-line; text-align: center; }      /* a disc as − and + are (4.86, Okay: "Link buttons round like plus"); linked, LINK over +ED */
+  .numpop .row.haslink > .linkpill { position: static; translate: none; grid-row: 2; justify-self: center; align-self: center; z-index: 1; width: var(--num-pop-disc-d); height: var(--num-pop-disc-d); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); font-size: var(--t-pixel-legend); line-height: 1.2; white-space: pre-line; text-align: center; }      /* a disc as − and + are (4.86, Okay: "Link buttons round like plus"); linked, LINK over +ED */
   .numpop .row.haslink > .linkpill:hover { background: var(--num-pop-hover); }
   .numpop .row.haslink > .linkpill.on { background: var(--white); color: var(--num-pop-disc); }
-  .numpop .row .steps > .step { flex: none; display: grid; place-items: center; width: var(--num-pop-small); height: var(--num-pop-small); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); }
+  .numpop .row .steps > .step { flex: none; display: grid; place-items: center; width: var(--num-pop-disc-d); height: var(--num-pop-disc-d); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); }
   .numpop .row .steps > .step:hover { background: var(--num-pop-hover); }
-  .numpop .row .steps > .step > svg { width: calc(var(--num-pop-sign) * var(--num-pop-s)); height: calc(var(--num-pop-sign) * var(--num-pop-s)); }      /* the − and +, as the controller is scaled */
+  .numpop .row .steps > .step > svg { width: calc(var(--num-pop-sign) * var(--num-pop-s) * var(--num-pop-disc-k)); height: calc(var(--num-pop-sign) * var(--num-pop-s) * var(--num-pop-disc-k)); }      /* the − and +, as the controller is scaled */
   /* the Positions preview (#251, 4.50.1): the hand's detail box, round — no frame, the circle as large as the box allows
      with a unit round it; a mark at every position, used in ink, skipped faint, the first a dot */
   .detail.round { border: 0; }
@@ -7173,7 +7177,7 @@ function window_text(kind, mo, lang = "en", form = 0) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.92.6";
+var VERSION = "beta 4.92.7";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -15121,9 +15125,9 @@ var SIGNS = {
 };
 var BIG = {
   // the controller's − and + (Okay's second drawing, 18 Oct 2026, controller 2.svg): square ends, white on the discs; at the controller's three quarters, 6 thick and 30 long on 33, drawn at the size shown (R33)
-  // at 70 % of that since 24 Oct 2026 (Okay: "plus minus and number line 70% of now"): 4.2 thick, 21 long, on 23.1
-  plus: icon(`<path d="M11.55 1.05V22.05M1.05 11.55H22.05" ${sw(4.2)} stroke-linecap="butt"/>`, 23.1),
-  minus: icon(`<path d="M1.05 11.55H22.05" ${sw(4.2)} stroke-linecap="butt"/>`, 23.1)
+  // at 70 % × 85 % of that (Okay, 24 Oct 2026: "plus minus … 70% of now"; 18:31: "a bit more smaller %15"): 3.57 thick, 17.85 long, on 19.635
+  plus: icon(`<path d="M9.8175 0.8925V18.7425M0.8925 9.8175H18.7425" ${sw(3.57)} stroke-linecap="butt"/>`, 19.635),
+  minus: icon(`<path d="M0.8925 9.8175H18.7425" ${sw(3.57)} stroke-linecap="butt"/>`, 19.635)
 };
 var STEP = {
   plus: icon(`<path d="M8.25 2.25V14.25M2.25 8.25H14.25"/>`),
@@ -19809,7 +19813,9 @@ var DialTool = class _DialTool {
     const r = this.build_row({ ...row, inpop: true, side: false, block: false, tip: null });
     const name = r.el.querySelector(":scope > .menulabel, :scope > label"), field = r.el.querySelector('input[type="text"]');
     if (name) name.hidden = true;
-    const head = el("div", { className: "pophead" }, ...field ? [el("div", { className: "popvalue" }, el("span", { className: "popword", ariaHidden: "true", textContent: row.text || "" }), field)] : []);
+    const steps = r.el.querySelector(".steps");
+    if (steps && row.text && !r.el.querySelector(".linkpill")) steps.lastElementChild.before(el("span", { className: "popword", ariaHidden: "true", textContent: row.text }));
+    const head = el("div", { className: "pophead" }, ...field ? [el("div", { className: "popvalue" }, field)] : []);
     head.hidden = !field;
     const box3 = el("div", { className: "numpop", id: "value-pop", role: "dialog", ariaLabel: row.text || "" }, head, r.el);
     const home = button.closest(".row"), parts = home ? [...home.children].filter((c) => !c.matches("label, .menulabel, .popname, .linkpill") && c.offsetParent) : [];
