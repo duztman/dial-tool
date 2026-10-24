@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.92.13 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.92.14 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -335,8 +335,8 @@
   .pillswitch.many { flex-wrap: wrap; }
   /* a toggle (#525): a small track as tall as the Gallery pill, a dot travelling in it. Off: its outline, the dot at the
      left in the outline's colour, its row's name dark. On: the dot white at the right, on the filled track */
-  .toggle { position: relative; flex: none; width: var(--toggle-w); height: var(--toggle-h); padding: 0; border: var(--hair) solid var(--ink); border-radius: var(--round-pill); background: none; }
-  .toggle > .knob { position: absolute; top: 50%; left: var(--u1); width: var(--toggle-dot); height: var(--toggle-dot); border-radius: 50%; background: var(--ink); translate: 0 -50%; transition: left var(--iris-time) var(--view-ease), background var(--iris-time); }
+  .toggle { position: relative; flex: none; width: var(--toggle-w); height: var(--toggle-h); padding: 0; border: var(--hair) solid var(--uiblack, var(--ink)); border-radius: var(--round-pill); background: none; }      /* off: all black — its outline, its dot, its name (Okay, 24 Oct 2026, 19:40: "Off; colors all black") */
+  .toggle > .knob { position: absolute; top: 50%; left: var(--u1); width: var(--toggle-dot); height: var(--toggle-dot); border-radius: 50%; background: var(--uiblack, var(--ink)); translate: 0 -50%; transition: left var(--iris-time) var(--view-ease), background var(--iris-time); }
   .toggle[aria-checked="true"] { background: var(--uiblack, var(--ink)); border-color: var(--uiblack, var(--ink)); }
   .toggle[aria-checked="true"] > .knob { left: calc(100% - var(--u1) - var(--toggle-dot)); background: var(--white); }
   /* free: each choice a pill of its own, wrapping, a half unit apart (#524; Okay, 24 Oct 2026: "Options can be free living single pills") */
@@ -466,10 +466,11 @@
      its toggle, so the toggles stand in line (":: Align labels to buttons right"); names in small capitals, a little
      tracked and a little heavier ("Try all caps small. Bit more tracking bit weight") */
   .shenticks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .shenticks > .row.seg { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--u2); min-height: var(--control); padding: var(--u1) var(--u4) var(--u1) 0; box-shadow: none; background: none; }
+  .shenticks { grid-auto-rows: var(--control); padding-block: var(--u2); }      /* every line one height, the same room over the first and under the last (19:40: "Greens show equal paddings and alignment") */
+  .shenticks > .row.seg { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--u2); min-height: 0; padding: 0 var(--u4) 0 0; box-shadow: none; background: none; }
   .shenticks > .row.seg > label { grid-column: 1; text-align: right; font-size: var(--t-xs); font-weight: 500; letter-spacing: var(--track-50); text-transform: uppercase; }
   .shenticks > .row.seg > .toggle { grid-column: 2; }
-  .shenticks > .row:last-child { grid-area: 1 / 3 / -1 / 4; grid-row: 1 / span 3; align-self: stretch; border-left: var(--hair) solid var(--ink); }      /* All in the third column, the whole height; the others flow two to a line beside it */
+  .shenticks > .row:last-child { grid-column: 3; grid-row: 1 / span 3; align-self: stretch; padding-left: var(--u4); border-left: var(--hair) solid var(--ink); }      /* All: its third, the whole height, its name and toggle in line with the others' right edge, on the block's middle */      /* All in the third column, the whole height; the others flow two to a line beside it */
   .panelcopy { position: fixed; z-index: 7; pointer-events: none; }      /* the panel's still copy sliding away while the modes change (panel_copy() in app.js) */      /* a phone's drawer gripper (8-narrow.css); a wider screen has no drawer */
   .panel { position: relative; z-index: 5; width: var(--panel-w); translate: calc(-1 * var(--panel-w) * var(--away)) 0; }
   .mast { display: flex; align-items: center; translate: calc(var(--panel-w) * var(--away)) 0; z-index: 6; }
@@ -739,7 +740,8 @@
   .row > label:first-child { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .row > .ownnames { grid-column: 3 / -1; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: var(--u1); padding: var(--u1) 0; }      /* your own words, side by side (#515, #516) */
   .ownnames > .ownname { min-width: 0; padding: 0 var(--u1); text-align: center; }      /* as typed: what the window draws */
-  .row.off > label:first-child { color: var(--uiblack, var(--ink)); }      /* a toggle that is off: its name goes dark (#525; Okay, 24 Oct 2026: "Off text label also goes black") */
+  .row.off > label:first-child { color: var(--uiblack, var(--ink)); }
+  .row:has(> .toggle[aria-checked="true"]) > label:first-child { color: var(--white); }      /* on: its name white (19:40: "On text white switch to the right and pill filled 'black'") */      /* a toggle that is off: its name goes dark (#525; Okay, 24 Oct 2026: "Off text label also goes black") */
   .row > label.strong:first-child { color: var(--ink); font-weight: 600; }      /* a name where a label would stand: the selected ring's, before its kinds */
   /* a label with a small menu beside it: the words, then a boxed arrow with the browser's own menu lying over it */
   .menulabel { display: flex; align-items: center; gap: var(--unit); min-width: 0; }
@@ -7200,7 +7202,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.92.13";
+var VERSION = "beta 4.92.14";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
