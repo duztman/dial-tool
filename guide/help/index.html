@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light">
-<meta name="checked" content="beta 4.92.11">
+<meta name="checked" content="beta 4.92.18">
 <title>Dial Tool · Help</title>
 <meta name="description" content="Every pane and control of Dial Tool, in one sentence each.">
 <style>
@@ -14,7 +14,7 @@
 :root{--bug:#c8331b;--map-w:211px;--map-h:132px;--map-frame:7px;--map-ring:5px;--paper:#f3f1ec;--ink:#1b1a18;--mute:#77736b;--line:#d8d4cb;--gut:16px}
 *{box-sizing:border-box}html{scroll-padding-top:96px;scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-.topbar{position:sticky;top:0;z-index:10;background:var(--paper);border-bottom:1px solid var(--line)}
+.topbar{position:sticky;top:0;z-index:10;background:var(--paper);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
 .top{display:grid;grid-template-columns:190px 1fr;gap:48px;align-items:baseline;max-width:1200px;margin:0 auto;padding:18px var(--gut)}
 .brand{display:flex;align-items:baseline;gap:10px;line-height:1;font-size:26px;font-weight:600;letter-spacing:-.01em;text-decoration:none;white-space:nowrap}
 .brand .ic{margin:0;align-self:center}.brand .ic svg{width:1em;height:1em}
@@ -33,7 +33,7 @@ nav a.on{color:var(--ink);font-weight:600}
 nav .eye{position:absolute;left:4px;width:18px;height:18px;color:var(--mute);opacity:0;transition:opacity .2s}
 nav .grp.on .eye{opacity:1}
 nav b{display:flex;align-items:center;margin:0 0 2px;color:var(--ink);font-weight:600}
-.intro p{margin:.5em 0 0;color:var(--mute);max-width:60ch}
+.intro p{margin:.24em 0 0;color:var(--mute);max-width:60ch}
 h2{clear:both;position:relative;margin:56px 0 4px;font-size:26px;font-weight:600;padding-bottom:8px;border-bottom:1px solid transparent}
 h2::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:var(--ink);z-index:1}
 h3{margin:42px 0 9px;font-size:19px;font-weight:600}
@@ -105,7 +105,7 @@ table.two tbody th{width:9em;font-weight:500}table.two thead th:first-child{widt
 <body>
 <div class="topbar"><header class="top">
   <a class="brand" href="../" title="Open the tool"><i class="ic" data-ic="mark"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="7" stroke-width="1.375"></circle><path d="M1.62 10.88L10.88 1.62M6.5 6H14.71M6.5 6V14.84M10 6V10H6.5M10 10L12.95 12.95" stroke-width="1"></path></svg></i>Dial Tool</a>
-  <div class="page"><span class="title">Help</span><span class="ver">beta 4.92.11</span><a class="bug" href="#report">Report a bug</a></div>
+  <div class="page"><span class="title">Help</span><span class="ver">beta 4.92.18</span><a class="bug" href="#report">Report a bug</a></div>
 </header></div>
 <div class="wrap">
 <nav aria-label="Contents">
@@ -167,7 +167,7 @@ table.two tbody th{width:9em;font-weight:500}table.two thead th:first-child{widt
   <dt>Scale everything with it</dt><dd>On: rings, hands and windows grow and shrink with the diameter.</dd>
   <dt>Weight %</dt><dd>Every width on the dial at once: marks, bands, hands, frames. Lengths and places stay; one undo takes it back.</dd>
   <dt>Centre hole</dt><dd>The hole for the hand pipes, as Ø; 0 for none.</dd>
-  <dt>Background</dt><dd>Add image… keeps a place for a picture under the print; not built yet.</dd>
+  <dt>Background</dt><dd>A note: your own picture, from an SVG file, comes after v1.</dd>
 </dl>
 <h3>Page · Colours · Reset</h3>
 <dl>
@@ -198,7 +198,7 @@ table.two tbody th{width:9em;font-weight:500}table.two thead th:first-child{widt
   <dt>12 o’clock · first position</dt><dd>A markers ring's first marker: Style, Scale ×, Gap.<span class="row"><span><i class="ic" data-ic="twelve-same"><svg viewBox="0 0 38 27" width="38" height="27" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="16.5" y="4" width="5" height="19" fill="currentColor" stroke="none"></rect></svg></i>Same</span><span><i class="ic" data-ic="twelve-double"><svg viewBox="0 0 38 27" width="38" height="27" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="11.5" y="4" width="5" height="19" fill="currentColor" stroke="none"></rect><rect x="21.5" y="4" width="5" height="19" fill="currentColor" stroke="none"></rect></svg></i>Double</span><span><i class="ic" data-ic="twelve-triangle"><svg viewBox="0 0 38 27" width="38" height="27" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H27L19 23Z" fill="currentColor" stroke="none"></path></svg></i>Triangle</span><span><i class="ic" data-ic="twelve-none"><svg viewBox="0 0 38 27" width="38" height="27" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="17" cy="4.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="22.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="19" cy="4.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="19" cy="22.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="4.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="22.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="6.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="6.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="8.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="8.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="10.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="10.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="12.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="12.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="14.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="14.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="16.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="16.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="18.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="18.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="17" cy="20.5" r="0.625" fill="currentColor" stroke="none"></circle><circle cx="21" cy="20.5" r="0.625" fill="currentColor" stroke="none"></circle></svg></i>None</span></span></dd>
   <dt>Numerals</dt><dd>Labels on its heading line: Arabic, Roman · IIII, Roman · IV, Eastern Arabic, Chinese, Words, Custom or Numbers (First number, Step, Digits, Start again after); then Placement:<span class="row"><span><i class="ic" data-ic="place-upright"><svg viewBox="0 0 38 27" width="38" height="27" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="19" cy="13.5" r="11.5" stroke-width="1.25" opacity="0.45"></circle><path d="M19 9L19 5.5M25.495 12.75L25.495 9.25M25.495 20.25L25.495 16.75M19 24L19 20.5M12.505 20.25L12.505 16.75M12.505 12.75L12.505 9.25" stroke-width="1.25"></path><path d="M19 3L20.75 5.75L17.25 5.75ZM25.495 6.75L27.245 9.5L23.745 9.5ZM25.495 14.25L27.245 17L23.745 17ZM19 18L20.75 20.75L17.25 20.75ZM12.505 14.25L14.255 17L10.755 17ZM12.505 6.75L14.255 9.5L10.755 9.5Z" fill="currentColor" stroke="none"></path></svg></i>Upright</span><span><i class="ic" data-ic="place-radial"><svg viewBox="0 0 38 27" width="38" height="27" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="19" cy="13.5" r="11.5" stroke-width="1.25" opacity="0.45"></circle><path d="M19 9L19 5.5M22.897 11.25L25.928 9.5M22.897 15.75L25.928 17.5M19 18L19 21.5M15.103 15.75L12.072 17.5M15.103 11.25L12.072 9.5" stroke-width="1.25"></path><path d="M19 3L20.75 5.75L17.25 5.75ZM28.093 8.25L26.587 11.141L24.837 8.109ZM28.093 18.75L24.837 18.891L26.587 15.859ZM19 24L17.25 21.25L20.75 21.25ZM9.907 18.75L11.413 15.859L13.163 18.891ZM9.907 8.25L13.163 8.109L11.413 11.141Z" fill="currentColor" stroke="none"></path></svg></i>Radial</span><span><i class="ic" data-ic="place-radial-auto-flip"><svg viewBox="0 0 38 27" width="38" height="27" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="19" cy="13.5" r="11.5" stroke-width="1.25" opacity="0.45"></circle><path d="M19 9L19 5.5M22.897 11.25L25.928 9.5M28.093 18.75L25.062 17M19 24L19 20.5M9.907 18.75L12.938 17M15.103 11.25L12.072 9.5" stroke-width="1.25"></path><path d="M19 3L20.75 5.75L17.25 5.75ZM28.093 8.25L26.587 11.141L24.837 8.109ZM22.897 15.75L26.154 15.609L24.404 18.641ZM19 18L20.75 20.75L17.25 20.75ZM15.103 15.75L13.596 18.641L11.846 15.609ZM9.907 8.25L13.163 8.109L11.413 11.141Z" fill="currentColor" stroke="none"></path></svg></i>Radial, auto-flip</span><span><i class="ic" data-ic="place-on-path"><svg viewBox="0 0 38 27" width="38" height="27" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="19" cy="13.5" r="11.5" stroke-width="1.25" opacity="0.45"></circle><path d="M16 6L19.5 6M23.995 7.152L25.745 10.183M26.995 14.652L25.245 17.683M22 21L18.5 21M14.005 19.848L12.255 16.817M11.005 12.348L12.755 9.317" stroke-width="1.25"></path><path d="M22 6L19.25 7.75L19.25 4.25ZM26.995 12.348L24.105 10.842L27.136 9.092ZM23.995 19.848L23.855 16.592L26.886 18.342ZM16 21L18.75 19.25L18.75 22.75ZM11.005 14.652L13.895 16.158L10.864 17.908ZM14.005 7.152L14.145 10.408L11.114 8.658Z" fill="currentColor" stroke="none"></path></svg></i>On path</span></span></dd>
   <dt>Band</dt><dd>Fill % of step: how much of each step the band covers.</dd>
-  <dt>Edit one numeral · Edit one mark</dt><dd>One numeral or mark of its own: Radius ±, Angle ± °, Rotate °, Scale ×; a mark also its Shape.</dd>
+  <dt>Edit one numeral · Edit one mark</dt><dd>One numeral or mark of its own: Radius ±, Angle ± °, Rotate °, Scale ×; a mark also its Shape; a numeral also its Font and Colour (As the ring takes the font back).</dd>
 </dl>
 <p class="watch">Markers and numerals leave a window's position empty; other marks are cut back from the window's clear zone.</p>
 
@@ -252,7 +252,7 @@ table.two tbody th{width:9em;font-weight:500}table.two thead th:first-child{widt
   <dt>Inks · sheets</dt><dd>A mask per ink; a print sheet with Paper, Copies, Room between and a cut line round each; a spec sheet.</dd>
   <dt>A set of files</dt><dd>Tick the files you want; Export ticked writes them all.</dd>
   <dt>Moving picture</dt><dd>The dial running, as MP4 or GIF: Seconds, fps, Size px.</dd>
-  <dt>Share dial as link</dt><dd>Copy link: a link that opens this dial anywhere. It holds only what you changed and may stop opening when the tool changes; to keep a dial, save a settings file.</dd>
+  <dt>Share dial as link</dt><dd>Copy link: a link that opens this dial anywhere; once it opens, the address bar shows the site alone, and a reload keeps the dial. It holds only what you changed and may stop opening when the tool changes; to keep a dial, save a settings file.</dd>
   <dt>Settings file</dt><dd>Save… · Load…: every value, to keep a dial for good.</dd>
   <dt>Log · Gallery</dt><dd>What each export did; dials to open and take apart.</dd>
 </dl>
@@ -279,7 +279,7 @@ table.two tbody th{width:9em;font-weight:500}table.two thead th:first-child{widt
   <dt>Watch</dt><dd>View, Case, Metal, Case colour; Insert and bracelet for the diver; Strap: leather colour, or NATO with Pattern stripes or one colour.</dd>
   <dt>Light</dt><dd>Style and Lighting; Sun From and Height, or move the sun on the drawing; Shadows: Darkness %, Soft shadows; Flare and Glass reflection, each with its sizes, while Effects (blurs, flare, shine, outline) is on.</dd>
   <dt>Backdrop</dt><dd>Plain colours, presets and gradients.</dd>
-  <dt>At the panel's foot</dt><dd>Shadows, Blurs, Flare, Bevels as switches, and All for the four.</dd>
+  <dt>At the panel's foot</dt><dd>Shadows, Blurs, Gradients, Flare, Bevels as switches, and All for the five.</dd>
   <dt>Export</dt><dd>The watch as PNG (Pixels) or PDF at the drawing's real size.</dd>
 </dl>
 
@@ -370,7 +370,7 @@ table.two tbody th{width:9em;font-weight:500}table.two thead th:first-child{widt
   <p id="report-note" role="status"></p>
 </form>
 
-<footer>Dial Tool · beta 4.92.11 · help written 24 Oct 2026 · <a href="../">open the tool</a></footer>
+<footer>Dial Tool · beta 4.92.18 · help written 24 Oct 2026 · <a href="../">open the tool</a></footer>
 </main>
 </div>
 <div class="box" id="box" role="dialog" aria-label="Where on the screen"><figure><img alt=""><figcaption></figcaption></figure></div>

@@ -120,7 +120,7 @@ Settings file
 Log
 Gallery
 Ink
-Ink height
+All inks at once
 Watch
 View
 Case
