@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.92.25 (web version) · 24 Oct 2026
+
+- **Added guides are dragged on the preview** (#527; Okay: placed "Both" ways): while the Guides list is open and the guides are on, each added guide has a handle in its own colour, as a ring's handles are drawn — a line a triangle on it at four fifths of the dial's radius, dragged round (0–180°); a crosshair a square on its point, dragged anywhere; a circle a disc on it at half past four (clear of the list), dragged in or out. Their numbers in the list follow; pressing a handle doesn't put the list away. A hidden guide has no handle.
+- Checked: links, labels, complications, the window test (new: a crosshair and a circle dragged by their handles, their numbers following, the list open).
+
 ## beta 4.92.24 (web version) · 24 Oct 2026
 
 - **The Guides popup, as Okay drew it** (#527; his answers: "Which rings show guides", "Both", "The last added", "Steps of today's", "A small popup by the dot"): two columns — Rings at the left with its menu (Selected · All · None) on its heading and a line per ring; the centre hole, the centre lines and Windows (its own menu) at the right. A white line, then *Added* with a minus that takes the last added away, its lines in the right column. A guide's line is its name, its colour as a dot and a tick: the dot opens None and the eight colours under its line (the chosen one ringed in its own colour); the tick hides it and brings it back in the colour it had. Under them, always in view: Add · Line · Crosshair · Circle; Thickness 1 · 2 · 3 (steps of 0.75, the start) · Reset All.

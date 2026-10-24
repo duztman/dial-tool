@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.92.24 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.92.25 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7255,7 +7255,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.92.24";
+var VERSION = "beta 4.92.25";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -16648,7 +16648,7 @@ var DialTool = class _DialTool {
   pressed(e) {
     const on = (q) => e.target.closest && e.target.closest(q);
     if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox")) this.pop_close();
-    if (this.guides_open && !$("#guide-list").hidden && !on(".guides")) this.guides_open(false);
+    if (this.guides_open && !$("#guide-list").hidden && !on(".guides, .handles [data-more]")) this.guides_open(false);
     if (this.shadows_open && !$("#shadow-list").hidden && !on(".shadows")) this.shadows_open(false);
     if (this.ground_open && !$("#ground-pop").hidden && !on(".backdrops, #colour-pop")) this.ground_open(false);
     if (this.versions_open && !$("#version-list").hidden && !on(".versions")) this.versions_open(false);
@@ -17726,10 +17726,13 @@ var DialTool = class _DialTool {
   draw_handles() {
     const H2 = this.handles;
     if (!H2) return;
+    const more = this.more_handles();
     const R = this.ring(), k = R ? ring_guide(this.S, this.S.ui_ring) : null;
     if (this.S.ui_show || this.unselected || this.S.ui_section !== 1 || !this.guides_drawn || !R || !R.on || k === null) {
-      H2.replaceChildren();
-      this.handles_key = "";
+      if ("more:" + more.key !== this.handles_key) {
+        this.handles_key = "more:" + more.key;
+        H2.innerHTML = more.parts.join("");
+      }
       return;
     }
     const kind = kind_of(R), ext = { ticks: R.len, markers: R.len, band: R.width }[kind] || 0;
@@ -17739,7 +17742,7 @@ var DialTool = class _DialTool {
     const free2 = angles.length > 1 ? a0 + ((angles[1] - a0) % 360 + 360) % 360 / 2 : a0 + 15;
     const edge = Math.abs(outer - R.r) >= Math.abs(R.r - inner) ? outer : inner;
     const span = Math.min(Math.max(+R.span || 360, 1), 360), out = outer + HANDLE_OUT / this.z;
-    const key = [this.S.ui_ring, R.r, edge, outer, a0, free2, span, this.z, this.S.out_mirror, k].join();
+    const key = [this.S.ui_ring, R.r, edge, outer, a0, free2, span, this.z, this.S.out_mirror, k, more.key].join();
     if (key === this.handles_key) return;
     this.handles_key = key;
     const tone2 = GUIDE_COLOURS[k], s = 1 / this.z, flip = this.S.out_mirror ? -1 : 1;
@@ -17758,12 +17761,38 @@ var DialTool = class _DialTool {
       return `<g class="handle ${w}" data-handle="${w}" data-tip="${tip[w]}" transform="translate(${at(r, a)}) scale(${(flip * s).toFixed(6)} ${(-s).toFixed(6)}) rotate(${(flip * turn).toFixed(3)})"><circle class="reach" r="${HANDLE_REACH}"/><circle class="seat" r="${HANDLE_SEAT}"/>${shape3[w]}</g>`;
     });
     H2.style.setProperty("--handle", tone2);
-    H2.innerHTML = parts.join("");
+    H2.innerHTML = parts.join("") + more.parts.join("");
+  }
+  /** the guides added by hand, each with a handle in its own colour while the Guides list is open (#527; Okay, 24 Oct
+   *  2026: placed "Both" ways — dragged here, and by the numbers in its line): a line by a triangle on it, turned round;
+   *  a crosshair by a square on its point, moved anywhere; a circle by a disc on it, dragged in or out. */
+  more_handles() {
+    const S = this.S, list = $("#guide-list");
+    if (S.ui_show || !S.guides || !list || list.hidden || !(S.gd_more || []).length) return { key: "", parts: [] };
+    const s = 1 / this.z, flip = S.out_mirror ? -1 : 1, R0 = S.dial_d / 2;
+    const at = (r, a) => clock_point(r, a).map((v) => v.toFixed(4)).join(" ");
+    const parts = S.gd_more.map((g, i2) => {
+      if (!(g.k >= 0)) return "";
+      const kind = GUIDE_MORE[g.kind];
+      const [r, a, sign, turn, tip] = kind === "line" ? [R0 * 0.8, g.a || 0, `<path d="M${-HANDLE_R} ${-HANDLE_R}L${HANDLE_R} 0L${-HANDLE_R} ${HANDLE_R}Z"/>`, (g.a || 0) + 90, "Line: drag round"] : kind === "crosshair" ? [g.r || 0, g.a || 0, `<rect x="${-HANDLE_R}" y="${-HANDLE_R}" width="${2 * HANDLE_R}" height="${2 * HANDLE_R}"/>`, 0, "Crosshair: drag it anywhere"] : [g.r || 0, 135, `<circle r="${HANDLE_R}"/>`, 0, "Circle: drag in or out"];
+      return `<g class="handle more" data-more="${i2}" data-tip="${tip}" style="--handle: ${GUIDE_COLOURS[g.k]}" transform="translate(${at(r, a)}) scale(${(flip * s).toFixed(6)} ${(-s).toFixed(6)}) rotate(${(flip * turn).toFixed(3)})"><circle class="reach" r="${HANDLE_REACH}"/><circle class="seat" r="${HANDLE_SEAT}"/>${sign}</g>`;
+    });
+    return { key: JSON.stringify([S.gd_more, this.z, S.out_mirror, S.dial_d]), parts };
   }
   /** a handle dragged: the pointer, in mm on the dial, sets its value as the row would (set_value). */
   handle_events() {
     const H2 = this.handles;
     H2.addEventListener("pointerdown", (e) => {
+      const m = e.target.closest("[data-more]");
+      if (m) {
+        e.stopPropagation();
+        e.preventDefault();
+        this.more_drag = { i: +m.dataset.more, x: e.clientX, y: e.clientY, moved: false };
+        H2.setPointerCapture(e.pointerId);
+        H2.classList.add("dragging");
+        this.tag_hide();
+        return;
+      }
       const g = e.target.closest("[data-handle]");
       if (!g) return;
       e.stopPropagation();
@@ -17798,6 +17827,18 @@ var DialTool = class _DialTool {
       this.tag_hide();
     });
     H2.addEventListener("pointermove", (e) => {
+      const m = this.more_drag;
+      if (m) {
+        if (!m.moved && Math.hypot(e.clientX - m.x, e.clientY - m.y) < 3) return;
+        m.moved = true;
+        const b3 = this.svg.getBoundingClientRect(), [x3, y2] = this.to_mm([e.clientX - b3.left, e.clientY - b3.top]);
+        const r = +Math.hypot(x3, y2).toFixed(2), a = +((Math.atan2(x3, y2) * 180 / Math.PI + 360) % 360).toFixed(1);
+        const g = this.S.gd_more[m.i], kind = GUIDE_MORE[g.kind];
+        this.S.gd_more[m.i] = kind === "line" ? { ...g, a: +(a % 180).toFixed(1) } : kind === "crosshair" ? { ...g, r, a } : { ...g, r: Math.max(r, 0.05) };
+        this.sync_rows();
+        this.render();
+        return;
+      }
       const d = this.handle_drag;
       if (!d) return;
       if (!d.moved && Math.hypot(e.clientX - d.x, e.clientY - d.y) < 3) return;
@@ -17828,6 +17869,7 @@ var DialTool = class _DialTool {
     });
     const end = () => {
       this.handle_drag = null;
+      this.more_drag = null;
       H2.classList.remove("dragging");
     };
     H2.addEventListener("pointerup", end);
@@ -17997,6 +18039,7 @@ var DialTool = class _DialTool {
     const open = (on) => {
       list.hidden = !on;
       more.setAttribute("aria-expanded", String(on));
+      this.render();
       if (!on) return;
       this.sync_guides();
       const m = this.main.getBoundingClientRect(), g = this.guides_tick.getBoundingClientRect();

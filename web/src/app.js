@@ -1451,7 +1451,7 @@ class DialTool {
   pressed(e) {
     const on = (q) => e.target.closest && e.target.closest(q);
     if (this.pop && this.pop.at && !on("#colour-pop") && !on(".swatch, .colour, .backdropbox")) this.pop_close();
-    if (this.guides_open && !$("#guide-list").hidden && !on(".guides")) this.guides_open(false);
+    if (this.guides_open && !$("#guide-list").hidden && !on(".guides, .handles [data-more]")) this.guides_open(false);      // an added guide's handle is the list's too (#527)
     if (this.shadows_open && !$("#shadow-list").hidden && !on(".shadows")) this.shadows_open(false);
     if (this.ground_open && !$("#ground-pop").hidden && !on(".backdrops, #colour-pop")) this.ground_open(false);
     if (this.versions_open && !$("#version-list").hidden && !on(".versions")) this.versions_open(false);
@@ -2266,8 +2266,12 @@ class DialTool {
   draw_handles() {
     const H = this.handles;
     if (!H) return;
+    const more = this.more_handles();      // the added guides' handles, while the Guides list is open (#527)
     const R = this.ring(), k = R ? G.ring_guide(this.S, this.S.ui_ring) : null;
-    if (this.S.ui_show || this.unselected || this.S.ui_section !== 1 || !this.guides_drawn || !R || !R.on || k === null) { H.replaceChildren(); this.handles_key = ""; return; }      // the selected ring's, shown to start (#486) and always with its guide (draw): a numeral being nudged hides both
+    if (this.S.ui_show || this.unselected || this.S.ui_section !== 1 || !this.guides_drawn || !R || !R.on || k === null) {      // the selected ring's, shown to start (#486) and always with its guide (draw): a numeral being nudged hides both
+      if ("more:" + more.key !== this.handles_key) { this.handles_key = "more:" + more.key; H.innerHTML = more.parts.join(""); }      // its own kind of key, so a cleared key ("") never passes for "nothing to show"
+      return;
+    }
     const kind = G.kind_of(R), ext = { ticks: R.len, markers: R.len, band: R.width }[kind] || 0;
     let outer = R.r + G.from_shift(R, ext), inner = outer - ext;
     if (G.has_text(R)) [inner, outer] = G.text_band(R);      // the band (#488)
@@ -2275,7 +2279,7 @@ class DialTool {
     const free = angles.length > 1 ? a0 + ((((angles[1] - a0) % 360) + 360) % 360) / 2 : a0 + 15;
     const edge = Math.abs(outer - R.r) >= Math.abs(R.r - inner) ? outer : inner;      // the edge away from the dotted line
     const span = Math.min(Math.max(+R.span || 360, 1), 360), out = outer + HANDLE_OUT / this.z;
-    const key = [this.S.ui_ring, R.r, edge, outer, a0, free, span, this.z, this.S.out_mirror, k].join();
+    const key = [this.S.ui_ring, R.r, edge, outer, a0, free, span, this.z, this.S.out_mirror, k, more.key].join();
     if (key === this.handles_key) return;          // nothing moved: the handles stay as they are
     this.handles_key = key;
     const tone = G.GUIDE_COLOURS[k], s = 1 / this.z, flip = this.S.out_mirror ? -1 : 1;
@@ -2291,13 +2295,41 @@ class DialTool {
       return `<g class="handle ${w}" data-handle="${w}" data-tip="${tip[w]}" transform="translate(${at(r, a)}) scale(${(flip * s).toFixed(6)} ${(-s).toFixed(6)}) rotate(${(flip * turn).toFixed(3)})"><circle class="reach" r="${HANDLE_REACH}"/><circle class="seat" r="${HANDLE_SEAT}"/>${shape[w]}</g>`;      // each in a disc of the guide's colour (#486: "All resize etc handles get a guide colored disc to sit in")
     });
     H.style.setProperty("--handle", tone);
-    H.innerHTML = parts.join("");
+    H.innerHTML = parts.join("") + more.parts.join("");
+  }
+
+  /** the guides added by hand, each with a handle in its own colour while the Guides list is open (#527; Okay, 24 Oct
+   *  2026: placed "Both" ways — dragged here, and by the numbers in its line): a line by a triangle on it, turned round;
+   *  a crosshair by a square on its point, moved anywhere; a circle by a disc on it, dragged in or out. */
+  more_handles() {
+    const S = this.S, list = $("#guide-list");
+    if (S.ui_show || !S.guides || !list || list.hidden || !(S.gd_more || []).length) return { key: "", parts: [] };
+    const s = 1 / this.z, flip = S.out_mirror ? -1 : 1, R0 = S.dial_d / 2;
+    const at = (r, a) => G.clock_point(r, a).map((v) => v.toFixed(4)).join(" ");
+    const parts = S.gd_more.map((g, i) => {
+      if (!(g.k >= 0)) return "";      // a hidden guide has no handle
+      const kind = G.GUIDE_MORE[g.kind];
+      const [r, a, sign, turn, tip] = kind === "line" ? [R0 * 0.8, g.a || 0, `<path d="M${-HANDLE_R} ${-HANDLE_R}L${HANDLE_R} 0L${-HANDLE_R} ${HANDLE_R}Z"/>`, (g.a || 0) + 90, "Line: drag round"]
+        : kind === "crosshair" ? [g.r || 0, g.a || 0, `<rect x="${-HANDLE_R}" y="${-HANDLE_R}" width="${2 * HANDLE_R}" height="${2 * HANDLE_R}"/>`, 0, "Crosshair: drag it anywhere"]
+        : [g.r || 0, 135, `<circle r="${HANDLE_R}"/>`, 0, "Circle: drag in or out"];      // at half past four: clear of the list, which opens at the top right
+      return `<g class="handle more" data-more="${i}" data-tip="${tip}" style="--handle: ${G.GUIDE_COLOURS[g.k]}" transform="translate(${at(r, a)}) scale(${(flip * s).toFixed(6)} ${(-s).toFixed(6)}) rotate(${(flip * turn).toFixed(3)})"><circle class="reach" r="${HANDLE_REACH}"/><circle class="seat" r="${HANDLE_SEAT}"/>${sign}</g>`;
+    });
+    return { key: JSON.stringify([S.gd_more, this.z, S.out_mirror, S.dial_d]), parts };
   }
 
   /** a handle dragged: the pointer, in mm on the dial, sets its value as the row would (set_value). */
   handle_events() {
     const H = this.handles;
     H.addEventListener("pointerdown", (e) => {
+      const m = e.target.closest("[data-more]");
+      if (m) {                                      // an added guide's handle (#527)
+        e.stopPropagation(); e.preventDefault();
+        this.more_drag = { i: +m.dataset.more, x: e.clientX, y: e.clientY, moved: false };
+        H.setPointerCapture(e.pointerId);
+        H.classList.add("dragging");
+        this.tag_hide();
+        return;
+      }
       const g = e.target.closest("[data-handle]");
       if (!g) return;
       e.stopPropagation(); e.preventDefault();      // not a pan, not a press on the dial
@@ -2315,6 +2347,17 @@ class DialTool {
       this.tag_hide();
     });
     H.addEventListener("pointermove", (e) => {
+      const m = this.more_drag;
+      if (m) {
+        if (!m.moved && Math.hypot(e.clientX - m.x, e.clientY - m.y) < 3) return;
+        m.moved = true;
+        const b = this.svg.getBoundingClientRect(), [x, y] = this.to_mm([e.clientX - b.left, e.clientY - b.top]);
+        const r = +Math.hypot(x, y).toFixed(2), a = +((((Math.atan2(x, y) * 180 / Math.PI) + 360) % 360).toFixed(1));
+        const g = this.S.gd_more[m.i], kind = G.GUIDE_MORE[g.kind];
+        this.S.gd_more[m.i] = kind === "line" ? { ...g, a: +(a % 180).toFixed(1) } : kind === "crosshair" ? { ...g, r, a } : { ...g, r: Math.max(r, 0.05) };      // a line through the centre: 0–180° says it all
+        this.sync_rows(); this.render();
+        return;
+      }
       const d = this.handle_drag;
       if (!d) return;
       if (!d.moved && Math.hypot(e.clientX - d.x, e.clientY - d.y) < 3) return;      // a press that hasn't moved changes nothing
@@ -2343,7 +2386,7 @@ class DialTool {
       d.prev = span = Math.min(Math.max(Math.round(span), 1), 360);
       this.set_value("ring", "span", span);
     });
-    const end = () => { this.handle_drag = null; H.classList.remove("dragging"); };
+    const end = () => { this.handle_drag = null; this.more_drag = null; H.classList.remove("dragging"); };
     H.addEventListener("pointerup", end);
     H.addEventListener("pointercancel", end);
   }
@@ -2475,6 +2518,7 @@ class DialTool {
     more.setAttribute("aria-expanded", "false");
     const open = (on) => {
       list.hidden = !on; more.setAttribute("aria-expanded", String(on));
+      this.render();      // the added guides' handles come and go with the list (#527)
       if (!on) return;
       this.sync_guides();
       // its room: from its switch down to the preview's bottom edge, measured now (a long list ran past the top of an

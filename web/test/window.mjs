@@ -719,6 +719,20 @@ const dot_c = (sel) => page.$eval(sel, (d) => d.style.getPropertyValue("--c"));
   const added = await page.evaluate(() => { const t = window.dial_tool, lines = [...document.querySelectorAll("#guide-list .guidekind.added")]; return [t.S.gd_more.map((g) => g.kind).join(""), t.S.gd_more[0].a, t.S.gd_more[1].r, t.items.filter((i) => i.role === "guide").length, lines.length,
     lines.every((l) => Math.round(l.getBoundingClientRect().height) === 30 && l.querySelector(".gdot") && l.querySelector(".gtick")), lines.map((l) => l.querySelector(".name").scrollWidth <= l.querySelector(".name").clientWidth).join(" ")]; });
   await shot("4c20-guides");
+  { // dragged on the preview (#527; Okay, 24 Oct 2026: "Both"): each added guide has a handle in its colour while the list is open; dragged, its numbers follow and the list stays
+    const on = await S("S.guides"); if (!on) await page.click("#guides");
+    const hs = await page.$$eval(".handles [data-more]", (h) => h.map((g) => { const r = g.getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; }));
+    const drag = async ([x, y], dx, dy) => { await page.mouse.move(x, y); await page.mouse.down(); await page.mouse.move(x + dx / 2, y + dy / 2, { steps: 4 }); await page.mouse.move(x + dx, y + dy, { steps: 4 }); await page.mouse.up(); await frame(); };
+    const was = await S("JSON.stringify(S.gd_more)");
+    const free = await page.evaluate((hs) => hs.map(([x, y]) => !!document.elementFromPoint(x, y)?.closest(".handles [data-more]")), hs);      // the ones not under the list
+    if (free[1]) await drag(hs[1], -40, 30);
+    if (free[2]) await drag(hs[2], 40, 40);
+    const now = await page.evaluate(() => { const t = window.dial_tool; return [t.S.gd_more[1].a, t.S.gd_more[2].r, document.querySelector("#guide-more-1-a").value, !document.querySelector("#guide-list").hidden]; });
+    const w = JSON.parse(was);
+    check(hs.length === 3 && free[1] && free[2] && now[0] !== w[1].a && now[1] > w[2].r && now[2] === String(now[0]) && now[3], `an added guide is dragged on the preview by its handle: the crosshair moved to ${now[0]}°, the circle out to ${now[1]}; its numbers follow; the list stays open (${hs.length} handles, free ${free.join(" ")})`);
+    await page.evaluate((was) => { const t = window.dial_tool; t.S.gd_more = JSON.parse(was); t.sync_rows(); t.render(); }, was);
+    if (!on) await page.click("#guides");
+  }
   await page.click("#guide-more-last");
   const left = await S("S.gd_more.map((g) => g.kind).join('')");
   await page.evaluate(() => { const t = window.dial_tool; t.S.gd_more = []; t.sync_rows(); t.render(); });
