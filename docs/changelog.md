@@ -1,5 +1,17 @@
 # Dial Tool — changelog
 
+## beta 4.92.3 (web version) · 24 Oct 2026
+
+Okay's Oct 24 notes, group 1 (small things; build list group L):
+- **Versions on the top line**, a unit after undo · redo · ⌄ (#517) — the phone already had it so; one rule now for every width.
+- **Every chevron on the canvas points down** (#518): Case's and Shadows' turned; open, each turns as Guides' does.
+- **The Plate row is gone; the plate's colour stands on the Dial heading** (#533, his drawing).
+- **Show mode**: Style's top dark rule removed — a pane with no heading draws no line over its first row (#534); the canvas switches (Backdrop) have no fill, so no patch on the gradient backdrop ("same as main").
+- **Day names in full** (#515): a day window following the date gets *Written*: Short · Full (`day_form`, a window key, appended to the link keys; short to start, so older links draw as before). Full names are the language's own, in its capitals (SAMEDI, CUMARTESİ).
+- **Export › Share dial as link** (was *Link to this dial*, #523).
+- From the morning's session, on `dev` since: Edit one numeral lists only what is drawn, by its own words (#513); show mode's Case tiles are filled silhouettes (#520); show mode's Colours scroll with the rest (#521).
+- Checked: `npm run small`; crops of the canvas buttons, the Dial pane, show mode's Light tab and a full-name day window.
+
 ## beta 4.92.2 (web version) · 24 Oct 2026
 
 - **The pane "Nudge one numeral" is called "Edit one numeral"** (a ring of marks: "Edit one mark"), the first of Okay's Oct 24 notes (build list #513; "Nudge one numeral is named 'edit one numeral'"). The name only: the picker, the rows and the data are as they were; the font and colour for one numeral, and the picker's list, wait for his pictures (#513).

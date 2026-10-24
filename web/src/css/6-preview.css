@@ -47,7 +47,7 @@
   .onview { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: var(--hair) solid var(--line-faint); color: var(--on-canvas); user-select: none; }
   @media (hover: hover) { .onview:hover { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); } }      /* under the pointer its line is twice as thick: still no fill */
   /* undo · redo, before the Guides switch: two joined outlined buttons; pale when there is no step that way */
-  .undos { position: absolute; z-index: 3; top: var(--canvas-top); left: max(var(--canvas-inset), calc(var(--title-end) + var(--gap) - var(--panel-w) * (1 - var(--away)))); display: flex; flex-direction: column; align-items: flex-start; gap: var(--unit); }      /* undo · redo, Versions under them (#435); top left of the preview, beside the panel; the dial alone, they ride left with the preview's edge and stop short of the title (a gap after it) */
+  .undos { position: absolute; z-index: 3; top: var(--canvas-top); left: max(var(--canvas-inset), calc(var(--title-end) + var(--gap) - var(--panel-w) * (1 - var(--away)))); display: flex; align-items: flex-start; gap: var(--unit); }      /* undo · redo, then Versions on the same line, a unit after them (#517; Okay, 24 Oct 2026: "Versions go up, right of the top row buttons"); top left of the preview, beside the panel; the dial alone, they ride left with the preview's edge and stop short of the title (a gap after it) */
   .undopair { display: flex; }
   .undos:has([aria-expanded="true"]) { z-index: 6; }      /* with its steps or Versions open, over the switches lower down (Backdrop, the Tiny Preview) */
   .undobox { width: var(--control-large); }
@@ -134,10 +134,9 @@
   /* Shadows (a trial, 14 Oct 2026): the Guides switch's make, at the bottom left, the Backdrop switch standing on it a
      unit above (Okay, 23:05: "button goes down"); one higher, so its open list lies over Backdrop.
      Its sign is a sphere and its cast shadow (15 Oct 2026), so its room is Guides'.
-     Its list opens upward (.shadelist, after the guides' list), so its arrow points up while closed. */
+     Its list opens upward (.shadelist, after the guides' list); its arrow points down while closed and turns open, as
+     every chevron on the canvas does (#518; Okay, 24 Oct 2026: "Chevrons all point down"). */
   .shadows { position: absolute; z-index: 4; left: var(--stop-short); bottom: var(--canvas-inset); display: flex; }
-  .shadows .guidesmore svg { rotate: 180deg; }
-  .shadows .guidesmore[aria-expanded="true"] svg { rotate: 0deg; }
 
   /* the list: near black and round, like the colour pop-out (.night). A kind of guide is one line: its name, then
      round choices with room between them — none, then the eight colours. The chosen one stands in a thick ring of its own colour, a
@@ -273,6 +272,9 @@
      its words (Okay, 15 Oct 2026, 07:07: "these buttons get solid bg color when labels visible"): the iris switch open
      (ACTIVATE SHOWCASE), the labelled switches — always on a wide screen, on a phone while unfolded (8-narrow.css) */
   .irisbox[aria-expanded="true"], :is(.guidesbox, .guidesmore, .backdropbox, .casebox) { background: var(--canvas-fill); }
+  /* show mode: no fill — its backdrop is a gradient, so a fill of one colour stands out as a patch (Okay, 24 Oct 2026: "Align
+     these, remove bg, same as main"; on the dial side the fill is the backdrop's own colour and so not seen) */
+  .showing :is(.guidesbox, .guidesmore, .backdropbox, .casebox) { background: none; }
 
   /* show mode's Backdrop (ground_pop() in app.js; the Show Case's background popup): the Shadows list's night part, opening
      upward from its switch; one colour on the left, a gradient on the right, ten tiles each in rows of five, and under each

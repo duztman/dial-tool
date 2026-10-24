@@ -2,6 +2,15 @@
 
 Moved out of build-list.md on 19 Oct 2026 (beta 4.87). Numbers are never reused; the changelog says what each version built.
 
+## Okay's notes of 24 Oct 2026 (group L)
+
+| # | Item | Status |
+|---|---|---|
+| 517 | **Versions go up, right of the top-row buttons** | **done — 4.92.3**: on the top line, a unit after undo · redo · ⌄ (one rule for every width) |
+| 520 | **Cases are filled shapes, no outline** ("these cases are not outlines, these are filled in shapes with no outline") | **done — 4.92.3**: show mode's Case tiles are filled silhouettes |
+| 533 | **The Plate row goes; its colour stands on the Dial heading** (his drawing: the pill up on *Dial*, "Row gone") | **done — 4.92.3** |
+| 534 | **Remove Style's top dark rule** (show mode's Light tab) and **the canvas switches' fill in show mode** ("Align these, remove bg, same as main") | **done — 4.92.3** |
+
 ## The Show Case merge (22 Oct 2026, group K)
 
 | # | Item | Status |

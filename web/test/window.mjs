@@ -918,7 +918,7 @@ const row_line = await page.$eval(".form .colourlist .row", (e) => getComputedSt
 check(row_line.split("rgb(255, 255, 255)").length === 3, "every row has a white hairline before and after it, on the grey");
 const half_line = await page.$eval(".row:has(+ .row.nest)", (e) => { const c = getComputedStyle(e); return [c.boxShadow.split("rgb").length - 1, c.backgroundSize, c.backgroundPosition, e.querySelector("label").textContent]; });
 check(half_line[0] === 1 && half_line[1].startsWith("calc(66.6667% - 4px)") && half_line[2] === "100% 100%" && half_line[3] === "Diameter", "before a nested row stands a half line, from the controls' column to the right edge: Diameter draws it, over Scale everything with it");
-await page.click('.pinned .fold:has-text("Dial")');
+await page.click('.pinned .fold:has-text("Dial")', { position: { x: 60, y: 12 } });      // on its word: the plate's pill stands on the heading's middle (#533)
 check(await page.isHidden("#global-dial-d-Diameter") && await page.isVisible("#global-margin-Page-margin"), "a heading folds its own group only");
 check((await page.textContent('.pinned .fold:has-text("Dial") .summary')).includes("diameter 30.0"), "a folded pane says what it holds: diameter 30.0 …");
 await page.click('.pinned .fold:has-text("Dial") .eye');
@@ -1713,7 +1713,7 @@ await page.uncheck("#global-out-live-text-Keep-numerals-as-text-in-the-SVG");
     return { pinned: [...p.querySelectorAll("h2")].map((h) => h.textContent).join(), order: rows.map((r) => (r.querySelector("button.main") || {}).id || (r.querySelector("input") || {}).id || r.className).join(" | "),
       pdf: left("#export-pdf"), svg: left("#export-svg"), png: left("#export-png"), label: left(".pinned .row > label"), tick: left(".pinned .check"), lines: rows.map(shadow).join(""), halves: rows.map(half).join(""), below: [...document.querySelectorAll(".form .pane h2")].map((h) => h.textContent).join(" · ") };
   });
-  check(e.pinned === "Export a file" && e.order === "export-pdf | export-svg | global-out-live-text-Keep-numerals-as-text-in-the-SVG | export-png | global-out-dpi-dpi-slider | row note under | export-wearos | wearos-name | row note under" && e.pdf === e.svg && e.png === e.pdf && e.pdf > e.label && e.tick === e.svg && e.lines === "211111111" && e.halves === "010100100"      /* a row and its note are one box: no line, half or whole, between them (#420) */ && e.below === "Print · A set of files · Moving picture · Link to this dial · Settings file · Log · Gallery",
+  check(e.pinned === "Export a file" && e.order === "export-pdf | export-svg | global-out-live-text-Keep-numerals-as-text-in-the-SVG | export-png | global-out-dpi-dpi-slider | row note under | export-wearos | wearos-name | row note under" && e.pdf === e.svg && e.png === e.pdf && e.pdf > e.label && e.tick === e.svg && e.lines === "211111111" && e.halves === "010100100"      /* a row and its note are one box: no line, half or whole, between them (#420) */ && e.below === "Print · A set of files · Moving picture · Share dial as link · Settings file · Log · Gallery",
     `Export a file is pinned: Vector · PDF, SVG under it with its tick tied to it, then PNG on the same column with its dpi under it, then Wear OS's APK with its name under it (4.67); a half line, from the buttons' column, before each nested row, none between a row and its note (the tick, the dpi: ${e.lines} ${e.halves}); below scroll ${e.below}`);
   await shot("4c21-export");
 }
@@ -1887,7 +1887,7 @@ await page.uncheck("#global-out-production-Mono-print-mask");
   const open_versions = async () => { if (await page.$eval("#version-list", (l) => l.hidden)) await page.click("#versions"); };
   await page.evaluate(() => localStorage.removeItem("dial-tool-instances"));
   await open_versions();
-  const under = await page.evaluate(() => { const u = document.querySelector(".undopair").getBoundingClientRect(), v = document.querySelector("#versions").getBoundingClientRect(); return v.top >= u.bottom && Math.abs(v.left - u.left) < 1 && !document.querySelector(".panel #instance-save"); });
+  const under = await page.evaluate(() => { const u = document.querySelector(".undopair").getBoundingClientRect(), v = document.querySelector("#versions").getBoundingClientRect(); return v.left >= u.right && Math.abs(v.top - u.top) < 1 && !document.querySelector(".panel #instance-save"); });      // on undo's line, after it (#517; Okay, 24 Oct 2026: "Versions go up, right of the top row buttons")
   const plate = await S("JSON.stringify(S.c_plate)");
   await page.click("#instance-save"); await page.waitForFunction(() => document.querySelectorAll("#instance-cards a").length === 1);
   const lone = await page.$eval("#instance-compare", (b) => b.hidden);      // R16: Compare needs two
@@ -1920,7 +1920,7 @@ await page.uncheck("#global-out-production-Mono-print-mask");
   await page.evaluate(() => window.dial_tool.versions_open(false));
   await page.evaluate((d) => window.dial_tool.set_value("global", "dial_d", d), size);
   check(vsheet_ok, "Sheet (#17): the three saved dials on one A4, as an SVG");
-  check(under && lone && back === plate && shut && card.every(Boolean) && gone.join() === "0,0", `Versions stands under undo and holds your dials (none left in the panel); Save this dial keeps one with its picture (${card.join(" ")}); Compare hidden with one; Edit this dial brings it back (plate ${back}) and shuts the list; Remove takes them away (${gone.join(" ")})`);
+  check(under && lone && back === plate && shut && card.every(Boolean) && gone.join() === "0,0", `Versions stands on undo's line, after it, and holds your dials (none left in the panel); Save this dial keeps one with its picture (${card.join(" ")}); Compare hidden with one; Edit this dial brings it back (plate ${back}) and shuts the list; Remove takes them away (${gone.join(" ")})`);
   check(cmp.n === 3 && cmp.inside && cmp.apart && cmp.same && cmp.big && cmp.away && cmp.shown && cmp.hidden && after.join() === "false,none",
     `Compare (#435): the three saved dials on the backdrop, one size (${cmp.big ? "over 150 px" : "small"}), apart, inside the room the switches leave, the panel away and the dial hidden; Escape brings the panel back (${JSON.stringify(cmp)} · ${after.join(" ")})`);
 }
@@ -2272,7 +2272,7 @@ await shot("10-bar");
     return { w: Math.round(panel.getBoundingClientRect().width), swatch: sw.checkVisibility(), before, grey, pressed, back: getComputedStyle(panel).backgroundColor === before, key: t.S.ui_grey_panel }; });
   const was_sun = await page.evaluate(() => [window.dial_tool.S.sh_from, window.dial_tool.S.sh_rise]);
   const look = await page.evaluate(() => { const t = window.dial_tool, r = (q) => document.querySelector(q), [w, h] = t.size(), svg = t.svg.getBoundingClientRect(), panel = r(".panel").getBoundingClientRect();
-    return { shown: ["#undo", "#versions"].every((q) => r(q).checkVisibility() && r(q).getBoundingClientRect().left < 100), gone: ["#guides", "#guides-more", "#shadows", "#shadows-more"].every((q) => !r(q).checkVisibility()),
+    return { shown: ["#undo", "#versions"].every((q) => r(q).checkVisibility() && r(q).getBoundingClientRect().left < 200), gone: ["#guides", "#guides-more", "#shadows", "#shadows-more"].every((q) => !r(q).checkVisibility()),
       title: getComputedStyle(r(".title h1"), "::after").content, header: ["#to-gallery", "#unit"].every((q) => !r(q).checkVisibility()), under: svg.right > panel.left + 100, w: Math.round(w), left: Math.round(panel.left - svg.left),
       sign: getComputedStyle(r(".tabs button.on .sign")).color }; });
   await page.mouse.move(200, 200); await page.mouse.down(); await page.mouse.move(180, 180, { steps: 3 }); await page.mouse.up(); await frame();

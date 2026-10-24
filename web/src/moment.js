@@ -28,6 +28,14 @@ export const NAMES = {
     day_names: ["lunedì", "martedì", "mercoledì", "giovedì", "venerdì", "sabato", "domenica"], month_names: ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"] },
 };
 
+/** a day window's seven names, Monday first: short as a day wheel prints them (form 0), or in full (form 1; Okay, 24 Oct
+ *  2026: "Days of the week option to be written in full"), in the language's own capitals (Turkish keeps its dotted İ). */
+export const DAY_FORMS = ["Short", "Full"];
+export function day_list(lang = "en", form = 0) {
+  const N = NAMES[lang] || NAMES.en;
+  return form === 1 ? N.day_names.map((d) => d.toLocaleUpperCase(lang)) : N.days;
+}
+
 export const SYNODIC = 29.530588853;               // a lunation in days (mean)
 
 /** a moment from a calendar day ("2026-10-17") and the seconds since midnight (the tool's S.t). The day is a civil day
@@ -57,10 +65,10 @@ export function moon_age(ms) {
 
 /** what a complication's window shows for a moment: the date's number, the weekday's or the month's short name in a
  *  language, AM or PM. The moon shows a picture: its age is in the moment. */
-export function window_text(kind, mo, lang = "en") {
+export function window_text(kind, mo, lang = "en", form = 0) {
   const N = NAMES[lang] || NAMES.en;
   if (kind === "date" || kind === "big date") return String(mo.d);
-  if (kind === "day") return N.days[mo.wd];
+  if (kind === "day") return day_list(lang, form)[mo.wd];
   if (kind === "month") return N.months[mo.m - 1];
   if (kind === "am · pm") return mo.pm ? "PM" : "AM";
   return "";

@@ -10,6 +10,7 @@
      the place of the whole one. The row above draws it, on its own last line, where every
      line of a row falls; the nested row draws no line over itself. One hidden row may lie between the two (a note that doesn't apply now). */
   .row:is(.nest, .tied, .under), .row.note { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  .pane.headless > .body > .row:first-child { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }      /* a pane with no heading: its first row draws no line over it, the pane's own top line is there (Okay, 24 Oct 2026: "Remove style's top dark hr bar") */
   .row:has(+ .row:is(.nest, .tied, .under):not([hidden])), .row:has(+ .row[hidden] + .row:is(.nest, .tied, .under):not([hidden])) { box-shadow: 0 calc(-1 * var(--hair)) 0 var(--row-rule); background: linear-gradient(var(--row-rule) 0 0) right bottom / calc(100% - var(--nest-from)) var(--hair) no-repeat; }
   .row:is(.nest, .tied, .under):has(+ .row:is(.nest, .tied, .under):not([hidden])) { box-shadow: none; }
   .row > .blank:first-child { display: block; }

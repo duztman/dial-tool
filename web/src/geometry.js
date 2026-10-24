@@ -12,10 +12,10 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.92.2";
+export const VERSION = "beta 4.92.3";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
-import { moment, window_text, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
+import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
 const { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 const radians = (a) => a * PI / 180;
 const degrees = (a) => a * 180 / PI;
@@ -134,6 +134,7 @@ export const WINDOW_BASE = {
   guide: -1,                                       // its guide's colour, as a ring's (#271): a place in GUIDE_COLOURS · -1 = by its place (window_guide) · -2 = none
   follows: true,                                   // a date, day or moon window shows the bar's date; on to start, and for every link (Okay, 19 Oct 2026, 21:09, #413: "All on by default", for old links too)
   names: 0,                                        // a day window following the date: its names' language, a place in moment.js LANGS (EN · TR · DE · FR · IT; 4.62)
+  day_form: 0,                                     // … and how they are written, a place in moment.js DAY_FORMS: short as before, or in full (#515)
   jump: false,                                     // an am · pm disc jumps at noon and midnight instead of sweeping (#401, 4.90; Okay, 19 Oct 2026, 14:13: "am pm gets a jump function on/off"); off, it sweeps, as before
   neighbours: true,                               // a date or day window shows its disc's places either side of the shown one, where the hole lets them (4.74; the disc sketch D1), in c2
   look: 0,                                         // its picture, a place in PICTURES[its kind] (4.73); 0 = as before
@@ -143,7 +144,7 @@ export const WINDOW_BASE = {
 };
 const FIRST_WINDOW = { on: "da_on", kind: "da_kind", at: "da_at", r: "da_r", w: "da_w", h: "da_h", round: "da_round", frame: "da_frame",
   clear: "da_clear", text: "da_day", size: "da_size", ink: "da_ink", hour: "da_hour", age: "da_age",
-  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c", guide: "da_guide", tracking: "da_tracking", lang: "da_lang", features: "da_features", at_deg: "da_at_deg", wh_link: "da_wh_link", follows: "da_follows", names: "da_names", physics: "da_physics", look: "da_look", c2: "da_c2", c3: "da_c3", neighbours: "da_neighbours", jump: "da_jump" };
+  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c", guide: "da_guide", tracking: "da_tracking", lang: "da_lang", features: "da_features", at_deg: "da_at_deg", wh_link: "da_wh_link", follows: "da_follows", names: "da_names", physics: "da_physics", look: "da_look", c2: "da_c2", c3: "da_c3", neighbours: "da_neighbours", jump: "da_jump", day_form: "da_day_form" };
 
 export const DEFAULTS = {
   version: 2,
@@ -215,6 +216,7 @@ export const DEFAULTS = {
   ui_effects: true,      // the costly layers in show mode — blurs, the flare, the glass shine, the silhouette outline (Okay: "turn off shenanigans")
   date: "",                                        // the day the dial shows, "2026-10-18", set in the bar (4.62; Okay, 18 Oct 2026: "Date best set at the bar … Default from system date"); "" = today, wherever the dial is opened
   da_jump: false,                                  // … and `jump` (#401, 4.90)
+  da_day_form: 0,                                  // … and `day_form` (#515)
   da_look: 0, da_c2: null, da_c3: null, da_neighbours: true,      // … and `neighbours` (4.74)            // the first window's `look`, `c2`, `c3` (4.73)
   da_physics: true, xray: false,                   // the first window's `physics` · X-ray, every window's disc seen under a veil of the plate, preview only (4.72, #346)
   da_wh_link: false,                               // the first window's width and height linked, as every window's `wh_link` (#358, beta 4.57)
@@ -511,6 +513,7 @@ export const LINK_KEYS = [
   "out_f_pdf", "out_f_svg", "out_f_png", "out_f_mask", "out_f_mirrored", "out_f_mask_png", "out_f_sheet", "out_f_spec",      // 4.90 (#171, #18): appended; what a set of files holds
   "out_ink",                // 4.90 (#35): appended; "" to start, every ink in one mask as before
   "jump", "da_jump",        // 4.90 (#401): appended; off to start, the disc sweeps as before
+  "day_form", "da_day_form",      // 4.92.3 (#515): appended; short to start, as every older link
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -1512,7 +1515,7 @@ function disc_places(S, w) {
   const kind = WINDOW_KINDS[w.kind], shape = window_shape(w), high = text_room(w);
   const lang = MOMENT_LANGS[w.names] || "en";
   const list = kind === "date" ? Array.from({ length: 31 }, (_, i) => String(i + 1))
-    : (MOMENT_NAMES[w.follows ? lang : (MOMENT_LANGS.find((l) => MOMENT_NAMES[l].days.includes(w.text)) || "en")]).days;
+    : w.follows ? day_list(lang, w.day_form) : MOMENT_NAMES[MOMENT_LANGS.find((l) => MOMENT_NAMES[l].days.includes(w.text)) || "en"].days;
   const now = Math.max(list.indexOf(kind === "date" ? String(parseInt(w.text, 10)) : String(w.text)), 0), n = list.length;      // "07" is the 7th
   const type = window_type(S, w), size = high * w.size / 100, centre = clock_point(w.r, window_angle(w)), turn = window_turn(w), a = window_angle(w);
   const at = (p) => {
@@ -1585,7 +1588,7 @@ export function shown_day(S) {
 export function shown_window(S, w) {
   if (!w.follows) return w;
   const kind = WINDOW_KINDS[w.kind], mo = moment(shown_day(S), S.t);
-  if (kind === "date" || kind === "day" || kind === "big date") return { ...w, text: window_text(kind === "big date" ? "date" : kind, mo, MOMENT_LANGS[w.names] || "en") };
+  if (kind === "date" || kind === "day" || kind === "big date") return { ...w, text: window_text(kind === "big date" ? "date" : kind, mo, MOMENT_LANGS[w.names] || "en", w.day_form) };
   if (kind === "moon phase") return { ...w, age: +mo.moon.toFixed(1) };
   return w;
 }

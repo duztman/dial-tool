@@ -613,7 +613,7 @@ const ROWS = {
     num("ui_weight", "Weight %", 50, 200, 1, { whole: true }),
     info("Every width on the dial at once — marks, bands, hands, frames. Lengths and places stay; one undo takes it back.", {}),
     num("dial_hole", "Centre hole", 0, 6, 0.1),      // Ø; 0 = none. Shows when the hands are hidden (#165)      // nest: a question about the row above starts on the controls' column (Okay, 12 Oct 2026)
-    col("c_plate", "Plate"),
+    col("c_plate", "Plate", { head: true }),      // the plate's colour on the Dial heading line, no row of its own (Okay, 24 Oct 2026: his drawing, the pill up on "Dial", "Row gone")
     custom("background"),
     hdr("Page", { folded: true }),                 // around the dial: preview and page only. Under the pinned part, with what scrolls (Okay, 20 Oct 2026, 03:41: "Page moves to gray area")
     num("margin", "Page margin", 0, 10, 0.5),
@@ -835,6 +835,7 @@ const ROWS = {
     chk("neighbours", "Neighbours", { ...W, show: win_is("date", "day") }),
     info("The disc’s next places show where the hole allows.", { ...W, show: win_is("date", "day") }),
     seg("names", "Names", ["EN", "TR", "DE", "FR", "IT"], { ...W, show: (T) => T.on && T.follows && G.WINDOW_KINDS[T.kind] === "day" }),
+    seg("day_form", "Written", ["Short", "Full"], { ...W, show: (T) => T.on && T.follows && G.WINDOW_KINDS[T.kind] === "day" }),      // MON or MONDAY (#515; Okay, 24 Oct 2026: "Days of the week option to be written in full"); Custom comes third (R9)
     // physics (4.72, #346: "their discs obey physics or not, chosen by the user"): on, a disc must end inside the case —
     // passing it, its outer guide shows red and this says by how much; off, it may (a face on a screen)
     chk("jump", "Jumps", { ...W, show: win_is("am · pm") }),      // #401, 4.90
@@ -908,7 +909,7 @@ const ROWS = {
     num("out_fps", "fps", 6, 60, 1, { whole: true }),
     num("out_px", "Size px", 240, 2160, 10, { whole: true }),
     info((S) => { const k = tool ? tool.speed : 1, n = Math.round(S.out_seconds * S.out_fps); return `${n} frames, ${S.out_px} × ${S.out_px} px, ${S.out_seconds} s at the bar's speed (${+k.toFixed(2)}×) from the time shown. A GIF is at most ${GIF_MOST} px and ${GIF_FPS_MOST} frames a second.`; }, { scope: "global" }),
-    hdr("Link to this dial", { folded: true }),
+    hdr("Share dial as link", { folded: true }),      // Okay, 24 Oct 2026: "'Share dial … as link' instead of this title"; the set of saved dials in one link is #523
     custom("link_copy", { head: true }),           // Copy link, flush right on the heading line, open or folded (#277)
     custom("link"),
     hdr("Settings file", { folded: true, title: () => tool && tool.loaded_name ? `Settings file · ${tool.loaded_name}` : "Settings file" }),      // after Load it names the file (#279)
@@ -2271,7 +2272,7 @@ class DialTool {
   case_box() {
     const word = el("span", { className: "word" });
     const arrow = el("span", { className: "arrow" });
-    arrow.innerHTML = icon(SIGNS.up);
+    arrow.innerHTML = icon(SIGNS.down);      // every chevron on the canvas points down (#518; Okay, 24 Oct 2026: "Chevrons all point down")
     const menu = el("select", { id: "case-pick", ariaLabel: "A case round the dial (preview only)", title: "A case round the dial (preview only)" });
     const NAMES = { dress: "Dress", field: "Field", diver: "Diver", emre01: "Emre" };      // Emre (Okay, 23 Oct 2026); its key stays emre01 (R8)
     menu.append(el("option", { value: "none", textContent: "No case" }));
