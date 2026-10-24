@@ -157,6 +157,7 @@
     --shade-name: 92px;                            /* the Shadows list's names: narrower than the guides' list's column, which holds an added guide's values; its sliders keep the room */
     --guide-dot: 7px; --guide-none: 14px; --scroll-w: 6px;      /* a round colour in the guides' list (the room between two: a special; Okay, 19 Oct 2026: "Still smaller balls") · the none sign ⊘, 14 (at 10 it went too small) · a list's scrollbar */
     --ring-thick: var(--triple);                   /* the chosen guide colour: a ring of its own colour this thick, a ring of the ground inside it */
+    --guide-col: calc(var(--guide-name) + 2 * var(--guide-gap) + 2 * var(--guide-none));      /* a column of the guides' list (#527): a name, its colour dot, its tick */
     --guide-dim: 0.4;                              /* a colour not chosen in the guides' list: this much of it (Okay, 18 Oct 2026, notes 2: "Fainter unselected swatches") */
 
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */

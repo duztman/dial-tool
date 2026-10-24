@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.92.24 (web version) · 24 Oct 2026
+
+- **The Guides popup, as Okay drew it** (#527; his answers: "Which rings show guides", "Both", "The last added", "Steps of today's", "A small popup by the dot"): two columns — Rings at the left with its menu (Selected · All · None) on its heading and a line per ring; the centre hole, the centre lines and Windows (its own menu) at the right. A white line, then *Added* with a minus that takes the last added away, its lines in the right column. A guide's line is its name, its colour as a dot and a tick: the dot opens None and the eight colours under its line (the chosen one ringed in its own colour); the tick hides it and brings it back in the colour it had. Under them, always in view: Add · Line · Crosshair · Circle; Thickness 1 · 2 · 3 (steps of 0.75, the start) · Reset All.
+- Under a finger a dot and a tick are pressed from just outside them; the colours hang under the line, so their reach never covers the dot.
+- Not yet: dragging an added guide on the preview (the second push of #527).
+- Checked: links, labels, complications, the window test (its guides section rewritten for the new popup); the popup on a screenshot.
+
 ## beta 4.92.23 (web version) · 24 Oct 2026
 
 - **Installed is a tab over the font list** (R35, #501; Okay, 22:45: "Two tabs over the list"): *Dial Tool's fonts* · *Installed*, standing on the list's top line as the hands' tabs do, shown only where the browser can read this computer's fonts (Chrome, Edge). Installed asks the browser the first time; its fonts are found by name, so the filters step out of sight there (keeping their room, so the list doesn't jump). The Installed button at the foot is gone; a link and a file share the two columns with their second lines. A family both added and installed stands in both tabs, each with its own styles.

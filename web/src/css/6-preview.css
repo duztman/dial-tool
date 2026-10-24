@@ -171,6 +171,27 @@
     --list-gap: var(--canvas-inset); max-height: min(var(--list-room, 100dvh), calc(100dvh - var(--bar-height) - 2 * var(--canvas-inset) - var(--control-large) - var(--unit))); }      /* --list-room: measured when it opens, from the preview's top to its switch, less a gap each side */
   .guidesheet > * { margin-inline: 0; }
   .guidescroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-top: var(--unit); touch-action: pan-y; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--grey) transparent; }
+  /* the Guides list in two columns (#527; Okay's drawing, 24 Oct 2026): Rings at the left; the centre hole, the centre
+     lines and Windows at the right; Added under both after a white line. A line: name · colour dot · tick */
+  .guidelist.guidesheet { width: calc(2 * var(--guide-col) + var(--gap) + 2 * var(--pop-pad) + 2 * var(--hair)); }
+  .guidescroll.guidecols { position: relative; display: grid; grid-template-columns: repeat(2, var(--guide-col)); column-gap: var(--gap); align-content: start; padding-inline: var(--pop-pad); }
+  .guidescroll.guidecols > * { margin-inline: 0; }
+  .guidecol { display: grid; align-content: start; min-width: 0; }
+  .guideadded { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; margin-top: var(--unit); border-top: var(--hair) solid var(--white); }
+  .guideadded[hidden] { display: none; }
+  .guidesheet .guidekind { grid-template-columns: minmax(0, 1fr) var(--guide-none) var(--guide-none); column-gap: var(--guide-gap); }
+  .guidesheet .guidehead { grid-template-columns: minmax(0, 1fr) auto; }
+  .guidehead .menubox { height: var(--control-s); font-size: var(--t-s); }
+  .gdot { width: var(--guide-none); height: var(--guide-none); border-radius: 50%; background: var(--c); box-shadow: 0 0 0 var(--hair) var(--chip-rule); }
+  .guidekind.off .gdot { opacity: var(--guide-dim); }
+  .gtick { display: grid; place-items: center; width: var(--guide-none); height: var(--guide-none); color: var(--grey); }
+  .gtick[aria-pressed="true"] { color: var(--ink); }
+  .gtick:hover { color: var(--ink); }
+  .guidehead .minus { display: grid; place-items: center; width: var(--guide-none); height: var(--guide-none); border: var(--hair) solid var(--grey); border-radius: 50%; color: var(--grey); }
+  .guidehead .minus:hover { border-color: var(--ink); color: var(--ink); }
+  /* a colour dot pressed: None and the eight colours by it, on a pill of the lines' colour */
+  .guidepop { position: absolute; z-index: 2; gap: var(--guide-gap); padding: var(--u2) var(--u3); border-radius: var(--round-pill); background: var(--row-rule); }
+  .guidepop[hidden] { display: none; }
   .guidescroll::-webkit-scrollbar { width: var(--scroll-w); }
   .guidescroll::-webkit-scrollbar-thumb { background: var(--grey); border-radius: calc(var(--scroll-w) / 2); }
   .guidescroll > * { margin-inline: var(--pop-pad); }
@@ -209,7 +230,7 @@
   .guidelist .guidelast > label:first-child { grid-column: 1; }
   .guidelast > input[type="range"] { display: none; }
   .guidelast > .numcell { grid-column: 2; display: flex; justify-content: flex-end; height: var(--control); pointer-events: none; }
-  .guidelast .numbox { pointer-events: auto; }
+  .guidelast :is(.numbox, .pillswitch) { pointer-events: auto; }
   .guidelast > .resetall { grid-column: 3; align-self: stretch; display: flex; align-items: center; padding-left: var(--gap); border-left: var(--hair) solid var(--paper); }      /* its rule: the ground's, from the section's top to the box's bottom (#305) */
   /* Reset All asks first, in its line's place (#271): the question at the left, round ✕ and ✓ at the right */
   .guidelast.asking > :not(.ask) { visibility: hidden; }

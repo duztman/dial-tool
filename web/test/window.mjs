@@ -663,93 +663,103 @@ const guides_at = await page.evaluate(() => { const r = (q) => document.querySel
 check(guides_at[0] === 12 && guides_at[1] === 12 && guides_at[2] === 12 && Math.abs(guides_at[3] - guides_at[5]) < 0.6 && Math.abs(guides_at[4] - guides_at[5]) < 0.6 && guides_at[6] === 12,
   `at the bottom right, stacked a unit apart and all 12 from the preview's right, top to bottom: the Tiny Preview, the dial alone (the eye), show mode (the rays), lowest, 12 from the foot (${guides_at.join(" / ")}) (Okay, 24 Oct 2026: "Lowest is activate middle normal, top mini")`);
 await page.click("#guides-more");
-check(await page.isVisible("#guide-list") && (await page.$$eval("#guide-list .guidescroll > .guidekind .name", (n) => n.map((e) => e.textContent))).join() === "Centre hole,Centre lines" && await page.$$eval("#guide-list .guidekind >> nth=0 >> .dots .tone", (b) => b.length) === 8 && await page.$eval("#guide-list .guiderings", (e) => e.querySelectorAll(".guidekind.ring").length) === await S("S.rings.length") && await page.$("#guide-list .swatch") === null,
-  "the arrow drops the list: the centre hole's guide first, then the centre lines (no dial edge since 15 Oct 2026, no window radii since 4.42.5), then a line for every ring and every window that is on, each with None and eight round colours, no free colour");
-// the list's look (Okay, 16 Oct 2026, #271; 18 Oct, notes 2: "fainter"): a colour not chosen at 40 % (60 % until 4.52), the "none" sign one path; lines 30 high (#305, 4.45.3: "tighter"; 38 before)
+// the list in two columns (#527; Okay's drawing, 24 Oct 2026): a line is a name, its colour as a dot (a press opens None
+// and the eight colours by it) and a tick; Rings and Windows have their menus on their headings
+const menu = (id, word) => page.evaluate(([id, word]) => { const s = document.getElementById(id); s.value = [...s.options].find((o) => o.textContent === word).value; s.dispatchEvent(new Event("change", { bubbles: true })); }, [id, word]);
+const pop_pick = async (dot, k) => { await page.click(dot); await page.click(k === null ? "#guide-pop-none" : `#guide-pop .tone >> nth=${k}`); };
+const dot_c = (sel) => page.$eval(sel, (d) => d.style.getPropertyValue("--c"));
 {
-  const look = await page.evaluate(() => { const q = (s) => document.querySelector("#guide-list " + s); return [Math.round(q(".guidekind").getBoundingClientRect().height), getComputedStyle(q(".tone:not(.on)")).opacity, getComputedStyle(q(".tone.on")).opacity, q(".none svg").querySelectorAll("path, circle, line").length]; });
-  check(look[0] === 30 && look[1] === "0.4" && look[2] === "1" && look[3] === 1, `a guide's line is ${look[0]} high; a colour not chosen shows at ${look[1]}, the chosen one whole; the "none" sign is ${look[3]} path, so nothing in it overlaps`);
+  const cols = await page.evaluate(() => { const c = [...document.querySelectorAll("#guide-list .guidecol")].map((e) => e.getBoundingClientRect()); return [c.length >= 2, Math.abs(c[0].top - c[1].top) < 1, c[0].right <= c[1].left]; });
+  check(await page.isVisible("#guide-list") && cols.every(Boolean) && (await page.$$eval("#guide-list .guidecol > .guidekind .name", (n) => n.map((e) => e.textContent))).join() === "Centre hole,Centre lines" && await page.$$eval("#guide-pop .tone", (b) => b.length) === 8 && await page.$eval("#guide-list .guiderings", (e) => e.querySelectorAll(".guidekind.ring").length) === await S("S.rings.length") && await page.$("#guide-list .swatch") === null,
+    "the arrow drops the list, in two columns side by side (#527): the rings at the left, a line each; the centre hole and the centre lines at the right, then the windows; eight colours and None by a guide's dot, no free colour");
 }
-// windows have their own section, as rings (#271): All · Selected · None, Selected to start; a line per window that is on, in its own colour; its edges drawn solid, its middle dotted, as a ring's (#272).
+{ // the list's look: lines 30 high (#305: "tighter"); in the dot's popup a colour not chosen at 40 % (18 Oct, notes 2: "fainter"), the "none" sign one path
+  await page.click("#guide-gd_hole-colour");
+  const look = await page.evaluate(() => { const q = (s) => document.querySelector("#guide-list " + s); return [Math.round(q(".guidekind").getBoundingClientRect().height), getComputedStyle(q("#guide-pop .tone:not(.on)")).opacity, getComputedStyle(q("#guide-pop .tone.on")).opacity, q("#guide-pop .none svg").querySelectorAll("path, circle, line").length, !q("#guide-pop").hidden]; });
+  await page.click("#guide-gd_hole-colour");
+  check(look[0] === 30 && look[1] === "0.4" && look[2] === "1" && look[3] === 1 && look[4] && await page.isHidden("#guide-pop"), `a guide's line is ${look[0]} high; its dot opens the colours by it, a colour not chosen at ${look[1]}, the chosen one whole; the "none" sign is ${look[3]} path; the dot again shuts them`);
+}
+// windows have their own section, as rings (#271): Selected · All · None, Selected to start; a line per window that is on, in its own colour; its edges drawn solid, its middle dotted, as a ring's (#272).
 // One thing in focus (#301): the tab says which — Rings its selected ring, Windows its selected window, the others neither; with All the rest show faded
 {
-  const start = await page.evaluate(() => { const t = window.dial_tool, h = [...document.querySelectorAll("#guide-list .guidehead")].find((e) => e.textContent.startsWith("Windows")); return [!!h && !h.hidden, t.S.gd_wins, t.S.gd_wsel, document.querySelector("#guide-windows-selected").classList.contains("on"), [...document.querySelectorAll("#guide-list .guidekind .name")].map((e) => e.textContent).includes("Window at 3")]; });
-  // in a tab (0 Dial · 1 Rings · 3 Windows): the dotted circles drawn, "f" for a faded one; the selected ring is numerals,
-  // whose band shows its two free circles dotted (4.91.1: "selected line gets full, others dotted")
+  const start = await page.evaluate(() => { const t = window.dial_tool, h = [...document.querySelectorAll("#guide-list .guidehead")].find((e) => e.textContent.startsWith("Windows")); return [!!h && !h.hidden, t.S.gd_wins, t.S.gd_wsel, document.querySelector("#guide-windows").value === "0", [...document.querySelectorAll("#guide-list .guidekind .name")].map((e) => e.textContent).includes("Window at 3")]; });
   const dotted = (n) => S(`(() => { const was = S.ui_section; S.ui_section = ${n}; t.draw(); const d = t.items.filter((i) => i.role === "guide" && i.dots).map((i) => (i.stroke[3] < 1 ? "f" : "d")).join(""); S.ui_section = was; t.draw(); return d; })()`);
   const sel = [await dotted(0), await dotted(1), await dotted(3)];
-  await page.click("#guide-windows-all");
+  await menu("guide-windows", "All");
   const all = [await dotted(0), await dotted(1), await dotted(3)];
-  await page.click("#guide-windows-none");
+  await menu("guide-windows", "None");
   const none = [await S("[S.gd_wins, S.gd_wsel]"), await dotted(3)];
-  await page.click("#guide-windows-selected");
-  const tones = await page.evaluate(() => { const on = (name) => [...document.querySelectorAll("#guide-list .guidekind")].find((e) => e.querySelector(".name").textContent === name).querySelector(".tone.on").title; return [on("Centre hole"), on("Window at 3")]; });
+  await menu("guide-windows", "Selected");
+  const tones = [await dot_c("#guide-gd_hole-colour"), await dot_c("#guide-window-0-colour")];
   check(start.every((x) => x === true || x === false) && start[0] && !start[1] && start[2] && start[3] && start[4] && sel.join() === ",dd,d" && all.join() === "f,ddf,d" && !none[0][0] && !none[0][1] && none[1] === "" && tones[0] !== tones[1],
-    `Windows: its heading with All · Selected · None (Selected to start), a line for the date window. The guides follow the tab (#301): Dial none, Rings the selected ring's, Windows the selected window's (${sel.map((x) => x || "–").join(" · ")}); with All the window's shows everywhere, faded out of its tab (${all.map((x) => x || "–").join(" · ")}); None takes it away; the first window's guide starts in a colour of its own (${tones[1]}; the centre hole's ${tones[0]})`);
+    `Windows: its heading with its menu, Selected · All · None (Selected to start), a line for the date window. The guides follow the tab (#301): Dial none, Rings the selected ring's, Windows the selected window's (${sel.map((x) => x || "–").join(" · ")}); with All the window's shows everywhere, faded out of its tab (${all.map((x) => x || "–").join(" · ")}); None takes it away; the first window's guide starts in a colour of its own (${tones[1]}; the centre hole's ${tones[0]})`);
 }
 // guides are connected to the rings (13 Oct 2026): each ring's edges in its own colour, different ones to start with; the row in the ring list is tinted with it
 {
-  const start = await page.evaluate(() => { const t = window.dial_tool, G = t.S.rings.map((r, i) => [r.guide, [...document.querySelectorAll("#guide-list .guidekind.ring")][i].querySelector(".tone.on").title]); return G; });
-  await page.click("#guide-rings-all");      // all rings' guides, to see their colours (only the selected ring's to start since 15 Oct 2026)
+  const start = await page.$$eval("#guide-list .guidekind.ring .gdot", (d) => d.map((x) => x.style.getPropertyValue("--c")));
+  await menu("guide-rings", "All");      // all rings' guides, to see their colours (only the selected ring's to start since 15 Oct 2026)
   const strokes = await page.evaluate(() => { const t = window.dial_tool; t.draw(); return [...new Set(t.items.filter((i) => i.role === "guide").map((i) => i.stroke.map((v) => Math.round(v * 255)).join(",")))].length; });
-  await page.click("#guide-list .guidekind.ring >> nth=0 >> .tone >> nth=5");
+  await pop_pick("#guide-ring-0-colour", 5);
   const set = await S("S.rings[0].guide");
-  await page.click("#guide-list .guidekind.ring >> nth=0 >> .none");
+  await page.click("#guide-ring-0");      // its tick: hidden
   const none = await S("S.rings[0].guide");
-  await page.click("#guide-rings-selected");
+  await page.click("#guide-ring-0");      // and back, in the colour it had
+  const back = await S("S.rings[0].guide");
+  await menu("guide-rings", "Selected");
   const only = await page.evaluate(() => { const t = window.dial_tool; t.draw(); return [t.S.gd_rings, t.S.gd_sel]; });
-  await page.click("#guide-rings-all");
-  await page.evaluate(() => { window.dial_tool.set_value("ring", "guide", -1); const t = window.dial_tool; t.S.rings[0].guide = -1; t.sync_rows(); t.render(); });
-  check(new Set(start.map((x) => x[1])).size === Math.min(start.length, 6) && strokes >= 3 && set === 5 && none === -2 && only[0] === false && only[1] === true,
-    `every ring has a guide colour of its own to start with (${start.map((x) => x[1]).join(" ")}); a ring's line in the list changes it or hides it; Rings: All · Selected · None says which rings show theirs`);
-  // guides you add: a line, a crosshair, a circle
+  await menu("guide-rings", "All");
+  await page.evaluate(() => { const t = window.dial_tool; t.S.rings[0].guide = -1; t.sync_rows(); t.render(); });
+  check(new Set(start).size === Math.min(start.length, 6) && strokes >= 3 && set === 5 && none === -2 && back === 5 && only[0] === false && only[1] === true,
+    `every ring has a guide colour of its own to start with (${start.join(" ")}); a ring's dot changes it, its tick hides it and brings it back in the same colour; Rings' menu, Selected · All · None, says which rings show theirs`);
+  // guides you add: a line, a crosshair, a circle; the minus on Added takes the last away (Okay, 24 Oct 2026: "The last added")
   await page.click("#guide-add-line"); await page.click("#guide-add-crosshair"); await page.click("#guide-add-circle");
   await enter_value("#guide-more-0-a", "45");
   await enter_value("#guide-more-1-r", "8");
   await frame();
   const added = await page.evaluate(() => { const t = window.dial_tool, lines = [...document.querySelectorAll("#guide-list .guidekind.added")]; return [t.S.gd_more.map((g) => g.kind).join(""), t.S.gd_more[0].a, t.S.gd_more[1].r, t.items.filter((i) => i.role === "guide").length, lines.length,
-    lines.every((l) => Math.round(l.getBoundingClientRect().height) === 30 && l.querySelector(".dots > :first-child").classList.contains("remove") && !l.querySelector(".none")), lines.map((l) => l.querySelector(".name").scrollWidth <= l.querySelector(".name").clientWidth).join(" ")]; });
+    lines.every((l) => Math.round(l.getBoundingClientRect().height) === 30 && l.querySelector(".gdot") && l.querySelector(".gtick")), lines.map((l) => l.querySelector(".name").scrollWidth <= l.querySelector(".name").clientWidth).join(" ")]; });
   await shot("4c20-guides");
-  await page.click("#guide-more-1-remove");
+  await page.click("#guide-more-last");
   const left = await S("S.gd_more.map((g) => g.kind).join('')");
   await page.evaluate(() => { const t = window.dial_tool; t.S.gd_more = []; t.sync_rows(); t.render(); });
-  check(added[0] === "012" && added[1] === 45 && added[2] === 8 && added[4] === 3 && left === "02", `Add: Line · Crosshair · Circle put a guide of that kind in the list, with its angle or radius, its colours and a way to remove it (${added[3]} guides drawn)`);
-  check(added[5] && added[6] === "true true true", `an added guide is one line, 30 high: its name and values whole (${added[6]}), its colours, a cross in the none sign's place (#305, 4.45.3)`);
+  check(added[0] === "012" && added[1] === 45 && added[2] === 8 && added[4] === 3 && left === "01", `Add: Line · Crosshair · Circle put a guide of that kind under Added, with its angle or radius, its colour and its tick; the minus takes the last added away (${added[3]} guides drawn; left ${left})`);
+  check(added[5] && added[6] === "true true true", `an added guide is one line, 30 high: its name and values whole (${added[6]}), its dot and its tick (#305)`);
 }
-const list_look = await page.evaluate(() => { const c = getComputedStyle(document.querySelector("#guide-list")), on = getComputedStyle(document.querySelector("#guide-list .tone.on")); return [c.backgroundColor, parseFloat(c.borderTopLeftRadius), on.borderTopLeftRadius, on.boxShadow.split("rgb").length - 1]; });
+await page.click("#guide-gd_hole-colour");
+const list_look = await page.evaluate(() => { const c = getComputedStyle(document.querySelector("#guide-list")), on = getComputedStyle(document.querySelector("#guide-pop .tone.on")); return [c.backgroundColor, parseFloat(c.borderTopLeftRadius), on.borderTopLeftRadius, on.boxShadow.split("rgb").length - 1]; });
+await page.click("#guide-gd_hole-colour");
 check(list_look[0] === "rgb(20, 20, 19)" && list_look[1] >= 12 && list_look[2] === "50%" && list_look[3] === 3, "the list is near black and round; the chosen colour is a disc in a thick ring of its own colour");
-await enter_value("#global-gd-w-Thickness", "3");
+await page.click("#guide-w-3");
 await page.click("#guide-gd_axes");
 await frame();
-check(await S("t.items.filter((i) => i.role === 'guide' && i.px === 3).length > 0 && !t.items.some((i) => i.role === 'guide' && i.path.d.length === 2)"), "Guides: thickness 3, and None on centre lines takes them off the preview");
-check(await page.$eval("#guide-gd_axes", (e) => e.classList.contains("on")) && await page.$$eval('#guide-list .guidekind:has-text("Centre lines") .tone.on', (b) => b.length) === 0, "None wears the mark; no colour does");
-await page.click('#guide-list .guidekind:has-text("Centre lines") .tone >> nth=3');
+check(await S("t.items.filter((i) => i.role === 'guide' && i.px === 2.25).length > 0 && !t.items.some((i) => i.role === 'guide' && i.path.d.length === 2)"), "Guides: thickness 3 (three steps of 0.75), and the centre lines' tick takes them off the preview");
+check(await page.$eval("#guide-gd_axes", (e) => e.getAttribute("aria-pressed") === "false") && await page.$eval("#guide-gd_axes", (e) => e.closest(".guidekind").classList.contains("off")), "its tick off, its line greyed");
+await pop_pick("#guide-gd_axes-colour", 3);
 await frame();
 check(await S("S.gd_axes === true && S.gd_k_axes === 3"), "pressing a colour shows that kind again, in that colour");
 await page.click("#guide-gd_axes");
-await page.click('#guide-list .guidekind:has-text("Centre hole") .tone >> nth=0');
+await pop_pick("#guide-gd_hole-colour", 0);
 await frame();
 const names = await page.$$eval("#guide-list .guidekind .name", (n) => n.map((e) => e.textContent));
 check(await S("S.gd_hole === true && S.gd_k_hole === 0") && !names.includes("Dial edge") && !names.includes("Window radii"), "a colour pressed is the centre hole's, the first of the eight; there is no dial edge nor window radii any more");
-// the last line (#271): Thickness, its number with a compact plus and minus, a rule, then Reset All — on one line
+// the last line (#271): Thickness 1 · 2 · 3, a rule, then Reset All — on one line
 {
-  const last = await page.evaluate(() => { const r = (s) => document.querySelector("#guide-list .guidelast " + s).getBoundingClientRect(), a = r("label"), b = r(".numbox"), c = r("#guides-reset"), d = getComputedStyle(document.querySelector("#guide-list .resetall")); return [Math.abs((a.top + a.bottom) / 2 - (c.top + c.bottom) / 2) < 1 && Math.abs((b.top + b.bottom) / 2 - (c.top + c.bottom) / 2) < 1, a.right <= b.left && b.right <= c.left, d.borderLeftWidth, document.querySelector("#guides-reset").textContent, !!document.querySelector("#guide-list .guidelast .numbox .step")]; });
-  check(last[0] && last[1] && last[2] === "1px" && last[3] === "Reset All" && last[4], `Thickness, its number with a compact plus and minus, a rule (${last[2]}) and Reset All stand on one line, in that order`);
+  const last = await page.evaluate(() => { const r = (s) => document.querySelector("#guide-list .guidelast " + s).getBoundingClientRect(), a = r("label"), b = r(".pillswitch"), c = r("#guides-reset"), d = getComputedStyle(document.querySelector("#guide-list .resetall")); return [Math.abs((a.top + a.bottom) / 2 - (c.top + c.bottom) / 2) < 1 && Math.abs((b.top + b.bottom) / 2 - (c.top + c.bottom) / 2) < 1, a.right <= b.left && b.right <= c.left, d.borderLeftWidth, document.querySelector("#guides-reset").textContent, [...document.querySelectorAll("#guide-list .guidelast .pillswitch button")].map((x) => x.textContent).join("")]; });
+  check(last[0] && last[1] && last[2] === "1px" && last[3] === "Reset All" && last[4] === "123", `Thickness 1 · 2 · 3, a rule (${last[2]}) and Reset All stand on one line, in that order`);
   const foot = await page.evaluate(() => { const list = document.querySelector("#guide-list"), f = list.querySelector(".guidelast"), r = f.getBoundingClientRect(), l = list.getBoundingClientRect(), c = getComputedStyle(f), rule = list.querySelector(".resetall").getBoundingClientRect(), s = getComputedStyle(list.querySelector(".resetall"));
     list.scrollTop = list.scrollHeight; const r2 = f.getBoundingClientRect();
     return [c.backgroundColor, c.boxShadow, Math.round(r2.bottom - (l.bottom - 1)), Math.round(r.left - (l.left + 1)), Math.round((l.right - 1) - r.right), Math.round(rule.top - r.top), Math.round(r.bottom - rule.bottom), s.borderLeftColor, getComputedStyle(list).backgroundColor]; });
   check(foot[0] === "rgb(74, 74, 70)" && foot[1] === "none" && foot.slice(2, 7).every((v) => v === 0) && foot[7] === foot[8], `the bottom section (#305): filled with the line colour (${foot[0]}), no line over or under it, from edge to edge and down to the box's bottom; its rule the ground's colour, from its top to the bottom`);
-  await page.click("#guide-list .guidelast label");
-  const slider = await page.evaluate(() => { const e = document.querySelector("#value-pop"); return !!e && e.querySelector("label").textContent === "Thickness" && getComputedStyle(e.querySelector("input[type=range]")).display !== "none"; });
-  await page.keyboard.press("Escape");
-  check(slider && await page.$("#value-pop") === null && await page.isVisible("#guide-list"), "a press on Thickness opens its popup, its slider there (R15 form B, #271); Escape puts it away, the list stays");
+  await page.click("#guide-w-2");
+  check(await S("S.gd_w === 1.5") && await page.$eval("#guide-w-2", (b) => b.classList.contains("on")), "Thickness 2 is two steps, 1.5 (Okay, 24 Oct 2026: \"Steps of today's\")");
+  await page.click("#guide-w-3");
 }
 await shot("4c-guides");
 await page.click("#guides-reset");
 { // Reset All asks first (#271): the question in its line's place, round ✕ and ✓; ✕ keeps the guides, ✓ resets them
   const asked = await page.evaluate(() => { const q = document.querySelector("#guide-list .guidelast .ask"); return !!q && !q.hidden && q.textContent.includes("Reset all guides?") && [...q.querySelectorAll(".roundb")].every((b) => getComputedStyle(b).borderRadius === "50%"); });
   await page.click("#guides-reset-no");
-  const kept = await S("S.gd_k_hole === 0 && S.gd_w === 3");
+  const kept = await S("S.gd_k_hole === 0 && S.gd_w === 2.25");
   await page.click("#guides-reset"); await page.click("#guides-reset-yes");
   check(asked && kept, "Reset All asks first, in its line's place: \"Reset all guides?\", round ✕ and ✓; ✕ keeps the guides as they are");
 }
@@ -2024,7 +2034,7 @@ const got = await other.evaluate(() => JSON.stringify({ ...window.dial_tool.S, u
   await fresh.reload(); await fresh.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
   const kept = await fresh.evaluate(() => JSON.stringify({ ...window.dial_tool.S, ui_section: 0, ui_ring: 0, ui_hand: 0 }));
   await fresh.close();
-  check(cut && JSON.parse(kept).ha_beat === JSON.parse(got).ha_beat && JSON.parse(kept).dial_d === JSON.parse(got).dial_d && JSON.parse(kept).rings.length === JSON.parse(got).rings.length, "a dial's link opens the dial, then the address bar shows only the site; a reload brings the same dial back (#537)");
+  check(cut && JSON.parse(kept).ha_beat === JSON.parse(got).ha_beat && JSON.parse(kept).dial_d === JSON.parse(got).dial_d && JSON.parse(kept).rings.length === JSON.parse(got).rings.length, `a dial's link opens the dial, then the address bar shows only the site; a reload brings the same dial back (#537; cut ${cut}, diameter ${JSON.parse(kept).dial_d} / ${JSON.parse(got).dial_d}, beat ${JSON.parse(kept).ha_beat} / ${JSON.parse(got).ha_beat}, rings ${JSON.parse(kept).rings.length} / ${JSON.parse(got).rings.length})`);
 }
 {
   // the same within what a link rounds (#246): a number to 3 decimals, a colour to hex, the time to the second (test/linktrip.mjs)
@@ -2579,12 +2589,17 @@ await pad.addInitScript(() => { if (!localStorage.getItem("dial-tool-folds")) lo
 await pad.goto("file://" + process.cwd() + "/dial-tool.html");
 await pad.waitForFunction(() => window.dial_tool && window.dial_tool.statik, null, { timeout: 20000 });
 await pad.tap("#guides-more");
+await pad.tap("#guide-gd_hole-colour");      // a guide's dot opens its colours by it (#527)
 const reach = await pad.evaluate(() => {
-  const dots = [...document.querySelectorAll("#guide-list .guidekind:nth-child(2) .tone")], a = dots[2].getBoundingClientRect(), b = dots[3].getBoundingClientRect();
+  const dots = [...document.querySelectorAll("#guide-pop .tone")], a = dots[2].getBoundingClientRect(), b = dots[3].getBoundingClientRect();
   const at = (x, y) => document.elementFromPoint(x, y);
   return { coarse: matchMedia("(pointer: coarse)").matches, size: a.width, left: at(a.left - 5, a.top + a.height / 2) === dots[2], above: at(a.left + a.width / 2, a.top - 10) === dots[2], nearer_next: at(b.left - 5, b.top + b.height / 2) === dots[3] };
 });
 check(reach.coarse && reach.left && reach.above && reach.nearer_next, `under a finger a ${reach.size} dot is pressed from 5 beside it and 10 above it; nearer the next dot, the next one is`);
+await pad.tap("#guide-gd_hole-colour");      // its colours shut again
+{ const t = await pad.evaluate(() => { const d = document.querySelector("#guide-gd_axes-colour").getBoundingClientRect(), k = document.querySelector("#guide-gd_axes").getBoundingClientRect(), at = (x, y) => document.elementFromPoint(x, y);
+    return [at(d.left - 3, d.top + d.height / 2)?.id, at(k.right + 3, k.top + k.height / 2)?.closest("button")?.id, at(k.left + k.width / 2, k.top - 6)?.closest("button")?.id]; });
+  check(t[0] === "guide-gd_axes-colour" && t[1] === "guide-gd_axes" && t[2] === "guide-gd_axes", `under a finger a guide's dot and tick are pressed from just outside them (${t.join(" ")})`); }
 { // under a finger the number popup opens without taking the focus, so no keyboard comes up (4.46.1; Okay: "Value gets selected was the wrong choice, triggers the keypad on ipad")
   await pad.tap("#guides-more");      // the guides' list away again
   await pad.tap('label[for="global-dial-d-Diameter"]'); await pad.waitForTimeout(300);
@@ -2592,7 +2607,8 @@ check(reach.coarse && reach.left && reach.above && reach.nearer_next, `under a f
   check(typing[0] && !typing[1], "under a finger a number's popup opens with nothing chosen to type over: no keyboard comes up until the value is pressed");
   await pad.tap("#guides-more"); await pad.waitForTimeout(200);      // a press outside puts the popup away; the guides' list open again for what follows
 }
-await pad.touchscreen.tap(...await pad.$eval('#guide-list .guidekind:nth-child(2) .tone:nth-child(5)', (e) => { const r = e.getBoundingClientRect(); return [r.left - 4, r.top - 8]; }));
+await pad.tap("#guide-gd_axes-colour");      // the centre lines' colours, by its dot
+await pad.touchscreen.tap(...await pad.$eval('#guide-pop .tone:nth-child(5)', (e) => { const r = e.getBoundingClientRect(); return [r.left - 4, r.top - 8]; }));
 check(await pad.evaluate(() => window.dial_tool.S.gd_k_axes === 3), "a tap just outside a dot chooses it");
 await pad.tap("#global-c-plate-Plate-hex");
 const chip_reach = await pad.evaluate(() => { const c = [...document.querySelectorAll("#pop-palette button")], r = c[4].getBoundingClientRect(); return [document.elementFromPoint(r.left - 4, r.top + 4) === c[4], document.querySelector("#global-c-plate-Plate-hex").tagName === "SPAN", !document.querySelector("#colour-pop").hidden]; });
