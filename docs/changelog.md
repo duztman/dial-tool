@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.93 (web version) · 25 Oct 2026 — the step
+
+- **Released to main**: the Guides list in one column (#539, 4.92.29) and the Shadows pane (#526, 4.92.30–33) — plus everything on dev since 4.92.1: the font library's Google and Noto fonts, the filters and the Installed tab (#501), the short address (#537), link scheme 5 and Arimo (#228), a set of saved dials as one link (#523), Help → the help page (#538), the Guides popup's handles (#527), Shenanigans as toggles, show mode's Colours per ring and hand (#521), one numeral's own font and colour (#513), custom day names and am · pm words (#515, #516), hand bevels on the dial side (#531), the controller's value over the knob.
+- Checked: the full `npm test` (parity, labels, links, complications, Wear OS, the window, the icons), the screenshots.
+
 ## beta 4.92.33 (web version) · 25 Oct 2026
 
 - **The Shadows pane's balance** (#526; Okay, 02:29, his marks: "This balance is what I'm after"): the sun box runs wide up to the sliders' column, same height; Angle · Height · Strength stand at the right edge, their column as wide as the squeezed slider; the exploded view is titled *Components* as the sun box is titled *Sun*; every corner of the pane round. A press on the sun's picture is read through the picture's scale, so a wide box places the sun right.
