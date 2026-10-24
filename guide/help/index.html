@@ -14,7 +14,7 @@
 :root{--bug:#c8331b;--map-w:211px;--map-h:132px;--map-frame:7px;--map-ring:5px;--paper:#f3f1ec;--ink:#1b1a18;--mute:#77736b;--line:#d8d4cb;--gut:16px}
 *{box-sizing:border-box}html{scroll-padding-top:96px;scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-.topbar{position:sticky;top:0;z-index:10;background:var(--paper);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+.topbar{position:sticky;top:0;z-index:10;background:var(--paper);padding-top:env(safe-area-inset-top,0px)}
 .top{display:grid;grid-template-columns:190px 1fr;gap:48px;align-items:baseline;max-width:1200px;margin:0 auto;padding:18px var(--gut)}
 .brand{display:flex;align-items:baseline;gap:10px;line-height:1;font-size:26px;font-weight:600;letter-spacing:-.01em;text-decoration:none;white-space:nowrap}
 .brand .ic{margin:0;align-self:center}.brand .ic svg{width:1em;height:1em}
@@ -90,6 +90,7 @@ h2:has(.map) + .lead{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 h2:has(.map) + .lead + *{clear:both}
 @media (max-width:760px){h2:has(.map) + .lead{white-space:normal}}
 .page{max-width:35em}
+.top{background:linear-gradient(var(--line),var(--line)) no-repeat var(--gut) 100% / calc(min(100%, 190px + 48px + 35em + 2 * var(--gut)) - 2 * var(--gut)) 1px}
 .box{position:fixed;inset:0;z-index:9;display:none;place-items:center;padding:24px;background:#eceae5;cursor:zoom-out}
 .box.open{display:grid}
 .box figure{margin:0;max-width:min(1400px,100%);max-height:100%;display:flex;flex-direction:column}
