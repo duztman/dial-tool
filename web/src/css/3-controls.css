@@ -31,7 +31,16 @@
   .pillswitch > button { height: calc(var(--control) - 2 * var(--u1) - 2 * var(--hair)); padding: 0 var(--u4); border-radius: var(--round-pill); color: var(--grey); font-size: var(--t-s); }
   .pillswitch > button:hover:not(.on) { color: var(--ink); }
   .pillswitch.many { flex-wrap: wrap; }
-  .showing .pillswitch { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }      /* show mode's column is narrower: a long pill scrolls sideways on its line, so no row grows (Okay, 22 Oct 2026, 21:05: "Scroll sideways it is"; the Show Case's rule) */
+  /* a toggle (#525): a small track as tall as the Gallery pill, a dot travelling in it. Off: its outline, the dot at the
+     left in the outline's colour, its row's name dark. On: the dot white at the right, on the filled track */
+  .toggle { position: relative; flex: none; width: var(--toggle-w); height: var(--toggle-h); padding: 0; border: var(--hair) solid var(--ink); border-radius: var(--round-pill); background: none; }
+  .toggle > .knob { position: absolute; top: 50%; left: var(--u1); width: var(--toggle-dot); height: var(--toggle-dot); border-radius: 50%; background: var(--ink); translate: 0 -50%; transition: left var(--iris-time) var(--view-ease), background var(--iris-time); }
+  .toggle[aria-checked="true"] { background: var(--uiblack, var(--ink)); border-color: var(--uiblack, var(--ink)); }
+  .toggle[aria-checked="true"] > .knob { left: calc(100% - var(--u1) - var(--toggle-dot)); background: var(--white); }
+  /* free: each choice a pill of its own, wrapping, a half unit apart (#524; Okay, 24 Oct 2026: "Options can be free living single pills") */
+  .pillswitch.free { flex-wrap: wrap; gap: var(--u1); padding: var(--u1) 0; border: 0; background: none; }
+  .pillswitch.free > button { border: var(--hair) solid var(--rule); background: var(--field); }
+  .showing .pillswitch:not(.free) { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }      /* show mode's column is narrower: a long pill scrolls sideways on its line, so no row grows (Okay, 22 Oct 2026, 21:05: "Scroll sideways it is"; the Show Case's rule) */
   .showing .pillswitch::-webkit-scrollbar { display: none; }
   .steps { width: 100%; }
   .step, .segs > button { flex: 1; border-color: var(--rule); }

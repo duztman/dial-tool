@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.92.8";
+export const VERSION = "beta 4.92.9";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)

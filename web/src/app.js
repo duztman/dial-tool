@@ -972,7 +972,14 @@ ROWS.Watch = [
   hdr("Strap", { folded: false }),
   seg("strap", "Strap", ["Strap", "Leather", "Bracelet", "NATO"], { order: [1, 3, 2], offered: (S) => (G.CASE_OF_BEZEL[S.bezel] === "diver" ? [1, 2, 3] : [1, 3]) }),      // 0 and 1 leather; a bracelet is the diver's alone (R16: not offered elsewhere)
   col("c_strap", "Leather", { show: (S) => S.strap !== 2 && S.strap !== 3 }),
-  seg("w_nato", "Pattern", ["Bond", "Regimental", "Khaki", "Black · grey", "Olive", "Grey"], { many: true, show: (S) => S.strap === 3 }),
+  // the NATO (#524; Okay, 24 Oct 2026: "Nato colors should be selectable. One solid option. Options can be free living
+  // single pills"): its patterns as pills of their own, Solid last (R9); a pattern taken starts again from its own colours
+  seg("w_nato", "Pattern", ["Bond", "Regimental", "Khaki", "Black · grey", "Olive", "Grey", "Solid"], { free: true, show: (S) => S.strap === 3,
+    put: (tool, v) => { tool.set_value("global", "w_nato", v); tool.set_value("global", "c_nato", null); } }),
+  // its colours, one swatch a stripe, starting from the pattern's: a change makes them your own (c_nato); a solid one's one swatch
+  ...[0, 1, 2].map((i) => col("c_nato", `Stripe ${i + 1}`, { show: (S) => S.strap === 3 && S.w_nato !== 6, get: (S) => nato_stripe(S, i),
+    put: (tool, v) => tool.set_value("global", "c_nato", [0, 1, 2].map((k) => (k === i ? v : nato_stripe(tool.S, k)))) })),
+  col("c_nato", "Colour", { show: (S) => S.strap === 3 && S.w_nato === 6, get: (S) => nato_stripe(S, 0), put: (tool, v) => tool.set_value("global", "c_nato", [v, v, v]) }),
 ];
 ROWS.Light = [
   hdr("Light", { pin: true, headless: true }),      // the Show Case's fixed lines: Style and Lighting stay put under the tabs, no heading (Okay, 21 Oct 2026, 01:50); everything else in show mode scrolls, so the top band is small
@@ -1101,6 +1108,7 @@ function drag_in(box, move) {
     at(e);
   };
 }
+const nato_stripe = (S, i) => (S.c_nato ? S.c_nato[i] : from_hex(SHOW.nato_colours(S)[i]));      // a NATO stripe's colour as drawn (#524)
 const from_hex = (h, alpha = 1) => [1, 3, 5].map((i) => +(parseInt(h.slice(i, i + 2), 16) / 255).toFixed(4)).concat([alpha]);
 
 function save_file(name, data, type) {
@@ -1840,11 +1848,15 @@ class DialTool {
   }
 
   /** show mode's Shenanigans (Okay, 23 Oct 2026): at the column's foot, always in view, on the top's darker ground — the
-   *  costly or showy layers on and off in one place: Shadows, Flare, Blurs, Bevels. Only shortcuts: the same keys as
-   *  their rows and switches elsewhere, which keep every other setting of theirs. Hidden on the dial side (R16) */
+   *  costly or showy layers on and off in one place. Only shortcuts: the same keys as their rows and switches elsewhere,
+   *  which keep every other setting of theirs. Hidden on the dial side (R16). Laid out after his drawing (24 Oct 2026,
+   *  #525; his drawing of 19:04): Shadows · Blurs over Flare · Bevels, each its name and a toggle; All alone in a third
+   *  column behind a white line, turning the four on or off together */
   shenanigans_box() {
-    this.shen_rows = [["sh_on", "Shadows"], ["w_flare_on", "Flare"], ["sh_blur", "Blurs"], ["w_bevels", "Bevels"]].map(([key, text]) => this.build_row({ ...chk(key, text), scope: "global" }));
-    return el("div", { className: "shenanigans" }, el("div", { className: "shenhead", textContent: "Shenanigans" }), el("div", { className: "shenticks" }, ...this.shen_rows.map((r) => r.el)));
+    const KEYS = ["sh_on", "sh_blur", "w_bevels", "w_flare_on"], pill = (key, text, o = {}) => this.build_row({ ...seg(key, text, ["On", "Off"], { bool: true, ...o }), scope: "global" });
+    const all = pill("w_flare_on", "All", { get: (T) => KEYS.every((k) => T[k]), put: (tool, v) => KEYS.forEach((k) => tool.set_value("global", k, v)) });
+    this.shen_rows = [...[["sh_on", "Shadows"], ["sh_blur", "Blurs"], ["w_flare_on", "Flare"], ["w_bevels", "Bevels"]].map(([key, text]) => pill(key, text)), all];
+    return el("div", { className: "shenanigans" }, el("div", { className: "shenticks" }, ...this.shen_rows.map((r) => r.el)));
   }
 
   /** the panel's colours from the backdrop in show mode (show.js tint_panel; #505) */
@@ -3083,14 +3095,24 @@ class DialTool {
       };
     }
 
-    if (row.kind === "seg") {
+    if (row.kind === "seg" && row.bool) {
+      // a toggle (Shenanigans, #525; Okay, 24 Oct 2026, 19:04: "On off does not need to be written down. A dot travels. On is
+      // outline only … Apple style sliding on of. On is right position and backg is filled button is white. Off text label
+      // also goes black"): a small track and a dot; off, the outline and the dot at the left, its name dark; on, the dot at
+      // the right, white on the filled track
+      const name = el("label", { htmlFor: id, textContent: row.text });
+      const toggle = el("button", { type: "button", id, className: "toggle", role: "switch", ariaLabel: row.text, onclick: () => set(!(row.get ? row.get(this.target(row.scope)) : this.target(row.scope)[row.key])) }, el("span", { className: "knob" }));
+      wrap.append(name, toggle);
+      out.refresh = (T) => { const on = Boolean(row.get ? row.get(T) : T[row.key]); toggle.setAttribute("aria-checked", String(on)); wrap.classList.toggle("off", !on); };
+    }
+    else if (row.kind === "seg") {
       // order: the buttons' order when it isn't the list's (the list only grows at its end, R9) · many: on two lines
-      const group = el("span", { className: row.many ? "pillswitch many" : "pillswitch", role: "radiogroup", ariaLabel: row.text });      // a choice of words is a pill switch, as the font sheet's Light · Dark (Okay, 20 Oct 2026, 01:33: "exactly same style. can we make this universal?")
+      const group = el("span", { className: row.free ? "pillswitch free" : row.many ? "pillswitch many" : "pillswitch", role: "radiogroup", ariaLabel: row.text });      // a choice of words is a pill switch, as the font sheet's Light · Dark (Okay, 20 Oct 2026, 01:33: "exactly same style. can we make this universal?")
       const buttons = row.items.map((name, i) => el("button", { type: "button", id: `${id}-${i}`, textContent: name, onclick: () => { set(i); if (row.key.startsWith("ui_")) this.sync_rows(); } }));
       group.append(...(row.order || buttons.map((b, i) => i)).map((i) => buttons[i]));
       const name = el("label", { textContent: row.text });
       wrap.append(name, group);
-      out.refresh = (T) => { buttons.forEach((b, i) => { b.classList.toggle("on", i === T[row.key]); if (row.offered) b.hidden = !row.offered(T).includes(i); }); if (row.say) name.textContent = label_of(row, T); };      // offered: which choices can be used now (R16)
+      out.refresh = (T) => { const at = row.get ? row.get(T) : T[row.key]; buttons.forEach((b, i) => { b.classList.toggle("on", i === at); if (row.offered) b.hidden = !row.offered(T).includes(i); }); if (row.say) name.textContent = label_of(row, T); };      // offered: which choices can be used now (R16)
     }
 
     if (row.kind === "chk") {
@@ -3106,7 +3128,7 @@ class DialTool {
       pill.onclick = () => this.pop_open(this.colour_of_row(row), pill);
       const name = el("label", { htmlFor: id, textContent: row.text });
       wrap.append(name, pill);
-      out.refresh = (T) => { pill.show(T[row.key] || (row.or ? row.or(T) : [0, 0, 0, 1])); if (row.say) name.textContent = row.say(T)[0]; };
+      out.refresh = (T) => { pill.show((row.get ? row.get(T) : T[row.key]) || (row.or ? row.or(T) : [0, 0, 0, 1])); if (row.say) name.textContent = row.say(T)[0]; };
     }
 
     if (row.kind === "txt") {
@@ -3213,8 +3235,8 @@ class DialTool {
   colour_of_row(row) {
     return {
       alpha: row.scope === "ring" || row.scope === "hand",      // rings (Okay, 12 Oct 2026) and hands (#163, 14 Oct 2026) can be see-through
-      read: () => { const T = this.target(row.scope); return T ? T[row.key] || (row.or ? row.or(T) : null) : null; },
-      write: (value) => this.set_value(row.scope, row.key, value),
+      read: () => { const T = this.target(row.scope); return T ? (row.get ? row.get(T) : T[row.key]) || (row.or ? row.or(T) : null) : null; },      // get · put: a row standing for part of a setting (a NATO's stripe)
+      write: (value) => (row.put ? row.put(this, value) : this.set_value(row.scope, row.key, value)),
       label: () => {
         const S = this.S, scope = row.scope;
         const whose = scope === "ring" ? this.ring().name || G.kind_of(this.ring()) : scope === "hand" ? ["Hour hand", "Minute hand", "Seconds hand"][S.ui_hand] : scope === "window" ? `Window ${S.ui_window + 1}` : "";

@@ -14,7 +14,14 @@ import * as G from "./geometry.js";
 import * as WATCH from "./watch.js";
 
 export const METAL_NAMES = ["steel", "gold", "alu", "bronze", "titanium", "black"];
-export const NATO_NAMES = ["bond", "regimental", "khaki", "blackgrey", "olive", "grey"];
+export const NATO_NAMES = ["bond", "regimental", "khaki", "blackgrey", "olive", "grey", "solid"];      // solid: one colour, your own (#524; Okay, 24 Oct 2026: "One solid option")
+const SOLID_NATO = "#2a3550";      // a solid NATO's colour to start: the regimental's navy
+/** a NATO's three stripe colours as drawn: your own (c_nato), else the pattern's, in the style's tones; a solid one's, three of one */
+export function nato_colours(S) {
+  const name = NATO_NAMES[S.w_nato], P = WATCH.presets(STYLE_NAMES[S.w_style] || "miyazaki");
+  if (S.c_nato) return S.c_nato.map(hex);
+  return name === "solid" ? [SOLID_NATO, SOLID_NATO, SOLID_NATO] : P.nato[name] || P.nato.regimental;
+}
 export const INSERTS = [["#2b2c30", "#2b2c30"], ["#1f3a6e", "#1f3a6e"], ["#1f5a3a", "#1f5a3a"], ["#23407a", "#a8262e"], ["#222326", "#22457e"], ["#222326", "#a3232b"], ["#2a2420", "#6b3f24"], ["#222326", "#2f7a3c"]];
 /** a metal's picture for its tile: a disc in its colour, lit on one side as a case is */
 export const metal_picture = (i) => { const c = WATCH.presets("miyazaki").metals[METAL_NAMES[i]] || "#9a9a9a";
@@ -38,7 +45,7 @@ export function options(S, items, effects) {
     A: Object.fromEntries(HANDS.map((h) => [h, 0])),
     strap: S.strap === 2 && diver ? "bracelet" : S.strap === 3 ? "nato" : "leather", nato: NATO_NAMES[S.w_nato] || "regimental",
     metal: S.c_metal ? hex(S.c_metal) : P.metals[METAL_NAMES[S.w_metal]] || P.metals.steel,
-    leather: hex(S.c_strap), natoColours: S.c_nato ? S.c_nato.map(hex) : P.nato[NATO_NAMES[S.w_nato]] || P.nato.regimental,
+    leather: hex(S.c_strap), natoColours: nato_colours(S),
     insert: S.c_insert ? { top: hex(S.c_insert[0]), bottom: hex(S.c_insert[1]) } : { top: INSERTS[S.w_insert][0], bottom: INSERTS[S.w_insert][1] },
     floor: hex(S.c_backdrop), floor2: S.c_backdrop2 ? hex(S.c_backdrop2) : null,
     L: S.sh_from - 90, h: S.sh_rise, shadow: S.sh_on ? S.sh_dark / 25 : 0,

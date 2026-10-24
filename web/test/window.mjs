@@ -2282,6 +2282,24 @@ await shot("10-bar");
   await page.evaluate((v) => { const t = window.dial_tool; t.set_value("global", "sh_from", v[0]); t.set_value("global", "sh_rise", v[1]); }, was_sun);
   check(look.shown && look.gone && look.title === '" Show Case"' && look.header && look.under && look.w === look.left && look.sign !== "rgb(0, 0, 0)" && (sun[0] !== was_sun[0] || sun[1] !== was_sun[1]) && sun[0] > 270 && sun[0] < 360,
     `show mode, as the Show Case had it (Okay, 23 Oct 2026): undo · redo · Versions at the canvas's top left; no Guides, no Shadows; the title Dial Tool Show Case with Help and the swatch alone; the canvas runs on under the see-through column, the watch centred in the ${look.w} px left of it; the chosen tab's sign in the column's colour (${look.sign}); a drag on the canvas moves the sun (${was_sun} → ${sun})`);
+  const shen = await page.evaluate(() => { const t = window.dial_tool, K = ["sh_on", "sh_blur", "w_bevels", "w_flare_on"], was = K.map((k) => t.S[k]), rows = [...document.querySelectorAll(".shenticks > .row")];
+    const press = (name) => rows.find((r) => r.querySelector("label").textContent === name).querySelector(".toggle").click();
+    K.forEach((k) => t.set_value("global", k, true)); press("All"); const off = K.map((k) => t.S[k]).join(" "), dark = rows.every((r) => r.classList.contains("off")); press("All"); const on = K.map((k) => t.S[k]).join(" "); press("Blurs"); const blur = t.S.sh_blur;
+    K.forEach((k, i) => t.set_value("global", k, was[i]));
+    return { names: rows.map((r) => r.querySelector("label").textContent).join(" · "), pills: rows.every((r) => r.querySelector(".toggle") && !/On|Off/.test(r.textContent)), lines: rows.slice(0, 4).every((r) => getComputedStyle(r).boxShadow === "none") && getComputedStyle(rows[4]).borderLeftStyle === "solid", off, on, blur, dark }; });
+  check(shen.names === "Shadows · Blurs · Flare · Bevels · All" && shen.pills && shen.lines && shen.dark && shen.off === "false false false false" && shen.on === "true true true true" && shen.blur === false,
+    `Shenanigans (#525; Okay, 24 Oct 2026, 19:04: "On off does not need to be written down. A dot travels"): ${shen.names}, each a toggle with no words, All behind a white line; off, the names go dark; All turns the four off (${shen.off}) and on (${shen.on})`);
+  const nato = await page.evaluate(async () => { const t = window.dial_tool, was = [t.S.strap, t.S.w_nato, t.S.c_nato], w = (ms) => new Promise((r) => setTimeout(r, ms));
+    document.querySelector('button[data-tab="Watch"]').click(); await w(100); t.set_value("global", "strap", 3); t.set_value("global", "w_nato", 0); await w(100);
+    const seen = () => [...document.querySelectorAll(".panel .row.col")].filter((r) => r.offsetParent).map((r) => r.querySelector("label").textContent).filter((n) => /Stripe|^Colour$/.test(n)).join(" ");
+    const pills = document.querySelectorAll(".pillswitch.free > button").length, three = seen();
+    [...document.querySelectorAll(".pillswitch.free > button")].find((b) => b.textContent === "Solid").click(); await w(100); const one = seen();
+    const row = [...document.querySelectorAll(".panel .row.col")].find((r) => r.offsetParent && r.querySelector("label").textContent === "Colour");
+    const id = row.querySelector("button").id; t.pop_open(t.colour_of_row(t.rows.find((r) => r.el === row).row), row.querySelector("button")); t.pop.at.write([1, 0, 0, 1]); t.pop_close(); const c = JSON.stringify(t.S.c_nato);
+    t.set_value("global", "strap", was[0]); t.set_value("global", "w_nato", was[1]); t.set_value("global", "c_nato", was[2]);
+    return { pills, three, one, c, id }; });
+  check(nato.pills === 7 && nato.three === "Stripe 1 Stripe 2 Stripe 3" && nato.one === "Colour" && nato.c === "[[1,0,0,1],[1,0,0,1],[1,0,0,1]]",
+    `the NATO (#524; Okay, 24 Oct 2026: "Nato colors should be selectable. One solid option. Options can be free living single pills"): ${nato.pills} pills of their own, Solid last; a pattern's three stripes each a swatch (${nato.three}); Solid one swatch (${nato.one}) that colours all three (${nato.c})`);
   const was_ground = await page.evaluate(() => [window.dial_tool.S.c_backdrop, window.dial_tool.S.c_backdrop2]);
   await page.click("#logo", { force: true }); const bio = await page.evaluate(() => document.querySelector("#bio").hidden);
   await page.click("#backdrop"); await page.click('.groundtile[title="Ember"]'); await frame();

@@ -8,11 +8,19 @@
      and so stays where it was, is over the backdrop once the panel is gone */
   .sheetgrip { display: none; }
   .shenanigans { display: none; }      /* show mode's on/off shortcuts at the column's foot (shenanigans_box() in app.js); the dial side has none (R16) */
-  .showing .shenanigans { display: block; flex: none; padding: 0 var(--margin) var(--u2); background: linear-gradient(var(--ink) 0 0) 50% 0 / calc(100% - 2 * var(--margin)) var(--thick) no-repeat, var(--column-top, var(--paper)); }
-  .shenhead { display: flex; align-items: center; height: var(--head); padding-left: var(--lead); font-weight: 600; }
-  .shenticks { display: grid; grid-template-columns: repeat(4, max-content); column-gap: var(--u4); padding-left: var(--lead); }
-  .shenticks > .row { min-height: var(--line); box-shadow: none; }
-  .shenticks > .row > .check { grid-column: 1 / -1; }
+  .showing .shenanigans { display: block; flex: none; padding: 0 var(--margin); background: linear-gradient(var(--ink) 0 0) 50% 0 / 100% var(--thick) no-repeat, var(--column-top, var(--paper)); }      /* its white line across the column's whole width (Okay, 24 Oct 2026, 19:04: "look at the white lines, they are crucial") */
+  /* after his drawing (#525, 19:04): Shadows · Blurs over Flare · Bevels, each a name and its toggle close by; All alone
+     in a third column, a white hairline before it from the top line to the bar */
+  /* three equal columns, All its own third (19:08: "All does get one third column"); in each the name set right against
+     its toggle, so the toggles stand in line (":: Align labels to buttons right"); names in small capitals, a little
+     tracked and a little heavier ("Try all caps small. Bit more tracking bit weight") */
+  .shenticks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .shenticks > .row.seg { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--u2); min-height: var(--control); padding: var(--u1) var(--u4) var(--u1) 0; box-shadow: none; background: none; }
+  .shenticks > .row.seg > label { grid-column: 1; text-align: right; font-size: var(--t-xs); font-weight: 500; letter-spacing: var(--track-50); text-transform: uppercase; }
+  .shenticks > .row.seg > .toggle { grid-column: 2; }
+  .shenticks > .row:nth-child(1) { grid-area: 1 / 1; } .shenticks > .row:nth-child(2) { grid-area: 1 / 2; }
+  .shenticks > .row:nth-child(3) { grid-area: 2 / 1; } .shenticks > .row:nth-child(4) { grid-area: 2 / 2; }
+  .shenticks > .row:last-child { grid-area: 1 / 3 / 3 / 4; align-self: stretch; border-left: var(--hair) solid var(--ink); }
   .panelcopy { position: fixed; z-index: 7; pointer-events: none; }      /* the panel's still copy sliding away while the modes change (panel_copy() in app.js) */      /* a phone's drawer gripper (8-narrow.css); a wider screen has no drawer */
   .panel { position: relative; z-index: 5; width: var(--panel-w); translate: calc(-1 * var(--panel-w) * var(--away)) 0; }
   .mast { display: flex; align-items: center; translate: calc(var(--panel-w) * var(--away)) 0; z-index: 6; }

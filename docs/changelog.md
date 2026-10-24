@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.92.9 (web version) · 24 Oct 2026
+
+- **Shenanigans, after his drawings** (#525; 19:04, 19:08): a **toggle** each, no words — off, its outline with the dot at the left and the name dark; on, the dot white at the right on a filled track ("A dot travels … Apple style … Off text label also goes black"); Shadows · Blurs over Flare · Bevels, **All** alone in the third column behind a white hairline, turning the four on or off together; the top white line across the column's whole width ("look at the white lines, they are crucial"); three equal columns, each name set right against its toggle so the toggles stand in line, in small capitals, tracked 50, weight 500 ("Try all caps small. Bit more tracking bit weight"). No heading. The toggle is `seg` with `bool` (R15); `.dot` was already the swatches' class, so its dot is `.knob`.
+- **The NATO** (#524; "Nato colors should be selectable. One solid option. Options can be free living single pills"): its seven patterns as free pills, wrapping, **Solid** last (R9); a swatch for each stripe (Solid one, colouring all three), starting from the pattern's colours in the style's tones (`nato_colours()` in show.js); a pattern taken again starts from its own. The colour rows read and write part of a setting through `get` and `put`, as other rows do.
+- Checked: the window test, two checks added (Shenanigans' toggles and All; the NATO's pills and swatches).
+
 ## beta 4.92.8 (web version) · 24 Oct 2026
 
 Okay, 18:43:
