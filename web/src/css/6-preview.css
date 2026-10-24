@@ -99,6 +99,12 @@
   main.comparing > :is(svg, .tip) { visibility: hidden; }
   .comparedial { position: absolute; width: var(--compare-d); height: var(--compare-d); }
   .comparedial > svg { display: block; width: 100%; height: 100%; }
+  .comparedial.pick { cursor: pointer; }      /* a set's dial from a link: a press edits it (#523) */
+  /* a set from a link (#523): the preview note's look, its question and two buttons on one line */
+  .setoffer { display: flex; align-items: center; gap: var(--unit); }
+  .offerbtn { padding: var(--u1) var(--u3); border: var(--hair) solid var(--white); background: none; color: var(--white); font: inherit; cursor: pointer; }      /* its buttons, drawn for the note's dark ground */
+  .offerbtn.main { background: var(--white); color: var(--ink); }
+  .setoffer[hidden] { display: none; }
   .undobox.none, .undobox.none:hover { border-color: var(--line-faint); box-shadow: none; cursor: default; pointer-events: none; }      /* no step that way: its outline as the others' (Okay, 21 Oct 2026, 23:34: "keep outlines as others while inactive"), its sign paler, nothing under a pointer or a finger */
   :is(.undobox.none, .undobox.none:hover) > * { opacity: calc(var(--faint) / 2); }
   .guidesbox { --sign-w: 18px; gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); border-radius: var(--round-switch) 0 0 var(--round-switch); }      /* on, its word is whole (black or white), never bolder (Okay, 14 Oct 2026: "when active label does not get bolder, just gets black") */

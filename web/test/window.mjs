@@ -2098,6 +2098,33 @@ check(short.length < 12, `the starting dial's link is short (${short})`);
 await page.evaluate((l) => { location.hash = l.split("#")[1]; }, link);
 await page.waitForFunction(() => window.dial_tool.S.ha_hour.round === 2, null, { timeout: 5000 }).catch(() => {});
 check(await S("S.ha_hour.round === 2") && await page.evaluate(() => location.hash === ""), "pasting a link into the open tool switches to that dial, and the address goes short again (#537)");
+{ // a set of saved dials as one link (#523; Okay, 24 Oct 2026: Share pane, opens as Compare, ask first, saved dials only)
+  const a = await (await visitor()).newPage();
+  await a.goto("file://" + process.cwd() + "/dial-tool.html"); await a.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
+  await a.evaluate(() => { localStorage.removeItem("dial-tool-instances"); window.dial_tool.sync_rows(); });
+  const none = await a.isVisible("#copy-set");
+  for (const d of [30, 38]) {
+    await a.evaluate((d) => window.dial_tool.set_value("global", "dial_d", d), d); await a.waitForTimeout(500);
+    if (await a.$eval("#version-list", (l) => l.hidden)) await a.click("#versions");
+    await a.click("#instance-save"); await a.waitForTimeout(200);
+  }
+  await a.evaluate((old) => { const l = JSON.parse(localStorage.getItem("dial-tool-instances")); l.push({ id: "old", at: 1, name: "saved with its link only", link: old, picture: "<svg/>" }); localStorage.setItem("dial-tool-instances", JSON.stringify(l)); window.dial_tool.sync_rows(); }, "#4" + link.split("#5")[1]);      // a dial saved before 4.92.19: its link only, of scheme 4
+  const set = await a.evaluate(() => window.dial_tool.copy_set(null)), made = await a.evaluate(() => window.dial_tool.log_lines[0]);
+  await a.context().close();
+  const b = await (await visitor()).newPage();
+  await b.goto(set); await b.waitForFunction(() => window.dial_tool && window.dial_tool.statik);
+  await b.waitForSelector("#set-offer:not([hidden])", { timeout: 8000 }).catch(() => {});
+  const seen = await b.evaluate(() => ({ cut: location.hash === "", comparing: Boolean(window.dial_tool.comparing), cells: document.querySelectorAll(".comparedial").length, kept: JSON.parse(localStorage.getItem("dial-tool-instances") || "[]").length, ask: document.getElementById("set-offer").textContent }));
+  await b.screenshot({ path: path.join(OUT, "9c-set-link.png") });
+  await b.click("#set-add"); await b.waitForTimeout(300);
+  const kept = await b.evaluate(() => JSON.parse(localStorage.getItem("dial-tool-instances") || "[]").map((e) => Boolean(e.dial)));
+  await b.click(".comparedial >> nth=1"); await b.waitForTimeout(500);
+  const opened = await b.evaluate(() => window.dial_tool.S.dial_d);
+  await b.context().close();
+  await page.bringToFront();      // the window under test back in front: a page behind others lets its hover and animations wait
+  check(!none && /^\S+#V5[0-9A-Z]+$/.test(set) && made.includes("3 dials") && seen.cut && seen.comparing && seen.cells === 3 && seen.kept === 0 && /3 dials from a link/.test(seen.ask) && kept.length === 3 && kept.every(Boolean) && opened === 30,
+    `a set link (#523): Copy set link shows with two saved dials or more, and copies them all in one link, a dial saved with only its scheme-4 link too (${made}); opened elsewhere, the address short, the set in Compare (${seen.cells}), nothing kept until asked ("${seen.ask}"); Add keeps them whole (${kept}); a press on one edits it (${opened} mm)`);
+}
 
 // ── nothing jumps: a click on the preview keeps the rows; panes slide; the Guides switch keeps its size ──
 await tab("Rings");
@@ -2114,7 +2141,7 @@ check(await page.$eval(".form", (e) => e.scrollTop) === 120, "a section is back 
 await page.$eval(".form", (e) => { e.scrollTop = 0; });
 await tab("Dial");
 const guides_w = [];
-for (let i = 0; i < 2; i++) { guides_w.push(await page.$eval("#guides", (e) => e.getBoundingClientRect().width)); await page.click("#guides"); await frame(); }
+for (let i = 0; i < 2; i++) { guides_w.push(await page.$eval("#guides", (e) => e.getBoundingClientRect().width)); await page.click("#guides"); await page.mouse.move(1, 1); await page.waitForTimeout(400); }      // the pointer moved off, so its name, shown under a pointer (#518), isn't measured
 check(guides_w[0] === guides_w[1], `the Guides switch is the same width on and off (${guides_w.join(" / ")})`);
 check(await page.$eval("#global-dial-d-Diameter-slider", (e) => { const p = +e.style.getPropertyValue("--p"); return Math.abs(p - (e.value - e.min) / (e.max - e.min)) < 0.001 && getComputedStyle(e).appearance === "none"; }), "a slider knows how far along it is: its track is filled up to the handle");
 await page.emulateMedia({ reducedMotion: "no-preference" });

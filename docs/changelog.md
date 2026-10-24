@@ -1,5 +1,14 @@
 # Dial Tool — changelog
 
+## beta 4.92.19 (web version) · 24 Oct 2026
+
+- **A set of saved dials as one link** (#523; his answers in question mode: the Share pane · Compare · ask first · saved dials only): *Copy set link*, under Copy link in *Share dial as link*, shown with two saved dials or more (R16), copies every dial under Versions in one link (`#V5…`: the dials' names and link texts deflated together; three dials ≈ 780 characters). Opened elsewhere, the address goes short (#537) and the set stands in Compare, its pictures drawn there once their fonts are in; a note asks *Add to my Versions* · *Just look*, and says how many of the receiver's oldest an Add replaces. Nothing is kept until Add. A press on one of the set's dials edits it (the receiver's own saved dials stay unpickable in Compare). A set of an older scheme says so on the preview (R17).
+- **Saved dials survive a new link scheme**: a dial saved under Versions keeps its whole settings too, so a scheme change (R31) no longer stops it opening; dials saved with only their link are read from it, scheme 4 too (4.92.18's change had left them unopenable). *In a new tab* opens today's link.
+- **The font sheet's shadows are solid** (Okay, 21:39: "make it solid 50% opacity. no fancy, static left plus bottom"): black at 50 %, no blur, two units left and two down; its legend one and one (`--shadow-solid`, `--shadow-solid-near`).
+- **Show mode's switch has no tag and no tooltip** (21:39: "show mode tooltip no need and incorrect on desktop").
+- Copy link's look (its sign beside its word) is the `copylink` class anywhere, not only on a heading line.
+- Checked: links, labels, complications, the window test (new: the set link end to end; the Guides switch measured with the pointer moved off, since a name shows under a pointer, #518).
+
 ## beta 4.92.18 (web version) · 24 Oct 2026
 
 - **A ring's starting font is Arimo** (#228; Okay, 21:05: "Helvetica not a bundled font. Bundled fonts are all free to use"): bundled (Apache 2.0), Helvetica's proportions, so the Type pane no longer says "not loaded" with Inter standing in. The DrawBot-era key `ty_family` follows. Settings files that name Helvetica Neue keep it.

@@ -115,7 +115,7 @@
   .picker .adding { position: relative; }      /* the legend hangs over it */
   .legend { position: absolute; z-index: 2; left: calc((100% - 2 * var(--unit)) / 3 + var(--unit)); right: 0; bottom: calc(100% + var(--unit)); display: grid;
     grid-template-columns: calc(50% + var(--unit) / 2) minmax(0, 1fr); overflow-y: auto; margin: 0; padding: var(--u6);
-    border: var(--hair) solid var(--rule); background: var(--hover); box-shadow: var(--shadow-light); color: var(--ink); font-size: var(--t-xxs); line-height: 1.3; }      /* a size under the buttons' words */
+    border: var(--hair) solid var(--rule); background: var(--hover); box-shadow: var(--shadow-solid-near); color: var(--ink); font-size: var(--t-xxs); line-height: 1.3; }      /* a size under the buttons' words */
   .legend[hidden] { display: none; }
   .legendhead { grid-column: 1 / -1; padding-bottom: var(--unit); color: var(--grey); font: 400 var(--t-pixel-legend)/1.25 var(--pixel); text-transform: uppercase; white-space: nowrap; opacity: var(--pixel-ink); }      /* its title across both columns from the top left, on one line, in the pixel font at half a size more (R32's one exception) */
   .legend :is(dt, dd) { padding: var(--unit) 0; border-top: var(--hair) solid var(--rule); }
@@ -131,7 +131,7 @@
   /* it floats over the panel: as wide and as high as the panel (from the window's top to the bar, never over the
      bar), its left edge on the panel's third column, where the controls start, so its right part lies over the
      preview; a shadow to its left */
-  .picker { position: fixed; inset: var(--header) auto calc(var(--bar-height) + var(--line)) calc(var(--margin) + var(--lead) + 2 * (var(--col) + var(--gap))); width: var(--panel); max-width: calc(100vw - 2 * var(--margin)); height: auto; max-height: none; margin: 0; padding: 0; border: var(--hair) solid var(--rule); box-shadow: var(--shadow);      /* a light edge (Okay, 13 Oct 2026: "lighter borders") */
+  .picker { position: fixed; inset: var(--header) auto calc(var(--bar-height) + var(--line)) calc(var(--margin) + var(--lead) + 2 * (var(--col) + var(--gap))); width: var(--panel); max-width: calc(100vw - 2 * var(--margin)); height: auto; max-height: none; margin: 0; padding: 0; border: var(--hair) solid var(--rule); box-shadow: var(--shadow-solid);      /* a light edge (Okay, 13 Oct 2026: "lighter borders") */
     background: var(--paper); color: var(--ink); }
   .picker[open] { display: grid; grid-template-rows: auto 1fr auto; gap: var(--u4); padding: var(--u6) var(--margin) var(--margin); }
   .picker:focus { outline: none; }

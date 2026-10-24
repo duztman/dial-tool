@@ -171,7 +171,8 @@
     --st-sets: color-mix(in srgb, #2D7BFF var(--st-tint), var(--field)); --st-styles: var(--ground);
     --st-tint: var(--guide-tint);
     --shadow: calc(-2 * var(--unit)) 0 6px rgba(0, 0, 0, 0.28);
-    --shadow-light: calc(-1 * var(--unit)) 0 5px rgba(0, 0, 0, 0.14);      /* a window over a window (the font sheet's legend): lighter, half as far (Okay, 14 Oct 2026: "second shadow lighter, both less blur") */      /* what floats over the window throws its shadow to the left, a little soft */
+    --shadow-solid: calc(-2 * var(--unit)) calc(2 * var(--unit)) 0 rgba(0, 0, 0, 0.5);      /* the font sheet's: solid, no blur, to the left and down, as far as --shadow reaches (Okay, 24 Oct 2026, 21:39: "font popups shadow looks out of place. make it solid 50% opacity. no fancy, static left plus bottom") */
+    --shadow-solid-near: calc(-1 * var(--unit)) var(--unit) 0 rgba(0, 0, 0, 0.5);      /* the same over the font sheet (its legend), half as far */
     --swatch-col: calc(2 * (var(--line-button) + var(--ringline-gap)) + var(--row-end));      /* from a pane's right edge to the right edge of the ring list's colour column: a colour swatch further down stands in that column too */
     --t-sample: 20px;                              /* a font's numerals in the font list, when the browser sets them */
     --t-pixel: 8px;                                /* the pixel font's own size: its dots fall on the screen's (R32) */

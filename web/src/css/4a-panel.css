@@ -158,7 +158,8 @@
   .pane.tooled.folded > .headtools { display: none; }
   .pane > .headcontrol.reset { justify-self: start; }      /* Reset's button: on its heading line where its warning starts, the controls' column, and only while the pane is open (Okay, 16 Oct 2026, #269; flush left with the warning since 4.44.2: "reset button flush left with explaner text") */
   .pane.folded > .headcontrol.reset { display: none; }
-  .pane > .headcontrol.copylink { justify-self: end; display: inline-flex; align-items: center; gap: var(--u1); }      /* Copy link with its sign, flush right on its heading line, open or folded (Okay, 16 Oct 2026, #277) */
+  .copylink { display: inline-flex; align-items: center; gap: var(--u1); justify-self: start; }      /* a link's Copy button with its sign: Copy link, Copy set link (#523) */
+  .pane > .headcontrol.copylink { justify-self: end; }      /* Copy link flush right on its heading line, open or folded (Okay, 16 Oct 2026, #277) */
   .body { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); padding-bottom: var(--air); }
   .body > * { grid-column: 2 / -1; }
   .body > :is(.ringlist, .examples) { grid-column: 1 / -1; }

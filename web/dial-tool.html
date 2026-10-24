@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.92.18 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.92.19 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -206,7 +206,8 @@
     --st-sets: color-mix(in srgb, #2D7BFF var(--st-tint), var(--field)); --st-styles: var(--ground);
     --st-tint: var(--guide-tint);
     --shadow: calc(-2 * var(--unit)) 0 6px rgba(0, 0, 0, 0.28);
-    --shadow-light: calc(-1 * var(--unit)) 0 5px rgba(0, 0, 0, 0.14);      /* a window over a window (the font sheet's legend): lighter, half as far (Okay, 14 Oct 2026: "second shadow lighter, both less blur") */      /* what floats over the window throws its shadow to the left, a little soft */
+    --shadow-solid: calc(-2 * var(--unit)) calc(2 * var(--unit)) 0 rgba(0, 0, 0, 0.5);      /* the font sheet's: solid, no blur, to the left and down, as far as --shadow reaches (Okay, 24 Oct 2026, 21:39: "font popups shadow looks out of place. make it solid 50% opacity. no fancy, static left plus bottom") */
+    --shadow-solid-near: calc(-1 * var(--unit)) var(--unit) 0 rgba(0, 0, 0, 0.5);      /* the same over the font sheet (its legend), half as far */
     --swatch-col: calc(2 * (var(--line-button) + var(--ringline-gap)) + var(--row-end));      /* from a pane's right edge to the right edge of the ring list's colour column: a colour swatch further down stands in that column too */
     --t-sample: 20px;                              /* a font's numerals in the font list, when the browser sets them */
     --t-pixel: 8px;                                /* the pixel font's own size: its dots fall on the screen's (R32) */
@@ -609,7 +610,8 @@
   .pane.tooled.folded > .headtools { display: none; }
   .pane > .headcontrol.reset { justify-self: start; }      /* Reset's button: on its heading line where its warning starts, the controls' column, and only while the pane is open (Okay, 16 Oct 2026, #269; flush left with the warning since 4.44.2: "reset button flush left with explaner text") */
   .pane.folded > .headcontrol.reset { display: none; }
-  .pane > .headcontrol.copylink { justify-self: end; display: inline-flex; align-items: center; gap: var(--u1); }      /* Copy link with its sign, flush right on its heading line, open or folded (Okay, 16 Oct 2026, #277) */
+  .copylink { display: inline-flex; align-items: center; gap: var(--u1); justify-self: start; }      /* a link's Copy button with its sign: Copy link, Copy set link (#523) */
+  .pane > .headcontrol.copylink { justify-self: end; }      /* Copy link flush right on its heading line, open or folded (Okay, 16 Oct 2026, #277) */
   .body { display: grid; grid-template-columns: var(--columns); column-gap: var(--gap); padding-bottom: var(--air); }
   .body > * { grid-column: 2 / -1; }
   .body > :is(.ringlist, .examples) { grid-column: 1 / -1; }
@@ -1305,7 +1307,7 @@
   .picker .adding { position: relative; }      /* the legend hangs over it */
   .legend { position: absolute; z-index: 2; left: calc((100% - 2 * var(--unit)) / 3 + var(--unit)); right: 0; bottom: calc(100% + var(--unit)); display: grid;
     grid-template-columns: calc(50% + var(--unit) / 2) minmax(0, 1fr); overflow-y: auto; margin: 0; padding: var(--u6);
-    border: var(--hair) solid var(--rule); background: var(--hover); box-shadow: var(--shadow-light); color: var(--ink); font-size: var(--t-xxs); line-height: 1.3; }      /* a size under the buttons' words */
+    border: var(--hair) solid var(--rule); background: var(--hover); box-shadow: var(--shadow-solid-near); color: var(--ink); font-size: var(--t-xxs); line-height: 1.3; }      /* a size under the buttons' words */
   .legend[hidden] { display: none; }
   .legendhead { grid-column: 1 / -1; padding-bottom: var(--unit); color: var(--grey); font: 400 var(--t-pixel-legend)/1.25 var(--pixel); text-transform: uppercase; white-space: nowrap; opacity: var(--pixel-ink); }      /* its title across both columns from the top left, on one line, in the pixel font at half a size more (R32's one exception) */
   .legend :is(dt, dd) { padding: var(--unit) 0; border-top: var(--hair) solid var(--rule); }
@@ -1321,7 +1323,7 @@
   /* it floats over the panel: as wide and as high as the panel (from the window's top to the bar, never over the
      bar), its left edge on the panel's third column, where the controls start, so its right part lies over the
      preview; a shadow to its left */
-  .picker { position: fixed; inset: var(--header) auto calc(var(--bar-height) + var(--line)) calc(var(--margin) + var(--lead) + 2 * (var(--col) + var(--gap))); width: var(--panel); max-width: calc(100vw - 2 * var(--margin)); height: auto; max-height: none; margin: 0; padding: 0; border: var(--hair) solid var(--rule); box-shadow: var(--shadow);      /* a light edge (Okay, 13 Oct 2026: "lighter borders") */
+  .picker { position: fixed; inset: var(--header) auto calc(var(--bar-height) + var(--line)) calc(var(--margin) + var(--lead) + 2 * (var(--col) + var(--gap))); width: var(--panel); max-width: calc(100vw - 2 * var(--margin)); height: auto; max-height: none; margin: 0; padding: 0; border: var(--hair) solid var(--rule); box-shadow: var(--shadow-solid);      /* a light edge (Okay, 13 Oct 2026: "lighter borders") */
     background: var(--paper); color: var(--ink); }
   .picker[open] { display: grid; grid-template-rows: auto 1fr auto; gap: var(--u4); padding: var(--u6) var(--margin) var(--margin); }
   .picker:focus { outline: none; }
@@ -1493,6 +1495,12 @@
   main.comparing > :is(svg, .tip) { visibility: hidden; }
   .comparedial { position: absolute; width: var(--compare-d); height: var(--compare-d); }
   .comparedial > svg { display: block; width: 100%; height: 100%; }
+  .comparedial.pick { cursor: pointer; }      /* a set's dial from a link: a press edits it (#523) */
+  /* a set from a link (#523): the preview note's look, its question and two buttons on one line */
+  .setoffer { display: flex; align-items: center; gap: var(--unit); }
+  .offerbtn { padding: var(--u1) var(--u3); border: var(--hair) solid var(--white); background: none; color: var(--white); font: inherit; cursor: pointer; }      /* its buttons, drawn for the note's dark ground */
+  .offerbtn.main { background: var(--white); color: var(--ink); }
+  .setoffer[hidden] { display: none; }
   .undobox.none, .undobox.none:hover { border-color: var(--line-faint); box-shadow: none; cursor: default; pointer-events: none; }      /* no step that way: its outline as the others' (Okay, 21 Oct 2026, 23:34: "keep outlines as others while inactive"), its sign paler, nothing under a pointer or a finger */
   :is(.undobox.none, .undobox.none:hover) > * { opacity: calc(var(--faint) / 2); }
   .guidesbox { --sign-w: 18px; gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); border-radius: var(--round-switch) 0 0 var(--round-switch); }      /* on, its word is whole (black or white), never bolder (Okay, 14 Oct 2026: "when active label does not get bolder, just gets black") */
@@ -7217,7 +7225,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.92.18";
+var VERSION = "beta 4.92.19";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -16036,6 +16044,8 @@ var ROWS = {
     custom("link_copy", { head: true }),
     // Copy link, flush right on the heading line, open or folded (#277)
     custom("link"),
+    custom("link_set", { show: () => instances_read().length > 1 }),
+    // the saved dials as one link (#523)
     hdr("Settings file", { folded: true, title: () => tool && tool.loaded_name ? `Settings file \xB7 ${tool.loaded_name}` : "Settings file" }),
     // after Load it names the file (#279)
     custom("settings"),
@@ -16281,6 +16291,7 @@ var instances_read = () => {
     return [];
   }
 };
+var is_light = (plate) => 0.2126 * plate[0] + 0.7152 * plate[1] + 0.0722 * plate[2] > 0.5;
 var instances_write = (list) => {
   try {
     localStorage.setItem(INSTANCES_KEY, JSON.stringify(list));
@@ -16297,10 +16308,10 @@ function dial_picture(S, statik) {
 async function pack(S) {
   return `${LINK_SCHEME}` + base32(await through(new TextEncoder().encode(link_text(S)), new CompressionStream("deflate-raw")));
 }
-async function unpack(hash) {
+async function unpack(hash, also = []) {
   const kind = link_kind(hash);
   if (!kind) return null;
-  if (kind.scheme !== LINK_SCHEME) return { old: kind.scheme };
+  if (kind.scheme !== LINK_SCHEME && !also.includes(kind.scheme)) return { old: kind.scheme };
   try {
     const settings = from_link_text(new TextDecoder().decode(await through(un_base32(kind.letters), new DecompressionStream("deflate-raw"))));
     return settings ? { settings } : null;
@@ -16309,6 +16320,37 @@ async function unpack(hash) {
   }
 }
 var OLD_LINK_NOTE = "This link is from an older Dial Tool and can\u2019t be opened: here is the First dial.";
+async function pack_set(dials) {
+  const text = JSON.stringify(dials.map((d) => [d.name, link_text(d.S)]));
+  return `V${LINK_SCHEME}` + base32(await through(new TextEncoder().encode(text), new CompressionStream("deflate-raw")));
+}
+var set_kind = (hash) => {
+  const m = /^#?V([0-9])([0-9A-Z]+)$/.exec(hash || "");
+  return m ? { scheme: +m[1], letters: m[2] } : null;
+};
+async function unpack_set(hash) {
+  const kind = set_kind(hash);
+  if (!kind) return null;
+  if (kind.scheme !== LINK_SCHEME) return { old: kind.scheme };
+  try {
+    const list = JSON.parse(new TextDecoder().decode(await through(un_base32(kind.letters), new DecompressionStream("deflate-raw"))));
+    const dials = list.map(([name, text]) => ({ name: String(name), settings: from_link_text(text) })).filter((d) => d.settings);
+    return dials.length ? { dials } : null;
+  } catch (e) {
+    return null;
+  }
+}
+var OLD_SET_NOTE = "This set of dials is from an older Dial Tool and can\u2019t be opened.";
+async function entry_settings(e) {
+  if (e.dial) {
+    try {
+      return fresh_settings(JSON.parse(e.dial));
+    } catch (x2) {
+    }
+  }
+  const got = await unpack(e.link, [4]);
+  return got && got.settings ? got.settings : null;
+}
 var HISTORY = { past: [], now: null, future: [], most: 20 };
 var dial_text = (S) => JSON.stringify(S, (key, value) => key === "t" || key.startsWith("ui_") ? void 0 : value);
 var RING_WORDS = { r: "Radius", w: "Width", len: "Length", size: "Size" };
@@ -17394,9 +17436,8 @@ var DialTool = class _DialTool {
       this.dial_alone(eye2.getAttribute("aria-pressed") !== "true");
     };
     this.eye_button = eye2;
-    const iris = el("button", { type: "button", className: "iriskey", id: "iris-box", title: "The showcase", ariaLabel: "The showcase" });
+    const iris = el("button", { type: "button", className: "iriskey", id: "iris-box", ariaLabel: "The showcase" });
     iris.innerHTML = icon(TOOL_ICONS.eyebox, 30);
-    iris.dataset.tip = "Show mode";
     iris.setAttribute("aria-pressed", "false");
     iris.onclick = () => {
       if (this.S.ui_show) this.show_mode(false);
@@ -21510,18 +21551,18 @@ var DialTool = class _DialTool {
         card.innerHTML = e.picture;
         const go = async (blank) => {
           unfocus();
-          if (blank) return window.open(e.link, "_blank");
-          const next = await unpack(e.link);
-          if (next && next.settings) {
-            this.compare(false);
-            if (this.versions_open) this.versions_open(false);
-            this.reopen({ ...next.settings, ui_section: this.S.ui_section });
-            this.log(`opened ${e.name}`);
-          }
+          const settings = await entry_settings(e);
+          if (!settings) return this.log(`couldn\u2019t open ${e.name}`);
+          if (blank) return window.open(location.href.split("#")[0] + "#" + await pack(fresh_settings(settings)), "_blank");
+          this.compare(false);
+          if (this.versions_open) this.versions_open(false);
+          this.reopen({ ...settings, ui_section: this.S.ui_section });
+          this.log(`opened ${e.name}`);
         };
         const remove = () => {
           instances_write(instances_read().filter((x2) => x2.id !== e.id));
           draw3();
+          this.sync_rows();
           if (this.comparing) this.compare_place();
           this.log(`removed ${e.name}`);
         };
@@ -21603,7 +21644,7 @@ var DialTool = class _DialTool {
     };
     save.onclick = async () => {
       const S = this.S, statik = build_static(S), plate = S.c_plate;
-      const e = { id: Date.now().toString(36), at: Date.now(), link: "#" + await pack(S), picture: dial_picture(S, statik), light: 0.2126 * plate[0] + 0.7152 * plate[1] + 0.0722 * plate[2] > 0.5 };
+      const e = { id: Date.now().toString(36), at: Date.now(), link: "#" + await pack(S), dial: dial_text(S), picture: dial_picture(S, statik), light: is_light(plate) };
       e.name = `${+S.dial_d.toFixed(2)} mm \xB7 ${when(e.at)}`;
       let list = instances_read();
       if (list.length >= INSTANCES_MOST) {
@@ -21614,6 +21655,7 @@ var DialTool = class _DialTool {
       list = [e, ...list];
       if (!instances_write(list)) return this.log("not saved: this browser's storage is full or closed (a private window?) \u2014 Copy link keeps it instead");
       draw3();
+      this.sync_rows();
       if (this.comparing) this.compare_place();
       this.log(`saved ${e.name} \u2014 under Versions, in this browser`);
     };
@@ -21659,7 +21701,7 @@ var DialTool = class _DialTool {
    *  ones kept when each was saved. Nothing in it can be picked; Compare again, the eye or Escape ends it. Not part of
    *  a dial (R26: preview only, nothing reaches a file). */
   compare(on) {
-    on = Boolean(on) && instances_read().length > 1;
+    on = Boolean(on) && this.compare_list().length > 1;
     if (on === Boolean(this.comparing)) return;
     this.comparing = on;
     if (on) {
@@ -21677,15 +21719,67 @@ var DialTool = class _DialTool {
       }
       if (!this.compare_was_alone) this.dial_alone(true);
     } else if (!this.compare_was_alone && this.eye_button.getAttribute("aria-pressed") === "true") this.dial_alone(false);
+    if (!on) {
+      this.looking = null;
+      if (this.set_offer) this.set_offer.hidden = true;
+    }
     this.main.classList.toggle("comparing", on);
     $("#instance-compare")?.setAttribute("aria-pressed", String(on));
     if (on) this.compare_place();
-    this.log(on ? `comparing ${instances_read().length} saved dials \u2014 Escape or Compare again to go back` : "comparing ended");
+    this.log(on ? `comparing ${this.compare_list().length} ${this.looking ? "dials from a link \u2014 press one to edit it" : "saved dials"} \u2014 Escape or Compare again to go back` : "comparing ended");
+  }
+  /** what Compare shows: a set opened from a link while it is looked at (#523), else the dials saved in this browser. */
+  compare_list() {
+    return this.looking || instances_read();
+  }
+  /** a set of dials from a link (#523): its pictures drawn here, once their fonts are fetched, then Compare, and a
+   *  note asking before anything is kept (Okay, 24 Oct 2026: "Ask first"): Add to my Versions · Just look. A press on
+   *  one of the set's dials edits it, as a Versions card's Edit this dial does. Nothing is saved until Add. */
+  async look_at_set(dials) {
+    const entries = [];
+    for (const [i2, d] of dials.entries()) {
+      const S = fresh_settings(d.settings);
+      await this.load_fonts_in_use(S);
+      entries.push({ id: "set" + i2, name: d.name, S, picture: dial_picture(S, build_static(S)), light: is_light(S.c_plate) });
+    }
+    if (entries.length === 1) {
+      this.reopen({ ...entries[0].S, ui_section: this.S.ui_section });
+      return this.log(`opened ${entries[0].name}, the one dial of a set`);
+    }
+    this.compare(false);
+    this.looking = entries;
+    this.compare(true);
+    if (!this.set_offer) {
+      this.set_offer = el("div", { className: "previewnote setoffer", id: "set-offer", hidden: true });
+      this.note.after(this.set_offer);
+    }
+    const mine = instances_read(), room = INSTANCES_MOST - mine.length, out = Math.min(mine.length, Math.max(0, entries.length - room));
+    const add = el("button", { type: "button", className: "offerbtn main", id: "set-add", textContent: "Add to my Versions", onclick: () => this.keep_set(entries) });
+    const look = el("button", { type: "button", className: "offerbtn", id: "set-look", textContent: "Just look", onclick: () => {
+      this.set_offer.hidden = true;
+    } });
+    this.set_offer.replaceChildren(el("span", { textContent: `${entries.length} dials from a link${out ? ` \xB7 adding replaces your ${out} oldest` : ""}` }), add, look);
+    this.set_offer.hidden = false;
+  }
+  /** a set's dials kept under Versions (#523): newest first, as Save this dial keeps them; over nine, your oldest go. */
+  async keep_set(entries) {
+    let list = instances_read();
+    const now = Date.now(), add = [];
+    for (const [i2, e] of entries.slice(0, INSTANCES_MOST).entries()) add.push({ id: (now + i2).toString(36), at: now + i2, name: e.name, link: "#" + await pack(e.S), dial: dial_text(e.S), picture: e.picture, light: e.light });
+    while (list.length && list.length + add.length > INSTANCES_MOST) {
+      const oldest = list.reduce((a, b) => b.at < a.at ? b : a);
+      list = list.filter((x2) => x2 !== oldest);
+      this.log(`${oldest.name} replaced: ${INSTANCES_MOST} is the most kept`);
+    }
+    if (!instances_write([...add, ...list])) return this.log("not saved: this browser's storage is full or closed (a private window?)");
+    this.set_offer.hidden = true;
+    this.sync_rows();
+    this.log(`added ${add.length} dials from a link \u2014 under Versions, in this browser`);
   }
   /** Compare's pictures in their places: as large as pack_even can make them in the view, a twelfth of that size
    *  between them, rows as even as can be, each centred (#468). Measured from the view each time it changes size. */
   compare_place() {
-    const view2 = this.compare_view, list = instances_read(), n = list.length;
+    const view2 = this.compare_view, list = this.compare_list(), n = list.length;
     if (!view2 || !n) return;
     const packed = pack_even(view2.clientWidth, view2.clientHeight, n), D = Math.floor(packed.D), places = packed.places;
     if (D < 1) return;
@@ -21695,6 +21789,15 @@ var DialTool = class _DialTool {
       cell.innerHTML = e.picture;
       cell.style.left = places[i2][0] + "px";
       cell.style.top = places[i2][1] + "px";
+      if (this.looking) {
+        cell.classList.add("pick");
+        cell.tabIndex = 0;
+        cell.onclick = () => {
+          this.compare(false);
+          this.reopen({ ...e.S, ui_section: this.S.ui_section });
+          this.log(`opened ${e.name}, from the set`);
+        };
+      }
       return cell;
     }));
   }
@@ -21928,6 +22031,24 @@ var DialTool = class _DialTool {
     copy.insertAdjacentHTML("afterbegin", icon(TOOL_ICONS.link));
     wrap.append(copy);
   }
+  /** every saved dial in one link (#523), under the dial's own: shown with two saved dials or more (R16). */
+  row_link_set(wrap) {
+    wrap.className = "row";
+    const copy = el("button", { type: "button", className: "btn copylink", id: "copy-set", title: "One link holding every dial saved under Versions", onclick: (ev) => this.copy_set(ev.currentTarget) }, el("span", { textContent: "Copy set link" }));
+    copy.insertAdjacentHTML("afterbegin", icon(TOOL_ICONS.link));
+    wrap.append(el("label", { textContent: "Versions" }), copy);
+  }
+  async copy_set(button) {
+    const made = (async () => {
+      const dials = [];
+      for (const e of instances_read()) {
+        const S = await entry_settings(e);
+        if (S) dials.push({ name: e.name, S: fresh_settings(S) });
+      }
+      return location.href.split("#")[0] + "#" + await pack_set(dials);
+    })();
+    return this.copy_link(button, made, "Copy set link", `set link (${instances_read().length} dials)`);
+  }
   async show_link() {
     const link = location.href.split("#")[0] + "#" + await pack(this.S);
     if (this.link_box && this.link_box.isConnected) {
@@ -22005,9 +22126,9 @@ var DialTool = class _DialTool {
     }
     return has_font(entry.ps);
   }
-  async load_fonts_in_use() {
+  async load_fonts_in_use(S = this.S) {
     let loaded = false;
-    for (const ring of [...this.S.rings, ...windows_of(this.S).filter((w) => w.ps), ...this.S.rings.flatMap((r) => Object.values(r.nudge || {}).filter((n) => n.ps))]) {
+    for (const ring of [...S.rings, ...windows_of(S).filter((w) => w.ps), ...S.rings.flatMap((r) => Object.values(r.nudge || {}).filter((n) => n.ps))]) {
       const entry = this.catalog.get(ring.ps);
       try {
         if (entry && !has_font(ring.ps)) loaded = await this.load_font(entry) || loaded;
@@ -22980,8 +23101,8 @@ var DialTool = class _DialTool {
   //  link button is not working, expanded and contracted"). So the clipboard is asked at once, with the link handed over
   //  when it is ready (a ClipboardItem holding a promise, which WebKit accepts); writeText after the wait is the fallback
   //  for browsers without it. The button says what happened, on the button itself (R17: no silent dead end).
-  async copy_link(button) {
-    const made = this.show_link();
+  async copy_link(button, maker = null, idle = "Copy link", what = "link") {
+    const made = maker || this.show_link();
     let copied = false;
     if (window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
       try {
@@ -22998,21 +23119,22 @@ var DialTool = class _DialTool {
       } catch (e) {
       }
     }
-    if (copied) this.log(`link copied \xB7 ${link.length} characters`);
-    else this.log(`couldn\u2019t copy by itself; the link is in the Link box, and here:
+    if (copied) this.log(`${what} copied \xB7 ${link.length} characters`);
+    else this.log(`couldn\u2019t copy by itself; the ${what} is here:
 ${link}`);
     if (button) {
       const word = button.querySelector("span");
       clearTimeout(this.copied_back);
       word.textContent = copied ? "Copied" : "Not copied";
       this.copied_back = setTimeout(() => {
-        word.textContent = "Copy link";
+        word.textContent = idle;
       }, 1600);
-      if (!copied && this.link_box && this.link_box.isConnected && this.link_box.offsetParent) {
+      if (!copied && !maker && this.link_box && this.link_box.isConnected && this.link_box.offsetParent) {
         this.link_box.focus();
         this.link_box.select();
       }
     }
+    return link;
   }
   log(message) {
     const stamp = (/* @__PURE__ */ new Date()).toTimeString().slice(0, 8);
@@ -23040,6 +23162,7 @@ async function open_window(pathkit2, harfbuzz, font_bytes) {
   start(pathkit2, harfbuzz);
   attach(pathkit2);
   add_font(font_bytes, 0, true);
+  const set = await unpack_set(location.hash);
   const linked = await unpack(location.hash);
   let settings = linked?.settings ?? (linked?.old !== void 0 ? structuredClone(OPENER) : null);
   if (!settings) {
@@ -23063,7 +23186,18 @@ async function open_window(pathkit2, harfbuzz, font_bytes) {
     opened(linked);
     keep_and_shorten(tool.S);
   }
+  const set_opened = (got) => {
+    if (got.dials) tool.look_at_set(got.dials);
+    else {
+      tool.log(`${OLD_SET_NOTE} (link scheme ${got.old})`);
+      tool.say(OLD_SET_NOTE);
+    }
+    keep_and_shorten(tool.S);
+  };
+  if (set) set_opened(set);
   window.addEventListener("hashchange", async () => {
+    const got = await unpack_set(location.hash);
+    if (got) return set_opened(got);
     const next = await unpack(location.hash);
     if (!next) return;
     tool.reopen({ ...next.settings ?? structuredClone(OPENER), ui_section: tool.S.ui_section });
