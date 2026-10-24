@@ -154,15 +154,6 @@
   /* the rings' guides and the guides you add: a small heading line with a choice at its right, then a line each */
   .guidehead { display: grid; grid-template-columns: var(--guide-name) 1fr; align-items: center; min-height: var(--guide-row); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
   .guidehead .name { font-weight: 600; }
-  /* All · Selected · None over the colours, from the none sign's left edge to the last colour's right, small (#305:
-     "all selected… line fits better"; "small like beta version allowed") */
-  .guidehead .segs { justify-self: stretch; height: var(--control-s); margin: 0 calc(var(--ring-gap-in) + var(--ring-thick)) 0 var(--guide-gap); }
-  .guidehead .segs > button { flex: 1 1 auto; height: 100%; padding: 0 var(--u1); font-size: var(--t-s); }
-  .guidekind.ring.selected .name { font-weight: 600; }
-  /* Add and the guides added under it belong to the bottom section: the section's lighter ground starts over Add, a
-     little more room over it (Okay, 18 Oct 2026, notes 2: "the functions are below, grouped under a lighter bg color
-     area. The grey area grows to include add line, the bottom block needs just a little more padding from top"; until
-     4.51.1 a band of the fields' colour over Add, the ground under Thickness · Reset All only, #271, #305) */
   /* the Guides list in two (4.79; Okay, 19 Oct 2026: "they need a scrollbar … use the lower part for all adjustments
      and settings"): its guides scroll, with a scrollbar a finger can drag; its settings stay under them on the lighter
      ground, every one of them — which rings and windows show theirs, Add, Thickness · Reset All. dvh: a phone's or an
@@ -171,65 +162,65 @@
     --list-gap: var(--canvas-inset); max-height: min(var(--list-room, 100dvh), calc(100dvh - var(--bar-height) - 2 * var(--canvas-inset) - var(--control-large) - var(--unit))); }      /* --list-room: measured when it opens, from the preview's top to its switch, less a gap each side */
   .guidesheet > * { margin-inline: 0; }
   .guidescroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-top: var(--unit); touch-action: pan-y; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--grey) transparent; }
-  /* the Guides list in two columns (#527; Okay's drawing, 24 Oct 2026): Rings at the left; the centre hole, the centre
-     lines and Windows at the right; Added under both after a white line. A line: name · colour dot · tick */
-  .guidelist.guidesheet { width: calc(2 * var(--guide-col) + var(--gap) + 2 * var(--pop-pad) + 2 * var(--hair)); }
-  .guidescroll.guidecols { position: relative; display: grid; grid-template-columns: repeat(2, var(--guide-col)); column-gap: var(--gap); align-content: start; padding-inline: var(--pop-pad); }
-  .guidescroll.guidecols > * { margin-inline: 0; }
-  .guidecol { display: grid; align-content: start; min-width: 0; }
-  .guideadded { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; margin-top: var(--u4); border-top: var(--hair) solid var(--white); }      /* two units off the last row's rule (Okay, 23:21: "close repeating lines need more space") */
-  .guideadded .guidehead, .guideadded .guidekind:last-child { box-shadow: none; }      /* the last added line meets the foot's edge: no rule of its own there */
-  .guideadded[hidden] { display: none; }
-  .guidesheet .guidekind { grid-template-columns: minmax(0, 1fr) var(--guide-none) var(--guide-none); column-gap: var(--guide-gap); }
+  /* the Guides list in one column (#539; Okay, 25 Oct 2026: "One column layout now and always", "less wider",
+     "inset tiered layer system"): four groups — Dial · Rings · Windows · Added — each a bold heading over its lines,
+     the lines inset a unit under it. A line: its name, then two circles at the right, its colour dot in one and its
+     chevron in the other, every line ending on one right edge, a hairline under every line. */
+  .guidelist.guidesheet { width: var(--guide-list); }
+  .guidescroll { position: relative; }
   .guidesheet .guidehead { grid-template-columns: minmax(0, 1fr) auto; }
-  .guidescroll .guidehead .name { color: var(--grey); font-weight: 400; }      /* Rings · Windows · Added: grey words (Okay's drawing) */
-  .gdot { width: var(--guide-none); height: var(--guide-none); border-radius: 50%; background: var(--c); box-shadow: 0 0 0 var(--hair) var(--chip-rule); }
-  .guidekind.off .gdot { box-shadow: inset 0 0 0 var(--hair) var(--grey); }      /* hidden (None): an empty ring */
-  .gchev { display: grid; place-items: center; width: var(--guide-none); height: var(--guide-none); color: var(--grey); }
+  .guidesheet .guidehead.gap { margin-top: var(--u4); }      /* a group after a group: air over its heading (Okay, 24 Oct 2026, 23:21: "close repeating lines need more space") */
+  .guidesheet .guidehead.gap[hidden] { display: none; }
+  .guidesheet .guidekind { grid-template-columns: minmax(0, 1fr) var(--guide-circle) var(--guide-circle); column-gap: var(--u2); margin-left: var(--guide-inset); }      /* the tier: a group's lines inset under their heading (their group's box carries the list's side room) */
+  .guidesheet .guidekind.selected > .name { justify-self: start; max-width: 100%; box-sizing: border-box; height: var(--guide-circle); line-height: var(--guide-circle); padding: 0 var(--u3); border-radius: var(--round-pill); background: var(--ink); color: var(--paper); font-weight: 400; }      /* the selected ring or window: its name in a filled pill, the chosen word's look (Okay, 25 Oct 2026: "Selected one gets its own personally tailored one word pill") */
+  .guideadded[hidden] { display: none; }
+  .guideadded .guidekind:last-child { box-shadow: none; }      /* the last line meets the foot's edge: no rule of its own there */
+  .gdot, .gchev { width: var(--guide-circle); height: var(--guide-circle); border-radius: 50%; display: grid; place-items: center; justify-self: center; }      /* each in a circle of its own, concentric (Okay: "If something can be a circle, is") */
+  .gdot::before { content: ""; width: var(--guide-none); height: var(--guide-none); border-radius: 50%; background: var(--c); box-shadow: 0 0 0 var(--hair) var(--chip-rule); }
+  .guidekind.off .gdot::before { background: none; box-shadow: inset 0 0 0 var(--hair) var(--grey); }      /* hidden (None): an empty ring */
+  .gchev { color: var(--grey); }
   .gchev:hover, .gchev[aria-expanded="true"] { color: var(--ink); }
   .gchev[aria-expanded="true"] svg { rotate: 180deg; }
-  .guidehead .minus { display: grid; place-items: center; width: var(--guide-none); height: var(--guide-none); border: var(--hair) solid var(--grey); border-radius: var(--round-tiny); color: var(--grey); }      /* a square (Okay, 23:21: "square") */
+  .guidehead .minus { display: grid; place-items: center; width: var(--guide-circle); height: var(--guide-circle); border: var(--hair) solid var(--grey); border-radius: 50%; color: var(--grey); }
   .guidehead .minus:hover { border-color: var(--ink); color: var(--ink); }
-  /* a heading's menu: an outlined pill with its choice; pressed, a small box with the three in its place */
-  .gpill { height: var(--control-s); padding: 0 var(--u3); border: var(--hair) solid var(--grey); border-radius: var(--round-pill); color: var(--ink); font-size: var(--t-s); }
-  .gpill:hover { border-color: var(--ink); }
-  .gdrop { position: absolute; z-index: 3; display: grid; border: var(--hair) solid var(--grey); border-radius: var(--round-small); background: var(--paper); font-size: var(--t-s); }
-  .gdrop[hidden] { display: none; }
-  .gdrop > button { padding: var(--u1) var(--u3); text-align: left; color: var(--ink); }
-  .gdrop > button + button { border-top: var(--hair) solid var(--row-rule); }
-  .gdrop > button[aria-selected="true"] { font-weight: 600; }
-  .gdrop > button:hover { background: var(--row-rule); }
+  /* a heading's menu, Selected · All · None: the tool's chevron box, round here, as high as a circle */
+  .gmenu { height: var(--guide-circle); border-radius: var(--round-pill); }
+  .gmenu > .v { padding-left: var(--u3); }
+  .gmenu > .arrow { width: var(--guide-circle); border-left: 0; }
   /* a chevron pressed: None and seven colours in a small box under the line, two lines of four */
-  .guidepop.dots { position: absolute; z-index: 3; display: grid; grid-template-columns: repeat(4, var(--guide-none)); gap: var(--guide-gap); padding: var(--u2) var(--u3); border: var(--hair) solid var(--grey); border-radius: var(--round-small); background: var(--paper); }
-  .guidepop .tone { width: var(--guide-none); height: var(--guide-none); }
+  .guidepop.dots { position: absolute; z-index: 3; display: grid; justify-content: start; grid-template-columns: repeat(4, var(--guide-circle)); gap: var(--u2); padding: var(--u3); border: var(--hair) solid var(--grey); border-radius: var(--round); background: var(--paper); }
+  .guidepop.dots :is(.tone, .none) { display: grid; place-items: center; width: var(--guide-circle); height: var(--guide-circle); border-radius: 50%; background: none; box-shadow: none; opacity: 1; }
+  .guidepop.dots .tone::before { content: ""; width: var(--guide-none); height: var(--guide-none); border-radius: 50%; background: var(--c); box-shadow: 0 0 0 var(--hair) var(--chip-rule); }
+  .guidepop.dots .tone:not(.on)::before { opacity: var(--guide-dim); }
+  .guidepop.dots :is(.tone, .none).on { box-shadow: inset 0 0 0 var(--hair) var(--ink); background: none; color: var(--ink); }      /* the chosen one: its circle drawn, concentric round its dot */
+  .guidepop.dots .none svg { flex: none; }
   .guidepop[hidden] { display: none; }
-  /* the foot (Okay's marks, 24 Oct 2026, 23:21–23:32): two tiers. Over, Add, the gap the same over and under it, its three
-     boxes solid; a line; under, lighter, Thickness · Reset All as outlines only, filled when chosen ("Bottom lighter
-     because bottom row solids don't get bg, they all simply outline. Unless clicked"). One grid for both, with the
-     list's side room as its first and last columns, so the lower tier's ground runs edge to edge */
-  .guidesheet .guidesettings { display: grid; grid-template-columns: var(--pop-pad) max-content minmax(0, 1fr) auto var(--pop-pad); column-gap: 0; padding: var(--guide-add-gap) 0 0; }
-  .guidesheet .guidesettings > :is(.guidehead, .guidelast) { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; column-gap: 0; margin-inline: 0; padding-inline: 0; }
-  .guidesheet .guidesettings > .guidehead { min-height: 0; padding-bottom: var(--guide-add-gap); }
-  .guidesheet .guidesettings > .guidehead > .name { grid-column: 2; padding-right: var(--gap); }
-  .guidesheet .guidesettings > .guidehead .segs { grid-column: 3 / 5; justify-self: stretch; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); margin: 0; }
-  .guidesheet .guidesettings > .guidelast { border-top: var(--hair) solid var(--paper); background: var(--guide-foot-light); }
-  .guidesheet.guidelist .guidelast > label:first-child { grid-column: 2; padding-right: var(--gap); }
-  .guidesheet .guidelast > .numcell { grid-column: 3; justify-content: stretch; }
-  .guidesheet .guidelast > .resetall { grid-column: 4; }
-  .guidesheet .guidelast > .ask { grid-column: 2 / 5; }
-  .guidesheet .gthick { flex: 1; justify-content: space-around; background: none; box-shadow: inset 0 0 0 var(--hair) var(--ink); border-radius: var(--round-pill); }
-  .guidesheet .guidelast #guides-reset { background: none; }
-  .guidesheet .guidelast #guides-reset:active { background: var(--ink); color: var(--paper); }
-  /* Thickness 1 · 2 · 3: on a dark box, the chosen one ringed */
-  .gthick { display: flex; gap: var(--u1); padding: var(--u1); border-radius: var(--round-small); background: var(--paper); }
-  .gthick > button { min-width: var(--control-s); height: var(--control-s); border-radius: var(--round-pill); color: var(--ink); }
-  .gthick > button[aria-checked="true"] { background: var(--ink); color: var(--paper); }      /* the chosen one filled (Okay, 23:32: "Unless clicked") */
+  /* the foot, one ground (Okay, 25 Oct 2026, his marks on the drawing): Add and its three free pills; Thickness as a
+     pill switch and Reset All a quiet word; the pills' edges on the lines' right edge */
+  .guidesheet .guidesettings { padding: var(--u2) var(--pop-pad) var(--u3); background: var(--field); }
+  .guidesheet .guidesettings > .guidehead { grid-template-columns: auto minmax(0, 1fr); column-gap: var(--u2); margin-inline: 0; min-height: var(--guide-row); }
+  .guidesheet .guidesettings .guidehead .name { color: var(--grey); font-weight: 400; }
+  .guidesheet .guidesettings .pillswitch { justify-self: end; height: var(--guide-circle); box-sizing: border-box; background: var(--paper); }
+  .guidesheet .guidesettings .pillswitch > button { height: 100%; padding: 0 var(--guide-pill-pad); border-radius: var(--round-pill); font-size: var(--t-s); }
+  .guidesheet .guidesettings .pillswitch.free { flex-wrap: nowrap; gap: var(--u2); padding: 0; background: none; }
+  .guidesheet .guidesettings .pillswitch.free > button { border: var(--hair) solid var(--rule); background: var(--paper); }
+  .guidesheet .guidesettings .pillswitch:not(.free) > button { height: calc(100% - 2 * var(--u1)); margin: var(--u1) 0; }
+  .guidesheet .guidesettings .pillswitch:not(.free) { padding: 0 var(--u1); }
+  .guidelist.guidesheet .guidelast { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; column-gap: var(--u2); align-items: center; height: var(--guide-row); margin-inline: 0; padding: 0; background: none; }
+  .guidelist.guidesheet .guidelast > label:first-child { color: var(--grey); }
+  .guidelist.guidesheet .guidelast > .numcell { display: contents; }
+  .guidelist.guidesheet .guidelast > .resetall { display: grid; padding: 0; border: 0; }
+  .guidelist.guidesheet .guidelast > .ask { grid-column: 1 / -1; }
+  .gword { padding: 0 0 0 var(--u2); font-size: var(--t-s); color: var(--grey); }
+  .gword:hover { color: var(--ink); }
   .guidescroll::-webkit-scrollbar { width: var(--scroll-w); }
   .guidescroll::-webkit-scrollbar-thumb { background: var(--grey); border-radius: calc(var(--scroll-w) / 2); }
   .guidescroll > * { margin-inline: var(--pop-pad); }
+  .guidescroll > .guidepop { margin-inline: 0; }
   .guidescroll.more { mask-image: linear-gradient(to bottom, var(--black) calc(100% - var(--u6)), transparent); }      /* more under the fold: the last line fades out */
   .guidesettings { flex: none; padding-top: var(--u2); background: var(--row-rule); }
   .guidesettings > .guidehead { margin-inline: var(--pop-pad); box-shadow: none; }
+  .guidesheet .guidesettings { margin-top: var(--u4); }
   /* a guide you added is one line, as every other (#305: "fit all in one line"): its name and its measures, quiet
      numbers to type in (grey, no box, as wide as they are); its colours; in the none sign's place a cross that removes
      it (an added guide is taken away, not hidden). A long name gives way to its numbers. */

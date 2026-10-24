@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.92.29 (web version) · 25 Oct 2026
+
+- **The Guides list rebuilt in one column** (#539; Okay, 00:10: "One column of items instead of two. Sensible width, 75% of now. Better spacing, better design. Categorization is impeccable"; built from his marks on two drawings, 00:29–00:39): 240 wide; four groups — **Dial** (the centre hole, the centre lines) · **Rings** · **Windows** · **Added** — each a bold heading over its lines, the lines inset two units under it ("inset tiered layer system"), one hairline under every line, every line ending on one right edge. A line: its name, its colour dot and its chevron each in a 20 px circle, concentric ("If something can be a circle, is"); the selected ring's or window's name in a filled pill ("Selected one gets its own personally tailored one word pill"). The headings' *Selected · All · None* are chevron boxes opening the tool's own list (R15, "can be a dropdown to gain width"); Added's minus a circle. One foot on the night field: Add with Line · Crosshair · Circle as free pills, Thickness 1 · 2 · 3 a pill switch (the chosen one filled), Reset All a quiet word; the colour box's chosen colour ringed by its circle's edge in ink.
+- Gone: the two columns, the foot's two tiers and the three tokens they needed (`--guide-col`, `--guide-add-gap`, `--guide-foot-light`), the outlined-pill menu and its box (`gpill`, `gdrop`; R15's exception). New tokens: `--guide-list` 240, `--guide-circle` 20, `--guide-inset`, `--guide-pill-pad`.
+- Open: Okay asked for 1–2 px more inside the foot's pills; at 240 the Add line has no room for it (its right edge is the lines'). A unit it stays until he chooses: wider, or the words as they are.
+- Checked: labels, links, the moment, the window test whole (new: the column, the foot; the NATO's pill count now the panel's alone), the screenshots.
+
 ## beta 4.92.28 (web version) · 24 Oct 2026
 
 - **The Guides list's foot in two tiers** (#527; Okay, 23:32: "Bottom gray area, two tiers. Bottom lighter because bottom row solids don't get bg, they all simply outline. Unless clicked"; marks "GAP VERTICAL", "ADD HR. LINE"): Add with the same 12 px over and under it, its boxes solid; a hairline; under it a lighter tier where Thickness is an outline pill with the chosen number filled ("Box outlined, chosen number filled") and Reset All an outline, filled while pressed. Add's boxes and the lower line share their left and right edges (one grid for both tiers).

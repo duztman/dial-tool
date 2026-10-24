@@ -157,7 +157,7 @@
     --shade-name: 92px;                            /* the Shadows list's names: narrower than the guides' list's column, which holds an added guide's values; its sliders keep the room */
     --guide-dot: 7px; --guide-none: 14px; --scroll-w: 6px;      /* a round colour in the guides' list (the room between two: a special; Okay, 19 Oct 2026: "Still smaller balls") · the none sign ⊘, 14 (at 10 it went too small) · a list's scrollbar */
     --ring-thick: var(--triple);                   /* the chosen guide colour: a ring of its own colour this thick, a ring of the ground inside it */
-    --guide-col: calc(var(--guide-name) + 2 * var(--guide-gap) + 2 * var(--guide-none));      /* a column of the guides' list (#527): a name, its colour dot, its tick */
+    --guide-list: 240px; --guide-circle: 20px; --guide-inset: var(--u4);      /* the Guides list (#539; Okay, 25 Oct 2026: "less wider" than 260 — 240 is the floor for the foot's words) · the circle a dot, a chevron, the minus and a menu stand in · a group's lines inset under their heading */
     --guide-dim: 0.4;                              /* a colour not chosen in the guides' list: this much of it (Okay, 18 Oct 2026, notes 2: "Fainter unselected swatches") */
 
     /* type: four sizes, two weights. (The canon has three sizes for paper; a window needs one smaller, for tile captions.) */
@@ -190,8 +190,7 @@
        measures (--margin, --eye, --gap, --col) and sizes of things (heights, widths), which no scale governs. */
 
     /* asked for by Okay */
-    --guide-add-gap: 12px;                         /* the Guides list's Add line: this much over it and under it, to the line between the foot's two tiers (Okay, 24 Oct 2026, 23:21: "Top = 12px"; 23:32: the same gap under it, "GAP VERTICAL") */
-    --guide-foot-light: #5F5E5A;                   /* the Guides list's lower tier, Thickness · Reset All: lighter than the Add tier, its controls outlines only (Okay, 23:32: "Bottom gray area, two tiers. Bottom lighter") — the value Claude's, to confirm */
+    --guide-pill-pad: var(--u2);                   /* a word's room at each side in the Guides foot's pills: a unit (at 240 wide the Add line has no room for more; Okay, 25 Oct 2026, asked for "1-2px" more — open, see #539) */
     /* the bar's date popup, as measured from Okay's final drawing (20 Oct 2026, 01:05: "all else is pixel perfect. gaps, placements within blocks, block sizes") */
     --datepop-ground: #BFBFBF;                     /* its light ground */
     --datepop-pad: 8px; --datepop-lead: 10px;      /* inside its frame round the boxes · before the weekday */

@@ -188,7 +188,7 @@ alignment to these rules as well."*
 - **A choice of a few words is a pill switch** (Picture, Names, Paper, a disc hand's Marker, the font sheet's Light ·
   Dark): a rounded outline as wide as its words, the words in it as pills, the chosen one ink (Okay, 20 Oct 2026, 01:33:
   "Arch phase line selector exactly like this light dark selector here. exactly same style. can we make this
-  universal?"). `.pillswitch`. The dark popups keep their segments.
+  universal?"). `.pillswitch`. The dark popups too: the Guides list's foot (Thickness; Add as free pills; Okay, 25 Oct 2026, #539).
 - **A row of tile buttons** (a window's complications, a mark's shapes; Okay, 19 Oct 2026, 21:26: "Complications tabs
   are 10/10. Do not touch, rule for 4 item buttons like this from the future. 5th squeezes in, or we find another
   way"; "2 or 3 buttons on a selector like complications work the same. Same size buttons, gaps on the right"): the
