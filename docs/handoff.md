@@ -12,7 +12,7 @@ A new session starts with no memory of the last one: the transcript stays in the
 - **Two sessions wrote to `dev` on 24 Oct 2026**: the app's (this one) and a Help-page session (`guide/help/`). Pull with rebase before every push; on a conflict in `docs/decisions.md` or `docs/build-list.md` keep both rows. Send Help-page notes to one session only.
 - **Okay builds by rounds**: each round goes to /dev/ with pictures; he answers with marked-up screenshots and short notes. Ask in question mode (multiple choice, AskUserQuestion) when a note can be read two ways; he answers precisely.
 - **Pushing to the live pages** can be stopped by the session's safety check; then say so and wait for Okay's word.
-- **Pictures**: never in the repo (R36); this session's are in `~/Desktop/dial-maker/screenshots/2026-10-24/` on his Mac when it was linked.
+- **Pictures**: never in the repo (R36); this session's are in `~/Desktop/dial-maker/screenshots/2026-10-24-4.92.16/` on his Mac, with a README.
 
 ## 2 · First steps in a new session
 
