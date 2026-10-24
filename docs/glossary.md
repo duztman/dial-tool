@@ -47,7 +47,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **X-ray** | Preview switch at the top right, under Case: every window's disc whole, stacked — selected disc on top, then hands, face, other discs (biggest deepest), each layer 15 % fainter. Never exported (R26). |
 | **Neighbours** | Date or day window tick: the disc's places either side of the shown one, where the hole lets them, in the number's colour unless given their own (Windows → Neighbours). |
 | **Big date** | The fifth complication: two square holes, tens and units of the date. |
-| **Bevel** | A hand's two long halves lit and shaded; preview only. Per-hand **Bevel** tick (`bevel`, off to start) in the Show box, while Shadows is on; strength Shadows → Bevels % (`sh_bevel`, 100 to start). |
+| **Bevel** | A hand's two long halves lit and shaded; preview only. Per-hand **Bevel** tick (`bevel`, off to start) in the Show box, Shadows on or off; strength Shadows → Bevels % (`sh_bevel`, 100 to start). |
 | **Hub** | The round boss at a hand's pivot, Ø per hand (Hands → Hub Ø, `hub`), joined to the hand. 0 = none. Not a disc hand. |
 | **Print sheet** | Copies of the dial at true size (#348): Export → Print → Sheet PDF; A4, Letter or A5, straight or staggered, optional cut lines. |
 | **Versions** | Switch on the preview's top line, after undo · redo: saved dials (at most nine, in this browser, *Save this dial*) and **Compare**, all side by side (#435). Numbered releases are **builds**. |

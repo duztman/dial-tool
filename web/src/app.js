@@ -1715,7 +1715,9 @@ class DialTool {
       return n;
     };
     const finish = () => { for (const [name, n] of parts) if (!used.has(name)) { n.remove(); parts.delete(name); } };
-    const on = S.sh_on ? Math.min(S.sh_dark / 25, 2) : 0;      // how much light there is to shade by
+    // how much light there is to shade by: the shadows' darkness while they are on; off, the sun still has a direction,
+    // so a hand with its Bevel ticked keeps it (Okay, 24 Oct 2026, #531: "bevels are lost on this current version on tool side. Bring them back")
+    const on = S.sh_on ? Math.min(S.sh_dark / 25, 2) : 1;
     if (S.out_production || !(on > 0)) return finish();
     if (!this.light_defs) { this.light_defs = svg_el("defs"); this.svg.prepend(this.light_defs); }
     const from = S.sh_from, nodes = items.map((_, i) => this.slots[i].node);
@@ -4462,7 +4464,7 @@ class DialTool {
     wrap.append(line);
     out.refresh = (T) => {
       box.checked = Boolean(T.on);
-      if (bevel) { bevel.checked = Boolean(T.bevel); bevel_word.hidden = !(T.on && G.HAND_SHAPES[T.shape] !== "disc" && this.S.sh_on); }      // with Show, at once (20 Oct 2026, 01:33: "bevel appears as soon as show tick turned on"); a disc hand is flat; no shadows, no bevels
+      if (bevel) { bevel.checked = Boolean(T.bevel); bevel_word.hidden = !(T.on && G.HAND_SHAPES[T.shape] !== "disc"); }      // with Show, Shadows on or off (#531)      // with Show, at once (20 Oct 2026, 01:33: "bevel appears as soon as show tick turned on"); a disc hand is flat; no shadows, no bevels
       const tabs = [...document.querySelectorAll(row.scope === "hand" ? ".tabsbar .segs > .tab" : ".windowcards .card > .tab")];
       wrap.style.setProperty("--tabs", Math.max(tabs.length, 1));
       wrap.style.setProperty("--tab", Math.max(tabs.findIndex((t) => t.classList.contains("on")), 0) + 1);

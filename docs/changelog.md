@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.92.10 (web version) · 24 Oct 2026
+
+- **Hand bevels back on the dial side** (#531; "bevels are lost on this current version on tool side. Bring them back"): the Bevel tick stood beside Show only while Shadows was on, and the dial side opens with Shadows off, so it was out of sight. The tick now shows whenever its hand does, and a hand with it ticked is bevelled by the sun's direction with Shadows on or off (at Bevels %, the Shadows popup's). The join options (Normal · Miter · Round) come after v1.
+- Checked: the window test; a bevelled hour hand with Shadows off, looked at.
+
 ## beta 4.92.9 (web version) · 24 Oct 2026
 
 - **Shenanigans, after his drawings** (#525; 19:04, 19:08): a **toggle** each, no words — off, its outline with the dot at the left and the name dark; on, the dot white at the right on a filled track ("A dot travels … Apple style … Off text label also goes black"); Shadows · Blurs over Flare · Bevels, **All** alone in the third column behind a white hairline, turning the four on or off together; the top white line across the column's whole width ("look at the white lines, they are crucial"); three equal columns, each name set right against its toggle so the toggles stand in line, in small capitals, tracked 50, weight 500 ("Try all caps small. Bit more tracking bit weight"). No heading. The toggle is `seg` with `bool` (R15); `.dot` was already the swatches' class, so its dot is `.knob`.

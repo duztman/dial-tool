@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.92.9 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.92.10 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -7199,7 +7199,7 @@ function window_text(kind, mo, lang = "en", form = 0) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.92.9";
+var VERSION = "beta 4.92.10";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -16890,7 +16890,7 @@ var DialTool = class _DialTool {
         parts.delete(name);
       }
     };
-    const on = S.sh_on ? Math.min(S.sh_dark / 25, 2) : 0;
+    const on = S.sh_on ? Math.min(S.sh_dark / 25, 2) : 1;
     if (S.out_production || !(on > 0)) return finish();
     if (!this.light_defs) {
       this.light_defs = svg_el("defs");
@@ -20332,7 +20332,7 @@ var DialTool = class _DialTool {
       box3.checked = Boolean(T.on);
       if (bevel) {
         bevel.checked = Boolean(T.bevel);
-        bevel_word.hidden = !(T.on && HAND_SHAPES[T.shape] !== "disc" && this.S.sh_on);
+        bevel_word.hidden = !(T.on && HAND_SHAPES[T.shape] !== "disc");
       }
       const tabs = [...document.querySelectorAll(row.scope === "hand" ? ".tabsbar .segs > .tab" : ".windowcards .card > .tab")];
       wrap.style.setProperty("--tabs", Math.max(tabs.length, 1));
