@@ -4,13 +4,15 @@
 
 A new session starts with no memory of the last one: the transcript stays in the old container. Everything a successor needs is in the repo. Use this page to find it.
 
-## 1 · Where things stand (23 Oct 2026, beta 4.92.1 on `main`, `dev`, the released page and /dev/)
+## 1 · Where things stand (24 Oct 2026, beta 4.92.16 on `dev` and /dev/; beta 4.92.1 on `main` and the released page)
 
-- **Pages**: <https://duztman.github.io/dial-tool/> and <https://duztman.github.io/dial-tool/dev/> are **beta 4.92.1**; `main` = `dev`. Okay checks back the rest of v1 on Sunday 25 Oct 2026 (the list: build list, v1); first #511 and #512). The Show Case page (</show-case/>) is beta 1.0.21, built from the same `web/src/watch.js`, a sandbox only (Okay: "left as a dev to tinker without touching main code").
-- **The Show Case merge is done** (build list group K, #506–#509; Okay, 23 Oct 2026: "And we're done"): show mode is Dial Tool's second mode — the iris switch at the bottom right, one movement in and out (`swoop()`), the watch drawn by `watch.js` through `show.js`, the column tinted by the backdrop, Shenanigans at its foot. What is left of it is #510 (Backdrop's auto, the bracelet of links, ink per colour, the buttons' looks with Okay, R26's wording, the v1 list).
-- **Okay builds by rounds**: each round goes to /dev/ with pictures; he answers with marked-up screenshots and short notes. Ask in question mode when a note can be read two ways; he answers precisely.
-- **Pushing to the live pages** can be stopped by the session's safety check; then say so and wait for Okay's word (23 Oct 2026: he gave it with "push this on main, dev and show case individual pages").
-- **Pictures**: never in the repo (R36).
+- **Pages**: <https://duztman.github.io/dial-tool/dev/> is **beta 4.92.16**; <https://duztman.github.io/dial-tool/> and `main` are **beta 4.92.1**. The Help page is live at </help/> (`guide/help/`, its own plan in `guide/help/PLAN.md`; published on Okay's word with `guide/help/publish.sh`).
+- **Okay's notes of 24 Oct 2026 are build list group L (#513–#537)**, from the gdoc "Dial tool notes" (Oct 24 block, with his pictures). Groups 1 and 2 are done (4.92.3–4.92.16; the done rows are in `docs/build-list-done.md`). **Next: group 3, sketch first** (draw simple diagrams in the answer, then question mode): #526 the Shadows popup and its sun (rays directional, symmetrical, longer when the sun is far), #527 the Guides popup (his two pictures in the gdoc), #528 the dramatic spotlight, #529 bracelets. **Waiting on his word**: #523 (a Versions set as one link — in v1?), #530 (SVG import — after v1?). **Noted only**: #537 (a short address; "Do later, just note").
+- **Show mode's Colours** (#521, 4.92.15–16): a line per ring (eye · name · colour · its ink height) and per hand (eye · name · colour · Bevel toggle · height), the cap's colour a square on its hand's line, the number column named INK HEIGHT on the Dial line; *All inks at once* in the Ink pane moves every ring together, each keeping its step (`ink_d`, not in links).
+- **Two sessions wrote to `dev` on 24 Oct 2026**: the app's (this one) and a Help-page session (`guide/help/`). Pull with rebase before every push; on a conflict in `docs/decisions.md` or `docs/build-list.md` keep both rows. Send Help-page notes to one session only.
+- **Okay builds by rounds**: each round goes to /dev/ with pictures; he answers with marked-up screenshots and short notes. Ask in question mode (multiple choice, AskUserQuestion) when a note can be read two ways; he answers precisely.
+- **Pushing to the live pages** can be stopped by the session's safety check; then say so and wait for Okay's word.
+- **Pictures**: never in the repo (R36); this session's are in `~/Desktop/dial-maker/screenshots/2026-10-24/` on his Mac when it was linked.
 
 ## 2 · First steps in a new session
 
