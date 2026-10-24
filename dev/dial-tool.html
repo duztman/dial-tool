@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.92.5 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.92.6 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -146,11 +146,11 @@
        changing anyway"); no frame. The drawing's measures, at a disc of 66: 16.5 round them, 8.25 between them, the
        corners 49.5; the knob with a white eye; the track a unit and a half thick; the signs square-ended. */
     --num-pop-k: 0.75;      /* the controller's scale, every measure below times it: three quarters everywhere (Okay, 19 Oct 2026, 12:30, on the iPad: "Size 75%") */
-    --num-pop-see: 85%;      /* how much of the controller's square shows: the preview through it (Okay, 19 Oct 2026, 12:46: "controller bg 85%") */
     --num-pop-step: calc(66px * var(--num-pop-k)); --num-pop-pill: var(--num-pop-step);      /* the discs and the slider's pill: one height */
     --num-pop-pad: calc(var(--u6) * var(--num-pop-k)); --num-pop-gap: calc(var(--u3) * var(--num-pop-k));      /* controller 2.svg (Okay, 18 Oct 2026), at a disc of 66: its 5.67 edge is 16.5, its 2.83 gaps 8.2 */
     --num-pop: calc(var(--num-pop-inner) + 2 * var(--num-pop-pad));
-    --num-pop-round: calc(var(--num-pop-step) / 2 + var(--num-pop-pad));      /* the square's corners follow the discs: his 17.01 is 49.5 */
+    --num-pop-s: 0.7; --num-pop-small: calc(var(--num-pop-step) * var(--num-pop-s));      /* the discs and the value's pill at 70 %, the slider's pill kept (Okay, 24 Oct 2026: "plus minus and number line 70% of now … Keep slider big") */
+    --num-pop-round: calc(var(--num-pop-small) / 2 + var(--num-pop-pad));      /* concentric: the corners are the discs' round plus the padding round them (his 17.01 in controller 2.svg is that sum) */
     --num-pop-ground: var(--grey); --num-pop-value: var(--rule); --num-pop-disc: #3F3F3E; --num-pop-well: var(--rule);      /* his #585857 square, #B1B1B1 value pill and track, #3F3F3E discs and knob — on the rule's tones where they are near */
     --num-pop-hover: color-mix(in srgb, var(--num-pop-disc) 85%, var(--white));
     --num-pop-thumb: calc(var(--num-pop-step) - 2 * var(--u4) * var(--num-pop-k)); --num-pop-eye: calc(6px * var(--num-pop-k)); --num-pop-sign: calc(44px * var(--num-pop-k));      /* the knob's white eye, a radius: his 2.13 */
@@ -1029,11 +1029,15 @@
      changing anyway". It stands where the finger is, the knob under it (value_pop_open), over everything; it comes at
      once and, after its last use, fades away (.fading). (4.49.2 to 4.51.1: a light head with the name over a hairline,
      the value riding over the knob, his first drawing of 17 Oct.) */
-  .numpop { position: fixed; z-index: 30; display: grid; row-gap: var(--num-pop-gap); width: max(var(--num-pop), var(--num-pop-w, 0px)); padding: var(--num-pop-pad); border-radius: var(--num-pop-round); background: color-mix(in srgb, var(--num-pop-ground) var(--num-pop-see), transparent); color: var(--ink); }
+  .numpop { position: fixed; z-index: 30; display: grid; row-gap: var(--num-pop-gap); width: max(var(--num-pop), var(--num-pop-w, 0px)); padding: var(--num-pop-pad); border-radius: var(--num-pop-round); color: var(--ink); }      /* its ground is its twin under it (.numground) */
+  .numground { position: fixed; z-index: 30; border-radius: var(--num-pop-round); background: var(--num-pop-ground); mix-blend-mode: multiply; pointer-events: none; }
+  .numground.screen { mix-blend-mode: screen; }
+  .numground.fading { opacity: 0; transition: opacity var(--num-pop-fade) ease-out; }
   .numpop.fading { opacity: 0; transition: opacity var(--num-pop-fade) ease-out; }
   /* the value: its figures centred in the grey pill, bold, in the square's grey */
-  .numpop .popvalue { display: grid; align-items: center; height: var(--num-pop-pill); border-radius: calc(var(--num-pop-pill) / 2); background: var(--num-pop-value); }
-  .numpop .popvalue input[type="text"] { width: 100%; height: auto; padding: 0; border: 0; background: none; font: 700 var(--t-num-pop)/1 var(--sans); letter-spacing: 0.02em; text-align: center; color: var(--num-pop-ground); }
+  .numpop .popvalue { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--num-pop-gap); height: var(--num-pop-small); padding: 0 calc(var(--num-pop-small) / 2); border-radius: calc(var(--num-pop-small) / 2); background: var(--num-pop-value); }
+  .numpop .popword { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--num-pop-ground); font: 400 calc(var(--t-num-pop) * var(--num-pop-s))/1 var(--sans); user-select: none; }      /* the name, left in the top pill, the value's size, regular */
+  .numpop .popvalue input[type="text"] { width: 7ch; height: auto; padding: 0; border: 0; background: none; font: 700 calc(var(--t-num-pop) * var(--num-pop-s))/1 var(--sans); letter-spacing: 0.02em; text-align: right; color: var(--num-pop-ground); }
   .numpop .popvalue input[type="text"]:focus { outline: 0; }      /* the value, chosen to be typed over, says it */
   .numpop .popvalue input[type="text"]::selection { background: var(--white); color: var(--num-pop-ground); }      /* chosen to be typed over: white behind the figures */
   .numpop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--num-pop-gap); min-height: 0;
@@ -1048,17 +1052,16 @@
   .numpop .places > button.on { background: var(--black); color: var(--white); }
   .numpop .numbox { display: contents; }      /* the row's number box: its value went to the head, its − + are the discs */
   .numpop .row .steps { display: flex; justify-content: space-between; align-items: center; gap: var(--num-pop-gap); width: 100%; }
-  .numpop .popword { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; color: var(--white); font: 600 var(--t-l)/1 var(--sans); pointer-events: none; user-select: none; }      /* the name between − and +, not pressable (#514) */
   /* a pair's link (width and height, #358) between − and +, at the middle of their line (Okay, 19 Oct 2026: "Linking
      stuff get a lower middle button between minus and plus on controller"): a dark pill as the discs are, LINK in the pixel font at 12; linked, white with LINKED in dark */
   .numpop .row > input[type="range"] { grid-row: 1; }
   .numpop .row .steps { grid-row: 2; grid-column: 1; }      /* placed outright, so the pill can lie over its middle (one left to find its own place would open a column beside it) */
-  .numpop .row.haslink > .linkpill { position: static; translate: none; grid-row: 2; justify-self: center; align-self: center; z-index: 1; width: var(--num-pop-step); height: var(--num-pop-step); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); font-size: var(--t-pixel-legend); line-height: 1.2; white-space: pre-line; text-align: center; }      /* a disc as − and + are (4.86, Okay: "Link buttons round like plus"); linked, LINK over +ED */
+  .numpop .row.haslink > .linkpill { position: static; translate: none; grid-row: 2; justify-self: center; align-self: center; z-index: 1; width: var(--num-pop-small); height: var(--num-pop-small); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); font-size: var(--t-pixel-legend); line-height: 1.2; white-space: pre-line; text-align: center; }      /* a disc as − and + are (4.86, Okay: "Link buttons round like plus"); linked, LINK over +ED */
   .numpop .row.haslink > .linkpill:hover { background: var(--num-pop-hover); }
   .numpop .row.haslink > .linkpill.on { background: var(--white); color: var(--num-pop-disc); }
-  .numpop .row .steps > .step { flex: none; display: grid; place-items: center; width: var(--num-pop-step); height: var(--num-pop-step); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); }
+  .numpop .row .steps > .step { flex: none; display: grid; place-items: center; width: var(--num-pop-small); height: var(--num-pop-small); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); }
   .numpop .row .steps > .step:hover { background: var(--num-pop-hover); }
-  .numpop .row .steps > .step > svg { width: var(--num-pop-sign); height: var(--num-pop-sign); }      /* the − and +, as the controller is scaled */
+  .numpop .row .steps > .step > svg { width: calc(var(--num-pop-sign) * var(--num-pop-s)); height: calc(var(--num-pop-sign) * var(--num-pop-s)); }      /* the − and +, as the controller is scaled */
   /* the Positions preview (#251, 4.50.1): the hand's detail box, round — no frame, the circle as large as the box allows
      with a unit round it; a mark at every position, used in ink, skipped faint, the first a dot */
   .detail.round { border: 0; }
@@ -1611,7 +1614,11 @@
   .irisbox { padding: 0; overflow: hidden; border-radius: var(--round-switch); }
   .iriskey { display: block; width: calc(var(--control-large) - 2 * var(--hair)); height: 100%; padding: 0; }
   .iriskey svg { display: block; margin: 0 auto; }
-  .irisbox .x { display: none; }
+  :is(.irisbox, .eyebox) .x { display: none; }      /* the eye's old way-out X: the dial alone wears the eye now (24 Oct 2026) */
+  /* the rays turn one whole turn while ACTIVATE SHOWCASE unfolds, and back as it folds (Okay, 24 Oct 2026: "One rotation of 360 deg. Of the rays around iris for the activate showcase button first label reveal"; "Label out and back") */
+  .irisbox .rays { transform-box: view-box; transform-origin: 15.25px 15px; transition: rotate var(--iris-time) var(--view-ease); }
+  .irisbox[aria-expanded="true"] .rays { rotate: 360deg; }
+  @media (prefers-reduced-motion: reduce) { .irisbox .rays { transition: none; } }
   .irisgo { max-width: 0; height: 100%; padding: 0; overflow: hidden; white-space: nowrap; font-family: var(--mono); font-size: var(--t-s); text-transform: uppercase; letter-spacing: var(--track-100);
     transition: max-width var(--iris-time) var(--view-ease), padding var(--iris-time) var(--view-ease); }
   .irisbox[aria-expanded="true"] .irisgo { max-width: var(--iris-words); padding: 0 var(--u2) 0 var(--u4); }
@@ -7166,7 +7173,7 @@ function window_text(kind, mo, lang = "en", form = 0) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.92.5";
+var VERSION = "beta 4.92.6";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -15114,8 +15121,9 @@ var SIGNS = {
 };
 var BIG = {
   // the controller's − and + (Okay's second drawing, 18 Oct 2026, controller 2.svg): square ends, white on the discs; at the controller's three quarters, 6 thick and 30 long on 33, drawn at the size shown (R33)
-  plus: icon(`<path d="M16.5 1.5V31.5M1.5 16.5H31.5" ${sw(6)} stroke-linecap="butt"/>`, 33),
-  minus: icon(`<path d="M1.5 16.5H31.5" ${sw(6)} stroke-linecap="butt"/>`, 33)
+  // at 70 % of that since 24 Oct 2026 (Okay: "plus minus and number line 70% of now"): 4.2 thick, 21 long, on 23.1
+  plus: icon(`<path d="M11.55 1.05V22.05M1.05 11.55H22.05" ${sw(4.2)} stroke-linecap="butt"/>`, 23.1),
+  minus: icon(`<path d="M1.05 11.55H22.05" ${sw(4.2)} stroke-linecap="butt"/>`, 23.1)
 };
 var STEP = {
   plus: icon(`<path d="M8.25 2.25V14.25M2.25 8.25H14.25"/>`),
@@ -15371,7 +15379,7 @@ var TOOL_ICONS = {
       const a = 2 * Math.PI * k / n;
       return `M${cx} ${cy}L${(cx + 25 * Math.sin(a)).toFixed(2)} ${(cy - 25 * Math.cos(a)).toFixed(2)}`;
     }).join("");
-    return `<mask id="eye-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask><path d="${rays}" stroke-width="${EYE_RAY}" stroke-linecap="butt" mask="url(#eye-cut)"/><circle cx="${cx}" cy="${cy}" r="2.75" fill="currentColor" stroke="none"/>`;
+    return `<mask id="eye-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask><g mask="url(#eye-cut)"><path class="rays" d="${rays}" stroke-width="${EYE_RAY}" stroke-linecap="butt"/></g><circle cx="${cx}" cy="${cy}" r="2.75" fill="currentColor" stroke="none"/>`;
   })(),
   // the show-mode switch, left of the eye (Okay, 15 Oct 2026, 04:26: "just the iris inside same box"): the eye's iris
   // alone, where it stands in the eye. In show mode it is the way out: two of the eye's rays cross on it, an X run
@@ -17249,7 +17257,8 @@ var DialTool = class _DialTool {
     };
     this.backdrop_dot = dot;
     const eye2 = el("button", { type: "button", className: "onview eyebox", id: "eye-box", title: "The dial alone: the panel slides away", ariaLabel: "The dial alone" });
-    eye2.innerHTML = icon(TOOL_ICONS.eyebox, 30);
+    eye2.innerHTML = icon(TOOL_ICONS.show_eye, 30);
+    eye2.dataset.tip = "The dial alone";
     eye2.setAttribute("aria-pressed", "false");
     eye2.onclick = () => {
       if (this.comparing) return this.compare(false);
@@ -17257,7 +17266,8 @@ var DialTool = class _DialTool {
     };
     this.eye_button = eye2;
     const iris = el("button", { type: "button", className: "iriskey", id: "iris-box", title: "The showcase", ariaLabel: "The showcase" });
-    iris.innerHTML = icon(TOOL_ICONS.show_eye, 30);
+    iris.innerHTML = icon(TOOL_ICONS.eyebox, 30);
+    iris.dataset.tip = "Show mode";
     iris.setAttribute("aria-pressed", "false");
     iris.onclick = () => {
       if (this.S.ui_show) this.show_mode(false);
@@ -17385,7 +17395,7 @@ var DialTool = class _DialTool {
    *  its margins round it on the backdrop — redrawn at most five times a second while the dial changes. */
   tiny_box() {
     const button = el("button", { type: "button", className: "onview tinyopen", id: "tiny-open", ariaLabel: "Tiny preview" });
-    button.dataset.tip = "Tiny preview: the dial at its own size";
+    button.dataset.tip = "Tiny Preview";
     button.innerHTML = icon(TOOL_ICONS.iris, 30);
     const shut = el("button", { type: "button", className: "tinyshut", id: "tiny-shut", ariaLabel: "Put the tiny preview away" });
     shut.innerHTML = eye(true);
@@ -19799,9 +19809,7 @@ var DialTool = class _DialTool {
     const r = this.build_row({ ...row, inpop: true, side: false, block: false, tip: null });
     const name = r.el.querySelector(":scope > .menulabel, :scope > label"), field = r.el.querySelector('input[type="text"]');
     if (name) name.hidden = true;
-    const steps = r.el.querySelector(".steps");
-    if (steps && row.text && !r.el.querySelector(".linkpill")) steps.lastElementChild.before(el("span", { className: "popword", ariaHidden: "true", textContent: row.text }));
-    const head = el("div", { className: "pophead" }, ...field ? [el("div", { className: "popvalue" }, field)] : []);
+    const head = el("div", { className: "pophead" }, ...field ? [el("div", { className: "popvalue" }, el("span", { className: "popword", ariaHidden: "true", textContent: row.text || "" }), field)] : []);
     head.hidden = !field;
     const box3 = el("div", { className: "numpop", id: "value-pop", role: "dialog", ariaLabel: row.text || "" }, head, r.el);
     const home = button.closest(".row"), parts = home ? [...home.children].filter((c) => !c.matches("label, .menulabel, .popname, .linkpill") && c.offsetParent) : [];
@@ -19828,6 +19836,13 @@ var DialTool = class _DialTool {
     }
     box3.style.left = `${clamp(left, 4, innerWidth - w - 4)}px`;
     box3.style.top = `${clamp(top, 4, innerHeight - h - 4)}px`;
+    const dark = button.closest(".panel") ? Boolean(this.S.ui_show) : this.main.classList.contains("dark");
+    const ground = el("div", { className: "numground" + (dark ? " screen" : "") });
+    for (const k of ["left", "top"]) ground.style[k] = box3.style[k];
+    ground.style.width = `${box3.offsetWidth}px`;
+    ground.style.height = `${box3.offsetHeight}px`;
+    box3.before(ground);
+    this.value_pop.ground = ground;
     const later = () => {
       clearTimeout(this.value_pop?.timer);
       if (this.value_pop) this.value_pop.timer = setTimeout(() => this.value_pop_close(true), POP_LINGER_MS);
@@ -19867,16 +19882,17 @@ var DialTool = class _DialTool {
   /** fade: it goes in a short fade (its last use is over); otherwise at once (a press elsewhere, Escape, another opening) */
   value_pop_close(fade = false) {
     if (!this.value_pop) return;
-    const { button, box: box3, timer } = this.value_pop;
+    const { button, box: box3, timer, ground } = this.value_pop;
     clearTimeout(timer);
     if (this.value_pop.row?.scope === "hand" && (!matchMedia("(hover: hover)").matches || !button.closest(".row")?.matches(":hover"))) this.hand_light(null);
     this.value_pop = null;
     const field = box3.querySelector('input[type="text"]');
     if (document.activeElement === field) field.blur();
+    const gone = [box3, ground].filter(Boolean);
     if (fade && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      box3.classList.add("fading");
-      setTimeout(() => box3.remove(), POP_FADE_MS);
-    } else box3.remove();
+      for (const g of gone) g.classList.add("fading");
+      setTimeout(() => gone.forEach((g) => g.remove()), POP_FADE_MS);
+    } else gone.forEach((g) => g.remove());
     button.setAttribute("aria-expanded", "false");
   }
   /** a ring's row says what the ring is, in the ring drawer's own order (Okay, 13 Oct 2026): its kind (with how many
