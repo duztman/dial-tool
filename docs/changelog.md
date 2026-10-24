@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.92.26 (web version) · 25 Oct 2026
+
+- **The Guides list, as drawn — round two** (#527; Okay, 23:07: "pills chevrons you misinterpreted"; his companion picture with the menus open): a guide's line is its name, its colour dot and a **chevron**; the chevron (or the dot) opens a small rounded box under the line, None and seven colours in two lines of four, the chosen one ringed in its own colour — black is left out ("Drop the black"; still in the list, R9). None hides a guide: its dot an empty ring, its name grey. No tick.
+- Rings' and Windows' menus are **outlined pills** with their choice; pressed, a small box with Selected · All · None opens in the pill's place (R15 notes the exception).
+- Rings · Windows · Added in grey, regular; Added's minus a rounded square; Thickness 1 · 2 · 3 on a dark box, the chosen one ringed.
+- Checked: links, labels, complications, the window test (its guides checks follow the new controls); the list at rest and open on screenshots.
+
 ## beta 4.92.25 (web version) · 24 Oct 2026
 
 - **Added guides are dragged on the preview** (#527; Okay: placed "Both" ways): while the Guides list is open and the guides are on, each added guide has a handle in its own colour, as a ring's handles are drawn — a line a triangle on it at four fifths of the dial's radius, dragged round (0–180°); a crosshair a square on its point, dragged anywhere; a circle a disc on it at half past four (clear of the list), dragged in or out. Their numbers in the list follow; pressing a handle doesn't put the list away. A hidden guide has no handle.

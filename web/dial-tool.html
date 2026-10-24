@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.92.25 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.92.26 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -416,11 +416,11 @@
   /* reach: under a finger, a small control is pressed from a little outside its edge too — up to half-way to its
      neighbour, so two never overlap. What you see doesn't change: the reach is an unseen frame round the control
      (--reach-x to the sides, --reach-y above and under; nothing for a mouse). Every small control is listed here. */
-  :is(.dots button, .gdot, .gtick, .chips button, .swatches .swatch, .sign, .step, .rename, .fontname .btn, .ringlist .grip) { position: relative; }
-  :is(.dots button, .gdot, .gtick, .chips button, .swatches .swatch, .sign, .step, .rename, .fontname .btn, .ringlist .grip)::after { content: ""; position: absolute; inset: calc(-1 * var(--reach-y, 0px)) calc(-1 * var(--reach-right, var(--reach-x, 0px))) calc(-1 * var(--reach-y, 0px)) calc(-1 * var(--reach-x, 0px)); }
+  :is(.dots button, .gdot, .gchev, .chips button, .swatches .swatch, .sign, .step, .rename, .fontname .btn, .ringlist .grip) { position: relative; }
+  :is(.dots button, .gdot, .gchev, .chips button, .swatches .swatch, .sign, .step, .rename, .fontname .btn, .ringlist .grip)::after { content: ""; position: absolute; inset: calc(-1 * var(--reach-y, 0px)) calc(-1 * var(--reach-right, var(--reach-x, 0px))) calc(-1 * var(--reach-y, 0px)) calc(-1 * var(--reach-x, 0px)); }
   @media (pointer: coarse) {
     .dots button { --reach-x: calc(var(--guide-gap) / 2); --reach-y: calc((var(--guide-row) - var(--guide-dot)) / 2); }      /* a guide's colour: the whole height of its line */
-    :is(.gdot, .gtick) { --reach-x: calc(var(--guide-gap) / 2); --reach-y: calc((var(--guide-row) - var(--guide-none)) / 2); }      /* a guide's dot and tick (#527): the whole height of its line, half the room between them */
+    :is(.gdot, .gchev) { --reach-x: calc(var(--guide-gap) / 2); --reach-y: calc((var(--guide-row) - var(--guide-none)) / 2); }      /* a guide's dot and tick (#527): the whole height of its line, half the room between them */
     .chiprow .chips button { --reach-x: calc(var(--pop-chip-gap) / 2); --reach-y: calc(var(--pop-chip-gap) / 2); }      /* a colour in the pop-out */
     .swatches .swatch { --reach-x: calc(var(--chip-gap) / 2); --reach-y: var(--reach); }      /* a band's sector */
     .sign, .rename, .step, .labelmenu { --reach-y: var(--reach); }      /* signs under the ring list, the pop-out's square and cross, the rename box, − and + */
@@ -1588,17 +1588,31 @@
   .guideadded[hidden] { display: none; }
   .guidesheet .guidekind { grid-template-columns: minmax(0, 1fr) var(--guide-none) var(--guide-none); column-gap: var(--guide-gap); }
   .guidesheet .guidehead { grid-template-columns: minmax(0, 1fr) auto; }
-  .guidehead .menubox { height: var(--control-s); font-size: var(--t-s); }
+  .guidescroll .guidehead .name { color: var(--grey); font-weight: 400; }      /* Rings · Windows · Added: grey words (Okay's drawing) */
   .gdot { width: var(--guide-none); height: var(--guide-none); border-radius: 50%; background: var(--c); box-shadow: 0 0 0 var(--hair) var(--chip-rule); }
-  .guidekind.off .gdot { opacity: var(--guide-dim); }
-  .gtick { display: grid; place-items: center; width: var(--guide-none); height: var(--guide-none); color: var(--grey); }
-  .gtick[aria-pressed="true"] { color: var(--ink); }
-  .gtick:hover { color: var(--ink); }
-  .guidehead .minus { display: grid; place-items: center; width: var(--guide-none); height: var(--guide-none); border: var(--hair) solid var(--grey); border-radius: 50%; color: var(--grey); }
+  .guidekind.off .gdot { box-shadow: inset 0 0 0 var(--hair) var(--grey); }      /* hidden (None): an empty ring */
+  .gchev { display: grid; place-items: center; width: var(--guide-none); height: var(--guide-none); color: var(--grey); }
+  .gchev:hover, .gchev[aria-expanded="true"] { color: var(--ink); }
+  .gchev[aria-expanded="true"] svg { rotate: 180deg; }
+  .guidehead .minus { display: grid; place-items: center; width: var(--guide-none); height: var(--guide-none); border: var(--hair) solid var(--grey); border-radius: var(--round-small); color: var(--grey); }
   .guidehead .minus:hover { border-color: var(--ink); color: var(--ink); }
-  /* a colour dot pressed: None and the eight colours by it, on a pill of the lines' colour */
-  .guidepop { position: absolute; z-index: 2; gap: var(--guide-gap); padding: var(--u2) var(--u3); border-radius: var(--round-pill); background: var(--row-rule); }
+  /* a heading's menu: an outlined pill with its choice; pressed, a small box with the three in its place */
+  .gpill { height: var(--control-s); padding: 0 var(--u3); border: var(--hair) solid var(--grey); border-radius: var(--round-pill); color: var(--ink); font-size: var(--t-s); }
+  .gpill:hover { border-color: var(--ink); }
+  .gdrop { position: absolute; z-index: 3; display: grid; border: var(--hair) solid var(--grey); border-radius: var(--round-small); background: var(--paper); font-size: var(--t-s); }
+  .gdrop[hidden] { display: none; }
+  .gdrop > button { padding: var(--u1) var(--u3); text-align: left; color: var(--ink); }
+  .gdrop > button + button { border-top: var(--hair) solid var(--row-rule); }
+  .gdrop > button[aria-selected="true"] { font-weight: 600; }
+  .gdrop > button:hover { background: var(--row-rule); }
+  /* a chevron pressed: None and seven colours in a small box under the line, two lines of four */
+  .guidepop.dots { position: absolute; z-index: 3; display: grid; grid-template-columns: repeat(4, var(--guide-none)); gap: var(--guide-gap); padding: var(--u2) var(--u3); border: var(--hair) solid var(--grey); border-radius: var(--round-small); background: var(--paper); }
+  .guidepop .tone { width: var(--guide-none); height: var(--guide-none); }
   .guidepop[hidden] { display: none; }
+  /* Thickness 1 · 2 · 3: on a dark box, the chosen one ringed */
+  .gthick { display: flex; gap: var(--u1); padding: var(--u1); border-radius: var(--round-small); background: var(--paper); }
+  .gthick > button { min-width: var(--control-s); height: var(--control-s); border-radius: var(--round-pill); color: var(--ink); }
+  .gthick > button[aria-checked="true"] { box-shadow: inset 0 0 0 var(--hair) var(--ink); }
   .guidescroll::-webkit-scrollbar { width: var(--scroll-w); }
   .guidescroll::-webkit-scrollbar-thumb { background: var(--grey); border-radius: calc(var(--scroll-w) / 2); }
   .guidescroll > * { margin-inline: var(--pop-pad); }
@@ -1637,7 +1651,7 @@
   .guidelist .guidelast > label:first-child { grid-column: 1; }
   .guidelast > input[type="range"] { display: none; }
   .guidelast > .numcell { grid-column: 2; display: flex; justify-content: flex-end; height: var(--control); pointer-events: none; }
-  .guidelast :is(.numbox, .pillswitch) { pointer-events: auto; }
+  .guidelast :is(.numbox, .gthick) { pointer-events: auto; }
   .guidelast > .resetall { grid-column: 3; align-self: stretch; display: flex; align-items: center; padding-left: var(--gap); border-left: var(--hair) solid var(--paper); }      /* its rule: the ground's, from the section's top to the box's bottom (#305) */
   /* Reset All asks first, in its line's place (#271): the question at the left, round ✕ and ✓ at the right */
   .guidelast.asking > :not(.ask) { visibility: hidden; }
@@ -7255,7 +7269,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.92.25";
+var VERSION = "beta 4.92.26";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -18052,7 +18066,7 @@ var DialTool = class _DialTool {
     const none = el("button", { type: "button", className: "none", id: "guide-pop-none", title: "None: hide it", ariaLabel: "None" });
     none.innerHTML = none_dot;
     none.dataset.k = "none";
-    pop2.append(none, ...GUIDE_COLOURS.map((hex3, i2) => {
+    pop2.append(none, ...GUIDE_COLOURS.map((hex3, i2) => [hex3, i2]).filter(([hex3]) => hex3 !== "#111111").map(([hex3, i2]) => {
       const b = el("button", { type: "button", className: "tone", title: hex3, ariaLabel: hex3 });
       b.style.setProperty("--c", hex3);
       b.dataset.k = i2;
@@ -18061,6 +18075,7 @@ var DialTool = class _DialTool {
     for (const b of pop2.children) b.setAttribute("role", "radio");
     let pop_for = null;
     const pop_shut = () => {
+      if (pop_for) pop_for.chev.setAttribute("aria-expanded", "false");
       pop2.hidden = true;
       pop_for = null;
     };
@@ -18073,28 +18088,25 @@ var DialTool = class _DialTool {
     };
     const guide_line = (name, get, set, id = "") => {
       const label = el("span", { className: "name", textContent: name, title: name });
-      const dot = el("button", { type: "button", className: "gdot", id: id ? id + "-colour" : "", title: "Its colour", ariaLabel: name + ": its colour" });
-      const tick = el("button", { type: "button", className: "gtick", id, title: "Show or hide it", ariaLabel: name });
-      tick.innerHTML = icon(`<path d="M2.5 6.25L5 8.75L9.5 3.5" ${sw(SLANT)}/>`, 12);
-      const line = el("div", { className: "guidekind" }, label, dot, tick);
-      let was = get() ?? 0;
+      const dot = el("button", { type: "button", className: "gdot", id: id ? id + "-colour" : "", tabIndex: -1, ariaHidden: "true" });
+      const chev = el("button", { type: "button", className: "gchev", id, title: "Its colour, or none", ariaLabel: name + ": its colour" });
+      chev.innerHTML = icon(SIGNS.down);
+      chev.setAttribute("aria-expanded", "false");
+      const line = el("div", { className: "guidekind" }, label, dot, chev);
       const d = {
         line,
         label,
         dot,
-        tick,
+        chev,
         choose: (k) => {
-          if (k !== null) was = k;
           set(k);
           this.sync_rows();
           this.render();
         },
         refresh: () => {
           const k = get();
-          if (k !== null) was = k;
-          dot.style.setProperty("--c", GUIDE_COLOURS[k ?? was] || GUIDE_COLOURS[0]);
+          dot.style.setProperty("--c", k === null ? "transparent" : GUIDE_COLOURS[k] || GUIDE_COLOURS[0]);
           line.classList.toggle("off", k === null);
-          tick.setAttribute("aria-pressed", String(k !== null));
           if (pop_for === d) for (const b of pop2.children) {
             const on = b.dataset.k === "none" ? k === null : +b.dataset.k === k;
             b.classList.toggle("on", on);
@@ -18102,16 +18114,19 @@ var DialTool = class _DialTool {
           }
         }
       };
-      tick.onclick = () => d.choose(get() === null ? was : null);
-      dot.onclick = () => {
+      const open2 = () => {
         if (pop_for === d) return pop_shut();
+        if (pop_for) pop_shut();
         pop_for = d;
+        chev.setAttribute("aria-expanded", "true");
         pop2.hidden = false;
         d.refresh();
-        const l = list.getBoundingClientRect(), r = dot.getBoundingClientRect(), under = line.getBoundingClientRect().bottom;
-        pop2.style.top = `${under - l.top + list.querySelector(".guidescroll").scrollTop}px`;
-        pop2.style.left = `${Math.max(0, Math.min(r.left + r.width / 2 - l.left - pop2.offsetWidth / 2, l.width - pop2.offsetWidth))}px`;
+        const scroll2 = list.querySelector(".guidescroll"), l = scroll2.getBoundingClientRect(), r = line.getBoundingClientRect();
+        pop2.style.top = `${r.bottom - l.top + scroll2.scrollTop}px`;
+        pop2.style.left = `${Math.max(0, chev.getBoundingClientRect().right - l.left - pop2.offsetWidth)}px`;
       };
+      chev.onclick = open2;
+      dot.onclick = open2;
       return d;
     };
     this.guide_dots = guide_line;
@@ -18122,18 +18137,42 @@ var DialTool = class _DialTool {
         this.S[colour] = k;
       }
     }, "guide-" + show));
+    const drop = el("div", { className: "gdrop", id: "guide-drop", role: "listbox", hidden: true });
+    let drop_for = null;
+    const drop_shut = () => {
+      if (drop_for) drop_for.setAttribute("aria-expanded", "false");
+      drop.hidden = true;
+      drop_for = null;
+    };
+    this.guide_drop_shut = drop_shut;
     const which_menu = (id, title, get, set) => {
-      const select = el("select", { id, ariaLabel: title });
-      ["Selected", "All", "None"].forEach((word2, i2) => select.append(el("option", { value: i2, textContent: word2 })));
-      select.onchange = () => {
-        set(+select.value);
-        this.sync_rows();
-        this.render();
+      const pill = el("button", { type: "button", className: "gpill", id, title, ariaLabel: title });
+      pill.setAttribute("aria-expanded", "false");
+      const words = ["Selected", "All", "None"];
+      pill.onclick = () => {
+        if (drop_for === pill) return drop_shut();
+        drop_shut();
+        pop_shut();
+        drop_for = pill;
+        pill.setAttribute("aria-expanded", "true");
+        drop.replaceChildren(...words.map((word2, i2) => {
+          const b = el("button", { type: "button", id: `${id}-${word2.toLowerCase()}`, role: "option", textContent: word2, onclick: () => {
+            drop_shut();
+            set(i2);
+            this.sync_rows();
+            this.render();
+          } });
+          b.setAttribute("aria-selected", String(i2 === get()));
+          return b;
+        }));
+        drop.hidden = false;
+        const scroll2 = list.querySelector(".guidescroll"), l = scroll2.getBoundingClientRect(), r = pill.getBoundingClientRect();
+        drop.style.top = `${r.top - l.top + scroll2.scrollTop}px`;
+        drop.style.left = `${r.left - l.left}px`;
+        drop.style.minWidth = `${r.width}px`;
       };
-      const menu = chevron_box(select);
-      return { box: menu.box, refresh: () => {
-        select.value = get();
-        menu.sync();
+      return { box: pill, refresh: () => {
+        pill.textContent = words[get()];
       } };
     };
     const which_of = (all, sel) => all ? 1 : sel ? 0 : 2, which_to = (n) => [n === 1, n !== 2];
@@ -18158,7 +18197,7 @@ var DialTool = class _DialTool {
     const left = el("div", { className: "guidecol" }, head("Rings", this.guide_which.box), this.guide_rings);
     const right = el("div", { className: "guidecol" }, ...this.guide_kinds.map((d) => d.line), this.guide_windows_head, this.guide_windows);
     this.guide_added = el("div", { className: "guideadded" }, el("div", { className: "guidecol" }, this.guide_more_head), el("div", { className: "guidecol" }, this.guide_more));
-    const scroll = el("div", { className: "guidescroll guidecols" }, left, right, this.guide_added, pop2);
+    const scroll = el("div", { className: "guidescroll guidecols" }, left, right, this.guide_added, pop2, drop);
     const adds = el("span", { className: "segs" });
     GUIDE_MORE.forEach((kind, i2) => adds.append(el("button", { type: "button", id: "guide-add-" + kind, textContent: kind[0].toUpperCase() + kind.slice(1), onclick: () => {
       const used = new Set((this.S.gd_more || []).map((g) => g.k));
@@ -18170,14 +18209,16 @@ var DialTool = class _DialTool {
     list.append(scroll, settings);
     list.classList.add("guidesheet");
     list.addEventListener("pointerdown", (e) => {
-      if (!pop2.hidden && !e.target.closest("#guide-pop, .gdot")) pop_shut();
+      if (!pop2.hidden && !e.target.closest("#guide-pop, .gdot, .gchev")) pop_shut();
+      if (this.guide_drop_shut && !e.target.closest(".gdrop, .gpill")) this.guide_drop_shut();
     });
     this.guides_more_below = () => scroll.classList.toggle("more", scroll.scrollTop + scroll.clientHeight < scroll.scrollHeight - 2);
     scroll.addEventListener("scroll", () => {
       pop_shut();
+      drop_shut();
       this.guides_more_below();
     }, { passive: true });
-    const thick = el("span", { className: "pillswitch", role: "radiogroup", ariaLabel: "Thickness" });
+    const thick = el("span", { className: "gthick", role: "radiogroup", ariaLabel: "Thickness" });
     [1, 2, 3].forEach((n) => {
       const b = el("button", { type: "button", id: "guide-w-" + n, textContent: String(n), role: "radio", onclick: () => {
         this.S.gd_w = GUIDE_STEP * n;
@@ -18474,11 +18515,7 @@ var DialTool = class _DialTool {
         f2.input.style.width = `${Math.max(1, f2.input.value.length)}ch`;
       }
     });
-    [...this.guide_thick.children].forEach((b, n) => {
-      const on = Math.abs(S.gd_w - GUIDE_STEP * (n + 1)) < 1e-6;
-      b.classList.toggle("on", on);
-      b.setAttribute("aria-checked", String(on));
-    });
+    [...this.guide_thick.children].forEach((b, n) => b.setAttribute("aria-checked", String(Math.abs(S.gd_w - GUIDE_STEP * (n + 1)) < 1e-6)));
   }
   /** the rows of the section that is showing. A heading opens a pane; the rows after it go inside the pane,
    *  which can be folded. Each section remembers how far it was scrolled. */

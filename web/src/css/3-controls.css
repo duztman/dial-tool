@@ -112,11 +112,11 @@
   /* reach: under a finger, a small control is pressed from a little outside its edge too — up to half-way to its
      neighbour, so two never overlap. What you see doesn't change: the reach is an unseen frame round the control
      (--reach-x to the sides, --reach-y above and under; nothing for a mouse). Every small control is listed here. */
-  :is(.dots button, .gdot, .gtick, .chips button, .swatches .swatch, .sign, .step, .rename, .fontname .btn, .ringlist .grip) { position: relative; }
-  :is(.dots button, .gdot, .gtick, .chips button, .swatches .swatch, .sign, .step, .rename, .fontname .btn, .ringlist .grip)::after { content: ""; position: absolute; inset: calc(-1 * var(--reach-y, 0px)) calc(-1 * var(--reach-right, var(--reach-x, 0px))) calc(-1 * var(--reach-y, 0px)) calc(-1 * var(--reach-x, 0px)); }
+  :is(.dots button, .gdot, .gchev, .chips button, .swatches .swatch, .sign, .step, .rename, .fontname .btn, .ringlist .grip) { position: relative; }
+  :is(.dots button, .gdot, .gchev, .chips button, .swatches .swatch, .sign, .step, .rename, .fontname .btn, .ringlist .grip)::after { content: ""; position: absolute; inset: calc(-1 * var(--reach-y, 0px)) calc(-1 * var(--reach-right, var(--reach-x, 0px))) calc(-1 * var(--reach-y, 0px)) calc(-1 * var(--reach-x, 0px)); }
   @media (pointer: coarse) {
     .dots button { --reach-x: calc(var(--guide-gap) / 2); --reach-y: calc((var(--guide-row) - var(--guide-dot)) / 2); }      /* a guide's colour: the whole height of its line */
-    :is(.gdot, .gtick) { --reach-x: calc(var(--guide-gap) / 2); --reach-y: calc((var(--guide-row) - var(--guide-none)) / 2); }      /* a guide's dot and tick (#527): the whole height of its line, half the room between them */
+    :is(.gdot, .gchev) { --reach-x: calc(var(--guide-gap) / 2); --reach-y: calc((var(--guide-row) - var(--guide-none)) / 2); }      /* a guide's dot and tick (#527): the whole height of its line, half the room between them */
     .chiprow .chips button { --reach-x: calc(var(--pop-chip-gap) / 2); --reach-y: calc(var(--pop-chip-gap) / 2); }      /* a colour in the pop-out */
     .swatches .swatch { --reach-x: calc(var(--chip-gap) / 2); --reach-y: var(--reach); }      /* a band's sector */
     .sign, .rename, .step, .labelmenu { --reach-y: var(--reach); }      /* signs under the ring list, the pop-out's square and cross, the rename box, − and + */

@@ -2539,10 +2539,12 @@ class DialTool {
     const none = el("button", { type: "button", className: "none", id: "guide-pop-none", title: "None: hide it", ariaLabel: "None" });
     none.innerHTML = none_dot;
     none.dataset.k = "none";
-    pop.append(none, ...G.GUIDE_COLOURS.map((hex, i) => { const b = el("button", { type: "button", className: "tone", title: hex, ariaLabel: hex }); b.style.setProperty("--c", hex); b.dataset.k = i; return b; }));
+    // None and seven colours, two lines of four: black is left out, near invisible on the dark ground (Okay, 24 Oct
+    // 2026: "Drop the black"); it stays in GUIDE_COLOURS (R9), so a guide already black stays black
+    pop.append(none, ...G.GUIDE_COLOURS.map((hex, i) => [hex, i]).filter(([hex]) => hex !== "#111111").map(([hex, i]) => { const b = el("button", { type: "button", className: "tone", title: hex, ariaLabel: hex }); b.style.setProperty("--c", hex); b.dataset.k = i; return b; }));
     for (const b of pop.children) b.setAttribute("role", "radio");
     let pop_for = null;
-    const pop_shut = () => { pop.hidden = true; pop_for = null; };
+    const pop_shut = () => { if (pop_for) pop_for.chev.setAttribute("aria-expanded", "false"); pop.hidden = true; pop_for = null; };
     this.guide_pop_shut = pop_shut;
     pop.onclick = (e) => {
       const b = e.target.closest("[data-k]");
@@ -2550,33 +2552,37 @@ class DialTool {
       pop_for.choose(b.dataset.k === "none" ? null : +b.dataset.k);
       pop_shut();
     };
+    // a guide's line (Okay's drawing, 24 Oct 2026: "All the ticks chevrons, they open up small rounded corner boxes"):
+    // its name, its colour as a dot, and a chevron that opens None and the colours in a small box under the line. A
+    // hidden guide (None) shows its dot as an empty ring and its name grey.
     const guide_line = (name, get, set, id = "") => {
       const label = el("span", { className: "name", textContent: name, title: name });
-      const dot = el("button", { type: "button", className: "gdot", id: id ? id + "-colour" : "", title: "Its colour", ariaLabel: name + ": its colour" });
-      const tick = el("button", { type: "button", className: "gtick", id, title: "Show or hide it", ariaLabel: name });
-      tick.innerHTML = icon(`<path d="M2.5 6.25L5 8.75L9.5 3.5" ${sw(SLANT)}/>`, 12);
-      const line = el("div", { className: "guidekind" }, label, dot, tick);
-      let was = get() ?? 0;      // its colour while it is hidden, for when it comes back
-      const d = { line, label, dot, tick,
-        choose: (k) => { if (k !== null) was = k; set(k); this.sync_rows(); this.render(); },
+      const dot = el("button", { type: "button", className: "gdot", id: id ? id + "-colour" : "", tabIndex: -1, ariaHidden: "true" });
+      const chev = el("button", { type: "button", className: "gchev", id, title: "Its colour, or none", ariaLabel: name + ": its colour" });
+      chev.innerHTML = icon(SIGNS.down);
+      chev.setAttribute("aria-expanded", "false");
+      const line = el("div", { className: "guidekind" }, label, dot, chev);
+      const d = { line, label, dot, chev,
+        choose: (k) => { set(k); this.sync_rows(); this.render(); },
         refresh: () => {
           const k = get();
-          if (k !== null) was = k;
-          dot.style.setProperty("--c", G.GUIDE_COLOURS[k ?? was] || G.GUIDE_COLOURS[0]);
+          dot.style.setProperty("--c", k === null ? "transparent" : G.GUIDE_COLOURS[k] || G.GUIDE_COLOURS[0]);
           line.classList.toggle("off", k === null);
-          tick.setAttribute("aria-pressed", String(k !== null));
           if (pop_for === d) for (const b of pop.children) { const on = b.dataset.k === "none" ? k === null : +b.dataset.k === k; b.classList.toggle("on", on); b.setAttribute("aria-checked", String(on)); }
         } };
-      tick.onclick = () => d.choose(get() === null ? was : null);
-      dot.onclick = () => {
+      const open = () => {
         if (pop_for === d) return pop_shut();
+        if (pop_for) pop_shut();
         pop_for = d;
+        chev.setAttribute("aria-expanded", "true");
         pop.hidden = false;
         d.refresh();
-        const l = list.getBoundingClientRect(), r = dot.getBoundingClientRect(), under = line.getBoundingClientRect().bottom;      // under the dot's line, so a finger's reach round the colours never covers the dot; kept inside the list
-        pop.style.top = `${under - l.top + list.querySelector(".guidescroll").scrollTop}px`;
-        pop.style.left = `${Math.max(0, Math.min(r.left + r.width / 2 - l.left - pop.offsetWidth / 2, l.width - pop.offsetWidth))}px`;
+        const scroll = list.querySelector(".guidescroll"), l = scroll.getBoundingClientRect(), r = line.getBoundingClientRect();      // under its line, its right edge on the chevron's, kept inside the list
+        pop.style.top = `${r.bottom - l.top + scroll.scrollTop}px`;
+        pop.style.left = `${Math.max(0, chev.getBoundingClientRect().right - l.left - pop.offsetWidth)}px`;
       };
+      chev.onclick = open;
+      dot.onclick = open;
       return d;
     };
     this.guide_dots = guide_line;
@@ -2584,12 +2590,29 @@ class DialTool {
     this.guide_kinds = [G.GUIDE_KINDS[5], G.GUIDE_KINDS[1]].map(([show, colour, name]) =>
       guide_line(name, () => (this.S[show] ? this.S[colour] : null), (k) => { if (k === null) this.S[show] = false; else { this.S[show] = true; this.S[colour] = k; } }, "guide-" + show));
     // which rings and which windows show their guides: a menu on each heading (R15: every menu is one), Selected · All · None
+    // which rings and which windows show their guides: an outlined pill on the heading with the choice in it; pressed,
+    // a small box with Selected · All · None opens in its place (Okay's drawing, 24 Oct 2026)
+    const drop = el("div", { className: "gdrop", id: "guide-drop", role: "listbox", hidden: true });
+    let drop_for = null;
+    const drop_shut = () => { if (drop_for) drop_for.setAttribute("aria-expanded", "false"); drop.hidden = true; drop_for = null; };
+    this.guide_drop_shut = drop_shut;
     const which_menu = (id, title, get, set) => {
-      const select = el("select", { id, ariaLabel: title });
-      ["Selected", "All", "None"].forEach((word, i) => select.append(el("option", { value: i, textContent: word })));
-      select.onchange = () => { set(+select.value); this.sync_rows(); this.render(); };
-      const menu = chevron_box(select);
-      return { box: menu.box, refresh: () => { select.value = get(); menu.sync(); } };
+      const pill = el("button", { type: "button", className: "gpill", id, title, ariaLabel: title });
+      pill.setAttribute("aria-expanded", "false");
+      const words = ["Selected", "All", "None"];
+      pill.onclick = () => {
+        if (drop_for === pill) return drop_shut();
+        drop_shut(); pop_shut();
+        drop_for = pill;
+        pill.setAttribute("aria-expanded", "true");
+        drop.replaceChildren(...words.map((word, i) => { const b = el("button", { type: "button", id: `${id}-${word.toLowerCase()}`, role: "option", textContent: word, onclick: () => { drop_shut(); set(i); this.sync_rows(); this.render(); } }); b.setAttribute("aria-selected", String(i === get())); return b; }));
+        drop.hidden = false;
+        const scroll = list.querySelector(".guidescroll"), l = scroll.getBoundingClientRect(), r = pill.getBoundingClientRect();
+        drop.style.top = `${r.top - l.top + scroll.scrollTop}px`;
+        drop.style.left = `${r.left - l.left}px`;
+        drop.style.minWidth = `${r.width}px`;
+      };
+      return { box: pill, refresh: () => { pill.textContent = words[get()]; } };
     };
     const which_of = (all, sel) => (all ? 1 : sel ? 0 : 2), which_to = (n) => [n === 1, n !== 2];      // Selected 0 · All 1 · None 2 → [all, selected]
     this.guide_which = which_menu("guide-rings", "Which rings show their guides", () => which_of(this.S.gd_rings, this.S.gd_sel), (n) => { [this.S.gd_rings, this.S.gd_sel] = which_to(n); });
@@ -2605,7 +2628,7 @@ class DialTool {
     const left = el("div", { className: "guidecol" }, head("Rings", this.guide_which.box), this.guide_rings);
     const right = el("div", { className: "guidecol" }, ...this.guide_kinds.map((d) => d.line), this.guide_windows_head, this.guide_windows);
     this.guide_added = el("div", { className: "guideadded" }, el("div", { className: "guidecol" }, this.guide_more_head), el("div", { className: "guidecol" }, this.guide_more));
-    const scroll = el("div", { className: "guidescroll guidecols" }, left, right, this.guide_added, pop);
+    const scroll = el("div", { className: "guidescroll guidecols" }, left, right, this.guide_added, pop, drop);
     // guides you add: a line, a crosshair, a circle (Okay: "add an option to add others, crosshair, straight line etc.")
     const adds = el("span", { className: "segs" });
     G.GUIDE_MORE.forEach((kind, i) => adds.append(el("button", { type: "button", id: "guide-add-" + kind, textContent: kind[0].toUpperCase() + kind.slice(1), onclick: () => {
@@ -2616,14 +2639,17 @@ class DialTool {
     const settings = el("div", { className: "guidesettings" }, head("Add", adds));
     list.append(scroll, settings);
     list.classList.add("guidesheet");
-    list.addEventListener("pointerdown", (e) => { if (!pop.hidden && !e.target.closest("#guide-pop, .gdot")) pop_shut(); });
+    list.addEventListener("pointerdown", (e) => {
+      if (!pop.hidden && !e.target.closest("#guide-pop, .gdot, .gchev")) pop_shut();
+      if (this.guide_drop_shut && !e.target.closest(".gdrop, .gpill")) this.guide_drop_shut();
+    });
     // more under the fold: its last line fades into the settings, so a finger knows it scrolls (a phone's and an iPad's
     // scrollbar only shows while it moves)
     this.guides_more_below = () => scroll.classList.toggle("more", scroll.scrollTop + scroll.clientHeight < scroll.scrollHeight - 2);
-    scroll.addEventListener("scroll", () => { pop_shut(); this.guides_more_below(); }, { passive: true });
+    scroll.addEventListener("scroll", () => { pop_shut(); drop_shut(); this.guides_more_below(); }, { passive: true });
     // the last line: Thickness 1 · 2 · 3 — steps of the thinnest, 0.75 (Okay, 24 Oct 2026: "Steps of today's") — then a
     // rule and Reset All (#271: "Reset also gets a vertical separator before. Written as 'Reset All'")
-    const thick = el("span", { className: "pillswitch", role: "radiogroup", ariaLabel: "Thickness" });
+    const thick = el("span", { className: "gthick", role: "radiogroup", ariaLabel: "Thickness" });      // the chosen one ringed, not filled (Okay's drawing)
     [1, 2, 3].forEach((n) => { const b = el("button", { type: "button", id: "guide-w-" + n, textContent: String(n), role: "radio", onclick: () => { this.S.gd_w = GUIDE_STEP * n; this.sync_rows(); this.render(); } }); thick.append(b); });
     this.guide_thick = thick;
     // Reset All asks first, in its line's place: "Reset all guides?" and round ✕ and ✓ (#271; answer: it resets the
@@ -2850,7 +2876,7 @@ class DialTool {
       d.refresh();
       for (const f of d.fields) if (document.activeElement !== f.input) { f.input.value = f.length ? String(parseFloat(this.in_unit(S.gd_more[i][f.key], 2))) : String(+(+S.gd_more[i][f.key]).toFixed(1)); f.input.style.width = `${Math.max(1, f.input.value.length)}ch`; }
     });
-    [...this.guide_thick.children].forEach((b, n) => { const on = Math.abs(S.gd_w - GUIDE_STEP * (n + 1)) < 1e-6; b.classList.toggle("on", on); b.setAttribute("aria-checked", String(on)); });
+    [...this.guide_thick.children].forEach((b, n) => b.setAttribute("aria-checked", String(Math.abs(S.gd_w - GUIDE_STEP * (n + 1)) < 1e-6)));
   }
 
   /** the rows of the section that is showing. A heading opens a pane; the rows after it go inside the pane,
