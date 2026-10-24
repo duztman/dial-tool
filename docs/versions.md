@@ -17,6 +17,7 @@ Pictures (R36): on Okay's Mac, `~/Desktop/dial-maker/screenshots/`, one folder p
 
 | Version | Date | Kind | Commit | Built file | First line of the version |
 |---|---|---|---|---|---|
+| 4.93 | 25 Oct 2026 | web | [`9735539`](https://github.com/duztman/dial-tool/tree/973553925bac793adb56e7f918b8c28eb39abca2) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/973553925bac793adb56e7f918b8c28eb39abca2/web/dial-tool.html) | the Guides list in one column, the Shadows pane |
 | 4.92 | 23 Oct 2026 | web | [`7fe1dba`](https://github.com/duztman/dial-tool/tree/7fe1dba255d6fbbe3088626f1dc5a60419b2d0ab) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/7fe1dba255d6fbbe3088626f1dc5a60419b2d0ab/web/dial-tool.html) | beta 4.92: the Show Case merged as show mode |
 | 4.91 | 21 Oct 2026 | web | [`58d9dc8`](https://github.com/duztman/dial-tool/tree/58d9dc8537a95422d2c687033b68f96df8f2fc02) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/58d9dc8537a95422d2c687033b68f96df8f2fc02/web/dial-tool.html) | a numerals ring is a cap-height band, resized from its outer, middle or inner circle (#488) |
 | 4.90 | 20 Oct 2026 | web | [`bad9b12`](https://github.com/duztman/dial-tool/tree/bad9b121cba20de14de14aef54eebea2861cbc42) | [dial-tool.html](https://github.com/duztman/dial-tool/blob/bad9b121cba20de14de14aef54eebea2861cbc42/web/dial-tool.html) | beta 4.90: Versions and Compare, Print's production ticks, a mask per ink, a set of files, spec sheet, MP4/GIF, Weight %, undo steps named, guides quieter, handles on guide discs |
