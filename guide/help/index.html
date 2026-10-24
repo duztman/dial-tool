@@ -28,7 +28,7 @@ ol,ul{padding-left:20px;max-width:66ch}li{margin:3px 0}
 a{color:inherit}
 code{font:13px ui-monospace,Menlo,monospace}
 footer{margin-top:64px;font:11px ui-monospace,Menlo,monospace;color:var(--mute)}
-@media (max-width:760px){.wrap{grid-template-columns:1fr;gap:16px}nav{position:static;display:flex;flex-wrap:wrap;gap:4px 14px}nav b{width:100%;margin:6px 0 0}dl{grid-template-columns:1fr}dt{border-bottom:0;padding-bottom:0}}
+@media (max-width:760px){.shot i{width:15px;height:15px;font-size:9px;line-height:15px}.wrap{grid-template-columns:1fr;gap:16px}nav{position:static;display:flex;flex-wrap:wrap;gap:4px 14px}nav b{width:100%;margin:6px 0 0}dl{grid-template-columns:1fr}dt{border-bottom:0;padding-bottom:0}}
 form.report{display:grid;gap:12px;max-width:560px;margin-top:12px}
 form.report label{display:grid;gap:4px;font-size:13px;color:var(--mute)}
 form.report label b{color:var(--ink);font-weight:500}
@@ -39,6 +39,12 @@ form.report .gotcha{position:absolute;left:-9999px}
 form.report button{justify-self:start;font:inherit;font-weight:500;color:var(--paper);background:var(--ink);border:0;border-radius:6px;padding:8px 18px;cursor:pointer}
 form.report button:disabled{opacity:.4;cursor:default}
 kbd{display:inline-block;min-width:1.8em;padding:1px 6px;margin:1px 1px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;font:12px/1.5 ui-monospace,Menlo,monospace;text-align:center;color:var(--ink);background:color-mix(in srgb,var(--paper) 80%,var(--ink) 4%)}
+figure{margin:16px 0 0}figure img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:6px}
+figcaption{margin-top:6px;font-size:12px;color:var(--mute)}
+.shot{position:relative}
+.shot i{position:absolute;transform:translate(-50%,-50%);width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--paper);font:600 11px/20px ui-monospace,Menlo,monospace;text-align:center;font-style:normal;box-shadow:0 0 0 2px var(--paper)}
+.n{display:inline-block;width:18px;height:18px;margin-right:6px;border-radius:50%;background:var(--ink);color:var(--paper);font:600 10px/18px ui-monospace,Menlo,monospace;text-align:center;vertical-align:1px}
+dd img{display:block;max-width:100%;height:auto;margin-top:8px}
 #report-note{font-size:13px;color:var(--mute);min-height:1.5em;margin:0}
 </style>
 </head>
@@ -65,14 +71,20 @@ kbd{display:inline-block;min-width:1.8em;padding:1px 6px;margin:1px 1px;border:1
 </ul>
 
 <h2 id="screen">The screen</h2>
+<figure class="shot">
+  <img src="img/screen.webp" width="1440" height="900" alt="The Dial Tool window: the panel with its tabs on the left, the dial in the preview on the right, buttons in the preview's corners, the time bar along the bottom.">
+  <i style="left:23.5%;top:2.4%">1</i><i style="left:30.5%;top:9.5%">2</i><i style="left:80%;top:20%">3</i><i style="left:47.5%;top:3.1%">4</i>
+  <i style="left:89.5%;top:3.1%">5</i><i style="left:41.5%;top:86%">6</i><i style="left:95%;top:89%">7</i><i style="left:33.5%;top:96.5%">8</i>
+</figure>
 <dl>
-  <dt>Title line</dt><dd>Version, Help, the Gallery and the unit box: mm, pt, in, lignes, thou.</dd>
-  <dt>Tabs</dt><dd>Dial · Rings · Hands · Windows · Export. Each opens its panes; pinned panes stay in view while the rest scrolls.</dd>
-  <dt>Preview</dt><dd>The dial at true proportions. Scroll zooms, right-drag moves, two fingers pinch and move.</dd>
-  <dt>Top left</dt><dd>Undo · redo, the list of steps under its chevron, and Versions: your saved dials.</dd>
-  <dt>Top right</dt><dd>Guides, Case, X-ray: preview helpers, never in a file.</dd>
-  <dt>Bottom right</dt><dd>The Tiny preview, the dial alone (eye) and show mode (iris).</dd>
-  <dt>Bottom bar</dt><dd>Time and speed, the date, the timeline, zoom and Fit.</dd>
+  <dt><span class="n">1</span>Title line</dt><dd>Version, Help, the Gallery and the unit box: mm, pt, in, lignes, thou.</dd>
+  <dt><span class="n">2</span>Tabs</dt><dd>Dial · Rings · Hands · Windows · Export. Each opens its panes; pinned panes stay in view while the rest scrolls.</dd>
+  <dt><span class="n">3</span>Preview</dt><dd>The dial at true proportions. Scroll zooms, right-drag moves, two fingers pinch and move.</dd>
+  <dt><span class="n">4</span>Top left</dt><dd>Undo · redo, the list of steps under its chevron, and Versions: your saved dials.</dd>
+  <dt><span class="n">5</span>Top right</dt><dd>Guides, Case, X-ray: preview helpers, never in a file.</dd>
+  <dt><span class="n">6</span>Bottom left</dt><dd>Backdrop, the colour behind the dial; Shadows.</dd>
+  <dt><span class="n">7</span>Bottom right</dt><dd>The Tiny preview, the dial alone (eye) and show mode (iris).</dd>
+  <dt><span class="n">8</span>Bottom bar</dt><dd>Time and speed, the date, the timeline, zoom and Fit.</dd>
 </dl>
 <p class="watch">On a phone the panel is a drawer: drag its grip to make it taller or shorter.</p>
 
@@ -95,6 +107,7 @@ kbd{display:inline-block;min-width:1.8em;padding:1px 6px;margin:1px 1px;border:1
   <dt>Weight %</dt><dd>Every width on the dial at once: marks, bands, hands, frames. Lengths and places stay; one undo takes it back.</dd>
   <dt>Centre hole</dt><dd>The hole for the hand pipes, Ø mm; 0 for none.</dd>
   <dt>Plate colour</dt><dd>On the Dial heading line.</dd>
+  <dt>Background</dt><dd>Add image… is a place kept for a picture under the print; not built yet.</dd>
 </dl>
 <h3>Page · Colours · Reset</h3>
 <dl>
@@ -128,7 +141,7 @@ kbd{display:inline-block;min-width:1.8em;padding:1px 6px;margin:1px 1px;border:1
 <p class="lead">Hour · Minute · Seconds, as tabs; the panes below edit the chosen hand.</p>
 <dl>
   <dt>Show</dt><dd>Whether the hand is drawn.</dd>
-  <dt>Shape</dt><dd>Baton, pencil, sword, dauphine, leaf, arrow, syringe, breguet, lollipop, disc, or your own file.</dd>
+  <dt>Shape</dt><dd>Baton, pencil, sword, dauphine, leaf, arrow, syringe, breguet, lollipop, disc; the dashed tile, a shape of your own, is not built yet.<img src="img/hands.webp" width="392" height="83" alt="The ten hand shapes as the Hands tab shows them, baton chosen, and the dashed tile."></dd>
   <dt>Length · Width · Tail</dt><dd>In mm, from the pivot.</dd>
   <dt>Shape rows</dt><dd>Tip length, head width, widest at %, circle Ø, hub, counterweight, hollow wall: only those the shape uses.</dd>
   <dt>Cap</dt><dd>The disc over the pivot: Cap Ø; Cap on this hand when there is no seconds hand.</dd>
@@ -137,7 +150,7 @@ kbd{display:inline-block;min-width:1.8em;padding:1px 6px;margin:1px 1px;border:1
 <h2 id="date">Windows</h2>
 <p class="lead">Four windows, at 12 · 3 · 6 · 9, as cards. Tick a window's heading to show it.</p>
 <dl>
-  <dt>Complication</dt><dd>Date, day, am · pm, moon phase; Big date for two discs.</dd>
+  <dt>Complication</dt><dd>Date, day, am · pm, moon phase; Big date for two discs.<img src="img/windows.webp" width="300" height="300" alt="A dial with four windows: the date at 12, the moon phase at 3, the day at 6, am · pm at 9."></dd>
   <dt>Shape</dt><dd>The hole: radius, width, height or Ø, sides, corner; turned with its radius or not.</dd>
   <dt>Frame · Clearance</dt><dd>A printed frame round the hole, and how far marks keep away from it.</dd>
   <dt>Follows the date</dt><dd>Shows the date set in the bar, not typed text; a moon window shows its age.</dd><dt>Neighbours</dt><dd>The disc's next places show where the hole allows.</dd><dt>Jumps</dt><dd>am · pm only: snaps at midnight and noon; off, the disc sweeps once a day.</dd><dt>Inside the case</dt><dd>The disc may not pass the case; off for a face on a screen.</dd>
@@ -217,14 +230,14 @@ kbd{display:inline-block;min-width:1.8em;padding:1px 6px;margin:1px 1px;border:1
 </dl>
 
 <h2 id="report">Report a bug</h2>
-<p class="lead">Something wrong or odd? Your name and the tester code are needed to send. Your browser, screen and whether you use touch or a mouse go with the report; nothing else.</p>
+<p class="lead">Thank you for trying the tool. If something looks wrong or acts oddly, tell us here; a few plain words are plenty. Your name lets us thank you and ask a follow-up question. The tester code only keeps spam out; ask Okay for it. Your browser, screen size and whether you use touch or a mouse are sent with the report, as they often explain a bug. Nothing else is sent, and this page keeps nothing.</p>
 <form class="report" id="report-form" novalidate>
   <label><b>Name</b><input name="name" required autocomplete="name"></label>
   <label><b>Tester code</b><input name="code" required autocomplete="off" spellcheck="false"></label>
   <label><b>What happened</b><textarea name="happened" required></textarea></label>
   <label>What you expected<textarea name="expected"></textarea></label>
   <label>Steps to make it happen again<textarea name="steps" placeholder="1. Rings › Add a ring&#10;2. …"></textarea></label>
-  <label>Version, from the title line<input name="version" placeholder="4.92.7"></label>
+  <label>Version, from the title line<input name="version" placeholder="beta 4.92.8"></label>
   <label>Link to the dial (Share dial as link › Copy link), if it helps<input name="dial_link" type="url"></label>
   <label>Your email, if you want an answer<input name="email" type="email" autocomplete="email"></label>
   <input class="gotcha" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -257,7 +270,7 @@ form.addEventListener("submit", async (event) => {
   const data = new FormData(form);
   if (!data.get("name").trim()) return say("Add your name to send.");
   if (!data.get("happened").trim()) return say("Say what happened.");
-  if (await sha256(data.get("code")) !== CODE_HASH) return say("That tester code isn't right.");
+  if (await sha256(data.get("code")) !== CODE_HASH) return say("That tester code doesn't match. Check it with Okay and try again.");
   if (!ENDPOINT) return say("The form isn't connected yet. Nothing was sent.");
   data.delete("code");
   data.set("browser", navigator.userAgent);
@@ -269,9 +282,9 @@ form.addEventListener("submit", async (event) => {
   try {
     const answer = await fetch(ENDPOINT, { method: "POST", body: data, headers: { Accept: "application/json" } });
     if (!answer.ok) throw new Error(answer.status);
-    form.reset(); say("Sent. Thank you.");
+    form.reset(); say("Sent. Thank you, it helps a lot.");
   } catch {
-    say("It didn't send. Try again, or email the report.");
+    say("It didn't go through, sorry. Your words are still here: try again in a moment.");
   } finally { button.disabled = false; }
 });
 </script>

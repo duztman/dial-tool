@@ -13,7 +13,9 @@
 - The ring list's pill (five rows, taller or shorter, #256); Now's spin; the Tiny preview's close; Compare's place; show mode reopening in show mode: small, check each in the app before a line.
 - The menus' own list (Space · Enter · ↑ ↓ on a menu): check on an iPad first.
 
-**Shown better than said** (screenshots, PLAN.md's table): the screen with its seven parts (#1) is the one that saves the most words; then the corners and bar (#8), the hand shapes (#5), the window kinds (#6). The keys are drawn as keycaps on the page, no picture needed.
+**Pictures on the page now** (`shoot.cjs` → `webp.py`, `img/`): the screen with its eight parts numbered (PLAN #1, which also covers the corners and bar, #8), the hand shapes (#5), the window kinds (#6). The keys are keycaps, no picture. Still to shoot: the ring list (#2), Resize Ring (#3), Give way (#4), colour vs mask (#7), edit vs show mode (#9).
+
+**Found while shooting:** Dial › Background, *Add image…* (not built yet), was missing from the page; added.
 
 ## Simple examples (from the Gallery, so each is a link that opens it)
 

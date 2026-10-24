@@ -29,7 +29,7 @@
 | 8 | Corners and bar | The four corner switches and the bar, cropped | two strips |
 | 9 | Show mode | The same dial in edit mode and show mode | two small |
 
-All made by script from the current app (the window test in `web/test/` already shoots most of them: `4-rings`, `4c-guides`, `4f-hands-bar`, `4h-window-cards`, `13-xray`, `10-bar`).
+Made: #1 (numbered over the picture; it covers #8 too), #5, #6, by `shoot.cjs` then `webp.py` into `img/` (2×, WebP, 55 KB together). All made by script from the current app (the window test in `web/test/` already shoots most of them: `4-rings`, `4c-guides`, `4f-hands-bar`, `4h-window-cards`, `13-xray`, `10-bar`).
 
 ## Words: the trade's own terms
 
