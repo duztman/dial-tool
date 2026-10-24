@@ -129,6 +129,19 @@ check(await S("['ticks','markers','numerals','band'][S.rings[S.ui_ring].kind] ==
   const list = await page.evaluate(() => { const t = window.dial_tool, was = t.ring().every; t.set_value("ring", "every", 3); t.frame(); const out = [...document.querySelectorAll("#nudge-pick option")].map((o) => o.textContent); t.set_value("ring", "every", was); t.frame(); return [out, [...document.querySelectorAll("#nudge-pick option")].length]; });
   check(list[0].length === 4 && list[0][0] === "12:00" && list[0][1] === "3:00" && list[1] > 4, `Edit one mark lists only the drawn marks: every 3rd → ${list[0].join(" · ")}; all again after (${list[1]})`);
 }
+{ // one numeral's own font and colour (#513; Okay, 24 Oct 2026: "Nudge one numeral is named 'edit one numeral' and gets font (with it color) change")
+  const own = await page.evaluate(async () => { const t = window.dial_tool, was = t.S.ui_ring;
+    t.S.ui_ring = t.S.rings.findIndex((r) => ["ticks", "markers", "numerals", "band"][r.kind] === "numerals"); t.nudge_at = "3"; t.sync_rows(); t.frame();
+    const R = t.ring(), before = JSON.stringify([R.nudge, R.cs]);
+    t.set_value("ring", "cs", { ...(R.cs || {}), 3: [0.8, 0.22, 0.1, 1] });
+    const entry = [...t.catalog.values()].find((e) => e.ps === "Barlow-SemiBold"); t.font_scope = "numeral"; await t.use_font(entry); t.frame();
+    const tints = (t.statik.rings.find((x) => x.ring === R) || {}).tints?.length, font = document.querySelector("#nudge-font").textContent, same = !document.querySelector("#nudge-font-ring").hidden, ps = R.nudge["3"]?.ps;
+    document.querySelector("#nudge-reset").click(); t.frame(); const after = JSON.stringify([R.nudge["3"] || null, (R.cs || {})["3"] || null]);
+    t.font_scope = "ring"; t.S.ui_ring = was; t.sync_rows(); t.frame();
+    return { tints, font, same, ps, after, before }; });
+  check(own.tints === 2 && own.font === "Barlow" && own.same && own.ps === "Barlow-SemiBold" && own.after === "[null,null]",
+    `Edit one numeral: the 3 in its own font (${own.ps}) and colour, drawn as a shape of its own (${own.tints} colours); Reset this numeral takes both away (${own.after})`);
+}
 await click_mm(...clock(13.9, 94));                                 // beside a thin tick (in its zone); 93° until the bar grew (#190): with the preview 10 shorter it fell to the marker at 3
 check(await S("['ticks','markers','numerals','band'][S.rings[S.ui_ring].kind] === 'ticks'"), "click in the ticks' zone → the ticks ring");
 const hands = await S("(() => { const a = [S.t / 43200 * 360, (S.t % 3600) / 3600 * 360]; return a; })()");

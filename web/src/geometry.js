@@ -1270,7 +1270,10 @@ function tangent_shift(ring, mode, a, label) {
   return side * reach;
 }
 
-function numeral_at(ring, i, a0, label) {
+/** the type one numeral draws with: its own font when Edit one numeral gave it one (#513), the ring's otherwise */
+const own_type = (ring, i) => { const n = (ring.nudge && ring.nudge[String(i)]) || {}; return n.ps ? { ...ring, family: n.family, ps: n.ps, axes: n.axes || {} } : ring; };
+function numeral_at(ring0, i, a0, label) {
+  const ring = own_type(ring0, i);
   const [mode, r0, a, size, rot] = numeral_setup(ring, i, a0);
   const r = mode === "on path" ? r0 + band_side(ring) * (text_band(ring)[1] - text_band(ring)[0]) / 2 : r0 + tangent_shift(ring, mode, a, label);
   if (mode === "on path") {
@@ -1427,7 +1430,7 @@ function build_rings(S, cut = null) {
     const d = { ring, kind, keep, taken, shape, at, parts, path: memo(key, final), ghost: !ring.on };
     // a band whose sectors have colours of their own is drawn as one shape per colour: the sectors of that
     // colour, cut like the whole ring. Which sectors go together is remembered, not which colour they have.
-    if (kind === "band" && at.some((i) => ring.cs && ring.cs[String(i)])) {
+    if ((kind === "band" || kind === "numerals" || kind === "text") && at.some((i) => ring.cs && ring.cs[String(i)])) {      // a numeral's own colour too (#513): the same split
       const groups = new Map();
       at.forEach((i, j) => { const c = JSON.stringify(sector_colour(ring, i)); groups.set(c, [...(groups.get(c) || []), j]); });
       d.tints = [...groups.values()].map((js) => ({

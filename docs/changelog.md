@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.92.13 (web version) · 24 Oct 2026
+
+- **Edit one numeral gives one numeral its own font and colour** (#513; "gets font (with it color) change"): a *Font* row (its font's name opens the font sheet for this numeral alone; *As the ring* takes it back) and a *Colour* pill. The font is kept with the numeral's nudges (`nudge[i].family`, `ps`, `axes`) and fetched when used (R35); the colour is the ring's colour for that position (`cs`, the band's sector colours' key), drawn as a shape of its own, as a band's sectors are. *Reset this numeral* takes both away with the nudges. Marks get theirs with #349.
+- Checked: links, labels, the window test (a check added: the 3 in Barlow SemiBold and red, two shapes, reset back).
+
 ## beta 4.92.12 (web version) · 24 Oct 2026
 
 Okay's answers of 20:50:

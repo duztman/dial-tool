@@ -4510,11 +4510,26 @@ class DialTool {
     pick.onchange = () => { this.nudge_at = pick.value; this.unselected = false; this.sync_rows(); this.render(); };
     const word = el("label", { htmlFor: "nudge-pick", textContent: "Numeral" }), reset = el("button", { type: "button", className: "btn", id: "nudge-reset", textContent: "Reset this numeral" });
     const pick_box = chevron_box(pick);
-    wrap.append(el("div", { className: "row pop" }, word, pick_box.box),
+    // its own font, and with it its own colour (#513; Okay, 24 Oct 2026: "Nudge one numeral is named 'edit one numeral' and
+    // gets font (with it color) change"): the font sheet chooses for this numeral alone; the colour is the ring's
+    // colour for this position (cs, as a band's sectors have), drawn as a shape of its own
+    const font = el("button", { type: "button", className: "btn", id: "nudge-font", onclick: () => { this.font_scope = "numeral"; this.open_picker(); } });
+    const same = el("button", { type: "button", className: "btn quiet", id: "nudge-font-ring", textContent: "As the ring", onclick: () => {
+      const all = { ...this.ring().nudge }, n = { ...(all[this.nudge_at] || {}) }; delete n.family; delete n.ps; delete n.axes;
+      if (Object.keys(n).length) all[this.nudge_at] = n; else delete all[this.nudge_at];
+      this.set_value("ring", "nudge", all);
+    } });
+    const colour = this.colour_pill("nudge-c", "This numeral's colour");
+    const colour_of = () => ({ alpha: true, read: () => G.sector_colour(this.ring(), +this.nudge_at), label: () => `${this.ring().name || "Numerals"} · ${pick.selectedOptions[0]?.textContent.trim() || ""}`,
+      write: (v) => this.set_value("ring", "cs", { ...(this.ring().cs || {}), [this.nudge_at]: v }) });
+    colour.onclick = () => this.pop_open(colour_of(), colour);
+    const font_row = el("div", { className: "row" }, el("label", { htmlFor: "nudge-font", textContent: "Font" }), el("span", { className: "btnline" }, font, same));
+    const colour_row = el("div", { className: "row col" }, el("label", { htmlFor: "nudge-c", textContent: "Colour" }), colour);
+    wrap.append(el("div", { className: "row pop" }, word, pick_box.box), font_row, colour_row,
       el("div", { className: "row" }, el("span"), Object.assign(reset, { onclick: () => {
-        const all = { ...this.ring().nudge };
-        delete all[this.nudge_at];
-        this.set_value("ring", "nudge", all);
+        const all = { ...this.ring().nudge }, cs = { ...(this.ring().cs || {}) };
+        delete all[this.nudge_at]; delete cs[this.nudge_at];      // its nudges, its font and its colour
+        this.set_value("ring", "nudge", all); this.set_value("ring", "cs", cs);
       } })));
     out.refresh = (R) => {
       const text = G.has_text(R);
@@ -4535,6 +4550,11 @@ class DialTool {
       }
       pick.value = this.nudge_at;
       pick_box.sync();
+      const n = R.nudge[String(this.nudge_at)] || {};
+      font_row.hidden = colour_row.hidden = !text;      // a mark's own colour and shape come with #349
+      font.textContent = n.family || R.family || "Font"; font.title = n.ps ? "This numeral's own font" : "As the ring: press to choose one for this numeral alone";
+      same.hidden = !n.ps;
+      colour.show(G.sector_colour(R, +this.nudge_at));
     };
     this.nudge_sync = () => { const R = this.ring(); if (R && !wrap.hidden) out.refresh(R); };      // the list follows a change of what is drawn, once the dial is rebuilt
   }
@@ -4594,7 +4614,10 @@ class DialTool {
   }
 
   /** whose font the font sheet and the style buttons set: the selected ring's, or the selected window's. */
-  font_holder() { return this.font_scope === "window" ? this.window() : this.ring(); }
+  font_holder() {
+    if (this.font_scope === "numeral") { const R = this.ring(), k = String(this.nudge_at || 0); return (R.nudge[k] ||= {}); }      // one numeral's own font (#513), kept with its nudges
+    return this.font_scope === "window" ? this.window() : this.ring();
+  }
   /** …and the type that holder draws with: a window without a font of its own draws with the top numerals ring's. */
   font_shown() { const T = this.font_holder(); return this.font_scope === "window" ? G.window_type(this.S, T) : T; }
 
@@ -5709,7 +5732,7 @@ class DialTool {
 
   async load_fonts_in_use() {
     let loaded = false;
-    for (const ring of [...this.S.rings, ...G.windows_of(this.S).filter((w) => w.ps)]) {      // rings, and windows with a font of their own
+    for (const ring of [...this.S.rings, ...G.windows_of(this.S).filter((w) => w.ps), ...this.S.rings.flatMap((r) => Object.values(r.nudge || {}).filter((n) => n.ps))]) {      // rings, windows and single numerals with a font of their own
       const entry = this.catalog.get(ring.ps);
       try {
         if (entry && !G.has_font(ring.ps)) loaded = (await this.load_font(entry)) || loaded;
@@ -5858,7 +5881,7 @@ class DialTool {
     if (!entry.start && G.has_font(entry.ps)) entry.start = this.start_of(entry.ps);
     const R = this.font_holder();
     R.family = entry.family; R.ps = entry.ps; R.axes = { ...(entry.start || {}) };
-    if (this.font_scope !== "window") R.features = {};       // a window's font is plain: no features of its own
+    if (this.font_scope === "ring") R.features = {};       // a window's font, and one numeral's, are plain: no features of their own
     this.static_dirty = true;
     this.sync_rows();
     this.render();

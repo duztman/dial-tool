@@ -8970,7 +8970,12 @@ function tangent_shift(ring, mode, a, label) {
   const reach = mode === "upright" ? abs(sin(t)) * (b[2] - b[0]) / 2 + abs(cos(t)) * half : half;
   return side * reach;
 }
-function numeral_at(ring, i2, a0, label) {
+var own_type = (ring, i2) => {
+  const n = ring.nudge && ring.nudge[String(i2)] || {};
+  return n.ps ? { ...ring, family: n.family, ps: n.ps, axes: n.axes || {} } : ring;
+};
+function numeral_at(ring0, i2, a0, label) {
+  const ring = own_type(ring0, i2);
   const [mode, r0, a, size, rot] = numeral_setup(ring, i2, a0);
   const r = mode === "on path" ? r0 + band_side(ring) * (text_band(ring)[1] - text_band(ring)[0]) / 2 : r0 + tangent_shift(ring, mode, a, label);
   if (mode === "on path") {
@@ -9110,7 +9115,7 @@ function build_rings(S, cut = null) {
     };
     const key = "final" + key_of(ring) + JSON.stringify([keep, sources.map((d2) => [key_of(d2.ring), d2.keep]), cut ? date_key(S) : null]);
     const d = { ring, kind, keep, taken, shape: shape3, at, parts, path: memo(key, final), ghost: !ring.on };
-    if (kind === "band" && at.some((i2) => ring.cs && ring.cs[String(i2)])) {
+    if ((kind === "band" || kind === "numerals" || kind === "text") && at.some((i2) => ring.cs && ring.cs[String(i2)])) {
       const groups = /* @__PURE__ */ new Map();
       at.forEach((i2, j) => {
         const c = JSON.stringify(sector_colour(ring, i2));
@@ -20424,12 +20429,39 @@ var DialTool = class _DialTool {
     };
     const word = el("label", { htmlFor: "nudge-pick", textContent: "Numeral" }), reset = el("button", { type: "button", className: "btn", id: "nudge-reset", textContent: "Reset this numeral" });
     const pick_box = chevron_box(pick2);
+    const font = el("button", { type: "button", className: "btn", id: "nudge-font", onclick: () => {
+      this.font_scope = "numeral";
+      this.open_picker();
+    } });
+    const same = el("button", { type: "button", className: "btn quiet", id: "nudge-font-ring", textContent: "As the ring", onclick: () => {
+      const all = { ...this.ring().nudge }, n = { ...all[this.nudge_at] || {} };
+      delete n.family;
+      delete n.ps;
+      delete n.axes;
+      if (Object.keys(n).length) all[this.nudge_at] = n;
+      else delete all[this.nudge_at];
+      this.set_value("ring", "nudge", all);
+    } });
+    const colour = this.colour_pill("nudge-c", "This numeral's colour");
+    const colour_of = () => ({
+      alpha: true,
+      read: () => sector_colour(this.ring(), +this.nudge_at),
+      label: () => `${this.ring().name || "Numerals"} \xB7 ${pick2.selectedOptions[0]?.textContent.trim() || ""}`,
+      write: (v) => this.set_value("ring", "cs", { ...this.ring().cs || {}, [this.nudge_at]: v })
+    });
+    colour.onclick = () => this.pop_open(colour_of(), colour);
+    const font_row = el("div", { className: "row" }, el("label", { htmlFor: "nudge-font", textContent: "Font" }), el("span", { className: "btnline" }, font, same));
+    const colour_row = el("div", { className: "row col" }, el("label", { htmlFor: "nudge-c", textContent: "Colour" }), colour);
     wrap.append(
       el("div", { className: "row pop" }, word, pick_box.box),
+      font_row,
+      colour_row,
       el("div", { className: "row" }, el("span"), Object.assign(reset, { onclick: () => {
-        const all = { ...this.ring().nudge };
+        const all = { ...this.ring().nudge }, cs = { ...this.ring().cs || {} };
         delete all[this.nudge_at];
+        delete cs[this.nudge_at];
         this.set_value("ring", "nudge", all);
+        this.set_value("ring", "cs", cs);
       } }))
     );
     out.refresh = (R) => {
@@ -20452,6 +20484,12 @@ var DialTool = class _DialTool {
       }
       pick2.value = this.nudge_at;
       pick_box.sync();
+      const n = R.nudge[String(this.nudge_at)] || {};
+      font_row.hidden = colour_row.hidden = !text;
+      font.textContent = n.family || R.family || "Font";
+      font.title = n.ps ? "This numeral's own font" : "As the ring: press to choose one for this numeral alone";
+      same.hidden = !n.ps;
+      colour.show(sector_colour(R, +this.nudge_at));
     };
     this.nudge_sync = () => {
       const R = this.ring();
@@ -20508,6 +20546,10 @@ var DialTool = class _DialTool {
   }
   /** whose font the font sheet and the style buttons set: the selected ring's, or the selected window's. */
   font_holder() {
+    if (this.font_scope === "numeral") {
+      const R = this.ring(), k = String(this.nudge_at || 0);
+      return R.nudge[k] ||= {};
+    }
     return this.font_scope === "window" ? this.window() : this.ring();
   }
   /** …and the type that holder draws with: a window without a font of its own draws with the top numerals ring's. */
@@ -21864,7 +21906,7 @@ var DialTool = class _DialTool {
   }
   async load_fonts_in_use() {
     let loaded = false;
-    for (const ring of [...this.S.rings, ...windows_of(this.S).filter((w) => w.ps)]) {
+    for (const ring of [...this.S.rings, ...windows_of(this.S).filter((w) => w.ps), ...this.S.rings.flatMap((r) => Object.values(r.nudge || {}).filter((n) => n.ps))]) {
       const entry = this.catalog.get(ring.ps);
       try {
         if (entry && !has_font(ring.ps)) loaded = await this.load_font(entry) || loaded;
@@ -22035,7 +22077,7 @@ var DialTool = class _DialTool {
     R.family = entry.family;
     R.ps = entry.ps;
     R.axes = { ...entry.start || {} };
-    if (this.font_scope !== "window") R.features = {};
+    if (this.font_scope === "ring") R.features = {};
     this.static_dirty = true;
     this.sync_rows();
     this.render();
