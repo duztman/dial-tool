@@ -315,7 +315,8 @@ const INK_TRAPS = (() => {
   }
   return out.join("");
 })();
-const EYE_RAYS = 16, EYE_RAY = 0.75;      // 16 at 0.75: Okay's 4.39 drawing, 23 Oct 2026 ("replace regular preview with this version"); 24 at 0.625 before      // the eye switch's rays: how many, how thick (Okay, 15 Oct 2026, 03:41; 0.5 until 16 Oct: "thicker lines, just barely visibly on 100%, not like +1px")
+const EYE_RAYS = 16, EYE_RAY = 0.75, RAY_REACH = 240;      // RAY_REACH: how far the rays run, faded to nothing there (behind the words, 24 Oct 2026)
+      // 16 at 0.75: Okay's 4.39 drawing, 23 Oct 2026 ("replace regular preview with this version"); 24 at 0.625 before      // the eye switch's rays: how many, how thick (Okay, 15 Oct 2026, 03:41; 0.5 until 16 Oct: "thicker lines, just barely visibly on 100%, not like +1px")
 // the hands' bevels (#354, 4.77; notes 2: "a height simply shaded in a few tones of the hand's colour by the shadows'
 // light … not 3d like all facets shifted"): each hand split along its length, the side the light falls on lighter, the
 // other darker, by as much as the light comes from the side; preview only (R5, R26)
@@ -404,8 +405,11 @@ const TOOL_ICONS = {
   eyebox: (() => {
     const cx = 15.25, cy = 15, lift = 5.25 * 1.2, n = EYE_RAYS;
     const lid = `M6.25 ${cy}C12.25 ${cy - lift} 18.25 ${cy - lift} 24.25 ${cy}C18.25 ${cy + lift} 12.25 ${cy + lift} 6.25 ${cy}Z`;
-    const rays = Array.from({ length: n }, (_, k) => { const a = 2 * Math.PI * k / n; return `M${cx} ${cy}L${(cx + 25 * Math.sin(a)).toFixed(2)} ${(cy - 25 * Math.cos(a)).toFixed(2)}`; }).join("");
-    return `<mask id="eye-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask>`
+    // the rays run on past the box, fading with distance, so that opened they reach out behind ACTIVATE SHOWCASE (Okay,
+    // 24 Oct 2026: "Extend behind text at all times"); closed, the box cuts them where it always has
+    const rays = Array.from({ length: n }, (_, k) => { const a = 2 * Math.PI * k / n; return `M${cx} ${cy}L${(cx + RAY_REACH * Math.sin(a)).toFixed(2)} ${(cy - RAY_REACH * Math.cos(a)).toFixed(2)}`; }).join("");
+    return `<radialGradient id="rays-fade" gradientUnits="userSpaceOnUse" cx="${cx}" cy="${cy}" r="${RAY_REACH}"><stop offset="${(15 / RAY_REACH).toFixed(3)}" stop-color="white"/><stop offset="${(30 / RAY_REACH).toFixed(3)}" stop-color="#555"/><stop offset="1" stop-color="black"/></radialGradient>`
+      + `<mask id="eye-cut" maskUnits="userSpaceOnUse" x="${cx - RAY_REACH}" y="${cy - RAY_REACH}" width="${2 * RAY_REACH}" height="${2 * RAY_REACH}"><rect x="${cx - RAY_REACH}" y="${cy - RAY_REACH}" width="${2 * RAY_REACH}" height="${2 * RAY_REACH}" fill="url(#rays-fade)" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask>`
       + `<g mask="url(#eye-cut)"><path class="rays" d="${rays}" stroke-width="${EYE_RAY}" stroke-linecap="butt"/></g><circle cx="${cx}" cy="${cy}" r="2.75" fill="currentColor" stroke="none"/>`;      // the mask stays still while the rays turn (.rays, 6-preview.css)
   })(),
   // the show-mode switch, left of the eye (Okay, 15 Oct 2026, 04:26: "just the iris inside same box"): the eye's iris
@@ -2025,7 +2029,7 @@ class DialTool {
     this.iris_box = el("div", { className: "onview irisbox" }, this.iris_go, iris);
     this.iris_button = iris;
     this.iris_open(false);
-    this.eye_box = el("div", { className: "eyes" }, this.iris_box, eye);
+    this.eye_box = el("div", { className: "eyes" }, eye, this.iris_box);      // bottom to top: show mode, the dial alone, (the Tiny Preview over them) — Okay, 24 Oct 2026: "Lowest is activate middle normal, top mini"
     return el("div", { className: "backdrops" }, box, pop);
   }
 
@@ -2111,8 +2115,10 @@ class DialTool {
       win.hidden = !on; button.hidden = on;
       if (!on) { button.focus({ preventScroll: true }); return; }
       this.tiny_draw(true);
-      if (!this.tiny.placed) {                     // until it is dragged: in place of its button, their right edges together
-        win.style.left = `${Math.max(b.right - win.offsetWidth, 0)}px`; win.style.top = `${b.top}px`;
+      if (!this.tiny.placed) {                     // until it is dragged: in place of its button, their right edges together, kept inside the canvas's padding (Okay, 24 Oct 2026: "Mini appears within canvas inside normal view padding")
+        const m = this.main.getBoundingClientRect(), pad = parseFloat(getComputedStyle(this.main).getPropertyValue("--canvas-inset")) || 0;
+        win.style.left = `${clamp(b.right - win.offsetWidth, m.left + pad, m.right - pad - win.offsetWidth)}px`;
+        win.style.top = `${clamp(b.top, m.top + pad, m.bottom - pad - win.offsetHeight)}px`;
       }
     };
     button.onclick = () => show(true);

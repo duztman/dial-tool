@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.92.8 (web version) · 24 Oct 2026
+
+Okay, 18:43:
+- **Show mode's rays shine instead of spin**: a 45° part turn over 1.1 s, eased ("too fast to read as something shining briefly. Faintly. An eased less rotation motion"); they run on past the box behind ACTIVATE SHOWCASE, whole in the box, a third just past it, fading to nothing ("Extend behind text at all times"); the words stand over them.
+- **The stack, bottom to top: show mode, the dial alone, the Tiny Preview** ("Lowest is activate middle normal, top mini"). The Tiny Preview opens inside the canvas's padding ("Mini appears within canvas inside normal view padding").
+- **The controller's darks are true black**: its discs and the knob ("Controller darks actual black now").
+- Checked: the window test (the stack's order, the eye over show mode's switch, the discs' black), the icon check.
+
 ## beta 4.92.7 (web version) · 24 Oct 2026
 
 - **The controller's value rides over the knob** (Okay, 18:31: "Shrink to the size of the numbers, make it follow the slider button all the way in its lane. Grey bg persists, name goes back below, normal size. Buttons a bit more smaller %15"): its grey pill as wide as its figures, placed by the slider's own place (`--p`): its left at p of the lane less p of its own width, so it meets each end as the knob does — no script. The name back between − and +, at 15 semibold; − and + at 85 % (29.45 px), the signs redrawn at that size (R33); corners still concentric (27.1). A field that can't size to its text (older Safari) keeps five figures' room.

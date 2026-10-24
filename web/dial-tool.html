@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.92.7 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.92.8 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -105,6 +105,7 @@
     --show-time: 1000ms;                           /* into show mode and out (swoop() in app.js): each panel's slide; the second starts when the first is halfway, the drawing moves over one and a half of it (Okay, 23 Oct 2026: "smoother, slower") */
     --watch-fade: 250ms;                           /* the watch fading in once the panels have moved into show mode, out before they move back */
     --view-time: 700ms; --view-ease: cubic-bezier(0.65, 0, 0.35, 1);      /* slow out, slow in */
+    --rays-time: 1100ms; --rays-turn: 45deg;      /* show mode's rays: a slow, eased part turn, a brief faint shine (Okay, 24 Oct 2026: "too fast to read as something shining briefly. Faintly. An eased less rotation motion") */
     --iris-time: 250ms;                            /* the iris switch's words sliding out; Now shrinking into its undo sign */
     --iris-words: 160px;                           /* room enough for ACTIVATE SHOWCASE */
     /* a phone (Okay, 15 Oct 2026, 06:20–06:24) */
@@ -152,7 +153,7 @@
     --num-pop-s: 0.7; --num-pop-small: calc(var(--num-pop-step) * var(--num-pop-s));      /* the discs and the value's pill at 70 %, the slider's pill kept (Okay, 24 Oct 2026: "plus minus and number line 70% of now … Keep slider big") */
     --num-pop-disc-k: 0.85; --num-pop-disc-d: calc(var(--num-pop-small) * var(--num-pop-disc-k));      /* − and + a further 15 % smaller (Okay, 24 Oct 2026, 18:31: "Buttons a bit more smaller %15") */
     --num-pop-round: calc(var(--num-pop-disc-d) / 2 + var(--num-pop-pad));      /* concentric: the corners are the discs' round plus the padding round them (his 17.01 in controller 2.svg is that sum) */
-    --num-pop-ground: var(--grey); --num-pop-value: var(--rule); --num-pop-disc: #3F3F3E; --num-pop-well: var(--rule);      /* his #585857 square, #B1B1B1 value pill and track, #3F3F3E discs and knob — on the rule's tones where they are near */
+    --num-pop-ground: var(--grey); --num-pop-value: var(--rule); --num-pop-disc: var(--black); --num-pop-well: var(--rule);      /* his #585857 square, #B1B1B1 value pill and track; the discs and knob true black (Okay, 24 Oct 2026: "Controller darks actual black now") */
     --num-pop-hover: color-mix(in srgb, var(--num-pop-disc) 85%, var(--white));
     --num-pop-thumb: calc(var(--num-pop-step) - 2 * var(--u4) * var(--num-pop-k)); --num-pop-eye: calc(6px * var(--num-pop-k)); --num-pop-sign: calc(44px * var(--num-pop-k));      /* the knob's white eye, a radius: his 2.13 */
     --num-pop-fade: 120ms; --num-pop-linger: 1200ms;      /* it comes at once; after its last use it fades away, quickish (Okay, 17 Oct 2026: "comes lightning fast, fade away quickish after use") */
@@ -1620,8 +1621,10 @@
   .iriskey svg { display: block; margin: 0 auto; }
   :is(.irisbox, .eyebox) .x { display: none; }      /* the eye's old way-out X: the dial alone wears the eye now (24 Oct 2026) */
   /* the rays turn one whole turn while ACTIVATE SHOWCASE unfolds, and back as it folds (Okay, 24 Oct 2026: "One rotation of 360 deg. Of the rays around iris for the activate showcase button first label reveal"; "Label out and back") */
-  .irisbox .rays { transform-box: view-box; transform-origin: 15.25px 15px; transition: rotate var(--iris-time) var(--view-ease); }
-  .irisbox[aria-expanded="true"] .rays { rotate: 360deg; }
+  .irisbox .rays { transform-box: view-box; transform-origin: 15.25px 15px; transition: rotate var(--rays-time) var(--view-ease); }
+  .irisbox[aria-expanded="true"] .rays { rotate: var(--rays-turn); }
+  .iriskey svg { overflow: visible; }      /* the rays reach out behind the words, faded (the drawing's mask); the box's round edge still cuts them */
+  .irisgo { position: relative; z-index: 1; }      /* the words over the rays */
   @media (prefers-reduced-motion: reduce) { .irisbox .rays { transition: none; } }
   .irisgo { max-width: 0; height: 100%; padding: 0; overflow: hidden; white-space: nowrap; font-family: var(--mono); font-size: var(--t-s); text-transform: uppercase; letter-spacing: var(--track-100);
     transition: max-width var(--iris-time) var(--view-ease), padding var(--iris-time) var(--view-ease); }
@@ -7177,7 +7180,7 @@ function window_text(kind, mo, lang = "en", form = 0) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.92.7";
+var VERSION = "beta 4.92.8";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -15292,6 +15295,7 @@ var INK_TRAPS = (() => {
 })();
 var EYE_RAYS = 16;
 var EYE_RAY = 0.75;
+var RAY_REACH = 240;
 var BEVEL = { light: 0.22, dark: 0.26 };
 var HOLE_LIVE_MS = 1200;
 var WORDS_MS = 3e3;
@@ -15381,9 +15385,9 @@ var TOOL_ICONS = {
     const lid = `M6.25 ${cy}C12.25 ${cy - lift} 18.25 ${cy - lift} 24.25 ${cy}C18.25 ${cy + lift} 12.25 ${cy + lift} 6.25 ${cy}Z`;
     const rays = Array.from({ length: n }, (_, k) => {
       const a = 2 * Math.PI * k / n;
-      return `M${cx} ${cy}L${(cx + 25 * Math.sin(a)).toFixed(2)} ${(cy - 25 * Math.cos(a)).toFixed(2)}`;
+      return `M${cx} ${cy}L${(cx + RAY_REACH * Math.sin(a)).toFixed(2)} ${(cy - RAY_REACH * Math.cos(a)).toFixed(2)}`;
     }).join("");
-    return `<mask id="eye-cut" maskUnits="userSpaceOnUse" x="-2" y="-2" width="34" height="34"><rect x="-2" y="-2" width="34" height="34" fill="white" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask><g mask="url(#eye-cut)"><path class="rays" d="${rays}" stroke-width="${EYE_RAY}" stroke-linecap="butt"/></g><circle cx="${cx}" cy="${cy}" r="2.75" fill="currentColor" stroke="none"/>`;
+    return `<radialGradient id="rays-fade" gradientUnits="userSpaceOnUse" cx="${cx}" cy="${cy}" r="${RAY_REACH}"><stop offset="${(15 / RAY_REACH).toFixed(3)}" stop-color="white"/><stop offset="${(30 / RAY_REACH).toFixed(3)}" stop-color="#555"/><stop offset="1" stop-color="black"/></radialGradient><mask id="eye-cut" maskUnits="userSpaceOnUse" x="${cx - RAY_REACH}" y="${cy - RAY_REACH}" width="${2 * RAY_REACH}" height="${2 * RAY_REACH}"><rect x="${cx - RAY_REACH}" y="${cy - RAY_REACH}" width="${2 * RAY_REACH}" height="${2 * RAY_REACH}" fill="url(#rays-fade)" stroke="none"/><path d="${lid}" fill="black" stroke="black" ${sw(CURVE)}/></mask><g mask="url(#eye-cut)"><path class="rays" d="${rays}" stroke-width="${EYE_RAY}" stroke-linecap="butt"/></g><circle cx="${cx}" cy="${cy}" r="2.75" fill="currentColor" stroke="none"/>`;
   })(),
   // the show-mode switch, left of the eye (Okay, 15 Oct 2026, 04:26: "just the iris inside same box"): the eye's iris
   // alone, where it stands in the eye. In show mode it is the way out: two of the eye's rays cross on it, an X run
@@ -17281,7 +17285,7 @@ var DialTool = class _DialTool {
     this.iris_box = el("div", { className: "onview irisbox" }, this.iris_go, iris);
     this.iris_button = iris;
     this.iris_open(false);
-    this.eye_box = el("div", { className: "eyes" }, this.iris_box, eye2);
+    this.eye_box = el("div", { className: "eyes" }, eye2, this.iris_box);
     return el("div", { className: "backdrops" }, box3, pop2);
   }
   /** show mode's Backdrop (the Show Case's background popup, 21 Oct 2026; Okay, 23 Oct 2026: "Backdrop did not get the
@@ -17417,8 +17421,9 @@ var DialTool = class _DialTool {
       }
       this.tiny_draw(true);
       if (!this.tiny.placed) {
-        win.style.left = `${Math.max(b.right - win.offsetWidth, 0)}px`;
-        win.style.top = `${b.top}px`;
+        const m = this.main.getBoundingClientRect(), pad = parseFloat(getComputedStyle(this.main).getPropertyValue("--canvas-inset")) || 0;
+        win.style.left = `${clamp(b.right - win.offsetWidth, m.left + pad, m.right - pad - win.offsetWidth)}px`;
+        win.style.top = `${clamp(b.top, m.top + pad, m.bottom - pad - win.offsetHeight)}px`;
       }
     };
     button.onclick = () => show(true);
