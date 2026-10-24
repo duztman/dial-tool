@@ -139,9 +139,12 @@
   .numground.fading { opacity: 0; transition: opacity var(--num-pop-fade) ease-out; }
   .numpop.fading { opacity: 0; transition: opacity var(--num-pop-fade) ease-out; }
   /* the value: its figures centred in the grey pill, bold, in the square's grey */
-  .numpop .popvalue { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--num-pop-gap); height: var(--num-pop-small); padding: 0 calc(var(--num-pop-small) / 2); border-radius: calc(var(--num-pop-small) / 2); background: var(--num-pop-value); }
-  .numpop .popword { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--num-pop-ground); font: 400 calc(var(--t-num-pop) * var(--num-pop-s))/1 var(--sans); user-select: none; }      /* the name, left in the top pill, the value's size, regular */
-  .numpop .popvalue input[type="text"] { width: 7ch; height: auto; padding: 0; border: 0; background: none; font: 700 calc(var(--t-num-pop) * var(--num-pop-s))/1 var(--sans); letter-spacing: 0.02em; text-align: right; color: var(--num-pop-ground); }
+  /* the value's pill: as wide as its figures, riding over the knob inside its lane — its left at p of the lane less p of
+     its own width, so it meets each end of the lane as the knob does (--p, the slider's place, 0–1, set by filled()) */
+  .numpop .popvalue { display: grid; align-items: center; width: max-content; height: var(--num-pop-small); margin-left: calc(var(--p, 0) * 100%); translate: calc(var(--p, 0) * -100%) 0; padding: 0 calc(var(--num-pop-small) / 2); border-radius: calc(var(--num-pop-small) / 2); background: var(--num-pop-value); }
+  .numpop .popword { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; color: var(--white); font: 600 var(--t-l)/1 var(--sans); pointer-events: none; user-select: none; }      /* the name between − and +, not pressable */
+  .numpop .popvalue input[type="text"] { field-sizing: content; width: auto; min-width: 2ch; height: auto; padding: 0; border: 0; background: none; font: 700 calc(var(--t-num-pop) * var(--num-pop-s))/1 var(--sans); letter-spacing: 0.02em; text-align: center; color: var(--num-pop-ground); }
+  @supports not (field-sizing: content) { .numpop .popvalue input[type="text"] { width: 5ch; } }      /* where a field can't size to its text (older Safari): five figures' room */
   .numpop .popvalue input[type="text"]:focus { outline: 0; }      /* the value, chosen to be typed over, says it */
   .numpop .popvalue input[type="text"]::selection { background: var(--white); color: var(--num-pop-ground); }      /* chosen to be typed over: white behind the figures */
   .numpop .row { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--num-pop-gap); min-height: 0;
@@ -160,12 +163,12 @@
      stuff get a lower middle button between minus and plus on controller"): a dark pill as the discs are, LINK in the pixel font at 12; linked, white with LINKED in dark */
   .numpop .row > input[type="range"] { grid-row: 1; }
   .numpop .row .steps { grid-row: 2; grid-column: 1; }      /* placed outright, so the pill can lie over its middle (one left to find its own place would open a column beside it) */
-  .numpop .row.haslink > .linkpill { position: static; translate: none; grid-row: 2; justify-self: center; align-self: center; z-index: 1; width: var(--num-pop-small); height: var(--num-pop-small); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); font-size: var(--t-pixel-legend); line-height: 1.2; white-space: pre-line; text-align: center; }      /* a disc as − and + are (4.86, Okay: "Link buttons round like plus"); linked, LINK over +ED */
+  .numpop .row.haslink > .linkpill { position: static; translate: none; grid-row: 2; justify-self: center; align-self: center; z-index: 1; width: var(--num-pop-disc-d); height: var(--num-pop-disc-d); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); font-size: var(--t-pixel-legend); line-height: 1.2; white-space: pre-line; text-align: center; }      /* a disc as − and + are (4.86, Okay: "Link buttons round like plus"); linked, LINK over +ED */
   .numpop .row.haslink > .linkpill:hover { background: var(--num-pop-hover); }
   .numpop .row.haslink > .linkpill.on { background: var(--white); color: var(--num-pop-disc); }
-  .numpop .row .steps > .step { flex: none; display: grid; place-items: center; width: var(--num-pop-small); height: var(--num-pop-small); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); }
+  .numpop .row .steps > .step { flex: none; display: grid; place-items: center; width: var(--num-pop-disc-d); height: var(--num-pop-disc-d); padding: 0; border: 0; border-radius: 50%; background: var(--num-pop-disc); color: var(--white); }
   .numpop .row .steps > .step:hover { background: var(--num-pop-hover); }
-  .numpop .row .steps > .step > svg { width: calc(var(--num-pop-sign) * var(--num-pop-s)); height: calc(var(--num-pop-sign) * var(--num-pop-s)); }      /* the − and +, as the controller is scaled */
+  .numpop .row .steps > .step > svg { width: calc(var(--num-pop-sign) * var(--num-pop-s) * var(--num-pop-disc-k)); height: calc(var(--num-pop-sign) * var(--num-pop-s) * var(--num-pop-disc-k)); }      /* the − and +, as the controller is scaled */
   /* the Positions preview (#251, 4.50.1): the hand's detail box, round — no frame, the circle as large as the box allows
      with a unit round it; a mark at every position, used in ink, skipped faint, the first a dot */
   .detail.round { border: 0; }

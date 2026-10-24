@@ -115,7 +115,8 @@
     --num-pop-pad: calc(var(--u6) * var(--num-pop-k)); --num-pop-gap: calc(var(--u3) * var(--num-pop-k));      /* controller 2.svg (Okay, 18 Oct 2026), at a disc of 66: its 5.67 edge is 16.5, its 2.83 gaps 8.2 */
     --num-pop: calc(var(--num-pop-inner) + 2 * var(--num-pop-pad));
     --num-pop-s: 0.7; --num-pop-small: calc(var(--num-pop-step) * var(--num-pop-s));      /* the discs and the value's pill at 70 %, the slider's pill kept (Okay, 24 Oct 2026: "plus minus and number line 70% of now … Keep slider big") */
-    --num-pop-round: calc(var(--num-pop-small) / 2 + var(--num-pop-pad));      /* concentric: the corners are the discs' round plus the padding round them (his 17.01 in controller 2.svg is that sum) */
+    --num-pop-disc-k: 0.85; --num-pop-disc-d: calc(var(--num-pop-small) * var(--num-pop-disc-k));      /* − and + a further 15 % smaller (Okay, 24 Oct 2026, 18:31: "Buttons a bit more smaller %15") */
+    --num-pop-round: calc(var(--num-pop-disc-d) / 2 + var(--num-pop-pad));      /* concentric: the corners are the discs' round plus the padding round them (his 17.01 in controller 2.svg is that sum) */
     --num-pop-ground: var(--grey); --num-pop-value: var(--rule); --num-pop-disc: #3F3F3E; --num-pop-well: var(--rule);      /* his #585857 square, #B1B1B1 value pill and track, #3F3F3E discs and knob — on the rule's tones where they are near */
     --num-pop-hover: color-mix(in srgb, var(--num-pop-disc) 85%, var(--white));
     --num-pop-thumb: calc(var(--num-pop-step) - 2 * var(--u4) * var(--num-pop-k)); --num-pop-eye: calc(6px * var(--num-pop-k)); --num-pop-sign: calc(44px * var(--num-pop-k));      /* the knob's white eye, a radius: his 2.13 */

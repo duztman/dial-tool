@@ -125,9 +125,9 @@ const SIGNS = {
 // the sign 20 across, its line 3 — twice LINE, a pictured width (icons/check.mjs) — centred on whole points, so a 3
 // line covers whole screen dots
 const BIG = {                                      // the controller's − and + (Okay's second drawing, 18 Oct 2026, controller 2.svg): square ends, white on the discs; at the controller's three quarters, 6 thick and 30 long on 33, drawn at the size shown (R33)
-  // at 70 % of that since 24 Oct 2026 (Okay: "plus minus and number line 70% of now"): 4.2 thick, 21 long, on 23.1
-  plus: icon(`<path d="M11.55 1.05V22.05M1.05 11.55H22.05" ${sw(4.2)} stroke-linecap="butt"/>`, 23.1),
-  minus: icon(`<path d="M1.05 11.55H22.05" ${sw(4.2)} stroke-linecap="butt"/>`, 23.1),
+  // at 70 % × 85 % of that (Okay, 24 Oct 2026: "plus minus … 70% of now"; 18:31: "a bit more smaller %15"): 3.57 thick, 17.85 long, on 19.635
+  plus: icon(`<path d="M9.8175 0.8925V18.7425M0.8925 9.8175H18.7425" ${sw(3.57)} stroke-linecap="butt"/>`, 19.635),
+  minus: icon(`<path d="M0.8925 9.8175H18.7425" ${sw(3.57)} stroke-linecap="butt"/>`, 19.635),
 };
 // the − and + of every number box (4.64; Okay, 18 Oct 2026, 21:20: "Signs grow inside the box as much as these new thick
 // bordered ones"): 12 across on 16, LINE, round ends — half the box's cell.
@@ -4031,8 +4031,12 @@ class DialTool {
     if (name) name.hidden = true;
     // its name, untouchable, in the gap between − and + (Okay, 24 Oct 2026, #514: "The gap between plus and minus becomes
     // a good place to just untouchably write the name of the thing being edited"); a linked pair's LINK disc stands there instead
-    // its name in the top pill, at the left, the value at the right (Okay, 24 Oct 2026: "On top pill, left the name right the value")
-    const head = el("div", { className: "pophead" }, ...(field ? [el("div", { className: "popvalue" }, el("span", { className: "popword", ariaHidden: "true", textContent: row.text || "" }), field)] : []));
+    // the value in a grey pill as small as its figures, riding over the knob (Okay, 24 Oct 2026, 18:31: "Shrink to the size of
+    // the numbers, make it follow the slider button all the way in its lane"); the name, untouchable, between − and +
+    // ("name goes back below, normal size"); a linked pair's LINK disc takes that place
+    const steps = r.el.querySelector(".steps");
+    if (steps && row.text && !r.el.querySelector(".linkpill")) steps.lastElementChild.before(el("span", { className: "popword", ariaHidden: "true", textContent: row.text }));
+    const head = el("div", { className: "pophead" }, ...(field ? [el("div", { className: "popvalue" }, field)] : []));
     head.hidden = !field;                          // a window's places: no value, so no pill
     const box = el("div", { className: "numpop", id: "value-pop", role: "dialog", ariaLabel: row.text || "" }, head, r.el);
     // as wide as the row's controls — everything right of its name, the slider and the number box — so on a wide

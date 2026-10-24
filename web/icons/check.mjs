@@ -31,7 +31,7 @@ const PICTURED = [
   { host: /^ring-twelve-Style-3$/, widths: [2], why: "a dashed outline: dashes look lighter than a whole line" },
   { host: /^iris-box/, widths: [0.75], why: "show mode's switch: the rays round the iris, thin on purpose (Okay, 15 Oct 2026, 03:41: \"I want to see thin lines\"; 24 Oct 2026: \"Eye with rays is … for activate showcase\")" },
   { host: /^eye-box/, widths: [1], why: "the dial alone's eye: its old way-out X, 1 thick, kept in the drawing and hidden (24 Oct 2026: the eye is the dial alone's)" },
-  { host: /^value-pop-(plus|minus)$/, widths: [4.2], why: "the controller's − and +, 4.2 thick (6 × the 70 % of 24 Oct 2026: \"plus minus and number line 70% of now\"), square ends, white on their discs (controller 2.svg, 18 Oct 2026; round ends from his drawing of 17 Oct, 3 from 16 Oct)" },
+  { host: /^value-pop-(plus|minus)$/, widths: [3.57], why: "the controller's − and +, 3.57 thick (6 × 70 % × 85 %, 24 Oct 2026: \"plus minus and number line 70% of now\"; \"a bit more smaller %15\"), square ends, white on their discs (controller 2.svg, 18 Oct 2026; round ends from his drawing of 17 Oct, 3 from 16 Oct)" },
   { host: /^(Skip where|Knock out): /, widths: [3], why: "Give way's drawing: this ring's ticks, a dial's ticks pictured, thick (Okay, 18 Oct 2026: \"thicker indices\")" },
   { host: /^logo$/, widths: [1, 1.375], why: "Okay's own mark, at his weights: lines 1, ring 1.375 (15 Oct 2026, 03:06: \"a bit thinner\")" },
 ];

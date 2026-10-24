@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.92.7 (web version) · 24 Oct 2026
+
+- **The controller's value rides over the knob** (Okay, 18:31: "Shrink to the size of the numbers, make it follow the slider button all the way in its lane. Grey bg persists, name goes back below, normal size. Buttons a bit more smaller %15"): its grey pill as wide as its figures, placed by the slider's own place (`--p`): its left at p of the lane less p of its own width, so it meets each end as the knob does — no script. The name back between − and +, at 15 semibold; − and + at 85 % (29.45 px), the signs redrawn at that size (R33); corners still concentric (27.1). A field that can't size to its text (older Safari) keeps five figures' room.
+- The font sheet's check allows the bar's 1 px rounding (837 or 838, seen in three runs).
+
 ## beta 4.92.6 (web version) · 24 Oct 2026
 
 Okay's notes of 17:54, settled in question mode:
