@@ -4744,7 +4744,7 @@ class DialTool {
     // preview: in a font box the numerals are followed by letters, A to g (Okay, 13 Oct 2026)
     // …and an ellipsis after the g (Okay, 13 Oct 2026): the font's own, or three full stops where it has none (Routed Gothic)
     const t = G.has_font(f.ps) ? { ...G.RING_BASE, ps: f.ps, axes: f.start || {}, features: {}, tracking: 0, lang: 0 } : null;
-    const text = what === "name" ? f.family : what === "preview" ? "1234567890 Abcdefg" + (t && G.has_chars("…", t) ? "…" : "...") : "1234567890", high = what === "name" ? 16 : 20;
+    const text = what === "name" ? f.family : what === "preview" ? "1234567890 Abcdefg" + (t && G.has_chars("…", t) ? "…" : "...") : "1234567890", high = what === "name" ? 16 : what === "preview" ? 20 : 26;      // the sheet's numerals larger (Okay, 24 Oct 2026, 23:32: "ENLARGE NUMS"; 20 before)
     let s = what === "preview" ? (t ? null : f.sample) : f[what];
     if (!s && t) {
       s = { d: G.text_path(text, t, 1000).svg(0, true), w: Math.round(G.advance(text, t, 1000)) };
@@ -5155,8 +5155,8 @@ class DialTool {
     find.oninput = () => { this.font_sheet_keep(); this.fill_picker(true); };
     const field = el("span", { className: "find" }, find);
     field.insertAdjacentHTML("beforeend", icon(TOOL_ICONS.find));
-    // the filters grow out of the search bar (R35; Okay, 24 Oct 2026: "A tray under the field", "Any of them"): six
-    // pills under the field, in its outline; each pressed adds its fonts, none pressed shows every font
+    // the filters (R35; Okay, 24 Oct 2026: "Any of them"; 23:32, his marks: "One line, full sheet width"): six pills on
+    // one line over the list, as wide as it; each pressed adds its fonts, none pressed shows every font
     const kept = font_sheet_read();
     this.font_filters = new Set(kept.filters || []);
     this.font_tab = kept.tab === 1 && "queryLocalFonts" in window ? 1 : 0;
@@ -5167,7 +5167,7 @@ class DialTool {
       pill.onclick = () => { const on = !this.font_filters.has(kind); if (on) this.font_filters.add(kind); else this.font_filters.delete(kind); pill.setAttribute("aria-pressed", String(on)); this.font_sheet_keep(); this.fill_picker(true); };
       return pill;
     }));
-    const finder = el("span", { className: "findbox" }, field, tray);
+    const finder = el("span", { className: "findbox" }, field);
     this.font_tray = tray;
     // two tabs over the list (R35; Okay, 24 Oct 2026: "Two tabs over the list"): the tool's own fonts · this computer's,
     // the second only where the browser can read them (Chrome, Edge; R16 elsewhere). Installed asks the browser the
@@ -5229,8 +5229,8 @@ class DialTool {
       grounds.forEach((b, i) => { b.classList.toggle("on", (i === 1) === dark); b.setAttribute("aria-checked", String((i === 1) === dark)); });
     };
     this.picker = el("dialog", { className: "picker", id: "font-picker" },
-      el("header", {}, el("h2", { textContent: "Fonts" }), ground, finder),      // the search stands at the sheet's top right
-      el("div", { className: "listbox" }, this.font_tabs, el("div", { className: "listwrap" }, list, rail)),
+      el("header", {}, el("h2", { textContent: "Fonts" }), ground, finder, this.font_tabs, this.font_tray),      // the search at the sheet's top right, the filters' box hanging from it down to the list; the tabs at the left on the list's line
+      el("div", { className: "listbox" }, el("div", { className: "listwrap" }, list, rail)),
       el("div", { className: "adding" },
         paste,
         el("div", { className: "quiet note", id: "picker-note" }),

@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.92.28 (web version) · 24 Oct 2026
+
+- **The Guides list's foot in two tiers** (#527; Okay, 23:32: "Bottom gray area, two tiers. Bottom lighter because bottom row solids don't get bg, they all simply outline. Unless clicked"; marks "GAP VERTICAL", "ADD HR. LINE"): Add with the same 12 px over and under it, its boxes solid; a hairline; under it a lighter tier where Thickness is an outline pill with the chosen number filled ("Box outlined, chosen number filled") and Reset All an outline, filled while pressed. Add's boxes and the lower line share their left and right edges (one grid for both tiers).
+- **The font sheet** (R35, #501): the filters' box hangs from the search bar, as wide as it, down onto the list's top line, a tab of the list beside Dial Tool's fonts · Installed (Okay, 23:48–23:51: "Pills inside a box that's attached to the search bar. Not equal pills. All pills fit word shapes like gloves"; "The tab can shrink and attach to lower window"); each pill as wide as its word. In a narrow window the box runs the sheet's width under the search bar, closed at its foot. The numerals bigger (26 px, was 20: "ENLARGE NUMS"); a row's stickers on one line, fading out at the column's edge ("Bigger numerals, stickers on one line").
+- To confirm: the lower tier's grey (#5F5E5A) is Claude's choice.
+- Checked: links, labels, complications, the window test (new: the foot's two tiers; the filters' box; the numerals' size); both on screenshots, the sheet also at phone width.
+
 ## beta 4.92.27 (web version) · 25 Oct 2026
 
 - **The Guides list's spacing, Okay's marks of 23:21** ("Lines need spacing, close repeating lines need more space"): the white line two units off the last row's rule; the last added line has no rule of its own where it meets the foot; Added's minus a square; the Add line 12 px under the foot's top and 5 px over Thickness ("Top = 12px", "Bottom = 5px", specials); Add and Thickness share one grid, Line · Crosshair · Circle three equal boxes from the Thickness box's left edge to the right edge, the Thickness box from there to the rule, 1 · 2 · 3 spread in it.

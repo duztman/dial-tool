@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.92.27 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.92.28 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -210,7 +210,7 @@
     --shadow-solid: calc(-2 * var(--unit)) calc(2 * var(--unit)) 0 rgba(0, 0, 0, 0.5);      /* the font sheet's: solid, no blur, to the left and down, as far as --shadow reaches (Okay, 24 Oct 2026, 21:39: "font popups shadow looks out of place. make it solid 50% opacity. no fancy, static left plus bottom") */
     --shadow-solid-near: calc(-1 * var(--unit)) var(--unit) 0 rgba(0, 0, 0, 0.5);      /* the same over the font sheet (its legend), half as far */
     --swatch-col: calc(2 * (var(--line-button) + var(--ringline-gap)) + var(--row-end));      /* from a pane's right edge to the right edge of the ring list's colour column: a colour swatch further down stands in that column too */
-    --t-sample: 20px;                              /* a font's numerals in the font list, when the browser sets them */
+    --t-sample: 26px;                              /* a font's numerals in the font list, when the browser sets them (as the outlines, app.js sample(): Okay, 24 Oct 2026, "ENLARGE NUMS") */
     --t-pixel: 8px;                                /* the pixel font's own size: its dots fall on the screen's (R32) */
     --pixel-ink: 0.7;                              /* how much of the pixel font shows: full strength is too dark on black (Okay, 13 Oct 2026) */
     --scrollbar: var(--unit);                      /* a scrollbar drawn by the tool: slim */
@@ -225,7 +225,8 @@
        measures (--margin, --eye, --gap, --col) and sizes of things (heights, widths), which no scale governs. */
 
     /* asked for by Okay */
-    --guide-add-top: 12px; --guide-add-bottom: 5px;      /* the Guides list's Add line: this much over it, this much under it (Okay, 24 Oct 2026, 23:21, his marks: "Top = 12px", "Bottom = 5px") */
+    --guide-add-gap: 12px;                         /* the Guides list's Add line: this much over it and under it, to the line between the foot's two tiers (Okay, 24 Oct 2026, 23:21: "Top = 12px"; 23:32: the same gap under it, "GAP VERTICAL") */
+    --guide-foot-light: #5F5E5A;                   /* the Guides list's lower tier, Thickness · Reset All: lighter than the Add tier, its controls outlines only (Okay, 23:32: "Bottom gray area, two tiers. Bottom lighter") — the value Claude's, to confirm */
     /* the bar's date popup, as measured from Okay's final drawing (20 Oct 2026, 01:05: "all else is pixel perfect. gaps, placements within blocks, block sizes") */
     --datepop-ground: #BFBFBF;                     /* its light ground */
     --datepop-pad: 8px; --datepop-lead: 10px;      /* inside its frame round the boxes · before the weekday */
@@ -1259,7 +1260,7 @@
   /* the list scrolls, and says so: a slim scrollbar of two pills, a light one the whole height, a darker one for how much is under (Okay, 13 Oct 2026) */
   /* the list scrolls, and says so with a scrollbar the tool draws (an iPad shows its own only while it moves): two slim
      pills in the rows' right margin, a light one the whole height, a darker one for the share in view (Okay, 13 Oct 2026) */
-  .listbox { display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 0; }      /* the tabs standing on the list's top line, then the list */
+  .listbox { display: grid; grid-template-rows: minmax(0, 1fr); min-height: 0; }
   .listwrap { position: relative; display: grid; min-height: 0; }
   /* the sheet's two tabs (R35): Dial Tool's fonts · Installed, as the hands' tabs, standing on the list's top line */
   .sheettabs[hidden] { display: none; }
@@ -1284,7 +1285,7 @@
   .fontrow .sample svg { display: block; flex: none; }
   .fontrow .face svg { display: block; flex: 0 1 auto; height: auto; max-width: 100%; }      /* a name too wide for its column is drawn smaller; numerals are cut at their column's edge */
   .fontrow .has .sticker { padding-inline: calc(var(--unit) / 3); }      /* a little tighter in the sheet, so even eight stickers take two lines */
-  .fontrow .has { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: var(--u1); padding: var(--unit) 0; }      /* from the column's left edge, on one line as long as it lets them */
+  .fontrow .has { display: flex; flex-wrap: nowrap; justify-content: flex-start; gap: var(--u1); padding: var(--unit) 0; overflow: hidden; mask-image: linear-gradient(to right, var(--black) calc(100% - var(--u4)), transparent); }      /* from the column's left edge, always one line (Okay, 24 Oct 2026, 23:32: "One line"); what doesn't fit fades out at its edge */
   /* a sticker: one thing a family has, in the pixel font at its own size (R32), on a colour of its kind, round
      corners. */
   .sticker { opacity: var(--pixel-ink);      /* the pixel font a little under full strength, on pale and on black alike (Okay, 13 Oct 2026: "Silkscreen too dark on full black, 70%") */
@@ -1333,24 +1334,34 @@
      preview; a shadow to its left */
   .picker { position: fixed; inset: var(--header) auto calc(var(--bar-height) + var(--line)) calc(var(--margin) + var(--lead) + 2 * (var(--col) + var(--gap))); width: var(--panel); max-width: calc(100vw - 2 * var(--margin)); height: auto; max-height: none; margin: 0; padding: 0; border: var(--hair) solid var(--rule); box-shadow: var(--shadow-solid);      /* a light edge (Okay, 13 Oct 2026: "lighter borders") */
     background: var(--paper); color: var(--ink); }
-  .picker[open] { display: grid; grid-template-rows: auto 1fr auto; gap: var(--u4); padding: var(--u6) var(--margin) var(--margin); }
+  .picker[open] { display: grid; grid-template-rows: auto 1fr auto; gap: 0; padding: var(--u6) var(--margin) var(--margin); }
   .picker:focus { outline: none; }
   .picker::backdrop { background: none; }          /* the dial keeps its true colours while you choose */
-  .picker header { display: flex; align-items: start; justify-content: space-between; gap: var(--gap); }      /* on the search field's line: the title and Light · Dark; the filters' tray hangs under the field */
+  /* the sheet's top: the title, Light · Dark between it and Find (the same room either side), Find at the right. The
+     filters' box hangs from Find, as wide as it, down onto the list's top line — a tab of the list, as Dial Tool's fonts ·
+     Installed are at the left (R35, "growing out of searchbar"; Okay, 24 Oct 2026: "Pills inside a box that's attached to
+     the search bar"; "The tab can shrink and attach to lower window"). One outline: Find open at its foot, the box open
+     at its top and foot, standing on the list's line */
+  .picker header { display: grid; grid-template-columns: max-content minmax(0, 1fr) var(--find); align-items: start; }
+  .picker header > h2 { grid-row: 1; grid-column: 1; }
+  .picker header > .pillswitch { grid-row: 1; grid-column: 2; justify-self: center; }
+  .picker header > .findbox { grid-row: 1; grid-column: 3; }
+  .picker header > .sheettabs { grid-row: 2; grid-column: 1 / 3; align-self: end; }
+  .picker header > .findtray { grid-row: 2; grid-column: 3; }
   /* Find: at the sheet's top right, as wide as the stickers' column under it; a magnifier in it, no words */
-  .picker header > .findbox { display: grid; width: var(--find); }
+  .picker header > .findbox { display: grid; }
   .findbox > .find { position: relative; }
-  .findbox > .find > input { width: 100%; padding-right: var(--control-large); }
+  .findbox > .find > input { width: 100%; padding-right: var(--control-large); border: var(--hair) solid var(--grey); border-bottom: 0; }
   .findbox > .find > input::-webkit-search-cancel-button { -webkit-appearance: none; }
   .findbox > .find > svg { position: absolute; right: var(--u3); top: 50%; translate: 0 -50%; color: var(--grey); pointer-events: none; }
   .picker header h2 { font-size: var(--t-l); }
-  /* the filters (R35): out of the search bar, in its outline continued down, two lines of three pills */
-  .findtray { display: grid; grid-template-columns: repeat(3, auto); justify-content: space-between; gap: var(--u1); padding: var(--u1); border: var(--hair) solid var(--rule); border-top: 0; background: var(--field); }
-  .filterpill { height: calc(var(--control) - 2 * var(--u1)); padding: 0 var(--u1); border: var(--hair) solid var(--rule); border-radius: var(--round-pill); color: var(--grey); font-size: var(--t-xs); white-space: nowrap; }
+  /* the filters (R35): six pills in the box, each as wide as its word (Okay: "Not equal pills. All pills fit word shapes like gloves"), on as few lines as the box allows, one after another as words are */
+  .findtray { display: flex; flex-wrap: wrap; align-content: start; gap: var(--u1); padding: var(--u1); border: var(--hair) solid var(--grey); border-block: 0; background: var(--field); }
+  .filterpill { flex: none; height: calc(var(--control) - 2 * var(--u1)); padding: 0 var(--u1); border: var(--hair) solid var(--rule); border-radius: var(--round-pill); color: var(--grey); font-size: var(--t-xs); white-space: nowrap; }
   .filterpill:hover { color: var(--ink); }
-  .findtray.away { visibility: hidden; }      /* on the Installed tab: fonts found by name, no filters (R35) */
+  .findtray.away > * { visibility: hidden; }      /* on the Installed tab: fonts found by name, no filters (R35); the box stays, so the outline and the list don't move */
   .picker .fontlist { min-height: 0; }
-  .picker .adding { display: grid; gap: var(--u4); }      /* straight under the list: its edge is the line between them */
+  .picker .adding { display: grid; gap: var(--u4); padding-top: var(--u4); }      /* straight under the list: its edge is the line between them */
   .picker .squares { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--unit); }      /* on the list's three columns */
   /* the squares: shorter, a sign beside two lines of words (Okay, 13 Oct 2026: "shorter"); they set the height of the
      sheet's foot. The legend's button is the last of them, at the right. */
@@ -1611,18 +1622,27 @@
   .guidepop.dots { position: absolute; z-index: 3; display: grid; grid-template-columns: repeat(4, var(--guide-none)); gap: var(--guide-gap); padding: var(--u2) var(--u3); border: var(--hair) solid var(--grey); border-radius: var(--round-small); background: var(--paper); }
   .guidepop .tone { width: var(--guide-none); height: var(--guide-none); }
   .guidepop[hidden] { display: none; }
-  /* the foot (Okay's marks, 23:21): Add and Thickness share one grid — their names in a column, Line · Crosshair · Circle
-     three equal boxes from the Thickness box's left edge to the right edge; the Thickness box from there to the rule */
-  .guidesheet .guidesettings { display: grid; grid-template-columns: max-content minmax(0, 1fr) auto; column-gap: var(--gap); padding: var(--guide-add-top) var(--pop-pad) 0; }
-  .guidesheet .guidesettings > :is(.guidehead, .guidelast) { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; margin-inline: 0; padding-inline: 0; }
-  .guidesheet .guidesettings > .guidehead { min-height: 0; margin-bottom: var(--guide-add-bottom); }
-  .guidesheet .guidesettings > .guidehead .segs { grid-column: 2 / -1; justify-self: stretch; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); margin: 0; }
-  .guidesheet .guidelast > .numcell { justify-content: stretch; }
-  .guidesheet .gthick { flex: 1; justify-content: space-around; }
+  /* the foot (Okay's marks, 24 Oct 2026, 23:21–23:32): two tiers. Over, Add, the gap the same over and under it, its three
+     boxes solid; a line; under, lighter, Thickness · Reset All as outlines only, filled when chosen ("Bottom lighter
+     because bottom row solids don't get bg, they all simply outline. Unless clicked"). One grid for both, with the
+     list's side room as its first and last columns, so the lower tier's ground runs edge to edge */
+  .guidesheet .guidesettings { display: grid; grid-template-columns: var(--pop-pad) max-content minmax(0, 1fr) auto var(--pop-pad); column-gap: 0; padding: var(--guide-add-gap) 0 0; }
+  .guidesheet .guidesettings > :is(.guidehead, .guidelast) { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; column-gap: 0; margin-inline: 0; padding-inline: 0; }
+  .guidesheet .guidesettings > .guidehead { min-height: 0; padding-bottom: var(--guide-add-gap); }
+  .guidesheet .guidesettings > .guidehead > .name { grid-column: 2; padding-right: var(--gap); }
+  .guidesheet .guidesettings > .guidehead .segs { grid-column: 3 / 5; justify-self: stretch; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); margin: 0; }
+  .guidesheet .guidesettings > .guidelast { border-top: var(--hair) solid var(--paper); background: var(--guide-foot-light); }
+  .guidesheet.guidelist .guidelast > label:first-child { grid-column: 2; padding-right: var(--gap); }
+  .guidesheet .guidelast > .numcell { grid-column: 3; justify-content: stretch; }
+  .guidesheet .guidelast > .resetall { grid-column: 4; }
+  .guidesheet .guidelast > .ask { grid-column: 2 / 5; }
+  .guidesheet .gthick { flex: 1; justify-content: space-around; background: none; box-shadow: inset 0 0 0 var(--hair) var(--ink); border-radius: var(--round-pill); }
+  .guidesheet .guidelast #guides-reset { background: none; }
+  .guidesheet .guidelast #guides-reset:active { background: var(--ink); color: var(--paper); }
   /* Thickness 1 · 2 · 3: on a dark box, the chosen one ringed */
   .gthick { display: flex; gap: var(--u1); padding: var(--u1); border-radius: var(--round-small); background: var(--paper); }
   .gthick > button { min-width: var(--control-s); height: var(--control-s); border-radius: var(--round-pill); color: var(--ink); }
-  .gthick > button[aria-checked="true"] { box-shadow: inset 0 0 0 var(--hair) var(--ink); }
+  .gthick > button[aria-checked="true"] { background: var(--ink); color: var(--paper); }      /* the chosen one filled (Okay, 23:32: "Unless clicked") */
   .guidescroll::-webkit-scrollbar { width: var(--scroll-w); }
   .guidescroll::-webkit-scrollbar-thumb { background: var(--grey); border-radius: calc(var(--scroll-w) / 2); }
   .guidescroll > * { margin-inline: var(--pop-pad); }
@@ -1979,8 +1999,14 @@
        fonts (Chrome, Edge on a desktop), never on a phone; in a narrow desktop window it would squeeze the others into
        three lines each (Okay, 15 Oct 2026, 07:14: "Installed is back. Solve this") — so here it isn't shown, and the two
        keep their second lines */
-    .picker header > .findbox { width: auto; flex: 1; }      /* Fonts · the Light/Dark pill · Find share the line (#276) */
-    .findtray { grid-template-columns: repeat(2, 1fr); }      /* the filters on three lines of two: three to a line don't fit a phone's field */
+    .picker header { grid-template-columns: max-content max-content minmax(0, 1fr); }      /* Fonts · the Light/Dark pill · Find share the line, Find taking what is left (#276) */
+    .picker header > .pillswitch { margin-inline: var(--gap); }
+    /* here Find takes what the line leaves, so the box runs the sheet's width under it, a line under the title and Light ·
+       Dark meeting Find's left edge; closed at its foot, half the sheet's gap over the tabs (a narrow desktop window) or
+       the list (a phone, no tabs) */
+    .picker header::before { content: ""; grid-row: 1; grid-column: 1 / 3; align-self: end; border-bottom: var(--hair) solid var(--grey); }
+    .picker header > .findtray { grid-column: 1 / -1; margin-bottom: var(--u2); border-block-end: var(--hair) solid var(--grey); }
+    .picker header > .sheettabs { grid-row: 3; grid-column: 1 / -1; }
     /* the colour pop-out is a sheet from the bottom; wide, it is the whole screen. Every sheet (fonts, colour, the Guides
        and Shadows lists) stands --sheet-edge in from the screen's sides and foot, not its top, its corners all round
        (Okay, 19 Oct 2026, 21:18: "This popup and others needs … padding from all sides except top on mobile"; 21:26: 7) */
@@ -7279,7 +7305,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.92.27";
+var VERSION = "beta 4.92.28";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -20800,7 +20826,7 @@ var DialTool = class _DialTool {
   sample(f2, what = "sample", fits = what === "name") {
     const box3 = el("span", { className: what === "name" ? "face" : "sample" });
     const t = has_font(f2.ps) ? { ...RING_BASE, ps: f2.ps, axes: f2.start || {}, features: {}, tracking: 0, lang: 0 } : null;
-    const text = what === "name" ? f2.family : what === "preview" ? "1234567890 Abcdefg" + (t && has_chars("\u2026", t) ? "\u2026" : "...") : "1234567890", high = what === "name" ? 16 : 20;
+    const text = what === "name" ? f2.family : what === "preview" ? "1234567890 Abcdefg" + (t && has_chars("\u2026", t) ? "\u2026" : "...") : "1234567890", high = what === "name" ? 16 : what === "preview" ? 20 : 26;
     let s = what === "preview" ? t ? null : f2.sample : f2[what];
     if (!s && t) {
       s = { d: text_path(text, t, 1e3).svg(0, true), w: Math.round(advance(text, t, 1e3)) };
@@ -21288,7 +21314,7 @@ var DialTool = class _DialTool {
       };
       return pill;
     }));
-    const finder = el("span", { className: "findbox" }, field, tray);
+    const finder = el("span", { className: "findbox" }, field);
     this.font_tray = tray;
     const sheet_tab = (i2, word) => {
       const b = el("button", { type: "button", className: "tab", id: "font-tab-" + i2, textContent: word, role: "tab", onclick: () => this.font_tab_go(i2) });
@@ -21376,9 +21402,9 @@ var DialTool = class _DialTool {
     this.picker = el(
       "dialog",
       { className: "picker", id: "font-picker" },
-      el("header", {}, el("h2", { textContent: "Fonts" }), ground, finder),
-      // the search stands at the sheet's top right
-      el("div", { className: "listbox" }, this.font_tabs, el("div", { className: "listwrap" }, list, rail)),
+      el("header", {}, el("h2", { textContent: "Fonts" }), ground, finder, this.font_tabs, this.font_tray),
+      // the search at the sheet's top right, the filters' box hanging from it down to the list; the tabs at the left on the list's line
+      el("div", { className: "listbox" }, el("div", { className: "listwrap" }, list, rail)),
       el(
         "div",
         { className: "adding" },

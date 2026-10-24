@@ -203,18 +203,27 @@
   .guidepop.dots { position: absolute; z-index: 3; display: grid; grid-template-columns: repeat(4, var(--guide-none)); gap: var(--guide-gap); padding: var(--u2) var(--u3); border: var(--hair) solid var(--grey); border-radius: var(--round-small); background: var(--paper); }
   .guidepop .tone { width: var(--guide-none); height: var(--guide-none); }
   .guidepop[hidden] { display: none; }
-  /* the foot (Okay's marks, 23:21): Add and Thickness share one grid — their names in a column, Line · Crosshair · Circle
-     three equal boxes from the Thickness box's left edge to the right edge; the Thickness box from there to the rule */
-  .guidesheet .guidesettings { display: grid; grid-template-columns: max-content minmax(0, 1fr) auto; column-gap: var(--gap); padding: var(--guide-add-top) var(--pop-pad) 0; }
-  .guidesheet .guidesettings > :is(.guidehead, .guidelast) { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; margin-inline: 0; padding-inline: 0; }
-  .guidesheet .guidesettings > .guidehead { min-height: 0; margin-bottom: var(--guide-add-bottom); }
-  .guidesheet .guidesettings > .guidehead .segs { grid-column: 2 / -1; justify-self: stretch; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); margin: 0; }
-  .guidesheet .guidelast > .numcell { justify-content: stretch; }
-  .guidesheet .gthick { flex: 1; justify-content: space-around; }
+  /* the foot (Okay's marks, 24 Oct 2026, 23:21–23:32): two tiers. Over, Add, the gap the same over and under it, its three
+     boxes solid; a line; under, lighter, Thickness · Reset All as outlines only, filled when chosen ("Bottom lighter
+     because bottom row solids don't get bg, they all simply outline. Unless clicked"). One grid for both, with the
+     list's side room as its first and last columns, so the lower tier's ground runs edge to edge */
+  .guidesheet .guidesettings { display: grid; grid-template-columns: var(--pop-pad) max-content minmax(0, 1fr) auto var(--pop-pad); column-gap: 0; padding: var(--guide-add-gap) 0 0; }
+  .guidesheet .guidesettings > :is(.guidehead, .guidelast) { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; column-gap: 0; margin-inline: 0; padding-inline: 0; }
+  .guidesheet .guidesettings > .guidehead { min-height: 0; padding-bottom: var(--guide-add-gap); }
+  .guidesheet .guidesettings > .guidehead > .name { grid-column: 2; padding-right: var(--gap); }
+  .guidesheet .guidesettings > .guidehead .segs { grid-column: 3 / 5; justify-self: stretch; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); margin: 0; }
+  .guidesheet .guidesettings > .guidelast { border-top: var(--hair) solid var(--paper); background: var(--guide-foot-light); }
+  .guidesheet.guidelist .guidelast > label:first-child { grid-column: 2; padding-right: var(--gap); }
+  .guidesheet .guidelast > .numcell { grid-column: 3; justify-content: stretch; }
+  .guidesheet .guidelast > .resetall { grid-column: 4; }
+  .guidesheet .guidelast > .ask { grid-column: 2 / 5; }
+  .guidesheet .gthick { flex: 1; justify-content: space-around; background: none; box-shadow: inset 0 0 0 var(--hair) var(--ink); border-radius: var(--round-pill); }
+  .guidesheet .guidelast #guides-reset { background: none; }
+  .guidesheet .guidelast #guides-reset:active { background: var(--ink); color: var(--paper); }
   /* Thickness 1 · 2 · 3: on a dark box, the chosen one ringed */
   .gthick { display: flex; gap: var(--u1); padding: var(--u1); border-radius: var(--round-small); background: var(--paper); }
   .gthick > button { min-width: var(--control-s); height: var(--control-s); border-radius: var(--round-pill); color: var(--ink); }
-  .gthick > button[aria-checked="true"] { box-shadow: inset 0 0 0 var(--hair) var(--ink); }
+  .gthick > button[aria-checked="true"] { background: var(--ink); color: var(--paper); }      /* the chosen one filled (Okay, 23:32: "Unless clicked") */
   .guidescroll::-webkit-scrollbar { width: var(--scroll-w); }
   .guidescroll::-webkit-scrollbar-thumb { background: var(--grey); border-radius: calc(var(--scroll-w) / 2); }
   .guidescroll > * { margin-inline: var(--pop-pad); }

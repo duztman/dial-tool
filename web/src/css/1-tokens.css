@@ -175,7 +175,7 @@
     --shadow-solid: calc(-2 * var(--unit)) calc(2 * var(--unit)) 0 rgba(0, 0, 0, 0.5);      /* the font sheet's: solid, no blur, to the left and down, as far as --shadow reaches (Okay, 24 Oct 2026, 21:39: "font popups shadow looks out of place. make it solid 50% opacity. no fancy, static left plus bottom") */
     --shadow-solid-near: calc(-1 * var(--unit)) var(--unit) 0 rgba(0, 0, 0, 0.5);      /* the same over the font sheet (its legend), half as far */
     --swatch-col: calc(2 * (var(--line-button) + var(--ringline-gap)) + var(--row-end));      /* from a pane's right edge to the right edge of the ring list's colour column: a colour swatch further down stands in that column too */
-    --t-sample: 20px;                              /* a font's numerals in the font list, when the browser sets them */
+    --t-sample: 26px;                              /* a font's numerals in the font list, when the browser sets them (as the outlines, app.js sample(): Okay, 24 Oct 2026, "ENLARGE NUMS") */
     --t-pixel: 8px;                                /* the pixel font's own size: its dots fall on the screen's (R32) */
     --pixel-ink: 0.7;                              /* how much of the pixel font shows: full strength is too dark on black (Okay, 13 Oct 2026) */
     --scrollbar: var(--unit);                      /* a scrollbar drawn by the tool: slim */
@@ -190,7 +190,8 @@
        measures (--margin, --eye, --gap, --col) and sizes of things (heights, widths), which no scale governs. */
 
     /* asked for by Okay */
-    --guide-add-top: 12px; --guide-add-bottom: 5px;      /* the Guides list's Add line: this much over it, this much under it (Okay, 24 Oct 2026, 23:21, his marks: "Top = 12px", "Bottom = 5px") */
+    --guide-add-gap: 12px;                         /* the Guides list's Add line: this much over it and under it, to the line between the foot's two tiers (Okay, 24 Oct 2026, 23:21: "Top = 12px"; 23:32: the same gap under it, "GAP VERTICAL") */
+    --guide-foot-light: #5F5E5A;                   /* the Guides list's lower tier, Thickness · Reset All: lighter than the Add tier, its controls outlines only (Okay, 23:32: "Bottom gray area, two tiers. Bottom lighter") — the value Claude's, to confirm */
     /* the bar's date popup, as measured from Okay's final drawing (20 Oct 2026, 01:05: "all else is pixel perfect. gaps, placements within blocks, block sizes") */
     --datepop-ground: #BFBFBF;                     /* its light ground */
     --datepop-pad: 8px; --datepop-lead: 10px;      /* inside its frame round the boxes · before the weekday */
