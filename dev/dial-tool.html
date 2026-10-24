@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.92.32 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.92.33 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -188,7 +188,7 @@
     --faint: 0.35;                                 /* how much of a switch on the preview shows at rest */
     --canvas-top: var(--canvas-inset);      /* undo and Guides as far from the canvas's top as from its side, their bottom on the title's line (--header) */
     --guide-name: 106px; --guide-row: 30px;        /* the guides' list: the column of names, wide enough for an added guide's name and values on one line · a line's height (Okay, 16 Oct 2026, #305: "tighter spacing overall … small like beta version allowed"; under a finger 38) */
-    --sun-w: 224px; --sun-h: 204px; --sun-ray: 1.5px;      /* the Shadows pane's sun picture: its box (Okay's mark, 25 Oct 2026, 01:38); a ray's width (the icons' LINE) */
+    --sun-w: 224px; --sun-h: 204px; --sun-ray: 1.5px;      /* the Shadows pane's sun picture: the picture's grid and the box's height (Okay's mark, 25 Oct 2026, 01:38; its width runs to the sliders' column, 02:29); a ray's width (the icons' LINE) */
     --shade-slide: 100px; --shade-slide-top: 160px;      /* the Shadows pane's sliders, squeezed (Okay, 25 Oct 2026, 02:20: "squeeze sliders"): on a part's row · beside the sun */
     --stack-w: 120px; --stack-line: 1.25px; --stack-name: 76px;      /* the exploded view's frame, as wide as a hand's box; its lines (the icons' DENSE); the rows' names beside it, "Minute ticks" whole */
     --guide-dot: 7px; --guide-none: 14px; --scroll-w: 6px;      /* a round colour in the guides' list (the room between two: a special; Okay, 19 Oct 2026: "Still smaller balls") · the none sign ⊘, 14 (at 10 it went too small) · a list's scrollbar */
@@ -1689,15 +1689,15 @@
      hairline of the ground, from its top to the box's bottom (.resetall) */
   .guidelist > .popfoot, .guidesettings > .popfoot { min-height: var(--pop-foot); margin-inline: 0; padding: 0 var(--pop-pad) env(safe-area-inset-bottom); background: var(--row-rule); box-shadow: none; }
   /* the Shadows list: the guides' list, opening upward from its switch at the bottom left (after .guidelist, which it overrides) */
-  .shadelist { position: fixed; z-index: 6; top: auto; right: auto; bottom: var(--shade-bottom, calc(var(--bar-height) + var(--canvas-inset))); left: var(--shade-left, var(--margin)); width: calc(var(--shade-right, var(--panel-w)) - var(--shade-left, var(--margin))); max-width: calc(100vw - 2 * var(--margin)); border-bottom-right-radius: 0;
-    max-height: calc(100dvh - var(--shade-bottom, var(--bar-height)) - var(--canvas-inset)); }      /* from the panel's margin to the switch's right edge, standing on the switch, its corner there square: joined to it */      /* over the panel's column, so the dial and its shadows stay in view (Okay, 25 Oct 2026, 02:02: "This has to open on the left so we'd see the shadow on the dials"); from the switch's foot up to the canvas's top */
+  .shadelist { position: fixed; z-index: 6; top: auto; right: auto; bottom: var(--shade-bottom, calc(var(--bar-height) + var(--canvas-inset))); left: var(--shade-left, var(--margin)); width: calc(var(--shade-right, var(--panel-w)) - var(--shade-left, var(--margin))); max-width: calc(100vw - 2 * var(--margin));
+    max-height: calc(100dvh - var(--shade-bottom, var(--bar-height)) - var(--canvas-inset)); }      /* from the panel's margin to the switch's right edge, standing on the switch (its corners all round: Okay, 02:29, "ROUND CORNERS") */      /* over the panel's column, so the dial and its shadows stay in view (Okay, 25 Oct 2026, 02:02: "This has to open on the left so we'd see the shadow on the dials"); from the switch's foot up to the canvas's top */
   /* the Shadows pane (#526; Okay's drawing, 24 Oct 2026; his marks of 25 Oct 2026, 01:27–01:47): the sun's picture at
      the left with Angle · Height · Strength stacked at its right; a line across; the parts' rows at the left and the
      exploded view at the right, as the Hands tab has its box and side rows; one foot. The panel's width and columns. */
   .shadelist { display: flex; flex-direction: column; overflow: hidden; padding: 0; }
   .shadescroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: var(--margin) var(--margin) var(--u2); touch-action: pan-y; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--grey) transparent; }
   .shadelist > *, .shadescroll > * { margin-inline: 0; }      /* the scroll carries the room at the sides */
-  .suntop { display: grid; grid-template-columns: var(--sun-w) minmax(0, 1fr); column-gap: var(--gap); align-items: stretch; }
+  .suntop { display: grid; grid-template-columns: minmax(0, 1fr) var(--shade-slide-top); column-gap: var(--gap); align-items: stretch; }      /* the sun box wide, up to the sliders' column (Okay, 02:29: "WIDE … WIDER UNTIL"); the sliders at the right edge */
   .sunpic { position: relative; height: var(--sun-h); border: var(--hair) solid var(--rule); border-radius: var(--round); background: var(--field); overflow: hidden; touch-action: none; cursor: grab; user-select: none; }
   .sunpic.held { cursor: grabbing; }
   .sunpic > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -1711,7 +1711,7 @@
   .shadelist .three > .row.named:last-child { box-shadow: none; }
   .shadelist .row.named > label { font-size: var(--t-s); color: var(--grey); }
   .shadelist .row.named > label:hover { color: var(--ink); }
-  .shadelist .row.named > .lane { position: relative; display: grid; max-width: var(--shade-slide-top); }      /* squeezed (Okay, 02:20: "squeeze sliders") */
+  .shadelist .row.named > .lane { position: relative; display: grid; }      /* as wide as its column: squeezed to --shade-slide-top (Okay, 02:20: "squeeze sliders") */
   .shadelist .row.named > .lane > input[type="range"] { grid-column: 1; }
   .shadelist .knobval { position: absolute; top: 50%; left: calc(var(--thumb) / 2 + var(--at, 0) * (100% - var(--thumb))); translate: -50% -50%; min-width: var(--thumb); height: var(--thumb); box-sizing: border-box; padding: 0 var(--u2); border-radius: var(--round-pill); background: var(--ink); color: var(--paper); font-size: var(--t-xs); font-weight: 600; font-variant-numeric: tabular-nums; line-height: var(--thumb); text-align: center; white-space: nowrap; pointer-events: none; }      /* the value rides in the knob: a pill as wide as its figures, centred on the thumb */
   .shadedivide { height: var(--hair); margin: var(--margin) 0; background: var(--ink); }      /* the line between the sun and the parts: the inner box's room over and under it, in ink (Okay: "single pixelled line, contrasty") */
@@ -1722,7 +1722,8 @@
   .shaderows .row.side > label { color: var(--grey); }
   .shaderows .row.side:is(:hover, :focus-within, :has([aria-expanded="true"])) > label { color: var(--ink); }
   .shaderows .row.ref > label { grid-column: 1 / -1; }      /* the plate: the reference, nothing to size */
-  .stackpic { position: relative; border: var(--hair) solid var(--rule); border-radius: var(--round-small); }      /* outline only, no ground (Okay, 01:46) */
+  .stackpic { position: relative; border: var(--hair) solid var(--rule); border-radius: var(--round); }      /* outline only, no ground (Okay, 01:46); the sun box's corners */
+  .stackpic .word { position: absolute; left: var(--u4); top: var(--u3); font-size: var(--t-s); color: var(--grey); pointer-events: none; }      /* its name, as the sun box has (Okay, 02:29: "Components") */
   .stackpic > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
   .stackpic .axis { stroke: var(--grey); stroke-width: var(--hair); stroke-dasharray: 3 3; }      /* the centre line every part hangs on (Okay, 01:58: "A dashed line marks the center line") */
   .stackpic .parts > g { fill: none; stroke: var(--grey); stroke-width: var(--stack-line); stroke-linecap: round; }
@@ -7335,7 +7336,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.92.32";
+var VERSION = "beta 4.92.33";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -18707,7 +18708,7 @@ var DialTool = class _DialTool {
   stack_picture() {
     const W2 = 120, H2 = 306, AX = W2 / 2, MM2 = 70, GAP = 24, STEP2 = 0.01, ROUND = 0.42;
     const box3 = el("div", { className: "stackpic", id: "shadows-stack" });
-    box3.innerHTML = `<svg viewBox="0 0 ${W2} ${H2}" aria-hidden="true"><line class="axis"/><g class="parts"></g></svg>`;
+    box3.innerHTML = `<svg viewBox="0 0 ${W2} ${H2}" aria-hidden="true"><line class="axis"/><g class="parts"></g></svg><span class="word">Components</span>`;
     const parts = box3.querySelector(".parts"), axis = box3.querySelector(".axis");
     const refresh = () => {
       const S = this.S, hands = ["hour", "minute", "second"].filter((h) => S["ha_" + h] ? S["ha_" + h].show !== false : true);
@@ -18771,7 +18772,8 @@ var DialTool = class _DialTool {
       fall.setAttribute("cy", (cy + Math.cos(a) * (R - 2)).toFixed(1));
     };
     const move = (e) => {
-      const r = box3.getBoundingClientRect(), px = (e.clientX - r.left) / r.width * W2, py = (e.clientY - r.top) / r.height * H2;
+      const r = box3.getBoundingClientRect(), k = Math.max(W2 / r.width, H2 / r.height);
+      const px = W2 / 2 + (e.clientX - r.left - r.width / 2) * k, py = H2 / 2 + (e.clientY - r.top - r.height / 2) * k;
       const dx = px - cx, dy = py - cy, dist = Math.hypot(dx, dy), from = (Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360;
       this.S.sh_from = Math.round(from);
       this.S.sh_rise = Math.round(clamp(5 + 80 * (FAR - clamp(dist, NEAR, FAR)) / (FAR - NEAR), 5, 85));
