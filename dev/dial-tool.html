@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.92.11 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.92.12 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -469,9 +469,7 @@
   .shenticks > .row.seg { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--u2); min-height: var(--control); padding: var(--u1) var(--u4) var(--u1) 0; box-shadow: none; background: none; }
   .shenticks > .row.seg > label { grid-column: 1; text-align: right; font-size: var(--t-xs); font-weight: 500; letter-spacing: var(--track-50); text-transform: uppercase; }
   .shenticks > .row.seg > .toggle { grid-column: 2; }
-  .shenticks > .row:nth-child(1) { grid-area: 1 / 1; } .shenticks > .row:nth-child(2) { grid-area: 1 / 2; }
-  .shenticks > .row:nth-child(3) { grid-area: 2 / 1; } .shenticks > .row:nth-child(4) { grid-area: 2 / 2; }
-  .shenticks > .row:last-child { grid-area: 1 / 3 / 3 / 4; align-self: stretch; border-left: var(--hair) solid var(--ink); }
+  .shenticks > .row:last-child { grid-area: 1 / 3 / -1 / 4; grid-row: 1 / span 3; align-self: stretch; border-left: var(--hair) solid var(--ink); }      /* All in the third column, the whole height; the others flow two to a line beside it */
   .panelcopy { position: fixed; z-index: 7; pointer-events: none; }      /* the panel's still copy sliding away while the modes change (panel_copy() in app.js) */      /* a phone's drawer gripper (8-narrow.css); a wider screen has no drawer */
   .panel { position: relative; z-index: 5; width: var(--panel-w); translate: calc(-1 * var(--panel-w) * var(--away)) 0; }
   .mast { display: flex; align-items: center; translate: calc(var(--panel-w) * var(--away)) 0; z-index: 6; }
@@ -7202,7 +7200,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.92.11";
+var VERSION = "beta 4.92.12";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -7613,6 +7611,8 @@ var DEFAULTS = {
   // show mode's panel in greys, like the bar, instead of the backdrop's colour (the round swatch at the title line's end; Okay, 22 Oct 2026)
   w_bevels: true,
   // show mode draws the hands' bevels (Shenanigans' Bevels: Okay, 23 Oct 2026)
+  w_gradients: true,
+  // show mode's gradients — the backdrop's, Dramatic's spotlight, the outline's light — on (Shenanigans' Gradients, #525: "Both")
   ui_case: false,
   // the case round the dial on the dial side: off to start (Okay, 23 Oct 2026: "On main default is caseless"); its kind is `bezel`, shared with show mode, which always has one
   ui_effects: true,
@@ -10027,6 +10027,8 @@ var FLARE_SCALE = 1;
 var GLASS_K = 1;
 var SH_OP = 0.3;
 var FLARE_KIND = "arc";
+var GRADIENTS = true;
+var HEIGHTS = {};
 var BRACELET_KIND = "vault";
 var DIAL_IN = true;
 var OUTLINE_ON = true;
@@ -10370,8 +10372,11 @@ function dialSVG(C2, v, L) {
   const D = DIALS[0], s = (C2.dial - (C2.insert ? 2 * REHAUT : 0)) / D.d, A = HANDS_A;
   const col2 = (x2) => clampL(x2.f);
   const items = D.items;
-  const kh = longer(SUN_H), sh = [-Math.cos(rad(L)) * 0.35 * kh, Math.sin(rad(L)) * 0.35 * kh];
-  const handsShadow = items.filter((x2) => x2.hand || x2.role === "cap").map((x2) => `<path d="${x2.p}" fill="#000" fill-opacity="${f(Math.min(1, 0.35 * SHD))}"${x2.hand ? ` data-hs="${x2.hand}" data-sh="${f(sh[0])} ${f(sh[1])}" transform="translate(${f(sh[0])} ${f(sh[1])}) rotate(${-A[x2.hand]})"` : ` transform="translate(${f(sh[0])} ${f(sh[1])})"`}/>`).join("");
+  const per = 1 / Math.tan(rad(Math.max(LOW_SUN, Math.min(89, SUN_H)))), away = (z) => [-Math.cos(rad(L)) * per * z, Math.sin(rad(L)) * per * z];
+  const handsShadow = items.filter((x2) => x2.hand || x2.role === "cap").map((x2) => {
+    const sh = away(HEIGHTS[x2.hand || "cap"] ?? 0.35);
+    return `<path d="${x2.p}" fill="#000" fill-opacity="${f(Math.min(1, 0.25 * SHD))}"${x2.hand ? ` data-hs="${x2.hand}" data-sh="${f(sh[0])} ${f(sh[1])}" transform="translate(${f(sh[0])} ${f(sh[1])}) rotate(${-A[x2.hand]})"` : ` transform="translate(${f(sh[0])} ${f(sh[1])})"`}/>`;
+  }).join("");
   const body = items.map((x2) => `<path d="${x2.p}" fill="${col2(x2)}" fill-opacity="${x2.a}"${x2.hand ? ` data-h="${x2.hand}" transform="rotate(${-A[x2.hand]})"` : ""}/>` + (x2.hand ? handBevel(x2, A, L) : x2.role !== "plate" && x2.role !== "cap" ? inkRelief(x2, s, L) : ""));
   const firstHand = items.findIndex((x2) => x2.hand || x2.role === "cap");
   body.splice(firstHand, 0, handsShadow);
@@ -10897,6 +10902,7 @@ function silhouetteOutline(paths, L = 0) {
   }
   const d = u.toSVGString();
   u.delete();
+  if (!GRADIENTS) return `<path d="${d}" fill="none" stroke="#fff" stroke-opacity="0.3" stroke-width="0.2" stroke-linejoin="round"/>`;
   const id = "og" + BLOB_N++, ux = Math.cos(rad(L)), uy = Math.sin(rad(L)), D = 24;
   CLIPS.push(`<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${f(-ux * D)}" y1="${f(-uy * D)}" x2="${f(ux * D)}" y2="${f(uy * D)}"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity="0.65"/></linearGradient>`);
   return `<path d="${d}" fill="none" stroke="url(#${id})" stroke-width="0.2" stroke-linejoin="round"/>`;
@@ -11007,6 +11013,8 @@ function draw(o) {
   const STYLE_ = STYLES[STYLE];
   OUTLINE_ON = o.outline !== false;
   DIALS = [{ name: "live", d: o.d, own: true, items: o.items }];
+  GRADIENTS = o.gradients !== false;
+  HEIGHTS = o.heights || {};
   HANDS_A = o.A;
   FLARE_KIND = o.flare;
   INK_K = o.ink ?? 6;
@@ -11085,11 +11093,15 @@ function options(S, items, effects) {
     natoColours: nato_colours(S),
     insert: S.c_insert ? { top: hex(S.c_insert[0]), bottom: hex(S.c_insert[1]) } : { top: INSERTS[S.w_insert][0], bottom: INSERTS[S.w_insert][1] },
     floor: hex(S.c_backdrop),
-    floor2: S.c_backdrop2 ? hex(S.c_backdrop2) : null,
+    floor2: S.c_backdrop2 && S.w_gradients !== false ? hex(S.c_backdrop2) : null,
+    gradients: S.w_gradients !== false,
+    // Gradients off: one colour, no spotlight, a flat outline (#525)
     L: S.sh_from - 90,
     h: S.sh_rise,
     shadow: S.sh_on ? S.sh_dark / 25 : 0,
-    lighting: S.w_lighting ? "flat" : "dramatic",
+    heights: { hour: S.sh_hour, minute: S.sh_minute, second: S.sh_second, cap: S.sh_cap },
+    // the hands' own heights, as the dial side's shadows use them (#519)
+    lighting: S.w_lighting || S.w_gradients === false ? "flat" : "dramatic",
     flare: S.w_flare ? "dot" : "arc",
     flareOn: lit && S.sh_blur && S.w_flare_on,
     blurs: lit && S.sh_blur,
@@ -11146,7 +11158,7 @@ var GROUNDS = [
   ["Slate", "#5b6066"],
   ["Night", "#1c1c1f"]
 ];
-var GRADIENTS = [
+var GRADIENTS2 = [
   ["Dusk", "#3b3f58", "#b8876c"],
   ["Sea", "#1f4e5a", "#a9c7c0"],
   ["Clay", "#d9b8a0", "#7a4a3a"],
@@ -15541,7 +15553,8 @@ var radius_row = (R) => RADIUS_ROWS[has_text(R) ? "numerals" : "outer"];
 var SIZE_ROWS = {
   len: num2("len", "Length", 0.05, 10, 0.05, { scope: "ring" }),
   dot: num2("w", "\xD8", 0.02, 5, 0.01, { scope: "ring" }),
-  numerals: num2("size", "Size", 0.3, 8, 0.05, { scope: "ring" }),
+  // a numeral's Size: its slider runs to the dial's diameter (Okay, 24 Oct 2026: "main numerals could grow up to 500-600"; asked, "Dial's diameter")
+  numerals: num2("size", "Size", 0.3, 8, 0.05, { scope: "ring", top: (S) => S.dial_d }),
   band: num2("width", "Band width", 0.02, 25, 0.05, { scope: "ring" })
 };
 var size_row = (R) => SIZE_ROWS[has_text(R) ? "numerals" : kind_of(R) === "band" ? "band" : SHAPES[R.shape] === "dot" ? "dot" : "len"];
@@ -17107,12 +17120,12 @@ var DialTool = class _DialTool {
   /** show mode's Shenanigans (Okay, 23 Oct 2026): at the column's foot, always in view, on the top's darker ground — the
    *  costly or showy layers on and off in one place. Only shortcuts: the same keys as their rows and switches elsewhere,
    *  which keep every other setting of theirs. Hidden on the dial side (R16). Laid out after his drawing (24 Oct 2026,
-   *  #525; his drawing of 19:04): Shadows · Blurs over Flare · Bevels, each its name and a toggle; All alone in a third
-   *  column behind a white line, turning the four on or off together */
+   *  #525; his drawings of 19:04): Shadows · Blurs, Flare · Bevels, Gradients, two to a line, each its name and a toggle; All alone
+   *  in the third column behind a white line, turning the five on or off together */
   shenanigans_box() {
-    const KEYS2 = ["sh_on", "sh_blur", "w_bevels", "w_flare_on"], pill = (key, text, o = {}) => this.build_row({ ...seg(key, text, ["On", "Off"], { bool: true, ...o }), scope: "global" });
+    const KEYS2 = ["sh_on", "sh_blur", "w_bevels", "w_flare_on", "w_gradients"], pill = (key, text, o = {}) => this.build_row({ ...seg(key, text, ["On", "Off"], { bool: true, ...o }), scope: "global" });
     const all = pill("w_flare_on", "All", { get: (T) => KEYS2.every((k) => T[k]), put: (tool2, v) => KEYS2.forEach((k) => tool2.set_value("global", k, v)) });
-    this.shen_rows = [...[["sh_on", "Shadows"], ["sh_blur", "Blurs"], ["w_flare_on", "Flare"], ["w_bevels", "Bevels"]].map(([key, text]) => pill(key, text)), all];
+    this.shen_rows = [...[["sh_on", "Shadows"], ["sh_blur", "Blurs"], ["w_flare_on", "Flare"], ["w_bevels", "Bevels"], ["w_gradients", "Gradients"]].map(([key, text]) => pill(key, text)), all];
     return el("div", { className: "shenanigans" }, el("div", { className: "shenticks" }, ...this.shen_rows.map((r) => r.el)));
   }
   /** the panel's colours from the backdrop in show mode (show.js tint_panel; #505) */
@@ -17366,7 +17379,7 @@ var DialTool = class _DialTool {
   ground_pop() {
     const pop2 = el("div", { className: "guidelist shadelist night groundpop", id: "ground-pop", hidden: true });
     const S = () => this.S, hex3 = (c) => c ? to_hex(c) : null, syncs = [];
-    const grad = () => S().c_backdrop2 ? [S().c_backdrop, S().c_backdrop2] : this.ground_grad || GRADIENTS[8].slice(1).map((h) => from_hex(h));
+    const grad = () => S().c_backdrop2 ? [S().c_backdrop, S().c_backdrop2] : this.ground_grad || GRADIENTS2[8].slice(1).map((h) => from_hex(h));
     const set = (a, b) => {
       this.set_value("global", "c_backdrop", a);
       this.set_value("global", "c_backdrop2", b);
@@ -17405,7 +17418,7 @@ var DialTool = class _DialTool {
       "div",
       { className: "groundsides" },
       side("One colour", GROUNDS.map(([n, c]) => tile(n, c, () => !S().c_backdrop2 && hex3(S().c_backdrop) === c, () => set(from_hex(c), null))), one),
-      side("Gradient", GRADIENTS.map(([n, a, b]) => tile(n, `linear-gradient(135deg, ${a}, ${b})`, () => hex3(S().c_backdrop) === a && hex3(S().c_backdrop2) === b, () => set(from_hex(a), from_hex(b)))), both)
+      side("Gradient", GRADIENTS2.map(([n, a, b]) => tile(n, `linear-gradient(135deg, ${a}, ${b})`, () => hex3(S().c_backdrop) === a && hex3(S().c_backdrop2) === b, () => set(from_hex(a), from_hex(b)))), both)
     ));
     this.ground_sync = () => {
       for (const f2 of syncs) f2();
@@ -18647,6 +18660,10 @@ var DialTool = class _DialTool {
           out.link.textContent = on ? row.inpop ? "LINK\n+ED" : "LINKED" : "LINK";
           out.link.setAttribute("aria-pressed", String(on));
           out.link.ariaLabel = on ? "Width and height linked: press to unlink" : "Link width and height";
+        }
+        if (row.top) {
+          const top = Math.max(row.top(this.S), v);
+          if (+slider.max !== top) slider.max = top;
         }
         if (v > +slider.max) slider.max = v;
         if (v < +slider.min) slider.min = v;
@@ -20544,7 +20561,7 @@ var DialTool = class _DialTool {
         this.changed(true);
       }
     });
-    const size = this.build_row(own ? { ...num2("size", "Size %", 20, 100, 1), scope: "window" } : { ...num2("size", "Size", 0.3, 8, 0.05), scope: "ring" });
+    const size = this.build_row(own ? { ...num2("size", "Size %", 20, 100, 1), scope: "window" } : { ...num2("size", "Size", 0.3, 8, 0.05, { top: (S) => S.dial_d }), scope: "ring" });
     const axes = this.axes_part(pre, own);
     const features = this.box_part("font/features", "OpenType features", this.features_part(pre, own), true);
     wrap.append(el("div", { className: "fontbox" }, shown_cell, named, styles, size.el, tracking.el, axes.el, features.el), ...own ? [back] : [], state);
