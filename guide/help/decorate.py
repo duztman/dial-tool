@@ -38,17 +38,28 @@ WHERE = {      # what each section fills
 }
 
 def small_map(name):
-    w, h = 64, 40      # the window's shape, 16 : 10
+    # Okay, 24 Oct 2026, 19:35: "too tiny. Apply a background and a dummy watch to increase reality, 3x size all"
+    # the window at 1440 × 900 drawn on 160 × 100: the panel, the brown backdrop with a dial in it, the dark bar;
+    # the part the section is about outlined in the tool's red, faint red where it is the panel under a tab
+    w, h = 160, 100
     X = lambda v: round(v * w / 100, 2)
     Y = lambda v: round(v * h / 100, 2)
-    def part(r):
-        kind, (x, y, a, b) = (r[0], r[1:]) if isinstance(r[0], str) else ("on", r)
-        a, b = max(X(a), 3), max(Y(b), 3)      # a corner button is a few points of the window: drawn at least 3, so it shows
-        return f'<rect x="{min(X(x), w - a)}" y="{min(Y(y), h - b)}" width="{a}" height="{b}" rx=".6" class="{kind}"/>'
-    parts = "".join(part(r) for r in WHERE[name])
-    return (f'<svg viewBox="-.5 -.5 {w + 1} {h + 1}" aria-hidden="true">'
-            f'<rect width="{w}" height="{h}" rx="1.5" class="frame"/>'
-            f'<path d="M{X(PANEL)} 0V{Y(BAR)}M0 {Y(BAR)}H{w}" class="line"/>{parts}</svg>')
+    cx, cy, r = X(66), Y(46.6), 39.5      # the first dial, where the app draws it
+    ticks = "".join(f'<path d="M{cx + (r - 7) * __import__("math").sin(a * 0.5236):.1f} {cy - (r - 7) * __import__("math").cos(a * 0.5236):.1f}L{cx + (r - 2.5) * __import__("math").sin(a * 0.5236):.1f} {cy - (r - 2.5) * __import__("math").cos(a * 0.5236):.1f}"/>' for a in range(12))
+    def part(r_):
+        kind, (x, y, a, b) = (r_[0], r_[1:]) if isinstance(r_[0], str) else ("on", r_)
+        a, b = max(X(a), 5), max(Y(b), 5)      # a corner button is a few points of the window: drawn at least 5, so it shows
+        return f'<rect x="{min(X(x), w - a)}" y="{min(Y(y), h - b)}" width="{a}" height="{b}" rx="1.5" class="{kind}"/>'
+    parts = "".join(part(r_) for r_ in WHERE[name])
+    return (f'<svg viewBox="0 0 {w} {h}" aria-hidden="true">'
+            f'<rect width="{w}" height="{h}" class="backdrop"/>'
+            f'<rect width="{X(PANEL)}" height="{Y(BAR)}" class="panel"/>'
+            f'<rect y="{Y(14.4)}" width="{X(PANEL)}" height="{Y(46 - 14.4)}" class="pane"/>'
+            + "".join(f'<circle cx="{X(t[0] + t[2] / 2)}" cy="{Y(8.6)}" r="2.4" class="tab"/>' for t in TABS) +
+            f'<rect y="{Y(BAR)}" width="{w}" height="{h - Y(BAR)}" class="bar"/>'
+            f'<circle cx="{cx}" cy="{cy}" r="{r}" class="dial"/><g class="ticks">{ticks}</g>'
+            f'<path d="M{cx} {cy}L{cx - 16} {cy - 10}M{cx} {cy}L{cx + 24} {cy - 14}" class="hands"/><circle cx="{cx}" cy="{cy}" r="2.2" class="cap"/>'
+            f'{parts}<rect x=".5" y=".5" width="{w - 1}" height="{h - 1}" rx="3" class="frame"/></svg>')
 
 text = page.read_text()
 text = re.sub(r'<i class="ic" data-ic="([a-z]+)">.*?</i>', lambda m: f'<i class="ic" data-ic="{m[1]}">{icon(m[1])}</i>', text, flags=re.S)
