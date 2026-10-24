@@ -749,14 +749,14 @@ function silhouetteOf(key, size) {
   const d = u.toSVGString(); u.delete();
   return d;
 }
-/** a case's picture for a tile (show mode's Case, Okay, 23 Oct 2026: "Tiles with pictures"): its silhouette and its dial's
- *  opening, at its published size, in a box `w` × `h` points; the line a point wide, in the tile's ink */
+/** a case's picture for a tile (show mode's Case, Okay, 23 Oct 2026: "Tiles with pictures"): its silhouette, filled, and its dial's
+ *  opening cut out of it, at its published size, in a box `w` × `h` points, in the tile's ink (Okay, 24 Oct 2026: filled in, no outline) */
 const TILES = {};
 export function tilePicture(key, w = 38, h = 27) {
   if (TILES[key]) return TILES[key];
   const C = scaleCase(CASES[key] || CASES.dress, 1), d = silhouetteOf(key, 1), b = caseBox(key, 1), m = 1.15;
   const s = Math.min(w / (b.w * m), h / (b.h * m));
-  return (TILES[key] = `<svg viewBox="${f(-w / 2 / s)} ${f(-h / 2 / s)} ${f(w / s)} ${f(h / s)}" width="${w}" height="${h}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><path d="${d}" vector-effect="non-scaling-stroke"/><path d="${circle(C.opening)}" vector-effect="non-scaling-stroke"/></svg>`);
+  return (TILES[key] = `<svg viewBox="${f(-w / 2 / s)} ${f(-h / 2 / s)} ${f(w / s)} ${f(h / s)}" width="${w}" height="${h}" aria-hidden="true" fill="currentColor" stroke="none"><path fill-rule="evenodd" d="${d} ${circle(C.opening)}"/></svg>`);
 }
 
 // ── one drawing for the page (Dial Show Case, show mode) ──

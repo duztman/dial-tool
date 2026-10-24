@@ -10904,7 +10904,7 @@ function tilePicture(key, w = 38, h = 27) {
   if (TILES[key]) return TILES[key];
   const C2 = scaleCase(CASES[key] || CASES.dress, 1), d = silhouetteOf(key, 1), b = caseBox(key, 1), m = 1.15;
   const s = Math.min(w / (b.w * m), h / (b.h * m));
-  return TILES[key] = `<svg viewBox="${f(-w / 2 / s)} ${f(-h / 2 / s)} ${f(w / s)} ${f(h / s)}" width="${w}" height="${h}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><path d="${d}" vector-effect="non-scaling-stroke"/><path d="${circle2(C2.opening)}" vector-effect="non-scaling-stroke"/></svg>`;
+  return TILES[key] = `<svg viewBox="${f(-w / 2 / s)} ${f(-h / 2 / s)} ${f(w / s)} ${f(h / s)}" width="${w}" height="${h}" aria-hidden="true" fill="currentColor" stroke="none"><path fill-rule="evenodd" d="${d} ${circle2(C2.opening)}"/></svg>`;
 }
 var DETAIL = 31;
 var FULL = { w: 126 / 1.2, h: 308 / 1.2 };
