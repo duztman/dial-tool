@@ -11,6 +11,10 @@ W=$(mktemp -d)/ghp
 git worktree add -q "$W" origin/gh-pages
 rm -rf "$W/help" && mkdir -p "$W/help"
 cp guide/help/index.html "$W/help/" && cp -r guide/help/img guide/help/fonts "$W/help/"
+# GitHub Pages lets browsers keep files 10 minutes: each picture and font is asked for with this publish's mark,
+# so a new one is fetched at once; the page itself is fetched fresh after a reload with ?v= anything
+V=$(git rev-parse --short HEAD)
+sed -i -E "s#(src=\"img/[^\"?]+)(\?v=[^\"]*)?\"#\1?v=$V\"#g; s#(url\(fonts/[^)?]+)(\?v=[^)]*)?\)#\1?v=$V)#g" "$W/help/index.html"
 cd "$W" && git add -A help
 if git diff --cached --quiet; then echo "already live: nothing changed"; else
   git commit -qm "Help page from dev $(git -C "$OLDPWD" rev-parse --short HEAD)" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>" && git push -q origin HEAD:gh-pages && echo "live in a minute: https://duztman.github.io/dial-tool/help/"
