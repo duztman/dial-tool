@@ -8,7 +8,10 @@ Taken from github.com/google/fonts (folder `ofl/`) and github.com/dse/routed-got
 (the font research's top tier, `docs/font-tiers-2026-10-16.md`) from google/fonts again, from Peter Wiegel's zips at
 peter-wiegel.de, and — D-DIN — from github.com/amcchord/datto-d-din, a copy of Datto's own `D-DIN_complete.zip` (Datto's
 page is not reachable from a session); unchanged, only renamed (`Jost[wght].ttf` → `Jost-wght.ttf`, spaces to dashes).
-Most carry Reserved Font Names: a file is passed on whole, never subset (docs/font-research-2026-10-16.md §4).
+On 24 Oct 2026 (#501) the middle tier's and the non-Latin numeral fonts that are on google/fonts joined (`apache/` for
+Syncopate). Most carry Reserved Font Names: a file is passed on whole, never subset (docs/font-research-2026-10-16.md §4)
+— but one: Noto Serif SC (25 MB whole, OFL with no Reserved Font Name) is cut to the characters a dial uses (`SUBSET` in
+`web/fonts.mjs`: Latin, digits, Chinese numerals and the date's words).
 Inter, the page's stand-in font, is packed inside the page itself (also OFL). The list is written by `web/fonts.mjs`.
 
 | Family | Files | Copyright | Licence |
@@ -54,3 +57,31 @@ Inter, the page's stand-in font, is packed inside the page itself (also OFL). Th
 | Immermann | `immermann.ttf` | Copyright (c) 2012, Peter Wiegel, www.peter-wiegel.de, wiegel@peter-wiegel.de | [licence](licences/Immermann-OFL.txt) |
 | Koch-Fraktur | `Koch-Fraktur_UNZ1A.ttf` | Copyright (c) 2009, Peter Wiegel, www.peter-wiegel.de, wiegel@peter-wiegel.de | [licence](licences/Koch-Fraktur-OFL.txt) |
 | TGL 0-16 | `TGL-0-16.ttf` `TGL-0-17.ttf` | Copyright (c) 2010, Peter Wiegel, www.peter-wiegel.de, wiegel@peter-wiegel.de | [licence](licences/TGL0-16-OFL.txt) |
+| Aboreto | `Aboreto-Regular.ttf` | Copyright 2022 The Aboreto Project Authors (https://github.com/domija/Aboreto) | [licence](licences/Aboreto-OFL.txt) |
+| Anta | `Anta-Regular.ttf` | Copyright 2019 The Anta Project Authors (https://github.com/Typedesigners/Anta-Regular) | [licence](licences/Anta-OFL.txt) |
+| Audiowide | `Audiowide-Regular.ttf` | Copyright (c) 2012, Brian J. Bonislawsky DBA Astigmatic (AOETI) (astigma@astigmatic.com), with Reserved Font Names "Audiowide" | [licence](licences/Audiowide-OFL.txt) |
+| Big Shoulders Display | `BigShouldersDisplay-wght.ttf` | Copyright 2019 The Big Shoulders Project Authors (https://github.com/xotypeco/big_shoulders) | [licence](licences/BigShouldersDisplay-OFL.txt) |
+| Black Ops One | `BlackOpsOne-Regular.ttf` | Copyright 2022 The Black-Ops Project Authors (https://github.com/googlefonts/googlefonts-project-template) | [licence](licences/BlackOpsOne-OFL.txt) |
+| Courier Prime | `CourierPrime-Regular.ttf` `CourierPrime-Bold.ttf` | Copyright 2015 The Courier Prime Project Authors (https://github.com/quoteunquoteapps/CourierPrime). | [licence](licences/CourierPrime-OFL.txt) |
+| Gilda Display | `GildaDisplay-Regular.ttf` | Copyright 2012 The Gilda Display Project Authors (https://github.com/etunni/gilda-display) with Reserved Font Name 'Gilda'. | [licence](licences/GildaDisplay-OFL.txt) |
+| Julius Sans One | `JuliusSansOne-Regular.ttf` | Copyright (c) 2012, LatinoType (luciano@latinotype.com), with Reserved Font Names 'Julius' | [licence](licences/JuliusSansOne-OFL.txt) |
+| Krona One | `KronaOne-Regular.ttf` | Copyright (c) 2011 by Sorkin Type Co (www.sorkintype.com), | [licence](licences/KronaOne-OFL.txt) |
+| Libre Caslon Display | `LibreCaslonDisplay-Regular.ttf` | Copyright 2012 The Libre Caslon Display Authors (https://github.com/impallari/Libre-Caslon-Display) | [licence](licences/LibreCaslonDisplay-OFL.txt) |
+| Limelight | `Limelight-Regular.ttf` | Copyright (c) 2011 by Sorkin Type Co (www.sorkintype.com), | [licence](licences/Limelight-OFL.txt) |
+| Major Mono Display | `MajorMonoDisplay-Regular.ttf` | Copyright 2018 The Major Mono Project Authors (https://github.com/googlefonts/majormono) | [licence](licences/MajorMonoDisplay-OFL.txt) |
+| Pathway Extreme | `PathwayExtreme-opsz-wdth-wght.ttf` | Copyright 2019 The Pathway Extreme Project Authors (https://github.com/etunni/Pathway-Variable-Font) | [licence](licences/PathwayExtreme-OFL.txt) |
+| Sirin Stencil | `SirinStencil-Regular.ttf` | Copyright (c) 2011, Cyreal (www.cyreal.org), | [licence](licences/SirinStencil-OFL.txt) |
+| Stardos Stencil | `StardosStencil-Regular.ttf` `StardosStencil-Bold.ttf` | Copyright (c) 2011 by vernon adams (vern@newtypography.co.uk), | [licence](licences/StardosStencil-OFL.txt) |
+| Syncopate | `Syncopate-Regular.ttf` `Syncopate-Bold.ttf` |  | [licence](licences/Syncopate-Apache.txt) |
+| Tenor Sans | `TenorSans-Regular.ttf` | Copyright (c) 2011, Denis Masharov <denis.masharov@gmail.com>, | [licence](licences/TenorSans-OFL.txt) |
+| Zen Dots | `ZenDots-Regular.ttf` | Copyright 2021 The Dots Project Authors (https://github.com/googlefonts/zen-dots) | [licence](licences/ZenDots-OFL.txt) |
+| Reem Kufi | `ReemKufi-wght.ttf` | Copyright 2015-2022 The Reem Kufi Project Authors (https://github.com/aliftype/reem-kufi), with Reserved Font Name "Josefin Sans". | [licence](licences/ReemKufi-OFL.txt) |
+| Noto Sans Bengali | `NotoSansBengali-wdth-wght.ttf` | Copyright 2022 The Noto Project Authors (https://github.com/notofonts/bengali) | [licence](licences/NotoSansBengali-OFL.txt) |
+| Noto Sans Devanagari | `NotoSansDevanagari-wdth-wght.ttf` | Copyright 2022 The Noto Project Authors (https://github.com/notofonts/devanagari) | [licence](licences/NotoSansDevanagari-OFL.txt) |
+| Vazirmatn | `Vazirmatn-wght.ttf` | Copyright 2015 The Vazirmatn Project Authors (https://github.com/rastikerdar/vazirmatn) | [licence](licences/Vazirmatn-OFL.txt) |
+| Noto Sans Indic Siyaq Numbers | `NotoSansIndicSiyaqNumbers-Regular.ttf` | Copyright 2022 The Noto Project Authors (https://github.com/notofonts/indic-siyaq-numbers) | [licence](licences/NotoSansIndicSiyaqNumbers-OFL.txt) |
+| Noto Sans Mayan Numerals | `NotoSansMayanNumerals-Regular.ttf` | Copyright 2022 The Noto Project Authors (https://github.com/notofonts/mayan-numerals) | [licence](licences/NotoSansMayanNumerals-OFL.txt) |
+| Noto Serif Ottoman Siyaq | `NotoSerifOttomanSiyaq-Regular.ttf` | Copyright 2023 The Noto Project Authors (https://github.com/notofonts/noto-project-template) | [licence](licences/NotoSerifOttomanSiyaq-OFL.txt) |
+| Noto Sans Tamil | `NotoSansTamil-wdth-wght.ttf` | Copyright 2022 The Noto Project Authors (https://github.com/notofonts/tamil) | [licence](licences/NotoSansTamil-OFL.txt) |
+| Kanit | `Kanit-Regular.ttf` `Kanit-Bold.ttf` | Copyright 2020 The Kanit Project Authors (https://github.com/cadsondemak/kanit) | [licence](licences/Kanit-OFL.txt) |
+| Noto Serif SC | `NotoSerifSC-wght.ttf` | Copyright 2012 Google Inc. All Rights Reserved. | [licence](licences/NotoSerifSC-OFL.txt) |

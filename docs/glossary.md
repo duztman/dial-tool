@@ -203,7 +203,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Window shape** | The hole's outline: rectangle · circle · polygon · arch (moon's) · half (am · pm's) · arc (a ring piece, for a day window at 12). Arch and half belong to their kind. **Turned**: along its radius, not level (off the quarters only). |
 | **Complication** | What a window shows (date · day · am · pm · moon phase; **big date** = Date with its tick, stored as kind 4, R9), and its row's name on Windows (#328). Its buttons act as **tabs**, each keeping its own settings for the window; position shared. Here only a window's kind. Key stays `kind` (R8). |
 | **Window** | A hole in the plate showing something, up to four, at 12 · 3 · 6 · 9; what shows is its **Complication**. Tab says Windows; key and number stay Date / 3 (R8). |
-| **Font list** | Forty-two open-licence families (`web/fonts/`, via `web/fonts.mjs`, #313): Google Fonts, D-DIN, ten by Peter Wiegel. |
+| **Font list** | Sixty-nine open-licence families and Inter (`web/fonts/`, via `web/fonts.mjs`, #313, #501): Google Fonts and Noto, D-DIN, ten by Peter Wiegel; each says what it is (`kinds`: sans, serif, condensed, mono, nonlatin) for the sheet's filters. |
 | **Font sheet** | Opens from the font in Type: fonts shown by numerals, search, **Add fonts** (Google, font URL, file, installed). **Light · Dark** pill (`--font-night`), kept per session; font boxes follow it (#276). |
 | **Font box** | The box in Type (and date or day window panes): the font's numerals, the language button (**EN** while the font sets it, #273), name and colour, styles as **hanging tabs** (#275), Size, Tracking and axes rows (#274). |
 | **Pointer label** | The name beside the pointer for the piece under it, which is outlined. |

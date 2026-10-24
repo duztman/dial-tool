@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.92.21 (web version) · 24 Oct 2026
+
+- **Twenty-eight more fonts** (#501; Okay, 21:50: "501 is on, priority"): the middle tier's eighteen on google/fonts (Aboreto, Anta, Audiowide, Big Shoulders Display, Black Ops One, Courier Prime, Gilda Display, Julius Sans One, Krona One, Libre Caslon Display, Limelight, Major Mono Display, Pathway Extreme, Sirin Stencil, Stardos Stencil, Syncopate — Apache 2.0, Tenor Sans, Zen Dots) and the ten non-Latin numeral fonts (Reem Kufi, Noto Sans Bengali, Noto Sans Devanagari, Vazirmatn, Noto Sans Indic Siyaq Numbers, Noto Sans Mayan Numerals, Noto Serif Ottoman Siyaq, Noto Sans Tamil, Kanit, Noto Serif SC). 69 families and Inter; the list's outlines 0.87 MB in the page (4.79 MB in all).
+- A non-Latin numeral font shows its own numerals in the sheet, left to right. Noto Serif SC (25 MB whole) is cut to Latin, digits, Chinese numerals and the date's words (167 kB); its licence has no Reserved Font Name, so a cut copy may be passed on. Every other file is whole.
+- Each family says what it is (`kinds`: sans · serif · condensed · mono · nonlatin) for the sheet's filters (R35), which come next.
+- Not in yet: Wiegel's 31 and Railway Sans — their sites can't be reached from a session or from Okay's Mac's shell.
+- Checked: the window test (the sheet lists every family, each with numerals in its own outlines; a long name drawn at 70 % then cut, the name column's law); the sheet's end on a screenshot.
+
 ## beta 4.92.20 (web version) · 24 Oct 2026
 
 - **Help opens the help page** (#538; Okay, 21:52: "new help is in, link it there"): the Help link beside the version opens https://duztman.github.io/dial-tool/help/ in a new tab; the guide is linked from the help page's top.
