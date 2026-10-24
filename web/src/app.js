@@ -592,6 +592,8 @@ const FONT_FILTERS = [["sans", "Sans"], ["serif", "Serif"], ["variable", "Variab
 const font_is = (fonts, kind) => fonts.some((f) => kind === "variable" ? Object.keys(f.axes || {}).length > 0
   : kind === "mono" ? (f.kinds || []).includes("mono") || (f.features || []).includes("tnum")
   : (f.kinds || []).includes(kind));
+const FONT_SHEET_KEY = KEY("font-sheet");      // the sheet's tab, search and filters (R35)
+const font_sheet_read = () => { try { return JSON.parse(localStorage.getItem(FONT_SHEET_KEY) || "{}") || {}; } catch (e) { return {}; } };
 const NAME_LEAST = 0.7;                            // in the font sheet a family's name may shrink to this share of its size to fit its column
 const AXIS_WORDS = { wdth: "wd", opsz: "opt", GRAD: "grad", XHGT: "xh", SOFT: "soft", MONO: "mono", CASL: "cas" };
 
@@ -5077,19 +5079,28 @@ class DialTool {
   build_picker() {
     // Find: a field with a magnifier, no words in it (Okay, 13 Oct 2026)
     const find = el("input", { type: "search", id: "font-find", ariaLabel: "Find a font", title: "Find a font" });
-    find.oninput = () => this.fill_picker(true);
+    find.oninput = () => { this.font_sheet_keep(); this.fill_picker(true); };
     const field = el("span", { className: "find" }, find);
     field.insertAdjacentHTML("beforeend", icon(TOOL_ICONS.find));
     // the filters grow out of the search bar (R35; Okay, 24 Oct 2026: "A tray under the field", "Any of them"): six
     // pills under the field, in its outline; each pressed adds its fonts, none pressed shows every font
-    this.font_filters = new Set();
+    const kept = font_sheet_read();
+    this.font_filters = new Set(kept.filters || []);
+    this.font_tab = kept.tab === 1 && "queryLocalFonts" in window ? 1 : 0;
+    find.value = kept.q || "";
     const tray = el("span", { className: "findtray", role: "group", ariaLabel: "Show only" }, ...FONT_FILTERS.map(([kind, word]) => {
       const pill = el("button", { type: "button", className: "filterpill", id: "font-filter-" + kind, textContent: word });
-      pill.setAttribute("aria-pressed", "false");
-      pill.onclick = () => { const on = !this.font_filters.has(kind); if (on) this.font_filters.add(kind); else this.font_filters.delete(kind); pill.setAttribute("aria-pressed", String(on)); this.fill_picker(true); };
+      pill.setAttribute("aria-pressed", String(this.font_filters.has(kind)));
+      pill.onclick = () => { const on = !this.font_filters.has(kind); if (on) this.font_filters.add(kind); else this.font_filters.delete(kind); pill.setAttribute("aria-pressed", String(on)); this.font_sheet_keep(); this.fill_picker(true); };
       return pill;
     }));
     const finder = el("span", { className: "findbox" }, field, tray);
+    this.font_tray = tray;
+    // two tabs over the list (R35; Okay, 24 Oct 2026: "Two tabs over the list"): the tool's own fonts · this computer's,
+    // the second only where the browser can read them (Chrome, Edge; R16 elsewhere). Installed asks the browser the
+    // first time; its fonts are found by name, so the filters go while it is open
+    const sheet_tab = (i, word) => { const b = el("button", { type: "button", className: "tab", id: "font-tab-" + i, textContent: word, role: "tab", onclick: () => this.font_tab_go(i) }); return b; };
+    this.font_tabs = el("div", { className: "sheettabs", hidden: !("queryLocalFonts" in window) }, el("span", { className: "segs", role: "tablist", ariaLabel: "Which fonts" }, sheet_tab(0, "Dial Tool’s fonts"), sheet_tab(1, "Installed")));
     const list = el("div", { className: "fontlist", id: "font-list" });
     // the list's own scrollbar, drawn by the tool (an iPad shows its own only while the list moves): a light pill the
     // whole height, a darker one as long as the share of the list in view, where that share is (Okay, 13 Oct 2026)
@@ -5146,7 +5157,7 @@ class DialTool {
     };
     this.picker = el("dialog", { className: "picker", id: "font-picker" },
       el("header", {}, el("h2", { textContent: "Fonts" }), ground, finder),      // the search stands at the sheet's top right
-      el("div", { className: "listwrap" }, list, rail),
+      el("div", { className: "listbox" }, this.font_tabs, el("div", { className: "listwrap" }, list, rail)),
       el("div", { className: "adding" },
         paste,
         el("div", { className: "quiet note", id: "picker-note" }),
@@ -5154,8 +5165,7 @@ class DialTool {
         el("div", { className: "squares" },
           // the ways to add a font, in the first two of the sheet's three columns, sharing them equally: Installed first when
           // the browser can read this computer's fonts (Chrome, Edge), then a link, then a file (Okay, 14 Oct 2026)
-          el("div", { className: "adds" + ("queryLocalFonts" in window ? " three" : "") },
-            square("local-fonts", "Installed", "The fonts installed on this computer", TOOL_ICONS.screen, () => this.local_fonts(true), { hidden: !("queryLocalFonts" in window) }),
+          el("div", { className: "adds" },
             square("font-add", "Add font link (gfonts, url)", "A font by its Google Fonts link or name, or by a link to a font file", SIGNS.plus, () => { if (paste.hidden) { paste.hidden = false; paste.focus(); } else if (paste.value.trim()) add(); else paste.focus(); }),      // the field for the link is out of sight until this is pressed (Okay, 13 Oct 2026)
             square("font-file-open", "Add font file (woff, ttf, otf)", "A font file from this computer: .ttf · .otf · .woff", SIGNS.sheet, () => file.click())),
           file, legend_button)));
@@ -5170,8 +5180,18 @@ class DialTool {
     return this.picker;
   }
 
+  /** the sheet's tabs: 0 the tool's own fonts (and yours), 1 this computer's. */
+  async font_tab_go(i) {
+    this.font_tab = i;
+    this.font_sheet_keep();
+    this.fill_picker(true);
+    if (i === 1 && ![...this.catalog.values()].some((f) => f.group === "computer")) { await this.local_fonts(true); this.fill_picker(true); }
+  }
+  /** the sheet keeps its tab, search and filters between openings, in this browser (R35; Okay, 24 Oct 2026: it opens on
+   *  the ring's font, "The ring's font", so where the list was scrolled is not kept). */
+  font_sheet_keep() { try { localStorage.setItem(FONT_SHEET_KEY, JSON.stringify({ tab: this.font_tab, q: $("#font-find").value, filters: [...this.font_filters] })); } catch (e) { /* kept for this page only */ } }
+
   open_picker() {
-    $("#font-find").value = "";
     if (!this.picker.open) {
       this.picker.showModal();
       this.picker.focus();                         // not the search field: it waits for a press (on an iPad the keyboard would come up at once; Okay, 13 Oct 2026)
@@ -5183,18 +5203,23 @@ class DialTool {
   fill_picker(again = false) {
     const list = $("#font-list"), R = this.font_shown(), by = this.families(), q = $("#font-find").value.trim().toLowerCase();
     const regular = (fonts) => fonts.find((f) => /^(regular|roman|book|normal)$/i.test(f.style)) || fonts[0];
-    const key = [...by.keys()].join("|") + "/" + q + "/" + [...this.font_filters].join(",") + "/" + G.font_list().length;
+    const key = [...by.keys()].join("|") + "/" + q + "/" + [...this.font_filters].join(",") + "/" + this.font_tab + "/" + G.font_list().length;
+    const installed = this.font_tab === 1;
+    this.font_tray.classList.toggle("away", installed);      // out of sight but keeping its room, so the list doesn't jump between the tabs
+    this.font_tabs.querySelectorAll(".tab").forEach((b, i) => { b.classList.toggle("on", i === this.font_tab); b.setAttribute("aria-selected", String(i === this.font_tab)); });
     if (again || list.dataset.shown !== key) {     // the list itself changes only when fonts arrive or the search does
       list.dataset.shown = key;
       list.replaceChildren();
       let group = null;
-      for (const [family, fonts] of by) {
+      for (const [family, every] of by) {
         if (q && !family.toLowerCase().includes(q)) continue;
-        if (this.font_filters.size && ![...this.font_filters].some((kind) => font_is(fonts, kind))) continue;      // any of the pressed filters
+        const fonts = every.filter((f) => (f.group === "computer") === installed);      // each tab its own fonts: a family both added and installed stands in both, each with its own
+        if (!fonts.length) continue;
+        if (!installed && this.font_filters.size && ![...this.font_filters].some((kind) => font_is(fonts, kind))) continue;      // any of the pressed filters
         const f = regular(fonts);
         if (f.group !== group) {
           group = f.group;
-          const title = { added: "Added by you", computer: "On this computer" }[group];
+          const title = { added: "Added by you" }[group];
           if (title) list.append(el("div", { className: "group quiet", textContent: title }));
         }
         // a line of the sheet (Okay, 13 Oct 2026): the family's name in its own face · its numerals · what it has
@@ -5870,7 +5895,7 @@ class DialTool {
         if (!this.catalog.has(f.postscriptName)) this.catalog.set(f.postscriptName, { family: f.family, style: f.style, ps: f.postscriptName, data: f, group: "computer" });
       }
       // a browser that isn't allowed answers with an empty list, not with an error
-      if (list.length) say(`${list.length} installed fonts are now listed under Family.`);
+      if (list.length) say(`${list.length} installed fonts, under Installed.`);
       else say("The browser gave no fonts: it isn’t allowed to for this page. Click the icon at the left of the address bar → Site settings → Fonts → Allow, reload, and press Installed fonts again. Or use Add font file… (Helvetica Neue is /System/Library/Fonts/HelveticaNeue.ttc).");
       await this.load_fonts_in_use();
     } catch (e) {

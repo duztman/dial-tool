@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.92.23 (web version) · 24 Oct 2026
+
+- **Installed is a tab over the font list** (R35, #501; Okay, 22:45: "Two tabs over the list"): *Dial Tool's fonts* · *Installed*, standing on the list's top line as the hands' tabs do, shown only where the browser can read this computer's fonts (Chrome, Edge). Installed asks the browser the first time; its fonts are found by name, so the filters step out of sight there (keeping their room, so the list doesn't jump). The Installed button at the foot is gone; a link and a file share the two columns with their second lines. A family both added and installed stands in both tabs, each with its own styles.
+- **The sheet opens where it was left**: its tab, search and filters, kept in this browser; scrolled to the ring's own font ("The ring's font").
+- Checked: the window test (new: the tab, the sheet reopened on Installed with its search and no filters, back to Dial Tool's fonts).
+
 ## beta 4.92.22 (web version) · 24 Oct 2026
 
 - **The font sheet's filters** (R35, #501; Okay, 22:20, question mode: "A tray under the field"; "Any of them"): six pills in a tray hanging under the search field, in its outline — Sans · Serif · Variable / Condensed · Mono · Non-Latin (three lines of two on a phone). Each pressed adds its fonts; none pressed shows every font. Variable is a file with axes; Mono is drawn monospaced or has tabular figures; the rest the font list says (`kinds`). Fonts you added or that are on this computer show only with no filter pressed.

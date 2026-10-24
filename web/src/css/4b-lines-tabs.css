@@ -35,9 +35,9 @@
   /* the fill: the same shape, one hairline inside the line; along the cut, a hairline measured straight across is 0.414 wider */
   .tab::after { --in-l: max(calc(var(--cut-l) + 0.414 * var(--hair)), var(--hair)); --in-r: max(calc(var(--cut-r) + 0.414 * var(--hair)), var(--hair));
     background: var(--tab-fill); clip-path: polygon(var(--in-l) var(--hair), calc(100% - var(--in-r)) var(--hair), calc(100% - var(--hair)) var(--in-r), calc(100% - var(--hair)) 100%, var(--hair) 100%, var(--hair) var(--in-l)); }
-  :is(.tabsbar .segs > .tab:first-child, .windowcards .card:first-child > .tab) { --cut-l: 0px; }
+  :is(.tabsbar .segs > .tab:first-child, .windowcards .card:first-child > .tab, .sheettabs .segs > .tab:first-child) { --cut-l: 0px; }
   :is(.tabsbar .segs > .tab:last-child, .windowcards .card:last-child > .tab) { --cut-r: 0px; }
-  :is(.tabsbar .segs > .tab, .windowcards .card) + :is(.tab, .card) { margin-left: calc(-1 * var(--hair)); }      /* one line between two tabs, not two */
+  :is(.tabsbar .segs > .tab, .windowcards .card, .sheettabs .segs > .tab) + :is(.tab, .card) { margin-left: calc(-1 * var(--hair)); }      /* one line between two tabs, not two */
   /* a hanging tab (the font box's styles, #275): the same tab turned over, hanging from the line over it — its cuts at
      the bottom corners, no line of its own at the top (the line it hangs from is the box's). Neighbours share one line:
      every tab but the last leaves its right side open (--line-r: 0), so the next one's left line is the line between */

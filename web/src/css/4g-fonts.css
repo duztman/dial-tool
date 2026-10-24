@@ -64,7 +64,12 @@
   /* the list scrolls, and says so: a slim scrollbar of two pills, a light one the whole height, a darker one for how much is under (Okay, 13 Oct 2026) */
   /* the list scrolls, and says so with a scrollbar the tool draws (an iPad shows its own only while it moves): two slim
      pills in the rows' right margin, a light one the whole height, a darker one for the share in view (Okay, 13 Oct 2026) */
+  .listbox { display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 0; }      /* the tabs standing on the list's top line, then the list */
   .listwrap { position: relative; display: grid; min-height: 0; }
+  /* the sheet's two tabs (R35): Dial Tool's fonts · Installed, as the hands' tabs, standing on the list's top line */
+  .sheettabs[hidden] { display: none; }
+  .sheettabs .segs { display: grid; grid-auto-flow: column; grid-auto-columns: max-content; }
+  .sheettabs .tab { height: var(--tab-high); padding: 0 var(--u4); font-weight: 600; }
   .fontlist { height: 100%; border: var(--hair) solid var(--rule); background: var(--field); overflow-y: auto; scrollbar-width: none; }
   .fontlist::-webkit-scrollbar { display: none; }
   .rail { position: absolute; top: var(--unit); bottom: var(--unit); right: calc((var(--btn-pad) - var(--scrollbar)) / 2 + var(--hair)); width: var(--scrollbar); border-radius: var(--round-pill); background: var(--ground); cursor: pointer; touch-action: none; }
@@ -148,6 +153,7 @@
   .findtray { display: grid; grid-template-columns: repeat(3, auto); justify-content: space-between; gap: var(--u1); padding: var(--u1); border: var(--hair) solid var(--rule); border-top: 0; background: var(--field); }
   .filterpill { height: calc(var(--control) - 2 * var(--u1)); padding: 0 var(--u1); border: var(--hair) solid var(--rule); border-radius: var(--round-pill); color: var(--grey); font-size: var(--t-xs); white-space: nowrap; }
   .filterpill:hover { color: var(--ink); }
+  .findtray.away { visibility: hidden; }      /* on the Installed tab: fonts found by name, no filters (R35) */
   .picker .fontlist { min-height: 0; }
   .picker .adding { display: grid; gap: var(--u4); }      /* straight under the list: its edge is the line between them */
   .picker .squares { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--unit); }      /* on the list's three columns */
@@ -155,8 +161,6 @@
      sheet's foot. The legend's button is the last of them, at the right. */
   /* the ways to add a font share the first two columns equally (two: each a column; three: each a third of the two) */
   .picker .squares > .adds { grid-column: 1 / 3; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--unit); }
-  .picker .squares .adds.three > .pickt small, .picker .squares .adds.three > .pickt br { display: none; }      /* three in the room of two: no second lines */
-  .picker .squares .adds.three > .pickt span { white-space: normal; }
   .picker .squares .pickt { grid-template-columns: auto minmax(0, 1fr); justify-items: start; align-items: center; align-content: center; column-gap: var(--unit); min-height: var(--u8); padding: var(--unit) var(--u3); text-align: left; }
   .picker .squares .pickt span { white-space: nowrap; text-align: left; }
   .picker .squares .pickt { overflow: hidden; }      /* a word longer than its box is cut at the box's edge (Okay, 15 Oct 2026, 07:12: "cutoff the text and leave it") */
