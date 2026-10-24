@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.92.26 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.92.27 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -225,6 +225,7 @@
        measures (--margin, --eye, --gap, --col) and sizes of things (heights, widths), which no scale governs. */
 
     /* asked for by Okay */
+    --guide-add-top: 12px; --guide-add-bottom: 5px;      /* the Guides list's Add line: this much over it, this much under it (Okay, 24 Oct 2026, 23:21, his marks: "Top = 12px", "Bottom = 5px") */
     /* the bar's date popup, as measured from Okay's final drawing (20 Oct 2026, 01:05: "all else is pixel perfect. gaps, placements within blocks, block sizes") */
     --datepop-ground: #BFBFBF;                     /* its light ground */
     --datepop-pad: 8px; --datepop-lead: 10px;      /* inside its frame round the boxes · before the weekday */
@@ -1584,7 +1585,8 @@
   .guidescroll.guidecols { position: relative; display: grid; grid-template-columns: repeat(2, var(--guide-col)); column-gap: var(--gap); align-content: start; padding-inline: var(--pop-pad); }
   .guidescroll.guidecols > * { margin-inline: 0; }
   .guidecol { display: grid; align-content: start; min-width: 0; }
-  .guideadded { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; margin-top: var(--unit); border-top: var(--hair) solid var(--white); }
+  .guideadded { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; margin-top: var(--u4); border-top: var(--hair) solid var(--white); }      /* two units off the last row's rule (Okay, 23:21: "close repeating lines need more space") */
+  .guideadded .guidehead, .guideadded .guidekind:last-child { box-shadow: none; }      /* the last added line meets the foot's edge: no rule of its own there */
   .guideadded[hidden] { display: none; }
   .guidesheet .guidekind { grid-template-columns: minmax(0, 1fr) var(--guide-none) var(--guide-none); column-gap: var(--guide-gap); }
   .guidesheet .guidehead { grid-template-columns: minmax(0, 1fr) auto; }
@@ -1594,7 +1596,7 @@
   .gchev { display: grid; place-items: center; width: var(--guide-none); height: var(--guide-none); color: var(--grey); }
   .gchev:hover, .gchev[aria-expanded="true"] { color: var(--ink); }
   .gchev[aria-expanded="true"] svg { rotate: 180deg; }
-  .guidehead .minus { display: grid; place-items: center; width: var(--guide-none); height: var(--guide-none); border: var(--hair) solid var(--grey); border-radius: var(--round-small); color: var(--grey); }
+  .guidehead .minus { display: grid; place-items: center; width: var(--guide-none); height: var(--guide-none); border: var(--hair) solid var(--grey); border-radius: var(--round-tiny); color: var(--grey); }      /* a square (Okay, 23:21: "square") */
   .guidehead .minus:hover { border-color: var(--ink); color: var(--ink); }
   /* a heading's menu: an outlined pill with its choice; pressed, a small box with the three in its place */
   .gpill { height: var(--control-s); padding: 0 var(--u3); border: var(--hair) solid var(--grey); border-radius: var(--round-pill); color: var(--ink); font-size: var(--t-s); }
@@ -1609,6 +1611,14 @@
   .guidepop.dots { position: absolute; z-index: 3; display: grid; grid-template-columns: repeat(4, var(--guide-none)); gap: var(--guide-gap); padding: var(--u2) var(--u3); border: var(--hair) solid var(--grey); border-radius: var(--round-small); background: var(--paper); }
   .guidepop .tone { width: var(--guide-none); height: var(--guide-none); }
   .guidepop[hidden] { display: none; }
+  /* the foot (Okay's marks, 23:21): Add and Thickness share one grid — their names in a column, Line · Crosshair · Circle
+     three equal boxes from the Thickness box's left edge to the right edge; the Thickness box from there to the rule */
+  .guidesheet .guidesettings { display: grid; grid-template-columns: max-content minmax(0, 1fr) auto; column-gap: var(--gap); padding: var(--guide-add-top) var(--pop-pad) 0; }
+  .guidesheet .guidesettings > :is(.guidehead, .guidelast) { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; margin-inline: 0; padding-inline: 0; }
+  .guidesheet .guidesettings > .guidehead { min-height: 0; margin-bottom: var(--guide-add-bottom); }
+  .guidesheet .guidesettings > .guidehead .segs { grid-column: 2 / -1; justify-self: stretch; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); margin: 0; }
+  .guidesheet .guidelast > .numcell { justify-content: stretch; }
+  .guidesheet .gthick { flex: 1; justify-content: space-around; }
   /* Thickness 1 · 2 · 3: on a dark box, the chosen one ringed */
   .gthick { display: flex; gap: var(--u1); padding: var(--u1); border-radius: var(--round-small); background: var(--paper); }
   .gthick > button { min-width: var(--control-s); height: var(--control-s); border-radius: var(--round-pill); color: var(--ink); }
@@ -7269,7 +7279,7 @@ function window_text(kind, mo, lang = "en", form = 0, own = null) {
 }
 
 // src/geometry.js
-var VERSION = "beta 4.92.26";
+var VERSION = "beta 4.92.27";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
