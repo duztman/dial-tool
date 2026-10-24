@@ -1593,14 +1593,16 @@ class DialTool {
     // the bar's height, for the rows that make room for it (a phone; the showcase closes its row): kept while it is in place
     this.watchers.push(new ResizeObserver(() => { if (bar.offsetHeight) root.style.setProperty("--bar-h", bar.offsetHeight + "px"); }));
     this.watchers.at(-1).observe(bar);
+    requestAnimationFrame(() => this.words_unfold());      // the page opens with the switches' words out, then folds them (#518: "load with animation")
   }
 
   /** how to zoom, beside the zoom buttons: words, then a faint magnifier, nothing to press (Okay, 14 Oct 2026,
    *  23:19: "say cmd+scroll is zoom in out attached to the zoom area. Put a magnifier icon at the end"; 23:26: "at the
    *  end, not a button, faint"). On a screen without a pointer the words say what a finger does. */
-  /** a phone: the switches on the preview show only their signs; a tap on the empty backdrop unfolds their words for
-   *  WORDS_MS, then they fold back (Okay, 15 Oct 2026, 06:20: "hide labels until backdrop tap"; the extended-button
-   *  pattern: a label that folds back to its sign). On a wider screen the words are always there (the stylesheet) */
+  /** the switches on the preview show only their signs; a press on the empty canvas, and the page opening, unfold their
+   *  words for WORDS_MS, then they fold back (Okay, 15 Oct 2026, 06:20: "hide labels until backdrop tap"; 24 Oct 2026,
+   *  #518: "All canvas buttons, labels default hidden. Like on mobile, load with animation"; the extended-button
+   *  pattern: a label that folds back to its sign). Under a pointer the word shows too (the stylesheet) */
   words_unfold() {
     this.main.classList.add("words");
     clearTimeout(this.words_timer);

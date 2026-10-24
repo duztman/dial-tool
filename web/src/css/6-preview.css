@@ -21,11 +21,10 @@
   .guides:has(.guidelist:not([hidden])) { z-index: 1; }      /* its list over the case and X-ray under it */
   /* the case's switch (in the top right corner, under Guides): its kind's name and a chevron, as Backdrop is a word and its chip; the
      system's list over it, unseen; with a case on, its outline solid like a switch that is on */
-  .casebox { position: relative; gap: var(--unit); padding: 0 0 0 var(--u3); border-radius: var(--round-switch); }
+  .casebox { --sign-w: 18px; position: relative; gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); border-radius: var(--round-switch); }
   /* its chevron in a square of its own behind a line, as Guides' and Shadows' are (4.82; Okay, 19 Oct 2026: "Case icon
      and its spacing need work"): the sign u3 from the left as theirs, the word u4 clear of the line */
-  .casebox .arrow { align-self: stretch; display: grid; place-items: center; width: var(--control-large); margin-left: calc(var(--u4) - var(--unit)); border-left: var(--hair) solid var(--line-faint); }
-  .casebox:not(.on) .arrow { border-left-style: dotted; }
+  .casebox .arrow { align-self: stretch; display: grid; place-items: center; }      /* folded with the word, no square of its own (the switches' words, below) */
   .casebox > select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
   .casebox:not(.on) { border-style: dotted; }      /* not on: its outline dotted — shorter dashes, shorter gaps, a denser line (Okay, 19 Oct 2026: "Dashes for invisible: shorter dash shorter gaps, denser outline") */
   .casebox.on > :is(.sign, svg) { opacity: 1; }      /* on: its sign alone lights; the word stays dim but under the pointer (Okay, 20 Oct 2026, 02:37: "when on, only the icon lights up. Labels stay dim at all times, except hover") */
@@ -88,7 +87,7 @@
   /* Versions, under undo (#435): a switch with its sign and word, as Backdrop's; its list drops under it — the panel's
      ground, its cards as wide as the Gallery's (the panel's width). Function first: its look is to be designed with Okay */
   .versions { position: relative; display: flex; }
-  .versionsbox { gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch); }
+  .versionsbox { --sign-w: 16px; gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); border-radius: var(--round-switch); }
   .versionlist { position: absolute; top: calc(100% + var(--unit)); left: 0; width: var(--panel-w); max-width: calc(100vw - 2 * var(--canvas-inset)); max-height: var(--list-room); overflow-y: auto; padding: 0 var(--pop-pad); border: var(--hair) solid var(--ink); border-radius: var(--round-switch); background: var(--paper); color: var(--ink); }
   .versionline { display: flex; gap: var(--unit); }
   #instance-cards a { touch-action: none; }      /* a finger on a card arranges, not scrolls (the list scrolls by its edge) */
@@ -102,13 +101,12 @@
   .comparedial > svg { display: block; width: 100%; height: 100%; }
   .undobox.none, .undobox.none:hover { border-color: var(--line-faint); box-shadow: none; cursor: default; pointer-events: none; }      /* no step that way: its outline as the others' (Okay, 21 Oct 2026, 23:34: "keep outlines as others while inactive"), its sign paler, nothing under a pointer or a finger */
   :is(.undobox.none, .undobox.none:hover) > * { opacity: calc(var(--faint) / 2); }
-  .guidesbox { gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch) 0 0 var(--round-switch); }      /* on, its word is whole (black or white), never bolder (Okay, 14 Oct 2026: "when active label does not get bolder, just gets black") */
+  .guidesbox { --sign-w: 18px; gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); border-radius: var(--round-switch) 0 0 var(--round-switch); }      /* on, its word is whole (black or white), never bolder (Okay, 14 Oct 2026: "when active label does not get bolder, just gets black") */
   .guidesmore { width: var(--control-large); border-left: 0; border-radius: 0 var(--round-switch) var(--round-switch) 0; }
   .guidesmore[aria-expanded="true"] svg { rotate: 180deg; }      /* open, only its arrow turns */
   /* Backdrop, standing on the Shadows switch (its row held the eye switch too until 15 Oct 2026, 03:41) */
   .backdrops { position: absolute; z-index: 3; left: var(--stop-short); bottom: calc(var(--canvas-inset) + var(--control-large) + var(--unit)); display: flex; flex-direction: column-reverse; align-items: flex-start; gap: var(--unit); }      /* Backdrop over Shadows at the bottom left (Okay, 19 Oct 2026: "Guides case and xray move top right corner") */
   .casebox .sign, .xraybox > svg { display: grid; flex: none; }
-  .xraybox { padding-right: var(--u4); }      /* no chevron after its word: as much room after it as Backdrop's (4.86; Okay: "Xray's box needs padding after label") */
   .tinyopen .x { display: none; }      /* its sign is the showcase's of 4.85, whose X is the showcase's way out */
   .casebox .sign { width: auto; }      /* its drawing's own 18, not a sign's 26 (4.82: four points stood empty either side of it) */
   /* the eye switch, alone at the preview's bottom right, over the zoom in the bar (Okay, 15 Oct 2026, 03:41) */
@@ -123,7 +121,7 @@
   .eyebox[aria-pressed="true"] svg { position: relative; color: var(--off-canvas); clip-path: inset(var(--hair) round calc(var(--round-switch) - 2 * var(--hair))); }
   main { --off-canvas: var(--white); }
   main.dark { --off-canvas: var(--ink); }
-  .backdropbox { gap: var(--unit); padding: 0 var(--u4) 0 var(--u3); border-radius: var(--round-switch); }
+  .backdropbox { --sign-w: var(--dot); gap: 0; padding: 0 calc((var(--control-large) - 2 * var(--hair) - var(--sign-w)) / 2); border-radius: var(--round-switch); }
   .backdropbox[aria-expanded="true"] { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); }
   .backdropbox .dot { border-color: var(--on-canvas); }
   /* a swatch on the canvas (Backdrop's, the strap's): its colour inside its outline only. Painted under the outline as
@@ -271,10 +269,26 @@
   /* a switch whose words show is filled with the backdrop's colour, so what is under it (the dial) doesn't show through
      its words (Okay, 15 Oct 2026, 07:07: "these buttons get solid bg color when labels visible"): the iris switch open
      (ACTIVATE SHOWCASE), the labelled switches — always on a wide screen, on a phone while unfolded (8-narrow.css) */
-  .irisbox[aria-expanded="true"], :is(.guidesbox, .guidesmore, .backdropbox, .casebox) { background: var(--canvas-fill); }
+  /* the switches' words (#518; Okay, 24 Oct 2026: "All canvas buttons, labels default hidden. Like on mobile, load with
+     animation. On desktop hover on icon reveals the name, whole is a button"; "Labels appear when canvas empty area
+     clicked"): a switch shows its sign alone, a square; its word (and Case's chevron) unfolds for a while after the page
+     opens and after a press on the empty canvas (main.words, words_unfold() in app.js), or under the pointer */
+  :is(.guidesbox, .backdropbox, .versionsbox) > .word, .casebox :is(.word, .arrow) { display: inline-grid; place-items: center; max-width: 0; overflow: hidden; white-space: nowrap;
+    transition: max-width var(--iris-time) var(--view-ease), margin var(--iris-time) var(--view-ease); }
+  :is(.guidesbox, .backdropbox, .versionsbox, .casebox) { transition: padding var(--iris-time) var(--view-ease); }
+  main.words :is(.guidesbox, .backdropbox, .versionsbox) > .word, main.words .casebox :is(.word, .arrow) { max-width: var(--word-max); margin-left: var(--unit); }
+  main.words :is(.guidesbox, .backdropbox, .versionsbox, .xraybox) { padding-right: var(--u4); }      /* as much room after the word as before the sign (4.86: "Xray's box needs padding after label") */
+  @media (hover: hover) {
+    :is(.guidesbox, .backdropbox, .versionsbox):hover > .word, .casebox:hover :is(.word, .arrow) { max-width: var(--word-max); margin-left: var(--unit); }
+    :is(.guidesbox, .backdropbox, .versionsbox, .xraybox):hover { padding-right: var(--u4); }
+  }
+  /* a switch whose word shows is filled with the backdrop's colour, so the dial under it doesn't show through its word
+     (Okay, 15 Oct 2026, 07:07: "these buttons get solid bg color when labels visible"); folded to its sign, an outline */
+  .irisbox[aria-expanded="true"], main.words :is(.guidesbox, .guidesmore, .backdropbox, .casebox, .versionsbox) { background: var(--canvas-fill); }
+  @media (hover: hover) { :is(.guidesbox, .backdropbox, .casebox, .versionsbox):hover { background: var(--canvas-fill); } }
   /* show mode: no fill — its backdrop is a gradient, so a fill of one colour stands out as a patch (Okay, 24 Oct 2026: "Align
      these, remove bg, same as main"; on the dial side the fill is the backdrop's own colour and so not seen) */
-  .showing :is(.guidesbox, .guidesmore, .backdropbox, .casebox) { background: none; }
+  .showing :is(.guidesbox, .guidesmore, .backdropbox, .casebox, .versionsbox) { background: none; }
 
   /* show mode's Backdrop (ground_pop() in app.js; the Show Case's background popup): the Shadows list's night part, opening
      upward from its switch; one colour on the left, a gradient on the right, ten tiles each in rows of five, and under each

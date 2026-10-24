@@ -6,6 +6,7 @@ Moved out of build-list.md on 19 Oct 2026 (beta 4.87). Numbers are never reused;
 
 | # | Item | Status |
 |---|---|---|
+| 518 | **Canvas buttons: labels hidden by default**, loaded with an animation as on mobile; on desktop hovering the icon reveals the name, the whole is a button. **Chevrons all point down** | **done** — chevrons 4.92.3; labels 4.92.4: every switch's word folds to its sign, at every width (the phone's mechanism, `main.words`); out for 3 s when the page opens and after a press on the empty canvas, and under the pointer |
 | 517 | **Versions go up, right of the top-row buttons** | **done — 4.92.3**: on the top line, a unit after undo · redo · ⌄ (one rule for every width) |
 | 520 | **Cases are filled shapes, no outline** ("these cases are not outlines, these are filled in shapes with no outline") | **done — 4.92.3**: show mode's Case tiles are filled silhouettes |
 | 533 | **The Plate row goes; its colour stands on the Dial heading** (his drawing: the pill up on *Dial*, "Row gone") | **done — 4.92.3** |

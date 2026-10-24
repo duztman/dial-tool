@@ -1,5 +1,11 @@
 # Dial Tool — changelog
 
+## beta 4.92.4 (web version) · 24 Oct 2026
+
+- **The canvas switches show their signs alone** (#518; Okay, 24 Oct 2026: "All canvas buttons, labels default hidden. Like on mobile, load with animation. On desktop hover on icon reveals the name"; "Labels appear when canvas empty area clicked"): Guides, Case, X-ray, Versions, Backdrop and Shadows are squares; their words unfold for 3 s when the page opens and after a press on the empty canvas, and under the pointer on a Mac. One mechanism for every width: the phone's (`main.words`, `words_unfold()`), moved out of `8-narrow.css` into `6-preview.css` (R34). A switch is filled with the backdrop's colour only while its word shows (Okay, 15 Oct 2026), never in show mode.
+- Case's chevron folds with its word; it has no square of its own any more.
+- Checked: the window test (two checks follow the folded words; the font sheet's check measures in two steps and prints the bar's top and the sheet's foot: it missed by 1 px, 33 for 34, in some runs and not others, both with 4.92.3's stylesheet and this one), crops at 1440, a phone's 390, and show mode.
+
 ## beta 4.92.3 (web version) · 24 Oct 2026
 
 Okay's Oct 24 notes, group 1 (small things; build list group L):

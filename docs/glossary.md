@@ -105,6 +105,7 @@ If a term is used differently in conversation, ask, then update this file.
 | **Show box** | Thin box under the hand tabs and window cards holding the one tick **Show** (#261). |
 | **Gallery** | Last pane of Export: dials to open and take apart (`web/gallery.mjs`; #286, #289): the First dial, Okay's versions from the research atlas, six to pick from, five **examples** (of the **classics**, `web/examples.mjs`), Okay's watch. The **Gallery pill** leads there. A card opens in **focus**: *Edit this dial* or *In a new tab*. |
 | **Tab** | A choice of what the panes below edit, drawn as touching tabs with V-cut corners, the chosen one black: hand tabs, window cards, Complication buttons. Not the five section **tabs**. |
+| **Switch's word** | A canvas switch's name beside its sign (Guides, Case, Backdrop…): folded to the sign; out for 3 s at load and after a press on the empty canvas (`main.words`), and under the pointer (#518). |
 | **Tag** | The small label shown with a wordless button on hover; one for the tool (`.tag`). A value button's tag gives name and value. |
 | **Build** | A numbered release ("beta 4.90"), listed with its commit in `docs/versions.md`; not a **Version** (saved dial). Numbering: R19. |
 | **Undo step** | The dial before a change, taken once it stands still. ⌘Z back, ⇧⌘Z forward. |
