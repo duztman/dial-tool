@@ -51,7 +51,8 @@
   .row > label:first-child { color: var(--grey); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .row > .ownnames { grid-column: 3 / -1; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: var(--u1); padding: var(--u1) 0; }      /* your own words, side by side (#515, #516) */
   .ownnames > .ownname { min-width: 0; padding: 0 var(--u1); text-align: center; }      /* as typed: what the window draws */
-  .row.off > label:first-child { color: var(--uiblack, var(--ink)); }      /* a toggle that is off: its name goes dark (#525; Okay, 24 Oct 2026: "Off text label also goes black") */
+  .row.off > label:first-child { color: var(--uiblack, var(--ink)); }
+  .row:has(> .toggle[aria-checked="true"]) > label:first-child { color: var(--white); }      /* on: its name white (19:40: "On text white switch to the right and pill filled 'black'") */      /* a toggle that is off: its name goes dark (#525; Okay, 24 Oct 2026: "Off text label also goes black") */
   .row > label.strong:first-child { color: var(--ink); font-weight: 600; }      /* a name where a label would stand: the selected ring's, before its kinds */
   /* a label with a small menu beside it: the words, then a boxed arrow with the browser's own menu lying over it */
   .menulabel { display: flex; align-items: center; gap: var(--unit); min-width: 0; }

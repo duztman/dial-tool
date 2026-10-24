@@ -33,8 +33,8 @@
   .pillswitch.many { flex-wrap: wrap; }
   /* a toggle (#525): a small track as tall as the Gallery pill, a dot travelling in it. Off: its outline, the dot at the
      left in the outline's colour, its row's name dark. On: the dot white at the right, on the filled track */
-  .toggle { position: relative; flex: none; width: var(--toggle-w); height: var(--toggle-h); padding: 0; border: var(--hair) solid var(--ink); border-radius: var(--round-pill); background: none; }
-  .toggle > .knob { position: absolute; top: 50%; left: var(--u1); width: var(--toggle-dot); height: var(--toggle-dot); border-radius: 50%; background: var(--ink); translate: 0 -50%; transition: left var(--iris-time) var(--view-ease), background var(--iris-time); }
+  .toggle { position: relative; flex: none; width: var(--toggle-w); height: var(--toggle-h); padding: 0; border: var(--hair) solid var(--uiblack, var(--ink)); border-radius: var(--round-pill); background: none; }      /* off: all black — its outline, its dot, its name (Okay, 24 Oct 2026, 19:40: "Off; colors all black") */
+  .toggle > .knob { position: absolute; top: 50%; left: var(--u1); width: var(--toggle-dot); height: var(--toggle-dot); border-radius: 50%; background: var(--uiblack, var(--ink)); translate: 0 -50%; transition: left var(--iris-time) var(--view-ease), background var(--iris-time); }
   .toggle[aria-checked="true"] { background: var(--uiblack, var(--ink)); border-color: var(--uiblack, var(--ink)); }
   .toggle[aria-checked="true"] > .knob { left: calc(100% - var(--u1) - var(--toggle-dot)); background: var(--white); }
   /* free: each choice a pill of its own, wrapping, a half unit apart (#524; Okay, 24 Oct 2026: "Options can be free living single pills") */

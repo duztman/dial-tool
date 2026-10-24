@@ -1,5 +1,10 @@
 # Dial Tool — changelog
 
+## beta 4.92.14 (web version) · 24 Oct 2026
+
+- **Shenanigans' toggles, his marks of 19:40**: off, all black — the outline, the dot, the name ("Off; colors all black"); on, the name white, the dot at the right on the black-filled track ("On text white switch to the right and pill filled 'black'"); every line one height with the same room over the first and under the last, All centred on the block's middle in its third, its toggle on the same right edge ("Greens show equal paddings and alignment").
+- Noted for later: a short address that still opens the dial (#537).
+
 ## beta 4.92.13 (web version) · 24 Oct 2026
 
 - **Edit one numeral gives one numeral its own font and colour** (#513; "gets font (with it color) change"): a *Font* row (its font's name opens the font sheet for this numeral alone; *As the ring* takes it back) and a *Colour* pill. The font is kept with the numeral's nudges (`nudge[i].family`, `ps`, `axes`) and fetched when used (R35); the colour is the ring's colour for that position (`cs`, the band's sector colours' key), drawn as a shape of its own, as a band's sectors are. *Reset this numeral* takes both away with the nudges. Marks get theirs with #349.
