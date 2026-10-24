@@ -6,7 +6,7 @@ const fs = require("fs"), path = require("path");
 const WEB = path.join(__dirname, "../../web");
 const WANT = {
   dial: 'button[data-tab="Dial"]', rings: 'button[data-tab="Rings"]', hands: 'button[data-tab="Hands"]', windows: 'button[data-tab="Date"]', export: 'button[data-tab="Export"]',
-  undo: "#undo", redo: "#redo", history: "#history-more", versions: "#versions",
+  mark: ".mast", undo: "#undo", redo: "#redo", history: "#history-more", versions: "#versions",
   guides: "#guides", case: "#case", xray: "#xray", backdrop: "#backdrop", shadows: "#shadows",
   tiny: "#tiny-open", eye: "#eye-box", iris: "#iris-box", play: "#play", zoom: ".zoomwell", fit: "#fit",
 };

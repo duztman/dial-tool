@@ -12,14 +12,20 @@
 @font-face{font-family:Inter;font-weight:500;font-display:swap;src:url(fonts/Inter-Medium.woff2) format("woff2")}
 @font-face{font-family:Inter;font-weight:600 700;font-display:swap;src:url(fonts/Inter-SemiBold.woff2) format("woff2")}
 :root{--paper:#f3f1ec;--ink:#1b1a18;--mute:#77736b;--line:#d8d4cb;--gut:16px}
-*{box-sizing:border-box}html{scroll-padding-top:16px}
+*{box-sizing:border-box}html{scroll-padding-top:96px}
+.topbar{position:sticky;top:0;z-index:2;background:var(--paper);border-bottom:1px solid var(--line)}
+.top{display:grid;grid-template-columns:190px 1fr;gap:48px;align-items:center;max-width:1200px;margin:0 auto;padding:18px var(--gut)}
+.brand{display:flex;align-items:center;gap:10px;line-height:1;font-size:26px;font-weight:600;letter-spacing:-.01em;text-decoration:none;white-space:nowrap}
+.brand .ic{margin:0}.brand .ic svg{width:1em;height:1em}
+.page{display:flex;align-items:baseline;line-height:1;justify-content:space-between;gap:16px}
+.page .title{font-size:26px;font-weight:600;letter-spacing:-.01em}
+.page .ver{font-size:15px;color:var(--mute)}
 body{margin:0;background:var(--paper);color:var(--ink);font:19px/1.4 Inter,ui-sans-serif,system-ui,sans-serif}
-.wrap{max-width:1200px;margin:0 auto;padding:32px var(--gut) 80px;display:grid;grid-template-columns:190px 1fr;gap:48px}
-nav{position:sticky;top:24px;align-self:start;font-size:15px;line-height:1.9}
+.wrap{max-width:1200px;margin:0 auto;padding:28px var(--gut) 80px;display:grid;grid-template-columns:190px 1fr;gap:48px}
+nav{position:sticky;top:104px;align-self:start;font-size:15px;line-height:1.9}
 nav a{display:block;color:var(--mute);text-decoration:none}nav a:hover{color:var(--ink)}
 nav b{display:block;margin:14px 0 2px;color:var(--ink);font-weight:600}
-header h1{margin:0;font-size:36px;font-weight:600;letter-spacing:-.01em}
-header p{margin:6px 0 0;color:var(--mute);max-width:60ch}
+.intro p{margin:0;color:var(--mute);max-width:60ch}
 h2{display:flex;align-items:center;gap:10px;margin:56px 0 4px;font-size:26px;font-weight:600;padding-bottom:8px;border-bottom:1px solid var(--ink)}
 h3{margin:28px 0 6px;font-size:19px;font-weight:600}
 p.lead{margin:8px 0 0;color:var(--mute);max-width:64ch}
@@ -32,7 +38,7 @@ ol,ul{padding-left:20px;max-width:66ch}li{margin:3px 0}
 a{color:inherit}
 code{font:17px ui-monospace,Menlo,monospace}
 footer{margin-top:64px;font-size:14px;color:var(--mute)}
-@media (max-width:760px){.shot i{width:15px;height:15px;font-size:9px;line-height:15px}.wrap{grid-template-columns:1fr;gap:16px}nav{position:static;display:flex;flex-wrap:wrap;gap:4px 14px}nav b{width:100%;margin:6px 0 0}dl{grid-template-columns:1fr}dt{border-bottom:0;padding-bottom:0}}
+@media (max-width:760px){.top{grid-template-columns:auto 1fr;gap:20px;padding:14px var(--gut)}.brand,.page .title{font-size:21px}html{scroll-padding-top:64px}.shot i{width:15px;height:15px;font-size:9px;line-height:15px}.wrap{grid-template-columns:1fr;gap:16px}nav{position:static;display:flex;flex-wrap:wrap;gap:4px 14px}nav b{width:100%;margin:6px 0 0}dl{grid-template-columns:1fr}dt{border-bottom:0;padding-bottom:0}}
 form.report{display:grid;gap:12px;max-width:620px;margin-top:12px}
 form.report label{display:grid;gap:4px;font-size:17px;color:var(--mute)}
 form.report label b{color:var(--ink);font-weight:500}
@@ -59,6 +65,10 @@ dt .ic{margin-right:8px}h2 .ic svg{width:1.3em;height:1.3em}
 </style>
 </head>
 <body>
+<div class="topbar"><header class="top">
+  <a class="brand" href="../" title="Open the tool"><i class="ic" data-ic="mark"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="7" stroke-width="1.375"></circle><path d="M1.62 10.88L10.88 1.62M6.5 6H14.71M6.5 6V14.84M10 6V10H6.5M10 10L12.95 12.95" stroke-width="1"></path></svg></i>Dial Tool</a>
+  <div class="page"><span class="title">Help</span><span class="ver">beta 4.92.11</span></div>
+</header></div>
 <div class="wrap">
 <nav aria-label="Contents">
   <b>Start</b><a href="#idea">The idea</a><a href="#screen">The screen</a><a href="#first">A first dial</a>
@@ -67,9 +77,8 @@ dt .ic{margin-right:8px}h2 .ic svg{width:1.3em;height:1.3em}
   <b>More</b><a href="#keys">Keys and pointer</a><a href="#how">How do I…</a><a href="#words">Words</a><a href="#report">Report a bug</a>
 </nav>
 <main>
-<header>
-  <h1>Dial Tool · Help</h1>
-  <p>Every pane and control, one sentence each. For the illustrated walk-through and the maker sheet, see the <a href="../guide/" target="_blank" rel="noopener">guide</a>. Written for beta 4.92.</p>
+<header class="intro">
+  <p>Every pane and control, one sentence each. For the illustrated walk-through and the maker sheet, see the <a href="../guide/" target="_blank" rel="noopener">guide</a>.</p>
 </header>
 
 <h2 id="idea">The idea<span class="map" data-map="idea" title="Where on the screen"><svg viewBox="-.5 -.5 65 41" aria-hidden="true"><rect width="64" height="40" rx="1.5" class="frame"/><path d="M20.48 0V37.2M0 37.2H64" class="line"/><rect x="20.479999999999997" y="0.0" width="43.52" height="37.2" rx=".6" class="on"/></svg></span></h2>

@@ -60,5 +60,6 @@ if "--done" in sys.argv:
     new = f'<meta name="checked" content="{version}">'
     page = re.sub(r'<meta name="checked" content="[^"]+">', new, page) if checked != "never" else page.replace("<title>", new + "\n<title>", 1)
     page = re.sub(r"(<footer>Dial Tool · )beta [\d.]+( · help written )[^·<]+", lambda m: f"{m[1]}{version}{m[2]}" + __import__("datetime").date.today().strftime("%-d %b %Y") + " ", page)
+    page = re.sub(r'<span class="ver">[^<]*</span>', f'<span class="ver">{version}</span>', page)
     (here / "index.html").write_text(page)
     print(f"\nrecorded: page checked against {version}; labels.txt written")
