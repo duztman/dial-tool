@@ -36,14 +36,14 @@ nav b{display:flex;align-items:center;margin:0 0 2px;color:var(--ink);font-weigh
 .intro p{margin:.5em 0 0;color:var(--mute);max-width:60ch}
 h2{clear:both;position:relative;margin:56px 0 4px;font-size:26px;font-weight:600;padding-bottom:8px;border-bottom:1px solid transparent}
 h2::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:var(--ink);z-index:1}
-h3{margin:28px 0 6px;font-size:19px;font-weight:600}
-p.lead{margin:12px 0 4px;color:var(--mute);max-width:64ch}
+h3{margin:42px 0 9px;font-size:19px;font-weight:600}
+p.lead{margin:18px 0 6px;color:var(--mute);max-width:64ch}
 dl{display:grid;grid-template-columns:9em minmax(0,1fr);column-gap:16px;margin:0;border-top:1px solid var(--line)}
-dt,dd{margin:0;padding:11px 0;border-bottom:1px solid var(--line)}
+dt,dd{margin:0;padding:16.5px 0;border-bottom:1px solid var(--line)}
 dt{font-weight:500;padding-right:16px}dd{color:var(--ink)}
 .watch{margin:10px 0 0 24px;font-size:17px;color:var(--mute);max-width:60ch}
 .watch::before{content:"Watch · ";color:var(--ink);font-weight:600}
-ol,ul{padding-left:20px;max-width:66ch}li{margin:14px 0}
+ol,ul{padding-left:20px;max-width:66ch}li{margin:21px 0}
 a{color:inherit}
 code{font:17px ui-monospace,Menlo,monospace}
 footer{margin-top:64px;font-size:14px;color:var(--mute)}
@@ -96,7 +96,7 @@ h2:has(.map) + .lead + *{clear:both}
 .box img{display:block;max-width:100%;max-height:calc(100vh - 110px);width:auto;height:auto;border:0;border-radius:4px;box-shadow:0 8px 30px rgba(0,0,0,.18)}
 .box figcaption{margin-top:12px;color:var(--ink);font-size:17px}.box figcaption b{font-weight:600}.box figcaption span{color:var(--mute)}
 table.two{width:100%;border-collapse:collapse;margin-top:10px;table-layout:fixed}
-table.two th,table.two td{text-align:left;vertical-align:top;padding:11px 12px 11px 0;border-bottom:1px solid var(--line)}
+table.two th,table.two td{text-align:left;vertical-align:top;padding:16.5px 12px 16.5px 0;border-bottom:1px solid var(--line)}
 table.two thead th{font-size:15px;color:var(--mute);font-weight:500;padding-top:0}
 table.two tbody th{width:9em;font-weight:500}table.two thead th:first-child{width:9em}
 @media (max-width:760px){table.two thead{display:none}table.two,table.two tbody,table.two tr,table.two th,table.two td{display:block;width:auto}table.two tbody th{padding-bottom:2px;border:0}table.two td{padding:2px 0 8px;border:0}table.two td:not([colspan])::before{display:block;font-size:14px;color:var(--mute)}table.two td:nth-of-type(1):not([colspan])::before{content:"Mouse"}table.two td:nth-of-type(2)::before{content:"Finger"}table.two tr{border-bottom:1px solid var(--line);padding:9px 0}}
@@ -387,6 +387,16 @@ table.two tbody th{width:9em;font-weight:500}table.two thead th:first-child{widt
   addEventListener("keydown", (e) => { if (e.key === "Escape") box.classList.remove("open"); });
 }
 
+{ // a jump from the menu lands the section's rule on the line under the menu's first title (Okay, 24 Oct 2026, 21:01:
+  // "Lines align with top menu line when jumped to"); measured at the time, so a heading with a sign or a picture lands the same
+  const line = () => document.querySelector("nav b").getBoundingClientRect().bottom;
+  const land = (id, smooth) => { const h = document.getElementById(id); if (!h) return;
+    scrollTo({ top: scrollY + h.getBoundingClientRect().bottom - line(), behavior: smooth ? "smooth" : "auto" }); };
+  document.querySelectorAll('a[href^="#"]').forEach((a) => a.addEventListener("click", (e) => {
+    const id = a.hash.slice(1); if (!document.getElementById(id) || !document.querySelector("nav b").offsetParent || getComputedStyle(document.querySelector("nav")).position !== "sticky") return;
+    e.preventDefault(); history.pushState(null, "", "#" + id); land(id, !matchMedia("(prefers-reduced-motion: reduce)").matches); }));
+  addEventListener("load", () => { if (location.hash && getComputedStyle(document.querySelector("nav")).position === "sticky") land(location.hash.slice(1), false); });
+}
 { // the menu follows the reader: the sections in view are marked, their group gets the eye
   const links = [...document.querySelectorAll("nav a")], seen = new Set();
   const mark = () => { links.forEach((a) => a.classList.toggle("on", seen.has(a.hash.slice(1))));
