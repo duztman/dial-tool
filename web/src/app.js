@@ -343,6 +343,21 @@ const POP_LINGER_MS = 1200, POP_FADE_MS = 120;      // the number popup: after i
 const SNAP_DEG = 2;        // a text ring's angle snaps to an index this close (#297)
 const RING_ROWS = 5;       // the ring list shows this many rings (and the drawer) before it scrolls; its pill makes it taller or shorter (#256)
 const SPIN_MS = 1600;      // Now and back: the big hands turn once, opposite ways, and land; the seconds hand goes straight there (07:36)
+// the Shadows pane's parts, seen from the side (#526; Okay, 25 Oct 2026: "Schematic, as sketched"): the cap a dot;
+// a hand a bar with its pipe at the left, the seconds thinnest and longest; a ring an ellipse ring; the dial a flat
+// ellipse with its hole and a window; a date disc a dashed ellipse. Each 28 × 18, in the label's current colour.
+const PART_PICS = (() => {
+  const pic = (inside, fill = "currentColor", stroke = "none") => `<svg class="pic" viewBox="0 0 28 18" width="28" height="18" aria-hidden="true" fill="${fill}" stroke="${stroke}" stroke-width="${DENSE}" stroke-linecap="round">${inside}</svg>`;
+  return {
+    cap: pic(`<circle cx="14" cy="9" r="3"/>`),
+    second: pic(`<circle cx="5" cy="9" r="2"/><rect x="5" y="8" width="20" height="2" rx="1"/>`),
+    minute: pic(`<circle cx="5" cy="9" r="2.5"/><rect x="5" y="7.5" width="16" height="3" rx="1.5"/>`),
+    hour: pic(`<circle cx="5" cy="9" r="3"/><rect x="5" y="7" width="12" height="4" rx="2"/>`),
+    ring: pic(`<ellipse cx="14" cy="9" rx="12" ry="4.5"/><ellipse cx="14" cy="9" rx="7" ry="2.5"/>`, "none", "currentColor"),
+    dial: pic(`<ellipse cx="14" cy="9" rx="13" ry="5"/><ellipse cx="14" cy="9" rx="1.5" ry="0.8"/><rect x="19" y="8" width="3" height="2"/>`, "none", "currentColor"),
+    disc: pic(`<ellipse cx="14" cy="9" rx="10" ry="3.5" stroke-dasharray="2 2"/>`, "none", "currentColor"),
+  };
+})();
 const TOOL_ICONS = {
   // on 18; a quiet sign, thin and light (Okay, 11 Oct 2026; again 14 Oct, 04:11: "thinner lines"): DENSE, corners
   // a sixteenth heavier as on any box; light by its grey. Outer edge where it was (1 … 17)
@@ -2680,21 +2695,33 @@ class DialTool {
     this.shadows_open = open;
     const row = (r) => this.build_row({ ...r, scope: "global" });
     const head = (text) => el("div", { className: "guidehead" }, el("span", { className: "name", textContent: text }));
-    const light = [row(num("sh_from", "From", 0, 359, 1, { whole: true })), row(num("sh_rise", "Height", 5, 85, 1, { whole: true })),
-      row(num("sh_dark", "Darkness", 0, 100, 1, { whole: true })), row(chk("sh_blur", "Soft edge")),
-      row(num("sh_bevel", "Bevels %", 0, 100, 1, { whole: true }))];      // the hands' bevels' strength; each hand's own Bevel tick, beside its Show, turns its bevel on
-    const heights = [row(num("sh_hour", "Hour hand", 0, 3, 0.05)), row(num("sh_minute", "Minute hand", 0, 3, 0.05)), row(num("sh_second", "Seconds hand", 0, 3, 0.05)), row(num("sh_cap", "Cap’s top", 0, 4, 0.05))];
-    const under = [row(num("sh_disc", "Date discs", 0, 2, 0.05))];
-    this.shadow_rows = [...light, ...heights, ...under];
-    // the soft edge blurs every shadow again on every frame: a warning beside it (Okay, 23:05: "we don't even need blur but keep it, write a warning beside it")
-    light[3].el.querySelector("label.check").append(el("span", { className: "quiet", textContent: "\u00a0· may stutter while time runs" }));
-    const reset = el("button", { type: "button", className: "btn", id: "shadows-reset", textContent: "Reset", title: "The shadows as they started", onclick: () => {
+    // the pane (#526; Okay's drawing, 24 Oct 2026, and his answers of 25 Oct): the sun's picture on top, dragged (round =
+    // the angle, toward the middle = higher); under it Angle · Height · Strength as three named sliders (R15, form D);
+    // then the parts, exploded, top to bottom as they stand — Cap · Seconds · Minutes · Hours · every ring (its ink
+    // height, the same number as show mode's Colours) · Dial, the reference · Date discs under the plate — each with a
+    // small side-view drawing, white while it is being sized; the foot: Soft edge · Bevels % · Reset
+    const sun = this.sun_picture("shadows");
+    const light = [row(num("sh_from", "Angle", 0, 359, 1, { whole: true, named: true })), row(num("sh_rise", "Height", 5, 85, 1, { whole: true, named: true })),
+      row(num("sh_dark", "Strength", 0, 100, 1, { whole: true, named: true }))];
+    const three = el("div", { className: "three" }, ...light.map((r) => r.el));
+    const heights = [row(num("sh_cap", "Cap", 0, 4, 0.05, { pic: PART_PICS.cap })), row(num("sh_second", "Seconds", 0, 3, 0.05, { pic: PART_PICS.second })),
+      row(num("sh_minute", "Minutes", 0, 3, 0.05, { pic: PART_PICS.minute })), row(num("sh_hour", "Hours", 0, 3, 0.05, { pic: PART_PICS.hour }))];
+    this.shadow_rings = el("div", { className: "shadowrings" });      // the rings, under their own heading: their ink stands in steps, not mm
+    this.shadow_rings_head = head("Inks · 0 to 10");
+    const dial = el("div", { className: "row ref" }, el("label", { className: "haspic", textContent: "Dial" }));
+    dial.querySelector("label").insertAdjacentHTML("afterbegin", PART_PICS.dial);
+    const under = [row(num("sh_disc", "Date discs", 0, 2, 0.05, { pic: PART_PICS.disc }))];
+    const soft = row(chk("sh_blur", "Soft edge")), bevel = row(num("sh_bevel", "Bevels %", 0, 100, 1, { whole: true, block: true }));      // the hands' bevels' strength; each hand's own Bevel tick turns its bevel on
+    this.shadow_rows = [...light, ...heights, ...under, soft, bevel];
+    this.shadow_ring_rows = [];
+    const reset = el("button", { type: "button", className: "gword", id: "shadows-reset", textContent: "Reset", title: "The shadows as they started", onclick: () => {
       for (const key of Object.keys(G.DEFAULTS)) if (key.startsWith("sh_") && key !== "sh_on") this.S[key] = structuredClone(G.DEFAULTS[key]);
       this.sync_rows();
       this.render();
     } });
-    list.append(head("Light · degrees"), ...light.map((r) => r.el), head("Over the plate · mm"), ...heights.map((r) => r.el),
-      head("Under the plate · mm"), ...under.map((r) => r.el), el("div", { className: "guidefoot popfoot" }, reset));
+    const scroll = el("div", { className: "shadescroll" }, sun.el, three, head("Over the plate · mm"), ...heights.map((r) => r.el), this.shadow_rings_head, this.shadow_rings, dial, head("Under the plate · mm"), ...under.map((r) => r.el));
+    list.append(scroll, el("div", { className: "guidefoot shadefoot" }, soft.el, bevel.el, reset));
+    this.shadow_sun = sun;
     const box = el("div", { className: "shadows" }, this.shadows_tick, more, list);
     box.onkeydown = (e) => { if (e.key === "Escape" && !list.hidden) { open(false); more.focus(); } };
     return box;
@@ -2938,7 +2965,54 @@ class DialTool {
     const on = Boolean(this.S.sh_on);
     this.shadows_tick.setAttribute("aria-pressed", String(on));
     this.shadows_tick.title = on ? "Shadows are on: press to hide them" : "Shadows are off: press to show them";
-    if (!$("#shadow-list").hidden) for (const r of this.shadow_rows) r.refresh(this.S);
+    if ($("#shadow-list").hidden) return;
+    // a line per ring shown, built again when the rings change: its ink height, the same number as show mode's Colours (#521)
+    const rings = JSON.stringify(this.S.rings.map((r) => [r.name, r.show !== false]));
+    if (this.shadow_rings.dataset.rings !== rings) {
+      this.shadow_rings.dataset.rings = rings;
+      this.shadow_ring_rows = this.S.rings.map((ring, i) => this.build_row({ ...num("ink", ring.name || G.kind_of(ring), 0, 10, 1, { whole: true, pic: PART_PICS.ring, id: `shadow-ring-${i}`,
+        get: () => { const R = this.S.rings[i]; return R ? clamp(this.S.w_ink + (R.ink_d || 0), 0, 10) : 0; },
+        put: (app, v) => { const R = this.S.rings[i]; if (!R) return; R.ink_d = clamp(v, 0, 10) - this.S.w_ink; this.changed(); } }), scope: "global" }));
+      this.shadow_rings.replaceChildren(...this.shadow_ring_rows.map((r) => r.el));
+      this.shadow_rings_head.hidden = !this.shadow_ring_rows.length;
+    }
+    for (const r of [...this.shadow_rows, ...this.shadow_ring_rows]) r.refresh(this.S);
+    this.shadow_sun.refresh();
+  }
+
+  /** the sun's picture (#526; Okay's drawing, 24 Oct 2026): the dial as a ring, the sun outside it with rays, a faint
+   *  disc on the far side where the shadows fall, its three figures along the foot (angle · height · strength). One
+   *  finger or the pointer moves the sun: round the dial for the angle, toward the middle for higher (Okay, 24 Oct
+   *  2026: "Drag it"); the sliders under it follow. The rays point away from the dial, symmetrical about that line,
+   *  and grow with the sun's distance (Okay: "Rays can grow on distant suns, shorter when they are close"); a sun
+   *  near a corner has its rays cut by the frame ("the rays pop in and out"). Drawn once, moved by attributes. */
+  sun_picture(id) {
+    const W = 280, H = 150, cx = W / 2, cy = H / 2, R = 46, NEAR = 14, FAR = 118;      // the picture's grid; the sun's distance from the middle: Height 85 = NEAR, 5 = FAR
+    const box = el("div", { className: "sunpic", id: id + "-sun" });
+    box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" aria-hidden="true"><circle class="dial" cx="${cx}" cy="${cy}" r="${R}"/><circle class="hole" cx="${cx}" cy="${cy}" r="3"/><circle class="fall" r="7"/><g class="sun"><circle r="8"/><g class="rays"></g></g></svg><span class="word">Sun</span><span class="figs"><span></span><span></span><span></span></span>`;
+    const sun = box.querySelector(".sun"), rays = box.querySelector(".rays"), fall = box.querySelector(".fall"), figs = [...box.querySelectorAll(".figs > span")];
+    for (let i = 0; i < 8; i++) rays.append(svg_el("line"));
+    const where = () => { const a = this.S.sh_from * Math.PI / 180, d = FAR - (clamp(this.S.sh_rise, 5, 85) - 5) / 80 * (FAR - NEAR); return { a, d, x: cx + Math.sin(a) * d, y: cy - Math.cos(a) * d }; };      // clock angles: 0 at 12, clockwise (R2)
+    const refresh = () => {
+      const { a, d, x, y } = where();
+      sun.setAttribute("transform", `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+      const len = 5 + 9 * (d - NEAR) / (FAR - NEAR);      // a far sun throws longer rays
+      [...rays.children].forEach((line, i) => { const t = a + Math.PI + (i - 3.5) * Math.PI / 4 + Math.PI / 8; for (const [k, v] of [["x1", 13 * Math.sin(t)], ["y1", -13 * Math.cos(t)], ["x2", (13 + len) * Math.sin(t)], ["y2", -(13 + len) * Math.cos(t)]]) line.setAttribute(k, v.toFixed(1)); });      // eight rays, away from the dial, symmetrical about the line from it
+      fall.setAttribute("cx", (cx - Math.sin(a) * (R - 2)).toFixed(1)); fall.setAttribute("cy", (cy + Math.cos(a) * (R - 2)).toFixed(1));
+      figs[0].textContent = `${Math.round(this.S.sh_from)}°`; figs[1].textContent = String(Math.round(this.S.sh_rise)); figs[2].textContent = `${Math.round(this.S.sh_dark)} %`;
+    };
+    // a drag anywhere on the picture puts the sun under the finger
+    const move = (e) => {
+      const r = box.getBoundingClientRect(), px = (e.clientX - r.left) / r.width * W, py = (e.clientY - r.top) / r.height * H;
+      const dx = px - cx, dy = py - cy, dist = Math.hypot(dx, dy), from = ((Math.atan2(dx, -dy) * 180 / Math.PI) + 360) % 360;
+      this.S.sh_from = Math.round(from);
+      this.S.sh_rise = Math.round(clamp(5 + 80 * (FAR - clamp(dist, NEAR, FAR)) / (FAR - NEAR), 5, 85));
+      this.sync_rows(); this.render();
+    };
+    box.onpointerdown = (e) => { if (e.button !== 0 && e.pointerType === "mouse") return; e.preventDefault(); box.setPointerCapture(e.pointerId); box.classList.add("held"); move(e); };
+    box.onpointermove = (e) => { if (box.classList.contains("held")) move(e); };
+    box.onpointerup = box.onpointercancel = () => box.classList.remove("held");
+    return { el: box, refresh };
   }
 
   /** every row: hidden if it doesn't apply (R16); its controls showing the scope's value. A pane hides its rows
@@ -3137,7 +3211,8 @@ class DialTool {
       if (row.button) { slider.ariaLabel = field.ariaLabel = row.text; field.title = row.text + " · " + field.title; }
       if (row.bare) { label.textContent = ""; label.className = "blank"; slider.ariaLabel = field.ariaLabel = row.text; field.title = row.text + " · " + field.title; }
       if (row.inpop) slider.ariaLabel = field.ariaLabel = row.text;      // the popup's head says its name too (4.49.2)
-      if (!row.inpop && !row.side && !row.bare && !row.button && !row.block) this.name_opens(label, row);      // form A: its name opens the popup (#249)
+      if (!row.inpop && !row.side && !row.bare && !row.button && !row.block && !row.named) this.name_opens(label, row);      // form A: its name opens the popup (#249)
+      if (row.pic) { label.insertAdjacentHTML("afterbegin", row.pic); label.classList.add("haspic"); }      // a small drawing before the name (the Shadows pane's parts, #526)
       // one number box for the whole tool (Okay, 18 Oct 2026, 21:20: "This version of boxes win: small plusminus and
       // these new thick border ones are retired, these replace all … Number box touches minus box"): the value in its
       // box, then − and + in theirs, all touching. A full row: name · slider · box. Beside a hand's box (side), the same,
@@ -3159,6 +3234,12 @@ class DialTool {
         wrap.classList.add("haslink");
         wrap.append(pill);
         out.link = pill;
+      } else if (row.named) {
+        // form D, a named slider (R15; the Shadows pane, #526): the slider over its name, no box on the row — the value
+        // is read elsewhere (the sun picture's figures); the name opens the controller, as a full row's does
+        wrap.classList.add("named");
+        wrap.append(slider, lead);
+        this.name_opens(label, row);
       } else if (row.block) {
         // a number block (#357, #317; the font box's of 4.54): the name, then the value and its − + joined, no slider
         // on the row; the name opens the controller and drags the value, as a quiet row's does (#249)

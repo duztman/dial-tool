@@ -2729,6 +2729,23 @@ await touch.close();
   check(before > 0 && after[0] === 0 && after[1] && back === before && pane[1] >= 80,
     `a press on empty canvas deselects: the ring's handles (${before} → ${after[0]}) and its guides go, and come back when a ring is chosen (${back}); the Shadows pane ${pane[0]} px wide, its sliders ${pane[1]}`);
 }
+{ // the Shadows pane (#526; Okay's drawing, 24 Oct 2026, his answers 25 Oct): the sun's picture, dragged; Angle · Height · Strength under it; the parts exploded, each with its drawing; one foot
+  await page.click("#shadows-more"); await frame();
+  const was = await page.evaluate(() => [window.dial_tool.S.sh_from, window.dial_tool.S.sh_rise]);
+  const pane = await page.evaluate(() => { const l = document.querySelector("#shadow-list"), pic = l.querySelector("#shadows-sun"), r = pic.getBoundingClientRect();
+    const ev = (type, x, y) => pic.dispatchEvent(new PointerEvent(type, { bubbles: true, clientX: r.left + x, clientY: r.top + y, pointerId: 1, pointerType: "mouse", button: 0 }));
+    ev("pointerdown", r.width * 0.85, r.height * 0.2); ev("pointerup", r.width * 0.85, r.height * 0.2);
+    const t = window.dial_tool, named = [...l.querySelectorAll(".row.named")], labels = [...l.querySelectorAll(".shadescroll .row:not(.named) > label")].map((e) => e.textContent.trim()), heads = [...l.querySelectorAll(".shadescroll .guidehead .name")].map((e) => e.textContent);
+    const foot = l.querySelector(".shadefoot"), fr = foot.getBoundingClientRect(), lr = l.getBoundingClientRect(), parts = [...foot.querySelectorAll("label.check, .row.block > label, #shadows-reset")].map((e) => e.getBoundingClientRect());
+    return { from: t.S.sh_from, rise: t.S.sh_rise, sliders: named.map((n) => n.querySelector('input[type="range"]').value), names: named.map((n) => n.querySelector("label").textContent), figs: [...pic.querySelectorAll(".figs > span")].map((e) => e.textContent),
+      under: named.every((n) => n.querySelector("label").getBoundingClientRect().top >= n.querySelector("input").getBoundingClientRect().bottom), rays: pic.querySelectorAll(".rays line").length, labels, heads, pics: l.querySelectorAll(".shadescroll label.haspic > .pic").length, rings: l.querySelectorAll(".shadowrings .row").length, nrings: t.S.rings.length,
+      foot: parts.every((p) => Math.abs((p.top + p.bottom) / 2 - (fr.top + fr.bottom) / 2) < 1) && parts[0].right <= parts[1].left && parts[1].right <= parts[2].left, flush: Math.round(fr.left - lr.left) <= 1 && Math.round(lr.right - fr.right) <= 1, inkhead: heads.includes("Inks · 0 to 10") }; });
+  await page.evaluate((v) => { const t = window.dial_tool; t.set_value("global", "sh_from", v[0]); t.set_value("global", "sh_rise", v[1]); }, was);
+  await page.click("#shadows-more");
+  check(pane.from > 0 && pane.from < 90 && pane.rise < 35 && pane.sliders[0] === String(pane.from) && pane.sliders[1] === String(pane.rise) && pane.names.join() === "Angle,Height,Strength" && pane.under && pane.figs[0] === `${pane.from}°` && pane.rays === 8
+    && pane.labels.slice(0, 4).join() === "Cap,Seconds,Minutes,Hours" && pane.labels.includes("Dial") && pane.labels.at(-1) === "Date discs" && pane.heads[0] === "Over the plate · mm" && pane.inkhead && pane.rings === pane.nrings && pane.pics === 6 + pane.nrings && pane.foot && pane.flush,
+    `the Shadows pane: a press on the sun's picture puts the sun there (${pane.from}°, height ${pane.rise}), the sliders follow (${pane.sliders.join(" · ")}) and the figures (${pane.figs.join(" · ")}); Angle · Height · Strength named under their sliders; eight rays; the parts top to bottom — ${pane.labels.join(" · ")} — under ${pane.heads.join(" / ")}, each with its drawing (${pane.pics}); a line per ring (${pane.rings}); the foot, Soft edge · Bevels % · Reset on one line, edge to edge`);
+}
 { // 20 Oct 2026 notes (#481, #482, #485, #486): the steps' chevron pale with no steps; the Settings buttons equal; handles with guides off, finer away
   await tab("Rings");
   const look = await page.evaluate(() => { const t = window.dial_tool; t.S.guides = false; t.select_ring(0); t.render(); return [document.querySelectorAll(".handles .handle").length, document.querySelectorAll(".handles .handle .seat").length]; });

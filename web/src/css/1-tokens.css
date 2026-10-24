@@ -153,8 +153,9 @@
     --faint: 0.35;                                 /* how much of a switch on the preview shows at rest */
     --canvas-top: var(--canvas-inset);      /* undo and Guides as far from the canvas's top as from its side, their bottom on the title's line (--header) */
     --guide-name: 106px; --guide-row: 30px;        /* the guides' list: the column of names, wide enough for an added guide's name and values on one line · a line's height (Okay, 16 Oct 2026, #305: "tighter spacing overall … small like beta version allowed"; under a finger 38) */
-    --shade-slider: 96px;                          /* the Shadows list's sliders */
-    --shade-name: 92px;                            /* the Shadows list's names: narrower than the guides' list's column, which holds an added guide's values; its sliders keep the room */
+    --sun-h: 150px; --sun-ray: 1.5px;              /* the Shadows pane's sun picture: its height; a ray's width (the icons' LINE) */
+    --shade-slider: 78px;                          /* the Shadows pane's sliders: short on the row, the controller gives the big one (#526) */
+    --shade-name: 110px;                           /* the Shadows pane's names: a part's drawing (28), a unit, then its name ("Minute ticks", "Date discs") */
     --guide-dot: 7px; --guide-none: 14px; --scroll-w: 6px;      /* a round colour in the guides' list (the room between two: a special; Okay, 19 Oct 2026: "Still smaller balls") · the none sign ⊘, 14 (at 10 it went too small) · a list's scrollbar */
     --ring-thick: var(--triple);                   /* the chosen guide colour: a ring of its own colour this thick, a ring of the ground inside it */
     --guide-list: 240px; --guide-circle: 20px; --guide-inset: var(--u4);      /* the Guides list (#539; Okay, 25 Oct 2026: "less wider" than 260 — 240 is the floor for the foot's words) · the circle a dot, a chevron, the minus and a menu stand in · a group's lines inset under their heading */

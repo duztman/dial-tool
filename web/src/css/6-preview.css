@@ -277,6 +277,38 @@
   .shadelist { width: calc(2 * var(--pop-pad) + var(--shade-name) + var(--shade-slider) + var(--box-value) + var(--box-steps) + 2 * var(--gap)); }      /* wide enough for a slider between the names and the boxes (Okay, 23 Oct 2026: "Bring back old shadows pane, wide one") */
   .shadelist .row { grid-template-columns: var(--shade-name) minmax(0, 1fr) calc(var(--box-value) + var(--box-steps)); column-gap: var(--gap); }      /* its own names' column (4.45.3), the slider, the number box */
   .shadelist .row > .numbox { grid-column: 3; }
+  /* the Shadows pane (#526; Okay's drawing, 24 Oct 2026, built 25 Oct 2026): the sun's picture on top, three named
+     sliders under it, then the parts top to bottom as they stand, each with its drawing; one foot */
+  .shadelist { display: flex; flex-direction: column; overflow: hidden; padding: 0; }
+  .shadescroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: var(--u2) var(--pop-pad) 0; touch-action: pan-y; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--grey) transparent; }
+  .shadescroll > * { margin-inline: 0; }
+  .sunpic { position: relative; height: var(--sun-h); margin: var(--u2) 0 var(--u4); border: var(--hair) solid var(--rule); border-radius: var(--round); background: var(--field); overflow: hidden; touch-action: none; cursor: grab; user-select: none; }
+  .sunpic.held { cursor: grabbing; }
+  .sunpic > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .sunpic .dial, .sunpic .hole { fill: none; stroke: var(--grey); stroke-width: var(--hair); }
+  .sunpic .fall { fill: none; stroke: var(--grey); stroke-width: var(--hair); stroke-dasharray: 2 2; }      /* where the shadows fall: the far side of the dial */
+  .sunpic .sun > circle { fill: var(--ink); }
+  .sunpic .rays line { stroke: var(--ink); stroke-width: var(--sun-ray); stroke-linecap: round; }
+  .sunpic .word { position: absolute; left: var(--u4); top: var(--u3); font-size: var(--t-s); color: var(--grey); pointer-events: none; }
+  .sunpic .figs { position: absolute; left: 0; right: 0; bottom: var(--u2); display: grid; grid-template-columns: 1fr 1fr 1fr; text-align: center; font-size: var(--t-s); font-variant-numeric: tabular-nums; color: var(--grey); pointer-events: none; }
+  .sunpic .figs > span:first-child { text-align: left; padding-left: var(--u4); }
+  .sunpic .figs > span:last-child { text-align: right; padding-right: var(--u4); }
+  .shadelist .three { display: grid; grid-template-columns: 1fr 1fr 1fr; column-gap: var(--u4); margin-bottom: var(--u2); }
+  .shadelist .row.named { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--u1); min-height: 0; box-shadow: none; }      /* form D: the slider over its name, each under its figure in the picture */
+  .shadelist .row.named > input[type="range"] { grid-column: 1; }
+  .shadelist .row.named > label { justify-self: center; font-size: var(--t-s); color: var(--grey); }
+  .shadelist .row.named > label:hover { color: var(--ink); }
+  .shadelist label.haspic { display: flex; align-items: center; gap: var(--u2); }
+  .shadelist label.haspic > .pic { flex: none; color: var(--grey); }      /* a part's drawing: grey, white while the part is sized — pointed at, held, or its controller open ("as one is being resized it stays white others turn gray") */
+  .shadelist .row:is(:hover, :focus-within):not(.ref) label.haspic > .pic, .shadelist .row:has([aria-expanded="true"]) label.haspic > .pic { color: var(--ink); }
+  .shadelist .row.ref { grid-template-columns: 1fr; }      /* the dial: the reference, nothing to size */
+  .shadelist .row.ref > label { color: var(--grey); }
+  .shadelist .shadefoot { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; column-gap: var(--u4); align-items: center; min-height: var(--pop-foot); margin-inline: 0; padding: 0 var(--pop-pad); background: var(--field); }      /* Soft edge · Bevels % · Reset on one line */
+  .shadelist .shadefoot > .row { display: contents; }
+  .shadelist .shadefoot > .row > label.check { grid-column: 1; color: var(--ink); }
+  .shadelist .shadefoot > .row.block > label { grid-column: 2; justify-self: end; color: var(--grey); }
+  .shadelist .shadefoot > .row.block > .numbox { grid-column: 3; }
+  .shadelist .shadefoot > .gword { grid-column: 4; }
   /* the outline of what the pointer is on: an orange line on a white one, so it shows on any colour */
   .glow { fill: none; stroke: var(--glow); stroke-width: var(--glow-line); vector-effect: non-scaling-stroke; stroke-linejoin: round; }
   .glow.under { stroke: var(--white); stroke-width: var(--glow-under); }
