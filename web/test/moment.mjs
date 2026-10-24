@@ -9,6 +9,10 @@ const a = moment("2026-10-17", 10 * 3600 + 9 * 60 + 36);
 check(a.y === 2026 && a.m === 10 && a.d === 17 && a.wd === 5 && a.h === 10 && a.min === 9 && a.s === 36 && !a.pm, `17 Oct 2026, 10:09:36: Saturday, AM (${JSON.stringify(a)})`);
 check(moment("2024-02-29", 13 * 3600).wd === 3 && moment("2024-02-29", 13 * 3600).pm, "29 Feb 2024 is a Thursday; 13:00 is PM");
 check(moment("2026-01-01", 86400 + 60).d === 1, "a time past midnight wraps within the day (the tool's day is one day)");
+{ const sat = moment("2026-10-17", 0), pm = moment("2026-10-17", 13 * 3600);
+  const full = window_text("day", sat, "tr", 1), own = window_text("day", sat, "en", 2, ["", "", "", "", "", "Cumartesi!", ""]), blank = window_text("day", sat, "fr", 2, null);
+  check(full === "CUMARTESİ" && own === "Cumartesi!" && blank === "SAM" && window_text("am · pm", pm, "en", 0, ["sabah", "akşam"]) === "akşam" && window_text("am · pm", sat, "en", 0, null) === "AM",
+    `day names in full, in the language's own capitals (${full}); your own seven, a blank one the short name (${own} · ${blank}); an am · pm window's own two words (#515, #516)`); }
 
 // the moon: the new moon of the total eclipse, 8 Apr 2024, 18:21 UT; the full moon of 18 Sep 2024, 02:34 UT (a partial lunar eclipse)
 const eclipse = moon_age(Date.UTC(2024, 3, 8, 18, 21)), full = moon_age(Date.UTC(2024, 8, 18, 2, 34));

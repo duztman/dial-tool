@@ -1,5 +1,12 @@
 # Dial Tool — changelog
 
+## beta 4.92.11 (web version) · 24 Oct 2026
+
+- **Your own day names** (#515; "Or custom (open 7 slots, 7 input boxes when so)"): *Written* gets **Custom**, third (R9), and seven fields under it, four to a line, each showing its day's short name faintly; a blank one draws that name.
+- **An am · pm window's words** (#516; "Am/pm gets two sub options, one is this disc, other is a typed out am pm default jump mechanism, allows custom text, opens up inputs like the week"): *Shows*: Disc · Words. Words draws AM or PM (or your own two, typed in two fields like the week's) in a rectangular hole, jumping at noon and midnight; *Jumps* and *Inside the case*, which are the disc's, hide (R16); its two colours read *Disc under it* and *Text*.
+- One mechanism for both: a window's `own_names` (null, or the words; a blank = the tool's) and the fields row `own_names`; `ampm_form` 0 the disc, 1 the words. Both keys appended to the link keys, starting as every older link draws (R31); a link carries the words (checked: Cuma!, sabah, akşam there and back).
+- Checked: links there and back, the complications test (a check added), labels, the window test; crops of a Custom day window and an am · pm window in Words.
+
 ## beta 4.92.10 (web version) · 24 Oct 2026
 
 - **Hand bevels back on the dial side** (#531; "bevels are lost on this current version on tool side. Bring them back"): the Bevel tick stood beside Show only while Shadows was on, and the dial side opens with Shadows off, so it was out of sight. The tick now shows whenever its hand does, and a hand with it ticked is bevelled by the sun's direction with Shadows on or off (at Bevels %, the Shadows popup's). The join options (Normal · Miter · Round) come after v1.

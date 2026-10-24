@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.92.10";
+export const VERSION = "beta 4.92.11";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -47,7 +47,7 @@ export const WINDOW_KINDS = ["date", "day", "am · pm", "moon phase", "big date"
 // moon phase, a rectangle for the others — what was drawn before there was a choice (R31). Only grows at its end (R9).
 export const WINDOW_SHAPES = ["as its kind", "rectangle", "circle", "polygon", "arch", "arc", "half"];      // half: an am · pm window's own, chosen as a shape (20 Oct 2026; appended, R9)
 export const window_shape = (w) => WINDOW_SHAPES[w.shape] && w.shape ? WINDOW_SHAPES[w.shape]
-  : WINDOW_KINDS[w.kind] === "moon phase" ? (w.look ? "circle" : "arch") : WINDOW_KINDS[w.kind] === "am · pm" ? "half"
+  : WINDOW_KINDS[w.kind] === "moon phase" ? (w.look ? "circle" : "arch") : WINDOW_KINDS[w.kind] === "am · pm" ? (w.ampm_form ? "rectangle" : "half")
   : WINDOW_KINDS[w.kind] === "big date" ? "pair" : "rectangle";      // a big date: two square holes side by side (4.74)      // a moon's Phase and Line sit in a round hole, an am · pm Half in a half-round one (4.73)      // a moon's Phase and Line pictures sit in a round hole (4.73)
 // what a moon window pictures (4.73, #346; the disc sketches B and C, Okay, 18 Oct 2026: "All are good"): Arch (the
 // humps) · Phase (the moon as it is lit, in three colours) · Line (its outline and dark side, one ink). An am · pm
@@ -134,7 +134,9 @@ export const WINDOW_BASE = {
   guide: -1,                                       // its guide's colour, as a ring's (#271): a place in GUIDE_COLOURS · -1 = by its place (window_guide) · -2 = none
   follows: true,                                   // a date, day or moon window shows the bar's date; on to start, and for every link (Okay, 19 Oct 2026, 21:09, #413: "All on by default", for old links too)
   names: 0,                                        // a day window following the date: its names' language, a place in moment.js LANGS (EN · TR · DE · FR · IT; 4.62)
-  day_form: 0,                                     // … and how they are written, a place in moment.js DAY_FORMS: short as before, or in full (#515)
+  day_form: 0,                                     // … and how they are written, a place in moment.js DAY_FORMS: short as before, in full, or your own (#515)
+  own_names: null,                                 // your own words: a day window's seven (Custom), an am · pm window's two (Text); null or a blank = the tool's (#515, #516)
+  ampm_form: 0,                                    // an am · pm window shows: 0 its disc under a half-round hole, as before · 1 its words, jumping at noon and midnight (#516)
   jump: false,                                     // an am · pm disc jumps at noon and midnight instead of sweeping (#401, 4.90; Okay, 19 Oct 2026, 14:13: "am pm gets a jump function on/off"); off, it sweeps, as before
   neighbours: true,                               // a date or day window shows its disc's places either side of the shown one, where the hole lets them (4.74; the disc sketch D1), in c2
   look: 0,                                         // its picture, a place in PICTURES[its kind] (4.73); 0 = as before
@@ -144,7 +146,7 @@ export const WINDOW_BASE = {
 };
 const FIRST_WINDOW = { on: "da_on", kind: "da_kind", at: "da_at", r: "da_r", w: "da_w", h: "da_h", round: "da_round", frame: "da_frame",
   clear: "da_clear", text: "da_day", size: "da_size", ink: "da_ink", hour: "da_hour", age: "da_age",
-  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c", guide: "da_guide", tracking: "da_tracking", lang: "da_lang", features: "da_features", at_deg: "da_at_deg", wh_link: "da_wh_link", follows: "da_follows", names: "da_names", physics: "da_physics", look: "da_look", c2: "da_c2", c3: "da_c3", neighbours: "da_neighbours", jump: "da_jump", day_form: "da_day_form" };
+  shape: "da_shape", sides: "da_sides", turn: "da_turn", text_turn: "da_text_turn", family: "da_family", ps: "da_ps", axes: "da_axes", text_c: "da_text_c", disc_c: "da_disc_c", guide: "da_guide", tracking: "da_tracking", lang: "da_lang", features: "da_features", at_deg: "da_at_deg", wh_link: "da_wh_link", follows: "da_follows", names: "da_names", physics: "da_physics", look: "da_look", c2: "da_c2", c3: "da_c3", neighbours: "da_neighbours", jump: "da_jump", day_form: "da_day_form", own_names: "da_own_names", ampm_form: "da_ampm_form" };
 
 export const DEFAULTS = {
   version: 2,
@@ -217,6 +219,7 @@ export const DEFAULTS = {
   date: "",                                        // the day the dial shows, "2026-10-18", set in the bar (4.62; Okay, 18 Oct 2026: "Date best set at the bar … Default from system date"); "" = today, wherever the dial is opened
   da_jump: false,                                  // … and `jump` (#401, 4.90)
   da_day_form: 0,                                  // … and `day_form` (#515)
+  da_own_names: null, da_ampm_form: 0,             // … and `own_names`, `ampm_form` (#515, #516)
   da_look: 0, da_c2: null, da_c3: null, da_neighbours: true,      // … and `neighbours` (4.74)            // the first window's `look`, `c2`, `c3` (4.73)
   da_physics: true, xray: false,                   // the first window's `physics` · X-ray, every window's disc seen under a veil of the plate, preview only (4.72, #346)
   da_wh_link: false,                               // the first window's width and height linked, as every window's `wh_link` (#358, beta 4.57)
@@ -514,6 +517,7 @@ export const LINK_KEYS = [
   "out_ink",                // 4.90 (#35): appended; "" to start, every ink in one mask as before
   "jump", "da_jump",        // 4.90 (#401): appended; off to start, the disc sweeps as before
   "day_form", "da_day_form",      // 4.92.3 (#515): appended; short to start, as every older link
+  "own_names", "da_own_names", "ampm_form", "da_ampm_form",      // 4.92.11 (#515, #516): appended; none and the disc to start, as every older link
 ];
 const CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const code_of = (i) => (i < 62 ? CODE_DIGITS[i] : CODE_DIGITS[Math.floor(i / 62) - 1] + CODE_DIGITS[i % 62]);
@@ -1515,7 +1519,7 @@ function disc_places(S, w) {
   const kind = WINDOW_KINDS[w.kind], shape = window_shape(w), high = text_room(w);
   const lang = MOMENT_LANGS[w.names] || "en";
   const list = kind === "date" ? Array.from({ length: 31 }, (_, i) => String(i + 1))
-    : w.follows ? day_list(lang, w.day_form) : MOMENT_NAMES[MOMENT_LANGS.find((l) => MOMENT_NAMES[l].days.includes(w.text)) || "en"].days;
+    : w.follows ? day_list(lang, w.day_form, w.own_names) : MOMENT_NAMES[MOMENT_LANGS.find((l) => MOMENT_NAMES[l].days.includes(w.text)) || "en"].days;
   const now = Math.max(list.indexOf(kind === "date" ? String(parseInt(w.text, 10)) : String(w.text)), 0), n = list.length;      // "07" is the 7th
   const type = window_type(S, w), size = high * w.size / 100, centre = clock_point(w.r, window_angle(w)), turn = window_turn(w), a = window_angle(w);
   const at = (p) => {
@@ -1577,6 +1581,9 @@ export const disc_hour = (S, w) => (w.jump ? (day_hour(S) < 12 ? 12 : 0) : day_h
 export const shows_day = (S) => windows_of(S).some((w) => w.on && WINDOW_KINDS[w.kind] === "am · pm");
 
 /** the day the dial shows: the bar's date, or today where it is opened (S.date "", 4.62). */
+/** a day window's short names in its Names language (EN · TR · DE · FR · IT): what a Custom day left blank shows */
+export const day_short = (names) => MOMENT_NAMES[MOMENT_LANGS[names] || "en"].days;
+
 export function shown_day(S) {
   if (S.date) return S.date;
   const d = new Date();
@@ -1588,7 +1595,8 @@ export function shown_day(S) {
 export function shown_window(S, w) {
   if (!w.follows) return w;
   const kind = WINDOW_KINDS[w.kind], mo = moment(shown_day(S), S.t);
-  if (kind === "date" || kind === "day" || kind === "big date") return { ...w, text: window_text(kind === "big date" ? "date" : kind, mo, MOMENT_LANGS[w.names] || "en", w.day_form) };
+  if (kind === "date" || kind === "day" || kind === "big date") return { ...w, text: window_text(kind === "big date" ? "date" : kind, mo, MOMENT_LANGS[w.names] || "en", w.day_form, w.own_names) };
+  if (kind === "am · pm" && w.ampm_form) return { ...w, text: window_text(kind, mo, "en", 0, w.own_names) };      // its words jump at noon and midnight (#516)
   if (kind === "moon phase") return { ...w, age: +mo.moon.toFixed(1) };
   return w;
 }
@@ -1613,7 +1621,7 @@ function build_window(S, w, index) {
   } else if (kind === "moon phase") {
     const { moon } = moon_parts(w.w, w.age);
     content = opening.copy().difference(moon);
-  } else if (kind === "am · pm") {                 // the disc under the half-round hole, turning on its flat side once a day: pm in the picture's colour, am the disc's
+  } else if (kind === "am · pm" && !w.ampm_form) {                 // the disc under the half-round hole, turning on its flat side once a day: pm in the picture's colour, am the disc's
     content = half_disc(w.w, disc_hour(S, w)).night.intersection(opening);
   }
   else if (kind === "big date") {                 // the tens in the left hole (none before 10), the units in the right (4.74)
@@ -1625,7 +1633,7 @@ function build_window(S, w, index) {
     content = on_path(w.text, w.r, a, window_type(S, w), text_room(w) * w.size / 100).translate(...centre.map((v) => -v));
   } else content = centred(text_path(w.text, window_type(S, w), text_room(w) * w.size / 100));
   const put = (p, turned = true) => (turn && turned ? p.rotate(-turn) : p).translate(...centre);
-  const shows_text = kind === "date" || kind === "day" || kind === "big date";
+  const shows_text = kind === "date" || kind === "day" || kind === "big date" || (kind === "am · pm" && w.ampm_form);
   const win = put(opening.copy());
   more = more.map((m) => ({ ...m, path: put(m.path.intersection(opening)) }));
   if (w.neighbours && (kind === "date" || kind === "day")) {      // its disc's places either side, where the hole lets them show (4.74)

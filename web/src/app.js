@@ -823,8 +823,8 @@ const ROWS = {
     chk("text_turn", "Turn the text with it", { ...W, nest: true, show: (T) => T.on && T.turn && G.window_shape(T) !== "arc" && ["date", "day"].includes(G.WINDOW_KINDS[T.kind]) }),
     // its colours, one to a line as elsewhere (Okay, 19 Oct 2026, 18:04: "List these colors in lines like elsewhere"): the disc under the hole · the frame · what a moon or am · pm window pictures · a moon's shade · the neighbours
     col("ink", "Frame", { ...W, show: win_on }),      // first, over the window's own colours (Okay, 20 Oct 2026, 01:49 and after 03:41: "Frame is always above window specific colors", #464, #487)
-    col("disc_c", "Disc under it", { ...W, show: win_on, say: (T) => [is_day(T) ? "AM half" : moon_look(T) === 1 ? "Moon" : "Disc under it"], or: () => [1, 1, 1, 1] }),
-    col("text_c", "Picture", { ...W, show: win_is("am · pm", "moon phase"), say: (T) => [moon_look(T) === 1 ? "Sky" : is_day(T) ? "PM half" : "Picture"], or: (T) => T.ink }),      // or: what an unset colour is
+    col("disc_c", "Disc under it", { ...W, show: win_on, say: (T) => [is_day(T) && !T.ampm_form ? "AM half" : moon_look(T) === 1 ? "Moon" : "Disc under it"], or: () => [1, 1, 1, 1] }),
+    col("text_c", "Picture", { ...W, show: win_is("am · pm", "moon phase"), say: (T) => [moon_look(T) === 1 ? "Sky" : is_day(T) ? (T.ampm_form ? "Text" : "PM half") : "Picture"], or: (T) => T.ink }),      // or: what an unset colour is
     col("c2", "Shade", { ...W, show: (T) => moon_look(T) === 1, or: () => G.PICTURE_TONES.shade }),      // a picture's further colour (4.73): a moon's dark side in Phase
     col("c2", "Neighbours", { ...W, id: "window-c2-Neighbours", show: (T) => win_is("date", "day")(T) && T.neighbours, or: (T) => T.text_c || T.ink }),      // a date or day window's neighbours (4.74), in the number's colour unless given one
     // the frame round the hole and the room kept clear round it are drawn on the dial: they are design, so they
@@ -840,13 +840,18 @@ const ROWS = {
     chk("neighbours", "Neighbours", { ...W, show: win_is("date", "day") }),
     info("The disc’s next places show where the hole allows.", { ...W, show: win_is("date", "day") }),
     seg("names", "Names", ["EN", "TR", "DE", "FR", "IT"], { ...W, show: (T) => T.on && T.follows && G.WINDOW_KINDS[T.kind] === "day" }),
-    seg("day_form", "Written", ["Short", "Full"], { ...W, show: (T) => T.on && T.follows && G.WINDOW_KINDS[T.kind] === "day" }),      // MON or MONDAY (#515; Okay, 24 Oct 2026: "Days of the week option to be written in full"); Custom comes third (R9)
+    seg("day_form", "Written", ["Short", "Full", "Custom"], { ...W, show: (T) => T.on && T.follows && G.WINDOW_KINDS[T.kind] === "day" }),
+    custom("own_names", { ...W, text: "Days", nest: true, count: 7, hint: (T) => G.day_short(T.names), show: (T) => T.on && T.follows && G.WINDOW_KINDS[T.kind] === "day" && T.day_form === 2 }),      // your seven (#515: "Or custom (open 7 slots, 7 input boxes when so)")
+    // an am · pm window (#516; Okay, 24 Oct 2026: "Am/pm gets two sub options, one is this disc, other is a typed out am pm
+    // default jump mechanism, allows custom text, opens up inputs like the week"): its disc, or its two words, jumping
+    seg("ampm_form", "Shows", ["Disc", "Words"], { ...W, show: win_is("am · pm") }),
+    custom("own_names", { ...W, text: "Words", nest: true, count: 2, hint: () => ["AM", "PM"], show: (T) => win_is("am · pm")(T) && T.ampm_form === 1 }),      // MON or MONDAY (#515; Okay, 24 Oct 2026: "Days of the week option to be written in full"); Custom comes third (R9)
     // physics (4.72, #346: "their discs obey physics or not, chosen by the user"): on, a disc must end inside the case —
     // passing it, its outer guide shows red and this says by how much; off, it may (a face on a screen)
-    chk("jump", "Jumps", { ...W, show: win_is("am · pm") }),      // #401, 4.90
-    info("Snaps to am at midnight and to pm at noon, as a date disc jumps. Off, the disc sweeps round once a day.", { ...W, show: win_is("am · pm") }),
-    chk("physics", "Inside the case", { ...W, show: win_is("date", "day", "am · pm") }),
-    info("Its disc may not pass the case. Off for a face on a screen.", { ...W, show: win_is("date", "day", "am · pm") }),
+    chk("jump", "Jumps", { ...W, show: (T) => win_is("am · pm")(T) && !T.ampm_form }),      // #401, 4.90; words always jump
+    info("Snaps to am at midnight and to pm at noon, as a date disc jumps. Off, the disc sweeps round once a day.", { ...W, show: (T) => win_is("am · pm")(T) && !T.ampm_form }),
+    chk("physics", "Inside the case", { ...W, show: (T) => win_is("date", "day", "am · pm")(T) && !(G.WINDOW_KINDS[T.kind] === "am · pm" && T.ampm_form) }),      // words have no disc (R16)
+    info("Its disc may not pass the case. Off for a face on a screen.", { ...W, show: (T) => win_is("date", "day", "am · pm")(T) && !(G.WINDOW_KINDS[T.kind] === "am · pm" && T.ampm_form) }),
     info((T) => `Its disc passes the case by ${tool ? tool.disc_past().toFixed(2) : "?"} mm: move the window in, or untick to let it.`, { ...W, nest: true, show: (T) => win_is("date", "day", "am · pm")(T) && T.physics !== false && tool && tool.disc_past() > 0 }),
     // its text and font: a pane of its own with its eye (Okay, 19 Oct 2026, #415: "Font needs own section & eye")
     hdr("Font", { ...W, folded: true, show: win_is("date", "day", "big date") }),
@@ -2169,6 +2174,18 @@ class DialTool {
     };
     if (now) { clearTimeout(T.timer); return go(); }
     if (!T.timer) T.timer = setTimeout(go, Math.max(0, TINY_EVERY - (performance.now() - T.at)));
+  }
+
+  /** your own words for a window (#515, #516): one small field each — a day window's seven, an am · pm window's two — the
+   *  tool's own word faint in a blank one, which is what it shows. They fill the controls' columns side by side. */
+  row_own_names(wrap, out, row) {
+    const fields = Array.from({ length: row.count }, (_, i) => {
+      const f = el("input", { type: "text", className: "ownname", ariaLabel: `${row.text} ${i + 1}`, spellcheck: false });
+      f.oninput = () => { const T = this.target("window"), list = Array.from({ length: row.count }, (_, k) => (T.own_names && T.own_names[k]) || ""); list[i] = f.value; this.set_value("window", "own_names", list.some(Boolean) ? list : null); };
+      return f;
+    });
+    wrap.append(el("label", { textContent: row.text }), el("span", { className: "ownnames", style: `--n: ${Math.min(row.count, 4)}` }, ...fields));      // four to a line at most: a day's word needs the room
+    out.refresh = (T) => { const hint = row.hint(T); fields.forEach((f, i) => { f.placeholder = hint[i] || ""; if (document.activeElement !== f) f.value = (T.own_names && T.own_names[i]) || ""; }); };
   }
 
   /** the complications act like tabs (Okay, 18 Oct 2026: "Act like tabs, selecting them changes settings accordingly",
