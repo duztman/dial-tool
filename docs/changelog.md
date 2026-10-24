@@ -1,5 +1,13 @@
 # Dial Tool — changelog
 
+## beta 4.92.12 (web version) · 24 Oct 2026
+
+Okay's answers of 20:50:
+- **A numeral's Size slider runs to the dial's diameter** ("Dial's diameter"; #535): a row's slider end can follow the dial (`top`), typing past it still works.
+- **Gradients in Shenanigans** ("Both"): off, show mode has no gradient — the backdrop one colour, Dramatic without its spotlight, the case's outline one even light (`w_gradients`, file and session, not the link). Five toggles, two to a line beside All.
+- **Show mode casts the dial's shadows as the dial side does** (#519; "Dial side's"): each hand from its own height (`sh_hour`, `sh_minute`, `sh_second`, `sh_cap`), as long as the sun's height throws it and no longer than a 20° sun, at the dial side's darkness. One offset for every hand before.
+- Checked: the window test (Shenanigans' check counts five); both modes' shadows side by side under one sun.
+
 ## beta 4.92.11 (web version) · 24 Oct 2026
 
 - **Your own day names** (#515; "Or custom (open 7 slots, 7 input boxes when so)"): *Written* gets **Custom**, third (R9), and seven fields under it, four to a line, each showing its day's short name faintly; a blank one draws that name.

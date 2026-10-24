@@ -18,9 +18,7 @@
   .shenticks > .row.seg { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--u2); min-height: var(--control); padding: var(--u1) var(--u4) var(--u1) 0; box-shadow: none; background: none; }
   .shenticks > .row.seg > label { grid-column: 1; text-align: right; font-size: var(--t-xs); font-weight: 500; letter-spacing: var(--track-50); text-transform: uppercase; }
   .shenticks > .row.seg > .toggle { grid-column: 2; }
-  .shenticks > .row:nth-child(1) { grid-area: 1 / 1; } .shenticks > .row:nth-child(2) { grid-area: 1 / 2; }
-  .shenticks > .row:nth-child(3) { grid-area: 2 / 1; } .shenticks > .row:nth-child(4) { grid-area: 2 / 2; }
-  .shenticks > .row:last-child { grid-area: 1 / 3 / 3 / 4; align-self: stretch; border-left: var(--hair) solid var(--ink); }
+  .shenticks > .row:last-child { grid-area: 1 / 3 / -1 / 4; grid-row: 1 / span 3; align-self: stretch; border-left: var(--hair) solid var(--ink); }      /* All in the third column, the whole height; the others flow two to a line beside it */
   .panelcopy { position: fixed; z-index: 7; pointer-events: none; }      /* the panel's still copy sliding away while the modes change (panel_copy() in app.js) */      /* a phone's drawer gripper (8-narrow.css); a wider screen has no drawer */
   .panel { position: relative; z-index: 5; width: var(--panel-w); translate: calc(-1 * var(--panel-w) * var(--away)) 0; }
   .mast { display: flex; align-items: center; translate: calc(var(--panel-w) * var(--away)) 0; z-index: 6; }

@@ -47,9 +47,10 @@ export function options(S, items, effects) {
     metal: S.c_metal ? hex(S.c_metal) : P.metals[METAL_NAMES[S.w_metal]] || P.metals.steel,
     leather: hex(S.c_strap), natoColours: nato_colours(S),
     insert: S.c_insert ? { top: hex(S.c_insert[0]), bottom: hex(S.c_insert[1]) } : { top: INSERTS[S.w_insert][0], bottom: INSERTS[S.w_insert][1] },
-    floor: hex(S.c_backdrop), floor2: S.c_backdrop2 ? hex(S.c_backdrop2) : null,
+    floor: hex(S.c_backdrop), floor2: S.c_backdrop2 && S.w_gradients !== false ? hex(S.c_backdrop2) : null, gradients: S.w_gradients !== false,      // Gradients off: one colour, no spotlight, a flat outline (#525)
     L: S.sh_from - 90, h: S.sh_rise, shadow: S.sh_on ? S.sh_dark / 25 : 0,
-    lighting: S.w_lighting ? "flat" : "dramatic", flare: S.w_flare ? "dot" : "arc", flareOn: lit && S.sh_blur && S.w_flare_on, blurs: lit && S.sh_blur,
+    heights: { hour: S.sh_hour, minute: S.sh_minute, second: S.sh_second, cap: S.sh_cap },      // the hands' own heights, as the dial side's shadows use them (#519)
+    lighting: S.w_lighting || S.w_gradients === false ? "flat" : "dramatic", flare: S.w_flare ? "dot" : "arc", flareOn: lit && S.sh_blur && S.w_flare_on, blurs: lit && S.sh_blur,
     fl: { size: S.w_fl_size / 100, tint: S.w_fl_tint / 100, bright: S.w_fl_bright / 100 }, glass: { fat: S.w_glass_fat / 100, len: S.w_glass_len / 100, op: lit ? S.w_glass_op / 100 : 0 },
     ink: S.w_ink, bevels: S.w_bevels ? S.sh_bevel / 100 : 0, outline: lit,      // the hands' bevels as the dial side sets them (each hand's tick, Bevels %), and Shenanigans' Bevels
   };

@@ -12,7 +12,7 @@
 //               the same engine the Python test harness uses.
 //   HarfBuzz  — the text engine: kerning, OpenType features, variable axes, language.
 
-export const VERSION = "beta 4.92.11";
+export const VERSION = "beta 4.92.12";
 export const MM = 72 / 25.4;                       // 1 mm in points (files only)
 
 import { moment, window_text, day_list, LANGS as MOMENT_LANGS, NAMES as MOMENT_NAMES } from "./moment.js";      // the complications' engine: one moment, a date and the time (#346, 4.62)
@@ -214,6 +214,7 @@ export const DEFAULTS = {
   ui_show_section: 6, ui_edit_section: 0,      // the tab last used in show mode (Watch to start) and on the dial side (SECTIONS numbers, R9)
   ui_grey_panel: false,      // show mode's panel in greys, like the bar, instead of the backdrop's colour (the round swatch at the title line's end; Okay, 22 Oct 2026)
   w_bevels: true,      // show mode draws the hands' bevels (Shenanigans' Bevels: Okay, 23 Oct 2026)
+  w_gradients: true,   // show mode's gradients — the backdrop's, Dramatic's spotlight, the outline's light — on (Shenanigans' Gradients, #525: "Both")
   ui_case: false,      // the case round the dial on the dial side: off to start (Okay, 23 Oct 2026: "On main default is caseless"); its kind is `bezel`, shared with show mode, which always has one
   ui_effects: true,      // the costly layers in show mode — blurs, the flare, the glass shine, the silhouette outline (Okay: "turn off shenanigans")
   date: "",                                        // the day the dial shows, "2026-10-18", set in the bar (4.62; Okay, 18 Oct 2026: "Date best set at the bar … Default from system date"); "" = today, wherever the dial is opened

@@ -544,7 +544,8 @@ const radius_row = (R) => RADIUS_ROWS[G.has_text(R) ? "numerals" : "outer"];
 // numeral's size, a band's width. As a number row: what the size button's pop-up shows (Okay, 13 Oct 2026).
 const SIZE_ROWS = {
   len: num("len", "Length", 0.05, 10, 0.05, { scope: "ring" }), dot: num("w", "Ø", 0.02, 5, 0.01, { scope: "ring" }),
-  numerals: num("size", "Size", 0.3, 8, 0.05, { scope: "ring" }), band: num("width", "Band width", 0.02, 25, 0.05, { scope: "ring" }),
+  // a numeral's Size: its slider runs to the dial's diameter (Okay, 24 Oct 2026: "main numerals could grow up to 500-600"; asked, "Dial's diameter")
+  numerals: num("size", "Size", 0.3, 8, 0.05, { scope: "ring", top: (S) => S.dial_d }), band: num("width", "Band width", 0.02, 25, 0.05, { scope: "ring" }),
 };
 const size_row = (R) => SIZE_ROWS[G.has_text(R) ? "numerals" : G.kind_of(R) === "band" ? "band" : G.SHAPES[R.shape] === "dot" ? "dot" : "len"];
 const VALUE_PICS = {                               // a value button's drawing, at its size (36), centre 18. Its disc is the button's edge and, since the audit's second round, a line as heavy as the others (Okay, 14 Oct 2026: "same thicknesses"); outer edges where they were
@@ -1857,12 +1858,12 @@ class DialTool {
   /** show mode's Shenanigans (Okay, 23 Oct 2026): at the column's foot, always in view, on the top's darker ground — the
    *  costly or showy layers on and off in one place. Only shortcuts: the same keys as their rows and switches elsewhere,
    *  which keep every other setting of theirs. Hidden on the dial side (R16). Laid out after his drawing (24 Oct 2026,
-   *  #525; his drawing of 19:04): Shadows · Blurs over Flare · Bevels, each its name and a toggle; All alone in a third
-   *  column behind a white line, turning the four on or off together */
+   *  #525; his drawings of 19:04): Shadows · Blurs, Flare · Bevels, Gradients, two to a line, each its name and a toggle; All alone
+   *  in the third column behind a white line, turning the five on or off together */
   shenanigans_box() {
-    const KEYS = ["sh_on", "sh_blur", "w_bevels", "w_flare_on"], pill = (key, text, o = {}) => this.build_row({ ...seg(key, text, ["On", "Off"], { bool: true, ...o }), scope: "global" });
+    const KEYS = ["sh_on", "sh_blur", "w_bevels", "w_flare_on", "w_gradients"], pill = (key, text, o = {}) => this.build_row({ ...seg(key, text, ["On", "Off"], { bool: true, ...o }), scope: "global" });
     const all = pill("w_flare_on", "All", { get: (T) => KEYS.every((k) => T[k]), put: (tool, v) => KEYS.forEach((k) => tool.set_value("global", k, v)) });
-    this.shen_rows = [...[["sh_on", "Shadows"], ["sh_blur", "Blurs"], ["w_flare_on", "Flare"], ["w_bevels", "Bevels"]].map(([key, text]) => pill(key, text)), all];
+    this.shen_rows = [...[["sh_on", "Shadows"], ["sh_blur", "Blurs"], ["w_flare_on", "Flare"], ["w_bevels", "Bevels"], ["w_gradients", "Gradients"]].map(([key, text]) => pill(key, text)), all];      // Gradients: every gradient in show mode (Okay, 24 Oct 2026: "Both")
     return el("div", { className: "shenanigans" }, el("div", { className: "shenticks" }, ...this.shen_rows.map((r) => r.el)));
   }
 
@@ -3062,6 +3063,7 @@ class DialTool {
       out.refresh = (T) => {
         const v = T[row.key] ?? (row.or ? row.or(T) : 0);
         if (out.link) { const on = Boolean(T[out.link.dataset.link]); out.link.classList.toggle("on", on); out.link.textContent = on ? (row.inpop ? "LINK\n+ED" : "LINKED") : "LINK"; out.link.setAttribute("aria-pressed", String(on)); out.link.ariaLabel = on ? "Width and height linked: press to unlink" : "Link width and height"; }      // in the controller's disc, linked: two lines (4.86, Okay: "LINK / +ED")
+        if (row.top) { const top = Math.max(row.top(this.S), v); if (+slider.max !== top) slider.max = top; }      // top: the slider's end follows the dial (a numeral's Size runs to the dial's diameter, #535)
         if (v > +slider.max) slider.max = v;       // the slider grows to hold a typed value
         if (v < +slider.min) slider.min = v;
         slider.step = String(unit_step() / per());      // the slider moves in the shown unit's round steps too (#76)
@@ -4630,7 +4632,7 @@ class DialTool {
     // every font box has all of it (Okay, 13 Oct 2026): numerals and letters · name, colour · styles, language · size ·
     // tracking · the variable axes · the OpenType features. The last can be put away.
     // size · tracking · the variable axes, one under the other without a heading (Okay's drawing, 13 Oct 2026)
-    const size = this.build_row(own ? { ...num("size", "Size %", 20, 100, 1), scope: "window" } : { ...num("size", "Size", 0.3, 8, 0.05), scope: "ring" });      // a window's text is sized in % of its height
+    const size = this.build_row(own ? { ...num("size", "Size %", 20, 100, 1), scope: "window" } : { ...num("size", "Size", 0.3, 8, 0.05, { top: (S) => S.dial_d }), scope: "ring" });      // a window's text is sized in % of its height
     const axes = this.axes_part(pre, own);
     const features = this.box_part("font/features", "OpenType features", this.features_part(pre, own), true);
     wrap.append(el("div", { className: "fontbox" }, shown_cell, named, styles, size.el, tracking.el, axes.el, features.el), ...(own ? [back] : []), state);

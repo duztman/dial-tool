@@ -17,7 +17,7 @@ export function attach(pk) { PK = pk; }
 
 // ── state of one drawing: set by draw(), read everywhere ──
 let STYLE = "miyazaki";
-let GLINT = "plain", INK_K = 6, INK_N = 0, HAND_BEVEL = false, FLARE_TINT = "#ffffff", FLARE_SCALE = 1, GLASS_K = 1, SH_OP = 0.3, FLARE_KIND = "arc";
+let GLINT = "plain", INK_K = 6, INK_N = 0, HAND_BEVEL = false, FLARE_TINT = "#ffffff", FLARE_SCALE = 1, GLASS_K = 1, SH_OP = 0.3, FLARE_KIND = "arc", GRADIENTS = true, HEIGHTS = {};
 let BRACELET_KIND = "vault";      // which bracelet the diver wears: vault (Oyster) or links (Emre's)
 let DIAL_IN = true, OUTLINE_ON = true, NO_LINES = false;      // NO_LINES: the Engineer's parts without their lines (main's case)      // OUTLINE_ON false: the effects switch is off (Okay: "turn off shenanigans") — no silhouette outline, which is a PathKit union per drawing      // false: the watch round a dial drawn by someone else (Dial Tool's edit mode) — no dial, no glass, nothing over the opening
 const REHAUT = 0.8; let SHD = 1, INSERT = { top: "#2b2c30", bottom: "#2b2c30" }, FL = { size: 1, tint: 0.45, bright: 1 }, GLASS = { fat: 1, len: 1, op: 1 }, DIALS = [], HANDS_A = { hour: 305, minute: 60, second: 180 };
@@ -260,8 +260,12 @@ function dialSVG(C, v, L) {
   const D = DIALS[0], s = (C.dial - (C.insert ? 2 * REHAUT : 0)) / D.d, A = HANDS_A;
   const col = (x) => clampL(x.f);      // every colour's lightness kept between 15 and 85 %
   const items = D.items;
-  const kh = longer(SUN_H), sh = [-Math.cos(rad(L)) * 0.35 * kh, Math.sin(rad(L)) * 0.35 * kh];       // the hands' shadow, away from the light (dial space is y up)
-  const handsShadow = items.filter((x) => x.hand || x.role === "cap").map((x) => `<path d="${x.p}" fill="#000" fill-opacity="${f(Math.min(1, 0.35 * SHD))}"${x.hand ? ` data-hs="${x.hand}" data-sh="${f(sh[0])} ${f(sh[1])}" transform="translate(${f(sh[0])} ${f(sh[1])}) rotate(${-A[x.hand]})"` : ` transform="translate(${f(sh[0])} ${f(sh[1])})"`}/>`).join("");
+  // the hands' shadows as the dial side casts them (Okay, 24 Oct 2026, #519: "Should look the same"; asked, "Dial side's"):
+  // each from its own height over the plate (HEIGHTS, mm), away from the light, as long as the sun's height throws it and
+  // never longer than a 20° sun (dial space is y up), at the dial side's darkness
+  const per = 1 / Math.tan(rad(Math.max(LOW_SUN, Math.min(89, SUN_H)))), away = (z) => [-Math.cos(rad(L)) * per * z, Math.sin(rad(L)) * per * z];
+  const handsShadow = items.filter((x) => x.hand || x.role === "cap").map((x) => { const sh = away(HEIGHTS[x.hand || "cap"] ?? 0.35);
+    return `<path d="${x.p}" fill="#000" fill-opacity="${f(Math.min(1, 0.25 * SHD))}"${x.hand ? ` data-hs="${x.hand}" data-sh="${f(sh[0])} ${f(sh[1])}" transform="translate(${f(sh[0])} ${f(sh[1])}) rotate(${-A[x.hand]})"` : ` transform="translate(${f(sh[0])} ${f(sh[1])})"`}/>`; }).join("");
   const body = items.map((x) => `<path d="${x.p}" fill="${col(x)}" fill-opacity="${x.a}"${x.hand ? ` data-h="${x.hand}" transform="rotate(${-A[x.hand]})"` : ""}/>` + (x.hand ? handBevel(x, A, L) : x.role !== "plate" && x.role !== "cap" ? inkRelief(x, s, L) : ""));
   const firstHand = items.findIndex((x) => x.hand || x.role === "cap");
   body.splice(firstHand, 0, handsShadow);
@@ -694,6 +698,7 @@ function silhouetteOutline(paths, L = 0) {
   const d = u.toSVGString(); u.delete();
   // lit by the light (18:26): one closed line round the metal only, its white from 0 on the side away from the light to 65 % on
   // the side facing it — a gradient along the light's direction across the watch
+  if (!GRADIENTS) return `<path d="${d}" fill="none" stroke="#fff" stroke-opacity="0.3" stroke-width="0.2" stroke-linejoin="round"/>`;      // Gradients off: one even light (#525)
   const id = "og" + BLOB_N++, ux = Math.cos(rad(L)), uy = Math.sin(rad(L)), D = 24;
   CLIPS.push(`<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${f(-ux * D)}" y1="${f(-uy * D)}" x2="${f(ux * D)}" y2="${f(uy * D)}"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity="0.65"/></linearGradient>`);
   return `<path d="${d}" fill="none" stroke="url(#${id})" stroke-width="0.2" stroke-linejoin="round"/>`;
@@ -783,7 +788,7 @@ export const STRIPE_COUNT = (name) => new Set((STRIPES[name] || [[0, 1, 0]]).map
 export function draw(o) {
   use(o.style || "miyazaki"); const STYLE_ = STYLES[STYLE]; OUTLINE_ON = o.outline !== false;
   DIALS = [{ name: "live", d: o.d, own: true, items: o.items }];
-  HANDS_A = o.A; FLARE_KIND = o.flare; INK_K = o.ink ?? 6; FL = o.fl; GLASS = o.glass; INSERT = o.insert; SHD = o.shadow ?? 1; HAND_BEVEL = +o.bevels || 0;
+  GRADIENTS = o.gradients !== false; HEIGHTS = o.heights || {}; HANDS_A = o.A; FLARE_KIND = o.flare; INK_K = o.ink ?? 6; FL = o.fl; GLASS = o.glass; INSERT = o.insert; SHD = o.shadow ?? 1; HAND_BEVEL = +o.bevels || 0;
   // a colour that is one of the engine's own keeps that entry's three tones; any other gets three made from it
   const own = (tabs, c, k) => tabs.flatMap((t) => Object.entries(t).filter(([n]) => n !== "custom").flatMap(([, v]) => (typeof v[0] === "string" ? [v] : v))).find((T) => T[1] === c) || tones(c, k);
   METALS.custom = own([METALS], o.metal, [1.35, 0.81]);
