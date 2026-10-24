@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Dial Tool</title>
-<!-- Dial Tool, web version · beta 4.92.2 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
+<!-- Dial Tool, web version · beta 4.92.3 · built 2026-10-24 · source: github.com/duztman/dial-tool, web/src
      One file: code, shape engine (PathKit), text engine (HarfBuzz), the stand-in font (Inter, OFL), the pixel font (Silkscreen, OFL), the time's face (Barlow Condensed, OFL) and the unit box's (JetBrains Mono, OFL) are all inside. -->
 <style>
 /* Dial Tool, web version — the stylesheet (R32).
@@ -680,6 +680,7 @@
      the place of the whole one. The row above draws it, on its own last line, where every
      line of a row falls; the nested row draws no line over itself. One hidden row may lie between the two (a note that doesn't apply now). */
   .row:is(.nest, .tied, .under), .row.note { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }
+  .pane.headless > .body > .row:first-child { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--row-rule); }      /* a pane with no heading: its first row draws no line over it, the pane's own top line is there (Okay, 24 Oct 2026: "Remove style's top dark hr bar") */
   .row:has(+ .row:is(.nest, .tied, .under):not([hidden])), .row:has(+ .row[hidden] + .row:is(.nest, .tied, .under):not([hidden])) { box-shadow: 0 calc(-1 * var(--hair)) 0 var(--row-rule); background: linear-gradient(var(--row-rule) 0 0) right bottom / calc(100% - var(--nest-from)) var(--hair) no-repeat; }
   .row:is(.nest, .tied, .under):has(+ .row:is(.nest, .tied, .under):not([hidden])) { box-shadow: none; }
   .row > .blank:first-child { display: block; }
@@ -1395,7 +1396,7 @@
   .onview { display: flex; align-items: center; justify-content: center; height: var(--control-large); border: var(--hair) solid var(--line-faint); color: var(--on-canvas); user-select: none; }
   @media (hover: hover) { .onview:hover { box-shadow: inset 0 0 0 var(--hair) var(--on-canvas); } }      /* under the pointer its line is twice as thick: still no fill */
   /* undo · redo, before the Guides switch: two joined outlined buttons; pale when there is no step that way */
-  .undos { position: absolute; z-index: 3; top: var(--canvas-top); left: max(var(--canvas-inset), calc(var(--title-end) + var(--gap) - var(--panel-w) * (1 - var(--away)))); display: flex; flex-direction: column; align-items: flex-start; gap: var(--unit); }      /* undo · redo, Versions under them (#435); top left of the preview, beside the panel; the dial alone, they ride left with the preview's edge and stop short of the title (a gap after it) */
+  .undos { position: absolute; z-index: 3; top: var(--canvas-top); left: max(var(--canvas-inset), calc(var(--title-end) + var(--gap) - var(--panel-w) * (1 - var(--away)))); display: flex; align-items: flex-start; gap: var(--unit); }      /* undo · redo, then Versions on the same line, a unit after them (#517; Okay, 24 Oct 2026: "Versions go up, right of the top row buttons"); top left of the preview, beside the panel; the dial alone, they ride left with the preview's edge and stop short of the title (a gap after it) */
   .undopair { display: flex; }
   .undos:has([aria-expanded="true"]) { z-index: 6; }      /* with its steps or Versions open, over the switches lower down (Backdrop, the Tiny Preview) */
   .undobox { width: var(--control-large); }
@@ -1482,10 +1483,9 @@
   /* Shadows (a trial, 14 Oct 2026): the Guides switch's make, at the bottom left, the Backdrop switch standing on it a
      unit above (Okay, 23:05: "button goes down"); one higher, so its open list lies over Backdrop.
      Its sign is a sphere and its cast shadow (15 Oct 2026), so its room is Guides'.
-     Its list opens upward (.shadelist, after the guides' list), so its arrow points up while closed. */
+     Its list opens upward (.shadelist, after the guides' list); its arrow points down while closed and turns open, as
+     every chevron on the canvas does (#518; Okay, 24 Oct 2026: "Chevrons all point down"). */
   .shadows { position: absolute; z-index: 4; left: var(--stop-short); bottom: var(--canvas-inset); display: flex; }
-  .shadows .guidesmore svg { rotate: 180deg; }
-  .shadows .guidesmore[aria-expanded="true"] svg { rotate: 0deg; }
 
   /* the list: near black and round, like the colour pop-out (.night). A kind of guide is one line: its name, then
      round choices with room between them — none, then the eight colours. The chosen one stands in a thick ring of its own colour, a
@@ -1621,6 +1621,9 @@
      its words (Okay, 15 Oct 2026, 07:07: "these buttons get solid bg color when labels visible"): the iris switch open
      (ACTIVATE SHOWCASE), the labelled switches — always on a wide screen, on a phone while unfolded (8-narrow.css) */
   .irisbox[aria-expanded="true"], :is(.guidesbox, .guidesmore, .backdropbox, .casebox) { background: var(--canvas-fill); }
+  /* show mode: no fill — its backdrop is a gradient, so a fill of one colour stands out as a patch (Okay, 24 Oct 2026: "Align
+     these, remove bg, same as main"; on the dial side the fill is the backdrop's own colour and so not seen) */
+  .showing :is(.guidesbox, .guidesmore, .backdropbox, .casebox) { background: none; }
 
   /* show mode's Backdrop (ground_pop() in app.js; the Show Case's background popup): the Shadows list's night part, opening
      upward from its switch; one colour on the left, a gradient on the right, ten tiles each in rows of five, and under each
@@ -1806,7 +1809,7 @@
     #app { grid-template-rows: var(--bar-h) calc(var(--preview-share) + (100% - var(--preview-share) - var(--bar-h)) * var(--away)) minmax(0, 1fr); }
     .panel, .mast { width: auto; translate: none; }
     main { --stop-short: var(--canvas-inset); }
-    .undos { left: var(--canvas-inset); flex-direction: row; }      /* nothing slides sideways, so nothing stops short; Versions beside undo, not under it, so the left column stays clear of Backdrop when the drawer is up (#232) */
+    .undos { left: var(--canvas-inset); }      /* nothing slides sideways, so nothing stops short */
     .versions { position: static; }      /* its list drops from the undo row's left edge, inside the screen */
     .bar { grid-row: 1; flex-wrap: wrap; height: auto; padding: 0; border-top: 0; border-bottom: var(--hair) solid var(--bar-rule); }
     .bar .lead { width: 100%; height: var(--bar-lead-narrow); }
@@ -7122,6 +7125,10 @@ var NAMES = {
     month_names: ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"]
   }
 };
+function day_list(lang = "en", form = 0) {
+  const N = NAMES[lang] || NAMES.en;
+  return form === 1 ? N.day_names.map((d) => d.toLocaleUpperCase(lang)) : N.days;
+}
 var SYNODIC = 29.530588853;
 function moment(day, t) {
   const [y, m, d] = String(day).split("-").map((v) => parseInt(v, 10));
@@ -7149,17 +7156,17 @@ function moon_age(ms) {
   const elongation = ((moon - sun) % 360 + 360) % 360;
   return elongation / 360 * SYNODIC;
 }
-function window_text(kind, mo, lang = "en") {
+function window_text(kind, mo, lang = "en", form = 0) {
   const N = NAMES[lang] || NAMES.en;
   if (kind === "date" || kind === "big date") return String(mo.d);
-  if (kind === "day") return N.days[mo.wd];
+  if (kind === "day") return day_list(lang, form)[mo.wd];
   if (kind === "month") return N.months[mo.m - 1];
   if (kind === "am \xB7 pm") return mo.pm ? "PM" : "AM";
   return "";
 }
 
 // src/geometry.js
-var VERSION = "beta 4.92.2";
+var VERSION = "beta 4.92.3";
 var MM = 72 / 25.4;
 var { sin, cos, tan, acos, hypot, PI, ceil, abs, min, max, round } = Math;
 var radians = (a) => a * PI / 180;
@@ -7336,6 +7343,8 @@ var WINDOW_BASE = {
   // a date, day or moon window shows the bar's date; on to start, and for every link (Okay, 19 Oct 2026, 21:09, #413: "All on by default", for old links too)
   names: 0,
   // a day window following the date: its names' language, a place in moment.js LANGS (EN · TR · DE · FR · IT; 4.62)
+  day_form: 0,
+  // … and how they are written, a place in moment.js DAY_FORMS: short as before, or in full (#515)
   jump: false,
   // an am · pm disc jumps at noon and midnight instead of sweeping (#401, 4.90; Okay, 19 Oct 2026, 14:13: "am pm gets a jump function on/off"); off, it sweeps, as before
   neighbours: true,
@@ -7387,7 +7396,8 @@ var FIRST_WINDOW = {
   c2: "da_c2",
   c3: "da_c3",
   neighbours: "da_neighbours",
-  jump: "da_jump"
+  jump: "da_jump",
+  day_form: "da_day_form"
 };
 var DEFAULTS = {
   version: 2,
@@ -7569,6 +7579,8 @@ var DEFAULTS = {
   // the day the dial shows, "2026-10-18", set in the bar (4.62; Okay, 18 Oct 2026: "Date best set at the bar … Default from system date"); "" = today, wherever the dial is opened
   da_jump: false,
   // … and `jump` (#401, 4.90)
+  da_day_form: 0,
+  // … and `day_form` (#515)
   da_look: 0,
   da_c2: null,
   da_c3: null,
@@ -8203,8 +8215,11 @@ var LINK_KEYS = [
   "out_ink",
   // 4.90 (#35): appended; "" to start, every ink in one mask as before
   "jump",
-  "da_jump"
+  "da_jump",
   // 4.90 (#401): appended; off to start, the disc sweeps as before
+  "day_form",
+  "da_day_form"
+  // 4.92.3 (#515): appended; short to start, as every older link
 ];
 var CODE_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 var code_of = (i2) => i2 < 62 ? CODE_DIGITS[i2] : CODE_DIGITS[Math.floor(i2 / 62) - 1] + CODE_DIGITS[i2 % 62];
@@ -9114,7 +9129,7 @@ var pair_gap = (w) => w.w / 8;
 function disc_places(S, w) {
   const kind = WINDOW_KINDS[w.kind], shape3 = window_shape(w), high = text_room(w);
   const lang = LANGS[w.names] || "en";
-  const list = kind === "date" ? Array.from({ length: 31 }, (_, i2) => String(i2 + 1)) : NAMES[w.follows ? lang : LANGS.find((l) => NAMES[l].days.includes(w.text)) || "en"].days;
+  const list = kind === "date" ? Array.from({ length: 31 }, (_, i2) => String(i2 + 1)) : w.follows ? day_list(lang, w.day_form) : NAMES[LANGS.find((l) => NAMES[l].days.includes(w.text)) || "en"].days;
   const now = Math.max(list.indexOf(kind === "date" ? String(parseInt(w.text, 10)) : String(w.text)), 0), n = list.length;
   const type = window_type(S, w), size = high * w.size / 100, centre2 = clock_point(w.r, window_angle(w)), turn = window_turn(w), a = window_angle(w);
   const at = (p) => {
@@ -9171,7 +9186,7 @@ function shown_day(S) {
 function shown_window(S, w) {
   if (!w.follows) return w;
   const kind = WINDOW_KINDS[w.kind], mo = moment(shown_day(S), S.t);
-  if (kind === "date" || kind === "day" || kind === "big date") return { ...w, text: window_text(kind === "big date" ? "date" : kind, mo, LANGS[w.names] || "en") };
+  if (kind === "date" || kind === "day" || kind === "big date") return { ...w, text: window_text(kind === "big date" ? "date" : kind, mo, LANGS[w.names] || "en", w.day_form) };
   if (kind === "moon phase") return { ...w, age: +mo.moon.toFixed(1) };
   return w;
 }
@@ -10904,7 +10919,7 @@ function tilePicture(key, w = 38, h = 27) {
   if (TILES[key]) return TILES[key];
   const C2 = scaleCase(CASES[key] || CASES.dress, 1), d = silhouetteOf(key, 1), b = caseBox(key, 1), m = 1.15;
   const s = Math.min(w / (b.w * m), h / (b.h * m));
-  return TILES[key] = `<svg viewBox="${f(-w / 2 / s)} ${f(-h / 2 / s)} ${f(w / s)} ${f(h / s)}" width="${w}" height="${h}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><path d="${d}" vector-effect="non-scaling-stroke"/><path d="${circle2(C2.opening)}" vector-effect="non-scaling-stroke"/></svg>`;
+  return TILES[key] = `<svg viewBox="${f(-w / 2 / s)} ${f(-h / 2 / s)} ${f(w / s)} ${f(h / s)}" width="${w}" height="${h}" aria-hidden="true" fill="currentColor" stroke="none"><path fill-rule="evenodd" d="${d} ${circle2(C2.opening)}"/></svg>`;
 }
 var DETAIL = 31;
 var FULL = { w: 126 / 1.2, h: 308 / 1.2 };
@@ -15538,7 +15553,8 @@ var ROWS = {
     info("Every width on the dial at once \u2014 marks, bands, hands, frames. Lengths and places stay; one undo takes it back.", {}),
     num2("dial_hole", "Centre hole", 0, 6, 0.1),
     // Ø; 0 = none. Shows when the hands are hidden (#165)      // nest: a question about the row above starts on the controls' column (Okay, 12 Oct 2026)
-    col("c_plate", "Plate"),
+    col("c_plate", "Plate", { head: true }),
+    // the plate's colour on the Dial heading line, no row of its own (Okay, 24 Oct 2026: his drawing, the pill up on "Dial", "Row gone")
     custom("background"),
     hdr("Page", { folded: true }),
     // around the dial: preview and page only. Under the pinned part, with what scrolls (Okay, 20 Oct 2026, 03:41: "Page moves to gray area")
@@ -15814,6 +15830,8 @@ var ROWS = {
     chk("neighbours", "Neighbours", { ...W, show: win_is("date", "day") }),
     info("The disc\u2019s next places show where the hole allows.", { ...W, show: win_is("date", "day") }),
     seg("names", "Names", ["EN", "TR", "DE", "FR", "IT"], { ...W, show: (T) => T.on && T.follows && WINDOW_KINDS[T.kind] === "day" }),
+    seg("day_form", "Written", ["Short", "Full"], { ...W, show: (T) => T.on && T.follows && WINDOW_KINDS[T.kind] === "day" }),
+    // MON or MONDAY (#515; Okay, 24 Oct 2026: "Days of the week option to be written in full"); Custom comes third (R9)
     // physics (4.72, #346: "their discs obey physics or not, chosen by the user"): on, a disc must end inside the case —
     // passing it, its outer guide shows red and this says by how much; off, it may (a face on a screen)
     chk("jump", "Jumps", { ...W, show: win_is("am \xB7 pm") }),
@@ -15898,7 +15916,8 @@ var ROWS = {
       const k = tool ? tool.speed : 1, n = Math.round(S.out_seconds * S.out_fps);
       return `${n} frames, ${S.out_px} \xD7 ${S.out_px} px, ${S.out_seconds} s at the bar's speed (${+k.toFixed(2)}\xD7) from the time shown. A GIF is at most ${GIF_MOST} px and ${GIF_FPS_MOST} frames a second.`;
     }, { scope: "global" }),
-    hdr("Link to this dial", { folded: true }),
+    hdr("Share dial as link", { folded: true }),
+    // Okay, 24 Oct 2026: "'Share dial … as link' instead of this title"; the set of saved dials in one link is #523
     custom("link_copy", { head: true }),
     // Copy link, flush right on the heading line, open or folded (#277)
     custom("link"),
@@ -15930,8 +15949,8 @@ var PULSE_RISE = 0.03;
 var PULSE_FLASH = 0.4;
 var UNIT_INK = { mm: [0.062, 1.076, 0.56, 0.56], pt: [0.088, 1.035, 0.705, 0.885], in: [0.082, 1.032, 0.78, 0.78], lig: [0.029, 1.683, 0.78, 0.96], thou: [0.052, 2.262, 0.73, 0.74] };
 ROWS["Show dial"] = [
-  hdr("Colours", { pin: true, summary: (S, tool2) => tool2.dial_colours(false).map((c) => ({ c })) }),
-  // the dial's colours, as the dial side's Colours pane: the one thing of the dial show mode changes (Okay, 22 Oct 2026)
+  hdr("Colours", { summary: (S, tool2) => tool2.dial_colours(false).map((c) => ({ c })) }),
+  // the dial's colours, as the dial side's Colours pane: the one thing of the dial show mode changes (Okay, 22 Oct 2026); not pinned, it scrolls with the rest on the grey (Okay, 24 Oct 2026, 12:41)
   custom("colours"),
   hdr("Ink", { folded: false }),
   num2("w_ink", "Ink height", 0, 10, 1, { whole: true }),
@@ -17583,7 +17602,7 @@ var DialTool = class _DialTool {
   case_box() {
     const word = el("span", { className: "word" });
     const arrow = el("span", { className: "arrow" });
-    arrow.innerHTML = icon(SIGNS.up);
+    arrow.innerHTML = icon(SIGNS.down);
     const menu = el("select", { id: "case-pick", ariaLabel: "A case round the dial (preview only)", title: "A case round the dial (preview only)" });
     const NAMES2 = { dress: "Dress", field: "Field", diver: "Diver", emre01: "Emre" };
     menu.append(el("option", { value: "none", textContent: "No case" }));
@@ -20261,14 +20280,21 @@ var DialTool = class _DialTool {
         return `${h}:${String(m % 60).padStart(2, "0")}`;
       };
       const labels = text ? ring_labels(R) : ring_angles(R).map(at);
-      if (+this.nudge_at >= labels.length) this.nudge_at = "0";
-      const want = labels.map((l, i2) => `${i2 + 1} \xB7 ${l || "\u2014"}${R.nudge[String(i2)] ? "  \u2022" : ""}`).join("|");
+      const built = this.statik && this.statik.rings.find((x2) => x2.ring === R);
+      const drawn2 = built ? built.at.filter((i2) => i2 < labels.length) : labels.map((_, i2) => i2);
+      if (drawn2.length && !drawn2.includes(+this.nudge_at)) this.nudge_at = String(drawn2[0]);
+      const name = (i2) => `${labels[i2] || "\u2014"}${R.nudge[String(i2)] ? "  \u2022" : ""}`;
+      const want = drawn2.map((i2) => `${i2}:${name(i2)}`).join("|");
       if (pick2.dataset.items !== want) {
-        pick2.replaceChildren(...labels.map((l, i2) => el("option", { value: String(i2), textContent: `${i2 + 1} \xB7 ${l || "\u2014"}${R.nudge[String(i2)] ? "  \u2022" : ""}` })));
+        pick2.replaceChildren(...drawn2.map((i2) => el("option", { value: String(i2), textContent: name(i2) })));
         pick2.dataset.items = want;
       }
       pick2.value = this.nudge_at;
       pick_box.sync();
+    };
+    this.nudge_sync = () => {
+      const R = this.ring();
+      if (R && !wrap.hidden) out.refresh(R);
     };
   }
   // ── fonts: the Type group shows the ring's font; the list of all fonts is a sheet of its own ──
@@ -21898,6 +21924,7 @@ var DialTool = class _DialTool {
       const t0 = performance.now();
       this.statik = build_static(S);
       this.static_dirty = false;
+      if (this.nudge_sync) this.nudge_sync();
       this.build_ms = performance.now() - t0;
       if (S.out_production) merges_of(this);
     }
